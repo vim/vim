@@ -48,7 +48,7 @@ fun! VbGetIndent(lnum)
     let ind = indent(lnum)
 
     " Add
-    if previous_line =~? '^\s*\<\(begin\|\%(\%(private\|public\|friend\)\s\+\)\=\%(function\|sub\|property\)\|select\|case\|default\|if\>.\{-}\<then\>\s*$\|else\|elseif\|do\|for\|while\|enum\|with\)\>'
+    if previous_line =~? '^\s*\<\(begin\|\%(\%(private\|public\|friend\)\s\+\)\=\%(function\|sub\|property\)\|select\|case\|default\|if\|else\|elseif\|do\|for\|while\|enum\|with\)\>'
 	let ind = ind + &sw
     endif
 

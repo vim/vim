@@ -1,6 +1,6 @@
 " Vim autoload file for the tohtml plugin.
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 July 24
+" Last Change: 2010 Jul 29
 "
 " Additional contributors:
 "
@@ -39,7 +39,6 @@ func! tohtml#Convert2HTML(line1, line2)
       let g:html_diff_win_num += 1
       runtime syntax/2html.vim
       call add(buf_list, bufnr('%'))
-      "exec '%s#<span id=''\zsfold\d\+\ze''#win'.win_num.'\0#ge'
     endfor
     unlet g:html_diff_win_num
     if !save_hwf
@@ -56,7 +55,9 @@ endfunc
 
 func! tohtml#Diff2HTML(win_list, buf_list)
   " TODO: add logic for xhtml
-  let style = []
+  let style = ['-->']
+  let body_line = ''
+
   let html = []
   call add(html, '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"')
   call add(html, '  "http://www.w3.org/TR/html4/loose.dtd">')
@@ -69,6 +70,7 @@ func! tohtml#Diff2HTML(win_list, buf_list)
   " validate without warnings about encoding
 
   call add(html, '</head>')
+  let body_line_num = len(html)
   call add(html, '<body>')
   call add(html, '<table border="1" width="100%">')
 
@@ -78,6 +80,9 @@ func! tohtml#Diff2HTML(win_list, buf_list)
   endfor
   call add(html, '</tr><tr>')
 
+  let diff_style_start = 0
+  let insert_index = 0
+
   for buf in a:buf_list
     let temp = []
     exe bufwinnr(buf) . 'wincmd w'
@@ -86,13 +91,40 @@ func! tohtml#Diff2HTML(win_list, buf_list)
     " to act on everything in a fold by mistake.
     setlocal nofoldenable
 
+    " When not using CSS or when using xhtml, the <body> line can be important.
+    " Assume it will be the same for all buffers and grab it from the first
+    " buffer. Similarly, need to grab the body end line as well.
+    if body_line == ''
+      1
+      call search('<body')
+      let body_line = getline('.')
+      $
+      call search('</body>', 'b')
+      let s:body_end_line = getline('.')
+    endif
+
     " Grab the style information.  Some of this will be duplicated...
     1
     let style_start = search('^<style type="text/css">')
     1
     let style_end = search('^</style>')
     if style_start > 0 && style_end > 0
-      let style += getline(style_start + 1, style_end - 1)
+      let buf_styles = getline(style_start + 1, style_end - 1)
+      for a_style in buf_styles
+	if index(style, a_style) == -1
+	  if diff_style_start == 0
+	    if a_style =~ '\<Diff\(Change\|Text\|Add\|Delete\)'
+	      let diff_style_start = len(style)-1
+	    endif
+	  endif
+	  call insert(style, a_style, insert_index)
+	  let insert_index += 1
+	endif
+      endfor
+    endif
+
+    if diff_style_start != 0
+      let insert_index = diff_style_start
     endif
 
     " Delete those parts that are not needed so
@@ -115,9 +147,11 @@ func! tohtml#Diff2HTML(win_list, buf_list)
     quit!
   endfor
 
+  let html[body_line_num] = body_line
+
   call add(html, '</tr>')
   call add(html, '</table>')
-  call add(html, '</body>')
+  call add(html, s:body_end_line)
   call add(html, '</html>')
 
   let i = 1

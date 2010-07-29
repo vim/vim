@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 July 24
+" Last Change: 2010 Jul 28
 "
 " Additional contributors:
 "
@@ -129,9 +129,13 @@ endif
 
 " Return HTML valid characters enclosed in a span of class style_name with
 " unprintable characters expanded and double spaces replaced as necessary.
-function! s:HtmlFormat(text, style_name)
+function! s:HtmlFormat(text, style_name, diff_style_name)
   " Replace unprintable characters
   let formatted = strtrans(a:text)
+
+  " separate the two classes by a space to apply them both if there is a diff
+  " style name
+  let l:style_name = a:style_name . (a:diff_style_name == '' ? '' : ' ') . a:diff_style_name
 
   " Replace the reserved html characters
   let formatted = substitute(substitute(substitute(substitute(substitute(formatted, '&', '\&amp;', 'g'), '<', '\&lt;', 'g'), '>', '\&gt;', 'g'), '"', '\&quot;', 'g'), "\x0c", '<hr class="PAGE-BREAK">', 'g')
@@ -143,12 +147,26 @@ function! s:HtmlFormat(text, style_name)
   endif
 
   " Enclose in a span of class style_name
-  let formatted = '<span class="' . a:style_name . '">' . formatted . '</span>'
+  let formatted = '<span class="' . l:style_name . '">' . formatted . '</span>'
 
-  " Add the class to class list if it's not there yet
+  " Add the class to class list if it's not there yet.
+  " Add normal groups to the beginning so diff groups can override them.
   let s:id = hlID(a:style_name)
-  if stridx(s:idlist, "," . s:id . ",") == -1
-    let s:idlist = s:idlist . s:id . ","
+  if index(s:idlist, s:id ) == -1
+    if a:style_name =~ 'Diff\%(Add\|Change\|Delete\|Text\)'
+      call add(s:idlist, s:id)
+    else
+      call insert(s:idlist, s:id)
+    endif
+  endif
+  
+  " Add the diff highlight class to class list if used and it's not there yet.
+  " Add diff groups to the end so they override the other highlighting.
+  if a:diff_style_name != ""
+    let s:diff_id = hlID(a:diff_style_name)
+    if index(s:idlist, s:diff_id) == -1
+      call add(s:idlist, s:diff_id)
+    endif
   endif
 
   return formatted
@@ -437,7 +455,7 @@ endif
 exe s:orgwin . "wincmd w"
 
 " List of all id's
-let s:idlist = ","
+let s:idlist = []
 
 " set up progress bar in the status line
 if !s:html_no_progress && has("statusline")
@@ -702,7 +720,7 @@ while s:lnum <= s:end
 	let s:new = s:new . repeat(s:difffillchar, 3)
       endif
 
-      let s:new = s:HtmlFormat(s:new, "DiffDelete")
+      let s:new = s:HtmlFormat(s:new, "DiffDelete", "")
       if s:numblines
 	" Indent if line numbering is on; must be after escaping.
 	let s:new = repeat(s:LeadingSpace, s:margin) . s:new
@@ -734,7 +752,7 @@ while s:lnum <= s:end
       let s:new = s:new . repeat(s:foldfillchar, &columns - strlen(s:new))
     endif
 
-    let s:new = s:HtmlFormat(s:new, "Folded")
+    let s:new = s:HtmlFormat(s:new, "Folded", "")
 
     " Skip to the end of the fold
     let s:new_lnum = foldclosedend(s:lnum)
@@ -807,7 +825,7 @@ while s:lnum <= s:end
 
 	" add fold text, moving the span ending to the next line so collapsing
 	" of folds works correctly
-	let s:new = s:new . substitute(s:HtmlFormat(s:numcol . foldtextresult(s:lnum), "Folded"), '</span>', s:HtmlEndline.'\n\0', '')
+	let s:new = s:new . substitute(s:HtmlFormat(s:numcol . foldtextresult(s:lnum), "Folded", ""), '</span>', s:HtmlEndline.'\n\0', '')
 	let s:new = s:new . "<span class='fulltext'>"
 
 	" open the fold now that we have the fold text to allow retrieval of
@@ -827,7 +845,7 @@ while s:lnum <= s:end
 	  " add the empty foldcolumn for unfolded lines if there is a fold
 	  " column at all
 	  if s:foldcolumn > 0
-	    let s:new = s:new . s:HtmlFormat(repeat(' ', s:foldcolumn), "FoldColumn")
+	    let s:new = s:new . s:HtmlFormat(repeat(' ', s:foldcolumn), "FoldColumn", "")
 	  endif
 	else
 	  " add the fold column for folds not on the opening line
@@ -842,7 +860,8 @@ while s:lnum <= s:end
 
     " Now continue with the unfolded line text
     if s:numblines
-      let s:new = s:new . s:HtmlFormat(s:numcol, "lnr")
+      " TODO: why not use the real highlight name here?
+      let s:new = s:new . s:HtmlFormat(s:numcol, "lnr", "")
     endif
 
     " Get the diff attribute, if any.
@@ -853,6 +872,11 @@ while s:lnum <= s:end
 
     " Loop over each character in the line
     let s:col = 1
+
+    " most of the time we won't use the diff_id, initialize to zero
+    let s:diff_id = 0
+    let s:diff_id_name = ""
+
     while s:col <= s:len || (s:col == 1 && s:diffattr)
       let s:startcol = s:col " The start column for processing text
       if !exists('g:html_ignore_conceal') && has('conceal')
@@ -866,13 +890,18 @@ while s:lnum <= s:end
 	" characters.
 	while s:col <= s:len && s:concealinfo == synconcealed(s:lnum, s:col) | let s:col = s:col + 1 | endwhile
       elseif s:diffattr
-	let s:id = diff_hlID(s:lnum, s:col)
+	let s:diff_id = diff_hlID(s:lnum, s:col)
+	let s:id = synID(s:lnum, s:col, 1)
 	let s:col = s:col + 1
 	" Speed loop (it's small - that's the trick)
 	" Go along till we find a change in hlID
-	while s:col <= s:len && s:id == diff_hlID(s:lnum, s:col) | let s:col = s:col + 1 | endwhile
+	while s:col <= s:len && s:id == synID(s:lnum, s:col, 1)
+	      \   && s:diff_id == diff_hlID(s:lnum, s:col) |
+	      \     let s:col = s:col + 1 |
+	      \ endwhile
 	if s:len < &columns && !exists("g:html_no_pre")
-	  " Add spaces at the end to mark the changed line.
+	  " Add spaces at the end of the raw text line to extend the changed
+	  " line to the full width.
 	  let s:line = s:line . repeat(' ', &columns - virtcol([s:lnum, s:len]) - s:margin)
 	  let s:len = &columns
 	endif
@@ -913,6 +942,9 @@ while s:lnum <= s:end
 	" get the highlight group name to use
 	let s:id = synIDtrans(s:id)
 	let s:id_name = synIDattr(s:id, "name", s:whatterm)
+	if s:diff_id
+	  let s:diff_id_name = synIDattr(s:diff_id, "name", s:whatterm)
+	endif
       else
 	" use Conceal highlighting for concealed text
 	let s:id_name = 'Conceal'
@@ -920,9 +952,9 @@ while s:lnum <= s:end
       endif
 
       " Output the text with the same synID, with class set to {s:id_name},
-      " unless it has been concealed completely. Always output empty lines.
+      " unless it has been concealed completely.
       if strlen(s:expandedtab) > 0
-	let s:new = s:new . s:HtmlFormat(s:expandedtab,  s:id_name)
+	let s:new = s:new . s:HtmlFormat(s:expandedtab,  s:id_name, s:diff_id_name)
       endif
     endwhile
   endif
@@ -948,18 +980,18 @@ if exists("g:html_dynamic_folds")
 
   " add fold column to the style list if not already there
   let s:id = hlID('FoldColumn')
-  if stridx(s:idlist, "," . s:id . ",") == -1
-    let s:idlist = s:idlist . s:id . ","
+  if index(s:idlist, s:id) == -1
+    call insert(s:idlist, s:id)
   endif
 endif
 
-" Close off the font tag that encapsulates the whole <body>
-if !exists("g:html_use_css")
-  let s:lines[-1].="</font>"
-endif
-
 if exists("g:html_no_pre")
-  call extend(s:lines, ["</body>", "</html>"])
+  if !exists("g:html_use_css")
+    " Close off the font tag that encapsulates the whole <body>
+    call extend(s:lines, ["</font></body>", "</html>"])
+  else
+    call extend(s:lines, ["</body>", "</html>"])
+  endif
 else
   call extend(s:lines, ["</pre>", "</body>", "</html>"])
 endif
@@ -1009,9 +1041,6 @@ if s:numblines
 endif
 
 " Gather attributes for all other classes
-let s:idlist_str = s:idlist
-unlet s:idlist
-let s:idlist = split(s:idlist_str, ',')
 if !s:html_no_progress && !empty(s:idlist)
   let s:pgb = s:ProgressBar("Processing classes:", len(s:idlist),s:newwin)
 endif
@@ -1027,12 +1056,18 @@ while !empty(s:idlist)
     if exists("g:html_use_css")
       execute "normal! A\n." . s:id_name . " { " . s:attr . "}"
     else
-      execute '%s+<span class="' . s:id_name . '">\([^<]*\)</span>+' . s:HtmlOpening(s:id) . '\1' . s:HtmlClosing(s:id) . '+g'
+      " replace spans of just this class name with non-CSS style markup
+      execute '%s+<span class="' . s:id_name . '">\([^<]*\)</span>+' . s:HtmlOpening(s:id) . '\1' . s:HtmlClosing(s:id) . '+ge'
+      " Replace spans of this class name AND a diff class with non-CSS style
+      " markup surrounding a span of just the diff class. The diff class will
+      " be handled later because we know that information is at the end.
+      execute '%s+<span class="' . s:id_name . ' \(Diff\%(Add\|Change\|Delete\|Text\)\)">\([^<]*\)</span>+' . s:HtmlOpening(s:id) . '<span class="\1">\2</span>' . s:HtmlClosing(s:id) . '+ge'
     endif
   else
     execute '%s+<span class="' . s:id_name . '">\([^<]*\)</span>+\1+ge'
+    execute '%s+<span class="' . s:id_name . ' \(Diff\%(Add\|Change\|Delete\|Text\)\)">\([^<]*\)</span>+<span class="\1">\2</span>+ge'
     if exists("g:html_use_css")
-      1;/<style type="text/+1
+      1;/<\/style>/-2
     endif
   endif
 
@@ -1045,7 +1080,6 @@ while !empty(s:idlist)
     endif
   endif
 endwhile
-unlet s:idlist_str
 
 " Add hyperlinks
 %s+\(https\=://\S\{-}\)\(\([.,;:}]\=\(\s\|$\)\)\|[\\"'<>]\|&gt;\|&lt;\|&quot;\)+<a href="\1">\1</a>\2+ge

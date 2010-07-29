@@ -33,6 +33,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 Patch for :filetype completion. (Dominique Pelle, Jul 28)
 
 Windows 7: "Open with..." menu starts Vim without a file.
+Need to use other registry methods in if_ole.cpp?
 
 Windows 7: installing Vim again doesn't find the previously installed Vim.
 

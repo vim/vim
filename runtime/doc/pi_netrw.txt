@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.3c.  Last change: 2010 Jul 27
+*pi_netrw.txt*  For Vim version 7.3c.  Last change: 2010 Jul 28
 
 	    -----------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -316,20 +316,20 @@ settings are described below, in |netrw-browser-options|, and in
 |netrw-externapp|:
 
  *b:netrw_lastfile*	last file Network-read/written retained on a
-			per-buffer basis (supports plain :Nw )
+		      per-buffer basis (supports plain :Nw )
 
  *g:netrw_bufsettings*	the settings that netrw buffers have
- 			(default) noma nomod nonu nowrap ro nobl
+ 		      (default) noma nomod nonu nowrap ro nobl
 
  *g:netrw_chgwin*	specifies a window number where file edits will take
-			place.  (also see |netrw-C|)
-			(default) not defined
+		      place.  (also see |netrw-C|)
+		      (default) not defined
 
  *g:Netrw_funcref*	specifies a function (or functions) to be called when
-			netrw edits a file.  The file is first edited, and
-			then the function reference (|Funcref|) is called.
-			This variable may also hold a |List| of Funcrefs.
-			(default) not defined
+		      netrw edits a file.  The file is first edited, and
+		      then the function reference (|Funcref|) is called.
+		      This variable may also hold a |List| of Funcrefs.
+		      (default) not defined
 >
 			    Example: place in .vimrc; affects all file opening
 			    fun! MyFuncRef()
@@ -337,74 +337,74 @@ settings are described below, in |netrw-browser-options|, and in
 			    let g:Netrw_funcref= function("MyFuncRef")
 <
  *g:netrw_ftp*		if it doesn't exist, use default ftp
-			=0 use default ftp		       (uid password)
-			=1 use alternate ftp method	  (user uid password)
-			If you're having trouble with ftp, try changing the
-			value of this variable to see if the alternate ftp
-			method works for your setup.
+		      =0 use default ftp		       (uid password)
+		      =1 use alternate ftp method	  (user uid password)
+		      If you're having trouble with ftp, try changing the
+		      value of this variable to see if the alternate ftp
+		      method works for your setup.
 
  *g:netrw_ftpextracmd*	default: doesn't exist
-                        If this variable exists, then any string it contains
-			will be placed into the commands set to your ftp
-			client.  As an example:
-			  ="passive"
+		      If this variable exists, then any string it contains
+		      will be placed into the commands set to your ftp
+		      client.  As an example:
+		        ="passive"
 
  *g:netrw_ftpmode*	="binary"				    (default)
-			="ascii"
+		      ="ascii"
 
  *g:netrw_ignorenetrc*	=0 (default for linux, cygwin)
-			=1 If you have a <.netrc> file but it doesn't work and
-			   you want it ignored, then set this variable as
-			   shown. (default for Windows + cmd.exe)
+		      =1 If you have a <.netrc> file but it doesn't work and
+		         you want it ignored, then set this variable as
+		         shown. (default for Windows + cmd.exe)
 
  *g:netrw_menu*		=0 disable netrw's menu
-			=1 (default) netrw's menu enabled
+		      =1 (default) netrw's menu enabled
 
  *g:netrw_nogx*		if this variable exists, then the "gx" map will not
-			be available (see |netrw-gx|)
+		      be available (see |netrw-gx|)
 
  *g:netrw_uid*		(ftp) user-id,      retained on a per-vim-session basis
  *s:netrw_passwd*	(ftp) password,     retained on a per-vim-session basis
 
  *g:netrw_preview*	=0 (default) preview window shown in a horizontally
-                           split window
-			=1 preview window shown in a vertically split window.
-			Also affects the "previous window" (see |netrw-P|) in
-			the same way.
+                         split window
+		      =1 preview window shown in a vertically split window.
+		      Also affects the "previous window" (see |netrw-P|) in
+		      the same way.
 
  *g:netrw_scpport*      = "-P" : option to use to set port for scp
  *g:netrw_sshport*      = "-p" : option to use to set port for ssh
 
  *g:netrw_sepchr*	=\0xff
-			=\0x01 for enc == euc-jp (and perhaps it should be for
+		      =\0x01 for enc == euc-jp (and perhaps it should be for
 			                          others, too, please let me
 						  know)
-			Separates priority codes from filenames internally.
-			See |netrw-p12|.
+		      Separates priority codes from filenames internally.
+		      See |netrw-p12|.
 
   *g:netrw_silent*	=0 : transfers done normally
-			=1 : transfers done silently
+		      =1 : transfers done silently
 
  *g:netrw_use_errorwindow* =1 : messages from netrw will use a separate one
-                                line window.  This window provides reliable
-				delivery of messages. (default)
-			   =0 : messages from netrw will use echoerr ;
-			        messages don't always seem to show up this
-				way, but one doesn't have to quit the window.
+                              line window.  This window provides reliable
+			      delivery of messages. (default)
+			 =0 : messages from netrw will use echoerr ;
+			      messages don't always seem to show up this
+			      way, but one doesn't have to quit the window.
 
  *g:netrw_win95ftp*	=1 if using Win95, will remove four trailing blank
-			   lines that o/s's ftp "provides" on transfers
-			=0 force normal ftp behavior (no trailing line removal)
+		         lines that o/s's ftp "provides" on transfers
+		      =0 force normal ftp behavior (no trailing line removal)
 
  *g:netrw_cygwin*	=1 assume scp under windows is from cygwin. Also
-			   permits network browsing to use ls with time and
-			   size sorting (default if windows)
-			=0 assume Windows' scp accepts windows-style paths
-			   Network browsing uses dir instead of ls
-			This option is ignored if you're using unix
+		         permits network browsing to use ls with time and
+		         size sorting (default if windows)
+		      =0 assume Windows' scp accepts windows-style paths
+		         Network browsing uses dir instead of ls
+		      This option is ignored if you're using unix
 
  *g:netrw_use_nt_rcp*	=0 don't use the rcp of WinNT, Win2000 and WinXP
-			=1 use WinNT's rcp in binary mode         (default)
+		      =1 use WinNT's rcp in binary mode         (default)
 
 PATHS							*netrw-path* {{{2
 
@@ -598,7 +598,7 @@ password.
 PASSWORD						*netrw-passwd*
 
 The script attempts to get passwords for ftp invisibly using |inputsecret()|,
-a built-in Vim function.  See |netrw-uidpass| for how to change the password
+a built-in Vim function.  See |netrw-userpass| for how to change the password
 after one has set it.
 
 Unfortunately there doesn't appear to be a way for netrw to feed a password to
@@ -809,12 +809,12 @@ temporary file:
        open machine [port]                    open machine [port]
        user userid password                   userid password
        [g:netrw_ftpmode]                      password
-       [g:netrw_extracmd]                     [g:netrw_ftpmode]
+       [g:netrw_ftpextracmd]                  [g:netrw_ftpmode]
        get filename tempfile                  [g:netrw_extracmd]
                                               get filename tempfile >
   ---------------------------------------------------------------------
 <
-The |g:netrw_ftpmode| and |g:netrw_extracmd| are optional.
+The |g:netrw_ftpmode| and |g:netrw_ftpextracmd| are optional.
 
 Netrw then executes the lines above by use of a filter:
 >
