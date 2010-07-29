@@ -9238,7 +9238,6 @@ unix_expandpath(gap, path, wildoff, flags, didstar)
 #if defined(FEAT_SEARCHPATH)
 static int find_previous_pathsep __ARGS((char_u *path, char_u **psep));
 static int is_unique __ARGS((char_u *maybe_unique, garray_T *gap, int i));
-static void remove_duplicates __ARGS((garray_T *gap));
 static void expand_path_option __ARGS((char_u *curdir, garray_T	*gap));
 static char_u *get_path_cutoff __ARGS((char_u *fname, garray_T *gap));
 static void uniquefy_paths __ARGS((garray_T *gap, char_u *pattern));
@@ -9299,29 +9298,6 @@ is_unique(maybe_unique, gap, i)
     }
 
     return TRUE;  /* no match found */
-}
-
-/*
- * Remove adjacent duplicate entries from "gap", which is a list of file names
- * in allocated memory.
- */
-    static void
-remove_duplicates(gap)
-    garray_T *gap;
-{
-    int	    i;
-    int	    j;
-    char_u  **fnames = (char_u **)gap->ga_data;
-
-    for (i = 1; i < gap->ga_len; ++i)
-	if (fnamecmp(fnames[i - 1], fnames[i]) == 0)
-	{
-	    vim_free(fnames[i]);
-	    for (j = i + 1; j < gap->ga_len; ++j)
-		fnames[j - 1] = fnames[j];
-	    --gap->ga_len;
-	    --i;
-	}
 }
 
 /*
@@ -9639,6 +9615,30 @@ expand_in_path(gap, pattern, flags)
     vim_free(files);
 
     return c;
+}
+#endif
+
+#if defined(FEAT_SEARCHPATH) || defined(FEAT_CMDL_COMPL) || defined(PROTO)
+/*
+ * Remove adjacent duplicate entries from "gap", which is a list of file names
+ * in allocated memory.
+ */
+    void
+remove_duplicates(gap)
+    garray_T	*gap;
+{
+    int	    i;
+    int	    j;
+    char_u  **fnames = (char_u **)gap->ga_data;
+
+    for (i = gap->ga_len - 1; i > 0; --i)
+	if (fnamecmp(fnames[i - 1], fnames[i]) == 0)
+	{
+	    vim_free(fnames[i]);
+	    for (j = i + 1; j < gap->ga_len; ++j)
+		fnames[j - 1] = fnames[j];
+	    --gap->ga_len;
+	}
 }
 #endif
 

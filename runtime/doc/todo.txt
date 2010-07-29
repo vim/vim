@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3c.  Last change: 2010 Jul 28
+*todo.txt*      For Vim version 7.3c.  Last change: 2010 Jul 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,8 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-Patch for :filetype completion. (Dominique Pelle, Jul 28)
 
 Windows 7: "Open with..." menu starts Vim without a file.
 Need to use other registry methods in if_ole.cpp?
