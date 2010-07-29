@@ -9339,8 +9339,8 @@ expand_path_option(curdir, gap)
 	else if (!mch_isFullName(buf))
 	{
 	    /* Expand relative path to their full path equivalent */
-	    int curdir_len = STRLEN(curdir);
-	    int buf_len = STRLEN(buf);
+	    int curdir_len = (int)STRLEN(curdir);
+	    int buf_len = (int)STRLEN(buf);
 
 	    if (curdir_len + buf_len + 3 > MAXPATHL)
 		continue;
@@ -9445,7 +9445,7 @@ uniquefy_paths(gap, pattern)
     if ((curdir = alloc((int)(MAXPATHL))) == NULL)
 	return;
     mch_dirname(curdir, MAXPATHL);
-    len_curdir = STRLEN(curdir);
+    len_curdir = (int)STRLEN(curdir);
 
     expand_path_option(curdir, &path_ga);
 
