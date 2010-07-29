@@ -1,14 +1,34 @@
 " Vim completion script
 " Language:    All languages, uses existing syntax highlighting rules
 " Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
-" Version:     5.0
-" Last Change: 2010 Jan 31
+" Version:     7.0
+" Last Change: 2010 Jul 29
 " Usage:       For detailed help, ":help ft-syntax-omni" 
 
 " History
+"
+" Version 7.0
+"     Updated syntaxcomplete#OmniSyntaxList()
+"         - Looking up the syntax groups defined from a syntax file
+"           looked for only 1 format of {filetype}GroupName, but some 
+"           syntax writers use this format as well:
+"               {b:current_syntax}GroupName
+"           OmniSyntaxList() will now check for both if the first
+"           method does not find a match.
+"
+" Version 6.0
+"     Added syntaxcomplete#OmniSyntaxList()
+"         - Allows other plugins to use this for their own 
+"           purposes.
+"         - It will return a List of all syntax items for the
+"           syntax group name passed in.  
+"         - XPTemplate for SQL will use this function via the 
+"           sqlcomplete plugin to populate a Choose box.
+"
 " Version 5.0
-"     When processing a list of syntax groups, the final group
-"     was missed in function SyntaxCSyntaxGroupItems.
+"     Updated SyntaxCSyntaxGroupItems()
+"         - When processing a list of syntax groups, the final group
+"           was missed in function SyntaxCSyntaxGroupItems.
 "
 " Set completion with CTRL-X CTRL-O to autoloaded function.
 " This check is in place in case this script is
@@ -24,7 +44,7 @@ endif
 if exists('g:loaded_syntax_completion')
     finish 
 endif
-let g:loaded_syntax_completion = 40
+let g:loaded_syntax_completion = 70
 
 " Set ignorecase to the ftplugin standard
 " This is the default setting, but if you define a buffer local
@@ -128,7 +148,30 @@ function! syntaxcomplete#Complete(findstart, base)
     return compl_list
 endfunc
 
-function! OmniSyntaxList()
+function! syntaxcomplete#OmniSyntaxList(...)
+    if a:0 > 0
+        let parms = []
+        if 3 == type(a:1) 
+            let parms = a:1
+        elseif 1 == type(a:1)
+            let parms = split(a:1, ',')
+        endif
+        return OmniSyntaxList( parms )
+    else
+        return OmniSyntaxList()
+    endif
+endfunc
+
+function! OmniSyntaxList(...)
+    let list_parms = []
+    if a:0 > 0
+        if 3 == type(a:1) 
+            let list_parms = a:1
+        elseif 1 == type(a:1)
+            let list_parms = split(a:1, ',')
+        endif
+    endif
+
     " Default to returning a dictionary, if use_dictionary is set to 0
     " a list will be returned.
     " let use_dictionary = 1
@@ -157,16 +200,40 @@ function! OmniSyntaxList()
     endif
 
     let saveL = @l
+    let filetype = substitute(&filetype, '\.', '_', 'g')
     
+    if empty(list_parms)
+        " Default the include group to include the requested syntax group
+        let syntax_group_include_{filetype} = ''
+        " Check if there are any overrides specified for this filetype
+        if exists('g:omni_syntax_group_include_'.filetype)
+            let syntax_group_include_{filetype} =
+                        \ substitute( g:omni_syntax_group_include_{filetype},'\s\+','','g') 
+            let list_parms = split(g:omni_syntax_group_include_{filetype}, ',')
+            if syntax_group_include_{filetype} =~ '\w'
+                let syntax_group_include_{filetype} = 
+                            \ substitute( syntax_group_include_{filetype}, 
+                            \ '\s*,\s*', '\\|', 'g'
+                            \ )
+            endif
+        endif
+    else
+        " A specific list was provided, use it
+    endif
+
     " Loop through all the syntax groupnames, and build a
     " syntax file which contains these names.  This can 
     " work generically for any filetype that does not already
     " have a plugin defined.
     " This ASSUMES the syntax groupname BEGINS with the name
     " of the filetype.  From my casual viewing of the vim7\syntax 
-    " directory.
+    " directory this is true for almost all syntax definitions.
+    " As an example, the SQL syntax groups have this pattern:
+    "     sqlType
+    "     sqlOperators
+    "     sqlKeyword ...
     redir @l
-    silent! exec 'syntax list '
+    silent! exec 'syntax list '.join(list_parms)
     redir END
 
     let syntax_full = "\n".@l
@@ -181,31 +248,23 @@ function! OmniSyntaxList()
 
     let filetype = substitute(&filetype, '\.', '_', 'g')
 
-    " Default the include group to include the requested syntax group
-    let syntax_group_include_{filetype} = ''
-    " Check if there are any overrides specified for this filetype
-    if exists('g:omni_syntax_group_include_'.filetype)
-        let syntax_group_include_{filetype} =
-                    \ substitute( g:omni_syntax_group_include_{filetype},'\s\+','','g') 
-        if syntax_group_include_{filetype} =~ '\w'
-            let syntax_group_include_{filetype} = 
-                        \ substitute( syntax_group_include_{filetype}, 
-                        \ '\s*,\s*', '\\|', 'g'
-                        \ )
-        endif
-    endif
-
-    " Default the exclude group to nothing
-    let syntax_group_exclude_{filetype} = ''
-    " Check if there are any overrides specified for this filetype
-    if exists('g:omni_syntax_group_exclude_'.filetype)
-        let syntax_group_exclude_{filetype} =
-                    \ substitute( g:omni_syntax_group_exclude_{filetype},'\s\+','','g') 
-        if syntax_group_exclude_{filetype} =~ '\w' 
-            let syntax_group_exclude_{filetype} = 
-                        \ substitute( syntax_group_exclude_{filetype}, 
-                        \ '\s*,\s*', '\\|', 'g'
-                        \ )
+    let list_exclude_groups = []
+    if a:0 > 0 
+        " Do nothing since we have specific a specific list of groups
+    else
+        " Default the exclude group to nothing
+        let syntax_group_exclude_{filetype} = ''
+        " Check if there are any overrides specified for this filetype
+        if exists('g:omni_syntax_group_exclude_'.filetype)
+            let syntax_group_exclude_{filetype} =
+                        \ substitute( g:omni_syntax_group_exclude_{filetype},'\s\+','','g') 
+            let list_exclude_groups = split(g:omni_syntax_group_exclude_{filetype}, ',')
+            if syntax_group_exclude_{filetype} =~ '\w' 
+                let syntax_group_exclude_{filetype} = 
+                            \ substitute( syntax_group_exclude_{filetype}, 
+                            \ '\s*,\s*', '\\|', 'g'
+                            \ )
+            endif
         endif
     endif
 
@@ -230,47 +289,51 @@ function! OmniSyntaxList()
         let index    = 0
         let index    = match(syntax_full, next_group_regex, index)
 
+        if index == -1 && exists('b:current_syntax') && ft_part_name != b:current_syntax
+            " There appears to be two standards when writing syntax files.
+            " Either items begin as:
+            "     syn keyword {filetype}Keyword         values ...
+            "     let b:current_syntax = "sql"
+            "     let b:current_syntax = "sqlanywhere"
+            " Or
+            "     syn keyword {syntax_filename}Keyword  values ...
+            "     let b:current_syntax = "mysql"
+            " So, we will make the format of finding the syntax group names
+            " a bit more flexible and look for both if the first fails to 
+            " find a match.
+            let next_group_regex = '\n' .
+                        \ '\zs'.b:current_syntax.'\w\+\ze'.
+                        \ '\s\+xxx\s\+' 
+            let index    = 0
+            let index    = match(syntax_full, next_group_regex, index)
+        endif
+
         while index > -1
             let group_name = matchstr( syntax_full, '\w\+', index )
 
             let get_syn_list = 1
-            " if syntax_group_include_{&filetype} == ''
-            "     if syntax_group_exclude_{&filetype} != ''
-            "         if '\<'.syntax_group_exclude_{&filetype}.'\>' =~ '\<'.group_name.'\>'
+            for exclude_group_name in list_exclude_groups
+                if '\<'.exclude_group_name.'\>' =~ '\<'.group_name.'\>'
+                    let get_syn_list = 0
+                endif
+            endfor
+        
+            " This code is no longer needed in version 6.0 since we have
+            " augmented the syntax list command to only retrieve the syntax 
+            " groups we are interested in.
+            "
+            " if get_syn_list == 1
+            "     if syntax_group_include_{filetype} != ''
+            "         if '\<'.syntax_group_include_{filetype}.'\>' !~ '\<'.group_name.'\>'
             "             let get_syn_list = 0
             "         endif
             "     endif
-            " else
-            "     if '\<'.syntax_group_include_{&filetype}.'\>' !~ '\<'.group_name.'\>'
-            "         let get_syn_list = 0
-            "     endif
             " endif
-            if syntax_group_exclude_{filetype} != ''
-                if '\<'.syntax_group_exclude_{filetype}.'\>' =~ '\<'.group_name.'\>'
-                    let get_syn_list = 0
-                endif
-            endif
-        
-            if get_syn_list == 1
-                if syntax_group_include_{filetype} != ''
-                    if '\<'.syntax_group_include_{filetype}.'\>' !~ '\<'.group_name.'\>'
-                        let get_syn_list = 0
-                    endif
-                endif
-            endif
 
             if get_syn_list == 1
                 " Pass in the full syntax listing, plus the group name we 
                 " are interested in.
                 let extra_syn_list = s:SyntaxCSyntaxGroupItems(group_name, syntax_full)
-
-                " if !empty(extra_syn_list)
-                "     for elem in extra_syn_list
-                "         let item = {'word':elem, 'kind':'t', 'info':group_name}
-                "         let compl_list += [item]
-                "     endfor
-                " endif
-
                 let syn_list = syn_list . extra_syn_list . "\n"
             endif
 

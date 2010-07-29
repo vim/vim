@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 7.3c.  Last change: 2008 Jul 21
+*helphelp.txt*	For Vim version 7.3c.  Last change: 2010 Jul 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -60,11 +60,20 @@ Help on help files					*helphelp*
 			If there are several matches, you can have them listed
 			by hitting CTRL-D.  Example: >
 				:help cont<Ctrl-D>
-<			To use a regexp |pattern|, first do ":help" and then
+
+<			Instead of typing ":help CTRL-V" to search for help
+			for CTRL-V you can type: >
+				:help ^V
+<			This also works together with other characters, for
+			example to find help for CTRL-V in Insert mode: >
+				:help i^V
+<
+			To use a regexp |pattern|, first do ":help" and then
 			use ":tag {pattern}" in the help window.  The
 			":tnext" command can then be used to jump to other
 			matches, "tselect" to list matches and choose one. >
 				:help index| :tse z.
+
 <			When there is no argument you will see matches for
 			"help", to avoid listing all possible matches (that
 			would be very slow).

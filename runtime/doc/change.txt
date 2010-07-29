@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.3c.  Last change: 2010 Mar 23
+*change.txt*    For Vim version 7.3c.  Last change: 2010 Jul 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1245,7 +1245,8 @@ gq{motion}		Format the lines that {motion} moves over.
 				:nnoremap Q gq
 
 gqgq							*gqgq* *gqq*
-gqq			Format the current line.  {not in Vi}
+gqq			Format the current line.  With a count format that
+			many lines.  {not in Vi}
 
 							*v_gq*
 {Visual}gq		Format the highlighted text.  (for {Visual} see

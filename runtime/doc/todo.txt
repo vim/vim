@@ -44,6 +44,8 @@ ftplugin/mupad.vim should not source AppendMatchGroup.vim, it should use an
 autoload function.
 Same for indent/GenericIndent.vim
 
+Uninspected issues on http://scan.coverity.com/rung2.html
+
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
