@@ -4802,9 +4802,24 @@ eval6(arg, rettv, evaluate, want_string)
 		    f1 = f1 * f2;
 		else if (op == '/')
 		{
+# ifdef VMS
+		    /* VMS crashes on divide by zero, work around it */
+		    if (f2 == 0.0)
+		    {
+			if (f1 == 0)
+			    f1 = -0x7fffffffL - 1L;     /* similar to NaN */
+			else if (f1 < 0)
+			    f1 = -0x7fffffffL;
+			else
+			    f1 = 0x7fffffffL;
+		    }
+		    else
+			f1 = f1 / f2;
+# else
 		    /* We rely on the floating point library to handle divide
 		     * by zero to result in "inf" and not a crash. */
 		    f1 = f1 / f2;
+# endif
 		}
 		else
 		{

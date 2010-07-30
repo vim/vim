@@ -4,7 +4,7 @@
 # Authors:	Zoltan Arpadffy, <arpadffy@polarhome.com>
 #		Sandor Kopanyi,  <sandor.kopanyi@mailbox.hu>
 #
-# Last change:  2010 Jul 29
+# Last change:  2010 Jul 30
 #
 # This has been tested on VMS 6.2 to 8.3 on DEC Alpha, VAX and IA64.
 # Edit the lines in the Configuration section below to select.
@@ -41,6 +41,10 @@
 # They fail because VMS does not support file names.
 # WANT_SPELL = YES
 
+# Comment out if you want to run mzschema  tests.
+# It fails because VMS does not support this feature yet.
+# WANT_MZSCH = YES
+
 # Comment out if you have gzip on your system
 # HAVE_GZIP = YES
 
@@ -69,8 +73,20 @@ SCRIPT = test1.out  test2.out  test3.out  test4.out  test5.out  \
 	 test48.out test51.out test53.out test54.out test55.out \
 	 test56.out test57.out test60.out \
 	 test61.out test62.out test63.out test64.out test65.out \
-	 test66.out test67.out test68.out test69.out test70.out \
-	 test71.out # test72.out
+	 test66.out test67.out test68.out test69.out \
+	 test71.out test72.out
+
+# Known problems:
+# Test 30: a problem around mac format - unknown reason
+#
+# Test 32: VMS is not case sensitive and all filenames are lowercase within Vim
+# (this should be changed in order to preserve the original filename) - should
+# be fixed. VMS allows just one dot in the filename
+#
+# Test 58 and 59: Failed/Hangs - VMS does not support spell files (file names
+# with too many dots).
+#
+# Test 72: unknown reason
 
 .IFDEF WANT_GUI
 SCRIPT_GUI = test16.out
@@ -89,6 +105,10 @@ SCRIPT_WIN = test50.out test52.out
 SCRIPT_SPELL = test58.out test59.out 
 .ENDIF
 
+.IFDEF WANT_MZSCH
+SCRIPT_MZSCH = test70.out 
+.ENDIF
+
 .IFDEF HAVE_GZIP
 SCRIPT_GZIP = test11.out
 .ENDIF
@@ -98,16 +118,24 @@ SCRIPT_GDIFF = test47.out
 .ENDIF
 
 .in.out :
+	-@ !clean up before doing the test
+	-@ if "''F$SEARCH("test.out.*")'" .NES. "" then delete/noconfirm/nolog test.out.*
+	-@ if "''F$SEARCH("$*.out.*")'"   .NES. "" then delete/noconfirm/nolog $*.out.*
 	-@ write sys$output " "
 	-@ write sys$output "-----------------------------------------------"
 	-@ write sys$output "                "$*" "
 	-@ write sys$output "-----------------------------------------------"
-	-@ create/term/wait mcr $(VIMPROG) $(GUI_OPTION) -u vms.vim --noplugin -s dotest.in $*.in
-	-@ if "''F$SEARCH("test.out.*")'" .NES. "" then differences /par test.out $*.ok;
-	-@ if "''F$SEARCH("test.out.*")'" .NES. "" then rename test.out $*.out
+	-@ !run the test
+	-@ create/term/wait/nodetach mcr $(VIMPROG) $(GUI_OPTION) -u vms.vim --noplugin -s dotest.in $*.in
+	-@ !analyse the result
+	-@ directory /size/date test.out
+	-@ if "''F$SEARCH("test.out.*")'" .NES. "" then rename/nolog test.out $*.out 
+	-@ if "''F$SEARCH("$*.out.*")'"   .NES. "" then differences /par $*.out $*.ok;
+	-@ !clean up after the test
 	-@ if "''F$SEARCH("Xdotest.*")'"  .NES. "" then delete/noconfirm/nolog Xdotest.*.*
 
-all : clean nolog $(SCRIPT) $(SCRIPT_GUI) $(SCRIPT_UNIX) $(SCRIPT_WIN) $(SCRIPT_SPELL) $(SCRIPT_GZIP) $(SCRIPT_GDIFF) 
+all : clean nolog $(START_WITH) $(SCRIPT) $(SCRIPT_GUI) $(SCRIPT_UNIX) $(SCRIPT_WIN) $(SCRIPT_SPELL) $(SCRIPT_GZIP) \
+    $(SCRIPT_GDIFF) $(SCRIPT_MZSCH) nolog 
 	-@ write sys$output " "
 	-@ write sys$output "-----------------------------------------------"
 	-@ write sys$output "                All done"
@@ -134,22 +162,24 @@ nolog :
 	-@ write sys$output "   WANT_UNIX = ""$(WANT_UNIX)"" "
 	-@ write sys$output "   WANT_WIN  = ""$(WANT_WIN)"" "
 	-@ write sys$output "   WANT_SPELL= ""$(WANT_SPELL)"" "
+	-@ write sys$output "   WANT_MZSCH= ""$(WANT_MZSCH)"" "
 	-@ write sys$output "   HAVE_GZIP = ""$(HAVE_GZIP)"" "
 	-@ write sys$output "   HAVE_GDIFF= ""$(HAVE_GDIFF)"" "
-	-@ write sys$output "Default vimrc file is VMS.VIM:
+	-@ write sys$output "Default vimrc file is VMS.VIM:"
 	-@ write sys$output "-----------------------------------------------"
 	-@ type VMS.VIM
 
 clean :
-	-@ if "''F$SEARCH("*.out")'"     .NES. "" then delete/noconfirm/nolog *.out.*
-	-@ if "''F$SEARCH("test.log")'"  .NES. "" then delete/noconfirm/nolog test.log.*
-	-@ if "''F$SEARCH("test.ok")'"   .NES. "" then delete/noconfirm/nolog test.ok.*
-	-@ if "''F$SEARCH("Xdotest.*")'" .NES. "" then delete/noconfirm/nolog Xdotest.*.*
-	-@ if "''F$SEARCH("*.*_sw*")'"   .NES. "" then delete/noconfirm/nolog *.*_sw*.*
-	-@ if "''F$SEARCH("*.failed")'"  .NES. "" then delete/noconfirm/nolog *.failed.*
-	-@ if "''F$SEARCH("*.rej")'"     .NES. "" then delete/noconfirm/nolog *.rej.*
-	-@ if "''F$SEARCH("tiny.vim")'"  .NES. "" then delete/noconfirm/nolog tiny.vim.*
-	-@ if "''F$SEARCH("small.vim")'" .NES. "" then delete/noconfirm/nolog small.vim.*
-	-@ if "''F$SEARCH("mbyte.vim")'" .NES. "" then delete/noconfirm/nolog mbyte.vim.*
-	-@ if "''F$SEARCH("viminfo.*")'" .NES. "" then delete/noconfirm/nolog viminfo.*.*
+	-@ if "''F$SEARCH("*.out")'"        .NES. "" then delete/noconfirm/nolog *.out.*
+	-@ if "''F$SEARCH("test.log")'"     .NES. "" then delete/noconfirm/nolog test.log.*
+	-@ if "''F$SEARCH("test.ok")'"      .NES. "" then delete/noconfirm/nolog test.ok.*
+	-@ if "''F$SEARCH("Xdotest.*")'"    .NES. "" then delete/noconfirm/nolog Xdotest.*.*
+	-@ if "''F$SEARCH("*.*_sw*")'"      .NES. "" then delete/noconfirm/nolog *.*_sw*.*
+	-@ if "''F$SEARCH("*.failed")'"     .NES. "" then delete/noconfirm/nolog *.failed.*
+	-@ if "''F$SEARCH("*.rej")'"        .NES. "" then delete/noconfirm/nolog *.rej.*
+	-@ if "''F$SEARCH("tiny.vim")'"     .NES. "" then delete/noconfirm/nolog tiny.vim.*
+	-@ if "''F$SEARCH("small.vim")'"    .NES. "" then delete/noconfirm/nolog small.vim.*
+	-@ if "''F$SEARCH("mbyte.vim")'"    .NES. "" then delete/noconfirm/nolog mbyte.vim.*
+	-@ if "''F$SEARCH("mzscheme.vim")'" .NES. "" then delete/noconfirm/nolog mzscheme.vim.*
+	-@ if "''F$SEARCH("viminfo.*")'"    .NES. "" then delete/noconfirm/nolog viminfo.*.*
 
