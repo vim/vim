@@ -49,9 +49,9 @@ dd:set ul=100
 :e Xtestfile
 uuu:w >>test.out
 :"
-:" And now with encryption, cryptmethod=0
+:" And now with encryption, cryptmethod=zip
 :e! Xtestfile
-:set undofile cm=0
+:set undofile cm=zip
 ggdG
 imonday
 tuesday
@@ -72,9 +72,9 @@ foobar
 uu:w >>test.out
 :"
 :"
-:" With encryption, cryptmethod=1
+:" With encryption, cryptmethod=blowfish
 :e! Xtestfile
-:set undofile cm=1
+:set undofile cm=blowfish
 ggdG
 ijan
 feb
