@@ -1,43 +1,47 @@
-.TH VIMTUTOR 1 "2001 April 2"
+.TH VIMTUTOR 1 "2 aprile 2001"
 .SH NOME
-vimtutor \- the Vim tutor
+vimtutor \- Un breve corso per imparare Vim
 .SH SINTASSI
 .br
-.B vimtutor [lingua]
+.B vimtutor [\-g] [lingua]
 .SH DESCRIZIONE
 .B Vimtutor
 inizia il
 .B Vim
-tutor.
-It copies the tutor file first, so that it can be modified without changing
-the original file.
+tutor (una breve corso per imparare Vim).
+Per prima cosa viene creata una copia del file di lavoro, che può così essere
+modificato senza alterare il file usato come modello.
 .PP
-The
+Il comando
 .B Vimtutor
-is useful for people that want to learn their first
+è utile a chi voglia imparare i primi comandi
 .B Vim
-commands.
+.
 .PP
-The optional [language] argument is the two\-letter name of a language, like
-"it" or "es".
-If the [language] argument is missing, the language of the current locale will
-be used.
-If a tutor in this language is available, it will be used.
-Otherwise the English version will be used.
+L'argomento opzionale \-g inizia vimtutor usando gvim invece che vim, se la
+versione GUI di vim è disponibile. oppure utilizza vim, se gvim non è
+disponibile.
+.PP
+L'arogmento opzionale [lingua] è l'abbreviazione di due lettere del nome
+di una lingua, per esempio "it" oppure "es".
+se L'argomento [lingua] non viene specificato, si utilizza la lingua "locale"
+del computer.
+Se la versione in quella lingua del "tutor" è disponibile, sarà usata.
+Altrimenti sarà usata la versione inglese.
 .PP
 .B Vim
-is always started in Vi compatible mode.
+è sempre iniziato in Modo compatibile con vi.
 .SH FILE
 .TP 15
 /usr/local/lib/vim/tutor/tutor[.language]
-The
+Il/I file di testo per
 .B Vimtutor
-text file(s).
+
 .TP 15
 /usr/local/lib/vim/tutor/tutor.vim
-The Vim script used to copy the
+Lo script di Vim usato per copiare il file di testo
 .B Vimtutor
-text file.
+.
 .SH AUTORE
 The
 .B Vimtutor
@@ -46,7 +50,7 @@ Colorado School of Mines, usando idee fornite da Charles Smith,
 Colorado State University.
 E\-mail: bware@mines.colorado.edu.
 .br
-E' stato modificato per
+È stato modificato per
 .B Vim
 da Bram Moolenaar.
 Per i nomi dei traduttori, vedere i file usati nelle rispettive lingue.

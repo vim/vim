@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.3c.  Last change: 2010 Jul 20
+*insert.txt*    For Vim version 7.3c.  Last change: 2010 Jul 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1488,6 +1488,38 @@ on word characters.   This can be controlled adding the following to your
 vimrc: >
     let g:omni_syntax_use_iskeyword = 0
 
+For plugin developers, the plugin exposes a public function OmniSyntaxList.
+This function can be used to request a List of syntax items.  When editing a
+SQL file (:e syntax.sql) you can use the ":syntax list" command to see the 
+various groups and syntax items.  For example: >
+    syntax list 
+
+Yields data similar to this: >
+    sqlOperator    xxx some prior all like and any escape exists in is not 
+                       or intersect minus between distinct
+                       links to Operator
+    sqlType        xxx varbit varchar nvarchar bigint int uniqueidentifier 
+                       date money long tinyint unsigned xml text smalldate 
+                       double datetime nchar smallint numeric time bit char 
+                       varbinary binary smallmoney
+                       image float integer timestamp real decimal
+
+There are two syntax groups listed here: sqlOperator and sqlType.  To retrieve
+a List of syntax items you can call OmniSyntaxList a number of different 
+ways.  To retrieve all syntax items regardless of syntax group:  >
+    echo OmniSyntaxList( [] )
+
+To retrieve only the syntax items for the sqlOperator syntax group: >
+    echo OmniSyntaxList( ['sqlOperator'] )
+
+To retrieve all syntax items for both the sqlOperator and sqlType groups: >
+    echo OmniSyntaxList( ['sqlOperator', 'sqlType'] )
+
+From within a plugin, you would typically assign the output to a List: >
+    let myKeywords = []
+    let myKeywords = OmniSyntaxList( ['sqlKeyword'] )
+
+    
 
 SQL							*ft-sql-omni*
 

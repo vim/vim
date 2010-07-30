@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3c.  Last change: 2010 Jul 29
+*todo.txt*      For Vim version 7.3c.  Last change: 2010 Jul 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -115,8 +115,6 @@ Jumplist doesn't work properly in Insert mode? (Jean Johner, 2010 Mar 20)
 
 Problem with transparent cmdline.  Also: Terminal title is wrong with
 non-ASCII character. (Lily White, 2010 Mar 7)
-
-Patch for horizontal mouse wheel. (Bjorn Winckler, 2010 Jul 18)
 
 iconv() doesn't fail on an illegal character, as documented. (Yongwei Wu, 2009
 Nov 15, example Nov 26)  Add argument to specify whether iconv() should fail
@@ -666,6 +664,8 @@ Netbeans problem.  Use "nc -l 127.0.0.1 55555" for the server, then run gvim
 with "gvim -nb:localhost:55555:foo".  From nc do: '1:editFile!0 "foo"'.  Then
 go to Insert mode and add a few lines.  Then backspacing every other time
 moves the cursor instead of deleting. (Chris Kaiser, 2007 Sep 25)
+
+Patch to use Modern UI 2.0 for the Nsis installer. (Guopeng Wen, 2010 Jul 30)
 
 Changes for Win32 makefile. (Mike Williams, 2007 Jan 22, Alexei Alexandrov,
 2007 Feb 8)

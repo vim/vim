@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2010 Jul 29
+" Last Change:	2010 Jul 30
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1285,6 +1285,7 @@ else
   au BufNewFile,BufRead *.pl			call s:FTpl()
 endif
 au BufNewFile,BufRead *.plx,*.al		setf perl
+au BufNewFile,BufRead *.p6,*.pm6		setf perl6
 
 func! s:FTpl()
   if exists("g:filetype_pl")

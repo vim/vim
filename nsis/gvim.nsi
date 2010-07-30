@@ -1,6 +1,6 @@
 # NSIS file to create a self-installing exe for Vim.
 # It requires NSIS version 2.0 or later.
-# Last change:	2004 May 02
+# Last Change:	2010 Jul 30
 
 # WARNING: if you make changes to this script, look out for $0 to be valid,
 # because uninstall deletes most files in $0.
