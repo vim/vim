@@ -77,6 +77,9 @@ Results in E670. (Tony Mechelynck, 2010 May 2)
 ":helpgrep" does not put the cursor in the correct column when preceded by
 accented character. (Tony Mechelynck, 2010 Apr 15)
 
+Patch: Let rare word highlighting overrule good word highlighting.
+(Jakson A. Aquino, 2010 Jul 30)
+
 Better Czech keymap. (Stepnem, 2010 May 4)  Use if no response from Jiri
 Tobisek.
 

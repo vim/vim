@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.3c.  Last change: 2010 Mar 27
+*indent.txt*    For Vim version 7.3c.  Last change: 2010 Jul 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -549,7 +549,7 @@ those useless characters first with a command like: >
     :%s /\r$//g
 
 Or, you can simply |:let| the variable PHP_removeCRwhenUnix to 1 and the
-script will silently remove them when Vim loads a PHP file (at each |BufRead|).
+script will silently remove them when Vim loads a PHP file (at each|BufRead|).
 
 OPTIONS: ~
 
@@ -557,7 +557,7 @@ PHP indenting can be altered in several ways by modifying the values of some
 variables:
 
 								*php-comment*
-To not enable auto-formatting of comments by default (if you want to use your
+To not enable auto-formating of comments by default (if you want to use your
 own 'formatoptions'): >
     :let g:PHP_autoformatcomment = 0
 
@@ -582,6 +582,10 @@ For example, with N = 1, this will give:
 	$command_hist = TRUE;
     ?>
 (Notice the extra indent between the PHP container markers and the code)
+-------------
+
+To indent PHP tags as the surrounding code: >
+    :let g:PHP_outdentphpescape = 0
 -------------
 
 To automatically remove '\r' characters when the 'fileformat' is set to Unix: >
@@ -609,7 +613,7 @@ NOTE:	Indenting will be a bit slower if this option is used because some
 To indent 'case:' and 'default:' statements in switch() blocks: >
     :let g:PHP_vintage_case_default_indent = 1
 
-(By default they are indented at the same level than the 'switch()' to avoid
+(Since in PHP braces are not required inside 'case/default' blocks, by default they are indented at the same level than the 'switch()' to avoid
 unnecessary indentation)
 
 
