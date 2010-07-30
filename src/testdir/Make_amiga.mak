@@ -1,5 +1,5 @@
 #
-# Makefile to run al tests for Vim, on Amiga
+# Makefile to run all tests for Vim, on Amiga
 #
 # Requires "rm", "csh" and "diff"!
 

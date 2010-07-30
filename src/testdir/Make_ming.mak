@@ -1,4 +1,5 @@
-# Makefile to run tests for Vim, on Dos-like machines
+#
+# Makefile to run all tests for Vim, on Dos-like machines
 # with sh.exe or zsh.exe in the path or not.
 #
 # Author: Bill McCarthy

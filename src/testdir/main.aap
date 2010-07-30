@@ -1,5 +1,5 @@
 #
-# Makefile to run al tests for Vim
+# Makefile to run all tests for Vim
 #
 
 VimProg ?= ../vim

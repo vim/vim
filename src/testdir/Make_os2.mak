@@ -1,5 +1,5 @@
 #
-# Makefile to run al tests for Vim, on OS/2
+# Makefile to run all tests for Vim, on OS/2
 #
 # Requires a set of Unix tools: echo, diff, etc.
 
