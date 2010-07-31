@@ -462,8 +462,8 @@ uninstall_check(int skip_question)
     DWORD	new_num_keys;
     int		foundone = 0;
 
-    code = RegOpenKeyEx(HKEY_LOCAL_MACHINE, uninstall_key, 0, KEY_READ,
-								 &key_handle);
+    code = RegOpenKeyEx(HKEY_LOCAL_MACHINE, uninstall_key, 0,
+				     KEY_WOW64_64KEY | KEY_READ, &key_handle);
     CHECK_REG_ERROR(code);
 
     for (key_index = 0;
@@ -475,8 +475,8 @@ uninstall_check(int skip_question)
 	if (strncmp("Vim", subkey_name_buff, 3) == 0)
 	{
 	    /* Open the key named Vim* */
-	    code = RegOpenKeyEx(key_handle, subkey_name_buff, 0, KEY_READ,
-		    &uninstall_key_handle);
+	    code = RegOpenKeyEx(key_handle, subkey_name_buff, 0,
+			   KEY_WOW64_64KEY | KEY_READ, &uninstall_key_handle);
 	    CHECK_REG_ERROR(code);
 
 	    /* get the DisplayName out of it to show the user */
@@ -1352,14 +1352,6 @@ init_vimrc_choices(void)
 }
 
 #if defined(WIN3264)
-/*
- * Modern way of creating registry entries, also works on 64 bit windows when
- * compiled as a 32 bit program.
- */
-# ifndef KEY_WOW64_64KEY
-#  define KEY_WOW64_64KEY 0x0100
-# endif
-
     static LONG
 reg_create_key(
     HKEY root,

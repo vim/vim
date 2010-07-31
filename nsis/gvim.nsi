@@ -450,7 +450,7 @@ Section Uninstall
 	  AskRemove:
 	    MessageBox MB_YESNO|MB_ICONQUESTION \
 	      "Remove all files in your $1\vimfiles directory? \
-	      $\nIf you have created something there that you want to keep, click No" IDNO Fin
+	      $\nCAREFUL: If you have created something there that you want to keep, click No" IDNO Fin
 	    RMDir /r $1\vimfiles
 	  NoRemove:
 

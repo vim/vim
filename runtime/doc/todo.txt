@@ -30,10 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Windows 7: installing Vim again doesn't find the previously installed Vim.
-
-Move more common code from if_python.c and if_python3.c to if_py_both.h
-
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 

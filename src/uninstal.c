@@ -46,8 +46,8 @@ popup_gvim_path(char *buf)
     int		r;
 
     /* Open the key where the path to gvim.exe is stored. */
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Vim\\Gvim", 0, KEY_READ,
-						&key_handle) != ERROR_SUCCESS)
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Vim\\Gvim", 0,
+		    KEY_WOW64_64KEY | KEY_READ, &key_handle) != ERROR_SUCCESS)
 	return 0;
 
     /* get the DisplayName out of it to show the user */
@@ -72,8 +72,8 @@ openwith_gvim_path(char *buf)
 
     /* Open the key where the path to gvim.exe is stored. */
     if (RegOpenKeyEx(HKEY_CLASSES_ROOT,
-		"Applications\\gvim.exe\\shell\\edit\\command", 0, KEY_READ,
-						&key_handle) != ERROR_SUCCESS)
+		"Applications\\gvim.exe\\shell\\edit\\command", 0,
+		    KEY_WOW64_64KEY | KEY_READ, &key_handle) != ERROR_SUCCESS)
 	return 0;
 
     /* get the DisplayName out of it to show the user */
@@ -95,7 +95,8 @@ remove_popup(void)
 	++fail;
     if (RegDeleteKey(HKEY_CLASSES_ROOT, "*\\shellex\\ContextMenuHandlers\\gvim") != ERROR_SUCCESS)
 	++fail;
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved", 0, KEY_ALL_ACCESS, &kh) != ERROR_SUCCESS)
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved", 0,
+		      KEY_WOW64_64KEY | KEY_ALL_ACCESS, &kh) != ERROR_SUCCESS)
 	++fail;
     else
     {
