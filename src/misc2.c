@@ -4533,8 +4533,9 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, find_what,
 	 * This is needed if the parameter path is fully qualified.
 	 */
 	search_ctx->ffsc_start_dir = vim_strsave(search_ctx->ffsc_fix_path);
-	if (search_ctx->ffsc_start_dir)
-	    search_ctx->ffsc_fix_path[0] = NUL;
+	if (search_ctx->ffsc_start_dir == NULL)
+	    goto error_return;
+	search_ctx->ffsc_fix_path[0] = NUL;
     }
 
     /* create an absolute path */

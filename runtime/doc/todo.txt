@@ -30,17 +30,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-After ":diffoff" scroll binding doesn't stop completely.
-
 Windows 7: "Open with..." menu starts Vim without a file.
 Need to use other registry methods in if_ole.cpp?
 
 Windows 7: installing Vim again doesn't find the previously installed Vim.
 
 Move more common code from if_python.c and if_python3.c to if_py_both.h
-
-Add filetype completion to user commands. (Christian Brabandt, 2010 Jul 26)
-But call it "filetype" instead of "syntax"?
 
 Uninspected issues on http://scan.coverity.com/rung2.html
 

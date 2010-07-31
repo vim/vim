@@ -1177,6 +1177,9 @@ ex_diffoff(eap)
 	{
 	    /* Set 'diff', 'scrollbind' off and 'wrap' on. */
 	    wp->w_p_diff = FALSE;
+#ifdef FEAT_CURSORBIND
+	    wp->w_p_crb = FALSE;
+#endif
 	    wp->w_p_scb = FALSE;
 	    wp->w_p_wrap = TRUE;
 #ifdef FEAT_FOLDING
@@ -2360,7 +2363,7 @@ ex_diffgetput(eap)
     }
 
     /* restore curwin/curbuf and a few other things */
-    if (idx_other == idx_to)
+    if (eap->cmdidx != CMD_diffget)
     {
 	/* Syncing undo only works for the current buffer, but we change
 	 * another buffer.  Sync undo if the command was typed.  This isn't

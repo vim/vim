@@ -3780,7 +3780,7 @@ vim_strsave_fnameescape(fname, shell)
 
     /* '>' and '+' are special at the start of some commands, e.g. ":edit" and
      * ":write".  "cd -" has a special meaning. */
-    if (*p == '>' || *p == '+' || (*p == '-' && p[1] == NUL))
+    if (p != NULL && (*p == '>' || *p == '+' || (*p == '-' && p[1] == NUL)))
 	escape_fname(&p);
 
     return p;

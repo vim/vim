@@ -3682,17 +3682,18 @@ addsigntype(
 	if (buf->signmaplen == 0) /* first allocation */
 	{
 	    buf->signmaplen = 5;
-	    buf->signmap = (int *)alloc_clear(buf->signmaplen * sizeof(int *));
+	    buf->signmap = (int *)alloc_clear(buf->signmaplen * sizeof(int));
 	}
 	else    /* grow it */
 	{
 	    int incr;
 	    int oldlen = buf->signmaplen;
+
 	    buf->signmaplen *= 2;
 	    incr = buf->signmaplen - oldlen;
 	    buf->signmap = (int *)vim_realloc(buf->signmap,
-					       buf->signmaplen*sizeof(int *));
-	    vim_memset(buf->signmap + oldlen, 0, incr * sizeof(int *));
+					       buf->signmaplen * sizeof(int));
+	    vim_memset(buf->signmap + oldlen, 0, incr * sizeof(int));
 	}
     }
 

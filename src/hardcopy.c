@@ -1943,6 +1943,7 @@ prt_open_resource(resource)
 	fclose(fd_resource);
 	return FALSE;
     }
+    fclose(fd_resource);
 
     prt_resfile.line_end = -1;
     prt_resfile.line_start = 0;
@@ -1956,7 +1957,6 @@ prt_open_resource(resource)
     {
 	EMSG2(_("E618: file \"%s\" is not a PostScript resource file"),
 		resource->filename);
-	fclose(fd_resource);
 	return FALSE;
     }
 
@@ -1974,7 +1974,6 @@ prt_open_resource(resource)
     {
 	EMSG2(_("E619: file \"%s\" is not a supported PostScript resource file"),
 		resource->filename);
-	fclose(fd_resource);
 	return FALSE;
     }
     offset += (int)STRLEN(PRT_RESOURCE_RESOURCE);
@@ -1993,7 +1992,6 @@ prt_open_resource(resource)
     {
 	EMSG2(_("E619: file \"%s\" is not a supported PostScript resource file"),
 		resource->filename);
-	fclose(fd_resource);
 	return FALSE;
     }
 
@@ -2036,11 +2034,8 @@ prt_open_resource(resource)
     {
 	EMSG2(_("E619: file \"%s\" is not a supported PostScript resource file"),
 		resource->filename);
-	fclose(fd_resource);
 	return FALSE;
     }
-
-    fclose(fd_resource);
 
     return TRUE;
 }

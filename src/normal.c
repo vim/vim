@@ -6358,7 +6358,7 @@ nv_csearch(cap)
 nv_brackets(cap)
     cmdarg_T	*cap;
 {
-    pos_T	new_pos;
+    pos_T	new_pos = INIT_POS_T(0, 0, 0);
     pos_T	prev_pos;
     pos_T	*pos = NULL;	    /* init for GCC */
     pos_T	old_pos;	    /* cursor position before command */
@@ -6436,7 +6436,6 @@ nv_brackets(cap)
     {
 	if (cap->nchar == '*')
 	    cap->nchar = '/';
-	new_pos.lnum = 0;
 	prev_pos.lnum = 0;
 	if (cap->nchar == 'm' || cap->nchar == 'M')
 	{

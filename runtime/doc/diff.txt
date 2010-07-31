@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.3c.  Last change: 2009 Sep 15
+*diff.txt*      For Vim version 7.3c.  Last change: 2010 Jul 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -57,6 +57,7 @@ In each of the edited files these options are set:
 
 	'diff'		on
 	'scrollbind'	on
+	'cursorbind'	on
 	'scrollopt'	includes "hor"
 	'wrap'		off
 	'foldmethod'	"diff"
@@ -133,6 +134,7 @@ the old values are not remembered.
 
 	'diff'		off
 	'scrollbind'	off
+	'cursorbind'	off
 	'scrollopt'	without "hor"
 	'wrap'		on
 	'foldmethod'	"manual"

@@ -9439,7 +9439,8 @@ spell_add_word(word, len, bad, idx, undo)
 		    fseek(fd, fpos_next, SEEK_SET);
 		}
 	    }
-	    fclose(fd);
+	    if (fd != NULL)
+		fclose(fd);
 	}
     }
 
