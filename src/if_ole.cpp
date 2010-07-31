@@ -50,6 +50,14 @@ WINOLEAUTAPI UnRegisterTypeLib(REFGUID libID, WORD wVerMajor,
 	    WORD wVerMinor, LCID lcid, SYSKIND syskind);
 #endif
 
+/*
+ * Modern way of creating registry entries, also works on 64 bit windows when
+ * compiled as a 32 bit program.
+ */
+# ifndef KEY_WOW64_64KEY
+#  define KEY_WOW64_64KEY 0x0100
+# endif
+
 /*****************************************************************************
  1. Internal definitions for this file
 *****************************************************************************/
@@ -157,7 +165,8 @@ CVim *CVim::Create(int *pbDoRestart)
 	// Check we can write to the registry.
 	// RegCreateKeyEx succeeds even if key exists. W.Briscoe W2K 20021011
 	if (RegCreateKeyEx(HKEY_CLASSES_ROOT, MYVIPROGID, 0, NULL,
-		  REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hKey, NULL))
+		  REG_OPTION_NON_VOLATILE,
+		  KEY_WOW64_64KEY | KEY_ALL_ACCESS, NULL, &hKey, NULL))
 	{
 	    delete me;
 	    return NULL; // Unable to write to registry. Quietly fail.
@@ -692,7 +701,7 @@ static void SetKeyAndValue(const char *key, const char *subkey, const char *valu
     long result = RegCreateKeyEx(HKEY_CLASSES_ROOT,
 				 buffer,
 				 0, NULL, REG_OPTION_NON_VOLATILE,
-				 KEY_ALL_ACCESS, NULL,
+				 KEY_WOW64_64KEY | KEY_ALL_ACCESS, NULL,
 				 &hKey, NULL);
     if (result != ERROR_SUCCESS)
 	return;
