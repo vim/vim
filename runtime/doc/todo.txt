@@ -37,13 +37,8 @@ Windows 7: installing Vim again doesn't find the previously installed Vim.
 
 Move more common code from if_python.c and if_python3.c to if_py_both.h
 
-Uninspected issues on http://scan.coverity.com/rung2.html
-
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
-
-Insert mode CTRL-R x doesn't paste combining characters. (Tony Mechelynck,
-2010 Jul 28)
 
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 

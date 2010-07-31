@@ -1439,7 +1439,7 @@ stuffescaped(arg, literally)
 	{
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
-		c = mb_ptr2char_adv(&arg);
+		c = mb_cptr2char_adv(&arg);
 	    else
 #endif
 		c = *arg++;
