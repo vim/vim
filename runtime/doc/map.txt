@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.3c.  Last change: 2010 Jul 27
+*map.txt*       For Vim version 7.3c.  Last change: 2010 Jul 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1208,13 +1208,15 @@ completion can be enabled:
 	-complete=event		autocommand events
 	-complete=expression	Vim expression
 	-complete=file		file and directory names
-	-complete=shellcmd	Shell command
+	-complete=filetype	filetype names |'filetype'|
 	-complete=function	function name
 	-complete=help		help subjects
 	-complete=highlight	highlight groups
 	-complete=mapping	mapping name
 	-complete=menu		menus
 	-complete=option	options
+	-complete=shellcmd	Shell command
+	-complete=syntax	syntax file names |'syntax'|
 	-complete=tag		tags
 	-complete=tag_listfiles	tags, file names are shown when CTRL-D is hit
 	-complete=var		user variables

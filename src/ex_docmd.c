@@ -5277,11 +5277,13 @@ static struct
     {EXPAND_EVENTS, "event"},
     {EXPAND_EXPRESSION, "expression"},
     {EXPAND_FILES, "file"},
+    {EXPAND_FILETYPE, "filetype"},
     {EXPAND_FUNCTIONS, "function"},
     {EXPAND_HELP, "help"},
     {EXPAND_HIGHLIGHT, "highlight"},
     {EXPAND_MAPPINGS, "mapping"},
     {EXPAND_MENUS, "menu"},
+    {EXPAND_OWNSYNTAX, "syntax"},
     {EXPAND_SETTINGS, "option"},
     {EXPAND_SHELLCMD, "shellcmd"},
 #if defined(FEAT_SIGNS)

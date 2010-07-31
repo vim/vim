@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.3c.  Last change: 2007 Mar 11
+*tabpage.txt*   For Vim version 7.3c.  Last change: 2010 Jul 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -58,17 +58,19 @@ clicking right of the labels.
 In the GUI tab pages line you can use the right mouse button to open menu.
 |tabline-menu|.
 
-:tabe[dit]				*:tabe* *:tabedit* *:tabnew*
-:tabnew		Open a new tab page with an empty window, after the current
-		tab page.
+:[count]tabe[dit]				*:tabe* *:tabedit* *:tabnew*
+:[count]tabnew
+		Open a new tab page with an empty window, after the current
+		tab page.  For [count] see |:tab| below.
 
-:tabe[dit] [++opt] [+cmd] {file}
-:tabnew [++opt] [+cmd] {file}
+:[count]tabe[dit] [++opt] [+cmd] {file}
+:[count]tabnew [++opt] [+cmd] {file}
 		Open a new tab page and edit {file}, like with |:edit|.
+		For [count] see |:tab| below.
 
-:tabf[ind] [++opt] [+cmd] {file}			*:tabf* *:tabfind*
+:[count]tabf[ind] [++opt] [+cmd] {file}			*:tabf* *:tabfind*
 		Open a new tab page and edit {file} in 'path', like with
-		|:find|.
+		|:find|.  For [count] see |:tab| below.
 		{not available when the |+file_in_path| feature was disabled
 		at compile time}
 
@@ -77,9 +79,11 @@ In the GUI tab pages line you can use the right mouse button to open menu.
 		page instead.  Doesn't work for |:diffsplit|, |:diffpatch|,
 		|:execute| and |:normal|.
 		When [count] is omitted the tab page appears after the current
-		one.  When [count] is specified the new tab page comes after
-		tab page [count].  Use ":0tab cmd" to get the new tab page as
-		the first one.  Examples: >
+		one.
+		When [count] is specified the new tab page comes after tab
+		page [count].  Use ":0tab cmd" to get the new tab page as the
+		first one.
+		Examples: >
 			:tab split	" opens current buffer in new tab page
 			:tab help gt	" opens tab page with help for "gt"
 
