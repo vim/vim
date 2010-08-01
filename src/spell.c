@@ -14751,10 +14751,18 @@ soundalike_score(goodstart, badstart)
     char_u	*pl2, *ps2;
     int		score = 0;
 
-    /* adding/inserting "*" at the start (word starts with vowel) shouldn't be
+    /* Adding/inserting "*" at the start (word starts with vowel) shouldn't be
      * counted so much, vowels halfway the word aren't counted at all. */
     if ((*badsound == '*' || *goodsound == '*') && *badsound != *goodsound)
     {
+	if ((badsound[0] == NUL && goodsound[1] == NUL)
+	    || (goodsound[0] == NUL && badsound[1] == NUL))
+	    /* changing word with vowel to word without a sound */
+	    return SCORE_DEL;
+	if (badsound[0] == NUL || goodsound[0] == NUL)
+	    /* more than two changes */
+	    return SCORE_MAXMAX;
+
 	if (badsound[1] == goodsound[1]
 		|| (badsound[1] != NUL
 		    && goodsound[1] != NUL
