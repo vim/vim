@@ -4,7 +4,7 @@ Test for joining lines and marks in them
  and with 'cpoptions' flag 'j' set or not
 
 STARTTEST
-:set nocompatible
+:set nocompatible viminfo+=nviminfo
 :set nojoinspaces
 :set cpoptions-=j
 /firstline/
