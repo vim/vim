@@ -1,8 +1,8 @@
 " SQL filetype plugin file
 " Language:    SQL (Common for Oracle, Microsoft SQL Server, Sybase)
-" Version:     6.0
+" Version:     7.0
 " Maintainer:  David Fishburn <fishburn at ianywhere dot com>
-" Last Change: 2009 Aug 04
+" Last Change: 2010 Jun 11
 " Download:    http://vim.sourceforge.net/script.php?script_id=454
 
 " For more details please use:
@@ -35,6 +35,11 @@
 "     :SQLGetType
 "
 " History
+"
+" Version 7.0
+" 
+" NF: Calls the sqlcomplete#ResetCacheSyntax() function when calling
+"     SQLSetType.
 "
 " Version 6.0
 " 
@@ -164,12 +169,26 @@ if !exists("*SQL_SetType")
         endif
         let b:sql_type_override = new_sql_type
 
+        " Remove any cached SQL since a new sytax will have different
+        " items and groups
+        if !exists('g:loaded_sql_completion') || 100 == g:loaded_sql_completion
+            call sqlcomplete#ResetCacheSyntax()
+        endif
+
         " Vim will automatically source the correct files if we
         " change the filetype.  You cannot do this with setfiletype
         " since that command will only execute if a filetype has
         " not already been set.  In this case we want to override
         " the existing filetype.
         let &filetype = 'sql'
+
+        if b:sql_compl_savefunc != ""
+            " We are changing the filetype to SQL from some other filetype
+            " which had OMNI completion defined.  We need to activate the
+            " SQL completion plugin in order to cache some of the syntax items
+            " while the syntax rules for SQL are active.
+            call sqlcomplete#PreCacheSyntax()
+        endif
     endfunction
     command! -nargs=* -complete=custom,SQL_GetList SQLSetType :call SQL_SetType(<q-args>)
 
@@ -463,6 +482,7 @@ if exists('&omnifunc')
         " which had OMNI completion defined.  We need to activate the
         " SQL completion plugin in order to cache some of the syntax items
         " while the syntax rules for SQL are active.
+        call sqlcomplete#ResetCacheSyntax()
         call sqlcomplete#PreCacheSyntax()
     endif
 endif

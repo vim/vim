@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3c.  Last change: 2010 Jul 28
+*options.txt*	For Vim version 7.3c.  Last change: 2010 Aug 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4490,8 +4490,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'listchars' 'lcs'	string	(default "eol:$")
 			global
 			{not in Vi}
-	Strings to use in 'list' mode.  It is a comma separated list of string
-	settings.
+	Strings to use in 'list' mode and for the |:list| command.  It is a
+	comma separated list of string settings.
 	  eol:c		Character to show at the end of each line.  When
 			omitted, there is no extra character at the end of the
 			line.

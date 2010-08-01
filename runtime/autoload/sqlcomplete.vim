@@ -1,25 +1,44 @@
 " Vim OMNI completion script for SQL
 " Language:    SQL
 " Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
-" Version:     9.0
-" Last Change: 2010 Apr 20
+" Version:     10.0
+" Last Change: 2010 Jun 11
 " Usage:       For detailed help
 "              ":help sql.txt" 
 "              or ":help ft-sql-omni" 
 "              or read $VIMRUNTIME/doc/sql.txt
 
 " History
+" Version 10.0
+"     Updated PreCacheSyntax() 
+"         - Now returns a List of the syntax items it finds.
+"           This allows other plugins / scripts to use this list for their own
+"           purposes.  In this case XPTemplate can use them for a Choose list.
+"         - Verifies the parameters are the correct type and displays a
+"           warning if not.
+"         - Verifies the parameters are the correct type and displays a
+"           warning if not.
+"     Updated SQLCWarningMsg() 
+"         - Prepends warning message with SQLComplete so you know who issued
+"           the warning.
+"     Updated SQLCErrorMsg() 
+"         - Prepends error message with SQLComplete so you know who issued
+"           the error.
+"     
 " Version 9.0
 "     This change removes some of the support for tables with spaces in their
 "     names in order to simplify the regexes used to pull out query table 
 "     aliases for more robust table name and column name code completion.
 "     Full support for "table names with spaces" can be added in again
 "     after 7.3.
+"
 " Version 8.0
 "     Incorrectly re-executed the g:ftplugin_sql_omni_key_right and g:ftplugin_sql_omni_key_left 
 "     when drilling in and out of a column list for a table.
+"
 " Version 7.0
 "     Better handling of object names
+"
 " Version 6.0
 "     Supports object names with spaces "my table name"
 "
@@ -37,7 +56,7 @@ endif
 if exists('g:loaded_sql_completion')
     finish 
 endif
-let g:loaded_sql_completion = 70
+let g:loaded_sql_completion = 100
 
 " Maintains filename of dictionary
 let s:sql_file_table        = ""
@@ -363,7 +382,13 @@ endfunc
 
 function! sqlcomplete#PreCacheSyntax(...)
     let syn_group_arr = []
+    let syn_items     = []
+
     if a:0 > 0 
+        if type(a:1) != 3
+            call s:SQLCWarningMsg("Parameter is not a list. Example:['syntaxGroup1', 'syntaxGroup2']")
+            return ''
+        endif
         let syn_group_arr = a:1
     else
         let syn_group_arr = g:omni_sql_precache_syntax_groups
@@ -372,7 +397,36 @@ function! sqlcomplete#PreCacheSyntax(...)
     " the sytnax items.
     if !empty(syn_group_arr)
         for group_name in syn_group_arr
-            call s:SQLCGetSyntaxList(group_name)
+            let syn_items = extend( syn_items, s:SQLCGetSyntaxList(group_name) )
+        endfor
+    endif
+
+    return syn_items
+endfunction
+
+function! sqlcomplete#ResetCacheSyntax(...)
+    let syn_group_arr = []
+
+    if a:0 > 0 
+        if type(a:1) != 3
+            call s:SQLCWarningMsg("Parameter is not a list. Example:['syntaxGroup1', 'syntaxGroup2']")
+            return ''
+        endif
+        let syn_group_arr = a:1
+    else
+        let syn_group_arr = g:omni_sql_precache_syntax_groups
+    endif
+    " For each group specified in the list, precache all
+    " the sytnax items.
+    if !empty(syn_group_arr)
+        for group_name in syn_group_arr
+            let list_idx = index(s:syn_list, group_name, 0, &ignorecase)
+            if list_idx > -1
+                " Remove from list of groups
+                call remove( s:syn_list, list_idx )
+                " Remove from list of keywords
+                call remove( s:syn_value, list_idx )
+            endif
         endfor
     endif
 endfunction
@@ -430,13 +484,13 @@ endfunction
 
 function! s:SQLCWarningMsg(msg)
     echohl WarningMsg
-    echomsg a:msg 
+    echomsg 'SQLComplete:'.a:msg 
     echohl None
 endfunction
       
 function! s:SQLCErrorMsg(msg)
     echohl ErrorMsg
-    echomsg a:msg 
+    echomsg 'SQLComplete:'.a:msg 
     echohl None
 endfunction
       
@@ -462,7 +516,7 @@ function! s:SQLCGetSyntaxList(syn_group)
             let g:omni_syntax_group_include_sql = syn_group
         endif
         let g:omni_syntax_group_exclude_sql = ''
-        let syn_value                       = OmniSyntaxList()
+        let syn_value                       = syntaxcomplete#OmniSyntaxList()
         let g:omni_syntax_group_include_sql = s:save_inc
         let g:omni_syntax_group_exclude_sql = s:save_exc
         " Cache these values for later use
