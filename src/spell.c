@@ -11658,7 +11658,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 		     * words, the edit distance and then add them. */
 		    add_sound_suggest(su, preword, sp->ts_score, lp);
 		}
-		else
+		else if (sp->ts_fidx > 0)
 		{
 		    /* Give a penalty when changing non-word char to word
 		     * char, e.g., "thes," -> "these". */
