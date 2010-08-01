@@ -7337,6 +7337,7 @@ New syntax files: ~
 Haskell Cabal build file (Vincent Berthoux)
 ChaiScript (Jason Turner)
 Cucumber (Tim Pope)
+Datascript (Dominique Pelle)
 Fantom (Kamil Toman)
 Liquid (Tim Pope)
 Markdown (Tim Pope)

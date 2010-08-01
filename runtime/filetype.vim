@@ -617,6 +617,9 @@ au BufNewFile,BufRead *.def			setf def
 " Dracula
 au BufNewFile,BufRead *.drac,*.drc,*lvs,*lpe	setf dracula
 
+" Datascript
+au BufNewFile,BufRead *.ds			setf datascript
+
 " dsl
 au BufNewFile,BufRead *.dsl			setf dsl
 
