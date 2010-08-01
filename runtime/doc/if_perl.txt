@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 7.3c.  Last change: 2010 Jul 21
+*if_perl.txt*   For Vim version 7.3d.  Last change: 2010 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege

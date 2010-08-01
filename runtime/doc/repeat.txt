@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.3c.  Last change: 2009 Nov 04
+*repeat.txt*    For Vim version 7.3d.  Last change: 2009 Nov 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3c.  Last change: 2010 Jul 28
+*syntax.txt*	For Vim version 7.3d.  Last change: 2010 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
