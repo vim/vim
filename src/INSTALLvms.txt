@@ -239,7 +239,7 @@ from CVS mirror ftp://ftp.polarhome.com/pub/cvs/SOURCE/
 
 7.1  General notes
 
-     To be able to build external GUI or language support wyo have to enable
+     To be able to build external GUI or language support you have to enable
      related feature in MAKE_VMS.MMS file. Usually it need some extra tuning
      around include files, shared libraries etc.
 

@@ -174,8 +174,8 @@ Inflections database, is under the following copyright:
   any associated documentation shall at all times remain with
   Princeton University and LICENSEE agrees to preserve same.
 
-The 50 level includes Brian's frequency class 1, words words appearing
-in at least 5 of 12 of the dictionaries as indicated in the 12Dicts
+The 50 level includes Brian's frequency class 1, words appearing in
+at least 5 of 12 of the dictionaries as indicated in the 12Dicts
 package, and uppercase words in at least 4 of the previous 12
 dictionaries.  A decent number of proper names is also included: The
 top 1000 male, female, and Last names from the 1990 Census report; a
@@ -217,7 +217,7 @@ list has the following copyright statement:
   (NO-)WARRANTY DISCLAIMER
 
   These files, like the original wordlists on which they are based,
-  are still very incomplete, uneven, and inconsitent, and probably
+  are still very incomplete, uneven, and inconsistent, and probably
   contain many errors.  They are offered "as is" without any warranty
   of correctness or fitness for any particular purpose.  Neither I nor
   my employer can be held responsible for any losses or damages that
@@ -336,9 +336,8 @@ Accent information was taken from UKACD.
 My VARCON package was used to create the American, British, and
 Canadian word list. 
 
-Since the original word lists used used in the
-VARCON package came from the Ispell distribution they are under the
-Ispell copyright.
+Since the original word lists used in the VARCON package came from 
+the Ispell distribution they are under the Ispell copyright.
 
 The variant word lists were created from a list of variants found in
 the 12dicts supplement package as well as a list of variants I created

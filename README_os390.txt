@@ -3,7 +3,7 @@ README_zOS.txt for version 7.3c of Vim: Vi IMproved.
 This readme explains how to build Vim on z/OS.  Formerly called OS/390.
 See "README.txt" for general information about Vim.
 
-Most likley there are not many users out there using Vim on z/OS. So chances
+Most likely there are not many users out there using Vim on z/OS. So chances
 are good, that some bugs are still undiscovered.
 
 Getting the source to z/OS:
