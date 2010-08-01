@@ -14493,8 +14493,11 @@ spell_soundfold_wsal(slang, inword, res)
 
 	if (n >= 0)
 	{
-	    /* check all rules for the same index byte */
-	    for (; ((ws = smp[n].sm_lead_w)[0] & 0xff) == (c & 0xff); ++n)
+	    /* Check all rules for the same index byte.
+	     * If c is 0x300 need extra check for the end of the array, as
+	     * (c & 0xff) is NUL. */
+	    for (; ((ws = smp[n].sm_lead_w)[0] & 0xff) == (c & 0xff)
+							 && ws[0] != NUL; ++n)
 	    {
 		/* Quickly skip entries that don't match the word.  Most
 		 * entries are less then three chars, optimize for that. */
