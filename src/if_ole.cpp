@@ -85,6 +85,14 @@ static CVim *app = 0;
 
 #define MAX_CLSID_LEN 100
 
+/*
+ * Modern way of creating registry entries, also works on 64 bit windows when
+ * compiled as a 32 bit program.
+ */
+# ifndef KEY_WOW64_64KEY
+#  define KEY_WOW64_64KEY 0x0100
+# endif
+
 /*****************************************************************************
  2. The application object
 *****************************************************************************/
