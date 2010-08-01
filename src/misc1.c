@@ -2274,7 +2274,7 @@ del_bytes(count, fixpos_arg, use_delcombine)
      * existing line. Otherwise a new line has to be allocated
      * Can't do this when using Netbeans, because we would need to invoke
      * netbeans_removed(), which deallocates the line.  Let ml_replace() take
-     * care of notifiying Netbeans.
+     * care of notifying Netbeans.
      */
 #ifdef FEAT_NETBEANS_INTG
     if (netbeans_active())
@@ -5142,7 +5142,7 @@ cin_isdefault(s)
 }
 
 /*
- * Recognize a "public/private/proctected" scope declaration label.
+ * Recognize a "public/private/protected" scope declaration label.
  */
     int
 cin_isscopedecl(s)
@@ -6034,7 +6034,7 @@ get_c_indent()
     int ind_open_imag = 0;
 
     /*
-     * spaces from the prevailing indent for a line that is not precededof by
+     * spaces from the prevailing indent for a line that is not preceded by
      * an opening brace.
      */
     int ind_no_brace = 0;
@@ -9301,7 +9301,7 @@ is_unique(maybe_unique, gap, i)
 }
 
 /*
- * Split the 'path' option to a an array of strings as garray_T.  Relative
+ * Split the 'path' option into an array of strings in garray_T.  Relative
  * paths are expanded to their equivalent fullpath.  This includes the "."
  * (relative to current buffer directory) and empty path (relative to current
  * directory) notations.
@@ -9412,7 +9412,6 @@ uniquefy_paths(gap, pattern)
     char_u	*pat;
     char_u      *file_pattern;
     char_u	*curdir = NULL;
-    int		len_curdir = 0;
     regmatch_T	regmatch;
     garray_T	path_ga;
 
@@ -9445,7 +9444,6 @@ uniquefy_paths(gap, pattern)
     if ((curdir = alloc((int)(MAXPATHL))) == NULL)
 	return;
     mch_dirname(curdir, MAXPATHL);
-    len_curdir = (int)STRLEN(curdir);
 
     expand_path_option(curdir, &path_ga);
 
