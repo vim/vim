@@ -33,6 +33,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
+test72 causes a beep for using "u" when it doesn't work.
+
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
 Should readfile() ignore BOM when not in binary mode?
