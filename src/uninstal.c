@@ -89,11 +89,14 @@ remove_popup(void)
     int		fail = 0;
     HKEY	kh;
 
-    if (RegDeleteKey(HKEY_CLASSES_ROOT, "CLSID\\{51EEE242-AD87-11d3-9C1E-0090278BBD99}\\InProcServer32") != ERROR_SUCCESS)
+    if (RegDeleteKeyEx(HKEY_CLASSES_ROOT, "CLSID\\{51EEE242-AD87-11d3-9C1E-0090278BBD99}\\InProcServer32",
+		KEY_WOW64_64KEY, 0) != ERROR_SUCCESS)
 	++fail;
-    if (RegDeleteKey(HKEY_CLASSES_ROOT, "CLSID\\{51EEE242-AD87-11d3-9C1E-0090278BBD99}") != ERROR_SUCCESS)
+    if (RegDeleteKeyEx(HKEY_CLASSES_ROOT, "CLSID\\{51EEE242-AD87-11d3-9C1E-0090278BBD99}",
+		KEY_WOW64_64KEY, 0) != ERROR_SUCCESS)
 	++fail;
-    if (RegDeleteKey(HKEY_CLASSES_ROOT, "*\\shellex\\ContextMenuHandlers\\gvim") != ERROR_SUCCESS)
+    if (RegDeleteKeyEx(HKEY_CLASSES_ROOT, "*\\shellex\\ContextMenuHandlers\\gvim",
+		KEY_WOW64_64KEY, 0) != ERROR_SUCCESS)
 	++fail;
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved", 0,
 		      KEY_WOW64_64KEY | KEY_ALL_ACCESS, &kh) != ERROR_SUCCESS)
@@ -104,9 +107,11 @@ remove_popup(void)
 	    ++fail;
 	RegCloseKey(kh);
     }
-    if (RegDeleteKey(HKEY_LOCAL_MACHINE, "Software\\Vim\\Gvim") != ERROR_SUCCESS)
+    if (RegDeleteKeyEx(HKEY_LOCAL_MACHINE, "Software\\Vim\\Gvim",
+		KEY_WOW64_64KEY, 0) != ERROR_SUCCESS)
 	++fail;
-    if (RegDeleteKey(HKEY_LOCAL_MACHINE, "Software\\Vim") != ERROR_SUCCESS)
+    if (RegDeleteKeyEx(HKEY_LOCAL_MACHINE, "Software\\Vim",
+		KEY_WOW64_64KEY, 0) != ERROR_SUCCESS)
 	++fail;
 
     if (fail == 6)
@@ -122,19 +127,26 @@ remove_openwith(void)
 {
     int		fail = 0;
 
-    if (RegDeleteKey(HKEY_CLASSES_ROOT, "Applications\\gvim.exe\\shell\\edit\\command") != ERROR_SUCCESS)
+    if (RegDeleteKeyEx(HKEY_CLASSES_ROOT, "Applications\\gvim.exe\\shell\\edit\\command",
+		KEY_WOW64_64KEY, 0) != ERROR_SUCCESS)
 	++fail;
-    if (RegDeleteKey(HKEY_CLASSES_ROOT, "Applications\\gvim.exe\\shell\\edit") != ERROR_SUCCESS)
+    if (RegDeleteKeyEx(HKEY_CLASSES_ROOT, "Applications\\gvim.exe\\shell\\edit",
+		KEY_WOW64_64KEY, 0) != ERROR_SUCCESS)
 	++fail;
-    if (RegDeleteKey(HKEY_CLASSES_ROOT, "Applications\\gvim.exe\\shell") != ERROR_SUCCESS)
+    if (RegDeleteKeyEx(HKEY_CLASSES_ROOT, "Applications\\gvim.exe\\shell",
+		KEY_WOW64_64KEY, 0) != ERROR_SUCCESS)
 	++fail;
-    if (RegDeleteKey(HKEY_CLASSES_ROOT, "Applications\\gvim.exe") != ERROR_SUCCESS)
+    if (RegDeleteKeyEx(HKEY_CLASSES_ROOT, "Applications\\gvim.exe",
+		KEY_WOW64_64KEY, 0) != ERROR_SUCCESS)
 	++fail;
-    if (RegDeleteKey(HKEY_CLASSES_ROOT, ".htm\\OpenWithList\\gvim.exe") != ERROR_SUCCESS)
+    if (RegDeleteKeyEx(HKEY_CLASSES_ROOT, ".htm\\OpenWithList\\gvim.exe",
+		KEY_WOW64_64KEY, 0) != ERROR_SUCCESS)
 	++fail;
-    if (RegDeleteKey(HKEY_CLASSES_ROOT, ".vim\\OpenWithList\\gvim.exe") != ERROR_SUCCESS)
+    if (RegDeleteKeyEx(HKEY_CLASSES_ROOT, ".vim\\OpenWithList\\gvim.exe",
+		KEY_WOW64_64KEY, 0) != ERROR_SUCCESS)
 	++fail;
-    if (RegDeleteKey(HKEY_CLASSES_ROOT, "*\\OpenWithList\\gvim.exe") != ERROR_SUCCESS)
+    if (RegDeleteKeyEx(HKEY_CLASSES_ROOT, "*\\OpenWithList\\gvim.exe",
+		KEY_WOW64_64KEY, 0) != ERROR_SUCCESS)
 	++fail;
 
     if (fail == 7)
@@ -290,7 +302,8 @@ win95(void)
 delete_uninstall_key(void)
 {
 #ifdef WIN3264
-    RegDeleteKey(HKEY_LOCAL_MACHINE, "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Vim " VIM_VERSION_SHORT);
+    RegDeleteKeyEx(HKEY_LOCAL_MACHINE, "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Vim " VIM_VERSION_SHORT,
+	    KEY_WOW64_64KEY, 0);
 #else
     FILE	*fd;
     char	buf[BUFSIZE];
