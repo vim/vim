@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3c.  Last change: 2010 Jul 31
+*todo.txt*      For Vim version 7.3c.  Last change: 2010 Aug 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,9 +34,6 @@ Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
-
-Test 69 breaks on MS-Windows, both 32 and 64 builds. (George Reilly, 2010 Feb
-26)
 
 Should readfile() ignore BOM when not in binary mode?
 

@@ -25,6 +25,7 @@ u:.w! test.out
 :set undofile
 :bwipe!
 :e Xtestfile
+:" TODO: this beeps
 u:.w >>test.out
 :"
 :" Test 'undofile', add 10 lines, delete 6 lines, undo 3
@@ -53,8 +54,7 @@ uuu:w >>test.out
 :" And now with encryption, cryptmethod=zip
 :e! Xtestfile
 :set undofile cm=zip
-ggdG
-imonday
+ggdGimonday
 tuesday
 wednesday
 thursday
@@ -76,8 +76,7 @@ uu:w >>test.out
 :" With encryption, cryptmethod=blowfish
 :e! Xtestfile
 :set undofile cm=blowfish
-ggdG
-ijan
+ggdGijan
 feb
 mar
 apr

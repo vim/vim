@@ -49,6 +49,7 @@ win32:	fixff $(SCRIPTS16) $(SCRIPTS) $(SCRIPTS32)
 
 fixff:
 	-$(VIMPROG) -u dos.vim --noplugin "+argdo set ff=dos|upd" +q *.in *.ok
+	-$(VIMPROG) -u dos.vim --noplugin "+argdo set ff=unix|upd" +q dotest.in
 
 clean:
 	-del *.out
