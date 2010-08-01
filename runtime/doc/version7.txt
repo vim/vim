@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.3c.  Last change: 2010 Jul 25
+*version7.txt*  For Vim version 7.3c.  Last change: 2010 Aug 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -7223,13 +7223,13 @@ The gvim executable is 32 bits, the installed gvimext.dll is either a 32 or 64
 bit version. (mostly by George Reilly)
 Made the DOS installer work with more compilers.
 The MS-Windows big gvim is now built with Python 2.7 and 3.1.2, Perl 5.12 and
-Ruby 1.9.1.
+Ruby 1.9.1.  You need the matching .dll files to use them.
 
 The extra and language files are no longer distributed separately.
 The source files for all systems are included in one distribution.
 
 After using ":recover" or recovering a file in another way, ":x" and "ZZ"
-don't save what you see.  This could result in work being lost.  Now the text
+didn't save what you see.  This could result in work being lost.  Now the text
 after recovery is compared to the original file contents.  When they differ
 the buffer is marked as modified.
 
@@ -7251,6 +7251,8 @@ Removed obsolete Mac code.
 Updated spell files for Ubuntu locale names.
 
 Switched from autoconf 2.63 to 2.65.
+
+Removed Mupad indent and ftplugin files, they are not useful.
 
 
 Added							*added-7.3*
@@ -7274,6 +7276,8 @@ Added the |strchars()|, |strwidth()| and |strdisplaywidth()| functions.
 Support GDK_SUPER_MASK for GTK on Mac. (Stephan Schulz)
 
 Made CTRL and ALT modifier work for mouse wheel. (Benjamin Haskell)
+
+Added support for horizontal scroll wheel. (Bjorn Winckler)
 
 When the buffer is in diff mode, have :TOhtml create HTML to show the diff
 side-by-side.  (Christian Brabandt)
@@ -7299,7 +7303,15 @@ Wozniski)
 
 Support completion for ":find". (Nazri Ramliy)
 
-Avoid use of the GTK mail_loop() so that the GtkFileChooser can be used.
+Command line completion for :ownsyntax and :setfiletype. (Dominique Pelle)
+
+Command line completion for :lmap and :lunmap.
+
+Support syntax and filetype completion for user commands. (Christian Brabandt)
+
+Add completion for ":ownsyntax" and improve completion for ":filetype".
+
+Avoid use of the GTK main_loop() so that the GtkFileChooser can be used.
 (James Vega)
 
 When 'formatexpr' evaluates to non-zero fall back to internal formatting, also
@@ -7312,21 +7324,16 @@ Support wide file names in gvimext. (Szabolcs Horvat)
 Improve test for joining lines. (Milan Vancura)
 Make joining a range of lines much faster. (Milan Vancura)
 
-Command line completion for :ownsyntax and :setfiletype. (Dominique Pelle)
-
-Command line completion for :lmap and :lunmap.
-
 Add patch to improve support of z/OS (OS/390). (Ralf Schandl)
 
 Added the helphelp.txt file.  Moved text from various.txt to it.
 
 Added "q" item for 'statusline'.  Added |w:quickfix_title|. (Lech Lorens)
 
-Added support for horizontal scroll wheel. (Bjorn Winckler)
+Various improvements for VMS. (Zoltan Arpadffy)
 
 
-
-New syntax files:
+New syntax files: ~
 Haskell Cabal build file (Vincent Berthoux)
 ChaiScript (Jason Turner)
 Cucumber (Tim Pope)
@@ -7340,13 +7347,13 @@ SVG - Scalable Vector Graphics (Vincent Berthoux)
 task data (John Florian)
 task 42 edit (John Florian)
 
-New filetype plugins:
+New filetype plugins: ~
 Cucumber (Tim Pope)
 Liquid (Tim Pope)
 Markdown (Tim Pope)
 Tcl (Robert L Hicks)
 
-New indent plugins:
+New indent plugins: ~
 ChaiScript (Jason Turner)
 Cucumber (Tim Pope)
 CUDA (Bram Moolenaar)
@@ -7355,7 +7362,7 @@ Liquid (Tim Pope)
 Mail (Bram Moolenaar)
 Perl 6 (Andy Lester)
 
-Other new runtime files:
+Other new runtime files: ~
 Breton spell file (Dominique Pelle)
 Tutor Bairish (Sepp Hell)
 Tutor in Esperanto. (Dominique Pellé)
@@ -10064,6 +10071,27 @@ Remove -arch flag from build flags for Perl. (Bjorn Wickler)
 
 Fix 'autochdir' not showing up in :options window. (Dominique Pelle)
 
+Fix: test 69 didn't work on MS-Windows.  Test 72 beeped too often.
+
+Avoid illegal memory access in spell suggestion. (Dominique Pelle)
+Fix: crash in spell checking with a 0x300 character.
+
+Avoid that running tests changes viminfo.
+
+Fix: changing case of a character removed combining characters.
+Fixed: CTRL-R in Insert mode doesn't insert composing characters.
+
+Added the WOW64 flag to OLE registration, for 64 bit Windows systems.
+
+Various fixes for coverity warnings.
+
+Fix compile warnings, esp. for 64-bit systems.  (Mike Williams)
+
+Fix: :redir to a dictionary that is changed before ":redir END" causes a
+memory access error.
+
+Fix: terminal title not properly restored when there are multi-byte
+characters.  (partly by James Vega)
 
 
  vim:tw=78:ts=8:ft=help:norl:

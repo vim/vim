@@ -417,41 +417,42 @@ an 50.110.140 &Syntax.S-Sm.Sather :cal SetSyn("sather")<CR>
 an 50.110.150 &Syntax.S-Sm.Scheme :cal SetSyn("scheme")<CR>
 an 50.110.160 &Syntax.S-Sm.Scilab :cal SetSyn("scilab")<CR>
 an 50.110.170 &Syntax.S-Sm.Screen\ RC :cal SetSyn("screen")<CR>
-an 50.110.180 &Syntax.S-Sm.SDC\ Synopsys\ Design\ Constraints :cal SetSyn("sdc")<CR>
-an 50.110.190 &Syntax.S-Sm.SDL :cal SetSyn("sdl")<CR>
-an 50.110.200 &Syntax.S-Sm.Sed :cal SetSyn("sed")<CR>
-an 50.110.210 &Syntax.S-Sm.Sendmail\.cf :cal SetSyn("sm")<CR>
-an 50.110.220 &Syntax.S-Sm.Send-pr :cal SetSyn("sendpr")<CR>
-an 50.110.230 &Syntax.S-Sm.Sensors\.conf :cal SetSyn("sensors")<CR>
-an 50.110.240 &Syntax.S-Sm.Service\ Location\ config :cal SetSyn("slpconf")<CR>
-an 50.110.250 &Syntax.S-Sm.Service\ Location\ registration :cal SetSyn("slpreg")<CR>
-an 50.110.260 &Syntax.S-Sm.Service\ Location\ SPI :cal SetSyn("slpspi")<CR>
-an 50.110.270 &Syntax.S-Sm.Services :cal SetSyn("services")<CR>
-an 50.110.280 &Syntax.S-Sm.Setserial\ config :cal SetSyn("setserial")<CR>
-an 50.110.290 &Syntax.S-Sm.SGML.SGML\ catalog :cal SetSyn("catalog")<CR>
-an 50.110.300 &Syntax.S-Sm.SGML.SGML\ DTD :cal SetSyn("sgml")<CR>
-an 50.110.310 &Syntax.S-Sm.SGML.SGML\ Declaration :cal SetSyn("sgmldecl")<CR>
-an 50.110.320 &Syntax.S-Sm.SGML.SGML-linuxdoc :cal SetSyn("sgmllnx")<CR>
-an 50.110.330 &Syntax.S-Sm.Shell\ script.sh\ and\ ksh :cal SetSyn("sh")<CR>
-an 50.110.340 &Syntax.S-Sm.Shell\ script.csh :cal SetSyn("csh")<CR>
-an 50.110.350 &Syntax.S-Sm.Shell\ script.tcsh :cal SetSyn("tcsh")<CR>
-an 50.110.360 &Syntax.S-Sm.Shell\ script.zsh :cal SetSyn("zsh")<CR>
-an 50.110.370 &Syntax.S-Sm.SiCAD :cal SetSyn("sicad")<CR>
-an 50.110.380 &Syntax.S-Sm.Sieve :cal SetSyn("sieve")<CR>
-an 50.110.390 &Syntax.S-Sm.Simula :cal SetSyn("simula")<CR>
-an 50.110.400 &Syntax.S-Sm.Sinda.Sinda\ compare :cal SetSyn("sindacmp")<CR>
-an 50.110.410 &Syntax.S-Sm.Sinda.Sinda\ input :cal SetSyn("sinda")<CR>
-an 50.110.420 &Syntax.S-Sm.Sinda.Sinda\ output :cal SetSyn("sindaout")<CR>
-an 50.110.430 &Syntax.S-Sm.SiSU :cal SetSyn("sisu")<CR>
-an 50.110.440 &Syntax.S-Sm.SKILL.SKILL :cal SetSyn("skill")<CR>
-an 50.110.450 &Syntax.S-Sm.SKILL.SKILL\ for\ Diva :cal SetSyn("diva")<CR>
-an 50.110.460 &Syntax.S-Sm.Slice :cal SetSyn("slice")<CR>
-an 50.110.470 &Syntax.S-Sm.SLRN.Slrn\ rc :cal SetSyn("slrnrc")<CR>
-an 50.110.480 &Syntax.S-Sm.SLRN.Slrn\ score :cal SetSyn("slrnsc")<CR>
-an 50.110.490 &Syntax.S-Sm.SmallTalk :cal SetSyn("st")<CR>
-an 50.110.500 &Syntax.S-Sm.Smarty\ Templates :cal SetSyn("smarty")<CR>
-an 50.110.510 &Syntax.S-Sm.SMIL :cal SetSyn("smil")<CR>
-an 50.110.520 &Syntax.S-Sm.SMITH :cal SetSyn("smith")<CR>
+an 50.110.180 &Syntax.S-Sm.SCSS :cal SetSyn("scss")<CR>
+an 50.110.190 &Syntax.S-Sm.SDC\ Synopsys\ Design\ Constraints :cal SetSyn("sdc")<CR>
+an 50.110.200 &Syntax.S-Sm.SDL :cal SetSyn("sdl")<CR>
+an 50.110.210 &Syntax.S-Sm.Sed :cal SetSyn("sed")<CR>
+an 50.110.220 &Syntax.S-Sm.Sendmail\.cf :cal SetSyn("sm")<CR>
+an 50.110.230 &Syntax.S-Sm.Send-pr :cal SetSyn("sendpr")<CR>
+an 50.110.240 &Syntax.S-Sm.Sensors\.conf :cal SetSyn("sensors")<CR>
+an 50.110.250 &Syntax.S-Sm.Service\ Location\ config :cal SetSyn("slpconf")<CR>
+an 50.110.260 &Syntax.S-Sm.Service\ Location\ registration :cal SetSyn("slpreg")<CR>
+an 50.110.270 &Syntax.S-Sm.Service\ Location\ SPI :cal SetSyn("slpspi")<CR>
+an 50.110.280 &Syntax.S-Sm.Services :cal SetSyn("services")<CR>
+an 50.110.290 &Syntax.S-Sm.Setserial\ config :cal SetSyn("setserial")<CR>
+an 50.110.300 &Syntax.S-Sm.SGML.SGML\ catalog :cal SetSyn("catalog")<CR>
+an 50.110.310 &Syntax.S-Sm.SGML.SGML\ DTD :cal SetSyn("sgml")<CR>
+an 50.110.320 &Syntax.S-Sm.SGML.SGML\ Declaration :cal SetSyn("sgmldecl")<CR>
+an 50.110.330 &Syntax.S-Sm.SGML.SGML-linuxdoc :cal SetSyn("sgmllnx")<CR>
+an 50.110.340 &Syntax.S-Sm.Shell\ script.sh\ and\ ksh :cal SetSyn("sh")<CR>
+an 50.110.350 &Syntax.S-Sm.Shell\ script.csh :cal SetSyn("csh")<CR>
+an 50.110.360 &Syntax.S-Sm.Shell\ script.tcsh :cal SetSyn("tcsh")<CR>
+an 50.110.370 &Syntax.S-Sm.Shell\ script.zsh :cal SetSyn("zsh")<CR>
+an 50.110.380 &Syntax.S-Sm.SiCAD :cal SetSyn("sicad")<CR>
+an 50.110.390 &Syntax.S-Sm.Sieve :cal SetSyn("sieve")<CR>
+an 50.110.400 &Syntax.S-Sm.Simula :cal SetSyn("simula")<CR>
+an 50.110.410 &Syntax.S-Sm.Sinda.Sinda\ compare :cal SetSyn("sindacmp")<CR>
+an 50.110.420 &Syntax.S-Sm.Sinda.Sinda\ input :cal SetSyn("sinda")<CR>
+an 50.110.430 &Syntax.S-Sm.Sinda.Sinda\ output :cal SetSyn("sindaout")<CR>
+an 50.110.440 &Syntax.S-Sm.SiSU :cal SetSyn("sisu")<CR>
+an 50.110.450 &Syntax.S-Sm.SKILL.SKILL :cal SetSyn("skill")<CR>
+an 50.110.460 &Syntax.S-Sm.SKILL.SKILL\ for\ Diva :cal SetSyn("diva")<CR>
+an 50.110.470 &Syntax.S-Sm.Slice :cal SetSyn("slice")<CR>
+an 50.110.480 &Syntax.S-Sm.SLRN.Slrn\ rc :cal SetSyn("slrnrc")<CR>
+an 50.110.490 &Syntax.S-Sm.SLRN.Slrn\ score :cal SetSyn("slrnsc")<CR>
+an 50.110.500 &Syntax.S-Sm.SmallTalk :cal SetSyn("st")<CR>
+an 50.110.510 &Syntax.S-Sm.Smarty\ Templates :cal SetSyn("smarty")<CR>
+an 50.110.520 &Syntax.S-Sm.SMIL :cal SetSyn("smil")<CR>
+an 50.110.530 &Syntax.S-Sm.SMITH :cal SetSyn("smith")<CR>
 an 50.120.100 &Syntax.Sn-Sy.SNMP\ MIB :cal SetSyn("mib")<CR>
 an 50.120.110 &Syntax.Sn-Sy.SNNS.SNNS\ network :cal SetSyn("snnsnet")<CR>
 an 50.120.120 &Syntax.Sn-Sy.SNNS.SNNS\ pattern :cal SetSyn("snnspat")<CR>
