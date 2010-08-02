@@ -1,10 +1,18 @@
 TRANSLATING VIM MESSAGES
 
-This file explains how to create and maintain po files using
-gnu-gettext.win32, a Windows port of gettext by Franco Bez
-<franco.bez@gmx.de>.  You can find it at:
+This file explains how to create and maintain po files using a number of
+GnuWin packages.  You will need gettext, libiconv and libexpat.  As of
+August 2010 the versions known to work are gettext 0.14.4, libiconv 1.9.2-1
+and expat 2.0.1.  gettext and libiconv can be found at:
 
-	http://people.freenet.de/franco.bez/gettext/gettext_win32_en.html
+	http://gnuwin32.sourceforge.net/
+
+expat can be found at:
+
+	http://sourceforge.net/projects/expat/
+
+expat will install into its own directory.  You should copy libexpat.dll into
+the bin directory created from the gettext/libiconv packages.
 
 First read the README.txt file in this directory for general remarks on
 translating Vim messages.

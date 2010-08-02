@@ -62,8 +62,8 @@ MOFILES = \
 
 PACKAGE = vim
 
-# Correct the following line for the installation directory of gettext
-GETTEXT_PATH = H:\gettext.win32.msvcrt\bin
+# Correct the following line for the directory where gettext et al is installed
+GETTEXT_PATH = H:\gettext.0.14.4\bin
 
 MSGFMT = $(GETTEXT_PATH)\msgfmt
 XGETTEXT = $(GETTEXT_PATH)\xgettext
