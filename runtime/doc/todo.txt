@@ -33,6 +33,10 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 Using uninitialized memory when crypting an empty file. (Dominique Pelle, 2010
 Aug 2)
 
+Go back to MSVC 2008, so that Windows 2000 is supported?
+
+For 'undoreload': put the cursor on the first line that is different.
+
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 

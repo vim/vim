@@ -89,7 +89,6 @@ char *searchpath(char *name);
  */
 # ifndef KEY_WOW64_64KEY
 #  define KEY_WOW64_64KEY 0x0100
-#  define RegDeleteKeyEx(a, b, c, d) RegDeleteKey(a, b)
 # endif
 
 #define VIM_STARTMENU "Programs\\Vim " VIM_VERSION_SHORT
