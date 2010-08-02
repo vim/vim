@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Vim 7.3 script
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Jul 19, 2010
-" Version:	7.3-02
+" Last Change:	Jul 28, 2010
+" Version:	7.3-03
 " Automatically generated keyword lists: {{{1
 
 " Quit when a syntax file was already loaded {{{2
@@ -532,18 +532,42 @@ syn region	vimGlobal	matchgroup=Statement start='\<v\%[global]!\=/' skip='\\.' e
 
 " Scripts  : perl,ruby : Benoit Cerrina {{{2
 " =======    python,tcl: Johannes Zellner
+"            lua
 
 " Allows users to specify the type of embedded script highlighting
 " they want:  (perl/python/ruby/tcl support)
 "   g:vimsyn_embed == 0   : don't embed any scripts
+"   g:vimsyn_embed ~= 'l' : embed lua      (but only if vim supports it)
 "   g:vimsyn_embed ~= 'm' : embed mzscheme (but only if vim supports it)
 "   g:vimsyn_embed ~= 'p' : embed perl     (but only if vim supports it)
 "   g:vimsyn_embed ~= 'P' : embed python   (but only if vim supports it)
 "   g:vimsyn_embed ~= 'r' : embed ruby     (but only if vim supports it)
 "   g:vimsyn_embed ~= 't' : embed tcl      (but only if vim supports it)
 if !exists("g:vimsyn_embed")
- let g:vimsyn_embed= "mpPr"
+ let g:vimsyn_embed= "lmpPr"
 endif
+
+" [-- lua --] {{{3
+let s:luapath= expand("<sfile>:p:h")."/lua.vim"
+if !filereadable(s:luapath)
+ let s:luapath= globpath(&rtp,"syntax/lua.vim")
+endif
+if (g:vimsyn_embed =~ 'p' && has("lua")) && filereadable(s:luapath)
+ unlet! b:current_syntax
+ exe "syn include @vimLuaScript ".s:luapath
+ if exists("g:vimsyn_folding") && g:vimsyn_folding =~ 'l'
+  syn region vimLuaRegion fold matchgroup=vimScriptDelim start=+lua\s*<<\s*\z(.*\)$+ end=+^\z1$+	contains=@vimLuaScript
+  syn region vimLuaRegion fold matchgroup=vimScriptDelim start=+lua\s*<<\s*$+ end=+\.$+		contains=@vimLuaScript
+ else
+  syn region vimLuaRegion matchgroup=vimScriptDelim start=+lua\s*<<\s*\z(.*\)$+ end=+^\z1$+	contains=@vimLuaScript
+  syn region vimLuaRegion matchgroup=vimScriptDelim start=+lua\s*<<\s*$+ end=+\.$+		contains=@vimLuaScript
+ endif
+ syn cluster vimFuncBodyList	add=vimLuaRegion
+else
+ syn region vimEmbedError start=+lua\s*<<\s*\z(.*\)$+ end=+^\z1$+
+ syn region vimEmbedError start=+lua\s*<<\s*$+ end=+\.$+
+endif
+unlet s:luapath
 
 " [-- perl --] {{{3
 let s:perlpath= expand("<sfile>:p:h")."/perl.vim"

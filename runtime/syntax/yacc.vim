@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Yacc
 " Maintainer:	Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Oct 21, 2008
-" Version:	7
+" Last Change:	Aug 2, 2010
+" Version:	8
 " URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Options: {{{1
@@ -35,7 +35,7 @@ endif
 
 " ---------------------------------------------------------------------
 "  Yacc Clusters: {{{1
-syn cluster yaccInitCluster	contains=yaccKey,yaccKeyActn,yaccBrkt,yaccType,yaccString,yaccUnionStart,yaccHeader2,yaccComment
+syn cluster yaccInitCluster	contains=yaccKey,yaccKeyActn,yaccBrkt,yaccType,yaccString,yaccUnionStart,yaccHeader2,yaccComment,yaccDefines,yaccParseParam
 syn cluster yaccRulesCluster	contains=yaccNonterminal,yaccString
 
 " ---------------------------------------------------------------------
@@ -49,6 +49,10 @@ HiFold syn	region	yaccEndCode	matchgroup=yaccSectionSep	start='^%%$'		end='\%$'	
 
 " ---------------------------------------------------------------------
 " Yacc Commands: {{{1
+syn	match	yaccDefines	'^%define\s\+.*$'
+syn	match	yaccParseParam	'%parse-param\>'	skipwhite	nextgroup=yaccParseParamStr
+syn	region	yaccParseParamStr	contained matchgroup=Delimiter	start='{'	end='}'	contains=cStructure
+
 syn	match	yaccDelim	"[:|]"	contained
 syn	match	yaccOper	"@\d\+"	contained
 
@@ -91,6 +95,8 @@ if !exists("did_yacc_syn_inits")
   HiLink yaccComment	Comment
   HiLink yaccCurly	Delimiter
   HiLink yaccCurlyError	Error
+  HiLink yaccDefines	cDefine
+  HiLink yaccParseParam	cDefine
   HiLink yaccNonterminal	Function
   HiLink yaccDelim	Delimiter
   HiLink yaccKeyActn	Special
