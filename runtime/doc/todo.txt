@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3d.  Last change: 2010 Aug 01
+*todo.txt*      For Vim version 7.3d.  Last change: 2010 Aug 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Using uninitialized memory when crypting an empty file. (Dominique Pelle, 2010
+Aug 2)
 
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)

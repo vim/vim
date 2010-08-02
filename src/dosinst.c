@@ -1463,7 +1463,7 @@ register_openwith(
     char	exe_cmd[BUFSIZE];
     LONG	lRet;
 
-    sprintf(exe_cmd, "%s \"%%1\"", exe_path);
+    sprintf(exe_cmd, "\"%s\" \"%%1\"", exe_path);
     lRet = reg_create_key_and_value(
 	    hRootKey,
 	    "Applications\\gvim.exe\\shell\\edit\\command",
