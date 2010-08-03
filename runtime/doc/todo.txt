@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3d.  Last change: 2010 Aug 02
+*todo.txt*      For Vim version 7.3d.  Last change: 2010 Aug 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1135,7 +1135,7 @@ More patches:
     New version received 2008 Jan 6.
     No maintenance in two years...
 -   Patch to access screen under Python. (Marko Mahni, 2010 Jul 18)
-
+-   Patch to open dropped files in new tabs. (Michael Trim, 2010 Aug 3)
 
 Awaiting updated patches:
 9   Mac unicode patch (Da Woon Jung, Eckehard Berns):

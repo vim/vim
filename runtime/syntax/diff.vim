@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Diff (context or unified)
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jun 20
+" Last Change:	2010 Aug 03
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -16,6 +16,9 @@ syn match diffIsA	"^File .* is a .* while file .* is a .*"
 syn match diffNoEOL	"^No newline at end of file .*"
 syn match diffCommon	"^Common subdirectories: .*"
 
+" German
+syn match diffOnly	"^Nur in .*"
+
 syn match diffRemoved	"^-.*"
 syn match diffRemoved	"^<.*"
 syn match diffAdded	"^+.*"
@@ -26,6 +29,7 @@ syn match diffSubname	" @@..*"ms=s+3 contained
 syn match diffLine	"^@.*" contains=diffSubname
 syn match diffLine	"^\<\d\+\>.*"
 syn match diffLine	"^\*\*\*\*.*"
+syn match diffLine	"^---$"
 
 "Some versions of diff have lines like "#c#" and "#d#" (where # is a number)
 syn match diffLine	"^\d\+\(,\d\+\)\=[cda]\d\+\>.*"

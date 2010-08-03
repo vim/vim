@@ -14,9 +14,9 @@ All commands are given with normal keyboard characters, so those who can type
 with ten fingers can work very fast.  Additionally, function keys can be
 defined by the user, and the mouse can be used.
 
-Vim currently runs under Amiga DOS, MS-DOS, MS-Windows 95/98/Me/NT/2000/XP,
-Atari MiNT, Macintosh, BeOS, VMS, RISC OS, OS/2 and almost all flavours of
-UNIX.  Porting to other systems should not be very difficult.
+Vim currently runs under Amiga DOS, MS-DOS, MS-Windows (95, 98, Me, NT, 2000,
+XP, Vista, 7), Atari MiNT, Macintosh, BeOS, VMS, RISC OS, OS/2 and almost all
+flavours of UNIX.  Porting to other systems should not be very difficult.
 
 
 DISTRIBUTION
@@ -98,34 +98,7 @@ If you have problems, have a look at the Vim FAQ:
 Send bug reports to:
 	Bram Moolenaar <Bram@vim.org>
 
-There are five mailing lists for Vim:
-<vim@vim.org>
-	For discussions about using existing versions of Vim: Useful mappings,
-	questions, answers, where to get a specific version, etc.
-<vim-dev@vim.org>
-	For discussions about changing Vim: New features, porting, beta-test
-	versions, etc.
-<vim-announce@vim.org>
-	Announcements about new versions of Vim; also beta-test versions and
-	ports to different systems.
-<vim-multibyte@vim.org>
-	For discussions about using and improving the multi-byte aspects of
-	Vim: XIM, Hangul, fontset, etc.
-<vim-mac@vim.org>
-	For discussions about using and improving Vim on the Macintosh.
-
-For more info and URLs of the archives see "http://www.vim.org/maillist.php".
-
-NOTE:
-- You can only send messages to these lists if you have subscribed!
-- You need to send the messages from the same location as where you subscribed
-  from (to avoid spam mail).
-- Maximum message size is 40000 characters.
-
-If you want to join a maillist, send a message to
-	<vim-help@vim.org>
-Make sure that your "From:" address is correct.  Then the list server will
-send you a help message.
+There are several mailing lists for Vim, see http://www.vim.org/maillist.php.
 
 
 MAIN AUTHOR

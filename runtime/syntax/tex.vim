@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Jul 28, 2010 
-" Version:	52
+" Last Change:	Aug 03, 2010 
+" Version:	54
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -498,34 +498,56 @@ if has("conceal") && &enc == 'utf-8'
  if s:tex_conceal =~ 'm'
   syn match texMathSymbol '\\approx\>'			contained conceal cchar=≈
   syn match texMathSymbol '\\ast\>'			contained conceal cchar=∗
+  syn match texMathSymbol '\\because\>'			contained conceal cchar=∵
+  syn match texMathSymbol '\\bigcap\>'			contained conceal cchar=∩
+  syn match texMathSymbol '\\bigcup\>'			contained conceal cchar=∪
+  syn match texMathSymbol '\\bigodot\>'			contained conceal cchar=⊙
+  syn match texMathSymbol '\\bigoplus\>'		contained conceal cchar=⊕
+  syn match texMathSymbol '\\bigotimes\>'		contained conceal cchar=⊗
+  syn match texMathSymbol '\\bigsqcup\>'		contained conceal cchar=⊔
   syn match texMathSymbol '\\bigtriangledown\>'		contained conceal cchar=∇
   syn match texMathSymbol '\\bigvee\>'			contained conceal cchar=⋁
   syn match texMathSymbol '\\bigwedge\>'		contained conceal cchar=⋀
   syn match texMathSymbol '\\blacksquare\>'		contained conceal cchar=∎
+  syn match texMathSymbol '\\bot\>'			contained conceal cchar=⊥
   syn match texMathSymbol '\\cap\>'			contained conceal cchar=∩
   syn match texMathSymbol '\\cdot\>'			contained conceal cchar=·
+  syn match texMathSymbol '\\cdots\>'			contained conceal cchar=⋯
   syn match texMathSymbol '\\circ\>'			contained conceal cchar=∘
   syn match texMathSymbol '\\circledcirc\>'		contained conceal cchar=⊚
   syn match texMathSymbol '\\cong\>'			contained conceal cchar=≅
+  syn match texMathSymbol '\\coprod\>'			contained conceal cchar=∐
   syn match texMathSymbol '\\cup\>'			contained conceal cchar=∪
   syn match texMathSymbol '\\diamond\>'			contained conceal cchar=⋄
   syn match texMathSymbol '\\div\>'			contained conceal cchar=÷
   syn match texMathSymbol '\\doteq\>'			contained conceal cchar=≐
   syn match texMathSymbol '\\dotsb\>'			contained conceal cchar=⋯
+  syn match texMathSymbol '\\dotsc\>'			contained conceal cchar=…
+  syn match texMathSymbol '\\dots\>'			contained conceal cchar=…
+  syn match texMathSymbol '\\dotsi\>'			contained conceal cchar=⋯
+  syn match texMathSymbol '\\dotso\>'			contained conceal cchar=…
   syn match texMathSymbol '\\emptyset\>'		contained conceal cchar=∅
   syn match texMathSymbol '\\equiv\>'			contained conceal cchar=≡
+  syn match texMathSymbol '\\exists\>'			contained conceal cchar=∃
   syn match texMathSymbol '\\forall\>'			contained conceal cchar=∀
   syn match texMathSymbol '\\geq\>'			contained conceal cchar=≥
-  syn match texMathSymbol '\\geq\>'			contained conceal cchar=≥
-  syn match texMathSymbol '\\gg\>'			contained conceal cchar=⟫
+  if &ambw == "double"
+   syn match texMathSymbol '\\gg\>'			contained conceal cchar=≫
+  else
+   syn match texMathSymbol '\\gg\>'			contained conceal cchar=⟫
+  endif
   syn match texMathSymbol '\\gtreqless\>'		contained conceal cchar=⋛
   syn match texMathSymbol '\\gtrless\>'			contained conceal cchar=≷
+  syn match texMathSymbol '\\iiint\>'			contained conceal cchar=∭
+  syn match texMathSymbol '\\iint\>'			contained conceal cchar=∬
   syn match texMathSymbol '\\Im\>'			contained conceal cchar=ℑ
   syn match texMathSymbol '\\in\>'			contained conceal cchar=∈
   syn match texMathSymbol '\\infty\>'			contained conceal cchar=∞
+  syn match texMathSymbol '\\int\>'			contained conceal cchar=∫
   syn match texMathSymbol '\\lceil\>'			contained conceal cchar=⌈
-  syn match texMathSymbol '\\leftarrow\>'		contained conceal cchar=⟶
-  syn match texMathSymbol '\\Leftarrow\>'		contained conceal cchar=⟹
+  syn match texMathSymbol '\\ldots\>'			contained conceal cchar=…
+  syn match texMathSymbol '\\leftarrow\>'		contained conceal cchar=⟵
+  syn match texMathSymbol '\\Leftarrow\>'		contained conceal cchar=⟸
   syn match texMathSymbol '\\left('			contained conceal cchar=(
   syn match texMathSymbol '\\left\['			contained conceal cchar=[
   syn match texMathSymbol '\\left\\{'			contained conceal cchar={
@@ -533,15 +555,24 @@ if has("conceal") && &enc == 'utf-8'
   syn match texMathSymbol '\\leq\>'			contained conceal cchar=≤
   syn match texMathSymbol '\\lesseqgtr\>'		contained conceal cchar=⋚
   syn match texMathSymbol '\\lfloor\>'			contained conceal cchar=⌊
-  syn match texMathSymbol '\\ll\>'			contained conceal cchar=⟪
+  if &ambw == "double"
+   syn match texMathSymbol '\\ll\>'			contained conceal cchar=≪
+  else
+   syn match texMathSymbol '\\ll\>'			contained conceal cchar=⟪
+  endif
   syn match texMathSymbol '\\mapsto\>'			contained conceal cchar=↦
+  syn match texMathSymbol '\\mid\>'			contained conceal cchar=∣
   syn match texMathSymbol '\\mp\>'			contained conceal cchar=∓
+  syn match texMathSymbol '\\nabla\>'			contained conceal cchar=∇
   syn match texMathSymbol '\\neq\>'			contained conceal cchar=≠
+  syn match texMathSymbol '\\nexists\>'			contained conceal cchar=∄
   syn match texMathSymbol '\\ngeq\>'			contained conceal cchar=≱
   syn match texMathSymbol '\\ngtr\>'			contained conceal cchar=≯
   syn match texMathSymbol '\\nleq\>'			contained conceal cchar=≰
   syn match texMathSymbol '\\nless\>'			contained conceal cchar=≮
+  syn match texMathSymbol '\\nmid\>'			contained conceal cchar=∤
   syn match texMathSymbol '\\notin\>'			contained conceal cchar=∉
+  syn match texMathSymbol '\\nsim\>'			contained conceal cchar=≁
   syn match texMathSymbol '\\odot\>'			contained conceal cchar=⊙
   syn match texMathSymbol '\\oint\>'			contained conceal cchar=∮
   syn match texMathSymbol '\\oplus\>'			contained conceal cchar=⊕
@@ -556,11 +587,13 @@ if has("conceal") && &enc == 'utf-8'
   syn match texMathSymbol '\\rceil\>'			contained conceal cchar=⌉
   syn match texMathSymbol '\\Re\>'			contained conceal cchar=ℜ
   syn match texMathSymbol '\\rfloor\>'			contained conceal cchar=⌋
-  syn match texMathSymbol '\\rightarrow\>'		contained conceal cchar=⟵
-  syn match texMathSymbol '\\Rightarrow\>'		contained conceal cchar=⟸
+  syn match texMathSymbol '\\rightarrow\>'		contained conceal cchar=⟶
+  syn match texMathSymbol '\\Rightarrow\>'		contained conceal cchar=⟹
   syn match texMathSymbol '\\right)'			contained conceal cchar=)
   syn match texMathSymbol '\\right]'			contained conceal cchar=]
   syn match texMathSymbol '\\right\\}'			contained conceal cchar=}
+  syn match texMathSymbol '\\setminus\>'		contained conceal cchar=∖
+  syn match texMathSymbol '\\sim\>'			contained conceal cchar=∼
   syn match texMathSymbol '\\sqcap\>'			contained conceal cchar=⊓
   syn match texMathSymbol '\\sqcup\>'			contained conceal cchar=⊔
   syn match texMathSymbol '\\subset\>'			contained conceal cchar=⊂
@@ -578,6 +611,8 @@ if has("conceal") && &enc == 'utf-8'
   syn match texMathSymbol '\\trianglerighteq\>'		contained conceal cchar=⊵
   syn match texMathSymbol '\\vartriangle\>'		contained conceal cchar=∆
   syn match texMathSymbol '\\vdots\>'			contained conceal cchar=⋮
+  syn match texMathSymbol '\\vee\>'			contained conceal cchar=∨
+  syn match texMathSymbol '\\wedge\>'			contained conceal cchar=∧
  endif
 
  " Greek {{{2
@@ -888,4 +923,4 @@ endif
 " Current Syntax: {{{1
 unlet b:extfname
 let   b:current_syntax = "tex"
-" vim: ts=8 fdm=marker
+" vim: ts=8 fdm=marker ambw=double
