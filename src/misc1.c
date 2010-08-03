@@ -9347,8 +9347,13 @@ expand_path_option(curdir, gap)
 		continue;
 	    STRMOVE(buf + curdir_len + 1, buf);
 	    STRCPY(buf, curdir);
-	    add_pathsep(buf);
-	    STRMOVE(buf + curdir_len, buf + curdir_len + 1);
+	    buf[curdir_len] = PATHSEP;
+	    /*
+	     * 'path' may have "./baz" as one of the items.
+	     * If curdir is "/foo/bar", p will end up being "/foo/bar/./baz".
+	     * Simplify it.
+	     */
+	    simplify_filename(buf);
 	}
 
 	if (ga_grow(gap, 1) == FAIL)
