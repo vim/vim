@@ -9587,7 +9587,7 @@ expand_in_path(gap, pattern, flags)
     char_u	*paths = NULL;
 # endif
 
-    if ((curdir = alloc((int)(MAXPATHL))) == NULL)
+    if ((curdir = alloc((unsigned)MAXPATHL)) == NULL)
 	return 0;
     mch_dirname(curdir, MAXPATHL);
 
@@ -9595,6 +9595,8 @@ expand_in_path(gap, pattern, flags)
     vim_free(curdir);
     path_list = (char_u **)(path_ga.ga_data);
 # ifdef WIN3264
+    if ((file_pattern = alloc((unsigned)MAXPATHL)) == NULL)
+	return 0;
     for (i = 0; i < path_ga.ga_len; i++)
     {
 	if (STRLEN(path_list[i]) + STRLEN(pattern) + 2 > MAXPATHL)
@@ -9604,12 +9606,13 @@ expand_in_path(gap, pattern, flags)
 	STRCAT(file_pattern, pattern);
 	mch_expandpath(gap, file_pattern, EW_DIR|EW_ADDSLASH|EW_FILE);
     }
+    vim_free(file_pattern);
 # else
     for (i = 0; i < path_ga.ga_len; i++)
     {
 	if (paths == NULL)
 	{
-	    if ((paths = alloc((int)(STRLEN(path_list[i]) + 1))) == NULL)
+	    if ((paths = alloc((unsigned)(STRLEN(path_list[i]) + 1))) == NULL)
 		return 0;
 	    STRCPY(paths, path_list[i]);
 	}
