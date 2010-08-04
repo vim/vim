@@ -17,6 +17,7 @@ void u_sync __ARGS((int force));
 void ex_undolist __ARGS((exarg_T *eap));
 void ex_undojoin __ARGS((exarg_T *eap));
 void u_unchanged __ARGS((buf_T *buf));
+void u_find_first_changed __ARGS((void));
 void u_update_save_nr __ARGS((buf_T *buf));
 void u_clearall __ARGS((buf_T *buf));
 void u_saveline __ARGS((linenr_T lnum));

@@ -2605,6 +2605,11 @@ failed:
      */
     write_no_eol_lnum = read_no_eol_lnum;
 
+    /* When reloading a buffer put the cursor at the first line that is
+     * different. */
+    if (flags & READ_KEEP_UNDO)
+	u_find_first_changed();
+
 #ifdef FEAT_PERSISTENT_UNDO
     /*
      * When opening a new file locate undo info and read it.
@@ -7095,7 +7100,7 @@ buf_reload(buf, orig_mode)
 	old_cursor = curwin->w_cursor;
 	old_topline = curwin->w_topline;
 
-	if (saved == OK && (p_ur < 0 || curbuf->b_ml.ml_line_count <= p_ur))
+	if (p_ur < 0 || curbuf->b_ml.ml_line_count <= p_ur)
 	{
 	    /* Save all the text, so that the reload can be undone.
 	     * Sync first so that this is a separate undo-able action. */
@@ -7169,8 +7174,10 @@ buf_reload(buf, orig_mode)
 		    u_clearall(buf);
 		}
 		else
+		{
 		    /* Mark all undo states as changed. */
 		    u_unchanged(curbuf);
+		}
 	    }
 	}
 	vim_free(ea.cmd);
