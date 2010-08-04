@@ -4016,9 +4016,9 @@ get_crypt_key(store, twice)
     }
 
     /* since the user typed this, no need to wait for return */
-    need_wait_return = FALSE;
     if (msg_didout)
 	msg_putchar('\n');
+    need_wait_return = FALSE;
     msg_didout = FALSE;
 
     free_crypt_key(p2);

@@ -1135,8 +1135,11 @@ msg_start()
 {
     int		did_return = FALSE;
 
-    vim_free(keep_msg);
-    keep_msg = NULL;			/* don't display old message now */
+    if (!msg_silent)
+    {
+	vim_free(keep_msg);
+	keep_msg = NULL;		/* don't display old message now */
+    }
 
 #ifdef FEAT_EVAL
     if (need_clr_eos)
