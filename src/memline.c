@@ -478,7 +478,7 @@ ml_set_crypt_key(buf, old_key, old_cm)
     blocknr_T	bnum;
     int		top;
 
-    if (mfp == NULL || mfp->mf_fd < 0)
+    if (mfp == NULL)
 	return;  /* no memfile yet, nothing to do */
 
     /* Set the key, method and seed to be used for reading, these must be the
