@@ -11,7 +11,8 @@ If Vim was not compiled with the +windows feature, the tiny.vim script will be
 set like small.vim above.  tiny.vim is sourced by tests that require the
 +windows feature or other features that are missing in the tiny version.
 
-If Vim was not compiled with the +multi_byte feature, the mbyte.vim script will be set like small.vim above.  mbyte.vim is sourced by tests that require the
+If Vim was not compiled with the +multi_byte feature, the mbyte.vim script will
+be set like small.vim above.  mbyte.vim is sourced by tests that require the
 +multi_byte feature.
 Similar logic is applied to the +mzscheme feature, using mzscheme.vim.
 

@@ -29,6 +29,11 @@ STARTTEST
 : !copy XXUnix,XXMac XXUxMac.
 : !copy XXDos,XXMac  XXDosMac.
 : !copy XXUnix,XXDos,XXMac XXUxDsMc.
+:elseif has("win32")
+: !copy /b XXUnix+XXDos XXUxDs
+: !copy /b XXUnix+XXMac XXUxMac
+: !copy /b XXDos+XXMac XXDosMac
+: !copy /b XXUnix+XXDos+XXMac XXUxDsMc
 :else
 : !cat XXUnix XXDos >XXUxDs
 : !cat XXUnix XXMac >XXUxMac
