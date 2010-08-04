@@ -9593,6 +9593,8 @@ expand_in_path(gap, pattern, flags)
 
     expand_path_option(curdir, &path_ga);
     vim_free(curdir);
+    if (path_ga.ga_len == 0)
+	return 0;
     path_list = (char_u **)(path_ga.ga_data);
 # ifdef WIN3264
     if ((file_pattern = alloc((unsigned)MAXPATHL)) == NULL)
