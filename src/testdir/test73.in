@@ -1,13 +1,15 @@
 Tests for find completion.
 
 STARTTEST
-:!mkdir -p Xfind/in/path
+:!mkdir Xfind
+:!mkdir Xfind/in
+:!mkdir Xfind/in/path
 :e Xfind/file.txt
-aHoly Grail:w
+SHoly Grail:w
 :e Xfind/in/file.txt
-aJimmy Hoffa:w
+SJimmy Hoffa:w
 :e Xfind/in/path/file.txt
-aE.T.:w
+SE.T.:w
 :set path=Xfind/**
 :set nocp
 :find file	

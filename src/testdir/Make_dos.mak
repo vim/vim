@@ -59,6 +59,7 @@ clean:
 	-if exist mbyte.vim del mbyte.vim
 	-if exist mzscheme.vim del mzscheme.vim
 	-del X*
+	-del X*.*
 	-if exist viminfo del viminfo
 
 .in.out:
