@@ -1,0 +1,21 @@
+Tests for find completion.
+
+STARTTEST
+:!mkdir -p Xfind/in/path
+:e Xfind/file.txt
+aHoly Grail:w
+:e Xfind/in/file.txt
+aJimmy Hoffa:w
+:e Xfind/in/path/file.txt
+aE.T.:w
+:set path=Xfind/**
+:set nocp
+:find file	
+:w! test.out
+:find file		
+:w >>test.out
+:find file			
+:w >>test.out
+:qa!
+ENDTEST
+

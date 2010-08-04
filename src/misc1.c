@@ -9321,7 +9321,7 @@ expand_path_option(curdir, gap)
 
     ga_init2(gap, (int)sizeof(char_u *), 1);
 
-    if ((buf = alloc((int)(MAXPATHL))) == NULL)
+    if ((buf = alloc((int)MAXPATHL)) == NULL)
 	return;
 
     while (*path_option != NUL)
@@ -9564,8 +9564,8 @@ theend:
 }
 
 /*
- * Calls globpath() or mch_expandpath() with 'path' values for the given
- * pattern and stores the result in gap.
+ * Calls globpath() with 'path' values for the given pattern and stores the
+ * result in "gap".
  * Returns the total number of matches.
  */
     static int
@@ -9574,18 +9574,12 @@ expand_in_path(gap, pattern, flags)
     char_u	*pattern;
     int		flags;		/* EW_* flags */
 {
-    char_u	**path_list;
     char_u	*curdir;
     garray_T	path_ga;
-    int		i;
-# ifdef WIN3264
-    char_u	*file_pattern;
-# else
     char_u	*files = NULL;
     char_u	*s;	/* start */
     char_u	*e;	/* end */
     char_u	*paths = NULL;
-# endif
 
     if ((curdir = alloc((unsigned)MAXPATHL)) == NULL)
 	return 0;
@@ -9595,42 +9589,14 @@ expand_in_path(gap, pattern, flags)
     vim_free(curdir);
     if (path_ga.ga_len == 0)
 	return 0;
-    path_list = (char_u **)(path_ga.ga_data);
-# ifdef WIN3264
-    if ((file_pattern = alloc((unsigned)MAXPATHL)) == NULL)
+
+    paths = ga_concat_strings(&path_ga);
+    ga_clear_strings(&path_ga);
+    if (paths == NULL)
 	return 0;
-    for (i = 0; i < path_ga.ga_len; i++)
-    {
-	if (STRLEN(path_list[i]) + STRLEN(pattern) + 2 > MAXPATHL)
-	    continue;
-	STRCPY(file_pattern, path_list[i]);
-	STRCAT(file_pattern, "/");
-	STRCAT(file_pattern, pattern);
-	mch_expandpath(gap, file_pattern, EW_DIR|EW_ADDSLASH|EW_FILE);
-    }
-    vim_free(file_pattern);
-# else
-    for (i = 0; i < path_ga.ga_len; i++)
-    {
-	if (paths == NULL)
-	{
-	    if ((paths = alloc((unsigned)(STRLEN(path_list[i]) + 1))) == NULL)
-		return 0;
-	    STRCPY(paths, path_list[i]);
-	}
-	else
-	{
-	    if ((paths = realloc(paths, (int)(STRLEN(paths)
-					  + STRLEN(path_list[i]) + 2))) == NULL)
-		return 0;
-	    STRCAT(paths, ",");
-	    STRCAT(paths, path_list[i]);
-	}
-    }
 
     files = globpath(paths, pattern, 0);
     vim_free(paths);
-
     if (files == NULL)
 	return 0;
 
@@ -9654,9 +9620,7 @@ expand_in_path(gap, pattern, flags)
 	    s = e;
 	}
     }
-
     vim_free(files);
-# endif
 
     return gap->ga_len;
 }
@@ -9797,7 +9761,12 @@ gen_expand_wildcards(num_pat, pat, num_file, file, flags)
 	    {
 #if defined(FEAT_SEARCHPATH)
 		if (*p != '.' && !vim_ispathsep(*p) && (flags & EW_PATH))
+		{
+		    /* recursiveness is OK here */
+		    recursive = FALSE;
 		    add_pat = expand_in_path(&ga, p, flags);
+		    recursive = TRUE;
+		}
 		else
 #endif
 		    add_pat = mch_expandpath(&ga, p, flags);

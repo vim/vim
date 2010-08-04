@@ -4,7 +4,7 @@
 # Authors:	Zoltan Arpadffy, <arpadffy@polarhome.com>
 #		Sandor Kopanyi,  <sandor.kopanyi@mailbox.hu>
 #
-# Last change:  2010 Jul 30
+# Last change:  2010 Aug 04
 #
 # This has been tested on VMS 6.2 to 8.3 on DEC Alpha, VAX and IA64.
 # Edit the lines in the Configuration section below to select.
@@ -94,7 +94,7 @@ GUI_OPTION = -g
 .ENDIF
 
 .IFDEF WANT_UNIX
-SCRIPT_UNIX = test10.out test12.out test25.out test27.out test49.out
+SCRIPT_UNIX = test10.out test12.out test25.out test27.out test49.out test73.out
 .ENDIF
 
 .IFDEF WANT_WIN

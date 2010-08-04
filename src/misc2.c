@@ -2068,6 +2068,36 @@ ga_grow(gap, n)
 }
 
 /*
+ * For a growing array that contains a list of strings: concatenate all the
+ * strings with a separating comma.
+ * Returns NULL when out of memory.
+ */
+    char_u *
+ga_concat_strings(gap)
+    garray_T *gap;
+{
+    int		i;
+    int		len = 0;
+    char_u	*s;
+
+    for (i = 0; i < gap->ga_len; ++i)
+	len += (int)STRLEN(((char_u **)(gap->ga_data))[i]) + 1;
+
+    s = alloc(len + 1);
+    if (s != NULL)
+    {
+	*s = NUL;
+	for (i = 0; i < gap->ga_len; ++i)
+	{
+	    if (*s != NUL)
+		STRCAT(s, ",");
+	    STRCAT(s, ((char_u **)(gap->ga_data))[i]);
+	}
+    }
+    return s;
+}
+
+/*
  * Concatenate a string to a growarray which contains characters.
  * Note: Does NOT copy the NUL at the end!
  */
