@@ -1,4 +1,4 @@
-README_extra.txt for version 7.3d of Vim: Vi IMproved.
+README_extra.txt for version 7.3e of Vim: Vi IMproved.
 
 The extra archive of Vim is to be used in combination with the source archive
 (vim-7.2-src.tar.gz).  The extra archive is useless without it.
