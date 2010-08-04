@@ -35,6 +35,14 @@ Before release 7.3:
 
 test73 doesn't work on MS-Windows.
 
+Better Czech keymap. (Stepnem, 2010 May 4)  Use if no response from Jiri
+Tobisek.
+
+Use Dutch spell files from:
+http://extensions.services.openoffice.org/en/project/dict-nl
+Looks like this is newer than the new wordlist for Dutch:
+http://www.opentaal.org/bestanden/1_10/nl_NL-Pack
+
 test72 causes a beep for using "u" when it doesn't work.
 
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
@@ -66,21 +74,10 @@ accented character. (Tony Mechelynck, 2010 Apr 15)
 Patch: Let rare word highlighting overrule good word highlighting.
 (Jakson A. Aquino, 2010 Jul 30)
 
-Better Czech keymap. (Stepnem, 2010 May 4)  Use if no response from Jiri
-Tobisek.
-
 ":drop" does not respect 'autochdir'. (Peter Odding, 2010 Jul 24)
-
-Use Dutch spell files from:
-http://extensions.services.openoffice.org/en/project/dict-nl
-Looks like this is newer than the new wordlist for Dutch:
-http://www.opentaal.org/bestanden/1_10/nl_NL-Pack
 
 Problem with cursor in the wrong column. (SungHyun Nam, 2010 Mar 11)
 Additional info by Dominique Pelle. (also on 2010 Apr 10)
-
-"make install" installs some of the .info files on Unix.
-(James Vega, 2010 Mar 30)
 
 Is ~/bin (literally) in $PATH supposed to work?  (Paul, 2010 March 29)
 Looks like only bash can do it. (Yakov Lerner)
