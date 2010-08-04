@@ -30,6 +30,10 @@ func! GetMline()
   return substitute(idline, '[^%]*\(%[-+ #''.0-9*]*l\=[dsuxXpoc%]\)\=', '\1', 'g')
 endfunc
 
+" This only works when 'wrapscan' is set.
+let s:save_wrapscan = &wrapscan
+set wrapscan
+
 " Start at the first "msgid" line.
 1
 /^msgid
@@ -77,5 +81,8 @@ endif
 if error == 0
   echo "OK"
 endif
+
+let &wrapscan = s:save_wrapscan
+unlet s:save_wrapscan
 
 endif
