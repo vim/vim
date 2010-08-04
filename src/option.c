@@ -5745,6 +5745,12 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     {
 	if (check_opt_strings(p_ambw, p_ambw_values, FALSE) != OK)
 	    errmsg = e_invarg;
+	else if (set_chars_option(&p_lcs) != NULL)
+	    errmsg = (char_u *)_("E834: Conflicts with value of 'listchars'");
+# if defined(FEAT_WINDOWS) || defined(FEAT_FOLDING)
+	else if (set_chars_option(&p_fcs) != NULL)
+	    errmsg = (char_u *)_("E835: Conflicts with value of 'fillchars'");
+# endif
     }
 #endif
 
