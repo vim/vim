@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3d.  Last change: 2010 Aug 03
+*todo.txt*      For Vim version 7.3d.  Last change: 2010 Aug 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,19 +30,14 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Using uninitialized memory when crypting an empty file. (Dominique Pelle, 2010
-Aug 2)
-
-Go back to MSVC 2008, so that Windows 2000 is supported?
-
-For 'undoreload': put the cursor on the first line that is different.
-
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
 test72 causes a beep for using "u" when it doesn't work.
 
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
+
+Patch to make more characters work in dialogs. (Yankwei Jia, 2010 Aug 4)
 
 Should readfile() ignore BOM when not in binary mode?
 

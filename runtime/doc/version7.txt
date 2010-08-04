@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.3d.  Last change: 2010 Aug 01
+*version7.txt*  For Vim version 7.3d.  Last change: 2010 Aug 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -7301,7 +7301,7 @@ In Visual mode with 'showcmd' display the number of bytes and characters.
 Allow synIDattr() getting GUI attributes when build without GUI.  (Matt
 Wozniski)
 
-Support completion for ":find". (Nazri Ramliy)
+Support completion for ":find".  Add test 73. (Nazri Ramliy)
 
 Command line completion for :ownsyntax and :setfiletype. (Dominique Pelle)
 
@@ -10093,6 +10093,10 @@ memory access error.
 
 Fix: terminal title not properly restored when there are multi-byte
 characters.  (partly by James Vega)
+
+Set 'wrapscan' when checking the .po files. (Mike Williams)
+
+Win32: Put quotes around the gvim.exe path for the "Open with" menu entry.
 
 
  vim:tw=78:ts=8:ft=help:norl:

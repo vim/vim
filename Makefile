@@ -136,11 +136,10 @@ DOSBIN_S =  dosbin_s
 # - Rename the executables to "vimd32.exe", "xxdd32.exe", "installd32.exe" and
 #   "uninstald32.exe".
 # Win32 console version:
-# - Set environment for Visual C++ 2010, e.g.:
-#   "E:\Microsoft Visual Studio 10.0\VC\bin\vcvars32.bat".  Or, for Visual
-#   C++ 2008 Express Edition: "msvc2008.bat".  Or, when using the Visual C++
-#   Toolkit 2003: "msvcsetup.bat" (adjust the paths when necessary).  For
-#   Windows 98/ME the 2003 version is required.
+# - Set environment for Visual C++ 2008, e.g.:
+#   "E:\Microsoft Visual Studio 9.0\VC\bin\vcvars32.bat".  Or, when using the
+#   Visual C++ Toolkit 2003: "msvcsetup.bat" (adjust the paths when necessary).
+#   For Windows 98/ME the 2003 version is required.
 # - "nmake -f Make_mvc.mak"
 # - "rm testdir/*.out", "nmake -f Make_mvc.mak test" and check the output.
 # - Rename the executables to "vimw32.exe", "xxdw32.exe".

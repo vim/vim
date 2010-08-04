@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3d.  Last change: 2010 Jul 28
+*eval.txt*	For Vim version 7.3d.  Last change: 2010 Aug 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -534,6 +534,10 @@ that references this function.	The function can only be used through a
 remaining that refers to it.
 
 It is not necessary to use the "dict" attribute for a numbered function.
+
+If you get an error for a numbered function, you can find out what it is with
+a trick.  Assuming the function is 42, the command is: >
+	:function {42}
 
 
 Functions for Dictionaries ~
