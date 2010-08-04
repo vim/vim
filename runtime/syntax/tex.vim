@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Aug 03, 2010 
-" Version:	54
+" Last Change:	Aug 04, 2010 
+" Version:	55
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -119,7 +119,7 @@ if !exists("tex_no_math")
  syn cluster texMatchGroup	add=@texMathZones
  syn cluster texMathDelimGroup	contains=texMathDelimBad,texMathDelimKey,texMathDelimSet1,texMathDelimSet2
  syn cluster texMathMatchGroup	contains=@texMathZones,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMathDelim,texMathMatcher,texMathOper,texNewCmd,texNewEnv,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone
- syn cluster texMathZoneGroup	contains=texComment,texDelimiter,texLength,texMathDelim,texMathMatcher,texMathOper,texMathSymbol,texRefZone,texSpecialChar,texStatement,texTypeSize,texTypeStyle
+ syn cluster texMathZoneGroup	contains=texComment,texDelimiter,texLength,texMathDelim,texMathMatcher,texMathOper,texMathSymbol,texMathText,texRefZone,texSpecialChar,texStatement,texTypeSize,texTypeStyle
  if !exists("g:tex_no_error")
   syn cluster texMathMatchGroup	add=texMathError
   syn cluster texMathZoneGroup	add=texMathError
@@ -365,6 +365,9 @@ if !exists("tex_no_math")
 
  syn match texMathOper		"[_^=]" contained
 
+ " Text Inside Math Zones: {{{2
+ syn region texMathText matchgroup=texStatement start='\\\(\(inter\)\=text\|mbox\)\s*{'	end='}'	contains=@texFoldGroup,@Spell
+
  " \left..something.. and \right..something.. support: {{{2
  syn match   texMathDelimBad	contained		"\S"
  if has("conceal") && &enc == 'utf-8' && s:tex_conceal =~ 'm'
@@ -424,24 +427,44 @@ else
 endif
 
 " Separate lines used for verb` and verb# so that the end conditions {{{1
-" will appropriately terminate.  Ideally vim would let me save a
-" character from the start pattern and re-use it in the end-pattern.
-syn region texZone		start="\\begin{[vV]erbatim}"		end="\\end{[vV]erbatim}\|%stopzone\>"	contains=@Spell
-" listings package:
-syn region texZone		start="\\begin{lstlisting}"		end="\\end{lstlisting}\|%stopzone\>"	contains=@Spell
-" moreverb package:
-syn region texZone		start="\\begin{verbatimtab}"		end="\\end{verbatimtab}\|%stopzone\>"	contains=@Spell
-syn region texZone		start="\\begin{verbatimwrite}"		end="\\end{verbatimwrite}\|%stopzone\>"	contains=@Spell
-syn region texZone		start="\\begin{boxedverbatim}"		end="\\end{boxedverbatim}\|%stopzone\>"	contains=@Spell
-if version < 600
- syn region texZone		start="\\verb\*\=`"			end="`\|%stopzone\>"
- syn region texZone		start="\\verb\*\=#"			end="#\|%stopzone\>"
+" will appropriately terminate.
+" If g:tex_verbspell exists, then verbatim texZones will permit spellchecking there.
+if exists("g:tex_verbspell") && g:tex_verbspell
+ syn region texZone		start="\\begin{[vV]erbatim}"		end="\\end{[vV]erbatim}\|%stopzone\>"	contains=@Spell
+ " listings package:
+ syn region texZone		start="\\begin{lstlisting}"		end="\\end{lstlisting}\|%stopzone\>"	contains=@Spell
+ " moreverb package:
+ syn region texZone		start="\\begin{verbatimtab}"		end="\\end{verbatimtab}\|%stopzone\>"	contains=@Spell
+ syn region texZone		start="\\begin{verbatimwrite}"		end="\\end{verbatimwrite}\|%stopzone\>"	contains=@Spell
+ syn region texZone		start="\\begin{boxedverbatim}"		end="\\end{boxedverbatim}\|%stopzone\>"	contains=@Spell
+ if version < 600
+  syn region texZone		start="\\verb\*\=`"			end="`\|%stopzone\>"			contains=@Spell
+  syn region texZone		start="\\verb\*\=#"			end="#\|%stopzone\>"			contains=@Spell
+ else
+   if b:tex_stylish
+    syn region texZone		start="\\verb\*\=\z([^\ta-zA-Z@]\)"	end="\z1\|%stopzone\>"			contains=@Spell
+   else
+    syn region texZone		start="\\verb\*\=\z([^\ta-zA-Z]\)"	end="\z1\|%stopzone\>"			contains=@Spell
+   endif
+ endif
 else
-  if b:tex_stylish
-    syn region texZone		start="\\verb\*\=\z([^\ta-zA-Z@]\)"	end="\z1\|%stopzone\>"
-  else
-    syn region texZone		start="\\verb\*\=\z([^\ta-zA-Z]\)"	end="\z1\|%stopzone\>"
-  endif
+ syn region texZone		start="\\begin{[vV]erbatim}"		end="\\end{[vV]erbatim}\|%stopzone\>"
+ " listings package:
+ syn region texZone		start="\\begin{lstlisting}"		end="\\end{lstlisting}\|%stopzone\>"
+ " moreverb package:
+ syn region texZone		start="\\begin{verbatimtab}"		end="\\end{verbatimtab}\|%stopzone\>"
+ syn region texZone		start="\\begin{verbatimwrite}"		end="\\end{verbatimwrite}\|%stopzone\>"
+ syn region texZone		start="\\begin{boxedverbatim}"		end="\\end{boxedverbatim}\|%stopzone\>"
+ if version < 600
+  syn region texZone		start="\\verb\*\=`"			end="`\|%stopzone\>"
+  syn region texZone		start="\\verb\*\=#"			end="#\|%stopzone\>"
+ else
+   if b:tex_stylish
+     syn region texZone		start="\\verb\*\=\z([^\ta-zA-Z@]\)"	end="\z1\|%stopzone\>"
+   else
+     syn region texZone		start="\\verb\*\=\z([^\ta-zA-Z]\)"	end="\z1\|%stopzone\>"
+   endif
+ endif
 endif
 
 " Tex Reference Zones: {{{1
@@ -452,8 +475,8 @@ syn region texRefZone		matchgroup=texStatement start="\\label{"		end="}\|%stopzo
 syn region texRefZone		matchgroup=texStatement start="\\\(page\|eq\)ref{"	end="}\|%stopzone\>"	contains=@texRefGroup
 syn region texRefZone		matchgroup=texStatement start="\\v\=ref{"		end="}\|%stopzone\>"	contains=@texRefGroup
 syn match  texRefZone		'\\cite\%([tp]\*\=\)\=' nextgroup=texRefOption,texCite
-syn region texRefOption	contained	matchgroup=Delimiter start='\[' end=']'		contains=@texRefGroup	nextgroup=texRefOption,texCite
-syn region texCite	contained	matchgroup=Delimiter start='{' end='}'		contains=@texRefGroup
+syn region texRefOption	contained	matchgroup=Delimiter start='\[' end=']'		contains=@texRefGroup,texRefZone	nextgroup=texRefOption,texCite
+syn region texCite	contained	matchgroup=Delimiter start='{' end='}'		contains=@texRefGroup,texRefZone,texCite
 
 " Handle newcommand, newenvironment : {{{1
 syn match  texNewCmd				"\\newcommand\>"			nextgroup=texCmdName skipwhite skipnl
@@ -496,9 +519,15 @@ if has("conceal") && &enc == 'utf-8'
 
  " Math Symbols {{{2
  if s:tex_conceal =~ 'm'
+  syn match texMathSymbol '\\angle\>'			contained conceal cchar=∠
   syn match texMathSymbol '\\approx\>'			contained conceal cchar=≈
   syn match texMathSymbol '\\ast\>'			contained conceal cchar=∗
+  syn match texMathSymbol '\\asymp\>'			contained conceal cchar=≍
+  syn match texMathSymbol '\\backepsilon\>'		contained conceal cchar=∍
+  syn match texMathSymbol '\\backsimeq\>'		contained conceal cchar=≃
+  syn match texMathSymbol '\\barwedge\>'		contained conceal cchar=⊼
   syn match texMathSymbol '\\because\>'			contained conceal cchar=∵
+  syn match texMathSymbol '\\between\>'			contained conceal cchar=≬
   syn match texMathSymbol '\\bigcap\>'			contained conceal cchar=∩
   syn match texMathSymbol '\\bigcup\>'			contained conceal cchar=∪
   syn match texMathSymbol '\\bigodot\>'			contained conceal cchar=⊙
@@ -510,34 +539,58 @@ if has("conceal") && &enc == 'utf-8'
   syn match texMathSymbol '\\bigwedge\>'		contained conceal cchar=⋀
   syn match texMathSymbol '\\blacksquare\>'		contained conceal cchar=∎
   syn match texMathSymbol '\\bot\>'			contained conceal cchar=⊥
+  syn match texMathSymbol '\\boxdot\>'			contained conceal cchar=⊡
+  syn match texMathSymbol '\\boxminus\>'		contained conceal cchar=⊟
+  syn match texMathSymbol '\\boxplus\>'			contained conceal cchar=⊞
+  syn match texMathSymbol '\\boxtimes\>'		contained conceal cchar=⊠
+  syn match texMathSymbol '\\bumpeq\>'			contained conceal cchar=≏
+  syn match texMathSymbol '\\Bumpeq\>'			contained conceal cchar=≎
   syn match texMathSymbol '\\cap\>'			contained conceal cchar=∩
+  syn match texMathSymbol '\\Cap\>'			contained conceal cchar=⋒
   syn match texMathSymbol '\\cdot\>'			contained conceal cchar=·
   syn match texMathSymbol '\\cdots\>'			contained conceal cchar=⋯
   syn match texMathSymbol '\\circ\>'			contained conceal cchar=∘
+  syn match texMathSymbol '\\circeq\>'			contained conceal cchar=≗
+  syn match texMathSymbol '\\circledast\>'		contained conceal cchar=⊛
   syn match texMathSymbol '\\circledcirc\>'		contained conceal cchar=⊚
+  syn match texMathSymbol '\\complement\>'		contained conceal cchar=∁
   syn match texMathSymbol '\\cong\>'			contained conceal cchar=≅
   syn match texMathSymbol '\\coprod\>'			contained conceal cchar=∐
   syn match texMathSymbol '\\cup\>'			contained conceal cchar=∪
+  syn match texMathSymbol '\\Cup\>'			contained conceal cchar=⋓
+  syn match texMathSymbol '\\curlyeqprec\>'		contained conceal cchar=⋞
+  syn match texMathSymbol '\\curlyeqsucc\>'		contained conceal cchar=⋟
+  syn match texMathSymbol '\\curlyvee\>'		contained conceal cchar=⋎
+  syn match texMathSymbol '\\curlywedge\>'		contained conceal cchar=⋏
+  syn match texMathSymbol '\\dashv\>'			contained conceal cchar=⊣
   syn match texMathSymbol '\\diamond\>'			contained conceal cchar=⋄
   syn match texMathSymbol '\\div\>'			contained conceal cchar=÷
   syn match texMathSymbol '\\doteq\>'			contained conceal cchar=≐
+  syn match texMathSymbol '\\doteqdot\>'		contained conceal cchar=≑
+  syn match texMathSymbol '\\dotplus\>'			contained conceal cchar=∔
   syn match texMathSymbol '\\dotsb\>'			contained conceal cchar=⋯
   syn match texMathSymbol '\\dotsc\>'			contained conceal cchar=…
   syn match texMathSymbol '\\dots\>'			contained conceal cchar=…
   syn match texMathSymbol '\\dotsi\>'			contained conceal cchar=⋯
   syn match texMathSymbol '\\dotso\>'			contained conceal cchar=…
+  syn match texMathSymbol '\\doublebarwedge\>'		contained conceal cchar=⩞
   syn match texMathSymbol '\\emptyset\>'		contained conceal cchar=∅
+  syn match texMathSymbol '\\eqcirc\>'			contained conceal cchar=≖
+  syn match texMathSymbol '\\eqsim\>'			contained conceal cchar=≂
+  syn match texMathSymbol '\\eqslantgtr\>'		contained conceal cchar=⪖
+  syn match texMathSymbol '\\eqslantless\>'		contained conceal cchar=⪕
   syn match texMathSymbol '\\equiv\>'			contained conceal cchar=≡
   syn match texMathSymbol '\\exists\>'			contained conceal cchar=∃
+  syn match texMathSymbol '\\fallingdotseq\>'		contained conceal cchar=≒
   syn match texMathSymbol '\\forall\>'			contained conceal cchar=∀
+  syn match texMathSymbol '\\ge\>'			contained conceal cchar=≥
   syn match texMathSymbol '\\geq\>'			contained conceal cchar=≥
-  if &ambw == "double"
-   syn match texMathSymbol '\\gg\>'			contained conceal cchar=≫
-  else
-   syn match texMathSymbol '\\gg\>'			contained conceal cchar=⟫
-  endif
+  syn match texMathSymbol '\\geqq\>'			contained conceal cchar=≧
+  syn match texMathSymbol '\\gneqq\>'			contained conceal cchar=≩
+  syn match texMathSymbol '\\gtrdot\>'			contained conceal cchar=⋗
   syn match texMathSymbol '\\gtreqless\>'		contained conceal cchar=⋛
   syn match texMathSymbol '\\gtrless\>'			contained conceal cchar=≷
+  syn match texMathSymbol '\\gtrsim\>'			contained conceal cchar=≳
   syn match texMathSymbol '\\iiint\>'			contained conceal cchar=∭
   syn match texMathSymbol '\\iint\>'			contained conceal cchar=∬
   syn match texMathSymbol '\\Im\>'			contained conceal cchar=ℑ
@@ -546,42 +599,68 @@ if has("conceal") && &enc == 'utf-8'
   syn match texMathSymbol '\\int\>'			contained conceal cchar=∫
   syn match texMathSymbol '\\lceil\>'			contained conceal cchar=⌈
   syn match texMathSymbol '\\ldots\>'			contained conceal cchar=…
+  syn match texMathSymbol '\\le\>'			contained conceal cchar=≤
   syn match texMathSymbol '\\leftarrow\>'		contained conceal cchar=⟵
   syn match texMathSymbol '\\Leftarrow\>'		contained conceal cchar=⟸
   syn match texMathSymbol '\\left('			contained conceal cchar=(
   syn match texMathSymbol '\\left\['			contained conceal cchar=[
   syn match texMathSymbol '\\left\\{'			contained conceal cchar={
+  syn match texMathSymbol '\\leftthreetimes\>'		contained conceal cchar=⋋
   syn match texMathSymbol '\\leq\>'			contained conceal cchar=≤
-  syn match texMathSymbol '\\leq\>'			contained conceal cchar=≤
+  syn match texMathSymbol '\\leqq\>'			contained conceal cchar=≦
+  syn match texMathSymbol '\\lessdot\>'			contained conceal cchar=⋖
   syn match texMathSymbol '\\lesseqgtr\>'		contained conceal cchar=⋚
+  syn match texMathSymbol '\\lesssim\>'			contained conceal cchar=≲
   syn match texMathSymbol '\\lfloor\>'			contained conceal cchar=⌊
-  if &ambw == "double"
-   syn match texMathSymbol '\\ll\>'			contained conceal cchar=≪
-  else
-   syn match texMathSymbol '\\ll\>'			contained conceal cchar=⟪
-  endif
+  syn match texMathSymbol '\\lneqq\>'			contained conceal cchar=≨
+  syn match texMathSymbol '\\ltimes\>'			contained conceal cchar=⋉
   syn match texMathSymbol '\\mapsto\>'			contained conceal cchar=↦
+  syn match texMathSymbol '\\measuredangle\>'		contained conceal cchar=∡
   syn match texMathSymbol '\\mid\>'			contained conceal cchar=∣
   syn match texMathSymbol '\\mp\>'			contained conceal cchar=∓
   syn match texMathSymbol '\\nabla\>'			contained conceal cchar=∇
+  syn match texMathSymbol '\\ncong\>'			contained conceal cchar=≇
+  syn match texMathSymbol '\\ne\>'			contained conceal cchar=≠
+  syn match texMathSymbol '\\neg\>'			contained conceal cchar=¬
   syn match texMathSymbol '\\neq\>'			contained conceal cchar=≠
   syn match texMathSymbol '\\nexists\>'			contained conceal cchar=∄
   syn match texMathSymbol '\\ngeq\>'			contained conceal cchar=≱
+  syn match texMathSymbol '\\ngeqq\>'			contained conceal cchar=≱
   syn match texMathSymbol '\\ngtr\>'			contained conceal cchar=≯
+  syn match texMathSymbol '\\ni\>'			contained conceal cchar=∋
   syn match texMathSymbol '\\nleq\>'			contained conceal cchar=≰
+  syn match texMathSymbol '\\nleqq\>'			contained conceal cchar=≰
   syn match texMathSymbol '\\nless\>'			contained conceal cchar=≮
   syn match texMathSymbol '\\nmid\>'			contained conceal cchar=∤
   syn match texMathSymbol '\\notin\>'			contained conceal cchar=∉
+  syn match texMathSymbol '\\nprec\>'			contained conceal cchar=⊀
   syn match texMathSymbol '\\nsim\>'			contained conceal cchar=≁
+  syn match texMathSymbol '\\nsucc\>'			contained conceal cchar=⊁
+  syn match texMathSymbol '\\ntriangleleft\>'		contained conceal cchar=⋪
+  syn match texMathSymbol '\\ntrianglelefteq\>'		contained conceal cchar=⋬
+  syn match texMathSymbol '\\ntriangleright\>'		contained conceal cchar=⋫
+  syn match texMathSymbol '\\ntrianglerighteq\>'	contained conceal cchar=⋭
+  syn match texMathSymbol '\\nvdash\>'			contained conceal cchar=⊬
+  syn match texMathSymbol '\\nvDash\>'			contained conceal cchar=⊭
+  syn match texMathSymbol '\\nVdash\>'			contained conceal cchar=⊮
   syn match texMathSymbol '\\odot\>'			contained conceal cchar=⊙
   syn match texMathSymbol '\\oint\>'			contained conceal cchar=∮
+  syn match texMathSymbol '\\ominus\>'			contained conceal cchar=⊖
   syn match texMathSymbol '\\oplus\>'			contained conceal cchar=⊕
   syn match texMathSymbol '\\oslash\>'			contained conceal cchar=⊘
   syn match texMathSymbol '\\otimes\>'			contained conceal cchar=⊗
+  syn match texMathSymbol '\\owns\>'			contained conceal cchar=∋
   syn match texMathSymbol '\\partial\>'			contained conceal cchar=∂
   syn match texMathSymbol '\\perp\>'			contained conceal cchar=⊥
+  syn match texMathSymbol '\\pitchfork\>'		contained conceal cchar=⋔
   syn match texMathSymbol '\\pm\>'			contained conceal cchar=±
+  syn match texMathSymbol '\\precapprox\>'		contained conceal cchar=⪷
   syn match texMathSymbol '\\prec\>'			contained conceal cchar=≺
+  syn match texMathSymbol '\\preccurlyeq\>'		contained conceal cchar=≼
+  syn match texMathSymbol '\\preceq\>'			contained conceal cchar=⪯
+  syn match texMathSymbol '\\precnapprox\>'		contained conceal cchar=⪹
+  syn match texMathSymbol '\\precneqq\>'		contained conceal cchar=⪵
+  syn match texMathSymbol '\\precsim\>'			contained conceal cchar=≾
   syn match texMathSymbol '\\prod\>'			contained conceal cchar=∏
   syn match texMathSymbol '\\propto\>'			contained conceal cchar=∝
   syn match texMathSymbol '\\rceil\>'			contained conceal cchar=⌉
@@ -592,27 +671,66 @@ if has("conceal") && &enc == 'utf-8'
   syn match texMathSymbol '\\right)'			contained conceal cchar=)
   syn match texMathSymbol '\\right]'			contained conceal cchar=]
   syn match texMathSymbol '\\right\\}'			contained conceal cchar=}
+  syn match texMathSymbol '\\rightthreetimes\>'		contained conceal cchar=⋌
+  syn match texMathSymbol '\\risingdotseq\>'		contained conceal cchar=≓
+  syn match texMathSymbol '\\rtimes\>'			contained conceal cchar=⋊
   syn match texMathSymbol '\\setminus\>'		contained conceal cchar=∖
   syn match texMathSymbol '\\sim\>'			contained conceal cchar=∼
+  syn match texMathSymbol '\\sphericalangle\>'		contained conceal cchar=∢
   syn match texMathSymbol '\\sqcap\>'			contained conceal cchar=⊓
   syn match texMathSymbol '\\sqcup\>'			contained conceal cchar=⊔
+  syn match texMathSymbol '\\sqsubset\>'		contained conceal cchar=⊏
+  syn match texMathSymbol '\\sqsubseteq\>'		contained conceal cchar=⊑
+  syn match texMathSymbol '\\sqsupset\>'		contained conceal cchar=⊐
+  syn match texMathSymbol '\\sqsupseteq\>'		contained conceal cchar=⊒
   syn match texMathSymbol '\\subset\>'			contained conceal cchar=⊂
+  syn match texMathSymbol '\\Subset\>'			contained conceal cchar=⋐
   syn match texMathSymbol '\\subseteq\>'		contained conceal cchar=⊆
+  syn match texMathSymbol '\\subseteqq\>'		contained conceal cchar=⫅
   syn match texMathSymbol '\\subsetneq\>'		contained conceal cchar=⊊
+  syn match texMathSymbol '\\subsetneqq\>'		contained conceal cchar=⫋
+  syn match texMathSymbol '\\succapprox\>'		contained conceal cchar=⪸
   syn match texMathSymbol '\\succ\>'			contained conceal cchar=≻
+  syn match texMathSymbol '\\succcurlyeq\>'		contained conceal cchar=≽
+  syn match texMathSymbol '\\succeq\>'			contained conceal cchar=⪰
+  syn match texMathSymbol '\\succnapprox\>'		contained conceal cchar=⪺
+  syn match texMathSymbol '\\succneqq\>'		contained conceal cchar=⪶
+  syn match texMathSymbol '\\succsim\>'			contained conceal cchar=≿
   syn match texMathSymbol '\\sum\>'			contained conceal cchar=∑
+  syn match texMathSymbol '\\Supset\>'			contained conceal cchar=⋑
   syn match texMathSymbol '\\supseteq\>'		contained conceal cchar=⊇
+  syn match texMathSymbol '\\supseteqq\>'		contained conceal cchar=⫆
   syn match texMathSymbol '\\supsetneq\>'		contained conceal cchar=⊋
+  syn match texMathSymbol '\\supsetneqq\>'		contained conceal cchar=⫌
   syn match texMathSymbol '\\surd\>'			contained conceal cchar=√
   syn match texMathSymbol '\\therefore\>'		contained conceal cchar=∴
   syn match texMathSymbol '\\times\>'			contained conceal cchar=×
   syn match texMathSymbol '\\to\>'			contained conceal cchar=→
+  syn match texMathSymbol '\\top\>'			contained conceal cchar=⊤
+  syn match texMathSymbol '\\triangleleft\>'		contained conceal cchar=⊲
   syn match texMathSymbol '\\trianglelefteq\>'		contained conceal cchar=⊴
+  syn match texMathSymbol '\\triangleq\>'		contained conceal cchar=≜
+  syn match texMathSymbol '\\triangleright\>'		contained conceal cchar=⊳
   syn match texMathSymbol '\\trianglerighteq\>'		contained conceal cchar=⊵
+  syn match texMathSymbol '\\varnothing\>'		contained conceal cchar=∅
   syn match texMathSymbol '\\vartriangle\>'		contained conceal cchar=∆
+  syn match texMathSymbol '\\vdash\>'			contained conceal cchar=⊢
+  syn match texMathSymbol '\\vDash\>'			contained conceal cchar=⊨
+  syn match texMathSymbol '\\Vdash\>'			contained conceal cchar=⊩
   syn match texMathSymbol '\\vdots\>'			contained conceal cchar=⋮
+  syn match texMathSymbol '\\veebar\>'			contained conceal cchar=⊻
   syn match texMathSymbol '\\vee\>'			contained conceal cchar=∨
+  syn match texMathSymbol '\\Vvdash\>'			contained conceal cchar=⊪
   syn match texMathSymbol '\\wedge\>'			contained conceal cchar=∧
+  syn match texMathSymbol '\\wr\>'			contained conceal cchar=≀
+
+  if &ambw == "double"
+   syn match texMathSymbol '\\gg\>'			contained conceal cchar=≫
+   syn match texMathSymbol '\\ll\>'			contained conceal cchar=≪
+  else
+   syn match texMathSymbol '\\gg\>'			contained conceal cchar=⟫
+   syn match texMathSymbol '\\ll\>'			contained conceal cchar=⟪
+  endif
  endif
 
  " Greek {{{2

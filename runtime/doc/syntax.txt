@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3e.  Last change: 2010 Jul 28
+*syntax.txt*	For Vim version 7.3e.  Last change: 2010 Aug 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2628,6 +2628,14 @@ prefer that spell checking be disabled in comments in LaTeX files.  To do
 this, put the following in your <.vimrc>: >
       let g:tex_comment_nospell= 1
 <
+								*tex-verb*
+Want Spell Checking in Verbatim Zones?~
+
+Often verbatim regions are used for things like source code; seldom does
+one want source code spell-checked.  However, for those of you who do
+want your verbatim zones spell-checked, put the following in your <.vimrc>: >
+	let g:tex_verbspell= 1
+
 								*tex-runon*
 Run-on Comments/Math? ~
 
