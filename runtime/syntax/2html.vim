@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 Jul 28
+" Last Change: 2010 Aug 05
 "
 " Additional contributors:
 "
@@ -22,30 +22,16 @@ let s:cpo_sav = &cpo
 let s:ls  = &ls
 set cpo-=C
 
-" Number lines when explicitely requested or when `number' is set
-if exists("g:html_number_lines")
-  let s:numblines = html_number_lines
-else
-  let s:numblines = &number
-endif
-
 let s:end=line('$')
-" default to using the progress bar
-if exists("g:html_no_progress")
-  let s:html_no_progress = g:html_no_progress
-else
-  let s:html_no_progress = 0
-endif
 
 " Font
 if exists("g:html_font")
-  let s:htmlfont = "'". html_font . "', monospace"
+  let s:htmlfont = "'". g:html_font . "', monospace"
 else
   let s:htmlfont = "monospace"
 endif
 
-" do any option overrides that are needed for current user settings
-let s:old_html_settings = tohtml#OverrideUserSettings()
+let s:settings = tohtml#GetUserSettings()
 
 " When not in gui we can only guess the colors.
 if has("gui_running")
@@ -87,7 +73,7 @@ else
   endfun
 endif
 
-if !exists("g:html_use_css")
+if s:settings.use_css
   " Return opening HTML tag for given highlight id
   function! s:HtmlOpening(id)
     let a = ""
@@ -193,7 +179,7 @@ function! s:CSS1(id)
   return a
 endfun
 
-if exists("g:html_dynamic_folds")
+if s:settings.dynamic_folds
   " compares two folds as stored in our list of folds
   " A fold is "less" than another if it starts at an earlier line number,
   " or ends at a later line number, ties broken by fold level
@@ -275,9 +261,9 @@ endif
 let s:orgbufnr = winbufnr(0)
 let s:origwin_stl = &l:stl
 if expand("%") == ""
-  new Untitled.html
+  exec 'new Untitled.'.(s:settings.use_xhtml ? 'x' : '').'html'
 else
-  new %.html
+  exec 'new %.'.(s:settings.use_xhtml ? 'x' : '').'html'
 endif
 
 " Resize the new window to very small in order to make it draw faster
@@ -308,7 +294,7 @@ set magic
 
 let s:lines = []
 
-if exists("g:use_xhtml")
+if s:settings.use_xhtml
   if s:html_encoding != ""
     call add(s:lines, "<?xml version=\"1.0\" encoding=\"" . s:html_encoding . "\"?>")
   else
@@ -319,20 +305,10 @@ else
   let s:tag_close = '>'
 endif
 
-" Cache html_no_pre in case we have to turn it on for non-css mode
-if exists("g:html_no_pre")
-  let s:old_html_no_pre = g:html_no_pre
-endif
-
-if !exists("g:html_use_css")
-  " Can't put font tags in <pre>
-  let g:html_no_pre=1
-endif
-
 let s:HtmlSpace = ' '
 let s:LeadingSpace = ' '
 let s:HtmlEndline = ''
-if exists("g:html_no_pre")
+if s:settings.no_pre
   let s:HtmlEndline = '<br' . s:tag_close
   let s:LeadingSpace = '&nbsp;'
   let s:HtmlSpace = '\' . s:LeadingSpace
@@ -351,10 +327,13 @@ if s:html_encoding != ""
   call add(s:lines, "<meta http-equiv=\"content-type\" content=\"text/html; charset=" . s:html_encoding . '"' . s:tag_close)
 endif
 call add(s:lines, '<meta name="syntax" content="'.s:current_syntax.'"'.s:tag_close)
+call add(s:lines, '<meta name="settings" content="'.
+      \ join(filter(keys(s:settings),'s:settings[v:val]'),',').
+      \ '"'.s:tag_close)
 
-if exists("g:html_use_css")
-  if exists("g:html_dynamic_folds")
-    if exists("g:html_hover_unfold")
+if s:settings.use_css
+  if s:settings.dynamic_folds
+    if s:settings.hover_unfold
       " if we are doing hover_unfold, use css 2 with css 1 fallback for IE6
       call extend(s:lines, [
 	    \ "<style type=\"text/css\">",
@@ -423,7 +402,7 @@ if exists("g:html_use_css")
 endif
 
 " insert javascript to toggle folds open and closed
-if exists("g:html_dynamic_folds")
+if s:settings.dynamic_folds
   call extend(s:lines, [
 	\ "",
 	\ "<script type='text/javascript'>",
@@ -446,7 +425,7 @@ if exists("g:html_dynamic_folds")
 	\])
 endif
 
-if exists("g:html_no_pre")
+if s:settings.no_pre
   call extend(s:lines, ["</head>", "<body>"])
 else
   call extend(s:lines, ["</head>", "<body>", "<pre>"])
@@ -458,7 +437,7 @@ exe s:orgwin . "wincmd w"
 let s:idlist = []
 
 " set up progress bar in the status line
-if !s:html_no_progress && has("statusline")
+if !s:settings.no_progress
   " ProgressBar Indicator
   let s:progressbar={}
 
@@ -558,19 +537,17 @@ if !s:html_no_progress && has("statusline")
     call self.paint()
   endfun
   " }}}
-  if exists("g:html_dynamic_folds")
+  if s:settings.dynamic_folds
     " to process folds we make two passes through each line
     let s:pgb = s:ProgressBar("Processing folds:", line('$')*2, s:orgwin)
   endif
-else
-  let s:html_no_progress=1
 endif
 
 " First do some preprocessing for dynamic folding. Do this for the entire file
 " so we don't accidentally start within a closed fold or something.
 let s:allfolds = []
 
-if exists("g:html_dynamic_folds")
+if s:settings.dynamic_folds
   let s:lnum = 1
   let s:end = line('$')
   " save the fold text and set it to the default so we can find fold levels
@@ -597,7 +574,7 @@ if exists("g:html_dynamic_folds")
       " open the fold so we can find any contained folds
       execute s:lnum."foldopen"
     else
-      if !s:html_no_progress
+      if !s:settings.no_progress
 	call s:pgb.incr()
 	if s:pgb.needs_redraw
 	  redrawstatus
@@ -632,7 +609,7 @@ if exists("g:html_dynamic_folds")
       " open the fold so we can find any contained folds
       execute s:lnum."foldopen"
     else
-      if !s:html_no_progress
+      if !s:settings.no_progress
 	call s:pgb.incr()
 	if s:pgb.needs_redraw
 	  redrawstatus
@@ -676,17 +653,17 @@ endif
 " stack to keep track of all the folds containing the current line
 let s:foldstack = []
 
-if !s:html_no_progress
+if !s:settings.no_progress
   let s:pgb = s:ProgressBar("Processing lines:", s:end - s:lnum + 1, s:orgwin)
 endif
 
-if s:numblines
+if s:settings.number_lines
   let s:margin = strlen(s:end) + 1
 else
   let s:margin = 0
 endif
 
-if has('folding') && !exists('g:html_ignore_folding')
+if has('folding') && !s:settings.ignore_folding
   let s:foldfillchar = &fillchars[matchend(&fillchars, 'fold:')]
   if s:foldfillchar == ''
     let s:foldfillchar = '-'
@@ -708,12 +685,12 @@ while s:lnum <= s:end
     while s:n > 0
       let s:new = repeat(s:difffillchar, 3)
 
-      if s:n > 2 && s:n < s:filler && !exists("g:html_whole_filler")
+      if s:n > 2 && s:n < s:filler && !s:settings.whole_filler
 	let s:new = s:new . " " . s:filler . " inserted lines "
 	let s:n = 2
       endif
 
-      if !exists("g:html_no_pre")
+      if !s:settings.no_pre
 	" HTML line wrapping is off--go ahead and fill to the margin
 	let s:new = s:new . repeat(s:difffillchar, &columns - strlen(s:new) - s:margin)
       else
@@ -721,7 +698,7 @@ while s:lnum <= s:end
       endif
 
       let s:new = s:HtmlFormat(s:new, "DiffDelete", "")
-      if s:numblines
+      if s:settings.number_lines
 	" Indent if line numbering is on; must be after escaping.
 	let s:new = repeat(s:LeadingSpace, s:margin) . s:new
       endif
@@ -734,7 +711,7 @@ while s:lnum <= s:end
   unlet s:filler
 
   " Start the line with the line number.
-  if s:numblines
+  if s:settings.number_lines
     let s:numcol = repeat(' ', s:margin - 1 - strlen(s:lnum)) . s:lnum . ' '
   else
     let s:numcol = ""
@@ -742,12 +719,12 @@ while s:lnum <= s:end
 
   let s:new = ""
 
-  if has('folding') && !exists('g:html_ignore_folding') && foldclosed(s:lnum) > -1 && !exists('g:html_dynamic_folds')
+  if has('folding') && !s:settings.ignore_folding && foldclosed(s:lnum) > -1 && !s:settings.dynamic_folds
     "
     " This is the beginning of a folded block (with no dynamic folding)
     "
     let s:new = s:numcol . foldtextresult(s:lnum)
-    if !exists("g:html_no_pre")
+    if !s:settings.no_pre
       " HTML line wrapping is off--go ahead and fill to the margin
       let s:new = s:new . repeat(s:foldfillchar, &columns - strlen(s:new))
     endif
@@ -757,7 +734,7 @@ while s:lnum <= s:end
     " Skip to the end of the fold
     let s:new_lnum = foldclosedend(s:lnum)
 
-    if !s:html_no_progress
+    if !s:settings.no_progress
       call s:pgb.incr(s:new_lnum - s:lnum)
     endif
 
@@ -770,7 +747,7 @@ while s:lnum <= s:end
     let s:line = getline(s:lnum)
     let s:len = strlen(s:line)
 
-    if exists("g:html_dynamic_folds")
+    if s:settings.dynamic_folds
       " First insert a closing for any open folds that end on this line
       while !empty(s:foldstack) && get(s:foldstack,0).lastline == s:lnum-1
 	let s:new = s:new."</span></span>"
@@ -791,7 +768,7 @@ while s:lnum <= s:end
 	" Note that dynamic folds require using css so we just use css to take
 	" care of the leading spaces rather than using &nbsp; in the case of
 	" html_no_pre to make it easier
-	if !exists("g:html_no_foldcolumn")
+	if !s:settings.no_foldcolumn
 	  " add fold column that can open the new fold
 	  if s:allfolds[0].level > 1 && s:firstfold
 	    let s:new = s:new . "<a class='toggle-open FoldColumn' href='javascript:toggleFold(\"fold".s:foldstack[0].id."\")'>"
@@ -840,7 +817,7 @@ while s:lnum <= s:end
       " Note that dynamic folds require using css so we just use css to take
       " care of the leading spaces rather than using &nbsp; in the case of
       " html_no_pre to make it easier
-      if !exists("g:html_no_foldcolumn")
+      if !s:settings.no_foldcolumn
 	if empty(s:foldstack)
 	  " add the empty foldcolumn for unfolded lines if there is a fold
 	  " column at all
@@ -859,7 +836,7 @@ while s:lnum <= s:end
     endif
 
     " Now continue with the unfolded line text
-    if s:numblines
+    if s:settings.number_lines
       " TODO: why not use the real highlight name here?
       let s:new = s:new . s:HtmlFormat(s:numcol, "lnr", "")
     endif
@@ -879,10 +856,10 @@ while s:lnum <= s:end
 
     while s:col <= s:len || (s:col == 1 && s:diffattr)
       let s:startcol = s:col " The start column for processing text
-      if !exists('g:html_ignore_conceal') && has('conceal')
+      if !s:settings.ignore_conceal && has('conceal')
 	let s:concealinfo = synconcealed(s:lnum, s:col)
       endif
-      if !exists('g:html_ignore_conceal') && s:concealinfo[0]
+      if !s:settings.ignore_conceal && s:concealinfo[0]
 	let s:col = s:col + 1
 	" Speed loop (it's small - that's the trick)
 	" Go along till we find a change in the match sequence number (ending
@@ -899,7 +876,7 @@ while s:lnum <= s:end
 	      \   && s:diff_id == diff_hlID(s:lnum, s:col) |
 	      \     let s:col = s:col + 1 |
 	      \ endwhile
-	if s:len < &columns && !exists("g:html_no_pre")
+	if s:len < &columns && !s:settings.no_pre
 	  " Add spaces at the end of the raw text line to extend the changed
 	  " line to the full width.
 	  let s:line = s:line . repeat(' ', &columns - virtcol([s:lnum, s:len]) - s:margin)
@@ -913,7 +890,7 @@ while s:lnum <= s:end
 	while s:col <= s:len && s:id == synID(s:lnum, s:col, 1) | let s:col = s:col + 1 | endwhile
       endif
 
-      if exists('g:html_ignore_conceal') || !s:concealinfo[0]
+      if s:settings.ignore_conceal || !s:concealinfo[0]
 	" Expand tabs
 	let s:expandedtab = strpart(s:line, s:startcol - 1, s:col - s:startcol)
 	let s:offset = 0
@@ -960,18 +937,18 @@ while s:lnum <= s:end
   endif
 
   call extend(s:lines, split(s:new.s:HtmlEndline, '\n', 1))
-  if !s:html_no_progress && s:pgb.needs_redraw
+  if !s:settings.no_progress && s:pgb.needs_redraw
     redrawstatus
     let s:pgb.needs_redraw = 0
   endif
   let s:lnum = s:lnum + 1
 
-  if !s:html_no_progress
+  if !s:settings.no_progress
     call s:pgb.incr()
   endif
 endwhile
 
-if exists("g:html_dynamic_folds")
+if s:settings.dynamic_folds
   " finish off any open folds
   while !empty(s:foldstack)
     let s:lines[-1].="</span></span>"
@@ -985,8 +962,8 @@ if exists("g:html_dynamic_folds")
   endif
 endif
 
-if exists("g:html_no_pre")
-  if !exists("g:html_use_css")
+if s:settings.no_pre
+  if !s:settings.use_css
     " Close off the font tag that encapsulates the whole <body>
     call extend(s:lines, ["</font></body>", "</html>"])
   else
@@ -1001,7 +978,7 @@ call setline(1, s:lines)
 unlet s:lines
 
 " Now, when we finally know which, we define the colors and styles
-if exists("g:html_use_css")
+if s:settings.use_css
   1;/<style type="text/+1
 endif
 
@@ -1018,8 +995,8 @@ endif
 " Normal/global attributes
 " For Netscape 4, set <body> attributes too, though, strictly speaking, it's
 " incorrect.
-if exists("g:html_use_css")
-  if exists("g:html_no_pre")
+if s:settings.use_css
+  if s:settings.no_pre
     execute "normal! A\nbody { color: " . s:fgc . "; background-color: " . s:bgc . "; font-family: ". s:htmlfont ."; }\e"
   else
     execute "normal! A\npre { font-family: ". s:htmlfont ."; color: " . s:fgc . "; background-color: " . s:bgc . "; }\e"
@@ -1032,8 +1009,8 @@ else
 endif
 
 " Line numbering attributes
-if s:numblines
-  if exists("g:html_use_css")
+if s:settings.number_lines
+  if s:settings.use_css
     execute "normal! A\n.lnr { " . s:CSS1(hlID("LineNr")) . "}\e"
   else
     execute '%s+^<span class="lnr">\([^<]*\)</span>+' . s:HtmlOpening(hlID("LineNr")) . '\1' . s:HtmlClosing(hlID("LineNr")) . '+g'
@@ -1041,7 +1018,7 @@ if s:numblines
 endif
 
 " Gather attributes for all other classes
-if !s:html_no_progress && !empty(s:idlist)
+if !s:settings.no_progress && !empty(s:idlist)
   let s:pgb = s:ProgressBar("Processing classes:", len(s:idlist),s:newwin)
 endif
 while !empty(s:idlist)
@@ -1053,7 +1030,7 @@ while !empty(s:idlist)
   " If the class has some attributes, export the style, otherwise DELETE all
   " its occurences to make the HTML shorter
   if s:attr != ""
-    if exists("g:html_use_css")
+    if s:settings.use_css
       execute "normal! A\n." . s:id_name . " { " . s:attr . "}"
     else
       " replace spans of just this class name with non-CSS style markup
@@ -1066,12 +1043,12 @@ while !empty(s:idlist)
   else
     execute '%s+<span class="' . s:id_name . '">\([^<]*\)</span>+\1+ge'
     execute '%s+<span class="' . s:id_name . ' \(Diff\%(Add\|Change\|Delete\|Text\)\)">\([^<]*\)</span>+<span class="\1">\2</span>+ge'
-    if exists("g:html_use_css")
+    if s:settings.use_css
       1;/<\/style>/-2
     endif
   endif
 
-  if !s:html_no_progress
+  if !s:settings.no_progress
     call s:pgb.incr()
     if s:pgb.needs_redraw
       redrawstatus
@@ -1085,13 +1062,15 @@ endwhile
 %s+\(https\=://\S\{-}\)\(\([.,;:}]\=\(\s\|$\)\)\|[\\"'<>]\|&gt;\|&lt;\|&quot;\)+<a href="\1">\1</a>\2+ge
 
 " The DTD
-if exists("g:use_xhtml")
-  exe "normal! gg$a\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\e"
+if s:settings.use_xhtml
+  exe "normal! gg$a\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"
+elseif s:settings.use_css && !s:settings.no_pre
+  exe "normal! gg0i<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n"
 else
-  exe "normal! gg0i<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n\e"
+  exe "normal! gg0i<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n"
 endif
 
-if exists("g:use_xhtml")
+if s:settings.use_xhtml
   exe "normal! gg/<html/e\na xmlns=\"http://www.w3.org/1999/xhtml\"\e"
 endif
 
@@ -1113,14 +1092,6 @@ exe s:newwin . "wincmd w"
 exec 'resize' s:old_winheight
 let &l:winfixheight = s:old_winfixheight
 
-" Reset old <pre> settings
-if exists("s:old_html_no_pre")
-  let g:html_no_pre = s:old_html_no_pre
-  unlet s:old_html_no_pre
-elseif exists("g:html_no_pre")
-  unlet g:html_no_pre
-endif
-
 call setwinvar(s:orgwin,'&stl', s:origwin_stl)
 call setwinvar(s:newwin,'&stl', s:newwin_stl)
 let &ls=s:ls
@@ -1129,21 +1100,21 @@ let &ls=s:ls
 unlet s:htmlfont
 unlet s:old_et s:old_paste s:old_icon s:old_report s:old_title s:old_search s:old_magic s:old_more s:old_fdm s:old_winheight s:old_winfixheight
 unlet s:whatterm s:idlist s:lnum s:end s:margin s:fgc s:bgc
-unlet! s:col s:id s:attr s:len s:line s:new s:expandedtab s:numblines s:concealinfo
+unlet! s:col s:id s:attr s:len s:line s:new s:expandedtab s:concealinfo
 unlet! s:orgwin s:newwin s:orgbufnr s:idx s:i s:offset s:ls s:origwin_stl s:newwin_stl s:current_syntax
 if !v:profiling
   delfunc s:HtmlColor
   delfunc s:HtmlFormat
   delfunc s:CSS1
-  if !exists("g:html_use_css")
+  if !s:settings.use_css
     delfunc s:HtmlOpening
     delfunc s:HtmlClosing
   endif
-  if exists("g:html_dynamic_folds")
+  if s:settings.dynamic_folds
     delfunc s:FoldCompare
   endif
 
-  if !s:html_no_progress
+  if !s:settings.no_progress
     delfunc s:ProgressBar
     delfunc s:progressbar.paint
     delfunc s:progressbar.incr
@@ -1152,12 +1123,7 @@ if !v:profiling
 endif
 
 unlet! s:new_lnum s:diffattr s:difffillchar s:foldfillchar s:HtmlSpace s:LeadingSpace s:HtmlEndline s:firstfold s:foldcolumn
-unlet s:foldstack s:allfolds s:foldId s:numcol
-
-unlet! s:html_no_progress
-
-call tohtml#RestoreUserSettings(s:old_html_settings)
-unlet s:old_html_settings
+unlet s:foldstack s:allfolds s:foldId s:numcol s:settings
 
 let &cpo = s:cpo_sav
 unlet! s:cpo_sav

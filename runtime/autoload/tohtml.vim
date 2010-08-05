@@ -1,6 +1,6 @@
 " Vim autoload file for the tohtml plugin.
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 Jul 29
+" Last Change: 2010 Aug 02
 "
 " Additional contributors:
 "
@@ -14,9 +14,9 @@ let s:cpo_sav = &cpo
 set cpo-=C
 
 func! tohtml#Convert2HTML(line1, line2)
-  let old_vals = tohtml#OverrideUserSettings()
+  let s:settings = tohtml#GetUserSettings()
 
-  if !&diff || exists("g:html_diff_one_file")
+  if !&diff || s:settings.diff_one_file
     if a:line2 >= a:line1
       let g:html_start_line = a:line1
       let g:html_end_line = a:line2
@@ -29,8 +29,7 @@ func! tohtml#Convert2HTML(line1, line2)
     let win_list = []
     let buf_list = []
     windo | if &diff | call add(win_list, winbufnr(0)) | endif
-    let save_hwf = exists("g:html_whole_filler")
-    let g:html_whole_filler = 1
+    let s:settings.whole_filler = 1
     let g:html_diff_win_num = 0
     for window in win_list
       exe ":" . bufwinnr(window) . "wincmd w"
@@ -41,16 +40,12 @@ func! tohtml#Convert2HTML(line1, line2)
       call add(buf_list, bufnr('%'))
     endfor
     unlet g:html_diff_win_num
-    if !save_hwf
-      unlet g:html_whole_filler
-    endif
     call tohtml#Diff2HTML(win_list, buf_list)
   endif
 
-  call tohtml#RestoreUserSettings(old_vals)
-
   unlet g:html_start_line
   unlet g:html_end_line
+  unlet s:settings
 endfunc
 
 func! tohtml#Diff2HTML(win_list, buf_list)
@@ -175,7 +170,7 @@ func! tohtml#Diff2HTML(win_list, buf_list)
 
     " Insert javascript to toggle matching folds open and closed in all windows,
     " if dynamic folding is active.
-    if exists("g:html_dynamic_folds")
+    if s:settings.dynamic_folds
       call append(style_start, [
 	    \  "<script type='text/javascript'>",
 	    \  "  <!--",
@@ -205,7 +200,7 @@ func! tohtml#Diff2HTML(win_list, buf_list)
     " up the full browser window (but not more), and be static in size,
     " horizontally scrollable when the lines are too long. Otherwise, the diff
     " is pretty useless for really long lines.
-    if exists("g:html_use_css")
+    if s:settings.use_css
       call append(style_start, [
 	    \ '<style type="text/css">']+
 	    \  style+[
@@ -221,52 +216,81 @@ func! tohtml#Diff2HTML(win_list, buf_list)
   endif
 endfunc
 
-func! tohtml#OverrideUserSettings()
-  let old_settings = {}
-  " make copies of the user-defined settings that we may overrule
-  let old_settings.html_dynamic_folds = exists("g:html_dynamic_folds")
-  let old_settings.html_hover_unfold = exists("g:html_hover_unfold")
-  let old_settings.html_use_css = exists("g:html_use_css")
-
-  " hover opening implies dynamic folding
-  if exists("g:html_hover_unfold")
-    let g:html_dynamic_folds = 1
+" Gets a single user option and sets it in the passed-in Dict, or gives it the
+" default value if the option doesn't actually exist.
+func! tohtml#GetOption(settings, option, default)
+  if exists('g:html_'.a:option)
+    let a:settings[a:option] = g:html_{a:option}
+  else
+    let a:settings[a:option] = a:default
   endif
-
-  " dynamic folding with no foldcolumn implies hover opens
-  if exists("g:html_dynamic_folds") && exists("g:html_no_foldcolumn")
-    let g:html_hover_unfold = 1
-  endif
-
-  " ignore folding overrides dynamic folding
-  if exists("g:html_ignore_folding") && exists("g:html_dynamic_folds")
-    unlet g:html_dynamic_folds
-  endif
-
-  " dynamic folding implies css
-  if exists("g:html_dynamic_folds")
-    let g:html_use_css = 1
-  endif
-
-  return old_settings
 endfunc
 
-func! tohtml#RestoreUserSettings(old_settings)
-  " restore any overridden user options
-  if a:old_settings.html_dynamic_folds
-    let g:html_dynamic_folds = 1
+" returns a Dict containing the values of all user options for 2html, including
+" default values for those not given an explicit value by the user. Discards the
+" html_ prefix of the option for nicer looking code.
+func! tohtml#GetUserSettings()
+  if exists('s:settings')
+    " just restore the known options if we've already retrieved them
+    return s:settings
   else
-    unlet! g:html_dynamic_folds
-  endif
-  if a:old_settings.html_hover_unfold
-    let g:html_hover_unfold = 1
-  else
-    unlet! g:html_hover_unfold
-  endif
-  if a:old_settings.html_use_css
-    let g:html_use_css = 1
-  else
-    unlet! g:html_use_css
+    " otherwise figure out which options are set
+    let user_settings = {}
+
+    " Define the correct option if the old option name exists and we haven't
+    " already defined the correct one. Maybe I'll put out a warnig message about
+    " this sometime and remove the old option entirely at some even later time,
+    " but for now just silently accept the old option.
+    if exists('g:use_xhtml') && !exists("g:html_use_xhtml")
+      let g:html_use_xhtml = g:use_xhtml
+    endif
+
+    " get current option settings with appropriate defaults
+    call tohtml#GetOption(user_settings,    'no_progress',  !has("statusline") )
+    call tohtml#GetOption(user_settings,  'diff_one_file',  0 )
+    call tohtml#GetOption(user_settings,   'number_lines',  &number )
+    call tohtml#GetOption(user_settings,        'use_css',  1 )
+    call tohtml#GetOption(user_settings, 'ignore_conceal',  0 )
+    call tohtml#GetOption(user_settings, 'ignore_folding',  0 )
+    call tohtml#GetOption(user_settings,  'dynamic_folds',  0 )
+    call tohtml#GetOption(user_settings,  'no_foldcolumn',  0 )
+    call tohtml#GetOption(user_settings,   'hover_unfold',  0 )
+    call tohtml#GetOption(user_settings,         'no_pre',  0 )
+    call tohtml#GetOption(user_settings,   'whole_filler',  0 )
+    call tohtml#GetOption(user_settings,      'use_xhtml',  0 )
+    
+    " TODO: encoding? font? These are string options that require more parsing.
+
+    " override those settings that need it
+
+    " ignore folding overrides dynamic folding
+    if user_settings.ignore_folding && user_settings.dynamic_folds
+      let user_settings.dynamic_folds = 0
+      let user_settings.hover_unfold = 0
+    endif
+
+    " hover opening implies dynamic folding
+    if user_settings.hover_unfold
+      let user_settings.dynamic_folds = 1
+    endif
+
+    " dynamic folding with no foldcolumn implies hover opens
+    if user_settings.dynamic_folds && user_settings.no_foldcolumn
+      let user_settings.hover_unfold = 1
+    endif
+
+    " dynamic folding implies css
+    if user_settings.dynamic_folds
+      let user_settings.use_css = 1
+    endif
+
+    " if we're not using CSS we cannot use a pre section because <font> tags
+    " aren't allowed inside a <pre> block
+    if !user_settings.use_css
+      let user_settings.no_pre = 1
+    endif
+
+    return user_settings
   endif
 endfunc
 
