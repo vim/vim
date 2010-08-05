@@ -1041,4 +1041,4 @@ endif
 " Current Syntax: {{{1
 unlet b:extfname
 let   b:current_syntax = "tex"
-" vim: ts=8 fdm=marker ambw=double
+" vim: ts=8 fdm=marker
