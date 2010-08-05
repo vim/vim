@@ -9337,6 +9337,8 @@ expand_path_option(curdir, gap)
 	}
 	else if (buf[0] == NUL) /* relative to current directory */
 	    STRCPY(buf, curdir);
+	else if (path_with_url(buf))
+	    continue;
 	else if (!mch_isFullName(buf))
 	{
 	    /* Expand relative path to their full path equivalent */

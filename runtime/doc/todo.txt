@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3e.  Last change: 2010 Aug 04
+*todo.txt*      For Vim version 7.3e.  Last change: 2010 Aug 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -33,8 +33,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
-test73 doesn't work on MS-Windows.
-
 Better Czech keymap. (Stepnem, 2010 May 4)  Use if no response from Jiri
 Tobisek.
 
@@ -53,6 +51,8 @@ Should readfile() ignore BOM when not in binary mode?
 
 Bug: searching for tags file uses 'suffixesadd', should not happen. (Dominique
 Pelle, 2010 June 28)
+
+Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
 When directory "/tmp/tags" contains "tags1" and "tags2", setting 'tags' to
 "/tmp/tags/*" doesn't pick up these files.  (Simon Ruggier, 2010 Mar 17)
@@ -256,6 +256,8 @@ displayed in a window should return the value that's stored for that buffer.
 There should be a way after an abbreviation has expanded to go back to what
 was typed.  CTRL-G h ?  Would also undo last word or line break inserted
 perhaps.  And undo CTRL-W.  CTRL-G l would redo.
+
+Diff mode out of sync. (Gary Johnson, 2010 Aug 4)
 
 Win32: A --remote command that has a directory name starting with a ( doesn't
 work, the backslash is removed, assuming that it escapes the (. (Valery

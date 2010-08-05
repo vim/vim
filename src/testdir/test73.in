@@ -1,23 +1,99 @@
 Tests for find completion.
 
 STARTTEST
+:" Do all test in a separate window to avoid E211 when we recursively
+:" delete the Xfind directory during cleanup
+:"
+:" This will cause a few errors, do it silently.
+:set visualbell
+:"
+:function! DeleteDirectory(dir)
+: if has("win16") || has("win32") || has("win64")
+:  exec "silent !rmdir /Q /S " . a:dir
+: else
+:  exec "silent !rm -rf " . a:dir
+: endif
+:endfun
+:" On windows a stale "Xfind" directory may exist, remove it so that
+:" we start from a clean state.
+:call DeleteDirectory("Xfind")
+:set nocp
+:new
+:let cwd=getcwd()
 :!mkdir Xfind
-:!mkdir Xfind/in
-:!mkdir Xfind/in/path
+:cd Xfind
+:set path=
+:find 	
+:w! ../test.out
+:close
+:new
+:set path=.
+:find 	
+:w >>../test.out
+:close
+:new
+:set path=.,,
+:find 	
+:w >>../test.out
+:close
+:new
+:set path=./**
+:find 	
+:w >>../test.out
+:close
+:new
+:" We shouldn't find any file at this point, ../test.out must be empty.
+:!mkdir in
+:cd in
+:!mkdir path
+:exec "cd " . cwd
 :e Xfind/file.txt
 SHoly Grail:w
 :e Xfind/in/file.txt
 SJimmy Hoffa:w
+:e Xfind/in/stuff.txt
+SAnother Holy Grail:w
 :e Xfind/in/path/file.txt
 SE.T.:w
 :set path=Xfind/**
-:set nocp
 :find file	
-:w! test.out
+:w >> test.out
 :find file		
 :w >>test.out
 :find file			
 :w >>test.out
+:" Rerun the previous three find completions, using fullpath in 'path'
+:exec "set path=" . cwd . "/Xfind/**"
+:find file	
+:w >> test.out
+:find file		
+:w >>test.out
+:find file			
+:w >>test.out
+:" Same steps again, using relative and fullpath items that point to the same
+:" recursive location.
+:" This is to test that there are no duplicates in the completion list.
+:exec "set path+=Xfind/**"
+:find file	
+:w >> test.out
+:find file		
+:w >>test.out
+:find file			
+:w >>test.out
+:find file		
+:" Test find completion for directory of current buffer, which at this point
+:" is Xfind/in/file.txt.
+:set path=.
+:find st	
+:w >> test.out
+:" Test find completion for empty path item ",," which is the current directory
+:cd Xfind
+:set path=,,
+:find f		
+:w >> ../test.out
+:cd ..
+:q
+:call DeleteDirectory("Xfind")
 :qa!
 ENDTEST
 

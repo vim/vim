@@ -5045,15 +5045,16 @@ globpath(path, file, expand_options)
     {
 	/* Copy one item of the path to buf[] and concatenate the file name. */
 	copy_option_part(&path, buf, MAXPATHL, ",");
-	if (path_with_url(buf))
-	    continue;
-	/*
-	 * FIXME: should we proactively skip 'path' with limiter (/usr/ **N)
-	 * and upward search (;) notations, just like we did with url above?
-	 */
 	if (STRLEN(buf) + STRLEN(file) + 2 < MAXPATHL)
 	{
+# ifdef WIN3264
+	    /* Using the platform's path separator (\) makes vim incorrectly
+	     * treat it as an escape character, use '/' instead. */
+	    if (*buf != NUL && !after_pathsep(buf, buf + STRLEN(buf)))
+		STRCAT(buf, "/");
+# else
 	    add_pathsep(buf);
+# endif
 	    STRCAT(buf, file);
 	    if (ExpandFromContext(&xpc, buf, &num_p, &p,
 			     WILD_SILENT|expand_options) != FAIL && num_p > 0)
