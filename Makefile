@@ -81,7 +81,8 @@ DOSBIN_S =  dosbin_s
 # - Update Vim version number.  For a test version in: src/version.h, Contents,
 #   MAJOR/MINOR above, VIMMAJOR and VIMMINOR in src/Makefile, README*.txt,
 #   runtime/doc/*.txt and nsis/gvim.nsi. Other things in README_os2.txt.  For a
-#   minor/major version: src/GvimExt/GvimExt.reg, src/vim.def, src/vim16.def.
+#   minor/major version: src/GvimExt/GvimExt.reg, src/vim.def, src/vim16.def,
+#   src/gvim.exe.mnf.
 # - Correct included_patches[] in src/version.c.
 # - Compile Vim with GTK, Perl, Python, Python3, TCL, Ruby, MZscheme, Lua (if
 #   you can make it work), Cscope and "huge" features.  Exclude workshop and
