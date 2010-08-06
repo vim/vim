@@ -190,6 +190,7 @@ gui_start()
 #ifdef FEAT_AUTOCMD
     /* If the GUI started successfully, trigger the GUIEnter event, otherwise
      * the GUIFailed event. */
+    gui_mch_update();
     apply_autocmds(gui.in_use ? EVENT_GUIENTER : EVENT_GUIFAILED,
 						   NULL, NULL, FALSE, curbuf);
 #endif
