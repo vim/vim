@@ -1,4 +1,4 @@
-*farsi.txt*     For Vim version 7.3e.  Last change: 2005 Mar 29
+*farsi.txt*     For Vim version 7.3e.  Last change: 2010 Aug 07
 
 
 		  VIM REFERENCE MANUAL    by Mortaza Ghassab Shiran
@@ -62,8 +62,8 @@ o  Toggling between Farsi ISIR-3342 standard encoding and Vim Farsi via F9
 Farsi Fonts					*farsi fonts*
 -----------
 
-If the "extra" archive has been unpacked, the following files are found in the
-subdirectories of the '$VIM/farsi' directory:
+The following files are found in the subdirectories of the '$VIM/farsi/fonts'
+directory:
 
    +  far-a01.pcf    X Windows fonts for Unix including Linux systems
    +  far-a01.bf     X Windows fonts for SunOS

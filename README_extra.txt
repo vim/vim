@@ -1,61 +1,54 @@
 README_extra.txt for version 7.3e of Vim: Vi IMproved.
 
-The extra archive of Vim is to be used in combination with the source archive
-(vim-7.2-src.tar.gz).  The extra archive is useless without it.
-
-For more information, see the "README.txt" file that comes with the runtime
-archive (vim-7.2-rt.tar.gz).  To be able to run Vim you MUST get the runtime
-archive too!
-
-The extra archive plus the source and runtime archives make up the complete
-sources of Vim for all systems.
+These extra files of Vim are for special purposes.  This README explains what
+the files are for.  For general information about Vim, see the "README.txt"
+file.
 
 
-Some of the things that the extra archive contains:
+farsi/*			Files for the Farsi (persian) language.  If you don't
+			know what Farsi is, this is not for you.
 
-Farsi		Files for the Farsi (persian) language.  If you don't know
-		what Farsi is, this is not for you.
+src/if_sniff.*		Interface to SNiFF.  If you don't know what SNiFF is,
+			this is not for you.
 
-if_sniff	Interface to SNiFF.  If you don't know what SNiFF is, this is
-		not for you.
+src/os_amiga.*		Files for the Amiga port.
 
-os_amiga	Files for the Amiga port.
+src/gui_riscos.*
+src/os_riscos.*		Files for the RISC OS port.
 
-gui_riscos
-os_riscos	Files for the RISC OS port.
+src/gui_beos.*
+src/os_beos.*		Files for the BeOS port.
 
-gui_beos
-os_beos		Files for the BeOS port.
+src/os_msdos.*
+src/os_dos.*		Files for the MS-DOS port.
 
-os_msdos
-os_dos		Files for the MS-DOS port.
+src/gui_mac.*
+src/os_mac.*		Files for the Mac port.
 
-gui_mac
-os_mac		Files for the Mac port.
+src/os_mint.8		Files for the Atari Mint port.
 
-os_mint		Files for the Atari Mint port.
+src/os_os2*		Files for the OS/2 port.
+src/tee/*		Extra program for OS/2.
 
-os_os2		Files for the OS/2 port.
-tee		Extra program for OS/2.
+src/os_vms*		Files for the VMS port.
 
-os_vms		Files for the VMS port.
+src/os_w32*
+src/os_win32.*		Files for the Win32 port.
 
-os_w32
-os_win32	Files for the Win32 port.
+src/gui_w32.*		Files for the Win32 GUI.
+src/gui_w48.*		Files for the Win32 and Win16 GUI.
+src/Make_mvc.mak	MS Visual C++ makefile for the Win32 GUI.
+runtime/rgb.txt		File with color definitions for the Win32 GUI.
 
-gui_w32		Files for the Win32 GUI.
-gui_w48		Files for the Win32 and Win16 GUI.
-Make_mvc.mak	MS Visual C++ makefile for the Win32 GUI.
-rgb.txt		File with color definitions for the Win32 GUI.
+src/if_ole.*		OLE automation interface, for MS Windows 95 and NT.
 
-if_ole		OLE automation interface, for MS Windows 95 and NT.
+src/VisVim/*		Integration of Win32 GUI with MS Visual Developer
+			Studio.
 
-VisVim		Integration of Win32 GUI with MS Visual Developer Studio.
+src/GvimExt/*		DLL for the "Edit with Vim" context menu entry
 
-GvimExt		DLL for the "Edit with Vim" context menu entry
+nsis/*			NSIS script to build the self-installing MS-Windows exe
 
-nsis		NSIS script to build the self-installing MS-Windows exe
+runtime/doc/*.man	Preprocessed manual pages.
 
-*.man		Preprocessed manual pages.
-
-file_select.vim	Vim script to browse directories (Unix only).
+runtime/macros/file_select.vim	Vim script to browse directories (Unix only).

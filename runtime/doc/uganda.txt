@@ -1,4 +1,4 @@
-*uganda.txt*    For Vim version 7.3e.  Last change: 2009 Dec 27
+*uganda.txt*    For Vim version 7.3e.  Last change: 2010 Aug 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -235,7 +235,7 @@ Canada:		Contact Kibaale Children's Fund (KCF) in Surrey, Canada.  They
 		will receive a tax receipt which can be submitted with your
 		tax return.
 
-Holland:	Transfer to the account of "Stichting ICCF Holland" in Venlo.
+Holland:	Transfer to the account of "Stichting ICCF Holland" in Lisse.
 		This will allow for tax deduction if you live in Holland.
 			Postbank, nr. 4548774
 
@@ -267,11 +267,11 @@ Others:		Transfer to one of these accounts if possible:
 		    Postbank, account 4548774
 				Swift code: INGB NL 2A
 				IBAN: NL47 PSTB 0004 5487 74
-			under the name "stichting ICCF Holland", Venlo
+			under the name "stichting ICCF Holland", Lisse
 		    If that doesn't work:
-		    Rabobank Venlo, account 3765.05.117
+		    Rabobank Lisse, account 3765.05.117
 				Swift code: RABO NL 2U
-			under the name "Bram Moolenaar", Venlo
+			under the name "Bram Moolenaar", Lisse
 		Otherwise, send a check in euro or US dollars to the address
 		below.  Minimal amount: $70 (my bank does not accept smaller
 		amounts for foreign check, sorry)

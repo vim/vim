@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3e.  Last change: 2010 Aug 05
+*todo.txt*      For Vim version 7.3e.  Last change: 2010 Aug 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,18 +36,19 @@ Before release 7.3:
 Better Czech keymap. (Stepnem, 2010 May 4)  Use if no response from Jiri
 Tobisek.
 
-Use Dutch spell files from:
-http://extensions.services.openoffice.org/en/project/dict-nl
-Looks like this is newer than the new wordlist for Dutch:
-http://www.opentaal.org/bestanden/1_10/nl_NL-Pack
-
 test72 causes a beep for using "u" when it doesn't work.
+
+:!cmd completion doesn't work on Windows. (Yue Wu).
+Problem with space in path?
 
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
 Patch to make more characters work in dialogs. (Yankwei Jia, 2010 Aug 4)
 
 Should readfile() ignore BOM when not in binary mode?
+
+GTK: accented characters are drawn one character too much to the left. (Boyko
+Bantchev, 2010 Aug 5)
 
 Bug: searching for tags file uses 'suffixesadd', should not happen. (Dominique
 Pelle, 2010 June 28)
@@ -176,6 +177,9 @@ List of encoding aliases. (Takao Fujiware, 2009 Jul 18)
 Are they all OK?  Update Jul 22.
 
 Win32: Expanding 'path' runs into a maximum size limit. (bgold12, 2009 Nov 15)
+
+Putting a Visual block while 'visualedit' is "all" does not leave the cursor
+on the first character. (John Beckett, 2010 Aug 7)
 
 Setting 'tags' to "tagsdir/*" does not find "tagsdir/tags". (Steven K. Wong,
 2009 Jul 18)
@@ -1976,7 +1980,7 @@ Problems that will (probably) not be solved:
     loop is never quit, which is a wrong assumption.  Also, it overwrites the
     file with different file permissions, which is a privacy issue.  This
     needs to be fixed in GTK.  A solution in Vim would be really complicated.
-    (2008 Jul 31)
+    (2008 Jul 31)  This appears to be fixed in Vim 7.3.
 -   xterm title: The following scenario may occur (esp. when running the Vim
     test script): Vim 1 sets the title to "file1", then restores the title to
     "xterm" with an ESC sequence when exiting.  Vim 2 obtains the old title

@@ -1,4 +1,4 @@
-*os_risc.txt*   For Vim version 7.3e.  Last change: 2008 Jun 28
+*os_risc.txt*   For Vim version 7.3e.  Last change: 2010 Aug 07
 
 
 		  VIM REFERENCE MANUAL    by Thomas Leonard
@@ -275,7 +275,6 @@ Downloading everything you need:
 
 - Get the latest source distribution (see www.vim.org)
 - Get the runtime environment files (e.g. these help files)
-- Get the "extra" archive (contains the RISC OS specific bits)
 - Get the RISC OS binary distribution (if possible)
 
 
