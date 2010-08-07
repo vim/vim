@@ -2591,18 +2591,21 @@ u_undoredo(undo)
     if (curhead->uh_cursor.lnum + 1 == curwin->w_cursor.lnum
 						 && curwin->w_cursor.lnum > 1)
 	--curwin->w_cursor.lnum;
-    if (curhead->uh_cursor.lnum == curwin->w_cursor.lnum)
+    if (curwin->w_cursor.lnum <= curbuf->b_ml.ml_line_count)
     {
-	curwin->w_cursor.col = curhead->uh_cursor.col;
+	if (curhead->uh_cursor.lnum == curwin->w_cursor.lnum)
+	{
+	    curwin->w_cursor.col = curhead->uh_cursor.col;
 #ifdef FEAT_VIRTUALEDIT
-	if (virtual_active() && curhead->uh_cursor_vcol >= 0)
-	    coladvance((colnr_T)curhead->uh_cursor_vcol);
-	else
-	    curwin->w_cursor.coladd = 0;
+	    if (virtual_active() && curhead->uh_cursor_vcol >= 0)
+		coladvance((colnr_T)curhead->uh_cursor_vcol);
+	    else
+		curwin->w_cursor.coladd = 0;
 #endif
+	}
+	else
+	    beginline(BL_SOL | BL_FIX);
     }
-    else if (curwin->w_cursor.lnum <= curbuf->b_ml.ml_line_count)
-	beginline(BL_SOL | BL_FIX);
     else
     {
 	/* We get here with the current cursor line being past the end (eg
