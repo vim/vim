@@ -247,14 +247,10 @@ distclean: clean
 checkclean:
 	rm -f *.ck
 
-#
-# NOTE: If you get an error for gvimext.cpp not found, you need to unpack the
-# extra archive.
-#
-$(PACKAGE).pot: ../*.c ../if_perl.xs ../GvimExt/gvimext.cpp ../globals.h
+$(PACKAGE).pot: ../*.c ../if_perl.xs ../GvimExt/gvimext.cpp ../globals.h ../if_py_both.h
 	cd ..; $(XGETTEXT) --default-domain=$(PACKAGE) \
 		--add-comments --keyword=_ --keyword=N_ \
-		*.c if_perl.xs GvimExt/gvimext.cpp globals.h
+		*.c if_perl.xs GvimExt/gvimext.cpp globals.h if_py_both.h
 	mv -f ../$(PACKAGE).po $(PACKAGE).pot
 
 update-po: $(LANGUAGES)
