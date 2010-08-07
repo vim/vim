@@ -30,7 +30,7 @@ unlet b:current_syntax
 syn case match
 
 " Include Java syntax
-syn include @jspJava <sfile>:p:h/java.vim
+syn include @jspJava syntax/java.vim
 
 syn region jspScriptlet matchgroup=jspTag start=/<%/  keepend end=/%>/ contains=@jspJava
 syn region jspComment			  start=/<%--/	      end=/--%>/
@@ -48,7 +48,8 @@ syn keyword jspCommandArg contained code codebase name archive align height
 syn keyword jspCommandArg contained width hspace vspace jreversion nspluginurl iepluginurl
 
 " Redefine htmlTag so that it can contain jspExpr
-syn region htmlTag start=+<[^/%]+ end=+>+ contains=htmlTagN,htmlString,htmlArg,htmlValue,htmlTagError,htmlEvent,htmlCssDefinition,@htmlPreproc,@htmlArgCluster,jspExpr
+syn clear htmlTag
+syn region htmlTag start=+<[^/%]+ end=+>+ contains=htmlTagN,htmlString,htmlArg,htmlValue,htmlTagError,htmlEvent,htmlCssDefinition,@htmlPreproc,@htmlArgCluster,jspExpr,javaScript
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
