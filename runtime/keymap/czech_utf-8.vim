@@ -1,17 +1,17 @@
-" Maintainer:   Jiri Tobisek <tobich@yahoo.com>
-" Last Changed: 2001 Sep 30
+" Maintainer: Štěpán Němec <stepnem@gmail.com>
+" Last Changed: Fri 25 Jun 2010 22:08:43 CEST
 
-let b:keymap = "czech"
+let b:keymap_name = "czech"
 
 loadkey
 0	é
 9	í
-8	÷
+8	á
 7	ý
-6	ŵ
+6	ž
 5	ř
-4	ī
-3	ŷ
+4	č
+3	š
 2	ě
 1	+
 `	;
@@ -30,7 +30,7 @@ $	4
 [	ú
 {	/
 '	§
-"	!
+\"	!
 ;	ů
 :	"
 /	-
@@ -44,35 +44,43 @@ $	4
 \\e	ë
 \\i	ï
 \\o	ö
-\\u	å
-\\y	ÿ
+\\u	ü
+\\z	ÿ
 \\A	Ä
 \\E	Ë
-\\I	ì
+\\I	Ï
 \\O	Ö
-\\U	ö
-\\Y	Ÿ
-=a	÷
+\\U	Ü
+\\Z	Ÿ
+=a	á
 =e	é
 =i	í
 =o	ó
 =u	ú
-=y	ý
+=z	ý
 =A	Á
 =E	É
-=I	ë
+=I	Í
 =O	Ó
-=U	ù
-=Y	û
-+c	ī
-+d	Ĭ
+=U	Ú
+=Z	Ý
++c	č
++d	ď
 +e	ě
 +n	ň
 +r	ř
-+s	ŷ
-+t	š
-+z	ŵ
-"y	z	If you prefere 'quertz' keyboard
-"Y	Z	instead of 'querty',
-"z	y	just uncomment these
-"Z	Y	four last lines
++s	š
++t	ť
++y	ž
++C	Č
++D	Ď
++E	Ě
++N	Ň
++R	Ř
++S	Š
++T	Ť
++Y	Ž
+y	z
+Y	Z
+z	y
+Z	Y
