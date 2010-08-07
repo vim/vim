@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Français)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-21 20:45+0200\n"
-"PO-Revision-Date: 2010-07-18 21:38+0200\n"
+"POT-Creation-Date: 2010-08-06 21:08+0200\n"
+"PO-Revision-Date: 2010-08-06 21:31+0200\n"
 "Last-Translator: Dominique Pellé <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -37,6 +37,13 @@ msgstr "E818: le test de sha256 a échoué"
 
 msgid "E819: Blowfish test failed"
 msgstr "E819: le test de blowfish a échoué"
+
+# DB - TODO : Trouver une traduction valable et attestée pour "location".
+msgid "[Location List]"
+msgstr "[Liste des emplacements]"
+
+msgid "[Quickfix List]"
+msgstr "[Liste Quickfix]"
 
 # AB - Il faut respecter l'esprit plus que la lettre.
 msgid "E82: Cannot allocate any buffer, exiting..."
@@ -201,13 +208,6 @@ msgid ""
 msgstr ""
 "\n"
 "# Liste des tampons :\n"
-
-# DB - TODO : Trouver une traduction valable et attestée pour "location".
-msgid "[Location List]"
-msgstr "[Liste des emplacements]"
-
-msgid "[Quickfix List]"
-msgstr "[Liste Quickfix]"
 
 msgid "[Scratch]"
 msgstr "[Brouillon]"
@@ -2303,12 +2303,15 @@ msgstr "Haut"
 msgid "Down"
 msgstr "Bas"
 
+#. 'Find Next' button
 msgid "Find Next"
 msgstr "Suivant"
 
+#. 'Replace' button
 msgid "Replace"
 msgstr "Remplacer"
 
+#. 'Replace All' button
 msgid "Replace All"
 msgstr "Remplacer tout"
 
@@ -2824,6 +2827,9 @@ msgstr "numéro de ligne hors limites"
 msgid "not allowed in the Vim sandbox"
 msgstr "non autorisé dans le bac à sable"
 
+msgid "E999: Python: Cannot use :py and :py3 in one session"
+msgstr "E999: Python : impossible d'utiliser :py et :py3 dans la même session"
+
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
 "loaded."
@@ -2843,51 +2849,9 @@ msgstr "softspace doit être un nombre entier"
 msgid "invalid attribute"
 msgstr "attribut invalide"
 
-msgid "writelines() requires list of strings"
-msgstr "writelines() requiert une liste de chaînes"
-
-msgid "E264: Python: Error initialising I/O objects"
-msgstr "E264: Python : Erreur d'initialisation des objets d'E/S"
-
-msgid "attempt to refer to deleted buffer"
-msgstr "tentative de référencer un tampon effacé"
-
-msgid "line number out of range"
-msgstr "numéro de ligne hors limites"
-
 #, c-format
 msgid "<buffer object (deleted) at %p>"
 msgstr "<objet tampon (effacé) à %p>"
-
-msgid "invalid mark name"
-msgstr "nom de marque invalide"
-
-msgid "no such buffer"
-msgstr "Ce tampon n'existe pas"
-
-msgid "attempt to refer to deleted window"
-msgstr "tentative de référencer une fenêtre effacée"
-
-msgid "readonly attribute"
-msgstr "attribut en lecture seule"
-
-msgid "cursor position outside buffer"
-msgstr "curseur positionné en dehors du tampon"
-
-#, c-format
-msgid "<window object (deleted) at %p>"
-msgstr "<objet fenêtre (effacé) à %p>"
-
-#, c-format
-msgid "<window object (unknown) at %p>"
-msgstr "<objet fenêtre (inconnu) à %p>"
-
-#, c-format
-msgid "<window %d>"
-msgstr "<fenêtre %d>"
-
-msgid "no such window"
-msgstr "Cette fenêtre n'existe pas"
 
 msgid "E265: $_ must be an instance of String"
 msgstr "E265: $_ doit être une instance de chaîne (String)"
@@ -3023,6 +2987,9 @@ msgstr "pas encore implémenté"
 msgid "cannot set line(s)"
 msgstr "Impossible de remettre la/les ligne(s)"
 
+msgid "invalid mark name"
+msgstr "nom de marque invalide"
+
 msgid "mark not set"
 msgstr "marque non positionnée"
 
@@ -3032,6 +2999,9 @@ msgstr "ligne %d colonne %d"
 
 msgid "cannot insert/append line"
 msgstr "Impossible d'insérer/ajouter de lignes"
+
+msgid "line number out of range"
+msgstr "numéro de ligne hors limites"
 
 msgid "unknown flag: "
 msgstr "drapeau inconnu : "
@@ -4560,6 +4530,12 @@ msgstr "E531: Utilisez \":gui\" pour démarrer l'interface graphique"
 msgid "E589: 'backupext' and 'patchmode' are equal"
 msgstr "E589: 'backupext' et 'patchmode' sont égaux"
 
+msgid "E834: Conflicts with value of 'listchars'"
+msgstr "E834: Conflits avec la valeur de 'listchars'"
+
+msgid "E835: Conflicts with value of 'fillchars'"
+msgstr "E835: Conflits avec la valeur de 'fillchars'"
+
 msgid "E617: Cannot be changed in the GTK+ 2 GUI"
 msgstr "E617: Non modifiable dans l'interface graphique GTK+ 2"
 
@@ -5905,8 +5881,8 @@ msgstr "Vim : Erreur lors de la lecture de l'entrée, sortie...\n"
 msgid "Used CUT_BUFFER0 instead of empty selection"
 msgstr "CUT_BUFFER0 utilisé plutôt qu'une sélection vide"
 
-#. This happens when the FileChangedRO autocommand changes the file in
-#. * a way it becomes shorter.
+#. This happens when the FileChangedRO autocommand changes the
+#. * file in a way it becomes shorter.
 msgid "E834: Line count changed unexpectedly"
 msgstr "E834: Le nombre de lignes a été changé inopinément"
 
@@ -6802,3 +6778,39 @@ msgstr "La recherche a atteint le BAS, et continue en HAUT"
 #, c-format
 msgid "Need encryption key for \"%s\""
 msgstr "Besoin de la clé de chiffrement pour \"%s\""
+
+msgid "writelines() requires list of strings"
+msgstr "writelines() requiert une liste de chaînes"
+
+msgid "E264: Python: Error initialising I/O objects"
+msgstr "E264: Python : Erreur d'initialisation des objets d'E/S"
+
+msgid "no such buffer"
+msgstr "Ce tampon n'existe pas"
+
+msgid "attempt to refer to deleted window"
+msgstr "tentative de référencer une fenêtre effacée"
+
+msgid "readonly attribute"
+msgstr "attribut en lecture seule"
+
+msgid "cursor position outside buffer"
+msgstr "curseur positionné en dehors du tampon"
+
+#, c-format
+msgid "<window object (deleted) at %p>"
+msgstr "<objet fenêtre (effacé) à %p>"
+
+#, c-format
+msgid "<window object (unknown) at %p>"
+msgstr "<objet fenêtre (inconnu) à %p>"
+
+#, c-format
+msgid "<window %d>"
+msgstr "<fenêtre %d>"
+
+msgid "no such window"
+msgstr "Cette fenêtre n'existe pas"
+
+msgid "attempt to refer to deleted buffer"
+msgstr "tentative de référencer un tampon effacé"

@@ -23,8 +23,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Esperanto)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-21 20:45+0200\n"
-"PO-Revision-Date: 2010-07-21 21:37+0200\n"
+"POT-Creation-Date: 2010-08-06 21:08+0200\n"
+"PO-Revision-Date: 2010-08-06 21:34+0200\n"
 "Last-Translator: Dominique PELLÉ <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -45,6 +45,13 @@ msgstr "E818: Testo de sha256 fiaskis"
 
 msgid "E819: Blowfish test failed"
 msgstr "E819: Testo de blowfish fiaskis"
+
+msgid "[Location List]"
+msgstr "[Listo de lokoj]"
+
+# DP: Ĉu vere indas traduki Quickfix?
+msgid "[Quickfix List]"
+msgstr "[Listo de rapidriparoj]"
 
 msgid "E82: Cannot allocate any buffer, exiting..."
 msgstr "E82: Ne eblas disponigi iun ajn bufron, nun eliras..."
@@ -186,13 +193,6 @@ msgid ""
 msgstr ""
 "\n"
 "# Listo de bufroj:\n"
-
-msgid "[Location List]"
-msgstr "[Listo de lokoj]"
-
-# DP: Ĉu vere indas traduki Quickfix?
-msgid "[Quickfix List]"
-msgstr "[Listo de rapidriparoj]"
 
 msgid "[Scratch]"
 msgstr "[Malneto]"
@@ -2106,12 +2106,15 @@ msgstr "Supren"
 msgid "Down"
 msgstr "Suben"
 
+#. 'Find Next' button
 msgid "Find Next"
 msgstr "Trovi sekvantan"
 
+#. 'Replace' button
 msgid "Replace"
 msgstr "Anstataŭigi"
 
+#. 'Replace All' button
 msgid "Replace All"
 msgstr "Anstataŭigi ĉiujn"
 
@@ -2605,6 +2608,9 @@ msgstr "numero de linio ekster limoj"
 msgid "not allowed in the Vim sandbox"
 msgstr "nepermesita en sabloludejo de Vim"
 
+msgid "E999: Python: Cannot use :py and :py3 in one session"
+msgstr "E999: Pitono: Ne eblas uzi :py kaj :py3 en la sama seanco"
+
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
 "loaded."
@@ -2624,51 +2630,9 @@ msgstr "malmolspaceto (softspace) devas esti entjero"
 msgid "invalid attribute"
 msgstr "nevalida atributo"
 
-msgid "writelines() requires list of strings"
-msgstr "writelines() bezonas liston de ĉenoj"
-
-msgid "E264: Python: Error initialising I/O objects"
-msgstr "E264: Pitono: Eraro de pravalorizo de eneligaj objektoj"
-
-msgid "attempt to refer to deleted buffer"
-msgstr "provo de referenco al forviŝita bufro"
-
-msgid "line number out of range"
-msgstr "numero de linio ekster limoj"
-
 #, c-format
 msgid "<buffer object (deleted) at %p>"
 msgstr "<bufra objekto (forviŝita) ĉe %p>"
-
-msgid "invalid mark name"
-msgstr "nevalida nomo de marko"
-
-msgid "no such buffer"
-msgstr "ne estas tia bufro"
-
-msgid "attempt to refer to deleted window"
-msgstr "provo de referenco al forviŝita fenestro"
-
-msgid "readonly attribute"
-msgstr "nurlegebla atributo"
-
-msgid "cursor position outside buffer"
-msgstr "kursoro poziciita ekster bufro"
-
-#, c-format
-msgid "<window object (deleted) at %p>"
-msgstr "<fenestra objekto (forviŝita) ĉe %p>"
-
-#, c-format
-msgid "<window object (unknown) at %p>"
-msgstr "<objekta fenestro (nekonata) ĉe %p>"
-
-#, c-format
-msgid "<window %d>"
-msgstr "<fenestro %d>"
-
-msgid "no such window"
-msgstr "ne estas tia fenestro"
 
 msgid "E265: $_ must be an instance of String"
 msgstr "E265: $_ devas esti apero de Ĉeno"
@@ -2802,6 +2766,9 @@ msgstr "ne jam realigita"
 msgid "cannot set line(s)"
 msgstr "ne eblas meti la linio(j)n"
 
+msgid "invalid mark name"
+msgstr "nevalida nomo de marko"
+
 msgid "mark not set"
 msgstr "marko ne estas metita"
 
@@ -2811,6 +2778,9 @@ msgstr "linio %d kolumno %d"
 
 msgid "cannot insert/append line"
 msgstr "ne eblas enmeti/postaldoni linion"
+
+msgid "line number out of range"
+msgstr "numero de linio ekster limoj"
 
 msgid "unknown flag: "
 msgstr "nekonata flago: "
@@ -4328,6 +4298,12 @@ msgstr "E531: Uzu \":gui\" por lanĉi la grafikan interfacon"
 msgid "E589: 'backupext' and 'patchmode' are equal"
 msgstr "E589: 'backupext' kaj 'patchmode' estas egalaj"
 
+msgid "E834: Conflicts with value of 'listchars'"
+msgstr "E834: Konfliktoj kun la valoro de 'listchars'"
+
+msgid "E835: Conflicts with value of 'fillchars'"
+msgstr "E835: Konfliktoj kun la valoro de 'fillchars'"
+
 msgid "E617: Cannot be changed in the GTK+ 2 GUI"
 msgstr "E617: Ne ŝanĝeblas en la grafika interfaco GTK+ 2"
 
@@ -5657,8 +5633,8 @@ msgstr "Vim: Eraro dum legado de eniro, elironta...\n"
 msgid "Used CUT_BUFFER0 instead of empty selection"
 msgstr "Uzis CUT_BUFFER0 anstataŭ malplenan apartigon"
 
-#. This happens when the FileChangedRO autocommand changes the file in
-#. * a way it becomes shorter.
+#. This happens when the FileChangedRO autocommand changes the
+#. * file in a way it becomes shorter.
 msgid "E834: Line count changed unexpectedly"
 msgstr "E834: Nombro de linioj ŝanĝiĝis neatendite"
 
@@ -6549,3 +6525,39 @@ msgstr "serĉo atingis SUBON, daŭrigonte al SUPRO"
 #, c-format
 msgid "Need encryption key for \"%s\""
 msgstr "Ŝlosilo de ĉifrado bezonata por \"%s\""
+
+msgid "writelines() requires list of strings"
+msgstr "writelines() bezonas liston de ĉenoj"
+
+msgid "E264: Python: Error initialising I/O objects"
+msgstr "E264: Pitono: Eraro de pravalorizo de eneligaj objektoj"
+
+msgid "no such buffer"
+msgstr "ne estas tia bufro"
+
+msgid "attempt to refer to deleted window"
+msgstr "provo de referenco al forviŝita fenestro"
+
+msgid "readonly attribute"
+msgstr "nurlegebla atributo"
+
+msgid "cursor position outside buffer"
+msgstr "kursoro poziciita ekster bufro"
+
+#, c-format
+msgid "<window object (deleted) at %p>"
+msgstr "<fenestra objekto (forviŝita) ĉe %p>"
+
+#, c-format
+msgid "<window object (unknown) at %p>"
+msgstr "<objekta fenestro (nekonata) ĉe %p>"
+
+#, c-format
+msgid "<window %d>"
+msgstr "<fenestro %d>"
+
+msgid "no such window"
+msgstr "ne estas tia fenestro"
+
+msgid "attempt to refer to deleted buffer"
+msgstr "provo de referenco al forviŝita bufro"
