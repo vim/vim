@@ -4005,8 +4005,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    ptr += mb_l - 1;
 
 		/* If a double-width char doesn't fit at the left side display
-		 * a '<' in the first column. */
-		if (n_skip > 0 && mb_l > 1)
+		 * a '<' in the first column.  Don't do this for unprintable
+		 * charactes. */
+		if (n_skip > 0 && mb_l > 1 && n_extra == 0)
 		{
 		    n_extra = 1;
 		    c_extra = '<';

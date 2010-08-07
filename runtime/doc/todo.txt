@@ -33,9 +33,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
-Better Czech keymap. (Stepnem, 2010 May 4)  Use if no response from Jiri
-Tobisek.
-
 :!cmd completion doesn't work on Windows. (Yue Wu).
 Problem with space in path?
 
