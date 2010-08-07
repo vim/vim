@@ -2,12 +2,13 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Vim 7.0\n"
+"Project-Id-Version: Vim 7.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-07-11 19:38-0300\n"
-"PO-Revision-Date: 2008-07-13 13:14-0300\n"
+"POT-Creation-Date: 2010-08-04 20:05-0300\n"
+"PO-Revision-Date: 2010-08-04 20:36-0300\n"
 "Last-Translator: Eduardo S. Dobay <edudobay@gmail.com>\n"
 "Language-Team: Brazilian Portuguese <pt-br@li.org>\n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -157,6 +158,9 @@ msgstr "[Lista de locais]"
 msgid "[Quickfix List]"
 msgstr "[Lista quickfix]"
 
+msgid "[Scratch]"
+msgstr "[Rascunho]"
+
 msgid ""
 "\n"
 "--- Signs ---"
@@ -176,11 +180,17 @@ msgstr "    linha=%ld  id=%d  nome=%s"
 msgid "E96: Can not diff more than %ld buffers"
 msgstr "E96: Não é possível usar diff com mais de %ld buffers"
 
+msgid "E810: Cannot read or write temp files"
+msgstr "E810: Não foi possível ler ou gravar arquivos temporários"
+
 msgid "E97: Cannot create diffs"
 msgstr "E97: diff não funcionou"
 
 msgid "Patch file"
 msgstr "Selecionar arquivo de patch"
+
+msgid "E816: Cannot read patch output"
+msgstr "E816: Não foi possível ler o resultado do patch"
 
 msgid "E98: Cannot read diff output"
 msgstr "E98: Não foi possível ler o resultado do diff"
@@ -286,7 +296,6 @@ msgstr " (substituição) Rolagem (^E/^Y)"
 msgid "Scanning: %s"
 msgstr "Examinando: %s"
 
-#, c-format
 msgid "Scanning tags."
 msgstr "Examinando tags."
 
@@ -444,6 +453,9 @@ msgstr "E693: Funcref só pode ser comparada com outra Funcref"
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Operação inválida para Funcrefs"
 
+msgid "E804: Cannot use '%' with Float"
+msgstr "E804: Não é possível usar '%' com Float"
+
 msgid "E110: Missing ')'"
 msgstr "E110: ')' faltando"
 
@@ -494,6 +506,14 @@ msgid "E724: variable nested too deep for displaying"
 msgstr "E724: variável aninhada demais para ser exibida"
 
 #, c-format
+msgid "E740: Too many arguments for function %s"
+msgstr "E740: Argumentos demais para a função %s"
+
+#, c-format
+msgid "E116: Invalid arguments for function %s"
+msgstr "E116: Argumentos inválidos para a função %s"
+
+#, c-format
 msgid "E117: Unknown function: %s"
 msgstr "E117: Função desconhecida: %s"
 
@@ -508,6 +528,9 @@ msgstr "E120: <SID> usado fora de um script: %s"
 #, c-format
 msgid "E725: Calling dict function without Dictionary: %s"
 msgstr "E725: Função dict chamada sem um Dicionário: %s"
+
+msgid "E808: Number or Float required"
+msgstr "E521: Número ou Float requerido"
 
 msgid "E699: Too many arguments"
 msgstr "E699: Argumentos demais"
@@ -585,14 +608,17 @@ msgstr "(Inválido)"
 msgid "E677: Error writing temp file"
 msgstr "E677: Erro ao gravar o arquivo temporário"
 
-msgid "E703: Using a Funcref as a number"
-msgstr "E703: Funcref usada como número"
+msgid "E805: Using a Float as a Number"
+msgstr "E745: Float usado como Número"
 
-msgid "E745: Using a List as a number"
-msgstr "E745: Lista usada como número"
+msgid "E703: Using a Funcref as a Number"
+msgstr "E703: Funcref usada como Número"
 
-msgid "E728: Using a Dictionary as a number"
-msgstr "E728: Dicionário usado como número"
+msgid "E745: Using a List as a Number"
+msgstr "E745: Lista usada como Número"
+
+msgid "E728: Using a Dictionary as a Number"
+msgstr "E728: Dicionário usado como Número"
 
 msgid "E729: using Funcref as a String"
 msgstr "E729: Funcref usada como String"
@@ -602,6 +628,9 @@ msgstr "E730: Lista usada como String"
 
 msgid "E731: using Dictionary as a String"
 msgstr "E731: Dicionário usado como String"
+
+msgid "E806: using Float as a String"
+msgstr "E730: Float usado como String"
 
 #, c-format
 msgid "E704: Funcref variable name must start with a capital: %s"
@@ -634,6 +663,10 @@ msgid "E698: variable nested too deep for making a copy"
 msgstr "E698: variável aninhada demais para fazer uma cópia"
 
 #, c-format
+msgid "E123: Undefined function: %s"
+msgstr "E123: Função indefinida: %s"
+
+#, c-format
 msgid "E124: Missing '(': %s"
 msgstr "E124: '(' faltando: %s"
 
@@ -643,6 +676,14 @@ msgstr "E125: Argumento inválido: %s"
 
 msgid "E126: Missing :endfunction"
 msgstr "E126: :endfunction faltando"
+
+#, c-format
+msgid "E707: Function name conflicts with variable: %s"
+msgstr "E707: Nome da função em conflito com variável: %s"
+
+#, c-format
+msgid "E127: Cannot redefine function %s: It is in use"
+msgstr "E127: Não é possível redefinir a função %s: ela está em uso"
 
 #, c-format
 msgid "E746: Function name does not match script file name: %s"
@@ -685,7 +726,6 @@ msgstr "continuando em %s"
 msgid "E133: :return not inside a function"
 msgstr "E133: :return fora de uma função"
 
-#, c-format
 msgid ""
 "\n"
 "# global variables:\n"
@@ -699,6 +739,139 @@ msgid ""
 msgstr ""
 "\n"
 "\tDefinido pela última vez em "
+
+msgid "No old files"
+msgstr "Não há arquivos antigos"
+
+msgid "Entering Debug mode.  Type \"cont\" to continue."
+msgstr "Entrando modo de depuração.  Digite \"cont\" para continuar."
+
+#, c-format
+msgid "line %ld: %s"
+msgstr "linha %ld: %s"
+
+#, c-format
+msgid "cmd: %s"
+msgstr "cmdo: %s"
+
+#, c-format
+msgid "Breakpoint in \"%s%s\" line %ld"
+msgstr "Ponto de interrupção em \"%s%s\", linha %ld"
+
+#, c-format
+msgid "E161: Breakpoint not found: %s"
+msgstr "E161: Ponto de interrupção não encontrado: %s"
+
+msgid "No breakpoints defined"
+msgstr "Nenhum ponto de interrupção definido"
+
+#, c-format
+msgid "%3d  %s %s  line %ld"
+msgstr "%3d  %s %s  linha %ld"
+
+msgid "E750: First use \":profile start {fname}\""
+msgstr "E750: Primeiro digite \":profile start {nome_arquivo}\""
+
+msgid "Save As"
+msgstr "Salvar como"
+
+#, c-format
+msgid "Save changes to \"%s\"?"
+msgstr "Salvar as alterações em \"%s\"?"
+
+msgid "Untitled"
+msgstr "(Sem título)"
+
+#, c-format
+msgid "E162: No write since last change for buffer \"%s\""
+msgstr "E162: Alterações no buffer \"%s\" não foram gravadas"
+
+msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
+msgstr "Aviso: Entrada inesperada em outro buffer (verifique os autocomandos)"
+
+msgid "E163: There is only one file to edit"
+msgstr "E163: Só há um arquivo para editar"
+
+msgid "E164: Cannot go before first file"
+msgstr "E164: Impossível ir antes do primeiro arquivo"
+
+msgid "E165: Cannot go beyond last file"
+msgstr "E165: Impossível ir além do último arquivo"
+
+#, c-format
+msgid "E666: compiler not supported: %s"
+msgstr "E666: compilador não suportado: %s"
+
+#, c-format
+msgid "Searching for \"%s\" in \"%s\""
+msgstr "Procurando por \"%s\" em \"%s\""
+
+#, c-format
+msgid "Searching for \"%s\""
+msgstr "Procurando por \"%s\""
+
+#, c-format
+msgid "not found in 'runtimepath': \"%s\""
+msgstr "não encontrado em 'runtimepath': \"%s\""
+
+msgid "Source Vim script"
+msgstr "Executar script do Vim"
+
+#, c-format
+msgid "Cannot source a directory: \"%s\""
+msgstr "Impossível executar um diretório: \"%s\""
+
+#, c-format
+msgid "could not source \"%s\""
+msgstr "não foi possível executar \"%s\""
+
+#, c-format
+msgid "line %ld: could not source \"%s\""
+msgstr "linha %ld: não foi possível executar \"%s\""
+
+#, c-format
+msgid "sourcing \"%s\""
+msgstr "executando \"%s\""
+
+#, c-format
+msgid "line %ld: sourcing \"%s\""
+msgstr "linha %ld: executando \"%s\""
+
+#, c-format
+msgid "finished sourcing %s"
+msgstr "fim da execução de %s"
+
+msgid "modeline"
+msgstr "modeline"
+
+msgid "--cmd argument"
+msgstr "argumento --cmd"
+
+msgid "-c argument"
+msgstr "argumento -c"
+
+msgid "environment variable"
+msgstr "variável de ambiente"
+
+msgid "error handler"
+msgstr "tratador de erro"
+
+msgid "W15: Warning: Wrong line separator, ^M may be missing"
+msgstr "W15: Aviso: Separador de linha incorreto; ^M pode estar faltando"
+
+msgid "E167: :scriptencoding used outside of a sourced file"
+msgstr "E167: :scriptencoding usado fora de um script"
+
+msgid "E168: :finish used outside of a sourced file"
+msgstr "E168: :finish usado fora de um script"
+
+#, c-format
+msgid "Current %slanguage: \"%s\""
+msgstr "Idioma atual para %s: \"%s\""
+
+#, c-format
+msgid "E197: Cannot set language to \"%s\""
+msgstr "E197: Impossível definir idioma como \"%s\""
 
 #, c-format
 msgid "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
@@ -749,6 +922,9 @@ msgstr " info"
 msgid " marks"
 msgstr " marcas"
 
+msgid " oldfiles"
+msgstr " arquivos antigos"
+
 msgid " FAILED"
 msgstr " FALHOU"
 
@@ -784,9 +960,6 @@ msgstr "# Valor de 'encoding' quando este arquivo foi escrito\n"
 
 msgid "Illegal starting char"
 msgstr "Caractere inicial inválido"
-
-msgid "Save As"
-msgstr "Salvar como"
 
 msgid "Write partial file?"
 msgstr "Gravar arquivo parcial?"
@@ -972,133 +1145,6 @@ msgstr " (não suportado)"
 msgid "[Deleted]"
 msgstr "[Excluído]"
 
-msgid "Entering Debug mode.  Type \"cont\" to continue."
-msgstr "Entrando modo de depuração.  Digite \"cont\" para continuar."
-
-#, c-format
-msgid "line %ld: %s"
-msgstr "linha %ld: %s"
-
-#, c-format
-msgid "cmd: %s"
-msgstr "cmdo: %s"
-
-#, c-format
-msgid "Breakpoint in \"%s%s\" line %ld"
-msgstr "Ponto de interrupção em \"%s%s\", linha %ld"
-
-#, c-format
-msgid "E161: Breakpoint not found: %s"
-msgstr "E161: Ponto de interrupção não encontrado: %s"
-
-msgid "No breakpoints defined"
-msgstr "Nenhum ponto de interrupção definido"
-
-#, c-format
-msgid "%3d  %s %s  line %ld"
-msgstr "%3d  %s %s  linha %ld"
-
-msgid "E750: First use :profile start <fname>"
-msgstr "E750: Primeiramente digite :profile start <nome_arquivo>"
-
-#, c-format
-msgid "Save changes to \"%s\"?"
-msgstr "Salvar as alterações em \"%s\"?"
-
-msgid "Untitled"
-msgstr "(Sem título)"
-
-#, c-format
-msgid "E162: No write since last change for buffer \"%s\""
-msgstr "E162: Alterações no buffer \"%s\" não foram gravadas"
-
-msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
-msgstr "Aviso: Entrada inesperada em outro buffer (verifique os autocomandos)"
-
-msgid "E163: There is only one file to edit"
-msgstr "E163: Só há um arquivo para editar"
-
-msgid "E164: Cannot go before first file"
-msgstr "E164: Impossível ir antes do primeiro arquivo"
-
-msgid "E165: Cannot go beyond last file"
-msgstr "E165: Impossível ir além do último arquivo"
-
-#, c-format
-msgid "E666: compiler not supported: %s"
-msgstr "E666: compilador não suportado: %s"
-
-#, c-format
-msgid "Searching for \"%s\" in \"%s\""
-msgstr "Procurando por \"%s\" em \"%s\""
-
-#, c-format
-msgid "Searching for \"%s\""
-msgstr "Procurando por \"%s\""
-
-#, c-format
-msgid "not found in 'runtimepath': \"%s\""
-msgstr "não encontrado em 'runtimepath': \"%s\""
-
-msgid "Source Vim script"
-msgstr "Executar script do Vim"
-
-#, c-format
-msgid "Cannot source a directory: \"%s\""
-msgstr "Impossível executar um diretório: \"%s\""
-
-#, c-format
-msgid "could not source \"%s\""
-msgstr "não foi possível executar \"%s\""
-
-#, c-format
-msgid "line %ld: could not source \"%s\""
-msgstr "linha %ld: não foi possível executar \"%s\""
-
-#, c-format
-msgid "sourcing \"%s\""
-msgstr "executando \"%s\""
-
-#, c-format
-msgid "line %ld: sourcing \"%s\""
-msgstr "linha %ld: executando \"%s\""
-
-#, c-format
-msgid "finished sourcing %s"
-msgstr "fim da execução de %s"
-
-msgid "modeline"
-msgstr "modeline"
-
-msgid "--cmd argument"
-msgstr "argumento --cmd"
-
-msgid "-c argument"
-msgstr "argumento -c"
-
-msgid "environment variable"
-msgstr "variável de ambiente"
-
-msgid "error handler"
-msgstr "tratador de erro"
-
-msgid "W15: Warning: Wrong line separator, ^M may be missing"
-msgstr "W15: Aviso: Separador de linha incorreto; ^M pode estar faltando"
-
-msgid "E167: :scriptencoding used outside of a sourced file"
-msgstr "E167: :scriptencoding usado fora de um script"
-
-msgid "E168: :finish used outside of a sourced file"
-msgstr "E168: :finish usado fora de um script"
-
-#, c-format
-msgid "Current %slanguage: \"%s\""
-msgstr "Idioma atual para %s: \"%s\""
-
-#, c-format
-msgid "E197: Cannot set language to \"%s\""
-msgstr "E197: Impossível definir idioma como \"%s\""
-
 msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
 msgstr "Entrando no modo Ex.  Digite \"visual\" para ir para o modo Normal."
 
@@ -1205,6 +1251,9 @@ msgstr "E468: Argumento só é permitido para completação personalizada"
 msgid "E467: Custom completion requires a function argument"
 msgstr "E467: Completação automática requer função como argumento"
 
+msgid "unknown"
+msgstr "desconhecido"
+
 #, c-format
 msgid "E185: Cannot find color scheme %s"
 msgstr "E185: Esquema de cores %s não encontrado"
@@ -1283,6 +1332,9 @@ msgstr "E191: Argumento deve ser uma letra ou aspa (` ou ')"
 
 msgid "E192: Recursive use of :normal too deep"
 msgstr "E192: Recursão excessiva de :normal"
+
+msgid "E809: #< is not available without the +eval feature"
+msgstr "E809: #< não está disponível sem o recurso +eval"
 
 msgid "E194: No alternate file name to substitute for '#'"
 msgstr "E194: Sem nome de arquivo alternativo para substituir '#'"
@@ -1422,6 +1474,9 @@ msgstr "E193: :endfunction fora de uma função"
 msgid "E788: Not allowed to edit another buffer now"
 msgstr "E788: Não é possível editar outro buffer agora"
 
+msgid "E811: Not allowed to change buffer information now"
+msgstr "E811: Não é permitido mudar as informações do buffer agora"
+
 msgid "tagname"
 msgstr "marcador"
 
@@ -1456,6 +1511,9 @@ msgstr "E198: cmd_pchar além do final do comando"
 
 msgid "E199: Active window or buffer deleted"
 msgstr "E199: A janela ou buffer ativo foi apagado"
+
+msgid "E812: Autocommands changed buffer or buffer name"
+msgstr "E812: Autocomandos alteraram o buffer ou o nome do buffer"
 
 msgid "Illegal file name"
 msgstr "Nome de arquivo inválido"
@@ -1515,9 +1573,6 @@ msgstr "[S/L]"
 msgid "[CR missing]"
 msgstr "[CR faltando]"
 
-msgid "[NL found]"
-msgstr "[NL encontrado]"
-
 msgid "[long lines split]"
 msgstr "[linhas longas divididas]"
 
@@ -1559,7 +1614,7 @@ msgstr "E203: Os autocomandos apagaram ou descarregaram o buffer a ser gravado"
 msgid "E204: Autocommand changed number of lines in unexpected way"
 msgstr "E204: Autocomando alterou número de linhas de maneira inesperada"
 
-msgid "NetBeans dissallows writes of unmodified buffers"
+msgid "NetBeans disallows writes of unmodified buffers"
 msgstr "NetBeans não permite gravação de buffers não modificados"
 
 msgid "Partial writes disallowed for NetBeans buffers"
@@ -1613,11 +1668,19 @@ msgstr "E512: Falha no fechamento do arquivo"
 msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
 msgstr "E513: erro de gravação, conversão falhou (torne 'fenc' vazio para forçar)"
 
+#, c-format
+msgid "E513: write error, conversion failed in line %ld (make 'fenc' empty to override)"
+msgstr "E513: erro de gravação, conversão falhou na linha %ld (deixe 'fenc' vazio para forçar)"
+
 msgid "E514: write error (file system full?)"
 msgstr "E514: erro de gravação (sistema de arquivos cheio?)"
 
 msgid " CONVERSION ERROR"
 msgstr " ERRO DE CONVERSÃO"
+
+#, c-format
+msgid " in line %ld;"
+msgstr "na linha %ld;"
 
 msgid "[Device]"
 msgstr "[Dispositivo]"
@@ -1872,29 +1935,6 @@ msgstr "Nenhuma associação encontrada"
 msgid "E228: makemap: Illegal mode"
 msgstr "E228: makemap: Modo inválido"
 
-msgid "E229: Cannot start the GUI"
-msgstr "E229: Não é possível iniciar a interface gráfica"
-
-#, c-format
-msgid "E230: Cannot read from \"%s\""
-msgstr "E230: Impossível ler de \"%s\""
-
-msgid "E665: Cannot start GUI, no valid font found"
-msgstr "E665: Impossível iniciar a interface gráfica, nenhuma fonte válida encontrada"
-
-msgid "E231: 'guifontwide' invalid"
-msgstr "E231: Valor inválido para 'guifontwide'"
-
-msgid "E599: Value of 'imactivatekey' is invalid"
-msgstr "E599: Valor inválido para 'imactivatekey'"
-
-#, c-format
-msgid "E254: Cannot allocate color %s"
-msgstr "E254: Impossível alocar cor %s"
-
-msgid "No match at cursor, finding next"
-msgstr "Nenhum resultado sob o cursor; procurando próximo"
-
 msgid "<cannot open> "
 msgstr "<impossível abrir> "
 
@@ -1917,14 +1957,37 @@ msgstr "OK"
 msgid "Cancel"
 msgstr "Cancelar"
 
-msgid "Scrollbar Widget: Could not get geometry of thumb pixmap."
-msgstr "Widget barra de rolagem: impossível obter geometria do pixmap 'thumb'"
-
 msgid "Vim dialog"
 msgstr "Diálogo do Vim"
 
+msgid "Scrollbar Widget: Could not get geometry of thumb pixmap."
+msgstr "Widget barra de rolagem: impossível obter geometria do pixmap 'thumb'"
+
 msgid "E232: Cannot create BalloonEval with both message and callback"
 msgstr "E232: Impossível criar BalloonEval com mensagem E callback"
+
+msgid "E229: Cannot start the GUI"
+msgstr "E229: Não é possível iniciar a interface gráfica"
+
+#, c-format
+msgid "E230: Cannot read from \"%s\""
+msgstr "E230: Impossível ler de \"%s\""
+
+msgid "E665: Cannot start GUI, no valid font found"
+msgstr "E665: Impossível iniciar a interface gráfica, nenhuma fonte válida encontrada"
+
+msgid "E231: 'guifontwide' invalid"
+msgstr "E231: Valor inválido para 'guifontwide'"
+
+msgid "E599: Value of 'imactivatekey' is invalid"
+msgstr "E599: Valor inválido para 'imactivatekey'"
+
+#, c-format
+msgid "E254: Cannot allocate color %s"
+msgstr "E254: Impossível alocar cor %s"
+
+msgid "No match at cursor, finding next"
+msgstr "Nenhum resultado sob o cursor; procurando próximo"
 
 msgid "Vim dialog..."
 msgstr "Diálogo do Vim..."
@@ -1997,9 +2060,6 @@ msgstr "Vim: Janela principal destruída inesperadamente\n"
 
 msgid "Font Selection"
 msgstr "Selecionar fonte"
-
-msgid "Used CUT_BUFFER0 instead of empty selection"
-msgstr "Foi usado CUT_BUFFER0 em vez de uma seleção vazia"
 
 msgid "&Filter"
 msgstr "&Filtrar"
@@ -2328,19 +2388,40 @@ msgid "E567: no cscope connections"
 msgstr "E567: não há conexões com o cscope"
 
 #, c-format
-msgid "E259: no matches found for cscope query %s of %s"
-msgstr "E259: nenhum resultado para a busca cscope %s de %s"
-
-#, c-format
 msgid "E469: invalid cscopequickfix flag %c for %c"
 msgstr "E469: marca %c inválida para %c em 'cscopequickfix'"
+
+#, c-format
+msgid "E259: no matches found for cscope query %s of %s"
+msgstr "E259: nenhum resultado para a busca cscope %s de %s"
 
 msgid "cscope commands:\n"
 msgstr "comandos do cscope:\n"
 
 #, c-format
-msgid "%-5s: %-30s (Usage: %s)"
-msgstr "%-5s: %-30s (Forma de uso: %s)"
+msgid "%-5s: %s%*s (Usage: %s)"
+msgstr "%-5s: %s%*s (Forma de uso: %s)"
+
+msgid ""
+"\n"
+"       c: Find functions calling this function\n"
+"       d: Find functions called by this function\n"
+"       e: Find this egrep pattern\n"
+"       f: Find this file\n"
+"       g: Find this definition\n"
+"       i: Find files #including this file\n"
+"       s: Find this C symbol\n"
+"       t: Find assignments to\n"
+msgstr ""
+"\n"
+"       c: Procurar funções que chamam esta função\n"
+"       d: Procurar funções chamadas por esta função\n"
+"       e: Procurar este padrão do egrep\n"
+"       f: Procurar este arquivo\n"
+"       g: Procurar esta definição\n"
+"       i: Procurar arquivos com #include para este arquivo\n"
+"       s: Procurar este símbolo do C\n"
+"       t: Procurar atribuições para isto\n"
 
 #, c-format
 msgid "E625: cannot open cscope database: %s"
@@ -2351,9 +2432,6 @@ msgstr "E626: impossível obter informações do banco de dados do cscope"
 
 msgid "E568: duplicate cscope database not added"
 msgstr "E568: banco de dados do cscope repetido; não foi adicionado"
-
-msgid "E569: maximum number of cscope connections reached"
-msgstr "E569: atingido o número máximo de conexões com o cscope"
 
 #, c-format
 msgid "E261: cscope connection %s not found"
@@ -2394,8 +2472,8 @@ msgstr "nenhuma conexão ao cscope\n"
 msgid " # pid    database name                       prepend path\n"
 msgstr " # pid    nome do banco de dados              adicionar caminho\n"
 
-msgid "???: Sorry, this command is disabled, the MzScheme library could not be loaded."
-msgstr "???: Desculpe, este comando está desativado. A biblioteca MzScheme não pôde ser carregada."
+msgid "E815: Sorry, this command is disabled, the MzScheme libraries could not be loaded."
+msgstr "E815: Desculpe, este comando está desativado. As bibliotecas do MzScheme não puderam ser carregadas."
 
 msgid "invalid expression"
 msgstr "expressão inválida"
@@ -2718,6 +2796,9 @@ msgstr "%d arquivos para editar\n"
 msgid "This Vim was not compiled with the diff feature."
 msgstr "Este Vim não foi compilado com o recurso diff."
 
+msgid "'-nb' cannot be used: not enabled at compile time\n"
+msgstr "'-nb' não pode ser usado: não foi ativado na compilação\n"
+
 msgid "Attempt to open script file again: \""
 msgstr "Tentando abrir novamente arquivo de script: \""
 
@@ -2970,6 +3051,9 @@ msgstr "--serverlist\t\tListar servidores Vim disponíveis e sair"
 
 msgid "--servername <name>\tSend to/become the Vim server <name>"
 msgstr "--servername <nome>\tEnviar para/tornar-se o servidor Vim <nome>"
+
+msgid "--startuptime <file>\tWrite startup timing messages to <file>"
+msgstr "--startuptime <arq.>\tGravar mensagens de cronometragem da inicialização para <arquivo>"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tUsar <viminfo> em vez do .viminfo normal"
@@ -3735,17 +3819,20 @@ msgstr "E338: Desculpe, não há um seletor de arquivos no modo console"
 msgid "E766: Insufficient arguments for printf()"
 msgstr "E766: Argumentos insuficientes para printf()"
 
+msgid "E807: Expected Float argument for printf()"
+msgstr "E807: Era esperado um argumento Float para printf()"
+
 msgid "E767: Too many arguments to printf()"
 msgstr "E767: Argumentos demais para printf()"
 
 msgid "W10: Warning: Changing a readonly file"
 msgstr "W10: Aviso: Modificando um arquivo somente-leitura"
 
-msgid "Type number or click with mouse (<Enter> cancels): "
-msgstr "Digite um número ou clique com o mouse (<Enter> cancela): "
+msgid "Type number and <Enter> or click with mouse (empty cancels): "
+msgstr "Digite um número e <Enter> ou clique com o mouse (deixe em branco para cancelar): "
 
-msgid "Choice number (<Enter> cancels): "
-msgstr "Número da opção (<Enter> cancela): "
+msgid "Type number and <Enter> (empty cancels): "
+msgstr "Digite um número e <Enter> (deixe em branco para cancelar): "
 
 msgid "1 more line"
 msgstr "1 linha a mais"
@@ -3853,7 +3940,6 @@ msgstr "E346: Mais nenhum diretório \"%s\" encontrado em 'cdpath'"
 msgid "E347: No more file \"%s\" found in path"
 msgstr "E347: Mais nenhum arquivo \"%s\" encontrado em 'path'"
 
-#. Get here when the server can't be found.
 msgid "Cannot connect to Netbeans #2"
 msgstr "Não foi possível conectar-se ao Netbeans #2"
 
@@ -3874,6 +3960,9 @@ msgstr "E658: Conexão com o NetBeans perdida para o buffer %ld"
 msgid "E505: "
 msgstr "E505: "
 
+msgid "E349: No identifier under cursor"
+msgstr "E349: Nenhum identificador sob o cursor"
+
 msgid "E774: 'operatorfunc' is empty"
 msgstr "E774: 'operatorfunc' está vazio"
 
@@ -3885,9 +3974,6 @@ msgstr "Aviso: o terminal não suporta destaque no modo visual"
 
 msgid "E348: No string under cursor"
 msgstr "E348: Nenhuma cadeia de caracteres sob o cursor"
-
-msgid "E349: No identifier under cursor"
-msgstr "E349: Nenhum identificador sob o cursor"
 
 msgid "E352: Cannot erase folds with current 'foldmethod'"
 msgstr "E352: Impossível eliminar dobras com o 'foldmethod' atual"
@@ -4679,6 +4765,9 @@ msgstr "E388: Definição não foi encontrada"
 msgid "E389: Couldn't find pattern"
 msgstr "E389: Padrão não foi encontrado"
 
+msgid "Substitute "
+msgstr " de substituição"
+
 # ESD - The %s is replaced by the argument which is given to the wvsp_one()
 #       function (search.c).  The "Substitute " argument which may be given
 #       to it should be translated as well.
@@ -4773,6 +4862,10 @@ msgstr "Definir COMPOUNDFORBIDFLAG após um item PFX pode causar resultados errad
 #, c-format
 msgid "Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line %d"
 msgstr "Definir COMPOUNDPERMITFLAG após um item PFX pode causar resultados errados em %s, linha %d"
+
+#, c-format
+msgid "Wrong COMPOUNDRULES value in %s line %d: %s"
+msgstr "Valor COMPOUNDRULES incorreto em %s, linha %d: %s"
 
 #, c-format
 msgid "Wrong COMPOUNDWORDMAX value in %s line %d: %s"
@@ -5307,11 +5400,18 @@ msgstr "E432: Arquivo de marcadores não ordenado: %s"
 msgid "E433: No tags file"
 msgstr "E433: Não há arquivo de marcadores"
 
+msgid "Ignoring long line in tags file"
+msgstr "Ignorando linha muito longa no arquivo de marcas"
+
 msgid "E434: Can't find tag pattern"
 msgstr "E434: Padrão do marcador não encontrado"
 
 msgid "E435: Couldn't find tag, just guessing!"
 msgstr "E435: Marcador não foi encontrado, tentando adivinhar apenas!"
+
+#, c-format
+msgid "Duplicate field name: %s"
+msgstr "Nome de campo duplicado: %s"
 
 msgid "' not known. Available builtin terminals are:"
 msgstr "' desconhecido. Os terminais incorporados disponíveis são:"
@@ -5348,6 +5448,9 @@ msgstr "novo shell iniciado\n"
 
 msgid "Vim: Error reading input, exiting...\n"
 msgstr "Vim: Erro ao ler a entrada; saindo...\n"
+
+msgid "Used CUT_BUFFER0 instead of empty selection"
+msgstr "Foi usado CUT_BUFFER0 em vez de uma seleção vazia"
 
 #. must display the prompt
 msgid "No undo possible; continue anyway"
@@ -5506,10 +5609,24 @@ msgstr ""
 
 msgid ""
 "\n"
+"OpenVMS version"
+msgstr ""
+"\n"
+"Versão OpenVMS"
+
+msgid ""
+"\n"
 "Included patches: "
 msgstr ""
 "\n"
 "Correções incluídas: "
+
+msgid ""
+"\n"
+"Extra patches: "
+msgstr ""
+"\n"
+"Correções extras:"
 
 msgid "Modified by "
 msgstr "Modificado por "
@@ -5741,6 +5858,12 @@ msgstr "E443: Impossível rodar quando outra janela está dividida"
 
 msgid "E444: Cannot close last window"
 msgstr "E444: Não posso fechar a última janela"
+
+msgid "E813: Cannot close autocmd window"
+msgstr "E813: Não é possível fechar a janela autocmd"
+
+msgid "E814: Cannot close window, only autocmd window would remain"
+msgstr "E814: Não é possível fechar a janela, só restaria a janela autocmd"
 
 msgid "E445: Other window contains changes"
 msgstr "E445: Outra janela contém alterações"
