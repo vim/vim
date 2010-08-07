@@ -1,6 +1,6 @@
 " Vim autoload file for the tohtml plugin.
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 Aug 02
+" Last Change: 2010 Aug 06
 "
 " Additional contributors:
 "
@@ -49,20 +49,50 @@ func! tohtml#Convert2HTML(line1, line2)
 endfunc
 
 func! tohtml#Diff2HTML(win_list, buf_list)
-  " TODO: add logic for xhtml
-  let style = ['-->']
+  let xml_line = ""
+  let tag_close = '>'
+
+  if s:settings.use_xhtml
+    if s:settings.encoding != ""
+      let xml_line = "<?xml version=\"1.0\" encoding=\"" . s:settings.encoding . "\"?>"
+    else
+      let xml_line = "<?xml version=\"1.0\"?>"
+    endif
+    let tag_close = ' />'
+  endif
+
+  let style = [s:settings.use_xhtml ? "" : '-->']
   let body_line = ''
 
   let html = []
-  call add(html, '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"')
-  call add(html, '  "http://www.w3.org/TR/html4/loose.dtd">')
-  call add(html, '<html>')
+  if s:settings.use_xhtml
+    call add(html, xml_line)
+  endif
+  if s:settings.use_xhtml
+    call add(html, "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">")
+    call add(html, '<html xmlns="http://www.w3.org/1999/xhtml">')
+  elseif s:settings.use_css && !s:settings.no_pre
+    call add(html, "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">")
+    call add(html, '<html>')
+  else
+    call add(html, '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"')
+    call add(html, '  "http://www.w3.org/TR/html4/loose.dtd">')
+    call add(html, '<html>')
+  endif
   call add(html, '<head>')
+
+  " include encoding as close to the top as possible, but only if not already
+  " contained in XML information (to avoid haggling over content type)
+  if s:settings.encoding != "" && !s:settings.use_xhtml
+    call add(html, "<meta http-equiv=\"content-type\" content=\"text/html; charset=" . s:settings.encoding . '"' . tag_close)
+  endif
+
   call add(html, '<title>diff</title>')
-  call add(html, '<meta name="Generator" content="Vim/'.v:version/100.'.'.v:version%100.'">')
-  call add(html, '<meta name="plugin-version" content="'.g:loaded_2html_plugin.'">')
-  " TODO: copy or move encoding logic from 2html.vim so generated markup can
-  " validate without warnings about encoding
+  call add(html, '<meta name="Generator" content="Vim/'.v:version/100.'.'.v:version%100.'"'.tag_close)
+  call add(html, '<meta name="plugin-version" content="'.g:loaded_2html_plugin.'"'.tag_close)
+  call add(html, '<meta name="settings" content="'.
+	\ join(filter(keys(s:settings),'s:settings[v:val]'),',').
+	\ '"'.tag_close)
 
   call add(html, '</head>')
   let body_line_num = len(html)
@@ -132,7 +162,13 @@ func! tohtml#Diff2HTML(win_list, buf_list)
     " so we can later save the file as valid html
     " TODO: restore using grabbed lines if undolevel is 1?
     normal 2u
-    call add(html, '<td nowrap valign="top"><div>')
+    if s:settings.use_css
+      call add(html, '<td valign="top"><div>')
+    elseif s:settings.use_xhtml
+      call add(html, '<td nowrap="nowrap" valign="top"><div>')
+    else
+      call add(html, '<td nowrap valign="top"><div>')
+    endif
     let html += temp
     call add(html, '</div></td>')
 
@@ -150,10 +186,10 @@ func! tohtml#Diff2HTML(win_list, buf_list)
   call add(html, '</html>')
 
   let i = 1
-  let name = "Diff" . ".html"
+  let name = "Diff" . (s:settings.use_xhtml ? ".xhtml" : ".html")
   " Find an unused file name if current file name is already in use
   while filereadable(name)
-    let name = substitute(name, '\d*\.html$', '', '') . i . ".html"
+    let name = substitute(name, '\d*\.x\?html$', '', '') . i . '.' . fnamemodify(copy(name), ":t:e")
     let i += 1
   endwhile
   exe "topleft new " . name
@@ -173,7 +209,7 @@ func! tohtml#Diff2HTML(win_list, buf_list)
     if s:settings.dynamic_folds
       call append(style_start, [
 	    \  "<script type='text/javascript'>",
-	    \  "  <!--",
+	    \  s:settings.use_xhtml ? '//<![CDATA[' : "  <!--",
 	    \  "  function toggleFold(objID)",
 	    \  "  {",
 	    \  "    for (win_num = 1; win_num <= ".len(a:buf_list)."; win_num++)",
@@ -190,7 +226,7 @@ func! tohtml#Diff2HTML(win_list, buf_list)
 	    \  "      }",
 	    \  "    }",
 	    \  "  }",
-	    \  "  -->",
+	    \  s:settings.use_xhtml ? '//]]>' : "  -->",
 	    \  "</script>"
 	    \ ])
     endif
@@ -201,16 +237,16 @@ func! tohtml#Diff2HTML(win_list, buf_list)
     " horizontally scrollable when the lines are too long. Otherwise, the diff
     " is pretty useless for really long lines.
     if s:settings.use_css
-      call append(style_start, [
-	    \ '<style type="text/css">']+
-	    \  style+[
-	    \ '<!--',
-	    \ 'table { table-layout: fixed; }',
-	    \ 'html, body, table, tbody { width: 100%; margin: 0; padding: 0; }',
-	    \ 'th, td { width: '.printf("%.1f",100.0/len(a:win_list)).'%; }',
-	    \ 'td div { overflow: auto; }',
-	    \ '-->',
-	    \  '</style>'
+      call append(style_start,
+	    \ ['<style type="text/css">']+
+	    \ style+
+	    \ [ s:settings.use_xhtml ? '' : '<!--',
+	    \   'table { table-layout: fixed; }',
+	    \   'html, body, table, tbody { width: 100%; margin: 0; padding: 0; }',
+	    \   'th, td { width: '.printf("%.1f",100.0/len(a:win_list)).'%; }',
+	    \   'td div { overflow: auto; }',
+	    \   s:settings.use_xhtml ? '' : '-->',
+	    \   '</style>'
 	    \ ])
     endif
   endif
@@ -259,19 +295,17 @@ func! tohtml#GetUserSettings()
     call tohtml#GetOption(user_settings,   'whole_filler',  0 )
     call tohtml#GetOption(user_settings,      'use_xhtml',  0 )
     
-    " TODO: encoding? font? These are string options that require more parsing.
-
     " override those settings that need it
+
+    " hover opening implies dynamic folding
+    if user_settings.hover_unfold
+      let user_settings.dynamic_folds = 1
+    endif
 
     " ignore folding overrides dynamic folding
     if user_settings.ignore_folding && user_settings.dynamic_folds
       let user_settings.dynamic_folds = 0
       let user_settings.hover_unfold = 0
-    endif
-
-    " hover opening implies dynamic folding
-    if user_settings.hover_unfold
-      let user_settings.dynamic_folds = 1
     endif
 
     " dynamic folding with no foldcolumn implies hover opens
@@ -289,6 +323,41 @@ func! tohtml#GetUserSettings()
     if !user_settings.use_css
       let user_settings.no_pre = 1
     endif
+
+    " Figure out proper MIME charset from the 'encoding' option.
+    if exists("g:html_use_encoding")
+      let user_settings.encoding = g:html_use_encoding
+    else
+      let vim_encoding = &encoding
+      if vim_encoding =~ '^8bit\|^2byte'
+	let vim_encoding = substitute(vim_encoding, '^8bit-\|^2byte-', '', '')
+      endif
+      if vim_encoding == 'latin1'
+	let user_settings.encoding = 'iso-8859-1'
+      elseif vim_encoding =~ "^cp12"
+	let user_settings.encoding = substitute(vim_encoding, 'cp', 'windows-', '')
+      elseif vim_encoding == 'sjis' || vim_encoding == 'cp932'
+	let user_settings.encoding = 'Shift_JIS'
+      elseif vim_encoding == 'big5' || vim_encoding == 'cp950'
+	let user_settings.encoding = "Big5"
+      elseif vim_encoding == 'euc-cn'
+	let user_settings.encoding = 'GB_2312-80'
+      elseif vim_encoding == 'euc-tw'
+	let user_settings.encoding = ""
+      elseif vim_encoding =~ '^euc\|^iso\|^koi'
+	let user_settings.encoding = substitute(vim_encoding, '.*', '\U\0', '')
+      elseif vim_encoding == 'cp949'
+	let user_settings.encoding = 'KS_C_5601-1987'
+      elseif vim_encoding == 'cp936'
+	let user_settings.encoding = 'GBK'
+      elseif vim_encoding =~ '^ucs\|^utf'
+	let user_settings.encoding = 'UTF-8'
+      else
+	let user_settings.encoding = ""
+      endif
+    endif
+
+    " TODO: font
 
     return user_settings
   endif

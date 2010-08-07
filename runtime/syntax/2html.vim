@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 Aug 05
+" Last Change: 2010 Aug 07
 "
 " Additional contributors:
 "
@@ -73,7 +73,7 @@ else
   endfun
 endif
 
-if s:settings.use_css
+if !s:settings.use_css
   " Return opening HTML tag for given highlight id
   function! s:HtmlOpening(id)
     let a = ""
@@ -198,39 +198,6 @@ if s:settings.dynamic_folds
 
 endif
 
-" Figure out proper MIME charset from the 'encoding' option.
-if exists("g:html_use_encoding")
-  let s:html_encoding = g:html_use_encoding
-else
-  let s:vim_encoding = &encoding
-  if s:vim_encoding =~ '^8bit\|^2byte'
-    let s:vim_encoding = substitute(s:vim_encoding, '^8bit-\|^2byte-', '', '')
-  endif
-  if s:vim_encoding == 'latin1'
-    let s:html_encoding = 'iso-8859-1'
-  elseif s:vim_encoding =~ "^cp12"
-    let s:html_encoding = substitute(s:vim_encoding, 'cp', 'windows-', '')
-  elseif s:vim_encoding == 'sjis' || s:vim_encoding == 'cp932'
-    let s:html_encoding = 'Shift_JIS'
-  elseif s:vim_encoding == 'big5' || s:vim_encoding == 'cp950'
-    let s:html_encoding = "Big5"
-  elseif s:vim_encoding == 'euc-cn'
-    let s:html_encoding = 'GB_2312-80'
-  elseif s:vim_encoding == 'euc-tw'
-    let s:html_encoding = ""
-  elseif s:vim_encoding =~ '^euc\|^iso\|^koi'
-    let s:html_encoding = substitute(s:vim_encoding, '.*', '\U\0', '')
-  elseif s:vim_encoding == 'cp949'
-    let s:html_encoding = 'KS_C_5601-1987'
-  elseif s:vim_encoding == 'cp936'
-    let s:html_encoding = 'GBK'
-  elseif s:vim_encoding =~ '^ucs\|^utf'
-    let s:html_encoding = 'UTF-8'
-  else
-    let s:html_encoding = ""
-  endif
-endif
-
 
 " Set some options to make it work faster.
 " Don't report changes for :substitute, there will be many of them.
@@ -295,8 +262,8 @@ set magic
 let s:lines = []
 
 if s:settings.use_xhtml
-  if s:html_encoding != ""
-    call add(s:lines, "<?xml version=\"1.0\" encoding=\"" . s:html_encoding . "\"?>")
+  if s:settings.encoding != ""
+    call add(s:lines, "<?xml version=\"1.0\" encoding=\"" . s:settings.encoding . "\"?>")
   else
     call add(s:lines, "<?xml version=\"1.0\"?>")
   endif
@@ -317,15 +284,18 @@ endif
 " HTML header, with the title and generator ;-). Left free space for the CSS,
 " to be filled at the end.
 call extend(s:lines, [
-      \"<html>",
-      \"<head>",
-      \("<title>".expand("%:p:~")."</title>"),
-      \("<meta name=\"Generator\" content=\"Vim/".v:version/100.".".v:version%100.'"'.s:tag_close),
-      \("<meta name=\"plugin-version\" content=\"".g:loaded_2html_plugin.'"'.s:tag_close),
-      \])
-if s:html_encoding != ""
-  call add(s:lines, "<meta http-equiv=\"content-type\" content=\"text/html; charset=" . s:html_encoding . '"' . s:tag_close)
+      \ "<html>",
+      \ "<head>"])
+" include encoding as close to the top as possible, but only if not already
+" contained in XML information (to avoid haggling over content type)
+if s:settings.encoding != "" && !s:settings.use_xhtml
+  call add(s:lines, "<meta http-equiv=\"content-type\" content=\"text/html; charset=" . s:settings.encoding . '"' . s:tag_close)
 endif
+call extend(s:lines, [
+      \ ("<title>".expand("%:p:~")."</title>"),
+      \ ("<meta name=\"Generator\" content=\"Vim/".v:version/100.".".v:version%100.'"'.s:tag_close),
+      \ ("<meta name=\"plugin-version\" content=\"".g:loaded_2html_plugin.'"'.s:tag_close)
+      \ ])
 call add(s:lines, '<meta name="syntax" content="'.s:current_syntax.'"'.s:tag_close)
 call add(s:lines, '<meta name="settings" content="'.
       \ join(filter(keys(s:settings),'s:settings[v:val]'),',').
@@ -337,7 +307,7 @@ if s:settings.use_css
       " if we are doing hover_unfold, use css 2 with css 1 fallback for IE6
       call extend(s:lines, [
 	    \ "<style type=\"text/css\">",
-	    \ "<!--",
+	    \ s:settings.use_xhtml ? "" : "<!--",
 	    \ ".FoldColumn { text-decoration: none; white-space: pre; }",
 	    \ "",
 	    \ "body * { margin: 0; padding: 0; }", "",
@@ -356,8 +326,12 @@ if s:settings.use_css
 	    \ ".closed-fold:hover > .fulltext { display: inline; }",
 	    \ ".closed-fold:hover > .toggle-filler { display: none; }",
 	    \ ".closed-fold:hover > .Folded { display: none; }",
-	    \ '-->',
-	    \ '<style>',
+	    \ s:settings.use_xhtml ? "" : '-->',
+	    \ '<style>'])
+      " TODO: IE7 doesn't *actually* support XHTML, maybe we should remove this.
+      " But if it's served up as tag soup, maybe the following will work, so
+      " leave it in for now.
+      call extend(s:lines, [
 	    \ "<!--[if lt IE 7]><style type=\"text/css\">",
 	    \ ".open-fold   .Folded      { display: none; }",
 	    \ ".open-fold   .fulltext      { display: inline; }",
@@ -375,7 +349,7 @@ if s:settings.use_css
       " if we aren't doing hover_unfold, use CSS 1 only
       call extend(s:lines, [
 	    \ "<style type=\"text/css\">",
-	    \ "<!--",
+	    \ s:settings.use_xhtml ? "" :"<!--",
 	    \ ".FoldColumn { text-decoration: none; white-space: pre; }",
 	    \ ".open-fold   .Folded      { display: none; }",
 	    \ ".open-fold   .fulltext      { display: inline; }",
@@ -386,7 +360,7 @@ if s:settings.use_css
 	    \ ".closed-fold .Folded      { display: inline; }",
 	    \ ".closed-fold .toggle-open   { display: inline; }",
 	    \ ".closed-fold .toggle-closed { display: none; }",
-	    \ '-->',
+	    \ s:settings.use_xhtml ? "" : '-->',
 	    \ '</style>'
 	    \])
     endif
@@ -394,8 +368,8 @@ if s:settings.use_css
     " if we aren't doing any dynamic folding, no need for any special rules
     call extend(s:lines, [
 	  \ "<style type=\"text/css\">",
-	  \ "<!--",
-	  \ '-->',
+	  \ s:settings.use_xhtml ? "" : "<!--",
+	  \ s:settings.use_xhtml ? "" : '-->',
 	  \ "</style>",
 	  \])
   endif
@@ -406,7 +380,7 @@ if s:settings.dynamic_folds
   call extend(s:lines, [
 	\ "",
 	\ "<script type='text/javascript'>",
-	\ "<!--",
+	\ s:settings.use_xhtml ? '//<![CDATA[' : "<!--",
 	\ "function toggleFold(objID)",
 	\ "{",
 	\ "  var fold;",
@@ -420,7 +394,7 @@ if s:settings.dynamic_folds
 	\ "    fold.className = 'closed-fold';",
 	\ "  }",
 	\ "}",
-	\ '-->',
+	\ s:settings.use_xhtml ? '//]]>' : '-->',
 	\ "</script>"
 	\])
 endif
@@ -965,7 +939,7 @@ endif
 if s:settings.no_pre
   if !s:settings.use_css
     " Close off the font tag that encapsulates the whole <body>
-    call extend(s:lines, ["</font></body>", "</html>"])
+    call extend(s:lines, ["</font>", "</body>", "</html>"])
   else
     call extend(s:lines, ["</body>", "</html>"])
   endif
@@ -1005,7 +979,7 @@ if s:settings.use_css
     execute "normal! ^cwbody\e"
   endif
 else
-  execute '%s:<body>:<body bgcolor="' . s:bgc . '" text="' . s:fgc . '"><font face="'. s:htmlfont .'">'
+  execute '%s:<body>:<body bgcolor="' . s:bgc . '" text="' . s:fgc . '">\r<font face="'. s:htmlfont .'">'
 endif
 
 " Line numbering attributes
@@ -1053,7 +1027,10 @@ while !empty(s:idlist)
     if s:pgb.needs_redraw
       redrawstatus
       let s:pgb.needs_redraw = 0
-      sleep 50m
+      " TODO: sleep here to show the progress bar, but only if total time spent
+      " so far on this step is < 1 second? Too slow for batch runs like the test
+      " suite to sleep all the time. Maybe there's no good reason to sleep at
+      " all.
     endif
   endif
 endwhile
