@@ -4809,6 +4809,10 @@ setup_zero_width_cluster(PangoItem *item, PangoGlyphInfo *glyph,
 	glyph->geometry.y_offset  = logical_rect.height
 		- (gui.char_height - p_linespace) * PANGO_SCALE;
     }
+    else
+	/* If the accent width is smaller than the cluster width, position it
+	 * in the middle. */
+	glyph->geometry.x_offset = -width + MAX(0, width - ink_rect.width) / 2;
 }
 
     static void
@@ -4989,9 +4993,6 @@ not_ascii:
 	int		cluster_width;
 	int		last_glyph_rbearing;
 	int		cells = 0;  /* cells occupied by current cluster */
-#if 0
-	int		monospace13 = STRICMP(p_guifont, "monospace 13") == 0;
-#endif
 
 	/* Safety check: pango crashes when invoked with invalid utf-8
 	 * characters. */
@@ -5107,21 +5108,17 @@ not_ascii:
 		    int width;
 
 		    /* There is a previous glyph, so we deal with combining
-		     * characters the canonical way.  That is, setting the
-		     * width of the previous glyph to 0. */
-		    glyphs->glyphs[i - 1].geometry.width = 0;
+		     * characters the canonical way.
+		     * Older versions of Pango used a positive x_offset,
+		     * then set the width of the previous glyph to zero.
+		     * Newer versions of Pango use a negative x_offset.
+		     * For both adjust the x_offset to position the glyph in
+		     * the middle.  */
+		    if (glyph->geometry.x_offset >= 0)
+			glyphs->glyphs[i - 1].geometry.width = 0;
 		    width = cells * gui.char_width * PANGO_SCALE;
 		    glyph->geometry.x_offset +=
 					    MAX(0, width - cluster_width) / 2;
-#if 0
-		    /* Dirty hack: for "monospace 13" font there is a bug that
-		     * draws composing chars in the wrong position.  Add
-		     * "width" to the offset to work around that. */
-		    if (monospace13)
-			glyph->geometry.x_offset = width;
-#endif
-
-		    glyph->geometry.width = width;
 		}
 		else /* i == 0 "cannot happen" */
 		{

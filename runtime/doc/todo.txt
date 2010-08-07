@@ -45,9 +45,6 @@ Patch to make more characters work in dialogs. (Yankwei Jia, 2010 Aug 4)
 
 Should readfile() ignore BOM when not in binary mode?
 
-GTK: accented characters are drawn one character too much to the left. (Boyko
-Bantchev, 2010 Aug 5)
-
 Bug: searching for tags file uses 'suffixesadd', should not happen. (Dominique
 Pelle, 2010 June 28)
 
