@@ -14267,6 +14267,20 @@ f_readfile(argvars, rettv)
 	    }
 	    else if (buf[filtd] == NUL)
 		buf[filtd] = '\n';
+#ifdef FEAT_MBYTE
+	    else if (buf[filtd] == 0xef
+		    && enc_utf8
+		    && filtd + 2 < buflen
+		    && !binary
+		    && buf[filtd + 1] == 0xbb
+		    && buf[filtd + 2] == 0xbf)
+	    {
+		/* remove utf-8 byte order mark */
+		mch_memmove(buf + filtd, buf + filtd + 3, buflen - filtd - 3);
+		--filtd;
+		buflen -= 3;
+	    }
+#endif
 	}
 	if (readlen <= 0)
 	    break;

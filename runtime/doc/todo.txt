@@ -33,10 +33,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
-Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
-
-Patch to make more characters work in dialogs. (Yankwei Jia, 2010 Aug 4)
-
 Should readfile() ignore BOM when not in binary mode?
 
 Bug: searching for tags file uses 'suffixesadd', should not happen. (Dominique
@@ -63,6 +59,8 @@ accented character. (Tony Mechelynck, 2010 Apr 15)
 
 Patch: Let rare word highlighting overrule good word highlighting.
 (Jakson A. Aquino, 2010 Jul 30)
+
+Patch to make more characters work in dialogs. (Yankwei Jia, 2010 Aug 4)
 
 ":drop" does not respect 'autochdir'. (Peter Odding, 2010 Jul 24)
 
