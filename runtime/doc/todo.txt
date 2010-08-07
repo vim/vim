@@ -36,8 +36,6 @@ Before release 7.3:
 Better Czech keymap. (Stepnem, 2010 May 4)  Use if no response from Jiri
 Tobisek.
 
-test72 causes a beep for using "u" when it doesn't work.
-
 :!cmd completion doesn't work on Windows. (Yue Wu).
 Problem with space in path?
 

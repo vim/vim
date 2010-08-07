@@ -6,7 +6,7 @@ STARTTEST
 :so small.vim
 :"
 :" Test 'undofile': first a simple one-line change.
-:set nocompatible viminfo+=nviminfo
+:set nocompatible viminfo+=nviminfo visualbell
 :set ul=100 undofile nomore
 :e! Xtestfile
 ggdGithis is one line:set ul=100
