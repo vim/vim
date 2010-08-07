@@ -3423,17 +3423,16 @@ set_one_cmd_context(xp, buff)
 	    xp->xp_pattern = bow;
 	xp->xp_context = EXPAND_FILES;
 
-#ifndef BACKSLASH_IN_FILENAME
 	/* For a shell command more chars need to be escaped. */
 	if (usefilter || ea.cmdidx == CMD_bang)
 	{
+#ifndef BACKSLASH_IN_FILENAME
 	    xp->xp_shell = TRUE;
-
+#endif
 	    /* When still after the command name expand executables. */
 	    if (xp->xp_pattern == skipwhite(arg))
 		xp->xp_context = EXPAND_SHELLCMD;
 	}
-#endif
 
 	/* Check for environment variable */
 	if (*xp->xp_pattern == '$'

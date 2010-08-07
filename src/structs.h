@@ -457,8 +457,8 @@ typedef struct expand
 #endif
     int		xp_backslash;		/* one of the XP_BS_ values */
 #ifndef BACKSLASH_IN_FILENAME
-    int		xp_shell;		/* for a shell command more characters
-					   need to be escaped */
+    int		xp_shell;		/* TRUE for a shell command, more
+					   characters need to be escaped */
 #endif
     int		xp_numfiles;		/* number of files found by
 						    file name completion */
