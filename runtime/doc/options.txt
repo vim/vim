@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3e.  Last change: 2010 Aug 04
+*options.txt*	For Vim version 7.3e.  Last change: 2010 Aug 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6887,8 +6887,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'cpoptions'.  Environment variables are expanded |:set_env|.  Also see
 	|tags-option|.
 	"*", "**" and other wildcards can be used to search for tags files in
-	a directory tree.  See |file-searching|.  {not available when compiled
-	without the |+path_extra| feature}
+	a directory tree.  See |file-searching|.  E.g., "/lib/**/tags" will
+	find all files named "tags" below "/lib".  The filename itself cannot
+	contain wildcards, it is used as-is.  E.g., "/lib/**/tags?" will find
+	files called "tags?".  {not available when compiled without the
+	|+path_extra| feature}
 	The |tagfiles()| function can be used to get a list of the file names
 	actually used.
 	If Vim was compiled with the |+emacs_tags| feature, Emacs-style tag

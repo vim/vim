@@ -4248,7 +4248,7 @@ vim_findnext()
 #endif
 
 /*
- * Initialization routine for vim_findfile.
+ * Initialization routine for vim_findfile().
  *
  * Returns the newly allocated search context or NULL if an error occurred.
  *

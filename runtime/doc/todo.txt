@@ -35,9 +35,6 @@ Before release 7.3:
 
 Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
-When directory "/tmp/tags" contains "tags1" and "tags2", setting 'tags' to
-"/tmp/tags/*" doesn't pick up these files.  (Simon Ruggier, 2010 Mar 17)
-
 ":command Print echo 'print'" works, but ":Print" doesn't.  Builtin Print
 should be overruled. (Aaron Thoma)
 
