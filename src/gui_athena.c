@@ -236,21 +236,6 @@ gui_x11_create_widgets()
      */
     gui.border_offset = gui.border_width;
 
-#if 0 /* not needed? */
-    XtInitializeWidgetClass(formWidgetClass);
-    XtInitializeWidgetClass(boxWidgetClass);
-    XtInitializeWidgetClass(coreWidgetClass);
-#ifdef FEAT_MENU
-    XtInitializeWidgetClass(menuButtonWidgetClass);
-#endif
-    XtInitializeWidgetClass(simpleMenuWidgetClass);
-#ifdef FEAT_GUI_NEXTAW
-    XtInitializeWidgetClass(scrollbarWidgetClass);
-#else
-    XtInitializeWidgetClass(vim_scrollbarWidgetClass);
-#endif
-#endif
-
     /* The form containing all the other widgets */
     vimForm = XtVaCreateManagedWidget("vimForm",
 	formWidgetClass,	vimShell,

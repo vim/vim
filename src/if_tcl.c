@@ -1494,13 +1494,6 @@ tclgetref(interp, refstartP, prefix, vimobj, proc)
 	else
 	{
 	    ref = (struct ref *)Tcl_Alloc(sizeof(struct ref));
-#if 0	/* Tcl_Alloc either succeeds or does not return */
-	    if (!ref)
-	    {
-		Tcl_SetResult(interp, "out of memory", TCL_STATIC);
-		return NULL;
-	    }
-#endif
 	    ref->interp = NULL;
 	    ref->next = (struct ref *)(*refstartP);
 	    (*refstartP) = (void *)ref;

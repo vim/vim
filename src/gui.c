@@ -1571,14 +1571,7 @@ gui_write(s, len)
 {
     char_u	*p;
     int		arg1 = 0, arg2 = 0;
-    /* this doesn't make sense, disabled until someone can explain why it
-     * would be needed */
-#if 0 && (defined(RISCOS) || defined(WIN16))
-    int		force_cursor = TRUE;	/* JK230798, stop Vim being smart or
-					   our redraw speed will suffer */
-#else
     int		force_cursor = FALSE;	/* force cursor update */
-#endif
     int		force_scrollbar = FALSE;
     static win_T	*old_curwin = NULL;
 

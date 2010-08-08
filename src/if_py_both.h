@@ -405,7 +405,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 #endif
 
     static PyObject *
-VimEval(PyObject *self UNUSED, PyObject *args)
+VimEval(PyObject *self UNUSED, PyObject *args UNUSED)
 {
 #ifdef FEAT_EVAL
     char	*expr;

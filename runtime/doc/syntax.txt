@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3e.  Last change: 2010 Aug 04
+*syntax.txt*	For Vim version 7.3e.  Last change: 2010 Aug 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -92,12 +92,12 @@ highlighting, include the ":gui" command in the |gvimrc|: >
 NOTE: Using ":gui" in the |gvimrc| means that "gvim -f" won't start in the
 foreground!  Use ":gui -f" then.
 
-
-You can toggle the syntax on/off with this command >
-   :if exists("syntax_on") | syntax off | else | syntax enable | endif
+							*g:syntax_on*
+You can toggle the syntax on/off with this command: >
+   :if exists("g:syntax_on") | syntax off | else | syntax enable | endif
 
 To put this into a mapping, you can use: >
-   :map <F7> :if exists("syntax_on") <Bar>
+   :map <F7> :if exists("g:syntax_on") <Bar>
 	\   syntax off <Bar>
 	\ else <Bar>
 	\   syntax enable <Bar>
@@ -925,7 +925,7 @@ Example: >
 or >
 	// vim:syntax=c.doxygen
 
-It can also be done automatically for c, cpp and idl files by setting the
+It can also be done automatically for C, C++, C# and IDL files by setting the
 global or buffer-local variable load_doxygen_syntax.  This is done by adding
 the following to your .vimrc. >
 	:let g:load_doxygen_syntax=1
@@ -3168,7 +3168,7 @@ and may be mixed with patterns.
 
 Not all commands accept all arguments.	This table shows which arguments
 can not be used for all commands:
-							*E395* *E396*
+							*E395*
 		    contains  oneline	fold  display  extend concealends~
 :syntax keyword		 -	 -	 -	 -	 -      -
 :syntax match		yes	 -	yes	yes	yes     -

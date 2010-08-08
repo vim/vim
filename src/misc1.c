@@ -2413,24 +2413,6 @@ pchar_cursor(c)
 						  + curwin->w_cursor.col) = c;
 }
 
-#if 0 /* not used */
-/*
- * Put *pos at end of current buffer
- */
-    void
-goto_endofbuf(pos)
-    pos_T    *pos;
-{
-    char_u  *p;
-
-    pos->lnum = curbuf->b_ml.ml_line_count;
-    pos->col = 0;
-    p = ml_get(pos->lnum);
-    while (*p++)
-	++pos->col;
-}
-#endif
-
 /*
  * When extra == 0: Return TRUE if the cursor is before or on the first
  *		    non-blank in the line.

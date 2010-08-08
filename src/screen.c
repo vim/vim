@@ -9429,18 +9429,13 @@ showmode()
 	{
 	    MSG_PUTS_ATTR("--", attr);
 #if defined(FEAT_XIM)
-# if 0  /* old version, changed by SungHyun Nam July 2008 */
-	    if (xic != NULL && im_get_status() && !p_imdisable
-					&& curbuf->b_p_iminsert == B_IMODE_IM)
-# else
 	    if (
-#  ifdef FEAT_GUI_GTK
+# ifdef FEAT_GUI_GTK
 		    preedit_get_status()
-#  else
+# else
 		    im_get_status()
-#  endif
-	       )
 # endif
+	       )
 # ifdef FEAT_GUI_GTK /* most of the time, it's not XIM being used */
 		MSG_PUTS_ATTR(" IM", attr);
 # else

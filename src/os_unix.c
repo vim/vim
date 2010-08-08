@@ -669,12 +669,6 @@ mch_delay(msec, ignoreinput)
 	WaitForChar(msec);
 }
 
-#if 0    /* disabled, no longer needed now that regmatch() is not recursive */
-# if defined(HAVE_GETRLIMIT)
-#  define HAVE_STACK_LIMIT
-# endif
-#endif
-
 #if defined(HAVE_STACK_LIMIT) \
 	|| (!defined(HAVE_SIGALTSTACK) && defined(HAVE_SIGSTACK))
 # define HAVE_CHECK_STACK_GROWTH

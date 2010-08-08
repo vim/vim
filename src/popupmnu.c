@@ -472,17 +472,6 @@ pum_redraw()
     }
 }
 
-#if 0 /* not used yet */
-/*
- * Return the index of the currently selected item.
- */
-    int
-pum_get_selected()
-{
-    return pum_selected;
-}
-#endif
-
 /*
  * Set the index of the currently selected item.  The menu will scroll when
  * necessary.  When "n" is out of range don't scroll.

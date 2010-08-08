@@ -286,30 +286,6 @@ remove_start_menu(void)
 }
 #endif
 
-#if 0  /* currently not used */
-/*
- * Return TRUE when we're on Windows 95/98/ME.
- */
-    static int
-win95(void)
-{
-    static int done = FALSE;
-    static DWORD PlatformId;
-
-    if (!done)
-    {
-	OSVERSIONINFO ovi;
-
-	ovi.dwOSVersionInfoSize = sizeof(ovi);
-	GetVersionEx(&ovi);
-	PlatformId = ovi.dwPlatformId;
-	done = TRUE;
-    }
-    /* Win NT/2000/XP is VER_PLATFORM_WIN32_NT */
-    return PlatformId == VER_PLATFORM_WIN32_WINDOWS;
-}
-#endif
-
     static void
 delete_uninstall_key(void)
 {

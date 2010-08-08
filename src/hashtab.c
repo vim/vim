@@ -492,25 +492,10 @@ hash_hash(key)
 				   want to crash if we get one. */
     p = key + 1;
 
-#if 0
-    /* ElfHash algorithm, which is supposed to have an even distribution.
-     * Suggested by Charles Campbell. */
-    hash_T	g;
-
-    while (*p != NUL)
-    {
-	hash = (hash << 4) + *p++;	/* clear low 4 bits of hash, add char */
-	g = hash & 0xf0000000L;		/* g has high 4 bits of hash only */
-	if (g != 0)
-	    hash ^= g >> 24;		/* xor g's high 4 bits into hash */
-    }
-#else
-
     /* A simplistic algorithm that appears to do very well.
      * Suggested by George Reilly. */
     while (*p != NUL)
 	hash = hash * 101 + *p++;
-#endif
 
     return hash;
 }

@@ -640,13 +640,6 @@ getcmdline(firstc, count, indent)
 		c = p_wc;
 	    }
 	}
-#if 0 /* If enabled <Down> on a file takes you _completely_ out of wildmenu */
-	if (p_wmnu
-		&& (xpc.xp_context == EXPAND_FILES
-		    || xpc.xp_context == EXPAND_MENUNAMES)
-		&& (c == K_UP || c == K_DOWN))
-	    xpc.xp_context = EXPAND_NOTHING;
-#endif
 
 #endif	/* FEAT_WILDMENU */
 

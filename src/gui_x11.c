@@ -3392,17 +3392,6 @@ gui_x11_get_last_mouse_event()
  * to provide room for the bitmap! */
 # define SIGN_WIDTH (gui.char_width * 2)
 
-#if 0	/* not used */
-    void
-gui_mch_clearsign(row)
-    int		row;
-{
-    if (gui.in_use)
-	XClearArea(gui.dpy, gui.wid, 0, TEXT_Y(row) - gui.char_height,
-		SIGN_WIDTH, gui.char_height, FALSE);
-}
-#endif
-
     void
 gui_mch_drawsign(row, col, typenr)
     int		row;

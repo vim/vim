@@ -33,8 +33,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
-Should readfile() ignore BOM when not in binary mode?
-
 Bug: searching for tags file uses 'suffixesadd', should not happen. (Dominique
 Pelle, 2010 June 28)
 

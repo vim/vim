@@ -392,7 +392,7 @@ messageFromEserve(XtPointer clientData UNUSED,
 
 			pingNum = atoi(&cmd[5]);
 			workshop_send_ack(ackNum);
-			WHAT DO I DO HERE?
+			/* WHAT DO I DO HERE? */
 #endif
 		}
 		HANDLE_ERRORS(cmd);
@@ -754,51 +754,6 @@ void	workshop_disconnect()
  * Utility functions
  */
 
-#if 0
-/* Set icon for the window */
-void
-workshop_set_icon(Display *display, Widget shell, char **xpmdata,
-		  int width, int height)
-{
-	Pixel		bgPixel;
-	XpmAttributes   xpmAttributes;
-	XSetWindowAttributes attr;
-	Window		iconWindow;
-	int		depth;
-	int		screenNum;
-	Pixmap		pixmap;
-
-	/* Create the pixmap/icon window which is shown when you
-	 * iconify the sccs viewer
-	 * This code snipped was adapted from Sun WorkShop's source base,
-	 * setIcon.cc.
-	 */
-	XtVaGetValues(shell, XmNbackground, &bgPixel, NULL);
-	screenNum = XScreenNumberOfScreen(XtScreen(shell));
-	depth = DisplayPlanes(display, screenNum);
-	xpmAttributes.valuemask = XpmColorSymbols;
-	xpmAttributes.numsymbols = 1;
-	xpmAttributes.colorsymbols =
-	    (XpmColorSymbol *)XtMalloc(sizeof (XpmColorSymbol) *
-	    xpmAttributes.numsymbols);
-	xpmAttributes.colorsymbols[0].name = NOCATGETS("BgColor");
-	xpmAttributes.colorsymbols[0].value = NULL;
-	xpmAttributes.colorsymbols[0].pixel = bgPixel;
-	if (XpmCreatePixmapFromData(display,
-	    RootWindow(display, screenNum), xpmdata, &pixmap,
-	    NULL, &xpmAttributes) >= 0) {
-		attr.background_pixmap = pixmap;
-		iconWindow = XCreateWindow(display, RootWindow(display,
-		    screenNum), 0, 0, width, height, 0, depth,
-				(unsigned int)CopyFromParent,
-		    CopyFromParent, CWBackPixmap, &attr);
-
-		XtVaSetValues(shell,
-		    XtNiconWindow, iconWindow, NULL);
-	}
-	XtFree((char *)xpmAttributes.colorsymbols);
-}
-#endif
 
 /* Minimize and maximize shells. From libutil's shell.cc. */
 
@@ -933,39 +888,6 @@ Boolean workshop_get_width_height(int *width, int *height)
 	return success;
 }
 
-#if 0
-Boolean workshop_get_rows_cols(int *rows, int *cols)
-{
-	static int	r = 0;
-	static int	c = 0;
-	static Boolean	firstTime = True;
-	static Boolean	success = False;
-
-	if (firstTime) {
-		char	*settings;
-
-		settings = getenv(NOCATGETS("SPRO_GUI_ROWS_COLS"));
-		if (settings != NULL) {
-			r = atoi(settings);
-			settings = strrchr(settings, ':');
-			if (settings++ != NULL) {
-				c = atoi(settings);
-			}
-			if (r > 0 && c > 0) {
-				success = True;
-			}
-			firstTime = False;
-		}
-	}
-
-	if (success) {
-		*rows = r;
-		*cols = c;
-	}
-	return success;
-}
-#endif
-
 /*
  * Toolbar code
  */
@@ -1050,20 +972,6 @@ void workshop_set_option_first(char *name, char *value)
 }
 
 
-#if 0
-/*
- * Send information to eserve on certain editor events
- * You must make sure these are called when necessary
- */
-void workshop_file_closed(char *filename)
-{
-	char buffer[2*MAXPATHLEN];
-	vim_snprintf(buffer, sizeof(buffer),
-			NOCATGETS("deletedFile %s\n"), filename);
-	dummy = write(sd, buffer, strlen(buffer));
-}
-#endif
-
 void workshop_file_closed_lineno(char *filename, int lineno)
 {
 	char buffer[2*MAXPATHLEN];
@@ -1092,24 +1000,6 @@ void workshop_file_saved(char *filename)
 	 * should deal with (for example, moving location-based breakpoints) */
 	workshop_moved_marks(filename);
 }
-
-#if 0
-void workshop_file_modified(char *filename)
-{
-	char buffer[2*MAXPATHLEN];
-	vim_snprintf(buffer, sizeof(buffer),
-			NOCATGETS("modifiedFile %s\n"), filename);
-	dummy = write(sd, buffer, strlen(buffer));
-}
-
-void workshop_move_mark(char *filename, int markId, int newLineno)
-{
-	char buffer[2*MAXPATHLEN];
-	vim_snprintf(buffer, sizeof(buffer),
-	       NOCATGETS("moveMark %s %d %d\n"), filename, markId, newLineno);
-	dummy = write(sd, buffer, strlen(buffer));
-}
-#endif
 
 void workshop_frame_moved(int new_x, int new_y, int new_w, int new_h)
 {

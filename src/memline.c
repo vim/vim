@@ -3355,26 +3355,6 @@ ml_firstmarked()
     return (linenr_T) 0;
 }
 
-#if 0  /* not used */
-/*
- * return TRUE if line 'lnum' has a mark
- */
-    int
-ml_has_mark(lnum)
-    linenr_T	lnum;
-{
-    bhdr_T	*hp;
-    DATA_BL	*dp;
-
-    if (curbuf->b_ml.ml_mfp == NULL
-			|| (hp = ml_find_line(curbuf, lnum, ML_FIND)) == NULL)
-	return FALSE;
-
-    dp = (DATA_BL *)(hp->bh_data);
-    return (int)((dp->db_index[lnum - curbuf->b_ml.ml_locked_low]) & DB_MARKED);
-}
-#endif
-
 /*
  * clear all DB_MARKED flags
  */

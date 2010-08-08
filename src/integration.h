@@ -410,15 +410,6 @@ void workshop_hotkey_pressed(void *frame, void *clientData);
 int workshop_invoked(void);
 #endif
 
-#if 0
-/*
- *Set the desktop icon of the current shell to the given xpm icon.
- * Standard WorkShop desktop icons should be 48x48.
- */
-void workshop_set_icon(Display *display, Widget shell, char **xpmdata,
-		       int width, int height);
-#endif
-
 
 /* Minimize (iconify) the given shell */
 void workshop_minimize_shell(Widget shell);

@@ -1824,27 +1824,6 @@ vim_strnicmp(s1, s2, len)
 }
 #endif
 
-#if 0	/* currently not used */
-/*
- * Check if string "s2" appears somewhere in "s1" while ignoring case.
- * Return NULL if not, a pointer to the first occurrence if it does.
- */
-    char_u *
-vim_stristr(s1, s2)
-    char_u	*s1;
-    char_u	*s2;
-{
-    char_u	*p;
-    int		len = STRLEN(s2);
-    char_u	*end = s1 + STRLEN(s1) - len;
-
-    for (p = s1; p <= end; ++p)
-	if (STRNICMP(p, s2, len) == 0)
-	    return p;
-    return NULL;
-}
-#endif
-
 /*
  * Version of strchr() and strrchr() that handle unsigned char strings
  * with characters from 128 to 255 correctly.  It also doesn't return a

@@ -32,9 +32,6 @@ char	*default_bat_dir = NULL;  /* when not NULL, use this as the default
 				     directory to write .bat files in */
 char	*default_vim_dir = NULL;  /* when not NULL, use this as the default
 				     install dir for NSIS */
-#if 0
-char	homedir[BUFSIZE];	/* home directory or "" */
-#endif
 
 /*
  * Structure used for each choice the user can make.
@@ -720,39 +717,6 @@ inspect_system(void)
 	fclose(fd);
     else
 	*oldvimrc = NUL;
-
-#if 0 /* currently not used */
-    /*
-     * Get default home directory.
-     * Prefer $HOME if it's set.  For Win NT use $HOMEDRIVE and $HOMEPATH.
-     * Otherwise, if there is a "c:" drive use that.
-     */
-    p = getenv("HOME");
-    if (p != NULL && *p != NUL && strlen(p) < BUFSIZE)
-	strcpy(homedir, p);
-    else
-    {
-	p = getenv("HOMEDRIVE");
-	if (p != NULL && *p != NUL && strlen(p) + 2 < BUFSIZE)
-	{
-	    strcpy(homedir, p);
-	    p = getenv("HOMEPATH");
-	    if (p != NULL && *p != NUL && strlen(homedir) + strlen(p) < BUFSIZE)
-		strcat(homedir, p);
-	    else
-		strcat(homedir, "\\");
-	}
-	else
-	{
-	    struct stat st;
-
-	    if (stat("c:\\", &st) == 0)
-		strcpy(homedir, "c:\\");
-	    else
-		*homedir = NUL;
-	}
-    }
-#endif
 }
 
 /*

@@ -41,18 +41,12 @@ void		 workshop_hotkeys(Boolean);
 
 static Boolean	 isShowing(int);
 static win_T	*get_window(buf_T *);
-#if 0
-static int	 get_buffer_number(buf_T *);
-#endif
 static void	 updatePriority(Boolean);
 static char	*addUniqueMnemonic(char *, char *);
 static char	*fixup(char *);
 static char	*get_selection(buf_T *);
 static char	*append_selection(int, char *, int *, int *);
 static void	 load_buffer_by_name(char *, int);
-#if 0
-static void	 load_buffer_by_number(int, int);
-#endif
 static void	 load_window(char *, int lnum);
 static void	 warp_to_pc(int);
 #ifdef FEAT_BEVAL
@@ -477,22 +471,6 @@ workshop_delete_mark(
     coloncmd(cbuf, TRUE);
 }
 
-#if 0	/* not used */
-    void
-workshop_delete_all_marks(
-    void	*window,
-    Boolean	 doRefresh)
-{
-#ifdef WSDEBUG_TRACE
-    if (WSDLEVEL(WS_TRACE_VERBOSE | WS_TRACE))
-	wstrace("workshop_delete_all_marks(%#x, %s)\n",
-		window, doRefresh ? "True" : "False");
-#endif
-
-    coloncmd("sign unplace *", TRUE);
-}
-#endif
-
     int
 workshop_get_mark_lineno(
 	char	*filename,
@@ -516,19 +494,6 @@ workshop_get_mark_lineno(
     return lineno;
 }
 
-
-#if 0	/* not used */
-    void
-workshop_adjust_marks(Widget *window, int pos,
-			int inserted, int deleted)
-{
-#ifdef WSDEBUG_TRACE
-    if (WSDLEVEL(WS_TRACE_VERBOSE | WS_TRACE))
-	wstrace("XXXworkshop_adjust_marks(%s, %d, %d, %d)\n",
-		window ? XtName(window) : "<None>", pos, inserted, deleted);
-#endif
-}
-#endif
 
 /*
  * Are there any moved marks? If so, call workshop_move_mark on
@@ -1361,26 +1326,6 @@ get_window(
     return wp;
 }
 
-
-#if 0 /* not used */
-    static int
-get_buffer_number(
-	buf_T		*buf)		/* buffer to get position of */
-{
-    buf_T	*bp;		/* iterate over buffer list */
-    int		 pos;		/* the position in the buffer list */
-
-    pos = 1;
-    for (bp = firstbuf; bp != NULL; bp = bp->b_next)
-    {
-	if (bp == buf)
-	    return pos;
-	pos++;
-    }
-
-    return 1;
-}
-#endif
 
     static void
 updatePriority(

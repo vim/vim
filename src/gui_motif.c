@@ -1335,18 +1335,11 @@ gui_mch_add_menu_item(menu, idx)
 	    else
 		wid = 4;
 
-#if 0
-	    /* We better use a FormWidget here, since it's far more
-	     * flexible in terms of size.  */
-	    type = xmFormWidgetClass;
-	    XtSetArg(args[n], XmNwidth, wid); n++;
-#else
 	    type = xmSeparatorWidgetClass;
 	    XtSetArg(args[n], XmNwidth, wid); n++;
 	    XtSetArg(args[n], XmNminWidth, wid); n++;
 	    XtSetArg(args[n], XmNorientation, XmVERTICAL); n++;
 	    XtSetArg(args[n], XmNseparatorType, XmSHADOW_ETCHED_IN); n++;
-#endif
 	}
 	else
 	{
@@ -2946,17 +2939,6 @@ gui_mch_compute_footer_height()
 
     return (int) height + top + bottom + (shadow << 1);
 }
-
-#if 0	    /* not used */
-    void
-gui_mch_set_footer_pos(h)
-    int	    h;			    /* textArea height */
-{
-    XtVaSetValues(footer,
-		  XmNtopOffset, h + 7,
-		  NULL);
-}
-#endif
 
     void
 gui_mch_enable_footer(showit)

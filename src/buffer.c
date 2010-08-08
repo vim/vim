@@ -398,13 +398,7 @@ close_buffer(win, buf, action)
     /* Return when a window is displaying the buffer or when it's not
      * unloaded. */
     if (buf->b_nwindows > 0 || !unload_buf)
-    {
-#if 0	    /* why was this here? */
-	if (buf == curbuf)
-	    u_sync();	    /* sync undo before going to another buffer */
-#endif
 	return;
-    }
 
     /* Always remove the buffer when there is no file name. */
     if (buf->b_ffname == NULL)

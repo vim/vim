@@ -682,40 +682,6 @@ _OnSettingChange(UINT n)
     return 0;
 }
 
-#if 0	/* disabled, a gap appears below and beside the window, and the window
-	   can be moved (in a strange way) */
-/*
- * Even though we have _DuringSizing() which makes the rubber band a valid
- * size, we need this for when the user maximises the window.
- * TODO: Doesn't seem to adjust the width though for some reason.
- */
-    static BOOL
-_OnWindowPosChanging(
-    HWND hwnd,
-    LPWINDOWPOS lpwpos)
-{
-    RECT    workarea_rect;
-
-    if (!(lpwpos->flags & SWP_NOSIZE))
-    {
-	if (IsMaximized(hwnd)
-		&& (os_version.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS
-		    || (os_version.dwPlatformId == VER_PLATFORM_WIN32_NT
-			&& os_version.dwMajorVersion >= 4)))
-	{
-	    SystemParametersInfo(SPI_GETWORKAREA, 0, &workarea_rect, 0);
-	    lpwpos->x = workarea_rect.left;
-	    lpwpos->y = workarea_rect.top;
-	    lpwpos->cx = workarea_rect.right - workarea_rect.left;
-	    lpwpos->cy = workarea_rect.bottom - workarea_rect.top;
-	}
-	gui_mswin_get_valid_dimensions(lpwpos->cx, lpwpos->cy,
-				     &lpwpos->cx, &lpwpos->cy);
-    }
-    return 0;
-}
-#endif
-
 #ifdef FEAT_NETBEANS_INTG
     static void
 _OnWindowPosChanged(
@@ -3078,14 +3044,8 @@ gui_mch_dialog(
 	return dfltbutton;   /* return default option */
 #endif
 
-#if 0
-    /* If there is no window yet, open it. */
-    if (s_hwnd == NULL && gui_mch_init() == FAIL)
-	return dfltbutton;
-#else
     if (s_hwnd == NULL)
 	get_dialog_font_metrics();
-#endif
 
     if ((type < 0) || (type > VIM_LAST_TYPE))
 	type = 0;
@@ -3443,15 +3403,6 @@ gui_mch_dialog(
 	    DLG_NONBUTTON_CONTROL + 0, (WORD)0x0082,
 	    dlg_icons[type]);
 
-#if 0
-    /* Dialog message */
-    p = add_dialog_element(p, SS_LEFT,
-	    PixelToDialogX(2 * dlgPaddingX + DLG_ICON_WIDTH),
-	    PixelToDialogY(dlgPaddingY),
-	    (WORD)(PixelToDialogX(messageWidth) + 1),
-	    PixelToDialogY(msgheight),
-	    DLG_NONBUTTON_CONTROL + 1, (WORD)0x0082, message);
-#else
     /* Dialog message */
     p = add_dialog_element(p, ES_LEFT|scroll_flag|ES_MULTILINE|ES_READONLY,
 	    PixelToDialogX(2 * dlgPaddingX + DLG_ICON_WIDTH),
@@ -3459,7 +3410,6 @@ gui_mch_dialog(
 	    (WORD)(PixelToDialogX(messageWidth) + 1),
 	    PixelToDialogY(msgheight),
 	    DLG_NONBUTTON_CONTROL + 1, (WORD)0x0081, message);
-#endif
 
     /* Edit box */
     if (textfield != NULL)
@@ -4288,18 +4238,6 @@ dyn_imm_load(void)
 
     return;
 }
-
-# if 0	/* not used */
-    int
-dyn_imm_unload(void)
-{
-    if (!hLibImm)
-	return FALSE;
-    FreeLibrary(hLibImm);
-    hLibImm = NULL;
-    return TRUE;
-}
-# endif
 
 #endif
 

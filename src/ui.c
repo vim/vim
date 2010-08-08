@@ -901,64 +901,6 @@ clip_process_selection(button, col, row, repeated_click)
 #endif
 }
 
-#if 0 /* not used */
-/*
- * Called after an Expose event to redraw the selection
- */
-    void
-clip_redraw_selection(x, y, w, h)
-    int	    x;
-    int	    y;
-    int	    w;
-    int	    h;
-{
-    VimClipboard    *cb = &clip_star;
-    int		    row1, col1, row2, col2;
-    int		    row;
-    int		    start;
-    int		    end;
-
-    if (cb->state == SELECT_CLEARED)
-	return;
-
-    row1 = check_row(Y_2_ROW(y));
-    col1 = check_col(X_2_COL(x));
-    row2 = check_row(Y_2_ROW(y + h - 1));
-    col2 = check_col(X_2_COL(x + w - 1));
-
-    /* Limit the rows that need to be re-drawn */
-    if (cb->start.lnum > row1)
-	row1 = cb->start.lnum;
-    if (cb->end.lnum < row2)
-	row2 = cb->end.lnum;
-
-    /* Look at each row that might need to be re-drawn */
-    for (row = row1; row <= row2; row++)
-    {
-	/* For the first selection row, use the starting selection column */
-	if (row == cb->start.lnum)
-	    start = cb->start.col;
-	else
-	    start = 0;
-
-	/* For the last selection row, use the ending selection column */
-	if (row == cb->end.lnum)
-	    end = cb->end.col;
-	else
-	    end = Columns;
-
-	if (col1 > start)
-	    start = col1;
-
-	if (col2 < end)
-	    end = col2 + 1;
-
-	if (end > start)
-	    gui_mch_invert_rectangle(row, start, 1, end - start);
-    }
-}
-#endif
-
 # if defined(FEAT_GUI) || defined(PROTO)
 /*
  * Redraw part of the selection if character at "row,col" is inside of it.

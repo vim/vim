@@ -192,9 +192,6 @@ static int  spell_bad_len = 0;	/* length of located bad word */
 #endif
 static void stop_insert __ARGS((pos_T *end_insert_pos, int esc));
 static int  echeck_abbr __ARGS((int));
-#if 0
-static void replace_push_off __ARGS((int c));
-#endif
 static int  replace_pop __ARGS((void));
 static void replace_join __ARGS((int off));
 static void replace_pop_ins __ARGS((void));
@@ -3352,19 +3349,6 @@ ins_compl_new_leader()
 	compl_restarting = FALSE;
     }
 
-#if 0   /* disabled, made CTRL-L, BS and typing char jump to original text. */
-    if (!compl_used_match)
-    {
-	/* Go to the original text, since none of the matches is inserted. */
-	if (compl_first_match->cp_prev != NULL
-		&& (compl_first_match->cp_prev->cp_flags & ORIGINAL_TEXT))
-	    compl_shown_match = compl_first_match->cp_prev;
-	else
-	    compl_shown_match = compl_first_match;
-	compl_curr_match = compl_shown_match;
-	compl_shows_dir = compl_direction;
-    }
-#endif
     compl_enter_selects = !compl_used_match;
 
     /* Show the popup menu with a different set of matches. */
@@ -7149,26 +7133,6 @@ replace_push_mb(p)
     for (j = l - 1; j >= 0; --j)
 	replace_push(p[j]);
     return l;
-}
-#endif
-
-#if 0
-/*
- * call replace_push(c) with replace_offset set to the first NUL.
- */
-    static void
-replace_push_off(c)
-    int	    c;
-{
-    char_u	*p;
-
-    p = replace_stack + replace_stack_nr;
-    for (replace_offset = 1; replace_offset < replace_stack_nr;
-							     ++replace_offset)
-	if (*--p == NUL)
-	    break;
-    replace_push(c);
-    replace_offset = 0;
 }
 #endif
 

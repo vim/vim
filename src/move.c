@@ -543,19 +543,6 @@ changed_cline_bef_curs_win(wp)
 						|VALID_CHEIGHT|VALID_TOPLINE);
 }
 
-#if 0 /* not used */
-/*
- * Call this function when the length of the cursor line (in screen
- * characters) has changed, and the position of the cursor doesn't change.
- * Need to take care of w_botline separately!
- */
-    void
-changed_cline_aft_curs()
-{
-    curwin->w_valid &= ~VALID_CHEIGHT;
-}
-#endif
-
 /*
  * Call this function when the length of a line (in screen characters) above
  * the cursor have changed.
@@ -613,46 +600,12 @@ invalidate_botline_win(wp)
     wp->w_valid &= ~(VALID_BOTLINE|VALID_BOTLINE_AP);
 }
 
-#if 0 /* never used */
-/*
- * Mark curwin->w_botline as approximated (because of some small change in the
- * buffer).
- */
-    void
-approximate_botline()
-{
-    curwin->w_valid &= ~VALID_BOTLINE;
-}
-#endif
-
     void
 approximate_botline_win(wp)
     win_T	*wp;
 {
     wp->w_valid &= ~VALID_BOTLINE;
 }
-
-#if 0 /* not used */
-/*
- * Return TRUE if curwin->w_botline is valid.
- */
-    int
-botline_valid()
-{
-    return (curwin->w_valid & VALID_BOTLINE);
-}
-#endif
-
-#if 0 /* not used */
-/*
- * Return TRUE if curwin->w_botline is valid or approximated.
- */
-    int
-botline_approximated()
-{
-    return (curwin->w_valid & VALID_BOTLINE_AP);
-}
-#endif
 
 /*
  * Return TRUE if curwin->w_wrow and curwin->w_wcol are valid.

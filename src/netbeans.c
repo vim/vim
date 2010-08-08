@@ -2031,11 +2031,6 @@ nb_do_cmd(
 		handle_key_queue();
 	    }
 
-#if 0  /* never used */
-	    buf->internalname = (char *)alloc_clear(8);
-	    sprintf(buf->internalname, "<%d>", bufno);
-	    buf->netbeansOwns = 0;
-#endif
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "setFullName"))
@@ -3252,26 +3247,8 @@ netbeans_removed(
     void
 netbeans_unmodified(buf_T *bufp UNUSED)
 {
-    if (!NETBEANS_OPEN)
-	return;
-
-#if 0
-    char_u	buf[128];
-    int		bufno;
-    nbbuf_T	*nbbuf;
-
-    /* This has been disabled, because NetBeans considers a buffer modified
+    /* This is a no-op, because NetBeans considers a buffer modified
      * even when all changes have been undone. */
-    nbbuf = nb_bufp2nbbuf_fire(bufp, &bufno);
-    if (nbbuf == NULL)
-	return;
-
-    nbbuf->modified = 0;
-
-    sprintf((char *)buf, "%d:unmodified=%d\n", bufno, r_cmdno);
-    nbdebug(("EVT: %s", buf));
-    nb_send((char *)buf, "netbeans_unmodified");
-#endif
 }
 
 /*

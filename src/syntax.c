@@ -4509,13 +4509,6 @@ get_syn_options(arg, opt, conceal_char)
 	}
 	else if (flagtab[fidx].argtype == 2)
 	{
-#if 0	    /* cannot happen */
-	    if (opt->cont_in_list == NULL)
-	    {
-		EMSG(_("E396: containedin argument not accepted here"));
-		return NULL;
-	    }
-#endif
 	    if (get_id_list(&arg, 11, &opt->cont_in_list) == FAIL)
 		return NULL;
 	}

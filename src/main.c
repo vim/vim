@@ -3255,10 +3255,6 @@ usage()
 # endif
     main_msg(_("-display <display>\tRun vim on <display>"));
     main_msg(_("-iconic\t\tStart vim iconified"));
-# if 0
-    main_msg(_("-name <name>\t\tUse resource as if vim was <name>"));
-    mch_msg(_("\t\t\t  (Unimplemented)\n"));
-# endif
     main_msg(_("-background <color>\tUse <color> for the background (also: -bg)"));
     main_msg(_("-foreground <color>\tUse <color> for normal text (also: -fg)"));
     main_msg(_("-font <font>\t\tUse <font> for normal text (also: -fn)"));
