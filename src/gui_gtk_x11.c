@@ -5109,13 +5109,20 @@ not_ascii:
 
 		    /* There is a previous glyph, so we deal with combining
 		     * characters the canonical way.
-		     * Older versions of Pango used a positive x_offset,
-		     * then set the width of the previous glyph to zero.
-		     * Newer versions of Pango use a negative x_offset.
+		     * In some circumstances Pango uses a positive x_offset,
+		     * then use the width of the previous glyph for this one
+		     * and set the previous width to zero.
+		     * Otherwise we get a negative x_offset, Pango has already
+		     * positioned the combining char, keep the widths as they
+		     * are.
 		     * For both adjust the x_offset to position the glyph in
-		     * the middle.  */
+		     * the middle. */
 		    if (glyph->geometry.x_offset >= 0)
+		    {
+			glyphs->glyphs[i].geometry.width =
+					 glyphs->glyphs[i - 1].geometry.width;
 			glyphs->glyphs[i - 1].geometry.width = 0;
+		    }
 		    width = cells * gui.char_width * PANGO_SCALE;
 		    glyph->geometry.x_offset +=
 					    MAX(0, width - cluster_width) / 2;
