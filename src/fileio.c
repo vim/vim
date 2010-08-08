@@ -3744,6 +3744,22 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 		     * can't delete an open file. */
 		    close(fd);
 		    mch_remove(IObuff);
+# ifdef MSWIN
+		    /* MS-Windows may trigger a virus scanner to open the
+		     * file, we can't delete it then.  Keep trying for half a
+		     * second. */
+		    {
+			int try;
+
+			for (try = 0; try < 10; ++try)
+			{
+			    if (mch_lstat((char *)IObuff, &st) < 0)
+				break;
+			    ui_delay(50L, TRUE);  /* wait 50 msec */
+			    mch_remove(IObuff);
+			}
+		    }
+# endif
 		}
 	    }
 	}

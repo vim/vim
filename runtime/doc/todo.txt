@@ -77,9 +77,6 @@ I often see pasted text (from Firefox, to Vim in xterm) appear twice.
 Also, Vim in xterm sometimes loses copy/paste ability (probably after running
 an external command).
 
-Win32: The "4913" file is sometimes not deleted.  Perhaps another program has
-opened it?  Use FILE_FLAG_DELETE_ON_CLOSE? (Craig Barkhouse, 2009 Nov 6)
-
 Jumplist doesn't work properly in Insert mode? (Jean Johner, 2010 Mar 20)
 
 Problem with transparent cmdline.  Also: Terminal title is wrong with
