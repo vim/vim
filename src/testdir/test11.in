@@ -8,13 +8,19 @@ Tests for autocommands:
 - FileReadPre		set options for decompression
 - FileReadPost		decompress the file
 
-Note: This test will fail if "gzip" is not available.
+Note: This test is skipped if "gzip" is not available.
 $GZIP is made empty, "-v" would cause trouble.
 Use a FileChangedShell autocommand to avoid a prompt for "Xtestfile.gz" being
 modified outside of Vim (noticed on Solaris).
 
 STARTTEST
 :so small.vim
+:" drop out when there is no gzip program
+:if !executable("gzip")
+: e! test.ok
+: w! test.out
+: qa!
+:endif
 :let $GZIP = ""
 :au FileChangedShell * echo "caught FileChangedShell"
 :set bin
