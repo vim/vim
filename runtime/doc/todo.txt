@@ -33,6 +33,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
+Test 73 fails on MS-Windows when compiled with DJGPP.
+
 Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
 CTRL-] on help tag |/[\n]| doesn't jump to the right place. (Tony Mechelynck,
