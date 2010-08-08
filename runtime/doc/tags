@@ -3735,7 +3735,6 @@ E392	syntax.txt	/*E392*
 E393	syntax.txt	/*E393*
 E394	syntax.txt	/*E394*
 E395	syntax.txt	/*E395*
-E396	syntax.txt	/*E396*
 E397	syntax.txt	/*E397*
 E398	syntax.txt	/*E398*
 E399	syntax.txt	/*E399*
@@ -5802,6 +5801,7 @@ g:netrw_use_nt_rcp	pi_netrw.txt	/*g:netrw_use_nt_rcp*
 g:netrw_win95ftp	pi_netrw.txt	/*g:netrw_win95ftp*
 g:netrw_winsize	pi_netrw.txt	/*g:netrw_winsize*
 g:netrw_xstrlen	pi_netrw.txt	/*g:netrw_xstrlen*
+g:syntax_on	syntax.txt	/*g:syntax_on*
 g:tar_browseoptions	pi_tar.txt	/*g:tar_browseoptions*
 g:tar_cmd	pi_tar.txt	/*g:tar_cmd*
 g:tar_copycmd	pi_tar.txt	/*g:tar_copycmd*

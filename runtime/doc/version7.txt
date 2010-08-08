@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.3e.  Last change: 2010 Aug 04
+*version7.txt*  For Vim version 7.3e.  Last change: 2010 Aug 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -7301,7 +7301,7 @@ In Visual mode with 'showcmd' display the number of bytes and characters.
 Allow synIDattr() getting GUI attributes when build without GUI.  (Matt
 Wozniski)
 
-Support completion for ":find".  Add test 73. (Nazri Ramliy)
+Support completion for ":find".  Added test 73. (Nazri Ramliy)
 
 Command line completion for :ownsyntax and :setfiletype. (Dominique Pelle)
 
@@ -10097,6 +10097,34 @@ characters.  (partly by James Vega)
 Set 'wrapscan' when checking the .po files. (Mike Williams)
 
 Win32: Put quotes around the gvim.exe path for the "Open with" menu entry.
+
+On MS-Windows sometimes files with number 4913 or higher are left behind.
+
+'suffixesadd' was used for finding tags file.
+
+Removed unused code.
+
+Improved positioning of combining characters in GTK.
+
+Made test 11 pass when there is no gzip program. (John Beckett)
+
+Changed readfile() to ignore byte order marks, unless in binary mode.
+
+On MS-Windows completion of shell commands didn't work.
+
+An unprintable multi-byte character at the start of the screen line caused the
+following text to be drawn at the wrong position.
+
+Got ml_get errors when using undo with 'virtualedit'.
+
+Call gui_mch_update() before triggering GuiEnter autocmd. (Ron Aaron)
+
+Unix "make install" installed a few Amiga .info files.
+
+Disallow setting 'ambiwidth' to "double" when 'listchars' or 'fillchars'
+contains a character that would become double width.
+
+Set 'wrapscan' when checking the .po files. (Mike Williams)
 
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -35,6 +35,9 @@ Before release 7.3:
 
 Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
+CTRL-] on help tag |/[\n]| doesn't jump to the right place. (Tony Mechelynck,
+2010 Aug 8)
+
 ":command Print echo 'print'" works, but ":Print" doesn't.  Builtin Print
 should be overruled. (Aaron Thoma)
 
