@@ -4163,6 +4163,7 @@ typedef struct ff_visited_list_hdr
  *   ffsc_level:	how many levels of dirs to search downwards
  *   ffsc_stopdirs_v:	array of stop directories for upward search
  *   ffsc_find_what:	FINDFILE_BOTH, FINDFILE_DIR or FINDFILE_FILE
+ *   ffsc_tagfile:	searching for tags file, don't use 'suffixesadd'
  */
 typedef struct ff_search_ctx_T
 {
@@ -4180,6 +4181,7 @@ typedef struct ff_search_ctx_T
      char_u			**ffsc_stopdirs_v;
 #endif
      int			ffsc_find_what;
+     int			ffsc_tagfile;
 } ff_search_ctx_T;
 
 /* locally needed functions */
@@ -4307,7 +4309,7 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, find_what,
     int		free_visited;
     int		find_what;
     void	*search_ctx_arg;
-    int		tagfile;
+    int		tagfile;	/* expanding names of tags files */
     char_u	*rel_fname;	/* file name to use for "." */
 {
 #ifdef FEAT_PATH_EXTRA
@@ -4329,6 +4331,7 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, find_what,
 	vim_memset(search_ctx, 0, sizeof(ff_search_ctx_T));
     }
     search_ctx->ffsc_find_what = find_what;
+    search_ctx->ffsc_tagfile = tagfile;
 
     /* clear the search context, but NOT the visited lists */
     ff_clear(search_ctx);
@@ -4899,7 +4902,10 @@ vim_findfile(search_ctx_arg)
 			 */
 #ifdef FEAT_SEARCHPATH
 			len = (int)STRLEN(file_path);
-			suf = curbuf->b_p_sua;
+			if (search_ctx->ffsc_tagfile)
+			    suf = (char_u *)"";
+			else
+			    suf = curbuf->b_p_sua;
 			for (;;)
 #endif
 			{
