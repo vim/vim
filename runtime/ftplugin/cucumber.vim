@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	Cucumber
 " Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
-" Last Change:	2010 May 21
+" Last Change:	2010 Aug 09
 
 " Only do this when not done yet for this buffer
 if (exists("b:did_ftplugin"))
@@ -80,7 +80,7 @@ function! s:stepmatch(receiver,target)
     endif
   catch
   endtry
-  if has("ruby")
+  if has("ruby") && pattern !~ '\\\@<!#{'
     ruby VIM.command("return #{if (begin; Kernel.eval('/'+VIM.evaluate('pattern')+'/'); rescue SyntaxError; end) === VIM.evaluate('a:target') then 1 else 0 end}")
   else
     return 0
