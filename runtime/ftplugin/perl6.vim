@@ -1,8 +1,11 @@
 " Vim filetype plugin file
-" Language:     Perl
+" Language:     Perl 6
 " Maintainer:   Andy Lester <andy@petdance.com>
-" URL:          http://github.com/petdance/vim-perl
-" Last Change:  2009-08-14
+" URL:          http://github.com/petdance/vim-perl/tree/master
+" Last Change:  2009-04-18
+" Contributors: Hinrik Örn Sigurðsson <hinrik.sig@gmail.com>
+"
+" Based on ftplugin/perl.vim by Dan Sharp <dwsharp at hotmail dot com>
 
 if exists("b:did_ftplugin") | finish | endif
 let b:did_ftplugin = 1
@@ -13,8 +16,6 @@ let s:save_cpo = &cpo
 set cpo-=C
 
 setlocal formatoptions+=crq
-setlocal keywordprg=perldoc\ -f
-
 setlocal comments=:#
 setlocal commentstring=#%s
 
@@ -31,41 +32,37 @@ endif
 setlocal include=\\<\\(use\\\|require\\)\\>
 setlocal includeexpr=substitute(substitute(v:fname,'::','/','g'),'$','.pm','')
 setlocal define=[^A-Za-z_]
+setlocal iskeyword=@,48-57,_,192-255
 
 " The following line changes a global variable but is necessary to make
-" gf and similar commands work.  The change to iskeyword was incorrect.
-" Thanks to Andrew Pimlott for pointing out the problem. If this causes a
-" problem for you, add an after/ftplugin/perl.vim file that contains
+" gf and similar commands work. Thanks to Andrew Pimlott for pointing out
+" the problem. If this causes a " problem for you, add an
+" after/ftplugin/perl6.vim file that contains
 "       set isfname-=:
 set isfname+=:
-"setlocal iskeyword=48-57,_,A-Z,a-z,:
 
 " Set this once, globally.
-if !exists("perlpath")
-    if executable("perl")
-      try
+if !exists("perl6path")
+    if executable("perl6")
 	if &shellxquote != '"'
-	    let perlpath = system('perl -e "print join(q/,/,@INC)"')
+	    let perl6path = system('perl6 -e "print join(q/,/,@*INC)"')
 	else
-	    let perlpath = system("perl -e 'print join(q/,/,@INC)'")
+	    let perl6path = system("perl6 -e 'print join(q/,/,@*INC)'")
 	endif
-	let perlpath = substitute(perlpath,',.$',',,','')
-      catch /E145:/
-	let perlpath = ".,,"
-      endtry
+	let perl6path = substitute(perl6path,',.$',',,','')
     else
-	" If we can't call perl to get its path, just default to using the
+	" If we can't call perl6 to get its path, just default to using the
 	" current directory and the directory of the current file.
-	let perlpath = ".,,"
+	let perl6path = ".,,"
     endif
 endif
 
-let &l:path=perlpath
+let &l:path=perl6path
 "---------------------------------------------
 
 " Undo the stuff we changed.
-let b:undo_ftplugin = "setlocal fo< com< cms< inc< inex< def< isf< kp<" .
-	    \	      " | unlet! b:browsefilter"
+let b:undo_ftplugin = "setlocal fo< com< cms< inc< inex< def< isk<" .
+	    \         " | unlet! b:browsefilter"
 
 " Restore the saved compatibility options.
 let &cpo = s:save_cpo

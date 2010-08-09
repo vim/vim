@@ -1,11 +1,12 @@
 " Vim filetype plugin file
-" Language:	XS (Perl extension interface language)
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2001 Sep 18
+" Language:     XS (Perl extension interface language)
+" Maintainer:   Andy Lester <andy@petdance.com>
+" URL:          http://github.com/petdance/vim-perl
+" Last Change:  2009-08-14
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
-  finish
+    finish
 endif
 
 " Just use the C plugin for now.

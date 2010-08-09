@@ -141,6 +141,7 @@ syn match perlLabel      "^\s*\h\w*\s*::\@!\%(\<v\d\+\s*:\)\@<!"
 " Special variables first ($^A, ...) and ($|, $', ...)
 syn match  perlVarPlain		 "$^[ACDEFHILMNOPRSTVWX]\="
 syn match  perlVarPlain		 "$[\\\"\[\]'&`+*.,;=%~!?@#$<>(-]"
+syn match  perlVarPlain		 "%+"
 syn match  perlVarPlain		 "$\%(0\|[1-9]\d*\)"
 " Same as above, but avoids confusion in $::foo (equivalent to $main::foo)
 syn match  perlVarPlain		 "$::\@!"
@@ -216,7 +217,8 @@ syn match  perlSpecialMatch	"(\*\%(\%(PRUNE\|SKIP\|THEN\)\%(:[^)]*\)\=\|\%(MARK\
 syn match  perlNotEmptyLine	"^\s\+$" contained
 " Highlight '} else if (...) {', it should be '} else { if (...) { ' or
 " '} elsif (...) {'.
-syn match perlElseIfError	"[^[:space:]{]\+" contained
+syn match perlElseIfError	"\s\+if" contained
+syn keyword perlElseIfError	elseif
 
 " Variable interpolation
 "
