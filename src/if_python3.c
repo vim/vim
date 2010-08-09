@@ -76,24 +76,30 @@ static void init_structs(void);
 
 #if defined(DYNAMIC_PYTHON3)
 
-#ifndef WIN3264
-#include <dlfcn.h>
-#define FARPROC void*
-#define HINSTANCE void*
-#define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
-#define close_dll dlclose
-#define symbol_from_dll dlsym
-#else
-#define load_dll LoadLibrary
-#define close_dll FreeLibrary
-#define symbol_from_dll GetProcAddress
-#endif
+# ifndef WIN3264
+#  include <dlfcn.h>
+#  define FARPROC void*
+#  define HINSTANCE void*
+#  ifdef FEAT_PYTHON
+   /* Don't use RTLD_GLOBAL, it may cause a crash if both :python and :py3 are
+    * used. But without it importing may fail, e.g., for termios. */
+#   define load_dll(n) dlopen((n), RTLD_LAZY)
+#  else
+#   define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
+#  endif
+#  define close_dll dlclose
+#  define symbol_from_dll dlsym
+# else
+#  define load_dll LoadLibrary
+#  define close_dll FreeLibrary
+#  define symbol_from_dll GetProcAddress
+# endif
 /*
  * Wrapper defines
  */
-#undef PyArg_Parse
+# undef PyArg_Parse
 # define PyArg_Parse py3_PyArg_Parse
-#undef PyArg_ParseTuple
+# undef PyArg_ParseTuple
 # define PyArg_ParseTuple py3_PyArg_ParseTuple
 # define PyDict_SetItemString py3_PyDict_SetItemString
 # define PyErr_BadArgument py3_PyErr_BadArgument
@@ -137,30 +143,31 @@ static void init_structs(void);
 # define _PyUnicode_AsString py3__PyUnicode_AsString
 # define PyObject_GenericGetAttr py3_PyObject_GenericGetAttr
 # define PySlice_Type (*py3_PySlice_Type)
-#ifdef Py_DEBUG
-    # define _Py_NegativeRefcount py3__Py_NegativeRefcount
-    # define _Py_RefTotal (*py3__Py_RefTotal)
-    # define _Py_Dealloc py3__Py_Dealloc
-    # define _PyObject_DebugMalloc py3__PyObject_DebugMalloc
-    # define _PyObject_DebugFree py3__PyObject_DebugFree
-#else
-    # define PyObject_Malloc py3_PyObject_Malloc
-    # define PyObject_Free py3_PyObject_Free
-#endif
+# ifdef Py_DEBUG
+#  define _Py_NegativeRefcount py3__Py_NegativeRefcount
+#  define _Py_RefTotal (*py3__Py_RefTotal)
+#  define _Py_Dealloc py3__Py_Dealloc
+#  define _PyObject_DebugMalloc py3__PyObject_DebugMalloc
+#  define _PyObject_DebugFree py3__PyObject_DebugFree
+# else
+#  define PyObject_Malloc py3_PyObject_Malloc
+#  define PyObject_Free py3_PyObject_Free
+# endif
 # define PyType_GenericAlloc py3_PyType_GenericAlloc
 # define PyType_GenericNew py3_PyType_GenericNew
 # define PyModule_Create2 py3_PyModule_Create2
-#undef PyUnicode_FromString
+# undef PyUnicode_FromString
 # define PyUnicode_FromString py3_PyUnicode_FromString
-#undef PyUnicode_FromStringAndSize
+# undef PyUnicode_FromStringAndSize
 # define PyUnicode_FromStringAndSize py3_PyUnicode_FromStringAndSize
 
-#ifdef Py_DEBUG
-#undef PyObject_NEW
-#define PyObject_NEW(type, typeobj) \
+# ifdef Py_DEBUG
+#  undef PyObject_NEW
+#  define PyObject_NEW(type, typeobj) \
 ( (type *) PyObject_Init( \
 	(PyObject *) _PyObject_DebugMalloc( _PyObject_SIZE(typeobj) ), (typeobj)) )
-#endif
+# endif
+
 /*
  * Pointers for dynamic link
  */
@@ -212,16 +219,16 @@ static PyObject* (*py3_PyModule_Create2)(struct PyModuleDef* module, int module_
 static PyObject* (*py3_PyType_GenericAlloc)(PyTypeObject *type, Py_ssize_t nitems);
 static PyObject* (*py3_PyType_GenericNew)(PyTypeObject *type, PyObject *args, PyObject *kwds);
 static PyTypeObject* py3_PySlice_Type;
-#ifdef Py_DEBUG
+# ifdef Py_DEBUG
     static void (*py3__Py_NegativeRefcount)(const char *fname, int lineno, PyObject *op);
     static Py_ssize_t* py3__Py_RefTotal;
     static void (*py3__Py_Dealloc)(PyObject *obj);
     static void (*py3__PyObject_DebugFree)(void*);
     static void* (*py3__PyObject_DebugMalloc)(size_t);
-#else
+# else
     static void (*py3_PyObject_Free)(void*);
     static void* (*py3_PyObject_Malloc)(size_t);
-#endif
+# endif
 
 static HINSTANCE hinstPy3 = 0; /* Instance of python.dll */
 
@@ -294,16 +301,16 @@ static struct
     {"PyType_GenericAlloc", (PYTHON_PROC*)&py3_PyType_GenericAlloc},
     {"PyType_GenericNew", (PYTHON_PROC*)&py3_PyType_GenericNew},
     {"PySlice_Type", (PYTHON_PROC*)&py3_PySlice_Type},
-#ifdef Py_DEBUG
+# ifdef Py_DEBUG
     {"_Py_NegativeRefcount", (PYTHON_PROC*)&py3__Py_NegativeRefcount},
     {"_Py_RefTotal", (PYTHON_PROC*)&py3__Py_RefTotal},
     {"_Py_Dealloc", (PYTHON_PROC*)&py3__Py_Dealloc},
     {"_PyObject_DebugFree", (PYTHON_PROC*)&py3__PyObject_DebugFree},
     {"_PyObject_DebugMalloc", (PYTHON_PROC*)&py3__PyObject_DebugMalloc},
-#else
+# else
     {"PyObject_Malloc", (PYTHON_PROC*)&py3_PyObject_Malloc},
     {"PyObject_Free", (PYTHON_PROC*)&py3_PyObject_Free},
-#endif
+# endif
     {"", NULL},
 };
 
@@ -331,7 +338,8 @@ py3_runtime_link_init(char *libname, int verbose)
     int i;
     void *ucs_from_string, *ucs_from_string_and_size;
 
-#if defined(UNIX) && defined(FEAT_PYTHON)
+# if 0  /* this should be OK now that we don't use RTLD_GLOBAL */
+# if defined(UNIX) && defined(FEAT_PYTHON)
     /* Can't have Python and Python3 loaded at the same time, it may cause a
      * crash. */
     if (python_loaded())
@@ -339,7 +347,8 @@ py3_runtime_link_init(char *libname, int verbose)
 	EMSG(_("E999: Python: Cannot use :py and :py3 in one session"));
 	return FAIL;
     }
-#endif
+# endif
+# endif
 
     if (hinstPy3 != 0)
 	return OK;

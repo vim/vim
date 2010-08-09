@@ -408,6 +408,8 @@ CClink = $(CC)
 #	ln -s python3 python3.1
 # If both python2.x and python3.x are enabled then the linking will be via
 # dlopen(), dlsym(), dlclose(), i.e. pythonX.Y.so must be available
+# However, this may still cause problems, such as "import termios" failing.
+# Build two separate versions of Vim in that case.
 #CONF_OPT_PYTHON = --enable-pythoninterp
 #CONF_OPT_PYTHON3 = --enable-python3interp
 
