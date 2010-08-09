@@ -22,6 +22,10 @@
 # include <time.h>	/* for strftime() */
 #endif
 
+#ifdef VMS
+# include <float.h>
+#endif
+
 #ifdef MACOS
 # include <time.h>	/* for time_t */
 #endif
@@ -4807,11 +4811,11 @@ eval6(arg, rettv, evaluate, want_string)
 		    if (f2 == 0.0)
 		    {
 			if (f1 == 0)
-			    f1 = -0x7fffffffL - 1L;     /* similar to NaN */
+			    f1 = -1 * __F_FLT_MAX - 1L;   /* similar to NaN */
 			else if (f1 < 0)
-			    f1 = -0x7fffffffL;
+			    f1 = -1 * __F_FLT_MAX;
 			else
-			    f1 = 0x7fffffffL;
+			    f1 = __F_FLT_MAX;
 		    }
 		    else
 			f1 = f1 / f2;
