@@ -15824,7 +15824,7 @@ set_qf_ll_list(wp, list_arg, action_arg, rettv)
 		action = *act;
 	}
 
-	if (l != NULL && set_errorlist(wp, l, action) == OK)
+	if (l != NULL && set_errorlist(wp, l, action, NULL) == OK)
 	    rettv->vval.v_number = 0;
     }
 #endif

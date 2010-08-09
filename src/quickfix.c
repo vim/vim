@@ -3593,13 +3593,14 @@ get_errorlist(wp, list)
 
 /*
  * Populate the quickfix list with the items supplied in the list
- * of dictionaries.
+ * of dictionaries. "title" will be copied to w:quickfix_title
  */
     int
-set_errorlist(wp, list, action)
+set_errorlist(wp, list, action, title)
     win_T	*wp;
     list_T	*list;
     int		action;
+    char_u	*title;
 {
     listitem_T	*li;
     dict_T	*d;
@@ -3623,7 +3624,7 @@ set_errorlist(wp, list, action)
 
     if (action == ' ' || qi->qf_curlist == qi->qf_listcount)
 	/* make place for a new list */
-	qf_new_list(qi, NULL);
+	qf_new_list(qi, title);
     else if (action == 'a' && qi->qf_lists[qi->qf_curlist].qf_count > 0)
 	/* Adding to existing list, find last entry. */
 	for (prevp = qi->qf_lists[qi->qf_curlist].qf_start;

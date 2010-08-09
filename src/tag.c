@@ -911,7 +911,8 @@ do_tag(tag, type, count, forceit, verbose)
 			dict_add_nr_str(dict, "pattern", 0L, cmd);
 		}
 
-		set_errorlist(curwin, list, ' ');
+		vim_snprintf(IObuff, IOSIZE, "ltag %s", tag);
+		set_errorlist(curwin, list, ' ', IObuff);
 
 		list_free(list, TRUE);
 
