@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 7.3e.  Last change: 2007 Aug 30
+*gui_w32.txt*   For Vim version 7.3f.  Last change: 2007 Aug 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
