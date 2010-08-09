@@ -185,8 +185,11 @@ netbeans_close(void)
     setcursor();
     out_flush();
 #ifdef FEAT_GUI
-    gui_update_cursor(TRUE, FALSE);
-    gui_mch_flush();
+    if (gui.in_use)
+    {
+	gui_update_cursor(TRUE, FALSE);
+	gui_mch_flush();
+    }
 #endif
 }
 
@@ -1890,7 +1893,8 @@ nb_do_cmd(
 	    maketitle();
 	    buf->insertDone = FALSE;
 #if defined(FEAT_MENU) && defined(FEAT_GUI)
-	    gui_update_menus(0);
+	    if (gui.in_use)
+		gui_update_menus(0);
 #endif
 /* =====================================================================*/
 	}
@@ -2051,7 +2055,8 @@ nb_do_cmd(
 	    buf->bufp = curbuf;
 	    maketitle();
 #if defined(FEAT_MENU) && defined(FEAT_GUI)
-	    gui_update_menus(0);
+	    if (gui.in_use)
+		gui_update_menus(0);
 #endif
 /* =====================================================================*/
 	}
@@ -2075,7 +2080,8 @@ nb_do_cmd(
 	    maketitle();
 #endif
 #if defined(FEAT_MENU) && defined(FEAT_GUI)
-	    gui_update_menus(0);
+	    if (gui.in_use)
+		gui_update_menus(0);
 #endif
 /* =====================================================================*/
 	}
@@ -2102,7 +2108,7 @@ nb_do_cmd(
 
 #ifdef FEAT_GUI
 		/* Side effect!!!. */
-		if (!gui.starting)
+		if (gui.in_use)
 		    gui_mch_set_foreground();
 #endif
 	    }
@@ -2112,7 +2118,7 @@ nb_do_cmd(
 	{
 #ifdef FEAT_GUI
 	    /* Bring gvim to the foreground. */
-	    if (!gui.starting)
+	    if (gui.in_use)
 		gui_mch_set_foreground();
 #endif
 /* =====================================================================*/
@@ -2246,14 +2252,17 @@ nb_do_cmd(
 	    setcursor();
 	    out_flush();
 #ifdef FEAT_GUI
-	    gui_update_cursor(TRUE, FALSE);
-	    gui_mch_flush();
+	    if (gui.in_use)
+	    {
+		gui_update_cursor(TRUE, FALSE);
+		gui_mch_flush();
+	    }
 #endif
 	    /* Quit a hit-return or more prompt. */
 	    if (State == HITRETURN || State == ASKMORE)
 	    {
 #ifdef FEAT_GUI_GTK
-		if (gtk_main_level() > 0)
+		if (gui.in_use && gtk_main_level() > 0)
 		    gtk_main_quit();
 #endif
 	    }
@@ -2637,14 +2646,17 @@ nb_do_cmd(
 	setcursor();
 	out_flush();
 #ifdef FEAT_GUI
-	gui_update_cursor(TRUE, FALSE);
-	gui_mch_flush();
+	if (gui.in_use)
+	{
+	    gui_update_cursor(TRUE, FALSE);
+	    gui_mch_flush();
+	}
 #endif
 	/* Quit a hit-return or more prompt. */
 	if (State == HITRETURN || State == ASKMORE)
 	{
 #ifdef FEAT_GUI_GTK
-	    if (gtk_main_level() > 0)
+	    if (gui.in_use && gtk_main_level() > 0)
 		gtk_main_quit();
 #endif
 	}
@@ -2689,8 +2701,11 @@ coloncmd(char *cmd, ...)
     out_flush();		/* make sure output has been written */
 
 #ifdef FEAT_GUI
-    gui_update_cursor(TRUE, FALSE);
-    gui_mch_flush();
+    if (gui.in_use)
+    {
+	gui_update_cursor(TRUE, FALSE);
+	gui_mch_flush();
+    }
 #endif
 }
 
@@ -2987,8 +3002,11 @@ netbeans_open(char *params, int doabort)
     setcursor();
     out_flush();
 #ifdef FEAT_GUI
-    gui_update_cursor(TRUE, FALSE);
-    gui_mch_flush();
+    if (gui.in_use)
+    {
+	gui_update_cursor(TRUE, FALSE);
+	gui_mch_flush();
+    }
 #endif
 }
 
