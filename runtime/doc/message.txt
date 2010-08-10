@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 7.3f.  Last change: 2010 Jul 26
+*message.txt*   For Vim version 7.3f.  Last change: 2010 Aug 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -547,7 +547,7 @@ Vim (and Vi) expect tags files to be sorted in ASCII order.  Binary searching
 can then be used, which is a lot faster than a linear search.  If your tags
 files are not properly sorted, reset the |'tagbsearch'| option.
 This message is only given when Vim detects a problem when searching for a
-tag.  Sometimes this message is not given, even thought the tags file is not
+tag.  Sometimes this message is not given, even though the tags file is not
 properly sorted.
 
 							*E460*  >

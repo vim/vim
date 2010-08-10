@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3f.  Last change: 2010 Aug 08
+*syntax.txt*	For Vim version 7.3f.  Last change: 2010 Aug 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2613,7 +2613,7 @@ redrawing can become slow.
 TEX						*tex.vim* *ft-tex-syntax*
 
 								*tex-folding*
-Want Syntax Folding? ~
+ Tex: Want Syntax Folding? ~
 
 As of version 28 of <syntax/tex.vim>, syntax-based folding of parts, chapters,
 sections, subsections, etc are supported.  Put >
@@ -2623,7 +2623,7 @@ modeline at the end of your LaTeX file: >
 	% vim: fdm=syntax
 <
 								*tex-nospell*
-Don't Want Spell Checking In Comments? ~
+ Tex: Don't Want Spell Checking In Comments? ~
 
 Some folks like to include things like source code in comments and so would
 prefer that spell checking be disabled in comments in LaTeX files.  To do
@@ -2631,15 +2631,15 @@ this, put the following in your <.vimrc>: >
       let g:tex_comment_nospell= 1
 <
 								*tex-verb*
-Want Spell Checking in Verbatim Zones?~
+ Tex: Want Spell Checking in Verbatim Zones?~
 
 Often verbatim regions are used for things like source code; seldom does
 one want source code spell-checked.  However, for those of you who do
 want your verbatim zones spell-checked, put the following in your <.vimrc>: >
 	let g:tex_verbspell= 1
-
+<
 								*tex-runon*
-Run-on Comments/Math? ~
+ Tex: Run-on Comments or MathZones ~
 
 The <syntax/tex.vim> highlighting supports TeX, LaTeX, and some AmsTeX.  The
 highlighting supports three primary zones/regions: normal, texZone, and
@@ -2652,7 +2652,7 @@ which will forcibly terminate the highlighting of either a texZone or a
 texMathZone.
 
 								*tex-slow*
-Slow Syntax Highlighting? ~
+ Tex: Slow Syntax Highlighting? ~
 
 If you have a slow computer, you may wish to reduce the values for >
 	:syn sync maxlines=200
@@ -2662,7 +2662,7 @@ increase them.	This primarily affects synchronizing (i.e. just what group,
 if any, is the text at the top of the screen supposed to be in?).
 
 					    *tex-morecommands* *tex-package*
-Want To Highlight More Commands? ~
+ Tex: Want To Highlight More Commands? ~
 
 LaTeX is a programmable language, and so there are thousands of packages full
 of specialized LaTeX commands, syntax, and fonts.  If you're using such a
@@ -2672,7 +2672,7 @@ techniques in |mysyntaxfile-add| to extend or modify the highlighting provided
 by syntax/tex.vim.
 
 								*tex-error*
-Excessive Error Highlighting? ~
+ Tex: Excessive Error Highlighting? ~
 
 The <tex.vim> supports lexical error checking of various sorts.  Thus,
 although the error checking is ofttimes very useful, it can indicate
@@ -2682,7 +2682,7 @@ you may put in your <.vimrc> the following statement: >
 and all error checking by <syntax/tex.vim> will be suppressed.
 
 								*tex-math*
-Need a new Math Group? ~
+ Tex: Need a new Math Group? ~
 
 If you want to include a new math group in your LaTeX, the following
 code shows you an example as to how you might do so: >
@@ -2697,7 +2697,7 @@ The "starform" variable, if true, implies that your new math group
 has a starred form (ie. eqnarray*).
 
 								*tex-style*
-Starting a New Style? ~
+ Tex: Starting a New Style? ~
 
 One may use "\makeatletter" in *.tex files, thereby making the use of "@" in
 commands available.  However, since the *.tex file doesn't have one of the
@@ -2711,7 +2711,7 @@ Putting "let g:tex_stylish=1" into your <.vimrc> will make <syntax/tex.vim>
 always accept such use of @.
 
 					*tex-cchar* *tex-cole* *tex-conceal*
-Taking Advantage of Conceal Mode~
+ Tex: Taking Advantage of Conceal Mode~
 
 If you have |'conceallevel'| set to 2 and if your encoding is utf-8, then a
 number of character sequences can be translated into appropriate utf-8 glyphs,
@@ -2722,6 +2722,22 @@ In fact, only a few characters are supported as subscripts.
 
 One way to use this is to have vertically split windows (see |CTRL-W_v|); one
 with |'conceallevel'| at 0 and the other at 2; and both using |'scrollbind'|.
+
+							*g:tex_conceal*
+ Tex: Selective Conceal Mode~
+
+You may selectively use conceal mode by setting g:tex_conceal in your
+<.vimrc>.  By default it is set to "admgs" to enable conceal for the
+following sets of characters: >
+
+	a = accents/ligatures
+	d = delimiters
+	m = math symbols
+	g = Greek
+	s = superscripts/subscripts
+<
+By leaving one or more of these out, the associated conceal-character
+substitution will not be made.
 
 
 TF						*tf.vim* *ft-tf-syntax*

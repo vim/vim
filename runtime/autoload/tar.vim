@@ -1,7 +1,7 @@
 " tar.vim: Handles browsing tarfiles
 "            AUTOLOAD PORTION
-" Date:			Jul 27, 2010
-" Version:		25
+" Date:			Aug 09, 2010
+" Version:		26
 " Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:		Vim License  (see vim's :help license)
 "
@@ -22,7 +22,7 @@
 if &cp || exists("g:loaded_tar")
  finish
 endif
-let g:loaded_tar= "v25"
+let g:loaded_tar= "v26"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** this version of tar needs vim 7.2"
@@ -127,7 +127,7 @@ fun! tar#Browse(tarfile)
   if &ma != 1
    set ma
   endif
-  let w:tarfile= a:tarfile
+  let b:tarfile= a:tarfile
 
   setlocal noswapfile
   setlocal buftype=nofile
@@ -198,13 +198,13 @@ fun! tar#Browse(tarfile)
   noremap <silent> <buffer> <cr> :call <SID>TarBrowseSelect()<cr>
 
   let &report= repkeep
-"  call Dret("tar#Browse : w:tarfile<".w:tarfile.">")
+"  call Dret("tar#Browse : b:tarfile<".b:tarfile.">")
 endfun
 
 " ---------------------------------------------------------------------
 " TarBrowseSelect: {{{2
 fun! s:TarBrowseSelect()
-"  call Dfunc("TarBrowseSelect() w:tarfile<".w:tarfile."> curfile<".expand("%").">")
+"  call Dfunc("TarBrowseSelect() b:tarfile<".b:tarfile."> curfile<".expand("%").">")
   let repkeep= &report
   set report=10
   let fname= getline(".")
@@ -224,8 +224,8 @@ fun! s:TarBrowseSelect()
    return
   endif
 
-  " about to make a new window, need to use w:tarfile
-  let tarfile= w:tarfile
+  " about to make a new window, need to use b:tarfile
+  let tarfile= b:tarfile
   let curfile= expand("%")
   if has("win32") && executable("cygpath")
    " assuming cygwin
@@ -313,7 +313,7 @@ fun! tar#Read(fname,mode)
    setlocal ro
   endif
 
-  let w:tarfile= a:fname
+  let b:tarfile= a:fname
   exe "file tarfile::".fnameescape(fname)
 
   " cleanup
@@ -321,13 +321,13 @@ fun! tar#Read(fname,mode)
   set nomod
 
   let &report= repkeep
-"  call Dret("tar#Read : w:tarfile<".w:tarfile.">")
+"  call Dret("tar#Read : b:tarfile<".b:tarfile.">")
 endfun
 
 " ---------------------------------------------------------------------
 " tar#Write: {{{2
 fun! tar#Write(fname)
-"  call Dfunc("tar#Write(fname<".a:fname.">) w:tarfile<".w:tarfile."> tblfile_".winnr()."<".s:tblfile_{winnr()}.">")
+"  call Dfunc("tar#Write(fname<".a:fname.">) b:tarfile<".b:tarfile."> tblfile_".winnr()."<".s:tblfile_{winnr()}.">")
   let repkeep= &report
   set report=10
 
@@ -383,8 +383,8 @@ fun! tar#Write(fname)
   cd _ZIPVIM_
 "  call Decho("current directory now: ".getcwd())
 
-  let tarfile = substitute(w:tarfile,'tarfile:\(.\{-}\)::.*$','\1','')
-  let fname   = substitute(w:tarfile,'tarfile:.\{-}::\(.*\)$','\1','')
+  let tarfile = substitute(b:tarfile,'tarfile:\(.\{-}\)::.*$','\1','')
+  let fname   = substitute(b:tarfile,'tarfile:.\{-}::\(.*\)$','\1','')
 
   " handle compressed archives
   if tarfile =~# '\.bz2'

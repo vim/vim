@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3f.  Last change: 2010 Aug 09
+*todo.txt*      For Vim version 7.3f.  Last change: 2010 Aug 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,11 +32,14 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 'cursorline' stops too early in a help file, caused by conceal feature.
 
+Test 73 fails on MS-Windows when compiled with DJGPP.
+:find completion with 'path' set to "./**" results in full path for
+"./subdir/file", should shorten to start with "./".
+
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
-Test 73 fails on MS-Windows when compiled with DJGPP.
-Possibly change WIN3264 to MSWIN || MSDOS.
+Problem with \NL in Ex script. (Ray Frish, 2010 Aug 10)
 
 Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 

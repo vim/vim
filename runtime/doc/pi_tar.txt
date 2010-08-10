@@ -1,4 +1,4 @@
-*pi_tar.txt*	For Vim version 7.3f.  Last change: 2010 Jul 27
+*pi_tar.txt*	For Vim version 7.3f.  Last change: 2010 Aug 09
 
 		       +====================+
 		       | Tar File Interface |
@@ -83,6 +83,8 @@ Copyright 2005-2010: The GPL (gnu public license) applies to	*tar-copyright*
 4. History						*tar-history*
 
 
+   v26 Aug 09, 2010 * uses buffer-local instead of window variables to hold
+		      tarfile name
    v25 Jun 19, 2010 * (Jan Steffens) added support for xz compression
    v24 Apr 07, 2009 * :Untarvim command implemented
        Sep 28, 2009 * Added lzma support

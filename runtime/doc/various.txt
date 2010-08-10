@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.3f.  Last change: 2010 Aug 01
+*various.txt*   For Vim version 7.3f.  Last change: 2010 Aug 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -364,7 +364,7 @@ m  *+ole*		Win32 GUI only: |ole-interface|
 N  *+path_extra*	Up/downwards search in 'path' and 'tags'
 m  *+perl*		Perl interface |perl|
 m  *+perl/dyn*		Perl interface |perl-dynamic| |/dyn|
-H  *+persistent_undo*	Persistent undo |undo-persistence|
+N  *+persistent_undo*	Persistent undo |undo-persistence|
    *+postscript*	|:hardcopy| writes a PostScript file
 N  *+printer*		|:hardcopy| command
 H  *+profile*		|:profile| command
