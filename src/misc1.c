@@ -9374,7 +9374,7 @@ get_path_cutoff(fname, gap)
 	int j = 0;
 
 	while ((fname[j] == path_part[i][j]
-#if defined(WIN3264)
+# if defined(MSWIN) || defined(MSDOS)
 		|| (vim_ispathsep(fname[j]) && vim_ispathsep(path_part[i][j]))
 #endif
 			     ) && fname[j] != NUL && path_part[i][j] != NUL)
@@ -9389,7 +9389,7 @@ get_path_cutoff(fname, gap)
     /* Skip to the file or directory name */
     if (cutoff != NULL)
 	while (
-#if defined(WIN3264)
+# if defined(MSWIN) || defined(MSDOS)
 		*cutoff == '/'
 #else
 		vim_ispathsep(*cutoff)
@@ -9460,7 +9460,7 @@ uniquefy_paths(gap, pattern)
 
 	len = (int)STRLEN(path);
 	while (dir_end > path &&
-#if defined(WIN3264)
+# if defined(MSWIN) || defined(MSDOS)
 		*dir_end != '/'
 #else
 		!vim_ispathsep(*dir_end)
