@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-19 19:17+0200\n"
-"PO-Revision-Date: 2010-07-19 19:43+0200\n"
+"POT-Creation-Date: 2010-08-10 18:13+0200\n"
+"PO-Revision-Date: 2010-08-10 18:15+0200\n"
 "Last-Translator: Mikolaj Machowski <mikmach@wp.pl>\n"
 "Language-Team: Polish <kde-i18n-doc@kde.org>\n"
 "MIME-Version: 1.0\n"
@@ -34,6 +34,12 @@ msgstr "E818: test sha256 nie powiód³ siê"
 
 msgid "E819: Blowfish test failed"
 msgstr "E819: test Blowfisha nie powiód³ siê"
+
+msgid "[Location List]"
+msgstr "[Lista lokacji]"
+
+msgid "[Quickfix List]"
+msgstr "[Lista quickfix]"
 
 msgid "E82: Cannot allocate any buffer, exiting..."
 msgstr "E82: Nie mogê zarezerwowaæ bufora; zakoñczenie..."
@@ -173,12 +179,6 @@ msgid ""
 msgstr ""
 "\n"
 "# Lista buforów:\n"
-
-msgid "[Location List]"
-msgstr "[Lista lokacji]"
-
-msgid "[Quickfix List]"
-msgstr "[Lista quickfix]"
 
 msgid "[Scratch]"
 msgstr "[Notka]"
@@ -2585,6 +2585,9 @@ msgstr "numer wiersza poza zakresem"
 msgid "not allowed in the Vim sandbox"
 msgstr "Niedozwolone w piaskownicy Vima"
 
+msgid "E999: Python: Cannot use :py and :py3 in one session"
+msgstr "E999: Python: nie mo¿na u¿ywaæ :py i :py3 w czasie jednej sesji"
+
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
 "loaded."
@@ -2601,51 +2604,9 @@ msgstr "softspace musi byæ liczb¹ ca³kowit¹"
 msgid "invalid attribute"
 msgstr "niepoprawny atrybut"
 
-msgid "writelines() requires list of strings"
-msgstr "writelines() wymaga listy ci¹gów"
-
-msgid "E264: Python: Error initialising I/O objects"
-msgstr "E264: Python: B³¹d w uruchomieniu obiektów I/O"
-
-msgid "attempt to refer to deleted buffer"
-msgstr "próba odniesienia do skasowanego bufora"
-
-msgid "line number out of range"
-msgstr "numer wiersza poza zakresem"
-
 #, c-format
 msgid "<buffer object (deleted) at %p>"
 msgstr "<obiekt bufora (skasowany) w %p>"
-
-msgid "invalid mark name"
-msgstr "niepoprawna nazwa zak³adki"
-
-msgid "no such buffer"
-msgstr "nie ma takiego bufora"
-
-msgid "attempt to refer to deleted window"
-msgstr "próba odniesienia do skasowanego okna"
-
-msgid "readonly attribute"
-msgstr "atrybut tylko do odczytu"
-
-msgid "cursor position outside buffer"
-msgstr "pozycja kursora poza buforem"
-
-#, c-format
-msgid "<window object (deleted) at %p>"
-msgstr "<obiekt okna (skasowany) w %p>"
-
-#, c-format
-msgid "<window object (unknown) at %p>"
-msgstr "<obiekt okna (nieznany) w %p>"
-
-#, c-format
-msgid "<window %d>"
-msgstr "<okno %d>"
-
-msgid "no such window"
-msgstr "nie ma takiego okna"
 
 msgid "E659: Cannot invoke Python recursively"
 msgstr "E659: Nie mo¿na wywo³aæ Pythona rekursywnie"
@@ -2780,6 +2741,9 @@ msgstr "obecnie nie zaimplementowano"
 msgid "cannot set line(s)"
 msgstr "nie mogê ustawiæ wiersza(y)"
 
+msgid "invalid mark name"
+msgstr "niepoprawna nazwa zak³adki"
+
 msgid "mark not set"
 msgstr "zak³adka nie ustawiona"
 
@@ -2789,6 +2753,9 @@ msgstr "wiersz %d kolumna %d"
 
 msgid "cannot insert/append line"
 msgstr "nie mogê wprowadziæ/do³¹czyæ wiersza"
+
+msgid "line number out of range"
+msgstr "numer wiersza poza zakresem"
 
 msgid "unknown flag: "
 msgstr "nieznana flaga: "
@@ -3154,7 +3121,9 @@ msgid "--servername <name>\tSend to/become the Vim server <name>"
 msgstr "--servername <nazwa>\t\tOdsy³aj do/stañ siê serwerem Vim <nazwa>"
 
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
-msgstr "--startuptime <plik>\nZapisz wiadomoœci o d³ugoœci startu do <plik>"
+msgstr ""
+"--startuptime <plik>\n"
+"Zapisz wiadomoœci o d³ugoœci startu do <plik>"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tU¿ywaj <viminfo> zamiast .viminfo"
@@ -3191,12 +3160,6 @@ msgstr "-display <display>\tZa³aduj vim na <display>"
 
 msgid "-iconic\t\tStart vim iconified"
 msgstr "-iconic\t\tZacznij Vim jako ikonê"
-
-msgid "-name <name>\t\tUse resource as if vim was <name>"
-msgstr "-name <nazwa>\t\tU¿ywaj zasobów tak jak by Vim by³ <nazwa>"
-
-msgid "\t\t\t  (Unimplemented)\n"
-msgstr "\t\t\t  (Niezaimplementowane)\n"
 
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
 msgstr "-background <kolor>\tU¿ywaj <kolor> dla t³a (równie¿: -bg)"
@@ -4294,6 +4257,12 @@ msgstr "E531: U¿yj \":gui\" do odpalenia GUI"
 msgid "E589: 'backupext' and 'patchmode' are equal"
 msgstr "E589: 'backupext' i 'patchmode' s¹ to¿same"
 
+msgid "E834: Conflicts with value of 'listchars'"
+msgstr "E834: Konflikty wartoœci 'listchars'"
+
+msgid "E835: Conflicts with value of 'fillchars'"
+msgstr "E835: Konflikty wartoœci 'fillchars'"
+
 msgid "E617: Cannot be changed in the GTK+ 2 GUI"
 msgstr "E617: Nie mogê zmieniæ w GTK+2 GUI"
 
@@ -5368,9 +5337,6 @@ msgstr "znaków nowego wiersza"
 msgid "E395: contains argument not accepted here"
 msgstr "E395: argument contains niedozwolony w tym miejscu"
 
-msgid "E396: containedin argument not accepted here"
-msgstr "E396: argument containedin niedozwolony w tym miejscu"
-
 msgid "E393: group[t]here not accepted here"
 msgstr "E393: group[t]here niedozwolone w tym miejscu"
 
@@ -5624,8 +5590,8 @@ msgstr "Vim: B³¹d podczas wczytywania wejœcia, koñczê...\n"
 msgid "Used CUT_BUFFER0 instead of empty selection"
 msgstr "U¿ywam CUT_BUFFER0 zamiast pustego wyboru"
 
-#. This happens when the FileChangedRO autocommand changes the file in
-#. * a way it becomes shorter.
+#. This happens when the FileChangedRO autocommand changes the
+#. * file in a way it becomes shorter.
 msgid "E834: Line count changed unexpectedly"
 msgstr "E834: Niespodziewana zmiana iloœci linii"
 
@@ -6499,6 +6465,51 @@ msgstr "szukanie dobi³o KOÑCA; kontynuacja od GÓRY"
 #, c-format
 msgid "Need encryption key for \"%s\""
 msgstr "Potrzebujê klucza szyfrowania dla \"%s\""
+
+msgid "writelines() requires list of strings"
+msgstr "writelines() wymaga listy ci¹gów"
+
+msgid "E264: Python: Error initialising I/O objects"
+msgstr "E264: Python: B³¹d w uruchomieniu obiektów I/O"
+
+msgid "no such buffer"
+msgstr "nie ma takiego bufora"
+
+msgid "attempt to refer to deleted window"
+msgstr "próba odniesienia do skasowanego okna"
+
+msgid "readonly attribute"
+msgstr "atrybut tylko do odczytu"
+
+msgid "cursor position outside buffer"
+msgstr "pozycja kursora poza buforem"
+
+#, c-format
+msgid "<window object (deleted) at %p>"
+msgstr "<obiekt okna (skasowany) w %p>"
+
+#, c-format
+msgid "<window object (unknown) at %p>"
+msgstr "<obiekt okna (nieznany) w %p>"
+
+#, c-format
+msgid "<window %d>"
+msgstr "<okno %d>"
+
+msgid "no such window"
+msgstr "nie ma takiego okna"
+
+msgid "attempt to refer to deleted buffer"
+msgstr "próba odniesienia do skasowanego bufora"
+
+#~ msgid "-name <name>\t\tUse resource as if vim was <name>"
+#~ msgstr "-name <nazwa>\t\tU¿ywaj zasobów tak jak by Vim by³ <nazwa>"
+
+#~ msgid "\t\t\t  (Unimplemented)\n"
+#~ msgstr "\t\t\t  (Niezaimplementowane)\n"
+
+#~ msgid "E396: containedin argument not accepted here"
+#~ msgstr "E396: argument containedin niedozwolony w tym miejscu"
 
 #~ msgid "Vim dialog..."
 #~ msgstr "Dialog Vima..."
