@@ -14,15 +14,15 @@ FILES    = pt_PT.aff pt_PT.dic
 #
 # Fetching the pt_PT files from the Natura project.
 #
-PT_DIR = http://natura.di.uminho.pt/download/sources/Dictionaries/myspell
-PT_FNAME = myspell.pt-latest.zip
-:attr {fetch = $PT_DIR/%file%} $PT_FNAME
+PT_FNAME = oo3x-pt-PT.oxt
+PT_DIR = http://extensions.services.openoffice.org/e-files/1196/5/$(PT_FNAME)
+:attr {fetch = $PT_DIR} $PT_FNAME
 
 #
 # Fetching the pt_BR files from BrOffice.org (Brazilian OOo).
 #
-BR_FNAME = pt_BR-V.zip
-BR_DIR = http://www.deso-se.com.br/downloads/broffice.org/$(BR_FNAME)
+BR_FNAME = Vero_pt_BR_V207AOC.oxt
+BR_DIR = http://www.broffice.org/files/$(BR_FNAME)
 :attr {fetch = $BR_DIR} $BR_FNAME
 
 all: $SPELLDIR/pt.latin1.spl $SPELLDIR/pt.utf-8.spl \
@@ -50,11 +50,17 @@ pt_PT.aff pt_PT.dic: {buildcheck=}
         :fetch $PT_FNAME
         :sys $UNZIP $PT_FNAME
         :delete $PT_FNAME
-        :move myspell.pt-*/pt_PT.dic .
-        :move myspell.pt-*/pt_PT.aff .
-        :move myspell.pt-*/README_pt_PT.txt .
-        :move myspell.pt-*/COPYING COPYING_pt_PT.txt
-        :deldir myspell.pt-*
+        :move dictionaries/pt_PT.dic .
+        :move dictionaries/pt_PT.aff .
+        :move dictionaries/README_pt_PT.txt .
+        :move dictionaries/COPYING COPYING_pt_PT.txt
+        :delete {r}{f} dictionaries
+        :delete {r}{f} META-INF
+        :delete {f} description.xml
+        :delete {f} dictionaries.xcu
+        :delete {f} LICENSES.txt
+        :sys $VIM pt_PT.dic -u NONE -e -c "%s/\t.*//" -c update -c q
+        :sys $VIM pt_PT.aff -u NONE -e -c "%s/\S\+=\S\+$$//" -c update -c q
         @if not os.path.exists('pt_PT.orig.aff'):
             :copy pt_PT.aff pt_PT.orig.aff
         @if not os.path.exists('pt_PT.orig.dic'):
@@ -67,13 +73,11 @@ pt_BR.aff pt_BR.dic: {buildcheck=}
         :fetch $BR_FNAME
         :sys $UNZIP $BR_FNAME
         :delete $BR_FNAME
-        :sys $VIM README_pt_BR.TXT -u NONE -e -c "set ff=unix" -c update -c q
+        :sys $VIM README_pt_BR.TXT -u NONE -N -e -c "set ff=unix" -c update -c q
         :move README_pt_BR.TXT README_pt_BR.txt
 
-# Vim seems to ignore the dots from the word list.
-# Removing words with dot to avoid misbehaviour.
-        :sys $VIM pt_BR.dic -u NONE -e -c "set ff=unix" -c "/\./d" -c update -c q
-        :sys $VIM pt_BR.aff -u NONE -e -c "set ff=unix" -c update -c q
+        :sys $VIM pt_BR.dic -u NONE -N -e -c "set ff=unix" -c update -c q
+        :sys $VIM pt_BR.aff -u NONE -N -e -c "set ff=unix" -c update -c q
         @if not os.path.exists('pt_BR.orig.aff'):
             :copy pt_BR.aff pt_BR.orig.aff
         @if not os.path.exists('pt_BR.orig.dic'):
@@ -92,6 +96,23 @@ diff:
         :sys {force} diff -a -C 1 pt_BR.orig.aff pt_BR.aff >pt_BR.diff
 	:sys {force} diff -a -C 1 pt_BR.orig.dic pt_BR.dic >>pt_BR.diff
 
+# Delete all downloaded and generated files.
+clean: clean_pt_BR clean_pt_PT
+
+clean_pt_BR:
+        :delete {f} pt_BR.aff
+        :delete {f} pt_BR.dic
+        :delete {f} pt_BR.orig.aff
+        :delete {f} pt_BR.orig.dic
+        :delete {f} README_pt_BR.txt
+
+clean_pt_PT:
+        :delete {f} pt_PT.aff
+        :delete {f} pt_PT.dic
+        :delete {f} pt_PT.orig.aff
+        :delete {f} pt_PT.orig.dic
+        :delete {f} README_pt_PT.txt
+        :delete {f} COPYING_pt_PT.txt
 
 # Check for updated OpenOffice spell files.  When there are changes the
 # ".new.aff" and ".new.dic" files are left behind for manual inspection.

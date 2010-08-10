@@ -1,58 +1,45 @@
-*** pt_PT.orig.aff	2008-02-21 19:40:49.000000000 -0300
---- pt_PT.aff	2008-02-24 11:14:39.000000000 -0300
+*** pt_PT.orig.aff	2010-08-10 22:36:56.000000000 +0200
+--- pt_PT.aff	2010-08-10 22:43:56.000000000 +0200
 ***************
-*** 1,4 ****
-  SET ISO8859-1
-- TRY aerisontcdmlupvgbfz�h�qj�x�������ACMPSBTELGRIFVDkHJON�ywUKXZWQ�Y�������
+*** 1,6 ****
+  SET UTF-8
+! LANG pt_PT
+! TRY aerisontcdmlupvgbfzáhçqjíxãóéêâúõACMPSBTELGRIFVDkHJONôywUKXZWQÁYÍÉàÓèÂÚ
+! KEY qwertyuiop|asdfghjkl|zxcvbnm
+! WORDCHARS -
   
-  
---- 1,17 ----
-  SET ISO8859-1
-  
-+ NAME European Portuguese
-+ VERSION 2008-07-05
-+ HOME http://natura.di.uminho.pt/
-+ AUTHOR Rui Vilela
-+ EMAIL ruivilela AT di DOT uminho DOT pt
-+ AUTHOR Jos� Jo�o de Almeira
-+ EMAIL jj AT di DOT uminho DOT pt
-+ AUTHOR Alberto Sim�es
-+ EMAIL ambs AT di DOT uminho DOT pt
-+ COPYRIGHT GPL, LGPL, MPL
-+ 
-+ FOL  ��������������������������������
-+ LOW  ��������������������������������
-+ UPP  ��������������������������������
+--- 1,10 ----
+  SET UTF-8
+! #LANG pt_PT
+! #TRY aerisontcdmlupvgbfzáhçqjíxãóéêâúõACMPSBTELGRIFVDkHJONôywUKXZWQÁYÍÉàÓèÂÚ
+! #KEY qwertyuiop|asdfghjkl|zxcvbnm
+! #WORDCHARS -
+! 
+! FOL  ßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ
+! LOW  ßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ
+! UPP  ßÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞÿ
   
 ***************
-*** 1047,1048 ****
---- 1060,1063 ----
-  SFX J   e              �dromo         e
-+ 
-+ 
-  REP 24
-***************
-*** 1073,1086 ****
+*** 1300,1312 ****
   
 ! MAP 11
-! MAP a�
-! MAP a�
-! MAP a�
-! MAP e�
-! MAP e�
-! MAP i�
-  MAP c�
-! MAP o�
-! MAP o�
-! MAP o�
-! MAP u�
-! 
---- 1088,1095 ----
+! MAP aá
+! MAP aã
+! MAP aâ
+! MAP eé
+! MAP eê
+! MAP ií
+  MAP cç
+! MAP oó
+! MAP oô
+! MAP oõ
+! MAP uú
+--- 1304,1311 ----
   
 ! MAP 6
-! MAP a���A���
-! MAP e��E��
-! MAP i�I�
-  MAP c�
-! MAP o���O���
-! MAP u��U��
+! MAP aáãâAÁÃÂ
+! MAP eéêEÉÊ
+! MAP iíIÍ
+  MAP cç
+! MAP oóõôOÓÕÔ
+! MAP uúüUÚÜ
