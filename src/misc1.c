@@ -9457,6 +9457,7 @@ uniquefy_paths(gap, pattern)
 	char_u	    *path = fnames[i];
 	int	    is_in_curdir;
 	char_u	    *dir_end = gettail(path);
+	char_u	    *short_name;
 
 	len = (int)STRLEN(path);
 	while (dir_end > path &&
@@ -9475,12 +9476,17 @@ uniquefy_paths(gap, pattern)
 	 * and it is not unique,
 	 * reduce it to ./{filename}
 	 *        FIXME ^ Is this portable?
+	 *
+	 * Note: If the full filename is /curdir/foo/bar/{filename}, we don't
+	 * want to shorten it to ./foo/bar/{filename} yet because 'path' might
+	 * contain ". / * *", in which case the shortened filename could be
+	 * shorter than ./foo/bar/{filename}.
 	 */
 	if (is_in_curdir)
 	{
 	    char_u *rel_path;
-	    char_u *short_name = shorten_fname(path, curdir);
 
+	    short_name = shorten_fname(path, curdir);
 	    if (short_name == NULL)
 		short_name = path;
 	    if (is_unique(short_name, gap, i))
@@ -9532,6 +9538,29 @@ uniquefy_paths(gap, pattern)
 		    mch_memmove(path, pathsep_p + 1, STRLEN(pathsep_p));
 		    break;
 		}
+	}
+
+	if (mch_isFullName(path))
+	{
+	    /*
+	     * Last resort: shorten relative to curdir if possible.
+	     * 'possible' means:
+	     * 1. It is under the current directory.
+	     * 2. The result is actually shorter than the original.
+	     *
+	     *	    Before                curdir        After
+	     *	    /foo/bar/file.txt     /foo/bar      ./file.txt
+	     *      c:\foo\bar\file.txt   c:\foo\bar    .\file.txt
+	     *      /file.txt             /             /file.txt
+	     *      c:\file.txt           c:\           .\file.txt
+	     */
+	    short_name = shorten_fname(path, curdir);
+	    if (short_name != NULL && short_name > path + 1)
+	    {
+		STRCPY(path, ".");
+		add_pathsep(path);
+		STRCAT(path, short_name);
+	    }
 	}
     }
 
@@ -9711,7 +9740,7 @@ gen_expand_wildcards(num_pat, pat, num_file, file, flags)
 	    /*
 	     * First expand environment variables, "~/" and "~user/".
 	     */
-	    if (vim_strpbrk(p, (char_u *)"$~") != NULL)
+	    if (vim_strchr(p, '$') != NULL || *p == '~')
 	    {
 		p = expand_env_save_opt(p, TRUE);
 		if (p == NULL)
@@ -9722,7 +9751,7 @@ gen_expand_wildcards(num_pat, pat, num_file, file, flags)
 		 * variable, use the shell to do that.  Discard previously
 		 * found file names and start all over again.
 		 */
-		else if (vim_strpbrk(p, (char_u *)"$~") != NULL)
+		else if (vim_strchr(p, '$') != NULL || *p == '~')
 		{
 		    vim_free(p);
 		    ga_clear_strings(&ga);
