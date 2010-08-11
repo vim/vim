@@ -530,7 +530,7 @@ msgid "E725: Calling dict function without Dictionary: %s"
 msgstr "E725: Função dict chamada sem um Dicionário: %s"
 
 msgid "E808: Number or Float required"
-msgstr "E521: Número ou Float requerido"
+msgstr "E808: Número ou Float requerido"
 
 msgid "E699: Too many arguments"
 msgstr "E699: Argumentos demais"
@@ -609,7 +609,7 @@ msgid "E677: Error writing temp file"
 msgstr "E677: Erro ao gravar o arquivo temporário"
 
 msgid "E805: Using a Float as a Number"
-msgstr "E745: Float usado como Número"
+msgstr "E805: Float usado como Número"
 
 msgid "E703: Using a Funcref as a Number"
 msgstr "E703: Funcref usada como Número"
@@ -630,7 +630,7 @@ msgid "E731: using Dictionary as a String"
 msgstr "E731: Dicionário usado como String"
 
 msgid "E806: using Float as a String"
-msgstr "E730: Float usado como String"
+msgstr "E806: Float usado como String"
 
 #, c-format
 msgid "E704: Funcref variable name must start with a capital: %s"

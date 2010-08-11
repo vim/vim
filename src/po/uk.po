@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim 7.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-19 09:17+0300\n"
+"POT-Creation-Date: 2010-08-11 12:13+0300\n"
 "PO-Revision-Date: 2010-06-18 21:53+0300\n"
 "Last-Translator: Анатолій Сахнік <sakhnik@gmail.com>\n"
 "Language-Team: Bohdan Vlasyuk <bohdan@vstu.edu.ua>\n"
@@ -36,6 +36,12 @@ msgstr "E818: Не пройшла перевірка sha256"
 
 msgid "E819: Blowfish test failed"
 msgstr "E819: Не пройшла перевірка Blowfish"
+
+msgid "[Location List]"
+msgstr "[Список місць]"
+
+msgid "[Quickfix List]"
+msgstr "[Список виправлень]"
 
 msgid "E82: Cannot allocate any buffer, exiting..."
 msgstr "E82: Немає можливості розмістити хоч один буфер, завершення роботи..."
@@ -175,12 +181,6 @@ msgid ""
 msgstr ""
 "\n"
 "# Список буферів:\n"
-
-msgid "[Location List]"
-msgstr "[Список місць]"
-
-msgid "[Quickfix List]"
-msgstr "[Список виправлень]"
 
 msgid "[Scratch]"
 msgstr "[З нуля]"
@@ -2649,6 +2649,9 @@ msgstr "номер рядка за межами файлу"
 msgid "not allowed in the Vim sandbox"
 msgstr "не дозволено у пісочниці Vim"
 
+msgid "E999: Python: Cannot use :py and :py3 in one session"
+msgstr "E999: Python: Не можна використати :py і :py3 в одному сеансі"
+
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
 "loaded."
@@ -2666,51 +2669,9 @@ msgstr "softspace має бути цілим"
 msgid "invalid attribute"
 msgstr "неправильний атрибут"
 
-msgid "writelines() requires list of strings"
-msgstr "для writelines() потрібен список рядків"
-
-msgid "E264: Python: Error initialising I/O objects"
-msgstr "E264: Python: Помилка ініціалізації об'єктів вводу/виводу"
-
-msgid "attempt to refer to deleted buffer"
-msgstr "спроба звернення до знищеного буфера"
-
-msgid "line number out of range"
-msgstr "номер рядка за межами файлу"
-
 #, c-format
 msgid "<buffer object (deleted) at %p>"
 msgstr "<об'єкт буфера (знищено) за адресою %p>"
-
-msgid "invalid mark name"
-msgstr "неправильна назва позначки"
-
-msgid "no such buffer"
-msgstr "такого буфера немає"
-
-msgid "attempt to refer to deleted window"
-msgstr "спроба звернутися до знищеного вікна"
-
-msgid "readonly attribute"
-msgstr "лише для читання"
-
-msgid "cursor position outside buffer"
-msgstr "курсор за межами буфера"
-
-#, c-format
-msgid "<window object (deleted) at %p>"
-msgstr "<об'єкт вікна (знищено) за адресою %p>"
-
-#, c-format
-msgid "<window object (unknown) at %p>"
-msgstr "<об'єкт вікна (невідомий) за адресою %p>"
-
-#, c-format
-msgid "<window %d>"
-msgstr "<вікно %d>"
-
-msgid "no such window"
-msgstr "такого вікна немає"
 
 msgid "E659: Cannot invoke Python recursively"
 msgstr "E659: Не можна рекурсивно викликати Python"
@@ -2846,6 +2807,9 @@ msgstr "ще не реалізовано"
 msgid "cannot set line(s)"
 msgstr "не вдалося встановити рядки"
 
+msgid "invalid mark name"
+msgstr "неправильна назва позначки"
+
 # msgstr "E19: "
 msgid "mark not set"
 msgstr "помітку не вказано"
@@ -2856,6 +2820,9 @@ msgstr "рядок %d колонка %d"
 
 msgid "cannot insert/append line"
 msgstr "Не вдалося вставити/додати рядок"
+
+msgid "line number out of range"
+msgstr "номер рядка за межами файлу"
 
 msgid "unknown flag: "
 msgstr "невідомий прапорець: "
@@ -3256,12 +3223,6 @@ msgstr "-display <дисплей>\tВиконати vim на заданому <�
 
 msgid "-iconic\t\tStart vim iconified"
 msgstr "-iconic\t\tЗапустити Vim і згорнути його вікно"
-
-msgid "-name <name>\t\tUse resource as if vim was <name>"
-msgstr "-name <назва>\t\tВикористати ресурси, ніби vim має задану <назву>"
-
-msgid "\t\t\t  (Unimplemented)\n"
-msgstr "\t\t\t  (Не діє)\n"
 
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
 msgstr "-background <колір>\tВикористати <колір> для фону (також: -bg)"
@@ -4407,6 +4368,12 @@ msgstr "E531: Застосуйте \":gui\" для запуску GUI"
 msgid "E589: 'backupext' and 'patchmode' are equal"
 msgstr "E589: Опції 'backupext' і 'patchmode' однакові"
 
+msgid "E834: Conflicts with value of 'listchars'"
+msgstr "E834: Конфліктує із значенням 'listchars'"
+
+msgid "E835: Conflicts with value of 'fillchars'"
+msgstr "E835: Конфліктує із значенням 'fillchars'"
+
 msgid "E617: Cannot be changed in the GTK+ 2 GUI"
 msgstr "E617: Не можна змінити в GUI GTK+ 2"
 
@@ -5510,9 +5477,6 @@ msgstr " розриви рядків"
 msgid "E395: contains argument not accepted here"
 msgstr "E395: Містить неприйнятні тут аргументи"
 
-msgid "E396: containedin argument not accepted here"
-msgstr "E396: Аргумент containedin тут неприйнятний"
-
 msgid "E393: group[t]here not accepted here"
 msgstr "E393: group[t]hete тут неприйнятний"
 
@@ -5800,8 +5764,8 @@ msgstr "Vim: Помилка читання вводу, робота заверш
 msgid "Used CUT_BUFFER0 instead of empty selection"
 msgstr "Використано CUT_BUFFER0 замість порожнього виділення"
 
-#. This happens when the FileChangedRO autocommand changes the file in
-#. * a way it becomes shorter.
+#. This happens when the FileChangedRO autocommand changes the
+#. * file in a way it becomes shorter.
 msgid "E834: Line count changed unexpectedly"
 msgstr "E834: Кількість рядків несподівано змінилася"
 
@@ -6716,6 +6680,51 @@ msgstr "Пошук дійшов до КІНЦЯ, продовжується з �
 #, c-format
 msgid "Need encryption key for \"%s\""
 msgstr "Для \"%s\" потрібен ключ: "
+
+msgid "writelines() requires list of strings"
+msgstr "для writelines() потрібен список рядків"
+
+msgid "E264: Python: Error initialising I/O objects"
+msgstr "E264: Python: Помилка ініціалізації об'єктів вводу/виводу"
+
+msgid "no such buffer"
+msgstr "такого буфера немає"
+
+msgid "attempt to refer to deleted window"
+msgstr "спроба звернутися до знищеного вікна"
+
+msgid "readonly attribute"
+msgstr "лише для читання"
+
+msgid "cursor position outside buffer"
+msgstr "курсор за межами буфера"
+
+#, c-format
+msgid "<window object (deleted) at %p>"
+msgstr "<об'єкт вікна (знищено) за адресою %p>"
+
+#, c-format
+msgid "<window object (unknown) at %p>"
+msgstr "<об'єкт вікна (невідомий) за адресою %p>"
+
+#, c-format
+msgid "<window %d>"
+msgstr "<вікно %d>"
+
+msgid "no such window"
+msgstr "такого вікна немає"
+
+msgid "attempt to refer to deleted buffer"
+msgstr "спроба звернення до знищеного буфера"
+
+#~ msgid "-name <name>\t\tUse resource as if vim was <name>"
+#~ msgstr "-name <назва>\t\tВикористати ресурси, ніби vim має задану <назву>"
+
+#~ msgid "\t\t\t  (Unimplemented)\n"
+#~ msgstr "\t\t\t  (Не діє)\n"
+
+#~ msgid "E396: containedin argument not accepted here"
+#~ msgstr "E396: Аргумент containedin тут неприйнятний"
 
 # msgstr "E232: "
 #~ msgid "Vim dialog..."

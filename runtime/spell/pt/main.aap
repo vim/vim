@@ -73,6 +73,12 @@ pt_BR.aff pt_BR.dic: {buildcheck=}
         :fetch $BR_FNAME
         :sys $UNZIP $BR_FNAME
         :delete $BR_FNAME
+        :delete {f} description.xml
+        :delete {f} dictionaries.xcu
+        :delete {f} hyph_pt_BR.dic
+        :delete {r}{f} META-INF
+        :delete {f} README_en.TXT
+        :delete {f} README_hyph_pt_BR.TXT
         :sys $VIM README_pt_BR.TXT -u NONE -N -e -c "set ff=unix" -c update -c q
         :move README_pt_BR.TXT README_pt_BR.txt
 
