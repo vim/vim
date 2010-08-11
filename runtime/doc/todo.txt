@@ -199,6 +199,8 @@ J.  Wang, 2009 Mar 31)
 When $VIMRUNTIME is set in .vimrc, need to reload lang files.  Already done
 for GTK, how about others? (Ron Aaron, 2010 Apr 10)
 
+Patch for GTK buttons X1Mouse and X2Mouse. (Christian J. Robinson, 2010 Aug 9)
+
 Motif: Build on Ubuntu can't enter any text in dialog text fields.
 
 When 'ft' changes redraw custom status line.

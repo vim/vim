@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.3f.  Last change: 2010 Jul 25
+*if_pyth.txt*   For Vim version 7.3f.  Last change: 2010 Aug 10
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -335,11 +335,11 @@ Currently the name is "python24.dll".  That is for Python 2.4.  To know for
 sure edit "gvim.exe" and search for "python\d*.dll\c".
 
 ==============================================================================
-7. Python 3						*python3*
+7. Python 3                                             *python3*
 
-							*:py3* *:python3*
+                                                        *:py3* *:python3*
 The |:py3| and |:python3| commands work similar to |:python|.
- 								*:py3file*
+                                                                *:py3file*
 The |:py3file| command works similar to |:pyfile|.
 
 Vim can be built in four ways (:version output):
@@ -349,9 +349,16 @@ Vim can be built in four ways (:version output):
 4. Python 2 and 3 support   (+python/dyn, +python3/dyn)
 
 You can see that when Python 2 and Python 3 are both supported they must be
-loaded dynamically.  This may cause some problems though, therefore currently
-inside a Vim executable you can only use Python 2 or Python 3.  To switch to
-the other one you need to restart Vim.
+loaded dynamically.
+
+On Linux/Unix systems this can only be done without importing global symbols.
+In this case python's "import" might fail, if the library expects the symbols 
+to be provided by vim. To work around this 
+1. either the problematic library, or python in case of standard libraries,
+   must be recompiled to link to the according libpython.so file
+   (--enable-shared in case of python).
+2. Or you recompile vim for only one python version.  In this case all symbols
+   can be imported into vim.
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:

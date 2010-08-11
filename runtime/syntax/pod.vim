@@ -1,7 +1,8 @@
 " Vim syntax file
-" Language:	Perl POD format
-" Maintainer:	Scott Bigham <dsb@killerbunnies.org>
-" Last Change:	2007 Jan 21
+" Language:     Perl POD format
+" Maintainer:   Andy Lester <andy@petdance.com>
+" URL:          http://github.com/petdance/vim-perl
+" Last Change:  2009-08-14
 
 " To add embedded POD documentation highlighting to your syntax file, add
 " the commands:
@@ -25,15 +26,15 @@ elseif exists("b:current_syntax")
 endif
 
 " POD commands
-syn match podCommand	"^=head[1234]"	nextgroup=podCmdText contains=@NoSpell
-syn match podCommand	"^=item"	nextgroup=podCmdText contains=@NoSpell
-syn match podCommand	"^=over"	nextgroup=podOverIndent skipwhite contains=@NoSpell
-syn match podCommand	"^=back" contains=@NoSpell
-syn match podCommand	"^=cut" contains=@NoSpell
-syn match podCommand	"^=pod" contains=@NoSpell
-syn match podCommand	"^=for"		nextgroup=podForKeywd skipwhite contains=@NoSpell
-syn match podCommand	"^=begin"	nextgroup=podForKeywd skipwhite contains=@NoSpell
-syn match podCommand	"^=end"		nextgroup=podForKeywd skipwhite contains=@NoSpell
+syn match podCommand    "^=head[1234]"  nextgroup=podCmdText contains=@NoSpell
+syn match podCommand    "^=item"        nextgroup=podCmdText contains=@NoSpell
+syn match podCommand    "^=over"        nextgroup=podOverIndent skipwhite contains=@NoSpell
+syn match podCommand    "^=back"        contains=@NoSpell
+syn match podCommand    "^=cut"         contains=@NoSpell
+syn match podCommand    "^=pod"         contains=@NoSpell
+syn match podCommand    "^=for"         nextgroup=podForKeywd skipwhite contains=@NoSpell
+syn match podCommand    "^=begin"       nextgroup=podForKeywd skipwhite contains=@NoSpell
+syn match podCommand    "^=end"         nextgroup=podForKeywd skipwhite contains=@NoSpell
 
 " Text of a =head1, =head2 or =item command
 syn match podCmdText	".*$" contained contains=podFormat,@NoSpell
