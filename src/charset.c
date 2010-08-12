@@ -14,6 +14,9 @@ static int win_chartabsize __ARGS((win_T *wp, char_u *p, colnr_T col));
 #endif
 
 #ifdef FEAT_MBYTE
+# if defined(HAVE_WCHAR_H)
+#  include <wchar.h>	    /* for towupper() and towlower() */
+# endif
 static int win_nolbr_chartabsize __ARGS((win_T *wp, char_u *s, colnr_T col, int *headp));
 #endif
 
