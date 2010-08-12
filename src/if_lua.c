@@ -1123,6 +1123,12 @@ luaV_setrange(lua_State *L, int line1, int line2)
 static lua_State *L = NULL;
 
     static int
+lua_is_open(void)
+{
+    return L != NULL;
+}
+
+    static int
 lua_init(void)
 {
     if (L == NULL)
@@ -1240,7 +1246,7 @@ ex_luafile(exarg_T *eap)
     void
 lua_buffer_free(buf_T *buf)
 {
-    if (lua_init() == FAIL) return;
+    if (!lua_is_open()) return;
     luaV_getfield(L, LUAVIM_FREE);
     lua_pushlightuserdata(L, (void *) buf);
     lua_call(L, 1, 0);
@@ -1250,7 +1256,7 @@ lua_buffer_free(buf_T *buf)
     void
 lua_window_free(win_T *win)
 {
-    if (lua_init() == FAIL) return;
+    if (!lua_is_open()) return;
     luaV_getfield(L, LUAVIM_FREE);
     lua_pushlightuserdata(L, (void *) win);
     lua_call(L, 1, 0);
