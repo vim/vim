@@ -6,7 +6,8 @@ STARTTEST
 :" delete the Xfind directory during cleanup
 :"
 :" This will cause a few errors, do it silently.
-:set nocp viminfo+=nviminfo visualbell
+:set visualbell
+:set nocp viminfo+=nviminfo
 :"
 :function! DeleteDirectory(dir)
 : if has("win16") || has("win32") || has("win64") || has("dos16") || has("dos32")
@@ -20,32 +21,33 @@ STARTTEST
 :call DeleteDirectory("Xfind")
 :new
 :let cwd=getcwd()
-:!mkdir Xfind
+:let test_out = cwd . '/test.out'
+:silent !mkdir Xfind
 :cd Xfind
 :set path=
 :find 	
-:w! ../test.out
+:exec "w! " . test_out
 :close
 :new
 :set path=.
 :find 	
-:w >>../test.out
+:exec "w >>" . test_out
 :close
 :new
 :set path=.,,
 :find 	
-:w >>../test.out
+:exec "w >>" . test_out
 :close
 :new
 :set path=./**
 :find 	
-:w >>../test.out
+:exec "w >>" . test_out
 :close
 :new
-:" We shouldn't find any file at this point, ../test.out must be empty.
-:!mkdir in
+:" We shouldn't find any file at this point, test.out must be empty.
+:silent !mkdir in
 :cd in
-:!mkdir path
+:silent !mkdir path
 :exec "cd " . cwd
 :e Xfind/file.txt
 SHoly Grail:w
@@ -57,40 +59,93 @@ SAnother Holy Grail:w
 SE.T.:w
 :set path=Xfind/**
 :find file	
-:w >> test.out
+:exec "w >>" . test_out
 :find file		
-:w >>test.out
+:exec "w >>" . test_out
 :find file			
-:w >>test.out
+:exec "w >>" . test_out
 :" Rerun the previous three find completions, using fullpath in 'path'
 :exec "set path=" . cwd . "/Xfind/**"
 :find file	
-:w >> test.out
+:exec "w >>" .  test_out
 :find file		
-:w >>test.out
+:exec "w >>" . test_out
 :find file			
-:w >>test.out
+:exec "w >>" . test_out
 :" Same steps again, using relative and fullpath items that point to the same
 :" recursive location.
 :" This is to test that there are no duplicates in the completion list.
 :exec "set path+=Xfind/**"
 :find file	
-:w >> test.out
+:exec "w >>" .  test_out
 :find file		
-:w >>test.out
+:exec "w >>" . test_out
 :find file			
-:w >>test.out
+:exec "w >>" . test_out
 :find file		
 :" Test find completion for directory of current buffer, which at this point
 :" is Xfind/in/file.txt.
 :set path=.
 :find st	
-:w >> test.out
+:exec "w >>" .  test_out
 :" Test find completion for empty path item ",," which is the current directory
 :cd Xfind
 :set path=,,
 :find f		
-:w >> ../test.out
+:exec "w >>" . test_out
+:" Test shortening of
+:"
+:"    foo/x/bar/voyager.txt
+:"    foo/y/bar/voyager.txt
+:"
+:" When current directory is above foo/ they should be shortened to (in order
+:" of appearance):
+:"
+:"    x/bar/voyager.txt
+:"    y/bar/voyager.txt
+:silent !mkdir foo
+:cd foo
+:silent !mkdir x
+:silent !mkdir y
+:cd x
+:silent !mkdir bar
+:cd ..
+:cd y
+:silent !mkdir bar
+:cd ..
+:cd ..
+:" We should now be in the Xfind directory
+:e foo/x/bar/voyager.txt
+SVoyager 1:w
+:e foo/y/bar/voyager.txt
+SVoyager 2:w
+:exec "set path=" . cwd . "/Xfind/**"
+:find voyager	
+:exec "w >>" . test_out
+:find voyager		
+:exec "w >>" . test_out
+:"
+:" When current directory is .../foo/y/bar they should be shortened to (in
+:" order of appearance):
+:"
+:"    ./voyager.txt
+:"    x/bar/voyager.txt
+:cd foo
+:cd y
+:cd bar
+:find voyager	
+:exec "w >> " . test_out
+:find voyager		
+:exec "w >> " . test_out
+:" Check the opposite too:
+:cd ..
+:cd ..
+:cd x
+:cd bar
+:find voyager	
+:exec "w >> " . test_out
+:find voyager		
+:exec "w >> " . test_out
 :cd ..
 :q
 :call DeleteDirectory("Xfind")

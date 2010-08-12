@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3f.  Last change: 2010 Aug 10
+*todo.txt*      For Vim version 7.3f.  Last change: 2010 Aug 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,6 +31,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 'cursorline' stops too early in a help file, caused by conceal feature.
+
+Have a close look at :find completion, anything that could be wrong?
 
 Test 73 fails on MS-Windows when compiled with DJGPP.
 :find completion with 'path' set to "./**" results in full path for
