@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Aug 09, 2010 
-" Version:	56
+" Last Change:	Aug 12, 2010 
+" Version:	57
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -814,8 +814,8 @@ if has("conceal") && &enc == 'utf-8'
 
  " Superscripts/Subscripts {{{2
  if s:tex_conceal =~ 's'
-  syn region texSuperscript	matchgroup=Delimiter start='\^{'	end='}'	contained concealends contains=texSuperscripts,texStatement
-  syn region texSubscript	matchgroup=Delimiter start='_{'		end='}'	contained concealends contains=texSubscripts,texStatement
+  syn region texSuperscript	matchgroup=Delimiter start='\^{'	end='}'	contained concealends contains=texSuperscripts,texStatement,texSubscript,texSuperscript,texMathMatcher
+  syn region texSubscript	matchgroup=Delimiter start='_{'		end='}'	contained concealends contains=texSubscripts,texStatement,texSubscript,texSuperscript,texMathMatcher
   fun! s:SuperSub(group,leader,pat,cchar)
     exe 'syn match '.a:group." '".a:leader.a:pat."' contained conceal cchar=".a:cchar
     exe 'syn match '.a:group."s '".a:pat."' contained conceal cchar=".a:cchar.' nextgroup='.a:group.'s'
