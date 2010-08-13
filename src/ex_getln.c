@@ -662,7 +662,8 @@ getcmdline(firstc, count, indent)
 #ifdef FEAT_EVAL
 	    else if (c == 'e')
 	    {
-		char_u		    *p = NULL;
+		char_u	*p = NULL;
+		int	len;
 
 		/*
 		 * Replace the command line with the result of an expression.
@@ -687,10 +688,11 @@ getcmdline(firstc, count, indent)
 		    p = get_expr_line();
 		    --textlock;
 		    restore_cmdline(&save_ccline);
+		    len = (int)STRLEN(p);
 
-		    if (p != NULL && realloc_cmdbuff((int)STRLEN(p) + 1) == OK)
+		    if (p != NULL && realloc_cmdbuff(len + 1) == OK)
 		    {
-			ccline.cmdlen = (int)STRLEN(p);
+			ccline.cmdlen = len;
 			STRCPY(ccline.cmdbuff, p);
 			vim_free(p);
 
@@ -2520,6 +2522,9 @@ realloc_cmdbuff(len)
 {
     char_u	*p;
 
+    if (len < ccline.cmdbufflen)
+	return OK;			/* no need to resize */
+
     p = ccline.cmdbuff;
     alloc_cmdbuff(len);			/* will get some more */
     if (ccline.cmdbuff == NULL)		/* out of memory */
@@ -2744,7 +2749,7 @@ put_on_cmdline(str, len, redraw)
 
     /* Check if ccline.cmdbuff needs to be longer */
     if (ccline.cmdlen + len + 1 >= ccline.cmdbufflen)
-	retval = realloc_cmdbuff(ccline.cmdlen + len);
+	retval = realloc_cmdbuff(ccline.cmdlen + len + 1);
     else
 	retval = OK;
     if (retval == OK)
@@ -3335,9 +3340,9 @@ nextwild(xp, type, options)
     if (p2 != NULL && !got_int)
     {
 	difflen = (int)STRLEN(p2) - xp->xp_pattern_len;
-	if (ccline.cmdlen + difflen > ccline.cmdbufflen - 4)
+	if (ccline.cmdlen + difflen + 4 > ccline.cmdbufflen)
 	{
-	    v = realloc_cmdbuff(ccline.cmdlen + difflen);
+	    v = realloc_cmdbuff(ccline.cmdlen + difflen + 4);
 	    xp->xp_pattern = ccline.cmdbuff + i;
 	}
 	else
