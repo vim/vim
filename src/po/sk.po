@@ -4791,8 +4791,8 @@ msgstr "E753: Nenájdené: %s"
 
 #. This should have been checked when generating the .spl
 #. * file.
-msgid "E999: duplicate char in MAP entry"
-msgstr "E999: duplicitný znak v MAP polo¾ke"
+msgid "E783: duplicate char in MAP entry"
+msgstr "E783: duplicitný znak v MAP polo¾ke"
 
 #, c-format
 msgid "E390: Illegal argument: %s"

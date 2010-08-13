@@ -2649,8 +2649,11 @@ msgstr "номер рядка за межами файлу"
 msgid "not allowed in the Vim sandbox"
 msgstr "не дозволено у пісочниці Vim"
 
-msgid "E999: Python: Cannot use :py and :py3 in one session"
-msgstr "E999: Python: Не можна використати :py і :py3 в одному сеансі"
+msgid "E836: This Vim cannot execute :python after using :py3"
+msgstr "E836: Python: Не можна використати :py і :py3 в одному сеансі"
+
+msgid "E837: This Vim cannot execute :py3 after using :python"
+msgstr "E837: Python: Не можна використати :py і :py3 в одному сеансі"
 
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "

@@ -2603,8 +2603,11 @@ msgstr "rivinumero arvoalueen ulkopuolelta"
 msgid "not allowed in the Vim sandbox"
 msgstr "ei sallittu Vimin hiekkalaatikossa"
 
-msgid "E999: Python: Cannot use :py and :py3 in one session"
-msgstr "E999: Python: Ei voi k‰ytt‰‰ komentoja :py ja :py3 samassa istunnossa"
+msgid "E836: This Vim cannot execute :python after using :py3"
+msgstr "E836: Python: Ei voi k‰ytt‰‰ komentoja :py ja :py3 samassa istunnossa"
+
+msgid "E837: This Vim cannot execute :py3 after using :python"
+msgstr "E837: Python: Ei voi k‰ytt‰‰ komentoja :py ja :py3 samassa istunnossa"
 
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "

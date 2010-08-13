@@ -2608,8 +2608,11 @@ msgstr "numero de linio ekster limoj"
 msgid "not allowed in the Vim sandbox"
 msgstr "nepermesita en sabloludejo de Vim"
 
-msgid "E999: Python: Cannot use :py and :py3 in one session"
-msgstr "E999: Pitono: Ne eblas uzi :py kaj :py3 en la sama seanco"
+msgid "E836: This Vim cannot execute :python after using :py3"
+msgstr "E836: Pitono: Ne eblas uzi :py kaj :py3 en la sama seanco"
+
+msgid "E837: This Vim cannot execute :py3 after using :python"
+msgstr "E837: Pitono: Ne eblas uzi :py kaj :py3 en la sama seanco"
 
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "

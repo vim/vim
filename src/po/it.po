@@ -2604,8 +2604,11 @@ msgstr "numero linea non nell'intervallo"
 msgid "not allowed in the Vim sandbox"
 msgstr "non ammesso in ambiente protetto"
 
-msgid "E999: Python: Cannot use :py and :py3 in one session"
-msgstr "E999: Python: Impossibile usare :py e :py3 nella stessa sessione"
+msgid "E836: This Vim cannot execute :python after using :py3"
+msgstr "E836: Python: Impossibile usare :py e :py3 nella stessa sessione"
+
+msgid "E837: This Vim cannot execute :py3 after using :python"
+msgstr "E837: Python: Impossibile usare :py e :py3 nella stessa sessione"
 
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
