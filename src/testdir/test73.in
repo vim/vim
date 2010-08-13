@@ -146,8 +146,12 @@ SVoyager 2:w
 :exec "w >> " . test_out
 :find voyager		
 :exec "w >> " . test_out
-:cd ..
+:" Check for correct handling of shorten_fname()'s behavior on windows
+:exec "cd " . cwd . "/Xfind/in"
+:find file	
+:exec "w >>" . test_out
 :q
+:exec "cd " . cwd
 :call DeleteDirectory("Xfind")
 :qa!
 ENDTEST

@@ -60,6 +60,7 @@ clean:
 	-if exist mzscheme.vim del mzscheme.vim
 	-del X*
 	-del X*.*
+	-if exists Xfind rmdir /S /Q Xfind
 	-if exist viminfo del viminfo
 
 .in.out:
@@ -69,5 +70,6 @@ clean:
 	-if exist $*.out del $*.out
 	rename test.out $*.out
 	-del X*
+	-del X*.*
 	-del test.ok
 	-if exist viminfo del viminfo

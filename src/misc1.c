@@ -4411,6 +4411,7 @@ fullpathcmp(s1, s2, checkname)
 
 /*
  * Get the tail of a path: the file name.
+ * When the path ends in a path separator the tail is the NUL after it.
  * Fail safe: never returns NULL.
  */
     char_u *
@@ -4429,6 +4430,46 @@ gettail(fname)
     }
     return p1;
 }
+
+#if defined(FEAT_SEARCHPATH)
+static char_u *gettail_dir __ARGS((char_u *fname));
+
+/*
+ * Return the end of the directory name, on the first path
+ * separator:
+ * "/path/file", "/path/dir/", "/path//dir", "/file"
+ *	 ^	       ^	     ^	      ^
+ */
+    static char_u *
+gettail_dir(fname)
+    char_u *fname;
+{
+    char_u	*dir_end = fname;
+    char_u	*next_dir_end = fname;
+    int		look_for_sep = TRUE;
+    char_u	*p;
+
+    for (p = fname; *p != NUL; )
+    {
+	if (vim_ispathsep(*p))
+	{
+	    if (look_for_sep)
+	    {
+		next_dir_end = p;
+		look_for_sep = FALSE;
+	    }
+	}
+	else
+	{
+	    if (!look_for_sep)
+		dir_end = next_dir_end;
+	    look_for_sep = TRUE;
+	}
+	mb_ptr_adv(p);
+    }
+    return dir_end;
+}
+#endif
 
 /*
  * Get pointer to tail of "fname", including path separators.  Putting a NUL
@@ -9388,13 +9429,7 @@ get_path_cutoff(fname, gap)
 
     /* Skip to the file or directory name */
     if (cutoff != NULL)
-	while (
-# if defined(MSWIN) || defined(MSDOS)
-		*cutoff == '/'
-#else
-		vim_ispathsep(*cutoff)
-#endif
-	      )
+	while (vim_ispathsep(*cutoff))
 	    mb_ptr_adv(cutoff);
 
     return cutoff;
@@ -9465,19 +9500,11 @@ uniquefy_paths(gap, pattern)
     {
 	char_u	    *path = fnames[i];
 	int	    is_in_curdir;
-	char_u	    *dir_end = gettail(path);
+	char_u	    *dir_end = gettail_dir(path);
 	char_u	    *pathsep_p;
 	char_u	    *path_cutoff;
 
 	len = (int)STRLEN(path);
-	while (dir_end > path &&
-# if defined(MSWIN) || defined(MSDOS)
-		*dir_end != '/'
-#else
-		!vim_ispathsep(*dir_end)
-#endif
-		)
-	    mb_ptr_back(path, dir_end);
 	is_in_curdir = fnamencmp(curdir, path, dir_end - path) == 0
 					     && curdir[dir_end - path] == NUL;
 
@@ -9517,7 +9544,19 @@ uniquefy_paths(gap, pattern)
 	     *	    c:\file.txt		  c:\		.\file.txt
 	     */
 	    short_name = shorten_fname(path, curdir);
-	    if (short_name != NULL && short_name > path + 1)
+	    if (short_name != NULL && short_name > path + 1
+#if defined(MSWIN) || defined(MSDOS)
+		    /*
+		     * On windows,
+		     *
+		     *	    shorten_fname("c:\a\a.txt", "c:\a\b")
+		     *
+		     * returns "\a\a.txt", which is not really the short
+		     * name, hence:
+		     */
+		    && !vim_ispathsep(*short_name)
+#endif
+		)
 	    {
 		STRCPY(path, ".");
 		add_pathsep(path);
@@ -9535,16 +9574,10 @@ uniquefy_paths(gap, pattern)
 	if (path == NULL)
 	    continue;
 	/*
-	 * If the file is in the current directory,
-	 * and it is not unique,
+	 * If the {filename} is not unique,
 	 * reduce it to ./{filename}
 	 *	  FIXME ^ Is this portable?
 	 * else reduce it to {filename}
-	 *
-	 * Note: If the full filename is /curdir/foo/bar/{filename}, we don't
-	 * want to shorten it to ./foo/bar/{filename} yet because 'path' might
-	 * contain ". / * *", in which case the shortened filename could be
-	 * shorter than ./foo/bar/{filename}.
 	 */
 	short_name = shorten_fname(path, curdir);
 	if (short_name == NULL)
@@ -9826,7 +9859,7 @@ gen_expand_wildcards(num_pat, pat, num_file, file, flags)
 	}
 
 #if defined(FEAT_SEARCHPATH)
-	if (flags & EW_PATH)
+	if (ga.ga_len > 0 && (flags & EW_PATH))
 	    uniquefy_paths(&ga, p);
 #endif
 	if (p != pat[i])
