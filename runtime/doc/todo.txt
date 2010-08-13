@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3f.  Last change: 2010 Aug 12
+*todo.txt*      For Vim version 7.3f.  Last change: 2010 Aug 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,9 +30,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-'cursorline' stops too early in a help file, caused by conceal feature.
-
 Have a close look at :find completion, anything that could be wrong?
+
+Patch for :python + :py3. (James Vega, Roland Puntaier, 2010 Aug 12)
+
+Patch for crash with cmdline editing functions. (Dominique Pelle, 2010 Aug 12)
 
 Test 73 fails on MS-Windows when compiled with DJGPP.
 :find completion with 'path' set to "./**" results in full path for
@@ -59,6 +61,8 @@ Editing a file with a ^M with 'ff' set to "mac", opening a help file, then the
 
 Problem producing tags file when hebrew.frx is present.  It has a BOM.
 Results in E670. (Tony Mechelynck, 2010 May 2)
+
+setpos() does not resture cursor position after :normal. (Tyru, 2010 Aug 11)
 
 'cindent' not correct when 'list' is set. (Zdravi Korusef, 2010 Apr 15)
 

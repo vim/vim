@@ -4399,7 +4399,11 @@ win_line(wp, lnum, startrow, endrow, nochange)
 # ifdef FEAT_RIGHTLEFT
 			    wp->w_p_rl ? (col >= 0) :
 # endif
-			    (col < W_WIDTH(wp))))
+			    (col
+# ifdef FEAT_CONCEAL
+				- boguscols
+# endif
+					    < W_WIDTH(wp))))
 		{
 		    /* Highlight until the right side of the window */
 		    c = ' ';
