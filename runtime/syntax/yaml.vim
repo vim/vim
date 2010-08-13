@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         YAML (YAML Ain't Markup Language)
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2010-05-30
+" Latest Revision:  2010-08-12
 
 if exists("b:current_syntax")
   finish
@@ -17,7 +17,7 @@ syn region  yamlComment         display oneline start='\%(^\|\s\)#' end='$'
 
 syn match   yamlNodeProperty    '!\%(![^\\^%     ]\+\|[^!][^:/   ]*\)'
 
-syn match   yamlAnchor          '&[^ \t]\+'
+syn match   yamlAnchor          '&.\+'
 
 syn match   yamlAlias           '\*.\+'
 
@@ -26,9 +26,11 @@ syn match   yamlBlock           '[\[\]{}>|]'
 syn match   yamlOperator        '[?+-]'
 syn match   yamlKey             '\w\+\(\s\+\w\+\)*\ze\s*:'
 
-syn region  yamlString          start=+"+ skip=+\\"+ end=+"+
+syn region  yamlString          matchgroup=yamlStringDelimiter
+                                \ start=+"+ skip=+\\"+ end=+"+
                                 \ contains=yamlEscape
-syn region  yamlString          start=+'+ skip=+''+ end=+'+
+syn region  yamlString          matchgroup=yamlStringDelimiter
+                                \ start=+'+ skip=+''+ end=+'+
                                 \ contains=yamlSingleEscape
 syn match   yamlEscape          contained display +\\[\\"abefnrtv^0_ NLP]+
 syn match   yamlEscape          contained display '\\x\x\{2}'
@@ -36,7 +38,7 @@ syn match   yamlEscape          contained display '\\u\x\{4}'
 syn match   yamlEscape          contained display '\\U\x\{8}'
 " TODO: how do we get 0x85, 0x2028, and 0x2029 into this?
 syn match   yamlEscape          display '\\\%(\r\n\|[\r\n]\)'
-syn match   yamlSingleEscape    contained display +''+
+syn match   yamlSingleEscape    contained +''+
 
 " TODO: sexagecimal and fixed (20:30.15 and 1,230.15)
 syn match   yamlNumber          display
@@ -71,6 +73,7 @@ hi def link yamlBlock           Operator
 hi def link yamlOperator        Operator
 hi def link yamlKey             Identifier
 hi def link yamlString          String
+hi def link yamlStringDelimiter yamlString
 hi def link yamlEscape          SpecialChar
 hi def link yamlSingleEscape    SpecialChar
 hi def link yamlNumber          Number
