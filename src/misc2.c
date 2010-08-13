@@ -784,7 +784,7 @@ vim_mem_profile_dump()
     {
 	printf("\r\n");
 	if (mem_frees[i] > mem_allocs[i])
-	    printf(_("ERROR: "));
+	    puts(_("ERROR: "));
 	printf("[>%d / %4lu-%-4lu]", i, mem_allocs[i], mem_frees[i]);
     }
 
@@ -827,7 +827,7 @@ alloc_clear(size)
 {
     char_u *p;
 
-    p = (lalloc((long_u)size, TRUE));
+    p = lalloc((long_u)size, TRUE);
     if (p != NULL)
 	(void)vim_memset(p, 0, (size_t)size);
     return p;
@@ -3802,7 +3802,7 @@ set_crypt_method(buf, method)
 /*
  * Prepare for initializing encryption.  If already doing encryption then save
  * the state.
- * Must always be called symmetrycally with crypt_pop_state().
+ * Must always be called symmetrically with crypt_pop_state().
  */
     void
 crypt_push_state()
@@ -3828,7 +3828,7 @@ crypt_push_state()
 /*
  * End encryption.  If doing encryption before crypt_push_state() then restore
  * the saved state.
- * Must always be called symmetrycally with crypt_push_state().
+ * Must always be called symmetrically with crypt_push_state().
  */
     void
 crypt_pop_state()

@@ -1434,7 +1434,7 @@ write_viminfo_filemarks(fp)
     if (get_viminfo_parameter('f') == 0)
 	return;
 
-    fprintf(fp, _("\n# File marks:\n"));
+    fputs(_("\n# File marks:\n"), fp);
 
     /*
      * Find a mark that is the same file and position as the cursor.
@@ -1469,7 +1469,7 @@ write_viminfo_filemarks(fp)
 
 #ifdef FEAT_JUMPLIST
     /* Write the jumplist with -' */
-    fprintf(fp, _("\n# Jumplist (newest first):\n"));
+    fputs(_("\n# Jumplist (newest first):\n"), fp);
     setpcmark();	/* add current cursor position */
     cleanup_jumplist();
     for (fm = &curwin->w_jumplist[curwin->w_jumplistlen - 1];
@@ -1570,7 +1570,7 @@ write_viminfo_marks(fp_out)
 	set_last_cursor(curwin);
 #endif
 
-    fprintf(fp_out, _("\n# History of marks within files (newest to oldest):\n"));
+    fputs(_("\n# History of marks within files (newest to oldest):\n"), fp_out);
     count = 0;
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
     {
