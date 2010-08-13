@@ -889,7 +889,7 @@ modifiers_gdk2vim(guint state)
 	modifiers |= MOD_MASK_CTRL;
     if (state & GDK_MOD1_MASK)
 	modifiers |= MOD_MASK_ALT;
-#ifdef GDK_SUPER_MASK
+#if GTK_CHECK_VERSION(2,10,0)
     if (state & GDK_SUPER_MASK)
 	modifiers |= MOD_MASK_META;
 #endif
