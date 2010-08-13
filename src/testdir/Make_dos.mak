@@ -59,8 +59,6 @@ clean:
 	-if exist mbyte.vim del mbyte.vim
 	-if exist mzscheme.vim del mzscheme.vim
 	-del X*
-	-del X*.*
-	-if exists Xfind rmdir /S /Q Xfind
 	-if exist viminfo del viminfo
 
 .in.out:
@@ -72,4 +70,5 @@ clean:
 	-del X*
 	-del X*.*
 	-del test.ok
+	-rmdir /s /q Xfind
 	-if exist viminfo del viminfo

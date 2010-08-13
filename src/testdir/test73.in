@@ -22,7 +22,7 @@ STARTTEST
 :new
 :let cwd=getcwd()
 :let test_out = cwd . '/test.out'
-:silent !mkdir Xfind
+:call mkdir('Xfind')
 :cd Xfind
 :set path=
 :find 	
@@ -45,9 +45,9 @@ STARTTEST
 :close
 :new
 :" We shouldn't find any file at this point, test.out must be empty.
-:silent !mkdir in
+:call mkdir('in')
 :cd in
-:silent !mkdir path
+:call mkdir('path')
 :exec "cd " . cwd
 :e Xfind/file.txt
 SHoly Grail:w
@@ -103,15 +103,15 @@ SE.T.:w
 :"
 :"    x/bar/voyager.txt
 :"    y/bar/voyager.txt
-:silent !mkdir foo
+:call mkdir('foo')
 :cd foo
-:silent !mkdir x
-:silent !mkdir y
+:call mkdir('x')
+:call mkdir('y')
 :cd x
-:silent !mkdir bar
+:call mkdir('bar')
 :cd ..
 :cd y
-:silent !mkdir bar
+:call mkdir('bar')
 :cd ..
 :cd ..
 :" We should now be in the Xfind directory
