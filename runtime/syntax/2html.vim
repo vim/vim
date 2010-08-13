@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 Aug 07
+" Last Change: 2010 Aug 12
 "
 " Additional contributors:
 "
@@ -126,10 +126,11 @@ function! s:HtmlFormat(text, style_name, diff_style_name)
   " Replace the reserved html characters
   let formatted = substitute(substitute(substitute(substitute(substitute(formatted, '&', '\&amp;', 'g'), '<', '\&lt;', 'g'), '>', '\&gt;', 'g'), '"', '\&quot;', 'g'), "\x0c", '<hr class="PAGE-BREAK">', 'g')
 
-  " Replace double spaces and leading spaces
+  " Replace double spaces, leading spaces, and trailing spaces if needed
   if ' ' != s:HtmlSpace
     let formatted = substitute(formatted, '  ', s:HtmlSpace . s:HtmlSpace, 'g')
     let formatted = substitute(formatted, '^ ', s:HtmlSpace, 'g')
+    let formatted = substitute(formatted, ' \+$', s:HtmlSpace, 'g')
   endif
 
   " Enclose in a span of class style_name
@@ -201,9 +202,11 @@ endif
 
 " Set some options to make it work faster.
 " Don't report changes for :substitute, there will be many of them.
+" Don't change other windows; turn off scroll bind temporarily
 let s:old_title = &title
 let s:old_icon = &icon
 let s:old_et = &l:et
+let s:old_bind = &l:scrollbind
 let s:old_report = &report
 let s:old_search = @/
 let s:old_more = &more
@@ -211,6 +214,7 @@ set notitle noicon
 setlocal et
 set nomore
 set report=1000000
+setlocal noscrollbind
 
 if exists(':ownsyntax') && exists('w:current_syntax')
   let s:current_syntax = w:current_syntax
@@ -247,7 +251,9 @@ let s:newwin_stl = &l:stl
 
 " on the new window, set the least time-consuming fold method
 let s:old_fdm = &foldmethod
+let s:old_fen = &foldenable
 setlocal foldmethod=manual
+setlocal nofoldenable
 
 let s:newwin = winnr()
 let s:orgwin = bufwinnr(s:orgbufnr)
@@ -327,7 +333,7 @@ if s:settings.use_css
 	    \ ".closed-fold:hover > .toggle-filler { display: none; }",
 	    \ ".closed-fold:hover > .Folded { display: none; }",
 	    \ s:settings.use_xhtml ? "" : '-->',
-	    \ '<style>'])
+	    \ '</style>'])
       " TODO: IE7 doesn't *actually* support XHTML, maybe we should remove this.
       " But if it's served up as tag soup, maybe the following will work, so
       " leave it in for now.
@@ -1055,6 +1061,7 @@ endif
 %s:\s\+$::e
 
 " Restore old settings
+let &l:foldenable = s:old_fen
 let &l:foldmethod = s:old_fdm
 let &report = s:old_report
 let &title = s:old_title
@@ -1065,6 +1072,7 @@ let @/ = s:old_search
 let &more = s:old_more
 exe s:orgwin . "wincmd w"
 let &l:et = s:old_et
+let &l:scrollbind = s:old_bind
 exe s:newwin . "wincmd w"
 exec 'resize' s:old_winheight
 let &l:winfixheight = s:old_winfixheight
@@ -1075,10 +1083,12 @@ let &ls=s:ls
 
 " Save a little bit of memory (worth doing?)
 unlet s:htmlfont
-unlet s:old_et s:old_paste s:old_icon s:old_report s:old_title s:old_search s:old_magic s:old_more s:old_fdm s:old_winheight s:old_winfixheight
-unlet s:whatterm s:idlist s:lnum s:end s:margin s:fgc s:bgc
+unlet s:old_et s:old_paste s:old_icon s:old_report s:old_title s:old_search
+unlet s:old_magic s:old_more s:old_fdm s:old_fen s:old_winheight
+unlet s:whatterm s:idlist s:lnum s:end s:margin s:fgc s:bgc s:old_winfixheight
 unlet! s:col s:id s:attr s:len s:line s:new s:expandedtab s:concealinfo
-unlet! s:orgwin s:newwin s:orgbufnr s:idx s:i s:offset s:ls s:origwin_stl s:newwin_stl s:current_syntax
+unlet! s:orgwin s:newwin s:orgbufnr s:idx s:i s:offset s:ls s:origwin_stl
+unlet! s:newwin_stl s:current_syntax
 if !v:profiling
   delfunc s:HtmlColor
   delfunc s:HtmlFormat
@@ -1099,7 +1109,8 @@ if !v:profiling
   endif
 endif
 
-unlet! s:new_lnum s:diffattr s:difffillchar s:foldfillchar s:HtmlSpace s:LeadingSpace s:HtmlEndline s:firstfold s:foldcolumn
+unlet! s:new_lnum s:diffattr s:difffillchar s:foldfillchar s:HtmlSpace
+unlet! s:LeadingSpace s:HtmlEndline s:firstfold s:foldcolumn
 unlet s:foldstack s:allfolds s:foldId s:numcol s:settings
 
 let &cpo = s:cpo_sav

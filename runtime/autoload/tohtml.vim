@@ -1,6 +1,6 @@
 " Vim autoload file for the tohtml plugin.
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 Aug 06
+" Last Change: 2010 Aug 12
 "
 " Additional contributors:
 "
@@ -51,6 +51,11 @@ endfunc
 func! tohtml#Diff2HTML(win_list, buf_list)
   let xml_line = ""
   let tag_close = '>'
+
+  let s:old_paste = &paste
+  set paste
+  let s:old_magic = &magic
+  set magic
 
   if s:settings.use_xhtml
     if s:settings.encoding != ""
@@ -250,6 +255,9 @@ func! tohtml#Diff2HTML(win_list, buf_list)
 	    \ ])
     endif
   endif
+
+  let &paste = s:old_paste
+  let &magic = s:old_magic
 endfunc
 
 " Gets a single user option and sets it in the passed-in Dict, or gives it the
