@@ -80,9 +80,7 @@ static void init_structs(void);
 #  include <dlfcn.h>
 #  define FARPROC void*
 #  define HINSTANCE void*
-#  ifdef FEAT_PYTHON
-   /* Don't use RTLD_GLOBAL, it may cause a crash if both :python and :py3 are
-    * used. But without it importing may fail, e.g., for termios. */
+#  ifdef PY_NO_RTLD_GLOBAL
 #   define load_dll(n) dlopen((n), RTLD_LAZY)
 #  else
 #   define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
@@ -338,16 +336,15 @@ py3_runtime_link_init(char *libname, int verbose)
     int i;
     void *ucs_from_string, *ucs_from_string_and_size;
 
-# if 0  /* this should be OK now that we don't use RTLD_GLOBAL */
-# if defined(UNIX) && defined(FEAT_PYTHON)
-    /* Can't have Python and Python3 loaded at the same time, it may cause a
-     * crash. */
+# if !defined(PY_NO_RTLD_GLOBAL) && defined(UNIX) && defined(FEAT_PYTHON)
+    /* Can't have Python and Python3 loaded at the same time.
+     * It cause a crash, because RTLD_GLOBAL is needed for
+     * standard C extension libraries of one or both python versions. */
     if (python_loaded())
     {
-	EMSG(_("E999: Python: Cannot use :py and :py3 in one session"));
+	EMSG(_("E837: This Vim cannot execute :py3 after using :python"));
 	return FAIL;
     }
-# endif
 # endif
 
     if (hinstPy3 != 0)

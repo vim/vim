@@ -30,15 +30,14 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Have a close look at :find completion, anything that could be wrong?
-
 Patch for :python + :py3. (James Vega, Roland Puntaier, 2010 Aug 12)
 
 Patch for crash with cmdline editing functions. (Dominique Pelle, 2010 Aug 12)
 
-Test 73 fails on MS-Windows when compiled with DJGPP.
-:find completion with 'path' set to "./**" results in full path for
-"./subdir/file", should shorten to start with "./".
+Have a close look at :find completion, anything that could be wrong?
+
+Test 73 fails on MS-Windows when compiled with DJGPP and run twice.  How to
+delete the Xfind directory?
 
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)

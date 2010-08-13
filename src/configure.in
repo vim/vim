@@ -757,10 +757,10 @@ AC_SUBST(PERL_LIBS)
 
 AC_MSG_CHECKING(--enable-pythoninterp argument)
 AC_ARG_ENABLE(pythoninterp,
-	[  --enable-pythoninterp   Include Python interpreter.], ,
+	[  --enable-pythoninterp[=OPTS]   Include Python interpreter. [default=no] [OPTS=no/yes/dynamic]], ,
 	[enable_pythoninterp="no"])
 AC_MSG_RESULT($enable_pythoninterp)
-if test "$enable_pythoninterp" = "yes"; then
+if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; then
   dnl -- find the python executable
   AC_PATH_PROG(vi_cv_path_python, python)
   if test "X$vi_cv_path_python" != "X"; then
@@ -944,10 +944,10 @@ AC_SUBST(PYTHON_OBJ)
 
 AC_MSG_CHECKING(--enable-python3interp argument)
 AC_ARG_ENABLE(python3interp,
-	[  --enable-python3interp   Include Python3 interpreter.], ,
+	[  --enable-python3interp[=OPTS]   Include Python3 interpreter. [default=no] [OPTS=no/yes/dynamic]], ,
 	[enable_python3interp="no"])
 AC_MSG_RESULT($enable_python3interp)
-if test "$enable_python3interp" = "yes"; then
+if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; then
   dnl -- find the python3 executable
   AC_PATH_PROG(vi_cv_path_python3, python3)
   if test "X$vi_cv_path_python3" != "X"; then
@@ -1075,7 +1075,7 @@ eof
 
       dnl check that compiling a simple program still works with the flags
       dnl added for Python.
-      AC_MSG_CHECKING([if compile and link flags for Python are sane])
+      AC_MSG_CHECKING([if compile and link flags for Python 3 are sane])
       cflags_save=$CFLAGS
       libs_save=$LIBS
       CFLAGS="$CFLAGS $PYTHON3_CFLAGS"
@@ -1109,10 +1109,62 @@ dnl with dlopen(), dlsym(), dlclose()
 if test "$python_ok" = yes && test "$python3_ok" = yes; then
   AC_DEFINE(DYNAMIC_PYTHON)
   AC_DEFINE(DYNAMIC_PYTHON3)
+  AC_MSG_CHECKING(whether we can do without RTLD_GLOBAL)
+  cflags_save=$CFLAGS
+  CFLAGS="$CFLAGS $PYTHON3_CFLAGS"
+  ldflags_save=$LDFLAGS
+  LDFLAGS="$LDFLAGS -ldl"
+  AC_RUN_IFELSE([
+    #include <dlfcn.h>
+    /* If this program fails, then RTLD_GLOBAL is needed.
+     * RTLD_GLOBAL will be used and then it is not possible to
+     * have both python versions enabled in the same vim instance.
+     * Only the first pyhton version used will be switched on.
+     */
+
+    int no_rtl_global_needed_for(char *python_instsoname)
+    {
+      int needed = 0;
+      void* pylib = dlopen(python_instsoname, RTLD_LAZY);
+      if (pylib != 0)
+      {
+          void (*init)(void) = dlsym(pylib, "Py_Initialize");
+          int (*simple)(char*) = dlsym(pylib, "PyRun_SimpleString");
+          void (*final)(void) = dlsym(pylib, "Py_Finalize");
+          (*init)();
+          needed = (*simple)("import termios") == -1;
+          (*final)();
+          dlclose(pylib);
+      }
+      return !needed;
+    }
+
+    int main(int argc, char** argv)
+    {
+      int not_needed = 0;
+      if (no_rtl_global_needed_for("libpython2.7.so.1.0") && no_rtl_global_needed_for("libpython3.1.so.1.0"))
+            not_needed = 1;
+      return !not_needed;
+    }],
+    [AC_MSG_RESULT(yes);AC_DEFINE(PY_NO_RTLD_GLOBAL)], [AC_MSG_RESULT(no)])
+  CFLAGS=$cflags_save
+  LDFLAGS=$ldflags_save
   PYTHON_SRC="if_python.c"
   PYTHON_OBJ="objects/if_python.o"
   PYTHON_CFLAGS="$PYTHON_CFLAGS -DDYNAMIC_PYTHON_DLL=\\\"${python_INSTSONAME}\\\""
   PYTHON_LIBS=
+  PYTHON3_SRC="if_python3.c"
+  PYTHON3_OBJ="objects/if_python3.o"
+  PYTHON3_CFLAGS="$PYTHON3_CFLAGS -DDYNAMIC_PYTHON3_DLL=\\\"${python3_INSTSONAME}\\\""
+  PYTHON3_LIBS=
+elif test "$python_ok" = yes && test "$enable_pythoninterp" = "dynamic"; then
+  AC_DEFINE(DYNAMIC_PYTHON)
+  PYTHON_SRC="if_python.c"
+  PYTHON_OBJ="objects/if_python.o"
+  PYTHON_CFLAGS="$PYTHON_CFLAGS -DDYNAMIC_PYTHON_DLL=\\\"${python_INSTSONAME}\\\""
+  PYTHON_LIBS=
+elif test "$python3_ok" = yes && test "$enable_python3interp" = "dynamic"; then
+  AC_DEFINE(DYNAMIC_PYTHON3)
   PYTHON3_SRC="if_python3.c"
   PYTHON3_OBJ="objects/if_python3.o"
   PYTHON3_CFLAGS="$PYTHON3_CFLAGS -DDYNAMIC_PYTHON3_DLL=\\\"${python3_INSTSONAME}\\\""

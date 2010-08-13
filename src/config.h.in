@@ -343,6 +343,9 @@
 /* Define for linking via dlopen() or LoadLibrary() */
 #undef DYNAMIC_PYTHON3
 
+/* Define if dynamic python does not require RTLD_GLOBAL */
+#undef PY_NO_RTLD_GLOBAL
+
 /* Define if you want to include the Ruby interpreter. */
 #undef FEAT_RUBY
 

@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.3f.  Last change: 2010 Aug 10
+*if_pyth.txt*   For Vim version 7.3f.  Last change: 2010 Aug 13
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -348,8 +348,10 @@ Vim can be built in four ways (:version output):
 3. Python 3 support only    (-python, +python3 or +python3/dyn)
 4. Python 2 and 3 support   (+python/dyn, +python3/dyn)
 
+							*E836* *E837*
 You can see that when Python 2 and Python 3 are both supported they must be
-loaded dynamically.
+loaded dynamically.  Depending on how the libraries have been build it might
+be impossible to use ":py3" and ":python" in one Vim session.
 
 On Linux/Unix systems this can only be done without importing global symbols.
 In this case python's "import" might fail, if the library expects the symbols 

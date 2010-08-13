@@ -1424,8 +1424,8 @@ Optional Features:
   --enable-luainterp=OPTS     Include Lua interpreter.  default=no OPTS=no/yes/dynamic
   --enable-mzschemeinterp   Include MzScheme interpreter.
   --enable-perlinterp=OPTS     Include Perl interpreter.  default=no OPTS=no/yes/dynamic
-  --enable-pythoninterp   Include Python interpreter.
-  --enable-python3interp   Include Python3 interpreter.
+  --enable-pythoninterp=OPTS   Include Python interpreter. default=no OPTS=no/yes/dynamic
+  --enable-python3interp=OPTS   Include Python3 interpreter. default=no OPTS=no/yes/dynamic
   --enable-tclinterp      Include Tcl interpreter.
   --enable-rubyinterp     Include Ruby interpreter.
   --enable-cscope         Include cscope interface.
@@ -5118,7 +5118,7 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_pythoninterp" >&5
 $as_echo "$enable_pythoninterp" >&6; }
-if test "$enable_pythoninterp" = "yes"; then
+if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; then
     # Extract the first word of "python", so it can be a program name with args.
 set dummy python; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
@@ -5409,7 +5409,7 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_python3interp" >&5
 $as_echo "$enable_python3interp" >&6; }
-if test "$enable_python3interp" = "yes"; then
+if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; then
     # Extract the first word of "python3", so it can be a program name with args.
 set dummy python3; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
@@ -5614,8 +5614,8 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "no" >&6; }
       fi
 
-                  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if compile and link flags for Python are sane" >&5
-$as_echo_n "checking if compile and link flags for Python are sane... " >&6; }
+                  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if compile and link flags for Python 3 are sane" >&5
+$as_echo_n "checking if compile and link flags for Python 3 are sane... " >&6; }
       cflags_save=$CFLAGS
       libs_save=$LIBS
       CFLAGS="$CFLAGS $PYTHON3_CFLAGS"
@@ -5667,10 +5667,85 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
 
   $as_echo "#define DYNAMIC_PYTHON3 1" >>confdefs.h
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we can do without RTLD_GLOBAL" >&5
+$as_echo_n "checking whether we can do without RTLD_GLOBAL... " >&6; }
+  cflags_save=$CFLAGS
+  CFLAGS="$CFLAGS $PYTHON3_CFLAGS"
+  ldflags_save=$LDFLAGS
+  LDFLAGS="$LDFLAGS -ldl"
+  if test "$cross_compiling" = yes; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error "cannot run test program while cross compiling
+See \`config.log' for more details." "$LINENO" 5; }
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    #include <dlfcn.h>
+    /* If this program fails, then RTLD_GLOBAL is needed.
+     * RTLD_GLOBAL will be used and then it is not possible to
+     * have both python versions enabled in the same vim instance.
+     * Only the first pyhton version used will be switched on.
+     */
+
+    int no_rtl_global_needed_for(char *python_instsoname)
+    {
+      int needed = 0;
+      void* pylib = dlopen(python_instsoname, RTLD_LAZY);
+      if (pylib != 0)
+      {
+          void (*init)(void) = dlsym(pylib, "Py_Initialize");
+          int (*simple)(char*) = dlsym(pylib, "PyRun_SimpleString");
+          void (*final)(void) = dlsym(pylib, "Py_Finalize");
+          (*init)();
+          needed = (*simple)("import termios") == -1;
+          (*final)();
+          dlclose(pylib);
+      }
+      return !needed;
+    }
+
+    int main(int argc, char** argv)
+    {
+      int not_needed = 0;
+      if (no_rtl_global_needed_for("libpython2.7.so.1.0") && no_rtl_global_needed_for("libpython3.1.so.1.0"))
+            not_needed = 1;
+      return !not_needed;
+    }
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; };$as_echo "#define PY_NO_RTLD_GLOBAL 1" >>confdefs.h
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+  CFLAGS=$cflags_save
+  LDFLAGS=$ldflags_save
   PYTHON_SRC="if_python.c"
   PYTHON_OBJ="objects/if_python.o"
   PYTHON_CFLAGS="$PYTHON_CFLAGS -DDYNAMIC_PYTHON_DLL=\\\"${python_INSTSONAME}\\\""
   PYTHON_LIBS=
+  PYTHON3_SRC="if_python3.c"
+  PYTHON3_OBJ="objects/if_python3.o"
+  PYTHON3_CFLAGS="$PYTHON3_CFLAGS -DDYNAMIC_PYTHON3_DLL=\\\"${python3_INSTSONAME}\\\""
+  PYTHON3_LIBS=
+elif test "$python_ok" = yes && test "$enable_pythoninterp" = "dynamic"; then
+  $as_echo "#define DYNAMIC_PYTHON 1" >>confdefs.h
+
+  PYTHON_SRC="if_python.c"
+  PYTHON_OBJ="objects/if_python.o"
+  PYTHON_CFLAGS="$PYTHON_CFLAGS -DDYNAMIC_PYTHON_DLL=\\\"${python_INSTSONAME}\\\""
+  PYTHON_LIBS=
+elif test "$python3_ok" = yes && test "$enable_python3interp" = "dynamic"; then
+  $as_echo "#define DYNAMIC_PYTHON3 1" >>confdefs.h
+
   PYTHON3_SRC="if_python3.c"
   PYTHON3_OBJ="objects/if_python3.o"
   PYTHON3_CFLAGS="$PYTHON3_CFLAGS -DDYNAMIC_PYTHON3_DLL=\\\"${python3_INSTSONAME}\\\""
