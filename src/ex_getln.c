@@ -4999,9 +4999,7 @@ ExpandRTDir(pat, num_file, file, dirnames)
     vim_free(all);
 
     /* Sort and remove duplicates which can happen when specifying multiple
-     * directories in dirnames such as "{syntax,ftplugin,indent}".
-     */
-    sort_strings((char_u **)ga.ga_data, ga.ga_len);
+     * directories in dirnames such as "{syntax,ftplugin,indent}". */
     remove_duplicates(&ga);
 
     *file = ga.ga_data;

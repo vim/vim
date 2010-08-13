@@ -9267,9 +9267,8 @@ static void uniquefy_paths __ARGS((garray_T *gap, char_u *pattern));
 static int expand_in_path __ARGS((garray_T *gap, char_u	*pattern, int flags));
 
 /*
- * Moves psep to the previous path separator in path, starting from the
- * end of path.
- * Returns FAIL is psep ends up at the beginning of path.
+ * Moves "*psep" back to the previous path separator in "path".
+ * Returns FAIL is "*psep" ends up at the beginning of "path".
  */
     static int
 find_previous_pathsep(path, psep)
@@ -9278,21 +9277,22 @@ find_previous_pathsep(path, psep)
 {
     /* skip the current separator */
     if (*psep > path && vim_ispathsep(**psep))
-	(*psep)--;
+	--*psep;
 
     /* find the previous separator */
-    while (*psep > path && !vim_ispathsep(**psep))
-	(*psep)--;
-
-    if (*psep != path && vim_ispathsep(**psep))
-	return OK;
+    while (*psep > path)
+    {
+	if (vim_ispathsep(**psep))
+	    return OK;
+	mb_ptr_back(path, *psep);
+    }
 
     return FAIL;
 }
 
 /*
- * Returns TRUE if "maybe_unique" is unique wrt other_paths in gap.
- * "maybe_unique" is the end portion of ((char_u **)gap->ga_data)[i].
+ * Returns TRUE if "maybe_unique" is unique wrt other_paths in "gap".
+ * "maybe_unique" is the end portion of "((char_u **)gap->ga_data)[i]".
  */
     static int
 is_unique(maybe_unique, gap, i)
@@ -9306,16 +9306,15 @@ is_unique(maybe_unique, gap, i)
     char_u  **other_paths = (char_u **)gap->ga_data;
     char_u  *rival;
 
-    for (j = 0; j < gap->ga_len && !got_int; j++)
+    for (j = 0; j < gap->ga_len; j++)
     {
-	ui_breakcheck();
 	if (j == i)
 	    continue;  /* don't compare it with itself */
 
 	candidate_len = (int)STRLEN(maybe_unique);
 	other_path_len = (int)STRLEN(other_paths[j]);
 	if (other_path_len < candidate_len)
-	    continue;  /* it's different */
+	    continue;  /* it's different when it's shorter */
 
 	rival = other_paths[j] + other_path_len - candidate_len;
 	if (fnamecmp(maybe_unique, rival) == 0)
@@ -9343,6 +9342,7 @@ expand_path_option(curdir, gap)
 						  ? p_path : curbuf->b_p_path;
     char_u	*buf;
     char_u	*p;
+    int		len;
 
     if ((buf = alloc((int)MAXPATHL)) == NULL)
 	return;
@@ -9351,33 +9351,39 @@ expand_path_option(curdir, gap)
     {
 	copy_option_part(&path_option, buf, MAXPATHL, " ,");
 
-	if (STRCMP(buf, ".") == 0) /* relative to current buffer */
+	if (buf[0] == '.' && (buf[1] == NUL || vim_ispathsep(buf[1])))
 	{
+	    /* Relative to current buffer:
+	     * "/path/file" + "." -> "/path/"
+	     * "/path/file"  + "./subdir" -> "/path/subdir" */
 	    if (curbuf->b_ffname == NULL)
 		continue;
-	    STRCPY(buf, curbuf->b_ffname);
-	    *gettail(buf) = NUL;
+	    p = gettail(curbuf->b_ffname);
+	    len = (int)(p - curbuf->b_ffname);
+	    if (len + (int)STRLEN(buf) >= MAXPATHL)
+		continue;
+	    if (buf[1] == NUL)
+		buf[len] = NUL;
+	    else
+		STRMOVE(buf + len, buf + 2);
+	    mch_memmove(buf, curbuf->b_ffname, len);
+	    simplify_filename(buf);
 	}
-	else if (buf[0] == NUL) /* relative to current directory */
+	else if (buf[0] == NUL)
+	    /* relative to current directory */
 	    STRCPY(buf, curdir);
 	else if (path_with_url(buf))
+	    /* URL can't be used here */
 	    continue;
 	else if (!mch_isFullName(buf))
 	{
 	    /* Expand relative path to their full path equivalent */
-	    int curdir_len = (int)STRLEN(curdir);
-	    int buf_len = (int)STRLEN(buf);
-
-	    if (curdir_len + buf_len + 3 > MAXPATHL)
+	    len = (int)STRLEN(curdir);
+	    if (len + (int)STRLEN(buf) + 3 > MAXPATHL)
 		continue;
-	    STRMOVE(buf + curdir_len + 1, buf);
+	    STRMOVE(buf + len + 1, buf);
 	    STRCPY(buf, curdir);
-	    buf[curdir_len] = PATHSEP;
-	    /*
-	     * 'path' may have "./baz" as one of the items.
-	     * If curdir is "/foo/bar", p will end up being "/foo/bar/./baz".
-	     * Simplify it.
-	     */
+	    buf[len] = PATHSEP;
 	    simplify_filename(buf);
 	}
 
@@ -9393,8 +9399,8 @@ expand_path_option(curdir, gap)
 }
 
 /*
- * Returns a pointer to the file or directory name in fname that matches the
- * longest path in gap, or NULL if there is no match. For example:
+ * Returns a pointer to the file or directory name in "fname" that matches the
+ * longest path in "ga"p, or NULL if there is no match. For example:
  *
  *    path: /foo/bar/baz
  *   fname: /foo/bar/baz/quux.txt
@@ -9427,7 +9433,7 @@ get_path_cutoff(fname, gap)
 	}
     }
 
-    /* Skip to the file or directory name */
+    /* skip to the file or directory name */
     if (cutoff != NULL)
 	while (vim_ispathsep(*cutoff))
 	    mb_ptr_adv(cutoff);
@@ -9436,9 +9442,9 @@ get_path_cutoff(fname, gap)
 }
 
 /*
- * Sorts, removes duplicates and modifies all the fullpath names in gap so that
- * they are unique with respect to each other while conserving the part that
- * matches the pattern. Beware, this is at least O(n^2) wrt gap->ga_len.
+ * Sorts, removes duplicates and modifies all the fullpath names in "gap" so
+ * that they are unique with respect to each other while conserving the part
+ * that matches the pattern. Beware, this is at least O(n^2) wrt "gap->ga_len".
  */
     static void
 uniquefy_paths(gap, pattern)
@@ -9451,17 +9457,13 @@ uniquefy_paths(gap, pattern)
     int		sort_again = FALSE;
     char_u	*pat;
     char_u      *file_pattern;
-    char_u	*curdir = NULL;
+    char_u	*curdir;
     regmatch_T	regmatch;
     garray_T	path_ga;
     char_u	**in_curdir = NULL;
     char_u	*short_name;
 
-    sort_strings(fnames, gap->ga_len);
     remove_duplicates(gap);
-    if (gap->ga_len == 0)
-	return;
-
     ga_init2(&path_ga, (int)sizeof(char_u *), 1);
 
     /*
@@ -9490,13 +9492,13 @@ uniquefy_paths(gap, pattern)
     if ((curdir = alloc((int)(MAXPATHL))) == NULL)
 	goto theend;
     mch_dirname(curdir, MAXPATHL);
-
     expand_path_option(curdir, &path_ga);
-    in_curdir = (char_u **)alloc(gap->ga_len * sizeof(char_u *));
+
+    in_curdir = (char_u **)alloc_clear(gap->ga_len * sizeof(char_u *));
     if (in_curdir == NULL)
 	goto theend;
 
-    for (i = 0; i < gap->ga_len; i++)
+    for (i = 0; i < gap->ga_len && !got_int; i++)
     {
 	char_u	    *path = fnames[i];
 	int	    is_in_curdir;
@@ -9507,11 +9509,8 @@ uniquefy_paths(gap, pattern)
 	len = (int)STRLEN(path);
 	is_in_curdir = fnamencmp(curdir, path, dir_end - path) == 0
 					     && curdir[dir_end - path] == NUL;
-
 	if (is_in_curdir)
 	    in_curdir[i] = vim_strsave(path);
-	else
-	    in_curdir[i] = NULL;
 
 	/* Shorten the filename while maintaining its uniqueness */
 	path_cutoff = get_path_cutoff(path, &path_ga);
@@ -9546,14 +9545,10 @@ uniquefy_paths(gap, pattern)
 	    short_name = shorten_fname(path, curdir);
 	    if (short_name != NULL && short_name > path + 1
 #if defined(MSWIN) || defined(MSDOS)
-		    /*
-		     * On windows,
-		     *
+		    /* On windows,
 		     *	    shorten_fname("c:\a\a.txt", "c:\a\b")
-		     *
 		     * returns "\a\a.txt", which is not really the short
-		     * name, hence:
-		     */
+		     * name, hence: */
 		    && !vim_ispathsep(*short_name)
 #endif
 		)
@@ -9563,22 +9558,20 @@ uniquefy_paths(gap, pattern)
 		STRCAT(path, short_name);
 	    }
 	}
+	ui_breakcheck();
     }
 
     /* Shorten filenames in /in/current/directory/{filename} */
-    for (i = 0; i < gap->ga_len; i++)
+    for (i = 0; i < gap->ga_len && !got_int; i++)
     {
 	char_u *rel_path;
 	char_u *path = in_curdir[i];
 
 	if (path == NULL)
 	    continue;
-	/*
-	 * If the {filename} is not unique,
-	 * reduce it to ./{filename}
-	 *	  FIXME ^ Is this portable?
-	 * else reduce it to {filename}
-	 */
+
+	/* If the {filename} is not unique, change it to ./{filename}.
+	 * Else reduce it to {filename} */
 	short_name = shorten_fname(path, curdir);
 	if (short_name == NULL)
 	    short_name = path;
@@ -9591,26 +9584,14 @@ uniquefy_paths(gap, pattern)
 	rel_path = alloc((int)(STRLEN(short_name) + STRLEN(PATHSEPSTR) + 2));
 	if (rel_path == NULL)
 	    goto theend;
-
-	/* FIXME Is "." a portable way of denoting the current directory? */
 	STRCPY(rel_path, ".");
 	add_pathsep(rel_path);
 	STRCAT(rel_path, short_name);
 
-	if (len < (int)STRLEN(rel_path))
-	{
-	    vim_free(fnames[i]);
-	    fnames[i] = alloc((int)(STRLEN(rel_path) + 1));
-	    if (fnames[i] == NULL)
-	    {
-		vim_free(rel_path);
-		goto theend;
-	    }
-	}
-
-	STRCPY(fnames[i], rel_path);
-	vim_free(rel_path);
+	vim_free(fnames[i]);
+	fnames[i] = rel_path;
 	sort_again = TRUE;
+	ui_breakcheck();
     }
 
 theend:
@@ -9625,10 +9606,7 @@ theend:
     vim_free(regmatch.regprog);
 
     if (sort_again)
-    {
-	sort_strings(fnames, gap->ga_len);
 	remove_duplicates(gap);
-    }
 }
 
 /*
@@ -9697,8 +9675,8 @@ expand_in_path(gap, pattern, flags)
 
 #if defined(FEAT_SEARCHPATH) || defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
- * Remove adjacent duplicate entries from "gap", which is a list of file names
- * in allocated memory.
+ * Sort "gap" and remove duplicate entries.  "gap" is expected to contain a
+ * list of file names in allocated memory.
  */
     void
 remove_duplicates(gap)
@@ -9708,6 +9686,7 @@ remove_duplicates(gap)
     int	    j;
     char_u  **fnames = (char_u **)gap->ga_data;
 
+    sort_strings(fnames, gap->ga_len);
     for (i = gap->ga_len - 1; i > 0; --i)
 	if (fnamecmp(fnames[i - 1], fnames[i]) == 0)
 	{
