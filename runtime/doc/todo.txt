@@ -30,8 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch for crash with cmdline editing functions. (Dominique Pelle, 2010 Aug 12)
-
 Have a close look at :find completion, anything that could be wrong?
 
 Test 73 fails on MS-Windows when compiled with DJGPP and run twice.  How to

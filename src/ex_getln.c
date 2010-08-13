@@ -2527,7 +2527,10 @@ realloc_cmdbuff(len)
 	ccline.cmdbuff = p;		/* keep the old one */
 	return FAIL;
     }
-    mch_memmove(ccline.cmdbuff, p, (size_t)ccline.cmdlen + 1);
+    /* There isn't always a NUL after the command, but it may need to be
+     * there, thus copy up to the NUL and add a NUL. */
+    mch_memmove(ccline.cmdbuff, p, (size_t)ccline.cmdlen);
+    ccline.cmdbuff[ccline.cmdlen] = NUL;
     vim_free(p);
 
     if (ccline.xpc != NULL
