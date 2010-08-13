@@ -83,10 +83,11 @@ DOSBIN_S =  dosbin_s
 #   runtime/doc/*.txt and nsis/gvim.nsi. Other things in README_os2.txt.  For a
 #   minor/major version: src/GvimExt/GvimExt.reg, src/vim.def, src/vim16.def,
 #   src/gvim.exe.mnf.
+# - Adjust the date and other info in src/version.h.
 # - Correct included_patches[] in src/version.c.
 # - Compile Vim with GTK, Perl, Python, Python3, TCL, Ruby, MZscheme, Lua (if
-#   you can make it work), Cscope and "huge" features.  Exclude workshop and
-#   SNiFF.
+#   you can make it all work), Cscope and "huge" features.  Exclude workshop
+#   and SNiFF.
 # - With these features: "make proto" (requires cproto and Motif installed;
 #   ignore warnings for missing include files, fix problems for syntax errors).
 # - With these features: "make depend" (works best with gcc).

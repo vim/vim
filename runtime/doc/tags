@@ -4217,6 +4217,8 @@ E832	undo.txt	/*E832*
 E833	editing.txt	/*E833*
 E834	options.txt	/*E834*
 E835	options.txt	/*E835*
+E836	if_pyth.txt	/*E836*
+E837	if_pyth.txt	/*E837*
 E84	windows.txt	/*E84*
 E85	options.txt	/*E85*
 E86	windows.txt	/*E86*
@@ -5810,6 +5812,7 @@ g:tar_nomax	pi_tar.txt	/*g:tar_nomax*
 g:tar_readoptions	pi_tar.txt	/*g:tar_readoptions*
 g:tar_secure	pi_tar.txt	/*g:tar_secure*
 g:tar_writeoptions	pi_tar.txt	/*g:tar_writeoptions*
+g:tex_conceal	syntax.txt	/*g:tex_conceal*
 g:var	eval.txt	/*g:var*
 g:vimball_home	pi_vimball.txt	/*g:vimball_home*
 g:vimball_mkdir	pi_vimball.txt	/*g:vimball_mkdir*

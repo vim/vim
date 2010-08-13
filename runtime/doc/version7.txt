@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.3f.  Last change: 2010 Aug 08
+*version7.txt*  For Vim version 7.3f.  Last change: 2010 Aug 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10125,6 +10125,12 @@ Disallow setting 'ambiwidth' to "double" when 'listchars' or 'fillchars'
 contains a character that would become double width.
 
 Set 'wrapscan' when checking the .po files. (Mike Williams)
+
+Fixed: using expression in command line may cause a crash.
+
+Avoid warnings from the clang compiler. (Dominique Pelle)
+
+Fix: Include wchar.h in charset.c for towupper().
 
 
  vim:tw=78:ts=8:ft=help:norl:

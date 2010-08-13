@@ -335,32 +335,48 @@ Currently the name is "python24.dll".  That is for Python 2.4.  To know for
 sure edit "gvim.exe" and search for "python\d*.dll\c".
 
 ==============================================================================
-7. Python 3                                             *python3*
+7. Python 3						*python3*
 
-                                                        *:py3* *:python3*
+							*:py3* *:python3*
 The |:py3| and |:python3| commands work similar to |:python|.
-                                                                *:py3file*
+							*:py3file*
 The |:py3file| command works similar to |:pyfile|.
 
 Vim can be built in four ways (:version output):
-1. No Python support        (-python, -python3)
+1. No Python support	    (-python, -python3)
 2. Python 2 support only    (+python or +python/dyn, -python3)
 3. Python 3 support only    (-python, +python3 or +python3/dyn)
 4. Python 2 and 3 support   (+python/dyn, +python3/dyn)
 
-							*E836* *E837*
-You can see that when Python 2 and Python 3 are both supported they must be
-loaded dynamically.  Depending on how the libraries have been build it might
-be impossible to use ":py3" and ":python" in one Vim session.
+Some more details on the special case 4:
 
-On Linux/Unix systems this can only be done without importing global symbols.
-In this case python's "import" might fail, if the library expects the symbols 
-to be provided by vim. To work around this 
-1. either the problematic library, or python in case of standard libraries,
-   must be recompiled to link to the according libpython.so file
-   (--enable-shared in case of python).
-2. Or you recompile vim for only one python version.  In this case all symbols
-   can be imported into vim.
+When Python 2 and Python 3 are both supported they must be loaded dynamically.
+
+When doing this on Linux/Unix systems and importing global symbols, this leads
+to a crash when the second Python version is used.  So either global symbols
+are loaded but only one Python version is activated, or no global symbols are
+loaded. The latter makes Python's "import" fail on libaries that expect the
+symbols to be provided by Vim.
+							*E836* *E837*
+Vim's configuration script makes a guess for all libraries based on one
+standard Python library (termios).  If importing this library succeeds for
+both Python versions, then both will be made available in Vim at the same
+time.  If not, only the version first used in a session will be enabled.
+When trying to use the other one you will get the E836 or E837 error message.
+
+Here Vim's behavior depends on the system in which it was configured.  In a
+system where both versions of Python were configured with --enable-shared,
+both versions of Python will be activated at the same time.  There will still
+be problems with other third party libraries that were not linked to
+libPython.
+
+To work around such problems there are these options:
+1. The problematic library is recompiled to link to the according
+   libpython.so.
+2. Vim is recompiled for only one Python version.
+3. You undefine PY_NO_RTLD_GLOBAL in auto/config.h after configuration.  This
+   may crash Vim though.
+
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:
