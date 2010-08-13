@@ -2,7 +2,7 @@
 " Language:     Perl 5
 " Maintainer:   Andy Lester <andy@petdance.com>
 " URL:          http://github.com/petdance/vim-perl/tree/master
-" Last Change:  2009-09-2
+" Last Change:  2010-08-10
 " Contributors: Andy Lester <andy@petdance.com>
 "               Hinrik Örn Sigurðsson <hinrik.sig@gmail.com>
 "               Lukas Mai <l.mai.web.de>
@@ -28,37 +28,8 @@
 " let perl_nofold_packages = 1
 " let perl_nofold_subs = 1
 
-if version < 600
-  echoerr ">=vim-6.0 is required to run perl.vim"
+if exists("b:current_syntax")
   finish
-elseif exists("b:current_syntax")
-  finish
-endif
-
-"
-" Folding
-
-if exists("perl_fold")
-  " Note: this bit must come before the actual highlighting of the "package"
-  " keyword, otherwise this will screw up Pod lines that match /^package/
-  if !exists("perl_nofold_packages")
-    syn region perlPackageFold start="^package \S\+;\s*\%(#.*\)\=$" end="^1;\=\s*\%(#.*\)\=$" end="\n\+package"me=s-1 transparent fold keepend
-  endif
-  if !exists("perl_nofold_subs")
-    syn region perlSubFold     start="^\z(\s*\)\<sub\>.*[^};]$" end="^\z1}\s*\%(#.*\)\=$" transparent fold keepend
-    syn region perlSubFold start="^\z(\s*\)\<\%(BEGIN\|END\|CHECK\|INIT\|UNITCHECK\)\>.*[^};]$" end="^\z1}\s*$" transparent fold keepend
-  endif
-
-  if exists("perl_fold_blocks")
-    syn region perlBlockFold start="^\z(\s*\)\%(if\|elsif\|unless\|for\|while\|until\|given\)\s*(.*)\%(\s*{\)\=\s*\%(#.*\)\=$" start="^\z(\s*\)foreach\s*\%(\%(my\|our\)\=\s*\S\+\s*\)\=(.*)\%(\s*{\)\=\s*\%(#.*\)\=$" end="^\z1}\s*;\=\%(#.*\)\=$" transparent fold keepend
-    syn region perlBlockFold start="^\z(\s*\)\%(do\|else\)\%(\s*{\)\=\s*\%(#.*\)\=$" end="^\z1}\s*while" end="^\z1}\s*;\=\%(#.*\)\=$" transparent fold keepend
-  endif
-
-  setlocal foldmethod=syntax
-  syn sync fromstart
-else
-  " fromstart above seems to set minlines even if perl_fold is not set.
-  syn sync minlines=0
 endif
 
 
@@ -417,6 +388,32 @@ if exists("perl_fold")
   syntax region perlDATA		start="^__\%(DATA\|END\)__$" skip="." end="." contains=perlPOD,@perlDATA fold
 else
   syntax region perlDATA		start="^__\%(DATA\|END\)__$" skip="." end="." contains=perlPOD,@perlDATA
+endif
+
+"
+" Folding
+
+if exists("perl_fold")
+  " Note: this bit must come before the actual highlighting of the "package"
+  " keyword, otherwise this will screw up Pod lines that match /^package/
+  if !exists("perl_nofold_packages")
+    syn region perlPackageFold start="^package \S\+;\s*\%(#.*\)\=$" end="^1;\=\s*\%(#.*\)\=$" end="\n\+package"me=s-1 transparent fold keepend
+  endif
+  if !exists("perl_nofold_subs")
+    syn region perlSubFold     start="^\z(\s*\)\<sub\>.*[^};]$" end="^\z1}\s*\%(#.*\)\=$" transparent fold keepend
+    syn region perlSubFold start="^\z(\s*\)\<\%(BEGIN\|END\|CHECK\|INIT\|UNITCHECK\)\>.*[^};]$" end="^\z1}\s*$" transparent fold keepend
+  endif
+
+  if exists("perl_fold_blocks")
+    syn region perlBlockFold start="^\z(\s*\)\%(if\|elsif\|unless\|for\|while\|until\|given\)\s*(.*)\%(\s*{\)\=\s*\%(#.*\)\=$" start="^\z(\s*\)foreach\s*\%(\%(my\|our\)\=\s*\S\+\s*\)\=(.*)\%(\s*{\)\=\s*\%(#.*\)\=$" end="^\z1}\s*;\=\%(#.*\)\=$" transparent fold keepend
+    syn region perlBlockFold start="^\z(\s*\)\%(do\|else\)\%(\s*{\)\=\s*\%(#.*\)\=$" end="^\z1}\s*while" end="^\z1}\s*;\=\%(#.*\)\=$" transparent fold keepend
+  endif
+
+  setlocal foldmethod=syntax
+  syn sync fromstart
+else
+  " fromstart above seems to set minlines even if perl_fold is not set.
+  syn sync minlines=0
 endif
 
 command -nargs=+ HiLink hi def link <args>
