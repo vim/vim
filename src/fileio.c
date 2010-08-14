@@ -317,20 +317,14 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
     char_u	conv_rest[CONV_RESTLEN];
     int		conv_restlen = 0;	/* nr of bytes in conv_rest[] */
 #endif
-
 #ifdef FEAT_AUTOCMD
-    /* Remember the initial values of curbuf, curbuf->b_ffname and
-     * curbuf->b_fname to detect whether they are altered as a result of
-     * executing nasty autocommands.  Also check if "fname" and "sfname"
-     * point to one of these values. */
-    buf_T   *old_curbuf = curbuf;
-    char_u  *old_b_ffname = curbuf->b_ffname;
-    char_u  *old_b_fname = curbuf->b_fname;
-    int     using_b_ffname = (fname == curbuf->b_ffname)
-					      || (sfname == curbuf->b_ffname);
-    int     using_b_fname = (fname == curbuf->b_fname)
-					       || (sfname == curbuf->b_fname);
+    buf_T	*old_curbuf;
+    char_u	*old_b_ffname;
+    char_u	*old_b_fname;
+    int		using_b_ffname;
+    int		using_b_fname;
 #endif
+
     write_no_eol_lnum = 0;	/* in case it was set by the previous read */
 
     /*
@@ -348,6 +342,19 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 	if (set_rw_fname(fname, sfname) == FAIL)
 	    return FAIL;
     }
+
+#ifdef FEAT_AUTOCMD
+    /* Remember the initial values of curbuf, curbuf->b_ffname and
+     * curbuf->b_fname to detect whether they are altered as a result of
+     * executing nasty autocommands.  Also check if "fname" and "sfname"
+     * point to one of these values. */
+    old_curbuf = curbuf;
+    old_b_ffname = curbuf->b_ffname;
+    old_b_fname = curbuf->b_fname;
+    using_b_ffname = (fname == curbuf->b_ffname)
+					      || (sfname == curbuf->b_ffname);
+    using_b_fname = (fname == curbuf->b_fname) || (sfname == curbuf->b_fname);
+#endif
 
     /* After reading a file the cursor line changes but we don't want to
      * display the line. */
