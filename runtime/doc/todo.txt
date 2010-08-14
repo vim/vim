@@ -33,11 +33,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
-Problem with \NL in Ex script. (Ray Frish, 2010 Aug 10)
-
 Using longest completion (with "longest" in 'wildmode' or using CTRL-L) after
 :find will not work, because of shortening the results.  Don't shorten when
 looking for the longest common part of the matches.
+
+Problem with \NL in Ex script. (Ray Frish, 2010 Aug 10)
 
 Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 

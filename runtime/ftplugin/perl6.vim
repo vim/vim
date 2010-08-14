@@ -40,25 +40,6 @@ setlocal define=[^A-Za-z_]
 "       set isfname-=:
 set isfname+=:
 
-" Set this once, globally.
-if !exists("perl6path")
-    if executable("perl6")
-	if &shellxquote != '"'
-	    let perl6path = system('perl6 -e "print join(q/,/,@*INC)"')
-	else
-	    let perl6path = system("perl6 -e 'print join(q/,/,@*INC)'")
-	endif
-	let perl6path = substitute(perl6path,',.$',',,','')
-    else
-	" If we can't call perl6 to get its path, just default to using the
-	" current directory and the directory of the current file.
-	let perl6path = ".,,"
-    endif
-endif
-
-let &l:path=perl6path
-"---------------------------------------------
-
 " Undo the stuff we changed.
 let b:undo_ftplugin = "setlocal fo< com< cms< inc< inex< def< isk<" .
 	    \         " | unlet! b:browsefilter"

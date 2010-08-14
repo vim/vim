@@ -7199,6 +7199,9 @@ The help files conceal characters used to mark tags and examples.
 
 Added the |synconcealed()| function and use it for :TOhtml. (Benjamin Fritz)
 
+Added the 'cursorbind' option, keeps the cursor in two windows with the same
+text in sync.
+
 
 Lua interface					*new-lua*
 -------------
@@ -7253,6 +7256,8 @@ Updated spell files for Ubuntu locale names.
 Switched from autoconf 2.63 to 2.65.
 
 Removed Mupad indent and ftplugin files, they are not useful.
+
+The maximum number of messages remembered in the history is now 200 (was 100).
 
 
 Added							*added-7.3*
@@ -7375,6 +7380,8 @@ Serbian menu translations (Aleksandar Jelenak)
 Tetum spell files
 Tutor Bairish (Sepp Hell)
 Tutor in Esperanto. (Dominique Pellé)
+Tutor in Portuguese.
+Norwegian Tutor now also available as tutor.nb
 
 Removed the Mupad runtime files, they were not maintained.
 
@@ -10139,7 +10146,7 @@ Avoid warnings from the clang compiler. (Dominique Pelle)
 Fix: Include wchar.h in charset.c for towupper().
 
 Fixed: Using ":read file" in an empty buffer when 'compatible' is set caused
-an error.
+an error.  Was caused by patch 7.2.132.
 
 
  vim:tw=78:ts=8:ft=help:norl:
