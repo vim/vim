@@ -9555,7 +9555,7 @@ uniquefy_paths(gap, pattern)
 	    {
 		STRCPY(path, ".");
 		add_pathsep(path);
-		STRCAT(path, short_name);
+		STRMOVE(path + STRLEN(path), short_name);
 	    }
 	}
 	ui_breakcheck();
