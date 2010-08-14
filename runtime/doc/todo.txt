@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3f.  Last change: 2010 Aug 13
+*todo.txt*      For Vim version 7.3g.  Last change: 2010 Aug 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -119,6 +119,9 @@ Bug with 'incsearch' going to wrong line. (Wolfram Kresse, 2009 Aug 17)
 Only with "vim -u NONE".
 
 Problem with editing file in binary mode. (Ingo Krabbe, 2009 Oct 8)
+
+Display error when 'tabline' that includes a file name with double-width
+characters. (2010 Aug 14, bootleq)
 
 Problem with stop directory in findfile(). (Adam Simpkins, 2009 Aug 26)
 

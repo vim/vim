@@ -1,4 +1,4 @@
-README_dos.txt for version 7.3f of Vim: Vi IMproved.
+README_dos.txt for version 7.3g of Vim: Vi IMproved.
 
 This file explains the installation of Vim on MS-DOS and MS-Windows systems.
 See "README.txt" for general information about Vim.
