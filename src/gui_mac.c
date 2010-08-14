@@ -2597,6 +2597,12 @@ bail:
     return CallNextEventHandler(nextHandler, theEvent);
 }
 
+     void
+gui_mch_mousehide(int hide)
+{
+    /* TODO */
+}
+
 #if 0
 
 /*

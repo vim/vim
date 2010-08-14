@@ -19,7 +19,12 @@
 #import <Cocoa/Cocoa.h>
 
 
-#ifdef FEAT_CLIPBOARD
+/*
+ * Clipboard support for the console.
+ * Don't include this when building the GUI version, the functions in
+ * gui_mac.c are used then.
+ */
+#if defined(FEAT_CLIPBOARD) && !defined(FEAT_GUI)
 
 /* Used to identify clipboard data copied from Vim. */
 
