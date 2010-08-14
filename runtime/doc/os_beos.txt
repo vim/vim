@@ -1,4 +1,4 @@
-*os_beos.txt*	For Vim version 7.3g.  Last change: 2005 Mar 29
+*os_beos.txt*	For Vim version 7.3g.  Last change: 2010 Aug 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -131,38 +131,9 @@ You may also use the /boot/bin/xtou command to convert UTF-8 files from (xtou
 
 5. The BeOS GUI						*beos-gui*
 
-Normally Vim starts with the GUI if you start it as gvim or vim -g.  The BeOS
-version tries to determine if it was started from the Tracker instead of the
-Terminal, and if so, use the GUI anyway.  However, the current detection scheme
-is fooled if you use the command "vim - </dev/null" or "vim filename &".  The
-latter can be called a feature but probably only works because there is no
-BSD-style job control.
-
-Stuff that does not work yet:
-
-- Running external commands from the GUI does not work 100% (again due to lack
-  of support for select()).  There was a choice between seeing the command's
-  output, or being able to interrupt it.  I chose for seeing the output.  Even
-  now the command sometimes crashes mysteriously, apparently in Be's
-  malloc_internal() called from the putenv() function, after fork()ing.  (data
-  access exception occurred, ec01b0ec:  90e80000 *stw r7, 0x0000 (r8)).  (:!ls
-  works usually, :r !ls usually doesn't).  This has been reported as bug
-  # 971215-083826.
-- The window title.
-- Starting the GUI from the Terminal version with :gui always acts as if
-  :gui -f were used.  There is no way to fix this that I can see.
-- There are some small display glitches here and there that I hope to clean up
-  later.  Most of them occur when the window is partially obscured.  Some of
-  them seem to be bugs in BeOS, because the Terminal has similar glitches.
-- Mouse up events are not generated when outside the window.  This is a bug in
-  BeOS.  You can notice this when selecting text and moving the cursor outside
-  the window, then letting go of the mouse button.  Another way is when you
-  drag the scrollbar and do the same thing.  Because Vim still thinks you are
-  still playing with the scrollbar it won't change it itself.  I provided a
-  workaround which kicks in when the window is activated or deactivated (so it
-  works best with focus- follows-mouse (/boot/bin/ffm) turned on).
-- The cursor does not flash (very low priority; I'm not sure I even like it
-  when it flashes)
+The BeOS GUI is no longer included.  It was not maintained for a while and
+most likely didn't work.  If you want to work on this: get the Vim 6.x version
+and merge it back in.
 
 
 6. The $VIM directory					*beos-vimdir*

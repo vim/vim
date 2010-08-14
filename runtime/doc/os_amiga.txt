@@ -1,4 +1,4 @@
-*os_amiga.txt*  For Vim version 7.3g.  Last change: 2005 Mar 29
+*os_amiga.txt*  For Vim version 7.3g.  Last change: 2010 Aug 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -7,6 +7,8 @@
 							*Amiga*
 This file contains the particularities for the Amiga version of Vim.
 There is also a section specifically for |MorphOS| below.
+
+NOTE: The Amiga code is still included, but has not been maintained or tested.
 
 Installation on the Amiga:
 - Assign "VIM:" to the directory where the Vim "doc" directory is.  Vim will

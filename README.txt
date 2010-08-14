@@ -9,14 +9,14 @@ on-line help, spell checking, filename completion, block operations, etc.
 There is also a Graphical User Interface (GUI) available.  See
 "runtime/doc/vi_diff.txt" for differences with Vi.
 
-This editor is very useful for editing programs and other plain ASCII files.
+This editor is very useful for editing programs and other plain text files.
 All commands are given with normal keyboard characters, so those who can type
 with ten fingers can work very fast.  Additionally, function keys can be
 defined by the user, and the mouse can be used.
 
-Vim currently runs under Amiga DOS, MS-DOS, MS-Windows (95, 98, Me, NT, 2000,
-XP, Vista, 7), Atari MiNT, Macintosh, BeOS, VMS, RISC OS, OS/2 and almost all
-flavours of UNIX.  Porting to other systems should not be very difficult.
+Vim runs under Amiga DOS, MS-DOS, MS-Windows (95, 98, Me, NT, 2000, XP, Vista,
+7), Atari MiNT, Macintosh, BeOS, VMS, RISC OS, OS/2 and almost all flavours of
+UNIX.  Porting to other systems should not be very difficult.
 
 
 DISTRIBUTION
@@ -32,19 +32,19 @@ an overview of currently available distributions.
 
 DOCUMENTATION
 
+The vim tutor is a one hour training course for beginners.  Mostly it can be
+started as "vimtutor".  See ":help tutor" for more information.
+
 The best is to use ":help" in Vim.  If you don't have an executable yet, read
 "runtime/doc/help.txt".  It contains pointers to the other documentation
 files.  The User Manual reads like a book and is recommended to learn to use
 Vim.  See ":help user-manual".
 
-The vim tutor is a one hour training course for beginners.  Mostly it can be
-started as "vimtutor".  See ":help tutor" for more information.
-
 
 COPYING
 
 Vim is Charityware.  You can use and copy it as much as you like, but you are
-encouraged to make a donation to orphans in Uganda.  Please read the file
+encouraged to make a donation to help orphans in Uganda.  Please read the file
 "runtime/doc/uganda.txt" for details (do ":help uganda" inside Vim).
 
 Summary of the license: There are no restrictions on using or distributing an
@@ -85,6 +85,8 @@ README_dos.txt		MS-DOS and MS-Windows
 README_os2.txt		OS/2
 README_mac.txt		Macintosh
 README_vms.txt		VMS
+
+There are more README_*.txt files, depending on the distribution you used.
 
 
 INFORMATION

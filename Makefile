@@ -141,7 +141,8 @@ DOSBIN_S =  dosbin_s
 # - Set environment for Visual C++ 2008, e.g.:
 #   "E:\Microsoft Visual Studio 9.0\VC\bin\vcvars32.bat".  Or, when using the
 #   Visual C++ Toolkit 2003: "msvcsetup.bat" (adjust the paths when necessary).
-#   For Windows 98/ME the 2003 version is required.
+#   For Windows 98/ME the 2003 version is required, but then it won't work on
+#   Windows 7 and 64 bit.
 # - "nmake -f Make_mvc.mak"
 # - "rm testdir/*.out", "nmake -f Make_mvc.mak test" and check the output.
 # - Rename the executables to "vimw32.exe", "xxdw32.exe".

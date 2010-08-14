@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.3g.  Last change: 2010 Aug 13
+*version7.txt*  For Vim version 7.3g.  Last change: 2010 Aug 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -7210,7 +7210,7 @@ Python3 interface				*new-python3*
 -----------------
 
 Added the Python3 interface.  It exists next to Python 2.x, both can be used
-at the same time. |python3| (Roland Puntaier)
+at the same time.  See |python3| (Roland Puntaier)
 
 
 Changed							*changed-7.3*
@@ -7351,13 +7351,16 @@ task 42 edit (John Florian)
 New filetype plugins: ~
 Cucumber (Tim Pope)
 Liquid (Tim Pope)
+Logcheck (Debian)
 Markdown (Tim Pope)
+Perl 6 (Andy Lester)
+Quickfix window (Lech Lorens)
 Tcl (Robert L Hicks)
 
 New indent plugins: ~
+CUDA (Bram Moolenaar)
 ChaiScript (Jason Turner)
 Cucumber (Tim Pope)
-CUDA (Bram Moolenaar)
 LifeLines (Patrick Texier)
 Liquid (Tim Pope)
 Mail (Bram Moolenaar)
@@ -7365,12 +7368,15 @@ Perl 6 (Andy Lester)
 
 Other new runtime files: ~
 Breton spell file (Dominique Pelle)
+Dvorak keymap (Ashish Shukla)
+Korean translations. (SungHyun Nam)
+Python 3 completion (Aaron Griffin)
+Serbian menu translations (Aleksandar Jelenak)
+Tetum spell files
 Tutor Bairish (Sepp Hell)
 Tutor in Esperanto. (Dominique Pellé)
-Korean translations. (SungHyun Nam)
-Dvorak keymap (Ashish Shukla)
-Serbian menu translations (Aleksandar Jelenak)
-Tetum spell files.
+
+Removed the Mupad runtime files, they were not maintained.
 
 
 Fixed							*fixed-7.3*
@@ -10131,6 +10137,9 @@ Fixed: using expression in command line may cause a crash.
 Avoid warnings from the clang compiler. (Dominique Pelle)
 
 Fix: Include wchar.h in charset.c for towupper().
+
+Fixed: Using ":read file" in an empty buffer when 'compatible' is set caused
+an error.
 
 
  vim:tw=78:ts=8:ft=help:norl:

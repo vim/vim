@@ -2,7 +2,7 @@ README_srcdos.txt for version 7.3g of Vim: Vi IMproved.
 
 See "README.txt" for general information about Vim.
 See "README_dos.txt" for installation instructions for MS-DOS and MS-Windows.
-These files are in the runtime archive (vim72rt.zip).
+These files are in the runtime archive (vim73rt.zip).
 
 
 The DOS source archive contains the files needed to compile Vim on MS-DOS or
