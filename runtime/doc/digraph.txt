@@ -57,8 +57,8 @@ conversion to be available, it might fail.  For the NUL character you will see
 "10".  That's because NUL characters are internally represented with a NL
 character.  When you write the file it will become a NUL character.
 
-When Vim was compiled without the +multi_byte feature, you need to specify the
-character in the encoding given with 'encoding'.  You might want to use
+When Vim was compiled without the |+multi_byte| feature, you need to specify
+the character in the encoding given with 'encoding'.  You might want to use
 something like this: >
 
 	if has("multi_byte")

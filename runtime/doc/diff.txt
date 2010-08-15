@@ -5,7 +5,7 @@
 
 
 				*diff* *vimdiff* *gvimdiff* *diff-mode*
-This file describes the +diff feature: Showing differences between two,
+This file describes the |+diff| feature: Showing differences between two,
 three or four versions of the same file.
 
 The basics are explained in section |08.7| of the user manual.

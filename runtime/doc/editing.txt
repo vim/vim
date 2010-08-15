@@ -782,7 +782,7 @@ fourth file in the argument list.  This happens when you do ":e file".
 LOCAL ARGUMENT LIST
 
 {not in Vi}
-{not available when compiled without the |+windows| or |+listcmds| feature}
+{not available when compiled without the |+windows| or |+listcmds| features}
 
 							*:arglocal*
 :argl[ocal]		Make a local copy of the global argument list.

@@ -137,7 +137,7 @@ A few special texts:
 	Last set from error handler ~
 		Option was cleared when evaluating it resulted in an error.
 
-{not available when compiled without the +eval feature}
+{not available when compiled without the |+eval| feature}
 
 							*:set-termcap* *E522*
 For {option} the form "t_xx" may be used to set a terminal option.  This will
@@ -1159,7 +1159,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'breakat' 'brk'		string	(default " ^I!@*-+;:,./?")
 			global
 			{not in Vi}
-			{not available when compiled without the  |+linebreak|
+			{not available when compiled without the |+linebreak|
 			feature}
 	This option lets you choose which characters might cause a line
 	break if 'linebreak' is on.  Only works for ASCII and also for 8-bit
@@ -1319,7 +1319,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'charconvert' 'ccv'	string (default "")
 			global
 			{only available when compiled with the |+multi_byte|
-			feature and the |+eval| feature}
+			and |+eval| features}
 			{not in Vi}
 	An expression that is used for character encoding conversion.  It is
 	evaluated when a file that is to be read or has been written has a
@@ -1624,7 +1624,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'whichwrap'	+ ""		left-right movements don't wrap
 	'wildchar'	+ CTRL-E	only when the current value is <Tab>
 					use CTRL-E for cmdline completion
-	'writebackup'	  on or off	depends on +writebackup feature
+	'writebackup'	  on or off	depends on the |+writebackup| feature
 
 						*'complete'* *'cpt'* *E535*
 'complete' 'cpt'	string	(default: ".,w,b,u,t,i")
@@ -1674,8 +1674,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'completefunc' 'cfu'	string	(default: empty)
 			local to buffer
 			{not in Vi}
-			{not available when compiled without the +eval
-			or +insert_expand feature}
+			{not available when compiled without the |+eval|
+			or |+insert_expand| features}
 	This option specifies a function to be used for Insert mode completion
 	with CTRL-X CTRL-U. |i_CTRL-X_CTRL-U|
 	See |complete-functions| for an explanation of how the function is
@@ -2209,7 +2209,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'cursorcolumn' 'cuc'	boolean	(default off)
 			local to window
 			{not in Vi}
-			{not available when compiled without the  |+syntax|
+			{not available when compiled without the |+syntax|
 			feature}
 	Highlight the screen column of the cursor with CursorColumn
 	|hl-CursorColumn|.  Useful to align text.  Will make screen redrawing
@@ -2224,7 +2224,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'cursorline' 'cul'	boolean	(default off)
 			local to window
 			{not in Vi}
-			{not available when compiled without the  |+syntax|
+			{not available when compiled without the |+syntax|
 			feature}
 	Highlight the screen line of the cursor with CursorLine
 	|hl-CursorLine|.  Useful to easily spot the cursor.  Will make screen
@@ -2444,7 +2444,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'eadirection' 'ead'	string	(default "both")
 			global
 			{not in Vi}
-			{not available when compiled without the +vertsplit
+			{not available when compiled without the |+vertsplit|
 			feature}
 	Tells when the 'equalalways' option applies:
 		ver	vertically, width of windows is not affected
@@ -2962,7 +2962,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to window
 			{not in Vi}
 			{not available when compiled without the |+folding|
-			or |+eval| feature}
+			or |+eval| features}
 	The expression used for when 'foldmethod' is "expr".  It is evaluated
 	for each line to obtain its fold level.  See |fold-expr|.
 
@@ -3607,7 +3607,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 			{only available when compiled with GUI enabled and
-			with the +windows feature}
+			with the |+windows| feature}
 	When nonempty describes the text to use in a label of the GUI tab
 	pages line.  When empty and when the result is empty Vim will use a
 	default label.  See |setting-guitablabel| for more info.
@@ -3624,7 +3624,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 			{only available when compiled with GUI enabled and
-			with the +windows feature}
+			with the |+windows| feature}
 	When nonempty describes the text to use in a tooltip for the GUI tab
 	pages line.  When empty Vim will use a default tooltip.
 	This option is otherwise just like 'guitablabel' above.
@@ -3651,7 +3651,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'helpheight' 'hh'	number	(default 20)
 			global
 			{not in Vi}
-			{not available when compiled without the +windows
+			{not available when compiled without the |+windows|
 			feature}
 	Minimal initial height of the help window when it is opened with the
 	":help" command.  The initial height of the help window is half of the
@@ -3910,8 +3910,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'imcmdline' 'imc'	boolean (default off)
 			global
 			{not in Vi}
-			{only available when compiled with the |+xim|
-			|+multi_byte_ime| or |global-ime| feature}
+			{only available when compiled with the |+xim|,
+			|+multi_byte_ime| or |global-ime| features}
 	When set the Input Method is always on when starting to edit a command
 	line, unless entering a search pattern (see 'imsearch' for that).
 	Setting this option is useful when your input method allows entering
@@ -3922,8 +3922,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'imdisable' 'imd'	boolean (default off, on for some systems (SGI))
 			global
 			{not in Vi}
-			{only available when compiled with the |+xim|
-			|+multi_byte_ime| or |global-ime| feature}
+			{only available when compiled with the |+xim|,
+			|+multi_byte_ime| or |global-ime| features}
 	When set the Input Method is never used.  This is useful to disable
 	the IM when it doesn't work properly.
 	Currently this option is on by default for SGI/IRIX machines.  This
@@ -3993,7 +3993,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to buffer
 			{not in Vi}
 			{not available when compiled without the
-			|+find_in_path| or |+eval| feature}
+			|+find_in_path| or |+eval| features}
 	Expression to be used to transform the string found with the 'include'
 	option to a file name.  Mostly useful to change "." to "/" for Java: >
 		:set includeexpr=substitute(v:fname,'\\.','/','g')
@@ -4014,7 +4014,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 			{not available when compiled without the
-			|+extra_search| feature}
+			|+extra_search| features}
 	While typing a search command, show where the pattern, as it was typed
 	so far, matches.  The matched string is highlighted.  If the pattern
 	is invalid or not found, nothing is shown.  The screen will be updated
@@ -4407,7 +4407,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'linebreak' 'lbr'	boolean	(default off)
 			local to window
 			{not in Vi}
-			{not available when compiled without the  |+linebreak|
+			{not available when compiled without the |+linebreak|
 			feature}
 	If on Vim will wrap long lines at a character in 'breakat' rather
 	than at the last character that fits on the screen.  Unlike
@@ -4664,7 +4664,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'maxfuncdepth' 'mfd'	number	(default 100)
 			global
 			{not in Vi}
-			{not available when compiled without the +eval
+			{not available when compiled without the |+eval|
 			feature}
 	Maximum depth of function calls for user functions.  This normally
 	catches endless recursion.  When using a recursive function with
@@ -5039,8 +5039,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'omnifunc' 'ofu'	string	(default: empty)
 			local to buffer
 			{not in Vi}
-			{not available when compiled without the +eval
-			or +insert_expand feature}
+			{not available when compiled without the |+eval|
+			or |+insert_expand| features}
 	This option specifies a function to be used for Insert mode omni
 	completion with CTRL-X CTRL-O. |i_CTRL-X_CTRL-O|
 	See |complete-functions| for an explanation of how the function is
@@ -5268,7 +5268,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 			{not available when compiled without the |+windows| or
-			|+quickfix| feature}
+			|+quickfix| features}
 	Default height for a preview window.  Used for |:ptag| and associated
 	commands.  Used for |CTRL-W_}| when no count is given.
 
@@ -5278,7 +5278,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to window
 			{not in Vi}
 			{not available when compiled without the |+windows| or
-			|+quickfix| feature}
+			|+quickfix| features}
 	Identifies the preview window.  Only one window can have this option
 	set.  It's normally not set directly, but by using one of the commands
 	|:ptag|, |:pedit|, etc.
@@ -5769,7 +5769,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 					       help,options,tabpages,winsize")
 			global
 			{not in Vi}
-			{not available when compiled without the +mksession
+			{not available when compiled without the |+mksession|
 			feature}
 	Changes the effect of the |:mksession| command.  It is a comma
 	separated list of words.  Each word enables saving and restoring
@@ -6079,7 +6079,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'showbreak' 'sbr'	string	(default "")
 			global
 			{not in Vi}
-			{not available when compiled without the  |+linebreak|
+			{not available when compiled without the |+linebreak|
 			feature}
 	String to put at the start of lines that have been wrapped.  Useful
 	values are "> " or "+++ ": >
@@ -6163,7 +6163,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'showtabline' 'stal'	number	(default 1)
 			global
 			{not in Vi}
-			{not available when compiled without the +windows
+			{not available when compiled without the |+windows|
 			feature}
 	The value of this option specifies when the line with tab page labels
 	will be displayed:
@@ -6438,7 +6438,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'splitbelow' 'sb'	boolean	(default off)
 			global
 			{not in Vi}
-			{not available when compiled without the +windows
+			{not available when compiled without the |+windows|
 			feature}
 	When on, splitting a window will put the new window below the current
 	one. |:split|
@@ -6447,7 +6447,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'splitright' 'spr'	boolean	(default off)
 			global
 			{not in Vi}
-			{not available when compiled without the +vertsplit
+			{not available when compiled without the |+vertsplit|
 			feature}
 	When on, splitting a window will put the new window right of the
 	current one. |:vsplit|
@@ -6757,7 +6757,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'tabline' 'tal'		string	(default empty)
 			global
 			{not in Vi}
-			{not available when compiled without the +windows
+			{not available when compiled without the |+windows|
 			feature}
 	When nonempty, this option determines the content of the tab pages
 	line at the top of the Vim window.  When empty Vim will use a default
@@ -6781,7 +6781,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'tabpagemax' 'tpm'	number	(default 10)
 			global
 			{not in Vi}
-			{not available when compiled without the +windows
+			{not available when compiled without the |+windows|
 			feature}
 	Maximum number of tab pages to be opened by the |-p| command line
 	argument or the ":tab all" command. |tabpage|
@@ -7348,7 +7348,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'undodir' 'udir'	string	(default ".")
 			global
 			{not in Vi}
-			{only when compiled with the +persistent_undo feature}
+			{only when compiled with the |+persistent_undo| feature}
 	List of directory names for undo files, separated with commas.
 	See |'backupdir'| for details of the format.
 	"." means using the directory of the file.  The undo file name for
@@ -7366,7 +7366,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'undofile' 'udf'	boolean	(default off)
 			local to buffer
 			{not in Vi}
-			{only when compiled with the +persistent_undo feature}
+			{only when compiled with the |+persistent_undo| feature}
 	When on, Vim automatically saves undo history to an undo file when
 	writing a buffer to a file, and restores undo history from the same
 	file on buffer read.
@@ -7480,7 +7480,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				 for RiscOS: "Choices:vimfiles/view")
 			global
 			{not in Vi}
-			{not available when compiled without the +mksession
+			{not available when compiled without the |+mksession|
 			feature}
 	Name of the directory where to store files for |:mkview|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
@@ -7490,7 +7490,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'viewoptions' 'vop'	string	(default: "folds,options,cursor")
 			global
 			{not in Vi}
-			{not available when compiled without the +mksession
+			{not available when compiled without the |+mksession|
 			feature}
 	Changes the effect of the |:mkview| command.  It is a comma separated
 	list of words.  Each word enables saving and restoring something:
@@ -7516,7 +7516,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				   for others: '100,<50,s10,h)
 			global
 			{not in Vi}
-			{not available when compiled without the  |+viminfo|
+			{not available when compiled without the |+viminfo|
 			feature}
 	When non-empty, the viminfo file is read upon startup and written
 	when exiting Vim (see |viminfo-file|).  The string should be a comma
@@ -7880,7 +7880,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'winheight' 'wh'	number	(default 1)
 			global
 			{not in Vi}
-			{not available when compiled without the +windows
+			{not available when compiled without the |+windows|
 			feature}
 	Minimal number of lines for the current window.  This is not a hard
 	minimum, Vim will use fewer lines if there is not enough room.  If the
@@ -7903,7 +7903,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'winfixheight' 'wfh'	boolean	(default off)
 			local to window
 			{not in Vi}
-			{not available when compiled without the +windows
+			{not available when compiled without the |+windows|
 			feature}
 	Keep the window height when windows are opened or closed and
 	'equalalways' is set.  Also for |CTRL-W_=|.  Set by default for the
@@ -7914,7 +7914,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'winfixwidth' 'wfw'	boolean	(default off)
 			local to window
 			{not in Vi}
-			{not available when compiled without the +windows
+			{not available when compiled without the |+windows|
 			feature}
 	Keep the window width when windows are opened or closed and
 	'equalalways' is set.  Also for |CTRL-W_=|.
@@ -7924,7 +7924,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'winminheight' 'wmh'	number	(default 1)
 			global
 			{not in Vi}
-			{not available when compiled without the +windows
+			{not available when compiled without the |+windows|
 			feature}
 	The minimal height of a window, when it's not the current window.
 	This is a hard minimum, windows will never become smaller.
@@ -7940,7 +7940,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'winminwidth' 'wmw'	number	(default 1)
 			global
 			{not in Vi}
-			{not available when compiled without the +vertsplit
+			{not available when compiled without the |+vertsplit|
 			feature}
 	The minimal width of a window, when it's not the current window.
 	This is a hard minimum, windows will never become smaller.
@@ -7957,7 +7957,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'winwidth' 'wiw'	number	(default 20)
 			global
 			{not in Vi}
-			{not available when compiled without the +vertsplit
+			{not available when compiled without the |+vertsplit|
 			feature}
 	Minimal number of columns for the current window.  This is not a hard
 	minimum, Vim will use fewer columns if there is not enough room.  If

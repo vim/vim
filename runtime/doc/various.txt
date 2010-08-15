@@ -204,8 +204,8 @@ g8			Print the hex values of the bytes used in the
 			for each line.  Otherwise it's the same as the
 			":normal" command without a range.
 			{not in Vi}
-			Not available when |+ex_extra| feature was disabled at
-			compile time.
+			{not available when |+ex_extra| feature was disabled
+			at compile time}
 
 							*:sh* *:shell* *E371*
 :sh[ell]		This command starts a shell.  When the shell exits
@@ -558,7 +558,7 @@ or an autocommand will also display where it was last defined.  If it was
 defined manually then there will be no "Last set" message.  When it was
 defined while executing a function, user command or autocommand, the script in
 which it was defined is reported.
-{not available when compiled without the +eval feature}
+{not available when compiled without the |+eval| feature}
 
 							*K*
 K			Run a program to lookup the keyword under the

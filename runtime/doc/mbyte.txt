@@ -14,7 +14,7 @@ For an introduction to the most common features, see |usr_45.txt| in the user
 manual.
 For changing the language of messages and menus see |mlang.txt|.
 
-{not available when compiled without the +multi_byte feature}
+{not available when compiled without the |+multi_byte| feature}
 
 
 1.  Getting started			|mbyte-first|

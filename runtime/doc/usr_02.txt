@@ -529,7 +529,7 @@ Summary: 					*help-summary*  >
 	:help -subject
 <		Command-line option "-subject". >
 	:help +subject
-<		Compile-time feature "+subject'. >
+<		Compile-time feature "+subject". >
 	:help EventName
 <		Autocommand event "EventName". >
 	:help digraphs.txt

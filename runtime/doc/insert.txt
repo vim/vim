@@ -527,7 +527,7 @@ last one).  {Vi does not have the 'expandtab' option}
 6. Virtual Replace mode		*vreplace-mode* *Virtual-Replace-mode*
 
 Enter Virtual Replace mode with the "gR" command in normal mode.
-{not available when compiled without the +vreplace feature}
+{not available when compiled without the |+vreplace| feature}
 {Vi does not have Virtual Replace mode}
 
 Virtual Replace mode is similar to Replace mode, but instead of replacing
@@ -1781,7 +1781,7 @@ NOTE: These commands cannot be used with |:global| or |:vglobal|.
 			or script is finished.
 			This command does not work from |:normal|.
 			{not in Vi}
-			{not available when compiled without the +ex_extra
+			{not available when compiled without the |+ex_extra|
 			feature}
 
 							*:stopi* *:stopinsert*
@@ -1800,14 +1800,14 @@ NOTE: These commands cannot be used with |:global| or |:vglobal|.
 			script that the replacement will only start after
 			the function or script is finished.
 			{not in Vi}
-			{not available when compiled without the +ex_extra
+			{not available when compiled without the |+ex_extra|
 			feature}
 
 							*:startgreplace*
 :startg[replace][!]	Just like |:startreplace|, but use Virtual Replace
 			mode, like with |gR|.
 			{not in Vi}
-			{not available when compiled without the +ex_extra
+			{not available when compiled without the |+ex_extra|
 			feature}
 
 ==============================================================================

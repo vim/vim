@@ -15,8 +15,7 @@ These functions were originally created by Avner Lottem:
 {Vi does not have any of these commands}
 
 								*E26*
-This feature is only available when the |+rightleft| feature was enabled
-at compile time.
+{only available when compiled with the |+rightleft| feature}
 
 
 Introduction

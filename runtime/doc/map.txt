@@ -770,7 +770,7 @@ g@{motion}		Call the function set by the 'operatorfunc' option.
 			    "block"	{motion} was |blockwise-visual|
 			Although "block" would rarely appear, since it can
 			only result from Visual mode where "g@" is not useful.
-			{not available when compiled without the +eval
+			{not available when compiled without the |+eval|
 			feature}
 
 Here is an example that counts the number of spaces with <F4>: >
@@ -1080,7 +1080,7 @@ to find out what they are defined to.
 The |:scriptnames| command can be used to see which scripts have been sourced
 and what their <SNR> number is.
 
-This is all {not in Vi} and {not available when compiled without the +eval
+This is all {not in Vi} and {not available when compiled without the |+eval|
 feature}.
 
 ==============================================================================

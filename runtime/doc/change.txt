@@ -159,7 +159,7 @@ gR			Enter Virtual Replace mode: Each character you type
 			<Tab> may replace several characters at once.
 			Repeat the entered text [count]-1 times.  See
 			|Virtual-Replace-mode| for more details.
-			{not available when compiled without the +vreplace
+			{not available when compiled without the |+vreplace|
 			feature}
 
 							*c*
@@ -279,7 +279,7 @@ gr{char}		Replace the virtual characters under the cursor with
 			space.  See |gR| and |Virtual-Replace-mode| for more
 			details.  As with |r| a count may be given.
 			{char} can be entered like with |r|.
-			{not available when compiled without the +vreplace
+			{not available when compiled without the |+vreplace|
 			feature}
 
 						*digraph-arg*
@@ -622,9 +622,9 @@ The flags that you can use for the substitute commands:
 	    'a'	    to substitute this and all remaining matches {not in Vi}
 	    'q'	    to quit substituting {not in Vi}
 	    CTRL-E  to scroll the screen up {not in Vi, not available when
-			compiled without the +insert_expand feature}
+			compiled without the |+insert_expand| feature}
 	    CTRL-Y  to scroll the screen down {not in Vi, not available when
-			compiled without the +insert_expand feature}
+			compiled without the |+insert_expand| feature}
 	If the 'edcompatible' option is on, Vim remembers the [c] flag and
 	toggles it each time you use it, but resets it when you give a new
 	search pattern.

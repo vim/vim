@@ -1170,7 +1170,7 @@ is deleted when the window is closed.
 						*tabpage-variable* *t:var*
 A variable name that is preceded with "t:" is local to the current tab page,
 It is deleted when the tab page is closed. {not available when compiled
-without the +windows feature}
+without the |+windows| feature}
 
 						*global-variable* *g:var*
 Inside functions global variables are accessed with "g:".  Omitting this will
@@ -1508,7 +1508,7 @@ v:oldfiles	List of file names that is loaded from the |viminfo| file on
 		The List can be modified, but this has no effect on what is
 		stored in the |viminfo| file later.  If you use values other
 		than String this will cause trouble.
-		{only when compiled with the +viminfo feature}
+		{only when compiled with the |+viminfo| feature}
 
 					*v:operator* *operator-variable*
 v:operator	The last operator given in Normal mode.  This is a single
@@ -1993,7 +1993,7 @@ acos({expr})							*acos()*
 <			1.570796 >
 			:echo acos(-0.5)
 <			2.094395
-		{only available when compiled with |+float|}
+		{only available when compiled with the |+float| feature}
 
 
 add({list}, {expr})					*add()*
@@ -2048,7 +2048,7 @@ asin({expr})						*asin()*
 <			0.927295 >
 			:echo asin(-0.5)
 <			-0.523599
-		{only available when compiled with |+float|}
+		{only available when compiled with the |+float| feature}
 
 
 atan({expr})						*atan()*
@@ -2072,7 +2072,7 @@ atan2({expr1}, {expr2})					*atan2()*
 <			-0.785398 >
 			:echo atan2(1, -1)
 <			2.356194
-		{only available when compiled with |+float|}
+		{only available when compiled with the |+float| feature}
 
 
 							*browse()*
@@ -2434,7 +2434,7 @@ cosh({expr})						*cosh()*
 <			1.127626 >
 			:echo cosh(-0.5)
 <			-1.127626
-		{only available when compiled with |+float|}
+		{only available when compiled with the |+float| feature}
 
 		
 count({comp}, {expr} [, {ic} [, {start}]])			*count()*
@@ -2705,7 +2705,7 @@ exp({expr})						*exp()*
 <			7.389056 >
 			:echo exp(-1)
 <			0.367879
-		{only available when compiled with |+float|}
+		{only available when compiled with the |+float| feature}
 
 
 expand({expr} [, {flag}])				*expand()*
@@ -2896,7 +2896,8 @@ finddir({name}[, {path}[, {count}]])				*finddir()*
 		{name} in {path} instead of the first one.
 		When {count} is negative return all the matches in a |List|.
 		This is quite similar to the ex-command |:find|.
-		{only available when compiled with the +file_in_path feature}
+		{only available when compiled with the |+file_in_path|
+		feature}
 
 findfile({name}[, {path}[, {count}]])				*findfile()*
 		Just like |finddir()|, but find a file instead of a directory.
@@ -2954,7 +2955,7 @@ fmod({expr1}, {expr2})					*fmod()*
 <			0.13 >
 			:echo fmod(-12.33, 1.22)
 <			-0.13
-		{only available when compiled with |+float|}
+		{only available when compiled with |+float| feature}
 
 
 fnameescape({string})					*fnameescape()*
@@ -3618,7 +3619,7 @@ iconv({expr}, {from}, {to})				*iconv()*
 <		Note that Vim uses UTF-8 for all Unicode encodings, conversion
 		from/to UCS-2 is automatically changed to use UTF-8.  You
 		cannot use UCS-2 in a string anyway, because of the NUL bytes.
-		{only available when compiled with the +multi_byte feature}
+		{only available when compiled with the |+multi_byte| feature}
 
 							*indent()*
 indent({lnum})	The result is a Number, which is indent of line {lnum} in the
@@ -3927,7 +3928,7 @@ log({expr})						*log()*
 <			2.302585 >
 			:echo log(exp(5))
 <			5.0
-		{only available when compiled with |+float|}
+		{only available when compiled with the |+float| feature}
 
 
 log10({expr})						*log10()*
@@ -4561,7 +4562,7 @@ reltime([{start} [, {end}]])				*reltime()*
 		and {end}.
 		The {start} and {end} arguments must be values returned by
 		reltime().
-		{only available when compiled with the +reltime feature}
+		{only available when compiled with the |+reltime| feature}
 
 reltimestr({time})				*reltimestr()*
 		Return a String that represents the time value of {time}.
@@ -4576,7 +4577,7 @@ reltimestr({time})				*reltimestr()*
 		can use split() to remove it. >
 			echo split(reltimestr(reltime(start)))[0]
 <		Also see |profiling|.
-		{only available when compiled with the +reltime feature}
+		{only available when compiled with the |+reltime| feature}
 
 							*remote_expr()* *E449*
 remote_expr({server}, {string} [, {idvar}])
@@ -4763,7 +4764,7 @@ search({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*search()*
 		{timeout} is 500 the search stops after half a second.
 		The value must not be negative.  A zero value is like not
 		giving the argument.
-		{only available when compiled with the +reltime feature}
+		{only available when compiled with the |+reltime| feature}
 
 		If there is no match a 0 is returned and the cursor doesn't
 		move.  No error message is given.
@@ -5224,7 +5225,7 @@ sinh({expr})						*sinh()*
 <			0.521095 >
 			:echo sinh(-0.9)
 <			-1.026517
-		{only available when compiled with |+float|}
+		{only available when compiled with the |+float| feature}
 
 
 sort({list} [, {func}])					*sort()* *E702*
@@ -5763,7 +5764,7 @@ tan({expr})						*tan()*
 <			0.648361 >
 			:echo tan(-4.01)
 <			-1.181502
-		{only available when compiled with |+float|}
+		{only available when compiled with the |+float| feature}
 
 
 tanh({expr})						*tanh()*
@@ -5775,7 +5776,7 @@ tanh({expr})						*tanh()*
 <			0.462117 >
 			:echo tanh(-1)
 <			-0.761594
-		{only available when compiled with |+float|}
+		{only available when compiled with the |+float| feature}
 
 
 tolower({expr})						*tolower()*

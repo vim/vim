@@ -182,7 +182,7 @@ CTRL-R CTRL-A				*c_CTRL-R_CTRL-A* *c_<C-R>_<C-A>*
 		the word that was already typed is not inserted again.
 
 		{not in Vi}
-		CTRL-F and CTRL-P: {only when +file_in_path feature is
+		CTRL-F and CTRL-P: {only when |+file_in_path| feature is
 		included}
 
 					*c_CTRL-R_CTRL-R* *c_<C-R>_<C-R>*
@@ -754,7 +754,7 @@ function expand() |expand()|.
 	#<n	(where n is a number > 0) is replaced with old	  *:_#<* *c_#<*
 		file name n.  See |:oldfiles| or |v:oldfiles| to get the
 		number.							*E809*
-		{only when compiled with the +eval and +viminfo features}
+		{only when compiled with the |+eval| and |+viminfo| features}
 
 Note that these, except "#<n", give the file name as it was typed.  If an
 absolute path is needed (when using the file name from a different directory),
@@ -1032,7 +1032,7 @@ VARIOUS
 The command-line window cannot be used:
 - when there already is a command-line window (no nesting)
 - for entering an encryption key or when using inputsecret()
-- when Vim was not compiled with the +vertsplit feature
+- when Vim was not compiled with the |+vertsplit| feature
 
 Some options are set when the command-line window is opened:
 'filetype'	"vim", when editing an Ex command-line; this starts Vim syntax

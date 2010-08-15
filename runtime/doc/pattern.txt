@@ -765,7 +765,7 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	branch is used.  Example: >
 		/\(.\{-}\zsFab\)\{3}
 <	Finds the third occurrence of "Fab".
-	{not in Vi} {not available when compiled without the +syntax feature}
+	{not in Vi} {not available when compiled without the |+syntax| feature}
 							*/\ze*
 \ze	Matches at any position, and sets the end of the match there: The
 	previous char is the last char of the whole match. |/zero-width|
@@ -773,7 +773,7 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	branch is used.
 	Example: "end\ze\(if\|for\)" matches the "end" in "endif" and
 	"endfor".
-	{not in Vi} {not available when compiled without the +syntax feature}
+	{not in Vi} {not available when compiled without the |+syntax| feature}
 
 						*/\%^* *start-of-file*
 \%^	Matches start of the file.  When matching with a string, matches the
@@ -1085,7 +1085,7 @@ x	A single character, with no special meaning, matches itself
 	To include a "[" use "[[]" and for "]" use []]", e.g.,: >
 		/index\%[[[]0[]]]
 <	matches "index" "index[", "index[0" and "index[0]".
-	{not available when compiled without the +syntax feature}
+	{not available when compiled without the |+syntax| feature}
 
 				*/\%d* */\%x* */\%o* */\%u* */\%U* *E678*
 

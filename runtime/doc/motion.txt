@@ -1010,7 +1010,7 @@ unless the line containing that position was changed or deleted.
 							*CTRL-O*
 CTRL-O			Go to [count] Older cursor position in jump list
 			(not a motion command).  {not in Vi}
-			{not available without the +jumplist feature}
+			{not available without the |+jumplist| feature}
 
 <Tab>		or					*CTRL-I* *<Tab>*
 CTRL-I			Go to [count] newer cursor position in jump list
@@ -1018,18 +1018,18 @@ CTRL-I			Go to [count] newer cursor position in jump list
 			In a |quickfix-window| it takes you to the position of
 			the error under the cursor.
 			{not in Vi}
-			{not available without the +jumplist feature}
+			{not available without the |+jumplist| feature}
 
 							*:ju* *:jumps*
 :ju[mps]		Print the jump list (not a motion command).  {not in
-			Vi} {not available without the +jumplist feature}
+			Vi} {not available without the |+jumplist| feature}
 
 							*jumplist*
 Jumps are remembered in a jump list.  With the CTRL-O and CTRL-I command you
 can go to cursor positions before older jumps, and back again.  Thus you can
 move up and down the list.  There is a separate jump list for each window.
 The maximum number of entries is fixed at 100.
-{not available without the +jumplist feature}
+{not available without the |+jumplist| feature}
 
 For example, after three jump commands you have this jump list:
 
@@ -1106,14 +1106,14 @@ g;			Go to [count] older position in change list.
 			If there is no older change an error message is given.
 			(not a motion command)
 			{not in Vi}
-			{not available without the +jumplist feature}
+			{not available without the |+jumplist| feature}
 
 							*g,* *E663*
 g,			Go to [count] newer cursor position in change list.
 			Just like |g;| but in the opposite direction.
 			(not a motion command)
 			{not in Vi}
-			{not available without the +jumplist feature}
+			{not available without the |+jumplist| feature}
 
 When using a count you jump as far back or forward as possible.  Thus you can
 use "999g;" to go to the first change for which the position is still
