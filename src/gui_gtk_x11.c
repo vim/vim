@@ -1011,7 +1011,7 @@ key_press_event(GtkWidget *widget UNUSED,
      * byte. */
     if (len == 1
 	    && ((state & GDK_MOD1_MASK)
-#ifdef GDK_SUPER_MASK
+#if GTK_CHECK_VERSION(2,10,0)
 		|| (state & GDK_SUPER_MASK)
 #endif
 		)
@@ -1065,7 +1065,7 @@ key_press_event(GtkWidget *widget UNUSED,
 	    || key_sym == GDK_Escape || key_sym == GDK_KP_Tab
 	    || key_sym == GDK_ISO_Enter || key_sym == GDK_3270_Enter
 	    || (enc_dbcs && len == 1 && ((state & GDK_MOD1_MASK)
-#ifdef GDK_SUPER_MASK
+#if GTK_CHECK_VERSION(2,10,0)
 		    || (state & GDK_SUPER_MASK)
 #endif
 		    )))
