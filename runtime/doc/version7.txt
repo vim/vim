@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.3g.  Last change: 2010 Aug 14
+*version7.txt*  For Vim version 7.3.  Last change: 2010 Aug 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10147,6 +10147,8 @@ Fix: Include wchar.h in charset.c for towupper().
 
 Fixed: Using ":read file" in an empty buffer when 'compatible' is set caused
 an error.  Was caused by patch 7.2.132.
+
+Make the references to features in the help more consistent. (Sylvain Hitier)
 
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.3g.  Last change: 2010 Jul 31
+*tabpage.txt*   For Vim version 7.3.  Last change: 2010 Jul 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

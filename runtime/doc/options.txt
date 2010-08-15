@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3g.  Last change: 2010 Aug 08
+*options.txt*	For Vim version 7.3.  Last change: 2010 Aug 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6766,7 +6766,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The tab pages line only appears as specified with the 'showtabline'
 	option and only when there is no GUI tab line.  When 'e' is in
 	'guioptions' and the GUI supports a tab line 'guitablabel' is used
-	instead.
+	instead.  Note that the two tab pages lines are very different.
 
 	The value is evaluated like with 'statusline'.  You can use
 	|tabpagenr()|, |tabpagewinnr()| and |tabpagebuflist()| to figure out

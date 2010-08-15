@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3g.  Last change: 2010 Aug 14
+*todo.txt*      For Vim version 7.3.  Last change: 2010 Aug 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,12 +30,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Before release 7.3:
-- Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
-
-Using longest completion (with "longest" in 'wildmode' or using CTRL-L) after
-:find will not work, because of shortening the results.  Don't shorten when
-looking for the longest common part of the matches.
+":find e" completion, editing a file in the Vim source directory, 'path' set
+to "./proto", does not shorten ./proto/eval.pro, probably because of
+./proto/ex_eval.pro.
 
 Problem with \NL in Ex script. (Ray Frish, 2010 Aug 10)
 
