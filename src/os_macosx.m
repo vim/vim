@@ -22,9 +22,10 @@
 /*
  * Clipboard support for the console.
  * Don't include this when building the GUI version, the functions in
- * gui_mac.c are used then.
+ * gui_mac.c are used then.  TODO: remove those instead?
+ * But for MacVim we need these ones.
  */
-#if defined(FEAT_CLIPBOARD) && !defined(FEAT_GUI)
+#if defined(FEAT_CLIPBOARD) && (!defined(FEAT_GUI) || defined(FEAT_GUI_MACVIM))
 
 /* Used to identify clipboard data copied from Vim. */
 
