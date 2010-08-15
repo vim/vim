@@ -150,6 +150,14 @@ SVoyager 2:w
 :exec "cd " . cwd . "/Xfind/in"
 :find file	
 :exec "w >>" . test_out
+:" Test for relative to current buffer 'path' item
+:exec "cd " . cwd . "/Xfind/"
+:set path=./path
+:" Open the file where Jimmy Hoffa is found
+:e in/file.txt
+:" Find the file containing 'E.T.' in the Xfind/in/path directory
+:find file	
+:exec "w >>" . test_out
 :q
 :exec "cd " . cwd
 :call DeleteDirectory("Xfind")

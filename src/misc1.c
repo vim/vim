@@ -9722,6 +9722,9 @@ gen_expand_wildcards(num_pat, pat, num_file, file, flags)
     char_u		*p;
     static int		recursive = FALSE;
     int			add_pat;
+#if defined(FEAT_SEARCHPATH)
+    int			did_expand_in_path = FALSE;
+#endif
 
     /*
      * expand_env() is called to expand things like "~user".  If this fails,
@@ -9808,12 +9811,19 @@ gen_expand_wildcards(num_pat, pat, num_file, file, flags)
 	    if (mch_has_exp_wildcard(p))
 	    {
 #if defined(FEAT_SEARCHPATH)
-		if (*p != '.' && !vim_ispathsep(*p) && (flags & EW_PATH))
+		if ((flags & EW_PATH)
+			&& !mch_isFullName(p)
+			&& !(p[0] == '.'
+			    && (vim_ispathsep(p[1])
+				|| (p[1] == '.' && vim_ispathsep(p[2]))))
+		   )
 		{
-		    /* recursiveness is OK here */
+		    /* :find completion where 'path' is used.
+		     * Recursiveness is OK here. */
 		    recursive = FALSE;
 		    add_pat = expand_in_path(&ga, p, flags);
 		    recursive = TRUE;
+		    did_expand_in_path = TRUE;
 		}
 		else
 #endif
@@ -9838,7 +9848,7 @@ gen_expand_wildcards(num_pat, pat, num_file, file, flags)
 	}
 
 #if defined(FEAT_SEARCHPATH)
-	if (ga.ga_len > 0 && (flags & EW_PATH))
+	if (did_expand_in_path && ga.ga_len > 0 && (flags & EW_PATH))
 	    uniquefy_paths(&ga, p);
 #endif
 	if (p != pat[i])
