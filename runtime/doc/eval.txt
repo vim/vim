@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3g.  Last change: 2010 Aug 07
+*eval.txt*	For Vim version 7.3g.  Last change: 2010 Aug 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5689,7 +5689,7 @@ tabpagenr([{arg}])					*tabpagenr()*
 
 
 tabpagewinnr({tabarg}, [{arg}])				*tabpagewinnr()*
-		Like |winnr()| but for tab page {arg}.
+		Like |winnr()| but for tab page {tabarg}.
 		{tabarg} specifies the number of tab page to be used.
 		{arg} is used like with |winnr()|:
 		- When omitted the current window number is returned.  This is
