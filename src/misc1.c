@@ -9317,7 +9317,8 @@ is_unique(maybe_unique, gap, i)
 	    continue;  /* it's different when it's shorter */
 
 	rival = other_paths[j] + other_path_len - candidate_len;
-	if (fnamecmp(maybe_unique, rival) == 0)
+	if (fnamecmp(maybe_unique, rival) == 0
+		&& (rival == other_paths[j] || vim_ispathsep(*(rival - 1))))
 	    return FALSE;  /* match */
     }
 
