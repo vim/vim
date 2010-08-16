@@ -3465,7 +3465,8 @@ set_one_cmd_context(xp, buff)
 	case CMD_find:
 	case CMD_sfind:
 	case CMD_tabfind:
-	    xp->xp_context = EXPAND_FILES_IN_PATH;
+	    if (xp->xp_context == EXPAND_FILES)
+		xp->xp_context = EXPAND_FILES_IN_PATH;
 	    break;
 	case CMD_cd:
 	case CMD_chdir:
