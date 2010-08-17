@@ -2125,6 +2125,7 @@ qf_free(qi, idx)
 	--qi->qf_lists[idx].qf_count;
     }
     vim_free(qi->qf_lists[idx].qf_title);
+    qi->qf_lists[idx].qf_title = NULL;
 }
 
 /*
