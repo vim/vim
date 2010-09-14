@@ -4,6 +4,10 @@ undo-able pieces.  Do that by setting 'undolevels'.
 Also tests :earlier and :later.
 
 STARTTEST
+:echo undotree().entries
+ENDTEST
+
+STARTTEST
 :" Delete three characters and undo
 Gx:set ul=100
 x:set ul=100
