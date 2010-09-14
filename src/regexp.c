@@ -3538,6 +3538,7 @@ vim_regexec_both(line, col, tm)
 
     regline = line;
     reglnum = 0;
+    reg_toolong = FALSE;
 
     /* Simplest case: Anchored match need be tried only once. */
     if (prog->reganch)
