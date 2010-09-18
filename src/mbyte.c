@@ -5167,15 +5167,15 @@ im_set_position(row, col)
     void
 xim_set_preedit()
 {
-    if (xic == NULL)
-	return;
-
-    xim_set_focus(TRUE);
-
     XVaNestedList attr_list;
     XRectangle spot_area;
     XPoint over_spot;
     int line_space;
+
+    if (xic == NULL)
+	return;
+
+    xim_set_focus(TRUE);
 
     if (!xim_has_focus)
     {
@@ -5554,11 +5554,11 @@ im_get_status()
     void
 xim_set_status_area()
 {
-    if (xic == NULL)
-	return;
-
     XVaNestedList preedit_list = 0, status_list = 0, list = 0;
     XRectangle pre_area, status_area;
+
+    if (xic == NULL)
+	return;
 
     if (input_style & XIMStatusArea)
     {

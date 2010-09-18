@@ -4679,7 +4679,7 @@ spell_free_all()
     buf_T	*buf;
     char_u	fname[MAXPATHL];
 
-    /* Go through all buffers and handle 'spelllang'. */ //<VN>
+    /* Go through all buffers and handle 'spelllang'. <VN> */
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
 	ga_clear(&buf->b_s.b_langp);
 
