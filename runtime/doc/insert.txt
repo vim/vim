@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.3.  Last change: 2010 Jul 29
+*insert.txt*    For Vim version 7.3.  Last change: 2010 Sep 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -555,12 +555,11 @@ CTRL-D, 'expandtab', 'smarttab', 'softtabstop', etc.
 In 'list' mode, Virtual Replace mode acts as if it was not in 'list' mode,
 unless "L" is in 'cpoptions'.
 
-Note that the only times characters beyond the cursor should appear to move
-are in 'list' mode, and occasionally when 'wrap' is set (and the line changes
-length to become shorter or wider than the width of the screen), or
-momentarily when typing over a CTRL character.  A CTRL character takes up two
-screen spaces.  When replacing it with two normal characters, the first will
-be inserted and the second will replace the CTRL character.
+Note that the only situations for which characters beyond the cursor should
+appear to move are in List mode |'list'|, and occasionally when 'wrap' is set
+(and the line changes length to become shorter or wider than the width of the
+screen).  In other cases spaces may be inserted to avoid following characters
+to move.
 
 This mode is very useful for editing <Tab> separated columns in tables, for
 entering new data while keeping all the columns aligned.

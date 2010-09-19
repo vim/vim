@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.3.  Last change: 2010 May 07
+*cmdline.txt*   For Vim version 7.3.  Last change: 2010 Sep 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -423,7 +423,8 @@ CTRL-L		A match is done on the pattern in front of the cursor.  If
 
 The 'wildchar' option defaults to <Tab> (CTRL-E when in Vi compatible mode; in
 a previous version <Esc> was used).  In the pattern standard wildcards '*' and
-'?' are accepted.  '*' matches any string, '?' matches exactly one character.
+'?' are accepted when matching file names.  '*' matches any string, '?'
+matches exactly one character.
 
 If you like tcsh's autolist completion, you can use this mapping:
 	:cnoremap X <C-L><C-D>

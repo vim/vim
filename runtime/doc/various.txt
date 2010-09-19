@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.3.  Last change: 2010 Aug 10
+*various.txt*   For Vim version 7.3.  Last change: 2010 Sep 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -610,7 +610,7 @@ g CTRL-A		Only when Vim was compiled with MEM_PROFILING defined
 			Only useful for debugging Vim.
 
 ==============================================================================
-3. Using Vim like less or more					*less*
+2. Using Vim like less or more					*less*
 
 If you use the less or more program to view a file, you don't get syntax
 highlighting.  Thus you would like to use Vim instead.  You can do this by

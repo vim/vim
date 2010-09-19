@@ -1,86 +1,186 @@
 " Vim syntax file
-" Language:         YAML (YAML Ain't Markup Language)
-" Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2010-08-12
+" Language:         YAML (YAML Ain't Markup Language) 1.2
+" Maintainer:       Nikolai Pavlov <zyx.vim@gmail.com>
+" First author:     Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2010-09-16
 
-if exists("b:current_syntax")
-  finish
+if exists('b:current_syntax')
+    finish
 endif
 
 let s:cpo_save = &cpo
 set cpo&vim
 
+let s:ns_char = '\%(\%([\n\r\uFEFF \t]\)\@!\p\)'
+let s:ns_word_char = '\%(\w\|-\)'
+let s:ns_uri_char  = '\%(%\x\x\|'.s:ns_word_char.'\|[#/;?:@&=+$,.!~*''()\[\]]\)'
+let s:ns_tag_char  = '\%(%\x\x\|'.s:ns_word_char.'\|[#/;?:@&=+$.~*''()]\)'
+let s:c_ns_anchor_char = '\%(\%([\n\r\uFEFF \t,\[\]{}]\)\@!\p\)'
+let s:c_indicator      = '[\-?:,\[\]{}#&*!|>''"%@`]'
+let s:c_flow_indicator = '[,\[\]{}]'
+
+let s:c_verbatim_tag = '!<'.s:ns_uri_char.'\+>'
+let s:c_named_tag_handle     = '!'.s:ns_word_char.'\+!'
+let s:c_secondary_tag_handle = '!!'
+let s:c_primary_tag_handle   = '!'
+let s:c_tag_handle = '\%('.s:c_named_tag_handle.
+            \         '\|'.s:c_secondary_tag_handle.
+            \         '\|'.s:c_primary_tag_handle.'\)'
+let s:c_ns_shorthand_tag = s:c_tag_handle . s:ns_tag_char.'\+'
+let s:c_non_specific_tag = '!'
+let s:c_ns_tag_property = s:c_verbatim_tag.
+            \        '\|'.s:c_ns_shorthand_tag.
+            \        '\|'.s:c_non_specific_tag
+
+let s:c_ns_anchor_name = s:c_ns_anchor_char.'\+'
+let s:c_ns_anchor_property =  '&'.s:c_ns_anchor_name
+let s:c_ns_alias_node      = '\*'.s:c_ns_anchor_name
+
+let s:ns_directive_name = s:ns_char.'\+'
+
+let s:ns_local_tag_prefix  = '!'.s:ns_uri_char.'*'
+let s:ns_global_tag_prefix = s:ns_tag_char.s:ns_uri_char.'*'
+let s:ns_tag_prefix = s:ns_local_tag_prefix.
+            \    '\|'.s:ns_global_tag_prefix
+
+let s:ns_plain_safe_out = s:ns_char
+let s:ns_plain_safe_in  = '\%('.s:c_flow_indicator.'\@!'.s:ns_char.'\)'
+
+let s:ns_plain_first_in  = '\%('.s:c_indicator.'\@!'.s:ns_char.'\|[?:\-]\%('.s:ns_plain_safe_in.'\)\@=\)'
+let s:ns_plain_first_out = '\%('.s:c_indicator.'\@!'.s:ns_char.'\|[?:\-]\%('.s:ns_plain_safe_out.'\)\@=\)'
+
+let s:ns_plain_char_in  = '\%('.s:ns_char.'#\|:'.s:ns_plain_safe_in.'\|[:#]\@!'.s:ns_plain_safe_in.'\)'
+let s:ns_plain_char_out = '\%('.s:ns_char.'#\|:'.s:ns_plain_safe_out.'\|[:#]\@!'.s:ns_plain_safe_out.'\)'
+
+let s:ns_plain_out = s:ns_plain_first_out . s:ns_plain_char_out.'*'
+let s:ns_plain_in  = s:ns_plain_first_in  . s:ns_plain_char_in.'*'
+
+
 syn keyword yamlTodo            contained TODO FIXME XXX NOTE
 
-syn region  yamlComment         display oneline start='\%(^\|\s\)#' end='$'
-                                \ contains=yamlTodo,@Spell
+syn region  yamlComment         display oneline start='\%\(^\|\s\)#' end='$'
+            \                   contains=yamlTodo
 
-syn match   yamlNodeProperty    '!\%(![^\\^%     ]\+\|[^!][^:/   ]*\)'
+execute 'syn region yamlDirective oneline start='.string('^\ze%'.s:ns_directive_name.'\s\+').' '.
+            \                            'end="$" '.
+            \                            'contains=yamlTAGDirective,'.
+            \                                     'yamlYAMLDirective,'.
+            \                                     'yamlReservedDirective '.
+            \                            'keepend'
 
-syn match   yamlAnchor          '&.\+'
+syn match yamlTAGDirective '%TAG\s\+' contained nextgroup=yamlTagHandle
+execute 'syn match yamlTagHandle contained nextgroup=yamlTagPrefix '.string(s:c_tag_handle.'\s\+')
+execute 'syn match yamlTagPrefix contained nextgroup=yamlComment ' . string(s:ns_tag_prefix)
 
-syn match   yamlAlias           '\*.\+'
+syn match yamlYAMLDirective '%YAML\s\+'  contained nextgroup=yamlYAMLVersion
+syn match yamlYAMLVersion   '\d\+\.\d\+' contained nextgroup=yamlComment
 
-syn match   yamlDelimiter       '[-,:]'
-syn match   yamlBlock           '[\[\]{}>|]'
-syn match   yamlOperator        '[?+-]'
-syn match   yamlKey             '\w\+\(\s\+\w\+\)*\ze\s*:'
+execute 'syn match yamlReservedDirective contained nextgroup=yamlComment '.
+            \string('%\%(\%(TAG\|YAML\)\s\)\@!'.s:ns_directive_name)
 
-syn region  yamlString          matchgroup=yamlStringDelimiter
-                                \ start=+"+ skip=+\\"+ end=+"+
-                                \ contains=yamlEscape
-syn region  yamlString          matchgroup=yamlStringDelimiter
-                                \ start=+'+ skip=+''+ end=+'+
-                                \ contains=yamlSingleEscape
-syn match   yamlEscape          contained display +\\[\\"abefnrtv^0_ NLP]+
-syn match   yamlEscape          contained display '\\x\x\{2}'
-syn match   yamlEscape          contained display '\\u\x\{4}'
-syn match   yamlEscape          contained display '\\U\x\{8}'
-" TODO: how do we get 0x85, 0x2028, and 0x2029 into this?
-syn match   yamlEscape          display '\\\%(\r\n\|[\r\n]\)'
-syn match   yamlSingleEscape    contained +''+
+syn region yamlFlowString matchgroup=yamlFlowStringDelimiter start='"' skip='\\"' end='"'
+            \ contains=yamlEscape
+            \ nextgroup=yamlKeyValueDelimiter
+syn region yamlFlowString matchgroup=yamlFlowStringDelimiter start="'" skip="''"  end="'"
+            \ contains=yamlSingleEscape
+            \ nextgroup=yamlKeyValueDelimiter
+syn match  yamlEscape contained '\\\%([\\"abefnrtv\^0_ NLP\n]\|x\x\x\|u\x\{4}\|U\x\{8}\)'
+syn match  yamlSingleEscape contained "''"
 
-" TODO: sexagecimal and fixed (20:30.15 and 1,230.15)
-syn match   yamlNumber          display
-                                \ '\<[+-]\=\d\+\%(\.\d\+\%([eE][+-]\=\d\+\)\=\)\='
-syn match   yamlNumber          display '0\o\+'
-syn match   yamlNumber          display '0x\x\+'
-syn match   yamlNumber          display '([+-]\=[iI]nf)'
-syn match   yamlNumber          display '(NaN)'
+syn match yamlBlockScalarHeader contained '\s\+\zs[|>]\%([+-]\=[1-9]\|[1-9]\=[+-]\)\='
 
-syn match   yamlConstant        '\<[~yn]\>'
-syn keyword yamlConstant        true True TRUE false False FALSE
-syn keyword yamlConstant        yes Yes on ON no No off OFF
-syn keyword yamlConstant        null Null NULL nil Nil NIL
+syn cluster yamlFlow contains=yamlFlowString,yamlFlowMapping,yamlFlowCollection
+syn cluster yamlFlow      add=yamlFlowMappingKey,yamlFlowMappingMerge
+syn cluster yamlFlow      add=yamlConstant,yamlPlainScalar,yamlFloat
+syn cluster yamlFlow      add=yamlTimestamp,yamlInteger,yamlMappingKeyStart
+syn cluster yamlFlow      add=yamlComment
+syn region yamlFlowMapping    matchgroup=yamlFlowIndicator start='{' end='}' contains=@yamlFlow
+syn region yamlFlowCollection matchgroup=yamlFlowIndicator start='\[' end='\]' contains=@yamlFlow
 
-syn match   yamlTimestamp       '\d\d\d\d-\%(1[0-2]\|\d\)-\%(3[0-2]\|2\d\|1\d\|\d\)\%( \%([01]\d\|2[0-3]\):[0-5]\d:[0-5]\d.\d\d [+-]\%([01]\d\|2[0-3]\):[0-5]\d\|t\%([01]\d\|2[0-3]\):[0-5]\d:[0-5]\d.\d\d[+-]\%([01]\d\|2[0-3]\):[0-5]\d\|T\%([01]\d\|2[0-3]\):[0-5]\d:[0-5]\d.\dZ\)\='
+execute 'syn match yamlPlainScalar /'.s:ns_plain_out.'/'
+execute 'syn match yamlPlainScalar contained /'.s:ns_plain_in.'/'
 
-syn region  yamlDocumentHeader  start='---' end='$' contains=yamlDirective
-syn match   yamlDocumentEnd     '\.\.\.'
+syn match yamlMappingKeyStart '?\ze\s'
+syn match yamlMappingKeyStart '?' contained
 
-syn match   yamlDirective       contained '%[^:]\+:.\+'
+execute 'syn match yamlFlowMappingKey /'.s:ns_plain_in.'\ze\s*:/ contained '.
+            \'nextgroup=yamlKeyValueDelimiter'
+syn match yamlFlowMappingMerge /<<\ze\s*:/ contained nextgroup=yamlKeyValueDelimiter
 
-hi def link yamlTodo            Todo
-hi def link yamlComment         Comment
-hi def link yamlDocumentHeader  PreProc
-hi def link yamlDocumentEnd     PreProc
-hi def link yamlDirective       Keyword
-hi def link yamlNodeProperty    Type
-hi def link yamlAnchor          Type
-hi def link yamlAlias           Type
-hi def link yamlDelimiter       Delimiter
-hi def link yamlBlock           Operator
-hi def link yamlOperator        Operator
-hi def link yamlKey             Identifier
-hi def link yamlString          String
-hi def link yamlStringDelimiter yamlString
-hi def link yamlEscape          SpecialChar
-hi def link yamlSingleEscape    SpecialChar
-hi def link yamlNumber          Number
-hi def link yamlConstant        Constant
-hi def link yamlTimestamp       Number
+syn match yamlBlockCollectionItemStart '^\s*\zs-\%(\s\+-\)*\s' nextgroup=yamlBlockMappingKey,yamlBlockMappingMerge
+execute 'syn match yamlBlockMappingKey /^\s*\zs'.s:ns_plain_out.'\ze\s*:\%(\s\|$\)/ '.
+            \'nextgroup=yamlKeyValueDelimiter'
+execute 'syn match yamlBlockMappingKey /\s*\zs'.s:ns_plain_out.'\ze\s*:\%(\s\|$\)/ contained '.
+            \'nextgroup=yamlKeyValueDelimiter'
+syn match yamlBlockMappingMerge /^\s*\zs<<\ze:\%(\s\|$\)/ nextgroup=yamlKeyValueDelimiter
+syn match yamlBlockMappingMerge /<<\ze\s*:\%(\s\|$\)/ nextgroup=yamlKeyValueDelimiter contained
+
+syn match   yamlKeyValueDelimiter /\s*:/ contained
+syn match   yamlKeyValueDelimiter /\s*:/ contained
+
+syn keyword yamlConstant true True TRUE false False FALSE
+syn keyword yamlConstant null Null NULL
+syn match   yamlConstant '\<\~\>'
+
+syn match   yamlTimestamp /\%([\[\]{}, \t]\@!\p\)\@<!\%(\d\{4}-\d\d\=-\d\d\=\%(\%([Tt]\|\s\+\)\%(\d\d\=\):\%(\d\d\):\%(\d\d\)\%(\.\%(\d*\)\)\=\%(\s*\%(Z\|[+-]\d\d\=\%(:\d\d\)\=\)\)\=\)\=\)\%([\[\]{}, \t]\@!\p\)\@!/
+
+syn match   yamlInteger /\%([\[\]{}, \t]\@!\p\)\@<!\%([+-]\=\%(0\%(b[0-1_]\+\|[0-7_]\+\|x[0-9a-fA-F_]\+\)\=\|\%([1-9][0-9_]*\%(:[0-5]\=\d\)\+\)\)\)\%([\[\]{}, \t]\@!\p\)\@!/
+syn match   yamlFloat   /\%([\[\]{}, \t]\@!\p\)\@<!\%([+-]\=\%(\%(\d[0-9_]*\)\.[0-9_]*\%([eE][+-]\d\+\)\=\|\.[0-9_]\+\%([eE][-+][0-9]\+\)\=\|\d[0-9_]*\%(:[0-5]\=\d\)\+\.[0-9_]*\|\.\%(inf\|Inf\|INF\)\)\|\%(\.\%(nan\|NaN\|NAN\)\)\)\%([\[\]{}, \t]\@!\p\)\@!/
+
+execute 'syn match yamlNodeTag '.string(s:c_ns_tag_property)
+execute 'syn match yamlAnchor  '.string(s:c_ns_anchor_property)
+execute 'syn match yamlAlias   '.string(s:c_ns_alias_node)
+
+syn match yamlDocumentStart '^---\ze\%(\s\|$\)'
+syn match yamlDocumentEnd   '^\.\.\.\ze\%(\s\|$\)'
+
+hi def link yamlTodo                     Todo
+hi def link yamlComment                  Comment
+
+hi def link yamlDocumentStart            PreProc
+hi def link yamlDocumentEnd              PreProc
+
+hi def link yamlDirectiveName            Keyword
+
+hi def link yamlTAGDirective             yamlDirectiveName
+hi def link yamlTagHandle                String
+hi def link yamlTagPrefix                String
+
+hi def link yamlYAMLDirective            yamlDirectiveName
+hi def link yamlReservedDirective        Error
+hi def link yamlYAMLVersion              Number
+
+hi def link yamlString                   String
+hi def link yamlFlowString               yamlString
+hi def link yamlFlowStringDelimiter      yamlString
+hi def link yamlEscape                   SpecialChar
+hi def link yamlSingleEscape             SpecialChar
+
+hi def link yamlBlockCollectionItemStart Label
+hi def link yamlBlockMappingKey          Identifier
+hi def link yamlBlockMappingMerge        Special
+
+hi def link yamlFlowMappingKey           Identifier
+hi def link yamlFlowMappingMerge         Special
+
+hi def link yamlMappingKeyStart          Special
+hi def link yamlFlowIndicator            Special
+hi def link yamlKeyValueDelimiter        Special
+
+hi def link yamlConstant                 Constant
+
+hi def link yamlAnchor                   Type
+hi def link yamlAlias                    Type
+hi def link yamlNodeTag                  Type
+
+hi def link yamlInteger                  Number
+hi def link yamlFloat                    Float
+hi def link yamlTimestamp                Number
 
 let b:current_syntax = "yaml"
 
+unlet s:ns_word_char s:ns_uri_char s:c_verbatim_tag s:c_named_tag_handle s:c_secondary_tag_handle s:c_primary_tag_handle s:c_tag_handle s:ns_tag_char s:c_ns_shorthand_tag s:c_non_specific_tag s:c_ns_tag_property s:c_ns_anchor_char s:c_ns_anchor_name s:c_ns_anchor_property s:c_ns_alias_node s:ns_char s:ns_directive_name s:ns_local_tag_prefix s:ns_global_tag_prefix s:ns_tag_prefix s:c_indicator s:ns_plain_safe_out s:c_flow_indicator s:ns_plain_safe_in s:ns_plain_first_in s:ns_plain_first_out s:ns_plain_char_in s:ns_plain_char_out s:ns_plain_out s:ns_plain_in
+
 let &cpo = s:cpo_save
 unlet s:cpo_save
+

@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 7.3.  Last change: 2010 Jul 29
+*helphelp.txt*	For Vim version 7.3.  Last change: 2010 Sep 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -7,7 +7,7 @@
 Help on help files					*helphelp*
 
 1. Help commands		|online-help|
-2. Translating help files	|help-translated|
+2. Translated help files	|help-translated|
 3. Writing help files		|help-writing|
 
 ==============================================================================
@@ -188,7 +188,7 @@ command: >
 			Only for backwards compatibility.  It now executes the
 			ToolBar.FindHelp menu entry instead of using a builtin
 			dialog.  {only when compiled with |+GUI_GTK|}
-<			{not in Vi}
+			{not in Vi}
 
 					*:helpt* *:helptags*
 				*E154* *E150* *E151* *E152* *E153* *E670*

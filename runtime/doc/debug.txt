@@ -1,4 +1,4 @@
-*debug.txt*     For Vim version 7.3.  Last change: 2010 Jul 20
+*debug.txt*     For Vim version 7.3.  Last change: 2010 Sep 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -22,7 +22,8 @@ compilation, here is what you can do to find out exactly where Vim crashes.
 This also applies when using the MingW tools.
 
 1. Compile Vim with the "-g" option (there is a line in the Makefile for this,
-   which you can uncomment).
+   which you can uncomment).  Also make sure "strip" is disabled (do not
+   install it, or use the line "STRIP = /bin/true").
 
 2. Execute these commands (replace "11" with the test that fails): >
 	cd testdir
@@ -67,7 +68,7 @@ If the Windows version of Vim crashes in a reproducible manner, you can take
 some steps to provide a useful bug report.
 
 
-GENERIC ~
+3.1 GENERIC ~
 
 You must obtain the debugger symbols (PDB) file for your executable: gvim.pdb
 for gvim.exe, or vim.pdb for vim.exe. The PDB should be available from the
@@ -89,7 +90,7 @@ a Vim executable compiled with the Borland compiler; gdb (see above
 
 
 								*debug-vs2005*
-2.2 Debugging Vim crashes with Visual Studio 2005/Visual C++ 2005 Express ~
+3.2 Debugging Vim crashes with Visual Studio 2005/Visual C++ 2005 Express ~
 
 First launch vim.exe or gvim.exe and then launch Visual Studio.  (If you don't
 have Visual Studio, follow the instructions at |get-ms-debuggers| to obtain a
@@ -123,7 +124,7 @@ installed as a just-in-time debugger. Use WinDbg, |debug-windbg|, if you
 need to save minidumps or you want a just-in-time (postmortem) debugger.
 
 								*debug-windbg*
-2.3 Debugging Vim crashes with WinDbg ~
+3.3 Debugging Vim crashes with WinDbg ~
 
 See |get-ms-debuggers| to obtain a copy of WinDbg.
 
@@ -149,7 +150,7 @@ To save a minidump, type the following at the WinDbg command line: >
         .dump vim.dmp
 <
 							*debug-minidump*
-2.4 Opening a Minidump ~
+3.4 Opening a Minidump ~
 
 If you have a minidump file, you can open it in Visual Studio or in WinDbg.
 
@@ -161,7 +162,7 @@ In WinDbg: choose Open Crash Dump on the File menu. Follow the instructions in
 |debug-windbg| to set the Symbol File Path.
 
 							*get-ms-debuggers*
-2.5 Obtaining Microsoft Debugging Tools ~
+3.5 Obtaining Microsoft Debugging Tools ~
 
 The Debugging Tools for Windows (including WinDbg) can be downloaded from
     http://www.microsoft.com/whdc/devtools/debugging/default.mspx

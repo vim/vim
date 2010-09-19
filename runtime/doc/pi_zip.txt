@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 7.3.  Last change: 2010 Apr 12
+*pi_zip.txt*	For Vim version 7.3.  Last change: 2010 Sep 14
 
 				+====================+
 				| Zip File Interface |
@@ -64,11 +64,10 @@ Copyright: Copyright (C) 2005-2009 Charles E Campbell, Jr *zip-copyright*
 
    If for some reason you do not wish to use vim to examine zipped files,
    you may put the following two variables into your <.vimrc> to prevent
-   the tar plugin from loading: >
+   the zip plugin from loading: >
 
 	let g:loaded_zipPlugin= 1
 	let g:loaded_zip      = 1
-<
 <
 
 ==============================================================================

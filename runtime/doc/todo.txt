@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2010 Aug 15
+*todo.txt*      For Vim version 7.3.  Last change: 2010 Sep 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,22 +30,96 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-":find e" completion, editing a file in the Vim source directory, 'path' set
-to "./proto", does not shorten ./proto/eval.pro, probably because of
-./proto/ex_eval.pro.
+"buffer" in if_python.c, ex_pyfile() shadows global var buffer in if_py_both.h
+
+Crash on Windows when using strftime(). (Christian Brabandt, 2010 Aug 18)
+Appears to be triggered by '%R' and '%T'.
+Use the bad_param_handler() (Mike Williams, 2010 Aug 19, 20)
+
+Patch: missing break in Mac GUI. (Dominique Pelle, 2010 Aug 19)
+
+":e ~br<Tab>" does not complete to ":e /home/bram/".  Crash too?
+
+Patch for Mingw build file (Jon, 2010 Aug 22)
+Patch for loading different Ruby versions. (Jon, 2010 Aug 23)
+
+Patch for clipboard not working properly: (Toni Ronkko)
+http://softagalleria.net/download/vim/clipboard.patch
+Clipboard not working with Athena. (Micael Ringe, 2010 Sep 13)
+
+Document cscope and sign completion for user commands. (Peter Odding, 2010 Aug
+19)
 
 Problem with \NL in Ex script. (Ray Frish, 2010 Aug 10)
 
+Runtime file for Falcon. (Steven Oliver, 2010 Sep 14)
+
+Patch to fix error tags in help files. (Dominique Pelle, 2010 Aug 25)
+
+Patch to fix :nbstart silently failing. (Xavier de Gaye, 2010 Aug 20)
+Another one for when Athena has netbeans support.
+
+patch for 3 bugs reported by smatch. (Dominique Pelle, 2010 Aug 23)
+
+'cursorline' is displayed too short when there are concealed characters and
+'list' is set, 'listchars' at default value. (Dennis Preiser, 2010 Aug 15)
+
+Hang on slave PTY on Mac.  Patch from Nikola Knezevic, 2010 Aug 29.
+
+Patch to support netbeans under Athena. (Xavier de Gaye, 2010 Aug 20)
+
+Patch to fix sign type negative and memory not freed. (Xavier de Gaye, 2010
+Aug 20)
+
+Conceal: using Tab for cchar causes problems.  Should reject it. (ZyX, 2010
+Aug 25)
+
+Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
+only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
+21, Ben Fritz, 2010 Sep 14)
+
+Patch for :mksession not escaping file name properly. (Peter Odding, 2010 Sep
+19)
+
+Patch for :grep docs. (Britton Kerin, 2010 Aug 31)
+
+Windows keys not set properly on Windows 7?  (cncyber, 2010 Aug 26)
+
+maparg() doesn't return the flags, such as <buffer>, <script>, <silent>.
+These are needed to save and restore a mapping.
+Also: the rhs string is not always correct. (Hari Krishna Dara, 2009 Sept 29)
+Patch by Christian Brabandt, 2010 Sep 17.
+
+Building the MingW version without clipboard but with multi-byte doesn't
+build. (Bill Lam, 2010 Sep 18)
+
 Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
+
+Patch to fix warning for accessing mediumVersion. (Dominique Pelle, 2010 Aug
+18)
+
+Patch for 2html to support 'fileencoding'. (Benjamin Fritz, 2010 Sep 10)
 
 CTRL-] on help tag |/[\n]| doesn't jump to the right place. (Tony Mechelynck,
 2010 Aug 8)
 
+Three patches for undo persistence. (Christian Brabandt, 2010 Sep 4)
+
+string() can't parse back "inf" and "nan".  Fix documentation or fix code?
+(XyX, 2010 Aug 23)
+
 ":command Print echo 'print'" works, but ":Print" doesn't.  Builtin Print
 should be overruled. (Aaron Thoma)
+Patch by Christian Brabandt, 2010 Sep 5.
+
+Comparing recursive structure loops forever. (ZyX, 2010 Aug 22, info from John
+Beckett Aug 23)
 
 GTK: drawing a double-width combining character over single-width characters
 doesn't look right. (Dominique Pelle, 2010 Aug 8)
+
+copy/paste between Vim and Google chrome doesn't work well for multi-byte
+characters. (Ben Haskell, 2010 Sep 17)
 
 Editing a file with a ^M with 'ff' set to "mac", opening a help file, then the
 ^M is displayed as ^J sometimes.  Getting 'ff' value from wrong window/buffer?
@@ -55,14 +129,32 @@ Results in E670. (Tony Mechelynck, 2010 May 2)
 
 setpos() does not restore cursor position after :normal. (Tyru, 2010 Aug 11)
 
+getpos()/setpos() don't include curswant.  getpos() could return a fifth
+element.  setpos() could accept an optional fifth element.
+Patch by Christian Brabandt, 2010 Sep 6.  Check that new argument is optional
+and that it's documented.
+
+Messages in message.txt are highlighted as examples.
+
+Win32: Patch to fix slow access over network (David Anderson).  Cleaned up by
+John Beckett, 2010 Aug 25.
+
 Test 73 fails on MS-Windows when compiled with DJGPP and run twice.  How to
 delete the Xfind directory?  Add an rmdir() function, just like we have
 mkdir().
 
 'cindent' not correct when 'list' is set. (Zdravi Korusef, 2010 Apr 15)
 
+Windows installer: licence text should not use indent, causes bad word wrap.
+(Benjamin Fritz, 2010 Aug 16)
+
+Mac with X11: clipboard doesn't work properly. (Raf, 2010 Aug 16)
+
 ":helpgrep" does not put the cursor in the correct column when preceded by
 accented character. (Tony Mechelynck, 2010 Apr 15)
+
+Don't call check_restricted() for histadd(), setbufvar(), settabvar(),
+setwinvar().
 
 Echo starts in the wrong column:
     while 1 | let s = input('A') | echo 'R' | endw
@@ -74,6 +166,9 @@ Patch: Let rare word highlighting overrule good word highlighting.
 Patch to make more characters work in dialogs. (Yankwei Jia, 2010 Aug 4)
 
 ":drop" does not respect 'autochdir'. (Peter Odding, 2010 Jul 24)
+
+When 'lines' is 25 and 'scrolloff' is 12, "j" scrolls zero or two lines
+instead of one. (Constantin Pan, 2010 Sep 10)
 
 Problem with cursor in the wrong column. (SungHyun Nam, 2010 Mar 11)
 Additional info by Dominique Pelle. (also on 2010 Apr 10)
@@ -162,6 +257,12 @@ line argument -noregister.
 When a mapping exists both for insert mode and lang-insert mode, the last one
 doesn't work. (Tyru, 2010 May 6)  Or is this intended?
 
+Cursor position wrong when 'formatoptions' contains "a". (Moshe Kamensky, 2010
+Sep 7, Gary Johnson, 2010 Sep 14)
+Formatoptions cause cursor to jump. (ZyX, 2010 Aug 22)
+Caused by revision 2294, "Make joining a range of lines much faster. (Milan
+Vancura)" ?
+
 Still a problem with ":make" in the wrong directory.  Caused by ":bufdo".
 (Ajit Thakkar, 2009 Jul 1) More information Jul 9, Jul 15.
 Caused by "doautoall syntaxset BufEnter *" in syntax/nosyntax.vim ?
@@ -178,7 +279,12 @@ Probably needs a bit of work.
 List of encoding aliases. (Takao Fujiware, 2009 Jul 18)
 Are they all OK?  Update Jul 22.
 
+Win32: Improved Makefile for MSVC. (Leonardo Valeri Manera, 2010 Aug 18)
+
 Win32: Expanding 'path' runs into a maximum size limit. (bgold12, 2009 Nov 15)
+
+Win32: Patch for enabling quick edit mode in console. (Craig Barkhouse, 2010
+Sep 1)
 
 Putting a Visual block while 'visualedit' is "all" does not leave the cursor
 on the first character. (John Beckett, 2010 Aug 7)
@@ -287,10 +393,6 @@ very high. (Yegappan Lakshmanan, 2010 Jul 22, Michael Peeters, 2010 Jul 22)
 
 Directory wrong in session file, caused by ":lcd" in BufEnter autocommand.
 (Felix Kater, 2009 Mar 3)
-
-maparg() doesn't return the flags, such as <buffer>, <script>, <silent>.
-These are needed to save and restore a mapping.
-Also: the rhs string is not always correct. (Hari Krishna Dara, 2009 Sept 29)
 
 Using ~ works OK on 'a' with composing char, but not on 0x0418  with composing
 char 0x0301. (Tony Mechelynck, 2009 Mar 4)
@@ -424,6 +526,15 @@ argument is processed for <f-args>. (Ivan Tishchenko, 2008 Aug 19)
 Win32: associating a type with Vim doesn't take care of space after a
 backslash? (Robert Vibrant, 2008 Jun 5)
 
+Win32: bold font doesn't work when 'guifontwide' has been set. (Yue Wu, 2010
+Aug 23)
+
+When 'rightleft' is set, cursorcolumn isn't highlighted after the end of a
+line.  It's also wrong in folds. (Dominique Pelle, 2010 Aug 21)
+
+Using an insert mode expression mapping, cursor is not in the expected
+position. (ZyX, 2010 Aug 29)
+
 After using <Tab> for command line completion after ":ta blah" and getting E33
 (no tags file), further editing the command to e.g., ":echo 'blah'", the
 command is not executed.  Fix by Ian Kelling?
@@ -513,6 +624,12 @@ When 'smartcase' is set and using CTRL-L to add to the search pattern it may
 result in no matches.  Convert chars to lower case? (Erik Wognsen, 2009 Apr
 16)
 
+Searching for composing char works, but not when inside []. (ZyX, Benjamin R.
+Haskell, 2010 Aug 24)
+
+Fail to edit file after failed register access.  Error flag remains set?
+(Lech Lorens, 2010 Aug 30)
+
 Patch for redo register. (Ben Schmidt, 2007 Oct 19)
 Await response to question to make the register writable.
 
@@ -560,6 +677,7 @@ C syntax: {} inside () causes following {} to be highlighted as error.
 
 Can't easily close the help window, like ":pc" closes the preview window and
 ":ccl" closes the quickfix window.  Add ":hclose". (Chris Gaal)
+Patch for :helpclose, Christian Brabandt, 2010 Sep 6.
 
 When 'diffopt' has "context:0" a single deleted line causes two folds to merge
 and mess up syncing. (Austin Jennings, 2008 Jan 31)
@@ -588,6 +706,9 @@ Cheng Fang made javacomplete. (2007 Aug 11)
 Asked about latest version: 0.77.1 is on www.vim.org.
 
 More AmigaOS4 patches. (Peter Bengtsson, Nov 9)
+
+Amiga patches with vbcc. (Adrien Destugues, 2010 Aug 30)
+http://pulkomandy.ath.cx/drop/vim73_vbcc_amiga.diff
 
 Insert mode completion: When editing the text and pressing CTRL-N again goes
 back to originally completed text, edited text is gone. (Peng Yu, 2008 Jul 24)
@@ -718,9 +839,6 @@ Win32: When there is 4 Gbyte of memory mch_avail_mem() doesn't work properly.
 Unfinished patch by Jelle Geerts, 2008 Aug 24.
 Let mch_avail_mem() return Kbyte instead?
 
-Win32: With two monitors, gvim partly on both, and adding/removing a scrollbar
-Vim resizes and moves to one of the monitors. (Chris Monkiewicz, 2008 Oct)
-
 Win32: When 'shell' is bash shellescape() doesn't always do the right thing.
 Depends on 'shellslash', 'shellquote' and 'shellxquote', but shellescape()
 only takes 'shellslash' into account.
@@ -801,9 +919,6 @@ VMS: VFC files are in some cases truncated during reading (Zoltan Arpadffy)
 
 input() completion should not insert a backslash to escape a space in a file
 name?
-
-getpos()/setpos() don't include curswant.  getpos() could return a fifth
-element.  setpos() could accept an optional fifth element.
 
 Ruby completion is insecure.  Can this be fixed?
 
@@ -992,9 +1107,6 @@ resulting in highlighted "{" in that window, not in the other.
 
 In mswin.vim: Instead of mapping <C-V> for Insert mode in a complicated way,
 can it be done like ":imap <C-V> <MiddleMouse>" without negative side effects?
-
-Win32: When the GUI tab pages line is displayed Vim jumps from the secondary
-to the primary monitor. (Afton Lewis, 2007 Mar 9)  Old resizing problem?
 
 GTK: when the Tab pages bar appears or disappears while the window is
 maximized the window is no longer maximized.  Patch that has some idea but
@@ -1319,9 +1431,18 @@ Win32 GUI known bugs:
     the wide functions.
 8   On Windows 98 the unicows library is needed to support functions with UCS2
     file names.  Can we load unicows.dll dynamically?
+8   Win32: With two monitors, gvim partly on both, and adding/removing a
+    scrollbar Vim resizes and moves to one of the monitors. (Chris Monkiewicz,
+    2008 Oct)
 8   When the primary monitor is below or right of the secondary monitor and
     Vim is on the secondary monitor it will often move to the primary monitor.
     Window position coordinates can be negative. (James Harvey)
+    When the primary monitor is on the right, coordinates on the left monitor
+    are negative.  Clamping to zero means gvim jups to the primary monitor.
+    (Michael Wookey, 2010 Aug 17)
+    Probably the same issue: When the GUI tab pages line is displayed Vim
+    jumps from the secondary to the primary monitor. (Afton Lewis, 2007 Mar 9)
+    Possible solution using GetSystemMetrics() (Sergey Khorev, 2010 Aug 18)
 8   The -P argument doesn't work very well with many MDI applications.
     The last argument of CreateWindowEx() should be used, see MSDN docs.
     Tutorial: http://win32assembly.online.fr/tut32.html

@@ -6,20 +6,20 @@
 ADA								      *ada.vim*
 
 1.  Syntax Highlighting			    |ft-ada-syntax|
-2.  Plug-in				    |ft-ada-plugin|
+2.  File type Plug-in			    |ft-ada-plugin|
 3.  Omni Completion			    |ft-ada-omni|
     3.1 Omni Completion with "gnat xref"	|gnat-xref|
     3.2 Omni Completion with "ctags"		|ada-ctags|
 4.  Compiler Support			    |ada-compiler|
     4.1 GNAT					|compiler-gnat|
-    4.1 Dec Ada					|compiler-decada|
+    4.2 Dec Ada					|compiler-decada|
 5.  References				    |ada-reference|
     5.1 Options					|ft-ada-options|
-    5.2 Functions				|ft-ada-functions|
-    5.3 Commands				|ft-ada-commands|
-    5.4 Variables				|ft-ada-variables|
-    5.5 Constants				|ft-ada-constants|
-8.  Extra Plug-ins			    |ada-extra-plugins|
+    5.2 Commands				|ft-ada-commands|
+    5.3 Variables				|ft-ada-variables|
+    5.4 Constants				|ft-ada-constants|
+    5.5 Functions				|ft-ada-functions|
+6.  Extra Plug-ins			    |ada-extra-plugins|
 
 ==============================================================================
 1. Syntax Highlighting ~
@@ -139,7 +139,7 @@ The Ada parser for Exuberant Ctags is fairly new - don't expect complete
 support yet.
 
 ==============================================================================
-4.  Compiler Support ~
+4. Compiler Support ~
 								*ada-compiler*
 
 The Ada mode supports more than one Ada compiler and will automatically load the
@@ -367,7 +367,7 @@ false when the variable is undefined. The value to which the variable is set
 makes no difference.
 
 ------------------------------------------------------------------------------
-5.3 Commands ~
+5.2 Commands ~
 							     *ft-ada-commands*
 
 :AdaRainbow							 *:AdaRainbow*
@@ -445,7 +445,7 @@ g:ada#Ctags_Kinds	dictionary of lists
 		for Ctags generates.
 
 ------------------------------------------------------------------------------
-5.2 Functions ~
+5.5 Functions ~
 							    *ft-ada-functions*
 
 ada#Word([{line}, {col}])					  *ada#Word()*
@@ -479,7 +479,7 @@ gnat#New ()
 
 
 ==============================================================================
-8. Extra Plugins ~
+6. Extra Plugins ~
 							   *ada-extra-plugins*
 
 You can optionally install the following extra plug-ins. They work well with

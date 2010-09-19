@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2010 Aug 15
+*eval.txt*	For Vim version 7.3.  Last change: 2010 Sep 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -63,21 +63,21 @@ The Number and String types are converted automatically, depending on how they
 are used.
 
 Conversion from a Number to a String is by making the ASCII representation of
-the Number.  Examples: >
-	Number 123	-->	String "123"
-	Number 0	-->	String "0"
-	Number -1	-->	String "-1"
+the Number.  Examples:
+	Number 123	-->	String "123" ~
+	Number 0	-->	String "0" ~
+	Number -1	-->	String "-1" ~
 							*octal*
 Conversion from a String to a Number is done by converting the first digits
 to a number.  Hexadecimal "0xf9" and Octal "017" numbers are recognized.  If
-the String doesn't start with digits, the result is zero.  Examples: >
-	String "456"	-->	Number 456
-	String "6bar"	-->	Number 6
-	String "foo"	-->	Number 0
-	String "0xf1"	-->	Number 241
-	String "0100"	-->	Number 64
-	String "-8"	-->	Number -8
-	String "+8"	-->	Number 0
+the String doesn't start with digits, the result is zero.  Examples:
+	String "456"	-->	Number 456 ~
+	String "6bar"	-->	Number 6 ~
+	String "foo"	-->	Number 0 ~
+	String "0xf1"	-->	Number 241 ~
+	String "0100"	-->	Number 64 ~
+	String "-8"	-->	Number -8 ~
+	String "+8"	-->	Number 0 ~
 
 To force conversion from String to Number, add zero to it: >
 	:echo "0100" + 0
@@ -6216,7 +6216,7 @@ toolbar			Compiled with support for |gui-toolbar|.
 unix			Unix version of Vim.
 user_commands		User-defined commands.
 viminfo			Compiled with viminfo support.
-vim_starting		True while initial source'ing takes place.
+vim_starting		True while initial source'ing takes place. |startup|
 vertsplit		Compiled with vertically split windows |:vsplit|.
 virtualedit		Compiled with 'virtualedit' option.
 visual			Compiled with Visual mode.

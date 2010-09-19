@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 7.3.  Last change: 2010 Jul 28
+*os_vms.txt*    For Vim version 7.3.  Last change: 2010 Aug 16
 
 
 		  VIM REFERENCE MANUAL
@@ -675,7 +675,7 @@ slow when user wants to run Vim just in the console mode - because of X environm
 Luckily, there is a simple solution for that. Administrators need to deploy
 both GUI/GTK build and just console build executables, like below: >
 
-    |- vim72
+    |- vim73
     |----- doc
     |----- syntax        
        vimrc    (system rc files)
@@ -685,7 +685,7 @@ both GUI/GTK build and just console build executables, like below: >
 
 Define system symbols like below in for ex in LOGIN.COM or SYLOGIN.COM: >
 
-	$ define/nolog VIM RF10:[UTIL.VIM72] ! where you VIM directory is
+	$ define/nolog VIM RF10:[UTIL.VIM73] ! where you VIM directory is
 	$ vi*m  :== mcr VIM:VIM.EXE
 	$ gvi*m :== mcr VIM:GVIM.EXE
 	$ ! or you can try to spawn with
@@ -755,7 +755,7 @@ Solution 2.  Different directories: >
 	$      define/nolog VIM RF10:[UTIL.IA64_EXE] ! IA64 executables
 	$ endif
         $! VIMRUNTIME must be defined in order to find runtime files
-	$ define/nolog VIMRUNTIME RF10:[UTIL.VIM72]
+	$ define/nolog VIMRUNTIME RF10:[UTIL.VIM73]
 
 A good example for this approach is the [GNU]gnu_tools.com script from
 GNU_TOOLS.ZIP package downloadable from http://www.polarhome.com/vim/

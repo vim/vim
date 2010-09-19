@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.3.  Last change: 2009 Dec 31
+*starting.txt*  For Vim version 7.3.  Last change: 2010 Sep 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -95,14 +95,14 @@ exim	vim -E	    Start in improved Ex mode (see |Ex-mode|).	    *exim*
 			(normally not installed)
 view	vim -R	    Start in read-only mode (see |-R|).		    *view*
 gvim	vim -g	    Start the GUI (see |gui|).			    *gvim*
-gex	vim -eg	    Start the GUI in Ex mode.			    *gex*
-gview	vim -Rg	    Start the GUI in read-only mode.		    *gview*
+gex	vim -eg	    Start the GUI in Ex mode.			  *gex*
+gview	vim -Rg	    Start the GUI in read-only mode.		  *gview*
 rvim	vim -Z	    Like "vim", but in restricted mode (see |-Z|)   *rvim*
-rview	vim -RZ	    Like "view", but in restricted mode.	    *rview*
-rgvim	vim -gZ	    Like "gvim", but in restricted mode.	    *rgvim*
-rgview	vim -RgZ    Like "gview", but in restricted mode.	    *rgview*
+rview	vim -RZ	    Like "view", but in restricted mode.	  *rview*
+rgvim	vim -gZ	    Like "gvim", but in restricted mode.	  *rgvim*
+rgview	vim -RgZ    Like "gview", but in restricted mode.	  *rgview*
 evim    vim -y      Easy Vim: set 'insertmode' (see |-y|)	    *evim*
-eview   vim -yR     Like "evim" in read-only mode		    *eview*
+eview   vim -yR     Like "evim" in read-only mode		  *eview*
 vimdiff vim -d	    Start in diff mode |diff-mode|
 gvimdiff vim -gd    Start in diff mode |diff-mode|
 
@@ -244,7 +244,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 -Z		Restricted mode.  All commands that make use of an external
 		shell are disabled.  This includes suspending with CTRL-Z,
 		":sh", filtering, the system() function, backtick expansion,
-		etc.
+		delete(), rename(), mkdir(), writefile(), libcall(), etc.
 		{not in Vi}
 
 							*-g*
@@ -869,6 +869,7 @@ accordingly.  Vim proceeds in this order:
 12. Execute startup commands
 	If a "-t" flag was given to Vim, the tag is jumped to.
 	The commands given with the |-c| and |+cmd| arguments are executed.
+	The starting flag is reset, has("vim_starting") will now return zero.
 	If the 'insertmode' option is set, Insert mode is entered.
 	The |VimEnter| autocommands are executed.
 

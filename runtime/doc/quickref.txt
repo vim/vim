@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.3.  Last change: 2010 Jul 24
+*quickref.txt*  For Vim version 7.3.  Last change: 2010 Sep 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1091,11 +1091,11 @@ Context-sensitive completion on the command-line:
 |:_#|	    #[num]	alternate file name [num] (only where a file name is
 			   expected)
 	Note: The next seven are typed literally; these are not special keys!
-|:<afile>|  <abuf>	buffer number, for use in an autocommand (only where a
+|:<abuf>|   <abuf>	buffer number, for use in an autocommand (only where a
 			   file name is expected)
-|:<afile>|  <afile>	file name, for user in an autocommand (only where a
+|:<afile>|  <afile>	file name, for use in an autocommand (only where a
 			   file name is expected)
-|:<afile>|  <amatch>	what matched with the pattern, for use in an
+|:<amatch>| <amatch>	what matched with the pattern, for use in an
 			   autocommand (only where a file name is expected)
 |:<cword>|  <cword>	word under the cursor (only where a file name is
 			   expected)
@@ -1377,7 +1377,7 @@ Context-sensitive completion on the command-line:
 		set foldmethod=indent	folding by indent
 		set foldmethod=expr	folding by 'foldexpr'
 		set foldmethod=syntax	folding by syntax regions
-		set foldmethod=marker	folding by 'foldmarkers'
+		set foldmethod=marker	folding by 'foldmarker'
 
 |zf|		zf{motion}		operator: Define a fold manually
 |:fold|		:{range}fold		define a fold for {range} lines
