@@ -1288,9 +1288,12 @@ do_buffer(action, start, dir, count, forceit)
     /* Go to the other buffer. */
     set_curbuf(buf, action);
 
-#if defined(FEAT_LISTCMDS) && defined(FEAT_SCROLLBIND)
+#if defined(FEAT_LISTCMDS) \
+	&& (defined(FEAT_SCROLLBIND) || defined(FEAT_CURSORBIND))
     if (action == DOBUF_SPLIT)
-	curwin->w_p_scb = FALSE;	/* reset 'scrollbind' */
+    {
+	RESET_BINDING(curwin);	/* reset 'scrollbind' and 'cursorbind' */
+    }
 #endif
 
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
@@ -1917,9 +1920,7 @@ buflist_getfile(n, lnum, options, forceit)
 		tabpage_new();
 	    else if (win_split(0, 0) == FAIL)	/* Open in a new window */
 		return FAIL;
-# ifdef FEAT_SCROLLBIND
-	    curwin->w_p_scb = FALSE;
-# endif
+	    RESET_BINDING(curwin);
 	}
     }
 #endif

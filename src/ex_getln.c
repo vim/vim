@@ -6147,9 +6147,7 @@ ex_window()
     curwin->w_p_rl = cmdmsg_rl;
     cmdmsg_rl = FALSE;
 # endif
-# ifdef FEAT_SCROLLBIND
-    curwin->w_p_scb = FALSE;
-# endif
+    RESET_BINDING(curwin);
 
 # ifdef FEAT_AUTOCMD
     /* Do execute autocommands for setting the filetype (load syntax). */

@@ -1656,9 +1656,7 @@ win_found:
 	    opened_window = TRUE;	/* close it when fail */
 	    p_swb = empty_option;	/* don't split again */
 	    swb_flags = 0;
-# ifdef FEAT_SCROLLBIND
-	    curwin->w_p_scb = FALSE;
-# endif
+	    RESET_BINDING(curwin);
 	    if (ll_ref != NULL)
 	    {
 		/* The new window should use the location list from the
@@ -2334,9 +2332,7 @@ ex_copen(eap)
 	    win_goto(lastwin);
 	if (win_split(height, WSP_BELOW | WSP_NEWLOC) == FAIL)
 	    return;		/* not enough room for window */
-#ifdef FEAT_SCROLLBIND
-	curwin->w_p_scb = FALSE;
-#endif
+	RESET_BINDING(curwin);
 
 	if (eap->cmdidx == CMD_lopen || eap->cmdidx == CMD_lwindow)
 	{

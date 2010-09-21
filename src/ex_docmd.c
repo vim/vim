@@ -6898,9 +6898,7 @@ handle_drop(filec, filev, split)
 # ifdef FEAT_WINDOWS
 	if (win_split(0, 0) == FAIL)
 	    return;
-#  ifdef FEAT_SCROLLBIND
-	curwin->w_p_scb = FALSE;
-#  endif
+	RESET_BINDING(curwin);
 
 	/* When splitting the window, create a new alist.  Otherwise the
 	 * existing one is overwritten. */
@@ -7300,7 +7298,9 @@ ex_splitview(eap)
 		|| cmdmod.browse
 #  endif
 	   )
-	    curwin->w_p_scb = FALSE;
+	{
+	    RESET_BINDING(curwin);
+	}
 	else
 	    do_check_scrollbind(FALSE);
 # endif

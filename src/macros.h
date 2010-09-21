@@ -285,3 +285,17 @@
 #else
 # define DO_AUTOCHDIR
 #endif
+
+#if defined(FEAT_SCROLLBIND) && defined(FEAT_CURSORBIND)
+# define RESET_BINDING(wp)  (wp)->w_p_scb = FALSE; (wp)->w_p_crb = FALSE
+#else
+# if defined(FEAT_SCROLLBIND)
+#  define RESET_BINDING(wp)  (wp)->w_p_scb = FALSE
+# else
+#  if defined(FEAT_CURSORBIND)
+#   define RESET_BINDING(wp)  (wp)->w_p_crb = FALSE
+#  else
+#   define RESET_BINDING(wp)
+#  endif
+# endif
+#endif

@@ -1274,9 +1274,7 @@ cs_find_common(opt, pat, forceit, verbose, use_ll, cmdline)
 		{
 		    win_split(postponed_split > 0 ? postponed_split : 0,
 						       postponed_split_flags);
-#  ifdef FEAT_SCROLLBIND
-		    curwin->w_p_scb = FALSE;
-#  endif
+		    RESET_BINDING(curwin);
 		    postponed_split = 0;
 		}
 # endif

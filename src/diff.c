@@ -1127,11 +1127,13 @@ diff_win_options(wp, addbuf)
 # endif
 
     wp->w_p_diff = TRUE;
+    /* Use 'scrollbind' and 'cursorbind' when available */
+#ifdef FEAT_SCROLLBIND
+    wp->w_p_scb = TRUE;
+#endif
 #ifdef FEAT_CURSORBIND
-    /* Use cursorbind if it's available */
     wp->w_p_crb = TRUE;
 #endif
-    wp->w_p_scb = TRUE;
     wp->w_p_wrap = FALSE;
 # ifdef FEAT_FOLDING
     curwin = wp;
@@ -1177,10 +1179,7 @@ ex_diffoff(eap)
 	{
 	    /* Set 'diff', 'scrollbind' off and 'wrap' on. */
 	    wp->w_p_diff = FALSE;
-#ifdef FEAT_CURSORBIND
-	    wp->w_p_crb = FALSE;
-#endif
-	    wp->w_p_scb = FALSE;
+	    RESET_BINDING(wp);
 	    wp->w_p_wrap = TRUE;
 #ifdef FEAT_FOLDING
 	    curwin = wp;

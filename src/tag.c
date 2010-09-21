@@ -3143,9 +3143,7 @@ jumpto_tag(lbuf, forceit, keep_help)
     {
 	win_split(postponed_split > 0 ? postponed_split : 0,
 						       postponed_split_flags);
-# ifdef FEAT_SCROLLBIND
-	curwin->w_p_scb = FALSE;
-# endif
+	RESET_BINDING(curwin);
     }
 #endif
 

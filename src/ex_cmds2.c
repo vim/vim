@@ -2165,9 +2165,7 @@ do_argfile(eap, argn)
 	{
 	    if (win_split(0, 0) == FAIL)
 		return;
-# ifdef FEAT_SCROLLBIND
-	    curwin->w_p_scb = FALSE;
-# endif
+	    RESET_BINDING(curwin);
 	}
 	else
 #endif

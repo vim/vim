@@ -525,9 +525,7 @@ wingotofile:
 		    setpcmark();
 		    if (win_split(0, 0) == OK)
 		    {
-# ifdef FEAT_SCROLLBIND
-			curwin->w_p_scb = FALSE;
-# endif
+			RESET_BINDING(curwin);
 			(void)do_ecmd(0, ptr, NULL, NULL, ECMD_LASTL,
 							   ECMD_HIDE, NULL);
 			if (nchar == 'F' && lnum >= 0)
@@ -3277,9 +3275,7 @@ win_alloc_aucmd_win()
     if (aucmd_win != NULL)
     {
 	win_init_some(aucmd_win, curwin);
-# ifdef FEAT_SCROLLBIND
-	aucmd_win->w_p_scb = FALSE;
-# endif
+	RESET_BINDING(aucmd_win);
 	new_frame(aucmd_win);
     }
 }
@@ -3320,10 +3316,8 @@ win_alloc_firstwin(oldwin)
 	/* First window in new tab page, initialize it from "oldwin". */
 	win_init(curwin, oldwin, 0);
 
-# ifdef FEAT_SCROLLBIND
-	/* We don't want scroll-binding in the first window. */
-	curwin->w_p_scb = FALSE;
-# endif
+	/* We don't want cursor- and scroll-binding in the first window. */
+	RESET_BINDING(curwin);
     }
 #endif
 

@@ -3498,9 +3498,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 	curbuf->b_p_bin = FALSE;	/* reset 'bin' before reading file */
 	curwin->w_p_nu = 0;		/* no line numbers */
 	curwin->w_p_rnu = 0;		/* no relative line numbers */
-#ifdef FEAT_SCROLLBIND
-	curwin->w_p_scb = FALSE;	/* no scroll binding */
-#endif
+	RESET_BINDING(curwin);		/* no scroll or cursor binding */
 #ifdef FEAT_ARABIC
 	curwin->w_p_arab = FALSE;	/* no arabic mode */
 #endif
@@ -5471,9 +5469,8 @@ prepare_tagpreview(undo_sync)
 		return FALSE;
 	    curwin->w_p_pvw = TRUE;
 	    curwin->w_p_wfh = TRUE;
-# ifdef FEAT_SCROLLBIND
-	    curwin->w_p_scb = FALSE;	    /* don't take over 'scrollbind' */
-# endif
+	    RESET_BINDING(curwin);	    /* don't take over 'scrollbind'
+					       and 'cursorbind' */
 # ifdef FEAT_DIFF
 	    curwin->w_p_diff = FALSE;	    /* no 'diff' */
 # endif
