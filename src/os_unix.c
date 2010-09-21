@@ -1123,6 +1123,30 @@ sigcont_handler SIGDEFARG(sigarg)
 }
 #endif
 
+# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+static void loose_clipboard __ARGS((void));
+
+/*
+ * Called when Vim is going to sleep or execute a shell command.
+ * We can't respond to requests for the X selections.  Lose them, otherwise
+ * other applications will hang.  But first copy the text to cut buffer 0.
+ */
+    static void
+loose_clipboard()
+{
+    if (clip_star.owned || clip_plus.owned)
+    {
+	x11_export_final_selection();
+	if (clip_star.owned)
+	    clip_lose_selection(&clip_star);
+	if (clip_plus.owned)
+	    clip_lose_selection(&clip_plus);
+	if (x11_display != NULL)
+	    XFlush(x11_display);
+    }
+}
+#endif
+
 /*
  * If the machine has job control, use it to suspend the program,
  * otherwise fake it by starting a new shell.
@@ -1137,19 +1161,7 @@ mch_suspend()
     out_flush();	    /* needed to disable mouse on some systems */
 
 # if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
-    /* Since we are going to sleep, we can't respond to requests for the X
-     * selections.  Lose them, otherwise other applications will hang.  But
-     * first copy the text to cut buffer 0. */
-    if (clip_star.owned || clip_plus.owned)
-    {
-	x11_export_final_selection();
-	if (clip_star.owned)
-	    clip_lose_selection(&clip_star);
-	if (clip_plus.owned)
-	    clip_lose_selection(&clip_plus);
-	if (x11_display != NULL)
-	    XFlush(x11_display);
-    }
+    loose_clipboard();
 # endif
 
 # if defined(_REENTRANT) && defined(SIGCONT)
@@ -3706,6 +3718,10 @@ mch_call_shell(cmd, options)
     if (options & SHELL_COOKED)
 	settmode(TMODE_COOK);	    /* set to normal mode */
 
+# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+    loose_clipboard();
+# endif
+
 # ifdef __EMX__
     if (cmd == NULL)
 	x = system("");	/* this starts an interactive shell in emx */
@@ -3814,13 +3830,17 @@ mch_call_shell(cmd, options)
 # endif
     int		did_settmode = FALSE;	/* settmode(TMODE_RAW) called */
 
+    newcmd = vim_strsave(p_sh);
+    if (newcmd == NULL)		/* out of memory */
+	goto error;
+
     out_flush();
     if (options & SHELL_COOKED)
 	settmode(TMODE_COOK);		/* set to normal mode */
 
-    newcmd = vim_strsave(p_sh);
-    if (newcmd == NULL)		/* out of memory */
-	goto error;
+# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+    loose_clipboard();
+# endif
 
     /*
      * Do this loop twice:
