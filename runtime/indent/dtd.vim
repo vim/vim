@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	    DTD (Document Type Definition for XML)
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2008-07-18
+" Latest Revision:  2010-09-21
 
 let s:cpo_save = &cpo
 set cpo&vim
@@ -52,7 +52,7 @@ function s:indent_to_innermost_parentheses(line, end)
   let end = a:end
   let parentheses = [end - 1]
   while token != ""
-    let [token, end] = s:lex(a:line, end, '^\%([(),|]\|[A-Za-z0-9_-]\+\)[?*+]\=')
+    let [token, end] = s:lex(a:line, end, '^\%([(),|]\|[A-Za-z0-9_-]\+\|#PCDATA\|%[A-Za-z0-9_-]\+;\)[?*+]\=')
     if token[0] == '('
       call add(parentheses, end - 1)
     elseif token[0] == ')'
@@ -80,7 +80,7 @@ function GetDTDIndent()
   let lnum = line('.')
   let col = col('.')
   let indent = indent('.')
-  let line = join(getline(lnum, v:lnum - 1), "\n")
+  let line = lnum == v:lnum ? getline(lnum) : join(getline(lnum, v:lnum - 1), "\n")
 
   let [declaration, end] = s:lex1(line, col)
   if declaration == ""
@@ -106,7 +106,7 @@ function GetDTDIndent()
     " Check for token following element name.  This can be a specification of
     " whether the start or end tag may be omitted.  If nothing is found, indent
     " one level.
-    let [token, end] = s:lex(line, end)
+    let [token, end] = s:lex(line, end, '^\%([-O(]\|ANY\|EMPTY\)')
     let n = 0
     while token =~ '[-O]' && n < 2
       let [token, end] = s:lex(line, end, '^\%([-O(]\|ANY\|EMPTY\)')
@@ -214,8 +214,7 @@ function GetDTDIndent()
 
       " Finally look for the attribute’s default value.  If non exists, indent
       " two levels.
-      " TODO: Do validation of keywords (#REQUIRED|#IMPLIED)?
-      let [default, end] = s:lex(line, end, '^\%("\_[^"]*"\|[^[:space:]]\+\)')
+      let [default, end] = s:lex(line, end, '^\%("\_[^"]*"\|#\(REQUIRED\|IMPLIED\|FIXED\)\)')
       if default == ""
         return indent + &sw * 2
       elseif default == '#FIXED'

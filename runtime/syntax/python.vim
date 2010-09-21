@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Python
 " Maintainer:	Neil Schemenauer <nas@python.ca>
-" Last Change:	2009-10-13
+" Last Change:	2010 Sep 21
 " Credits:	Zvezdan Petkovic <zpetkovic@acm.org>
 "		Neil Schemenauer <nas@python.ca>
 "		Dmitry Vasiliev
@@ -44,6 +44,11 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+" We need nocompatible mode in order to continue lines with backslashes.
+" Original setting will be restored.
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Keep Python keywords in alphabetical order inside groups for easy
 " comparison with the table in the 'Python Language Reference'
@@ -291,5 +296,8 @@ if version >= 508 || !exists("did_python_syn_inits")
 endif
 
 let b:current_syntax = "python"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim:set sw=2 sts=2 ts=8 noet:

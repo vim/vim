@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2010 Sep 19
+*todo.txt*      For Vim version 7.3.  Last change: 2010 Sep 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,27 +30,15 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-"buffer" in if_python.c, ex_pyfile() shadows global var buffer in if_py_both.h
-
-Crash on Windows when using strftime(). (Christian Brabandt, 2010 Aug 18)
-Appears to be triggered by '%R' and '%T'.
-Use the bad_param_handler() (Mike Williams, 2010 Aug 19, 20)
-
-Patch: missing break in Mac GUI. (Dominique Pelle, 2010 Aug 19)
-
-":e ~br<Tab>" does not complete to ":e /home/bram/".  Crash too?
-
 Patch for Mingw build file (Jon, 2010 Aug 22)
 Patch for loading different Ruby versions. (Jon, 2010 Aug 23)
-
-Patch for clipboard not working properly: (Toni Ronkko)
-http://softagalleria.net/download/vim/clipboard.patch
-Clipboard not working with Athena. (Micael Ringe, 2010 Sep 13)
 
 Document cscope and sign completion for user commands. (Peter Odding, 2010 Aug
 19)
 
 Problem with \NL in Ex script. (Ray Frish, 2010 Aug 10)
+
+":e ~br<Tab>" does not complete to ":e /home/bram/".  Crash too?
 
 Runtime file for Falcon. (Steven Oliver, 2010 Sep 14)
 
@@ -106,7 +94,7 @@ CTRL-] on help tag |/[\n]| doesn't jump to the right place. (Tony Mechelynck,
 Three patches for undo persistence. (Christian Brabandt, 2010 Sep 4)
 
 string() can't parse back "inf" and "nan".  Fix documentation or fix code?
-(XyX, 2010 Aug 23)
+(ZyX, 2010 Aug 23)
 
 ":command Print echo 'print'" works, but ":Print" doesn't.  Builtin Print
 should be overruled. (Aaron Thoma)
@@ -1573,7 +1561,7 @@ Athena GUI:
 
 
 Motif GUI:
--   gui_mch_browsedir() is missing.
+-   gui_mch_browsedir() is missing, browsedir() doesn't work nicely.
 7   Use XmStringCreateLocalized() instead of XmStringCreateSimple()?
     David Harrison says it's OK (it exists in Motif 1.2).
 8   Lesstif: When deleting a menu that's torn off, the torn off menu becomes
@@ -1783,33 +1771,17 @@ Amiga:
 
 Macintosh:
 -   GUI: gui_mch_browsedir() is missing.
-7   Patch to add 'transparency' option.  Disadvantage: it's slow. (Eckehard
-    Berns, 2004 May 9) http://ecki.to/vim/TransBack-2004-05-09.diff
-    Needs more work.  Add when someone really wants it.
 7   Loading the Perl library only works on OS/X 10.2 or 10.3, never on both.
     Load the Perl library dynamically see Python sources file dynload_mac
     (Jack)
     dynamic linking: http://developer.apple.com/technotes/tn2002/tn2064.html
-8   Inputting Unicode characters does not work in the terminal.  They appear
-    to arrive as upper and lower bytes. (David Brown, 2004 April 17)
-8   Typing Unicode characters doesn't work at all in the GUI.
 8   inputdialog() doesn't resize when giving more text lines. (David Fishburn,
     2006 Sept 28)
-9   Problems in Carbon version for OS X: (Benji Fisher)
-    - keyboard shortcuts in the menus get lost.
-8   The Vim/About menu doesn't work.
-8   ":gui" doesn't fork.  Enabling the code in gui.c to fork causes a SEGV.
 8   Define vim_mkdir() for Macintosh.
 8   Define mch_writable() for Macintosh.
 9   When DiskLock is running, using a swap file causes a crash.  Appears to be
     a problem with writing a file that starts with a dot. (Giacalone)
-9   On G3 Mac, OS version 8, control strip causes characters messed up when
-    scrolling (CTRL-L cleans it up). (Benji Fisher)
-9   On G3 Mac, OS version 8, variable-speed scrolling doesn't work, after two
-    seconds of scrolling the screen freezes. (Benji Fisher)
 9   In mac_expandpath() check that handling of backslashes is done properly.
-8   Standard Mac shortcuts are missing.  (Amerige)
-8   Handling of non-fixed width fonts is wrong. (Amerige)
 
 
 "Small" problems:
@@ -2705,9 +2677,6 @@ Syntax highlighting:
     colors.  And add colors, so that Green+Red becomes Yellow.
     E.g. for this html:
 	<B> bold text <I> italic+bold text </B> italic text </I>
-7   Wild idea: Not only set highlighting, but also change what is displayed
-    (e.g., remove characters, so that "<B>bold</B>" can be shown as "bold"):
-	:syn region boldstuff start="<B>" display="" end="</B>" display=""
 7   CTRL-] checks the highlight group for finding out what the tag is.
 7   Add an explanation how a list of words can be used to highlight misspelled
     words.
@@ -2881,8 +2850,6 @@ Built-in script language:
     "command" would use <> notation.
     Does scratch buffer have a number?  Or re-use same number?
 7   Add function to generate unique number (date in milliseconds).
-7   Automatically load a function from a file when it is called.  Need an
-    option for the search path. (Sekera)
 
 
 Robustness:
@@ -2934,7 +2901,7 @@ Performance:
     http://www.theregister.co.uk/content/4/22908.html. (Andre Pang)
 7   Check how performance of loading the wordlist can be improved (adding a
     lot of abbreviations).
-7   DOS console: Add t_DL support, to make scrolling faster.
+7   MS-DOS console: Add t_DL support, to make scrolling faster.
 7   Compile Ex commands to byte codes.  Store byte codes in a vim script file
     at the end, after "compiled:.  Make it look like a single comment line
     for old Vim versions.  Insert first line "Vim script compiled <timestamp>.
@@ -3067,7 +3034,7 @@ Screen updating:
 
 
 Scrolling:
-8   Add "zm" command: scroll horizontally to put the cursor in the middle.
+8   Add "zy" command: scroll horizontally to put the cursor in the middle.
 6   Add option to set the overlap for CTRL-F and CTRL-B. (Garhi)
 -   extend 'scrollbind' option: 'scrollopt' words "search", "relative", etc..
     Also 'e'xecute some commands (search, vertical movements) in all bound
@@ -3303,8 +3270,6 @@ Autocommands:
     CursorHold), go through the list once and cache the result for a specific
     buffer.  Invalidate the cache when adding/deleting autocommands or
     changing the buffer name.
-8   Add ScriptReadCmd event: used to load remote Vim scripts, e.g.
-    "vim -u http://mach/path/vimrc".
 7   Add TagJump event: do something after jumping to a tag.
 8   Add "TagJumpFile" autocommand: When jumping to another file for a tag.
     Can be used to open "main.c.gz" when "main.c" isn't found.
@@ -3355,8 +3320,6 @@ Autocommands:
     PreDirChanged/PostDirChanged
 		    - Before/after ":cd" has been used (for changing the
 		      window title)
-    BufReadAction   - replaces reading a file
-    BufWriteAction  - replaces writing a file
     ShutDown	    - when the system is about to shut down
     InsertCharPre   - user typed character Insert mode, before inserting the
 		      char.  Pattern is matched with text before the cursor.
@@ -3833,21 +3796,14 @@ Mappings and Abbreviations:
 8   Add a flag to ":abbrev" to eat the character that triggers the
     abbreviation.  Thus "abb ab xxx" and typing "ab<Space>" inserts "xxx" and
     not the <Space>.
-8   Allow mapping of CTRL-@ (anywhere in the LHS).
 8   Give a warning when using CTRL-C in the lhs of a mapping.  It will never
     (?) work.
 8   Add a way to save a current mapping and restore it later.  Use a function
     that returns the mapping command to restore it: mapcmd()?  mapcheck() is
     not fool proof.  How to handle ambiguous mappings?
 7   Add <0x8f> (hex), <033> (octal) and <123> (decimal) to <> notation?
-7   Allow mapping "Q" and "Q}" at the same time.  Need to put a flag with "Q",
-    that it needs an extra character before it can match.  See Vile 'maplonger'
-    option.
 7   When someone tries to unmap with a trailing space, and it fails, try
     unmapping without the trailing space.  Helps for ":unmap xx | unmap yy".
-7   Make it possible to map 'wildchar', but only when it's a special character
-    (like CTRL-E).  Currently it's only recognized when typed.  Useful for
-    mapping a key to do something and then completion.
 6   Context-sensitive abbreviations: Specify syntax group(s) in which the
     abbreviations are to be used.
 -   Add mappings that take arguments.  Could work like the ":s" command.  For
@@ -3859,12 +3815,9 @@ Mappings and Abbreviations:
     :map q<Char>	    :s/<Char>/\u\0/g
     Or implicit:
     :map q			<Register>d<Number>$
--   Make it possible to include a <Nul> in the lhs and rhs of a mapping.
 -   Add command to repeat a whole mapping ("." only repeats the last change in
     a mapping).  Also: Repeat a whole insert command, including any mappings
     that it included.  Sort-of automatic recording?
--   Add an option to ":map" that makes it display the special keys in
-    <> notation (e.g. <CR> instead of ^M).  Or just always do this?
 -   Include an option (or flag to 'cpoptions') that makes errors in mappings
     not flush the rest of the mapping (like nvi does).
 -   Use context sensitiveness of completion to switch abbreviations and
@@ -4514,7 +4467,7 @@ Various improvements:
     (like "v" makes the operator characterwise-exclusive).  "x" could be used.
 -   Make a set of operations on list of names: expand wildcards, replace home
     dir, append a string, delete a string, etc.
--   Remove mktemp() and use tmpname() only?  Ctags does this.
+-   Remove using mktemp() and use tmpname() only?  Ctags does this.
 -   When replacing environment variables, and there is one that is not set,
     turn it into an empty string?  Only when expanding options? (Hiebert)
 -   Option to set command to be executed instead of producing a beep (e.g. to
@@ -4599,7 +4552,6 @@ Various improvements:
     expanded.  Is there a better way to do this?
 -   Add ":@!" command, to ":@" like what ":source!" is to ":source".
 8   Add ":@:!": repeat last command with forceit set.
--   Should be possible to write to a device, e.g. ":w! /dev/null".
 -   Add 't_normal': Used whenever t_me, t_se, t_ue or t_Zr is empty.
 -   ":cab map test ^V| je", ":cunab map" doesn't work.	This is vi compatible!
 -   CTRL-W CTRL-E and CTRL-W CTRL-Y should move the current window up or down
@@ -4677,9 +4629,6 @@ Various improvements:
 -   ":split file1 file2" adds two more windows (Webb).
 -   Don't give message "Incomplete last line" when editing binary file.
 -   Add ":a", ":i" for preloading of named buffers.
--   Allow autowrite when doing ":e file" (with an option 'eaw').
--   Allow a "+command" argument before each file name in the Vim command line:
-    "vim +123 file1 +234 file2 +345 file3". ???
 -   When entering text, keep other windows on same buffer updated (when a line
     entered)?
 -   Check out how screen does output optimizing.  Apparently this is possible
@@ -4753,8 +4702,6 @@ Various improvements:
     working in another window.  Put cmdline in a separate window?
 -   Add possibility to put output of Ex commands in a buffer or file, e.g. for
     ":set all".  ":r :set all"?
--   'edit' option: When off changing the buffer is not possible (Really
-    read-only mode).
 -   When the 'equalalways' option is set, creating a new window should not
     result in windows to become bigger.  Deleting a window should not result in
     a window to become smaller (Webb).

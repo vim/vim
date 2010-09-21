@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2010 Aug 15
+*options.txt*	For Vim version 7.3.  Last change: 2010 Sep 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2817,13 +2817,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  2. If a <NL> is found and 'fileformats' includes "unix", 'fileformat'
 	     is set to "unix".  Note that when a <NL> is found without a
 	     preceding <CR>, "unix" is preferred over "dos".
-	  3. If 'fileformats' includes "mac", 'fileformat' is set to "mac".
-	     This means that "mac" is only chosen when "unix" is not present,
-	     or when no <NL> is found in the file, and when "dos" is not
-	     present, or no <CR><NL> is present in the file.
-	     Also if "unix" was first chosen, but the first <CR> is before
-	     the first <NL> and there appears to be more <CR>'s than <NL>'s in
-	     the file, then 'fileformat' is set to "mac".
+	  3. If 'fileformat' has not yet been set, and if 'fileformats'
+	     includes "mac", 'fileformat' is set to "mac".
+	     This means that "mac" is only chosen when:
+	      "unix" is not present or no <NL> is found in the file, and
+	      "dos" is not present or no <CR><NL> is found in the file.
+	     Except: if "unix" was chosen, but there is a <CR> before
+	     the first <NL>, and there appear to be more <CR>s than <NL>s in
 	  4. If 'fileformat' is still not set, the first name from
 	     'fileformats' is used.
 	  When reading a file into an existing buffer, the same is done, but
