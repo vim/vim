@@ -1615,6 +1615,35 @@ executable_exists(char *name)
     return TRUE;
 }
 
+#if ((defined(__MINGW32__) || defined (__CYGWIN32__)) && \
+        __MSVCRT_VERSION__ >= 0x800) || (defined(_MSC_VER) && _MSC_VER >= 1400)
+/*
+ * Bad parameter handler.
+ *
+ * Certain MS CRT functions will intentionally crash when passed invalid
+ * parameters to highlight possible security holes.  Setting this function as
+ * the bad parameter handler will prevent the crash.
+ *
+ * In debug builds the parameters contain CRT information that might help track
+ * down the source of a problem, but in non-debug builds the arguments are all
+ * NULL/0.  Debug builds will also produce assert dialogs from the CRT, it is
+ * worth allowing these to make debugging of issues easier.
+ */
+    static void
+bad_param_handler(const wchar_t *expression,
+    const wchar_t *function,
+    const wchar_t *file,
+    unsigned int line,
+    uintptr_t pReserved)
+{
+}
+
+# define SET_INVALID_PARAM_HANDLER \
+	((void)_set_invalid_parameter_handler(bad_param_handler))
+#else
+# define SET_INVALID_PARAM_HANDLER
+#endif
+
 #ifdef FEAT_GUI_W32
 
 /*
@@ -1626,6 +1655,9 @@ mch_init(void)
 #ifndef __MINGW32__
     extern int _fmode;
 #endif
+
+    /* Silently handle invalid parameters to CRT functions */
+    SET_INVALID_PARAM_HANDLER;
 
     /* Let critical errors result in a failure, not in a dialog box.  Required
      * for the timestamp test to work on removed floppies. */
@@ -2102,6 +2134,9 @@ mch_init(void)
 #ifndef __MINGW32__
     extern int _fmode;
 #endif
+
+    /* Silently handle invalid parameters to CRT functions */
+    SET_INVALID_PARAM_HANDLER;
 
     /* Let critical errors result in a failure, not in a dialog box.  Required
      * for the timestamp test to work on removed floppies. */
