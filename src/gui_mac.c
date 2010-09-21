@@ -1480,7 +1480,7 @@ GetFontPanelSelection(char_u *outName)
  *
  *  Returns the index inside the menu wher
  */
-    short /* Shoulde we return MenuItemIndex? */
+    short /* Should we return MenuItemIndex? */
 gui_mac_get_menu_item_index(vimmenu_T *pMenu)
 {
     short	index;
@@ -1823,7 +1823,7 @@ gui_mac_doInZoomClick(EventRecord *theEvent, WindowPtr whichWindow)
 	p.h += gui.scrollbar_width;
     if (gui.which_scrollbars[SBAR_RIGHT])
 	p.h += gui.scrollbar_width;
-    /* ideal height is as heigh as we can get */
+    /* ideal height is as high as we can get */
     p.v = 15 * 1024;
 
     thePart = IsWindowInStandardState(whichWindow, &p, &r)
@@ -4481,7 +4481,7 @@ gui_mch_wait_for_chars(int wtime)
 	 * event arrives.  No need to check for input_buf_full because we are
 	 * returning as soon as it contains a single char.
 	 */
-	/* TODO: reduce wtime accordinly???  */
+	/* TODO: reduce wtime accordingly???  */
 	if (wtime > -1)
 	    sleeppyTick = 60 * wtime / 1000;
 	else
@@ -5723,13 +5723,13 @@ gui_mch_dialog(
     iconDITL = GetResource('DITL', 131);
     switch (type)
     {
-	case VIM_GENERIC:  useIcon = kNoteIcon;
-	case VIM_ERROR:    useIcon = kStopIcon;
-	case VIM_WARNING:  useIcon = kCautionIcon;
-	case VIM_INFO:     useIcon = kNoteIcon;
-	case VIM_QUESTION: useIcon = kNoteIcon;
-	default:      useIcon = kStopIcon;
-    };
+	case VIM_GENERIC:
+	case VIM_INFO:
+	case VIM_QUESTION: useIcon = kNoteIcon; break;
+	case VIM_WARNING:  useIcon = kCautionIcon; break;
+	case VIM_ERROR:    useIcon = kStopIcon; break;
+	default:           useIcon = kStopIcon;
+    }
     AppendDITL(theDialog, iconDITL, overlayDITL);
     ReleaseResource(iconDITL);
     GetDialogItem(theDialog, iconItm.idx, &itemType, &itemHandle, &box);
@@ -5892,7 +5892,7 @@ gui_mch_dialog(
 
     return itemHit;
 /*
- * Usefull thing which could be used
+ * Useful thing which could be used
  * SetDialogTimeout(): Auto click a button after timeout
  * SetDialogTracksCursor() : Get the I-beam cursor over input box
  * MoveDialogItem():	    Probably better than SetDialogItem
@@ -6100,7 +6100,7 @@ gui_mch_settitle(char_u *title, char_u *icon)
 #endif
 
 /*
- * Transfered from os_mac.c for MacOS X using os_unix.c prep work
+ * Transferred from os_mac.c for MacOS X using os_unix.c prep work
  */
 
     int
@@ -6543,7 +6543,7 @@ getTabLabel(tabpage_T *page)
 static ControlRef dataBrowser = NULL;
 
 // when the tabline is hidden, vim doesn't call update_tabline(). When
-// the tabline is shown again, show_tabline() is called before upate_tabline(),
+// the tabline is shown again, show_tabline() is called before update_tabline(),
 // and because of this, the tab labels and vims internal tabs are out of sync
 // for a very short time. to prevent inconsistent state, we store the labels
 // of the tabs, not pointers to the tabs (which are invalid for a short time).
