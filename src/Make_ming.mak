@@ -303,7 +303,7 @@ DIRSLASH = \\
 endif
 endif
 CC := $(CROSS_COMPILE)gcc
-WINDRES := $(CROSS_COMPILE)windres
+WINDRES := $(CROSS_COMPILE)windres --preprocessor="$(CC) -E -xc" -
 
 #>>>>> end of choices
 ###########################################################################

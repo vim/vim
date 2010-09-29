@@ -33,7 +33,7 @@ DEL = del
 endif
 endif
 CXX := $(CROSS_COMPILE)g++
-WINDRES := $(CROSS_COMPILE)windres
+WINDRES := $(CROSS_COMPILE)windres --preprocessor="$(CXX) -E -xc" -
 LIBS :=  -luuid
 RES  := gvimext.res
 DEFFILE = gvimext_ming.def
