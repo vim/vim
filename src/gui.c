@@ -2352,7 +2352,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
     if (draw_sign)
 	/* Draw the sign on top of the spaces. */
 	gui_mch_drawsign(gui.row, col, gui.highlight_mask);
-# if defined(FEAT_NETBEANS_INTG) && (defined(FEAT_GUI_MOTIF) \
+# if defined(FEAT_NETBEANS_INTG) && (defined(FEAT_GUI_X11) \
 	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_W32))
     if (multi_sign)
 	netbeans_draw_multisign_indicator(gui.row);

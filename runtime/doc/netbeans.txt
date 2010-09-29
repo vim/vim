@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 7.3.  Last change: 2010 Jul 20
+*netbeans.txt*  For Vim version 7.3.  Last change: 2010 Aug 20
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -118,7 +118,8 @@ In case you do not want the NetBeans interface you can disable it by
 uncommenting a line with "--disable-netbeans" in the Makefile.
 
 Currently the NetBeans interface is supported by Vim running in a terminal and
-by GVim when it is run with one of the following GUIs: GTK, GNOME, and Motif.
+by GVim when it is run with one of the following GUIs: GTK, GNOME, Windows,
+Athena and Motif.
 
 If Motif support is required the user must supply XPM libraries.  See
 |workshop-xpm| for details on obtaining the latest version of XPM.

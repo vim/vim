@@ -940,7 +940,7 @@ main
     if (netbeansArg != NULL && strncmp("-nb", netbeansArg, 3) == 0)
     {
 # ifdef FEAT_GUI
-#  if !defined(FEAT_GUI_MOTIF) && !defined(FEAT_GUI_GTK)  \
+#  if !defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)  \
 		&& !defined(FEAT_GUI_W32)
 	if (gui.in_use)
 	{
