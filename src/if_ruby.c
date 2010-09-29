@@ -4,6 +4,7 @@
  *
  * Ruby interface by Shugo Maeda
  *   with improvements by SegPhault (Ryan Paul)
+ *   with improvements by Jon Maken
  *
  * Do ":help uganda"  in Vim to read copying and usage conditions.
  * Do ":help credits" in Vim to see a list of people who contributed.
@@ -26,12 +27,12 @@
 # define RUBYEXTERN extern
 #endif
 
+#ifdef DYNAMIC_RUBY
 /*
  * This is tricky.  In ruby.h there is (inline) function rb_class_of()
  * definition.  This function use these variables.  But we want function to
  * use dll_* variables.
  */
-#ifdef DYNAMIC_RUBY
 # define rb_cFalseClass		(*dll_rb_cFalseClass)
 # define rb_cFixnum		(*dll_rb_cFixnum)
 # define rb_cNilClass		(*dll_rb_cNilClass)
@@ -46,7 +47,20 @@
  */
 #  define RUBY_EXPORT
 # endif
+
+#if !(defined(WIN32) || defined(_WIN64))
+# include <dlfcn.h>
+# define HANDLE void*
+# define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
+# define symbol_from_dll dlsym
+# define close_dll dlclose
+#else
+# define load_dll LoadLibrary
+# define symbol_from_dll GetProcAddress
+# define close_dll FreeLibrary
 #endif
+
+#endif  /* ifdef DYNAMIC_RUBY */
 
 /* suggested by Ariya Mizutani */
 #if (_MSC_VER == 1200)
@@ -166,7 +180,6 @@ static void ruby_vim_init(void);
 #define rb_obj_as_string		dll_rb_obj_as_string
 #define rb_obj_id			dll_rb_obj_id
 #define rb_raise			dll_rb_raise
-#define rb_str2cstr			dll_rb_str2cstr
 #define rb_str_cat			dll_rb_str_cat
 #define rb_str_concat			dll_rb_str_concat
 #define rb_str_new			dll_rb_str_new
@@ -178,10 +191,13 @@ static void ruby_vim_init(void);
 # define rb_str_new2			dll_rb_str_new2
 #endif
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
+# define rb_string_value		dll_rb_string_value
 # define rb_string_value_ptr		dll_rb_string_value_ptr
 # define rb_float_new			dll_rb_float_new
 # define rb_ary_new			dll_rb_ary_new
 # define rb_ary_push			dll_rb_ary_push
+#else
+# define rb_str2cstr			dll_rb_str2cstr
 #endif
 #ifdef RUBY19_OR_LATER
 # define rb_errinfo			dll_rb_errinfo
@@ -246,7 +262,11 @@ static VALUE (*dll_rb_obj_alloc) (VALUE);
 static VALUE (*dll_rb_obj_as_string) (VALUE);
 static VALUE (*dll_rb_obj_id) (VALUE);
 static void (*dll_rb_raise) (VALUE, const char*, ...);
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
+static VALUE (*dll_rb_string_value) (volatile VALUE*);
+#else
 static char *(*dll_rb_str2cstr) (VALUE,int*);
+#endif
 static VALUE (*dll_rb_str_cat) (VALUE, const char*, long);
 static VALUE (*dll_rb_str_concat) (VALUE, VALUE);
 static VALUE (*dll_rb_str_new) (const char*, long);
@@ -347,7 +367,11 @@ static struct
     {"rb_obj_as_string", (RUBY_PROC*)&dll_rb_obj_as_string},
     {"rb_obj_id", (RUBY_PROC*)&dll_rb_obj_id},
     {"rb_raise", (RUBY_PROC*)&dll_rb_raise},
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
+    {"rb_string_value", (RUBY_PROC*)&dll_rb_string_value},
+#else
     {"rb_str2cstr", (RUBY_PROC*)&dll_rb_str2cstr},
+#endif
     {"rb_str_cat", (RUBY_PROC*)&dll_rb_str_cat},
     {"rb_str_concat", (RUBY_PROC*)&dll_rb_str_concat},
     {"rb_str_new", (RUBY_PROC*)&dll_rb_str_new},
@@ -399,7 +423,7 @@ end_dynamic_ruby()
 {
     if (hinstRuby)
     {
-	FreeLibrary(hinstRuby);
+	close_dll(hinstRuby);
 	hinstRuby = 0;
     }
 }
@@ -416,7 +440,7 @@ ruby_runtime_link_init(char *libname, int verbose)
 
     if (hinstRuby)
 	return OK;
-    hinstRuby = LoadLibrary(libname);
+    hinstRuby = load_dll(libname);
     if (!hinstRuby)
     {
 	if (verbose)
@@ -426,10 +450,10 @@ ruby_runtime_link_init(char *libname, int verbose)
 
     for (i = 0; ruby_funcname_table[i].ptr; ++i)
     {
-	if (!(*ruby_funcname_table[i].ptr = GetProcAddress(hinstRuby,
+	if (!(*ruby_funcname_table[i].ptr = symbol_from_dll(hinstRuby,
 			ruby_funcname_table[i].name)))
 	{
-	    FreeLibrary(hinstRuby);
+	    close_dll(hinstRuby);
 	    hinstRuby = 0;
 	    if (verbose)
 		EMSG2(_(e_loadfunc), ruby_funcname_table[i].name);
