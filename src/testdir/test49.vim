@@ -1,6 +1,6 @@
 " Vim script language tests
 " Author:	Servatius Brandt <Servatius.Brandt@fujitsu-siemens.com>
-" Last Change:	2006 Apr 28
+" Last Change:	2010 Sep 29
 
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1
@@ -8711,7 +8711,7 @@ try
 		endif
 	    else
 		if cmd == "let"
-		    let match = MATCH(0, thrmsg, 'E106', "Unknown variable")
+		    let match = MATCH(0, thrmsg, 'E121', "Undefined variable")
 		elseif cmd == "unlet"
 		    let match = MATCH(0, thrmsg, 'E108', "No such variable")
 		endif
