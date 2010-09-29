@@ -4951,7 +4951,7 @@ typedef struct spellinfo_S
     char_u	*si_info;	/* info text chars or NULL  */
     int		si_region_count; /* number of regions supported (1 when there
 				    are no regions) */
-    char_u	si_region_name[16]; /* region names; used only if
+    char_u	si_region_name[17]; /* region names; used only if
 				     * si_region_count > 1) */
 
     garray_T	si_rep;		/* list of fromto_T entries from REP lines */
@@ -9530,7 +9530,8 @@ init_spellfile()
 	    if (aspath)
 		/* Use directory of an entry with path, e.g., for
 		 * "/dir/lg.utf-8.spl" use "/dir". */
-		vim_strncpy(buf, curbuf->b_s.b_p_spl, lstart - curbuf->b_s.b_p_spl - 1);
+		vim_strncpy(buf, curbuf->b_s.b_p_spl,
+					    lstart - curbuf->b_s.b_p_spl - 1);
 	    else
 		/* Copy the path from 'runtimepath' to buf[]. */
 		copy_option_part(&rtp, buf, MAXPATHL, ",");
@@ -9539,13 +9540,14 @@ init_spellfile()
 		/* Use the first language name from 'spelllang' and the
 		 * encoding used in the first loaded .spl file. */
 		if (aspath)
-		    vim_strncpy(buf, curbuf->b_s.b_p_spl, lend - curbuf->b_s.b_p_spl);
+		    vim_strncpy(buf, curbuf->b_s.b_p_spl,
+						  lend - curbuf->b_s.b_p_spl);
 		else
 		{
 		    /* Create the "spell" directory if it doesn't exist yet. */
 		    l = (int)STRLEN(buf);
 		    vim_snprintf((char *)buf + l, MAXPATHL - l, "/spell");
-		    if (!filewritable(buf) != 2)
+		    if (filewritable(buf) != 2)
 			vim_mkdir(buf, 0755);
 
 		    l = (int)STRLEN(buf);

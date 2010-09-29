@@ -7600,10 +7600,10 @@ do_highlight(line, forceit, init)
 		/*
 		 * Copy characters from arg[] to buf[], translating <> codes.
 		 */
-		for (p = arg, off = 0; off < 100 && *p; )
+		for (p = arg, off = 0; off < 100 - 6 && *p; )
 		{
 		    len = trans_special(&p, buf + off, FALSE);
-		    if (len)		    /* recognized special char */
+		    if (len > 0)	    /* recognized special char */
 			off += len;
 		    else		    /* copy as normal char */
 			buf[off++] = *p++;
