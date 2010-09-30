@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2010 Sep 14
+*eval.txt*	For Vim version 7.3.  Last change: 2010 Sep 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1115,8 +1115,8 @@ See below |functions|.
 
 
 ==============================================================================
-3. Internal variable				*internal-variables* *E121*
-									*E461*
+3. Internal variable				*internal-variables* *E461*
+
 An internal variable name can be made up of letters, digits and '_'.  But it
 cannot start with a digit.  It's also possible to use curly braces, see
 |curly-braces-names|.
@@ -6741,7 +6741,8 @@ This would call the function "my_func_whizz(parameter)".
 :let [{name}, ..., ; {lastname}] -= {expr1}
 			Like above, but append/add/subtract the value for each
 			|List| item.
-							*E106*
+
+								*E121*
 :let {var-name}	..	List the value of variable {var-name}.	Multiple
 			variable names may be given.  Special names recognized
 			here:				*E738*

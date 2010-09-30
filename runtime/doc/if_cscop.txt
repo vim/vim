@@ -1,4 +1,4 @@
-*if_cscop.txt*  For Vim version 7.3.  Last change: 2009 Mar 18
+*if_cscop.txt*  For Vim version 7.3.  Last change: 2010 Sep 29
 
 
 		  VIM REFERENCE MANUAL    by Andy Kahn
@@ -112,8 +112,7 @@ The available subcommands are:
 	    :cscope add /projects/vim/cscope.out /usr/local/vim
 	    :cscope add cscope.out /usr/local/vim -C
 <
-				      *cscope-find* *cs-find*
-						*E565* *E567*
+				      *cscope-find* *cs-find* *E567*
     find  : Query cscope.  All cscope query options are available
 	    except option #5 ("Change this grep pattern").
 
@@ -198,7 +197,7 @@ The available subcommands are:
 
 	    USAGE   :cs help
 
-						*E260* *E261*
+							*E261*
     kill  : Kill a cscope connection (or kill all cscope connections).
 
 	    USAGE   :cs kill {num|partial_name}

@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.3.  Last change: 2010 Jul 20
+*intro.txt*     For Vim version 7.3.  Last change: 2010 Sep 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -300,7 +300,7 @@ and <> are part of what you type, the context should make this clear.
 
 []		Characters in square brackets are optional.
 
-						    *count* *[count]* *E489*
+						    *count* *[count]*
 [count]		An optional number that may precede the command to multiply
 		or iterate the command.  If no number is given, a count of one
 		is used, unless otherwise noted.  Note that in this manual the

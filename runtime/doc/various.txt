@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.3.  Last change: 2010 Sep 14
+*various.txt*   For Vim version 7.3.  Last change: 2010 Sep 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -167,8 +167,8 @@ g8			Print the hex values of the bytes used in the
 :norm[al][!] {commands}					*:norm* *:normal*
 			Execute Normal mode commands {commands}.  This makes
 			it possible to execute Normal mode commands typed on
-			the command-line.  {commands} is executed like it is
-			typed.  For undo all commands are undone together.
+			the command-line.  {commands} are executed like they
+			are typed.  For undo all commands are undone together.
 			Execution stops when an error is encountered.
 			If the [!] is given, mappings will not be used.
 			{commands} should be a complete command.  If

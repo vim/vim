@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 7.3.  Last change: 2010 Aug 20
+*netbeans.txt*  For Vim version 7.3.  Last change: 2010 Sep 29
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -820,7 +820,7 @@ These errors occur when a message violates the protocol:
 ==============================================================================
 7. NetBeans commands					*netbeans-commands*
 
-							*:nbstart* *E511*
+							*:nbstart* *E511* *E838*
 :nbs[tart] {connection}	Start a new Netbeans session with {connection} as the
 			socket connection parameters.  The format of
 			{connection} is described in |netbeans-parameters|.

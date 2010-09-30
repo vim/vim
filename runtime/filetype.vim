@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2010 Jul 30
+" Last Change:	2010 Sep 29
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -676,6 +676,9 @@ au BufNewFile,BufRead *.exp			setf expect
 
 " Exports
 au BufNewFile,BufRead exports			setf exports
+
+" Falcon
+au BufNewFile,BufRead *.fal 			setf falcon
 
 " Fantom
 au BufNewFile,BufRead *.fan,*.fwt		setf fan

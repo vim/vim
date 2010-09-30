@@ -2,8 +2,8 @@
 "
 " Language:     D
 " Maintainer:   Jesse Phillips <Jesse.K.Phillips+D@gmail.com>
-" Last Change:  2010 Sep 9
-" Version:      0.21
+" Last Change:  2010 Sep 21
+" Version:      0.22
 "
 " Contributors:
 "   - Jason Mills <jasonmills@nf.sympatico.ca>: original Maintainer
@@ -117,9 +117,9 @@ syn match dSharpBang "\%^#!.*"     display
 syn match dAnnotation	"@[_$a-zA-Z][_$a-zA-Z0-9_]*\>" contains=dAttribute
 
 " Version Identifiers
-syn match dVersion	"version\s*([_a-zA-Z][_a-zA-Z0-9]*\>"he=s+7 contains=dVersionIdentifier
-syn match dVersion	"[^.]\s*\<version\>"
-syn match dVersion	"^\<version\>"
+syn match dVersion   "[^.]version" nextgroup=dVersionInside
+syn match dVersion   "^version" nextgroup=dVersionInside
+syn match dVersionInside  "([_a-zA-Z][_a-zA-Z0-9]*\>" transparent contained contains=dVersionIdentifier
 
 " Scope StorageClass
 syn match dStorageClass   "scope"

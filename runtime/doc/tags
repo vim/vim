@@ -3420,7 +3420,6 @@ E102	diff.txt	/*E102*
 E103	diff.txt	/*E103*
 E104	digraph.txt	/*E104*
 E105	mbyte.txt	/*E105*
-E106	eval.txt	/*E106*
 E107	eval.txt	/*E107*
 E108	eval.txt	/*E108*
 E109	eval.txt	/*E109*
@@ -3587,7 +3586,6 @@ E257	if_cscop.txt	/*E257*
 E258	remote.txt	/*E258*
 E259	if_cscop.txt	/*E259*
 E26	rileft.txt	/*E26*
-E260	if_cscop.txt	/*E260*
 E261	if_cscop.txt	/*E261*
 E262	if_cscop.txt	/*E262*
 E263	if_pyth.txt	/*E263*
@@ -3836,7 +3834,6 @@ E485	message.txt	/*E485*
 E486	pattern.txt	/*E486*
 E487	options.txt	/*E487*
 E488	message.txt	/*E488*
-E489	intro.txt	/*E489*
 E49	message.txt	/*E49*
 E490	fold.txt	/*E490*
 E492	message.txt	/*E492*
@@ -3919,7 +3916,6 @@ E561	if_cscop.txt	/*E561*
 E562	if_cscop.txt	/*E562*
 E563	if_cscop.txt	/*E563*
 E564	if_cscop.txt	/*E564*
-E565	if_cscop.txt	/*E565*
 E566	if_cscop.txt	/*E566*
 E567	if_cscop.txt	/*E567*
 E568	if_cscop.txt	/*E568*
@@ -4219,6 +4215,7 @@ E834	options.txt	/*E834*
 E835	options.txt	/*E835*
 E836	if_pyth.txt	/*E836*
 E837	if_pyth.txt	/*E837*
+E838	netbeans.txt	/*E838*
 E84	windows.txt	/*E84*
 E85	options.txt	/*E85*
 E86	windows.txt	/*E86*

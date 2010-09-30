@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.3.  Last change: 2010 Jul 31
+*diff.txt*      For Vim version 7.3.  Last change: 2010 Sep 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -261,10 +261,12 @@ that the buffers will be equal within the specified range.
 							*do*
 do		Same as ":diffget" without argument or range.  The "o" stands
 		for "obtain" ("dg" can't be used, it could be the start of
-		"dgg"!).
+		"dgg"!). Note: this doesn't work in Visual mode.
 
 							*dp*
 dp		Same as ":diffput" without argument or range.
+		Note: this doesn't work in Visual mode.
+
 
 When no [range] is given, the diff at the cursor position or just above it is
 affected.  When [range] is used, Vim tries to only put or get the specified

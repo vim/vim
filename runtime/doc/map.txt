@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.3.  Last change: 2010 Jul 31
+*map.txt*       For Vim version 7.3.  Last change: 2010 Sep 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1203,6 +1203,7 @@ completion can be enabled:
 	-complete=augroup	autocmd groups
 	-complete=buffer	buffer names
 	-complete=command	Ex command (and arguments)
+	-complete=cscope	|:cscope| suboptions
 	-complete=dir		directory names
 	-complete=environment	environment variable names
 	-complete=event		autocommand events
@@ -1216,6 +1217,7 @@ completion can be enabled:
 	-complete=menu		menus
 	-complete=option	options
 	-complete=shellcmd	Shell command
+	-complete=sign		|:sign| suboptions
 	-complete=syntax	syntax file names |'syntax'|
 	-complete=tag		tags
 	-complete=tag_listfiles	tags, file names are shown when CTRL-D is hit

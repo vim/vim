@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 7.3.  Last change: 2010 Sep 14
+*undo.txt*      For Vim version 7.3.  Last change: 2010 Sep 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -137,7 +137,7 @@ This is explained in the user manual: |usr_32.txt|.
 			The "time" column is the time this change was made.
 			The "saved" column specifies, if this change was
 			written to disk and which file write it was. This can
-			be used with the |later| and |earlier| commands.
+			be used with the |:later| and |:earlier| commands.
 			For more details use the |undotree()| function.
 
 							*g-*

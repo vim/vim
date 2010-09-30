@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 7.3.  Last change: 2010 Jul 20
+*vi_diff.txt*   For Vim version 7.3.  Last change: 2010 Sep 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -90,6 +90,7 @@ Maximum lhs of a mapping   50 characters.
 Number of different highlighting types: over 30000
 Range of a Number variable:  -2147483648 to 2147483647 (more on 64 bit
 			   systems)
+Maximum length of a line in a tags file: 512 bytes.
 
 Information for undo and text in registers is kept in memory, thus when making
 (big) changes the amount of (virtual) memory available limits the number of

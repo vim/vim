@@ -1,7 +1,7 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2010 Jul 29
+" Last change:	2010 Sep 22
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
@@ -168,7 +168,8 @@ else
     call SetFileTypeSH(s:line1)	" defined in filetype.vim
 
     " Z shell scripts
-  elseif s:line1 =~ '^#compdef\>' || s:line1 =~ '^#autoload\>'
+  elseif s:line1 =~ '^#compdef\>' || s:line1 =~ '^#autoload\>' ||
+        \ "\n".s:line1."\n".s:line2."\n".s:line3."\n".s:line4."\n".s:line5 =~ '\n\s*emulate\s\+\%(-[LR]\s\+\)\=[ckz]\=sh\>'
     set ft=zsh
 
   " ELM Mail files
