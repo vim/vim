@@ -2773,6 +2773,16 @@ ex_nbkey(eap)
 ex_nbstart(eap)
     exarg_T	*eap;
 {
+#ifdef FEAT_GUI
+# if !defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)  \
+                && !defined(FEAT_GUI_W32)
+    if (gui.in_use)
+    {
+        EMSG(_("E838: netbeans is not supported with this GUI"));
+        return;
+    }
+# endif
+#endif
     netbeans_open((char *)eap->arg, FALSE);
 }
 
