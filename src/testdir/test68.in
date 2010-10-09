@@ -51,6 +51,17 @@ a b
 }
 
 STARTTEST
+/^{/+2
+:set tw& fo=a
+I^^
+ENDTEST
+
+{
+   1aa
+   2bb
+}
+
+STARTTEST
 :g/^STARTTEST/.,/^ENDTEST/d
 :1;/^Results/,$wq! test.out
 ENDTEST

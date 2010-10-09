@@ -4153,9 +4153,10 @@ do_join(count, insert_space, save_undo)
     int	    save_undo;
 {
     char_u	*curr = NULL;
+    char_u      *curr_start = NULL;
     char_u	*cend;
     char_u	*newp;
-    char_u	*spaces;	/* number of spaces inserte before a line */
+    char_u	*spaces;	/* number of spaces inserted before a line */
     int		endcurr1 = NUL;
     int		endcurr2 = NUL;
     int		currsize = 0;	/* size of the current line */
@@ -4181,7 +4182,7 @@ do_join(count, insert_space, save_undo)
      */
     for (t = 0; t < count; ++t)
     {
-	curr = ml_get((linenr_T)(curwin->w_cursor.lnum + t));
+	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t));
 	if (insert_space && t > 0)
 	{
 	    curr = skipwhite(curr);
@@ -4265,10 +4266,10 @@ do_join(count, insert_space, save_undo)
 	    copy_spaces(cend, (size_t)(spaces[t]));
 	}
 	mark_col_adjust(curwin->w_cursor.lnum + t, (colnr_T)0, (linenr_T)-t,
-				 (long)(cend - newp + spaces[t]));
+			 (long)(cend - newp + spaces[t] - (curr - curr_start)));
 	if (t == 0)
 	    break;
-	curr = ml_get((linenr_T)(curwin->w_cursor.lnum + t - 1));
+	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t - 1));
 	if (insert_space && t > 1)
 	    curr = skipwhite(curr);
 	currsize = (int)STRLEN(curr);
