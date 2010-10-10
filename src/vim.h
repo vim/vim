@@ -192,8 +192,8 @@
 #endif
 
 #ifdef NO_X11_INCLUDES
-    /* In os_mac_conv.c NO_X11_INCLUDES is defined to avoid X11 headers.
-     * Disable all X11 related things to avoid conflicts. */
+    /* In os_mac_conv.c and os_macosx.m NO_X11_INCLUDES is defined to avoid
+     * X11 headers.  Disable all X11 related things to avoid conflicts. */
 # ifdef FEAT_X11
 #  undef FEAT_X11
 # endif
