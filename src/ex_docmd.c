@@ -10708,7 +10708,7 @@ ses_fname(fd, buf, flagp)
  * Write a file name to the session file.
  * Takes care of the "slash" option in 'sessionoptions' and escapes special
  * characters.
- * Returns FAIL if writing fails.
+ * Returns FAIL if writing fails or out of memory.
  */
     static int
 ses_put_fname(fd, name, flagp)
@@ -10717,49 +10717,32 @@ ses_put_fname(fd, name, flagp)
     unsigned	*flagp;
 {
     char_u	*sname;
+    char_u	*p;
     int		retval = OK;
-    int		c;
 
     sname = home_replace_save(NULL, name);
-    if (sname != NULL)
-	name = sname;
-    while (*name != NUL)
-    {
-#ifdef FEAT_MBYTE
-	{
-	    int l;
+    if (sname == NULL)
+	return FAIL;
 
-	    if (has_mbyte && (l = (*mb_ptr2len)(name)) > 1)
-	    {
-		/* copy a multibyte char */
-		while (--l >= 0)
-		{
-		    if (putc(*name, fd) != *name)
-			retval = FAIL;
-		    ++name;
-		}
-		continue;
-	    }
-	}
-#endif
-	c = *name++;
-	if (c == '\\' && (*flagp & SSOP_SLASH))
-	    /* change a backslash to a forward slash */
-	    c = '/';
-	else if ((vim_strchr(escape_chars, c) != NULL
-#ifdef BACKSLASH_IN_FILENAME
-		    && c != '\\'
-#endif
-		 ) || c == '#' || c == '%')
-	{
-	    /* escape a special character with a backslash */
-	    if (putc('\\', fd) != '\\')
-		retval = FAIL;
-	}
-	if (putc(c, fd) != c)
-	    retval = FAIL;
+    if (*flagp & SSOP_SLASH)
+    {
+	/* change all backslashes to forward slashes */
+	for (p = sname; *p != NUL; mb_ptr_adv(p))
+	    if (*p == '\\')
+		*p = '/';
     }
+
+    /* escapse special characters */
+    p = vim_strsave_fnameescape(sname, FALSE);
     vim_free(sname);
+    if (p == NULL)
+	return FAIL;
+
+    /* write the result */
+    if (fputs((char *)p, fd) < 0)
+	retval = FAIL;
+
+    vim_free(p);
     return retval;
 }
 
