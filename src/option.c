@@ -10011,7 +10011,7 @@ buf_copy_options(buf, flags)
 	    buf->b_p_smc = p_smc;
 #endif
 #ifdef FEAT_SPELL
-	    buf->b_s.b_p_spc = vim_strsave(p_spf);
+	    buf->b_s.b_p_spc = vim_strsave(p_spc);
 	    (void)compile_cap_prog(&buf->b_s);
 	    buf->b_s.b_p_spf = vim_strsave(p_spf);
 	    buf->b_s.b_p_spl = vim_strsave(p_spl);
