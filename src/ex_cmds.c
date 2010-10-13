@@ -6670,11 +6670,6 @@ ex_sign(eap)
 		    sp = (sign_T *)alloc_clear((unsigned)sizeof(sign_T));
 		    if (sp == NULL)
 			return;
-		    if (sp_prev == NULL)
-			first_sign = sp;
-		    else
-			sp_prev->sn_next = sp;
-		    sp->sn_name = vim_strnsave(arg, (int)(p - arg));
 
 		    /* If the name is a number use that for the typenr,
 		     * otherwise use a negative number. */
@@ -6687,13 +6682,14 @@ ex_sign(eap)
 
 			for (lp = first_sign; lp != NULL; lp = lp->sn_next)
 			{
-			    if (lp->sn_typenr == last_sign_typenr)
+			    if (lp->sn_typenr == -last_sign_typenr)
 			    {
 				--last_sign_typenr;
 				if (last_sign_typenr == 0)
 				    last_sign_typenr = MAX_TYPENR;
 				if (last_sign_typenr == start)
 				{
+				    vim_free(sp);
 				    EMSG(_("E612: Too many signs defined"));
 				    return;
 				}
@@ -6702,10 +6698,17 @@ ex_sign(eap)
 			    }
 			}
 
-			sp->sn_typenr = last_sign_typenr--;
-			if (last_sign_typenr == 0)
+			sp->sn_typenr = -last_sign_typenr;
+			if (--last_sign_typenr == 0)
 			    last_sign_typenr = MAX_TYPENR; /* wrap around */
 		    }
+
+		    /* add the new sign to the list of signs */
+		    if (sp_prev == NULL)
+			first_sign = sp;
+		    else
+			sp_prev->sn_next = sp;
+		    sp->sn_name = vim_strnsave(arg, (int)(p - arg));
 		}
 
 		/* set values for a defined sign. */
