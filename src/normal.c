@@ -5666,8 +5666,13 @@ nv_ident(cap)
 	else if (cmdchar == '#')
 	    aux_ptr = (char_u *)(p_magic ? "/?.*~[^$\\" : "/?^$\\");
 	else if (tag_cmd)
-	    /* Don't escape spaces and Tabs in a tag with a backslash */
-	    aux_ptr = (char_u *)"\\|\"\n[";
+	{
+	    if (curbuf->b_help)
+		/* ":help" handles unescaped argument */
+		aux_ptr = (char_u *)"";
+	    else
+		aux_ptr = (char_u *)"\\|\"\n[";
+	}
 	else
 	    aux_ptr = (char_u *)"\\|\"\n*?[";
 
