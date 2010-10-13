@@ -2308,12 +2308,14 @@ fname_case(
     int		len)
 {
     char		szTrueName[_MAX_PATH + 2];
+    char		szTrueNameTemp[_MAX_PATH + 2];
     char		*ptrue, *ptruePrev;
     char		*porig, *porigPrev;
     int			flen;
     WIN32_FIND_DATA	fb;
     HANDLE		hFind;
     int			c;
+    int			slen;
 
     flen = (int)STRLEN(name);
     if (flen == 0 || flen > _MAX_PATH)
@@ -2358,12 +2360,19 @@ fname_case(
 	}
 	*ptrue = NUL;
 
+	/* To avoid a slow failure append "\*" when searching a directory,
+	 * server or network share. */
+	STRCPY(szTrueNameTemp, szTrueName);
+	slen = strlen(szTrueNameTemp);
+	if (*porig == psepc && slen + 2 < _MAX_PATH)
+	    STRCPY(szTrueNameTemp + slen, "\\*");
+
 	/* Skip "", "." and "..". */
 	if (ptrue > ptruePrev
 		&& (ptruePrev[0] != '.'
 		    || (ptruePrev[1] != NUL
 			&& (ptruePrev[1] != '.' || ptruePrev[2] != NUL)))
-		&& (hFind = FindFirstFile(szTrueName, &fb))
+		&& (hFind = FindFirstFile(szTrueNameTemp, &fb))
 						      != INVALID_HANDLE_VALUE)
 	{
 	    c = *porig;
