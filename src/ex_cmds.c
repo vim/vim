@@ -323,7 +323,8 @@ sort_compare(s1, s2)
     /* When sorting numbers "start_col_nr" is the number, not the column
      * number. */
     if (sort_nr)
-	result = l1.start_col_nr - l2.start_col_nr;
+	result = l1.start_col_nr == l2.start_col_nr ? 0
+				 : l1.start_col_nr > l2.start_col_nr ? 1 : -1;
     else
     {
 	/* We need to copy one line into "sortbuf1", because there is no
@@ -482,7 +483,7 @@ ex_sort(eap)
 	     * of the match, by temporarily terminating the string there */
 	    s2 = s + end_col;
 	    c = *s2;
-	    (*s2) = 0;
+	    *s2 = NUL;
 	    /* Sorting on number: Store the number itself. */
 	    p = s + start_col;
 	    if (sort_hex)
@@ -491,9 +492,13 @@ ex_sort(eap)
 		s = skiptodigit(p);
 	    if (s > p && s[-1] == '-')
 		--s;  /* include preceding negative sign */
-	    vim_str2nr(s, NULL, NULL, sort_oct, sort_hex,
-					&nrs[lnum - eap->line1].start_col_nr, NULL);
-	    (*s2) = c;
+	    if (*s == NUL)
+		/* empty line should sort before any number */
+		nrs[lnum - eap->line1].start_col_nr = -MAXLNUM;
+	    else
+		vim_str2nr(s, NULL, NULL, sort_oct, sort_hex,
+				  &nrs[lnum - eap->line1].start_col_nr, NULL);
+	    *s2 = c;
 	}
 	else
 	{
@@ -6556,8 +6561,7 @@ typedef struct sign sign_T;
 struct sign
 {
     sign_T	*sn_next;	/* next sign in list */
-    int		sn_typenr;	/* type number of sign (negative if not equal
-				   to name) */
+    int		sn_typenr;	/* type number of sign */
     char_u	*sn_name;	/* name of sign */
     char_u	*sn_icon;	/* name of pixmap */
 #ifdef FEAT_SIGN_ICONS

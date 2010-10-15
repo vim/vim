@@ -53,15 +53,19 @@ b321b
 t02: numeric
 abc
 ab
-a
 a321
 a123
 a122
+a
+x-22
 b321
 b123
+
 c123d
+-24
  123b
 c321d
+0
 b322b
 b321
 b321b
