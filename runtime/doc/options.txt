@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2010 Sep 21
+*options.txt*	For Vim version 7.3.  Last change: 2010 Oct 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1495,6 +1495,25 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+vertsplit|
 			feature}
 	Number of screen lines to use for the command-line window. |cmdwin|
+
+						*'colorcolumn'* *'cc'*
+'colorcolumn' 'cc'	string	(default "")
+			local to window
+			{not in Vi}
+			{not available when compiled without the |+syntax|
+			feature}
+	'colorcolumn' is a comma separated list of screen columns that are
+	highlighted with ColorColumn |hl-ColorColumn|.  Useful to align
+	text.  Will make screen redrawing slower.
+	The screen column can be an absolute number, or a number preceded with
+	'+' or '-', which is added to or subtracted from 'textwidth'. >
+
+		:set cc=+1  " highlight column after 'textwidth'
+		:set cc=+1,+2,+3  " highlight three columns after 'textwidth'
+		:hi ColorColumn ctermbg=lightgrey guibg=lightgrey
+<
+	When 'textwidth' is zero then the items with '-' and '+' are not used.
+	A maximum of 256 columns are highlighted.
 
 						*'columns'* *'co'* *E594*
 'columns' 'co'		number	(default 80 or terminal width)
@@ -4600,25 +4619,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	    :set makeprg=latex\ \\\\nonstopmode\ \\\\input\\{$*}
 <	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
-
-						*'colorcolumn'* *'cc'*
-'colorcolumn' 'cc'	string	(default "")
-			local to window
-			{not in Vi}
-			{not available when compiled without the |+syntax|
-			feature}
-	'colorcolumn' is a comma separated list of screen columns that are
-	highlighted with ColorColumn |hl-ColorColumn|.  Useful to align
-	text.  Will make screen redrawing slower.
-	The screen column can be an absolute number, or a number preceded with
-	'+' or '-', which is added to or subtracted from 'textwidth'. >
-
-		:set cc=+1  " highlight column after 'textwidth'
-		:set cc=+1,+2,+3  " highlight three columns after 'textwidth'
-		:hi ColorColumn ctermbg=lightgrey guibg=lightgrey
-<
-	When 'textwidth' is zero then the items with '-' and '+' are not used.
-	A maximum of 256 columns are highlighted.
 
 						*'matchpairs'* *'mps'*
 'matchpairs' 'mps'	string	(default "(:),{:},[:]")

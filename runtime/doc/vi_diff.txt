@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 7.3.  Last change: 2010 Sep 25
+*vi_diff.txt*   For Vim version 7.3.  Last change: 2010 Oct 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -989,6 +989,8 @@ These are remarks about running the POSIX test suite:
 - vi test 33 sometimes fails for unknown reasons
 - vi test 250 fails; behavior will be changed in a new revision
     http://www.opengroup.org/austin/mailarchives/ag-review/msg01710.html
+    (link no longer works, perhaps it's now:
+    https://www.opengroup.org/sophocles/show_mail.tpl?CALLER=show_archive.tpl&source=L&listname=austin-review-l&id=1711)
 - vi test 310 fails; exit code non-zero when any error occurred?
 - ex test 24 fails because test is wrong.  Changed between SUSv2 and SUSv3.
 - ex tests 47, 48, 49, 72, 73 fail because .exrc file isn't read in silent

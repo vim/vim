@@ -2,7 +2,7 @@
 " Language:         YAML (YAML Ain't Markup Language) 1.2
 " Maintainer:       Nikolai Pavlov <zyx.vim@gmail.com>
 " First author:     Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2010-09-16
+" Latest Revision:  2010-10-08
 
 if exists('b:current_syntax')
     finish
@@ -124,7 +124,7 @@ syn match   yamlConstant '\<\~\>'
 
 syn match   yamlTimestamp /\%([\[\]{}, \t]\@!\p\)\@<!\%(\d\{4}-\d\d\=-\d\d\=\%(\%([Tt]\|\s\+\)\%(\d\d\=\):\%(\d\d\):\%(\d\d\)\%(\.\%(\d*\)\)\=\%(\s*\%(Z\|[+-]\d\d\=\%(:\d\d\)\=\)\)\=\)\=\)\%([\[\]{}, \t]\@!\p\)\@!/
 
-syn match   yamlInteger /\%([\[\]{}, \t]\@!\p\)\@<!\%([+-]\=\%(0\%(b[0-1_]\+\|[0-7_]\+\|x[0-9a-fA-F_]\+\)\=\|\%([1-9][0-9_]*\%(:[0-5]\=\d\)\+\)\)\)\%([\[\]{}, \t]\@!\p\)\@!/
+syn match   yamlInteger /\%([\[\]{}, \t]\@!\p\)\@<!\%([+-]\=\%(0\%(b[0-1_]\+\|[0-7_]\+\|x[0-9a-fA-F_]\+\)\=\|\%([1-9][0-9_]*\%(:[0-5]\=\d\)\+\)\)\|[1-9][0-9_]*\)\%([\[\]{}, \t]\@!\p\)\@!/
 syn match   yamlFloat   /\%([\[\]{}, \t]\@!\p\)\@<!\%([+-]\=\%(\%(\d[0-9_]*\)\.[0-9_]*\%([eE][+-]\d\+\)\=\|\.[0-9_]\+\%([eE][-+][0-9]\+\)\=\|\d[0-9_]*\%(:[0-5]\=\d\)\+\.[0-9_]*\|\.\%(inf\|Inf\|INF\)\)\|\%(\.\%(nan\|NaN\|NAN\)\)\)\%([\[\]{}, \t]\@!\p\)\@!/
 
 execute 'syn match yamlNodeTag '.string(s:c_ns_tag_property)

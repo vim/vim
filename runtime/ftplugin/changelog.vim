@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:         generic Changelog file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2009-05-25
+" Latest Revision:  2010-08-17
 " Variables:
 "   g:changelog_timeformat (deprecated: use g:changelog_dateformat instead) -
 "       description: the timeformat used in ChangeLog entries.
@@ -170,7 +170,7 @@ if &filetype == 'changelog'
   endfunction
 
   " Internal function to create a new entry in the ChangeLog.
-  function! s:new_changelog_entry()
+  function! s:new_changelog_entry(...)
     " Deal with 'paste' option.
     let save_paste = &paste
     let &paste = 1

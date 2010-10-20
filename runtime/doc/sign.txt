@@ -1,4 +1,4 @@
-*sign.txt*      For Vim version 7.3.  Last change: 2010 May 07
+*sign.txt*      For Vim version 7.3.  Last change: 2010 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -70,7 +70,8 @@ DEFINING A SIGN.			*:sign-define* *E255* *E160* *E612*
 :sign define {name} {argument}...
 		Define a new sign or set attributes for an existing sign.
 		The {name} can either be a number (all digits) or a name
-		starting with a non-digit.
+		starting with a non-digit.  Leading digits are ignored, thus
+		"0012", "012" and "12" are considered the same name.
 		About 120 different signs can be defined.
 
 		Accepted arguments:

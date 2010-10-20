@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.3.  Last change: 2010 Jul 20
+*quickfix.txt*  For Vim version 7.3.  Last change: 2010 Oct 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -545,6 +545,14 @@ there is no match in the file the associated buffer is wiped out again.  The
 descriptors when searching many files.  However, when the |:hide| command
 modifier is used the buffers are kept loaded.  This makes following searches
 in the same files a lot faster.
+
+Note that |:copen| (or |:lopen| for |:lgrep|) may be used to open a buffer
+containing the search results in linked form.  The |:silent| command may be
+used to suppress the default full screen grep output.  The |:grep!| form of
+the |:grep| command doesn't jump to the first match automatically.  These
+commands can be combined to create a NewGrep command: >
+
+        command! -nargs=+ NewGrep execute 'silent grep! <args>' | copen 42
 
 
 5.1 using Vim's internal grep

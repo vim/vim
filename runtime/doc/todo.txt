@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2010 Sep 29
+*todo.txt*      For Vim version 7.3.  Last change: 2010 Oct 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,20 +30,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Cursor position wrong when 'formatoptions' contains "a". (Moshe Kamensky, 2010
-Sep 7, Gary Johnson, 2010 Sep 14)
-Formatoptions cause cursor to jump. (ZyX, 2010 Aug 22)
-Caused by revision 2294, "Make joining a range of lines much faster. (Milan
-Vancura)" ?
-Patch by Carlo Teubner, 2010 Sep 25.  Test Sep 26.
-
 'cursorline' is displayed too short when there are concealed characters and
 'list' is set, 'listchars' at default value. (Dennis Preiser, 2010 Aug 15)
-
-Hang on slave PTY on Mac.  Patch from Nikola Knezevic, 2010 Aug 29.
-
-Patch to fix sign type negative and memory not freed. (Xavier de Gaye, 2010
-Aug 20)
 
 Conceal: using Tab for cchar causes problems.  Should reject it. (ZyX, 2010
 Aug 25)
@@ -52,23 +40,13 @@ Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
 only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
 21, Ben Fritz, 2010 Sep 14)
 
-Patch for :mksession not escaping file name properly. (Peter Odding, 2010 Sep
-19)
-
-Patch for CTRL-] in help file doing wrong escaping. (Carlo Teubner, 2010 Sep
-25)
-
-Patch to support List and Dict in .viminfo. (Christian Brabandt, 2010 Sep 24)
-Sep 26 with a test.
-
-Patch for :grep docs. (Britton Kerin, 2010 Aug 31)
-
-Patch for dynamic loading Ruby on Unix. (Jon, 2010 Aug 23)
-Included, but also need a change to configure.
-
-Replacement R syntax file. (Jakson A. Aquino, 2010 Sep 29)
-
 Windows keys not set properly on Windows 7?  (cncyber, 2010 Aug 26)
+
+This line hangs Vim, because of syntax HL:
+call append(line, "INFO  ....12....18....24....30....36....42....48....54....60....66....72....78%$")
+
+Patch to add v:windowid. (Christian J. Robinson, 2010 Oct 13, update by Lech
+Lorens, Oct 14)
 
 maparg() doesn't return the flags, such as <buffer>, <script>, <silent>.
 These are needed to save and restore a mapping.
@@ -80,6 +58,10 @@ build. (Bill Lam, 2010 Sep 18)
 
 Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
+Using ":break" or something else that stops executing commands inside a
+":finally" does not rethrow a previously uncaught exception. (ZyX, 2010 Oct
+15)
+
 Patch to fix warning for accessing mediumVersion. (Dominique Pelle, 2010 Aug
 18)
 
@@ -87,13 +69,21 @@ Patch for 2html to support 'fileencoding'. (Benjamin Fritz, 2010 Sep 10)
 
 Patch to use 'previewheight' for popup menu. (Benjamin Haskell, 2010 Sep 29)
 
-CTRL-] on help tag |/[\n]| doesn't jump to the right place. (Tony Mechelynck,
-2010 Aug 8)
-
 Three patches for undo persistence. (Christian Brabandt, 2010 Sep 4)
+
+ml_get error for using :copen in a custom complete function. (Xavier
+Deguillard, 2010 Oct 19)  Other way to reproduce it by Lech Lorens, Oct 20.
 
 string() can't parse back "inf" and "nan".  Fix documentation or fix code?
 (ZyX, 2010 Aug 23)
+
+Patch to use "--as-needed" instead of the link.sh functionality.  (Kirill A.
+Shutemov, 2010 Aug 25)
+
+Patch to fix complete(). (Kikuchan, 2010 Oct 15)
+
+Ruby: Patch to load Gem module.  Why is this needed? (Yasuhiro Matsumoto, 2010
+Oct 6)
 
 ":command Print echo 'print'" works, but ":Print" doesn't.  Builtin Print
 should be overruled. (Aaron Thoma)
@@ -101,9 +91,19 @@ Patch by Christian Brabandt, 2010 Sep 5.
 
 Comparing recursive structure loops forever. (ZyX, 2010 Aug 22, info from John
 Beckett Aug 23)
+Patch from Christian Brabandt, 2010 Oct 2
+
+":drop" does not respect 'autochdir'. (Peter Odding, 2010 Jul 24)
+Patch from Benjamin Fritz, 2010 Oct 13.
+
+Highlighting stops working after changing it many times.  Script to reproduce
+it: Pablo Contreras, 2010 Oct 12  Windows XP and 7.  Font is never freed?
 
 GTK: drawing a double-width combining character over single-width characters
 doesn't look right. (Dominique Pelle, 2010 Aug 8)
+
+Using ":call" inside "if 0" does not see that a function returns a Dict and
+gives error for "." as string concatenation.  (Yasuhiro Matsumoto, 2010 Oct 20)
 
 Copy/paste between Vim and Google chrome doesn't work well for multi-byte
 characters. (Ben Haskell, 2010 Sep 17)
@@ -115,8 +115,16 @@ clear why it doesn't work.
 Editing a file with a ^M with 'ff' set to "mac", opening a help file, then the
 ^M is displayed as ^J sometimes.  Getting 'ff' value from wrong window/buffer?
 
+Patch to add 'systemencoding', convert between 'encoding' and this for file
+names, shell commands and the like.  (Kikuchan, 2010 Oct 14)
+Assume the system converts between the actual encoding of the filesystem to
+the system encoding (usually utf-8).
+
 Problem producing tags file when hebrew.frx is present.  It has a BOM.
 Results in E670. (Tony Mechelynck, 2010 May 2)
+
+Patch for dynamic loading Ruby on Unix. (Jon, 2010 Aug 23)
+Included, but also need a change to configure.
 
 setpos() does not restore cursor position after :normal. (Tyru, 2010 Aug 11)
 
@@ -127,12 +135,11 @@ and that it's documented.
 
 Messages in message.txt are highlighted as examples.
 
-Win32: Patch to fix slow access over network (David Anderson).  Cleaned up by
-John Beckett, 2010 Aug 25.
-
 Test 73 fails on MS-Windows when compiled with DJGPP and run twice.  How to
 delete the Xfind directory?  Add an rmdir() function, just like we have
 mkdir().
+
+":echo "\x85" =~# '[\u0085]'" returns 1 instead of 0. (ZyX, 2010 Oct 3)
 
 'cindent' not correct when 'list' is set. (Zdravi Korusef, 2010 Apr 15)
 
@@ -155,8 +162,6 @@ Patch: Let rare word highlighting overrule good word highlighting.
 (Jakson A. Aquino, 2010 Jul 30)
 
 Patch to make more characters work in dialogs. (Yankwei Jia, 2010 Aug 4)
-
-":drop" does not respect 'autochdir'. (Peter Odding, 2010 Jul 24)
 
 When 'lines' is 25 and 'scrolloff' is 12, "j" scrolls zero or two lines
 instead of one. (Constantin Pan, 2010 Sep 10)
@@ -195,6 +200,8 @@ Use format year-month-day hr:min:sec.
 Shell not recognized properly if it ends in "csh -f". (James Vega, 2009 Nov 3)
 Find tail?  Might have a / in argument.  Find space?  Might have space in
 path.
+
+":sort n" treats empty line as higher than zero. (Beeyawned, 2010 Oct 13)
 
 ":function f(x) keepjumps" creates a function where every command is executed
 like it has ":keepjumps" before it.
@@ -363,6 +370,10 @@ was typed.  CTRL-G h ?  Would also undo last word or line break inserted
 perhaps.  And undo CTRL-W.  CTRL-G l would redo.
 
 Diff mode out of sync. (Gary Johnson, 2010 Aug 4)
+
+Support a 'systemencoding' option (for Unix).  It specifies the encoding of
+file names. (Kikuchan, 2010 Oct 5).  Useful on a latin1 or double-byte Asian
+system when 'encoding' is "utf-8".
 
 Win32: A --remote command that has a directory name starting with a ( doesn't
 work, the backslash is removed, assuming that it escapes the (. (Valery

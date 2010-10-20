@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.3.  Last change: 2010 Aug 15
+*version7.txt*  For Vim version 7.3.  Last change: 2010 Oct 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -8180,7 +8180,7 @@ Solution:   Use get_cmdline_type(). (James Vega)
 Files:	    src/ex_getln.c
 
 Patch 7.2.130
-Problem:    Vim may haing until CTRL-C is typed when using CTRL-Z.
+Problem:    Vim may hang until CTRL-C is typed when using CTRL-Z.
 Solution:   Avoid using pause().  Also use "volatile" for variables used in
 	    signal functions. (Dominique Pelle)
 Files:	    src/auto/configure, src/configure.in, src/config.h.in,

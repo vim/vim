@@ -201,7 +201,7 @@ msgstr "Segni per %s:"
 
 #, c-format
 msgid "    line=%ld  id=%d  name=%s"
-msgstr "    linea=%ld id=%d, nome=%s"
+msgstr "    linea=%ld  id=%d  nome=%s"
 
 #, c-format
 msgid "E96: Can not diff more than %ld buffers"

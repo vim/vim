@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.3.  Last change: 2010 Aug 13
+*if_pyth.txt*   For Vim version 7.3.  Last change: 2010 Oct 20
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -355,7 +355,7 @@ When Python 2 and Python 3 are both supported they must be loaded dynamically.
 When doing this on Linux/Unix systems and importing global symbols, this leads
 to a crash when the second Python version is used.  So either global symbols
 are loaded but only one Python version is activated, or no global symbols are
-loaded. The latter makes Python's "import" fail on libaries that expect the
+loaded. The latter makes Python's "import" fail on libraries that expect the
 symbols to be provided by Vim.
 							*E836* *E837*
 Vim's configuration script makes a guess for all libraries based on one

@@ -173,7 +173,7 @@ msgstr "Tecken för %s:"
 
 #, c-format
 msgid "    line=%ld  id=%d  name=%s"
-msgstr "    line=%ld  id=%d  namn%s"
+msgstr "    line=%ld  id=%d  namn=%s"
 
 #, c-format
 msgid "E96: Can not diff more than %ld buffers"
