@@ -10,6 +10,7 @@ VIMPROG = ../vim
 #   This will make testing about 10 times as slow.
 # VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=15 --log-file=valgrind.$*
 
+
 SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test7.out test8.out test9.out test10.out test11.out \
 		test12.out  test13.out test14.out test15.out test17.out \
@@ -23,7 +24,8 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test54.out test55.out test56.out test57.out test58.out \
 		test59.out test60.out test61.out test62.out test63.out \
 		test64.out test65.out test66.out test67.out test68.out \
-		test69.out test70.out test71.out test72.out test73.out
+		test69.out test70.out test71.out test72.out test73.out \
+		test74.out
 
 SCRIPTS_GUI = test16.out
 

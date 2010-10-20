@@ -22520,18 +22520,21 @@ read_viminfo_varlist(virp, writing)
 	if (tab != NULL)
 	{
 	    *tab++ = '\0';	/* isolate the variable name */
-	    if (*tab == 'S')	/* string var */
-		type = VAR_STRING;
+	    switch (*tab)
+	    {
+		case 'S': type = VAR_STRING; break;
 #ifdef FEAT_FLOAT
-	    else if (*tab == 'F')
-		type = VAR_FLOAT;
+		case 'F': type = VAR_FLOAT; break;
 #endif
+		case 'D': type = VAR_DICT; break;
+		case 'L': type = VAR_LIST; break;
+	    }
 
 	    tab = vim_strchr(tab, '\t');
 	    if (tab != NULL)
 	    {
 		tv.v_type = type;
-		if (type == VAR_STRING)
+		if (type == VAR_STRING || type == VAR_DICT || type == VAR_LIST)
 		    tv.vval.v_string = viminfo_readstring(virp,
 				       (int)(tab - virp->vir_line + 1), TRUE);
 #ifdef FEAT_FLOAT
@@ -22540,9 +22543,27 @@ read_viminfo_varlist(virp, writing)
 #endif
 		else
 		    tv.vval.v_number = atol((char *)tab + 1);
+		if (type == VAR_DICT || type == VAR_LIST)
+		{
+		    typval_T *etv = eval_expr(tv.vval.v_string, NULL);
+
+		    if (etv == NULL)
+			/* Failed to parse back the dict or list, use it as a
+			 * string. */
+			tv.v_type = VAR_STRING;
+		    else
+		    {
+			vim_free(tv.vval.v_string);
+			tv = *etv;
+		    }
+		}
+
 		set_var(virp->vir_line + 1, &tv, FALSE);
-		if (type == VAR_STRING)
+
+		if (tv.v_type == VAR_STRING)
 		    vim_free(tv.vval.v_string);
+		else if (tv.v_type == VAR_DICT || tv.v_type == VAR_LIST)
+		    clear_tv(&tv);
 	    }
 	}
     }
@@ -22584,8 +22605,10 @@ write_viminfo_varlist(fp)
 		    case VAR_STRING: s = "STR"; break;
 		    case VAR_NUMBER: s = "NUM"; break;
 #ifdef FEAT_FLOAT
-		    case VAR_FLOAT: s = "FLO"; break;
+		    case VAR_FLOAT:  s = "FLO"; break;
 #endif
+		    case VAR_DICT:   s = "DIC"; break;
+		    case VAR_LIST:   s = "LIS"; break;
 		    default: continue;
 		}
 		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);

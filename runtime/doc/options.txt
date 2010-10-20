@@ -7530,8 +7530,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	!	When included, save and restore global variables that start
 		with an uppercase letter, and don't contain a lowercase
 		letter.  Thus "KEEPTHIS and "K_L_M" are stored, but "KeepThis"
-		and "_K_L_M" are not.  Only String and Number types are
-		stored.
+		and "_K_L_M" are not.  Nested List and Dict items may not be
+		read back correctly, you end up with a string representation
+		instead.
 	"	Maximum number of lines saved for each register.  Old name of
 		the '<' item, with the disadvantage that you need to put a
 		backslash before the ", otherwise it will be recognized as the
