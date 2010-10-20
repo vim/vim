@@ -105,8 +105,18 @@ gui_start()
 
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
     if (gui.in_use)
+    {
+# ifdef FEAT_EVAL
+	Window	x11_window;
+	Display	*x11_display;
+
+	if (gui_get_x11_windis(&x11_window, &x11_display) == OK)
+	    set_vim_var_nr(VV_WINDOWID, (long)x11_window);
+# endif
+
 	/* Display error messages in a dialog now. */
 	display_errors();
+    }
 #endif
 
 #if defined(MAY_FORK) && !defined(__QNXNTO__)

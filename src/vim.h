@@ -1842,7 +1842,8 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 #define VV_OP		52
 #define VV_SEARCHFORWARD 53
 #define VV_OLDFILES	54
-#define VV_LEN		55	/* number of v: vars */
+#define VV_WINDOWID	55
+#define VV_LEN		56	/* number of v: vars */
 
 #ifdef FEAT_CLIPBOARD
 

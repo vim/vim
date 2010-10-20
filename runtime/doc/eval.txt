@@ -1657,6 +1657,11 @@ v:version	Version number of Vim: Major version number times 100 plus
 					*v:warningmsg* *warningmsg-variable*
 v:warningmsg	Last given warning message.  It's allowed to set this variable.
 
+					*v:windowid* *windowid-variable*
+v:windowid	When any X11 based GUI is running or when running in a
+		terminal and Vim connects to the X server (|-X|) this will be
+		set to the window ID.  Otherwise the value is zero.
+
 ==============================================================================
 4. Builtin Functions					*functions*
 

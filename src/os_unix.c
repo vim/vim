@@ -1738,6 +1738,11 @@ get_x11_windis()
     }
     if (x11_window == 0 || x11_display == NULL)
 	return (result = FAIL);
+
+# ifdef FEAT_EVAL
+    set_vim_var_nr(VV_WINDOWID, (long)x11_window);
+# endif
+
     return (result = OK);
 }
 
