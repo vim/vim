@@ -1,0 +1,16 @@
+" Tests for functions.
+
+STARTTEST
+:so small.vim
+:" Test maparg() with a string result
+:map foo<C-V> is<F4>foo
+:vnoremap <script> <buffer> <expr> <silent> bar isbar
+:call append('$', maparg('foo<C-V>'))
+:call append('$', string(maparg('foo<C-V>', '', 0, 1)))
+:call append('$', string(maparg('bar', '', 0, 1)))
+:"
+:/^eof/+1,$w! test.out
+:qa!
+ENDTEST
+
+eof

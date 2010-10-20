@@ -33,6 +33,7 @@ char_u *msg_outtrans_one __ARGS((char_u *p, int attr));
 int msg_outtrans_len_attr __ARGS((char_u *msgstr, int len, int attr));
 void msg_make __ARGS((char_u *arg));
 int msg_outtrans_special __ARGS((char_u *strstart, int from));
+char_u *str2special_save __ARGS((char_u *str, int is_lhs));
 char_u *str2special __ARGS((char_u **sp, int from));
 void str2specialbuf __ARGS((char_u *sp, char_u *buf, int len));
 void msg_prt_line __ARGS((char_u *s, int list));

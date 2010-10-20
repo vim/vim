@@ -7804,7 +7804,7 @@ static struct fst
     {"log10",		1, 1, f_log10},
 #endif
     {"map",		2, 2, f_map},
-    {"maparg",		1, 3, f_maparg},
+    {"maparg",		1, 4, f_maparg},
     {"mapcheck",	1, 3, f_mapcheck},
     {"match",		2, 4, f_match},
     {"matchadd",	2, 4, f_matchadd},
@@ -13292,8 +13292,10 @@ get_maparg(argvars, rettv, exact)
     char_u	*keys_buf = NULL;
     char_u	*rhs;
     int		mode;
-    garray_T	ga;
     int		abbr = FALSE;
+    int         get_dict = FALSE;
+    mapblock_T	*mp;
+    int		buffer_local;
 
     /* return empty string for failure */
     rettv->v_type = VAR_STRING;
@@ -13307,7 +13309,11 @@ get_maparg(argvars, rettv, exact)
     {
 	which = get_tv_string_buf_chk(&argvars[1], buf);
 	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
 	    abbr = get_tv_number(&argvars[2]);
+	    if (argvars[3].v_type != VAR_UNKNOWN)
+		get_dict = get_tv_number(&argvars[3]);
+	}
     }
     else
 	which = (char_u *)"";
@@ -13317,19 +13323,34 @@ get_maparg(argvars, rettv, exact)
     mode = get_map_mode(&which, 0);
 
     keys = replace_termcodes(keys, &keys_buf, TRUE, TRUE, FALSE);
-    rhs = check_map(keys, mode, exact, FALSE, abbr);
+    rhs = check_map(keys, mode, exact, FALSE, abbr, &mp, &buffer_local);
     vim_free(keys_buf);
-    if (rhs != NULL)
+
+    if (!get_dict)
     {
-	ga_init(&ga);
-	ga.ga_itemsize = 1;
-	ga.ga_growsize = 40;
+	/* Return a string. */
+	if (rhs != NULL)
+	    rettv->vval.v_string = str2special_save(rhs, FALSE);
 
-	while (*rhs != NUL)
-	    ga_concat(&ga, str2special(&rhs, FALSE));
+    }
+    else if (rettv_dict_alloc(rettv) != FAIL && rhs != NULL)
+    {
+	/* Return a dictionary. */
+	char_u	    *lhs = str2special_save(mp->m_keys, TRUE);
+	char_u	    *mapmode = map_mode_to_chars(mp->m_mode);
+	dict_T	    *dict = rettv->vval.v_dict;
 
-	ga_append(&ga, NUL);
-	rettv->vval.v_string = (char_u *)ga.ga_data;
+	dict_add_nr_str(dict, "lhs",	 0L, lhs);
+	dict_add_nr_str(dict, "rhs",     0L, mp->m_orig_str);
+	dict_add_nr_str(dict, "noremap", mp->m_noremap ? 1L : 0L , NULL);
+	dict_add_nr_str(dict, "expr",    mp->m_expr    ? 1L : 0L, NULL);
+	dict_add_nr_str(dict, "silent",  mp->m_silent  ? 1L : 0L, NULL);
+	dict_add_nr_str(dict, "sid",     (long)mp->m_script_ID, NULL);
+	dict_add_nr_str(dict, "buffer",  (long)buffer_local, NULL);
+	dict_add_nr_str(dict, "mode",    0L, mapmode);
+
+	vim_free(lhs);
+	vim_free(mapmode);
     }
 }
 

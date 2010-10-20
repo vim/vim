@@ -1477,6 +1477,27 @@ msg_outtrans_special(strstart, from)
     return retval;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Return the lhs or rhs of a mapping, with the key codes turned into printable
+ * strings, in an allocated string.
+ */
+    char_u *
+str2special_save(str, is_lhs)
+    char_u  *str;
+    int	    is_lhs;  /* TRUE for lhs, FALSE for rhs */
+{
+    garray_T	ga;
+    char_u	*p = str;
+
+    ga_init2(&ga, 1, 40);
+    while (*p != NUL)
+	ga_concat(&ga, str2special(&p, is_lhs));
+    ga_append(&ga, NUL);
+    return (char_u *)ga.ga_data;
+}
+#endif
+
 /*
  * Return the printable string for the key codes at "*sp".
  * Used for translating the lhs or rhs of a mapping to printable chars.

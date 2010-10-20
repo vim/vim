@@ -1,0 +1,3 @@
+is<F4>foo
+{'silent': 0, 'noremap': 0, 'lhs': 'foo<C-V>', 'mode': ' ', 'expr': 0, 'sid': 0, 'rhs': 'is<F4>foo', 'buffer': 0}
+{'silent': 1, 'noremap': 1, 'lhs': 'bar', 'mode': 'v', 'expr': 1, 'sid': 0, 'rhs': 'isbar', 'buffer': 1}

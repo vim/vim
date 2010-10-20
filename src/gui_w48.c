@@ -1810,7 +1810,8 @@ process_message(void)
 		 * mapped we want to use the mapping instead. */
 		if (vk == VK_F10
 			&& gui.menu_is_active
-			&& check_map(k10, State, FALSE, TRUE, FALSE) == NULL)
+			&& check_map(k10, State, FALSE, TRUE, FALSE,
+							  NULL, NULL) == NULL)
 		    break;
 #endif
 		if (GetKeyState(VK_SHIFT) & 0x8000)
@@ -1924,7 +1925,8 @@ process_message(void)
     /* Check for <F10>: Default effect is to select the menu.  When <F10> is
      * mapped we need to stop it here to avoid strange effects (e.g., for the
      * key-up event) */
-    if (vk != VK_F10 || check_map(k10, State, FALSE, TRUE, FALSE) == NULL)
+    if (vk != VK_F10 || check_map(k10, State, FALSE, TRUE, FALSE,
+							  NULL, NULL) == NULL)
 #endif
 	DispatchMessage(&msg);
 }

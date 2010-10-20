@@ -3168,6 +3168,7 @@ do_map(maptype, arg, mode, abbrev)
     int		expr = FALSE;
 #endif
     int		noremap;
+    char_u      *orig_rhs;
 
     keys = arg;
     map_table = maphash;
@@ -3266,6 +3267,7 @@ do_map(maptype, arg, mode, abbrev)
     }
     if (*p != NUL)
 	*p++ = NUL;
+
     p = skipwhite(p);
     rhs = p;
     hasarg = (*rhs != NUL);
@@ -3290,6 +3292,7 @@ do_map(maptype, arg, mode, abbrev)
 	keys = replace_termcodes(keys, &keys_buf, TRUE, TRUE, special);
     if (hasarg)
     {
+	orig_rhs = rhs;
 	if (STRICMP(rhs, "<nop>") == 0)	    /* "<Nop>" means nothing */
 	    rhs = (char_u *)"";
 	else
@@ -3298,7 +3301,7 @@ do_map(maptype, arg, mode, abbrev)
 
 #ifdef FEAT_FKMAP
     /*
-     * when in right-to-left mode and alternate keymap option set,
+     * When in right-to-left mode and alternate keymap option set,
      * reverse the character flow in the rhs in Farsi.
      */
     if (p_altkeymap && curwin->w_p_rl)
@@ -3556,6 +3559,8 @@ do_map(maptype, arg, mode, abbrev)
 				}
 				vim_free(mp->m_str);
 				mp->m_str = newstr;
+				vim_free(mp->m_orig_str);
+				mp->m_orig_str = vim_strsave(orig_rhs);
 				mp->m_noremap = noremap;
 				mp->m_silent = silent;
 				mp->m_mode = mode;
@@ -3633,10 +3638,12 @@ do_map(maptype, arg, mode, abbrev)
 
     mp->m_keys = vim_strsave(keys);
     mp->m_str = vim_strsave(rhs);
+    mp->m_orig_str = vim_strsave(orig_rhs);
     if (mp->m_keys == NULL || mp->m_str == NULL)
     {
 	vim_free(mp->m_keys);
 	vim_free(mp->m_str);
+	vim_free(mp->m_orig_str);
 	vim_free(mp);
 	retval = 4;	/* no mem */
 	goto theend;
@@ -3682,6 +3689,7 @@ map_free(mpp)
     mp = *mpp;
     vim_free(mp->m_keys);
     vim_free(mp->m_str);
+    vim_free(mp->m_orig_str);
     *mpp = mp->m_next;
     vim_free(mp);
 }
@@ -3851,12 +3859,57 @@ map_clear_int(buf, mode, local, abbr)
     }
 }
 
+/*
+ * Return characters to represent the map mode in an allocated string.
+ * Returns NULL when out of memory.
+ */
+    char_u *
+map_mode_to_chars(mode)
+    int mode;
+{
+    garray_T    mapmode;
+
+    ga_init2(&mapmode, 1, 7);
+
+    if ((mode & (INSERT + CMDLINE)) == INSERT + CMDLINE)
+	ga_append(&mapmode, '!');			/* :map! */
+    else if (mode & INSERT)
+	ga_append(&mapmode, 'i');			/* :imap */
+    else if (mode & LANGMAP)
+	ga_append(&mapmode, 'l');			/* :lmap */
+    else if (mode & CMDLINE)
+	ga_append(&mapmode, 'c');			/* :cmap */
+    else if ((mode & (NORMAL + VISUAL + SELECTMODE + OP_PENDING))
+				 == NORMAL + VISUAL + SELECTMODE + OP_PENDING)
+	ga_append(&mapmode, ' ');			/* :map */
+    else
+    {
+	if (mode & NORMAL)
+	    ga_append(&mapmode, 'n');			/* :nmap */
+	if (mode & OP_PENDING)
+	    ga_append(&mapmode, 'o');			/* :omap */
+	if ((mode & (VISUAL + SELECTMODE)) == VISUAL + SELECTMODE)
+	    ga_append(&mapmode, 'v');			/* :vmap */
+	else
+	{
+	    if (mode & VISUAL)
+		ga_append(&mapmode, 'x');		/* :xmap */
+	    if (mode & SELECTMODE)
+		ga_append(&mapmode, 's');		/* :smap */
+	}
+    }
+
+    ga_append(&mapmode, NUL);
+    return (char_u *)mapmode.ga_data;
+}
+
     static void
 showmap(mp, local)
     mapblock_T	*mp;
     int		local;	    /* TRUE for buffer-local map */
 {
-    int len = 1;
+    int		len = 1;
+    char_u	*mapchars;
 
     if (msg_didout || msg_silent != 0)
     {
@@ -3864,49 +3917,15 @@ showmap(mp, local)
 	if (got_int)	    /* 'q' typed at MORE prompt */
 	    return;
     }
-    if ((mp->m_mode & (INSERT + CMDLINE)) == INSERT + CMDLINE)
-	msg_putchar('!');			/* :map! */
-    else if (mp->m_mode & INSERT)
-	msg_putchar('i');			/* :imap */
-    else if (mp->m_mode & LANGMAP)
-	msg_putchar('l');			/* :lmap */
-    else if (mp->m_mode & CMDLINE)
-	msg_putchar('c');			/* :cmap */
-    else if ((mp->m_mode & (NORMAL + VISUAL + SELECTMODE + OP_PENDING))
-				 == NORMAL + VISUAL + SELECTMODE + OP_PENDING)
-	msg_putchar(' ');			/* :map */
-    else
+
+    mapchars = map_mode_to_chars(mp->m_mode);
+    if (mapchars != NULL)
     {
-	len = 0;
-	if (mp->m_mode & NORMAL)
-	{
-	    msg_putchar('n');		/* :nmap */
-	    ++len;
-	}
-	if (mp->m_mode & OP_PENDING)
-	{
-	    msg_putchar('o');		/* :omap */
-	    ++len;
-	}
-	if ((mp->m_mode & (VISUAL + SELECTMODE)) == VISUAL + SELECTMODE)
-	{
-	    msg_putchar('v');		/* :vmap */
-	    ++len;
-	}
-	else
-	{
-	    if (mp->m_mode & VISUAL)
-	    {
-		msg_putchar('x');		/* :xmap */
-		++len;
-	    }
-	    if (mp->m_mode & SELECTMODE)
-	    {
-		msg_putchar('s');		/* :smap */
-		++len;
-	    }
-	}
+	msg_puts(mapchars);
+	len = STRLEN(mapchars);
+	vim_free(mapchars);
     }
+
     while (++len <= 3)
 	msg_putchar(' ');
 
@@ -3931,8 +3950,7 @@ showmap(mp, local)
 	msg_putchar(' ');
 
     /* Use FALSE below if we only want things like <Up> to show up as such on
-     * the rhs, and not M-x etc, TRUE gets both -- webb
-     */
+     * the rhs, and not M-x etc, TRUE gets both -- webb */
     if (*mp->m_str == NUL)
 	msg_puts_attr((char_u *)"<Nop>", hl_attr(HLF_8));
     else
@@ -4995,19 +5013,21 @@ check_map_keycodes()
     sourcing_name = save_name;
 }
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * Check the string "keys" against the lhs of all mappings
- * Return pointer to rhs of mapping (mapblock->m_str)
- * NULL otherwise
+ * Check the string "keys" against the lhs of all mappings.
+ * Return pointer to rhs of mapping (mapblock->m_str).
+ * NULL when no mapping found.
  */
     char_u *
-check_map(keys, mode, exact, ign_mod, abbr)
+check_map(keys, mode, exact, ign_mod, abbr, mp_ptr, local_ptr)
     char_u	*keys;
     int		mode;
     int		exact;		/* require exact match */
     int		ign_mod;	/* ignore preceding modifier */
     int		abbr;		/* do abbreviations */
+    mapblock_T	**mp_ptr;	/* return: pointer to mapblock or NULL */
+    int		*local_ptr;	/* return: buffer-local mapping or NULL */
 {
     int		hash;
     int		len, minlen;
@@ -5062,7 +5082,13 @@ check_map(keys, mode, exact, ign_mod, abbr)
 			    minlen = mp->m_keylen - 3;
 		    }
 		    if (STRNCMP(s, keys, minlen) == 0)
+		    {
+			if (mp_ptr != NULL)
+			    *mp_ptr = mp;
+			if (local_ptr != NULL)
+			    *local_ptr = local;
 			return mp->m_str;
+		    }
 		}
 	    }
 	}
