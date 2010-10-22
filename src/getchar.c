@@ -5086,7 +5086,11 @@ check_map(keys, mode, exact, ign_mod, abbr, mp_ptr, local_ptr)
 			if (mp_ptr != NULL)
 			    *mp_ptr = mp;
 			if (local_ptr != NULL)
+#ifdef FEAT_LOCALMAP
 			    *local_ptr = local;
+#else
+			    *local_ptr = 0;
+#endif
 			return mp->m_str;
 		    }
 		}
