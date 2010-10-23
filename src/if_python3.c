@@ -88,7 +88,7 @@ static void init_structs(void);
 #  define close_dll dlclose
 #  define symbol_from_dll dlsym
 # else
-#  define load_dll LoadLibrary
+#  define load_dll vimLoadLib
 #  define close_dll FreeLibrary
 #  define symbol_from_dll GetProcAddress
 # endif

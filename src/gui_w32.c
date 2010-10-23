@@ -1260,7 +1260,7 @@ gui_mch_prepare(int *argc, char **argv)
 
     /* try and load the user32.dll library and get the entry points for
      * multi-monitor-support. */
-    if ((user32_lib = LoadLibrary("User32.dll")) != NULL)
+    if ((user32_lib = vimLoadLib("User32.dll")) != NULL)
     {
 	pMonitorFromWindow = (TMonitorFromWindow)GetProcAddress(user32_lib,
 							 "MonitorFromWindow");
@@ -4188,7 +4188,7 @@ gui_mch_set_foreground(void)
     static void
 dyn_imm_load(void)
 {
-    hLibImm = LoadLibrary("imm32.dll");
+    hLibImm = vimLoadLib("imm32.dll");
     if (hLibImm == NULL)
 	return;
 

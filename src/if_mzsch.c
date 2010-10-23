@@ -556,8 +556,8 @@ mzscheme_runtime_link_init(char *sch_dll, char *gc_dll, int verbose)
 
     if (hMzGC && hMzSch)
 	return OK;
-    hMzSch = LoadLibrary(sch_dll);
-    hMzGC = LoadLibrary(gc_dll);
+    hMzSch = vimLoadLib(sch_dll);
+    hMzGC = vimLoadLib(gc_dll);
 
     if (!hMzSch)
     {

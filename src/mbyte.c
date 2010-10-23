@@ -4159,11 +4159,11 @@ iconv_enabled(verbose)
 {
     if (hIconvDLL != 0 && hMsvcrtDLL != 0)
 	return TRUE;
-    hIconvDLL = LoadLibrary(DYNAMIC_ICONV_DLL);
+    hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL);
     if (hIconvDLL == 0)		/* sometimes it's called libiconv.dll */
-	hIconvDLL = LoadLibrary(DYNAMIC_ICONV_DLL_ALT);
+	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT);
     if (hIconvDLL != 0)
-	hMsvcrtDLL = LoadLibrary(DYNAMIC_MSVCRT_DLL);
+	hMsvcrtDLL = vimLoadLib(DYNAMIC_MSVCRT_DLL);
     if (hIconvDLL == 0 || hMsvcrtDLL == 0)
     {
 	/* Only give the message when 'verbose' is set, otherwise it might be

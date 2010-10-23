@@ -49,7 +49,7 @@ static const char LUAVIM_FREE[] = "luaV_free";
 # define symbol_from_dll dlsym
 # define close_dll dlclose
 #else
-# define load_dll LoadLibrary
+# define load_dll vimLoadLib
 # define symbol_from_dll GetProcAddress
 # define close_dll FreeLibrary
 #endif

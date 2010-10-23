@@ -817,7 +817,11 @@ mch_libcall(
     BOOL fRunTimeLinkSuccess = FALSE;
 
     // Get a handle to the DLL module.
+# ifdef WIN16
     hinstLib = LoadLibrary(libname);
+# else
+    hinstLib = vimLoadLib(libname);
+# endif
 
     // If the handle is valid, try to get the function address.
     if (hinstLib != NULL)

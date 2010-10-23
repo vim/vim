@@ -206,42 +206,63 @@ static char *vimrun_path = "vimrun ";
 static int suppress_winsize = 1;	/* don't fiddle with console */
 #endif
 
+static char_u *exe_path = NULL;
+
     static void
 get_exe_name(void)
 {
-    char	temp[256];
-    static int	did_set_PATH = FALSE;
+    char	temp[MAXPATHL];
+    char_u	*p;
 
     if (exe_name == NULL)
     {
 	/* store the name of the executable, may be used for $VIM */
-	GetModuleFileName(NULL, temp, 255);
+	GetModuleFileName(NULL, temp, MAXPATHL - 1);
 	if (*temp != NUL)
 	    exe_name = FullName_save((char_u *)temp, FALSE);
     }
 
-    if (!did_set_PATH && exe_name != NULL)
+    if (exe_path == NULL && exe_name != NULL)
     {
-	char_u	    *p;
-	char_u	    *newpath;
-
-	/* Append our starting directory to $PATH, so that when doing "!xxd"
-	 * it's found in our starting directory.  Needed because SearchPath()
-	 * also looks there. */
-	p = mch_getenv("PATH");
-	newpath = alloc((unsigned)(STRLEN(p) + STRLEN(exe_name) + 2));
-	if (newpath != NULL)
+	exe_path = vim_strnsave(exe_name, gettail_sep(exe_name) - exe_name);
+	if (exe_path != NULL)
 	{
-	    STRCPY(newpath, p);
-	    STRCAT(newpath, ";");
-	    vim_strncpy(newpath + STRLEN(newpath), exe_name,
-					    gettail_sep(exe_name) - exe_name);
-	    vim_setenv((char_u *)"PATH", newpath);
-	    vim_free(newpath);
+	    /* Append our starting directory to $PATH, so that when doing
+	     * "!xxd" it's found in our starting directory.  Needed because
+	     * SearchPath() also looks there. */
+	    p = mch_getenv("PATH");
+	    if (STRLEN(p) + STRLEN(exe_path) + 2 < MAXPATHL);
+	    {
+		STRCPY(temp, p);
+		STRCAT(temp, ";");
+		STRCAT(temp, exe_path);
+		vim_setenv((char_u *)"PATH", temp);
+	    }
 	}
-
-	did_set_PATH = TRUE;
     }
+}
+
+/*
+ * Load library "name".
+ */
+    HINSTANCE
+vimLoadLib(char *name)
+{
+    HINSTANCE dll = NULL;
+    char old_dir[MAXPATHL];
+
+    if (exe_path == NULL)
+	get_exe_name();
+    if (exe_path != NULL && mch_dirname(old_dir, MAXPATHL) == OK)
+    {
+	/* Change directory to where the executable is, both to make sure we
+	 * find a .dll there and to avoid looking for a .dll in the current
+	 * directory. */
+	mch_chdir(exe_path);
+	dll = LoadLibrary(name);
+	mch_chdir(old_dir);
+    }
+    return dll;
 }
 
 #if defined(DYNAMIC_GETTEXT) || defined(PROTO)
@@ -254,7 +275,7 @@ static char *null_libintl_textdomain(const char *);
 static char *null_libintl_bindtextdomain(const char *, const char *);
 static char *null_libintl_bind_textdomain_codeset(const char *, const char *);
 
-static HINSTANCE hLibintlDLL = 0;
+static HINSTANCE hLibintlDLL = NULL;
 char *(*dyn_libintl_gettext)(const char *) = null_libintl_gettext;
 char *(*dyn_libintl_textdomain)(const char *) = null_libintl_textdomain;
 char *(*dyn_libintl_bindtextdomain)(const char *, const char *)
@@ -282,26 +303,16 @@ dyn_libintl_init(char *libname)
     if (hLibintlDLL)
 	return 1;
     /* Load gettext library (libintl.dll) */
-    hLibintlDLL = LoadLibrary(libname != NULL ? libname : GETTEXT_DLL);
+    hLibintlDLL = vimLoadLib(libname != NULL ? libname : GETTEXT_DLL);
     if (!hLibintlDLL)
     {
-	char_u	    dirname[_MAX_PATH];
-
-	/* Try using the path from gvim.exe to find the .dll there. */
-	get_exe_name();
-	STRCPY(dirname, exe_name);
-	STRCPY(gettail(dirname), GETTEXT_DLL);
-	hLibintlDLL = LoadLibrary((char *)dirname);
-	if (!hLibintlDLL)
+	if (p_verbose > 0)
 	{
-	    if (p_verbose > 0)
-	    {
-		verbose_enter();
-		EMSG2(_(e_loadlib), GETTEXT_DLL);
-		verbose_leave();
-	    }
-	    return 0;
+	    verbose_enter();
+	    EMSG2(_(e_loadlib), GETTEXT_DLL);
+	    verbose_leave();
 	}
+	return 0;
     }
     for (i = 0; libintl_entry[i].name != NULL
 					 && libintl_entry[i].ptr != NULL; ++i)
@@ -430,7 +441,7 @@ PlatformId(void)
 	     * Seems like a lot of overhead to load/unload ADVAPI32.DLL each
 	     * time we verify security...
 	     */
-	    advapi_lib = LoadLibrary("ADVAPI32.DLL");
+	    advapi_lib = vimLoadLib("ADVAPI32.DLL");
 	    if (advapi_lib != NULL)
 	    {
 		pSetNamedSecurityInfo = (PSNSECINFO)GetProcAddress(advapi_lib,
