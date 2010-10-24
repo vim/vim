@@ -231,7 +231,7 @@ get_exe_name(void)
 	     * "!xxd" it's found in our starting directory.  Needed because
 	     * SearchPath() also looks there. */
 	    p = mch_getenv("PATH");
-	    if (STRLEN(p) + STRLEN(exe_path) + 2 < MAXPATHL);
+	    if (STRLEN(p) + STRLEN(exe_path) + 2 < MAXPATHL)
 	    {
 		STRCPY(temp, p);
 		STRCAT(temp, ";");
