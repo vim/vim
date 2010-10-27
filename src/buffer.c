@@ -639,6 +639,9 @@ free_buffer_stuff(buf, free_options)
     {
 	clear_wininfo(buf);		/* including window-local options */
 	free_buf_options(buf, TRUE);
+#ifdef FEAT_SPELL
+	ga_clear(&buf->b_s.b_langp);
+#endif
     }
 #ifdef FEAT_EVAL
     vars_clear(&buf->b_vars.dv_hashtab); /* free all internal variables */
@@ -660,9 +663,6 @@ free_buffer_stuff(buf, free_options)
 #ifdef FEAT_MBYTE
     vim_free(buf->b_start_fenc);
     buf->b_start_fenc = NULL;
-#endif
-#ifdef FEAT_SPELL
-    ga_clear(&buf->b_s.b_langp);
 #endif
 }
 
