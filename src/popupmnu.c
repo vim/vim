@@ -558,8 +558,11 @@ pum_set_selected(n, repeat)
 	    win_T	*curwin_save = curwin;
 	    int		res = OK;
 
-	    /* Open a preview window.  3 lines by default. */
+	    /* Open a preview window.  3 lines by default.  Prefer
+	     * 'previewheight' if set and smaller. */
 	    g_do_tagpreview = 3;
+	    if (p_pvh > 0 && p_pvh < g_do_tagpreview)
+		g_do_tagpreview = p_pvh;
 	    resized = prepare_tagpreview(FALSE);
 	    g_do_tagpreview = 0;
 
