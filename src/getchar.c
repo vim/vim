@@ -3290,9 +3290,9 @@ do_map(maptype, arg, mode, abbrev)
      */
     if (haskey)
 	keys = replace_termcodes(keys, &keys_buf, TRUE, TRUE, special);
+    orig_rhs = rhs;
     if (hasarg)
     {
-	orig_rhs = rhs;
 	if (STRICMP(rhs, "<nop>") == 0)	    /* "<Nop>" means nothing */
 	    rhs = (char_u *)"";
 	else
