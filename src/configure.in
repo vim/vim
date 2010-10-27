@@ -1299,10 +1299,10 @@ AC_SUBST(TCL_LIBS)
 
 AC_MSG_CHECKING(--enable-rubyinterp argument)
 AC_ARG_ENABLE(rubyinterp,
-	[  --enable-rubyinterp     Include Ruby interpreter.], ,
+	[  --enable-rubyinterp[=OPTS]     Include Ruby interpreter.  [default=no] [OPTS=no/yes/dynamic]], ,
 	[enable_rubyinterp="no"])
 AC_MSG_RESULT($enable_rubyinterp)
-if test "$enable_rubyinterp" = "yes"; then
+if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
   AC_MSG_CHECKING(--with-ruby-command argument)
   AC_ARG_WITH(ruby-command, [  --with-ruby-command=RUBY  name of the Ruby command (default: ruby)],
 	RUBY_CMD="$withval"; AC_MSG_RESULT($RUBY_CMD),
@@ -1360,6 +1360,12 @@ if test "$enable_rubyinterp" = "yes"; then
 	RUBY_OBJ="objects/if_ruby.o"
 	RUBY_PRO="if_ruby.pro"
 	AC_DEFINE(FEAT_RUBY)
+	if test "$enable_rubyinterp" = "dynamic"; then
+	  libruby=`$vi_cv_path_ruby -r rbconfig -e 'printf "lib%s.%s\n", Config::CONFIG[["RUBY_SO_NAME"]], Config::CONFIG[["DLEXT"]]'`
+	  AC_DEFINE(DYNAMIC_RUBY)
+	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby\\\" -DDYNAMIC_RUBY_VER=$rubyversion $RUBY_CFLAGS"
+	  RUBY_LIBS=
+	fi
       else
 	AC_MSG_RESULT(not found; disabling Ruby)
       fi

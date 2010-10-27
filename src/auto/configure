@@ -1427,7 +1427,7 @@ Optional Features:
   --enable-pythoninterp=OPTS   Include Python interpreter. default=no OPTS=no/yes/dynamic
   --enable-python3interp=OPTS   Include Python3 interpreter. default=no OPTS=no/yes/dynamic
   --enable-tclinterp      Include Tcl interpreter.
-  --enable-rubyinterp     Include Ruby interpreter.
+  --enable-rubyinterp=OPTS     Include Ruby interpreter.  default=no OPTS=no/yes/dynamic
   --enable-cscope         Include cscope interface.
   --enable-workshop       Include Sun Visual Workshop support.
   --disable-netbeans      Disable NetBeans integration support.
@@ -6103,7 +6103,7 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_rubyinterp" >&5
 $as_echo "$enable_rubyinterp" >&6; }
-if test "$enable_rubyinterp" = "yes"; then
+if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking --with-ruby-command argument" >&5
 $as_echo_n "checking --with-ruby-command argument... " >&6; }
 
@@ -6209,6 +6209,13 @@ $as_echo "$rubyhdrdir" >&6; }
 	RUBY_PRO="if_ruby.pro"
 	$as_echo "#define FEAT_RUBY 1" >>confdefs.h
 
+	if test "$enable_rubyinterp" = "dynamic"; then
+	  libruby=`$vi_cv_path_ruby -r rbconfig -e 'printf "lib%s.%s\n", Config::CONFIG["RUBY_SO_NAME"], Config::CONFIG["DLEXT"]'`
+	  $as_echo "#define DYNAMIC_RUBY 1" >>confdefs.h
+
+	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby\\\" -DDYNAMIC_RUBY_VER=$rubyversion $RUBY_CFLAGS"
+	  RUBY_LIBS=
+	fi
       else
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: not found; disabling Ruby" >&5
 $as_echo "not found; disabling Ruby" >&6; }
