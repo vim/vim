@@ -1573,6 +1573,11 @@ gui_mch_init(void)
 # endif
 #endif
 
+#ifdef FEAT_EVAL
+    /* set the v:windowid variable */
+    set_vim_var_nr(VV_WINDOWID, (long)s_hwnd);
+#endif
+
 theend:
     /* Display any pending error messages */
     display_errors();

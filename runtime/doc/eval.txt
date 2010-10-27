@@ -1660,7 +1660,11 @@ v:warningmsg	Last given warning message.  It's allowed to set this variable.
 					*v:windowid* *windowid-variable*
 v:windowid	When any X11 based GUI is running or when running in a
 		terminal and Vim connects to the X server (|-X|) this will be
-		set to the window ID.  Otherwise the value is zero.
+		set to the window ID.
+		When an MS-Windows GUI is running this will be set to the
+		window handle.
+		Otherwise the value is zero.
+		Note: for windows inside Vim use |winnr()|.
 
 ==============================================================================
 4. Builtin Functions					*functions*
