@@ -14,7 +14,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "auto/config.h"
+#ifdef HAVE_CONFIG_H
+# include "auto/config.h"
+#endif
 
 #ifdef _WIN32
 # if !defined(DYNAMIC_RUBY_VER) || (DYNAMIC_RUBY_VER < 18)
@@ -50,7 +52,7 @@
 #  define RUBY_EXPORT
 # endif
 
-#ifndef WIN3264
+#if !(defined(WIN32) || defined(_WIN64))
 # include <dlfcn.h>
 # define HINSTANCE void*
 # define RUBY_PROC void*
