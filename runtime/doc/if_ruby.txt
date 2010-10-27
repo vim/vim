@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 7.3.  Last change: 2010 Jul 20
+*if_ruby.txt*   For Vim version 7.3.  Last change: 2010 Oct 27
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda
@@ -39,6 +39,9 @@ downloading Ruby there.
 			Note: This command doesn't work when the Ruby feature
 			wasn't compiled in.  To avoid errors, see
 			|script-here|.
+
+Command to try it out: >
+	:ruby print "Hello"   # this is a comment
 
 Example Vim script: >
 
@@ -187,12 +190,12 @@ $curbuf		The current buffer object.
 ==============================================================================
 6. Dynamic loading					*ruby-dynamic*
 
-On MS-Windows the Ruby library can be loaded dynamically.  The |:version|
-output then includes |+ruby/dyn|.
+On MS-Windows and Unix the Ruby library can be loaded dynamically.  The
+|:version| output then includes |+ruby/dyn|.
 
-This means that Vim will search for the Ruby DLL file only when needed.  When
-you don't use the Ruby interface you don't need it, thus you can use Vim
-without this DLL file.
+This means that Vim will search for the Ruby DLL file or shared library only
+when needed.  When you don't use the Ruby interface you don't need it, thus
+you can use Vim even though this library file is not on your system.
 
 You need to install the right version of Ruby for this to work.  You can find
 the package to download from:

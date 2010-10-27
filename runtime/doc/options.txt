@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2010 Oct 20
+*options.txt*	For Vim version 7.3.  Last change: 2010 Oct 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3089,6 +3089,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Specifies for which type of commands folds will be opened, if the
 	command moves the cursor into a closed fold.  It is a comma separated
 	list of items.
+	NOTE: When the command is part of a mapping this option is not used.
+	Add the |zv| command to the mapping to get the same effect.
+	(rationale: the mapping may want to control opening folds itself)
+
 		item		commands ~
 		all		any
 		block		"(", "{", "[[", "[{", etc.
@@ -3103,8 +3107,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 				Also for |[s| and |]s|.
 		tag		jumping to a tag: ":ta", CTRL-T, etc.
 		undo		undo or redo: "u" and CTRL-R
-	When the command is part of a mapping this option is not used.  Add
-	the |zv| command to the mapping to get the same effect.
 	When a movement command is used for an operator (e.g., "dl" or "y%")
 	this option is not used.  This means the operator will include the
 	whole closed fold.

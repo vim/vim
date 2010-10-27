@@ -8086,6 +8086,7 @@ v:val	eval.txt	/*v:val*
 v:var	eval.txt	/*v:var*
 v:version	eval.txt	/*v:version*
 v:warningmsg	eval.txt	/*v:warningmsg*
+v:windowid	eval.txt	/*v:windowid*
 v_!	change.txt	/*v_!*
 v_$	visual.txt	/*v_$*
 v_:	cmdline.txt	/*v_:*
@@ -8360,6 +8361,7 @@ window-size	term.txt	/*window-size*
 window-size-functions	usr_41.txt	/*window-size-functions*
 window-tag	windows.txt	/*window-tag*
 window-variable	eval.txt	/*window-variable*
+windowid-variable	eval.txt	/*windowid-variable*
 windows	windows.txt	/*windows*
 windows-3.1	os_win32.txt	/*windows-3.1*
 windows-intro	windows.txt	/*windows-intro*

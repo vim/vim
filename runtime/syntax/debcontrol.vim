@@ -3,8 +3,8 @@
 " Maintainer:  Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
 " Former Maintainers: Gerfried Fuchs <alfie@ist.org>
 "                     Wichert Akkerman <wakkerma@debian.org>
-" Last Change: 2009 Aug 17
-" URL: http://hg.debian.org/hg/pkg-vim/vim/raw-file/tip/runtime/syntax/debcontrol.vim
+" Last Change: 2010 Oct 21
+" URL: http://hg.debian.org/hg/pkg-vim/vim/raw-file/unstable/runtime/syntax/debcontrol.vim
 
 " Standard syntax initialization
 if version < 600
@@ -27,7 +27,7 @@ syn match debControlSpace " "
 syn match debcontrolArchitecture contained "\%(all\|any\|alpha\|amd64\|arm\%(e[bl]\)\=\|avr32\|hppa\|i386\|ia64\|lpia\|m32r\|m68k\|mips\%(el\)\=\|powerpc\|ppc64\|s390x\=\|sh[34]\(eb\)\=\|sh\|sparc\%(64\)\=\|hurd-i386\|kfreebsd-\%(i386\|amd64\|gnu\)\|knetbsd-i386\|kopensolaris-i386\|netbsd-\%(alpha\|i386\)\)"
 syn match debcontrolName contained "[a-z0-9][a-z0-9+.-]\+"
 syn match debcontrolPriority contained "\(extra\|important\|optional\|required\|standard\)"
-syn match debcontrolSection contained "\v((contrib|non-free|non-US/main|non-US/contrib|non-US/non-free|restricted|universe|multiverse)/)?(admin|cli-mono|comm|database|debian-installer|debug|devel|doc|editors|electronics|embedded|fonts|games|gnome|gnustep|gnu-r|graphics|hamradio|haskell|httpd|interpreters|java|kde|kernel|libs|libdevel|lisp|localization|mail|math|misc|net|news|ocaml|oldlibs|otherosfs|perl|php|python|ruby|science|shells|sound|text|tex|utils|vcs|video|web|x11|xfce|zope)"
+syn match debcontrolSection contained "\v((contrib|non-free|non-US/main|non-US/contrib|non-US/non-free|restricted|universe|multiverse)/)?(admin|cli-mono|comm|database|debian-installer|debug|devel|doc|editors|electronics|embedded|fonts|games|gnome|gnustep|gnu-r|graphics|hamradio|haskell|httpd|interpreters|java|kde|kernel|libs|libdevel|lisp|localization|mail|math|metapackages|misc|net|news|ocaml|oldlibs|otherosfs|perl|php|python|ruby|science|shells|sound|text|tex|utils|vcs|video|web|x11|xfce|zope)"
 syn match debcontrolPackageType contained "u\?deb"
 syn match debcontrolVariable contained "\${.\{-}}"
 syn match debcontrolDmUpload contained "\cyes"

@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.3.  Last change: 2010 Sep 29
+*insert.txt*    For Vim version 7.3.  Last change: 2010 Oct 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -381,6 +381,10 @@ end of the line, it will be put on the last character in the line.  In
 mappings it's often better to use <Esc> (first put an "x" in the text, <Esc>
 will then always put the cursor on it).  Or use CTRL-\ CTRL-O, but then
 beware of the cursor possibly being beyond the end of the line.
+
+The CTRL-O command takes you to Normal mode.  If you then use a command enter
+Insert mode again it doesn't nest.  Thus when typing "a<C-O>a" and then <Esc>
+takes you back to Normal mode, you do not need to type <Esc> twice.
 
 The shifted cursor keys are not available on all terminals.
 
@@ -1043,7 +1047,8 @@ be relatively short.  The "info" item can be longer, it will  be displayed in
 the preview window when "preview" appears in 'completeopt'.  The "info" item
 will also remain displayed after the popup menu has been removed.  This is
 useful for function arguments.  Use a single space for "info" to remove
-existing text in the preview window.
+existing text in the preview window.  The size of the preview window is three
+lines, but 'previewheight' is used when it has a value of 1 or 2.
 
 The "kind" item uses a single letter to indicate the kind of completion.  This
 may be used to show the completion differently (different color or icon).

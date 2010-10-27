@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2010 Oct 18
+*eval.txt*	For Vim version 7.3.  Last change: 2010 Oct 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4009,7 +4009,7 @@ maparg({name}[, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 		  "lhs"	     The {lhs} of the mapping.
 		  "rhs"	     The {rhs} of the mapping as typed.
 		  "silent"   1 for a |:map-silent| mapping, else 0.
-		  "noremap"  1 if the {rhs} of the mapping is remappable.
+		  "noremap"  1 if the {rhs} of the mapping is not remappable.
 		  "expr"     1 for an expression mapping (|:map-<expr>|).
 		  "buffer"   1 for a buffer local mapping (|:map-local|).
 		  "mode"     Modes for which the mapping is defined. In
@@ -4018,8 +4018,8 @@ maparg({name}[, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 			     " "     Normal, Visual and Operator-pending
 			     "!"     Insert and Commandline mode
 				     (|mapmpde-ic|)
-		  "sid"	     the Script local ID, used for <sid> mappings
-			     (|<SID>|)
+		  "sid"	     The script local ID, used for <sid> mappings
+			     (|<SID>|).
 
 		The mappings local to the current buffer are checked first,
 		then the global mappings.

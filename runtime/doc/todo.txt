@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2010 Oct 20
+*todo.txt*      For Vim version 7.3.  Last change: 2010 Oct 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,6 +30,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Segfault with command line abbreviation. (Randy Morris, 2010 Oct 25)
+
 'cursorline' is displayed too short when there are concealed characters and
 'list' is set, 'listchars' at default value. (Dennis Preiser, 2010 Aug 15)
 
@@ -45,16 +47,8 @@ Windows keys not set properly on Windows 7?  (cncyber, 2010 Aug 26)
 This line hangs Vim, because of syntax HL:
 call append(line, "INFO  ....12....18....24....30....36....42....48....54....60....66....72....78%$")
 
-Patch to add v:windowid. (Christian J. Robinson, 2010 Oct 13, update by Lech
-Lorens, Oct 14)
-
-maparg() doesn't return the flags, such as <buffer>, <script>, <silent>.
-These are needed to save and restore a mapping.
-Also: the rhs string is not always correct. (Hari Krishna Dara, 2009 Sept 29)
-Patch by Christian Brabandt, 2010 Sep 17.
-
 Building the MingW version without clipboard but with multi-byte doesn't
-build. (Bill Lam, 2010 Sep 18)
+work. (Bill Lam, 2010 Sep 18)
 
 Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
@@ -62,17 +56,12 @@ Using ":break" or something else that stops executing commands inside a
 ":finally" does not rethrow a previously uncaught exception. (ZyX, 2010 Oct
 15)
 
-Patch to fix warning for accessing mediumVersion. (Dominique Pelle, 2010 Aug
-18)
-
 Patch for 2html to support 'fileencoding'. (Benjamin Fritz, 2010 Sep 10)
-
-Patch to use 'previewheight' for popup menu. (Benjamin Haskell, 2010 Sep 29)
+Beta testing finished now?
 
 Three patches for undo persistence. (Christian Brabandt, 2010 Sep 4)
 
-ml_get error for using :copen in a custom complete function. (Xavier
-Deguillard, 2010 Oct 19)  Other way to reproduce it by Lech Lorens, Oct 20.
+Patch to adjust mzscheme to support racket. (Sergey Khorev, 2010 Oct 24)
 
 string() can't parse back "inf" and "nan".  Fix documentation or fix code?
 (ZyX, 2010 Aug 23)
@@ -80,7 +69,13 @@ string() can't parse back "inf" and "nan".  Fix documentation or fix code?
 Patch to use "--as-needed" instead of the link.sh functionality.  (Kirill A.
 Shutemov, 2010 Aug 25)
 
+ml_get error for using :copen in a custom complete function. (Xavier
+Deguillard, 2010 Oct 19)  Other way to reproduce it by Lech Lorens, Oct 20.
+Patch from Lech: Oct 20. More problems from Lech, Oct 21.
+
 Patch to fix complete(). (Kikuchan, 2010 Oct 15)
+
+maparg() does not show the <script> flag.  How to restore the script ID?
 
 Ruby: Patch to load Gem module.  Why is this needed? (Yasuhiro Matsumoto, 2010
 Oct 6)
@@ -102,8 +97,11 @@ it: Pablo Contreras, 2010 Oct 12  Windows XP and 7.  Font is never freed?
 GTK: drawing a double-width combining character over single-width characters
 doesn't look right. (Dominique Pelle, 2010 Aug 8)
 
+GTK: tear-off menu does not work. (Kurt Sonnenmoser, 2010 Oct 25)
+
 Using ":call" inside "if 0" does not see that a function returns a Dict and
 gives error for "." as string concatenation.  (Yasuhiro Matsumoto, 2010 Oct 20)
+Patch: Oct 20.
 
 Copy/paste between Vim and Google chrome doesn't work well for multi-byte
 characters. (Ben Haskell, 2010 Sep 17)
@@ -128,12 +126,22 @@ Included, but also need a change to configure.
 
 setpos() does not restore cursor position after :normal. (Tyru, 2010 Aug 11)
 
+7   The 'directory' option supports changing path separators to "%" to make
+    file names unique, also support this for 'backupdir'. (Mikolaj Machowski)
+    Patch by Christian Brabandt, 2010 Oct 21.
+
 getpos()/setpos() don't include curswant.  getpos() could return a fifth
 element.  setpos() could accept an optional fifth element.
 Patch by Christian Brabandt, 2010 Sep 6.  Check that new argument is optional
 and that it's documented.
 
+With "tw=55 fo+=a" typing space before ) doesn't work well. (Scott Mcdermott,
+2010 Oct 24)
+
 Messages in message.txt are highlighted as examples.
+
+When using cp850 the NBSP (0xff) is not drawn correctly. (Brett Stahlman, 2010
+Oct 22)  'isprint' is set to "@,161-255".
 
 Test 73 fails on MS-Windows when compiled with DJGPP and run twice.  How to
 delete the Xfind directory?  Add an rmdir() function, just like we have
@@ -1879,11 +1887,6 @@ Macintosh:
     works.
 8   A very long message in confirm() can't be quit.  Make this possible with
     CTRL-C.
-7   clip_x11_own_selection() uses CurrentTime, that is not allowed.  VNC X
-    server has a problem with this.  (Mark Waggoner) Remembering the timestamp
-    of events isn't always possible.  We don't get them in an xterm.  GTK
-    doesn't obtain the selection again when the timestamp differs, thus it
-    won't work for GTK anyway.
 8   When the clipboard isn't supported: ":yank*" gives a confusing error
     message.  Specifically mention that the register name is invalid.
 8   "gf" always excludes trailing punctuation characters.  file_name_in_line()
@@ -4278,8 +4281,6 @@ Writing files:
 8   'backupskip' doesn't write a backup file at all, a bit dangerous for some
     applications.  Add 'backupelsewhere' to write a backup file in another
     directory?  Or add a flag to 'backupdir'?
-7   The 'directory' option supports changing path separators to "%" to make
-    file names unique, also support this for 'backupdir'. (Mikolaj Machowski)
 6   Add an option to write a new, numbered, backup file each time.  Like
     'patchmode', e.g., 'backupmode'.
 6   Make it possible to write 'patchmode' files to a different directory.
