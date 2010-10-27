@@ -688,24 +688,27 @@ getcmdline(firstc, count, indent)
 		    p = get_expr_line();
 		    --textlock;
 		    restore_cmdline(&save_ccline);
-		    len = (int)STRLEN(p);
 
-		    if (p != NULL && realloc_cmdbuff(len + 1) == OK)
+		    if (p != NULL)
 		    {
-			ccline.cmdlen = len;
-			STRCPY(ccline.cmdbuff, p);
-			vim_free(p);
+			len = (int)STRLEN(p);
+			if (realloc_cmdbuff(len + 1) == OK)
+			{
+			    ccline.cmdlen = len;
+			    STRCPY(ccline.cmdbuff, p);
+			    vim_free(p);
 
-			/* Restore the cursor or use the position set with
-			 * set_cmdline_pos(). */
-			if (new_cmdpos > ccline.cmdlen)
-			    ccline.cmdpos = ccline.cmdlen;
-			else
-			    ccline.cmdpos = new_cmdpos;
+			    /* Restore the cursor or use the position set with
+			     * set_cmdline_pos(). */
+			    if (new_cmdpos > ccline.cmdlen)
+				ccline.cmdpos = ccline.cmdlen;
+			    else
+				ccline.cmdpos = new_cmdpos;
 
-			KeyTyped = FALSE;	/* Don't do p_wc completion. */
-			redrawcmd();
-			goto cmdline_changed;
+			    KeyTyped = FALSE;	/* Don't do p_wc completion. */
+			    redrawcmd();
+			    goto cmdline_changed;
+			}
 		    }
 		}
 		beep_flush();
