@@ -715,6 +715,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    41,
+/**/
     40,
 /**/
     39,
@@ -1342,9 +1344,9 @@ do_intro_line(row, mesg, add_version, attr)
 	if (highest_patch())
 	{
 	    /* Check for 9.9x or 9.9xx, alpha/beta version */
-	    if (isalpha((int)mediumVersion[3]))
+	    if (isalpha((int)vers[3]))
 	    {
-		if (isalpha((int)mediumVersion[4]))
+		if (isalpha((int)vers[4]))
 		    sprintf((char *)vers + 5, ".%d%s", highest_patch(),
 							   mediumVersion + 5);
 		else
