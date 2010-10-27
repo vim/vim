@@ -3124,6 +3124,9 @@ mb_strnicmp(s1, s2, nn)
 		/* If one of the two characters is incomplete return -1. */
 		if (incomplete || i + utf_byte2len(s2[i]) > n)
 		    return -1;
+		/* Don't case-fold illegal bytes or truncated characters. */
+		if (utf_ptr2len(s1 + i) < l || utf_ptr2len(s2 + i) < l)
+		    return -1;
 		cdiff = utf_fold(utf_ptr2char(s1 + i))
 					     - utf_fold(utf_ptr2char(s2 + i));
 		if (cdiff != 0)
