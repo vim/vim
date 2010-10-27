@@ -289,13 +289,13 @@ typedef struct tagNMTTDISPINFOW {
 
 #ifdef FEAT_MENU
 static UINT	s_menu_id = 100;
+#endif
 
 /*
  * Use the system font for dialogs and tear-off menus.  Remove this line to
  * use DLG_FONT_NAME.
  */
-# define USE_SYSMENU_FONT
-#endif
+#define USE_SYSMENU_FONT
 
 #define VIM_NAME	"vim"
 #define VIM_CLASS	"Vim"
