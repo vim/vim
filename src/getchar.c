@@ -3922,7 +3922,7 @@ showmap(mp, local)
     if (mapchars != NULL)
     {
 	msg_puts(mapchars);
-	len = STRLEN(mapchars);
+	len = (int)STRLEN(mapchars);
 	vim_free(mapchars);
     }
 

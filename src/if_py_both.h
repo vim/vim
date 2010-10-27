@@ -154,7 +154,7 @@ writer(writefn fn, char_u *str, PyInt n)
     {
 	PyInt len = ptr - str;
 
-	if (ga_grow(&io_ga, len + 1) == FAIL)
+	if (ga_grow(&io_ga, (int)(len + 1)) == FAIL)
 	    break;
 
 	mch_memmove(((char *)io_ga.ga_data) + io_ga.ga_len, str, (size_t)len);
@@ -166,10 +166,10 @@ writer(writefn fn, char_u *str, PyInt n)
     }
 
     /* Put the remaining text into io_ga for later printing. */
-    if (n > 0 && ga_grow(&io_ga, n + 1) == OK)
+    if (n > 0 && ga_grow(&io_ga, (int)(n + 1)) == OK)
     {
 	mch_memmove(((char *)io_ga.ga_data) + io_ga.ga_len, str, (size_t)n);
-	io_ga.ga_len += n;
+	io_ga.ga_len += (int)n;
     }
 }
 

@@ -224,7 +224,8 @@ get_exe_name(void)
 
     if (exe_path == NULL && exe_name != NULL)
     {
-	exe_path = vim_strnsave(exe_name, gettail_sep(exe_name) - exe_name);
+	exe_path = vim_strnsave(exe_name,
+				     (int)(gettail_sep(exe_name) - exe_name));
 	if (exe_path != NULL)
 	{
 	    /* Append our starting directory to $PATH, so that when doing
@@ -2374,7 +2375,7 @@ fname_case(
 	/* To avoid a slow failure append "\*" when searching a directory,
 	 * server or network share. */
 	STRCPY(szTrueNameTemp, szTrueName);
-	slen = strlen(szTrueNameTemp);
+	slen = (int)strlen(szTrueNameTemp);
 	if (*porig == psepc && slen + 2 < _MAX_PATH)
 	    STRCPY(szTrueNameTemp + slen, "\\*");
 
