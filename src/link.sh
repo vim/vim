@@ -5,7 +5,7 @@
 # libraries when they exist, but this doesn't mean they are needed for Vim.
 #
 #      Author: Bram Moolenaar
-# Last change: 2006 Sep 26
+# Last change: 2010 Nov 03
 #     License: Public domain
 #
 # Warning: This fails miserably if the linker doesn't return an error code!
@@ -16,11 +16,23 @@
 echo "$LINK " >link.cmd
 exit_value=0
 
+if test "$LINK_AS_NEEDED" = yes; then
+  echo "link.sh: \$LINK_AS_NEEDED set to 'yes': invoking linker directly."
+  cat link.cmd
+  if sh link.cmd; then
+    exit_value=0
+    echo "link.sh: Linked fine"
+  else
+    exit_value=$?
+    echo "link.sh: Linking failed"
+  fi
+else
+  if test -f auto/link.sed; then
+
 #
 # If auto/link.sed already exists, use it.  We assume a previous run of
 # link.sh has found the correct set of libraries.
 #
-if test -f auto/link.sed; then
   echo "link.sh: The file 'auto/link.sed' exists, which is going to be used now."
   echo "link.sh: If linking fails, try deleting the auto/link.sed file."
   echo "link.sh: If this fails too, try creating an empty auto/link.sed file."
@@ -122,6 +134,8 @@ if test -f auto/link.sed -a ! -s auto/link.sed -a ! -f link3.sed; then
       rm -f auto/link.sed
     fi
   fi
+fi
+
 fi
 
 #

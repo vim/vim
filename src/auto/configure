@@ -593,6 +593,7 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+LINK_AS_NEEDED
 DEPEND_CFLAGS_FILTER
 MAKEMO
 MSGFMT
@@ -12401,6 +12402,23 @@ $as_echo "yes" >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
   fi
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking linker --as-needed support" >&5
+$as_echo_n "checking linker --as-needed support... " >&6; }
+LINK_AS_NEEDED=
+# Check if linker supports --as-needed and --no-as-needed options
+if $CC -Wl,--help 2>/dev/null | grep as-needed > /dev/null; then
+  LDFLAGS="$LDFLAGS -Wl,--as-needed"
+  LINK_AS_NEEDED=yes
+fi
+if test "$LINK_AS_NEEDED" = yes; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
 fi
 
 

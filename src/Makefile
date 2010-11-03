@@ -1700,7 +1700,8 @@ $(VIMTARGET): auto/config.mk objects $(OBJ) version.c version.h
 	$(CCC) version.c -o objects/version.o
 	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
 		-o $(VIMTARGET) $(OBJ) objects/version.o $(ALL_LIBS)" \
-		MAKE="$(MAKE)" sh $(srcdir)/link.sh
+		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
+		sh $(srcdir)/link.sh
 
 xxd/xxd$(EXEEXT): xxd/xxd.c
 	cd xxd; CC="$(CC)" CFLAGS="$(CPPFLAGS) $(CFLAGS)" \
