@@ -4862,16 +4862,36 @@ $as_echo "yes" >&6; }
       else
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if scheme.h can be found in /usr/include/plt/" >&5
-$as_echo_n "checking if scheme.h can be found in /usr/include/plt/... " >&6; }
-	if test -f /usr/include/plt/scheme.h; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include/racket" >&5
+$as_echo_n "checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include/racket... " >&6; }
+	if test -f $vi_cv_path_mzscheme_pfx/include/racket/scheme.h; then
 	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-	  SCHEME_INC=/usr/include/plt
+	  SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include/racket
 	else
 	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	  vi_cv_path_mzscheme_pfx=
+	  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if scheme.h can be found in /usr/include/plt/" >&5
+$as_echo_n "checking if scheme.h can be found in /usr/include/plt/... " >&6; }
+	  if test -f /usr/include/plt/scheme.h; then
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	    SCHEME_INC=/usr/include/plt
+	  else
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if scheme.h can be found in /usr/include/racket/" >&5
+$as_echo_n "checking if scheme.h can be found in /usr/include/racket/... " >&6; }
+	    if test -f /usr/include/racket/scheme.h; then
+	      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	      SCHEME_INC=/usr/include/racket
+	    else
+	      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	      vi_cv_path_mzscheme_pfx=
+	    fi
+	  fi
 	fi
       fi
     fi
@@ -4883,12 +4903,22 @@ $as_echo "no" >&6; }
     elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzscheme3m.a"; then
       MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libmzscheme3m.a"
       MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
-    elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a"; then
+    elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libracket3m.a"; then
+      MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libracket3m.a"
+      MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
+    elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libracket.a"; then
+      MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libracket.a ${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a"
+    elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzscheme.a"; then
       MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libmzscheme.a ${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a"
     else
             if test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzscheme3m.so"; then
         MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lmzscheme3m"
 	MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
+      elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libracket3m.so"; then
+        MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lracket3m"
+	MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
+      elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libracket.so"; then
+        MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lracket -lmzgc"
       else
         MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lmzscheme -lmzgc"
       fi
@@ -4901,10 +4931,20 @@ $as_echo "no" >&6; }
     fi
     if test -d $vi_cv_path_mzscheme_pfx/lib/plt/collects; then
       SCHEME_COLLECTS=lib/plt/
+    else
+      if test -d $vi_cv_path_mzscheme_pfx/lib/racket/collects; then
+	SCHEME_COLLECTS=lib/racket/
+      fi
     fi
     if test -f "${vi_cv_path_mzscheme_pfx}/${SCHEME_COLLECTS}collects/scheme/base.ss" ; then
-            MZSCHEME_EXTRA="mzscheme_base.c"
-      MZSCHEME_CFLAGS="${MZSCHEME_CFLAGS} -DINCLUDE_MZSCHEME_BASE"
+      MZSCHEME_EXTRA="mzscheme_base.c"
+    else
+      if test -f "${vi_cv_path_mzscheme_pfx}/${SCHEME_COLLECTS}collects/scheme/base.rkt" ; then
+	MZSCHEME_EXTRA="mzscheme_base.c"
+      fi
+    fi
+    if test "X$MZSCHEME_EXTRA" != "X" ; then
+            MZSCHEME_CFLAGS="${MZSCHEME_CFLAGS} -DINCLUDE_MZSCHEME_BASE"
       MZSCHEME_MZC="${vi_cv_path_mzscheme_pfx}/bin/mzc"
     fi
     MZSCHEME_CFLAGS="${MZSCHEME_CFLAGS} -I${SCHEME_INC} \

@@ -1,6 +1,6 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2010 Feb 24
+# Last updated by Dan Sharp.  Last Change: 2010 Nov 03
 #
 # Also read INSTALLpc.txt!
 #
@@ -27,6 +27,7 @@
 #   MZSCHEME_VER      define to version of MzScheme being used (209_000)
 #   DYNAMIC_MZSCHEME  no or yes: use yes to load the MzScheme DLLs dynamically (yes)
 #   MZSCHEME_DLLS     path to MzScheme DLLs (libmzgc and libmzsch), for "static" build.
+#   MZSCHEME_USE_RACKET  define to use "racket" instead of "mzsch".
 # LUA	define to path to Lua dir to get Lua support (not defined)
 #   LUA_VER	    define to version of Lua being used (51)
 #   DYNAMIC_LUA  no or yes: use yes to load the Lua DLL dynamically (yes)
@@ -254,16 +255,22 @@ ifndef MZSCHEME_GENERATE_BASE
 MZSCHEME_GENERATE_BASE=no
 endif
 
+ifndef MZSCHEME_USE_RACKET
+MZSCHEME_MAIN_LIB=mzsch
+else
+MZSCHEME_MAIN_LIB=racket
+endif
+
 ifeq (yes, $(DYNAMIC_MZSCHEME))
-DEFINES += -DDYNAMIC_MZSCHEME -DDYNAMIC_MZSCH_DLL=\"libmzsch$(MZSCHEME_VER).dll\" -DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
+DEFINES += -DDYNAMIC_MZSCHEME -DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" -DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
 else
 ifndef MZSCHEME_DLLS
 MZSCHEME_DLLS = $(MZSCHEME)
 endif
 ifeq (yes,$(MZSCHEME_PRECISE_GC))
-MZSCHEME_LIB=-lmzsch$(MZSCHEME_VER)
+MZSCHEME_LIB=-l$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER)
 else
-MZSCHEME_LIB = -lmzsch$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
+MZSCHEME_LIB = -l$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
 endif
 EXTRA_LIBS += -L$(MZSCHEME_DLLS) -L$(MZSCHEME_DLLS)/lib $(MZSCHEME_LIB)
 endif

@@ -794,9 +794,16 @@ mzscheme_end(void)
 #endif
 }
 
+#if MZSCHEME_VERSION_MAJOR >= 500 && defined(WIN32) && defined(USE_THREAD_LOCAL)
+static __declspec(thread) void *tls_space;
+#endif
+
     void
 mzscheme_main(void)
 {
+#if MZSCHEME_VERSION_MAJOR >= 500 && defined(WIN32) && defined(USE_THREAD_LOCAL)
+    scheme_register_tls_space(&tls_space, 0);
+#endif
 #if defined(MZ_PRECISE_GC) && MZSCHEME_VERSION_MAJOR >= 400
     /* use trampoline for precise GC in MzScheme >= 4.x */
     scheme_main_setup(TRUE, mzscheme_env_main, 0, NULL);

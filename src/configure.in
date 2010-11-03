@@ -568,13 +568,27 @@ if test "$enable_mzschemeinterp" = "yes"; then
 	SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include/plt
       else
 	AC_MSG_RESULT(no)
-	AC_MSG_CHECKING(if scheme.h can be found in /usr/include/plt/)
-	if test -f /usr/include/plt/scheme.h; then
+	AC_MSG_CHECKING(if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include/racket)
+	if test -f $vi_cv_path_mzscheme_pfx/include/racket/scheme.h; then
 	  AC_MSG_RESULT(yes)
-	  SCHEME_INC=/usr/include/plt
+	  SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include/racket
 	else
 	  AC_MSG_RESULT(no)
-	  vi_cv_path_mzscheme_pfx=
+	  AC_MSG_CHECKING(if scheme.h can be found in /usr/include/plt/)
+	  if test -f /usr/include/plt/scheme.h; then
+	    AC_MSG_RESULT(yes)
+	    SCHEME_INC=/usr/include/plt
+	  else
+	    AC_MSG_RESULT(no)
+	    AC_MSG_CHECKING(if scheme.h can be found in /usr/include/racket/)
+	    if test -f /usr/include/racket/scheme.h; then
+	      AC_MSG_RESULT(yes)
+	      SCHEME_INC=/usr/include/racket
+	    else
+	      AC_MSG_RESULT(no)
+	      vi_cv_path_mzscheme_pfx=
+	    fi
+	  fi
 	fi
       fi
     fi
@@ -586,13 +600,23 @@ if test "$enable_mzschemeinterp" = "yes"; then
     elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzscheme3m.a"; then
       MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libmzscheme3m.a"
       MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
-    elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a"; then
+    elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libracket3m.a"; then
+      MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libracket3m.a"
+      MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
+    elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libracket.a"; then
+      MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libracket.a ${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a"
+    elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzscheme.a"; then
       MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libmzscheme.a ${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a"
     else
       dnl Using shared objects
       if test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzscheme3m.so"; then
         MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lmzscheme3m"
 	MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
+      elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libracket3m.so"; then
+        MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lracket3m"
+	MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
+      elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libracket.so"; then
+        MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lracket -lmzgc"
       else
         MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lmzscheme -lmzgc"
       fi
@@ -607,10 +631,20 @@ if test "$enable_mzschemeinterp" = "yes"; then
     fi
     if test -d $vi_cv_path_mzscheme_pfx/lib/plt/collects; then
       SCHEME_COLLECTS=lib/plt/
+    else
+      if test -d $vi_cv_path_mzscheme_pfx/lib/racket/collects; then
+	SCHEME_COLLECTS=lib/racket/
+      fi
     fi
     if test -f "${vi_cv_path_mzscheme_pfx}/${SCHEME_COLLECTS}collects/scheme/base.ss" ; then
-      dnl need to generate bytecode for MzScheme base
       MZSCHEME_EXTRA="mzscheme_base.c"
+    else
+      if test -f "${vi_cv_path_mzscheme_pfx}/${SCHEME_COLLECTS}collects/scheme/base.rkt" ; then
+	MZSCHEME_EXTRA="mzscheme_base.c"
+      fi
+    fi
+    if test "X$MZSCHEME_EXTRA" != "X" ; then
+      dnl need to generate bytecode for MzScheme base
       MZSCHEME_CFLAGS="${MZSCHEME_CFLAGS} -DINCLUDE_MZSCHEME_BASE"
       MZSCHEME_MZC="${vi_cv_path_mzscheme_pfx}/bin/mzc"
     fi
