@@ -342,7 +342,18 @@ let l = [0, 1, 2, 3]
 :$put =(d == d)
 :$put =(l != deepcopy(l))
 :$put =(d != deepcopy(d))
+:"
+:" compare complex recursively linked list and dict
+:let l = []
+:call add(l, l)
+:let dict4 = {"l": l}
+:call add(dict4.l, dict4)
+:let lcopy = deepcopy(l)
+:let dict4copy = deepcopy(dict4)
+:$put =(l == lcopy)
+:$put =(dict4 == dict4copy)
 :endfun
+:"
 :call Test(1, 2, [3, 4], {5: 6})  " This may take a while
 :"
 :delfunc Test
