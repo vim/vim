@@ -4747,7 +4747,11 @@ expand_shellcmd(filepat, num_file, file, flagsarg)
 			    || (pat[1] == '.' && vim_ispathsep(pat[2])))))
 	path = (char_u *)".";
     else
+    {
 	path = vim_getenv((char_u *)"PATH", &mustfree);
+	if (path == NULL)
+	    path = (char_u *)"";
+    }
 
     /*
      * Go over all directories in $PATH.  Expand matches in that directory and

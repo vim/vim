@@ -211,13 +211,16 @@ static char_u *exe_path = NULL;
     static void
 get_exe_name(void)
 {
-    char	temp[MAXPATHL];
+    /* Maximum length of $PATH is more than MAXPATHL.  8191 is often mentioned
+     * as the maximum length that works (plus a NUL byte). */
+#define MAX_ENV_PATH_LEN 8192
+    char	temp[MAX_ENV_PATH_LEN];
     char_u	*p;
 
     if (exe_name == NULL)
     {
 	/* store the name of the executable, may be used for $VIM */
-	GetModuleFileName(NULL, temp, MAXPATHL - 1);
+	GetModuleFileName(NULL, temp, MAX_ENV_PATH_LEN - 1);
 	if (*temp != NUL)
 	    exe_name = FullName_save((char_u *)temp, FALSE);
     }
@@ -232,10 +235,16 @@ get_exe_name(void)
 	     * "!xxd" it's found in our starting directory.  Needed because
 	     * SearchPath() also looks there. */
 	    p = mch_getenv("PATH");
-	    if (STRLEN(p) + STRLEN(exe_path) + 2 < MAXPATHL)
+	    if (p == NULL
+		       || STRLEN(p) + STRLEN(exe_path) + 2 < MAX_ENV_PATH_LEN)
 	    {
-		STRCPY(temp, p);
-		STRCAT(temp, ";");
+		if (p == NULL || *p == NUL)
+		    temp[0] = NUL;
+		else
+		{
+		    STRCPY(temp, p);
+		    STRCAT(temp, ";");
+		}
 		STRCAT(temp, exe_path);
 		vim_setenv((char_u *)"PATH", temp);
 	    }
