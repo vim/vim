@@ -2871,8 +2871,10 @@ find_command(eap, full)
 	    }
 
 #ifdef FEAT_USR_CMDS
-	/* Look for a user defined command as a last resort */
-	if (eap->cmdidx == CMD_SIZE && *eap->cmd >= 'A' && *eap->cmd <= 'Z')
+	/* Look for a user defined command as a last resort.  Let ":Print" be
+	 * overruled by a user defined command. */
+	if ((eap->cmdidx == CMD_SIZE || eap->cmdidx == CMD_Print)
+		&& *eap->cmd >= 'A' && *eap->cmd <= 'Z')
 	{
 	    /* User defined commands may contain digits. */
 	    while (ASCII_ISALNUM(*p))
@@ -5588,6 +5590,7 @@ ex_command(eap)
     int	    compl = EXPAND_NOTHING;
     char_u  *compl_arg = NULL;
     int	    has_attr = (eap->arg[0] == '-');
+    int	    name_len;
 
     p = eap->arg;
 
@@ -5613,6 +5616,7 @@ ex_command(eap)
 	return;
     }
     end = p;
+    name_len = (int)(end - name);
 
     /* If there is nothing after the name, and no attributes were specified,
      * we are listing commands
@@ -5625,6 +5629,13 @@ ex_command(eap)
     else if (!ASCII_ISUPPER(*name))
     {
 	EMSG(_("E183: User defined commands must start with an uppercase letter"));
+	return;
+    }
+    else if ((name_len == 1 && *name == 'X')
+	  || (name_len <= 4
+		  && STRNCMP(name, "Next", name_len > 4 ? 4 : name_len) == 0))
+    {
+	EMSG(_("E841: Reserved name, cannot be used for user defined command"));
 	return;
     }
     else
@@ -9394,7 +9405,7 @@ ex_findpat(eap)
 ex_ptag(eap)
     exarg_T	*eap;
 {
-    g_do_tagpreview = p_pvh;
+    g_do_tagpreview = p_pvh;  /* will be reset to 0 in ex_tag_cmd() */
     ex_tag_cmd(eap, cmdnames[eap->cmdidx].cmd_name + 1);
 }
 
