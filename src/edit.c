@@ -2662,6 +2662,7 @@ set_completion(startcol, list)
     if (stop_arrow() == FAIL)
 	return;
 
+    compl_direction = FORWARD;
     if (startcol > curwin->w_cursor.col)
 	startcol = curwin->w_cursor.col;
     compl_col = startcol;
@@ -3909,6 +3910,7 @@ ins_compl_add_tv(tv, dir)
     char_u	*word;
     int		icase = FALSE;
     int		adup = FALSE;
+    int		aempty = FALSE;
     char_u	*(cptext[CPT_COUNT]);
 
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
@@ -3926,13 +3928,15 @@ ins_compl_add_tv(tv, dir)
 	    icase = get_dict_number(tv->vval.v_dict, (char_u *)"icase");
 	if (get_dict_string(tv->vval.v_dict, (char_u *)"dup", FALSE) != NULL)
 	    adup = get_dict_number(tv->vval.v_dict, (char_u *)"dup");
+	if (get_dict_string(tv->vval.v_dict, (char_u *)"empty", FALSE) != NULL)
+	    aempty = get_dict_number(tv->vval.v_dict, (char_u *)"empty");
     }
     else
     {
 	word = get_tv_string_chk(tv);
 	vim_memset(cptext, 0, sizeof(cptext));
     }
-    if (word == NULL || *word == NUL)
+    if (word == NULL || (!aempty && *word == NUL))
 	return FAIL;
     return ins_compl_add(word, -1, icase, NULL, cptext, dir, 0, adup);
 }
