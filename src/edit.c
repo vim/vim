@@ -58,6 +58,10 @@ static char *ctrl_x_msgs[] =
 };
 
 static char e_hitend[] = N_("Hit end of paragraph");
+#ifdef FEAT_COMPL_FUNC
+static char e_complwin[] = N_("E839: Completion function changed window");
+static char e_compldel[] = N_("E840: Completion function deleted text");
+#endif
 
 /*
  * Structure used to store one match for insert completion.
@@ -3833,6 +3837,8 @@ expand_by_function(type, base)
     char_u	*args[2];
     char_u	*funcname;
     pos_T	pos;
+    win_T	*curwin_save;
+    buf_T	*curbuf_save;
 
     funcname = (type == CTRL_X_FUNCTION) ? curbuf->b_p_cfu : curbuf->b_p_ofu;
     if (*funcname == NUL)
@@ -3843,13 +3849,27 @@ expand_by_function(type, base)
     args[1] = base;
 
     pos = curwin->w_cursor;
+    curwin_save = curwin;
+    curbuf_save = curbuf;
     matchlist = call_func_retlist(funcname, 2, args, FALSE);
+    if (curwin_save != curwin || curbuf_save != curbuf)
+    {
+	EMSG(_(e_complwin));
+	goto theend;
+    }
     curwin->w_cursor = pos;	/* restore the cursor position */
-    if (matchlist == NULL)
-	return;
+    check_cursor();
+    if (!equalpos(curwin->w_cursor, pos))
+    {
+	EMSG(_(e_compldel));
+	goto theend;
+    }
+    if (matchlist != NULL)
+	ins_compl_add_list(matchlist);
 
-    ins_compl_add_list(matchlist);
-    list_unref(matchlist);
+theend:
+    if (matchlist != NULL)
+	list_unref(matchlist);
 }
 #endif /* FEAT_COMPL_FUNC */
 
@@ -4994,6 +5014,8 @@ ins_complete(c)
 	    int		col;
 	    char_u	*funcname;
 	    pos_T	pos;
+	    win_T	*curwin_save;
+	    buf_T	*curbuf_save;
 
 	    /* Call 'completefunc' or 'omnifunc' and get pattern length as a
 	     * string */
@@ -5009,8 +5031,21 @@ ins_complete(c)
 	    args[0] = (char_u *)"1";
 	    args[1] = NULL;
 	    pos = curwin->w_cursor;
+	    curwin_save = curwin;
+	    curbuf_save = curbuf;
 	    col = call_func_retnr(funcname, 2, args, FALSE);
+	    if (curwin_save != curwin || curbuf_save != curbuf)
+	    {
+		EMSG(_(e_complwin));
+		return FAIL;
+	    }
 	    curwin->w_cursor = pos;	/* restore the cursor position */
+	    check_cursor();
+	    if (!equalpos(curwin->w_cursor, pos))
+	    {
+		EMSG(_(e_compldel));
+		return FAIL;
+	    }
 
 	    if (col < 0)
 		col = curs_col;
