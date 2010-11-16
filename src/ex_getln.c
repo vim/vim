@@ -712,7 +712,11 @@ getcmdline(firstc, count, indent)
 		    }
 		}
 		beep_flush();
-		c = ESC;
+		got_int = FALSE;	/* don't abandon the command line */
+		did_emsg = FALSE;
+		emsg_on_display = FALSE;
+		redrawcmd();
+		goto cmdline_not_changed;
 	    }
 #endif
 	    else
