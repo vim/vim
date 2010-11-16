@@ -2895,6 +2895,11 @@ gui_mch_wait_for_chars(wtime)
 	    focus = gui.in_focus;
 	}
 
+#if defined(FEAT_NETBEANS_INTG)
+	/* Process any queued netbeans messages. */
+	netbeans_parse_messages();
+#endif
+
 	/*
 	 * Don't use gui_mch_update() because then we will spin-lock until a
 	 * char arrives, instead we use XtAppProcessEvent() to hang until an

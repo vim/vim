@@ -726,9 +726,6 @@ netbeans_read()
     static char_u	*buf = NULL;
     int			len = 0;
     int			readlen = 0;
-#if defined(NB_HAS_GUI) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_W32)
-    static int		level = 0;
-#endif
 #ifdef HAVE_SELECT
     struct timeval	tval;
     fd_set		rfds;
@@ -743,13 +740,6 @@ netbeans_read()
 	nbdebug(("messageFromNetbeans() called without a socket\n"));
 	return;
     }
-
-#if defined(NB_HAS_GUI) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_W32)
-    /* recursion guard; this will be called from the X event loop at unknown
-     * moments */
-    if (NB_HAS_GUI)
-	++level;
-#endif
 
     /* Allocate a buffer to read into. */
     if (buf == NULL)
@@ -803,21 +793,9 @@ netbeans_read()
 	return; /* don't try to parse it */
     }
 
-#if defined(NB_HAS_GUI) && !defined(FEAT_GUI_W32)
-    /* Let the main loop handle messages. */
-    if (NB_HAS_GUI)
-    {
-# ifdef FEAT_GUI_GTK
-	if (gtk_main_level() > 0)
-	    gtk_main_quit();
-# else
-	/* Parse the messages now, but avoid recursion. */
-	if (level == 1)
-	    netbeans_parse_messages();
-
-	--level;
-# endif
-    }
+#if defined(NB_HAS_GUI) && defined(FEAT_GUI_GTK)
+    if (NB_HAS_GUI && gtk_main_level() > 0)
+        gtk_main_quit();
 #endif
 }
 
