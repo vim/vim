@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.3.  Last change: 2010 Jul 20
+*usr_41.txt*	For Vim version 7.3.  Last change: 2010 Oct 31
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -793,6 +793,7 @@ Syntax and highlighting:	  *syntax-functions* *highlighting-functions*
 	synID()			get syntax ID at a specific position
 	synIDattr()		get a specific attribute of a syntax ID
 	synIDtrans()		get translated syntax ID
+	synstack()		get list of syntax IDs at a specific position
 	diff_hlID()		get highlight ID for diff mode at a position
 	matchadd()		define a pattern to highlight (a "match")
 	matcharg()		get info about |:match| arguments

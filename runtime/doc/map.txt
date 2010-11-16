@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.3.  Last change: 2010 Sep 29
+*map.txt*       For Vim version 7.3.  Last change: 2010 Nov 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1093,16 +1093,20 @@ is executed, it is transformed into a normal Ex command and then executed.
 
 For starters: See section |40.2| in the user manual.
 
-						*E183* *user-cmd-ambiguous*
+					*E183* *E841* *user-cmd-ambiguous*
 All user defined commands must start with an uppercase letter, to avoid
-confusion with builtin commands.  (There are a few builtin commands, notably
-:Next, :Print and :X, which do start with an uppercase letter.  The builtin
-will always take precedence in these cases).  The other characters of the user
-command can be uppercase letters, lowercase letters or digits.  When using
-digits, note that other commands that take a numeric argument may become
-ambiguous.  For example, the command ":Cc2" could be the user command ":Cc2"
-without an argument, or the command ":Cc" with argument "2".  It is advised to
-put a space between the command name and the argument to avoid these problems.
+confusion with builtin commands.  Exceptions are these builtin commands:
+	:Next
+	:X
+They cannot be used for a user defined command.  ":Print" is also an existing
+command, but it is deprecated and can be overruled.
+
+The other characters of the user command can be uppercase letters, lowercase
+letters or digits.  When using digits, note that other commands that take a
+numeric argument may become ambiguous.  For example, the command ":Cc2" could
+be the user command ":Cc2" without an argument, or the command ":Cc" with
+argument "2".  It is advised to put a space between the command name and the
+argument to avoid these problems.
 
 When using a user-defined command, the command can be abbreviated.  However, if
 an abbreviation is not unique, an error will be issued.  Furthermore, a

@@ -6142,7 +6142,7 @@ msgid "E485: Can't read file %s"
 msgstr "E485: %s 파일을 읽을 수 없습니다"
 
 msgid "E37: No write since last change (add ! to override)"
-msgstr "E37: 마지막으로 고친 뒤 저장되지 않았습니다 (덮어쓰려면 ! 더하기)"
+msgstr "E37: 마지막으로 고친 뒤 저장되지 않았습니다 (무시하려면 ! 더하기)"
 
 msgid "E38: Null argument"
 msgstr "E38: 널 인자"

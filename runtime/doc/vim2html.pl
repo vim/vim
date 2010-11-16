@@ -214,7 +214,7 @@ EOF
 }
 
 # main
-usage() if $#ARGV < 2;
+usage() if $#ARGV < 1;
 
 print "Processing tags...\n";
 readTagFile( $ARGV[ 0 ] );

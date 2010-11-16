@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.3.  Last change: 2010 Sep 29
+*intro.txt*     For Vim version 7.3.  Last change: 2010 Nov 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -703,7 +703,7 @@ Lines longer than the window width will wrap, unless the 'wrap' option is off
 (see below).  The 'linebreak' option can be set to wrap at a blank character.
 
 If the window has room after the last line of the buffer, Vim will show '~' in
-the first column of the last lines in the window, like this: >
+the first column of the last lines in the window, like this:
 
 	+-----------------------+
 	|some line		|
@@ -715,7 +715,7 @@ the first column of the last lines in the window, like this: >
 Thus the '~' lines indicate that the end of the buffer was reached.
 
 If the last line in a window doesn't fit, Vim will indicate this with a '@' in
-the first column of the last lines in the window, like this: >
+the first column of the last lines in the window, like this:
 
 	+-----------------------+
 	|first line		|

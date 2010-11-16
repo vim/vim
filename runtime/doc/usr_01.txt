@@ -1,4 +1,4 @@
-*usr_01.txt*	For Vim version 7.3.  Last change: 2008 May 07
+*usr_01.txt*	For Vim version 7.3.  Last change: 2010 Nov 03
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -40,12 +40,19 @@ the commands and options used for it.  Use these two commands:
 	Press  CTRL-]  to jump to a subject under the cursor.
 	Press  CTRL-O  to jump back (repeat to go further back).
 
-Many links are in vertical bars, like this: |bars|.  An option name, like
-'number', a command in double quotes like ":write" and any other word can also
-be used as a link.  Try it out: Move the cursor to  CTRL-]  and press CTRL-]
-on it.
+Many links are in vertical bars, like this: |bars|.  The bars themselves may
+be hidden or invisible, see below.  An option name, like 'number', a command
+in double quotes like ":write" and any other word can also be used as a link.
+Try it out: Move the cursor to  CTRL-]  and press CTRL-] on it.
 
 Other subjects can be found with the ":help" command, see |help.txt|.
+
+The bars and stars are usually hidden with the |conceal| feature.  They also
+use |hl-Ignore|, using the same color for the text as the background.  You can
+make them visible with: >
+	:set conceallevel=0
+	:hi link HelpBar Normal
+	:hi link HelpStar Normal
 
 ==============================================================================
 *01.2*	Vim installed

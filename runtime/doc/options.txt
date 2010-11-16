@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2010 Oct 23
+*options.txt*	For Vim version 7.3.  Last change: 2010 Nov 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1699,7 +1699,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	with CTRL-X CTRL-U. |i_CTRL-X_CTRL-U|
 	See |complete-functions| for an explanation of how the function is
 	invoked and what it should return.
-
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 						*'completeopt'* *'cot'*
 'completeopt' 'cot'	string	(default: "menu,preview")
@@ -2843,6 +2844,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	      "dos" is not present or no <CR><NL> is found in the file.
 	     Except: if "unix" was chosen, but there is a <CR> before
 	     the first <NL>, and there appear to be more <CR>s than <NL>s in
+	     the first few lines, "mac" is used.
 	  4. If 'fileformat' is still not set, the first name from
 	     'fileformats' is used.
 	  When reading a file into an existing buffer, the same is done, but
@@ -6230,8 +6232,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Do smart autoindenting when starting a new line.  Works for C-like
 	programs, but can also be used for other languages.  'cindent' does
 	something like this, works better in most cases, but is more strict,
-	see |C-indenting|.  When 'cindent' is on, setting 'si' has no effect.
-	'indentexpr' is a more advanced alternative.
+	see |C-indenting|.  When 'cindent' is on or 'smartindent' is set,
+	setting 'si' has no effect.  'indentexpr' is a more advanced
+	alternative.
 	Normally 'autoindent' should also be on when using 'smartindent'.
 	An indent is automatically inserted:
 	- After a line ending in '{'.
@@ -7533,8 +7536,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		with an uppercase letter, and don't contain a lowercase
 		letter.  Thus "KEEPTHIS and "K_L_M" are stored, but "KeepThis"
 		and "_K_L_M" are not.  Nested List and Dict items may not be
-		read back correctly, you end up with a string representation
-		instead.
+		read back correctly, you end up with an empty item.
 	"	Maximum number of lines saved for each register.  Old name of
 		the '<' item, with the disadvantage that you need to put a
 		backslash before the ", otherwise it will be recognized as the

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.3.  Last change: 2010 Oct 20
+*version7.txt*  For Vim version 7.3.  Last change: 2010 Nov 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1673,7 +1673,7 @@ The GTK font dialog uses a font size zero when the font name doesn't include a
 size.  Use a default size of 10.
 
 This example in the documentation didn't work:
-    :e `=foo . ".c" `
+    :e `=foo . ".c"`
 Skip over the expression in `=expr` when looking for comments, |, % and #.
 
 When ":helpgrep" doesn't find anything there is no error message.

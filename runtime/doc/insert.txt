@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.3.  Last change: 2010 Oct 27
+*insert.txt*    For Vim version 7.3.  Last change: 2010 Nov 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1037,6 +1037,8 @@ items:
 			items that only differ in case are added
 	dup		when non-zero this match will be added even when an
 			item with the same word is already present.
+	empty		when non-zero this match will be added even when it is
+			an empty string
 
 All of these except 'icase' must be a string.  If an item does not meet these
 requirements then an error message is given and further items in the list are
@@ -1064,9 +1066,9 @@ match to the total list.  These matches should then not appear in the returned
 list!  Call |complete_check()| now and then to allow the user to press a key
 while still searching for matches.  Stop searching when it returns non-zero.
 
-The function is allowed to move the cursor, it is restored afterwards.  This
-option cannot be set from a |modeline| or in the |sandbox|, for security
-reasons.
+							*E839* *E840*
+The function is allowed to move the cursor, it is restored afterwards.
+The function is not allowed to move to another window or delete text.
 
 An example that completes the names of the months: >
 	fun! CompleteMonths(findstart, base)

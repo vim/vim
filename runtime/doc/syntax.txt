@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2010 Sep 23
+*syntax.txt*	For Vim version 7.3.  Last change: 2010 Oct 7
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -390,10 +390,10 @@ Or use the ":TOhtml" user command.  It is defined in a standard plugin.
 
 	:10,40TOhtml
 
-Warning: This is slow! The script must process every character of every line.
-Because it is so slow, by default a progress bar is displayed in the
-statusline for each step that usually takes a long time. If you don't like
-seeing this progress bar, you can disable it and get a very minor speed
+Warning: This can be slow! The script must process every character of every
+line. Because it can take a long time, by default a progress bar is displayed
+in the statusline for each major step in the conversion process. If you don't
+like seeing this progress bar, you can disable it and get a very minor speed
 improvement with: >
 
 	let g:html_no_progress = 1
@@ -475,40 +475,69 @@ risk of making some things look a bit different, use: >
 This will use <br> at the end of each line and use "&nbsp;" for repeated
 spaces.
 
-The current value of 'encoding' is used to specify the charset of the HTML
-file.  This only works for those values of 'encoding' that have an equivalent
-HTML charset name.  To overrule this set g:html_use_encoding to the name of
-the charset to be used: >
-   :let g:html_use_encoding = "foobar"
-To omit the line that specifies the charset, set g:html_use_encoding to an
-empty string: >
-   :let g:html_use_encoding = ""
-To go back to the automatic mechanism, delete the g:html_use_encoding
-variable: >
-   :unlet g:html_use_encoding
-<
-For diff mode a sequence of more than 3 filler lines is displayed as three
-lines with the middle line mentioning the total number of inserted lines.  If
-you prefer to see all the inserted lines use: >
+For diff mode on a single file (with g:html_diff_one_file) a sequence of more
+than 3 filler lines is displayed as three lines with the middle line
+mentioning the total number of inserted lines.  If you prefer to see all the
+inserted lines as with the side-by-side diff, use: >
     :let g:html_whole_filler = 1
 And to go back to displaying up to three lines again: >
     :unlet g:html_whole_filler
 <
+TOhtml uses the current value of 'fileencoding' if set, or 'encoding' if not,
+to determine the charset and 'fileencoding' of the HTML file. In general, this
+works for the encodings mentioned specifically by name in |encoding-names|, but
+TOhtml will only automatically use those encodings which are widely supported.
+However, you can override this to support specific encodings that may not be
+automatically detected by default.
+
+To overrule all automatic charset detection, set g:html_use_encoding to the
+name of the charset to be used. TOhtml will try to determine the appropriate
+'fileencoding' setting from the charset, but you may need to set it manually
+if TOhtml cannot determine the encoding. It is recommended to set this
+variable to something widely supported, like UTF-8, for anything you will be
+hosting on a webserver: >
+   :let g:html_use_encoding = "UTF-8"
+You can also use this option to omit the line that specifies the charset
+entirely, by setting g:html_use_encoding to an empty string: >
+   :let g:html_use_encoding = ""
+To go back to the automatic mechanism, delete the g:html_use_encoding
+variable: >
+   :unlet g:html_use_encoding
+
+If you specify a charset with g:html_use_encoding for which TOhtml cannot
+automatically detect the corresponding 'fileencoding' setting, you can use
+g:html_encoding_override to allow TOhtml to detect the correct encoding.
+This is a dictionary of charset-encoding pairs that will replace existing
+pairs automatically detected by TOhtml, or supplement with new pairs. For
+example, to allow TOhtml to detect the HTML charset "windows-1252" properly as
+the encoding "8bit-cp1252", use: >
+   :let g:html_encoding_override = {'windows-1252': '8bit-cp1252'}
+<
+The g:html_charset_override is similar, it allows TOhtml to detect the HTML
+charset for any 'fileencoding' or 'encoding' which is not detected
+automatically. You can also use it to override specific existing
+encoding-charset pairs. For example, TOhtml will by default use UTF-8 for all
+Unicode/UCS encodings. To use UTF-16 and UTF-32 instead, use: >
+   :let g:html_charset_override = {'ucs-4': 'UTF-32', 'utf-16': 'UTF-16'}
+
+Note that documents encoded in either UTF-32 or UTF-16 have known
+compatibility problems with at least one major browser.
+
 					    *convert-to-XML* *convert-to-XHTML*
-An alternative is to have the script generate XHTML (XML compliant HTML).  To
-do this set the "html_use_xhtml" variable: >
+If you do not like plain HTML, an alternative is to have the script generate
+XHTML (XML compliant HTML). To do this set the "html_use_xhtml" variable: >
     :let g:html_use_xhtml = 1
 
-Any of these options can be enabled or disabled by setting them explicitly to
-the desired value, or restored to their default by removing the variable using
-|:unlet|.
+Any of the on/off options listed above can be enabled or disabled by setting
+them explicitly to the desired value, or restored to their default by removing
+the variable using |:unlet|.
 
 Remarks:
-- This only works in a version with GUI support.  If the GUI is not actually
-  running (possible for X11) it still works, but not very well (the colors
-  may be wrong).
 - Some truly ancient browsers may not show the background colors.
 - From most browsers you can also print the file (in color)!
+- This version of TOhtml may work with older versions of Vim, but some
+  features such as conceal support will not function, and the colors may be
+  incorrect for an old Vim without GUI support compiled in.
 
 Here is an example how to run the script over all .c and .h files from a
 Unix shell: >

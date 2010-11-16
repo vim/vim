@@ -1,4 +1,4 @@
-*arabic.txt*	For Vim version 7.3.  Last change: 2005 Mar 29
+*arabic.txt*	For Vim version 7.3.  Last change: 2010 Nov 13
 
 
 		  VIM REFERENCE MANUAL	  by Nadim Shaikli
@@ -146,7 +146,7 @@ o  Enable Arabic settings [short-cut]
 		:set arabic
 <
    The two above noted possible invocations are the preferred manner
-   in which users are instructed to proceed.  Baring an enabled 'termbidi'
+   in which users are instructed to proceed.  Barring an enabled 'termbidi'
    setting, both command options:
 
      1. set the appropriate keymap

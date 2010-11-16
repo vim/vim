@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.3.  Last change: 2010 Sep 30
+*diff.txt*      For Vim version 7.3.  Last change: 2010 Nov 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -373,8 +373,8 @@ get an error message.  Possible causes:
 If it's not clear what the problem is set the 'verbose' option to one or more
 to see more messages.
 
-The self-installing Vim includes a diff program.  If you don't have it you
-might want to download a diff.exe.  For example from
+The self-installing Vim for MS-Windows includes a diff program.  If you don't
+have it you might want to download a diff.exe.  For example from
 http://jlb.twu.net/code/unixkit.php.
 
 

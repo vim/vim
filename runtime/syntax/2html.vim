@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 Aug 12
+" Last Change: 2010 Sep 04
 "
 " Additional contributors:
 "
@@ -264,6 +264,19 @@ let s:old_paste = &paste
 set paste
 let s:old_magic = &magic
 set magic
+
+" set the fileencoding to match the charset we'll be using
+let &l:fileencoding=s:settings.vim_encoding
+
+" According to http://www.w3.org/TR/html4/charset.html#doc-char-set, the byte
+" order mark is highly recommend on the web when using multibyte encodings. But,
+" it is not a good idea to include it on UTF-8 files. Otherwise, let Vim
+" determine when it is actually inserted.
+if s:settings.vim_encoding == 'utf-8'
+  setlocal nobomb
+else
+  setlocal bomb
+endif
 
 let s:lines = []
 
@@ -1071,14 +1084,14 @@ let &magic = s:old_magic
 let @/ = s:old_search
 let &more = s:old_more
 exe s:orgwin . "wincmd w"
+let &l:stl = s:origwin_stl
 let &l:et = s:old_et
 let &l:scrollbind = s:old_bind
 exe s:newwin . "wincmd w"
+let &l:stl = s:newwin_stl
 exec 'resize' s:old_winheight
 let &l:winfixheight = s:old_winfixheight
 
-call setwinvar(s:orgwin,'&stl', s:origwin_stl)
-call setwinvar(s:newwin,'&stl', s:newwin_stl)
 let &ls=s:ls
 
 " Save a little bit of memory (worth doing?)

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Vim help file
 " Maintainer:	Bram Moolenaar (Bram@vim.org)
-" Last Change:	2009 May 18
+" Last Change:	2010 Nov 03
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -30,6 +30,7 @@ syn match helpVim		"VIM REFERENCE.*"
 syn match helpOption		"'[a-z]\{2,\}'"
 syn match helpOption		"'t_..'"
 syn match helpHeader		"\s*\zs.\{-}\ze\s\=\~$" nextgroup=helpIgnore
+syn match helpGraphic		".* \ze`$" nextgroup=helpIgnore
 syn match helpIgnore		"." contained conceal
 syn keyword helpNote		note Note NOTE note: Note: NOTE: Notes Notes:
 syn match helpSpecial		"\<N\>"

@@ -1,6 +1,6 @@
 " Vim autoload file for the tohtml plugin.
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 Aug 12
+" Last Change: 2010 Oct 07
 "
 " Additional contributors:
 "
@@ -13,10 +13,284 @@
 let s:cpo_sav = &cpo
 set cpo-=C
 
-func! tohtml#Convert2HTML(line1, line2)
+" Automatically find charsets from all encodings supported natively by Vim. With
+" the 8bit- and 2byte- prefixes, Vim can actually support more encodings than
+" this. Let the user specify these however since they won't be supported on
+" every system. TODO: how? g:html_charsets and g:html_encodings?
+"
+" Note, not all of Vim's supported encodings have a charset to use.
+"
+" Names in this list are from:
+"   http://www.iana.org/assignments/character-sets
+" g:tohtml#encoding_to_charset: {{{
+let g:tohtml#encoding_to_charset = {
+      \ 'latin1' : 'ISO-8859-1',
+      \ 'iso-8859-2' : 'ISO-8859-2',
+      \ 'iso-8859-3' : 'ISO-8859-3',
+      \ 'iso-8859-4' : 'ISO-8859-4',
+      \ 'iso-8859-5' : 'ISO-8859-5',
+      \ 'iso-8859-6' : 'ISO-8859-6',
+      \ 'iso-8859-7' : 'ISO-8859-7',
+      \ 'iso-8859-8' : 'ISO-8859-8',
+      \ 'iso-8859-9' : 'ISO-8859-9',
+      \ 'iso-8859-10' : '',
+      \ 'iso-8859-13' : 'ISO-8859-13',
+      \ 'iso-8859-14' : '',
+      \ 'iso-8859-15' : 'ISO-8859-15',
+      \ 'koi8-r' : 'KOI8-R',
+      \ 'koi8-u' : 'KOI8-U',
+      \ 'macroman' : 'macintosh',
+      \ 'cp437' : '',
+      \ 'cp775' : '',
+      \ 'cp850' : '',
+      \ 'cp852' : '',
+      \ 'cp855' : '',
+      \ 'cp857' : '',
+      \ 'cp860' : '',
+      \ 'cp861' : '',
+      \ 'cp862' : '',
+      \ 'cp863' : '',
+      \ 'cp865' : '',
+      \ 'cp866' : 'IBM866',
+      \ 'cp869' : '',
+      \ 'cp874' : '',
+      \ 'cp1250' : 'windows-1250',
+      \ 'cp1251' : 'windows-1251',
+      \ 'cp1253' : 'windows-1253',
+      \ 'cp1254' : 'windows-1254',
+      \ 'cp1255' : 'windows-1255',
+      \ 'cp1256' : 'windows-1256',
+      \ 'cp1257' : 'windows-1257',
+      \ 'cp1258' : 'windows-1258',
+      \ 'euc-jp' : 'EUC-JP',
+      \ 'sjis' : 'Shift_JIS',
+      \ 'cp932' : 'Shift_JIS',
+      \ 'cp949' : '',
+      \ 'euc-kr' : 'EUC-KR',
+      \ 'cp936' : 'GBK',
+      \ 'euc-cn' : 'GB2312',
+      \ 'big5' : 'Big5',
+      \ 'cp950' : 'Big5',
+      \ 'utf-8' : 'UTF-8',
+      \ 'ucs-2' : 'UTF-8',
+      \ 'ucs-2le' : 'UTF-8',
+      \ 'utf-16' : 'UTF-8',
+      \ 'utf-16le' : 'UTF-8',
+      \ 'ucs-4' : 'UTF-8',
+      \ 'ucs-4le' : 'UTF-8',
+      \ }
+lockvar g:tohtml#encoding_to_charset
+" Notes:
+"   1. All UCS/UTF are converted to UTF-8 because it is much better supported
+"   2. Any blank spaces are there because Vim supports it but at least one major
+"      web browser does not according to http://wiki.whatwg.org/wiki/Web_Encodings.
+" }}}
+
+" Only automatically find encodings supported natively by Vim, let the user
+" specify the encoding if it's not natively supported. This function is only
+" used when the user specifies the charset, they better know what they are
+" doing!
+"
+" Names in this list are from:
+"   http://www.iana.org/assignments/character-sets
+" g:tohtml#charset_to_encoding: {{{
+let g:tohtml#charset_to_encoding = {
+      \ 'iso_8859-1:1987' : 'latin1',
+      \ 'iso-ir-100' : 'latin1',
+      \ 'iso_8859-1' : 'latin1',
+      \ 'iso-8859-1' : 'latin1',
+      \ 'latin1' : 'latin1',
+      \ 'l1' : 'latin1',
+      \ 'ibm819' : 'latin1',
+      \ 'cp819' : 'latin1',
+      \ 'csisolatin1' : 'latin1',
+      \ 'iso_8859-2:1987' : 'iso-8859-2',
+      \ 'iso-ir-101' : 'iso-8859-2',
+      \ 'iso_8859-2' : 'iso-8859-2',
+      \ 'iso-8859-2' : 'iso-8859-2',
+      \ 'latin2' : 'iso-8859-2',
+      \ 'l2' : 'iso-8859-2',
+      \ 'csisolatin2' : 'iso-8859-2',
+      \ 'iso_8859-3:1988' : 'iso-8859-3',
+      \ 'iso-ir-109' : 'iso-8859-3',
+      \ 'iso_8859-3' : 'iso-8859-3',
+      \ 'iso-8859-3' : 'iso-8859-3',
+      \ 'latin3' : 'iso-8859-3',
+      \ 'l3' : 'iso-8859-3',
+      \ 'csisolatin3' : 'iso-8859-3',
+      \ 'iso_8859-4:1988' : 'iso-8859-4',
+      \ 'iso-ir-110' : 'iso-8859-4',
+      \ 'iso_8859-4' : 'iso-8859-4',
+      \ 'iso-8859-4' : 'iso-8859-4',
+      \ 'latin4' : 'iso-8859-4',
+      \ 'l4' : 'iso-8859-4',
+      \ 'csisolatin4' : 'iso-8859-4',
+      \ 'iso_8859-5:1988' : 'iso-8859-5',
+      \ 'iso-ir-144' : 'iso-8859-5',
+      \ 'iso_8859-5' : 'iso-8859-5',
+      \ 'iso-8859-5' : 'iso-8859-5',
+      \ 'cyrillic' : 'iso-8859-5',
+      \ 'csisolatincyrillic' : 'iso-8859-5',
+      \ 'iso_8859-6:1987' : 'iso-8859-6',
+      \ 'iso-ir-127' : 'iso-8859-6',
+      \ 'iso_8859-6' : 'iso-8859-6',
+      \ 'iso-8859-6' : 'iso-8859-6',
+      \ 'ecma-114' : 'iso-8859-6',
+      \ 'asmo-708' : 'iso-8859-6',
+      \ 'arabic' : 'iso-8859-6',
+      \ 'csisolatinarabic' : 'iso-8859-6',
+      \ 'iso_8859-7:1987' : 'iso-8859-7',
+      \ 'iso-ir-126' : 'iso-8859-7',
+      \ 'iso_8859-7' : 'iso-8859-7',
+      \ 'iso-8859-7' : 'iso-8859-7',
+      \ 'elot_928' : 'iso-8859-7',
+      \ 'ecma-118' : 'iso-8859-7',
+      \ 'greek' : 'iso-8859-7',
+      \ 'greek8' : 'iso-8859-7',
+      \ 'csisolatingreek' : 'iso-8859-7',
+      \ 'iso_8859-8:1988' : 'iso-8859-8',
+      \ 'iso-ir-138' : 'iso-8859-8',
+      \ 'iso_8859-8' : 'iso-8859-8',
+      \ 'iso-8859-8' : 'iso-8859-8',
+      \ 'hebrew' : 'iso-8859-8',
+      \ 'csisolatinhebrew' : 'iso-8859-8',
+      \ 'iso_8859-9:1989' : 'iso-8859-9',
+      \ 'iso-ir-148' : 'iso-8859-9',
+      \ 'iso_8859-9' : 'iso-8859-9',
+      \ 'iso-8859-9' : 'iso-8859-9',
+      \ 'latin5' : 'iso-8859-9',
+      \ 'l5' : 'iso-8859-9',
+      \ 'csisolatin5' : 'iso-8859-9',
+      \ 'iso-8859-10' : 'iso-8859-10',
+      \ 'iso-ir-157' : 'iso-8859-10',
+      \ 'l6' : 'iso-8859-10',
+      \ 'iso_8859-10:1992' : 'iso-8859-10',
+      \ 'csisolatin6' : 'iso-8859-10',
+      \ 'latin6' : 'iso-8859-10',
+      \ 'iso-8859-13' : 'iso-8859-13',
+      \ 'iso-8859-14' : 'iso-8859-14',
+      \ 'iso-ir-199' : 'iso-8859-14',
+      \ 'iso_8859-14:1998' : 'iso-8859-14',
+      \ 'iso_8859-14' : 'iso-8859-14',
+      \ 'latin8' : 'iso-8859-14',
+      \ 'iso-celtic' : 'iso-8859-14',
+      \ 'l8' : 'iso-8859-14',
+      \ 'iso-8859-15' : 'iso-8859-15',
+      \ 'iso_8859-15' : 'iso-8859-15',
+      \ 'latin-9' : 'iso-8859-15',
+      \ 'koi8-r' : 'koi8-r',
+      \ 'cskoi8r' : 'koi8-r',
+      \ 'koi8-u' : 'koi8-u',
+      \ 'macintosh' : 'macroman',
+      \ 'mac' : 'macroman',
+      \ 'csmacintosh' : 'macroman',
+      \ 'ibm437' : 'cp437',
+      \ 'cp437' : 'cp437',
+      \ '437' : 'cp437',
+      \ 'cspc8codepage437' : 'cp437',
+      \ 'ibm775' : 'cp775',
+      \ 'cp775' : 'cp775',
+      \ 'cspc775baltic' : 'cp775',
+      \ 'ibm850' : 'cp850',
+      \ 'cp850' : 'cp850',
+      \ '850' : 'cp850',
+      \ 'cspc850multilingual' : 'cp850',
+      \ 'ibm852' : 'cp852',
+      \ 'cp852' : 'cp852',
+      \ '852' : 'cp852',
+      \ 'cspcp852' : 'cp852',
+      \ 'ibm855' : 'cp855',
+      \ 'cp855' : 'cp855',
+      \ '855' : 'cp855',
+      \ 'csibm855' : 'cp855',
+      \ 'ibm857' : 'cp857',
+      \ 'cp857' : 'cp857',
+      \ '857' : 'cp857',
+      \ 'csibm857' : 'cp857',
+      \ 'ibm860' : 'cp860',
+      \ 'cp860' : 'cp860',
+      \ '860' : 'cp860',
+      \ 'csibm860' : 'cp860',
+      \ 'ibm861' : 'cp861',
+      \ 'cp861' : 'cp861',
+      \ '861' : 'cp861',
+      \ 'cp-is' : 'cp861',
+      \ 'csibm861' : 'cp861',
+      \ 'ibm862' : 'cp862',
+      \ 'cp862' : 'cp862',
+      \ '862' : 'cp862',
+      \ 'cspc862latinhebrew' : 'cp862',
+      \ 'ibm863' : 'cp863',
+      \ 'cp863' : 'cp863',
+      \ '863' : 'cp863',
+      \ 'csibm863' : 'cp863',
+      \ 'ibm865' : 'cp865',
+      \ 'cp865' : 'cp865',
+      \ '865' : 'cp865',
+      \ 'csibm865' : 'cp865',
+      \ 'ibm866' : 'cp866',
+      \ 'cp866' : 'cp866',
+      \ '866' : 'cp866',
+      \ 'csibm866' : 'cp866',
+      \ 'ibm869' : 'cp869',
+      \ 'cp869' : 'cp869',
+      \ '869' : 'cp869',
+      \ 'cp-gr' : 'cp869',
+      \ 'csibm869' : 'cp869',
+      \ 'windows-1250' : 'cp1250',
+      \ 'windows-1251' : 'cp1251',
+      \ 'windows-1253' : 'cp1253',
+      \ 'windows-1254' : 'cp1254',
+      \ 'windows-1255' : 'cp1255',
+      \ 'windows-1256' : 'cp1256',
+      \ 'windows-1257' : 'cp1257',
+      \ 'windows-1258' : 'cp1258',
+      \ 'extended_unix_code_packed_format_for_japanese' : 'euc-jp',
+      \ 'cseucpkdfmtjapanese' : 'euc-jp',
+      \ 'euc-jp' : 'euc-jp',
+      \ 'shift_jis' : 'sjis',
+      \ 'ms_kanji' : 'sjis',
+      \ 'sjis' : 'sjis',
+      \ 'csshiftjis' : 'sjis',
+      \ 'ibm-thai' : 'cp874',
+      \ 'csibmthai' : 'cp874',
+      \ 'ks_c_5601-1987' : 'cp949',
+      \ 'iso-ir-149' : 'cp949',
+      \ 'ks_c_5601-1989' : 'cp949',
+      \ 'ksc_5601' : 'cp949',
+      \ 'korean' : 'cp949',
+      \ 'csksc56011987' : 'cp949',
+      \ 'euc-kr' : 'euc-kr',
+      \ 'cseuckr' : 'euc-kr',
+      \ 'gbk' : 'cp936',
+      \ 'cp936' : 'cp936',
+      \ 'ms936' : 'cp936',
+      \ 'windows-936' : 'cp936',
+      \ 'gb_2312-80' : 'euc-cn',
+      \ 'iso-ir-58' : 'euc-cn',
+      \ 'chinese' : 'euc-cn',
+      \ 'csiso58gb231280' : 'euc-cn',
+      \ 'big5' : 'big5',
+      \ 'csbig5' : 'big5',
+      \ 'utf-8' : 'utf-8',
+      \ 'iso-10646-ucs-2' : 'ucs-2',
+      \ 'csunicode' : 'ucs-2',
+      \ 'utf-16' : 'utf-16',
+      \ 'utf-16be' : 'utf-16',
+      \ 'utf-16le' : 'utf-16le',
+      \ 'utf-32' : 'ucs-4',
+      \ 'utf-32be' : 'ucs-4',
+      \ 'utf-32le' : 'ucs-4le',
+      \ 'iso-10646-ucs-4' : 'ucs-4',
+      \ 'csucs4' : 'ucs-4'
+      \ }
+lockvar g:tohtml#charset_to_encoding
+"}}}
+
+func! tohtml#Convert2HTML(line1, line2) "{{{
   let s:settings = tohtml#GetUserSettings()
 
-  if !&diff || s:settings.diff_one_file
+  if !&diff || s:settings.diff_one_file "{{{
     if a:line2 >= a:line1
       let g:html_start_line = a:line1
       let g:html_end_line = a:line2
@@ -24,31 +298,50 @@ func! tohtml#Convert2HTML(line1, line2)
       let g:html_start_line = a:line2
       let g:html_end_line = a:line1
     endif
-    runtime syntax/2html.vim
-  else
+    runtime syntax/2html.vim "}}}
+  else "{{{
     let win_list = []
     let buf_list = []
     windo | if &diff | call add(win_list, winbufnr(0)) | endif
     let s:settings.whole_filler = 1
     let g:html_diff_win_num = 0
     for window in win_list
+      " switch to the next buffer to convert
       exe ":" . bufwinnr(window) . "wincmd w"
+
+      " figure out whether current charset and encoding will work, if not
+      " default to UTF-8
+      if !exists('g:html_use_encoding') &&
+	    \ (&l:fileencoding!='' && &l:fileencoding!=s:settings.vim_encoding ||
+	    \  &l:fileencoding=='' &&       &encoding!=s:settings.vim_encoding)
+	echohl WarningMsg
+	echomsg "TOhtml: mismatched file encodings in Diff buffers, using UTF-8"
+	echohl None
+	let s:settings.vim_encoding = 'utf-8'
+	let s:settings.encoding = 'UTF-8'
+      endif
+
+      " set up for diff-mode conversion
       let g:html_start_line = 1
       let g:html_end_line = line('$')
       let g:html_diff_win_num += 1
+
+      " convert this file
       runtime syntax/2html.vim
+
+      " remember the HTML buffer for later combination
       call add(buf_list, bufnr('%'))
     endfor
     unlet g:html_diff_win_num
     call tohtml#Diff2HTML(win_list, buf_list)
-  endif
+  endif "}}}
 
   unlet g:html_start_line
   unlet g:html_end_line
   unlet s:settings
-endfunc
+endfunc "}}}
 
-func! tohtml#Diff2HTML(win_list, buf_list)
+func! tohtml#Diff2HTML(win_list, buf_list) "{{{
   let xml_line = ""
   let tag_close = '>'
 
@@ -87,7 +380,7 @@ func! tohtml#Diff2HTML(win_list, buf_list)
   call add(html, '<head>')
 
   " include encoding as close to the top as possible, but only if not already
-  " contained in XML information (to avoid haggling over content type)
+  " contained in XML information
   if s:settings.encoding != "" && !s:settings.use_xhtml
     call add(html, "<meta http-equiv=\"content-type\" content=\"text/html; charset=" . s:settings.encoding . '"' . tag_close)
   endif
@@ -133,7 +426,8 @@ func! tohtml#Diff2HTML(win_list, buf_list)
       let s:body_end_line = getline('.')
     endif
 
-    " Grab the style information.  Some of this will be duplicated...
+    " Grab the style information. Some of this will be duplicated so only insert
+    " it if it's not already there. {{{
     1
     let style_start = search('^<style type="text/css">')
     1
@@ -151,8 +445,10 @@ func! tohtml#Diff2HTML(win_list, buf_list)
 	  let insert_index += 1
 	endif
       endfor
-    endif
+    endif " }}}
 
+    " everything new will get added before the diff styles so diff highlight
+    " properly overrides normal highlight
     if diff_style_start != 0
       let insert_index = diff_style_start
     endif
@@ -203,6 +499,20 @@ func! tohtml#Diff2HTML(win_list, buf_list)
   " just in case some user autocmd creates content in the new buffer, make sure
   " it is empty before proceeding
   %d
+
+  " set the fileencoding to match the charset we'll be using
+  let &l:fileencoding=s:settings.vim_encoding
+
+  " According to http://www.w3.org/TR/html4/charset.html#doc-char-set, the byte
+  " order mark is highly recommend on the web when using multibyte encodings. But,
+  " it is not a good idea to include it on UTF-8 files. Otherwise, let Vim
+  " determine when it is actually inserted.
+  if s:settings.vim_encoding == 'utf-8'
+    setlocal nobomb
+  else
+    setlocal bomb
+  endif
+
   call append(0, html)
 
   if len(style) > 0
@@ -210,7 +520,7 @@ func! tohtml#Diff2HTML(win_list, buf_list)
     let style_start = search('^</head>')-1
 
     " Insert javascript to toggle matching folds open and closed in all windows,
-    " if dynamic folding is active.
+    " if dynamic folding is active. {{{
     if s:settings.dynamic_folds
       call append(style_start, [
 	    \  "<script type='text/javascript'>",
@@ -234,13 +544,13 @@ func! tohtml#Diff2HTML(win_list, buf_list)
 	    \  s:settings.use_xhtml ? '//]]>' : "  -->",
 	    \  "</script>"
 	    \ ])
-    endif
+    endif "}}}
 
     " Insert styles from all the generated html documents and additional styles
     " for the table-based layout of the side-by-side diff. The diff should take
     " up the full browser window (but not more), and be static in size,
     " horizontally scrollable when the lines are too long. Otherwise, the diff
-    " is pretty useless for really long lines.
+    " is pretty useless for really long lines. {{{
     if s:settings.use_css
       call append(style_start,
 	    \ ['<style type="text/css">']+
@@ -252,28 +562,28 @@ func! tohtml#Diff2HTML(win_list, buf_list)
 	    \   'td div { overflow: auto; }',
 	    \   s:settings.use_xhtml ? '' : '-->',
 	    \   '</style>'
-	    \ ])
-    endif
+	    \])
+    endif "}}}
   endif
 
   let &paste = s:old_paste
   let &magic = s:old_magic
-endfunc
+endfunc "}}}
 
 " Gets a single user option and sets it in the passed-in Dict, or gives it the
 " default value if the option doesn't actually exist.
-func! tohtml#GetOption(settings, option, default)
+func! tohtml#GetOption(settings, option, default) "{{{
   if exists('g:html_'.a:option)
     let a:settings[a:option] = g:html_{a:option}
   else
     let a:settings[a:option] = a:default
   endif
-endfunc
+endfunc "}}}
 
 " returns a Dict containing the values of all user options for 2html, including
 " default values for those not given an explicit value by the user. Discards the
 " html_ prefix of the option for nicer looking code.
-func! tohtml#GetUserSettings()
+func! tohtml#GetUserSettings() "{{{
   if exists('s:settings')
     " just restore the known options if we've already retrieved them
     return s:settings
@@ -289,7 +599,7 @@ func! tohtml#GetUserSettings()
       let g:html_use_xhtml = g:use_xhtml
     endif
 
-    " get current option settings with appropriate defaults
+    " get current option settings with appropriate defaults {{{
     call tohtml#GetOption(user_settings,    'no_progress',  !has("statusline") )
     call tohtml#GetOption(user_settings,  'diff_one_file',  0 )
     call tohtml#GetOption(user_settings,   'number_lines',  &number )
@@ -302,8 +612,9 @@ func! tohtml#GetUserSettings()
     call tohtml#GetOption(user_settings,         'no_pre',  0 )
     call tohtml#GetOption(user_settings,   'whole_filler',  0 )
     call tohtml#GetOption(user_settings,      'use_xhtml',  0 )
+    " }}}
     
-    " override those settings that need it
+    " override those settings that need it {{{
 
     " hover opening implies dynamic folding
     if user_settings.hover_unfold
@@ -330,49 +641,91 @@ func! tohtml#GetUserSettings()
     " aren't allowed inside a <pre> block
     if !user_settings.use_css
       let user_settings.no_pre = 1
-    endif
+    endif "}}}
 
-    " Figure out proper MIME charset from the 'encoding' option.
-    if exists("g:html_use_encoding")
+    if exists("g:html_use_encoding") "{{{
+      " user specified the desired MIME charset, figure out proper
+      " 'fileencoding' from it or warn the user if we cannot
       let user_settings.encoding = g:html_use_encoding
+      let user_settings.vim_encoding = tohtml#EncodingFromCharset(g:html_use_encoding)
+      if user_settings.vim_encoding == ''
+	echohl WarningMsg
+	echomsg "TOhtml: file encoding for"
+	      \ g:html_use_encoding
+	      \ "unknown, please set 'fileencoding'"
+	echohl None
+      endif
     else
-      let vim_encoding = &encoding
-      if vim_encoding =~ '^8bit\|^2byte'
-	let vim_encoding = substitute(vim_encoding, '^8bit-\|^2byte-', '', '')
+      " Figure out proper MIME charset from 'fileencoding' if possible
+      if &l:fileencoding != ''
+	let user_settings.vim_encoding = &l:fileencoding
+	call tohtml#CharsetFromEncoding(user_settings)
       endif
-      if vim_encoding == 'latin1'
-	let user_settings.encoding = 'iso-8859-1'
-      elseif vim_encoding =~ "^cp12"
-	let user_settings.encoding = substitute(vim_encoding, 'cp', 'windows-', '')
-      elseif vim_encoding == 'sjis' || vim_encoding == 'cp932'
-	let user_settings.encoding = 'Shift_JIS'
-      elseif vim_encoding == 'big5' || vim_encoding == 'cp950'
-	let user_settings.encoding = "Big5"
-      elseif vim_encoding == 'euc-cn'
-	let user_settings.encoding = 'GB_2312-80'
-      elseif vim_encoding == 'euc-tw'
-	let user_settings.encoding = ""
-      elseif vim_encoding =~ '^euc\|^iso\|^koi'
-	let user_settings.encoding = substitute(vim_encoding, '.*', '\U\0', '')
-      elseif vim_encoding == 'cp949'
-	let user_settings.encoding = 'KS_C_5601-1987'
-      elseif vim_encoding == 'cp936'
-	let user_settings.encoding = 'GBK'
-      elseif vim_encoding =~ '^ucs\|^utf'
+
+      " else from 'encoding' if possible
+      if &l:fileencoding == '' || user_settings.encoding == ''
+	let user_settings.vim_encoding = &encoding
+	call tohtml#CharsetFromEncoding(user_settings)
+      endif
+
+      " else default to UTF-8 and warn user
+      if user_settings.encoding == ''
+	let user_settings.vim_encoding = 'utf-8'
 	let user_settings.encoding = 'UTF-8'
-      else
-	let user_settings.encoding = ""
+	echohl WarningMsg
+	echomsg "TOhtml: couldn't determine MIME charset, using UTF-8"
+	echohl None
       endif
-    endif
+    endif "}}}
 
     " TODO: font
 
     return user_settings
   endif
-endfunc
+endfunc "}}}
+
+" get the proper HTML charset name from a Vim encoding option.
+function! tohtml#CharsetFromEncoding(settings) "{{{
+  let l:vim_encoding = a:settings.vim_encoding
+  if exists('g:html_charset_override') && has_key(g:html_charset_override, l:vim_encoding)
+    let a:settings.encoding = g:html_charset_override[l:vim_encoding]
+  else
+    if l:vim_encoding =~ '^8bit\|^2byte'
+      " 8bit- and 2byte- prefixes are to indicate encodings available on the
+      " system that Vim will convert with iconv(), look up just the encoding name,
+      " not Vim's prefix.
+      let l:vim_encoding = substitute(l:vim_encoding, '^8bit-\|^2byte-', '', '')
+    endif
+    if has_key(g:tohtml#encoding_to_charset, l:vim_encoding)
+      let a:settings.encoding = g:tohtml#encoding_to_charset[l:vim_encoding]
+    else
+      let a:settings.encoding = ""
+    endif
+  endif
+  if a:settings.encoding != ""
+    let l:vim_encoding = tohtml#EncodingFromCharset(a:settings.encoding)
+    if l:vim_encoding != ""
+      " if the Vim encoding to HTML encoding conversion is set up (by default or
+      " by the user) to convert to a different encoding, we need to also change
+      " the Vim encoding of the new buffer
+      let a:settings.vim_encoding = l:vim_encoding
+    endif
+  endif
+endfun "}}}
+
+" Get the proper Vim encoding option setting from an HTML charset name.
+function! tohtml#EncodingFromCharset(encoding) "{{{
+  if exists('g:html_encoding_override') && has_key(g:html_encoding_override, a:encoding)
+    return g:html_encoding_override[a:encoding]
+  elseif has_key(g:tohtml#charset_to_encoding, tolower(a:encoding))
+    return g:tohtml#charset_to_encoding[tolower(a:encoding)]
+  else
+    return ""
+  endif
+endfun "}}}
 
 let &cpo = s:cpo_sav
 unlet s:cpo_sav
 
 " Make sure any patches will probably use consistent indent
-"   vim: ts=8 sw=2 sts=2 noet
+"   vim: ts=8 sw=2 sts=2 noet fdm=marker

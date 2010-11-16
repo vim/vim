@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2010 Oct 27
+*eval.txt*	For Vim version 7.3.  Last change: 2010 Nov 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4017,7 +4017,7 @@ maparg({name}[, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 			     characters will be used:
 			     " "     Normal, Visual and Operator-pending
 			     "!"     Insert and Commandline mode
-				     (|mapmpde-ic|)
+				     (|mapmode-ic|)
 		  "sid"	     The script local ID, used for <sid> mappings
 			     (|<SID>|).
 
