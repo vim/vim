@@ -3817,6 +3817,8 @@ build_drop_cmd(filec, filev, tabs, sendReply)
     /* Check if we have at least one argument. */
     if (filec <= 0)
 	mainerr_arg_missing((char_u *)filev[-1]);
+
+    /* Temporarily cd to the current directory to handle relative file names. */
     if (mch_dirname(cwd, MAXPATHL) != OK)
 	return NULL;
     if ((p = vim_strsave_escaped_ext(cwd,
@@ -3858,13 +3860,20 @@ build_drop_cmd(filec, filev, tabs, sendReply)
 	ga_concat(&ga, p);
 	vim_free(p);
     }
+    ga_concat(&ga, (char_u *)"|if exists('*inputrestore')|call inputrestore()|endif<CR>");
+
     /* The :drop commands goes to Insert mode when 'insertmode' is set, use
      * CTRL-\ CTRL-N again. */
-    ga_concat(&ga, (char_u *)"|if exists('*inputrestore')|call inputrestore()|endif<CR>");
-    ga_concat(&ga, (char_u *)"<C-\\><C-N>:cd -");
+    ga_concat(&ga, (char_u *)"<C-\\><C-N>");
+
+    /* Switch back to the correct current directory (prior to temporary path
+     * switch) unless 'autochdir' is set, in which case it will already be
+     * correct after the :drop command. */
+    ga_concat(&ga, (char_u *)":if !exists('+acd')||!&acd|cd -|endif<CR>");
+
     if (sendReply)
-	ga_concat(&ga, (char_u *)"<CR>:call SetupRemoteReplies()");
-    ga_concat(&ga, (char_u *)"<CR>:");
+	ga_concat(&ga, (char_u *)":call SetupRemoteReplies()<CR>");
+    ga_concat(&ga, (char_u *)":");
     if (inicmd != NULL)
     {
 	/* Can't use <CR> after "inicmd", because an "startinsert" would cause
