@@ -102,7 +102,7 @@ struct PyMethodDef { Py_ssize_t a; };
 #  include <dlfcn.h>
 #  define FARPROC void*
 #  define HINSTANCE void*
-#  ifdef PY_NO_RTLD_GLOBAL
+#  if defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)
 #   define load_dll(n) dlopen((n), RTLD_LAZY)
 #  else
 #   define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
@@ -168,6 +168,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define Py_BuildValue dll_Py_BuildValue
 # define Py_FindMethod dll_Py_FindMethod
 # define Py_InitModule4 dll_Py_InitModule4
+# define Py_SetPythonHome dll_Py_SetPythonHome
 # define Py_Initialize dll_Py_Initialize
 # define Py_Finalize dll_Py_Finalize
 # define Py_IsInitialized dll_Py_IsInitialized
@@ -226,6 +227,7 @@ static PyTypeObject* dll_PyType_Type;
 static PyObject*(*dll_Py_BuildValue)(char *, ...);
 static PyObject*(*dll_Py_FindMethod)(struct PyMethodDef[], PyObject *, char *);
 static PyObject*(*dll_Py_InitModule4)(char *, struct PyMethodDef *, char *, PyObject *, int);
+static void(*dll_Py_SetPythonHome)(char *home);
 static void(*dll_Py_Initialize)(void);
 static void(*dll_Py_Finalize)(void);
 static int(*dll_Py_IsInitialized)(void);
@@ -310,6 +312,7 @@ static struct
 # else
     {"Py_InitModule4", (PYTHON_PROC*)&dll_Py_InitModule4},
 # endif
+    {"Py_SetPythonHome", (PYTHON_PROC*)&dll_Py_SetPythonHome},
     {"Py_Initialize", (PYTHON_PROC*)&dll_Py_Initialize},
     {"Py_Finalize", (PYTHON_PROC*)&dll_Py_Finalize},
     {"Py_IsInitialized", (PYTHON_PROC*)&dll_Py_IsInitialized},
@@ -349,7 +352,7 @@ python_runtime_link_init(char *libname, int verbose)
 {
     int i;
 
-#if !defined(PY_NO_RTLD_GLOBAL) && defined(UNIX) && defined(FEAT_PYTHON3)
+#if !(defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)) && defined(UNIX) && defined(FEAT_PYTHON3)
     /* Can't have Python and Python3 loaded at the same time.
      * It cause a crash, because RTLD_GLOBAL is needed for
      * standard C extension libraries of one or both python versions. */
@@ -541,6 +544,10 @@ Python_Init(void)
 	    EMSG(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
 	    goto fail;
 	}
+#endif
+
+#ifdef PYTHON_HOME
+	Py_SetPythonHome(PYTHON_HOME);
 #endif
 
 	init_structs();

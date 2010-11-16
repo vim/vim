@@ -80,7 +80,7 @@ static void init_structs(void);
 #  include <dlfcn.h>
 #  define FARPROC void*
 #  define HINSTANCE void*
-#  ifdef PY_NO_RTLD_GLOBAL
+#  if defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)
 #   define load_dll(n) dlopen((n), RTLD_LAZY)
 #  else
 #   define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
@@ -132,6 +132,7 @@ static void init_structs(void);
 # define PyType_Ready py3_PyType_Ready
 #undef Py_BuildValue
 # define Py_BuildValue py3_Py_BuildValue
+# define Py_SetPythonHome py3_Py_SetPythonHome
 # define Py_Initialize py3_Py_Initialize
 # define Py_Finalize py3_Py_Finalize
 # define Py_IsInitialized py3_Py_IsInitialized
@@ -170,6 +171,7 @@ static void init_structs(void);
  * Pointers for dynamic link
  */
 static int (*py3_PySys_SetArgv)(int, wchar_t **);
+static void (*py3_Py_SetPythonHome)(wchar_t *home);
 static void (*py3_Py_Initialize)(void);
 static PyObject* (*py3_PyList_New)(Py_ssize_t size);
 static PyGILState_STATE (*py3_PyGILState_Ensure)(void);
@@ -254,6 +256,7 @@ static struct
 } py3_funcname_table[] =
 {
     {"PySys_SetArgv", (PYTHON_PROC*)&py3_PySys_SetArgv},
+    {"Py_SetPythonHome", (PYTHON_PROC*)&py3_Py_SetPythonHome},
     {"Py_Initialize", (PYTHON_PROC*)&py3_Py_Initialize},
     {"PyArg_ParseTuple", (PYTHON_PROC*)&py3_PyArg_ParseTuple},
     {"PyList_New", (PYTHON_PROC*)&py3_PyList_New},
@@ -336,7 +339,7 @@ py3_runtime_link_init(char *libname, int verbose)
     int i;
     void *ucs_from_string, *ucs_from_string_and_size;
 
-# if !defined(PY_NO_RTLD_GLOBAL) && defined(UNIX) && defined(FEAT_PYTHON)
+# if !(defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)) && defined(UNIX) && defined(FEAT_PYTHON)
     /* Can't have Python and Python3 loaded at the same time.
      * It cause a crash, because RTLD_GLOBAL is needed for
      * standard C extension libraries of one or both python versions. */
@@ -538,6 +541,11 @@ Python3_Init(void)
 #endif
 
 	init_structs();
+
+
+#ifdef PYTHON3_HOME
+	Py_SetPythonHome(PYTHON3_HOME);
+#endif
 
 	/* initialise threads */
 	PyEval_InitThreads();
