@@ -135,14 +135,12 @@ static int dosetvisible = FALSE;
 static int needupdate = 0;
 static int inAtomic = 0;
 
+/*
+ * Close the socket and remove the input handlers.
+ */
     static void
-netbeans_close(void)
+nb_close_socket(void)
 {
-    if (!NETBEANS_OPEN)
-	return;
-
-    netbeans_send_disconnect();
-
 #ifdef FEAT_GUI_X11
     if (inputHandler != (XtInputId)NULL)
     {
@@ -167,12 +165,26 @@ netbeans_close(void)
 # endif
 #endif
 
+    sock_close(nbsock);
+    nbsock = -1;
+}
+
+/*
+ * Close the connection and cleanup.
+ * May be called when nb_close_socket() was called earlier.
+ */
+    static void
+netbeans_close(void)
+{
+    if (NETBEANS_OPEN)
+    {
+	netbeans_send_disconnect();
+	nb_close_socket();
+    }
+
 #ifdef FEAT_BEVAL
     bevalServers &= ~BEVAL_NETBEANS;
 #endif
-
-    sock_close(nbsock);
-    nbsock = -1;
 
     needupdate = 0;
     inAtomic = 0;
@@ -632,9 +644,6 @@ netbeans_parse_messages(void)
     char_u	*p;
     queue_T	*node;
 
-    if (!NETBEANS_OPEN)
-	return;
-
     while (head.next != NULL && head.next != &head)
     {
 	node = head.next;
@@ -720,6 +729,8 @@ messageFromNetbeans(gpointer clientData UNUSED,
 }
 #endif
 
+#define DETACH_MSG "DETACH\n"
+
     void
 netbeans_read()
 {
@@ -780,22 +791,32 @@ netbeans_read()
 	    break;	/* did read everything that's available */
     }
 
+    /* Reading a socket disconnection (readlen == 0), or a socket error. */
     if (readlen <= 0)
     {
-	/* read error or didn't read anything */
-	netbeans_close();
-	nbdebug(("messageFromNetbeans: Error in read() from socket\n"));
+	/* Queue a "DETACH" netbeans message in the command queue in order to
+	 * terminate the netbeans session later. Do not end the session here
+	 * directly as we may be running in the context of a call to
+	 * netbeans_parse_messages():
+	 *	netbeans_parse_messages
+	 *	    -> autocmd triggered while processing the netbeans cmd
+	 *		-> ui_breakcheck
+	 *		    -> gui event loop or select loop
+	 *			-> netbeans_read()
+	 */
+	save((char_u *)DETACH_MSG, strlen(DETACH_MSG));
+	nb_close_socket();
+
 	if (len < 0)
 	{
 	    nbdebug(("read from Netbeans socket\n"));
 	    PERROR(_("read from Netbeans socket"));
 	}
-	return; /* don't try to parse it */
     }
 
 #if defined(NB_HAS_GUI) && defined(FEAT_GUI_GTK)
     if (NB_HAS_GUI && gtk_main_level() > 0)
-        gtk_main_quit();
+	gtk_main_quit();
 #endif
 }
 
@@ -1163,6 +1184,10 @@ nb_reply_nil(int cmdno)
     char reply[32];
 
     nbdebug(("REP %d: <none>\n", cmdno));
+
+    /* Avoid printing an annoying error message. */
+    if (!NETBEANS_OPEN)
+	return;
 
     sprintf(reply, "%d\n", cmdno);
     nb_send(reply, "nb_reply_nil");
@@ -2753,11 +2778,11 @@ ex_nbstart(eap)
 {
 #ifdef FEAT_GUI
 # if !defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)  \
-                && !defined(FEAT_GUI_W32)
+		&& !defined(FEAT_GUI_W32)
     if (gui.in_use)
     {
-        EMSG(_("E838: netbeans is not supported with this GUI"));
-        return;
+	EMSG(_("E838: netbeans is not supported with this GUI"));
+	return;
     }
 # endif
 #endif
