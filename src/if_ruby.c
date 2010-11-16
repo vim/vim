@@ -229,6 +229,9 @@ static void ruby_vim_init(void);
 # define rb_enc_find_index		dll_rb_enc_find_index
 # define rb_enc_find			dll_rb_enc_find
 # define rb_enc_str_new			dll_rb_enc_str_new
+# define rb_intern2			dll_rb_intern2
+# define rb_const_remove		dll_rb_const_remove
+# define Init_prelude			dll_Init_prelude
 # define rb_sprintf			dll_rb_sprintf
 # define ruby_init_stack		dll_ruby_init_stack
 #endif
@@ -317,6 +320,9 @@ static void (*dll_ruby_script) (const char*);
 static int (*dll_rb_enc_find_index) (const char*);
 static rb_encoding* (*dll_rb_enc_find) (const char*);
 static VALUE (*dll_rb_enc_str_new) (const char*, long, rb_encoding*);
+static ID (*dll_rb_intern2) (const char*, long);
+static void (*dll_Init_prelude) (void);
+static VALUE (*dll_rb_const_remove) (VALUE, ID);
 static VALUE (*dll_rb_sprintf) (const char*, ...);
 static void (*ruby_init_stack)(VALUE*);
 #endif
@@ -425,6 +431,9 @@ static struct
     {"rb_enc_find_index", (RUBY_PROC*)&dll_rb_enc_find_index},
     {"rb_enc_find", (RUBY_PROC*)&dll_rb_enc_find},
     {"rb_enc_str_new", (RUBY_PROC*)&dll_rb_enc_str_new},
+    {"rb_intern2", (RUBY_PROC*)&dll_rb_intern2},
+    {"rb_const_remove", (RUBY_PROC*)&dll_rb_const_remove},
+    {"Init_prelude", (RUBY_PROC*)&dll_Init_prelude},
     {"rb_sprintf", (RUBY_PROC*)&dll_rb_sprintf},
     {"ruby_init_stack", (RUBY_PROC*)&dll_ruby_init_stack},
 #endif
@@ -662,6 +671,12 @@ static int ensure_ruby_initialized(void)
 	    ruby_io_init();
 #ifdef RUBY19_OR_LATER
 	    rb_enc_find_index("encdb");
+
+	    /* This avoids the error "Encoding::ConverterNotFoundError: code
+	     * converter not found (UTF-16LE to ASCII-8BIT)". */
+	    rb_define_module("Gem");
+	    Init_prelude();
+	    rb_const_remove(rb_cObject, rb_intern2("TMP_RUBY_PREFIX", 15));
 #endif
 	    ruby_vim_init();
 	    ruby_initialized = 1;
@@ -946,13 +961,9 @@ static VALUE buffer_count(VALUE self)
 
 static VALUE get_buffer_line(buf_T *buf, linenr_T n)
 {
-    if (n > 0 && n <= buf->b_ml.ml_line_count)
-    {
-	char *line = (char *)ml_get_buf(buf, n, FALSE);
-	return line ? vim_str2rb_enc_str(line) : Qnil;
-    }
-    rb_raise(rb_eIndexError, "line number %ld out of range", (long)n);
-    return Qnil; /* For stop warning */
+    if (n <= 0 || n > buf->b_ml.ml_line_count)
+	rb_raise(rb_eIndexError, "line number %ld out of range", (long)n);
+    return vim_str2rb_enc_str((char *)ml_get_buf(buf, n, FALSE));
 }
 
 static VALUE buffer_aref(VALUE self, VALUE num)
@@ -991,9 +1002,6 @@ static VALUE set_buffer_line(buf_T *buf, linenr_T n, VALUE str)
     else
     {
 	rb_raise(rb_eIndexError, "line number %ld out of range", (long)n);
-#ifndef __GNUC__
-	return Qnil; /* For stop warning */
-#endif
     }
     return str;
 }
@@ -1048,7 +1056,8 @@ static VALUE buffer_append(VALUE self, VALUE num, VALUE str)
     long	n = NUM2LONG(num);
     aco_save_T	aco;
 
-    if (line == NULL) {
+    if (line == NULL)
+    {
 	rb_raise(rb_eIndexError, "NULL line");
     }
     else if (n >= 0 && n <= buf->b_ml.ml_line_count)
@@ -1072,7 +1081,8 @@ static VALUE buffer_append(VALUE self, VALUE num, VALUE str)
 
 	update_curbuf(NOT_VALID);
     }
-    else {
+    else
+    {
 	rb_raise(rb_eIndexError, "line number %ld out of range", n);
     }
     return str;
