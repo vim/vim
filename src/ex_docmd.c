@@ -733,7 +733,7 @@ do_cmdline_cmd(cmd)
  * do_cmdline(): execute one Ex command line
  *
  * 1. Execute "cmdline" when it is not NULL.
- *    If "cmdline" is NULL, or more lines are needed, getline() is used.
+ *    If "cmdline" is NULL, or more lines are needed, fgetline() is used.
  * 2. Split up in parts separated with '|'.
  *
  * This function can be called recursively!
@@ -741,7 +741,7 @@ do_cmdline_cmd(cmd)
  * flags:
  * DOCMD_VERBOSE  - The command will be included in the error message.
  * DOCMD_NOWAIT   - Don't call wait_return() and friends.
- * DOCMD_REPEAT   - Repeat execution until getline() returns NULL.
+ * DOCMD_REPEAT   - Repeat execution until fgetline() returns NULL.
  * DOCMD_KEYTYPED - Don't reset KeyTyped.
  * DOCMD_EXCRESET - Reset the exception environment (used for debugging).
  * DOCMD_KEEPLINE - Store first typed line (for repeating with ".").
@@ -749,15 +749,15 @@ do_cmdline_cmd(cmd)
  * return FAIL if cmdline could not be executed, OK otherwise
  */
     int
-do_cmdline(cmdline, getline, cookie, flags)
+do_cmdline(cmdline, fgetline, cookie, flags)
     char_u	*cmdline;
-    char_u	*(*getline) __ARGS((int, void *, int));
-    void	*cookie;		/* argument for getline() */
+    char_u	*(*fgetline) __ARGS((int, void *, int));
+    void	*cookie;		/* argument for fgetline() */
     int		flags;
 {
     char_u	*next_cmdline;		/* next cmd to execute */
     char_u	*cmdline_copy = NULL;	/* copy of cmd line */
-    int		used_getline = FALSE;	/* used "getline" to obtain command */
+    int		used_getline = FALSE;	/* used "fgetline" to obtain command */
     static int	recursive = 0;		/* recursive depth */
     int		msg_didout_before_start = 0;
     int		count = 0;		/* line number count */
@@ -775,14 +775,14 @@ do_cmdline(cmdline, getline, cookie, flags)
     struct msglist	**saved_msg_list = NULL;
     struct msglist	*private_msg_list;
 
-    /* "getline" and "cookie" passed to do_one_cmd() */
+    /* "fgetline" and "cookie" passed to do_one_cmd() */
     char_u	*(*cmd_getline) __ARGS((int, void *, int));
     void	*cmd_cookie;
     struct loop_cookie cmd_loop_cookie;
     void	*real_cookie;
     int		getline_is_func;
 #else
-# define cmd_getline getline
+# define cmd_getline fgetline
 # define cmd_cookie cookie
 #endif
     static int	call_depth = 0;		/* recursiveness */
@@ -822,10 +822,10 @@ do_cmdline(cmdline, getline, cookie, flags)
     cstack.cs_lflags = 0;
     ga_init2(&lines_ga, (int)sizeof(wcmd_T), 10);
 
-    real_cookie = getline_cookie(getline, cookie);
+    real_cookie = getline_cookie(fgetline, cookie);
 
     /* Inside a function use a higher nesting level. */
-    getline_is_func = getline_equal(getline, cookie, get_func_line);
+    getline_is_func = getline_equal(fgetline, cookie, get_func_line);
     if (getline_is_func && ex_nesting_level == func_level(real_cookie))
 	++ex_nesting_level;
 
@@ -837,7 +837,7 @@ do_cmdline(cmdline, getline, cookie, flags)
 	breakpoint = func_breakpoint(real_cookie);
 	dbg_tick = func_dbg_tick(real_cookie);
     }
-    else if (getline_equal(getline, cookie, getsourceline))
+    else if (getline_equal(fgetline, cookie, getsourceline))
     {
 	fname = sourcing_name;
 	breakpoint = source_breakpoint(real_cookie);
@@ -881,7 +881,8 @@ do_cmdline(cmdline, getline, cookie, flags)
      * KeyTyped is only set when calling vgetc().  Reset it here when not
      * calling vgetc() (sourced command lines).
      */
-    if (!(flags & DOCMD_KEYTYPED) && !getline_equal(getline, cookie, getexline))
+    if (!(flags & DOCMD_KEYTYPED)
+			       && !getline_equal(fgetline, cookie, getexline))
 	KeyTyped = FALSE;
 
     /*
@@ -894,7 +895,7 @@ do_cmdline(cmdline, getline, cookie, flags)
     do
     {
 #ifdef FEAT_EVAL
-	getline_is_func = getline_equal(getline, cookie, get_func_line);
+	getline_is_func = getline_equal(fgetline, cookie, get_func_line);
 #endif
 
 	/* stop skipping cmds for an error msg after all endif/while/for */
@@ -909,7 +910,7 @@ do_cmdline(cmdline, getline, cookie, flags)
 
 	/*
 	 * 1. If repeating a line in a loop, get a line from lines_ga.
-	 * 2. If no line given: Get an allocated line with getline().
+	 * 2. If no line given: Get an allocated line with fgetline().
 	 * 3. If a line is given: Make a copy, so we can mess with it.
 	 */
 
@@ -938,12 +939,12 @@ do_cmdline(cmdline, getline, cookie, flags)
 	    }
 #ifdef FEAT_PROFILE
 	    else if (do_profiling == PROF_YES
-			     && getline_equal(getline, cookie, getsourceline))
+			    && getline_equal(fgetline, cookie, getsourceline))
 		script_line_end();
 #endif
 
 	    /* Check if a sourced file hit a ":finish" command. */
-	    if (source_finished(getline, cookie))
+	    if (source_finished(fgetline, cookie))
 	    {
 		retval = FAIL;
 		break;
@@ -954,7 +955,7 @@ do_cmdline(cmdline, getline, cookie, flags)
 						   && *dbg_tick != debug_tick)
 	    {
 		*breakpoint = dbg_find_breakpoint(
-				getline_equal(getline, cookie, getsourceline),
+				getline_equal(fgetline, cookie, getsourceline),
 							fname, sourcing_lnum);
 		*dbg_tick = debug_tick;
 	    }
@@ -969,7 +970,7 @@ do_cmdline(cmdline, getline, cookie, flags)
 		dbg_breakpoint(fname, sourcing_lnum);
 		/* Find next breakpoint. */
 		*breakpoint = dbg_find_breakpoint(
-				getline_equal(getline, cookie, getsourceline),
+			       getline_equal(fgetline, cookie, getsourceline),
 							fname, sourcing_lnum);
 		*dbg_tick = debug_tick;
 	    }
@@ -978,7 +979,7 @@ do_cmdline(cmdline, getline, cookie, flags)
 	    {
 		if (getline_is_func)
 		    func_line_start(real_cookie);
-		else if (getline_equal(getline, cookie, getsourceline))
+		else if (getline_equal(fgetline, cookie, getsourceline))
 		    script_line_start();
 	    }
 # endif
@@ -987,7 +988,7 @@ do_cmdline(cmdline, getline, cookie, flags)
 	if (cstack.cs_looplevel > 0)
 	{
 	    /* Inside a while/for loop we need to store the lines and use them
-	     * again.  Pass a different "getline" function to do_one_cmd()
+	     * again.  Pass a different "fgetline" function to do_one_cmd()
 	     * below, so that it stores lines in or reads them from
 	     * "lines_ga".  Makes it possible to define a function inside a
 	     * while/for loop. */
@@ -995,27 +996,27 @@ do_cmdline(cmdline, getline, cookie, flags)
 	    cmd_cookie = (void *)&cmd_loop_cookie;
 	    cmd_loop_cookie.lines_gap = &lines_ga;
 	    cmd_loop_cookie.current_line = current_line;
-	    cmd_loop_cookie.getline = getline;
+	    cmd_loop_cookie.getline = fgetline;
 	    cmd_loop_cookie.cookie = cookie;
 	    cmd_loop_cookie.repeating = (current_line < lines_ga.ga_len);
 	}
 	else
 	{
-	    cmd_getline = getline;
+	    cmd_getline = fgetline;
 	    cmd_cookie = cookie;
 	}
 #endif
 
-	/* 2. If no line given, get an allocated line with getline(). */
+	/* 2. If no line given, get an allocated line with fgetline(). */
 	if (next_cmdline == NULL)
 	{
 	    /*
 	     * Need to set msg_didout for the first line after an ":if",
 	     * otherwise the ":if" will be overwritten.
 	     */
-	    if (count == 1 && getline_equal(getline, cookie, getexline))
+	    if (count == 1 && getline_equal(fgetline, cookie, getexline))
 		msg_didout = TRUE;
-	    if (getline == NULL || (next_cmdline = getline(':', cookie,
+	    if (fgetline == NULL || (next_cmdline = fgetline(':', cookie,
 #ifdef FEAT_EVAL
 		    cstack.cs_idx < 0 ? 0 : (cstack.cs_idx + 1) * 2
 #else
@@ -1142,7 +1143,7 @@ do_cmdline(cmdline, getline, cookie, flags)
 	     * If the command was typed, remember it for the ':' register.
 	     * Do this AFTER executing the command to make :@: work.
 	     */
-	    if (getline_equal(getline, cookie, getexline)
+	    if (getline_equal(fgetline, cookie, getexline)
 						  && new_last_cmdline != NULL)
 	    {
 		vim_free(last_cmdline);
@@ -1163,7 +1164,7 @@ do_cmdline(cmdline, getline, cookie, flags)
 #ifdef FEAT_EVAL
 	/* reset did_emsg for a function that is not aborted by an error */
 	if (did_emsg && !force_abort
-		&& getline_equal(getline, cookie, get_func_line)
+		&& getline_equal(fgetline, cookie, get_func_line)
 					      && !func_has_abort(real_cookie))
 	    did_emsg = FALSE;
 
@@ -1202,7 +1203,7 @@ do_cmdline(cmdline, getline, cookie, flags)
 		    if (breakpoint != NULL)
 		    {
 			*breakpoint = dbg_find_breakpoint(
-				getline_equal(getline, cookie, getsourceline),
+			       getline_equal(fgetline, cookie, getsourceline),
 									fname,
 			   ((wcmd_T *)lines_ga.ga_data)[current_line].lnum-1);
 			*dbg_tick = debug_tick;
@@ -1296,8 +1297,8 @@ do_cmdline(cmdline, getline, cookie, flags)
 #endif
 	    )
 	    && !(did_emsg && used_getline
-			  && (getline_equal(getline, cookie, getexmodeline)
-				|| getline_equal(getline, cookie, getexline)))
+			    && (getline_equal(fgetline, cookie, getexmodeline)
+			       || getline_equal(fgetline, cookie, getexline)))
 	    && (next_cmdline != NULL
 #ifdef FEAT_EVAL
 			|| cstack.cs_idx >= 0
@@ -1316,9 +1317,9 @@ do_cmdline(cmdline, getline, cookie, flags)
 	 * unclosed conditional.
 	 */
 	if (!got_int && !did_throw
-		&& ((getline_equal(getline, cookie, getsourceline)
-			&& !source_finished(getline, cookie))
-		    || (getline_equal(getline, cookie, get_func_line)
+		&& ((getline_equal(fgetline, cookie, getsourceline)
+			&& !source_finished(fgetline, cookie))
+		    || (getline_equal(fgetline, cookie, get_func_line)
 					    && !func_has_ended(real_cookie))))
 	{
 	    if (cstack.cs_flags[cstack.cs_idx] & CSF_TRY)
@@ -1354,7 +1355,7 @@ do_cmdline(cmdline, getline, cookie, flags)
     /* If a missing ":endtry", ":endwhile", ":endfor", or ":endif" or a memory
      * lack was reported above and the error message is to be converted to an
      * exception, do this now after rewinding the cstack. */
-    do_errthrow(&cstack, getline_equal(getline, cookie, get_func_line)
+    do_errthrow(&cstack, getline_equal(fgetline, cookie, get_func_line)
 				  ? (char_u *)"endfunction" : (char_u *)NULL);
 
     if (trylevel == 0)
@@ -1449,9 +1450,9 @@ do_cmdline(cmdline, getline, cookie, flags)
      */
     if (did_throw)
 	need_rethrow = TRUE;
-    if ((getline_equal(getline, cookie, getsourceline)
+    if ((getline_equal(fgetline, cookie, getsourceline)
 		&& ex_nesting_level > source_level(real_cookie))
-	    || (getline_equal(getline, cookie, get_func_line)
+	    || (getline_equal(fgetline, cookie, get_func_line)
 		&& ex_nesting_level > func_level(real_cookie) + 1))
     {
 	if (!did_throw)
@@ -1460,16 +1461,16 @@ do_cmdline(cmdline, getline, cookie, flags)
     else
     {
 	/* When leaving a function, reduce nesting level. */
-	if (getline_equal(getline, cookie, get_func_line))
+	if (getline_equal(fgetline, cookie, get_func_line))
 	    --ex_nesting_level;
 	/*
 	 * Go to debug mode when returning from a function in which we are
 	 * single-stepping.
 	 */
-	if ((getline_equal(getline, cookie, getsourceline)
-		    || getline_equal(getline, cookie, get_func_line))
+	if ((getline_equal(fgetline, cookie, getsourceline)
+		    || getline_equal(fgetline, cookie, get_func_line))
 		&& ex_nesting_level + 1 <= debug_break_level)
-	    do_debug(getline_equal(getline, cookie, getsourceline)
+	    do_debug(getline_equal(fgetline, cookie, getsourceline)
 		    ? (char_u *)_("End of sourced file")
 		    : (char_u *)_("End of function"));
     }
