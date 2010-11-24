@@ -3432,6 +3432,7 @@ load_dummy_buffer(fname)
     char_u	*fname;
 {
     buf_T	*newbuf;
+    buf_T	*newbuf_to_wipe = NULL;
     int		failed = TRUE;
     aco_save_T	aco;
 
@@ -3468,15 +3469,19 @@ load_dummy_buffer(fname)
 	    failed = FALSE;
 	    if (curbuf != newbuf)
 	    {
-		/* Bloody autocommands changed the buffer! */
-		if (buf_valid(newbuf))
-		    wipe_buffer(newbuf, FALSE);
+		/* Bloody autocommands changed the buffer!  Can happen when
+		 * using netrw and editing a remote file.  Use the current
+		 * buffer instead, delete the dummy one after restoring the
+		 * window stuff. */
+		newbuf_to_wipe = newbuf;
 		newbuf = curbuf;
 	    }
 	}
 
 	/* restore curwin/curbuf and a few other things */
 	aucmd_restbuf(&aco);
+	if (newbuf_to_wipe != NULL && buf_valid(newbuf_to_wipe))
+	    wipe_buffer(newbuf_to_wipe, FALSE);
     }
 
     if (!buf_valid(newbuf))
