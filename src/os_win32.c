@@ -3185,9 +3185,10 @@ mch_system(char *cmd, int options)
      * It's nicer to run a filter command in a minimized window, but in
      * Windows 95 this makes the command MUCH slower.  We can't do it under
      * Win32s either as it stops the synchronous spawn workaround working.
+     * Don't activate the window to keep focus on Vim.
      */
     if ((options & SHELL_DOOUT) && !mch_windows95() && !gui_is_win32s())
-	si.wShowWindow = SW_SHOWMINIMIZED;
+	si.wShowWindow = SW_SHOWMINNOACTIVE;
     else
 	si.wShowWindow = SW_SHOWNORMAL;
     si.cbReserved2 = 0;
