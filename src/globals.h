@@ -510,6 +510,7 @@ EXTERN VimClipboard clip_star;	/* PRIMARY selection in X11 */
 EXTERN VimClipboard clip_plus;	/* CLIPBOARD selection in X11 */
 # else
 #  define clip_plus clip_star	/* there is only one clipboard */
+#  define ONE_CLIPBOARD
 # endif
 EXTERN int	clip_unnamed INIT(= FALSE);
 EXTERN int	clip_autoselect INIT(= FALSE);
