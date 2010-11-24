@@ -1287,6 +1287,9 @@ gui_mch_dialog(int	type,	    /* type of dialog */
 	entry = gtk_entry_new();
 	gtk_widget_show(entry);
 
+	/* Make Enter work like pressing OK. */
+        gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
+
 	text = CONVERT_TO_UTF8(textfield);
 	gtk_entry_set_text(GTK_ENTRY(entry), (const char *)text);
 	CONVERT_TO_UTF8_FREE(text);
