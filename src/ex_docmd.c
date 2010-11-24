@@ -9538,17 +9538,23 @@ find_cmdline_var(src, usedlen)
 #define SPEC_CFILE  4
 		    "<sfile>",		/* ":so" file name */
 #define SPEC_SFILE  5
+		    "<slnum>",		/* ":so" file line number */
+#define SPEC_SLNUM  6
 #ifdef FEAT_AUTOCMD
 		    "<afile>",		/* autocommand file name */
-# define SPEC_AFILE 6
+# define SPEC_AFILE 7
 		    "<abuf>",		/* autocommand buffer number */
-# define SPEC_ABUF  7
+# define SPEC_ABUF  8
 		    "<amatch>",		/* autocommand match name */
-# define SPEC_AMATCH 8
+# define SPEC_AMATCH 9
 #endif
 #ifdef FEAT_CLIENTSERVER
 		    "<client>"
-# define SPEC_CLIENT 9
+# ifdef FEAT_AUTOCMD
+#  define SPEC_CLIENT 10
+# else
+#  define SPEC_CLIENT 7
+# endif
 #endif
     };
 
@@ -9573,6 +9579,7 @@ find_cmdline_var(src, usedlen)
  *	  '<cWORD>' to WORD under the cursor
  *	  '<cfile>' to path name under the cursor
  *	  '<sfile>' to sourced file name
+ *	  '<slnum>' to sourced file line number
  *	  '<afile>' to file name for autocommand
  *	  '<abuf>'  to buffer number for autocommand
  *	  '<amatch>' to matching name for autocommand
@@ -9604,10 +9611,7 @@ eval_vars(src, srcstart, usedlen, lnump, errormsg, escaped)
 #ifdef FEAT_MODIFY_FNAME
     int		skip_mod = FALSE;
 #endif
-
-#if defined(FEAT_AUTOCMD) || defined(FEAT_CLIENTSERVER)
     char_u	strbuf[30];
-#endif
 
     *errormsg = NULL;
     if (escaped != NULL)
@@ -9795,6 +9799,15 @@ eval_vars(src, srcstart, usedlen, lnump, errormsg, escaped)
 		    *errormsg = (char_u *)_("E498: no :source file name to substitute for \"<sfile>\"");
 		    return NULL;
 		}
+		break;
+	case SPEC_SLNUM:	/* line in file for ":so" command */
+		if (sourcing_name == NULL || sourcing_lnum == 0)
+		{
+		    *errormsg = (char_u *)_("E842: no line number to use for \"<slnum>\"");
+		    return NULL;
+		}
+		sprintf((char *)strbuf, "%ld", (long)sourcing_lnum);
+		result = strbuf;
 		break;
 #if defined(FEAT_CLIENTSERVER)
 	case SPEC_CLIENT:	/* Source of last submitted input */
