@@ -2705,6 +2705,10 @@ do_write(eap)
 									TRUE);
 		do_modelines(0);
 	    }
+
+	    /* Autocommands may have changed buffer names, esp. when
+	     * 'autochdir' is set. */
+	    fname = curbuf->b_sfname;
 #endif
 	}
 
