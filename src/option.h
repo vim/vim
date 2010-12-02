@@ -872,6 +872,7 @@ EXTERN int	p_wiv;		/* 'weirdinvert' */
 EXTERN char_u	*p_ww;		/* 'whichwrap' */
 EXTERN long	p_wc;		/* 'wildchar' */
 EXTERN long	p_wcm;		/* 'wildcharm' */
+EXTERN long	p_wic;		/* 'wildignorecase' */
 EXTERN char_u	*p_wim;		/* 'wildmode' */
 #ifdef FEAT_WILDMENU
 EXTERN int	p_wmnu;		/* 'wildmenu' */

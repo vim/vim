@@ -2740,7 +2740,7 @@ static struct vimoption
 			    (char_u *)&p_wc, PV_NONE,
 			    {(char_u *)(long)Ctrl_E, (char_u *)(long)TAB}
 			    SCRIPTID_INIT},
-    {"wildcharm",   "wcm",   P_NUM|P_VI_DEF,
+    {"wildcharm",   "wcm",  P_NUM|P_VI_DEF,
 			    (char_u *)&p_wcm, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
     {"wildignore",  "wig",  P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
@@ -2750,6 +2750,9 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+    {"wildignorecase", "wic", P_BOOL|P_VI_DEF,
+			    (char_u *)&p_wic, PV_NONE,
+			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
     {"wildmenu",    "wmnu", P_BOOL|P_VI_DEF,
 #ifdef FEAT_WILDMENU
 			    (char_u *)&p_wmnu, PV_NONE,

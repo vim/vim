@@ -7752,6 +7752,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 	a pattern from the list.  This avoids problems when a future version
 	uses another default.
 
+
+			*'wildignorecase* *'wic'* *'nowildignorecase* *'nowic'*
+'wildignorecase' 'wic'	boolean	(default off)
+			global
+			{not in Vi}
+	When set case is ignored when completing file names and directories.
+	Has no effect on systems where file name case is generally ignored.
+	Does not apply when the shell is used to expand wildcards, which
+	happens when there are special characters.
+
+
 				*'wildmenu'* *'wmnu'* *'nowildmenu'* *'nowmnu'*
 'wildmenu' 'wmnu'	boolean	(default off)
 			global

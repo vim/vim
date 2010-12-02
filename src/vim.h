@@ -798,6 +798,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define WILD_KEEP_ALL		32
 #define WILD_SILENT		64
 #define WILD_ESCAPE		128
+#define WILD_ICASE		256
 
 /* Flags for expand_wildcards() */
 #define EW_DIR		0x01	/* include directory names */
@@ -808,6 +809,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define EW_SILENT	0x20	/* don't print "1 returned" from shell */
 #define EW_EXEC		0x40	/* executable files */
 #define EW_PATH		0x80	/* search in 'path' too */
+#define EW_ICASE	0x100	/* ignore case */
 /* Note: mostly EW_NOTFOUND and EW_SILENT are mutually exclusive: EW_NOTFOUND
  * is used when executing commands and EW_SILENT for interactive expanding. */
 

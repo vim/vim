@@ -9161,7 +9161,10 @@ unix_expandpath(gap, path, wildoff, flags, didstar)
 #ifdef CASE_INSENSITIVE_FILENAME
     regmatch.rm_ic = TRUE;		/* Behave like Terminal.app */
 #else
-    regmatch.rm_ic = FALSE;		/* Don't ever ignore case */
+    if (flags & EW_ICASE)
+	regmatch.rm_ic = TRUE;		/* 'wildignorecase' set */
+    else
+	regmatch.rm_ic = FALSE;		/* Don't ignore case */
 #endif
     regmatch.regprog = vim_regcomp(pat, RE_MAGIC);
     vim_free(pat);
@@ -9643,7 +9646,7 @@ expand_in_path(gap, pattern, flags)
     if (paths == NULL)
 	return 0;
 
-    files = globpath(paths, pattern, 0);
+    files = globpath(paths, pattern, (flags & EW_ICASE) ? WILD_ICASE : 0);
     vim_free(paths);
     if (files == NULL)
 	return 0;
