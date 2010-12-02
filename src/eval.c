@@ -9876,7 +9876,7 @@ f_expand(argvars, rettv)
     char_u	*s;
     int		len;
     char_u	*errormsg;
-    int		flags = WILD_SILENT|WILD_USE_NL|WILD_LIST_NOTFOUND;
+    int		options = WILD_SILENT|WILD_USE_NL|WILD_LIST_NOTFOUND;
     expand_T	xpc;
     int		error = FALSE;
 
@@ -9894,12 +9894,14 @@ f_expand(argvars, rettv)
 	 * for 'wildignore' and don't put matches for 'suffixes' at the end. */
 	if (argvars[1].v_type != VAR_UNKNOWN
 				    && get_tv_number_chk(&argvars[1], &error))
-	    flags |= WILD_KEEP_ALL;
+	    options |= WILD_KEEP_ALL;
 	if (!error)
 	{
 	    ExpandInit(&xpc);
 	    xpc.xp_context = EXPAND_FILES;
-	    rettv->vval.v_string = ExpandOne(&xpc, s, NULL, flags, WILD_ALL);
+	    if (p_wic)
+		options += WILD_ICASE;
+	    rettv->vval.v_string = ExpandOne(&xpc, s, NULL, options, WILD_ALL);
 	}
 	else
 	    rettv->vval.v_string = NULL;
@@ -11672,7 +11674,7 @@ f_glob(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    int		flags = WILD_SILENT|WILD_USE_NL;
+    int		options = WILD_SILENT|WILD_USE_NL;
     expand_T	xpc;
     int		error = FALSE;
 
@@ -11680,14 +11682,16 @@ f_glob(argvars, rettv)
     * for 'wildignore' and don't put matches for 'suffixes' at the end. */
     if (argvars[1].v_type != VAR_UNKNOWN
 				&& get_tv_number_chk(&argvars[1], &error))
-	flags |= WILD_KEEP_ALL;
+	options |= WILD_KEEP_ALL;
     rettv->v_type = VAR_STRING;
     if (!error)
     {
 	ExpandInit(&xpc);
 	xpc.xp_context = EXPAND_FILES;
+	if (p_wic)
+	    options += WILD_ICASE;
 	rettv->vval.v_string = ExpandOne(&xpc, get_tv_string(&argvars[0]),
-						       NULL, flags, WILD_ALL);
+						     NULL, options, WILD_ALL);
     }
     else
 	rettv->vval.v_string = NULL;
