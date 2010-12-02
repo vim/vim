@@ -643,6 +643,7 @@ netbeans_parse_messages(void)
 {
     char_u	*p;
     queue_T	*node;
+    int		own_node;
 
     while (head.next != NULL && head.next != &head)
     {
@@ -681,20 +682,25 @@ netbeans_parse_messages(void)
 	    *p++ = NUL;
 	    if (*p == NUL)
 	    {
+		own_node = TRUE;
 		head.next = node->next;
 		node->next->prev = node->prev;
 	    }
+	    else
+		own_node = FALSE;
 
 	    /* now, parse and execute the commands */
 	    nb_parse_cmd(node->buffer);
 
-	    if (*p == NUL)
+	    if (own_node)
 	    {
 		/* buffer finished, dispose of the node and buffer */
 		vim_free(node->buffer);
 		vim_free(node);
 	    }
-	    else
+	    /* Check that "head" wasn't changed under our fingers, e.g. when a
+	     * DETACH command was handled. */
+	    else if (head.next == node)
 	    {
 		/* more follows, move to the start */
 		STRMOVE(node->buffer, p);
