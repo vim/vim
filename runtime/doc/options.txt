@@ -1434,6 +1434,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 			explicitly accessed using the "* notation.  Also see
 			|gui-clipboard|.
 
+	unnamedplus	A variant of "unnamed" flag which uses the clipboard
+			register '+' (|quoteplus|) instead of register '*' for
+			all operations except yank.  Yank shall copy the text
+			into register '+' and also into '*' when "unnamed" is
+			included.
+			Only available with the |+x11| feature.
+			Availability can be checked with: >
+				if has('unnamedplus')
+<
 	autoselect	Works like the 'a' flag in 'guioptions': If present,
 			then whenever Visual mode is started, or the Visual
 			area extended, Vim tries to become the owner of the

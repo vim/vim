@@ -1584,9 +1584,11 @@ cmdline_paste_reg(regname, literally, remcr)
 adjust_clip_reg(rp)
     int		*rp;
 {
-    /* If no reg. specified, and "unnamed" is in 'clipboard', use '*' reg. */
-    if (*rp == 0 && clip_unnamed)
-	*rp = '*';
+    /* If no reg. specified, and "unnamed" or "unnamedplus" is in 'clipboard',
+     * use '*' or '+' reg, respectively. "unnamedplus" prevails. */
+    if (*rp == 0 && clip_unnamed != 0)
+	*rp = ((clip_unnamed & CLIP_UNNAMED_PLUS) && clip_plus.available)
+								  ? '+' : '*';
     if (!clip_star.available && *rp == '*')
 	*rp = 0;
     if (!clip_plus.available && *rp == '+')
@@ -2842,6 +2844,7 @@ op_yank(oap, deleting, mess)
     char_u		*p;
     char_u		*pnew;
     struct block_def	bd;
+    int			did_star = FALSE;
 
 				    /* check for read-only register */
     if (oap->regname != 0 && !valid_yank_reg(oap->regname, TRUE))
@@ -3115,7 +3118,8 @@ op_yank(oap, deleting, mess)
      */
     if (clip_star.available
 	    && (curr == &(y_regs[STAR_REGISTER])
-		|| (!deleting && oap->regname == 0 && clip_unnamed)))
+		|| (!deleting && oap->regname == 0
+					   && (clip_unnamed & CLIP_UNNAMED))))
     {
 	if (curr != &(y_regs[STAR_REGISTER]))
 	    /* Copy the text from register 0 to the clipboard register. */
@@ -3123,6 +3127,7 @@ op_yank(oap, deleting, mess)
 
 	clip_own_selection(&clip_star);
 	clip_gen_set_selection(&clip_star);
+	did_star = TRUE;
     }
 
 # ifdef FEAT_X11
@@ -3130,12 +3135,19 @@ op_yank(oap, deleting, mess)
      * If we were yanking to the '+' register, send result to selection.
      * Also copy to the '*' register, in case auto-select is off.
      */
-    else if (clip_plus.available && curr == &(y_regs[PLUS_REGISTER]))
+    if (clip_plus.available
+	    && (curr == &(y_regs[PLUS_REGISTER])
+		|| (!deleting && oap->regname == 0
+				      && (clip_unnamed & CLIP_UNNAMED_PLUS))))
     {
+	if (curr != &(y_regs[PLUS_REGISTER]))
+	    /* Copy the text from register 0 to the clipboard register. */
+	    copy_yank_reg(&(y_regs[PLUS_REGISTER]));
+
 	/* No need to copy to * register upon 'unnamed' now - see below */
 	clip_own_selection(&clip_plus);
 	clip_gen_set_selection(&clip_plus);
-	if (!clip_isautosel())
+	if (!clip_isautosel() && !did_star)
 	{
 	    copy_yank_reg(&(y_regs[STAR_REGISTER]));
 	    clip_own_selection(&clip_star);

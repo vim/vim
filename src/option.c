@@ -7307,7 +7307,7 @@ check_stl_option(s)
     static char_u *
 check_clipboard_option()
 {
-    int		new_unnamed = FALSE;
+    int		new_unnamed = 0;
     int		new_autoselect = FALSE;
     int		new_autoselectml = FALSE;
     int		new_html = FALSE;
@@ -7319,8 +7319,14 @@ check_clipboard_option()
     {
 	if (STRNCMP(p, "unnamed", 7) == 0 && (p[7] == ',' || p[7] == NUL))
 	{
-	    new_unnamed = TRUE;
+	    new_unnamed |= CLIP_UNNAMED;
 	    p += 7;
+	}
+        else if (STRNCMP(p, "unnamedplus", 11) == 0
+					    && (p[11] == ',' || p[11] == NUL))
+	{
+	    new_unnamed |= CLIP_UNNAMED_PLUS;
+	    p += 11;
 	}
 	else if (STRNCMP(p, "autoselect", 10) == 0
 					&& (p[10] == ',' || p[10] == NUL))
