@@ -9756,6 +9756,9 @@ copy_winopt(from, to)
 #ifdef FEAT_SCROLLBIND
     to->wo_scb = from->wo_scb;
 #endif
+#ifdef FEAT_CURSORBIND
+    to->wo_crb = from->wo_crb;
+#endif
 #ifdef FEAT_SPELL
     to->wo_spell = from->wo_spell;
 #endif

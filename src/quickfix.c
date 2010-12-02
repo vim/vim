@@ -2359,6 +2359,7 @@ ex_copen(eap)
 	    set_option_value((char_u *)"bt", 0L, (char_u *)"quickfix",
 								   OPT_LOCAL);
 	    set_option_value((char_u *)"bh", 0L, (char_u *)"wipe", OPT_LOCAL);
+	    RESET_BINDING(curwin);
 #ifdef FEAT_DIFF
 	    curwin->w_p_diff = FALSE;
 #endif
