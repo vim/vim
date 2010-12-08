@@ -2844,7 +2844,9 @@ op_yank(oap, deleting, mess)
     char_u		*p;
     char_u		*pnew;
     struct block_def	bd;
+#if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
     int			did_star = FALSE;
+#endif
 
 				    /* check for read-only register */
     if (oap->regname != 0 && !valid_yank_reg(oap->regname, TRUE))
@@ -3127,7 +3129,9 @@ op_yank(oap, deleting, mess)
 
 	clip_own_selection(&clip_star);
 	clip_gen_set_selection(&clip_star);
+# ifdef FEAT_X11
 	did_star = TRUE;
+# endif
     }
 
 # ifdef FEAT_X11
