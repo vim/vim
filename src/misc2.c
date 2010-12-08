@@ -200,7 +200,6 @@ coladvance2(pos, addspaces, finetune, wcol)
 	}
 #endif
 
-	idx = -1;
 	ptr = line;
 	while (col <= wcol && *ptr != NUL)
 	{
@@ -1223,7 +1222,7 @@ free_all_mem()
 #endif
 
 /*
- * copy a string into newly allocated memory
+ * Copy "string" into newly allocated memory.
  */
     char_u *
 vim_strsave(string)
@@ -1239,6 +1238,12 @@ vim_strsave(string)
     return p;
 }
 
+/*
+ * Copy up to "len" bytes of "string" into newly allocated memory and
+ * terminate with a NUL.
+ * The allocated memory always has size "len + 1", also when "string" is
+ * shorter.
+ */
     char_u *
 vim_strnsave(string, len)
     char_u	*string;

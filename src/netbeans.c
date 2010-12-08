@@ -960,7 +960,6 @@ nb_free()
     keyQ_T *key_node = keyHead.next;
     queue_T *cmd_node = head.next;
     nbbuf_T buf;
-    buf_T *bufp;
     int i;
 
     /* free the netbeans buffer list */
@@ -969,7 +968,7 @@ nb_free()
 	buf = buf_list[i];
 	vim_free(buf.displayname);
 	vim_free(buf.signmap);
-	if ((bufp=buf.bufp) != NULL)
+	if (buf.bufp != NULL)
 	{
 	    buf.bufp->b_netbeans_file = FALSE;
 	    buf.bufp->b_was_netbeans_file = FALSE;

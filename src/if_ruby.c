@@ -586,9 +586,9 @@ void ex_rubydo(exarg_T *eap)
 	if (u_save(eap->line1 - 1, eap->line2 + 1) != OK)
 	    return;
 	for (i = eap->line1; i <= eap->line2; i++) {
-	    VALUE line, oldline;
+	    VALUE line;
 
-	    line = oldline = vim_str2rb_enc_str((char *)ml_get(i));
+	    line = vim_str2rb_enc_str((char *)ml_get(i));
 	    rb_lastline_set(line);
 	    eval_enc_string_protect((char *) eap->arg, &state);
 	    if (state) {

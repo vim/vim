@@ -9839,10 +9839,7 @@ spell_iswordp(p, wp)
 	{
 	    /* be quick for ASCII */
 	    if (wp->w_s->b_spell_ismw[*p])
-	    {
 		s = p + 1;		/* skip a mid-word character */
-		l = MB_BYTE2LEN(*s);
-	    }
 	}
 	else
 	{
@@ -9850,10 +9847,7 @@ spell_iswordp(p, wp)
 	    if (c < 256 ? wp->w_s->b_spell_ismw[c]
 		    : (wp->w_s->b_spell_ismw_mb != NULL
 			   && vim_strchr(wp->w_s->b_spell_ismw_mb, c) != NULL))
-	    {
 		s = p + l;
-		l = MB_BYTE2LEN(*s);
-	    }
 	}
 
 	c = mb_ptr2char(s);
@@ -13813,11 +13807,8 @@ add_suggestion(su, gap, goodword, badlenarg, score, altscore, had_bonus,
 		    su->su_sfmaxscore = cleanup_suggestions(gap,
 				      su->su_sfmaxscore, SUG_CLEAN_COUNT(su));
 		else
-		{
-		    i = su->su_maxscore;
 		    su->su_maxscore = cleanup_suggestions(gap,
 					su->su_maxscore, SUG_CLEAN_COUNT(su));
-		}
 	    }
 	}
     }

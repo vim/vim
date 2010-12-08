@@ -1798,7 +1798,6 @@ find_replace_cb(GtkWidget *widget UNUSED, gpointer data)
     char_u		*repl_text;
     gboolean		direction_down;
     SharedFindReplace	*sfr;
-    int			rc;
 
     flags = (int)(long)data;	    /* avoid a lint warning here */
 
@@ -1824,7 +1823,7 @@ find_replace_cb(GtkWidget *widget UNUSED, gpointer data)
 
     repl_text = CONVERT_FROM_UTF8(repl_text);
     find_text = CONVERT_FROM_UTF8(find_text);
-    rc = gui_do_findrepl(flags, find_text, repl_text, direction_down);
+    gui_do_findrepl(flags, find_text, repl_text, direction_down);
     CONVERT_FROM_UTF8_FREE(repl_text);
     CONVERT_FROM_UTF8_FREE(find_text);
 }
