@@ -582,6 +582,9 @@ ml_set_crypt_key(buf, old_key, old_cm)
 	    idx = ip->ip_index + 1;	    /* go to next index */
 	    page_count = 1;
 	}
+
+	if (error > 0)
+	    EMSG(_("E843: Error while updating swap file crypt"));
     }
 
     mfp->mf_old_key = NULL;
@@ -2384,7 +2387,7 @@ theend:
  * Make a copy of the line if necessary.
  */
 /*
- * get a pointer to a (read-only copy of a) line
+ * Return a pointer to a (read-only copy of a) line.
  *
  * On failure an error message is given and IObuff is returned (to avoid
  * having to check for error everywhere).
@@ -2397,7 +2400,7 @@ ml_get(lnum)
 }
 
 /*
- * ml_get_pos: get pointer to position 'pos'
+ * Return pointer to position "pos".
  */
     char_u *
 ml_get_pos(pos)
@@ -2407,7 +2410,7 @@ ml_get_pos(pos)
 }
 
 /*
- * ml_get_curline: get pointer to cursor line.
+ * Return pointer to cursor line.
  */
     char_u *
 ml_get_curline()
@@ -2416,7 +2419,7 @@ ml_get_curline()
 }
 
 /*
- * ml_get_cursor: get pointer to cursor position
+ * Return pointer to cursor position.
  */
     char_u *
 ml_get_cursor()
@@ -2426,7 +2429,7 @@ ml_get_cursor()
 }
 
 /*
- * get a pointer to a line in a specific buffer
+ * Return a pointer to a line in a specific buffer
  *
  * "will_change": if TRUE mark the buffer dirty (chars in the line will be
  * changed)
