@@ -3405,9 +3405,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
 # endif
 		   )
 		{
-		    int_u	text_sign;
+		    int	text_sign;
 # ifdef FEAT_SIGN_ICONS
-		    int_u	icon_sign;
+		    int	icon_sign;
 # endif
 
 		    /* Draw two cells with the sign value or blank. */
@@ -6522,8 +6522,17 @@ win_redr_custom(wp, draw_ruler)
 				stl, use_sandbox,
 				fillchar, maxwidth, hltab, tabtab);
     vim_free(stl);
-    len = (int)STRLEN(buf);
 
+    /* Make all characters printable. */
+    p = transstr(buf);
+    if (p != NULL)
+    {
+	vim_strncpy(buf, p, sizeof(buf) - 1);
+	vim_free(p);
+    }
+
+    /* fill up with "fillchar" */
+    len = (int)STRLEN(buf);
     while (width < maxwidth && len < (int)sizeof(buf) - 1)
     {
 #ifdef FEAT_MBYTE
