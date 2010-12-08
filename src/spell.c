@@ -327,6 +327,16 @@ typedef int idx_T;
 typedef long idx_T;
 #endif
 
+#ifdef VMS
+# define SPL_FNAME_TMPL  "%s_%s.spl"
+# define SPL_FNAME_ADD   "_add."
+# define SPL_FNAME_ASCII "_ascii."
+#else
+# define SPL_FNAME_TMPL  "%s.%s.spl"
+# define SPL_FNAME_ADD   ".add."
+# define SPL_FNAME_ASCII ".ascii."
+#endif
+
 /* Flags used for a word.  Only the lowest byte can be used, the region byte
  * comes above it. */
 #define WF_REGION   0x01	/* region byte follows */
@@ -2471,14 +2481,24 @@ spell_load_lang(lang)
 	 * Find the first spell file for "lang" in 'runtimepath' and load it.
 	 */
 	vim_snprintf((char *)fname_enc, sizeof(fname_enc) - 5,
-					"spell/%s.%s.spl", lang, spell_enc());
+#ifdef VMS
+					"spell/%s_%s.spl",
+#else
+					"spell/%s.%s.spl",
+#endif
+							   lang, spell_enc());
 	r = do_in_runtimepath(fname_enc, FALSE, spell_load_cb, &sl);
 
 	if (r == FAIL && *sl.sl_lang != NUL)
 	{
 	    /* Try loading the ASCII version. */
 	    vim_snprintf((char *)fname_enc, sizeof(fname_enc) - 5,
-						  "spell/%s.ascii.spl", lang);
+#ifdef VMS
+						  "spell/%s_ascii.spl",
+#else
+						  "spell/%s.ascii.spl",
+#endif
+									lang);
 	    r = do_in_runtimepath(fname_enc, FALSE, spell_load_cb, &sl);
 
 #ifdef FEAT_AUTOCMD
@@ -2496,7 +2516,12 @@ spell_load_lang(lang)
 
     if (r == FAIL)
     {
-	smsg((char_u *)_("Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""),
+	smsg((char_u *)
+#ifdef VMS
+	_("Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""),
+#else
+	_("Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""),
+#endif
 						     lang, spell_enc(), lang);
     }
     else if (sl.sl_slang != NULL)
@@ -2530,7 +2555,7 @@ spell_enc()
 int_wordlist_spl(fname)
     char_u	    *fname;
 {
-    vim_snprintf((char *)fname, MAXPATHL, "%s.%s.spl",
+    vim_snprintf((char *)fname, MAXPATHL, SPL_FNAME_TMPL,
 						  int_wordlist, spell_enc());
 }
 
@@ -2785,8 +2810,8 @@ spell_load_file(fname, lang, old_lp, silent)
 	if (lp->sl_fname == NULL)
 	    goto endFAIL;
 
-	/* Check for .add.spl. */
-	lp->sl_add = strstr((char *)gettail(fname), ".add.") != NULL;
+	/* Check for .add.spl (_add.spl for VMS). */
+	lp->sl_add = strstr((char *)gettail(fname), SPL_FNAME_ADD) != NULL;
     }
     else
 	lp = old_lp;
@@ -9109,8 +9134,8 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 	    /* For ":mkspell path/vim" output file is "path/vim.latin1.spl". */
 	    innames = &fnames[0];
 	    incount = 1;
-	    vim_snprintf((char *)wfname, sizeof(wfname), "%s.%s.spl", fnames[0],
-			     spin.si_ascii ? (char_u *)"ascii" : spell_enc());
+	    vim_snprintf((char *)wfname, sizeof(wfname), SPL_FNAME_TMPL,
+		  fnames[0], spin.si_ascii ? (char_u *)"ascii" : spell_enc());
 	}
 	else if (len > 4 && STRCMP(fnames[0] + len - 4, ".spl") == 0)
 	{
@@ -9119,15 +9144,15 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 	}
 	else
 	    /* Name should be language, make the file name from it. */
-	    vim_snprintf((char *)wfname, sizeof(wfname), "%s.%s.spl", fnames[0],
-			     spin.si_ascii ? (char_u *)"ascii" : spell_enc());
+	    vim_snprintf((char *)wfname, sizeof(wfname), SPL_FNAME_TMPL,
+		  fnames[0], spin.si_ascii ? (char_u *)"ascii" : spell_enc());
 
 	/* Check for .ascii.spl. */
-	if (strstr((char *)gettail(wfname), ".ascii.") != NULL)
+	if (strstr((char *)gettail(wfname), SPL_FNAME_ASCII) != NULL)
 	    spin.si_ascii = TRUE;
 
 	/* Check for .add.spl. */
-	if (strstr((char *)gettail(wfname), ".add.") != NULL)
+	if (strstr((char *)gettail(wfname), SPL_FNAME_ADD) != NULL)
 	    spin.si_add = TRUE;
     }
 
