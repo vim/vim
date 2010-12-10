@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.3.  Last change: 2010 Sep 18
+*editing.txt*   For Vim version 7.3.  Last change: 2010 Dec 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1340,7 +1340,7 @@ Vim is able to write files encrypted, and read them back.  The encrypted text
 cannot be read without the right key.
 {only available when compiled with the |+cryptv| feature}  *E833*
 
-The text in the swap file and the undo file is also encrypted.
+The text in the swap file and the undo file is also encrypted.  *E843*
 
 Note: The text in memory is not encrypted.  A system administrator may be able
 to see your text while you are editing it.  When filtering text with

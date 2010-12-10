@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	man
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change:	2008 Sep 17
+" Last Change:	2010 Nov 29
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -14,6 +14,10 @@ if &filetype == "man"
     finish
   endif
   let b:did_ftplugin = 1
+
+  " Ensure Vim is not recursively invoked (man-db does this)
+  " when doing ctrl-[ on a man page reference.
+  let $MANPAGER = ""
 
   " allow dot and dash in manual page name.
   setlocal iskeyword+=\.,-

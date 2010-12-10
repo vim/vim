@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Aug 12, 2010 
-" Version:	57
+" Last Change:	Sep 17, 2010 
+" Version:	60
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -67,11 +67,11 @@ endif
 "   g:tex_stylish to 1      (for    "*.sty" mode)
 "    or to           0 else (normal "*.tex" mode)
 " or on a buffer-by-buffer basis with b:tex_stylish
-let b:extfname=expand("%:e")
+let s:extfname=expand("%:e")
 if exists("g:tex_stylish")
  let b:tex_stylish= g:tex_stylish
 elseif !exists("b:tex_stylish")
- if b:extfname == "sty" || b:extfname == "cls" || b:extfname == "clo" || b:extfname == "dtx" || b:extfname == "ltx"
+ if s:extfname == "sty" || s:extfname == "cls" || s:extfname == "clo" || s:extfname == "dtx" || s:extfname == "ltx"
   let b:tex_stylish= 1
  else
   let b:tex_stylish= 0
@@ -92,12 +92,12 @@ endif
 " (La)TeX keywords: only use the letters a-zA-Z {{{1
 " but _ is the only one that causes problems.
 if version < 600
-  set isk-=_
+  set isk=a-z,A-Z
   if b:tex_stylish
     set isk+=@
   endif
 else
-  setlocal isk-=_
+  setlocal isk=a-z,A-Z
   if b:tex_stylish
     setlocal isk+=@
   endif
@@ -300,7 +300,7 @@ endif
 
 " Bad Math (mismatched): {{{1
 if !exists("tex_no_math")
- syn match texBadMath		"\\end\s*{\s*\(array\|gathered\|bBpvV]matrix\|split\|subequations\|smallmatrix\|xxalignat\)\s*}"
+ syn match texBadMath		"\\end\s*{\s*\(array\|gathered\|bBpvV]matrix\|split\|smallmatrix\|xxalignat\)\s*}"
  syn match texBadMath		"\\end\s*{\s*\(align\|alignat\|displaymath\|displaymath\|eqnarray\|equation\|flalign\|gather\|math\|multline\|xalignat\)\*\=\s*}"
  syn match texBadMath		"\\[\])]"
 endif
@@ -345,7 +345,6 @@ if !exists("tex_no_math")
  call TexNewMathZone("G","gather",1)
  call TexNewMathZone("H","math",1)
  call TexNewMathZone("I","multline",1)
- call TexNewMathZone("J","subequations",0)
  call TexNewMathZone("K","xalignat",1)
  call TexNewMathZone("L","xxalignat",0)
 
@@ -412,7 +411,7 @@ endif
 syn case ignore
 syn keyword texTodo		contained		combak	fixme	todo	xxx
 syn case match
-if b:extfname == "dtx"
+if s:extfname == "dtx"
   syn match texComment		"\^\^A.*$"	contains=@texCommentGroup
   syn match texComment		"^%\+"		contains=@texCommentGroup
 else
@@ -468,15 +467,16 @@ else
 endif
 
 " Tex Reference Zones: {{{1
-syn region texZone		matchgroup=texStatement start="@samp{"			end="}\|%stopzone\>"	contains=@texRefGroup
-syn region texRefZone		matchgroup=texStatement start="\\nocite{"		end="}\|%stopzone\>"	contains=@texRefGroup
-syn region texRefZone		matchgroup=texStatement start="\\bibliography{"		end="}\|%stopzone\>"	contains=@texRefGroup
-syn region texRefZone		matchgroup=texStatement start="\\label{"		end="}\|%stopzone\>"	contains=@texRefGroup
-syn region texRefZone		matchgroup=texStatement start="\\\(page\|eq\)ref{"	end="}\|%stopzone\>"	contains=@texRefGroup
-syn region texRefZone		matchgroup=texStatement start="\\v\=ref{"		end="}\|%stopzone\>"	contains=@texRefGroup
-syn match  texRefZone		'\\cite\%([tp]\*\=\)\=' nextgroup=texRefOption,texCite
-syn region texRefOption	contained	matchgroup=Delimiter start='\[' end=']'		contains=@texRefGroup,texRefZone	nextgroup=texRefOption,texCite
-syn region texCite	contained	matchgroup=Delimiter start='{' end='}'		contains=@texRefGroup,texRefZone,texCite
+syn match texRefZone		'\\@samp\>'		skipwhite	nextgroup=texRefLabel
+syn match texRefZone		'\\nocite\>'		skipwhite	nextgroup=texRefLabel
+syn match texRefZone		'\\bibliography\>'	skipwhite	nextgroup=texRefLabel
+syn match texRefZone		'\\label\>'		skipwhite	nextgroup=texRefLabel
+syn match texRefZone		'\\\(page\|eq\)ref\>'	skipwhite	nextgroup=texRefLabel
+syn match texRefZone		'\\v\=ref'		skipwhite	nextgroup=texRefLabel
+syn match texRefZone		'\\cite\%([tp]\*\=\)\='	skipwhite	nextgroup=texCiteOption,texCite
+syn region texRefLabel		contained matchgroup=Delimiter start='{'	end='}'	contains=@texRefGroup
+syn region texCiteOption	contained matchgroup=Delimiter start='\['	end=']'	contains=@Spell,@texRefGroup,@texMathZones,texRefZone	nextgroup=texCiteOption,texCite
+syn region texCite		contained matchgroup=Delimiter start='{'	end='}'	contains=@texRefGroup,texCite
 
 " Handle newcommand, newenvironment : {{{1
 syn match  texNewCmd				"\\newcommand\>"			nextgroup=texCmdName skipwhite skipnl
@@ -753,7 +753,11 @@ if has("conceal") && &enc == 'utf-8'
     \ ['wedge'		, '∧'],
     \ ['wr'		, '≀']]
   for texmath in s:texMathList
-   exe "syn match texMathSymbol '\\\\".texmath[0]."\\>' contained conceal cchar=".texmath[1]
+   if texmath[0] =~ '\w$'
+    exe "syn match texMathSymbol '\\\\".texmath[0]."\\>' contained conceal cchar=".texmath[1]
+   else
+    exe "syn match texMathSymbol '\\\\".texmath[0]."' contained conceal cchar=".texmath[1]
+   endif
   endfor
 
   if &ambw == "double"
@@ -1027,7 +1031,6 @@ if did_tex_syntax_inits == 1
    HiLink texError		Error
   endif
 
-  HiLink texCite		texRefZone
   HiLink texDefCmd		texDef
   HiLink texDefName		texDef
   HiLink texDocType		texCmdName
@@ -1052,6 +1055,7 @@ if did_tex_syntax_inits == 1
    HiLink texMathZoneV		texMath
    HiLink texMathZoneZ		texMath
   endif
+  HiLink texRefZone		Identifier
   HiLink texSectionMarker	texCmdName
   HiLink texSectionName		texSection
   HiLink texSpaceCode		texStatement
@@ -1060,6 +1064,7 @@ if did_tex_syntax_inits == 1
   HiLink texTypeStyle		texType
 
    " Basic TeX highlighting groups
+  HiLink texCite		Special
   HiLink texCmdArgs		Number
   HiLink texCmdName		Statement
   HiLink texComment		Comment
@@ -1075,7 +1080,7 @@ if did_tex_syntax_inits == 1
   HiLink texNewCmd		Statement
   HiLink texNewEnv		Statement
   HiLink texOption		Number
-  HiLink texRefZone		Special
+  HiLink texRefLabel		Special
   HiLink texSection		PreCondit
   HiLink texSpaceCodeChar	Special
   HiLink texSpecialChar		SpecialChar
@@ -1089,6 +1094,6 @@ if did_tex_syntax_inits == 1
 endif
 
 " Current Syntax: {{{1
-unlet b:extfname
+unlet s:extfname
 let   b:current_syntax = "tex"
 " vim: ts=8 fdm=marker

@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2010 Jul 24
+" Last Change:	2010 Dec 02
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -1042,6 +1042,8 @@ if has("wildignore")
   call append("$", "wildignore\tlist of patterns to ignore files for file name completion")
   call <SID>OptionG("wig", &wig)
 endif
+call append("$", "wildignorecase\tignore case when completing file names")
+call <SID>BinOptionG("wic", &wic)
 if has("wildmenu")
   call append("$", "wildmenu\tcommand-line completion shows a list of matches")
   call <SID>BinOptionG("wmnu", &wmnu)

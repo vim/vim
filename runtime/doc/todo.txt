@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2010 Nov 16
+*todo.txt*      For Vim version 7.3.  Last change: 2010 Dec 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,12 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Crash when using vimgrep with an ftp file. (Christian Brabandt, 2010 Nov 5)
-Crash with dragn-n-drop of file combined with netrw (Marius Gedminas, 2008 Jun
-11)  I can't reproduce it.  It's probably caused by a handle_drop() call
-in combination with autocommands that invoke a ":redraw" command.
-Another valgrind output Jun 30.
-
 'cursorline' is displayed too short when there are concealed characters and
 'list' is set, 'listchars' at default value. (Dennis Preiser, 2010 Aug 15)
 
@@ -58,19 +52,27 @@ call append(line, "INFO  ....12....18....24....30....36....42....48....54....60.
 Building the MingW version without clipboard but with multi-byte doesn't
 work. (Bill Lam, 2010 Sep 18)
 
+When reading from stdin, don't enable signals before finishing reading?
+Otherwise the program producing the text may get killed by SIGWINCH.
+(Benjamin R. Haskell) Xavier: It's because reading from stdin returns -1.
+Patch from Xavier de Gaye, 2010 Dec 7.  More generic solution?
+
 Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
 Using ":break" or something else that stops executing commands inside a
 ":finally" does not rethrow a previously uncaught exception. (ZyX, 2010 Oct
 15)
 
+Vim using lots of memory when joining lines. (John Little, 2010 Dec 3)
+
 string() can't parse back "inf" and "nan".  Fix documentation or fix code?
 (ZyX, 2010 Aug 23)
 
-maparg() does not show the <script> flag.  How to restore the script ID?
+maparg() does not show the <script> flag.  When temporarily changing a
+mapping, how to restore the script ID?
 
 Patch to fix \%V item in regexp. (Christian Brabandt, 2010 Nov 8)
-Not quite right.
+Update Nov 19.  James Vega: still not right.  Christian: it's difficult.
 
 Highlighting stops working after changing it many times.  Script to reproduce
 it: Pablo Contreras, 2010 Oct 12  Windows XP and 7.  Font is never freed?
@@ -78,20 +80,28 @@ it: Pablo Contreras, 2010 Oct 12  Windows XP and 7.  Font is never freed?
 When 'cursorcolumn' is set locally to a window, ":new" opens a window with the
 same highlighting but 'cursorcolumn' is empty. (Tyru, 2010 Nov 15)
 
+In the sandbox it's not allowed to do many things, but it's possible to change
+or set variables.  Add a way to prevent variables from being changed in the
+sandbox?  E.g.: ":protect g:restore_settings".
+
 GTK: drawing a double-width combining character over single-width characters
 doesn't look right. (Dominique Pelle, 2010 Aug 8)
 
-GTK: patch to fix hitting Enter in a dialog. (Britton Kerin, 2010 Nov 11)
-
 GTK: tear-off menu does not work. (Kurt Sonnenmoser, 2010 Oct 25)
+
+Version of netbeans.c for use with MacVim. (Kazuki Sakamoto, 2010 Nov 18)
+
+7.3.014 changed how backslash at end of line works, but still get a NUL when
+there is one backslash. (Ray Frush, 2010 Nov 18)  What does the original ex
+do?
 
 ":find" completion does not escape space in directory name. (Isz, 2010 Nov 2)
 
+Searching mixed with Visual mode doesn't redraw properly. (James Vega, 2010 Nov
+22)
+
 Win32: When using Chinese tear-off menu doesn't work. (Weasley, 2010 Oct 31)
 Patch by Alex Jakushev, 2010 Nov 2.
-
-Using control characters in 'statusline' doesn't work well. (ZyX, 2010 Nov 1)
-Patch by Caio Ariede, 2010 Nov 3
 
 Using ":call" inside "if 0" does not see that a function returns a Dict and
 gives error for "." as string concatenation.  (Yasuhiro Matsumoto, 2010 Oct 20)
@@ -110,6 +120,14 @@ clear why it doesn't work.
 Editing a file with a ^M with 'ff' set to "mac", opening a help file, then the
 ^M is displayed as ^J sometimes.  Getting 'ff' value from wrong window/buffer?
 
+Since patch 7.2.46 Yankring plugin has become very slow, eventually make Vim
+crash? (Raiwil, 2010 Nov 17)
+
+Patch to disallow fork() when __APPLE__ is defined. (Hisashi T Fujinaka, 2010
+Nov 25)
+
+GTK: Patch to fix menu popping down. (Hong Xu, 2010 Dec 4, Dec 5)
+
 Patch to add 'systemencoding', convert between 'encoding' and this for file
 names, shell commands and the like.  (Kikuchan, 2010 Oct 14)
 Assume the system converts between the actual encoding of the filesystem to
@@ -118,7 +136,8 @@ the system encoding (usually utf-8).
 Problem producing tags file when hebrew.frx is present.  It has a BOM.
 Results in E670. (Tony Mechelynck, 2010 May 2)
 
-Patch to support sorting on floating point number.
+Patch to support sorting on floating point number.  (Alex Jakushev, 2010 Oct
+30)
 
 Ruby: ":ruby print $buffer.number" returns zero.
 
@@ -178,6 +197,8 @@ Patch for VisVim, pass file name to VimOpenFile. (Jiri Sedlak, 2010 Nov 12)
 
 When 'lines' is 25 and 'scrolloff' is 12, "j" scrolls zero or two lines
 instead of one. (Constantin Pan, 2010 Sep 10)
+
+Crash in setqflist(). (Benoit Mortgat, 2010 Nov 18)
 
 Writing nested List and Dict in viminfo gives error message and can't be read
 back. (Yukihiro Nakadaira, 2010 Nov 13)
@@ -255,6 +276,8 @@ Undo problem: line not removed as expected when using setline() from Insert
 mode. (Israel Chauca, 2010 May 13, more in second msg)
 Break undo when CTRL-R = changes the text?  Or save more lines?
 
+Patch for static code analysis errors in riscOS. (Dominique Pelle, 2010 Dec 3)
+
 Change to C syntax folding to make it work much faster, but a bit less
 reliable. (Lech Lorens, 2009 Nov 9)  Enable with an option?
 Most time is spent in in_id_list().
@@ -262,6 +285,8 @@ Most time is spent in in_id_list().
 Slow combination of folding and PHP syntax highlighting.  Script to reproduce
 it.  Caused by "syntax sync fromstart" in combination with patch 7.2.274.
 (Christian Brabandt, 2010 May 27)
+Generally, folding with 'foldmethod' set to "syntax" is slow.  Do profiling to
+find out why.
 
 When completion inserts the first match, it may trigger the line to be folded.
 Disable updating folds while completion is active? (Peter Odding, 2010 Jun 9)
@@ -427,6 +452,9 @@ very high. (Yegappan Lakshmanan, 2010 Jul 22, Michael Peeters, 2010 Jul 22)
 Directory wrong in session file, caused by ":lcd" in BufEnter autocommand.
 (Felix Kater, 2009 Mar 3)
 
+Session file generates error upon loading, cause bu --remote-silent-tab.
+(7tommm (ytommm) 2010 Nov 24)
+
 Using ~ works OK on 'a' with composing char, but not on 0x0418  with composing
 char 0x0301. (Tony Mechelynck, 2009 Mar 4)
 
@@ -543,9 +571,6 @@ Patch for c.vim and cpp.vim syntax files. (Chung-chieh Shan, 2008 Nov 26)
 c.vim: XXX in a comment is colored yellow, but not when it's after "#if 0".
 (Ilya Dogolazky, 2009 Aug 7)
 
-Win32:  ":dis +" shows nothing, but "+p does insert text.  Problem with "* and
-"+ being the same thing?
-
 You can type ":w ++bad=x fname", but the ++bad argument is ignored.  Give an
 error message?  Or is this easy to implement?  (Nathan Stratton Treadway, 2008
 Aug 20)  This is in ucs2bytes(), search for 0xBF.  Using the ++bad argument is
@@ -581,9 +606,6 @@ Apr 6)  Or use "\u(123456)", similar to Perl.
 When mapping : to ; and ; to :, @; doesn't work like @: and @: doesn't work
 either.  Matt Wozniski:  nv_at() calls do_execreg() which uses
 put_in_typebuf().  Char mapped twice?
-
-8   Some file systems are case-sensitive, some are not.  Turn
-    CASE_INSENSITIVE_FILENAME into an option, at least for completion.
 
 Despite adding save_subexpr() this still doesn't work properly:
 Regexp: matchlist('12a4aaa', '^\(.\{-}\)\(\%5c\@<=a\+\)\(.\+\)\?')
@@ -639,6 +661,9 @@ try the Cocoa version.
 
 Mac: After a ":vsplit" the left scrollbar doesn't appear until 'columns' is
 changed or the window is resized.
+
+GTK: when setting 'columns' in a startup script and doing ":vertical diffsplit"
+the window isn't redrawn properly, see two vertical bars.
 
 Mac: Patch for configure: remove arch from ruby link args. (Knezevic, 2008
 Mar 5)  Alternative: Kazuki Sakamoto, Mar 7.
@@ -1149,8 +1174,8 @@ doesn't work from Geoffrey Antos, 2008 May 5.
 Also: the window may no longer fit on the screen, thus the command line is not
 visible.
 
-GTK: when setting 'columns' in a startup script and doing ":vertical diffsplit"
-the window isn't redrawn properly, see two vertical bars.
+When right after "vim file", "M" then CTRL-W v the windows are scrolled
+differently and unexpectedly.  Caused by patch 7.2.398?
 
 The magic clipboard format "VimClipboard2" appears in several places.  Should
 be only one.
@@ -4105,6 +4130,9 @@ Buffer list:
     should then mean the number of the last buffer.  E.g.: "4,$bdel".
 7   Add an option to mostly use slashes in file names.  Separately for
     internal use and for when executing an external program?
+8   Some file systems are case-sensitive, some are not.  Besides
+    'wildignorecase' there might be more parts inside
+    CASE_INSENSITIVE_FILENAME that are useful on Unix.
 
 
 Swap (.swp) files:
@@ -4503,6 +4531,8 @@ Various improvements:
 3   Make "2d%" work like "d%d%" instead of "d2%"?
 7   "g CTRL-O" jumps back to last used buffer.	Skip CTRL-O jumps in the same
     buffer.  Make jumplist remember the last ten accessed buffers?
+7   Make it possible to set the size of the jumplist (also to a smaller number
+    than the default). (Nikolai Weibull)
 -   Add code to disable the CAPS key when going from Insert to Normal mode.
 -   Set date/protection/etc. of the patchfile the same as the original file.
 -   Use growarray for termcodes[] in term.c

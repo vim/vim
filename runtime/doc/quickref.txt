@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.3.  Last change: 2010 Sep 14
+*quickref.txt*  For Vim version 7.3.  Last change: 2010 Dec 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -934,6 +934,7 @@ Short explanation of each option:		*option-list*
 'wildchar'	  'wc'	    command-line character for wildcard expansion
 'wildcharm'	  'wcm'     like 'wildchar' but also works when mapped
 'wildignore'	  'wig'     files matching these patterns are not completed
+'wildignorecase'  'wic'     ignore case when completing file names
 'wildmenu'	  'wmnu'    use menu for command line completion
 'wildmode'	  'wim'     mode for 'wildchar' command-line expansion
 'wildoptions'	  'wop'     specifies how command line completion is done

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2010 Oct 7
+*syntax.txt*	For Vim version 7.3.  Last change: 2010 Dec 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -901,8 +901,8 @@ line to your startup file: >
 
 
 DOCBOOK					*docbk.vim* *ft-docbk-syntax* *docbook*
-DOCBOOK	XML				*docbkxml.vim* *ft-docbkxml-syntax*
-DOCBOOK	SGML				*docbksgml.vim* *ft-docbksgml-syntax*
+DOCBOOK XML				*docbkxml.vim* *ft-docbkxml-syntax*
+DOCBOOK SGML				*docbksgml.vim* *ft-docbksgml-syntax*
 
 There are two types of DocBook files: SGML and XML.  To specify what type you
 are using the "b:docbk_type" variable should be set.  Vim does this for you

@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.3.  Last change: 2010 Nov 03
+*intro.txt*     For Vim version 7.3.  Last change: 2010 Dec 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -616,7 +616,6 @@ Replace		 <Esc>	  --	  --	<Insert>	      --      --
 Command-line	 *3	  --	  --	 :start	    --		      --
 Ex		 :vi	  --	  --	 --	    --	      --
 
--  NA
 -- not possible
 
 *1 Go from Normal mode to Insert mode by giving the command "i", "I", "a",
@@ -730,7 +729,7 @@ window.
 When the "lastline" flag is present in the 'display' option, you will not see
 '@' characters at the left side of window.  If the last line doesn't fit
 completely, only the part that fits is shown, and the last three characters of
-the last line are replaced with "@@@", like this: >
+the last line are replaced with "@@@", like this:
 
 	+-----------------------+
 	|first line		|

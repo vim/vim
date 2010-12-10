@@ -232,7 +232,7 @@ msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: 불러들인 파일에서 :loadkeymap을 사용하지 않았습니다"
 
 msgid "E791: Empty keymap entry"
-msgstr "E791: 키맵 엔트리가 비어있슴"
+msgstr "E791: 키맵 엔트리가 비어있음"
 
 msgid " Keyword completion (^N^P)"
 msgstr " 낱말 완성 (^N^P)"
@@ -367,7 +367,7 @@ msgstr "E118: 함수에 너무 많은 인자 넘김: %s"
 
 #, c-format
 msgid "E716: Key not present in Dictionary: %s"
-msgstr "E716: Dictionary에 키가 없슴: %s"
+msgstr "E716: Dictionary에 키가 없음: %s"
 
 #, c-format
 msgid "E122: Function %s already exists, add ! to replace it"
@@ -585,7 +585,7 @@ msgid "E727: Start past end"
 msgstr "E727: 시작위치가 끝을 지나침"
 
 msgid "<empty>"
-msgstr "<비어있슴>"
+msgstr "<비어있음>"
 
 msgid "E240: No connection to Vim server"
 msgstr "E240: Vim 서버에 연결되어 있지 않습니다"
@@ -855,7 +855,7 @@ msgstr "스왑 파일 \"%s\"가 있습니다, 덮어쓸까요?"
 
 #, c-format
 msgid "E768: Swap file exists: %s (:silent! overrides)"
-msgstr "E768: 스왑 파일 있슴: %s (덮어쓰려면 :silent! 사용)"
+msgstr "E768: 스왑 파일 있음: %s (덮어쓰려면 :silent! 사용)"
 
 #, c-format
 msgid "E141: No file name for buffer %ld"
@@ -1096,7 +1096,7 @@ msgstr "빔 스크립트 로드"
 
 #, c-format
 msgid "Cannot source a directory: \"%s\""
-msgstr "디렉토리는 source할 수 없슴: \"%s\""
+msgstr "디렉토리는 source할 수 없음: \"%s\""
 
 #, c-format
 msgid "could not source \"%s\""
@@ -2833,7 +2833,7 @@ msgid "This Vim was not compiled with the diff feature."
 msgstr "이 빔은 diff 기능 없이 컴파일 되었습니다."
 
 msgid "'-nb' cannot be used: not enabled at compile time\n"
-msgstr "'-nb'는 사용할 수 없슴: 컴파일할 때 포함되지 않음\n"
+msgstr "'-nb'는 사용할 수 없음: 컴파일할 때 포함되지 않음\n"
 
 msgid "Attempt to open script file again: \""
 msgstr "스크립트 파일을 다시 열려고 시도: \""
@@ -5149,7 +5149,7 @@ msgstr "E752: 철자가 바뀐적이 없습니다"
 
 #, c-format
 msgid "E753: Not found: %s"
-msgstr "E753: 찾을 수 없슴: %s"
+msgstr "E753: 찾을 수 없음: %s"
 
 #, c-format
 msgid "E778: This does not look like a .sug file: %s"
@@ -5902,7 +5902,7 @@ msgid "E813: Cannot close autocmd window"
 msgstr "E813: autocmd 창을 닫을 수 없습니다"
 
 msgid "E814: Cannot close window, only autocmd window would remain"
-msgstr "E814: 창을 닫을 수 없슴, autocmd 창만 남음"
+msgstr "E814: 창을 닫을 수 없음, autocmd 창만 남음"
 
 msgid "E445: Other window contains changes"
 msgstr "E445: 다른 창이 바뀌었습니다"
@@ -6177,7 +6177,7 @@ msgid "E42: No Errors"
 msgstr "E42: 에러 없음"
 
 msgid "E776: No location list"
-msgstr "E776: 위치 목록 없슴"
+msgstr "E776: 위치 목록 없음"
 
 msgid "E43: Damaged match string"
 msgstr "E43: 깨진 맞는 문자열"
@@ -6194,7 +6194,7 @@ msgstr "E46: 읽기 전용 변수 \"%s\"을(를) 바꿀 수 없습니다"
 
 #, c-format
 msgid "E794: Cannot set variable in the sandbox: \"%s\""
-msgstr "E794: sandbox 안에서는 변수를 설정할 수 없슴: \"%s\""
+msgstr "E794: sandbox 안에서는 변수를 설정할 수 없음: \"%s\""
 
 msgid "E47: Error while reading errorfile"
 msgstr "E47: 에러파일 읽는 도중에 에러"

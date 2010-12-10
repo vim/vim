@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.3.  Last change: 2010 Jul 30
+*indent.txt*    For Vim version 7.3.  Last change: 2010 Nov 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -258,6 +258,7 @@ assume a 'shiftwidth' of 4.
 <
 	bN    If N != 0 Vim will align a final "break" with the case label,
 	      so that case..break looks like a sort of block.  (default: 0).
+	      When using 1, consider adding "0=break" to 'cinkeys'.
 
 		cino=		    cino=b1 >
 		  switch (x)	      switch(x)

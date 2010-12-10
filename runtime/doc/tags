@@ -659,6 +659,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'noweirdinvert'	options.txt	/*'noweirdinvert'*
 'nowfh'	options.txt	/*'nowfh'*
 'nowfw'	options.txt	/*'nowfw'*
+'nowic'	options.txt	/*'nowic'*
+'nowildignorecase'	options.txt	/*'nowildignorecase'*
 'nowildmenu'	options.txt	/*'nowildmenu'*
 'nowinfixheight'	options.txt	/*'nowinfixheight'*
 'nowinfixwidth'	options.txt	/*'nowinfixwidth'*
@@ -1064,10 +1066,12 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'wh'	options.txt	/*'wh'*
 'whichwrap'	options.txt	/*'whichwrap'*
 'wi'	options.txt	/*'wi'*
+'wic'	options.txt	/*'wic'*
 'wig'	options.txt	/*'wig'*
 'wildchar'	options.txt	/*'wildchar'*
 'wildcharm'	options.txt	/*'wildcharm'*
 'wildignore'	options.txt	/*'wildignore'*
+'wildignorecase'	options.txt	/*'wildignorecase'*
 'wildmenu'	options.txt	/*'wildmenu'*
 'wildmode'	options.txt	/*'wildmode'*
 'wildoptions'	options.txt	/*'wildoptions'*
@@ -4219,6 +4223,9 @@ E838	netbeans.txt	/*E838*
 E839	insert.txt	/*E839*
 E84	windows.txt	/*E84*
 E840	insert.txt	/*E840*
+E841	map.txt	/*E841*
+E842	cmdline.txt	/*E842*
+E843	editing.txt	/*E843*
 E85	options.txt	/*E85*
 E86	windows.txt	/*E86*
 E87	windows.txt	/*E87*

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2010 Nov 13
+*eval.txt*	For Vim version 7.3.  Last change: 2010 Dec 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2720,7 +2720,7 @@ exp({expr})						*exp()*
 
 expand({expr} [, {flag}])				*expand()*
 		Expand wildcards and the following special keywords in {expr}.
-		The result is a String.
+		The result is a String.  'wildignorecase' applies.
 
 		When there are several matches, they are separated by <NL>
 		characters.  [Note: in version 5.0 a space was used, which
@@ -2741,6 +2741,7 @@ expand({expr} [, {flag}])				*expand()*
 			<abuf>		autocmd buffer number (as a String!)
 			<amatch>	autocmd matched name
 			<sfile>		sourced script file name
+			<slnum>		sourced script file line number
 			<cword>		word under the cursor
 			<cWORD>		WORD under the cursor
 			<client>	the {clientid} of the last received
@@ -3434,6 +3435,7 @@ glob({expr} [, {flag}])					*glob()*
 		the 'suffixes' and 'wildignore' options apply: Names matching
 		one of the patterns in 'wildignore' will be skipped and
 		'suffixes' affect the ordering of matches.
+		'wildignorecase' always applies.
 		If the expansion fails, the result is an empty string.
 		A name for a non-existing file is not included.
 
@@ -5454,8 +5456,8 @@ stridx({haystack}, {needle} [, {start}])		*stridx()*
 		{haystack} of the first occurrence of the String {needle}.
 		If {start} is specified, the search starts at index {start}.
 		This can be used to find a second match: >
-			:let comma1 = stridx(line, ",")
-			:let comma2 = stridx(line, ",", comma1 + 1)
+			:let colon1 = stridx(line, ":")
+			:let colon2 = stridx(line, ":", colon1 + 1)
 <		The search is done case-sensitive.
 		For pattern searches use |match()|.
 		-1 is returned if the {needle} does not occur in {haystack}.

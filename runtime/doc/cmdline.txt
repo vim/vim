@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.3.  Last change: 2010 Sep 18
+*cmdline.txt*   For Vim version 7.3.  Last change: 2010 Nov 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -372,10 +372,10 @@ word before the cursor.  This is available for:
 - Mappings: Only after a ":map" or similar command.
 - Variable and function names: Only after a ":if", ":call" or similar command.
 
-When Vim was compiled with the |+cmdline_compl| feature disabled, only file
-names, directories and help items can be completed.  The number of help item
-matches is limited (currently to 300) to avoid a long delay when there are
-very many matches.
+When Vim was compiled without the |+cmdline_compl| feature only file names,
+directories and help items can be completed.  The number of help item matches
+is limited (currently to 300) to avoid a long delay when there are very many
+matches.
 
 These are the commands that can be used:
 
@@ -782,30 +782,34 @@ it, no matter how many backslashes.
 			       *:<cword>* *:<cWORD>* *:<cfile>* *<cfile>*
 			       *:<sfile>* *<sfile>* *:<afile>* *<afile>*
 			       *:<abuf>* *<abuf>* *:<amatch>* *<amatch>*
-			       *E495* *E496* *E497* *E498* *E499* *E500*
+			       *E495* *E496* *E497* *E499* *E500*
 Note: these are typed literally, they are not special keys!
 	<cword>    is replaced with the word under the cursor (like |star|)
 	<cWORD>    is replaced with the WORD under the cursor (see |WORD|)
 	<cfile>    is replaced with the path name under the cursor (like what
 		   |gf| uses)
-	<afile>    when executing autocommands, is replaced with the file name
-		   for a file read or write
-	<abuf>     when executing autocommands, is replaced with the currently
+	<afile>    When executing autocommands, is replaced with the file name
+		   for a file read or write.
+	<abuf>     When executing autocommands, is replaced with the currently
 		   effective buffer number (for ":r file" and ":so file" it is
 		   the current buffer, the file being read/sourced is not in a
 		   buffer).
-	<amatch>   when executing autocommands, is replaced with the match for
+	<amatch>   When executing autocommands, is replaced with the match for
 		   which this autocommand was executed.  It differs from
 		   <afile> only when the file name isn't used to match with
 		   (for FileType, Syntax and SpellFileMissing events).
-	<sfile>    when executing a ":source" command, is replaced with the
-		   file name of the sourced file;
-		   when executing a function, is replaced with
+	<sfile>    When executing a ":source" command, is replaced with the
+		   file name of the sourced file.  *E498* 
+		   When executing a function, is replaced with
 		   "function {function-name}"; function call nesting is
 		   indicated like this:
 		   "function {function-name1}..{function-name2}".  Note that
 		   filename-modifiers are useless when <sfile> is used inside
 		   a function.
+	<slnum>	   When executing a ":source" command, is replaced with the
+	           line number.  *E842*
+		   When executing a function it's the line number relative to
+		   the start of the function.
 
 							 *filename-modifiers*
 	 *:_%:* *::8* *::p* *::.* *::~* *::h* *::t* *::r* *::e* *::s* *::gs*

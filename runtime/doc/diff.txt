@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.3.  Last change: 2010 Nov 03
+*diff.txt*      For Vim version 7.3.  Last change: 2010 Dec 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -375,7 +375,7 @@ to see more messages.
 
 The self-installing Vim for MS-Windows includes a diff program.  If you don't
 have it you might want to download a diff.exe.  For example from
-http://jlb.twu.net/code/unixkit.php.
+http://gnuwin32.sourceforge.net/packages/diffutils.htm.
 
 
 USING PATCHES					*diff-patchexpr*
