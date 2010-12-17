@@ -323,12 +323,6 @@ netbeans_connect(char *params, int doabort)
     server.sin_port = htons(port);
     if ((host = gethostbyname(hostname)) == NULL)
     {
-	if (mch_access(hostname, R_OK) >= 0)
-	{
-	    /* DEBUG: input file */
-	    sd = mch_open(hostname, O_RDONLY, 0);
-	    goto theend;
-	}
 	nbdebug(("error in gethostbyname() in netbeans_connect()\n"));
 	PERROR("gethostbyname() in netbeans_connect()");
 	goto theend;
