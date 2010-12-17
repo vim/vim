@@ -70,7 +70,8 @@ static win_T *restore_snapshot_rec __ARGS((frame_T *sn, frame_T *fr));
 #endif /* FEAT_WINDOWS */
 
 static win_T *win_alloc __ARGS((win_T *after, int hidden));
-static void win_new_height __ARGS((win_T *, int));
+static void set_fraction __ARGS((win_T *wp));
+static void win_new_height __ARGS((win_T *wp, int height));
 
 #define URL_SLASH	1		/* path_is_url() has found "://" */
 #define URL_BACKSLASH	2		/* path_is_url() has found ":\\" */
@@ -983,10 +984,16 @@ win_split_ins(size, flags, newwin, dir)
     else
 	frame_append(curfrp, frp);
 
+    /* Set w_fraction now so that the cursor keeps the same relative
+     * vertical position. */
+    set_fraction(oldwin);
+    wp->w_fraction = oldwin->w_fraction;
+
 #ifdef FEAT_VERTSPLIT
     if (flags & WSP_VERT)
     {
 	wp->w_p_scr = curwin->w_p_scr;
+
 	if (need_status)
 	{
 	    win_new_height(oldwin, oldwin->w_height - 1);
@@ -5453,6 +5460,19 @@ win_drag_vsep_line(dragwin, offset)
 
 #endif /* FEAT_WINDOWS */
 
+#define FRACTION_MULT	16384L
+
+/*
+ * Set wp->w_fraction for the current w_wrow and w_height.
+ */
+    static void
+set_fraction(wp)
+    win_T	*wp;
+{
+    wp->w_fraction = ((long)wp->w_wrow * FRACTION_MULT
+				    + FRACTION_MULT / 2) / (long)wp->w_height;
+}
+
 /*
  * Set the height of a window.
  * This takes care of the things inside the window, not what happens to the
@@ -5465,7 +5485,6 @@ win_new_height(wp, height)
 {
     linenr_T	lnum;
     int		sline, line_size;
-#define FRACTION_MULT	16384L
 
     /* Don't want a negative height.  Happens when splitting a tiny window.
      * Will equalize heights soon to fix it. */
@@ -5475,8 +5494,7 @@ win_new_height(wp, height)
 	return;	    /* nothing to do */
 
     if (wp->w_wrow != wp->w_prev_fraction_row && wp->w_height > 0)
-	wp->w_fraction = ((long)wp->w_wrow * FRACTION_MULT
-				    + FRACTION_MULT / 2) / (long)wp->w_height;
+	set_fraction(wp);
 
     wp->w_height = height;
     wp->w_skipcol = 0;
