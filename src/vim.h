@@ -480,6 +480,11 @@ typedef unsigned long u8char_T;	    /* long should be 32 bits or more */
 # include <sys/stat.h>
 #endif
 
+#if defined(HAVE_ERRNO_H) || defined(DJGPP) || defined(WIN16) \
+	|| defined(WIN32) || defined(_WIN64) || defined(__EMX__)
+# include <errno.h>
+#endif
+
 /*
  * Allow other (non-unix) systems to configure themselves now
  * These are also in os_unix.h, because osdef.sh needs them there.

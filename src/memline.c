@@ -52,10 +52,6 @@
 # include <proto/dos.h>	    /* for Open() and Close() */
 #endif
 
-#ifdef HAVE_ERRNO_H
-# include <errno.h>
-#endif
-
 typedef struct block0		ZERO_BL;    /* contents of the first block */
 typedef struct pointer_block	PTR_BL;	    /* contents of a pointer block */
 typedef struct data_block	DATA_BL;    /* contents of a data block */

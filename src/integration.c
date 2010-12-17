@@ -33,7 +33,6 @@
 #include <sys/un.h>
 #endif
 
-#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/param.h>

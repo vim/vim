@@ -74,7 +74,6 @@ TODO:
 #endif
 
 #include <tcl.h>
-#include <errno.h>
 #include <string.h>
 
 typedef struct

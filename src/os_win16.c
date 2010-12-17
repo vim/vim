@@ -25,7 +25,6 @@
 #include <dos.h>
 #include <string.h>
 #include <sys/types.h>
-#include <errno.h>
 #include <signal.h>
 #include <limits.h>
 #include <process.h>
