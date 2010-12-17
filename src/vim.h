@@ -1642,6 +1642,11 @@ int vim_memcmp __ARGS((void *, void *, size_t));
 # define USE_INPUT_BUF
 #endif
 
+#ifndef EINTR
+# define read_eintr(fd, buf, count) vim_read((fd), (buf), (count))
+# define write_eintr(fd, buf, count) vim_write((fd), (buf), (count))
+#endif
+
 #ifdef MSWIN
 /* On MS-Windows the third argument isn't size_t.  This matters for Win64,
  * where sizeof(size_t)==8, not 4 */

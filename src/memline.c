@@ -2062,7 +2062,7 @@ swapfile_info(fname)
     fd = mch_open((char *)fname, O_RDONLY | O_EXTRA, 0);
     if (fd >= 0)
     {
-	if (read(fd, (char *)&b0, sizeof(b0)) == sizeof(b0))
+	if (read_eintr(fd, &b0, sizeof(b0)) == sizeof(b0))
 	{
 	    if (STRNCMP(b0.b0_version, "VIM 3.0", 7) == 0)
 	    {
@@ -4392,7 +4392,7 @@ findswapname(buf, dirp, old_fname)
 		fd = mch_open((char *)fname, O_RDONLY | O_EXTRA, 0);
 		if (fd >= 0)
 		{
-		    if (read(fd, (char *)&b0, sizeof(b0)) == sizeof(b0))
+		    if (read_eintr(fd, &b0, sizeof(b0)) == sizeof(b0))
 		    {
 			/*
 			 * If the swapfile has the same directory as the

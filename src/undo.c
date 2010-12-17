@@ -1386,7 +1386,7 @@ u_write_undo(name, forceit, buf, hash)
 		char_u	mbuf[UF_START_MAGIC_LEN];
 		int	len;
 
-		len = vim_read(fd, mbuf, UF_START_MAGIC_LEN);
+		len = read_eintr(fd, mbuf, UF_START_MAGIC_LEN);
 		close(fd);
 		if (len < UF_START_MAGIC_LEN
 		      || memcmp(mbuf, UF_START_MAGIC, UF_START_MAGIC_LEN) != 0)

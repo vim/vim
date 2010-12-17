@@ -4454,7 +4454,7 @@ mch_call_shell(cmd, options)
 		    ++noread_cnt;
 		    while (RealWaitForChar(fromshell_fd, 10L, NULL))
 		    {
-			len = read(fromshell_fd, (char *)buffer
+			len = read_eintr(fromshell_fd, buffer
 # ifdef FEAT_MBYTE
 				+ buffer_off, (size_t)(BUFLEN - buffer_off)
 # else
