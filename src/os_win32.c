@@ -20,7 +20,6 @@
  * Roger Knobbe <rogerk@wonderware.com> did the initial port of Vim 3.0.
  */
 
-#include "vimio.h"
 #include "vim.h"
 
 #ifdef FEAT_MZSCHEME

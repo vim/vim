@@ -16,10 +16,6 @@
  * See ":help netbeans-protocol" for explanation.
  */
 
-#if defined(MSDOS) || defined(WIN16) || defined(WIN32) || defined(_WIN64)
-# include "vimio.h"	/* for mch_open(), must be before vim.h */
-#endif
-
 #include "vim.h"
 
 #if defined(FEAT_NETBEANS_INTG) || defined(PROTO)

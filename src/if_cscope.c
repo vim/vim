@@ -20,9 +20,6 @@
 #include <sys/stat.h>
 #if defined(UNIX)
 # include <sys/wait.h>
-#else
-    /* not UNIX, must be WIN32 */
-# include "vimio.h"
 #endif
 #include "if_cscope.h"
 

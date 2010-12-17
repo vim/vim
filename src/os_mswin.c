@@ -22,7 +22,6 @@
 # endif
 #endif
 
-#include "vimio.h"
 #include "vim.h"
 
 #ifdef WIN16

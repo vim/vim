@@ -9,7 +9,6 @@
 
 #ifdef WIN32
 # include <stdio.h>
-# include "vimio.h"
 # include <process.h>
 # include <string.h>
 # include <assert.h>

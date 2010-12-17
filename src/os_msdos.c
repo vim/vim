@@ -21,7 +21,6 @@
  * Some functions are also used for Win16 (MS-Windows 3.1).
  */
 
-#include "vimio.h"
 #include "vim.h"
 
 #include <conio.h>

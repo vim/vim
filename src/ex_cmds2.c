@@ -11,10 +11,6 @@
  * ex_cmds2.c: some more functions for command line commands
  */
 
-#if defined(MSDOS) || defined(WIN16) || defined(WIN32) || defined(_WIN64)
-# include "vimio.h"	/* for mch_open(), must be before vim.h */
-#endif
-
 #include "vim.h"
 #include "version.h"
 

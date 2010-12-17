@@ -27,6 +27,11 @@
 # endif
 #endif
 
+#if defined(MSDOS) || defined(WIN16) || defined(WIN32) || defined(_WIN64) \
+	|| defined(__EMX__)
+# include "vimio.h"
+#endif
+
 /* ============ the header file puzzle (ca. 50-100 pieces) ========= */
 
 #ifdef HAVE_CONFIG_H	/* GNU autoconf (or something else) was here */

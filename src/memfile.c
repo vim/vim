@@ -32,10 +32,6 @@
  * file is opened.
  */
 
-#if defined(MSDOS) || defined(WIN16) || defined(WIN32) || defined(_WIN64)
-# include "vimio.h"	/* for lseek(), must be before vim.h */
-#endif
-
 #include "vim.h"
 
 /*

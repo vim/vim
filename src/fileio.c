@@ -11,14 +11,6 @@
  * fileio.c: read from and write to a file
  */
 
-#if defined(MSDOS) || defined(WIN16) || defined(WIN32) || defined(_WIN64)
-# include "vimio.h"	/* for lseek(), must be before vim.h */
-#endif
-
-#if defined __EMX__
-# include "vimio.h"	/* for mktemp(), CJW 1997-12-03 */
-#endif
-
 #include "vim.h"
 
 #if defined(__TANDEM) || defined(__MINT__)
@@ -10336,7 +10328,7 @@ write_eintr(fd, buf, bufsize)
      * by a signal. */
     while (ret < (long)bufsize)
     {
-	wlen = vim_write(fd, buf + ret, bufsize - ret);
+	wlen = vim_write(fd, (char *)buf + ret, bufsize - ret);
 	if (wlen < 0)
 	{
 	    if (errno != EINTR)
