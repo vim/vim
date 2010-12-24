@@ -90,6 +90,7 @@
 # include <ruby/encoding.h>
 #endif
 
+#undef off_t	/* ruby defines off_t as _int64, Mingw uses long */
 #undef EXTERN
 #undef _
 
@@ -229,10 +230,10 @@ static void ruby_vim_init(void);
 # define rb_enc_find_index		dll_rb_enc_find_index
 # define rb_enc_find			dll_rb_enc_find
 # define rb_enc_str_new			dll_rb_enc_str_new
-# define rb_intern2			dll_rb_intern2
-# define rb_const_remove		dll_rb_const_remove
 # define rb_sprintf			dll_rb_sprintf
+# define rb_require			dll_rb_require
 # define ruby_init_stack		dll_ruby_init_stack
+# define ruby_process_options		dll_ruby_process_options
 #endif
 
 /*
@@ -319,11 +320,10 @@ static void (*dll_ruby_script) (const char*);
 static int (*dll_rb_enc_find_index) (const char*);
 static rb_encoding* (*dll_rb_enc_find) (const char*);
 static VALUE (*dll_rb_enc_str_new) (const char*, long, rb_encoding*);
-static ID (*dll_rb_intern2) (const char*, long);
-static void (*dll_Init_prelude) (void);
-static VALUE (*dll_rb_const_remove) (VALUE, ID);
 static VALUE (*dll_rb_sprintf) (const char*, ...);
+static VALUE (*dll_rb_require) (const char*);
 static void (*ruby_init_stack)(VALUE*);
+static void* (*ruby_process_options)(int, char**);
 #endif
 
 #ifdef RUBY19_OR_LATER
@@ -430,10 +430,10 @@ static struct
     {"rb_enc_find_index", (RUBY_PROC*)&dll_rb_enc_find_index},
     {"rb_enc_find", (RUBY_PROC*)&dll_rb_enc_find},
     {"rb_enc_str_new", (RUBY_PROC*)&dll_rb_enc_str_new},
-    {"rb_intern2", (RUBY_PROC*)&dll_rb_intern2},
-    {"rb_const_remove", (RUBY_PROC*)&dll_rb_const_remove},
     {"rb_sprintf", (RUBY_PROC*)&dll_rb_sprintf},
+    {"rb_require", (RUBY_PROC*)&dll_rb_require},
     {"ruby_init_stack", (RUBY_PROC*)&dll_ruby_init_stack},
+    {"ruby_process_options", (RUBY_PROC*)&dll_ruby_process_options},
 #endif
     {"", NULL},
 };
@@ -663,18 +663,16 @@ static int ensure_ruby_initialized(void)
 		ruby_init();
 	    }
 #ifdef RUBY19_OR_LATER
+	    {
+		int dummy_argc = 2;
+		char *dummy_argv[] = {"vim-ruby", "-e0"};
+		ruby_process_options(dummy_argc, dummy_argv);
+	    }
 	    ruby_script("vim-ruby");
-#endif
+#else
 	    ruby_init_loadpath();
-	    ruby_io_init();
-#ifdef RUBY19_OR_LATER
-	    rb_enc_find_index("encdb");
-
-	    /* This avoids the error "Encoding::ConverterNotFoundError: code
-	     * converter not found (UTF-16LE to ASCII-8BIT)". */
-	    rb_define_module("Gem");
-	    rb_const_remove(rb_cObject, rb_intern2("TMP_RUBY_PREFIX", 15));
 #endif
+	    ruby_io_init();
 	    ruby_vim_init();
 	    ruby_initialized = 1;
 #ifdef DYNAMIC_RUBY
