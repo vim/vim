@@ -800,7 +800,7 @@ netbeans_read()
 	 *		    -> gui event loop or select loop
 	 *			-> netbeans_read()
 	 */
-	save((char_u *)DETACH_MSG, strlen(DETACH_MSG));
+	save((char_u *)DETACH_MSG, (int)strlen(DETACH_MSG));
 	nb_close_socket();
 
 	if (len < 0)
