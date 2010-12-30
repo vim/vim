@@ -2317,7 +2317,7 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 		num = (long)lnum;
 	    else
 		/* 'relativenumber', don't use negative numbers */
-		num = (long)abs((int)get_cursor_rel_lnum(wp, lnum));
+		num = labs((long)get_cursor_rel_lnum(wp, lnum));
 
 	    sprintf((char *)buf, "%*ld ", w, num);
 #ifdef FEAT_RIGHTLEFT
@@ -3475,8 +3475,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			    num = (long)lnum;
 			else
 			    /* 'relativenumber', don't use negative numbers */
-			    num = (long)abs((int)get_cursor_rel_lnum(wp,
-								    lnum));
+			    num = labs((long)get_cursor_rel_lnum(wp, lnum));
 
 			sprintf((char *)extra, "%*ld ",
 						number_width(wp), num);
