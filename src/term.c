@@ -3053,10 +3053,13 @@ shell_resized_check()
     int		old_Rows = Rows;
     int		old_Columns = Columns;
 
-    (void)ui_get_shellsize();
-    check_shellsize();
-    if (old_Rows != Rows || old_Columns != Columns)
-	shell_resized();
+    if (!exiting)
+    {
+	(void)ui_get_shellsize();
+	check_shellsize();
+	if (old_Rows != Rows || old_Columns != Columns)
+	    shell_resized();
+    }
 }
 
 /*
