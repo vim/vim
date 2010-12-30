@@ -17,6 +17,17 @@ CROSS = no
 # check also the executables
 MINGWOLD = no
 
+# Link against the shared versions of libgcc/libstdc++ by default.  Set
+# STATIC_STDCPLUS to "yes" to link against static versions instead.
+STATIC_STDCPLUS=no
+#STATIC_STDCPLUS=yes
+
+# Note: -static-libstdc++ is not available until gcc 4.5.x.
+LDFLAGS += -shared
+ifeq (yes, $(STATIC_STDCPLUS))
+LDFLAGS += -static-libgcc -static-libstdc++
+endif
+
 ifeq ($(CROSS),yes)
 DEL = rm
 ifeq ($(MINGWOLD),yes)
@@ -33,7 +44,9 @@ DEL = del
 endif
 endif
 CXX := $(CROSS_COMPILE)g++
-WINDRES := $(CROSS_COMPILE)windres --preprocessor="$(CXX) -E -xc" -DRC_INVOKED
+WINDRES := $(CROSS_COMPILE)windres
+WINDRES_CXX = $(CXX)
+WINDRES_FLAGS = --preprocessor="$(WINDRES_CXX) -E -xc" -DRC_INVOKED
 LIBS :=  -luuid
 RES  := gvimext.res
 DEFFILE = gvimext_ming.def
@@ -46,7 +59,7 @@ DLL  := gvimext.dll
 all: all-before $(DLL) all-after
 
 $(DLL): $(OBJ) $(RES) $(DEFFILE)
-	$(CXX) -shared $(CXXFLAGS) -s -o $@ \
+	$(CXX) $(LDFLAGS) $(CXXFLAGS) -s -o $@ \
 		-Wl,--enable-auto-image-base \
 		-Wl,--enable-auto-import \
 		-Wl,--whole-archive \
@@ -58,7 +71,7 @@ gvimext.o: gvimext.cpp
 	$(CXX) $(CXXFLAGS) -DFEAT_GETTEXT -c $? -o $@
 
 $(RES): gvimext_ming.rc
-	$(WINDRES) --input-format=rc --output-format=coff -DMING $? -o $@
+	$(WINDRES) $(WINDRES_FLAGS) --input-format=rc --output-format=coff -DMING $? -o $@
 
 clean: clean-custom
 	-$(DEL)  $(OBJ) $(RES) $(DLL)

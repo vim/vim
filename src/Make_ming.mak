@@ -56,6 +56,12 @@ CSCOPE=yes
 NETBEANS=$(GUI)
 
 
+# Link against the shared version of libstdc++ by default.  Set
+# STATIC_STDCPLUS to "yes" to link against static version instead.
+ifndef STATIC_STDCPLUS
+STATIC_STDCPLUS=no
+endif
+
 # If the user doesn't want gettext, undefine it.
 ifeq (no, $(GETTEXT))
 GETTEXT=
@@ -309,12 +315,14 @@ DIRSLASH = \\
 endif
 endif
 CC := $(CROSS_COMPILE)gcc
-WINDRES := $(CROSS_COMPILE)windres --preprocessor="$(CC) -E -xc" -DRC_INVOKED
+WINDRES := $(CROSS_COMPILE)windres
+WINDRES_CC = $(CC)
 
 #>>>>> end of choices
 ###########################################################################
 
 CFLAGS = -Iproto $(DEFINES) -pipe -w -march=$(ARCH) -Wall
+WINDRES_FLAGS = --preprocessor="$(WINDRES_CC) -E -xc" -DRC_INVOKED
 
 ifdef GETTEXT
 DEFINES += -DHAVE_GETTEXT -DHAVE_LOCALE_H
@@ -577,8 +585,13 @@ endif
 endif
 
 ifeq (yes, $(OLE))
-LIB += -loleaut32 -lstdc++
+LIB += -loleaut32
 OBJ += $(OUTDIR)/if_ole.o
+ifeq (yes, $(STATIC_STDCPLUS))
+LIB += -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic
+else
+LIB += -lstdc++
+endif
 endif
 
 ifeq (yes, $(MBYTE))
@@ -656,10 +669,10 @@ $(OUTDIR)/%.o : %.c $(INCL)
 	$(CC) -c $(CFLAGS) $< -o $@
 
 $(OUTDIR)/vimres.res: vim.rc version.h gui_w32_rc.h
-	$(WINDRES) $(DEFINES) vim.rc $(OUTDIR)/vimres.res
+	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) vim.rc $(OUTDIR)/vimres.res
 
 $(OUTDIR)/vimrc.o: $(OUTDIR)/vimres.res
-	$(WINDRES) $(OUTDIR)/vimres.res $(OUTDIR)/vimrc.o
+	$(WINDRES) $(WINDRES_FLAGS) $(OUTDIR)/vimres.res $(OUTDIR)/vimrc.o
 
 $(OUTDIR):
 	$(MKDIR) $(OUTDIR)
