@@ -1506,9 +1506,6 @@ updatescript(c)
     }
 }
 
-#define KL_PART_KEY -1		/* keylen value for incomplete key-code */
-#define KL_PART_MAP -2		/* keylen value for incomplete mapping */
-
 /*
  * Get the next input character.
  * Can return a special key or a multi-byte character.
@@ -2171,7 +2168,7 @@ vgetorpeek(advance)
 					if (!timedout)
 					{
 					    /* break at a partly match */
-					    keylen = KL_PART_MAP;
+					    keylen = KEYLEN_PART_MAP;
 					    break;
 					}
 				    }
@@ -2192,7 +2189,7 @@ vgetorpeek(advance)
 
 			/* If no partly match found, use the longest full
 			 * match. */
-			if (keylen != KL_PART_MAP)
+			if (keylen != KEYLEN_PART_MAP)
 			{
 			    mp = mp_match;
 			    keylen = mp_match_len;
@@ -2230,7 +2227,7 @@ vgetorpeek(advance)
 			}
 			/* Need more chars for partly match. */
 			if (mlen == typebuf.tb_len)
-			    keylen = KL_PART_KEY;
+			    keylen = KEYLEN_PART_KEY;
 			else if (max_mlen < mlen)
 			    /* no match, may have to check for termcode at
 			     * next character */
@@ -2238,7 +2235,7 @@ vgetorpeek(advance)
 		    }
 
 		    if ((mp == NULL || max_mlen >= mp_match_len)
-						     && keylen != KL_PART_MAP)
+						 && keylen != KEYLEN_PART_MAP)
 		    {
 			int	save_keylen = keylen;
 
@@ -2264,8 +2261,8 @@ vgetorpeek(advance)
 			    /* If no termcode matched but 'pastetoggle'
 			     * matched partially it's like an incomplete key
 			     * sequence. */
-			    if (keylen == 0 && save_keylen == KL_PART_KEY)
-				keylen = KL_PART_KEY;
+			    if (keylen == 0 && save_keylen == KEYLEN_PART_KEY)
+				keylen = KEYLEN_PART_KEY;
 
 			    /*
 			     * When getting a partial match, but the last
@@ -2302,7 +2299,7 @@ vgetorpeek(advance)
 				    continue;
 				}
 				if (*s == NUL)	    /* need more characters */
-				    keylen = KL_PART_KEY;
+				    keylen = KEYLEN_PART_KEY;
 			    }
 			    if (keylen >= 0)
 #endif
@@ -2339,7 +2336,8 @@ vgetorpeek(advance)
 			if (keylen > 0)	    /* full matching terminal code */
 			{
 #if defined(FEAT_GUI) && defined(FEAT_MENU)
-			    if (typebuf.tb_buf[typebuf.tb_off] == K_SPECIAL
+			    if (typebuf.tb_len >= 2
+				&& typebuf.tb_buf[typebuf.tb_off] == K_SPECIAL
 					 && typebuf.tb_buf[typebuf.tb_off + 1]
 								   == KS_MENU)
 			    {
@@ -2381,7 +2379,7 @@ vgetorpeek(advance)
 			/* Partial match: get some more characters.  When a
 			 * matching mapping was found use that one. */
 			if (mp == NULL || keylen < 0)
-			    keylen = KL_PART_KEY;
+			    keylen = KEYLEN_PART_KEY;
 			else
 			    keylen = mp_match_len;
 		    }
@@ -2553,7 +2551,8 @@ vgetorpeek(advance)
 #endif
 			&& typebuf.tb_maplen == 0
 			&& (State & INSERT)
-			&& (p_timeout || (keylen == KL_PART_KEY && p_ttimeout))
+			&& (p_timeout
+			    || (keylen == KEYLEN_PART_KEY && p_ttimeout))
 			&& (c = inchar(typebuf.tb_buf + typebuf.tb_off
 						     + typebuf.tb_len, 3, 25L,
 						 typebuf.tb_change_cnt)) == 0)
@@ -2783,9 +2782,9 @@ vgetorpeek(advance)
 			    ? 0
 			    : ((typebuf.tb_len == 0
 				    || !(p_timeout || (p_ttimeout
-						   && keylen == KL_PART_KEY)))
+					       && keylen == KEYLEN_PART_KEY)))
 				    ? -1L
-				    : ((keylen == KL_PART_KEY && p_ttm >= 0)
+				    : ((keylen == KEYLEN_PART_KEY && p_ttm >= 0)
 					    ? p_ttm
 					    : p_tm)), typebuf.tb_change_cnt);
 

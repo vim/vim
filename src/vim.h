@@ -2211,4 +2211,8 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 #define MSCR_LEFT	-1
 #define MSCR_RIGHT	-2
 
+#define KEYLEN_PART_KEY -1	/* keylen value for incomplete key-code */
+#define KEYLEN_PART_MAP -2	/* keylen value for incomplete mapping */
+#define KEYLEN_REMOVED  9999	/* keylen value for removed sequence */
+
 #endif /* VIM__H */

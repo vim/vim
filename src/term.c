@@ -3828,6 +3828,7 @@ set_mouse_topline(wp)
  * Check from typebuf.tb_buf[typebuf.tb_off] to typebuf.tb_buf[typebuf.tb_off
  * + max_offset].
  * Return 0 for no match, -1 for partial match, > 0 for full match.
+ * Return KEYLEN_REMOVED when a key code was deleted.
  * With a match, the match is removed, the replacement code is inserted in
  * typebuf.tb_buf[] and the number of characters in typebuf.tb_buf[] is
  * returned.
@@ -3845,6 +3846,7 @@ check_termcode(max_offset, buf, buflen)
     int		slen = 0;	/* init for GCC */
     int		modslen;
     int		len;
+    int		retval = 0;
     int		offset;
     char_u	key_name[2];
     int		modifiers;
@@ -4940,6 +4942,13 @@ check_termcode(max_offset, buf, buflen)
 #endif
 		string[new_slen++] = key_name[1];
 	}
+	else if (new_slen == 0 && key_name[0] == KS_EXTRA
+						  && key_name[1] == KE_IGNORE)
+	{
+	    /* Do not put K_IGNORE into the buffer, do return KEYLEN_REMOVED
+	     * to indicate what happened. */
+	    retval = KEYLEN_REMOVED;
+	}
 	else
 	{
 	    string[new_slen++] = K_SPECIAL;
@@ -4976,7 +4985,7 @@ check_termcode(max_offset, buf, buflen)
 						   (size_t)(buflen - offset));
 	    mch_memmove(buf + offset, string, (size_t)new_slen);
 	}
-	return (len + extra + offset);
+	return retval == 0 ? (len + extra + offset) : retval;
     }
 
     return 0;			    /* no match found */

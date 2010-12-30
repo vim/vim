@@ -3114,10 +3114,11 @@ get_keystroke()
 	       && (!p_ttimeout || waited * 100L < (p_ttm < 0 ? p_tm : p_ttm)))
 	    continue;
 
-	/* found a termcode: adjust length */
-	if (n > 0)
+	if (n == KEYLEN_REMOVED)  /* key code removed */
+	    continue;
+	if (n > 0)		/* found a termcode: adjust length */
 	    len = n;
-	if (len == 0)	    /* nothing typed yet */
+	if (len == 0)		/* nothing typed yet */
 	    continue;
 
 	/* Handle modifier and/or special key code. */
