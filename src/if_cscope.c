@@ -1346,7 +1346,7 @@ cs_help(eap)
 		       "       g: Find this definition\n"
 		       "       i: Find files #including this file\n"
 		       "       s: Find this C symbol\n"
-		       "       t: Find assignments to\n"));
+		       "       t: Find this text string\n"));
 
 	cmdp++;
     }
@@ -1657,7 +1657,7 @@ cs_kill_execute(i, cname)
 /*
  * PRIVATE: cs_make_vim_style_matches
  *
- * convert the cscope output into into a ctags style entry (as might be found
+ * convert the cscope output into a ctags style entry (as might be found
  * in a ctags tags file).  there's one catch though: cscope doesn't tell you
  * the type of the tag you are looking for.  for example, in Darren Hiebert's
  * ctags (the one that comes with vim), #define's use a line number to find the
