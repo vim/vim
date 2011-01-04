@@ -569,6 +569,10 @@ emsg(s)
     int		severe;
 #endif
 
+    /* Skip this if not giving error messages at the moment. */
+    if (emsg_not_now())
+	return TRUE;
+
     called_emsg = TRUE;
     ex_exitval = 1;
 
@@ -580,10 +584,6 @@ emsg(s)
     severe = emsg_severe;
     emsg_severe = FALSE;
 #endif
-
-    /* Skip this if not giving error messages at the moment. */
-    if (emsg_not_now())
-	return TRUE;
 
     if (!emsg_off || vim_strchr(p_debug, 't') != NULL)
     {
