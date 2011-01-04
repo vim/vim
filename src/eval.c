@@ -3335,6 +3335,15 @@ ex_call(eap)
     int		failed = FALSE;
     funcdict_T	fudi;
 
+    if (eap->skip)
+    {
+	/* trans_function_name() doesn't work well when skipping, use eval0()
+	 * instead to skip to any following command, e.g. for:
+	 *   :if 0 | call dict.foo().bar() | endif  */
+	eval0(eap->arg, &rettv, &eap->nextcmd, FALSE);
+	return;
+    }
+
     tofree = trans_function_name(&arg, eap->skip, TFN_INT, &fudi);
     if (fudi.fd_newkey != NULL)
     {
