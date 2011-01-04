@@ -1512,8 +1512,8 @@ menu_name_equal(name, menu)
 {
 #ifdef FEAT_MULTI_LANG
     if (menu->en_name != NULL
-	    && (menu_namecmp(name,menu->en_name)
-		|| menu_namecmp(name,menu->en_dname)))
+	    && (menu_namecmp(name, menu->en_name)
+		|| menu_namecmp(name, menu->en_dname)))
 	return TRUE;
 #endif
     return menu_namecmp(name, menu->name) || menu_namecmp(name, menu->dname);
@@ -2342,7 +2342,7 @@ gui_find_menu(path_name)
 
 	while (menu != NULL)
 	{
-	    if (STRCMP(name, menu->name) == 0 || STRCMP(name, menu->dname) == 0)
+	    if (menu_name_equal(name, menu))
 	    {
 		if (menu->children == NULL)
 		{
