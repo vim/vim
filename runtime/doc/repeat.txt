@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.3.  Last change: 2009 Nov 04
+*repeat.txt*    For Vim version 7.3.  Last change: 2011 Jan 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -102,7 +102,7 @@ To abort this type CTRL-C twice.
 q{0-9a-zA-Z"}		Record typed characters into register {0-9a-zA-Z"}
 			(uppercase to append).  The 'q' command is disabled
 			while executing a register, and it doesn't work inside
-			a mapping.  {Vi: no recording}
+			a mapping and |:normal|.  {Vi: no recording}
 
 q			Stops recording.  (Implementation note: The 'q' that
 			stops recording is not stored in the register, unless
@@ -112,9 +112,13 @@ q			Stops recording.  (Implementation note: The 'q' that
 @{0-9a-z".=*}		Execute the contents of register {0-9a-z".=*} [count]
 			times.  Note that register '%' (name of the current
 			file) and '#' (name of the alternate file) cannot be
-			used.  For "@=" you are prompted to enter an
-			expression.  The result of the expression is then
-			executed.  See also |@:|.  {Vi: only named registers}
+			used.
+			The register is executed like a mapping, that means
+			that the difference between 'wildchar' and 'wildcharm'
+			applies.
+			For "@=" you are prompted to enter an expression.  The
+			result of the expression is then executed.
+			See also |@:|.  {Vi: only named registers}
 
 							*@@* *E748*
 @@			Repeat the previous @{0-9a-z":*} [count] times.

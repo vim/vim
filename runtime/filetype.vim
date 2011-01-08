@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2010 Sep 29
+" Last Change:	2010 Dec 17
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1614,7 +1614,16 @@ au BufNewFile,BufRead *.rtf			setf rtf
 au BufNewFile,BufRead .irbrc,irbrc		setf ruby
 
 " Ruby
-au BufNewFile,BufRead *.rb,*.rbw,*.gem,*.gemspec	setf ruby
+au BufNewFile,BufRead *.rb,*.rbw		setf ruby
+
+" RubyGems
+au BufNewFile,BufRead *.gemspec			setf ruby
+
+" Rackup
+au BufNewFile,BufRead *.ru			setf ruby
+
+" Bundler
+au BufNewFile,BufRead Gemfile			setf ruby
 
 " Ruby on Rails
 au BufNewFile,BufRead *.builder,*.rxml,*.rjs	setf ruby

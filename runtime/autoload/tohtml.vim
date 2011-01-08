@@ -1,6 +1,6 @@
 " Vim autoload file for the tohtml plugin.
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 Oct 07
+" Last Change: 2011 Jan 05
 "
 " Additional contributors:
 "
@@ -600,18 +600,18 @@ func! tohtml#GetUserSettings() "{{{
     endif
 
     " get current option settings with appropriate defaults {{{
-    call tohtml#GetOption(user_settings,    'no_progress',  !has("statusline") )
-    call tohtml#GetOption(user_settings,  'diff_one_file',  0 )
-    call tohtml#GetOption(user_settings,   'number_lines',  &number )
-    call tohtml#GetOption(user_settings,        'use_css',  1 )
-    call tohtml#GetOption(user_settings, 'ignore_conceal',  0 )
-    call tohtml#GetOption(user_settings, 'ignore_folding',  0 )
-    call tohtml#GetOption(user_settings,  'dynamic_folds',  0 )
-    call tohtml#GetOption(user_settings,  'no_foldcolumn',  0 )
-    call tohtml#GetOption(user_settings,   'hover_unfold',  0 )
-    call tohtml#GetOption(user_settings,         'no_pre',  0 )
-    call tohtml#GetOption(user_settings,   'whole_filler',  0 )
-    call tohtml#GetOption(user_settings,      'use_xhtml',  0 )
+    call tohtml#GetOption(user_settings,    'no_progress', !has("statusline") )
+    call tohtml#GetOption(user_settings,  'diff_one_file', 0 )
+    call tohtml#GetOption(user_settings,   'number_lines', &number )
+    call tohtml#GetOption(user_settings,        'use_css', 1 )
+    call tohtml#GetOption(user_settings, 'ignore_conceal', 0 )
+    call tohtml#GetOption(user_settings, 'ignore_folding', 0 )
+    call tohtml#GetOption(user_settings,  'dynamic_folds', 0 )
+    call tohtml#GetOption(user_settings,  'no_foldcolumn', 0 )
+    call tohtml#GetOption(user_settings,   'hover_unfold', 0 )
+    call tohtml#GetOption(user_settings,         'no_pre', 0 )
+    call tohtml#GetOption(user_settings,   'whole_filler', 0 )
+    call tohtml#GetOption(user_settings,      'use_xhtml', 0 )
     " }}}
     
     " override those settings that need it {{{
@@ -642,6 +642,18 @@ func! tohtml#GetUserSettings() "{{{
     if !user_settings.use_css
       let user_settings.no_pre = 1
     endif "}}}
+
+    " set up expand_tabs option after all the overrides so we know the
+    " appropriate defaults {{{
+    if user_settings.no_pre == 0
+      call tohtml#GetOption(user_settings,
+	    \ 'expand_tabs',
+	    \ &expandtab || &ts != 8 || user_settings.number_lines ||
+	    \   (user_settings.dynamic_folds && !user_settings.no_foldcolumn))
+    else
+      let user_settings.expand_tabs = 1
+    endif
+    " }}}
 
     if exists("g:html_use_encoding") "{{{
       " user specified the desired MIME charset, figure out proper

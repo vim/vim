@@ -115,7 +115,7 @@ CTRL-T			Jump to [count] older entry in the tag stack
 
 The output of ":tags" looks like this:
 
-   # TO tag      FROM line in file/line
+   # TO tag      FROM line  in file/text
    1  1 main		 1  harddisk2:text/vim/test
  > 2  2 FuncA		58  i = FuncA(10);
    3  1 FuncC	       357  harddisk2:text/vim/src/amiga.c
@@ -135,7 +135,7 @@ you were before the tag command.  The line number will be correct, also when
 deleting/inserting lines, unless this was done by another program (e.g.
 another instance of Vim).
 
-For the current file, the "file/line" column shows the text at the position.
+For the current file, the "file/text" column shows the text at the position.
 An indent is removed and a long line is truncated to fit in the window.
 
 You can jump to previously used tags with several commands.  Some examples:
@@ -164,9 +164,9 @@ entry was not at the bottom, the entries below the last used one are
 deleted.  This means that an old branch in the call graph is lost.  After the
 commands explained above the tag stack will look like this:
 
-   # TO tag	FROM line in file
-   1 main	       1  harddisk2:text/vim/test
-   2 FuncB	      59  harddisk2:text/vim/src/main.c
+   # TO tag	FROM line  in file/text
+   1  1 main		1  harddisk2:text/vim/test
+   2  1 FuncB	       59  harddisk2:text/vim/src/main.c
 
 							*E73*
 When you try to use the tag stack while it doesn't contain anything you will

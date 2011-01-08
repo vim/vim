@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2010 Dec 08
+*options.txt*	For Vim version 7.3.  Last change: 2010 Dec 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2862,7 +2862,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When 'binary' is set, the value of 'fileformats' is not used.
 
 	Note that when Vim starts up with an empty buffer this option is not
-	use.  Set 'fileformat' in your .vimrc instead.
+	used.  Set 'fileformat' in your .vimrc instead.
 
 	For systems with a Dos-like <EOL> (<CR><NL>), when reading files that
 	are ":source"ed and for vimrc files, automatic <EOL> detection may be

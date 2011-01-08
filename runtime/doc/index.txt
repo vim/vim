@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.3.  Last change: 2010 Jul 21
+*index.txt*     For Vim version 7.3.  Last change: 2011 Jan 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -29,7 +29,7 @@ For a complete listing of all help items see |help-tags|.
 ==============================================================================
 1. Insert mode						*insert-index*
 
-tag		char		action	~
+tag		char		action in Insert mode	~
 -----------------------------------------------------------------------
 |i_CTRL-@|	CTRL-@		insert previously inserted text and stop
 				insert
@@ -459,7 +459,7 @@ tag		char	      note action in Normal mode	~
 
 These can be used after an operator or in Visual mode to select an object.
 
-tag		command		   action in Normal mode	~
+tag		command		   action in op-pending and Visual mode	~
 ------------------------------------------------------------------------------
 |v_aquote|	a"		   double quoted string
 |v_a'|		a'		   single quoted string
@@ -721,6 +721,7 @@ tag		char	      note action in Normal mode	~
 |gJ|		gJ		2  join lines without inserting space
 |gP|		["x]gP		2  put the text [from register x] before the
 				   cursor N times, leave the cursor after it
+|gQ|		gQ		    switch to "Ex" mode with Vim editing
 |gR|		gR		2  enter Virtual Replace mode
 |gU|		gU{motion}	2  make Nmove text uppercase
 |gV|		gV		   don't reselect the previous Visual area
@@ -951,11 +952,13 @@ Normal characters are inserted at the current cursor position.
 "Completion" below refers to context-sensitive completion.  It will complete
 file names, tags, commands etc. as appropriate.
 
+tag		command	      action in Command-line editing mode	~
+------------------------------------------------------------------------------
 		CTRL-@		not used
 |c_CTRL-A|	CTRL-A		do completion on the pattern in front of the
 				cursor and insert all matches
 |c_CTRL-B|	CTRL-B		cursor to begin of command-line
-|c_CTRL-C|	CTRL-C		same as <ESC>
+|c_CTRL-C|	CTRL-C		same as <Esc>
 |c_CTRL-D|	CTRL-D		list completions that match the pattern in
 				front of the cursor
 |c_CTRL-E|	CTRL-E		cursor to end of command-line
@@ -1046,6 +1049,8 @@ This is a brief but complete listing of all the ":" commands, without
 mentioning any arguments.  The optional part of the command name is inside [].
 The commands are sorted on the non-optional part of their name.
 
+tag	      command	      action ~
+------------------------------------------------------------------------------
 |:!|		:!		filter lines or execute an external command
 |:!!|		:!!		repeat last ":!" command
 |:#|		:#		same as ":number"

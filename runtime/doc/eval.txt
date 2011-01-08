@@ -6133,17 +6133,17 @@ cmdline_compl		Compiled with |cmdline-completion| support.
 cmdline_hist		Compiled with |cmdline-history| support.
 cmdline_info		Compiled with 'showcmd' and 'ruler' support.
 comments		Compiled with |'comments'| support.
+compatible		Compiled to be very Vi compatible.
 cryptv			Compiled with encryption support |encryption|.
 cscope			Compiled with |cscope| support.
-compatible		Compiled to be very Vi compatible.
 debug			Compiled with "DEBUG" defined.
 dialog_con		Compiled with console dialog support.
 dialog_gui		Compiled with GUI dialog support.
 diff			Compiled with |vimdiff| and 'diff' support.
 digraphs		Compiled with support for digraphs.
 dnd			Compiled with support for the "~ register |quote_~|.
-dos32			32 bits DOS (DJGPP) version of Vim.
 dos16			16 bits DOS version of Vim.
+dos32			32 bits DOS (DJGPP) version of Vim.
 ebcdic			Compiled on a machine with ebcdic character set.
 emacs_tags		Compiled with support for Emacs tags.
 eval			Compiled with expression evaluation support.  Always
@@ -6166,15 +6166,15 @@ fork			Compiled to use fork()/exec() instead of system().
 gettext			Compiled with message translation |multi-lang|
 gui			Compiled with GUI enabled.
 gui_athena		Compiled with Athena GUI.
+gui_gnome		Compiled with Gnome support (gui_gtk is also defined).
 gui_gtk			Compiled with GTK+ GUI (any version).
 gui_gtk2		Compiled with GTK+ 2 GUI (gui_gtk is also defined).
-gui_gnome		Compiled with Gnome support (gui_gtk is also defined).
 gui_mac			Compiled with Macintosh GUI.
 gui_motif		Compiled with Motif GUI.
 gui_photon		Compiled with Photon GUI.
+gui_running		Vim is running in the GUI, or it will start soon.
 gui_win32		Compiled with MS Windows Win32 GUI.
 gui_win32s		idem, and Win32s system being used (Windows 3.1)
-gui_running		Vim is running in the GUI, or it will start soon.
 hangul_input		Compiled with Hangul input support. |hangul|
 iconv			Can use iconv() for conversion.
 insert_expand		Compiled with support for CTRL-X expansion commands in
@@ -6196,20 +6196,20 @@ menu			Compiled with support for |:menu|.
 mksession		Compiled with support for |:mksession|.
 modify_fname		Compiled with file name modifiers. |filename-modifiers|
 mouse			Compiled with support mouse.
-mouseshape		Compiled with support for 'mouseshape'.
 mouse_dec		Compiled with support for Dec terminal mouse.
 mouse_gpm		Compiled with support for gpm (Linux console mouse)
 mouse_netterm		Compiled with support for netterm mouse.
 mouse_pterm		Compiled with support for qnx pterm mouse.
 mouse_sysmouse		Compiled with support for sysmouse (*BSD console mouse)
 mouse_xterm		Compiled with support for xterm mouse.
+mouseshape		Compiled with support for 'mouseshape'.
 multi_byte		Compiled with support for 'encoding'
 multi_byte_encoding	'encoding' is set to a multi-byte encoding.
 multi_byte_ime		Compiled with support for IME input method.
 multi_lang		Compiled with support for multiple languages.
 mzscheme		Compiled with MzScheme interface |mzscheme|.
-netbeans_intg		Compiled with support for |netbeans|.
 netbeans_enabled	Compiled with support for |netbeans| and connected.
+netbeans_intg		Compiled with support for |netbeans|.
 ole			Compiled with OLE automation support for Win32.
 os2			OS/2 version of Vim.
 osfiletype		Compiled with support for osfiletypes |+osfiletype|
@@ -6230,11 +6230,11 @@ showcmd			Compiled with 'showcmd' support.
 signs			Compiled with |:sign| support.
 smartindent		Compiled with 'smartindent' support.
 sniff			Compiled with SNiFF interface support.
+spell			Compiled with spell checking support |spell|.
 startuptime		Compiled with |--startuptime| support.
 statusline		Compiled with support for 'statusline', 'rulerformat'
 			and special formats of 'titlestring' and 'iconstring'.
 sun_workshop		Compiled with support for Sun |workshop|.
-spell			Compiled with spell checking support |spell|.
 syntax			Compiled with syntax highlighting support |syntax|.
 syntax_items		There are active syntax highlighting items for the
 			current buffer.
@@ -6255,9 +6255,9 @@ title			Compiled with window title support |'title'|.
 toolbar			Compiled with support for |gui-toolbar|.
 unix			Unix version of Vim.
 user_commands		User-defined commands.
-viminfo			Compiled with viminfo support.
-vim_starting		True while initial source'ing takes place. |startup|
 vertsplit		Compiled with vertically split windows |:vsplit|.
+vim_starting		True while initial source'ing takes place. |startup|
+viminfo			Compiled with viminfo support.
 virtualedit		Compiled with 'virtualedit' option.
 visual			Compiled with Visual mode.
 visualextra		Compiled with extra Visual mode commands.
@@ -6266,13 +6266,13 @@ vms			VMS version of Vim.
 vreplace		Compiled with |gR| and |gr| commands.
 wildignore		Compiled with 'wildignore' option.
 wildmenu		Compiled with 'wildmenu' option.
-windows			Compiled with support for more than one window.
-winaltkeys		Compiled with 'winaltkeys' option.
 win16			Win16 version of Vim (MS-Windows 3.1).
 win32			Win32 version of Vim (MS-Windows 95/98/ME/NT/2000/XP).
-win64			Win64 version of Vim (MS-Windows 64 bit).
 win32unix		Win32 version of Vim, using Unix files (Cygwin)
+win64			Win64 version of Vim (MS-Windows 64 bit).
 win95			Win32 version for MS-Windows 95/98/ME.
+winaltkeys		Compiled with 'winaltkeys' option.
+windows			Compiled with support for more than one window.
 writebackup		Compiled with 'writebackup' default on.
 xfontset		Compiled with X fontset support |xfontset|.
 xim			Compiled with X input method support |xim|.

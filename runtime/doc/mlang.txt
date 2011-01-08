@@ -1,4 +1,4 @@
-*mlang.txt*     For Vim version 7.3.  Last change: 2010 Jul 20
+*mlang.txt*     For Vim version 7.3.  Last change: 2010 Dec 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -68,7 +68,7 @@ use of "-" and "_".
 			With the "ctype" argument the language used for
 			character encoding is set.  This affects the libraries
 			that Vim was linked with.  It's unusual to set this to
-			a different value from 'encoding'.  This sets
+			a different value from 'encoding' or "C".  This sets
 			$LC_CTYPE.
 			With the "time" argument the language used for time
 			and date messages is set.  This affects strftime().

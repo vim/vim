@@ -1,25 +1,32 @@
 " Vim plugin for converting a syntax highlighted file to HTML.
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 Oct 28
+" Last Change: 2011 Jan 06
 "
 " The core of the code is in $VIMRUNTIME/autoload/tohtml.vim and
 " $VIMRUNTIME/syntax/2html.vim
 "
 " TODO:
-"   * Patch to leave tab characters in when noexpandtab set (Andy Spencer)
-"   * Make folds show up when using a range and dynamic folding
-"   * Remove fold column when there are no folds and using dynamic folding
+"   * Explicitly trigger IE8+ Standards Mode?
+"   * Make it so deleted lines in a diff don't create side-scrolling
 "   * Restore open/closed folds and cursor position after processing each file
 "     with option not to restore for speed increase
-"   * Add extra meta info (generation time, etc.)
-"   * Tidy up so we can use strict doctype in even more situations?
+"   * Undercurl support via dotted bottom border?
+"   * Add extra meta info (generation time, etc.)?
+"   * Tidy up so we can use strict doctype in even more situations
 "   * Implementation detail: add threshold for writing the lines to the html
 "     buffer before we're done (5000 or so lines should do it)
 "   * TODO comments for code cleanup scattered throughout
 "
 "
 " Changelog:
-"   7.3_v7 (this version): see betas released on vim_dev below:
+"   7.3_v8 (this version): Add html_expand_tabs option to allow leaving tab
+"                          characters in generated output (Andy Spencer). Escape
+"                          text that looks like a modeline so Vim doesn't use
+"                          anything in the converted HTML as a modeline.
+"                          Bugfixes: Fix folding when a fold starts before the
+"                          conversion range. Remove fold column when there are
+"                          no folds.
+"   7.3_v7 (840c3cadb842): see betas released on vim_dev below:
 "                7.3_v7b3: Fixed bug, convert Unicode to UTF-8 all the way.
 "                7.3_v7b2: Remove automatic detection of encodings that are not
 "                          supported by all major browsers according to
@@ -54,7 +61,7 @@
 if exists('g:loaded_2html_plugin')
   finish
 endif
-let g:loaded_2html_plugin = 'vim7.3_v7'
+let g:loaded_2html_plugin = 'vim7.3_v8'
 
 " Define the :TOhtml command when:
 " - 'compatible' is not set

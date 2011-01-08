@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 Sep 04
+" Last Change: 2011 Jan 06
 "
 " Additional contributors:
 "
@@ -124,7 +124,18 @@ function! s:HtmlFormat(text, style_name, diff_style_name)
   let l:style_name = a:style_name . (a:diff_style_name == '' ? '' : ' ') . a:diff_style_name
 
   " Replace the reserved html characters
-  let formatted = substitute(substitute(substitute(substitute(substitute(formatted, '&', '\&amp;', 'g'), '<', '\&lt;', 'g'), '>', '\&gt;', 'g'), '"', '\&quot;', 'g'), "\x0c", '<hr class="PAGE-BREAK">', 'g')
+  let formatted = substitute(formatted, '&', '\&amp;',  'g')
+  let formatted = substitute(formatted, '<', '\&lt;',   'g')
+  let formatted = substitute(formatted, '>', '\&gt;',   'g')
+  let formatted = substitute(formatted, '"', '\&quot;', 'g')
+  " TODO: Use &apos; for "'"?
+
+  " Replace a "form feed" character with HTML to do a page break
+  let formatted = substitute(formatted, "\x0c", '<hr class="PAGE-BREAK">', 'g')
+
+  " Mangle modelines so Vim doesn't try to use HTML text as a modeline if
+  " editing this file in the future
+  let formatted = substitute(formatted, '\v(\s+%(vim?|ex)):', '\1\&#0058;', 'g')
 
   " Replace double spaces, leading spaces, and trailing spaces if needed
   if ' ' != s:HtmlSpace
@@ -558,9 +569,6 @@ if s:settings.dynamic_folds
       " level, so subtract 2 from index of first non-dash after the dashes
       " in order to get the fold level of the current fold
       let s:level = match(foldtextresult(s:lnum), '+-*\zs[^-]') - 2
-      if s:level+1 > s:foldcolumn
-	let s:foldcolumn = s:level+1
-      endif
       " store fold info for later use
       let s:newfold = {'firstline': s:lnum, 'lastline': foldclosedend(s:lnum), 'level': s:level,'type': "closed-fold"}
       call add(s:allfolds, s:newfold)
@@ -590,9 +598,6 @@ if s:settings.dynamic_folds
       " level, so subtract 2 from index of first non-dash after the dashes
       " in order to get the fold level of the current fold
       let s:level = match(foldtextresult(s:lnum), '+-*\zs[^-]') - 2
-      if s:level+1 > s:foldcolumn
-	let s:foldcolumn = s:level+1
-      endif
       let s:newfold = {'firstline': s:lnum, 'lastline': foldclosedend(s:lnum), 'level': s:level,'type': "closed-fold"}
       " only add the fold if we don't already have it
       if empty(s:allfolds) || index(s:allfolds, s:newfold) == -1
@@ -622,6 +627,48 @@ if s:settings.dynamic_folds
 
   " close all folds again so we can get the fold text as we go
   silent! %foldclose!
+
+  for afold in s:allfolds
+    let removed = 0
+    if exists("g:html_start_line") && exists("g:html_end_line")
+      if afold.firstline < g:html_start_line
+	if afold.lastline < g:html_end_line && afold.lastline > g:html_start_line
+	  " if a fold starts before the range to convert but stops within the
+	  " range, we need to include it. Make it start on the first converted
+	  " line.
+	  let afold.firstline = g:html_start_line
+	else
+	  " if the fold lies outside the range or the start and stop enclose
+	  " the entire range, don't bother parsing it
+	  call remove(s:allfolds, index(s:allfolds, afold))
+	  let removed = 1
+	endif
+      elseif afold.firstline > g:html_end_line
+	" If the entire fold lies outside the range we need to remove it.
+	call remove(s:allfolds, index(s:allfolds, afold))
+	let removed = 1
+      endif
+    elseif exists("g:html_start_line")
+      if afold.firstline < g:html_start_line
+	" if there is no last line, but there is a first line, the end of the
+	" fold will always lie within the region of interest, so keep it
+	let afold.firstline = g:html_start_line
+      endif
+    elseif exists("g:html_end_line")
+      " if there is no first line we default to the first line in the buffer so
+      " the fold start will always be included if the fold itself is included.
+      " If however the entire fold lies outside the range we need to remove it.
+      if afold.firstline > g:html_end_line
+	call remove(s:allfolds, index(s:allfolds, afold))
+	let removed = 1
+      endif
+    endif
+    if !removed
+      if afold.level+1 > s:foldcolumn
+	let s:foldcolumn = afold.level+1
+      endif
+    endif
+  endfor
 endif
 
 " Now loop over all lines in the original text to convert to html.
@@ -668,6 +715,13 @@ if s:difffillchar == ''
 endif
 
 let s:foldId = 0
+
+if !s:settings.expand_tabs
+  " If keeping tabs, add them to printable characters so we keep them when
+  " formatting text (strtrans() doesn't replace printable chars)
+  let s:old_isprint = &isprint
+  setlocal isprint+=9
+endif
 
 while s:lnum <= s:end
 
@@ -747,7 +801,7 @@ while s:lnum <= s:end
 	call remove(s:foldstack, 0)
       endwhile
 
-      " Now insert an opening any new folds that start on this line
+      " Now insert an opening for any new folds that start on this line
       let s:firstfold = 1
       while !empty(s:allfolds) && get(s:allfolds,0).firstline == s:lnum
 	let s:foldId = s:foldId + 1
@@ -884,30 +938,32 @@ while s:lnum <= s:end
       endif
 
       if s:settings.ignore_conceal || !s:concealinfo[0]
-	" Expand tabs
+	" Expand tabs if needed
 	let s:expandedtab = strpart(s:line, s:startcol - 1, s:col - s:startcol)
-	let s:offset = 0
-	let s:idx = stridx(s:expandedtab, "\t")
-	while s:idx >= 0
-	  if has("multi_byte_encoding")
-	    if s:startcol + s:idx == 1
-	      let s:i = &ts
-	    else
-	      if s:idx == 0
-		let s:prevc = matchstr(s:line, '.\%' . (s:startcol + s:idx + s:offset) . 'c')
-	      else
-		let s:prevc = matchstr(s:expandedtab, '.\%' . (s:idx + 1) . 'c')
-	      endif
-	      let s:vcol = virtcol([s:lnum, s:startcol + s:idx + s:offset - len(s:prevc)])
-	      let s:i = &ts - (s:vcol % &ts)
-	    endif
-	    let s:offset -= s:i - 1
-	  else
-	    let s:i = &ts - ((s:idx + s:startcol - 1) % &ts)
-	  endif
-	  let s:expandedtab = substitute(s:expandedtab, '\t', repeat(' ', s:i), '')
+	if s:settings.expand_tabs
+	  let s:offset = 0
 	  let s:idx = stridx(s:expandedtab, "\t")
-	endwhile
+	  while s:idx >= 0
+	    if has("multi_byte_encoding")
+	      if s:startcol + s:idx == 1
+		let s:i = &ts
+	      else
+		if s:idx == 0
+		  let s:prevc = matchstr(s:line, '.\%' . (s:startcol + s:idx + s:offset) . 'c')
+		else
+		  let s:prevc = matchstr(s:expandedtab, '.\%' . (s:idx + 1) . 'c')
+		endif
+		let s:vcol = virtcol([s:lnum, s:startcol + s:idx + s:offset - len(s:prevc)])
+		let s:i = &ts - (s:vcol % &ts)
+	      endif
+	      let s:offset -= s:i - 1
+	    else
+	      let s:i = &ts - ((s:idx + s:startcol - 1) % &ts)
+	    endif
+	    let s:expandedtab = substitute(s:expandedtab, '\t', repeat(' ', s:i), '')
+	    let s:idx = stridx(s:expandedtab, "\t")
+	  endwhile
+	end
 
 	" get the highlight group name to use
 	let s:id = synIDtrans(s:id)
@@ -1073,7 +1129,7 @@ endif
 " Cleanup
 %s:\s\+$::e
 
-" Restore old settings
+" Restore old settings (new window first)
 let &l:foldenable = s:old_fen
 let &l:foldmethod = s:old_fdm
 let &report = s:old_report
@@ -1083,11 +1139,20 @@ let &paste = s:old_paste
 let &magic = s:old_magic
 let @/ = s:old_search
 let &more = s:old_more
+
+" switch to original window to restore those settings
 exe s:orgwin . "wincmd w"
+
+if !s:settings.expand_tabs
+  let &l:isprint = s:old_isprint
+endif
 let &l:stl = s:origwin_stl
 let &l:et = s:old_et
 let &l:scrollbind = s:old_bind
+
+" and back to the new window again to end there
 exe s:newwin . "wincmd w"
+
 let &l:stl = s:newwin_stl
 exec 'resize' s:old_winheight
 let &l:winfixheight = s:old_winfixheight
@@ -1098,6 +1163,7 @@ let &ls=s:ls
 unlet s:htmlfont
 unlet s:old_et s:old_paste s:old_icon s:old_report s:old_title s:old_search
 unlet s:old_magic s:old_more s:old_fdm s:old_fen s:old_winheight
+unlet! s:old_isprint
 unlet s:whatterm s:idlist s:lnum s:end s:margin s:fgc s:bgc s:old_winfixheight
 unlet! s:col s:id s:attr s:len s:line s:new s:expandedtab s:concealinfo
 unlet! s:orgwin s:newwin s:orgbufnr s:idx s:i s:offset s:ls s:origwin_stl

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2010 Dec 08
+*todo.txt*      For Vim version 7.3.  Last change: 2011 Jan 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -33,6 +33,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 'cursorline' is displayed too short when there are concealed characters and
 'list' is set, 'listchars' at default value. (Dennis Preiser, 2010 Aug 15)
 
+When running external command with ":make", cursor line is redrawn on top of
+external output.
+
 Conceal: using Tab for cchar causes problems.  Should reject it. (ZyX, 2010
 Aug 25)
 
@@ -44,6 +47,8 @@ Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
 only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
 21, Ben Fritz, 2010 Sep 14)
 
+Bug in repeating Visual "u". (Lawrence Kesteloot, 2010 Dec 20)
+
 Windows keys not set properly on Windows 7?  (cncyber, 2010 Aug 26)
 
 This line hangs Vim, because of syntax HL:
@@ -52,11 +57,6 @@ call append(line, "INFO  ....12....18....24....30....36....42....48....54....60.
 Building the MingW version without clipboard but with multi-byte doesn't
 work. (Bill Lam, 2010 Sep 18)
 
-When reading from stdin, don't enable signals before finishing reading?
-Otherwise the program producing the text may get killed by SIGWINCH.
-(Benjamin R. Haskell) Xavier: It's because reading from stdin returns -1.
-Patch from Xavier de Gaye, 2010 Dec 7.  More generic solution?
-
 Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
 Using ":break" or something else that stops executing commands inside a
@@ -64,6 +64,13 @@ Using ":break" or something else that stops executing commands inside a
 15)
 
 Vim using lots of memory when joining lines. (John Little, 2010 Dec 3)
+
+On 64 bit MS-Windows "long" is only 32 bits, but we sometimes need to store a
+64 bits value.  Change all number options to use nropt_T and define it to the
+right type.
+
+Patch to improve mf_hash, dynamic sizing. (Ivan Krasilnikov, 2010 Dec 17)
+Needs tests.
 
 string() can't parse back "inf" and "nan".  Fix documentation or fix code?
 (ZyX, 2010 Aug 23)
@@ -74,8 +81,14 @@ mapping, how to restore the script ID?
 Patch to fix \%V item in regexp. (Christian Brabandt, 2010 Nov 8)
 Update Nov 19.  James Vega: still not right.  Christian: it's difficult.
 
+Patch to add up to 99 match groups. (Christian Brabandt, 2010 Dec 22)
+Also add named groups: \%{name}(re)  and \%{name}g
+
 Highlighting stops working after changing it many times.  Script to reproduce
 it: Pablo Contreras, 2010 Oct 12  Windows XP and 7.  Font is never freed?
+
+Loading autoload script even when usage is inside "if 0". (Christian Brabandt,
+2010 Dec 18)
 
 When 'cursorcolumn' is set locally to a window, ":new" opens a window with the
 same highlighting but 'cursorcolumn' is empty. (Tyru, 2010 Nov 15)
@@ -100,15 +113,7 @@ do?
 Searching mixed with Visual mode doesn't redraw properly. (James Vega, 2010 Nov
 22)
 
-Win32: When using Chinese tear-off menu doesn't work. (Weasley, 2010 Oct 31)
-Patch by Alex Jakushev, 2010 Nov 2.
-
-Using ":call" inside "if 0" does not see that a function returns a Dict and
-gives error for "." as string concatenation.  (Yasuhiro Matsumoto, 2010 Oct 20)
-Patch: Oct 20.
-
-Patch to move check for emsg_not_now() up to avoid statusline not being
-updated. (James Vega, 2010 Nov 4)
+Patch to support ":!start /b cmd". (Xaizek, 2010 Dec 22)
 
 Copy/paste between Vim and Google chrome doesn't work well for multi-byte
 characters. (Ben Haskell, 2010 Sep 17)
@@ -127,6 +132,9 @@ Patch to disallow fork() when __APPLE__ is defined. (Hisashi T Fujinaka, 2010
 Nov 25)
 
 GTK: Patch to fix menu popping down. (Hong Xu, 2010 Dec 4, Dec 5)
+
+Python: Adding line to buffer other than the current one doesn't work
+correctly. (Rozbujnik, 2010 Dec 19)
 
 Patch to add 'systemencoding', convert between 'encoding' and this for file
 names, shell commands and the like.  (Kikuchan, 2010 Oct 14)
@@ -171,10 +179,16 @@ mkdir().
 
 'cindent' not correct when 'list' is set. (Zdravi Korusef, 2010 Apr 15)
 
+When 'paste' is changed with 'pastetoggle', the ruler doesn't reflect this
+right away. (Samuel Ferencik, 2010 Dec 7)
+
 Windows installer: licence text should not use indent, causes bad word wrap.
 (Benjamin Fritz, 2010 Aug 16)
 
 Mac with X11: clipboard doesn't work properly. (Raf, 2010 Aug 16)
+
+Using CompilerSet doesn't record where an option was set from.  E.g., in the
+gcc compiler plugin. (Gary Johnson, 2010 Dec 13)
 
 ":helpgrep" does not put the cursor in the correct column when preceded by
 accented character. (Tony Mechelynck, 2010 Apr 15)
@@ -188,6 +202,9 @@ Echo starts in the wrong column:
 
 Patch for GVimExt to show an icon. (Dominik Riebeling, 2010 Nov 7)
 
+When writing a file > 2Gbyte, the reported number of bytes is negative.
+(Antonio Colombo, 2010 Dec 18)
+
 Patch: Let rare word highlighting overrule good word highlighting.
 (Jakson A. Aquino, 2010 Jul 30)
 
@@ -200,8 +217,15 @@ instead of one. (Constantin Pan, 2010 Sep 10)
 
 Crash in setqflist(). (Benoit Mortgat, 2010 Nov 18)
 
+Patch to handle resizing when tab is opened, when at full size. (Yukihiro
+Nakadaira, 2010 Jan 6)
+
 Writing nested List and Dict in viminfo gives error message and can't be read
 back. (Yukihiro Nakadaira, 2010 Nov 13)
+
+Can 'undolevels' be a buffer-local option?  Helps for making big changes in
+one file only, set 'ul' to -1 only for that buffer.
+Patch by Christian Brabandt, 2010 Dec 17.  Needs test.
 
 Dos uninstal may delete vim.bat from the wrong directory (e.g., when someone
 makes his own wrapper).  Add a magic string with the version number to the
@@ -258,6 +282,9 @@ Check if there are new reported defects: http://scan.coverity.com/rung2.html
 Patch to support :undo absolute jump to file save number. (Christian Brabandt,
 2010 Nov 5)
 
+Patch to use 'foldnextmax' also for "marker" foldmethod. (Arnaud Lacombe, 2011
+Jan 7)
+
 When setting 'undofile' while the file is already loaded, but unchanged, try
 to read the undo file.  Requires computing a checksum of the text. (Andy
 Wokula)
@@ -296,6 +323,10 @@ Jun 1)
 
 Cannot use getchar() inside :normal and using an expression mapping.  Is this
 supposed to work?  (XyX, 2010 Sep 22)
+
+When using an expression mapping with a multi-byte character each byte is
+converted to a utf-8 character. (ZyX, 2011 Jan 4)
+Patch for possible solution. (Yukihiro Nakadaira, 2011 Jan 5)
 
 When a:base in 'completefunc' starts with a number it's passed as a number,
 not a string. (Sean Ma)  Need to add flag to call_func_retlist() to force a
@@ -458,17 +489,16 @@ Session file generates error upon loading, cause bu --remote-silent-tab.
 Using ~ works OK on 'a' with composing char, but not on 0x0418  with composing
 char 0x0301. (Tony Mechelynck, 2009 Mar 4)
 
+A function on a dictionary is not profiled. (Zyx, 2010 Dec 25)
+
 Inconsistent: starting with $LANG set to es_ES.utf-8 gives Spanish
 messages, even though locale is not supported.  But ":lang messages
 es_ES.utf-8" gives an error and doesn't switch messages. (Dominique Pelle,
 2009 Jan 26)
 
-When $HOME contains special characters, sich as a comma, escape them when used
+When $HOME contains special characters, such as a comma, escape them when used
 in an option. (Michael Hordijk, 2009 May 5)
 Turn "esc" argument of expand_env_esc() into string of chars to be escaped.
-
-Can 'undolevels' be a buffer-local option?  Helps for making big changes in
-one file only, set 'ul' to -1 only for that buffer.
 
 Should make 'ignorecase' global-local, so that it makes sense setting it from
 a modeline.
@@ -841,6 +871,9 @@ go to Insert mode and add a few lines.  Then backspacing every other time
 moves the cursor instead of deleting. (Chris Kaiser, 2007 Sep 25)
 
 Patch to use Modern UI 2.0 for the Nsis installer. (Guopeng Wen, 2010 Jul 30)
+8   Windows install with NSIS: make it possible to do a silent install, see
+    http://nsis.sourceforge.net/Docs/Chapter4.html#4.12
+    Version from Guopeng Wen that does this (2010 Dec 27)
 
 Changes for Win32 makefile. (Mike Williams, 2007 Jan 22, Alexei Alexandrov,
 2007 Feb 8)
@@ -1566,8 +1599,6 @@ Win32 GUI known bugs:
     scroll?
 7   Scrollbar width doesn't change when selecting other windows appearance.
     Also background color of Toolbar and rectangle below vert. scrollbar.
-7   "!start /min cmd" should run in a minimized window, instead of using
-    "/min" as the command name. (Rogall)
 6   Drawing text transparently doesn't seem to work (when drawing part cursor).
 8   CTRL key doesn't always work in combination with ALT key.  It does work
     for function keys, not for alphabetic characters.  Perhaps this is because
@@ -2330,8 +2361,6 @@ Help:
 
 
 User Friendlier:
-8   Windows install with NSIS: make it possible to do a silent install, see
-    http://nsis.sourceforge.net/Docs/Chapter4.html#4.12
 8   Windows install with install.exe: Use .exe instead of .bat files for
     links, so that command line arguments are passed on unmodified? (Walter
     Briscoe)
@@ -4455,6 +4484,8 @@ Various improvements:
 7   Instead of filtering errors with a shell script it should be possible to
     do this with Vim script.  A function that filters the raw text that comes
     from the 'makeprg'?
+9   Add %F to 'errorformat': file name without spaces.  Useful on Unix to
+    avoid matching something up to a time 11:22:33.
 -   Add %b to 'errorformat': buffer number. (Yegappan Lakshmanan / Suresh
     Govindachar)
 7   Add a command that goes back to the position from before jumping to the

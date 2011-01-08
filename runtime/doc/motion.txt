@@ -1033,20 +1033,20 @@ The maximum number of entries is fixed at 100.
 
 For example, after three jump commands you have this jump list:
 
-  jump line  col file/line ~
+  jump line  col file/text ~
     3	  1    0 some text ~
     2	 70    0 another line ~
     1  1154   23 end. ~
  > ~
 
-The "file/line" column shows the file name, or the text at the jump if it is
+The "file/text" column shows the file name, or the text at the jump if it is
 in the current file (an indent is removed and a long line is truncated to fit
 in the window).
 
 You are currently in line 1167.  If you then use the CTRL-O command, the
 cursor is put in line 1154.  This results in:
 
-  jump line  col file/line ~
+  jump line  col file/text ~
     2	  1    0 some text ~
     1	 70    0 another line ~
  >  0  1154   23 end. ~
@@ -1076,7 +1076,7 @@ command.  You can explicitly add a jump by setting the ' mark.
 After the CTRL-O command that got you into line 1154 you could give another
 jump command (e.g., "G").  The jump list would then become:
 
-  jump line  col file/line ~
+  jump line  col file/text ~
     4	  1    0 some text ~
     3	 70    0 another line ~
     2  1167    0 foo bar ~

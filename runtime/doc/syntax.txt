@@ -475,6 +475,26 @@ risk of making some things look a bit different, use: >
 This will use <br> at the end of each line and use "&nbsp;" for repeated
 spaces.
 
+If you do use the "<pre>" tags, <Tab> characters in the text are included in
+the generated output if they will have no effect on the appearance of the
+text and it looks like they are in the document intentionally. This allows for
+the HTML output to be copied and pasted from a browser without losing the
+actual whitespace used in the document.
+
+Specifically, <Tab> characters will be included if the 'tabstop' option is set
+to the default of 8, 'expandtab' is not set, and if neither the foldcolumn nor
+the line numbers are included in the HTML output (see options above). When any
+of these conditions are not met, any <Tab> characters in the text are expanded
+to the appropriate number of spaces in the HTML output.
+
+When "<pre>" is included, you can force |:TOhtml| to keep the tabs even if the
+other conditions are not met with: >
+   :let g:html_expand_tabs = 0
+Note that this can easily break text alignment and indentation in the HTML.
+
+Force tabs to be expanded even when they would be kept using: >
+   :let g:html_expand_tabs = 1
+
 For diff mode on a single file (with g:html_diff_one_file) a sequence of more
 than 3 filler lines is displayed as three lines with the middle line
 mentioning the total number of inserted lines.  If you prefer to see all the

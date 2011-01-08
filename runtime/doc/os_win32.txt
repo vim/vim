@@ -1,4 +1,4 @@
-*os_win32.txt*  For Vim version 7.3.  Last change: 2010 Jul 20
+*os_win32.txt*  For Vim version 7.3.  Last change: 2010 Dec 19
 
 
 		  VIM REFERENCE MANUAL    by George Reilly
@@ -313,6 +313,7 @@ A. When using :! to run an external command, you can run it with "start": >
    with :!start do not get passed Vim's open file handles, which means they do
    not have to be closed before Vim.
    To avoid this special treatment, use ":! start".
+   The optional "/min" argument causes the window to be minimized.
 
 Q. I'm using Win32s, and when I try to run an external command like "make",
    Vim doesn't wait for it to finish!  Help!

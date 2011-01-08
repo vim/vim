@@ -1,4 +1,4 @@
-*debug.txt*     For Vim version 7.3.  Last change: 2010 Sep 14
+*debug.txt*     For Vim version 7.3.  Last change: 2010 Dec 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -21,8 +21,8 @@ When Vim crashes in one of the test files, and you are using gcc for
 compilation, here is what you can do to find out exactly where Vim crashes.
 This also applies when using the MingW tools.
 
-1. Compile Vim with the "-g" option (there is a line in the Makefile for this,
-   which you can uncomment).  Also make sure "strip" is disabled (do not
+1. Compile Vim with the "-g" option (there is a line in the src/Makefile for
+   this, which you can uncomment).  Also make sure "strip" is disabled (do not
    install it, or use the line "STRIP = /bin/true").
 
 2. Execute these commands (replace "11" with the test that fails): >

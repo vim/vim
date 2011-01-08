@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 7.3.  Last change: 2010 Oct 21
+*undo.txt*      For Vim version 7.3.  Last change: 2010 Dec 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -125,16 +125,23 @@ This is explained in the user manual: |usr_32.txt|.
 
 							*:undol* *:undolist*
 :undol[ist]		List the leafs in the tree of changes.  Example:
-				number changes   time      saved ~
-				4      10	 10:34:11
-				18     4	 11:01:46  7
+			   number changes  when               saved ~
+			       88      88  2010/01/04 14:25:53
+			      108     107  08/07 12:47:51
+			      136      46  13:33:01             7
+			      166     164  3 seconds ago
 
 			The "number" column is the change number.  This number
 			continuously increases and can be used to identify a
 			specific undo-able change, see |:undo|.
 			The "changes" column is the number of changes to this
 			leaf from the root of the tree.
-			The "time" column is the time this change was made.
+			The "when" column is the date and time when this
+			change was made.  The four possible formats are:
+			    N seconds ago
+			    HH:MM:SS             hour, minute, seconds
+			    MM/DD HH:MM:SS       idem, with month and day
+			    YYYY/MM/DD HH:MM:SS  idem, with year
 			The "saved" column specifies, if this change was
 			written to disk and which file write it was. This can
 			be used with the |:later| and |:earlier| commands.
