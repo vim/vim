@@ -986,7 +986,8 @@ win_split_ins(size, flags, newwin, dir)
 
     /* Set w_fraction now so that the cursor keeps the same relative
      * vertical position. */
-    set_fraction(oldwin);
+    if (oldwin->w_height > 0)
+	set_fraction(oldwin);
     wp->w_fraction = oldwin->w_fraction;
 
 #ifdef FEAT_VERTSPLIT
