@@ -2117,13 +2117,14 @@ dialog_wm_handler(w, client_data, event, dum)
 }
 
     int
-gui_mch_dialog(type, title, message, buttons, dfltbutton, textfield)
+gui_mch_dialog(type, title, message, buttons, dfltbutton, textfield, ex_cmd)
     int		type UNUSED;
     char_u	*title;
     char_u	*message;
     char_u	*buttons;
     int		dfltbutton UNUSED;
     char_u	*textfield;
+    int		ex_cmd UNUSED;
 {
     char_u		*buts;
     char_u		*p, *next;

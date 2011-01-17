@@ -7008,7 +7008,7 @@ buf_check_timestamp(buf, focus)
 		    STRCAT(tbuf, mesg2);
 		}
 		if (do_dialog(VIM_WARNING, (char_u *)_("Warning"), tbuf,
-				(char_u *)_("&OK\n&Load File"), 1, NULL) == 2)
+			  (char_u *)_("&OK\n&Load File"), 1, NULL, TRUE) == 2)
 		    reload = TRUE;
 	    }
 	    else

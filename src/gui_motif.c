@@ -2549,13 +2549,14 @@ create_pixmap_label(parent, name, data, args, arg)
 #endif
 
     int
-gui_mch_dialog(type, title, message, button_names, dfltbutton, textfield)
+gui_mch_dialog(type, title, message, button_names, dfltbutton, textfield, ex_cmd)
     int		type UNUSED;
     char_u	*title;
     char_u	*message;
     char_u	*button_names;
     int		dfltbutton;
     char_u	*textfield;		/* buffer of size IOSIZE */
+    int		ex_cmd UNUSED;
 {
     char_u		*buts;
     char_u		*p, *next;

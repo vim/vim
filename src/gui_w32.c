@@ -3005,7 +3005,8 @@ gui_mch_dialog(
     char_u	*message,
     char_u	*buttons,
     int		 dfltbutton,
-    char_u	*textfield)
+    char_u	*textfield,
+    int		ex_cmd)
 {
     WORD	*p, *pdlgtemplate, *pnumitems;
     DWORD	*dwp;

@@ -688,7 +688,7 @@ do_choice(Widget w,
 	    do_dialog(VIM_ERROR,
 		    (char_u *)_("Error"),
 		    (char_u *)_("Invalid font specification"),
-		    (char_u *)_("&Dismiss"), 1, NULL);
+		    (char_u *)_("&Dismiss"), 1, NULL, FALSE);
 
 	return True;
     }
@@ -807,7 +807,7 @@ ok_callback(Widget w UNUSED,
 	do_dialog(VIM_ERROR,
 		(char_u *)_("Error"),
 		(char_u *)_("Invalid font specification"),
-		(char_u *)_("&Dismiss"), 1, NULL);
+		(char_u *)_("&Dismiss"), 1, NULL, FALSE);
 	XFreeFontNames(name);
     }
     else

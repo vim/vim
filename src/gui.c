@@ -4903,7 +4903,7 @@ display_errors()
 		if (STRLEN(p) > 2000)
 		    STRCPY(p + 2000 - 14, "...(truncated)");
 		(void)do_dialog(VIM_ERROR, (char_u *)_("Error"),
-					      p, (char_u *)_("&Ok"), 1, NULL);
+				       p, (char_u *)_("&Ok"), 1, NULL, FALSE);
 		break;
 	    }
 	ga_clear(&error_ga);

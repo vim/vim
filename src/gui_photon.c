@@ -1502,7 +1502,8 @@ gui_mch_dialog(
 	char_u	*message,
 	char_u	*buttons,
 	int	default_button,
-	char_u	*textfield)
+	char_u	*textfield,
+	int	ex_cmd)
 {
     char_u	*str;
     char_u	**button_array;

@@ -64,7 +64,7 @@ void verbose_stop __ARGS((void));
 int verbose_open __ARGS((void));
 void give_warning __ARGS((char_u *message, int hl));
 void msg_advance __ARGS((int col));
-int do_dialog __ARGS((int type, char_u *title, char_u *message, char_u *buttons, int dfltbutton, char_u *textfield));
+int do_dialog __ARGS((int type, char_u *title, char_u *message, char_u *buttons, int dfltbutton, char_u *textfield, int ex_cmd));
 void display_confirm_msg __ARGS((void));
 int vim_dialog_yesno __ARGS((int type, char_u *title, char_u *message, int dflt));
 int vim_dialog_yesnocancel __ARGS((int type, char_u *title, char_u *message, int dflt));

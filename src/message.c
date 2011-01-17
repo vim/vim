@@ -3315,7 +3315,7 @@ msg_advance(col)
  * different letter.
  */
     int
-do_dialog(type, title, message, buttons, dfltbutton, textfield)
+do_dialog(type, title, message, buttons, dfltbutton, textfield, ex_cmd)
     int		type UNUSED;
     char_u	*title UNUSED;
     char_u	*message;
@@ -3323,6 +3323,8 @@ do_dialog(type, title, message, buttons, dfltbutton, textfield)
     int		dfltbutton;
     char_u	*textfield UNUSED;	/* IObuff for inputdialog(), NULL
 					   otherwise */
+    int		ex_cmd;	    /* when TRUE pressing : accepts default and starts
+			       Ex command */
 {
     int		oldState;
     int		retval = 0;
@@ -3341,7 +3343,7 @@ do_dialog(type, title, message, buttons, dfltbutton, textfield)
     if (gui.in_use && vim_strchr(p_go, GO_CONDIALOG) == NULL)
     {
 	c = gui_mch_dialog(type, title, message, buttons, dfltbutton,
-								   textfield);
+							   textfield, ex_cmd);
 	/* avoid a hit-enter prompt without clearing the cmdline */
 	need_wait_return = FALSE;
 	emsg_on_display = FALSE;
@@ -3388,6 +3390,13 @@ do_dialog(type, title, message, buttons, dfltbutton, textfield)
 	    default:		/* Could be a hotkey? */
 		if (c < 0)	/* special keys are ignored here */
 		    continue;
+		if (c == ':' && ex_cmd)
+		{
+		    retval = dfltbutton;
+		    ins_char_typebuf(':');
+		    break;
+		}
+
 		/* Make the character lowercase, as chars in "hotkeys" are. */
 		c = MB_TOLOWER(c);
 		retval = 1;
@@ -3661,7 +3670,7 @@ vim_dialog_yesno(type, title, message, dflt)
     if (do_dialog(type,
 		title == NULL ? (char_u *)_("Question") : title,
 		message,
-		(char_u *)_("&Yes\n&No"), dflt, NULL) == 1)
+		(char_u *)_("&Yes\n&No"), dflt, NULL, FALSE) == 1)
 	return VIM_YES;
     return VIM_NO;
 }
@@ -3676,7 +3685,7 @@ vim_dialog_yesnocancel(type, title, message, dflt)
     switch (do_dialog(type,
 		title == NULL ? (char_u *)_("Question") : title,
 		message,
-		(char_u *)_("&Yes\n&No\n&Cancel"), dflt, NULL))
+		(char_u *)_("&Yes\n&No\n&Cancel"), dflt, NULL, FALSE))
     {
 	case 1: return VIM_YES;
 	case 2: return VIM_NO;
@@ -3695,7 +3704,7 @@ vim_dialog_yesnoallcancel(type, title, message, dflt)
 		title == NULL ? (char_u *)"Question" : title,
 		message,
 		(char_u *)_("&Yes\n&No\nSave &All\n&Discard All\n&Cancel"),
-								  dflt, NULL))
+							   dflt, NULL, FALSE))
     {
 	case 1: return VIM_YES;
 	case 2: return VIM_NO;

@@ -1268,7 +1268,8 @@ gui_mch_dialog(int	type,	    /* type of dialog */
 	       char_u	*message,   /* message text */
 	       char_u	*buttons,   /* names of buttons */
 	       int	def_but,    /* default button */
-	       char_u	*textfield) /* text for textfield or NULL */
+	       char_u	*textfield, /* text for textfield or NULL */
+	       int	ex_cmd UNUSED)
 {
     GtkWidget	*dialog;
     GtkWidget	*entry = NULL;
