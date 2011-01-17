@@ -11,12 +11,12 @@
  * See README.txt for an overview of the Vim source code.
  */
 
-#include <stdio.h>
-#include <string.h>
-
 #ifdef HAVE_CONFIG_H
 # include "auto/config.h"
 #endif
+
+#include <stdio.h>
+#include <string.h>
 
 #ifdef _WIN32
 # if !defined(DYNAMIC_RUBY_VER) || (DYNAMIC_RUBY_VER < 18)

@@ -9,12 +9,11 @@
  * See README.txt for an overview of the Vim source code.
  */
 
-#include <stdio.h>
-#include <string.h>
+#include "vim.h"
+
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
-#include "vim.h"
 
 /* Only do the following when the feature is enabled.  Needed for "make
  * depend". */
