@@ -2919,7 +2919,7 @@ unchanged(buf, ff)
     buf_T	*buf;
     int		ff;	/* also reset 'fileformat' */
 {
-    if (buf->b_changed || (ff && file_ff_differs(buf)))
+    if (buf->b_changed || (ff && file_ff_differs(buf, FALSE)))
     {
 	buf->b_changed = 0;
 	ml_setflags(buf);

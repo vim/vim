@@ -54,6 +54,6 @@ void change_compatible __ARGS((int on));
 int option_was_set __ARGS((char_u *name));
 int can_bs __ARGS((int what));
 void save_file_ff __ARGS((buf_T *buf));
-int file_ff_differs __ARGS((buf_T *buf));
+int file_ff_differs __ARGS((buf_T *buf, int ignore_empty));
 int check_ff_value __ARGS((char_u *p));
 /* vim: set ft=c : */
