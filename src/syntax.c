@@ -4537,6 +4537,13 @@ get_syn_options(arg, opt, conceal_char)
 		;
 #endif
 	    }
+#ifdef FEAT_CONCEAL
+	    if (!vim_isprintc_strict(*conceal_char))
+	    {
+		EMSG(_("E844: invalid cchar value"));
+		return NULL;
+	    }
+#endif
 	    arg = skipwhite(arg + 7);
 	}
 	else
