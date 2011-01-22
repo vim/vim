@@ -2882,9 +2882,11 @@ do_check_cursorbind()
 	    if (has_mbyte)
 		mb_adjust_cursor();
 # endif
-
 	    redraw_later(VALID);
-	    update_topline();
+
+	    /* Only scroll when 'scrollbind' hasn't done this. */
+	    if (!curwin->w_p_scb)
+		update_topline();
 # ifdef FEAT_WINDOWS
 	    curwin->w_redr_status = TRUE;
 # endif
