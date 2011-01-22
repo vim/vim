@@ -10866,6 +10866,11 @@ f_getbufvar(argvars, rettv)
 
 	if (*varname == '&')	/* buffer-local-option */
 	    get_option_tv(&varname, rettv, TRUE);
+	else if (STRCMP(varname, "changedtick") == 0)
+	{
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = curbuf->b_changedtick;
+	}
 	else
 	{
 	    if (*varname == NUL)
