@@ -2884,7 +2884,7 @@ u_add_time(buf, buflen, tt)
 	    (void)strftime((char *)buf, buflen, "%m/%d %H:%M:%S", curtime);
 	else
 	    /* long ago */
-	    (void)strftime((char *)buf, buflen, "%y/%m/%d %H:%M:%S", curtime);
+	    (void)strftime((char *)buf, buflen, "%Y/%m/%d %H:%M:%S", curtime);
     }
     else
 #endif
