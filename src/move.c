@@ -2846,6 +2846,7 @@ do_check_cursorbind()
     colnr_T	col =  curwin->w_cursor.col;
     win_T	*old_curwin = curwin;
     buf_T	*old_curbuf = curbuf;
+    int		restart_edit_save;
 # ifdef FEAT_VISUAL
     int		old_VIsual_select = VIsual_select;
     int		old_VIsual_active = VIsual_active;
@@ -2875,8 +2876,12 @@ do_check_cursorbind()
 		curwin->w_cursor.lnum = line;
 	    curwin->w_cursor.col = col;
 
-	    /* Make sure the cursor is in a valid position. */
+	    /* Make sure the cursor is in a valid position.  Temporarily set
+	     * "restart_edit" to allow the cursor to be beyond the EOL. */
+	    restart_edit_save = restart_edit;
+	    restart_edit = TRUE;
 	    check_cursor();
+	    restart_edit = restart_edit_save;
 # ifdef FEAT_MBYTE
 	    /* Correct cursor for multi-byte character. */
 	    if (has_mbyte)

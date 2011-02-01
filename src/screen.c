@@ -6435,6 +6435,8 @@ win_redr_custom(wp, draw_ruler)
     struct	stl_hlrec hltab[STL_MAX_ITEM];
     struct	stl_hlrec tabtab[STL_MAX_ITEM];
     int		use_sandbox = FALSE;
+    win_T	*ewp;
+    int		p_crb_save;
 
     /* setup environment for the task at hand */
     if (wp == NULL)
@@ -6513,14 +6515,20 @@ win_redr_custom(wp, draw_ruler)
     if (maxwidth <= 0)
 	return;
 
+    /* Temporarily reset 'cursorbind', we don't want a side effect from moving
+     * the cursor away and back. */
+    ewp = wp == NULL ? curwin : wp;
+    p_crb_save = ewp->w_p_crb;
+    ewp->w_p_crb = FALSE;
+
     /* Make a copy, because the statusline may include a function call that
      * might change the option value and free the memory. */
     stl = vim_strsave(stl);
-    width = build_stl_str_hl(wp == NULL ? curwin : wp,
-				buf, sizeof(buf),
+    width = build_stl_str_hl(ewp, buf, sizeof(buf),
 				stl, use_sandbox,
 				fillchar, maxwidth, hltab, tabtab);
     vim_free(stl);
+    ewp->w_p_crb = p_crb_save;
 
     /* Make all characters printable. */
     p = transstr(buf);
