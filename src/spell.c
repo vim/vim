@@ -3634,7 +3634,7 @@ read_compound(fd, slang, len)
 	}
 
 	/* Add all flags to "sl_compallflags". */
-	if (vim_strchr((char_u *)"+*[]/", c) == NULL
+	if (vim_strchr((char_u *)"?*+[]/", c) == NULL
 		&& !byte_in_str(slang->sl_compallflags, c))
 	{
 	    *ap++ = c;
@@ -3664,7 +3664,7 @@ read_compound(fd, slang, len)
 	/* Copy flag to "sl_comprules", unless we run into a wildcard. */
 	if (crp != NULL)
 	{
-	    if (c == '+' || c == '*')
+	    if (c == '?' || c == '+' || c == '*')
 	    {
 		vim_free(slang->sl_comprules);
 		slang->sl_comprules = NULL;
@@ -3682,8 +3682,8 @@ read_compound(fd, slang, len)
 	}
 	else		    /* normal char, "[abc]" and '*' are copied as-is */
 	{
-	    if (c == '+' || c == '~')
-		*pp++ = '\\';	    /* "a+" becomes "a\+" */
+	    if (c == '?' || c == '+' || c == '~')
+		*pp++ = '\\';	    /* "a?" becomes "a\?", "a+" becomes "a\+" */
 #ifdef FEAT_MBYTE
 	    if (enc_utf8)
 		pp += mb_char2bytes(c, pp);
@@ -4951,6 +4951,8 @@ typedef struct spellinfo_S
 
     sblock_T	*si_blocks;	/* memory blocks used */
     long	si_blocks_cnt;	/* memory blocks allocated */
+    int		si_did_emsg;	/* TRUE when ran out of memory */
+
     long	si_compress_cnt;    /* words to add before lowering
 				       compression limit */
     wordnode_T	*si_first_free; /* List of nodes that have been freed during
@@ -5477,21 +5479,25 @@ spell_read_aff(spin, fname)
 	    }
 	    else if (is_aff_rule(items, itemcnt, "COMPOUNDRULE", 2))
 	    {
-		/* Concatenate this string to previously defined ones, using a
-		 * slash to separate them. */
-		l = (int)STRLEN(items[1]) + 1;
-		if (compflags != NULL)
-		    l += (int)STRLEN(compflags) + 1;
-		p = getroom(spin, l, FALSE);
-		if (p != NULL)
+		/* Don't use the first rule if it is a number. */
+		if (compflags != NULL || *skipdigits(items[1]) != NUL)
 		{
+		    /* Concatenate this string to previously defined ones,
+		     * using a slash to separate them. */
+		    l = (int)STRLEN(items[1]) + 1;
 		    if (compflags != NULL)
+			l += (int)STRLEN(compflags) + 1;
+		    p = getroom(spin, l, FALSE);
+		    if (p != NULL)
 		    {
-			STRCPY(p, compflags);
-			STRCAT(p, "/");
+			if (compflags != NULL)
+			{
+			    STRCPY(p, compflags);
+			    STRCAT(p, "/");
+			}
+			STRCAT(p, items[1]);
+			compflags = p;
 		    }
-		    STRCAT(p, items[1]);
-		    compflags = p;
 		}
 	    }
 	    else if (is_aff_rule(items, itemcnt, "COMPOUNDWORDMAX", 2)
@@ -6291,7 +6297,7 @@ process_compflags(spin, aff, compflags)
 
     for (p = compflags; *p != NUL; )
     {
-	if (vim_strchr((char_u *)"/*+[]", *p) != NULL)
+	if (vim_strchr((char_u *)"/?*+[]", *p) != NULL)
 	    /* Copy non-flag characters directly. */
 	    *tp++ = *p++;
 	else
@@ -6320,7 +6326,7 @@ process_compflags(spin, aff, compflags)
 		    {
 			check_renumber(spin);
 			id = spin->si_newcompID--;
-		    } while (vim_strchr((char_u *)"/+*[]\\-^", id) != NULL);
+		    } while (vim_strchr((char_u *)"/?*+[]\\-^", id) != NULL);
 		    ci->ci_newID = id;
 		    hash_add(&aff->af_comp, ci->ci_key);
 		}
@@ -7364,10 +7370,21 @@ getroom(spin, len, align)
 
     if (bl == NULL || bl->sb_used + len > SBLOCKSIZE)
     {
-	/* Allocate a block of memory. This is not freed until much later. */
-	bl = (sblock_T *)alloc_clear((unsigned)(sizeof(sblock_T) + SBLOCKSIZE));
+	if (len >= SBLOCKSIZE)
+	    bl = NULL;
+	else
+	    /* Allocate a block of memory. It is not freed until much later. */
+	    bl = (sblock_T *)alloc_clear(
+				   (unsigned)(sizeof(sblock_T) + SBLOCKSIZE));
 	if (bl == NULL)
+	{
+	    if (!spin->si_did_emsg)
+	    {
+		EMSG(_("E845: Insufficient memory, word list will be incomplete"));
+		spin->si_did_emsg = TRUE;
+	    }
 	    return NULL;
+	}
 	bl->sb_next = spin->si_blocks;
 	spin->si_blocks = bl;
 	bl->sb_used = 0;
@@ -7382,6 +7399,7 @@ getroom(spin, len, align)
 
 /*
  * Make a copy of a string into memory allocated with getroom().
+ * Returns NULL when out of memory.
  */
     static char_u *
 getroom_save(spin, s)
@@ -7416,6 +7434,7 @@ free_blocks(bl)
 
 /*
  * Allocate the root of a word tree.
+ * Returns NULL when out of memory.
  */
     static wordnode_T *
 wordtree_alloc(spin)
@@ -7700,6 +7719,7 @@ spell_check_msm()
 /*
  * Get a wordnode_T, either from the list of previously freed nodes or
  * allocate a new one.
+ * Returns NULL when out of memory.
  */
     static wordnode_T *
 get_wordnode(spin)
@@ -7717,7 +7737,8 @@ get_wordnode(spin)
 	--spin->si_free_count;
     }
 #ifdef SPELL_PRINTTREE
-    n->wn_nr = ++spin->si_wordnode_nr;
+    if (n != NULL)
+	n->wn_nr = ++spin->si_wordnode_nr;
 #endif
     return n;
 }
