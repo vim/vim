@@ -1637,8 +1637,16 @@ msg_prt_line(s, list)
 	else if (has_mbyte && (l = (*mb_ptr2len)(s)) > 1)
 	{
 	    col += (*mb_ptr2cells)(s);
-	    mch_memmove(buf, s, (size_t)l);
-	    buf[l] = NUL;
+	    if (lcs_nbsp != NUL && list && mb_ptr2char(s) == 160)
+	    {
+		mb_char2bytes(lcs_nbsp, buf);
+		buf[(*mb_ptr2len)(buf)] = NUL;
+	    }
+	    else
+	    {
+		mch_memmove(buf, s, (size_t)l);
+		buf[l] = NUL;
+	    }
 	    msg_puts(buf);
 	    s += l;
 	    continue;
@@ -1663,6 +1671,11 @@ msg_prt_line(s, list)
 		    c_extra = lcs_tab2;
 		    attr = hl_attr(HLF_8);
 		}
+	    }
+	    else if (c == 160 && list && lcs_nbsp != NUL)
+	    {
+		c = lcs_nbsp;
+		attr = hl_attr(HLF_8);
 	    }
 	    else if (c == NUL && list && lcs_eol != NUL)
 	    {
