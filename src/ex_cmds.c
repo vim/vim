@@ -5412,7 +5412,7 @@ read_viminfo_sub_string(virp, force)
     vir_T	*virp;
     int		force;
 {
-    if (old_sub != NULL && force)
+    if (force)
 	vim_free(old_sub);
     if (force || old_sub == NULL)
 	old_sub = viminfo_readstring(virp, 1, TRUE);

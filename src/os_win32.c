@@ -1886,8 +1886,7 @@ SaveConsoleBuffer(
 	cb->BufferSize.X = cb->Info.dwSize.X;
 	cb->BufferSize.Y = cb->Info.dwSize.Y;
 	NumCells = cb->BufferSize.X * cb->BufferSize.Y;
-	if (cb->Buffer != NULL)
-	    vim_free(cb->Buffer);
+	vim_free(cb->Buffer);
 	cb->Buffer = (PCHAR_INFO)alloc(NumCells * sizeof(CHAR_INFO));
 	if (cb->Buffer == NULL)
 	    return FALSE;

@@ -5106,9 +5106,7 @@ eval7(arg, rettv, evaluate, want_string)
 	    else
 		ret = OK;
 	}
-
-	if (alias != NULL)
-	    vim_free(alias);
+	vim_free(alias);
     }
 
     *arg = skipwhite(*arg);
@@ -19807,7 +19805,7 @@ set_var(name, tv, copy)
 	    EMSG2(_("E704: Funcref variable name must start with a capital: %s"), name);
 	    return;
 	}
-	/* Don't allow hiding a function.  When "v" is not NULL we migth be
+	/* Don't allow hiding a function.  When "v" is not NULL we might be
 	 * assigning another function to the same var, the type is checked
 	 * below. */
 	if (v == NULL && function_exists(name))
