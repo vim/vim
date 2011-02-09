@@ -283,7 +283,7 @@ static struct signalinfo
 #ifdef SIGTERM
     {SIGTERM,	    "TERM",	TRUE},
 #endif
-#ifdef SIGVTALRM
+#if defined(SIGVTALRM) && !defined(FEAT_RUBY)
     {SIGVTALRM,	    "VTALRM",	TRUE},
 #endif
 #if defined(SIGPROF) && !defined(FEAT_MZSCHEME) && !defined(WE_ARE_PROFILING)
@@ -1107,7 +1107,7 @@ deathtrap SIGDEFARG(sigarg)
  * On Linux, signal is not always handled immediately either.
  * See https://bugs.launchpad.net/bugs/291373
  *
- * volatile because it is used in in signal handler sigcont_handler().
+ * volatile because it is used in signal handler sigcont_handler().
  */
 static volatile int sigcont_received;
 static RETSIGTYPE sigcont_handler __ARGS(SIGPROTOARG);
