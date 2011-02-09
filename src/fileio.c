@@ -7459,7 +7459,10 @@ vim_tempname(extra_char)
 
     STRCPY(itmp, "");
     if (GetTempPath(_MAX_PATH, szTempFile) == 0)
-	szTempFile[0] = NUL;	/* GetTempPath() failed, use current dir */
+    {
+	szTempFile[0] = '.';	/* GetTempPath() failed, use current dir */
+	szTempFile[1] = NUL;
+    }
     strcpy(buf4, "VIM");
     buf4[2] = extra_char;   /* make it "VIa", "VIb", etc. */
     if (GetTempFileName(szTempFile, buf4, 0, itmp) == 0)
