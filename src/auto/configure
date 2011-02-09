@@ -9886,9 +9886,9 @@ rm -f core conftest.err conftest.$ac_objext \
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: empty: automatic terminal library selection" >&5
 $as_echo "empty: automatic terminal library selection" >&6; }
-              case "`uname -s 2>/dev/null`" in
-	OSF1|SCO_SV)	tlibs="ncurses curses termlib termcap";;
-	*)	tlibs="ncurses termlib termcap curses";;
+                case "`uname -s 2>/dev/null`" in
+	OSF1|SCO_SV)	tlibs="tinfo ncurses curses termlib termcap";;
+	*)	tlibs="tinfo ncurses termlib termcap curses";;
   esac
   for libname in $tlibs; do
     as_ac_Lib=`$as_echo "ac_cv_lib_${libname}''_tgetent" | $as_tr_sh`

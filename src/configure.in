@@ -2618,13 +2618,14 @@ else
   AC_MSG_RESULT([empty: automatic terminal library selection])
   dnl  On HP-UX 10.10 termcap or termlib should be used instead of
   dnl  curses, because curses is much slower.
-  dnl  Newer versions of ncurses are preferred over anything.
+  dnl  Newer versions of ncurses are preferred over anything, except
+  dnl  when tinfo has been split off, it conains all we need.
   dnl  Older versions of ncurses have bugs, get a new one!
   dnl  Digital Unix (OSF1) should use curses (Ronald Schild).
   dnl  On SCO Openserver should prefer termlib (Roger Cornelius).
   case "`uname -s 2>/dev/null`" in
-	OSF1|SCO_SV)	tlibs="ncurses curses termlib termcap";;
-	*)	tlibs="ncurses termlib termcap curses";;
+	OSF1|SCO_SV)	tlibs="tinfo ncurses curses termlib termcap";;
+	*)	tlibs="tinfo ncurses termlib termcap curses";;
   esac
   for libname in $tlibs; do
     AC_CHECK_LIB(${libname}, tgetent,,)
