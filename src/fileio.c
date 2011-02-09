@@ -7483,8 +7483,11 @@ vim_tempname(extra_char)
 # else /* WIN3264 */
 
 #  ifdef USE_TMPNAM
+    char_u	*p;
+
     /* tmpnam() will make its own name */
-    if (*tmpnam((char *)itmp) == NUL)
+    p = tmpnam((char *)itmp);
+    if (p == NULL || *p == NUL)
 	return NULL;
 #  else
     char_u	*p;
