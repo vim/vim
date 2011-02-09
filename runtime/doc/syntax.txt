@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2010 Dec 08
+*syntax.txt*	For Vim version 7.3.  Last change: 2011 Jan 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3267,11 +3267,12 @@ Whether or not they are actually concealed depends on the setting on the
 in this way when they have their own highlighting via "matchgroup"
 
 cchar							*:syn-cchar*
-
+							*E844*
 The "cchar" argument defines the character shown in place of the item
 when it is concealed (setting "cchar" only makes sense when the conceal
 argument is given.) If "cchar" is not set then the default conceal
-character defined in the 'listchars' option is used. Example: >
+character defined in the 'listchars' option is used.  The character cannot be
+a control character such as Tab.  Example: >
    :syntax match Entity "&amp;" conceal cchar=&
 See |hl-Conceal| for highlighting.
 

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2010 Dec 11
+*options.txt*	For Vim version 7.3.  Last change: 2011 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -361,6 +361,7 @@ Setting the filetype
 			settings and syntax files to be loaded.
 			{not in Vi}
 
+				*option-window* *optwin*
 :bro[wse] se[t]			*:set-browse* *:browse-set* *:opt* *:options*
 :opt[ions]		Open a window for viewing and setting all options.
 			Options are grouped by function.
@@ -4306,6 +4307,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"echo &key".  This is to avoid showing it to someone who shouldn't
 	know.  It also means you cannot see it yourself once you have set it,
 	be careful not to make a typing error!
+	You can use "&key" in an expression to detect whether encryption is
+	enabled.  When 'key' is set it returns "*****" (five stars).
 
 					*'keymap'* *'kmp'* *E544*
 'keymap' 'kmp'		string	(default "")

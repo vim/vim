@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.3.  Last change: 2010 Jul 26
+*mbyte.txt*     For Vim version 7.3.  Last change: 2011 Feb 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -280,7 +280,7 @@ Note that all encodings must use ASCII for the characters up to 128 (except
 when compiled for EBCDIC).
 
 Supported 'encoding' values are:			*encoding-values*
-1   latin1	8-bit characters (ISO 8859-1)
+1   latin1	8-bit characters (ISO 8859-1, also used for cp1252)
 1   iso-8859-n	ISO_8859 variant (n = 2 to 15)
 1   koi8-r	Russian
 1   koi8-u	Ukrainian
@@ -336,7 +336,11 @@ For MS-Windows "cp{number}" means using codepage {number}.
 Examples: >
 		:set encoding=8bit-cp1252
 		:set encoding=2byte-cp932
-<
+
+The MS-Windows codepage 1252 is very similar to latin1.  For practical reasons
+the same encoding is used and it's called latin1.  'isprint' can be used to
+display the characters 0x80 - 0xA0 or not.
+
 Several aliases can be used, they are translated to one of the names above.
 An incomplete list:
 

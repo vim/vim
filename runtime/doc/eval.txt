@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2010 Dec 01
+*eval.txt*	For Vim version 7.3.  Last change: 2011 Feb 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1542,8 +1542,9 @@ v:progname	Contains the name (with path removed) with which Vim was
 		Read-only.
 
 					*v:register* *register-variable*
-v:register	The name of the register supplied to the last normal mode
-		command.  Empty if none were supplied. |getreg()| |setreg()|
+v:register	The name of the register in effect for the current normal mode
+		command.  If none is supplied it is the default register.
+		Also see |getreg()| and |setreg()|
 
 					*v:scrollstart* *scrollstart-variable*
 v:scrollstart	String describing the script or function that caused the
@@ -1920,7 +1921,7 @@ spellsuggest( {word} [, {max} [, {capital}]])
 				List	spelling suggestions
 split( {expr} [, {pat} [, {keepempty}]])
 				List	make |List| from {pat} separated {expr}
-sqrt( {expr}			Float	squar root of {expr}
+sqrt( {expr})			Float	square root of {expr}
 str2float( {expr})		Float	convert String to Float
 str2nr( {expr} [, {base}])	Number	convert String to Number
 strchars( {expr})		Number	character length of the String {expr}
@@ -1959,7 +1960,7 @@ tolower( {expr})		String	the String {expr} switched to lowercase
 toupper( {expr})		String	the String {expr} switched to uppercase
 tr( {src}, {fromstr}, {tostr})	String	translate chars of {src} in {fromstr}
 					to chars in {tostr}
-trunc( {expr}			Float	truncate Float {expr}
+trunc( {expr})			Float	truncate Float {expr}
 type( {name})			Number	type of variable {name}
 undofile( {name})		String	undo file name for {name}
 undotree()			List	undo file tree
@@ -6267,7 +6268,8 @@ vreplace		Compiled with |gR| and |gr| commands.
 wildignore		Compiled with 'wildignore' option.
 wildmenu		Compiled with 'wildmenu' option.
 win16			Win16 version of Vim (MS-Windows 3.1).
-win32			Win32 version of Vim (MS-Windows 95/98/ME/NT/2000/XP).
+win32			Win32 version of Vim (MS-Windows 95 and later, 32 or
+			64 bits)
 win32unix		Win32 version of Vim, using Unix files (Cygwin)
 win64			Win64 version of Vim (MS-Windows 64 bit).
 win95			Win32 version for MS-Windows 95/98/ME.

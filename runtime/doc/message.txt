@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 7.3.  Last change: 2010 Sep 14
+*message.txt*   For Vim version 7.3.  Last change: 2011 Jan 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -481,8 +481,10 @@ Also see |msdos-limitations|.
 							*E339*  >
   Pattern too long
 
-This only happens on systems with 16 bit ints: The compiled regexp pattern is
+This happens on systems with 16 bit ints: The compiled regexp pattern is
 longer than about 65000 characters.  Try using a shorter pattern.
+It also happens when the offset of a rule doesn't fit in the space available.
+Try simplifying the pattern.
 
 							*E45*  >
   'readonly' option is set (add ! to override)

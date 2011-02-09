@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.3.  Last change: 2010 Dec 08
+*spell.txt*	For Vim version 7.3.  Last change: 2011 Feb 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -522,7 +522,7 @@ then Vim will try to guess.
 			Up to eight regions can be combined. *E754* *E755*
 			The REP and SAL items of the first .aff file where
 			they appear are used. |spell-REP| |spell-SAL|
-
+								*E845*
 			This command uses a lot of memory, required to find
 			the optimal word tree (Polish, Italian and Hungarian
 			require several hundred Mbyte).  The final result will

@@ -6,7 +6,7 @@
 #  FIRST AUTHOR  DindinX         <David.Odin@bigfoot.com>     2000.
 # SECOND AUTHOR  Adrien Beau     <version.francaise@free.fr>  2002, 2003.
 #  THIRD AUTHOR  David Blanchet  <david.blanchet@free.fr>     2006, 2008.
-# FOURTH AUTHOR  Dominique Pellé <dominique.pelle@gmail.com>  2008, 2010.
+# FOURTH AUTHOR  Dominique Pellé <dominique.pelle@gmail.com>  2008, 2011.
 #
 # Latest translation available at:
 #   http://dominique.pelle.free.fr/vim-fr.php
@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Français)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-23 21:37+0200\n"
-"PO-Revision-Date: 2010-10-23 21:41+0200\n"
+"POT-Creation-Date: 2011-01-26 22:14+0100\n"
+"PO-Revision-Date: 2011-10-27 19:41+0200\n"
 "Last-Translator: Dominique Pellé <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -351,6 +351,12 @@ msgstr " Complètement local de mot-clé (^N/^P)"
 #      affichée.
 msgid "Hit end of paragraph"
 msgstr "Fin du paragraphe"
+
+msgid "E839: Completion function changed window"
+msgstr "E839: La fonction de complètement a changé la fenêtre"
+
+msgid "E840: Completion function deleted text"
+msgstr "E840: La fonction de complètement a effacé du texte"
 
 msgid "'dictionary' option is empty"
 msgstr "L'option 'dictionary' est vide"
@@ -1461,6 +1467,9 @@ msgstr "E182: Nom de commande invalide"
 msgid "E183: User defined commands must start with an uppercase letter"
 msgstr "E183: Les commandes utilisateur doivent commencer par une majuscule"
 
+msgid "E841: Reserved name, cannot be used for user defined command"
+msgstr "E841: Nom réservé, ne peux pas être utilisé pour une commande utilisateur"
+
 #, c-format
 msgid "E184: No such user-defined command: %s"
 msgstr "E184: Aucune commande %s définie par l'utilisateur"
@@ -1578,6 +1587,9 @@ msgstr "E497: Aucune correspondance d'autocommande à substituer à \"<amatch>\""
 
 msgid "E498: no :source file name to substitute for \"<sfile>\""
 msgstr "E498: Aucun nom de fichier :source à substituer à \"<sfile>\""
+
+msgid "E842: no line number to use for \"<slnum>\""
+msgstr "E842: aucun numéro de ligne à utiliser pour \"<slnum>\""
 
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
@@ -2699,7 +2711,7 @@ msgid ""
 "       g: Find this definition\n"
 "       i: Find files #including this file\n"
 "       s: Find this C symbol\n"
-"       t: Find assignments to\n"
+"       t: Find this text string\n"
 msgstr ""
 "\n"
 "       c: Trouver les fonctions appelant cette fonction\n"
@@ -2709,7 +2721,7 @@ msgstr ""
 "       g: Trouver cette définition\n"
 "       i: Trouver les fichiers qui #incluent ce fichier\n"
 "       s: Trouver ce symbole C\n"
-"       t: Trouver les affectations à\n"
+"       t: Trouver cette chaîne\n"
 
 #, c-format
 msgid "E625: cannot open cscope database: %s"
@@ -2824,8 +2836,7 @@ msgid "not allowed in the Vim sandbox"
 msgstr "non autorisé dans le bac à sable"
 
 msgid "E836: This Vim cannot execute :python after using :py3"
-msgstr ""
-"E836: Vim ne peut pas exécuter :python après avoir utilisé :py3"
+msgstr "E836: Vim ne peut pas exécuter :python après avoir utilisé :py3"
 
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
@@ -2851,8 +2862,7 @@ msgid "<buffer object (deleted) at %p>"
 msgstr "<objet tampon (effacé) à %p>"
 
 msgid "E837: This Vim cannot execute :py3 after using :python"
-msgstr ""
-"E837: Vim ne peut pas exécuter :py3 après avoir utilisé :python"
+msgstr "E837: Vim ne peut pas exécuter :py3 après avoir utilisé :python"
 
 msgid "E265: $_ must be an instance of String"
 msgstr "E265: $_ doit être une instance de chaîne (String)"
@@ -3609,6 +3619,9 @@ msgstr "E298: Bloc n°1 non récupéré ?"
 
 msgid "E298: Didn't get block nr 2?"
 msgstr "E298: Bloc n°2 non récupéré ?"
+
+msgid "E843: Error while updating swap file crypt"
+msgstr "E843: Erreur lors de la mise à jour du fichier d'échange crypté"
 
 #. could not (re)open the swap file, what can we do????
 msgid "E301: Oops, lost the swap file!!!"
@@ -5205,6 +5218,10 @@ msgid "E756: Spell checking is not enabled"
 msgstr "E756: La vérification orthographique n'est pas activée"
 
 #, c-format
+msgid "Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""
+msgstr "Alerte : Liste de mots \"%s_%s.spl\" ou \"%s_ascii.spl\" introuvable"
+
+#, c-format
 msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
 msgstr "Alerte : Liste de mots \"%s.%s.spl\" ou \"%s.ascii.spl\" introuvable"
 
@@ -5615,6 +5632,9 @@ msgstr " coupures de ligne"
 msgid "E395: contains argument not accepted here"
 msgstr "E395: L'argument « contains » n'est pas accepté ici"
 
+msgid "E844: invalid cchar value"
+msgstr "E844: valeur de cchar invalide"
+
 msgid "E393: group[t]here not accepted here"
 msgstr "E393: L'argument « group[t]here » n'est pas accepté ici"
 
@@ -6000,8 +6020,8 @@ msgid "Nothing to undo"
 msgstr "Rien à annuler"
 
 # DB - Les deux premières colonnes sont alignées à droite.
-msgid "number changes  time            saved"
-msgstr "numéro  modif.  instant         enregistré"
+msgid "number changes  when               saved"
+msgstr "numéro modif.   instant            enregistré"
 
 #, c-format
 msgid "%ld seconds ago"

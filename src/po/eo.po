@@ -14,7 +14,7 @@
 #   Komputada leksikono: http://bertilow.com/div/komputada_leksikono/
 #
 # Lasta versio:
-#   http://svn.ikso.net/programtradukoj/vim/vim7/src/po/eo.po
+#   http://dominique.pelle.free.fr/vim-eo.php
 #
 # Ĉiu komento estas bonvenata...
 # Every remark is welcome...
@@ -23,8 +23,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Esperanto)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-23 21:37+0200\n"
-"PO-Revision-Date: 2010-10-23 21:42+0200\n"
+"POT-Creation-Date: 2011-01-26 22:14+0100\n"
+"PO-Revision-Date: 2011-01-26 22:23+0200\n"
 "Last-Translator: Dominique PELLÉ <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -312,6 +312,12 @@ msgstr " Kompletigo loka de ŝlosilvorto (^N/^P)"
 
 msgid "Hit end of paragraph"
 msgstr "Atingis finon de alineo"
+
+msgid "E839: Completion function changed window"
+msgstr "E839: Kompletiga funkcio ŝanĝis la fenestron"
+
+msgid "E840: Completion function deleted text"
+msgstr "E840: Kompletiga funkcio forviŝis tekston"
 
 msgid "'dictionary' option is empty"
 msgstr "La opcio 'dictionary' estas malplena"
@@ -1274,6 +1280,9 @@ msgstr "E182: Nevalida komanda nomo"
 msgid "E183: User defined commands must start with an uppercase letter"
 msgstr "E183: Komandoj difinataj de uzanto devas eki per majusklo"
 
+msgid "E841: Reserved name, cannot be used for user defined command"
+msgstr "E841: Rezervita nomo, neuzebla por komando difinita de uzanto"
+
 #, c-format
 msgid "E184: No such user-defined command: %s"
 msgstr "E184: Neniu komando-difinita-de-uzanto kiel: %s"
@@ -1380,29 +1389,24 @@ msgstr "E809: #< ne haveblas sen la eblo +eval"
 msgid "E194: No alternate file name to substitute for '#'"
 msgstr "E194: Neniu alterna dosiernomo por anstataŭigi al '#'"
 
-# DP: mi ne certas, ĉu <afile> tradukeblas
-# AM: laŭ mi ne
 msgid "E495: no autocommand file name to substitute for \"<afile>\""
 msgstr "E495: neniu dosiernomo de aŭtokomando por anstataŭigi al \"<afile>\""
 
-# DP: mi ne certas, ĉu <abuf> tradukeblas
-# AM: laŭ mi ne
 msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
 msgstr ""
 "E496: neniu numero de bufro de aŭtokomando por anstataŭigi al \"<abuf>\""
 
-# DP: mi ne certas, ĉu <amatch> tradukeblas
-# AM: laŭ mi ne
 # DP: ĉu match estas verbo aŭ nomo en la angla version?
 # AM: ĉi tie, nomo, ŝajnas al mi
 msgid "E497: no autocommand match name to substitute for \"<amatch>\""
 msgstr ""
 "E497: neniu nomo de kongruo de aŭtokomando por anstataŭigi al \"<amatch>\""
 
-# DP: mi ne certas, ĉu <sfile> tradukeblas
-# AM: laŭ mi ne
 msgid "E498: no :source file name to substitute for \"<sfile>\""
 msgstr "E498: neniu dosiernomo \":source\" por anstataŭigi al \"<sfile>\""
+
+msgid "E842: no line number to use for \"<slnum>\""
+msgstr "E842: neniu uzebla numero de linio por \"<slnum>\""
 
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
@@ -2482,7 +2486,7 @@ msgid ""
 "       g: Find this definition\n"
 "       i: Find files #including this file\n"
 "       s: Find this C symbol\n"
-"       t: Find assignments to\n"
+"       t: Find this text string\n"
 msgstr ""
 "\n"
 "       c: Trovi funkciojn, kiuj alvokas tiun funkcion\n"
@@ -2492,7 +2496,7 @@ msgstr ""
 "       g: Trovi tiun difinon\n"
 "       i: Trovi dosierojn, kiuj inkluzivas (#include) tiun dosieron\n"
 "       s: Trovi tiun C-simbolon\n"
-"       t: Trovi atribuojn al\n"
+"       t: Trovi tiun ĉenon\n"
 
 #, c-format
 msgid "E625: cannot open cscope database: %s"
@@ -2756,7 +2760,7 @@ msgid "Sniff: Error during write. Disconnected"
 msgstr "Sniff: Eraro dum skribo. Malkonektita"
 
 msgid "invalid buffer number"
-msgstr "nevalida nombro de bufroj"
+msgstr "nevalida numero de bufro"
 
 msgid "not implemented yet"
 msgstr "ne jam realigita"
@@ -3385,6 +3389,9 @@ msgstr "E298: Ĉu ne akiris blokon n-ro 1?"
 
 msgid "E298: Didn't get block nr 2?"
 msgstr "E298: Ĉu ne akiris blokon n-ro 2?"
+
+msgid "E843: Error while updating swap file crypt"
+msgstr "E843: Eraro dum ĝisdatigo de ĉifrada permutodosiero .swp"
 
 #. could not (re)open the swap file, what can we do????
 msgid "E301: Oops, lost the swap file!!!"
@@ -4894,7 +4901,7 @@ msgid "--- Included files "
 msgstr "--- Inkluzivitaj dosieroj "
 
 msgid "not found "
-msgstr "netrovita "
+msgstr "netrovitaj "
 
 msgid "in path ---\n"
 msgstr "en serĉvojo ---\n"
@@ -4966,6 +4973,10 @@ msgstr "Densigas arbon de vortoj..."
 
 msgid "E756: Spell checking is not enabled"
 msgstr "E756: Literumilo ne estas ŝaltita"
+
+#, c-format
+msgid "Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""
+msgstr "Averto: Ne eblas trovi vortliston \"%s_%s.spl\" aŭ \"%s_ascii.spl\""
 
 #, c-format
 msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
@@ -5368,6 +5379,9 @@ msgstr " liniavancoj"
 msgid "E395: contains argument not accepted here"
 msgstr "E395: La argumento \"contains\" ne akcepteblas tie"
 
+msgid "E844: invalid cchar value"
+msgstr "E844: nevalida valoro de cchar"
+
 msgid "E393: group[t]here not accepted here"
 msgstr "E393: La argumento \"group[t]here\" ne akcepteblas tie"
 
@@ -5744,8 +5758,8 @@ msgstr "malantaŭ"
 msgid "Nothing to undo"
 msgstr "Nenio por malfari"
 
-msgid "number changes  time            saved"
-msgstr "numero ŝanĝoj   tempo           konservita"
+msgid "number changes  when               saved"
+msgstr "numero ŝanĝoj   tempo              konservita"
 
 #, c-format
 msgid "%ld seconds ago"

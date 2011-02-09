@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2011 Jan 07
+*todo.txt*      For Vim version 7.3.  Last change: 2011 Feb 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,18 +30,18 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-'cursorline' is displayed too short when there are concealed characters and
-'list' is set, 'listchars' at default value. (Dennis Preiser, 2010 Aug 15)
-
-When running external command with ":make", cursor line is redrawn on top of
-external output.
-
-Conceal: using Tab for cchar causes problems.  Should reject it. (ZyX, 2010
-Aug 25)
+Still crash with 'statusline'. (Christian Brabandt, 2011 Feb 2)
+Can't reproduce it.
 
 Problems with building after 7.3.050, -as-needed does not work for gcc 4.4.1?
 (Charles Campbell, 2010 Nov 7)  Or is the problem that we should use -ltinfo,
 because nothing is used from ncurses?
+
+Patch for 'changedtick' in getbufvar(). (Christian Brabandt, 2011 Jan 16)
+
+Patch to avoid exiting for VTALRM. (Dominique Pelle, 2011 Jan 16)
+
+Documentation patches. (Javier Rojas, 2011 Feb 2)
 
 Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
 only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
@@ -75,6 +75,9 @@ Needs tests.
 string() can't parse back "inf" and "nan".  Fix documentation or fix code?
 (ZyX, 2010 Aug 23)
 
+Patch to fix wront eol handling when writing a file. (Kevin Goodsell, 2011 Jan
+12)
+
 maparg() does not show the <script> flag.  When temporarily changing a
 mapping, how to restore the script ID?
 
@@ -84,8 +87,28 @@ Update Nov 19.  James Vega: still not right.  Christian: it's difficult.
 Patch to add up to 99 match groups. (Christian Brabandt, 2010 Dec 22)
 Also add named groups: \%{name}(re)  and \%{name}g
 
+Patch to use pattern from last :s when there is no last search pattern.
+(Christian Brabandt, 2011 Jan 24)  Would this break anything?
+
+Bug in try/catch: return with invalid compare throws error that isn't caught.
+(ZyX, 2011 Jan 26)
+
 Highlighting stops working after changing it many times.  Script to reproduce
 it: Pablo Contreras, 2010 Oct 12  Windows XP and 7.  Font is never freed?
+
+Patch to fix quoting in MingW makefile. (Weasley, 2011 Jan 10)
+
+After patch 7.3.097 still get E15. (Yukihiro Nakadaira, 2011 Jan 18)
+Also for another example (ZyX, 2011 Jan 24)
+
+Build problem with small features on Mac OS X 10.6. (Rainer, 2011 Jan 24)
+
+"0g@$" puts '] on last byte of multi-byte. (ZyX, 2011 Jan 22)
+
+Two patches for xxd. (Florian Zumbiehl, 2011 Jan 11)
+Two updates for second one Jan 12.
+
+Problem with "syn sync gouphere". (Gustavo Niemeyer, 2011 Jan 27)
 
 Loading autoload script even when usage is inside "if 0". (Christian Brabandt,
 2010 Dec 18)
@@ -97,10 +120,34 @@ In the sandbox it's not allowed to do many things, but it's possible to change
 or set variables.  Add a way to prevent variables from being changed in the
 sandbox?  E.g.: ":protect g:restore_settings".
 
+Patch for configure related to Ruby on Mac OS X. (Bjorn Winckler, 2011 Jan 14)
+
+Patch to recognize more files as log files. (Mathieu Parent, 2011 Jan 14)
+
+Patch to set v:register on startup. (Ingo Karkat, 2011 Jan 16)
+
+Patch to set v:register default depending on "unnamed" in 'clipboard'. (Ingo
+Karkat, 2011 Jan 16)
+
+Patch for:
+    InsertCharPre   - user typed character Insert mode, before inserting the
+		      char.  Pattern is matched with text before the cursor.
+		      Set v:char to the character, can be changed.
+		      (not triggered when 'paste' is set).
+(Jakson A. Aquino, 2011 Jan 29)
+
+Patch for "No errors" showing up after QuickfixCmdPost. (Mike Lundy, 2011 Feb
+3)
+
+Patch for cmdline completion of ":lang".  (Dominique Pelle, 2011 Feb 5)
+
 GTK: drawing a double-width combining character over single-width characters
 doesn't look right. (Dominique Pelle, 2010 Aug 8)
 
 GTK: tear-off menu does not work. (Kurt Sonnenmoser, 2010 Oct 25)
+
+Patch for adding 's' option to 'cino', C++ namespace indenting. (Konstantin
+Lepa, 2011 Jan 18)
 
 Version of netbeans.c for use with MacVim. (Kazuki Sakamoto, 2010 Nov 18)
 
@@ -115,6 +162,22 @@ Searching mixed with Visual mode doesn't redraw properly. (James Vega, 2010 Nov
 
 Patch to support ":!start /b cmd". (Xaizek, 2010 Dec 22)
 
+Patch to build with GTK on Mac. (Ben Schmidt, 2011 Jan 18)
+Use another name instead of FEAT_GUI_ELSEWHERE.
+
+Patch for xxd makefile to avoid generating .dSYM files. (Ben Schmidt, 2011 Jan
+18)
+
+Patch to show sign for folded text. (Christian Brabandt, 2011 Jan 12)
+Method to reproduce it: Jan 16.
+
+Patch to improve optwin.vim. (ZyX, 2011 Jan 29)
+
+New esperanto spell file can't be processed. (Dominique Pelle, 2011 Jan 30)
+- move compflags to separate growarray?
+- instead of a regexp use a hashtable.  Expand '?', '*", '+'.  What would be
+  the maximum repeat for * and +?
+
 Copy/paste between Vim and Google chrome doesn't work well for multi-byte
 characters. (Ben Haskell, 2010 Sep 17)
 When putting text in the cut buffer (when exiting) and conversion doesn't work
@@ -125,6 +188,13 @@ clear why it doesn't work.
 Editing a file with a ^M with 'ff' set to "mac", opening a help file, then the
 ^M is displayed as ^J sometimes.  Getting 'ff' value from wrong window/buffer?
 
+When Vim is put in the background (SIGTSTP) and then gets a SIGHUP it doesn't
+exit.  It exists as soon as back in the foreground. (Stephen Liang, 2011 Jan
+9)  Caused by vim_handle_signal(SIGNAL_BLOCK); in ui.c.
+
+g` not working correctly when using :edit.  It works OK when editing a file on
+the command line. (Ingo Karkat, 2011 Jan 25)
+
 Since patch 7.2.46 Yankring plugin has become very slow, eventually make Vim
 crash? (Raiwil, 2010 Nov 17)
 
@@ -132,6 +202,7 @@ Patch to disallow fork() when __APPLE__ is defined. (Hisashi T Fujinaka, 2010
 Nov 25)
 
 GTK: Patch to fix menu popping down. (Hong Xu, 2010 Dec 4, Dec 5)
+Update 2011 Feb 3.
 
 Python: Adding line to buffer other than the current one doesn't work
 correctly. (Rozbujnik, 2010 Dec 19)
@@ -273,6 +344,9 @@ path.
 
 ":sort n" treats empty line as higher than zero. (Beeyawned, 2010 Oct 13)
 
+Test 51 fails when language set to German. (Marco, 2011 Jan 9)
+Dominique can't reproduc it.
+
 ":function f(x) keepjumps" creates a function where every command is executed
 like it has ":keepjumps" before it.
 
@@ -304,6 +378,8 @@ mode. (Israel Chauca, 2010 May 13, more in second msg)
 Break undo when CTRL-R = changes the text?  Or save more lines?
 
 Patch for static code analysis errors in riscOS. (Dominique Pelle, 2010 Dec 3)
+
+Better #if 0 syntax highlighting for C code. (Ben Schmidt, 2011 Jan 20)
 
 Change to C syntax folding to make it work much faster, but a bit less
 reliable. (Lech Lorens, 2009 Nov 9)  Enable with an option?
@@ -732,6 +808,8 @@ each choice does.  Similar to  ":help swap-exists-choices"
 
 try/catch not working for argument of return. (Matt Wozniski, 2008 Sep 15)
 
+try/catch not working when inside a for loop. (ZyX, 2011 Jan 25)
+
 Recognize and ignore BOM in error file. (Aleksey Baibarin)
 
 ":tab help" always opens a new tab, while ":help" re-uses an existing window.
@@ -1123,6 +1201,12 @@ only one buffer line displayed, causes display errors.
 Completing with 'wildmenu' and using <Up> and <Down> to move through directory
 tree stops unexpectedly when using ":cd " and entering a directory that
 doesn't contain other directories.
+
+Setting 'background' resets the Normal background color:
+   highlight Normal ctermbg=DarkGray
+   set background=dark
+This is undesired, 'background' is supposed to tell Vim what the background
+color is, not reset it.
 
 Linux distributions:
 - Suggest compiling xterm with --enable-tcap-query, so that nr of colors is
@@ -3419,10 +3503,6 @@ Autocommands:
 		    - Before/after ":cd" has been used (for changing the
 		      window title)
     ShutDown	    - when the system is about to shut down
-    InsertCharPre   - user typed character Insert mode, before inserting the
-		      char.  Pattern is matched with text before the cursor.
-		      Set v:char to the character, can be changed.
-		      (not triggered when 'paste' is set).
     InsertCharPost  - user typed a character in Insert mode, after inserting
 		      the char.
     BufModified	    - When a buffer becomes modified, or unmodified (for
@@ -4346,6 +4426,7 @@ Marks:
 Digraphs:
 7   Make "ga" show the digraph for a character, if it exists.
     Also the keymap?
+    Also show the code of the character after conversion to 'filenecoding'.
 -   Make it possible to enter "r<C-E>" and "r<C-Y>" (get character from line
     below/above).
 -   Use digraph table to tell Vim about the collating sequence of special

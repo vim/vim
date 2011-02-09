@@ -4226,6 +4226,8 @@ E840	insert.txt	/*E840*
 E841	map.txt	/*E841*
 E842	cmdline.txt	/*E842*
 E843	editing.txt	/*E843*
+E844	syntax.txt	/*E844*
+E845	spell.txt	/*E845*
 E85	options.txt	/*E85*
 E86	windows.txt	/*E86*
 E87	windows.txt	/*E87*
@@ -5226,6 +5228,7 @@ digraph	digraph.txt	/*digraph*
 digraph-arg	change.txt	/*digraph-arg*
 digraph-encoding	digraph.txt	/*digraph-encoding*
 digraph-table	digraph.txt	/*digraph-table*
+digraph-table-mbyte	digraph.txt	/*digraph-table-mbyte*
 digraph.txt	digraph.txt	/*digraph.txt*
 digraphs	digraph.txt	/*digraphs*
 digraphs-changed	version6.txt	/*digraphs-changed*
@@ -6970,9 +6973,11 @@ operator-variable	eval.txt	/*operator-variable*
 option-backslash	options.txt	/*option-backslash*
 option-list	quickref.txt	/*option-list*
 option-summary	options.txt	/*option-summary*
+option-window	options.txt	/*option-window*
 options	options.txt	/*options*
 options-changed	version5.txt	/*options-changed*
 options.txt	options.txt	/*options.txt*
+optwin	options.txt	/*optwin*
 oracle	ft_sql.txt	/*oracle*
 os2	os_os2.txt	/*os2*
 os2ansi	os_os2.txt	/*os2ansi*
@@ -8403,6 +8408,7 @@ write-fail	editing.txt	/*write-fail*
 write-filetype-plugin	usr_41.txt	/*write-filetype-plugin*
 write-library-script	usr_41.txt	/*write-library-script*
 write-local-help	usr_41.txt	/*write-local-help*
+write-permissions	editing.txt	/*write-permissions*
 write-plugin	usr_41.txt	/*write-plugin*
 write-plugin-quickload	usr_41.txt	/*write-plugin-quickload*
 write-quit	editing.txt	/*write-quit*

@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.3.  Last change: 2010 Nov 27
+*indent.txt*    For Vim version 7.3.  Last change: 2011 Jan 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -322,6 +322,7 @@ assume a 'shiftwidth' of 4.
 <
 	+N    Indent a continuation line (a line that spills onto the next) N
 	      additional characters.  (default 'shiftwidth').
+	      When the previous line ended in a backslash it's doubled.
 
 		cino=			  cino=+10 >
 		  a = b + 9 *		    a = b + 9 *

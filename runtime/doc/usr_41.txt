@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.3.  Last change: 2010 Nov 17
+*usr_41.txt*	For Vim version 7.3.  Last change: 2011 Feb 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -2097,7 +2097,7 @@ and that is not what a filetype plugin should do.
 When an option has a value that is a list of flags or items, consider using
 "+=" and "-=" to keep the existing value.  Be aware that the user may have
 changed an option value already.  First resetting to the default value and
-then changing it often a good idea.  Example: >
+then changing it is often a good idea.  Example: >
 
 	:setlocal formatoptions& formatoptions+=ro
 

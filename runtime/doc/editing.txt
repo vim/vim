@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.3.  Last change: 2010 Dec 08
+*editing.txt*   For Vim version 7.3.  Last change: 2011 Jan 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -983,6 +983,11 @@ explanation of when the copy is made and when the file is renamed.
 
 If the creation of a backup file fails, the write is not done.  If you want
 to write anyway add a '!' to the command.
+
+							*write-permissions*
+When writing a new file the permissions are read-write.  For unix the mask is
+0666 with additionally umask applied.  When writing a file that was read Vim
+will preserve the permissions, but clear the s-bit.
 
 							*write-readonly*
 When the 'cpoptions' option contains 'W', Vim will refuse to overwrite a
