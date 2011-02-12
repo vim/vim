@@ -857,7 +857,7 @@ EXTERN long	p_verbose;	/* 'verbose' */
 #ifdef IN_OPTION_C
 char_u	*p_vfile = (char_u *)""; /* used before options are initialized */
 #else
-EXTERN char_u	*p_vfile;	/* 'verbosefile' */
+extern char_u	*p_vfile;	/* 'verbosefile' */
 #endif
 EXTERN int	p_warn;		/* 'warn' */
 #ifdef FEAT_CMDL_COMPL
