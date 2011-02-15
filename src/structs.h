@@ -1564,6 +1564,9 @@ struct file_buffer
 
     /* end of buffer options */
 
+    linenr_T	b_no_eol_lnum;	/* non-zero lnum when last line of next binary
+				 * write should not have an end-of-line */
+
     int		b_start_eol;	/* last line had eol when it was read */
     int		b_start_ffc;	/* first char of 'ff' when edit started */
 #ifdef FEAT_MBYTE

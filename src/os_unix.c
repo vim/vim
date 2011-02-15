@@ -4245,7 +4245,7 @@ mch_call_shell(cmd, options)
 				 * should not have one. */
 				if (lnum != curbuf->b_op_end.lnum
 					|| !curbuf->b_p_bin
-					|| (lnum != write_no_eol_lnum
+					|| (lnum != curbuf->b_no_eol_lnum
 					    && (lnum !=
 						    curbuf->b_ml.ml_line_count
 						    || curbuf->b_p_eol)))
@@ -4588,10 +4588,10 @@ finished:
 		    {
 			append_ga_line(&ga);
 			/* remember that the NL was missing */
-			write_no_eol_lnum = curwin->w_cursor.lnum;
+			curbuf->b_no_eol_lnum = curwin->w_cursor.lnum;
 		    }
 		    else
-			write_no_eol_lnum = 0;
+			curbuf->b_no_eol_lnum = 0;
 		    ga_clear(&ga);
 		}
 
