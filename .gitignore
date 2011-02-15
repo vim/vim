@@ -5,14 +5,15 @@ src/xxd/xxd
 src/auto/if_perl.c
 src/tags
 
-# We do need src/auto/configure and src/auto/config.mk.
-src/auto/osdef.h
+# We do need src/auto/configure.
 src/auto/config.aap
 src/auto/config.cache
 src/auto/config.h
 src/auto/config.log
+src/auto/config.mk
 src/auto/config.status
 src/auto/configure.aap
+src/auto/osdef.h
 src/auto/link.log
 src/auto/link.sed
 src/auto/pathdef.c

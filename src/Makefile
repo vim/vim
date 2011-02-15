@@ -283,12 +283,13 @@ CC=
 
 ######################## auto/config.mk ######################## {{{1
 # At this position auto/config.mk is included. When starting from the
-# distribution it is almost empty. After running auto/configure it contains
-# settings that have been discovered for your system. Settings below this
-# include override settings in auto/config.mk!
+# toplevel Makefile it is almost empty. After running auto/configure it
+# contains settings that have been discovered for your system. Settings below
+# this include override settings in auto/config.mk!
 
-# Note: if auto/config.mk is lost somehow (e.g., because configure was
-# interrupted), create an empty auto/config.mk file and do "make config".
+# Note: If make fails because auto/config.mk does not exist (it is not
+# included in the repository), do:
+#    cp config.mk.dist auto/config.mk
 
 # (X) How to include auto/config.mk depends on the version of "make" you have,
 #     if the current choice doesn't work, try the other one.
