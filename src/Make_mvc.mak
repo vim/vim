@@ -1159,6 +1159,10 @@ $(OUTDIR)/glbl_ime.obj:	$(OUTDIR) glbl_ime.cpp  dimm.h $(INCL)
 E0_CFLAGS = $(CFLAGS:\=\\)
 E_CFLAGS = $(E0_CFLAGS:"=\")
 # ") stop the string
+# $LINKARGS2 may contain backslashes and double quotes, escape them both.
+E0_LINKARGS2 = $(LINKARGS2:\=\\)
+E_LINKARGS2 = $(E0_LINKARGS2:"=\")
+# ") stop the string
 
 $(PATHDEF_SRC): auto
 	@echo creating $(PATHDEF_SRC)
@@ -1167,7 +1171,7 @@ $(PATHDEF_SRC): auto
 	@echo char_u *default_vim_dir = (char_u *)"$(VIMRCLOC:\=\\)"; >> $(PATHDEF_SRC)
 	@echo char_u *default_vimruntime_dir = (char_u *)"$(VIMRUNTIMEDIR:\=\\)"; >> $(PATHDEF_SRC)
 	@echo char_u *all_cflags = (char_u *)"$(CC:\=\\) $(E_CFLAGS)"; >> $(PATHDEF_SRC)
-	@echo char_u *all_lflags = (char_u *)"$(link:\=\\) $(LINKARGS1:\=\\) $(LINKARGS2:\=\\)"; >> $(PATHDEF_SRC)
+	@echo char_u *all_lflags = (char_u *)"$(link:\=\\) $(LINKARGS1:\=\\) $(E_LINKARGS2)"; >> $(PATHDEF_SRC)
 	@echo char_u *compiled_user = (char_u *)"$(USERNAME)"; >> $(PATHDEF_SRC)
 	@echo char_u *compiled_sys = (char_u *)"$(USERDOMAIN)"; >> $(PATHDEF_SRC)
 
