@@ -22,8 +22,8 @@
  * Adaptations to support both python3.x and python2.x
  */
 
-// uncomment this if used with the debug version of python
-// #define Py_DEBUG
+/* uncomment this if used with the debug version of python */
+/* #define Py_DEBUG */
 
 #include "vim.h"
 
@@ -74,7 +74,7 @@ static void init_structs(void);
 #define PyString_Size(obj) PyUnicode_GET_SIZE(obj)
 #define PyString_FromString(repr) PyUnicode_FromString(repr)
 
-#if defined(DYNAMIC_PYTHON3)
+#if defined(DYNAMIC_PYTHON3) || defined(PROTO)
 
 # ifndef WIN3264
 #  include <dlfcn.h>
