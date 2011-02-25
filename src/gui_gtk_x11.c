@@ -3094,7 +3094,7 @@ gui_gtk_set_dnd_targets(void)
     gtk_drag_dest_set(gui.drawarea,
 		      GTK_DEST_DEFAULT_ALL,
 		      targets, n_targets,
-		      GDK_ACTION_COPY);
+		      GDK_ACTION_COPY | GDK_ACTION_MOVE);
 }
 
 /*
