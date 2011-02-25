@@ -250,6 +250,7 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 #ifdef FEAT_CRYPT
     char_u	*cryptkey = NULL;
     int		did_ask_for_key = FALSE;
+    int		crypt_method_used;
 #endif
 #ifdef FEAT_PERSISTENT_UNDO
     context_sha256_T sha_ctx;
@@ -2289,6 +2290,7 @@ failed:
 	save_file_ff(curbuf);		/* remember the current file format */
 
 #ifdef FEAT_CRYPT
+    crypt_method_used = use_crypt_method;
     if (cryptkey != NULL)
     {
 	crypt_pop_state();
@@ -2483,7 +2485,10 @@ failed:
 #ifdef FEAT_CRYPT
 	    if (cryptkey != NULL)
 	    {
-		STRCAT(IObuff, _("[crypted]"));
+		if (crypt_method_used == 1)
+		    STRCAT(IObuff, _("[blowfish]"));
+		else
+		    STRCAT(IObuff, _("[crypted]"));
 		c = TRUE;
 	    }
 #endif
@@ -3198,6 +3203,9 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 #ifdef FEAT_PERSISTENT_UNDO
     int		    write_undo_file = FALSE;
     context_sha256_T sha_ctx;
+#endif
+#ifdef FEAT_CRYPT
+    int		    crypt_method_used;
 #endif
 
     if (fname == NULL || *fname == NUL)	/* safety check */
@@ -4728,6 +4736,7 @@ restore_backup:
 	mch_set_acl(wfname, acl);
 #endif
 #ifdef FEAT_CRYPT
+    crypt_method_used = use_crypt_method;
     if (wb_flags & FIO_ENCRYPTED)
 	crypt_pop_state();
 #endif
@@ -4882,7 +4891,10 @@ restore_backup:
 #ifdef FEAT_CRYPT
 	if (wb_flags & FIO_ENCRYPTED)
 	{
-	    STRCAT(IObuff, _("[crypted]"));
+	    if (crypt_method_used == 1)
+		STRCAT(IObuff, _("[blowfish]"));
+	    else
+		STRCAT(IObuff, _("[crypted]"));
 	    c = TRUE;
 	}
 #endif
