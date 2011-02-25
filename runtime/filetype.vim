@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2010 Dec 17
+" Last Change:	2011 Feb 23
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1100,8 +1100,8 @@ au BufNewFile,BufRead *.mel			setf mel
 " Mercurial config (looks like generic config file)
 au BufNewFile,BufRead *.hgrc,*hgrc		setf cfg
 
-" Messages
-au BufNewFile,BufRead /var/log/messages,/var/log/messages.*[0-9]  setf messages
+" Messages (logs mostly)
+autocmd BufNewFile,BufRead */log/{auth,cron,daemon,debug,kern,lpr,mail,messages,news/news,syslog,user}{,.log,.err,.info,.warn,.crit,.notice}{,.*[0-9]*} setf messages
 
 " Metafont
 au BufNewFile,BufRead *.mf			setf mf

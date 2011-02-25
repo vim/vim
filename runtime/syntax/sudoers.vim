@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         sudoers(5) configuration files
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2007-08-02
+" Latest Revision:  2011-02-24
 
 if exists("b:current_syntax")
   finish
@@ -149,10 +149,86 @@ syn match   sudoersDefaultTypeGreaterThan contained '>' nextgroup=@sudoersUser s
 
 " TODO: could also deal with special characters here
 syn match   sudoersBooleanParameter contained '!' nextgroup=sudoersBooleanParameter skipwhite skipnl
-syn keyword sudoersBooleanParameter contained long_opt_prompt ignore_dot mail_always mail_badpass mail_no_user mail_no_perms tty_tickets lecture authenticate root_sudo log_host log_year shell_noargs set_home always_set_home path_info preserve_groups fqdn insults requiretty env_editor rootpw runaspw targetpw set_logname stay_setuid env_reset use_loginclass nextgroup=sudoersParameterListComma skipwhite skipnl
-syn keyword sudoersIntegerParameter contained passwd_tries loglinelen timestamp_timeout passwd_timeout umask nextgroup=sudoersIntegerParameterEquals skipwhite skipnl
-syn keyword sudoersStringParameter  contained mailsub badpass_message timestampdir timestampowner passprompt runas_default syslog_goodpri syslog_badpri editor logfile syslog mailerpath mailerflags mailto exempt_group verifypw listpw nextgroup=sudoersStringParameterEquals skipwhite skipnl
-syn keyword sudoersListParameter    contained env_check env_delete env_keep nextgroup=sudoersListParameterEquals skipwhite skipnl
+syn keyword sudoersBooleanParameter contained skipwhite skipnl
+                                  \ always_set_home
+                                  \ authenticate
+                                  \ closefrom_override
+                                  \ env_editor
+                                  \ env_reset
+                                  \ fqdn
+                                  \ ignore_dot
+                                  \ ignore_local_sudoers
+                                  \ insults
+                                  \ log_host
+                                  \ log_year
+                                  \ long_otp_prompt
+                                  \ mail_always
+                                  \ mail_badpass
+                                  \ mail_no_host
+                                  \ mail_no_perms
+                                  \ mail_no_user
+                                  \ noexec
+                                  \ path_info
+                                  \ passprompt_override
+                                  \ preserve_groups
+                                  \ requiretty
+                                  \ root_sudo
+                                  \ rootpw
+                                  \ runaspw
+                                  \ set_home
+                                  \ set_logname
+                                  \ setenv
+                                  \ shell_noargs
+                                  \ stay_setuid
+                                  \ targetpw
+                                  \ tty_tickets
+                                  \ visiblepw
+
+syn keyword sudoersIntegerParameter contained
+                                  \ nextgroup=sudoersIntegerParameterEquals
+                                  \ skipwhite skipnl
+                                  \ closefrom
+                                  \ passwd_tries
+                                  \ loglinelen
+                                  \ passwd_timeout
+                                  \ timestamp_timeout
+                                  \ umask
+
+syn keyword sudoersStringParameter  contained
+                                  \ nextgroup=sudoersStringParameterEquals
+                                  \ skipwhite skipnl
+                                  \ badpass_message
+                                  \ editor
+                                  \ mailsub
+                                  \ noexec_file
+                                  \ passprompt
+                                  \ runas_default
+                                  \ syslog_badpri
+                                  \ syslog_goodpri
+                                  \ sudoers_locale
+                                  \ timestampdir
+                                  \ timestampowner
+                                  \ askpass
+                                  \ env_file
+                                  \ exempt_group
+                                  \ lecture
+                                  \ lecture_file
+                                  \ listpw
+                                  \ logfile
+                                  \ mailerflags
+                                  \ mailerpath
+                                  \ mailfrom
+                                  \ mailto
+                                  \ secure_path
+                                  \ syslog
+                                  \ verifypw
+
+syn keyword sudoersListParameter    contained
+                                  \ nextgroup=sudoersListParameterEquals
+                                  \ skipwhite skipnl
+                                  \ env_check
+                                  \ env_delete
+                                  \ env_keep
 
 syn match   sudoersParameterListComma contained ',' nextgroup=@sudoersParameter skipwhite skipnl
 

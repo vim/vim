@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.3.  Last change: 2009 Nov 05
+*term.txt*      For Vim version 7.3.  Last change: 2011 Feb 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -665,6 +665,7 @@ When the X-server clipboard is available, the command server described in
 							*xterm-copy-paste*
 NOTE: In some (older) xterms, it's not possible to move the cursor past column
 95.  This is an xterm problem, not Vim's.  Get a newer xterm |color-xterm|.
+Now the limit is 223 columns.
 
 Copy/paste in xterm with (current mode NOT included in 'mouse'):
 1. Press left mouse button on first letter of text, move mouse pointer to last

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2011 Feb 09
+*todo.txt*      For Vim version 7.3.  Last change: 2011 Feb 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,24 +30,19 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Still crash with 'statusline'. (Christian Brabandt, 2011 Feb 2)
-Can't reproduce it.
+New r and rhelp syntax files. (Jakson Alves de Aquino, 2011 Feb 20)
 
-Problems with building after 7.3.050, -as-needed does not work for gcc 4.4.1?
-(Charles Campbell, 2010 Nov 7)  Or is the problem that we should use -ltinfo,
-because nothing is used from ncurses?
+In file message show "blowfish" instead of "crypted" when using blowfish.
 
-Patch for 'changedtick' in getbufvar(). (Christian Brabandt, 2011 Jan 16)
-
-Patch to avoid exiting for VTALRM. (Dominique Pelle, 2011 Jan 16)
-
-Documentation patches. (Javier Rojas, 2011 Feb 2)
+Patch to fix drag-n-drop in KDE. (Florian Degner, 2011 Feb 23)
 
 Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
 only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
 21, Ben Fritz, 2010 Sep 14)
 
 Bug in repeating Visual "u". (Lawrence Kesteloot, 2010 Dec 20)
+
+Crash with big .xpm file. (Yukihiro Nakadaira, 2011 Feb 18)
 
 Windows keys not set properly on Windows 7?  (cncyber, 2010 Aug 26)
 
@@ -56,6 +51,9 @@ call append(line, "INFO  ....12....18....24....30....36....42....48....54....60.
 
 Building the MingW version without clipboard but with multi-byte doesn't
 work. (Bill Lam, 2010 Sep 18)
+
+When using a Vim server, a # in the path causes an error message.
+(Jeff Lanzarotta, 2011 Feb 17)
 
 Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
@@ -75,9 +73,6 @@ Needs tests.
 string() can't parse back "inf" and "nan".  Fix documentation or fix code?
 (ZyX, 2010 Aug 23)
 
-Patch to fix wront eol handling when writing a file. (Kevin Goodsell, 2011 Jan
-12)
-
 maparg() does not show the <script> flag.  When temporarily changing a
 mapping, how to restore the script ID?
 
@@ -96,8 +91,6 @@ Bug in try/catch: return with invalid compare throws error that isn't caught.
 Highlighting stops working after changing it many times.  Script to reproduce
 it: Pablo Contreras, 2010 Oct 12  Windows XP and 7.  Font is never freed?
 
-Patch to fix quoting in MingW makefile. (Weasley, 2011 Jan 10)
-
 After patch 7.3.097 still get E15. (Yukihiro Nakadaira, 2011 Jan 18)
 Also for another example (ZyX, 2011 Jan 24)
 
@@ -113,8 +106,9 @@ Problem with "syn sync gouphere". (Gustavo Niemeyer, 2011 Jan 27)
 Loading autoload script even when usage is inside "if 0". (Christian Brabandt,
 2010 Dec 18)
 
-When 'cursorcolumn' is set locally to a window, ":new" opens a window with the
-same highlighting but 'cursorcolumn' is empty. (Tyru, 2010 Nov 15)
+When 'colorcolumn' is set locally to a window, ":new" opens a window with the
+same highlighting but 'colorcolumn' is empty. (Tyru, 2010 Nov 15)
+Patch by Christian Brabandt, 2011 Feb 13 (but move further down).
 
 In the sandbox it's not allowed to do many things, but it's possible to change
 or set variables.  Add a way to prevent variables from being changed in the
@@ -172,6 +166,8 @@ Patch to show sign for folded text. (Christian Brabandt, 2011 Jan 12)
 Method to reproduce it: Jan 16.
 
 Patch to improve optwin.vim. (ZyX, 2011 Jan 29)
+
+Patch for Python 3 support. (lilydjwg, 2011 Feb 24)
 
 New esperanto spell file can't be processed. (Dominique Pelle, 2011 Jan 30)
 - move compflags to separate growarray?
@@ -283,6 +279,8 @@ Patch to make more characters work in dialogs. (Yankwei Jia, 2010 Aug 4)
 
 Patch for VisVim, pass file name to VimOpenFile. (Jiri Sedlak, 2010 Nov 12)
 
+":com" changes the multi-byte text of :echo. (Dimitar Dimitrov, 2011 Feb 11)
+
 When 'lines' is 25 and 'scrolloff' is 12, "j" scrolls zero or two lines
 instead of one. (Constantin Pan, 2010 Sep 10)
 
@@ -368,6 +366,10 @@ Only with "vim -u NONE".
 
 Problem with editing file in binary mode. (Ingo Krabbe, 2009 Oct 8)
 
+With 'wildmode' set to "longest:full,full" and pressing Tab once the first
+entry in wildmenu is highlighted, that shouldn't happen. (Yuki Watanabe, 2011
+Feb 12)
+
 Display error when 'tabline' that includes a file name with double-width
 characters. (2010 Aug 14, bootleq)
 
@@ -379,7 +381,8 @@ Break undo when CTRL-R = changes the text?  Or save more lines?
 
 Patch for static code analysis errors in riscOS. (Dominique Pelle, 2010 Dec 3)
 
-Better #if 0 syntax highlighting for C code. (Ben Schmidt, 2011 Jan 20)
+Patch for better #if 0 syntax highlighting for C code. (Ben Schmidt, 2011 Jan
+20)
 
 Change to C syntax folding to make it work much faster, but a bit less
 reliable. (Lech Lorens, 2009 Nov 9)  Enable with an option?
@@ -519,6 +522,9 @@ are applied to the wrong buffer/window. (Ben Fritz, 2009 Apr 2, May 11)
 Ignore window options when not in the right window?
 Perhaps we need to use a hidden window for applying autocommands to a buffer
 that doesn't have a window.
+
+When "b" is a symlink to directory "a", resolve("b/") doesn't result in "a/".
+(ZyX, 2011 Feb 12)
 
 When using "ab foo bar" and mapping <Tab> to <Esc>, pressing <Tab> after foo
 doesn't trigger the abbreviation like <Esc> would. (Ramana Kumar, 2009 Sep 6)
@@ -1276,6 +1282,9 @@ check the result of has("patch13").
 Cursor line at bottom of window instead of halfway after saving view and
 restoring.  Only with 'nowrap'. (Robert Webb, 2008 Aug 25)
 
+Netrw has trouble executing autocommands only for a directory.  Add <isdir>
+and <notisdir> to autocommand patterns?  Also <isfile>?
+
 Add command modifier that skips wildcard expansion, so that you don't need to
 put backslashes before special chars, only for white space.
 
@@ -1388,6 +1397,11 @@ restored. (Luc St-Louis)
 
 Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
 2010 Jun 30)
+
+
+At next release:
+-   Rename src/Makefile and create a new one like toplevel Makefile that
+    creates auto/config.mk when it's not there? (Ben Schmidt, 2011 Feb 11)
 
 
 More patches:

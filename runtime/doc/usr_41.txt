@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.3.  Last change: 2011 Feb 01
+*usr_41.txt*	For Vim version 7.3.  Last change: 2011 Feb 15
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -313,7 +313,7 @@ The usual precedence is used.  Example: >
 	:echo 10 + 5 * 2
 <	20 ~
 
-Grouping is done with braces.  No surprises here.  Example: >
+Grouping is done with parentheses.  No surprises here.  Example: >
 
 	:echo (10 + 5) * 2
 <	30 ~
@@ -537,7 +537,7 @@ way.  A few examples will be given in this section.  You can find the whole
 list here: |functions|.
 
 A function is called with the ":call" command.  The parameters are passed in
-between braces, separated by commas.  Example: >
+between parentheses separated by commas.  Example: >
 
 	:call search("Date: ", "W")
 
@@ -1017,7 +1017,7 @@ so on.  The variable "a:0" contains the number of extra arguments.
 
 	:function Show(start, ...)
 	:  echohl Title
-	:  echo "Show is " . a:start
+	:  echo "start is " . a:start
 	:  echohl None
 	:  let index = 1
 	:  while index <= a:0
@@ -1285,7 +1285,7 @@ local variable will then refer to that Dictionary.
 
 	split(a:line)
 
-The split() function takes a string, chops it into white separated words
+The split() function takes a string, chops it into whitespace separated words
 and returns a list with these words.  Thus in the example it returns: >
 
 	:echo split('three two five one')
@@ -1402,7 +1402,7 @@ Let's start with an example: >
 
 The ":read" command will fail if the file does not exist.  Instead of
 generating an error message, this code catches the error and gives the user a
-nice message instead.
+nice message.
 
 For the commands in between ":try" and ":endtry" errors are turned into
 exceptions.  An exception is a string.  In the case of an error the string
@@ -1479,7 +1479,7 @@ escaped by a "\" (backslash)  as in the following example: >
 
 	:set tags=my\ nice\ file
 
-The same example written as >
+The same example written as: >
 
 	:set tags=my nice file
 

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2011 Jan 30
+*options.txt*	For Vim version 7.3.  Last change: 2011 Feb 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3078,8 +3078,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{not available when compiled without the |+folding|
 			feature}
-	Sets the minimum number of screen lines for a fold to be displayed
-	closed.  Also for manually closed folds.
+	Sets the number of screen lines above which a fold can be displayed
+	closed.  Also for manually closed folds.  With the default value of
+	one a fold can only be closed if it takes up two or more screen lines.
+	Set to zero to be able to close folds of just one screen line.
 	Note that this only has an effect of what is displayed.  After using
 	"zc" to close a fold, which is displayed open because it's smaller
 	than 'foldminlines', a following "zc" may close a containing fold.
@@ -6488,7 +6490,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	where it was the last time the buffer was edited.
 	NOTE: This option is set when 'compatible' is set.
 
-			   *'statusline'* *'stl'* *E540* *E541* *E542*
+			   *'statusline'* *'stl'* *E540* *E542*
 'statusline' 'stl'	string	(default empty)
 			global or local to window |global-local|
 			{not in Vi}
@@ -6501,7 +6503,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	normal text.  Each status line item is of the form:
 	  %-0{minwid}.{maxwid}{item}
 	All fields except the {item} is optional.  A single percent sign can
-	be given as "%%".  Up to 80 items can be specified.
+	be given as "%%".  Up to 80 items can be specified.  *E541*
 
 	When the option starts with "%!" then it is used as an expression,
 	evaluated and the result is used as the option value.  Example: >
@@ -6554,7 +6556,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	k S   Value of "b:keymap_name" or 'keymap' when |:lmap| mappings are
 	      being used: "<keymap>"
 	n N   Buffer number.
-	b N   Value of byte under cursor.
+	b N   Value of character under cursor.
 	B N   As above, in hexadecimal.
 	o N   Byte number in file of byte under cursor, first byte is 1.
 	      Mnemonic: Offset from start of file (with one added)
