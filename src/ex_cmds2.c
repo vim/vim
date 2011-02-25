@@ -1115,7 +1115,7 @@ ex_profile(eap)
 static enum
 {
     PEXP_SUBCMD,	/* expand :profile sub-commands */
-    PEXP_FUNC,		/* expand :profile func {funcname} */
+    PEXP_FUNC		/* expand :profile func {funcname} */
 } pexpand_what;
 
 static char *pexpand_cmds[] = {
