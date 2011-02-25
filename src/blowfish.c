@@ -413,6 +413,7 @@ bf_key_init(password, salt, salt_len)
     int    salt_len;
 {
     int      i, j, keypos = 0;
+    unsigned u;
     UINT32_T val, data_l, data_r;
     char_u   *key;
     int      keylen;
@@ -432,8 +433,8 @@ bf_key_init(password, salt, salt_len)
     }
     for (i = 0; i < keylen; i++)
     {
-	sscanf((char *)&key[i * 2], "%2x", &j);
-	key[i] = j;
+	sscanf((char *)&key[i * 2], "%2x", &u);
+	key[i] = u;
     }
 
     mch_memmove(sbx, sbi, 4 * 4 * 256);
