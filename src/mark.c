@@ -1750,7 +1750,10 @@ copy_viminfo_marks(virp, fp_out, count, eof, flags)
 	    {
 		if (line[1] != NUL)
 		{
-		    sscanf((char *)line + 2, "%ld %u", &pos.lnum, &pos.col);
+		    unsigned u;
+
+		    sscanf((char *)line + 2, "%ld %u", &pos.lnum, &u);
+		    pos.col = u;
 		    switch (line[1])
 		    {
 			case '"': curbuf->b_last_cursor = pos; break;
