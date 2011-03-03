@@ -6054,15 +6054,17 @@ do_ucmd(eap)
 		end = vim_strchr(start + 1, '>');
 	    if (buf != NULL)
 	    {
-		ksp = vim_strchr(p, K_SPECIAL);
-		if (ksp != NULL && (start == NULL || ksp < start || end == NULL)
+		for (ksp = p; *ksp != NUL && *ksp != K_SPECIAL; ++ksp)
+		    ;
+		if (*ksp == K_SPECIAL
+			&& (start == NULL || ksp < start || end == NULL)
 			&& ((ksp[1] == KS_SPECIAL && ksp[2] == KE_FILLER)
 # ifdef FEAT_GUI
 			    || (ksp[1] == KS_EXTRA && ksp[2] == (int)KE_CSI)
 # endif
 			    ))
 		{
-		    /* K_SPECIAL han been put in the buffer as K_SPECIAL
+		    /* K_SPECIAL has been put in the buffer as K_SPECIAL
 		     * KS_SPECIAL KE_FILLER, like for mappings, but
 		     * do_cmdline() doesn't handle that, so convert it back.
 		     * Also change K_SPECIAL KS_EXTRA KE_CSI into CSI. */
