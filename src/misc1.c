@@ -3115,7 +3115,15 @@ get_keystroke()
 	    continue;
 
 	if (n == KEYLEN_REMOVED)  /* key code removed */
+	{
+	    if (must_redraw)
+	    {
+		/* Redrawing was postponed, do it now. */
+		update_screen(0);
+		setcursor(); /* put cursor back where it belongs */
+	    }
 	    continue;
+	}
 	if (n > 0)		/* found a termcode: adjust length */
 	    len = n;
 	if (len == 0)		/* nothing typed yet */
