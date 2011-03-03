@@ -13,7 +13,6 @@
 
 #if defined(FEAT_CSCOPE) || defined(PROTO)
 
-#include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #if defined(UNIX)
