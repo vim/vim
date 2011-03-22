@@ -33,6 +33,7 @@ Python_Release_Vim(void)
 
 static PyObject *OutputWrite(PyObject *, PyObject *);
 static PyObject *OutputWritelines(PyObject *, PyObject *);
+static PyObject *OutputFlush(PyObject *, PyObject *);
 
 /* Function to write a line, points to either msg() or emsg(). */
 typedef void (*writefn)(char_u *);
@@ -47,9 +48,10 @@ typedef struct
 
 static struct PyMethodDef OutputMethods[] = {
     /* name,	    function,		calling,    documentation */
-    {"write",	    OutputWrite,	1,	    "" },
-    {"writelines",  OutputWritelines,	1,	    "" },
-    { NULL,	    NULL,		0,	    NULL }
+    {"write",	    OutputWrite,	1,	    ""},
+    {"writelines",  OutputWritelines,	1,	    ""},
+    {"flush",       OutputFlush,        1,          ""},
+    { NULL,	    NULL,		0,	    NULL}
 };
 
 #define PyErr_SetVim(str) PyErr_SetString(VimError, str)
@@ -122,6 +124,15 @@ OutputWritelines(PyObject *self, PyObject *args)
     Py_INCREF(Py_None);
     return Py_None;
 }
+
+    static PyObject *
+OutputFlush(PyObject *self UNUSED, PyObject *args UNUSED)
+{
+    /* do nothing */
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 
 /* Buffer IO, we write one whole line at a time. */
 static garray_T io_ga = {0, 0, 1, 80, NULL};
