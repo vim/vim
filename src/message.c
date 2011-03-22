@@ -879,16 +879,17 @@ wait_return(redraw)
     if (msg_silent != 0)
 	return;
 
-/*
- * With the global command (and some others) we only need one return at the
- * end. Adjust cmdline_row to avoid the next message overwriting the last one.
- * When inside vgetc(), we can't wait for a typed character at all.
- */
+    /*
+     * When inside vgetc(), we can't wait for a typed character at all.
+     * With the global command (and some others) we only need one return at
+     * the end. Adjust cmdline_row to avoid the next message overwriting the
+     * last one.
+     */
     if (vgetc_busy > 0)
 	return;
+    need_wait_return = TRUE;
     if (no_wait_return)
     {
-	need_wait_return = TRUE;
 	if (!exmode_active)
 	    cmdline_row = msg_row;
 	return;

@@ -3116,7 +3116,7 @@ get_keystroke()
 
 	if (n == KEYLEN_REMOVED)  /* key code removed */
 	{
-	    if (must_redraw)
+	    if (must_redraw != 0 && !need_wait_return && (State & CMDLINE) == 0)
 	    {
 		/* Redrawing was postponed, do it now. */
 		update_screen(0);
