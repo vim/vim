@@ -150,6 +150,18 @@ example, if Alt-b produces <Esc>b, use this: >
 (the ^[ is a real <Esc> here, use CTRL-V <Esc> to enter it)
 The advantage over a mapping is that it works in all situations.
 
+You can define any key codes, e.g.: >
+	:set t_xy=^[foo;
+There is no warning for using a name that isn't recognized.  You can map these
+codes as you like: >
+	:map <t_xy> something
+<								*E846*
+When a key code is not set, it's like it does not exist.  Trying to get its
+value will result in an error: >
+	:set t_kb=
+	:set t_kb
+	E846: Key code not set: t_kb
+
 The t_xx options cannot be set from a |modeline| or in the |sandbox|, for
 security reasons.
 
