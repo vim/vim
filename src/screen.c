@@ -5099,11 +5099,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #ifdef FEAT_DIFF
 		    || filler_todo > 0
 #endif
-		    || (wp->w_p_list && lcs_eol != NUL && p_extra != at_end_str
-#ifdef FEAT_SYN_HL
-			   && !wp->w_p_cul
-#endif
-			)
+		    || (wp->w_p_list && lcs_eol != NUL && p_extra != at_end_str)
 		    || (n_extra != 0 && (c_extra != NUL || *p_extra != NUL)))
 		)
 	{
