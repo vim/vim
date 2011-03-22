@@ -661,7 +661,14 @@ Floating point computation:				*float-functions*
 	sqrt()			square root
 	sin()			sine
 	cos()			cosine
+	tan()			tangent
+	asin()			arc sine
+	acos()			arc cosine
 	atan()			arc tangent
+	atan2()			arc tangent
+	sinh()			hyperbolic sine
+	cosh()			hyperbolic cosine
+	tanh()			hyperbolic tangent
 
 Variables:						*var-functions*
 	type()			type of a variable

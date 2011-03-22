@@ -3206,6 +3206,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 <reg>	map.txt	/*<reg>*
 <register>	map.txt	/*<register>*
 <sfile>	cmdline.txt	/*<sfile>*
+<slnum>	cmdline.txt	/*<slnum>*
 <xCSI>	intro.txt	/*<xCSI>*
 <xDown>	term.txt	/*<xDown>*
 <xEnd>	term.txt	/*<xEnd>*

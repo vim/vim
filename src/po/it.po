@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim 7.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-08-09 12:53+0200\n"
-"PO-Revision-Date:  2010-08-09 21:00+0200\n"
+"POT-Creation-Date: 2011-03-10 11:10+0100\n"
+"PO-Revision-Date:  2011-03-12 07:08+0100\n"
 "Last-Translator:   Vlad Sandrini   <vlad.gently@gmail.com>\n"
 "Language-Team:     Italian"
 "                   Antonio Colombo <azc100@gmail.com>"
@@ -201,7 +201,7 @@ msgstr "Segni per %s:"
 
 #, c-format
 msgid "    line=%ld  id=%d  name=%s"
-msgstr "    linea=%ld  id=%d  nome=%s"
+msgstr "    linea=%ld id=%d, nome=%s"
 
 #, c-format
 msgid "E96: Can not diff more than %ld buffers"
@@ -302,6 +302,12 @@ msgstr " Completamento Keyword Locale (^N^P)"
 
 msgid "Hit end of paragraph"
 msgstr "Giunto alla fine del paragrafo"
+
+msgid "E839: Completion function changed window"
+msgstr "E839: La funzione di completamento ha modificato la finestra"
+
+msgid "E840: Completion function deleted text"
+msgstr "E840: La funzione di completamento ha eliminato del testo"
 
 msgid "'dictionary' option is empty"
 msgstr "l'opzione 'dictionary' non è impostata"
@@ -1271,6 +1277,9 @@ msgid "E183: User defined commands must start with an uppercase letter"
 msgstr ""
 "E183: I comandi definiti dall'utente devono iniziare con lettera maiuscola"
 
+msgid "E841: Reserved name, cannot be used for user defined command"
+msgstr "E841: Nome riservato, non usabile in un comando definito dall'utente"
+
 #, c-format
 msgid "E184: No such user-defined command: %s"
 msgstr "E184: Comando definito dall'utente %s inesistente"
@@ -1394,6 +1403,9 @@ msgstr ""
 msgid "E498: no :source file name to substitute for \"<sfile>\""
 msgstr ""
 "E498: nessun nome di file :source trovato da sostituire per \"<sfile>\""
+
+msgid "E842: no line number to use for \"<slnum>\""
+msgstr "E842: nessun numero di riga da usare per \"<slnum>\""
 
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
@@ -1625,6 +1637,9 @@ msgstr "[NON convertito]"
 
 msgid "[converted]"
 msgstr "[convertito]"
+
+msgid "[blowfish]"
+msgstr "[blowfish]"
 
 msgid "[crypted]"
 msgstr "[cifrato]"
@@ -2307,7 +2322,6 @@ msgstr "Pagina %d"
 msgid "No text to be printed"
 msgstr "Manca testo da stampare"
 
-#, c-format
 msgid "Printing page %d (%d%%)"
 msgstr "Sto stampando pagina %d (%d%%)"
 
@@ -2482,7 +2496,7 @@ msgid ""
 "       g: Find this definition\n"
 "       i: Find files #including this file\n"
 "       s: Find this C symbol\n"
-"       t: Find assignments to\n"
+"       t: Find this text string\n"
 msgstr ""
 "\n"
 "       c: Trova funzioni che chiamano questa\n"
@@ -2492,7 +2506,7 @@ msgstr ""
 "       g: Trova questa definizione\n"
 "       i: Trova file che #includono questo file\n"
 "       s: Trova questo simbolo C\n"
-"       t: Trova assegnazioni a\n"
+"       t: Trova questa stringa\n"
 
 #, c-format
 msgid "E625: cannot open cscope database: %s"
@@ -2608,7 +2622,7 @@ msgid "E836: This Vim cannot execute :python after using :py3"
 msgstr "E836: Python: Impossibile usare :py e :py3 nella stessa sessione"
 
 msgid "E837: This Vim cannot execute :py3 after using :python"
-msgstr "E837: Python: Impossibile usare :py e :py3 nella stessa sessione"
+msgstr "E837: Impossibile usare ora :py3 dopo aver usato :python"
 
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
@@ -3207,12 +3221,6 @@ msgstr "-display <schermo>\tEsegui vim su <schermo>"
 msgid "-iconic\t\tStart vim iconified"
 msgstr "-iconic\t\tInizia vim riducendolo ad icona"
 
-msgid "-name <name>\t\tUse resource as if vim was <name>"
-msgstr "-name <nome>\t\tUsa risorsa come se vim fosse <nome>"
-
-msgid "\t\t\t  (Unimplemented)\n"
-msgstr "\t\t\t  (Non implementato)\n"
-
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
 msgstr "-background <colore>\tUsa <colore> come sfondo (anche: -bg)"
 
@@ -3415,6 +3423,9 @@ msgstr "E298: Non riesco a leggere blocco numero 1?"
 msgid "E298: Didn't get block nr 2?"
 msgstr "E298: Non riesco a leggere blocco numero 2?"
 
+msgid "E843: Error while updating swap file crypt"
+msgstr "E843: Errore aggiornando cifratura dello swap file"
+
 #. could not (re)open the swap file, what can we do????
 msgid "E301: Oops, lost the swap file!!!"
 msgstr "E301: Ahimè, lo swap file è perduto!!!"
@@ -3518,7 +3529,7 @@ msgid ""
 "If you wrote the text file after changing the crypt key press enter"
 msgstr ""
 "\n"
-"Se hai riscritto il file dopo aver cambio chiave di cifr., premi Invio"
+"Se hai riscritto il file dopo aver cambiato chiave di cifr., premi Invio"
 
 msgid ""
 "\n"
@@ -3773,24 +3784,20 @@ msgstr "      più RECENTE dello swap file!\n"
 #. * other languages.
 msgid ""
 "\n"
-"(1) Another program may be editing the same file.\n"
-"    If this is the case, be careful not to end up with two\n"
-"    different instances of the same file when making changes.\n"
+"(1) Another program may be editing the same file.  If this is the case,\n"
+"    be careful not to end up with two different instances of the same\n"
+"    file when making changes."
 msgstr ""
 "\n"
 "(1) Un altro programma può essere in edit sullo stesso file.\n"
 "    Se è così, attenzione a non trovarti con due versioni\n"
 "    differenti dello stesso file a cui vengono apportate modifiche.\n"
 
-msgid "    Quit, or continue with caution.\n"
-msgstr "    Esci, o continua con prudenza.\n"
+msgid "  Quit, or continue with caution.\n"
+msgstr "  Esci, o continua con prudenza.\n"
 
-msgid ""
-"\n"
-"(2) An edit session for this file crashed.\n"
-msgstr ""
-"\n"
-"(2) Una sessione di edit per questo file è finita male.\n"
+msgid "(2) An edit session for this file crashed.\n"
+msgstr "(2) Una sessione di edit per questo file è finita male.\n"
 
 msgid "    If this is the case, use \":recover\" or \"vim -r "
 msgstr "    Se è così, usa \":recover\" oppure \"vim -r "
@@ -4022,7 +4029,6 @@ msgstr "Vim: preservo file...\n"
 msgid "Vim: Finished.\n"
 msgstr "Vim: Finito.\n"
 
-#, c-format
 msgid "ERROR: "
 msgstr "ERRORE: "
 
@@ -4122,6 +4128,9 @@ msgstr "lettura da socket Netbeans"
 #, c-format
 msgid "E658: NetBeans connection lost for buffer %ld"
 msgstr "E658: Connessione NetBeans persa per il buffer %ld"
+
+msgid "E838: netbeans is not supported with this GUI"
+msgstr "E838: netbeans non è supportato con questa GUI"
 
 msgid "E511: netbeans already connected"
 msgstr "E511: netbeans già connesso"
@@ -4534,7 +4543,6 @@ msgstr "Vim: Segnale doppio, esco\n"
 msgid "Vim: Caught deadly signal %s\n"
 msgstr "Vim: Intercettato segnale fatale %s\n"
 
-#, c-format
 msgid "Vim: Caught deadly signal\n"
 msgstr "Vim: Intercettato segnale fatale\n"
 
@@ -4678,26 +4686,21 @@ msgstr ""
 msgid "Vim Warning"
 msgstr "Avviso da Vim"
 
-#, c-format
 msgid "E372: Too many %%%c in format string"
 msgstr "E372: Troppi %%%c nella stringa di 'format'"
 
-#, c-format
 msgid "E373: Unexpected %%%c in format string"
 msgstr "E373: %%%c imprevisto nella stringa di 'format'"
 
 msgid "E374: Missing ] in format string"
 msgstr "E374: Manca ] nella stringa di 'format'"
 
-#, c-format
 msgid "E375: Unsupported %%%c in format string"
 msgstr "E375: %%%c non supportato nella stringa di 'format'"
 
-#, c-format
 msgid "E376: Invalid %%%c in format string prefix"
 msgstr "E376: %%%c non valido nel prefisso della stringa di 'format'"
 
-#, c-format
 msgid "E377: Invalid %%%c in format string"
 msgstr "E377: %%%c non valido nella stringa di 'format'"
 
@@ -4746,10 +4749,6 @@ msgstr "E681: Buffer non caricato"
 msgid "E777: String or List expected"
 msgstr "E777: aspettavo Stringa o Lista"
 
-#, c-format
-msgid "E369: invalid item in %s%%[]"
-msgstr "E369: elemento non valido in %s%%[]"
-
 msgid "E339: Pattern too long"
 msgstr "E339: Espressione troppo lunga"
 
@@ -4763,7 +4762,6 @@ msgstr "E51: Troppe %s("
 msgid "E52: Unmatched \\z("
 msgstr "E52: Senza riscontro: \\z("
 
-#, c-format
 msgid "E53: Unmatched %s%%("
 msgstr "E53: Senza riscontro: %s%%("
 
@@ -4810,19 +4808,15 @@ msgstr "E67: \\z1 ecc. non consentiti qui"
 msgid "E68: Invalid character after \\z"
 msgstr "E68: Carattere non ammesso dopo \\z"
 
-#, c-format
 msgid "E69: Missing ] after %s%%["
 msgstr "E69: Manca ] dopo %s%%["
 
-#, c-format
 msgid "E70: Empty %s%%[]"
 msgstr "E70: %s%%[] vuoto"
 
-#, c-format
 msgid "E678: Invalid character after %s%%[dxouU]"
 msgstr "E678: Carattere non valido dopo %s%%[dxouU]"
 
-#, c-format
 msgid "E71: Invalid character after %s%%"
 msgstr "E71: Carattere non ammesso dopo %s%%"
 
@@ -4986,6 +4980,10 @@ msgstr "Comprimo albero di parole..."
 
 msgid "E756: Spell checking is not enabled"
 msgstr "E756: Controllo ortografico non abilitato"
+
+#, c-format
+msgid "Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""
+msgstr "Attenzione: Non trovo lista parole \"%s_%s.spl\" o \"%s_ascii.spl\""
 
 #, c-format
 msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
@@ -5212,6 +5210,9 @@ msgstr "Flag non riconosciuti in %s linea %d: %s"
 msgid "Ignored %d words with non-ASCII characters"
 msgstr "%d parole con caratteri non-ASCII ignorate"
 
+msgid "E845: Insufficient memory, word list will be incomplete"
+msgstr "E845: Memoria insufficiente, la lista parole sarà incompleta"
+
 #, c-format
 msgid "Compressed %d of %d nodes; %d (%d%%) remaining"
 msgstr "%d di %d nodi compressi; ne restano %d (%d%%)"
@@ -5389,8 +5390,8 @@ msgstr " interruzioni di linea"
 msgid "E395: contains argument not accepted here"
 msgstr "E395: contiene argomenti non accettati qui"
 
-msgid "E396: containedin argument not accepted here"
-msgstr "E396: argomento 'containedin' non accettato qui"
+msgid "E844: invalid cchar value"
+msgstr "E844: valore cchar non valido"
 
 msgid "E393: group[t]here not accepted here"
 msgstr "E393: group[t]here non ammesso qui"
@@ -5768,8 +5769,8 @@ msgstr "dopo"
 msgid "Nothing to undo"
 msgstr "Nessuna modifica, Undo impossibile"
 
-msgid "number changes  time            saved"
-msgstr "numero modif.   ora             salv."
+msgid "number changes  when               saved"
+msgstr "numero modif.   quando             salv."
 
 #, c-format
 msgid "%ld seconds ago"
@@ -6164,7 +6165,6 @@ msgstr "Differenza con Vim"
 msgid "Edit with &Vim"
 msgstr "Apri con &Vim"
 
-#. Now concatenate
 msgid "Edit with existing Vim - "
 msgstr "Apri con Vim esistente - "
 

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2011 Feb 23
+" Last Change:	2011 Mar 22
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -325,7 +325,7 @@ au BufNewFile,BufRead */.calendar/*,
 au BufNewFile,BufRead *.cs			setf cs
 
 " Cabal
-au BufNewFile,BufRead *.cabal       		setf cabal
+au BufNewFile,BufRead *.cabal			setf cabal
 
 " Cdrdao TOC
 au BufNewFile,BufRead *.toc			setf cdrtoc
@@ -536,7 +536,7 @@ au BufNewFile,BufRead *.qc			setf c
 au BufNewFile,BufRead *.cfg			setf cfg
 
 " Cucumber
-au BufNewFile,BufRead *.feature 		setf cucumber
+au BufNewFile,BufRead *.feature			setf cucumber
 
 " Communicating Sequential Processes
 au BufNewFile,BufRead *.csp,*.fdr		setf csp
@@ -678,7 +678,7 @@ au BufNewFile,BufRead *.exp			setf expect
 au BufNewFile,BufRead exports			setf exports
 
 " Falcon
-au BufNewFile,BufRead *.fal 			setf falcon
+au BufNewFile,BufRead *.fal			setf falcon
 
 " Fantom
 au BufNewFile,BufRead *.fan,*.fwt		setf fan
@@ -779,7 +779,7 @@ au BufNewFile,BufRead *.haml			setf haml
 au BufNewFile,BufRead *.hsc,*.hsm		setf hamster
 
 " Haskell
-au BufNewFile,BufRead *.hs,*.hs-boot 		setf haskell
+au BufNewFile,BufRead *.hs,*.hs-boot		setf haskell
 au BufNewFile,BufRead *.lhs			setf lhaskell
 au BufNewFile,BufRead *.chs			setf chaskell
 
@@ -872,7 +872,9 @@ func! s:ProtoCheck(default)
   " Cproto files have a comment in the first line and a function prototype in
   " the second line, it always ends in ";".  Indent files may also have
   " comments, thus we can't match comments to see the difference.
-  if getline(2) =~ ';$'
+  " IDL files can have a single ';' in the second line, require at least one
+  " chacter before the ';'.
+  if getline(2) =~ '.;$'
     setf cpp
   else
     exe 'setf ' . a:default
@@ -1405,7 +1407,7 @@ au BufNewFile,BufRead *.it,*.ih			setf ppwiz
 
 " Obj 3D file format
 " TODO: is there a way to avoid MS-Windows Object files?
-au BufNewFile,BufRead *.obj         		setf obj
+au BufNewFile,BufRead *.obj			setf obj
 
 " Oracle Pro*C/C++
 au BufNewFile,BufRead *.pc			setf proc
@@ -1650,7 +1652,7 @@ au BufNewFile,BufRead *.sa			setf sather
 au BufNewFile,BufRead *.sci,*.sce		setf scilab
 
 " SCSS
-au BufNewFile,BufRead *.scss 			setf scss
+au BufNewFile,BufRead *.scss			setf scss
 
 " SD: Streaming Descriptors
 au BufNewFile,BufRead *.sd			setf sd
@@ -1811,7 +1813,7 @@ endfunc
 " Z-Shell script
 au BufNewFile,BufRead .zprofile,/etc/zprofile,.zfbfmarks  setf zsh
 au BufNewFile,BufRead .zsh*,.zlog*,.zcompdump*  call s:StarSetf('zsh')
-au BufNewFile,BufRead *.zsh 			setf zsh
+au BufNewFile,BufRead *.zsh			setf zsh
 
 " Scheme
 au BufNewFile,BufRead *.scm,*.ss		setf scheme
@@ -2101,6 +2103,9 @@ au BufNewFile,BufRead *.tf,.tfrc,tfrc		setf tf
 " TPP - Text Presentation Program
 au BufNewFile,BufReadPost *.tpp			setf tpp
 
+" Treetop
+au BufRead,BufNewFile *.treetop			setf treetop
+
 " Trustees
 au BufNewFile,BufRead trustees.conf		setf trustees
 
@@ -2130,6 +2135,10 @@ au BufNewFile,BufRead *.uc			setf uc
 
 " Updatedb
 au BufNewFile,BufRead /etc/updatedb.conf	setf updatedb
+
+" Upstart (init(8)) config files
+au BufNewFile,BufRead */etc/init/*.conf,~/.init/*.conf          setf upstart
+au BufNewFile,BufRead */etc/init/*.override,~/.init/*.override  setf upstart
 
 " Vera
 au BufNewFile,BufRead *.vr,*.vri,*.vrh		setf vera

@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.3.  Last change: 2010 Jul 29
+*change.txt*    For Vim version 7.3.  Last change: 2011 Feb 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -690,7 +690,8 @@ reason is that the flags can only be found by skipping the pattern, and in
 order to skip the pattern the "magicness" must be known.  Catch 22!
 
 If the {pattern} for the substitute command is empty, the command uses the
-pattern from the last substitute or ":global" command.  With the [r] flag, the
+pattern from the last substitute or ":global" command.  If there is none, but
+there is a previous search pattern, that one is used.  With the [r] flag, the
 command uses the pattern from the last substitute, ":global", or search
 command.
 

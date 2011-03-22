@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.3.  Last change: 2011 Feb 01
+*various.txt*   For Vim version 7.3.  Last change: 2011 Mar 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -133,14 +133,14 @@ g8			Print the hex values of the bytes used in the
 			specified with {range}, or around the current line
 			if there is no {range}.  If there is a {count}, that's
 			how many lines you'll see; if there is only one window
-			then the 'window' option is used, otherwise the
-			current window size is used.
+			then twice the value of the 'scroll' option is used,
+			otherwise the current window height minus 3 is used.
 
 			:z can be used either alone or followed by any of
 			several punctuation marks.  These have the following
 			effect:
 
-			mark   first line    last line      new location   ~
+			mark   first line    last line      new cursor line ~
 			----   ----------    ---------      ------------
 			+      current line  1 scr forward  1 scr forward
 			-      1 scr back    current line   current line

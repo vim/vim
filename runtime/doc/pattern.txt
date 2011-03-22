@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.3.  Last change: 2010 Jul 20
+*pattern.txt*   For Vim version 7.3.  Last change: 2011 Feb 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -214,7 +214,8 @@ The last used pattern and offset are remembered.  They can be used to repeat
 the search, possibly in another direction or with another count.  Note that
 two patterns are remembered: One for 'normal' search commands and one for the
 substitute command ":s".  Each time an empty pattern is given, the previously
-used pattern is used.
+used pattern is used.  However, if there is no previous search command, a
+previous substitute pattern is used, if possible.
 
 The 'magic' option sticks with the last used pattern.  If you change 'magic',
 this will not change how the last used pattern will be interpreted.

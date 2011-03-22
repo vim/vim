@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2011 Feb 11
+*eval.txt*	For Vim version 7.3.  Last change: 2011 Mar 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7072,7 +7072,9 @@ This would call the function "my_func_whizz(parameter)".
 			is terminated.
 			Example: >
 		:try | throw "oops" | catch /^oo/ | echo "caught" | endtry
-<
+<			Note that "catch" may need to be on a separate line
+			for when an error causes the parsing to skip the whole
+			line and not see the "|" that separates the commands.
 
 							*:ec* *:echo*
 :ec[ho] {expr1} ..	Echoes each {expr1}, with a space in between.  The

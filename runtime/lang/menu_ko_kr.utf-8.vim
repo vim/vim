@@ -1,6 +1,6 @@
 " Menu Translations:	Korean
 " Maintainer:		SungHyun Nam <goweol@gmail.com>
-" Last Change:		2010 Feb 18
+" Last Change:		2011 Mar 22
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -42,7 +42,7 @@ menutrans E&xit<Tab>:qa			끝내기(&x)<Tab>:qa
 " Edit menu
 menutrans &Edit				편집(&E)
 menutrans &Undo<Tab>u			취소(&U)<Tab>u
-menutrans &Redo<Tab>^R			다시 실행(&R)<Tab>^R
+menutrans &Redo<Tab>^R			다시\ 실행(&R)<Tab>^R
 menutrans Rep&eat<Tab>\.		되풀이(&e)<Tab>\.
 menutrans Cu&t<Tab>"+x			자르기(&t)<Tab>"+x
 menutrans &Copy<Tab>"+y			복사(&C)<Tab>"+y
@@ -63,7 +63,7 @@ menutrans Toggle\ &Ignore-case<Tab>:set\ ic! 대소문자\ 구분\ 토글(&I)<Ta
 menutrans Toggle\ &Showmatch<Tab>:set\ sm! Showmatch\ 토글(&S)<Tab>:set\ sm!
 menutrans &Context\ lines		콘텍스트\ 줄(&C)
 menutrans &Virtual\ Edit		가상\ 편집(&V)
-menutrans Never				사용 안 함
+menutrans Never				사용\ 안\ 함
 menutrans Block\ Selection		블럭\ 고르기
 menutrans Insert\ mode			삽입\ 모드
 menutrans Block\ and\ Insert		블럭과\ 삽입
@@ -92,7 +92,7 @@ menutrans Toggle\ &auto-indent<Tab>:set\ ai! 자동인덴트\ 토글(&a)<Tab>:se
 menutrans Toggle\ &C-indenting<Tab>:set\ cin! C-인덴팅\ 토글(&C)<Tab>:set\ cin!
 
 " other options
-menutrans &Shiftwidth			쉬프트 너비(&S)
+menutrans &Shiftwidth			쉬프트\ 너비(&S)
 menutrans Soft\ &Tabstop		소프트\ 탭스톱(&T)
 menutrans Te&xt\ Width\.\.\.		텍스트\ 너비(&x)\.\.\.
 menutrans &File\ Format\.\.\.		파일\ 형식(&F)\.\.\.
@@ -125,12 +125,12 @@ menutrans &Find\ More\ Languages	다른\ 언어\ 찾기(&F)
 " Tools.Fold Menu
 menutrans &Folding			접기(&F)
 " open close folds
-menutrans &Enable/Disable\ folds<Tab>zi	접는\ 기능\ 사용\ 토글(&E)<Tab>zi
+menutrans &Enable/Disable\ folds<Tab>zi	접기\ 사용\ 토글(&E)<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv	커서\ 줄\ 보기(&V)<Tab>zv
 menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx 커서\ 줄만\ 보기(&w)<Tab>zMzx
 menutrans C&lose\ more\ folds<Tab>zm	더\ 많은\ 접기\ 닫기(&l)<Tab>zm
-menutrans &Close\ all\ folds<Tab>zM	접힌\ 부분\ 모두\ 접기(&C)<Tab>zM
-menutrans O&pen\ more\ folds<Tab>zr	더 많은\ 접기\ 열기(&p)<Tab>zr
+menutrans &Close\ all\ folds<Tab>zM	모든\ 접기\ 닫기(&C)<Tab>zM
+menutrans O&pen\ more\ folds<Tab>zr	더\ 많은\ 접기\ 열기(&p)<Tab>zr
 menutrans &Open\ all\ folds<Tab>zR	접힌\ 부분\ 모두\ 펴기(&O)<Tab>zR
 " fold method
 menutrans Fold\ Met&hod			접는\ 방법(&h)
@@ -141,11 +141,11 @@ menutrans S&yntax			신택스(&y)
 "menutrans &Diff				&Diff
 menutrans Ma&rker			꼬리표(&r)
 " create and delete folds
-menutrans Create\ &Fold<Tab>zf		새로 접기(&F)<Tab>zf
-menutrans &Delete\ Fold<Tab>zd		완전히 펴기(&D)<Tab>zd
-menutrans Delete\ &All\ Folds<Tab>zD	모두\ 펴기(&A)<Tab>zD
+menutrans Create\ &Fold<Tab>zf		접기\ 생성(&F)<Tab>zf
+menutrans &Delete\ Fold<Tab>zd		접기\ 삭제(&D)<Tab>zd
+menutrans Delete\ &All\ Folds<Tab>zD	모든\ 접기\ 삭제(&A)<Tab>zD
 " moving around in folds
-menutrans Fold\ column\ &width		접을\ 칸\ 너비(&w)
+menutrans Fold\ column\ &width		접기\ 컬럼\ 너비(&w)
 
 "menutrans &Diff				&Diff
 menutrans &Update			갱신(&U)

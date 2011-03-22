@@ -1,7 +1,8 @@
 " Vim syntax file
 " Language:    R Help File
-" Maintainer:  Johannes Ranke <jranke@uni-bremen.de>
-" Last Change: 2010 Nov 22
+" Maintainer: Jakson Aquino <jalvesaq@gmail.com>
+" Former Maintainer: Johannes Ranke <jranke@uni-bremen.de>
+" Last Change: Sat Feb 19, 2011  02:13PM
 " Version:     0.7.4
 " SVN:		   $Id: rhelp.vim 90 2010-11-22 10:58:11Z ranke $
 " Remarks:     - Includes R syntax highlighting in the appropriate
@@ -24,36 +25,46 @@ endif
 
 syn case match
 
-" R help identifiers {{{
+" R help identifiers {{{1
 syn region rhelpIdentifier matchgroup=rhelpSection	start="\\name{" end="}" 
 syn region rhelpIdentifier matchgroup=rhelpSection	start="\\alias{" end="}" 
-syn region rhelpIdentifier matchgroup=rhelpSection	start="\\pkg{" end="}" 
+syn region rhelpIdentifier matchgroup=rhelpSection	start="\\pkg{" end="}" contains=rhelpLink
 syn region rhelpIdentifier matchgroup=rhelpSection start="\\method{" end="}" contained
 syn region rhelpIdentifier matchgroup=rhelpSection start="\\Rdversion{" end="}"
 
 " Highlighting of R code using an existing r.vim syntax file if available {{{1
 syn include @R syntax/r.vim
-syn match rhelpDots		"\\dots" containedin=@R
-syn region rhelpRcode matchgroup=Delimiter start="\\examples{" matchgroup=Delimiter transparent end="}" contains=@R,rhelpSection
-syn region rhelpRcode matchgroup=Delimiter start="\\usage{" matchgroup=Delimiter transparent end="}" contains=@R,rhelpIdentifier,rhelpS4method
-syn region rhelpRcode matchgroup=Delimiter start="\\synopsis{" matchgroup=Delimiter transparent end="}" contains=@R
-syn region rhelpRcode matchgroup=Delimiter start="\\special{" matchgroup=Delimiter transparent end="}" contains=@R contained
-syn region rhelpRcode matchgroup=Delimiter start="\\code{" matchgroup=Delimiter transparent end="}" contains=@R,rhelpLink contained
-syn region rhelpS4method matchgroup=Delimiter start="\\S4method{.*}(" matchgroup=Delimiter transparent end=")" contains=@R,rhelpDots contained
-syn region rhelpSexpr matchgroup=Delimiter start="\\Sexpr{" matchgroup=Delimiter transparent end="}" contains=@R
 
 " Strings {{{1
-syn region rhelpString start=/"/ end=/"/ 
+syn region rhelpString start=/"/ skip=/\\"/ end=/"/ contains=rhelpSpecialChar,rhelpCodeSpecial,rhelpLink contained
 
-" Special characters  ( \$ \& \% \# \{ \} \_) {{{1
+" Special characters in R strings
+syn match rhelpCodeSpecial display contained "\\\\\(n\|r\|t\|b\|a\|f\|v\|'\|\"\)\|\\\\"
+
+" Special characters  ( \$ \& \% \# \{ \} \_)
 syn match rhelpSpecialChar        "\\[$&%#{}_]"
+
+
+" R code {{{1
+syn match rhelpDots		"\\dots" containedin=@R
+syn region rhelpRcode matchgroup=Delimiter start="\\examples{" matchgroup=Delimiter transparent end="}" contains=@R,rhelpLink,rhelpIdentifier,rhelpString,rhelpSpecialChar,rhelpSection
+syn region rhelpRcode matchgroup=Delimiter start="\\usage{" matchgroup=Delimiter transparent end="}" contains=@R,rhelpIdentifier,rhelpS4method
+syn region rhelpRcode matchgroup=Delimiter start="\\synopsis{" matchgroup=Delimiter transparent end="}" contains=@R
+syn region rhelpRcode matchgroup=Delimiter start="\\special{" matchgroup=Delimiter transparent end="}" contains=@R
+syn region rhelpRcode matchgroup=Delimiter start="\\code{" skip='\\\@<!{.\{-}\\\@<!}' transparent end="}" contains=@R,rhelpDots,rhelpString,rhelpSpecialChar,rhelpLink keepend
+syn region rhelpS4method matchgroup=Delimiter start="\\S4method{.*}(" matchgroup=Delimiter transparent end=")" contains=@R,rhelpDots
+syn region rhelpSexpr matchgroup=Delimiter start="\\Sexpr{" matchgroup=Delimiter transparent end="}" contains=@R
+
+" PreProc {{{1
+syn match rhelpPreProc "^#ifdef.*" 
+syn match rhelpPreProc "^#endif.*" 
 
 " Special Delimiters {{{1
 syn match rhelpDelimiter		"\\cr"
 syn match rhelpDelimiter		"\\tab "
 
 " Keywords {{{1
-syn match rhelpKeyword	"\\R" contained
+syn match rhelpKeyword	"\\R"
 syn match rhelpKeyword	"\\ldots"
 syn match rhelpKeyword  "--"
 syn match rhelpKeyword  "---"
@@ -111,9 +122,13 @@ syn match rhelpKeyword	"\\Psi"
 syn match rhelpKeyword	"\\Omega"
 
 " Links {{{1
-syn region rhelpLink matchgroup=rhelpSection start="\\link{" end="}" contained keepend
-syn region rhelpLink matchgroup=rhelpSection start="\\link\[.\{-}\]{" end="}" contained keepend
-syn region rhelpLink matchgroup=rhelpSection start="\\linkS4class{" end="}" contained keepend
+syn region rhelpLink matchgroup=rhelpSection start="\\link{" end="}" contained keepend extend
+syn region rhelpLink matchgroup=rhelpSection start="\\link\[.\{-}\]{" end="}" contained keepend extend
+syn region rhelpLink matchgroup=rhelpSection start="\\linkS4class{" end="}" contained keepend extend
+
+" Verbatim like {{{1
+syn region rhelpVerbatim matchgroup=rhelpType start="\\samp{" skip='\\\@<!{.\{-}\\\@<!}' end="}" contains=rhelpSpecialChar,rhelpComment
+syn region rhelpVerbatim matchgroup=rhelpType start="\\verb{" skip='\\\@<!{.\{-}\\\@<!}' end="}" contains=rhelpSpecialChar,rhelpComment
 
 " Type Styles {{{1
 syn match rhelpType		"\\emph\>"
@@ -123,7 +138,6 @@ syn match rhelpType		"\\sQuote\>"
 syn match rhelpType		"\\dQuote\>"
 syn match rhelpType		"\\preformatted\>"
 syn match rhelpType		"\\kbd\>"
-syn match rhelpType		"\\samp\>"
 syn match rhelpType		"\\eqn\>"
 syn match rhelpType		"\\deqn\>"
 syn match rhelpType		"\\file\>"
@@ -172,6 +186,8 @@ syn match rhelpSection		"\\donttest\>"
 syn region rhelpFreesec matchgroup=Delimiter start="\\section{" matchgroup=Delimiter transparent end="}"
 syn region rhelpFreesubsec matchgroup=Delimiter start="\\subsection{" matchgroup=Delimiter transparent end="}" 
 
+syn match rhelpDelimiter "{\|\[\|(\|)\|\]\|}"
+
 " R help file comments {{{1
 syn match rhelpComment /%.*$/
 
@@ -194,17 +210,21 @@ if version >= 508 || !exists("did_rhelp_syntax_inits")
   else
     command -nargs=+ HiLink hi def link <args>
   endif
+  HiLink rhelpVerbatim    String
+  HiLink rhelpDelimiter   Delimiter
   HiLink rhelpIdentifier  Identifier
   HiLink rhelpString      String
+  HiLink rhelpCodeSpecial Special
   HiLink rhelpKeyword     Keyword
   HiLink rhelpDots        Keyword
   HiLink rhelpLink        Underlined
-  HiLink rhelpType	      Type
+  HiLink rhelpType        Type
   HiLink rhelpSection     PreCondit
   HiLink rhelpError       Error
   HiLink rhelpBraceError  Error
   HiLink rhelpCurlyError  Error
   HiLink rhelpParenError  Error
+  HiLink rhelpPreProc     PreProc
   HiLink rhelpDelimiter   Delimiter
   HiLink rhelpComment     Comment
   HiLink rhelpRComment    Comment

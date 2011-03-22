@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.3.  Last change: 2011 Jan 27
+*editing.txt*   For Vim version 7.3.  Last change: 2011 Feb 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -276,10 +276,11 @@ If you want to keep the changed buffer without saving it, switch on the
 			'readonly' option for this buffer.  {not in Vi}
 
 							*CTRL-^* *CTRL-6*
-CTRL-^			Edit the alternate file (equivalent to ":e #").
-			Mostly the alternate file is the previously edited
-			file.  This is a quick way to toggle between two
-			files.
+CTRL-^			Edit the alternate file.  Mostly the alternate file is
+			the previously edited file.  This is a quick way to
+			toggle between two files.  It is equivalent to ":e #",
+			except that it also works when there is no file name.
+
 			If the 'autowrite' or 'autowriteall' option is on and
 			the buffer was changed, write it.
 			Mostly the ^ character is positioned on the 6 key,
@@ -1387,6 +1388,8 @@ To set the default method, used for new files, use one of these in your
 |vimrc| file: >
 	set cm=zip
 	set cm=blowfish
+The message given for reading and writing a file will show "[crypted]" when
+using zip, "[blowfish]" when using blowfish.
 
 When writing an undo file, the same key and method will be used for the text
 in the undo file. |persistent-undo|.
