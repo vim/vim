@@ -561,7 +561,7 @@ CClink = $(CC)
 #CFLAGS = -g -O2 '-DSTARTUPTIME="vimstartup"' -fno-strength-reduce -Wall -Wmissing-prototypes
 
 # Use this with GCC to check for mistakes, unused arguments, etc.
-#CFLAGS = -g -Wall -Wextra -Wmissing-prototypes -Wunreachable-code -D_FORTIFY_SOURCE=1 -DU_DEBUG
+#CFLAGS = -g -Wall -Wextra -Wmissing-prototypes -Wunreachable-code -D_FORTIFY_SOURCE=1
 #CFLAGS = -g -O2 -Wall -Wextra -Wmissing-prototypes -D_FORTIFY_SOURCE=1 -DU_DEBUG
 #PYTHON_CFLAGS_EXTRA = -Wno-missing-field-initializers
 #MZSCHEME_CFLAGS_EXTRA = -Wno-unreachable-code -Wno-unused-parameter
@@ -594,8 +594,9 @@ LINT_OPTIONS = -beprxzF
 
 # PROFILING - Uncomment the next two lines to do profiling with gcc and gprof.
 # Might not work with GUI or Perl.
-# For unknown reasons adding "-lc" fixes a linking problem with GCC.  That's
-# probably a bug in the "-pg" implementation.
+# For unknown reasons adding "-lc" fixes a linking problem with some versions
+# of GCC.  That's probably a bug in the "-pg" implementation.
+# After running Vim see the profile result with: gmon vim gmon.out | vim -
 # Need to recompile everything after changing this: "make clean" "make".
 #PROFILE_CFLAGS = -pg -g -DWE_ARE_PROFILING
 #PROFILE_LIBS = -pg
@@ -606,8 +607,8 @@ LINT_OPTIONS = -beprxzF
 # Configuration is in the .ccmalloc or ~/.ccmalloc file.
 # Doesn't work very well, since memory linked to from global variables
 # (in libraries) is also marked as leaked memory.
-#PROFILE_CFLAGS = -DEXITFREE
-#PROFILE_LIBS = -lccmalloc
+#LEAK_CFLAGS = -DEXITFREE
+#LEAK_LIBS = -lccmalloc
 
 #####################################################
 ###  Specific systems, check if yours is listed!  ### {{{
@@ -1329,7 +1330,7 @@ SHELL = /bin/sh
 PRE_DEFS = -Iproto $(DEFS) $(GUI_DEFS) $(GUI_IPATH) $(CPPFLAGS) $(EXTRA_IPATHS)
 POST_DEFS = $(X_CFLAGS) $(MZSCHEME_CFLAGS) $(TCL_CFLAGS) $(EXTRA_DEFS)
 
-ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(POST_DEFS)
+ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(LEAK_CFLAGS) $(POST_DEFS)
 
 # Exclude $CFLAGS for osdef.sh, for Mac 10.4 some flags don't work together
 # with "-E".
@@ -1358,7 +1359,8 @@ ALL_LIBS = \
 	   $(PYTHON3_LIBS) \
 	   $(TCL_LIBS) \
 	   $(RUBY_LIBS) \
-	   $(PROFILE_LIBS)
+	   $(PROFILE_LIBS) \
+	   $(LEAK_LIBS)
 
 # abbreviations
 DEST_BIN = $(DESTDIR)$(BINDIR)
@@ -1480,8 +1482,15 @@ EXTRA_SRC = hangulin.c if_lua.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
 	    if_python.c if_python3.c if_tcl.c if_ruby.c if_sniff.c \
 	    gui_beval.c workshop.c wsdebug.c integration.c netbeans.c
 
+# Unittest files
+MEMFILE_TEST_SRC = memfile_test.c
+MEMFILE_TEST_TARGET = memfile_test$(EXEEXT)
+
+UNITTEST_SRC = $(MEMFILE_TEST_SRC)
+UNITTEST_TARGETS = $(MEMFILE_TEST_TARGET)
+
 # All sources, also the ones that are not configured
-ALL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(EXTRA_SRC)
+ALL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(UNITTEST_SRC) $(EXTRA_SRC)
 
 # Which files to check with lint.  Select one of these three lines.  ALL_SRC
 # checks more, but may not work well for checking a GUI that wasn't configured.
@@ -1492,7 +1501,7 @@ LINT_SRC = $(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) $(PYTHON_SRC) $(PYTHON3_SRC) 
 #LINT_SRC = $(ALL_SRC)
 #LINT_SRC = $(BASIC_SRC)
 
-OBJ = \
+OBJ_COMMON = \
 	objects/buffer.o \
 	objects/blowfish.o \
 	objects/charset.o \
@@ -1513,10 +1522,8 @@ OBJ = \
 	$(HANGULIN_OBJ) \
 	objects/if_cscope.o \
 	objects/if_xcmdsrv.o \
-	objects/main.o \
 	objects/mark.o \
-	objects/memfile.o \
-	objects/memline.o \
+        objects/memline.o \
 	objects/menu.o \
 	objects/message.o \
 	objects/misc1.o \
@@ -1541,6 +1548,7 @@ OBJ = \
 	objects/term.o \
 	objects/ui.o \
 	objects/undo.o \
+	objects/version.o \
 	objects/window.o \
 	$(GUI_OBJ) \
 	$(LUA_OBJ) \
@@ -1554,6 +1562,13 @@ OBJ = \
 	$(WORKSHOP_OBJ) \
 	$(NETBEANS_OBJ) \
 	$(WSDEBUG_OBJ)
+
+OBJ = $(OBJ_COMMON) \
+	objects/main.o \
+	objects/memfile.o \
+
+MEMFILE_TEST_OBJ = $(OBJ_COMMON) \
+        objects/memfile_test.o
 
 PRO_AUTO = \
 	blowfish.pro \
@@ -1700,7 +1715,7 @@ CCC = $(CC) -c -I$(srcdir) $(ALL_CFLAGS)
 $(VIMTARGET): auto/config.mk objects $(OBJ) version.c version.h
 	$(CCC) version.c -o objects/version.o
 	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
-		-o $(VIMTARGET) $(OBJ) objects/version.o $(ALL_LIBS)" \
+		-o $(VIMTARGET) $(OBJ) $(ALL_LIBS)" \
 		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
 		sh $(srcdir)/link.sh
 
@@ -1825,12 +1840,32 @@ test check:
 		ln -s $(VIMTARGET) vim; \
 	fi
 	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET) $(GUI_TESTARG)
+	$(MAKE) -f Makefile unittest
+
+unittesttargets:
+	$(MAKE) -f Makefile $(UNITTEST_TARGETS)
+
+unittest unittests: $(UNITTEST_TARGETS)
+	@for t in $(UNITTEST_TARGETS); do \
+		./$$t || exit 1; echo $$t passed; \
+	done
 
 testclean:
 	cd testdir; $(MAKE) -f Makefile clean
 	if test -d $(PODIR); then \
 		cd $(PODIR); $(MAKE) checkclean; \
 	fi
+
+# Unittests
+# It's build just like Vim to satisfy all dependencies.
+$(MEMFILE_TEST_TARGET): auto/config.mk objects $(MEMFILE_TEST_OBJ)
+	$(CCC) version.c -o objects/version.o
+	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
+		-o $(MEMFILE_TEST_TARGET) $(MEMFILE_TEST_OBJ) $(ALL_LIBS)" \
+		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
+		sh $(srcdir)/link.sh
+
+# install targets
 
 install: $(GUI_INSTALL)
 
@@ -2265,6 +2300,7 @@ clean celan: testclean
 	-rm -f *.o objects/* core $(VIMTARGET).core $(VIMTARGET) vim xxd/*.o
 	-rm -f $(TOOLS) auto/osdef.h auto/pathdef.c auto/if_perl.c
 	-rm -f conftest* *~ auto/link.sed
+	-rm -f $(UNITTEST_TARGETS)
 	-rm -f runtime pixmaps
 	-rm -rf $(APPDIR)
 	-rm -rf mzscheme_base.c
@@ -2558,6 +2594,9 @@ objects/mark.o: mark.c
 
 objects/memfile.o: memfile.c
 	$(CCC) -o $@ memfile.c
+
+objects/memfile_test.o: memfile_test.c
+	$(CCC) -o $@ memfile_test.c
 
 objects/memline.o: memline.c
 	$(CCC) -o $@ memline.c
@@ -2877,7 +2916,7 @@ objects/option.o: option.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h 
 objects/os_unix.o: os_unix.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
- arabic.h if_mzsch.h os_unixx.h
+ arabic.h os_unixx.h
 objects/pathdef.o: auto/pathdef.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
@@ -3016,6 +3055,10 @@ objects/gui_at_fs.o: gui_at_fs.c vim.h auto/config.h feature.h os_unix.h \
 objects/pty.o: pty.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h ascii.h \
  keymap.h term.h macros.h option.h structs.h regexp.h gui.h gui_beval.h \
  proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h arabic.h
+objects/memfile_test.o: memfile_test.c main.c vim.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h \
+ structs.h regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h \
+ proto.h globals.h farsi.h arabic.h farsi.c arabic.c memfile.c
 objects/hangulin.o: hangulin.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
@@ -3027,7 +3070,7 @@ objects/if_lua.o: if_lua.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h 
 objects/if_mzsch.o: if_mzsch.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
- globals.h farsi.h arabic.h if_mzsch.h mzscheme_base.c
+ globals.h farsi.h arabic.h if_mzsch.h
 objects/if_perl.o: auto/if_perl.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
@@ -3048,7 +3091,7 @@ objects/if_tcl.o: if_tcl.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h 
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
  arabic.h
-objects/if_ruby.o: if_ruby.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
+objects/if_ruby.o: if_ruby.c auto/config.h vim.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
  arabic.h version.h

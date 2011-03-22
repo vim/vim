@@ -92,37 +92,39 @@ typedef struct
 #define EDIT_TAG    3	    /* tag name argument given, use tagname */
 #define EDIT_QF	    4	    /* start in quickfix mode */
 
-#if defined(UNIX) || defined(VMS)
+#if (defined(UNIX) || defined(VMS)) && !defined(NO_VIM_MAIN)
 static int file_owned __ARGS((char *fname));
 #endif
 static void mainerr __ARGS((int, char_u *));
+#ifndef NO_VIM_MAIN
 static void main_msg __ARGS((char *s));
 static void usage __ARGS((void));
 static int get_number_arg __ARGS((char_u *p, int *idx, int def));
-#if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
+# if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
 static void init_locale __ARGS((void));
-#endif
+# endif
 static void parse_command_name __ARGS((mparm_T *parmp));
 static void early_arg_scan __ARGS((mparm_T *parmp));
 static void command_line_scan __ARGS((mparm_T *parmp));
 static void check_tty __ARGS((mparm_T *parmp));
 static void read_stdin __ARGS((void));
 static void create_windows __ARGS((mparm_T *parmp));
-#ifdef FEAT_WINDOWS
+# ifdef FEAT_WINDOWS
 static void edit_buffers __ARGS((mparm_T *parmp));
-#endif
+# endif
 static void exe_pre_commands __ARGS((mparm_T *parmp));
 static void exe_commands __ARGS((mparm_T *parmp));
 static void source_startup_scripts __ARGS((mparm_T *parmp));
 static void main_start_gui __ARGS((void));
-#if defined(HAS_SWAP_EXISTS_ACTION)
+# if defined(HAS_SWAP_EXISTS_ACTION)
 static void check_swap_exists_action __ARGS((void));
-#endif
-#ifdef FEAT_CLIENTSERVER
+# endif
+# if defined(FEAT_CLIENTSERVER) || defined(PROTO)
 static void exec_on_server __ARGS((mparm_T *parmp));
 static void prepare_server __ARGS((mparm_T *parmp));
 static void cmdsrv_main __ARGS((int *argc, char **argv, char_u *serverName_arg, char_u **serverStr));
 static char_u *serverMakeName __ARGS((char_u *arg, char *cmd));
+# endif
 #endif
 
 
@@ -145,7 +147,8 @@ static char *(main_errors[]) =
 #define ME_INVALID_ARG		5
 };
 
-#ifndef PROTO	    /* don't want a prototype for main() */
+#ifndef NO_VIM_MAIN	/* skip this for unittests */
+#ifndef PROTO		/* don't want a prototype for main() */
     int
 # ifdef VIMDLL
 _export
@@ -966,6 +969,7 @@ main
     return 0;
 }
 #endif /* PROTO */
+#endif /* NO_VIM_MAIN */
 
 /*
  * Main loop: Execute Normal mode commands until exiting Vim.
@@ -1430,6 +1434,7 @@ getout(exitval)
     mch_exit(exitval);
 }
 
+#ifndef NO_VIM_MAIN
 /*
  * Get a (optional) count for a Vim argument.
  */
@@ -2994,6 +2999,8 @@ main_start_gui()
 #endif
 }
 
+#endif  /* NO_VIM_MAIN */
+
 /*
  * Get an environment variable, and execute it as Ex commands.
  * Returns FAIL if the environment variable was not executed, OK otherwise.
@@ -3033,7 +3040,7 @@ process_env(env, is_viminit)
     return FAIL;
 }
 
-#if defined(UNIX) || defined(VMS)
+#if (defined(UNIX) || defined(VMS)) && !defined(NO_VIM_MAIN)
 /*
  * Return TRUE if we are certain the user owns the file "fname".
  * Used for ".vimrc" and ".exrc".
@@ -3091,6 +3098,7 @@ mainerr_arg_missing(str)
     mainerr(ME_ARG_MISSING, str);
 }
 
+#ifndef NO_VIM_MAIN
 /*
  * print a message with three spaces prepended and '\n' appended.
  */
@@ -3311,6 +3319,8 @@ check_swap_exists_action()
 }
 #endif
 
+#endif
+
 #if defined(STARTUPTIME) || defined(PROTO)
 static void time_diff __ARGS((struct timeval *then, struct timeval *now));
 
@@ -3420,7 +3430,7 @@ time_msg(mesg, tv_start)
 
 #endif
 
-#if defined(FEAT_CLIENTSERVER) || defined(PROTO)
+#if (defined(FEAT_CLIENTSERVER) && !defined(NO_VIM_MAIN)) || defined(PROTO)
 
 /*
  * Common code for the X command server and the Win32 command server.
@@ -3888,6 +3898,32 @@ build_drop_cmd(filec, filev, tabs, sendReply)
 }
 
 /*
+ * Make our basic server name: use the specified "arg" if given, otherwise use
+ * the tail of the command "cmd" we were started with.
+ * Return the name in allocated memory.  This doesn't include a serial number.
+ */
+    static char_u *
+serverMakeName(arg, cmd)
+    char_u	*arg;
+    char	*cmd;
+{
+    char_u *p;
+
+    if (arg != NULL && *arg != NUL)
+	p = vim_strsave_up(arg);
+    else
+    {
+	p = vim_strsave_up(gettail((char_u *)cmd));
+	/* Remove .exe or .bat from the name. */
+	if (p != NULL && vim_strchr(p, '.') != NULL)
+	    *vim_strchr(p, '.') = NUL;
+    }
+    return p;
+}
+#endif /* FEAT_CLIENTSERVER */
+
+#if defined(FEAT_CLIENTSERVER) || defined(PROTO)
+/*
  * Replace termcodes such as <CR> and insert as key presses if there is room.
  */
     void
@@ -3998,32 +4034,7 @@ serverConvert(client_enc, data, tofree)
 # endif
     return res;
 }
-
-
-/*
- * Make our basic server name: use the specified "arg" if given, otherwise use
- * the tail of the command "cmd" we were started with.
- * Return the name in allocated memory.  This doesn't include a serial number.
- */
-    static char_u *
-serverMakeName(arg, cmd)
-    char_u	*arg;
-    char	*cmd;
-{
-    char_u *p;
-
-    if (arg != NULL && *arg != NUL)
-	p = vim_strsave_up(arg);
-    else
-    {
-	p = vim_strsave_up(gettail((char_u *)cmd));
-	/* Remove .exe or .bat from the name. */
-	if (p != NULL && vim_strchr(p, '.') != NULL)
-	    *vim_strchr(p, '.') = NUL;
-    }
-    return p;
-}
-#endif /* FEAT_CLIENTSERVER */
+#endif
 
 /*
  * When FEAT_FKMAP is defined, also compile the Farsi source code.

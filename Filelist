@@ -39,6 +39,7 @@ SRC_ALL =	\
 		src/mark.c \
 		src/mbyte.c \
 		src/memfile.c \
+		src/memfile_test.c \
 		src/memline.c \
 		src/menu.c \
 		src/message.c \
@@ -686,6 +687,8 @@ LANG_GEN = \
 		runtime/tutor/tutor.utf-8 \
 		runtime/tutor/tutor.?? \
 		runtime/tutor/tutor.??.* \
+		runtime/tutor/tutor.bar \
+		runtime/tutor/tutor.bar.* \
 		runtime/spell/README.txt \
 		runtime/spell/??/*.diff \
 		runtime/spell/??/main.aap \

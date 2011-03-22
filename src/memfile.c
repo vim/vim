@@ -84,6 +84,13 @@ static int  mf_write __ARGS((memfile_T *, bhdr_T *));
 static int  mf_write_block __ARGS((memfile_T *mfp, bhdr_T *hp, off_t offset, unsigned size));
 static int  mf_trans_add __ARGS((memfile_T *, bhdr_T *));
 static void mf_do_open __ARGS((memfile_T *, char_u *, int));
+static void mf_hash_init __ARGS((mf_hashtab_T *));
+static void mf_hash_free __ARGS((mf_hashtab_T *));
+static void mf_hash_free_all __ARGS((mf_hashtab_T *));
+static mf_hashitem_T *mf_hash_find __ARGS((mf_hashtab_T *, blocknr_T));
+static void mf_hash_add_item __ARGS((mf_hashtab_T *, mf_hashitem_T *));
+static void mf_hash_rem_item __ARGS((mf_hashtab_T *, mf_hashitem_T *));
+static int mf_hash_grow __ARGS((mf_hashtab_T *));
 
 /*
  * The functions for using a memfile:
@@ -119,7 +126,6 @@ mf_open(fname, flags)
     int		flags;
 {
     memfile_T		*mfp;
-    int			i;
     off_t		size;
 #if defined(STATFS) && defined(UNIX) && !defined(__QNX__)
 # define USE_FSTATFS
@@ -152,11 +158,8 @@ mf_open(fname, flags)
     mfp->mf_used_last = NULL;
     mfp->mf_dirty = FALSE;
     mfp->mf_used_count = 0;
-    for (i = 0; i < MEMHASHSIZE; ++i)
-    {
-	mfp->mf_hash[i] = NULL;		/* hash lists are empty */
-	mfp->mf_trans[i] = NULL;	/* trans lists are empty */
-    }
+    mf_hash_init(&mfp->mf_hash);
+    mf_hash_init(&mfp->mf_trans);
     mfp->mf_page_size = MEMFILE_PAGE_SIZE;
 #ifdef FEAT_CRYPT
     mfp->mf_old_key = NULL;
@@ -242,8 +245,6 @@ mf_close(mfp, del_file)
     int		del_file;
 {
     bhdr_T	*hp, *nextp;
-    NR_TRANS	*tp, *tpnext;
-    int		i;
 
     if (mfp == NULL)		    /* safety check */
 	return;
@@ -263,12 +264,8 @@ mf_close(mfp, del_file)
     }
     while (mfp->mf_free_first != NULL)	    /* free entries in free list */
 	vim_free(mf_rem_free(mfp));
-    for (i = 0; i < MEMHASHSIZE; ++i)	    /* free entries in trans lists */
-	for (tp = mfp->mf_trans[i]; tp != NULL; tp = tpnext)
-	{
-	    tpnext = tp->nt_next;
-	    vim_free(tp);
-	}
+    mf_hash_free(&mfp->mf_hash);
+    mf_hash_free_all(&mfp->mf_trans);	    /* free hashtable and its items */
     vim_free(mfp->mf_fname);
     vim_free(mfp->mf_ffname);
     vim_free(mfp);
@@ -743,16 +740,7 @@ mf_ins_hash(mfp, hp)
     memfile_T	*mfp;
     bhdr_T	*hp;
 {
-    bhdr_T	*hhp;
-    int		hash;
-
-    hash = MEMHASH(hp->bh_bnum);
-    hhp = mfp->mf_hash[hash];
-    hp->bh_hash_next = hhp;
-    hp->bh_hash_prev = NULL;
-    if (hhp != NULL)
-	hhp->bh_hash_prev = hp;
-    mfp->mf_hash[hash] = hp;
+    mf_hash_add_item(&mfp->mf_hash, (mf_hashitem_T *)hp);
 }
 
 /*
@@ -763,13 +751,7 @@ mf_rem_hash(mfp, hp)
     memfile_T	*mfp;
     bhdr_T	*hp;
 {
-    if (hp->bh_hash_prev == NULL)
-	mfp->mf_hash[MEMHASH(hp->bh_bnum)] = hp->bh_hash_next;
-    else
-	hp->bh_hash_prev->bh_hash_next = hp->bh_hash_next;
-
-    if (hp->bh_hash_next)
-	hp->bh_hash_next->bh_hash_prev = hp->bh_hash_prev;
+    mf_hash_rem_item(&mfp->mf_hash, (mf_hashitem_T *)hp);
 }
 
 /*
@@ -780,12 +762,7 @@ mf_find_hash(mfp, nr)
     memfile_T	*mfp;
     blocknr_T	nr;
 {
-    bhdr_T	*hp;
-
-    for (hp = mfp->mf_hash[MEMHASH(nr)]; hp != NULL; hp = hp->bh_hash_next)
-	if (hp->bh_bnum == nr)
-	    break;
-    return hp;
+    return (bhdr_T *)mf_hash_find(&mfp->mf_hash, nr);
 }
 
 /*
@@ -1187,7 +1164,6 @@ mf_trans_add(mfp, hp)
 {
     bhdr_T	*freep;
     blocknr_T	new_bnum;
-    int		hash;
     NR_TRANS	*np;
     int		page_count;
 
@@ -1235,12 +1211,8 @@ mf_trans_add(mfp, hp)
     hp->bh_bnum = new_bnum;
     mf_ins_hash(mfp, hp);		    /* insert in new hash list */
 
-    hash = MEMHASH(np->nt_old_bnum);	    /* insert in trans list */
-    np->nt_next = mfp->mf_trans[hash];
-    mfp->mf_trans[hash] = np;
-    if (np->nt_next != NULL)
-	np->nt_next->nt_prev = np;
-    np->nt_prev = NULL;
+    /* Insert "np" into "mf_trans" hashtable with key "np->nt_old_bnum" */
+    mf_hash_add_item(&mfp->mf_trans, (mf_hashitem_T *)np);
 
     return OK;
 }
@@ -1255,25 +1227,20 @@ mf_trans_del(mfp, old_nr)
     memfile_T	*mfp;
     blocknr_T	old_nr;
 {
-    int		hash;
     NR_TRANS	*np;
     blocknr_T	new_bnum;
 
-    hash = MEMHASH(old_nr);
-    for (np = mfp->mf_trans[hash]; np != NULL; np = np->nt_next)
-	if (np->nt_old_bnum == old_nr)
-	    break;
+    np = (NR_TRANS *)mf_hash_find(&mfp->mf_trans, old_nr);
+
     if (np == NULL)		/* not found */
 	return old_nr;
 
     mfp->mf_neg_count--;
     new_bnum = np->nt_new_bnum;
-    if (np->nt_prev != NULL)		/* remove entry from the trans list */
-	np->nt_prev->nt_next = np->nt_next;
-    else
-	mfp->mf_trans[hash] = np->nt_next;
-    if (np->nt_next != NULL)
-	np->nt_next->nt_prev = np->nt_prev;
+
+    /* remove entry from the trans list */
+    mf_hash_rem_item(&mfp->mf_trans, (mf_hashitem_T *)np);
+
     vim_free(np);
 
     return new_bnum;
@@ -1396,4 +1363,208 @@ mf_do_open(mfp, fname, flags)
 #endif
 	mch_hide(mfp->mf_fname);    /* try setting the 'hidden' flag */
     }
+}
+
+/*
+ * Implementation of mf_hashtab_T follows.
+ */
+
+/*
+ * The number of buckets in the hashtable is increased by a factor of
+ * MHT_GROWTH_FACTOR when the average number of items per bucket
+ * exceeds 2 ^ MHT_LOG_LOAD_FACTOR.
+ */
+#define MHT_LOG_LOAD_FACTOR 6
+#define MHT_GROWTH_FACTOR   2   /* must be a power of two */
+
+/*
+ * Initialize an empty hash table.
+ */
+    static void
+mf_hash_init(mht)
+    mf_hashtab_T *mht;
+{
+    vim_memset(mht, 0, sizeof(mf_hashtab_T));
+    mht->mht_buckets = mht->mht_small_buckets;
+    mht->mht_mask = MHT_INIT_SIZE - 1;
+}
+
+/*
+ * Free the array of a hash table.  Does not free the items it contains!
+ * The hash table must not be used again without another mf_hash_init() call.
+ */
+    static void
+mf_hash_free(mht)
+    mf_hashtab_T *mht;
+{
+    if (mht->mht_buckets != mht->mht_small_buckets)
+	vim_free(mht->mht_buckets);
+}
+
+/*
+ * Free the array of a hash table and all the items it contains.
+ */
+    static void
+mf_hash_free_all(mht)
+    mf_hashtab_T    *mht;
+{
+    long_u	    idx;
+    mf_hashitem_T   *mhi;
+    mf_hashitem_T   *next;
+
+    for (idx = 0; idx <= mht->mht_mask; idx++)
+	for (mhi = mht->mht_buckets[idx]; mhi != NULL; mhi = next)
+	{
+	    next = mhi->mhi_next;
+	    vim_free(mhi);
+	}
+
+    mf_hash_free(mht);
+}
+
+/*
+ * Find "key" in hashtable "mht".
+ * Returns a pointer to a mf_hashitem_T or NULL if the item was not found.
+ */
+    static mf_hashitem_T *
+mf_hash_find(mht, key)
+    mf_hashtab_T    *mht;
+    blocknr_T	    key;
+{
+    mf_hashitem_T   *mhi;
+
+    mhi = mht->mht_buckets[key & mht->mht_mask];
+    while (mhi != NULL && mhi->mhi_key != key)
+	mhi = mhi->mhi_next;
+
+    return mhi;
+}
+
+/*
+ * Add item "mhi" to hashtable "mht".
+ * "mhi" must not be NULL.
+ */
+    static void
+mf_hash_add_item(mht, mhi)
+    mf_hashtab_T    *mht;
+    mf_hashitem_T   *mhi;
+{
+    long_u	    idx;
+
+    idx = mhi->mhi_key & mht->mht_mask;
+    mhi->mhi_next = mht->mht_buckets[idx];
+    mhi->mhi_prev = NULL;
+    if (mhi->mhi_next != NULL)
+	mhi->mhi_next->mhi_prev = mhi;
+    mht->mht_buckets[idx] = mhi;
+
+    mht->mht_count++;
+
+    /*
+     * Grow hashtable when we have more thank 2^MHT_LOG_LOAD_FACTOR
+     * items per bucket on average
+     */
+    if (mht->mht_fixed == 0
+	&& (mht->mht_count >> MHT_LOG_LOAD_FACTOR) > mht->mht_mask)
+    {
+	if (mf_hash_grow(mht) == FAIL)
+	{
+	    /* stop trying to grow after first failure to allocate memory */
+	    mht->mht_fixed = 1;
+	}
+    }
+}
+
+/*
+ * Remove item "mhi" from hashtable "mht".
+ * "mhi" must not be NULL and must have been inserted into "mht".
+ */
+    static void
+mf_hash_rem_item(mht, mhi)
+    mf_hashtab_T    *mht;
+    mf_hashitem_T   *mhi;
+{
+    if (mhi->mhi_prev == NULL)
+	mht->mht_buckets[mhi->mhi_key & mht->mht_mask] = mhi->mhi_next;
+    else
+	mhi->mhi_prev->mhi_next = mhi->mhi_next;
+
+    if (mhi->mhi_next != NULL)
+	mhi->mhi_next->mhi_prev = mhi->mhi_prev;
+
+    mht->mht_count--;
+
+    /* We could shrink the table here, but it typically takes little memory,
+     * so why bother?  */
+}
+
+/*
+ * Increase number of buckets in the hashtable by MHT_GROWTH_FACTOR and
+ * rehash items.
+ * Returns FAIL when out of memory.
+ */
+    static int
+mf_hash_grow(mht)
+    mf_hashtab_T    *mht;
+{
+    long_u	    i, j;
+    int		    shift;
+    mf_hashitem_T   *mhi;
+    mf_hashitem_T   *tails[MHT_GROWTH_FACTOR];
+    mf_hashitem_T   **buckets;
+    size_t	    size;
+
+    size = (mht->mht_mask + 1) * MHT_GROWTH_FACTOR * sizeof(void *);
+    buckets = (mf_hashitem_T **)lalloc_clear(size, FALSE);
+    if (buckets == NULL)
+	return FAIL;
+
+    shift = 0;
+    while ((mht->mht_mask >> shift) != 0)
+	shift++;
+
+    for (i = 0; i <= mht->mht_mask; i++)
+    {
+	/*
+	 * Traverse the items in the i-th original bucket and move them into
+	 * MHT_GROWTH_FACTOR new buckets, preserving their relative order
+	 * within each new bucket.  Preserving the order is important because
+	 * mf_get() tries to keep most recently used items at the front of
+	 * each bucket.
+	 *
+	 * Here we strongly rely on the fact the hashes are computed modulo
+	 * a power of two.
+	 */
+
+	vim_memset(tails, 0, sizeof(tails));
+
+	for (mhi = mht->mht_buckets[i]; mhi != NULL; mhi = mhi->mhi_next)
+	{
+	    j = (mhi->mhi_key >> shift) & (MHT_GROWTH_FACTOR - 1);
+	    if (tails[j] == NULL)
+	    {
+		buckets[i + (j << shift)] = mhi;
+		tails[j] = mhi;
+		mhi->mhi_prev = NULL;
+	    }
+	    else
+	    {
+		tails[j]->mhi_next = mhi;
+		mhi->mhi_prev = tails[j];
+		tails[j] = mhi;
+	    }
+	}
+
+	for (j = 0; j < MHT_GROWTH_FACTOR; j++)
+	    if (tails[j] != NULL)
+		tails[j]->mhi_next = NULL;
+    }
+
+    if (mht->mht_buckets != mht->mht_small_buckets)
+	vim_free(mht->mht_buckets);
+
+    mht->mht_buckets = buckets;
+    mht->mht_mask = (mht->mht_mask + 1) * MHT_GROWTH_FACTOR - 1;
+
+    return OK;
 }

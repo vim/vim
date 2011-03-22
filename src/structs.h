@@ -378,6 +378,35 @@ typedef struct memfile	    memfile_T;
 typedef long		    blocknr_T;
 
 /*
+ * mf_hashtab_T is a chained hashtable with blocknr_T key and arbitrary
+ * structures as items.  This is an intrusive data structure: we require
+ * that items begin with mf_hashitem_T which contains the key and linked
+ * list pointers.  List of items in each bucket is doubly-linked.
+ */
+
+typedef struct mf_hashitem_S mf_hashitem_T;
+
+struct mf_hashitem_S
+{
+    mf_hashitem_T   *mhi_next;
+    mf_hashitem_T   *mhi_prev;
+    blocknr_T	    mhi_key;
+};
+
+#define MHT_INIT_SIZE   64
+
+typedef struct mf_hashtab_S
+{
+    long_u	    mht_mask;	    /* mask used for hash value (nr of items
+				     * in array is "mht_mask" + 1) */
+    long_u	    mht_count;	    /* nr of items inserted into hashtable */
+    mf_hashitem_T   **mht_buckets;  /* points to mht_small_buckets or
+				     *dynamically allocated array */
+    mf_hashitem_T   *mht_small_buckets[MHT_INIT_SIZE];   /* initial buckets */
+    char	    mht_fixed;	    /* non-zero value forbids growth */
+} mf_hashtab_T;
+
+/*
  * for each (previously) used block in the memfile there is one block header.
  *
  * The block may be linked in the used list OR in the free list.
@@ -394,11 +423,11 @@ typedef long		    blocknr_T;
 
 struct block_hdr
 {
+    mf_hashitem_T bh_hashitem;      /* header for hash table and key */
+#define bh_bnum bh_hashitem.mhi_key /* block number, part of bh_hashitem */
+
     bhdr_T	*bh_next;	    /* next block_hdr in free or used list */
     bhdr_T	*bh_prev;	    /* previous block_hdr in used list */
-    bhdr_T	*bh_hash_next;	    /* next block_hdr in hash list */
-    bhdr_T	*bh_hash_prev;	    /* previous block_hdr in hash list */
-    blocknr_T	bh_bnum;	    /* block number */
     char_u	*bh_data;	    /* pointer to memory (for used block) */
     int		bh_page_count;	    /* number of pages in this block */
 
@@ -417,9 +446,9 @@ typedef struct nr_trans NR_TRANS;
 
 struct nr_trans
 {
-    NR_TRANS	*nt_next;		/* next nr_trans in hash list */
-    NR_TRANS	*nt_prev;		/* previous nr_trans in hash list */
-    blocknr_T	nt_old_bnum;		/* old, negative, number */
+    mf_hashitem_T nt_hashitem;		/* header for hash table and key */
+#define nt_old_bnum nt_hashitem.mhi_key	/* old, negative, number */
+
     blocknr_T	nt_new_bnum;		/* new, positive, number */
 };
 
@@ -499,12 +528,6 @@ typedef struct
 
 typedef struct file_buffer buf_T;  /* forward declaration */
 
-/*
- * Simplistic hashing scheme to quickly locate the blocks in the used list.
- * 64 blocks are found directly (64 * 4K = 256K, most files are smaller).
- */
-#define MEMHASHSIZE	64
-#define MEMHASH(nr)	((nr) & (MEMHASHSIZE - 1))
 #define MF_SEED_LEN	8
 
 struct memfile
@@ -517,8 +540,8 @@ struct memfile
     bhdr_T	*mf_used_last;		/* lru block_hdr in used list */
     unsigned	mf_used_count;		/* number of pages in used list */
     unsigned	mf_used_count_max;	/* maximum number of pages in memory */
-    bhdr_T	*mf_hash[MEMHASHSIZE];	/* array of hash lists */
-    NR_TRANS	*mf_trans[MEMHASHSIZE];	/* array of trans lists */
+    mf_hashtab_T mf_hash;		/* hash lists */
+    mf_hashtab_T mf_trans;		/* trans lists */
     blocknr_T	mf_blocknr_max;		/* highest positive block number + 1*/
     blocknr_T	mf_blocknr_min;		/* lowest negative block number - 1 */
     blocknr_T	mf_neg_count;		/* number of negative blocks numbers */
