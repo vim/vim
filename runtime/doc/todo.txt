@@ -31,27 +31,15 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 The :z command doesn't work exactly as it should. (ChangZhuo Chen, 2011 Mar 2)
+Compare with how old Vi works and with posix spec.  terminal is 80 x 24,
+'scroll' option set to 11.
 
 Crash with ":python help(dir)". (Kearn Holliday, 2011 Mar 19)
 I can reproduce it.  Don't know why it happens.
 
-Compare with how old Vi works and with posix spec.  terminal is 80 x 24,
-'scroll' option set to 11.
-
-Update Bavarian tutor. (Sepp Hell, 2011 Mar 10)
-
-After ":set t_kb=" ":set t_kb" gives an error, should report an empty string.
-Can do ":set t_xy=foo", need to check for valid name.
-
-Menu File/Close should close a tab if it's not the last one and it
-contains only one window (Jean Johner)
-Patch by Ben Schmidt (7 maart)
-
-Patch to update .hgtags (Ben Haskell, 2011 Mar 8)
-Also hints how to add a tag after committing a patch.
-
-Patch for slow write: undefined symbols with FEAT_CLIENTSERVER.
-Alternative tests.  (Krasilnikov)
+'cursorline' is displayed too short when there are concealed characters and
+'list' is set.  (Dennis Preiser)
+Patch 7.3.116 was the wrong solution.
 
 When opening file from windows explorer, characters inside [] cause
 problems, even though double quotes are used. (Manuel Stol, 2011 Mar 9)

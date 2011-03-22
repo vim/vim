@@ -1,5 +1,5 @@
 ===============================================================================
-=    G o t i k a m   i n   n   W I M M - S c h a i n e r   -   Fassung 1.7D   =
+=    G o t i k a m   i n   n   W I M M - S c h a i n e r   -   Fassung 1.7    =
 ===============================================================================
 
    Dyr Wimm ist ayn gro mächtigs Blat, dös was mit aynn Wösn Befelh aufwartt; z
@@ -12,10 +12,10 @@
    OBACHT:
    Die Faudungen,  wost daader finddst,  gaand istig  s Gwort öndern.  Dösswögn
    machst eyn n Böstn glei  ayn Aamum von derer Dautticht daader.  Haast alsnan
-   dös Gwort daader  mit n Befelh "vimtutor bj"  ausherlaassn,  ist s ee schoon
+   dös Gwort daader mit n Befelh  "vimtutor bar"  ausherlaassn, ist s ee schoon
    ayn Aamum.
    Mir kan s  nit oft gnueg  sagn,  däß  der Schainer daader  istig  gan n Üebn
-   ghoert.  Also muesst schoon aau die Befelh ausfüern,  wennst ys gscheid ler-
+   ghoert.  Also muesst schoon aau die Befelh +ausfüern, wennst ys gscheid ler-
    nen willst. Mit n Lösn yllain ist s +nit taan!
 
    Ietz schaust grad non, däß dein Föststölltastn nit druckt ist; und aft geest
@@ -24,7 +24,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                       Letzn 1.1: MIT N MÖRKL UMAYNANDFARN
 
-**  Dyrmitst mit n Mörkl umaynandkimmst, druck h, j, k und l wie unt zaigt.  **
+** Dyrmitst mit n Mörkl umaynandkimmst, druck  h, j, k und l  wie unt zaigt. **
             ^            Ayn Öslsbrugg:
             k            De Tastn  h  ist winster und +geet aau gan winster.
    < h             l >   S  l  leit zesm und richtt si gan zesm.
@@ -32,13 +32,13 @@
             v            Mit n  k  kimmst gan n KOPF.            
   1. Ietz ruedertst ainfach mit n Mörkl auf n Bildschirm umaynand,  hinst däßst
      di sicher füelst.
-  2. Halt  d Abhin-Tastn (j)  druckt;  aft rumplt s  ainfach weiter.  Netty yso
+  2. Halt d Abhin-Tastn  (j)  druckt;  aft rumplt s  ainfach weiter.  Netty yso
      kimmst gan dyr naehstn Letzn.
      
   3. Wie gsait, ietz bewögst di also mit derer Tastn gan dyr Letzn 1.2.
 
 Non öbbs: Allweil, wenn dyr niemer ganz wol ist, wasst öbbenn druckt haast, aft
-          zipfst  <ESC>;  naacherd bist wider ganz gwon in dyr Befelhs-Artweis.
+          zipfst  <ESC>  ; naacher bist wider ganz gwon in dyr Befelhs-Artweis.
 
       
           Nöbnbei gsait kimmst gwonerweil aau mit de Pfeiltastnen weiter.  Aber
@@ -53,17 +53,17 @@ Non öbbs: Allweil, wenn dyr niemer ganz wol ist, wasst öbbenn druckt haast, aft
 
   1. Druck d <ESC>-Tastn, dyrmitst aau gwiß in dyr Befelhs-Artweis bist.
   
-  2. Demmlt  :q! <EIN>.
+  2. Demmlt  :q!<EIN>  .
      Daa dyrmit  benddst ys Blat  und verwirffst  allss,  wasst öbbenn  göndert
      haast.
 
   3. Balst önn Eingib seghst, gib dö Faudung ein,  wo di zo dönn Schainer brun-
-     gen haat, also    vimtutor bj <EIN>.
+     gen haat, also   vimtutor bar<EIN>  .
 
   4. Also, wenn ietz allsse sitzt, naacherd füerst d Schritt 1 hinst 3 aus, mit
      wasst ys Blat verlaasst und aft wider einhinkimmst.
 
-Anmörkung: Mit  :q! <EIN> verwirffst allss, wasst göndert older enther gschribn
+Anmörkung: Mit  :q!<EIN>  verwirffst allss, wasst göndert older enther gschribn
            haast. In aynn Öttlych Letznen lernst acht, wiest dös allss in ayner
            Dautticht speichertst.
 
@@ -73,7 +73,7 @@ Anmörkung: Mit  :q! <EIN> verwirffst allss, wasst göndert older enther gschribn
          
          ** Druck  x  , dyrmitst dös Zaichen unter n Mörkl löschst. **
 
-  1. Bewög di mit n Mörkl auf de mit  ---> angmörkte Zeil unt.
+  1. Bewög di mit n Mörkl auf de mit  --->  angmörkte Zeil unt.
 
   2. Zo n Faeler Verbössern  farst mit n Mörkl  netty  auf dös Zaichen,  dös wo
      glöscht ghoert.
@@ -96,14 +96,14 @@ Und ganz wichtig:  Dyrweilst dönn Schainer durcharechtst,  versuech nit öbbenn,
 
                   **  Druck  i  , dyrmitst öbbs einfüegst. **
 
-  1. Bewög önn Mörkl zo dyr eerstn untignen Zeil, wo mit ---> angeet.
+  1. Bewög önn Mörkl zo dyr eerstn untignen Zeil, wo mit  --->  angeet.
 
   2. Dyrmitst  de eerste Zeil  wie de zwaitte machst,  bewög önn Mörkl  auf dös
      eerste Zaichen NAACH derer Stöll, daa wo s Gwort eingfüegt werdn sollt.
 
   3. Druck  i  und gib dös ein, was abgeet.
 
-  4. Wenn ieweils ayn Faeler verweitert ist, aft druck <ESC>; und dyrmit kimmst
+  4. Wenn ieweils ayn Faeler verweitert ist, aft druck   <ESC>  ; dyrmit kimmst
      gan dyr Befelhsartweis zrugg.
      So, und ietz tuest ainfach yso weiter, hinst däß dyr Saz stimmt.
 
@@ -119,15 +119,15 @@ Und ganz wichtig:  Dyrweilst dönn Schainer durcharechtst,  versuech nit öbbenn,
 
                       ** Druck  A  gan n Gwort Anfüegn. **
 
-  1. Gee mit n Mörkl gan dyr eerstn untignen Zeil, wo ayn ---> dyrvor haat.
+  1. Gee mit n Mörkl gan dyr eerstn untignen Zeil, wo ayn  --->  dyrvor haat.
      Daa ist s gleich, wo gnaun dyr Mörkl in derer Zeil steet.  
 
   2. Demmlt  A  und gib de entspröchetn Ergöntzungen ein.
 
-  3. Wennst  mit n Anfüegn förtig bist,  aft druckst <ESC>,  däßst wider eyn de
+  3. Wennst mit n Anfüegn förtig bist, aft druckst  <ESC>  , däßst wider eyn de
      Befelhsartweis zruggkimmst.
 
-  4. So,  und ietz geest aft non gan dyr zwaittn  mit ---> angmörktn Zeil;  und
+  4. So,  und ietz geest aft non gan dyr zwaittn mit  --->  angmörktn Zeil; und
      daadl machst ys netty yso.
 
 ---> In derer Zeil gee  
@@ -147,14 +147,14 @@ Und ganz wichtig:  Dyrweilst dönn Schainer durcharechtst,  versuech nit öbbenn,
 
   1. Verlaaß also s Blat, wie s in dyr Letzn 1.2. haisst, mit  :q!  !
 
-  2. Gib dö Faudung eyn n Eingib ein:  vim Schainer <EIN> . 'vim' ruefft s Blat
-     auf,  und 'Schainer'  haisst de Dautticht,  wost barechtn  willst.  Dyrmit
+  2. Gib dö Faudung eyn n Eingib ein:  vim Schainer<EIN>  . 'vim' ruefft s Blat
+     auf,  und  'Schainer'  haisst de Dautticht,  wost barechtn willst.  Dyrmit
      haast also ayn Dautticht, dö wost barechtn kanst.
 
   3. Ietz  füegst öbbs ein older löschst öbbs,  wiest ys in de vorignen Letznen
      glernt haast.
 
-  4. Speichert de gönderte Dautticht und verlaaß önn Wimm mit  :wq  <EIN>  .
+  4. Speichert de gönderte Dautticht und verlaaß önn Wimm mit  :wq<EIN>  .
 
   5. Schmeiß önn Wimmschainer neu an und gee gan dyr folgetn Zammenfassung.
 
@@ -166,31 +166,31 @@ Und ganz wichtig:  Dyrweilst dönn Schainer durcharechtst,  versuech nit öbbenn,
   1. Dyr Mörkl werd mit de Tastnen hjkl older aau mit de Pfeiltastnen gsteuert.
               h (winst)     j (ab)        k (auf)       l (zes)
 
-  2. Um önn Wimm umbb n Eingib aus z ginnen, demmlt: vim DAUTTICHT <EIN> .
+  2. Um önn Wimm umbb n Eingib aus z ginnen, demmlt:  vim DAUTTICHT<EIN>  .
 
   3. Willst önn Wimm verlaassn und aau allss verwerffen, aft gibst ein:
-                <ESC>  :q!  <EIN> .
-     Gan n Verlaassn und Speichern aber zipfst <ESC>  :wq  <EIN>.
+                <ESC>  und  :q!<EIN>  .
+     Gan n Verlaassn und Speichern aber zipfst  <ESC>  und  :wq<EIN>  .
 
   4. Willst dös Zaichen löschn, daa wo dyr Mörkl drauf ist, demmltst  x  .
 
   5. Willst öbbs vor n Mörkl eingöbn, zipfst  i  und drafter  <ESC>  .
      Mechst ys aber eyn s Zeilnend anhinhöngen, benutzt ys   A  .
-     Und ainfach naach n Mörkl füegst ys mit  a  ein  .
+     Und ainfach naach n Mörkl füegst ys mit  a  ein.
 
-Anmörkung:  Druckst <ESC>, kimmst eyn de Befelhsartweis zrugg older brichst ayn
-            Faudung ab, dö wo dyr schiefgangen ist.
+Anmörkung:  Druckst  <ESC>  ,  kimmst eyn de Befelhsartweis zrugg older brichst
+            ayn Faudung ab, dö wo dyr schiefgangen ist.
 
      Ietz tue mit dyr Letzn 2 weiter.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                            Letzn 2.1.: LÖSHFAUDUNGEN
 
 
-                 ** Demmlt  dw  , dyrmitst ayn Wort löschst **
+                 ** Demmlt  dw  , dyrmitst ayn Wort löschst. **
 
-  1. Druck  <ESC>, dyrmit s aau gwiß ist, däßst in dyr Befelhsartweis bist.
+  1. Druck  <ESC>  ,  dyrmit s aau gwiß ist,  däßst in dyr Befelhsartweis bist.
 
-  2. Bewög önn Mörkl zo dyr mit ---> angmörktn Zeil unt.
+  2. Bewög önn Mörkl zo dyr mit  --->  angmörktn Zeil unt.
 
   3. Und daa geest ietz auf n Anfang von aynn Wort, dös wo glöscht ghoert.
 
@@ -211,9 +211,9 @@ Anmörkung:  Druckst <ESC>, kimmst eyn de Befelhsartweis zrugg older brichst ayn
 
             ** Gib  d$  ein, däßst hinst eyn s Zeilnend löschst. **
 
-  1. Druck <ESC> , dyrmitst aau gwiß in dyr Befelhsartweis bist.
+  1. Druck  <ESC>  , dyrmitst aau gwiß in dyr Befelhsartweis bist.
 
-  2. Bewög önn Mörkl hinst eyn de mit ---> angmörkte Zeil untn.
+  2. Bewög önn Mörkl hinst eyn de mit  --->  angmörkte Zeil untn.
 
   3. Gee mit n Mörkl auf s End von dyr faelerfreien Zeil, NAACH n eerstn  .   .
 
@@ -243,11 +243,11 @@ Anmörkung:  Druckst <ESC>, kimmst eyn de Befelhsartweis zrugg older brichst ayn
 
 
   Daader also, was i wie löschn kan:
-    w - hinst eyn n Anfang von n naehstn Wort AANE dönn sein eersts Zaichen.
-    e - gan n End von n ietzundn Wort MIT dönn seinn lösstn Zaichen.
-    $ - zo n End von dyr Zeil MIT derer irn lösstn Zaichen.
+     w  -  hinst eyn n Anfang von n naehstn Wort AANE dönn sein eersts Zaichen.
+     e  -  gan n End von n ietzundn Wort MIT dönn seinn lösstn Zaichen.
+     $  -  zo n End von dyr Zeil MIT derer irn lösstn Zaichen.
 
-  Also löscht de Tastnfolg  de  umbb n Mörkl hinst eyn s Wortend.
+  Also löscht de Tastnfolg  de  allss umbb n Mörkl hinst eyn s Wortend.
 Anmörkung:   Gib i grad  dös zwaitte Zaichen  yllain ein,  ruckt halt dyr Mörkl
              entspröchet weiter.
 
@@ -255,9 +255,9 @@ Anmörkung:   Gib i grad  dös zwaitte Zaichen  yllain ein,  ruckt halt dyr Mörkl
                    Letzn 2.4: MIT AYNN ZÖLER D WOLENDER ÄFERN
 
 
-      ** Gib i ayn Zal vor aynn Wolend ein, werd dös Sel halt widerholt. **
+ ** Gib i ayn Zal vor aynn Wolend ein, werd dös Sel entspröchet oft gangen. **
 
-  1. Bewög önn Mörkl gan n Anfang von dyr Zeil mit ---> dyrvor unt.
+  1. Bewög önn Mörkl gan n Anfang von dyr Zeil mit  --->  dyrvor unt.
 
   2. Zipf  2w  , däßst mit n Mörkl zwai Wörter weitergeest.
 
@@ -278,13 +278,13 @@ Anmörkung:   Gib i grad  dös zwaitte Zaichen  yllain ein,  ruckt halt dyr Mörkl
                  Letzn 2.5: DURCH AYNN ZÖLER GLEI MEERER LÖSCHN
 
 
-              ** Ayn Zal vor aynn Pfemerer äfert dönn um seln Werd. **
+        ** Ayn Zal vor aynn Pfemerer füert dönn entspröchet oft aus. **
 
   Also, i mecht löschn,  und zwaar öbbs Bestimmts,  und dös so und so oft:  Daa
   dyrzue benutz i aynn Zöler:
                               d  Zöler  Wolend (also önn Bewögungsschrit)
 
-  1. Bewög önn Mörkl  gan n eerstn Wort in GROOSSBUECHSTABN in dyr mit ---> an-
+  1. Bewög önn Mörkl zo n eerstn Wort in GROOSSBUECHSTABN in dyr mit  --->  an-
      gmörktn Zeil.
 
   2. Demmlt  d2w  , dyrmitst de ganz grooßgschribnen Wörter löschst.
@@ -325,9 +325,9 @@ Anmörkung:   Gib i grad  dös zwaitte Zaichen  yllain ein,  ruckt halt dyr Mörkl
 
 
              ** Zipf  u  , dyrmitst de lösstn Faudungen ruggltst **
-              ** older  U  , um ayn gantze Zeil widerherzstölln. **
+             ** older   U  , um ayn gantze Zeil widerherzstölln. **
 
-  1. Bewög önn Mörkl  gan dyr mit ---> angmörktn Zeil unt  und gee dyrmit auf n
+  1. Bewög önn Mörkl gan dyr mit  --->  angmörktn Zeil unt und gee dyrmit auf n
      eerstn Faeler.
   2. Zipf  x  , däßst dös eerste z vile Zaichen löschst.
   3. Ietz demmlt  u  , dyrmitst de lösste Faudung ruggltst.
@@ -358,13 +358,13 @@ Anmörkung:   Gib i grad  dös zwaitte Zaichen  yllain ein,  ruckt halt dyr Mörkl
       Dyr PFEMERER gibt an, WAS taan ghoert, öbbenn   d   =  löschn (»delete«).
       [ZAL] - Ayn Zal KAN myn angöbn, wenn myn halt ayn Wolend öfter habn will.
       S WOLEND,  also dyr Schrit WOHIN, besagt,  auf was i aushin will,  öbbenn
-      auf ayn Wort (  w  ), s End von dyr Zeil (  $  ) und so weiter.
+      auf aynn Wortanfang (  w  ), s End von dyr Zeil (  $  ) und so weiter.
 
   6. Däßst eyn n Anfang von dyr Zeil hinkimmst, schreib aynn Nuller:  0
 
   7. Um öbbs Vorigs wider z ruggln, gib ein:                u (klain also)
      Um allsand Önderungen in ayner Zeil z ruggln, haast:   U (also grooß)
-     Um "rugg-z-ruggln", also allss wider herzstölln, zipf: <STRG>r   
+     Um "rugg-z-ruggln", also allss wider herzstölln, zipf:  <STRG>r   
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                            Letzn 3.1: ANFÜEGN (»put«) 
@@ -372,10 +372,10 @@ Anmörkung:   Gib i grad  dös zwaitte Zaichen  yllain ein,  ruckt halt dyr Mörkl
 
      ** Zipf  p  , dyrmitst öbbs gnetty Glöschts naach n Mörkl anfüegst. **
 
-  1. Bewög önn Mörkl gan dyr eerstn untignen Zeil mit   --->   dyrvor.
+  1. Bewög önn Mörkl gan dyr eerstn untignen Zeil mit  --->  dyrvor.
 
-  2. Zipf  dd  , um sele Zeil z löschn  und dyrmit  in aynn Wimm-"Roster"  zo n
-     speichern.
+  2. Zipf  dd  ,  um sele Zeil z löschn und dyrmit in ayner Wimm-Osn zo n Spei-
+     chern.
 
   3. Bewög önn Mörkl gan dyr Zeil c),  ÜBER derer, daa wo de glöschte Zeil ein-
      hinkemmen sollt.
@@ -395,7 +395,7 @@ Anmörkung:   Gib i grad  dös zwaitte Zaichen  yllain ein,  ruckt halt dyr Mörkl
 
       ** Zipf  rx  , um dös Zaichen unter n Mörkl durch  x  z ersötzn. **
 
-  1. Bewög önn Mörkl zo dyr eerstn untignen Zeil mit   --->   dyrvor.
+  1. Bewög önn Mörkl zo dyr eerstn untignen Zeil mit  --->  dyrvor.
 
   2. Bewög önn Mörkl, hinst däß yr auf n eerstn Faeler steet.
 
@@ -418,13 +418,13 @@ Anmörkung: Vergiß nit drauf, däßst mit n Anwenddn lernen solltst und nit öbbenn
 
               ** Um hinst eyn s Wortend z öndern, zipf  ce  . **
 
-  1. Gee mit n Mörkl auf de eerste mit ---> angmörkte Zeil.
+  1. Gee mit n Mörkl auf de eerste mit  --->  angmörkte Zeil.
 
   2. Ietz farst netty auf s  "s"  von Wstwr hin.
 
   3. Zipf  ce  ein und aft d Wortberichtigung, daader also  örter  .
 
-  4. Druck <ESC> und bewög önn Mörkl gan n naehstn Zaichen,  wo göndert ghoert.
+  4. Druck  <ESC>  und bewög önn Mörkl zo n naehstn Zaichen, wo göndert ghoert.
 
   5. Äfert  d Schritt 3 und 4,  hinst däß  dyr eerste Saz  wie dyr zwaitte ist.
 
@@ -443,12 +443,12 @@ ce  löscht also s Wort und schlaaufft di eyn d Eingaab-Artweis.
 
   1. Dyr Önder-Pfemerer arechtt anleich wie d Löshfaudung mit   d  ,  und zwaar
      yso:
-         c    [Zal]   Bewögungsschritt (Wolend)
+         c    [Zal]   Bewögungsschrit (Wolend)
 
-  2. D Wolender  seind  de gleichn,  öbbenn  w  für Wort und  $ für s Zeilnend.
+  2. D Wolender seind  de gleichn,  öbbenn  w  für Wort und  $  für s Zeilnend.
 
 
-  3. Bewög di zo dyr eerstn untignen Zeil mit ---> .
+  3. Bewög di zo dyr eerstn untignen Zeil mit  --->  .
 
   4. Ietz geest auf dönn eerstn Faeler.
 
@@ -494,14 +494,14 @@ Anmörkung: Lis dö gantze Letzn daader durch, ee wennst iewign öbbs unternimmst!
      Mörk dyr de Zeilnnummer für n Schrit 3.
 
 Anmörkung:  Müglicherweis  seghst aau önn Mörklbefand  in n zesmen untern Bild-
-            schirmögg. Aft ist s "Lindl" (»ruler«) eingstöllt; schau dyrzue mit
-            n Befelh   :help 'ruler'   naach.
+            schirmögg. Aft ist s "Lindl" (»ruler«) eingstöllt;  meerer über dös
+            laasst dyr dyr Befelh   :help 'ruler'   ausher.
   2. Druck  G  , um an s End von dyr Dautticht z kemmen.
      gg  gibst ein, däßst gan n Anfang von dyr Dautticht aufhinkimmst.
 
   3. Gib d Nummer von derer Zeil ein, daa wost vorher warst,  und aft non  G  .
      Dös bringt di zrugg gan seler Zeil,  daa wost stuenddst,  wiest dös eerste
-     Maal <STRG>g gadruckst.
+     Maal  <STRG>g  gadruckst.
 
   4. Wennst di sicher gnueg füelst, aft füer d Schritt 1 hinst 3 aus.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -513,15 +513,15 @@ Anmörkung:  Müglicherweis  seghst aau önn Mörklbefand  in n zesmen untern Bild-
   1. Du gibst also in dyr Befelhsartweis s Zaichen  /  ein. Dös sel wie aau dyr
      Mörkl erscheinend drauf unt auf n Schirm, netty wie bei dyr Faudung  :  .
 
-  2. Ietz zipf 'Faeeler' <EIN>. Netty um dös 'Faeeler' willst ietz suechen.
+  2. Ietz zipf  Faeeler<EIN>  . Netty um dös 'Faeeler' willst ietz suechen.
 
   3. Willst um gnaun dönn Ausdruk weitersuechen, zipf ainfach  n  (wie »next«).
      Willst hinzrugg suechen, aft gibst  N  ein.
 
   4. Um von Haus aus zruggaus z suechen, nimm  ?  statt  /  her.
 
-  5. Dyrmitst wider daa hinkimmst, wost herkemmen bist, druck <STRG>o,  und dös
-     öfter,  wennst weiter zrugg willst.  Mit <STRG>i widerum  kimmst vorwärts.
+  5. Dyrmitst wider daa hinkimmst, wost herkemmen bist, nimm  <STRG>o , und dös
+     öfter,  wennst weiter zrugg willst. Mit  <STRG>i  widerum kimmst vorwärts.
 
 --->  Aynn Faeler schreibt myn nit "Faeeler"; Faeeler ist ayn Faeler
 
@@ -534,7 +534,7 @@ Anmörkung:  Wenn d Suech s Dauttichtend dyrraicht haat, geet s eyn n Anfang wi-
    ** Zipf  %  , um de entspröchete Klammer  )  ,  ]  older  }  z finddn. **
 
   1. Sötz önn Mörkl  auf iewign aine  von dene drei Klammern  (  ,  [  older  {
-     in dyr untignen Zeil, wo mit ---> angmörkt ist.
+     in dyr untignen Zeil, wo mit  --->  angmörkt ist.
 
   2. Ietzet zipf s Zaichen  %  .
 
@@ -556,7 +556,7 @@ Anmörkung:  Um dö Müglichkeit gaast bsunders froo sein,  wennst aynmaal in aynn
 
         ** Zipf  :s/alt/neu/g  , um 'alt' durch 'neu' zo n Ersötzn. **
 
-  1. Gee mit n Mörkl zo dyr unt steehetn mit ---> angmörktn Zeil.
+  1. Gee mit n Mörkl zo dyr unt steehetn mit  --->  angmörktn Zeil.
 
   2. Zipf  :s/dee/de <EIN>  . Der Befelh ersötzt alsnan grad dös +eerste "dee",
      wo vürkimmt.
@@ -577,60 +577,60 @@ Anmörkung:  Um dö Müglichkeit gaast bsunders froo sein,  wennst aynmaal in aynn
                          ZAMMENFASSUNG VON DYR LETZN 4
                         
   1. <STRG>g   zaigt dönn ietzundn Dauttichtbefand  und önn Darstand dyrvon an.
-           G  bringt di an s End von dyr Dautticht.
-     <Zal> G  bringt di gan dyr entspröchetn Zeilnnummer.
-          gg  bringt di zo dyr eerstn Zeil.
-          
+           G   bringt di an s End von dyr Dautticht.
+      <Zal>G   bringt di gan dyr entspröchetn Zeilnnummer.
+     <Zal>gg   geet +grad yso.
+          gg   bringt di zo dyr eerstn Zeil.
   2. D Eingaab von  /  mit aynn Ausdruk suecht VÜRSHLING um dönn Ausdruk.
      Gibst  ?  und aynn Suechbegrif ein, suecht s um dönn ÄRSHLING.
      Zipf naach ayner Suech  n  ;  naacherd werd in de gleiche Richtung weiter-
-     gsuecht. Mit  N geet s umkeerter weiter.
-     <STRG>o bringt di zo ölterne Befändd zrugg, <STRG>i zo neuerne.
+     gsuecht. Mit  N  geet s umkeerter weiter.
+     <STRG>o  bringt di zo ölterne Befändd zrugg,  <STRG>i  zo neuerne.
 
   3. D Eingaab von  % , wenn dyr Mörkl auf ainer von dene Klammern steet:   ({[
      )]}  , bringt di zo dyr Gögnklammer.
 
-  4. Um dös eerste Vürkemmen  von "alt"  in ayner Zeil  durch "neu"  z ersötzn,
-     zipf   :s/alt/neu   .
-     Um allsand in ayner Zeil z ersötzn, zipf   :s/alt/neu/g   .
+  4. Um dös eerste Vürkemmen von  "alt"  in ayner Zeil durch  "neu"  z ersötzn,
+     zipf  :s/alt/neu  .
+     Um allsand in ayner Zeil z ersötzn, zipf  :s/alt/neu/g  .
      Mechst allss in zwo Zeiln ersötzn, demmlt zo n Beispil  :5,6s/alt/neu/g  .
-     Mechst allss in dyr gantzn Dautticht ersötzn, gib ein:   :%s/alt/neu/g   .
+     Mechst allss in dyr gantzn Dautticht ersötzn, gib ein:  :%s/alt/neu/g    .
      Willst ayn ieds Maal bstaetln, höng 'c' wie »confirm« hint anhin.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             Letzn 5.1: ZWISCHNDRINN AYNN AUSSERIGNEN BEFELH AUSFÜERN 
             
 
-  ** Willst ayn Gfäßfaudung ausfüern, gib ainfach dö sel naach   :!   ein. **
+   ** Willst ayn Gfäßfaudung ausfüern, gib ainfach dö sel naach  :!  ein. **
  
   1. Zipf  dönn bekanntn Befelh   :  ,  dyrmitst  mit n Mörkl  auf n Bildschirm
      ganz abhin kimmst. Draufhin kanst aynn gwonen Gfäßbefelh eingöbn.
 
-  2. Zeerst  kimmt aber non ayn Ruefzaichen   !   .  Und ietz haast de Müglich-
+  2. Zeerst  kimmt aber non ayn Ruefzaichen   !  .  Und ietzet haast d Müglich-
      keit, ayn beliebige ausserige Gfäßfaudung auszfüern.
 
-  3. Als Beispil zipf   :!ls <EIN>  ; und schoon haast ayn Auflistung von deinn
+  3. Als Beispil zipf   :!ls<EIN>  ;  und schoon haast ayn Auflistung von deinn
      Verzaichniss,  netty  wie wennst  ganz gwon  in n Eingib wärst.  Geet   ls
-     aus iewign aynn Grund nit, aft pröblt s mit  :!dir <EIN>  .
+     aus iewign aynn Grund nit, aft pröblt s mit  :!dir<EIN>  .
 
 Also non aynmaal: Mit dönn Angang kan ayn iede beliebige ausserige Faudung aus-
                   gfüert werdn, aau mit Auerwerdd.
 
-Und wolgmörkt:    Allsand Befelh, wo mit  :  angeend,  müessend mit <EIN> bstö-
-                  tigt werdn. Dös dyrsagn myr vürbaß niemer.
+Und wolgmörkt:    Alle Befelh,  wo mit  :  angeend,  müessend mit  <EIN>  bstö-
+                  tigt werdn. Dös dyrsagn myr fürbaß +niemer.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
            Letzn 5.2: NON MEERER DRÜBER, WIE MYN DAUTTICHTN SCHREIBT
 
 
-      ** Um öbbs Gönderts neu z speichern, zipf :w NEUER_DAUTTICHTNAM. **
+     ** Um öbbs Gönderts neu z speichern, zipf  :w NEUER_DAUTTICHTNAM  . **
 
   1. Zipf  :!dir   older  :!ls  ,  däßst dyr ayn Auflistung von deinn Verzaich-
-     niss ausherlaasst.  Däßst dyrnaach <EIN> eingöbn muesst, waisst ee schoon.
+     niss ausherlaasst. Däßst drafter  <EIN>  eingöbn muesst, waisst ee schoon.
 
-  2. Suech dyr aynn Dauttichtnam aus, dönn wo s non nit geit, öbbenn POCH.
+  2. Suech dyr aynn Dauttichtnam aus, dönn wo s non nit geit, öbbenn  POCH  .
 
-  3. Ietz demmlt:  :w POCH   (also mit POCH als dönn neuen Dauttichtnam).
+  3. Ietz demmlt:  :w POCH  (also mit POCH als dönn neuen Dauttichtnam).
 
   4. Dös speichert ietz de gantze Dautticht, also önn Wimmschainer,  unter dönn
      Nam POCH. Dös kanst leicht überprüeffen, indem däßst ainfach  :!ls   older
@@ -641,7 +641,7 @@ Anmörkung:  Stigst ietz aus n Wimm aus und gännst n aft wider mit   vim POCH  ,
             wiest n gspeichert haast.
 
   5. Ietz verweitert dö Dautticht - fallsst s Fenstl haast - , mit   :!del POCH
-     beziehungsweis bei aynn Ainslgebäu mit   :!rm POCH   .
+     beziehungsweis bei aynn Unixgebäu mit   :!rm POCH   .
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             Letzn 5.3: AYNN TAIL VON N GWORT ZO N SPEICHERN AUSWALN
 
@@ -655,15 +655,15 @@ Anmörkung:  Stigst ietz aus n Wimm aus und gännst n aft wider mit   vim POCH  ,
   3. Druck s Zaichen  :  . Ganz unt auf n Bildschirm erscheint  :'<,'>  .
 
   4. Zipf  w POCH  , wobei s dönn Dauttichtnam POCH  non nit geit.  Vergwiß di,
-     däßst dös  :'<,'>w POCH aau +seghst, ee wennst <EIN> druckst.
+     däßst dös  :'<,'>w POCH  aau +seghst, ee wennst  <EIN>  druckst.
 
-  5. Dyr Wimm schreibt de ausgwaltn Zeil  eyn de Dautticht POCH einhin.  Benutz
+  5. Dyr Wimm schreibt de ausgwaltn Zeiln eyn de Dautticht POCH einhin.  Benutz
      :!dir  older  :!ls  ,  däßst dös überprüeffst. Lösh s fein nit öbbenn! Mir
      brauchend s nömlich für de naehste Letzn.
 
 Anmörkung:  Druckt myn  v  , ginnt d Sichtisch-Auswal. Du kanst mit n Mörkl um-
             aynandfarn,  um d Auswal  z veröndern.  Drafter kan myn mit yn aynn
-            Pfemerer  mit dönn Gwort  öbbs machen.  Zo n Beispil löscht  d  dös
+            Pfemerer mit dönn Gwort öbbs machen.  Zo n Beispil löscht   d   dös
             Gwort.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                Letzn 5.4: EINLÖSN UND ZAMMENFÜERN VON DAUTTICHTN   
@@ -692,10 +692,10 @@ Anmörkung:  Du kanst aau  d Ausgaab von aynn Ausserigbefelh einlösn.  Zo n Bei-
                          ZAMMENFASSUNG VON DYR LETZN 5
 
 
-  1. :!FAUDUNG füert aynn ausserignen Befelh aus.
+  1. :!FAUDUNG  füert aynn ausserignen Befelh aus.
 
       Daader ayn Öttlych gwänddte Beispiler:
-      (Fenstl)              (Ainsl - Leinsl)
+      (Fenstl)              (Unix - Linux)
       :!dir                 :!ls                - listt s Verzaichniss auf.
       :!del DAUTTICHT       :!rm DAUTTICHT      - verweitert sele Dautticht.
 
@@ -715,19 +715,19 @@ Anmörkung:  Du kanst aau  d Ausgaab von aynn Ausserigbefelh einlösn.  Zo n Bei-
                         Letzn 6.1: ZEIL ÖFFNEN (»open«)
 
 
-        ** Zipf o, um ayn Zeil unterhalb n Mörkl z öffnen und eyn d **
+       ** Zipf  o  , um ayn Zeil unterhalb n Mörkl z öffnen und eyn d **
                         ** Einfüegartweis z kemmen. **
 
-  1. Bewög önn Mörkl zo dyr eerstn mit ---> angmörktn Zeil unt.
+  1. Bewög önn Mörkl zo dyr eerstn mit  --->  angmörktn Zeil unt.
 
-  2. Zipf o (klain),  um ayn Zeil  UNTERHALB n Mörkl z öffnen  und mit dyr Ein-
+  2. Zipf  o  (klain),  um ayn Zeil UNTERHALB n Mörkl z öffnen und mit dyr Ein-
      füegartweis weiterztuen.
 
-  3. Ietz zipf ayn Weeng ayn Gwort und druck <ESC>,  um d Einfüegartweis z ver-
+  3. Ietzet zipf ayn Weeng öbbs  und druck  <ESC>  , um d Einfüegartweis z ver-
      laassn.
----> Mit  o  werd dyr Mörkl auf de offene Zeil in dyr Einfüegartweis gsötzt.
+---> Mit  o  werd dyr Mörkl in dyr Einfüegartweis auf de offene Zeil gsötzt.
 
-  4. Um ayn Zeil OBERHALB n Mörkl aufzmachen,  gib ainfach aynn groosss O statt
+  4. Um ayn Zeil  OBERHALB n Mörkl aufzmachen,  gib ainfach ayn groosss O statt
      yn aynn klainen ein. Versuech dös auf dyr untignen Zeil.
 
 ---> Öffnet ayn Zeil über derer daader mit  O  ,  wenn dyr Mörkl auf derer Zeil
@@ -740,14 +740,14 @@ Anmörkung:  Du kanst aau  d Ausgaab von aynn Ausserigbefelh einlösn.  Zo n Bei-
 
                 ** Zipf  a  , um öbbs NAACH n Mörkl einzfüegn. **
 
-  1. Bewög önn Mörkl gan n Anfang von dyr eerstn Üebungszeil mit ---> unt.
+  1. Bewög önn Mörkl gan n Anfang von dyr eerstn Üebungszeil mit  --->  unt.
 
   2. Druck  e  , hinst däß dyr Mörkl an n End von  Zei  steet.
 
   3. Zipf ayn klains  a  , um öbbs NAACH n Mörkl anzfüegn.
 
-  4. Vergöntz dös Wort wie in dyr Zeil drunter.  Druck <ESC>, um d Schreib-Art-
-     weis z verlaassn.
+  4. Vergöntz dös Wort  wie in dyr Zeil drunter.  Druck  <ESC>  , um d Schreib-
+     Artweis z verlaassn.
 
   5. Bewög di mit  e   zo n naehstn ungantzn Wort  und widerhol d Schritt 3 und
      4.
@@ -763,13 +763,13 @@ Anmörkung:   a  ,  i  und  A  bringend ainn gleichermaaßn eyn d Einfüegartweis;
 
  ** Demmlt ayn groosss  R  , um meerer als wie grad ain Zaichen z ersötzn. **
 
-  1. Bewög önn Mörkl zo dyr eerstn untignen, mit ---> angmörktn Zeil.
+  1. Bewög önn Mörkl zo dyr eerstn untignen, mit  --->  angmörktn Zeil.
      Gee mit n Mörkl gan n Anfang von n eerstn  xxx  .
 
   2. Ietz druck  R   und zipf sele Zal,  wo drunter  in dyr zwaittn Zeil steet,
      yso däß de sel s xxx ersötzt.
 
-  3. Druck <ESC> ,  um d Ersötzungsartweis  z verlaassn.  Du gspannst,  däß dyr
+  3. Druck  <ESC>  ,  um d Ersötzungsartweis z verlaassn.  Du gspannst, däß dyr
      Rest von dyr Zeil unveröndert bleibt.
 
   4. Äfert die Schritt, um dös überblibne xxx z ersötzn.
@@ -795,14 +795,14 @@ Anmörkung: D Ersötzungsartweis ist wie d Einfüegartweis,  aber ayn ieds eindem-
 
   5. Demmlt  p  , um dös Gwort einzfüegn, und aft:  a zwaitte <ESC>  .
 
-  6. Benutz d Sichtischartweis, um " Eintrag." auszwaln,  aam s pfelfs  y,  be-
+  6. Benutz d Sichtischartweis, um " Eintrag." auszwaln, aam s mittls  y  , be-
      wög di gan n End von dyr naehstn Zeil mit  j$   und füeg s Gwort dortn mit
      p  an.
 
 --->  a) dös ist dyr eerste Eintrag.
       b)
-
-Anmörkung: Du kanst  y  aau als Pfemerer verwenddn;  yw  aamt ain Wort.
+Anmörkung:   Du kanst   y   aau als Pfemerer verwenddn;   yw  zo n Beispil aamt
+             hinst eyn n naehstn Wortanfang (aane dönn selber).
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                            Letzn 6.5: SCHALTTER SÖTZN
 
@@ -829,18 +829,18 @@ Anmörkung:  Sollt klain/grooß bei ayner ainzignen Suech wurst sein,  benutz  \c
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                          ZAMMENFASSUNG VON DYR LETZN 6
 
-  1. Zipf  o  ,  um ayn Zeil  UNTERHALB n Mörkl z öffnen und d Einfüegartweis z
-                 ginnen.
-     Zipf  O  ,  um ayn Zeil OBERHALB n Mörkl z öffnen.
+  1. Zipf  o  , um ayn Zeil  UNTERHALB  n Mörkl z öffnen und d Einfüegartweis z
+                ginnen.
+     Zipf  O  , um ayn Zeil OBERHALB n Mörkl z öffnen.
 
-  2. Zipf  a  ,  um NAACH n Mörkl ayn Gwort einzfüegn.
-     Zipf  A  ,  um ayn Gwort naach n Zeilnend anzfüegn.
+  2. Zipf  a  , um NAACH n Mörkl ayn Gwort einzfüegn.
+     Zipf  A  , um ayn Gwort naach n Zeilnend anzfüegn.
 
   3. D Faudung  e  bringt di gan n End von aynn Wort.
 
   4. Dyr Pfemerer  y  (»yank«) aamt öbbs,  p  (»put«) füegt dös ein.
 
-  5. Ayn groosss  R  geet eyn d Ersötzungsartweis,  hinst däß myn <ESC> druckt.
+  5. Ayn groosss  R  geet eyn d Ersötzungsartweis, hinst däß myn  <ESC> druckt.
 
   6. D Eingaab von ":set xxx"  sötzt de Zwisl "xxx".  Ayn Öttlych Zwisln seind:
      'ic' 'ignorecase'   Grooß/klain wurst bei ayner Suech
@@ -853,7 +853,7 @@ Anmörkung:  Sollt klain/grooß bei ayner ainzignen Suech wurst sein,  benutz  \c
                       Letzn 7.1: AYN HILFGWORT AUFRUEFFEN
 
 
-            ** Nutz dös einbaute Hilfgebäu, de "Betribsanlaittung" **
+           ** Nutz dös einbaute Hilfgebäu, de "Betribsanlaittung". **
 
   Eyn n Wimm  ist ayn ausfüerliche "Gebrauchsanweisung"  einbaut.  Für s Eerste
   pröblt ainfach ains von dene dreu aus:
@@ -866,7 +866,7 @@ Anmörkung:  Sollt klain/grooß bei ayner ainzignen Suech wurst sein,  benutz  \c
   Demmlt   :q <EIN>  , um s Hilffenster zo n Schliessn.
 
   Du kanst zo so guet wie allssand ayn Hilf finddn,  indem däßst yn dyr Faudung
-  :help   aynn Auerwerd naachstöllst und istig <EIN> nit vergisst.  Pröblt dös:
+  :help  aynn Auerwerd naachstöllst und istig  <EIN>  nit vergisst. Pröblt dös:
 
      :help w
      :help c_CTRL-D
@@ -876,14 +876,14 @@ Anmörkung:  Sollt klain/grooß bei ayner ainzignen Suech wurst sein,  benutz  \c
                        Letzn 7.2: ERSTÖLL AYN GIN-SCHRIPF
 
 
-            ** Mutz önn Wimm mit de einbautn Faehigkeitn auf **
+              ** Mutz önn Wimm mit de einbautn Faehigkeitn auf. **
 
   Dyr Wimm besitzt ayn Wösn Schäftungen,  wo über n Urwimm aushingeend, aber de
   meerern dyrvon  seind in dyr Vorgaab ausgschaltt.  Dyrmitst meerer aus n Wimm
   ausherholst, erstöllst ayn "vimrc"-Dautticht.
 
   1. Lög ayn "vimrc"-Dautticht an;  dös geet  ie naach Betribsgebäu  verschidn:
-     :e ~/.vimrc     für s Ainsl
+     :e ~/.vimrc     für s Unix
      :e $VIM/_vimrc  bei n Fenstl
 
   2. Ietz lis önn Inhalt von dyr Beispil-"vimrc"-Dautticht ein:
@@ -892,14 +892,14 @@ Anmörkung:  Sollt klain/grooß bei ayner ainzignen Suech wurst sein,  benutz  \c
   3. Speichert de Dautticht mit:
      :w
 
-  4. Bei n naehstn Gin von n Wimm  ist aft d Füegnussvürherhöbung  zuegschaltt.
+  4. Bei n naehstn Gin von n Wimm  ist aft d Füegnussvürherhöbung zuegschalttn.
      Du kanst dyr allss  eyn dö Dautticht  einhinschreibn,  wasst bständig habn
      willst. Meerer dyrzue erfarst unter:   :help vimrc-intro
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                               Letzn 7.3: VERGÖNTZN
 
 
-               ** Befelhszeilnvergöntzung mit <STRG>d und <TAB> **
+            ** Befelhszeilnvergöntzung mit  <STRG>d  und  <TAB>  **
 
   1. Vergwiß di, däß dyr Wimm nit auf n Urwimm-"Glais" fart:   :set nocp
 
@@ -907,22 +907,22 @@ Anmörkung:  Sollt klain/grooß bei ayner ainzignen Suech wurst sein,  benutz  \c
      older   :!dir
   3. Zipf önn Anfang von ayner Faudung:   :e
 
-  4. Druck  <STRG>d  ,  und dyr Wimm zaigt ayn Listn von Faudungen,  wo mit "e"
+  4. Druck  <STRG>d  , und dyr Wimm zaigt ayn Listn von Faudungen, wo mit   "e"
      angeend.
-  5. Druck  <TAB>  ,  und dyr Wimm vervollstöndigt  önn Faudungsnam zo ":edit".
+  5. Druck  <TAB>  , und dyr Wimm vervollstöndigt önn Faudungsnam zo   ":edit".
 
   6. Füeg  ayn Laerzaichen  und önn Anfang  von ayner  besteehetn Dautticht an:
      :edit DAU
 
-  7. Druck <TAB>.  Dyr Wimm vergöntzt önn Nam,  dös haisst,  wenn yr aindeuttig
+  7. Druck  <TAB>  . Dyr Wimm vergöntzt önn Nam, dös haisst, wenn yr aindeuttig
      ist.
 Anmörkung:  D Vergöntzung  geit s für aynn Hauffen Faudungen.  Versuech ainfach
-           <STRG>d  und  <TAB>.  Bsunders nützlich ist dös bei   :help  .
+            <STRG>d  und  <TAB>  . Bsunders nützlich ist dös bei   :help  .
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                          ZAMMENFASSUNG VON DYR LETZN 7
 
 
-  1. Zipf  :help   older druck <F1> older <HILF>,  um ayn Hilffenster z öffnen.
+  1. Zipf  :help  oder druck  <F1>  oder  <HILF> , um ayn Hilffenster z öffnen.
 
   2. Zipf  :help FAUDUNG  , um auf ayn Hilf gan aynn Befelh z kemmen.
 
@@ -932,9 +932,9 @@ Anmörkung:  D Vergöntzung  geit s für aynn Hauffen Faudungen.  Versuech ainfach
 
   5. Erstöll ayn vimrc-Ginschripf  zuer Sicherung von deine Mötzneinstöllungen.
 
-  6. Druck <STRG>d, aft däßst naach  :  mit ayner Faudung angfangt haast,  dyr-
+  6. Druck  <STRG>d  , aft däßst naach   :   ayn Faudung  angfangt haast,  dyr-
      mitst mügliche Vergöntzungen anzaigt kriegst.
-     Druck <TAB> für ain Vervollstöndigung yllain.
+     Druck  <TAB>  für ain Vervollstöndigung yllain.
 
 
 
@@ -944,10 +944,10 @@ Anmörkung:  D Vergöntzung  geit s für aynn Hauffen Faudungen.  Versuech ainfach
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   Dös wär ietzet s End von n Wimmschainer.  Gangen ist s daa drum,  aynn kurtzn
-  und bündignen Überblik über s Blat  WIMM z lifern,  netty vil gnueg,  däß myn
+  und bündignen Überblik  über s Blat WIMM z lifern,  netty vil gnueg,  däß myn
   für s Eerste  wirklich öbbs  dyrmit anfangen kan.  Dyrmit ist s aber auf kain
   Weitn non nit taan;  dyr Wimm haat schoon non vil meerer  auf Lager.  Lis als
-  Naehsts aynmaal s Benutzerhandbuech:   :help user-manual   .
+  Naehsts aynmaal s Benutzerhandbuech:   :help user-manual
 
   Zo n Weiterlösn und Weiterlernen wör dös Buech daader zo n Empfelhen:
     Vim - Vi Improved - von n OUALLINE Steve
@@ -962,26 +962,20 @@ Anmörkung:  D Vergöntzung  geit s für aynn Hauffen Faudungen.  Versuech ainfach
   3897211262
   In dönn Buech  kan myn fast allss finddn,  was myn mit n Urwimm angeen mecht.
   De söxte Ausgaab enthaltt aau schoon öbbs über n Wimm.
-  Als ietzunde Bezugniss  für d Fassung  6.2  und ayn pfrenge Einfüerung  dient
-  dös folgete Buech:
+  Als ietzunde Bezugniss für d Fassung 7  und ayn pfrenge Einfüerung  dient dös
+  folgete Buech:
     vim ge-packt  von n WOBST Reinhard
-    mitp-Verlaag, Buechlaittzal 3-8266-1425-9
+    mitp-Verlaag, Buechlaittzal 978-3-8266-1781-2
   Trotz dyr recht pfrengen Darstöllung  ist s durch seine viln nützlichnen Bei-
   spiler aau für Einsteiger grad grecht.  Probhaeupster und de Beispilschripfer
-  seind zesig zo n Kriegn; see http://iccf-holland.org/click5.html
+  seind zesig zo n Kriegn; see   http://iccf-holland.org/click5.html
 
   Verfasst habnd dönn Schainer dyr PIERCE Michael C. und WARE Robert K. von dyr
   Kolraader Knappnschuel (Colorado School of Mines). Er beruet auf Entwürff, wo
   dyr SMITH Charles  von dyr  Kolraader Allschuel  (Colorado State  University)
-  zuer Verfüegung gstöllt haat. Gundpost: bware@mines.colorado.edu.
+  zuer Verfüegung gstöllt haat. Gundpost:   bware@mines.colorado.edu
   Für n Wimm haat n dyr MOOLENAAR Bram barechtt.
-  De bairische Übersötzung stammt von n HELL Sepp 2009. Sein Gundpostbrächt ist
-  sturmibund@t-online.de 
+  De bairische Übersötzung  stammt von n HELL Sepp 2009,  ayn Weeng überarechtt
+  2011. Sein Gundpostbrächt ist   sturmibund@t-online.de
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-
- 
-
-
-

@@ -3791,7 +3791,7 @@ msgstr ""
 "\n"
 "(1) Un altro programma può essere in edit sullo stesso file.\n"
 "    Se è così, attenzione a non trovarti con due versioni\n"
-"    differenti dello stesso file a cui vengono apportate modifiche.\n"
+"    differenti dello stesso file a cui vengono apportate modifiche."
 
 msgid "  Quit, or continue with caution.\n"
 msgstr "  Esci, o continua con prudenza.\n"
