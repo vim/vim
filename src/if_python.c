@@ -780,7 +780,7 @@ OutputSetattr(PyObject *self, char *name, PyObject *val)
 PythonIO_Init(void)
 {
     /* Fixups... */
-    OutputType.ob_type = &PyType_Type;
+    PyType_Ready(&OutputType);
 
     return PythonIO_Init_io();
 }
@@ -1402,12 +1402,12 @@ PythonMod_Init(void)
     static char *(argv[2]) = {"/must>not&exist/foo", NULL};
 
     /* Fixups... */
-    BufferType.ob_type = &PyType_Type;
-    RangeType.ob_type = &PyType_Type;
-    WindowType.ob_type = &PyType_Type;
-    BufListType.ob_type = &PyType_Type;
-    WinListType.ob_type = &PyType_Type;
-    CurrentType.ob_type = &PyType_Type;
+    PyType_Ready(&BufferType);
+    PyType_Ready(&RangeType);
+    PyType_Ready(&WindowType);
+    PyType_Ready(&BufListType);
+    PyType_Ready(&WinListType);
+    PyType_Ready(&CurrentType);
 
     /* Set sys.argv[] to avoid a crash in warn(). */
     PySys_SetArgv(1, argv);
