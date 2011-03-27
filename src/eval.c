@@ -789,6 +789,8 @@ static void list_one_var_a __ARGS((char_u *prefix, char_u *name, int type, char_
 static void set_var __ARGS((char_u *name, typval_T *varp, int copy));
 static int var_check_ro __ARGS((int flags, char_u *name));
 static int var_check_fixed __ARGS((int flags, char_u *name));
+static int var_check_func_name __ARGS((char_u *name, int new_var));
+static int valid_varname __ARGS((char_u *varname));
 static int tv_check_lock __ARGS((int lock, char_u *name));
 static int item_copy __ARGS((typval_T *from, typval_T *to, int deep, int copyID));
 static char_u *find_option_end __ARGS((char_u **arg, int *opt_flags));
@@ -2716,8 +2718,27 @@ get_lval(name, rettv, lp, unlet, skip, quiet, fne_flags)
 	    lp->ll_list = NULL;
 	    lp->ll_dict = lp->ll_tv->vval.v_dict;
 	    lp->ll_di = dict_find(lp->ll_dict, key, len);
+
+	    /* When assigning to g: check that a function and variable name is
+	     * valid. */
+	    if (rettv != NULL && lp->ll_dict == &globvardict)
+	    {
+		if (rettv->v_type == VAR_FUNC
+			       && var_check_func_name(key, lp->ll_di == NULL))
+		    return NULL;
+		if (!valid_varname(key))
+		    return NULL;
+	    }
+
 	    if (lp->ll_di == NULL)
 	    {
+		/* Can't add "v:" variable. */
+		if (lp->ll_dict == &vimvardict)
+		{
+		    EMSG2(_(e_illvar), name);
+		    return NULL;
+		}
+
 		/* Key does not exist in dict: may need to add it. */
 		if (*p == '[' || *p == '.' || unlet)
 		{
@@ -2737,6 +2758,10 @@ get_lval(name, rettv, lp, unlet, skip, quiet, fne_flags)
 		    p = NULL;
 		break;
 	    }
+	    /* existing variable, need to check if it can be changed */
+	    else if (var_check_ro(lp->ll_di->di_flags, name))
+		return NULL;
+
 	    if (len == -1)
 		clear_tv(&var1);
 	    lp->ll_tv = &lp->ll_di->di_tv;
@@ -19786,7 +19811,6 @@ set_var(name, tv, copy)
     dictitem_T	*v;
     char_u	*varname;
     hashtab_T	*ht;
-    char_u	*p;
 
     ht = find_var_ht(name, &varname);
     if (ht == NULL || *varname == NUL)
@@ -19796,25 +19820,8 @@ set_var(name, tv, copy)
     }
     v = find_var_in_ht(ht, varname, TRUE);
 
-    if (tv->v_type == VAR_FUNC)
-    {
-	if (!(vim_strchr((char_u *)"wbs", name[0]) != NULL && name[1] == ':')
-		&& !ASCII_ISUPPER((name[0] != NUL && name[1] == ':')
-							 ? name[2] : name[0]))
-	{
-	    EMSG2(_("E704: Funcref variable name must start with a capital: %s"), name);
-	    return;
-	}
-	/* Don't allow hiding a function.  When "v" is not NULL we might be
-	 * assigning another function to the same var, the type is checked
-	 * below. */
-	if (v == NULL && function_exists(name))
-	{
-	    EMSG2(_("E705: Variable name conflicts with existing function: %s"),
-									name);
-	    return;
-	}
-    }
+    if (tv->v_type == VAR_FUNC && var_check_func_name(name, v == NULL))
+	return;
 
     if (v != NULL)
     {
@@ -19880,13 +19887,8 @@ set_var(name, tv, copy)
 	}
 
 	/* Make sure the variable name is valid. */
-	for (p = varname; *p != NUL; ++p)
-	    if (!eval_isnamec1(*p) && (p == varname || !VIM_ISDIGIT(*p))
-						       && *p != AUTOLOAD_CHAR)
-	    {
-		EMSG2(_(e_illvar), varname);
-		return;
-	    }
+	if (!valid_varname(varname))
+	    return;
 
 	v = (dictitem_T *)alloc((unsigned)(sizeof(dictitem_T)
 							  + STRLEN(varname)));
@@ -19948,6 +19950,55 @@ var_check_fixed(flags, name)
 	return TRUE;
     }
     return FALSE;
+}
+
+/*
+ * Check if a funcref is assigned to a valid variable name.
+ * Return TRUE and give an error if not.
+ */
+    static int
+var_check_func_name(name, new_var)
+    char_u *name;    /* points to start of variable name */
+    int    new_var;  /* TRUE when creating the variable */
+{
+    if (!(vim_strchr((char_u *)"wbs", name[0]) != NULL && name[1] == ':')
+	    && !ASCII_ISUPPER((name[0] != NUL && name[1] == ':')
+						     ? name[2] : name[0]))
+    {
+	EMSG2(_("E704: Funcref variable name must start with a capital: %s"),
+									name);
+	return TRUE;
+    }
+    /* Don't allow hiding a function.  When "v" is not NULL we might be
+     * assigning another function to the same var, the type is checked
+     * below. */
+    if (new_var && function_exists(name))
+    {
+	EMSG2(_("E705: Variable name conflicts with existing function: %s"),
+								    name);
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Check if a variable name is valid.
+ * Return FALSE and give an error if not.
+ */
+    static int
+valid_varname(varname)
+    char_u *varname;
+{
+    char_u *p;
+
+    for (p = varname; *p != NUL; ++p)
+	if (!eval_isnamec1(*p) && (p == varname || !VIM_ISDIGIT(*p))
+						   && *p != AUTOLOAD_CHAR)
+	{
+	    EMSG2(_(e_illvar), varname);
+	    return FALSE;
+	}
+    return TRUE;
 }
 
 /*
