@@ -219,16 +219,20 @@ typedef struct syn_cluster_S
 
 /*
  * Syntax group IDs have different types:
- *     0 -  9999  normal syntax groups
- * 10000 - 14999  ALLBUT indicator (current_syn_inc_tag added)
- * 15000 - 19999  TOP indicator (current_syn_inc_tag added)
- * 20000 - 24999  CONTAINED indicator (current_syn_inc_tag added)
- * >= 25000	  cluster IDs (subtract SYNID_CLUSTER for the cluster ID)
+ *     0 - 19999  normal syntax groups
+ * 20000 - 20999  ALLBUT indicator (current_syn_inc_tag added)
+ * 21000 - 21999  TOP indicator (current_syn_inc_tag added)
+ * 22000 - 22999  CONTAINED indicator (current_syn_inc_tag added)
+ * 23000 - 32767  cluster IDs (subtract SYNID_CLUSTER for the cluster ID)
  */
-#define SYNID_ALLBUT	10000	    /* syntax group ID for contains=ALLBUT */
-#define SYNID_TOP	15000	    /* syntax group ID for contains=TOP */
-#define SYNID_CONTAINED	20000	    /* syntax group ID for contains=CONTAINED */
-#define SYNID_CLUSTER	25000	    /* first syntax group ID for clusters */
+#define SYNID_ALLBUT	20000	    /* syntax group ID for contains=ALLBUT */
+#define SYNID_TOP	21000	    /* syntax group ID for contains=TOP */
+#define SYNID_CONTAINED	22000	    /* syntax group ID for contains=CONTAINED */
+#define SYNID_CLUSTER	23000	    /* first syntax group ID for clusters */
+
+#define MAX_SYNID       SYNID_ALLBUT
+#define MAX_SYN_INC_TAG	999	    /* maximum before the above overflow */
+#define MAX_CLUSTER_ID  (32767 - SYNID_CLUSTER)
 
 /*
  * Annoying Hack(TM):  ":syn include" needs this pointer to pass to
@@ -3442,6 +3446,9 @@ syntax_clear(block)
     /* free the stored states */
     syn_stack_free_all(block);
     invalidate_current_state();
+
+    /* Reset the counter for ":syn include" */
+    running_syn_inc_tag = 0;
 }
 
 /*
@@ -4661,6 +4668,8 @@ syn_cmd_include(eap, syncing)
 	    return;
 	}
 	sgl_id = syn_check_cluster(arg, (int)(group_name_end - arg));
+	if (sgl_id == 0)
+	    return;
 	/* separate_nextcmd() and expand_filename() depend on this */
 	eap->arg = rest;
     }
@@ -4689,6 +4698,11 @@ syn_cmd_include(eap, syncing)
      * Save and restore the existing top-level grouplist id and ":syn
      * include" tag around the actual inclusion.
      */
+    if (running_syn_inc_tag >= MAX_SYN_INC_TAG)
+    {
+	EMSG((char_u *)_("E847: Too many syntax includes"));
+	return;
+    }
     prev_syn_inc_tag = current_syn_inc_tag;
     current_syn_inc_tag = ++running_syn_inc_tag;
     prev_toplvl_grp = curwin->w_s->b_syn_topgrp;
@@ -4712,7 +4726,7 @@ syn_cmd_keyword(eap, syncing)
     char_u	*group_name_end;
     int		syn_id;
     char_u	*rest;
-    char_u	*keyword_copy;
+    char_u	*keyword_copy = NULL;
     char_u	*p;
     char_u	*kw;
     syn_opt_arg_T syn_opt_arg;
@@ -4724,9 +4738,9 @@ syn_cmd_keyword(eap, syncing)
     if (rest != NULL)
     {
 	syn_id = syn_check_group(arg, (int)(group_name_end - arg));
-
-	/* allocate a buffer, for removing the backslashes in the keyword */
-	keyword_copy = alloc((unsigned)STRLEN(rest) + 1);
+	if (syn_id != 0)
+	    /* allocate a buffer, for removing backslashes in the keyword */
+	    keyword_copy = alloc((unsigned)STRLEN(rest) + 1);
 	if (keyword_copy != NULL)
 	{
 	    syn_opt_arg.flags = 0;
@@ -5133,7 +5147,8 @@ syn_cmd_region(eap, syncing)
 			    (item == ITEM_SKIP) ? SPTYPE_SKIP : SPTYPE_END;
 		    SYN_ITEMS(curwin->w_s)[idx].sp_flags |= syn_opt_arg.flags;
 		    SYN_ITEMS(curwin->w_s)[idx].sp_syn.id = syn_id;
-		    SYN_ITEMS(curwin->w_s)[idx].sp_syn.inc_tag = current_syn_inc_tag;
+		    SYN_ITEMS(curwin->w_s)[idx].sp_syn.inc_tag =
+							  current_syn_inc_tag;
 		    SYN_ITEMS(curwin->w_s)[idx].sp_syn_match_id =
 							ppp->pp_matchgroup_id;
 #ifdef FEAT_CONCEAL
@@ -5426,6 +5441,14 @@ syn_add_cluster(name)
 	curwin->w_s->b_syn_clusters.ga_growsize = 10;
     }
 
+    len = curwin->w_s->b_syn_clusters.ga_len;
+    if (len >= MAX_CLUSTER_ID)
+    {
+	EMSG((char_u *)_("E848: Too many syntax clusters"));
+	vim_free(name);
+	return 0;
+    }
+
     /*
      * Make room for at least one other cluster entry.
      */
@@ -5434,7 +5457,6 @@ syn_add_cluster(name)
 	vim_free(name);
 	return 0;
     }
-    len = curwin->w_s->b_syn_clusters.ga_len;
 
     vim_memset(&(SYN_CLSTR(curwin->w_s)[len]), 0, sizeof(syn_cluster_T));
     SYN_CLSTR(curwin->w_s)[len].scl_name = name;
@@ -5476,8 +5498,10 @@ syn_cmd_cluster(eap, syncing)
 
     if (rest != NULL)
     {
-	scl_id = syn_check_cluster(arg, (int)(group_name_end - arg))
-							      - SYNID_CLUSTER;
+	scl_id = syn_check_cluster(arg, (int)(group_name_end - arg));
+	if (scl_id == 0)
+	    return;
+	scl_id -= SYNID_CLUSTER;
 
 	for (;;)
 	{
@@ -5516,7 +5540,7 @@ syn_cmd_cluster(eap, syncing)
 	if (got_clstr)
 	{
 	    redraw_curbuf_later(SOME_VALID);
-	    syn_stack_free_all(curwin->w_s);	/* Need to recompute all syntax. */
+	    syn_stack_free_all(curwin->w_s);	/* Need to recompute all. */
 	}
     }
 
@@ -8970,6 +8994,13 @@ syn_add_group(name)
     {
 	highlight_ga.ga_itemsize = sizeof(struct hl_group);
 	highlight_ga.ga_growsize = 10;
+    }
+
+    if (highlight_ga.ga_len >= MAX_SYNID)
+    {
+	EMSG(_("E849: Too many syntax groups"));
+	vim_free(name);
+	return 0;
     }
 
     /*
