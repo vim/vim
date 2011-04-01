@@ -1565,7 +1565,7 @@ OBJ_COMMON = \
 
 OBJ = $(OBJ_COMMON) \
 	objects/main.o \
-	objects/memfile.o \
+	objects/memfile.o
 
 MEMFILE_TEST_OBJ = $(OBJ_COMMON) \
         objects/memfile_test.o
