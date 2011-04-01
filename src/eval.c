@@ -14305,9 +14305,9 @@ f_readfile(argvars, rettv)
 	{
 	    if (buf[filtd] == '\n' || readlen <= 0)
 	    {
-		/* Only when in binary mode add an empty list item when the
-		 * last line ends in a '\n'. */
-		if (!binary && readlen == 0 && filtd == 0)
+		/* In binary mode add an empty list item when the last
+		 * non-empty line ends in a '\n'. */
+		if (!binary && readlen == 0 && filtd == 0 && prev == NULL)
 		    break;
 
 		/* Found end-of-line or end-of-file: add a text line to the
@@ -14372,25 +14372,28 @@ f_readfile(argvars, rettv)
 
 	if (tolist == 0)
 	{
-	    /* "buf" is full, need to move text to an allocated buffer */
-	    if (prev == NULL)
+	    if (buflen >= FREAD_SIZE / 2)
 	    {
-		prev = vim_strnsave(buf, buflen);
-		prevlen = buflen;
-	    }
-	    else
-	    {
-		s = alloc((unsigned)(prevlen + buflen));
-		if (s != NULL)
+		/* "buf" is full, need to move text to an allocated buffer */
+		if (prev == NULL)
 		{
-		    mch_memmove(s, prev, prevlen);
-		    mch_memmove(s + prevlen, buf, buflen);
-		    vim_free(prev);
-		    prev = s;
-		    prevlen += buflen;
+		    prev = vim_strnsave(buf, buflen);
+		    prevlen = buflen;
 		}
+		else
+		{
+		    s = alloc((unsigned)(prevlen + buflen));
+		    if (s != NULL)
+		    {
+			mch_memmove(s, prev, prevlen);
+			mch_memmove(s + prevlen, buf, buflen);
+			vim_free(prev);
+			prev = s;
+			prevlen += buflen;
+		    }
+		}
+		filtd = 0;
 	    }
-	    filtd = 0;
 	}
 	else
 	{
