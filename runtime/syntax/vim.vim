@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Vim 7.3 script
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	August 20, 2010
-" Version:	7.3-05
+" Last Change:	Jan 10, 2011
+" Version:	7.3-07
 " Automatically generated keyword lists: {{{1
 
 " Quit when a syntax file was already loaded {{{2
@@ -550,9 +550,9 @@ if !exists("g:vimsyn_embed")
 endif
 
 " [-- lua --] {{{3
-let s:luapath= expand("<sfile>:p:h")."/lua.vim"
+let s:luapath= fnameescape(expand("<sfile>:p:h")."/lua.vim")
 if !filereadable(s:luapath)
- let s:luapath= globpath(&rtp,"syntax/lua.vim")
+ let s:luapath= fnameescape(globpath(&rtp,"syntax/lua.vim"))
 endif
 if (g:vimsyn_embed =~ 'l' && has("lua")) && filereadable(s:luapath)
  unlet! b:current_syntax
@@ -572,9 +572,9 @@ endif
 unlet s:luapath
 
 " [-- perl --] {{{3
-let s:perlpath= expand("<sfile>:p:h")."/perl.vim"
+let s:perlpath= fnameescape(expand("<sfile>:p:h")."/perl.vim")
 if !filereadable(s:perlpath)
- let s:perlpath= globpath(&rtp,"syntax/perl.vim")
+ let s:perlpath= fnameescape(globpath(&rtp,"syntax/perl.vim"))
 endif
 if (g:vimsyn_embed =~ 'p' && has("perl")) && filereadable(s:perlpath)
  unlet! b:current_syntax
@@ -594,9 +594,9 @@ endif
 unlet s:perlpath
 
 " [-- ruby --] {{{3
-let s:rubypath= expand("<sfile>:p:h")."/ruby.vim"
+let s:rubypath= fnameescape(expand("<sfile>:p:h")."/ruby.vim")
 if !filereadable(s:rubypath)
- let s:rubypath= globpath(&rtp,"syntax/ruby.vim")
+ let s:rubypath= fnameescape(globpath(&rtp,"syntax/ruby.vim"))
 endif
 if (g:vimsyn_embed =~ 'r' && has("ruby")) && filereadable(s:rubypath)
  unlet! b:current_syntax
@@ -615,9 +615,9 @@ endif
 unlet s:rubypath
 
 " [-- python --] {{{3
-let s:pythonpath= expand("<sfile>:p:h")."/python.vim"
+let s:pythonpath= fnameescape(expand("<sfile>:p:h")."/python.vim")
 if !filereadable(s:pythonpath)
- let s:pythonpath= globpath(&rtp,"syntax/python.vim")
+ let s:pythonpath= fnameescape(globpath(&rtp,"syntax/python.vim"))
 endif
 if (g:vimsyn_embed =~ 'P' && has("python")) && filereadable(s:pythonpath)
  unlet! b:current_syntax
@@ -644,9 +644,9 @@ else
  let s:trytcl= 1
 endif
 if s:trytcl
- let s:tclpath= expand("<sfile>:p:h")."/tcl.vim"
+ let s:tclpath= fnameescape(expand("<sfile>:p:h")."/tcl.vim")
  if !filereadable(s:tclpath)
-  let s:tclpath= globpath(&rtp,"syntax/tcl.vim")
+  let s:tclpath= fnameescape(globpath(&rtp,"syntax/tcl.vim"))
  endif
  if (g:vimsyn_embed =~ 't' && has("tcl")) && filereadable(s:tclpath)
   unlet! b:current_syntax
@@ -671,9 +671,9 @@ endif
 unlet s:trytcl
 
 " [-- mzscheme --] {{{3
-let s:mzschemepath= expand("<sfile>:p:h")."/scheme.vim"
+let s:mzschemepath= fnameescape(expand("<sfile>:p:h")."/scheme.vim")
 if !filereadable(s:mzschemepath)
- let s:mzschemepath= globpath(&rtp,"syntax/scheme.vim")
+ let s:mzschemepath= fnameescape(globpath(&rtp,"syntax/scheme.vim"))
 endif
 if (g:vimsyn_embed =~ 'm' && has("mzscheme")) && filereadable(s:mzschemepath)
  unlet! b:current_syntax

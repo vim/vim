@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2011 Mar 22
+" Last Change:	2011 Apr 01
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -75,7 +75,7 @@ endfunc
 au BufNewFile,BufRead *.aap			setf aap
 
 " A2ps printing utility
-au BufNewFile,BufRead etc/a2ps.cfg,etc/a2ps/*.cfg,a2psrc,.a2psrc setf a2ps
+au BufNewFile,BufRead */etc/a2ps.cfg,*/etc/a2ps/*.cfg,a2psrc,.a2psrc setf a2ps
 
 " ABAB/4
 au BufNewFile,BufRead *.abap			setf abap
@@ -110,8 +110,7 @@ au BufNewFile,BufRead build.xml			setf ant
 au BufNewFile,BufRead proftpd.conf*		call s:StarSetf('apachestyle')
 
 " Apache config file
-au BufNewFile,BufRead .htaccess,/etc/httpd/*.conf		 setf apache
-au BufNewFile,BufRead httpd.conf*,srm.conf*,access.conf*,apache.conf*,apache2.conf*,/etc/apache2/*.conf*,/etc/httpd/conf.d/*.conf* call s:StarSetf('apache')
+au BufNewFile,BufRead .htaccess,*/etc/httpd/*.conf		setf apache
 
 " XA65 MOS6510 cross assembler
 au BufNewFile,BufRead *.a65			setf a65
@@ -124,7 +123,7 @@ au BufNewFile,BufRead *.am
 	\ if expand("<afile>") !~? 'Makefile.am\>' | setf elf | endif
 
 " ALSA configuration
-au BufNewFile,BufRead ~/.asoundrc,/usr/share/alsa/alsa.conf,/etc/asound.conf	setf alsaconf
+au BufNewFile,BufRead ~/.asoundrc,/usr/share/alsa/alsa.conf,*/etc/asound.conf	setf alsaconf
 
 " Arc Macro Language
 au BufNewFile,BufRead *.aml			setf aml
@@ -157,7 +156,7 @@ au BufNewFile,BufRead *.asp
 	\ endif
 
 " Grub (must be before catch *.lst)
-au BufNewFile,BufRead /boot/grub/menu.lst,/boot/grub/grub.conf,/etc/grub.conf	setf grub
+au BufNewFile,BufRead /boot/grub/menu.lst,/boot/grub/grub.conf,*/etc/grub.conf	setf grub
 
 " Assembly (all kinds)
 " *.lst is not pure assembly, it has two extra columns (address, byte codes)
@@ -296,7 +295,7 @@ endfunc
 au BufNewFile,BufRead *.bl			setf blank
 
 " Blkid cache file
-au BufNewFile,BufRead /etc/blkid.tab,/etc/blkid.tab.old   setf xml
+au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
 
 " C or lpc
 au BufNewFile,BufRead *.c			call s:FTlpc()
@@ -331,7 +330,7 @@ au BufNewFile,BufRead *.cabal			setf cabal
 au BufNewFile,BufRead *.toc			setf cdrtoc
 
 " Cdrdao config
-au BufNewFile,BufRead etc/cdrdao.conf,etc/defaults/cdrdao,etc/default/cdrdao,~/.cdrdao						setf cdrdaoconf
+au BufNewFile,BufRead */etc/cdrdao.conf,*/etc/defaults/cdrdao,*/etc/default/cdrdao,~/.cdrdao	setf cdrdaoconf
 
 " Cfengine
 au BufNewFile,BufRead cfengine.conf		setf cfengine
@@ -553,7 +552,8 @@ au BufNewFile,BufRead control
 	\| endif
 
 " Debian Sources.list
-au BufNewFile,BufRead /etc/apt/sources.list	setf debsources
+au BufNewFile,BufRead */etc/apt/sources.list		setf debsources
+au BufNewFile,BufRead */etc/apt/sources.list.d/*.list	setf debsources
 
 " Deny hosts
 au BufNewFile,BufRead denyhosts.conf		setf denyhosts
@@ -586,7 +586,7 @@ au BufNewFile,BufRead dictd.conf		setf dictdconf
 au BufNewFile,BufRead *.diff,*.rej,*.patch	setf diff
 
 " Dircolors
-au BufNewFile,BufRead .dir_colors,/etc/DIR_COLORS	setf dircolors
+au BufNewFile,BufRead .dir_colors,.dircolors,*/etc/DIR_COLORS	setf dircolors
 
 " Diva (with Skill) or InstallShield
 au BufNewFile,BufRead *.rul
@@ -767,7 +767,7 @@ au BufNewFile,BufRead *.groovy			setf groovy
 au BufNewFile,BufRead *.gsp			setf gsp
 
 " Group file
-au BufNewFile,BufRead /etc/group,/etc/group-,/etc/group.edit,/etc/gshadow,/etc/gshadow-,/etc/gshadow.edit,/var/backups/group.bak,/var/backups/gshadow.bak  setf group
+au BufNewFile,BufRead */etc/group,*/etc/group-,*/etc/group.edit,*/etc/gshadow,*/etc/gshadow-,*/etc/gshadow.edit,*/var/backups/group.bak,*/var/backups/gshadow.bak  setf group
 
 " GTK RC
 au BufNewFile,BufRead .gtkrc,gtkrc		setf gtkrc
@@ -826,10 +826,10 @@ au BufNewFile,BufRead *.html.m4			setf htmlm4
 au BufNewFile,BufRead *.tmpl			setf htmlcheetah
 
 " Host config
-au BufNewFile,BufRead /etc/host.conf		setf hostconf
+au BufNewFile,BufRead */etc/host.conf		setf hostconf
 
 " Hosts access
-au BufNewFile,BufRead /etc/hosts.allow,/etc/hosts.deny  setf hostsaccess
+au BufNewFile,BufRead */etc/hosts.allow,*/etc/hosts.deny  setf hostsaccess
 
 " Hyper Builder
 au BufNewFile,BufRead *.hb			setf hb
@@ -889,7 +889,7 @@ au BufNewFile,BufRead indentrc			setf indent
 au BufNewFile,BufRead *.inf,*.INF		setf inform
 
 " Initng
-au BufNewFile,BufRead /etc/initng/**/*.i,*.ii	setf initng
+au BufNewFile,BufRead */etc/initng/**/*.i,*.ii	setf initng
 
 " Ipfilter
 au BufNewFile,BufRead ipf.conf,ipf6.conf,ipf.rules	setf ipfilter
@@ -953,7 +953,7 @@ au BufNewFile,BufRead *.ace,*.ACE		setf lace
 au BufNewFile,BufRead *.latte,*.lte		setf latte
 
 " Limits
-au BufNewFile,BufRead /etc/limits		setf limits
+au BufNewFile,BufRead */etc/limits,*/etc/*limits.conf,*/etc/*limits.d/*.conf	setf limits
 
 " LambdaProlog (*.mod too, see Modsim)
 au BufNewFile,BufRead *.sig			setf lprolog
@@ -968,10 +968,10 @@ au BufNewFile,BufRead *.ld			setf ld
 au BufNewFile,BufRead *.lex,*.l			setf lex
 
 " Libao
-au BufNewFile,BufRead /etc/libao.conf,*/.libao	setf libao
+au BufNewFile,BufRead */etc/libao.conf,*/.libao	setf libao
 
 " Libsensors
-au BufNewFile,BufRead /etc/sensors.conf		setf sensors
+au BufNewFile,BufRead */etc/sensors.conf,*/etc/sensors3.conf	setf sensors
 
 " LFTP
 au BufNewFile,BufRead lftp.conf,.lftprc,*lftp/rc	setf lftp
@@ -1002,10 +1002,10 @@ au BufNewFile,BufRead *.lite,*.lt		setf lite
 au BufNewFile,BufRead */LiteStep/*/*.rc		setf litestep
 
 " Login access
-au BufNewFile,BufRead /etc/login.access		setf loginaccess
+au BufNewFile,BufRead */etc/login.access	setf loginaccess
 
 " Login defs
-au BufNewFile,BufRead /etc/login.defs		setf logindefs
+au BufNewFile,BufRead */etc/login.defs		setf logindefs
 
 " Logtalk
 au BufNewFile,BufRead *.lgt			setf logtalk
@@ -1036,7 +1036,7 @@ au BufNewFile,BufRead *.mgp			setf mgp
 au BufNewFile,BufRead snd.\d\+,.letter,.letter.\d\+,.followup,.article,.article.\d\+,pico.\d\+,mutt{ng,}-*-\w\+,mutt[[:alnum:]_-]\{6\},ae\d\+.txt,/tmp/SLRN[0-9A-Z.]\+,*.eml setf mail
 
 " Mail aliases
-au BufNewFile,BufRead /etc/mail/aliases,/etc/aliases	setf mailaliases
+au BufNewFile,BufRead */etc/mail/aliases,*/etc/aliases	setf mailaliases
 
 " Mailcap configuration file
 au BufNewFile,BufRead .mailcap,mailcap		setf mailcap
@@ -1051,7 +1051,7 @@ au BufNewFile,BufRead *.ist,*.mst		setf ist
 au BufNewFile,BufRead *.man			setf man
 
 " Man config
-au BufNewFile,BufRead /etc/man.conf,man.config	setf manconf
+au BufNewFile,BufRead */etc/man.conf,man.config	setf manconf
 
 " Maple V
 au BufNewFile,BufRead *.mv,*.mpl,*.mws		setf maple
@@ -1159,8 +1159,8 @@ au BufNewFile,BufRead *.isc,*.monk,*.ssc,*.tsc	setf monk
 au BufNewFile,BufRead *.moo			setf moo
 
 " Modconf
-au BufNewFile,BufRead /etc/modules.conf,/etc/conf.modules	setf modconf
-au BufNewFile,BufRead /etc/modutils/*
+au BufNewFile,BufRead */etc/modules.conf,*/etc/modules,*/etc/conf.modules	setf modconf
+au BufNewFile,BufRead */etc/modutils/*
 	\ if executable(expand("<afile>")) != 1
 	\|  call s:StarSetf('modconf')
 	\|endif
@@ -1193,7 +1193,7 @@ au BufNewFile,BufRead *.mush			setf mush
 au BufNewFile,BufRead Mutt{ng,}rc		setf muttrc
 
 " Nano
-au BufNewFile,BufRead /etc/nanorc,.nanorc	setf nanorc
+au BufNewFile,BufRead */etc/nanorc,.nanorc	setf nanorc
 
 " Nastran input/DMAP
 "au BufNewFile,BufRead *.dat			setf nastran
@@ -1269,13 +1269,13 @@ au BufNewFile,BufRead *.ora			setf ora
 au BufNewFile,BufRead pf.conf			setf pf
 
 " Pam conf
-au BufNewFile,BufRead /etc/pam.conf		setf pamconf
+au BufNewFile,BufRead */etc/pam.conf		setf pamconf
 
 " PApp
 au BufNewFile,BufRead *.papp,*.pxml,*.pxsl	setf papp
 
 " Password file
-au BufNewFile,BufRead /etc/passwd,/etc/passwd-,/etc/passwd.edit,/etc/shadow,/etc/shadow-,/var/backups/passwd.bak,/var/backups/shadow.bak setf passwd
+au BufNewFile,BufRead */etc/passwd,*/etc/passwd-,*/etc/passwd.edit,*/etc/shadow,*/etc/shadow-,*/etc/shadow.edit,*/var/backups/passwd.bak,*/var/backups/shadow.bak setf passwd
 
 " Pascal (also *.p)
 au BufNewFile,BufRead *.pas			setf pascal
@@ -1502,7 +1502,7 @@ au BufNewFile,BufRead *.pdb			setf prolog
 au BufNewFile,BufRead *.pml			setf promela
 
 " Protocols
-au BufNewFile,BufRead /etc/protocols		setf protocols
+au BufNewFile,BufRead */etc/protocols		setf protocols
 
 " Pyrex
 au BufNewFile,BufRead *.pyx,*.pxd		setf pyrex
@@ -1689,19 +1689,19 @@ func! s:McSetf()
 endfunc
 
 " Services
-au BufNewFile,BufRead /etc/services		setf services
+au BufNewFile,BufRead */etc/services		setf services
 
 " Service Location config
-au BufNewFile,BufRead /etc/slp.conf		setf slpconf
+au BufNewFile,BufRead */etc/slp.conf		setf slpconf
 
 " Service Location registration
-au BufNewFile,BufRead /etc/slp.reg		setf slpreg
+au BufNewFile,BufRead */etc/slp.reg		setf slpreg
 
 " Service Location SPI
-au BufNewFile,BufRead /etc/slp.spi		setf slpspi
+au BufNewFile,BufRead */etc/slp.spi		setf slpspi
 
 " Setserial config
-au BufNewFile,BufRead /etc/serial.conf		setf setserial
+au BufNewFile,BufRead */etc/serial.conf		setf setserial
 
 " SGML
 au BufNewFile,BufRead *.sgm,*.sgml
@@ -1728,7 +1728,7 @@ au BufNewFile,BufRead sgml.catalog*		call s:StarSetf('catalog')
 " Gentoo ebuilds are actually bash scripts
 au BufNewFile,BufRead .bashrc*,bashrc,bash.bashrc,.bash_profile*,.bash_logout*,*.bash,*.ebuild call SetFileTypeSH("bash")
 au BufNewFile,BufRead .kshrc*,*.ksh call SetFileTypeSH("ksh")
-au BufNewFile,BufRead /etc/profile,.profile*,*.sh,*.env call SetFileTypeSH(getline(1))
+au BufNewFile,BufRead */etc/profile,.profile*,*.sh,*.env call SetFileTypeSH(getline(1))
 
 " Also called from scripts.vim.
 func! SetFileTypeSH(name)
@@ -1811,7 +1811,7 @@ func! s:CSH()
 endfunc
 
 " Z-Shell script
-au BufNewFile,BufRead .zprofile,/etc/zprofile,.zfbfmarks  setf zsh
+au BufNewFile,BufRead .zprofile,*/etc/zprofile,.zfbfmarks  setf zsh
 au BufNewFile,BufRead .zsh*,.zlog*,.zcompdump*  call s:StarSetf('zsh')
 au BufNewFile,BufRead *.zsh			setf zsh
 
@@ -1882,7 +1882,7 @@ au BufNewFile,BufRead *.rules			call s:FTRules()
 let s:ft_rules_udev_rules_pattern = '^\s*\cudev_rules\s*=\s*"\([^"]\{-1,}\)/*".*'
 func! s:FTRules()
   let path = expand('<amatch>:p')
-  if path =~ '^/etc/udev/\%(rules\.d/\)\=.*\.rules$'
+  if path =~ '^/\(etc/udev/\%(rules\.d/\)\=.*\.rules\|lib/udev/\%(rules\.d/\)\=.*\.rules\)$'
     setf udevrules
     return
   endif
@@ -1970,13 +1970,13 @@ au BufNewFile,BufRead *.sml			setf sml
 au BufNewFile,BufRead *.cm			setf voscm
 
 " Sysctl
-au BufNewFile,BufRead /etc/sysctl.conf		setf sysctl
+au BufNewFile,BufRead */etc/sysctl.conf,*/etc/sysctl.d/*.conf	setf sysctl
 
 " Synopsys Design Constraints
 au BufNewFile,BufRead *.sdc			setf sdc
 
 " Sudoers
-au BufNewFile,BufRead /etc/sudoers,sudoers.tmp	setf sudoers
+au BufNewFile,BufRead */etc/sudoers,sudoers.tmp	setf sudoers
 
 " SVG (Scalable Vector Graphics)
 au BufNewFile,BufRead *.svg			setf svg
@@ -2122,23 +2122,23 @@ au BufNewFile,BufReadPost *.tsscl		setf tsscl
 au BufNewFile,BufRead *.uit,*.uil		setf uil
 
 " Udev conf
-au BufNewFile,BufRead /etc/udev/udev.conf	setf udevconf
+au BufNewFile,BufRead */etc/udev/udev.conf	setf udevconf
 
 " Udev permissions
-au BufNewFile,BufRead /etc/udev/permissions.d/*.permissions setf udevperm
+au BufNewFile,BufRead */etc/udev/permissions.d/*.permissions setf udevperm
 "
 " Udev symlinks config
-au BufNewFile,BufRead /etc/udev/cdsymlinks.conf	setf sh
+au BufNewFile,BufRead */etc/udev/cdsymlinks.conf	setf sh
 
 " UnrealScript
 au BufNewFile,BufRead *.uc			setf uc
 
 " Updatedb
-au BufNewFile,BufRead /etc/updatedb.conf	setf updatedb
+au BufNewFile,BufRead */etc/updatedb.conf	setf updatedb
 
 " Upstart (init(8)) config files
-au BufNewFile,BufRead */etc/init/*.conf,~/.init/*.conf          setf upstart
-au BufNewFile,BufRead */etc/init/*.override,~/.init/*.override  setf upstart
+au BufNewFile,BufRead */etc/init/*.conf,*/.init/*.conf          setf upstart
+au BufNewFile,BufRead */etc/init/*.override,*/.init/*.override  setf upstart
 
 " Vera
 au BufNewFile,BufRead *.vr,*.vri,*.vrh		setf vera
@@ -2233,12 +2233,15 @@ au BufNewFile,BufRead XF86Config
 	\   let b:xf86c_xfree86_version = 3 |
 	\ endif |
 	\ setf xf86conf
+au BufNewFile,BufRead */xorg.conf.d/*.conf
+	\ let b:xf86conf_xfree86_version = 4 |
+	\ setf xf86conf
 
 " Xorg config
-au BufNewFile,BufRead xorg.conf,xorg.conf-4	let b:xf86c_xfree86_version = 4 | setf xf86conf
+au BufNewFile,BufRead xorg.conf,xorg.conf-4	let b:xf86conf_xfree86_version = 4 | setf xf86conf
 
 " Xinetd conf
-au BufNewFile,BufRead /etc/xinetd.conf		setf xinetd
+au BufNewFile,BufRead */etc/xinetd.conf		setf xinetd
 
 " XS Perl extension interface language
 au BufNewFile,BufRead *.xs			setf xs
@@ -2285,7 +2288,7 @@ au BufNewFile,BufRead *.ts,*.ui			setf xml
 au BufNewFile,BufRead *.tpm			setf xml
 
 " Xdg menus
-au BufNewFile,BufRead /etc/xdg/menus/*.menu	setf xml
+au BufNewFile,BufRead */etc/xdg/menus/*.menu	setf xml
 
 " ATI graphics driver configuration
 au BufNewFile,BufRead fglrxrc			setf xml
@@ -2369,8 +2372,9 @@ au StdinReadPost * if !did_filetype() | runtime! scripts.vim | endif
 " Most of these should call s:StarSetf() to avoid names ending in .gz and the
 " like are used.
 
-" More Apache files.
-au BufNewFile,BufRead /etc/apache2/conf.*/*,/etc/apache2/sites-*/*,/etc/apache2/mods-*/*		call s:StarSetf('apache')
+" More Apache config files
+au BufNewFile,BufRead access.conf*,apache.conf*,apache2.conf*,httpd.conf*,srm.conf*	call s:StarSetf('apache')
+au BufNewFile,BufRead */etc/apache2/*.conf*,*/etc/apache2/conf.*/*,*/etc/apache2/mods-*/*,*/etc/apache2/sites-*/*,*/etc/httpd/conf.d/*.conf*		call s:StarSetf('apache')
 
 " Asterisk config file
 au BufNewFile,BufRead *asterisk/*.conf*		call s:StarSetf('asterisk')
@@ -2391,10 +2395,7 @@ au BufNewFile,BufRead [cC]hange[lL]og*
 	\|endif
 
 " Crontab
-au BufNewFile,BufRead crontab,crontab.*,/etc/cron.d/*		call s:StarSetf('crontab')
-
-" Debian Sources.list
-au BufNewFile,BufRead /etc/apt/sources.list.d/*	call s:StarSetf('debsources')
+au BufNewFile,BufRead crontab,crontab.*,*/etc/cron.d/*		call s:StarSetf('crontab')
 
 " Dracula
 au BufNewFile,BufRead drac.*			call s:StarSetf('dracula')
@@ -2429,7 +2430,7 @@ au! BufNewFile,BufRead *jarg*
 au BufNewFile,BufRead Kconfig.*			call s:StarSetf('kconfig')
 
 " Logcheck
-au BufNewFile,BufRead /etc/logcheck/*.d*/*	call s:StarSetf('logcheck')
+au BufNewFile,BufRead */etc/logcheck/*.d*/*	call s:StarSetf('logcheck')
 
 " Makefile
 au BufNewFile,BufRead [mM]akefile*		call s:StarSetf('make')
@@ -2441,7 +2442,7 @@ au BufNewFile,BufRead [rR]akefile*		call s:StarSetf('ruby')
 au BufNewFile,BufRead mutt[[:alnum:]._-]\{6\}	setf mail
 
 " Modconf
-au BufNewFile,BufRead /etc/modprobe.*		call s:StarSetf('modconf')
+au BufNewFile,BufRead */etc/modprobe.*		call s:StarSetf('modconf')
 
 " Mutt setup file
 au BufNewFile,BufRead .mutt{ng,}rc*,*/.mutt{ng,}/mutt{ng,}rc*	call s:StarSetf('muttrc')
@@ -2451,7 +2452,7 @@ au BufNewFile,BufRead mutt{ng,}rc*,Mutt{ng,}rc*		call s:StarSetf('muttrc')
 au BufNewFile,BufRead tmac.*			call s:StarSetf('nroff')
 
 " Pam conf
-au BufNewFile,BufRead /etc/pam.d/*		call s:StarSetf('pamconf')
+au BufNewFile,BufRead */etc/pam.d/*		call s:StarSetf('pamconf')
 
 " Printcap and Termcap
 au BufNewFile,BufRead *printcap*
@@ -2474,10 +2475,10 @@ au BufNewFile,BufRead Xresources*,*/app-defaults/*,*/Xresources/* call s:StarSet
 
 " XFree86 config
 au BufNewFile,BufRead XF86Config-4*
-	\ let b:xf86c_xfree86_version = 4 | call s:StarSetf('xf86conf')
+	\ let b:xf86conf_xfree86_version = 4 | call s:StarSetf('xf86conf')
 au BufNewFile,BufRead XF86Config*
 	\ if getline(1) =~ '\<XConfigurator\>'
-	\|  let b:xf86c_xfree86_version = 3
+	\|  let b:xf86conf_xfree86_version = 3
 	\|endif
 	\|call s:StarSetf('xf86conf')
 
@@ -2485,7 +2486,7 @@ au BufNewFile,BufRead XF86Config*
 au BufNewFile,BufRead *xmodmap*			call s:StarSetf('xmodmap')
 
 " Xinetd conf
-au BufNewFile,BufRead /etc/xinetd.d/*		call s:StarSetf('xinetd')
+au BufNewFile,BufRead */etc/xinetd.d/*		call s:StarSetf('xinetd')
 
 " Z-Shell script
 au BufNewFile,BufRead zsh*,zlog*		call s:StarSetf('zsh')

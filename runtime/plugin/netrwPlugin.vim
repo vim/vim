@@ -1,6 +1,6 @@
 " netrwPlugin.vim: Handles file transfer and remote directory listing across a network
 "            PLUGIN SECTION
-" Date:		Jul 27, 2010
+" Date:		Feb 10, 2011
 " Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2008 Charles E. Campbell, Jr. {{{1
@@ -20,7 +20,7 @@
 if &cp || exists("g:loaded_netrwPlugin")
  finish
 endif
-let g:loaded_netrwPlugin = "v140"
+let g:loaded_netrwPlugin = "v141"
 if v:version < 702
  echohl WarningMsg | echo "***netrw*** you need vim version 7.2 for this version of netrw" | echohl None
  finish
@@ -34,10 +34,13 @@ set cpo&vim
 " Local Browsing: {{{2
 augroup FileExplorer
  au!
- au BufEnter * silent! call s:LocalBrowse(expand("<amatch>"))
- au VimEnter * silent! call s:VimEnter(expand("<amatch>"))
+" au BufReadCmd *[/\\]	sil! call s:LocalBrowse(expand("<amatch>")) 
+" au BufEnter *[^/\\]	sil! call s:LocalBrowse(expand("<amatch>"))
+" au VimEnter *[^/\\]	sil! call s:VimEnter(expand("<amatch>"))
+ au BufEnter *	sil! call s:LocalBrowse(expand("<amatch>"))
+ au VimEnter *	sil! call s:VimEnter(expand("<amatch>"))
  if has("win32") || has("win95") || has("win64") || has("win16")
-  au BufEnter .* silent! call s:LocalBrowse(expand("<amatch>"))
+  au BufEnter .* sil! call s:LocalBrowse(expand("<amatch>"))
  endif
 augroup END
 
@@ -45,10 +48,10 @@ augroup END
 augroup Network
  au!
  if has("win32") || has("win95") || has("win64") || has("win16")
-  au BufReadCmd  file://*		exe "silent doau BufReadPre ".fnameescape(netrw#RFC2396(expand("<amatch>")))|exe 'e '.fnameescape(substitute(netrw#RFC2396(expand("<amatch>")),'file://\(.*\)','\1',""))|exe "bwipe ".fnameescape(expand("<amatch>"))|exe "silent doau BufReadPost ".fnameescape(netrw#RFC2396(expand("<amatch>")))
+  au BufReadCmd  file://*		call netrw#FileUrlRead(expand("<amatch>"))
  else
-  au BufReadCmd  file://*		exe "silent doau BufReadPre ".fnameescape(netrw#RFC2396(expand("<amatch>")))|exe 'e '.fnameescape(substitute(netrw#RFC2396(expand("<amatch>")),'file://\(.*\)','\1',""))|exe "bwipe ".fnameescape(expand("<amatch>"))|exe "silent doau BufReadPost ".fnameescape(netrw#RFC2396(expand("<amatch>")))
-  au BufReadCmd  file://localhost/*	exe "silent doau BufReadPre ".fnameescape(netrw#RFC2396(expand("<amatch>")))|exe 'e '.fnameescape(substitute(netrw#RFC2396(expand("<amatch>")),'file://localhost/\(.*\)','\1',""))|exe "bwipe ".fnameescape(substitute(expand("<amatch>"),'file://\(\k\+@\)\=','',''))|exe "silent doau BufReadPost ".fnameescape(netrw#RFC2396(expand("<amatch>")))
+  au BufReadCmd  file://*		call netrw#FileUrlRead(expand("<amatch>"))
+  au BufReadCmd  file://localhost/*	call netrw#FileUrlRead(substitute(expand("<amatch>")),'file://localhost/','file:///','')
  endif
  au BufReadCmd   ftp://*,rcp://*,scp://*,http://*,dav://*,davs://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".fnameescape(expand("<amatch>"))|call netrw#Nread(2,expand("<amatch>"))|exe "silent doau BufReadPost ".fnameescape(expand("<amatch>"))
  au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,dav://*,davs://*,rsync://*,sftp://*	exe "silent doau FileReadPre ".fnameescape(expand("<amatch>"))|call netrw#Nread(1,expand("<amatch>"))|exe "silent doau FileReadPost ".fnameescape(expand("<amatch>"))
@@ -100,11 +103,11 @@ fun! s:LocalBrowse(dirname)
    " string is the current directory and not checking would break
    " things such as the help command.
    if a:dirname != '' && isdirectory(a:dirname)
-    silent! call netrw#LocalBrowseCheck(a:dirname)
+    sil! call netrw#LocalBrowseCheck(a:dirname)
    endif
   elseif isdirectory(a:dirname)
 "   echomsg "dirname<".dirname."> isdir"
-   silent! call netrw#LocalBrowseCheck(a:dirname)
+   sil! call netrw#LocalBrowseCheck(a:dirname)
   endif
   " not a directory, ignore it
 endfun

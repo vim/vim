@@ -1,8 +1,8 @@
 " vi:set ts=8 sts=8 sw=8 tw=0:
 "
 " Menu Translations:	Japanese (CP932)
-" Translated By:	MURAOKA Taro  <koron@tka.att.ne.jp>
-" Last Change:		18-Apr-2006.
+" Translated By:	MURAOKA Taro  <koron.kaoriya@gmail.com>
+" Last Change:		21-Mar-2011.
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -99,6 +99,8 @@ let g:menutrans_tags_dialog = "タグファイルの名前を入力してください:\n名前はカン
 menutrans F&ile\ Settings		ファイル設定(&I)
 menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!
 	\	行番号表示切替(&N)<Tab>:set\ nu!
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!
+	\	相対行番号表示切替(&V)<Tab>:set\ rnu!
 menutrans Toggle\ &List\ Mode<Tab>:set\ list!
 	\ リストモード切替(&L)<Tab>:set\ list!
 menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!
@@ -149,7 +151,7 @@ menutrans Se&T\ Compiler		コンパイラ設定(&T)
 " Tools.Spelling Menu
 menutrans &Spelling			スペリング(&S)
 menutrans &Spell\ Check\ On		スペルチェック有効(&S)
-menutrans Spell\ Check\ &Off		スペルチェック有効(&O)
+menutrans Spell\ Check\ &Off		スペルチェック無効(&O)
 menutrans To\ &Next\ error<Tab>]s	次のエラー(&N)<Tab>]s
 menutrans To\ &Previous\ error<Tab>[s	前のエラー(&P)<Tab>[s
 menutrans Suggest\ &Corrections<Tab>z=	修正候補(&C)<Tab>z=

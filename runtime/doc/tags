@@ -4229,6 +4229,10 @@ E842	cmdline.txt	/*E842*
 E843	editing.txt	/*E843*
 E844	syntax.txt	/*E844*
 E845	spell.txt	/*E845*
+E846	options.txt	/*E846*
+E847	syntax.txt	/*E847*
+E848	syntax.txt	/*E848*
+E849	syntax.txt	/*E849*
 E85	options.txt	/*E85*
 E86	windows.txt	/*E86*
 E87	windows.txt	/*E87*
@@ -4861,6 +4865,8 @@ c_<S-Tab>	cmdline.txt	/*c_<S-Tab>*
 c_<S-Up>	cmdline.txt	/*c_<S-Up>*
 c_<Tab>	cmdline.txt	/*c_<Tab>*
 c_<Up>	cmdline.txt	/*c_<Up>*
+c_BS	cmdline.txt	/*c_BS*
+c_CR	cmdline.txt	/*c_CR*
 c_CTRL-A	cmdline.txt	/*c_CTRL-A*
 c_CTRL-B	cmdline.txt	/*c_CTRL-B*
 c_CTRL-C	cmdline.txt	/*c_CTRL-C*
@@ -4893,6 +4899,15 @@ c_CTRL-\_e	cmdline.txt	/*c_CTRL-\\_e*
 c_CTRL-]	cmdline.txt	/*c_CTRL-]*
 c_CTRL-^	cmdline.txt	/*c_CTRL-^*
 c_CTRL-_	cmdline.txt	/*c_CTRL-_*
+c_Del	cmdline.txt	/*c_Del*
+c_Down	cmdline.txt	/*c_Down*
+c_End	cmdline.txt	/*c_End*
+c_Esc	cmdline.txt	/*c_Esc*
+c_Home	cmdline.txt	/*c_Home*
+c_Insert	cmdline.txt	/*c_Insert*
+c_Left	cmdline.txt	/*c_Left*
+c_Right	cmdline.txt	/*c_Right*
+c_Up	cmdline.txt	/*c_Up*
 c_digraph	cmdline.txt	/*c_digraph*
 c_wildchar	cmdline.txt	/*c_wildchar*
 call()	eval.txt	/*call()*
@@ -5750,10 +5765,11 @@ g:netrw_chgperm	pi_netrw.txt	/*g:netrw_chgperm*
 g:netrw_chgwin	pi_netrw.txt	/*g:netrw_chgwin*
 g:netrw_compress	pi_netrw.txt	/*g:netrw_compress*
 g:netrw_ctags	pi_netrw.txt	/*g:netrw_ctags*
-g:netrw_cursorline	pi_netrw.txt	/*g:netrw_cursorline*
+g:netrw_cursor	pi_netrw.txt	/*g:netrw_cursor*
 g:netrw_cygwin	pi_netrw.txt	/*g:netrw_cygwin*
 g:netrw_dav_cmd	pi_netrw.txt	/*g:netrw_dav_cmd*
 g:netrw_decompress	pi_netrw.txt	/*g:netrw_decompress*
+g:netrw_dirhistmax	pi_netrw.txt	/*g:netrw_dirhistmax*
 g:netrw_fastbrowse	pi_netrw.txt	/*g:netrw_fastbrowse*
 g:netrw_fetch_cmd	pi_netrw.txt	/*g:netrw_fetch_cmd*
 g:netrw_fname_escape	pi_netrw.txt	/*g:netrw_fname_escape*
@@ -6710,6 +6726,7 @@ netrw-clean	pi_netrw.txt	/*netrw-clean*
 netrw-contents	pi_netrw.txt	/*netrw-contents*
 netrw-copyright	pi_netrw.txt	/*netrw-copyright*
 netrw-cr	pi_netrw.txt	/*netrw-cr*
+netrw-createfile	pi_netrw.txt	/*netrw-createfile*
 netrw-credits	pi_netrw.txt	/*netrw-credits*
 netrw-ctrl-h	pi_netrw.txt	/*netrw-ctrl-h*
 netrw-ctrl-l	pi_netrw.txt	/*netrw-ctrl-l*
@@ -6733,7 +6750,9 @@ netrw-fixup	pi_netrw.txt	/*netrw-fixup*
 netrw-ftp	pi_netrw.txt	/*netrw-ftp*
 netrw-ftype	pi_netrw.txt	/*netrw-ftype*
 netrw-gb	pi_netrw.txt	/*netrw-gb*
+netrw-gd	pi_netrw.txt	/*netrw-gd*
 netrw-getftype	pi_netrw.txt	/*netrw-getftype*
+netrw-gf	pi_netrw.txt	/*netrw-gf*
 netrw-gh	pi_netrw.txt	/*netrw-gh*
 netrw-gp	pi_netrw.txt	/*netrw-gp*
 netrw-gx	pi_netrw.txt	/*netrw-gx*

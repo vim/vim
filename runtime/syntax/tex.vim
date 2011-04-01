@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Sep 17, 2010 
-" Version:	60
+" Last Change:	Dec 07, 2010 
+" Version:	64
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -89,18 +89,17 @@ if g:tex_fold_enabled && &fdm == "manual"
  setl fdm=syntax
 endif
 
-" (La)TeX keywords: only use the letters a-zA-Z {{{1
+" (La)TeX keywords: uses the characters 0-9,a-z,A-Z,192-255 only... {{{1
 " but _ is the only one that causes problems.
-if version < 600
-  set isk=a-z,A-Z
-  if b:tex_stylish
-    set isk+=@
-  endif
+" One may override this iskeyword setting by providing
+" g:tex_isk
+if exists("g:tex_isk")
+ exe "setlocal isk=".g:tex_isk
 else
-  setlocal isk=a-z,A-Z
-  if b:tex_stylish
-    setlocal isk+=@
-  endif
+ setlocal isk=48-57,a-z,A-Z,192-255
+endif
+if b:tex_stylish
+  setlocal isk+=@-@
 endif
 
 " Clusters: {{{1
@@ -372,19 +371,54 @@ if !exists("tex_no_math")
  if has("conceal") && &enc == 'utf-8' && s:tex_conceal =~ 'm'
   syn match   texMathDelim	contained		"\\left\\{\>"	skipwhite nextgroup=texMathDelimSet1,texMathDelimSet2,texMathDelimBad contains=texMathSymbol cchar={
   syn match   texMathDelim	contained		"\\right\\}\>"	skipwhite nextgroup=texMathDelimSet1,texMathDelimSet2,texMathDelimBad contains=texMathSymbol cchar=}
+  let s:texMathDelimList=[
+     \ ['<'            , '<'] ,
+     \ ['>'            , '>'] ,
+     \ ['('            , '('] ,
+     \ [')'            , ')'] ,
+     \ ['\['           , '['] ,
+     \ [']'            , ']'] ,
+     \ ['\\{'          , '{'] ,
+     \ ['\\}'          , '}'] ,
+     \ ['|'            , '|'] ,
+     \ ['\\|'          , '‖'] ,
+     \ ['\\backslash'  , '\'] ,
+     \ ['\\downarrow'  , '↓'] ,
+     \ ['\\Downarrow'  , '⇓'] ,
+     \ ['\\langle'     , '<'] ,
+     \ ['\\lbrace'     , '['] ,
+     \ ['\\lceil'      , '⌈'] ,
+     \ ['\\lfloor'     , '⌊'] ,
+     \ ['\\lgroup'     , '⌊'] ,
+     \ ['\\lmoustache' , '⎛'] ,
+     \ ['\\rangle'     , '>'] ,
+     \ ['\\rbrace'     , ']'] ,
+     \ ['\\rceil'      , '⌉'] ,
+     \ ['\\rfloor'     , '⌋'] ,
+     \ ['\\rgroup'     , '⌋'] ,
+     \ ['\\rmoustache' , '⎞'] ,
+     \ ['\\uparrow'    , '↑'] ,
+     \ ['\\Uparrow'    , '↑'] ,
+     \ ['\\updownarrow', '↕'] ,
+     \ ['\\Updownarrow', '⇕']]
+  syn match texMathDelim	'\\[bB]igg\=[lr]' contained nextgroup=texMathDelimBad
+  for texmath in s:texMathDelimList
+   exe "syn match texMathDelim	'\\\\[bB]igg\\=[lr]\\=".texmath[0]."'	contained conceal cchar=".texmath[1]
+  endfor
+
  else
   syn match   texMathDelim	contained		"\\\(left\|right\)\>"	skipwhite nextgroup=texMathDelimSet1,texMathDelimSet2,texMathDelimBad
+  syn match   texMathDelim	contained		"\\[bB]igg\=[lr]\=\>"	skipwhite nextgroup=texMathDelimSet1,texMathDelimSet2,texMathDelimBad
+  syn match   texMathDelimSet2	contained	"\\"		nextgroup=texMathDelimKey,texMathDelimBad
+  syn match   texMathDelimSet1	contained	"[<>()[\]|/.]\|\\[{}|]"
+  syn keyword texMathDelimKey	contained	backslash       lceil           lVert           rgroup          uparrow
+  syn keyword texMathDelimKey	contained	downarrow       lfloor          rangle          rmoustache      Uparrow
+  syn keyword texMathDelimKey	contained	Downarrow       lgroup          rbrace          rvert           updownarrow
+  syn keyword texMathDelimKey	contained	langle          lmoustache      rceil           rVert           Updownarrow
+  syn keyword texMathDelimKey	contained	lbrace          lvert           rfloor
  endif
- syn match   texMathDelim	contained		"\\\([bB]igg\=[lr]\)\>"			skipwhite nextgroup=texMathDelimSet1,texMathDelimSet2,texMathDelimBad
  syn match   texMathDelim	contained		"\\\(left\|right\)arrow\>\|\<\([aA]rrow\|brace\)\=vert\>"
  syn match   texMathDelim	contained		"\\lefteqn\>"
- syn match   texMathDelimSet2	contained	"\\"		nextgroup=texMathDelimKey,texMathDelimBad
- syn match   texMathDelimSet1	contained	"[<>()[\]|/.]\|\\[{}|]"
- syn keyword texMathDelimKey	contained	backslash       lceil           lVert           rgroup          uparrow
- syn keyword texMathDelimKey	contained	downarrow       lfloor          rangle          rmoustache      Uparrow
- syn keyword texMathDelimKey	contained	Downarrow       lgroup          rbrace          rvert           updownarrow
- syn keyword texMathDelimKey	contained	langle          lmoustache      rceil           rVert           Updownarrow
- syn keyword texMathDelimKey	contained	lbrace          lvert           rfloor
 endif
 
 " Special TeX characters  ( \$ \& \% \# \{ \} \_ \S \P ) : {{{1
@@ -521,6 +555,7 @@ if has("conceal") && &enc == 'utf-8'
  " (many of these symbols were contributed by Björn Winckler)
  if s:tex_conceal =~ 'm'
   let s:texMathList=[
+    \ ['|'		, '‖'],
     \ ['angle'		, '∠'],
     \ ['approx'		, '≈'],
     \ ['ast'		, '∗'],
@@ -624,6 +659,7 @@ if has("conceal") && &enc == 'utf-8'
     \ ['lesseqgtr'	, '⋚'],
     \ ['lesssim'	, '≲'],
     \ ['lfloor'		, '⌊'],
+    \ ['lmoustache'     , '╭'],
     \ ['lneqq'		, '≨'],
     \ ['ltimes'		, '⋉'],
     \ ['mapsto'		, '↦'],
@@ -694,6 +730,7 @@ if has("conceal") && &enc == 'utf-8'
     \ ['rightsquigarrow', '↝'],
     \ ['rightthreetimes', '⋌'],
     \ ['risingdotseq'	, '≓'],
+    \ ['rmoustache'     , '╮'],
     \ ['rtimes'		, '⋊'],
     \ ['searrow'	, '↘'],
     \ ['setminus'	, '∖'],

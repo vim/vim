@@ -2,8 +2,8 @@
 " Language:		shell (sh) Korn shell (ksh) bash (sh)
 " Maintainer:		Dr. Charles E. Campbell, Jr.  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		Aug 04, 2010
-" Version:		114
+" Last Change:		Feb 11, 2011
+" Version:		115
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 " For options and settings, please use:      :help ft-sh-syntax
 " This file includes many ideas from ?ric Brunet (eric.brunet@ens.fr)
@@ -410,6 +410,10 @@ syn region  shDerefVarArray   contained	matchgroup=shDeref start="\[" end="]"	co
 "    ksh bash : ${parameter##pattern} remove large left  pattern
 "    ksh bash : ${parameter%pattern}  remove small right pattern
 "    ksh bash : ${parameter%%pattern} remove large right pattern
+"    ksh bash : ${parameter^pattern}  Case modification
+"    ksh bash : ${parameter^^pattern} Case modification
+"    ksh bash : ${parameter,pattern}  Case modification
+"    ksh bash : ${parameter,,pattern} Case modification
 syn cluster shDerefPatternList	contains=shDerefPattern,shDerefString
 syn match shDerefOpError	contained	":[[:punct:]]"
 syn match  shDerefOp	contained	":\=[-=?]"	nextgroup=@shDerefPatternList
@@ -417,6 +421,8 @@ syn match  shDerefOp	contained	":\=+"	nextgroup=@shDerefPatternList
 if exists("b:is_bash") || exists("b:is_kornshell")
  syn match  shDerefOp	contained	"#\{1,2}"	nextgroup=@shDerefPatternList
  syn match  shDerefOp	contained	"%\{1,2}"	nextgroup=@shDerefPatternList
+ syn match  shDerefOp	contained	"\^\{1,2}"	nextgroup=@shDerefPatternList
+ syn match  shDerefOp	contained	",\{1,2}"	nextgroup=@shDerefPatternList
  syn match  shDerefPattern	contained	"[^{}]\+"	contains=shDeref,shDerefSimple,shDerefPattern,shDerefString,shCommandSub,shDerefEscape nextgroup=shDerefPattern
  syn region shDerefPattern	contained	start="{" end="}"	contains=shDeref,shDerefSimple,shDerefString,shCommandSub nextgroup=shDerefPattern
  syn match  shDerefEscape	contained	'\%(\\\\\)*\\.'

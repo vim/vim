@@ -3,20 +3,41 @@
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
 #
-# MURAOKA Taro <koron.kaoriya@gmail.com>, 2001-8.
-# Last Change: 31-May-2008.
+# MURAOKA Taro <koron.kaoriya@gmail.com>, 2001-11.
+# Last Change: 23-Mar-2011.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Vim 7.1\n"
+"Project-Id-Version: Vim 7.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-05-31 22:00+0900\n"
-"PO-Revision-Date: 2008-05-31 22:30+0900\n"
+"POT-Creation-Date: 2011-03-23 20:58+0900\n"
+"PO-Revision-Date: 2011-03-23 21:20+0900\n"
 "Last-Translator: MURAOKA Taro <koron.kaoriya@gmail.com>\n"
 "Language-Team: MURAOKA Taro <koron.kaoriya@gmail.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=euc-jp\n"
 "Content-Transfer-Encoding: 8-bit\n"
+
+msgid "E831: bf_key_init() called with empty password"
+msgstr "E831: bf_key_init() が空パスワードで呼び出されました"
+
+msgid "E820: sizeof(uint32_t) != 4"
+msgstr "E820: sizeof(uint32_t) != 4"
+
+msgid "E817: Blowfish big/little endian use wrong"
+msgstr "E817: Blowfish暗号のビッグ/リトルエンディアンが間違っています"
+
+msgid "E818: sha256 test failed"
+msgstr "E818: sha256のテストに失敗しました"
+
+msgid "E819: Blowfish test failed"
+msgstr "E819: Blowfish暗号のテストに失敗しました"
+
+msgid "[Location List]"
+msgstr "[場所リスト]"
+
+msgid "[Quickfix List]"
+msgstr "[Quickfixリスト]"
 
 msgid "E82: Cannot allocate any buffer, exiting..."
 msgstr "E82: バッファを1つも作成できないので, 終了します..."
@@ -149,7 +170,6 @@ msgstr "末尾"
 msgid "Top"
 msgstr "先頭"
 
-#, c-format
 msgid ""
 "\n"
 "# Buffer list:\n"
@@ -157,11 +177,8 @@ msgstr ""
 "\n"
 "# バッファリスト:\n"
 
-msgid "[Location List]"
-msgstr "[場所リスト]"
-
-msgid "[Quickfix List]"
-msgstr "[Quickfixリスト]"
+msgid "[Scratch]"
+msgstr "[下書き]"
 
 msgid ""
 "\n"
@@ -182,11 +199,17 @@ msgstr "    行=%ld  識別子=%d  名前=%s"
 msgid "E96: Can not diff more than %ld buffers"
 msgstr "E96: %ld 以上のバッファはdiffできません"
 
+msgid "E810: Cannot read or write temp files"
+msgstr "E810: 一時ファイルの読込もしくは書込ができません"
+
 msgid "E97: Cannot create diffs"
 msgstr "E97: 差分を作成できません "
 
 msgid "Patch file"
 msgstr "パッチファイル"
+
+msgid "E816: Cannot read patch output"
+msgstr "E816: patchの出力を読込めません"
 
 msgid "E98: Cannot read diff output"
 msgstr "E98: diffの出力を読込めません"
@@ -273,6 +296,12 @@ msgstr " 局所キーワード補完 (^N^P)"
 msgid "Hit end of paragraph"
 msgstr "段落の最後にヒット"
 
+msgid "E839: Completion function changed window"
+msgstr "E839: 補間関数がウィンドウを変更しました"
+
+msgid "E840: Completion function deleted text"
+msgstr "E840: 補完関数がテキストを削除しました"
+
 msgid "'dictionary' option is empty"
 msgstr "'dictionary' オプションが空です"
 
@@ -293,7 +322,6 @@ msgstr " (置換) スクロール (^E/^Y)"
 msgid "Scanning: %s"
 msgstr "スキャン中: %s"
 
-#, c-format
 msgid "Scanning tags."
 msgstr "タグをスキャン中."
 
@@ -452,6 +480,9 @@ msgstr "E693: 関数参照型は関数参照型としか比較できません"
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: 関数参照型には無効な操作です"
 
+msgid "E804: Cannot use '%' with Float"
+msgstr "E804: '%' を浮動小数点数と組み合わせては使えません"
+
 msgid "E110: Missing ')'"
 msgstr "E110: ')' がみつかりません"
 
@@ -502,6 +533,14 @@ msgid "E724: variable nested too deep for displaying"
 msgstr "E724: 表示するには変数の入れ子が深過ぎます"
 
 #, c-format
+msgid "E740: Too many arguments for function %s"
+msgstr "E740: 関数の引数が多過ぎます: %s"
+
+#, c-format
+msgid "E116: Invalid arguments for function %s"
+msgstr "E116: 関数の無効な引数です: %s"
+
+#, c-format
 msgid "E117: Unknown function: %s"
 msgstr "E117: 未知の関数です: %s"
 
@@ -516,6 +555,9 @@ msgstr "E120: スクリプト以外で<SID>が使われました: %s"
 #, c-format
 msgid "E725: Calling dict function without Dictionary: %s"
 msgstr "E725: 辞書用関数が呼ばれましたが辞書がありません: %s"
+
+msgid "E808: Number or Float required"
+msgstr "E808: 数値か浮動小数点数が必要です"
 
 msgid "E699: Too many arguments"
 msgstr "E699: が多過ぎます"
@@ -533,7 +575,7 @@ msgstr "&Ok"
 
 #, c-format
 msgid "E737: Key already exists: %s"
-msgstr "E737: %s というキーは既に存在します"
+msgstr "E737: キーは既に存在します: %s"
 
 #, c-format
 msgid "+-%s%3ld lines: "
@@ -594,6 +636,9 @@ msgstr "(無効)"
 msgid "E677: Error writing temp file"
 msgstr "E677: 一時ファイル書込中にエラーが発生しました"
 
+msgid "E805: Using a Float as a Number"
+msgstr "E805: 浮動小数点数を数値として扱っています"
+
 msgid "E703: Using a Funcref as a Number"
 msgstr "E703: 関数参照型を数値として扱っています。"
 
@@ -611,6 +656,9 @@ msgstr "E730: リスト型を文字列として扱っています"
 
 msgid "E731: using Dictionary as a String"
 msgstr "E731: 変数型を文字列として扱っています"
+
+msgid "E806: using Float as a String"
+msgstr "E806: 浮動小数点数を文字列として扱っています"
 
 #, c-format
 msgid "E704: Funcref variable name must start with a capital: %s"
@@ -643,6 +691,10 @@ msgid "E698: variable nested too deep for making a copy"
 msgstr "E698: コピーを取るには変数の入れ子が深過ぎます"
 
 #, c-format
+msgid "E123: Undefined function: %s"
+msgstr "E123: 未定義の関数です: %s"
+
+#, c-format
 msgid "E124: Missing '(': %s"
 msgstr "E124: '(' がありません: %s"
 
@@ -652,6 +704,14 @@ msgstr "E125: 不正な引数です: %s"
 
 msgid "E126: Missing :endfunction"
 msgstr "E126: :endfunction がありません"
+
+#, c-format
+msgid "E707: Function name conflicts with variable: %s"
+msgstr "E707: 関数名が変数名と衝突します: %s"
+
+#, c-format
+msgid "E127: Cannot redefine function %s: It is in use"
+msgstr "E127: 関数 %s を再定義できません: 使用中です"
 
 #, c-format
 msgid "E746: Function name does not match script file name: %s"
@@ -694,7 +754,6 @@ msgstr "%s の実行を継続中です"
 msgid "E133: :return not inside a function"
 msgstr "E133: 関数外に :return がありました"
 
-#, c-format
 msgid ""
 "\n"
 "# global variables:\n"
@@ -708,6 +767,9 @@ msgid ""
 msgstr ""
 "\n"
 "\tLast set from "
+
+msgid "No old files"
+msgstr "古いファイルはありません"
 
 #, c-format
 msgid "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
@@ -758,6 +820,9 @@ msgstr " 情報"
 msgid " marks"
 msgstr " マーク"
 
+msgid " oldfiles"
+msgstr " 旧ファイル群"
+
 msgid " FAILED"
 msgstr " 失敗"
 
@@ -779,7 +844,6 @@ msgstr "viminfoファイル \"%s\" を書込み中"
 msgid "# This viminfo file was generated by Vim %s.\n"
 msgstr "# この viminfo ファイルは Vim %s によって生成されました.\n"
 
-#, c-format
 msgid ""
 "# You may edit it if you're careful!\n"
 "\n"
@@ -787,7 +851,6 @@ msgstr ""
 "# 変更する際には十分注意してください!\n"
 "\n"
 
-#, c-format
 msgid "# Value of 'encoding' when this file was written\n"
 msgstr "# このファイルが書かれた時の 'encoding' の値\n"
 
@@ -898,7 +961,6 @@ msgstr "E148: globalコマンドに正規表現が指定されていません"
 msgid "Pattern found in every line: %s"
 msgstr "パターンが全ての行でみつかりました: %s"
 
-#, c-format
 msgid ""
 "\n"
 "# Last Substitute String:\n"
@@ -1009,8 +1071,8 @@ msgstr "ブレークポイントが定義されていません"
 msgid "%3d  %s %s  line %ld"
 msgstr "%3d  %s %s  行 %ld"
 
-msgid "E750: First use :profile start <fname>"
-msgstr "E750: 初めに :profile start <fname> を実行してください"
+msgid "E750: First use \":profile start {fname}\""
+msgstr "E750: 初めに \":profile start {fname}\" を実行してください"
 
 #, c-format
 msgid "Save changes to \"%s\"?"
@@ -1202,6 +1264,9 @@ msgstr "E182: 無効なコマンド名です"
 msgid "E183: User defined commands must start with an uppercase letter"
 msgstr "E183: ユーザ定義コマンドは英大文字で始まらなければなりません"
 
+msgid "E841: Reserved name, cannot be used for user defined command"
+msgstr "E841: 予約名なので, ユーザ定義コマンドに利用できません"
+
 #, c-format
 msgid "E184: No such user-defined command: %s"
 msgstr "E184: そのユーザ定義コマンドはありません: %s"
@@ -1215,6 +1280,9 @@ msgstr "E468: 補完引数はカスタム補完でしか使用できません"
 
 msgid "E467: Custom completion requires a function argument"
 msgstr "E467: カスタム補完には引数として関数が必要です"
+
+msgid "unknown"
+msgstr "不明"
 
 #, c-format
 msgid "E185: Cannot find color scheme %s"
@@ -1298,6 +1366,9 @@ msgstr "E191: 引数は文字か前進/後退クォートでしなければいけません"
 msgid "E192: Recursive use of :normal too deep"
 msgstr "E192: :normal の再帰利用が深くなり過ぎました"
 
+msgid "E809: #< is not available without the +eval feature"
+msgstr "E809: #< は +eval 機能が無いと利用できません"
+
 msgid "E194: No alternate file name to substitute for '#'"
 msgstr "E194: '#'を置き換える副ファイルの名前がありません"
 
@@ -1312,6 +1383,9 @@ msgstr "E497: \"<amatch>\"を置き換えるautocommandの該当名がありません"
 
 msgid "E498: no :source file name to substitute for \"<sfile>\""
 msgstr "E498: \"<sfile>\"を置き換える :source 対象ファイル名がありません"
+
+msgid "E842: no line number to use for \"<slnum>\""
+msgstr "E842: \"<slnum>\"を置き換える行番号がありません"
 
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
@@ -1437,6 +1511,9 @@ msgstr "E193: 関数の外に :endfunction がありました"
 msgid "E788: Not allowed to edit another buffer now"
 msgstr "E788: 現在は他のバッファを編集することは許されません"
 
+msgid "E811: Not allowed to change buffer information now"
+msgstr "E811: 現在はバッファ情報を変更することは許されません"
+
 msgid "tagname"
 msgstr "タグ名"
 
@@ -1471,6 +1548,9 @@ msgstr "E198: cmd_pchar がコマンド長を超えました"
 
 msgid "E199: Active window or buffer deleted"
 msgstr "E199: アクティブなウィンドウかバッファが削除されました"
+
+msgid "E812: Autocommands changed buffer or buffer name"
+msgstr "E812: autocommandがバッファかバッファ名を変更しました"
 
 msgid "Illegal file name"
 msgstr "不正なファイル名"
@@ -1530,9 +1610,6 @@ msgstr "[読専]"
 msgid "[CR missing]"
 msgstr "[CR無]"
 
-msgid "[NL found]"
-msgstr "[NL有]"
-
 msgid "[long lines split]"
 msgstr "[長行分割]"
 
@@ -1541,6 +1618,9 @@ msgstr "[未変換]"
 
 msgid "[converted]"
 msgstr "[変換済]"
+
+msgid "[blowfish]"
+msgstr "[blowfish暗号化]"
 
 msgid "[crypted]"
 msgstr "[暗号化]"
@@ -1564,6 +1644,9 @@ msgstr "'charconvert' による変換が失敗しました"
 
 msgid "can't read output of 'charconvert'"
 msgstr "'charconvert' の出力を読込めませんでした"
+
+msgid "E821: File is encrypted with unknown method"
+msgstr "E821: ファイルが未知の方法で暗号化されています"
 
 msgid "E676: No matching autocommands for acwrite buffer"
 msgstr "E676: acwriteバッファの該当するautocommandは存在しません"
@@ -1630,11 +1713,23 @@ msgstr "E512: 閉じることに失敗"
 msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
 msgstr "E513: 書込みエラー, 変換失敗 (上書するには 'fenc' を空にしてください)"
 
+#, c-format
+msgid ""
+"E513: write error, conversion failed in line %ld (make 'fenc' empty to "
+"override)"
+msgstr ""
+"E513: 書込みエラー, 変換失敗, 行数 %ld (上書するには 'fenc' を空にしてくださ"
+"い)"
+
 msgid "E514: write error (file system full?)"
 msgstr "E514: 書込みエラー, (ファイルシステムが満杯?)"
 
 msgid " CONVERSION ERROR"
 msgstr " 変換エラー"
+
+#, c-format
+msgid " in line %ld;"
+msgstr "行 %ld;"
 
 msgid "[Device]"
 msgstr "[デバイス]"
@@ -1701,6 +1796,11 @@ msgstr "%ld 行, "
 msgid "1 character"
 msgstr "1 文字"
 
+#, c-format
+msgid "%lld characters"
+msgstr "%lld 文字"
+
+#. Explicit typecast avoids warning on Mac OS X 10.6
 #, c-format
 msgid "%ld characters"
 msgstr "%ld 文字"
@@ -1945,9 +2045,6 @@ msgstr "Vim ダイアログ"
 msgid "E232: Cannot create BalloonEval with both message and callback"
 msgstr "E232: メッセージとコールバックのある BalloonEval を作成できません"
 
-msgid "Vim dialog..."
-msgstr "Vim ダイアログ..."
-
 msgid ""
 "&Yes\n"
 "&No\n"
@@ -1990,12 +2087,15 @@ msgstr "上"
 msgid "Down"
 msgstr "下"
 
+#. 'Find Next' button
 msgid "Find Next"
 msgstr "次を検索"
 
+#. 'Replace' button
 msgid "Replace"
 msgstr "置換"
 
+#. 'Replace All' button
 msgid "Replace All"
 msgstr "全て置換"
 
@@ -2013,12 +2113,6 @@ msgstr "タブページを開く..."
 
 msgid "Vim: Main window unexpectedly destroyed\n"
 msgstr "Vim: メインウィンドウが不意に破壊されました\n"
-
-msgid "Font Selection"
-msgstr "フォント選択"
-
-msgid "Used CUT_BUFFER0 instead of empty selection"
-msgstr "空の選択領域のかわりにCUT_BUFFER0が使用されました"
 
 msgid "&Filter"
 msgstr "フィルタ(&F)"
@@ -2348,19 +2442,40 @@ msgid "E567: no cscope connections"
 msgstr "E567: cscope接続に失敗しました"
 
 #, c-format
-msgid "E259: no matches found for cscope query %s of %s"
-msgstr "E259: cscopeクエリー %s of %s に該当がありませんでした"
-
-#, c-format
 msgid "E469: invalid cscopequickfix flag %c for %c"
 msgstr "E469: 無効な cscopequickfix フラグ %c の %c です"
+
+#, c-format
+msgid "E259: no matches found for cscope query %s of %s"
+msgstr "E259: cscopeクエリー %s of %s に該当がありませんでした"
 
 msgid "cscope commands:\n"
 msgstr "cscopeコマンド:\n"
 
 #, c-format
-msgid "%-5s: %-30s (Usage: %s)"
-msgstr "%-5s: %-30s (使用法: %s)"
+msgid "%-5s: %s%*s (Usage: %s)"
+msgstr "%-5s: %s%*s (使用法: %s)"
+
+msgid ""
+"\n"
+"       c: Find functions calling this function\n"
+"       d: Find functions called by this function\n"
+"       e: Find this egrep pattern\n"
+"       f: Find this file\n"
+"       g: Find this definition\n"
+"       i: Find files #including this file\n"
+"       s: Find this C symbol\n"
+"       t: Find this text string\n"
+msgstr ""
+"\n"
+"       c: この関数を呼んでいる関数を探す\n"
+"       d: この関数から呼んでいる関数を探す\n"
+"       e: このegrepパターンを探す\n"
+"       f: このファイルを探す\n"
+"       g: この定義を探す\n"
+"       i: このファイルを#includeしているファイルを探す\n"
+"       s: このCシンボルを探す\n"
+"       t: このテキスト文字列を探す\n"
 
 #, c-format
 msgid "E625: cannot open cscope database: %s"
@@ -2371,9 +2486,6 @@ msgstr "E626: cscopeデータベースの情報を取得できません"
 
 msgid "E568: duplicate cscope database not added"
 msgstr "E568: 重複するcscopeデータベースは追加されませんでした"
-
-msgid "E569: maximum number of cscope connections reached"
-msgstr "E569: cscope接続の最大数に達しました"
 
 #, c-format
 msgid "E261: cscope connection %s not found"
@@ -2414,12 +2526,16 @@ msgstr "cscope接続がありません\n"
 msgid " # pid    database name                       prepend path\n"
 msgstr " # pid    データベース名                      prepend パス\n"
 
+msgid "Lua library cannot be loaded."
+msgstr "Luaライブラリをロードできません."
+
+msgid "cannot save undo information"
+msgstr "アンドゥ情報が保存できません"
+
 msgid ""
-"???: Sorry, this command is disabled, the MzScheme library could not be "
+"E815: Sorry, this command is disabled, the MzScheme libraries could not be "
 "loaded."
-msgstr ""
-"???: このコマンドは無効です, ごめんなさい: MzScheme ライブラリをロードできま"
-"せんでした."
+msgstr "E815: このコマンドは無効です. MzScheme ライブラリをロードできません."
 
 msgid "invalid expression"
 msgstr "無効な式です"
@@ -2438,9 +2554,6 @@ msgstr "範囲外のウィンドウ番号です"
 
 msgid "couldn't open buffer"
 msgstr "バッファを開けません"
-
-msgid "cannot save undo information"
-msgstr "アンドゥ情報が保存できません"
 
 msgid "cannot delete line"
 msgstr "行を消せません"
@@ -2472,6 +2585,22 @@ msgstr "範囲外の行番号です"
 msgid "not allowed in the Vim sandbox"
 msgstr "サンドボックスでは許されません"
 
+#, c-format
+msgid "E370: Could not load library %s"
+msgstr "E370: ライブラリ %s をロードできませんでした"
+
+msgid "Sorry, this command is disabled: the Perl library could not be loaded."
+msgstr ""
+"このコマンドは無効です, ごめんなさい: Perlライブラリをロードできませんでした."
+
+msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
+msgstr ""
+"E299: サンドボックスでは Safe モジュールを使用しないPerlスクリプトは禁じられ"
+"ています"
+
+msgid "E836: This Vim cannot execute :python after using :py3"
+msgstr "E836: このVimでは :py3 を使った後に :python を使えません"
+
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
 "loaded."
@@ -2492,51 +2621,12 @@ msgstr "softspace は integer でなければなりません"
 msgid "invalid attribute"
 msgstr "無効な属性です"
 
-msgid "writelines() requires list of strings"
-msgstr "writelines() には文字列のリストが必要です"
-
-msgid "E264: Python: Error initialising I/O objects"
-msgstr "E264: Python: I/Oオブジェクトの初期化中にエラーです"
-
-msgid "attempt to refer to deleted buffer"
-msgstr "消されたバッファが参照されました"
-
-msgid "line number out of range"
-msgstr "範囲外の行番号です"
-
 #, c-format
-msgid "<buffer object (deleted) at %8lX>"
-msgstr "<バッファオブジェクト (消去済み) %8lX>"
+msgid "<buffer object (deleted) at %p>"
+msgstr "<バッファオブジェクト (消去済み) %p>"
 
-msgid "invalid mark name"
-msgstr "無効なマーク名です"
-
-msgid "no such buffer"
-msgstr "そのようなバッファはありません"
-
-msgid "attempt to refer to deleted window"
-msgstr "消されたウィンドウが参照されました"
-
-msgid "readonly attribute"
-msgstr "読込専用属性"
-
-msgid "cursor position outside buffer"
-msgstr "カーソルがバッファの外にあります"
-
-#, c-format
-msgid "<window object (deleted) at %.8lX>"
-msgstr "<ウィンドウオブジェクト (消去済) %.8lX>"
-
-#, c-format
-msgid "<window object (unknown) at %.8lX>"
-msgstr "<ウィンドウオブジェクト (未知) %.8lX>"
-
-#, c-format
-msgid "<window %d>"
-msgstr "<ウィンドウ %d>"
-
-msgid "no such window"
-msgstr "そのようなウィンドウはありません"
+msgid "E837: This Vim cannot execute :py3 after using :python"
+msgstr "E837: このVimでは :python を使った後に :py3 を使えません"
 
 msgid "E265: $_ must be an instance of String"
 msgstr "E265: $_ は文字列のインスタンスでなければなりません"
@@ -2668,6 +2758,9 @@ msgstr "まだ実装されていません"
 msgid "cannot set line(s)"
 msgstr "行を設定できません"
 
+msgid "invalid mark name"
+msgstr "無効なマーク名です"
+
 msgid "mark not set"
 msgstr "マークは設定されていません"
 
@@ -2677,6 +2770,9 @@ msgstr "行 %d 列 %d"
 
 msgid "cannot insert/append line"
 msgstr "行の挿入/追加をできません"
+
+msgid "line number out of range"
+msgstr "範囲外の行番号です"
 
 msgid "unknown flag: "
 msgstr "未知のフラグ:"
@@ -2766,8 +2862,14 @@ msgstr "無効な引数です: "
 msgid "%d files to edit\n"
 msgstr "%d 個のファイルが編集を控えています\n"
 
+msgid "netbeans is not supported with this GUI\n"
+msgstr "netbeans はこのGUIでは利用できません\n"
+
 msgid "This Vim was not compiled with the diff feature."
 msgstr "このVimにはdiff機能がありません(コンパイル時設定)."
+
+msgid "'-nb' cannot be used: not enabled at compile time\n"
+msgstr "'-nb' 使用不可能です: コンパイル時に無効にされています\n"
 
 msgid "Attempt to open script file again: \""
 msgstr "スクリプトファイルを再び開いてみます: \""
@@ -2997,7 +3099,7 @@ msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <files>\t可能ならばVimサーバで <files> を編集する"
 
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
-msgstr "--remote-silnet <files>  同上, サーバが無くても警告文を出力しない"
+msgstr "--remote-silent <files>  同上, サーバが無くても警告文を出力しない"
 
 msgid ""
 "--remote-wait <files>  As --remote but wait for files to have been edited"
@@ -3024,6 +3126,9 @@ msgstr "--serverlist\t\tVimサーバ名の一覧を表示して終了する"
 
 msgid "--servername <name>\tSend to/become the Vim server <name>"
 msgstr "--servename <name>\t\tVimサーバ <name> に送信/名前設定する"
+
+msgid "--startuptime <file>\tWrite startup timing messages to <file>"
+msgstr "--startuptime <file>\t起動にかかった時間の詳細を <file> へ出力する"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\t.viminfoの代わりに <viminfo> を使う"
@@ -3060,12 +3165,6 @@ msgstr "-display <display>\t<display> でvimを実行する"
 
 msgid "-iconic\t\tStart vim iconified"
 msgstr "-iconic\t\t最小化した状態でvimを起動する"
-
-msgid "-name <name>\t\tUse resource as if vim was <name>"
-msgstr "-name <name>\t\tvimの名が <name> であるとしてリソースを使う"
-
-msgid "\t\t\t  (Unimplemented)\n"
-msgstr "\t\t\t  (実装されていない)\n"
 
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
 msgstr "-background <color>\t背景色に <color> を使う(同義: -bg)"
@@ -3191,7 +3290,6 @@ msgstr ""
 "\n"
 "変更   行    列  テキスト"
 
-#, c-format
 msgid ""
 "\n"
 "# File marks:\n"
@@ -3200,7 +3298,6 @@ msgstr ""
 "# ファイルマーク:\n"
 
 #. Write the jumplist with -'
-#, c-format
 msgid ""
 "\n"
 "# Jumplist (newest first):\n"
@@ -3208,7 +3305,6 @@ msgstr ""
 "\n"
 "# ジャンプリスト (新しいものが先):\n"
 
-#, c-format
 msgid ""
 "\n"
 "# History of marks within files (newest to oldest):\n"
@@ -3240,15 +3336,6 @@ msgstr "E288: インプットメソッドはどんなスタイルもサポートしません"
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: インプットメソッドは my preedit type をサポートしません"
 
-msgid "E290: over-the-spot style requires fontset"
-msgstr "E290: over-the-spot スタイルにはfontsetが必要です"
-
-msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
-msgstr "E291: GTK+が1.2.3よりも古いのでステータスエリアが無効です"
-
-msgid "E292: Input Method Server is not running"
-msgstr "E292: インプットメソッドサーバ が動作していません"
-
 msgid "E293: block was not locked"
 msgstr "E293: ブロックがロックされていません"
 
@@ -3275,6 +3362,9 @@ msgstr "E298: ブロック 1 を取得できません?"
 
 msgid "E298: Didn't get block nr 2?"
 msgstr "E298: ブロック 2 を取得できません?"
+
+msgid "E843: Error while updating swap file crypt"
+msgstr "E843: スワップファイルの暗号を更新中にエラーが発生しました"
 
 #. could not (re)open the swap file, what can we do????
 msgid "E301: Oops, lost the swap file!!!"
@@ -3334,6 +3424,12 @@ msgstr ""
 ",\n"
 "もしくはファイルが損傷しています."
 
+#, c-format
+msgid ""
+"E833: %s is encrypted and this version of Vim does not support encryption"
+msgstr ""
+"E833: %s はこのバージョンのVimでサポートしていない形式で暗号化されています"
+
 msgid " has been damaged (page size is smaller than minimum value).\n"
 msgstr " は損傷しています (ページサイズが最小値を下回っています).\n"
 
@@ -3347,6 +3443,38 @@ msgstr "原本ファイル \"%s\""
 
 msgid "E308: Warning: Original file may have been changed"
 msgstr "E308: 警告: 原本ファイルが変更されています"
+
+#, c-format
+msgid "Swap file is encrypted: \"%s\""
+msgstr "スワップファイルは暗号化されています: \"%s\""
+
+msgid ""
+"\n"
+"If you entered a new crypt key but did not write the text file,"
+msgstr ""
+"\n"
+"新しい暗号キーを入力したあとにテキストファイルを保存していない場合は,"
+
+msgid ""
+"\n"
+"enter the new crypt key."
+msgstr ""
+"\n"
+"新しい暗号キーを入力してください."
+
+msgid ""
+"\n"
+"If you wrote the text file after changing the crypt key press enter"
+msgstr ""
+"\n"
+"暗号キーを変えたあとにテキストファイルを保存した場合は, テキストファイルと"
+
+msgid ""
+"\n"
+"to use the same key for text file and swap file"
+msgstr ""
+"\n"
+"スワップファイルに同じ暗号キーを使うためにenterだけを押してください."
 
 #, c-format
 msgid "E309: Unable to read block 1 from %s"
@@ -3401,15 +3529,23 @@ msgstr ""
 "\n"
 "(変更をチェックするために, このファイルを別の名前で保存した上で\n"
 
-msgid "and run diff with the original file to check for changes)\n"
-msgstr "原本ファイルとの diff を実行すると良いでしょう)\n"
+msgid "and run diff with the original file to check for changes)"
+msgstr "原本ファイルとの diff を実行すると良いでしょう)"
+
+msgid "Recovery completed. Buffer contents equals file contents."
+msgstr "復元完了. バッファの内容はファイルと同じになりました."
 
 msgid ""
-"Delete the .swp file afterwards.\n"
+"\n"
+"You may want to delete the .swp file now.\n"
 "\n"
 msgstr ""
+"\n"
 "それから.swpファイルを削除してください\n"
 "\n"
+
+msgid "Using crypt key from swap file for the text file.\n"
+msgstr "スワップファイルから取得した暗号キーをテキストファイルに使います.\n"
 
 #. use msg() to start the scrolling properly
 msgid "Swap files found:"
@@ -3585,24 +3721,20 @@ msgstr "      スワップファイルよりも新しいです!\n"
 #. * other languages.
 msgid ""
 "\n"
-"(1) Another program may be editing the same file.\n"
-"    If this is the case, be careful not to end up with two\n"
-"    different instances of the same file when making changes.\n"
+"(1) Another program may be editing the same file.  If this is the case,\n"
+"    be careful not to end up with two different instances of the same\n"
+"    file when making changes."
 msgstr ""
 "\n"
 "(1) 別のプログラムが同じファイルを編集しているかもしれません.\n"
 "    この場合には, 変更をした際に最終的に, 同じファイルの異なる\n"
-"    2つのインスタンスができてしまうことに注意してください.\n"
+"    2つのインスタンスができてしまうことに注意してください."
 
-msgid "    Quit, or continue with caution.\n"
-msgstr "    終了するか, 注意しながら続けます.\n"
+msgid "  Quit, or continue with caution.\n"
+msgstr "  終了するか, 注意しながら続けてください.\n"
 
-msgid ""
-"\n"
-"(2) An edit session for this file crashed.\n"
-msgstr ""
-"\n"
-"(2) このファイルの編集セッションがクラッシュした.\n"
+msgid "(2) An edit session for this file crashed.\n"
+msgstr "(2) このファイルの編集セッションがクラッシュした.\n"
 
 msgid "    If this is the case, use \":recover\" or \"vim -r "
 msgstr "    この場合には \":recover\" か \"vim -r "
@@ -3645,7 +3777,7 @@ msgid ""
 msgstr ""
 "読込専用で開く(&O)\n"
 "とにかく編集する(&E)\n"
-"復活させる(&R)ecover\n"
+"復活させる(&R)\n"
 "終了する(&Q)\n"
 "中止する(&A)"
 
@@ -3659,7 +3791,7 @@ msgid ""
 msgstr ""
 "読込専用で開く(&O)\n"
 "とにかく編集する(&E)\n"
-"復活させる(&R)ecover\n"
+"復活させる(&R)\n"
 "削除する(&D)\n"
 "終了する(&Q)\n"
 "中止する(&A)"
@@ -3789,17 +3921,21 @@ msgstr "E338: コンソールモードではファイルブラウザを使えません, ごめんなさい"
 msgid "E766: Insufficient arguments for printf()"
 msgstr "E766: printf() の引数が不十分です"
 
+msgid "E807: Expected Float argument for printf()"
+msgstr "E807: printf() の引数には浮動少数が期待されています"
+
 msgid "E767: Too many arguments to printf()"
 msgstr "E767: pirntf() の引数が多過ぎます"
 
 msgid "W10: Warning: Changing a readonly file"
 msgstr "W10: 警告: 読込専用ファイルを変更します"
 
-msgid "Type number or click with mouse (<Enter> cancels): "
-msgstr "数値を入力するかマウスをクリックしてください (<Enter> でキャンセル): "
+msgid "Type number and <Enter> or click with mouse (empty cancels): "
+msgstr ""
+"番号と<Enter>を入力するかマウスでクリックしてください (空でキャンセル): "
 
-msgid "Choice number (<Enter> cancels): "
-msgstr "番号を選択してください (<Enter> でキャンセル): "
+msgid "Type number and <Enter> (empty cancels): "
+msgstr "番号と<Enter>を入力してください (空でキャンセル): "
 
 msgid "1 more line"
 msgstr "1 行 追加しました"
@@ -3828,7 +3964,6 @@ msgstr "Vim: ファイルを保存中...\n"
 msgid "Vim: Finished.\n"
 msgstr "Vim: 終了しました.\n"
 
-#, c-format
 msgid "ERROR: "
 msgstr "エラー: "
 
@@ -3911,7 +4046,6 @@ msgstr "E346: cdpathにはこれ以上 \"%s\" というファイルがありません"
 msgid "E347: No more file \"%s\" found in path"
 msgstr "E347: パスにはこれ以上 \"%s\" というファイルがありません"
 
-#. Get here when the server can't be found.
 msgid "Cannot connect to Netbeans #2"
 msgstr "Netbeans #2 に接続できません"
 
@@ -3930,8 +4064,17 @@ msgstr "Netbeans のソケットを読込み"
 msgid "E658: NetBeans connection lost for buffer %ld"
 msgstr "E658: バッファ %ld の NetBeans 接続が失われました"
 
+msgid "E838: netbeans is not supported with this GUI"
+msgstr "E838: NetBeansはこのGUIには対応していません"
+
+msgid "E511: netbeans already connected"
+msgstr "E511: NetBeansは既に接続しています"
+
 msgid "E505: "
 msgstr "E505: "
+
+msgid "E349: No identifier under cursor"
+msgstr "E349: カーソルの位置には識別子がありません"
 
 msgid "E774: 'operatorfunc' is empty"
 msgstr "E774: 'operatorfunc' オプションが空です"
@@ -3944,9 +4087,6 @@ msgstr "警告: 使用している端末はハイライトできません"
 
 msgid "E348: No string under cursor"
 msgstr "E348: カーソルの位置には文字列がありません"
-
-msgid "E349: No identifier under cursor"
-msgstr "E349: カーソルの位置には識別子がありません"
 
 msgid "E352: Cannot erase folds with current 'foldmethod'"
 msgstr "E352: 現在の 'foldmethod' では折畳みを消去できません"
@@ -4037,7 +4177,6 @@ msgstr ""
 msgid "Illegal register name"
 msgstr "不正なレジスタ名"
 
-#, c-format
 msgid ""
 "\n"
 "# Registers:\n"
@@ -4055,7 +4194,7 @@ msgstr "%ld 列; "
 
 #, c-format
 msgid "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"
-msgstr "選択 %s%ld / %ld 行; %ld / %ld 単語; %ld / %ld 文字"
+msgstr "選択 %s%ld / %ld 行; %ld / %ld 単語; %ld / %ld バイト"
 
 #, c-format
 msgid ""
@@ -4065,7 +4204,7 @@ msgstr "選択 %s%ld / %ld 行; %ld / %ld 単語; %ld / %ld 文字; %ld / %ld バイト"
 
 #, c-format
 msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"
-msgstr "列 %s / %s; 行 %ld of %ld; 単語 %ld / %ld; 文字 %ld / %ld"
+msgstr "列 %s / %s; 行 %ld of %ld; 単語 %ld / %ld; バイト %ld / %ld"
 
 #, c-format
 msgid ""
@@ -4093,6 +4232,9 @@ msgstr "E519: オプションはサポートされていません"
 msgid "E520: Not allowed in a modeline"
 msgstr "E520: modeline では許可されません"
 
+msgid "E846: Key code not set"
+msgstr "E846: キーコードが設定されていません"
+
 msgid "E521: Number required after ="
 msgstr "E521: = の後には数字が必要です"
 
@@ -4114,6 +4256,12 @@ msgstr "E531: GUIをスタートするには \":gui\" を使用してください"
 
 msgid "E589: 'backupext' and 'patchmode' are equal"
 msgstr "E589: 'backupext' と 'patchmode' が同じです"
+
+msgid "E834: Conflicts with value of 'listchars'"
+msgstr "E834: 'listchars'の値に矛盾があります"
+
+msgid "E835: Conflicts with value of 'fillchars'"
+msgstr "E835: 'fillchars'の値に矛盾があります"
 
 msgid "E617: Cannot be changed in the GTK+ 2 GUI"
 msgstr "E617: GTK+2 GUIでは変更できません"
@@ -4527,6 +4675,9 @@ msgstr "エラー一覧 %d of %d; %d 個エラー"
 msgid "E382: Cannot write, 'buftype' option is set"
 msgstr "E382: 'buftype' オプションが設定されているので書込みません"
 
+msgid "Error file"
+msgstr "エラーファイル"
+
 msgid "E683: File name missing or invalid pattern"
 msgstr "E683: ファイル名が無いか無効なパターンです"
 
@@ -4751,6 +4902,9 @@ msgstr "E388: 定義をみつけられません"
 msgid "E389: Couldn't find pattern"
 msgstr "E389: パターンをみつけられません"
 
+msgid "Substitute "
+msgstr "Substitute "
+
 #, c-format
 msgid ""
 "\n"
@@ -4787,6 +4941,11 @@ msgstr "単語ツリーを圧縮しています..."
 
 msgid "E756: Spell checking is not enabled"
 msgstr "E756: スペルチェックは無効化されています"
+
+#, c-format
+msgid "Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""
+msgstr ""
+"警告: 単語リスト \"%s_%s.spl\" および \"%s_ascii.spl\" は見つかりません"
 
 #, c-format
 msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
@@ -4852,6 +5011,10 @@ msgid ""
 msgstr ""
 "%s の %d 行目の PFX 項目の後の COMPOUNDPERMITFLAG の定義は誤った結果を生じる"
 "ことがあります"
+
+#, c-format
+msgid "Wrong COMPOUNDRULES value in %s line %d: %s"
+msgstr "COMPOUNDRULES の値に誤りがあります. ファイル %s の %d 行目: %s"
 
 #, c-format
 msgid "Wrong COMPOUNDWORDMAX value in %s line %d: %s"
@@ -5009,6 +5172,9 @@ msgstr "%s の %d 行目 認識不能なフラグです: %s"
 #, c-format
 msgid "Ignored %d words with non-ASCII characters"
 msgstr "非ASCII文字を含む %d 個の単語を無視しました"
+
+msgid "E845: Insufficient memory, word list will be incomplete"
+msgstr "E845: メモリが足りないので、単語リストは不完全です"
 
 #, c-format
 msgid "Compressed %d of %d nodes; %d (%d%%) remaining"
@@ -5187,8 +5353,8 @@ msgstr " 個の改行"
 msgid "E395: contains argument not accepted here"
 msgstr "E395: この場所では引数containsは許可されていません"
 
-msgid "E396: containedin argument not accepted here"
-msgstr "E396: この場所では引数containedinは許可されていません"
+msgid "E844: invalid cchar value"
+msgstr "E844: 無効なccharの値です"
 
 msgid "E393: group[t]here not accepted here"
 msgstr "E393: ここではグループは許可されません"
@@ -5391,11 +5557,18 @@ msgstr "E432: タグファイルがソートされていません: %s"
 msgid "E433: No tags file"
 msgstr "E433: タグファイルがありません"
 
+msgid "Ignoring long line in tags file"
+msgstr "タグファイル内の長い行を無視します"
+
 msgid "E434: Can't find tag pattern"
 msgstr "E434: タグパターンをみつけられません"
 
 msgid "E435: Couldn't find tag, just guessing!"
 msgstr "E435: タグをみつけられないので単に推測します!"
+
+#, c-format
+msgid "Duplicate field name: %s"
+msgstr "重複したフィールド名: %s"
 
 msgid "' not known. Available builtin terminals are:"
 msgstr "' は未知です. 現行の組み込み端末は次のとおりです:"
@@ -5433,9 +5606,86 @@ msgstr "新しいシェルを起動します\n"
 msgid "Vim: Error reading input, exiting...\n"
 msgstr "Vim: 入力を読込み中のエラーにより終了します...\n"
 
+msgid "Used CUT_BUFFER0 instead of empty selection"
+msgstr "空の選択領域のかわりにCUT_BUFFER0が使用されました"
+
+#. This happens when the FileChangedRO autocommand changes the
+#. * file in a way it becomes shorter.
+msgid "E834: Line count changed unexpectedly"
+msgstr "E834: 予期せず行カウントが変わりました"
+
 #. must display the prompt
 msgid "No undo possible; continue anyway"
 msgstr "可能なアンドゥはありません: とりあえず続けます"
+
+#, c-format
+msgid "E828: Cannot open undo file for writing: %s"
+msgstr "E828: 書込み用にアンドゥファイルを開けません: %s"
+
+#, c-format
+msgid "E825: Corrupted undo file (%s): %s"
+msgstr "E825: アンドゥファイルが壊れています (%s): %s"
+
+msgid "Cannot write undo file in any directory in 'undodir'"
+msgstr "'undodir'のディレクトリにアンドゥファイルを書き込めません"
+
+#, c-format
+msgid "Will not overwrite with undo file, cannot read: %s"
+msgstr "アンドゥファイルとして読み込めないので上書きしません: %s"
+
+#, c-format
+msgid "Will not overwrite, this is not an undo file: %s"
+msgstr "アンドゥファイルではないので上書きしません: %s"
+
+msgid "Skipping undo file write, nothing to undo"
+msgstr "対象がないのでアンドゥファイルの書き込みをスキップします"
+
+#, c-format
+msgid "Writing undo file: %s"
+msgstr "アンドゥファイル書き込み中: %s"
+
+#, c-format
+msgid "E829: write error in undo file: %s"
+msgstr "E829: アンドゥファイルの書き込みエラーです: %s"
+
+#, c-format
+msgid "Not reading undo file, owner differs: %s"
+msgstr "オーナーが異なるのでアンドゥファイルを読み込みません: %s"
+
+#, c-format
+msgid "Reading undo file: %s"
+msgstr "アンドゥファイル読込中: %s"
+
+#, c-format
+msgid "E822: Cannot open undo file for reading: %s"
+msgstr "E822: アンドゥファイルを読込用として開けません: %s"
+
+#, c-format
+msgid "E823: Not an undo file: %s"
+msgstr "E823: アンドゥファイルではありません: %s"
+
+#, c-format
+msgid "E832: Non-encrypted file has encrypted undo file: %s"
+msgstr "E832: 非暗号化ファイルが暗号化されたアンドゥファイルを使ってます: %s"
+
+#, c-format
+msgid "E826: Undo file decryption failed: %s"
+msgstr "E826: 暗号化されたアンドゥファイルの解読に失敗しました: %s"
+
+#, c-format
+msgid "E827: Undo file is encrypted: %s"
+msgstr "E827: アンドゥファイルが暗号化されています: %s"
+
+#, c-format
+msgid "E824: Incompatible undo file: %s"
+msgstr "E824: 互換性の無いアンドゥファイルです: %s"
+
+msgid "File contents changed, cannot use undo info"
+msgstr "ファイルの内容が変わっているため、アンドゥ情報を利用できません"
+
+#, c-format
+msgid "Finished reading undo file %s"
+msgstr "アンドゥファイル %s の取込を完了"
 
 msgid "Already at oldest change"
 msgstr "既に一番古い変更です"
@@ -5444,8 +5694,8 @@ msgid "Already at newest change"
 msgstr "既に一番新しい変更です"
 
 #, c-format
-msgid "Undo number %ld not found"
-msgstr "アンドゥ番号 %ld がみつかりません"
+msgid "E830: Undo number %ld not found"
+msgstr "E830: アンドゥ番号 %ld はみつかりません"
 
 msgid "E438: u_undo: line numbers wrong"
 msgstr "E438: u_undo: 行番号が間違っています"
@@ -5481,8 +5731,8 @@ msgstr "後方"
 msgid "Nothing to undo"
 msgstr "アンドゥ対象がありません"
 
-msgid "number changes  time"
-msgstr "番号   変更     時刻"
+msgid "number changes  when               saved"
+msgstr "通番   変更数   変更時期           保存済"
 
 #, c-format
 msgid "%ld seconds ago"
@@ -5524,6 +5774,13 @@ msgstr " in Win32s モード"
 
 msgid " with OLE support"
 msgstr " with OLE サポート"
+
+msgid ""
+"\n"
+"MS-Windows 64-bit console version"
+msgstr ""
+"\n"
+"MS-Windows 64 ビット コンソール 版"
 
 msgid ""
 "\n"
@@ -5583,10 +5840,24 @@ msgstr ""
 
 msgid ""
 "\n"
+"OpenVMS version"
+msgstr ""
+"\n"
+"OpenVMS 版"
+
+msgid ""
+"\n"
 "Included patches: "
 msgstr ""
 "\n"
 "適用済パッチ: "
+
+msgid ""
+"\n"
+"Extra patches: "
+msgstr ""
+"\n"
+"追加拡張パッチ: "
 
 msgid "Modified by "
 msgstr "Modified by "
@@ -5642,14 +5913,8 @@ msgstr "without GUI."
 msgid "with GTK2-GNOME GUI."
 msgstr "with GTK2-GNOME GUI."
 
-msgid "with GTK-GNOME GUI."
-msgstr "with GTK-GNOME GUI."
-
 msgid "with GTK2 GUI."
 msgstr "with GTK2 GUI."
-
-msgid "with GTK GUI."
-msgstr "with GTK GUI."
 
 msgid "with X11-Motif GUI."
 msgstr "with X11-Motif GUI."
@@ -5819,6 +6084,12 @@ msgstr "E443: 他のウィンドウが分割されている時には順回できません"
 msgid "E444: Cannot close last window"
 msgstr "E444: 最後のウィンドウを閉じることはできません"
 
+msgid "E813: Cannot close autocmd window"
+msgstr "E813: autocmdウィンドウは閉じられません"
+
+msgid "E814: Cannot close window, only autocmd window would remain"
+msgstr "E814: autocmdウィンドウしか残らないため、ウィンドウは閉じられません"
+
 msgid "E445: Other window contains changes"
 msgstr "E445: 他のウィンドウには変更があります"
 
@@ -5828,19 +6099,6 @@ msgstr "E446: カーソルの下にファイル名がありません"
 #, c-format
 msgid "E447: Can't find file \"%s\" in path"
 msgstr "E447: pathには \"%s\" というファイルがありません"
-
-#, c-format
-msgid "E370: Could not load library %s"
-msgstr "E370: ライブラリ %s をロードできませんでした"
-
-msgid "Sorry, this command is disabled: the Perl library could not be loaded."
-msgstr ""
-"このコマンドは無効です, ごめんなさい: Perlライブラリをロードできませんでした."
-
-msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
-msgstr ""
-"E299: サンドボックスでは Safe モジュールを使用しないPerlスクリプトは禁じられ"
-"ています"
 
 msgid "Edit with &multiple Vims"
 msgstr "複数のVimで編集する (&M)"
@@ -6210,3 +6468,43 @@ msgstr "上まで検索したので下に戻ります"
 
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "下まで検索したので上に戻ります"
+
+#, c-format
+msgid "Need encryption key for \"%s\""
+msgstr "暗号キーが必要です: \"%s\""
+
+msgid "writelines() requires list of strings"
+msgstr "writelines() は文字列の配列を要求します"
+
+msgid "E264: Python: Error initialising I/O objects"
+msgstr "E264: Python: I/Oオブジェクトの初期化エラー"
+
+msgid "no such buffer"
+msgstr "そのようなバッファはありません"
+
+msgid "attempt to refer to deleted window"
+msgstr "削除されたウィンドウを参照しようとしました"
+
+msgid "readonly attribute"
+msgstr "読込専用属性"
+
+msgid "cursor position outside buffer"
+msgstr "カーソルがバッファの外にあります"
+
+#, c-format
+msgid "<window object (deleted) at %p>"
+msgstr "<ウィンドウオブジェクト (消去済) %p>"
+
+#, c-format
+msgid "<window object (unknown) at %p>"
+msgstr "<ウィンドウオブジェクト (未知) %p>"
+
+#, c-format
+msgid "<window %d>"
+msgstr "<ウィンドウ %d>"
+
+msgid "no such window"
+msgstr "そのようなウィンドウはありません"
+
+msgid "attempt to refer to deleted buffer"
+msgstr "消されたバッファが参照されました"

@@ -2,7 +2,11 @@
 " Language:    Pascal
 " Maintainer:  Neil Carter <n.carter@swansea.ac.uk>
 " Created:     2004 Jul 13
-" Last Change: 2005 Jul 05
+" Last Change: 2011 Apr 01
+"
+" This is version 2.0, a complete rewrite.
+"
+" For further documentation, see http://psy.swansea.ac.uk/staff/carter/vim/
 
 
 if exists("b:did_indent")
@@ -38,7 +42,15 @@ function! s:GetPrevNonCommentLineNum( line_num )
 endfunction
 
 
+function! s:PurifyCode( line_num )
+	" Strip any trailing comments and whitespace
+	let pureline = 'TODO'
+	return pureline
+endfunction
+
+
 function! GetPascalIndent( line_num )
+
 	" Line 0 always goes at column 0
 	if a:line_num == 0
 		return 0
@@ -46,128 +58,171 @@ function! GetPascalIndent( line_num )
 
 	let this_codeline = getline( a:line_num )
 
-	" If in the middle of a three-part comment
+
+	" SAME INDENT
+
+	" Middle of a three-part comment
 	if this_codeline =~ '^\s*\*'
-		return indent( a:line_num )
+		return indent( a:line_num - 1)
 	endif
+
+
+	" COLUMN 1 ALWAYS
+
+	" Last line of the program
+	if this_codeline =~ '^\s*end\.'
+		return 0
+	endif
+
+	" Compiler directives, allowing "(*" and "{"
+	"if this_codeline =~ '^\s*\({\|(\*\)$\(IFDEF\|IFNDEF\|ELSE\|ENDIF\)'
+	if this_codeline =~ '^\s*\({\|(\*\)\$'
+		return 0
+	endif
+
+	" section headers
+	if this_codeline =~ '^\s*\(program\|procedure\|function\|type\)\>'
+		return 0
+	endif
+
+	" Subroutine separators, lines ending with "const" or "var"
+	if this_codeline =~ '^\s*\((\*\ _\+\ \*)\|\(const\|var\)\)$'
+		return 0
+	endif
+
+
+	" OTHERWISE, WE NEED TO LOOK FURTHER BACK...
 
 	let prev_codeline_num = s:GetPrevNonCommentLineNum( a:line_num )
 	let prev_codeline = getline( prev_codeline_num )
 	let indnt = indent( prev_codeline_num )
 
-	" Compiler directives should always go in column zero.
-	if this_codeline =~ '^\s*{\(\$IFDEF\|\$ELSE\|\$ENDIF\)'
-		return 0
+
+	" INCREASE INDENT
+
+	" If the PREVIOUS LINE ended in these items, always indent
+	if prev_codeline =~ '\<\(type\|const\|var\)$'
+		return indnt + &shiftwidth
 	endif
 
-	" These items have nothing before or after (not even a comment), and
-	" go on column 0. Make sure that the ^\s* is followed by \( to make
-	" ORs work properly, and not include the start of line (this must
-	" always appear).
-	" The bracketed expression with the underline is a routine
-	" separator. This is one case where we do indent comment lines.
-	if this_codeline =~ '^\s*\((\*\ _\+\ \*)\|\<\(const\|var\)\>\)$'
-		return 0
-	endif
-
-	" These items may have text after them, and go on column 0 (in most
-	" cases). The problem is that "function" and "procedure" keywords
-	" should be indented if within a class declaration.
-	if this_codeline =~ '^\s*\<\(program\|type\|uses\|procedure\|function\)\>'
-		return 0
-	endif
-
-	" BEGIN
-	" If the begin does not come after "if", "for", or "else", then it
-	" goes in column 0
-	if this_codeline =~ '^\s*begin\>' && prev_codeline !~ '^\s*\<\(if\|for\|else\)\>'
-		return 0
-	endif
-
-	" These keywords are indented once only.
-	if this_codeline =~ '^\s*\<\(private\)\>'
-		return &shiftwidth
-	endif
-
-	" If the PREVIOUS LINE contained these items, the current line is
-	" always indented once.
-	if prev_codeline =~ '^\s*\<\(type\|uses\)\>'
-		return &shiftwidth
-	endif
-
-	" These keywords are indented once only. Possibly surrounded by
-	" other chars.
-	if this_codeline =~ '^.\+\<\(object\|record\)\>'
-		return &shiftwidth
-	endif
-
-	" If the previous line was indenting...
-	if prev_codeline =~ '^\s*\<\(for\|if\|case\|else\|end\ else\)\>'
-		" then indent.
-		let indnt = indnt + &shiftwidth
-		" BUT... if this is the start of a multistatement block then we
-		" need to align the begin with the previous line.
-		if this_codeline =~ '^\s*begin\>'
-			return indnt - &shiftwidth
-		endif
-
-		" We also need to keep the indentation level constant if the
-		" whole if-then statement was on one line.
-		if prev_codeline =~ '\<then\>.\+'
-			let indnt = indnt - &shiftwidth
-		endif
-	endif
-
-	" PREVIOUS-LINE BEGIN
-	" If the previous line was an indenting keyword then indent once...
-	if prev_codeline =~ '^\s*\<\(const\|var\|begin\|repeat\|private\)\>'
-		" But only if this is another var in a list.
-		if this_codeline !~ '^\s*var\>'
+	if prev_codeline =~ '\<repeat$'
+		if this_codeline !~ '^\s*until\>'
 			return indnt + &shiftwidth
+		else
+			return indnt
 		endif
 	endif
 
-	" PREVIOUS-LINE BEGIN
-	" Indent code after a case statement begin
-	if prev_codeline =~ '\:\ begin\>'
+	if prev_codeline =~ '\<\(begin\|record\)$'
+		if this_codeline !~ '^\s*end\>'
+			return indnt + &shiftwidth
+		else
+			return indnt
+		endif
+	endif
+
+	" If the PREVIOUS LINE ended with these items, indent if not
+	" followed by "begin"
+	if prev_codeline =~ '\<\(\|else\|then\|do\)$' || prev_codeline =~ ':$'
+		if this_codeline !~ '^\s*begin\>'
+			return indnt + &shiftwidth
+		else
+			" If it does start with "begin" then keep the same indent
+			"return indnt + &shiftwidth
+			return indnt
+		endif
+	endif
+
+	" Inside a parameter list (i.e. a "(" without a ")"). ???? Considers
+	" only the line before the current one. TODO: Get it working for
+	" parameter lists longer than two lines.
+	if prev_codeline =~ '([^)]\+$'
 		return indnt + &shiftwidth
 	endif
 
-	" These words may have text before them on the line (hence the .*)
-	" but are followed by nothing. Always indent once only.
-	if prev_codeline =~ '^\(.*\|\s*\)\<\(object\|record\)\>$'
-		return indnt + &shiftwidth
-	endif
 
-	" If we just closed a bracket that started on a previous line, then
-	" unindent. But don't return yet -- we need to check for further
-	" unindentation (for end/until/else)
-	if prev_codeline =~ '^[^(]*[^*])'
-		let indnt = indnt - &shiftwidth
-	endif
+	" DECREASE INDENT
 
-	" At the end of a block, we have to unindent both the current line
-	" (the "end" for instance) and the newly-created line.
-	if this_codeline =~ '^\s*\<\(end\|until\|else\)\>'
+	" Lines starting with "else", but not following line ending with
+	" "end".
+	if this_codeline =~ '^\s*else\>' && prev_codeline !~ '\<end$'
 		return indnt - &shiftwidth
 	endif
 
-	" If we have opened a bracket and it continues over one line,
-	" then indent once.
-	"
-	" RE = an opening bracket followed by any amount of anything other
-	" than a closing bracket and then the end-of-line.
-	"
-	" If we didn't include the end of line, this RE would match even
-	" closed brackets, since it would match everything up to the closing
-	" bracket.
-	"
-	" This test isn't clever enough to handle brackets inside strings or
-	" comments.
-	if prev_codeline =~ '([^*]\=[^)]*$'
+	" Lines after a single-statement branch/loop.
+	" Two lines before ended in "then", "else", or "do"
+	" Previous line didn't end in "begin"
+	let prev2_codeline_num = s:GetPrevNonCommentLineNum( prev_codeline_num )
+	let prev2_codeline = getline( prev2_codeline_num )
+	if prev2_codeline =~ '\<\(then\|else\|do\)$' && prev_codeline !~ '\<begin$'
+		" If the next code line after a single statement branch/loop
+		" starts with "end", "except" or "finally", we need an
+		" additional unindentation.
+		if this_codeline =~ '^\s*\(end;\|except\|finally\|\)$'
+			" Note that we don't return from here.
+			return indnt - &shiftwidth - &shiftwidth
+		endif
+		return indnt - &shiftwidth
+	endif
+
+	" Lines starting with "until" or "end". This rule must be overridden
+	" by the one for "end" after a single-statement branch/loop. In
+	" other words that rule should come before this one.
+	if this_codeline =~ '^\s*\(end\|until\)\>'
+		return indnt - &shiftwidth
+	endif
+
+
+	" MISCELLANEOUS THINGS TO CATCH
+
+	" Most "begin"s will have been handled by now. Any remaining
+	" "begin"s on their own line should go in column 1.
+	if this_codeline =~ '^\s*begin$'
+		return 0
+	endif
+
+
+" ____________________________________________________________________
+" Object/Borland Pascal/Delphi Extensions
+"
+" Note that extended-pascal is handled here, unless it is simpler to
+" handle them in the standard-pascal section above.
+
+
+	" COLUMN 1 ALWAYS
+
+	" section headers at start of line.
+	if this_codeline =~ '^\s*\(interface\|implementation\|uses\|unit\)\>'
+		return 0
+	endif
+
+
+	" INDENT ONCE
+
+	" If the PREVIOUS LINE ended in these items, always indent.
+	if prev_codeline =~ '^\s*\(unit\|uses\|try\|except\|finally\|private\|protected\|public\|published\)$'
 		return indnt + &shiftwidth
 	endif
 
+	" ???? Indent "procedure" and "functions" if they appear within an
+	" class/object definition. But that means overriding standard-pascal
+	" rule where these words always go in column 1.
+
+
+	" UNINDENT ONCE
+
+	if this_codeline =~ '^\s*\(except\|finally\)$'
+		return indnt - &shiftwidth
+	endif
+
+	if this_codeline =~ '^\s*\(private\|protected\|public\|published\)$'
+		return indnt - &shiftwidth
+	endif
+
+
+" ____________________________________________________________________
+
+	" If nothing changed, return same indent.
 	return indnt
 endfunction
 

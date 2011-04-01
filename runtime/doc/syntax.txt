@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2011 Jan 22
+*syntax.txt*	For Vim version 7.3.  Last change: 2011 Apr 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3223,6 +3223,9 @@ DEFINING REGIONS	*:syn-region* *:syn-start* *:syn-skip* *:syn-end*
    :hi par1 ctermfg=red guifg=red
    :hi par2 ctermfg=blue guifg=blue
    :hi par3 ctermfg=darkgreen guifg=darkgreen
+<
+						*E849*
+The maximum number of syntax groups is 19999.
 
 ==============================================================================
 6. :syntax arguments					*:syn-arguments*
@@ -3761,6 +3764,9 @@ This also has implications for nested clusters: >
    :syntax match Stuff "( aaa bbb )" contains=@BigGroup
    :syntax cluster BigGroup remove=B	" no effect, since B isn't in BigGroup
    :syntax cluster SmallGroup remove=B	" now bbb isn't matched within Stuff
+<
+						*E848*
+The maximum number of clusters is 9767.
 
 ==============================================================================
 9. Including syntax files				*:syn-include* *E397*
@@ -3799,6 +3805,9 @@ two different ways:
 	  recommended, because it allows a user to replace the included file
 	  with his own version, without replacing the file that does the ":syn
 	  include".
+
+						*E847*
+The maximum number of includes is 999.
 
 ==============================================================================
 10. Synchronizing				*:syn-sync* *E403* *E404*

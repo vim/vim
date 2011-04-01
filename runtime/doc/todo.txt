@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2011 Mar 22
+*todo.txt*      For Vim version 7.3.  Last change: 2011 Apr 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,128 +30,20 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-The :z command doesn't work exactly as it should. (ChangZhuo Chen, 2011 Mar 2)
-Compare with how old Vi works and with posix spec.  terminal is 80 x 24,
-'scroll' option set to 11.
-
-Crash with ":python help(dir)". (Kearn Holliday, 2011 Mar 19)
-I can reproduce it.  Don't know why it happens.
-
-'cursorline' is displayed too short when there are concealed characters and
-'list' is set.  (Dennis Preiser)
-Patch 7.3.116 was the wrong solution.
-
-When opening file from windows explorer, characters inside [] cause
-problems, even though double quotes are used. (Manuel Stol, 2011 Mar 9)
-
-Patch for Vim indent file. (Cocular, 2011 Mar)
-
-:help c_Esc should work, but only :help c_<Esc> does.
-
-Patch to change the meaning of \n in substitute(). (motoya kurotsu, 2011 Mar 8)
-
-New version of Pascal indent file. (Neil Carter, 2011 Mar 9)
-
-Help file foldexpr (ZyX)
-
-upstart syntax file (James Hunt, Mar 11 2011)
-
-Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
-only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
-21, Ben Fritz, 2010 Sep 14)
-
-Bug in repeating Visual "u". (Lawrence Kesteloot, 2010 Dec 20)
-
-Crash with big .xpm file. (Yukihiro Nakadaira, 2011 Feb 18)
-Patch from Ben Schmidt (2011 Mar 3).  Needs some more work.
-
-Patch for disappearing cursor after netbeans command. (Xavier de Gaye, 2011
-Mar 4)
-
-Windows keys not set properly on Windows 7?  (cncyber, 2010 Aug 26)
-
-Compiler scripts for fortran (Hong Xu, 2011 March 19)
-
-This line hangs Vim, because of syntax HL:
-call append(line, "INFO  ....12....18....24....30....36....42....48....54....60....66....72....78%$")
-
-Building the MingW version without clipboard but with multi-byte doesn't
-work. (Bill Lam, 2010 Sep 18)
-
-Patch for handling of NL in substitute() with \= expression. (Motoya Kurotsu,
-2011 Mar 16)
-
-When using a Vim server, a # in the path causes an error message.
-(Jeff Lanzarotta, 2011 Feb 17)
-
-Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
-
-Using ":break" or something else that stops executing commands inside a
-":finally" does not rethrow a previously uncaught exception. (ZyX, 2010 Oct
-15)
-
-Vim using lots of memory when joining lines. (John Little, 2010 Dec 3)
-
-On 64 bit MS-Windows "long" is only 32 bits, but we sometimes need to store a
-64 bits value.  Change all number options to use nropt_T and define it to the
-right type.
-
-Patch to improve mf_hash, dynamic sizing. (Ivan Krasilnikov, 2010 Dec 17)
-Update with tests: 2011 Feb 28.
-
-string() can't parse back "inf" and "nan".  Fix documentation or fix code?
-(ZyX, 2010 Aug 23)
-
-maparg() does not show the <script> flag.  When temporarily changing a
-mapping, how to restore the script ID?
-
-Patch to fix \%V item in regexp. (Christian Brabandt, 2010 Nov 8)
-Update Nov 19.  James Vega: still not right.  Christian: it's difficult.
-
-Patch to add up to 99 match groups. (Christian Brabandt, 2010 Dec 22)
-Also add named groups: \%{name}(re)  and \%{name}g
-
-Bug in try/catch: return with invalid compare throws error that isn't caught.
-(ZyX, 2011 Jan 26)
-
 Improvement patch for filetype.vim. (Thilo Six, 2011 Mar 19)
 
-Patch for "+ and "* getting same selection when "a" is not in 'guioptions'.
-(James Vega, 2011 Mar 17)
-
-Highlighting stops working after changing it many times.  Script to reproduce
-it: Pablo Contreras, 2010 Oct 12  Windows XP and 7.  Font is never freed?
-
-After patch 7.3.097 still get E15. (Yukihiro Nakadaira, 2011 Jan 18)
-Also for another example (ZyX, 2011 Jan 24)
-
-Build problem with small features on Mac OS X 10.6. (Rainer, 2011 Jan 24)
-
-"0g@$" puts '] on last byte of multi-byte. (ZyX, 2011 Jan 22)
-
-Deleting a linewise selection that includes the last line of the file leaves
-an empty line. (Ben Schmidt, 2011 Mar 17)
-Patch by Christian Brabandt, 2011 Mar 19.
+Patch to recognize more files as log files. (Mathieu Parent, 2011 Jan 14)
 
 Two patches for xxd. (Florian Zumbiehl, 2011 Jan 11)
 Two updates for second one Jan 12.
 
-Problem with "syn sync gouphere". (Gustavo Niemeyer, 2011 Jan 27)
-
-Loading autoload script even when usage is inside "if 0". (Christian Brabandt,
-2010 Dec 18)
+Go through new coverity reports.
 
 When 'colorcolumn' is set locally to a window, ":new" opens a window with the
 same highlighting but 'colorcolumn' is empty. (Tyru, 2010 Nov 15)
 Patch by Christian Brabandt, 2011 Feb 13 (but move further down).
 
-In the sandbox it's not allowed to do many things, but it's possible to change
-or set variables.  Add a way to prevent variables from being changed in the
-sandbox?  E.g.: ":protect g:restore_settings".
-
 Patch for configure related to Ruby on Mac OS X. (Bjorn Winckler, 2011 Jan 14)
-
-Patch to recognize more files as log files. (Mathieu Parent, 2011 Jan 14)
 
 Patch to set v:register on startup. (Ingo Karkat, 2011 Jan 16)
 
@@ -170,27 +62,8 @@ Patch for "No errors" showing up after QuickfixCmdPost. (Mike Lundy, 2011 Feb
 
 Patch for cmdline completion of ":lang".  (Dominique Pelle, 2011 Feb 5)
 
-GTK: drawing a double-width combining character over single-width characters
-doesn't look right. (Dominique Pelle, 2010 Aug 8)
-
-GTK: tear-off menu does not work. (Kurt Sonnenmoser, 2010 Oct 25)
-
-Win32: tear-off menu does not work when menu language is German. (Markus
-Bossler, 2011 Mar 2)  Fixed by 7.3.095?
-
 Patch for adding 's' option to 'cino', C++ namespace indenting. (Konstantin
 Lepa, 2011 Jan 18)
-
-Version of netbeans.c for use with MacVim. (Kazuki Sakamoto, 2010 Nov 18)
-
-7.3.014 changed how backslash at end of line works, but still get a NUL when
-there is one backslash. (Ray Frush, 2010 Nov 18)  What does the original ex
-do?
-
-":find" completion does not escape space in directory name. (Isz, 2010 Nov 2)
-
-Searching mixed with Visual mode doesn't redraw properly. (James Vega, 2010 Nov
-22)
 
 Patch to support ":!start /b cmd". (Xaizek, 2010 Dec 22)
 
@@ -206,6 +79,135 @@ Method to reproduce it: Jan 16.
 Patch to improve optwin.vim. (ZyX, 2011 Jan 29)
 
 Patch for Python 3 support. (lilydjwg, 2011 Feb 24)
+
+Building the MingW version without clipboard but with multi-byte doesn't
+work. (Bill Lam, 2010 Sep 18)
+
+Patch for handling of NL in substitute() with \= expression. (Motoya Kurotsu,
+2011 Mar 16)  Update Mar 24.
+
+Patch to disallow fork() when __APPLE__ is defined. (Hisashi T Fujinaka, 2010
+Nov 25)
+
+GTK: Patch to fix menu popping down. (Hong Xu, 2010 Dec 4, Dec 5)
+Update 2011 Feb 3.
+
+Patch to use pipes on Win32.  (Vincent Berthoux, 2011 Feb 28)
+Update Mar 1 using 'shelltemp'.
+
+"gh<Del>" deletes the current line, except when it's the last line.
+Hint by Christian Brabandt, 2011 Mar 22
+
+The :z command doesn't work exactly as it should. (ChangZhuo Chen, 2011 Mar 2)
+Compare with how old Vi works and with posix spec.  terminal is 80 x 24,
+'scroll' option set to 11.
+
+'cursorline' is displayed too short when there are concealed characters and
+'list' is set.  (Dennis Preiser)
+Patch 7.3.116 was the wrong solution.
+
+When opening file from windows explorer, characters inside [] cause
+problems, even though double quotes are used. (Manuel Stol, 2011 Mar 9)
+
+Patch to change the meaning of \n in substitute(). (motoya kurotsu, 2011 Mar 8)
+
+Help file foldexpr (ZyX)
+
+Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
+only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
+21, Ben Fritz, 2010 Sep 14)
+
+Bug in repeating Visual "u". (Lawrence Kesteloot, 2010 Dec 20)
+
+CursorHold repeats typed key when it's the start of a mapping.
+(Will Gray, 2011 Mar 23)
+
+Windows keys not set properly on Windows 7?  (cncyber, 2010 Aug 26)
+
+This line hangs Vim, because of syntax HL:
+call append(line, "INFO  ....12....18....24....30....36....42....48....54....60....66....72....78%$")
+
+When using a Vim server, a # in the path causes an error message.
+(Jeff Lanzarotta, 2011 Feb 17)
+
+Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
+
+Using ":break" or something else that stops executing commands inside a
+":finally" does not rethrow a previously uncaught exception. (ZyX, 2010 Oct
+15)
+
+Vim using lots of memory when joining lines. (John Little, 2010 Dec 3)
+
+On 64 bit MS-Windows "long" is only 32 bits, but we sometimes need to store a
+64 bits value.  Change all number options to use nropt_T and define it to the
+right type.
+
+string() can't parse back "inf" and "nan".  Fix documentation or fix code?
+(ZyX, 2010 Aug 23)
+
+When doing "redir => s:foo" in a script and then "redir END" somewhere else
+(e.g. in a function) it can't find s:foo.
+
+maparg() does not show the <script> flag.  When temporarily changing a
+mapping, how to restore the script ID?
+
+Patch to fix \%V item in regexp. (Christian Brabandt, 2010 Nov 8)
+Update Nov 19.  James Vega: still not right.  Christian: it's difficult.
+
+Patch to add up to 99 match groups. (Christian Brabandt, 2010 Dec 22)
+Also add named groups: \%{name}(re)  and \%{name}g
+
+Bug in try/catch: return with invalid compare throws error that isn't caught.
+(ZyX, 2011 Jan 26)
+
+Highlighting stops working after changing it many times.  Script to reproduce
+it: Pablo Contreras, 2010 Oct 12  Windows XP and 7.  Font is never freed?
+
+After patch 7.3.097 still get E15. (Yukihiro Nakadaira, 2011 Jan 18)
+Also for another example (ZyX, 2011 Jan 24)
+
+Build problem with small features on Mac OS X 10.6. (Rainer, 2011 Jan 24)
+
+"0g@$" puts '] on last byte of multi-byte. (ZyX, 2011 Jan 22)
+
+Deleting a linewise selection that includes the last line of the file leaves
+an empty line. (Ben Schmidt, 2011 Mar 17)
+Patch by Christian Brabandt, 2011 Mar 19.
+
+Patch to support sorting on floating point number.  (Alex Jakushev, 2010 Oct
+30)
+
+When a script contains "redir => s:foo" but doesn't end redirection, a
+following "redir" command gives an error for not being able to access s:foo.
+(ZyX, 2011 Mar 27)
+
+Problem with "syn sync gouphere". (Gustavo Niemeyer, 2011 Jan 27)
+
+Loading autoload script even when usage is inside "if 0". (Christian Brabandt,
+2010 Dec 18)
+
+In the sandbox it's not allowed to do many things, but it's possible to change
+or set variables.  Add a way to prevent variables from being changed in the
+sandbox?  E.g.: ":protect g:restore_settings".
+
+GTK: drawing a double-width combining character over single-width characters
+doesn't look right. (Dominique Pelle, 2010 Aug 8)
+
+GTK: tear-off menu does not work. (Kurt Sonnenmoser, 2010 Oct 25)
+
+Win32: tear-off menu does not work when menu language is German. (Markus
+Bossler, 2011 Mar 2)  Fixed by 7.3.095?
+
+Version of netbeans.c for use with MacVim. (Kazuki Sakamoto, 2010 Nov 18)
+
+7.3.014 changed how backslash at end of line works, but still get a NUL when
+there is one backslash. (Ray Frush, 2010 Nov 18)  What does the original ex
+do?
+
+":find" completion does not escape space in directory name. (Isz, 2010 Nov 2)
+
+Searching mixed with Visual mode doesn't redraw properly. (James Vega, 2010 Nov
+22)
 
 New esperanto spell file can't be processed. (Dominique Pelle, 2011 Jan 30)
 - move compflags to separate growarray?
@@ -235,15 +237,6 @@ the command line. (Ingo Karkat, 2011 Jan 25)
 Since patch 7.2.46 Yankring plugin has become very slow, eventually make Vim
 crash? (Raiwil, 2010 Nov 17)
 
-Patch to disallow fork() when __APPLE__ is defined. (Hisashi T Fujinaka, 2010
-Nov 25)
-
-GTK: Patch to fix menu popping down. (Hong Xu, 2010 Dec 4, Dec 5)
-Update 2011 Feb 3.
-
-Patch to use pipes on Win32.  (Vincent Berthoux, 2011 Feb 28)
-Update Mar 1 using 'shelltemp'.
-
 Python: Adding line to buffer other than the current one doesn't work
 correctly. (Rozbujnik, 2010 Dec 19)
 
@@ -254,9 +247,6 @@ the system encoding (usually utf-8).
 
 Problem producing tags file when hebrew.frx is present.  It has a BOM.
 Results in E670. (Tony Mechelynck, 2010 May 2)
-
-Patch to support sorting on floating point number.  (Alex Jakushev, 2010 Oct
-30)
 
 Ruby: ":ruby print $buffer.number" returns zero.
 
@@ -895,6 +885,9 @@ C syntax: {} inside () causes following {} to be highlighted as error.
 Can't easily close the help window, like ":pc" closes the preview window and
 ":ccl" closes the quickfix window.  Add ":hclose". (Chris Gaal)
 Patch for :helpclose, Christian Brabandt, 2010 Sep 6.
+
+Patch for :lmake not updating the quickfix window title. (Lech Lorens, 2011
+Mar 26)
 
 When 'diffopt' has "context:0" a single deleted line causes two folds to merge
 and mess up syncing. (Austin Jennings, 2008 Jan 31)

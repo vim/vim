@@ -1,8 +1,8 @@
 " SQL filetype plugin file
 " Language:    SQL (Common for Oracle, Microsoft SQL Server, Sybase)
-" Version:     7.0
-" Maintainer:  David Fishburn <fishburn at ianywhere dot com>
-" Last Change: 2010 Jun 11
+" Version:     8.0
+" Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
+" Last Change: 2011 Apr 01
 " Download:    http://vim.sourceforge.net/script.php?script_id=454
 
 " For more details please use:
@@ -35,6 +35,10 @@
 "     :SQLGetType
 "
 " History
+"
+" Version 8.0
+" 
+" NF: Improved the matchit plugin regex (Talek)
 "
 " Version 7.0
 " 
@@ -290,6 +294,7 @@ if !exists("b:match_words")
     " WHEN OTHERS THEN
     "
     " create[ or replace] procedure|function|event
+                " \ '^\s*\<\%(do\|for\|while\|loop\)\>.*:'.
 
     let b:match_words =
 		\ '\<begin\>:\<end\>\W*$,'.
@@ -298,12 +303,9 @@ if !exists("b:match_words")
                 \ '\<elsif\>\|\<elseif\>\|\<else\>:'.
                 \ '\<end\s\+if\>,'.
                 \
-                \ '\<do\>\|'.
-                \ '\<while\>\|'.
-                \ '\%(' . s:notend . '\<loop\>\)\|'.
-                \ '\%(' . s:notend . '\<for\>\):'.
-                \ '\<exit\>\|\<leave\>\|\<break\>\|\<continue\>:'.
-                \ '\%(\<end\s\+\%(for\|loop\>\)\)\|\<doend\>,'.
+                \ '\(^\s*\)\@<=\(\<\%(do\|for\|while\|loop\)\>.*\):'.
+                \ '\%(\<exit\>\|\<leave\>\|\<break\>\|\<continue\>\):'.
+                \ '\%(\<doend\>\|\%(\<end\s\+\%(for\|while\|loop\>\)\)\),'.
                 \
                 \ '\%('. s:notend . '\<case\>\):'.
                 \ '\%('.s:when_no_matched_or_others.'\):'.

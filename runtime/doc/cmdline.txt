@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.3.  Last change: 2011 Feb 10
+*cmdline.txt*   For Vim version 7.3.  Last change: 2011 Mar 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -83,9 +83,9 @@ CTRL-V		Insert next non-digit literally.  Up to three digits form the
 CTRL-Q		Same as CTRL-V.  But with some terminals it is used for
 		control flow, it doesn't work then.
 
-							*c_<Left>*
+							*c_<Left>* *c_Left*
 <Left>		cursor left
-							*c_<Right>*
+							*c_<Right>* *c_Right*
 <Right>		cursor right
 							*c_<S-Left>*
 <S-Left> or <C-Left>					*c_<C-Left>*
@@ -93,18 +93,18 @@ CTRL-Q		Same as CTRL-V.  But with some terminals it is used for
 							*c_<S-Right>*
 <S-Right> or <C-Right>					*c_<C-Right>*
 		cursor one WORD right
-CTRL-B or <Home>					*c_CTRL-B* *c_<Home>*
+CTRL-B or <Home>				*c_CTRL-B* *c_<Home>* *c_Home*
 		cursor to beginning of command-line
-CTRL-E or <End>						*c_CTRL-E* *c_<End>*
+CTRL-E or <End>					*c_CTRL-E* *c_<End>* *c_End*
 		cursor to end of command-line
 
 							*c_<LeftMouse>*
 <LeftMouse>	Move the cursor to the position of the mouse click.
 
-CTRL-H							*c_<BS>* *c_CTRL-H*
+CTRL-H						*c_<BS>* *c_CTRL-H* *c_BS*
 <BS>		Delete the character in front of the cursor (see |:fixdel| if
 		your <BS> key does not do what you want).
-							*c_<Del>*
+							*c_<Del>* *c_Del*
 <Del>		Delete the character under the cursor (at end of line:
 		character before the cursor) (see |:fixdel| if your <Del>
 		key does not do what you want).
@@ -118,7 +118,7 @@ CTRL-U		Remove all characters between the cursor position and
 		preferred behavior, add the following to your .vimrc: >
 			:cnoremap <C-U> <C-E><C-U>
 <
-							*c_<Insert>*
+						*c_<Insert>* *c_Insert*
 <Insert>	Toggle between insert and overstrike.  {not in Vi}
 
 {char1} <BS> {char2}	or				*c_digraph*
@@ -224,9 +224,9 @@ CTRL-Y		When there is a modeless selection, copy the selection into
 		the clipboard. |modeless-selection|
 		If there is no selection CTRL-Y is inserted as a character.
 
-CTRL-J						*c_CTRL-J* *c_<NL>* *c_<CR>*
+CTRL-J					*c_CTRL-J* *c_<NL>* *c_<CR>* *c_CR*
 <CR> or <NL>	start entered command
-							*c_<Esc>*
+							*c_<Esc>* *c_Esc*
 <Esc>		When typed and 'x' not present in 'cpoptions', quit
 		Command-line mode without executing.  In macros or when 'x'
 		present in 'cpoptions', start entered command.
@@ -235,12 +235,12 @@ CTRL-J						*c_CTRL-J* *c_<NL>* *c_<CR>*
 							*c_CTRL-C*
 CTRL-C		quit command-line without executing
 
-							*c_<Up>*
+							*c_<Up>* *c_Up*
 <Up>		recall older command-line from history, whose beginning
 		matches the current command-line (see below).
 		{not available when compiled without the |+cmdline_hist|
 		feature}
-							*c_<Down>*
+							*c_<Down>* *c_Down*
 <Down>		recall more recent command-line from history, whose beginning
 		matches the current command-line (see below).
 		{not available when compiled without the |+cmdline_hist|
@@ -865,7 +865,7 @@ These modifiers can be given, in this order:
 		After this, the previous modifiers can be used again.  For
 		example ":p", to make a full path after the substitution.
 	:gs?pat?sub?
-		Substitute all occurrences of "path" with "sub".  Otherwise
+		Substitute all occurrences of "pat" with "sub".  Otherwise
 		this works like ":s".
 
 Examples, when the file name is "src/version.c", current dir
