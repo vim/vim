@@ -191,6 +191,7 @@ netbeans_close(void)
     changed_window_setting();
     update_screen(CLEAR);
     setcursor();
+    cursor_on();
     out_flush();
 #ifdef FEAT_GUI
     if (gui.in_use)
@@ -2248,6 +2249,7 @@ nb_do_cmd(
 	    update_topline();		/* scroll to show the line */
 	    update_screen(VALID);
 	    setcursor();
+	    cursor_on();
 	    out_flush();
 #ifdef FEAT_GUI
 	    if (gui.in_use)
@@ -2642,6 +2644,7 @@ nb_do_cmd(
     {
 	update_screen(NOT_VALID);
 	setcursor();
+	cursor_on();
 	out_flush();
 #ifdef FEAT_GUI
 	if (gui.in_use)
@@ -3008,6 +3011,7 @@ netbeans_open(char *params, int doabort)
     changed_window_setting();
     update_screen(CLEAR);
     setcursor();
+    cursor_on();
     out_flush();
 #ifdef FEAT_GUI
     if (gui.in_use)
