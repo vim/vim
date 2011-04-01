@@ -3148,10 +3148,9 @@ op_yank(oap, deleting, mess)
 	    /* Copy the text from register 0 to the clipboard register. */
 	    copy_yank_reg(&(y_regs[PLUS_REGISTER]));
 
-	/* No need to copy to * register upon 'unnamed' now - see below */
 	clip_own_selection(&clip_plus);
 	clip_gen_set_selection(&clip_plus);
-	if (!clip_isautosel() && !did_star)
+	if (!clip_isautosel() && !did_star && curr == &(y_regs[PLUS_REGISTER]))
 	{
 	    copy_yank_reg(&(y_regs[STAR_REGISTER]));
 	    clip_own_selection(&clip_star);
