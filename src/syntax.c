@@ -68,6 +68,8 @@ static garray_T highlight_ga;	/* highlight groups for 'highlight' option */
 
 #define HL_TABLE() ((struct hl_group *)((highlight_ga.ga_data)))
 
+#define MAX_HL_ID       20000	/* maximum value for a highlight ID. */
+
 #ifdef FEAT_CMDL_COMPL
 /* Flags to indicate an additional string for highlight name completion. */
 static int include_none = 0;	/* when 1 include "None" */
@@ -225,12 +227,11 @@ typedef struct syn_cluster_S
  * 22000 - 22999  CONTAINED indicator (current_syn_inc_tag added)
  * 23000 - 32767  cluster IDs (subtract SYNID_CLUSTER for the cluster ID)
  */
-#define SYNID_ALLBUT	20000	    /* syntax group ID for contains=ALLBUT */
+#define SYNID_ALLBUT	MAX_HL_ID   /* syntax group ID for contains=ALLBUT */
 #define SYNID_TOP	21000	    /* syntax group ID for contains=TOP */
 #define SYNID_CONTAINED	22000	    /* syntax group ID for contains=CONTAINED */
 #define SYNID_CLUSTER	23000	    /* first syntax group ID for clusters */
 
-#define MAX_SYNID       SYNID_ALLBUT
 #define MAX_SYN_INC_TAG	999	    /* maximum before the above overflow */
 #define MAX_CLUSTER_ID  (32767 - SYNID_CLUSTER)
 
@@ -6462,7 +6463,6 @@ syn_get_foldlevel(wp, lnum)
 
 #endif /* FEAT_SYN_HL */
 
-
 /**************************************
  *  Highlighting stuff		      *
  **************************************/
@@ -8996,9 +8996,9 @@ syn_add_group(name)
 	highlight_ga.ga_growsize = 10;
     }
 
-    if (highlight_ga.ga_len >= MAX_SYNID)
+    if (highlight_ga.ga_len >= MAX_HL_ID)
     {
-	EMSG(_("E849: Too many syntax groups"));
+	EMSG(_("E849: Too many highlight and syntax groups"));
 	vim_free(name);
 	return 0;
     }
