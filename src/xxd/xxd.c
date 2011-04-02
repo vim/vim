@@ -210,6 +210,7 @@ char osver[] = "";
 /* Let's collect some prototypes */
 /* CodeWarrior is really picky about missing prototypes */
 static void exit_with_usage __P((void));
+static void die __P((int));
 static int huntype __P((FILE *, FILE *, FILE *, int, int, long));
 static void xxdline __P((FILE *, char *, int));
 
@@ -689,6 +690,7 @@ main(argc, argv)
 
 	  while (s--)
 	    if (getc(fp) == EOF)
+	    {
 	      if (ferror(fp))
 		{
 		  die(2);
@@ -698,6 +700,7 @@ main(argc, argv)
 		  fprintf(stderr, "%s: sorry cannot seek.\n", pname);
 		  return 4;
 		}
+	    }
 	}
     }
 
