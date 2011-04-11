@@ -6773,8 +6773,7 @@ get_c_indent()
 		{
 		    curwin->w_cursor.lnum = our_paren_pos.lnum;
 		    curwin->w_cursor.col = col;
-		    if ((trypos = find_match_paren(ind_maxparen,
-						     ind_maxcomment)) != NULL)
+		    if (find_match_paren(ind_maxparen, ind_maxcomment) != NULL)
 			amount += ind_unclosed2;
 		    else
 			amount += ind_unclosed;
