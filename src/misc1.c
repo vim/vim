@@ -6433,6 +6433,8 @@ get_c_indent()
 	/* find how indented the line beginning the comment is */
 	getvcol(curwin, trypos, &col, NULL, NULL);
 	amount = col;
+	*lead_start = NUL;
+	*lead_middle = NUL;
 
 	p = curbuf->b_p_com;
 	while (*p != NUL)
