@@ -2777,7 +2777,7 @@ check_overwrite(eap, buf, fname, ffname, other)
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	    if (p_confirm || cmdmod.confirm)
 	    {
-		char_u	buff[IOSIZE];
+		char_u	buff[DIALOG_MSG_SIZE];
 
 		dialog_msg(buff, _("Overwrite existing file \"%s\"?"), fname);
 		if (vim_dialog_yesno(VIM_QUESTION, NULL, buff, 2) != VIM_YES)
@@ -2795,7 +2795,7 @@ check_overwrite(eap, buf, fname, ffname, other)
 	/* For ":w! filename" check that no swap file exists for "filename". */
 	if (other && !emsg_silent)
 	{
-	    char_u	dir[MAXPATHL];
+	    char_u	*dir;
 	    char_u	*p;
 	    int		r;
 	    char_u	*swapname;
@@ -2806,20 +2806,29 @@ check_overwrite(eap, buf, fname, ffname, other)
 	     * Use 'shortname' of the current buffer, since there is no buffer
 	     * for the written file. */
 	    if (*p_dir == NUL)
+	    {
+		dir = alloc(5);
+		if (dir == NULL)
+		    return FAIL;
 		STRCPY(dir, ".");
+	    }
 	    else
 	    {
+		dir = alloc(MAXPATHL);
+		if (dir == NULL)
+		    return FAIL;
 		p = p_dir;
 		copy_option_part(&p, dir, MAXPATHL, ",");
 	    }
 	    swapname = makeswapname(fname, ffname, curbuf, dir);
+	    vim_free(dir);
 	    r = vim_fexists(swapname);
 	    if (r)
 	    {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 		if (p_confirm || cmdmod.confirm)
 		{
-		    char_u	buff[IOSIZE];
+		    char_u	buff[DIALOG_MSG_SIZE];
 
 		    dialog_msg(buff,
 			    _("Swap file \"%s\" exists, overwrite anyway?"),
@@ -2969,7 +2978,7 @@ check_readonly(forceit, buf)
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	if ((p_confirm || cmdmod.confirm) && buf->b_fname != NULL)
 	{
-	    char_u	buff[IOSIZE];
+	    char_u	buff[DIALOG_MSG_SIZE];
 
 	    if (buf->b_p_ro)
 		dialog_msg(buff, _("'readonly' option is set for \"%s\".\nDo you wish to write anyway?"),

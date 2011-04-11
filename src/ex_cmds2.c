@@ -1492,7 +1492,7 @@ dialog_changed(buf, checkall)
     buf_T	*buf;
     int		checkall;	/* may abandon all changed buffers */
 {
-    char_u	buff[IOSIZE];
+    char_u	buff[DIALOG_MSG_SIZE];
     int		ret;
     buf_T	*buf2;
 

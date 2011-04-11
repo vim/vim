@@ -11100,18 +11100,22 @@ f_getcwd(argvars, rettv)
     typval_T	*argvars UNUSED;
     typval_T	*rettv;
 {
-    char_u	cwd[MAXPATHL];
+    char_u	*cwd;
 
     rettv->v_type = VAR_STRING;
-    if (mch_dirname(cwd, MAXPATHL) == FAIL)
-	rettv->vval.v_string = NULL;
-    else
+    rettv->vval.v_string = NULL;
+    cwd = alloc(MAXPATHL);
+    if (cwd != NULL)
     {
-	rettv->vval.v_string = vim_strsave(cwd);
+	if (mch_dirname(cwd, MAXPATHL) != FAIL)
+	{
+	    rettv->vval.v_string = vim_strsave(cwd);
 #ifdef BACKSLASH_IN_FILENAME
-	if (rettv->vval.v_string != NULL)
-	    slash_adjust(rettv->vval.v_string);
+	    if (rettv->vval.v_string != NULL)
+		slash_adjust(rettv->vval.v_string);
 #endif
+	}
+	vim_free(cwd);
     }
 }
 
@@ -14938,6 +14942,9 @@ f_resolve(argvars, rettv)
     typval_T	*rettv;
 {
     char_u	*p;
+#ifdef HAVE_READLINK
+    char_u	*buf = NULL;
+#endif
 
     p = get_tv_string(&argvars[0]);
 #ifdef FEAT_SHORTCUT
@@ -14953,7 +14960,6 @@ f_resolve(argvars, rettv)
 #else
 # ifdef HAVE_READLINK
     {
-	char_u	buf[MAXPATHL + 1];
 	char_u	*cpy;
 	int	len;
 	char_u	*remain = NULL;
@@ -14980,6 +14986,10 @@ f_resolve(argvars, rettv)
 	    remain = vim_strsave(q - 1);
 	    q[-1] = NUL;
 	}
+
+	buf = alloc(MAXPATHL + 1);
+	if (buf == NULL)
+	    goto fail;
 
 	for (;;)
 	{
@@ -15124,6 +15134,7 @@ f_resolve(argvars, rettv)
 
 #ifdef HAVE_READLINK
 fail:
+    vim_free(buf);
 #endif
     rettv->v_type = VAR_STRING;
 }
@@ -17604,11 +17615,14 @@ f_tagfiles(argvars, rettv)
     typval_T	*argvars UNUSED;
     typval_T	*rettv;
 {
-    char_u	fname[MAXPATHL + 1];
+    char_u	*fname;
     tagname_T	tn;
     int		first;
 
     if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    fname = alloc(MAXPATHL);
+    if (fname == NULL)
 	return;
 
     for (first = TRUE; ; first = FALSE)
@@ -17616,6 +17630,7 @@ f_tagfiles(argvars, rettv)
 		|| list_append_string(rettv->vval.v_list, fname, -1) == FAIL)
 	    break;
     tagname_free(&tn);
+    vim_free(fname);
 }
 
 /*

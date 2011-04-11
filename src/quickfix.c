@@ -3049,8 +3049,8 @@ ex_vimgrep(eap)
     int		flags = 0;
     colnr_T	col;
     long	tomatch;
-    char_u	dirname_start[MAXPATHL];
-    char_u	dirname_now[MAXPATHL];
+    char_u	*dirname_start = NULL;
+    char_u	*dirname_now = NULL;
     char_u	*target_dir = NULL;
 #ifdef FEAT_AUTOCMD
     char_u	*au_name =  NULL;
@@ -3127,6 +3127,11 @@ ex_vimgrep(eap)
 	EMSG(_(e_nomatch));
 	goto theend;
     }
+
+    dirname_start = alloc(MAXPATHL);
+    dirname_now = alloc(MAXPATHL);
+    if (dirname_start == NULL || dirname_now == NULL)
+	goto theend;
 
     /* Remember the current directory, because a BufRead autocommand that does
      * ":lcd %:p:h" changes the meaning of short path names. */
@@ -3364,6 +3369,8 @@ ex_vimgrep(eap)
     }
 
 theend:
+    vim_free(dirname_now);
+    vim_free(dirname_start);
     vim_free(target_dir);
     vim_free(regmatch.regprog);
 }

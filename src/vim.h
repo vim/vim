@@ -1435,6 +1435,8 @@ typedef UINT32_TYPEDEF UINT32_T;
 
 #define IOSIZE	   (1024+1)	/* file i/o and sprintf buffer size */
 
+#define DIALOG_MSG_SIZE 1000	/* buffer size for dialog_msg() */
+
 #ifdef FEAT_MBYTE
 # define MSG_BUF_LEN 480	/* length of buffer for small messages */
 # define MSG_BUF_CLEN  (MSG_BUF_LEN / 6)    /* cell length (worst case: utf-8

@@ -476,7 +476,7 @@ main(argc, argv)
   int octspergrp = -1;	/* number of octets grouped in output */
   int grplen;		/* total chars per octet group */
   long length = -1, n = 0, seekoff = 0;
-  char l[LLEN+1];
+  static char l[LLEN+1];  /* static because it may be too big for stack */
   char *pp;
 
 #ifdef AMIGA

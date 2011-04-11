@@ -775,17 +775,25 @@ do_tag(tag, type, count, forceit, verbose)
 	    {
 		list_T	*list;
 		char_u	tag_name[128 + 1];
-		char_u	fname[MAXPATHL + 1];
-		char_u	cmd[CMDBUFFSIZE + 1];
+		char_u	*fname;
+		char_u	*cmd;
 
 		/*
 		 * Add the matching tags to the location list for the current
 		 * window.
 		 */
 
+		fname = alloc(MAXPATHL + 1);
+		cmd = alloc(CMDBUFFSIZE + 1);
 		list = list_alloc();
-		if (list == NULL)
+		if (list == NULL || fname == NULL || cmd == NULL)
+		{
+		    vim_free(cmd);
+		    vim_free(fname);
+		    if (list != NULL)
+			list_free(list, TRUE);
 		    goto end_do_tag;
+		}
 
 		for (i = 0; i < num_matches; ++i)
 		{
@@ -911,6 +919,8 @@ do_tag(tag, type, count, forceit, verbose)
 		set_errorlist(curwin, list, ' ', IObuff);
 
 		list_free(list, TRUE);
+		vim_free(fname);
+		vim_free(cmd);
 
 		cur_match = 0;		/* Jump to the first tag */
 	    }
@@ -3777,8 +3787,9 @@ add_tag_field(dict, field_name, start, end)
     char_u  *start;		/* start of the value */
     char_u  *end;		/* after the value; can be NULL */
 {
-    char_u	buf[MAXPATHL];
+    char_u	*buf;
     int		len = 0;
+    int		retval;
 
     /* check that the field name doesn't exist yet */
     if (dict_find(dict, (char_u *)field_name, -1) != NULL)
@@ -3791,6 +3802,9 @@ add_tag_field(dict, field_name, start, end)
 	}
 	return FAIL;
     }
+    buf = alloc(MAXPATHL);
+    if (buf == NULL)
+	return FAIL;
     if (start != NULL)
     {
 	if (end == NULL)
@@ -3800,12 +3814,14 @@ add_tag_field(dict, field_name, start, end)
 		--end;
 	}
 	len = (int)(end - start);
-	if (len > (int)sizeof(buf) - 1)
-	    len = sizeof(buf) - 1;
+	if (len > MAXPATHL - 1)
+	    len = MAXPATHL - 1;
 	vim_strncpy(buf, start, len);
     }
     buf[len] = NUL;
-    return dict_add_nr_str(dict, field_name, 0L, buf);
+    retval = dict_add_nr_str(dict, field_name, 0L, buf);
+    vim_free(buf);
+    return retval;
 }
 
 /*

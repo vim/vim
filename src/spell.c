@@ -8590,7 +8590,7 @@ spell_make_sugfile(spin, wfname)
     spellinfo_T	*spin;
     char_u	*wfname;
 {
-    char_u	fname[MAXPATHL];
+    char_u	*fname = NULL;
     int		len;
     slang_T	*slang;
     int		free_slang = FALSE;
@@ -8654,6 +8654,9 @@ spell_make_sugfile(spin, wfname)
      * Write the .sug file.
      * Make the file name by changing ".spl" to ".sug".
      */
+    fname = alloc(MAXPATHL);
+    if (fname == NULL)
+	goto theend;
     vim_strncpy(fname, wfname, MAXPATHL - 1);
     len = (int)STRLEN(fname);
     fname[len - 2] = 'u';
@@ -8661,6 +8664,7 @@ spell_make_sugfile(spin, wfname)
     sug_write(spin, fname);
 
 theend:
+    vim_free(fname);
     if (free_slang)
 	slang_free(slang);
     free_blocks(spin->si_blocks);
@@ -9106,8 +9110,8 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
     int		overwrite;	    /* overwrite existing output file */
     int		added_word;	    /* invoked through "zg" */
 {
-    char_u	fname[MAXPATHL];
-    char_u	wfname[MAXPATHL];
+    char_u	*fname = NULL;
+    char_u	*wfname;
     char_u	**innames;
     int		incount;
     afffile_T	*(afile[8]);
@@ -9135,6 +9139,10 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
     innames = &fnames[1];
     incount = fcount - 1;
 
+    wfname = alloc(MAXPATHL);
+    if (wfname == NULL)
+	return;
+
     if (fcount >= 1)
     {
 	len = (int)STRLEN(fnames[0]);
@@ -9144,24 +9152,24 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 	     * "path/en.latin1.add.spl". */
 	    innames = &fnames[0];
 	    incount = 1;
-	    vim_snprintf((char *)wfname, sizeof(wfname), "%s.spl", fnames[0]);
+	    vim_snprintf((char *)wfname, MAXPATHL, "%s.spl", fnames[0]);
 	}
 	else if (fcount == 1)
 	{
 	    /* For ":mkspell path/vim" output file is "path/vim.latin1.spl". */
 	    innames = &fnames[0];
 	    incount = 1;
-	    vim_snprintf((char *)wfname, sizeof(wfname), SPL_FNAME_TMPL,
+	    vim_snprintf((char *)wfname, MAXPATHL, SPL_FNAME_TMPL,
 		  fnames[0], spin.si_ascii ? (char_u *)"ascii" : spell_enc());
 	}
 	else if (len > 4 && STRCMP(fnames[0] + len - 4, ".spl") == 0)
 	{
 	    /* Name ends in ".spl", use as the file name. */
-	    vim_strncpy(wfname, fnames[0], sizeof(wfname) - 1);
+	    vim_strncpy(wfname, fnames[0], MAXPATHL - 1);
 	}
 	else
 	    /* Name should be language, make the file name from it. */
-	    vim_snprintf((char *)wfname, sizeof(wfname), SPL_FNAME_TMPL,
+	    vim_snprintf((char *)wfname, MAXPATHL, SPL_FNAME_TMPL,
 		  fnames[0], spin.si_ascii ? (char_u *)"ascii" : spell_enc());
 
 	/* Check for .ascii.spl. */
@@ -9186,13 +9194,17 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 	if (!overwrite && mch_stat((char *)wfname, &st) >= 0)
 	{
 	    EMSG(_(e_exists));
-	    return;
+	    goto theend;
 	}
 	if (mch_isdir(wfname))
 	{
 	    EMSG2(_(e_isadir2), wfname);
-	    return;
+	    goto theend;
 	}
+
+	fname = alloc(MAXPATHL);
+	if (fname == NULL)
+	    goto theend;
 
 	/*
 	 * Init the aff and dic pointers.
@@ -9209,7 +9221,7 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 						|| innames[i][len - 3] != '_')
 		{
 		    EMSG2(_("E755: Invalid region in %s"), innames[i]);
-		    return;
+		    goto theend;
 		}
 		spin.si_region_name[i * 2] = TOLOWER_ASC(innames[i][len - 2]);
 		spin.si_region_name[i * 2 + 1] =
@@ -9226,7 +9238,7 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 		|| spin.si_prefroot == NULL)
 	{
 	    free_blocks(spin.si_blocks);
-	    return;
+	    goto theend;
 	}
 
 	/* When not producing a .add.spl file clear the character table when
@@ -9247,7 +9259,7 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 	    spin.si_conv.vc_type = CONV_NONE;
 	    spin.si_region = 1 << i;
 
-	    vim_snprintf((char *)fname, sizeof(fname), "%s.aff", innames[i]);
+	    vim_snprintf((char *)fname, MAXPATHL, "%s.aff", innames[i]);
 	    if (mch_stat((char *)fname, &st) >= 0)
 	    {
 		/* Read the .aff file.  Will init "spin->si_conv" based on the
@@ -9258,7 +9270,7 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 		else
 		{
 		    /* Read the .dic file and store the words in the trees. */
-		    vim_snprintf((char *)fname, sizeof(fname), "%s.dic",
+		    vim_snprintf((char *)fname, MAXPATHL, "%s.dic",
 								  innames[i]);
 		    if (spell_read_dic(&spin, fname, afile[i]) == FAIL)
 			error = TRUE;
@@ -9340,6 +9352,10 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 	    spell_make_sugfile(&spin, wfname);
 
     }
+
+theend:
+    vim_free(fname);
+    vim_free(wfname);
 }
 
 /*
@@ -9392,7 +9408,7 @@ spell_add_word(word, len, bad, idx, undo)
     buf_T	*buf = NULL;
     int		new_spf = FALSE;
     char_u	*fname;
-    char_u	fnamebuf[MAXPATHL];
+    char_u	*fnamebuf = NULL;
     char_u	line[MAXWLEN * 2];
     long	fpos, fpos_next = 0;
     int		i;
@@ -9422,6 +9438,9 @@ spell_add_word(word, len, bad, idx, undo)
 	    EMSG2(_(e_notset), "spellfile");
 	    return;
 	}
+	fnamebuf = alloc(MAXPATHL);
+	if (fnamebuf == NULL)
+	    return;
 
 	for (spf = curwin->w_s->b_p_spf, i = 1; *spf != NUL; ++i)
 	{
@@ -9431,6 +9450,7 @@ spell_add_word(word, len, bad, idx, undo)
 	    if (*spf == NUL)
 	    {
 		EMSGN(_("E765: 'spellfile' does not have %ld entries"), idx);
+		vim_free(fnamebuf);
 		return;
 	    }
 	}
@@ -9442,6 +9462,7 @@ spell_add_word(word, len, bad, idx, undo)
 	if (buf != NULL && bufIsChanged(buf))
 	{
 	    EMSG(_(e_bufloaded));
+	    vim_free(fnamebuf);
 	    return;
 	}
 
@@ -9536,6 +9557,7 @@ spell_add_word(word, len, bad, idx, undo)
 
 	redraw_all_later(SOME_VALID);
     }
+    vim_free(fnamebuf);
 }
 
 /*
@@ -9544,7 +9566,7 @@ spell_add_word(word, len, bad, idx, undo)
     static void
 init_spellfile()
 {
-    char_u	buf[MAXPATHL];
+    char_u	*buf;
     int		l;
     char_u	*fname;
     char_u	*rtp;
@@ -9554,6 +9576,10 @@ init_spellfile()
 
     if (*curwin->w_s->b_p_spl != NUL && curwin->w_s->b_langp.ga_len > 0)
     {
+	buf = alloc(MAXPATHL);
+	if (buf == NULL)
+	    return;
+
 	/* Find the end of the language name.  Exclude the region.  If there
 	 * is a path separator remember the start of the tail. */
 	for (lend = curwin->w_s->b_p_spl; *lend != NUL
@@ -9597,7 +9623,8 @@ init_spellfile()
 				 "/%.*s", (int)(lend - lstart), lstart);
 		}
 		l = (int)STRLEN(buf);
-		fname = LANGP_ENTRY(curwin->w_s->b_langp, 0)->lp_slang->sl_fname;
+		fname = LANGP_ENTRY(curwin->w_s->b_langp, 0)
+							 ->lp_slang->sl_fname;
 		vim_snprintf((char *)buf + l, MAXPATHL - l, ".%s.add",
 			fname != NULL
 			  && strstr((char *)gettail(fname), ".ascii.") != NULL
@@ -9607,6 +9634,8 @@ init_spellfile()
 	    }
 	    aspath = FALSE;
 	}
+
+	vim_free(buf);
     }
 }
 
