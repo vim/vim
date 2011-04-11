@@ -4129,7 +4129,7 @@ iconv_string(vcp, str, slen, unconvlenp, resultlenp)
 	done = to - (char *)result;
     }
 
-    if (resultlenp != NULL)
+    if (resultlenp != NULL && result != NULL)
 	*resultlenp = (int)(to - (char *)result);
     return result;
 }
