@@ -1761,12 +1761,12 @@ prt_find_resource(name, resource)
 {
     char_u	buffer[MAXPATHL + 1];
 
-    STRCPY(resource->name, name);
+    vim_strncpy(resource->name, (char_u *)name, 63);
     /* Look for named resource file in runtimepath */
     STRCPY(buffer, "print");
     add_pathsep(buffer);
-    STRCAT(buffer, name);
-    STRCAT(buffer, ".ps");
+    vim_strcat(buffer, (char_u *)name, MAXPATHL);
+    vim_strcat(buffer, (char_u *)".ps", MAXPATHL);
     resource->filename[0] = NUL;
     return (do_in_runtimepath(buffer, FALSE, prt_resource_name,
 							   resource->filename)

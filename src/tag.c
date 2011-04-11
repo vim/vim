@@ -806,7 +806,7 @@ do_tag(tag, type, count, forceit, verbose)
 		    p = tag_full_fname(&tagp);
 		    if (p == NULL)
 			continue;
-		    STRCPY(fname, p);
+		    vim_strncpy(fname, p, MAXPATHL);
 		    vim_free(p);
 
 		    /*

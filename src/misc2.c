@@ -1647,6 +1647,28 @@ vim_strncpy(to, from, len)
 }
 
 /*
+ * Like strcat(), but make sure the result fits in "tosize" bytes and is
+ * always NUL terminated.
+ */
+    void
+vim_strcat(to, from, tosize)
+    char_u	*to;
+    char_u	*from;
+    size_t	tosize;
+{
+    size_t tolen = STRLEN(to);
+    size_t fromlen = STRLEN(from);
+
+    if (tolen + fromlen + 1 > tosize)
+    {
+	mch_memmove(to + tolen, from, tosize - tolen - 1);
+	to[tosize - 1] = NUL;
+    }
+    else
+	STRCPY(to + tolen, from);
+}
+
+/*
  * Isolate one part of a string option where parts are separated with
  * "sep_chars".
  * The part is copied into "buf[maxlen]".

@@ -8576,8 +8576,8 @@ highlight_list_arg(id, didh, type, iarg, sarg, name)
 		if (iarg & hl_attr_table[i])
 		{
 		    if (buf[0] != NUL)
-			STRCAT(buf, ",");
-		    STRCAT(buf, hl_name_table[i]);
+			vim_strcat(buf, (char_u *)",", 100);
+		    vim_strcat(buf, (char_u *)hl_name_table[i], 100);
 		    iarg &= ~hl_attr_table[i];	    /* don't want "inverse" */
 		}
 	    }

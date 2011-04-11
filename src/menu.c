@@ -1394,7 +1394,8 @@ get_menu_names(xp, idx)
     int		idx;
 {
     static vimmenu_T	*menu = NULL;
-    static char_u	tbuffer[256]; /*hack*/
+#define TBUFFER_LEN 256
+    static char_u	tbuffer[TBUFFER_LEN]; /*hack*/
     char_u		*str;
 #ifdef FEAT_MULTI_LANG
     static  int		should_advance = FALSE;
@@ -1428,11 +1429,11 @@ get_menu_names(xp, idx)
 	{
 #ifdef FEAT_MULTI_LANG
 	    if (should_advance)
-		STRCPY(tbuffer, menu->en_dname);
+		vim_strncpy(tbuffer, menu->en_dname, TBUFFER_LEN - 2);
 	    else
 	    {
 #endif
-		STRCPY(tbuffer, menu->dname);
+		vim_strncpy(tbuffer, menu->dname,  TBUFFER_LEN - 2);
 #ifdef FEAT_MULTI_LANG
 		if (menu->en_dname == NULL)
 		    should_advance = TRUE;

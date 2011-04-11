@@ -6957,7 +6957,7 @@ store_aff_word(spin, word, afflist, affile, ht, xht, condit, flags,
 			    if (ae->ae_add == NULL)
 				*newword = NUL;
 			    else
-				STRCPY(newword, ae->ae_add);
+				vim_strncpy(newword, ae->ae_add, MAXWLEN - 1);
 			    p = word;
 			    if (ae->ae_chop != NULL)
 			    {
@@ -6978,7 +6978,7 @@ store_aff_word(spin, word, afflist, affile, ht, xht, condit, flags,
 			else
 			{
 			    /* suffix: chop/add at the end of the word */
-			    STRCPY(newword, word);
+			    vim_strncpy(newword, word, MAXWLEN - 1);
 			    if (ae->ae_chop != NULL)
 			    {
 				/* Remove chop string. */
@@ -8654,7 +8654,7 @@ spell_make_sugfile(spin, wfname)
      * Write the .sug file.
      * Make the file name by changing ".spl" to ".sug".
      */
-    STRCPY(fname, wfname);
+    vim_strncpy(fname, wfname, MAXPATHL - 1);
     len = (int)STRLEN(fname);
     fname[len - 2] = 'u';
     fname[len - 1] = 'g';
@@ -10261,7 +10261,7 @@ spell_suggest(count)
 
 	    /* The suggested word may replace only part of the bad word, add
 	     * the not replaced part. */
-	    STRCPY(wcopy, stp->st_word);
+	    vim_strncpy(wcopy, stp->st_word, MAXWLEN);
 	    if (sug.su_badlen > stp->st_orglen)
 		vim_strncpy(wcopy + stp->st_wordlen,
 					       sug.su_badptr + stp->st_orglen,
@@ -13162,7 +13162,7 @@ stp_sal_score(stp, su, slang, badsound)
 	pbad = badsound2;
     }
 
-    if (lendiff > 0)
+    if (lendiff > 0 && stp->st_wordlen + lendiff < MAXWLEN)
     {
 	/* Add part of the bad word to the good word, so that we soundfold
 	 * what replaces the bad word. */
@@ -13875,7 +13875,7 @@ check_suggestions(su, gap)
     for (i = gap->ga_len - 1; i >= 0; --i)
     {
 	/* Need to append what follows to check for "the the". */
-	STRCPY(longword, stp[i].st_word);
+	vim_strncpy(longword, stp[i].st_word, MAXWLEN);
 	len = stp[i].st_wordlen;
 	vim_strncpy(longword + len, su->su_badptr + stp[i].st_orglen,
 							       MAXWLEN - len);
@@ -14221,7 +14221,7 @@ spell_soundfold_sal(slang, inword, res)
 	*t = NUL;
     }
     else
-	STRCPY(word, s);
+	vim_strncpy(word, s, MAXWLEN - 1);
 
     smp = (salitem_T *)slang->sl_sal.ga_data;
 

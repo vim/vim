@@ -5096,7 +5096,9 @@ check_more(message, forceit)
 		char_u	buff[IOSIZE];
 
 		if (n == 1)
-		    STRCPY(buff, _("1 more file to edit.  Quit anyway?"));
+		    vim_strncpy(buff,
+			    (char_u *)_("1 more file to edit.  Quit anyway?"),
+								  IOSIZE - 1);
 		else
 		    vim_snprintf((char *)buff, IOSIZE,
 			      _("%d more files to edit.  Quit anyway?"), n);

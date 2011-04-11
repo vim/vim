@@ -3914,14 +3914,12 @@ print_save_msg(buf, nchars)
     }
     else
     {
-	char_u ebuf[BUFSIZ];
+	char_u msgbuf[IOSIZE];
 
-	STRCPY(ebuf, (char_u *)_("E505: "));
-	STRCAT(ebuf, IObuff);
-	STRCAT(ebuf, (char_u *)_("is read-only (add ! to override)"));
-	STRCPY(IObuff, ebuf);
-	nbdebug(("    %s\n", ebuf ));
-	emsg(IObuff);
+	vim_snprintf((char *)msgbuf, IOSIZE,
+		_("E505: %s is read-only (add ! to override)"), IObuff);
+	nbdebug(("    %s\n", msgbuf));
+	emsg(msgbuf);
     }
 }
 

@@ -5725,6 +5725,7 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 	if (shell_style == STYLE_PRINT && !did_find_nul)
 	{
 	    /* If there is a NUL, set did_find_nul, else set check_spaces */
+	    buffer[len] = NUL;
 	    if (len && (int)STRLEN(buffer) < (int)len - 1)
 		did_find_nul = TRUE;
 	    else
@@ -6594,7 +6595,7 @@ do_xterm_trace()
 	    xterm_hints.x = 2;
 	return TRUE;
     }
-    if (mouse_code == NULL)
+    if (mouse_code == NULL || STRLEN(mouse_code) > 45)
     {
 	xterm_trace = 0;
 	return FALSE;
