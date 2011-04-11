@@ -209,8 +209,8 @@ OpenPTY(ttyn)
 #ifdef _SEQUENT_
     fvhangup(s);
 #endif
-    strncpy(PtyName, m, sizeof(PtyName));
-    strncpy(TtyName, s, sizeof(TtyName));
+    vim_strncpy((char_u *)PtyName, (char_u *)m, sizeof(PtyName) - 1);
+    vim_strncpy((char_u *)TtyName, (char_u *)s, sizeof(TtyName) - 1);
     initmaster(f);
     *ttyn = TtyName;
     return f;
@@ -301,7 +301,7 @@ OpenPTY(ttyn)
 	return -1;
     }
     signal(SIGCHLD, sigcld);
-    strncpy(TtyName, m, sizeof(TtyName));
+    vim_strncpy((char_u *)TtyName, (char_u *)m, sizeof(TtyName) - 1);
     initmaster(f);
     *ttyn = TtyName;
     return f;
@@ -326,7 +326,7 @@ OpenPTY(ttyn)
     /* a dumb looking loop replaced by mycrofts code: */
     if ((f = open("/dev/ptc", O_RDWR | O_NOCTTY | O_EXTRA)) < 0)
 	return -1;
-    strncpy(TtyName, ttyname(f), sizeof(TtyName));
+    vim_strncpy((char_u *)TtyName, (char_u *)ttyname(f), sizeof(TtyName) - 1);
     if (geteuid() != ROOT_UID && mch_access(TtyName, R_OK | W_OK))
     {
 	close(f);
