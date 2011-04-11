@@ -853,6 +853,7 @@ eval_init()
 
     init_var_dict(&globvardict, &globvars_var);
     init_var_dict(&vimvardict, &vimvars_var);
+    vimvardict.dv_lock = VAR_FIXED;
     hash_init(&compat_hashtab);
     hash_init(&func_hashtab);
 
@@ -8545,7 +8546,7 @@ f_add(argvars, rettv)
     if (argvars[0].v_type == VAR_LIST)
     {
 	if ((l = argvars[0].vval.v_list) != NULL
-		&& !tv_check_lock(l->lv_lock, (char_u *)"add()")
+		&& !tv_check_lock(l->lv_lock, (char_u *)_("add() argument"))
 		&& list_append_tv(l, &argvars[1]) == OK)
 	    copy_tv(&argvars[0], rettv);
     }
@@ -9946,6 +9947,8 @@ f_extend(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
+    char      *arg_errmsg = N_("extend() argument");
+
     if (argvars[0].v_type == VAR_LIST && argvars[1].v_type == VAR_LIST)
     {
 	list_T		*l1, *l2;
@@ -9955,7 +9958,7 @@ f_extend(argvars, rettv)
 
 	l1 = argvars[0].vval.v_list;
 	l2 = argvars[1].vval.v_list;
-	if (l1 != NULL && !tv_check_lock(l1->lv_lock, (char_u *)"extend()")
+	if (l1 != NULL && !tv_check_lock(l1->lv_lock, (char_u *)_(arg_errmsg))
 		&& l2 != NULL)
 	{
 	    if (argvars[2].v_type != VAR_UNKNOWN)
@@ -9994,7 +9997,7 @@ f_extend(argvars, rettv)
 
 	d1 = argvars[0].vval.v_dict;
 	d2 = argvars[1].vval.v_dict;
-	if (d1 != NULL && !tv_check_lock(d1->dv_lock, (char_u *)"extend()")
+	if (d1 != NULL && !tv_check_lock(d1->dv_lock, (char_u *)_(arg_errmsg))
 		&& d2 != NULL)
 	{
 	    /* Check the third argument. */
@@ -10236,20 +10239,22 @@ filter_map(argvars, rettv, map)
     typval_T	save_key;
     int		rem;
     int		todo;
-    char_u	*ermsg = map ? (char_u *)"map()" : (char_u *)"filter()";
+    char_u	*ermsg = (char_u *)(map ? "map()" : "filter()");
+    char	*arg_errmsg = (map ? N_("map() argument")
+				   : N_("filter() argument"));
     int		save_did_emsg;
     int		idx = 0;
 
     if (argvars[0].v_type == VAR_LIST)
     {
 	if ((l = argvars[0].vval.v_list) == NULL
-		|| (map && tv_check_lock(l->lv_lock, ermsg)))
+		|| tv_check_lock(l->lv_lock, (char_u *)_(arg_errmsg)))
 	    return;
     }
     else if (argvars[0].v_type == VAR_DICT)
     {
 	if ((d = argvars[0].vval.v_dict) == NULL
-		|| (map && tv_check_lock(d->dv_lock, ermsg)))
+		|| tv_check_lock(d->dv_lock, (char_u *)_(arg_errmsg)))
 	    return;
     }
     else
@@ -10286,7 +10291,8 @@ filter_map(argvars, rettv, map)
 		{
 		    --todo;
 		    di = HI2DI(hi);
-		    if (tv_check_lock(di->di_tv.v_lock, ermsg))
+		    if (tv_check_lock(di->di_tv.v_lock,
+						     (char_u *)_(arg_errmsg)))
 			break;
 		    vimvars[VV_KEY].vv_str = vim_strsave(di->di_key);
 		    if (filter_map_one(&di->di_tv, expr, map, &rem) == FAIL
@@ -10305,7 +10311,7 @@ filter_map(argvars, rettv, map)
 
 	    for (li = l->lv_first; li != NULL; li = nli)
 	    {
-		if (tv_check_lock(li->li_tv.v_lock, ermsg))
+		if (tv_check_lock(li->li_tv.v_lock, (char_u *)_(arg_errmsg)))
 		    break;
 		nli = li->li_next;
 		vimvars[VV_KEY].vv_nr = idx;
@@ -12910,7 +12916,7 @@ f_insert(argvars, rettv)
     if (argvars[0].v_type != VAR_LIST)
 	EMSG2(_(e_listarg), "insert()");
     else if ((l = argvars[0].vval.v_list) != NULL
-	    && !tv_check_lock(l->lv_lock, (char_u *)"insert()"))
+	    && !tv_check_lock(l->lv_lock, (char_u *)_("insert() argument")))
     {
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	    before = get_tv_number_chk(&argvars[2], &error);
@@ -14775,13 +14781,14 @@ f_remove(argvars, rettv)
     char_u	*key;
     dict_T	*d;
     dictitem_T	*di;
+    char	*arg_errmsg = N_("remove() argument");
 
     if (argvars[0].v_type == VAR_DICT)
     {
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	    EMSG2(_(e_toomanyarg), "remove()");
 	else if ((d = argvars[0].vval.v_dict) != NULL
-		&& !tv_check_lock(d->dv_lock, (char_u *)"remove() argument"))
+		&& !tv_check_lock(d->dv_lock, (char_u *)_(arg_errmsg)))
 	{
 	    key = get_tv_string_chk(&argvars[1]);
 	    if (key != NULL)
@@ -14801,7 +14808,7 @@ f_remove(argvars, rettv)
     else if (argvars[0].v_type != VAR_LIST)
 	EMSG2(_(e_listdictarg), "remove()");
     else if ((l = argvars[0].vval.v_list) != NULL
-	    && !tv_check_lock(l->lv_lock, (char_u *)"remove() argument"))
+	    && !tv_check_lock(l->lv_lock, (char_u *)_(arg_errmsg)))
     {
 	int	    error = FALSE;
 
@@ -15135,7 +15142,7 @@ f_reverse(argvars, rettv)
     if (argvars[0].v_type != VAR_LIST)
 	EMSG2(_(e_listarg), "reverse()");
     else if ((l = argvars[0].vval.v_list) != NULL
-	    && !tv_check_lock(l->lv_lock, (char_u *)"reverse()"))
+	    && !tv_check_lock(l->lv_lock, (char_u *)_("reverse() argument")))
     {
 	li = l->lv_last;
 	l->lv_first = l->lv_last = NULL;
@@ -16432,7 +16439,8 @@ f_sort(argvars, rettv)
     else
     {
 	l = argvars[0].vval.v_list;
-	if (l == NULL || tv_check_lock(l->lv_lock, (char_u *)"sort()"))
+	if (l == NULL || tv_check_lock(l->lv_lock,
+					     (char_u *)_("sort() argument")))
 	    return;
 	rettv->vval.v_list = l;
 	rettv->v_type = VAR_LIST;
