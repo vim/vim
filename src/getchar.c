@@ -635,11 +635,14 @@ stuffReadbuffLen(s, len)
 /*
  * Stuff "s" into the stuff buffer, leaving special key codes unmodified and
  * escaping other K_SPECIAL and CSI bytes.
+ * Change CR, LF and ESC into a space.
  */
     void
 stuffReadbuffSpec(s)
     char_u	*s;
 {
+    int c;
+
     while (*s != NUL)
     {
 	if (*s == K_SPECIAL && s[1] != NUL && s[2] != NUL)
@@ -649,11 +652,16 @@ stuffReadbuffSpec(s)
 	    s += 3;
 	}
 	else
+	{
 #ifdef FEAT_MBYTE
-	    stuffcharReadbuff(mb_ptr2char_adv(&s));
+	    c = mb_ptr2char_adv(&s);
 #else
-	    stuffcharReadbuff(*s++);
+	    c = *s++;
 #endif
+	    if (c == CAR || c == NL || c == ESC)
+		c = ' ';
+	    stuffcharReadbuff(c);
+	}
     }
 }
 #endif
