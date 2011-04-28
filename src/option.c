@@ -3846,6 +3846,8 @@ set_init_3()
 # ifndef OS2	/* Always use bourne shell style redirection if we reach this */
 	    if (       fnamecmp(p, "sh") == 0
 		    || fnamecmp(p, "ksh") == 0
+		    || fnamecmp(p, "mksh") == 0
+		    || fnamecmp(p, "pdksh") == 0
 		    || fnamecmp(p, "zsh") == 0
 		    || fnamecmp(p, "zsh-beta") == 0
 		    || fnamecmp(p, "bash") == 0
@@ -3853,6 +3855,8 @@ set_init_3()
 		    || fnamecmp(p, "cmd") == 0
 		    || fnamecmp(p, "sh.exe") == 0
 		    || fnamecmp(p, "ksh.exe") == 0
+		    || fnamecmp(p, "mksh.exe") == 0
+		    || fnamecmp(p, "pdksh.exe") == 0
 		    || fnamecmp(p, "zsh.exe") == 0
 		    || fnamecmp(p, "zsh-beta.exe") == 0
 		    || fnamecmp(p, "bash.exe") == 0
