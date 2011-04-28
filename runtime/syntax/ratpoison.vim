@@ -1,8 +1,9 @@
 " Vim syntax file
 " Language:	Ratpoison configuration/commands file ( /etc/ratpoisonrc ~/.ratpoisonrc )
-" Maintainer:	Doug Kearns <djkea2@gus.gscit.monash.edu.au>
-" URL:		http://gus.gscit.monash.edu.au/~djkea2/vim/syntax/ratpoison.vim
-" Last Change:	2005 Oct 06
+" Maintainer:	Magnus Woldrich <m@japh.se>
+" URL:		http://github.com/trapd00r/vim-syntax-ratpoison
+" Last Change:	2011 Apr 11
+" Previous Maintainer:	Doug Kearns <djkea2@gus.gscit.monash.edu.au>
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -94,6 +95,13 @@ syn keyword ratpoisonSetArg	barpadding	contained nextgroup=ratpoisonNumberArg
 syn keyword ratpoisonSetArg	bgcolor
 syn keyword ratpoisonSetArg	border		contained nextgroup=ratpoisonNumberArg
 syn keyword ratpoisonSetArg	fgcolor
+syn keyword ratpoisonSetArg	fwcolor
+syn keyword ratpoisonSetArg	bwcolor
+syn keyword ratpoisonSetArg	historysize
+syn keyword ratpoisonSetArg	historycompaction
+syn keyword ratpoisonSetArg	historyexpansion
+syn keyword ratpoisonSetArg	topkmap
+syn keyword ratpoisonSetArg	barinpadding
 syn keyword ratpoisonSetArg	font
 syn keyword ratpoisonSetArg	framesels
 syn keyword ratpoisonSetArg	inputwidth	contained nextgroup=ratpoisonNumberArg

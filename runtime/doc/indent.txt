@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.3.  Last change: 2011 Mar 18
+*indent.txt*    For Vim version 7.3.  Last change: 2011 Apr 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -472,6 +472,8 @@ assume a 'shiftwidth' of 4.
 
 	*N    Vim searches for unclosed comments at most N lines away.  This
 	      limits the time needed to search for the start of a comment.
+	      If your /* */ comments stop indenting afer N lines this is the
+	      value you will want to change.
 	      (default 70 lines).
 
 	#N    When N is non-zero recognize shell/Perl comments, starting with

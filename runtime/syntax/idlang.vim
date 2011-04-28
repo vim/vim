@@ -1,6 +1,6 @@
 " Interactive Data Language syntax file (IDL, too  [:-)]
 " Maintainer: Aleksandar Jelenak <ajelenak AT yahoo.com>
-" Last change: 2003 Apr 25
+" Last change: 2011 Apr 11
 " Created by: Hermann Rochholz <Hermann.Rochholz AT gmx.de>
 
 " Remove any old syntax stuff hanging around
@@ -113,7 +113,7 @@ syn keyword idlangRoutine EXPAND_PATH EXPINT EXTRAC EXTRACT_SLICE F_CVF
 syn keyword idlangRoutine F_PDF FACTORIAL FFT FILE_CHMOD FILE_DELETE
 syn keyword idlangRoutine FILE_EXPAND_PATH FILE_MKDIR FILE_TEST FILE_WHICH
 syn keyword idlangRoutine FILEPATH FINDFILE FINDGEN FINITE FIX FLICK FLOAT
-syn keyword idlangRoutine FLOOR FLOW3 FLTARR FLUSH FOR FORMAT_AXIS_VALUES
+syn keyword idlangRoutine FLOOR FLOW3 FLTARR FLUSH FORMAT_AXIS_VALUES
 syn keyword idlangRoutine FORWARD_FUNCTION FREE_LUN FSTAT FULSTR FUNCT
 syn keyword idlangRoutine FV_TEST FX_ROOT FZ_ROOTS GAMMA GAMMA_CT
 syn keyword idlangRoutine GAUSS_CVF GAUSS_PDF GAUSS2DFIT GAUSSFIT GAUSSINT

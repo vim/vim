@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2011 Apr 01
+*syntax.txt*	For Vim version 7.3.  Last change: 2011 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -468,18 +468,28 @@ disabled javascript to view closed folds. To use this option, use: >
 Setting html_no_foldcolumn with html_dynamic_folds will automatically set
 html_hover_unfold, because otherwise the folds wouldn't be dynamic.
 
-By default "<pre>" and "</pre>" is used around the text.  This makes it show
-up as you see it in Vim, but without wrapping.	If you prefer wrapping, at the
-risk of making some things look a bit different, use: >
+By default "<pre>" and "</pre>" are used around the text. When 'wrap' is set
+in the window being converted, the CSS 2.0 "white-space:pre-wrap" value is
+used to wrap the text. You can explicitly enable the wrapping with: >
+   :let g:html_pre_wrap = 1
+or disable with >
+   :let g:html_pre_wrap = 0
+This generates HTML that looks very close to the Vim window, but unfortunately
+there can be minor differences such as the lack of a 'showbreak' option in in
+the HTML, or where line breaks can occur.
+
+Another way to obtain text wrapping in the HTML, at the risk of making some
+things look even more different, is to use: >
    :let g:html_no_pre = 1
 This will use <br> at the end of each line and use "&nbsp;" for repeated
-spaces.
+spaces. Doing it this way is more compatible with old browsers, but modern
+browsers support the "white-space" method.
 
-If you do use the "<pre>" tags, <Tab> characters in the text are included in
-the generated output if they will have no effect on the appearance of the
-text and it looks like they are in the document intentionally. This allows for
-the HTML output to be copied and pasted from a browser without losing the
-actual whitespace used in the document.
+If you do stick with the default "<pre>" tags, <Tab> characters in the text
+are included in the generated output if they will have no effect on the
+appearance of the text and it looks like they are in the document
+intentionally. This allows for the HTML output to be copied and pasted from a
+browser without losing the actual whitespace used in the document.
 
 Specifically, <Tab> characters will be included if the 'tabstop' option is set
 to the default of 8, 'expandtab' is not set, and if neither the foldcolumn nor
@@ -502,13 +512,14 @@ inserted lines as with the side-by-side diff, use: >
     :let g:html_whole_filler = 1
 And to go back to displaying up to three lines again: >
     :unlet g:html_whole_filler
-<
-TOhtml uses the current value of 'fileencoding' if set, or 'encoding' if not,
-to determine the charset and 'fileencoding' of the HTML file. In general, this
-works for the encodings mentioned specifically by name in |encoding-names|, but
-TOhtml will only automatically use those encodings which are widely supported.
-However, you can override this to support specific encodings that may not be
-automatically detected by default.
+
+For most buffers, TOhtml uses the current value of 'fileencoding' if set, or
+'encoding' if not, to determine the charset and 'fileencoding' of the HTML
+file. 'encoding' is always used for certain 'buftype' values. In general, this
+works for the encodings mentioned specifically by name in |encoding-names|,
+but TOhtml will only automatically use those encodings which are widely
+supported. However, you can override this to support specific encodings that
+may not be automatically detected by default.
 
 To overrule all automatic charset detection, set g:html_use_encoding to the
 name of the charset to be used. TOhtml will try to determine the appropriate

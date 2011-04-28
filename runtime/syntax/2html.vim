@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2011 Jan 06
+" Last Change: 2011 Apr 05
 "
 " Additional contributors:
 "
@@ -32,6 +32,13 @@ else
 endif
 
 let s:settings = tohtml#GetUserSettings()
+
+" Whitespace
+if s:settings.pre_wrap
+  let s:whitespace = "white-space: pre-wrap; "
+else
+  let s:whitespace = ""
+endif
 
 " When not in gui we can only guess the colors.
 if has("gui_running")
@@ -1048,10 +1055,14 @@ if s:settings.use_css
   if s:settings.no_pre
     execute "normal! A\nbody { color: " . s:fgc . "; background-color: " . s:bgc . "; font-family: ". s:htmlfont ."; }\e"
   else
-    execute "normal! A\npre { font-family: ". s:htmlfont ."; color: " . s:fgc . "; background-color: " . s:bgc . "; }\e"
+    execute "normal! A\npre { " . s:whitespace . "font-family: ". s:htmlfont ."; color: " . s:fgc . "; background-color: " . s:bgc . "; }\e"
     yank
     put
     execute "normal! ^cwbody\e"
+    " body should not have the wrap formatting, only the pre section
+    if s:whitespace != ''
+      exec 's#'.s:whitespace
+    endif
   endif
 else
   execute '%s:<body>:<body bgcolor="' . s:bgc . '" text="' . s:fgc . '">\r<font face="'. s:htmlfont .'">'
@@ -1160,7 +1171,7 @@ let &l:winfixheight = s:old_winfixheight
 let &ls=s:ls
 
 " Save a little bit of memory (worth doing?)
-unlet s:htmlfont
+unlet s:htmlfont s:whitespace
 unlet s:old_et s:old_paste s:old_icon s:old_report s:old_title s:old_search
 unlet s:old_magic s:old_more s:old_fdm s:old_fen s:old_winheight
 unlet! s:old_isprint

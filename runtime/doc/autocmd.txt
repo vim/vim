@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.3.  Last change: 2010 Jul 22
+*autocmd.txt*   For Vim version 7.3.  Last change: 2011 Apr 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -786,7 +786,10 @@ TermChanged			After the value of 'term' has changed.  Useful
 TermResponse			After the response to |t_RV| is received from
 				the terminal.  The value of |v:termresponse|
 				can be used to do things depending on the
-				terminal version.
+				terminal version.  Note that this event may be
+				triggered halfway executing another event,
+				especially if file I/O, a shell command or
+				anything else that takes time is involved.
 							*User*
 User				Never executed automatically.  To be used for
 				autocommands that are only executed with

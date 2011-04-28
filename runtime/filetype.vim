@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2011 Apr 01
+" Last Change:	2011 Apr 28
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -123,7 +123,7 @@ au BufNewFile,BufRead *.am
 	\ if expand("<afile>") !~? 'Makefile.am\>' | setf elf | endif
 
 " ALSA configuration
-au BufNewFile,BufRead ~/.asoundrc,/usr/share/alsa/alsa.conf,*/etc/asound.conf	setf alsaconf
+au BufNewFile,BufRead .asoundrc,*/usr/share/alsa/alsa.conf,*/etc/asound.conf setf alsaconf
 
 " Arc Macro Language
 au BufNewFile,BufRead *.aml			setf aml
@@ -156,7 +156,7 @@ au BufNewFile,BufRead *.asp
 	\ endif
 
 " Grub (must be before catch *.lst)
-au BufNewFile,BufRead /boot/grub/menu.lst,/boot/grub/grub.conf,*/etc/grub.conf	setf grub
+au BufNewFile,BufRead */boot/grub/menu.lst,*/boot/grub/grub.conf,*/etc/grub.conf setf grub
 
 " Assembly (all kinds)
 " *.lst is not pure assembly, it has two extra columns (address, byte codes)
@@ -316,9 +316,6 @@ endfunc
 
 " Calendar
 au BufNewFile,BufRead calendar			setf calendar
-au BufNewFile,BufRead */.calendar/*,
-	\*/share/calendar/*/calendar.*,*/share/calendar/calendar.*
-	\					call s:StarSetf('calendar')
 
 " C#
 au BufNewFile,BufRead *.cs			setf cs
@@ -330,7 +327,7 @@ au BufNewFile,BufRead *.cabal			setf cabal
 au BufNewFile,BufRead *.toc			setf cdrtoc
 
 " Cdrdao config
-au BufNewFile,BufRead */etc/cdrdao.conf,*/etc/defaults/cdrdao,*/etc/default/cdrdao,~/.cdrdao	setf cdrdaoconf
+au BufNewFile,BufRead */etc/cdrdao.conf,*/etc/defaults/cdrdao,*/etc/default/cdrdao,.cdrdao	setf cdrdaoconf
 
 " Cfengine
 au BufNewFile,BufRead cfengine.conf		setf cfengine
@@ -487,7 +484,7 @@ au BufNewFile,BufRead *.prg
 au BufNewFile,BufRead CMakeLists.txt,*.cmake,*.cmake.in		setf cmake
 
 " Cmusrc
-au BufNewFile,BufRead ~/.cmus/{autosave,rc,command-history,*.theme} setf cmusrc
+au BufNewFile,BufRead */.cmus/{autosave,rc,command-history,*.theme} setf cmusrc
 au BufNewFile,BufRead */cmus/{rc,*.theme}			setf cmusrc
 
 " Cobol
@@ -557,6 +554,9 @@ au BufNewFile,BufRead */etc/apt/sources.list.d/*.list	setf debsources
 
 " Deny hosts
 au BufNewFile,BufRead denyhosts.conf		setf denyhosts
+
+" dnsmasq(8) configuration files
+au BufNewFile,BufRead dnsmasq.conf		setf dnsmasq
 
 " ROCKLinux package description
 au BufNewFile,BufRead *.desc			setf desc
@@ -728,14 +728,14 @@ au BufNewFile,BufRead *.mo,*.gdmo		setf gdmo
 au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 
 " Git
-autocmd BufNewFile,BufRead *.git/COMMIT_EDITMSG setf gitcommit
-autocmd BufNewFile,BufRead *.git/config,.gitconfig,.gitmodules setf gitconfig
-autocmd BufNewFile,BufRead git-rebase-todo      setf gitrebase
-autocmd BufNewFile,BufRead .msg.[0-9]*
+au BufNewFile,BufRead *.git/COMMIT_EDITMSG setf gitcommit
+au BufNewFile,BufRead *.git/config,.gitconfig,.gitmodules setf gitconfig
+au BufNewFile,BufRead git-rebase-todo      setf gitrebase
+au BufNewFile,BufRead .msg.[0-9]*
       \ if getline(1) =~ '^From.*# This line is ignored.$' |
       \   setf gitsendemail |
       \ endif
-autocmd BufNewFile,BufRead *.git/**
+au BufNewFile,BufRead *.git/**
       \ if getline(1) =~ '^\x\{40\}\>\|^ref: ' |
       \   setf git |
       \ endif
@@ -749,7 +749,10 @@ au BufNewFile,BufRead *.gp,.gprc		setf gp
 " GPG
 au BufNewFile,BufRead */.gnupg/options		setf gpg
 au BufNewFile,BufRead */.gnupg/gpg.conf		setf gpg
-au BufNewFile,BufRead /usr/**/gnupg/options.skel setf gpg
+au BufNewFile,BufRead */usr/**/gnupg/options.skel setf gpg
+
+" gnash(1) configuration files
+au BufNewFile,BufRead gnashrc,.gnashrc,gnashpluginrc,.gnashpluginrc setf gnash
 
 " Gnuplot scripts
 au BufNewFile,BufRead *.gpi			setf gnuplot
@@ -980,7 +983,7 @@ au BufNewFile,BufRead lftp.conf,.lftprc,*lftp/rc	setf lftp
 au BufNewFile,BufRead *.ll			setf lifelines
 
 " Lilo: Linux loader
-au BufNewFile,BufRead lilo.conf*		call s:StarSetf('lilo')
+au BufNewFile,BufRead lilo.conf			setf lilo
 
 " Lisp (*.el = ELisp, *.cl = Common Lisp, *.jl = librep Lisp)
 if has("fname_case")
@@ -1103,7 +1106,7 @@ au BufNewFile,BufRead *.mel			setf mel
 au BufNewFile,BufRead *.hgrc,*hgrc		setf cfg
 
 " Messages (logs mostly)
-autocmd BufNewFile,BufRead */log/{auth,cron,daemon,debug,kern,lpr,mail,messages,news/news,syslog,user}{,.log,.err,.info,.warn,.crit,.notice}{,.*[0-9]*} setf messages
+au BufNewFile,BufRead */log/{auth,cron,daemon,debug,kern,lpr,mail,messages,news/news,syslog,user}{,.log,.err,.info,.warn,.crit,.notice}{,.[0-9]*,-[0-9]*} setf messages
 
 " Metafont
 au BufNewFile,BufRead *.mf			setf mf
@@ -1159,11 +1162,7 @@ au BufNewFile,BufRead *.isc,*.monk,*.ssc,*.tsc	setf monk
 au BufNewFile,BufRead *.moo			setf moo
 
 " Modconf
-au BufNewFile,BufRead */etc/modules.conf,*/etc/modules,*/etc/conf.modules	setf modconf
-au BufNewFile,BufRead */etc/modutils/*
-	\ if executable(expand("<afile>")) != 1
-	\|  call s:StarSetf('modconf')
-	\|endif
+au BufNewFile,BufRead */etc/modules.conf,*/etc/modules,*/etc/conf.modules setf modconf
 
 " Mplayer config
 au BufNewFile,BufRead mplayer.conf,*/.mplayer/config	setf mplayerconf
@@ -1179,6 +1178,9 @@ au BufNewFile,BufRead *.msql			setf msql
 
 " Mysql
 au BufNewFile,BufRead *.mysql			setf mysql
+
+" Mutt setup files (must be before catch *.rc)
+au BufNewFile,BufRead */etc/Muttrc.d/*		call s:StarSetf('muttrc')
 
 " M$ Resource files
 au BufNewFile,BufRead *.rc			setf rc
@@ -1588,8 +1590,7 @@ func! s:FTr()
 endfunc
 
 " Remind
-au BufNewFile,BufRead .reminders*		call s:StarSetf('remind')
-au BufNewFile,BufRead *.remind,*.rem		setf remind
+au BufNewFile,BufRead .reminders,*.remind,*.rem		setf remind
 
 " Resolv.conf
 au BufNewFile,BufRead resolv.conf		setf resolv
@@ -2230,7 +2231,7 @@ au BufEnter *.xpm2				setf xpm2
 " XFree86 config
 au BufNewFile,BufRead XF86Config
 	\ if getline(1) =~ '\<XConfigurator\>' |
-	\   let b:xf86c_xfree86_version = 3 |
+	\   let b:xf86conf_xfree86_version = 3 |
 	\ endif |
 	\ setf xf86conf
 au BufNewFile,BufRead */xorg.conf.d/*.conf
@@ -2386,6 +2387,11 @@ au BufNewFile,BufRead bzr_log.*			setf bzr
 " BIND zone
 au BufNewFile,BufRead */named/db.*,*/bind/db.*	call s:StarSetf('bindzone')
 
+" Calendar
+au BufNewFile,BufRead */.calendar/*,
+	\*/share/calendar/*/calendar.*,*/share/calendar/calendar.*
+	\					call s:StarSetf('calendar')
+
 " Changelog
 au BufNewFile,BufRead [cC]hange[lL]og*
 	\ if getline(1) =~ '; urgency='
@@ -2396,6 +2402,9 @@ au BufNewFile,BufRead [cC]hange[lL]og*
 
 " Crontab
 au BufNewFile,BufRead crontab,crontab.*,*/etc/cron.d/*		call s:StarSetf('crontab')
+
+" dnsmasq(8) configuration
+au BufNewFile,BufRead */etc/dnsmasq.d/*		call s:StarSetf('dnsmasq')
 
 " Dracula
 au BufNewFile,BufRead drac.*			call s:StarSetf('dracula')
@@ -2412,7 +2421,7 @@ au BufNewFile,BufRead *fvwm2rc*
 	\|endif
 
 " Gedcom
-au BufNewFile,BufRead /tmp/lltmp*		call s:StarSetf('gedcom')
+au BufNewFile,BufRead */tmp/lltmp*		call s:StarSetf('gedcom')
 
 " GTK RC
 au BufNewFile,BufRead .gtkrc*,gtkrc*		call s:StarSetf('gtkrc')
@@ -2429,6 +2438,9 @@ au! BufNewFile,BufRead *jarg*
 " Kconfig
 au BufNewFile,BufRead Kconfig.*			call s:StarSetf('kconfig')
 
+" Lilo: Linux loader
+au BufNewFile,BufRead lilo.conf*		call s:StarSetf('lilo')
+
 " Logcheck
 au BufNewFile,BufRead */etc/logcheck/*.d*/*	call s:StarSetf('logcheck')
 
@@ -2442,6 +2454,10 @@ au BufNewFile,BufRead [rR]akefile*		call s:StarSetf('ruby')
 au BufNewFile,BufRead mutt[[:alnum:]._-]\{6\}	setf mail
 
 " Modconf
+au BufNewFile,BufRead */etc/modutils/*
+	\ if executable(expand("<afile>")) != 1
+	\|  call s:StarSetf('modconf')
+	\|endif
 au BufNewFile,BufRead */etc/modprobe.*		call s:StarSetf('modconf')
 
 " Mutt setup file
@@ -2463,6 +2479,9 @@ au BufNewFile,BufRead *termcap*
 	\ if !did_filetype()
 	\|  let b:ptcap_type = "term" | call s:StarSetf('ptcap')
 	\|endif
+
+" Remind
+au BufNewFile,BufRead .reminders*		call s:StarSetf('remind')
 
 " Vim script
 au BufNewFile,BufRead *vimrc*			call s:StarSetf('vim')

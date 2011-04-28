@@ -1,6 +1,6 @@
 " Vim autoload file for the tohtml plugin.
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2011 Jan 05
+" Last Change: 2011 Apr 05
 "
 " Additional contributors:
 "
@@ -16,7 +16,7 @@ set cpo-=C
 " Automatically find charsets from all encodings supported natively by Vim. With
 " the 8bit- and 2byte- prefixes, Vim can actually support more encodings than
 " this. Let the user specify these however since they won't be supported on
-" every system. TODO: how? g:html_charsets and g:html_encodings?
+" every system.
 "
 " Note, not all of Vim's supported encodings have a charset to use.
 "
@@ -312,8 +312,9 @@ func! tohtml#Convert2HTML(line1, line2) "{{{
       " figure out whether current charset and encoding will work, if not
       " default to UTF-8
       if !exists('g:html_use_encoding') &&
-	    \ (&l:fileencoding!='' && &l:fileencoding!=s:settings.vim_encoding ||
-	    \  &l:fileencoding=='' &&       &encoding!=s:settings.vim_encoding)
+	    \ (((&l:fileencoding=='' || (&l:buftype!='' && &l:buftype!=?'help'))
+	    \      && &encoding!=?s:settings.vim_encoding)
+	    \ || &l:fileencoding!='' && &l:fileencoding!=?s:settings.vim_encoding)
 	echohl WarningMsg
 	echomsg "TOhtml: mismatched file encodings in Diff buffers, using UTF-8"
 	echohl None
@@ -603,6 +604,7 @@ func! tohtml#GetUserSettings() "{{{
     call tohtml#GetOption(user_settings,    'no_progress', !has("statusline") )
     call tohtml#GetOption(user_settings,  'diff_one_file', 0 )
     call tohtml#GetOption(user_settings,   'number_lines', &number )
+    call tohtml#GetOption(user_settings,       'pre_wrap', &wrap )
     call tohtml#GetOption(user_settings,        'use_css', 1 )
     call tohtml#GetOption(user_settings, 'ignore_conceal', 0 )
     call tohtml#GetOption(user_settings, 'ignore_folding', 0 )
@@ -641,7 +643,13 @@ func! tohtml#GetUserSettings() "{{{
     " aren't allowed inside a <pre> block
     if !user_settings.use_css
       let user_settings.no_pre = 1
-    endif "}}}
+    endif
+
+    " pre_wrap doesn't do anything if not using pre or not using CSS
+    if user_settings.no_pre || !user_settings.use_css
+      let user_settings.pre_wrap=0
+    endif
+    "}}}
 
     " set up expand_tabs option after all the overrides so we know the
     " appropriate defaults {{{
@@ -669,9 +677,16 @@ func! tohtml#GetUserSettings() "{{{
       endif
     else
       " Figure out proper MIME charset from 'fileencoding' if possible
-      if &l:fileencoding != ''
-	let user_settings.vim_encoding = &l:fileencoding
-	call tohtml#CharsetFromEncoding(user_settings)
+      if &l:fileencoding != '' 
+	" If the buffer is not a "normal" type, the 'fileencoding' value may not
+	" be trusted; since the buffer should not be written the fileencoding is
+	" not intended to be used.
+	if &l:buftype=='' || &l:buftype==?'help'
+	  let user_settings.vim_encoding = &l:fileencoding
+	  call tohtml#CharsetFromEncoding(user_settings)
+	else
+	  let user_settings.encoding = '' " trigger detection using &encoding
+	endif
       endif
 
       " else from 'encoding' if possible

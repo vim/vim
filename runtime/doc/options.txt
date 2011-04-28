@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2011 Mar 22
+*options.txt*	For Vim version 7.3.  Last change: 2011 Apr 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5907,9 +5907,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	For Unix the default it "| tee".  The stdout of the compiler is saved
 	in a file and echoed to the screen.  If the 'shell' option is "csh" or
 	"tcsh" after initializations, the default becomes "|& tee".  If the
-	'shell' option is "sh", "ksh", "zsh" or "bash" the default becomes
-	"2>&1| tee".  This means that stderr is also included.  Before using
-	the 'shell' option a path is removed, thus "/bin/sh" uses "sh".
+	'shell' option is "sh", "ksh", "mksh", "pdksh", "zsh" or "bash" the
+	default becomes "2>&1| tee".  This means that stderr is also included.
+	Before using the 'shell' option a path is removed, thus "/bin/sh" uses
+	"sh".
 	The initialization of this option is done after reading the ".vimrc"
 	and the other initializations, so that when the 'shell' option is set
 	there, the 'shellpipe' option changes automatically, unless it was

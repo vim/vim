@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	HTML and XHTML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Oct 19
+" Last Change:	2011 Apr 28
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -285,6 +285,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 				let cssfiles = styletable + secimportfiles
 				let classes = []
 				for file in cssfiles
+				  	let classlines = []
 					if filereadable(file)
 						let stylesheet = readfile(file)
 						let stylefile = join(stylesheet, ' ')

@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.3.  Last change: 2011 Feb 25
+*pattern.txt*   For Vim version 7.3.  Last change: 2011 Apr 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -650,6 +650,13 @@ overview.
 	position where "bar" matches, "foo" does not match.  To avoid matching
 	"foobar" you could use "\(foo\)\@!...bar", but that doesn't match a
 	bar at the start of a line.  Use "\(foo\)\@<!bar".
+
+	Useful example: to find "foo" in a line that does not contain "bar": >
+		/^\%(.*bar\)\@!.*\zsfoo
+<	This pattern first checks that there is not a single position in the
+	line where "bar" matches.  If ".*bar" matches somewhere the \@! will
+	reject the pattern.  When there is no match any "foo" will be found.
+	The "\zs" is to have the match start just before "foo".
 
 							*/\@<=*
 \@<=	Matches with zero width if the preceding atom matches just before what

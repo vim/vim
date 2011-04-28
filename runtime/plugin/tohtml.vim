@@ -1,11 +1,20 @@
 " Vim plugin for converting a syntax highlighted file to HTML.
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2011 Jan 06
+" Last Change: 2011 Apr 09
 "
 " The core of the code is in $VIMRUNTIME/autoload/tohtml.vim and
 " $VIMRUNTIME/syntax/2html.vim
 "
 " TODO:
+"   * Options for generating the CSS in external style sheets. New :TOcss
+"     command to convert the current color scheme into a (mostly) generic CSS
+"     stylesheet which can be re-used. Alternate stylesheet support?
+"   * Pull in code from http://www.vim.org/scripts/script.php?script_id=3113 :
+"	- listchars support
+"	- full-line background highlight
+"	- other?
+"   * Font auto-detection similar to
+"     http://www.vim.org/scripts/script.php?script_id=2384
 "   * Explicitly trigger IE8+ Standards Mode?
 "   * Make it so deleted lines in a diff don't create side-scrolling
 "   * Restore open/closed folds and cursor position after processing each file
@@ -19,7 +28,12 @@
 "
 "
 " Changelog:
-"   7.3_v8 (this version): Add html_expand_tabs option to allow leaving tab
+"   7.3_v9 (this version): Add html_pre_wrap option active with html_use_css and
+"                          without html_no_pre, default value same as 'wrap'
+"                          option, (Andy Spencer). Don't use 'fileencoding' for
+"                          converted document encoding if 'buftype' indicates a
+"                          special buffer which isn't written.
+"   7.3_v8 (85c5a72551e2): Add html_expand_tabs option to allow leaving tab
 "                          characters in generated output (Andy Spencer). Escape
 "                          text that looks like a modeline so Vim doesn't use
 "                          anything in the converted HTML as a modeline.
@@ -61,7 +75,7 @@
 if exists('g:loaded_2html_plugin')
   finish
 endif
-let g:loaded_2html_plugin = 'vim7.3_v8'
+let g:loaded_2html_plugin = 'vim7.3_v9'
 
 " Define the :TOhtml command when:
 " - 'compatible' is not set

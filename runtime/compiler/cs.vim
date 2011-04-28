@@ -1,7 +1,8 @@
 " Vim compiler file
-" Compiler:	ms C#
-" Maintainer:	Joseph H. Yao (hyao@sina.com)
-" Last Change:	2004 Mar 27
+" Compiler:	Microsoft Visual Studio C#
+" Maintainer:	Zhou YiChao (broken.zhou@gmail.com)
+" Previous Maintainer:	Joseph H. Yao (hyao@sina.com)
+" Last Change:	2011 Apr 21
 
 if exists("current_compiler")
   finish
@@ -12,8 +13,9 @@ if exists(":CompilerSet") != 2		" older Vim always used :setlocal
   command -nargs=* CompilerSet setlocal <args>
 endif
 
-" default errorformat
 CompilerSet errorformat&
+CompilerSet errorformat+=%f(%l\\,%v):\ %t%*[^:]:\ %m,
+            \%trror%*[^:]:\ %m,
+            \%tarning%*[^:]:\ %m
 
-" default make
 CompilerSet makeprg=csc\ %

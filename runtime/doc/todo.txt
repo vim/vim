@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2011 Apr 01
+*todo.txt*      For Vim version 7.3.  Last change: 2011 Apr 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,14 +30,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Improvement patch for filetype.vim. (Thilo Six, 2011 Mar 19)
+Go through more coverity reports.
 
-Patch to recognize more files as log files. (Mathieu Parent, 2011 Jan 14)
+Patch for behavior of :cwindow. (Ingo Karkat, 2011 Apr 15)
 
-Two patches for xxd. (Florian Zumbiehl, 2011 Jan 11)
-Two updates for second one Jan 12.
-
-Go through new coverity reports.
+Configure fix for finding exctags. (Hong Xu, 2011 Aprl 2)
 
 When 'colorcolumn' is set locally to a window, ":new" opens a window with the
 same highlighting but 'colorcolumn' is empty. (Tyru, 2010 Nov 15)
@@ -45,10 +42,29 @@ Patch by Christian Brabandt, 2011 Feb 13 (but move further down).
 
 Patch for configure related to Ruby on Mac OS X. (Bjorn Winckler, 2011 Jan 14)
 
+Patch to make mkdir() work properly for different encodings. (Yukihiro
+Nakadaira, 2011 Apr 23)
+
+Updated PHP syntax file. (Jason Woofenden, 2011 Apr 22)
+
+ASCII Vim logo's (Erling Westenvik, 2011 Apr 19)  Add to website.
+
+Crash in autocomplete, valgrind log. (Greg Weber, 2011 Apr 22)
+
+Patch for static code analysis errors in riscOS. (Dominique Pelle, 2010 Dec 3)
+
 Patch to set v:register on startup. (Ingo Karkat, 2011 Jan 16)
+
+Risc OS gui has obvious errors.  Drop it?
 
 Patch to set v:register default depending on "unnamed" in 'clipboard'. (Ingo
 Karkat, 2011 Jan 16)
+
+Patch to add 'cscoperelative'. (Raghavendra Prabhu, 2011 Apr 18)
+
+New syntax file for dnsmasq. (Thilo Six, 2011 Apr 18)
+
+Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
 Patch for:
     InsertCharPre   - user typed character Insert mode, before inserting the
@@ -118,6 +134,21 @@ only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
 21, Ben Fritz, 2010 Sep 14)
 
 Bug in repeating Visual "u". (Lawrence Kesteloot, 2010 Dec 20)
+
+In GTK Gvim, setting 'lines' and 'columns' to 99999 causes a crash (Tony
+Mechelynck, 2011 Apr 25).  Can reproduce the crash sometimes:
+   gvim -N -u NONE --cmd 'set lines=99999 columns=99999'
+(gvim:25968): Gdk-WARNING **: Native Windows wider or taller than 65535 pixels are not supported
+The program 'gvim' received an X Window System error.
+This probably reflects a bug in the program.
+The error was 'RenderBadPicture (invalid Picture parameter)'.
+  (Details: serial 313 error_code 161 request_code 149 minor_code 8)
+  (Note to programmers: normally, X errors are reported asynchronously;
+   that is, you will receive the error a while after causing it.
+   To debug your program, run it with the --sync command line
+   option to change this behavior. You can then get a meaningful
+   backtrace from your debugger if you break on the gdk_x_error() function.)
+Check that number of pixels doesn't go above 65535?
 
 CursorHold repeats typed key when it's the start of a mapping.
 (Will Gray, 2011 Mar 23)
@@ -203,8 +234,6 @@ Version of netbeans.c for use with MacVim. (Kazuki Sakamoto, 2010 Nov 18)
 7.3.014 changed how backslash at end of line works, but still get a NUL when
 there is one backslash. (Ray Frush, 2010 Nov 18)  What does the original ex
 do?
-
-":find" completion does not escape space in directory name. (Isz, 2010 Nov 2)
 
 Searching mixed with Visual mode doesn't redraw properly. (James Vega, 2010 Nov
 22)
@@ -410,8 +439,6 @@ Problem with stop directory in findfile(). (Adam Simpkins, 2009 Aug 26)
 Undo problem: line not removed as expected when using setline() from Insert
 mode. (Israel Chauca, 2010 May 13, more in second msg)
 Break undo when CTRL-R = changes the text?  Or save more lines?
-
-Patch for static code analysis errors in riscOS. (Dominique Pelle, 2010 Dec 3)
 
 Patch for better #if 0 syntax highlighting for C code. (Ben Schmidt, 2011 Jan
 20)
@@ -1401,9 +1428,6 @@ no search at that position for another match. (Lukas Mai, 2008 April 11)
 In gvim the backspace key produces a backspace character, but on Linux the
 VERASE key is Delete.  Set VERASE to Backspace? (patch by Stephane Chazelas,
 2007 Oct 16)
-
-When entering a C /* comment, after typing <Enter> for 70 times the indent
-disappears. (Vincent Beffara, 2008 Jul 3)
 
 TermResponse autocommand isn't always triggered when using vimdiff. (Aron
 Griffis, 2007 Sep 19)
@@ -3768,6 +3792,7 @@ Insert mode:
 7   Use CTRL-G <count> to repeat what follows.  Useful for inserting a
     character multiple times or repeating CTRL-Y.
 -   Make 'revins' work in Replace mode.
+9   Can't use multi-byte characters for 'matchpairs'.
 7   Use 'matchpairs' for 'showmatch': When inserting a character check if it
     appears in the rhs of 'matchpairs'.
 -   In Insert mode (and command line editing?): Allow undo of the last typed
