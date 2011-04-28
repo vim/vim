@@ -3505,7 +3505,7 @@ init_homedir()
     if (enc_utf8 && var != NULL)
     {
 	int	len;
-	char_u  *pp;
+	char_u  *pp = NULL;
 
 	/* Convert from active codepage to UTF-8.  Other conversions are
 	 * not done, because they would fail for non-ASCII characters. */
@@ -3872,11 +3872,13 @@ expand_env_esc(srcp, dst, dstlen, esc, one, startstr)
  * Vim's version of getenv().
  * Special handling of $HOME, $VIM and $VIMRUNTIME.
  * Also does ACP to 'enc' conversion for Win32.
+ * "mustfree" is set to TRUE when returned is allocated, it must be
+ * initialized to FALSE by the caller.
  */
     char_u *
 vim_getenv(name, mustfree)
     char_u	*name;
-    int		*mustfree;	/* set to TRUE when returned is allocated */
+    int		*mustfree;
 {
     char_u	*p;
     char_u	*pend;
@@ -3898,7 +3900,7 @@ vim_getenv(name, mustfree)
 	if (enc_utf8)
 	{
 	    int	    len;
-	    char_u  *pp;
+	    char_u  *pp = NULL;
 
 	    /* Convert from active codepage to UTF-8.  Other conversions are
 	     * not done, because they would fail for non-ASCII characters. */
@@ -3942,7 +3944,7 @@ vim_getenv(name, mustfree)
 	    if (enc_utf8)
 	    {
 		int	len;
-		char_u  *pp;
+		char_u  *pp = NULL;
 
 		/* Convert from active codepage to UTF-8.  Other conversions
 		 * are not done, because they would fail for non-ASCII
@@ -3950,7 +3952,7 @@ vim_getenv(name, mustfree)
 		acp_to_enc(p, (int)STRLEN(p), &pp, &len);
 		if (pp != NULL)
 		{
-		    if (mustfree)
+		    if (*mustfree)
 			vim_free(p);
 		    p = pp;
 		    *mustfree = TRUE;
