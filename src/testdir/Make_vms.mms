@@ -4,7 +4,7 @@
 # Authors:	Zoltan Arpadffy, <arpadffy@polarhome.com>
 #		Sandor Kopanyi,  <sandor.kopanyi@mailbox.hu>
 #
-# Last change:  2010 Nov 10
+# Last change:  2011 Mar 03
 #
 # This has been tested on VMS 6.2 to 8.3 on DEC Alpha, VAX and IA64.
 # Edit the lines in the Configuration section below to select.
@@ -74,7 +74,8 @@ SCRIPT = test1.out  test2.out  test3.out  test4.out  test5.out  \
 	 test56.out test57.out test60.out \
 	 test61.out test62.out test63.out test64.out test65.out \
 	 test66.out test67.out test68.out test69.out \
-	 test71.out test72.out test74.out test75.out test76.out
+	 test71.out test72.out test74.out test75.out test76.out \
+	 test77.out
 
 # Known problems:
 # Test 30: a problem around mac format - unknown reason
