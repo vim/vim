@@ -1315,6 +1315,35 @@ int main ()
 }
 
 STARTTEST
+:set cino=(0,ts
+2kdd=][
+ENDTEST
+
+void func(int a
+#if defined(FOO)
+		  , int b
+		  , int c
+#endif
+		 )
+{
+}
+
+STARTTEST
+:set cino=(0
+2kdd=][
+ENDTEST
+
+void
+func(int a
+#if defined(FOO)
+		  , int b
+		  , int c
+#endif
+		 )
+{
+}
+
+STARTTEST
 :g/^STARTTEST/.,/^ENDTEST/d
 :1;/start of AUTO/,$wq! test.out
 ENDTEST

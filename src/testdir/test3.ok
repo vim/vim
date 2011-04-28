@@ -1183,3 +1183,24 @@ int main ()
 		foo;
 }
 
+
+void func(int a
+#if defined(FOO)
+		  , int b
+		  , int c
+#endif
+		 )
+{
+}
+
+
+	void
+func(int a
+#if defined(FOO)
+	 , int b
+	 , int c
+#endif
+	)
+{
+}
+
