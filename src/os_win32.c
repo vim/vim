@@ -2645,25 +2645,44 @@ mch_isdir(char_u *name)
     int
 mch_is_linked(char_u *fname)
 {
+    BY_HANDLE_FILE_INFORMATION info;
+
+    return win32_fileinfo(fname, &info) == FILEINFO_OK
+						   && info.nNumberOfLinks > 1;
+}
+
+/*
+ * Get the by-handle-file-information for "fname".
+ * Returns FILEINFO_OK when OK.
+ * returns FILEINFO_ENC_FAIL when enc_to_utf16() failed.
+ * Returns FILEINFO_READ_FAIL when CreateFile() failed.
+ * Returns FILEINFO_INFO_FAIL when GetFileInformationByHandle() failed.
+ */
+    int
+win32_fileinfo(char_u *fname, BY_HANDLE_FILE_INFORMATION *info)
+{
     HANDLE	hFile;
-    int		res = 0;
-    BY_HANDLE_FILE_INFORMATION inf;
+    int		res = FILEINFO_READ_FAIL;
 #ifdef FEAT_MBYTE
     WCHAR	*wn = NULL;
 
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
 	wn = enc_to_utf16(fname, NULL);
+	if (wn == NULL)
+	    res = FILEINFO_ENC_FAIL;
+    }
     if (wn != NULL)
     {
 	hFile = CreateFileW(wn,		/* file name */
 		    GENERIC_READ,	/* access mode */
-		    0,			/* share mode */
+		    FILE_SHARE_READ | FILE_SHARE_WRITE,	/* share mode */
 		    NULL,		/* security descriptor */
 		    OPEN_EXISTING,	/* creation disposition */
-		    0,			/* file attributes */
+		    FILE_FLAG_BACKUP_SEMANTICS,	/* file attributes */
 		    NULL);		/* handle to template file */
 	if (hFile == INVALID_HANDLE_VALUE
-		&& GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
+			      && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
 	{
 	    /* Retry with non-wide function (for Windows 98). */
 	    vim_free(wn);
@@ -2674,17 +2693,18 @@ mch_is_linked(char_u *fname)
 #endif
 	hFile = CreateFile(fname,	/* file name */
 		    GENERIC_READ,	/* access mode */
-		    0,			/* share mode */
+		    FILE_SHARE_READ | FILE_SHARE_WRITE,	/* share mode */
 		    NULL,		/* security descriptor */
 		    OPEN_EXISTING,	/* creation disposition */
-		    0,			/* file attributes */
+		    FILE_FLAG_BACKUP_SEMANTICS,	/* file attributes */
 		    NULL);		/* handle to template file */
 
     if (hFile != INVALID_HANDLE_VALUE)
     {
-	if (GetFileInformationByHandle(hFile, &inf) != 0
-		&& inf.nNumberOfLinks > 1)
-	    res = 1;
+	if (GetFileInformationByHandle(hFile, info) != 0)
+	    res = FILEINFO_OK;
+	else
+	    res = FILEINFO_INFO_FAIL;
 	CloseHandle(hFile);
     }
 

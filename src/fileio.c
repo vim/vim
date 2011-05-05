@@ -6555,6 +6555,21 @@ vim_rename(from, to)
 	    use_tmp_file = TRUE;
     }
 #endif
+#ifdef WIN3264
+    {
+	BY_HANDLE_FILE_INFORMATION info1, info2;
+
+	/* It's possible for the source and destination to be the same file.
+	 * In that case go through a temp file name.  This makes rename("foo",
+	 * "./foo") a no-op (in a complicated way). */
+	if (win32_fileinfo(from, &info1) == FILEINFO_OK
+		&& win32_fileinfo(to, &info2) == FILEINFO_OK
+		&& info1.dwVolumeSerialNumber == info2.dwVolumeSerialNumber
+		&& info1.nFileIndexHigh == info2.nFileIndexHigh
+		&& info1.nFileIndexLow == info2.nFileIndexLow)
+	    use_tmp_file = TRUE;
+    }
+#endif
 
 #if defined(UNIX) || defined(CASE_INSENSITIVE_FILENAME)
     if (use_tmp_file)

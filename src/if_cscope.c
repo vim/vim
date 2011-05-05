@@ -1412,17 +1412,15 @@ cs_insert_filelist(fname, ppath, flags, sb)
 {
     short	i, j;
 #ifndef UNIX
-    HANDLE	hFile;
     BY_HANDLE_FILE_INFORMATION bhfi;
 
-    vim_memset(&bhfi, 0, sizeof(bhfi));
     /* On windows 9x GetFileInformationByHandle doesn't work, so skip it */
     if (!mch_windows95())
     {
-	hFile = CreateFile(fname, FILE_READ_ATTRIBUTES, 0, NULL, OPEN_EXISTING,
-						 FILE_ATTRIBUTE_NORMAL, NULL);
-	if (hFile == INVALID_HANDLE_VALUE)
+	switch (win32_fileinfo(fname, &bhfi))
 	{
+	case FILEINFO_ENC_FAIL:		/* enc_to_utf16() failed */
+	case FILEINFO_READ_FAIL:	/* CreateFile() failed */
 	    if (p_csverbose)
 	    {
 		char *cant_msg = _("E625: cannot open cscope database: %s");
@@ -1438,15 +1436,12 @@ cs_insert_filelist(fname, ppath, flags, sb)
 		    (void)EMSG2(cant_msg, fname);
 	    }
 	    return -1;
-	}
-	if (!GetFileInformationByHandle(hFile, &bhfi))
-	{
-	    CloseHandle(hFile);
+
+	case FILEINFO_INFO_FAIL:    /* GetFileInformationByHandle() failed */
 	    if (p_csverbose)
 		(void)EMSG(_("E626: cannot get cscope database information"));
 	    return -1;
 	}
-	CloseHandle(hFile);
     }
 #endif
 

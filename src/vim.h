@@ -2217,4 +2217,10 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 #define KEYLEN_PART_MAP -2	/* keylen value for incomplete mapping */
 #define KEYLEN_REMOVED  9999	/* keylen value for removed sequence */
 
+/* Return values from win32_fileinfo(). */
+#define FILEINFO_OK	     0
+#define FILEINFO_ENC_FAIL    1	/* enc_to_utf16() failed */
+#define FILEINFO_READ_FAIL   2	/* CreateFile() failed */
+#define FILEINFO_INFO_FAIL   3	/* GetFileInformationByHandle() failed */
+
 #endif /* VIM__H */
