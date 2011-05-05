@@ -917,8 +917,10 @@ inside of strings can change!  Also see 'softtabstop' option. >
 {Visual}["x]Y		Yank the highlighted lines [into register x] (for
 			{Visual} see |Visual-mode|).  {not in Vi}
 
-							*:y* *:yank*
-:[range]y[ank] [x]	Yank [range] lines [into register x].
+							*:y* *:yank* *E850*
+:[range]y[ank] [x]	Yank [range] lines [into register x]. Yanking to the
+			"* or "+ registers is possible only in GUI versions or
+			when the |+xterm_clipboard| feature is included.
 
 :[range]y[ank] [x] {count}
 			Yank {count} lines, starting with last line number

@@ -2424,25 +2424,39 @@ do_one_cmd(cmdlinep, sourcing,
     if (       (ea.argt & REGSTR)
 	    && *ea.arg != NUL
 #ifdef FEAT_USR_CMDS
-	    && valid_yank_reg(*ea.arg, (ea.cmdidx != CMD_put
-						   && USER_CMDIDX(ea.cmdidx)))
 	    /* Do not allow register = for user commands */
 	    && (!USER_CMDIDX(ea.cmdidx) || *ea.arg != '=')
-#else
-	    && valid_yank_reg(*ea.arg, ea.cmdidx != CMD_put)
 #endif
 	    && !((ea.argt & COUNT) && VIM_ISDIGIT(*ea.arg)))
     {
-	ea.regname = *ea.arg++;
-#ifdef FEAT_EVAL
-	/* for '=' register: accept the rest of the line as an expression */
-	if (ea.arg[-1] == '=' && ea.arg[0] != NUL)
+#ifndef FEAT_CLIPBOARD
+	/* check these explicitly for a more specific error message */
+	if (*ea.arg == '*' || *ea.arg == '+')
 	{
-	    set_expr_line(vim_strsave(ea.arg));
-	    ea.arg += STRLEN(ea.arg);
+	    errormsg = (char_u *)_(e_invalidreg);
+	    goto doend;
 	}
 #endif
-	ea.arg = skipwhite(ea.arg);
+	if (
+#ifdef FEAT_USR_CMDS
+	    valid_yank_reg(*ea.arg, (ea.cmdidx != CMD_put
+						   && USER_CMDIDX(ea.cmdidx)))
+#else
+	    valid_yank_reg(*ea.arg, ea.cmdidx != CMD_put)
+#endif
+	   )
+	{
+	    ea.regname = *ea.arg++;
+#ifdef FEAT_EVAL
+	    /* for '=' register: accept the rest of the line as an expression */
+	    if (ea.arg[-1] == '=' && ea.arg[0] != NUL)
+	    {
+		set_expr_line(vim_strsave(ea.arg));
+		ea.arg += STRLEN(ea.arg);
+	    }
+#endif
+	    ea.arg = skipwhite(ea.arg);
+	}
     }
 
     /*

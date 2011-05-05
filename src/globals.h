@@ -1561,6 +1561,9 @@ EXTERN char_u e_bufloaded[]	INIT(= N_("E139: File is loaded in another buffer"))
 	(defined(FEAT_INS_EXPAND) && defined(FEAT_COMPL_FUNC))
 EXTERN char_u e_notset[]	INIT(= N_("E764: Option '%s' is not set"));
 #endif
+#ifndef FEAT_CLIPBOARD
+EXTERN char_u e_invalidreg[]    INIT(= N_("E850: Invalid register name"));
+#endif
 
 #ifdef MACOS_X_UNIX
 EXTERN short disallow_gui	INIT(= FALSE);
