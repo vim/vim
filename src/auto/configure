@@ -6218,15 +6218,15 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking --with-ruby-command argument" >&5
 $as_echo_n "checking --with-ruby-command argument... " >&6; }
 
+
 # Check whether --with-ruby-command was given.
 if test "${with_ruby_command+set}" = set; then :
-  withval=$with_ruby_command; RUBY_CMD="$withval"; { $as_echo "$as_me:${as_lineno-$LINENO}: result: $RUBY_CMD" >&5
+  withval=$with_ruby_command; RUBY_CMD="$withval"; vi_cv_path_ruby="$withval"; { $as_echo "$as_me:${as_lineno-$LINENO}: result: $RUBY_CMD" >&5
 $as_echo "$RUBY_CMD" >&6; }
 else
   RUBY_CMD="ruby"; { $as_echo "$as_me:${as_lineno-$LINENO}: result: defaulting to $RUBY_CMD" >&5
 $as_echo "defaulting to $RUBY_CMD" >&6; }
 fi
-
 
   # Extract the first word of "$RUBY_CMD", so it can be a program name with args.
 set dummy $RUBY_CMD; ac_word=$2
@@ -6292,17 +6292,14 @@ $as_echo "$rubyhdrdir" >&6; }
 	  RUBY_LIBS="$rubylibs"
 	fi
 	librubyarg=`$vi_cv_path_ruby -r rbconfig -e 'print Config.expand(Config::CONFIG["LIBRUBYARG"])'`
-	if test -f "$rubyhdrdir/$librubyarg"; then
-	  librubyarg="$rubyhdrdir/$librubyarg"
-	else
-	  rubylibdir=`$vi_cv_path_ruby -r rbconfig -e 'print Config.expand(Config::CONFIG["libdir"])'`
-	  if test -f "$rubylibdir/$librubyarg"; then
-	    librubyarg="$rubylibdir/$librubyarg"
-	  elif test "$librubyarg" = "libruby.a"; then
-	    	    librubyarg="-lruby"
-	  else
-	    librubyarg=`$vi_cv_path_ruby -r rbconfig -e "print '$librubyarg'.gsub(/-L\./, %'-L#{Config.expand(Config::CONFIG[\"libdir\"])}')"`
-	  fi
+	librubya=`$vi_cv_path_ruby -r rbconfig -e 'print Config.expand(Config::CONFIG["LIBRUBY_A"])'`
+  rubylibdir=`$vi_cv_path_ruby -r rbconfig -e 'print Config.expand(Config::CONFIG["libdir"])'`
+	if test -f "$rubylibdir/$librubya"; then
+	  librubyarg="$librubyarg"
+    RUBY_LIBS="$RUBY_LIBS -L$rubylibdir"
+  elif test "$librubyarg" = "libruby.a"; then
+        librubyarg="-lruby"
+    RUBY_LIBS="$RUBY_LIBS -L$rubylibdir"
 	fi
 
 	if test "X$librubyarg" != "X"; then

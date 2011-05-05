@@ -1387,10 +1387,10 @@ AC_ARG_ENABLE(rubyinterp,
 AC_MSG_RESULT($enable_rubyinterp)
 if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
   AC_MSG_CHECKING(--with-ruby-command argument)
-  AC_ARG_WITH(ruby-command, [  --with-ruby-command=RUBY  name of the Ruby command (default: ruby)],
-	RUBY_CMD="$withval"; AC_MSG_RESULT($RUBY_CMD),
-	RUBY_CMD="ruby"; AC_MSG_RESULT(defaulting to $RUBY_CMD))
   AC_SUBST(vi_cv_path_ruby)
+  AC_ARG_WITH(ruby-command, [  --with-ruby-command=RUBY  name of the Ruby command (default: ruby)],
+	RUBY_CMD="$withval"; vi_cv_path_ruby="$withval"; AC_MSG_RESULT($RUBY_CMD),
+	RUBY_CMD="ruby"; AC_MSG_RESULT(defaulting to $RUBY_CMD))
   AC_PATH_PROG(vi_cv_path_ruby, $RUBY_CMD)
   if test "X$vi_cv_path_ruby" != "X"; then
     AC_MSG_CHECKING(Ruby version)
@@ -1412,18 +1412,15 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 	  RUBY_LIBS="$rubylibs"
 	fi
 	librubyarg=`$vi_cv_path_ruby -r rbconfig -e 'print Config.expand(Config::CONFIG[["LIBRUBYARG"]])'`
-	if test -f "$rubyhdrdir/$librubyarg"; then
-	  librubyarg="$rubyhdrdir/$librubyarg"
-	else
-	  rubylibdir=`$vi_cv_path_ruby -r rbconfig -e 'print Config.expand(Config::CONFIG[["libdir"]])'`
-	  if test -f "$rubylibdir/$librubyarg"; then
-	    librubyarg="$rubylibdir/$librubyarg"
-	  elif test "$librubyarg" = "libruby.a"; then
-	    dnl required on Mac OS 10.3 where libruby.a doesn't exist
-	    librubyarg="-lruby"
-	  else
-	    librubyarg=`$vi_cv_path_ruby -r rbconfig -e "print '$librubyarg'.gsub(/-L\./, %'-L#{Config.expand(Config::CONFIG[\"libdir\"])}')"`
-	  fi
+	librubya=`$vi_cv_path_ruby -r rbconfig -e 'print Config.expand(Config::CONFIG[["LIBRUBY_A"]])'`
+  rubylibdir=`$vi_cv_path_ruby -r rbconfig -e 'print Config.expand(Config::CONFIG[["libdir"]])'`
+	if test -f "$rubylibdir/$librubya"; then
+	  librubyarg="$librubyarg"
+    RUBY_LIBS="$RUBY_LIBS -L$rubylibdir"
+  elif test "$librubyarg" = "libruby.a"; then
+    dnl required on Mac OS 10.3 where libruby.a doesn't exist
+    librubyarg="-lruby"
+    RUBY_LIBS="$RUBY_LIBS -L$rubylibdir"
 	fi
 
 	if test "X$librubyarg" != "X"; then
