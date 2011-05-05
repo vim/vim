@@ -191,5 +191,5 @@ Trace(char *pszFormat, ...);
 #ifdef __BORLANDC__
 # define vim_mkdir(x, y) mkdir(x)
 #else
-# define vim_mkdir(x, y) _mkdir(x)
+# define vim_mkdir(x, y) mch_mkdir(x)
 #endif
