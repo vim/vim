@@ -1164,7 +1164,7 @@ copy_loclist(from, to)
 
 	/* When no valid entries are present in the list, qf_ptr points to
 	 * the first item in the list */
-	if (to_qfl->qf_nonevalid == TRUE)
+	if (to_qfl->qf_nonevalid)
 	    to_qfl->qf_ptr = to_qfl->qf_start;
     }
 
@@ -2243,6 +2243,7 @@ ex_cwindow(eap)
      * it if we have errors; otherwise, leave it closed.
      */
     if (qi->qf_lists[qi->qf_curlist].qf_nonevalid
+	    || qi->qf_lists[qi->qf_curlist].qf_count == 0
 	    || qi->qf_curlist >= qi->qf_listcount)
     {
 	if (win != NULL)
@@ -3711,7 +3712,7 @@ set_errorlist(wp, list, action, title)
     }
 
     if (qi->qf_lists[qi->qf_curlist].qf_index == 0)
-	/* empty list or no valid entry */
+	/* no valid entry */
 	qi->qf_lists[qi->qf_curlist].qf_nonevalid = TRUE;
     else
 	qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
