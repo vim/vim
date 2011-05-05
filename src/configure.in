@@ -2619,7 +2619,7 @@ else
   dnl  On HP-UX 10.10 termcap or termlib should be used instead of
   dnl  curses, because curses is much slower.
   dnl  Newer versions of ncurses are preferred over anything, except
-  dnl  when tinfo has been split off, it conains all we need.
+  dnl  when tinfo has been split off, it contains all we need.
   dnl  Older versions of ncurses have bugs, get a new one!
   dnl  Digital Unix (OSF1) should use curses (Ronald Schild).
   dnl  On SCO Openserver should prefer termlib (Roger Cornelius).
@@ -3370,7 +3370,7 @@ dnl Link with xpg4, it is said to make Korean locale working
 AC_CHECK_LIB(xpg4, _xpg4_setrunelocale, [LIBS="$LIBS -lxpg4"],,)
 
 dnl Check how we can run ctags.  Default to "ctags" when nothing works.
-dnl --version for Exuberant ctags (preferred)
+dnl Use --version to detect Exuberant ctags (preferred)
 dnl       Add --fields=+S to get function signatures for omni completion.
 dnl -t for typedefs (many ctags have this)
 dnl -s for static functions (Elvis ctags only?)
@@ -3378,7 +3378,9 @@ dnl -v for variables. Dangerous, most ctags take this for 'vgrind style'.
 dnl -i+m to test for older Exuberant ctags
 AC_MSG_CHECKING(how to create tags)
 test -f tags && mv tags tags.save
-if (eval ctags --version /dev/null | grep Exuberant) < /dev/null 1>&AC_FD_CC 2>&1; then
+if (eval exctags --version /dev/null | grep Exuberant) < /dev/null 1>&AC_FD_CC 2>&1; then
+  TAGPRG="exctags -I INIT+ --fields=+S"
+elif (eval ctags --version /dev/null | grep Exuberant) < /dev/null 1>&AC_FD_CC 2>&1; then
   TAGPRG="ctags -I INIT+ --fields=+S"
 else
   TAGPRG="ctags"

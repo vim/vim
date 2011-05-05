@@ -12031,7 +12031,9 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking how to create tags" >&5
 $as_echo_n "checking how to create tags... " >&6; }
 test -f tags && mv tags tags.save
-if (eval ctags --version /dev/null | grep Exuberant) < /dev/null 1>&5 2>&1; then
+if (eval exctags --version /dev/null | grep Exuberant) < /dev/null 1>&5 2>&1; then
+  TAGPRG="exctags -I INIT+ --fields=+S"
+elif (eval ctags --version /dev/null | grep Exuberant) < /dev/null 1>&5 2>&1; then
   TAGPRG="ctags -I INIT+ --fields=+S"
 else
   TAGPRG="ctags"
