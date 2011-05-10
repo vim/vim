@@ -1563,7 +1563,7 @@ get_leader_len(line, flags, backward)
     char_u	*list;
     int		middle_match_len = 0;
     char_u	*prev_list;
-    char_u	*saved_flags;
+    char_u	*saved_flags = NULL;
 
     i = 0;
     while (vim_iswhite(line[i]))    /* leading white space is ignored */
