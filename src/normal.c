@@ -1202,7 +1202,13 @@ getcount:
     {
 	clearop(oap);
 #ifdef FEAT_EVAL
-	set_reg_var('"');
+	{
+	    int regname = 0;
+	    /* Adjust the register according to 'clipboard', so that when
+	     * "unnamed" is present it becomes '*' or '+' instead of '"'. */
+	    adjust_clip_reg(&regname);
+	    set_reg_var(regname);
+	}
 #endif
     }
 
