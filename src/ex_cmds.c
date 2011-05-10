@@ -5365,8 +5365,9 @@ ex_global(eap)
 global_exe(cmd)
     char_u	*cmd;
 {
-    linenr_T	old_lcount;	/* b_ml.ml_line_count before the command */
-    linenr_T	lnum;		/* line number according to old situation */
+    linenr_T old_lcount;	/* b_ml.ml_line_count before the command */
+    buf_T    *old_buf = curbuf;	/* remember what buffer we started in */
+    linenr_T lnum;		/* line number according to old situation */
 
     /*
      * Set current position only once for a global command.
@@ -5410,8 +5411,10 @@ global_exe(cmd)
 	msg_didout = FALSE;
 
     /* If substitutes done, report number of substitutes, otherwise report
-     * number of extra or deleted lines. */
-    if (!do_sub_msg(FALSE))
+     * number of extra or deleted lines.
+     * Don't report extra or deleted lines in the edge case where the buffer
+     * we are in after execution is different from the buffer we started in. */
+    if (!do_sub_msg(FALSE) && curbuf == old_buf)
 	msgmore(curbuf->b_ml.ml_line_count - old_lcount);
 }
 
