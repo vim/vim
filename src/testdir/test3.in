@@ -1373,6 +1373,18 @@ void func(void)
 }
 
 STARTTEST
+:set com=s1:/*,m:*,ex:*/
+]]3jofoo();
+ENDTEST
+
+void func(void)
+{
+	/*
+	 * This is a comment.
+	 */
+}
+
+STARTTEST
 :g/^STARTTEST/.,/^ENDTEST/d
 :1;/start of AUTO/,$wq! test.out
 ENDTEST

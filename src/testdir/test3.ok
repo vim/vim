@@ -1225,3 +1225,12 @@ void func(void)
 		<< "c";
 }
 
+
+void func(void)
+{
+	/*
+	 * This is a comment.
+	 */
+	foo();
+}
+

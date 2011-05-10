@@ -1561,6 +1561,9 @@ get_leader_len(line, flags, backward)
     char_u	part_buf[COM_MAX_LEN];	/* buffer for one option part */
     char_u	*string;		/* pointer to comment string */
     char_u	*list;
+    int		middle_match_len = 0;
+    char_u	*prev_list;
+    char_u	*saved_flags;
 
     i = 0;
     while (vim_iswhite(line[i]))    /* leading white space is ignored */
@@ -1569,7 +1572,7 @@ get_leader_len(line, flags, backward)
     /*
      * Repeat to match several nested comment strings.
      */
-    while (line[i])
+    while (line[i] != NUL)
     {
 	/*
 	 * scan through the 'comments' option for a match
@@ -1577,82 +1580,104 @@ get_leader_len(line, flags, backward)
 	found_one = FALSE;
 	for (list = curbuf->b_p_com; *list; )
 	{
-	    /*
-	     * Get one option part into part_buf[].  Advance list to next one.
-	     * put string at start of string.
-	     */
-	    if (!got_com && flags != NULL)  /* remember where flags started */
-		*flags = list;
+	    /* Get one option part into part_buf[].  Advance "list" to next
+	     * one.  Put "string" at start of string.  */
+	    if (!got_com && flags != NULL)
+		*flags = list;	    /* remember where flags started */
+	    prev_list = list;
 	    (void)copy_option_part(&list, part_buf, COM_MAX_LEN, ",");
 	    string = vim_strchr(part_buf, ':');
 	    if (string == NULL)	    /* missing ':', ignore this part */
 		continue;
 	    *string++ = NUL;	    /* isolate flags from string */
 
-	    /*
-	     * When already found a nested comment, only accept further
-	     * nested comments.
-	     */
+	    /* If we found a middle match previously, use that match when this
+	     * is not a middle or end. */
+	    if (middle_match_len != 0
+		    && vim_strchr(part_buf, COM_MIDDLE) == NULL
+		    && vim_strchr(part_buf, COM_END) == NULL)
+		break;
+
+	    /* When we already found a nested comment, only accept further
+	     * nested comments. */
 	    if (got_com && vim_strchr(part_buf, COM_NEST) == NULL)
 		continue;
 
-	    /* When 'O' flag used don't use for "O" command */
+	    /* When 'O' flag present and using "O" command skip this one. */
 	    if (backward && vim_strchr(part_buf, COM_NOBACK) != NULL)
 		continue;
 
-	    /*
-	     * Line contents and string must match.
+	    /* Line contents and string must match.
 	     * When string starts with white space, must have some white space
 	     * (but the amount does not need to match, there might be a mix of
-	     * TABs and spaces).
-	     */
+	     * TABs and spaces). */
 	    if (vim_iswhite(string[0]))
 	    {
 		if (i == 0 || !vim_iswhite(line[i - 1]))
-		    continue;
+		    continue;  /* missing shite space */
 		while (vim_iswhite(string[0]))
 		    ++string;
 	    }
 	    for (j = 0; string[j] != NUL && string[j] == line[i + j]; ++j)
 		;
 	    if (string[j] != NUL)
-		continue;
+		continue;  /* string doesn't match */
 
-	    /*
-	     * When 'b' flag used, there must be white space or an
-	     * end-of-line after the string in the line.
-	     */
+	    /* When 'b' flag used, there must be white space or an
+	     * end-of-line after the string in the line. */
 	    if (vim_strchr(part_buf, COM_BLANK) != NULL
 			   && !vim_iswhite(line[i + j]) && line[i + j] != NUL)
 		continue;
 
-	    /*
-	     * We have found a match, stop searching.
-	     */
-	    i += j;
-	    got_com = TRUE;
+	    /* We have found a match, stop searching unless this is a middle
+	     * comment. The middle comment can be a substring of the end
+	     * comment in which case it's better to return the length of the
+	     * end comment and its flags.  Thus we keep searching with middle
+	     * and end matches and use an end match if it matches better. */
+	    if (vim_strchr(part_buf, COM_MIDDLE) != NULL)
+	    {
+		if (middle_match_len == 0)
+		{
+		    middle_match_len = j;
+		    saved_flags = prev_list;
+		}
+		continue;
+	    }
+	    if (middle_match_len != 0 && j > middle_match_len)
+		/* Use this match instead of the middle match, since it's a
+		 * longer thus better match. */
+		middle_match_len = 0;
+
+	    if (middle_match_len == 0)
+		i += j;
 	    found_one = TRUE;
 	    break;
 	}
 
-	/*
-	 * No match found, stop scanning.
-	 */
+	if (middle_match_len != 0)
+	{
+	    /* Use the previously found middle match after failing to find a
+	     * match with an end. */
+	    if (!got_com && flags != NULL)
+		*flags = saved_flags;
+	    i += middle_match_len;
+	    found_one = TRUE;
+	}
+
+	/* No match found, stop scanning. */
 	if (!found_one)
 	    break;
 
-	/*
-	 * Include any trailing white space.
-	 */
+	/* Include any trailing white space. */
 	while (vim_iswhite(line[i]))
 	    ++i;
 
-	/*
-	 * If this comment doesn't nest, stop here.
-	 */
+	/* If this comment doesn't nest, stop here. */
+	got_com = TRUE;
 	if (vim_strchr(part_buf, COM_NEST) == NULL)
 	    break;
     }
+
     return (got_com ? i : 0);
 }
 #endif
