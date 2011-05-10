@@ -504,18 +504,11 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 
     if (newfile && !read_stdin && !read_buffer)
     {
-	/* Remember time of file.
-	 * For RISCOS, also remember the filetype.
-	 */
+	/* Remember time of file. */
 	if (mch_stat((char *)fname, &st) >= 0)
 	{
 	    buf_store_time(curbuf, &st, fname);
 	    curbuf->b_mtime_read = curbuf->b_mtime;
-
-#if defined(RISCOS) && defined(FEAT_OSFILETYPE)
-	    /* Read the filetype into the buffer local filetype option. */
-	    mch_read_filetype(fname);
-#endif
 #ifdef UNIX
 	    /*
 	     * Use the protection bits of the original file for the swap file.
@@ -557,7 +550,6 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 
 /*
  * for UNIX: check readonly with perm and mch_access()
- * for RISCOS: same as Unix, otherwise file gets re-datestamped!
  * for MSDOS and Amiga: check readonly by trying to open the file for writing
  */
     file_readonly = FALSE;
@@ -3804,13 +3796,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 
 	/* make sure we have a valid backup extension to use */
 	if (*p_bex == NUL)
-	{
-#ifdef RISCOS
-	    backup_ext = (char_u *)"/bak";
-#else
 	    backup_ext = (char_u *)".bak";
-#endif
-	}
 	else
 	    backup_ext = p_bex;
 
@@ -4724,11 +4710,6 @@ restore_backup:
 #endif
     if (perm >= 0)		/* set perm. of new file same as old file */
 	(void)mch_setperm(wfname, perm);
-#ifdef RISCOS
-    if (!append && !filtering)
-	/* Set the filetype after writing the file. */
-	mch_set_filetype(wfname, buf->b_p_oft);
-#endif
 #ifdef HAVE_ACL
     /* Probably need to set the ACL before changing the user (can't set the
      * ACL on a file the user doesn't own). */
@@ -6262,19 +6243,17 @@ buf_modname(shortname, fname, ext, prepend_dot)
      */
     for (ptr = retval + fnamelen; ptr > retval; mb_ptr_back(retval, ptr))
     {
-#ifndef RISCOS
 	if (*ext == '.'
-# ifdef USE_LONG_FNAME
+#ifdef USE_LONG_FNAME
 		    && (!USE_LONG_FNAME || shortname)
-# else
-#  ifndef SHORT_FNAME
+#else
+# ifndef SHORT_FNAME
 		    && shortname
-#  endif
 # endif
+#endif
 								)
 	    if (*ptr == '.')	/* replace '.' by '_' */
 		*ptr = '_';
-#endif
 	if (vim_ispathsep(*ptr))
 	{
 	    ++ptr;
@@ -6309,23 +6288,14 @@ buf_modname(shortname, fname, ext, prepend_dot)
 	if (fname == NULL || *fname == NUL
 				   || vim_ispathsep(fname[STRLEN(fname) - 1]))
 	{
-#ifdef RISCOS
-	    if (*ext == '/')
-#else
 	    if (*ext == '.')
-#endif
 		*s++ = '_';
 	}
 	/*
 	 * If the extension starts with '.', truncate the base name at 8
 	 * characters
 	 */
-#ifdef RISCOS
-	/* We normally use '/', but swap files are '_' */
-	else if (*ext == '/' || *ext == '_')
-#else
 	else if (*ext == '.')
-#endif
 	{
 	    if ((size_t)(s - ptr) > (size_t)8)
 	    {
@@ -6337,13 +6307,8 @@ buf_modname(shortname, fname, ext, prepend_dot)
 	 * If the extension doesn't start with '.', and the file name
 	 * doesn't have an extension yet, append a '.'
 	 */
-#ifdef RISCOS
-	else if ((e = vim_strchr(ptr, '/')) == NULL)
-	    *s++ = '/';
-#else
 	else if ((e = vim_strchr(ptr, '.')) == NULL)
 	    *s++ = '.';
-#endif
 	/*
 	 * If the extension doesn't start with '.', and there already is an
 	 * extension, it may need to be truncated
@@ -6371,23 +6336,14 @@ buf_modname(shortname, fname, ext, prepend_dot)
     /*
      * Prepend the dot.
      */
-    if (prepend_dot && !shortname && *(e = gettail(retval)) !=
-#ifdef RISCOS
-	    '/'
-#else
-	    '.'
-#endif
+    if (prepend_dot && !shortname && *(e = gettail(retval)) != '.'
 #ifdef USE_LONG_FNAME
 	    && USE_LONG_FNAME
 #endif
 				)
     {
 	STRMOVE(e + 1, e);
-#ifdef RISCOS
-	*e = '/';
-#else
 	*e = '.';
-#endif
     }
 #endif
 
@@ -10205,19 +10161,11 @@ file_pat_to_reg_pat(pat, pat_end, allow_dirs, no_bslash)
 		    ++p;
 		break;
 	    case '.':
-#ifdef RISCOS
-		if (allow_dirs != NULL)
-		     *allow_dirs = TRUE;
-		/* FALLTHROUGH */
-#endif
 	    case '~':
 		reg_pat[i++] = '\\';
 		reg_pat[i++] = *p;
 		break;
 	    case '?':
-#ifdef RISCOS
-	    case '#':
-#endif
 		reg_pat[i++] = '.';
 		break;
 	    case '\\':

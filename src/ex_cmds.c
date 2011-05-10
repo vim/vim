@@ -899,9 +899,6 @@ free_prev_shellcmd()
  * Handle the ":!cmd" command.	Also for ":r !cmd" and ":w !cmd"
  * Bangs in the argument are replaced with the previously entered command.
  * Remember the argument.
- *
- * RISCOS: Bangs only replaced when followed by a space, since many
- * pathnames contain one.
  */
     void
 do_bang(addr_count, eap, forceit, do_in, do_out)
@@ -980,11 +977,7 @@ do_bang(addr_count, eap, forceit, do_in, do_out)
 	trailarg = NULL;
 	while (*p)
 	{
-	    if (*p == '!'
-#ifdef RISCOS
-			&& (p[1] == ' ' || p[1] == NUL)
-#endif
-					)
+	    if (*p == '!')
 	    {
 		if (p > newcmd && p[-1] == '\\')
 		    STRMOVE(p - 1, p);
@@ -1578,14 +1571,8 @@ make_filter_cmd(cmd, itmp, otmp)
 	    if (p != NULL)
 		*p = NUL;
 	}
-# ifdef RISCOS
-	STRCAT(buf, " { < ");	/* Use RISC OS notation for input. */
-	STRCAT(buf, itmp);
-	STRCAT(buf, " } ");
-# else
 	STRCAT(buf, " <");	/* " < " causes problems on Amiga */
 	STRCAT(buf, itmp);
-# endif
 	if (*p_shq == NUL)
 	{
 	    p = vim_strchr(cmd, '|');
@@ -1634,16 +1621,9 @@ append_redir(buf, buflen, opt, fname)
     else
 	vim_snprintf((char *)end, (size_t)(buflen - (end - buf)),
 #ifdef FEAT_QUICKFIX
-# ifndef RISCOS
-		opt != p_sp ? " %s%s" :
-# endif
 		" %s %s",
 #else
-# ifndef RISCOS
 		" %s%s",	/* " > %s" causes problems on Amiga */
-# else
-		" %s %s",	/* But is needed for 'shellpipe' and RISC OS */
-# endif
 #endif
 		(char *)opt, (char *)fname);
 }
@@ -1844,11 +1824,7 @@ write_viminfo(file, forceit)
 #ifdef VMS
 				    (char_u *)"-tmp",
 #else
-# ifdef RISCOS
-				    (char_u *)"/tmp",
-# else
 				    (char_u *)".tmp",
-# endif
 #endif
 				    FALSE);
 	    if (tempname == NULL)		/* out of memory */

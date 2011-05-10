@@ -62,9 +62,6 @@ extern int _stricoll __ARGS((char *a, char *b));
 # ifdef __BEOS__
 #  include "os_beos.pro"
 # endif
-# ifdef RISCOS
-#  include "os_riscos.pro"
-# endif
 # ifdef __QNX__
 #  include "os_qnx.pro"
 # endif
@@ -244,9 +241,6 @@ extern char *vim_SelFile __ARGS((Widget toplevel, char *prompt, char *init_path,
 #  endif
 #  ifdef FEAT_GUI_X11
 #   include "gui_x11.pro"
-#  endif
-#  ifdef RISCOS
-#   include "gui_riscos.pro"
 #  endif
 #  ifdef FEAT_GUI_PHOTON
 #   include "gui_photon.pro"

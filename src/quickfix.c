@@ -1182,21 +1182,17 @@ qf_get_fnum(directory, fname)
     if (fname == NULL || *fname == NUL)		/* no file name */
 	return 0;
     {
-#ifdef RISCOS
-	/* Name is reported as `main.c', but file is `c.main' */
-	return ro_buflist_add(fname);
-#else
 	char_u	    *ptr;
 	int	    fnum;
 
-# ifdef VMS
+#ifdef VMS
 	vms_remove_version(fname);
-# endif
-# ifdef BACKSLASH_IN_FILENAME
+#endif
+#ifdef BACKSLASH_IN_FILENAME
 	if (directory != NULL)
 	    slash_adjust(directory);
 	slash_adjust(fname);
-# endif
+#endif
 	if (directory != NULL && !vim_isAbsName(fname)
 		&& (ptr = concat_fnames(directory, fname, TRUE)) != NULL)
 	{
@@ -1221,7 +1217,6 @@ qf_get_fnum(directory, fname)
 	    return fnum;
 	}
 	return buflist_add(fname, 0);
-#endif
     }
 }
 

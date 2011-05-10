@@ -2156,7 +2156,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 
     if (highlight_mask & (HL_INVERSE | HL_STANDOUT))
     {
-#if defined(AMIGA) || defined(RISCOS)
+#if defined(AMIGA)
 	gui_mch_set_colors(bg_color, fg_color);
 #else
 	gui_mch_set_fg_color(bg_color);
@@ -2165,7 +2165,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
     }
     else
     {
-#if defined(AMIGA) || defined(RISCOS)
+#if defined(AMIGA)
 	gui_mch_set_colors(fg_color, bg_color);
 #else
 	gui_mch_set_fg_color(fg_color);
@@ -2193,7 +2193,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
     if (back != 0 && ((draw_flags & DRAW_BOLD) || (highlight_mask & HL_ITALIC)))
 	return FAIL;
 
-#if defined(RISCOS) || defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_GTK)
     /* If there's no italic font, then fake it.
      * For GTK2, we don't need a different font for italic style. */
     if (hl_mask_todo & HL_ITALIC)
@@ -2985,26 +2985,11 @@ button_set:
 	    did_clip = TRUE;
 	}
 	/* Allow the left button to start the selection */
-	else if (button ==
-# ifdef RISCOS
-		/* Only start a drag on a drag event. Otherwise
-		 * we don't get a release event. */
-		    MOUSE_DRAG
-# else
-		    MOUSE_LEFT
-# endif
-				)
+	else if (button == MOUSE_LEFT)
 	{
 	    clip_start_selection(X_2_COL(x), Y_2_ROW(y), repeated_click);
 	    did_clip = TRUE;
 	}
-# ifdef RISCOS
-	else if (button == MOUSE_LEFT)
-	{
-	    clip_clear_selection();
-	    did_clip = TRUE;
-	}
-# endif
 
 	/* Always allow pasting */
 	if (button != MOUSE_MIDDLE)

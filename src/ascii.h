@@ -183,11 +183,6 @@ extern char MetaCharTable[];
 # define PATHSEP	psepc
 # define PATHSEPSTR	pseps
 #else
-# ifdef RISCOS
-#  define PATHSEP	'.'
-#  define PATHSEPSTR	"."
-# else
-#  define PATHSEP	'/'
-#  define PATHSEPSTR	"/"
-# endif
+# define PATHSEP	'/'
+# define PATHSEPSTR	"/"
 #endif

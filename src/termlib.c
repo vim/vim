@@ -13,7 +13,7 @@
 #include "vim.h"
 #include "termlib.pro"
 
-#if !defined(AMIGA) && !defined(VMS) && !defined(MACOS) && !defined(RISCOS)
+#if !defined(AMIGA) && !defined(VMS) && !defined(MACOS)
 # include <sgtty.h>
 #endif
 

@@ -184,9 +184,6 @@
 #  define SIZEOF_INT 2
 # endif
 #endif
-#ifdef RISCOS
-# define SIZEOF_INT 4
-#endif
 
 
 #include "feature.h"	/* #defines for optionals and features */
@@ -338,10 +335,6 @@
 #  define HAVE_SETENV
 # endif
 # include "os_mac.h"
-#endif
-
-#ifdef RISCOS
-# include "os_riscos.h"
 #endif
 
 #ifdef __QNX__

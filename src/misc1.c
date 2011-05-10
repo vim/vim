@@ -4589,25 +4589,21 @@ get_past_head(path)
 vim_ispathsep(c)
     int c;
 {
-#ifdef RISCOS
-    return (c == '.' || c == ':');
-#else
-# ifdef UNIX
+#ifdef UNIX
     return (c == '/');	    /* UNIX has ':' inside file names */
-# else
-#  ifdef BACKSLASH_IN_FILENAME
+#else
+# ifdef BACKSLASH_IN_FILENAME
     return (c == ':' || c == '/' || c == '\\');
-#  else
-#   ifdef VMS
+# else
+#  ifdef VMS
     /* server"user passwd"::device:[full.path.name]fname.extension;version" */
     return (c == ':' || c == '[' || c == ']' || c == '/'
 	    || c == '<' || c == '>' || c == '"' );
-#   else		/* Amiga */
+#  else
     return (c == ':' || c == '/');
-#   endif /* VMS */
-#  endif
+#  endif /* VMS */
 # endif
-#endif /* RISC OS */
+#endif
 }
 
 #if defined(FEAT_SEARCHPATH) || defined(PROTO)

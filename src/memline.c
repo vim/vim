@@ -748,7 +748,7 @@ ml_open_file(buf)
 	    continue;
 	if (mf_open_file(mfp, fname) == OK)	/* consumes fname! */
 	{
-#if defined(MSDOS) || defined(MSWIN) || defined(RISCOS)
+#if defined(MSDOS) || defined(MSWIN)
 	    /*
 	     * set full pathname for swap file now, because a ":!cd dir" may
 	     * change directory without us knowing it.
@@ -933,7 +933,7 @@ set_b0_fname(b0p, buf)
 	b0p->b0_fname[0] = NUL;
     else
     {
-#if defined(MSDOS) || defined(MSWIN) || defined(AMIGA) || defined(RISCOS)
+#if defined(MSDOS) || defined(MSWIN) || defined(AMIGA)
 	/* Systems that cannot translate "~user" back into a path: copy the
 	 * file name unmodified.  Do use slashes instead of backslashes for
 	 * portability. */
@@ -1103,7 +1103,7 @@ ml_recover()
 	fname = (char_u *)"";
     len = (int)STRLEN(fname);
     if (len >= 4 &&
-#if defined(VMS) || defined(RISCOS)
+#if defined(VMS)
 	    STRNICMP(fname + len - 4, "_s" , 2)
 #else
 	    STRNICMP(fname + len - 4, ".s" , 2)
@@ -1773,11 +1773,7 @@ recover_names(fname, list, nr, fname_out)
 #ifdef VMS
 		names[0] = vim_strsave((char_u *)"*_sw%");
 #else
-# ifdef RISCOS
-		names[0] = vim_strsave((char_u *)"*_sw#");
-# else
 		names[0] = vim_strsave((char_u *)"*.sw?");
-# endif
 #endif
 #if defined(UNIX) || defined(WIN3264)
 		/* For Unix names starting with a dot are special.  MS-Windows
@@ -1804,11 +1800,7 @@ recover_names(fname, list, nr, fname_out)
 #ifdef VMS
 		names[0] = concat_fnames(dir_name, (char_u *)"*_sw%", TRUE);
 #else
-# ifdef RISCOS
-		names[0] = concat_fnames(dir_name, (char_u *)"*_sw#", TRUE);
-# else
 		names[0] = concat_fnames(dir_name, (char_u *)"*.sw?", TRUE);
-# endif
 #endif
 #if defined(UNIX) || defined(WIN3264)
 		/* For Unix names starting with a dot are special.  MS-Windows
@@ -1877,7 +1869,7 @@ recover_names(fname, list, nr, fname_out)
 	    char_u	    *swapname;
 
 	    swapname = modname(fname_res,
-#if defined(VMS) || defined(RISCOS)
+#if defined(VMS)
 			       (char_u *)"_swp", FALSE
 #else
 			       (char_u *)".swp", TRUE
@@ -2176,11 +2168,7 @@ recov_file_names(names, path, prepend_dot)
 #ifdef VMS
     names[num_names] = concat_fnames(path, (char_u *)"_sw%", FALSE);
 #else
-# ifdef RISCOS
-    names[num_names] = concat_fnames(path, (char_u *)"_sw#", FALSE);
-# else
     names[num_names] = concat_fnames(path, (char_u *)".sw?", FALSE);
-# endif
 #endif
     if (names[num_names] == NULL)
 	goto end;
@@ -2207,11 +2195,7 @@ recov_file_names(names, path, prepend_dot)
 #ifdef VMS
     names[num_names] = modname(path, (char_u *)"_sw%", FALSE);
 #else
-# ifdef RISCOS
-    names[num_names] = modname(path, (char_u *)"_sw#", FALSE);
-# else
     names[num_names] = modname(path, (char_u *)".sw?", FALSE);
-# endif
 #endif
     if (names[num_names] == NULL)
 	goto end;
@@ -3205,7 +3189,8 @@ ml_delete_int(buf, lnum, message)
 	mf_free(mfp, hp);	/* free the data block */
 	buf->b_ml.ml_locked = NULL;
 
-	for (stack_idx = buf->b_ml.ml_stack_top - 1; stack_idx >= 0; --stack_idx)
+	for (stack_idx = buf->b_ml.ml_stack_top - 1; stack_idx >= 0;
+								  --stack_idx)
 	{
 	    buf->b_ml.ml_stack_top = 0;	    /* stack is invalid when failing */
 	    ip = &(buf->b_ml.ml_stack[stack_idx]);
@@ -3956,14 +3941,9 @@ makeswapname(fname, ffname, buf, dir_name)
 #else
 	    (buf->b_p_sn || buf->b_shortname),
 #endif
-#ifdef RISCOS
-	    /* Avoid problems if fname has special chars, eg <Wimp$Scrap> */
-	    ffname,
-#else
 	    fname_res,
-#endif
 	    (char_u *)
-#if defined(VMS) || defined(RISCOS)
+#if defined(VMS)
 	    "_swp",
 #else
 	    ".swp",
@@ -4427,14 +4407,6 @@ findswapname(buf, dirp, old_fname)
 		    }
 		    close(fd);
 		}
-#ifdef RISCOS
-		else
-		    /* Can't open swap file, though it does exist.
-		     * Assume that the user is editing two files with
-		     * the same name in different directories. No error.
-		     */
-		    differ = TRUE;
-#endif
 
 		/* give the ATTENTION message when there is an old swap file
 		 * for the current file, and the buffer was not recovered. */

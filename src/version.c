@@ -715,6 +715,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    187,
+/**/
     186,
 /**/
     185,
@@ -1205,9 +1207,6 @@ list_version()
 # endif
 #endif
 
-#ifdef RISCOS
-    MSG_PUTS(_("\nRISC OS version"));
-#endif
 #ifdef VMS
     MSG_PUTS(_("\nOpenVMS version"));
 # ifdef HAVE_PATHDEF

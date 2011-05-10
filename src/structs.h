@@ -2366,11 +2366,6 @@ struct VimMenu
     MenuHandle	menu_handle;
     MenuHandle	submenu_handle;
 #endif
-#ifdef RISCOS
-    int		*id;		    /* Not used, but gui.c needs it */
-    int		greyed_out;	    /* Flag */
-    int		hidden;
-#endif
 #ifdef FEAT_GUI_PHOTON
     PtWidget_t	*id;
     PtWidget_t	*submenu_id;

@@ -500,18 +500,10 @@ dbg_parsearg(arg, gap)
 	/* Expand the file name in the same way as do_source().  This means
 	 * doing it twice, so that $DIR/file gets expanded when $DIR is
 	 * "~/dir". */
-#ifdef RISCOS
-	q = mch_munge_fname(p);
-#else
 	q = expand_env_save(p);
-#endif
 	if (q == NULL)
 	    return FAIL;
-#ifdef RISCOS
-	p = mch_munge_fname(q);
-#else
 	p = expand_env_save(q);
-#endif
 	vim_free(q);
 	if (p == NULL)
 	    return FAIL;
@@ -2940,11 +2932,7 @@ do_source(fname, check_other, is_vimrc)
     proftime_T		    wait_start;
 #endif
 
-#ifdef RISCOS
-    p = mch_munge_fname(fname);
-#else
     p = expand_env_save(fname);
-#endif
     if (p == NULL)
 	return retval;
     fname_exp = fix_fname(p);
