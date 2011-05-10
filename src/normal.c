@@ -1204,9 +1204,12 @@ getcount:
 #ifdef FEAT_EVAL
 	{
 	    int regname = 0;
+
 	    /* Adjust the register according to 'clipboard', so that when
 	     * "unnamed" is present it becomes '*' or '+' instead of '"'. */
+# ifdef FEAT_CLIPBOARD
 	    adjust_clip_reg(&regname);
+# endif
 	    set_reg_var(regname);
 	}
 #endif
