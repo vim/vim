@@ -1756,7 +1756,7 @@ ro_mouse(block)
 
 	if (button & 0x444)
 	{
-	    int	    front_block[10];
+	    int	    front_block[64];
 	    /* Dragging with Select - bring window to front first */
 	    front_block[0] = gui.window_handle;
 	    swi(Wimp_GetWindowState, 0, front_block);
@@ -1874,7 +1874,7 @@ ro_continue_drag(block)
 
     if (ro_dragging == DRAG_RESIZE_WINDOW)
     {
-	/* Resizeing the main window. */
+	/* Resizing the main window. */
 	block[2] = y;
 	block[3] = x;
 	ro_open_main(block);
@@ -2651,7 +2651,7 @@ clip_mch_request_selection(VimClipboard *cbd)
     long_u	length;
 
     block[0] = 48;			/* Size of block. */
-    block[3] = 0;			/* Orinial message. */
+    block[3] = 0;			/* Original message. */
     block[4] = 0x10;			/* Data request. */
     block[5] = gui.window_handle;
     block[6] = RO_LOAD_CLIPBOARD;	/* Internal handle. */
