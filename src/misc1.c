@@ -4983,7 +4983,7 @@ cin_skipcomment(s)
 }
 
 /*
- * Return TRUE if there there is no code at *s.  White space and comments are
+ * Return TRUE if there is no code at *s.  White space and comments are
  * not considered code.
  */
     static int
@@ -5458,8 +5458,11 @@ cin_islinecomment(p)
 }
 
 /*
- * Recognize a line that starts with '{' or '}', or ends with ';', '{' or '}'.
+ * Recognize a line that starts with '{' or '}', or ends with ';', ',', '{' or
+ * '}'.
  * Don't consider "} else" a terminated line.
+ * Don't consider a line where there are unmatched opening braces before '}',
+ * ';' or ',' a terminated line.
  * Return the character terminating the line (ending char's have precedence if
  * both apply in order to determine initializations).
  */
@@ -5470,6 +5473,7 @@ cin_isterminated(s, incl_open, incl_comma)
     int		incl_comma;	/* recognize a trailing comma */
 {
     char_u found_start = 0;
+    unsigned n_open = 0;
 
     s = cin_skipcomment(s);
 
@@ -5480,10 +5484,19 @@ cin_isterminated(s, incl_open, incl_comma)
     {
 	/* skip over comments, "" strings and 'c'haracters */
 	s = skip_string(cin_skipcomment(s));
-	if ((*s == ';' || (incl_open && *s == '{') || *s == '}'
-						 || (incl_comma && *s == ','))
+	if (*s == '}' && n_open > 0)
+	    --n_open;
+	if (n_open == 0
+		&& (*s == ';' || *s == '}' || (incl_comma && *s == ','))
 		&& cin_nocode(s + 1))
 	    return *s;
+	else if (*s == '{')
+	{
+	    if (incl_open && cin_nocode(s + 1))
+		return *s;
+	    else
+		++n_open;
+	}
 
 	if (*s)
 	    s++;

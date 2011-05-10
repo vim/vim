@@ -1344,6 +1344,22 @@ func(int a
 }
 
 STARTTEST
+:set cino&
+2kdd=][
+ENDTEST
+
+void func(void)
+{
+	if(x==y)
+		if(y==z)
+			foo=1;
+		else { bar=1;
+			baz=2;
+		}
+	printf("Foo!\n");
+}
+
+STARTTEST
 :g/^STARTTEST/.,/^ENDTEST/d
 :1;/start of AUTO/,$wq! test.out
 ENDTEST
