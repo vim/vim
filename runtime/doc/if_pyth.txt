@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.3.  Last change: 2010 Oct 20
+*if_pyth.txt*   For Vim version 7.3.  Last change: 2011 May 07
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -377,6 +377,18 @@ To work around such problems there are these options:
 3. You undefine PY_NO_RTLD_GLOBAL in auto/config.h after configuration.  This
    may crash Vim though.
 
+							*has-python*
+You can test what Python version is available with: >
+	if has('python')
+	  echo 'there is Pyton 2.x'
+  	elseif has('python3')
+	  echo 'there is Python 3.x'
+	endif
+
+Note however, that when Python 2 and 3 are both available and loaded
+dynamically, these has() calls will try to load them.  If only one can be
+loaded at a time, just checking if Python 2 or 3 are available will prevent
+the other one from being available.
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:

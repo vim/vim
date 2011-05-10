@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2011 Apr 28
+*todo.txt*      For Vim version 7.3.  Last change: 2011 May 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,30 +32,18 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Go through more coverity reports.
 
-Patch for behavior of :cwindow. (Ingo Karkat, 2011 Apr 15)
-
-Configure fix for finding exctags. (Hong Xu, 2011 Aprl 2)
-
-When 'colorcolumn' is set locally to a window, ":new" opens a window with the
-same highlighting but 'colorcolumn' is empty. (Tyru, 2010 Nov 15)
-Patch by Christian Brabandt, 2011 Feb 13 (but move further down).
-
-Patch for configure related to Ruby on Mac OS X. (Bjorn Winckler, 2011 Jan 14)
-
-Patch to make mkdir() work properly for different encodings. (Yukihiro
-Nakadaira, 2011 Apr 23)
-
-Updated PHP syntax file. (Jason Woofenden, 2011 Apr 22)
-
-ASCII Vim logo's (Erling Westenvik, 2011 Apr 19)  Add to website.
-
 Crash in autocomplete, valgrind log. (Greg Weber, 2011 Apr 22)
 
-Patch for static code analysis errors in riscOS. (Dominique Pelle, 2010 Dec 3)
+Ex command ":s/ \?/ /g" splits multi-byte characters into bytes. (Dominique
+Pelle, 2011 May 7).
 
-Patch to set v:register on startup. (Ingo Karkat, 2011 Jan 16)
+In command line window ":close" doesn't work properly. (Tony Mechelynck, 2009
+Jun 1)
+Patch by Jean-Rene David, 2011 Apr 30.
 
-Risc OS gui has obvious errors.  Drop it?
+When "b" is a symlink to directory "a", resolve("b/") doesn't result in "a/".
+(ZyX, 2011 Feb 12)
+Patch by Jean-Rene David, 2011 Apr 30.
 
 Patch to set v:register default depending on "unnamed" in 'clipboard'. (Ingo
 Karkat, 2011 Jan 16)
@@ -96,6 +84,9 @@ Patch to improve optwin.vim. (ZyX, 2011 Jan 29)
 
 Patch for Python 3 support. (lilydjwg, 2011 Feb 24)
 
+Patch to make putting from clipboard linewise when the text ends in a newline.
+(Sung Pae)  Do we want this?
+
 Building the MingW version without clipboard but with multi-byte doesn't
 work. (Bill Lam, 2010 Sep 18)
 
@@ -105,11 +96,25 @@ Patch for handling of NL in substitute() with \= expression. (Motoya Kurotsu,
 Patch to disallow fork() when __APPLE__ is defined. (Hisashi T Fujinaka, 2010
 Nov 25)
 
+7   Output for ":scriptnames" and ":breaklist" should shorten the file names:
+    use "~/" when possible.
+Patch by Jean-Rene David, 2011 May 1.
+
+Patch for better #if 0 syntax highlighting for C code. (Ben Schmidt, 2011 Jan
+20)
+Change to C syntax folding to make it work much faster, but a bit less
+reliable. (Lech Lorens, 2009 Nov 9)  Enable with an option?
+Most time is spent in in_id_list().
+Updated to merge both patches. (Ben Schmidt, 2011 May 2)
+
 GTK: Patch to fix menu popping down. (Hong Xu, 2010 Dec 4, Dec 5)
 Update 2011 Feb 3.
 
 Patch to use pipes on Win32.  (Vincent Berthoux, 2011 Feb 28)
 Update Mar 1 using 'shelltemp'.
+
+Patch to support UTF-8 for Hangul. (Shawn Y.H. Kim, 2011 May 1)
+Needs more work.
 
 "gh<Del>" deletes the current line, except when it's the last line.
 Hint by Christian Brabandt, 2011 Mar 22
@@ -149,6 +154,12 @@ The error was 'RenderBadPicture (invalid Picture parameter)'.
    option to change this behavior. You can then get a meaningful
    backtrace from your debugger if you break on the gdk_x_error() function.)
 Check that number of pixels doesn't go above 65535?
+
+8   Add an event like CursorHold that is triggered repeatedly, not just once
+    after typing something.
+Need for CursorHold that retriggers.  Use a key that doesn't do anything, or a
+function that resets did_cursorhold.
+Patch by Christian Brabandt, 2011 May 6.
 
 CursorHold repeats typed key when it's the start of a mapping.
 (Will Gray, 2011 Mar 23)
@@ -372,11 +383,6 @@ FILE_SHARE_WRITE in mch_access()? (Phillippe Vaucher, 2010 Nov 2)
 Is ~/bin (literally) in $PATH supposed to work?  (Paul, 2010 March 29)
 Looks like only bash can do it. (Yakov Lerner)
 
-8   Add an event like CursorHold that is triggered repeatedly, not just once
-    after typing something.
-Need for CursorHold that retriggers.  Use a key that doesn't do anything, or a
-function that resets did_cursorhold.
-
 Cscope "cs add" stopped working somewhat before 7.2.438. (Gary Johnson, 2010
 Jun 29)  Caused by 7.2.433?
 
@@ -400,8 +406,6 @@ Use format year-month-day hr:min:sec.
 Shell not recognized properly if it ends in "csh -f". (James Vega, 2009 Nov 3)
 Find tail?  Might have a / in argument.  Find space?  Might have space in
 path.
-
-":sort n" treats empty line as higher than zero. (Beeyawned, 2010 Oct 13)
 
 Test 51 fails when language set to German. (Marco, 2011 Jan 9)
 Dominique can't reproduc it.
@@ -440,13 +444,6 @@ Undo problem: line not removed as expected when using setline() from Insert
 mode. (Israel Chauca, 2010 May 13, more in second msg)
 Break undo when CTRL-R = changes the text?  Or save more lines?
 
-Patch for better #if 0 syntax highlighting for C code. (Ben Schmidt, 2011 Jan
-20)
-
-Change to C syntax folding to make it work much faster, but a bit less
-reliable. (Lech Lorens, 2009 Nov 9)  Enable with an option?
-Most time is spent in in_id_list().
-
 Slow combination of folding and PHP syntax highlighting.  Script to reproduce
 it.  Caused by "syntax sync fromstart" in combination with patch 7.2.274.
 (Christian Brabandt, 2010 May 27)
@@ -458,9 +455,6 @@ Disable updating folds while completion is active? (Peter Odding, 2010 Jun 9)
 
 Using ":call foo#d.f()" doesn't autoload the "foo.vim" file.  Works OK for
 echo, just not for  ":call" and ":call call()". (Ted, 2011 Mar 17)
-
-In command line window ":close" doesn't work properly. (Tony Mechelynck, 2009
-Jun 1)
 
 Cannot use getchar() inside :normal and using an expression mapping.  Is this
 supposed to work?  (XyX, 2010 Sep 22)
@@ -584,9 +578,6 @@ are applied to the wrong buffer/window. (Ben Fritz, 2009 Apr 2, May 11)
 Ignore window options when not in the right window?
 Perhaps we need to use a hidden window for applying autocommands to a buffer
 that doesn't have a window.
-
-When "b" is a symlink to directory "a", resolve("b/") doesn't result in "a/".
-(ZyX, 2011 Feb 12)
 
 When using "ab foo bar" and mapping <Tab> to <Esc>, pressing <Tab> after foo
 doesn't trigger the abbreviation like <Esc> would. (Ramana Kumar, 2009 Sep 6)
@@ -1857,7 +1848,7 @@ GUI:
 8   When translating menus ignore the part after the Tab, the shortcut.  So
     that the same menu item with a different shortcut (e.g., for the Mac) are
     still translated.
-8   Add menu separators for Amiga, RISCOS.
+8   Add menu separators for Amiga.
 8   Add way to specify the file filter for the browse dialog.  At least for
     browse().
 8   Add dialog for search/replace to other GUIs?  Tk has something for this,
@@ -2102,8 +2093,6 @@ Macintosh:
 6   Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 8   Command line completion: buffers "foo.txt" and "../b/foo.txt", completing
     ":buf foo<Tab>" doesn't find the second one. (George V. Reilly)
-7   Output for ":scriptnames" and ":breaklist" should shorten the file names:
-    use "~/" when possible.
 7   mb_off2cells() doesn't work correctly on the tail byte of a double-byte
     character. (Yasuhiro Matsumoto)  It should return 1 when used on a tail
     byte, like for utf-8.  Store second byte of double-byte in ScreenLines2[]
@@ -2130,8 +2119,6 @@ Macintosh:
     works.
 8   A very long message in confirm() can't be quit.  Make this possible with
     CTRL-C.
-8   When the clipboard isn't supported: ":yank*" gives a confusing error
-    message.  Specifically mention that the register name is invalid.
 8   "gf" always excludes trailing punctuation characters.  file_name_in_line()
     is currently fixed to use ".,:;!".  Add an option to make this
     configurable?
@@ -2145,8 +2132,6 @@ Macintosh:
     is a multi-byte character.
 8   When appending to a file and 'patchmode' isn't empty, a backup file is
     always written, even when the original file already exists.
-7   When using "daw" on the last word in a file and this is a single letter,
-    nothing is deleted.  Should delete the letter and preceding white space.
 9   When getting focus while writing a large file, could warn for this file
     being changed outside of Vim.  Avoid checking this while the file is being
     written.
@@ -2797,7 +2782,7 @@ Multi-byte characters:
     For Windows, the charset_pairs[] table could be used.  But how do we know
     if a font exists?
 -   Do keyboard conversion from 'termencoding' to 'encoding' with
-    convert_input() for Mac GUI and RiscOS GUI.
+    convert_input() for Mac GUI.
 -   Add mnemonics from RFC1345 longer than two characters.
     Support CTRL-K _{mnemonic}_
 7   In "-- INSERT (lang) --" show the name of the keymap used instead of
@@ -3060,6 +3045,10 @@ Built-in script language:
 				Patch by Ilya Sher, 2004 Mar 4.
 				Return a list instead.
 	char2hex()		convert char string to hex string.
+	crypt()			encrypt string
+	decrypt()		decrypt string
+	base64enc()		base 64 encoding
+	base64dec()		base 64 decoding
 	attributes()		return file protection flags "drwxrwxrwx"
 	filecopy(from, to)	Copy a file
 	shorten(fname)		shorten a file name, like home_replace()
@@ -3441,7 +3430,7 @@ Win32 GUI:
 
 
 GUI:
-8   Make inputdialog() work for Photon, Amiga, RiscOS.
+8   Make inputdialog() work for Photon, Amiga.
 -   <C--> cannot be mapped.  Should be possible to recognize this as a
     normal "-" with the Ctrl modifier.
 7   Implement ":popup" for other systems than Windows.
@@ -3552,9 +3541,9 @@ Autocommands:
     handled (e.g., other font) (Ron Aaron)
 7   When trying to open a directory, trigger an OpenDirectory event.
 7   Add file type in front of file pattern: <d> for directory, <l> for link,
-    <x> for executable, etc.  <&xxx> for Risc OS.  With commas to separate
-    alternatives.  The autocommand is only executed when both the file type
-    AND the file pattern match. (Leonard)
+    <x> for executable, etc.  With commas to separate alternatives.  The
+    autocommand is only executed when both the file type AND the file pattern
+    match. (Leonard)
 5   Add option that specifies extensions which are to be discarded from the
     file name.  E.g. 'ausuffix', with ".gz,.orig".  Such that file.c.gz will
     trigger the "*.c" autocommands.  (Belabas)
@@ -3812,10 +3801,6 @@ Insert mode:
 
 
 'cindent', 'smartindent':
-9   ") :" confuses continuation line: (Colin Bennett, 2007 Dec 14)
-        cout << "a"
-                << ") :"
-                << "y";
 9   "} else" causes following lines to be indented too much. (Rouben
     Rostamian, 2008 Aug 30)
 9   Wrapping a variable initialization should have extra indent:

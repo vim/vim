@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         sysctl.conf(5) configuration file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2011-05-02
 
 if exists("b:current_syntax")
   finish
@@ -13,7 +13,7 @@ set cpo&vim
 syn match   sysctlBegin   display '^'
                           \ nextgroup=sysctlToken,sysctlComment skipwhite
 
-syn match   sysctlToken   contained display '\S\+'
+syn match   sysctlToken   contained display '[^=]\+'
                           \ nextgroup=sysctlTokenEq skipwhite
 
 syn match   sysctlTokenEq contained display '=' nextgroup=sysctlValue skipwhite

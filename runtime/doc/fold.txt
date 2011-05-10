@@ -60,7 +60,7 @@ level form a fold, with the lines with a higher level forming a nested fold.
 The nesting of folds is limited with 'foldnestmax'.
 
 Some lines are ignored and get the fold level of the line above or below it,
-whatever is the lowest.  These are empty or white lines and lines starting
+whichever is lower.  These are empty or white lines and lines starting
 with a character in 'foldignore'.  White space is skipped before checking for
 characters in 'foldignore'.  For C use "#" to ignore preprocessor lines.
 

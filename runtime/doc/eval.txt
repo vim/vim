@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2011 Mar 18
+*eval.txt*	For Vim version 7.3.  Last change: 2011 May 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1545,7 +1545,9 @@ v:progname	Contains the name (with path removed) with which Vim was
 
 					*v:register* *register-variable*
 v:register	The name of the register in effect for the current normal mode
-		command.  If none is supplied it is the default register.
+		command.  If none is supplied it is the default register '"',
+		unless 'clipboard' contains "unnamed" or "unnamedplus", then
+		it is '*' or '+'.
 		Also see |getreg()| and |setreg()|
 
 					*v:scrollstart* *scrollstart-variable*
@@ -6222,7 +6224,8 @@ persistent_undo		Compiled with support for persistent undo history.
 postscript		Compiled with PostScript file printing.
 printer			Compiled with |:hardcopy| support.
 profile			Compiled with |:profile| support.
-python			Compiled with Python interface.
+python			Compiled with Python 2.x interface. |has-python|
+python3			Compiled with Python 3.x interface. |has-python|
 qnx			QNX version of Vim.
 quickfix		Compiled with |quickfix| support.
 reltime			Compiled with |reltime()| support.

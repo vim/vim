@@ -4234,6 +4234,7 @@ E847	syntax.txt	/*E847*
 E848	syntax.txt	/*E848*
 E849	syntax.txt	/*E849*
 E85	options.txt	/*E85*
+E850	change.txt	/*E850*
 E86	windows.txt	/*E86*
 E87	windows.txt	/*E87*
 E88	windows.txt	/*E88*
@@ -6057,6 +6058,7 @@ hangul	hangulin.txt	/*hangul*
 hangulin.txt	hangulin.txt	/*hangulin.txt*
 has()	eval.txt	/*has()*
 has-patch	eval.txt	/*has-patch*
+has-python	if_pyth.txt	/*has-python*
 has_key()	eval.txt	/*has_key()*
 haskell.vim	syntax.txt	/*haskell.vim*
 haslocaldir()	eval.txt	/*haslocaldir()*

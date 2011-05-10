@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.3.  Last change: 2011 Feb 25
+*change.txt*    For Vim version 7.3.  Last change: 2011 May 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -919,8 +919,8 @@ inside of strings can change!  Also see 'softtabstop' option. >
 
 							*:y* *:yank* *E850*
 :[range]y[ank] [x]	Yank [range] lines [into register x]. Yanking to the
-			"* or "+ registers is possible only in GUI versions or
-			when the |+xterm_clipboard| feature is included.
+			"* or "+ registers is possible only when the
+			|+clipboard| feature is included.
 
 :[range]y[ank] [x] {count}
 			Yank {count} lines, starting with last line number
@@ -1390,16 +1390,19 @@ before typing anything else on the new line.  This will replace the
 middle-comment leader with the end-comment leader and apply any specified
 alignment, leaving just " */".  There is no need to hit BackSpace first.
 
+When there is a match with a middle part, but there also is a maching end part
+which is longer, the end part is used.  This makes a C style comment work
+without requiring the middle part to end with a space.
 
 Here is an example of alignment flags at work to make a comment stand out
-(kind of looks like a 1 too). Consider comment string >
-	sr:/***,m:**,ex2:******/
-
-                                   /***
-                                     **<--right aligned from "r" flag
-                                     **
-offset 2 spaces from the "2" flag--->**
-                                   ******/
+(kind of looks like a 1 too). Consider comment string: >
+	:set comments=sr:/***,m:**,ex-2:******/
+<
+                                   /*** ~
+                                     **<--right aligned from "r" flag ~
+                                     ** ~
+offset 2 spaces for the "-2" flag--->** ~
+                                   ******/ ~
 In this case, the first comment was typed, then return was pressed 4 times,
 then "/" was pressed to end the comment.
 
@@ -1417,8 +1420,8 @@ Reindenting using a different method like |gq| or |=| will not consult
 alignment flags either. The same behaviour can be defined in those other
 formatting options. One consideration is that 'cindent' has additional options
 for context based indenting of comments but cannot replicate many three piece
-indent alignments.  However, 'indentexpr' is has the ability to work better
-with three piece comments.
+indent alignments.  However, 'indentexpr' has the ability to work better with
+three piece comments.
 
 Other examples: >
    "b:*"	Includes lines starting with "*", but not if the "*" is

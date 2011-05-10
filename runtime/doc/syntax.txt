@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2011 Apr 06
+*syntax.txt*	For Vim version 7.3.  Last change: 2011 May 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1102,6 +1102,8 @@ your .vimrc: >
 FLEXWIKI				*flexwiki.vim* *ft-flexwiki-syntax*
 
 FlexWiki is an ASP.NET-based wiki package available at http://www.flexwiki.com
+NOTE: this site currently doesn't work, on Wikipedia is mentioned that
+development stopped in 2009.
 
 Syntax highlighting is available for the most common elements of FlexWiki
 syntax. The associated ftplugin script sets some buffer-local options to make

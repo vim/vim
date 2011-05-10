@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.3.  Last change: 2011 Apr 13
+*map.txt*       For Vim version 7.3.  Last change: 2011 May 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -480,9 +480,9 @@ You can create an empty {rhs} by typing nothing after a single CTRL-V (you
 have to type CTRL-V two times).  Unfortunately, you cannot do this in a vimrc
 file.
 							*<Nop>*
-A easier way to get a mapping that doesn't produce anything, is to use "<Nop>"
-for the {rhs}.  This only works when the |<>| notation is enabled.  For
-example, to make sure that function key 8 does nothing at all: >
+An easier way to get a mapping that doesn't produce anything, is to use
+"<Nop>" for the {rhs}.  This only works when the |<>| notation is enabled.
+For example, to make sure that function key 8 does nothing at all: >
 	:map  <F8>  <Nop>
 	:map! <F8>  <Nop>
 <
@@ -495,7 +495,7 @@ scenario: >
 	:set encoding=utf-8
 The mapping for <M-C> is defined with the latin1 encoding, resulting in a 0xc3
 byte.  If you type the character á (0xe1 <M-a>) in UTF-8 encoding this is the
-two bytes 0xc3 0xa1.  You don't want the 0xc3 byte to be mapped then,
+two bytes 0xc3 0xa1.  You don't want the 0xc3 byte to be mapped then or
 otherwise it would be impossible to type the á character.
 
 					*<Leader>* *mapleader*
@@ -1177,13 +1177,15 @@ reported if any are supplied).  However, it is possible to specify that the
 command can take arguments, using the -nargs attribute.  Valid cases are:
 
 	-nargs=0    No arguments are allowed (the default)
-	-nargs=1    Exactly one argument is required
-	-nargs=*    Any number of arguments are allowed (0, 1, or many)
+	-nargs=1    Exactly one argument is require, it includes spaces 
+	-nargs=*    Any number of arguments are allowed (0, 1, or many),
+		    separated by white space
 	-nargs=?    0 or 1 arguments are allowed
 	-nargs=+    Arguments must be supplied, but any number are allowed
 
 Arguments are considered to be separated by (unescaped) spaces or tabs in this
-context.
+context, except when there is one argument, then the white space is part of
+the argument.
 
 Note that arguments are used as text, not as expressions.  Specifically,
 "s:var" will use the script-local variable in the script where the command was
