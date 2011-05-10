@@ -1360,6 +1360,19 @@ void func(void)
 }
 
 STARTTEST
+:set cino&
+2kdd=][
+ENDTEST
+
+void func(void)
+{
+	cout << "a"
+	<< "b"
+	<< ") :"
+	<< "c";
+}
+
+STARTTEST
 :g/^STARTTEST/.,/^ENDTEST/d
 :1;/start of AUTO/,$wq! test.out
 ENDTEST

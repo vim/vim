@@ -5801,7 +5801,9 @@ cin_is_cpp_baseclass(col)
 		continue;
 	}
 
-	if (s[0] == ':')
+	if (s[0] == '"')
+	    s = skip_string(s) + 1;
+	else if (s[0] == ':')
 	{
 	    if (s[1] == ':')
 	    {

@@ -1216,3 +1216,12 @@ void func(void)
 	printf("Foo!\n");
 }
 
+
+void func(void)
+{
+	cout << "a"
+		<< "b"
+		<< ") :"
+		<< "c";
+}
+
