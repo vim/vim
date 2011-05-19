@@ -6324,6 +6324,12 @@ ex_window()
 	    ccline.cmdbuff = vim_strsave((char_u *)"qa");
 	    cmdwin_result = CAR;
 	}
+	else if (cmdwin_result == Ctrl_C)
+	{
+	    /* :q or :close, don't execute any command
+	     * and don't modify the cmd window. */
+	    ccline.cmdbuff = NULL;
+	}
 	else
 	    ccline.cmdbuff = vim_strsave(ml_get_curline());
 	if (ccline.cmdbuff == NULL)

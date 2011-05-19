@@ -6472,7 +6472,7 @@ ex_close(eap)
 {
 # ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
-	cmdwin_result = K_IGNORE;
+	cmdwin_result = Ctrl_C;
     else
 # endif
 	if (!text_locked()
