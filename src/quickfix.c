@@ -2813,17 +2813,21 @@ ex_make(eap)
 					   (eap->cmdidx != CMD_grepadd
 					    && eap->cmdidx != CMD_lgrepadd),
 					   *eap->cmdlinep);
+    if (wp != NULL)
+	qi = GET_LOC_LIST(wp);
 #ifdef FEAT_AUTOCMD
     if (au_name != NULL)
+    {
 	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
 					       curbuf->b_fname, TRUE, curbuf);
+	if (qi->qf_curlist < qi->qf_listcount)
+	    res = qi->qf_lists[qi->qf_curlist].qf_count;
+	else
+	    res = 0;
+    }
 #endif
     if (res > 0 && !eap->forceit)
-    {
-	if (wp != NULL)
-	    qi = GET_LOC_LIST(wp);
 	qf_jump(qi, 0, 0, FALSE);		/* display first error */
-    }
 
     mch_remove(fname);
     vim_free(fname);
