@@ -2566,6 +2566,9 @@ check_state_ends()
 #endif
 		update_si_attr(current_state.ga_len - 1);
 
+		/* nextgroup= should not match in the end pattern */
+		current_next_list = NULL;
+
 		/* what matches next may be different now, clear it */
 		next_match_idx = 0;
 		next_match_col = MAXCOL;
