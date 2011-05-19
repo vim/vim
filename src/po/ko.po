@@ -2135,21 +2135,6 @@ msgid "&Undo"
 msgstr "취소(&U)"
 
 #, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Zap 글꼴 '%s'을(를) 로드할 수 없습니다"
-
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: 글꼴 %s을(를) 사용할 수 없습니다"
-
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"자식 프로세스를 끝내기 위해 메시지를 보냈습니다.\n"
-
-#, c-format
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: 창 제목 \"%s\"을(를) 찾을 수 없습니다"
 
@@ -4425,9 +4410,6 @@ msgstr "E244: 잘못된 글자셋 이름 \"%s\"이(가) 글꼴 이름 \"%s\"에 있습니다"
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: 잘못된 글자 '%c'이(가) 글꼴 이름 \"%s\"에 있습니다"
-
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: 잘못된 'osfiletype' 옵션 - Text를 사용합니다"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "빔: 같은 시그널 두 번, 끝냅니다\n"

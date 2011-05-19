@@ -2098,21 +2098,6 @@ msgid "&Undo"
 msgstr "&Desfazer"
 
 #, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Impossível carregar a fonte Zap '%s'"
-
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: Impossível usar a fonte %s"
-
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"Enviando mensagem para terminar processo-filho.\n"
-
-#, c-format
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: Impossível encontrar janela de título \"%s\""
 
@@ -4341,9 +4326,6 @@ msgstr "E244: Conjunto de caracteres \"%s\" inválido no nome da fonte \"%s\""
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Caractere '%c' inválido no nome da fonte \"%s\""
-
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: Valor inválido para 'osfiletype' - usando Text"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim: Sinal duplo, saindo\n"

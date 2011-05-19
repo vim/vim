@@ -2182,21 +2182,6 @@ msgid "&Undo"
 msgstr "&U Disfa"
 
 #, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Non riesco a caricare il font Zap '%s'"
-
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: Non riesco a usare il font %s"
-
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"Spedisco un messaggio per terminare il processo figlio.\n"
-
-#, c-format
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: Non trovo il titolo della finestra \"%s\""
 
@@ -4532,9 +4517,6 @@ msgstr "E244: Nome di charset non ammesso \"%s\" nel fonte di nome \"%s\""
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Carattere non ammesso '%c' nel font di nome \"%s\""
-
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: Opzione 'osfiletype' non valida - uso 'Text'"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim: Segnale doppio, esco\n"

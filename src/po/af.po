@@ -1768,19 +1768,6 @@ msgstr "Seleksie"
 msgid "Undo"
 msgstr "Herroep"
 
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Kan nie Zap font '%s' laai nie"
-
-msgid "E611: Can't use font %s"
-msgstr "E611: Kan nie font %s gebruik nie"
-
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"Besig om doodsboodskap aan kindproses te stuur.\n"
-
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: Kan nie venster titel vind nie \"%s\""
 
@@ -3751,9 +3738,6 @@ msgstr "E244: Ongeldige karakterstelnaam \"%s\" in fontnaam \"%s\""
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Ongeldige karakter '%c' in fontnaam \"%s\""
-
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: Ongeldige 'osfiletype' opsie - gaan Text gebruik"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim: Dubbel sein, staak\n"

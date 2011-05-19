@@ -2806,24 +2806,6 @@ msgstr "Reemplazar &Todos"
 msgid "&Undo"
 msgstr "&Deshacer"
 
-#: gui_riscos.c:953
-#, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: No se pudo cargar el tipo de letra de impresión Zap '%s'"
-
-#: gui_riscos.c:1052
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: No se puede usar el tipo de letra de impresión %s"
-
-#: gui_riscos.c:3282
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"Enviando mensaje para terminar los procesos dependientes (\"child\").\n"
-
 #: gui_w32.c:1177
 #, c-format
 msgid "E671: Cannot find window title \"%s\""
@@ -5813,10 +5795,6 @@ msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr ""
 "E245: Carácter '%c' ilegal en el nombre del tipo de letra de\n"
 "impresión %s"
-
-#: os_riscos.c:1263
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: La opción \"osfiletype\" no es válida - usando Texto"
 
 #: os_unix.c:1065
 msgid "Vim: Double signal, exiting\n"

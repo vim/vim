@@ -2199,23 +2199,6 @@ msgid "&Undo"
 msgstr "&U:Скасувати"
 
 #, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Не вдалося завантажити шрифт Zap '%s'"
-
-# msgstr "E235: "
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: Не вдалося використати шрифт %s"
-
-# msgstr "E242: "
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"Посилається повідомлення щоб припинити дочірній процес.\n"
-
-#, c-format
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: Не вдалося знайти вікно \"%s\""
 
@@ -4590,10 +4573,6 @@ msgstr "E244: Некоректна назва набору символів \"%s\" у назві шрифту \"%s\""
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Помилковий символ %c в назві шрифту \"%s\""
 
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: Неправильна опція 'osfiletype' -- буде `Text'"
-
-# msgstr "E366: "
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim: Двічі отримано сигнал, вихід\n"
 

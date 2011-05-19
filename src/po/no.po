@@ -2070,21 +2070,6 @@ msgid "&Undo"
 msgstr "&Angre"
 
 #, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Kan ikke laste Zap-skrifttype '%s'"
-
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: Kan ikke bruke skrifttype %s"
-
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"Sender beskjed om å avslutte barneprosess.\n"
-
-#, c-format
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: Fant ikke vindutittel \"%s\""
 
@@ -4323,9 +4308,6 @@ msgstr "E244: Ulovlig navn på tegnsett \"%s\" i skrifttypenavn \"%s\""
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Ulovlig tegn '%c' i skrifttypenavn \"%s\""
-
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: Ugyldig 'osfiletype'-valg - bruker Text"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim: Dobbelt signal, avslutter\n"

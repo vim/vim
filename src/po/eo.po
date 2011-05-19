@@ -2170,21 +2170,6 @@ msgid "&Undo"
 msgstr "&Malfari"
 
 #, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Ne eblas ŝargi la tiparon Zap \"%s\""
-
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: Ne eblas uzi tiparon %s"
-
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"Sendas mesaĝon por finigi idan procezon\n"
-
-#, c-format
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: Ne eblas trovi titolon de fenestro \"%s\""
 
@@ -4507,10 +4492,6 @@ msgstr "E244: Nevalida nomo de signaro \"%s\" en nomo de tiparo \"%s\""
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Nevalida signo '%c' en nomo de tiparo \"%s\""
-
-# DP: ĉu traduki Text?
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: Nevalida opcio 'osfiletype' - uzas Text"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim: Duobla signalo, eliranta\n"

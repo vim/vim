@@ -1977,21 +1977,6 @@ msgid "&Undo"
 msgstr "&Rückgängig"
 
 #, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Zap-Schriftart '%s' kann nicht geladen werden"
-
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: Schriftart %s kann nicht verwendet werden"
-
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"Sende Nachricht zum Beenden des Kind-Prozesses.\n"
-
-#, c-format
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: Kann Fenstertitel \"%s\" nicht finden"
 
@@ -4168,9 +4153,6 @@ msgstr "E244: Unzulässiger Zeichensatz-Name \"%s\" im Schriftart-Namen \"%s\""
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Unzulässiges Zeichen '%c' in der Schriftart \"%s\""
-
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: Unzulässige 'osfiletype'-Option - verwende Text"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim: Doppel-Signal, beenden\n"

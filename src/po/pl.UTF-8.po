@@ -2147,21 +2147,6 @@ msgid "&Undo"
 msgstr "&Cofnij"
 
 #, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Nie mogę załadować czcionki Zap '%s'"
-
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: Nie mogę użyć czcionki %s"
-
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"Wysyłam zawiadomienie kończące proces pochodny.\n"
-
-#, c-format
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: Nie mogę znaleźć tytułu okna \"%s\""
 
@@ -4471,9 +4456,6 @@ msgstr ""
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Niedozwolony znak '%c' w nazwie czcionki \"%s\""
-
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: Niewłaściwa opcja 'osfiletype' - używam Text"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim: Podwójny sygnał, wychodzę\n"

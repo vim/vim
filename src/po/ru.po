@@ -1790,21 +1790,6 @@ msgstr "Выделение"
 msgid "Undo"
 msgstr "Отмена"
 
-#, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Невозможно загрузить шрифт Zap '%s'"
-
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: Невозможно использовать шрифт %s"
-
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"Отправка сообщения для уничтожения процесса-потомка.\n"
-
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: Окно с заголовком \"%s\" не обнаружено"
 
@@ -3815,9 +3800,6 @@ msgstr "E244: Недопустимое имя кодировки \"%s\" в им�
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Недопустимый символ '%c' в имени шрифта \"%s\""
-
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: Недопустимое значение опции 'osfiletype' -- используется Text"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim: Двойной сигнал, завершение работы\n"

@@ -2141,21 +2141,6 @@ msgid "&Undo"
 msgstr "&Cealaigh"
 
 #, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Ní féidir an chlófhoireann Zap '%s' a luchtú"
-
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: Ní féidir an chlófhoireann %s a úsáid"
-
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"Ag seoladh teachtaireachta chun an macphróiseas a stopadh.\n"
-
-#, c-format
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: Ní féidir teideal na fuinneoige \"%s\" a aimsiú"
 
@@ -4475,9 +4460,6 @@ msgstr ""
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Carachtar neamhcheadaithe '%c' mar pháirt d'ainm cló \"%s\""
-
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: Rogha neamhbhailí 'osfiletype' - ag baint úsáid as `Text'"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim: Comhartha dúbailte, ag scor\n"

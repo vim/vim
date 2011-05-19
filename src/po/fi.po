@@ -2167,22 +2167,6 @@ msgid "&Undo"
 msgstr "&Kumoa"
 
 #, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Zap-fontin latause ei onnistu %s"
-
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: Ei voi käyttää fonttia %s"
-
-# varmaan SIGTERM, ei SIGKILL tms.
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"Lähetetään viestiä lapsiprosessien terminoimiseksi.\n"
-
-#, c-format
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: Ikkunan otsikkoa ei löydy %s"
 
@@ -4467,9 +4451,6 @@ msgstr "E244: Virheellinen merkistön nimi %s fontin nimessä %s"
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Virheellinen merkki %c fontin nimessä %s"
-
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: Virheellinen osfiletype - käytetään Textiä"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim: Kaksoissignaali, lopetetaan\n"

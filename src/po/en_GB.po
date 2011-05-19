@@ -139,14 +139,6 @@ msgstr "E614: vim_SelFile: cannot return to current directory"
 msgid "E615: vim_SelFile: can't get current directory"
 msgstr "E615: vim_SelFile: cannot get current directory"
 
-#, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Cannot load Zap font '%s'"
-
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: Cannot use font %s"
-
 msgid "Vim E458: Cannot allocate colormap entry, some colors may be incorrect"
 msgstr ""
 "Vim E458: Cannot allocate colourmap entry, some colours may be incorrect"

@@ -2077,21 +2077,6 @@ msgid "&Undo"
 msgstr "&Desfés"
 
 #, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: No s'ha pogut carregar la fosa Zap '%s'"
-
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: No es pot utilitzar la fosa %s"
-
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"Enviant un missatge per finalitzar el procés fill.\n"
-
-#, c-format
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: No s'ha trobat el títol de finestra \"%s\""
 
@@ -4281,9 +4266,6 @@ msgstr "E244: Conjunt de caràcters \"%s\" il·legal en el tipus \"%s\""
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Caràcter '%c' il·legal en el tipus \"%s\""
-
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: L'opció 'osfiletype' no és vàlida - s'usa Text"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim: S'ha rebut un doble senyal, sortint\n"

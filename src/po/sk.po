@@ -1908,19 +1908,6 @@ msgstr "Nahradi» &V¹etko"
 msgid "&Undo"
 msgstr "&Spä»"
 
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Nemô¾em naèíta» chybný font '%s'"
-
-msgid "E611: Can't use font %s"
-msgstr "E611: Nedá sa pou¾í» písmo %s"
-
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"Posielam správu na ukonèenie synovského procesu.\n"
-
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: Nemo¾no nájs» okno s titulkom \"%s\""
 
@@ -4094,9 +4081,6 @@ msgstr "E244: Chybný názov znakovej sady \"%s\" v názve písma \"%s\""
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Chybný znak '%c' v názve písma \"%s\""
-
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: Chybná 'osfiletype' voµba - pou¾itie Textu"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim: dvojitý signál, konèím\n"

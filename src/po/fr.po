@@ -2377,21 +2377,6 @@ msgid "&Undo"
 msgstr "Ann&uler"
 
 #, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Impossible de charger la police Zap '%s'"
-
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: Impossible d'utiliser la police %s"
-
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"Envoi d'un message pour interrompre le processus fils.\n"
-
-#, c-format
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: Titre de fenêtre \"%s\" introuvable"
 
@@ -4751,9 +4736,6 @@ msgstr "E244: Jeu de caractères \"%s\" invalide dans le nom de fonte \"%s\""
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Caractère '%c' invalide dans le nom de fonte \"%s\""
-
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: Option 'osfiletype' invalide - Text est utilisé"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim : Double signal, sortie\n"

@@ -1785,21 +1785,6 @@ msgid "Undo"
 msgstr "Hủy thao tác"
 
 #, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Không nạp được phông chữ Zap '%s'"
-
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: Không sử dụng được phông chữ %s"
-
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"Gửi thông báo để \"hủy diệt\" (dừng) tiến trình con.\n"
-
-#, c-format
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: Không tìm được tiêu đề cửa sổ \"%s\""
 
@@ -3800,9 +3785,6 @@ msgstr "E244: Tên bảng mã không cho phép \"%s\" trong tên phông chữ \"
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Ký tự không cho phép '%c' trong tên phông chữ \"%s\""
-
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: Giá trị tùy chọn 'osfiletype' không cho phép - sử dụng Text"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim: Tín hiệu đôi, thoát\n"

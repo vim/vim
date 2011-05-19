@@ -1806,21 +1806,6 @@ msgid "Undo"
 msgstr "復原"
 
 #, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: 無法開啟 Zap 字型 '%s'"
-
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: 無法使用字型 %s"
-
-msgid ""
-"\n"
-"Sending message to terminate child process.\n"
-msgstr ""
-"\n"
-"送出中斷子程式的訊息中.\n"
-
-#, c-format
 msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: 找不到標題為 \"%s\" 的視窗"
 
@@ -3784,9 +3769,6 @@ msgstr "E244: 字元集 \"%s\" 無法對應字型\"%s\""
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: 不正確的字元 '%c' 出現在字型名稱 \"%s\" 內"
-
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: 不正確的 'filetype' 選項 - 使用純文字模式"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim: 雙重signal, 離開中\n"
