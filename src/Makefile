@@ -29,7 +29,7 @@
 #	- Uncomment the line "CONF_OPT_X = --without-x" if you have X11 but
 #	  want to disable using X11 libraries.	This speeds up starting Vim,
 #	  but the window title will not be set and the X11 selection can not
-#	  used.
+#	  be used.
 #	- Uncomment the line "CONF_OPT_XSMP = --disable-xsmp" if you have the
 #	  X11 Session Management Protocol (XSMP) library (libSM) but do not
 #	  want to use it.
@@ -729,12 +729,6 @@ LINT_OPTIONS = -beprxzF
 
 ### USL for Unix Systems Laboratories (SYSV 4.2)
 #EXTRA_DEFS = -DUSL
-
-### RISCos on MIPS without X11
-#EXTRA_DEFS = -DMIPS
-
-### RISCos on MIPS with X11
-#EXTRA_LIBS = -lsun
 
 ### (6)  A/UX 3.1.1 with gcc (Jim Jagielski)
 #CC= gcc -D_POSIX_SOURCE
@@ -1633,7 +1627,7 @@ PRO_AUTO = \
 RSRC_DIR = os_mac_rsrc
 
 PRO_MANUAL = os_amiga.pro os_msdos.pro os_win16.pro os_win32.pro \
-	os_mswin.pro os_beos.pro os_vms.pro os_riscos.pro $(PERL_PRO)
+	os_mswin.pro os_beos.pro os_vms.pro $(PERL_PRO)
 
 # Default target is making the executable and tools
 all: $(VIMTARGET) $(TOOLS) languages $(GUI_BUNDLE)

@@ -140,9 +140,6 @@
 #define PV_MOD		OPT_BUF(BV_MOD)
 #define PV_MPS		OPT_BUF(BV_MPS)
 #define PV_NF		OPT_BUF(BV_NF)
-#ifdef FEAT_OSFILETYPE
-# define PV_OFT		OPT_BUF(BV_OFT)
-#endif
 #ifdef FEAT_COMPL_FUNC
 # define PV_OFU		OPT_BUF(BV_OFU)
 #endif
@@ -337,9 +334,6 @@ static int	p_ma;
 static int	p_mod;
 static char_u	*p_mps;
 static char_u	*p_nf;
-#ifdef FEAT_OSFILETYPE
-static char_u	*p_oft;
-#endif
 static int	p_pi;
 #ifdef FEAT_TEXTOBJ
 static char_u	*p_qe;
@@ -1901,14 +1895,8 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
     {"osfiletype",  "oft",  P_STRING|P_ALLOCED|P_VI_DEF,
-#ifdef FEAT_OSFILETYPE
-			    (char_u *)&p_oft, PV_OFT,
-			    {(char_u *)DFLT_OFT, (char_u *)0L}
-#else
 			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)0L, (char_u *)0L}
-#endif
-			    SCRIPTID_INIT},
+			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
     {"paragraphs",  "para", P_STRING|P_VI_DEF,
 			    (char_u *)&p_para, PV_NONE,
 			    {(char_u *)"IPLPPPQPP TPHPLIPpLpItpplpipbp",
@@ -5281,9 +5269,6 @@ check_buf_options(buf)
 #endif
 #ifdef FEAT_AUTOCMD
     check_string_option(&buf->b_p_ft);
-#endif
-#ifdef FEAT_OSFILETYPE
-    check_string_option(&buf->b_p_oft);
 #endif
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
     check_string_option(&buf->b_p_cinw);
@@ -9665,9 +9650,6 @@ get_varp(p)
 	case PV_MA:	return (char_u *)&(curbuf->b_p_ma);
 	case PV_MOD:	return (char_u *)&(curbuf->b_changed);
 	case PV_NF:	return (char_u *)&(curbuf->b_p_nf);
-#ifdef FEAT_OSFILETYPE
-	case PV_OFT:	return (char_u *)&(curbuf->b_p_oft);
-#endif
 	case PV_PI:	return (char_u *)&(curbuf->b_p_pi);
 #ifdef FEAT_TEXTOBJ
 	case PV_QE:	return (char_u *)&(curbuf->b_p_qe);
@@ -10017,9 +9999,6 @@ buf_copy_options(buf, flags)
 #ifdef FEAT_AUTOCMD
 	    /* Don't copy 'filetype', it must be detected */
 	    buf->b_p_ft = empty_option;
-#endif
-#ifdef FEAT_OSFILETYPE
-	    buf->b_p_oft = vim_strsave(p_oft);
 #endif
 	    buf->b_p_pi = p_pi;
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)

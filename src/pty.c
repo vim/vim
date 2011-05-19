@@ -123,8 +123,7 @@
 static void initmaster __ARGS((int));
 
 /*
- *  Open all ptys with O_NOCTTY, just to be on the safe side
- *  (RISCos mips breaks otherwise)
+ *  Open all ptys with O_NOCTTY, just to be on the safe side.
  */
 #ifndef O_NOCTTY
 # define O_NOCTTY 0

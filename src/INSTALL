@@ -6,9 +6,8 @@ executable version of Vim, you don't need this.
 Contents:
 1. Generic
 2. Unix
-3. RISC OS
-4. OS/2 (with EMX 0.9b)
-5. Atari MiNT
+3. OS/2 (with EMX 0.9b)
+4. Atari MiNT
 
 See INSTALLami.txt              for Amiga
 See INSTALLmac.txt              for Macintosh
@@ -174,25 +173,7 @@ And to not search for locally installed headers and libraries at all, use:
 	./configure --without-local-dir
 
 
-3. RISC OS
-=============
-
-Much file renaming is needed before you can compile anything.
-You'll need UnixLib to link against, GCC and GNU make.
-
-I suggest you get the RISC OS binary distribution, which includes the
-Templates file and the loader.
-
-Try here: http://www.ecs.soton.ac.uk/~tal197
-
-Do
-    :help riscos
-
-within the editor for more information, or read the
-../runtime/doc/os_risc.txt help file.
-
-
-4. OS/2
+3. OS/2
 =======
 
 Summary:
@@ -237,7 +218,7 @@ Prerequisites:
 Check ../runtime/doc/os_os2.txt for additional info on running Vim.
 
 
-5. Atari MiNT
+4. Atari MiNT
 =============
 
 [NOTE: this is quite old, it might not work anymore]

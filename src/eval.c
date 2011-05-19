@@ -12076,9 +12076,6 @@ f_has(argvars, rettv)
 #ifdef FEAT_OLE
 	"ole",
 #endif
-#ifdef FEAT_OSFILETYPE
-	"osfiletype",
-#endif
 #ifdef FEAT_PATH_EXTRA
 	"path_extra",
 #endif

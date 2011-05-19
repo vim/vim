@@ -1808,9 +1808,6 @@ free_buf_options(buf, free_p_ff)
 #ifdef FEAT_AUTOCMD
     clear_string_option(&buf->b_p_ft);
 #endif
-#ifdef FEAT_OSFILETYPE
-    clear_string_option(&buf->b_p_oft);
-#endif
 #ifdef FEAT_CINDENT
     clear_string_option(&buf->b_p_cink);
     clear_string_option(&buf->b_p_cino);

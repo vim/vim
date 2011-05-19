@@ -506,15 +506,6 @@
 #endif
 
 /*
- * +osfiletype		filetype checking in autocommand patterns.
- *			Only on systems that support filetypes (RISC OS).
- */
-#if 0
-# define FEAT_OSFILETYPE
-# define DFLT_OFT "Text"
-#endif
-
-/*
  * +viminfo		reading/writing the viminfo file. Takes about 8Kbyte
  *			of code.
  * VIMINFO_FILE		Location of user .viminfo file (should start with $).
