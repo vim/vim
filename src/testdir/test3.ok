@@ -1216,6 +1216,34 @@ void func(void)
 	printf("Foo!\n");
 }
 
+void func1(void)
+{
+	char* tab[] = {"foo", "bar",
+		"baz", "quux",
+		"this line used", "to be indented incorrectly"};
+	foo();
+}
+
+void func2(void)
+{
+	int tab[] =
+	{1, 2,
+		3, 4,
+		5, 6};
+
+	printf("This line used to be indented incorrectly.\n");
+}
+
+void func3(void)
+{
+	int tab[] = {
+		1, 2,
+		3, 4,
+		5, 6};
+
+	printf("Don't you dare indent this line incorrectly!\n);
+}
+
 
 void func(void)
 {

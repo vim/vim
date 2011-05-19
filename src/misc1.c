@@ -5482,8 +5482,8 @@ cin_islinecomment(p)
  * Recognize a line that starts with '{' or '}', or ends with ';', ',', '{' or
  * '}'.
  * Don't consider "} else" a terminated line.
- * Don't consider a line where there are unmatched opening braces before '}',
- * ';' or ',' a terminated line.
+ * If a line begins with an "else", only consider it terminated if no unmatched
+ * opening braces follow (handle "else { foo();" correctly).
  * Return the character terminating the line (ending char's have precedence if
  * both apply in order to determine initializations).
  */
@@ -5493,13 +5493,17 @@ cin_isterminated(s, incl_open, incl_comma)
     int		incl_open;	/* include '{' at the end as terminator */
     int		incl_comma;	/* recognize a trailing comma */
 {
-    char_u found_start = 0;
-    unsigned n_open = 0;
+    char_u	found_start = 0;
+    unsigned	n_open = 0;
+    int		is_else = FALSE;
 
     s = cin_skipcomment(s);
 
     if (*s == '{' || (*s == '}' && !cin_iselse(s)))
 	found_start = *s;
+
+    if (!found_start)
+	is_else = cin_iselse(s);
 
     while (*s)
     {
@@ -5507,7 +5511,7 @@ cin_isterminated(s, incl_open, incl_comma)
 	s = skip_string(cin_skipcomment(s));
 	if (*s == '}' && n_open > 0)
 	    --n_open;
-	if (n_open == 0
+	if ((!is_else || n_open == 0)
 		&& (*s == ';' || *s == '}' || (incl_comma && *s == ','))
 		&& cin_nocode(s + 1))
 	    return *s;
