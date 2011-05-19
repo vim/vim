@@ -4571,48 +4571,50 @@ ExpandFromContext(xp, pat, num_file, file, options)
 	    int		context;
 	    char_u	*((*func)__ARGS((expand_T *, int)));
 	    int		ic;
+	    int		escaped;
 	} tab[] =
 	{
-	    {EXPAND_COMMANDS, get_command_name, FALSE},
-	    {EXPAND_BEHAVE, get_behave_arg, TRUE},
+	    {EXPAND_COMMANDS, get_command_name, FALSE, TRUE},
+	    {EXPAND_BEHAVE, get_behave_arg, TRUE, TRUE},
 #ifdef FEAT_USR_CMDS
-	    {EXPAND_USER_COMMANDS, get_user_commands, FALSE},
-	    {EXPAND_USER_CMD_FLAGS, get_user_cmd_flags, FALSE},
-	    {EXPAND_USER_NARGS, get_user_cmd_nargs, FALSE},
-	    {EXPAND_USER_COMPLETE, get_user_cmd_complete, FALSE},
+	    {EXPAND_USER_COMMANDS, get_user_commands, FALSE, TRUE},
+	    {EXPAND_USER_CMD_FLAGS, get_user_cmd_flags, FALSE, TRUE},
+	    {EXPAND_USER_NARGS, get_user_cmd_nargs, FALSE, TRUE},
+	    {EXPAND_USER_COMPLETE, get_user_cmd_complete, FALSE, TRUE},
 #endif
 #ifdef FEAT_EVAL
-	    {EXPAND_USER_VARS, get_user_var_name, FALSE},
-	    {EXPAND_FUNCTIONS, get_function_name, FALSE},
-	    {EXPAND_USER_FUNC, get_user_func_name, FALSE},
-	    {EXPAND_EXPRESSION, get_expr_name, FALSE},
+	    {EXPAND_USER_VARS, get_user_var_name, FALSE, TRUE},
+	    {EXPAND_FUNCTIONS, get_function_name, FALSE, TRUE},
+	    {EXPAND_USER_FUNC, get_user_func_name, FALSE, TRUE},
+	    {EXPAND_EXPRESSION, get_expr_name, FALSE, TRUE},
 #endif
 #ifdef FEAT_MENU
-	    {EXPAND_MENUS, get_menu_name, FALSE},
-	    {EXPAND_MENUNAMES, get_menu_names, FALSE},
+	    {EXPAND_MENUS, get_menu_name, FALSE, TRUE},
+	    {EXPAND_MENUNAMES, get_menu_names, FALSE, TRUE},
 #endif
 #ifdef FEAT_SYN_HL
-	    {EXPAND_SYNTAX, get_syntax_name, TRUE},
+	    {EXPAND_SYNTAX, get_syntax_name, TRUE, TRUE},
 #endif
-	    {EXPAND_HIGHLIGHT, get_highlight_name, TRUE},
+	    {EXPAND_HIGHLIGHT, get_highlight_name, TRUE, TRUE},
 #ifdef FEAT_AUTOCMD
-	    {EXPAND_EVENTS, get_event_name, TRUE},
-	    {EXPAND_AUGROUP, get_augroup_name, TRUE},
+	    {EXPAND_EVENTS, get_event_name, TRUE, TRUE},
+	    {EXPAND_AUGROUP, get_augroup_name, TRUE, TRUE},
 #endif
 #ifdef FEAT_CSCOPE
-	    {EXPAND_CSCOPE, get_cscope_name, TRUE},
+	    {EXPAND_CSCOPE, get_cscope_name, TRUE, TRUE},
 #endif
 #ifdef FEAT_SIGNS
-	    {EXPAND_SIGN, get_sign_name, TRUE},
+	    {EXPAND_SIGN, get_sign_name, TRUE, TRUE},
 #endif
 #ifdef FEAT_PROFILE
-	    {EXPAND_PROFILE, get_profile_name, TRUE},
+	    {EXPAND_PROFILE, get_profile_name, TRUE, TRUE},
 #endif
 #if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
 	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
-	    {EXPAND_LANGUAGE, get_lang_arg, TRUE},
+	    {EXPAND_LANGUAGE, get_lang_arg, TRUE, FALSE},
+	    {EXPAND_LOCALES, get_locales, TRUE, FALSE},
 #endif
-	    {EXPAND_ENV_VARS, get_env_name, TRUE},
+	    {EXPAND_ENV_VARS, get_env_name, TRUE, TRUE},
 	};
 	int	i;
 
@@ -4626,7 +4628,8 @@ ExpandFromContext(xp, pat, num_file, file, options)
 	    {
 		if (tab[i].ic)
 		    regmatch.rm_ic = TRUE;
-		ret = ExpandGeneric(xp, &regmatch, num_file, file, tab[i].func);
+		ret = ExpandGeneric(xp, &regmatch, num_file, file,
+                                                tab[i].func, tab[i].escaped);
 		break;
 	    }
     }
@@ -4648,13 +4651,14 @@ ExpandFromContext(xp, pat, num_file, file, options)
  * Returns OK when no problems encountered, FAIL for error (out of memory).
  */
     int
-ExpandGeneric(xp, regmatch, num_file, file, func)
+ExpandGeneric(xp, regmatch, num_file, file, func, escaped)
     expand_T	*xp;
     regmatch_T	*regmatch;
     int		*num_file;
     char_u	***file;
     char_u	*((*func)__ARGS((expand_T *, int)));
 					  /* returns a string from the list */
+    int		escaped;
 {
     int		i;
     int		count = 0;
@@ -4679,7 +4683,10 @@ ExpandGeneric(xp, regmatch, num_file, file, func)
 	    {
 		if (round)
 		{
-		    str = vim_strsave_escaped(str, (char_u *)" \t\\.");
+		    if (escaped)
+			str = vim_strsave_escaped(str, (char_u *)" \t\\.");
+		    else
+			str = vim_strsave(str);
 		    (*file)[count] = str;
 #ifdef FEAT_MENU
 		    if (func == get_menu_names && str != NULL)

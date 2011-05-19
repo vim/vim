@@ -83,5 +83,7 @@ void ex_checktime __ARGS((exarg_T *eap));
 char_u *get_mess_lang __ARGS((void));
 void set_lang_var __ARGS((void));
 void ex_language __ARGS((exarg_T *eap));
+void free_locales __ARGS((void));
 char_u *get_lang_arg __ARGS((expand_T *xp, int idx));
+char_u *get_locales __ARGS((expand_T *xp, int idx));
 /* vim: set ft=c : */

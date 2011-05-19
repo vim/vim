@@ -911,6 +911,7 @@ eval_clear()
     hash_clear(&compat_hashtab);
 
     free_scriptnames();
+    free_locales();
 
     /* global variables */
     vars_clear(&globvarht);
