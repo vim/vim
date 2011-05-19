@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2011 May 10
+*todo.txt*      For Vim version 7.3.  Last change: 2011 May 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,6 +32,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Go through more coverity reports.
 
+Hong Xu: I think src/Make_ro.mak should also be removed.
+Two patches 2011 May 15
+
 Crash in autocomplete, valgrind log. (Greg Weber, 2011 Apr 22)
 
 Ex command ":s/ \?/ /g" splits multi-byte characters into bytes. (Dominique
@@ -49,6 +52,10 @@ Patch to set v:register default depending on "unnamed" in 'clipboard'. (Ingo
 Karkat, 2011 Jan 16)
 
 Patch to add 'cscoperelative'. (Raghavendra Prabhu, 2011 Apr 18)
+
+9   "} else" causes following lines to be indented too much. (Rouben
+    Rostamian, 2008 Aug 30)
+Patch by Lech Lorens, 2011 May 16, with more tests.
 
 New syntax file for dnsmasq. (Thilo Six, 2011 Apr 18)
 
@@ -71,6 +78,8 @@ Lepa, 2011 Jan 18)
 
 Patch to support ":!start /b cmd". (Xaizek, 2010 Dec 22)
 
+Patch for syntax "extend" not working correctly. (Ben Schmidt, 2011 May 15)
+
 Patch to build with GTK on Mac. (Ben Schmidt, 2011 Jan 18)
 Use another name instead of FEAT_GUI_ELSEWHERE.
 
@@ -86,6 +95,8 @@ Patch for Python 3 support. (lilydjwg, 2011 Feb 24)
 
 Patch to make putting from clipboard linewise when the text ends in a newline.
 (Sung Pae)  Do we want this?
+
+Patch to add third dict argument to sort(). (ZyX, 2011 May 15)
 
 Building the MingW version without clipboard but with multi-byte doesn't
 work. (Bill Lam, 2010 Sep 18)
@@ -132,6 +143,10 @@ problems, even though double quotes are used. (Manuel Stol, 2011 Mar 9)
 
 Patch to change the meaning of \n in substitute(). (motoya kurotsu, 2011 Mar 8)
 
+Gui menu edit/paste in block mode insert only inserts in one line (Bjorn
+Winckler, 2011 May 11)
+Use function to set paste option and restore it, use CTRL-R+ to paste.
+
 Help file foldexpr (ZyX)
 
 Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
@@ -163,6 +178,7 @@ Patch by Christian Brabandt, 2011 May 6.
 
 CursorHold repeats typed key when it's the start of a mapping.
 (Will Gray, 2011 Mar 23)
+Christian Brabandt: problem is that OP_PENDING isn't set.
 
 Windows keys not set properly on Windows 7?  (cncyber, 2010 Aug 26)
 
@@ -323,9 +339,6 @@ mkdir().
 When 'paste' is changed with 'pastetoggle', the ruler doesn't reflect this
 right away. (Samuel Ferencik, 2010 Dec 7)
 
-Windows installer: licence text should not use indent, causes bad word wrap.
-(Benjamin Fritz, 2010 Aug 16)
-
 Mac with X11: clipboard doesn't work properly. (Raf, 2010 Aug 16)
 
 Using CompilerSet doesn't record where an option was set from.  E.g., in the
@@ -367,11 +380,6 @@ back. (Yukihiro Nakadaira, 2010 Nov 13)
 Can 'undolevels' be a buffer-local option?  Helps for making big changes in
 one file only, set 'ul' to -1 only for that buffer.
 Patch by Christian Brabandt, 2010 Dec 17.  Needs test.
-
-Dos uninstal may delete vim.bat from the wrong directory (e.g., when someone
-makes his own wrapper).  Add a magic string with the version number to the
-.bat file and check for it in the uninstaller.  E.g.
-          # uninstall key: vim7.3*
 
 Problem with cursor in the wrong column. (SungHyun Nam, 2010 Mar 11)
 Additional info by Dominique Pelle. (also on 2010 Apr 10)
@@ -992,6 +1000,9 @@ Jun 3)
 However, for backwards compatibility escaping might be necessary.  Check if
 the user put quotes around the expanded item?
 
+A throw in a function causes missing an endif below the call. (Spiros
+Bousbouras, 2011 May 16)
+
 Error E324 can be given when a cron script has wiped out our temp directory.
 Give a clear error message about this (and tell them not to wipe out /tmp).
 
@@ -1011,9 +1022,18 @@ go to Insert mode and add a few lines.  Then backspacing every other time
 moves the cursor instead of deleting. (Chris Kaiser, 2007 Sep 25)
 
 Patch to use Modern UI 2.0 for the Nsis installer. (Guopeng Wen, 2010 Jul 30)
+Latest version: 2011 May 18
 8   Windows install with NSIS: make it possible to do a silent install, see
     http://nsis.sourceforge.net/Docs/Chapter4.html#4.12
     Version from Guopeng Wen that does this (2010 Dec 27)
+
+Windows installer: licence text should not use indent, causes bad word wrap.
+(Benjamin Fritz, 2010 Aug 16)
+
+Dos uninstal may delete vim.bat from the wrong directory (e.g., when someone
+makes his own wrapper).  Add a magic string with the version number to the
+.bat file and check for it in the uninstaller.  E.g.
+          # uninstall key: vim7.3*
 
 Changes for Win32 makefile. (Mike Williams, 2007 Jan 22, Alexei Alexandrov,
 2007 Feb 8)
@@ -3801,8 +3821,6 @@ Insert mode:
 
 
 'cindent', 'smartindent':
-9   "} else" causes following lines to be indented too much. (Rouben
-    Rostamian, 2008 Aug 30)
 9   Wrapping a variable initialization should have extra indent:
 	char * veryLongName =
 		"very long string"

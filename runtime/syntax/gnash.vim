@@ -2,7 +2,7 @@
 " Language: 	gnash(1) configuration files
 "		http://www.gnu.org/software/gnash/manual/gnashuser.html#gnashrc
 " Maintainer: 	Thilo Six <T.Six@gmx.de>
-" Last Change: 	2011 Apr 28
+" Last Change: 	17 May 2011
 " Credidts:	derived from readline.vim
 "		Nikolai Weibull
 "
@@ -15,16 +15,12 @@ elseif exists ("b:current_syntax")
     finish
 endif
 
-let s:cpo_save = &cpo
-set cpo&vim
-
-
 syn case match
-
 syn keyword GnashTodo	    contained TODO FIXME XXX NOTE
 
-syn region  GnashComment    display oneline start='^\s*#' end='$'
-                                \ contains=GnashTodo,@Spell
+" Comments
+syn match   GnashComment    "^#.*$"   contains=GnashTodo
+syn match   GnashComment    "\s#.*$"  contains=GnashTodo
 
 syn match   GnashNumber	    display '\<\d\+\>'
 
@@ -84,16 +80,13 @@ syn match GnashKeyword      '\<webcamDevice\>'
 syn match GnashKeyword      '\<whitelist\>'
 syn match GnashKeyword      '\<writelog\>'
 
-hi def GnashOn		    ctermfg=Green guifg=Green
-hi def GnashOff		    ctermfg=Red   guifg=Red
+hi def link GnashOn	    Identifier
+hi def link GnashOff	    Preproc
 hi def link GnashComment    Comment
 hi def link GnashTodo	    Todo
 hi def link GnashString	    String
-hi def link GnashNumber	    Normal
+hi def link GnashNumber	    Type
 hi def link GnashSet	    String
 hi def link GnashKeyword    Keyword
 
 let b:current_syntax = "gnash"
-
-let &cpo = s:cpo_save
-unlet s:cpo_save

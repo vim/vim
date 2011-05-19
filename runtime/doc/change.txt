@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.3.  Last change: 2011 May 10
+*change.txt*    For Vim version 7.3.  Last change: 2011 May 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -522,11 +522,11 @@ comment (starting with '"') after the ":!" command.
 ={motion}		Filter {motion} lines through the external program
 			given with the 'equalprg' option.  When the 'equalprg'
 			option is empty (this is the default), use the
-			internal formatting function |C-indenting|.  But when
-			'indentexpr' is not empty, it will be used instead
-			|indent-expression|.  When Vim was compiled without
-			internal formatting then the "indent" program is used
-			as a last resort.
+			internal formatting function |C-indenting| and
+			|'lisp'|.  But when 'indentexpr' is not empty, it will
+			be used instead |indent-expression|.  When Vim was
+			compiled without internal formatting then the "indent"
+			program is used as a last resort.
 
 							*==*
 ==			Filter [count] lines like with ={motion}.

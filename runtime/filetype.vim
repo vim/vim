@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2011 Apr 28
+" Last Change:	2011 May 19
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -556,7 +556,7 @@ au BufNewFile,BufRead */etc/apt/sources.list.d/*.list	setf debsources
 au BufNewFile,BufRead denyhosts.conf		setf denyhosts
 
 " dnsmasq(8) configuration files
-au BufNewFile,BufRead dnsmasq.conf		setf dnsmasq
+au BufNewFile,BufRead */etc/dnsmasq.conf	setf dnsmasq
 
 " ROCKLinux package description
 au BufNewFile,BufRead *.desc			setf desc

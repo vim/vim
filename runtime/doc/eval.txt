@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2011 May 10
+*eval.txt*	For Vim version 7.3.  Last change: 2011 May 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4076,6 +4076,7 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 		{pat} matches.
 		A match at the first character or |List| item returns zero.
 		If there is no match -1 is returned.
+		For getting submatches see |matchlist()|.
 		Example: >
 			:echo match("testing", "ing")	" results in 4
 			:echo match([1, 'x'], '\a')	" results in 1
@@ -5581,6 +5582,10 @@ substitute({expr}, {pat}, {sub}, {flags})		*substitute()*
 <		This removes the last component of the 'path' option. >
 			:echo substitute("testing", ".*", "\\U\\0", "")
 <		results in "TESTING".
+		The {sub} argument can start with \=, just like with
+		|:substitute|.  Example: >
+			:echo substitute(s, '%\(\x\x\)',
+			   \ '\=nr2char("0x" . submatch(1))', 'g')
 
 synID({lnum}, {col}, {trans})				*synID()*
 		The result is a Number, which is the syntax ID at the position

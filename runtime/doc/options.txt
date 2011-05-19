@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2011 Apr 29
+*options.txt*	For Vim version 7.3.  Last change: 2011 May 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4104,7 +4104,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	It is used when a new line is created, for the |=| operator and
 	in Insert mode as specified with the 'indentkeys' option.
 	When this option is not empty, it overrules the 'cindent' and
-	'smartindent' indenting.
+	'smartindent' indenting.  When 'lisp' is set, this option is
+	overridden by the Lisp indentation algorithm.
 	When 'paste' is set this option is not used for indenting.
 	The expression is evaluated with |v:lnum| set to the line number for
 	which the indent is to be computed.  The cursor is also in this line

@@ -3,7 +3,7 @@
 " Filenames:    *.dot
 " Maintainer:   Markus Mottl  <markus.mottl@gmail.com>
 " URL:          http://www.ocaml.info/vim/syntax/dot.vim
-" Last Change:  2006 Feb 05
+" Last Change:  2011 May 17 - improved identifier matching + two new keywords
 "               2001 May 04 - initial version
 
 " For version 5.x: Clear all syntax items
@@ -47,10 +47,10 @@ syn keyword  dotType shape shapefile sides skew width
 
 " Edge attributes
 syn keyword  dotType arrowhead arrowsize arrowtail constraint decorateP
-syn keyword  dotType dir headclip headlabel labelangle labeldistance
+syn keyword  dotType dir headclip headlabel headport labelangle labeldistance
 syn keyword  dotType labelfontcolor labelfontname labelfontsize
 syn keyword  dotType minlen port_label_distance samehead sametail
-syn keyword  dotType tailclip taillabel weight
+syn keyword  dotType tailclip taillabel tailport weight
 
 " Shared attributes (graphs, nodes, edges)
 syn keyword  dotType color
@@ -67,7 +67,7 @@ syn match    dotKeyChar  ";"
 syn match    dotKeyChar  "->"
 
 " Identifier
-syn match    dotIdentifier /\<\w\+\>/
+syn match    dotIdentifier /\<\w\+\(:\w\+\)\?\>/
 
 " Synchronization
 syn sync minlines=50
