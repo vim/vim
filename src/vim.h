@@ -1274,6 +1274,7 @@ enum auto_event
     EVENT_WINENTER,		/* after entering a window */
     EVENT_WINLEAVE,		/* before leaving a window */
     EVENT_ENCODINGCHANGED,	/* after changing the 'encoding' option */
+    EVENT_INSERTCHARPRE,	/* before inserting a char */
     EVENT_CURSORHOLD,		/* cursor in same position for a while */
     EVENT_CURSORHOLDI,		/* idem, in Insert mode */
     EVENT_FUNCUNDEFINED,	/* if calling a function which doesn't exist */

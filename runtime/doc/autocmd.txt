@@ -299,6 +299,8 @@ Name			triggered by ~
 |InsertEnter|		starting Insert mode
 |InsertChange|		when typing <Insert> while in Insert or Replace mode
 |InsertLeave|		when leaving Insert mode
+|InsertCharPre|		when a character was typed in Insert mode, before
+			inserting it
 
 |ColorScheme|		after loading a color scheme
 
@@ -657,6 +659,17 @@ InsertChange			When typing <Insert> while in Insert or
 				indicates the new mode.
 				Be careful not to move the cursor or do
 				anything else that the user does not expect.
+							*InsertCharPre*
+InsertCharPre			When a character is typed in Insert mode,
+				before inserting the char.
+				The |v:char| variable indicates the char typed
+				and can be changed during the event to insert
+				a different character.  When |v:char| is set
+				to more than one character this text is
+				inserted literally.
+				It is not allowed to change the text |textlock|.
+				The event is not triggered when 'paste' is
+				set.
 							*InsertEnter*
 InsertEnter			Just before starting Insert mode.  Also for
 				Replace mode and Virtual Replace mode.  The

@@ -1381,10 +1381,45 @@ docomplete:
 		goto do_intr;
 #endif
 
+normalchar:
 	    /*
 	     * Insert a nomal character.
 	     */
-normalchar:
+#ifdef FEAT_AUTOCMD
+	    if (!p_paste)
+	    {
+		/* Trigger the InsertCharPre event.  Lock the text to avoid
+		 * weird things from happening. */
+		set_vim_var_char(c);
+		++textlock;
+		if (apply_autocmds(EVENT_INSERTCHARPRE, NULL, NULL,
+							       FALSE, curbuf))
+		{
+		    /* Get the new value of v:char.  If it is more than one
+		     * character insert it literally. */
+		    char_u *s = get_vim_var_str(VV_CHAR);
+		    if (MB_CHARLEN(s) > 1)
+		    {
+			if (stop_arrow() != FAIL)
+			{
+			    ins_str(s);
+			    AppendToRedobuffLit(s, -1);
+			}
+			c = NUL;
+		    }
+		    else
+			c = PTR2CHAR(s);
+		}
+
+		set_vim_var_string(VV_CHAR, NULL, -1);
+		--textlock;
+
+		/* If the new value is an empty string then don't insert a
+		 * char. */
+		if (c == NUL)
+		    break;
+	    }
+#endif
 #ifdef FEAT_SMARTINDENT
 	    /* Try to perform smart-indenting. */
 	    ins_try_si(c);
@@ -3491,11 +3526,7 @@ ins_compl_addfrommatch()
 	    return;
     }
     p += len;
-#ifdef FEAT_MBYTE
-    c = mb_ptr2char(p);
-#else
-    c = *p;
-#endif
+    c = PTR2CHAR(p);
     ins_compl_addleader(c);
 }
 
