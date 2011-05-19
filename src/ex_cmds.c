@@ -4625,7 +4625,15 @@ do_sub(eap)
 			 * for a match in this line again. */
 			skip_match = TRUE;
 		    else
-			++matchcol; /* search for a match at next column */
+		    {
+			 /* search for a match at next column */
+#ifdef FEAT_MBYTE
+			if (has_mbyte)
+			    matchcol += mb_ptr2len(sub_firstline + matchcol);
+			else
+#endif
+			    ++matchcol;
+		    }
 		    goto skip;
 		}
 
