@@ -1575,7 +1575,7 @@ gui_mch_init(void)
 
 #ifdef FEAT_EVAL
     /* set the v:windowid variable */
-    set_vim_var_nr(VV_WINDOWID, (long)s_hwnd);
+    set_vim_var_nr(VV_WINDOWID, HandleToLong(s_hwnd));
 #endif
 
 theend:
