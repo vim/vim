@@ -3401,6 +3401,7 @@ mch_call_shell(
 	    {
 		STARTUPINFO		si;
 		PROCESS_INFORMATION	pi;
+		DWORD			flags = CREATE_NEW_CONSOLE;
 
 		si.cb = sizeof(si);
 		si.lpReserved = NULL;
@@ -3417,6 +3418,22 @@ mch_call_shell(
 		    cmdbase = skipwhite(cmdbase + 4);
 		    si.dwFlags = STARTF_USESHOWWINDOW;
 		    si.wShowWindow = SW_SHOWMINNOACTIVE;
+		}
+		else if ((STRNICMP(cmdbase, "/b", 2) == 0)
+			&& vim_iswhite(cmdbase[2]))
+		{
+		    cmdbase = skipwhite(cmdbase + 2);
+		    flags = CREATE_NO_WINDOW;
+		    si.dwFlags = STARTF_USESTDHANDLES;
+		    si.hStdInput = CreateFile("\\\\.\\NUL",	// File name
+			GENERIC_READ,				// Access flags
+			0,					// Share flags
+			NULL,					// Security att.
+			OPEN_EXISTING,				// Open flags
+			FILE_ATTRIBUTE_NORMAL,			// File att.
+			NULL);					// Temp file
+		    si.hStdOutput = si.hStdInput;
+		    si.hStdError = si.hStdInput;
 		}
 
 		/* When the command is in double quotes, but 'shellxquote' is
@@ -3445,7 +3462,7 @@ mch_call_shell(
 			NULL,			// Process security attributes
 			NULL,			// Thread security attributes
 			FALSE,			// Inherit handles
-			CREATE_NEW_CONSOLE,	// Creation flags
+			flags,			// Creation flags
 			NULL,			// Environment
 			NULL,			// Current directory
 			&si,			// Startup information
@@ -3457,6 +3474,11 @@ mch_call_shell(
 #ifdef FEAT_GUI_W32
 		    EMSG(_("E371: Command not found"));
 #endif
+		}
+		if (si.hStdInput != NULL)
+		{
+		    /* Close the handle to \\.\NUL */
+		    CloseHandle(si.hStdInput);
 		}
 		/* Close the handles to the subprocess, so that it goes away */
 		CloseHandle(pi.hThread);

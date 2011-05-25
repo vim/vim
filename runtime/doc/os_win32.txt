@@ -313,7 +313,36 @@ A. When using :! to run an external command, you can run it with "start": >
    with :!start do not get passed Vim's open file handles, which means they do
    not have to be closed before Vim.
    To avoid this special treatment, use ":! start".
-   The optional "/min" argument causes the window to be minimized.
+   There are two optional arguments (see the next Q):
+       /min  the window will be minimized.
+       /b"   no console window will be opened
+   You can only one of these flags at a time.  A second second one will be
+   treated as the start of the command.
+
+Q. How do I avoid getting a window for programs that I run asynchronously?
+A. You have two possible solutions depending on what exactly do you want:
+   1) You may use the /min flag that would run program in minimized state with
+      no other changes. It will work equally for console and GUI applications.
+   2) You can use /b flag to run console applications without creating a
+      console window for them (GUI applications are not affected). But you
+      should use this flag only if application you run doesn't require any
+      input.  Otherwise it will get an EOF error because it's input stream
+      (stdin) would be redirected to \\.\NUL (stdour and stderr too).
+
+   Example for a console application, run Exuberant ctags: >
+        :!start /min ctags -R .
+<  When it has finished you should see file named "tags" in your current
+   directory.  You should notice the window title blinking on your taskbar.
+   This is more noticable for commands that take longer.
+   Now delete the "tags" file and run this command: >
+        :!start /b ctags -R .
+<  You should have the same "tags" file, but this time there will be no
+   blinking on the taskbar.
+   Example for a GUI application: >
+        :!start /min notepad
+        :!start /b notepad
+<  The first command runs notepad minimized and the second one runs it
+   normally.
 
 Q. I'm using Win32s, and when I try to run an external command like "make",
    Vim doesn't wait for it to finish!  Help!
