@@ -3861,13 +3861,24 @@ set_one_cmd_context(xp, buff)
 #if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
 	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
 	case CMD_language:
-	    if (*skiptowhite(arg) == NUL)
+	    p = skiptowhite(arg);
+	    if (*p == NUL)
 	    {
 		xp->xp_context = EXPAND_LANGUAGE;
 		xp->xp_pattern = arg;
 	    }
 	    else
-		xp->xp_context = EXPAND_NOTHING;
+	    {
+		if ( STRNCMP(arg, "messages", p - arg) == 0
+		  || STRNCMP(arg, "ctype", p - arg) == 0
+		  || STRNCMP(arg, "time", p - arg) == 0)
+		{
+		    xp->xp_context = EXPAND_LOCALES;
+		    xp->xp_pattern = skipwhite(p);
+		}
+		else
+		    xp->xp_context = EXPAND_NOTHING;
+	    }
 	    break;
 #endif
 #if defined(FEAT_PROFILE)
