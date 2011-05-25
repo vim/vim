@@ -4959,6 +4959,7 @@ static pos_T	*find_match_paren __ARGS((int, int));
 static int	corr_ind_maxparen __ARGS((int ind_maxparen, pos_T *startpos));
 static int	find_last_paren __ARGS((char_u *l, int start, int end));
 static int	find_match __ARGS((int lookfor, linenr_T ourscope, int ind_maxparen, int ind_maxcomment));
+static int	cin_is_cpp_namespace __ARGS((char_u *));
 
 static int	ind_hash_comment = 0;   /* # starts a comment */
 
@@ -5219,6 +5220,50 @@ cin_isscopedecl(s)
     else
 	return FALSE;
     return (*(s = cin_skipcomment(s + i)) == ':' && s[1] != ':');
+}
+
+/* Maximum number of lines to search back for a "namespace" line. */
+#define FIND_NAMESPACE_LIM 20
+
+/*
+ * Recognize a "namespace" scope declaration.
+ */
+    static int
+cin_is_cpp_namespace(s)
+    char_u	*s;
+{
+    char_u	*p;
+    int		has_name = FALSE;
+
+    s = cin_skipcomment(s);
+    if (STRNCMP(s, "namespace", 9) == 0 && (s[9] == NUL || !vim_iswordc(s[9])))
+    {
+	p = cin_skipcomment(skipwhite(s + 9));
+	while (*p != NUL)
+	{
+	    if (vim_iswhite(*p))
+	    {
+		has_name = TRUE; /* found end of a name */
+		p = cin_skipcomment(skipwhite(p));
+	    }
+	    else if (*p == '{')
+	    {
+		break;
+	    }
+	    else if (vim_iswordc(*p))
+	    {
+		if (has_name)
+		    return FALSE; /* word character after skipping past name */
+		++p;
+	    }
+	    else
+	    {
+		return FALSE;
+	    }
+	}
+	return TRUE;
+    }
+    return FALSE;
 }
 
 /*
@@ -6296,6 +6341,11 @@ get_c_indent()
      */
     int ind_keep_case_label = 0;
 
+    /*
+     * handle C++ namespace
+     */
+    int ind_cpp_namespace = 0;
+
     pos_T	cur_curpos;
     int		amount;
     int		scope_amount;
@@ -6336,6 +6386,7 @@ get_c_indent()
     int		n;
     int		iscase;
     int		lookfor_break;
+    int		lookfor_cpp_namespace = FALSE;
     int		cont_amount = 0;    /* amount for continuation line */
     int		original_line_islabel;
 
@@ -6409,6 +6460,7 @@ get_c_indent()
 	    case 'J': ind_js = n; break;
 	    case 'l': ind_keep_case_label = n; break;
 	    case '#': ind_hash_comment = n; break;
+	    case 'N': ind_cpp_namespace = n; break;
 	}
 	if (*options == ',')
 	    ++options;
@@ -6976,11 +7028,24 @@ get_c_indent()
 	    if (start_brace == BRACE_IN_COL0)	    /* '{' is in column 0 */
 	    {
 		amount = ind_open_left_imag;
+		lookfor_cpp_namespace = TRUE;
+	    }
+	    else if (start_brace == BRACE_AT_START &&
+		    lookfor_cpp_namespace)	  /* '{' is at start */
+	    {
+
+		lookfor_cpp_namespace = TRUE;
 	    }
 	    else
 	    {
 		if (start_brace == BRACE_AT_END)    /* '{' is at end of line */
+		{
 		    amount += ind_open_imag;
+
+		    l = skipwhite(ml_get_curline());
+		    if (cin_is_cpp_namespace(l))
+			amount += ind_cpp_namespace;
+		}
 		else
 		{
 		    /* Compensate for adding ind_open_extra later. */
@@ -7150,6 +7215,46 @@ get_c_indent()
 			    amount = cont_amount;
 			else
 			    amount += ind_continuation;
+		    }
+		    else if (lookfor_cpp_namespace)
+		    {
+			if (curwin->w_cursor.lnum == ourscope)
+			    continue;
+
+			if (curwin->w_cursor.lnum == 0
+				|| curwin->w_cursor.lnum
+					      < ourscope - FIND_NAMESPACE_LIM)
+			    break;
+
+			l = ml_get_curline();
+
+			/*
+			 * If we're in a comment now, skip to the start of the
+			 * comment.
+			 */
+			trypos = find_start_comment(ind_maxcomment);
+			if (trypos != NULL)
+			{
+			    curwin->w_cursor.lnum = trypos->lnum + 1;
+			    curwin->w_cursor.col = 0;
+			    continue;
+			}
+
+			/*
+			 * Skip preprocessor directives and blank lines.
+			 */
+			if (cin_ispreproc_cont(&l, &curwin->w_cursor.lnum))
+			    continue;
+
+			if (cin_is_cpp_namespace(l))
+			{
+			    amount += ind_cpp_namespace;
+			    break;
+			}
+
+			if (cin_nocode(l))
+			    continue;
+
 		    }
 		    else if (lookfor != LOOKFOR_TERM
 					  && lookfor != LOOKFOR_CPP_BASECLASS)

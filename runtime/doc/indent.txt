@@ -128,13 +128,20 @@ have changed the indent by typing <BS>, <Tab>, or <Space> in the indent or
 used CTRL-T or CTRL-D.
 
 						*cinoptions-values*
-The 'cinoptions' option sets how Vim performs indentation.  In the list below,
+The 'cinoptions' option sets how Vim performs indentation.  The value after
+the option character can be one of these (N is any number):
+	N	indent N spaces
+	-N	indent N spaces to the left
+	Ns	N times 'shiftwidth spaces
+	-Ns	N times 'shiftwidth spaces to the left
+
+In the list below,
 "N" represents a number of your choice (the number can be negative).  When
 there is an 's' after the number, Vim multiplies the number by 'shiftwidth':
 "1s" is 'shiftwidth', "2s" is two times 'shiftwidth', etc.  You can use a
-decimal point, too: "-0.5s" is minus half a 'shiftwidth'.  The examples below
-assume a 'shiftwidth' of 4.
-
+decimal point, too: "-0.5s" is minus half a 'shiftwidth'.
+The examples below assume a 'shiftwidth' of 4.
+							*cino->*
 	>N    Amount added for "normal" indent.  Used after a line that should
 	      increase the indent (lines starting with "if", an opening brace,
 	      etc.).  (default 'shiftwidth').
@@ -145,6 +152,7 @@ assume a 'shiftwidth' of 4.
 		      foo;		foo;			  foo;
 		  }		      }			  }
 <
+							*cino-e*
 	eN    Add N to the prevailing indent inside a set of braces if the
 	      opening brace at the End of the line (more precise: is not the
 	      first character in a line).  This is useful if you want a
@@ -160,6 +168,7 @@ assume a 'shiftwidth' of 4.
 		      bar;		  bar;		      bar;
 		  }		      }			  }
 <
+							*cino-n*
 	nN    Add N to the prevailing indent for a statement after an "if",
 	      "while", etc., if it is NOT inside a set of braces.  This is
 	      useful if you want a different indent when there is no '{'
@@ -174,6 +183,7 @@ assume a 'shiftwidth' of 4.
 		      bar;		  bar;		      bar;
 		  }		      }			  }
 <
+							*cino-f*
 	fN    Place the first opening brace of a function or other block in
 	      column N.  This applies only for an opening brace that is not
 	      inside other braces and is at the start of the line.  What comes
@@ -184,6 +194,7 @@ assume a 'shiftwidth' of 4.
 		  {			{		      {
 		      int foo;		    int foo;		  int foo;
 <
+							*cino-{*
 	{N    Place opening braces N characters from the prevailing indent.
 	      This applies only for opening braces that are inside other
 	      braces.  (default 0).
@@ -193,6 +204,7 @@ assume a 'shiftwidth' of 4.
 		  {			{		      {
 		      foo;		  foo;		      foo;
 <
+							*cino-}*
 	}N    Place closing braces N characters from the matching opening
 	      brace.  (default 0).
 
@@ -202,6 +214,7 @@ assume a 'shiftwidth' of 4.
 		      foo;		  foo;		      foo;
 		  }		      }			    }
 <
+							*cino-^*
 	^N    Add N to the prevailing indent inside a set of braces if the
 	      opening brace is in column 0.  This can specify a different
 	      indent for whole of a function (some may like to set it to a
@@ -216,6 +229,7 @@ assume a 'shiftwidth' of 4.
 		      }			}		  }
 		  }		      }			  }
 <
+							*cino-L*
 	LN    Controls placement of jump labels. If N is negative, the label
 	      will be placed at column 1. If N is non-negative, the indent of
 	      the label will be the prevailing indent minus N.  (default -1).
@@ -229,6 +243,7 @@ assume a 'shiftwidth' of 4.
 		      }                   }                   }
 		  }                   }                   }
 <
+							*cino-:*
 	:N    Place case labels N characters from the indent of the switch().
 	      (default 'shiftwidth').
 
@@ -240,6 +255,7 @@ assume a 'shiftwidth' of 4.
 		      default:	      default:
 		  }		      }
 <
+							*cino-=*
 	=N    Place statements occurring after a case label N characters from
 	      the indent of the label.  (default 'shiftwidth').
 
@@ -247,6 +263,7 @@ assume a 'shiftwidth' of 4.
 		   case 11:		case 11:  a = a + 1;
 		       a = a + 1;		  b = b + 1;
 <
+							*cino-l*
 	lN    If N != 0 Vim will align with a case label instead of the
 	      statement after it in the same line.
 
@@ -256,6 +273,7 @@ assume a 'shiftwidth' of 4.
 				    break;	      break;
 				}		  }
 <
+							*cino-b*
 	bN    If N != 0 Vim will align a final "break" with the case label,
 	      so that case..break looks like a sort of block.  (default: 0).
 	      When using 1, consider adding "0=break" to 'cinkeys'.
@@ -272,6 +290,7 @@ assume a 'shiftwidth' of 4.
 			  break;	  break;
 		  }		      }
 <
+							*cino-g*
 	gN    Place C++ scope declarations N characters from the indent of the
 	      block they are in.  (default 'shiftwidth').  A scope declaration
 	      can be "public:", "protected:" or "private:".
@@ -283,6 +302,7 @@ assume a 'shiftwidth' of 4.
 		      private:	      private:
 		  }		      }
 <
+							*cino-h*
 	hN    Place statements occurring after a C++ scope declaration N
 	      characters from the indent of the label.  (default
 	      'shiftwidth').
@@ -291,6 +311,21 @@ assume a 'shiftwidth' of 4.
 		   public:		public:   a = a + 1;
 		       a = a + 1;		  b = b + 1;
 <
+							*cino-N*
+	NN    Indent inside C++ namespace N characters extra compared to a
+	      normal block.  (default 0).
+
+		cino=			   cino=N-s >
+		  namespace {                namespace {
+		      void function();       void function();
+		  }                          }
+
+		  namespace my               namespace my
+		  {                          {
+		      void function();       void function();
+		  }                          }
+<
+							*cino-p*
 	pN    Parameter declarations for K&R-style function declarations will
 	      be indented N characters from the margin.  (default
 	      'shiftwidth').
@@ -300,6 +335,7 @@ assume a 'shiftwidth' of 4.
 		      int a;	      int a;			  int a;
 		      char b;	      char b;			  char b;
 <
+							*cino-t*
 	tN    Indent a function return type declaration N characters from the
 	      margin.  (default 'shiftwidth').
 
@@ -307,6 +343,7 @@ assume a 'shiftwidth' of 4.
 		      int	      int			 int
 		  func()	      func()		  func()
 <
+							*cino-i*
 	iN    Indent C++ base class declarations and constructor
 	      initializations, if they start in a new line (otherwise they
 	      are aligned at the right side of the ':').
@@ -320,6 +357,7 @@ assume a 'shiftwidth' of 4.
 		      BaseClass(3)	    BaseClass(3)
 		  {}			    {}
 <
+							*cino-+*
 	+N    Indent a continuation line (a line that spills onto the next)
               inside a function N additional characters.  (default
               'shiftwidth').
@@ -330,6 +368,7 @@ assume a 'shiftwidth' of 4.
 		  a = b + 9 *		    a = b + 9 *
 		      c;			      c;
 <
+							*cino-c*
 	cN    Indent comment lines after the comment opener, when there is no
 	      other text with which to align, N characters from the comment
 	      opener.  (default 3).  See also |format-comments|.
@@ -339,6 +378,7 @@ assume a 'shiftwidth' of 4.
 		     text.			 text.
 		   */			     */
 <
+							*cino-C*
 	CN    When N is non-zero, indent comment lines by the amount specified
 	      with the c flag above even if there is other text behind the
 	      comment opener.  (default 0).
@@ -349,12 +389,14 @@ assume a 'shiftwidth' of 4.
 		  ********/		    ********/
 <	      (Example uses ":set comments& comments-=s1:/* comments^=s0:/*")
 
+							*cino-/*
 	/N    Indent comment lines N characters extra.  (default 0).
 		cino=			  cino=/4 >
 		  a = b;		    a = b;
 		  /* comment */			/* comment */
 		  c = d;		    c = d;
 <
+							*cino-(*
 	(N    When in unclosed parentheses, indent N characters from the line
 	      with the unclosed parentheses.  Add a 'shiftwidth' for every
 	      unclosed parentheses.  When N is 0 or the unclosed parentheses
@@ -370,6 +412,7 @@ assume a 'shiftwidth' of 4.
 			  (c2 || c3))		(c2 || c3))
 		     {			       {
 <
+							*cino-u*
 	uN    Same as (N, but for one level deeper.  (default 'shiftwidth').
 
 		cino=			  cino=u2 >
@@ -377,6 +420,7 @@ assume a 'shiftwidth' of 4.
 			  && (c22345		    && (c22345
 			      || c3))		      || c3))
 <
+							*cino-U*
 	UN    When N is non-zero, do not ignore the indenting specified by
 	      ( or u in case that the unclosed parentheses is the first
 	      non-white character in its line.  (default 0).
@@ -388,6 +432,7 @@ assume a 'shiftwidth' of 4.
 		       c3			    c3
 		      ) && c4;			) && c4;
 <
+							*cino-2*
 	wN    When in unclosed parentheses and N is non-zero and either
 	      using "(0" or "u0", respectively, or using "U0" and the unclosed
 	      parentheses is the first non-white character in its line, line
@@ -400,6 +445,7 @@ assume a 'shiftwidth' of 4.
 				|| c3))		    || c3))
 		      foo;			foo;
 <
+							*cino-W*
 	WN    When in unclosed parentheses and N is non-zero and either
 	      using "(0" or "u0", respectively and the unclosed parentheses is
 	      the last non-white character in its line and it is not the
@@ -414,6 +460,7 @@ assume a 'shiftwidth' of 4.
 		  a_short_line(argument,    a_short_line(argument,
 			       argument);		 argument);
 <
+							*cino-m*
 	mN    When N is non-zero, line up a line starting with a closing
 	      parentheses with the first character of the line with the
 	      matching opening parentheses.  (default 0).
@@ -428,6 +475,7 @@ assume a 'shiftwidth' of 4.
 		     )			    )
 		      foo;			foo;
 <
+							*cino-M*
 	MN    When N is non-zero, line up a line starting with a closing
 	      parentheses with the first character of the previous line.
 	      (default 0).
@@ -437,7 +485,7 @@ assume a 'shiftwidth' of 4.
 			 cond2			   cond2
 		     )				   )
 <
-					*java-cinoptions* *java-indenting*
+				*java-cinoptions* *java-indenting* *cino-j*
 	jN    Indent java anonymous classes correctly.  The value 'N' is
 	      currently unused but must be non-zero (e.g. 'j1').  'j1' will
 	      indent for example the following code snippet correctly: >
@@ -448,7 +496,7 @@ assume a 'shiftwidth' of 4.
 		    }
 		});
 <
-				*javascript-cinoptions* *javascript-indenting*
+			*javascript-cinoptions* *javascript-indenting* *cino-J*
 	JN    Indent JavaScript object declarations correctly by not confusing
 	      them with labels.  The value 'N' is currently unused but must be 
 	      non-zero (e.g. 'J1'). >
@@ -466,16 +514,19 @@ assume a 'shiftwidth' of 4.
 		    }
 		}
 <
+								*cino-)*
 	)N    Vim searches for unclosed parentheses at most N lines away.
 	      This limits the time needed to search for parentheses.  (default
 	      20 lines).
 
+								*cino-star*
 	*N    Vim searches for unclosed comments at most N lines away.  This
 	      limits the time needed to search for the start of a comment.
 	      If your /* */ comments stop indenting afer N lines this is the
 	      value you will want to change.
 	      (default 70 lines).
 
+								*cino-#*
 	#N    When N is non-zero recognize shell/Perl comments, starting with
 	      '#'.  Default N is zero: don't recognizes '#' comments.  Note
 	      that lines starting with # will still be seen as preprocessor
@@ -483,7 +534,7 @@ assume a 'shiftwidth' of 4.
 
 
 The defaults, spelled out in full, are:
-	cinoptions=>s,e0,n0,f0,{0,}0,^0,L-1,:s,=s,l0,b0,gs,hs,ps,ts,is,+s,
+	cinoptions=>s,e0,n0,f0,{0,}0,^0,L-1,:s,=s,l0,b0,gs,hs,N0,ps,ts,is,+s,
 			c3,C0,/0,(2s,us,U0,w0,W0,m0,j0,J0,)20,*70,#0
 
 Vim puts a line in column 1 if:
