@@ -46,8 +46,11 @@ typedef struct Vim Vim;
 /* header files for imported files */
 #include "oaidl.h"
 
-void __RPC_FAR * __RPC_USER MIDL_user_allocate(size_t);
-void __RPC_USER MIDL_user_free( void __RPC_FAR * );
+#ifndef __MIDL_user_allocate_free_DEFINED__
+#define __MIDL_user_allocate_free_DEFINED__
+    void __RPC_FAR * __RPC_USER MIDL_user_allocate(size_t);
+    void __RPC_USER MIDL_user_free( void __RPC_FAR * );
+#endif
 
 #ifndef __IVim_INTERFACE_DEFINED__
 #define __IVim_INTERFACE_DEFINED__
