@@ -7657,7 +7657,7 @@ get_c_indent()
 			     * not the one from "if () {". */
 			    if (*l == '}')
 				curwin->w_cursor.col =
-						   (l - ml_get_curline()) + 1;
+					  (colnr_T)(l - ml_get_curline()) + 1;
 
 			    if ((trypos = find_start_brace(ind_maxcomment))
 								       == NULL
