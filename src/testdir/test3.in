@@ -1413,6 +1413,21 @@ void func(void)
 }
 
 STARTTEST
+:set cino&
+2kdd=][
+ENDTEST
+
+void func(void)
+{
+	for (int i = 0; i < 10; ++i)
+		if (i & 1) {
+			foo(1);
+		} else
+			foo(0);
+baz();
+}
+
+STARTTEST
 :g/^STARTTEST/.,/^ENDTEST/d
 :1;/start of AUTO/,$wq! test.out
 ENDTEST

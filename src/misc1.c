@@ -7541,17 +7541,25 @@ get_c_indent()
 
 			/*
 			 * When searching for a terminated line, don't use the
-			 * one between the "if" and the "else".
+			 * one between the "if" and the matching "else".
 			 * Need to use the scope of this "else".  XXX
 			 * If whilelevel != 0 continue looking for a "do {".
 			 */
-			if (cin_iselse(l)
-				&& whilelevel == 0
-				&& ((trypos = find_start_brace(ind_maxcomment))
-								    == NULL
+			if (cin_iselse(l) && whilelevel == 0)
+			{
+			    /* If we're looking at "} else", let's make sure we
+			     * find the opening brace of the enclosing scope,
+			     * not the one from "if () {". */
+			    if (*l == '}')
+				curwin->w_cursor.col =
+						   (l - ml_get_curline()) + 1;
+
+			    if ((trypos = find_start_brace(ind_maxcomment))
+								       == NULL
 				    || find_match(LOOKFOR_IF, trypos->lnum,
-					ind_maxparen, ind_maxcomment) == FAIL))
-			    break;
+					ind_maxparen, ind_maxcomment) == FAIL)
+				break;
+			}
 		    }
 
 		    /*
