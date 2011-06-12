@@ -391,6 +391,7 @@ EXTERN long	p_ph;		/* 'pumheight' */
 EXTERN char_u	*p_cpo;		/* 'cpoptions' */
 #ifdef FEAT_CSCOPE
 EXTERN char_u	*p_csprg;	/* 'cscopeprg' */
+EXTERN int	p_csre;		/* 'cscoperelative' */
 # ifdef FEAT_QUICKFIX
 EXTERN char_u	*p_csqf;	/* 'cscopequickfix' */
 #  define	CSQF_CMDS   "sgdctefi"
