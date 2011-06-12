@@ -1507,6 +1507,7 @@ ml_recover()
 		    bnum = pp->pb_pointer[idx].pe_bnum;
 		    line_count = pp->pb_pointer[idx].pe_line_count;
 		    page_count = pp->pb_pointer[idx].pe_page_count;
+		    idx = 0;
 		    continue;
 		}
 	    }
