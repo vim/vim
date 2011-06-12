@@ -5607,7 +5607,6 @@ __:
 	@echo "python3_BASEMODLIBS='$(BASEMODLIBS)'"
 	@echo "python3_LIBS='$(LIBS)'"
 	@echo "python3_SYSLIBS='$(SYSLIBS)'"
-	@echo "python3_LINKFORSHARED='$(LINKFORSHARED)'"
 	@echo "python3_INSTSONAME='$(INSTSONAME)'"
 eof
                     eval "`cd ${PYTHON3_CONFDIR} && make -f "${tmp_mkf}" __ | sed '/ directory /d'`"
@@ -5624,7 +5623,7 @@ fi
       if test "${vi_cv_path_python3_pfx}" = "${vi_cv_path_python3_epfx}"; then
         PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -DPYTHON3_HOME=L\\\"${vi_cv_path_python3_pfx}\\\""
       else
-        PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version} -DPYTHON3_HOME=L\\\"${vi_cv_path_python3_pfx}\\\""
+        PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -DPYTHON3_HOME=L\\\"${vi_cv_path_python3_pfx}\\\""
       fi
       PYTHON3_SRC="if_python3.c"
             if test "x$MACOSX" = "xyes"; then
