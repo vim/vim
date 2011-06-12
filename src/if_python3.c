@@ -547,14 +547,13 @@ Python3_Init(void)
 	Py_SetPythonHome(PYTHON3_HOME);
 #endif
 
-	/* initialise threads */
-	PyEval_InitThreads();
-
 #if !defined(MACOS) || defined(MACOS_X_UNIX)
 	Py_Initialize();
 #else
 	PyMac_Initialize();
 #endif
+	/* initialise threads, must be after Py_Initialize() */
+	PyEval_InitThreads();
 
 #ifdef DYNAMIC_PYTHON3
 	get_py3_exceptions();
