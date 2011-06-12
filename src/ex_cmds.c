@@ -4097,8 +4097,8 @@ ex_z(eap)
     switch (*kind)
     {
 	case '-':
-	    start = lnum - bigness * (linenr_T)(x - kind);
-	    end = start + bigness;
+	    start = lnum - bigness * (linenr_T)(x - kind) + 1;
+	    end = start + bigness - 1;
 	    curs = end;
 	    break;
 
