@@ -2471,42 +2471,61 @@ cs_reset(eap)
  */
     static char *
 cs_resolve_file(i, name)
-    int i;
+    int  i;
     char *name;
 {
-    char *fullname;
-    int len;
+    char	*fullname;
+    int		len;
+    char_u	*csdir = NULL;
 
     /*
-     * ppath is freed when we destroy the cscope connection.
-     * fullname is freed after cs_make_vim_style_matches, after it's been
-     * copied into the tag buffer used by vim
+     * Ppath is freed when we destroy the cscope connection.
+     * Fullname is freed after cs_make_vim_style_matches, after it's been
+     * copied into the tag buffer used by Vim.
      */
     len = (int)(strlen(name) + 2);
     if (csinfo[i].ppath != NULL)
 	len += (int)strlen(csinfo[i].ppath);
+    else if (p_csre && csinfo[i].fname != NULL)
+    {
+	/* If 'cscoperelative' is set and ppath is not set, use cscope.out
+	 * path in path resolution. */
+	csdir = alloc(MAXPATHL);
+	if (csdir != NULL)
+	{
+	    vim_strncpy(csdir, (char_u *)csinfo[i].fname,
+		    gettail((char_u *)csinfo[i].fname) - 1 - (char_u *)csinfo[i].fname);
+	    len += (int)STRLEN(csdir);
+	}
+    }
 
     if ((fullname = (char *)alloc(len)) == NULL)
 	return NULL;
 
-    /*
-     * note/example: this won't work if the cscope output already starts
+    /* Note/example: this won't work if the cscope output already starts
      * "../.." and the prefix path is also "../..".  if something like this
-     * happens, you are screwed up and need to fix how you're using cscope.
-     */
-    if (csinfo[i].ppath != NULL &&
-	(strncmp(name, csinfo[i].ppath, strlen(csinfo[i].ppath)) != 0) &&
-	(name[0] != '/')
+     * happens, you are screwed up and need to fix how you're using cscope. */
+    if (csinfo[i].ppath != NULL
+	    && (strncmp(name, csinfo[i].ppath, strlen(csinfo[i].ppath)) != 0)
+	    && (name[0] != '/')
 #ifdef WIN32
-	&& name[0] != '\\' && name[1] != ':'
+	    && name[0] != '\\' && name[1] != ':'
 #endif
-	)
+       )
 	(void)sprintf(fullname, "%s/%s", csinfo[i].ppath, name);
+    else if (csdir != NULL && csinfo[i].fname != NULL && STRLEN(csdir) > 0)
+    {
+	/* Check for csdir to be non empty to avoid empty path concatenated to
+	 * cscope output. TODO: avoid the unnecessary alloc/free of fullname. */
+	vim_free(fullname);
+	fullname = concat_fnames(csdir, (char_u *)name, TRUE);
+    }
     else
 	(void)sprintf(fullname, "%s", name);
 
+    vim_free(csdir);
     return fullname;
-} /* cs_resolve_file */
+}
 
 
 /*

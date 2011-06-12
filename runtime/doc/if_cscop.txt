@@ -271,6 +271,15 @@ tag files.  The default is off.  Examples: >
 	:set cst
 	:set nocst
 <
+							*cscoperelative* *csre*
+If 'cscoperelative' set, then in absence of a prefix given to cscope (prefx
+is the argument to -P option of cscope), basename of cscope.out location
+(usually the project root directory) will be used as the prefix to construt
+absolute path.The default is off. Note: This option is only effective when
+cscope (cscopeprg) is initialized without a prefix path (-P). Examples: >
+	:set csre
+	:set nocsre
+<
 							*cscopetagorder* *csto*
 The value of 'csto' determines the order in which |:cstag| performs a search.
 If 'csto' is set to zero, cscope database(s) are searched first, followed

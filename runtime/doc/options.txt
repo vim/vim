@@ -2209,6 +2209,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Specifies whether to use quickfix window to show cscope results.
 	See |cscopequickfix|.
 
+						*'cscoperelative'* *'csre'*
+'cscoperelative' 'csre' boolean (default off)
+			global
+			{not available when compiled without the |+cscope|
+			feature}
+			{not in Vi}
+	In the absence of a prefix (-P) for cscope. setting this option enables
+	to use the basename of cscope.out path as the prefix.
+	See |cscoperelative|.
+
 				*'cscopetag'* *'cst'* *'nocscopetag'* *'nocst'*
 'cscopetag' 'cst'	boolean (default off)
 			global
