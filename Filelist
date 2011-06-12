@@ -262,6 +262,7 @@ SRC_DOS =	\
 		src/bigvim.bat \
 		src/msvcsetup.bat \
 		src/msvc2008.bat \
+		src/msvc2010.bat \
 		src/dimm.idl \
 		src/dlldata.c \
 		src/dosinst.c \

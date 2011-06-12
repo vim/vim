@@ -28,8 +28,9 @@ Contents:
 9. MS-DOS
 
 The currently preferred method is using the free Visual C++ Toolkit 2008
-|msvc-2008-express|.  If you need the executable to run on Windows 98 or ME,
-use the 2003 one |msvc-2003-toolkit|.
+|msvc-2008-express|, the produced binary runs on most MS-Windows systems.  If
+you need the executable to run on Windows 98 or ME, use the 2003 one
+|msvc-2003-toolkit|.
 
 
 1. Microsoft Visual C++
@@ -176,7 +177,7 @@ Visual C++ 2010 Express Edition can be downloaded for free from:
     http://www.microsoft.com/express/vc/Default.aspx
 This includes the IDE and the debugger.
 
-To set the environment execute the msvc2008.bat script.  You can then build
+To set the environment execute the msvc2010.bat script.  You can then build
 Vim with Make_mvc.mak.
 
 
