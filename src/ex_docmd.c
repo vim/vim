@@ -2595,6 +2595,7 @@ do_one_cmd(cmdlinep, sourcing,
 	    case CMD_unlet:
 	    case CMD_verbose:
 	    case CMD_vertical:
+	    case CMD_wincmd:
 				break;
 
 	    default:		goto doend;
@@ -8237,7 +8238,7 @@ ex_wincmd(eap)
     p = skipwhite(p);
     if (*p != NUL && *p != '"' && eap->nextcmd == NULL)
 	EMSG(_(e_invarg));
-    else
+    else if (!eap->skip)
     {
 	/* Pass flags on for ":vertical wincmd ]". */
 	postponed_split_flags = cmdmod.split;
