@@ -409,8 +409,8 @@ CPUARG = /G7 /arch:SSE2
 CPUARG =
 !endif
 !else
-# VC8/9 only allows specifying SSE architecture
-!if "$(CPUNR)" == "pentium4"
+# VC8/9/10 only allows specifying SSE architecture but only for 32bit
+!if "$(ASSEMBLY_ARCHITECTURE)" == "x86" && "$(CPUNR)" == "pentium4"
 CPUARG = /arch:SSE2
 !endif
 !endif
