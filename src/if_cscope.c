@@ -2518,7 +2518,7 @@ cs_resolve_file(i, name)
 	/* Check for csdir to be non empty to avoid empty path concatenated to
 	 * cscope output. TODO: avoid the unnecessary alloc/free of fullname. */
 	vim_free(fullname);
-	fullname = concat_fnames(csdir, (char_u *)name, TRUE);
+	fullname = (char *)concat_fnames(csdir, (char_u *)name, TRUE);
     }
     else
 	(void)sprintf(fullname, "%s", name);
