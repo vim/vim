@@ -6965,7 +6965,7 @@ get_c_indent()
 	     *			ldfd) {
 	     *		    }
 	     */
-	    if ((ind_keep_case_label
+	    if (ind_js || (ind_keep_case_label
 			   && cin_iscase(skipwhite(ml_get_curline()), FALSE)))
 		amount = get_indent();
 	    else

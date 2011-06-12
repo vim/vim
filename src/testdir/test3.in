@@ -1492,10 +1492,11 @@ baz();
 
 STARTTEST
 :set cino=N-s
-/namespaces
+/^NAMESPACESTART
 =/^NAMESPACEEND
 ENDTEST
 
+NAMESPACESTART
 /* valid namespaces with normal indent */
 namespace
 {
@@ -1559,6 +1560,27 @@ namespace111111111
 }
 NAMESPACEEND
 
+
+STARTTEST
+:set cino=J1
+/^JSSTART
+=/^JSEND
+ENDTEST
+
+JSSTART
+var bar = {
+foo: {
+that: this,
+some: ok,
+},
+"bar":{
+a : 2,
+b: "123abc",
+x: 4,
+"y": 5
+}
+}
+JSEND
 
 STARTTEST
 :g/^STARTTEST/.,/^ENDTEST/d

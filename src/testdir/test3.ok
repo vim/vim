@@ -1337,6 +1337,7 @@ void func(void)
 }
 
 
+NAMESPACESTART
 /* valid namespaces with normal indent */
 namespace
 {
@@ -1400,4 +1401,20 @@ namespace111111111
 }
 NAMESPACEEND
 
+
+
+JSSTART
+var bar = {
+	foo: {
+		that: this,
+		some: ok,
+	},
+	"bar":{
+		a : 2,
+		b: "123abc",
+		x: 4,
+		"y": 5
+	}
+}
+JSEND
 
