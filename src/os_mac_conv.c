@@ -14,6 +14,8 @@
  */
 
 #define NO_X11_INCLUDES
+#define BalloonEval int   /* used in header files */
+
 #include "vim.h"
 #ifndef FEAT_GUI_MAC
 # include <CoreServices/CoreServices.h>
