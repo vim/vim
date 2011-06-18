@@ -3,7 +3,7 @@
 ;Hence this is the same file as gvimext.def with private removed
 
 LIBRARY      gvimext
-DESCRIPTION  'Vim Shell Extension build with MinGW'
+; DESCRIPTION  'Vim Shell Extension build with MinGW'
 
 EXPORTS
     DllCanUnloadNow = DllCanUnloadNow@0
