@@ -1410,9 +1410,9 @@ clip_mch_request_selection(VimClipboard *cbd)
     {
 	char_u *temp_clipboard;
 
-	/* If the type is not known guess it. */
+	/* If the type is not known detect it. */
 	if (metadata.type == -1)
-	    metadata.type = (vim_strchr(str, '\n') == NULL) ? MCHAR : MLINE;
+	    metadata.type = MAUTO;
 
 	/* Translate <CR><NL> into <NL>. */
 	temp_clipboard = crnl_to_nl(str, &str_size);

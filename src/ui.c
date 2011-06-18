@@ -1609,7 +1609,7 @@ add_to_input_buf_csi(char_u *str, int len)
 
 #if defined(FEAT_HANGULIN) || defined(PROTO)
     void
-push_raw_key (s, len)
+push_raw_key(s, len)
     char_u  *s;
     int	    len;
 {
@@ -2016,7 +2016,7 @@ clip_x11_request_selection_cb(w, success, sel_atom, type, value, length,
     long_u	*length;
     int		*format;
 {
-    int		motion_type;
+    int		motion_type = MAUTO;
     long_u	len;
     char_u	*p;
     char	**text_list = NULL;
@@ -2036,7 +2036,6 @@ clip_x11_request_selection_cb(w, success, sel_atom, type, value, length,
 	*(int *)success = FALSE;
 	return;
     }
-    motion_type = MCHAR;
     p = (char_u *)value;
     len = *length;
     if (*type == vim_atom)

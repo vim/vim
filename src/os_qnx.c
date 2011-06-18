@@ -93,7 +93,7 @@ clip_mch_request_selection( VimClipboard *cbd )
 	    clip_length  = clip_header->length - 1;
 
 	    if( clip_text != NULL && is_type_set == FALSE )
-		type = (strchr( clip_text, '\r' ) != NULL) ? MLINE : MCHAR;
+		type = MAUTO;
 	}
 
 	if( (clip_text != NULL) && (clip_length > 0) )

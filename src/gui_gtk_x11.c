@@ -1173,7 +1173,7 @@ selection_received_cb(GtkWidget		*widget UNUSED,
     char_u	    *tmpbuf = NULL;
     guchar	    *tmpbuf_utf8 = NULL;
     int		    len;
-    int		    motion_type;
+    int		    motion_type = MAUTO;
 
     if (data->selection == clip_plus.gtk_sel_atom)
 	cbd = &clip_plus;
@@ -1182,7 +1182,6 @@ selection_received_cb(GtkWidget		*widget UNUSED,
 
     text = (char_u *)data->data;
     len  = data->length;
-    motion_type = MCHAR;
 
     if (text == NULL || len <= 0)
     {

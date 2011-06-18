@@ -5733,7 +5733,9 @@ clip_get_selection(cbd)
     }
 }
 
-/* Convert from the GUI selection string into the '*'/'+' register */
+/*
+ * Convert from the GUI selection string into the '*'/'+' register.
+ */
     void
 clip_yank_selection(type, str, len, cbd)
     int		type;
@@ -6090,9 +6092,6 @@ write_reg_contents_ex(name, str, maxlen, must_append, yank_type, block_len)
     if (yank_type == MBLOCK)
 	yank_type = MAUTO;
 #endif
-    if (yank_type == MAUTO)
-	yank_type = ((len > 0 && (str[len - 1] == '\n' || str[len - 1] == '\r'))
-							     ? MLINE : MCHAR);
     str_to_reg(y_current, yank_type, str, len, block_len);
 
 # ifdef FEAT_CLIPBOARD
@@ -6113,13 +6112,14 @@ write_reg_contents_ex(name, str, maxlen, must_append, yank_type, block_len)
  * is appended.
  */
     static void
-str_to_reg(y_ptr, type, str, len, blocklen)
+str_to_reg(y_ptr, yank_type, str, len, blocklen)
     struct yankreg	*y_ptr;		/* pointer to yank register */
-    int			type;		/* MCHAR, MLINE or MBLOCK */
+    int			yank_type;	/* MCHAR, MLINE, MBLOCK, MAUTO */
     char_u		*str;		/* string to put in register */
     long		len;		/* length of string */
     long		blocklen;	/* width of Visual block */
 {
+    int		type;			/* MCHAR, MLINE or MBLOCK */
     int		lnum;
     long	start;
     long	i;
@@ -6135,6 +6135,12 @@ str_to_reg(y_ptr, type, str, len, blocklen)
 
     if (y_ptr->y_array == NULL)		/* NULL means empty register */
 	y_ptr->y_size = 0;
+
+    if (yank_type == MAUTO)
+	type = ((len > 0 && (str[len - 1] == NL || str[len - 1] == CAR))
+							     ? MLINE : MCHAR);
+    else
+	type = yank_type;
 
     /*
      * Count the number of lines within the string
