@@ -70,8 +70,10 @@ static void init_structs(void);
 
 #define PyInt Py_ssize_t
 #define PyString_Check(obj) PyUnicode_Check(obj)
-#define PyString_AsString(obj) _PyUnicode_AsString(obj)
-#define PyString_Size(obj) PyUnicode_GET_SIZE(obj)
+#define PyString_AsBytes(obj) PyUnicode_AsEncodedString(obj, (char *)p_enc, NULL);
+#define PyString_FreeBytes(obj) Py_XDECREF(bytes)
+#define PyString_AsString(obj) PyBytes_AsString(obj)
+#define PyString_Size(obj) PyBytes_GET_SIZE(bytes)
 #define PyString_FromString(repr) PyUnicode_FromString(repr)
 
 #if defined(DYNAMIC_PYTHON3) || defined(PROTO)
@@ -99,6 +101,7 @@ static void init_structs(void);
 # define PyArg_Parse py3_PyArg_Parse
 # undef PyArg_ParseTuple
 # define PyArg_ParseTuple py3_PyArg_ParseTuple
+# define PyMem_Free py3_PyMem_Free
 # define PyDict_SetItemString py3_PyDict_SetItemString
 # define PyErr_BadArgument py3_PyErr_BadArgument
 # define PyErr_Clear py3_PyErr_Clear
@@ -140,8 +143,13 @@ static void init_structs(void);
 # define PyModule_AddObject py3_PyModule_AddObject
 # define PyImport_AppendInittab py3_PyImport_AppendInittab
 # define _PyUnicode_AsString py3__PyUnicode_AsString
+# undef PyUnicode_AsEncodedString
+# define PyUnicode_AsEncodedString py3_PyUnicode_AsEncodedString
+# undef PyBytes_AsString
+# define PyBytes_AsString py3_PyBytes_AsString
 # define PyObject_GenericGetAttr py3_PyObject_GenericGetAttr
 # define PySlice_Type (*py3_PySlice_Type)
+# define PyErr_NewException py3_PyErr_NewException
 # ifdef Py_DEBUG
 #  define _Py_NegativeRefcount py3__Py_NegativeRefcount
 #  define _Py_RefTotal (*py3__Py_RefTotal)
@@ -157,8 +165,8 @@ static void init_structs(void);
 # define PyModule_Create2 py3_PyModule_Create2
 # undef PyUnicode_FromString
 # define PyUnicode_FromString py3_PyUnicode_FromString
-# undef PyUnicode_FromStringAndSize
-# define PyUnicode_FromStringAndSize py3_PyUnicode_FromStringAndSize
+# undef PyUnicode_Decode
+# define PyUnicode_Decode py3_PyUnicode_Decode
 
 # ifdef Py_DEBUG
 #  undef PyObject_NEW
@@ -199,7 +207,8 @@ static PyObject* (*py3_Py_BuildValue)(char *, ...);
 static int (*py3_PyType_Ready)(PyTypeObject *type);
 static int (*py3_PyDict_SetItemString)(PyObject *dp, char *key, PyObject *item);
 static PyObject* (*py3_PyUnicode_FromString)(const char *u);
-static PyObject* (*py3_PyUnicode_FromStringAndSize)(const char *u, Py_ssize_t size);
+static PyObject* (*py3_PyUnicode_Decode)(const char *u, Py_ssize_t size,
+	const char *encoding, const char *errors);
 static long (*py3_PyLong_AsLong)(PyObject *);
 static void (*py3_PyErr_SetNone)(PyObject *);
 static void (*py3_PyEval_InitThreads)(void);
@@ -207,6 +216,7 @@ static void(*py3_PyEval_RestoreThread)(PyThreadState *);
 static PyThreadState*(*py3_PyEval_SaveThread)(void);
 static int (*py3_PyArg_Parse)(PyObject *, char *, ...);
 static int (*py3_PyArg_ParseTuple)(PyObject *, char *, ...);
+static int (*py3_PyMem_Free)(void *);
 static int (*py3_Py_IsInitialized)(void);
 static void (*py3_PyErr_Clear)(void);
 static PyObject*(*py3__PyObject_Init)(PyObject *, PyTypeObject *);
@@ -214,11 +224,14 @@ static PyObject* py3__Py_NoneStruct;
 static int (*py3_PyModule_AddObject)(PyObject *m, const char *name, PyObject *o);
 static int (*py3_PyImport_AppendInittab)(const char *name, PyObject* (*initfunc)(void));
 static char* (*py3__PyUnicode_AsString)(PyObject *unicode);
+static PyObject* (*py3_PyUnicode_AsEncodedString)(PyObject *unicode, const char* encoding, const char* errors);
+static char* (*py3_PyBytes_AsString)(PyObject *bytes);
 static PyObject* (*py3_PyObject_GenericGetAttr)(PyObject *obj, PyObject *name);
 static PyObject* (*py3_PyModule_Create2)(struct PyModuleDef* module, int module_api_version);
 static PyObject* (*py3_PyType_GenericAlloc)(PyTypeObject *type, Py_ssize_t nitems);
 static PyObject* (*py3_PyType_GenericNew)(PyTypeObject *type, PyObject *args, PyObject *kwds);
 static PyTypeObject* py3_PySlice_Type;
+static PyObject* (*py3_PyErr_NewException)(char *name, PyObject *base, PyObject *dict);
 # ifdef Py_DEBUG
     static void (*py3__Py_NegativeRefcount)(const char *fname, int lineno, PyObject *op);
     static Py_ssize_t* py3__Py_RefTotal;
@@ -259,6 +272,7 @@ static struct
     {"Py_SetPythonHome", (PYTHON_PROC*)&py3_Py_SetPythonHome},
     {"Py_Initialize", (PYTHON_PROC*)&py3_Py_Initialize},
     {"PyArg_ParseTuple", (PYTHON_PROC*)&py3_PyArg_ParseTuple},
+    {"PyMem_Free", (PYTHON_PROC*)&py3_PyMem_Free},
     {"PyList_New", (PYTHON_PROC*)&py3_PyList_New},
     {"PyGILState_Ensure", (PYTHON_PROC*)&py3_PyGILState_Ensure},
     {"PyGILState_Release", (PYTHON_PROC*)&py3_PyGILState_Release},
@@ -289,7 +303,6 @@ static struct
     {"PyEval_RestoreThread", (PYTHON_PROC*)&py3_PyEval_RestoreThread},
     {"PyEval_SaveThread", (PYTHON_PROC*)&py3_PyEval_SaveThread},
     {"PyArg_Parse", (PYTHON_PROC*)&py3_PyArg_Parse},
-    {"PyArg_ParseTuple", (PYTHON_PROC*)&py3_PyArg_ParseTuple},
     {"Py_IsInitialized", (PYTHON_PROC*)&py3_Py_IsInitialized},
     {"_Py_NoneStruct", (PYTHON_PROC*)&py3__Py_NoneStruct},
     {"PyErr_Clear", (PYTHON_PROC*)&py3_PyErr_Clear},
@@ -297,11 +310,13 @@ static struct
     {"PyModule_AddObject", (PYTHON_PROC*)&py3_PyModule_AddObject},
     {"PyImport_AppendInittab", (PYTHON_PROC*)&py3_PyImport_AppendInittab},
     {"_PyUnicode_AsString", (PYTHON_PROC*)&py3__PyUnicode_AsString},
+    {"PyBytes_AsString", (PYTHON_PROC*)&py3_PyBytes_AsString},
     {"PyObject_GenericGetAttr", (PYTHON_PROC*)&py3_PyObject_GenericGetAttr},
     {"PyModule_Create2", (PYTHON_PROC*)&py3_PyModule_Create2},
     {"PyType_GenericAlloc", (PYTHON_PROC*)&py3_PyType_GenericAlloc},
     {"PyType_GenericNew", (PYTHON_PROC*)&py3_PyType_GenericNew},
     {"PySlice_Type", (PYTHON_PROC*)&py3_PySlice_Type},
+    {"PyErr_NewException", (PYTHON_PROC*)&py3_PyErr_NewException},
 # ifdef Py_DEBUG
     {"_Py_NegativeRefcount", (PYTHON_PROC*)&py3__Py_NegativeRefcount},
     {"_Py_RefTotal", (PYTHON_PROC*)&py3__Py_RefTotal},
@@ -337,7 +352,7 @@ end_dynamic_python3(void)
 py3_runtime_link_init(char *libname, int verbose)
 {
     int i;
-    void *ucs_from_string, *ucs_from_string_and_size;
+    void *ucs_from_string, *ucs_decode, *ucs_as_encoded_string;
 
 # if !(defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)) && defined(UNIX) && defined(FEAT_PYTHON)
     /* Can't have Python and Python3 loaded at the same time.
@@ -377,19 +392,24 @@ py3_runtime_link_init(char *libname, int verbose)
     /* Load unicode functions separately as only the ucs2 or the ucs4 functions
      * will be present in the library. */
     ucs_from_string = symbol_from_dll(hinstPy3, "PyUnicodeUCS2_FromString");
-    ucs_from_string_and_size = symbol_from_dll(hinstPy3,
-	    "PyUnicodeUCS2_FromStringAndSize");
-    if (!ucs_from_string || !ucs_from_string_and_size)
+    ucs_decode = symbol_from_dll(hinstPy3,
+	    "PyUnicodeUCS2_Decode");
+    ucs_as_encoded_string = symbol_from_dll(hinstPy3,
+	    "PyUnicodeUCS2_AsEncodedString");
+    if (!ucs_from_string || !ucs_decode || !ucs_as_encoded_string)
     {
 	ucs_from_string = symbol_from_dll(hinstPy3,
 		"PyUnicodeUCS4_FromString");
-	ucs_from_string_and_size = symbol_from_dll(hinstPy3,
-		"PyUnicodeUCS4_FromStringAndSize");
+	ucs_decode = symbol_from_dll(hinstPy3,
+		"PyUnicodeUCS4_Decode");
+	ucs_as_encoded_string = symbol_from_dll(hinstPy3,
+		"PyUnicodeUCS4_AsEncodedString");
     }
-    if (ucs_from_string && ucs_from_string_and_size)
+    if (ucs_from_string && ucs_decode && ucs_as_encoded_string)
     {
 	py3_PyUnicode_FromString = ucs_from_string;
-	py3_PyUnicode_FromStringAndSize = ucs_from_string_and_size;
+	py3_PyUnicode_Decode = ucs_decode;
+	py3_PyUnicode_AsEncodedString = ucs_as_encoded_string;
     }
     else
     {
@@ -567,8 +587,11 @@ Python3_Init(void)
 	/* Remove the element from sys.path that was added because of our
 	 * argv[0] value in Py3Init_vim().  Previously we used an empty
 	 * string, but dependinding on the OS we then get an empty entry or
-	 * the current directory in sys.path. */
-	PyRun_SimpleString("import sys; sys.path = list(filter(lambda x: x != '/must>not&exist', sys.path))");
+	 * the current directory in sys.path.
+	 * Only after vim has been imported, the element does exist in
+	 * sys.path.
+	 */
+	PyRun_SimpleString("import vim; import sys; sys.path = list(filter(lambda x: not x.endswith('must>not&exist'), sys.path))");
 
 	// lock is created and acquired in PyEval_InitThreads() and thread
 	// state is created in Py_Initialize()
@@ -605,6 +628,8 @@ DoPy3Command(exarg_T *eap, const char *cmd)
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
     char		*saved_locale;
 #endif
+    PyObject		*cmdstr;
+    PyObject		*cmdbytes;
 
 #if defined(MACOS) && !defined(MACOS_X_UNIX)
     GetPort(&oldPort);
@@ -634,7 +659,13 @@ DoPy3Command(exarg_T *eap, const char *cmd)
 
     pygilstate = PyGILState_Ensure();
 
-    PyRun_SimpleString((char *)(cmd));
+    /* PyRun_SimpleString expects a UTF-8 string. Wrong encoding may cause
+     * SyntaxError (unicode error). */
+    cmdstr = PyUnicode_Decode(cmd, strlen(cmd), (char *)p_enc, NULL);
+    cmdbytes = PyUnicode_AsEncodedString(cmdstr, "utf-8", NULL);
+    Py_XDECREF(cmdstr);
+    PyRun_SimpleString(PyBytes_AsString(cmdbytes));
+    Py_XDECREF(cmdbytes);
 
     PyGILState_Release(pygilstate);
 
@@ -693,7 +724,10 @@ ex_py3file(exarg_T *eap)
      * different options under Windows, meaning that stdio pointers aren't
      * compatible between the two. Yuk.
      *
-     * construct: exec(compile(open('a_filename').read(), 'a_filename', 'exec'))
+     * construct: exec(compile(open('a_filename', 'rb').read(), 'a_filename', 'exec'))
+     *
+     * Using bytes so that Python can detect the source encoding as it normally
+     * does. The doc does not say "compile" accept bytes, though.
      *
      * We need to escape any backslashes or single quotes in the file name, so that
      * Python won't mangle the file name.
@@ -716,8 +750,8 @@ ex_py3file(exarg_T *eap)
 	    return;
 	if (i==0)
 	{
-	    strcpy(p,"').read(),'");
-	    p += 11;
+	    strcpy(p,"','rb').read(),'");
+	    p += 16;
 	}
 	else
 	{
@@ -812,8 +846,8 @@ PythonIO_Fini(void)
 
 static Py_ssize_t BufferLength(PyObject *);
 static PyObject *BufferItem(PyObject *, Py_ssize_t);
-static Py_ssize_t BufferAsItem(PyObject *, Py_ssize_t, PyObject *);
 static PyObject* BufferSubscript(PyObject *self, PyObject* idx);
+static Py_ssize_t BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val);
 
 
 /* Line range type - Implementation functions
@@ -835,7 +869,7 @@ static PySequenceMethods BufferAsSeq = {
     (ssizeargfunc)	0,		    /* sq_repeat,    x*n      */
     (ssizeargfunc)	BufferItem,	    /* sq_item,      x[i]     */
     0,					    /* was_sq_slice,	 x[i:j]   */
-    (ssizeobjargproc)	BufferAsItem,	    /* sq_ass_item,  x[i]=v   */
+    0,					    /* sq_ass_item,  x[i]=v   */
     0,					    /* sq_ass_slice, x[i:j]=v */
     0,					    /* sq_contains */
     0,					    /* sq_inplace_concat */
@@ -845,7 +879,7 @@ static PySequenceMethods BufferAsSeq = {
 PyMappingMethods BufferAsMapping = {
     /* mp_length	*/ (lenfunc)BufferLength,
     /* mp_subscript     */ (binaryfunc)BufferSubscript,
-    /* mp_ass_subscript */ (objobjargproc)0,
+    /* mp_ass_subscript */ (objobjargproc)BufferAsSubscript,
 };
 
 
@@ -897,6 +931,8 @@ BufferDestructor(PyObject *self)
 
     if (this->buf && this->buf != INVALID_BUFFER_VALUE)
 	this->buf->b_python3_ref = NULL;
+
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
     static PyObject *
@@ -975,15 +1011,6 @@ BufferSlice(PyObject *self, Py_ssize_t lo, Py_ssize_t hi)
 	       (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count);
 }
 
-    static Py_ssize_t
-BufferAsItem(PyObject *self, Py_ssize_t n, PyObject *val)
-{
-    return RBAsItem((BufferObject *)(self), n, val, 1,
-		(Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count,
-		NULL);
-}
-
-
     static PyObject *
 BufferSubscript(PyObject *self, PyObject* idx)
 {
@@ -999,10 +1026,36 @@ BufferSubscript(PyObject *self, PyObject* idx)
 	      &step, &slicelen) < 0) {
 	    return NULL;
 	}
-	return BufferSlice(self,start,stop+1);
+	return BufferSlice(self,start,stop);
     } else {
 	PyErr_SetString(PyExc_IndexError, "Index must be int or slice");
 	return NULL;
+    }
+}
+
+    static Py_ssize_t
+BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val)
+{
+    if (PyLong_Check(idx)) {
+	long n = PyLong_AsLong(idx);
+	return RBAsItem((BufferObject *)(self), n, val, 1,
+		    (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count,
+		    NULL);
+    } else if (PySlice_Check(idx)) {
+	Py_ssize_t start, stop, step, slicelen;
+
+	if (PySlice_GetIndicesEx((PySliceObject *)idx,
+	      (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count+1,
+	      &start, &stop,
+	      &step, &slicelen) < 0) {
+	    return -1;
+	}
+	return RBAsSlice((BufferObject *)(self), start, stop, val, 1,
+			  (PyInt)((BufferObject *)(self))->buf->b_ml.ml_line_count,
+			  NULL);
+    } else {
+	PyErr_SetString(PyExc_IndexError, "Index must be int or slice");
+	return -1;
     }
 }
 
@@ -1032,6 +1085,7 @@ PyMappingMethods RangeAsMapping = {
 RangeDestructor(PyObject *self)
 {
     Py_DECREF(((RangeObject *)(self))->buf);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
     static PyObject *
@@ -1159,6 +1213,8 @@ WindowDestructor(PyObject *self)
 
     if (this->win && this->win != INVALID_WINDOW_VALUE)
 	this->win->w_python3_ref = NULL;
+
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
     static PyObject *
@@ -1350,8 +1406,11 @@ PyMODINIT_FUNC Py3Init_vim(void)
     PySys_SetArgv(1, argv);
 
     mod = PyModule_Create(&vimmodule);
+    if (mod == NULL)
+	return NULL;
 
-    VimError = Py_BuildValue("s", "vim.error");
+    VimError = PyErr_NewException("vim.error", NULL, NULL);
+    Py_INCREF(VimError);
 
     PyModule_AddObject(mod, "error", VimError);
     Py_INCREF((PyObject *)(void *)&TheBufferList);
@@ -1404,7 +1463,7 @@ LineToString(const char *str)
     }
     *p = '\0';
 
-    result = PyUnicode_FromStringAndSize(tmp, len);
+    result = PyUnicode_Decode(tmp, len, (char *)p_enc, NULL);
 
     vim_free(tmp);
     return result;
