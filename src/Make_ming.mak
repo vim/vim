@@ -87,7 +87,7 @@ INTLLIB=gnu_gettext
 
 # If you are using gettext-0.10.35 from http://sourceforge.net/projects/gettext
 # or gettext-0.10.37 from http://sourceforge.net/projects/mingwrep/
-# uncomment the following, but I can't build a static versión with them, ?-(|
+# uncomment the following, but I can't build a static version with them, ?-(|
 #GETTEXT=c:/gettext-0.10.37-20010430
 #STATIC_GETTEXT=USE_STATIC_GETTEXT
 #DYNAMIC_GETTEXT=DYNAMIC_GETTEXT

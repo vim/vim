@@ -1105,132 +1105,6 @@ crnl_to_nl(const char_u *str, int *size)
     return ret;
 }
 
-#if defined(FEAT_MBYTE) || defined(PROTO)
-/*
- * Note: the following two functions are only guaranteed to work when using
- * valid MS-Windows codepages or when iconv() is available.
- */
-
-/*
- * Convert "str" from 'encoding' to UTF-16.
- * Input in "str" with length "*lenp".  When "lenp" is NULL, use strlen().
- * Output is returned as an allocated string.  "*lenp" is set to the length of
- * the result.  A trailing NUL is always added.
- * Returns NULL when out of memory.
- */
-    short_u *
-enc_to_utf16(char_u *str, int *lenp)
-{
-    vimconv_T	conv;
-    WCHAR	*ret;
-    char_u	*allocbuf = NULL;
-    int		len_loc;
-    int		length;
-
-    if (lenp == NULL)
-    {
-	len_loc = (int)STRLEN(str) + 1;
-	lenp = &len_loc;
-    }
-
-    if (enc_codepage > 0)
-    {
-	/* We can do any CP### -> UTF-16 in one pass, and we can do it
-	 * without iconv() (convert_* may need iconv). */
-	MultiByteToWideChar_alloc(enc_codepage, 0, str, *lenp, &ret, &length);
-    }
-    else
-    {
-	/* Use "latin1" by default, we might be called before we have p_enc
-	 * set up.  Convert to utf-8 first, works better with iconv().  Does
-	 * nothing if 'encoding' is "utf-8". */
-	conv.vc_type = CONV_NONE;
-	if (convert_setup(&conv, p_enc ? p_enc : (char_u *)"latin1",
-						   (char_u *)"utf-8") == FAIL)
-	    return NULL;
-	if (conv.vc_type != CONV_NONE)
-	{
-	    str = allocbuf = string_convert(&conv, str, lenp);
-	    if (str == NULL)
-		return NULL;
-	}
-	convert_setup(&conv, NULL, NULL);
-
-	length = utf8_to_utf16(str, *lenp, NULL, NULL);
-	ret = (WCHAR *)alloc((unsigned)((length + 1) * sizeof(WCHAR)));
-	if (ret != NULL)
-	{
-	    utf8_to_utf16(str, *lenp, (short_u *)ret, NULL);
-	    ret[length] = 0;
-	}
-
-	vim_free(allocbuf);
-    }
-
-    *lenp = length;
-    return (short_u *)ret;
-}
-
-/*
- * Convert an UTF-16 string to 'encoding'.
- * Input in "str" with length (counted in wide characters) "*lenp".  When
- * "lenp" is NULL, use wcslen().
- * Output is returned as an allocated string.  If "*lenp" is not NULL it is
- * set to the length of the result.
- * Returns NULL when out of memory.
- */
-    char_u *
-utf16_to_enc(short_u *str, int *lenp)
-{
-    vimconv_T	conv;
-    char_u	*utf8_str = NULL, *enc_str = NULL;
-    int		len_loc;
-
-    if (lenp == NULL)
-    {
-	len_loc = (int)wcslen(str) + 1;
-	lenp = &len_loc;
-    }
-
-    if (enc_codepage > 0)
-    {
-	/* We can do any UTF-16 -> CP### in one pass. */
-	int length;
-
-	WideCharToMultiByte_alloc(enc_codepage, 0, str, *lenp,
-					    (LPSTR *)&enc_str, &length, 0, 0);
-	*lenp = length;
-	return enc_str;
-    }
-
-    /* Avoid allocating zero bytes, it generates an error message. */
-    utf8_str = alloc(utf16_to_utf8(str, *lenp == 0 ? 1 : *lenp, NULL));
-    if (utf8_str != NULL)
-    {
-	*lenp = utf16_to_utf8(str, *lenp, utf8_str);
-
-	/* We might be called before we have p_enc set up. */
-	conv.vc_type = CONV_NONE;
-	convert_setup(&conv, (char_u *)"utf-8",
-					    p_enc? p_enc: (char_u *)"latin1");
-	if (conv.vc_type == CONV_NONE)
-	{
-	    /* p_enc is utf-8, so we're done. */
-	    enc_str = utf8_str;
-	}
-	else
-	{
-	    enc_str = string_convert(&conv, utf8_str, lenp);
-	    vim_free(utf8_str);
-	}
-
-	convert_setup(&conv, NULL, NULL);
-    }
-
-    return enc_str;
-}
-#endif /* FEAT_MBYTE */
-
 /*
  * Wait for another process to Close the Clipboard.
  * Returns TRUE for success.
@@ -1436,32 +1310,6 @@ clip_mch_request_selection(VimClipboard *cbd)
 #endif
 }
 
-#if (defined(FEAT_MBYTE) && defined(WIN3264)) || defined(PROTO)
-/*
- * Convert from the active codepage to 'encoding'.
- * Input is "str[str_size]".
- * The result is in allocated memory: "out[outlen]".  With terminating NUL.
- */
-    void
-acp_to_enc(str, str_size, out, outlen)
-    char_u	*str;
-    int		str_size;
-    char_u	**out;
-    int		*outlen;
-
-{
-    LPWSTR	widestr;
-
-    MultiByteToWideChar_alloc(GetACP(), 0, str, str_size, &widestr, outlen);
-    if (widestr != NULL)
-    {
-	++*outlen;	/* Include the 0 after the string */
-	*out = utf16_to_enc((short_u *)widestr, outlen);
-	vim_free(widestr);
-    }
-}
-#endif
-
 /*
  * Send the current selection to the clipboard.
  */
@@ -1625,6 +1473,158 @@ clip_mch_set_selection(VimClipboard *cbd)
 }
 
 #endif /* FEAT_CLIPBOARD */
+
+#if defined(FEAT_MBYTE) || defined(PROTO)
+/*
+ * Note: the following two functions are only guaranteed to work when using
+ * valid MS-Windows codepages or when iconv() is available.
+ */
+
+/*
+ * Convert "str" from 'encoding' to UTF-16.
+ * Input in "str" with length "*lenp".  When "lenp" is NULL, use strlen().
+ * Output is returned as an allocated string.  "*lenp" is set to the length of
+ * the result.  A trailing NUL is always added.
+ * Returns NULL when out of memory.
+ */
+    short_u *
+enc_to_utf16(char_u *str, int *lenp)
+{
+    vimconv_T	conv;
+    WCHAR	*ret;
+    char_u	*allocbuf = NULL;
+    int		len_loc;
+    int		length;
+
+    if (lenp == NULL)
+    {
+	len_loc = (int)STRLEN(str) + 1;
+	lenp = &len_loc;
+    }
+
+    if (enc_codepage > 0)
+    {
+	/* We can do any CP### -> UTF-16 in one pass, and we can do it
+	 * without iconv() (convert_* may need iconv). */
+	MultiByteToWideChar_alloc(enc_codepage, 0, str, *lenp, &ret, &length);
+    }
+    else
+    {
+	/* Use "latin1" by default, we might be called before we have p_enc
+	 * set up.  Convert to utf-8 first, works better with iconv().  Does
+	 * nothing if 'encoding' is "utf-8". */
+	conv.vc_type = CONV_NONE;
+	if (convert_setup(&conv, p_enc ? p_enc : (char_u *)"latin1",
+						   (char_u *)"utf-8") == FAIL)
+	    return NULL;
+	if (conv.vc_type != CONV_NONE)
+	{
+	    str = allocbuf = string_convert(&conv, str, lenp);
+	    if (str == NULL)
+		return NULL;
+	}
+	convert_setup(&conv, NULL, NULL);
+
+	length = utf8_to_utf16(str, *lenp, NULL, NULL);
+	ret = (WCHAR *)alloc((unsigned)((length + 1) * sizeof(WCHAR)));
+	if (ret != NULL)
+	{
+	    utf8_to_utf16(str, *lenp, (short_u *)ret, NULL);
+	    ret[length] = 0;
+	}
+
+	vim_free(allocbuf);
+    }
+
+    *lenp = length;
+    return (short_u *)ret;
+}
+
+/*
+ * Convert an UTF-16 string to 'encoding'.
+ * Input in "str" with length (counted in wide characters) "*lenp".  When
+ * "lenp" is NULL, use wcslen().
+ * Output is returned as an allocated string.  If "*lenp" is not NULL it is
+ * set to the length of the result.
+ * Returns NULL when out of memory.
+ */
+    char_u *
+utf16_to_enc(short_u *str, int *lenp)
+{
+    vimconv_T	conv;
+    char_u	*utf8_str = NULL, *enc_str = NULL;
+    int		len_loc;
+
+    if (lenp == NULL)
+    {
+	len_loc = (int)wcslen(str) + 1;
+	lenp = &len_loc;
+    }
+
+    if (enc_codepage > 0)
+    {
+	/* We can do any UTF-16 -> CP### in one pass. */
+	int length;
+
+	WideCharToMultiByte_alloc(enc_codepage, 0, str, *lenp,
+					    (LPSTR *)&enc_str, &length, 0, 0);
+	*lenp = length;
+	return enc_str;
+    }
+
+    /* Avoid allocating zero bytes, it generates an error message. */
+    utf8_str = alloc(utf16_to_utf8(str, *lenp == 0 ? 1 : *lenp, NULL));
+    if (utf8_str != NULL)
+    {
+	*lenp = utf16_to_utf8(str, *lenp, utf8_str);
+
+	/* We might be called before we have p_enc set up. */
+	conv.vc_type = CONV_NONE;
+	convert_setup(&conv, (char_u *)"utf-8",
+					    p_enc? p_enc: (char_u *)"latin1");
+	if (conv.vc_type == CONV_NONE)
+	{
+	    /* p_enc is utf-8, so we're done. */
+	    enc_str = utf8_str;
+	}
+	else
+	{
+	    enc_str = string_convert(&conv, utf8_str, lenp);
+	    vim_free(utf8_str);
+	}
+
+	convert_setup(&conv, NULL, NULL);
+    }
+
+    return enc_str;
+}
+#endif /* FEAT_MBYTE */
+
+#if (defined(FEAT_MBYTE) && defined(WIN3264)) || defined(PROTO)
+/*
+ * Convert from the active codepage to 'encoding'.
+ * Input is "str[str_size]".
+ * The result is in allocated memory: "out[outlen]".  With terminating NUL.
+ */
+    void
+acp_to_enc(str, str_size, out, outlen)
+    char_u	*str;
+    int		str_size;
+    char_u	**out;
+    int		*outlen;
+
+{
+    LPWSTR	widestr;
+
+    MultiByteToWideChar_alloc(GetACP(), 0, str, str_size, &widestr, outlen);
+    if (widestr != NULL)
+    {
+	++*outlen;	/* Include the 0 after the string */
+	*out = utf16_to_enc((short_u *)widestr, outlen);
+	vim_free(widestr);
+    }
+}
+#endif
 
 
 /*
