@@ -59,7 +59,8 @@ static int can_update_cursor = TRUE; /* can display the cursor */
 gui_start()
 {
     char_u	*old_term;
-#if defined(UNIX) && !defined(__BEOS__) && !defined(MACOS_X)
+#if defined(UNIX) && !defined(__BEOS__) && !defined(MACOS_X) \
+	&& !defined(__APPLE__)
 # define MAY_FORK
     int		dofork = TRUE;
 #endif
