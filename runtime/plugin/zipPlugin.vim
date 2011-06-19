@@ -20,7 +20,7 @@
 if &cp || exists("g:loaded_zipPlugin")
  finish
 endif
-let g:loaded_zipPlugin = "v23"
+let g:loaded_zipPlugin = "v24"
 let s:keepcpo          = &cpo
 set cpo&vim
 
@@ -40,7 +40,7 @@ augroup zip
   au FileWriteCmd zipfile:*/*	call zip#Write(expand("<amatch>"))
  endif
 
- au BufReadCmd   *.zip,*.jar,*.xpi,*.war,*.ear		call zip#Browse(expand("<amatch>"))
+ au BufReadCmd   *.zip,*.jar,*.xpi,*.war,*.ear,*.celzip		call zip#Browse(expand("<amatch>"))
 augroup END
 
 " ---------------------------------------------------------------------

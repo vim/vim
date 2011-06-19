@@ -3,7 +3,7 @@
 " Author: René Neumann <necoro@necoro.eu>
 " Author: Steve Spigarelli <http://spig.net/>
 " Original Author:	Jean-Marc Vanel <http://jmvanel.free.fr/>
-" Last Change:	December 11, 2010
+" Last Change:	mar jui 12 18:04:05 CEST 2005
 " Filenames:	*.xq
 " URL:		http://jmvanel.free.fr/vim/xquery.vim
 
@@ -51,7 +51,7 @@ syn match xqFloat   "\d\+e[-+]\=\d\+[fl]\=\>"
 syn match xqNumber  "0x\x\+\(u\=l\{0,2}\|ll\=u\)\>"
 syn match xqNumber  "\<\d\+\>"
 
-syn region xqString  start=+"+ end=+"+
+syn region xqString  start=+\z(['"]\)+ skip=+\\.+ end=+\z1+
 syn region xqComment start='(:' excludenl end=':)' contains=XQdoc
 
 syn match xqVariable "$\<[a-zA-Z:_][-.0-9a-zA-Z0-9:_]*\>"

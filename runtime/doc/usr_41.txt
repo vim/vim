@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.3.  Last change: 2011 Feb 15
+*usr_41.txt*	For Vim version 7.3.  Last change: 2011 Jun 19
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -597,7 +597,7 @@ String manipulation:					*string-functions*
 	strridx()		last index of a short string in a long string
 	strlen()		length of a string
 	substitute()		substitute a pattern match with a string
-	submatch()		get a specific match in a ":substitute"
+	submatch()		get a specific match in ":s" and substitute()
 	strpart()		get part of a string
 	expand()		expand special keywords
 	iconv()			convert text from one encoding to another

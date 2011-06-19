@@ -16,18 +16,22 @@
 if &cp || exists("g:loaded_vimballPlugin")
  finish
 endif
-let g:loaded_vimballPlugin = "v31"
+let g:loaded_vimballPlugin = "v33"
 let s:keepcpo              = &cpo
 set cpo&vim
 
 " ------------------------------------------------------------------------------
 " Public Interface: {{{1
-com! -ra   -complete=file -na=+ -bang MkVimball call vimball#MkVimball(<line1>,<line2>,<bang>0,<f-args>)
-com! -na=? -complete=dir  UseVimball			call vimball#Vimball(1,<f-args>)
-com! -na=0                VimballList			call vimball#Vimball(0)
-com! -na=* -complete=dir  RmVimball				call vimball#SaveSettings()|call vimball#RmVimball(<f-args>)|call vimball#RestoreSettings()
-au SourceCmd  *.vba.gz,*.vba.bz2,*.vba.zip		call vimball#Decompress(expand("<amatch>"))|call vimball#Vimball(1)
-au BufEnter  *.vba,*.vba.gz,*.vba.bz2,*.vba.zip	setlocal bt=nofile fmr=[[[,]]] fdm=marker|if &ff != 'unix'| setlocal ma ff=unix noma |endif|call vimball#ShowMesg(0,"Source this file to extract it! (:so %)")
+com! -ra   -complete=file -na=+ -bang MkVimball				call vimball#MkVimball(<line1>,<line2>,<bang>0,<f-args>)
+com! -na=? -complete=dir  UseVimball						call vimball#Vimball(1,<f-args>)
+com! -na=0                VimballList						call vimball#Vimball(0)
+com! -na=* -complete=dir  RmVimball							call vimball#SaveSettings()|call vimball#RmVimball(<f-args>)|call vimball#RestoreSettings()
+au BufEnter  *.vba,*.vba.gz,*.vba.bz2,*.vba.zip,*.vba.xz	setlocal bt=nofile fmr=[[[,]]] fdm=marker|if &ff != 'unix'|setlocal ma ff=unix noma|endif|call vimball#ShowMesg(0,"Source this file to extract it! (:so %)")
+au SourceCmd *.vba.gz,*.vba.bz2,*.vba.zip,*.vba.xz			if expand("%")!=expand("<afile>") | exe "1sp" fnameescape(expand("<afile>"))|endif|call vimball#Decompress(expand("<amatch>"))|so %|if expand("%")!=expand("<afile>")|close|endif
+au SourceCmd *.vba											if expand("%")!=expand("<afile>") | exe "1sp" fnameescape(expand("<afile>"))|call vimball#Vimball(1)|close|else|call vimball#Vimball(1)|endif
+au BufEnter  *.vmb,*.vmb.gz,*.vmb.bz2,*.vmb.zip,*.vmb.xz	setlocal bt=nofile fmr=[[[,]]] fdm=marker|if &ff != 'unix'|setlocal ma ff=unix noma|endif|call vimball#ShowMesg(0,"Source this file to extract it! (:so %)")
+au SourceCmd *.vmb.gz,*.vmb.bz2,*.vmb.zip,*.vmb.xz			if expand("%")!=expand("<afile>") | exe "1sp" fnameescape(expand("<afile>"))|endif|call vimball#Decompress(expand("<amatch>"))|so %|if expand("%")!=expand("<afile>")|close|endif
+au SourceCmd *.vmb											if expand("%")!=expand("<afile>") | exe "1sp" fnameescape(expand("<afile>"))|call vimball#Vimball(1)|close|else|call vimball#Vimball(1)|endif
 
 " =====================================================================
 " Restoration And Modelines: {{{1

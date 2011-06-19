@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.3.  Last change: 2011 May 10
+*map.txt*       For Vim version 7.3.  Last change: 2011 Jun 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -107,6 +107,8 @@ modes.
 :cmapc[lear]			|mapmode-c|		*:cmapc*  *:cmapclear*
 			Remove ALL mappings for the modes where the map
 			command applies.  {not in Vi}
+			Use the <buffer> argument to remove buffer-local
+			mappings |:map-<buffer>|
 			Warning: This also removes the default mappings.
 
 :map				|mapmode-nvo|
@@ -934,11 +936,12 @@ See |:verbose-cmd| for more information.
 			avoid that a typed {lhs} is expanded, since
 			command-line abbreviations apply here.
 
-:ab[breviate] [<expr>] {lhs} {rhs}
+:ab[breviate] [<expr>] [<buffer>] {lhs} {rhs}
 			add abbreviation for {lhs} to {rhs}.  If {lhs} already
 			existed it is replaced with the new {rhs}.  {rhs} may
 			contain spaces.
 			See |:map-<expr>| for the optional <expr> argument.
+			See |:map-<buffer>| for the optional <buffer> argument.
 
 						*:una* *:unabbreviate*
 :una[bbreviate] {lhs}	Remove abbreviation for {lhs} from the list.  If none
@@ -948,12 +951,12 @@ See |:verbose-cmd| for more information.
 			expansion insert a CTRL-V (type it twice).
 
 						*:norea* *:noreabbrev*
-:norea[bbrev] [<expr>] [lhs] [rhs]
+:norea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
 			same as ":ab", but no remapping for this {rhs} {not
 			in Vi}
 
 						*:ca* *:cabbrev*
-:ca[bbrev] [<expr>] [lhs] [rhs]
+:ca[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
 			same as ":ab", but for Command-line mode only.  {not
 			in Vi}
 
@@ -962,12 +965,12 @@ See |:verbose-cmd| for more information.
 			in Vi}
 
 						*:cnorea* *:cnoreabbrev*
-:cnorea[bbrev] [<expr>] [lhs] [rhs]
+:cnorea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
 			same as ":ab", but for Command-line mode only and no
 			remapping for this {rhs} {not in Vi}
 
 						*:ia* *:iabbrev*
-:ia[bbrev] [<expr>] [lhs] [rhs]
+:ia[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
 			same as ":ab", but for Insert mode only.  {not in Vi}
 
 						*:iuna* *:iunabbrev*
@@ -975,18 +978,18 @@ See |:verbose-cmd| for more information.
 			Vi}
 
 						*:inorea* *:inoreabbrev*
-:inorea[bbrev] [<expr>] [lhs] [rhs]
+:inorea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
 			same as ":ab", but for Insert mode only and no
 			remapping for this {rhs} {not in Vi}
 
 							*:abc* *:abclear*
-:abc[lear]		Remove all abbreviations.  {not in Vi}
+:abc[lear] [<buffer>]	Remove all abbreviations.  {not in Vi}
 
 							*:iabc* *:iabclear*
-:iabc[lear]		Remove all abbreviations for Insert mode.  {not in Vi}
+:iabc[lear] [<buffer>]	Remove all abbreviations for Insert mode.  {not in Vi}
 
 							*:cabc* *:cabclear*
-:cabc[lear]		Remove all abbreviations for Command-line mode.  {not
+:cabc[lear] [<buffer>]	Remove all abbreviations for Command-line mode.  {not
 			in Vi}
 
 							*using_CTRL-V*

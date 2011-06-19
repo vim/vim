@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2011 May 19
+" Last Change:	2011 Jun 13
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -936,6 +936,9 @@ au BufNewFile,BufRead *.clp			setf jess
 
 " Jgraph
 au BufNewFile,BufRead *.jgr			setf jgraph
+
+" Jovial
+au BufNewFile,BufRead *.jov,*.j73,*.jovial	setf jovial
 
 " Kixtart
 au BufNewFile,BufRead *.kix			setf kix

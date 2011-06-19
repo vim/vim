@@ -2,7 +2,7 @@
 " Language:	BibTeX (bibliographic database format for (La)TeX)
 " Maintainer:	Bernd Feige <Bernd.Feige@gmx.net>
 " Filenames:	*.bib
-" Last Change:	Aug 02, 2005
+" Last Change:	Mar 23, 2011
 
 " Thanks to those who pointed out problems with this file or supplied fixes!
 
@@ -34,6 +34,8 @@ syn keyword bibEntryKw contained	number organization pages publisher
 syn keyword bibEntryKw contained	school series title type volume year
 " Non-standard:
 syn keyword bibNSEntryKw contained	abstract isbn issn keywords url
+" AMS mref http://www.ams.org/mref
+syn keyword bibNSEntryKw contained	mrclass mrnumber mrreviewer fjournal coden
 
 " Clusters
 " ========
@@ -55,11 +57,11 @@ syn region bibEntryData contained start=/[{(]/ms=e+1 end=/[})]/me=e-1 contains=b
 " Actually, 5.8 <= Vim < 6.0 would ignore the `fold' keyword anyway, but Vim<5.8 would produce
 " an error, so we explicitly distinguish versions with and without folding functionality:
 if version < 600
-  syn region bibEntry start=/@\S\+[{(]/ end=/^\s*[})]/ transparent contains=bibType,bibEntryData nextgroup=bibComment
+  syn region bibEntry start=/@\S\+\s*[{(]/ end=/^\s*[})]/ transparent contains=bibType,bibEntryData nextgroup=bibComment
 else
-  syn region bibEntry start=/@\S\+[{(]/ end=/^\s*[})]/ transparent fold contains=bibType,bibEntryData nextgroup=bibComment
+  syn region bibEntry start=/@\S\+\s*[{(]/ end=/^\s*[})]/ transparent fold contains=bibType,bibEntryData nextgroup=bibComment
 endif
-syn region bibComment2 start=/@Comment[{(]/ end=/^\s*@/me=e-1 contains=@bibCommentContents nextgroup=bibEntry
+syn region bibComment2 start=/@Comment\s*[{(]/ end=/^\s*[})]/me=e-1 contains=@bibCommentContents nextgroup=bibEntry
 
 " Synchronization
 " ===============

@@ -1,4 +1,4 @@
-*if_cscop.txt*  For Vim version 7.3.  Last change: 2010 Sep 29
+*if_cscop.txt*  For Vim version 7.3.  Last change: 2011 Jun 12
 
 
 		  VIM REFERENCE MANUAL    by Andy Kahn
@@ -264,19 +264,20 @@ seems to be useful: >
 	:set cscopequickfix=s-,c-,d-,i-,t-,e-
 <
 							*cscopetag* *cst*
-If 'cscopetag' set, the commands ":tag" and CTRL-] as well as "vim -t" will
-always use |:cstag| instead of the default :tag behavior.  Effectively, by
-setting 'cst', you will always search your cscope databases as well as your
-tag files.  The default is off.  Examples: >
+If 'cscopetag' is set, the commands ":tag" and CTRL-] as well as "vim -t"
+will always use |:cstag| instead of the default :tag behavior.  Effectively,
+by setting 'cst', you will always search your cscope databases as well as
+your tag files.  The default is off.  Examples: >
 	:set cst
 	:set nocst
 <
 							*cscoperelative* *csre*
-If 'cscoperelative' set, then in absence of a prefix given to cscope (prefx
-is the argument to -P option of cscope), basename of cscope.out location
-(usually the project root directory) will be used as the prefix to construt
-absolute path.The default is off. Note: This option is only effective when
-cscope (cscopeprg) is initialized without a prefix path (-P). Examples: >
+If 'cscoperelative' is set, then in absence of a prefix given to cscope
+(prefix is the argument of -P option of cscope), basename of cscope.out
+location (usually the project root directory) will be used as the prefix
+to construct an absolute path.  The default is off.  Note: This option is
+only effective when cscope (cscopeprg) is initialized without a prefix
+path (-P).  Examples: >
 	:set csre
 	:set nocsre
 <

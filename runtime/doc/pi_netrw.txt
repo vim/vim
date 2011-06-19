@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.3.  Last change: 2011 Apr 01
+*pi_netrw.txt*  For Vim version 7.3.  Last change: 2011 May 31
 
 	    -----------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -273,7 +273,7 @@ SOURCING					*netrw-source* {{{2
 	:Nsource "scp://[user@]machine[[:#]port]/path"	uses scp
 	:Nsource "sftp://[user@]machine/path"		uses sftp
 
-DIRECTORY LISTING					*netrw-dirlist* {{{2
+DIRECTORY LISTING				*netrw-trailingslash* *netrw-dirlist* {{{2
 
 	One may browse a directory to get a listing by simply attempting to
 	edit the directory: >
@@ -281,14 +281,15 @@ DIRECTORY LISTING					*netrw-dirlist* {{{2
 		:e scp://[user]@hostname/path/
 		:e ftp://[user]@hostname/path/
 <
-	For remote directories (ie. those using scp or ftp), that trailing
-	"/" is necessary (the slash tells netrw to treat the argument as a
-	directory to browse instead of a file to download).
+	For remote directory listings (ie. those using scp or ftp), that
+	trailing "/" is necessary (the slash tells netrw to treat the argument
+	as a directory to browse instead of as a file to download).
 
-	However, the Nread command can also be used to accomplish this:
+	The Nread command may also be used to accomplish this (again, that
+	trailing slash is necessary): >
 
-	:Nread [protocol]://[user]@hostname/path/
-
+		:Nread [protocol]://[user]@hostname/path/
+<
 					*netrw-login* *netrw-password*
 CHANGING USERID AND PASSWORD		*netrw-chgup* *netrw-userpass* {{{2
 
@@ -2158,8 +2159,8 @@ your browsing preferences.  (see also: |netrw-settings|)
   *g:netrw_mkdir_cmd*		  command for making a remote directory
 				 default: "ssh USEPORT HOSTNAME mkdir"
 
-  *g:netrw_mousemaps*		  =1 (default) enables the mouse buttons
-				   while browsing:
+  *g:netrw_mousemaps*		  =1 (default) enables mouse buttons while
+  				   browsing to:
 				     leftmouse       : open file/directory
 				     shift-leftmouse : mark file
 				     middlemouse     : same as P
@@ -2274,8 +2275,11 @@ your browsing preferences.  (see also: |netrw-settings|)
 
   *g:netrw_winsize*		  specify initial size of new windows made with
 				"o" (see |netrw-o|), "v" (see |netrw-v|),
-				|:Hexplore| or |:Vexplore|.
-				 default: ""
+				|:Hexplore| or |:Vexplore|.  The g:netrw_winsize
+				is an integer describing the percentage of the
+				current netrw buffer's window to be used for
+				the new window.
+				 default: 50  (for 50%)
 
   *g:netrw_xstrlen*		  Controls how netrw computes string lengths,
 				including multi-byte characters' string
@@ -2660,7 +2664,7 @@ Associated setting variables:	|g:netrw_chgwin|
 
 								*netrw-p11*
 	P11. I want to have two windows; a thin one on the left and my editing
-	     window on the right.  How can I do this?
+	     window on the right.  How may I accomplish this?
 
 		* Put the following line in your <.vimrc>:
 			let g:netrw_altv = 1
@@ -2706,7 +2710,45 @@ Associated setting variables:	|g:netrw_chgwin|
 	    "let g:netrw_sftp_cmd = "d:\\dev\\putty\\PSFTP.exe"
 	    "let g:netrw_scp_cmd = "d:\\dev\\putty\\PSCP.exe"
 <
+								*netrw-p14*
+	P14. I'd would like to speed up writes using Nwrite and scp/ssh
+	     style connections.  How?  (Thomer M. Gil)
 
+	     Try using ssh's ControlMaster and ControlPath (see the ssh_config
+	     man page) to share multiple ssh connections over a single network
+	     connection. That cuts out the cryptographic handshake on each
+	     file write, sometimes speeding it up by an order of magnitude.
+	     (see  http://thomer.com/howtos/netrw_ssh.html)
+	     (included by permission)
+
+	     Add the following to your ~/.ssh/config: >
+
+		 # you change "*" to the hostname you care about
+		 Host *
+		   ControlMaster auto
+		   ControlPath /tmp/%r@%h:%p
+
+<	     Then create an ssh connection to the host and leave it running: >
+
+		 ssh -N host.domain.com
+
+<	     Now remotely open a file with Vim's Netrw and enjoy the
+	     zippiness: >
+
+		vim scp://host.domain.com//home/user/.bashrc
+<
+								*netrw-p15*
+	P15. How may I use a double-click instead of netrw's usual single click
+	     to open a file or directory?  (Ben Fritz)
+
+	     First, disable netrw's mapping with >
+		    let g:netrw_mousemaps= 0
+<	     and then create a netrw buffer only mapping in
+	     $HOME/.vim/after/ftplugin/netrw.vim: >
+		    nmap <buffer> <2-leftmouse> <CR>
+<	     Note that setting g:netrw_mousemaps to zero will turn off
+	     all netrw's mouse mappings, not just the <leftmouse> one.
+	     (see |g:netrw_mousemaps|)
 
 ==============================================================================
 11. Debugging Netrw Itself				*netrw-debug* {{{1
@@ -2762,6 +2804,15 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 12. History						*netrw-history* {{{1
 
+	v142: Apr 06, 2011 * I modified NetrwRemoteListing() to use
+			     shellescape(fnameescape(s:path),1) for
+			     the benefit of those using scp://.../
+			     with subdirectories having spaces.
+			     Problem reported by: Gilles Charron
+	      Apr 18, 2011 * s:NetrwMethod() attempts to issue an
+	      		     error message when given a malformed url
+	      Apr 29, 2011 * converted most mousemaps to use <Plug>s
+			   * |g:netrw_winsize|'s meaning changed
 	v141: Aug 28, 2010 * added -s:... support for Windows ftp
 			   * restored 2-leftmouse for :Rex-like return
 			   * added balloon help for banner
@@ -2772,6 +2823,9 @@ which is loaded automatically at startup (assuming :set nocp).
 			     Avoids "... is a directory" message, works
 			     inside a try-catch-endtry clause.
 	      Feb 22, 2011 * for menus, &go =~# used to insure correct case
+	      Apr 01, 2011 * changed g:netrw_cursorcolumn to g:netrw_cursor
+	                     In addition, there's more supported settings for
+			     it.
 	v140: Jul 27, 2010 * (Lech Lorens) unexpected change of window
 	v139: May 14, 2010 * when viewing remote directory listings and
 			     changing listing style, going to tree listing

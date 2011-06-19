@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.3.  Last change: 2011 Feb 01
+*spell.txt*	For Vim version 7.3.  Last change: 2011 May 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1244,6 +1244,7 @@ one or more groups, where each group can be:
 Optionally this may be followed by:
 	*	the group appears zero or more times, e.g., sm*e
 	+	the group appears one or more times, e.g., c+
+	?	the group appears zero times or once, e.g., x?
 
 This is similar to the regexp pattern syntax (but not the same!).  A few
 examples with the sequence of word flags they require:
@@ -1251,6 +1252,7 @@ examples with the sequence of word flags they require:
     COMPOUNDRULE yz	    yz
     COMPOUNDRULE x+z	    xz xxz xxxz etc.
     COMPOUNDRULE yx+	    yx yxx yxxx etc.
+    COMPOUNDRULE xy?z	    xz xyz
 
     COMPOUNDRULE [abc]z    az bz cz
     COMPOUNDRULE [abc]+z   az aaz abaz bz baz bcbz cz caz cbaz etc.

@@ -2,8 +2,8 @@
 " Language:     Debian sources.list
 " Maintainer:   Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
 " Former Maintainer: Matthijs Mohlmann <matthijs@cacholong.nl>
-" Last Change: 2010 Oct 21
-" URL: http://hg.debian.org/hg/pkg-vim/vim/raw-file/unstable/runtime/syntax/debsources.vim
+" Last Change: 2011 June 01
+" URL: http://anonscm.debian.org/hg/pkg-vim/vim/raw-file/unstable/runtime/syntax/debsources.vim
 
 " Standard syntax initialization
 if version < 600
@@ -23,7 +23,7 @@ syn match debsourcesComment        /#.*/  contains=@Spell
 
 " Match uri's
 syn match debsourcesUri            +\(http://\|ftp://\|[rs]sh://\|debtorrent://\|\(cdrom\|copy\|file\):\)[^' 	<>"]\++
-syn match debsourcesDistrKeyword   +\([[:alnum:]_./]*\)\(lenny\|squeeze\|\(old\)\=stable\|testing\|unstable\|sid\|rc-buggy\|experimental\|dapper\|hardy\|jaunty\|karmic\|lucid\|maverick\|natty\)\([-[:alnum:]_./]*\)+
+syn match debsourcesDistrKeyword   +\([[:alnum:]_./]*\)\(lenny\|squeeze\|wheezy\|\(old\)\=stable\|testing\|unstable\|sid\|rc-buggy\|experimental\|hardy\|lucid\|maverick\|natty\|oneiric\)\([-[:alnum:]_./]*\)+
 
 " Associate our matches and regions with pretty colours
 hi def link debsourcesLine            Error

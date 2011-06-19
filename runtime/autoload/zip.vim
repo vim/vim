@@ -1,10 +1,10 @@
 " zip.vim: Handles browsing zipfiles
 "            AUTOLOAD PORTION
-" Date:		Apr 12, 2010
-" Version:	23
+" Date:		May 24, 2011
+" Version:	24
 " Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:	Vim License  (see vim's :help license)
-" Copyright:    Copyright (C) 2005-2008 Charles E. Campbell, Jr. {{{1
+" Copyright:    Copyright (C) 2005-2011 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
@@ -19,7 +19,7 @@
 if &cp || exists("g:loaded_zip")
  finish
 endif
-let g:loaded_zip= "v23"
+let g:loaded_zip= "v24"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** this version of zip needs vim 7.2"
@@ -103,37 +103,25 @@ fun! zip#Browse(zipfile)
   set ft=tar
 
   " give header
-  let lastline= line("$")
-  call setline(lastline+1,'" zip.vim version '.g:loaded_zip)
-  call setline(lastline+2,'" Browsing zipfile '.a:zipfile)
-  call setline(lastline+3,'" Select a file with cursor and press ENTER')
-  $put =''
-  0d
-  $
+  call append(0, ['" zip.vim version '.g:loaded_zip,
+                \ '" Browsing zipfile '.a:zipfile,
+                \ '" Select a file with cursor and press ENTER'])
+  keepj $
 
 "  call Decho("exe silent r! ".g:zip_unzipcmd." -l -- ".s:Escape(a:zipfile,1))
-  exe "silent r! ".g:zip_unzipcmd." -l -- ".s:Escape(a:zipfile,1)
+  exe "silent r! ".g:zip_unzipcmd." -Z -1 -- ".s:Escape(a:zipfile,1)
   if v:shell_error != 0
    redraw!
    echohl WarningMsg | echo "***warning*** (zip#Browse) ".fnameescape(a:zipfile)." is not a zip file" | echohl None
 "   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
-   silent %d
+   keepj sil! %d
    let eikeep= &ei
    set ei=BufReadCmd,FileReadCmd
-   exe "r ".fnameescape(a:zipfile)
+   exe "keepj r ".fnameescape(a:zipfile)
    let &ei= eikeep
-   1d
+   keepj 1d
 "   call Dret("zip#Browse")
    return
-  endif
-"  call Decho("line 6: ".getline(6))
-  let namecol= stridx(getline(6),'Name') + 1
-"  call Decho("namecol=".namecol)
-  4,$g/^\s*----/d
-  4,$g/^\s*\a/d
-  $d
-  if namecol > 0
-   exe 'silent 4,$s/^.*\%'.namecol.'c//'
   endif
 
   setlocal noma nomod ro
@@ -205,11 +193,12 @@ fun! zip#Read(fname,mode)
 "  call Decho("zipfile<".zipfile.">")
 "  call Decho("fname  <".fname.">")
 
-"  call Decho("exe r! ".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fname,1))
-  exe "silent r! ".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fname,1)
+"  call Decho("exe r! ".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fnameescape(fname),1))
+  exe "keepj sil! r! ".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fnameescape(fname),1)
+  filetype detect
 
   " cleanup
-  0d
+  keepj 0d
   set nomod
 
   let &report= repkeep

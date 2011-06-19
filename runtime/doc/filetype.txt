@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 7.3.  Last change: 2008 Jul 15
+*filetype.txt*  For Vim version 7.3.  Last change: 2011 Jun 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -270,6 +270,9 @@ directories!
 
 
 						*autocmd-osfiletypes*
+NOTE: this code is currently disabled, as the RISC OS implementation was
+removed.  In the future this will use the 'filetype' option.
+
 On operating systems which support storing a file type with the file, you can
 specify that an autocommand should only be executed if the file is of a
 certain type.
@@ -296,8 +299,6 @@ must both match): >
 
 This will match files of type "&fff" whose names start with "diff".
 
-Note that osfiletype checking is skipped if Vim is compiled without the
-|+osfiletype| feature.
 
 							*plugin-details*
 The "plugin" directory can be in any of the directories in the 'runtimepath'

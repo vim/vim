@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:	GDMO
 "		(ISO-10165-4; Guidelines for the Definition of Managed Object)
-" Maintainer:	Gyuman Kim <violino@dooly.modacom.co.kr>
-" URL:		http://dooly.modacom.co.kr/gdmo.vim
-" Last change:	2001 Sep 02
+" Maintainer:	Gyuman (Chester) Kim <violkim@gmail.com>
+" URL:		http://classicalprogrammer.wikidot.com/local--files/vim-syntax-file-for-gdmo/gdmo.vim
+" Last change:	8th June, 2011
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

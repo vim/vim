@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.3.  Last change: 2011 May 17
+*change.txt*    For Vim version 7.3.  Last change: 2011 Jun 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -717,11 +717,13 @@ Otherwise it works on whole lines anyway.
 
 					*sub-replace-special* *:s\=*
 When the {string} starts with "\=" it is evaluated as an expression, see
-|sub-replace-expression|.  You can use that for any special characters.
+|sub-replace-expression|.  You can use that for complex replacement or special
+characters.
+
 Otherwise these characters in {string} have a special meaning:
 								*:s%*
 When {string} is equal to "%" and '/' is included with the 'cpoptions' option,
-then the {string} of the previous substitute command is used. |cpo-/|
+then the {string} of the previous substitute command is used, see |cpo-/|
 
 magic	nomagic	  action    ~
   &	  \&	  replaced with the whole matched pattern	     *s/\&*
@@ -756,6 +758,14 @@ magic	nomagic	  action    ~
       \x	  where x is any character not mentioned above:
 		  Reserved for future expansion
 
+The special meaning is also used inside the third argument {sub} of
+the |substitute()| function with the following exceptions:
+  - A % inserts a percent literally without regard to 'cpoptions'.
+  - magic is always set without regard to 'magic'.
+  - A ~ inserts a tilde literally.
+  - <CR> and \r inserts a carriage-return (CTRL-M).
+  - \<CR> does not have a special meaning. it's just one of \x.
+
 Examples: >
   :s/a\|b/xxx\0xxx/g		 modifies "a b"	     to "xxxaxxx xxxbxxx"
   :s/\([abc]\)\([efg]\)/\2\1/g	 modifies "af fa bg" to "fa fa gb"
@@ -787,17 +797,19 @@ either the first or second pattern in parentheses did not match, so either
 Substitute with an expression			*sub-replace-expression*
 						*sub-replace-\=*
 When the substitute string starts with "\=" the remainder is interpreted as an
-expression.  This does not work recursively: a substitute() function inside
+expression.  This does not work recursively: a |substitute()| function inside
 the expression cannot use "\=" for the substitute string.
 
 The special meaning for characters as mentioned at |sub-replace-special| does
-not apply except for "<CR>", "\<CR>" and "\\".  Thus in the result of the
-expression you need to use two backslashes to get one, put a backslash before a
-<CR> you want to insert, and use a <CR> without a backslash where you want to
-break the line.
+not apply except for "<CR>".  A <NL> character is used as a line break, you
+can get one with a double-quote string: "\n".  Prepend a backslash to get a
+real <NL> character (which will be a NUL in the file).
 
-For convenience a <NL> character is also used as a line break.  Prepend a
-backslash to get a real <NL> character (which will be a NUL in the file).
+The "\=" notation can also be used inside the third argument {sub} of
+|substitute()| function.  In this case, the special meaning for characters as
+mentioned at |sub-replace-special| does not apply at all. Especially, <CR> and
+<NL> are interpreted not as a line break but as a carriage-return and a
+new-line respectively.
 
 When the result is a |List| then the items are joined with separating line
 breaks.  Thus each item becomes a line, except that they can contain line

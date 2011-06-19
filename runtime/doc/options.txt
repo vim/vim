@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2011 May 17
+*options.txt*	For Vim version 7.3.  Last change: 2011 Jun 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2933,8 +2933,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This will use the "c" filetype first, then the "doxygen" filetype.
 	This works both for filetype plugins and for syntax files.  More than
 	one dot may appear.
-	Do not confuse this option with 'osfiletype', which is for the file
-	type that is actually stored with the file.
 	This option is not copied to another buffer, independent of the 's' or
 	'S' flag in 'cpoptions'.
 	Only normal file name characters can be used, "/\*?[|<>" are illegal.
@@ -3405,7 +3403,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	    :highlight Cursor gui=NONE guifg=bg guibg=fg
 <
 					*'guifont'* *'gfn'*
-						   *E235* *E596* *E610* *E611*
+						   *E235* *E596*
 'guifont' 'gfn'		string	(default "")
 			global
 			{not in Vi}
@@ -5123,20 +5121,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	security reasons.
 
 
-					*'osfiletype'* *'oft'* *E366*
-'osfiletype' 'oft'	string (RISC-OS default: "Text",
-				others default: "")
+					*'osfiletype'* *'oft'*
+'osfiletype' 'oft'	string (default: "")
 			local to buffer
 			{not in Vi}
-			{only available when compiled with the |+osfiletype|
-			feature}
-	Some operating systems store extra information about files besides
-	name, datestamp and permissions.  This option contains the extra
-	information, the nature of which will vary between systems.
-	The value of this option is usually set when the file is loaded, and
-	is used to set the operating system file type when file is written.
-	It can affect the pattern matching of the automatic commands.
-	|autocmd-osfiletypes|
+	This option was supported on RISC OS, which has been removed.
+
 
 						*'paragraphs'* *'para'*
 'paragraphs' 'para'	string	(default "IPLPPPQPP TPHPLIPpLpItpplpipbp")

@@ -1,4 +1,4 @@
-*pi_vimball.txt*	For Vim version 7.3.  Last change: 2010 Apr 12
+*pi_vimball.txt*	For Vim version 7.3.  Last change: 2011 Apr 02
 
 			       ----------------
 			       Vimball Archiver
@@ -6,7 +6,7 @@
 
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
-Copyright: (c) 2004-2009 by Charles E. Campbell, Jr.	*Vimball-copyright*
+Copyright: (c) 2004-2011 by Charles E. Campbell, Jr.	*Vimball-copyright*
 	   The VIM LICENSE applies to Vimball.vim, and Vimball.txt
 	   (see |copyright|) except use "Vimball" instead of "Vim".
 	   No warranty, express or implied.
@@ -176,6 +176,22 @@ WINDOWS							*vimball-windows*
 ==============================================================================
 4. Vimball History					*vimball-history* {{{1
 
+	33 : Apr 02, 2011 * Gave priority to *.vmb over *.vba
+			  * Changed silent! to sil! (shorter)
+			  * Safed |'swf'| setting (during vimball extraction,
+			    its now turned off)
+	32 : May 19, 2010 * (Christian Brabrandt) :so someplugin.vba and
+			    :so someplugin.vba.gz (and the other supported
+			    compression types) now works
+			  * (Jan Steffens) added support for xz compression
+			  * fenc extraction was erroneously picking up the
+			    end of the line number when no file encoding
+			    was present.  Fixed.
+			  * By request, beginning the switchover from the vba
+			    extension to vmb.  Currently both are supported;
+			    MkVimball, however, now will create *.vmb files.
+	     Feb 11, 2011 * motoyakurotsu reported an error with vimball's
+			    handling of zero-length files
 	30 : Dec 08, 2008 * fnameescape() inserted to protect error
 			    messaging using corrupted filenames from
 			    causing problems
@@ -199,6 +215,8 @@ WINDOWS							*vimball-windows*
 			    causing problems as reported by Zhang Shuhan
 	24 : Nov 15, 2007 * g:vimball_path_escape used by s:Path() to
 	                    prevent certain characters from causing trouble
+			    (defunct: |fnameescape()| and |shellescape()|
+			    now used instead)
 	22 : Mar 21, 2007 * uses setlocal instead of set during BufEnter
 	21 : Nov 27, 2006 * (tnx to Bill McCarthy) vimball had a header
 	                    handling problem and it now changes \s to /s

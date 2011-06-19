@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 7.3.  Last change: 2010 Sep 14
+*pi_zip.txt*	For Vim version 7.3.  Last change: 2011 May 24
 
 				+====================+
 				| Zip File Interface |
@@ -6,7 +6,7 @@
 
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
-Copyright: Copyright (C) 2005-2009 Charles E Campbell, Jr *zip-copyright*
+Copyright: Copyright (C) 2005-2011 Charles E Campbell, Jr *zip-copyright*
            Permission is hereby granted to use and distribute this code,
 	   with or without modifications, provided that this copyright
 	   notice is copied with it. Like anything else that's free,
@@ -17,14 +17,14 @@ Copyright: Copyright (C) 2005-2009 Charles E Campbell, Jr *zip-copyright*
 	   the use of this software.
 
 ==============================================================================
-1. Contents					*zip* *zip-contents*
+1. Contents						*zip* *zip-contents*
    1. Contents................................................|zip-contents|
    2. Usage...................................................|zip-usage|
    3. Additional Extensions...................................|zip-extension|
    4. History.................................................|zip-history|
 
 ==============================================================================
-2. Usage					*zip-usage* *zip-manual*
+2. Usage						*zip-usage* *zip-manual*
 
    When one edits a *.zip file, this plugin will handle displaying a
    contents page.  Select a file to edit by moving the cursor atop
@@ -69,6 +69,7 @@ Copyright: Copyright (C) 2005-2009 Charles E Campbell, Jr *zip-copyright*
 	let g:loaded_zipPlugin= 1
 	let g:loaded_zip      = 1
 <
+<
 
 ==============================================================================
 3. Additional Extensions					*zip-extension*
@@ -83,7 +84,11 @@ Copyright: Copyright (C) 2005-2009 Charles E Campbell, Jr *zip-copyright*
    should be treated as zip files.
 
 ==============================================================================
-4. History					*zip-history* {{{1
+4. History							*zip-history* {{{1
+   v24 Jun 21, 2010 * (Cédric Bosdonnat) unzip seems to need its filenames
+		      fnameescape'd as well as shellquote'd
+		    * (Motoya Kurotsu) inserted keepj before 0d to protect
+		      jump list
    v17 May 09, 2008 * arno caught a security bug
    v15 Sep 07, 2007 * &shq now used if not the empty string for g:zip_shq
    v14 May 07, 2007 * using b:zipfile instead of w:zipfile to avoid problem

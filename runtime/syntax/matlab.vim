@@ -4,6 +4,8 @@
 " Credits:	Preben 'Peppe' Guldberg <peppe-vim@wielders.org>
 "		Original author: Mario Eusebio
 " Last Change:	Wed Jan 13 11:12:34 CET 2010
+" 		sinh added to matlab implicit commands
+" Change History:
 " 		- 'global' and 'persistent' keyword are now recognized
 
 " For version 5.x: Clear all syntax items
@@ -68,7 +70,7 @@ syn keyword matlabOperator		ceil floor size clear zeros eye mean std cov
 syn keyword matlabFunction		error eval function
 
 syn keyword matlabImplicit		abs acos atan asin cos cosh exp log prod sum
-syn keyword matlabImplicit		log10 max min sign sin sqrt tan reshape
+syn keyword matlabImplicit		log10 max min sign sin sinh sqrt tan reshape
 
 syn match matlabError	"-\=\<\d\+\.\d\+\.[^*/\\^]"
 syn match matlabError	"-\=\<\d\+\.\d\+[eEdD][-+]\=\d\+\.\([^*/\\^]\)"

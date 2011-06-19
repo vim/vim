@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.3.  Last change: 2010 May 14
+*motion.txt*    For Vim version 7.3.  Last change: 2011 Jun 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -344,6 +344,8 @@ gg			Goto line [count], default first line, on the first
 			last number in it used as the byte count.  End-of-line
 			characters are counted depending on the current
 			'fileformat' setting.
+			Also see the |line2byte()| function, and the 'o'
+			option in 'statusline'.
 			{not in Vi}
 			{not available when compiled without the
 			|+byte_offset| feature}

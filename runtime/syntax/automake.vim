@@ -2,8 +2,8 @@
 " Language:	automake Makefile.am
 " Maintainer:   Debian VIM Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
 " Former Maintainer:	John Williams <jrw@pobox.com>
-" Last Change:	2007-10-14
-" URL: http://git.debian.org/?p=pkg-vim/vim.git;a=blob_plain;f=runtime/syntax/automake.vim;hb=debian
+" Last Change:	2011-06-13
+" URL: http://anonscm.debian.org/hg/pkg-vim/vim/raw-file/unstable/runtime/syntax/automake.vim
 "
 " XXX This file is in need of a new maintainer, Debian VIM Maintainers maintain
 "     it only because patches have been submitted for it by Debian users and the
@@ -17,6 +17,12 @@
 " when they are used in an inappropriate place, such as in defining
 " EXTRA_SOURCES.
 
+" Standard syntax initialization
+if version < 600
+  syntax clear
+elseif exists("b:current_syntax")
+  finish
+endif
 
 " Read the Makefile syntax to start with
 if version < 600
@@ -25,27 +31,28 @@ else
   runtime! syntax/make.vim
 endif
 
-syn match automakePrimary "^[A-Za-z0-9_]\+\(_PROGRAMS\|LIBRARIES\|_LIST\|_SCRIPTS\|_DATA\|_HEADERS\|_MANS\|_TEXINFOS\|_JAVA\|_LTLIBRARIES\)\s*="me=e-1
-syn match automakePrimary "^TESTS\s*="me=e-1
-syn match automakeSecondary "^[A-Za-z0-9_]\+\(_SOURCES\|_LDADD\|_LIBADD\|_LDFLAGS\|_DEPENDENCIES\|_CPPFLAGS\)\s*="me=e-1
-syn match automakeSecondary "^OMIT_DEPENDENCIES\s*="me=e-1
-syn match automakeExtra "^EXTRA_[A-Za-z0-9_]\+\s*="me=e-1
-syn match automakeOptions "^\(AUTOMAKE_OPTIONS\|ETAGS_ARGS\|TAGS_DEPENDENCIES\)\s*="me=e-1
-syn match automakeClean "^\(MOSTLY\|DIST\|MAINTAINER\)\=CLEANFILES\s*="me=e-1
-syn match automakeSubdirs "^\(DIST_\)\=SUBDIRS\s*="me=e-1
-syn match automakeConditional "^\(if\s*[a-zA-Z0-9_]\+\|else\|endif\)\s*$"
+syn match automakePrimary "^\w\+\(_PROGRAMS\|_LIBRARIES\|_LISP\|_PYTHON\|_JAVA\|_SCRIPTS\|_DATA\|_HEADERS\|_MANS\|_TEXINFOS\|_LTLIBRARIES\)\s*\ze+\=="
+syn match automakePrimary "^TESTS\s*\ze+\=="me=e-1
+syn match automakeSecondary "^\w\+\(_SOURCES\|_LIBADD\|_LDADD\|_LDFLAGS\|_DEPENDENCIES\|_AR\|_CCASFLAGS\|_CFLAGS\|_CPPFLAGS\|_CXXFLAGS\|_FCFLAGS\|_FFLAGS\|_GCJFLAGS\|_LFLAGS\|_LIBTOOLFLAGS\|OBJCFLAGS\|RFLAGS\|UPCFLAGS\|YFLAGS\)\s*\ze+\=="
+syn match automakeSecondary "^\(LDADD\|ARFLAGS\|OMIT_DEPENDENCIES\|AM_MAKEFLAGS\|\(AM_\)\=\(MAKEINFOFLAGS\|RUNTESTDEFAULTFLAGS\|ETAGSFLAGS\|CTAGSFLAGS\|JAVACFLAGS\)\)\s*\ze+\=="
+syn match automakeExtra "^EXTRA_\w\+\s*\ze+\=="
+syn match automakeOptions "^\(ACLOCAL_AMFLAGS\|AUTOMAKE_OPTIONS\|DISTCHECK_CONFIGURE_FLAGS\|ETAGS_ARGS\|TAGS_DEPENDENCIES\)\s*\ze+\=="
+syn match automakeClean "^\(MOSTLY\|DIST\|MAINTAINER\)\=CLEANFILES\s*\ze+\=="
+syn match automakeSubdirs "^\(DIST_\)\=SUBDIRS\s*\ze+\=="
+syn match automakeConditional "^\(if\s*!\=\w\+\|else\|endif\)\s*$"
 
-syn match automakeSubst     "@[a-zA-Z0-9_]\+@"
-syn match automakeSubst     "^\s*@[a-zA-Z0-9_]\+@"
+syn match automakeSubst     "@\w\+@"
+syn match automakeSubst     "^\s*@\w\+@"
 syn match automakeComment1 "#.*$" contains=automakeSubst
 syn match automakeComment2 "##.*$"
 
 syn match automakeMakeError "$[{(][^})]*[^a-zA-Z0-9_})][^})]*[})]" " GNU make function call
+syn match automakeMakeError "^AM_LDADD\s*\ze+\==" " Common mistake
 
-syn region automakeNoSubst start="^EXTRA_[a-zA-Z0-9_]*\s*=" end="$" contains=ALLBUT,automakeNoSubst transparent
-syn region automakeNoSubst start="^DIST_SUBDIRS\s*=" end="$" contains=ALLBUT,automakeNoSubst transparent
-syn region automakeNoSubst start="^[a-zA-Z0-9_]*_SOURCES\s*=" end="$" contains=ALLBUT,automakeNoSubst transparent
-syn match automakeBadSubst  "@\([a-zA-Z0-9_]*@\=\)\=" contained
+syn region automakeNoSubst start="^EXTRA_\w*\s*+\==" end="$" contains=ALLBUT,automakeNoSubst transparent
+syn region automakeNoSubst start="^DIST_SUBDIRS\s*+\==" end="$" contains=ALLBUT,automakeNoSubst transparent
+syn region automakeNoSubst start="^\w*_SOURCES\s*+\==" end="$" contains=ALLBUT,automakeNoSubst transparent
+syn match automakeBadSubst  "@\(\w*@\=\)\=" contained
 
 syn region  automakeMakeDString start=+"+  skip=+\\"+  end=+"+  contains=makeIdent,automakeSubstitution
 syn region  automakeMakeSString start=+'+  skip=+\\'+  end=+'+  contains=makeIdent,automakeSubstitution

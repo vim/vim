@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.3.  Last change: 2011 Apr 28
+*pattern.txt*   For Vim version 7.3.  Last change: 2011 May 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -635,7 +635,8 @@ overview.
 	Like '(?!pattern)" in Perl.
 	Example			matches ~
 	foo\(bar\)\@!		any "foo" not followed by "bar"
-	a.\{-}p\@!		"a", "ap", "app", etc. not followed by a "p"
+	a.\{-}p\@!		"a", "ap", "aap", "app", etc. not immediately
+				followed by a "p"
 	if \(\(then\)\@!.\)*$	"if " not followed by "then"
 
 	Using "\@!" is tricky, because there are many places where a pattern

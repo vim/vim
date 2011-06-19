@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.3.  Last change: 2010 Dec 02
+*quickref.txt*  For Vim version 7.3.  Last change: 2011 Jun 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -657,6 +657,7 @@ Short explanation of each option:		*option-list*
 'cscopepathcomp'  'cspc'    how many components of the path to show
 'cscopeprg'       'csprg'   command to execute cscope
 'cscopequickfix'  'csqf'    use quickfix window for cscope results
+'cscoperelative'  'csre'    Use cscope.out path basename as prefix
 'cscopetag'       'cst'     use cscope for tag commands
 'cscopetagorder'  'csto'    determines ":cstag" search order
 'cscopeverbose'   'csverb'  give messages when adding a cscope database
@@ -800,7 +801,7 @@ Short explanation of each option:		*option-list*
 'omnifunc'	  'ofu'     function for filetype-specific completion
 'opendevice'	  'odev'    allow reading/writing devices on MS-Windows
 'operatorfunc'	  'opfunc'  function to be called for |g@| operator
-'osfiletype'	  'oft'     operating system-specific filetype information
+'osfiletype' 	  'oft'     no longer supported
 'paragraphs'	  'para'    nroff macros that separate paragraphs
 'paste'			    allow pasting text
 'pastetoggle'	  'pt'	    key code that causes 'paste' to toggle

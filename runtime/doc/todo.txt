@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2011 May 19
+*todo.txt*      For Vim version 7.3.  Last change: 2011 Jun 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -27,82 +27,20 @@ Priority classification:
 See |develop.txt| for development plans.  You can vote for which items should
 be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
+Issues can also be entered online: http://code.google.com/p/vim/issues/list
+Updates will be forwarded to the vim_dev maillist.  Issues entered there will
+not be repeated below, unless there is extra information.
+
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
 Go through more coverity reports.
 
-Hong Xu: I think src/Make_ro.mak should also be removed.
-Two patches 2011 May 15
-
 Crash in autocomplete, valgrind log. (Greg Weber, 2011 Apr 22)
-
-Ex command ":s/ \?/ /g" splits multi-byte characters into bytes. (Dominique
-Pelle, 2011 May 7).
-
-In command line window ":close" doesn't work properly. (Tony Mechelynck, 2009
-Jun 1)
-Patch by Jean-Rene David, 2011 Apr 30.
-
-When "b" is a symlink to directory "a", resolve("b/") doesn't result in "a/".
-(ZyX, 2011 Feb 12)
-Patch by Jean-Rene David, 2011 Apr 30.
-
-Patch to set v:register default depending on "unnamed" in 'clipboard'. (Ingo
-Karkat, 2011 Jan 16)
-
-Patch to add 'cscoperelative'. (Raghavendra Prabhu, 2011 Apr 18)
-
-9   "} else" causes following lines to be indented too much. (Rouben
-    Rostamian, 2008 Aug 30)
-Patch by Lech Lorens, 2011 May 16, with more tests.
-
-New syntax file for dnsmasq. (Thilo Six, 2011 Apr 18)
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
-Patch for:
-    InsertCharPre   - user typed character Insert mode, before inserting the
-		      char.  Pattern is matched with text before the cursor.
-		      Set v:char to the character, can be changed.
-		      (not triggered when 'paste' is set).
-(Jakson A. Aquino, 2011 Jan 29)
-
-Patch for "No errors" showing up after QuickfixCmdPost. (Mike Lundy, 2011 Feb
-3)
-
-Patch for cmdline completion of ":lang".  (Dominique Pelle, 2011 Feb 5)
-
-Patch for adding 's' option to 'cino', C++ namespace indenting. (Konstantin
-Lepa, 2011 Jan 18)
-
-Patch to support ":!start /b cmd". (Xaizek, 2010 Dec 22)
-
-Patch for syntax "extend" not working correctly. (Ben Schmidt, 2011 May 15)
-
-Patch to build with GTK on Mac. (Ben Schmidt, 2011 Jan 18)
-Use another name instead of FEAT_GUI_ELSEWHERE.
-
-Patch for xxd makefile to avoid generating .dSYM files. (Ben Schmidt, 2011 Jan
-18)
-
-Patch to show sign for folded text. (Christian Brabandt, 2011 Jan 12)
-Method to reproduce it: Jan 16.
-
-Patch to improve optwin.vim. (ZyX, 2011 Jan 29)
-
-Patch for Python 3 support. (lilydjwg, 2011 Feb 24)
-
-Patch to make putting from clipboard linewise when the text ends in a newline.
-(Sung Pae)  Do we want this?
-
-Patch to add third dict argument to sort(). (ZyX, 2011 May 15)
-
-Building the MingW version without clipboard but with multi-byte doesn't
-work. (Bill Lam, 2010 Sep 18)
-
-Patch for handling of NL in substitute() with \= expression. (Motoya Kurotsu,
-2011 Mar 16)  Update Mar 24.
+Patch to fix gj with count. (James Vega, 2011 Jun 13)
 
 Patch to disallow fork() when __APPLE__ is defined. (Hisashi T Fujinaka, 2010
 Nov 25)
@@ -110,6 +48,11 @@ Nov 25)
 7   Output for ":scriptnames" and ":breaklist" should shorten the file names:
     use "~/" when possible.
 Patch by Jean-Rene David, 2011 May 1.
+
+Cindent wrong after patch 7.3.202. (Lech Lorens, issue 9)
+
+Patch for cindent fix with closing brace placement, including tests.
+(Lech Lorens, issue 10, 2011 Jun 12)
 
 Patch for better #if 0 syntax highlighting for C code. (Ben Schmidt, 2011 Jan
 20)
@@ -124,11 +67,25 @@ Update 2011 Feb 3.
 Patch to use pipes on Win32.  (Vincent Berthoux, 2011 Feb 28)
 Update Mar 1 using 'shelltemp'.
 
+Patch to fix CTRL-R CTRL-W in the command line when the cursor is not at the
+end. (Tyru, 2011 Jun 6)
+
 Patch to support UTF-8 for Hangul. (Shawn Y.H. Kim, 2011 May 1)
 Needs more work.
 
+Patch to make ";" not get stuck on "t" command. (Christian Brabandt, 2011 May
+23)
+
+Patch to do more testing of Javascript indenting.  Some items are srong.
+(Luc Deschenaux, 2011 Jun 14)
+
 "gh<Del>" deletes the current line, except when it's the last line.
 Hint by Christian Brabandt, 2011 Mar 22
+
+"echo 'abc' > ''" returns 0 or 1, depending on 'ignorecase'.
+mb_strnicmp() checks for illegal and truncated bytes are wrong.
+Should also not assume that byte length is equal before case folding.
+Patch by Ivan Krasilnikov, 2011 May 27.
 
 The :z command doesn't work exactly as it should. (ChangZhuo Chen, 2011 Mar 2)
 Compare with how old Vi works and with posix spec.  terminal is 80 x 24,
@@ -137,6 +94,14 @@ Compare with how old Vi works and with posix spec.  terminal is 80 x 24,
 'cursorline' is displayed too short when there are concealed characters and
 'list' is set.  (Dennis Preiser)
 Patch 7.3.116 was the wrong solution.
+
+With concealed text mouse click doesn't put the cursor in the right position.
+(Herb Sitz)  Fix by Christian Brabandt, 2011 Jun 16.  Doesn't work properly,
+need to make the change in where RET_WIN_BUF_CHARTABSIZE() is called.
+
+Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
+only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
+21, Ben Fritz, 2010 Sep 14)
 
 When opening file from windows explorer, characters inside [] cause
 problems, even though double quotes are used. (Manuel Stol, 2011 Mar 9)
@@ -149,11 +114,13 @@ Use function to set paste option and restore it, use CTRL-R+ to paste.
 
 Help file foldexpr (ZyX)
 
-Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
-only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
-21, Ben Fritz, 2010 Sep 14)
-
 Bug in repeating Visual "u". (Lawrence Kesteloot, 2010 Dec 20)
+
+Patch to automatically get version number into NSIS. (Guopeng Wen, 2011 May
+27)
+
+Patch to make character classes work with multi-byte characters.
+(Dominique Pelle, 2011 May 31)
 
 In GTK Gvim, setting 'lines' and 'columns' to 99999 causes a crash (Tony
 Mechelynck, 2011 Apr 25).  Can reproduce the crash sometimes:
@@ -189,6 +156,10 @@ When using a Vim server, a # in the path causes an error message.
 (Jeff Lanzarotta, 2011 Feb 17)
 
 Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
+
+Bug: Windows 7 64 bit system freezes  when 'clipboard' set to "unnamed" and
+doing ":g/test/d".  Putting every delete on the clipboard? (Robert Chan, 2011
+Jun 17)
 
 Using ":break" or something else that stops executing commands inside a
 ":finally" does not rethrow a previously uncaught exception. (ZyX, 2010 Oct
@@ -235,6 +206,9 @@ Patch by Christian Brabandt, 2011 Mar 19.
 Patch to support sorting on floating point number.  (Alex Jakushev, 2010 Oct
 30)
 
+Patch to addd TextDeletePost and TextYankPost events. (Philippe Vaucher, 2011
+May 24)  Update May 26.
+
 When a script contains "redir => s:foo" but doesn't end redirection, a
 following "redir" command gives an error for not being able to access s:foo.
 (ZyX, 2011 Mar 27)
@@ -243,6 +217,10 @@ Problem with "syn sync gouphere". (Gustavo Niemeyer, 2011 Jan 27)
 
 Loading autoload script even when usage is inside "if 0". (Christian Brabandt,
 2010 Dec 18)
+
+With a filler line in diff mode, it isn't displayed in the column with line
+number, but it is in the sign column.  Doesn't look right. (ZyX 2011 Jun 5)
+Patch by Christian Brabandt, 2011 Jun 5.  Introduces new problems.
 
 In the sandbox it's not allowed to do many things, but it's possible to change
 or set variables.  Add a way to prevent variables from being changed in the
@@ -355,6 +333,9 @@ Echo starts in the wrong column:
 (Boyko Bantchev, 2010 Aug 9)
 
 Patch for GVimExt to show an icon. (Dominik Riebeling, 2010 Nov 7)
+
+GvimExt sets $LANG in the wrong way.  Patch by Yasuhiro Matsumoto, 2011 Jun
+15.  This will fix issue no 11.
 
 When writing a file > 2Gbyte, the reported number of bytes is negative.
 (Antonio Colombo, 2010 Dec 18)
@@ -923,6 +904,9 @@ Gnome improvements: Edward Catmur, 2007 Jan 7
 
 New PHP syntax file, use it? (Peter Hodge)
 
+":echoe" in catch block stops processing, while this doesn't happen outside of
+a catch block. (ZyX, 2011 Jun 2)
+
 'foldcolumn' in modeline applied to wrong window when using a session. (Teemu
 Likonen, March 19)
 
@@ -1143,8 +1127,6 @@ if_ruby.c.
 
 Patch to dynamically load Python on Solaris. (Danek Duvall, 2009 Feb 16)
 Needs more work.
-
-Python3 interface doesn't handle utf-8 correctly? (Nov 2010, lilydjwg)
 
 The need_fileinfo flag is messy.  Instead make the message right away and put
 it in keep_msg?
@@ -1369,6 +1351,9 @@ resulting in highlighted "{" in that window, not in the other.
 
 In mswin.vim: Instead of mapping <C-V> for Insert mode in a complicated way,
 can it be done like ":imap <C-V> <MiddleMouse>" without negative side effects?
+
+Completion menu disappears when using 'cursorcolumn'. (Sven-Hendrik Haase,
+2011 May 23)
 
 GTK: when the Tab pages bar appears or disappears while the window is
 maximized the window is no longer maximized.  Patch that has some idea but
@@ -3529,6 +3514,8 @@ GUI:
 
 
 Autocommands:
+9   Rework the code from FEAT_OSFILETYPE for autocmd-osfiletypes to use
+    'filetype'.  Only for when the current buffer is known.
 -   Put autocommand event names in a hashtable for faster lookup?
 8   When the SwapExists event is triggered, provide information about the
     swap file, e.g., whether the process is running, file was modified, etc.

@@ -88,7 +88,7 @@ if !exists("did_drchip_netrwlist_syntax")
  hi default link netrwTimeSep	netrwDateSep
  hi default link netrwComma	netrwComment
  hi default link netrwHide	netrwComment
- hi default link netrwMarkFile	DiffChange
+ hi default link netrwMarkFile	TabLineSel
 
  " special syntax highlighting (see :he g:netrw_special_syntax)
  hi default link netrwBak	NonText

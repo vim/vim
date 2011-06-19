@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	Fortran95 (and Fortran90, Fortran77, F and elf90)
-" Version:	0.38
-" Last Change:	2010 July 21
+" Version:	0.39
+" Last Change:	2011 May 30
 " Maintainer:	Ajit J. Thakkar <ajit@unb.ca>; <http://www.unb.ca/chem/ajit/>
 " Usage:	Do :help fortran-indent from Vim
 
@@ -12,8 +12,14 @@ endif
 let b:did_indent = 1
 
 setlocal indentkeys+==~end,=~case,=~if,=~else,=~do,=~where,=~elsewhere,=~select
-setlocal indentkeys+==~endif,=~enddo,=~endwhere,=~endselect
-setlocal indentkeys+==~type,=~interface
+setlocal indentkeys+==~endif,=~enddo,=~endwhere,=~endselect,=~elseif
+setlocal indentkeys+==~type,=~interface,=~forall,=~associate,=~block,=~enum
+setlocal indentkeys+==~endforall,=~endassociate,=~endblock,=~endenum
+if exists("b:fortran_indent_more") || exists("g:fortran_indent_more")
+  setlocal indentkeys+==~function,=~subroutine,=~module,=~contains,=~program
+  setlocal indentkeys+==~endfunction,=~endsubroutine,=~endmodule
+  setlocal indentkeys+==~endprogram
+endif
 
 " Determine whether this is a fixed or free format source file
 " if this hasn't been done yet
@@ -69,6 +75,8 @@ function FortranGetIndent(lnum)
   let prevline=getline(a:lnum)
   " Strip tail comment
   let prevstat=substitute(prevline, '!.*$', '', '')
+  let prev2line=getline(a:lnum-1)
+  let prev2stat=substitute(prev2line, '!.*$', '', '')
 
   "Indent do loops only if they are all guaranteed to be of do/end do type
   if exists("b:fortran_do_enddo") || exists("g:fortran_do_enddo")
@@ -80,31 +88,62 @@ function FortranGetIndent(lnum)
     endif
   endif
 
-  "Add a shiftwidth to statements following if, else, case,
-  "where, elsewhere, type and interface statements
-  if prevstat =~? '^\s*\(\d\+\s\)\=\s*\(else\|case\|where\|elsewhere\)\>'
-	\ ||prevstat =~? '^\s*\(\d\+\s\)\=\s*\(type\|interface\)\>'
-	\ || prevstat =~? '^\s*\(\d\+\s\)\=\s*\(\a\w*\s*:\)\=\s*if\>'
+  "Add a shiftwidth to statements following if, else, else if, case,
+  "where, else where, forall, type, interface and associate statements
+  if prevstat =~? '^\s*\(case\|else\|else\s*if\|else\s*where\)\>'
+	\ ||prevstat=~? '^\s*\(type\|interface\|associate\|enum\)\>'
+	\ ||prevstat=~?'^\s*\(\d\+\s\)\=\s*\(\a\w*\s*:\)\=\s*\(forall\|where\|block\)\>'
+	\ ||prevstat=~? '^\s*\(\d\+\s\)\=\s*\(\a\w*\s*:\)\=\s*if\>'
      let ind = ind + &sw
     " Remove unwanted indent after logical and arithmetic ifs
     if prevstat =~? '\<if\>' && prevstat !~? '\<then\>'
       let ind = ind - &sw
     endif
     " Remove unwanted indent after type( statements
-    if prevstat =~? '\<type\s*('
+    if prevstat =~? '^\s*type\s*('
       let ind = ind - &sw
     endif
   endif
 
-  "Subtract a shiftwidth from else, elsewhere, case, end if,
-  " end where, end select, end interface and end type statements
-  if getline(v:lnum) =~? '^\s*\(\d\+\s\)\=\s*'
-	\. '\(else\|elsewhere\|case\|end\s*\(if\|where\|select\|interface\|type\)\)\>'
-    let ind = ind - &sw
-    " Fix indent for case statement immediately after select
-    if prevstat =~? '\<select\>'
+  "Indent program units unless instructed otherwise
+  if !exists("b:fortran_indent_less") && !exists("g:fortran_indent_less")
+    let prefix='\(\(pure\|impure\|elemental\|recursive\)\s\+\)\{,2}'
+    let type='\(\(integer\|real\|double\s\+precision\|complex\|logical'
+          \.'\|character\|type\|class\)\s*\S*\s\+\)\='
+    if prevstat =~? '^\s*\(module\|contains\|program\)\>'
+            \ ||prevstat =~? '^\s*'.prefix.'subroutine\>'
+            \ ||prevstat =~? '^\s*'.prefix.type.'function\>'
+            \ ||prevstat =~? '^\s*'.type.prefix.'function\>'
       let ind = ind + &sw
     endif
+    if getline(v:lnum) =~? '^\s*contains\>'
+          \ ||getline(v:lnum)=~? '^\s*end\s*'
+          \ .'\(function\|subroutine\|module\|program\)\>'
+      let ind = ind - &sw
+    endif
+  endif
+
+  "Subtract a shiftwidth from else, else if, elsewhere, case, end if,
+  " end where, end select, end forall, end interface, end associate,
+  " end enum, and end type statements
+  if getline(v:lnum) =~? '^\s*\(\d\+\s\)\=\s*'
+        \. '\(else\|else\s*if\|else\s*where\|case\|'
+        \. 'end\s*\(if\|where\|select\|interface\|'
+        \. 'type\|forall\|associate\|enum\)\)\>'
+    let ind = ind - &sw
+    " Fix indent for case statement immediately after select
+    if prevstat =~? '\<select\s\+\(case\|type\)\>'
+      let ind = ind + &sw
+    endif
+  endif
+
+  "First continuation line
+  if prevstat =~ '&\s*$' && prev2stat !~ '&\s*$'
+    let ind = ind + &sw
+  endif
+  "Line after last continuation line
+  if prevstat !~ '&\s*$' && prev2stat =~ '&\s*$'
+    let ind = ind - &sw
   endif
 
   return ind
