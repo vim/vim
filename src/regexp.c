@@ -6872,6 +6872,7 @@ static regmatch_T	*submatch_match;
 static regmmatch_T	*submatch_mmatch;
 static linenr_T		submatch_firstlnum;
 static linenr_T		submatch_maxline;
+static int		submatch_line_lbr;
 #endif
 
 #if defined(FEAT_MODIFY_FNAME) || defined(FEAT_EVAL) || defined(PROTO)
@@ -6998,6 +6999,7 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 	    submatch_mmatch = reg_mmatch;
 	    submatch_firstlnum = reg_firstlnum;
 	    submatch_maxline = reg_maxline;
+	    submatch_line_lbr = reg_line_lbr;
 	    save_reg_win = reg_win;
 	    save_ireg_ic = ireg_ic;
 	    can_f_submatch = TRUE;
@@ -7009,9 +7011,10 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 
 		for (s = eval_result; *s != NUL; mb_ptr_adv(s))
 		{
-		    /* Change NL to CR, so that it becomes a line break.
+		    /* Change NL to CR, so that it becomes a line break,
+		     * unless called from vim_regexec_nl().
 		     * Skip over a backslashed character. */
-		    if (*s == NL)
+		    if (*s == NL && !submatch_line_lbr)
 			*s = CAR;
 		    else if (*s == '\\' && s[1] != NUL)
 		    {
@@ -7020,8 +7023,9 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 			 * :s/abc\\\ndef/\="aaa\\\nbbb"/  on text:
 			 *   abc\
 			 *   def
+			 * Not when called from vim_regexec_nl().
 			 */
-			if (*s == NL)
+			if (*s == NL && !submatch_line_lbr)
 			    *s = CAR;
 			had_backslash = TRUE;
 		    }
@@ -7044,6 +7048,7 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 	    reg_mmatch = submatch_mmatch;
 	    reg_firstlnum = submatch_firstlnum;
 	    reg_maxline = submatch_maxline;
+	    reg_line_lbr = submatch_line_lbr;
 	    reg_win = save_reg_win;
 	    ireg_ic = save_ireg_ic;
 	    can_f_submatch = FALSE;
