@@ -1919,7 +1919,8 @@ shellescape( {string} [, {special}])
 simplify( {filename})		String	simplify filename as much as possible
 sin( {expr})			Float	sine of {expr}
 sinh( {expr})			Float	hyperbolic sine of {expr}
-sort( {list} [, {func}])	List	sort {list}, using {func} to compare
+sort( {list} [, {func} [, {dict}]])
+				List	sort {list}, using {func} to compare
 soundfold( {word})		String	sound-fold {word}
 spellbadword()			String	badly spelled word at cursor
 spellsuggest( {word} [, {max} [, {capital}]])
@@ -5275,7 +5276,7 @@ sinh({expr})						*sinh()*
 		{only available when compiled with the |+float| feature}
 
 
-sort({list} [, {func}])					*sort()* *E702*
+sort({list} [, {func} [, {dict}]])			*sort()* *E702*
 		Sort the items in {list} in-place.  Returns {list}.  If you
 		want a list to remain unmodified make a copy first: >
 			:let sortedlist = sort(copy(mylist))
@@ -5283,6 +5284,8 @@ sort({list} [, {func}])					*sort()* *E702*
 		Numbers sort after Strings, |Lists| after Numbers.
 		For sorting text in the current buffer use |:sort|.
 		When {func} is given and it is one then case is ignored.
+		{dict} is for functions with the "dict" attribute.  It will be
+		used to set the local variable "self". |Dictionary-function|
 		When {func} is a |Funcref| or a function name, this function
 		is called to compare items.  The function is invoked with two
 		items as argument and must return zero if they are equal, 1 or
