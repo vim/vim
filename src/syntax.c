@@ -559,7 +559,13 @@ syntax_start(wp, lnum)
     if (INVALID_STATE(&current_state))
     {
 	syn_sync(wp, lnum, last_valid);
-	first_stored = current_lnum + syn_block->b_syn_sync_minlines;
+	if (current_lnum == 1)
+	    /* First line is always valid, no matter "minlines". */
+	    first_stored = 1;
+	else
+	    /* Need to parse "minlines" lines before state can be considered
+	     * valid to store. */
+	    first_stored = current_lnum + syn_block->b_syn_sync_minlines;
     }
     else
 	first_stored = current_lnum;
