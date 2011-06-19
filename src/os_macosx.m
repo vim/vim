@@ -65,7 +65,7 @@ clip_mch_request_selection(VimClipboard *cbd)
     NSString *bestType = [pb availableTypeFromArray:supportedTypes];
     if (!bestType) goto releasepool;
 
-    int motion_type = MCHAR;
+    int motion_type = MAUTO;
     NSString *string = nil;
 
     if ([bestType isEqual:VimPboardType])
@@ -89,9 +89,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 
     if (!string)
     {
-	/* Use NSStringPboardType.  The motion type is set to line-wise if the
-	 * string contains at least one EOL character, otherwise it is set to
-	 * character-wise (block-wise is never used).
+	/* Use NSStringPboardType.  The motion type is detected automatically.
 	 */
 	NSMutableString *mstring =
 		[[pb stringForType:NSStringPboardType] mutableCopy];
@@ -108,19 +106,13 @@ clip_mch_request_selection(VimClipboard *cbd)
 					   options:0 range:range];
 	}
 
-	/* Scan for newline character to decide whether the string should be
-	 * pasted line-wise or character-wise.
-	 */
-	motion_type = MCHAR;
-	if (0 < n || NSNotFound != [mstring rangeOfString:@"\n"].location)
-	    motion_type = MLINE;
-
 	string = mstring;
     }
 
+    /* Default to MAUTO, uses MCHAR or MLINE depending on trailing NL. */
     if (!(MCHAR == motion_type || MLINE == motion_type || MBLOCK == motion_type
 	    || MAUTO == motion_type))
-	motion_type = MCHAR;
+	motion_type = MAUTO;
 
     char_u *str = (char_u*)[string UTF8String];
     int len = [string lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
