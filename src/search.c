@@ -1546,6 +1546,7 @@ searchc(cap, t_cmd)
     int			col;
     char_u		*p;
     int			len;
+    int			stop = TRUE;
 #ifdef FEAT_MBYTE
     static char_u	bytes[MB_MAXBYTES];
     static int		bytelen = 1;	/* >1 for multi-byte char */
@@ -1580,6 +1581,12 @@ searchc(cap, t_cmd)
 	t_cmd = last_t_cmd;
 	c = lastc;
 	/* For multi-byte re-use last bytes[] and bytelen. */
+
+	/* Force a move of at least one char, so ";" and "," will move the
+	 * cursor, even if the cursor is right in front of char we are looking
+	 * at. */
+	if (vim_strchr(p_cpo, CPO_SCOLON) == NULL && count == 1)
+	    stop = FALSE;
     }
 
     if (dir == BACKWARD)
@@ -1612,14 +1619,15 @@ searchc(cap, t_cmd)
 		}
 		if (bytelen == 1)
 		{
-		    if (p[col] == c)
+		    if (p[col] == c && stop)
 			break;
 		}
 		else
 		{
-		    if (vim_memcmp(p + col, bytes, bytelen) == 0)
+		    if (vim_memcmp(p + col, bytes, bytelen) == 0 && stop)
 			break;
 		}
+		stop = TRUE;
 	    }
 	}
 	else
@@ -1629,8 +1637,9 @@ searchc(cap, t_cmd)
 	    {
 		if ((col += dir) < 0 || col >= len)
 		    return FAIL;
-		if (p[col] == c)
+		if (p[col] == c && stop)
 		    break;
+		stop = TRUE;
 	    }
 	}
     }

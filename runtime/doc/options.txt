@@ -2117,6 +2117,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 								*cpo->*
 		>	When appending to a register, put a line break before
 			the appended text.
+								*cpo-;*
+		;	When using |,| or |;| to repeat the last |t| search
+			and the cursor is right in front of the searched
+			character, the cursor won't move. When not included,
+			the cursor would skip over it and jump to the
+			following occurence.
 
 	POSIX flags.  These are not included in the Vi default value, except
 	when $VIM_POSIX was set on startup. |posix|

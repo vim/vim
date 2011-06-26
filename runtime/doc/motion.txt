@@ -269,11 +269,11 @@ T{char}			Till after [count]'th occurrence of {char} to the
 			{char} can be entered like with the |f| command.
 
 							*;*
-;			Repeat latest f, t, F or T [count] times.
+;			Repeat latest f, t, F or T [count] times. See |cpo-;|
 
 							*,*
 ,			Repeat latest f, t, F or T in opposite direction
-			[count] times.
+			[count] times. See also |cpo-;|
 
 ==============================================================================
 3. Up-down motions					*up-down-motions*
