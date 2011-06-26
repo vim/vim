@@ -88,8 +88,6 @@ extern void bonobo_dock_item_set_behavior(BonoboDockItem *dock_item, BonoboDockI
 # include <X11/Sunkeysym.h>
 #endif
 
-static guint32 clipboard_event_time = CurrentTime;
-
 /*
  * Easy-to-use macro for multihead support.
  */
@@ -934,7 +932,7 @@ key_press_event(GtkWidget *widget UNUSED,
     guint	state;
     char_u	*s, *d;
 
-    clipboard_event_time = event->time;
+    gui.event_time = event->time;
     key_sym = event->keyval;
     state = event->state;
 
@@ -1129,7 +1127,7 @@ key_release_event(GtkWidget *widget UNUSED,
 		  GdkEventKey *event,
 		  gpointer data UNUSED)
 {
-    clipboard_event_time = event->time;
+    gui.event_time = event->time;
     /*
      * GTK+ 2 input methods may do fancy stuff on key release events too.
      * With the default IM for instance, you can enter any UCS code point
@@ -1622,7 +1620,7 @@ button_press_event(GtkWidget *widget,
     int x, y;
     int_u vim_modifiers;
 
-    clipboard_event_time = event->time;
+    gui.event_time = event->time;
 
     /* Make sure we have focus now we've been selected */
     if (gtk_socket_id != 0 && !GTK_WIDGET_HAS_FOCUS(widget))
@@ -1733,7 +1731,7 @@ button_release_event(GtkWidget *widget UNUSED,
     int x, y;
     int_u vim_modifiers;
 
-    clipboard_event_time = event->time;
+    gui.event_time = event->time;
 
     /* Remove any motion "machine gun" timers used for automatic further
        extension of allocation areas if outside of the applications window
@@ -5654,7 +5652,7 @@ clip_mch_own_selection(VimClipboard *cbd)
     int success;
 
     success = gtk_selection_owner_set(gui.drawarea, cbd->gtk_sel_atom,
-				      clipboard_event_time);
+				      gui.event_time);
     gui_mch_update();
     return (success) ? OK : FAIL;
 }

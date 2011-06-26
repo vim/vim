@@ -1391,7 +1391,7 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
     gtk_menu_popup(GTK_MENU(menu->submenu_id),
 		   NULL, NULL,
 		   (GtkMenuPositionFunc)NULL, NULL,
-		   3U, (guint32)GDK_CURRENT_TIME);
+		   3U, gui.event_time);
 }
 
 /* Ugly global variable to pass "mouse_pos" flag from gui_make_popup() to

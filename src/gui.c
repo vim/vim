@@ -84,6 +84,10 @@ gui_start()
     gui.starting = TRUE;
     full_screen = FALSE;
 
+#ifdef FEAT_GUI_GTK
+    gui.event_time = GDK_CURRENT_TIME;
+#endif
+
 #ifdef MAY_FORK
     if (!gui.dofork || vim_strchr(p_go, GO_FORG) || recursive)
 	dofork = FALSE;

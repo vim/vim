@@ -401,6 +401,8 @@ typedef struct Gui
     GtkAccelGroup *accel_group;
     GtkWidget	*filedlg;	    /* file selection dialog */
     char_u	*browse_fname;	    /* file name from filedlg */
+
+    guint32	event_time;
 #endif	/* FEAT_GUI_GTK */
 
 #if defined(FEAT_GUI_TABLINE) \
