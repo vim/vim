@@ -70,7 +70,7 @@ static void init_structs(void);
 
 #define PyInt Py_ssize_t
 #define PyString_Check(obj) PyUnicode_Check(obj)
-#define PyString_AsBytes(obj) PyUnicode_AsEncodedString(obj, (char *)p_enc, NULL);
+#define PyString_AsBytes(obj) PyUnicode_AsEncodedString(obj, (char *)ENC_OPT, NULL);
 #define PyString_FreeBytes(obj) Py_XDECREF(bytes)
 #define PyString_AsString(obj) PyBytes_AsString(obj)
 #define PyString_Size(obj) PyBytes_GET_SIZE(bytes)
@@ -661,7 +661,7 @@ DoPy3Command(exarg_T *eap, const char *cmd)
 
     /* PyRun_SimpleString expects a UTF-8 string. Wrong encoding may cause
      * SyntaxError (unicode error). */
-    cmdstr = PyUnicode_Decode(cmd, strlen(cmd), (char *)p_enc, NULL);
+    cmdstr = PyUnicode_Decode(cmd, strlen(cmd), (char *)ENC_OPT, NULL);
     cmdbytes = PyUnicode_AsEncodedString(cmdstr, "utf-8", NULL);
     Py_XDECREF(cmdstr);
     PyRun_SimpleString(PyBytes_AsString(cmdbytes));
@@ -1463,7 +1463,7 @@ LineToString(const char *str)
     }
     *p = '\0';
 
-    result = PyUnicode_Decode(tmp, len, (char *)p_enc, NULL);
+    result = PyUnicode_Decode(tmp, len, (char *)ENC_OPT, NULL);
 
     vim_free(tmp);
     return result;
