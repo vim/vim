@@ -682,10 +682,12 @@ ex_breaklist(eap)
 	for (i = 0; i < dbg_breakp.ga_len; ++i)
 	{
 	    bp = &BREAKP(i);
+	    if (bp->dbg_type == DBG_FILE)
+		home_replace(NULL, bp->dbg_name, NameBuff, MAXPATHL, TRUE);
 	    smsg((char_u *)_("%3d  %s %s  line %ld"),
 		    bp->dbg_nr,
 		    bp->dbg_type == DBG_FUNC ? "func" : "file",
-		    bp->dbg_name,
+		    bp->dbg_type == DBG_FUNC ? bp->dbg_name : NameBuff,
 		    (long)bp->dbg_lnum);
 	}
 }
@@ -3268,7 +3270,11 @@ ex_scriptnames(eap)
 
     for (i = 1; i <= script_items.ga_len && !got_int; ++i)
 	if (SCRIPT_ITEM(i).sn_name != NULL)
-	    smsg((char_u *)"%3d: %s", i, SCRIPT_ITEM(i).sn_name);
+	{
+	    home_replace(NULL, SCRIPT_ITEM(i).sn_name,
+						    NameBuff, MAXPATHL, TRUE);
+	    smsg((char_u *)"%3d: %s", i, NameBuff);
+        }
 }
 
 # if defined(BACKSLASH_IN_FILENAME) || defined(PROTO)
