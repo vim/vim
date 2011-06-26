@@ -12,6 +12,12 @@
  * Common code for if_python.c and if_python3.c.
  */
 
+#ifdef FEAT_MBYTE
+# define ENC_OPT p_enc
+#else
+# define ENC_OPT "latin1"
+#endif
+
 /*
  * obtain a lock on the Vim data structures
  */
@@ -68,7 +74,7 @@ OutputWrite(PyObject *self, PyObject *args)
     char *str = NULL;
     int error = ((OutputObject *)(self))->error;
 
-    if (!PyArg_ParseTuple(args, "es#", p_enc, &str, &len))
+    if (!PyArg_ParseTuple(args, "es#", ENC_OPT, &str, &len))
 	return NULL;
 
     Py_BEGIN_ALLOW_THREADS
@@ -108,7 +114,7 @@ OutputWritelines(PyObject *self, PyObject *args)
 	char *str = NULL;
 	PyInt len;
 
-	if (!PyArg_Parse(line, "es#", p_enc, &str, &len)) {
+	if (!PyArg_Parse(line, "es#", ENC_OPT, &str, &len)) {
 	    PyErr_SetString(PyExc_TypeError, _("writelines() requires list of strings"));
 	    Py_DECREF(list);
 	    return NULL;
