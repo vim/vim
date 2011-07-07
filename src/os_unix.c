@@ -3660,27 +3660,6 @@ mch_new_shellsize()
     /* Nothing to do. */
 }
 
-#ifndef USE_SYSTEM
-static void append_ga_line __ARGS((garray_T *gap));
-
-/*
- * Append the text in "gap" below the cursor line and clear "gap".
- */
-    static void
-append_ga_line(gap)
-    garray_T	*gap;
-{
-    /* Remove trailing CR. */
-    if (gap->ga_len > 0
-	    && !curbuf->b_p_bin
-	    && ((char_u *)gap->ga_data)[gap->ga_len - 1] == CAR)
-	--gap->ga_len;
-    ga_append(gap, NUL);
-    ml_append(curwin->w_cursor.lnum++, gap->ga_data, 0, FALSE);
-    gap->ga_len = 0;
-}
-#endif
-
     int
 mch_call_shell(cmd, options)
     char_u	*cmd;

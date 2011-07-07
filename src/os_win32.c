@@ -417,6 +417,11 @@ static PSNSECINFO pSetNamedSecurityInfo;
 static PGNSECINFO pGetNamedSecurityInfo;
 #endif
 
+typedef BOOL (WINAPI *PSETHANDLEINFORMATION)(HANDLE, DWORD, DWORD);
+
+static BOOL allowPiping = FALSE;
+static PSETHANDLEINFORMATION pSetHandleInformation;
+
 /*
  * Set g_PlatformId to VER_PLATFORM_WIN32_NT (NT) or
  * VER_PLATFORM_WIN32_WINDOWS (Win95).
@@ -467,6 +472,18 @@ PlatformId(void)
 	    }
 	}
 #endif
+	/*
+	 * If we are on windows NT, try to load the pipe functions, only
+	 * available from Win2K.
+	 */
+	if (g_PlatformId == VER_PLATFORM_WIN32_NT)
+	{
+	    HANDLE kernel32 = GetModuleHandle("kernel32");
+	    pSetHandleInformation = (PSETHANDLEINFORMATION)GetProcAddress(
+					    kernel32, "SetHandleInformation");
+
+	    allowPiping = pSetHandleInformation != NULL;
+	}
 	done = TRUE;
     }
 }
@@ -1635,7 +1652,7 @@ executable_exists(char *name)
 }
 
 #if ((defined(__MINGW32__) || defined (__CYGWIN32__)) && \
-        __MSVCRT_VERSION__ >= 0x800) || (defined(_MSC_VER) && _MSC_VER >= 1400)
+       __MSVCRT_VERSION__ >= 0x800) || (defined(_MSC_VER) && _MSC_VER >= 1400)
 /*
  * Bad parameter handler.
  *
@@ -3210,7 +3227,7 @@ mch_set_winsize_now(void)
  *    4. Prompt the user to press a key to close the console window
  */
     static int
-mch_system(char *cmd, int options)
+mch_system_classic(char *cmd, int options)
 {
     STARTUPINFO		si;
     PROCESS_INFORMATION pi;
@@ -3315,6 +3332,498 @@ mch_system(char *cmd, int options)
 
     return ret;
 }
+
+/*
+ * Thread launched by the gui to send the current buffer data to the
+ * process. This way avoid to hang up vim totally if the children
+ * process take a long time to process the lines.
+ */
+    static DWORD WINAPI
+sub_process_writer(LPVOID param)
+{
+    HANDLE	    g_hChildStd_IN_Wr = param;
+    linenr_T	    lnum = curbuf->b_op_start.lnum;
+    DWORD	    len = 0;
+    DWORD	    l;
+    char_u	    *lp = ml_get(lnum);
+    char_u	    *s;
+    int		    written = 0;
+
+    for (;;)
+    {
+	l = (DWORD)STRLEN(lp + written);
+	if (l == 0)
+	    len = 0;
+	else if (lp[written] == NL)
+	{
+	    /* NL -> NUL translation */
+	    WriteFile(g_hChildStd_IN_Wr, "", 1, &len, NULL);
+	}
+	else
+	{
+	    s = vim_strchr(lp + written, NL);
+	    WriteFile(g_hChildStd_IN_Wr, (char *)lp + written,
+		      s == NULL ? l : (DWORD)(s - (lp + written)),
+		      &len, NULL);
+	}
+	if (len == (int)l)
+	{
+	    /* Finished a line, add a NL, unless this line should not have
+	     * one. */
+	    if (lnum != curbuf->b_op_end.lnum
+		|| !curbuf->b_p_bin
+		|| (lnum != curbuf->b_no_eol_lnum
+		    && (lnum != curbuf->b_ml.ml_line_count
+			|| curbuf->b_p_eol)))
+	    {
+		WriteFile(g_hChildStd_IN_Wr, "\n", 1, &ignored, NULL);
+	    }
+
+	    ++lnum;
+	    if (lnum > curbuf->b_op_end.lnum)
+		break;
+
+	    lp = ml_get(lnum);
+	    written = 0;
+	}
+	else if (len > 0)
+	    written += len;
+    }
+
+    /* finished all the lines, close pipe */
+    CloseHandle(g_hChildStd_IN_Wr);
+    ExitThread(0);
+}
+
+
+# define BUFLEN 100	/* length for buffer, stolen from unix version */
+
+/*
+ * This function read from the children's stdout and write the
+ * data on screen or in the buffer accordingly.
+ */
+    static void
+dump_pipe(int	    options,
+	  HANDLE    g_hChildStd_OUT_Rd,
+	  garray_T  *ga,
+	  char_u    buffer[],
+	  DWORD	    *buffer_off)
+{
+    DWORD	availableBytes = 0;
+    DWORD	i;
+    int		c;
+    char_u	*p;
+    int		ret;
+    DWORD	len;
+    DWORD	toRead;
+    int		repeatCount;
+
+    /* we query the pipe to see if there is any data to read
+     * to avoid to perform a blocking read */
+    ret = PeekNamedPipe(g_hChildStd_OUT_Rd, /* pipe to query */
+			NULL,		    /* optional buffer */
+			0,		    /* buffe size */
+			NULL,		    /* number of read bytes */
+			&availableBytes,    /* available bytes total */
+			NULL);		    /* byteLeft */
+
+    repeatCount = 0;
+    /* We got real data in the pipe, read it */
+    while (ret != 0 && availableBytes > 0 && availableBytes > 0)
+    {
+	repeatCount++;
+	toRead =
+# ifdef FEAT_MBYTE
+		 (DWORD)(BUFLEN - *buffer_off);
+# else
+		 (DWORD)BUFLEN;
+# endif
+	toRead = availableBytes < toRead ? availableBytes : toRead;
+	ReadFile(g_hChildStd_OUT_Rd, buffer
+# ifdef FEAT_MBYTE
+		 + *buffer_off, toRead
+# else
+		 , toRead
+# endif
+		 , &len, NULL);
+
+	/* If we haven't read anything, there is a problem */
+	if (len == 0)
+	    break;
+
+	availableBytes -= len;
+
+	if (options & SHELL_READ)
+	{
+	    /* Do NUL -> NL translation, append NL separated
+	     * lines to the current buffer. */
+	    for (i = 0; i < len; ++i)
+	    {
+		if (buffer[i] == NL)
+		    append_ga_line(ga);
+		else if (buffer[i] == NUL)
+		    ga_append(ga, NL);
+		else
+		    ga_append(ga, buffer[i]);
+	    }
+	}
+# ifdef FEAT_MBYTE
+	else if (has_mbyte)
+	{
+	    int		l;
+
+	    len += *buffer_off;
+	    buffer[len] = NUL;
+
+	    /* Check if the last character in buffer[] is
+	     * incomplete, keep these bytes for the next
+	     * round. */
+	    for (p = buffer; p < buffer + len; p += l)
+	    {
+		l = mb_cptr2len(p);
+		if (l == 0)
+		    l = 1;  /* NUL byte? */
+		else if (MB_BYTE2LEN(*p) != l)
+		    break;
+	    }
+	    if (p == buffer)	/* no complete character */
+	    {
+		/* avoid getting stuck at an illegal byte */
+		if (len >= 12)
+		    ++p;
+		else
+		{
+		    *buffer_off = len;
+		    return;
+		}
+	    }
+	    c = *p;
+	    *p = NUL;
+	    msg_puts(buffer);
+	    if (p < buffer + len)
+	    {
+		*p = c;
+		*buffer_off = (DWORD)((buffer + len) - p);
+		mch_memmove(buffer, p, *buffer_off);
+		return;
+	    }
+	    *buffer_off = 0;
+	}
+# endif /* FEAT_MBYTE */
+	else
+	{
+	    buffer[len] = NUL;
+	    msg_puts(buffer);
+	}
+
+	windgoto(msg_row, msg_col);
+	cursor_on();
+	out_flush();
+    }
+}
+
+/*
+ * Version of system to use for windows NT > 5.0 (Win2K), use pipe
+ * for communication and doesn't open any new window.
+ */
+    static int
+mch_system_piped(char *cmd, int options)
+{
+    STARTUPINFO		si;
+    PROCESS_INFORMATION pi;
+    DWORD		ret = 0;
+
+    HANDLE g_hChildStd_IN_Rd = NULL;
+    HANDLE g_hChildStd_IN_Wr = NULL;
+    HANDLE g_hChildStd_OUT_Rd = NULL;
+    HANDLE g_hChildStd_OUT_Wr = NULL;
+
+    char_u	buffer[BUFLEN + 1]; /* reading buffer + size */
+    DWORD	len;
+
+    /* buffer used to receive keys */
+    char_u	ta_buf[BUFLEN + 1];	/* TypeAHead */
+    int		ta_len = 0;		/* valid bytes in ta_buf[] */
+
+    DWORD	i;
+    int		c;
+    int		noread_cnt = 0;
+    garray_T	ga;
+    int	    delay = 1;
+# ifdef FEAT_MBYTE
+    DWORD	buffer_off = 0;	/* valid bytes in buffer[] */
+# endif
+
+    SECURITY_ATTRIBUTES saAttr;
+
+    /* Set the bInheritHandle flag so pipe handles are inherited. */
+    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+    saAttr.bInheritHandle = TRUE;
+    saAttr.lpSecurityDescriptor = NULL;
+
+    if ( ! CreatePipe(&g_hChildStd_OUT_Rd, &g_hChildStd_OUT_Wr, &saAttr, 0)
+	/* Ensure the read handle to the pipe for STDOUT is not inherited. */
+       || ! pSetHandleInformation(g_hChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0)
+	/* Create a pipe for the child process's STDIN. */
+       || ! CreatePipe(&g_hChildStd_IN_Rd, &g_hChildStd_IN_Wr, &saAttr, 0)
+	/* Ensure the write handle to the pipe for STDIN is not inherited. */
+       || ! pSetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0) )
+    {
+	CloseHandle(g_hChildStd_IN_Rd);
+	CloseHandle(g_hChildStd_IN_Wr);
+	CloseHandle(g_hChildStd_OUT_Rd);
+	CloseHandle(g_hChildStd_OUT_Wr);
+	MSG_PUTS(_("\nCannot create pipes\n"));
+    }
+
+    si.cb = sizeof(si);
+    si.lpReserved = NULL;
+    si.lpDesktop = NULL;
+    si.lpTitle = NULL;
+    si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+
+    /* set-up our file redirection */
+    si.hStdError = g_hChildStd_OUT_Wr;
+    si.hStdOutput = g_hChildStd_OUT_Wr;
+    si.hStdInput = g_hChildStd_IN_Rd;
+    si.wShowWindow = SW_HIDE;
+    si.cbReserved2 = 0;
+    si.lpReserved2 = NULL;
+
+    if (options & SHELL_READ)
+	ga_init2(&ga, 1, BUFLEN);
+
+    /* Now, run the command */
+    CreateProcess(NULL,			/* Executable name */
+		  cmd,			/* Command to execute */
+		  NULL,			/* Process security attributes */
+		  NULL,			/* Thread security attributes */
+
+		  // this command can be litigeous, handle inheritence was
+		  // deactivated for pending temp file, but, if we deactivate
+		  // it, the pipes don't work for some reason.
+		  TRUE,			/* Inherit handles, first deactivated,
+					 * but needed */
+		  CREATE_DEFAULT_ERROR_MODE, /* Creation flags */
+		  NULL,			/* Environment */
+		  NULL,			/* Current directory */
+		  &si,			/* Startup information */
+		  &pi);			/* Process information */
+
+
+    /* Close our unused side of the pipes */
+    CloseHandle(g_hChildStd_IN_Rd);
+    CloseHandle(g_hChildStd_OUT_Wr);
+
+    if (options & SHELL_WRITE)
+    {
+	HANDLE thread =
+	   CreateThread(NULL,  /* security attributes */
+			0,     /* default stack size */
+			sub_process_writer, /* function to be executed */
+			g_hChildStd_IN_Wr,  /* parameter */
+			0,		 /* creation flag, start immediately */
+			NULL);		    /* we don't care about thread id */
+	CloseHandle(thread);
+	g_hChildStd_IN_Wr = NULL;
+    }
+
+    /* Keep updating the window while waiting for the shell to finish. */
+    for (;;)
+    {
+	MSG	msg;
+
+	if (PeekMessage(&msg, (HWND)NULL, 0, 0, PM_REMOVE))
+	{
+	    TranslateMessage(&msg);
+	    DispatchMessage(&msg);
+	}
+
+	/* write pipe information in the window */
+	if ((options & (SHELL_READ|SHELL_WRITE))
+# ifdef FEAT_GUI
+		|| gui.in_use
+# endif
+	    )
+	{
+	    len = 0;
+	    if (!(options & SHELL_EXPAND)
+		&& ((options &
+			(SHELL_READ|SHELL_WRITE|SHELL_COOKED))
+		    != (SHELL_READ|SHELL_WRITE|SHELL_COOKED)
+# ifdef FEAT_GUI
+		    || gui.in_use
+# endif
+		    )
+		&& (ta_len > 0 || noread_cnt > 4))
+	    {
+		if (ta_len == 0)
+		{
+		    /* Get extra characters when we don't have any.  Reset the
+		     * counter and timer. */
+		    noread_cnt = 0;
+# if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+		    gettimeofday(&start_tv, NULL);
+# endif
+		    len = ui_inchar(ta_buf, BUFLEN, 10L, 0);
+		}
+		if (ta_len > 0 || len > 0)
+		{
+		    /*
+		     * For pipes: Check for CTRL-C: send interrupt signal to
+		     * child.  Check for CTRL-D: EOF, close pipe to child.
+		     */
+		    if (len == 1 && cmd != NULL)
+		    {
+			if (ta_buf[ta_len] == Ctrl_C)
+			{
+			    /* Learn what exit code is expected, for
+				* now put 9 as SIGKILL */
+			    TerminateProcess(pi.hProcess, 9);
+			}
+			if (ta_buf[ta_len] == Ctrl_D)
+			{
+			    CloseHandle(g_hChildStd_IN_Wr);
+			    g_hChildStd_IN_Wr = NULL;
+			}
+		    }
+
+		    /* replace K_BS by <BS> and K_DEL by <DEL> */
+		    for (i = ta_len; i < ta_len + len; ++i)
+		    {
+			if (ta_buf[i] == CSI && len - i > 2)
+			{
+			    c = TERMCAP2KEY(ta_buf[i + 1], ta_buf[i + 2]);
+			    if (c == K_DEL || c == K_KDEL || c == K_BS)
+			    {
+				mch_memmove(ta_buf + i + 1, ta_buf + i + 3,
+					    (size_t)(len - i - 2));
+				if (c == K_DEL || c == K_KDEL)
+				    ta_buf[i] = DEL;
+				else
+				    ta_buf[i] = Ctrl_H;
+				len -= 2;
+			    }
+			}
+			else if (ta_buf[i] == '\r')
+			    ta_buf[i] = '\n';
+# ifdef FEAT_MBYTE
+			if (has_mbyte)
+			    i += (*mb_ptr2len_len)(ta_buf + i,
+						    ta_len + len - i) - 1;
+# endif
+		    }
+
+		    /*
+		     * For pipes: echo the typed characters.  For a pty this
+		     * does not seem to work.
+		     */
+		    for (i = ta_len; i < ta_len + len; ++i)
+		    {
+			if (ta_buf[i] == '\n' || ta_buf[i] == '\b')
+			    msg_putchar(ta_buf[i]);
+# ifdef FEAT_MBYTE
+			else if (has_mbyte)
+			{
+			    int l = (*mb_ptr2len)(ta_buf + i);
+
+			    msg_outtrans_len(ta_buf + i, l);
+			    i += l - 1;
+			}
+# endif
+			else
+			    msg_outtrans_len(ta_buf + i, 1);
+		    }
+		    windgoto(msg_row, msg_col);
+		    out_flush();
+
+		    ta_len += len;
+
+		    /*
+		     * Write the characters to the child, unless EOF has been
+		     * typed for pipes.  Write one character at a time, to
+		     * avoid losing too much typeahead.  When writing buffer
+		     * lines, drop the typed characters (only check for
+		     * CTRL-C).
+		     */
+		    if (options & SHELL_WRITE)
+			ta_len = 0;
+		    else if (g_hChildStd_IN_Wr != NULL)
+		    {
+			WriteFile(g_hChildStd_IN_Wr, (char*)ta_buf,
+				    1, &len, NULL);
+			// if we are typing in, we want to keep things reactive
+			delay = 1;
+			if (len > 0)
+			{
+			    ta_len -= len;
+			    mch_memmove(ta_buf, ta_buf + len, ta_len);
+			}
+		    }
+		}
+	    }
+	}
+
+	if (ta_len)
+	    ui_inchar_undo(ta_buf, ta_len);
+
+	if (WaitForSingleObject(pi.hProcess, delay) != WAIT_TIMEOUT)
+	{
+	    dump_pipe(options, g_hChildStd_OUT_Rd,
+			&ga, buffer, &buffer_off);
+	    break;
+	}
+
+	++noread_cnt;
+	dump_pipe(options, g_hChildStd_OUT_Rd,
+		    &ga, buffer, &buffer_off);
+
+	/* We start waiting for a very short time and then increase it, so
+	 * that we respond quickly when the process is quick, and don't
+	 * consume too much overhead when it's slow. */
+	if (delay < 50)
+	    delay += 10;
+    }
+
+    /* Close the pipe */
+    CloseHandle(g_hChildStd_OUT_Rd);
+    if (g_hChildStd_IN_Wr != NULL)
+	CloseHandle(g_hChildStd_IN_Wr);
+
+    WaitForSingleObject(pi.hProcess, INFINITE);
+
+    /* Get the command exit code */
+    GetExitCodeProcess(pi.hProcess, &ret);
+
+    if (options & SHELL_READ)
+    {
+	if (ga.ga_len > 0)
+	{
+	    append_ga_line(&ga);
+	    /* remember that the NL was missing */
+	    curbuf->b_no_eol_lnum = curwin->w_cursor.lnum;
+	}
+	else
+	    curbuf->b_no_eol_lnum = 0;
+	ga_clear(&ga);
+    }
+
+    /* Close the handles to the subprocess, so that it goes away */
+    CloseHandle(pi.hThread);
+    CloseHandle(pi.hProcess);
+
+    return ret;
+}
+
+    static int
+mch_system(char *cmd, int options)
+{
+    /* if we can pipe and the shelltemp option is off */
+    if (allowPiping && !p_stmp)
+	return mch_system_piped(cmd, options);
+    else
+	return mch_system_classic(cmd, options);
+}
 #else
 
 # define mch_system(c, o) system(c)
@@ -3388,7 +3897,7 @@ mch_call_shell(
 	char_u *newcmd;
 	long_u cmdlen =  (
 #ifdef FEAT_GUI_W32
-		STRLEN(vimrun_path) +
+		(allowPiping && !p_stmp ? 0 : STRLEN(vimrun_path)) +
 #endif
 		STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10);
 
@@ -3497,7 +4006,7 @@ mch_call_shell(
 			    MB_ICONWARNING);
 		    need_vimrun_warning = FALSE;
 		}
-		if (!s_dont_use_vimrun)
+		if (!s_dont_use_vimrun && (!allowPiping || p_stmp))
 		    /* Use vimrun to execute the command.  It opens a console
 		     * window, which can be closed without killing Vim. */
 		    vim_snprintf((char *)newcmd, cmdlen, "%s%s%s %s %s",
@@ -3521,7 +4030,8 @@ mch_call_shell(
     /* Print the return value, unless "vimrun" was used. */
     if (x != 0 && !(options & SHELL_SILENT) && !emsg_silent
 #if defined(FEAT_GUI_W32)
-		&& ((options & SHELL_DOOUT) || s_dont_use_vimrun)
+		&& ((options & SHELL_DOOUT) || s_dont_use_vimrun
+						  || (allowPiping && !p_stmp))
 #endif
 	    )
     {

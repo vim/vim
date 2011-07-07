@@ -58,6 +58,7 @@ int ga_grow __ARGS((garray_T *gap, int n));
 char_u *ga_concat_strings __ARGS((garray_T *gap));
 void ga_concat __ARGS((garray_T *gap, char_u *s));
 void ga_append __ARGS((garray_T *gap, int c));
+void append_ga_line __ARGS((garray_T *gap));
 int name_to_mod_mask __ARGS((int c));
 int simplify_key __ARGS((int key, int *modifiers));
 int handle_x_keys __ARGS((int key));

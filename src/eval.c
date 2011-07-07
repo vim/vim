@@ -11931,7 +11931,7 @@ f_has(argvars, rettv)
 #ifdef FEAT_SEARCHPATH
 	"file_in_path",
 #endif
-#if defined(UNIX) && !defined(USE_SYSTEM)
+#if (defined(UNIX) && !defined(USE_SYSTEM)) || defined(WIN3264)
 	"filterpipe",
 #endif
 #ifdef FEAT_FIND_ID

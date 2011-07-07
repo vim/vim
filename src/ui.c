@@ -58,7 +58,7 @@ ui_write(s, len)
 #endif
 }
 
-#if defined(UNIX) || defined(VMS) || defined(PROTO)
+#if defined(UNIX) || defined(VMS) || defined(PROTO) || defined(WIN3264)
 /*
  * When executing an external program, there may be some typed characters that
  * are not consumed by it.  Give them back to ui_inchar() and they are stored
