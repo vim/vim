@@ -3247,7 +3247,7 @@ get_real_state()
 #if defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * Return TRUE if "p" points to just after a path separator.
- * Take care of multi-byte characters.
+ * Takes care of multi-byte characters.
  * "b" must point to the start of the file name
  */
     int
@@ -3255,7 +3255,7 @@ after_pathsep(b, p)
     char_u	*b;
     char_u	*p;
 {
-    return vim_ispathsep(p[-1])
+    return p > b && vim_ispathsep(p[-1])
 			     && (!has_mbyte || (*mb_head_off)(b, p - 1) == 0);
 }
 #endif
