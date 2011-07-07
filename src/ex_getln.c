@@ -5025,7 +5025,7 @@ ExpandRTDir(pat, num_file, file, dirnames)
 
     *num_file = 0;
     *file = NULL;
-    pat_len = STRLEN(pat);
+    pat_len = (int)STRLEN(pat);
     ga_init2(&ga, (int)sizeof(char *), 10);
 
     for (i = 0; dirnames[i] != NULL; ++i)
