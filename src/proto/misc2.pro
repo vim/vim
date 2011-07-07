@@ -14,6 +14,7 @@ int decl __ARGS((pos_T *lp));
 linenr_T get_cursor_rel_lnum __ARGS((win_T *wp, linenr_T lnum));
 void check_cursor_lnum __ARGS((void));
 void check_cursor_col __ARGS((void));
+void check_cursor_col_win __ARGS((win_T *win));
 void check_cursor __ARGS((void));
 void adjust_cursor_col __ARGS((void));
 int leftcol_changed __ARGS((void));

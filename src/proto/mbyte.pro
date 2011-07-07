@@ -56,7 +56,7 @@ void utf_find_illegal __ARGS((void));
 int utf_valid_string __ARGS((char_u *s, char_u *end));
 int dbcs_screen_tail_off __ARGS((char_u *base, char_u *p));
 void mb_adjust_cursor __ARGS((void));
-void mb_adjustpos __ARGS((pos_T *lp));
+void mb_adjustpos __ARGS((buf_T *buf, pos_T *lp));
 char_u *mb_prevptr __ARGS((char_u *line, char_u *p));
 int mb_charlen __ARGS((char_u *str));
 int mb_charlen_len __ARGS((char_u *str, int len));

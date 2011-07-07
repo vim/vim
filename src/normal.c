@@ -8774,7 +8774,7 @@ unadjust_for_sel()
 	{
 	    --pp->col;
 #ifdef FEAT_MBYTE
-	    mb_adjustpos(pp);
+	    mb_adjustpos(curbuf, pp);
 #endif
 	}
 	else if (pp->lnum > 1)

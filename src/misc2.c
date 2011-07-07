@@ -333,7 +333,7 @@ coladvance2(pos, addspaces, finetune, wcol)
 #ifdef FEAT_MBYTE
     /* prevent from moving onto a trail byte */
     if (has_mbyte)
-	mb_adjustpos(pos);
+	mb_adjustpos(curbuf, pos);
 #endif
 
     if (col < wcol)
@@ -544,16 +544,26 @@ check_cursor_lnum()
     void
 check_cursor_col()
 {
+    check_cursor_col_win(curwin);
+}
+
+/*
+ * Make sure win->w_cursor.col is valid.
+ */
+    void
+check_cursor_col_win(win)
+    win_T *win;
+{
     colnr_T len;
 #ifdef FEAT_VIRTUALEDIT
-    colnr_T oldcol = curwin->w_cursor.col;
-    colnr_T oldcoladd = curwin->w_cursor.col + curwin->w_cursor.coladd;
+    colnr_T oldcol = win->w_cursor.col;
+    colnr_T oldcoladd = win->w_cursor.col + win->w_cursor.coladd;
 #endif
 
-    len = (colnr_T)STRLEN(ml_get_curline());
+    len = (colnr_T)STRLEN(ml_get_buf(win->w_buffer, win->w_cursor.lnum, FALSE));
     if (len == 0)
-	curwin->w_cursor.col = 0;
-    else if (curwin->w_cursor.col >= len)
+	win->w_cursor.col = 0;
+    else if (win->w_cursor.col >= len)
     {
 	/* Allow cursor past end-of-line when:
 	 * - in Insert mode or restarting Insert mode
@@ -567,33 +577,33 @@ check_cursor_col()
 		|| (ve_flags & VE_ONEMORE)
 #endif
 		|| virtual_active())
-	    curwin->w_cursor.col = len;
+	    win->w_cursor.col = len;
 	else
 	{
-	    curwin->w_cursor.col = len - 1;
+	    win->w_cursor.col = len - 1;
 #ifdef FEAT_MBYTE
-	    /* prevent cursor from moving on the trail byte */
+	    /* Move the cursor to the head byte. */
 	    if (has_mbyte)
-		mb_adjust_cursor();
+		mb_adjustpos(win->w_buffer, &win->w_cursor);
 #endif
 	}
     }
-    else if (curwin->w_cursor.col < 0)
-	curwin->w_cursor.col = 0;
+    else if (win->w_cursor.col < 0)
+	win->w_cursor.col = 0;
 
 #ifdef FEAT_VIRTUALEDIT
     /* If virtual editing is on, we can leave the cursor on the old position,
      * only we must set it to virtual.  But don't do it when at the end of the
      * line. */
     if (oldcol == MAXCOL)
-	curwin->w_cursor.coladd = 0;
+	win->w_cursor.coladd = 0;
     else if (ve_flags == VE_ALL)
     {
-	if (oldcoladd > curwin->w_cursor.col)
-	    curwin->w_cursor.coladd = oldcoladd - curwin->w_cursor.col;
+	if (oldcoladd > win->w_cursor.col)
+	    win->w_cursor.coladd = oldcoladd - win->w_cursor.col;
 	else
 	    /* avoid weird number when there is a miscalculation or overflow */
-	    curwin->w_cursor.coladd = 0;
+	    win->w_cursor.coladd = 0;
     }
 #endif
 }

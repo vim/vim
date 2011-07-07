@@ -3563,7 +3563,7 @@ dbcs_screen_tail_off(base, p)
     void
 mb_adjust_cursor()
 {
-    mb_adjustpos(&curwin->w_cursor);
+    mb_adjustpos(curbuf, &curwin->w_cursor);
 }
 
 /*
@@ -3571,7 +3571,8 @@ mb_adjust_cursor()
  * If it points to a tail byte it's moved backwards to the head byte.
  */
     void
-mb_adjustpos(lp)
+mb_adjustpos(buf, lp)
+    buf_T	*buf;
     pos_T	*lp;
 {
     char_u	*p;
@@ -3582,7 +3583,7 @@ mb_adjustpos(lp)
 #endif
 	    )
     {
-	p = ml_get(lp->lnum);
+	p = ml_get_buf(buf, lp->lnum, FALSE);
 	lp->col -= (*mb_head_off)(p, p + lp->col);
 #ifdef FEAT_VIRTUALEDIT
 	/* Reset "coladd" when the cursor would be on the right half of a
