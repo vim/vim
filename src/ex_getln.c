@@ -3046,7 +3046,7 @@ cmdline_paste(regname, literally, remcr)
 	    int	    len;
 
 	    /* Locate start of last word in the cmd buffer. */
-	    for (w = ccline.cmdbuff + ccline.cmdlen; w > ccline.cmdbuff; )
+	    for (w = ccline.cmdbuff + ccline.cmdpos; w > ccline.cmdbuff; )
 	    {
 #ifdef FEAT_MBYTE
 		if (has_mbyte)
@@ -3064,7 +3064,7 @@ cmdline_paste(regname, literally, remcr)
 		    --w;
 		}
 	    }
-	    len = (int)((ccline.cmdbuff + ccline.cmdlen) - w);
+	    len = (int)((ccline.cmdbuff + ccline.cmdpos) - w);
 	    if (p_ic ? STRNICMP(w, arg, len) == 0 : STRNCMP(w, arg, len) == 0)
 		p += len;
 	}
