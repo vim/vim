@@ -14318,7 +14318,7 @@ f_readfile(argvars, rettv)
 	tolist = 0;
 	for ( ; filtd < buflen || readlen <= 0; ++filtd)
 	{
-	    if (buf[filtd] == '\n' || readlen <= 0)
+	    if (readlen <= 0 || buf[filtd] == '\n')
 	    {
 		/* In binary mode add an empty list item when the last
 		 * non-empty line ends in a '\n'. */
