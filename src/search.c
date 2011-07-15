@@ -1585,7 +1585,7 @@ searchc(cap, t_cmd)
 	/* Force a move of at least one char, so ";" and "," will move the
 	 * cursor, even if the cursor is right in front of char we are looking
 	 * at. */
-	if (vim_strchr(p_cpo, CPO_SCOLON) == NULL && count == 1)
+	if (vim_strchr(p_cpo, CPO_SCOLON) == NULL && count == 1 && t_cmd)
 	    stop = FALSE;
     }
 
