@@ -1650,7 +1650,9 @@ op_delete(oap)
 	    && oap->line_count > 1
 	    && oap->op_type == OP_DELETE)
     {
-	ptr = ml_get(oap->end.lnum) + oap->end.col + oap->inclusive;
+	ptr = ml_get(oap->end.lnum) + oap->end.col;
+	if (*ptr != NUL)
+	    ptr += oap->inclusive;
 	ptr = skipwhite(ptr);
 	if (*ptr == NUL && inindent(0))
 	    oap->motion_type = MLINE;
@@ -1920,11 +1922,20 @@ op_delete(oap)
 		    curwin->w_cursor.coladd = 0;
 	    }
 #endif
-	    (void)del_bytes((long)n, !virtual_op, oap->op_type == OP_DELETE
+	    if (oap->inclusive && oap->end.lnum == curbuf->b_ml.ml_line_count
+		    && n > (int)STRLEN(ml_get(oap->end.lnum)))
+	    {
+		/* Special case: gH<Del> deletes the last line. */
+		del_lines(1L, FALSE);
+	    }
+	    else
+	    {
+		(void)del_bytes((long)n, !virtual_op, oap->op_type == OP_DELETE
 #ifdef FEAT_VISUAL
 				    && !oap->is_VIsual
 #endif
 							);
+	    }
 	}
 	else				/* delete characters between lines */
 	{
@@ -1941,17 +1952,29 @@ op_delete(oap)
 	    ++curwin->w_cursor.lnum;
 	    del_lines((long)(oap->line_count - 2), FALSE);
 
-	    /* delete from start of line until op_end */
-	    curwin->w_cursor.col = 0;
-	    (void)del_bytes((long)(oap->end.col + 1 - !oap->inclusive),
-					!virtual_op, oap->op_type == OP_DELETE
+	    n = (oap->end.col + 1 - !oap->inclusive);
+	    if (oap->inclusive && oap->end.lnum == curbuf->b_ml.ml_line_count
+		    && n > (int)STRLEN(ml_get(oap->end.lnum)))
+	    {
+		/* Special case: gH<Del> deletes the last line. */
+		del_lines(1L, FALSE);
+		curwin->w_cursor = curpos;	/* restore curwin->w_cursor */
+		if (curwin->w_cursor.lnum > 1)
+		    --curwin->w_cursor.lnum;
+	    }
+	    else
+	    {
+		/* delete from start of line until op_end */
+		curwin->w_cursor.col = 0;
+		(void)del_bytes((long)n, !virtual_op, oap->op_type == OP_DELETE
 #ifdef FEAT_VISUAL
 					&& !oap->is_VIsual
 #endif
 							    );
-	    curwin->w_cursor = curpos;		/* restore curwin->w_cursor */
-
-	    (void)do_join(2, FALSE, FALSE);
+		curwin->w_cursor = curpos;	/* restore curwin->w_cursor */
+	    }
+	    if (curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
+		(void)do_join(2, FALSE, FALSE);
 	}
     }
 
