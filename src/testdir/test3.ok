@@ -1310,6 +1310,31 @@ void func3(void)
 
 void func(void)
 {
+	int tab[] =
+	{
+		1, 2, 3,
+		4, 5, 6};
+
+	printf("Indent this line correctly!\n");
+
+	switch (foo)
+	{
+		case bar:
+			printf("bar");
+			break;
+		case baz: {
+			printf("baz");
+			break;
+		}
+		case quux:
+			printf("But don't break the indentation of this instruction\n");
+			break;
+	}
+}
+
+
+void func(void)
+{
 	cout << "a"
 		<< "b"
 		<< ") :"

@@ -7945,8 +7945,7 @@ term_again:
 			 * If we're at the end of a block, skip to the start of
 			 * that block.
 			 */
-			curwin->w_cursor.col = 0;
-			if (*cin_skipcomment(l) == '}'
+			if (find_last_paren(l, '{', '}')
 				&& (trypos = find_start_brace(ind_maxcomment))
 							    != NULL) /* XXX */
 			{

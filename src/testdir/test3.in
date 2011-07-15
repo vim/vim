@@ -1452,6 +1452,36 @@ printf("Don't you dare indent this line incorrectly!\n);
 
 STARTTEST
 :set cino&
+:set cino+=l1
+2kdd=][
+ENDTEST
+
+void func(void)
+{
+	int tab[] =
+	{
+		1, 2, 3,
+		4, 5, 6};
+
+	printf("Indent this line correctly!\n");
+
+	switch (foo)
+	{
+		case bar:
+			printf("bar");
+			break;
+		case baz: {
+			printf("baz");
+			break;
+		}
+		case quux:
+printf("But don't break the indentation of this instruction\n");
+break;
+	}
+}
+
+STARTTEST
+:set cino&
 2kdd=][
 ENDTEST
 
