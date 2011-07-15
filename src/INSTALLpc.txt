@@ -11,9 +11,9 @@ The file "feature.h" can be edited to match your preferences. You can skip
 this, then you will get the default behavior as is documented, which should
 be fine for most people.
 
-With the exception of the last two sections (Windows 3.1 and MS-DOS),
-this document assumes that you are building Vim for Win32
-(Windows NT/2000/XP/2003/Vista and Windows 95/98/Me)
+With the exception of two sections (Windows 3.1 and MS-DOS), this document
+assumes that you are building Vim for Win32 or later.
+(Windows 95/98/Me/NT/2000/XP/2003/Vista/7)
 
 
 Contents:
@@ -26,6 +26,9 @@ Contents:
 7. Building with MzScheme support
 8. Windows 3.1
 9. MS-DOS
+
+10. Installing after building from sources
+
 
 The currently preferred method is using the free Visual C++ Toolkit 2008
 |msvc-2008-express|, the produced binary runs on most MS-Windows systems.  If
@@ -409,3 +412,59 @@ will work properly!  Esp. handling multi-byte file names.
 
 If you get all kinds of strange error messages when compiling, try adding
 changing the file format from "unix" to "dos".
+
+
+10. Installing after building from sources
+==========================================
+
+[provided by Michael Soyka]
+
+After you've built the Vim binaries as described above, you're ready to
+install Vim on your system.  However, if you've obtained the Vim sources
+using Mercurial or by downloading them as a unix tar file, you must first 
+create a "vim73" directory.  If you instead downloaded the sources as
+zip files, you can skip this setup as the zip archives already have the
+correct directory structure.  
+
+  A.  Create a Vim "runtime" subdirectory named "vim73"
+  -----------------------------------------------------
+  If you obtained your Vim sources as zip files, you can skip this step.  
+  Otherwise, continue reading.
+
+  Go to the directory that contains the Vim "src" and "runtime"
+  directories and create a new subdirectory named "vim73".  
+  
+  Copy the "runtime" files into "vim73":
+     copy runtime\* vim73
+
+  B.  Copy the new binaries into the "vim73" directory
+  ----------------------------------------------------
+  Regardless of how you installed the Vim sources, you need to copy the
+  new binaries you created above into "vim73":
+
+     copy src\*.exe vim73
+     copy src\GvimExt\gvimext.dll vim73
+     copy src\xxd\xxd.exe vim73
+
+  C.  Move the "vim73" directory into the Vim installation subdirectory
+  ---------------------------------------------------------------------
+  Move the "vim73" subdirectory into the subdirectory where you want Vim
+  to be installed.  Typically, this subdirectory will be named "vim".  
+  If you already have a "vim73" subdirectory in "vim", delete it first
+  by running its unstal.exe program.  
+
+  D.  Install Vim
+  ---------------
+  "cd" to your Vim installation subdirectory "vim\vim73" and run the
+  "install.exe" program.  It will ask you a number of questions about
+  how you would like to have your Vim setup.  Among these are:
+  - You can tell it to write a "_vimrc" file with your preferences in the
+    parent directory.
+  - It can also install an "Edit with Vim" entry in the Windows Explorer
+    popup menu.
+  - You can have it create batch files, so that you can run Vim from the
+    console or in a shell.  You can select one of the directories in your
+    PATH or add the directory to PATH using the Windows Control Panel.  
+  - Create entries for Vim on the desktop and in the Start menu.
+
+Happy Vimming!
