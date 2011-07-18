@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	    DTD (Document Type Definition for XML)
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2010-09-21
+" Latest Revision:  2011-07-08
 
 let s:cpo_save = &cpo
 set cpo&vim
@@ -52,7 +52,7 @@ function s:indent_to_innermost_parentheses(line, end)
   let end = a:end
   let parentheses = [end - 1]
   while token != ""
-    let [token, end] = s:lex(a:line, end, '^\%([(),|]\|[A-Za-z0-9_-]\+\|#PCDATA\|%[A-Za-z0-9_-]\+;\)[?*+]\=')
+    let [token, end] = s:lex(a:line, end, '^\%([(),|]\|[A-Za-z0-9_-]\+\|#P\=CDATA\|%[A-Za-z0-9_-]\+;\)[?*+]\=')
     if token[0] == '('
       call add(parentheses, end - 1)
     elseif token[0] == ')'

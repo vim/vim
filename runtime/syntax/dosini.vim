@@ -3,7 +3,8 @@
 " Version Info: @(#)dosini.vim 1.6 97/12/15 08:54:12
 " Author:       Sean M. McKee <mckee@misslink.net>
 " Maintainer:   Nima Talebi <nima@it.net.au>
-" Last Change:	Mon, 26 Jun 2006 22:07:28 +1000
+" Updated By:   Hong Xu
+" Last Change:	2011 Jul 16
 
 
 " For version 5.x: Clear all syntax items
@@ -19,7 +20,7 @@ syn case ignore
 
 syn match  dosiniLabel		"^.\{-}="
 syn region dosiniHeader		start="^\[" end="\]"
-syn match  dosiniComment	"^;.*$"
+syn match  dosiniComment	"^[#;].*$"
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already

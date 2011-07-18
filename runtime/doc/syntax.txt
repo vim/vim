@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2011 May 06
+*syntax.txt*	For Vim version 7.3.  Last change: 2011 Jul 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -866,13 +866,13 @@ used.
 Detecting whether a file is csh or tcsh is notoriously hard.  Some systems
 symlink /bin/csh to /bin/tcsh, making it almost impossible to distinguish
 between csh and tcsh.  In case VIM guesses wrong you can set the
-"filetype_csh" variable.  For using csh: >
-
-	:let filetype_csh = "csh"
+"filetype_csh" variable.  For using csh:  *g:filetype_csh*
+>
+	:let g:filetype_csh = "csh"
 
 For using tcsh: >
 
-	:let filetype_csh = "tcsh"
+	:let g:filetype_csh = "tcsh"
 
 Any script with a tcsh extension or a standard tcsh filename (.tcshrc,
 tcsh.tcshrc, tcsh.login) will have filetype tcsh.  All other tcsh/csh scripts
@@ -2371,6 +2371,12 @@ to a larger number: >
 This will make the syntax synchronization start 50 lines before the first
 displayed line.  The default value is 10.  The disadvantage of using a larger
 number is that redrawing can become slow.
+
+Vim tries to guess what type a ".r" file is.  If it can't be detected (from
+comment lines), the default is "r".  To make the default rexx add this line to
+your .vimrc:  *g:filetype_r*
+>
+	:let g:filetype_r = "r"
 
 
 RUBY						*ruby.vim* *ft-ruby-syntax*

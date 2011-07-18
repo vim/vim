@@ -23,8 +23,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Esperanto)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-26 22:14+0100\n"
-"PO-Revision-Date: 2011-01-26 22:23+0200\n"
+"POT-Creation-Date: 2011-06-21 17:23+0200\n"
+"PO-Revision-Date: 2011-06-21 17:26+0200\n"
 "Last-Translator: Dominique PELLÉ <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -575,6 +575,9 @@ msgstr "E725: Alvoko de funkcio dict sen Vortaro: %s"
 msgid "E808: Number or Float required"
 msgstr "E808: Nombro aŭ Glitpunktnombro bezonata"
 
+msgid "add() argument"
+msgstr "argumento de add()"
+
 msgid "E699: Too many arguments"
 msgstr "E699: Tro da argumentoj"
 
@@ -589,9 +592,18 @@ msgstr "E785: complete() uzeblas nur en Enmeta reĝimo"
 msgid "&Ok"
 msgstr "&Bone"
 
+msgid "extend() argument"
+msgstr "argumento de extend()"
+
 #, c-format
 msgid "E737: Key already exists: %s"
 msgstr "E737: Ŝlosilo jam ekzistas: %s"
+
+msgid "map() argument"
+msgstr "argumento de map()"
+
+msgid "filter() argument"
+msgstr "argumento de filter()"
 
 #, c-format
 msgid "+-%s%3ld lines: "
@@ -610,6 +622,9 @@ msgstr ""
 
 msgid "called inputrestore() more often than inputsave()"
 msgstr "alvokis inputrestore() pli ofte ol inputsave()"
+
+msgid "insert() argument"
+msgstr "argumento de insert()"
 
 msgid "E786: Range not allowed"
 msgstr "E786: Amplekso malpermesita"
@@ -636,11 +651,20 @@ msgstr "E241: Ne eblas sendi al %s"
 msgid "E277: Unable to read a server reply"
 msgstr "E277: Ne eblas legi respondon de servilo"
 
+msgid "remove() argument"
+msgstr "argumento de remove()"
+
 msgid "E655: Too many symbolic links (cycle?)"
 msgstr "E655: Tro da simbolaj ligiloj (ĉu estas ciklo?)"
 
+msgid "reverse() argument"
+msgstr "argumento de reverse()"
+
 msgid "E258: Unable to send to client"
 msgstr "E258: Ne eblas sendi al kliento"
+
+msgid "sort() argument"
+msgstr "argumento de sort()"
 
 msgid "E702: Sort compare function failed"
 msgstr "E702: Ordiga funkcio fiaskis"
@@ -676,20 +700,20 @@ msgid "E806: using Float as a String"
 msgstr "E806: uzo de Glitpunktnombro kiel Ĉeno"
 
 #, c-format
-msgid "E704: Funcref variable name must start with a capital: %s"
-msgstr "E704: Nomo de variablo Funcref ekendas per majusklo: %s"
-
-#, c-format
-msgid "E705: Variable name conflicts with existing function: %s"
-msgstr "E705: Nomo de variablo konfliktas kun ekzistanta funkcio: %s"
-
-#, c-format
 msgid "E706: Variable type mismatch for: %s"
 msgstr "E706: Nekongrua datumtipo de variablo: %s"
 
 #, c-format
 msgid "E795: Cannot delete variable %s"
 msgstr "E795: Ne eblas forviŝi variablon %s"
+
+#, c-format
+msgid "E704: Funcref variable name must start with a capital: %s"
+msgstr "E704: Nomo de variablo Funcref devas finiĝi per majusklo: %s"
+
+#, c-format
+msgid "E705: Variable name conflicts with existing function: %s"
+msgstr "E705: Nomo de variablo konfliktas kun ekzistanta funkcio: %s"
 
 #, c-format
 msgid "E741: Value is locked: %s"
@@ -1639,6 +1663,9 @@ msgstr "[NE konvertita]"
 msgid "[converted]"
 msgstr "[konvertita]"
 
+msgid "[blowfish]"
+msgstr "[blowfish]"
+
 msgid "[crypted]"
 msgstr "[ĉifrita]"
 
@@ -1816,6 +1843,7 @@ msgstr "1 signo"
 msgid "%lld characters"
 msgstr "%lld signoj"
 
+#. Explicit typecast avoids warning on Mac OS X 10.6
 #, c-format
 msgid "%ld characters"
 msgstr "%ld signoj"
@@ -2090,7 +2118,7 @@ msgstr "Anstataŭigi per:"
 
 #. whole word only button
 msgid "Match whole word only"
-msgstr "Kongrui nur plenan vorton"
+msgstr "Kongrui kun nur plena vorto"
 
 #. match case button
 msgid "Match case"
@@ -2654,7 +2682,7 @@ msgid "E273: unknown longjmp status %d"
 msgstr "E273: nekonata stato de longjmp: %d"
 
 msgid "Toggle implementation/definition"
-msgstr "Baskuli realigon/difinon"
+msgstr "Baskuligi realigon/difinon"
 
 msgid "Show base class of"
 msgstr "Vidigi bazan klason de"
@@ -2748,7 +2776,7 @@ msgid "invalid buffer number"
 msgstr "nevalida numero de bufro"
 
 msgid "not implemented yet"
-msgstr "ne jam realigita"
+msgstr "ankoraŭ ne realigita"
 
 #. ???
 msgid "cannot set line(s)"
@@ -3020,7 +3048,7 @@ msgid "-r\t\t\tList swap files and exit"
 msgstr "-r\t\t\tListigi permutodosierojn .swp kaj eliri"
 
 msgid "-r (with file name)\tRecover crashed session"
-msgstr "-r (kun dosiernomo)\tRestaŭri kolapsitan seancon"
+msgstr "-r (kun dosiernomo)\tRestaŭri kolapsintan seancon"
 
 msgid "-L\t\t\tSame as -r"
 msgstr "-L\t\t\tKiel -r"
@@ -3213,19 +3241,6 @@ msgstr "+reverse\t\tNe uzi inversan videon (ankaŭ: +rv)"
 
 msgid "-xrm <resource>\tSet the specified resource"
 msgstr "-xrm <rimedo>\tAgordi la specifitan <rimedo>-n"
-
-msgid ""
-"\n"
-"Arguments recognised by gvim (RISC OS version):\n"
-msgstr ""
-"\n"
-"Argumentoj agnoskitaj de gvim (versio RISC OS):\n"
-
-msgid "--columns <number>\tInitial width of window in columns"
-msgstr "--columns <nombro>\tKomenca larĝo de fenestro en kolumnoj"
-
-msgid "--rows <number>\tInitial height of window in rows"
-msgstr "--rows <nombro>\tKomenca alto de fenestro en vicoj"
 
 msgid ""
 "\n"
@@ -3634,7 +3649,7 @@ msgstr ""
 "        proceza ID: "
 
 msgid " (still running)"
-msgstr " (ankoraŭ rulas)"
+msgstr " (ankoraŭ ruliĝas)"
 
 msgid ""
 "\n"
@@ -3736,24 +3751,20 @@ msgstr "      PLI NOVA ol permutodosiero .swp!\n"
 #. * other languages.
 msgid ""
 "\n"
-"(1) Another program may be editing the same file.\n"
-"    If this is the case, be careful not to end up with two\n"
-"    different instances of the same file when making changes.\n"
+"(1) Another program may be editing the same file.  If this is the case,\n"
+"    be careful not to end up with two different instances of the same\n"
+"    file when making changes."
 msgstr ""
 "\n"
 "(1) Alia programo eble redaktas la saman dosieron.\n"
 "    Se jes, estu singarda por ne havi du malsamajn\n"
-"    aperojn de la sama dosiero, kiam vi faros ŝanĝojn.\n"
+"    aperojn de la sama dosiero, kiam vi faros ŝanĝojn."
 
-msgid "    Quit, or continue with caution.\n"
-msgstr "    Eliru, aŭ daŭrigu singarde.\n"
+msgid "  Quit, or continue with caution.\n"
+msgstr "  Eliru, aŭ daŭrigu singarde.\n"
 
-msgid ""
-"\n"
-"(2) An edit session for this file crashed.\n"
-msgstr ""
-"\n"
-"(2) Redakta seanco de tiu dosiero kolapsis.\n"
+msgid "(2) An edit session for this file crashed.\n"
+msgstr "(2) Redakta seanco de tiu dosiero kolapsis.\n"
 
 msgid "    If this is the case, use \":recover\" or \"vim -r "
 msgstr "    Se veras, uzu \":recover\" aŭ \"vim -r "
@@ -4094,8 +4105,9 @@ msgstr "E838: netbeans ne estas subtenata kun tiu grafika interfaco"
 msgid "E511: netbeans already connected"
 msgstr "E511: nebeans jam konektata"
 
-msgid "E505: "
-msgstr "E505: "
+#, c-format
+msgid "E505: %s is read-only (add ! to override)"
+msgstr "E505: %s estas nurlegebla (aldonu ! por transpasi)"
 
 msgid "E349: No identifier under cursor"
 msgstr "E349: Neniu identigilo sub la kursoro"
@@ -4259,6 +4271,9 @@ msgstr "E519: Opcio ne subtenata"
 
 msgid "E520: Not allowed in a modeline"
 msgstr "E520: Ne permesita en reĝimlinio"
+
+msgid "E846: Key code not set"
+msgstr "E846: Klavkodo ne agordita"
 
 msgid "E521: Number required after ="
 msgstr "E521: Nombro bezonata malantaŭ ="
@@ -5183,6 +5198,9 @@ msgstr "Nekonata flago en %s linio %d: %s"
 msgid "Ignored %d words with non-ASCII characters"
 msgstr "Ignoris %d vorto(j)n kun neaskiaj signoj"
 
+msgid "E845: Insufficient memory, word list will be incomplete"
+msgstr "E845: Ne sufiĉe da memoro, vortlisto estos nekompleta."
+
 #, c-format
 msgid "Compressed %d of %d nodes; %d (%d%%) remaining"
 msgstr "Densigis %d de %d nodoj; %d (%d%%) restantaj"
@@ -5373,6 +5391,9 @@ msgstr "E394: Ne trovis regionan elementon por %s"
 msgid "E397: Filename required"
 msgstr "E397: Dosiernomo bezonata"
 
+msgid "E847: Too many syntax includes"
+msgstr "E847: Tro da sintaksaj inkluzivoj"
+
 #, c-format
 msgid "E789: Missing ']': %s"
 msgstr "E789: Mankas ']': %s"
@@ -5384,6 +5405,9 @@ msgstr "E398: Mankas '=': %s"
 #, c-format
 msgid "E399: Not enough arguments: syntax region %s"
 msgstr "E399: Ne sufiĉaj argumentoj: sintaksa regiono %s"
+
+msgid "E848: Too many syntax clusters"
+msgstr "E848: Tro da sintaksaj grupoj"
 
 msgid "E400: No cluster specified"
 msgstr "E400: Neniu fasko specifita"
@@ -5487,6 +5511,9 @@ msgstr "E669: Nepresebla signo en nomo de grupo"
 
 msgid "W18: Invalid character in group name"
 msgstr "W18: Nevalida signo en nomo de grupo"
+
+msgid "E849: Too many highlight and syntax groups"
+msgstr "E849: Tro da emfazaj kaj sintaksaj grupoj"
 
 msgid "E555: at bottom of tag stack"
 msgstr "E555: ĉe subo de stako de etikedoj"
@@ -5662,7 +5689,7 @@ msgstr "Ne legas malfaran dosieron, posedanto malsamas: %s"
 
 #, c-format
 msgid "Reading undo file: %s"
-msgstr "Legado de de malfara dosiero: %s"
+msgstr "Legado de malfara dosiero: %s"
 
 #, c-format
 msgid "E822: Cannot open undo file for reading: %s"
@@ -5838,13 +5865,6 @@ msgid ""
 msgstr ""
 "\n"
 "Versio Mak OS"
-
-msgid ""
-"\n"
-"RISC OS version"
-msgstr ""
-"\n"
-"Versio RISC operaciumo"
 
 msgid ""
 "\n"
@@ -6035,7 +6055,7 @@ msgid "type  :help version7<Enter>   for version info"
 msgstr "tajpu  :help version7<Enenklavo>  por informo de versio"
 
 msgid "Running in Vi compatible mode"
-msgstr "Rulas en reĝimo kongrua kun Vi"
+msgstr "Ruliĝas en reĝimo kongrua kun Vi"
 
 # DP: atentu al la spacetoj: ĉiuj ĉenoj devas havi la saman longon
 msgid "type  :set nocp<Enter>        for Vim defaults"
@@ -6050,11 +6070,11 @@ msgid "menu  Help->Orphans           for information    "
 msgstr "menuo  Help->Orfinoj              por pliaj informoj   "
 
 msgid "Running modeless, typed text is inserted"
-msgstr "Rulas senreĝime, tajpita teksto estas enmetita"
+msgstr "Ruliĝas senreĝime, tajpita teksto estas enmetita"
 
 # DP: atentu al la spacetoj: ĉiuj ĉenoj devas havi la saman longon
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
-msgstr "menuo Redakti->Mallokaj Agordoj->Baskuli Enmetan Reĝimon"
+msgstr "menuo Redakti->Mallokaj Agordoj->Baskuligi Enmetan Reĝimon"
 
 # DP: atentu al la spacetoj: ĉiuj ĉenoj devas havi la saman longon
 msgid "                              for two modes      "
@@ -6063,7 +6083,7 @@ msgstr "                                  por du reĝimoj       "
 # DP: tiu ĉeno pli longas (mi ne volas igi ĉiujn aliajn ĉenojn
 #     pli longajn)
 msgid "menu  Edit->Global Settings->Toggle Vi Compatible"
-msgstr "menuo Redakti->Mallokaj Agordoj->Baskuli Reĝimon Kongruan kun Vi"
+msgstr "menuo Redakti->Mallokaj Agordoj->Baskuligi Reĝimon Kongruan kun Vi"
 
 # DP: atentu al la spacetoj: ĉiuj ĉenoj devas havi la saman longon
 msgid "                              for Vim defaults   "
@@ -6500,6 +6520,9 @@ msgstr "E139: Dosiero estas ŝargita en alia bufro"
 msgid "E764: Option '%s' is not set"
 msgstr "E764: La opcio '%s' ne estas ŝaltita"
 
+msgid "E850: Invalid register name"
+msgstr "E850: Nevalida nomo de reĝistro"
+
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "serĉo atingis SUPRON, daŭrigonte al SUBO"
 
@@ -6545,3 +6568,23 @@ msgstr "ne estas tia fenestro"
 
 msgid "attempt to refer to deleted buffer"
 msgstr "provo de referenco al forviŝita bufro"
+
+#~ msgid ""
+#~ "\n"
+#~ "Arguments recognised by gvim (RISC OS version):\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Argumentoj agnoskitaj de gvim (versio RISC OS):\n"
+
+#~ msgid "--columns <number>\tInitial width of window in columns"
+#~ msgstr "--columns <nombro>\tKomenca larĝo de fenestro en kolumnoj"
+
+#~ msgid "--rows <number>\tInitial height of window in rows"
+#~ msgstr "--rows <nombro>\tKomenca alto de fenestro en vicoj"
+
+#~ msgid ""
+#~ "\n"
+#~ "RISC OS version"
+#~ msgstr ""
+#~ "\n"
+#~ "Versio RISC operaciumo"

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	dnsmasq(8) configuration file
 " Maintainer:	Thilo Six <T.Six@gmx.de>
-" Last Change:	17 May 2011
+" Last Change:	2011 Jul 14
 " Credits:	This file is a mix of cfg.vim, wget.vim and xf86conf.vim, credits go to:
 "		Igor N. Prischepoff
 "		Doug Kearns
@@ -58,7 +58,7 @@ syn match   DnsmasqString   "'.*'"
 syn match   DnsmasqComment  "^#.*$"   contains=DnsmasqTodo
 syn match   DnsmasqComment  "\s#.*$"  contains=DnsmasqTodo
 
-syn keyword DnsmasqTodo	    FIXME TODO XXX NOT contained
+syn keyword DnsmasqTodo	    FIXME TODO XXX NOTE contained
 
 syn match DnsmasqKeywordSpecial    "\<set\>:"me=e-1
 syn match DnsmasqKeywordSpecial    "\<tag\>:"me=e-1

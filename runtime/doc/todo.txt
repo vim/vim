@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2011 Jun 19
+*todo.txt*      For Vim version 7.3.  Last change: 2011 Jul 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -40,52 +40,11 @@ Crash in autocomplete, valgrind log. (Greg Weber, 2011 Apr 22)
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
-Patch to fix gj with count. (James Vega, 2011 Jun 13)
-
-Patch to disallow fork() when __APPLE__ is defined. (Hisashi T Fujinaka, 2010
-Nov 25)
-
-7   Output for ":scriptnames" and ":breaklist" should shorten the file names:
-    use "~/" when possible.
-Patch by Jean-Rene David, 2011 May 1.
-
-Cindent wrong after patch 7.3.202. (Lech Lorens, issue 9)
-
-Patch for cindent fix with closing brace placement, including tests.
-(Lech Lorens, issue 10, 2011 Jun 12)
-
-Patch for better #if 0 syntax highlighting for C code. (Ben Schmidt, 2011 Jan
-20)
-Change to C syntax folding to make it work much faster, but a bit less
-reliable. (Lech Lorens, 2009 Nov 9)  Enable with an option?
-Most time is spent in in_id_list().
-Updated to merge both patches. (Ben Schmidt, 2011 May 2)
-
-GTK: Patch to fix menu popping down. (Hong Xu, 2010 Dec 4, Dec 5)
-Update 2011 Feb 3.
-
-Patch to use pipes on Win32.  (Vincent Berthoux, 2011 Feb 28)
-Update Mar 1 using 'shelltemp'.
-
-Patch to fix CTRL-R CTRL-W in the command line when the cursor is not at the
-end. (Tyru, 2011 Jun 6)
-
 Patch to support UTF-8 for Hangul. (Shawn Y.H. Kim, 2011 May 1)
 Needs more work.
 
-Patch to make ";" not get stuck on "t" command. (Christian Brabandt, 2011 May
-23)
-
-Patch to do more testing of Javascript indenting.  Some items are srong.
-(Luc Deschenaux, 2011 Jun 14)
-
-"gh<Del>" deletes the current line, except when it's the last line.
-Hint by Christian Brabandt, 2011 Mar 22
-
-"echo 'abc' > ''" returns 0 or 1, depending on 'ignorecase'.
-mb_strnicmp() checks for illegal and truncated bytes are wrong.
-Should also not assume that byte length is equal before case folding.
-Patch by Ivan Krasilnikov, 2011 May 27.
+With "unamedplus" in 'clipboard' pasting in Visual mode causes error for empty
+register. (Michael Seiwald, 2011 Jun 28)
 
 The :z command doesn't work exactly as it should. (ChangZhuo Chen, 2011 Mar 2)
 Compare with how old Vi works and with posix spec.  terminal is 80 x 24,
@@ -94,6 +53,7 @@ Compare with how old Vi works and with posix spec.  terminal is 80 x 24,
 'cursorline' is displayed too short when there are concealed characters and
 'list' is set.  (Dennis Preiser)
 Patch 7.3.116 was the wrong solution.
+Christian Brabandt has another incomplete patch. (2011 Jul 13)
 
 With concealed text mouse click doesn't put the cursor in the right position.
 (Herb Sitz)  Fix by Christian Brabandt, 2011 Jun 16.  Doesn't work properly,
@@ -119,8 +79,13 @@ Bug in repeating Visual "u". (Lawrence Kesteloot, 2010 Dec 20)
 Patch to automatically get version number into NSIS. (Guopeng Wen, 2011 May
 27)
 
+Patch to add more command completions (Dominique Pelle, 2011 Jun 25)
+
+Patch to have GvimExt not use "edit with existing Vim" entries.
+(Jerome Vuarand, 2011 Jun 22)
+
 Patch to make character classes work with multi-byte characters.
-(Dominique Pelle, 2011 May 31)
+(Dominique Pelle, 2011 May 31, update July 11)
 
 In GTK Gvim, setting 'lines' and 'columns' to 99999 causes a crash (Tony
 Mechelynck, 2011 Apr 25).  Can reproduce the crash sometimes:
@@ -142,6 +107,9 @@ Check that number of pixels doesn't go above 65535?
 Need for CursorHold that retriggers.  Use a key that doesn't do anything, or a
 function that resets did_cursorhold.
 Patch by Christian Brabandt, 2011 May 6.
+
+popup completion menu closes quickly when there is a fold in the buffer. (Jan
+Christoph Ebersbach, 2011 Jul 3)
 
 CursorHold repeats typed key when it's the start of a mapping.
 (Will Gray, 2011 Mar 23)
@@ -191,6 +159,10 @@ Bug in try/catch: return with invalid compare throws error that isn't caught.
 
 Highlighting stops working after changing it many times.  Script to reproduce
 it: Pablo Contreras, 2010 Oct 12  Windows XP and 7.  Font is never freed?
+
+When setting a local option value from the global value, add a script ID that
+indicates this, so that ":verbose set" can give a hint.  Check with options in
+the help file.
 
 After patch 7.3.097 still get E15. (Yukihiro Nakadaira, 2011 Jan 18)
 Also for another example (ZyX, 2011 Jan 24)
@@ -250,6 +222,9 @@ New esperanto spell file can't be processed. (Dominique Pelle, 2011 Jan 30)
 
 "L'Italie" noted as a spell error at start of the sentence. (Dominique Pelle,
 2011 Feb 27)
+
+Patch to fail if configure can't find an interface, such as Python.
+(Shlomi Fish, 2011 Jul 11)
 
 Copy/paste between Vim and Google chrome doesn't work well for multi-byte
 characters. (Ben Haskell, 2010 Sep 17)
@@ -341,7 +316,7 @@ When writing a file > 2Gbyte, the reported number of bytes is negative.
 (Antonio Colombo, 2010 Dec 18)
 
 Patch: Let rare word highlighting overrule good word highlighting.
-(Jakson A. Aquino, 2010 Jul 30)
+(Jakson A. Aquino, 2010 Jul 30, again 2011 Jul 2)
 
 Patch to make more characters work in dialogs. (Yankwei Jia, 2010 Aug 4)
 
@@ -428,6 +403,9 @@ Display error when 'tabline' that includes a file name with double-width
 characters. (2010 Aug 14, bootleq)
 
 Problem with stop directory in findfile(). (Adam Simpkins, 2009 Aug 26)
+
+Using ']' as the end of a range in a pattern requires double escaping:
+     /[@-\\]]  (Andy Wokula, 2011 Jun 28)
 
 Undo problem: line not removed as expected when using setline() from Insert
 mode. (Israel Chauca, 2010 May 13, more in second msg)
@@ -1525,6 +1503,7 @@ Awaiting updated patches:
 -   Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
     Smilauer, 2004 Sep 13, fix Oct 31, update 2007 May 30)
     Version for latest MacVim: Tobia Conforto, 2009 Nov 23
+    More recent version: https://retracile.net/wiki/VimBreakIndent
 8   Add a few more command names to the menus.  Patch from Jiri Brezina
     (28 feb 2002).  Will mess the translations...
 7   ATTENTION dialog choices are more logical when "Delete it' appears

@@ -410,8 +410,8 @@ Windows exe (GUI or console mode), or a 16-bit MS-DOS version.
 NOTE: multi-byte support is broken in the Borland libraries, not everything
 will work properly!  Esp. handling multi-byte file names.
 
-If you get all kinds of strange error messages when compiling, try adding
-changing the file format from "unix" to "dos".
+If you get all kinds of strange error messages when compiling, try changing
+the file format from "unix" to "dos".
 
 
 10. Installing after building from sources
@@ -451,7 +451,7 @@ correct directory structure.
   Move the "vim73" subdirectory into the subdirectory where you want Vim
   to be installed.  Typically, this subdirectory will be named "vim".  
   If you already have a "vim73" subdirectory in "vim", delete it first
-  by running its unstal.exe program.  
+  by running its uninstal.exe program.  
 
   D.  Install Vim
   ---------------

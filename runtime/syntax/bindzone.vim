@@ -1,13 +1,13 @@
 " Vim syntax file
-" Language:     BIND zone files (RFC1035)
+" Language:     BIND zone files (RFC 1035)
 " Maintainer:   Julian Mehnle <julian@mehnle.net>
 " URL:          http://www.mehnle.net/source/odds+ends/vim/syntax/
-" Last Change:  Thu 2006-04-20 12:30:45 UTC
+" Last Change:  Thu 2011-07-16 20:42:00 UTC
 " 
 " Based on an earlier version by Вячеслав Горбанев (Slava Gorbanev), with
 " heavy modifications.
 " 
-" $Id: bindzone.vim,v 1.2 2006/04/20 22:06:21 vimboss Exp $
+" $Id: bindzone.vim 12 2011-07-16 21:09:57Z julian $
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -23,7 +23,7 @@ syn case match
 syn region      zoneRRecord     start=/^/ end=/$/ contains=zoneOwnerName,zoneSpecial,zoneTTL,zoneClass,zoneRRType,zoneComment,zoneUnknown
 
 syn match       zoneDirective   /^\$ORIGIN\s\+/   nextgroup=zoneOrigin,zoneUnknown
-syn match       zoneDirective   /^\$TTL\s\+/      nextgroup=zoneNumber,zoneUnknown
+syn match       zoneDirective   /^\$TTL\s\+/      nextgroup=zoneTTL,zoneUnknown
 syn match       zoneDirective   /^\$INCLUDE\s\+/  nextgroup=zoneText,zoneUnknown
 syn match       zoneDirective   /^\$GENERATE\s/
 
@@ -34,9 +34,9 @@ syn match       zoneOrigin      contained  /[^[:space:]!"#$%&'()*+,\/:;<=>?@[\]\
 syn match       zoneDomain      contained  /[^[:space:]!"#$%&'()*+,\/:;<=>?@[\]\^`{|}~]\+\(\s\|;\|$\)\@=/
 
 syn match       zoneSpecial     contained /^[@*.]\s/
-syn match       zoneTTL         contained /\<\d[0-9HhWwDd]*\>/  nextgroup=zoneClass,zoneRRType skipwhite
-syn keyword     zoneClass       contained IN CHAOS              nextgroup=zoneRRType,zoneTTL   skipwhite
-syn keyword     zoneRRType      contained A AAAA CNAME HINFO MX NS PTR SOA SRV TXT nextgroup=zoneRData skipwhite
+syn match       zoneTTL         contained /\s\@<=\d[0-9WwDdHhMmSs]*\(\s\|$\)\@=/ nextgroup=zoneClass,zoneRRType skipwhite
+syn keyword     zoneClass       contained IN CHAOS nextgroup=zoneRRType,zoneTTL skipwhite
+syn keyword     zoneRRType      contained A AAAA CNAME DNAME HINFO MX NS PTR SOA SRV TXT SPF nextgroup=zoneRData skipwhite
 syn match       zoneRData       contained /[^;]*/ contains=zoneDomain,zoneIPAddr,zoneIP6Addr,zoneText,zoneNumber,zoneParen,zoneUnknown
 
 syn match       zoneIPAddr      contained /\<[0-9]\{1,3}\(\.[0-9]\{1,3}\)\{,3}\>/
@@ -66,7 +66,7 @@ syn match       zoneNumber      contained /\<[0-9]\+\(\s\|;\|$\)\@=/
 syn match       zoneSerial      contained /\<[0-9]\{9,10}\(\s\|;\|$\)\@=/
 
 syn match       zoneErrParen    /)/
-syn region      zoneParen       contained start="(" end=")" contains=zoneSerial,zoneNumber,zoneComment
+syn region      zoneParen       contained start="(" end=")" contains=zoneSerial,zoneTTL,zoneNumber,zoneComment
 syn match       zoneComment     /;.*/
 
 " Define the default highlighting.

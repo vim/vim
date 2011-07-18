@@ -5096,6 +5096,7 @@ cpo-+	options.txt	/*cpo-+*
 cpo--	options.txt	/*cpo--*
 cpo-.	options.txt	/*cpo-.*
 cpo-/	options.txt	/*cpo-\/*
+cpo-;	options.txt	/*cpo-;*
 cpo-<	options.txt	/*cpo-<*
 cpo->	options.txt	/*cpo->*
 cpo-A	options.txt	/*cpo-A*
@@ -5784,6 +5785,8 @@ g:decada.Error_Format	ft_ada.txt	/*g:decada.Error_Format*
 g:decada.Make()	ft_ada.txt	/*g:decada.Make()*
 g:decada.Make_Command	ft_ada.txt	/*g:decada.Make_Command*
 g:decada.Unit_Name()	ft_ada.txt	/*g:decada.Unit_Name()*
+g:filetype_csh	syntax.txt	/*g:filetype_csh*
+g:filetype_r	syntax.txt	/*g:filetype_r*
 g:gnat	ft_ada.txt	/*g:gnat*
 g:gnat.Error_Format	ft_ada.txt	/*g:gnat.Error_Format*
 g:gnat.Find()	ft_ada.txt	/*g:gnat.Find()*

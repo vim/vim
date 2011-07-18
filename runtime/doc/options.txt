@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2011 Jun 12
+*options.txt*	For Vim version 7.3.  Last change: 2011 Jul 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6002,7 +6002,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 	When on, use temp files for shell commands.  When off use a pipe.
 	When using a pipe is not possible temp files are used anyway.
-	Currently a pipe is only supported on Unix.  You can check it with: >
+	Currently a pipe is only supported on Unix and MS-Windows 2K and
+	later.  You can check it with: >
 		:if has("filterpipe")
 <	The advantage of using a pipe is that nobody can read the temp file
 	and the 'shell' command does not need to support redirection.

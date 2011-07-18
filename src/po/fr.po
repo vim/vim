@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Français)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-26 22:14+0100\n"
-"PO-Revision-Date: 2011-10-27 19:41+0200\n"
+"POT-Creation-Date: 2011-06-21 17:23+0200\n"
+"PO-Revision-Date: 2011-06-21 17:26+0200\n"
 "Last-Translator: Dominique Pellé <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -639,6 +639,9 @@ msgstr "E725: Appel d'une fonction « dict » sans Dictionnaire : %s"
 msgid "E808: Number or Float required"
 msgstr "E808: Nombre ou Flottant requis"
 
+msgid "add() argument"
+msgstr "argument de add()"
+
 msgid "E699: Too many arguments"
 msgstr "E699: Trop d'arguments"
 
@@ -655,9 +658,18 @@ msgstr "E785: complete() n'est utilisable que dans le mode Insertion"
 msgid "&Ok"
 msgstr "&Ok"
 
+msgid "extend() argument"
+msgstr "argument de extend()"
+
 #, c-format
 msgid "E737: Key already exists: %s"
 msgstr "E737: un mappage existe déjà pour %s"
+
+msgid "map() argument"
+msgstr "argument de map()"
+
+msgid "filter() argument"
+msgstr "argument de filter()"
 
 #, c-format
 msgid "+-%s%3ld lines: "
@@ -678,6 +690,9 @@ msgstr ""
 # AB - La version française est meilleure que la version anglaise.
 msgid "called inputrestore() more often than inputsave()"
 msgstr "inputrestore() a été appelé plus de fois qu'inputsave()"
+
+msgid "insert() argument"
+msgstr "argument de insert()"
 
 msgid "E786: Range not allowed"
 msgstr "E786: Les plages ne sont pas autorisées"
@@ -707,12 +722,21 @@ msgstr "E241: L'envoi au serveur %s à échoué"
 msgid "E277: Unable to read a server reply"
 msgstr "E277: Impossible de lire la réponse du serveur"
 
+msgid "remove() argument"
+msgstr "argument de remove()"
+
 msgid "E655: Too many symbolic links (cycle?)"
 msgstr "E655: Trop de liens symboliques (cycle ?)"
+
+msgid "reverse() argument"
+msgstr "argument de reverse()"
 
 # AB - La version française est meilleure que la version anglaise.
 msgid "E258: Unable to send to client"
 msgstr "E258: La réponse n'a pas pu être envoyée au client"
+
+msgid "sort() argument"
+msgstr "argument de sort()"
 
 msgid "E702: Sort compare function failed"
 msgstr "E702: La fonction de comparaison de sort() a échoué"
@@ -747,14 +771,6 @@ msgstr "E731: Utilisation d'un Dictionnaire comme une Chaîne"
 msgid "E806: using Float as a String"
 msgstr "E806: Utilisation d'un Flottant comme une Chaîne"
 
-#, c-format
-msgid "E704: Funcref variable name must start with a capital: %s"
-msgstr "E704: Le nom d'une Funcref doit commencer par une majuscule : %s"
-
-#, c-format
-msgid "E705: Variable name conflicts with existing function: %s"
-msgstr "E705: Le nom d'une variable entre en conflit avec la fonction %s"
-
 # DB : On doit pouvoir trouver nettement mieux que ça.
 #, c-format
 msgid "E706: Variable type mismatch for: %s"
@@ -763,6 +779,14 @@ msgstr "E706: Type de variable incohérent pour %s"
 #, c-format
 msgid "E795: Cannot delete variable %s"
 msgstr "E795: Impossible de supprimer la variable %s"
+
+#, c-format
+msgid "E704: Funcref variable name must start with a capital: %s"
+msgstr "E704: Le nom d'une Funcref doit commencer par une majuscule : %s"
+
+#, c-format
+msgid "E705: Variable name conflicts with existing function: %s"
+msgstr "E705: Le nom d'une variable entre en conflit avec la fonction %s"
 
 #, c-format
 msgid "E741: Value is locked: %s"
@@ -1468,7 +1492,8 @@ msgid "E183: User defined commands must start with an uppercase letter"
 msgstr "E183: Les commandes utilisateur doivent commencer par une majuscule"
 
 msgid "E841: Reserved name, cannot be used for user defined command"
-msgstr "E841: Nom réservé, ne peux pas être utilisé pour une commande utilisateur"
+msgstr ""
+"E841: Nom réservé, ne peux pas être utilisé pour une commande utilisateur"
 
 #, c-format
 msgid "E184: No such user-defined command: %s"
@@ -1760,7 +1785,7 @@ msgid "E199: Active window or buffer deleted"
 msgstr "E199: Fenêtre ou tampon actif effacé"
 
 msgid "E812: Autocommands changed buffer or buffer name"
-msgstr "E812: Des autocommandes on changé le tampon ou le nom du tampon"
+msgstr "E812: Des autocommandes ont changé le tampon ou le nom du tampon"
 
 msgid "Illegal file name"
 msgstr "Nom de fichier invalide"
@@ -1830,6 +1855,9 @@ msgstr "[NON converti]"
 
 msgid "[converted]"
 msgstr "[converti]"
+
+msgid "[blowfish]"
+msgstr "[blowfish]"
 
 msgid "[crypted]"
 msgstr "[chiffré]"
@@ -2018,6 +2046,7 @@ msgstr "1 caractère"
 msgid "%lld characters"
 msgstr "%lld caractères"
 
+#. Explicit typecast avoids warning on Mac OS X 10.6
 #, c-format
 msgid "%ld characters"
 msgstr "%ld caractères"
@@ -2170,7 +2199,7 @@ msgid "E220: Missing }."
 msgstr "E220: } manquant."
 
 msgid "E490: No fold found"
-msgstr "E490: Aucune repli trouvé"
+msgstr "E490: Aucun repli trouvé"
 
 msgid "E350: Cannot create fold with current 'foldmethod'"
 msgstr "E350: Impossible de créer un repli avec la 'foldmethod'e actuelle"
@@ -3443,19 +3472,6 @@ msgstr "-xrm <ressource>\tConfigurer la <ressource> spécifiée"
 
 msgid ""
 "\n"
-"Arguments recognised by gvim (RISC OS version):\n"
-msgstr ""
-"\n"
-"Arguments reconnus par gvim (version RISC OS) :\n"
-
-msgid "--columns <number>\tInitial width of window in columns"
-msgstr "--columns <nombre>\tNombre de colonnes initial de la fenêtre"
-
-msgid "--rows <number>\tInitial height of window in rows"
-msgstr "--rows <nombre>\tNombre de lignes initial de la fenêtre"
-
-msgid ""
-"\n"
 "Arguments recognised by gvim (GTK+ version):\n"
 msgstr ""
 "\n"
@@ -3971,24 +3987,20 @@ msgstr "      PLUS RÉCENT que le fichier d'échange !\n"
 #. * other languages.
 msgid ""
 "\n"
-"(1) Another program may be editing the same file.\n"
-"    If this is the case, be careful not to end up with two\n"
-"    different instances of the same file when making changes.\n"
+"(1) Another program may be editing the same file.  If this is the case,\n"
+"    be careful not to end up with two different instances of the same\n"
+"    file when making changes."
 msgstr ""
 "\n"
 "(1) Un autre programme est peut-être en train d'éditer ce fichier.\n"
 "    Si c'est le cas, faites attention à ne pas vous retrouver avec\n"
-"    deux version différentes du même fichier en faisant des modifications.\n"
+"    deux versions différentes du même fichier en faisant des modifications."
 
-msgid "    Quit, or continue with caution.\n"
-msgstr "    Quittez, ou continuez prudemment.\n"
+msgid "  Quit, or continue with caution.\n"
+msgstr "  Quittez, ou continuez prudemment.\n"
 
-msgid ""
-"\n"
-"(2) An edit session for this file crashed.\n"
-msgstr ""
-"\n"
-"(2) Une session d'édition de ce fichier a planté.\n"
+msgid "(2) An edit session for this file crashed.\n"
+msgstr "(2) Une session d'édition de ce fichier a planté.\n"
 
 msgid "    If this is the case, use \":recover\" or \"vim -r "
 msgstr "    Si c'est le cas, utilisez \":recover\" ou \"vim -r "
@@ -4331,8 +4343,9 @@ msgstr "E838: netbeans n'est pas supporté avec cette interface graphique"
 msgid "E511: netbeans already connected"
 msgstr "E511: netbeans déjà connecté"
 
-msgid "E505: "
-msgstr "E505: "
+#, c-format
+msgid "E505: %s is read-only (add ! to override)"
+msgstr "E505: %s est en lecture seule (ajoutez ! pour passer outre)"
 
 msgid "E349: No identifier under cursor"
 msgstr "E349: Aucun identifiant sous le curseur"
@@ -4499,6 +4512,9 @@ msgstr "E519: Option non supportée"
 
 msgid "E520: Not allowed in a modeline"
 msgstr "E520: Non autorisé dans une ligne de mode"
+
+msgid "E846: Key code not set"
+msgstr "E846: Le code de touche n'est pas configuré"
 
 msgid "E521: Number required after ="
 msgstr "E521: Nombre requis après ="
@@ -5152,7 +5168,7 @@ msgid "All included files were found"
 msgstr "Tous les fichiers inclus ont été trouvés"
 
 msgid "No included files"
-msgstr "Aucun fichiers inclus"
+msgstr "Aucun fichier inclus"
 
 msgid "E388: Couldn't find definition"
 msgstr "E388: Impossible de trouver la définition"
@@ -5296,7 +5312,7 @@ msgstr ""
 
 #, c-format
 msgid "Duplicate affix in %s line %d: %s"
-msgstr "Affixe dupliquée dans %s ligne %d : %s"
+msgstr "Affixe dupliqué dans %s ligne %d : %s"
 
 #, c-format
 msgid ""
@@ -5431,6 +5447,9 @@ msgstr "Drapeaux non reconnus dans %s ligne %d : %s"
 msgid "Ignored %d words with non-ASCII characters"
 msgstr "%d mot(s) ignoré(s) avec des caractères non-ASCII"
 
+msgid "E845: Insufficient memory, word list will be incomplete"
+msgstr "E845: mémoire insuffisante, liste de mots peut-être incomplète"
+
 #, c-format
 msgid "Compressed %d of %d nodes; %d (%d%%) remaining"
 msgstr "%d noeuds compressés sur %d ; %d (%d%%) restants "
@@ -5496,7 +5515,7 @@ msgstr "Mot ajouté dans %s"
 
 msgid "E763: Word characters differ between spell files"
 msgstr ""
-"E763: Les caractères de mots diffèrent entre les fichier orthographiques"
+"E763: Les caractères de mots diffèrent entre les fichiers orthographiques"
 
 msgid "Sorry, no suggestions"
 msgstr "Désolé, aucune suggestion"
@@ -5627,6 +5646,9 @@ msgstr "E394: Aucun élément de type région trouvé pour %s"
 msgid "E397: Filename required"
 msgstr "E397: Nom de fichier requis"
 
+msgid "E847: Too many syntax includes"
+msgstr "E847: Trop d'inclusions de syntaxe"
+
 #, c-format
 msgid "E789: Missing ']': %s"
 msgstr "E789: ']' manquant : %s"
@@ -5638,6 +5660,9 @@ msgstr "E398: '=' manquant : %s"
 #, c-format
 msgid "E399: Not enough arguments: syntax region %s"
 msgstr "E399: Pas assez d'arguments : syntax region %s"
+
+msgid "E848: Too many syntax clusters"
+msgstr "E848: Trop de grappes de syntaxe"
 
 msgid "E400: No cluster specified"
 msgstr "E400: Aucune grappe spécifiée"
@@ -5743,6 +5768,9 @@ msgstr "E669: Caractère non-imprimable dans un nom de groupe"
 
 msgid "W18: Invalid character in group name"
 msgstr "W18: Caractère invalide dans un nom de groupe"
+
+msgid "E849: Too many highlight and syntax groups"
+msgstr "E849: Trop de groupes de surbrillance et de syntaxe"
 
 msgid "E555: at bottom of tag stack"
 msgstr "E555: En bas de la pile de marqueurs"
@@ -5899,7 +5927,7 @@ msgstr ""
 
 #, c-format
 msgid "Will not overwrite with undo file, cannot read: %s"
-msgstr "Le fichier d'annulations de sera pas écrasé, impossible de lire : %s"
+msgstr "Le fichier d'annulations ne sera pas écrasé, impossible de lire : %s"
 
 #, c-format
 msgid "Will not overwrite, this is not an undo file: %s"
@@ -6101,13 +6129,6 @@ msgid ""
 msgstr ""
 "\n"
 "Version MacOS"
-
-msgid ""
-"\n"
-"RISC OS version"
-msgstr ""
-"\n"
-"Version RISC OS"
 
 msgid ""
 "\n"
@@ -6762,6 +6783,9 @@ msgstr "E139: Le fichier est chargé dans un autre tampon"
 msgid "E764: Option '%s' is not set"
 msgstr "E764: L'option '%s' n'est pas activée"
 
+msgid "E850: Invalid register name"
+msgstr "E850: Nom de registre invalide"
+
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "La recherche a atteint le HAUT, et continue en BAS"
 
@@ -6807,3 +6831,26 @@ msgstr "Cette fenêtre n'existe pas"
 
 msgid "attempt to refer to deleted buffer"
 msgstr "tentative de référencer un tampon effacé"
+
+#~ msgid ""
+#~ "\n"
+#~ "Arguments recognised by gvim (RISC OS version):\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Arguments reconnus par gvim (version RISC OS) :\n"
+
+#~ msgid "--columns <number>\tInitial width of window in columns"
+#~ msgstr "--columns <nombre>\tNombre de colonnes initial de la fenêtre"
+
+#~ msgid "--rows <number>\tInitial height of window in rows"
+#~ msgstr "--rows <nombre>\tNombre de lignes initial de la fenêtre"
+
+#~ msgid ""
+#~ "\n"
+#~ "RISC OS version"
+#~ msgstr ""
+#~ "\n"
+#~ "Version RISC OS"
+
+#~ msgid "E505: "
+#~ msgstr "E505: "

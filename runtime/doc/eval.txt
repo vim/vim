@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2011 Jun 19
+*eval.txt*	For Vim version 7.3.  Last change: 2011 Jul 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2277,7 +2277,8 @@ char2nr({expr})						*char2nr()*
 <		The current 'encoding' is used.  Example for "utf-8": >
 			char2nr("á")		returns 225
 			char2nr("á"[0])		returns 195
-<		|nr2char()| does the opposite.
+<		A combining character is a separate character.
+		|nr2char()| does the opposite.
 
 cindent({lnum})						*cindent()*
 		Get the amount of indent for line {lnum} according the C
@@ -5968,7 +5969,7 @@ virtcol({expr})						*virtcol()*
 		When 'virtualedit' is used {expr} can be [lnum, col, off], where
 		"off" is the offset in screen columns from the start of the
 		character.  E.g., a position within a <Tab> or after the last
-		character.
+		character.  When "off" is omitted zero is used.
 		When Virtual editing is active in the current mode, a position
 		beyond the end of the line can be returned. |'virtualedit'|
 		The accepted positions are:

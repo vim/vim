@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.3.  Last change: 2011 May 31
+*indent.txt*    For Vim version 7.3.  Last change: 2011 Jul 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -486,9 +486,10 @@ The examples below assume a 'shiftwidth' of 4.
 		     )				   )
 <
 				*java-cinoptions* *java-indenting* *cino-j*
-	jN    Indent java anonymous classes correctly.  The value 'N' is
-	      currently unused but must be non-zero (e.g. 'j1').  'j1' will
-	      indent for example the following code snippet correctly: >
+	jN    Indent Java anonymous classes correctly.  Also works well for
+	      Javascript.  The value 'N' is currently unused but must be
+	      non-zero (e.g. 'j1').  'j1' will indent for example the
+	      following code snippet correctly: >
 
 		object.add(new ChangeListener() {
 		    public void stateChanged(ChangeEvent e) {
@@ -499,7 +500,8 @@ The examples below assume a 'shiftwidth' of 4.
 			*javascript-cinoptions* *javascript-indenting* *cino-J*
 	JN    Indent JavaScript object declarations correctly by not confusing
 	      them with labels.  The value 'N' is currently unused but must be 
-	      non-zero (e.g. 'J1'). >
+	      non-zero (e.g. 'J1').  If you enable this you probably also want
+	      to set |cino-j|. >
 
 		var bar = {
 		    foo: {

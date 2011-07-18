@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.3.  Last change: 2011 Feb 01
+*mbyte.txt*     For Vim version 7.3.  Last change: 2011 Jul 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -1306,8 +1306,8 @@ character.  However, search patterns may not match on an overlong sequence.
 character.)  An exception is NUL (zero) which is displayed as "<00>".
 
 In the file and buffer the full range of Unicode characters can be used (31
-bits).  However, displaying only works for 16 bit characters, and only for the
-characters present in the selected font.
+bits).  However, displaying only works for the characters present in the
+selected font.
 
 Useful commands:
 - "ga" shows the decimal, hexadecimal and octal value of the character under

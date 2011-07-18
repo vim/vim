@@ -2,7 +2,7 @@
 " Language: 	gnash(1) configuration files
 "		http://www.gnu.org/software/gnash/manual/gnashuser.html#gnashrc
 " Maintainer: 	Thilo Six <T.Six@gmx.de>
-" Last Change: 	17 May 2011
+" Last Change: 	2011 Jul 02
 " Credidts:	derived from readline.vim
 "		Nikolai Weibull
 "
@@ -32,6 +32,7 @@ syn case match
 syn match GnashSet	    '^\s*set\>'
 syn match GnashSet	    '^\s*append\>'
 
+syn case ignore
 syn match GnashKeyword	    '\<CertDir\>'
 syn match GnashKeyword      '\<ASCodingErrorsVerbosity\>'
 syn match GnashKeyword      '\<CertFile\>'
