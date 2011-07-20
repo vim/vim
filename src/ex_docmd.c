@@ -5297,7 +5297,9 @@ static struct
 {
     {EXPAND_AUGROUP, "augroup"},
     {EXPAND_BUFFERS, "buffer"},
+    {EXPAND_COLORS, "color"},
     {EXPAND_COMMANDS, "command"},
+    {EXPAND_COMPILER, "compiler"},
 #if defined(FEAT_CSCOPE)
     {EXPAND_CSCOPE, "cscope"},
 #endif
@@ -5310,10 +5312,15 @@ static struct
     {EXPAND_EVENTS, "event"},
     {EXPAND_EXPRESSION, "expression"},
     {EXPAND_FILES, "file"},
+    {EXPAND_FILES_IN_PATH, "file_in_path"},
     {EXPAND_FILETYPE, "filetype"},
     {EXPAND_FUNCTIONS, "function"},
     {EXPAND_HELP, "help"},
     {EXPAND_HIGHLIGHT, "highlight"},
+#if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
+        && (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
+    {EXPAND_LOCALES, "locale"},
+#endif
     {EXPAND_MAPPINGS, "mapping"},
     {EXPAND_MENUS, "menu"},
     {EXPAND_OWNSYNTAX, "syntax"},
