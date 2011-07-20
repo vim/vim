@@ -7069,7 +7069,7 @@ alist_expand(fnum_list, fnum_len)
 	old_arg_count = GARGCOUNT;
 	if (expand_wildcards(old_arg_count, old_arg_files,
 		    &new_arg_file_count, &new_arg_files,
-		    EW_FILE|EW_NOTFOUND|EW_ADDSLASH) == OK
+		    EW_FILE|EW_NOTFOUND|EW_ADDSLASH|EW_NOERROR) == OK
 		&& new_arg_file_count > 0)
 	{
 	    alist_set(&global_alist, new_arg_file_count, new_arg_files,

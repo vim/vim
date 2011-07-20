@@ -815,6 +815,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define EW_EXEC		0x40	/* executable files */
 #define EW_PATH		0x80	/* search in 'path' too */
 #define EW_ICASE	0x100	/* ignore case */
+#define EW_NOERROR	0x200	/* no error for bad regexp */
 /* Note: mostly EW_NOTFOUND and EW_SILENT are mutually exclusive: EW_NOTFOUND
  * is used when executing commands and EW_SILENT for interactive expanding. */
 

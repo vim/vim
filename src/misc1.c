@@ -9043,8 +9043,12 @@ dos_expandpath(
     }
 
     /* compile the regexp into a program */
+    if (flags & EW_NOERROR)
+	++emsg_silent;
     regmatch.rm_ic = TRUE;		/* Always ignore case */
     regmatch.regprog = vim_regcomp(pat, RE_MAGIC);
+    if (flags & EW_NOERROR)
+	--emsg_silent;
     vim_free(pat);
 
     if (regmatch.regprog == NULL)
