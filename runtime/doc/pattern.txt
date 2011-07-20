@@ -1036,11 +1036,9 @@ x	A single character, with no special meaning, matches itself
 	  These items only work for 8-bit characters.
 							*/[[=* *[==]*
 	- An equivalence class.  This means that characters are matched that
-	  have almost the same meaning, e.g., when ignoring accents.  The form
-	  is:
+	  have almost the same meaning, e.g., when ignoring accents.  This
+	  only works for Unicode, latin1 and latin9.  The form is:
 		[=a=]
-	  Currently this is only implemented for latin1.  Also works for the
-	  latin1 characters in utf-8 and latin9.
 							*/[[.* *[..]*
 	- A collation element.  This currently simply accepts a single
 	  character in the form:

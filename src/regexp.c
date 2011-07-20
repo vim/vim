@@ -666,8 +666,12 @@ static char_u	*regnext __ARGS((char_u *));
 static void	regc __ARGS((int b));
 #ifdef FEAT_MBYTE
 static void	regmbc __ARGS((int c));
+# define REGMBC(x) regmbc(x);
+# define CASEMBC(x) case x:
 #else
 # define regmbc(c) regc(c)
+# define REGMBC(x)
+# define CASEMBC(x)
 #endif
 static void	reginsert __ARGS((int, char_u *));
 static void	reginsert_limits __ARGS((int, long, long, char_u *));
@@ -787,68 +791,295 @@ reg_equi_class(c)
 	switch (c)
 	{
 	    case 'A': case '\300': case '\301': case '\302':
+	    CASEMBC(0x100) CASEMBC(0x102) CASEMBC(0x104) CASEMBC(0x1cd)
+	    CASEMBC(0x1de) CASEMBC(0x1e0) CASEMBC(0x1ea2)
 	    case '\303': case '\304': case '\305':
 		      regmbc('A'); regmbc('\300'); regmbc('\301');
 		      regmbc('\302'); regmbc('\303'); regmbc('\304');
 		      regmbc('\305');
+		      REGMBC(0x100) REGMBC(0x102) REGMBC(0x104)
+		      REGMBC(0x1cd) REGMBC(0x1de) REGMBC(0x1e0)
+		      REGMBC(0x1ea2)
+		      return;
+	    case 'B': CASEMBC(0x1e02) CASEMBC(0x1e06)
+		      regmbc('B'); REGMBC(0x1e02) REGMBC(0x1e06)
 		      return;
 	    case 'C': case '\307':
+	    CASEMBC(0x106) CASEMBC(0x108) CASEMBC(0x10a) CASEMBC(0x10c)
 		      regmbc('C'); regmbc('\307');
+		      REGMBC(0x106) REGMBC(0x108) REGMBC(0x10a)
+		      REGMBC(0x10c)
+		      return;
+	    case 'D': CASEMBC(0x10e) CASEMBC(0x110) CASEMBC(0x1e0a)
+	    CASEMBC(0x1e0e) CASEMBC(0x1e10)
+		      regmbc('D'); REGMBC(0x10e) REGMBC(0x110)
+		      REGMBC(0x1e0a) REGMBC(0x1e0e) REGMBC(0x1e10)
 		      return;
 	    case 'E': case '\310': case '\311': case '\312': case '\313':
+	    CASEMBC(0x112) CASEMBC(0x114) CASEMBC(0x116) CASEMBC(0x118)
+	    CASEMBC(0x11a) CASEMBC(0x1eba) CASEMBC(0x1ebc)
 		      regmbc('E'); regmbc('\310'); regmbc('\311');
 		      regmbc('\312'); regmbc('\313');
+		      REGMBC(0x112) REGMBC(0x114) REGMBC(0x116)
+		      REGMBC(0x118) REGMBC(0x11a) REGMBC(0x1eba)
+		      REGMBC(0x1ebc)
+		      return;
+	    case 'F': CASEMBC(0x1e1e)
+		      regmbc('F'); REGMBC(0x1e1e)
+		      return;
+	    case 'G': CASEMBC(0x11c) CASEMBC(0x11e) CASEMBC(0x120)
+	    CASEMBC(0x122) CASEMBC(0x1e4) CASEMBC(0x1e6) CASEMBC(0x1f4)
+	    CASEMBC(0x1e20)
+		      regmbc('G'); REGMBC(0x11c) REGMBC(0x11e)
+		      REGMBC(0x120) REGMBC(0x122) REGMBC(0x1e4)
+		      REGMBC(0x1e6) REGMBC(0x1f4) REGMBC(0x1e20)
+		      return;
+	    case 'H': CASEMBC(0x124) CASEMBC(0x126) CASEMBC(0x1e22)
+	    CASEMBC(0x1e26) CASEMBC(0x1e28)
+		      regmbc('H'); REGMBC(0x124) REGMBC(0x126)
+		      REGMBC(0x1e22) REGMBC(0x1e26) REGMBC(0x1e28)
 		      return;
 	    case 'I': case '\314': case '\315': case '\316': case '\317':
+	    CASEMBC(0x128) CASEMBC(0x12a) CASEMBC(0x12c) CASEMBC(0x12e)
+	    CASEMBC(0x130) CASEMBC(0x1cf) CASEMBC(0x1ec8)
 		      regmbc('I'); regmbc('\314'); regmbc('\315');
 		      regmbc('\316'); regmbc('\317');
+		      REGMBC(0x128) REGMBC(0x12a) REGMBC(0x12c)
+		      REGMBC(0x12e) REGMBC(0x130) REGMBC(0x1cf)
+		      REGMBC(0x1ec8)
+		      return;
+	    case 'J': CASEMBC(0x134)
+		      regmbc('J'); REGMBC(0x134)
+		      return;
+	    case 'K': CASEMBC(0x136) CASEMBC(0x1e8) CASEMBC(0x1e30)
+	    CASEMBC(0x1e34)
+		      regmbc('K'); REGMBC(0x136) REGMBC(0x1e8)
+		      REGMBC(0x1e30) REGMBC(0x1e34)
+		      return;
+	    case 'L': CASEMBC(0x139) CASEMBC(0x13b) CASEMBC(0x13d)
+	    CASEMBC(0x13f) CASEMBC(0x141) CASEMBC(0x1e3a)
+		      regmbc('L'); REGMBC(0x139) REGMBC(0x13b)
+		      REGMBC(0x13d) REGMBC(0x13f) REGMBC(0x141)
+		      REGMBC(0x1e3a)
+		      return;
+	    case 'M': CASEMBC(0x1e3e) CASEMBC(0x1e40)
+		      regmbc('M'); REGMBC(0x1e3e) REGMBC(0x1e40)
 		      return;
 	    case 'N': case '\321':
+	    CASEMBC(0x143) CASEMBC(0x145) CASEMBC(0x147) CASEMBC(0x1e44)
+	    CASEMBC(0x1e48)
 		      regmbc('N'); regmbc('\321');
+		      REGMBC(0x143) REGMBC(0x145) REGMBC(0x147)
+		      REGMBC(0x1e44) REGMBC(0x1e48)
 		      return;
 	    case 'O': case '\322': case '\323': case '\324': case '\325':
-	    case '\326':
+	    case '\326': case '\330':
+	    CASEMBC(0x14c) CASEMBC(0x14e) CASEMBC(0x150) CASEMBC(0x1a0)
+	    CASEMBC(0x1d1) CASEMBC(0x1ea) CASEMBC(0x1ec) CASEMBC(0x1ece)
 		      regmbc('O'); regmbc('\322'); regmbc('\323');
 		      regmbc('\324'); regmbc('\325'); regmbc('\326');
+		      regmbc('\330');
+		      REGMBC(0x14c) REGMBC(0x14e) REGMBC(0x150)
+		      REGMBC(0x1a0) REGMBC(0x1d1) REGMBC(0x1ea)
+		      REGMBC(0x1ec) REGMBC(0x1ece)
+		      return;
+	    case 'P': case 0x1e54: case 0x1e56:
+		      regmbc('P'); REGMBC(0x1e54) REGMBC(0x1e56)
+		      return;
+	    case 'R': CASEMBC(0x154) CASEMBC(0x156) CASEMBC(0x158)
+	    CASEMBC(0x1e58) CASEMBC(0x1e5e)
+		      regmbc('R'); REGMBC(0x154) REGMBC(0x156) REGMBC(0x158)
+		      REGMBC(0x1e58) REGMBC(0x1e5e)
+		      return;
+	    case 'S': CASEMBC(0x15a) CASEMBC(0x15c) CASEMBC(0x15e)
+	    CASEMBC(0x160) CASEMBC(0x1e60)
+		      regmbc('S'); REGMBC(0x15a) REGMBC(0x15c)
+		      REGMBC(0x15e) REGMBC(0x160) REGMBC(0x1e60)
+		      return;
+	    case 'T': CASEMBC(0x162) CASEMBC(0x164) CASEMBC(0x166)
+	    CASEMBC(0x1e6a) CASEMBC(0x1e6e)
+		      regmbc('T'); REGMBC(0x162) REGMBC(0x164)
+		      REGMBC(0x166) REGMBC(0x1e6a) REGMBC(0x1e6e)
 		      return;
 	    case 'U': case '\331': case '\332': case '\333': case '\334':
+	    CASEMBC(0x168) CASEMBC(0x16a) CASEMBC(0x16c) CASEMBC(0x16e)
+	    CASEMBC(0x170) CASEMBC(0x172) CASEMBC(0x1af) CASEMBC(0x1d3)
+	    CASEMBC(0x1ee6)
 		      regmbc('U'); regmbc('\331'); regmbc('\332');
 		      regmbc('\333'); regmbc('\334');
+		      REGMBC(0x168) REGMBC(0x16a) REGMBC(0x16c)
+		      REGMBC(0x16e) REGMBC(0x170) REGMBC(0x172)
+		      REGMBC(0x1af) REGMBC(0x1d3) REGMBC(0x1ee6)
+		      return;
+	    case 'V': CASEMBC(0x1e7c)
+		      regmbc('V'); REGMBC(0x1e7c)
+		      return;
+	    case 'W': CASEMBC(0x174) CASEMBC(0x1e80) CASEMBC(0x1e82)
+	    CASEMBC(0x1e84) CASEMBC(0x1e86)
+		      regmbc('W'); REGMBC(0x174) REGMBC(0x1e80)
+		      REGMBC(0x1e82) REGMBC(0x1e84) REGMBC(0x1e86)
+		      return;
+	    case 'X': CASEMBC(0x1e8a) CASEMBC(0x1e8c)
+		      regmbc('X'); REGMBC(0x1e8a) REGMBC(0x1e8c)
 		      return;
 	    case 'Y': case '\335':
+	    CASEMBC(0x176) CASEMBC(0x178) CASEMBC(0x1e8e) CASEMBC(0x1ef2)
+	    CASEMBC(0x1ef6) CASEMBC(0x1ef8)
 		      regmbc('Y'); regmbc('\335');
+		      REGMBC(0x176) REGMBC(0x178) REGMBC(0x1e8e)
+		      REGMBC(0x1ef2) REGMBC(0x1ef6) REGMBC(0x1ef8)
+		      return;
+	    case 'Z': CASEMBC(0x179) CASEMBC(0x17b) CASEMBC(0x17d)
+	    CASEMBC(0x1b5) CASEMBC(0x1e90) CASEMBC(0x1e94)
+		      regmbc('Z'); REGMBC(0x179) REGMBC(0x17b)
+		      REGMBC(0x17d) REGMBC(0x1b5) REGMBC(0x1e90)
+		      REGMBC(0x1e94)
 		      return;
 	    case 'a': case '\340': case '\341': case '\342':
 	    case '\343': case '\344': case '\345':
+	    CASEMBC(0x101) CASEMBC(0x103) CASEMBC(0x105) CASEMBC(0x1ce)
+	    CASEMBC(0x1df) CASEMBC(0x1e1) CASEMBC(0x1ea3)
 		      regmbc('a'); regmbc('\340'); regmbc('\341');
 		      regmbc('\342'); regmbc('\343'); regmbc('\344');
 		      regmbc('\345');
+		      REGMBC(0x101) REGMBC(0x103) REGMBC(0x105)
+		      REGMBC(0x1ce) REGMBC(0x1df) REGMBC(0x1e1)
+		      REGMBC(0x1ea3)
+		      return;
+	    case 'b': CASEMBC(0x1e03) CASEMBC(0x1e07)
+		      regmbc('b'); REGMBC(0x1e03) REGMBC(0x1e07)
 		      return;
 	    case 'c': case '\347':
+	    CASEMBC(0x107) CASEMBC(0x109) CASEMBC(0x10b) CASEMBC(0x10d)
 		      regmbc('c'); regmbc('\347');
+		      REGMBC(0x107) REGMBC(0x109) REGMBC(0x10b)
+		      REGMBC(0x10d)
+		      return;
+	    case 'd': CASEMBC(0x10f) CASEMBC(0x111) CASEMBC(0x1d0b)
+	    CASEMBC(0x1e11)
+		      regmbc('d'); REGMBC(0x10f) REGMBC(0x111)
+		      REGMBC(0x1e0b) REGMBC(0x01e0f) REGMBC(0x1e11)
 		      return;
 	    case 'e': case '\350': case '\351': case '\352': case '\353':
+	    CASEMBC(0x113) CASEMBC(0x115) CASEMBC(0x117) CASEMBC(0x119)
+	    CASEMBC(0x11b) CASEMBC(0x1ebb) CASEMBC(0x1ebd)
 		      regmbc('e'); regmbc('\350'); regmbc('\351');
 		      regmbc('\352'); regmbc('\353');
+		      REGMBC(0x113) REGMBC(0x115) REGMBC(0x117)
+		      REGMBC(0x119) REGMBC(0x11b) REGMBC(0x1ebb)
+		      REGMBC(0x1ebd)
+		      return;
+	    case 'f': CASEMBC(0x1e1f)
+		      regmbc('f'); REGMBC(0x1e1f)
+		      return;
+	    case 'g': CASEMBC(0x11d) CASEMBC(0x11f) CASEMBC(0x121)
+	    CASEMBC(0x123) CASEMBC(0x1e5) CASEMBC(0x1e7) CASEMBC(0x1f5)
+	    CASEMBC(0x1e21)
+		      regmbc('g'); REGMBC(0x11d) REGMBC(0x11f)
+		      REGMBC(0x121) REGMBC(0x123) REGMBC(0x1e5)
+		      REGMBC(0x1e7) REGMBC(0x1f5) REGMBC(0x1e21)
+		      return;
+	    case 'h': CASEMBC(0x125) CASEMBC(0x127) CASEMBC(0x1e23)
+	    CASEMBC(0x1e27) CASEMBC(0x1e29) CASEMBC(0x1e96)
+		      regmbc('h'); REGMBC(0x125) REGMBC(0x127)
+		      REGMBC(0x1e23) REGMBC(0x1e27) REGMBC(0x1e29)
+		      REGMBC(0x1e96)
 		      return;
 	    case 'i': case '\354': case '\355': case '\356': case '\357':
+	    CASEMBC(0x129) CASEMBC(0x12b) CASEMBC(0x12d) CASEMBC(0x12f)
+	    CASEMBC(0x1d0) CASEMBC(0x1ec9)
 		      regmbc('i'); regmbc('\354'); regmbc('\355');
 		      regmbc('\356'); regmbc('\357');
+		      REGMBC(0x129) REGMBC(0x12b) REGMBC(0x12d)
+		      REGMBC(0x12f) REGMBC(0x1d0) REGMBC(0x1ec9)
+		      return;
+	    case 'j': CASEMBC(0x135) CASEMBC(0x1f0)
+		      regmbc('j'); REGMBC(0x135) REGMBC(0x1f0)
+		      return;
+	    case 'k': CASEMBC(0x137) CASEMBC(0x1e9) CASEMBC(0x1e31)
+	    CASEMBC(0x1e35)
+		      regmbc('k'); REGMBC(0x137) REGMBC(0x1e9)
+		      REGMBC(0x1e31) REGMBC(0x1e35)
+		      return;
+	    case 'l': CASEMBC(0x13a) CASEMBC(0x13c) CASEMBC(0x13e)
+	    CASEMBC(0x140) CASEMBC(0x142) CASEMBC(0x1e3b)
+		      regmbc('l'); REGMBC(0x13a) REGMBC(0x13c)
+		      REGMBC(0x13e) REGMBC(0x140) REGMBC(0x142)
+		      REGMBC(0x1e3b)
+		      return;
+	    case 'm': CASEMBC(0x1e3f) CASEMBC(0x1e41)
+		      regmbc('m'); REGMBC(0x1e3f) REGMBC(0x1e41)
 		      return;
 	    case 'n': case '\361':
+	    CASEMBC(0x144) CASEMBC(0x146) CASEMBC(0x148) CASEMBC(0x149)
+	    CASEMBC(0x1e45) CASEMBC(0x1e49)
 		      regmbc('n'); regmbc('\361');
+		      REGMBC(0x144) REGMBC(0x146) REGMBC(0x148)
+		      REGMBC(0x149) REGMBC(0x1e45) REGMBC(0x1e49)
 		      return;
 	    case 'o': case '\362': case '\363': case '\364': case '\365':
-	    case '\366':
+	    case '\366': case '\370':
+	    CASEMBC(0x14d) CASEMBC(0x14f) CASEMBC(0x151) CASEMBC(0x1a1)
+	    CASEMBC(0x1d2) CASEMBC(0x1eb) CASEMBC(0x1ed) CASEMBC(0x1ecf)
 		      regmbc('o'); regmbc('\362'); regmbc('\363');
 		      regmbc('\364'); regmbc('\365'); regmbc('\366');
+		      regmbc('\370');
+		      REGMBC(0x14d) REGMBC(0x14f) REGMBC(0x151)
+		      REGMBC(0x1a1) REGMBC(0x1d2) REGMBC(0x1eb)
+		      REGMBC(0x1ed) REGMBC(0x1ecf)
+		      return;
+	    case 'p': CASEMBC(0x1e55) CASEMBC(0x1e57)
+		      regmbc('p'); REGMBC(0x1e55) REGMBC(0x1e57)
+		      return;
+	    case 'r': CASEMBC(0x155) CASEMBC(0x157) CASEMBC(0x159)
+	    CASEMBC(0x1e59) CASEMBC(0x1e5f)
+		      regmbc('r'); REGMBC(0x155) REGMBC(0x157) REGMBC(0x159)
+		      REGMBC(0x1e59) REGMBC(0x1e5f)
+		      return;
+	    case 's': CASEMBC(0x15b) CASEMBC(0x15d) CASEMBC(0x15f)
+	    CASEMBC(0x161) CASEMBC(0x1e61)
+		      regmbc('s'); REGMBC(0x15b) REGMBC(0x15d)
+		      REGMBC(0x15f) REGMBC(0x161) REGMBC(0x1e61)
+		      return;
+	    case 't': CASEMBC(0x163) CASEMBC(0x165) CASEMBC(0x167)
+	    CASEMBC(0x1e6b) CASEMBC(0x1e6f) CASEMBC(0x1e97)
+		      regmbc('t'); REGMBC(0x163) REGMBC(0x165) REGMBC(0x167)
+		      REGMBC(0x1e6b) REGMBC(0x1e6f) REGMBC(0x1e97)
 		      return;
 	    case 'u': case '\371': case '\372': case '\373': case '\374':
+	    CASEMBC(0x169) CASEMBC(0x16b) CASEMBC(0x16d) CASEMBC(0x16f)
+	    CASEMBC(0x171) CASEMBC(0x173) CASEMBC(0x1b0) CASEMBC(0x1d4)
+	    CASEMBC(0x1ee7)
 		      regmbc('u'); regmbc('\371'); regmbc('\372');
 		      regmbc('\373'); regmbc('\374');
+		      REGMBC(0x169) REGMBC(0x16b) REGMBC(0x16d)
+		      REGMBC(0x16f) REGMBC(0x171) REGMBC(0x173)
+		      REGMBC(0x1b0) REGMBC(0x1d4) REGMBC(0x1ee7)
+		      return;
+	    case 'v': CASEMBC(0x1e7d)
+		      regmbc('v'); REGMBC(0x1e7d)
+		      return;
+	    case 'w': CASEMBC(0x175) CASEMBC(0x1e81) CASEMBC(0x1e83)
+	    CASEMBC(0x1e85) CASEMBC(0x1e87) CASEMBC(0x1e98)
+		      regmbc('w'); REGMBC(0x175) REGMBC(0x1e81)
+		      REGMBC(0x1e83) REGMBC(0x1e85) REGMBC(0x1e87)
+		      REGMBC(0x1e98)
+		      return;
+	    case 'x': CASEMBC(0x1e8b) CASEMBC(0x1e8d)
+		      regmbc('x'); REGMBC(0x1e8b) REGMBC(0x1e8d)
 		      return;
 	    case 'y': case '\375': case '\377':
+	    CASEMBC(0x177) CASEMBC(0x1e8f) CASEMBC(0x1e99)
+	    CASEMBC(0x1ef3) CASEMBC(0x1ef7) CASEMBC(0x1ef9)
 		      regmbc('y'); regmbc('\375'); regmbc('\377');
+		      REGMBC(0x177) REGMBC(0x1e8f) REGMBC(0x1e99)
+		      REGMBC(0x1ef3) REGMBC(0x1ef7) REGMBC(0x1ef9)
+		      return;
+	    case 'z': CASEMBC(0x17a) CASEMBC(0x17c) CASEMBC(0x17e)
+	    CASEMBC(0x1b6) CASEMBC(0x1e91) CASEMBC(0x1e95)
+		      regmbc('z'); REGMBC(0x17a) REGMBC(0x17c)
+		      REGMBC(0x17e) REGMBC(0x1b6) REGMBC(0x1e91)
+		      REGMBC(0x1e95)
 		      return;
 	}
 #endif
@@ -2468,6 +2699,8 @@ regc(b)
 regmbc(c)
     int		c;
 {
+    if (!has_mbyte && c > 0xff)
+	return;
     if (regcode == JUST_CALC_SIZE)
 	regsize += (*mb_char2len)(c);
     else
@@ -2588,7 +2821,7 @@ regtail(p, val)
     else
 	offset = (int)(val - scan);
     /* When the offset uses more than 16 bits it can no longer fit in the two
-     * bytes avaliable.  Use a global flag to avoid having to check return
+     * bytes available.  Use a global flag to avoid having to check return
      * values in too many places. */
     if (offset > 0xffff)
 	reg_toolong = TRUE;
