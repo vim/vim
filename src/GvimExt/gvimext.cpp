@@ -586,8 +586,23 @@ STDMETHODIMP CShellExt::QueryContextMenu(HMENU hMenu,
 
     // Initialize m_cntOfHWnd to 0
     m_cntOfHWnd = 0;
-    // Retrieve all the vim instances
-    EnumWindows(EnumWindowsProc, (LPARAM)this);
+
+    HKEY keyhandle;
+    bool showExisting = true;
+
+    // Check whether "Edit with existing Vim" entries are disabled.
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Vim\\Gvim", 0,
+				       KEY_READ, &keyhandle) == ERROR_SUCCESS)
+    {
+	if (RegQueryValueEx(keyhandle, "DisableEditWithExisting", 0, NULL,
+						 NULL, NULL) == ERROR_SUCCESS)
+	    showExisting = false;
+	RegCloseKey(keyhandle);
+    }
+
+    // Retrieve all the vim instances, unless disabled.
+    if (showExisting)
+	EnumWindows(EnumWindowsProc, (LPARAM)this);
 
     if (cbFiles > 1)
     {
