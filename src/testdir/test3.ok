@@ -1443,3 +1443,117 @@ var bar = {
 }
 JSEND
 
+
+JSSTART
+var foo = [
+1,  // indent 8 more
+	2,
+	3
+	];  // indent 8 less
+JSEND
+
+
+JSSTART
+function bar() {
+	var foo = [
+		1,
+		2,
+		3
+			];  // indent 16 less
+}
+JSEND
+
+
+JSSTART
+(function($){
+
+	var class_name='myclass';
+
+	function private_method() {
+	}
+
+	var public_method={
+		method: function(options,args){
+			private_method();
+		}
+	}
+
+	function init(options) {
+
+		$(this).data(class_name+'_public',$.extend({},{
+			foo: 'bar',
+		bar: 2,  // indent 8 more
+		foobar: [  // indent 8 more
+			1,  // indent 8 more
+		2,  // indent 16 more
+		3   // indent 16 more
+			],
+		callback: function(){  // indent 8 more
+			return true;  // indent 8 more
+		}  // indent 8 more
+		}, options||{}));
+	}
+
+	$.fn[class_name]=function() {
+
+		var _arguments=arguments;
+		return this.each(function(){
+
+			var options=$(this).data(class_name+'_public');
+			if (!options) {
+				init.apply(this,_arguments);
+
+			} else {
+				var method=public_method[_arguments[0]];
+
+				if (typeof(method)!='function') {
+					console.log(class_name+' has no method "'+_arguments[0]+'"');
+					return false;
+				}
+				_arguments[0]=options;
+				method.apply(this,_arguments);
+			}
+		});
+	}
+
+})(jQuery);
+JSEND
+
+
+JSSTART
+function init(options) {
+	$(this).data(class_name+'_public',$.extend({},{
+		foo: 'bar',
+		bar: 2,
+		foobar: [
+		1,  // indent 8 more
+		2,  // indent 8 more
+		3   // indent 8 more
+		],
+		callback: function(){
+			return true;
+		}
+	}, options||{}));
+}
+JSEND
+
+
+JSSTART
+(function($){
+	function init(options) {
+		$(this).data(class_name+'_public',$.extend({},{
+			foo: 'bar',
+		bar: 2,  // indent 8 more
+		foobar: [  // indent 8 more
+			1,  // indent 8 more
+		2,  // indent 16 more
+		3  // indent 16 more
+			],
+		callback: function(){  // indent 8 more
+			return true;  // indent 8 more
+		}  // indent 8 more
+		}, options||{}));
+	}
+})(jQuery);
+JSEND
+
