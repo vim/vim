@@ -9044,7 +9044,10 @@ trigger_cursorhold()
 {
     int		state;
 
-    if (!did_cursorhold && has_cursorhold() && !Recording
+    if (!did_cursorhold
+	    && has_cursorhold()
+	    && !Recording
+	    && typebuf.tb_len == 0
 #ifdef FEAT_INS_EXPAND
 	    && !ins_compl_active()
 #endif
@@ -9935,6 +9938,8 @@ match_file_pat(pattern, prog, fname, sfname, tail, allow_dirs)
 	    if ((c == ';' || c == '>') && match == FALSE)
 	    {
 		*pattern = NUL;	    /* Terminate the string */
+		/* TODO: match with 'filetype' of buffer that "fname" comes
+		 * from. */
 		match = mch_check_filetype(fname, type_start);
 		*pattern = c;	    /* Restore the terminator */
 		type_start = pattern + 1;
