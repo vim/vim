@@ -4653,9 +4653,8 @@ vim_findfile_stopdir(buf)
     {
 	if (r_ptr[0] == '\\' && r_ptr[1] == ';')
 	{
-	    /* overwrite the escape char,
-	     * use STRLEN(r_ptr) to move the trailing '\0'
-	     */
+	    /* Overwrite the escape char,
+	     * use STRLEN(r_ptr) to move the trailing '\0'. */
 	    STRMOVE(r_ptr, r_ptr + 1);
 	    r_ptr++;
 	}
@@ -4914,10 +4913,13 @@ vim_findfile(search_ctx_arg)
 			stackp->ffs_filearray_size = 0;
 		}
 		else
+		    /* Add EW_NOTWILD because the expanded path may contain
+		     * wildcard characters that are to be taken literally.
+		     * This is a bit of a hack. */
 		    expand_wildcards((dirptrs[1] == NULL) ? 1 : 2, dirptrs,
 			    &stackp->ffs_filearray_size,
 			    &stackp->ffs_filearray,
-			    EW_DIR|EW_ADDSLASH|EW_SILENT);
+			    EW_DIR|EW_ADDSLASH|EW_SILENT|EW_NOTWILD);
 
 		stackp->ffs_filearray_cur = 0;
 		stackp->ffs_stage = 0;
