@@ -5170,6 +5170,10 @@ xim_queue_key_press_event(GdkEventKey *event, int down)
 		/* We had a keypad key, and XIM tried to thieve it */
 		return FALSE;
 
+	    /* This is supposed to fix a problem with iBus, that space
+	     * characters don't work in input mode. */
+	    xim_expected_char = NUL;
+
 	    /* Normal processing */
 	    return imresult;
 	}
