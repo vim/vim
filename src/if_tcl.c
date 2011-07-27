@@ -1884,14 +1884,14 @@ tclexit(error)
 {
     int newerr = OK;
 
-    if (error == TCL_EXIT )
+    if (error == TCL_EXIT)
     {
 	int retval;
 	char buf[50];
 	Tcl_Obj *robj;
 
 	robj = Tcl_GetObjResult(tclinfo.interp);
-	if( Tcl_GetIntFromObj(tclinfo.interp, robj, &retval) != TCL_OK )
+	if (Tcl_GetIntFromObj(tclinfo.interp, robj, &retval) != TCL_OK)
 	{
 	    EMSG(_("E281: TCL ERROR: exit code is not int!? Please report this to vim-dev@vim.org"));
 	    newerr = FAIL;
@@ -1900,7 +1900,7 @@ tclexit(error)
 	{
 	    sprintf(buf, _("E572: exit code %d"), retval);
 	    tclerrmsg(buf);
-	    if (retval == 0 )
+	    if (retval == 0)
 	    {
 		did_emsg = 0;
 		newerr = OK;

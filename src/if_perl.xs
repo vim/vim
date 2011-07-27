@@ -755,7 +755,7 @@ ex_perl(eap)
 #ifdef HAVE_SANDBOX
     if (sandbox)
     {
-	safe = perl_get_sv( "VIM::safe", FALSE );
+	safe = perl_get_sv("VIM::safe", FALSE);
 # ifndef MAKE_TEST  /* avoid a warning for unreachable code */
 	if (safe == NULL || !SvTRUE(safe))
 	    EMSG(_("E299: Perl evaluation forbidden in sandbox without the Safe module"));
@@ -1108,7 +1108,7 @@ Cursor(win, ...)
     VIWIN win
 
     PPCODE:
-    if(items == 1)
+    if (items == 1)
     {
       EXTEND(sp, 2);
       if (!win_valid(win))
@@ -1116,7 +1116,7 @@ Cursor(win, ...)
       PUSHs(sv_2mortal(newSViv(win->w_cursor.lnum)));
       PUSHs(sv_2mortal(newSViv(win->w_cursor.col)));
     }
-    else if(items == 3)
+    else if (items == 3)
     {
       int lnum, col;
 
@@ -1249,9 +1249,9 @@ Delete(vimbuf, ...)
 	{
 	    lnum = SvIV(ST(1));
 	    count = 1 + SvIV(ST(2)) - lnum;
-	    if(count == 0)
+	    if (count == 0)
 		count = 1;
-	    if(count < 0)
+	    if (count < 0)
 	    {
 		lnum -= count;
 		count = -count;
