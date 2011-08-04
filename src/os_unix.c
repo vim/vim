@@ -3795,8 +3795,10 @@ mch_call_shell(cmd, options)
     int		retval = -1;
     char	**argv = NULL;
     int		argc;
+    char_u	*p_shcf_copy = NULL;
     int		i;
     char_u	*p;
+    char_u	*s;
     int		inquote;
     int		pty_master_fd = -1;	    /* for pty's */
 # ifdef FEAT_GUI
@@ -3855,6 +3857,19 @@ mch_call_shell(cmd, options)
 	}
 	if (argv == NULL)
 	{
+	    /*
+	     * Account for possible multiple args in p_shcf.
+	     */
+	    p = p_shcf;
+	    for (;;)
+	    {
+		p = skiptowhite(p);
+		if (*p == NUL)
+		    break;
+		++argc;
+		p = skipwhite(p);
+	    }
+
 	    argv = (char **)alloc((unsigned)((argc + 4) * sizeof(char *)));
 	    if (argv == NULL)	    /* out of memory */
 		goto error;
@@ -3864,7 +3879,23 @@ mch_call_shell(cmd, options)
     {
 	if (extra_shell_arg != NULL)
 	    argv[argc++] = (char *)extra_shell_arg;
-	argv[argc++] = (char *)p_shcf;
+
+	/* Break 'shellcmdflag' into white separated parts.  This doesn't
+	 * handle quoted strings, they are very unlikely to appear. */
+	p_shcf_copy = alloc((unsigned)STRLEN(p_shcf) + 1);
+	if (p_shcf_copy == NULL)    /* out of memory */
+	    goto error;
+	s = p_shcf_copy;
+	p = p_shcf;
+	while (*p != NUL)
+	{
+	    argv[argc++] = (char *)s;
+	    while (*p && *p != ' ' && *p != TAB)
+		*s++ = *p++;
+	    *s++ = NUL;
+	    p = skipwhite(p);
+	}
+
 	argv[argc++] = (char *)cmd;
     }
     argv[argc] = NULL;
@@ -4677,6 +4708,7 @@ finished:
 	}
     }
     vim_free(argv);
+    vim_free(p_shcf_copy);
 
 error:
     if (!did_settmode)
