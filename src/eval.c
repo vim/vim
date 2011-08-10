@@ -1357,7 +1357,11 @@ eval_to_string(arg, nextcmd, convert)
 	{
 	    ga_init2(&ga, (int)sizeof(char), 80);
 	    if (tv.vval.v_list != NULL)
+	    {
 		list_join(&ga, tv.vval.v_list, (char_u *)"\n", TRUE, 0);
+		if (tv.vval.v_list->lv_len > 0)
+		    ga_append(&ga, NL);
+	    }
 	    ga_append(&ga, NUL);
 	    retval = (char_u *)ga.ga_data;
 	}
