@@ -20,6 +20,7 @@ int gui_mch_get_winpos __ARGS((int *x, int *y));
 void gui_mch_set_winpos __ARGS((int x, int y));
 int gui_mch_maximized __ARGS((void));
 void gui_mch_unmaximize __ARGS((void));
+void gui_mch_newfont __ARGS((void));
 void gui_mch_set_shellsize __ARGS((int width, int height, int min_width, int min_height, int base_width, int base_height, int direction));
 void gui_mch_get_screen_dimensions __ARGS((int *screen_w, int *screen_h));
 void gui_mch_settitle __ARGS((char_u *title, char_u *icon));

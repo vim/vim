@@ -3900,6 +3900,21 @@ gui_mch_unmaximize()
 }
 
 /*
+ * Called when the font changed while the window is maximized.  Compute the
+ * new Rows and Columns.  This is like resizing the window.
+ */
+    void
+gui_mch_newfont()
+{
+    int w, h;
+
+    gtk_window_get_size(GTK_WINDOW(gui.mainwin), &w, &h);
+    w -= get_menu_tool_width();
+    h -= get_menu_tool_height();
+    gui_resize_shell(w, h);
+}
+
+/*
  * Set the windows size.
  */
     void
@@ -4409,14 +4424,9 @@ gui_mch_init_font(char_u *font_name, int fontset UNUSED)
 
     if (gui_mch_maximized())
     {
-	int w, h;
-
 	/* Update lines and columns in accordance with the new font, keep the
 	 * window maximized. */
-	gtk_window_get_size(GTK_WINDOW(gui.mainwin), &w, &h);
-	w -= get_menu_tool_width();
-	h -= get_menu_tool_height();
-	gui_resize_shell(w, h);
+	gui_mch_newfont();
     }
     else
     {
