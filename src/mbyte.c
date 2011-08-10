@@ -838,6 +838,27 @@ bomb_size()
 }
 
 /*
+ * Remove all BOM from "s" by moving remaining text.
+ */
+    void
+remove_bom(s)
+    char_u *s;
+{
+    if (enc_utf8)
+    {
+	char_u *p = s;
+
+	while ((p = vim_strbyte(p, 0xef)) != NULL)
+	{
+	    if (p[1] == 0xbb && p[2] == 0xbf)
+		STRMOVE(p, p + 3);
+	    else
+		++p;
+	}
+    }
+}
+
+/*
  * Get class of pointer:
  * 0 for blank or NUL
  * 1 for punctuation

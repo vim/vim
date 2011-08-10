@@ -561,6 +561,10 @@ qf_init_ext(qi, efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast,
 	    break;
 
 	IObuff[CMDBUFFSIZE - 2] = NUL;  /* for very long lines */
+#ifdef FEAT_MBYTE
+	remove_bom(IObuff);
+#endif
+
 	if ((efmp = vim_strrchr(IObuff, '\n')) != NULL)
 	    *efmp = NUL;
 #ifdef USE_CRNL

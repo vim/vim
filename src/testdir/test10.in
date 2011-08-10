@@ -2,6 +2,9 @@ Test for 'errorformat'.  This will fail if the quickfix feature was disabled.
 
 STARTTEST
 :so small.vim
+:" Also test a BOM is ignored.
+:so mbyte.vim
+:set encoding=utf-8
 :/start of errorfile/,/end of errorfile/w! Xerrorfile
 :/start of testfile/,/end of testfile/w! Xtestfile
 :cf Xerrorfile
@@ -20,7 +23,7 @@ ENDTEST
 
 start of errorfile
 "Xtestfile", line 4.12: 1506-045 (S) Undeclared identifier fd_set.
-"Xtestfile", line 7 col 19; this is an error
+﻿"Xtestfile", line 7 col 19; this is an error
 gcc -c -DHAVE_CONFIsing-prototypes -I/usr/X11R6/include  version.c
 Xtestfile:13: parse error before `asd'
 make: *** [vim] Error 1
