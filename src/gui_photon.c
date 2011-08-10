@@ -358,21 +358,21 @@ gui_ph_handle_timer_timeout(PtWidget_t *widget, void *data, PtCallbackInfo_t *in
 }
 
     static int
-gui_ph_handle_window_cb( PtWidget_t *widget, void *data, PtCallbackInfo_t *info )
+gui_ph_handle_window_cb(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 {
     PhWindowEvent_t *we = info->cbdata;
     ushort_t *width, *height;
 
-    switch( we->event_f ) {
+    switch (we->event_f) {
 	case Ph_WM_CLOSE:
 	    gui_shell_closed();
 	    break;
 
 	case Ph_WM_FOCUS:
 	    /* Just in case it's hidden and needs to be shown */
-	    gui_mch_mousehide( MOUSE_SHOW );
+	    gui_mch_mousehide(MOUSE_SHOW);
 
-	    if( we->event_state == Ph_WM_EVSTATE_FOCUS )
+	    if (we->event_state == Ph_WM_EVSTATE_FOCUS)
 	    {
 		gui_focus_change(TRUE);
 		gui_mch_start_blink();
@@ -385,17 +385,17 @@ gui_ph_handle_window_cb( PtWidget_t *widget, void *data, PtCallbackInfo_t *info 
 	    break;
 
 	case Ph_WM_RESIZE:
-	    PtGetResource( gui.vimWindow, Pt_ARG_WIDTH, &width, 0 );
-	    PtGetResource( gui.vimWindow, Pt_ARG_HEIGHT, &height, 0 );
+	    PtGetResource(gui.vimWindow, Pt_ARG_WIDTH, &width, 0);
+	    PtGetResource(gui.vimWindow, Pt_ARG_HEIGHT, &height, 0);
 #ifdef USE_PANEL_GROUP
 	    width  -= (pg_margin_left + pg_margin_right);
 	    height -= (pg_margin_top + pg_margin_bottom);
 #endif
-	    gui_resize_shell( *width, *height );
-	    gui_set_shellsize( FALSE, FALSE, RESIZE_BOTH );
+	    gui_resize_shell(*width, *height);
+	    gui_set_shellsize(FALSE, FALSE, RESIZE_BOTH);
 	    is_ignore_draw = FALSE;
-	    PtEndFlux( gui.vimContainer );
-	    PtContainerRelease( gui.vimContainer );
+	    PtEndFlux(gui.vimContainer);
+	    PtContainerRelease(gui.vimContainer);
 	    break;
 
 	default:
@@ -406,7 +406,7 @@ gui_ph_handle_window_cb( PtWidget_t *widget, void *data, PtCallbackInfo_t *info 
 }
 
     static int
-gui_ph_handle_scrollbar( PtWidget_t *widget, void *data, PtCallbackInfo_t *info )
+gui_ph_handle_scrollbar(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 {
     PtScrollbarCallback_t *scroll;
     scrollbar_T *sb;
@@ -415,10 +415,10 @@ gui_ph_handle_scrollbar( PtWidget_t *widget, void *data, PtCallbackInfo_t *info 
     scroll = info->cbdata;
 
     sb = (scrollbar_T *) data;
-    if( sb != NULL )
+    if (sb != NULL)
     {
 	value = scroll->position;
-	switch( scroll->action )
+	switch (scroll->action)
 	{
 	    case Pt_SCROLL_DRAGGED:
 		dragging = TRUE;
@@ -436,97 +436,97 @@ gui_ph_handle_scrollbar( PtWidget_t *widget, void *data, PtCallbackInfo_t *info 
 }
 
     static int
-gui_ph_handle_keyboard( PtWidget_t *widget, void *data, PtCallbackInfo_t *info )
+gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 {
     PhKeyEvent_t    *key;
     unsigned char   string[6];
     int		    len, i;
     int		    ch, modifiers;
 
-    key = PhGetData( info->event );
+    key = PhGetData(info->event);
 
     ch = modifiers = len = 0;
 
-    if( p_mh )
-	gui_mch_mousehide( MOUSE_HIDE );
+    if (p_mh)
+	gui_mch_mousehide(MOUSE_HIDE);
 
     /* We're a good lil photon program, aren't we? yes we are, yeess wee arrr */
-    if( key->key_flags & Pk_KF_Compose )
+    if (key->key_flags & Pk_KF_Compose)
     {
 	return Pt_CONTINUE;
     }
 
-    if( (key->key_flags & Pk_KF_Cap_Valid) &&
-	    PkIsKeyDown( key->key_flags ) )
+    if ((key->key_flags & Pk_KF_Cap_Valid) &&
+	    PkIsKeyDown(key->key_flags))
     {
 #ifdef FEAT_MENU
 	/*
 	 * Only show the menu if the Alt key is down, and the Shift & Ctrl
 	 * keys aren't down, as well as the other conditions
 	 */
-	if( ( ( key->key_mods & Pk_KM_Alt ) &&
-		    !( key->key_mods & Pk_KM_Shift ) &&
-		    !( key->key_mods & Pk_KM_Ctrl ) ) &&
+	if (((key->key_mods & Pk_KM_Alt) &&
+		    !(key->key_mods & Pk_KM_Shift) &&
+		    !(key->key_mods & Pk_KM_Ctrl)) &&
 	    gui.menu_is_active &&
-	    ( *p_wak == 'y' ||
-	      ( *p_wak == 'm' &&
-		gui_is_menu_shortcut( key->key_cap ) ) ) )
+	    (*p_wak == 'y' ||
+	      (*p_wak == 'm' &&
+		gui_is_menu_shortcut(key->key_cap))))
 	{
 	    /* Fallthrough and let photon look for the hotkey */
 	    return Pt_CONTINUE;
 	}
 #endif
 
-	for( i = 0; special_keys[i].key_sym != 0; i++ )
+	for(i = 0; special_keys[i].key_sym != 0; i++)
 	{
-	    if( special_keys[i].key_sym == key->key_cap )
+	    if (special_keys[i].key_sym == key->key_cap)
 	    {
 		len = 0;
-		if( special_keys[i].vim_code1 == NUL )
+		if (special_keys[i].vim_code1 == NUL)
 		    ch = special_keys[i].vim_code0;
 		else
 		{
 		    /* Detect if a keypad number key has been pressed
 		     * and change the key if Num Lock is on */
-		    if( key->key_cap >= Pk_KP_Enter && key->key_cap <= Pk_KP_9
-			    && ( key->key_mods & Pk_KM_Num_Lock ) )
+		    if (key->key_cap >= Pk_KP_Enter && key->key_cap <= Pk_KP_9
+			    && (key->key_mods & Pk_KM_Num_Lock))
 		    {
 			/* FIXME: For now, just map the key to a ascii value
 			 * (see <photon/PkKeyDef.h>) */
 			ch = key->key_cap - 0xf080;
 		    }
 		    else
-			ch = TO_SPECIAL( special_keys[i].vim_code0,
-				special_keys[i].vim_code1 );
+			ch = TO_SPECIAL(special_keys[i].vim_code0,
+				special_keys[i].vim_code1);
 		}
 		break;
 	    }
 	}
 
-	if( key->key_mods & Pk_KM_Ctrl )
+	if (key->key_mods & Pk_KM_Ctrl)
 	    modifiers |= MOD_MASK_CTRL;
-	if( key->key_mods & Pk_KM_Alt )
+	if (key->key_mods & Pk_KM_Alt)
 	    modifiers |= MOD_MASK_ALT;
-	if( key->key_mods & Pk_KM_Shift )
+	if (key->key_mods & Pk_KM_Shift)
 	    modifiers |= MOD_MASK_SHIFT;
 
 	/* Is this not a special key? */
-	if( special_keys[i].key_sym == 0 )
+	if (special_keys[i].key_sym == 0)
 	{
-	    ch = PhTo8859_1( key );
-	    if( ch == -1
+	    ch = PhTo8859_1(key);
+	    if (ch == -1
 #ifdef FEAT_MBYTE
-		|| ( enc_utf8 && ch > 127 )
+		|| (enc_utf8 && ch > 127)
 #endif
 		)
 	    {
 #ifdef FEAT_MBYTE
-		len = PhKeyToMb( string, key );
-		if( len > 0 )
+		len = PhKeyToMb(string, key);
+		if (len > 0)
 		{
 		    static char buf[6];
 		    int src_taken, dst_made;
-		    if( enc_utf8 != TRUE )
+		    if (enc_utf8 != TRUE)
 		    {
 			PxTranslateFromUTF(
 				charset_translate,
@@ -2931,13 +2931,13 @@ gui_ph_parse_font_name(
 	name_len = (int_u) ( mark - vim_font );
 
     *font_name = vim_strnsave( vim_font, name_len );
-    if( *font_name != NULL )
+    if (*font_name != NULL)
     {
-	if( mark != NULL )
+	if (mark != NULL)
 	{
-	    while( *mark != NUL && *mark++ == ':')
+	    while (*mark != NUL && *mark++ == ':')
 	    {
-		switch( tolower( *mark++ ) )
+		switch (tolower(*mark++))
 		{
 		    case 'a': *font_flags |= PF_STYLE_ANTIALIAS; break;
 		    case 'b': *font_flags |= PF_STYLE_BOLD; break;
@@ -2946,7 +2946,7 @@ gui_ph_parse_font_name(
 		    case 's':
 			size = getdigits( &mark );
 			/* Restrict the size to some vague limits */
-			if( size < 1 || size > 100 )
+			if (size < 1 || size > 100)
 			    size = 8;
 
 			*font_size = size;
@@ -2973,18 +2973,18 @@ gui_mch_init_font(char_u *vim_font_name, int fontset)
     FontQueryInfo info;
     PhRect_t extent;
 
-    if( vim_font_name == NULL )
+    if (vim_font_name == NULL)
     {
 	/* Default font */
 	vim_font_name = "PC Terminal";
     }
 
-    if( STRCMP( vim_font_name, "*" ) == 0 )
+    if (STRCMP( vim_font_name, "*" ) == 0)
     {
 	font_tag = PtFontSelection( gui.vimWindow, NULL, NULL,
 		"pcterm12", -1, PHFONT_FIXED, NULL );
 
-	if( font_tag == NULL )
+	if (font_tag == NULL)
 	    return FAIL;
 
 	gui_mch_free_font( gui.norm_font );
@@ -2995,12 +2995,12 @@ gui_mch_init_font(char_u *vim_font_name, int fontset)
     }
     else
     {
-	if( gui_ph_parse_font_name( vim_font_name, &font_name, &font_flags,
-		    &font_size ) == FALSE )
+	if (gui_ph_parse_font_name( vim_font_name, &font_name, &font_flags,
+		    &font_size ) == FALSE)
 	    return FAIL;
 
 	font_tag = gui_ph_get_font( font_name, font_flags, font_size, 0 );
-	if( font_tag == NULL )
+	if (font_tag == NULL)
 	{
 	    vim_free( font_name );
 	    return FAIL;
@@ -3053,17 +3053,17 @@ gui_mch_get_font(char_u *vim_font_name, int report_error)
     int_u   font_size = 12;
     int_u   font_flags = 0;
 
-    if( gui_ph_parse_font_name( vim_font_name, &font_name, &font_flags,
-		&font_size ) != FALSE )
+    if (gui_ph_parse_font_name( vim_font_name, &font_name, &font_flags,
+		&font_size ) != FALSE)
     {
 	font_tag = gui_ph_get_font( font_name, font_flags, font_size, -1 );
 	vim_free( font_name );
 
-	if( font_tag != NULL )
+	if (font_tag != NULL)
 	    return (GuiFont)font_tag;
     }
 
-    if( report_error )
+    if (report_error)
 	EMSG2(e_font, vim_font_name );
 
     return FAIL;
