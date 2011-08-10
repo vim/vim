@@ -18,6 +18,6 @@ line 17 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 line 18 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Eine 19 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 line 20 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-line 21 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-line 22 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+line 21 :cf Xerrorfile1xxxxxxxxxxxxxxx
+line 22 :cf Xerrorfile2xxxxxxxxxxxxxxx
 end of testfile

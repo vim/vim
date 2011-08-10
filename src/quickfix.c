@@ -126,6 +126,7 @@ static int	is_qf_win __ARGS((win_T *win, qf_info_T *qi));
 static win_T	*qf_find_win __ARGS((qf_info_T *qi));
 static buf_T	*qf_find_buf __ARGS((qf_info_T *qi));
 static void	qf_update_buffer __ARGS((qf_info_T *qi));
+static void	qf_set_title __ARGS((qf_info_T *qi));
 static void	qf_fill_buffer __ARGS((qf_info_T *qi));
 #endif
 static char_u	*get_mef_name __ARGS((void));
@@ -2388,8 +2389,7 @@ ex_copen(eap)
     qf_fill_buffer(qi);
 
     if (qi->qf_lists[qi->qf_curlist].qf_title != NULL)
-	set_internal_string_var((char_u *)"w:quickfix_title",
-				       qi->qf_lists[qi->qf_curlist].qf_title);
+	qf_set_title(qi);
 
     curwin->w_cursor.lnum = qi->qf_lists[qi->qf_curlist].qf_index;
     curwin->w_cursor.col = 0;
@@ -2526,6 +2526,8 @@ qf_update_buffer(qi)
     qf_info_T	*qi;
 {
     buf_T	*buf;
+    win_T	*win;
+    win_T	*curwin_save;
     aco_save_T	aco;
 
     /* Check if a buffer for the quickfix list exists.  Update it. */
@@ -2537,11 +2539,29 @@ qf_update_buffer(qi)
 
 	qf_fill_buffer(qi);
 
+	if (qi->qf_lists[qi->qf_curlist].qf_title != NULL
+	    && (win = qf_find_win(qi)) != NULL)
+	{
+	    curwin_save = curwin;
+	    curwin = win;
+	    qf_set_title(qi);
+	    curwin = curwin_save;
+
+	}
+
 	/* restore curwin/curbuf and a few other things */
 	aucmd_restbuf(&aco);
 
 	(void)qf_win_pos_update(qi, 0);
     }
+}
+
+    static void
+qf_set_title(qi)
+    qf_info_T	*qi;
+{
+    set_internal_string_var((char_u *)"w:quickfix_title",
+				    qi->qf_lists[qi->qf_curlist].qf_title);
 }
 
 /*

@@ -5,9 +5,16 @@ STARTTEST
 :" Also test a BOM is ignored.
 :so mbyte.vim
 :set encoding=utf-8
-:/start of errorfile/,/end of errorfile/w! Xerrorfile
+:7/start of errorfile/,/end of errorfile/w! Xerrorfile1
+:7/start of errorfile/,/end of errorfile/-1w! Xerrorfile2
 :/start of testfile/,/end of testfile/w! Xtestfile
-:cf Xerrorfile
+:cf Xerrorfile2
+:clast
+:copen
+:let a=w:quickfix_title
+:wincmd p
+gR=a
+:cf Xerrorfile1
 rA
 :cn
 rB
@@ -17,6 +24,11 @@ rC
 rD
 :cn
 rE
+:cn
+:wincmd w
+:let a=w:quickfix_title
+:wincmd p
+gR=a
 :w! test.out             " Write contents of this file
 :qa!
 ENDTEST
@@ -33,6 +45,8 @@ in file "Xtestfile" linenr 16: there is an error
 "Xtestfile", linenr 19: yet another problem
 
 Does anyone know what is the problem and how to correction it?
+"Xtestfile", line 21 col 9: What is the title of the quickfix window?
+"Xtestfile", line 22 col 9: What is the title of the quickfix window?
 end of errorfile
 
 start of testfile
