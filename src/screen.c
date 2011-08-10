@@ -4252,7 +4252,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		{
 		    /* tab amount depends on current column */
 		    n_extra = (int)wp->w_buffer->b_p_ts
-				   - vcol % (int)wp->w_buffer->b_p_ts - 1;
+				   - VCOL_HLC % (int)wp->w_buffer->b_p_ts - 1;
 #ifdef FEAT_MBYTE
 		    mb_utf8 = FALSE;	/* don't draw as UTF-8 */
 #endif
