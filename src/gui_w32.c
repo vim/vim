@@ -1270,6 +1270,25 @@ gui_mch_prepare(int *argc, char **argv)
 	pGetMonitorInfo = (TGetMonitorInfo)GetProcAddress(user32_lib,
 							  "GetMonitorInfoA");
     }
+
+#ifdef FEAT_MBYTE
+    /* If the OS is Windows NT, use wide functions;
+     * this enables common dialogs input unicode from IME. */
+    if (os_version.dwPlatformId == VER_PLATFORM_WIN32_NT)
+    {
+	pDispatchMessage = DispatchMessageW;
+	pGetMessage = GetMessageW;
+	pIsDialogMessage = IsDialogMessageW;
+	pPeekMessage = PeekMessageW;
+    }
+    else
+    {
+	pDispatchMessage = DispatchMessageA;
+	pGetMessage = GetMessageA;
+	pIsDialogMessage = IsDialogMessageA;
+	pPeekMessage = PeekMessageA;
+    }
+#endif
 }
 
 /*

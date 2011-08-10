@@ -152,6 +152,14 @@ static PFNGCKLN    s_pfnGetConsoleKeyboardLayoutName = NULL;
 # define wcsicmp(a, b) wcscmpi((a), (b))
 #endif
 
+/* Enable common dialogs input unicode from IME if posible. */
+#ifdef FEAT_MBYTE
+LRESULT (WINAPI *pDispatchMessage)(LPMSG) = DispatchMessage;
+BOOL (WINAPI *pGetMessage)(LPMSG, HWND, UINT, UINT) = GetMessage;
+BOOL (WINAPI *pIsDialogMessage)(HWND, LPMSG) = IsDialogMessage;
+BOOL (WINAPI *pPeekMessage)(LPMSG, HWND, UINT, UINT, UINT) = PeekMessage;
+#endif
+
 #ifndef FEAT_GUI_W32
 /* Win32 Console handles for input and output */
 static HANDLE g_hConIn  = INVALID_HANDLE_VALUE;
@@ -3284,10 +3292,10 @@ mch_system_classic(char *cmd, int options)
 	{
 	    MSG	msg;
 
-	    if (PeekMessage(&msg, (HWND)NULL, 0, 0, PM_REMOVE))
+	    if (pPeekMessage(&msg, (HWND)NULL, 0, 0, PM_REMOVE))
 	    {
 		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		pDispatchMessage(&msg);
 	    }
 	    if (WaitForSingleObject(pi.hProcess, delay) != WAIT_TIMEOUT)
 		break;
