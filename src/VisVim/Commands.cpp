@@ -549,7 +549,7 @@ static BOOL VimOpenFile(BSTR& FileName, long LineNr)
 	if (g_bNewTabs)
 	{
 		sprintf(VimCmd, ":tab drop ");
-		s = VimCmd + 11;
+		s = VimCmd + 10;
 	}
 	else
 	{
@@ -557,8 +557,7 @@ static BOOL VimOpenFile(BSTR& FileName, long LineNr)
 		s = VimCmd + 6;
 	}
 	sprintf(FileNameTmp, "%S", (char *)FileName);
-	for (p = FileNameTmp; *p != '\0' && s < FileNameTmp + MAX_OLE_STR - 4;
-									  ++p)
+	for (p = FileNameTmp; *p != '\0' && s < VimCmd + MAX_OLE_STR - 4; ++p)
 		if (*p == '\\')
 			*s++ = '/';
 		else
