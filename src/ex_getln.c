@@ -1969,8 +1969,12 @@ getcmdline_prompt(firstc, prompt, attr, xp_context, xp_arg)
 # endif
     s = getcmdline(firstc, 1L, 0);
     restore_cmdline(&save_ccline);
-    /* Restore msg_col, the prompt from input() may have changed it. */
-    msg_col = msg_col_save;
+    /* Restore msg_col, the prompt from input() may have changed it.
+     * But only if called recursively and the commandline is therefore being
+     * restored to an old one; if not, the input() prompt stays on the screen,
+     * so we need its modified msg_col left intact. */
+    if (ccline.cmdbuff != NULL)
+	msg_col = msg_col_save;
 
     return s;
 }
