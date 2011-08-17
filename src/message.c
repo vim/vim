@@ -1547,16 +1547,27 @@ str2special(sp, from)
 	if (IS_SPECIAL(c) || modifiers)	/* special key */
 	    special = TRUE;
     }
-    *sp = str + 1;
 
 #ifdef FEAT_MBYTE
-    /* For multi-byte characters check for an illegal byte. */
-    if (has_mbyte && MB_BYTE2LEN(*str) > (*mb_ptr2len)(str))
+    if (has_mbyte && !IS_SPECIAL(c))
     {
-	transchar_nonprint(buf, c);
-	return buf;
+        int len = (*mb_ptr2len)(str);
+
+	/* For multi-byte characters check for an illegal byte. */
+	if (has_mbyte && MB_BYTE2LEN(*str) > len)
+	{
+	    transchar_nonprint(buf, c);
+	    *sp = str + 1;
+	    return buf;
+	}
+        /* Since 'special' is TRUE the multi-byte character 'c' will be
+         * processed by get_special_key_name() */
+        c = (*mb_ptr2char)(str);
+        *sp = str + len;
     }
+    else
 #endif
+	*sp = str + 1;
 
     /* Make unprintable characters in <> form, also <M-Space> and <Tab>.
      * Use <Space> only for lhs of a mapping. */
