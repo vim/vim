@@ -3262,9 +3262,9 @@ do_map(maptype, arg, mode, abbrev)
     validate_maphash();
 
     /*
-     * find end of keys and skip CTRL-Vs (and backslashes) in it
+     * Find end of keys and skip CTRL-Vs (and backslashes) in it.
      * Accept backslash like CTRL-V when 'cpoptions' does not contain 'B'.
-     * with :unmap white space is included in the keys, no argument possible
+     * with :unmap white space is included in the keys, no argument possible.
      */
     p = keys;
     do_backslash = (vim_strchr(p_cpo, CPO_BSLASH) == NULL);
@@ -4506,12 +4506,23 @@ eval_map_expr(str, c)
 {
     char_u	*res;
     char_u	*p;
+    char_u	*expr;
     char_u	*save_cmd;
     pos_T	save_cursor;
 
+    /* Remove escaping of CSI, because "str" is in a format to be used as
+     * typeahead. */
+    expr = vim_strsave(str);
+    if (expr == NULL)
+	return NULL;
+    vim_unescape_csi(expr);
+
     save_cmd = save_cmdline_alloc();
     if (save_cmd == NULL)
+    {
+	vim_free(expr);
 	return NULL;
+    }
 
     /* Forbid changing text or using ":normal" to avoid most of the bad side
      * effects.  Also restore the cursor position. */
@@ -4521,7 +4532,7 @@ eval_map_expr(str, c)
 #endif
     set_vim_var_char(c);  /* set v:char to the typed character */
     save_cursor = curwin->w_cursor;
-    p = eval_to_string(str, NULL, FALSE);
+    p = eval_to_string(expr, NULL, FALSE);
     --textlock;
 #ifdef FEAT_EX_EXTRA
     --ex_normal_lock;
@@ -4529,8 +4540,11 @@ eval_map_expr(str, c)
     curwin->w_cursor = save_cursor;
 
     restore_cmdline_alloc(save_cmd);
+    vim_free(expr);
+
     if (p == NULL)
 	return NULL;
+    /* Escape CSI in the result to be able to use the string as typeahead. */
     res = vim_strsave_escape_csi(p);
     vim_free(p);
 
