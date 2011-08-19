@@ -2781,6 +2781,12 @@ find_special_key(srcp, modp, keycode, keep_x_key)
 	}
 	if (bp[0] == 't' && bp[1] == '_' && bp[2] && bp[3])
 	    bp += 3;	/* skip t_xx, xx may be '-' or '>' */
+	else if (STRNICMP(bp, "char-", 5) == 0)
+	{
+	    vim_str2nr(bp + 5, NULL, &l, TRUE, TRUE, NULL, NULL);
+	    bp += l + 5;
+	    break;
+	}
     }
 
     if (*bp == '>')	/* found matching '>' */
@@ -2810,27 +2816,27 @@ find_special_key(srcp, modp, keycode, keep_x_key)
 	    {
 		/* <Char-123> or <Char-033> or <Char-0x33> */
 		vim_str2nr(last_dash + 6, NULL, NULL, TRUE, TRUE, NULL, &n);
-		*modp = modifiers;
-		*srcp = end_of_name;
-		return (int)n;
+		key = (int)n;
 	    }
-
-	    /*
-	     * Modifier with single letter, or special key name.
-	     */
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		l = mb_ptr2len(last_dash + 1);
-	    else
-#endif
-		l = 1;
-	    if (modifiers != 0 && last_dash[l + 1] == '>')
-		key = PTR2CHAR(last_dash + 1);
 	    else
 	    {
-		key = get_special_key_code(last_dash + 1);
-		if (!keep_x_key)
-		    key = handle_x_keys(key);
+		/*
+		 * Modifier with single letter, or special key name.
+		 */
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		    l = mb_ptr2len(last_dash + 1);
+		else
+#endif
+		    l = 1;
+		if (modifiers != 0 && last_dash[l + 1] == '>')
+		    key = PTR2CHAR(last_dash + 1);
+		else
+		{
+		    key = get_special_key_code(last_dash + 1);
+		    if (!keep_x_key)
+			key = handle_x_keys(key);
+		}
 	    }
 
 	    /*
