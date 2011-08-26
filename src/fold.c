@@ -1469,11 +1469,14 @@ deleteFoldEntry(gap, idx, recursive)
     }
     else
     {
-	/* move nested folds one level up, to overwrite the fold that is
+	/* Move nested folds one level up, to overwrite the fold that is
 	 * deleted. */
 	moved = fp->fd_nested.ga_len;
 	if (ga_grow(gap, (int)(moved - 1)) == OK)
 	{
+	    /* Get "fp" again, the array may have been reallocated. */
+	    fp = (fold_T *)gap->ga_data + idx;
+
 	    /* adjust fd_top and fd_flags for the moved folds */
 	    nfp = (fold_T *)fp->fd_nested.ga_data;
 	    for (i = 0; i < moved; ++i)
@@ -1486,9 +1489,9 @@ deleteFoldEntry(gap, idx, recursive)
 	    }
 
 	    /* move the existing folds down to make room */
-	    if (idx < gap->ga_len)
+	    if (idx + 1 < gap->ga_len)
 		mch_memmove(fp + moved, fp + 1,
-					sizeof(fold_T) * (gap->ga_len - idx));
+				  sizeof(fold_T) * (gap->ga_len - (idx + 1)));
 	    /* move the contained folds one level up */
 	    mch_memmove(fp, nfp, (size_t)(sizeof(fold_T) * moved));
 	    vim_free(nfp);
