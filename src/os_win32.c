@@ -3419,8 +3419,6 @@ dump_pipe(int	    options,
 {
     DWORD	availableBytes = 0;
     DWORD	i;
-    int		c;
-    char_u	*p;
     int		ret;
     DWORD	len;
     DWORD	toRead;
@@ -3479,6 +3477,8 @@ dump_pipe(int	    options,
 	else if (has_mbyte)
 	{
 	    int		l;
+	    int		c;
+	    char_u	*p;
 
 	    len += *buffer_off;
 	    buffer[len] = NUL;
@@ -3558,9 +3558,7 @@ mch_system_piped(char *cmd, int options)
     int		noread_cnt = 0;
     garray_T	ga;
     int	    delay = 1;
-# ifdef FEAT_MBYTE
     DWORD	buffer_off = 0;	/* valid bytes in buffer[] */
-# endif
 
     SECURITY_ATTRIBUTES saAttr;
 
@@ -3777,14 +3775,12 @@ mch_system_piped(char *cmd, int options)
 
 	if (WaitForSingleObject(pi.hProcess, delay) != WAIT_TIMEOUT)
 	{
-	    dump_pipe(options, g_hChildStd_OUT_Rd,
-			&ga, buffer, &buffer_off);
+	    dump_pipe(options, g_hChildStd_OUT_Rd, &ga, buffer, &buffer_off);
 	    break;
 	}
 
 	++noread_cnt;
-	dump_pipe(options, g_hChildStd_OUT_Rd,
-		    &ga, buffer, &buffer_off);
+	dump_pipe(options, g_hChildStd_OUT_Rd, &ga, buffer, &buffer_off);
 
 	/* We start waiting for a very short time and then increase it, so
 	 * that we respond quickly when the process is quick, and don't
