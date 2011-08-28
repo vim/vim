@@ -368,7 +368,8 @@ python_runtime_link_init(char *libname, int verbose)
      * standard C extension libraries of one or both python versions. */
     if (python3_loaded())
     {
-	EMSG(_("E836: This Vim cannot execute :python after using :py3"));
+	if (verbose)
+	    EMSG(_("E836: This Vim cannot execute :python after using :py3"));
 	return FAIL;
     }
 #endif
