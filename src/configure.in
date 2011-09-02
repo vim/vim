@@ -1161,7 +1161,8 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
   cflags_save=$CFLAGS
   CFLAGS="$CFLAGS $PYTHON_CFLAGS"
   ldflags_save=$LDFLAGS
-  LDFLAGS="$LDFLAGS -ldl"
+  dnl -ldl must go first to make this work on Archlinux (Roland Puntaier)
+  LDFLAGS="-ldl $LDFLAGS"
   AC_RUN_IFELSE([
     #include <dlfcn.h>
     /* If this program fails, then RTLD_GLOBAL is needed.
@@ -1205,7 +1206,8 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
   cflags_save=$CFLAGS
   CFLAGS="$CFLAGS $PYTHON3_CFLAGS"
   ldflags_save=$LDFLAGS
-  LDFLAGS="$LDFLAGS -ldl"
+  dnl -ldl must go first to make this work on Archlinux (Roland Puntaier)
+  LDFLAGS="-ldl $LDFLAGS"
   AC_RUN_IFELSE([
     #include <dlfcn.h>
     #include <wchar.h>

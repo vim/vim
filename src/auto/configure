@@ -5733,7 +5733,7 @@ $as_echo_n "checking whether we can do without RTLD_GLOBAL for Python... " >&6; 
   cflags_save=$CFLAGS
   CFLAGS="$CFLAGS $PYTHON_CFLAGS"
   ldflags_save=$LDFLAGS
-  LDFLAGS="$LDFLAGS -ldl"
+    LDFLAGS="-ldl $LDFLAGS"
   if test "$cross_compiling" = yes; then :
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
@@ -5798,7 +5798,7 @@ $as_echo_n "checking whether we can do without RTLD_GLOBAL for Python3... " >&6;
   cflags_save=$CFLAGS
   CFLAGS="$CFLAGS $PYTHON3_CFLAGS"
   ldflags_save=$LDFLAGS
-  LDFLAGS="$LDFLAGS -ldl"
+    LDFLAGS="-ldl $LDFLAGS"
   if test "$cross_compiling" = yes; then :
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}

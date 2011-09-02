@@ -346,6 +346,9 @@
 /* Define if dynamic python does not require RTLD_GLOBAL */
 #undef PY_NO_RTLD_GLOBAL
 
+/* Define if dynamic python3 does not require RTLD_GLOBAL */
+#undef PY3_NO_RTLD_GLOBAL
+
 /* Define if you want to include the Ruby interpreter. */
 #undef FEAT_RUBY
 
