@@ -11197,7 +11197,7 @@ allcap_copy(word, wcopy)
 	    c = *s++;
 
 #ifdef FEAT_MBYTE
-	/* We only change ß to SS when we are certain latin1 is used.  It
+	/* We only change 0xdf to SS when we are certain latin1 is used.  It
 	 * would cause weird errors in other 8-bit encodings. */
 	if (enc_latin1like && c == 0xdf)
 	{
