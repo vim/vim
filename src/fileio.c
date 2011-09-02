@@ -3342,8 +3342,22 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	}
 	else if (reset_changed && whole)
 	{
-	    if (!(did_cmd = apply_autocmds_exarg(EVENT_BUFWRITECMD,
-					 sfname, sfname, FALSE, curbuf, eap)))
+	    int was_changed = curbufIsChanged();
+
+	    did_cmd = apply_autocmds_exarg(EVENT_BUFWRITECMD,
+					  sfname, sfname, FALSE, curbuf, eap);
+	    if (did_cmd)
+	    {
+		if (was_changed && !curbufIsChanged())
+		{
+		    /* Written everything correctly and BufWriteCmd has reset
+		     * 'modified': Correct the undo information so that an
+		     * undo now sets 'modified'. */
+		    u_unchanged(curbuf);
+		    u_update_save_nr(curbuf);
+		}
+	    }
+	    else
 	    {
 #ifdef FEAT_QUICKFIX
 		if (overwriting && bt_nofile(curbuf))
