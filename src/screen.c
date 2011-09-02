@@ -2531,7 +2531,9 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 		/* Visual block mode: highlight the chars part of the block */
 		if (wp->w_old_cursor_fcol + txtcol < (colnr_T)W_WIDTH(wp))
 		{
-		    if (wp->w_old_cursor_lcol + txtcol < (colnr_T)W_WIDTH(wp))
+		    if (wp->w_old_cursor_lcol != MAXCOL
+			     && wp->w_old_cursor_lcol + txtcol
+						       < (colnr_T)W_WIDTH(wp))
 			len = wp->w_old_cursor_lcol;
 		    else
 			len = W_WIDTH(wp) - txtcol;
