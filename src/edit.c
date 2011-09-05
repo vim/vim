@@ -3367,15 +3367,6 @@ ins_compl_new_leader()
     ins_bytes(compl_leader + ins_compl_len());
     compl_used_match = FALSE;
 
-#ifdef FEAT_COMPL_FUNC
-    /*
-     * To call eval 'completefunc' when leader is changed, restart completion
-     * every time.
-     */
-    if (ctrl_x_mode == CTRL_X_FUNCTION || ctrl_x_mode == CTRL_X_OMNI)
-        ins_compl_restart();
-#endif
-
     if (compl_started)
 	ins_compl_set_original_text(compl_leader);
     else
