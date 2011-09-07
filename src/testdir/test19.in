@@ -12,6 +12,9 @@ r
 0wR			
 :" Test replacing with Tabs
 0wR			
+:" Test that copyindent works with expandtab set
+:set expandtab smartindent copyindent ts=8 sw=8 sts=8
+:exe "norm! o{\<cr>x"
 :?^start?,$w! test.out
 :qa!
 ENDTEST
