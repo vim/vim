@@ -74,7 +74,7 @@ OutputWrite(PyObject *self, PyObject *args)
     char *str = NULL;
     int error = ((OutputObject *)(self))->error;
 
-    if (!PyArg_ParseTuple(args, "es#", ENC_OPT, &str, &len))
+    if (!PyArg_ParseTuple(args, "et#", ENC_OPT, &str, &len))
 	return NULL;
 
     Py_BEGIN_ALLOW_THREADS
@@ -114,7 +114,7 @@ OutputWritelines(PyObject *self, PyObject *args)
 	char *str = NULL;
 	PyInt len;
 
-	if (!PyArg_Parse(line, "es#", ENC_OPT, &str, &len)) {
+	if (!PyArg_Parse(line, "et#", ENC_OPT, &str, &len)) {
 	    PyErr_SetString(PyExc_TypeError, _("writelines() requires list of strings"));
 	    Py_DECREF(list);
 	    return NULL;
