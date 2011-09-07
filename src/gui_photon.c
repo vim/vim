@@ -535,13 +535,13 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 				&src_taken,
 				buf,
 				6,
-				&dst_made );
+				&dst_made);
 
-			add_to_input_buf( buf, dst_made );
+			add_to_input_buf(buf, dst_made);
 		    }
 		    else
 		    {
-			add_to_input_buf( string, len );
+			add_to_input_buf(string, len);
 		    }
 
 		    return Pt_CONSUME;
@@ -549,31 +549,31 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 		len = 0;
 #endif
 		ch = key->key_cap;
-		if( ch < 0xff )
+		if (ch < 0xff)
 		{
 		    /* FIXME: is this the right thing to do? */
-		    if( modifiers & MOD_MASK_CTRL )
+		    if (modifiers & MOD_MASK_CTRL)
 		    {
 			modifiers &= ~MOD_MASK_CTRL;
 
-			if( ( ch >= 'a'  &&  ch <= 'z' ) ||
+			if ((ch >= 'a' && ch <= 'z') ||
 				ch == '[' ||
 				ch == ']' ||
-				ch == '\\' )
-			    ch = Ctrl_chr( ch );
-			else if( ch == '2' )
+				ch == '\\')
+			    ch = Ctrl_chr(ch);
+			else if (ch == '2')
 			    ch = NUL;
-			else if( ch == '6' )
+			else if (ch == '6')
 			    ch = 0x1e;
-			else if( ch == '-' )
+			else if (ch == '-')
 			    ch = 0x1f;
 			else
 			    modifiers |= MOD_MASK_CTRL;
 		    }
 
-		    if( modifiers & MOD_MASK_ALT )
+		    if (modifiers & MOD_MASK_ALT)
 		    {
-			ch = Meta( ch );
+			ch = Meta(ch);
 			modifiers &= ~MOD_MASK_ALT;
 		    }
 		}
@@ -586,19 +586,19 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 		modifiers &= ~MOD_MASK_SHIFT;
 	}
 
-	ch = simplify_key( ch, &modifiers );
-	if( modifiers )
+	ch = simplify_key(ch, &modifiers);
+	if (modifiers)
 	{
 	    string[ len++ ] = CSI;
 	    string[ len++ ] = KS_MODIFIER;
 	    string[ len++ ] = modifiers;
 	}
 
-	if( IS_SPECIAL( ch ) )
+	if (IS_SPECIAL(ch))
 	{
 	    string[ len++ ] = CSI;
-	    string[ len++ ] = K_SECOND( ch );
-	    string[ len++ ] = K_THIRD( ch );
+	    string[ len++ ] = K_SECOND(ch);
+	    string[ len++ ] = K_THIRD(ch);
 	}
 	else
 	{
@@ -619,9 +619,9 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 	    string[ len++ ] = KE_CSI;
 	}
 
-	if( len > 0 )
+	if (len > 0)
 	{
-	    add_to_input_buf( string, len );
+	    add_to_input_buf(string, len);
 	    return Pt_CONSUME;
 	}
     }
@@ -630,17 +630,17 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 }
 
     static int
-gui_ph_handle_mouse( PtWidget_t *widget, void *data, PtCallbackInfo_t *info )
+gui_ph_handle_mouse(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 {
     PhPointerEvent_t *pointer;
     PhRect_t	     *pos;
     int		     button = 0, repeated_click, modifiers = 0x0;
     short	     mouse_x, mouse_y;
 
-    pointer = PhGetData( info->event );
-    pos = PhGetRects( info->event );
+    pointer = PhGetData(info->event);
+    pos = PhGetRects(info->event);
 
-    gui_mch_mousehide( MOUSE_SHOW );
+    gui_mch_mousehide(MOUSE_SHOW);
 
     /*
      * Coordinates need to be relative to the base window,
@@ -649,27 +649,27 @@ gui_ph_handle_mouse( PtWidget_t *widget, void *data, PtCallbackInfo_t *info )
     mouse_x = pos->ul.x + gui.border_width;
     mouse_y = pos->ul.y + gui.border_width;
 
-    if( info->event->type == Ph_EV_PTR_MOTION_NOBUTTON )
+    if (info->event->type == Ph_EV_PTR_MOTION_NOBUTTON)
     {
-	gui_mouse_moved( mouse_x, mouse_y );
+	gui_mouse_moved(mouse_x, mouse_y);
 	return Pt_CONTINUE;
     }
 
-    if( pointer->key_mods & Pk_KM_Shift )
+    if (pointer->key_mods & Pk_KM_Shift)
 	modifiers |= MOUSE_SHIFT;
-    if( pointer->key_mods & Pk_KM_Ctrl )
+    if (pointer->key_mods & Pk_KM_Ctrl)
 	modifiers |= MOUSE_CTRL;
-    if( pointer->key_mods & Pk_KM_Alt )
+    if (pointer->key_mods & Pk_KM_Alt)
 	modifiers |= MOUSE_ALT;
 
     /*
      * FIXME More than one button may be involved, but for
      * now just deal with one
      */
-    if( pointer->buttons & Ph_BUTTON_SELECT )
+    if (pointer->buttons & Ph_BUTTON_SELECT)
 	button = MOUSE_LEFT;
 
-    if( pointer->buttons & Ph_BUTTON_MENU )
+    if (pointer->buttons & Ph_BUTTON_MENU)
     {
 	button = MOUSE_RIGHT;
 	/* Need the absolute coordinates for the popup menu */
@@ -677,29 +677,29 @@ gui_ph_handle_mouse( PtWidget_t *widget, void *data, PtCallbackInfo_t *info )
 	abs_mouse.y = pointer->pos.y;
     }
 
-    if( pointer->buttons & Ph_BUTTON_ADJUST )
+    if (pointer->buttons & Ph_BUTTON_ADJUST)
 	button = MOUSE_MIDDLE;
 
     /* Catch a real release (not phantom or other releases */
-    if( info->event->type == Ph_EV_BUT_RELEASE )
+    if (info->event->type == Ph_EV_BUT_RELEASE)
 	button = MOUSE_RELEASE;
 
-    if( info->event->type & Ph_EV_PTR_MOTION_BUTTON )
+    if (info->event->type & Ph_EV_PTR_MOTION_BUTTON)
 	button = MOUSE_DRAG;
 
 #if 0
     /* Vim doesn't use button repeats */
-    if( info->event->type & Ph_EV_BUT_REPEAT )
+    if (info->event->type & Ph_EV_BUT_REPEAT)
 	button = MOUSE_DRAG;
 #endif
 
     /* Don't do anything if it is one of the phantom mouse release events */
-    if( ( button != MOUSE_RELEASE ) ||
-	    ( info->event->subtype == Ph_EV_RELEASE_REAL ) )
+    if ((button != MOUSE_RELEASE) ||
+	    (info->event->subtype == Ph_EV_RELEASE_REAL))
     {
 	repeated_click = (pointer->click_count >= 2) ? TRUE : FALSE;
 
-	gui_send_mouse_event( button , mouse_x, mouse_y, repeated_click, modifiers );
+	gui_send_mouse_event(button , mouse_x, mouse_y, repeated_click, modifiers);
     }
 
     return Pt_CONTINUE;
@@ -707,35 +707,35 @@ gui_ph_handle_mouse( PtWidget_t *widget, void *data, PtCallbackInfo_t *info )
 
 /* Handle a focus change of the PtRaw widget */
     static int
-gui_ph_handle_focus( PtWidget_t *widget, void *data, PtCallbackInfo_t *info )
+gui_ph_handle_focus(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 {
-    if( info->reason == Pt_CB_LOST_FOCUS )
+    if (info->reason == Pt_CB_LOST_FOCUS)
     {
-	PtRemoveEventHandler( gui.vimTextArea, Ph_EV_PTR_MOTION_NOBUTTON,
-		gui_ph_handle_mouse, NULL );
+	PtRemoveEventHandler(gui.vimTextArea, Ph_EV_PTR_MOTION_NOBUTTON,
+		gui_ph_handle_mouse, NULL);
 
-	gui_mch_mousehide( MOUSE_SHOW );
+	gui_mch_mousehide(MOUSE_SHOW);
     }
     else
     {
-	PtAddEventHandler( gui.vimTextArea, Ph_EV_PTR_MOTION_NOBUTTON,
-		gui_ph_handle_mouse, NULL );
+	PtAddEventHandler(gui.vimTextArea, Ph_EV_PTR_MOTION_NOBUTTON,
+		gui_ph_handle_mouse, NULL);
     }
     return Pt_CONTINUE;
 }
 
     static void
-gui_ph_handle_raw_draw( PtWidget_t *widget, PhTile_t *damage )
+gui_ph_handle_raw_draw(PtWidget_t *widget, PhTile_t *damage)
 {
     PhRect_t	*r;
     PhPoint_t	offset;
     PhPoint_t	translation;
 
-    if( is_ignore_draw == TRUE )
+    if (is_ignore_draw == TRUE)
 	return;
 
-    PtSuperClassDraw( PtBasic, widget, damage );
-    PgGetTranslation( &translation );
+    PtSuperClassDraw(PtBasic, widget, damage);
+    PgGetTranslation(&translation);
     PgClearTranslation();
 
 #if 0
@@ -750,21 +750,21 @@ gui_ph_handle_raw_draw( PtWidget_t *widget, PhTile_t *damage )
     out_flush();
 #endif
 
-    PtWidgetOffset( widget, &offset );
-    PhTranslatePoint( &offset, PtWidgetPos( gui.vimTextArea, NULL ) );
+    PtWidgetOffset(widget, &offset);
+    PhTranslatePoint(&offset, PtWidgetPos(gui.vimTextArea, NULL));
 
 #if 1
     /* Redraw individual damage regions */
-    if( damage->next != NULL )
+    if (damage->next != NULL)
 	damage = damage->next;
 
-    while( damage != NULL )
+    while(damage != NULL)
     {
 	r = &damage->rect;
 	gui_redraw(
 		r->ul.x - offset.x, r->ul.y - offset.y,
 		r->lr.x - r->ul.x + 1,
-		r->lr.y - r->ul.y + 1 );
+		r->lr.y - r->ul.y + 1);
 	damage = damage->next;
     }
 #else
@@ -773,24 +773,24 @@ gui_ph_handle_raw_draw( PtWidget_t *widget, PhTile_t *damage )
     gui_redraw(
 	    r->ul.x - offset.x, r->ul.y - offset.y,
 	    r->lr.x - r->ul.x + 1,
-	    r->lr.y - r->ul.y + 1 );
+	    r->lr.y - r->ul.y + 1);
 #endif
 
-    PgSetTranslation( &translation, 0 );
+    PgSetTranslation(&translation, 0);
 }
 
     static int
 gui_ph_handle_pulldown_menu(
 	PtWidget_t *widget,
 	void *data,
-	PtCallbackInfo_t *info )
+	PtCallbackInfo_t *info)
 {
-    if( data != NULL )
+    if (data != NULL)
     {
 	vimmenu_T *menu = (vimmenu_T *) data;
 
-	PtPositionMenu( menu->submenu_id, NULL );
-	PtRealizeWidget( menu->submenu_id );
+	PtPositionMenu(menu->submenu_id, NULL);
+	PtRealizeWidget(menu->submenu_id);
     }
 
     return Pt_CONTINUE;
