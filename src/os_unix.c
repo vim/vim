@@ -4819,7 +4819,8 @@ WaitForChar(msec)
 
 /*
  * Wait "msec" msec until a character is available from file descriptor "fd".
- * Time == -1 will block forever.
+ * "msec" == 0 will check for characters once.
+ * "msec" == -1 will block until a character is available.
  * When a GUI is being used, this will not be used for input -- webb
  * Returns also, when a request from Sniff is waiting -- toni.
  * Or when a Linux GPM mouse event is waiting.
@@ -5057,7 +5058,8 @@ RealWaitForChar(fd, msec, check_for_gpm)
 	/*
 	 * Select on ready for reading and exceptional condition (end of file).
 	 */
-	FD_ZERO(&rfds); /* calls bzero() on a sun */
+select_eintr:
+	FD_ZERO(&rfds);
 	FD_ZERO(&efds);
 	FD_SET(fd, &rfds);
 # if !defined(__QNX__) && !defined(__CYGWIN32__)
@@ -5117,6 +5119,14 @@ RealWaitForChar(fd, msec, check_for_gpm)
 # else
 	ret = select(maxfd + 1, &rfds, NULL, &efds, tvp);
 # endif
+# ifdef EINTR
+	if (ret == -1 && errno == EINTR)
+	    /* Interrupted by a signal, need to try again.  We ignore msec
+	     * here, because we do want to check even after a timeout if
+	     * characters are available.  Needed for reading output of an
+	     * external command after the process has finished. */
+	    goto select_eintr;
+# endif
 # ifdef __TANDEM
 	if (ret == -1 && errno == ENOTSUP)
 	{
@@ -5124,7 +5134,7 @@ RealWaitForChar(fd, msec, check_for_gpm)
 	    FD_ZERO(&efds);
 	    ret = 0;
 	}
-#endif
+# endif
 # ifdef FEAT_MZSCHEME
 	if (ret == 0 && mzquantum_used)
 	    /* loop if MzThreads must be scheduled and timeout occurred */
