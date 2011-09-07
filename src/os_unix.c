@@ -154,6 +154,13 @@ static int	did_set_icon = FALSE;
 
 static void may_core_dump __ARGS((void));
 
+#ifdef HAVE_UNION_WAIT
+typedef union wait waitstatus;
+#else
+typedef int waitstatus;
+#endif
+static int  wait4pid __ARGS((pid_t, waitstatus *));
+
 static int  WaitForChar __ARGS((long));
 #if defined(__BEOS__)
 int  RealWaitForChar __ARGS((int, long, int *));
@@ -3660,6 +3667,47 @@ mch_new_shellsize()
     /* Nothing to do. */
 }
 
+/*
+ * Wait for process "child" to end.
+ * Return "child" if it exited properly, <= 0 on error.
+ */
+    static pid_t
+wait4pid(child, status)
+    pid_t	child;
+    waitstatus	*status;
+{
+    pid_t wait_pid = 0;
+
+    while (wait_pid != child)
+    {
+# ifdef _THREAD_SAFE
+	/* Ugly hack: when compiled with Python threads are probably
+	 * used, in which case wait() sometimes hangs for no obvious
+	 * reason.  Use waitpid() instead and loop (like the GUI). */
+#  ifdef __NeXT__
+	wait_pid = wait4(child, status, WNOHANG, (struct rusage *)0);
+#  else
+	wait_pid = waitpid(child, status, WNOHANG);
+#  endif
+	if (wait_pid == 0)
+	{
+	    /* Wait for 1/100 sec before trying again. */
+	    mch_delay(10L, TRUE);
+	    continue;
+	}
+# else
+	wait_pid = wait(status);
+# endif
+	if (wait_pid <= 0
+# ifdef ECHILD
+		&& errno == ECHILD
+# endif
+	   )
+	    break;
+    }
+    return wait_pid;
+}
+
     int
 mch_call_shell(cmd, options)
     char_u	*cmd;
@@ -4234,7 +4282,7 @@ mch_call_shell(cmd, options)
 		    {
 			MSG_PUTS(_("\nCannot fork\n"));
 		    }
-		    else if (wpid == 0)
+		    else if (wpid == 0) /* child */
 		    {
 			linenr_T    lnum = curbuf->b_op_start.lnum;
 			int	    written = 0;
@@ -4242,7 +4290,6 @@ mch_call_shell(cmd, options)
 			char_u	    *s;
 			size_t	    l;
 
-			/* child */
 			close(fromshell_fd);
 			for (;;)
 			{
@@ -4287,7 +4334,7 @@ mch_call_shell(cmd, options)
 			}
 			_exit(0);
 		    }
-		    else
+		    else /* parent */
 		    {
 			close(toshell_fd);
 			toshell_fd = -1;
@@ -4584,7 +4631,7 @@ mch_call_shell(cmd, options)
 		     * typed characters (otherwise we would lose typeahead).
 		     */
 # ifdef __NeXT__
-		    wait_pid = wait4(pid, &status, WNOHANG, (struct rusage *) 0);
+		    wait_pid = wait4(pid, &status, WNOHANG, (struct rusage *)0);
 # else
 		    wait_pid = waitpid(pid, &status, WNOHANG);
 # endif
@@ -4633,33 +4680,8 @@ finished:
 	     * Don't wait if wait_pid was already set above, indicating the
 	     * child already exited.
 	     */
-	    while (wait_pid != pid)
-	    {
-# ifdef _THREAD_SAFE
-		/* Ugly hack: when compiled with Python threads are probably
-		 * used, in which case wait() sometimes hangs for no obvious
-		 * reason.  Use waitpid() instead and loop (like the GUI). */
-#  ifdef __NeXT__
-		wait_pid = wait4(pid, &status, WNOHANG, (struct rusage *)0);
-#  else
-		wait_pid = waitpid(pid, &status, WNOHANG);
-#  endif
-		if (wait_pid == 0)
-		{
-		    /* Wait for 1/100 sec before trying again. */
-		    mch_delay(10L, TRUE);
-		    continue;
-		}
-# else
-		wait_pid = wait(&status);
-# endif
-		if (wait_pid <= 0
-# ifdef ECHILD
-			&& errno == ECHILD
-# endif
-		   )
-		    break;
-	    }
+	    if (wait_pid != pid)
+		wait_pid = wait4pid(pid, &status);
 
 # ifdef FEAT_GUI
 	    /* Close slave side of pty.  Only do this after the child has
@@ -4672,7 +4694,10 @@ finished:
 	    /* Make sure the child that writes to the external program is
 	     * dead. */
 	    if (wpid > 0)
+	    {
 		kill(wpid, SIGKILL);
+		wait4pid(wpid, NULL);
+	    }
 
 	    /*
 	     * Set to raw mode right now, otherwise a CTRL-C after
