@@ -159,7 +159,7 @@ typedef union wait waitstatus;
 #else
 typedef int waitstatus;
 #endif
-static int  wait4pid __ARGS((pid_t, waitstatus *));
+static pid_t wait4pid __ARGS((pid_t, waitstatus *));
 
 static int  WaitForChar __ARGS((long));
 #if defined(__BEOS__)
