@@ -1,6 +1,7 @@
 Tests for "r<Tab>" with 'smarttab' and 'expandtab' set/not set.
 
 STARTTEST
+:so small.vim
 :set smarttab expandtab ts=8 sw=4
 :" make sure that backspace works, no matter what termcap is used
 :set t_kD=x7f t_kb=x08
@@ -14,8 +15,8 @@ r
 0wR			
 :" Test that copyindent works with expandtab set
 :set expandtab smartindent copyindent ts=8 sw=8 sts=8
-:exe "norm! o{\<cr>x"
-:?^start?,$w! test.out
+o{
+x:?^start?,$w! test.out
 :qa!
 ENDTEST
 
