@@ -785,7 +785,7 @@ PERL_EXE = $(PERL)\Bin$(PERL_ARCH)\perl
 PERL_INC = /I $(PERL_INCDIR)
 PERL_OBJ = $(OUTDIR)\if_perl.obj $(OUTDIR)\if_perlsfio.obj
 XSUBPP = $(PERL)\lib\ExtUtils\xsubpp
-!if exist($(XSUBPP)
+!if exist($(XSUBPP))
 XSUBPP = $(PERL_EXE) $(XSUBPP)
 !else
 XSUBPP = xsubpp
