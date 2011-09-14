@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2011 Jul 17
+" Last Change:	2011 Sep 07
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -922,7 +922,7 @@ au BufNewFile,BufRead *.java,*.jav		setf java
 au BufNewFile,BufRead *.jj,*.jjt		setf javacc
 
 " JavaScript, ECMAScript
-au BufNewFile,BufRead *.js,*.javascript,*.es,*.jsx	setf javascript
+au BufNewFile,BufRead *.js,*.javascript,*.es,*.jsx,*.json   setf javascript
 
 " Java Server Pages
 au BufNewFile,BufRead *.jsp			setf jsp
@@ -2345,6 +2345,9 @@ endfunc
 " Yaml
 au BufNewFile,BufRead *.yaml,*.yml		setf yaml
 
+" yum conf (close enough to dosini)
+au BufNewFile,BufRead */etc/yum.conf 		setf dosini
+
 " Zope
 "   dtml (zope dynamic template markup language), pt (zope page template),
 "   cpt (zope form controller page template)
@@ -2514,6 +2517,9 @@ au BufNewFile,BufRead *xmodmap*			call s:StarSetf('xmodmap')
 
 " Xinetd conf
 au BufNewFile,BufRead */etc/xinetd.d/*		call s:StarSetf('xinetd')
+
+" yum conf (close enough to dosini)
+au BufNewFile,BufRead */etc/yum.repos.d/* 	call s:StarSetf('dosini')
 
 " Z-Shell script
 au BufNewFile,BufRead zsh*,zlog*		call s:StarSetf('zsh')

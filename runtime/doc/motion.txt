@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.3.  Last change: 2011 Jun 02
+*motion.txt*    For Vim version 7.3.  Last change: 2011 Jul 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1017,8 +1017,6 @@ CTRL-O			Go to [count] Older cursor position in jump list
 <Tab>		or					*CTRL-I* *<Tab>*
 CTRL-I			Go to [count] newer cursor position in jump list
 			(not a motion command).
-			In a |quickfix-window| it takes you to the position of
-			the error under the cursor.
 			{not in Vi}
 			{not available without the |+jumplist| feature}
 

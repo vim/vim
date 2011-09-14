@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.3.  Last change: 2011 May 07
+*if_pyth.txt*   For Vim version 7.3.  Last change: 2011 Aug 19
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -380,7 +380,7 @@ To work around such problems there are these options:
 							*has-python*
 You can test what Python version is available with: >
 	if has('python')
-	  echo 'there is Pyton 2.x'
+	  echo 'there is Python 2.x'
   	elseif has('python3')
 	  echo 'there is Python 3.x'
 	endif

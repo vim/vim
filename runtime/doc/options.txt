@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2011 Jul 07
+*options.txt*	For Vim version 7.3.  Last change: 2011 Sep 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4861,6 +4861,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   written.  A ":set nomodified" command also resets the original
 	   values to the current values and the 'modified' option will be
 	   reset.
+	This option is not set when a change is made to the buffer as the
+	result of a BufNewFile, BufRead/BufReadPost, BufWritePost,
+	FileAppendPost or VimLeave autocommand event.  See |gzip-example| for
+	an explanation.
 	When 'buftype' is "nowrite" or "nofile" this option may be set, but
 	will be ignored.
 
@@ -5898,8 +5902,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"bash.exe -c ls" or "command.com /c dir".  For the MS-DOS-like
 	systems, the default is set according to the value of 'shell', to
 	reduce the need to set this option by the user.  It's not used for
-	OS/2 (EMX figures this out itself).  See |option-backslash| about
-	including spaces and backslashes.  See |dos-shell|.
+	OS/2 (EMX figures this out itself).
+	On Unix it can have more than one flag.  Each white space separated
+	part is passed as an argument to the shell command.
+	See |option-backslash| about including spaces and backslashes.
+	Also see |dos-shell| for MS-DOS and MS-Windows.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 

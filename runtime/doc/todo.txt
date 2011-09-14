@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2011 Jul 15
+*todo.txt*      For Vim version 7.3.  Last change: 2011 Sep 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,21 +34,40 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Patch to start GTK only after forking. (Tim Starling, 2011 Sep 12)
+
+Patch for Lua debug(). (Rob Hoelz, 2011 Sep 12)
+
 Go through more coverity reports.
+
+Using "." to repeat a Visual delete counts bytes, not characters.  Can this be
+fixed? (Connor Lane Smith, 2011 Sep 1)
+
+Patch to allow getchar() in expression mapping.
+Why was typeahead saved and restored? (James Vega, 2011 Aug 31)
 
 Crash in autocomplete, valgrind log. (Greg Weber, 2011 Apr 22)
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
+Patch to fail if configure can't find an interface, such as Python.
+(Shlomi Fish, 2011 Jul 11)
+
 Patch to support UTF-8 for Hangul. (Shawn Y.H. Kim, 2011 May 1)
 Needs more work.
 
-With "unamedplus" in 'clipboard' pasting in Visual mode causes error for empty
-register. (Michael Seiwald, 2011 Jun 28)
+Patch for glob() returning a list. (Christian Brabandt, 2011 Aug 24, second
+one)
 
-The :z command doesn't work exactly as it should. (ChangZhuo Chen, 2011 Mar 2)
-Compare with how old Vi works and with posix spec.  terminal is 80 x 24,
-'scroll' option set to 11.
+Patch for: (Christian Brabandt, 2011 Aug 22)
+-   Make it possible to enter "r<C-E>" and "r<C-Y>" (get character from line
+    below/above).
+
+Patch for: (Christian Brabandt, 2011 Aug 24, updated patch)
+8   ":sign unplace * file={filename}" should work.  Also: ":sign unplace *
+    buffer={bufnr}".  So one can remove all signs for one file/buffer.
+
+Problem with l: dictionary being locked in a function. (ZyX, 2011 Jul 21)
 
 'cursorline' is displayed too short when there are concealed characters and
 'list' is set.  (Dennis Preiser)
@@ -63,29 +82,12 @@ Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
 only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
 21, Ben Fritz, 2010 Sep 14)
 
-When opening file from windows explorer, characters inside [] cause
-problems, even though double quotes are used. (Manuel Stol, 2011 Mar 9)
-
-Patch to change the meaning of \n in substitute(). (motoya kurotsu, 2011 Mar 8)
-
-Gui menu edit/paste in block mode insert only inserts in one line (Bjorn
-Winckler, 2011 May 11)
-Use function to set paste option and restore it, use CTRL-R+ to paste.
-
-Help file foldexpr (ZyX)
+Need to escape $HOME on Windows?  (ZyX, 2011 Jul 21)
 
 Bug in repeating Visual "u". (Lawrence Kesteloot, 2010 Dec 20)
 
-Patch to automatically get version number into NSIS. (Guopeng Wen, 2011 May
-27)
-
-Patch to add more command completions (Dominique Pelle, 2011 Jun 25)
-
-Patch to have GvimExt not use "edit with existing Vim" entries.
-(Jerome Vuarand, 2011 Jun 22)
-
-Patch to make character classes work with multi-byte characters.
-(Dominique Pelle, 2011 May 31, update July 11)
+With "unamedplus" in 'clipboard' pasting in Visual mode causes error for empty
+register. (Michael Seiwald, 2011 Jun 28)  I can't reproduce it.
 
 In GTK Gvim, setting 'lines' and 'columns' to 99999 causes a crash (Tony
 Mechelynck, 2011 Apr 25).  Can reproduce the crash sometimes:
@@ -102,18 +104,8 @@ The error was 'RenderBadPicture (invalid Picture parameter)'.
    backtrace from your debugger if you break on the gdk_x_error() function.)
 Check that number of pixels doesn't go above 65535?
 
-8   Add an event like CursorHold that is triggered repeatedly, not just once
-    after typing something.
-Need for CursorHold that retriggers.  Use a key that doesn't do anything, or a
-function that resets did_cursorhold.
-Patch by Christian Brabandt, 2011 May 6.
-
 popup completion menu closes quickly when there is a fold in the buffer. (Jan
 Christoph Ebersbach, 2011 Jul 3)
-
-CursorHold repeats typed key when it's the start of a mapping.
-(Will Gray, 2011 Mar 23)
-Christian Brabandt: problem is that OP_PENDING isn't set.
 
 Windows keys not set properly on Windows 7?  (cncyber, 2010 Aug 26)
 
@@ -135,6 +127,8 @@ Using ":break" or something else that stops executing commands inside a
 
 Vim using lots of memory when joining lines. (John Little, 2010 Dec 3)
 
+Changes to manpage plugin. (Elias Toivanen, 2011 Jul 25)
+
 On 64 bit MS-Windows "long" is only 32 bits, but we sometimes need to store a
 64 bits value.  Change all number options to use nropt_T and define it to the
 right type.
@@ -142,17 +136,16 @@ right type.
 string() can't parse back "inf" and "nan".  Fix documentation or fix code?
 (ZyX, 2010 Aug 23)
 
+Make 'formatprg' global-local. (Sung Pae)
+
 When doing "redir => s:foo" in a script and then "redir END" somewhere else
 (e.g. in a function) it can't find s:foo.
 
+7   Make "ga" show the digraph for a character, if it exists.
+Patch from Christian Brabandt, 2011 Aug 19.
+
 maparg() does not show the <script> flag.  When temporarily changing a
 mapping, how to restore the script ID?
-
-Patch to fix \%V item in regexp. (Christian Brabandt, 2010 Nov 8)
-Update Nov 19.  James Vega: still not right.  Christian: it's difficult.
-
-Patch to add up to 99 match groups. (Christian Brabandt, 2010 Dec 22)
-Also add named groups: \%{name}(re)  and \%{name}g
 
 Bug in try/catch: return with invalid compare throws error that isn't caught.
 (ZyX, 2011 Jan 26)
@@ -170,10 +163,6 @@ Also for another example (ZyX, 2011 Jan 24)
 Build problem with small features on Mac OS X 10.6. (Rainer, 2011 Jan 24)
 
 "0g@$" puts '] on last byte of multi-byte. (ZyX, 2011 Jan 22)
-
-Deleting a linewise selection that includes the last line of the file leaves
-an empty line. (Ben Schmidt, 2011 Mar 17)
-Patch by Christian Brabandt, 2011 Mar 19.
 
 Patch to support sorting on floating point number.  (Alex Jakushev, 2010 Oct
 30)
@@ -193,6 +182,29 @@ Loading autoload script even when usage is inside "if 0". (Christian Brabandt,
 With a filler line in diff mode, it isn't displayed in the column with line
 number, but it is in the sign column.  Doesn't look right. (ZyX 2011 Jun 5)
 Patch by Christian Brabandt, 2011 Jun 5.  Introduces new problems.
+
+8   Add a command to jump to the next character highlighted with "Error".
+Patch by Christian Brabandt, uses ]e [e ]t and [t. 2011 Aug 9.
+
+8   Add an event like CursorHold that is triggered repeatedly, not just once
+    after typing something.
+Need for CursorHold that retriggers.  Use a key that doesn't do anything, or a
+function that resets did_cursorhold.
+Patch by Christian Brabandt, 2011 May 6.
+
+7   Use "++--", "+++--" for different levels instead of "+---" "+----".
+Patch by Christian Brabandt, 2011 Jul 27.
+Update by Ben Fritz, with fix for TOhtml. (2011 Jul 30)
+
+9   Add %F to 'errorformat': file name without spaces.  Useful on Unix to
+    avoid matching something up to a time 11:22:33.
+Patch by Christian Brabandt, 2011 Jul 27.
+
+Patch to fix \%V item in regexp. (Christian Brabandt, 2010 Nov 8)
+Update Nov 19.  James Vega: still not right.  Christian: it's difficult.
+
+Patch to add up to 99 match groups. (Christian Brabandt, 2010 Dec 22)
+Also add named groups: \%{name}(re)  and \%{name}g
 
 In the sandbox it's not allowed to do many things, but it's possible to change
 or set variables.  Add a way to prevent variables from being changed in the
@@ -222,9 +234,6 @@ New esperanto spell file can't be processed. (Dominique Pelle, 2011 Jan 30)
 
 "L'Italie" noted as a spell error at start of the sentence. (Dominique Pelle,
 2011 Feb 27)
-
-Patch to fail if configure can't find an interface, such as Python.
-(Shlomi Fish, 2011 Jul 11)
 
 Copy/paste between Vim and Google chrome doesn't work well for multi-byte
 characters. (Ben Haskell, 2010 Sep 17)
@@ -309,26 +318,20 @@ Echo starts in the wrong column:
 
 Patch for GVimExt to show an icon. (Dominik Riebeling, 2010 Nov 7)
 
-GvimExt sets $LANG in the wrong way.  Patch by Yasuhiro Matsumoto, 2011 Jun
-15.  This will fix issue no 11.
-
 When writing a file > 2Gbyte, the reported number of bytes is negative.
 (Antonio Colombo, 2010 Dec 18)
 
 Patch: Let rare word highlighting overrule good word highlighting.
 (Jakson A. Aquino, 2010 Jul 30, again 2011 Jul 2)
 
-Patch to make more characters work in dialogs. (Yankwei Jia, 2010 Aug 4)
-
-Patch for VisVim, pass file name to VimOpenFile. (Jiri Sedlak, 2010 Nov 12)
-
 When 'lines' is 25 and 'scrolloff' is 12, "j" scrolls zero or two lines
 instead of one. (Constantin Pan, 2010 Sep 10)
 
 Crash in setqflist(). (Benoit Mortgat, 2010 Nov 18)
 
-Patch to handle resizing when tab is opened, when at full size. (Yukihiro
-Nakadaira, 2010 Jan 6)
+Gui menu edit/paste in block mode insert only inserts in one line (Bjorn
+Winckler, 2011 May 11)
+Requires a map mode for Insert mode started from blockwise Visual mode.
 
 Writing nested List and Dict in viminfo gives error message and can't be read
 back. (Yukihiro Nakadaira, 2010 Nov 13)
@@ -425,10 +428,6 @@ echo, just not for  ":call" and ":call call()". (Ted, 2011 Mar 17)
 
 Cannot use getchar() inside :normal and using an expression mapping.  Is this
 supposed to work?  (XyX, 2010 Sep 22)
-
-When using an expression mapping with a multi-byte character each byte is
-converted to a utf-8 character. (ZyX, 2011 Jan 4)
-Patch for possible solution. (Yukihiro Nakadaira, 2011 Jan 5)
 
 When a:base in 'completefunc' starts with a number it's passed as a number,
 not a string. (Sean Ma)  Need to add flag to call_func_retlist() to force a
@@ -756,11 +755,6 @@ an alternate solution, also for src/ex_getln.c.
 This also fails when the file or directory name contains "%". (Thoml, 2008
 July 7)
 
-The str2special() function doesn't handle multi-byte characters properly.
-Patch from Vladimir Vichniakov, 2007 Apr 24.
-Should clean up the whole function.  Also allow modifiers like <S-Char-32>?
-find_special_key() also has this problem.
-
 Problem with 'langmap' being used on the rhs of a mapping. (Nikolai Weibull,
 2008 May 14)
 
@@ -836,8 +830,6 @@ try/catch not working for argument of return. (Matt Wozniski, 2008 Sep 15)
 
 try/catch not working when inside a for loop. (ZyX, 2011 Jan 25)
 
-Recognize and ignore BOM in error file. (Aleksey Baibarin)
-
 ":tab help" always opens a new tab, while ":help" re-uses an existing window.
 Would be more consistent when an existing tab is re-used. (Tony Mechelynck)
 
@@ -870,9 +862,6 @@ C syntax: {} inside () causes following {} to be highlighted as error.
 Can't easily close the help window, like ":pc" closes the preview window and
 ":ccl" closes the quickfix window.  Add ":hclose". (Chris Gaal)
 Patch for :helpclose, Christian Brabandt, 2010 Sep 6.
-
-Patch for :lmake not updating the quickfix window title. (Lech Lorens, 2011
-Mar 26)
 
 When 'diffopt' has "context:0" a single deleted line causes two folds to merge
 and mess up syncing. (Austin Jennings, 2008 Jan 31)
@@ -933,9 +922,6 @@ Popup menu redraw: Instead of first redrawing the text and then drawing the
 popup menu over it, first draw the new popup menu, remember its position and
 size and then redraw the text, skipping the characters under the popup menu.
 This should avoid flicker.  Other solution by A.Politz, 2007 Aug 22.
-
-When the popup menu is close to the edge of the window it is truncated.  Patch
-to anchor the popup menu in a different way. (James Vega, 2008 Jul 30)
 
 Windows 98: pasting from the clipboard with text from another application has
 a trailing NUL.  (Joachim Hofmann)  Perhaps the length specified for CF_TEXT
@@ -1074,9 +1060,6 @@ If the variable "g:x#y#z" exists completion after ":echo g:x#" doesn't work.
 
 Feature request: Command to go to previous tab, like what CTRL-W p does for
 windows. (Adam George)
-
-When using input() in a loop and then ":echo" the display column isn't right.
-(Benjamin Fritz, 2008 Aug 28)  Patch by Ben Schmidt, 2008 Sep 2.
 
 F1 - F4 in an xterm produce a different escape sequence when used with a
 modifier key.  Need to catch three different sequences.  Use K_ZF1, like
@@ -2662,7 +2645,6 @@ Folding:
 8   Add "z/" and "z?" for searching in not folded text only.
 9   Add search pattern item to only match in closed or open fold and/or fold
     with certain level.  Allows doing ":g/pat/cmd" to work on closed folds.
-7   Use "++--", "+++--" for different levels instead of "+---" "+----".
 8   When a closed fold is displayed open because of 'foldminlines', the
     behavior of commands is still like the fold is closed.  How to make the
     user aware of this?
@@ -2842,7 +2824,6 @@ Syntax highlighting:
 8   Highlight the text between two matching parens (e.g., with a grey
     background) when on one of the parens or in between them.
     Option for the matchparen plugin?
-8   Add a command to jump to the next character highlighted with "Error".
 8   When using a cterm, and no ctermfg or ctermbg are defined, use start/stop
     sequences.	Add remark in docs that :if 'term' == "term-name" should be
     used.
@@ -4479,11 +4460,8 @@ Marks:
 
 
 Digraphs:
-7   Make "ga" show the digraph for a character, if it exists.
-    Also the keymap?
+7   Make "ga" show the keymap for a character, if it exists.
     Also show the code of the character after conversion to 'filenecoding'.
--   Make it possible to enter "r<C-E>" and "r<C-Y>" (get character from line
-    below/above).
 -   Use digraph table to tell Vim about the collating sequence of special
     characters?
 8   Add command to remove one or more (all) digraphs. (Brown)
@@ -4601,8 +4579,6 @@ Debug mode:
 Various improvements:
 9   Python: be able to define a Python function that can be called directly
     from Vim script.  Requires converting the arguments and return value.
-8   ":sign unplace * file={filename}" should work.  Also: ":sign unplace *
-    buffer={bufnr}".  So one can remove all signs for one file/buffer.
 7   Add plugins for formatting?  Should be able to make a choice depending on
     the language of a file (English/Korean/Japanese/etc.).
     Setting the 'langformat' option to "chinese" would load the
@@ -4620,8 +4596,6 @@ Various improvements:
 7   Instead of filtering errors with a shell script it should be possible to
     do this with Vim script.  A function that filters the raw text that comes
     from the 'makeprg'?
-9   Add %F to 'errorformat': file name without spaces.  Useful on Unix to
-    avoid matching something up to a time 11:22:33.
 -   Add %b to 'errorformat': buffer number. (Yegappan Lakshmanan / Suresh
     Govindachar)
 7   Add a command that goes back to the position from before jumping to the

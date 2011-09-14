@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 7.3.  Last change: 2011 May 24
+*pi_zip.txt*	For Vim version 7.3.  Last change: 2011 Aug 14
 
 				+====================+
 				| Zip File Interface |
@@ -68,7 +68,6 @@ Copyright: Copyright (C) 2005-2011 Charles E Campbell, Jr *zip-copyright*
 
 	let g:loaded_zipPlugin= 1
 	let g:loaded_zip      = 1
-<
 <
 
 ==============================================================================

@@ -4233,6 +4233,8 @@ E848	syntax.txt	/*E848*
 E849	syntax.txt	/*E849*
 E85	options.txt	/*E85*
 E850	change.txt	/*E850*
+E851	gui_x11.txt	/*E851*
+E852	gui_x11.txt	/*E852*
 E86	windows.txt	/*E86*
 E87	windows.txt	/*E87*
 E88	windows.txt	/*E88*
@@ -4963,7 +4965,6 @@ cino-(	indent.txt	/*cino-(*
 cino-)	indent.txt	/*cino-)*
 cino-+	indent.txt	/*cino-+*
 cino-/	indent.txt	/*cino-\/*
-cino-2	indent.txt	/*cino-2*
 cino-:	indent.txt	/*cino-:*
 cino-=	indent.txt	/*cino-=*
 cino->	indent.txt	/*cino->*
@@ -4990,6 +4991,7 @@ cino-p	indent.txt	/*cino-p*
 cino-star	indent.txt	/*cino-star*
 cino-t	indent.txt	/*cino-t*
 cino-u	indent.txt	/*cino-u*
+cino-w	indent.txt	/*cino-w*
 cino-{	indent.txt	/*cino-{*
 cino-}	indent.txt	/*cino-}*
 cinoptions-values	indent.txt	/*cinoptions-values*
@@ -5690,6 +5692,7 @@ ft-ptcap-syntax	syntax.txt	/*ft-ptcap-syntax*
 ft-python-indent	indent.txt	/*ft-python-indent*
 ft-python-syntax	syntax.txt	/*ft-python-syntax*
 ft-quake-syntax	syntax.txt	/*ft-quake-syntax*
+ft-r-indent	indent.txt	/*ft-r-indent*
 ft-readline-syntax	syntax.txt	/*ft-readline-syntax*
 ft-rexx-syntax	syntax.txt	/*ft-rexx-syntax*
 ft-ruby-omni	insert.txt	/*ft-ruby-omni*
@@ -6022,6 +6025,7 @@ gtk-tooltip-colors	gui_x11.txt	/*gtk-tooltip-colors*
 gu	change.txt	/*gu*
 gugu	change.txt	/*gugu*
 gui	gui.txt	/*gui*
+gui-IME	gui.txt	/*gui-IME*
 gui-clipboard	gui_w32.txt	/*gui-clipboard*
 gui-colors	syntax.txt	/*gui-colors*
 gui-extras	gui.txt	/*gui-extras*
@@ -6230,6 +6234,7 @@ i)	motion.txt	/*i)*
 i<	motion.txt	/*i<*
 i>	motion.txt	/*i>*
 iB	motion.txt	/*iB*
+iBus	gui.txt	/*iBus*
 iW	motion.txt	/*iW*
 i[	motion.txt	/*i[*
 i]	motion.txt	/*i]*

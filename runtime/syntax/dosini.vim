@@ -1,10 +1,10 @@
 " Vim syntax file
-" Language:	Configuration File (ini file) for MSDOS/MS Windows
-" Version Info: @(#)dosini.vim 1.6 97/12/15 08:54:12
-" Author:       Sean M. McKee <mckee@misslink.net>
-" Maintainer:   Nima Talebi <nima@it.net.au>
-" Updated By:   Hong Xu
-" Last Change:	2011 Jul 16
+" Language:               Configuration File (ini file) for MSDOS/MS Windows
+" Version:                2.0
+" Original Author:        Sean M. McKee <mckee@misslink.net>
+" Previous Maintainer:    Nima Talebi <nima@it.net.au>
+" Current Maintainer:     Hong Xu <xuhdev@gmail.com>
+" Last Change:            2011 Jul 21
 
 
 " For version 5.x: Clear all syntax items
@@ -18,9 +18,13 @@ endif
 " shut case off
 syn case ignore
 
-syn match  dosiniLabel		"^.\{-}="
-syn region dosiniHeader		start="^\[" end="\]"
-syn match  dosiniComment	"^[#;].*$"
+syn match  dosiniBool     "\<\(yes\|no\|y\|n\|true\|false\)\>"
+syn match  dosiniNumber   "\<\d\+\>"
+syn match  dosiniNumber   "\<\d*\.\d\+\>"
+syn match  dosiniNumber   "\<\d\+e[+-]\=\d\+\>"
+syn match  dosiniLabel    "^.\{-}="
+syn region dosiniHeader   start="^\s*\[" end="\]"
+syn match  dosiniComment  "^[#;].*$"
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
@@ -33,13 +37,15 @@ if version >= 508 || !exists("did_dosini_syntax_inits")
     command -nargs=+ HiLink hi def link <args>
   endif
 
-	HiLink dosiniHeader	Special
-	HiLink dosiniComment	Comment
-	HiLink dosiniLabel	Type
+  HiLink dosiniBool     Boolean
+  HiLink dosiniNumber   Number
+  HiLink dosiniHeader   Special
+  HiLink dosiniComment  Comment
+  HiLink dosiniLabel    Type
 
   delcommand HiLink
 endif
 
 let b:current_syntax = "dosini"
 
-" vim:ts=8
+" vim: sts=2 sw=2 et

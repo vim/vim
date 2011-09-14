@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 7.3.  Last change: 2010 Dec 19
+*gui_w32.txt*   For Vim version 7.3.  Last change: 2011 Jul 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -137,6 +137,9 @@ options:
 And if there already is a gvim running:
 "Edit with existing gvim"   -- edit the file with the running gvim
 
+The "edit with existing Vim" entries can be disabled by adding an entry in the
+registry under HKLM\Software\Vim\Gvim, named DisableEditWithExisting, and with
+any value.
 						*install-registry*
 You can add the "Edit with Vim" menu entry in an easy way by using the
 "install.exe" program.  It will add several registry entries for you.

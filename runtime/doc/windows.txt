@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.3.  Last change: 2010 Aug 15
+*windows.txt*   For Vim version 7.3.  Last change: 2011 Aug 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -246,7 +246,7 @@ window will appear.
 
 These command modifiers can be combined to make a vertically split window
 occupy the full height.  Example: >
-	:vertical topleft edit tags
+	:vertical topleft split tags
 Opens a vertically split, full-height window on the "tags" file at the far
 left of the Vim window.
 

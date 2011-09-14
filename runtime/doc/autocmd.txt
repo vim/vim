@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.3.  Last change: 2011 May 19
+*autocmd.txt*   For Vim version 7.3.  Last change: 2011 Aug 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -448,6 +448,9 @@ BufWriteCmd			Before writing the whole buffer to a file.
 				'modified' if successful, unless '+' is in
 				'cpo' and writing to another file |cpo-+|.
 				The buffer contents should not be changed.
+				When the command resets 'modified' the undo
+				information is adjusted to mark older undo
+				states as 'modified', like |:write| does.
 				|Cmd-event|
 							*BufWritePost*
 BufWritePost			After writing the whole buffer to a file
@@ -508,6 +511,7 @@ CursorMoved			After the cursor was moved in Normal mode.
 				not expect or that is slow.
 							*CursorMovedI*
 CursorMovedI			After the cursor was moved in Insert mode.
+				Not triggered when the popup menu is visible.
 				Otherwise the same as CursorMoved.
 							*EncodingChanged*
 EncodingChanged			Fires off after the 'encoding' option has been

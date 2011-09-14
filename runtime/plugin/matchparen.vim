@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2010 Nov 16
+" Last Change: 2011 Aug 27
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -82,7 +82,7 @@ function! s:Highlight_Matching_Pair()
   endif
 
   " When not in a string or comment ignore matches inside them.
-  " We match "escape" for special items, such as listpEscapeSpecial.
+  " We match "escape" for special items, such as lispEscapeSpecial.
   let s_skip ='synIDattr(synID(line("."), col("."), 0), "name") ' .
 	\ '=~?  "string\\|character\\|singlequote\\|escape\\|comment"'
   execute 'if' s_skip '| let s_skip = 0 | endif'

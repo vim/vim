@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language: php PHP 3/4/5
 " Maintainer: Jason Woofenden <jason@jasonwoof.com>
-" Last Change:  April 28, 2011
+" Last Change: July 29, 2011
 " URL: https://gitorious.org/jasonwoof/vim-syntax/blobs/master/php.vim
 " Former Maintainers: Peter Hodge <toomuchphp-vim@yahoo.com>
 "         Debian VIM Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
@@ -54,14 +54,6 @@
 "        the string would be highlighted as an error, what is incorrect.
 "    ii) Same problem if you are setting php_folding = 2 with a closing
 "        } inside an string on the first line of this string.
-"
-"  - A double-quoted string like this:
-"      "$foo->someVar->someOtherVar->bar"
-"    will highight '->someOtherVar->bar' as though they will be parsed
-"    as object member variables, but PHP only recognizes the first
-"    object member variable ($foo->someVar).
-"
-"
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -131,7 +123,7 @@ syn keyword phpCoreConstant PHP_VERSION PHP_OS DEFAULT_INCLUDE_PATH PEAR_INSTALL
 
 syn case ignore
 
-syn keyword phpConstant  __LINE__ __FILE__ __FUNCTION__ __METHOD__ __CLASS__  contained
+syn keyword phpConstant  __LINE__ __FILE__ __FUNCTION__ __METHOD__ __CLASS__ __DIR__ __NAMESPACE__  contained
 
 
 " Function and Methods ripped from php_manual_de.tar.gz Jan 2003
@@ -273,7 +265,7 @@ syn keyword phpRepeat as do endfor endforeach endwhile for foreach while  contai
 syn keyword phpLabel  case default switch contained
 
 " Statement
-syn keyword phpStatement  return break continue exit  contained
+syn keyword phpStatement  return break continue exit goto  contained
 
 " Keyword
 syn keyword phpKeyword  var const contained
@@ -282,7 +274,7 @@ syn keyword phpKeyword  var const contained
 syn keyword phpType bool[ean] int[eger] real double float string array object NULL  contained
 
 " Structure
-syn keyword phpStructure  extends implements instanceof parent self contained
+syn keyword phpStructure  namespace extends implements instanceof parent self contained
 
 " Operator
 syn match phpOperator "[-=+%^&|*!.~?:]" contained display
@@ -302,11 +294,41 @@ syn match phpIdentifierSimply "${\h\w*}"  contains=phpOperator,phpParent  contai
 syn region  phpIdentifierComplex  matchgroup=phpParent start="{\$"rs=e-1 end="}"  contains=phpIdentifier,phpMemberSelector,phpVarSelector,phpIdentifierComplexP contained extend
 syn region  phpIdentifierComplexP matchgroup=phpParent start="\[" end="]" contains=@phpClInside contained
 
+" Interpolated indentifiers (inside strings)
+	syn match phpBrackets "[][}{]" contained display
+	" errors
+		syn match phpInterpSimpleError "\[[^]]*\]" contained display  " fallback (if nothing else matches)
+		syn match phpInterpSimpleError "->[^a-zA-Z_]" contained display
+		" make sure these stay above the correct DollarCurlies so they don't take priority
+		syn match phpInterpBogusDollarCurley "${[^}]*}" contained display  " fallback (if nothing else matches)
+	syn match phpinterpSimpleBracketsInner "\w\+" contained
+	syn match phpInterpSimpleBrackets "\[\h\w*]" contained contains=phpBrackets,phpInterpSimpleBracketsInner
+	syn match phpInterpSimpleBrackets "\[\d\+]" contained contains=phpBrackets,phpInterpSimpleBracketsInner
+	syn match phpInterpSimpleBrackets "\[0[xX]\x\+]" contained contains=phpBrackets,phpInterpSimpleBracketsInner
+	syn match phpInterpSimple "\$\h\w*\(\[[^]]*\]\|->\h\w*\)\?" contained contains=phpInterpSimpleBrackets,phpIdentifier,phpInterpSimpleError,phpMethods,phpMemberSelector display
+	syn match phpInterpVarname "\h\w*" contained
+	syn match phpInterpMethodName "\h\w*" contained " default color
+	syn match phpInterpSimpleCurly "\${\h\w*}"  contains=phpInterpVarname contained extend
+	syn region phpInterpDollarCurley1Helper matchgroup=phpParent start="{" end="\[" contains=phpInterpVarname contained
+	syn region phpInterpDollarCurly1 matchgroup=phpParent start="\${\h\w*\["rs=s+1 end="]}" contains=phpInterpDollarCurley1Helper,@phpClConst contained extend
+
+	syn match phpInterpDollarCurley2Helper "{\h\w*->" contains=phpBrackets,phpInterpVarname,phpMemberSelector contained
+
+	syn region phpInterpDollarCurly2 matchgroup=phpParent start="\${\h\w*->"rs=s+1 end="}" contains=phpInterpDollarCurley2Helper,phpInterpMethodName contained
+
+	syn match phpInterpBogusDollarCurley "${\h\w*->}" contained display
+	syn match phpInterpBogusDollarCurley "${\h\w*\[]}" contained display
+
+	syn region phpInterpComplex matchgroup=phpParent start="{\$"rs=e-1 end="}" contains=phpIdentifier,phpMemberSelector,phpVarSelector,phpIdentifierComplexP contained extend
+	syn region phpIdentifierComplexP matchgroup=phpParent start="\[" end="]" contains=@phpClInside contained
+	" define a cluster to get all interpolation syntaxes for double-quoted strings
+	syn cluster phpInterpDouble contains=phpInterpSimple,phpInterpSimpleCurly,phpInterpDollarCurly1,phpInterpDollarCurly2,phpInterpBogusDollarCurley,phpInterpComplex
+
 " Methoden
 syn match phpMethodsVar "->\h\w*" contained contains=phpMethods,phpMemberSelector display
 
 " Include
-syn keyword phpInclude  include require include_once require_once contained
+syn keyword phpInclude  include require include_once require_once use contained
 
 " Peter Hodge - added 'clone' keyword
 " Define
@@ -322,12 +344,18 @@ syn match phpNumber "\<0x\x\{1,8}\>"  contained display
 " Float
 syn match phpFloat  "\(-\=\<\d+\|-\=\)\.\d\+\>" contained display
 
-" SpecialChar
-syn match phpSpecialChar  "\\[abcfnrtyv\\]" contained display
-syn match phpSpecialChar  "\\\d\{3}"  contained contains=phpOctalError display
-syn match phpSpecialChar  "\\x\x\{2}" contained display
-syn match phpDoubleSpecialChar "\\\"" contained display
-syn match phpSingleSpecialChar "\\[\\']" contained display
+" Backslash escapes
+	syn case match
+	" for double quotes and heredoc
+	syn match phpBackslashSequences  "\\[fnrtv\\\"$]" contained display
+	syn match phpBackslashSequences  "\\\d\{1,3}"  contained contains=phpOctalError display
+	syn match phpBackslashSequences  "\\x\x\{1,2}" contained display
+	" additional sequence for double quotes only
+	syn match phpBackslashDoubleQuote "\\[\"]" contained display
+	" for single quotes only
+	syn match phpBackslashSingleQuote "\\[\\']" contained display
+	syn case ignore
+
 
 " Error
 syn match phpOctalError "[89]"  contained display
@@ -356,23 +384,32 @@ endif
 
 " String
 if exists("php_parent_error_open")
-  syn region  phpStringDouble matchgroup=None start=+"+ skip=+\\\\\|\\"+ end=+"+  contains=@phpAddStrings,phpIdentifier,phpSpecialChar,phpIdentifierSimply,phpIdentifierComplex,phpDoubleSpecialChar contained keepend
-  syn region  phpBacktick matchgroup=None start=+`+ skip=+\\\\\|\\"+ end=+`+  contains=@phpAddStrings,phpIdentifier,phpSpecialChar,phpIdentifierSimply,phpIdentifierComplex contained keepend
-  syn region  phpStringSingle matchgroup=None start=+'+ skip=+\\\\\|\\'+ end=+'+  contains=@phpAddStrings,phpSingleSpecialChar contained keepend
+  syn region  phpStringDouble matchgroup=None start=+"+ skip=+\\\\\|\\"+ end=+"+  contains=@phpAddStrings,phpBackslashSequences,phpBackslashDoubleQuote,@phpInterpDouble contained keepend
+  syn region  phpBacktick matchgroup=None start=+`+ skip=+\\\\\|\\"+ end=+`+  contains=@phpAddStrings,phpIdentifier,phpBackslashSequences,phpIdentifierSimply,phpIdentifierComplex contained keepend
+  syn region  phpStringSingle matchgroup=None start=+'+ skip=+\\\\\|\\'+ end=+'+  contains=@phpAddStrings,phpBackslashSingleQuote contained keepend
 else
-  syn region  phpStringDouble matchgroup=None start=+"+ skip=+\\\\\|\\"+ end=+"+  contains=@phpAddStrings,phpIdentifier,phpSpecialChar,phpIdentifierSimply,phpIdentifierComplex,phpDoubleSpecialChar contained extend keepend
-  syn region  phpBacktick matchgroup=None start=+`+ skip=+\\\\\|\\"+ end=+`+  contains=@phpAddStrings,phpIdentifier,phpSpecialChar,phpIdentifierSimply,phpIdentifierComplex contained extend keepend
-  syn region  phpStringSingle matchgroup=None start=+'+ skip=+\\\\\|\\'+ end=+'+  contains=@phpAddStrings,phpSingleSpecialChar contained keepend extend
+  syn region  phpStringDouble matchgroup=None start=+"+ skip=+\\\\\|\\"+ end=+"+  contains=@phpAddStrings,phpBackslashSequences,phpBackslashDoubleQuote,@phpInterpDouble contained extend keepend
+  syn region  phpBacktick matchgroup=None start=+`+ skip=+\\\\\|\\"+ end=+`+  contains=@phpAddStrings,phpIdentifier,phpBackslashSequences,phpIdentifierSimply,phpIdentifierComplex contained extend keepend
+  syn region  phpStringSingle matchgroup=None start=+'+ skip=+\\\\\|\\'+ end=+'+  contains=@phpAddStrings,phpBackslashSingleQuote contained keepend extend
 endif
 
-" HereDoc
+" HereDoc and NowDoc
 if version >= 600
   syn case match
-  syn region  phpHereDoc  matchgroup=Delimiter start="\(<<<\)\@<=\z(\I\i*\)$" end="^\z1\(;\=$\)\@=" contained contains=phpIdentifier,phpIdentifierSimply,phpIdentifierComplex,phpSpecialChar,phpMethodsVar keepend extend
+
+  " HereDoc
+  syn region  phpHereDoc  matchgroup=Delimiter start="\(<<<\)\@<=\(\"\=\)\z(\I\i*\)\2$" end="^\z1\(;\=$\)\@=" contained contains=phpIdentifier,phpIdentifierSimply,phpIdentifierComplex,phpBackslashSequences,phpMethodsVar keepend extend
 " including HTML,JavaScript,SQL even if not enabled via options
-  syn region  phpHereDoc  matchgroup=Delimiter start="\(<<<\)\@<=\z(\(\I\i*\)\=\(html\)\c\(\i*\)\)$" end="^\z1\(;\=$\)\@="  contained contains=@htmlTop,phpIdentifier,phpIdentifierSimply,phpIdentifierComplex,phpSpecialChar,phpMethodsVar keepend extend
-  syn region  phpHereDoc  matchgroup=Delimiter start="\(<<<\)\@<=\z(\(\I\i*\)\=\(sql\)\c\(\i*\)\)$" end="^\z1\(;\=$\)\@=" contained contains=@sqlTop,phpIdentifier,phpIdentifierSimply,phpIdentifierComplex,phpSpecialChar,phpMethodsVar keepend extend
-  syn region  phpHereDoc  matchgroup=Delimiter start="\(<<<\)\@<=\z(\(\I\i*\)\=\(javascript\)\c\(\i*\)\)$" end="^\z1\(;\=$\)\@="  contained contains=@htmlJavascript,phpIdentifierSimply,phpIdentifier,phpIdentifierComplex,phpSpecialChar,phpMethodsVar keepend extend
+  syn region  phpHereDoc  matchgroup=Delimiter start="\(<<<\)\@<=\(\"\=\)\z(\(\I\i*\)\=\(html\)\c\(\i*\)\)\2$" end="^\z1\(;\=$\)\@="  contained contains=@htmlTop,phpIdentifier,phpIdentifierSimply,phpIdentifierComplex,phpBackslashSequences,phpMethodsVar keepend extend
+  syn region  phpHereDoc  matchgroup=Delimiter start="\(<<<\)\@<=\(\"\=\)\z(\(\I\i*\)\=\(sql\)\c\(\i*\)\)\2$" end="^\z1\(;\=$\)\@=" contained contains=@sqlTop,phpIdentifier,phpIdentifierSimply,phpIdentifierComplex,phpBackslashSequences,phpMethodsVar keepend extend
+  syn region  phpHereDoc  matchgroup=Delimiter start="\(<<<\)\@<=\(\"\=\)\z(\(\I\i*\)\=\(javascript\)\c\(\i*\)\)\2$" end="^\z1\(;\=$\)\@="  contained contains=@htmlJavascript,phpIdentifierSimply,phpIdentifier,phpIdentifierComplex,phpBackslashSequences,phpMethodsVar keepend extend
+
+  " NowDoc
+  syn region  phpNowDoc  matchgroup=Delimiter start="\(<<<\)\@<='\z(\I\i*\)'$" end="^\z1\(;\=$\)\@=" contained keepend extend
+" including HTML,JavaScript,SQL even if not enabled via options
+  syn region  phpNowDoc  matchgroup=Delimiter start="\(<<<\)\@<='\z(\(\I\i*\)\=\(html\)\c\(\i*\)\)'$" end="^\z1\(;\=$\)\@="  contained contains=@htmlTop keepend extend
+  syn region  phpNowDoc  matchgroup=Delimiter start="\(<<<\)\@<='\z(\(\I\i*\)\=\(sql\)\c\(\i*\)\)'$" end="^\z1\(;\=$\)\@=" contained contains=@sqlTop keepend extend
+  syn region  phpNowDoc  matchgroup=Delimiter start="\(<<<\)\@<='\z(\(\I\i*\)\=\(javascript\)\c\(\i*\)\)'$" end="^\z1\(;\=$\)\@="  contained contains=@htmlJavascript keepend extend
   syn case ignore
 endif
 
@@ -389,7 +426,7 @@ else
 endif
 
 syn cluster phpClConst  contains=phpFunctions,phpIdentifier,phpConditional,phpRepeat,phpStatement,phpOperator,phpRelation,phpStringSingle,phpStringDouble,phpBacktick,phpNumber,phpFloat,phpKeyword,phpType,phpBoolean,phpStructure,phpMethodsVar,phpConstant,phpCoreConstant,phpException
-syn cluster phpClInside contains=@phpClConst,phpComment,phpLabel,phpParent,phpParentError,phpInclude,phpHereDoc
+syn cluster phpClInside contains=@phpClConst,phpComment,phpLabel,phpParent,phpParentError,phpInclude,phpHereDoc,phpNowDoc
 syn cluster phpClFunction contains=@phpClInside,phpDefine,phpParentError,phpStorageClass
 syn cluster phpClTop  contains=@phpClFunction,phpFoldFunction,phpFoldClass,phpFoldInterface,phpFoldTry,phpFoldCatch
 
@@ -452,16 +489,13 @@ else
   syn keyword phpStorageClass final global private protected public static  contained
 endif
 
+" TODO: fold on "trait". For now just make sure it gets colored:
+syn keyword phpStructure trait
+
 " ================================================================
 " Peter Hodge - June 9, 2006
 " Some of these changes (highlighting isset/unset/echo etc) are not so
 " critical, but they make things more colourful. :-)
-
-" corrected highlighting for an escaped '\$' inside a double-quoted string
-syn match phpSpecialChar  "\\\$"  contained display
-
-" highlight object variables inside strings
-syn match phpMethodsVar "->\h\w*" contained contains=phpMethods,phpMemberSelector display containedin=phpStringDouble
 
 " highlight constant E_STRICT
 syntax case match
@@ -613,13 +647,21 @@ if version >= 508 || !exists("did_php_syn_inits")
   HiLink   phpType  Type
   HiLink   phpInclude Include
   HiLink   phpDefine  Define
-  HiLink   phpSpecialChar SpecialChar
-  HiLink   phpDoubleSpecialChar SpecialChar
-  HiLink   phpSingleSpecialChar SpecialChar
+  HiLink   phpBackslashSequences SpecialChar
+  HiLink   phpBackslashDoubleQuote SpecialChar
+  HiLink   phpBackslashSingleQuote SpecialChar
   HiLink   phpParent  Delimiter
+  HiLink   phpBrackets  Delimiter
   HiLink   phpIdentifierConst Delimiter
   HiLink   phpParentError Error
   HiLink   phpOctalError  Error
+  HiLink   phpInterpSimpleError Error
+  HiLink   phpInterpBogusDollarCurley Error
+  HiLink   phpInterpDollarCurly1 Error
+  HiLink   phpInterpDollarCurly2 Error
+  HiLink   phpInterpSimpleBracketsInner String
+  HiLink   phpInterpSimpleCurly Delimiter
+  HiLink   phpInterpVarname Identifier
   HiLink   phpTodo  Todo
   HiLink   phpMemberSelector  Structure
   if exists("php_oldStyle")
@@ -631,13 +673,13 @@ if version >= 508 || !exists("did_php_syn_inits")
   hi  phpIdentifier guifg=DarkGray ctermfg=Brown
   hi  phpIdentifierSimply guifg=DarkGray ctermfg=Brown
   else
-  HiLink  phpIntVar Identifier
-  HiLink  phpEnvVar Identifier
-  HiLink  phpOperator Operator
-  HiLink  phpVarSelector  Operator
-  HiLink  phpRelation Operator
-  HiLink  phpIdentifier Identifier
-  HiLink  phpIdentifierSimply Identifier
+  HiLink   phpIntVar Identifier
+  HiLink   phpEnvVar Identifier
+  HiLink   phpOperator Operator
+  HiLink   phpVarSelector  Operator
+  HiLink   phpRelation Operator
+  HiLink   phpIdentifier Identifier
+  HiLink   phpIdentifierSimply Identifier
   endif
 
   delcommand HiLink

@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.3.  Last change: 2010 Nov 10
+*insert.txt*    For Vim version 7.3.  Last change: 2011 Sep 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1020,6 +1020,21 @@ On the second invocation the arguments are:
 The function must return a List with the matching words.  These matches
 usually include the "a:base" text.  When there are no matches return an empty
 List.
+
+In order to return more information than the matching words, return a Dict
+that contains the List.  The Dict can have these items:
+	words		The List of matching words (mandatory).
+	refresh		A string to control re-invocation of the function
+			(optional).
+			The only value currently recognized is "always", the
+			effect is that the function is called whenever the
+			leading text is changed.
+Other items are ignored.
+
+For example, the function can contain this: >
+	let matches = ... list of words ...
+	return {'words': matches, 'refresh': 'always'}
+<
 						*complete-items*
 Each list item can either be a string or a Dictionary.  When it is a string it
 is used as the completion.  When it is a Dictionary it can contain these
@@ -1040,9 +1055,10 @@ items:
 	empty		when non-zero this match will be added even when it is
 			an empty string
 
-All of these except 'icase' must be a string.  If an item does not meet these
-requirements then an error message is given and further items in the list are
-not used.  You can mix string and Dictionary items in the returned list.
+All of these except 'icase', 'dup' and 'empty' must be a string.  If an item
+does not meet these requirements then an error message is given and further
+items in the list are not used.  You can mix string and Dictionary items in
+the returned list.
 
 The "menu" item is used in the popup menu and may be truncated, thus it should
 be relatively short.  The "info" item can be longer, it will  be displayed in

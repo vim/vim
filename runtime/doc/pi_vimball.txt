@@ -1,4 +1,4 @@
-*pi_vimball.txt*	For Vim version 7.3.  Last change: 2011 Apr 02
+*pi_vimball.txt*	For Vim version 7.3.  Last change: 2011 Aug 14
 
 			       ----------------
 			       Vimball Archiver
@@ -16,6 +16,7 @@ Copyright: (c) 2004-2011 by Charles E. Campbell, Jr.	*Vimball-copyright*
 1. Contents				*vba* *vimball* *vimball-contents*
 
 	1. Contents......................................: |vimball-contents|
+	2. Vimball Introduction..........................: |vimball-intro|
 	3. Vimball Manual................................: |vimball-manual|
 	   MkVimball.....................................: |:MkVimball|
 	   UseVimball....................................: |:UseVimball|

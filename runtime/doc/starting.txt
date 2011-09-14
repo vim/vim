@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.3.  Last change: 2010 Sep 18
+*starting.txt*  For Vim version 7.3.  Last change: 2011 Jul 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -424,12 +424,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		"-d con:30/10/600/150".  But you can also use it to start
 		editing on another device, e.g., AUX:.  {not in Vi}
 							*-f*
--f		Amiga: Do not restart Vim to open a new window.  This
-		option should be used when Vim is started by a program that
-		will wait for the edit session to finish (e.g., mail or
-		readnews).  See |amiga-window|.
-
-		GUI: Do not disconnect from the program that started Vim.
+-f		GUI: Do not disconnect from the program that started Vim.
 		'f' stands for "foreground".  If omitted, the GUI forks a new
 		process and exits the current one.  "-f" should be used when
 		gvim is started by a program that will wait for the edit
@@ -437,7 +432,13 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		never to fork, include 'f' in 'guioptions' in your |gvimrc|.
 		Careful: You can use "-gf" to start the GUI in the foreground,
 		but "-fg" is used to specify the foreground color.  |gui-fork|
+
+		Amiga: Do not restart Vim to open a new window.  This
+		option should be used when Vim is started by a program that
+		will wait for the edit session to finish (e.g., mail or
+		readnews).  See |amiga-window|.
 		{not in Vi}
+
 
 							*--nofork*
 --nofork	GUI: Do not fork.  Same as |-f|.

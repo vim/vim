@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.3.  Last change: 2011 Jul 15
+*indent.txt*    For Vim version 7.3.  Last change: 2011 Sep 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -132,8 +132,8 @@ The 'cinoptions' option sets how Vim performs indentation.  The value after
 the option character can be one of these (N is any number):
 	N	indent N spaces
 	-N	indent N spaces to the left
-	Ns	N times 'shiftwidth spaces
-	-Ns	N times 'shiftwidth spaces to the left
+	Ns	N times 'shiftwidth' spaces
+	-Ns	N times 'shiftwidth' spaces to the left
 
 In the list below,
 "N" represents a number of your choice (the number can be negative).  When
@@ -432,7 +432,7 @@ The examples below assume a 'shiftwidth' of 4.
 		       c3			    c3
 		      ) && c4;			) && c4;
 <
-							*cino-2*
+							*cino-w*
 	wN    When in unclosed parentheses and N is non-zero and either
 	      using "(0" or "u0", respectively, or using "U0" and the unclosed
 	      parentheses is the first non-white character in its line, line
@@ -705,6 +705,43 @@ Indent after a nested paren: >
 Indent for a continuation line: >
 	let g:pyindent_continue = '&sw * 2'
 
+
+R								*ft-r-indent*
+
+Function arguments are aligned if they span for multiple lines. If you prefer
+do not have the arguments of functions aligned, put in your |vimrc|:
+>
+   let r_indent_align_args = 0
+<
+All lines beginning with a comment character, #, get the same indentation
+level of the normal R code. Users of Emacs/ESS may be used to have lines
+beginning with a single # indented in the 40th column, ## indented as R code,
+and ### not indented. If you prefer that lines beginning with comment
+characters are aligned as they are by Emacs/ESS, put in your |vimrc|:
+>
+   let r_indent_ess_comments = 1
+<
+If you prefer that lines beginning with a single # are aligned at a column
+different from the 40th one, you should set a new value to the variable
+r_indent_comment_column, as in the example below:
+>
+   let r_indent_comment_column = 30
+<
+Any code after a line that ends with "<-" is indented. Emacs/ESS does not
+indent the code if it is a top level function. If you prefer that the
+Vim-R-plugin behaves like Emacs/ESS in this regard, put in your |vimrc|:
+>
+   let r_indent_ess_compatible = 1
+<
+Below is an example of indentation with and without this option enabled:
+>
+   ### r_indent_ess_compatible = 1           ### r_indent_ess_compatible = 0
+   foo <-                                    foo <-
+       function(x)                               function(x)
+   {                                             {
+       paste(x)                                      paste(x)
+   }                                             }
+<
 
 SHELL							*ft-sh-indent*
 

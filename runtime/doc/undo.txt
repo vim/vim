@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 7.3.  Last change: 2010 Dec 19
+*undo.txt*      For Vim version 7.3.  Last change: 2011 Aug 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -35,8 +35,10 @@ CTRL-R			Redo [count] changes which were undone.  {Vi: redraw
 :red[o]			Redo one change which was undone.  {Vi: no redo}
 
 							*U*
-U			Undo all latest changes on one line.  {Vi: while not
-			moved off of it}
+U			Undo all latest changes on one line, the line where
+			the latest change was made. |U| itself also counts as
+			a change, and thus |U| undoes a previous |U|.
+			{Vi: while not moved off of the last modified line}
 
 The last changes are remembered.  You can use the undo and redo commands above
 to revert the text to how it was before each change.  You can also apply the

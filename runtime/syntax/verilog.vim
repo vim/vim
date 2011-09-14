@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Verilog
 " Maintainer:	Mun Johl <Mun.Johl@emulex.com>
-" Last Update:  Fri Oct 13 11:44:32 PDT 2006
+" Last Update:  Wed Jul 20 16:04:19 PDT 2011
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -11,11 +11,13 @@ elseif exists("b:current_syntax")
    finish
 endif
 
-" Set the local value of the 'iskeyword' option
+" Set the local value of the 'iskeyword' option.
+" NOTE: '?' was added so that verilogNumber would be processed correctly when
+"       '?' is the last character of the number.
 if version >= 600
-   setlocal iskeyword=@,48-57,_,192-255
+   setlocal iskeyword=@,48-57,63,_,192-255
 else
-   set iskeyword=@,48-57,_,192-255
+   set iskeyword=@,48-57,63,_,192-255
 endif
 
 " A bunch of useful Verilog keywords
@@ -48,7 +50,7 @@ syn keyword verilogLabel       begin end fork join
 syn keyword verilogConditional if else case casex casez default endcase
 syn keyword verilogRepeat      forever repeat while for
 
-syn keyword verilogTodo contained TODO
+syn keyword verilogTodo contained TODO FIXME
 
 syn match   verilogOperator "[&|~><!)(*#%@+/=?:;}{,.\^\-\[\]]"
 
@@ -113,17 +115,17 @@ if version >= 508 || !exists("did_verilog_syn_inits")
    " The default highlighting.
    HiLink verilogCharacter       Character
    HiLink verilogConditional     Conditional
-   HiLink verilogRepeat		 Repeat
-   HiLink verilogString		 String
-   HiLink verilogTodo		 Todo
-   HiLink verilogComment	 Comment
-   HiLink verilogConstant	 Constant
-   HiLink verilogLabel		 Label
-   HiLink verilogNumber		 Number
-   HiLink verilogOperator	 Special
-   HiLink verilogStatement	 Statement
-   HiLink verilogGlobal		 Define
-   HiLink verilogDirective	 SpecialComment
+   HiLink verilogRepeat          Repeat
+   HiLink verilogString          String
+   HiLink verilogTodo            Todo
+   HiLink verilogComment         Comment
+   HiLink verilogConstant        Constant
+   HiLink verilogLabel           Label
+   HiLink verilogNumber          Number
+   HiLink verilogOperator        Special
+   HiLink verilogStatement       Statement
+   HiLink verilogGlobal          Define
+   HiLink verilogDirective       SpecialComment
    HiLink verilogEscape		 Special
 
    delcommand HiLink

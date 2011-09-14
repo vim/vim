@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.3.  Last change: 2010 Nov 03
+*gui.txt*       For Vim version 7.3.  Last change: 2011 Jul 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -147,6 +147,15 @@ task bar with the 'guiheadroom' option.
 If you are running the X Window System, you can get information about the
 window Vim is running in with this command: >
 	:!xwininfo -id $WINDOWID
+<
+							*gui-IME* *iBus*
+Input methods for international characters in X that rely on the XIM
+framework, most notably iBus, have been known to produce undesirable results
+in gVim. These may include an inability to enter spaces, or long delays
+between typing a character and it being recognized by the application.
+
+One workaround that has been successful, for unknown reasons, is to prevent
+gvim from forking into the background by starting it with the |-f| argument.
 
 ==============================================================================
 2. Scrollbars						*gui-scrollbars*

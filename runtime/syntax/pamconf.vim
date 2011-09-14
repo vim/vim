@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         pam(8) configuration file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2011-08-03
 
 
 if exists("b:current_syntax")
@@ -33,7 +33,7 @@ syn match   pamconfTypeLineCont     contained '\\$'
                                     \ pamconfTypeLineCont skipwhite skipnl
 
 syn keyword pamconfControl          contained requisite required sufficient
-                                    \ optional
+                                    \ optional include substack
                                     \ nextgroup=pamconfMPath,
                                     \ pamconfControlLineContH skipwhite
 
@@ -57,7 +57,9 @@ syn keyword pamconfControlValues    contained success open_err symbol_err
                                     \ bad_item and default
                                     \ nextgroup=pamconfControlValueEq
 
-syn match   pamconfControlValueEq   contained '=' nextgroup=pamconfControlAction
+syn match   pamconfControlValueEq   contained '='
+                                    \ nextgroup=pamconfControlActionN,
+                                    \           pamconfControlAction
 
 syn match   pamconfControlActionN   contained '\d\+\>'
                                     \ nextgroup=pamconfControlValues,

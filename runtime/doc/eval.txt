@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2011 Jul 13
+*eval.txt*	For Vim version 7.3.  Last change: 2011 Aug 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,7 +39,7 @@ done, the features in this document are not available.	See |+eval| and
 							*E712*
 There are six types of variables:
 
-Number		A 32 bit signed number.  |expr-number| *Number*
+Number		A 32 or 64 bit signed number.  |expr-number| *Number*
 		Examples:  -123  0x10  0177
 
 Float		A floating point number. |floating-point-format| *Float*
