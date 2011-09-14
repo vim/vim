@@ -194,7 +194,7 @@ static void (*py3_PyGILState_Release)(PyGILState_STATE);
 static int (*py3_PySys_SetObject)(char *, PyObject *);
 static PyObject* (*py3_PyList_Append)(PyObject *, PyObject *);
 static Py_ssize_t (*py3_PyList_Size)(PyObject *);
-static int (*py3_PySlice_GetIndicesEx)(PySliceObject *r, Py_ssize_t length,
+static int (*py3_PySlice_GetIndicesEx)(PyObject *r, Py_ssize_t length,
 		     Py_ssize_t *start, Py_ssize_t *stop, Py_ssize_t *step, Py_ssize_t *slicelength);
 static PyObject* (*py3_PyErr_NoMemory)(void);
 static void (*py3_Py_Finalize)(void);
