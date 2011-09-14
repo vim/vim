@@ -39,7 +39,6 @@ static int do_more_prompt __ARGS((int typed_char));
 static void msg_screen_putchar __ARGS((int c, int attr));
 static int  msg_check_screen __ARGS((void));
 static void redir_write __ARGS((char_u *s, int maxlen));
-static void verbose_write __ARGS((char_u *s, int maxlen));
 #ifdef FEAT_CON_DIALOG
 static char_u *msg_show_console_dialog __ARGS((char_u *message, char_u *buttons, int dfltbutton));
 static int	confirm_msg_used = FALSE;	/* displaying confirm_msg */
@@ -57,6 +56,9 @@ struct msg_hist
 static struct msg_hist *first_msg_hist = NULL;
 static struct msg_hist *last_msg_hist = NULL;
 static int msg_hist_len = 0;
+
+static FILE *verbose_fd = NULL;
+static int  verbose_did_open = FALSE;
 
 /*
  * When writing messages to the screen, there are many different situations.
@@ -1551,7 +1553,7 @@ str2special(sp, from)
 #ifdef FEAT_MBYTE
     if (has_mbyte && !IS_SPECIAL(c))
     {
-        int len = (*mb_ptr2len)(str);
+	int len = (*mb_ptr2len)(str);
 
 	/* For multi-byte characters check for an illegal byte. */
 	if (has_mbyte && MB_BYTE2LEN(*str) > len)
@@ -1560,10 +1562,10 @@ str2special(sp, from)
 	    *sp = str + 1;
 	    return buf;
 	}
-        /* Since 'special' is TRUE the multi-byte character 'c' will be
-         * processed by get_special_key_name() */
-        c = (*mb_ptr2char)(str);
-        *sp = str + len;
+	/* Since 'special' is TRUE the multi-byte character 'c' will be
+	 * processed by get_special_key_name() */
+	c = (*mb_ptr2char)(str);
+	*sp = str + len;
     }
     else
 #endif
@@ -3065,12 +3067,9 @@ redir_write(str, maxlen)
     if (redir_off)
 	return;
 
-    /*
-     * If 'verbosefile' is set write message in that file.
-     * Must come before the rest because of updating "msg_col".
-     */
-    if (*p_vfile != NUL)
-	verbose_write(s, maxlen);
+    /* If 'verbosefile' is set prepare for writing in that file. */
+    if (*p_vfile != NUL && verbose_fd == NULL)
+	verbose_open();
 
     if (redirecting())
     {
@@ -3084,9 +3083,12 @@ redir_write(str, maxlen)
 		    write_reg_contents(redir_reg, (char_u *)" ", -1, TRUE);
 		else if (redir_vname)
 		    var_redir_str((char_u *)" ", -1);
-		else if (redir_fd)
+		else
 #endif
+		    if (redir_fd != NULL)
 		    fputs(" ", redir_fd);
+		if (verbose_fd != NULL)
+		    fputs(" ", verbose_fd);
 		++cur_col;
 	    }
 	}
@@ -3098,13 +3100,16 @@ redir_write(str, maxlen)
 	    var_redir_str(s, maxlen);
 #endif
 
-	/* Adjust the current column */
+	/* Write and adjust the current column. */
 	while (*s != NUL && (maxlen < 0 || (int)(s - str) < maxlen))
 	{
 #ifdef FEAT_EVAL
-	    if (!redir_reg && !redir_vname && redir_fd != NULL)
+	    if (!redir_reg && !redir_vname)
 #endif
-		putc(*s, redir_fd);
+		if (redir_fd != NULL)
+		    putc(*s, redir_fd);
+	    if (verbose_fd != NULL)
+		putc(*s, verbose_fd);
 	    if (*s == '\r' || *s == '\n')
 		cur_col = 0;
 	    else if (*s == '\t')
@@ -3122,7 +3127,7 @@ redir_write(str, maxlen)
     int
 redirecting()
 {
-    return redir_fd != NULL
+    return redir_fd != NULL || *p_vfile != NUL
 #ifdef FEAT_EVAL
 			  || redir_reg || redir_vname
 #endif
@@ -3180,9 +3185,6 @@ verbose_leave_scroll()
 	cmdline_row = msg_row;
 }
 
-static FILE *verbose_fd = NULL;
-static int  verbose_did_open = FALSE;
-
 /*
  * Called when 'verbosefile' is set: stop writing to the file.
  */
@@ -3217,49 +3219,6 @@ verbose_open()
 	}
     }
     return OK;
-}
-
-/*
- * Write a string to 'verbosefile'.
- * When "maxlen" is -1 write the whole string, otherwise up to "maxlen" bytes.
- */
-    static void
-verbose_write(str, maxlen)
-    char_u	*str;
-    int		maxlen;
-{
-    char_u	*s = str;
-    static int	cur_col = 0;
-
-    /* Open the file when called the first time. */
-    if (verbose_fd == NULL)
-	verbose_open();
-
-    if (verbose_fd != NULL)
-    {
-	/* If the string doesn't start with CR or NL, go to msg_col */
-	if (*s != '\n' && *s != '\r')
-	{
-	    while (cur_col < msg_col)
-	    {
-		fputs(" ", verbose_fd);
-		++cur_col;
-	    }
-	}
-
-	/* Adjust the current column */
-	while (*s != NUL && (maxlen < 0 || (int)(s - str) < maxlen))
-	{
-	    putc(*s, verbose_fd);
-	    if (*s == '\r' || *s == '\n')
-		cur_col = 0;
-	    else if (*s == '\t')
-		cur_col += (8 - cur_col % 8);
-	    else
-		++cur_col;
-	    ++s;
-	}
-    }
 }
 
 /*
