@@ -108,6 +108,13 @@ endif
 # on NT, it's here:
 PERLLIB=$(PERL)/lib
 PERLLIBS=$(PERLLIB)/Core
+XSUBPP=$(PERLLIB)/ExtUtils/xsubpp
+XSUBPP_EXISTS=$(shell perl -e "print 1 unless -e '$(XSUBPP)'")
+ifeq "$(XSUBPP_EXISTS)" ""
+XSUBPP=perl $(XSUBPP)
+else
+XSUBPP=xsubpp
+endif
 endif
 
 # uncomment 'LUA' if you want a Lua-enabled version
@@ -696,7 +703,7 @@ ifeq (16, $(RUBY))
 endif
 
 if_perl.c: if_perl.xs typemap
-	perl $(PERLLIB)/ExtUtils/xsubpp -prototypes -typemap \
+	$(XSUBPP) -prototypes -typemap \
 	     $(PERLLIB)/ExtUtils/typemap if_perl.xs > $@
 
 $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)

@@ -785,6 +785,11 @@ PERL_EXE = $(PERL)\Bin$(PERL_ARCH)\perl
 PERL_INC = /I $(PERL_INCDIR)
 PERL_OBJ = $(OUTDIR)\if_perl.obj $(OUTDIR)\if_perlsfio.obj
 XSUBPP = $(PERL)\lib\ExtUtils\xsubpp
+!if exist($(XSUBPP)
+XSUBPP = $(PERL_EXE) $(XSUBPP)
+!else
+XSUBPP = xsubpp
+!endif
 XSUBPP_TYPEMAP = $(PERL)\lib\ExtUtils\typemap
 
 !endif
@@ -1041,7 +1046,7 @@ $(OUTDIR)/if_lua.obj: $(OUTDIR) if_lua.c  $(INCL)
 	$(CC) $(CFLAGS) $(LUA_INC) if_lua.c
 
 if_perl.c : if_perl.xs typemap
-	$(PERL_EXE) $(XSUBPP) -prototypes -typemap $(XSUBPP_TYPEMAP) \
+	$(XSUBPP) -prototypes -typemap $(XSUBPP_TYPEMAP) \
 		-typemap typemap if_perl.xs > if_perl.c
 
 $(OUTDIR)/if_perl.obj: $(OUTDIR) if_perl.c  $(INCL)
