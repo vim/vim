@@ -135,6 +135,8 @@ static char_u	  *compl_orig_text = NULL;  /* text as it was before
 static int	  compl_cont_mode = 0;
 static expand_T	  compl_xp;
 
+static int	  compl_opt_refresh_always = FALSE;
+
 static void ins_ctrl_x __ARGS((void));
 static int  has_compl_option __ARGS((int dict_opt));
 static int  ins_compl_accept_char __ARGS((int c));
@@ -153,9 +155,10 @@ static char_u *find_line_end __ARGS((char_u *ptr));
 static void ins_compl_free __ARGS((void));
 static void ins_compl_clear __ARGS((void));
 static int  ins_compl_bs __ARGS((void));
+static int  ins_compl_need_restart __ARGS((void));
 static void ins_compl_new_leader __ARGS((void));
 static void ins_compl_addleader __ARGS((int c));
-static int ins_compl_len __ARGS((void));
+static int  ins_compl_len __ARGS((void));
 static void ins_compl_restart __ARGS((void));
 static void ins_compl_set_original_text __ARGS((char_u *str));
 static void ins_compl_addfrommatch __ARGS((void));
@@ -163,6 +166,7 @@ static int  ins_compl_prep __ARGS((int c));
 static buf_T *ins_compl_next_buf __ARGS((buf_T *buf, int flag));
 #if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
 static void ins_compl_add_list __ARGS((list_T *list));
+static void ins_compl_add_dict __ARGS((dict_T *dict));
 #endif
 static int  ins_compl_get_exp __ARGS((pos_T *ini));
 static void ins_compl_delete __ARGS((void));
@@ -3341,7 +3345,7 @@ ins_compl_bs()
     /* Deleted more than what was used to find matches or didn't finish
      * finding all matches: need to look for matches all over again. */
     if (curwin->w_cursor.col <= compl_col + compl_length
-						     || compl_was_interrupted)
+						  || ins_compl_need_restart())
 	ins_compl_restart();
 
     vim_free(compl_leader);
@@ -3352,6 +3356,20 @@ ins_compl_bs()
 	return NUL;
     }
     return K_BS;
+}
+
+/*
+ * Return TRUE when we need to find matches again, ins_compl_restart() is to
+ * be called.
+ */
+    static int
+ins_compl_need_restart()
+{
+    /* Return TRUE if we didn't complete finding matches or when the
+     * 'completefunc' returned "always" in the "refresh" dictionary item. */
+    return compl_was_interrupted
+	|| ((ctrl_x_mode == CTRL_X_FUNCTION || ctrl_x_mode == CTRL_X_OMNI)
+						  && compl_opt_refresh_always);
 }
 
 /*
@@ -3443,7 +3461,7 @@ ins_compl_addleader(c)
 	ins_char(c);
 
     /* If we didn't complete finding matches we must search again. */
-    if (compl_was_interrupted)
+    if (ins_compl_need_restart())
 	ins_compl_restart();
 
     vim_free(compl_leader);
@@ -3871,12 +3889,14 @@ expand_by_function(type, base)
     int		type;	    /* CTRL_X_OMNI or CTRL_X_FUNCTION */
     char_u	*base;
 {
-    list_T      *matchlist;
+    list_T      *matchlist = NULL;
+    dict_T	*matchdict = NULL;
     char_u	*args[2];
     char_u	*funcname;
     pos_T	pos;
     win_T	*curwin_save;
     buf_T	*curbuf_save;
+    typval_T	rettv;
 
     funcname = (type == CTRL_X_FUNCTION) ? curbuf->b_p_cfu : curbuf->b_p_ofu;
     if (*funcname == NUL)
@@ -3889,7 +3909,25 @@ expand_by_function(type, base)
     pos = curwin->w_cursor;
     curwin_save = curwin;
     curbuf_save = curbuf;
-    matchlist = call_func_retlist(funcname, 2, args, FALSE);
+
+    /* Call a function, which returns a list or dict. */
+    if (call_vim_function(funcname, 2, args, FALSE, &rettv) == OK)
+    {
+	switch (rettv.v_type)
+	{
+	    case VAR_LIST:
+		matchlist = rettv.vval.v_list;
+		break;
+	    case VAR_DICT:
+		matchdict = rettv.vval.v_dict;
+		break;
+	    default:
+		/* TODO: Give error message? */
+		clear_tv(&rettv);
+		break;
+	}
+    }
+
     if (curwin_save != curwin || curbuf_save != curbuf)
     {
 	EMSG(_(e_complwin));
@@ -3902,10 +3940,15 @@ expand_by_function(type, base)
 	EMSG(_(e_compldel));
 	goto theend;
     }
+
     if (matchlist != NULL)
 	ins_compl_add_list(matchlist);
+    else if (matchdict != NULL)
+	ins_compl_add_dict(matchdict);
 
 theend:
+    if (matchdict != NULL)
+	dict_unref(matchdict);
     if (matchlist != NULL)
 	list_unref(matchlist);
 }
@@ -3931,6 +3974,33 @@ ins_compl_add_list(list)
 	else if (did_emsg)
 	    break;
     }
+}
+
+/*
+ * Add completions from a dict.
+ */
+    static void
+ins_compl_add_dict(dict)
+    dict_T	*dict;
+{
+    dictitem_T	*refresh;
+    dictitem_T	*words;
+
+    /* Check for optional "refresh" item. */
+    compl_opt_refresh_always = FALSE;
+    refresh = dict_find(dict, (char_u *)"refresh", 7);
+    if (refresh != NULL && refresh->di_tv.v_type == VAR_STRING)
+    {
+	char_u	*v = refresh->di_tv.vval.v_string;
+
+	if (v != NULL && STRCMP(v, (char_u *)"always") == 0)
+	    compl_opt_refresh_always = TRUE;
+    }
+
+    /* Add completions from a "words" list. */
+    words = dict_find(dict, (char_u *)"words", 5);
+    if (words != NULL && words->di_tv.v_type == VAR_LIST)
+	ins_compl_add_list(words->di_tv.vval.v_list);
 }
 
 /*
@@ -5087,6 +5157,12 @@ ins_complete(c)
 		EMSG(_(e_compldel));
 		return FAIL;
 	    }
+
+	    /*
+	     * Reset extended parameters of completion, when start new
+	     * completion.
+	     */
+	    compl_opt_refresh_always = FALSE;
 
 	    if (col < 0)
 		col = curs_col;

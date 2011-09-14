@@ -380,9 +380,6 @@ static dictitem_T	vimvars_var;
 
 static void prepare_vimvar __ARGS((int idx, typval_T *save_tv));
 static void restore_vimvar __ARGS((int idx, typval_T *save_tv));
-#if defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)
-static int call_vim_function __ARGS((char_u *func, int argc, char_u **argv, int safe, typval_T *rettv));
-#endif
 static int ex_let_vars __ARGS((char_u *arg, typval_T *tv, int copy, int semicolon, int var_count, char_u *nextchars));
 static char_u *skip_var_list __ARGS((char_u *arg, int *var_count, int *semicolon));
 static char_u *skip_var_one __ARGS((char_u *arg));
@@ -451,7 +448,6 @@ static void set_ref_in_ht __ARGS((hashtab_T *ht, int copyID));
 static void set_ref_in_list __ARGS((list_T *l, int copyID));
 static void set_ref_in_item __ARGS((typval_T *tv, int copyID));
 static int rettv_dict_alloc __ARGS((typval_T *rettv));
-static void dict_unref __ARGS((dict_T *d));
 static void dict_free __ARGS((dict_T *d, int recurse));
 static dictitem_T *dictitem_copy __ARGS((dictitem_T *org));
 static void dictitem_remove __ARGS((dict_T *dict, dictitem_T *item));
@@ -1563,7 +1559,7 @@ eval_expr(arg, nextcmd)
  * arguments are currently supported.
  * Returns OK or FAIL.
  */
-    static int
+    int
 call_vim_function(func, argc, argv, safe, rettv)
     char_u      *func;
     int		argc;
@@ -6903,7 +6899,7 @@ rettv_dict_alloc(rettv)
  * Unreference a Dictionary: decrement the reference count and free it when it
  * becomes zero.
  */
-    static void
+    void
 dict_unref(d)
     dict_T *d;
 {
