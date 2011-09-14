@@ -416,7 +416,11 @@ close_buffer(win, buf, action)
 #endif
 
     buf_freeall(buf, (del_buf ? BFA_DEL : 0) + (wipe_buf ? BFA_WIPE : 0));
-    if (win_valid(win) && win->w_buffer == buf)
+    if (
+#ifdef FEAT_WINDOWS
+	win_valid(win) &&
+#endif
+			  win->w_buffer == buf)
 	win->w_buffer = NULL;  /* make sure we don't use the buffer now */
 
 #ifdef FEAT_AUTOCMD
