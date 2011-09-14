@@ -1030,7 +1030,7 @@ BufferSubscript(PyObject *self, PyObject* idx)
     } else if (PySlice_Check(idx)) {
 	Py_ssize_t start, stop, step, slicelen;
 
-	if (PySlice_GetIndicesEx((PySliceObject *)idx,
+	if (PySlice_GetIndicesEx((PyObject *)idx,
 	      (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count+1,
 	      &start, &stop,
 	      &step, &slicelen) < 0) {
@@ -1054,7 +1054,7 @@ BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val)
     } else if (PySlice_Check(idx)) {
 	Py_ssize_t start, stop, step, slicelen;
 
-	if (PySlice_GetIndicesEx((PySliceObject *)idx,
+	if (PySlice_GetIndicesEx((PyObject *)idx,
 	      (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count+1,
 	      &start, &stop,
 	      &step, &slicelen) < 0) {
@@ -1142,7 +1142,7 @@ RangeSubscript(PyObject *self, PyObject* idx)
     } else if (PySlice_Check(idx)) {
 	Py_ssize_t start, stop, step, slicelen;
 
-	if (PySlice_GetIndicesEx((PySliceObject *)idx,
+	if (PySlice_GetIndicesEx((PyObject *)idx,
 		((RangeObject *)(self))->end-((RangeObject *)(self))->start+1,
 		&start, &stop,
 		&step, &slicelen) < 0) {
@@ -1164,7 +1164,7 @@ RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val)
     } else if (PySlice_Check(idx)) {
 	Py_ssize_t start, stop, step, slicelen;
 
-	if (PySlice_GetIndicesEx((PySliceObject *)idx,
+	if (PySlice_GetIndicesEx((PyObject *)idx,
 		((RangeObject *)(self))->end-((RangeObject *)(self))->start+1,
 		&start, &stop,
 		&step, &slicelen) < 0) {
