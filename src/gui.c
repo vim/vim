@@ -37,6 +37,24 @@ static void gui_set_fg_color __ARGS((char_u *name));
 static void gui_set_bg_color __ARGS((char_u *name));
 static win_T *xy2win __ARGS((int x, int y));
 
+#if defined(UNIX) && !defined(__BEOS__) && !defined(MACOS_X) \
+	&& !defined(__APPLE__)
+# define MAY_FORK
+static void gui_do_fork __ARGS((void));
+
+static int gui_read_child_pipe __ARGS((int fd));
+
+/* Return values for gui_read_child_pipe */
+enum {
+    GUI_CHILD_IO_ERROR,
+    GUI_CHILD_OK,
+    GUI_CHILD_FAILED
+};
+
+#endif /* MAY_FORK */
+
+static void gui_attempt_start __ARGS((void));
+
 static int can_update_cursor = TRUE; /* can display the cursor */
 
 /*
@@ -59,47 +77,47 @@ static int can_update_cursor = TRUE; /* can display the cursor */
 gui_start()
 {
     char_u	*old_term;
-#if defined(UNIX) && !defined(__BEOS__) && !defined(MACOS_X) \
-	&& !defined(__APPLE__)
-# define MAY_FORK
-    int		dofork = TRUE;
-#endif
     static int	recursive = 0;
 
     old_term = vim_strsave(T_NAME);
 
-    /*
-     * Set_termname() will call gui_init() to start the GUI.
-     * Set the "starting" flag, to indicate that the GUI will start.
-     *
-     * We don't want to open the GUI shell until after we've read .gvimrc,
-     * otherwise we don't know what font we will use, and hence we don't know
-     * what size the shell should be.  So if there are errors in the .gvimrc
-     * file, they will have to go to the terminal: Set full_screen to FALSE.
-     * full_screen will be set to TRUE again by a successful termcapinit().
-     */
     settmode(TMODE_COOK);		/* stop RAW mode */
     if (full_screen)
 	cursor_on();			/* needed for ":gui" in .vimrc */
-    gui.starting = TRUE;
     full_screen = FALSE;
 
-#ifdef FEAT_GUI_GTK
-    gui.event_time = GDK_CURRENT_TIME;
-#endif
-
-#ifdef MAY_FORK
-    if (!gui.dofork || vim_strchr(p_go, GO_FORG) || recursive)
-	dofork = FALSE;
-#endif
     ++recursive;
 
-    termcapinit((char_u *)"builtin_gui");
-    gui.starting = recursive - 1;
+#ifdef MAY_FORK
+    /*
+     * Quit the current process and continue in the child.
+     * Makes "gvim file" disconnect from the shell it was started in.
+     * Don't do this when Vim was started with "-f" or the 'f' flag is present
+     * in 'guioptions'.
+     */
+    if (gui.dofork && !vim_strchr(p_go, GO_FORG) && recursive <= 1)
+    {
+	gui_do_fork();
+    }
+    else
+#endif
+    {
+	gui_attempt_start();
+    }
 
     if (!gui.in_use)			/* failed to start GUI */
     {
-	termcapinit(old_term);		/* back to old term settings */
+	/* Back to old term settings
+	 *
+	 * FIXME: If we got here because a child process failed and flagged to
+	 * the parent to resume, and X11 is enabled with FEAT_TITLE, this will
+	 * hit an X11 I/O error and do a longjmp(), leaving recursive
+	 * permanently set to 1. This is probably not as big a problem as it
+	 * sounds, because gui_mch_init() in both gui_x11.c and gui_gtk_x11.c
+	 * return "OK" unconditionally, so it would be very difficult to
+	 * actually hit this case.
+	 */
+	termcapinit(old_term);
 	settmode(TMODE_RAW);		/* restart RAW mode */
 #ifdef FEAT_TITLE
 	set_title_defaults();		/* set 'title' and 'icon' again */
@@ -107,6 +125,41 @@ gui_start()
     }
 
     vim_free(old_term);
+
+#ifdef FEAT_AUTOCMD
+    /* If the GUI started successfully, trigger the GUIEnter event, otherwise
+     * the GUIFailed event. */
+    gui_mch_update();
+    apply_autocmds(gui.in_use ? EVENT_GUIENTER : EVENT_GUIFAILED,
+						   NULL, NULL, FALSE, curbuf);
+#endif
+    --recursive;
+}
+
+/*
+ * Set_termname() will call gui_init() to start the GUI.
+ * Set the "starting" flag, to indicate that the GUI will start.
+ *
+ * We don't want to open the GUI shell until after we've read .gvimrc,
+ * otherwise we don't know what font we will use, and hence we don't know
+ * what size the shell should be.  So if there are errors in the .gvimrc
+ * file, they will have to go to the terminal: Set full_screen to FALSE.
+ * full_screen will be set to TRUE again by a successful termcapinit().
+ */
+    static void
+gui_attempt_start()
+{
+    static int recursive = 0;
+
+    ++recursive;
+    gui.starting = TRUE;
+
+#ifdef FEAT_GUI_GTK
+    gui.event_time = GDK_CURRENT_TIME;
+#endif
+
+    termcapinit((char_u *)"builtin_gui");
+    gui.starting = recursive - 1;
 
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
     if (gui.in_use)
@@ -123,95 +176,170 @@ gui_start()
 	display_errors();
     }
 #endif
-
-#if defined(MAY_FORK) && !defined(__QNXNTO__)
-    /*
-     * Quit the current process and continue in the child.
-     * Makes "gvim file" disconnect from the shell it was started in.
-     * Don't do this when Vim was started with "-f" or the 'f' flag is present
-     * in 'guioptions'.
-     */
-    if (gui.in_use && dofork)
-    {
-	int	pipefd[2];	/* pipe between parent and child */
-	int	pipe_error;
-	char	dummy;
-	pid_t	pid = -1;
-
-	/* Setup a pipe between the child and the parent, so that the parent
-	 * knows when the child has done the setsid() call and is allowed to
-	 * exit. */
-	pipe_error = (pipe(pipefd) < 0);
-	pid = fork();
-	if (pid > 0)	    /* Parent */
-	{
-	    /* Give the child some time to do the setsid(), otherwise the
-	     * exit() may kill the child too (when starting gvim from inside a
-	     * gvim). */
-	    if (pipe_error)
-		ui_delay(300L, TRUE);
-	    else
-	    {
-		/* The read returns when the child closes the pipe (or when
-		 * the child dies for some reason). */
-		close(pipefd[1]);
-		ignored = (int)read(pipefd[0], &dummy, (size_t)1);
-		close(pipefd[0]);
-	    }
-
-	    /* When swapping screens we may need to go to the next line, e.g.,
-	     * after a hit-enter prompt and using ":gui". */
-	    if (newline_on_exit)
-		mch_errmsg("\r\n");
-
-	    /*
-	     * The parent must skip the normal exit() processing, the child
-	     * will do it.  For example, GTK messes up signals when exiting.
-	     */
-	    _exit(0);
-	}
-
-# if defined(HAVE_SETSID) || defined(HAVE_SETPGID)
-	/*
-	 * Change our process group.  On some systems/shells a CTRL-C in the
-	 * shell where Vim was started would otherwise kill gvim!
-	 */
-	if (pid == 0)	    /* child */
-#  if defined(HAVE_SETSID)
-	    (void)setsid();
-#  else
-	    (void)setpgid(0, 0);
-#  endif
-# endif
-	if (!pipe_error)
-	{
-	    close(pipefd[0]);
-	    close(pipefd[1]);
-	}
-
-# if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
-	/* Tell the session manager our new PID */
-	gui_mch_forked();
-# endif
-    }
-#else
-# if defined(__QNXNTO__)
-    if (gui.in_use && dofork)
-	procmgr_daemon(0, PROCMGR_DAEMON_KEEPUMASK | PROCMGR_DAEMON_NOCHDIR |
-		PROCMGR_DAEMON_NOCLOSE | PROCMGR_DAEMON_NODEVNULL);
-# endif
-#endif
-
-#ifdef FEAT_AUTOCMD
-    /* If the GUI started successfully, trigger the GUIEnter event, otherwise
-     * the GUIFailed event. */
-    gui_mch_update();
-    apply_autocmds(gui.in_use ? EVENT_GUIENTER : EVENT_GUIFAILED,
-						   NULL, NULL, FALSE, curbuf);
-#endif
-
     --recursive;
 }
+
+#ifdef MAY_FORK
+
+/* for waitpid() */
+# if defined(HAVE_SYS_WAIT_H) || defined(HAVE_UNION_WAIT)
+#  include <sys/wait.h>
+# endif
+
+/*
+ * Create a new process, by forking. In the child, start the GUI, and in
+ * the parent, exit.
+ *
+ * If something goes wrong, this will return with gui.in_use still set
+ * to FALSE, in which case the caller should continue execution without
+ * the GUI.
+ *
+ * If the child fails to start the GUI, then the child will exit and the
+ * parent will return. If the child succeeds, then the parent will exit
+ * and the child will return.
+ */
+    static void
+gui_do_fork()
+{
+#ifdef __QNXNTO__
+    procmgr_daemon(0, PROCMGR_DAEMON_KEEPUMASK | PROCMGR_DAEMON_NOCHDIR |
+	    PROCMGR_DAEMON_NOCLOSE | PROCMGR_DAEMON_NODEVNULL);
+    gui_attempt_start();
+    return;
+#else
+    int		pipefd[2];	/* pipe between parent and child */
+    int		pipe_error;
+    int		status;
+    int		exit_status;
+    pid_t	pid = -1;
+    FILE	*parent_file;
+
+    /* Setup a pipe between the child and the parent, so that the parent
+     * knows when the child has done the setsid() call and is allowed to
+     * exit. */
+    pipe_error = (pipe(pipefd) < 0);
+    pid = fork();
+    if (pid < 0)	    /* Fork error */
+    {
+	EMSG(_("E851: Failed to create a new process for the GUI"));
+	return;
+    }
+    else if (pid > 0)	    /* Parent */
+    {
+	/* Give the child some time to do the setsid(), otherwise the
+	 * exit() may kill the child too (when starting gvim from inside a
+	 * gvim). */
+	if (!pipe_error)
+	{
+	    /* The read returns when the child closes the pipe (or when
+	     * the child dies for some reason). */
+	    close(pipefd[1]);
+	    status = gui_read_child_pipe(pipefd[0]);
+	    if (status == GUI_CHILD_FAILED)
+	    {
+		/* The child failed to start the GUI, so the caller must
+		 * continue. There may be more error information written
+		 * to stderr by the child. */
+# ifdef __NeXT__
+		wait4(pid, &exit_status, 0, (struct rusage *)0);
+# else
+		waitpid(pid, &exit_status, 0);
+# endif
+		EMSG(_("E852: The child process failed to start the GUI"));
+		return;
+	    }
+	    else if (status == GUI_CHILD_IO_ERROR)
+	    {
+		pipe_error = TRUE;
+	    }
+	    /* else GUI_CHILD_OK: parent exit */
+	}
+
+	if (pipe_error)
+	    ui_delay(300L, TRUE);
+
+	/* When swapping screens we may need to go to the next line, e.g.,
+	 * after a hit-enter prompt and using ":gui". */
+	if (newline_on_exit)
+	    mch_errmsg("\r\n");
+
+	/*
+	 * The parent must skip the normal exit() processing, the child
+	 * will do it.  For example, GTK messes up signals when exiting.
+	 */
+	_exit(0);
+    }
+    /* Child */
+
+# if defined(HAVE_SETSID) || defined(HAVE_SETPGID)
+    /*
+     * Change our process group.  On some systems/shells a CTRL-C in the
+     * shell where Vim was started would otherwise kill gvim!
+     */
+#  if defined(HAVE_SETSID)
+    (void)setsid();
+#  else
+    (void)setpgid(0, 0);
+#  endif
+# endif
+    if (!pipe_error)
+	close(pipefd[0]);
+
+# if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
+    /* Tell the session manager our new PID */
+    gui_mch_forked();
+# endif
+
+    if (!pipe_error)
+	parent_file = fdopen(pipefd[1], "w");
+    else
+	parent_file = NULL;
+
+    /* Try to start the GUI */
+    gui_attempt_start();
+
+    /* Notify the parent */
+    if (parent_file != NULL)
+    {
+	fputs(gui.in_use ? "ok" : "fail", parent_file);
+	fclose(parent_file);
+    }
+
+    /* If we failed to start the GUI, exit now. */
+    if (!gui.in_use)
+	exit(1);
+#endif
+}
+
+/*
+ * Read from a pipe assumed to be connected to the child process (this
+ * function is called from the parent).
+ * Return GUI_CHILD_OK if the child successfully started the GUI,
+ * GUY_CHILD_FAILED if the child failed, or GUI_CHILD_IO_ERROR if there was
+ * some other error.
+ *
+ * The file descriptor will be closed before the function returns.
+ */
+    static int
+gui_read_child_pipe(int fd)
+{
+    size_t	bytes_read;
+    FILE	*file;
+    char	buffer[10];
+
+    file = fdopen(fd, "r");
+    if (!file)
+	return GUI_CHILD_IO_ERROR;
+
+    bytes_read = fread(buffer, sizeof(char), sizeof(buffer)-1, file);
+    buffer[bytes_read] = '\0';
+    fclose(file);
+    if (strcmp(buffer, "ok") == 0)
+	return GUI_CHILD_OK;
+    return GUI_CHILD_FAILED;
+}
+
+#endif /* MAY_FORK */
 
 /*
  * Call this when vim starts up, whether or not the GUI is started
