@@ -20786,7 +20786,8 @@ ex_function(eap)
     nesting = 0;
     for (;;)
     {
-	msg_scroll = TRUE;
+	if (KeyTyped)
+	    msg_scroll = TRUE;
 	need_wait_return = FALSE;
 	sourcing_lnum_off = sourcing_lnum;
 
