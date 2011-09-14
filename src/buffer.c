@@ -416,6 +416,8 @@ close_buffer(win, buf, action)
 #endif
 
     buf_freeall(buf, (del_buf ? BFA_DEL : 0) + (wipe_buf ? BFA_WIPE : 0));
+    if (win_valid(win) && win->w_buffer == buf)
+	win->w_buffer = NULL;  /* make sure we don't use the buffer now */
 
 #ifdef FEAT_AUTOCMD
     /* Autocommands may have deleted the buffer. */
@@ -559,6 +561,10 @@ buf_freeall(buf, flags)
 #endif
 #ifdef FEAT_DIFF
     diff_buf_delete(buf);	    /* Can't use 'diff' for unloaded buffer. */
+#endif
+#ifdef FEAT_SYN_HL
+    if (curwin->w_buffer == buf)
+	reset_synblock(curwin);	    /* remove any ownsyntax */
 #endif
 
 #ifdef FEAT_FOLDING
@@ -1346,6 +1352,10 @@ set_curbuf(buf, action)
 # endif
 #endif
     {
+#ifdef FEAT_SYN_HL
+	if (prevbuf == curwin->w_buffer)
+	    reset_synblock(curwin);
+#endif
 #ifdef FEAT_WINDOWS
 	if (unload)
 	    close_windows(prevbuf, FALSE);
@@ -1395,10 +1405,6 @@ enter_buffer(buf)
     foldUpdateAll(curwin);	/* update folds (later). */
 #endif
 
-#ifdef FEAT_SYN_HL
-    reset_synblock(curwin);
-    curwin->w_s = &(buf->b_s);
-#endif
     /* Get the buffer in the current window. */
     curwin->w_buffer = buf;
     curbuf = buf;
@@ -1407,6 +1413,10 @@ enter_buffer(buf)
 #ifdef FEAT_DIFF
     if (curwin->w_p_diff)
 	diff_buf_add(curbuf);
+#endif
+
+#ifdef FEAT_SYN_HL
+    curwin->w_s = &(buf->b_s);
 #endif
 
     /* Cursor on first line by default. */

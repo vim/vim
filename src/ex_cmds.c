@@ -3619,10 +3619,6 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
      */
     check_arg_idx(curwin);
 
-#ifdef FEAT_SYN_HL
-    reset_synblock(curwin);	    /* remove any ownsyntax */
-#endif
-
 #ifdef FEAT_AUTOCMD
     if (!auto_buf)
 #endif

@@ -3017,11 +3017,19 @@ set_shellsize(width, height, mustset)
     if (width < 0 || height < 0)    /* just checking... */
 	return;
 
-    if (State == HITRETURN || State == SETWSIZE) /* postpone the resizing */
+    if (State == HITRETURN || State == SETWSIZE)
     {
+	/* postpone the resizing */
 	State = SETWSIZE;
 	return;
     }
+
+    /* curwin->w_buffer can be NULL when we are closing a window and the
+     * buffer has already been closed and removing a scrollbar causes a resize
+     * event. Don't resize then, it will happen after entering another buffer.
+     */
+    if (curwin->w_buffer == NULL)
+	return;
 
     ++busy;
 

@@ -1226,15 +1226,15 @@ win_init(newp, oldp, flags)
     }
     newp->w_tagstackidx = oldp->w_tagstackidx;
     newp->w_tagstacklen = oldp->w_tagstacklen;
-# ifdef FEAT_FOLDING
+#ifdef FEAT_FOLDING
     copyFoldingState(oldp, newp);
-# endif
+#endif
 
     win_init_some(newp, oldp);
 
-# ifdef FEAT_SYN_HL
+#ifdef FEAT_SYN_HL
     check_colorcolumn(newp);
-# endif
+#endif
 }
 
 /*
@@ -2212,6 +2212,11 @@ win_close(win, free_buf)
 	out_flush();
 #endif
 
+#ifdef FEAT_SYN_HL
+    /* Free independent synblock before the buffer is freed. */
+    reset_synblock(win);
+#endif
+
     /*
      * Close the link to the buffer.
      */
@@ -2222,7 +2227,8 @@ win_close(win, free_buf)
     if (!win_valid(win) || last_window() || curtab != prev_curtab)
 	return;
 
-    /* Free the memory used for the window. */
+    /* Free the memory used for the window and get the window that received
+     * the screen space. */
     wp = win_free_mem(win, &dir, NULL);
 
     /* Make sure curwin isn't invalid.  It can cause severe trouble when
@@ -3246,6 +3252,9 @@ win_init_empty(wp)
 	wp->w_farsi = W_CONV + W_R_L;
     else
 	wp->w_farsi = W_CONV;
+#endif
+#ifdef FEAT_SYN_HL
+    wp->w_s = &wp->w_buffer->b_s;
 #endif
 }
 
@@ -4437,7 +4446,6 @@ win_free(wp, tp)
 #endif /* FEAT_GUI */
 
 #ifdef FEAT_SYN_HL
-    reset_synblock(wp);  /* free independent synblock */
     vim_free(wp->w_p_cc_cols);
 #endif
 
