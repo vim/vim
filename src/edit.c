@@ -163,6 +163,7 @@ static void ins_compl_restart __ARGS((void));
 static void ins_compl_set_original_text __ARGS((char_u *str));
 static void ins_compl_addfrommatch __ARGS((void));
 static int  ins_compl_prep __ARGS((int c));
+static void ins_compl_fixRedoBufForLeader __ARGS((char_u *ptr_arg));
 static buf_T *ins_compl_next_buf __ARGS((buf_T *buf, int flag));
 #if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
 static void ins_compl_add_list __ARGS((list_T *list));
@@ -3713,9 +3714,6 @@ ins_compl_prep(c)
 	     * memory that was used, and make sure we can redo the insert. */
 	    if (compl_curr_match != NULL || compl_leader != NULL || c == Ctrl_E)
 	    {
-		char_u	*p;
-		int	temp = 0;
-
 		/*
 		 * If any of the original typed text has been changed, eg when
 		 * ignorecase is set, we must add back-spaces to the redo
@@ -3726,25 +3724,9 @@ ins_compl_prep(c)
 		 */
 		if (compl_curr_match != NULL && compl_used_match && c != Ctrl_E)
 		    ptr = compl_curr_match->cp_str;
-		else if (compl_leader != NULL)
-		    ptr = compl_leader;
 		else
-		    ptr = compl_orig_text;
-		if (compl_orig_text != NULL)
-		{
-		    p = compl_orig_text;
-		    for (temp = 0; p[temp] != NUL && p[temp] == ptr[temp];
-								       ++temp)
-			;
-#ifdef FEAT_MBYTE
-		    if (temp > 0)
-			temp -= (*mb_head_off)(compl_orig_text, p + temp);
-#endif
-		    for (p += temp; *p != NUL; mb_ptr_adv(p))
-			AppendCharToRedobuff(K_BS);
-		}
-		if (ptr != NULL)
-		    AppendToRedobuffLit(ptr + temp, -1);
+		    ptr = NULL;
+		ins_compl_fixRedoBufForLeader(ptr);
 	    }
 
 #ifdef FEAT_CINDENT
@@ -3831,6 +3813,44 @@ ins_compl_prep(c)
     }
 
     return retval;
+}
+
+/*
+ * Fix the redo buffer for the completion leader replacing some of the typed
+ * text.  This inserts backspaces and appends the changed text.
+ * "ptr" is the known leader text or NUL.
+ */
+    static void
+ins_compl_fixRedoBufForLeader(ptr_arg)
+    char_u *ptr_arg;
+{
+    int	    len;
+    char_u  *p;
+    char_u  *ptr = ptr_arg;
+
+    if (ptr == NULL)
+    {
+	if (compl_leader != NULL)
+	    ptr = compl_leader;
+	else
+	    return;  /* nothing to do */
+    }
+    if (compl_orig_text != NULL)
+    {
+	p = compl_orig_text;
+	for (len = 0; p[len] != NUL && p[len] == ptr[len]; ++len)
+	    ;
+#ifdef FEAT_MBYTE
+	if (len > 0)
+	    len -= (*mb_head_off)(p, p + len);
+#endif
+	for (p += len; *p != NUL; mb_ptr_adv(p))
+	    AppendCharToRedobuff(K_BS);
+    }
+    else
+	len = 0;
+    if (ptr != NULL)
+	AppendToRedobuffLit(ptr + len, -1);
 }
 
 /*
@@ -5240,6 +5260,10 @@ ins_complete(c)
 	    edit_submode = (char_u *)_(ctrl_x_msgs[CTRL_X_LOCAL_MSG]);
 	else
 	    edit_submode = (char_u *)_(CTRL_X_MSG(ctrl_x_mode));
+
+	/* If any of the original typed text has been changed we need to fix
+	 * the redo buffer. */
+	ins_compl_fixRedoBufForLeader(NULL);
 
 	/* Always add completion for the original text. */
 	vim_free(compl_orig_text);
