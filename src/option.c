@@ -7036,6 +7036,9 @@ check_colorcolumn(wp)
     int		i;
     int		j = 0;
 
+    if (wp->w_buffer == NULL)
+	return NULL;  /* buffer was closed */
+
     for (s = wp->w_p_cc; *s != NUL && count < 255;)
     {
 	if (*s == '-' || *s == '+')
