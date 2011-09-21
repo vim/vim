@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2011 Sep 14
+*todo.txt*      For Vim version 7.3.  Last change: 2011 Sep 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,11 +34,36 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch to start GTK only after forking. (Tim Starling, 2011 Sep 12)
+Patch for redirection. (Yasuhiro Matsumoto, 2011 Sep 15) 2nd patch.
+Another on Sep 15?
 
-Patch for Lua debug(). (Rob Hoelz, 2011 Sep 12)
+Patch for DFLT_EFM. (Ben Boeckel, 2011 Sep 14)
+
+Code style patch. (Elias Diem, 2011 Sep 19)
+
+Patch for 'transparency' option. (Ben Boeckel, 2011 Sep 14)
+Do we want this?  Also Sergiu Dotenco, 2011 Sep 17.
+
+Patch for gui_w32.c: call DefWindowProc(). (Sergiu Dotenco, 2011 Sep 15, 17)
+
+Patch to use task dialogs when available. (Sergiu Dotenco, 2011 Sep 15, 17)
+Addition Sep 16.
+
+Patch for alpha-blended icons and toolbar height. (Sergiu Dotenco, 2011 Sep 15, 17)
+
+Change to #ifdef for PDP_RETVAL. (Sergiu Dotenco, 2011 Sep 17, patch 2)
+
+Patch for phpcomplete.vim (Benjamin Haskell) picked up by maintainer?
+
+Add voting item: modern plugin management (automatic updates, handle
+dependencies).
+Add links to http://vimcasts.org/ and http://vimgolf.com/
+Read http://www.charlietanksley.net/philtex/sane-vim-plugin-management/
 
 Go through more coverity reports.
+
+Patch for Issue #9: http://code.google.com/p/vim/issues/detail?id=9
+C++ indenting. martin.gieseking
 
 Using "." to repeat a Visual delete counts bytes, not characters.  Can this be
 fixed? (Connor Lane Smith, 2011 Sep 1)
@@ -66,6 +91,9 @@ Patch for: (Christian Brabandt, 2011 Aug 22)
 Patch for: (Christian Brabandt, 2011 Aug 24, updated patch)
 8   ":sign unplace * file={filename}" should work.  Also: ":sign unplace *
     buffer={bufnr}".  So one can remove all signs for one file/buffer.
+
+Problem with winfixheight and resizing. (Yukihiro Nakadaira, 2011 Sep 17)
+Patch Sep 18.
 
 Problem with l: dictionary being locked in a function. (ZyX, 2011 Jul 21)
 
@@ -138,8 +166,13 @@ string() can't parse back "inf" and "nan".  Fix documentation or fix code?
 
 Make 'formatprg' global-local. (Sung Pae)
 
+v:register doesn't work exactly as expected. (David Fishburn, 2011 Sep 20)
+
 When doing "redir => s:foo" in a script and then "redir END" somewhere else
 (e.g. in a function) it can't find s:foo.
+
+When setqflist() uses a filename that triggers a BufReadCmd autocommand Vim
+doesn't jump to the correct line with :cfirst. (ZyX,  2011 Sep 18)
 
 7   Make "ga" show the digraph for a character, if it exists.
 Patch from Christian Brabandt, 2011 Aug 19.
@@ -419,6 +452,8 @@ it.  Caused by "syntax sync fromstart" in combination with patch 7.2.274.
 (Christian Brabandt, 2010 May 27)
 Generally, folding with 'foldmethod' set to "syntax" is slow.  Do profiling to
 find out why.
+
+Syntax priority problem. (Charles Campbell, 2011 Sep 15)
 
 When completion inserts the first match, it may trigger the line to be folded.
 Disable updating folds while completion is active? (Peter Odding, 2010 Jun 9)

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2011 Jul 18
+*syntax.txt*	For Vim version 7.3.  Last change: 2011 Sep 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2605,8 +2605,41 @@ reduce this, the "sh_maxlines" internal variable can be set.  Example: >
 The default is to use the twice sh_minlines.  Set it to a smaller number to
 speed up displaying.  The disadvantage is that highlight errors may appear.
 
+						*g:sh_isk* *g:sh_noisk*
+The shell languages appear to let "." be part of words, commands, etc;
+consequently it should be in the isk for sh.vim.  As of v116 of syntax/sh.vim,
+syntax/sh.vim will append the "." to |'iskeyword'| by default; you may control
+this behavior with: >
+	let g:sh_isk  = '..whatever characters you want as part of iskeyword'
+	let g:sh_noisk= 1  " otherwise, if this exists, the isk will NOT chg
+<
+						*sh-embed*  *sh-awk*
+ Sh: EMBEDDING LANGUAGES~
 
-SPEEDUP (AspenTech plant simulator)		*spup.vim* *ft-spup-syntax*
+You may wish to embed languages into sh.  I'll give an example courtesy of
+Lorance Stinson on how to do this with awk as an example. Put the following
+file into $HOME/.vim/after/syntax/sh/awkembed.vim: >
+
+    " AWK Embedding: {{{1
+    " ==============
+    " Shamelessly ripped from aspperl.vim by Aaron Hope.
+    if exists("b:current_syntax")
+      unlet b:current_syntax
+    endif
+    syn include @AWKScript syntax/awk.vim
+    syn region AWKScriptCode matchgroup=AWKCommand start=+[=\\]\@<!'+ skip=+\\'+ end=+'+ contains=@AWKScript contained
+    syn region AWKScriptEmbedded matchgroup=AWKCommand start=+\<awk\>+ skip=+\\$+ end=+[=\\]\@<!'+me=e-1 contains=@shIdList,@shExprList2 nextgroup=AWKScriptCode
+    syn cluster shCommandSubList add=AWKScriptEmbedded
+    hi def link AWKCommand Type
+<
+This code will then let the awk code in the single quotes: >
+	awk '...awk code here...'
+be highlighted using the awk highlighting syntax.  Clearly this may be
+extended to other languages.
+
+
+SPEEDUP						*spup.vim* *ft-spup-syntax*
+(AspenTech plant simulator)
 
 The Speedup syntax file has some options:
 
@@ -2689,6 +2722,8 @@ sections, subsections, etc are supported.  Put >
 in your <.vimrc>, and :set fdm=syntax.  I suggest doing the latter via a
 modeline at the end of your LaTeX file: >
 	% vim: fdm=syntax
+If your system becomes too slow, then you might wish to look into >
+	https://vimhelp.appspot.com/vim_faq.txt.html#faq-29.7
 <
 								*tex-nospell*
  Tex: Don't Want Spell Checking In Comments? ~
@@ -2728,6 +2763,9 @@ If you have a slow computer, you may wish to reduce the values for >
 (especially the latter).  If your computer is fast, you may wish to
 increase them.	This primarily affects synchronizing (i.e. just what group,
 if any, is the text at the top of the screen supposed to be in?).
+
+Another cause of slow highlighting is due to syntax-driven folding; see
+|tex-folding| for a way around this.
 
 					    *tex-morecommands* *tex-package*
  Tex: Want To Highlight More Commands? ~

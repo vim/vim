@@ -3,7 +3,7 @@
 " Maintainer:  Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
 " Former Maintainers: Gerfried Fuchs <alfie@ist.org>
 "                     Wichert Akkerman <wakkerma@debian.org>
-" Last Change: 2011 June 01
+" Last Change: 2011 Sep 17
 " URL: http://anonscm.debian.org/hg/pkg-vim/vim/raw-file/unstable/runtime/syntax/debcontrol.vim
 
 " Standard syntax initialization
@@ -24,7 +24,7 @@ syn match debControlComma ", *"
 syn match debControlSpace " "
 
 " Define some common expressions we can use later on
-syn match debcontrolArchitecture contained "\%(all\|any\|linux-any\|\%(any-\)\=\%(alpha\|amd64\|arm\%(e[bl]\)\=\|avr32\|hppa\|i386\|ia64\|lpia\|m32r\|m68k\|mips\%(el\)\=\|powerpc\|ppc64\|s390x\=\|sh[34]\(eb\)\=\|sh\|sparc\%(64\)\=\)\|hurd-\%(i386\|any\)\|kfreebsd-\%(i386\|amd64\|any\)\|knetbsd-\%(i386\|any\)\|kopensolaris-\%(i386\|any\)\|netbsd-\%(alpha\|i386\|any\)\)"
+syn match debcontrolArchitecture contained "\%(all\|linux-any\|\%(any-\)\=\%(alpha\|amd64\|arm\%(e[bl]\|hf\)\=\|avr32\|hppa\|i386\|ia64\|lpia\|m32r\|m68k\|mips\%(el\)\=\|powerpc\|ppc64\|s390x\=\|sh[34]\(eb\)\=\|sh\|sparc\%(64\)\=\)\|hurd-\%(i386\|any\)\|kfreebsd-\%(i386\|amd64\|any\)\|knetbsd-\%(i386\|any\)\|kopensolaris-\%(i386\|any\)\|netbsd-\%(alpha\|i386\|any\)\|any\)"
 syn match debcontrolMultiArch contained "\%(no\|foreign\|allowed\|same\)"
 syn match debcontrolName contained "[a-z0-9][a-z0-9+.-]\+"
 syn match debcontrolPriority contained "\(extra\|important\|optional\|required\|standard\)"

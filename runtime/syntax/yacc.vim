@@ -7,16 +7,6 @@
 "
 " Options: {{{1
 "   g:yacc_uses_cpp : if this variable exists, then C++ is loaded rather than C
-"
-" Overall layout of a bison/yacc grammer:
-"   %{
-"    Prolog
-"   %}
-"   Bison/Yacc Declarations
-"   %%
-"   Grammar Rules
-"   %%
-"   Epilogue
 
 " ---------------------------------------------------------------------
 " this version of syntax/yacc.vim requires 6.0 or later

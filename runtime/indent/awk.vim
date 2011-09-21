@@ -189,6 +189,9 @@ endfunction
 
 function! s:Seems_continuing( line )
   " Unfinished lines
+  if a:line =~ '\(--\|++\)\s*$'
+    return 0
+  endif
   if a:line =~ '[\\,\|\&\+\-\*\%\^]\s*$'
     return 1
   endif
