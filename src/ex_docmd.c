@@ -61,6 +61,7 @@ static char_u	*do_one_cmd __ARGS((char_u **, int, struct condstack *, char_u *(*
 static char_u	*do_one_cmd __ARGS((char_u **, int, char_u *(*fgetline)(int, void *, int), void *cookie));
 static int	if_level = 0;		/* depth in :if */
 #endif
+static void	append_command __ARGS((char_u *cmd));
 static char_u	*find_command __ARGS((exarg_T *eap, int *full));
 
 static void	ex_abbreviate __ARGS((exarg_T *eap));
@@ -2136,10 +2137,7 @@ do_one_cmd(cmdlinep, sourcing,
 	{
 	    STRCPY(IObuff, _("E492: Not an editor command"));
 	    if (!sourcing)
-	    {
-		STRCAT(IObuff, ": ");
-		STRNCAT(IObuff, *cmdlinep, 40);
-	    }
+		append_command(*cmdlinep);
 	    errormsg = IObuff;
 	}
 	goto doend;
@@ -2708,8 +2706,7 @@ doend:
 		STRCPY(IObuff, errormsg);
 		errormsg = IObuff;
 	    }
-	    STRCAT(errormsg, ": ");
-	    STRNCAT(errormsg, *cmdlinep, IOSIZE - STRLEN(IObuff) - 1);
+	    append_command(*cmdlinep);
 	}
 	emsg(errormsg);
     }
@@ -2794,6 +2791,42 @@ checkforcmd(pp, cmd, len)
 	return TRUE;
     }
     return FALSE;
+}
+
+/*
+ * Append "cmd" to the error message in IObuff.
+ * Takes care of limiting the length and handling 0xa0, which would be
+ * invisible otherwise.
+ */
+    static void
+append_command(cmd)
+    char_u *cmd;
+{
+    char_u *s = cmd;
+    char_u *d;
+
+    STRCAT(IObuff, ": ");
+    d = IObuff + STRLEN(IObuff);
+    while (*s != NUL && d - IObuff < IOSIZE - 7)
+    {
+	if (
+#ifdef FEAT_MBYTE
+		enc_utf8 ? (s[0] == 0xc2 && s[1] == 0xa0) :
+#endif
+		*s == 0xa0)
+	{
+	    s +=
+#ifdef FEAT_MBYTE
+		enc_utf8 ? 2 :
+#endif
+		1;
+	    STRCPY(d, "<a0>");
+	    d += 4;
+	}
+	else
+	    MB_COPY_CHAR(s, d);
+    }
+    *d = NUL;
 }
 
 /*
