@@ -1922,7 +1922,9 @@ op_delete(oap)
 		    curwin->w_cursor.coladd = 0;
 	    }
 #endif
-	    if (oap->inclusive && oap->end.lnum == curbuf->b_ml.ml_line_count
+	    if (oap->op_type == OP_DELETE
+		    && oap->inclusive
+		    && oap->end.lnum == curbuf->b_ml.ml_line_count
 		    && n > (int)STRLEN(ml_get(oap->end.lnum)))
 	    {
 		/* Special case: gH<Del> deletes the last line. */
@@ -3331,8 +3333,8 @@ do_put(regname, dir, count, flags)
 	if (regname == '=')
 	{
 	    /* For the = register we need to split the string at NL
-	     * characters. */
-	    /* Loop twice: count the number of lines and save them. */
+	     * characters.
+	     * Loop twice: count the number of lines and save them. */
 	    for (;;)
 	    {
 		y_size = 0;
@@ -3348,7 +3350,7 @@ do_put(regname, dir, count, flags)
 			if (y_array != NULL)
 			    *ptr = NUL;
 			++ptr;
-			/* A trailing '\n' makes the string linewise */
+			/* A trailing '\n' makes the register linewise. */
 			if (*ptr == NUL)
 			{
 			    y_type = MLINE;
