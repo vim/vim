@@ -1781,7 +1781,7 @@ swap_me(COLORREF colorref)
 }
 
 /* Attempt to make this work for old and new compilers */
-#if !defined(_MSC_VER) || (_MSC_VER < 1300) || !defined(INT_PTR)
+#if !defined(_WIN64) && (!defined(_MSC_VER) || _MSC_VER < 1300)
 # define PDP_RETVAL BOOL
 #else
 # define PDP_RETVAL INT_PTR
