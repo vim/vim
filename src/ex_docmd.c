@@ -371,11 +371,9 @@ static void	ex_tag_cmd __ARGS((exarg_T *eap, char_u *name));
 # define ex_endif		ex_ni
 # define ex_else		ex_ni
 # define ex_while		ex_ni
-# define ex_for			ex_ni
 # define ex_continue		ex_ni
 # define ex_break		ex_ni
 # define ex_endwhile		ex_ni
-# define ex_endfor		ex_ni
 # define ex_throw		ex_ni
 # define ex_try			ex_ni
 # define ex_catch		ex_ni

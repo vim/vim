@@ -3377,7 +3377,10 @@ ex_call(eap)
 	/* trans_function_name() doesn't work well when skipping, use eval0()
 	 * instead to skip to any following command, e.g. for:
 	 *   :if 0 | call dict.foo().bar() | endif  */
-	eval0(eap->arg, &rettv, &eap->nextcmd, FALSE);
+	++emsg_skip;
+	if (eval0(eap->arg, &rettv, &eap->nextcmd, FALSE) != FAIL)
+	    clear_tv(&rettv);
+	--emsg_skip;
 	return;
     }
 
