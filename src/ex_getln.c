@@ -2870,6 +2870,7 @@ put_on_cmdline(str, len, redraw)
 	{
 	    msg_no_more = TRUE;
 	    i = cmdline_row;
+	    cursorcmd();
 	    draw_cmdline(ccline.cmdpos, ccline.cmdlen - ccline.cmdpos);
 	    /* Avoid clearing the rest of the line too often. */
 	    if (cmdline_row != i || ccline.overstrike)
