@@ -4546,7 +4546,7 @@ ExpandFromContext(xp, pat, num_file, file, options)
     }
     if (xp->xp_context == EXPAND_COMPILER)
     {
-	char *directories[] = {"colors", NULL};
+	char *directories[] = {"compiler", NULL};
 	return ExpandRTDir(pat, num_file, file, directories);
     }
     if (xp->xp_context == EXPAND_OWNSYNTAX)
