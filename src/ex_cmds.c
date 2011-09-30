@@ -5508,6 +5508,9 @@ ex_help(eap)
     int		len;
     char_u	*lang;
 #endif
+#ifdef FEAT_FOLDING
+    int		old_KeyTyped = KeyTyped;
+#endif
 
     if (eap != NULL)
     {
@@ -5670,6 +5673,12 @@ ex_help(eap)
 
     if (!p_im)
 	restart_edit = 0;	    /* don't want insert mode in help file */
+
+#ifdef FEAT_FOLDING
+    /* Restore KeyTyped, setting 'filetype=help' may reset it.
+     * It is needed for do_tag top open folds under the cursor. */
+    KeyTyped = old_KeyTyped;
+#endif
 
     if (tag != NULL)
 	do_tag(tag, DT_HELP, 1, FALSE, TRUE);
