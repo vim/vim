@@ -641,7 +641,7 @@ upx: exes
 	upx vim.exe
 
 xxd/xxd.exe: xxd/xxd.c
-	$(MAKE) -C xxd -f Make_cyg.mak CC=$(CC)
+	$(MAKE) -C xxd -f Make_ming.mak CC=$(CC)
 
 GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 	$(MAKE) -C GvimExt -f Make_ming.mak CROSS=$(CROSS) CROSS_COMPILE=$(CROSS_COMPILE)
@@ -659,7 +659,7 @@ ifdef MZSCHEME
 	-$(DEL) mzscheme_base.c
 endif
 	$(MAKE) -C GvimExt -f Make_ming.mak clean
-	$(MAKE) -C xxd -f Make_cyg.mak clean
+	$(MAKE) -C xxd -f Make_ming.mak clean
 
 ###########################################################################
 INCL = vim.h feature.h os_win32.h os_dos.h ascii.h keymap.h term.h macros.h \

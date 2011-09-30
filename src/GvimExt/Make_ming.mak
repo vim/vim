@@ -1,6 +1,6 @@
 # Project: gvimext
 # Generates gvimext.dll with gcc.
-# Can be used for Cygwin and MingW (MingW ignores -mno-cygwin)
+# To be used with MingW.
 #
 # Originally, the DLL base address was fixed: -Wl,--image-base=0x1C000000
 # Now it is allocated dymanically by the linker by evaluating all DLLs
@@ -31,12 +31,12 @@ endif
 ifeq ($(CROSS),yes)
 DEL = rm
 ifeq ($(MINGWOLD),yes)
-CXXFLAGS := -O2 -mno-cygwin -fvtable-thunks
+CXXFLAGS := -O2 -fvtable-thunks
 else
-CXXFLAGS := -O2 -mno-cygwin
+CXXFLAGS := -O2
 endif
 else
-CXXFLAGS := -O2 -mno-cygwin
+CXXFLAGS := -O2
 ifneq (sh.exe, $(SHELL))
 DEL = rm
 else
@@ -75,4 +75,3 @@ $(RES): gvimext_ming.rc
 
 clean: clean-custom
 	-$(DEL)  $(OBJ) $(RES) $(DLL)
-

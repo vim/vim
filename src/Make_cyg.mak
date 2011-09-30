@@ -536,7 +536,7 @@ xxd/xxd.exe: xxd/xxd.c
 	$(MAKE) -C xxd -f Make_cyg.mak CC=$(CC) USEDLL=$(USEDLL)
 
 GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
-	$(MAKE) -C GvimExt -f Make_ming.mak CROSS_COMPILE=$(CROSS_COMPILE)
+	$(MAKE) -C GvimExt -f Make_cyg.mak CROSS_COMPILE=$(CROSS_COMPILE)
 
 vimrun.exe: vimrun.c
 	$(CC) $(CFLAGS) -o vimrun.exe vimrun.c  $(LIBS)
@@ -565,7 +565,7 @@ ifdef MZSCHEME
 endif
 	-$(DEL) pathdef.c
 	$(MAKE) -C xxd -f Make_cyg.mak clean
-	$(MAKE) -C GvimExt -f Make_ming.mak clean
+	$(MAKE) -C GvimExt -f Make_cyg.mak clean
 
 distclean: clean
 	-$(DEL) obj$(DIRSLASH)*.o
