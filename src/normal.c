@@ -20,7 +20,7 @@
  */
 static int	resel_VIsual_mode = NUL;	/* 'v', 'V', or Ctrl-V */
 static linenr_T	resel_VIsual_line_count;	/* number of lines */
-static colnr_T	resel_VIsual_col;		/* nr of cols or end col */
+static colnr_T	resel_VIsual_vcol;		/* nr of cols or end col */
 
 static int	restart_VIsual_select = 0;
 #endif
@@ -1436,7 +1436,7 @@ do_pending_operator(cap, old_col, gui_yank)
     /* The visual area is remembered for redo */
     static int	    redo_VIsual_mode = NUL; /* 'v', 'V', or Ctrl-V */
     static linenr_T redo_VIsual_line_count; /* number of lines */
-    static colnr_T  redo_VIsual_col;	    /* number of cols or end column */
+    static colnr_T  redo_VIsual_vcol;	    /* number of cols or end column */
     static long	    redo_VIsual_count;	    /* count for Visual operator */
 # ifdef FEAT_VIRTUALEDIT
     int		    include_line_break = FALSE;
@@ -1549,22 +1549,31 @@ do_pending_operator(cap, old_col, gui_yank)
 #ifdef FEAT_VISUAL
 	if (redo_VIsual_busy)
 	{
+	    /* Redo of an operation on a Visual area. Use the same size from
+	     * redo_VIsual_line_count and redo_VIsual_vcol. */
 	    oap->start = curwin->w_cursor;
 	    curwin->w_cursor.lnum += redo_VIsual_line_count - 1;
 	    if (curwin->w_cursor.lnum > curbuf->b_ml.ml_line_count)
 		curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
 	    VIsual_mode = redo_VIsual_mode;
-	    if (VIsual_mode == 'v')
+	    if (redo_VIsual_vcol == MAXCOL || VIsual_mode == 'v')
 	    {
-		if (redo_VIsual_line_count <= 1)
-		    curwin->w_cursor.col += redo_VIsual_col - 1;
+		if (VIsual_mode == 'v')
+		{
+		    if (redo_VIsual_line_count <= 1)
+		    {
+			validate_virtcol();
+			curwin->w_curswant =
+				     curwin->w_virtcol + redo_VIsual_vcol - 1;
+		    }
+		    else
+			curwin->w_curswant = redo_VIsual_vcol;
+		}
 		else
-		    curwin->w_cursor.col = redo_VIsual_col;
-	    }
-	    if (redo_VIsual_col == MAXCOL)
-	    {
-		curwin->w_curswant = MAXCOL;
-		coladvance((colnr_T)MAXCOL);
+		{
+		    curwin->w_curswant = MAXCOL;
+		}
+		coladvance(curwin->w_curswant);
 	    }
 	    cap->count0 = redo_VIsual_count;
 	    if (redo_VIsual_count != 0)
@@ -1710,7 +1719,7 @@ do_pending_operator(cap, old_col, gui_yank)
 		    }
 		}
 		else if (redo_VIsual_busy)
-		    oap->end_vcol = oap->start_vcol + redo_VIsual_col - 1;
+		    oap->end_vcol = oap->start_vcol + redo_VIsual_vcol - 1;
 		/*
 		 * Correct oap->end.col and oap->start.col to be the
 		 * upper-left and lower-right corner of the block area.
@@ -1735,13 +1744,22 @@ do_pending_operator(cap, old_col, gui_yank)
 		 */
 		resel_VIsual_mode = VIsual_mode;
 		if (curwin->w_curswant == MAXCOL)
-		    resel_VIsual_col = MAXCOL;
-		else if (VIsual_mode == Ctrl_V)
-		    resel_VIsual_col = oap->end_vcol - oap->start_vcol + 1;
-		else if (oap->line_count > 1)
-		    resel_VIsual_col = oap->end.col;
+		    resel_VIsual_vcol = MAXCOL;
 		else
-		    resel_VIsual_col = oap->end.col - oap->start.col + 1;
+		{
+		    if (VIsual_mode != Ctrl_V)
+			getvvcol(curwin, &(oap->end),
+						  NULL, NULL, &oap->end_vcol);
+		    if (VIsual_mode == Ctrl_V || oap->line_count <= 1)
+		    {
+			if (VIsual_mode != Ctrl_V)
+			    getvvcol(curwin, &(oap->start),
+						&oap->start_vcol, NULL, NULL);
+			resel_VIsual_vcol = oap->end_vcol - oap->start_vcol + 1;
+		    }
+		    else
+			resel_VIsual_vcol = oap->end_vcol;
+		}
 		resel_VIsual_line_count = oap->line_count;
 	    }
 
@@ -1769,7 +1787,7 @@ do_pending_operator(cap, old_col, gui_yank)
 		if (!redo_VIsual_busy)
 		{
 		    redo_VIsual_mode = resel_VIsual_mode;
-		    redo_VIsual_col = resel_VIsual_col;
+		    redo_VIsual_vcol = resel_VIsual_vcol;
 		    redo_VIsual_line_count = resel_VIsual_line_count;
 		    redo_VIsual_count = cap->count0;
 		}
@@ -7631,12 +7649,16 @@ nv_visual(cap)
 	    if (VIsual_mode == 'v')
 	    {
 		if (resel_VIsual_line_count <= 1)
-		    curwin->w_cursor.col += resel_VIsual_col * cap->count0 - 1;
+		{
+		    validate_virtcol();
+		    curwin->w_curswant = curwin->w_virtcol
+					+ resel_VIsual_vcol * cap->count0 - 1;
+		}
 		else
-		    curwin->w_cursor.col = resel_VIsual_col;
-		check_cursor_col();
+		    curwin->w_curswant = resel_VIsual_vcol;
+		coladvance(curwin->w_curswant);
 	    }
-	    if (resel_VIsual_col == MAXCOL)
+	    if (resel_VIsual_vcol == MAXCOL)
 	    {
 		curwin->w_curswant = MAXCOL;
 		coladvance((colnr_T)MAXCOL);
@@ -7645,7 +7667,7 @@ nv_visual(cap)
 	    {
 		validate_virtcol();
 		curwin->w_curswant = curwin->w_virtcol
-					 + resel_VIsual_col * cap->count0 - 1;
+					+ resel_VIsual_vcol * cap->count0 - 1;
 		coladvance(curwin->w_curswant);
 	    }
 	    else
