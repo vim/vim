@@ -1009,6 +1009,7 @@ main_loop(cmdwin, noexmode)
 	skip_redraw = FALSE;
 	RedrawingDisabled = 0;
 	no_wait_return = 0;
+	vgetc_busy = 0;
 # ifdef FEAT_EVAL
 	emsg_skip = 0;
 # endif
