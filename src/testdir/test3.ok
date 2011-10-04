@@ -1190,6 +1190,16 @@ protected:
 };
 
 
+class Foo : public Bar
+{
+	public:
+		virtual void method1(void) = 0;
+		virtual void method2(int arg1,
+							 int arg2,
+							 int arg3) = 0;
+};
+
+
 	void
 foo()
 {

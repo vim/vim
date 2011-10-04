@@ -1309,6 +1309,20 @@ protected:
 };
 
 STARTTEST
+:set cino=(0,gs,hs
+2kdd]]=][
+ENDTEST
+
+class Foo : public Bar
+{
+public:
+virtual void method1(void) = 0;
+virtual void method2(int arg1,
+int arg2,
+int arg3) = 0;
+};
+
+STARTTEST
 :set cino=+20
 2kdd]]=][
 ENDTEST
