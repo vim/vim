@@ -3927,7 +3927,7 @@ again:
 	curwin->w_cursor = old_pos;
 	goto theend;
     }
-    sprintf((char *)spat, "<%.*s\\%%(\\_[^>]\\{-}[^/]>\\|>\\)\\c", len, p);
+    sprintf((char *)spat, "<%.*s\\>\\%%(\\_[^>]\\{-}[^/]>\\|>\\)\\c", len, p);
     sprintf((char *)epat, "</%.*s>\\c", len, p);
 
     r = do_searchpair(spat, (char_u *)"", epat, FORWARD, (char_u *)"",
