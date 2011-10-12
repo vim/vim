@@ -1277,6 +1277,7 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
 {
     FILE       *fp;
     char_u     *lbuf;			/* line buffer */
+    int		lbuf_size = LSIZE;	/* length of lbuf */
     char_u     *tag_fname;		/* name of tag file */
     tagname_T	tn;			/* info for get_tagfname() */
     int		first_file;		/* trying first tag file */
@@ -1291,6 +1292,7 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
     char_u	*s;
     int		i;
 #ifdef FEAT_TAG_BINS
+    int		tag_file_sorted = NUL;	/* !_TAG_FILE_SORTED value */
     struct tag_search_info	/* Binary search file offsets */
     {
 	off_t	low_offset;	/* offset for first char of first line that
@@ -1360,13 +1362,8 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
     char_u	*saved_pat = NULL;		/* copy of pat[] */
 #endif
 
-    /* Use two sets of variables for the pattern: "orgpat" holds the values
-     * for the original pattern and "convpat" converted from 'encoding' to
-     * encoding of the tags file.  "pats" point to either one of these. */
-    pat_T	*pats;
     pat_T	orgpat;			/* holds unconverted pattern info */
 #ifdef FEAT_MBYTE
-    pat_T	convpat;		/* holds converted pattern info */
     vimconv_T	vimconv;
 #endif
 
@@ -1390,7 +1387,6 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
 
     help_save = curbuf->b_help;
     orgpat.pat = pat;
-    pats = &orgpat;
 #ifdef FEAT_MBYTE
     vimconv.vc_type = CONV_NONE;
 #endif
@@ -1398,7 +1394,7 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
 /*
  * Allocate memory for the buffers that are used
  */
-    lbuf = alloc(LSIZE);
+    lbuf = alloc(lbuf_size);
     tag_fname = alloc(MAXPATHL + 1);
 #ifdef FEAT_EMACS_TAGS
     ebuf = alloc(LSIZE);
@@ -1424,30 +1420,30 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
     if (help_only)				/* want tags from help file */
 	curbuf->b_help = TRUE;			/* will be restored later */
 
-    pats->len = (int)STRLEN(pat);
+    orgpat.len = (int)STRLEN(pat);
 #ifdef FEAT_MULTI_LANG
     if (curbuf->b_help)
     {
 	/* When "@ab" is specified use only the "ab" language, otherwise
 	 * search all languages. */
-	if (pats->len > 3 && pat[pats->len - 3] == '@'
-					  && ASCII_ISALPHA(pat[pats->len - 2])
-					 && ASCII_ISALPHA(pat[pats->len - 1]))
+	if (orgpat.len > 3 && pat[orgpat.len - 3] == '@'
+					  && ASCII_ISALPHA(pat[orgpat.len - 2])
+					 && ASCII_ISALPHA(pat[orgpat.len - 1]))
 	{
-	    saved_pat = vim_strnsave(pat, pats->len - 3);
+	    saved_pat = vim_strnsave(pat, orgpat.len - 3);
 	    if (saved_pat != NULL)
 	    {
-		help_lang_find = &pat[pats->len - 2];
-		pats->pat = saved_pat;
-		pats->len -= 3;
+		help_lang_find = &pat[orgpat.len - 2];
+		orgpat.pat = saved_pat;
+		orgpat.len -= 3;
 	    }
 	}
     }
 #endif
-    if (p_tl != 0 && pats->len > p_tl)		/* adjust for 'taglength' */
-	pats->len = p_tl;
+    if (p_tl != 0 && orgpat.len > p_tl)		/* adjust for 'taglength' */
+	orgpat.len = p_tl;
 
-    prepare_pats(pats, has_re);
+    prepare_pats(&orgpat, has_re);
 
 #ifdef FEAT_TAG_BINS
     /* This is only to avoid a compiler warning for using search_info
@@ -1466,13 +1462,13 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
      * Only ignore case when TAG_NOIC not used or 'ignorecase' set.
      */
 #ifdef FEAT_TAG_BINS
-    pats->regmatch.rm_ic = ((p_ic || !noic)
-				&& (findall || pats->headlen == 0 || !p_tbs));
+    orgpat.regmatch.rm_ic = ((p_ic || !noic)
+				&& (findall || orgpat.headlen == 0 || !p_tbs));
     for (round = 1; round <= 2; ++round)
     {
-      linear = (pats->headlen == 0 || !p_tbs || round == 2);
+      linear = (orgpat.headlen == 0 || !p_tbs || round == 2);
 #else
-      pats->regmatch.rm_ic = (p_ic || !noic);
+      orgpat.regmatch.rm_ic = (p_ic || !noic);
 #endif
 
       /*
@@ -1701,6 +1697,36 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
 	    }
 line_read_in:
 
+#ifdef FEAT_MBYTE
+	    if (vimconv.vc_type != CONV_NONE)
+	    {
+		char_u	*conv_line;
+		int	len;
+
+		/* Convert every line.  Converting the pattern from 'enc' to
+		 * the tags file encoding doesn't work, because characters are
+		 * not recognized. */
+		conv_line = string_convert(&vimconv, lbuf, NULL);
+		if (conv_line != NULL)
+		{
+		    /* Copy or swap lbuf and conv_line. */
+		    len = (int)STRLEN(conv_line) + 1;
+		    if (len > lbuf_size)
+		    {
+			vim_free(lbuf);
+			lbuf = conv_line;
+			lbuf_size = len;
+		    }
+		    else
+		    {
+			STRCPY(lbuf, conv_line);
+			vim_free(conv_line);
+		    }
+		}
+	    }
+#endif
+
+
 #ifdef FEAT_EMACS_TAGS
 	    /*
 	     * Emacs tags line with CTRL-L: New file name on next line.
@@ -1770,6 +1796,33 @@ line_read_in:
 	     */
 	    if (state == TS_START)
 	    {
+		if (STRNCMP(lbuf, "!_TAG_", 6) <= 0)
+		{
+		    /*
+		     * Read header line.
+		     */
+#ifdef FEAT_TAG_BINS
+		    if (STRNCMP(lbuf, "!_TAG_FILE_SORTED\t", 18) == 0)
+			tag_file_sorted = lbuf[18];
+#endif
+#ifdef FEAT_MBYTE
+		    if (STRNCMP(lbuf, "!_TAG_FILE_ENCODING\t", 20) == 0)
+		    {
+			/* Prepare to convert every line from the specified
+			 * encoding to 'encoding'. */
+			for (p = lbuf + 20; *p > ' ' && *p < 127; ++p)
+			    ;
+			*p = NUL;
+			convert_setup(&vimconv, lbuf + 20, p_enc);
+		    }
+#endif
+
+		    /* Read the next line.  Unrecognized flags are ignored. */
+		    continue;
+		}
+
+		/* Headers ends. */
+
 #ifdef FEAT_TAG_BINS
 		/*
 		 * When there is no tag head, or ignoring case, need to do a
@@ -1786,24 +1839,20 @@ line_read_in:
 		if (linear)
 # endif
 		    state = TS_LINEAR;
-		else if (STRNCMP(lbuf, "!_TAG_", 6) > 0)
+		else if (tag_file_sorted == NUL)
 		    state = TS_BINARY;
-		else if (STRNCMP(lbuf, "!_TAG_FILE_SORTED\t", 18) == 0)
+		else if (tag_file_sorted == '1')
+			state = TS_BINARY;
+		else if (tag_file_sorted == '2')
 		{
-		    /* Check sorted flag */
-		    if (lbuf[18] == '1')
-			state = TS_BINARY;
-		    else if (lbuf[18] == '2')
-		    {
-			state = TS_BINARY;
-			sortic = TRUE;
-			pats->regmatch.rm_ic = (p_ic || !noic);
-		    }
-		    else
-			state = TS_LINEAR;
+		    state = TS_BINARY;
+		    sortic = TRUE;
+		    orgpat.regmatch.rm_ic = (p_ic || !noic);
 		}
+		else
+		    state = TS_LINEAR;
 
-		if (state == TS_BINARY && pats->regmatch.rm_ic && !sortic)
+		if (state == TS_BINARY && orgpat.regmatch.rm_ic && !sortic)
 		{
 		    /* binary search won't work for ignoring case, use linear
 		     * search. */
@@ -1843,40 +1892,12 @@ line_read_in:
 #endif
 	    }
 
-#ifdef FEAT_MBYTE
-	    if (lbuf[0] == '!' && pats == &orgpat
-			   && STRNCMP(lbuf, "!_TAG_FILE_ENCODING\t", 20) == 0)
-	    {
-		/* Convert the search pattern from 'encoding' to the
-		 * specified encoding. */
-		for (p = lbuf + 20; *p > ' ' && *p < 127; ++p)
-		    ;
-		*p = NUL;
-		convert_setup(&vimconv, p_enc, lbuf + 20);
-		if (vimconv.vc_type != CONV_NONE)
-		{
-		    convpat.pat = string_convert(&vimconv, pats->pat, NULL);
-		    if (convpat.pat != NULL)
-		    {
-			pats = &convpat;
-			pats->len = (int)STRLEN(pats->pat);
-			prepare_pats(pats, has_re);
-			pats->regmatch.rm_ic = orgpat.regmatch.rm_ic;
-		    }
-		}
-
-		/* Prepare for converting a match the other way around. */
-		convert_setup(&vimconv, lbuf + 20, p_enc);
-		continue;
-	    }
-#endif
-
 	    /*
 	     * Figure out where the different strings are in this line.
 	     * For "normal" tags: Do a quick check if the tag matches.
 	     * This speeds up tag searching a lot!
 	     */
-	    if (pats->headlen
+	    if (orgpat.headlen
 #ifdef FEAT_EMACS_TAGS
 			    && !is_etag
 #endif
@@ -1933,9 +1954,9 @@ line_read_in:
 		cmplen = (int)(tagp.tagname_end - tagp.tagname);
 		if (p_tl != 0 && cmplen > p_tl)	    /* adjust for 'taglength' */
 		    cmplen = p_tl;
-		if (has_re && pats->headlen < cmplen)
-		    cmplen = pats->headlen;
-		else if (state == TS_LINEAR && pats->headlen != cmplen)
+		if (has_re && orgpat.headlen < cmplen)
+		    cmplen = orgpat.headlen;
+		else if (state == TS_LINEAR && orgpat.headlen != cmplen)
 		    continue;
 
 #ifdef FEAT_TAG_BINS
@@ -1954,10 +1975,10 @@ line_read_in:
 		     * Compare the current tag with the searched tag.
 		     */
 		    if (sortic)
-			tagcmp = tag_strnicmp(tagp.tagname, pats->head,
+			tagcmp = tag_strnicmp(tagp.tagname, orgpat.head,
 							      (size_t)cmplen);
 		    else
-			tagcmp = STRNCMP(tagp.tagname, pats->head, cmplen);
+			tagcmp = STRNCMP(tagp.tagname, orgpat.head, cmplen);
 
 		    /*
 		     * A match with a shorter tag means to search forward.
@@ -1965,9 +1986,9 @@ line_read_in:
 		     */
 		    if (tagcmp == 0)
 		    {
-			if (cmplen < pats->headlen)
+			if (cmplen < orgpat.headlen)
 			    tagcmp = -1;
-			else if (cmplen > pats->headlen)
+			else if (cmplen > orgpat.headlen)
 			    tagcmp = 1;
 		    }
 
@@ -2011,7 +2032,7 @@ line_read_in:
 		}
 		else if (state == TS_SKIP_BACK)
 		{
-		    if (MB_STRNICMP(tagp.tagname, pats->head, cmplen) != 0)
+		    if (MB_STRNICMP(tagp.tagname, orgpat.head, cmplen) != 0)
 			state = TS_STEP_FORWARD;
 		    else
 			/* Have to skip back more.  Restore the curr_offset
@@ -2021,7 +2042,7 @@ line_read_in:
 		}
 		else if (state == TS_STEP_FORWARD)
 		{
-		    if (MB_STRNICMP(tagp.tagname, pats->head, cmplen) != 0)
+		    if (MB_STRNICMP(tagp.tagname, orgpat.head, cmplen) != 0)
 		    {
 			if ((off_t)ftell(fp) > search_info.match_offset)
 			    break;	/* past last match */
@@ -2032,7 +2053,7 @@ line_read_in:
 		else
 #endif
 		    /* skip this match if it can't match */
-		    if (MB_STRNICMP(tagp.tagname, pats->head, cmplen) != 0)
+		    if (MB_STRNICMP(tagp.tagname, orgpat.head, cmplen) != 0)
 		    continue;
 
 		/*
@@ -2083,41 +2104,41 @@ line_read_in:
 	    if (p_tl != 0 && cmplen > p_tl)	    /* adjust for 'taglength' */
 		cmplen = p_tl;
 	    /* if tag length does not match, don't try comparing */
-	    if (pats->len != cmplen)
+	    if (orgpat.len != cmplen)
 		match = FALSE;
 	    else
 	    {
-		if (pats->regmatch.rm_ic)
+		if (orgpat.regmatch.rm_ic)
 		{
-		    match = (MB_STRNICMP(tagp.tagname, pats->pat, cmplen) == 0);
+		    match = (MB_STRNICMP(tagp.tagname, orgpat.pat, cmplen) == 0);
 		    if (match)
-			match_no_ic = (STRNCMP(tagp.tagname, pats->pat,
+			match_no_ic = (STRNCMP(tagp.tagname, orgpat.pat,
 								cmplen) == 0);
 		}
 		else
-		    match = (STRNCMP(tagp.tagname, pats->pat, cmplen) == 0);
+		    match = (STRNCMP(tagp.tagname, orgpat.pat, cmplen) == 0);
 	    }
 
 	    /*
 	     * Has a regexp: Also find tags matching regexp.
 	     */
 	    match_re = FALSE;
-	    if (!match && pats->regmatch.regprog != NULL)
+	    if (!match && orgpat.regmatch.regprog != NULL)
 	    {
 		int	cc;
 
 		cc = *tagp.tagname_end;
 		*tagp.tagname_end = NUL;
-		match = vim_regexec(&pats->regmatch, tagp.tagname, (colnr_T)0);
+		match = vim_regexec(&orgpat.regmatch, tagp.tagname, (colnr_T)0);
 		if (match)
 		{
-		    matchoff = (int)(pats->regmatch.startp[0] - tagp.tagname);
-		    if (pats->regmatch.rm_ic)
+		    matchoff = (int)(orgpat.regmatch.startp[0] - tagp.tagname);
+		    if (orgpat.regmatch.rm_ic)
 		    {
-			pats->regmatch.rm_ic = FALSE;
-			match_no_ic = vim_regexec(&pats->regmatch, tagp.tagname,
+			orgpat.regmatch.rm_ic = FALSE;
+			match_no_ic = vim_regexec(&orgpat.regmatch, tagp.tagname,
 								  (colnr_T)0);
-			pats->regmatch.rm_ic = TRUE;
+			orgpat.regmatch.rm_ic = TRUE;
 		    }
 		}
 		*tagp.tagname_end = cc;
@@ -2174,7 +2195,7 @@ line_read_in:
 			else
 			    mtt = MT_GL_OTH;
 		    }
-		    if (pats->regmatch.rm_ic && !match_no_ic)
+		    if (orgpat.regmatch.rm_ic && !match_no_ic)
 			mtt += MT_IC_OFF;
 		    if (match_re)
 			mtt += MT_RE_OFF;
@@ -2187,35 +2208,6 @@ line_read_in:
 		 */
 		if (ga_grow(&ga_match[mtt], 1) == OK)
 		{
-#ifdef FEAT_MBYTE
-		    char_u	*conv_line = NULL;
-		    char_u	*lbuf_line = lbuf;
-
-		    if (vimconv.vc_type != CONV_NONE)
-		    {
-			/* Convert the tag line from the encoding of the tags
-			 * file to 'encoding'.  Then parse the line again. */
-			conv_line = string_convert(&vimconv, lbuf, NULL);
-			if (conv_line != NULL)
-			{
-			    if (parse_tag_line(conv_line,
-#ifdef FEAT_EMACS_TAGS
-					is_etag,
-#endif
-					&tagp) == OK)
-				lbuf_line = conv_line;
-			    else
-				/* doesn't work, go back to unconverted line. */
-				(void)parse_tag_line(lbuf,
-#ifdef FEAT_EMACS_TAGS
-						     is_etag,
-#endif
-						     &tagp);
-			}
-		    }
-#else
-# define lbuf_line lbuf
-#endif
 		    if (help_only)
 		    {
 #ifdef FEAT_MULTI_LANG
@@ -2307,7 +2299,7 @@ line_read_in:
 			 * without Emacs tags: <mtt><tag_fname><NUL><lbuf>
 			 */
 			len = (int)STRLEN(tag_fname)
-						 + (int)STRLEN(lbuf_line) + 3;
+						 + (int)STRLEN(lbuf) + 3;
 #ifdef FEAT_EMACS_TAGS
 			if (is_etag)
 			    len += (int)STRLEN(ebuf) + 1;
@@ -2337,7 +2329,7 @@ line_read_in:
 			    else
 				*s++ = NUL;
 #endif
-			    STRCPY(s, lbuf_line);
+			    STRCPY(s, lbuf);
 			}
 		    }
 
@@ -2373,10 +2365,6 @@ line_read_in:
 			else
 			    vim_free(mfp);
 		    }
-#ifdef FEAT_MBYTE
-		    /* Note: this makes the values in "tagp" invalid! */
-		    vim_free(conv_line);
-#endif
 		}
 		else    /* Out of memory! Just forget about the rest. */
 		{
@@ -2415,19 +2403,12 @@ line_read_in:
 	}
 #endif
 #ifdef FEAT_MBYTE
-	if (pats == &convpat)
-	{
-	    /* Go back from converted pattern to original pattern. */
-	    vim_free(pats->pat);
-	    vim_free(pats->regmatch.regprog);
-	    orgpat.regmatch.rm_ic = pats->regmatch.rm_ic;
-	    pats = &orgpat;
-	}
 	if (vimconv.vc_type != CONV_NONE)
 	    convert_setup(&vimconv, NULL, NULL);
 #endif
 
 #ifdef FEAT_TAG_BINS
+	tag_file_sorted = NUL;
 	if (sort_error)
 	{
 	    EMSG2(_("E432: Tags file not sorted: %s"), tag_fname);
@@ -2461,13 +2442,13 @@ line_read_in:
 #ifdef FEAT_TAG_BINS
       /* stop searching when already did a linear search, or when TAG_NOIC
        * used, and 'ignorecase' not set or already did case-ignore search */
-      if (stop_searching || linear || (!p_ic && noic) || pats->regmatch.rm_ic)
+      if (stop_searching || linear || (!p_ic && noic) || orgpat.regmatch.rm_ic)
 	  break;
 # ifdef FEAT_CSCOPE
       if (use_cscope)
 	  break;
 # endif
-      pats->regmatch.rm_ic = TRUE;	/* try another time while ignoring case */
+      orgpat.regmatch.rm_ic = TRUE;	/* try another time while ignoring case */
     }
 #endif
 
@@ -2480,7 +2461,7 @@ line_read_in:
 
 findtag_end:
     vim_free(lbuf);
-    vim_free(pats->regmatch.regprog);
+    vim_free(orgpat.regmatch.regprog);
     vim_free(tag_fname);
 #ifdef FEAT_EMACS_TAGS
     vim_free(ebuf);
