@@ -2460,27 +2460,18 @@ vgetorpeek(advance)
 
 			/*
 			 * Handle ":map <expr>": evaluate the {rhs} as an
-			 * expression.  Save and restore the typeahead so that
-			 * getchar() can be used.  Also save and restore the
-			 * command line for "normal :".
+			 * expression.  Also save and restore the command line
+			 * for "normal :".
 			 */
 			if (mp->m_expr)
 			{
-			    tasave_T	tabuf;
 			    int		save_vgetc_busy = vgetc_busy;
 
-			    save_typeahead(&tabuf);
-			    if (tabuf.typebuf_valid)
-			    {
-				vgetc_busy = 0;
-				save_m_keys = vim_strsave(mp->m_keys);
-				save_m_str = vim_strsave(mp->m_str);
-				s = eval_map_expr(save_m_str, NUL);
-				vgetc_busy = save_vgetc_busy;
-			    }
-			    else
-				s = NULL;
-			    restore_typeahead(&tabuf);
+			    vgetc_busy = 0;
+			    save_m_keys = vim_strsave(mp->m_keys);
+			    save_m_str = vim_strsave(mp->m_str);
+			    s = eval_map_expr(save_m_str, NUL);
+			    vgetc_busy = save_vgetc_busy;
 			}
 			else
 #endif
