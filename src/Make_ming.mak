@@ -108,10 +108,10 @@ endif
 # on NT, it's here:
 PERLLIB=$(PERL)/lib
 PERLLIBS=$(PERLLIB)/Core
-XSUBPP=$(PERLLIB)/ExtUtils/xsubpp
-XSUBPP_EXISTS=$(shell perl -e "print 1 unless -e '$(XSUBPP)'")
+XSUBPPTRY=$(PERLLIB)/ExtUtils/xsubpp
+XSUBPP_EXISTS=$(shell perl -e "print 1 unless -e '$(XSUBPPTRY)'")
 ifeq "$(XSUBPP_EXISTS)" ""
-XSUBPP=perl $(XSUBPP)
+XSUBPP=perl $(XSUBPPTRY)
 else
 XSUBPP=xsubpp
 endif
