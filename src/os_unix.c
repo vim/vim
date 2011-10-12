@@ -5146,11 +5146,18 @@ select_eintr:
 # endif
 # ifdef EINTR
 	if (ret == -1 && errno == EINTR)
+	{
+	    /* Check whether window has been resized, EINTR may be caused by
+	     * SIGWINCH. */
+	    if (do_resize)
+		handle_resize();
+
 	    /* Interrupted by a signal, need to try again.  We ignore msec
 	     * here, because we do want to check even after a timeout if
 	     * characters are available.  Needed for reading output of an
 	     * external command after the process has finished. */
 	    goto select_eintr;
+	}
 # endif
 # ifdef __TANDEM
 	if (ret == -1 && errno == ENOTSUP)
