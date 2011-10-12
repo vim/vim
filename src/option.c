@@ -7806,6 +7806,10 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	/* Only de-activate it here, it will be enabled when changing mode. */
 	if (p_imdisable)
 	    im_set_active(FALSE);
+	else if (State & INSERT)
+	    /* When the option is set from an autocommand, it may need to take
+	     * effect right away. */
+	    im_set_active(curbuf->b_p_iminsert == B_IMODE_IM);
     }
 #endif
 
