@@ -2328,6 +2328,7 @@ shadow:	runtime pixmaps
 				 ../../testdir/vimrc.unix \
 				 ../../testdir/*.in \
 				 ../../testdir/*.vim \
+				 ../../testdir/test83-tags? \
 				 ../../testdir/*.ok .
 
 # Link needed for doing "make install" in a shadow directory.

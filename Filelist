@@ -81,6 +81,7 @@ SRC_ALL =	\
 		src/testdir/test[0-9]*.ok \
 		src/testdir/test49.vim \
 		src/testdir/test60.vim \
+		src/testdir/test83-tags? \
 		src/proto.h \
 		src/proto/blowfish.pro \
 		src/proto/buffer.pro \
