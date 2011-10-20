@@ -92,13 +92,13 @@
  */
 #define KS_TEAROFF		244
 
-/* used for JSB term mouse */
+/* Used for JSB term mouse. */
 #define KS_JSBTERM_MOUSE	243
 
-/* used a termcap entry that produces a normal character */
+/* Used a termcap entry that produces a normal character. */
 #define KS_KEY			242
 
-/* Used for the qnx pterm mouse */
+/* Used for the qnx pterm mouse. */
 #define KS_PTERM_MOUSE		241
 
 /* Used for click in a tab pages label. */
@@ -106,6 +106,9 @@
 
 /* Used for menu in a tab pages line. */
 #define KS_TABMENU		239
+
+/* Used for the urxvt mouse. */
+#define KS_URXVT_MOUSE		238
 
 /*
  * Filler used after KS_SPECIAL and others
