@@ -263,6 +263,12 @@ The messages are currently sent over a socket.  Since the messages are in
 plain UTF-8 text this protocol could also be used with any other communication
 mechanism.
 
+Netbeans messages are processed when Vim is idle, waiting for user input.
+When Vim is run in non-interactive mode, for example when running an automated
+test case that sources a Vim script, the idle loop may not be called often
+enough. In that case, insert |sleep| commands in the Vim script. The |sleep|
+command does invoke Netbeans messages processing.
+
 6.1 Kinds of messages		|nb-messages|
 6.2 Terms			|nb-terms|
 6.3 Commands			|nb-commands|
@@ -833,11 +839,16 @@ These errors occur when a message violates the protocol:
 			signs.
 
 							*:nbkey*
-:nb[key] {key}		Pass the {key} to the Vim Controller for processing
-
-When a hot-key has been installed with the specialKeys command, this command
-can be used to generate a hotkey messages to the Vim Controller. The events
-newDotAndMark, keyCommand and keyAtPos are generated (in this order).
+:nb[key] {key}		Pass the {key} to the Vim Controller for processing.
+			When a hot-key has been installed with the specialKeys
+			command, this command can be used to generate a hotkey
+			message to the Vim Controller.
+			This command can also be used to pass any text to the
+			Vim  Controller. It is used by Pyclewn, for example,
+			to build the complete set of gdb commands as Vim user
+			commands.
+			The events newDotAndMark, keyCommand and keyAtPos are
+			generated (in this order).
 
 
 ==============================================================================

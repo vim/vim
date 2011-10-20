@@ -14,6 +14,13 @@
  * which are *between* characters, whereas vim uses line number
  * and column number which are *on* characters.
  * See ":help netbeans-protocol" for explanation.
+ *
+ * The Netbeans messages are received and queued in the gui event loop, or in
+ * the select loop when Vim runs in a terminal. These messages are processed
+ * by netbeans_parse_messages() which is invoked in the idle loop when Vim is
+ * waiting for user input. The function netbeans_parse_messages() is also
+ * called from the ":sleep" command, to allow the execution of test cases that
+ * may not invoke the idle loop.
  */
 
 #include "vim.h"
