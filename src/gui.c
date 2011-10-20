@@ -212,7 +212,6 @@ gui_do_fork()
     int		status;
     int		exit_status;
     pid_t	pid = -1;
-    FILE	*parent_file;
 
     /* Setup a pipe between the child and the parent, so that the parent
      * knows when the child has done the setsid() call and is allowed to
@@ -290,19 +289,17 @@ gui_do_fork()
     gui_mch_forked();
 # endif
 
-    if (!pipe_error)
-	parent_file = fdopen(pipefd[1], "w");
-    else
-	parent_file = NULL;
-
     /* Try to start the GUI */
     gui_attempt_start();
 
     /* Notify the parent */
-    if (parent_file != NULL)
+    if (!pipe_error)
     {
-	fputs(gui.in_use ? "ok" : "fail", parent_file);
-	fclose(parent_file);
+	if (gui.in_use)
+	    write_eintr(pipefd[1], "ok", 3);
+	else
+	    write_eintr(pipefd[1], "fail", 5);
+	close(pipefd[1]);
     }
 
     /* If we failed to start the GUI, exit now. */
@@ -323,17 +320,16 @@ gui_do_fork()
     static int
 gui_read_child_pipe(int fd)
 {
-    size_t	bytes_read;
-    FILE	*file;
-    char	buffer[10];
+    long	bytes_read;
+#define READ_BUFFER_SIZE 10
+    char	buffer[READ_BUFFER_SIZE];
 
-    file = fdopen(fd, "r");
-    if (!file)
+    bytes_read = read_eintr(fd, buffer, READ_BUFFER_SIZE - 1);
+#undef READ_BUFFER_SIZE
+    close(fd);
+    if (bytes_read < 0)
 	return GUI_CHILD_IO_ERROR;
-
-    bytes_read = fread(buffer, sizeof(char), sizeof(buffer)-1, file);
-    buffer[bytes_read] = '\0';
-    fclose(file);
+    buffer[bytes_read] = NUL;
     if (strcmp(buffer, "ok") == 0)
 	return GUI_CHILD_OK;
     return GUI_CHILD_FAILED;
