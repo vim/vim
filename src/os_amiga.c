@@ -1022,7 +1022,7 @@ mch_get_shellsize()
 
     /* insure longword alignment */
 #ifdef __amigaos4__
-    if(!(id = AllocDosObject(DOS_INFODATA, 0)))
+    if (!(id = AllocDosObject(DOS_INFODATA, 0)))
 	goto out;
 #else
     id = (struct InfoData *)(((long)id_a + 3L) & ~3L);
