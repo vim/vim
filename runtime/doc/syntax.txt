@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2011 Sep 21
+*syntax.txt*	For Vim version 7.3.  Last change: 2011 Sep 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2723,7 +2723,7 @@ in your <.vimrc>, and :set fdm=syntax.  I suggest doing the latter via a
 modeline at the end of your LaTeX file: >
 	% vim: fdm=syntax
 If your system becomes too slow, then you might wish to look into >
-	https://vimhelp.appspot.com/vim_faq.txt.html#faq-29.7
+ 	http://vim.wikia.com/wiki/Keep_folds_closed_while_inserting_text
 <
 								*tex-nospell*
  Tex: Don't Want Spell Checking In Comments? ~

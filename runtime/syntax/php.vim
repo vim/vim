@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language: php PHP 3/4/5
 " Maintainer: Jason Woofenden <jason@jasonwoof.com>
-" Last Change: July 29, 2011
+" Last Change: Oct 20, 2011
 " URL: https://gitorious.org/jasonwoof/vim-syntax/blobs/master/php.vim
 " Former Maintainers: Peter Hodge <toomuchphp-vim@yahoo.com>
 "         Debian VIM Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
@@ -109,6 +109,10 @@ endif
 if exists( "php_htmlInStrings")
   syn cluster phpAddStrings add=@htmlTop
 endif
+
+" make sure we can use \ at the begining of the line to do a continuation
+let s:cpo_save = &cpo
+set cpo&vim
 
 syn case match
 
@@ -690,5 +694,9 @@ let b:current_syntax = "php"
 if main_syntax == 'php'
   unlet main_syntax
 endif
+
+" put cpoptions back the way we found it
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: ts=8 sts=2 sw=2 expandtab

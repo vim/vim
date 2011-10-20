@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.3.  Last change: 2011 Jul 20
+*pattern.txt*   For Vim version 7.3.  Last change: 2011 Sep 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -21,7 +21,7 @@ explanations are in chapter 27 |usr_27.txt|.
 10. Highlighting matches	|match-highlight|
 
 ==============================================================================
-1. Search commands				*search-commands* *E486*
+1. Search commands				*search-commands*
 
 							*/*
 /{pattern}[/]<CR>	Search forward for the [count]'th occurrence of
@@ -149,6 +149,11 @@ use <Esc> to abandon the search.
 
 All matches for the last used search pattern will be highlighted if you set
 the 'hlsearch' option.  This can be suspended with the |:nohlsearch| command.
+
+When no match is found you get the error: *E486* Pattern not found
+Note that for the |:global| command this behaves like a normal message, for Vi
+compatibility.  For the |:s| command the "e" flag can be used to avoid the
+error message |:s_flags|.
 
 					*search-offset* *{offset}*
 These commands search for the specified pattern.  With "/" and "?" an

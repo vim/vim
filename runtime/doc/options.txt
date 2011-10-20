@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2011 Sep 09
+*options.txt*	For Vim version 7.3.  Last change: 2011 Sep 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6762,8 +6762,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   usetab	Like "useopen", but also consider windows in other tab
 			pages.
 	   split	If included, split the current window before loading
-			a buffer.  Otherwise: do not split, use current window.
-			Supported in |quickfix| commands that display errors.
+			a buffer for a |quickfix| command that display errors.
+			Otherwise: do not split, use current window.
 	   newtab	Like "split", but open a new tab page.  Overrules
 			"split" when both are present.
 

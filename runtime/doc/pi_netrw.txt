@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.3.  Last change: 2011 May 31
+*pi_netrw.txt*  For Vim version 7.3.  Last change: 2011 Sep 26
 
 	    -----------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -89,7 +89,7 @@ Copyright: Copyright (C) 1999-2011 Charles E Campbell, Jr    *netrw-copyright*
       Marked Files: Unmarking............................|netrw-mu|
       Netrw Browser Variables............................|netrw-browser-var|
       Netrw Browsing And Option Incompatibilities........|netrw-incompatible|
-      Netrw Settings.....................................|netrw-settings|
+      Netrw Settings Window..............................|netrw-settings-window|
       Obtaining A File...................................|netrw-O|
       Preview Window.....................................|netrw-p|
       Previous Window....................................|netrw-P|
@@ -294,14 +294,14 @@ DIRECTORY LISTING				*netrw-trailingslash* *netrw-dirlist* {{{2
 CHANGING USERID AND PASSWORD		*netrw-chgup* *netrw-userpass* {{{2
 
 	Attempts to use ftp will prompt you for a user-id and a password.
-	These will be saved in global variables g:netrw_uid and
-	s:netrw_passwd; subsequent uses of ftp will re-use those two items to
-	simplify the further use of ftp.  However, if you need to use a
-	different user id and/or password, you'll want to call NetUserPass()
+	These will be saved in global variables |g:netrw_uid| and
+	|s:netrw_passwd|; subsequent use of ftp will re-use those two strings,
+	thereby simplifying use of ftp.  However, if you need to use a
+	different user id and/or password, you'll want to call |NetUserPass()|
 	first.  To work around the need to enter passwords, check if your ftp
 	supports a <.netrc> file in your home directory.  Also see
 	|netrw-passwd| (and if you're using ssh/scp hoping to figure out how
-	to not need to use passwords, look at |netrw-ssh-hack|).
+	to not need to use passwords for scp, look at |netrw-ssh-hack|).
 
 	:NetUserPass [uid [password]]		-- prompts as needed
 	:call NetUserPass()			-- prompts for uid and password
@@ -331,7 +331,8 @@ settings are described below, in |netrw-browser-options|, and in
 		      netrw edits a file.  The file is first edited, and
 		      then the function reference (|Funcref|) is called.
 		      This variable may also hold a |List| of Funcrefs.
-		      (default) not defined
+		      (default) not defined.  (the capital in g:Netrw...
+		      is required by its holding a function reference)
 >
 			    Example: place in .vimrc; affects all file opening
 			    fun! MyFuncRef()
@@ -479,6 +480,9 @@ variable (ex. scp uses the variable g:netrw_scp_cmd, which is defaulted to
 	let g:netrw_scp_cmd = '"c:\Program Files\PuTTY\pscp.exe" -q -batch'
 	let g:netrw_sftp_cmd= '"c:\Program Files\PuTTY\psftp.exe"'
 <
+(note: it has been reported that windows 7 with putty v0.6's "-batch" option
+       doesn't work, so its best to leave it off for that system)
+
 See |netrw-p8| for more about putty, pscp, psftp, etc.
 
 Ftp, an old protocol, seems to be blessed by numerous implementations.
@@ -716,13 +720,16 @@ below, a {netfile} is an url to a remote file.
 
 
 ==============================================================================
-8. Variables and Options		*netrw-options* *netrw-var* {{{1
+8. Variables and Options			*netrw-settings* {{{1
 
-(if you're interested in the netrw browser settings, see: |netrw-browser-var|)
+(also see: |netrw-options| |netrw-variables| |netrw-protocol|
+           |netrw-browser-settings| |netrw-browser-options|
+	   |netrw-browser-var| )
 
 The <netrw.vim> script provides several variables which act as options to
 affect <netrw.vim>'s file transfer behavior.  These variables typically may be
 set in the user's <.vimrc> file: (see also |netrw-settings| |netrw-protocol|)
+						*netrw-options*
 >
                         -------------
                         Netrw Options
@@ -754,6 +761,7 @@ set in the user's <.vimrc> file: (see also |netrw-settings| |netrw-protocol|)
                                 =1 use default method to do ftp >
 	-----------------------------------------------------------------------
 <
+							*netrw-internal-variables*
 The script will also make use of the following variables internally, albeit
 temporarily.
 >
@@ -1147,15 +1155,14 @@ allows one to open a new window to hold the new directory listing or file.  A
 horizontal split is used.  (for vertical splitting, see |netrw-v|)
 
 Normally, the o key splits the window horizontally with the new window and
-cursor at the top.  To change to splitting the window horizontally with the
-new window and cursor at the bottom, have
-
-	let g:netrw_alto = 1
-
-in your <.vimrc>.  (also see |netrw-t| |netrw-T| |netrw-v|)
+cursor at the top.
 
 Associated setting variables: |g:netrw_alto| |g:netrw_winsize|
 
+Related Actions |netrw-cr| |netrw-p| |netrw-t| |netrw-T| |netrw-v|
+Associated setting variables:
+   |g:netrw_alto|    control above/below splitting
+   |g:netrw_winsize| control initial sizing
 
 BROWSING WITH A NEW TAB				*netrw-t* *netrw-T* {{{2
 
@@ -1164,8 +1171,9 @@ allows one to open a new window holding the new directory listing or file in
 a new tab.  The "T" version puts the file or directory into a background tab
 (see |gT|)
 
-Related actions:  |netrw-o| |netrw-v|
-
+Related Actions |netrw-cr| |netrw-o| |netrw-p| |netrw-v|
+Associated setting variables:
+   |g:netrw_winsize| control initial sizing
 
 BROWSING WITH A VERTICALLY SPLIT WINDOW			*netrw-v* {{{2
 
@@ -1174,17 +1182,17 @@ allows one to open a new window to hold the new directory listing or file.  A
 vertical split is used.  (for horizontal splitting, see |netrw-o|)
 
 Normally, the v key splits the window vertically with the new window and
-cursor at the left.  To change to splitting the window vertically with the new
-window and cursor at the right, have
-
-	let g:netrw_altv = 1
-
-in your <.vimrc>.  (also see: |netrw-o| |netrw-t| |netrw-T|)
+cursor at the left.
 
 There is only one tree listing buffer; using "v" on a displayed subdirectory
 will split the screen, but the same buffer will be shown twice.
 
 Associated setting variable: |g:netrw_altv| |g:netrw_winsize|
+
+Related Actions |netrw-cr| |netrw-o| |netrw-t| |netrw-T| |netrw-v|
+Associated setting variables:
+   |g:netrw_altv|    control right/left splitting
+   |g:netrw_winsize| control initial sizing
 
 
 CHANGE LISTING STYLE  (THIN LONG WIDE TREE)   			*netrw-i* {{{2
@@ -1386,6 +1394,7 @@ to remove it again using the g:netrw_rmf_cmd variable.  Its default value is:
 
 	g:netrw_rmf_cmd: ssh HOSTNAME rm -f
 
+Related topics: |netrw-d|
 Associated setting variable: |g:netrw_local_rmdir| |g:netrw_rm_cmd|
                              |g:netrw_rmdir_cmd|   |g:netrw_ssh_cmd|
 
@@ -1520,7 +1529,7 @@ What it means:
 Associated setting variables: |g:netrw_hide| |g:netrw_list_hide|
 Associated topics: |netrw-a| |netrw-gh| |netrw-mh|
 
-
+					*netrw-sort-sequence*
 EDITING THE SORTING SEQUENCE		*netrw-S* *netrw-sortsequence* {{{2
 
 When "Sorted by" is name, one may specify priority via the sorting sequence
@@ -1723,9 +1732,9 @@ directory's name.  A bare <CR> at that point will abort the making of the
 directory.  Attempts to make a local directory that already exists (as either
 a file or a directory) will be detected, reported on, and ignored.
 
-Currently, making a directory via ftp is not supported.
-
-Associated setting variable: |g:netrw_local_mkdir| |g:netrw_mkdir_cmd|
+Related topics: |netrw-D|
+Associated setting variables:	|g:netrw_local_mkdir|  |g:netrw_mkdir_cmd|
+				|g:netrw_remote_mkdir|
 
 
 MAKING THE BROWSING DIRECTORY THE CURRENT DIRECTORY	*netrw-c* {{{2
@@ -1953,10 +1962,11 @@ MARKED FILES: UNMARKING						*netrw-mu* {{{2
 
 The "mu" mapping will unmark all currently marked files.
 
-
+				*netrw-browser-settings*
 NETRW BROWSER VARIABLES		*netrw-browser-options* *netrw-browser-var* {{{2
 
-(if you're interested in the netrw file transfer settings, see |netrw-options|)
+(if you're interested in the netrw file transfer settings, see |netrw-options|
+ and |netrw-protocol|)
 
 The <netrw.vim> browser provides settings in the form of variables which
 you may modify; by placing these settings in your <.vimrc>, you may customize
@@ -2005,6 +2015,15 @@ your browsing preferences.  (see also: |netrw-settings|)
   *g:netrw_compress*		  ="gzip"
 				    Will compress marked files with this
 				    command
+
+  *g:Netrw_corehandler*		  Allows one to specify something additional
+				to do when handling <core> files via netrw's
+				browser's "x" command (see |netrw-x|).  If
+				present, g:Netrw_corehandler specifies
+				either one or more function references
+				(see |Funcref|).  (the capital g:Netrw...
+				is required its holding a function reference)
+
 
   *g:netrw_ctags*		  ="ctags"
 				The default external program used to create tags
@@ -2157,6 +2176,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				columnar.
 
   *g:netrw_mkdir_cmd*		  command for making a remote directory
+				via ssh  (also see |g:netrw_remote_mkdir|)
 				 default: "ssh USEPORT HOSTNAME mkdir"
 
   *g:netrw_mousemaps*		  =1 (default) enables mouse buttons while
@@ -2166,6 +2186,15 @@ your browsing preferences.  (see also: |netrw-settings|)
 				     middlemouse     : same as P
 				     rightmouse      : remove file/directory
 				=0: disables mouse maps
+
+  *g:netrw_nobeval*		doesn't exist (default)
+				If this variable exists, then balloon
+				evaluation will be suppressed
+				(see |'ballooneval'|)
+
+  *g:netrw_remote_mkdir*	  command for making a local directory
+				via ftp  (also see |g:netrw_mkdir_cmd|)
+				 default: "mkdir"
 
   *g:netrw_retmap*		  if it exists and is set to one, then:
 				 * if in a netrw-selected file, AND
@@ -2279,6 +2308,9 @@ your browsing preferences.  (see also: |netrw-settings|)
 				is an integer describing the percentage of the
 				current netrw buffer's window to be used for
 				the new window.
+				 If g:netrw_winsize is less than zero, then
+				the absolute value of g:netrw_winsize lines
+				or columns will be used for the new window.
 				 default: 50  (for 50%)
 
   *g:netrw_xstrlen*		  Controls how netrw computes string lengths,
@@ -2313,7 +2345,7 @@ file you edit; this apparently also applies to directories.  In other words,
 autochdir sets the current directory to that containing the "file" (even if
 that "file" is itself a directory).
 
-NETRW BROWSER SETTINGS						*netrw-settings* {{{2
+NETRW SETTINGS WINDOW				*netrw-settings-window* {{{2
 
 With the NetrwSettings.vim plugin, >
 	:NetrwSettings
@@ -2356,7 +2388,6 @@ Related topics:
  * To automatically make the currently browsed directory the current
    directory, see |g:netrw_keepdir|.
 
-
 							*netrw-createfile*
 OPEN A NEW FILE IN NETRW'S CURRENT DIRECTORY		*netrw-%*
 
@@ -2390,14 +2421,20 @@ PREVIOUS WINDOW				*netrw-P* *netrw-prvwin* {{{2
 
 To edit a file or directory in the previously used (last accessed) window (see
 :he |CTRL-W_p|), press a "P".  If there's only one window, then the one window
-will be horizontally split (above/below splitting is controlled by
-|g:netrw_alto|, and its initial size is controlled by |g:netrw_winsize|).
+will be horizontally split (by default).
 
 If there's more than one window, the previous window will be re-used on
 the selected file/directory.  If the previous window's associated buffer
 has been modified, and there's only one window with that buffer, then
 the user will be asked if s/he wishes to save the buffer first (yes,
 no, or cancel).
+
+Related Actions |netrw-cr| |netrw-o| |netrw-t| |netrw-T| |netrw-v|
+Associated setting variables:
+   |g:netrw_alto|    control above/below splitting
+   |g:netrw_altv|    control right/left splitting
+   |g:netrw_preview| control horizontal vs vertical splitting
+   |g:netrw_winsize| control initial sizing
 
 
 REFRESHING THE LISTING			*netrw-ctrl-l* *netrw-ctrl_l* {{{2
@@ -2804,6 +2841,30 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 12. History						*netrw-history* {{{1
 
+	v143: Jun 01, 2011 * |g:netrw_winsize| will accept a negative
+			     number; the absolute value of it will then
+			     be used to specify lines/columns instead of
+			     a percentage.
+	      Jul 05, 2011 * the "d" map now supports mkdir via ftp
+			     See |netrw-d| and |g:netrw_remote_mkdir|
+	      Jul 11, 2011 * Changed Explore!, Sexplore!, and Vexplore
+			     to use a percentage of |winwidth()| instead
+			     of a percentage of |winheight()|.
+	      Jul 11, 2011 * included support for https://... I'm just
+			     beginning to test this, however.
+	      Aug 01, 2011 * changed RestoreOptions to also restore
+			     cursor position in netrw buffers.
+	      Aug 12, 2011 * added a note about "%" to the balloon
+	      Aug 30, 2011 * if |g:netrw_nobeval| exists, then balloon
+			     evaluation is suppressed.
+	      Aug 31, 2011 * (Benjamin R Haskell) provided a patch that
+			     implements non-standard port handling for
+			     files opened via the remote browser.
+	      Aug 31, 2011 * Fixed a **//pattern  Explorer bug
+	      Sep 15, 2011 * (reported by Francesco Campana) netrw
+			     now permits the "@" to be part of the
+			     user id (if there's an @ that appears
+			     to the right).
 	v142: Apr 06, 2011 * I modified NetrwRemoteListing() to use
 			     shellescape(fnameescape(s:path),1) for
 			     the benefit of those using scp://.../

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2011 Sep 21
+*todo.txt*      For Vim version 7.3.  Last change: 2011 Oct 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,26 +34,29 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch for redirection. (Yasuhiro Matsumoto, 2011 Sep 15) 2nd patch.
-Another on Sep 15?
-
-Patch for DFLT_EFM. (Ben Boeckel, 2011 Sep 14)
-
-Code style patch. (Elias Diem, 2011 Sep 19)
-
 Patch for 'transparency' option. (Ben Boeckel, 2011 Sep 14)
 Do we want this?  Also Sergiu Dotenco, 2011 Sep 17.
 
-Patch for gui_w32.c: call DefWindowProc(). (Sergiu Dotenco, 2011 Sep 15, 17)
+Once syntax and other runtime files have been fixed: add "set cp" to
+check.vim.  Use a function to run both with 'cp' and 'nocp'.
 
-Patch to use task dialogs when available. (Sergiu Dotenco, 2011 Sep 15, 17)
-Addition Sep 16.
-
-Patch for alpha-blended icons and toolbar height. (Sergiu Dotenco, 2011 Sep 15, 17)
-
-Change to #ifdef for PDP_RETVAL. (Sergiu Dotenco, 2011 Sep 17, patch 2)
+Windows stuff:
+- Patch for gui_w32.c: call DefWindowProc(). (Sergiu Dotenco, 2011 Sep 15, 17)
+- Patch to use task dialogs when available. (Sergiu Dotenco, 2011 Sep 15, 17)
+  Addition Sep 16.
+- Patch for alpha-blended icons and toolbar height. (Sergiu Dotenco, 2011 Sep
+  15, 17)
+- Patch for redirection. (Yasuhiro Matsumoto, 2011 Sep 15) 2nd patch.  Another
+  on Sep 15?  Can't reproduce it.  Only with vim.exe, compiled with Mingw?
 
 Patch for phpcomplete.vim (Benjamin Haskell) picked up by maintainer?
+
+Something weird with text formatting when 'compatible' is set.
+Only formats from Insert starting point, even when using "gqj"?
+(Peter Wagenaar, 2011 Oct 20)
+
+FocusGained event received event though it's in 'eventignore'?
+(Ben Fritz, 2011 Sep 25)
 
 Add voting item: modern plugin management (automatic updates, handle
 dependencies).
@@ -62,14 +65,13 @@ Read http://www.charlietanksley.net/philtex/sane-vim-plugin-management/
 
 Go through more coverity reports.
 
-Patch for Issue #9: http://code.google.com/p/vim/issues/detail?id=9
-C++ indenting. martin.gieseking
+Better D/Dtrace detection. (Jesse Phillips, 2011 Oct 18)
 
-Using "." to repeat a Visual delete counts bytes, not characters.  Can this be
-fixed? (Connor Lane Smith, 2011 Sep 1)
+Patch for not showing dict methods in completion. (Yasuhiro Matsumoto, 2011
+Oct 7)  Move "<" methods to the end.  Fix for compiler warnings, Oct 13.
 
-Patch to allow getchar() in expression mapping.
-Why was typeahead saved and restored? (James Vega, 2011 Aug 31)
+FPE exception in mbyte.c.  Stack trace: (Lomy, 2011 Sep 26)
+Can't reproduce it.
 
 Crash in autocomplete, valgrind log. (Greg Weber, 2011 Apr 22)
 
@@ -81,8 +83,19 @@ Patch to fail if configure can't find an interface, such as Python.
 Patch to support UTF-8 for Hangul. (Shawn Y.H. Kim, 2011 May 1)
 Needs more work.
 
+Other way to start Mzscheme. Tim Brown, 2011 Oct 5: change main call.
+Later patch by Sergey Khorev, 2011 Oct 9.
+
+Patch to add getsid(). (Tyru, 2011 Oct 2)  Do we want this?  Update Oct 4.
+Or use expand('<sid>')?
+
 Patch for glob() returning a list. (Christian Brabandt, 2011 Aug 24, second
 one)
+
+Patch to highlight cursor line number. (Howard Buchholz (lhb), 2011 Oct 18)
+
+Docs fix for v:register. (Ingo Karkat, 2011 Sep 26, 27)
+v:register doesn't work exactly as expected. (David Fishburn, 2011 Sep 20)
 
 Patch for: (Christian Brabandt, 2011 Aug 22)
 -   Make it possible to enter "r<C-E>" and "r<C-Y>" (get character from line
@@ -92,10 +105,24 @@ Patch for: (Christian Brabandt, 2011 Aug 24, updated patch)
 8   ":sign unplace * file={filename}" should work.  Also: ":sign unplace *
     buffer={bufnr}".  So one can remove all signs for one file/buffer.
 
+Patch to add "onselected" callback for completion. (Taro Muraoka, 2011 Sep 24)
+
 Problem with winfixheight and resizing. (Yukihiro Nakadaira, 2011 Sep 17)
 Patch Sep 18.
 
+Patch for has('unnamedplus') docs. (Tony Mechelynck, 2011 Sep 27)
+And one for gui_x11.txt.
+
 Problem with l: dictionary being locked in a function. (ZyX, 2011 Jul 21)
+
+Patch to sort functions starting with '<' after others.  Omit dict functions,
+they can't be called. (Yasuhiro Matsumoto, 2011 Oct 11)
+
+Updated syntax file for ssh_config, maintainer doesn't respond.
+(Leonard Ehrenfried, 2011 Sep 26)
+
+"fC" doesn't position the cursor correctly when there are concealed
+characters.  Patch by Christian Brabandt, 2011 Oct 11)
 
 'cursorline' is displayed too short when there are concealed characters and
 'list' is set.  (Dennis Preiser)
@@ -165,8 +192,6 @@ string() can't parse back "inf" and "nan".  Fix documentation or fix code?
 (ZyX, 2010 Aug 23)
 
 Make 'formatprg' global-local. (Sung Pae)
-
-v:register doesn't work exactly as expected. (David Fishburn, 2011 Sep 20)
 
 When doing "redir => s:foo" in a script and then "redir END" somewhere else
 (e.g. in a function) it can't find s:foo.
@@ -298,6 +323,8 @@ the system encoding (usually utf-8).
 
 Problem producing tags file when hebrew.frx is present.  It has a BOM.
 Results in E670. (Tony Mechelynck, 2010 May 2)
+
+'beval' option should be global-local.
 
 Ruby: ":ruby print $buffer.number" returns zero.
 
@@ -461,14 +488,9 @@ Disable updating folds while completion is active? (Peter Odding, 2010 Jun 9)
 Using ":call foo#d.f()" doesn't autoload the "foo.vim" file.  Works OK for
 echo, just not for  ":call" and ":call call()". (Ted, 2011 Mar 17)
 
-Cannot use getchar() inside :normal and using an expression mapping.  Is this
-supposed to work?  (XyX, 2010 Sep 22)
-
 When a:base in 'completefunc' starts with a number it's passed as a number,
 not a string. (Sean Ma)  Need to add flag to call_func_retlist() to force a
 string value.
-
-There is no command line completion for ":lmap".
 
 ":e ~br<Tab>" does not complete to ":e /home/bram/".  Would need to use
 getpwent() to find all the matches.

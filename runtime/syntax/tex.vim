@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Aug 22, 2011 
-" Version:	68
+" Last Change:	Oct 12, 2011 
+" Version:	69
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -37,6 +37,8 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 scriptencoding utf-8
 
 " Define the default highlighting. {{{1
@@ -1217,7 +1219,9 @@ if did_tex_syntax_inits == 1
   delcommand HiLink
 endif
 
-" Current Syntax: {{{1
+" Cleanup: {{{1
 unlet s:extfname
 let   b:current_syntax = "tex"
+let &cpo               = s:keepcpo
+unlet s:keepcpo
 " vim: ts=8 fdm=marker

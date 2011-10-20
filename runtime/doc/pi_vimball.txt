@@ -1,4 +1,4 @@
-*pi_vimball.txt*	For Vim version 7.3.  Last change: 2011 Aug 14
+*pi_vimball.txt*	For Vim version 7.3.  Last change: 2011 Sep 26
 
 			       ----------------
 			       Vimball Archiver
@@ -177,6 +177,8 @@ WINDOWS							*vimball-windows*
 ==============================================================================
 4. Vimball History					*vimball-history* {{{1
 
+	34 : Sep 22, 2011 * "UseVimball path" now supports a non-full path by
+			    prepending the current directory to it.
 	33 : Apr 02, 2011 * Gave priority to *.vmb over *.vba
 			  * Changed silent! to sil! (shorter)
 			  * Safed |'swf'| setting (during vimball extraction,

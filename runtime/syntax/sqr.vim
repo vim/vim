@@ -43,11 +43,11 @@ syn keyword    sqrSection     begin-program begin-report begin-setup
 syn keyword    sqrSection     end-footing end-heading end-procedure
 syn keyword    sqrSection     end-program end-report end-setup
 
-syn keyword    sqrParagraph   alter-color-map alter-conection
+syn keyword    sqrParagraph   alter-color-map alter-connection
 syn keyword    sqrParagraph   alter-locale alter-printer alter-report
 syn keyword    sqrParagraph   begin-document begin-execute begin-select
 syn keyword    sqrParagraph   begin-sql declare-chart declare-image
-syn keyword    sqrParagraph   declare-color-map declare-conection
+syn keyword    sqrParagraph   declare-color-map declare-connection
 syn keyword    sqrParagraph   declare-layout declare-printer
 syn keyword    sqrParagraph   declare-report declare-procedure
 syn keyword    sqrParagraph   declare-toc declare-variable end-declare
@@ -224,16 +224,16 @@ if version >= 600
   " See also the sqrString section above for handling of ! characters
   " inside of strings.  (Those patterns override the ones below.)
   syn match	sqrComment	/!\@<!!\([^!=].*\|$\)/ contains=sqrTodo
-  "				  the ! can't be preceeded by another !,
+  "				  the ! can't be preceded by another !,
   "				  and must be followed by at least one
   "				  character other than ! or =, or immediately
   "				  by the end-of-line
   syn match	sqrComment	/^!=.*/ contains=sqrTodo
   syn match	sqrComment	/^!!.*/ contains=sqrTodo
   syn match	sqrError	/^\s\+\zs!=.*/
-  "				  it's an error to have "!=" preceeded by
+  "				  it's an error to have "!=" preceded by
   "				  just whitespace on the line ("!="
-  "				  preceeded by non-whitespace is treated
+  "				  preceded by non-whitespace is treated
   "				  as neither a comment nor an error, since
   "				  it is often correct, i.e.
   "				    if #count != 7
@@ -259,7 +259,7 @@ endif
 
 " Define the default highlighting.
 " For version 5.7 and earlier, only when not done already.
-" For version 5.8 and later, only when an item doesn;t have hightlighting yet.
+" For version 5.8 and later, only when an item doesn't have highlighting yet.
 if version >= 508 || !exists("did_sqr_syn_inits")
   if version < 508
     let did_sqr_syn_inits = 1

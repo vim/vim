@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2011 Sep 07
+" Last Change:	2011 Oct 08
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -753,6 +753,11 @@ au BufNewFile,BufRead */usr/**/gnupg/options.skel setf gpg
 
 " gnash(1) configuration files
 au BufNewFile,BufRead gnashrc,.gnashrc,gnashpluginrc,.gnashpluginrc setf gnash
+
+" Gitolite
+au BufNewFile,BufRead gitolite.conf		setf gitolite
+au BufNewFile,BufRead */gitolite-admin/conf/*	call s:StarSetf('gitolite')
+au BufNewFile,BufRead {,.}gitolite.rc,example.gitolite.rc 	setf perl
 
 " Gnuplot scripts
 au BufNewFile,BufRead *.gpi			setf gnuplot

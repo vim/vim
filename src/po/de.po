@@ -1700,7 +1700,7 @@ msgid ""
 "&Load File"
 msgstr ""
 "&OK\n"
-"&Lese Datei"
+"&Lies Datei"
 
 #, c-format
 msgid "E462: Could not prepare for reloading \"%s\""

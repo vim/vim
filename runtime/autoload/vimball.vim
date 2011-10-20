@@ -1,7 +1,7 @@
 " vimball.vim : construct a file containing both paths and files
 " Author:	Charles E. Campbell, Jr.
-" Date:		Apr 02, 2011
-" Version:	33
+" Date:		Sep 26, 2011
+" Version:	34
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
 " Copyright: (c) 2004-2011 by Charles E. Campbell, Jr.
 "            The VIM LICENSE applies to Vimball.vim, and Vimball.txt
@@ -14,7 +14,7 @@
 if &cp || exists("g:loaded_vimball")
  finish
 endif
-let g:loaded_vimball = "v33"
+let g:loaded_vimball = "v34"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** this version of vimball needs vim 7.2"
@@ -220,7 +220,16 @@ fun! vimball#Vimball(really,...)
 
   " go to vim plugin home
   if a:0 > 0
+   " let user specify the directory where the vimball is to be unpacked.
+   " If, however, the user did not specify a full path, set the home to be below the current directory
    let home= expand(a:1)
+   if has("win32") || has("win95") || has("win64") || has("win16")
+	if home !~ '^\a:[/\\]'
+	 let home= getcwd().'/'.a:1
+	endif
+   elseif home !~ '^/'
+	let home= getcwd().'/'.a:1
+   endif
   else
    let home= vimball#VimballHome()
   endif
@@ -282,11 +291,14 @@ fun! vimball#Vimball(really,...)
 "    call Decho("making directories if they don't exist yet (fname<".fname.">)")
     let fnamebuf= substitute(fname,'\\','/','g')
 	let dirpath = substitute(home,'\\','/','g')
+"	call Decho("init: fnamebuf<".fnamebuf.">")
+"	call Decho("init: dirpath <".dirpath.">")
     while fnamebuf =~ '/'
      let dirname  = dirpath."/".substitute(fnamebuf,'/.*$','','')
 	 let dirpath  = dirname
      let fnamebuf = substitute(fnamebuf,'^.\{-}/\(.*\)$','\1','')
 "	 call Decho("dirname<".dirname.">")
+"	 call Decho("dirpath<".dirpath.">")
      if !isdirectory(dirname)
 "      call Decho("making <".dirname.">")
       if exists("g:vimball_mkdir")
@@ -569,9 +581,19 @@ endfun
 fun! s:ChgDir(newdir)
 "  call Dfunc("ChgDir(newdir<".a:newdir.">)")
   if (has("win32") || has("win95") || has("win64") || has("win16"))
-   exe 'silent cd '.fnameescape(substitute(a:newdir,'/','\\','g'))
+   try
+    exe 'silent cd '.fnameescape(substitute(a:newdir,'/','\\','g'))
+   catch  /^Vim\%((\a\+)\)\=:E/
+    call mkdir(fnameescape(substitute(a:newdir,'/','\\','g')))
+    exe 'silent cd '.fnameescape(substitute(a:newdir,'/','\\','g'))
+   endtry
   else
-   exe 'silent cd '.fnameescape(a:newdir)
+   try
+    exe 'silent cd '.fnameescape(a:newdir)
+   catch  /^Vim\%((\a\+)\)\=:E/
+    call mkdir(fnameescape(a:newdir))
+    exe 'silent cd '.fnameescape(a:newdir)
+   endtry
   endif
 "  call Dret("ChgDir : curdir<".getcwd().">")
 endfun

@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	R
 " Author:	Jakson Alves de Aquino <jalvesaq@gmail.com>
-" Last Change:	Wed Aug 31, 2011  12:24AM
+" Last Change:	Fri Oct 14, 2011  09:50PM
 
 
 " Only load this indent file when no other was loaded.
@@ -455,19 +455,29 @@ function GetRIndent()
         return ind
     endif
 
+    if g:r_indent_align_args == 0 && bb != 0
+        let ind += bb * &sw
+        return ind
+    endif
+
     if ind == pind || (ind == (pind  + &sw) && pline =~ '{$' && ppost_else == 0)
         return ind
     endif
 
-    while pind < ind && plnum > 0 && ppb == 0
+    let pline = getline(plnum)
+    let pbb = s:Get_paren_balance(pline, '[', ']')
+
+    while pind < ind && plnum > 0 && ppb == 0 && pbb == 0
         let ind = pind
         let plnum = s:Get_prev_line(plnum)
         let pline = getline(plnum)
         let ppb = s:Get_paren_balance(pline, '(', ')')
+        let pbb = s:Get_paren_balance(pline, '[', ']')
         while pline =~ '^\s*else'
             let plnum = s:Get_matching_if(plnum, 1)
             let pline = getline(plnum)
             let ppb = s:Get_paren_balance(pline, '(', ')')
+            let pbb = s:Get_paren_balance(pline, '[', ']')
         endwhile
         let pind = indent(plnum)
         if ind == (pind  + &sw) && pline =~ '{$'
