@@ -4154,6 +4154,9 @@ ex_language(eap)
 	    /* Set v:lang, v:lc_time and v:ctype to the final result. */
 	    set_lang_var();
 # endif
+# ifdef FEAT_TITLE
+	    maketitle();
+# endif
 	}
     }
 }
