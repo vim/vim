@@ -6078,6 +6078,7 @@ internal_format(textwidth, second_indent, flags, format_only, c)
 	 * Stop at first entered white when 'formatoptions' has 'v'
 	 */
 	while ((!fo_ins_blank && !has_format_option(FO_INS_VI))
+		    || (flags & INSCHAR_FORMAT)
 		    || curwin->w_cursor.lnum != Insstart.lnum
 		    || curwin->w_cursor.col >= Insstart.col)
 	{
