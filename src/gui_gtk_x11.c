@@ -3081,7 +3081,7 @@ gui_gtk_set_dnd_targets(void)
 
     for (i = 0; i < (int)N_DND_TARGETS; ++i)
     {
-	if (!clip_html && selection_targets[i].info == TARGET_HTML)
+	if (!clip_html && dnd_targets[i].info == TARGET_HTML)
 	    n_targets--;
 	else
 	    targets[j++] = dnd_targets[i];
