@@ -121,6 +121,14 @@ static int	ExpandUserList __ARGS((expand_T *xp, int *num_file, char_u ***file));
 static int	ex_window __ARGS((void));
 #endif
 
+#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
+static int
+#ifdef __BORLANDC__
+_RTLENTRYF
+#endif
+sort_func_compare __ARGS((const void *s1, const void *s2));
+#endif
+
 /*
  * getcmdline() - accept a command line starting with firstc.
  *
@@ -3286,6 +3294,24 @@ ccheck_abbr(c)
     return check_abbr(c, ccline.cmdbuff, ccline.cmdpos, 0);
 }
 
+#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
+    static int
+#ifdef __BORLANDC__
+_RTLENTRYF
+#endif
+sort_func_compare(s1, s2)
+    const void *s1;
+    const void *s2;
+{
+    char_u *p1 = *(char_u **)s1;
+    char_u *p2 = *(char_u **)s2;
+
+    if (*p1 != '<' && *p2 == '<') return -1;
+    if (*p1 == '<' && *p2 != '<') return 1;
+    return STRCMP(p1, p2);
+}
+#endif
+
 /*
  * Return FAIL if this is not an appropriate context in which to do
  * completion of anything, return OK if it is (even if there are no matches).
@@ -4735,7 +4761,16 @@ ExpandGeneric(xp, regmatch, num_file, file, func, escaped)
 
     /* Sort the results.  Keep menu's in the specified order. */
     if (xp->xp_context != EXPAND_MENUNAMES && xp->xp_context != EXPAND_MENUS)
-	sort_strings(*file, *num_file);
+    {
+	if (xp->xp_context == EXPAND_EXPRESSION
+		|| xp->xp_context == EXPAND_FUNCTIONS
+		|| xp->xp_context == EXPAND_USER_FUNC)
+	    /* <SNR> functions should be sorted to the end. */
+	    qsort((void *)*file, (size_t)*num_file, sizeof(char_u *),
+							   sort_func_compare);
+	else
+	    sort_strings(*file, *num_file);
+    }
 
 #ifdef FEAT_CMDL_COMPL
     /* Reset the variables used for special highlight names expansion, so that
