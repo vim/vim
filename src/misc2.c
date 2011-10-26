@@ -1012,8 +1012,12 @@ do_outofmem_msg(size)
     {
 	/* Don't hide this message */
 	emsg_silent = 0;
-	EMSGN(_("E342: Out of memory!  (allocating %lu bytes)"), size);
+
+	/* Must come first to avoid coming back here when printing the error
+	 * message fails, e.g. when setting v:errmsg. */
 	did_outofmem_msg = TRUE;
+
+	EMSGN(_("E342: Out of memory!  (allocating %lu bytes)"), size);
     }
 }
 
