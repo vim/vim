@@ -621,6 +621,8 @@ ml_setname(buf)
 	    break;
 	fname = findswapname(buf, &dirp, mfp->mf_fname);
 						    /* alloc's fname */
+	if (dirp == NULL)	    /* out of memory */
+	    break;
 	if (fname == NULL)	    /* no file name found for this dir */
 	    continue;
 
@@ -744,6 +746,8 @@ ml_open_file(buf)
 	 * and creating it, another Vim creates the file.  In that case the
 	 * creation will fail and we will use another directory. */
 	fname = findswapname(buf, &dirp, NULL); /* allocates fname */
+	if (dirp == NULL)
+	    break;  /* out of memory */
 	if (fname == NULL)
 	    continue;
 	if (mf_open_file(mfp, fname) == OK)	/* consumes fname! */
@@ -4114,6 +4118,7 @@ do_swapexists(buf, fname)
  *
  * Several names are tried to find one that does not exist
  * Returns the name in allocated memory or NULL.
+ * When out of memory "dirp" is set to NULL.
  *
  * Note: If BASENAMELEN is not correct, you will get error messages for
  *	 not being able to open the swap or undo file
@@ -4157,7 +4162,9 @@ findswapname(buf, dirp, old_fname)
      * First allocate some memory to put the directory name in.
      */
     dir_name = alloc((unsigned)STRLEN(*dirp) + 1);
-    if (dir_name != NULL)
+    if (dir_name == NULL)
+	*dirp = NULL;
+    else
 	(void)copy_option_part(dirp, dir_name, 31000, ",");
 
     /*
