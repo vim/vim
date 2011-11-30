@@ -875,7 +875,7 @@ eval_init()
 
 #ifdef EBCDIC
     /*
-     * Sort the function table, to enable binary sort.
+     * Sort the function table, to enable binary search.
      */
     sortFunctions();
 #endif
@@ -21736,6 +21736,9 @@ get_user_func_name(xp, idx)
 	while (HASHITEM_EMPTY(hi))
 	    ++hi;
 	fp = HI2UF(hi);
+
+	if (fp->uf_flags & FC_DICT)
+	    return NULL; /* don't show dict functions */
 
 	if (STRLEN(fp->uf_name) + 4 >= IOSIZE)
 	    return fp->uf_name;	/* prevents overflow */
