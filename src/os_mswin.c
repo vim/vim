@@ -1869,7 +1869,7 @@ AbortProc(HDC hdcPrn, int iCode)
 
 #ifndef FEAT_GUI
 
-    static UINT CALLBACK
+    static UINT_PTR CALLBACK
 PrintHookProc(
 	HWND hDlg,	// handle to dialog box
 	UINT uiMsg,	// message identifier
