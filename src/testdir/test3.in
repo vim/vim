@@ -1454,6 +1454,16 @@ void func2(void)
 		printf("This line used to be indented incorrectly.\n");
 }
 
+int foo[]
+#ifdef BAR
+
+= { 1, 2, 3,
+	4, 5, 6 }
+
+#endif
+;
+	int baz;
+
 void func3(void)
 {
 	int tab[] = {
