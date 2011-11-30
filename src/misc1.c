@@ -6127,7 +6127,7 @@ corr_ind_maxparen(ind_maxparen, startpos)
 
 /*
  * Set w_cursor.col to the column number of the last unmatched ')' or '{' in
- * line "l".
+ * line "l".  "l" must point to the start of the line.
  */
     static int
 find_last_paren(l, start, end)
@@ -6140,7 +6140,7 @@ find_last_paren(l, start, end)
 
     curwin->w_cursor.col = 0;		    /* default is start of line */
 
-    for (i = 0; l[i]; i++)
+    for (i = 0; l[i] != NUL; i++)
     {
 	i = (int)(cin_skipcomment(l + i) - l); /* ignore parens in comments */
 	i = (int)(skip_string(l + i) - l);    /* ignore parens in quotes */
@@ -7953,6 +7953,7 @@ term_again:
 			 * If we're at the end of a block, skip to the start of
 			 * that block.
 			 */
+			l = ml_get_curline();
 			if (find_last_paren(l, '{', '}')
 				&& (trypos = find_start_brace(ind_maxcomment))
 							    != NULL) /* XXX */
