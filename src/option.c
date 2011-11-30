@@ -7796,9 +7796,9 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 #ifdef FEAT_BEVAL
     else if ((int *)varp == &p_beval)
     {
-	if (p_beval == TRUE)
+	if (p_beval && !old_value)
 	    gui_mch_enable_beval_area(balloonEval);
-	else
+	else if (!p_beval && old_value)
 	    gui_mch_disable_beval_area(balloonEval);
     }
 #endif
