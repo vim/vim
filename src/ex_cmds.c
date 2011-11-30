@@ -820,7 +820,13 @@ do_move(line1, line2, dest)
 	curwin->w_cursor.lnum = dest + (line2 - line1) + 1;
 
     if (line1 < dest)
-	changed_lines(line1, 0, dest + num_lines + 1, 0L);
+    {
+	dest += num_lines + 1;
+	last_line = curbuf->b_ml.ml_line_count;
+	if (dest > last_line + 1)
+	    dest = last_line + 1;
+	changed_lines(line1, 0, dest, 0L);
+    }
     else
 	changed_lines(dest + 1, 0, line1 + num_lines, 0L);
 
