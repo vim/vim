@@ -4060,7 +4060,11 @@ check_termcode(max_offset, buf, buflen)
 		    if (tp[1 + (tp[0] != CSI)] == '>' && j == 2)
 		    {
 			/* if xterm version >= 95 use mouse dragging */
-			if (extra >= 95 && ttym_flags != TTYM_URXVT)
+			if (extra >= 95
+# ifdef TTYM_URXVT
+				&& ttym_flags != TTYM_URXVT
+# endif
+				)
 			    set_option_value((char_u *)"ttym", 0L,
 						       (char_u *)"xterm2", 0);
 			/* if xterm version >= 141 try to get termcap codes */
