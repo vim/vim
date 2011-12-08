@@ -2764,19 +2764,22 @@ utf_convert(a, table, tableSize)
     int			tableSize;
 {
     int start, mid, end; /* indices into table */
+    int entries = tableSize / sizeof(convertStruct);
 
     start = 0;
-    end = tableSize / sizeof(convertStruct);
+    end = entries;
     while (start < end)
     {
 	/* need to search further */
-	mid = (end + start) /2;
+	mid = (end + start) / 2;
 	if (table[mid].rangeEnd < a)
 	    start = mid + 1;
 	else
 	    end = mid;
     }
-    if (table[start].rangeStart <= a && a <= table[start].rangeEnd
+    if (start < entries
+	    && table[start].rangeStart <= a
+	    && a <= table[start].rangeEnd
 	    && (a - table[start].rangeStart) % table[start].step == 0)
 	return (a + table[start].offset);
     else
@@ -2791,7 +2794,7 @@ utf_convert(a, table, tableSize)
 utf_fold(a)
     int		a;
 {
-    return utf_convert(a, foldCase, sizeof(foldCase));
+    return utf_convert(a, foldCase, (int)sizeof(foldCase));
 }
 
 static convertStruct toLower[] =
@@ -3119,7 +3122,7 @@ utf_toupper(a)
 	return TOUPPER_LOC(a);
 
     /* For any other characters use the above mapping table. */
-    return utf_convert(a, toUpper, sizeof(toUpper));
+    return utf_convert(a, toUpper, (int)sizeof(toUpper));
 }
 
     int
@@ -3152,7 +3155,7 @@ utf_tolower(a)
 	return TOLOWER_LOC(a);
 
     /* For any other characters use the above mapping table. */
-    return utf_convert(a, toLower, sizeof(toLower));
+    return utf_convert(a, toLower, (int)sizeof(toLower));
 }
 
     int
