@@ -645,7 +645,11 @@ getcmdline(firstc, count, indent)
 		}
 		else if (ccline.cmdpos > i)
 		    cmdline_del(i);
+
+		/* Now complete in the new directory. Set KeyTyped in case the
+		 * Up key came from a mapping. */
 		c = p_wc;
+		KeyTyped = TRUE;
 	    }
 	}
 
