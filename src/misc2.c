@@ -4293,6 +4293,8 @@ static ff_stack_T *ff_create_stack_element __ARGS((char_u *, int, int));
 static int ff_path_in_stoplist __ARGS((char_u *, int, char_u **));
 #endif
 
+static char_u e_pathtoolong[] = N_("E854: path too long for completion");
+
 #if 0
 /*
  * if someone likes findfirst/findnext, here are the functions
@@ -4589,6 +4591,11 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, find_what,
 	len = 0;
 	while (*wc_part != NUL)
 	{
+	    if (len + 5 >= MAXPATHL)
+	    {
+		EMSG(_(e_pathtoolong));
+		break;
+	    }
 	    if (STRNCMP(wc_part, "**", 2) == 0)
 	    {
 		ff_expand_buffer[len++] = *wc_part++;
@@ -4634,6 +4641,12 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, find_what,
     }
 
     /* create an absolute path */
+    if (STRLEN(search_ctx->ffsc_start_dir)
+			  + STRLEN(search_ctx->ffsc_fix_path) + 3 >= MAXPATHL)
+    {
+	EMSG(_(e_pathtoolong));
+	goto error_return;
+    }
     STRCPY(ff_expand_buffer, search_ctx->ffsc_start_dir);
     add_pathsep(ff_expand_buffer);
     STRCAT(ff_expand_buffer, search_ctx->ffsc_fix_path);
