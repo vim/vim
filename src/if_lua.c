@@ -1044,13 +1044,12 @@ luaV_window(lua_State *L)
     static int
 luaV_open(lua_State *L)
 {
-    luaV_Buffer *b;
     char_u *s = NULL;
 #ifdef HAVE_SANDBOX
     luaV_checksandbox(L);
 #endif
     if (lua_isstring(L, 1)) s = (char_u *) lua_tostring(L, 1);
-    b = luaV_pushbuffer(L, buflist_new(s, NULL, 1L, BLN_LISTED));
+    luaV_pushbuffer(L, buflist_new(s, NULL, 1L, BLN_LISTED));
     return 1;
 }
 
