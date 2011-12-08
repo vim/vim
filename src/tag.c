@@ -1906,12 +1906,26 @@ line_read_in:
 		tagp.tagname = lbuf;
 #ifdef FEAT_TAG_ANYWHITE
 		tagp.tagname_end = skiptowhite(lbuf);
-		if (*tagp.tagname_end == NUL)	    /* corrupted tag line */
+		if (*tagp.tagname_end == NUL)
 #else
 		tagp.tagname_end = vim_strchr(lbuf, TAB);
-		if (tagp.tagname_end == NULL)	    /* corrupted tag line */
+		if (tagp.tagname_end == NULL)
 #endif
 		{
+		    if (vim_strchr(lbuf, NL) == NULL)
+		    {
+			/* Truncated line, ignore it.  Has been reported for
+			 * Mozilla JS with extremely long names. */
+			if (p_verbose >= 5)
+			{
+			    verbose_enter();
+			    MSG(_("Ignoring long line in tags file"));
+			    verbose_leave();
+			}
+			continue;
+		    }
+
+		    /* Corrupted tag line. */
 		    line_error = TRUE;
 		    break;
 		}
