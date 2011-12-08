@@ -3294,7 +3294,10 @@ usage()
 #ifdef FEAT_GUI_GNOME
     /* Gnome gives extra messages for --help if we continue, but not for -h. */
     if (gui.starting)
+    {
 	mch_msg("\n");
+	gui.dofork = FALSE;
+    }
     else
 #endif
 	mch_exit(0);
