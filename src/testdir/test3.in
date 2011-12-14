@@ -299,17 +299,24 @@ char *(array[100]) = {
 
 enum soppie
 {
-	yes = 0,
-	no,
-	maybe
+yes = 0,
+no,
+maybe
 };
 
 typedef enum soppie
 {
-	yes = 0,
-	no,
-	maybe
+yes = 0,
+no,
+maybe
 };
+
+static enum
+{
+yes = 0,
+no,
+maybe
+} soppie;
 
 {
 	int a,

@@ -299,6 +299,13 @@ typedef enum soppie
 	maybe
 };
 
+static enum
+{
+	yes = 0,
+	no,
+	maybe
+} soppie;
+
 {
 	int a,
 		b;
