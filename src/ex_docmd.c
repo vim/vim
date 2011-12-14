@@ -4840,12 +4840,10 @@ getargopt(eap)
 #ifdef FEAT_MBYTE
     else if (STRNCMP(arg, "enc", 3) == 0)
     {
-	arg += 3;
-	pp = &eap->force_enc;
-    }
-    else if (STRNCMP(arg, "encoding", 8) == 0)
-    {
-	arg += 8;
+	if (STRNCMP(arg, "encoding", 8) == 0)
+	    arg += 8;
+	else
+	    arg += 3;
 	pp = &eap->force_enc;
     }
     else if (STRNCMP(arg, "bad", 3) == 0)
