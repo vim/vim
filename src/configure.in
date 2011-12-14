@@ -28,6 +28,16 @@ dnl in autoconf needs it, where it uses STDC_HEADERS.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 
+dnl Check for the flag that fails if stuff are missing.
+
+AC_MSG_CHECKING(--enable-fail-if-missing argument)
+AC_ARG_ENABLE(fail_if_missing,
+	[  --enable-fail-if-missing    Fail if dependencies on additional features
+     specified on the command line are missing.], 
+	[fail_if_missing="yes"],
+	[fail_if_missing="no"])
+AC_MSG_RESULT($fail_if_missing)
+
 dnl Set default value for CFLAGS if none is defined or it's empty
 if test -z "$CFLAGS"; then
   CFLAGS="-O"
@@ -491,6 +501,9 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
       LUA_CFLAGS="-DDYNAMIC_LUA_DLL=\\\"liblua${vi_cv_version_lua}.so$LUA_SONAME\\\" $LUA_CFLAGS"
     fi
   fi
+  if test "$fail_if_missing" = "yes" -a -z "$LUA_SRC"; then
+    AC_MSG_ERROR([could not configure lua])
+  fi
   AC_SUBST(LUA_SRC)
   AC_SUBST(LUA_OBJ)
   AC_SUBST(LUA_PRO)
@@ -781,6 +794,10 @@ if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
       PERL_CFLAGS="-DDYNAMIC_PERL_DLL=\\\"$libperl\\\" $PERL_CFLAGS"
     fi
   fi
+
+  if test "$fail_if_missing" = "yes" -a "$perl_ok" != "yes"; then
+    AC_MSG_ERROR([could not configure perl])
+  fi
 fi
 AC_SUBST(shrpenv)
 AC_SUBST(PERL_SRC)
@@ -965,6 +982,10 @@ eof
     else
       AC_MSG_RESULT(too old)
     fi
+  fi
+
+  if test "$fail_if_missing" = "yes" -a "$python_ok" != "yes"; then
+    AC_MSG_ERROR([could not configure python])
   fi
 fi
 
@@ -1389,6 +1410,9 @@ if test "$enable_tclinterp" = "yes"; then
       AC_MSG_RESULT(too old; need Tcl version 8.0 or later)
     fi
   fi
+  if test "$fail_if_missing" = "yes" -a -z "$TCL_SRC"; then
+    AC_MSG_ERROR([could not configure Tcl])
+  fi
 fi
 AC_SUBST(TCL_SRC)
 AC_SUBST(TCL_OBJ)
@@ -1468,6 +1492,10 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
     else
       AC_MSG_RESULT(too old; need Ruby version 1.6.0 or later)
     fi
+  fi
+
+  if test "$fail_if_missing" = "yes" -a -z "$RUBY_OBJ"; then
+    AC_MSG_ERROR([could not configure Ruby])
   fi
 fi
 AC_SUBST(RUBY_SRC)
