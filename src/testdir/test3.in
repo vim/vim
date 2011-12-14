@@ -1429,7 +1429,7 @@ func(int a
 
 STARTTEST
 :set cino&
-2kdd=4][
+2kdd=7][
 ENDTEST
 
 void func(void)
@@ -1478,7 +1478,29 @@ void func3(void)
 	3, 4,
 	5, 6};
 
-printf("Don't you dare indent this line incorrectly!\n);
+printf("Don't you dare indent this line incorrectly!\n");
+}
+
+void
+func4(a, b,
+		c)
+int a;
+int b;
+int c;
+{
+}
+
+void
+func5(
+		int a,
+		int b)
+{
+}
+
+void
+func6(
+		int a)
+{
 }
 
 STARTTEST
