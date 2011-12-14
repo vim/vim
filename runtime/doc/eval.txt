@@ -801,11 +801,12 @@ expr6 .	 expr6 ..	String concatenation			*expr-.*
 For |Lists| only "+" is possible and then both expr6 must be a list.  The
 result is a new list with the two lists Concatenated.
 
-expr7 *	 expr7 ..	number multiplication			*expr-star*
-expr7 /	 expr7 ..	number division				*expr-/*
-expr7 %	 expr7 ..	number modulo				*expr-%*
+expr7 *	 expr7 ..	Number multiplication			*expr-star*
+expr7 /	 expr7 ..	Number division				*expr-/*
+expr7 %	 expr7 ..	Number modulo				*expr-%*
 
 For all, except ".", Strings are converted to Numbers.
+For bitwise operators see |and()|, |or()| and |xor()|.
 
 Note the difference between "+" and ".":
 	"123" + "456" = 579
@@ -1687,6 +1688,7 @@ USAGE				RESULT	DESCRIPTION	~
 abs( {expr})			Float or Number  absolute value of {expr}
 acos( {expr})			Float	arc cosine of {expr}
 add( {list}, {item})		List	append {item} to |List| {list}
+and( {expr}, {expr})		Number  bitwise AND
 append( {lnum}, {string})	Number	append {string} below line {lnum}
 append( {lnum}, {list})		Number	append lines {list} below line {lnum}
 argc()				Number	number of files in the argument list
@@ -1825,6 +1827,7 @@ inputrestore()			Number	restore typeahead
 inputsave()			Number	save and clear typeahead
 inputsecret( {prompt} [, {text}]) String  like input() but hiding the text
 insert( {list}, {item} [, {idx}]) List	insert {item} in {list} [before {idx}]
+invert( {expr})			Number  bitwise invert
 isdirectory( {directory})	Number	TRUE if {directory} is a directory
 islocked( {expr})		Number	TRUE if {expr} is locked
 items( {dict})			List	key-value pairs in {dict}
@@ -1864,6 +1867,7 @@ mode( [expr])			String	current editing mode
 mzeval( {expr})			any	evaluate |MzScheme| expression
 nextnonblank( {lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char( {expr})		String	single char with ASCII value {expr}
+or( {expr}, {expr})		Number  bitwise OR
 pathshorten( {expr})		String	shorten directory names in a path
 pow( {x}, {y})			Float	{x} to the power of {y}
 prevnonblank( {lnum})		Number	line nr of non-blank line <= {lnum}
@@ -1987,6 +1991,7 @@ winsaveview()			Dict	save view of current window
 winwidth( {nr})			Number	width of window {nr}
 writefile( {list}, {fname} [, {binary}])
 				Number	write list of lines to file {fname}
+xor( {expr}, {expr})		Number  bitwise XOR
 
 abs({expr})							*abs()*
 		Return the absolute value of {expr}.  When {expr} evaluates to
@@ -2024,6 +2029,13 @@ add({list}, {expr})					*add()*
 <		Note that when {expr} is a |List| it is appended as a single
 		item.  Use |extend()| to concatenate |Lists|.
 		Use |insert()| to add an item at another position.
+
+
+and({expr}, {expr})					*and()*
+		Bitwise AND on the two arguments.  The arguments are converted
+		to a number.  A List, Dict or Float argument causes an error.
+		Example: >
+			:let flag = and(bits, 0x80)
 
 
 append({lnum}, {expr})					*append()*
@@ -3782,6 +3794,11 @@ insert({list}, {item} [, {idx}])			*insert()*
 		Note that when {item} is a |List| it is inserted as a single
 		item.  Use |extend()| to concatenate |Lists|.
 
+invert({expr})						*invert()*
+		Bitwise invert.  The argument is converted to a number.  A
+		List, Dict or Float argument causes an error.  Example: >
+			:let bits = invert(bits)
+
 isdirectory({directory})				*isdirectory()*
 		The result is a Number, which is non-zero when a directory
 		with the name {directory} exists.  If {directory} doesn't
@@ -4346,6 +4363,13 @@ getpos({expr})	Get the position for {expr}.  For possible values of {expr}
 			MoveTheCursorAround
 			call setpos('.', save_cursor)
 <		Also see |setpos()|.
+
+or({expr}, {expr})					*or()*
+		Bitwise OR on the two arguments.  The arguments are converted
+		to a number.  A List, Dict or Float argument causes an error.
+		Example: >
+			:let bits = or(bits, 0x80)
+
 
 pathshorten({expr})					*pathshorten()*
 		Shorten directory names in the path {expr} and return the
@@ -6121,7 +6145,15 @@ writefile({list}, {fname} [, {binary}])
 		To copy a file byte for byte: >
 			:let fl = readfile("foo", "b")
 			:call writefile(fl, "foocopy", "b")
-<
+
+
+xor({expr}, {expr})					*xor()*
+		Bitwise XOR on the two arguments.  The arguments are converted
+		to a number.  A List, Dict or Float argument causes an error.
+		Example: >
+			:let bits = xor(bits, 0x80)
+
+
 
 							*feature-list*
 There are three types of features:

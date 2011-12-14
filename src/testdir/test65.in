@@ -1,4 +1,4 @@
-Test for floating point.
+Test for floating point and logical operators.
 
 STARTTEST
 :so small.vim
@@ -72,6 +72,23 @@ STARTTEST
 :$put ='float2nr'
 :$put =float2nr(123.456)
 :$put =float2nr(-123.456)
+:$put ='AND'
+:$put =and(127, 127)
+:$put =and(127, 16)
+:$put =and(127, 128)
+:$put ='OR'
+:$put =or(16, 7)
+:$put =or(8, 7)
+:$put =or(0, 123)
+:$put ='XOR'
+:$put =xor(127, 127)
+:$put =xor(127, 16)
+:$put =xor(127, 128)
+:$put ='invert'
+:$put =and(invert(127), 65535)
+:$put =and(invert(16), 65535)
+:$put =and(invert(128), 65535)
+:$put =invert(1.0)
 :/^Results/,$wq! test.out
 ENDTEST
 
