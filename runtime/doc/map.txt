@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.3.  Last change: 2011 Oct 12
+*map.txt*       For Vim version 7.3.  Last change: 2011 Oct 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -246,8 +246,8 @@ have these mappings: >
   inoremap <expr> <C-L>x "foo"
 If you now type CTRL-L nothing happens yet, Vim needs the next character to
 decide what mapping to use.  If you type 'x' the second mapping is used and
-"foo" is inserted.  If you type 'a' the first mapping is used, getchar() gets
-the 'a' and returns it.
+"foo" is inserted.  If you type any other key the first mapping is used,
+getchar() gets the typed key and returns it.
 
 Here is an example that inserts a list number that increases: >
 	let counter = 0

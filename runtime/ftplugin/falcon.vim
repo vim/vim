@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:     Falcon
 " Author:       Steven Oliver <oliver.steven@gmail.com>
-" Copyright:    Copyright (c) 2009, 2010 Steven Oliver
+" Copyright:    Copyright (c) 2009, 2010, 2011 Steven Oliver
 " License:      You may redistribute this under the same terms as Vim itself
 " --------------------------------------------------------------------------
 " GetLatestVimScripts: 2762 1 :AutoInstall: falcon.vim
@@ -16,7 +16,7 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 setlocal tabstop=4 shiftwidth=4 expandtab fileencoding=utf-8
-setlocal suffixesadd=.fal
+setlocal suffixesadd=.fal,.ftd
 
 " Matchit support
 if exists("loaded_matchit") && !exists("b:match_words")
@@ -36,8 +36,11 @@ setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,://
 
 " Windows allows you to filter the open file dialog
 if has("gui_win32") && !exists("b:browsefilter")
-  let b:browsefilter = "Falcon Source Files (*.fal)\t*.fal\n" .
+  let b:browsefilter = "Falcon Source Files (*.fal *.ftd)\t*.fal;*.ftd\n" .
                      \ "All Files (*.*)\t*.*\n"
 endif
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: set sw=4 sts=4 et tw=80 :

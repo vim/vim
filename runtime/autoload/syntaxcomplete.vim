@@ -1,11 +1,17 @@
 " Vim completion script
 " Language:    All languages, uses existing syntax highlighting rules
 " Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
-" Version:     7.0
-" Last Change: 2010 Jul 29
+" Version:     8.0
+" Last Change: 2011 Nov 02
 " Usage:       For detailed help, ":help ft-syntax-omni" 
 
 " History
+"
+" Version 8.0
+"     Updated SyntaxCSyntaxGroupItems()
+"         - Some additional syntax items were also allowed
+"           on nextgroup= lines which were ignored by default.
+"           Now these lines are processed independently.
 "
 " Version 7.0
 "     Updated syntaxcomplete#OmniSyntaxList()
@@ -44,7 +50,7 @@ endif
 if exists('g:loaded_syntax_completion')
     finish 
 endif
-let g:loaded_syntax_completion = 70
+let g:loaded_syntax_completion = 80
 
 " Set ignorecase to the ftplugin standard
 " This is the default setting, but if you define a buffer local
@@ -72,7 +78,8 @@ endif
 " This script will build a completion list based on the syntax
 " elements defined by the files in $VIMRUNTIME/syntax.
 let s:syn_remove_words = 'match,matchgroup=,contains,'.
-            \ 'links to,start=,end=,nextgroup='
+            \ 'links to,start=,end='
+            " \ 'links to,start=,end=,nextgroup='
 
 let s:cache_name = []
 let s:cache_list = []
@@ -411,9 +418,25 @@ function! s:SyntaxCSyntaxGroupItems( group_name, syntax_full )
                     \    , "\n", 'g' 
                     \  )
 
-        " Now strip off the newline + blank space + contained
+        " Now strip off the newline + blank space + contained.
+        " Also include lines with nextgroup=@someName skip_key_words syntax_element
         let syn_list = substitute( 
-                    \    syn_list, '\%(^\|\n\)\@<=\s*\<\(contained\)'
+                    \    syn_list, '\%(^\|\n\)\@<=\s*\<\(contained\|nextgroup=\)'
+                    \    , "", 'g' 
+                    \ )
+
+        " This can leave lines like this
+        "     =@vimMenuList  skipwhite onoremenu
+        " Strip the special option keywords first
+        "     :h :syn-skipwhite*
+        let syn_list = substitute( 
+                    \    syn_list, '\<\(skipwhite\|skipnl\|skipempty\)\>'
+                    \    , "", 'g' 
+                    \ )
+
+        " Now remove the remainder of the nextgroup=@someName lines
+        let syn_list = substitute( 
+                    \    syn_list, '\%(^\|\n\)\@<=\s*\(@\w\+\)'
                     \    , "", 'g' 
                     \ )
 

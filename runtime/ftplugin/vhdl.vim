@@ -1,8 +1,8 @@
 " VHDL filetype plugin
 " Language:    VHDL
-" Maintainer:  R.Shankar <shankar.r?freescale.com>
+" Maintainer:  R.Shankar <shankar.pec?gmail.com>
 " Modified By: Gerald Lai <laigera+vim?gmail.com>
-" Last Change: 2006 Feb 16
+" Last Change: 2011 Dec 11
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -11,6 +11,9 @@ endif
 
 " Don't load another plugin for this buffer
 let b:did_ftplugin = 1
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Set 'formatoptions' to break comment lines but not other lines,
 " and insert the comment leader when hitting <CR> or using "o".
@@ -21,8 +24,6 @@ let b:did_ftplugin = 1
 
 " Format comments to be up to 78 characters long
 "setlocal tw=75
-
-set cpo-=C
 
 " Win32 can filter files in the browse dialog
 "if has("gui_win32") && !exists("b:browsefilter")
@@ -82,3 +83,6 @@ vnoremap <buffer><silent>[[ :<C-u>cal <SID>CountWrapper('[[')<CR>
 vnoremap <buffer><silent>]] :<C-u>cal <SID>CountWrapper(']]')<CR>
 vnoremap <buffer><silent>[] :<C-u>cal <SID>CountWrapper('[]')<CR>
 vnoremap <buffer><silent>][ :<C-u>cal <SID>CountWrapper('][')<CR>
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2011 Sep 30
+*syntax.txt*	For Vim version 7.3.  Last change: 2011 Nov 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3919,7 +3919,7 @@ First syncing method:			*:syn-sync-first*
 The file will be parsed from the start.  This makes syntax highlighting
 accurate, but can be slow for long files.  Vim caches previously parsed text,
 so that it's only slow when parsing the text for the first time.  However,
-when making changes some part of the next needs to be parsed again (worst
+when making changes some part of the text needs to be parsed again (worst
 case: to the end of the file).
 
 Using "fromstart" is equivalent to using "minlines" with a very large number.

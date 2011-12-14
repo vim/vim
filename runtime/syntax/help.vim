@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Vim help file
 " Maintainer:	Bram Moolenaar (Bram@vim.org)
-" Last Change:	2011 Jul 11
+" Last Change:	2011 Dec 03
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -29,6 +29,7 @@ else
   syn match helpStar		contained "\*"
 endif
 syn match helpNormal		"|.*====*|"
+syn match helpNormal		"|||"
 syn match helpNormal		":|vim:|"	" for :help modeline
 syn match helpVim		"Vim version [0-9.a-z]\+"
 syn match helpVim		"VIM REFERENCE.*"

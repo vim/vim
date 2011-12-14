@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2011 Oct 20
+*todo.txt*      For Vim version 7.3.  Last change: 2011 Dec 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,57 +34,43 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch for 'transparency' option. (Ben Boeckel, 2011 Sep 14)
-Do we want this?  Also Sergiu Dotenco, 2011 Sep 17.
-
-Once syntax and other runtime files have been fixed: add "set cp" to
-check.vim.  Use a function to run both with 'cp' and 'nocp'.
-
-Windows stuff:
-- Patch for gui_w32.c: call DefWindowProc(). (Sergiu Dotenco, 2011 Sep 15, 17)
-- Patch to use task dialogs when available. (Sergiu Dotenco, 2011 Sep 15, 17)
-  Addition Sep 16.
-- Patch for alpha-blended icons and toolbar height. (Sergiu Dotenco, 2011 Sep
-  15, 17)
-- Patch for redirection. (Yasuhiro Matsumoto, 2011 Sep 15) 2nd patch.  Another
-  on Sep 15?  Can't reproduce it.  Only with vim.exe, compiled with Mingw?
-
-Patch for phpcomplete.vim (Benjamin Haskell) picked up by maintainer?
-
-Something weird with text formatting when 'compatible' is set.
-Only formats from Insert starting point, even when using "gqj"?
-(Peter Wagenaar, 2011 Oct 20)
-
-FocusGained event received event though it's in 'eventignore'?
-(Ben Fritz, 2011 Sep 25)
-
-Add voting item: modern plugin management (automatic updates, handle
-dependencies).
-Add links to http://vimcasts.org/ and http://vimgolf.com/
-Read http://www.charlietanksley.net/philtex/sane-vim-plugin-management/
-
 Go through more coverity reports.
-
-Better D/Dtrace detection. (Jesse Phillips, 2011 Oct 18)
-
-Patch for not showing dict methods in completion. (Yasuhiro Matsumoto, 2011
-Oct 7)  Move "<" methods to the end.  Fix for compiler warnings, Oct 13.
-
-FPE exception in mbyte.c.  Stack trace: (Lomy, 2011 Sep 26)
-Can't reproduce it.
-
-Crash in autocomplete, valgrind log. (Greg Weber, 2011 Apr 22)
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
-Patch to fail if configure can't find an interface, such as Python.
-(Shlomi Fish, 2011 Jul 11)
+Patch to fix "Console prompts fail to reset the console pager".
+Issue 14 on googlecode
+
+Issue 33 on googlecode: feedkeys() leaks memory.
 
 Patch to support UTF-8 for Hangul. (Shawn Y.H. Kim, 2011 May 1)
 Needs more work.
 
+Once syntax and other runtime files have been fixed: add "set cp" to
+check.vim.  Use a function to run both with 'cp' and 'nocp'.
+
+Patch to make ":helpgrep" work with non-UTF-8 encoding. (Yasuhiro Matsumoto,
+2011 Nov 28, update later that day)
+
+":doau" says it triggers modeline.  Should this only happen for events used
+when loading a buffer?  (Kana Natsuno, 2011 Nov 7)
+
+Patch to fix "it" and "at" when there is a dash in the tag name.
+(Christian Brabandt, 2011 Nov 20)
+
+Patch to make 'shcf' default work better. (Benjamin Fritz, 2011 Nov 18)
+    Win32: When 'shell' is cmd.exe this command fails:
+	    echo system('"c:/path/echo.exe" "foo bar"')
+    Should we set the default for 'shellxquote' to a double quote, when 'shell'
+    contains "cmd" in the tail?  (Benjamin Fritz, 2008 Oct 13)
+    Also set 'shellcmdflag' to include /s.
+
 Other way to start Mzscheme. Tim Brown, 2011 Oct 5: change main call.
 Later patch by Sergey Khorev, 2011 Oct 9.
+
+Patch to make InsertCharPre work better. (Yasuhiro Matsumoto, 2011 Oct 21)
+
+Patch to fix closed folds with "loadview". (Xavier de Gaye, 2011 Nov 25)
 
 Patch to add getsid(). (Tyru, 2011 Oct 2)  Do we want this?  Update Oct 4.
 Or use expand('<sid>')?
@@ -93,6 +79,17 @@ Patch for glob() returning a list. (Christian Brabandt, 2011 Aug 24, second
 one)
 
 Patch to highlight cursor line number. (Howard Buchholz (lhb), 2011 Oct 18)
+
+Patch for urxvt mouse support after shell command. (Issue 31)
+
+7   Setting an option always sets "w_set_curswant", while this is only
+    required for a few options.  Only do it for those options to avoid the
+    side effect.
+Patch by Kana Natsuno, 2011 Nov 12.
+
+Patch for option in 'cino' to specify more indent for continued conditions.
+(Lech Lorens, 2011 Nov 27)
+Isn't this already possible?
 
 Docs fix for v:register. (Ingo Karkat, 2011 Sep 26, 27)
 v:register doesn't work exactly as expected. (David Fishburn, 2011 Sep 20)
@@ -107,6 +104,9 @@ Patch for: (Christian Brabandt, 2011 Aug 24, updated patch)
 
 Patch to add "onselected" callback for completion. (Taro Muraoka, 2011 Sep 24)
 
+":tab drop buffer.c" always opens a new tab, also if buffer.c is already in an
+open window. (Herb Sitz, 2011 Nov 17)
+
 Problem with winfixheight and resizing. (Yukihiro Nakadaira, 2011 Sep 17)
 Patch Sep 18.
 
@@ -118,11 +118,22 @@ Problem with l: dictionary being locked in a function. (ZyX, 2011 Jul 21)
 Patch to sort functions starting with '<' after others.  Omit dict functions,
 they can't be called. (Yasuhiro Matsumoto, 2011 Oct 11)
 
+Patch to improve "it" and "at" text object matching. (Christian Brabandt, 2011
+Nov 20)
+
+`[ moves to character after insert, instead of the last inserted character.
+(Yukihiro Nakadaira, 2011 Dec 9)
+
+Plugin for Modeleasy. (Massimiliano Tripoli, 2011 Nov 29)
+
 Updated syntax file for ssh_config, maintainer doesn't respond.
 (Leonard Ehrenfried, 2011 Sep 26)
 
 "fC" doesn't position the cursor correctly when there are concealed
 characters.  Patch by Christian Brabandt, 2011 Oct 11)
+
+Patch for 'transparency' option. (Sergiu Dotenco, 2011 Sep 17)
+Only for MS-Windows.  No documentation.  Do we want this?
 
 'cursorline' is displayed too short when there are concealed characters and
 'list' is set.  (Dennis Preiser)
@@ -137,7 +148,16 @@ Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
 only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
 21, Ben Fritz, 2010 Sep 14)
 
+Win32: Patch to use task dialogs when available. (Sergiu Dotenco, 2011 Sep 17)
+New feature, requires testing.  Made some remarks.
+
+Win32: Patch for alpha-blended icons and toolbar height. (Sergiu Dotenco, 2011
+Sep 17)  Asked for feedback from others.
+
 Need to escape $HOME on Windows?  (ZyX, 2011 Jul 21)
+
+"2" in 'formatopions' not working in comments. (Christian Corneliussen, 2011
+Oct 26)
 
 Bug in repeating Visual "u". (Lawrence Kesteloot, 2010 Dec 20)
 
@@ -169,6 +189,9 @@ call append(line, "INFO  ....12....18....24....30....36....42....48....54....60.
 
 When using a Vim server, a # in the path causes an error message.
 (Jeff Lanzarotta, 2011 Feb 17)
+
+Setting $HOME on MS-Windows is not very well documented.  Suggestion by Ben
+Fritz (2011 Oct 27).
 
 Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
@@ -1085,12 +1108,6 @@ pointer in long and seek offset in 64 bit var.
 
 Win32: patch for fullscreen mode. (Liushaolin, 2008 April 17)
 
-Win32: When 'shell' is cmd.exe this command fails:
-	echo system('"c:/path/echo.exe" "foo bar"')
-Should we set the default for 'shellxquote' to a double quote, when 'shell'
-contains "cmd" in the tail?  (Benjamin Fritz, 2008 Oct 13)
-Also set 'shellcmdflag' to include /s.
-
 Win32: When there is 4 Gbyte of memory mch_avail_mem() doesn't work properly.
 Unfinished patch by Jelle Geerts, 2008 Aug 24.
 Let mch_avail_mem() return Kbyte instead?
@@ -1478,6 +1495,8 @@ Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
 At next release:
 -   Rename src/Makefile and create a new one like toplevel Makefile that
     creates auto/config.mk when it's not there? (Ben Schmidt, 2011 Feb 11)
+-   Improve plugin handling: Automatic updates, handle dependencies?
+    E.g. Vundle: https://github.com/gmarik/vundle
 
 
 More patches:
@@ -1544,6 +1563,7 @@ Awaiting updated patches:
     Smilauer, 2004 Sep 13, fix Oct 31, update 2007 May 30)
     Version for latest MacVim: Tobia Conforto, 2009 Nov 23
     More recent version: https://retracile.net/wiki/VimBreakIndent
+    Posted to vim-dev by Taylor Hedberg, 2011 Nov 25
 8   Add a few more command names to the menus.  Patch from Jiri Brezina
     (28 feb 2002).  Will mess the translations...
 7   ATTENTION dialog choices are more logical when "Delete it' appears
@@ -4433,9 +4453,6 @@ Sessions:
 Options:
 7   ":with option=value | command": temporarily set an option value and
     restore it after the command has executed.
-7   Setting an option always sets "w_set_curswant", while this is only
-    required for a few options.  Only do it for those options to avoid the
-    side effect.
 8   Make "old" number options that really give a number of effects into string
     options that are a comma separated list.  The old number values should
     also be supported.

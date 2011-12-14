@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2011 Sep 30
+*eval.txt*	For Vim version 7.3.  Last change: 2011 Dec 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -615,7 +615,6 @@ Expression syntax summary, from least to most significant:
 	- expr7			unary minus
 	+ expr7			unary plus
 
-
 |expr8|	expr8[expr1]		byte of a String or item of a |List|
 	expr8[expr1 : expr1]	substring of a String or sublist of a |List|
 	expr8.name		entry in a |Dictionary|
@@ -946,7 +945,8 @@ When expr8 is a |Funcref| type variable, invoke the function it refers to.
 							*expr9*
 number
 ------
-number			number constant		*expr-number*
+number			number constant			*expr-number* 
+						*hex-number* *octal-number*
 
 Decimal, Hexadecimal (starting with 0x or 0X), or Octal (starting with 0).
 
@@ -1768,7 +1768,7 @@ foldtext( )			String	line displayed for closed fold
 foldtextresult( {lnum})		String	text for closed fold at {lnum}
 foreground( )			Number	bring the Vim window to the foreground
 function( {name})		Funcref reference to function {name}
-garbagecollect( [at_exit])	none	free memory, breaking cyclic references
+garbagecollect( [{atexit}])	none	free memory, breaking cyclic references
 get( {list}, {idx} [, {def}])	any	get item {idx} from {list} or {def}
 get( {dict}, {key} [, {def}])	any	get item {key} from {dict} or {def}
 getbufline( {expr}, {lnum} [, {end}])
@@ -1844,7 +1844,8 @@ log( {expr})			Float	natural logarithm (base e) of {expr}
 log10( {expr})			Float	logarithm of Float {expr} to base 10
 map( {expr}, {string})		List/Dict  change each item in {expr} to {expr}
 maparg( {name}[, {mode} [, {abbr} [, {dict}]]])
-				String	rhs of mapping {name} in mode {mode}
+				String or Dict
+					rhs of mapping {name} in mode {mode}
 mapcheck( {name}[, {mode} [, {abbr}]])
 				String	check for mappings matching {name}
 match( {expr}, {pat}[, {start}[, {count}]])
@@ -3077,7 +3078,7 @@ function({name})					*function()* *E700*
 		{name} can be a user defined function or an internal function.
 
 
-garbagecollect([at_exit])				*garbagecollect()*
+garbagecollect([{atexit}])				*garbagecollect()*
 		Cleanup unused |Lists| and |Dictionaries| that have circular
 		references.  There is hardly ever a need to invoke this
 		function, as it is automatically done when Vim runs out of
@@ -3087,7 +3088,7 @@ garbagecollect([at_exit])				*garbagecollect()*
 		This is useful if you have deleted a very big |List| and/or
 		|Dictionary| with circular references in a script that runs
 		for a long time.
-		When the optional "at_exit" argument is one, garbage
+		When the optional {atexit} argument is one, garbage
 		collection will also be done when exiting Vim, if it wasn't
 		done before.  This is useful when checking for memory leaks.
 
@@ -3163,6 +3164,8 @@ getchar([expr])						*getchar()*
 		one-byte character it is the character itself as a number.
 		Use nr2char() to convert it to a String.
 
+		Use getcharmod() to obtain any additional modifiers.
+
 		When the user clicks a mouse button, the mouse event will be
 		returned.  The position can then be found in |v:mouse_col|,
 		|v:mouse_lnum| and |v:mouse_win|.  This example positions the
@@ -3201,10 +3204,11 @@ getcharmod()						*getcharmod()*
 			2	shift
 			4	control
 			8	alt (meta)
-			16	mouse double click
-			32	mouse triple click
-			64	mouse quadruple click
-			128	Macintosh only: command
+			16	meta (when it's different from ALT)
+			32	mouse double click
+			64	mouse triple click
+			96	mouse quadruple click (== 32 + 64)
+			128	command (Macintosh only)
 		Only the modifiers that have not been included in the
 		character itself are obtained.	Thus Shift-a results in "A"
 		without a modifier.
@@ -6258,6 +6262,7 @@ mouse_gpm		Compiled with support for gpm (Linux console mouse)
 mouse_netterm		Compiled with support for netterm mouse.
 mouse_pterm		Compiled with support for qnx pterm mouse.
 mouse_sysmouse		Compiled with support for sysmouse (*BSD console mouse)
+mouse_urxvt		Compiled with support for urxvt mouse.
 mouse_xterm		Compiled with support for xterm mouse.
 mouseshape		Compiled with support for 'mouseshape'.
 multi_byte		Compiled with support for 'encoding'

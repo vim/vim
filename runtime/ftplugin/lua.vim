@@ -1,7 +1,7 @@
 " Vim filetype plugin file.
 " Language:	Lua 4.0+
 " Maintainer:	Max Ischenko <mfi@ukr.net>
-" Last Change:	2008 Mar 25
+" Last Change:	2011 Dec 10 by Thilo Six
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -10,6 +10,9 @@ endif
 
 " Don't load another plugin for this buffer
 let b:did_ftplugin = 1
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Set 'formatoptions' to break comment lines but not other lines, and insert
 " the comment leader when hitting <CR> or using "o".
@@ -22,8 +25,6 @@ setlocal suffixesadd=.lua
 
 " The following lines enable the macros/matchit.vim plugin for
 " extended matching with the % key.
-
-set cpo-=C
 if exists("loaded_matchit")
 
   let b:match_ignorecase = 0
@@ -34,3 +35,6 @@ if exists("loaded_matchit")
     \ '\<repeat\>:\<until\>'
 
 endif " exists("loaded_matchit")
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

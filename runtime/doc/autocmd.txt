@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.3.  Last change: 2011 Aug 29
+*autocmd.txt*   For Vim version 7.3.  Last change: 2011 Oct 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1061,8 +1061,8 @@ option will not cause any commands to be executed.
 			It's possible to use this inside an autocommand too,
 			so you can base the autocommands for one extension on
 			another extension.  Example: >
-				:au Bufenter *.cpp so ~/.vimrc_cpp
-				:au Bufenter *.cpp doau BufEnter x.c
+				:au BufEnter *.cpp so ~/.vimrc_cpp
+				:au BufEnter *.cpp doau BufEnter x.c
 <			Be careful to avoid endless loops.  See
 			|autocmd-nested|.
 

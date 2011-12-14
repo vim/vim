@@ -7,7 +7,7 @@
 " URL:         http://www.ocaml.info/vim/ftplugin/ocaml.vim
 " Last Change: 2010 Jul 10 - Bugfix, thanks to Pat Rondon
 "              2008 Jul 17 - Bugfix related to fnameescape (VA)
-"              2007 Sep 09 - Added .annot support for ocamlbuild, python not 
+"              2007 Sep 09 - Added .annot support for ocamlbuild, python not
 "                            needed anymore (VA)
 "              2006 May 01 - Added .annot support for file.whateverext (SZ)
 "	             2006 Apr 11 - Fixed an initialization bug; fixed ASS abbrev (MM)
@@ -31,7 +31,7 @@ endif
 
 " Error handling -- helps moving where the compiler wants you to go
 let s:cposet=&cpoptions
-set cpo-=C
+set cpo&vim
 setlocal efm=
       \%EFile\ \"%f\"\\,\ line\ %l\\,\ characters\ %c-%*\\d:,
       \%EFile\ \"%f\"\\,\ line\ %l\\,\ character\ %c:%m,
@@ -211,7 +211,7 @@ endfunction
 " cursor position.
 "
 " Typing '<LocalLeader>t' (LocalLeader defaults to '\', see :h LocalLeader)
-" will cause " Ocaml_print_type function to be invoked with the right 
+" will cause " Ocaml_print_type function to be invoked with the right
 " argument depending on the current mode (visual or not).
 " >>
 "
@@ -221,9 +221,9 @@ endfunction
 "   - no need for python support
 "     + plus : more portable
 "     + minus: no more lazy parsing, it looks very fast however
-"     
+"
 "   - ocamlbuild support, ie.
-"     + the plugin finds the _build directory and looks for the 
+"     + the plugin finds the _build directory and looks for the
 "       corresponding file inside;
 "     + if the user decides to change the name of the _build directory thanks
 "       to the '-build-dir' option of ocamlbuild, the plugin will manage in
@@ -232,7 +232,7 @@ endfunction
 "     + if ocamlbuild is not used, the usual behaviour holds; ie. the .annot
 "       file should be in the same directory as the source file;
 "     + for vim plugin programmers:
-"       the variable 'b:_build_dir' contains the inferred path to the build 
+"       the variable 'b:_build_dir' contains the inferred path to the build
 "       directory, even if this one is not named '_build'.
 "
 " Bonus :
@@ -287,10 +287,10 @@ endfunction
   endfun
 
     " After call:
-    " - b:annot_file_path : 
+    " - b:annot_file_path :
     "                       path to the .annot file corresponding to the
     "                       source file (dealing with ocamlbuild stuff)
-    " - b:_build_path: 
+    " - b:_build_path:
     "                       path to the build directory even if this one is
     "                       not named '_build'
   function! s:Locate_annotation()
@@ -320,7 +320,7 @@ endfunction
             let b:annot_file_path = getcwd().'/'.b:annot_file_path
           endif
         else
-          " 3rd case : the _build directory is in a directory higher in the file hierarchy 
+          " 3rd case : the _build directory is in a directory higher in the file hierarchy
           "            (it can't be deeper by ocamlbuild requirements)
           "      ..
           "     /  \
@@ -372,7 +372,7 @@ endfunction
   let b:annotation_file_located = 0
 
 " 2. Finding the type information in the annotation file
-  
+
   " a. The annotation file is opened in vim as a buffer that
   " should be (almost) invisible to the user.
 
@@ -401,7 +401,7 @@ endfunction
 
       " After call:
       "   The annot file is loaded and assigned to a buffer.
-      "   This also handles the modification date of the .annot file, eg. after a 
+      "   This also handles the modification date of the .annot file, eg. after a
       "   compilation.
     function! s:Load_annotation()
       if bufloaded(b:annot_file_path) && b:annot_file_last_mod < getftime(b:annot_file_path)
@@ -419,9 +419,9 @@ endfunction
         let b:annot_file_last_mod = getftime(b:annot_file_path)
       endif
     endfun
-  
+
   "b. 'search' and 'match' work to find the type information
-   
+
       "In:  - lin1,col1: postion of expression first char
       "     - lin2,col2: postion of expression last char
       "Out: - the pattern to be looked for to find the block
@@ -462,7 +462,7 @@ endfunction
       let end = line(".") - 1
       return join(getline(begin,end),"\n")
     endfun
-        
+
       "In:  the pattern to look for in order to match the block
       "Out: the type information (calls s:Match_data)
       " Should be called in the annotation buffer
@@ -479,10 +479,10 @@ endfunction
       endtry
       return annotation
     endfun
-  
+
   "c. link this stuff with what the user wants
   " ie. get the expression selected/under the cursor
-    
+
     let s:ocaml_word_char = '\w|[À-ÿ]|'''
 
       "In:  the current mode (eg. "visual", "normal", etc.)
@@ -531,7 +531,7 @@ endfunction
       let [lin1,lin2,col1,col2] = s:Match_borders(a:mode)
       return s:Extract_type_data(s:Block_pattern(lin1,lin2,col1,col2))
     endfun
-  
+
   "d. main
       "In:         the current mode (eg. "visual", "normal", etc.)
       "After call: the type information is displayed

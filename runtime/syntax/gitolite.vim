@@ -2,7 +2,7 @@
 " Language:	gitolite configuration
 " URL:		https://github.com/tmatilai/gitolite.vim
 " Maintainer:	Teemu Matilainen <teemu.matilainen@iki.fi>
-" Last Change:	2011-10-05
+" Last Change:	2011-10-18
 
 if exists("b:current_syntax")
   finish
@@ -20,7 +20,7 @@ syn match	gitoliteRepoDef		"^\s*repo\s" nextgroup=gitoliteRepoLine
 syn match	gitoliteRepoLine	".*" contained transparent contains=gitoliteGroup,gitoliteWildRepo,gitoliteCreator,gitoliteExtCmdHelper,gitoliteRepoError,gitoliteComment
 syn match	gitoliteUserLine	".*" contained transparent contains=gitoliteGroup,gitolitePreProc,gitoliteUserError,gitoliteComment
 
-syn match	gitoliteWildRepo	"[ \t=]\@<=[^ \t]*[\\^$|()[\]*?{}][^ \t]*" contained contains=gitoliteCreator,gitoliteRepoError
+syn match	gitoliteWildRepo	"[ \t=]\@<=[^ \t]*[\\^$|()[\]*?{},][^ \t]*" contained contains=gitoliteCreator,gitoliteRepoError
 syn match	gitoliteGroup		"[ \t=]\@<=@[^ \t]\+" contained contains=gitoliteUserError
 
 syn keyword	gitoliteCreator		CREATER CREATOR contained
@@ -30,7 +30,7 @@ syn match	gitoliteExtCmdHelper	"[ \t=]\@<=EXTCMD/" contained nextgroup=gitoliteE
 syn match	gitoliteExtCmd		"rsync\(\s\|$\)" contained
 
 " Illegal characters
-syn match	gitoliteRepoError	"[^ \t0-9a-zA-Z._@+/\\^$|()[\]*?{}-]\+" contained
+syn match	gitoliteRepoError	"[^ \t0-9a-zA-Z._@+/\\^$|()[\]*?{},-]\+" contained
 syn match	gitoliteUserError	"[^ \t0-9a-zA-Z._@+-]\+" contained
 syn match	gitoliteSpaceError	"\s\+" contained
 

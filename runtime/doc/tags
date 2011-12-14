@@ -1184,6 +1184,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 +mouse_netterm	various.txt	/*+mouse_netterm*
 +mouse_pterm	various.txt	/*+mouse_pterm*
 +mouse_sysmouse	various.txt	/*+mouse_sysmouse*
++mouse_urxvt	various.txt	/*+mouse_urxvt*
 +mouse_xterm	various.txt	/*+mouse_xterm*
 +mouseshape	various.txt	/*+mouseshape*
 +multi_byte	various.txt	/*+multi_byte*
@@ -2092,6 +2093,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :display	change.txt	/*:display*
 :dj	tagsrch.txt	/*:dj*
 :djump	tagsrch.txt	/*:djump*
+:dl	change.txt	/*:dl*
 :dli	tagsrch.txt	/*:dli*
 :dlist	tagsrch.txt	/*:dlist*
 :do	autocmd.txt	/*:do*
@@ -4236,6 +4238,7 @@ E850	change.txt	/*E850*
 E851	gui_x11.txt	/*E851*
 E852	gui_x11.txt	/*E852*
 E853	eval.txt	/*E853*
+E854	options.txt	/*E854*
 E86	windows.txt	/*E86*
 E87	windows.txt	/*E87*
 E88	windows.txt	/*E88*
@@ -4685,6 +4688,7 @@ alt	intro.txt	/*alt*
 alt-input	debugger.txt	/*alt-input*
 alternate-file	editing.txt	/*alternate-file*
 amiga-window	starting.txt	/*amiga-window*
+and()	eval.txt	/*and()*
 anonymous-function	eval.txt	/*anonymous-function*
 ant.vim	syntax.txt	/*ant.vim*
 ap	motion.txt	/*ap*
@@ -6130,6 +6134,7 @@ helpfile_name.txt	helphelp.txt	/*helpfile_name.txt*
 helphelp	helphelp.txt	/*helphelp*
 helphelp.txt	helphelp.txt	/*helphelp.txt*
 hex-editing	tips.txt	/*hex-editing*
+hex-number	eval.txt	/*hex-number*
 hidden-buffer	windows.txt	/*hidden-buffer*
 hidden-changed	version5.txt	/*hidden-changed*
 hidden-menus	gui.txt	/*hidden-menus*
@@ -6436,6 +6441,7 @@ internet	intro.txt	/*internet*
 intro	intro.txt	/*intro*
 intro.txt	intro.txt	/*intro.txt*
 inverse	syntax.txt	/*inverse*
+invert()	eval.txt	/*invert()*
 ip	motion.txt	/*ip*
 iquote	motion.txt	/*iquote*
 is	motion.txt	/*is*
@@ -7035,6 +7041,7 @@ objects	index.txt	/*objects*
 obtaining-exted	netbeans.txt	/*obtaining-exted*
 ocaml.vim	syntax.txt	/*ocaml.vim*
 octal	eval.txt	/*octal*
+octal-number	eval.txt	/*octal-number*
 octal-number	options.txt	/*octal-number*
 oldfiles-variable	eval.txt	/*oldfiles-variable*
 ole-activation	if_ole.txt	/*ole-activation*
@@ -7060,6 +7067,7 @@ options	options.txt	/*options*
 options-changed	version5.txt	/*options-changed*
 options.txt	options.txt	/*options.txt*
 optwin	options.txt	/*optwin*
+or()	eval.txt	/*or()*
 oracle	ft_sql.txt	/*oracle*
 os2	os_os2.txt	/*os2*
 os2ansi	os_os2.txt	/*os2ansi*
@@ -8066,6 +8074,7 @@ unix	os_unix.txt	/*unix*
 unlisted-buffer	windows.txt	/*unlisted-buffer*
 up-down-motions	motion.txt	/*up-down-motions*
 uppercase	change.txt	/*uppercase*
+urxvt-mouse	options.txt	/*urxvt-mouse*
 use-cpo-save	usr_41.txt	/*use-cpo-save*
 use-visual-cmds	version4.txt	/*use-visual-cmds*
 useful-mappings	tips.txt	/*useful-mappings*
@@ -8504,6 +8513,7 @@ xiterm	syntax.txt	/*xiterm*
 xml-folding	syntax.txt	/*xml-folding*
 xml-omni-datafile	insert.txt	/*xml-omni-datafile*
 xml.vim	syntax.txt	/*xml.vim*
+xor()	eval.txt	/*xor()*
 xpm.vim	syntax.txt	/*xpm.vim*
 xterm-8-bit	term.txt	/*xterm-8-bit*
 xterm-8bit	term.txt	/*xterm-8bit*

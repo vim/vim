@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2011 Oct 08
+" Last Change:	2011 Oct 26
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -566,7 +566,10 @@ au BufNewFile,BufRead *.d			call s:DtraceCheck()
 
 func! s:DtraceCheck()
   let lines = getline(1, min([line("$"), 100]))
-  if match(lines, '^#!\S\+dtrace\|#pragma\s\+D\s\+option\|:\S\{-}:\S\{-}:') > -1
+  if match(lines, '^module\>\|^import\>') > -1
+    " D files often start with a module and/or import statement.
+    setf d
+  elseif match(lines, '^#!\S\+dtrace\|#pragma\s\+D\s\+option\|:\S\{-}:\S\{-}:') > -1
     setf dtrace
   else
     setf d

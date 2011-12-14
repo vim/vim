@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.3.  Last change: 2011 Oct 1st
+*various.txt*   For Vim version 7.3.  Last change: 2011 Nov 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -350,12 +350,13 @@ N  *+mouseshape*	|'mouseshape'|
 B  *+mouse_dec*		Unix only: Dec terminal mouse handling |dec-mouse|
 N  *+mouse_gpm*		Unix only: Linux console mouse handling |gpm-mouse|
 B  *+mouse_netterm*	Unix only: netterm mouse handling |netterm-mouse|
-N  *+mouse_pterm*	QNX only: pterm mouse handling |qnx-terminal|
+N  *+mouse_pterm*		QNX only: pterm mouse handling |qnx-terminal|
 N  *+mouse_sysmouse*	Unix only: *BSD console mouse handling |sysmouse|
-N  *+mouse_xterm*	Unix only: xterm mouse handling |xterm-mouse|
-B  *+multi_byte*	16 and 32 bit characters |multibyte|
+N  *+mouse_urxvt*		Unix only: urxvt mouse handling |urxvt-mouse|
+N  *+mouse_xterm*		Unix only: xterm mouse handling |xterm-mouse|
+B  *+multi_byte*		16 and 32 bit characters |multibyte|
    *+multi_byte_ime*	Win32 input method for multibyte chars |multibyte-ime|
-N  *+multi_lang*	non-English language support |multi-lang|
+N  *+multi_lang*		non-English language support |multi-lang|
 m  *+mzscheme*		Mzscheme interface |mzscheme|
 m  *+mzscheme/dyn*	Mzscheme interface |mzscheme-dynamic| |/dyn|
 m  *+netbeans_intg*	|netbeans|

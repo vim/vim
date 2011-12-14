@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.3.  Last change: 2011 Jun 19
+*change.txt*    For Vim version 7.3.  Last change: 2011 Oct 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -71,7 +71,7 @@ For inserting text see |insert.txt|.
 			"D" deletes the highlighted text plus all text until
 			the end of the line.  {not in Vi}
 
-						*:d* *:de* *:del* *:delete*
+					*:d* *:de* *:del* *:delete* *:dl*
 :[range]d[elete] [x]	Delete [range] lines (default: current line) [into
 			register x].
 

@@ -2,7 +2,7 @@
 " Language:	LPC
 " Maintainer:	Shizhu Pan <poet@mudbuilder.net>
 " URL:		http://poet.tomud.com/pub/lpc.vim.bz2
-" Last Change:	2003 May 11
+" Last Change:	2011 Dec 10 by Thilo Six
 " Comments:	If you are using Vim 6.2 or later, see :h lpc.vim for
 "		file type recognizing, if not, you had to use modeline.
 
@@ -16,6 +16,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Nodule: Keywords {{{1
 
@@ -345,7 +348,6 @@ exec "syn sync ccomment lpcComment minlines=" . b:c_minlines
 setlocal cindent
 setlocal fo-=t fo+=croql
 setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,://
-set cpo-=C
 
 " Win32 can filter files in the browse dialog
 if has("gui_win32") && !exists("b:browsefilter")
@@ -450,6 +452,9 @@ endif
 " Nodule: This is the end nodule. {{{1
 
 let b:current_syntax = "lpc"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim:ts=8:nosta:sw=2:ai:si:
 " vim600:set fdm=marker: }}}1

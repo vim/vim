@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2011 Sep 30
+*options.txt*	For Vim version 7.3.  Last change: 2011 Dec 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -400,6 +400,9 @@ of user "user".  Example: >
 On Unix systems the form "${HOME}" can be used too.  The name between {} can
 contain non-id characters then.  Note that if you want to use this for the
 "gf" command, you need to add the '{' and '}' characters to 'isfname'.
+
+On MS-Windows, if $HOME is not defined as an environment variable, then
+at runtime Vim will set it to the expansion of $HOMEDRIVE$HOMEPATH.
 
 NOTE: expanding environment variables and "~/" is only done with the ":set"
 command, not when assigning a value to an option with ":let".
@@ -1217,7 +1220,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			|:bwipeout|
 
 	CAREFUL: when "unload", "delete" or "wipe" is used changes in a buffer
-	are lost without a warning.
+	are lost without a warning.  Also, these values may break autocommands
+	that switch between buffers temporarily.
 	This option is used together with 'buftype' and 'swapfile' to specify
 	special kinds of buffers.   See |special-buffers|.
 
@@ -3554,8 +3558,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	screen.
 
 						*'guioptions'* *'go'*
-'guioptions' 'go'	string	(default "gmrLtT"   (MS-Windows),
-					 "agimrLtT" (GTK, Motif and Athena))
+'guioptions' 'go'	string	(default "egmrLtT"   (MS-Windows),
+					 "aegimrLtT" (GTK, Motif and Athena))
 			global
 			{not in Vi}
 			{only available when compiled with GUI enabled}
@@ -3858,14 +3862,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	are not applied.
 	See also: 'incsearch' and |:match|.
 	When you get bored looking at the highlighted matches, you can turn it
-	off with |:nohlsearch|.  As soon as you use a search command, the
-	highlighting comes back.
+	off with |:nohlsearch|.  This does not change the option value, as
+	soon as you use a search command, the highlighting comes back.
 	'redrawtime' specifies the maximum time spent on finding matches.
 	When the search pattern can match an end-of-line, Vim will try to
 	highlight all of the matched text.  However, this depends on where the
 	search starts.  This will be the first line in the window or the first
 	line below a closed fold.  A match in a previous line which is not
 	drawn may not continue in a newly drawn line.
+	You can specify whether the highlight status is restored on startup
+	with the 'h' flag in 'viminfo' |viminfo-h|.
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'history'* *'hi'*
@@ -5241,7 +5247,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	recognized as a compressed file.
 	Only normal file name characters can be used, "/\*?[|<>" are illegal.
 
-					*'path'* *'pa'* *E343* *E345* *E347*
+				*'path'* *'pa'* *E343* *E345* *E347* *E854*
 'path' 'pa'		string	(default on Unix: ".,/usr/include,,"
 				   on OS/2:	  ".,/emx/include,,"
 				   other systems: ".,,")
@@ -7368,6 +7374,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   jsbterm	JSB term mouse handling.
 							*pterm-mouse*
 	   pterm	QNX pterm mouse handling.
+							*urxvt-mouse*
+	   urxvt	Mouse handling for the urxvt (rxvt-unicode) terminal.
 
 	The mouse handling must be enabled at compile time |+mouse_xterm|
 	|+mouse_dec| |+mouse_netterm|.
@@ -7584,15 +7592,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	parameter.  The following is a list of the identifying characters and
 	the effect of their value.
 	CHAR	VALUE	~
+							*viminfo-!*
 	!	When included, save and restore global variables that start
 		with an uppercase letter, and don't contain a lowercase
 		letter.  Thus "KEEPTHIS and "K_L_M" are stored, but "KeepThis"
 		and "_K_L_M" are not.  Nested List and Dict items may not be
 		read back correctly, you end up with an empty item.
+							*viminfo-quote*
 	"	Maximum number of lines saved for each register.  Old name of
 		the '<' item, with the disadvantage that you need to put a
 		backslash before the ", otherwise it will be recognized as the
 		start of a comment!
+							*viminfo-%*
 	%	When included, save and restore the buffer list.  If Vim is
 		started with a file name argument, the buffer list is not
 		restored.  If Vim is started without a file name argument, the
@@ -7602,38 +7613,48 @@ A jump table for the options with a short description can be found at |Q_op|.
 		When followed by a number, the number specifies the maximum
 		number of buffers that are stored.  Without a number all
 		buffers are stored.
+							*viminfo-'*
 	'	Maximum number of previously edited files for which the marks
 		are remembered.  This parameter must always be included when
 		'viminfo' is non-empty.
 		Including this item also means that the |jumplist| and the
 		|changelist| are stored in the viminfo file.
+							*viminfo-/*
 	/	Maximum number of items in the search pattern history to be
 		saved.  If non-zero, then the previous search and substitute
 		patterns are also saved.  When not included, the value of
 		'history' is used.
+							*viminfo-:*
 	:	Maximum number of items in the command-line history to be
 		saved.  When not included, the value of 'history' is used.
+							*viminfo-<*
 	<	Maximum number of lines saved for each register.  If zero then
 		registers are not saved.  When not included, all lines are
 		saved.  '"' is the old name for this item.
 		Also see the 's' item below: limit specified in Kbyte.
+							*viminfo-@*
 	@	Maximum number of items in the input-line history to be
 		saved.  When not included, the value of 'history' is used.
+							*viminfo-c*
 	c	When included, convert the text in the viminfo file from the
 		'encoding' used when writing the file to the current
 		'encoding'.  See |viminfo-encoding|.
+							*viminfo-f*
 	f	Whether file marks need to be stored.  If zero, file marks ('0
 		to '9, 'A to 'Z) are not stored.  When not present or when
 		non-zero, they are all stored.  '0 is used for the current
 		cursor position (when exiting or when doing ":wviminfo").
+							*viminfo-h*
 	h	Disable the effect of 'hlsearch' when loading the viminfo
 		file.  When not included, it depends on whether ":nohlsearch"
 		has been used since the last search command.
+							*viminfo-n*
 	n	Name of the viminfo file.  The name must immediately follow
 		the 'n'.  Must be the last one!  If the "-i" argument was
 		given when starting Vim, that file name overrides the one
 		given here with 'viminfo'.  Environment variables are expanded
 		when opening the file, not when setting the option.
+							*viminfo-r*
 	r	Removable media.  The argument is a string (up to the next
 		',').  This parameter can be given several times.  Each
 		specifies the start of a path for which no marks will be
@@ -7642,6 +7663,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		also use it for temp files, e.g., for Unix: "r/tmp".  Case is
 		ignored.  Maximum length of each 'r' argument is 50
 		characters.
+							*viminfo-s*
 	s	Maximum size of an item in Kbyte.  If zero then registers are
 		not saved.  Currently only applies to registers.  The default
 		"s10" will exclude registers with more than 10 Kbyte of text.

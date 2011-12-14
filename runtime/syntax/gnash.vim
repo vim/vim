@@ -2,7 +2,8 @@
 " Language: 	gnash(1) configuration files
 "		http://www.gnu.org/software/gnash/manual/gnashuser.html#gnashrc
 " Maintainer: 	Thilo Six <T.Six@gmx.de>
-" Last Change: 	2011 Jul 02
+" Last Change: 	2011 Dec 11
+" Modeline:	vim: ts=8:sw=2:sts=2:
 " Credidts:	derived from readline.vim
 "		Nikolai Weibull
 "
@@ -11,7 +12,7 @@
 " For version 6.x: Quit when a syntax file was already loaded
 if version < 600
     syntax clear
-elseif exists ("b:current_syntax")
+elseif exists("b:current_syntax") || &compatible
     finish
 endif
 
@@ -27,12 +28,10 @@ syn match   GnashNumber	    display '\<\d\+\>'
 syn case ignore
 syn keyword GnashOn	    ON YES TRUE
 syn keyword GnashOff	    OFF NO FALSE
-syn case match
 
 syn match GnashSet	    '^\s*set\>'
 syn match GnashSet	    '^\s*append\>'
 
-syn case ignore
 syn match GnashKeyword	    '\<CertDir\>'
 syn match GnashKeyword      '\<ASCodingErrorsVerbosity\>'
 syn match GnashKeyword      '\<CertFile\>'
@@ -91,3 +90,4 @@ hi def link GnashSet	    String
 hi def link GnashKeyword    Keyword
 
 let b:current_syntax = "gnash"
+

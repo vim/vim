@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	PHP
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 May 9
+" Last Change:	2011 Dec 08
 "
 "   TODO:
 "   - Class aware completion:
@@ -650,6 +650,7 @@ function! phpcomplete#GetClassContents(file, name) " {{{
 	" this is the most efficient way. The other way
 	" is to go through the looong string looking for
 	" matching {}
+	let original_window = winnr()
 	below 1new
 	0put =cfile
 	call search('class\s\+'.a:name)
@@ -667,6 +668,9 @@ function! phpcomplete#GetClassContents(file, name) " {{{
 	let classcontent = join(classc, "\n")
 
 	bw! %
+	" go back to where we started
+	exe original_window.'wincmd w'
+
 	if extends_class != ''
 		let classlocation = phpcomplete#GetClassLocation(extends_class)
 		if filereadable(classlocation)

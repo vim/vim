@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.3.  Last change: 2011 Sep 28
+*pattern.txt*   For Vim version 7.3.  Last change: 2011 Nov 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -937,7 +937,7 @@ match ASCII characters, as indicated by the range.
 \l	lowercase character:		[a-z]		*/\l*
 \L	non-lowercase character:	[^a-z]		*/\L*
 \u	uppercase character:		[A-Z]		*/\u*
-\U	non-uppercase character		[^A-Z]		*/\U*
+\U	non-uppercase character:	[^A-Z]		*/\U*
 
 	NOTE: Using the atom is faster than the [] form.
 

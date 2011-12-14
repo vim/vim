@@ -1,10 +1,12 @@
 " Vim syntax file
 " Language:               Configuration File (ini file) for MSDOS/MS Windows
-" Version:                2.0
+" Version:                2.1
 " Original Author:        Sean M. McKee <mckee@misslink.net>
 " Previous Maintainer:    Nima Talebi <nima@it.net.au>
 " Current Maintainer:     Hong Xu <xuhdev@gmail.com>
-" Last Change:            2011 Jul 21
+" Homepage:               http://www.vim.org/scripts/script.php?script_id=3747
+"                         https://bitbucket.org/xuhdev/syntax-dosini.vim
+" Last Change:            2011 Nov 8
 
 
 " For version 5.x: Clear all syntax items
@@ -18,7 +20,6 @@ endif
 " shut case off
 syn case ignore
 
-syn match  dosiniBool     "\<\(yes\|no\|y\|n\|true\|false\)\>"
 syn match  dosiniNumber   "\<\d\+\>"
 syn match  dosiniNumber   "\<\d*\.\d\+\>"
 syn match  dosiniNumber   "\<\d\+e[+-]\=\d\+\>"
@@ -37,7 +38,6 @@ if version >= 508 || !exists("did_dosini_syntax_inits")
     command -nargs=+ HiLink hi def link <args>
   endif
 
-  HiLink dosiniBool     Boolean
   HiLink dosiniNumber   Number
   HiLink dosiniHeader   Special
   HiLink dosiniComment  Comment

@@ -1,4 +1,3 @@
-
 " Vim syntax file
 " Language:    SQL, Adaptive Server Anywhere
 " Maintainer:  David Fishburn <fishburn at ianywhere dot com>

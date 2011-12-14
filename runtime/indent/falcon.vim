@@ -153,4 +153,7 @@ function FalconGetIndent()
     return ind + chg
 endfunction
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
+
 " vim: set sw=4 sts=4 et tw=80 :

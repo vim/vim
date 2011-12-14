@@ -1,6 +1,6 @@
 " Language:     Verilog HDL
 " Maintainer:	Chih-Tsun Huang <cthuang@larc.ee.nthu.edu.tw>
-" Last Change:	Wed Oct 31 16:13:11 CST 2001
+" Last Change:	2011 Dec 10 by Thilo Six
 " URL:		http://larc.ee.nthu.edu.tw/~cthuang/vim/indent/verilog.vim
 "
 " Credits:
@@ -30,7 +30,8 @@ if exists("*GetVerilogIndent")
   finish
 endif
 
-set cpo-=C
+let s:cpo_save = &cpo
+set cpo&vim
 
 function GetVerilogIndent()
 
@@ -215,5 +216,8 @@ function GetVerilogIndent()
   " Return the indention
   return ind
 endfunction
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim:sw=2

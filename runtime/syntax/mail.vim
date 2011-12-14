@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:		Mail file
 " Previous Maintainer:	Felix von Leitner <leitner@math.fu-berlin.de>
-" Maintainer:		Gautam Iyer <gi1242@users.sourceforge.net>
-" Last Change:		Thu 06 Nov 2008 10:10:55 PM PST
+" Maintainer:		GI <a@b.c>, where a='gi1242+vim', b='gmail', c='com'
+" Last Change:		Sat 03 Dec 2011 10:34:27 PM EST
 
 " Quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -89,7 +89,7 @@ hi def link mailSignature	PreProc
 hi def link mailHeaderEmail	mailEmail
 hi def link mailEmail		Special
 hi def link mailURL		String
-hi def link mailSubject		LineNR
+hi def link mailSubject		Title
 hi def link mailQuoted1		Comment
 hi def link mailQuoted3		mailQuoted1
 hi def link mailQuoted5		mailQuoted1
