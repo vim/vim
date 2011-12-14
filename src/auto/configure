@@ -11777,7 +11777,8 @@ _ACEOF
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking uint32_t is 32 bits" >&5
 $as_echo_n "checking uint32_t is 32 bits... " >&6; }
 if test "$cross_compiling" = yes; then :
-  as_fn_error "could not compile program using uint32_t." "$LINENO" 5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: cannot check uint32_t when cross-compiling." >&5
+$as_echo "$as_me: WARNING: cannot check uint32_t when cross-compiling." >&2;}
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
