@@ -1854,7 +1854,7 @@ line_read_in:
 
 		if (state == TS_BINARY && orgpat.regmatch.rm_ic && !sortic)
 		{
-		    /* binary search won't work for ignoring case, use linear
+		    /* Binary search won't work for ignoring case, use linear
 		     * search. */
 		    linear = TRUE;
 		    state = TS_LINEAR;
@@ -1922,6 +1922,19 @@ line_read_in:
 			    MSG(_("Ignoring long line in tags file"));
 			    verbose_leave();
 			}
+#ifdef FEAT_TAG_BINS
+			if (state != TS_LINEAR)
+			{
+			    /* Avoid getting stuck. */
+			    linear = TRUE;
+			    state = TS_LINEAR;
+# ifdef HAVE_FSEEKO
+			    fseeko(fp, search_info.low_offset, SEEK_SET);
+# else
+			    fseek(fp, (long)search_info.low_offset, SEEK_SET);
+# endif
+			}
+#endif
 			continue;
 		    }
 
