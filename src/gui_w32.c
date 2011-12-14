@@ -1101,7 +1101,7 @@ _WndProc(
 	return MyWindowProc(hwnd, uMsg, wParam, lParam);
     }
 
-    return 1;
+    return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
 /*
