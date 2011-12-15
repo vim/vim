@@ -798,7 +798,7 @@ _WndProc(
 		if (pt.y < rect.top)
 		{
 		    show_tabline_popup_menu();
-		    return 0;
+		    return 0L;
 		}
 	    }
 	    return MyWindowProc(hwnd, uMsg, wParam, lParam);
@@ -828,7 +828,10 @@ _WndProc(
 
     case WM_ENDSESSION:
 	if (wParam)	/* system only really goes down when wParam is TRUE */
+	{
 	    _OnEndSession();
+	    return 0L;
+	}
 	break;
 
     case WM_CHAR:
@@ -866,7 +869,7 @@ _WndProc(
 	 * are received, mouse pointer remains hidden. */
 	return MyWindowProc(hwnd, uMsg, wParam, lParam);
 #else
-	return 0;
+	return 0L;
 #endif
 
     case WM_SIZING:	/* HANDLE_MSG doesn't seem to handle this one */
@@ -874,7 +877,7 @@ _WndProc(
 
     case WM_MOUSEWHEEL:
 	_OnMouseWheel(hwnd, HIWORD(wParam));
-	break;
+	return 0L;
 
 	/* Notification for change in SystemParametersInfo() */
     case WM_SETTINGCHANGE:
@@ -987,13 +990,19 @@ _WndProc(
 	    case TCN_SELCHANGE:
 		if (gui_mch_showing_tabline()
 				  && ((LPNMHDR)lParam)->hwndFrom == s_tabhwnd)
+		{
 		    send_tabline_event(TabCtrl_GetCurSel(s_tabhwnd) + 1);
+		    return 0L;
+		}
 		break;
 
 	    case NM_RCLICK:
 		if (gui_mch_showing_tabline()
 			&& ((LPNMHDR)lParam)->hwndFrom == s_tabhwnd)
+		{
 		    show_tabline_popup_menu();
+		    return 0L;
+		}
 		break;
 # endif
 	    default:
@@ -1037,6 +1046,7 @@ _WndProc(
 		out_flush();
 		did_menu_tip = TRUE;
 	    }
+	    return 0L;
 	}
 	break;
 #endif
@@ -1079,18 +1089,19 @@ _WndProc(
     case WM_IME_NOTIFY:
 	if (!_OnImeNotify(hwnd, (DWORD)wParam, (DWORD)lParam))
 	    return MyWindowProc(hwnd, uMsg, wParam, lParam);
-	break;
+	return 1L;
+
     case WM_IME_COMPOSITION:
 	if (!_OnImeComposition(hwnd, wParam, lParam))
 	    return MyWindowProc(hwnd, uMsg, wParam, lParam);
-	break;
+	return 1L;
 #endif
 
     default:
 	if (uMsg == msh_msgmousewheel && msh_msgmousewheel != 0)
 	{   /* handle MSH_MOUSEWHEEL messages for Intellimouse */
 	    _OnMouseWheel(hwnd, HIWORD(wParam));
-	    break;
+	    return 0L;
 	}
 #ifdef MSWIN_FIND_REPLACE
 	else if (uMsg == s_findrep_msg && s_findrep_msg != 0)
