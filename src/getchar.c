@@ -4510,6 +4510,8 @@ eval_map_expr(str, c)
     char_u	*expr;
     char_u	*save_cmd;
     pos_T	save_cursor;
+    int		save_msg_col;
+    int		save_msg_row;
 
     /* Remove escaping of CSI, because "str" is in a format to be used as
      * typeahead. */
@@ -4533,12 +4535,16 @@ eval_map_expr(str, c)
 #endif
     set_vim_var_char(c);  /* set v:char to the typed character */
     save_cursor = curwin->w_cursor;
+    save_msg_col = msg_col;
+    save_msg_row = msg_row;
     p = eval_to_string(expr, NULL, FALSE);
     --textlock;
 #ifdef FEAT_EX_EXTRA
     --ex_normal_lock;
 #endif
     curwin->w_cursor = save_cursor;
+    msg_col = save_msg_col;
+    msg_row = save_msg_row;
 
     restore_cmdline_alloc(save_cmd);
     vim_free(expr);
