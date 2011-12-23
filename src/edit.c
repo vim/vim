@@ -2183,7 +2183,7 @@ vim_is_ctrl_x_key(c)
 		    || c == Ctrl_I || c == Ctrl_D || c == Ctrl_P
 		    || c == Ctrl_N || c == Ctrl_T || c == Ctrl_V
 		    || c == Ctrl_Q || c == Ctrl_U || c == Ctrl_O
-		    || c == Ctrl_S || c == 's');
+		    || c == Ctrl_S || c == Ctrl_K || c == 's');
 	case CTRL_X_SCROLL:
 	    return (c == Ctrl_Y || c == Ctrl_E);
 	case CTRL_X_WHOLE_LINE:
