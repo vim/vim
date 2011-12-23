@@ -123,7 +123,7 @@
 #define DCS		0x90	/* Device Control String */
 #define STERM		0x9c	/* String Terminator */
 
-#define POUND		'\xA3'
+#define POUND		0xB1
 
 #define CTRL_F_STR	"\056"
 #define CTRL_H_STR	"\026"
