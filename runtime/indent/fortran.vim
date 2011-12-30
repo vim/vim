@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	Fortran95 (and Fortran90, Fortran77, F and elf90)
-" Version:	0.39
-" Last Change:	2011 May 30
+" Version:	0.40
+" Last Change:	2011 Dec. 28
 " Maintainer:	Ajit J. Thakkar <ajit@unb.ca>; <http://www.unb.ca/chem/ajit/>
 " Usage:	Do :help fortran-indent from Vim
 
@@ -10,6 +10,9 @@ if exists("b:did_indent")
   finish
 endif
 let b:did_indent = 1
+
+let s:cposet=&cpoptions
+set cpoptions&vim
 
 setlocal indentkeys+==~end,=~case,=~if,=~else,=~do,=~where,=~elsewhere,=~select
 setlocal indentkeys+==~endif,=~enddo,=~endwhere,=~endselect,=~elseif
@@ -66,9 +69,6 @@ else
     finish
   endif
 endif
-
-let s:cposet=&cpoptions
-set cpoptions-=C
 
 function FortranGetIndent(lnum)
   let ind = indent(a:lnum)

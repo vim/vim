@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.3.  Last change: 2011 Nov 28
+*various.txt*   For Vim version 7.3.  Last change: 2011 Dec 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -135,6 +135,9 @@ g8			Print the hex values of the bytes used in the
 			how many lines you'll see; if there is only one window
 			then twice the value of the 'scroll' option is used,
 			otherwise the current window height minus 3 is used.
+
+			If there is a {count} the 'window' option is set to
+			its value.
 
 			:z can be used either alone or followed by any of
 			several punctuation marks.  These have the following

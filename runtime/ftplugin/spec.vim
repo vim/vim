@@ -1,12 +1,15 @@
 " Plugin to update the %changelog section of RPM spec files
 " Filename: spec.vim
 " Maintainer: Gustavo Niemeyer <niemeyer@conectiva.com>
-" Last Change: Wed, 10 Apr 2002 16:28:52 -0300
+" Last Change: 2011 Dec 25 by Thilo Six
 
 if exists("b:did_ftplugin")
 	finish
 endif
 let b:did_ftplugin = 1
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 if !exists("no_plugin_maps") && !exists("no_spec_maps")
 	if !hasmapto("<Plug>SpecChangelog")
@@ -165,4 +168,7 @@ let b:match_ignorecase = 0
 let b:match_words =
   \ '^Name:^%description:^%clean:^%setup:^%build:^%install:^%files:' .
   \ '^%package:^%preun:^%postun:^%changelog'
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2011 Nov 26
+*syntax.txt*	For Vim version 7.3.  Last change: 2011 Dec 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1603,11 +1603,6 @@ which are used for the statement itself, special characters used in debug
 strings, strings, boolean constants and types (this, super) respectively.  I
 have opted to chose another background for those statements.
 
-In order to help you write code that can be easily ported between Java and
-C++, all C++ keywords can be marked as an error in a Java program.  To
-have this add this line in your .vimrc file: >
-	:let java_allow_cpp_keywords = 0
-
 Javadoc is a program that takes special comments out of Java program files and
 creates HTML pages.  The standard configuration will highlight this HTML code
 similarly to HTML files (see |html.vim|).  You can even add Javascript
@@ -2775,7 +2770,9 @@ of specialized LaTeX commands, syntax, and fonts.  If you're using such a
 package you'll often wish that the distributed syntax/tex.vim would support
 it.  However, clearly this is impractical.  So please consider using the
 techniques in |mysyntaxfile-add| to extend or modify the highlighting provided
-by syntax/tex.vim.
+by syntax/tex.vim.  Please consider uploading any extensions that you write,
+which typically would go in $HOME/after/syntax/tex/[pkgname].vim, to
+http://vim.sf.net/.
 
 								*tex-error*
  Tex: Excessive Error Highlighting? ~

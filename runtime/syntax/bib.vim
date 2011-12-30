@@ -2,7 +2,7 @@
 " Language:	BibTeX (bibliographic database format for (La)TeX)
 " Maintainer:	Bernd Feige <Bernd.Feige@gmx.net>
 " Filenames:	*.bib
-" Last Change:	Mar 23, 2011
+" Last Change:	2011 Dec 25
 
 " Thanks to those who pointed out problems with this file or supplied fixes!
 
@@ -15,6 +15,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Ignore case
 syn case ignore
@@ -93,3 +96,6 @@ if version >= 508 || !exists("did_bib_syn_inits")
 endif
 
 let b:current_syntax = "bib"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

@@ -2,7 +2,7 @@
 " Language:     LaTeX
 " Maintainer:   Zhou YiChao <broken.zhou@gmail.com>
 " Created:      Sat, 16 Feb 2002 16:50:19 +0100
-" Last Change:	Tue, 25 Sep 2011
+" Last Change:	2011 Dec 24
 " Last Update:  25th Sep 2002, by LH :
 "               (*) better support for the option
 "               (*) use some regex instead of several '||'.
@@ -37,42 +37,42 @@
 "
 "   If this variable is unset or non-zero, it will use smartindent-like style
 "   for "{}" and "[]"
-"   
+"
 " * g:tex_indent_items
 "
 "   If this variable is set, item-environments are indented like Emacs does
 "   it, i.e., continuation lines are indented with a shiftwidth.
-"   
+"
 "   NOTE: I've already set the variable below; delete the corresponding line
 "   if you don't like this behaviour.
 "
 "   Per default, it is unset.
-"   
+"
 "              set                                unset
 "   ----------------------------------------------------------------
-"       \begin{itemize}                      \begin{itemize}  
+"       \begin{itemize}                      \begin{itemize}
 "         \item blablabla                      \item blablabla
-"           bla bla bla                        bla bla bla  
+"           bla bla bla                        bla bla bla
 "         \item blablabla                      \item blablabla
-"           bla bla bla                        bla bla bla  
-"       \end{itemize}                        \end{itemize}    
+"           bla bla bla                        bla bla bla
+"       \end{itemize}                        \end{itemize}
 "
 "
 " * g:tex_items
 "
-"   A list of tokens to be considered as commands for the beginning of an item 
-"   command. The tokens should be separated with '\|'. The initial '\' should 
+"   A list of tokens to be considered as commands for the beginning of an item
+"   command. The tokens should be separated with '\|'. The initial '\' should
 "   be escaped. The default is '\\bibitem\|\\item'.
 "
 " * g:tex_itemize_env
-" 
-"   A list of environment names, separated with '\|', where the items (item 
-"   commands matching g:tex_items) may appear. The default is 
+"
+"   A list of environment names, separated with '\|', where the items (item
+"   commands matching g:tex_items) may appear. The default is
 "   'itemize\|description\|enumerate\|thebibliography'.
 "
 " * g:tex_noindent_env
 "
-"   A list of environment names. separated with '\|', where no indentation is 
+"   A list of environment names. separated with '\|', where no indentation is
 "   required. The default is 'document\|verbatim'.
 "
 " * g:tex_indent_and
@@ -82,7 +82,7 @@
 "   Note that this feature need to search back some line, so vim may become
 "   a little slow.
 "
-" }}} 
+" }}}
 
 if exists("b:did_indent")
     finish
@@ -104,7 +104,7 @@ if g:tex_indent_items
         let g:tex_itemize_env = 'itemize\|description\|enumerate\|thebibliography'
     endif
     if !exists('g:tex_items')
-        let g:tex_items = '\\bibitem\|\\item' 
+        let g:tex_items = '\\bibitem\|\\item'
     endif
 else
     let g:tex_items = ''
@@ -125,6 +125,8 @@ let g:tex_items = '^\s*' . g:tex_items
 if exists("*GetTeXIndent") | finish
 endif
 
+let s:cpo_save = &cpo
+set cpo&vim
 
 function GetTeXIndent()
     " Find a non-blank line above the current line.
@@ -137,7 +139,7 @@ function GetTeXIndent()
 
     " At the start of the file use zero indent.
     if lnum == 0
-        return 0 
+        return 0
     endif
 
     let line = getline(lnum)             " last line
@@ -159,7 +161,7 @@ function GetTeXIndent()
 
 
     if lnum == 0
-        return 0 
+        return 0
     endif
 
     let ind = indent(lnum)
@@ -171,7 +173,7 @@ function GetTeXIndent()
 
     " Add a 'shiftwidth' after beginning of environments.
     " Don't add it for \begin{document} and \begin{verbatim}
-    ""if line =~ '^\s*\\begin{\(.*\)}'  && line !~ 'verbatim' 
+    ""if line =~ '^\s*\\begin{\(.*\)}'  && line !~ 'verbatim'
     " LH modification : \begin does not always start a line
     " ZYC modification : \end after \begin won't cause wrong indent anymore
     if line =~ '\\begin{.*}' && line !~ g:tex_noindent_env
@@ -246,5 +248,8 @@ function GetTeXIndent()
 
     return ind
 endfunction
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: set sw=4 textwidth=80:

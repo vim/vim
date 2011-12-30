@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Fortran95 (and Fortran90, Fortran77, F and elf90)
-" Version:	0.89
-" Last Change:	2010 July 21
+" Version:	0.90
+" Last Change:	2011 Dec. 28
 " Maintainer:	Ajit J. Thakkar (ajit AT unb.ca); <http://www.unb.ca/chem/ajit/>
 " Usage:	For instructions, do :help fortran-syntax from Vim
 " Credits:
@@ -18,6 +18,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " let b:fortran_dialect = fortran_dialect if set correctly by user
 if exists("fortran_dialect")
@@ -257,7 +260,7 @@ if b:fortran_dialect != "f77"
   syn match  fortranType	"\<end\s*type"
   syn match  fortranType	"\<in\s*out"
 
-  syn keyword fortranUnitHeaderEx	procedure
+  syn keyword fortranType	procedure
   syn keyword fortranIOEx		namelist
   syn keyword fortranConditionalEx	while
   syn keyword fortran90IntrinsicEx	achar iachar transfer
@@ -306,13 +309,15 @@ if b:fortran_dialect == "f95"
   syn keyword fortran03ReadWrite	flush wait
   syn keyword fortran03IO	        decimal round iomsg
   syn keyword fortran03Type             asynchronous nopass non_overridable pass protected volatile abstract extends import
-  syn keyword fortran03Type             non_intrinsic value bind deferred generic final enumerator class
+  syn keyword fortran03Type             non_intrinsic value bind deferred generic final enumerator
+  syn match fortran03Type               "\<class\>"
   syn match fortran03Type               "\<associate\>"
   syn match fortran03Type               "\<end\s*associate"
   syn match fortran03Type               "\<enum\s*,\s*bind\s*(\s*c\s*)"
   syn match fortran03Type               "\<end\s*enum"
   syn match fortran03Conditional	"\<select\s*type"
   syn match fortran03Conditional        "\<type\s*is\>"
+  syn match fortran03Conditional        "\<class\s*is\>"
   syn match fortran03UnitHeader         "\<abstract\s*interface\>"
   syn match fortran03Operator           "\([\|]\)"
 
@@ -537,4 +542,6 @@ endif
 
 let b:current_syntax = "fortran"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8 tw=132

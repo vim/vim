@@ -1,12 +1,15 @@
 " Vim syntax file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2011 Sep 07
+" Last Change:	2011 Dec 30
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " A bunch of useful C keywords
 syn keyword	cStatement	goto break return continue asm
@@ -390,4 +393,6 @@ hi def link cCppOut		Comment
 
 let b:current_syntax = "c"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8

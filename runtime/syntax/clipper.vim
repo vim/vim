@@ -2,7 +2,7 @@
 " Language:	Clipper 5.2 & FlagShip
 " Maintainer:	C R Zamana <zamana@zip.net>
 " Some things based on c.vim by Bram Moolenaar and pascal.vim by Mario Eusebio
-" Last Change:	Sat Sep 09 2000
+" Last Change:	2011 Dec 29 by Thilo Six
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -11,6 +11,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Exceptions for my "Very Own" (TM) user variables naming style.
 " If you don't like this, comment it
@@ -140,4 +143,6 @@ endif
 
 let b:current_syntax = "clipper"
 
-" vim: ts=4
+let &cpo = s:cpo_save
+unlet s:cpo_save
+" vim: ts=8

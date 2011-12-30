@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language: Essbase script
 " Maintainer:	Raul Segura Acevedo <raulseguraaceved@netscape.net>
-" Last change:	2001 Sep 25
+" Last change:	2011 Dec 25 by Thilo Six
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -10,6 +10,9 @@ if version < 600
 elseif exists("b:current_syntax")
 	finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " folds: fix/endfix and comments
 sy	region	EssFold start="\<Fix" end="EndFix" transparent fold
@@ -196,4 +199,6 @@ endif
 
 let b:current_syntax = "csc"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8

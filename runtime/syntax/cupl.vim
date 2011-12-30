@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	CUPL
-" Maintainer:	John Cook <john.cook@kla-tencor.com>
-" Last Change:	2001 Apr 25
+" Maintainer:	John Cook <johncook3@gmail.com>
+" Last Change:	2011 Dec 27
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -10,6 +10,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " this language is oblivious to case.
 syn case ignore
@@ -127,4 +130,8 @@ if version >= 508 || !exists("did_cupl_syn_inits")
 endif
 
 let b:current_syntax = "cupl"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
+
 " vim:ts=8

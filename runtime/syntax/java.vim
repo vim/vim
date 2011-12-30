@@ -1,7 +1,7 @@
 " Vim syntax file " Language:	  Java
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/java.vim
-" Last Change:	2010 March 23
+" Last Change:	2011 Dec 30
 
 " Please check :help java.vim for comments on some of the options available.
 
@@ -120,11 +120,8 @@ syn region  javaLabelRegion	transparent matchgroup=javaLabel start="\<case\>" ma
 syn match   javaUserLabel	"^\s*[_$a-zA-Z][_$a-zA-Z0-9_]*\s*:"he=e-1 contains=javaLabel
 syn keyword javaLabel		default
 
-if !exists("java_allow_cpp_keywords")
-  syn keyword javaError auto delete extern friend inline redeclared
-  syn keyword javaError register signed sizeof struct template typedef union
-  syn keyword javaError unsigned operator
-endif
+" highlighting C++ keywords as errors removed, too many people find it
+" annoying.  Was: if !exists("java_allow_cpp_keywords")
 
 " The following cluster contains all java groups except the contained ones
 syn cluster javaTop add=javaExternal,javaError,javaError,javaBranch,javaLabelRegion,javaLabel,javaConditional,javaRepeat,javaBoolean,javaConstant,javaTypedef,javaOperator,javaType,javaType,javaStatement,javaStorageClass,javaAssert,javaExceptions,javaMethodDecl,javaClassDecl,javaClassDecl,javaClassDecl,javaScopeDecl,javaError,javaError2,javaUserLabel,javaLangObject,javaAnnotation,javaVarArg

@@ -1,8 +1,10 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2010 Mar 23
+" Last Change:	2011 Dec 30
 
+let s:cpo_save = &cpo
+set cpo&vim
 
 " This function is used for the 'omnifunc' option.
 function! ccomplete#Complete(findstart, base)
@@ -603,3 +605,6 @@ function! s:SearchMembers(matches, items, all)
   endfor
   return res
 endfunc
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

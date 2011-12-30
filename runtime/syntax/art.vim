@@ -2,11 +2,14 @@
 " Language:      ART-IM and ART*Enterprise
 " Maintainer:    Dorai Sitaram <ds26@gte.com>
 " URL:		 http://www.ccs.neu.edu/~dorai/vimplugins/vimplugins.html
-" Last Change:   Nov 6, 2002
+" Last Change:   2011 Dec 28 by Thilo Six
 
 if exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 syn case ignore
 
@@ -42,3 +45,6 @@ hi def link artspform statement
 hi def link artvariable function
 
 let b:current_syntax = "art"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

@@ -2,7 +2,7 @@
 " Language:		Clean
 " Author:		Pieter van Engelen <pietere@sci.kun.nl>
 " Co-Author:	Arthur van Leeuwen <arthurvl@sci.kun.nl>
-" Last Change:	Fri Sep 29 11:35:34 CEST 2000
+" Last Change:	2011 Dec 25 by Thilo Six
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -11,6 +11,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Some Clean-keywords
 syn keyword cleanConditional if case
@@ -91,4 +94,6 @@ endif
 
 let b:current_syntax = "clean"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=4

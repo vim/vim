@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2011 Dec 14
+*eval.txt*	For Vim version 7.3.  Last change: 2011 Dec 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3941,11 +3941,12 @@ line2byte({lnum})					*line2byte()*
 		Return the byte count from the start of the buffer for line
 		{lnum}.  This includes the end-of-line character, depending on
 		the 'fileformat' option for the current buffer.  The first
-		line returns 1.
+		line returns 1. 'encoding' matters, 'fileencoding' is ignored.
 		This can also be used to get the byte count for the line just
 		below the last line: >
 			line2byte(line("$") + 1)
-<		This is the file size plus one.
+<		This is the buffer size plus one.  If 'fileencoding' is empty
+		it is the file size plus one.
 		When {lnum} is invalid, or the |+byte_offset| feature has been
 		disabled at compile time, -1 is returned.
 		Also see |byte2line()|, |go| and |:goto|.

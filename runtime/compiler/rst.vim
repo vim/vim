@@ -9,7 +9,7 @@ endif
 let current_compiler = "rst"
 
 let s:cpo_save = &cpo
-set cpo-=C
+set cpo&vim
 
 setlocal errorformat=
       \%f:%l:\ (%tEBUG/0)\ %m,

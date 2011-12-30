@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2011 Oct 26
+" Last Change:	2011 Dec 28
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -2532,6 +2532,10 @@ au BufNewFile,BufRead */etc/yum.repos.d/* 	call s:StarSetf('dosini')
 " Z-Shell script
 au BufNewFile,BufRead zsh*,zlog*		call s:StarSetf('zsh')
 
+
+" Plain text files, needs to be far down to not override others.  This avoids
+" the "conf" type being used if there is a line starting with '#'.
+au BufNewFile,BufRead *.txt,*.text		setf text
 
 
 " Use the filetype detect plugins.  They may overrule any of the previously

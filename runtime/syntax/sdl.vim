@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:	SDL
-" Maintainer:	Michael Piefel <piefel@informatik.hu-berlin.de>
+" Maintainer:	Michael Piefel <entwurf@piefel.de>
 " Last Change:	2 May 2001
 
 " For version 5.x: Clear all syntax items

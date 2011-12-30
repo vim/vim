@@ -1,12 +1,13 @@
 " Vim filetype plugin file
 " Language:	Kimwitu++
-" Maintainer:	Michael Piefel <piefel@informatik.hu-berlin.de>
-" Last Change:	16 August 2001
+" Maintainer:	Michael Piefel <entwurf@piefel.de>
+" Last Change:	10 December 2011
 
 " Behaves almost like C++
 runtime! ftplugin/cpp.vim ftplugin/cpp_*.vim ftplugin/cpp/*.vim
 
-set cpo-=C
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Limit the browser to related files
 if has("gui_win32") && !exists("b:browsefilter")
@@ -18,3 +19,6 @@ endif
 
 " Set the errorformat for the Kimwitu++ compiler
 set efm+=kc%.%#:\ error\ at\ %f:%l:\ %m
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

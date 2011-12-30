@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	BASIC
 " Maintainer:	Allan Kelly <allan@fruitloaf.co.uk>
-" Last Change:	Tue Sep 14 14:24:23 BST 1999
+" Last Change:  2011 Dec 25 by Thilo Six
 
 " First version based on Micro$soft QBASIC circa 1989, as documented in
 " 'Learn BASIC Now' by Halvorson&Rygmyr. Microsoft Press 1989.
@@ -15,6 +15,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " A bunch of useful BASIC keywords
 syn keyword basicStatement	BEEP beep Beep BLOAD bload Bload BSAVE bsave Bsave
@@ -171,4 +174,6 @@ endif
 
 let b:current_syntax = "basic"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8

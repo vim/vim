@@ -2,7 +2,7 @@
 " Language:	gitolite configuration
 " URL:		https://github.com/tmatilai/gitolite.vim
 " Maintainer:	Teemu Matilainen <teemu.matilainen@iki.fi>
-" Last Change:	2011-11-01
+" Last Change:	2011-12-24
 
 if exists("b:did_indent")
   finish
@@ -17,6 +17,9 @@ setlocal indentkeys=o,O,*<Return>,!^F,=repo,\",=
 if exists("*GetGitoliteIndent")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 function! GetGitoliteIndent()
   let prevln = prevnonblank(v:lnum-1)
@@ -37,3 +40,6 @@ function! GetGitoliteIndent()
     return 0
   endif
 endfunction
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

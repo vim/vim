@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	AYacc
 " Maintainer:	Mathieu Clabaut <mathieu.clabaut@free.fr>
-" LastChange:	02 May 2001
+" LastChange:	2011 Dec 25
 " Original:	Yacc, maintained by Dr. Charles E. Campbell, Jr.
 " Comment:	     Replaced sourcing c.vim file by ada.vim and rename yacc*
 "		in ayacc*
@@ -21,6 +21,9 @@ else
    runtime! syntax/ada.vim
    unlet b:current_syntax
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Clusters
 syn cluster	ayaccActionGroup	contains=ayaccDelim,cInParen,cTodo,cIncluded,ayaccDelim,ayaccCurlyError,ayaccUnionCurly,ayaccUnion,cUserLabel,cOctalZero,cCppOut2,cCppSkip,cErrInBracket,cErrInParen,cOctalError
@@ -83,4 +86,6 @@ endif
 
 let b:current_syntax = "ayacc"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=15

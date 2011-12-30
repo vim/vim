@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.3.  Last change: 2011 Jun 19
+*usr_41.txt*	For Vim version 7.3.  Last change: 2011 Dec 15
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -669,6 +669,12 @@ Floating point computation:				*float-functions*
 	sinh()			hyperbolic sine
 	cosh()			hyperbolic cosine
 	tanh()			hyperbolic tangent
+
+Other computation:					*bitwise-function*
+	and()			bitwise AND
+	invert()		bitwise invert
+	or()			bitwise OR
+	xor()			bitwise XOR
 
 Variables:						*var-functions*
 	type()			type of a variable

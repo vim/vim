@@ -9,7 +9,7 @@ endif
 let current_compiler = "gcc"
 
 let s:cpo_save = &cpo
-set cpo-=C
+set cpo&vim
 
 CompilerSet errorformat=
       \%*[^\"]\"%f\"%*\\D%l:%c:\ %m,

@@ -1,7 +1,7 @@
 " Vim settings file
 " Language:	Fortran90 (and Fortran95, Fortran77, F and elf90)
-" Version:	0.46
-" Last Change:	2010 July 24
+" Version:	0.47
+" Last Change:	2011 December 28
 " Maintainer:	Ajit J. Thakkar <ajit@unb.ca>; <http://www.unb.ca/chem/ajit/>
 " Usage:	Do :help fortran-plugin from Vim
 " Credits:
@@ -11,6 +11,9 @@
 if exists("b:did_ftplugin")
   finish
 endif
+
+let s:cposet=&cpoptions
+set cpoptions&vim
 
 " Don't do other file type settings for this buffer
 let b:did_ftplugin = 1
@@ -77,9 +80,6 @@ setlocal fo+=tcql
 
 setlocal include=^\\c#\\=\\s*include\\s\\+
 setlocal suffixesadd+=.f95,.f90,.for,.f,.F,.f77,.ftn,.fpp
-
-let s:cposet=&cpoptions
-set cpoptions-=C
 
 " Define patterns for the matchit plugin
 if !exists("b:match_words")

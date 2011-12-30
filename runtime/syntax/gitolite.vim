@@ -2,11 +2,14 @@
 " Language:	gitolite configuration
 " URL:		https://github.com/tmatilai/gitolite.vim
 " Maintainer:	Teemu Matilainen <teemu.matilainen@iki.fi>
-" Last Change:	2011-10-18
+" Last Change:	2011-12-25
 
 if exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Comment
 syn match	gitoliteComment		"\(^\|\s\)#.*" contains=gitoliteTodo
@@ -78,3 +81,6 @@ hi def link gitoliteInclude		Include
 hi def link gitoliteString		String
 
 let b:current_syntax = "gitolite"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

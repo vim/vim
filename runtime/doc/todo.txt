@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2011 Dec 14
+*todo.txt*      For Vim version 7.3.  Last change: 2011 Dec 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,13 +38,30 @@ Go through more coverity reports.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
+Patch to fix crash with EXITFREE. (Dominique Pelle, 2011 Dec 20)
+
 Patch to fix "Console prompts fail to reset the console pager".
 Issue 14 on googlecode
 
 Issue 33 on googlecode: feedkeys() leaks memory.
 
+Patch for Mac using NULL pointer. (Bjorn Winckler, 2011 Dec 18)
+
 Patch to support UTF-8 for Hangul. (Shawn Y.H. Kim, 2011 May 1)
 Needs more work.
+
+Issue 43: patch with new C keywords.
+
+When setting 'undofile' while the file is already loaded, but unchanged, try
+to read the undo file.  Requires computing a checksum of the text. (Andy
+Wokula)
+Patch from Christian Brabandt, 2011 Dec 22. Dec 24 with test.
+
+Patch for Vim moving to another window when resizing. (Yukihiro Nakadaira,
+2011 Dec 18)
+
+Compilation problem on z/OS, POUND is equal to '#', duplicate case.
+(Stephen Bovy, 2011 Dec 16)
 
 Once syntax and other runtime files have been fixed: add "set cp" to
 check.vim.  Use a function to run both with 'cp' and 'nocp'.
@@ -82,6 +99,10 @@ Patch to highlight cursor line number. (Howard Buchholz (lhb), 2011 Oct 18)
 
 Patch for urxvt mouse support after shell command. (Issue 31)
 
+When exiting with unsaved changes, selecting an existing file in the file
+dialog, there is no dialog to ask whether the existing file should be
+overwritten. (Felipe G. Nievinski, 2011 Dec 22)
+
 7   Setting an option always sets "w_set_curswant", while this is only
     required for a few options.  Only do it for those options to avoid the
     side effect.
@@ -90,6 +111,8 @@ Patch by Kana Natsuno, 2011 Nov 12.
 Patch for option in 'cino' to specify more indent for continued conditions.
 (Lech Lorens, 2011 Nov 27)
 Isn't this already possible?
+
+Patch for using objcpp file type for headers files. Issue 44.
 
 Docs fix for v:register. (Ingo Karkat, 2011 Sep 26, 27)
 v:register doesn't work exactly as expected. (David Fishburn, 2011 Sep 20)
@@ -103,6 +126,9 @@ Patch for: (Christian Brabandt, 2011 Aug 24, updated patch)
     buffer={bufnr}".  So one can remove all signs for one file/buffer.
 
 Patch to add "onselected" callback for completion. (Taro Muraoka, 2011 Sep 24)
+
+Use a count before "v" and "V" to select that many characters or lines?
+(Kikyous)
 
 ":tab drop buffer.c" always opens a new tab, also if buffer.c is already in an
 open window. (Herb Sitz, 2011 Nov 17)
@@ -134,6 +160,8 @@ characters.  Patch by Christian Brabandt, 2011 Oct 11)
 
 Patch for 'transparency' option. (Sergiu Dotenco, 2011 Sep 17)
 Only for MS-Windows.  No documentation.  Do we want this?
+
+Patch to support cursor shape in Cygwin console. (Ben bgold, 2011 Dec 27)
 
 'cursorline' is displayed too short when there are concealed characters and
 'list' is set.  (Dennis Preiser)
@@ -471,10 +499,6 @@ Patch to support :undo absolute jump to file save number. (Christian Brabandt,
 
 Patch to use 'foldnextmax' also for "marker" foldmethod. (Arnaud Lacombe, 2011
 Jan 7)
-
-When setting 'undofile' while the file is already loaded, but unchanged, try
-to read the undo file.  Requires computing a checksum of the text. (Andy
-Wokula)
 
 Bug with 'incsearch' going to wrong line. (Wolfram Kresse, 2009 Aug 17)
 Only with "vim -u NONE".
@@ -1055,6 +1079,15 @@ Latest version: 2011 May 18
     http://nsis.sourceforge.net/Docs/Chapter4.html#4.12
     Version from Guopeng Wen that does this (2010 Dec 27)
 
+Windows installer should install 32-bit version of right-click handler also on
+64-bit systems. (Brian Cunningham, 2011 Dec 28)
+
+Windows installer could add a "open in new tab of existing Vim" menu entry.
+Gvimext: patch to add "Edit with single Vim &tabbed" menu entry.
+Just have two choices, always using one Vim and selecting between using an
+argument list or opening each file in a separate tab.
+(Erik Falor, 2008 May 21, 2008 Jun 26)
+
 Windows installer: licence text should not use indent, causes bad word wrap.
 (Benjamin Fritz, 2010 Aug 16)
 
@@ -1214,12 +1247,6 @@ When unloading a buffer in a BufHidden autocommand the hidden flag is reset?
 
 Substituting an area with a line break with almost the same area does change
 the Visual area.  Can this be fixed? (James Vega, 2006 Sept 15)
-
-Windows installer could add a "open in new tab of existing Vim" menu entry.
-Gvimext: patch to add "Edit with single Vim &tabbed" menu entry.
-Just have two choices, always using one Vim and selecting between using an
-argument list or opening each file in a separate tab.
-(Erik Falor, 2008 May 21, 2008 Jun 26)
 
 GUI: When combining fg en bg make sure they are not equal.
 
