@@ -85,7 +85,7 @@ static int  verbose_did_open = FALSE;
  *		    need_wait_return to be set.  This is a hack to make ":ts"
  *		    work without an extra prompt.
  * lines_left	    Number of lines available for messages before the
- *		    more-prompt is to be given.
+ *		    more-prompt is to be given.  -1 when not set.
  * need_wait_return TRUE when the hit-return prompt is needed.
  *		    Reset: After giving the hit-return prompt, when the user
  *		    has answered some other prompt.
@@ -855,6 +855,7 @@ msg_end_prompt()
     cmdline_row = msg_row;
     msg_col = 0;
     msg_clr_eos();
+    lines_left = -1;
 }
 #endif
 
