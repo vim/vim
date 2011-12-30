@@ -419,6 +419,8 @@ close_buffer(win, buf, action)
     if (
 #ifdef FEAT_WINDOWS
 	win_valid(win) &&
+#else
+	win != NULL &&
 #endif
 			  win->w_buffer == buf)
 	win->w_buffer = NULL;  /* make sure we don't use the buffer now */
