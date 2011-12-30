@@ -2675,7 +2675,7 @@ qf_fill_buffer(qi)
 bt_quickfix(buf)
     buf_T	*buf;
 {
-    return (buf->b_p_bt[0] == 'q');
+    return buf != NULL && buf->b_p_bt[0] == 'q';
 }
 
 /*
@@ -2686,8 +2686,8 @@ bt_quickfix(buf)
 bt_nofile(buf)
     buf_T	*buf;
 {
-    return (buf->b_p_bt[0] == 'n' && buf->b_p_bt[2] == 'f')
-	    || buf->b_p_bt[0] == 'a';
+    return buf != NULL && ((buf->b_p_bt[0] == 'n' && buf->b_p_bt[2] == 'f')
+	    || buf->b_p_bt[0] == 'a');
 }
 
 /*
@@ -2697,7 +2697,7 @@ bt_nofile(buf)
 bt_dontwrite(buf)
     buf_T	*buf;
 {
-    return (buf->b_p_bt[0] == 'n');
+    return buf != NULL && buf->b_p_bt[0] == 'n';
 }
 
     int

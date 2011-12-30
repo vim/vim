@@ -2170,7 +2170,7 @@ win_close(win, free_buf)
 
     /* When closing the help window, try restoring a snapshot after closing
      * the window.  Otherwise clear the snapshot, it's now invalid. */
-    if (win->w_buffer->b_help)
+    if (win->w_buffer != NULL && win->w_buffer->b_help)
 	help_window = TRUE;
     else
 	clear_snapshot(curtab, SNAP_HELP_IDX);
@@ -2214,13 +2214,15 @@ win_close(win, free_buf)
 
 #ifdef FEAT_SYN_HL
     /* Free independent synblock before the buffer is freed. */
-    reset_synblock(win);
+    if (win->w_buffer != NULL)
+	reset_synblock(win);
 #endif
 
     /*
      * Close the link to the buffer.
      */
-    close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0);
+    if (win->w_buffer != NULL)
+	close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0);
 
     /* Autocommands may have closed the window already, or closed the only
      * other window or moved to another tab page. */

@@ -3390,6 +3390,13 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 				      (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD);
 
 #ifdef FEAT_AUTOCMD
+		/* Autocommands may open a new window and leave oldwin open
+		 * which leads to crashes since the above call sets
+		 * oldwin->w_buffer to NULL. */
+		if (curwin != oldwin && oldwin != aucmd_win
+			     && win_valid(oldwin) && oldwin->w_buffer == NULL)
+		    win_close(oldwin, FALSE);
+
 # ifdef FEAT_EVAL
 		if (aborting())	    /* autocmds may abort script processing */
 		{
