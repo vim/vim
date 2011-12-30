@@ -2,12 +2,12 @@ Tests for tag search with !_TAG_FILE_ENCODING.
 
 STARTTEST
 :so mbyte.vim
+:set enc=utf8
 :if !has('iconv') || iconv("\x82\x60", "cp932", "utf-8") != "\uff21"
 : e! test.ok
 : w! test.out
 : qa!
 :endif
-:set enc=utf8
 
 :/^text for tags1$/,/^text for tags1$/+1w! Xtags1.txt
 :/^text for tags2$/,/^text for tags2$/+1w! Xtags2.txt
