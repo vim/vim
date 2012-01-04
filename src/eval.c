@@ -12260,6 +12260,9 @@ f_has(argvars, rettv)
 #ifdef FEAT_XFONTSET
 	"xfontset",
 #endif
+#ifdef FEAT_XPM_W32
+	"xpm_w32",
+#endif
 #ifdef USE_XSMP
 	"xsmp",
 #endif
