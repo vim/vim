@@ -7516,6 +7516,30 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	compatible_set();
     }
 
+#ifdef FEAT_PERSISTENT_UNDO
+    /* 'undofile' */
+    else if ((int *)varp == &curbuf->b_p_udf || (int *)varp == &p_udf)
+    {
+	char_u	hash[UNDO_HASH_SIZE];
+	buf_T	*save_curbuf = curbuf;
+
+	for (curbuf = firstbuf; curbuf != NULL; curbuf = curbuf->b_next)
+	{
+	    /* When 'undofile' is set globally: for every buffer, otherwise
+	     * only for the current buffer: Try to read in the undofile, if
+	     * one exists and the buffer wasn't changed. */
+	    if ((curbuf == save_curbuf
+				|| (opt_flags & OPT_GLOBAL) || opt_flags == 0)
+		    && !curbufIsChanged())
+	    {
+		u_compute_hash(hash);
+		u_read_undo(NULL, hash, curbuf->b_fname);
+	    }
+	}
+	curbuf = save_curbuf;
+    }
+#endif
+
     /* 'list', 'number' */
     else if ((int *)varp == &curwin->w_p_list
 	  || (int *)varp == &curwin->w_p_nu

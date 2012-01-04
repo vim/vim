@@ -51,6 +51,12 @@ dd:set ul=100
 :e Xtestfile
 uuu:w >>test.out
 :"
+:" Test that reading the undofiles when setting undofile works
+:set noundofile ul=0
+i
+u:e! Xtestfile
+:set undofile ul=100
+uuuuuu:w >>test.out
 :" And now with encryption, cryptmethod=zip
 :e! Xtestfile
 :set undofile cm=zip
