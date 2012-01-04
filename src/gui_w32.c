@@ -1661,9 +1661,7 @@ gui_mch_set_shellsize(int width, int height,
 {
     RECT	workarea_rect;
     int		win_width, win_height;
-    int		win_xpos, win_ypos;
     WINDOWPLACEMENT wndpl;
-    int		workarea_left;
 
     /* Try to keep window completely on screen. */
     /* Get position of the screen work area.  This is the part that is not
@@ -1685,9 +1683,6 @@ gui_mch_set_shellsize(int width, int height,
 	GetWindowPlacement(s_hwnd, &wndpl);
     }
 
-    win_xpos = wndpl.rcNormalPosition.left;
-    win_ypos = wndpl.rcNormalPosition.top;
-
     /* compute the size of the outside of the window */
     win_width = width + GetSystemMetrics(SM_CXFRAME) * 2;
     win_height = height + GetSystemMetrics(SM_CYFRAME) * 2
@@ -1697,36 +1692,32 @@ gui_mch_set_shellsize(int width, int height,
 #endif
 			;
 
-    /* There is an inconsistency when using two monitors and Vim is on the
-     * second (right) one: win_xpos will be the offset from the workarea of
-     * the left monitor.  While with one monitor it's the offset from the
-     * workarea (including a possible taskbar on the left).  Detect the second
-     * monitor by checking for the left offset to be quite big. */
-    if (workarea_rect.left > 300)
-	workarea_left = 0;
-    else
-	workarea_left = workarea_rect.left;
+    /* The following should take care of keeping Vim on the same monitor, no
+     * matter if the secondary monitor is left or right of the primary
+     * monitor. */
+    wndpl.rcNormalPosition.right = wndpl.rcNormalPosition.left + win_width;
+    wndpl.rcNormalPosition.bottom = wndpl.rcNormalPosition.top + win_height;
 
-    /* If the window is going off the screen, move it on to the screen.
-     * win_xpos and win_ypos are relative to the workarea. */
+    /* If the window is going off the screen, move it on to the screen. */
     if ((direction & RESIZE_HOR)
-	    && workarea_left + win_xpos + win_width > workarea_rect.right)
-	win_xpos = workarea_rect.right - win_width - workarea_left;
+	    && wndpl.rcNormalPosition.right > workarea_rect.right)
+	OffsetRect(&wndpl.rcNormalPosition,
+		workarea_rect.right - wndpl.rcNormalPosition.right, 0);
 
-    if ((direction & RESIZE_HOR) && win_xpos < 0)
-	win_xpos = 0;
+    if ((direction & RESIZE_HOR)
+	    && wndpl.rcNormalPosition.left < workarea_rect.left)
+	OffsetRect(&wndpl.rcNormalPosition,
+		workarea_rect.left - wndpl.rcNormalPosition.left, 0);
 
     if ((direction & RESIZE_VERT)
-	  && workarea_rect.top + win_ypos + win_height > workarea_rect.bottom)
-	win_ypos = workarea_rect.bottom - win_height - workarea_rect.top;
+	    && wndpl.rcNormalPosition.bottom > workarea_rect.bottom)
+	OffsetRect(&wndpl.rcNormalPosition,
+		0, workarea_rect.bottom - wndpl.rcNormalPosition.bottom);
 
-    if ((direction & RESIZE_VERT) && win_ypos < 0)
-	win_ypos = 0;
-
-    wndpl.rcNormalPosition.left = win_xpos;
-    wndpl.rcNormalPosition.right = win_xpos + win_width;
-    wndpl.rcNormalPosition.top = win_ypos;
-    wndpl.rcNormalPosition.bottom = win_ypos + win_height;
+    if ((direction & RESIZE_VERT)
+	    && wndpl.rcNormalPosition.top < workarea_rect.top)
+	OffsetRect(&wndpl.rcNormalPosition,
+		0, workarea_rect.top - wndpl.rcNormalPosition.top);
 
     /* set window position - we should use SetWindowPlacement rather than
      * SetWindowPos as the MSDN docs say the coord systems returned by
