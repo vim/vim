@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.3.  Last change: 2011 Oct 28
+*change.txt*    For Vim version 7.3.  Last change: 2012 Jan 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -88,7 +88,8 @@ An exception for the d{motion} command: If the motion is not linewise, the
 start and end of the motion are not in the same line, and there are only
 blanks before the start and after the end of the motion, the delete becomes
 linewise.  This means that the delete also removes the line of blanks that you
-might expect to remain.
+might expect to remain. Use the |o_v| operator to force the motion to be
+characterwise.
 
 Trying to delete an empty region of text (e.g., "d0" in the first column)
 is an error when 'cpoptions' includes the 'E' flag.

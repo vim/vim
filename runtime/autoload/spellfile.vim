@@ -1,6 +1,6 @@
 " Vim script to download a missing spell file
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2008 Nov 29
+" Last Change:	2012 Jan 08
 
 if !exists('g:spellfile_URL')
   " Prefer using http:// when netrw should be able to use it, since
@@ -70,7 +70,7 @@ function! spellfile#LoadFile(lang)
     " Remember the buffer number, we check it below.
     new
     let newbufnr = winbufnr(0)
-    setlocal bin
+    setlocal bin fenc=
     echo 'Downloading ' . fname . '...'
     call spellfile#Nread(fname)
     if getline(2) !~ 'VIMspell'
@@ -83,7 +83,7 @@ function! spellfile#LoadFile(lang)
 	  " Our buffer has vanished!?  Open a new window.
 	  echomsg "download buffer disappeared, opening a new one"
 	  new
-	  setlocal bin
+	  setlocal bin fenc=
 	else
 	  exe winnr . "wincmd w"
 	endif
@@ -120,6 +120,7 @@ function! spellfile#LoadFile(lang)
       else
 	let dirname = escape(dirlist[dirchoice], ' ')
       endif
+      setlocal fenc=
       exe "write " . dirname . '/' . fname
 
       " Also download the .sug file, if the user wants to.

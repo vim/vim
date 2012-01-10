@@ -3,7 +3,7 @@
 " Maintainer:	Reimer Behrends <behrends@cse.msu.edu>
 "		With much input from Jocelyn Fiat <fiat@eiffel.com>
 " See http://www.cse.msu.edu/~behrends/vim/ for the most current version.
-" Last Change:	2001 May 09
+" Last Change:	2011 Dec 31 by Thilo Six
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -12,6 +12,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Option handling
 
@@ -193,4 +196,6 @@ endif
 
 let b:current_syntax = "eiffel"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	GSP - GNU Server Pages (v. 0.86)
 " Created By:	Nathaniel Harward nharward@yahoo.com
-" Last Changed: Dec. 12, 2000
+" Last Changed: 2012 Jan 08 by Thilo Six
 " Filenames:    *.gsp
 " URL:		http://www.constructicon.com/~nharward/vim/syntax/gsp.vim
 
@@ -34,6 +34,9 @@ else
   syn include @gspJava syntax/java.vim
 endif
 
+let s:cpo_save = &cpo
+set cpo&vim
+
 " Add <java> as an HTML tag name along with its args
 syn keyword htmlTagName contained java
 syn keyword htmlArg     contained type file page
@@ -57,3 +60,6 @@ let b:current_syntax = "gsp"
 if main_syntax == 'gsp'
   unlet main_syntax
 endif
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

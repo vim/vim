@@ -1,4 +1,4 @@
-*sign.txt*      For Vim version 7.3.  Last change: 2010 Oct 14
+*sign.txt*      For Vim version 7.3.  Last change: 2012 Jan 04
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -76,7 +76,7 @@ DEFINING A SIGN.			*:sign-define* *E255* *E160* *E612*
 
 		Accepted arguments:
 
-	icon={pixmap}
+	icon={bitmap}
 		Define the file name where the bitmap can be found.  Should be
 		a full path.  The bitmap should fit in the place of two
 		characters.  This is not checked.  If the bitmap is too big it
@@ -86,6 +86,8 @@ DEFINING A SIGN.			*:sign-define* *E255* *E160* *E612*
 			GTK 1		pixmap (.xpm)
 			GTK 2		many
 			Motif		pixmap (.xpm)
+			Win32		.bmp, .ico, .cur
+					pixmap (.xpm) |+xpm_w32|
 
 	linehl={group}
 		Highlighting group used for the whole line the sign is placed

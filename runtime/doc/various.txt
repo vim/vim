@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.3.  Last change: 2011 Dec 29
+*various.txt*   For Vim version 7.3.  Last change: 2012 Jan 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -391,35 +391,36 @@ N  *+statusline*	Options 'statusline', 'rulerformat' and special
 m  *+sun_workshop*	|workshop|
 N  *+syntax*		Syntax highlighting |syntax|
    *+system()*		Unix only: opposite of |+fork|
-N  *+tag_binary*	binary searching in tags file |tag-binary-search|
+N  *+tag_binary*		binary searching in tags file |tag-binary-search|
 N  *+tag_old_static*	old method for static tags |tag-old-static|
 m  *+tag_any_white*	any white space allowed in tags file |tag-any-white|
-m  *+tcl*		Tcl interface |tcl|
+m  *+tcl*			Tcl interface |tcl|
 m  *+tcl/dyn*		Tcl interface |tcl-dynamic| |/dyn|
    *+terminfo*		uses |terminfo| instead of termcap
 N  *+termresponse*	support for |t_RV| and |v:termresponse|
-N  *+textobjects*	|text-objects| selection
+N  *+textobjects*		|text-objects| selection
    *+tgetent*		non-Unix only: able to use external termcap
 N  *+title*		Setting the window 'title' and 'icon'
 N  *+toolbar*		|gui-toolbar|
 N  *+user_commands*	User-defined commands. |user-commands|
 N  *+viminfo*		|'viminfo'|
 N  *+vertsplit*		Vertically split windows |:vsplit|
-N  *+virtualedit*	|'virtualedit'|
+N  *+virtualedit*		|'virtualedit'|
 S  *+visual*		Visual mode |Visual-mode|
-N  *+visualextra*	extra Visual mode commands |blockwise-operators|
+N  *+visualextra*		extra Visual mode commands |blockwise-operators|
 N  *+vreplace*		|gR| and |gr|
-N  *+wildignore*	|'wildignore'|
+N  *+wildignore*		|'wildignore'|
 N  *+wildmenu*		|'wildmenu'|
 S  *+windows*		more than one window
-m  *+writebackup*	|'writebackup'| is default on
-m  *+xim*		X input method |xim|
+m  *+writebackup*		|'writebackup'| is default on
+m  *+xim*			X input method |xim|
    *+xfontset*		X fontset support |xfontset|
+m  *+xpm_w32*		Win32 GUI only: pixmap support |:sign-define|
    *+xsmp*		XSMP (X session management) support
    *+xsmp_interact*	interactive XSMP (X session management) support
 N  *+xterm_clipboard*	Unix only: xterm clipboard handling
-m  *+xterm_save*	save and restore xterm screen |xterm-screens|
-N  *+X11*		Unix only: can restore window title |X11|
+m  *+xterm_save*		save and restore xterm screen |xterm-screens|
+N  *+X11*			Unix only: can restore window title |X11|
 
 							*/dyn* *E370* *E448*
 			To some of the features "/dyn" is added when the

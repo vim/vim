@@ -374,7 +374,7 @@ Bemerkung:  Die Eingabe lediglich des Bewegungsteils im Normalmodus bewegt den
 
   1. Bewege den Cursor zur ersten unten stehenden mit ---> markierten Zeile.
 
-  2. Tippe  dd  , um die Zeile zu löschen und sie in eimem Vim-Register zu
+  2. Tippe  dd  , um die Zeile zu löschen und sie in einem Vim-Register zu
      speichern.
 
   3. Bewege den Cursor zur Zeile c), ÜBER derjenigen, wo die gelöschte Zeile

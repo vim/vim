@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2011 Dec 30
+*syntax.txt*	For Vim version 7.3.  Last change: 2012 Jan 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -758,6 +758,7 @@ c_syntax_for_h		use C syntax for *.h files, instead of C++
 c_no_if0		don't highlight "#if 0" blocks as comments
 c_no_cformat		don't highlight %-formats in strings
 c_no_c99		don't highlight C99 standard items
+c_no_c11		don't highlight C11 standard items
 
 When 'foldmethod' is set to "syntax" then /* */ comments and { } blocks will
 become a fold.  If you don't want comments to become a fold use: >
@@ -1155,11 +1156,9 @@ conditionals are LightBlue for better distinction.
 FORTRAN					*fortran.vim* *ft-fortran-syntax*
 
 Default highlighting and dialect ~
-Highlighting appropriate for f95 (Fortran 95) is used by default.  This choice
-should be appropriate for most users most of the time because Fortran 95 is a
-superset of Fortran 90 and almost a superset of Fortran 77. Support for 
-Fortran 2003 and Fortran 2008 features has been introduced and is
-automatically available in the default (f95) highlighting.
+Highlighting appropriate for Fortran 2008 is used by default.  This choice
+should be appropriate for most users most of the time because Fortran 2008 is 
+almost a superset of previous versions (Fortran 2003, 95, 90, and 77). 
 
 Fortran source code form ~
 Fortran 9x code can be in either fixed or free source form.  Note that the
@@ -1244,7 +1243,9 @@ construct.
 
 Non-default fortran dialects ~
 The syntax script supports five Fortran dialects: f95, f90, f77, the Lahey
-subset elf90, and the Imagine1 subset F.
+subset elf90, and the Imagine1 subset F. However, these dialects are outdated;
+the next version of the syntax script will support only two variants: modern
+Fortran and legacy Fortran.
 
 If you use f77 with extensions, even common ones like do/enddo loops, do/while
 loops and free source form that are supported by most f77 compilers including

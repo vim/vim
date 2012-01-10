@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2011 Dec 19
+*eval.txt*	For Vim version 7.3.  Last change: 2012 Jan 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6157,7 +6157,7 @@ xor({expr}, {expr})					*xor()*
 		to a number.  A List, Dict or Float argument causes an error.
 		Example: >
 			:let bits = xor(bits, 0x80)
-
+<
 
 
 							*feature-list*
@@ -6340,6 +6340,7 @@ windows			Compiled with support for more than one window.
 writebackup		Compiled with 'writebackup' default on.
 xfontset		Compiled with X fontset support |xfontset|.
 xim			Compiled with X input method support |xim|.
+xpm_w32			Compiled with pixmap support for Win32.
 xsmp			Compiled with X session management support.
 xsmp_interact		Compiled with interactive X session management support.
 xterm_clipboard		Compiled with support for xterm clipboard.

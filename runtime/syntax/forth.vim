@@ -1,11 +1,11 @@
 " Vim syntax file
 " Language:    FORTH
 " Maintainer:  Christian V. J. Brüssow <cvjb@cvjb.de>
-" Last Change: Di 07 Jul 2009 21:38:45 CEST
+" Last Change: Sa 07 Jan 2012 21:30:55 CET
 " Filenames:   *.fs,*.ft
 " URL:	       http://www.cvjb.de/comp/vim/forth.vim
 
-" $Id: forth.vim,v 1.12 2008/07/07 21:39:12 bruessow Exp $
+" $Id: forth.vim,v 1.13 2012/01/07 21:31:31 bruessow Exp $
 
 " The list of keywords is incomplete, compared with the offical ANS
 " wordlist. If you use this language, please improve it, and send me
@@ -16,6 +16,10 @@
 " for forth.vim).
 
 " Many Thanks to...
+" 
+" 2012-01-07:
+" Thilo Six <T.Six at gmx dot de> send a patch for cpoptions.
+" See the discussion at http://thread.gmane.org/gmane.editors.vim.devel/32151
 "
 " 2009-06-28:
 " Josh Grams send a patch to allow the parenthesis comments at the
@@ -47,7 +51,7 @@
 " Thomas E. Vaughan <tevaugha at ball dot com> send me a patch
 " for the parenthesis comment word, so words with a trailing
 " parenthesis will not start the highlighting for such comments.
-" 
+"
 " 2003-05-10:
 " Andrew Gaul <andrew at gaul.org> send me a patch for
 " forthOperators.
@@ -79,6 +83,9 @@ if version < 600
 elseif exists("b:current_syntax")
     finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Synchronization method
 syn sync ccomment
@@ -125,7 +132,7 @@ syn keyword forthOperators F~REL F~ABS F~
 syn keyword forthOperators 0< 0<= 0<> 0= 0> 0>= < <= <> = > >= U< U<=
 syn keyword forthOperators U> U>= D0< D0<= D0<> D0= D0> D0>= D< D<= D<>
 syn keyword forthOperators D= D> D>= DU< DU<= DU> DU>= WITHIN ?NEGATE
-syn keyword forthOperators ?DNEGATE 
+syn keyword forthOperators ?DNEGATE
 
 " stack manipulations
 syn keyword forthStack DROP NIP DUP OVER TUCK SWAP ROT -ROT ?DUP PICK ROLL
@@ -171,7 +178,7 @@ syn keyword forthDefine LITERAL CREATE-INTERPRET/COMPILE INTERPRETATION>
 syn keyword forthDefine <INTERPRETATION COMPILATION> <COMPILATION ] LASTXT
 syn keyword forthDefine COMP' POSTPONE, FIND-NAME NAME>INT NAME?INT NAME>COMP
 syn keyword forthDefine NAME>STRING STATE C; CVARIABLE
-syn keyword forthDefine , 2, F, C, 
+syn keyword forthDefine , 2, F, C,
 syn match forthDefine "\[IFDEF]"
 syn match forthDefine "\[IFUNDEF]"
 syn match forthDefine "\[THEN]"
@@ -210,7 +217,7 @@ syn match forthCharOps '\<\[char\]\s\S\s'
 syn region forthCharOps start=+."\s+ skip=+\\"+ end=+"+
 
 " char-number conversion
-syn keyword forthConversion <<# <# # #> #>> #S (NUMBER) (NUMBER?) CONVERT D>F 
+syn keyword forthConversion <<# <# # #> #>> #S (NUMBER) (NUMBER?) CONVERT D>F
 syn keyword forthConversion D>S DIGIT DPL F>D HLD HOLD NUMBER S>D SIGN >NUMBER
 syn keyword forthConversion F>S S>F
 
@@ -225,7 +232,7 @@ syn keyword forthVocs ONLY FORTH ALSO ROOT SEAL VOCS ORDER CONTEXT #VOCS
 syn keyword forthVocs VOCABULARY DEFINITIONS
 
 " File keywords
-syn keyword forthFileMode R/O R/W W/O BIN 
+syn keyword forthFileMode R/O R/W W/O BIN
 syn keyword forthFileWords OPEN-FILE CREATE-FILE CLOSE-FILE DELETE-FILE
 syn keyword forthFileWords RENAME-FILE READ-FILE READ-LINE KEY-FILE
 syn keyword forthFileWords KEY?-FILE WRITE-FILE WRITE-LINE EMIT-FILE
@@ -331,4 +338,6 @@ endif
 
 let b:current_syntax = "forth"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim:ts=8:sw=4:nocindent:smartindent:

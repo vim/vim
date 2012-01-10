@@ -2,7 +2,7 @@
 " Language:	Hyper Builder
 " Maintainer:	Alejandro Forero Cuervo
 " URL:		http://bachue.com/hb/vim/syntax/hb.vim
-" Last Change:	2001 Sep 02
+" Last Change:	2012 Jan 08 by Thilo Six
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -11,6 +11,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Read the HTML syntax to start with
 "syn include @HTMLStuff <sfile>:p:h/htmlhb.vim
@@ -94,4 +97,6 @@ syn sync match Normal grouphere NONE "^:\s*include\s\+[^ \t]\+$"
 
 let b:current_syntax = "hb"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8

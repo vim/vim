@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Makeindex style file, *.ist
 " Maintainer:	Peter Meszaros <pmeszaros@effice.hu>
-" Last Change:	May 4, 2001
+" Last Change:	2012 Jan 08 by Thilo Six
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -10,6 +10,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 if version >= 600
   setlocal iskeyword=$,@,48-57,_
@@ -67,4 +70,6 @@ endif
 
 let b:current_syntax = "ist"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8 sw=2

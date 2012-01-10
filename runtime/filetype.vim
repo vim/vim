@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2011 Dec 28
+" Last Change:	2012 Jan 04
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1216,6 +1216,9 @@ au BufNewFile,BufRead *.NS[ACGLMNPS]		setf natural
 
 " Netrc
 au BufNewFile,BufRead .netrc			setf netrc
+
+" Ninja file
+au BufNewFile,BufRead *.ninja			setf ninja
 
 " Novell netware batch files
 au BufNewFile,BufRead *.ncf			setf ncf

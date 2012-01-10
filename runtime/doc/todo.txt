@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2011 Dec 30
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Jan 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,36 +38,31 @@ Go through more coverity reports.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
-Patch to fix crash with EXITFREE. (Dominique Pelle, 2011 Dec 20)
-
-Patch to fix "Console prompts fail to reset the console pager".
-Issue 14 on googlecode
-
-Issue 33 on googlecode: feedkeys() leaks memory.
-
-Patch for Mac using NULL pointer. (Bjorn Winckler, 2011 Dec 18)
-
-Patch to support UTF-8 for Hangul. (Shawn Y.H. Kim, 2011 May 1)
-Needs more work.
-
-Issue 43: patch with new C keywords.
-
-When setting 'undofile' while the file is already loaded, but unchanged, try
-to read the undo file.  Requires computing a checksum of the text. (Andy
-Wokula)
-Patch from Christian Brabandt, 2011 Dec 22. Dec 24 with test.
-
-Patch for Vim moving to another window when resizing. (Yukihiro Nakadaira,
-2011 Dec 18)
-
 Compilation problem on z/OS, POUND is equal to '#', duplicate case.
 (Stephen Bovy, 2011 Dec 16)
 
 Once syntax and other runtime files have been fixed: add "set cp" to
 check.vim.  Use a function to run both with 'cp' and 'nocp'.
 
+Patch to fix regression caused by 7.3.251. (Christian Brabandt, 2012 Jan 5)
+
 Patch to make ":helpgrep" work with non-UTF-8 encoding. (Yasuhiro Matsumoto,
 2011 Nov 28, update later that day)
+
+Patch to fix messing up terminal when redrawing too early. (Christian
+Brabandt, 2012 Jan 5)
+
+Patch to fix member confusion in Lua interface. (Taro Muraoka, 2012 Jan 8)
+Update Jan 9.
+Carvalho will merge the patch.
+
+Possible quickfix bug: Audrius Kažukauskas, 2012 Jan 6
+
+Problem reading german spell file? (Jan Stocker, 2012 Jan 5)
+
+Win32: When a directory name contains an exclamation mark, completion doesn't
+complete the contents of the directory.  No escaping for the "!"? (Jan
+Stocker, 2012 Jan 5)
 
 ":doau" says it triggers modeline.  Should this only happen for events used
 when loading a buffer?  (Kana Natsuno, 2011 Nov 7)
@@ -162,6 +157,9 @@ Patch for 'transparency' option. (Sergiu Dotenco, 2011 Sep 17)
 Only for MS-Windows.  No documentation.  Do we want this?
 
 Patch to support cursor shape in Cygwin console. (Ben bgold, 2011 Dec 27)
+
+Patch to support UTF-8 for Hangul. (Shawn Y.H. Kim, 2011 May 1)
+Needs more work.  Pinged 2012 Jan 4.
 
 'cursorline' is displayed too short when there are concealed characters and
 'list' is set.  (Dennis Preiser)
@@ -408,6 +406,10 @@ mkdir().
 ":echo "\x85" =~# '[\u0085]'" returns 1 instead of 0. (ZyX, 2010 Oct 3)
 
 'cindent' not correct when 'list' is set. (Zdravi Korusef, 2010 Apr 15)
+
+C-indenting: A matching { in a comment is ignored, but intermediate { are not
+checked to be in a comment.  Implement FM_SKIPCOMM flag of findmatchlimit().
+Issue 46.
 
 When 'paste' is changed with 'pastetoggle', the ruler doesn't reflect this
 right away. (Samuel Ferencik, 2010 Dec 7)
@@ -1746,18 +1748,6 @@ Win32 GUI known bugs:
     the wide functions.
 8   On Windows 98 the unicows library is needed to support functions with UCS2
     file names.  Can we load unicows.dll dynamically?
-8   Win32: With two monitors, gvim partly on both, and adding/removing a
-    scrollbar Vim resizes and moves to one of the monitors. (Chris Monkiewicz,
-    2008 Oct)
-8   When the primary monitor is below or right of the secondary monitor and
-    Vim is on the secondary monitor it will often move to the primary monitor.
-    Window position coordinates can be negative. (James Harvey)
-    When the primary monitor is on the right, coordinates on the left monitor
-    are negative.  Clamping to zero means gvim jups to the primary monitor.
-    (Michael Wookey, 2010 Aug 17)
-    Probably the same issue: When the GUI tab pages line is displayed Vim
-    jumps from the secondary to the primary monitor. (Afton Lewis, 2007 Mar 9)
-    Possible solution using GetSystemMetrics() (Sergey Khorev, 2010 Aug 18)
 8   The -P argument doesn't work very well with many MDI applications.
     The last argument of CreateWindowEx() should be used, see MSDN docs.
     Tutorial: http://win32assembly.online.fr/tut32.html

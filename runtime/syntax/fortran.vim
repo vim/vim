@@ -1,7 +1,7 @@
 " Vim syntax file
-" Language:	Fortran95 (and Fortran90, Fortran77, F and elf90)
-" Version:	0.90
-" Last Change:	2011 Dec. 28
+" Language:	Fortran 2008 (and earlier versions including 2003, 95, 90, and 77)
+" Version:	0.91
+" Last Change:	2012 Jan. 02
 " Maintainer:	Ajit J. Thakkar (ajit AT unb.ca); <http://www.unb.ca/chem/ajit/>
 " Usage:	For instructions, do :help fortran-syntax from Vim
 " Credits:
@@ -133,6 +133,7 @@ syn match fortranUnitHeader	"\<program\>"
 syn keyword fortranKeyword	return stop
 syn keyword fortranConditional	else then
 syn match fortranConditional	"\<if\>"
+syn match fortranConditionalOb	"\<if\s*(.*)\s*\d\+\s*,\s*\d\+\s*,\s*\d\+\s*$"
 syn match fortranRepeat		"\<do\>"
 
 syn keyword fortranTodo		contained todo fixme
@@ -144,6 +145,7 @@ syn match  fortranParenError   ")"
 syn match fortranOperator	"\.\s*n\=eqv\s*\."
 syn match fortranOperator	"\.\s*\(and\|or\|not\)\s*\."
 syn match fortranOperator	"\(+\|-\|/\|\*\)"
+syn match fortranTypeOb		"\<character\>\@<=\s*\*"
 
 syn match fortranBoolean	"\.\s*\(true\|false\)\s*\."
 
@@ -161,7 +163,7 @@ syn keyword fortranIO		access blank direct exist file fmt form formatted iostat 
 syn keyword fortran66Intrinsic		alog alog10 amax0 amax1 amin0 amin1 amod cabs ccos cexp clog csin csqrt dabs dacos dasin datan datan2 dcos dcosh ddim dexp dint dlog dlog10 dmax1 dmin1 dmod dnint dsign dsin dsinh dsqrt dtan dtanh float iabs idim idint idnint ifix isign max0 max1 min0 min1 sngl
 
 " Intrinsics provided by some vendors
-syn keyword fortranExtraIntrinsic	algama cdabs cdcos cdexp cdlog cdsin cdsqrt cqabs cqcos cqexp cqlog cqsin cqsqrt dcmplx dconjg derf derfc dfloat dgamma dimag dlgama erf erfc gamma iqint qabs qacos qasin qatan qatan2 qcmplx qconjg qcos qcosh qdim qerf qerfc qexp qgamma qimag qlgama qlog qlog10 qmax1 qmin1 qmod qnint qsign qsin qsinh qsqrt qtan qtanh
+syn keyword fortranExtraIntrinsic	algama cdabs cdcos cdexp cdlog cdsin cdsqrt cqabs cqcos cqexp cqlog cqsin cqsqrt dcmplx dconjg derf derfc dfloat dgamma dimag dlgama iqint qabs qacos qasin qatan qatan2 qcmplx qconjg qcos qcosh qdim qerf qerfc qexp qgamma qimag qlgama qlog qlog10 qmax1 qmin1 qmod qnint qsign qsin qsinh qsqrt qtan qtanh
 
 syn keyword fortran77Intrinsic	abs acos aimag aint anint asin atan atan2 char cmplx conjg cos cosh exp ichar index int log log10 max min nint sign sin sinh sqrt tan tanh
 syn match fortran77Intrinsic	"\<len\s*[(,]"me=s+3
@@ -211,10 +213,12 @@ syn keyword fortranTypeEx	external
 syn keyword fortranIOEx		format
 syn match fortranKeywordEx	"\<continue\>"
 syn match fortranKeyword	"^\s*\d\+\s\+continue\>"
-syn match fortranKeywordEx	"\<go\s*to\>"
+syn match fortranKeyword  	"\<go\s*to\>"
+syn match fortranKeywordDel  	"\<go\s*to\ze\s\+.*,\s*(.*$"
+syn match fortranKeywordOb  	"\<go\s*to\ze\s*(\d\+.*$"
 syn region fortranStringEx	start=+'+ end=+'+ contains=fortranContinueMark,fortranLeftMargin,fortranSerialNumber
 syn keyword fortran77IntrinsicEx	dim lge lgt lle llt mod
-syn keyword fortranKeywordOb	assign pause to
+syn keyword fortranKeywordDel	assign pause
 
 if b:fortran_dialect != "f77"
 
@@ -273,7 +277,7 @@ syn match   fortranConditional	"\<end\s*if"
 syn match   fortranIO		contains=fortranOperator "\<e\(nd\|rr\)\s*=\s*\d\+"
 syn match   fortranConditional	"\<else\s*if"
 
-syn keyword fortranUnitHeaderR	entry
+syn keyword fortranUnitHeaderOb	entry
 syn match fortranTypeR		display "double\s\+precision"
 syn match fortranTypeR		display "double\s\+complex"
 syn match fortranUnitHeaderR	display "block\s\+data"
@@ -466,6 +470,20 @@ if version >= 508 || !exists("did_fortran_syn_inits")
   HiLink fortran03Intrinsic	Function
   HiLink fortran08Intrinsic	Function
   HiLink fortran03Constant	Function
+
+  if b:fortran_dialect != "f77"
+    HiLink fortranUnitHeaderOb    Todo
+    HiLink fortranKeywordOb       Todo
+    HiLink fortranConditionalOb   Todo
+    HiLink fortranTypeOb          Todo
+    HiLink fortranKeywordDel      Todo
+  else
+    HiLink fortranUnitHeaderOb    fortranUnitHeader
+    HiLink fortranKeywordOb       fortranKeyword
+    HiLink fortranConditionalOb   fortranConditional
+    HiLink fortranTypeOb          fortranType
+    HiLink fortranKeywordDel      fortranKeyword
+  endif
 
   if ( b:fortran_dialect == "elf" || b:fortran_dialect == "F" )
     HiLink fortranKeywordOb	fortranObsolete
