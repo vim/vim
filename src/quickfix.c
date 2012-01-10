@@ -899,8 +899,7 @@ qf_new_list(qi, qf_title)
     }
     else
 	qi->qf_curlist = qi->qf_listcount++;
-    qi->qf_lists[qi->qf_curlist].qf_index = 0;
-    qi->qf_lists[qi->qf_curlist].qf_count = 0;
+    vim_memset(&qi->qf_lists[qi->qf_curlist], 0, (size_t)(sizeof(qf_list_T)));
     if (qf_title != NULL)
     {
 	char_u *p = alloc((int)STRLEN(qf_title) + 2);
@@ -909,8 +908,6 @@ qf_new_list(qi, qf_title)
 	if (p != NULL)
 	    sprintf((char *)p, ":%s", (char *)qf_title);
     }
-    else
-	qi->qf_lists[qi->qf_curlist].qf_title = NULL;
 }
 
 /*
