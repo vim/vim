@@ -443,7 +443,7 @@ getConnInfo(char *file, char **host, char **port, char **auth)
     FILE *fp;
     char_u buf[BUFSIZ];
     char_u *lp;
-    char_u *nl;
+    char_u *nlp;
 #ifdef UNIX
     struct stat	st;
 
@@ -472,8 +472,8 @@ getConnInfo(char *file, char **host, char **port, char **auth)
     /* Read the file. There should be one of each parameter */
     while ((lp = (char_u *)fgets((char *)buf, BUFSIZ, fp)) != NULL)
     {
-	if ((nl = vim_strchr(lp, '\n')) != NULL)
-	    *nl = 0;	    /* strip off the trailing newline */
+	if ((nlp = vim_strchr(lp, '\n')) != NULL)
+	    *nlp = 0;	    /* strip off the trailing newline */
 
 	if (STRNCMP(lp, "host=", 5) == 0)
 	{
@@ -1740,7 +1740,7 @@ nb_do_cmd(
 		int	added = 0;
 		int	oldFire = netbeansFireChanges;
 		int	old_b_changed;
-		char_u	*nl;
+		char_u	*nlp;
 		linenr_T lnum;
 		linenr_T lnum_start;
 		pos_T	*pos;
@@ -1780,8 +1780,8 @@ nb_do_cmd(
 		do_update = 1;
 		while (*args != NUL)
 		{
-		    nl = vim_strchr(args, '\n');
-		    if (nl == NULL)
+		    nlp = vim_strchr(args, '\n');
+		    if (nlp == NULL)
 		    {
 			/* Incomplete line, probably truncated.  Next "insert"
 			 * command should append to this one. */
@@ -1789,13 +1789,13 @@ nb_do_cmd(
 		    }
 		    else
 		    {
-			len = nl - args;
+			len = nlp - args;
 
 			/*
 			 * We need to detect EOL style, because the commands
 			 * use a character offset.
 			 */
-			if (nl > args && nl[-1] == '\r')
+			if (nlp > args && nlp[-1] == '\r')
 			{
 			    ff_detected = EOL_DOS;
 			    --len;
@@ -1814,7 +1814,8 @@ nb_do_cmd(
 
 			/* Insert halfway a line.  For simplicity we assume we
 			 * need to append to the line. */
-			newline = alloc_check((unsigned)(STRLEN(oldline) + len + 1));
+			newline = alloc_check(
+				       (unsigned)(STRLEN(oldline) + len + 1));
 			if (newline != NULL)
 			{
 			    STRCPY(newline, oldline);
@@ -1826,14 +1827,15 @@ nb_do_cmd(
 		    {
 			/* Append a new line.  Not that we always do this,
 			 * also when the text doesn't end in a "\n". */
-			ml_append((linenr_T)(lnum - 1), args, (colnr_T)(len + 1), FALSE);
+			ml_append((linenr_T)(lnum - 1), args,
+						   (colnr_T)(len + 1), FALSE);
 			++added;
 		    }
 
-		    if (nl == NULL)
+		    if (nlp == NULL)
 			break;
 		    ++lnum;
-		    args = nl + 1;
+		    args = nlp + 1;
 		}
 
 		/* Adjust the marks below the inserted lines. */
