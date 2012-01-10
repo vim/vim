@@ -1961,8 +1961,8 @@ op_delete(oap)
 		/* Special case: gH<Del> deletes the last line. */
 		del_lines(1L, FALSE);
 		curwin->w_cursor = curpos;	/* restore curwin->w_cursor */
-		if (curwin->w_cursor.lnum > 1)
-		    --curwin->w_cursor.lnum;
+		if (curwin->w_cursor.lnum > curbuf->b_ml.ml_line_count)
+		    curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
 	    }
 	    else
 	    {
@@ -4434,7 +4434,7 @@ same_leader(lnum, leader1_len, leader1_flags, leader2_len, leader2_flags)
 #endif
 
 /*
- * implementation of the format operator 'gq'
+ * Implementation of the format operator 'gq'.
  */
     void
 op_format(oap, keep_cursor)
