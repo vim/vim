@@ -764,9 +764,13 @@ update_debug_sign(buf, lnum)
 	    doit = TRUE;
     }
 
-    /* Return when there is nothing to do or screen updating already
-     * happening. */
-    if (!doit || updating_screen)
+    /* Return when there is nothing to do, screen updating is already
+     * happening (recursive call) or still starting up. */
+    if (!doit || updating_screen
+#ifdef FEAT_GUI
+	    || gui.starting
+#endif
+	    || starting)
 	return;
 
     /* update all windows that need updating */
