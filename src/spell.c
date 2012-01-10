@@ -5020,7 +5020,6 @@ static void aff_check_string __ARGS((char_u *spinval, char_u *affval, char *name
 static int str_equal __ARGS((char_u *s1, char_u	*s2));
 static void add_fromto __ARGS((spellinfo_T *spin, garray_T *gap, char_u	*from, char_u *to));
 static int sal_to_bool __ARGS((char_u *s));
-static int has_non_ascii __ARGS((char_u *s));
 static void spell_free_aff __ARGS((afffile_T *aff));
 static int spell_read_dic __ARGS((spellinfo_T *spin, char_u *fname, afffile_T *affile));
 static int get_affix_flags __ARGS((afffile_T *affile, char_u *afflist));
@@ -6482,23 +6481,6 @@ sal_to_bool(s)
     char_u	*s;
 {
     return STRCMP(s, "1") == 0 || STRCMP(s, "true") == 0;
-}
-
-/*
- * Return TRUE if string "s" contains a non-ASCII character (128 or higher).
- * When "s" is NULL FALSE is returned.
- */
-    static int
-has_non_ascii(s)
-    char_u	*s;
-{
-    char_u	*p;
-
-    if (s != NULL)
-	for (p = s; *p != NUL; ++p)
-	    if (*p >= 128)
-		return TRUE;
-    return FALSE;
 }
 
 /*

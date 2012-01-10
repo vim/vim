@@ -6541,3 +6541,23 @@ put_time(fd, the_time)
 #endif
 
 #endif
+
+#if (defined(FEAT_MBYTE) && defined(FEAT_QUICKFIX)) \
+	|| defined(FEAT_SPELL) || defined(PROTO)
+/*
+ * Return TRUE if string "s" contains a non-ASCII character (128 or higher).
+ * When "s" is NULL FALSE is returned.
+ */
+    int
+has_non_ascii(s)
+    char_u	*s;
+{
+    char_u	*p;
+
+    if (s != NULL)
+	for (p = s; *p != NUL; ++p)
+	    if (*p >= 128)
+		return TRUE;
+    return FALSE;
+}
+#endif

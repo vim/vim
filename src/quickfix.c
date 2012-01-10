@@ -3914,6 +3914,16 @@ ex_helpgrep(eap)
     regmatch.rm_ic = FALSE;
     if (regmatch.regprog != NULL)
     {
+#ifdef FEAT_MBYTE
+	vimconv_T vc;
+
+	/* Help files are in utf-8 or latin1, convert lines when 'encoding'
+	 * differs. */
+	vc.vc_type = CONV_NONE;
+	if (!enc_utf8)
+	    convert_setup(&vc, (char_u *)"utf-8", p_enc);
+#endif
+
 	/* create a new quickfix list */
 	qf_new_list(qi, *eap->cmdlinep);
 
@@ -3948,21 +3958,33 @@ ex_helpgrep(eap)
 			lnum = 1;
 			while (!vim_fgets(IObuff, IOSIZE, fd) && !got_int)
 			{
-			    if (vim_regexec(&regmatch, IObuff, (colnr_T)0))
+			    char_u    *line = IObuff;
+#ifdef FEAT_MBYTE
+			    /* Convert a line if 'encoding' is not utf-8 and
+			     * the line contains a non-ASCII character. */
+			    if (vc.vc_type != CONV_NONE
+						   && has_non_ascii(IObuff)) {
+				line = string_convert(&vc, IObuff, NULL);
+				if (line == NULL)
+				    line = IObuff;
+			    }
+#endif
+
+			    if (vim_regexec(&regmatch, line, (colnr_T)0))
 			    {
-				int	l = (int)STRLEN(IObuff);
+				int	l = (int)STRLEN(line);
 
 				/* remove trailing CR, LF, spaces, etc. */
-				while (l > 0 && IObuff[l - 1] <= ' ')
-				     IObuff[--l] = NUL;
+				while (l > 0 && line[l - 1] <= ' ')
+				     line[--l] = NUL;
 
 				if (qf_add_entry(qi, &prevp,
 					    NULL,	/* dir */
 					    fnames[fi],
 					    0,
-					    IObuff,
+					    line,
 					    lnum,
-					    (int)(regmatch.startp[0] - IObuff)
+					    (int)(regmatch.startp[0] - line)
 								+ 1, /* col */
 					    FALSE,	/* vis_col */
 					    NULL,	/* search pattern */
@@ -3972,9 +3994,17 @@ ex_helpgrep(eap)
 					    ) == FAIL)
 				{
 				    got_int = TRUE;
+#ifdef FEAT_MBYTE
+				    if (line != IObuff)
+					vim_free(line);
+#endif
 				    break;
 				}
 			    }
+#ifdef FEAT_MBYTE
+			    if (line != IObuff)
+				vim_free(line);
+#endif
 			    ++lnum;
 			    line_breakcheck();
 			}
@@ -3984,7 +4014,12 @@ ex_helpgrep(eap)
 		FreeWild(fcount, fnames);
 	    }
 	}
+
 	vim_free(regmatch.regprog);
+#ifdef FEAT_MBYTE
+	if (vc.vc_type != CONV_NONE)
+	    convert_setup(&vc, NULL, NULL);
+#endif
 
 	qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
 	qi->qf_lists[qi->qf_curlist].qf_ptr =
