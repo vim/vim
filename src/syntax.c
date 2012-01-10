@@ -4006,17 +4006,17 @@ syn_list_one(id, syncing, link_only)
 }
 
     static void
-syn_list_flags(nl, flags, attr)
-    struct name_list	*nl;
+syn_list_flags(nlist, flags, attr)
+    struct name_list	*nlist;
     int			flags;
     int			attr;
 {
     int		i;
 
-    for (i = 0; nl[i].flag != 0; ++i)
-	if (flags & nl[i].flag)
+    for (i = 0; nlist[i].flag != 0; ++i)
+	if (flags & nlist[i].flag)
 	{
-	    msg_puts_attr((char_u *)nl[i].name, attr);
+	    msg_puts_attr((char_u *)nlist[i].name, attr);
 	    msg_putchar(' ');
 	}
 }

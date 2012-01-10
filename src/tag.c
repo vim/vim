@@ -1353,7 +1353,6 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
     int		match_count = 0;		/* number of matches found */
     char_u	**matches;
     int		mtt;
-    int		len;
     int		help_save;
 #ifdef FEAT_MULTI_LANG
     int		help_pri = 0;
@@ -2235,6 +2234,8 @@ line_read_in:
 		 */
 		if (ga_grow(&ga_match[mtt], 1) == OK)
 		{
+		    int len;
+
 		    if (help_only)
 		    {
 #ifdef FEAT_MULTI_LANG

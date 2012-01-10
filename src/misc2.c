@@ -1559,7 +1559,7 @@ strup_save(orig)
 	    if (enc_utf8)
 	    {
 		int	c, uc;
-		int	nl;
+		int	newl;
 		char_u	*s;
 
 		c = utf_ptr2char(p);
@@ -1568,21 +1568,21 @@ strup_save(orig)
 		/* Reallocate string when byte count changes.  This is rare,
 		 * thus it's OK to do another malloc()/free(). */
 		l = utf_ptr2len(p);
-		nl = utf_char2len(uc);
-		if (nl != l)
+		newl = utf_char2len(uc);
+		if (newl != l)
 		{
-		    s = alloc((unsigned)STRLEN(res) + 1 + nl - l);
+		    s = alloc((unsigned)STRLEN(res) + 1 + newl - l);
 		    if (s == NULL)
 			break;
 		    mch_memmove(s, res, p - res);
-		    STRCPY(s + (p - res) + nl, p + l);
+		    STRCPY(s + (p - res) + newl, p + l);
 		    p = s + (p - res);
 		    vim_free(res);
 		    res = s;
 		}
 
 		utf_char2bytes(uc, p);
-		p += nl;
+		p += newl;
 	    }
 	    else if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 		p += l;		/* skip multi-byte character */

@@ -418,12 +418,12 @@ typeahead_noflush(c)
 
 /*
  * Remove the contents of the stuff buffer and the mapped characters in the
- * typeahead buffer (used in case of an error).  If 'typeahead' is true,
+ * typeahead buffer (used in case of an error).  If "flush_typeahead" is true,
  * flush all typeahead characters (used when interrupted by a CTRL-C).
  */
     void
-flush_buffers(typeahead)
-    int typeahead;
+flush_buffers(flush_typeahead)
+    int flush_typeahead;
 {
     init_typebuf();
 
@@ -431,7 +431,7 @@ flush_buffers(typeahead)
     while (read_stuff(TRUE) != NUL)
 	;
 
-    if (typeahead)	    /* remove all typeahead */
+    if (flush_typeahead)	    /* remove all typeahead */
     {
 	/*
 	 * We have to get all characters, because we may delete the first part

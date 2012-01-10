@@ -2402,24 +2402,24 @@ check_linecomment(line)
     {
 	if (vim_strchr(p, ';') != NULL) /* there may be comments */
 	{
-	    int instr = FALSE;	/* inside of string */
+	    int in_str = FALSE;	/* inside of string */
 
 	    p = line;		/* scan from start */
 	    while ((p = vim_strpbrk(p, (char_u *)"\";")) != NULL)
 	    {
 		if (*p == '"')
 		{
-		    if (instr)
+		    if (in_str)
 		    {
 			if (*(p - 1) != '\\') /* skip escaped quote */
-			    instr = FALSE;
+			    in_str = FALSE;
 		    }
 		    else if (p == line || ((p - line) >= 2
 				      /* skip #\" form */
 				      && *(p - 1) != '\\' && *(p - 2) != '#'))
-			instr = TRUE;
+			in_str = TRUE;
 		}
-		else if (!instr && ((p - line) < 2
+		else if (!in_str && ((p - line) < 2
 				    || (*(p - 1) != '\\' && *(p - 2) != '#')))
 		    break;	/* found! */
 		++p;

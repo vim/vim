@@ -2080,13 +2080,13 @@ get_digraph(cmdline)
 /*
  * Lookup the pair "char1", "char2" in the digraph tables.
  * If no match, return "char2".
- * If "meta" is TRUE and "char1" is a space, return "char2" | 0x80.
+ * If "meta_char" is TRUE and "char1" is a space, return "char2" | 0x80.
  */
     static int
-getexactdigraph(char1, char2, meta)
+getexactdigraph(char1, char2, meta_char)
     int		char1;
     int		char2;
-    int		meta;
+    int		meta_char;
 {
     int		i;
     int		retval = 0;
@@ -2159,7 +2159,7 @@ getexactdigraph(char1, char2, meta)
 
     if (retval == 0)		/* digraph deleted or not found */
     {
-	if (char1 == ' ' && meta)	/* <space> <char> --> meta-char */
+	if (char1 == ' ' && meta_char)	/* <space> <char> --> meta-char */
 	    return (char2 | 0x80);
 	return char2;
     }
@@ -2171,16 +2171,16 @@ getexactdigraph(char1, char2, meta)
  * Allow for both char1-char2 and char2-char1
  */
     int
-getdigraph(char1, char2, meta)
+getdigraph(char1, char2, meta_char)
     int	char1;
     int	char2;
-    int	meta;
+    int	meta_char;
 {
     int	    retval;
 
-    if (((retval = getexactdigraph(char1, char2, meta)) == char2)
+    if (((retval = getexactdigraph(char1, char2, meta_char)) == char2)
 	    && (char1 != char2)
-	    && ((retval = getexactdigraph(char2, char1, meta)) == char1))
+	    && ((retval = getexactdigraph(char2, char1, meta_char)) == char1))
 	return char2;
     return retval;
 }

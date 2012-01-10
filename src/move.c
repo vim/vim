@@ -926,8 +926,8 @@ curwin_col_off2()
  * Also updates curwin->w_leftcol.
  */
     void
-curs_columns(scroll)
-    int		scroll;		/* when TRUE, may scroll horizontally */
+curs_columns(may_scroll)
+    int		may_scroll;	/* when TRUE, may scroll horizontally */
 {
     int		diff;
     int		extra;		/* offset for first screen line */
@@ -1014,7 +1014,7 @@ curs_columns(scroll)
     /* No line wrapping: compute curwin->w_leftcol if scrolling is on and line
      * is not folded.
      * If scrolling is off, curwin->w_leftcol is assumed to be 0 */
-    else if (scroll
+    else if (may_scroll
 #ifdef FEAT_FOLDING
 	    && !curwin->w_cline_folded
 #endif

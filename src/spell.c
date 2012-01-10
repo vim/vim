@@ -5049,7 +5049,7 @@ static int sug_filltable __ARGS((spellinfo_T *spin, wordnode_T *node, int startw
 static int offset2bytes __ARGS((int nr, char_u *buf));
 static int bytes2offset __ARGS((char_u **pp));
 static void sug_write __ARGS((spellinfo_T *spin, char_u *fname));
-static void mkspell __ARGS((int fcount, char_u **fnames, int ascii, int overwrite, int added_word));
+static void mkspell __ARGS((int fcount, char_u **fnames, int ascii, int over_write, int added_word));
 static void spell_message __ARGS((spellinfo_T *spin, char_u *str));
 static void init_spellfile __ARGS((void));
 
@@ -9085,11 +9085,11 @@ close_spellbuf(buf)
  * and ".spl" is appended to make the output file name.
  */
     static void
-mkspell(fcount, fnames, ascii, overwrite, added_word)
+mkspell(fcount, fnames, ascii, over_write, added_word)
     int		fcount;
     char_u	**fnames;
     int		ascii;		    /* -ascii argument given */
-    int		overwrite;	    /* overwrite existing output file */
+    int		over_write;	    /* overwrite existing output file */
     int		added_word;	    /* invoked through "zg" */
 {
     char_u	*fname = NULL;
@@ -9173,7 +9173,7 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
     {
 	/* Check for overwriting before doing things that may take a lot of
 	 * time. */
-	if (!overwrite && mch_stat((char *)wfname, &st) >= 0)
+	if (!over_write && mch_stat((char *)wfname, &st) >= 0)
 	{
 	    EMSG(_(e_exists));
 	    goto theend;

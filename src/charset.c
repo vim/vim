@@ -463,41 +463,42 @@ str_foldcase(str, orglen, buf, buflen)
 	    if (enc_utf8)
 	    {
 		int	c = utf_ptr2char(STR_PTR(i));
-		int	ol = utf_ptr2len(STR_PTR(i));
+		int	olen = utf_ptr2len(STR_PTR(i));
 		int	lc = utf_tolower(c);
 
 		/* Only replace the character when it is not an invalid
 		 * sequence (ASCII character or more than one byte) and
 		 * utf_tolower() doesn't return the original character. */
-		if ((c < 0x80 || ol > 1) && c != lc)
+		if ((c < 0x80 || olen > 1) && c != lc)
 		{
-		    int	    nl = utf_char2len(lc);
+		    int	    nlen = utf_char2len(lc);
 
 		    /* If the byte length changes need to shift the following
 		     * characters forward or backward. */
-		    if (ol != nl)
+		    if (olen != nlen)
 		    {
-			if (nl > ol)
+			if (nlen > olen)
 			{
-			    if (buf == NULL ? ga_grow(&ga, nl - ol + 1) == FAIL
-						    : len + nl - ol >= buflen)
+			    if (buf == NULL
+				    ? ga_grow(&ga, nlen - olen + 1) == FAIL
+				    : len + nlen - olen >= buflen)
 			    {
 				/* out of memory, keep old char */
 				lc = c;
-				nl = ol;
+				nlen = olen;
 			    }
 			}
-			if (ol != nl)
+			if (olen != nlen)
 			{
 			    if (buf == NULL)
 			    {
-				STRMOVE(GA_PTR(i) + nl, GA_PTR(i) + ol);
-				ga.ga_len += nl - ol;
+				STRMOVE(GA_PTR(i) + nlen, GA_PTR(i) + olen);
+				ga.ga_len += nlen - olen;
 			    }
 			    else
 			    {
-				STRMOVE(buf + i + nl, buf + i + ol);
-				len += nl - ol;
+				STRMOVE(buf + i + nlen, buf + i + olen);
+				len += nlen - olen;
 			    }
 			}
 		    }

@@ -2487,7 +2487,7 @@ do_more_prompt(typed_char)
 #ifdef FEAT_CON_DIALOG
     int		retval = FALSE;
 #endif
-    int		scroll;
+    int		toscroll;
     msgchunk_T	*mp_last = NULL;
     msgchunk_T	*mp;
     int		i;
@@ -2538,49 +2538,49 @@ do_more_prompt(typed_char)
 	}
 #endif
 
-	scroll = 0;
+	toscroll = 0;
 	switch (c)
 	{
 	case BS:		/* scroll one line back */
 	case K_BS:
 	case 'k':
 	case K_UP:
-	    scroll = -1;
+	    toscroll = -1;
 	    break;
 
 	case CAR:		/* one extra line */
 	case NL:
 	case 'j':
 	case K_DOWN:
-	    scroll = 1;
+	    toscroll = 1;
 	    break;
 
 	case 'u':		/* Up half a page */
-	    scroll = -(Rows / 2);
+	    toscroll = -(Rows / 2);
 	    break;
 
 	case 'd':		/* Down half a page */
-	    scroll = Rows / 2;
+	    toscroll = Rows / 2;
 	    break;
 
 	case 'b':		/* one page back */
 	case K_PAGEUP:
-	    scroll = -(Rows - 1);
+	    toscroll = -(Rows - 1);
 	    break;
 
 	case ' ':		/* one extra page */
 	case 'f':
 	case K_PAGEDOWN:
 	case K_LEFTMOUSE:
-	    scroll = Rows - 1;
+	    toscroll = Rows - 1;
 	    break;
 
 	case 'g':		/* all the way back to the start */
-	    scroll = -999999;
+	    toscroll = -999999;
 	    break;
 
 	case 'G':		/* all the way to the end */
-	    scroll = 999999;
+	    toscroll = 999999;
 	    lines_left = 999999;
 	    break;
 
@@ -2633,9 +2633,9 @@ do_more_prompt(typed_char)
 	    continue;
 	}
 
-	if (scroll != 0)
+	if (toscroll != 0)
 	{
-	    if (scroll < 0)
+	    if (toscroll < 0)
 	    {
 		/* go to start of last line */
 		if (mp_last == NULL)
@@ -2653,7 +2653,7 @@ do_more_prompt(typed_char)
 		if (mp != NULL && mp->sb_prev != NULL)
 		{
 		    /* Find line to be displayed at top. */
-		    for (i = 0; i > scroll; --i)
+		    for (i = 0; i > toscroll; --i)
 		    {
 			if (mp == NULL || mp->sb_prev == NULL)
 			    break;
@@ -2664,7 +2664,7 @@ do_more_prompt(typed_char)
 			    mp_last = msg_sb_start(mp_last->sb_prev);
 		    }
 
-		    if (scroll == -1 && screen_ins_lines(0, 0, 1,
+		    if (toscroll == -1 && screen_ins_lines(0, 0, 1,
 						       (int)Rows, NULL) == OK)
 		    {
 			/* display line at top */
@@ -2680,13 +2680,13 @@ do_more_prompt(typed_char)
 			    ++msg_scrolled;
 			}
 		    }
-		    scroll = 0;
+		    toscroll = 0;
 		}
 	    }
 	    else
 	    {
 		/* First display any text that we scrolled back. */
-		while (scroll > 0 && mp_last != NULL)
+		while (toscroll > 0 && mp_last != NULL)
 		{
 		    /* scroll up, display line at bottom */
 		    msg_scroll_up();
@@ -2694,11 +2694,11 @@ do_more_prompt(typed_char)
 		    screen_fill((int)Rows - 2, (int)Rows - 1, 0,
 						   (int)Columns, ' ', ' ', 0);
 		    mp_last = disp_sb_line((int)Rows - 2, mp_last);
-		    --scroll;
+		    --toscroll;
 		}
 	    }
 
-	    if (scroll <= 0)
+	    if (toscroll <= 0)
 	    {
 		/* displayed the requested text, more prompt again */
 		screen_fill((int)Rows - 1, (int)Rows, 0,
@@ -2708,7 +2708,7 @@ do_more_prompt(typed_char)
 	    }
 
 	    /* display more text, return to caller */
-	    lines_left = scroll;
+	    lines_left = toscroll;
 	}
 
 	break;

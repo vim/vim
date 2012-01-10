@@ -1033,10 +1033,10 @@ foldMoveTo(updown, dir, count)
  * Init the fold info in a new window.
  */
     void
-foldInitWin(newwin)
-    win_T	*newwin;
+foldInitWin(new_win)
+    win_T	*new_win;
 {
-    ga_init2(&newwin->w_folds, (int)sizeof(fold_T), 10);
+    ga_init2(&new_win->w_folds, (int)sizeof(fold_T), 10);
 }
 
 /* find_wl_entry() {{{2 */

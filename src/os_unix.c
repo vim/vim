@@ -3884,7 +3884,6 @@ mch_call_shell(cmd, options)
     char_u	*p_shcf_copy = NULL;
     int		i;
     char_u	*p;
-    char_u	*s;
     int		inquote;
     int		pty_master_fd = -1;	    /* for pty's */
 # ifdef FEAT_GUI
@@ -3963,6 +3962,8 @@ mch_call_shell(cmd, options)
     }
     if (cmd != NULL)
     {
+	char_u	*s;
+
 	if (extra_shell_arg != NULL)
 	    argv[argc++] = (char *)extra_shell_arg;
 
@@ -4325,7 +4326,6 @@ mch_call_shell(cmd, options)
 			linenr_T    lnum = curbuf->b_op_start.lnum;
 			int	    written = 0;
 			char_u	    *lp = ml_get(lnum);
-			char_u	    *s;
 			size_t	    l;
 
 			close(fromshell_fd);
@@ -4339,7 +4339,8 @@ mch_call_shell(cmd, options)
 				len = write(toshell_fd, "", (size_t)1);
 			    else
 			    {
-				s = vim_strchr(lp + written, NL);
+				char_u	*s = vim_strchr(lp + written, NL);
+
 				len = write(toshell_fd, (char *)lp + written,
 					   s == NULL ? l
 					      : (size_t)(s - (lp + written)));

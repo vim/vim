@@ -683,19 +683,19 @@ win_split(size, flags)
 }
 
 /*
- * When "newwin" is NULL: split the current window in two.
- * When "newwin" is not NULL: insert this window at the far
+ * When "new_wp" is NULL: split the current window in two.
+ * When "new_wp" is not NULL: insert this window at the far
  * top/left/right/bottom.
  * return FAIL for failure, OK otherwise
  */
     int
-win_split_ins(size, flags, newwin, dir)
+win_split_ins(size, flags, new_wp, dir)
     int		size;
     int		flags;
-    win_T	*newwin;
+    win_T	*new_wp;
     int		dir;
 {
-    win_T	*wp = newwin;
+    win_T	*wp = new_wp;
     win_T	*oldwin;
     int		new_size = size;
     int		i;
@@ -718,7 +718,7 @@ win_split_ins(size, flags, newwin, dir)
     /* add a status line when p_ls == 1 and splitting the first window */
     if (lastwin == firstwin && p_ls == 1 && oldwin->w_status_height == 0)
     {
-	if (oldwin->w_height <= p_wmh && newwin == NULL)
+	if (oldwin->w_height <= p_wmh && new_wp == NULL)
 	{
 	    EMSG(_(e_noroom));
 	    return FAIL;
@@ -751,7 +751,7 @@ win_split_ins(size, flags, newwin, dir)
 	}
 	else
 	    available = oldwin->w_width;
-	if (available < needed && newwin == NULL)
+	if (available < needed && new_wp == NULL)
 	{
 	    EMSG(_(e_noroom));
 	    return FAIL;
@@ -815,7 +815,7 @@ win_split_ins(size, flags, newwin, dir)
 	    available = oldwin->w_height;
 	    needed += p_wmh;
 	}
-	if (available < needed && newwin == NULL)
+	if (available < needed && new_wp == NULL)
 	{
 	    EMSG(_(e_noroom));
 	    return FAIL;
@@ -888,20 +888,20 @@ win_split_ins(size, flags, newwin, dir)
 			p_sb))))
     {
 	/* new window below/right of current one */
-	if (newwin == NULL)
+	if (new_wp == NULL)
 	    wp = win_alloc(oldwin, FALSE);
 	else
 	    win_append(oldwin, wp);
     }
     else
     {
-	if (newwin == NULL)
+	if (new_wp == NULL)
 	    wp = win_alloc(oldwin->w_prev, FALSE);
 	else
 	    win_append(oldwin->w_prev, wp);
     }
 
-    if (newwin == NULL)
+    if (new_wp == NULL)
     {
 	if (wp == NULL)
 	    return FAIL;
@@ -972,10 +972,10 @@ win_split_ins(size, flags, newwin, dir)
 		frp->fr_parent = curfrp;
     }
 
-    if (newwin == NULL)
+    if (new_wp == NULL)
 	frp = wp->w_frame;
     else
-	frp = newwin->w_frame;
+	frp = new_wp->w_frame;
     frp->fr_parent = curfrp->fr_parent;
 
     /* Insert the new frame at the right place in the frame list. */
@@ -4284,19 +4284,19 @@ win_alloc(after, hidden)
     win_T	*after UNUSED;
     int		hidden UNUSED;
 {
-    win_T	*newwin;
+    win_T	*new_wp;
 
     /*
      * allocate window structure and linesizes arrays
      */
-    newwin = (win_T *)alloc_clear((unsigned)sizeof(win_T));
-    if (newwin != NULL && win_alloc_lines(newwin) == FAIL)
+    new_wp = (win_T *)alloc_clear((unsigned)sizeof(win_T));
+    if (new_wp != NULL && win_alloc_lines(new_wp) == FAIL)
     {
-	vim_free(newwin);
-	newwin = NULL;
+	vim_free(new_wp);
+	new_wp = NULL;
     }
 
-    if (newwin != NULL)
+    if (new_wp != NULL)
     {
 #ifdef FEAT_AUTOCMD
 	/* Don't execute autocommands while the window is not properly
@@ -4309,53 +4309,53 @@ win_alloc(after, hidden)
 	 */
 #ifdef FEAT_WINDOWS
 	if (!hidden)
-	    win_append(after, newwin);
+	    win_append(after, new_wp);
 #endif
 #ifdef FEAT_VERTSPLIT
-	newwin->w_wincol = 0;
-	newwin->w_width = Columns;
+	new_wp->w_wincol = 0;
+	new_wp->w_width = Columns;
 #endif
 
 	/* position the display and the cursor at the top of the file. */
-	newwin->w_topline = 1;
+	new_wp->w_topline = 1;
 #ifdef FEAT_DIFF
-	newwin->w_topfill = 0;
+	new_wp->w_topfill = 0;
 #endif
-	newwin->w_botline = 2;
-	newwin->w_cursor.lnum = 1;
+	new_wp->w_botline = 2;
+	new_wp->w_cursor.lnum = 1;
 #ifdef FEAT_SCROLLBIND
-	newwin->w_scbind_pos = 1;
+	new_wp->w_scbind_pos = 1;
 #endif
 
 	/* We won't calculate w_fraction until resizing the window */
-	newwin->w_fraction = 0;
-	newwin->w_prev_fraction_row = -1;
+	new_wp->w_fraction = 0;
+	new_wp->w_prev_fraction_row = -1;
 
 #ifdef FEAT_GUI
 	if (gui.in_use)
 	{
-	    gui_create_scrollbar(&newwin->w_scrollbars[SBAR_LEFT],
-		    SBAR_LEFT, newwin);
-	    gui_create_scrollbar(&newwin->w_scrollbars[SBAR_RIGHT],
-		    SBAR_RIGHT, newwin);
+	    gui_create_scrollbar(&new_wp->w_scrollbars[SBAR_LEFT],
+		    SBAR_LEFT, new_wp);
+	    gui_create_scrollbar(&new_wp->w_scrollbars[SBAR_RIGHT],
+		    SBAR_RIGHT, new_wp);
 	}
 #endif
 #ifdef FEAT_EVAL
 	/* init w: variables */
-	init_var_dict(&newwin->w_vars, &newwin->w_winvar);
+	init_var_dict(&new_wp->w_vars, &new_wp->w_winvar);
 #endif
 #ifdef FEAT_FOLDING
-	foldInitWin(newwin);
+	foldInitWin(new_wp);
 #endif
 #ifdef FEAT_AUTOCMD
 	unblock_autocmds();
 #endif
 #ifdef FEAT_SEARCH_EXTRA
-	newwin->w_match_head = NULL;
-	newwin->w_next_match_id = 4;
+	new_wp->w_match_head = NULL;
+	new_wp->w_next_match_id = 4;
 #endif
     }
-    return newwin;
+    return new_wp;
 }
 
 #if defined(FEAT_WINDOWS) || defined(PROTO)

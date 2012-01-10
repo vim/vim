@@ -1395,7 +1395,7 @@ nb_do_cmd(
     int		cmdno,
     char_u	*args)	    /* points to space before arguments or NUL */
 {
-    int		doupdate = 0;
+    int		do_update = 0;
     long	off = 0;
     nbbuf_T	*buf = nb_get_buf(bufno);
     static int	skip = 0;
@@ -1600,7 +1600,7 @@ nb_do_cmd(
 							last.lnum, last.col));
 		del_from_lnum = first.lnum;
 		del_to_lnum = last.lnum;
-		doupdate = 1;
+		do_update = 1;
 
 		/* Get the position of the first byte after the deleted
 		 * section.  "next" is NULL when deleting to the end of the
@@ -1777,7 +1777,7 @@ nb_do_cmd(
 		lnum = lnum_start;
 
 		/* Loop over the "\n" separated lines of the argument. */
-		doupdate = 1;
+		do_update = 1;
 		while (*args != NUL)
 		{
 		    nl = vim_strchr(args, '\n');
@@ -1992,7 +1992,7 @@ nb_do_cmd(
 		EMSG("E640: invalid buffer identifier in initDone");
 		return FAIL;
 	    }
-	    doupdate = 1;
+	    do_update = 1;
 	    buf->initDone = TRUE;
 	    nb_set_curbuf(buf->bufp);
 #if defined(FEAT_AUTOCMD)
@@ -2081,7 +2081,7 @@ nb_do_cmd(
 					     ECMD_HIDE + ECMD_OLDBUF, curwin);
 	    buf->bufp = curbuf;
 	    buf->initDone = TRUE;
-	    doupdate = 1;
+	    do_update = 1;
 #if defined(FEAT_TITLE)
 	    maketitle();
 #endif
@@ -2109,7 +2109,7 @@ nb_do_cmd(
 		exarg.forceit = FALSE;
 		dosetvisible = TRUE;
 		goto_buffer(&exarg, DOBUF_FIRST, FORWARD, buf->bufp->b_fnum);
-		doupdate = 1;
+		do_update = 1;
 		dosetvisible = FALSE;
 
 #ifdef FEAT_GUI
@@ -2309,7 +2309,7 @@ nb_do_cmd(
 						     buf->bufp->b_fnum, TRUE);
 	    buf->bufp = NULL;
 	    buf->initDone = FALSE;
-	    doupdate = 1;
+	    do_update = 1;
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "setStyle")) /* obsolete... */
@@ -2400,7 +2400,7 @@ nb_do_cmd(
 		return FAIL;
 	    }
 
-	    doupdate = 1;
+	    do_update = 1;
 
 	    cp = (char *)args;
 	    serNum = strtol(cp, &cp, 10);
@@ -2448,7 +2448,7 @@ nb_do_cmd(
 		nbdebug(("    invalid buffer identifier in removeAnno\n"));
 		return FAIL;
 	    }
-	    doupdate = 1;
+	    do_update = 1;
 	    cp = (char *)args;
 	    serNum = strtol(cp, &cp, 10);
 	    args = (char_u *)cp;
@@ -2493,7 +2493,7 @@ nb_do_cmd(
 	    len = strtol(cp, NULL, 10);
 	    args = (char_u *)cp;
 	    pos = off2pos(buf->bufp, off);
-	    doupdate = 1;
+	    do_update = 1;
 	    if (!pos)
 		nbdebug(("    no such start pos in %s, %ld\n", cmd, off));
 	    else
@@ -2555,7 +2555,7 @@ nb_do_cmd(
 	    inAtomic = 0;
 	    if (needupdate)
 	    {
-		doupdate = 1;
+		do_update = 1;
 		needupdate = 0;
 	    }
 /* =====================================================================*/
@@ -2636,18 +2636,18 @@ nb_do_cmd(
 	 * Unrecognized command is ignored.
 	 */
     }
-    if (inAtomic && doupdate)
+    if (inAtomic && do_update)
     {
 	needupdate = 1;
-	doupdate = 0;
+	do_update = 0;
     }
 
     /*
      * Is this needed? I moved the netbeans_Xt_connect() later during startup
      * and it may no longer be necessary. If its not needed then needupdate
-     * and doupdate can also be removed.
+     * and do_update can also be removed.
      */
-    if (buf != NULL && buf->initDone && doupdate)
+    if (buf != NULL && buf->initDone && do_update)
     {
 	update_screen(NOT_VALID);
 	setcursor();

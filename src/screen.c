@@ -7849,15 +7849,15 @@ check_for_delay(check_msg_scroll)
 
 /*
  * screen_valid -  allocate screen buffers if size changed
- *   If "clear" is TRUE: clear screen if it has been resized.
+ *   If "doclear" is TRUE: clear screen if it has been resized.
  *	Returns TRUE if there is a valid screen to write to.
  *	Returns FALSE when starting up and screen not initialized yet.
  */
     int
-screen_valid(clear)
-    int	    clear;
+screen_valid(doclear)
+    int	    doclear;
 {
-    screenalloc(clear);	    /* allocate screen buffers if size changed */
+    screenalloc(doclear);	   /* allocate screen buffers if size changed */
     return (ScreenLines != NULL);
 }
 
@@ -7872,8 +7872,8 @@ screen_valid(clear)
  * final size of the shell is needed.
  */
     void
-screenalloc(clear)
-    int	    clear;
+screenalloc(doclear)
+    int	    doclear;
 {
     int		    new_row, old_row;
 #ifdef FEAT_GUI
@@ -8069,7 +8069,7 @@ give_up:
 	     * (used when resizing the window at the "--more--" prompt or when
 	     * executing an external command, for the GUI).
 	     */
-	    if (!clear)
+	    if (!doclear)
 	    {
 		(void)vim_memset(new_ScreenLines + new_row * Columns,
 				      ' ', (size_t)Columns * sizeof(schar_T));
@@ -8159,7 +8159,7 @@ give_up:
     screen_Columns = Columns;
 
     must_redraw = CLEAR;	/* need to clear the screen later */
-    if (clear)
+    if (doclear)
 	screenclear2();
 
 #ifdef FEAT_GUI
