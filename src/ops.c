@@ -1648,6 +1648,7 @@ op_delete(oap)
 	    && !oap->block_mode
 #endif
 	    && oap->line_count > 1
+	    && oap->motion_force == NUL
 	    && oap->op_type == OP_DELETE)
     {
 	ptr = ml_get(oap->end.lnum) + oap->end.col;
