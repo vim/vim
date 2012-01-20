@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2012 Jan 04
+*syntax.txt*	For Vim version 7.3.  Last change: 2012 Jan 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1161,7 +1161,7 @@ should be appropriate for most users most of the time because Fortran 2008 is
 almost a superset of previous versions (Fortran 2003, 95, 90, and 77). 
 
 Fortran source code form ~
-Fortran 9x code can be in either fixed or free source form.  Note that the
+Fortran code can be in either fixed or free source form.  Note that the
 syntax highlighting will not be correct if the form is incorrectly set.
 
 When you create a new fortran file, the syntax script assumes fixed source
@@ -1242,54 +1242,54 @@ recognized, as will construct names at the end of a do, if, select or forall
 construct.
 
 Non-default fortran dialects ~
-The syntax script supports five Fortran dialects: f95, f90, f77, the Lahey
-subset elf90, and the Imagine1 subset F. However, these dialects are outdated;
-the next version of the syntax script will support only two variants: modern
-Fortran and legacy Fortran.
+The syntax script supports two Fortran dialects: f08 and F. You will probably
+find the default highlighting (f08) satisfactory.  A few legacy constructs
+deleted or declared obsolescent in the 2008 standard are highlighted as todo
+items.
 
-If you use f77 with extensions, even common ones like do/enddo loops, do/while
-loops and free source form that are supported by most f77 compilers including
-g77 (GNU Fortran), then you will probably find the default highlighting
-satisfactory.  However, if you use strict f77 with no extensions, not even free
-source form or the MIL STD 1753 extensions, then the advantages of setting the
-dialect to f77 are that names such as SUM are recognized as user variable
-names and not highlighted as f9x intrinsic functions, that obsolete constructs
-such as ASSIGN statements are not highlighted as todo items, and that fixed
-source form will be assumed.
+If you use F, the advantage of setting the dialect appropriately is that
+other legacy features excluded from F will be highlighted as todo items and
+that free source form will be assumed. 
 
-If you use elf90 or F, the advantage of setting the dialect appropriately is
-that f90 features excluded from these dialects will be highlighted as todo
-items and that free source form will be assumed as required for these
-dialects.
+The dialect can be selected in various ways.  If all your fortran files use
+the same dialect, set the global variable fortran_dialect in your .vimrc prior
+to your syntax on statement.  The case-sensitive, permissible values of
+fortran_dialect are "f08" or "F".  Invalid values of fortran_dialect are
+ignored.
 
-The dialect can be selected by setting the variable fortran_dialect.  The
-permissible values of fortran_dialect are case-sensitive and must be "f95",
-"f90", "f77", "elf" or "F".  Invalid values of fortran_dialect are ignored.
-
-If all your fortran files use the same dialect, set fortran_dialect in your
-.vimrc prior to your syntax on statement.  If the dialect depends upon the file
-extension, then it is most convenient to set it in a ftplugin file.  For more
-information on ftplugin files, see |ftplugin|.  For example, if all your
-fortran files with an .f90 extension are written in the elf subset, your
-ftplugin file should contain the code >
+If the dialect depends upon the file extension, then it is most convenient to
+set a buffer-local variable in a ftplugin file.  For more information on
+ftplugin files, see |ftplugin|.  For example, if all your fortran files with
+an .f90 extension are written in the F subset, your ftplugin file should
+contain the code >
     let s:extfname = expand("%:e")
     if s:extfname ==? "f90"
-	let fortran_dialect="elf"
+	let b:fortran_dialect="F"
     else
-	unlet! fortran_dialect
+	unlet! b:fortran_dialect
     endif
 Note that this will work only if the "filetype plugin indent on" command
 precedes the "syntax on" command in your .vimrc file.
 
 Finer control is necessary if the file extension does not uniquely identify
-the dialect.  You can override the default dialect, on a file-by-file basis, by
-including a comment with the directive "fortran_dialect=xx" (where xx=f77 or
-elf or F or f90 or f95) in one of the first three lines in your file.  For
-example, your older .f files may be written in extended f77 but your newer
-ones may be F codes, and you would identify the latter by including in the
-first three lines of those files a Fortran comment of the form >
+the dialect.  You can override the default dialect, on a file-by-file basis,
+by including a comment with the directive "fortran_dialect=xx" (where xx=F or
+f08) in one of the first three lines in your file.  For example, your older .f
+files may be legacy code but your newer ones may be F codes, and you would
+identify the latter by including in the first three lines of those files a
+Fortran comment of the form >
   ! fortran_dialect=F
-F overrides elf if both directives are present.
+
+For previous versions of the syntax, you may have set fortran_dialect to the
+now-obsolete values "f77", "f90", "f95", or "elf". Such settings will be
+silently handled as "f08". Users of "elf" may wish to experiment with "F"
+instead. 
+
+The syntax/fortran.vim script contains embedded comments that tell you how to
+comment and/or uncomment some lines to (a) activate recognition of some
+non-standard, vendor-supplied intrinsics and (b) to prevent features deleted
+or declared obsolescent in the 2008 standard from being highlighted as todo
+items. 
 
 Limitations ~
 Parenthesis checking does not catch too few closing parentheses.  Hollerith

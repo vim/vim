@@ -40,7 +40,7 @@ syn match	mailHeaderKey	contained contains=mailHeaderEmail,mailEmail,@NoSpell "\
 syn region	mailHeaderKey	contained contains=mailHeaderEmail,mailEmail,@mailQuoteExps,@NoSpell start="\v(^(\> ?)*)@<=(to|b?cc):" skip=",$" end="$"
 syn match	mailHeaderKey	contained contains=mailHeaderEmail,mailEmail,@NoSpell "\v(^(\> ?)*)@<=(from|reply-to):.*$" fold
 syn match	mailHeaderKey	contained contains=@NoSpell "\v(^(\> ?)*)@<=date:"
-syn match	mailSubject	contained "\v^subject:.*$" fold
+syn match	mailSubject	contained contains=@NoSpell "\v^subject:.*$" fold
 syn match	mailSubject	contained contains=@NoSpell "\v(^(\> ?)+)@<=subject:.*$"
 
 " Anything in the header between < and > is an email address

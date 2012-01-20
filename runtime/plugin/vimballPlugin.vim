@@ -16,7 +16,7 @@
 if &cp || exists("g:loaded_vimballPlugin")
  finish
 endif
-let g:loaded_vimballPlugin = "v34"
+let g:loaded_vimballPlugin = "v35"
 let s:keepcpo              = &cpo
 set cpo&vim
 

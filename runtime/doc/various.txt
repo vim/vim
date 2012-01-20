@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.3.  Last change: 2012 Jan 04
+*various.txt*   For Vim version 7.3.  Last change: 2012 Jan 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -363,30 +363,30 @@ N  *+multi_lang*		non-English language support |multi-lang|
 m  *+mzscheme*		Mzscheme interface |mzscheme|
 m  *+mzscheme/dyn*	Mzscheme interface |mzscheme-dynamic| |/dyn|
 m  *+netbeans_intg*	|netbeans|
-m  *+ole*		Win32 GUI only: |ole-interface|
-N  *+path_extra*	Up/downwards search in 'path' and 'tags'
+m  *+ole*			Win32 GUI only: |ole-interface|
+N  *+path_extra*		Up/downwards search in 'path' and 'tags'
 m  *+perl*		Perl interface |perl|
 m  *+perl/dyn*		Perl interface |perl-dynamic| |/dyn|
 N  *+persistent_undo*	Persistent undo |undo-persistence|
-   *+postscript*	|:hardcopy| writes a PostScript file
+   *+postscript*		|:hardcopy| writes a PostScript file
 N  *+printer*		|:hardcopy| command
 H  *+profile*		|:profile| command
 m  *+python*		Python 2 interface |python|
-m  *+python/dyn*	Python 2 interface |python-dynamic| |/dyn|
+m  *+python/dyn*		Python 2 interface |python-dynamic| |/dyn|
 m  *+python3*		Python 3 interface |python|
-m  *+python3/dyn*	Python 3 interface |python-dynamic| |/dyn|
+m  *+python3/dyn*		Python 3 interface |python-dynamic| |/dyn|
 N  *+quickfix*		|:make| and |quickfix| commands
 N  *+reltime*		|reltime()| function, 'hlsearch'/'incsearch' timeout,
 			'redrawtime' option
 B  *+rightleft*		Right to left typing |'rightleft'|
 m  *+ruby*		Ruby interface |ruby|
 m  *+ruby/dyn*		Ruby interface |ruby-dynamic| |/dyn|
-N  *+scrollbind*	|'scrollbind'|
+N  *+scrollbind*		|'scrollbind'|
 B  *+signs*		|:sign|
-N  *+smartindent*	|'smartindent'|
+N  *+smartindent*		|'smartindent'|
 m  *+sniff*		SniFF interface |sniff|
-N  *+startuptime*	|--startuptime| argument
-N  *+statusline*	Options 'statusline', 'rulerformat' and special
+N  *+startuptime*		|--startuptime| argument
+N  *+statusline*		Options 'statusline', 'rulerformat' and special
 			formats of 'titlestring' and 'iconstring'
 m  *+sun_workshop*	|workshop|
 N  *+syntax*		Syntax highlighting |syntax|

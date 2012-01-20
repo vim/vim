@@ -1,15 +1,21 @@
-*pi_getscript.txt*  For Vim version 7.0.  Last change: 2011 May 31
+*pi_getscript.txt*  For Vim version 7.0.  Last change: 2011 Jun 23
 >
 		GETSCRIPT REFERENCE MANUAL  by Charles E. Campbell, Jr.
 <
 Authors:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamilyA.Mbiz>
 	  (remove NOSPAM from the email address)
 						*GetLatestVimScripts-copyright*
-Copyright: (c) 2004-2010 by Charles E. Campbell, Jr.	*glvs-copyright*
-           The VIM LICENSE applies to getscript.vim and
-           pi_getscript.txt (see |copyright|) except use
-           "getscript" instead of "Vim".  No warranty, express or implied.
-	   Use At-Your-Own-Risk.
+Copyright: (c) 2004-2012 by Charles E. Campbell, Jr.	*glvs-copyright*
+	The VIM LICENSE (see |copyright|) applies to the files in this
+	package, including getscriptPlugin.vim, getscript.vim,
+	GetLatestVimScripts.dist, and pi_getscript.txt, except use "getscript"
+	instead of "VIM".  Like anything else that's free, getscript and its
+	associated files are provided *as is* and comes with no warranty of
+	any kind, either expressed or implied.  No guarantees of
+	merchantability.  No guarantees of suitability for any purpose.  By
+	using this plugin, you agree that in no event will the copyright
+	holder be liable for any damages resulting from the use of this
+	software. Use at your own risk!
 
 Getscript is a plugin that simplifies retrieval of the latest versions of the
 scripts that you yourself use!  Typing |:GLVS| will invoke getscript; it will
@@ -374,6 +380,8 @@ The AutoInstall process will:
 ==============================================================================
 9. GetLatestVimScripts History		*getscript-history* *glvs-hist* {{{1
 
+v44 Jun 23, 2011 : * handles additional decompression options for tarballs
+                     (tgz taz tbz txz)
 v33 May 31, 2011 : * using fnameescape() instead of escape()
 		   * *.xz support
 v32 Jun 19, 2010 : * (Jan Steffens) added support for xz compression

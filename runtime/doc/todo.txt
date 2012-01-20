@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Jan 10
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Jan 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,31 +38,34 @@ Go through more coverity reports.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
-Compilation problem on z/OS, POUND is equal to '#', duplicate case.
-(Stephen Bovy, 2011 Dec 16)
-
 Once syntax and other runtime files have been fixed: add "set cp" to
 check.vim.  Use a function to run both with 'cp' and 'nocp'.
 
-Patch to fix regression caused by 7.3.251. (Christian Brabandt, 2012 Jan 5)
+Win32: When the taskbar is at the top of the screen creating the tabbar causes
+the window to move unnecessarily. (William E. Skeith III, 2012 Jan 12)
+Patch: 2012 Jan 13
 
-Patch to make ":helpgrep" work with non-UTF-8 encoding. (Yasuhiro Matsumoto,
-2011 Nov 28, update later that day)
+Patch for using DBCS encoding in user command. (Yasuhiro Matsumoto, 2012 Jan
+15)  Update Jan 17.
 
-Patch to fix messing up terminal when redrawing too early. (Christian
-Brabandt, 2012 Jan 5)
+Repeating search history entries. (Edwin Steiner, 2012 Jan 17)
+Jan 18: Caused by patch 7.3.265?
 
-Patch to fix member confusion in Lua interface. (Taro Muraoka, 2012 Jan 8)
-Update Jan 9.
-Carvalho will merge the patch.
+Hang in using VimEnter. (Alex Efros, 2012 Jan 14)
 
-Possible quickfix bug: Audrius Kažukauskas, 2012 Jan 6
-
-Problem reading german spell file? (Jan Stocker, 2012 Jan 5)
+":cd" doesn't work when current directory path contains wildcards.
+finddir() has the same problem.  (Yukihiro Nakadaira, 2012 Jan 10)
 
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
+
+Patch to add support for Solaris ZFS ACLs. (Danek Duvall, 2012 Jan 13)
+
+Patch to make continued lines work faster. (Yasuhiro Matsumoto, 2012 Jan 11)
+
+Also an idea to make join() faster. (Yasuhiro Matsumoto, 2012 Jan 11)
+Another one from Taro Muraoka, 2012 Jan 12.
 
 ":doau" says it triggers modeline.  Should this only happen for events used
 when loading a buffer?  (Kana Natsuno, 2011 Nov 7)
@@ -103,6 +106,10 @@ overwritten. (Felipe G. Nievinski, 2011 Dec 22)
     side effect.
 Patch by Kana Natsuno, 2011 Nov 12.
 
+Patch to fix member confusion in Lua interface. (Taro Muraoka, 2012 Jan 8)
+Update Jan 9.
+Carvalho merged the patch:  New version 2012 Jan 19.
+
 Patch for option in 'cino' to specify more indent for continued conditions.
 (Lech Lorens, 2011 Nov 27)
 Isn't this already possible?
@@ -135,6 +142,8 @@ Patch for has('unnamedplus') docs. (Tony Mechelynck, 2011 Sep 27)
 And one for gui_x11.txt.
 
 Problem with l: dictionary being locked in a function. (ZyX, 2011 Jul 21)
+
+Issue 48: foldopen error can't be caught by try/catch
 
 Patch to sort functions starting with '<' after others.  Omit dict functions,
 they can't be called. (Yasuhiro Matsumoto, 2011 Oct 11)
@@ -179,6 +188,9 @@ New feature, requires testing.  Made some remarks.
 
 Win32: Patch for alpha-blended icons and toolbar height. (Sergiu Dotenco, 2011
 Sep 17)  Asked for feedback from others.
+
+Win32: Cannot cd into a directory that starts with a space. (Andy Wokula, 2012
+Jan 19)
 
 Need to escape $HOME on Windows?  (ZyX, 2011 Jul 21)
 
@@ -802,8 +814,6 @@ fileencoding differs.  Reload the buffer in this situation?  Need to check for
 the buffer to be unmodified.
 Unfinished patch by Ian Kelling, 2008 Jul 11.  Followup Jul 14, need to have
 another look at it.
-
-Patch for c.vim and cpp.vim syntax files. (Chung-chieh Shan, 2008 Nov 26)
 
 c.vim: XXX in a comment is colored yellow, but not when it's after "#if 0".
 (Ilya Dogolazky, 2009 Aug 7)

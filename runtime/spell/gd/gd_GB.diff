@@ -25,7 +25,7 @@
 + # soundslike mapping from Aspell
 + # Aspell phonetics for Irish, by Kevin Scannell <scannell@slu.edu>
 + # Copyright 2002, 2003 Kevin P. Scannell, distributed under GNU GPL
-+ # version 2.0
++ # version 2.0 or the Vim license (attribution by Kevin Scannell, Jan 2012)
 + 
 + SAL followup 0                    # else breaks QU^, e.g.
 + SAL collapse_result 1             # no double letters in resulting strings

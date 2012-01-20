@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 7.3.  Last change: 2011 Aug 14
+*pi_zip.txt*	For Vim version 7.3.  Last change: 2012 Jan 17
 
 				+====================+
 				| Zip File Interface |
@@ -7,14 +7,15 @@
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
 Copyright: Copyright (C) 2005-2011 Charles E Campbell, Jr *zip-copyright*
-           Permission is hereby granted to use and distribute this code,
-	   with or without modifications, provided that this copyright
-	   notice is copied with it. Like anything else that's free,
-	   zip.vim, zipPlugin.vim, and pi_zip.txt are provided *as is*
-	   and it comes with no warranty of any kind, either expressed or
-	   implied. By using this plugin, you agree that in no event will
-	   the copyright holder be liable for any damages resulting from
-	   the use of this software.
+	The VIM LICENSE (see |copyright|) applies to the files in this
+	package, including zipPlugin.vim, zip.vim, and pi_zip.vim.  except use
+	"zip.vim" instead of "VIM".  Like anything else that's free, zip.vim
+	and its associated files are provided *as is* and comes with no
+	warranty of any kind, either expressed or implied.  No guarantees of
+	merchantability.  No guarantees of suitability for any purpose.  By
+	using this plugin, you agree that in no event will the copyright
+	holder be liable for any damages resulting from the use of this
+	software. Use at your own risk!
 
 ==============================================================================
 1. Contents						*zip* *zip-contents*
@@ -73,7 +74,7 @@ Copyright: Copyright (C) 2005-2011 Charles E Campbell, Jr *zip-copyright*
 ==============================================================================
 3. Additional Extensions					*zip-extension*
 
-   Apparently there are a number of archivers who generate zip files that
+   Apparently there are a number of archivers which generate zip files that
    don't use the .zip extension (.jar, .xpi, etc).  To handle such files,
    place a line in your <.vimrc> file: >
 
@@ -84,6 +85,8 @@ Copyright: Copyright (C) 2005-2011 Charles E Campbell, Jr *zip-copyright*
 
 ==============================================================================
 4. History							*zip-history* {{{1
+   v25 Jun 27, 2011 * using keepj with unzip -Z
+		      (consistent with the -p variant)
    v24 Jun 21, 2010 * (Cédric Bosdonnat) unzip seems to need its filenames
 		      fnameescape'd as well as shellquote'd
 		    * (Motoya Kurotsu) inserted keepj before 0d to protect

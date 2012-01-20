@@ -1,7 +1,7 @@
 " vimball.vim : construct a file containing both paths and files
 " Author:	Charles E. Campbell, Jr.
-" Date:		Sep 26, 2011
-" Version:	34
+" Date:		Jan 17, 2012
+" Version:	35
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
 " Copyright: (c) 2004-2011 by Charles E. Campbell, Jr.
 "            The VIM LICENSE applies to Vimball.vim, and Vimball.txt
@@ -14,7 +14,7 @@
 if &cp || exists("g:loaded_vimball")
  finish
 endif
-let g:loaded_vimball = "v34"
+let g:loaded_vimball = "v35"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** this version of vimball needs vim 7.2"
@@ -766,6 +766,9 @@ fun! vimball#RestoreSettings()
   unlet s:regakeep s:eikeep s:fenkeep s:hidkeep s:ickeep s:repkeep s:vekeep s:makeep s:lzkeep s:pmkeep s:ffkeep
 "  call Dret("RestoreSettings")
 endfun
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " ---------------------------------------------------------------------
 " Modelines: {{{1

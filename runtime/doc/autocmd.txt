@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.3.  Last change: 2011 Oct 26
+*autocmd.txt*   For Vim version 7.3.  Last change: 2012 Jan 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -699,7 +699,8 @@ MenuPopup			Just before showing the popup menu (under the
 QuickFixCmdPre			Before a quickfix command is run (|:make|,
 				|:lmake|, |:grep|, |:lgrep|, |:grepadd|,
 				|:lgrepadd|, |:vimgrep|, |:lvimgrep|,
-				|:vimgrepadd|, |:lvimgrepadd|, |:cscope|).
+				|:vimgrepadd|, |:lvimgrepadd|, |:cscope|,
+				|:helpgrep|, |:lhelpgrep|).
 				The pattern is matched against the command
 				being run.  When |:grep| is used but 'grepprg'
 				is set to "internal" it still matches "grep".

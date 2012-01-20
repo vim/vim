@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 Jan 04
+" Last Change:	2012 Jan 14
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -61,6 +61,25 @@ endif
 syn match	cSpecialCharacter display "L\='\\\o\{1,3}'"
 syn match	cSpecialCharacter display "'\\x\x\{1,2}'"
 syn match	cSpecialCharacter display "L'\\x\x\+'"
+
+if !exists("c_no_c11") " ISO C11
+  if exists("c_no_cformat")
+    syn region	cString		start=+\%(U\|u8\=\)"+ skip=+\\\\\|\\"+ end=+"+ contains=cSpecial,@Spell
+  else
+    syn region	cString		start=+\%(U\|u8\=\)"+ skip=+\\\\\|\\"+ end=+"+ contains=cSpecial,cFormat,@Spell
+  endif
+  syn match	cCharacter	"[Uu]'[^\\]'"
+  syn match	cCharacter	"[Uu]'[^']*'" contains=cSpecial
+  if exists("c_gnu")
+    syn match	cSpecialError	"[Uu]'\\[^'\"?\\abefnrtv]'"
+    syn match	cSpecialCharacter "[Uu]'\\['\"?\\abefnrtv]'"
+  else
+    syn match	cSpecialError	"[Uu]'\\[^'\"?\\abfnrtv]'"
+    syn match	cSpecialCharacter "[Uu]'\\['\"?\\abfnrtv]'"
+  endif
+  syn match	cSpecialCharacter display "[Uu]'\\\o\{1,3}'"
+  syn match	cSpecialCharacter display "[Uu]'\\x\x\+'"
+endif
 
 "when wanted, highlight trailing white space
 if exists("c_space_errors")
@@ -211,6 +230,7 @@ if !exists("c_no_c11")
   syn keyword	cStorageClass	_Noreturn noreturn
   syn keyword	cOperator	_Static_assert static_assert
   syn keyword	cStorageClass	_Thread_local thread_local
+  syn keyword   cType		char16_t char32_t
 endif
 
 if !exists("c_no_ansi") || exists("c_ansi_constants") || exists("c_gnu")

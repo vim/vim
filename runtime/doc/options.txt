@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2011 Dec 15
+*options.txt*	For Vim version 7.3.  Last change: 2012 Jan 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -301,9 +301,8 @@ You will not get back the 'list' value as it was the last time you edited
 			copying the value.
 			{not in Vi}
 
-:se[t] {option}<	Set the local value of {option} to its global value by
-			making it empty.  Only makes sense for |global-local|
-			options.
+:se[t] {option}<	For |global-local| options: Remove the local value of
+			{option}, so that the global value will be used.
 			{not in Vi}
 
 							*:setg* *:setglobal*

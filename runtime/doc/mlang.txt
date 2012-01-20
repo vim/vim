@@ -1,4 +1,4 @@
-*mlang.txt*     For Vim version 7.3.  Last change: 2010 Dec 11
+*mlang.txt*     For Vim version 7.3.  Last change: 2012 Jan 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -59,7 +59,7 @@ use of "-" and "_".
 			system.  Some systems accept aliases like "en" or
 			"en_US", but some only accept the full specification
 			like "en_US.ISO_8859-1".  On Unix systems you can use
-			the this command to see what locales are supported: >
+			this command to see what locales are supported: >
 				:!locale -a
 <			With the "messages" argument the language used for
 			messages is set.  This can be different when you want,

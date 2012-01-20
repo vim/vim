@@ -27,7 +27,7 @@
 + # soundslike mapping from Aspell
 + # swedish_phonet.dat - Swedish phonetic transformation rules for aspell
 + # Copyright (C) 2000  Martin Norbäck  <d95mback@dtek.chalmers.se>
-+ # distributed under GNU GPL
++ # distributed under GNU GPL or the Vim license, at your choice.
 + # version 0.2
 + 
 + SAL &	&

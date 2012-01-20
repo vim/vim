@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 7.3.  Last change: 2008 Dec 17
+*develop.txt*   For Vim version 7.3.  Last change: 2012 Jan 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -231,6 +231,17 @@ index		shadows global declaration
 time		shadows global declaration
 new		C++ reserved keyword
 try		Borland C++ doesn't like it to be used as a variable.
+
+clear		Mac curses.h
+echo		Mac curses.h
+instr		Mac curses.h
+meta		Mac curses.h
+newwin		Mac curses.h
+nl		Mac curses.h
+overwrite	Mac curses.h
+refresh		Mac curses.h
+scroll		Mac curses.h
+typeahead	Mac curses.h
 
 basename()	GNU string function
 dirname()	GNU string function

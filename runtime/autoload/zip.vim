@@ -1,10 +1,10 @@
 " zip.vim: Handles browsing zipfiles
 "            AUTOLOAD PORTION
-" Date:		May 24, 2011
-" Version:	24
+" Date:		Jan 17, 2012
+" Version:	25
 " Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:	Vim License  (see vim's :help license)
-" Copyright:    Copyright (C) 2005-2011 Charles E. Campbell, Jr. {{{1
+" Copyright:    Copyright (C) 2005-2012 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
@@ -19,7 +19,7 @@
 if &cp || exists("g:loaded_zip")
  finish
 endif
-let g:loaded_zip= "v24"
+let g:loaded_zip= "v25"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** this version of zip needs vim 7.2"
@@ -104,12 +104,12 @@ fun! zip#Browse(zipfile)
 
   " give header
   call append(0, ['" zip.vim version '.g:loaded_zip,
-                \ '" Browsing zipfile '.a:zipfile,
-                \ '" Select a file with cursor and press ENTER'])
+ \                '" Browsing zipfile '.a:zipfile,
+ \                '" Select a file with cursor and press ENTER'])
   keepj $
 
 "  call Decho("exe silent r! ".g:zip_unzipcmd." -l -- ".s:Escape(a:zipfile,1))
-  exe "silent r! ".g:zip_unzipcmd." -Z -1 -- ".s:Escape(a:zipfile,1)
+  exe "keepj sil! r! ".g:zip_unzipcmd." -Z -1 -- ".s:Escape(a:zipfile,1)
   if v:shell_error != 0
    redraw!
    echohl WarningMsg | echo "***warning*** (zip#Browse) ".fnameescape(a:zipfile)." is not a zip file" | echohl None

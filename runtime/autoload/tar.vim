@@ -1,7 +1,7 @@
 " tar.vim: Handles browsing tarfiles
 "            AUTOLOAD PORTION
-" Date:			May 31, 2011
-" Version:		27
+" Date:			Jan 17, 2012
+" Version:		28
 " Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:		Vim License  (see vim's :help license)
 "
@@ -22,7 +22,7 @@
 if &cp || exists("g:loaded_tar")
  finish
 endif
-let g:loaded_tar= "v27"
+let g:loaded_tar= "v28"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** this version of tar needs vim 7.2"
@@ -143,7 +143,7 @@ fun! tar#Browse(tarfile)
   call setline(lastline+2,'" Browsing tarfile '.a:tarfile)
   call setline(lastline+3,'" Select a file with cursor and press ENTER')
   keepj $put =''
-  keepj 0d
+  keepj sil! 0d
   keepj $
 
   let tarfile= a:tarfile
@@ -158,10 +158,10 @@ fun! tar#Browse(tarfile)
   elseif tarfile =~# '\.lrp'
 "   call Decho("2: exe silent r! cat -- ".shellescape(tarfile,1)."|gzip -d -c -|".g:tar_cmd." -".g:tar_browseoptions." - ")
    exe "sil! r! cat -- ".shellescape(tarfile,1)."|gzip -d -c -|".g:tar_cmd." -".g:tar_browseoptions." - "
-  elseif tarfile =~# '\.bz2$'
+  elseif tarfile =~# '\.\(bz2\|tbz\|tb2\)$'
 "   call Decho("3: exe silent r! bzip2 -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - ")
    exe "sil! r! bzip2 -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
-  elseif tarfile =~# '\.lzma$'
+  elseif tarfile =~# '\.\(lzma\|tlz\)$'
 "   call Decho("3: exe silent r! lzma -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - ")
    exe "sil! r! lzma -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
   elseif tarfile =~# '\.\(xz\|txz\)$'

@@ -2,8 +2,8 @@
 " Language:	Upstart job files
 " Maintainer:	Michael Biebl <biebl@debian.org>
 "		James Hunt <james.hunt@ubuntu.com>
-" Last Change:	2011 Mar 22
-" License:	GPL v2
+" Last Change:	2012 Jan 16
+" License:	The Vim license
 " Version:	0.4
 " Remark:	Syntax highlighting for Upstart (init(8)) job files.
 "

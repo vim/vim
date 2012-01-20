@@ -1,9 +1,9 @@
 " zipPlugin.vim: Handles browsing zipfiles
 "            PLUGIN PORTION
-" Date:			Oct 05, 2007
+" Date:			Aug 15, 2011
 " Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:		Vim License  (see vim's :help license)
-" Copyright:    Copyright (C) 2005,2006 Charles E. Campbell, Jr. {{{1
+" Copyright:    Copyright (C) 2005-2011 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
@@ -20,7 +20,7 @@
 if &cp || exists("g:loaded_zipPlugin")
  finish
 endif
-let g:loaded_zipPlugin = "v24"
+let g:loaded_zipPlugin = "v25"
 let s:keepcpo          = &cpo
 set cpo&vim
 
@@ -40,7 +40,7 @@ augroup zip
   au FileWriteCmd zipfile:*/*	call zip#Write(expand("<amatch>"))
  endif
 
- au BufReadCmd   *.zip,*.jar,*.xpi,*.war,*.ear,*.celzip		call zip#Browse(expand("<amatch>"))
+ au BufReadCmd   *.zip,*.jar,*.xpi,*.war,*.ear,*.celzip,*.oxt		call zip#Browse(expand("<amatch>"))
 augroup END
 
 " ---------------------------------------------------------------------

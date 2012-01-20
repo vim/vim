@@ -2,20 +2,21 @@
 "
 " Language:     D
 " Maintainer:   Jesse Phillips <Jesse.K.Phillips+D@gmail.com>
-" Last Change:  2010 Sep 21
-" Version:      0.22
+" Last Change:  2012 Jan 11
+" Version:      0.24
 "
 " Contributors:
 "   - Jason Mills <jasonmills@nf.sympatico.ca>: original Maintainer
-"   - Kirk McDonald: version 0.17 updates, with minor modifications
-"     (http://paste.dprogramming.com/dplmb7qx?view=hidelines)
-"   - Tim Keating: patch to fix a bug in highlighting the `\` literal
-"   - Frank Benoit: Fixed a bug that caused some identifiers and numbers to highlight as octal number errors.
-"   - Shougo Matsushita <Shougo.Matsu@gmail.com>: updates for latest 2.047 highlighting
-"   - Ellery Newcomer: Fixed some highlighting bugs.
-"   - Steven N. Oliver: #! highlighting
+"   - Kirk McDonald
+"   - Tim Keating
+"   - Frank Benoit
+"   - Shougo Matsushita <Shougo.Matsu@gmail.com>
+"   - Ellery Newcomer
+"   - Steven N. Oliver
+"   - Sohgo Takeuchi
 "
-" Please email me with bugs, comments, and suggestions.
+" Please submit bugs/comments/suggestions to the github repo: 
+" https://github.com/he-the-great/d.vim
 "
 " Options:
 "   d_comment_strings - Set to highlight strings and numbers in comments.
@@ -23,34 +24,23 @@
 "   d_hl_operator_overload - Set to highlight D's specially named functions
 "   that when overloaded implement unary and binary operators (e.g. opCmp).
 "
-" Todo:
-"   - Determine a better method of sync'ing than simply setting minlines
-"   to a large number.
-"
-"   - Several keywords (e.g., in, out, inout) are both storage class and
-"   statements, depending on their context. Perhaps use pattern matching to
-"   figure out which and highlight appropriately. For now I have made such
-"   keywords storage classes so their highlighting is consistent with other
-"   keywords that are commonly used with them, but are true storage classes,
-"   such as lazy. Similarly, I made some statement keywords (e.g. body) storage
-"   classes.
-"
-"   - Mark contents of the asm statement body as special
-"
-"   - Maybe highlight the 'exit', 'failure', and 'success' parts of the
-"   scope() statement.
-"
-"   - Highlighting DDoc comments.
-"
+"   d_hl_object_types - Set to highlight some common types from object.di.
 
 " Quit when a syntax file was already loaded
 if exists("b:current_syntax")
   finish
 endif
 
+" Support cpoptions
+let s:cpo_save = &cpo
+set cpo&vim
+
+" Set the current syntax to be known as d
+let b:current_syntax = "d"
+
 " Keyword definitions
 "
-syn keyword dExternal              import package module extern
+syn keyword dExternal              import module
 syn keyword dConditional           if else switch
 syn keyword dBranch                goto break continue
 syn keyword dRepeat                while for do foreach foreach_reverse
@@ -77,21 +67,34 @@ if exists("d_hl_operator_overload")
   syn keyword dOpOverload          opCall opSlice opSliceAssign opSliceOpAssign 
   syn keyword dOpOverload          opPos opAdd_r opMul_r opAnd_r opOr_r opXor_r
   syn keyword dOpOverload          opIn opIn_r opPow opDispatch opStar opDot 
-  syn keyword dOpOverload          opApply opApplyReverse
+  syn keyword dOpOverload          opApply opApplyReverse opDollar
   syn keyword dOpOverload          opUnary opIndexUnary opSliceUnary
   syn keyword dOpOverload          opBinary opBinaryRight
 endif
 
-syn keyword dType                  void ushort int uint long ulong float
-syn keyword dType                  byte ubyte double bit char wchar ucent cent
-syn keyword dType                  short bool dchar wstring dstring
-syn keyword dType                  real ireal ifloat idouble
-syn keyword dType                  creal cfloat cdouble
+syn keyword dType                  byte ubyte short ushort int uint long ulong cent ucent
+syn keyword dType                  void bool bit
+syn keyword dType                  float double real
+syn keyword dType                  ushort int uint long ulong float
+syn keyword dType                  char wchar dchar string wstring dstring
+syn keyword dType                  ireal ifloat idouble creal cfloat cdouble
+syn keyword dType                  size_t ptrdiff_t sizediff_t equals_t hash_t
+if exists("d_hl_object_types")
+  syn keyword dType                Object Throwable AssociativeArray Error Exception
+  syn keyword dType                Interface OffsetTypeInfo TypeInfo TypeInfo_Typedef
+  syn keyword dType                TypeInfo_Enum TypeInfo_Pointer TypeInfo_Array
+  syn keyword dType                TypeInfo_StaticArray TypeInfo_AssociativeArray
+  syn keyword dType                TypeInfo_Function TypeInfo_Delegate TypeInfo_Class
+  syn keyword dType                ClassInfo TypeInfo_Interface TypeInfo_Struct
+  syn keyword dType                TypeInfo_Tuple TypeInfo_Const TypeInfo_Invariant
+  syn keyword dType                TypeInfo_Shared TypeInfo_Inout MemberInfo
+  syn keyword dType                MemberInfo_field MemberInfo_function ModuleInfo
+endif
 syn keyword dDebug                 deprecated unittest invariant
 syn keyword dExceptions            throw try catch finally
-syn keyword dScopeDecl             public protected private export
+syn keyword dScopeDecl             public protected private export package 
 syn keyword dStatement             debug return with
-syn keyword dStatement             function delegate __traits mixin macro
+syn keyword dStatement             function delegate __ctfe mixin macro
 syn keyword dStorageClass          in out inout ref lazy body
 syn keyword dStorageClass          pure nothrow
 syn keyword dStorageClass          auto static override final abstract volatile
@@ -100,15 +103,26 @@ syn keyword dStorageClass          synchronized shared immutable const lazy
 syn keyword dPragma                pragma
 syn keyword dIdentifier            _arguments _argptr __vptr __monitor _ctor _dtor
 syn keyword dScopeIdentifier       contained exit success failure
+syn keyword dTraitsIdentifier      contained isAbstractClass isArithmetic isAssociativeArray
+syn keyword dTraitsIdentifier      contained isFinalClass isFloating isIntegral isScalar
+syn keyword dTraitsIdentifier      contained isStaticArray isUnsigned isVirtualFunction
+syn keyword dTraitsIdentifier      contained isAbstractFunction isFinalFunction isStaticFunction
+syn keyword dTraitsIdentifier      contained isRef isOut isLazy hasMember identifier getMember
+syn keyword dTraitsIdentifier      contained getOverloads getVirtualFunctions parent compiles
+syn keyword dTraitsIdentifier      contained classInstanceSize allMembers derivedMembers isSame
+syn keyword dExternIdentifier      contained Windows Pascal Java System D
 syn keyword dAttribute             contained safe trusted system
 syn keyword dAttribute             contained property disable
-syn keyword dVersionIdentifier     contained DigitalMars GNU LDC LLVM
-syn keyword dVersionIdentifier     contained X86 X86_64 Windows Win32 Win64 
-syn keyword dVersionIdentifier     contained linux Posix OSX FreeBSD
-syn keyword dVersionIdentifier     contained LittleEndian BigEndian D_Coverage
-syn keyword dVersionIdentifier     contained D_Ddoc D_InlineAsm_X86
-syn keyword dVersionIdentifier     contained D_InlineAsm_X86_64 D_LP64 D_PIC
-syn keyword dVersionIdentifier     contained unittest D_Version2 none all
+syn keyword dVersionIdentifier     contained DigitalMars GNU LDC SDC D_NET
+syn keyword dVersionIdentifier     contained X86 X86_64 ARM PPC PPC64 IA64 MIPS MIPS64 Alpha
+syn keyword dVersionIdentifier     contained SPARC SPARC64 S390 S390X HPPA HPPA64 SH SH64
+syn keyword dVersionIdentifier     contained linux Posix OSX FreeBSD Windows Win32 Win64
+syn keyword dVersionIdentifier     contained OpenBSD BSD Solaris AIX SkyOS SysV3 SysV4 Hurd
+syn keyword dVersionIdentifier     contained Cygwin MinGW
+syn keyword dVersionIdentifier     contained LittleEndian BigEndian
+syn keyword dVersionIdentifier     contained D_InlineAsm_X86 D_InlineAsm_X86_64
+syn keyword dVersionIdentifier     contained D_Version2 D_Coverage D_Ddoc D_LP64 D_PIC
+syn keyword dVersionIdentifier     contained unittest none all
 
 " Highlight the sharpbang
 syn match dSharpBang "\%^#!.*"     display
@@ -117,23 +131,38 @@ syn match dSharpBang "\%^#!.*"     display
 syn match dAnnotation	"@[_$a-zA-Z][_$a-zA-Z0-9_]*\>" contains=dAttribute
 
 " Version Identifiers
-syn match dVersion   "[^.]version" nextgroup=dVersionInside
-syn match dVersion   "^version" nextgroup=dVersionInside
-syn match dVersionInside  "([_a-zA-Z][_a-zA-Z0-9]*\>" transparent contained contains=dVersionIdentifier
+syn match dVersion   "[^.]\<version\>"hs=s+1 nextgroup=dVersionInside
+syn match dVersion   "^\<version\>" nextgroup=dVersionInside
+syn match dVersionInside  "\s*([_a-zA-Z][_a-zA-Z0-9]*\>" transparent contained contains=dVersionIdentifier
 
 " Scope StorageClass
-syn match dStorageClass   "scope"
+syn match dStorageClass   "\<scope\>"
+
+" Traits Expression
+syn match dStatement    "\<__traits\>"
+
+" Extern Modifier
+syn match dExternal     "\<extern\>"
 
 " Scope Identifiers
-syn match dScope	"scope\s*([_a-zA-Z][_a-zA-Z0-9]*\>"he=s+5 contains=dScopeIdentifier
+syn match dScope	"\<scope\s*([_a-zA-Z][_a-zA-Z0-9]*\>"he=s+5 contains=dScopeIdentifier
+
+" Traits Identifiers
+syn match dTraits       "\<__traits\s*([_a-zA-Z][_a-zA-Z0-9]*\>"he=s+8 contains=dTraitsIdentifier
+
+" Necessary to highlight C++ in extern modifiers.
+syn match dExternIdentifier "C\(++\)\?" contained
+
+" Extern Identifiers
+syn match dExtern       "\<extern\s*([_a-zA-Z][_a-zA-Z0-9\+]*\>"he=s+6 contains=dExternIdentifier
 
 " String is a statement and a module name.
-syn match dType "^string"
-syn match dType "[^.]\s*\<string\>"ms=s+1
+syn match dType "[^.]\<string\>"ms=s+1
+syn match dType "^\<string\>"
 
 " Assert is a statement and a module name.
-syn match dAssert "^assert"
-syn match dAssert "[^.]\s*\<assert\>"ms=s+1
+syn match dAssert "[^.]\<assert\>"ms=s+1
+syn match dAssert "^\<assert\>"
 
 " dTokens is used by the token string highlighting
 syn cluster dTokens contains=dExternal,dConditional,dBranch,dRepeat,dBoolean
@@ -161,12 +190,12 @@ if exists("d_comment_strings")
   syn region dBlockCommentString	contained start=+"+ end=+"+ end=+\*/+me=s-1,he=s-1 contains=dCommentStar,dUnicode,dEscSequence,@Spell
   syn region dNestedCommentString	contained start=+"+ end=+"+ end="+"me=s-1,he=s-1 contains=dCommentPlus,dUnicode,dEscSequence,@Spell
   syn region dLineCommentString		contained start=+"+ end=+$\|"+ contains=dUnicode,dEscSequence,@Spell
-  syn region dBlockComment	start="/\*"  end="\*/" contains=dBlockCommentString,dTodo,@Spell
-  syn region dNestedComment	start="/+"  end="+/" contains=dNestedComment,dNestedCommentString,dTodo,@Spell
+  syn region dBlockComment	start="/\*"  end="\*/" contains=dBlockCommentString,dTodo,@Spell fold
+  syn region dNestedComment	start="/+"  end="+/" contains=dNestedComment,dNestedCommentString,dTodo,@Spell fold
   syn match  dLineComment	"//.*" contains=dLineCommentString,dTodo,@Spell
 else
-  syn region dBlockComment	start="/\*"  end="\*/" contains=dBlockCommentString,dTodo,@Spell
-  syn region dNestedComment	start="/+"  end="+/" contains=dNestedComment,dNestedCommentString,dTodo,@Spell
+  syn region dBlockComment	start="/\*"  end="\*/" contains=dBlockCommentString,dTodo,@Spell fold
+  syn region dNestedComment	start="/+"  end="+/" contains=dNestedComment,dNestedCommentString,dTodo,@Spell fold
   syn match  dLineComment	"//.*" contains=dLineCommentString,dTodo,@Spell
 endif
 
@@ -280,6 +309,10 @@ syn case match
 " TODO: Highlight following Integer and optional Filespec.
 syn region  dPragma start="#\s*\(line\>\)" skip="\\$" end="$"
 
+" Block
+"
+syn region dBlock	start="{" end="}" transparent fold
+
 
 " The default highlighting.
 "
@@ -330,12 +363,14 @@ hi def link dAnnotation          PreProc
 hi def link dSharpBang           PreProc
 hi def link dAttribute           StorageClass
 hi def link dIdentifier          Identifier
-hi def link dVersionIdentifier   Identifier
 hi def link dVersion             dStatement
-hi def link dScopeIdentifier     dStatement
+hi def link dVersionIdentifier   Identifier
 hi def link dScope               dStorageClass
-
-let b:current_syntax = "d"
+hi def link dScopeIdentifier     Identifier
+hi def link dTraits              dStatement
+hi def link dTraitsIdentifier    Identifier
+hi def link dExtern              dExternal
+hi def link dExternIdentifier    Identifier
 
 " Marks contents of the asm statment body as special
 
@@ -464,3 +499,5 @@ syn keyword dAsmOpCode contained	pfnacc 	pfpnacc 	pfrcp 	pfrcpit1 	pfrcpit2
 syn keyword dAsmOpCode contained	pfrsqit1 	pfrsqrt 	pfsub 	pfsubr 	pi2fd
 syn keyword dAsmOpCode contained	pmulhrw 	pswapd
 
+let &cpo = s:cpo_save
+unlet s:cpo_save

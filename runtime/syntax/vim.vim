@@ -1,14 +1,16 @@
 " Vim syntax file
 " Language:	Vim 7.3 script
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Jul 18, 2011
-" Version:	7.3-08
+" Last Change:	Jan 11, 2012
+" Version:	7.3-13
 " Automatically generated keyword lists: {{{1
 
 " Quit when a syntax file was already loaded {{{2
 if exists("b:current_syntax")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 " vimTodo: contains common special-notices for comments {{{2
 " Use the vimCommentGroup cluster to add your own.
@@ -118,14 +120,14 @@ syn region vimInsert	matchgroup=vimCommand start="^[: \t]*\(\d\+\(,\d\+\)\=\)\=i
 " =======
 syn match   vimBehave	"\<be\%[have]\>" skipwhite nextgroup=vimBehaveModel,vimBehaveError
 syn keyword vimBehaveModel contained	mswin	xterm
-if !exists("g:vimsyn_noerror")
+if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_nobehaveerror")
  syn match   vimBehaveError contained	"[^ ]\+"
 endif
 
 " Filetypes {{{2
 " =========
 syn match   vimFiletype	"\<filet\%[ype]\(\s\+\I\i*\)*"	skipwhite contains=vimFTCmd,vimFTOption,vimFTError
-if !exists("g:vimsyn_noerror")
+if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_vimFTError")
  syn match   vimFTError  contained	"\I\i*"
 endif
 syn keyword vimFTCmd    contained	filet[ype]
@@ -140,7 +142,7 @@ else
  syn region  vimAugroup	start="\<aug\%[roup]\>\s\+\K\k*" end="\<aug\%[roup]\>\s\+[eE][nN][dD]\>"	contains=vimAugroupKey,vimAutoCmd,@vimAugroupList keepend
 endif
 syn match   vimAugroup	"aug\%[roup]!" contains=vimAugroupKey
-if !exists("g:vimsyn_noerror")
+if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_noaugrouperror")
  syn match   vimAugroupError	"\<aug\%[roup]\>\s\+[eE][nN][dD]\>"
 endif
 syn keyword vimAugroupKey contained	aug[roup]
@@ -152,7 +154,7 @@ syn match	vimOper	"\(==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\|=\)[?#]\{0,2}"	skipwhite ne
 syn match	vimOper	"||\|&&\|[-+.]"	skipwhite nextgroup=vimString,vimSpecFile
 syn region	vimOperParen 	oneline matchgroup=vimParenSep	start="(" end=")" contains=@vimOperGroup
 syn region	vimOperParen	oneline matchgroup=vimSep	start="{" end="}" contains=@vimOperGroup nextgroup=vimVar,vimFuncVar
-if !exists("g:vimsyn_noerror")
+if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_noopererror")
  syn match	vimOperError	")"
 endif
 
@@ -196,7 +198,7 @@ syn match	vimUserAttrb	contained	"-cou\%[nt]=\d\+"	contains=vimNumber,vimOper,vi
 syn match	vimUserAttrb	contained	"-bang\=\>"	contains=vimOper,vimUserAttrbKey
 syn match	vimUserAttrb	contained	"-bar\>"	contains=vimOper,vimUserAttrbKey
 syn match	vimUserAttrb	contained	"-re\%[gister]\>"	contains=vimOper,vimUserAttrbKey
-if !exists("g:vimsyn_noerror")
+if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_nousercmderror")
  syn match	vimUserCmdError	contained	"\S\+\>"
 endif
 syn case ignore
@@ -269,7 +271,7 @@ syn match	vimMark	"\<norm\%[al]\s\zs'[a-zA-Z0-9]"	nextgroup=vimOper,vimMarkNumbe
 syn match	vimMarkNumber	"[-+]\d\+"		nextgroup=vimSubst contained contains=vimOper
 syn match	vimPlainMark contained	"'[a-zA-Z0-9]"
 
-syn match	vimRegister	'[^,;[{]\zs"[a-zA-Z0-9.%#:_\-/]\ze[^a-zA-Z_":]'
+syn match	vimRegister	'[^,;[{]\zs"[a-zA-Z0-9.%#:_\-/]\ze[^a-zA-Z_":0-9]'
 syn match	vimRegister	'\<norm\s\+\zs"[a-zA-Z0-9]'
 syn match	vimRegister	'\<normal\s\+\zs"[a-zA-Z0-9]'
 syn match	vimRegister	'@"'
@@ -282,8 +284,8 @@ syn match	vimFilter contained	"^!.\{-}\(|\|$\)"		contains=vimSpecFile
 syn match	vimFilter contained	"\A!.\{-}\(|\|$\)"ms=s+1	contains=vimSpecFile,vimFunction,vimFuncName,vimOperParen
 
 " Complex repeats (:h complex-repeat) {{{2
-syn match	vimCmplxRepeat	'[^a-zA-Z_/\\()]q[0-9a-zA-Z"]'lc=1
-syn match	vimCmplxRepeat	'@[0-9a-z".=@:]\ze\($\|[^a-zA-Z]\)'
+syn match	vimCmplxRepeat	'[^a-zA-Z_/\\()]q[0-9a-zA-Z"]\>'lc=1
+syn match	vimCmplxRepeat	'@[0-9a-z".=@:]\ze\($\|[^a-zA-Z]\>\)'
 
 " Set command and associated set-options (vimOptions) with comment {{{2
 syn region	vimSet		matchgroup=vimCommand start="\<\%(setl\%[ocal]\|setg\%[lobal]\|se\%[t]\)\>" skip="\%(\\\\\)*\\." end="$" matchgroup=vimNotation end="<[cC][rR]>" keepend oneline contains=vimSetEqual,vimOption,vimErrSetting,vimComment,vimSetString,vimSetMod
@@ -364,7 +366,7 @@ syn match vimNotFunc	"\<if\>\|\<el\%[seif]\>\|\<return\>\|\<while\>"
 
 " Errors And Warnings: {{{2
 " ====================
-if !exists("g:vimsyn_noerror")
+if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_novimfunctionerror")
  syn match	vimFunctionError	"\s\zs[a-z0-9]\i\{-}\ze\s*("			contained contains=vimFuncKey,vimFuncBlank
 " syn match	vimFunctionError	"\s\zs\%(<[sS][iI][dD]>\|[sSgGbBwWtTlL]:\)[0-9]\i\{-}\ze\s*("	contained contains=vimFuncKey,vimFuncBlank
  syn match	vimElseIfErr	"\<else\s\+if\>"
@@ -381,7 +383,7 @@ syn match	vimNormCmds contained	".*$"
 syn match	vimGroupList	contained	"@\=[^ \t,]*"	contains=vimGroupSpecial,vimPatSep
 syn match	vimGroupList	contained	"@\=[^ \t,]*,"	nextgroup=vimGroupList contains=vimGroupSpecial,vimPatSep
 syn keyword	vimGroupSpecial	contained	ALL	ALLBUT	CONTAINED	TOP
-if !exists("g:vimsyn_noerror")
+if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_novimsynerror")
  syn match	vimSynError	contained	"\i\+"
  syn match	vimSynError	contained	"\i\+="	nextgroup=vimGroupList
 endif
@@ -395,7 +397,7 @@ syn cluster vimFuncBodyList add=vimSyntax
 
 " Syntax: case {{{2
 syn keyword	vimSynType	contained	case	skipwhite nextgroup=vimSynCase,vimSynCaseError
-if !exists("g:vimsyn_noerror")
+if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_novimsyncaseerror")
  syn match	vimSynCaseError	contained	"\i\+"
 endif
 syn keyword	vimSynCase	contained	ignore	match
@@ -456,7 +458,7 @@ syn cluster vimFuncBodyList add=vimSynType
 " Syntax: sync {{{2
 " ============
 syn keyword vimSynType	contained	sync	skipwhite	nextgroup=vimSyncC,vimSyncLines,vimSyncMatch,vimSyncError,vimSyncLinebreak,vimSyncLinecont,vimSyncRegion
-if !exists("g:vimsyn_noerror")
+if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_novimsyncerror")
  syn match	vimSyncError	contained	"\i\+"
 endif
 syn keyword	vimSyncC	contained	ccomment	clear	fromstart
@@ -477,6 +479,9 @@ syn match	vimIsCommand	"<Bar>\s*\a\+"	transparent contains=vimCommand,vimNotatio
 " Highlighting {{{2
 " ============
 syn cluster	vimHighlightCluster		contains=vimHiLink,vimHiClear,vimHiKeyList,vimComment
+if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_novimhictermerror")
+ syn match	vimHiCtermError	contained	"[^0-9]\i*"
+endif
 syn match	vimHighlight	"\<hi\%[ghlight]\>"	skipwhite nextgroup=vimHiBang,@vimHighlightCluster
 syn match	vimHiBang	contained	"!"	skipwhite nextgroup=@vimHighlightCluster
 
@@ -488,20 +493,18 @@ syn case match
 syn match	vimHiAttribList	contained	"\i\+"	contains=vimHiAttrib
 syn match	vimHiAttribList	contained	"\i\+,"he=e-1	contains=vimHiAttrib nextgroup=vimHiAttribList
 syn case ignore
-syn keyword	vimHiCtermColor	contained	black blue brown cyan darkBlue darkcyan darkgray darkgreen darkgrey darkmagenta darkred darkyellow gray green grey lightblue lightcyan lightgray lightgreen lightgrey lightmagenta lightred magenta red white yellow
+syn keyword	vimHiCtermColor	contained	black blue brown cyan darkblue darkcyan darkgray darkgreen darkgrey darkmagenta darkred darkyellow gray green grey lightblue lightcyan lightgray lightgreen lightgrey lightmagenta lightred magenta red white yellow
+syn match	vimHiCtermColor	contained	"\<color\d\{1,3}\>"
 
 syn case match
 syn match	vimHiFontname	contained	"[a-zA-Z\-*]\+"
 syn match	vimHiGuiFontname	contained	"'[a-zA-Z\-* ]\+'"
 syn match	vimHiGuiRgb	contained	"#\x\{6}"
-if !exists("g:vimsyn_noerror")
- syn match	vimHiCtermError	contained	"[^0-9]\i*"
-endif
 
 " Highlighting: hi group key=arg ... {{{2
 syn cluster	vimHiCluster contains=vimGroup,vimHiGroup,vimHiTerm,vimHiCTerm,vimHiStartStop,vimHiCtermFgBg,vimHiGui,vimHiGuiFont,vimHiGuiFgBg,vimHiKeyError,vimNotation
 syn region	vimHiKeyList	contained oneline start="\i\+" skip="\\\\\|\\|" end="$\||"	contains=@vimHiCluster
-if !exists("g:vimsyn_noerror")
+if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_vimhikeyerror")
  syn match	vimHiKeyError	contained	"\i\+="he=e-1
 endif
 syn match	vimHiTerm	contained	"\cterm="he=e-1		nextgroup=vimHiAttribList
@@ -757,7 +760,9 @@ hi def link vimFTCmd	vimCommand
 hi def link vimFTOption	vimSynType
 hi def link vimFuncKey	vimCommand
 hi def link vimGroupAdd	vimSynOption
+hi def link vimGroupName	vimGroup
 hi def link vimGroupRem	vimSynOption
+hi def link vimHiClear	vimHighlight
 hi def link vimHiCtermFgBg	vimHiTerm
 hi def link vimHiCTerm	vimHiTerm
 hi def link vimHighlight	vimCommand
@@ -872,8 +877,14 @@ hi def link vimTodo	Todo
 hi def link vimUserAttrbCmpltFunc	Special
 hi def link vimUserCmdError	Error
 hi def link vimUserFunc	Normal
+hi def link vimVar	Identifier
 hi def link vimWarn	WarningMsg
 
 " Current Syntax Variable: {{{2
 let b:current_syntax = "vim"
+
+" ---------------------------------------------------------------------
+" Cleanup: {{{1
+let &cpo = s:keepcpo
+unlet s:keepcpo
 " vim:ts=18  fdm=marker

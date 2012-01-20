@@ -1,4 +1,4 @@
-*pi_vimball.txt*	For Vim version 7.3.  Last change: 2011 Sep 26
+*pi_vimball.txt*	For Vim version 7.3.  Last change: 2012 Jan 17
 
 			       ----------------
 			       Vimball Archiver
@@ -6,11 +6,16 @@
 
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
-Copyright: (c) 2004-2011 by Charles E. Campbell, Jr.	*Vimball-copyright*
-	   The VIM LICENSE applies to Vimball.vim, and Vimball.txt
-	   (see |copyright|) except use "Vimball" instead of "Vim".
-	   No warranty, express or implied.
-	   Use At-Your-Own-Risk!
+Copyright: (c) 2004-2012 by Charles E. Campbell, Jr.	*Vimball-copyright*
+	The VIM LICENSE (see |copyright|) applies to the files in this
+	package, including vimballPlugin.vim, vimball.vim, and pi_vimball.txt.
+	except use "vimball" instead of "VIM".  Like anything else that's free,
+	vimball.vim and its associated files are provided *as is* and comes with
+	no warranty of any kind, either expressed or implied.  No guarantees
+	of merchantability.  No guarantees of suitability for any purpose.  By
+	using this plugin, you agree that in no event will the copyright
+	holder be liable for any damages resulting from the use of this
+	software. Use at your own risk!
 
 ==============================================================================
 1. Contents				*vba* *vimball* *vimball-contents*

@@ -1,7 +1,7 @@
 " Vim syntax file
-" Language:	gp (version 2.4)
+" Language:	gp (version 2.5)
 " Maintainer:	Karim Belabas <Karim.Belabas@math.u-bordeaux.fr>
-" Last change:	2007 Oct 1
+" Last change:	2012 Jan 08
 " URL:		http://pari.math.u-bordeaux.fr
 
 if version < 600
@@ -10,21 +10,30 @@ elseif exists("b:current_syntax")
   finish
 endif
 
+let s:cpo_save = &cpo
+set cpo&vim
+
 " control statements
 syntax keyword gpStatement	break return next
 syntax keyword gpConditional	if
-syntax keyword gpRepeat		until while for fordiv forprime forstep forvec
+syntax keyword gpRepeat		until while for fordiv forell forprime 
+syntax keyword gpRepeat		forsubgroup forstep forvec
 " storage class
 syntax keyword gpScope		my local global
 " defaults
-syntax keyword gpInterfaceKey	colors compatible datadir debug debugfiles
-syntax keyword gpInterfaceKey	debugmem echo factor_add_primes format help
-syntax keyword gpInterfaceKey	histsize lines log logfile new_galois_format
+syntax keyword gpInterfaceKey	breakloop colors compatible
+syntax keyword gpInterfaceKey	datadir debug debugfiles debugmem 
+syntax keyword gpInterfaceKey	echo factor_add_primes factor_proven format 
+syntax keyword gpInterfaceKey	graphcolormap graphcolors
+syntax keyword gpInterfaceKey	help histfile histsize 
+syntax keyword gpInterfaceKey	lines linewrap log logfile new_galois_format
 syntax keyword gpInterfaceKey	output parisize path prettyprinter primelimit
-syntax keyword gpInterfaceKey	prompt prompt_cont psfile realprecision secure
-syntax keyword gpInterfaceKey	seriesprecision simplify strictmatch TeXstyle timer
+syntax keyword gpInterfaceKey	prompt prompt_cont psfile 
+syntax keyword gpInterfaceKey	readline realprecision recover 
+syntax keyword gpInterfaceKey	secure seriesprecision simplify strictmatch
+syntax keyword gpInterfaceKey	TeXstyle timer
 
-syntax match   gpInterface	"^\s*\\[a-z].*"
+syntax match gpInterface	"^\s*\\[a-z].*"
 syntax keyword gpInterface	default
 syntax keyword gpInput		read input
 
@@ -79,4 +88,6 @@ if version >= 508 || !exists("did_gp_syn_inits")
 endif
 
 let b:current_syntax = "gp"
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8
