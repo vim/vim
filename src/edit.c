@@ -3465,11 +3465,17 @@ ins_compl_addleader(c)
     if (ins_compl_need_restart())
 	ins_compl_restart();
 
-    vim_free(compl_leader);
-    compl_leader = vim_strnsave(ml_get_curline() + compl_col,
+    /* When 'always' is set, don't reset compl_leader. While completing,
+     * cursor don't point original position, changing compl_leader would
+     * break redo. */
+    if (!compl_opt_refresh_always)
+    {
+	vim_free(compl_leader);
+	compl_leader = vim_strnsave(ml_get_curline() + compl_col,
 				     (int)(curwin->w_cursor.col - compl_col));
-    if (compl_leader != NULL)
-	ins_compl_new_leader();
+	if (compl_leader != NULL)
+	    ins_compl_new_leader();
+    }
 }
 
 /*
@@ -4553,6 +4559,11 @@ ins_compl_next(allow_get_expansion, count, insert_match)
     compl_T *found_compl = NULL;
     int	    found_end = FALSE;
     int	    advance;
+
+    /* When user complete function return -1 for findstart which is next
+     * time of 'always', compl_shown_match become NULL. */
+    if (compl_shown_match == NULL)
+	return -1;
 
     if (compl_leader != NULL
 			&& (compl_shown_match->cp_flags & ORIGINAL_TEXT) == 0)
