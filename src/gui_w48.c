@@ -3286,6 +3286,7 @@ convert_filterW(char_u *s)
 {
     char_u *tmp;
     int len;
+    WCHAR *res;
 
     tmp = convert_filter(s);
     if (tmp == NULL)
