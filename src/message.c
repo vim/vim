@@ -222,15 +222,16 @@ msg_strtrunc(s, force)
 	    if (enc_utf8)
 		/* may have up to 18 bytes per cell (6 per char, up to two
 		 * composing chars) */
-		buf = alloc((room + 2) * 18);
+		len = (room + 2) * 18;
 	    else if (enc_dbcs == DBCS_JPNU)
 		/* may have up to 2 bytes per cell for euc-jp */
-		buf = alloc((room + 2) * 2);
+		len = (room + 2) * 2;
 	    else
 #endif
-		buf = alloc(room + 2);
+		len = room + 2;
+	    buf = alloc(len);
 	    if (buf != NULL)
-		trunc_string(s, buf, room);
+		trunc_string(s, buf, room, len);
 	}
     }
     return buf;
@@ -241,10 +242,11 @@ msg_strtrunc(s, force)
  * "s" and "buf" may be equal.
  */
     void
-trunc_string(s, buf, room)
+trunc_string(s, buf, room, buflen)
     char_u	*s;
     char_u	*buf;
     int		room;
+    int		buflen;
 {
     int		half;
     int		len;
@@ -257,7 +259,7 @@ trunc_string(s, buf, room)
     len = 0;
 
     /* First part: Start of the string. */
-    for (e = 0; len < half; ++e)
+    for (e = 0; len < half && e < buflen; ++e)
     {
 	if (s[e] == NUL)
 	{
@@ -274,7 +276,8 @@ trunc_string(s, buf, room)
 	if (has_mbyte)
 	    for (n = (*mb_ptr2len)(s + e); --n > 0; )
 	    {
-		++e;
+		if (++e == buflen)
+		    break;
 		buf[e] = s[e];
 	    }
 #endif
@@ -319,8 +322,19 @@ trunc_string(s, buf, room)
     }
 
     /* Set the middle and copy the last part. */
-    mch_memmove(buf + e, "...", (size_t)3);
-    STRMOVE(buf + e + 3, s + i);
+    if (e + 3 < buflen)
+    {
+	mch_memmove(buf + e, "...", (size_t)3);
+	len = STRLEN(s + i) + 1;
+	if (len >= buflen - e - 3)
+	    len = buflen - e - 3 - 1;
+	mch_memmove(buf + e + 3, s + i, len);
+	buf[e + 3 + len - 1] = NUL;
+    }
+    else
+    {
+	buf[e - 1] = NUL;  // make sure it is truncated
+    }
 }
 
 /*

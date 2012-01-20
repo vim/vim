@@ -3258,9 +3258,8 @@ maketitle()
 	    if (maxlen > 0)
 	    {
 		/* make it shorter by removing a bit in the middle */
-		len = vim_strsize(buf);
-		if (len > maxlen)
-		    trunc_string(buf, buf, maxlen);
+		if (vim_strsize(buf) > maxlen)
+		    trunc_string(buf, buf, maxlen, IOSIZE);
 	    }
 	}
     }

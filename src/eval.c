@@ -22163,8 +22163,12 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 			s = tv2string(&argvars[i], &tofree, numbuf2, 0);
 			if (s != NULL)
 			{
-			    trunc_string(s, buf, MSG_BUF_CLEN);
-			    msg_puts(buf);
+			    if (vim_strsize(s) > MSG_BUF_CLEN)
+			    {
+				trunc_string(s, buf, MSG_BUF_CLEN, MSG_BUF_LEN);
+				s = buf;
+			    }
+			    msg_puts(s);
 			    vim_free(tofree);
 			}
 		    }
@@ -22252,8 +22256,12 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	    s = tv2string(fc->rettv, &tofree, numbuf2, 0);
 	    if (s != NULL)
 	    {
-		trunc_string(s, buf, MSG_BUF_CLEN);
-		smsg((char_u *)_("%s returning %s"), sourcing_name, buf);
+		if (vim_strsize(s) > MSG_BUF_CLEN)
+		{
+		    trunc_string(s, buf, MSG_BUF_CLEN, MSG_BUF_LEN);
+		    s = buf;
+		}
+		smsg((char_u *)_("%s returning %s"), sourcing_name, s);
 		vim_free(tofree);
 	    }
 	}
