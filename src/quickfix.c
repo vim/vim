@@ -3878,15 +3878,34 @@ ex_helpgrep(eap)
     qf_info_T	*qi = &ql_info;
     int		new_qi = FALSE;
     win_T	*wp;
-
-    /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
-    save_cpo = p_cpo;
-    p_cpo = empty_option;
+#ifdef FEAT_AUTOCMD
+    char_u	*au_name =  NULL;
+#endif
 
 #ifdef FEAT_MULTI_LANG
     /* Check for a specified language */
     lang = check_help_lang(eap->arg);
 #endif
+
+#ifdef FEAT_AUTOCMD
+    switch (eap->cmdidx)
+    {
+	case CMD_helpgrep:  au_name = (char_u *)"helpgrep"; break;
+	case CMD_lhelpgrep: au_name = (char_u *)"lhelpgrep"; break;
+	default: break;
+    }
+    if (au_name != NULL)
+    {
+	apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
+					       curbuf->b_fname, TRUE, curbuf);
+	if (did_throw || force_abort)
+	    return;
+    }
+#endif
+
+    /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
+    save_cpo = p_cpo;
+    p_cpo = empty_option;
 
     if (eap->cmdidx == CMD_lhelpgrep)
     {
@@ -4034,6 +4053,17 @@ ex_helpgrep(eap)
 
 #ifdef FEAT_WINDOWS
     qf_update_buffer(qi);
+#endif
+
+#ifdef FEAT_AUTOCMD
+    if (au_name != NULL)
+    {
+	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
+					       curbuf->b_fname, TRUE, curbuf);
+	if (!new_qi && qi != &ql_info && qf_find_buf(qi) == NULL)
+	    /* autocommands made "qi" invalid */
+	    return;
+    }
 #endif
 
     /* Jump to first match. */
