@@ -1842,8 +1842,10 @@ win_found:
 #endif
 	if (print_message)
 	{
-	    /* Update the screen before showing the message */
-	    update_topline_redraw();
+	    /* Update the screen before showing the message, unless the screen
+	     * scrolled up. */
+	    if (!msg_scrolled)
+		update_topline_redraw();
 	    sprintf((char *)IObuff, _("(%d of %d)%s%s: "), qf_index,
 		    qi->qf_lists[qi->qf_curlist].qf_count,
 		    qf_ptr->qf_cleared ? _(" (line deleted)") : "",
