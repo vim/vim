@@ -328,6 +328,10 @@ static LOGFONT norm_logfont;
 static LRESULT _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData);
 #endif
 
+#if defined(FEAT_MBYTE) && defined(WIN3264)
+static char_u *convert_filter(char_u *s);
+#endif
+
 #ifdef DEBUG_PRINT_ERROR
 /*
  * Print out the last Windows error message
@@ -3275,28 +3279,20 @@ mch_set_mouse_shape(int shape)
 
 # if defined(FEAT_MBYTE) && defined(WIN3264)
 /*
- * Wide version of convert_filter().  Keep in sync!
+ * Wide version of convert_filter().
  */
     static WCHAR *
 convert_filterW(char_u *s)
 {
-    WCHAR	*res;
-    unsigned	s_len = (unsigned)STRLEN(s);
-    unsigned	i;
+    char_u *tmp;
+    int len;
 
-    res = (WCHAR *)alloc((s_len + 3) * sizeof(WCHAR));
-    if (res != NULL)
-    {
-	for (i = 0; i < s_len; ++i)
-	    if (s[i] == '\t' || s[i] == '\n')
-		res[i] = '\0';
-	    else
-		res[i] = s[i];
-	res[s_len] = NUL;
-	/* Add two extra NULs to make sure it's properly terminated. */
-	res[s_len + 1] = NUL;
-	res[s_len + 2] = NUL;
-    }
+    tmp = convert_filter(s);
+    if (tmp == NULL)
+	return NULL;
+    len = (int)STRLEN(s) + 3;
+    res = enc_to_utf16(tmp, &len);
+    vim_free(tmp);
     return res;
 }
 
