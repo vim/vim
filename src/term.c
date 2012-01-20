@@ -5252,12 +5252,12 @@ find_term_bykeys(src)
     char_u	*src;
 {
     int		i;
-    int		slen;
+    int		slen = STRLEN(src);
 
     for (i = 0; i < tc_len; ++i)
     {
-	slen = termcodes[i].len;
-	if (slen > 1 && STRNCMP(termcodes[i].code, src, (size_t)slen) == 0)
+	if (slen == termcodes[i].len
+			&& STRNCMP(termcodes[i].code, src, (size_t)slen) == 0)
 	    return i;
     }
     return -1;

@@ -2416,10 +2416,21 @@ static struct key_name_entry
     {'<',		(char_u *)"lt"},
 
     {K_MOUSE,		(char_u *)"Mouse"},
+#ifdef FEAT_MOUSE_NET
     {K_NETTERM_MOUSE,	(char_u *)"NetMouse"},
+#endif
+#ifdef FEAT_MOUSE_DEC
     {K_DEC_MOUSE,	(char_u *)"DecMouse"},
+#endif
+#ifdef FEAT_MOUSE_JSB
     {K_JSBTERM_MOUSE,	(char_u *)"JsbMouse"},
+#endif
+#ifdef FEAT_MOUSE_PTERM
     {K_PTERM_MOUSE,	(char_u *)"PtermMouse"},
+#endif
+#ifdef FEAT_MOUSE_URXVT
+    {K_URXVT_MOUSE,	(char_u *)"UrxvtMouse"},
+#endif
     {K_LEFTMOUSE,	(char_u *)"LeftMouse"},
     {K_LEFTMOUSE_NM,	(char_u *)"LeftMouseNM"},
     {K_LEFTDRAG,	(char_u *)"LeftDrag"},
