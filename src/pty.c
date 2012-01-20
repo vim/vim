@@ -14,6 +14,10 @@
  * It has been modified to work better with Vim.
  * The parts that are not used in Vim have been deleted.
  * See the "screen" sources for the complete stuff.
+ *
+ * This specific version is distibuted under the Vim license (attribution by
+ * Juergen Weigert), the GPL applies to the original version, see the
+ * copyright notice below.
  */
 
 /* Copyright (c) 1993
