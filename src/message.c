@@ -333,7 +333,7 @@ trunc_string(s, buf, room, buflen)
     }
     else
     {
-	buf[e - 1] = NUL;  // make sure it is truncated
+	buf[e - 1] = NUL;  /* make sure it is truncated */
     }
 }
 
