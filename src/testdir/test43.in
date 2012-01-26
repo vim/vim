@@ -1,6 +1,7 @@
 Tests for regexp with various magic settings.
 
 STARTTEST
+:so small.vim
 :set nocompatible viminfo+=nviminfo
 /^1
 /a*b\{2}c\+/e
