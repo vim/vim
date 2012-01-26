@@ -21802,7 +21802,7 @@ get_user_func_name(xp, idx)
 	fp = HI2UF(hi);
 
 	if (fp->uf_flags & FC_DICT)
-	    return ""; /* don't show dict functions */
+	    return (char_u *)""; /* don't show dict functions */
 
 	if (STRLEN(fp->uf_name) + 4 >= IOSIZE)
 	    return fp->uf_name;	/* prevents overflow */
