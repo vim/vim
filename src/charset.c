@@ -764,7 +764,7 @@ ptr2cells(p)
 }
 
 /*
- * Return the number of characters string "s" will take on the screen,
+ * Return the number of character cells string "s" will take on the screen,
  * counting TABs as two characters: "^I".
  */
     int
@@ -775,8 +775,8 @@ vim_strsize(s)
 }
 
 /*
- * Return the number of characters string "s[len]" will take on the screen,
- * counting TABs as two characters: "^I".
+ * Return the number of character cells string "s[len]" will take on the
+ * screen, counting TABs as two characters: "^I".
  */
     int
 vim_strnsize(s, len)
@@ -1830,7 +1830,7 @@ vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
 			hex = 0;	/* can't be octal */
 			break;
 		    }
-		    if (ptr[n] > '0')
+		    if (ptr[n] >= '0')
 			hex = '0';	/* assume octal */
 		}
 	    }
