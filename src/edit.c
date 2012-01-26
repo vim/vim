@@ -5189,6 +5189,11 @@ ins_complete(c)
 		return FAIL;
 	    }
 
+	    /* Return value -2 means the user complete function wants to
+	     * cancel the complete without an error. */
+	    if (col == -2)
+		return FAIL;
+
 	    /*
 	     * Reset extended parameters of completion, when start new
 	     * completion.
