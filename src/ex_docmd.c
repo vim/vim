@@ -5967,7 +5967,14 @@ uc_check_code(code, len, buf, cmd, eap, split_buf, split_len)
 	    result = STRLEN(eap->arg) + 2;
 	    for (p = eap->arg; *p; ++p)
 	    {
-		if (*p == '\\' || *p == '"')
+#ifdef  FEAT_MBYTE
+		if (enc_dbcs != 0 && (*mb_ptr2len)(p) == 2)
+		    /* DBCS can contain \ in a trail byte, skip the
+		     * double-byte character. */
+		    ++p;
+		else
+#endif
+		     if (*p == '\\' || *p == '"')
 		    ++result;
 	    }
 
@@ -5976,7 +5983,14 @@ uc_check_code(code, len, buf, cmd, eap, split_buf, split_len)
 		*buf++ = '"';
 		for (p = eap->arg; *p; ++p)
 		{
-		    if (*p == '\\' || *p == '"')
+#ifdef  FEAT_MBYTE
+		    if (enc_dbcs != 0 && (*mb_ptr2len)(p) == 2)
+			/* DBCS can contain \ in a trail byte, copy the
+			 * double-byte character to avoid escaping. */
+			*buf++ = *p++;
+		    else
+#endif
+			 if (*p == '\\' || *p == '"')
 			*buf++ = '\\';
 		    *buf++ = *p;
 		}
