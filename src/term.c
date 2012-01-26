@@ -5252,7 +5252,7 @@ find_term_bykeys(src)
     char_u	*src;
 {
     int		i;
-    int		slen = STRLEN(src);
+    int		slen = (int)STRLEN(src);
 
     for (i = 0; i < tc_len; ++i)
     {

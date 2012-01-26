@@ -5923,7 +5923,7 @@ ex_history(eap)
 							      hist[i].hisnum);
 		    if (vim_strsize(hist[i].hisstr) > (int)Columns - 10)
 			trunc_string(hist[i].hisstr, IObuff + STRLEN(IObuff),
-				  (int)Columns - 10, IOSIZE - STRLEN(IObuff));
+			     (int)Columns - 10, IOSIZE - (int)STRLEN(IObuff));
 		    else
 			STRCAT(IObuff, hist[i].hisstr);
 		    msg_outtrans(IObuff);

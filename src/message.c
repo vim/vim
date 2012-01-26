@@ -325,7 +325,7 @@ trunc_string(s, buf, room, buflen)
     if (e + 3 < buflen)
     {
 	mch_memmove(buf + e, "...", (size_t)3);
-	len = STRLEN(s + i) + 1;
+	len = (int)STRLEN(s + i) + 1;
 	if (len >= buflen - e - 3)
 	    len = buflen - e - 3 - 1;
 	mch_memmove(buf + e + 3, s + i, len);
