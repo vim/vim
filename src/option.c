@@ -7527,10 +7527,11 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	{
 	    /* When 'undofile' is set globally: for every buffer, otherwise
 	     * only for the current buffer: Try to read in the undofile, if
-	     * one exists and the buffer wasn't changed. */
+	     * one exists and the buffer wasn't changed and the buffer was
+	     * loaded. */
 	    if ((curbuf == save_curbuf
 				|| (opt_flags & OPT_GLOBAL) || opt_flags == 0)
-		    && !curbufIsChanged())
+		    && !curbufIsChanged() && curbuf->b_ml.ml_mfp != NULL)
 	    {
 		u_compute_hash(hash);
 		u_read_undo(NULL, hash, curbuf->b_fname);
