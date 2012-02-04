@@ -1,4 +1,5 @@
-/*
+/* vi:set ts=8 sts=4 sw=4:
+ *
  * Load XPM image.
  *
  * This function is placed in separate file because Xpm headers conflict with
@@ -30,9 +31,10 @@
 #include "xpm.h"
 
 /*
- * Tries to load Xpm image from file 'filename'.
- * If fails return -1.
- * success - 0 and image and mask BITMAPS
+ * Tries to load an Xpm image from the file "filename".
+ * Returns -1 on failure.
+ * Returns 0 on success and stores image and mask BITMAPS in "hImage" and
+ * "hShape".
  */
     int
 LoadXpmImage(filename, hImage, hShape)
@@ -40,7 +42,7 @@ LoadXpmImage(filename, hImage, hShape)
     HBITMAP *hImage;
     HBITMAP *hShape;
 {
-    XImage	    *img;   /* loaded image */
+    XImage	    *img;  /* loaded image */
     XImage	    *shp;  /* shapeimage */
     XpmAttributes   attr;
     int		    res;
@@ -51,10 +53,13 @@ LoadXpmImage(filename, hImage, hShape)
     DeleteDC(hdc);
     if (res < 0)
 	return -1;
-    else
+    if (shp == NULL)
     {
-	*hImage = img->bitmap;
-	*hShape = shp->bitmap;
-	return 0;
+        if (img)
+	    XDestroyImage(img);
+	return -1;
     }
+    *hImage = img->bitmap;
+    *hShape = shp->bitmap;
+    return 0;
 }
