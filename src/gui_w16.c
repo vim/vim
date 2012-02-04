@@ -21,6 +21,12 @@
  *
  */
 
+/* Win16 doesn't use the "W" methods. */
+#define pDispatchMessage DispatchMessage
+#define pGetMessage GetMessage
+#define pIsDialogMessage IsDialogMessage
+#define pPeekMessage PeekMessage
+
 /*
  * Include the common stuff for MS-Windows GUI.
  */
