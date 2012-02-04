@@ -1763,9 +1763,9 @@ display_dollar(col)
     static void
 undisplay_dollar()
 {
-    if (dollar_vcol)
+    if (dollar_vcol >= 0)
     {
-	dollar_vcol = 0;
+	dollar_vcol = -1;
 	redrawWinline(curwin->w_cursor.lnum, FALSE);
     }
 }
@@ -5441,7 +5441,7 @@ ins_complete(c)
 				compl_curr_match->cp_number);
 		edit_submode_extra = match_ref;
 		edit_submode_highl = HLF_R;
-		if (dollar_vcol)
+		if (dollar_vcol >= 0)
 		    curs_columns(FALSE);
 	    }
 	}
@@ -8961,7 +8961,7 @@ ins_bs(c, mode, inserted_space_p)
      * We can emulate the vi behaviour by pretending there is a dollar
      * displayed even when there isn't.
      *  --pkv Sun Jan 19 01:56:40 EST 2003 */
-    if (vim_strchr(p_cpo, CPO_BACKSPACE) != NULL && dollar_vcol == 0)
+    if (vim_strchr(p_cpo, CPO_BACKSPACE) != NULL && dollar_vcol == -1)
 	dollar_vcol = curwin->w_virtcol;
 
 #ifdef FEAT_FOLDING

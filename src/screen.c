@@ -1637,11 +1637,11 @@ win_update(wp)
 	     * When at start of changed lines: May scroll following lines
 	     * up or down to minimize redrawing.
 	     * Don't do this when the change continues until the end.
-	     * Don't scroll when dollar_vcol is non-zero, keep the "$".
+	     * Don't scroll when dollar_vcol >= 0, keep the "$".
 	     */
 	    if (lnum == mod_top
 		    && mod_bot != MAXLNUM
-		    && !(dollar_vcol != 0 && mod_bot == mod_top + 1))
+		    && !(dollar_vcol >= 0 && mod_bot == mod_top + 1))
 	    {
 		int		old_rows = 0;
 		int		new_rows = 0;
@@ -1868,12 +1868,12 @@ win_update(wp)
 	    if (row > wp->w_height)	/* past end of screen */
 	    {
 		/* we may need the size of that too long line later on */
-		if (dollar_vcol == 0)
+		if (dollar_vcol == -1)
 		    wp->w_lines[idx].wl_size = plines_win(wp, lnum, TRUE);
 		++idx;
 		break;
 	    }
-	    if (dollar_vcol == 0)
+	    if (dollar_vcol == -1)
 		wp->w_lines[idx].wl_size = row - srow;
 	    ++idx;
 #ifdef FEAT_FOLDING
@@ -1990,7 +1990,7 @@ win_update(wp)
 	    }
 #endif
 	}
-	else if (dollar_vcol == 0)
+	else if (dollar_vcol == -1)
 	    wp->w_botline = lnum;
 
 	/* make sure the rest of the screen is blank */
@@ -2005,7 +2005,7 @@ win_update(wp)
     wp->w_old_botfill = wp->w_botfill;
 #endif
 
-    if (dollar_vcol == 0)
+    if (dollar_vcol == -1)
     {
 	/*
 	 * There is a trick with w_botline.  If we invalidate it on each
@@ -3564,7 +3564,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	}
 
 	/* When still displaying '$' of change command, stop at cursor */
-	if (dollar_vcol != 0 && wp == curwin
+	if (dollar_vcol >= 0 && wp == curwin
 		   && lnum == wp->w_cursor.lnum && vcol >= (long)wp->w_virtcol
 #ifdef FEAT_DIFF
 				   && filler_todo <= 0

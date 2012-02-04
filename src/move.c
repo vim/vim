@@ -362,7 +362,7 @@ update_topline()
 #endif
 	    )
     {
-	dollar_vcol = 0;
+	dollar_vcol = -1;
 	if (curwin->w_skipcol != 0)
 	{
 	    curwin->w_skipcol = 0;
@@ -966,7 +966,7 @@ curs_columns(may_scroll)
 
     /* remove '$' from change command when cursor moves onto it */
     if (startcol > dollar_vcol)
-	dollar_vcol = 0;
+	dollar_vcol = -1;
 
     extra = curwin_col_off();
     curwin->w_wcol = curwin->w_virtcol + extra;

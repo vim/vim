@@ -113,9 +113,9 @@ EXTERN int      use_crypt_method INIT(= 0);
  * When '$' is included in 'cpoptions' option set:
  * When a change command is given that deletes only part of a line, a dollar
  * is put at the end of the changed text. dollar_vcol is set to the virtual
- * column of this '$'.
+ * column of this '$'.  -1 is used to indicate no $ is being displayed.
  */
-EXTERN colnr_T	dollar_vcol INIT(= 0);
+EXTERN colnr_T	dollar_vcol INIT(= -1);
 
 #ifdef FEAT_INS_EXPAND
 /*
