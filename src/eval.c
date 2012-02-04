@@ -14325,22 +14325,19 @@ f_readfile(argvars, rettv)
     typval_T	*rettv;
 {
     int		binary = FALSE;
+    int		failed = FALSE;
     char_u	*fname;
     FILE	*fd;
-    listitem_T	*li;
-#define FREAD_SIZE 200	    /* optimized for text lines */
-    char_u	buf[FREAD_SIZE];
-    int		readlen;    /* size of last fread() */
-    int		buflen;	    /* nr of valid chars in buf[] */
-    int		filtd;	    /* how much in buf[] was NUL -> '\n' filtered */
-    int		tolist;	    /* first byte in buf[] still to be put in list */
-    int		chop;	    /* how many CR to chop off */
-    char_u	*prev = NULL;	/* previously read bytes, if any */
-    int		prevlen = 0;    /* length of "prev" if not NULL */
-    char_u	*s;
-    int		len;
-    long	maxline = MAXLNUM;
-    long	cnt = 0;
+    char_u	buf[(IOSIZE/256)*256];	/* rounded to avoid odd + 1 */
+    int		io_size = sizeof(buf);
+    int		readlen;		/* size of last fread() */
+    char_u	*prev	 = NULL;	/* previously read bytes, if any */
+    long	prevlen  = 0;		/* length of data in prev */
+    long	prevsize = 0;		/* size of prev buffer */
+    long	maxline  = MAXLNUM;
+    long	cnt	 = 0;
+    char_u	*p;			/* position in buf */
+    char_u	*start;			/* start of current line */
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
@@ -14362,49 +14359,61 @@ f_readfile(argvars, rettv)
 	return;
     }
 
-    filtd = 0;
     while (cnt < maxline || maxline < 0)
     {
-	readlen = (int)fread(buf + filtd, 1, FREAD_SIZE - filtd, fd);
-	buflen = filtd + readlen;
-	tolist = 0;
-	for ( ; filtd < buflen || readlen <= 0; ++filtd)
-	{
-	    if (readlen <= 0 || buf[filtd] == '\n')
-	    {
-		/* In binary mode add an empty list item when the last
-		 * non-empty line ends in a '\n'. */
-		if (!binary && readlen == 0 && filtd == 0 && prev == NULL)
-		    break;
+	readlen = (int)fread(buf, 1, io_size, fd);
 
-		/* Found end-of-line or end-of-file: add a text line to the
-		 * list. */
-		chop = 0;
-		if (!binary)
-		    while (filtd - chop - 1 >= tolist
-					  && buf[filtd - chop - 1] == '\r')
-			++chop;
-		len = filtd - tolist - chop;
-		if (prev == NULL)
-		    s = vim_strnsave(buf + tolist, len);
+	/* This for loop processes what was read, but is also entered at end
+	 * of file so that either:
+	 * - an incomplete line gets written
+	 * - a "binary" file gets an empty line at the end if it ends in a
+	 *   newline.  */
+	for (p = buf, start = buf;
+		p < buf + readlen || (readlen <= 0 && (prevlen > 0 || binary));
+		++p)
+	{
+	    if (*p == '\n' || readlen <= 0)
+	    {
+		listitem_T  *li;
+		char_u	    *s	= NULL;
+		long_u	    len = p - start;
+
+		/* Finished a line.  Remove CRs before NL. */
+		if (readlen > 0 && !binary)
+		{
+		    while (len > 0 && start[len - 1] == '\r')
+			--len;
+		    /* removal may cross back to the "prev" string */
+		    if (len == 0)
+			while (prevlen > 0 && prev[prevlen - 1] == '\r')
+			    --prevlen;
+		}
+		if (prevlen == 0)
+		    s = vim_strnsave(start, len);
 		else
 		{
-		    s = alloc((unsigned)(prevlen + len + 1));
-		    if (s != NULL)
+		    /* Change "prev" buffer to be the right size.  This way
+		     * the bytes are only copied once, and very long lines are
+		     * allocated only once.  */
+		    if ((s = vim_realloc(prev, prevlen + len + 1)) != NULL)
 		    {
-			mch_memmove(s, prev, prevlen);
-			vim_free(prev);
-			prev = NULL;
-			mch_memmove(s + prevlen, buf + tolist, len);
+			mch_memmove(s + prevlen, start, len);
 			s[prevlen + len] = NUL;
+			prev = NULL; /* the list will own the string */
+			prevlen = prevsize = 0;
 		    }
 		}
-		tolist = filtd + 1;
+		if (s == NULL)
+		{
+		    do_outofmem_msg((long_u) prevlen + len + 1);
+		    failed = TRUE;
+		    break;
+		}
 
-		li = listitem_alloc();
-		if (li == NULL)
+		if ((li = listitem_alloc()) == NULL)
 		{
 		    vim_free(s);
+		    failed = TRUE;
 		    break;
 		}
 		li->li_tv.v_type = VAR_STRING;
@@ -14412,73 +14421,108 @@ f_readfile(argvars, rettv)
 		li->li_tv.vval.v_string = s;
 		list_append(rettv->vval.v_list, li);
 
-		if (++cnt >= maxline && maxline >= 0)
-		    break;
-		if (readlen <= 0)
+		start = p + 1; /* step over newline */
+		if ((++cnt >= maxline && maxline >= 0) || readlen <= 0)
 		    break;
 	    }
-	    else if (buf[filtd] == NUL)
-		buf[filtd] = '\n';
+	    else if (*p == NUL)
+		*p = '\n';
 #ifdef FEAT_MBYTE
-	    else if (buf[filtd] == 0xef
-		    && enc_utf8
-		    && filtd + 2 < buflen
-		    && !binary
-		    && buf[filtd + 1] == 0xbb
-		    && buf[filtd + 2] == 0xbf)
+	    /* Check for utf8 "bom"; U+FEFF is encoded as EF BB BF.  Do this
+	     * when finding the BF and check the previous two bytes. */
+	    else if (*p == 0xbf && enc_utf8 && !binary)
 	    {
-		/* remove utf-8 byte order mark */
-		mch_memmove(buf + filtd, buf + filtd + 3, buflen - filtd - 3);
-		--filtd;
-		buflen -= 3;
-	    }
-#endif
-	}
-	if (readlen <= 0)
-	    break;
+		/* Find the two bytes before the 0xbf.	If p is at buf, or buf
+		 * + 1, these may be in the "prev" string. */
+		char_u back1 = p >= buf + 1 ? p[-1]
+				     : prevlen >= 1 ? prev[prevlen - 1] : NUL;
+		char_u back2 = p >= buf + 2 ? p[-2]
+			  : p == buf + 1 && prevlen >= 1 ? prev[prevlen - 1]
+			  : prevlen >= 2 ? prev[prevlen - 2] : NUL;
 
-	if (tolist == 0)
-	{
-	    if (buflen >= FREAD_SIZE / 2)
-	    {
-		/* "buf" is full, need to move text to an allocated buffer */
-		if (prev == NULL)
+		if (back2 == 0xef && back1 == 0xbb)
 		{
-		    prev = vim_strnsave(buf, buflen);
-		    prevlen = buflen;
-		}
-		else
-		{
-		    s = alloc((unsigned)(prevlen + buflen));
-		    if (s != NULL)
+		    char_u *dest = p - 2;
+
+		    /* Usually a BOM is at the beginning of a file, and so at
+		     * the beginning of a line; then we can just step over it.
+		     */
+		    if (start == dest)
+			start = p + 1;
+		    else
 		    {
-			mch_memmove(s, prev, prevlen);
-			mch_memmove(s + prevlen, buf, buflen);
-			vim_free(prev);
-			prev = s;
-			prevlen += buflen;
+			/* have to shuffle buf to close gap */
+			int adjust_prevlen = 0;
+
+			if (dest < buf)
+			{
+			    adjust_prevlen = buf - dest; /* must be 1 or 2 */
+			    dest = buf;
+			}
+			if (readlen > p - buf + 1)
+			    mch_memmove(dest, p + 1, readlen - (p - buf) - 1);
+			readlen -= 3 - adjust_prevlen;
+			prevlen -= adjust_prevlen;
+			p = dest - 1;
 		    }
 		}
-		filtd = 0;
 	    }
-	}
-	else
+#endif
+	} /* for */
+
+	if (failed || (cnt >= maxline && maxline >= 0) || readlen <= 0)
+	    break;
+	if (start < p)
 	{
-	    mch_memmove(buf, buf + tolist, buflen - tolist);
-	    filtd -= tolist;
+	    /* There's part of a line in buf, store it in "prev". */
+	    if (p - start + prevlen >= prevsize)
+	    {
+		/* need bigger "prev" buffer */
+		char_u *newprev;
+
+		/* A common use case is ordinary text files and "prev" gets a
+		 * fragment of a line, so the first allocation is made
+		 * small, to avoid repeatedly 'allocing' large and
+		 * 'reallocing' small. */
+		if (prevsize == 0)
+		    prevsize = p - start;
+		else
+		{
+		    long grow50pc = (prevsize * 3) / 2;
+		    long growmin  = (p - start) * 2 + prevlen;
+		    prevsize = grow50pc > growmin ? grow50pc : growmin;
+		}
+		if ((newprev = vim_realloc(prev, prevsize)) == NULL)
+		{
+		    do_outofmem_msg((long_u)prevsize);
+		    failed = TRUE;
+		    break;
+		}
+		prev = newprev;
+	    }
+	    /* Add the line part to end of "prev". */
+	    mch_memmove(prev + prevlen, start, p - start);
+	    prevlen += p - start;
 	}
-    }
+    } /* while */
 
     /*
      * For a negative line count use only the lines at the end of the file,
      * free the rest.
      */
-    if (maxline < 0)
+    if (!failed && maxline < 0)
 	while (cnt > -maxline)
 	{
 	    listitem_remove(rettv->vval.v_list, rettv->vval.v_list->lv_first);
 	    --cnt;
 	}
+
+    if (failed)
+    {
+	list_free(rettv->vval.v_list, TRUE);
+	/* readfile doc says an empty list is returned on error */
+	rettv->vval.v_list = list_alloc();
+    }
 
     vim_free(prev);
     fclose(fd);
