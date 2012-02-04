@@ -6027,8 +6027,10 @@ read_viminfo_history(virp)
 	val = viminfo_readstring(virp, 1, TRUE);
 	if (val != NULL && *val != NUL)
 	{
+	    int sep = (*val == ' ' ? NUL : *val);
+
 	    if (!in_history(type, val + (type == HIST_SEARCH),
-						  viminfo_add_at_front, *val))
+						   viminfo_add_at_front, sep))
 	    {
 		/* Need to re-allocate to append the separator byte. */
 		len = STRLEN(val);
@@ -6040,7 +6042,7 @@ read_viminfo_history(virp)
 			/* Search entry: Move the separator from the first
 			 * column to after the NUL. */
 			mch_memmove(p, val + 1, (size_t)len);
-			p[len] = (*val == ' ' ? NUL : *val);
+			p[len] = sep;
 		    }
 		    else
 		    {
