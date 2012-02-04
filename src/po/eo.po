@@ -23,10 +23,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Esperanto)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-06-21 17:23+0200\n"
-"PO-Revision-Date: 2011-06-21 17:26+0200\n"
+"POT-Creation-Date: 2012-01-22 15:37+0100\n"
+"PO-Revision-Date: 2012-01-22 15:38+0100\n"
 "Last-Translator: Dominique PELLÉ <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
+"Language: eo\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -562,7 +563,7 @@ msgstr "E117: Nekonata funkcio: %s"
 
 #, c-format
 msgid "E119: Not enough arguments for function: %s"
-msgstr "E119: Ne sufiĉe da argumentoj de funkcio: %s"
+msgstr "E119: Ne sufiĉe da argumentoj por funkcio: %s"
 
 #, c-format
 msgid "E120: Using <SID> not in a script context: %s"
@@ -740,6 +741,10 @@ msgstr "E124: Mankas '(': %s"
 #, c-format
 msgid "E125: Illegal argument: %s"
 msgstr "E125: Nevalida argumento: %s"
+
+#, c-format
+msgid "E853: Duplicate argument name: %s"
+msgstr "E853: Ripetita nomo de argumento: %s"
 
 msgid "E126: Missing :endfunction"
 msgstr "E126: Mankas \":endfunction\""
@@ -2034,6 +2039,12 @@ msgstr "Neniu mapo trovita"
 
 msgid "E228: makemap: Illegal mode"
 msgstr "E228: makemap: Nevalida reĝimo"
+
+msgid "E851: Failed to create a new process for the GUI"
+msgstr "E851: Ne sukcesis krei novan procezon por la grafika interfaco"
+
+msgid "E852: The child process failed to start the GUI"
+msgstr "E852: La ida procezo ne sukcesis startigi la grafikan interfacon"
 
 msgid "E229: Cannot start the GUI"
 msgstr "E229: Ne eblas lanĉi la grafikan interfacon"
@@ -4057,6 +4068,9 @@ msgstr "Tajpu la ŝlosilon denove: "
 msgid "Keys don't match!"
 msgstr "Ŝlosiloj ne kongruas!"
 
+msgid "E854: path too long for completion"
+msgstr "E854: tro longa vojo por kompletigo"
+
 #, c-format
 msgid ""
 "E343: Invalid path: '**[number]' must be at the end of the path or be "
@@ -4238,8 +4252,8 @@ msgid ""
 "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld "
 "Bytes"
 msgstr ""
-"Apartigis %s%ld de %ld Linioj; %ld de %ld Vortoj; %ld de %ld Signoj; %ld de %"
-"ld Bajtoj"
+"Apartigis %s%ld de %ld Linioj; %ld de %ld Vortoj; %ld de %ld Signoj; %ld de "
+"%ld Bajtoj"
 
 #, c-format
 msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"
@@ -4250,8 +4264,8 @@ msgid ""
 "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of "
 "%ld"
 msgstr ""
-"Kol %s de %s; Linio %ld de %ld; Vorto %ld de %ld; Signo %ld de %ld; Bajto %"
-"ld de %ld"
+"Kol %s de %s; Linio %ld de %ld; Vorto %ld de %ld; Signo %ld de %ld; Bajto "
+"%ld de %ld"
 
 #, c-format
 msgid "(+%ld for BOM)"
@@ -5576,6 +5590,9 @@ msgstr "Serĉado de dosiero de etikedoj %s"
 msgid "E430: Tag file path truncated for %s\n"
 msgstr "E430: Vojo de etikeda dosiero trunkita por %s\n"
 
+msgid "Ignoring long line in tags file"
+msgstr "Ignoro de longa linio en etikeda dosiero"
+
 #, c-format
 msgid "E431: Format error in tags file \"%s\""
 msgstr "E431: Eraro de formato en etikeda dosiero \"%s\""
@@ -5591,9 +5608,6 @@ msgstr "E432: Etikeda dosiero ne estas ordigita: %s"
 #. never opened any tags file
 msgid "E433: No tags file"
 msgstr "E433: Neniu etikeda dosiero"
-
-msgid "Ignoring long line in tags file"
-msgstr "Ignoro de longa linio en etikeda dosiero"
 
 msgid "E434: Can't find tag pattern"
 msgstr "E434: Ne eblas trovi ŝablonon de etikedo"

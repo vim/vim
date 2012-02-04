@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.3.  Last change: 2011 Sep 26
+*pi_netrw.txt*  For Vim version 7.3.  Last change: 2012 Jan 26
 
 	    -----------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -43,7 +43,7 @@ Copyright: Copyright (C) 1999-2011 Charles E Campbell, Jr    *netrw-copyright*
 5.  Activation...........................................|netrw-activate|
 6.  Transparent Remote File Editing......................|netrw-transparent|
 7.  Ex Commands..........................................|netrw-ex|
-8.  Variables and Options................................|netrw-var|
+8.  Variables and Options................................|netrw-settings|
 9.  Browsing.............................................|netrw-browse|
       Introduction To Browsing...........................|netrw-intro-browse|
       Quick Reference: Maps..............................|netrw-browse-maps|
@@ -309,7 +309,7 @@ CHANGING USERID AND PASSWORD		*netrw-chgup* *netrw-userpass* {{{2
 	:call NetUserPass("uid","password")	-- sets global uid and password
 
 NETRW VARIABLES AND SETTINGS				*netrw-variables* {{{2
-(also see: |netrw-browser-var| |netrw-protocol| |netrw-settings| |netrw-var|)
+(also see: |netrw-browser-var| |netrw-protocol| |netrw-settings|)
 
 Netrw provides a lot of variables which allow you to customize netrw to your
 preferences.  One way to look at them is via the command :NetrwSettings (see
@@ -2354,7 +2354,7 @@ settings.  You may change any of their values; when you save the file, the
 settings therein will be used.  One may also press "?" on any of the lines for
 help on what each of the variables do.
 
-(also see: |netrw-browser-var| |netrw-protocol| |netrw-var| |netrw-variables|)
+(also see: |netrw-browser-var| |netrw-protocol| |netrw-settings| |netrw-variables|)
 
 
 ==============================================================================

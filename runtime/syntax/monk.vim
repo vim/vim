@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language: Monk (See-Beyond Technologies)
 " Maintainer: Mike Litherland <litherm@ccf.org>
-" Last Change: March 6, 2002
+" Last Change: 2012 Feb 03 by Thilo Six
 
 " This syntax file is good enough for my needs, but others
 " may desire more features.  Suggestions and bug reports
@@ -28,6 +28,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 syn case ignore
 
@@ -226,3 +229,6 @@ if version >= 508 || !exists("did_monk_syntax_inits")
 endif
 
 let b:current_syntax = "monk"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

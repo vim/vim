@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Telix (Modem Comm Program) SALT Script
 " Maintainer:	Sean M. McKee <mckee@misslink.net>
-" Last Change:	2001 May 09
+" Last Change:	2012 Feb 03 by Thilo Six
 " Version Info: @(#)tsalt.vim	1.5	97/12/16 08:11:15
 
 " For version 5.x: Clear all syntax items
@@ -11,6 +11,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " turn case matching off
 syn case ignore
@@ -211,4 +214,6 @@ endif
 
 let b:current_syntax = "tsalt"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8

@@ -2,9 +2,9 @@
 " Language:	Mutt setup files
 " Original:	Preben 'Peppe' Guldberg <peppe-vim@wielders.org>
 " Maintainer:	Kyle Wheeler <kyle-muttrc.vim@memoryhole.net>
-" Last Change:	9 Aug 2010
+" Last Change:	2 Feb 2012
 
-" This file covers mutt version 1.5.20 (and most of the mercurial tip)
+" This file covers mutt version 1.5.21 (and most of the mercurial tip)
 " Included are also a few features from 1.4.2.1
 
 " For version 5.x: Clear all syntax items
@@ -15,11 +15,19 @@ elseif exists("b:current_syntax")
   finish
 endif
 
+let s:cpo_save = &cpo
+set cpo&vim
+
 " Set the keyword characters
 if version < 600
   set isk=@,48-57,_,-
 else
   setlocal isk=@,48-57,_,-
+endif
+
+" handling optional variables
+if !exists("use_mutt_sidebar")
+  let use_mutt_sidebar=0
 endif
 
 syn match muttrcComment		"^# .*$" contains=@Spell
@@ -98,7 +106,7 @@ syn region  muttrcKey		contained start=+"+ skip=+\\\\\|\\"+ end=+"+	contains=mut
 syn region  muttrcKey		contained start=+'+ skip=+\\\\\|\\'+ end=+'+	contains=muttrcKeySpecial,muttrcKeyName
 syn match   muttrcKeyName	contained "\<f\%(\d\|10\)\>"
 syn match   muttrcKeyName	contained "\\[trne]"
-syn match   muttrcKeyName	contained "\c<\%(BackSpace\|Delete\|Down\|End\|Enter\|Esc\|Home\|Insert\|Left\|PageDown\|PageUp\|Return\|Right\|Space\|Tab\|Up\)>"
+syn match   muttrcKeyName	contained "\c<\%(BackSpace\|BackTab\|Delete\|Down\|End\|Enter\|Esc\|Home\|Insert\|Left\|PageDown\|PageUp\|Return\|Right\|Space\|Tab\|Up\)>"
 syn match   muttrcKeyName	contained "<F[0-9]\+>"
 
 syn keyword muttrcVarBool	skipwhite contained allow_8bit allow_ansi arrow_cursor ascii_chars askbcc askcc attach_split auto_tag autoedit beep beep_new nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
@@ -207,6 +215,9 @@ syn keyword muttrcVarBool	skipwhite contained invstrict_threads invsuspend invte
 syn keyword muttrcVarBool	skipwhite contained invthread_received invtilde invuncollapse_jump invuse_8bitmime nextgroup=muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 syn keyword muttrcVarBool	skipwhite contained invuse_domain invuse_envelope_from invuse_from invuse_idn invuse_ipv6 nextgroup=muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 syn keyword muttrcVarBool	skipwhite contained invuser_agent invwait_key invweed invwrap_search invwrite_bcc nextgroup=muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
+if use_mutt_sidebar == 1
+    syn keyword muttrcVarBool skipwhite contained sidebar_visible sidebar_sort nextgroup=muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
+endif
 
 syn keyword muttrcVarQuad	skipwhite contained abort_nosubject abort_unmodified bounce copy nextgroup=muttrcSetQuadAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 syn keyword muttrcVarQuad	skipwhite contained crypt_verify_sig delete fcc_attach forward_edit honor_followup_to nextgroup=muttrcSetQuadAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
@@ -232,6 +243,9 @@ syn keyword muttrcVarNum	skipwhite contained pop_checkinterval read_inc save_his
 syn keyword muttrcVarNum	skipwhite contained score_threshold_flag score_threshold_read search_context sendmail_wait sleep_time nextgroup=muttrcSetNumAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 syn keyword muttrcVarNum	skipwhite contained smime_timeout ssl_min_dh_prime_bits timeout time_inc wrap wrapmargin nextgroup=muttrcSetNumAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 syn keyword muttrcVarNum	skipwhite contained write_inc nextgroup=muttrcSetNumAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
+if use_mutt_sidebar == 1
+    syn keyword muttrcVarNum skipwhite contained sidebar_width nextgroup=muttrcSetNumAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
+endif
 
 syn match muttrcFormatErrors contained /%./
 
@@ -372,6 +386,9 @@ syn keyword muttrcVarStr	contained skipwhite smime_keys smime_sign_as nextgroup=
 syn keyword muttrcVarStr	contained skipwhite smtp_url smtp_authenticators smtp_pass sort sort_alias sort_aux nextgroup=muttrcSetStrAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 syn keyword muttrcVarStr	contained skipwhite sort_browser spam_separator spoolfile ssl_ca_certificates_file ssl_client_cert nextgroup=muttrcSetStrAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 syn keyword muttrcVarStr	contained skipwhite status_chars tmpdir to_chars tunnel visual nextgroup=muttrcSetStrAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
+if use_mutt_sidebar == 1
+    syn keyword muttrcVarStr skipwhite contained sidebar_delim nextgroup=muttrcSetStrAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
+endif
 
 " Present in 1.4.2.1 (pgp_create_traditional was a bool then)
 syn keyword muttrcVarBool	contained skipwhite imap_force_ssl noimap_force_ssl invimap_force_ssl nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
@@ -417,7 +434,10 @@ syn keyword muttrcSubscribeKeyword	unsubscribe nextgroup=muttrcAsterisk,muttrcCo
 syn keyword muttrcAlternateKeyword contained alternates unalternates
 syn region muttrcAlternatesLine keepend start=+^\s*\%(un\)\?alternates\s+ skip=+\\$+ end=+$+ contains=muttrcAlternateKeyword,muttrcGroupDef,muttrcRXPat,muttrcUnHighlightSpace,muttrcComment
 
-syn match muttrcVariable	contained "\\\@<!\$[a-zA-Z_-]\+"
+" muttrcVariable includes a prefix because partial strings are considered
+" valid.
+syn match muttrcVariable	contained "\\\@<![a-zA-Z_-]*\$[a-zA-Z_-]\+" contains=muttrcVariableInner
+syn match muttrcVariableInner	contained "\$[a-zA-Z_-]\+"
 syn match muttrcEscapedVariable	contained "\\\$[a-zA-Z_-]\+"
 
 syn match muttrcBadAction	contained "[^<>]\+" contains=muttrcEmail
@@ -450,6 +470,9 @@ syn match muttrcFunction	contained "\<undelete-\%(pattern\|subthread\)\>"
 syn match muttrcFunction	contained "\<collapse-\%(parts\|thread\|all\)\>"
 syn match muttrcFunction	contained "\<view-\%(attach\|attachments\|file\|mailcap\|name\|text\)\>"
 syn match muttrcFunction	contained "\<\%(backspace\|backward-char\|bol\|bottom\|bottom-page\|buffy-cycle\|clear-flag\|complete\%(-query\)\?\|copy-file\|create-alias\|detach-file\|eol\|exit\|extract-keys\|\%(imap-\)\?fetch-mail\|forget-passphrase\|forward-char\|group-reply\|help\|ispell\|jump\|limit\|list-reply\|mail\|mail-key\|mark-as-new\|middle-page\|new-mime\|noop\|pgp-menu\|query\|query-append\|quit\|quote-char\|read-subthread\|redraw-screen\|refresh\|rename-file\|reply\|select-new\|set-flag\|shell-escape\|skip-quoted\|sort\|subscribe\|sync-mailbox\|top\|top-page\|transpose-chars\|unsubscribe\|untag-pattern\|verify-key\|what-key\|write-fcc\)\>"
+if use_mutt_sidebar == 1
+    syn match muttrcFunction    contained "\<sidebar-\%(prev\|next\|open\|scroll-up\|scroll-down\)"
+endif
 syn match muttrcAction		contained "<[^>]\{-}>" contains=muttrcBadAction,muttrcFunction,muttrcKeyName
 
 syn keyword muttrcCommand	set     skipwhite nextgroup=muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
@@ -523,7 +546,7 @@ syn match muttrcSimplePat contained "!\?\^\?[~][mnXz]\s*\%([<>-][0-9]\+[kM]\?\|[
 syn match muttrcSimplePat contained "!\?\^\?[~][dr]\s*\%(\%(-\?[0-9]\{1,2}\%(/[0-9]\{1,2}\%(/[0-9]\{2}\%([0-9]\{2}\)\?\)\?\)\?\%([+*-][0-9]\+[ymwd]\)*\)\|\%(\%([0-9]\{1,2}\%(/[0-9]\{1,2}\%(/[0-9]\{2}\%([0-9]\{2}\)\?\)\?\)\?\%([+*-][0-9]\+[ymwd]\)*\)-\%([0-9]\{1,2}\%(/[0-9]\{1,2}\%(/[0-9]\{2}\%([0-9]\{2}\)\?\)\?\)\?\%([+*-][0-9]\+[ymwd]\)\?\)\?\)\|\%([<>=][0-9]\+[ymwd]\)\|\%(`[^`]\+`\)\|\%(\$[a-zA-Z0-9_-]\+\)\)" contains=muttrcShellString,muttrcVariable
 syn match muttrcSimplePat contained "!\?\^\?[~][bBcCefhHiLstxy]\s*" nextgroup=muttrcSimplePatRXContainer
 syn match muttrcSimplePat contained "!\?\^\?[%][bBcCefhHiLstxy]\s*" nextgroup=muttrcSimplePatString
-syn match muttrcSimplePat contained "!\?\^\?[=][bh]\s*" nextgroup=muttrcSimplePatString
+syn match muttrcSimplePat contained "!\?\^\?[=][bcCefhHiLstxy]\s*" nextgroup=muttrcSimplePatString
 syn region muttrcSimplePat contained keepend start=+!\?\^\?[~](+ end=+)+ contains=muttrcSimplePat
 "syn match muttrcSimplePat contained /'[^~=%][^']*/ contains=muttrcRXString
 syn region muttrcSimplePatString contained keepend start=+"+ end=+"+ skip=+\\"+
@@ -557,9 +580,12 @@ syn region muttrcColorRXPat	contained start=+\s*'+ skip=+\\'+ end=+'\s*+ keepend
 syn region muttrcColorRXPat	contained start=+\s*"+ skip=+\\"+ end=+"\s*+ keepend skipwhite contains=muttrcRXString2 nextgroup=muttrcColorMatchCount,muttrcColorMatchCountNL
 syn keyword muttrcColorField	contained attachment body bold error hdrdefault header index indicator markers message normal quoted search signature status tilde tree underline
 syn match   muttrcColorField	contained "\<quoted\d\=\>"
+if use_mutt_sidebar == 1
+    syn keyword muttrcColorField contained sidebar_new
+endif
 syn keyword muttrcColor	contained black blue cyan default green magenta red white yellow
 syn keyword muttrcColor	contained brightblack brightblue brightcyan brightdefault brightgreen brightmagenta brightred brightwhite brightyellow
-syn match   muttrcColor	contained "\<\%(bright\)\=color\d\{1,2}\>"
+syn match   muttrcColor	contained "\<\%(bright\)\=color\d\{1,3}\>"
 " Now for the structure of the color line
 syn match muttrcColorRXNL	contained skipnl "\s*\\$" nextgroup=muttrcColorRXPat,muttrcColorRXNL
 syn match muttrcColorBG 	contained /\s*[$]\?\w\+/ contains=muttrcColor,muttrcVariable,muttrcUnHighlightSpace nextgroup=muttrcColorRXPat,muttrcColorRXNL
@@ -641,7 +667,7 @@ if version >= 508 || !exists("did_muttrc_syntax_inits")
   HiLink muttrcSetQuadAssignment	Boolean
   HiLink muttrcSetStrAssignment	String
   HiLink muttrcEmail		Special
-  HiLink muttrcVariable		Special
+  HiLink muttrcVariableInner	Special
   HiLink muttrcEscapedVariable	String
   HiLink muttrcHeader		Type
   HiLink muttrcKeySpecial	SpecialChar
@@ -765,4 +791,6 @@ endif
 
 let b:current_syntax = "muttrc"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 "EOF	vim: ts=8 noet tw=100 sw=8 sts=0 ft=vim

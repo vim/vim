@@ -1,7 +1,7 @@
 /* ex_docmd.c */
 void do_exmode __ARGS((int improved));
 int do_cmdline_cmd __ARGS((char_u *cmd));
-int do_cmdline __ARGS((char_u *cmdline, char_u *(*getline)(int, void *, int), void *cookie, int flags));
+int do_cmdline __ARGS((char_u *cmdline, char_u *(*fgetline)(int, void *, int), void *cookie, int flags));
 int getline_equal __ARGS((char_u *(*fgetline)(int, void *, int), void *cookie, char_u *(*func)(int, void *, int)));
 void *getline_cookie __ARGS((char_u *(*fgetline)(int, void *, int), void *cookie));
 int checkforcmd __ARGS((char_u **pp, char *cmd, int len));

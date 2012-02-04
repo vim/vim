@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 7.3.  Last change: 2011 Oct 20
+*netbeans.txt*  For Vim version 7.3.  Last change: 2012 Jan 26
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -266,7 +266,7 @@ mechanism.
 Netbeans messages are processed when Vim is idle, waiting for user input.
 When Vim is run in non-interactive mode, for example when running an automated
 test case that sources a Vim script, the idle loop may not be called often
-enough. In that case, insert |sleep| commands in the Vim script. The |sleep|
+enough. In that case, insert |:sleep| commands in the Vim script. The |:sleep|
 command does invoke Netbeans messages processing.
 
 6.1 Kinds of messages		|nb-messages|

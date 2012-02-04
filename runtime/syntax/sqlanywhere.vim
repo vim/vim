@@ -1,10 +1,12 @@
+
 " Vim syntax file
 " Language:    SQL, Adaptive Server Anywhere
-" Maintainer:  David Fishburn <fishburn at ianywhere dot com>
-" Last Change: 2009 Mar 15
-" Version:     11.0.1
+" Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
+" Last Change: 2012 Jan 23
+" Version:     12.0.1
 
-" Description: Updated to Adaptive Server Anywhere 11.0.1
+" Description: Updated to Adaptive Server Anywhere 12.0.1 (including spatial data)
+"              Updated to Adaptive Server Anywhere 11.0.1
 "              Updated to Adaptive Server Anywhere 10.0.1
 "              Updated to Adaptive Server Anywhere  9.0.2
 "              Updated to Adaptive Server Anywhere  9.0.1
@@ -66,6 +68,9 @@ syn keyword sqlFunction	 hash compress decompress encrypt decrypt
 " 11.0.1 functions
 syn keyword sqlFunction	 connection_extended_property text_handle_vector_match
 syn keyword sqlFunction	 read_client_file write_client_file
+
+" 12.0.1 functions
+syn keyword sqlFunction	 http_response_header
 
 " string functions
 syn keyword sqlFunction	 ascii char left ltrim repeat
@@ -358,7 +363,7 @@ syn keyword sqlFunction  xp_write_file
 
 " http functions
 syn keyword sqlFunction	 http_header http_variable
-syn keyword sqlFunction	 next_http_header next_http_variable
+syn keyword sqlFunction	 next_http_header next_http_response_header next_http_variable
 syn keyword sqlFunction	 sa_set_http_header sa_set_http_option
 syn keyword sqlFunction	 sa_http_variable_info sa_http_header_info
 
@@ -366,114 +371,231 @@ syn keyword sqlFunction	 sa_http_variable_info sa_http_header_info
 syn keyword sqlFunction	 http_encode http_decode
 syn keyword sqlFunction	 html_encode html_decode
 
+" XML function support
+syn keyword sqlFunction	 openxml xmlelement xmlforest xmlgen xmlconcat xmlagg
+syn keyword sqlFunction	 xmlattributes
+
+" Spatial Compatibility Functions
+syn keyword sqlFunction  ST_BdMPolyFromText
+syn keyword sqlFunction  ST_BdMPolyFromWKB
+syn keyword sqlFunction  ST_BdPolyFromText
+syn keyword sqlFunction  ST_BdPolyFromWKB
+syn keyword sqlFunction  ST_CPolyFromText
+syn keyword sqlFunction  ST_CPolyFromWKB
+syn keyword sqlFunction  ST_CircularFromTxt
+syn keyword sqlFunction  ST_CircularFromWKB
+syn keyword sqlFunction  ST_CompoundFromTxt
+syn keyword sqlFunction  ST_CompoundFromWKB
+syn keyword sqlFunction  ST_GeomCollFromTxt
+syn keyword sqlFunction  ST_GeomCollFromWKB
+syn keyword sqlFunction  ST_GeomFromText
+syn keyword sqlFunction  ST_GeomFromWKB
+syn keyword sqlFunction  ST_LineFromText
+syn keyword sqlFunction  ST_LineFromWKB
+syn keyword sqlFunction  ST_MCurveFromText
+syn keyword sqlFunction  ST_MCurveFromWKB
+syn keyword sqlFunction  ST_MLineFromText
+syn keyword sqlFunction  ST_MLineFromWKB
+syn keyword sqlFunction  ST_MPointFromText
+syn keyword sqlFunction  ST_MPointFromWKB
+syn keyword sqlFunction  ST_MPolyFromText
+syn keyword sqlFunction  ST_MPolyFromWKB
+syn keyword sqlFunction  ST_MSurfaceFromTxt
+syn keyword sqlFunction  ST_MSurfaceFromWKB
+syn keyword sqlFunction  ST_OrderingEquals
+syn keyword sqlFunction  ST_PointFromText
+syn keyword sqlFunction  ST_PointFromWKB
+syn keyword sqlFunction  ST_PolyFromText
+syn keyword sqlFunction  ST_PolyFromWKB
+" Spatial Structural Methods
+syn keyword sqlFunction  ST_CoordDim
+syn keyword sqlFunction  ST_CurveN
+syn keyword sqlFunction  ST_Dimension
+syn keyword sqlFunction  ST_EndPoint
+syn keyword sqlFunction  ST_ExteriorRing
+syn keyword sqlFunction  ST_GeometryN
+syn keyword sqlFunction  ST_GeometryType
+syn keyword sqlFunction  ST_InteriorRingN
+syn keyword sqlFunction  ST_Is3D
+syn keyword sqlFunction  ST_IsClosed
+syn keyword sqlFunction  ST_IsEmpty
+syn keyword sqlFunction  ST_IsMeasured
+syn keyword sqlFunction  ST_IsRing
+syn keyword sqlFunction  ST_IsSimple
+syn keyword sqlFunction  ST_IsValid
+syn keyword sqlFunction  ST_NumCurves
+syn keyword sqlFunction  ST_NumGeometries
+syn keyword sqlFunction  ST_NumInteriorRing
+syn keyword sqlFunction  ST_NumPoints
+syn keyword sqlFunction  ST_PointN
+syn keyword sqlFunction  ST_StartPoint
+"Spatial Computation
+syn keyword sqlFunction  ST_Length
+syn keyword sqlFunction  ST_Area
+syn keyword sqlFunction  ST_Centroid
+syn keyword sqlFunction  ST_Area
+syn keyword sqlFunction  ST_Centroid
+syn keyword sqlFunction  ST_IsWorld
+syn keyword sqlFunction  ST_Perimeter
+syn keyword sqlFunction  ST_PointOnSurface
+syn keyword sqlFunction  ST_Distance
+" Spatial Input/Output
+syn keyword sqlFunction  ST_AsBinary
+syn keyword sqlFunction  ST_AsGML
+syn keyword sqlFunction  ST_AsGeoJSON
+syn keyword sqlFunction  ST_AsSVG
+syn keyword sqlFunction  ST_AsSVGAggr
+syn keyword sqlFunction  ST_AsText
+syn keyword sqlFunction  ST_AsWKB
+syn keyword sqlFunction  ST_AsWKT
+syn keyword sqlFunction  ST_AsXML
+syn keyword sqlFunction  ST_GeomFromBinary
+syn keyword sqlFunction  ST_GeomFromShape
+syn keyword sqlFunction  ST_GeomFromText
+syn keyword sqlFunction  ST_GeomFromWKB
+syn keyword sqlFunction  ST_GeomFromWKT
+syn keyword sqlFunction  ST_GeomFromXML
+" Spatial Cast Methods
+syn keyword sqlFunction  ST_CurvePolyToPoly
+syn keyword sqlFunction  ST_CurveToLine
+syn keyword sqlFunction  ST_ToCircular
+syn keyword sqlFunction  ST_ToCompound
+syn keyword sqlFunction  ST_ToCurve
+syn keyword sqlFunction  ST_ToCurvePoly
+syn keyword sqlFunction  ST_ToGeomColl
+syn keyword sqlFunction  ST_ToLineString
+syn keyword sqlFunction  ST_ToMultiCurve
+syn keyword sqlFunction  ST_ToMultiLine
+syn keyword sqlFunction  ST_ToMultiPoint
+syn keyword sqlFunction  ST_ToMultiPolygon
+syn keyword sqlFunction  ST_ToMultiSurface
+syn keyword sqlFunction  ST_ToPoint
+syn keyword sqlFunction  ST_ToPolygon
+syn keyword sqlFunction  ST_ToSurface
+
+
 " keywords
-syn keyword sqlKeyword	 absolute accent action active add address aes_decrypt
-syn keyword sqlKeyword	 after aggregate algorithm allow_dup_row allowed
-syn keyword sqlKeyword	 alter and ansi_substring any as append apply asc ascii ase
-syn keyword sqlKeyword	 assign at atan2 atomic attach attended audit authorization
+syn keyword sqlKeyword	 absolute accent action active add address admin aes_decrypt
+syn keyword sqlKeyword	 after aggregate algorithm allow_dup_row allow allowed alter 
+syn keyword sqlKeyword	 and angular ansi_substring any as append apply 
+syn keyword sqlKeyword	 arbiter asc ascii ase
+syn keyword sqlKeyword	 assign at atan2 atomic attended 
+syn keyword sqlKeyword	 audit auditing authorization axis
 syn keyword sqlKeyword	 autoincrement autostop batch bcp before
 syn keyword sqlKeyword	 between bit_and bit_length bit_or bit_substr bit_xor
 syn keyword sqlKeyword	 blank blanks block
-syn keyword sqlKeyword	 both bottom unbounded break breaker bufferpool
+syn keyword sqlKeyword	 both bottom unbounded breaker bufferpool
 syn keyword sqlKeyword	 build bulk by byte bytes cache calibrate calibration
 syn keyword sqlKeyword	 cancel capability cascade cast
-syn keyword sqlKeyword	 catalog ceil changes char char_convert check checksum
+syn keyword sqlKeyword	 catalog ceil change changes char char_convert check checksum
 syn keyword sqlKeyword	 class classes client cmp
 syn keyword sqlKeyword	 cluster clustered collation
 syn keyword sqlKeyword	 column columns
-syn keyword sqlKeyword	 command comment committed comparisons
+syn keyword sqlKeyword	 command comments committed comparisons
 syn keyword sqlKeyword	 compatible component compressed compute computes
 syn keyword sqlKeyword	 concat configuration confirm conflict connection
 syn keyword sqlKeyword	 console consolidate consolidated
-syn keyword sqlKeyword	 constraint constraints content continue
-syn keyword sqlKeyword	 convert coordinator copy count count_set_bits
+syn keyword sqlKeyword	 constraint constraints content 
+syn keyword sqlKeyword	 convert coordinate coordinator copy count count_set_bits
 syn keyword sqlKeyword	 crc createtime cross cube cume_dist
 syn keyword sqlKeyword	 current cursor data data database
-syn keyword sqlKeyword	 current_timestamp current_user
+syn keyword sqlKeyword	 current_timestamp current_user cycle
 syn keyword sqlKeyword	 databases datatype dba dbfile
 syn keyword sqlKeyword	 dbspace dbspaces dbspacename debug decoupled
 syn keyword sqlKeyword	 decrypted default defaults default_dbspace deferred
 syn keyword sqlKeyword	 definer definition
 syn keyword sqlKeyword	 delay deleting delimited dependencies desc
-syn keyword sqlKeyword	 description detach deterministic directory
-syn keyword sqlKeyword	 disable disabled distinct do domain download duplicate
-syn keyword sqlKeyword	 dsetpass dttm dynamic each editproc ejb
+syn keyword sqlKeyword	 description deterministic directory
+syn keyword sqlKeyword	 disable disabled disallow distinct do domain download duplicate
+syn keyword sqlKeyword	 dsetpass dttm dynamic each earth editproc ejb
+syn keyword sqlKeyword	 elimination ellipsoid
 syn keyword sqlKeyword	 else elseif empty enable encapsulated encrypted end
 syn keyword sqlKeyword	 encoding endif engine environment erase error escape escapes event
-syn keyword sqlKeyword	 event_parameter every except exception exclude excluded exclusive exec
+syn keyword sqlKeyword	 event_parameter every exception exclude excluded exclusive exec
 syn keyword sqlKeyword	 existing exists expanded expiry express exprtype extended_property
 syn keyword sqlKeyword	 external externlogin factor failover false
-syn keyword sqlKeyword	 fastfirstrow fieldproc file files filler
-syn keyword sqlKeyword	 fillfactor finish first first_keyword first_value
+syn keyword sqlKeyword	 fastfirstrow feature fieldproc file files filler
+syn keyword sqlKeyword	 fillfactor final finish first first_keyword first_value
+syn keyword sqlKeyword	 flattening
 syn keyword sqlKeyword	 following force foreign format forxml forxml_sep fp frame
-syn keyword sqlKeyword	 freepage french fresh full function gb get_bit go global
+syn keyword sqlKeyword	 free freepage french fresh full function 
+syn keyword sqlKeyword	 gb generic get_bit go global grid
 syn keyword sqlKeyword	 group handler hash having header hexadecimal
 syn keyword sqlKeyword	 hidden high history hg hng hold holdlock host
 syn keyword sqlKeyword	 hours http_body http_session_timeout id identified identity ignore
 syn keyword sqlKeyword	 ignore_dup_key ignore_dup_row immediate
-syn keyword sqlKeyword	 in inactiv inactive inactivity included incremental
+syn keyword sqlKeyword	 in inactiv inactive inactivity included increment incremental
 syn keyword sqlKeyword	 index index_enabled index_lparen indexonly info
 syn keyword sqlKeyword	 inline inner inout insensitive inserting
 syn keyword sqlKeyword	 instead integrated
-syn keyword sqlKeyword	 internal intersection into introduced invoker iq is isolation
+syn keyword sqlKeyword	 internal intersection into introduced inverse invoker 
+syn keyword sqlKeyword	 iq is isolation
 syn keyword sqlKeyword	 jar java java_location java_main_userid java_vm_options
 syn keyword sqlKeyword	 jconnect jdk join kb key keep kerberos language last
-syn keyword sqlKeyword	 last_keyword last_value lateral ld left len lf ln level like
-syn keyword sqlKeyword	 limit local location log
-syn keyword sqlKeyword	 logging login logscan long low lru main manual mark
-syn keyword sqlKeyword	 match matched materialized max maximum mb membership
-syn keyword sqlKeyword	 merge metadata methods minimum minutes mirror mode modify monitor move mru
-syn keyword sqlKeyword	 multiplex name named national native natural new next no
-syn keyword sqlKeyword	 noholdlock nolock nonclustered none not
-syn keyword sqlKeyword	 notify null nullable_constant nulls object oem_string of off offline
-syn keyword sqlKeyword	 old on online only openstring optimization optimizer option
-syn keyword sqlKeyword	 or order others out outer over
+syn keyword sqlKeyword	 last_keyword last_value lateral latitude
+syn keyword sqlKeyword	 ld left len linear lf ln level like
+syn keyword sqlKeyword	 limit local location log 
+syn keyword sqlKeyword	 logging logical login logscan long longitude low lru ls
+syn keyword sqlKeyword	 main major manual mark
+syn keyword sqlKeyword	 match matched materialized max maxvalue maximum mb measure membership
+syn keyword sqlKeyword	 merge metadata methods minimum minor minutes minvalue mirror 
+syn keyword sqlKeyword	 mode modify monitor move mru multiplex 
+syn keyword sqlKeyword	 name named namespaces national native natural new next nextval 
+syn keyword sqlKeyword	 ngram no noholdlock nolock nonclustered none normal not
+syn keyword sqlKeyword	 notify null nullable_constant nulls 
+syn keyword sqlKeyword	 object oem_string of off offline offset olap
+syn keyword sqlKeyword	 old on online only openstring operator
+syn keyword sqlKeyword	 optimization optimizer option
+syn keyword sqlKeyword	 or order organization others out outer over
 syn keyword sqlKeyword	 package packetsize padding page pages
-syn keyword sqlKeyword	 paglock parallel part partial partition partitions partner password path
-syn keyword sqlKeyword	 pctfree plan policy populate port postfilter preceding precision
-syn keyword sqlKeyword	 prefetch prefilter prefix preserve preview primary
-syn keyword sqlKeyword	 prior priority priqty private privileges procedure profile
+syn keyword sqlKeyword	 paglock parallel parameter parent part 
+syn keyword sqlKeyword	 partition partitions partner password path pctfree 
+syn keyword sqlKeyword	 perms plan planar policy polygon populate port postfilter preceding 
+syn keyword sqlKeyword	 precisionprefetch prefilter prefix preserve preview previous
+syn keyword sqlKeyword	 primary prior priority priqty private privileges procedure profile
 syn keyword sqlKeyword	 property_is_cumulative property_is_numeric public publication publish publisher
 syn keyword sqlKeyword	 quiesce quote quotes range readclientfile readcommitted reader readfile readonly
 syn keyword sqlKeyword	 readpast readuncommitted readwrite rebuild
 syn keyword sqlKeyword	 received recompile recover recursive references
-syn keyword sqlKeyword	 referencing refresh regex regexp regexp_substr relative relocate
-syn keyword sqlKeyword	 rename repeatable repeatableread
-syn keyword sqlKeyword	 replicate request_timeout required rereceive resend reserve reset
-syn keyword sqlKeyword	 resizing resolve resource respect
+syn keyword sqlKeyword	 referencing regex regexp regexp_substr relative relocate
+syn keyword sqlKeyword	 rename repeatable repeatableread replicate 
+syn keyword sqlKeyword	 requests request_timeout required rereceive resend reserve reset
+syn keyword sqlKeyword	 resizing resolve resource respect restart
 syn keyword sqlKeyword	 restrict result retain
 syn keyword sqlKeyword	 returns reverse right role
-syn keyword sqlKeyword	 rollup root row row_number rowlock rows save
+syn keyword sqlKeyword	 rollup root row row_number rowlock rows 
 syn keyword sqlKeyword	 sa_index_hash sa_internal_fk_verify sa_internal_termbreak
 syn keyword sqlKeyword	 sa_order_preserving_hash sa_order_preserving_hash_big sa_order_preserving_hash_prefix
-syn keyword sqlKeyword	 schedule schema scope scripted scroll seconds secqty security
-syn keyword sqlKeyword	 send sensitive sent serializable
+syn keyword sqlKeyword	 scale schedule schema scope scripted scroll seconds secqty security
+syn keyword sqlKeyword	 semi send sensitive sent sequence serializable
 syn keyword sqlKeyword	 server server session set_bit set_bits sets
-syn keyword sqlKeyword	 share simple since site size skip
-syn keyword sqlKeyword	 snapshot soapheader soap_header split some sorted_data
-syn keyword sqlKeyword	 sqlcode sqlid sqlflagger sqlstate sqrt square
+syn keyword sqlKeyword	 shapefile share side simple since site size skip
+syn keyword sqlKeyword	 snap snapshot soapheader soap_header 
+syn keyword sqlKeyword	 spatial split some sorted_data
+syn keyword sqlKeyword	 sql sqlcode sqlid sqlflagger sqlstate sqrt square
 syn keyword sqlKeyword	 stacker stale statement statistics status stddev_pop stddev_samp
-syn keyword sqlKeyword	 stemmer stogroup stoplist store
+syn keyword sqlKeyword	 stemmer stogroup stoplist storage store
 syn keyword sqlKeyword	 strip stripesizekb striping subpages subscribe subscription
 syn keyword sqlKeyword	 subtransaction suser_id suser_name synchronization
-syn keyword sqlKeyword	 syntax_error table tablock
-syn keyword sqlKeyword	 tablockx tb temp template temporary term then
-syn keyword sqlKeyword	 ties timezone to to_char to_nchar top traced_plan tracing
-syn keyword sqlKeyword	 transfer transaction transactional tries true
-syn keyword sqlKeyword	 tsequal type tune uncommitted unconditionally
-syn keyword sqlKeyword	 unenforced unicode unique union unistr unknown unlimited unload
+syn keyword sqlKeyword	 syntax_error table tables tablock
+syn keyword sqlKeyword	 tablockx tb temp template temporary term then ties 
+syn keyword sqlKeyword	 timezone timeout to to_char to_nchar tolerance top
+syn keyword sqlKeyword	 traced_plan tracing
+syn keyword sqlKeyword	 transfer transform transaction transactional treat tries 
+syn keyword sqlKeyword	 true tsequal type tune uncommitted unconditionally
+syn keyword sqlKeyword	 unenforced unicode unique unistr unit unknown unlimited unload
 syn keyword sqlKeyword	 unpartition unquiesce updatetime updating updlock upgrade upload
-syn keyword sqlKeyword	 upper use user
+syn keyword sqlKeyword	 upper usage use user
 syn keyword sqlKeyword	 using utc utilities validproc
 syn keyword sqlKeyword	 value values varchar variable
-syn keyword sqlKeyword	 varying var_pop var_samp vcat verify versions view virtual wait
-syn keyword sqlKeyword	 warning wd web when where window with with_auto
+syn keyword sqlKeyword	 varying var_pop var_samp vcat verbosity
+syn keyword sqlKeyword	 verify versions view virtual wait
+syn keyword sqlKeyword	 warning wd web when where with with_auto
 syn keyword sqlKeyword	 with_auto with_cube with_rollup without
 syn keyword sqlKeyword	 with_lparen within word work workload write writefile
-syn keyword sqlKeyword	 writeclientfile writer writers writeserver xlock zeros
-" XML function support
-syn keyword sqlFunction	 openxml xmlelement xmlforest xmlgen xmlconcat xmlagg
-syn keyword sqlFunction	 xmlattributes
+syn keyword sqlKeyword	 writeclientfile writer writers writeserver xlock 
+syn keyword sqlKeyword	 zeros zone
+" XML 
 syn keyword sqlKeyword	 raw auto elements explicit
 " HTTP support
 syn keyword sqlKeyword	 authorization secure url service next_soap_header
@@ -488,37 +610,119 @@ syn keyword sqlKeyword	 regr_sxx regr_syy regr_sxy
 syn keyword sqlKeyword	 character dec options proc reference
 syn keyword sqlKeyword	 subtrans tran syn keyword
 
+" Spatial Predicates
+syn keyword sqlKeyword   ST_Contains
+syn keyword sqlKeyword   ST_ContainsFilter
+syn keyword sqlKeyword   ST_CoveredBy
+syn keyword sqlKeyword   ST_CoveredByFilter
+syn keyword sqlKeyword   ST_Covers
+syn keyword sqlKeyword   ST_CoversFilter
+syn keyword sqlKeyword   ST_Crosses
+syn keyword sqlKeyword   ST_Disjoint
+syn keyword sqlKeyword   ST_Equals
+syn keyword sqlKeyword   ST_EqualsFilter
+syn keyword sqlKeyword   ST_Intersects
+syn keyword sqlKeyword   ST_IntersectsFilter
+syn keyword sqlKeyword   ST_IntersectsRect
+syn keyword sqlKeyword   ST_OrderingEquals
+syn keyword sqlKeyword   ST_Overlaps
+syn keyword sqlKeyword   ST_Relate
+syn keyword sqlKeyword   ST_Touches
+syn keyword sqlKeyword   ST_Within
+syn keyword sqlKeyword   ST_WithinFilter
+" Spatial Set operations
+syn keyword sqlKeyword   ST_Affine
+syn keyword sqlKeyword   ST_Boundary
+syn keyword sqlKeyword   ST_Buffer
+syn keyword sqlKeyword   ST_ConvexHull
+syn keyword sqlKeyword   ST_ConvexHullAggr
+syn keyword sqlKeyword   ST_Difference
+syn keyword sqlKeyword   ST_Intersection
+syn keyword sqlKeyword   ST_IntersectionAggr
+syn keyword sqlKeyword   ST_SymDifference
+syn keyword sqlKeyword   ST_Union
+syn keyword sqlKeyword   ST_UnionAggr
+" Spatial Bounds
+syn keyword sqlKeyword   ST_Envelope
+syn keyword sqlKeyword   ST_EnvelopeAggr
+syn keyword sqlKeyword   ST_Lat
+syn keyword sqlKeyword   ST_LatMax
+syn keyword sqlKeyword   ST_LatMin
+syn keyword sqlKeyword   ST_Long
+syn keyword sqlKeyword   ST_LongMax
+syn keyword sqlKeyword   ST_LongMin
+syn keyword sqlKeyword   ST_M
+syn keyword sqlKeyword   ST_MMax
+syn keyword sqlKeyword   ST_MMin
+syn keyword sqlKeyword   ST_Point
+syn keyword sqlKeyword   ST_X
+syn keyword sqlKeyword   ST_XMax
+syn keyword sqlKeyword   ST_XMin
+syn keyword sqlKeyword   ST_Y
+syn keyword sqlKeyword   ST_YMax
+syn keyword sqlKeyword   ST_YMin
+syn keyword sqlKeyword   ST_Z
+syn keyword sqlKeyword   ST_ZMax
+syn keyword sqlKeyword   ST_ZMin
+" Spatial Collection Aggregates
+syn keyword sqlKeyword   ST_GeomCollectionAggr
+syn keyword sqlKeyword   ST_LineStringAggr
+syn keyword sqlKeyword   ST_MultiCurveAggr
+syn keyword sqlKeyword   ST_MultiLineStringAggr
+syn keyword sqlKeyword   ST_MultiPointAggr
+syn keyword sqlKeyword   ST_MultiPolygonAggr
+syn keyword sqlKeyword   ST_MultiSurfaceAggr
+syn keyword sqlKeyword   ST_Perimeter
+syn keyword sqlKeyword   ST_PointOnSurface
+" Spatial SRS
+syn keyword sqlKeyword   ST_CompareWKT
+syn keyword sqlKeyword   ST_FormatWKT
+syn keyword sqlKeyword   ST_ParseWKT
+syn keyword sqlKeyword   ST_TransformGeom
+syn keyword sqlKeyword   ST_GeometryTypeFromBaseType
+syn keyword sqlKeyword   ST_SnapToGrid
+syn keyword sqlKeyword   ST_Transform
+syn keyword sqlKeyword   ST_SRID
+syn keyword sqlKeyword   ST_SRIDFromBaseType
+syn keyword sqlKeyword   ST_LoadConfigurationData
+" Spatial Indexes
+syn keyword sqlKeyword   ST_LinearHash
+syn keyword sqlKeyword   ST_LinearUnHash
 
 syn keyword sqlOperator	 in any some all between exists
 syn keyword sqlOperator	 like escape not is and or
-syn keyword sqlOperator  intersect minus
+syn keyword sqlOperator  minus
 syn keyword sqlOperator  prior distinct
 
-syn keyword sqlStatement allocate alter backup begin call case
-syn keyword sqlStatement checkpoint clear close commit configure connect
-syn keyword sqlStatement create deallocate declare delete describe
-syn keyword sqlStatement disconnect drop execute exit explain fetch
+syn keyword sqlStatement allocate alter attach backup begin break call case
+syn keyword sqlStatement checkpoint clear close comment commit configure connect
+syn keyword sqlStatement continue create deallocate declare delete describe
+syn keyword sqlStatement detach disconnect drop except execute exit explain fetch
 syn keyword sqlStatement for forward from get goto grant help if include
-syn keyword sqlStatement input insert install leave load lock loop
-syn keyword sqlStatement message open output parameter parameters passthrough
-syn keyword sqlStatement prepare print put raiserror read readtext release
+syn keyword sqlStatement input insert install intersect leave load lock loop
+syn keyword sqlStatement message open output parameters passthrough
+syn keyword sqlStatement prepare print put raiserror read readtext refresh release
 syn keyword sqlStatement remote remove reorganize resignal restore resume
-syn keyword sqlStatement return revoke rollback savepoint select
+syn keyword sqlStatement return revoke rollback save savepoint select
 syn keyword sqlStatement set setuser signal start stop synchronize
-syn keyword sqlStatement system trigger truncate unload update
-syn keyword sqlStatement validate waitfor whenever while writetext
+syn keyword sqlStatement system trigger truncate union unload update
+syn keyword sqlStatement validate waitfor whenever while window writetext
 
 
-syn keyword sqlType	 char long varchar text
-syn keyword sqlType	 bigint decimal double float int integer numeric
+syn keyword sqlType	 char nchar long varchar nvarchar text ntext uniqueidentifierstr xml
+syn keyword sqlType	 bigint bit decimal double varbit
+syn keyword sqlType	 float int integer numeric
 syn keyword sqlType	 smallint tinyint real
 syn keyword sqlType	 money smallmoney
-syn keyword sqlType	 bit
-syn keyword sqlType	 date datetime smalldate time timestamp
+syn keyword sqlType	 date datetime datetimeoffset smalldatetime time timestamp
 syn keyword sqlType	 binary image varbinary uniqueidentifier
-syn keyword sqlType	 xml unsigned
-" New types 10.0.0
-syn keyword sqlType	 varbit nchar nvarchar
+syn keyword sqlType	 unsigned
+" Spatial types
+syn keyword sqlType	 st_geometry st_point st_curve st_surface st_geomcollection
+syn keyword sqlType	 st_linestring st_circularstring st_compoundcurve
+syn keyword sqlType	 st_curvepolygon st_polygon
+syn keyword sqlType	 st_multipoint st_multicurve st_multisurface
+syn keyword sqlType	 st_multilinestring st_multipolygon
 
 syn keyword sqlOption    Allow_nulls_by_default
 syn keyword sqlOption    Allow_read_client_file
@@ -556,6 +760,7 @@ syn keyword sqlOption    Default_dbspace
 syn keyword sqlOption    Default_timestamp_increment
 syn keyword sqlOption    Delayed_commit_timeout
 syn keyword sqlOption    Delayed_commits
+syn keyword sqlOption    Divide_by_zero_error
 syn keyword sqlOption    Escape_character
 syn keyword sqlOption    Exclude_operators
 syn keyword sqlOption    Extended_join_syntax
@@ -633,6 +838,7 @@ syn keyword sqlOption    Updatable_statement_isolation
 syn keyword sqlOption    Update_statistics
 syn keyword sqlOption    Upgrade_database_capability
 syn keyword sqlOption    User_estimates
+syn keyword sqlOption    Uuid_has_hyphens
 syn keyword sqlOption    Verify_password_function
 syn keyword sqlOption    Wait_for_commit
 syn keyword sqlOption    Webservice_namespace_host

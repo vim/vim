@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:     Speedup, plant simulator from AspenTech
 " Maintainer:   Stefan.Schwarzer <s.schwarzer@ndh.net>
-" URL:			http://www.ndh.net/home/sschwarzer/download/spup.vim
-" Last Change:  2003 May 11
+" URL:		http://www.ndh.net/home/sschwarzer/download/spup.vim
+" Last Change:  2012 Feb 03 by Thilo Six
 " Filename:     spup.vim
 
 " Bugs
@@ -25,6 +25,9 @@ elseif exists("b:current_syntax")
     finish
 endif
 
+let s:cpo_save = &cpo
+set cpo&vim
+
 " don't hightlight several keywords like subsections
 "let strict_subsections = 1
 
@@ -43,7 +46,7 @@ endif
 
 " Speedup SECTION regions
 syn case ignore
-syn region spupCdi		  matchgroup=spupSection start="^CDI"		 end="^\*\*\*\*" contains=spupCdiSubs,@spupOrdinary
+syn region spupCdi	  matchgroup=spupSection start="^CDI"	     end="^\*\*\*\*" contains=spupCdiSubs,@spupOrdinary
 syn region spupConditions matchgroup=spupSection start="^CONDITIONS" end="^\*\*\*\*" contains=spupConditionsSubs,@spupOrdinary,spupConditional,spupOperator,spupCode
 syn region spupDeclare    matchgroup=spupSection start="^DECLARE"    end="^\*\*\*\*" contains=spupDeclareSubs,@spupOrdinary,spupTypes,spupCode
 syn region spupEstimation matchgroup=spupSection start="^ESTIMATION" end="^\*\*\*\*" contains=spupEstimationSubs,@spupOrdinary
@@ -63,7 +66,7 @@ syn region spupTitle      matchgroup=spupSection start="^TITLE"      end="^\*\*\
 syn region spupUnit       matchgroup=spupSection start="^UNIT"       end="^\*\*\*\*" contains=spupUnitSubs,@spupOrdinary
 
 " Subsections
-syn keyword spupCdiSubs		   INPUT FREE OUTPUT LINEARTIME MINNONZERO CALCULATE FILES SCALING contained
+syn keyword spupCdiSubs	       INPUT FREE OUTPUT LINEARTIME MINNONZERO CALCULATE FILES SCALING contained
 syn keyword spupDeclareSubs    TYPE STREAM contained
 syn keyword spupEstimationSubs ESTIMATE SSEXP DYNEXP RESULT contained
 syn keyword spupExternalSubs   TRANSMIT RECEIVE contained
@@ -183,7 +186,7 @@ syn sync minlines=100
 syn sync maxlines=500
 
 syn sync match spupSyncOperation  grouphere spupOperation  "^OPERATION"
-syn sync match spupSyncCdi		  grouphere spupCdi		   "^CDI"
+syn sync match spupSyncCdi	  grouphere spupCdi	   "^CDI"
 syn sync match spupSyncConditions grouphere spupConditions "^CONDITIONS"
 syn sync match spupSyncDeclare    grouphere spupDeclare    "^DECLARE"
 syn sync match spupSyncEstimation grouphere spupEstimation "^ESTIMATION"
@@ -207,71 +210,73 @@ syn sync match spupSyncUnit       grouphere spupUnit       "^UNIT"
 " For version 5.8 and later: only when an item doesn't have highlighting yet
 if version >= 508 || !exists("did_spup_syn_inits")
     if version < 508
-		let did_spup_syn_inits = 1
-		command -nargs=+ HiLink hi link <args>
-	else
-		command -nargs=+ HiLink hi def link <args>
+	let did_spup_syn_inits = 1
+	command -nargs=+ HiLink hi link <args>
+    else
+	command -nargs=+ HiLink hi def link <args>
     endif
 
-	HiLink spupCdi			spupSection
-	HiLink spupConditions	spupSection
-	HiLink spupDeclare		spupSection
-	HiLink spupEstimation	spupSection
-	HiLink spupExternal		spupSection
-	HiLink spupFlowsheet	spupSection
-	HiLink spupFunction		spupSection
-	HiLink spupGlobal		spupSection
-	HiLink spupHomotopy		spupSection
-	HiLink spupMacro		spupSection
-	HiLink spupModel		spupSection
-	HiLink spupOperation	spupSection
-	HiLink spupOptions		spupSection
-	HiLink spupProcedure	spupSection
-	HiLink spupProfiles		spupSection
-	HiLink spupReport		spupSection
-	HiLink spupTitle		spupConstant  " this is correct, truly ;)
-	HiLink spupUnit			spupSection
+    HiLink spupCdi	    spupSection
+    HiLink spupConditions   spupSection
+    HiLink spupDeclare	    spupSection
+    HiLink spupEstimation   spupSection
+    HiLink spupExternal	    spupSection
+    HiLink spupFlowsheet    spupSection
+    HiLink spupFunction	    spupSection
+    HiLink spupGlobal	    spupSection
+    HiLink spupHomotopy	    spupSection
+    HiLink spupMacro	    spupSection
+    HiLink spupModel	    spupSection
+    HiLink spupOperation    spupSection
+    HiLink spupOptions	    spupSection
+    HiLink spupProcedure    spupSection
+    HiLink spupProfiles	    spupSection
+    HiLink spupReport	    spupSection
+    HiLink spupTitle	    spupConstant  " this is correct, truly ;)
+    HiLink spupUnit	    spupSection
 
-	HiLink spupCdiSubs		  spupSubs
-	HiLink spupConditionsSubs spupSubs
-	HiLink spupDeclareSubs	  spupSubs
-	HiLink spupEstimationSubs spupSubs
-	HiLink spupExternalSubs   spupSubs
-	HiLink spupFlowsheetSubs  spupSubs
-	HiLink spupFunctionSubs   spupSubs
-	HiLink spupHomotopySubs   spupSubs
-	HiLink spupMacroSubs	  spupSubs
-	HiLink spupModelSubs	  spupSubs
-	HiLink spupOperationSubs  spupSubs
-	HiLink spupOptionsSubs	  spupSubs
-	HiLink spupProcedureSubs  spupSubs
-	HiLink spupReportSubs	  spupSubs
-	HiLink spupUnitSubs		  spupSubs
+    HiLink spupCdiSubs	      spupSubs
+    HiLink spupConditionsSubs spupSubs
+    HiLink spupDeclareSubs    spupSubs
+    HiLink spupEstimationSubs spupSubs
+    HiLink spupExternalSubs   spupSubs
+    HiLink spupFlowsheetSubs  spupSubs
+    HiLink spupFunctionSubs   spupSubs
+    HiLink spupHomotopySubs   spupSubs
+    HiLink spupMacroSubs      spupSubs
+    HiLink spupModelSubs      spupSubs
+    HiLink spupOperationSubs  spupSubs
+    HiLink spupOptionsSubs    spupSubs
+    HiLink spupProcedureSubs  spupSubs
+    HiLink spupReportSubs     spupSubs
+    HiLink spupUnitSubs	      spupSubs
 
-	HiLink spupCode			   Normal
-	HiLink spupComment		   Comment
-	HiLink spupComment2		   spupComment
-	HiLink spupConditional	   Statement
-	HiLink spupConstant		   Constant
-	HiLink spupError		   Error
-	HiLink spupHelp			   Normal
-	HiLink spupIdentifier	   Identifier
-	HiLink spupNumber		   Constant
-	HiLink spupOperator		   Special
-	HiLink spupOpenBrace	   spupError
-	HiLink spupSection		   Statement
-	HiLink spupSpecial		   spupTextprocGeneric
-	HiLink spupStreams		   Type
-	HiLink spupString		   Constant
-	HiLink spupSubs			   Statement
-	HiLink spupSymbol		   Special
-	HiLink spupTextprocError   Normal
-	HiLink spupTextprocGeneric PreProc
-	HiLink spupTypes		   Type
+    HiLink spupCode	       Normal
+    HiLink spupComment	       Comment
+    HiLink spupComment2	       spupComment
+    HiLink spupConditional     Statement
+    HiLink spupConstant	       Constant
+    HiLink spupError	       Error
+    HiLink spupHelp	       Normal
+    HiLink spupIdentifier      Identifier
+    HiLink spupNumber	       Constant
+    HiLink spupOperator	       Special
+    HiLink spupOpenBrace       spupError
+    HiLink spupSection	       Statement
+    HiLink spupSpecial	       spupTextprocGeneric
+    HiLink spupStreams	       Type
+    HiLink spupString	       Constant
+    HiLink spupSubs	       Statement
+    HiLink spupSymbol	       Special
+    HiLink spupTextprocError   Normal
+    HiLink spupTextprocGeneric PreProc
+    HiLink spupTypes	       Type
 
     delcommand HiLink
 endif
 
 let b:current_syntax = "spup"
 
-" vim:ts=4
+let &cpo = s:cpo_save
+unlet s:cpo_save
+" vim:ts=8

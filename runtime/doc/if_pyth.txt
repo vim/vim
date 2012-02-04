@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.3.  Last change: 2011 Aug 19
+*if_pyth.txt*   For Vim version 7.3.  Last change: 2012 Feb 04
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -222,8 +222,9 @@ Buffer objects represent vim buffers.  You can obtain them in a number of ways:
 	- from indexing vim.buffers (|python-buffers|)
 	- from the "buffer" attribute of a window (|python-window|)
 
-Buffer objects have one read-only attribute - name - the full file name for
-the buffer.  They also have three methods (append, mark, and range; see below).
+Buffer objects have two read-only attributes - name - the full file name for
+the buffer, and number - the buffer number.  They also have three methods
+(append, mark, and range; see below).
 
 You can also treat buffer objects as sequence objects.  In this context, they
 act as if they were lists (yes, they are mutable) of strings, with each

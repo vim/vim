@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 Jan 04
+" Last Change:	2012 Feb 03
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1264,7 +1264,7 @@ au BufNewFile,BufRead *.nqc			setf nqc
 au BufNewFile,BufRead *.nsi			setf nsis
 
 " OCAML
-au BufNewFile,BufRead *.ml,*.mli,*.mll,*.mly	setf ocaml
+au BufNewFile,BufRead *.ml,*.mli,*.mll,*.mly,.ocamlinit	setf ocaml
 
 " Occam
 au BufNewFile,BufRead *.occ			setf occam

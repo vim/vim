@@ -1,8 +1,8 @@
 " VIM syntax file
 " Language:	nroff/groff
-" Maintainer:	Alejandro López-Valencia <dradul@yahoo.com>
-" URL:		http://dradul.tripod.com/vim
-" Last Change:	2006 Apr 14
+" Maintainer:	Pedro Alejandro López-Valencia <palopezv@gmail.com>
+" URL:		http://vorbote.wordpress.com/
+" Last Change:	2012 Feb 2
 "
 " {{{1 Acknowledgements
 "
@@ -30,6 +30,9 @@ if version < 600
 elseif exists("b:current_syntax")
 	finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 "
 " {{{1 plugin settings...
@@ -256,4 +259,6 @@ endif
 
 let b:current_syntax = "nroff"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim600: set fdm=marker fdl=2:

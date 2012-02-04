@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language: TASM: turbo assembler by Borland
 " Maintaner: FooLman of United Force <foolman@bigfoot.com>
-" Last change: 22 aug 2000
+" Last Change: 2012 Feb 03 by Thilo Six
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -10,6 +10,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 syn case ignore
 syn match tasmLabel "^[\ \t]*[@a-z_$][a-z0-9_$@]*\ *:"
@@ -120,3 +123,6 @@ if version >= 508 || !exists("did_tasm_syntax_inits")
 endif
 
 let b:curret_syntax = "tasm"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

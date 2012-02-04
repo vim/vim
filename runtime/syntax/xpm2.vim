@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	X Pixmap v2
 " Maintainer:	Steve Wall (hitched97@velnet.com)
-" Last Change:	2008 May 28
+" Last Change:	2012 Feb 03 by Thilo Six
 " Version:	5.8
 "
 " Made from xpm.vim by Ronald Schild <rs@scutum.de>
@@ -13,6 +13,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 syn region  xpm2PixelString	start="^"  end="$"  contains=@xpm2Colors
 syn keyword xpm2Todo		TODO FIXME XXX  contained
@@ -159,4 +162,6 @@ delcommand Hi
 
 let b:current_syntax = "xpm2"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8:sw=2:noet:

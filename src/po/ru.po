@@ -4888,15 +4888,15 @@ msgstr "Редактировать в &разных Vim-ах"
 msgid "Edit with single &Vim"
 msgstr "Редактировать в &одном Vim"
 
-msgid "&Diff with Vim"
-msgstr "&Сравнить с помощью Vim"
+msgid "Diff with Vim"
+msgstr "Сравнить с помощью Vim"
 
 msgid "Edit with &Vim"
 msgstr "Ре&дактировать с помощью Vim"
 
 #. Now concatenate
-msgid "Edit with existing Vim - &"
-msgstr "Редактировать в запущенном Vim - &"
+msgid "Edit with existing Vim - "
+msgstr "Редактировать в запущенном Vim - "
 
 msgid "Edits the selected file(s) with Vim"
 msgstr "Редактировать выделенные файлы с помощью Vim"

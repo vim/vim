@@ -2,8 +2,8 @@
 " Language:	Microsoft Macro Assembler (80x86)
 " Orig Author:	Rob Brady <robb@datatone.com>
 " Maintainer:	Wu Yongwei <wuyongwei@gmail.com>
-" Last Change:	$Date: 2007/04/21 13:20:15 $
-" $Revision: 1.44 $
+" Last Change:	$Date: 2012/02/04 12:45:39 $
+" $Revision: 1.46 $
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -12,6 +12,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 syn case ignore
 
@@ -184,6 +187,12 @@ syn keyword masmRegister	DR0 DR1 DR2 DR3 DR6 DR7
 syn keyword masmRegister	TR3 TR4 TR5 TR6 TR7
 syn match   masmRegister	"ST([0-7])"
 
+" x86-64 registers
+syn keyword masmRegister	RAX RBX RCX RDX RSI RDI RBP RSP
+syn keyword masmRegister	R8 R9 R10 R11 R12 R13 R14 R15
+syn keyword masmRegister	R8D R9D R10D R11D R12D R13D R14D R15D
+syn keyword masmRegister	R8W R9W R10W R11W R12W R13W R14W R15W
+syn keyword masmRegister	R8B R9B R10B R11B R12B R13B R14B R15B
 
 " Instruction prefixes
 syn keyword masmOpcode		LOCK REP REPE REPNE REPNZ REPZ
@@ -339,5 +348,8 @@ if version >= 508 || !exists("did_masm_syntax_inits")
 endif
 
 let b:current_syntax = "masm"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: ts=8

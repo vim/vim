@@ -451,7 +451,7 @@ NOTE : N'oubliez pas que vous devriez apprendre par la pratique, pas par
   3. Tapez  ce  et corrigez le mot (dans notre cas, tapez  'igne'.)
 
   4. Appuyez <Échap> et placez-vous sur le prochain caractère qui doit
-     être changé).
+     être changé.
 
   5. Répétez les étapes 3 et 4 jusqu'à ce que la première phrase soit
      identique à la seconde.
@@ -560,7 +560,7 @@ NOTE : Vous pouvez peut-être voir le curseur en bas à droite de l'écran.
 ---> erreur ne s'écrit pas "errreuur" ; errreuur est une erreur.
 
 NOTE : Quand la recherche atteint la fin du fichier, elle reprend au début
-       sauf si l'option 'wrapscan' est déactivée.
+       sauf si l'option 'wrapscan' est désactivée.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1034,5 +1034,5 @@ NOTE : Le complètement fonctionne pour de nombreuses commandes. Essayez
   Dernières mises à jour par Dominique Pellé.
 
   E-mail :      dominique.pelle@gmail.com
-  Last Change : 2011 Jun 25
+  Last Change : 2011 Nov 27
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

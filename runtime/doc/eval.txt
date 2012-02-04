@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2012 Jan 04
+*eval.txt*	For Vim version 7.3.  Last change: 2012 Jan 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4814,6 +4814,10 @@ search({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*search()*
 		Search for regexp pattern {pattern}.  The search starts at the
 		cursor position (you can use |cursor()| to set it).
 
+		If there is no match a 0 is returned and the cursor doesn't
+		move.  No error message is given.
+		When a match has been found its line number is returned.
+
 		{flags} is a String, which can contain these character flags:
 		'b'	search backward instead of forward
 		'c'	accept a match at the cursor position
@@ -4847,9 +4851,6 @@ search({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*search()*
 		giving the argument.
 		{only available when compiled with the |+reltime| feature}
 
-		If there is no match a 0 is returned and the cursor doesn't
-		move.  No error message is given.
-		When a match has been found its line number is returned.
 							*search()-sub-match*
 		With the 'p' flag the returned value is one more than the
 		first sub-match in \(\).  One if none of them matched but the
@@ -5068,7 +5069,8 @@ setcmdpos({pos})					*setcmdpos()*
 		line.
 
 setline({lnum}, {text})					*setline()*
-		Set line {lnum} of the current buffer to {text}.
+		Set line {lnum} of the current buffer to {text}.  To insert
+		lines use |append()|.
 		{lnum} is used like with |getline()|.
 		When {lnum} is just below the last line the {text} will be
 		added as a new line.

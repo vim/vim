@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	SNNS pattern file
 " Maintainer:	Davide Alberani <alberanid@bigfoot.com>
-" Last Change:	28 Apr 2001
+" Last Change:	2012 Feb 03 by Thilo Six
 " Version:	0.2
 " URL:		http://digilander.iol.it/alberanid/vim/syntax/snnspat.vim
 "
@@ -14,6 +14,8 @@ elseif exists("b:current_syntax")
   finish
 endif
 
+let s:cpo_save = &cpo
+set cpo&vim
 
 " anything that isn't part of the header, a comment or a number
 " is wrong
@@ -65,4 +67,6 @@ endif
 
 let b:current_syntax = "snnspat"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8 sw=2

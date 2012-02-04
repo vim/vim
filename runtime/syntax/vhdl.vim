@@ -2,6 +2,7 @@
 " Language:	VHDL
 " Maintainer:	Czo <Olivier.Sirol@lip6.fr>
 " Credits:	Stephan Hegel <stephan.hegel@snc.siemens.com.cn>
+" Last Changed:	2012 Feb 03 by Thilo Six
 " $Id: vhdl.vim,v 1.1 2004/06/13 15:34:56 vimboss Exp $
 
 " VHSIC Hardware Description Language
@@ -14,6 +15,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " This is not VHDL. I use the C-Preprocessor cpp to generate different binaries
 " from one VHDL source file. Unfortunately there is no preprocessor for VHDL
@@ -181,4 +185,6 @@ endif
 
 let b:current_syntax = "vhdl"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8

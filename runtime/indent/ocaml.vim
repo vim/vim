@@ -1,12 +1,12 @@
 " Vim indent file
 " Language:     OCaml
-" Maintainers:	Jean-Francois Yuen   <jfyuen@happycoders.org>
-"		Mike Leary	     <leary@nwlink.com>
-"		Markus Mottl	     <markus.mottl@gmail.com>
-" URL:		http://www.ocaml.info/vim/indent/ocaml.vim
-" Last Change:  2005 Jun 25 - Fixed multiple bugs due to 'else\nreturn ind' working
-"		2005 May 09 - Added an option to not indent OCaml-indents specially (MM)
-"		2005 Apr 11 - Fixed an indentation bug concerning "let" (MM)
+" Maintainers:  Jean-Francois Yuen   <jfyuen@happycoders.org>
+"               Mike Leary           <leary@nwlink.com>
+"               Markus Mottl         <markus.mottl@gmail.com>
+" URL:          http://www.ocaml.info/vim/indent/ocaml.vim
+" Last Change:  2010 Sep 04 - Added an indentation improvement by Mark Weber
+"               2005 Jun 25 - Fixed multiple bugs due to 'else\nreturn ind' working
+"               2005 May 09 - Added an option to not indent OCaml-indents specially (MM)
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -44,7 +44,7 @@ let s:obj = '^\s*\(constraint\|inherit\|initializer\|method\|val\)\>\|\<\(object
 let s:type = '^\s*\%(class\|let\|type\)\>.*='
 
 " Skipping pattern, for comments
-function s:GetLineWithoutFullComment(lnum)
+function! s:GetLineWithoutFullComment(lnum)
  let lnum = prevnonblank(a:lnum - 1)
  let lline = substitute(getline(lnum), '(\*.*\*)\s*$', '', '')
  while lline =~ '^\s*$' && lnum > 0
@@ -55,7 +55,7 @@ function s:GetLineWithoutFullComment(lnum)
 endfunction
 
 " Indent for ';;' to match multiple 'let'
-function s:GetInd(lnum, pat, lim)
+function! s:GetInd(lnum, pat, lim)
  let llet = search(a:pat, 'bW')
  let old = indent(a:lnum)
  while llet > 0
@@ -70,18 +70,18 @@ function s:GetInd(lnum, pat, lim)
 endfunction
 
 " Indent pairs
-function s:FindPair(pstart, pmid, pend)
+function! s:FindPair(pstart, pmid, pend)
  call search(a:pend, 'bW')
  return indent(searchpair(a:pstart, a:pmid, a:pend, 'bWn', 'synIDattr(synID(line("."), col("."), 0), "name") =~? "string\\|comment"'))
 endfunction
 
 " Indent 'let'
-function s:FindLet(pstart, pmid, pend)
+function! s:FindLet(pstart, pmid, pend)
  call search(a:pend, 'bW')
  return indent(searchpair(a:pstart, a:pmid, a:pend, 'bWn', 'synIDattr(synID(line("."), col("."), 0), "name") =~? "string\\|comment" || getline(".") =~ "^\\s*let\\>.*=.*\\<in\\s*$" || getline(prevnonblank(".") - 1) =~ s:beflet'))
 endfunction
 
-function GetOCamlIndent()
+function! GetOCamlIndent()
  " Find a non-commented line above the current line.
  let lnum = s:GetLineWithoutFullComment(v:lnum)
 
@@ -238,6 +238,20 @@ function GetOCamlIndent()
  " If this is a multiline comment then align '*':
  elseif lline =~ '^\s*(\*' && line =~ '^\s*\*'
    let ind = ind + 1
+
+ else
+ " Don't change indentation of this line
+ " for new lines (indent==0) use indentation of previous line
+
+ " This is for preventing removing indentation of these args:
+ "   let f x =
+ "     let y = x + 1 in
+ "     Printf.printf
+ "       "o"           << here
+ "       "oeuth"       << don't touch indentation
+
+   let i = indent(v:lnum)
+   return i == 0 ? ind : i
 
  endif
 

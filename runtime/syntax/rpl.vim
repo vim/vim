@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	RPL/2
 " Version:	0.15.15 against RPL/2 version 4.00pre7i
-" Last Change:	2003 august 24
+" Last Change:	2012 Feb 03 by Thilo Six
 " Maintainer:	Joël BERTRAND <rpl2@free.fr>
 " URL:		http://www.makalis.fr/~bertrand/rpl2/download/vim/indent/rpl.vim
 " Credits:	Nothing
@@ -13,6 +13,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Keyword characters (not used)
 " set iskeyword=33-127
@@ -488,4 +491,6 @@ endif
 
 let b:current_syntax = "rpl"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8 tw=132

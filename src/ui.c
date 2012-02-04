@@ -2363,14 +2363,14 @@ clip_x11_own_selection(myShell, cbd)
 	       XtLastTimestampProcessed(XtDisplay(myShell)),
 	       clip_x11_convert_selection_cb, clip_x11_lose_ownership_cb,
 	       NULL) == False)
-	return FAIL;
+	    return FAIL;
     }
     else
 #endif
     {
 	if (!XChangeProperty(XtDisplay(myShell), XtWindow(myShell),
 		  cbd->sel_atom, timestamp_atom, 32, PropModeAppend, NULL, 0))
-	return FAIL;
+	    return FAIL;
     }
     /* Flush is required in a terminal as nothing else is doing it. */
     XFlush(XtDisplay(myShell));

@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 7.3.  Last change: 2011 Aug 02
+*undo.txt*      For Vim version 7.3.  Last change: 2012 Jan 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -267,7 +267,12 @@ respectively:
 		(the magic number at the start of the file is wrong), then
 		this fails, unless the ! was added.
 		If it exists and does look like an undo file it is
-		overwritten.
+		overwritten. If there is no undo-history, nothing will be 
+		written.
+		Implementation detail: Overwriting happens by first deleting
+		the existing file and then creating a new file with the same
+		name. So it is not possible to overwrite an existing undofile
+		in a write-protected directory.
 		{not in Vi}
 
 :rundo {file}	Read undo history from {file}.

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Jan 20
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Feb 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41,17 +41,26 @@ Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 Once syntax and other runtime files have been fixed: add "set cp" to
 check.vim.  Use a function to run both with 'cp' and 'nocp'.
 
-Win32: When the taskbar is at the top of the screen creating the tabbar causes
-the window to move unnecessarily. (William E. Skeith III, 2012 Jan 12)
-Patch: 2012 Jan 13
-
-Patch for using DBCS encoding in user command. (Yasuhiro Matsumoto, 2012 Jan
-15)  Update Jan 17.
-
 Repeating search history entries. (Edwin Steiner, 2012 Jan 17)
 Jan 18: Caused by patch 7.3.265?
 
+Patch for '$' not being displayed for a change when 'cpoptions' contains "$".
+(Yasuhiro Matsumoto, 2012 Jan 28, patch by Hideki EIRAKU and Hirohito Higashi)
+
+Patch to speed up readfile(). (John Little, 2012 Feb 1)
+Adjustment by Charles Peacech, Feb 3.
+8   When editing a file with extremely long lines (e.g., an executable), the
+    "linerest" in readfile() is allocated twice to be able to copy what was
+    read so far.  Use realloc() instead?  Or split the line when allocating
+    memory fails and "linerest" is big (> 100000)?
+
+Patch to fix a crash when an xpm file is invalid. (Dave Bodenstab, 2012 Jan
+27)
+
 Hang in using VimEnter. (Alex Efros, 2012 Jan 14)
+
+Patch for behavior of "." in compatible mode. (Yasuhiro Matsumoto, patch by
+Hideki EIRAKU, 2012 Jan 28)
 
 ":cd" doesn't work when current directory path contains wildcards.
 finddir() has the same problem.  (Yukihiro Nakadaira, 2012 Jan 10)
@@ -70,8 +79,9 @@ Another one from Taro Muraoka, 2012 Jan 12.
 ":doau" says it triggers modeline.  Should this only happen for events used
 when loading a buffer?  (Kana Natsuno, 2011 Nov 7)
 
-Patch to fix "it" and "at" when there is a dash in the tag name.
-(Christian Brabandt, 2011 Nov 20)
+Patch for compiler warnings in if_perl. (James McCoy, 2011 Jan 30)
+
+Patch for X selection conversion. (Alex Efros, 2012 Jan 24)
 
 Patch to make 'shcf' default work better. (Benjamin Fritz, 2011 Nov 18)
     Win32: When 'shell' is cmd.exe this command fails:
@@ -83,6 +93,15 @@ Patch to make 'shcf' default work better. (Benjamin Fritz, 2011 Nov 18)
 Other way to start Mzscheme. Tim Brown, 2011 Oct 5: change main call.
 Later patch by Sergey Khorev, 2011 Oct 9.
 
+Patch to allow ! for :all and :sall, as documented. (Hirohito Higashi, 2012
+Jan 30)
+
+Patch for "tab drop hoge" moving current window. (Higashi, 2012 Jan 31)
+":tab drop buffer.c" always opens a new tab, also if buffer.c is already in an
+open window. (Herb Sitz, 2011 Nov 17)
+":tab drop filename" doesn't work nicely when "filename" is open in a window
+in another tab. (Tony Mechelynck, 2009 Feb 13)
+
 Patch to make InsertCharPre work better. (Yasuhiro Matsumoto, 2011 Oct 21)
 
 Patch to fix closed folds with "loadview". (Xavier de Gaye, 2011 Nov 25)
@@ -93,9 +112,24 @@ Or use expand('<sid>')?
 Patch for glob() returning a list. (Christian Brabandt, 2011 Aug 24, second
 one)
 
+Win32: When the taskbar is at the top of the screen creating the tabbar causes
+the window to move unnecessarily. (William E. Skeith III, 2012 Jan 12)
+Patch: 2012 Jan 13  Needs more work (2012 Feb 2)
+
 Patch to highlight cursor line number. (Howard Buchholz (lhb), 2011 Oct 18)
 
-Patch for urxvt mouse support after shell command. (Issue 31)
+URXVT:
+- will get stuck if byte sequence does not containe expected semicolon.
+- Patch for urxvt mouse support after shell command. (Issue 31)
+- Use urxvt mouse support also in xterm.  Explanations:
+  http://www.midnight-commander.org/ticket/2662
+
+Patch for using QuickFixCmdPre for more commands. (Marcin Szamotulski, 2012
+Feb 1, update Feb 2)
+
+When running Vim in silent ex mode, an existing swapfile causes Vim to wait
+for a user action without a prompt. (Maarten Billemont, 2012 Feb 3)
+Do give the prompt? Quit with an error?
 
 When exiting with unsaved changes, selecting an existing file in the file
 dialog, there is no dialog to ask whether the existing file should be
@@ -128,12 +162,14 @@ Patch for: (Christian Brabandt, 2011 Aug 24, updated patch)
     buffer={bufnr}".  So one can remove all signs for one file/buffer.
 
 Patch to add "onselected" callback for completion. (Taro Muraoka, 2011 Sep 24)
+Another for CompleteFuncOk. (Florian Klein, 2012 Jan 31)
+Name it "CompleteFuncDone".
+
+Patch for Make_mvc.mak and Make_ming.mak for Ruby support. (Yasuhiro
+Matsumoto, 2012 Jan 30)
 
 Use a count before "v" and "V" to select that many characters or lines?
 (Kikyous)
-
-":tab drop buffer.c" always opens a new tab, also if buffer.c is already in an
-open window. (Herb Sitz, 2011 Nov 17)
 
 Problem with winfixheight and resizing. (Yukihiro Nakadaira, 2011 Sep 17)
 Patch Sep 18.
@@ -288,6 +324,8 @@ Patch to support sorting on floating point number.  (Alex Jakushev, 2010 Oct
 
 Patch to addd TextDeletePost and TextYankPost events. (Philippe Vaucher, 2011
 May 24)  Update May 26.
+
+Patch for :tabrecently. (Hirokazu Yoshida, 2012 Jan 30)
 
 When a script contains "redir => s:foo" but doesn't end redirection, a
 following "redir" command gives an error for not being able to access s:foo.
@@ -948,9 +986,6 @@ try/catch not working when inside a for loop. (ZyX, 2011 Jan 25)
 
 ":tab help" always opens a new tab, while ":help" re-uses an existing window.
 Would be more consistent when an existing tab is re-used. (Tony Mechelynck)
-
-":tab drop filename" doesn't work nicely when "filename" is open in a window
-in another tab. (Tony Mechelynck, 2009 Feb 13)
 
 Add ":nofold".  Range will apply without expanding to closed fold.
 
@@ -3228,10 +3263,6 @@ Performance:
     Add command to compile a vim script and add it to the file in-place.
     Split Ex command executing into a parsing and executing phase.
     Use compiled code for functions, while loops, etc.
-8   When editing a file with extremely long lines (e.g., an executable), the
-    "linerest" in readfile() is allocated twice to be able to copy what was
-    read so far.  Use realloc() instead?  Or split the line when allocating
-    memory fails and "linerest" is big (> 100000)?
 8   When defining autocommands (e.g., from $VIMRUNTIME/filetype.vim), need to
     compare each pattern with all existing patterns.  Use a hash code to avoid
     using strcmp() too often?

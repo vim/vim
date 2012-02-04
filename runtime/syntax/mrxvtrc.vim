@@ -1,12 +1,15 @@
-" Created	: Wed 26 Apr 2006 01:20:53 AM CDT
-" Modified	: Mon 27 Aug 2007 12:10:37 PM PDT
-" Author	: Gautam Iyer <gi1242@users.sourceforge.net>
 " Description	: Vim syntax file for mrxvtrc (for mrxvt-0.5.0 and up)
+" Created	: Wed 26 Apr 2006 01:20:53 AM CDT
+" Modified	: Thu 02 Feb 2012 08:37:45 PM EST
+" Maintainer	: GI <a@b.c>, where a='gi1242+vim', b='gmail', c='com'
 
 " Quit when a syntax file was already loaded
 if exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 syn case match
 
@@ -274,3 +277,6 @@ hi def link mrxvtrcCmd		PreProc
 hi def link mrxvtrcSubwin	mrxvtrcStrVal
 
 let b:current_syntax = "mrxvtrc"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

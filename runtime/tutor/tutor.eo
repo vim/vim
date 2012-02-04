@@ -1,5 +1,5 @@
 ==============================================================================
-=  B o n v e n o n  al  la  I n s t r u i l o  de  V I M  -  Versio 1.7.eo.3 =
+=  B o n v e n o n   al   la   I n s t r u i l o  de  V I M  -  Versio 1.7   =
 ==============================================================================
 
    Vim estas tre potenca redaktilo, kiu havas multajn komandojn, tro da ili
@@ -108,7 +108,7 @@ RIMARKO: Trairante la instruilon, ne provu memori, lernu per la uzo.
      reøimo. Ripetu la paþojn 2 øis 4 por korekti la frazon.
 
 ---> Mank en æi linio.
----> Mankas tekston en æi tiu linio.
+---> Mankas teksto en æi tiu linio.
 
   5. Kiam vi sentas vin komforta pri enmeto de teksto, moviøu al la
      leciono 1.5.
@@ -160,7 +160,7 @@ RIMARKO: Trairante la instruilon, ne provu memori, lernu per la uzo.
 
   4. Konservu la dosieron kun þanøoj kaj eliru el Vim per:  :wq  <Enenklavo>
 
-  5. Se vi eliris la instruilon vimtutor en paþo 1, restartu la intruilon
+  5. Se vi eliris la instruilon vimtutor en paþo 1, restartigu la intruilon
      vimtutor kaj moviøu suben al la sekvanta resumo.
 
   6. Post kiam vi legis la suprajn paþojn, kaj komprenis ilin: faru ilin.
@@ -640,7 +640,7 @@ RIMARKO: Æiuj  :  komandoj devas finiøi per tajpo de <Enenklavo>
   1. Tajpu  !dir  aý  !ls  por akiri liston de via dosierujo.
      Vi jam scias, ke vi devas tajpi <Enenklavo> post tio.
 
-  2. Elektu dosieron, kiu ne jam ekzistas, kiel ekzemple TESTO.
+  2. Elektu dosieron, kiu ankoraý ne ekzistas, kiel ekzemple TESTO.
 
   3. Nun tajpu:   :w TESTO   (kie TESTO estas la elektita dosiernomo)
 
@@ -669,7 +669,7 @@ RIMARKO: Se vi volus eliri el Vim kaj restartigi øin denove per  vim TESTO,
 
   3. Premu la  :  signon.  Æe la fino de la ekrano  :'<,'>  aperos.
 
-  4. Tajpu  w TESTO  , kie TESTO estas dosiernomo, kiu ne jam ekzistas.
+  4. Tajpu  w TESTO  , kie TESTO estas dosiernomo, kiu ankoraý ne ekzistas.
      Kontrolu, ke vi vidas  :'<,'>w TESTO  antaý premi <Enenklavo>.
 
   5. Vim konservos la apartigitajn liniojn al la dosiero TESTO.  Uzu  :dir
@@ -984,8 +984,8 @@ RIMARKO: Kompletigo funkcias por multaj komandoj. Nur provu premi CTRL-D kaj
 
   Modifita por Vim de Bram Moolenaar.
 
-  Tradukita en Esperanto de Dominique Pellé, 2008-04-01
+  Esperantigita fare de Dominique Pellé, 2008-04-01
   Retpoþto: dominique.pelle@gmail.com
-  Lasta þanøo: 2010-05-23
+  Lasta þanøo: 2011-11-27
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

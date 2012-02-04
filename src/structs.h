@@ -1846,7 +1846,7 @@ struct window_S
 				       often, keep it the first item!) */
 
 #if defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
-    synblock_T	*w_s;
+    synblock_T	*w_s;		    /* for :ownsyntax */
 #endif
 
 #ifdef FEAT_WINDOWS

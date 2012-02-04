@@ -1939,7 +1939,7 @@ alist_check_arg_idx()
 }
 
 /*
- * Return TRUE if window "win" is editing then file at the current argument
+ * Return TRUE if window "win" is editing the file at the current argument
  * index.
  */
     static int

@@ -2,7 +2,7 @@
 " Language:	SMIL (Synchronized Multimedia Integration Language)
 " Maintainer:	Herve Foucher <Herve.Foucher@helio.org>
 " URL:		http://www.helio.org/vim/syntax/smil.vim
-" Last Change:	2003 May 11
+" Last Change:	2012 Feb 03 by Thilo Six
 
 " To learn more about SMIL, please refer to http://www.w3.org/AudioVideo/
 " and to http://www.helio.org/products/smil/tutorial/
@@ -14,6 +14,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " SMIL is case sensitive
 syn case match
@@ -151,4 +154,6 @@ if main_syntax == 'smil'
   unlet main_syntax
 endif
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8

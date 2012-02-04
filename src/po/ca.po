@@ -1,6 +1,6 @@
 # Catalan messages for vim.
-# Copyright (C) 2003-2008 Ernest Adrogué <eadrogue@gmx.net>.
-# This file is distributed under the GNU General Public License.
+# Copyright (C) 2003-2012 Ernest Adrogué <eadrogue@gmx.net>.
+# This file is distributed under the Vim License.
 #
 msgid ""
 msgstr ""
@@ -13,8 +13,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-Language: Catalan\n"
-"X-Poedit-Country: SPAIN\n"
 
 msgid "E82: Cannot allocate any buffer, exiting..."
 msgstr "E82: No s'ha pogut assignar memòria per cap buffer, sortint..."

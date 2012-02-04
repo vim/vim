@@ -2,17 +2,18 @@
 " Maintainer:  David Baelde        <firstname.name@ens-lyon.org>
 "              Mike Leary          <leary@nwlink.com>
 "              Markus Mottl        <markus.mottl@gmail.com>
+"              Pierre Vittet       <pierre-vittet@pvittet.com>
 "              Stefano Zacchiroli  <zack@bononia.it>
 "              Vincent Aravantinos <firstname.name@imag.fr>
 " URL:         http://www.ocaml.info/vim/ftplugin/ocaml.vim
-" Last Change: 2010 Jul 10 - Bugfix, thanks to Pat Rondon
+" Last Change:
+"              2012 Jan 15 - Bugfix :reloading .annot file does not close
+"              splitted view (Pierre Vittet)
+"              2011 Nov 28 - Bugfix + support of multiple ml annotation file
+"              (Pierre Vittet)
+"              2010 Jul 10 - Bugfix, thanks to Pat Rondon
 "              2008 Jul 17 - Bugfix related to fnameescape (VA)
-"              2007 Sep 09 - Added .annot support for ocamlbuild, python not
-"                            needed anymore (VA)
-"              2006 May 01 - Added .annot support for file.whateverext (SZ)
-"	             2006 Apr 11 - Fixed an initialization bug; fixed ASS abbrev (MM)
-"              2005 Oct 13 - removed GPL; better matchit support (MM, SZ)
-"
+
 if exists("b:did_ftplugin")
   finish
 endif
@@ -287,24 +288,27 @@ endfunction
   endfun
 
     " After call:
-    " - b:annot_file_path :
+    "
+    "  Following information have been put in s:annot_file_list, using
+    "  annot_file_name name as key:
+    " - annot_file_path :
     "                       path to the .annot file corresponding to the
     "                       source file (dealing with ocamlbuild stuff)
-    " - b:_build_path:
+    " - _build_path:
     "                       path to the build directory even if this one is
     "                       not named '_build'
+    " - date_of_last annot:
+    "                       Set to 0 until we load the file. It contains the
+    "                       date at which the file has been loaded.
   function! s:Locate_annotation()
-    if !b:annotation_file_located
-
+    let annot_file_name = s:Fnameescape(expand('%:t:r')).'.annot'
+    if !exists ("s:annot_file_list[annot_file_name]")
       silent exe 'cd' s:Fnameescape(expand('%:p:h'))
-
-      let annot_file_name = s:Fnameescape(expand('%:r')).'.annot'
-
       " 1st case : the annot file is in the same directory as the buffer (no ocamlbuild)
-      let b:annot_file_path = findfile(annot_file_name,'.')
-      if b:annot_file_path != ''
-        let b:annot_file_path = getcwd().'/'.b:annot_file_path
-        let b:_build_path = ''
+      let annot_file_path = findfile(annot_file_name,'.')
+      if annot_file_path != ''
+        let annot_file_path = getcwd().'/'.annot_file_path
+        let _build_path = ''
       else
         " 2nd case : the buffer and the _build directory are in the same directory
         "      ..
@@ -312,12 +316,12 @@ endfunction
         "    /    \
         " _build  .ml
         "
-        let b:_build_path = finddir('_build','.')
-        if b:_build_path != ''
-          let b:_build_path = getcwd().'/'.b:_build_path
-          let b:annot_file_path           = findfile(annot_file_name,'_build')
-          if b:annot_file_path != ''
-            let b:annot_file_path = getcwd().'/'.b:annot_file_path
+        let _build_path = finddir('_build','.')
+        if _build_path != ''
+          let _build_path = getcwd().'/'._build_path
+          let annot_file_path           = findfile(annot_file_name,'_build')
+          if annot_file_path != ''
+            let annot_file_path = getcwd().'/'.annot_file_path
           endif
         else
           " 3rd case : the _build directory is in a directory higher in the file hierarchy
@@ -330,46 +334,54 @@ endfunction
           "            \
           "           .ml
           "
-          let b:_build_path = finddir('_build',';')
-          if b:_build_path != ''
-            let project_path                = substitute(b:_build_path,'/_build$','','')
+          let _build_path = finddir('_build',';')
+          if _build_path != ''
+            let project_path                = substitute(_build_path,'/_build$','','')
             let path_relative_to_project    = s:Fnameescape(substitute(expand('%:p:h'),project_path.'/','',''))
-            let b:annot_file_path           = findfile(annot_file_name,project_path.'/_build/'.path_relative_to_project)
+            let annot_file_path           = findfile(annot_file_name,project_path.'/_build/'.path_relative_to_project)
           else
-            let b:annot_file_path = findfile(annot_file_name,'**')
+            let annot_file_path = findfile(annot_file_name,'**')
             "4th case : what if the user decided to change the name of the _build directory ?
             "           -> we relax the constraints, it should work in most cases
-            if b:annot_file_path != ''
+            if annot_file_path != ''
               " 4a. we suppose the renamed _build directory is in the current directory
-              let b:_build_path = matchstr(b:annot_file_path,'^[^/]*')
-              if b:annot_file_path != ''
-                let b:annot_file_path = getcwd().'/'.b:annot_file_path
-                let b:_build_path     = getcwd().'/'.b:_build_path
+              let _build_path = matchstr(annot_file_path,'^[^/]*')
+              if annot_file_path != ''
+                let annot_file_path = getcwd().'/'.annot_file_path
+                let _build_path     = getcwd().'/'._build_path
               endif
             else
+              let annot_file_name = ''
+              "(Pierre Vittet: I have commented 4b because this was chrashing
+              "my vim (it produced infinite loop))
+              "
               " 4b. anarchy : the renamed _build directory may be higher in the hierarchy
               " this will work if the file for which we are looking annotations has a unique name in the whole project
               " if this is not the case, it may still work, but no warranty here
-              let b:annot_file_path = findfile(annot_file_name,'**;')
-              let project_path      = s:Find_common_path(b:annot_file_path,expand('%:p:h'))
-              let b:_build_path       = matchstr(b:annot_file_path,project_path.'/[^/]*')
+              "let annot_file_path = findfile(annot_file_name,'**;')
+              "let project_path      = s:Find_common_path(annot_file_path,expand('%:p:h'))
+              "let _build_path       = matchstr(annot_file_path,project_path.'/[^/]*')
             endif
           endif
         endif
       endif
 
-      if b:annot_file_path == ''
+      if annot_file_path == ''
         throw 'E484: no annotation file found'
       endif
 
       silent exe 'cd' '-'
-
-      let b:annotation_file_located = 1
+      let s:annot_file_list[annot_file_name]= [annot_file_path, _build_path, 0]
     endif
   endfun
 
-  " This in order to locate the .annot file only once
-  let b:annotation_file_located = 0
+  " This variable contain a dictionnary of list. Each element of the dictionnary
+  " represent an annotation system. An annotation system is a list with :
+  " - annotation file name as it's key
+  " - annotation file path as first element of the contained list
+  " - build path as second element of the contained list
+  " - annot_file_last_mod (contain the date of .annot file) as third element
+  let s:annot_file_list = {}
 
 " 2. Finding the type information in the annotation file
 
@@ -379,16 +391,17 @@ endfunction
       " After call:
       " The current buffer is now the one containing the .annot file.
       " We manage to keep all this hidden to the user's eye.
-    function! s:Enter_annotation_buffer()
+    function! s:Enter_annotation_buffer(annot_file_path)
       let s:current_pos = getpos('.')
       let s:current_hidden = &l:hidden
       set hidden
       let s:current_buf = bufname('%')
-      if bufloaded(b:annot_file_path)
-        silent exe 'keepj keepalt' 'buffer' s:Fnameescape(b:annot_file_path)
+      if bufloaded(a:annot_file_path)
+        silent exe 'keepj keepalt' 'buffer' s:Fnameescape(a:annot_file_path)
       else
-        silent exe 'keepj keepalt' 'view' s:Fnameescape(b:annot_file_path)
+        silent exe 'keepj keepalt' 'view' s:Fnameescape(a:annot_file_path)
       endif
+      call setpos(".", [0, 0 , 0 , 0])
     endfun
 
       " After call:
@@ -402,21 +415,29 @@ endfunction
       " After call:
       "   The annot file is loaded and assigned to a buffer.
       "   This also handles the modification date of the .annot file, eg. after a
-      "   compilation.
-    function! s:Load_annotation()
-      if bufloaded(b:annot_file_path) && b:annot_file_last_mod < getftime(b:annot_file_path)
-        call s:Enter_annotation_buffer()
-        silent exe "bunload"
-        call s:Exit_annotation_buffer()
+      "   compilation (return an updated annot_file_list).
+    function! s:Load_annotation(annot_file_name)
+      let annot = s:annot_file_list[a:annot_file_name]
+      let annot_file_path = annot[0]
+      let annot_file_last_mod = 0
+      if exists("annot[2]")
+        let annot_file_last_mod = annot[2]
       endif
-      if !bufloaded(b:annot_file_path)
-        call s:Enter_annotation_buffer()
+      if bufloaded(annot_file_path) && annot_file_last_mod < getftime(annot_file_path)
+        " if there is a more recent file
+        let nr = bufnr(annot_file_path)
+        silent exe 'keepj keepalt' 'bunload' nr
+      endif
+      if !bufloaded(annot_file_path)
+        call s:Enter_annotation_buffer(annot_file_path)
         setlocal nobuflisted
         setlocal bufhidden=hide
         setlocal noswapfile
         setlocal buftype=nowrite
         call s:Exit_annotation_buffer()
-        let b:annot_file_last_mod = getftime(b:annot_file_path)
+        let annot[2] = getftime(annot_file_path)
+        " List updated with the new date
+        let s:annot_file_list[a:annot_file_name] = annot
       endif
     endfun
 
@@ -466,8 +487,9 @@ endfunction
       "In:  the pattern to look for in order to match the block
       "Out: the type information (calls s:Match_data)
       " Should be called in the annotation buffer
-    function! s:Extract_type_data(block_pattern)
-      call s:Enter_annotation_buffer()
+    function! s:Extract_type_data(block_pattern, annot_file_name)
+      let annot_file_path = s:annot_file_list[a:annot_file_name][0]
+      call s:Enter_annotation_buffer(annot_file_path)
       try
         if search(a:block_pattern,'e') == 0
           throw "no_annotation"
@@ -527,9 +549,9 @@ endfunction
 
       "In:  the current mode (eg. "visual", "normal", etc.)
       "Out: the type information (calls s:Extract_type_data)
-    function! s:Get_type(mode)
+    function! s:Get_type(mode, annot_file_name)
       let [lin1,lin2,col1,col2] = s:Match_borders(a:mode)
-      return s:Extract_type_data(s:Block_pattern(lin1,lin2,col1,col2))
+      return s:Extract_type_data(s:Block_pattern(lin1,lin2,col1,col2), a:annot_file_name)
     endfun
 
   "d. main
@@ -537,9 +559,10 @@ endfunction
       "After call: the type information is displayed
     if !exists("*Ocaml_get_type")
       function Ocaml_get_type(mode)
+        let annot_file_name = s:Fnameescape(expand('%:t:r')).'.annot'
         call s:Locate_annotation()
-        call s:Load_annotation()
-        return s:Get_type(a:mode)
+        call s:Load_annotation(annot_file_name)
+        return s:Get_type(a:mode, annot_file_name)
       endfun
     endif
 

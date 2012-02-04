@@ -15,10 +15,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Français)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-06-21 17:23+0200\n"
-"PO-Revision-Date: 2011-06-21 17:26+0200\n"
+"POT-Creation-Date: 2012-01-22 15:37+0100\n"
+"PO-Revision-Date: 2012-01-22 15:40+0100\n"
 "Last-Translator: Dominique Pellé <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO_8859-15\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -816,6 +817,10 @@ msgstr "E124: Il manque '(' après %s"
 #, c-format
 msgid "E125: Illegal argument: %s"
 msgstr "E125: Argument invalide : %s"
+
+#, c-format
+msgid "E853: Duplicate argument name: %s"
+msgstr "E853: Nom d'argument dupliqué : %s"
 
 msgid "E126: Missing :endfunction"
 msgstr "E126: Il manque :endfunction"
@@ -2241,6 +2246,15 @@ msgstr "Aucun mappage trouvé"
 
 msgid "E228: makemap: Illegal mode"
 msgstr "E228: makemap : mode invalide"
+
+msgid "E851: Failed to create a new process for the GUI"
+msgstr ""
+"E851: Échec lors de la création d'un nouveau processus pour l'interface "
+"graphique"
+
+msgid "E852: The child process failed to start the GUI"
+msgstr ""
+"E852: Le processus fils n'a pas réussi à démarrer l'interface graphique"
 
 msgid "E229: Cannot start the GUI"
 msgstr "E229: Impossible de démarrer l'interface graphique"
@@ -4293,6 +4307,9 @@ msgstr "Tapez la clé à nouveau : "
 msgid "Keys don't match!"
 msgstr "Les clés ne correspondent pas !"
 
+msgid "E854: path too long for completion"
+msgstr "E854: chemin trop long pour complètement"
+
 #, c-format
 msgid ""
 "E343: Invalid path: '**[number]' must be at the end of the path or be "
@@ -4478,8 +4495,8 @@ msgid ""
 "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld "
 "Bytes"
 msgstr ""
-"%s%ld sur %ld Lignes ; %ld sur %ld Mots ; %ld sur %ld Caractères ; %ld sur %"
-"ld octets sélectionnés"
+"%s%ld sur %ld Lignes ; %ld sur %ld Mots ; %ld sur %ld Caractères ; %ld sur "
+"%ld octets sélectionnés"
 
 #, c-format
 msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"
@@ -4491,8 +4508,8 @@ msgid ""
 "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of "
 "%ld"
 msgstr ""
-"Colonne %s sur %s ; Ligne %ld sur %ld ; Mot %ld sur %ld ; Caractère %ld sur %"
-"ld ; Octet %ld sur %ld"
+"Colonne %s sur %s ; Ligne %ld sur %ld ; Mot %ld sur %ld ; Caractère %ld sur "
+"%ld ; Octet %ld sur %ld"
 
 #, c-format
 msgid "(+%ld for BOM)"
@@ -5832,6 +5849,9 @@ msgstr "Examen du fichier de marqueurs %s"
 msgid "E430: Tag file path truncated for %s\n"
 msgstr "E430: Chemin de fichiers de marqueurs tronqué pour %s\n"
 
+msgid "Ignoring long line in tags file"
+msgstr "Ignore longue ligne dans le fichier de marqueurs"
+
 #, c-format
 msgid "E431: Format error in tags file \"%s\""
 msgstr "E431: Erreur de format dans le fichier de marqueurs \"%s\""
@@ -5847,9 +5867,6 @@ msgstr "E432: Le fichier de marqueurs %s n'est pas ordonné"
 #. never opened any tags file
 msgid "E433: No tags file"
 msgstr "E433: Aucun fichier de marqueurs"
-
-msgid "Ignoring long line in tags file"
-msgstr "Ignore longue ligne dans le fichier de marqueurs"
 
 msgid "E434: Can't find tag pattern"
 msgstr "E434: Le motif de marqueur est introuvable"

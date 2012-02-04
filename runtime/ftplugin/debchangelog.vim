@@ -3,8 +3,8 @@
 " Maintainer:   Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
 " Former Maintainers:   Michael Piefel <piefel@informatik.hu-berlin.de>
 "                       Stefano Zacchiroli <zack@debian.org>
-" Last Change:  2010-07-11
-" License:      GNU GPL, version 2.0 or later
+" Last Change:  2012-01-31
+" License:      Vim License
 " URL:          http://hg.debian.org/hg/pkg-vim/vim/file/unstable/runtime/ftplugin/debchangelog.vim
 
 " Bug completion requires apt-listbugs installed for Debian packages or
