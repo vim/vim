@@ -468,6 +468,7 @@ get_py3_exceptions()
 static PyObject *BufferNew (buf_T *);
 static PyObject *WindowNew(win_T *);
 static PyObject *LineToString(const char *);
+static PyObject *BufferDir(PyObject *, PyObject *);
 
 static PyTypeObject RangeType;
 
@@ -961,10 +962,15 @@ BufferGetattro(PyObject *self, PyObject*nameobj)
 	return Py_BuildValue("s", this->buf->b_ffname);
     else if (strcmp(name, "number") == 0)
 	return Py_BuildValue("n", this->buf->b_fnum);
-    else if (strcmp(name,"__members__") == 0)
-	return Py_BuildValue("[ss]", "name", "number");
     else
 	return PyObject_GenericGetAttr(self, nameobj);
+}
+
+    static PyObject *
+BufferDir(PyObject *self UNUSED, PyObject *args UNUSED)
+{
+    return Py_BuildValue("[sssss]", "name", "number",
+						   "append", "mark", "range");
 }
 
     static PyObject *

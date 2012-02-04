@@ -1479,6 +1479,9 @@ static struct PyMethodDef BufferMethods[] = {
     {"append",	    BufferAppend,	1,	    "Append data to Vim buffer" },
     {"mark",	    BufferMark,		1,	    "Return (row,col) representing position of named mark" },
     {"range",	    BufferRange,	1,	    "Return a range object which represents the part of the given buffer between line numbers s and e" },
+#if PY_VERSION_HEX >= 0x03000000
+    {"__dir__",	    BufferDir,		4,	    "List its attributes" },
+#endif
     { NULL,	    NULL,		0,	    NULL }
 };
 
