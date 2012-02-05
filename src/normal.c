@@ -1978,7 +1978,10 @@ do_pending_operator(cap, old_col, gui_yank)
 	    VIsual_reselect = FALSE;	    /* don't reselect now */
 #endif
 	    if (empty_region_error)
+	    {
 		vim_beep();
+		CancelRedo();
+	    }
 	    else
 	    {
 		(void)op_delete(oap);
@@ -1992,7 +1995,10 @@ do_pending_operator(cap, old_col, gui_yank)
 	    if (empty_region_error)
 	    {
 		if (!gui_yank)
+		{
 		    vim_beep();
+		    CancelRedo();
+		}
 	    }
 	    else
 		(void)op_yank(oap, FALSE, !gui_yank);
@@ -2004,7 +2010,10 @@ do_pending_operator(cap, old_col, gui_yank)
 	    VIsual_reselect = FALSE;	    /* don't reselect now */
 #endif
 	    if (empty_region_error)
+	    {
 		vim_beep();
+		CancelRedo();
+	    }
 	    else
 	    {
 		/* This is a new edit command, not a restart.  Need to
@@ -2066,7 +2075,10 @@ do_pending_operator(cap, old_col, gui_yank)
 	case OP_LOWER:
 	case OP_ROT13:
 	    if (empty_region_error)
+	    {
 		vim_beep();
+		CancelRedo();
+	    }
 	    else
 		op_tilde(oap);
 	    check_cursor_col();
@@ -2099,7 +2111,10 @@ do_pending_operator(cap, old_col, gui_yank)
 #endif
 #ifdef FEAT_VISUALEXTRA
 	    if (empty_region_error)
+	    {
 		vim_beep();
+		CancelRedo();
+	    }
 	    else
 	    {
 		/* This is a new edit command, not a restart.  Need to
@@ -2129,7 +2144,10 @@ do_pending_operator(cap, old_col, gui_yank)
 #ifdef FEAT_VISUALEXTRA
 	    if (empty_region_error)
 #endif
+	    {
 		vim_beep();
+		CancelRedo();
+	    }
 #ifdef FEAT_VISUALEXTRA
 	    else
 		op_replace(oap, cap->nchar);

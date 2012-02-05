@@ -470,6 +470,24 @@ ResetRedobuff()
     }
 }
 
+/*
+ * Discard the contents of the redo buffer and restore the previous redo
+ * buffer.
+ */
+    void
+CancelRedo()
+{
+    if (!block_redo)
+    {
+	free_buff(&redobuff);
+	redobuff = old_redobuff;
+	old_redobuff.bh_first.b_next = NULL;
+	start_stuff();
+	while (read_stuff(TRUE) != NUL)
+	    ;
+    }
+}
+
 #if defined(FEAT_AUTOCMD) || defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Save redobuff and old_redobuff to save_redobuff and save_old_redobuff.
@@ -691,9 +709,9 @@ stuffnumReadbuff(n)
  * Read a character from the redo buffer.  Translates K_SPECIAL, CSI and
  * multibyte characters.
  * The redo buffer is left as it is.
- * if init is TRUE, prepare for redo, return FAIL if nothing to redo, OK
- * otherwise
- * if old is TRUE, use old_redobuff instead of redobuff
+ * If init is TRUE, prepare for redo, return FAIL if nothing to redo, OK
+ * otherwise.
+ * If old is TRUE, use old_redobuff instead of redobuff.
  */
     static int
 read_redo(init, old_redo)
