@@ -442,6 +442,7 @@ static int list_concat __ARGS((list_T *l1, list_T *l2, typval_T *tv));
 static list_T *list_copy __ARGS((list_T *orig, int deep, int copyID));
 static void list_remove __ARGS((list_T *l, listitem_T *item, listitem_T *item2));
 static char_u *list2string __ARGS((typval_T *tv, int copyID));
+static int list_join_inner __ARGS((garray_T *gap, list_T *l, char_u *sep, int echo_style, int copyID, garray_T *join_gap));
 static int list_join __ARGS((garray_T *gap, list_T *l, char_u *sep, int echo, int copyID));
 static int free_unref_items __ARGS((int copyID));
 static void set_ref_in_ht __ARGS((hashtab_T *ht, int copyID));
@@ -6571,6 +6572,82 @@ list2string(tv, copyID)
     return (char_u *)ga.ga_data;
 }
 
+typedef struct join_S {
+    char_u	*s;
+    char_u	*tofree;
+} join_T;
+
+    static int
+list_join_inner(gap, l, sep, echo_style, copyID, join_gap)
+    garray_T	*gap;		/* to store the result in */
+    list_T	*l;
+    char_u	*sep;
+    int		echo_style;
+    int		copyID;
+    garray_T	*join_gap;	/* to keep each list item string */
+{
+    int		i;
+    join_T	*p;
+    int		len;
+    int		sumlen = 0;
+    int		first = TRUE;
+    char_u	*tofree;
+    char_u	numbuf[NUMBUFLEN];
+    listitem_T	*item;
+    char_u	*s;
+
+    /* Stringify each item in the list. */
+    for (item = l->lv_first; item != NULL && !got_int; item = item->li_next)
+    {
+	if (echo_style)
+	    s = echo_string(&item->li_tv, &tofree, numbuf, copyID);
+	else
+	    s = tv2string(&item->li_tv, &tofree, numbuf, copyID);
+	if (s == NULL)
+	    return FAIL;
+
+	len = (int)STRLEN(s);
+	sumlen += len;
+
+	ga_grow(join_gap, 1);
+	p = ((join_T *)join_gap->ga_data) + (join_gap->ga_len++);
+	if (tofree != NULL || s != numbuf)
+	{
+	    p->s = s;
+	    p->tofree = tofree;
+	}
+	else
+	{
+	    p->s = vim_strnsave(s, len);
+	    p->tofree = p->s;
+	}
+
+	line_breakcheck();
+    }
+
+    /* Allocate result buffer with its total size, avoid re-allocation and
+     * multiple copy operations.  Add 2 for a tailing ']' and NUL. */
+    if (join_gap->ga_len >= 2)
+	sumlen += (int)STRLEN(sep) * (join_gap->ga_len - 1);
+    if (ga_grow(gap, sumlen + 2) == FAIL)
+	return FAIL;
+
+    for (i = 0; i < join_gap->ga_len && !got_int; ++i)
+    {
+	if (first)
+	    first = FALSE;
+	else
+	    ga_concat(gap, sep);
+	p = ((join_T *)join_gap->ga_data) + i;
+
+	if (p->s != NULL)
+	    ga_concat(gap, p->s);
+	line_breakcheck();
+    }
+
+    return OK;
+}
+
 /*
  * Join list "l" into a string in "*gap", using separator "sep".
  * When "echo_style" is TRUE use String as echoed, otherwise as inside a List.
@@ -6584,31 +6661,27 @@ list_join(gap, l, sep, echo_style, copyID)
     int		echo_style;
     int		copyID;
 {
-    int		first = TRUE;
-    char_u	*tofree;
-    char_u	numbuf[NUMBUFLEN];
-    listitem_T	*item;
-    char_u	*s;
+    garray_T	join_ga;
+    int		retval;
+    join_T	*p;
+    int		i;
 
-    for (item = l->lv_first; item != NULL && !got_int; item = item->li_next)
+    ga_init2(&join_ga, (int)sizeof(join_T), l->lv_len);
+    retval = list_join_inner(gap, l, sep, echo_style, copyID, &join_ga);
+
+    /* Dispose each item in join_ga. */
+    if (join_ga.ga_data != NULL)
     {
-	if (first)
-	    first = FALSE;
-	else
-	    ga_concat(gap, sep);
-
-	if (echo_style)
-	    s = echo_string(&item->li_tv, &tofree, numbuf, copyID);
-	else
-	    s = tv2string(&item->li_tv, &tofree, numbuf, copyID);
-	if (s != NULL)
-	    ga_concat(gap, s);
-	vim_free(tofree);
-	if (s == NULL)
-	    return FAIL;
-	line_breakcheck();
+	p = (join_T *)join_ga.ga_data;
+	for (i = 0; i < join_ga.ga_len; ++i)
+	{
+	    vim_free(p->tofree);
+	    ++p;
+	}
+	ga_clear(&join_ga);
     }
-    return OK;
+
+    return retval;
 }
 
 /*
@@ -13406,7 +13479,7 @@ get_maparg(argvars, rettv, exact)
     char_u	*rhs;
     int		mode;
     int		abbr = FALSE;
-    int         get_dict = FALSE;
+    int		get_dict = FALSE;
     mapblock_T	*mp;
     int		buffer_local;
 
