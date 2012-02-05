@@ -11328,7 +11328,47 @@ fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for Solaris ACL support" >&5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for acl_get in -lsec" >&5
+$as_echo_n "checking for acl_get in -lsec... " >&6; }
+if test "${ac_cv_lib_sec_acl_get+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lsec  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char acl_get ();
+int
+main ()
+{
+return acl_get ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_sec_acl_get=yes
+else
+  ac_cv_lib_sec_acl_get=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_sec_acl_get" >&5
+$as_echo "$ac_cv_lib_sec_acl_get" >&6; }
+if test "x$ac_cv_lib_sec_acl_get" = x""yes; then :
+  LIBS="$LIBS -lsec"; $as_echo "#define HAVE_SOLARIS_ZFS_ACL 1" >>confdefs.h
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Solaris ACL support" >&5
 $as_echo_n "checking for Solaris ACL support... " >&6; }
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -11355,6 +11395,8 @@ $as_echo "no" >&6; }
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+fi
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for AIX ACL support" >&5
 $as_echo_n "checking for AIX ACL support... " >&6; }

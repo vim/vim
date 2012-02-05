@@ -3106,6 +3106,7 @@ AC_TRY_LINK([
 
 dnl Link with -lposix1e for ACL stuff; if not found, try -lacl for SGI
 dnl when -lacl works, also try to use -lattr (required for Debian).
+dnl On Solaris, use the acl_get/set functions in libsec, if present.
 AC_MSG_CHECKING(--disable-acl argument)
 AC_ARG_ENABLE(acl,
 	[  --disable-acl           Don't check for ACL support.],
@@ -3128,6 +3129,7 @@ acl_t acl;], [acl = acl_get_file("foo", ACL_TYPE_ACCESS);
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_POSIX_ACL),
 	AC_MSG_RESULT(no))
 
+AC_CHECK_LIB(sec, acl_get, [LIBS="$LIBS -lsec"; AC_DEFINE(HAVE_SOLARIS_ZFS_ACL)],
 AC_MSG_CHECKING(for Solaris ACL support)
 AC_TRY_LINK([
 #ifdef HAVE_SYS_ACL_H
@@ -3135,7 +3137,7 @@ AC_TRY_LINK([
 #endif], [acl("foo", GETACLCNT, 0, NULL);
 	],
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SOLARIS_ACL),
-	AC_MSG_RESULT(no))
+	AC_MSG_RESULT(no)))
 
 AC_MSG_CHECKING(for AIX ACL support)
 AC_TRY_LINK([

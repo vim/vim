@@ -363,6 +363,7 @@
 
 /* Define if you want to add support for ACL */
 #undef HAVE_POSIX_ACL
+#undef HAVE_SOLARIS_ZFS_ACL
 #undef HAVE_SOLARIS_ACL
 #undef HAVE_AIX_ACL
 
