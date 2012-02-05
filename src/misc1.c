@@ -3105,8 +3105,9 @@ ask_yesno(str, direct)
     int
 get_keystroke()
 {
-#define CBUFLEN 151
-    char_u	buf[CBUFLEN];
+    char_u	*buf = NULL;
+    int		buflen = 150;
+    int		maxlen;
     int		len = 0;
     int		n;
     int		save_mapped_ctrl_c = mapped_ctrl_c;
@@ -3118,12 +3119,29 @@ get_keystroke()
 	cursor_on();
 	out_flush();
 
+	/* Leave some room for check_termcode() to insert a key code into (max
+	 * 5 chars plus NUL).  And fix_input_buffer() can triple the number of
+	 * bytes. */
+	maxlen = (buflen - 6 - len) / 3;
+	if (buf == NULL)
+	    buf = alloc(buflen);
+	else if (maxlen < 10)
+	{
+	    /* Need some more space. This migth happen when receiving a long
+	     * escape sequence. */
+	    buflen += 100;
+	    buf = vim_realloc(buf, buflen);
+	    maxlen = (buflen - 6 - len) / 3;
+	}
+	if (buf == NULL)
+	{
+	    do_outofmem_msg((long_u)buflen);
+	    return ESC;  /* panic! */
+	}
+
 	/* First time: blocking wait.  Second time: wait up to 100ms for a
-	 * terminal code to complete.  Leave some room for check_termcode() to
-	 * insert a key code into (max 5 chars plus NUL).  And
-	 * fix_input_buffer() can triple the number of bytes. */
-	n = ui_inchar(buf + len, (CBUFLEN - 6 - len) / 3,
-						    len == 0 ? -1L : 100L, 0);
+	 * terminal code to complete. */
+	n = ui_inchar(buf + len, maxlen, len == 0 ? -1L : 100L, 0);
 	if (n > 0)
 	{
 	    /* Replace zero and CSI by a special key code. */
@@ -3135,7 +3153,7 @@ get_keystroke()
 	    ++waited;	    /* keep track of the waiting time */
 
 	/* Incomplete termcode and not timed out yet: get more characters */
-	if ((n = check_termcode(1, buf, len)) < 0
+	if ((n = check_termcode(1, buf, buflen, &len)) < 0
 	       && (!p_ttimeout || waited * 100L < (p_ttm < 0 ? p_tm : p_ttm)))
 	    continue;
 
@@ -3203,7 +3221,7 @@ get_keystroke()
 	{
 	    if (MB_BYTE2LEN(n) > len)
 		continue;	/* more bytes to get */
-	    buf[len >= CBUFLEN ? CBUFLEN - 1 : len] = NUL;
+	    buf[len >= buflen ? buflen - 1 : len] = NUL;
 	    n = (*mb_ptr2char)(buf);
 	}
 #endif
@@ -3213,6 +3231,7 @@ get_keystroke()
 #endif
 	break;
     }
+    vim_free(buf);
 
     mapped_ctrl_c = save_mapped_ctrl_c;
     return n;

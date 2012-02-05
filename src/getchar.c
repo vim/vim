@@ -2282,7 +2282,8 @@ vgetorpeek(advance)
 						   typebuf.tb_off] == RM_YES))
 				&& !timedout)
 			{
-			    keylen = check_termcode(max_mlen + 1, NULL, 0);
+			    keylen = check_termcode(max_mlen + 1,
+							       NULL, 0, NULL);
 
 			    /* If no termcode matched but 'pastetoggle'
 			     * matched partially it's like an incomplete key

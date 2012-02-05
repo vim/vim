@@ -3785,14 +3785,16 @@ set_mouse_topline(wp)
  * With a match, the match is removed, the replacement code is inserted in
  * typebuf.tb_buf[] and the number of characters in typebuf.tb_buf[] is
  * returned.
- * When "buf" is not NULL, it is used instead of typebuf.tb_buf[]. "buflen" is
- * then the length of the string in buf[].
+ * When "buf" is not NULL, buf[bufsize] is used instead of typebuf.tb_buf[].
+ * "buflen" is then the length of the string in buf[] and is updated for
+ * inserts and deletes.
  */
     int
-check_termcode(max_offset, buf, buflen)
+check_termcode(max_offset, buf, bufsize, buflen)
     int		max_offset;
     char_u	*buf;
-    int		buflen;
+    int		bufsize;
+    int		*buflen;
 {
     char_u	*tp;
     char_u	*p;
@@ -3864,10 +3866,10 @@ check_termcode(max_offset, buf, buflen)
 	}
 	else
 	{
-	    if (offset >= buflen)
+	    if (offset >= *buflen)
 		break;
 	    tp = buf + offset;
-	    len = buflen - offset;
+	    len = *buflen - offset;
 	}
 
 	/*
@@ -5002,12 +5004,18 @@ check_termcode(max_offset, buf, buflen)
 	    if (extra < 0)
 		/* remove matched characters */
 		mch_memmove(buf + offset, buf + offset - extra,
-					   (size_t)(buflen + offset + extra));
+					   (size_t)(*buflen + offset + extra));
 	    else if (extra > 0)
-		/* insert the extra space we need */
+	    {
+		/* Insert the extra space we need.  If there is insufficient
+		 * space return -1. */
+		if (*buflen + extra + new_slen >= bufsize)
+		    return -1;
 		mch_memmove(buf + offset + extra, buf + offset,
-						   (size_t)(buflen - offset));
+						   (size_t)(*buflen - offset));
+	    }
 	    mch_memmove(buf + offset, string, (size_t)new_slen);
+	    *buflen = *buflen + extra + new_slen;
 	}
 	return retval == 0 ? (len + extra + offset) : retval;
     }
