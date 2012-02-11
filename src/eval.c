@@ -14462,7 +14462,7 @@ f_readfile(argvars, rettv)
 			    --prevlen;
 		}
 		if (prevlen == 0)
-		    s = vim_strnsave(start, len);
+		    s = vim_strnsave(start, (int)len);
 		else
 		{
 		    /* Change "prev" buffer to be the right size.  This way
@@ -14529,7 +14529,7 @@ f_readfile(argvars, rettv)
 
 			if (dest < buf)
 			{
-			    adjust_prevlen = buf - dest; /* must be 1 or 2 */
+			    adjust_prevlen = (int)(buf - dest); /* must be 1 or 2 */
 			    dest = buf;
 			}
 			if (readlen > p - buf + 1)
@@ -14558,11 +14558,11 @@ f_readfile(argvars, rettv)
 		 * small, to avoid repeatedly 'allocing' large and
 		 * 'reallocing' small. */
 		if (prevsize == 0)
-		    prevsize = p - start;
+		    prevsize = (long)(p - start);
 		else
 		{
 		    long grow50pc = (prevsize * 3) / 2;
-		    long growmin  = (p - start) * 2 + prevlen;
+		    long growmin  = (long)((p - start) * 2 + prevlen);
 		    prevsize = grow50pc > growmin ? grow50pc : growmin;
 		}
 		if ((newprev = vim_realloc(prev, prevsize)) == NULL)
@@ -14575,7 +14575,7 @@ f_readfile(argvars, rettv)
 	    }
 	    /* Add the line part to end of "prev". */
 	    mch_memmove(prev + prevlen, start, p - start);
-	    prevlen += p - start;
+	    prevlen += (long)(p - start);
 	}
     } /* while */
 
