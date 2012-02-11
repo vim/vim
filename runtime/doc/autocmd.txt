@@ -1073,13 +1073,8 @@ option will not cause any commands to be executed.
 			autocommands for that group.  Note: if you use an
 			undefined group name, Vim gives you an error message.
 
-			After applying the autocommands the modelines are
-			processed, so that their settings overrule the
-			settings from autocommands, like what happens when
-			editing a file.
-
 						*:doautoa* *:doautoall*
-:doautoa[ll] [group] {event} [fname]
+:doautoa[ll] [<nomodeline>] [group] {event} [fname]
 			Like ":doautocmd", but apply the autocommands to each
 			loaded buffer.  Note that [fname] is used to select
 			the autocommands, not the buffers to which they are
@@ -1089,6 +1084,12 @@ option will not cause any commands to be executed.
 			contents of a buffer; the result is unpredictable.
 			This command is intended for autocommands that set
 			options, change highlighting, and things like that.
+
+			After applying the autocommands the modelines are
+			processed, so that their settings overrule the
+			settings from autocommands, like what happens when
+			editing a file. This is skipped when the <nomodeline>
+			argument is present.
 
 ==============================================================================
 10. Using autocommands					*autocmd-use*

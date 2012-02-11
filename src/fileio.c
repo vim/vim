@@ -8739,6 +8739,14 @@ ex_doautoall(eap)
     int		retval;
     aco_save_T	aco;
     buf_T	*buf;
+    char_u	*arg = eap->arg;
+    int		call_do_modelines = TRUE;
+
+    if (STRNCMP(arg, "<nomodeline>", 12) == 0)
+    {
+	call_do_modelines = FALSE;
+	arg = skipwhite(arg + 12);
+    }
 
     /*
      * This is a bit tricky: For some commands curwin->w_buffer needs to be
@@ -8755,11 +8763,15 @@ ex_doautoall(eap)
 	    aucmd_prepbuf(&aco, buf);
 
 	    /* execute the autocommands for this buffer */
-	    retval = do_doautocmd(eap->arg, FALSE);
+	    retval = do_doautocmd(arg, FALSE);
 
-	    /* Execute the modeline settings, but don't set window-local
-	     * options if we are using the current window for another buffer. */
-	    do_modelines(curwin == aucmd_win ? OPT_NOWIN : 0);
+	    if (call_do_modelines)
+	    {
+		/* Execute the modeline settings, but don't set window-local
+		 * options if we are using the current window for another
+		 * buffer. */
+		do_modelines(curwin == aucmd_win ? OPT_NOWIN : 0);
+	    }
 
 	    /* restore the current window */
 	    aucmd_restbuf(&aco);
