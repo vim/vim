@@ -3400,7 +3400,7 @@ getsourceline(c, cookie, indent)
 {
     struct source_cookie *sp = (struct source_cookie *)cookie;
     char_u		*line;
-    char_u		*p, *s;
+    char_u		*p;
 
 #ifdef FEAT_EVAL
     /* If breakpoints have been added/deleted need to check for it. */
@@ -3471,6 +3471,8 @@ getsourceline(c, cookie, indent)
 #ifdef FEAT_MBYTE
     if (line != NULL && sp->conv.vc_type != CONV_NONE)
     {
+	char_u	*s;
+
 	/* Convert the encoding of the script line. */
 	s = string_convert(&sp->conv, line, NULL);
 	if (s != NULL)
