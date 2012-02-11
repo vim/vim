@@ -8898,10 +8898,11 @@ aucmd_restbuf(aco)
 		    if (tp != curtab)
 			goto_tabpage_tp(tp);
 		    win_goto(aucmd_win);
-		    break;
+		    goto win_found;
 		}
 	    }
 	}
+win_found:
 
 	/* Remove the window and frame from the tree of frames. */
 	(void)winframe_remove(curwin, &dummy, NULL);
