@@ -6,7 +6,7 @@ INPUT
 T_VIOBJNOMUNGE
 	if (sv_isa($arg, \"${ntype}\")) {
 	    IV tmp = SvIV((SV*)SvRV($arg));
-	    $var = ($type) tmp;
+	    $var = INT2PTR($type, tmp);
 	    if (!tmp)
 		croak(\"$ntype no longer exists\");
 	}

@@ -611,7 +611,7 @@ newWINrv(rv, ptr)
     if (ptr->w_perl_private == NULL)
     {
 	ptr->w_perl_private = newSV(0);
-	sv_setiv(ptr->w_perl_private, (IV)ptr);
+	sv_setiv(ptr->w_perl_private, PTR2IV(ptr));
     }
     else
 	SvREFCNT_inc(ptr->w_perl_private);
@@ -629,7 +629,7 @@ newBUFrv(rv, ptr)
     if (ptr->b_perl_private == NULL)
     {
 	ptr->b_perl_private = newSV(0);
-	sv_setiv(ptr->b_perl_private, (IV)ptr);
+	sv_setiv(ptr->b_perl_private, PTR2IV(ptr));
     }
     else
 	SvREFCNT_inc(ptr->b_perl_private);
