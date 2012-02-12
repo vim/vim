@@ -35,6 +35,7 @@ void au_event_restore __ARGS((char_u *old_ei));
 void do_autocmd __ARGS((char_u *arg, int forceit));
 int do_doautocmd __ARGS((char_u *arg, int do_msg));
 void ex_doautoall __ARGS((exarg_T *eap));
+int check_nomodeline __ARGS((char_u **argp));
 void aucmd_prepbuf __ARGS((aco_save_T *aco, buf_T *buf));
 void aucmd_restbuf __ARGS((aco_save_T *aco));
 int apply_autocmds __ARGS((event_T event, char_u *fname, char_u *fname_io, int force, buf_T *buf));

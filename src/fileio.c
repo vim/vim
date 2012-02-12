@@ -8740,13 +8740,7 @@ ex_doautoall(eap)
     aco_save_T	aco;
     buf_T	*buf;
     char_u	*arg = eap->arg;
-    int		call_do_modelines = TRUE;
-
-    if (STRNCMP(arg, "<nomodeline>", 12) == 0)
-    {
-	call_do_modelines = FALSE;
-	arg = skipwhite(arg + 12);
-    }
+    int		call_do_modelines = check_nomodeline(&arg);
 
     /*
      * This is a bit tricky: For some commands curwin->w_buffer needs to be
@@ -8783,6 +8777,23 @@ ex_doautoall(eap)
     }
 
     check_cursor();	    /* just in case lines got deleted */
+}
+
+/*
+ * Check *argp for <nomodeline>.  When it is present return FALSE, otherwise
+ * return TRUE and advance *argp to after it.
+ * Thus return TRUE when do_modelines() should be called.
+ */
+    int
+check_nomodeline(argp)
+    char_u **argp;
+{
+    if (STRNCMP(*argp, "<nomodeline>", 12) == 0)
+    {
+	*argp = skipwhite(*argp + 12);
+	return FALSE;
+    }
+    return TRUE;
 }
 
 /*
