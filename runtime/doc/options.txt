@@ -6041,8 +6041,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'shellxquote'* *'sxq'*
 'shellxquote' 'sxq'	string	(default: "";
-					for Win32, when 'shell' contains "sh"
-					somewhere: "\""
+					for Win32, when 'shell' is cmd.exe or
+					contains "sh" somewhere: "\""
 					for Unix, when using system(): "\"")
 			global
 			{not in Vi}
@@ -6050,11 +6050,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	the "!" and ":!" commands.  Includes the redirection.  See
 	'shellquote' to exclude the redirection.  It's probably not useful
 	to set both options.
-	This is an empty string by default.  Known to be useful for
-	third-party shells when using the Win32 version, such as the MKS Korn
-	Shell or bash, where it should be "\"".  The default is adjusted
-	according the value of 'shell', to reduce the need to set this option
-	by the user.  See |dos-shell|.
+	This is an empty string by default on most systems, but is known to be
+	useful for on Win32 version, either for cmd.exe which automatically
+	strips off the first and last quote on a command, or 3rd-party shells
+	such as the MKS Korn Shell or bash, where it should be "\"".  The
+	default is adjusted according the value of 'shell', to reduce the need
+	to set this option by the user.  See |dos-shell|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
