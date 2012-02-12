@@ -63,6 +63,12 @@ A 3:close
 :" write "testtext 1"
 A 3:close!
 :w >>test.out
+:set nohidden
+:" test ":all!" hides changed buffer; write "testtext 2 2 2"
+:sp Xtest4
+GA 4:all!
+:1wincmd w
+:w >>test.out
 :qa!
 ENDTEST
 
