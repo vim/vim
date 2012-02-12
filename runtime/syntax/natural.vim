@@ -1,9 +1,9 @@
 " Vim syntax file
 "
 " Language:	NATURAL
-" Version:	2.1.0.3
+" Version:	2.1.0.5
 " Maintainer:	Marko von Oppen <marko@von-oppen.com>
-" Last Changed:	2008-07-29 01:40:52
+" Last Changed:	2012-02-05 18:50:43
 " Support:	http://www.von-oppen.com/
 
 " For version 5.x: Clear all syntax items
@@ -16,6 +16,9 @@ elseif exists("b:current_syntax")
 else
   setlocal iskeyword+=-,*,#,+,_,/
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " NATURAL is case insensitive
 syntax case ignore
@@ -206,4 +209,7 @@ endif
 
 let b:current_syntax = "natural"
 
-" vim:set ts=8 sw=8 noet ft=vim:
+let &cpo = s:cpo_save
+unlet s:cpo_save
+
+" vim:set ts=8 sw=8 noet ft=vim list:

@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.3.  Last change: 2012 Jan 20
+*autocmd.txt*   For Vim version 7.3.  Last change: 2012 Feb 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1053,7 +1053,7 @@ Note that the 'eventignore' option applies here too.  Events listed in this
 option will not cause any commands to be executed.
 
 					*:do* *:doau* *:doautocmd* *E217*
-:do[autocmd] [group] {event} [fname]
+:do[autocmd] [<nomodeline>] [group] {event} [fname]
 			Apply the autocommands matching [fname] (default:
 			current file name) for {event} to the current buffer.
 			You can use this when the current file name does not

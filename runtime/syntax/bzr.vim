@@ -1,10 +1,10 @@
 " Vim syntax file
 " Language:     Bazaar (bzr) commit file
-" Maintainer:   Dmitry Vasiliev <dima at hlabs dot spb dot ru>
-" URL:          http://www.hlabs.spb.ru/vim/bzr.vim
-" Last Change:  2009-01-27
+" Maintainer:   Dmitry Vasiliev <dima at hlabs dot org>
+" URL:          https://github.com/hdima/vim-scripts/blob/master/syntax/bzr.vim
+" Last Change:  2012-02-11
 " Filenames:    bzr_log.*
-" Version:      1.2.1
+" Version:      1.2.2
 "
 " Thanks:
 "

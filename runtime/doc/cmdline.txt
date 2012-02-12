@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.3.  Last change: 2011 Mar 27
+*cmdline.txt*   For Vim version 7.3.  Last change: 2012 Feb 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -425,6 +425,8 @@ The 'wildchar' option defaults to <Tab> (CTRL-E when in Vi compatible mode; in
 a previous version <Esc> was used).  In the pattern standard wildcards '*' and
 '?' are accepted when matching file names.  '*' matches any string, '?'
 matches exactly one character.
+
+The 'wildignorecase' option can be set to ignore case in filenames.
 
 If you like tcsh's autolist completion, you can use this mapping:
 	:cnoremap X <C-L><C-D>

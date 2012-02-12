@@ -1,10 +1,10 @@
 " Vim syntax file
 " Language:     Subversion (svn) commit file
-" Maintainer:   Dmitry Vasiliev <dima at hlabs dot spb dot ru>
-" URL:          http://www.hlabs.spb.ru/vim/svn.vim
-" Revision:     $Id: svn.vim 683 2008-07-30 11:52:38Z hdima $
+" Maintainer:   Dmitry Vasiliev <dima at hlabs dot org>
+" URL:          https://github.com/hdima/vim-scripts/blob/master/syntax/svn.vim
+" Last Change:  2012-02-11
 " Filenames:    svn-commit*.tmp
-" Version:      1.6
+" Version:      1.7
 
 " Contributors:
 "   Stefano Zacchiroli

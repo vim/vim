@@ -3,7 +3,7 @@
 " Maintainer:	Andriy Sokolov	<andriy145@gmail.com>
 " Original Author:	Manuel M.H. Stol	<Manuel.Stol@allieddata.nl>
 " Former Maintainer:	Manuel M.H. Stol	<Manuel.Stol@allieddata.nl>
-" Last Change:	2010 Sep 24
+" Last Change:	2012 Feb 7
 " NASM Home:	http://www.nasm.us/
 
 
@@ -48,14 +48,14 @@ syn cluster nasmGrpComments	contains=@nasmGrpInComments,nasmComment,nasmSpecialC
 "  in NASM: 'Everything is a Label'
 "  Definition Label = label defined by %[i]define or %[i]assign
 "  Identifier Label = label defined as first non-keyword on a line or %[i]macro
-syn match   nasmLabelError	"$\=\(\d\+\K\|[#\.@]\|\$\$\k\)\k*\>"
+syn match   nasmLabelError	"$\=\(\d\+\K\|[#.@]\|\$\$\k\)\k*\>"
 syn match   nasmLabel		"\<\(\h\|[?@]\)\k*\>"
 syn match   nasmLabel		"[\$\~]\(\h\|[?@]\)\k*\>"lc=1
 "  Labels starting with one or two '.' are special
 syn match   nasmLocalLabel	"\<\.\(\w\|[#$?@~]\)\k*\>"
 syn match   nasmLocalLabel	"\<\$\.\(\w\|[#$?@~]\)\k*\>"ms=s+1
 if !exists("nasm_no_warn")
-  syn match  nasmLabelWarn	"\<\~\=\$\=[_\.][_\.\~]*\>"
+  syn match  nasmLabelWarn	"\<\~\=\$\=[_.][_.\~]*\>"
 endif
 if exists("nasm_loose_syntax")
   syn match   nasmSpecialLabel	"\<\.\.@\k\+\>"
@@ -90,7 +90,6 @@ syn match   nasmHexNumber	"\<\~\(\d\x*h\|0x\x\+\|\$\d\x*\)\>"lc=1
 syn match   nasmFltNumber	"\<\d\+\.\d*\(e[+-]\=\d\+\)\=\>"
 syn keyword nasmFltNumber	Inf Infinity Indefinite NaN SNaN QNaN
 syn match   nasmNumberError	"\<\~\s*\d\+\.\d*\(e[+-]\=\d\+\)\=\>"
-
 
 
 " Netwide Assembler Storage Directives:
@@ -181,7 +180,7 @@ if exists("nasm_ctx_outside_macro")
   syn region nasmPreConditDef	transparent matchgroup=nasmCtxPreCondit start="^\s*%ifnctx\>"hs=e-6 start="^\s*%ifctx\>"hs=e-5 end="%endif\>" contains=@nasmGrpCntnPreCon
   syn match  nasmCtxPreProc	"^\s*%pop\>"hs=e-3
   if exists("nasm_loose_syntax")
-    syn match   nasmCtxLocLabel	"%$\+\(\w\|[#\.?@~]\)\k*\>"
+    syn match   nasmCtxLocLabel	"%$\+\(\w\|[#.?@~]\)\k*\>"
   else
     syn match   nasmCtxLocLabel	"%$\+\(\h\|[?@]\)\k*\>"
   endif
@@ -249,10 +248,10 @@ syn match   nasmRegisterError	"\<X\=MM[8-9]\>"
 syn match   nasmRegisterError	"\<ST\((\d)\|[8-9]\>\)"
 syn match   nasmRegisterError	"\<E\([A-D][HL]\|[C-GS]S\)\>"
 "  Memory reference operand (address):
-syn match   nasmMemRefError	"[\[\]]"
+syn match   nasmMemRefError	"[[\]]"
 syn cluster nasmGrpCntnMemRef	contains=ALLBUT,@nasmGrpComments,@nasmGrpPreProcs,@nasmGrpInStrucs,nasmMemReference,nasmMemRefError
-syn match   nasmInMacMemRef	contained "\[[^;\[\]]\{-}\]" contains=@nasmGrpCntnMemRef,nasmPreProcError,nasmInMacLabel,nasmInMacLblWarn,nasmInMacParam
-syn match   nasmMemReference	"\[[^;\[\]]\{-}\]" contains=@nasmGrpCntnMemRef,nasmPreProcError,nasmCtxLocLabel
+syn match   nasmInMacMemRef	contained "\[[^;[\]]\{-}\]" contains=@nasmGrpCntnMemRef,nasmPreProcError,nasmInMacLabel,nasmInMacLblWarn,nasmInMacParam
+syn match   nasmMemReference	"\[[^;[\]]\{-}\]" contains=@nasmGrpCntnMemRef,nasmPreProcError,nasmCtxLocLabel
 
 
 

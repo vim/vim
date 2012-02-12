@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2012 Jan 13
+*options.txt*	For Vim version 7.3.  Last change: 2012 Feb 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5899,8 +5899,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	security reasons.
 
 						*'shellcmdflag'* *'shcf'*
-'shellcmdflag' 'shcf'	string	(default: "-c", MS-DOS and Win32, when 'shell'
-					does not contain "sh" somewhere: "/c")
+'shellcmdflag' 'shcf'	string	(default: "-c";
+				 Win32, when 'shell' is cmd.exe: "/s /c";
+				 MS-DOS and Win32, when 'shell' neither is
+				 cmd.exe nor contains "sh" somewhere: "/c")
 			global
 			{not in Vi}
 	Flag passed to the shell to execute "!" and ":!" commands; e.g.,

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 Feb 03
+" Last Change:	2012 Feb 05
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -2546,7 +2546,7 @@ au BufNewFile,BufRead *.txt,*.text		setf text
 runtime! ftdetect/*.vim
 
 " NOTE: The above command could have ended the filetypedetect autocmd group
-" and started another one. Let's make sure it has ended to get to a consistant
+" and started another one. Let's make sure it has ended to get to a consistent
 " state.
 augroup END
 

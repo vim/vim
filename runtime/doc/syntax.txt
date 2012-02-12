@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2012 Jan 20
+*syntax.txt*	For Vim version 7.3.  Last change: 2012 Feb 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -986,9 +986,9 @@ Example: >
 or >
 	// vim:syntax=c.doxygen
 
-It can also be done automatically for C, C++, C# and IDL files by setting the
-global or buffer-local variable load_doxygen_syntax.  This is done by adding
-the following to your .vimrc. >
+It can also be done automatically for C, C++, C#, IDL and PHP files by setting
+the global or buffer-local variable load_doxygen_syntax.  This is done by
+adding the following to your .vimrc. >
 	:let g:load_doxygen_syntax=1
 
 There are a couple of variables that have an effect on syntax highlighting, and
@@ -1742,19 +1742,10 @@ instead, and the name of your source file should be *.pike
 
 LUA						*lua.vim* *ft-lua-syntax*
 
-This syntax file may be used for Lua 4.0, Lua 5.0 or Lua 5.1 (the latter is
+The Lua syntax file can be used for versions 4.0, 5.0, 5.1 and 5.2 (5.2 is
 the default). You can select one of these versions using the global variables
 lua_version and lua_subversion. For example, to activate Lua
-4.0 syntax highlighting, use this command: >
-
-	:let lua_version = 4
-
-If you are using Lua 5.0, use these commands: >
-
-	:let lua_version = 5
-	:let lua_subversion = 0
-
-To restore highlighting for Lua 5.1: >
+5.1 syntax highlighting, set the variables like this:
 
 	:let lua_version = 5
 	:let lua_subversion = 1

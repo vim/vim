@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Feb 04
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Feb 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41,60 +41,12 @@ Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 Once syntax and other runtime files have been fixed: add "set cp" to
 check.vim.  Use a function to run both with 'cp' and 'nocp'.
 
-Repeating search history entries. (Edwin Steiner, 2012 Jan 17)
-Jan 18: Caused by patch 7.3.265?
-
-Patch for '$' not being displayed for a change when 'cpoptions' contains "$".
-(Yasuhiro Matsumoto, 2012 Jan 28, patch by Hideki EIRAKU and Hirohito Higashi)
-
-Patch to speed up readfile(). (John Little, 2012 Feb 1)
-Adjustment by Charles Peacech, Feb 3.
-8   When editing a file with extremely long lines (e.g., an executable), the
-    "linerest" in readfile() is allocated twice to be able to copy what was
-    read so far.  Use realloc() instead?  Or split the line when allocating
-    memory fails and "linerest" is big (> 100000)?
-
-Patch to fix a crash when an xpm file is invalid. (Dave Bodenstab, 2012 Jan
-27)
-
-Hang in using VimEnter. (Alex Efros, 2012 Jan 14)
-
-Patch for behavior of "." in compatible mode. (Yasuhiro Matsumoto, patch by
-Hideki EIRAKU, 2012 Jan 28)
-
-":cd" doesn't work when current directory path contains wildcards.
-finddir() has the same problem.  (Yukihiro Nakadaira, 2012 Jan 10)
+GTK: problem with 'L' in 'guioptions' changing the window width.
+(Aaron Cornelius, 2012 Feb 6)
 
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
-
-Patch to add support for Solaris ZFS ACLs. (Danek Duvall, 2012 Jan 13)
-
-Patch to make continued lines work faster. (Yasuhiro Matsumoto, 2012 Jan 11)
-
-Also an idea to make join() faster. (Yasuhiro Matsumoto, 2012 Jan 11)
-Another one from Taro Muraoka, 2012 Jan 12.
-
-":doau" says it triggers modeline.  Should this only happen for events used
-when loading a buffer?  (Kana Natsuno, 2011 Nov 7)
-
-Patch for compiler warnings in if_perl. (James McCoy, 2011 Jan 30)
-
-Patch for X selection conversion. (Alex Efros, 2012 Jan 24)
-
-Patch to make 'shcf' default work better. (Benjamin Fritz, 2011 Nov 18)
-    Win32: When 'shell' is cmd.exe this command fails:
-	    echo system('"c:/path/echo.exe" "foo bar"')
-    Should we set the default for 'shellxquote' to a double quote, when 'shell'
-    contains "cmd" in the tail?  (Benjamin Fritz, 2008 Oct 13)
-    Also set 'shellcmdflag' to include /s.
-
-Other way to start Mzscheme. Tim Brown, 2011 Oct 5: change main call.
-Later patch by Sergey Khorev, 2011 Oct 9.
-
-Patch to allow ! for :all and :sall, as documented. (Hirohito Higashi, 2012
-Jan 30)
 
 Patch for "tab drop hoge" moving current window. (Higashi, 2012 Jan 31)
 ":tab drop buffer.c" always opens a new tab, also if buffer.c is already in an
@@ -153,6 +105,8 @@ Patch for using objcpp file type for headers files. Issue 44.
 Docs fix for v:register. (Ingo Karkat, 2011 Sep 26, 27)
 v:register doesn't work exactly as expected. (David Fishburn, 2011 Sep 20)
 
+Patch for: vimgrep fails when 'autochdir' is set. (Ben Fritz, 2012 Feb 4)
+
 Patch for: (Christian Brabandt, 2011 Aug 22)
 -   Make it possible to enter "r<C-E>" and "r<C-Y>" (get character from line
     below/above).
@@ -177,12 +131,18 @@ Patch Sep 18.
 Patch for has('unnamedplus') docs. (Tony Mechelynck, 2011 Sep 27)
 And one for gui_x11.txt.
 
+":cd" doesn't work when current directory path contains "**".
+finddir() has the same problem.  (Yukihiro Nakadaira, 2012 Jan 10)
+Requires a rewrite of the file_file_in_path code.
+
 Problem with l: dictionary being locked in a function. (ZyX, 2011 Jul 21)
 
 Issue 48: foldopen error can't be caught by try/catch
 
 Patch to sort functions starting with '<' after others.  Omit dict functions,
 they can't be called. (Yasuhiro Matsumoto, 2011 Oct 11)
+
+Patch to pass list to or(), and() and xor(). (Yasuhiro Matsumoto, 2012 Feb 8)
 
 Patch to improve "it" and "at" text object matching. (Christian Brabandt, 2011
 Nov 20)
@@ -627,6 +587,8 @@ Win32: Expanding 'path' runs into a maximum size limit. (bgold12, 2009 Nov 15)
 
 Win32: Patch for enabling quick edit mode in console. (Craig Barkhouse, 2010
 Sep 1)
+
+Win32: Patch for using .png files for icons. (Charles Peacech, 2012 Feb 5)
 
 Putting a Visual block while 'visualedit' is "all" does not leave the cursor
 on the first character. (John Beckett, 2010 Aug 7)

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Smalltalk
 " Maintainer:	Arndt Hesse <hesse@self.de>
-" Last Change:	2001 May 09
+" Last Change:	2012 Feb 12 by Thilo Six
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -10,6 +10,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " some Smalltalk keywords and standard methods
 syn keyword	stKeyword	super self class true false new not
@@ -100,3 +103,6 @@ if version >= 508 || !exists("did_st_syntax_inits")
 endif
 
 let b:current_syntax = "st"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

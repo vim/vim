@@ -1,13 +1,13 @@
 " Vim syntax file
 " Language:	Scheme (R5RS + some R6RS extras)
-" Last Change:	2009 Nov 27
+" Last Change:	2012 Feb 04
 " Maintainer:	Sergey Khorev <sergey.khorev@gmail.com>
 " Original author:	Dirk van Deun <dirk@igwe.vub.ac.be>
 
 " This script incorrectly recognizes some junk input as numerals:
 " parsing the complete system of Scheme numerals using the pattern
 " language is practically impossible: I did a lax approximation.
- 
+
 " MzScheme extensions can be activated with setting is_mzscheme variable
 
 " Suggestions and bug reports are solicited by the author.
@@ -21,6 +21,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 syn case ignore
 
@@ -117,7 +120,7 @@ syn keyword schemeFunc hashtable? hashtable-size hashtable-ref hashtable-set!
 syn keyword schemeFunc hashtable-delete! hashtable-contains? hashtable-update!
 syn keyword schemeFunc hashtable-copy hashtable-clear! hashtable-keys
 syn keyword schemeFunc hashtable-entries hashtable-equivalence-function hashtable-hash-function
-syn keyword schemeFunc hashtable-mutable? equal-hash string-hash string-ci-hash symbol-hash 
+syn keyword schemeFunc hashtable-mutable? equal-hash string-hash string-ci-hash symbol-hash
 syn keyword schemeFunc find for-all exists filter partition fold-left fold-right
 syn keyword schemeFunc remp remove remv remq memp assp cons*
 
@@ -207,7 +210,7 @@ if exists("b:is_mzscheme") || exists("is_mzscheme")
     syn keyword schemeExtSyntax free-identifier=? bound-identifier=? module-identifier=? syntax-object->datum
     syn keyword schemeExtSyntax datum->syntax-object
     syn keyword schemeExtSyntax let-values let*-values letrec-values set!-values fluid-let parameterize begin0
-    syn keyword schemeExtSyntax error raise opt-lambda define-values unit unit/sig define-signature 
+    syn keyword schemeExtSyntax error raise opt-lambda define-values unit unit/sig define-signature
     syn keyword schemeExtSyntax invoke-unit/sig define-values/invoke-unit/sig compound-unit/sig import export
     syn keyword schemeExtSyntax link syntax quasisyntax unsyntax with-syntax
 
@@ -231,7 +234,7 @@ if exists("b:is_mzscheme") || exists("is_mzscheme")
     syn keyword schemeExtFunc exn:i/o:tcp? exn:i/o:udp? exn:misc? exn:misc:application? exn:misc:unsupported? exn:module? exn:read? exn:read:non-char?
     syn keyword schemeExtFunc exn:special-comment? exn:syntax? exn:thread? exn:user? exn:variable? exn:application:mismatch?
     " Command-line parsing
-    syn keyword schemeExtFunc command-line current-command-line-arguments once-any help-labels multi once-each 
+    syn keyword schemeExtFunc command-line current-command-line-arguments once-any help-labels multi once-each
 
     " syntax quoting, unquoting and quasiquotation
     syn region schemeUnquote matchgroup=Delimiter start="#," end=![ \t\[\]()";]!me=e-1 contains=ALL
@@ -263,7 +266,7 @@ if exists("b:is_chicken") || exists("is_chicken")
 
     " here-string
     syn region schemeString start=+#<<\s*\z(.*\)+ end=+^\z1$+
- 
+
     if filereadable(expand("<sfile>:p:h")."/cpp.vim")
 	unlet! b:current_syntax
 	syn include @ChickenC <sfile>:p:h/cpp.vim
@@ -282,7 +285,7 @@ if exists("b:is_chicken") || exists("is_chicken")
 
     " suggested by Alex Queiroz
     syn match schemeExtSyntax "#![-a-z!$%&*/:<=>?^_~0-9+.@#%]\+"
-    syn region schemeString start=+#<#\s*\z(.*\)+ end=+^\z1$+ 
+    syn region schemeString start=+#<#\s*\z(.*\)+ end=+^\z1$+
 endif
 
 " Synchronization and the wrapping up...
@@ -322,3 +325,6 @@ if version >= 508 || !exists("did_scheme_syntax_inits")
 endif
 
 let b:current_syntax = "scheme"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

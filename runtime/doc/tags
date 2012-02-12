@@ -3206,6 +3206,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 <line1>	map.txt	/*<line1>*
 <line2>	map.txt	/*<line2>*
 <lt>	intro.txt	/*<lt>*
+<nomodeline>	autocmd.txt	/*<nomodeline>*
 <q-args>	map.txt	/*<q-args>*
 <reg>	map.txt	/*<reg>*
 <register>	map.txt	/*<register>*
@@ -5948,6 +5949,7 @@ g`a	motion.txt	/*g`a*
 ga	various.txt	/*ga*
 garbagecollect()	eval.txt	/*garbagecollect()*
 gd	pattern.txt	/*gd*
+gdb	debug.txt	/*gdb*
 ge	motion.txt	/*ge*
 get()	eval.txt	/*get()*
 get-ms-debuggers	debug.txt	/*get-ms-debuggers*

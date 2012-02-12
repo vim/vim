@@ -1,4 +1,4 @@
-*debug.txt*     For Vim version 7.3.  Last change: 2010 Dec 22
+*debug.txt*     For Vim version 7.3.  Last change: 2012 Feb 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -15,7 +15,7 @@ For debugging Vim scripts, functions, etc. see |debug-scripts|
 
 ==============================================================================
 
-1. Location of a crash, using gcc and gdb		*debug-gcc*
+1. Location of a crash, using gcc and gdb		*debug-gcc* *gdb*
 
 When Vim crashes in one of the test files, and you are using gcc for
 compilation, here is what you can do to find out exactly where Vim crashes.

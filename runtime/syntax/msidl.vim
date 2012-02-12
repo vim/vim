@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:     MS IDL (Microsoft dialect of Interface Description Language)
 " Maintainer:   Vadim Zeitlin <vadim@wxwindows.org>
-" Last Change:  2003 May 11
+" Last Change:  2012 Feb 12 by Thilo Six
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -10,6 +10,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Misc basic
 syn match   msidlId		"[a-zA-Z][a-zA-Z0-9_]*"
@@ -89,4 +92,6 @@ endif
 
 let b:current_syntax = "msidl"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vi: set ts=8 sw=4:

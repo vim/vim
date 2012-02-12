@@ -2,7 +2,7 @@
 " Language:	Lua 4.0, Lua 5.0, Lua 5.1 and Lua 5.2
 " Maintainer:	Marcus Aurelius Farias <masserahguard-lua 'at' yahoo com>
 " First Author:	Carlos Augusto Teixeira Mendes <cmendes 'at' inf puc-rio br>
-" Last Change:	2011 Dec 20
+" Last Change:	2012 Feb 07
 " Options:	lua_version = 4 or 5
 "		lua_subversion = 0 (4.0, 5.0) or 1 (5.1) or 2 (5.2)
 "		default 5.2
@@ -14,6 +14,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 if !exists("lua_version")
   " Default is lua 5.2
@@ -358,4 +361,6 @@ endif
 
 let b:current_syntax = "lua"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: et ts=8 sw=2
