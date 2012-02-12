@@ -14,6 +14,7 @@ void mzvim_check_threads __ARGS((void));
 void mzvim_reset_timer __ARGS((void));
 void *mzvim_eval_string __ARGS((char_u *str));
 int mzthreads_allowed __ARGS((void));
-void mzscheme_main __ARGS((void));
+int mzscheme_main __ARGS((int argc, char **argv));
 void do_mzeval __ARGS((char_u *str, typval_T *rettv));
+int vim_main2 __ARGS((int argc, char **argv));
 /* vim: set ft=c : */

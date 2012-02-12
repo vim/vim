@@ -31,8 +31,6 @@
  * depend". */
 #if defined(FEAT_MZSCHEME) || defined(PROTO)
 
-#include <assert.h>
-
 /* Base data structures */
 #define SCHEME_VIMBUFFERP(obj)  SAME_TYPE(SCHEME_TYPE(obj), mz_buffer_type)
 #define SCHEME_VIMWINDOWP(obj)  SAME_TYPE(SCHEME_TYPE(obj), mz_window_type)
@@ -559,17 +557,17 @@ mzscheme_runtime_link_init(char *sch_dll, char *gc_dll, int verbose)
     hMzSch = vimLoadLib(sch_dll);
     hMzGC = vimLoadLib(gc_dll);
 
-    if (!hMzSch)
-    {
-	if (verbose)
-	    EMSG2(_(e_loadlib), sch_dll);
-	return FAIL;
-    }
-
     if (!hMzGC)
     {
 	if (verbose)
 	    EMSG2(_(e_loadlib), gc_dll);
+	return FAIL;
+    }
+
+    if (!hMzSch)
+    {
+	if (verbose)
+	    EMSG2(_(e_loadlib), sch_dll);
 	return FAIL;
     }
 
@@ -798,65 +796,68 @@ mzscheme_end(void)
 static __declspec(thread) void *tls_space;
 #endif
 
-    void
-mzscheme_main(void)
+/*
+ * Since version 4.x precise GC requires trampolined startup.
+ * Futures and places in version 5.x need it too.
+ */
+#if defined(MZ_PRECISE_GC) && MZSCHEME_VERSION_MAJOR >= 400 \
+    || MZSCHEME_VERSION_MAJOR >= 500 && (defined(MZ_USE_FUTURES) || defined(MZ_USE_PLACES))
+# ifdef DYNAMIC_MZSCHEME
+#  error Precise GC v.4+ or Racket with futures/places do not support dynamic MzScheme
+# endif
+# define TRAMPOLINED_MZVIM_STARTUP
+#endif
+
+    int
+mzscheme_main(int argc, char** argv)
 {
 #if MZSCHEME_VERSION_MAJOR >= 500 && defined(WIN32) && defined(USE_THREAD_LOCAL)
     scheme_register_tls_space(&tls_space, 0);
 #endif
-#if defined(MZ_PRECISE_GC) && MZSCHEME_VERSION_MAJOR >= 400
-    /* use trampoline for precise GC in MzScheme >= 4.x */
-    scheme_main_setup(TRUE, mzscheme_env_main, 0, NULL);
+#ifdef TRAMPOLINED_MZVIM_STARTUP
+    return scheme_main_setup(TRUE, mzscheme_env_main, argc, argv);
 #else
-    mzscheme_env_main(NULL, 0, NULL);
+    return mzscheme_env_main(NULL, argc, argv);
 #endif
 }
 
     static int
-mzscheme_env_main(Scheme_Env *env, int argc UNUSED, char **argv UNUSED)
+mzscheme_env_main(Scheme_Env *env, int argc, char **argv)
 {
-    /* neither argument nor return values are used */
-#ifdef MZ_PRECISE_GC
-# if MZSCHEME_VERSION_MAJOR < 400
-    /*
-     * Starting from version 4.x, embedding applications must use
-     * scheme_main_setup/scheme_main_stack_setup trampolines
-     * rather than setting stack base directly with scheme_set_stack_base
-     */
+    int vim_main_result;
+#ifdef TRAMPOLINED_MZVIM_STARTUP
+    /* Scheme has created the environment for us */
+    environment = env;
+#else
+# ifdef MZ_PRECISE_GC
     Scheme_Object   *dummy = NULL;
     MZ_GC_DECL_REG(1);
     MZ_GC_VAR_IN_REG(0, dummy);
 
     stack_base = &__gc_var_stack__;
 # else
-    /* environment has been created by us by Scheme */
-    environment = env;
-# endif
-    /*
-     * In 4.x, all activities must be performed inside trampoline
-     * so we are forced to initialise GC immediately
-     * This can be postponed in 3.x but I see no point in implementing
-     * a feature which will work in older versions only.
-     * One would better use conservative GC if he needs dynamic MzScheme
-     */
-    mzscheme_init();
-#else
     int dummy = 0;
     stack_base = (void *)&dummy;
+# endif
 #endif
-    main_loop(FALSE, FALSE);
-#if defined(MZ_PRECISE_GC) && MZSCHEME_VERSION_MAJOR < 400
+
+    /* mzscheme_main is called as a trampoline from main.
+     * We trampoline into vim_main2
+     * Passing argc, argv through from mzscheme_main
+     */
+    vim_main_result = vim_main2(argc, argv);
+#if !defined(TRAMPOLINED_MZVIM_STARTUP) && defined(MZ_PRECISE_GC)
     /* releasing dummy */
     MZ_GC_REG();
     MZ_GC_UNREG();
 #endif
-    return 0;
+    return vim_main_result;
 }
 
     static void
 startup_mzscheme(void)
 {
-#if !defined(MZ_PRECISE_GC) || MZSCHEME_VERSION_MAJOR < 400
+#ifndef TRAMPOLINED_MZVIM_STARTUP
     scheme_set_stack_base(stack_base, 1);
 #endif
 
@@ -868,7 +869,7 @@ startup_mzscheme(void)
     MZ_REGISTER_STATIC(exn_message);
     MZ_REGISTER_STATIC(vim_exn);
 
-#if !defined(MZ_PRECISE_GC) || MZSCHEME_VERSION_MAJOR < 400
+#ifndef TRAMPOLINED_MZVIM_STARTUP
     /* in newer versions of precise GC the initial env has been created */
     environment = scheme_basic_env();
 #endif
@@ -3013,7 +3014,6 @@ register_vim_exn(void)
 	MZ_GC_REG();
 
 	tmp = scheme_make_struct_names(exn_name, scheme_null, 0, &nc);
-	assert(nc <= 5);
 	mch_memmove(exn_names, tmp, nc * sizeof(Scheme_Object *));
 	MZ_GC_CHECK();
 
