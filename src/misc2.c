@@ -3230,7 +3230,11 @@ call_shell(cmd, opt)
 	    {
 		STRCPY(ncmd, p_sxq);
 		STRCAT(ncmd, cmd);
-		STRCAT(ncmd, p_sxq);
+		/* When 'shellxquote' is ( append ).
+		 * When 'shellxquote' is "( append )". */
+		STRCAT(ncmd, STRCMP(p_sxq, "(") == 0 ? (char_u *)")"
+			   : STRCMP(p_sxq, "\"(") == 0 ? (char_u *)")\""
+			   : p_sxq);
 		retval = mch_call_shell(ncmd, opt);
 		vim_free(ncmd);
 	    }

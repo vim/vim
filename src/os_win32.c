@@ -3908,8 +3908,13 @@ mch_call_shell(
 	newcmd = lalloc(cmdlen, TRUE);
 	if (newcmd != NULL)
 	{
-	    char_u *cmdbase = (*cmd == '"' ? cmd + 1 : cmd);
+	    char_u *cmdbase = cmd;
 
+	    /* Skip a leading ", ( and "(. */
+	    if (*cmdbase == '"' )
+		++cmdbase;
+	    if (*cmdbase == '(')
+		++cmdbase;
 	    if ((STRNICMP(cmdbase, "start", 5) == 0) && vim_iswhite(cmdbase[5]))
 	    {
 		STARTUPINFO		si;
@@ -3953,16 +3958,26 @@ mch_call_shell(
 		 * empty, keep the double quotes around the command.
 		 * Otherwise remove the double quotes, they aren't needed
 		 * here, because we don't use a shell to run the command. */
-		if (*cmd == '"' && *p_sxq == NUL)
+		if (cmdbase > cmd)
 		{
-		    newcmd[0] = '"';
-		    STRCPY(newcmd + 1, cmdbase);
-		}
-		else
-		{
-		    STRCPY(newcmd, cmdbase);
-		    if (*cmd == '"' && *newcmd != NUL)
-			newcmd[STRLEN(newcmd) - 1] = NUL;
+		    if (STRNCMP(cmd, p_sxq, cmd - cmdbase) != 0)
+		    {
+			STRCPY(newcmd, cmd);
+		    }
+		    else
+		    {
+			char_u *p;
+
+			STRCPY(newcmd, cmdbase);
+			/* Remove a trailing ", ) and )" if they have a match
+			 * at the start of the command. */
+			p = newcmd + STRLEN(newcmd);
+			if (p > newcmd && p[-1] == '"' && *cmd == '"')
+			    *--p = NUL;
+			if (p > newcmd && p[-1] == ')'
+					     && (*cmd =='(' || cmd[1] == '('))
+			    *--p = NUL;
+		    }
 		}
 
 		/*
@@ -3970,7 +3985,7 @@ mch_call_shell(
 		 * inherit our handles which causes unpleasant dangling swap
 		 * files if we exit before the spawned process
 		 */
-		if (CreateProcess (NULL,	// Executable name
+		if (CreateProcess(NULL,		// Executable name
 			newcmd,			// Command to execute
 			NULL,			// Process security attributes
 			NULL,			// Thread security attributes
