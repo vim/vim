@@ -3225,11 +3225,19 @@ call_shell(cmd, opt)
 	    retval = mch_call_shell(cmd, opt);
 	else
 	{
-	    ncmd = alloc((unsigned)(STRLEN(cmd) + STRLEN(p_sxq) * 2 + 1));
+	    char_u *ecmd = cmd;
+
+	    if (*p_sxe != NUL && STRCMP(p_sxq, "(") == 0)
+	    {
+		ecmd = vim_strsave_escaped_ext(cmd, p_sxe, '^', FALSE);
+		if (ecmd == NULL)
+		    ecmd = cmd;
+	    }
+	    ncmd = alloc((unsigned)(STRLEN(ecmd) + STRLEN(p_sxq) * 2 + 1));
 	    if (ncmd != NULL)
 	    {
 		STRCPY(ncmd, p_sxq);
-		STRCAT(ncmd, cmd);
+		STRCAT(ncmd, ecmd);
 		/* When 'shellxquote' is ( append ).
 		 * When 'shellxquote' is "( append )". */
 		STRCAT(ncmd, STRCMP(p_sxq, "(") == 0 ? (char_u *)")"
@@ -3240,6 +3248,8 @@ call_shell(cmd, opt)
 	    }
 	    else
 		retval = -1;
+	    if (ecmd != cmd)
+		vim_free(ecmd);
 	}
 #ifdef FEAT_GUI
 	--hold_gui_events;
