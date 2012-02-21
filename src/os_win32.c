@@ -259,6 +259,29 @@ get_exe_name(void)
 }
 
 /*
+ * Unescape characters in "p" that appear in "escaped".
+ */
+    static void
+unescape_shellxquote(char_u *p, char_u *escaped)
+{
+    int	    l = STRLEN(p);
+    int	    n;
+
+    while (*p != NUL)
+    {
+	if (*p == '^' && vim_strchr(escaped, p[1]) != NULL)
+	    mch_memmove(p, p + 1, l--);
+#ifdef FEAT_MBYTE
+	n = (*mb_ptr2len)(p);
+#else
+	n = 1;
+#endif
+	p += n;
+	l -= n;
+    }
+}
+
+/*
  * Load library "name".
  */
     HINSTANCE
@@ -3559,6 +3582,7 @@ mch_system_piped(char *cmd, int options)
     garray_T	ga;
     int	    delay = 1;
     DWORD	buffer_off = 0;	/* valid bytes in buffer[] */
+    char	*p = NULL;
 
     SECURITY_ATTRIBUTES saAttr;
 
@@ -3599,9 +3623,18 @@ mch_system_piped(char *cmd, int options)
     if (options & SHELL_READ)
 	ga_init2(&ga, 1, BUFLEN);
 
+    if (cmd != NULL)
+    {
+	p = (char *)vim_strsave((char_u *)cmd);
+	if (p != NULL)
+	    unescape_shellxquote((char_u *)p, p_sxe);
+	else
+	    p = cmd;
+    }
+
     /* Now, run the command */
     CreateProcess(NULL,			/* Executable name */
-		  cmd,			/* Command to execute */
+		  p,			/* Command to execute */
 		  NULL,			/* Process security attributes */
 		  NULL,			/* Thread security attributes */
 
@@ -3616,6 +3649,8 @@ mch_system_piped(char *cmd, int options)
 		  &si,			/* Startup information */
 		  &pi);			/* Process information */
 
+    if (p != cmd)
+	vim_free(p);
 
     /* Close our unused side of the pipes */
     CloseHandle(g_hChildStd_IN_Rd);
@@ -3898,121 +3933,116 @@ mch_call_shell(
     else
     {
 	/* we use "command" or "cmd" to start the shell; slow but easy */
-	char_u *newcmd;
-	long_u cmdlen =  (
+	char_u *cmdbase = cmd;
+
+	/* Skip a leading ", ( and "(. */
+	if (*cmdbase == '"' )
+	    ++cmdbase;
+	if (*cmdbase == '(')
+	    ++cmdbase;
+
+	if ((STRNICMP(cmdbase, "start", 5) == 0) && vim_iswhite(cmdbase[5]))
+	{
+	    STARTUPINFO		si;
+	    PROCESS_INFORMATION	pi;
+	    DWORD		flags = CREATE_NEW_CONSOLE;
+	    char_u		*p;
+
+	    si.cb = sizeof(si);
+	    si.lpReserved = NULL;
+	    si.lpDesktop = NULL;
+	    si.lpTitle = NULL;
+	    si.dwFlags = 0;
+	    si.cbReserved2 = 0;
+	    si.lpReserved2 = NULL;
+
+	    cmdbase = skipwhite(cmdbase + 5);
+	    if ((STRNICMP(cmdbase, "/min", 4) == 0)
+		    && vim_iswhite(cmdbase[4]))
+	    {
+		cmdbase = skipwhite(cmdbase + 4);
+		si.dwFlags = STARTF_USESHOWWINDOW;
+		si.wShowWindow = SW_SHOWMINNOACTIVE;
+	    }
+	    else if ((STRNICMP(cmdbase, "/b", 2) == 0)
+		    && vim_iswhite(cmdbase[2]))
+	    {
+		cmdbase = skipwhite(cmdbase + 2);
+		flags = CREATE_NO_WINDOW;
+		si.dwFlags = STARTF_USESTDHANDLES;
+		si.hStdInput = CreateFile("\\\\.\\NUL",	// File name
+		    GENERIC_READ,				// Access flags
+		    0,					// Share flags
+		    NULL,					// Security att.
+		    OPEN_EXISTING,				// Open flags
+		    FILE_ATTRIBUTE_NORMAL,			// File att.
+		    NULL);					// Temp file
+		si.hStdOutput = si.hStdInput;
+		si.hStdError = si.hStdInput;
+	    }
+
+	    /* Remove a trailing ", ) and )" if they have a match
+	     * at the start of the command. */
+	    if (cmdbase > cmd)
+	    {
+		p = cmdbase + STRLEN(cmdbase);
+		if (p > cmdbase && p[-1] == '"' && *cmd == '"')
+		    *--p = NUL;
+		if (p > cmdbase && p[-1] == ')'
+			&& (*cmd =='(' || cmd[1] == '('))
+		    *--p = NUL;
+	    }
+
+	    /*
+	     * Unescape characters in shellxescape. This is workaround for
+	     * /b option. Only redirect character should be unescaped.
+	     */
+	    unescape_shellxquote(cmdbase,
+			(flags & CREATE_NEW_CONSOLE) ? p_sxe : "<>");
+
+	    /*
+	     * Now, start the command as a process, so that it doesn't
+	     * inherit our handles which causes unpleasant dangling swap
+	     * files if we exit before the spawned process
+	     */
+	    if (CreateProcess(NULL,		// Executable name
+		    cmdbase,			// Command to execute
+		    NULL,			// Process security attributes
+		    NULL,			// Thread security attributes
+		    FALSE,			// Inherit handles
+		    flags,			// Creation flags
+		    NULL,			// Environment
+		    NULL,			// Current directory
+		    &si,			// Startup information
+		    &pi))			// Process information
+		x = 0;
+	    else
+	    {
+		x = -1;
+#ifdef FEAT_GUI_W32
+		EMSG(_("E371: Command not found"));
+#endif
+	    }
+	    if (si.hStdInput != NULL)
+	    {
+		/* Close the handle to \\.\NUL */
+		CloseHandle(si.hStdInput);
+	    }
+	    /* Close the handles to the subprocess, so that it goes away */
+	    CloseHandle(pi.hThread);
+	    CloseHandle(pi.hProcess);
+	}
+	else
+	{
+	    char_u *newcmd;
+	    long_u cmdlen =  (
 #ifdef FEAT_GUI_W32
 		(allowPiping && !p_stmp ? 0 : STRLEN(vimrun_path)) +
 #endif
 		STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10);
 
-	newcmd = lalloc(cmdlen, TRUE);
-	if (newcmd != NULL)
-	{
-	    char_u *cmdbase = cmd;
-
-	    /* Skip a leading ", ( and "(. */
-	    if (*cmdbase == '"' )
-		++cmdbase;
-	    if (*cmdbase == '(')
-		++cmdbase;
-	    if ((STRNICMP(cmdbase, "start", 5) == 0) && vim_iswhite(cmdbase[5]))
-	    {
-		STARTUPINFO		si;
-		PROCESS_INFORMATION	pi;
-		DWORD			flags = CREATE_NEW_CONSOLE;
-
-		si.cb = sizeof(si);
-		si.lpReserved = NULL;
-		si.lpDesktop = NULL;
-		si.lpTitle = NULL;
-		si.dwFlags = 0;
-		si.cbReserved2 = 0;
-		si.lpReserved2 = NULL;
-
-		cmdbase = skipwhite(cmdbase + 5);
-		if ((STRNICMP(cmdbase, "/min", 4) == 0)
-			&& vim_iswhite(cmdbase[4]))
-		{
-		    cmdbase = skipwhite(cmdbase + 4);
-		    si.dwFlags = STARTF_USESHOWWINDOW;
-		    si.wShowWindow = SW_SHOWMINNOACTIVE;
-		}
-		else if ((STRNICMP(cmdbase, "/b", 2) == 0)
-			&& vim_iswhite(cmdbase[2]))
-		{
-		    cmdbase = skipwhite(cmdbase + 2);
-		    flags = CREATE_NO_WINDOW;
-		    si.dwFlags = STARTF_USESTDHANDLES;
-		    si.hStdInput = CreateFile("\\\\.\\NUL",	// File name
-			GENERIC_READ,				// Access flags
-			0,					// Share flags
-			NULL,					// Security att.
-			OPEN_EXISTING,				// Open flags
-			FILE_ATTRIBUTE_NORMAL,			// File att.
-			NULL);					// Temp file
-		    si.hStdOutput = si.hStdInput;
-		    si.hStdError = si.hStdInput;
-		}
-
-		/* When the command is in double quotes, but 'shellxquote' is
-		 * empty, keep the double quotes around the command.
-		 * Otherwise remove the double quotes, they aren't needed
-		 * here, because we don't use a shell to run the command. */
-		if (cmdbase > cmd)
-		{
-		    if (STRNCMP(cmd, p_sxq, cmd - cmdbase) != 0)
-		    {
-			STRCPY(newcmd, cmd);
-		    }
-		    else
-		    {
-			char_u *p;
-
-			STRCPY(newcmd, cmdbase);
-			/* Remove a trailing ", ) and )" if they have a match
-			 * at the start of the command. */
-			p = newcmd + STRLEN(newcmd);
-			if (p > newcmd && p[-1] == '"' && *cmd == '"')
-			    *--p = NUL;
-			if (p > newcmd && p[-1] == ')'
-					     && (*cmd =='(' || cmd[1] == '('))
-			    *--p = NUL;
-		    }
-		}
-
-		/*
-		 * Now, start the command as a process, so that it doesn't
-		 * inherit our handles which causes unpleasant dangling swap
-		 * files if we exit before the spawned process
-		 */
-		if (CreateProcess(NULL,		// Executable name
-			newcmd,			// Command to execute
-			NULL,			// Process security attributes
-			NULL,			// Thread security attributes
-			FALSE,			// Inherit handles
-			flags,			// Creation flags
-			NULL,			// Environment
-			NULL,			// Current directory
-			&si,			// Startup information
-			&pi))			// Process information
-		    x = 0;
-		else
-		{
-		    x = -1;
-#ifdef FEAT_GUI_W32
-		    EMSG(_("E371: Command not found"));
-#endif
-		}
-		if (si.hStdInput != NULL)
-		{
-		    /* Close the handle to \\.\NUL */
-		    CloseHandle(si.hStdInput);
-		}
-		/* Close the handles to the subprocess, so that it goes away */
-		CloseHandle(pi.hThread);
-		CloseHandle(pi.hProcess);
-	    }
-	    else
+	    newcmd = lalloc(cmdlen, TRUE);
+	    if (newcmd != NULL)
 	    {
 #if defined(FEAT_GUI_W32)
 		if (need_vimrun_warning)
@@ -4038,8 +4068,8 @@ mch_call_shell(
 		    vim_snprintf((char *)newcmd, cmdlen, "%s %s %s",
 							   p_sh, p_shcf, cmd);
 		x = mch_system((char *)newcmd, options);
+		vim_free(newcmd);
 	    }
-	    vim_free(newcmd);
 	}
     }
 
