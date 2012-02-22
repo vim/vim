@@ -3448,7 +3448,7 @@ getsourceline(c, cookie, indent)
 	{
 	    garray_T    ga;
 
-	    ga_init2(&ga, (int)sizeof(char_u), 200);
+	    ga_init2(&ga, (int)sizeof(char_u), 400);
 	    ga_concat(&ga, line);
 	    ga_concat(&ga, p + 1);
 	    for (;;)
@@ -3460,6 +3460,15 @@ getsourceline(c, cookie, indent)
 		p = skipwhite(sp->nextline);
 		if (*p != '\\')
 		    break;
+		/* Adjust the growsize to the current length to speed up
+		 * concatenating many lines. */
+		if (ga.ga_len > 400)
+		{
+		    if (ga.ga_len > 8000)
+			ga.ga_growsize = 8000;
+		    else
+			ga.ga_growsize = ga.ga_len;
+		}
 		ga_concat(&ga, p + 1);
 	    }
 	    ga_append(&ga, NUL);
