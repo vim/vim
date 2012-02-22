@@ -4008,21 +4008,23 @@ mch_call_shell(
 	    if (flags != CREATE_NEW_CONSOLE)
 	    {
 		char_u	*subcmd;
-		char_u	*cmd_shell = default_shell();
+		char_u	*cmd_shell = mch_getenv("COMSPEC");
+
+		if (cmd_shell == NULL || *cmd_shell == NUL)
+		    cmd_shell = default_shell();
 
 		subcmd = vim_strsave_escaped_ext(cmdbase, "|", '^', FALSE);
 		if (subcmd != NULL)
 		{
 		    /* make "cmd.exe /c arguments" */
 		    cmdlen = STRLEN(cmd_shell) + STRLEN(subcmd) + 5;
-		    vim_free(subcmd);
-
 		    newcmd = lalloc(cmdlen, TRUE);
 		    if (newcmd != NULL)
 			vim_snprintf((char *)newcmd, cmdlen, "%s /c %s",
-						       default_shell, subcmd);
+						       cmd_shell, subcmd);
 		    else
 			newcmd = cmdbase;
+		    vim_free(subcmd);
 		}
 	    }
 
