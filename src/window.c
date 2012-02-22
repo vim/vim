@@ -23,7 +23,6 @@ static void win_rotate __ARGS((int, int));
 static void win_totop __ARGS((int size, int flags));
 static void win_equal_rec __ARGS((win_T *next_curwin, int current, frame_T *topfr, int dir, int col, int row, int width, int height));
 static int last_window __ARGS((void));
-static int one_window __ARGS((void));
 static win_T *win_free_mem __ARGS((win_T *win, int *dirp, tabpage_T *tp));
 static frame_T *win_altframe __ARGS((win_T *win, tabpage_T *tp));
 static tabpage_T *alt_tabpage __ARGS((void));
@@ -2083,7 +2082,7 @@ last_window()
  * Return TRUE if there is only one window other than "aucmd_win" in the
  * current tab page.
  */
-    static int
+    int
 one_window()
 {
 #ifdef FEAT_AUTOCMD
@@ -2109,7 +2108,7 @@ one_window()
  * Close window "win".  Only works for the current tab page.
  * If "free_buf" is TRUE related buffer may be unloaded.
  *
- * called by :quit, :close, :xit, :wq and findtag()
+ * Called by :quit, :close, :xit, :wq and findtag().
  */
     void
 win_close(win, free_buf)
@@ -2222,7 +2221,7 @@ win_close(win, free_buf)
      * Close the link to the buffer.
      */
     if (win->w_buffer != NULL)
-	close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0);
+	close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0, TRUE);
 
     /* Autocommands may have closed the window already, or closed the only
      * other window or moved to another tab page. */
@@ -2328,7 +2327,7 @@ win_close_othertab(win, free_buf, tp)
     int		free_tp = FALSE;
 
     /* Close the link to the buffer. */
-    close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0);
+    close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0, FALSE);
 
     /* Careful: Autocommands may have closed the tab page or made it the
      * current tab page.  */

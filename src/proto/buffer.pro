@@ -1,7 +1,7 @@
 /* buffer.c */
 int open_buffer __ARGS((int read_stdin, exarg_T *eap, int flags));
 int buf_valid __ARGS((buf_T *buf));
-void close_buffer __ARGS((win_T *win, buf_T *buf, int action));
+void close_buffer __ARGS((win_T *win, buf_T *buf, int action, int abort_if_last));
 void buf_clear_file __ARGS((buf_T *buf));
 void buf_freeall __ARGS((buf_T *buf, int flags));
 void goto_buffer __ARGS((exarg_T *eap, int start, int dir, int count));

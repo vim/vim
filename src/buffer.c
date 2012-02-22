@@ -64,6 +64,9 @@ static void buf_delete_signs __ARGS((buf_T *buf));
 static char *msg_loclist = N_("[Location List]");
 static char *msg_qflist = N_("[Quickfix List]");
 #endif
+#ifdef FEAT_AUTOCMD
+static char *e_auabort = N_("E855: Autocommands caused command to abort");
+#endif
 
 /*
  * Open current buffer, that is: open the memfile and read the file into
@@ -96,7 +99,7 @@ open_buffer(read_stdin, eap, flags)
 	 * There MUST be a memfile, otherwise we can't do anything
 	 * If we can't create one for the current buffer, take another buffer
 	 */
-	close_buffer(NULL, curbuf, 0);
+	close_buffer(NULL, curbuf, 0, FALSE);
 	for (curbuf = firstbuf; curbuf != NULL; curbuf = curbuf->b_next)
 	    if (curbuf->b_ml.ml_mfp != NULL)
 		break;
@@ -316,12 +319,17 @@ buf_valid(buf)
  * get a new buffer very soon!
  *
  * The 'bufhidden' option can force freeing and deleting.
+ *
+ * When "abort_if_last" is TRUE then do not close the buffer if autocommands
+ * cause there to be only one window with this buffer.  e.g. when ":quit" is
+ * supposed to close the window but autocommands close all other windows.
  */
     void
-close_buffer(win, buf, action)
+close_buffer(win, buf, action, abort_if_last)
     win_T	*win;		/* if not NULL, set b_last_cursor */
     buf_T	*buf;
     int		action;
+    int		abort_if_last;
 {
 #ifdef FEAT_AUTOCMD
     int		is_curbuf;
@@ -371,8 +379,12 @@ close_buffer(win, buf, action)
     {
 	apply_autocmds(EVENT_BUFWINLEAVE, buf->b_fname, buf->b_fname,
 								  FALSE, buf);
-	if (!buf_valid(buf))	    /* autocommands may delete the buffer */
+	/* Return if autocommands deleted the buffer or made it the only one. */
+	if (!buf_valid(buf) || (abort_if_last && one_window()))
+	{
+	    EMSG(_(e_auabort));
 	    return;
+	}
 
 	/* When the buffer becomes hidden, but is not unloaded, trigger
 	 * BufHidden */
@@ -380,8 +392,13 @@ close_buffer(win, buf, action)
 	{
 	    apply_autocmds(EVENT_BUFHIDDEN, buf->b_fname, buf->b_fname,
 								  FALSE, buf);
-	    if (!buf_valid(buf))	/* autocmds may delete the buffer */
+	    /* Return if autocommands deleted the buffer or made it the only
+	     * one. */
+	    if (!buf_valid(buf) || (abort_if_last && one_window()))
+	    {
+		EMSG(_(e_auabort));
 		return;
+	    }
 	}
 # ifdef FEAT_EVAL
 	if (aborting())	    /* autocmds may abort script processing */
@@ -775,7 +792,7 @@ handle_swap_exists(old_curbuf)
 	 * open a new, empty buffer. */
 	swap_exists_action = SEA_NONE;	/* don't want it again */
 	swap_exists_did_quit = TRUE;
-	close_buffer(curwin, curbuf, DOBUF_UNLOAD);
+	close_buffer(curwin, curbuf, DOBUF_UNLOAD, FALSE);
 	if (!buf_valid(old_curbuf) || old_curbuf == curbuf)
 	    old_curbuf = buflist_new(NULL, NULL, 1L, BLN_CURBUF | BLN_LISTED);
 	if (old_curbuf != NULL)
@@ -1122,7 +1139,7 @@ do_buffer(action, start, dir, count, forceit)
 	     * if the buffer still exists.
 	     */
 	    if (buf != curbuf && buf_valid(buf) && buf->b_nwindows == 0)
-		close_buffer(NULL, buf, action);
+		close_buffer(NULL, buf, action, FALSE);
 	    return retval;
 	}
 
@@ -1146,7 +1163,7 @@ do_buffer(action, start, dir, count, forceit)
 	    close_windows(buf, FALSE);
 #endif
 	    if (buf != curbuf && buf_valid(buf) && buf->b_nwindows <= 0)
-		close_buffer(NULL, buf, action);
+		close_buffer(NULL, buf, action, FALSE);
 	    return OK;
 	}
 
@@ -1378,7 +1395,7 @@ set_curbuf(buf, action)
 	    close_buffer(prevbuf == curwin->w_buffer ? curwin : NULL, prevbuf,
 		    unload ? action : (action == DOBUF_GOTO
 			&& !P_HID(prevbuf)
-			&& !bufIsChanged(prevbuf)) ? DOBUF_UNLOAD : 0);
+			&& !bufIsChanged(prevbuf)) ? DOBUF_UNLOAD : 0, FALSE);
 	}
     }
 #ifdef FEAT_AUTOCMD
@@ -2708,7 +2725,8 @@ setfname(buf, ffname, sfname, message)
 		vim_free(ffname);
 		return FAIL;
 	    }
-	    close_buffer(NULL, obuf, DOBUF_WIPE); /* delete from the list */
+	    /* delete from the list */
+	    close_buffer(NULL, obuf, DOBUF_WIPE, FALSE);
 	}
 	sfname = vim_strsave(sfname);
 	if (ffname == NULL || sfname == NULL)
@@ -5638,7 +5656,7 @@ wipe_buffer(buf, aucmd)
     if (!aucmd)		    /* Don't trigger BufDelete autocommands here. */
 	block_autocmds();
 #endif
-    close_buffer(NULL, buf, DOBUF_WIPE);
+    close_buffer(NULL, buf, DOBUF_WIPE, FALSE);
 #ifdef FEAT_AUTOCMD
     if (!aucmd)
 	unblock_autocmds();

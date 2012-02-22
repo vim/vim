@@ -3565,7 +3565,7 @@ unload_dummy_buffer(buf)
     buf_T	*buf;
 {
     if (curbuf != buf)		/* safety check */
-	close_buffer(NULL, buf, DOBUF_UNLOAD);
+	close_buffer(NULL, buf, DOBUF_UNLOAD, FALSE);
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)

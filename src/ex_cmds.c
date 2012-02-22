@@ -3387,7 +3387,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 		/* close the link to the current buffer */
 		u_sync(FALSE);
 		close_buffer(oldwin, curbuf,
-				      (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD);
+			       (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD, FALSE);
 
 #ifdef FEAT_AUTOCMD
 		/* Autocommands may open a new window and leave oldwin open

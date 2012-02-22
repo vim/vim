@@ -6443,7 +6443,7 @@ ex_window()
 	/* win_close() may have already wiped the buffer when 'bh' is
 	 * set to 'wipe' */
 	if (buf_valid(bp))
-	    close_buffer(NULL, bp, DOBUF_WIPE);
+	    close_buffer(NULL, bp, DOBUF_WIPE, FALSE);
 
 	/* Restore window sizes. */
 	win_size_restore(&winsizes);
