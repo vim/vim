@@ -1852,8 +1852,11 @@ cmdline_changed:
 # endif
 		)
 	    /* Always redraw the whole command line to fix shaping and
-	     * right-left typing.  Not efficient, but it works. */
-	    redrawcmd();
+	     * right-left typing.  Not efficient, but it works.
+	     * Do it only when there are no characters left to read
+	     * to avoid useless intermediate redraws. */
+	    if (vpeekc() == NUL)
+		redrawcmd();
 #endif
     }
 
