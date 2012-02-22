@@ -3933,7 +3933,9 @@ mch_call_shell(
     else
     {
 	/* we use "command" or "cmd" to start the shell; slow but easy */
-	char_u *cmdbase = cmd;
+	char_u	*newcmd = NULL;
+	char_u	*cmdbase = cmd;
+	long_u	cmdlen;
 
 	/* Skip a leading ", ( and "(. */
 	if (*cmdbase == '"' )
@@ -3971,12 +3973,12 @@ mch_call_shell(
 		flags = CREATE_NO_WINDOW;
 		si.dwFlags = STARTF_USESTDHANDLES;
 		si.hStdInput = CreateFile("\\\\.\\NUL",	// File name
-		    GENERIC_READ,				// Access flags
+		    GENERIC_READ,			// Access flags
 		    0,					// Share flags
-		    NULL,					// Security att.
-		    OPEN_EXISTING,				// Open flags
-		    FILE_ATTRIBUTE_NORMAL,			// File att.
-		    NULL);					// Temp file
+		    NULL,				// Security att.
+		    OPEN_EXISTING,			// Open flags
+		    FILE_ATTRIBUTE_NORMAL,		// File att.
+		    NULL);				// Temp file
 		si.hStdOutput = si.hStdInput;
 		si.hStdError = si.hStdInput;
 	    }
@@ -3993,12 +3995,36 @@ mch_call_shell(
 		    *--p = NUL;
 	    }
 
+	    newcmd = cmdbase;
+	    unescape_shellxquote(cmdbase, p_sxe);
+
 	    /*
-	     * Unescape characters in shellxescape. This is workaround for
-	     * /b option. Only redirect character should be unescaped.
+	     * If creating new console, arguments are passed to the
+	     * 'cmd.exe' as-is. If it's not, arguments are not treated
+	     * correctly for current 'cmd.exe'. So unescape characters in
+	     * shellxescape except '|' for avoiding to be treated as
+	     * argument to them. Pass the arguments to sub-shell.
 	     */
-	    unescape_shellxquote(cmdbase,
-			(flags & CREATE_NEW_CONSOLE) ? p_sxe : "<>");
+	    if (flags != CREATE_NEW_CONSOLE)
+	    {
+		char_u	*subcmd;
+		char_u	*cmd_shell = default_shell();
+
+		subcmd = vim_strsave_escaped_ext(cmdbase, "|", '^', FALSE);
+		if (subcmd != NULL)
+		{
+		    /* make "cmd.exe /c arguments" */
+		    cmdlen = STRLEN(cmd_shell) + STRLEN(subcmd) + 5;
+		    vim_free(subcmd);
+
+		    newcmd = lalloc(cmdlen, TRUE);
+		    if (newcmd != NULL)
+			vim_snprintf((char *)newcmd, cmdlen, "%s /c %s",
+						       default_shell, subcmd);
+		    else
+			newcmd = cmdbase;
+		}
+	    }
 
 	    /*
 	     * Now, start the command as a process, so that it doesn't
@@ -4006,7 +4032,7 @@ mch_call_shell(
 	     * files if we exit before the spawned process
 	     */
 	    if (CreateProcess(NULL,		// Executable name
-		    cmdbase,			// Command to execute
+		    newcmd,			// Command to execute
 		    NULL,			// Process security attributes
 		    NULL,			// Thread security attributes
 		    FALSE,			// Inherit handles
@@ -4023,6 +4049,10 @@ mch_call_shell(
 		EMSG(_("E371: Command not found"));
 #endif
 	    }
+
+	    if (newcmd != cmdbase)
+		vim_free(newcmd);
+
 	    if (si.hStdInput != NULL)
 	    {
 		/* Close the handle to \\.\NUL */
@@ -4034,8 +4064,7 @@ mch_call_shell(
 	}
 	else
 	{
-	    char_u *newcmd;
-	    long_u cmdlen =  (
+	    cmdlen = (
 #ifdef FEAT_GUI_W32
 		(allowPiping && !p_stmp ? 0 : STRLEN(vimrun_path)) +
 #endif
