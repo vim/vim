@@ -5,3 +5,6 @@ this is tab page 1
 this is tab page 4
 gettabvar: pass
 settabvar: pass
+tab drop 1: pass
+tab drop 2: pass
+tab drop 3: pass
