@@ -2064,24 +2064,22 @@ ga_grow(gap, n)
     garray_T	*gap;
     int		n;
 {
-    size_t	len;
+    size_t	old_len;
+    size_t	new_len;
     char_u	*pp;
 
     if (gap->ga_maxlen - gap->ga_len < n)
     {
 	if (n < gap->ga_growsize)
 	    n = gap->ga_growsize;
-	len = gap->ga_itemsize * (gap->ga_len + n);
-	pp = alloc_clear((unsigned)len);
+	new_len = gap->ga_itemsize * (gap->ga_len + n);
+	pp = (gap->ga_data == NULL)
+			? alloc(new_len) : vim_realloc(gap->ga_data, new_len);
 	if (pp == NULL)
 	    return FAIL;
+	old_len = gap->ga_itemsize * gap->ga_maxlen;
+	vim_memset(pp + old_len, 0, new_len - old_len);
 	gap->ga_maxlen = gap->ga_len + n;
-	if (gap->ga_data != NULL)
-	{
-	    mch_memmove(pp, gap->ga_data,
-				      (size_t)(gap->ga_itemsize * gap->ga_len));
-	    vim_free(gap->ga_data);
-	}
 	gap->ga_data = pp;
     }
     return OK;
