@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2011 Jun 13
+" Last Change:	2012 Feb 22
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -1064,6 +1064,8 @@ call append("$", "shellquote\tcharacter(s) to enclose a shell command in")
 call <SID>OptionG("shq", &shq)
 call append("$", "shellxquote\tlike 'shellquote' but include the redirection")
 call <SID>OptionG("sxq", &sxq)
+call append("$", "shellxescape\tcharacters to escape when 'shellxquote' is (")
+call <SID>OptionG("sxe", &sxe)
 call append("$", "shellcmdflag\targument for 'shell' to execute a command")
 call <SID>OptionG("shcf", &shcf)
 call append("$", "shellredir\tused to redirect command output to a file")

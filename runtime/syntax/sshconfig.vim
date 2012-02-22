@@ -2,9 +2,7 @@
 " Language:	OpenSSH client configuration file (ssh_config)
 " Author:	David Necas (Yeti)
 " Maintainer:   Leonard Ehrenfried <leonard.ehrenfried@web.de>	
-" Modified By:	Thilo Six
-" Originally:	2009-07-09
-" Last Change:	2011 Oct 31
+" Last Change:	2012 Feb 19
 " SSH Version:	5.9p1
 "
 
@@ -92,7 +90,8 @@ syn match sshconfigNumber "\d\+"
 syn match sshconfigHostPort "\<\(\d\{1,3}\.\)\{3}\d\{1,3}\(:\d\+\)\?\>"
 syn match sshconfigHostPort "\<\([-a-zA-Z0-9]\+\.\)\+[-a-zA-Z0-9]\{2,}\(:\d\+\)\?\>"
 syn match sshconfigHostPort "\<\(\x\{,4}:\)\+\x\{,4}[:/]\d\+\>"
-
+syn match sshconfigHostPort "\(Host \)\@<=.\+"
+syn match sshconfigHostPort "\(HostName \)\@<=.\+"
 
 " case off
 syn case ignore

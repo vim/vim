@@ -783,6 +783,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'shellslash'	options.txt	/*'shellslash'*
 'shelltemp'	options.txt	/*'shelltemp'*
 'shelltype'	options.txt	/*'shelltype'*
+'shellxescape'	options.txt	/*'shellxescape'*
 'shellxquote'	options.txt	/*'shellxquote'*
 'shiftround'	options.txt	/*'shiftround'*
 'shiftwidth'	options.txt	/*'shiftwidth'*
@@ -852,6 +853,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'swf'	options.txt	/*'swf'*
 'switchbuf'	options.txt	/*'switchbuf'*
 'sws'	options.txt	/*'sws'*
+'sxe'	options.txt	/*'sxe'*
 'sxq'	options.txt	/*'sxq'*
 'syn'	options.txt	/*'syn'*
 'synmaxcol'	options.txt	/*'synmaxcol'*
@@ -4241,6 +4243,7 @@ E851	gui_x11.txt	/*E851*
 E852	gui_x11.txt	/*E852*
 E853	eval.txt	/*E853*
 E854	options.txt	/*E854*
+E855	autocmd.txt	/*E855*
 E86	windows.txt	/*E86*
 E87	windows.txt	/*E87*
 E88	windows.txt	/*E88*

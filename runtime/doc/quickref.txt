@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.3.  Last change: 2011 Jun 12
+*quickref.txt*  For Vim version 7.3.  Last change: 2012 Feb 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -851,6 +851,7 @@ Short explanation of each option:		*option-list*
 'shellslash'	  'ssl'     use forward slash for shell file names
 'shelltemp'	  'stmp'    whether to use a temp file for shell commands
 'shelltype'	  'st'	    Amiga: influences how to use a shell
+'shellxescape'	  'sxe'     characters to escape when 'shellxquote' is (
 'shellxquote'	  'sxq'     like 'shellquote', but include redirection
 'shiftround'	  'sr'	    round indent to multiple of shiftwidth
 'shiftwidth'	  'sw'	    number of spaces to use for (auto)indent step

@@ -1,16 +1,19 @@
 " Vim syntax file
 " Language:	Flat Assembler (FASM)
 " Maintainer:	Ron Aaron <ron@ronware.org>
-" Last Change:	2004 May 16
+" Last Change:	2012/02/13
 " Vim URL:	http://www.vim.org/lang.html
 " FASM Home:	http://flatassembler.net/
-" FASM Version: 1.52
+" FASM Version: 1.56
 
 if version < 600
   syntax clear
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 setlocal iskeyword=a-z,A-Z,48-57,.,_
 setlocal isident=a-z,A-Z,48-57,.,_
@@ -97,7 +100,7 @@ syn keyword fasmDirective 	align binary code coff console discardable display dl
 syn keyword fasmDirective	elf entry executable export extern far fixups format gui
 syn keyword fasmDirective	import label ms mz native near notpageable pe public readable
 syn keyword fasmDirective	repeat resource section segment shareable stack times
-syn keyword fasmDirective	use16 use32 virtual wdm writeable
+syn keyword fasmDirective	use16 use32 virtual wdm writable writeable
 syn keyword fasmOperator 	as at defined eq eqtype from mod on ptr rva used
 
 syn match	fasmNumericOperator	"[+-/*]"
@@ -142,4 +145,8 @@ hi def link	fasmInstr keyword
 hi def link	fasmLabel label
 hi def link	fasmPrefix preproc
 let b:current_syntax = "fasm"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
+
 " vim: ts=8 sw=8 :

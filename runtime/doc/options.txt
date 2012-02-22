@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2012 Feb 12
+*options.txt*	For Vim version 7.3.  Last change: 2012 Feb 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5900,9 +5900,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'shellcmdflag'* *'shcf'*
 'shellcmdflag' 'shcf'	string	(default: "-c";
-				 Win32, when 'shell' is cmd.exe: "/s /c";
-				 MS-DOS and Win32, when 'shell' neither is
-				 cmd.exe nor contains "sh" somewhere: "/c")
+				 MS-DOS and Win32, when 'shell' does not
+				 contain "sh" somewhere: "/c")
 			global
 			{not in Vi}
 	Flag passed to the shell to execute "!" and ":!" commands; e.g.,
@@ -6041,6 +6040,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	0 and 2: use "shell 'shellcmdflag' cmd" to start external commands
 	1 and 3: use "shell cmd" to start external commands
 
+						*'shellxescape'* *'sxe'*
+'shellxescape' 'sxe'	string	(default: "";
+				 for MS-DOS and MS-Windows: "\"&|<>()@^")
+			global
+			{not in Vi}
+	When 'shellxquote' is set to "(" then the characters listed in this
+	option will be escaped with a '^' character.  This makes it possible
+	to execute most external commands with cmd.exe.
+
 						*'shellxquote'* *'sxq'*
 'shellxquote' 'sxq'	string	(default: "";
 					for Win32, when 'shell' is cmd.exe: "("
@@ -6064,16 +6072,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	to set this option by the user.  See |dos-shell|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
-
-						*'shellxescape'* *'sxe'*
-'shellxescape' 'sxe'	string	(default: "";
-				 for MS-DOS and MS-Windows: "\"&|<>()@^")
-			global
-			{not in Vi}
-	When 'shellxquote' is set to "(" then the characters listed in this
-	option will be escaped with a '^' character.  This makes it possible
-	to execute most external commands with cmd.exe.
-
 
 			*'shiftround'* *'sr'* *'noshiftround'* *'nosr'*
 'shiftround' 'sr'	boolean	(default off)

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Feb 12
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Feb 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,8 +38,14 @@ Go through more coverity reports.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
+Stack trace of crash: http://vpaste.net/GBt9S
+(Alexandre Provencio)
+
 Once syntax and other runtime files have been fixed: add "set cp" to
 check.vim.  Use a function to run both with 'cp' and 'nocp'.
+
+Undo broken when pasting close to the last line. (Andrey Radev, 2012 Feb 14)
+Patch by Christian Brabandt, 2012 Feb 14.
 
 GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
@@ -47,6 +53,8 @@ GTK: problem with 'L' in 'guioptions' changing the window width.
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
+
+Patch to speed up ga_grow(). (Dominique Pelle, 2012 Feb 13)
 
 Patch for "tab drop hoge" moving current window. (Higashi, 2012 Jan 31)
 ":tab drop buffer.c" always opens a new tab, also if buffer.c is already in an
@@ -79,6 +87,9 @@ URXVT:
 Patch for using QuickFixCmdPre for more commands. (Marcin Szamotulski, 2012
 Feb 1, update Feb 2)
 
+Patch for pasting in the Ex command line is slow. (Dominique Pelle, 2012 Feb
+19)
+
 When running Vim in silent ex mode, an existing swapfile causes Vim to wait
 for a user action without a prompt. (Maarten Billemont, 2012 Feb 3)
 Do give the prompt? Quit with an error?
@@ -86,6 +97,10 @@ Do give the prompt? Quit with an error?
 When exiting with unsaved changes, selecting an existing file in the file
 dialog, there is no dialog to ask whether the existing file should be
 overwritten. (Felipe G. Nievinski, 2011 Dec 22)
+
+Patch for improved ":qa" behavior. (Hirohito Higashi, 2012 Feb 18)
+
+Recognize objcpp. (Austin Ziegler, 2012 Feb 15)
 
 7   Setting an option always sets "w_set_curswant", while this is only
     required for a few options.  Only do it for those options to avoid the
@@ -98,7 +113,7 @@ Carvalho merged the patch:  New version 2012 Jan 19.
 
 Patch for option in 'cino' to specify more indent for continued conditions.
 (Lech Lorens, 2011 Nov 27)
-Isn't this already possible?
+Isn't this already possible?  Update 2012 Feb 15.
 
 Patch for using objcpp file type for headers files. Issue 44.
 
@@ -154,6 +169,9 @@ Plugin for Modeleasy. (Massimiliano Tripoli, 2011 Nov 29)
 
 Updated syntax file for ssh_config, maintainer doesn't respond.
 (Leonard Ehrenfried, 2011 Sep 26)
+
+BufWinLeave triggers too late when quitting last window in a tab page. (Lech
+Lorens, 2012 Feb 21)
 
 "fC" doesn't position the cursor correctly when there are concealed
 characters.  Patch by Christian Brabandt, 2011 Oct 11)
@@ -959,6 +977,7 @@ Performance tests:
 - ~/vim/test/slowsearch
 - ~/vim/test/rgb.vim
 - ~/vim/text/FeiqCfg.xml (file from Netjune)
+- ~/vim/text/edl.svg  (also XML)
 - search for  a.*e*exn  in the vim executable.  Go to last line to use
   'hlsearch'.
 
