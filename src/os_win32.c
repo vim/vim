@@ -264,7 +264,7 @@ get_exe_name(void)
     static void
 unescape_shellxquote(char_u *p, char_u *escaped)
 {
-    int	    l = STRLEN(p);
+    int	    l = (int)STRLEN(p);
     int	    n;
 
     while (*p != NUL)

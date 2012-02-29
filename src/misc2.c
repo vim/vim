@@ -2074,7 +2074,7 @@ ga_grow(gap, n)
 	    n = gap->ga_growsize;
 	new_len = gap->ga_itemsize * (gap->ga_len + n);
 	pp = (gap->ga_data == NULL)
-			? alloc(new_len) : vim_realloc(gap->ga_data, new_len);
+	      ? alloc((unsigned)new_len) : vim_realloc(gap->ga_data, new_len);
 	if (pp == NULL)
 	    return FAIL;
 	old_len = gap->ga_itemsize * gap->ga_maxlen;
