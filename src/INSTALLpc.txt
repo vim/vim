@@ -239,6 +239,12 @@ If you are dismayed by how big the EXE is, I strongly recommend you get 'UPX'
 found at
     http://www.upx.org/
 
+As of 2011, UPX still does not support compressing 64-bit EXE's; if you have
+built a 64-bit vim then an alternative to UPX is 'MPRESS'. MPRESS can be found
+at:
+    http://www.matcode.com/mpress.htm
+
+
 ADDITION: NLS support with MinGW
 
 (by Eduardo F. Amatria <eferna1@platea.pntic.mec.es>)
