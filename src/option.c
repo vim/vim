@@ -10984,7 +10984,8 @@ has_format_option(x)
 shortmess(x)
     int	    x;
 {
-    return (   vim_strchr(p_shm, x) != NULL
+    return p_shm != NULL &&
+	    (   vim_strchr(p_shm, x) != NULL
 	    || (vim_strchr(p_shm, 'a') != NULL
 		&& vim_strchr((char_u *)SHM_A, x) != NULL));
 }
