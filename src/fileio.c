@@ -9116,6 +9116,15 @@ has_cursormovedI()
     return (first_autopat[(int)EVENT_CURSORMOVEDI] != NULL);
 }
 
+/*
+ * Return TRUE when there is an InsertCharPre autocommand defined.
+ */
+    int
+has_insertcharpre()
+{
+    return (first_autopat[(int)EVENT_INSERTCHARPRE] != NULL);
+}
+
     static int
 apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     event_T	event;

@@ -259,6 +259,9 @@ static int  ins_ctrl_ey __ARGS((int tc));
 static void ins_try_si __ARGS((int c));
 #endif
 static colnr_T get_nolist_virtcol __ARGS((void));
+#ifdef FEAT_AUTOCMD
+static char_u *do_insert_char_pre __ARGS((int c));
+#endif
 
 static colnr_T	Insstart_textlen;	/* length of line when insert started */
 static colnr_T	Insstart_blank_vcol;	/* vcol for first inserted blank */
@@ -784,7 +787,20 @@ edit(cmdchar, startln, count)
 		 * completion: Add to "compl_leader". */
 		if (ins_compl_accept_char(c))
 		{
-		    ins_compl_addleader(c);
+#ifdef FEAT_AUTOCMD
+		    /* Trigger InsertCharPre. */
+		    char_u *str = do_insert_char_pre(c);
+		    char_u *p;
+
+		    if (str != NULL)
+		    {
+			for (p = str; *p != NUL; mb_ptr_adv(p))
+			    ins_compl_addleader(PTR2CHAR(p));
+			vim_free(str);
+		    }
+		    else
+#endif
+			ins_compl_addleader(c);
 		    continue;
 		}
 
@@ -1393,34 +1409,31 @@ normalchar:
 #ifdef FEAT_AUTOCMD
 	    if (!p_paste)
 	    {
-		/* Trigger the InsertCharPre event.  Lock the text to avoid
-		 * weird things from happening. */
-		set_vim_var_char(c);
-		++textlock;
-		if (apply_autocmds(EVENT_INSERTCHARPRE, NULL, NULL,
-							       FALSE, curbuf))
+		/* Trigger InsertCharPre. */
+		char_u *str = do_insert_char_pre(c);
+		char_u *p;
+
+		if (str != NULL)
 		{
-		    /* Get the new value of v:char.  If it is more than one
-		     * character insert it literally. */
-		    char_u *s = get_vim_var_str(VV_CHAR);
-		    if (MB_CHARLEN(s) > 1)
+		    if (*str != NUL && stop_arrow() != FAIL)
 		    {
-			if (stop_arrow() != FAIL)
+			/* Insert the new value of v:char literally. */
+			for (p = str; *p != NUL; mb_ptr_adv(p))
 			{
-			    ins_str(s);
-			    AppendToRedobuffLit(s, -1);
+			    c = PTR2CHAR(p);
+			    if (c == CAR || c == K_KENTER || c == NL)
+				ins_eol(c);
+			    else
+				ins_char(c);
 			}
-			c = NUL;
+			AppendToRedobuffLit(str, -1);
 		    }
-		    else
-			c = PTR2CHAR(s);
+		    vim_free(str);
+		    c = NUL;
 		}
 
-		set_vim_var_string(VV_CHAR, NULL, -1);
-		--textlock;
-
-		/* If the new value is an empty string then don't insert a
-		 * char. */
+		/* If the new value is already inserted or an empty string
+		 * then don't insert any character. */
 		if (c == NUL)
 		    break;
 	    }
@@ -5883,6 +5896,8 @@ insertchar(c, flags, second_indent)
      * Don't do this when 'cindent' or 'indentexpr' is set, because we might
      * need to re-indent at a ':', or any other character (but not what
      * 'paste' is set)..
+     * Don't do this when there an InsertCharPre autocommand is defined,
+     * because we need to fire the event for every character.
      */
 #ifdef USE_ON_FLY_SCROLL
     dont_scroll = FALSE;		/* allow scrolling here */
@@ -5899,6 +5914,9 @@ insertchar(c, flags, second_indent)
 #endif
 #ifdef FEAT_RIGHTLEFT
 	    && !p_ri
+#endif
+#ifdef FEAT_AUTOCMD
+	    && !has_insertcharpre()
 #endif
 	       )
     {
@@ -10068,3 +10086,38 @@ get_nolist_virtcol()
     validate_virtcol();
     return curwin->w_virtcol;
 }
+
+#ifdef FEAT_AUTOCMD
+/*
+ * Handle the InsertCharPre autocommand.
+ * "c" is the character that was typed.
+ * Return a pointer to allocated memory with the replacement string.
+ * Return NULL to continue inserting "c".
+ */
+    static char_u *
+do_insert_char_pre(c)
+    int c;
+{
+    char_u *res;
+
+    /* Return quickly when there is nothing to do. */
+    if (!has_insertcharpre())
+	return NULL;
+
+    /* Lock the text to avoid weird things from happening. */
+    ++textlock;
+    set_vim_var_char(c);  /* set v:char */
+
+    if (apply_autocmds(EVENT_INSERTCHARPRE, NULL, NULL, FALSE, curbuf))
+	/* Get the new value of v:char.  It may be empty or more than one
+	 * character. */
+	res = vim_strsave(get_vim_var_str(VV_CHAR));
+    else
+	res = NULL;
+
+    set_vim_var_string(VV_CHAR, NULL, -1);  /* clear v:char */
+    --textlock;
+
+    return res;
+}
+#endif
