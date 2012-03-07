@@ -329,7 +329,7 @@ close_buffer(win, buf, action, abort_if_last)
     win_T	*win;		/* if not NULL, set b_last_cursor */
     buf_T	*buf;
     int		action;
-    int		abort_if_last;
+    int		abort_if_last UNUSED;
 {
 #ifdef FEAT_AUTOCMD
     int		is_curbuf;
