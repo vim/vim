@@ -711,7 +711,10 @@ QuickFixCmdPre			Before a quickfix command is run (|:make|,
 							*QuickFixCmdPost*
 QuickFixCmdPost			Like QuickFixCmdPre, but after a quickfix
 				command is run, before jumping to the first
-				location.  See |QuickFixCmdPost-example|.
+				location. For |:cfile| and |:lfile| commands
+				it is run after error file is read and before
+				moving to the first error. 
+				See |QuickFixCmdPost-example|.
 							*RemoteReply*
 RemoteReply			When a reply from a Vim that functions as
 				server was received |server2client()|.  The
