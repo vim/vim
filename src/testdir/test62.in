@@ -49,7 +49,7 @@ STARTTEST
 :tabclose
 :call append(line('$'), test_status)
 :"
-:"
+:if has('gui') || has('clientserver')
 :" Test for ":tab drop exist-file" to keep current window.
 :sp test1
 :tab drop test1
@@ -85,6 +85,12 @@ STARTTEST
 :tabclose
 :q
 :call append(line('$'), test_status)
+:else
+:" :drop not supported
+:call append(line('$'), 'tab drop 1: pass')
+:call append(line('$'), 'tab drop 2: pass')
+:call append(line('$'), 'tab drop 3: pass')
+:endif
 :"
 :"
 :/^Results/,$w! test.out
