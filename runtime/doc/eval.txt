@@ -1746,7 +1746,8 @@ exists( {expr})			Number	TRUE if {expr} exists
 extend( {expr1}, {expr2} [, {expr3}])
 				List/Dict insert items of {expr2} into {expr1}
 exp( {expr})			Float	exponential of {expr}
-expand( {expr} [, {flag}])	String	expand special keywords in {expr}
+expand( {expr} [, {nosuf} [, {list}]])
+				any	expand special keywords in {expr}
 feedkeys( {string} [, {mode}])	Number	add key sequence to typeahead buffer
 filereadable( {file})		Number	TRUE if {file} is a readable file
 filewritable( {file})		Number	TRUE if {file} is a writable file
@@ -1800,7 +1801,8 @@ gettabwinvar( {tabnr}, {winnr}, {name})
 getwinposx()			Number	X coord in pixels of GUI Vim window
 getwinposy()			Number	Y coord in pixels of GUI Vim window
 getwinvar( {nr}, {varname})	any	variable {varname} in window {nr}
-glob( {expr} [, {flag}])	String	expand file wildcards in {expr}
+glob( {expr} [, {nosuf} [, {list}]])
+				any	expand file wildcards in {expr}
 globpath( {path}, {expr} [, {flag}])
 				String	do glob({expr}) for all dirs in {path}
 has( {feature})			Number	TRUE if feature {feature} supported
@@ -2802,10 +2804,10 @@ expand({expr} [, {flag}])				*expand()*
 		When {expr} does not start with '%', '#' or '<', it is
 		expanded like a file name is expanded on the command line.
 		'suffixes' and 'wildignore' are used, unless the optional
-		{flag} argument is given and it is non-zero.  Names for
-		non-existing files are included.  The "**" item can be used to
-		search in a directory tree.  For example, to find all "README"
-		files in the current directory and below: >
+		{nosuf} argument is given and it is non-zero.
+		Names for non-existing files are included.  The "**" item can
+		be used to search in a directory tree.  For example, to find
+		all "README" files in the current directory and below: >
 			:echo expand("**/README")
 <
 		Expand() can also be used to expand variables and environment

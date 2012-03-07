@@ -794,6 +794,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define WILD_PREV		5
 #define WILD_ALL		6
 #define WILD_LONGEST		7
+#define WILD_ALL_KEEP		8
 
 #define WILD_LIST_NOTFOUND	1
 #define WILD_HOME_REPLACE	2

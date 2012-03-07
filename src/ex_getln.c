@@ -3461,6 +3461,7 @@ nextwild(xp, type, options)
  * mode = WILD_PREV:	    use previous match in multiple match, wrap to first
  * mode = WILD_ALL:	    return all matches concatenated
  * mode = WILD_LONGEST:	    return longest matched part
+ * mode = WILD_ALL_KEEP:    get all matches, keep matches
  *
  * options = WILD_LIST_NOTFOUND:    list entries without a match
  * options = WILD_HOME_REPLACE:	    do home_replace() for buffer names
@@ -3584,7 +3585,8 @@ ExpandOne(xp, str, orig, options, mode)
 	    /*
 	     * Check for matching suffixes in file names.
 	     */
-	    if (mode != WILD_ALL && mode != WILD_LONGEST)
+	    if (mode != WILD_ALL && mode != WILD_ALL_KEEP
+						      && mode != WILD_LONGEST)
 	    {
 		if (xp->xp_numfiles)
 		    non_suf_match = xp->xp_numfiles;
