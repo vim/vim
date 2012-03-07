@@ -5151,10 +5151,13 @@ outofmem:
 
 	if (!global_busy)
 	{
-	    if (endcolumn)
-		coladvance((colnr_T)MAXCOL);
-	    else
-		beginline(BL_WHITE | BL_FIX);
+	    if (!do_ask)  /* when interactive leave cursor on the match */
+	    {
+		if (endcolumn)
+		    coladvance((colnr_T)MAXCOL);
+		else
+		    beginline(BL_WHITE | BL_FIX);
+	    }
 	    if (!do_sub_msg(do_count) && do_ask)
 		MSG("");
 	}
