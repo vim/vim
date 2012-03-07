@@ -4504,7 +4504,8 @@ im_show_info(void)
     vgetc_busy = TRUE;
     showmode();
     vgetc_busy = old_vgetc_busy;
-    setcursor();
+    if ((State & NORMAL) || (State & INSERT))
+	setcursor();
     out_flush();
 }
 
