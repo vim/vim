@@ -1957,6 +1957,9 @@ op_delete(oap)
 	    ++curwin->w_cursor.lnum;
 	    del_lines((long)(oap->line_count - 2), FALSE);
 
+	    if (delete_last_line)
+		oap->end.lnum = curbuf->b_ml.ml_line_count;
+
 	    n = (oap->end.col + 1 - !oap->inclusive);
 	    if (oap->inclusive && delete_last_line
 		    && n > (int)STRLEN(ml_get(oap->end.lnum)))
