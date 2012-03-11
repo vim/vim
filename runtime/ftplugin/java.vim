@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Java
 " Maintainer:	Dan Sharp <dwsharp at users dot sourceforge dot net>
-" Last Change:  20 Jan 2009
+" Last Change:  2012 Mar 11
 " URL:		http://dwsharp.users.sourceforge.net/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
@@ -48,3 +48,4 @@ let b:undo_ftplugin = "setlocal suffixes< suffixesadd<" .
 
 " Restore the saved compatibility options.
 let &cpo = s:save_cpo
+unlet s:save_cpo

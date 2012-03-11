@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2012 Jan 28
+*eval.txt*	For Vim version 7.3.  Last change: 2012 Mar 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2744,13 +2744,15 @@ exp({expr})						*exp()*
 		{only available when compiled with the |+float| feature}
 
 
-expand({expr} [, {flag}])				*expand()*
+expand({expr} [, {nosuf} [, {list}]])				*expand()*
 		Expand wildcards and the following special keywords in {expr}.
-		The result is a String.  'wildignorecase' applies.
+		'wildignorecase' applies.
 
-		When there are several matches, they are separated by <NL>
-		characters.  [Note: in version 5.0 a space was used, which
-		caused problems when a file name contains a space]
+		If {list} is given and it is non-zero, a List will be returned.
+		Otherwise the result is a String and when there are several
+		matches, they are separated by <NL> characters.  [Note: in
+		version 5.0 a space was used, which caused problems when a
+		file name contains a space]
 
 		If the expansion fails, the result is an empty string.	A name
 		for a non-existing file is not included.
@@ -3454,18 +3456,23 @@ getwinvar({winnr}, {varname})				*getwinvar()*
 			:let list_is_on = getwinvar(2, '&list')
 			:echo "myvar = " . getwinvar(1, 'myvar')
 <
-glob({expr} [, {flag}])					*glob()*
+glob({expr} [, {nosuf} [, {list}]])				*glob()*
 		Expand the file wildcards in {expr}.  See |wildcards| for the
 		use of special characters.
-		The result is a String.
-		When there are several matches, they are separated by <NL>
-		characters.
-		Unless the optional {flag} argument is given and is non-zero,
+
+		Unless the optional {nosuf} argument is given and is non-zero,
 		the 'suffixes' and 'wildignore' options apply: Names matching
 		one of the patterns in 'wildignore' will be skipped and
 		'suffixes' affect the ordering of matches.
 		'wildignorecase' always applies.
-		If the expansion fails, the result is an empty string.
+
+		When {list} is present and it is non-zero the result is a List
+		with all matching files. The advantage of using a List is,
+		you also get filenames containing newlines correctly.
+		Otherwise the result is a String and when there are several
+		matches, they are separated by <NL> characters.
+
+		If the expansion fails, the result is an empty String or List.
 		A name for a non-existing file is not included.
 
 		For most systems backticks can be used to get files names from
@@ -6678,9 +6685,9 @@ Hint: If you distribute a bunch of scripts you can pack them together with the
 ==============================================================================
 6. Curly braces names					*curly-braces-names*
 
-Wherever you can use a variable, you can use a "curly braces name" variable.
-This is a regular variable name with one or more expressions wrapped in braces
-{} like this: >
+In most places where you can use a variable, you can use a "curly braces name"
+variable.  This is a regular variable name with one or more expressions
+wrapped in braces {} like this: >
 	my_{adjective}_variable
 
 When Vim encounters this, it evaluates the expression inside the braces, puts
@@ -6715,6 +6722,11 @@ Example: >
 	:call my_func_{func_end}(parameter)
 
 This would call the function "my_func_whizz(parameter)".
+
+This does NOT work: >
+  :let i = 3
+  :let @{i} = ''  " error
+  :echo @{i}      " error
 
 ==============================================================================
 7. Commands						*expression-commands*

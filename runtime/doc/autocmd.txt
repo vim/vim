@@ -700,7 +700,9 @@ QuickFixCmdPre			Before a quickfix command is run (|:make|,
 				|:lmake|, |:grep|, |:lgrep|, |:grepadd|,
 				|:lgrepadd|, |:vimgrep|, |:lvimgrep|,
 				|:vimgrepadd|, |:lvimgrepadd|, |:cscope|,
-				|:helpgrep|, |:lhelpgrep|).
+				|:cfile|, |:cgetfile|, |:caddfile|, |:lfile|,
+				|:lgetfile|, |:laddfile|, |:helpgrep|,
+				|:lhelpgrep|).
 				The pattern is matched against the command
 				being run.  When |:grep| is used but 'grepprg'
 				is set to "internal" it still matches "grep".

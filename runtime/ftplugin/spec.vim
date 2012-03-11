@@ -1,7 +1,7 @@
 " Plugin to update the %changelog section of RPM spec files
 " Filename: spec.vim
 " Maintainer: Gustavo Niemeyer <niemeyer@conectiva.com>
-" Last Change: 2011 Dec 25 by Thilo Six
+" Last Change: 2012 Mar 07
 
 if exists("b:did_ftplugin")
 	finish
@@ -172,3 +172,4 @@ let b:match_words =
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
+let b:undo_ftplugin = "unlet! b:match_ignorecase b:match_words"

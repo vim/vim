@@ -32,5 +32,6 @@ if exists("loaded_matchit")
 endif " exists("loaded_matchit")
 
 let &cpo = s:save_cpo
+unlet s:save_cpo
 
 " vim:sts=2:sw=2:

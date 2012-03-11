@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.3.  Last change: 2011 Oct 15
+*mbyte.txt*     For Vim version 7.3.  Last change: 2012 Feb 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -857,7 +857,7 @@ Use the RPM or port for your system.
 
 
 USING XIM			*multibyte-input* *E284* *E286* *E287* *E288*
-				*E285* *E291* *E292* *E290* *E289*
+				*E285* *E289*
 
 Note that Display and Input are independent.  It is possible to see your
 language even though you have no input method for it.  But when your Display

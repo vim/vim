@@ -1,12 +1,20 @@
 " Vim syntax file
 " Language:    Lout
 " Maintainer:  Christian V. J. Brüssow <cvjb@cvjb.de>
-" Last Change: Son 22 Jun 2003 20:43:26 CEST
+" Last Change: So 12 Feb 2012 15:15:03 CET
 " Filenames:   *.lout,*.lt
-" URL:			http://www.cvjb.de/comp/vim/lout.vim
-" $Id: lout.vim,v 1.1 2004/06/13 17:52:18 vimboss Exp $
+" URL:         http://www.cvjb.de/comp/vim/lout.vim
+
+" $Id: lout.vim,v 1.4 2012/02/12 15:16:17 bruessow Exp $
 "
 " Lout: Basser Lout document formatting system.
+
+" Many Thanks to...
+" 
+" 2012-02-12:
+" Thilo Six <T.Six at gmx dot de> send a patch for cpoptions.
+" See the discussion at http://thread.gmane.org/gmane.editors.vim.devel/32151
+
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -15,6 +23,9 @@ if version < 600
 elseif exists("b:current_syntax")
 	finish
 endif
+
+let s:cpo_save=&cpo
+set cpo&vim
 
 " Lout is case sensitive
 syn case match
@@ -135,5 +146,8 @@ if version >= 508 || !exists("did_lout_syn_inits")
 endif
 
 let b:current_syntax = "lout"
+
+let &cpo=s:cpo_save
+unlet s:cpo_save
 
 " vim:ts=8:sw=4:nocindent:smartindent:

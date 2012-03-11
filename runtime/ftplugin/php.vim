@@ -80,3 +80,4 @@ let b:undo_ftplugin = "setlocal commentstring< include< omnifunc<" .
 
 " Restore the saved compatibility options.
 let &cpo = s:save_cpo
+unlet s:save_cpo

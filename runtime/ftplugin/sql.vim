@@ -2,7 +2,7 @@
 " Language:    SQL (Common for Oracle, Microsoft SQL Server, Sybase)
 " Version:     8.0
 " Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
-" Last Change: 2011 Apr 01
+" Last Change: 2012 Mar 11
 " Download:    http://vim.sourceforge.net/script.php?script_id=454
 
 " For more details please use:
@@ -490,6 +490,7 @@ if exists('&omnifunc')
 endif
 
 let &cpo = s:save_cpo
+unlet s:save_cpo
 
 " vim:sw=4:
 

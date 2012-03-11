@@ -37,3 +37,4 @@ let b:undo_ftplugin = "setlocal commentstring< comments< formatoptions<" .
 
 " Restore the saved compatibility options.
 let &cpo = s:save_cpo
+unlet s:save_cpo

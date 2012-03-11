@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:     Abaqus finite element input file (www.abaqus.com)
 " Maintainer:   Carl Osterwisch <osterwischc@asme.org>
-" Last Change:  2008 Oct 5
+" Last Change:  2012 Mar 11
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin") | finish | endif
@@ -87,3 +87,4 @@ let b:undo_ftplugin .= "|unmap <buffer> [[|unmap <buffer> ]]"
 
 " Restore saved compatibility options
 let &cpoptions = s:cpo_save
+unlet s:cpo_save

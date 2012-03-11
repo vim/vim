@@ -32,5 +32,6 @@ let b:undo_ftplugin = "setlocal fo< com< cms< inc< inex< def< isf< kp<" .
 
 " Restore the saved compatibility options.
 let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: set et ts=4 sw=4 tw=78:

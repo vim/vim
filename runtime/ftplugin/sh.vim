@@ -36,3 +36,4 @@ let b:undo_ftplugin = "setlocal cms< | unlet! b:browsefilter b:match_words"
 
 " Restore the saved compatibility options.
 let &cpo = s:save_cpo
+unlet s:save_cpo

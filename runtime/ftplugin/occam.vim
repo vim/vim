@@ -37,3 +37,8 @@ if has("gui_win32") && !exists("b:browsefilter")
 endif
 "}}}
 
+"{{{  Undo settings
+let b:undo_ftplugin = "setlocal shiftwidth< softtabstop< expandtab<"
+	\ . " formatoptions< comments< textwidth<"
+	\ . "| unlet! b:browsefiler"
+"}}}

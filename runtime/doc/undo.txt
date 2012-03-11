@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 7.3.  Last change: 2012 Jan 28
+*undo.txt*      For Vim version 7.3.  Last change: 2012 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -250,7 +250,7 @@ detect if an undo file is no longer synchronized with the file it was written
 for (with a hash of the file contents) and ignore it when the file was changed
 after the undo file was written, to prevent corruption.  An undo file is also
 ignored if its owner differs from the owner of the edited file.  Set 'verbose'
-to get a message about that.
+to get a message about that when opening a file.
 
 Undo files are normally saved in the same directory as the file.  This can be
 changed with the 'undodir' option.

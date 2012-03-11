@@ -1,7 +1,7 @@
 " Vim filetype plugin file.
 " Language:	Lua 4.0+
 " Maintainer:	Max Ischenko <mfi@ukr.net>
-" Last Change:	2011 Dec 10 by Thilo Six
+" Last Change:	2012 Mar 07
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -38,3 +38,5 @@ endif " exists("loaded_matchit")
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
+
+let b:undo_ftplugin = "setlocal fo< com< cms< suffixesadd<"

@@ -2,7 +2,7 @@
 " Language:     Perl 6
 " Maintainer:   Andy Lester <andy@petdance.com>
 " URL:          http://github.com/petdance/vim-perl/tree/master
-" Last Change:  2010-08-10
+" Last Change:  2012 Mar 11
 " Contributors: Hinrik Örn Sigurðsson <hinrik.sig@gmail.com>
 "
 " Based on ftplugin/perl.vim by Dan Sharp <dwsharp at hotmail dot com>
@@ -46,3 +46,4 @@ let b:undo_ftplugin = "setlocal fo< com< cms< inc< inex< def< isk<" .
 
 " Restore the saved compatibility options.
 let &cpo = s:save_cpo
+unlet s:save_cpo

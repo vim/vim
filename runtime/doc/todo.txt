@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Feb 22
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Mar 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -44,9 +44,6 @@ Stack trace of crash: http://vpaste.net/GBt9S
 Once syntax and other runtime files have been fixed: add "set cp" to
 check.vim.  Use a function to run both with 'cp' and 'nocp'.
 
-Undo broken when pasting close to the last line. (Andrey Radev, 2012 Feb 14)
-Patch by Christian Brabandt, 2012 Feb 14.
-
 GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
 
@@ -54,23 +51,13 @@ Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
 
-Patch to speed up ga_grow(). (Dominique Pelle, 2012 Feb 13)
+Issue 54: document behavior of -complete, also expands arg.
 
-Patch for "tab drop hoge" moving current window. (Higashi, 2012 Jan 31)
-":tab drop buffer.c" always opens a new tab, also if buffer.c is already in an
-open window. (Herb Sitz, 2011 Nov 17)
-":tab drop filename" doesn't work nicely when "filename" is open in a window
-in another tab. (Tony Mechelynck, 2009 Feb 13)
-
-Patch to make InsertCharPre work better. (Yasuhiro Matsumoto, 2011 Oct 21)
-
-Patch to fix closed folds with "loadview". (Xavier de Gaye, 2011 Nov 25)
+Syntax update problem in one buffer opened in two windows, bottom window is
+not correctly updated. (Paul Harris, 2012 Feb 27)
 
 Patch to add getsid(). (Tyru, 2011 Oct 2)  Do we want this?  Update Oct 4.
 Or use expand('<sid>')?
-
-Patch for glob() returning a list. (Christian Brabandt, 2011 Aug 24, second
-one)
 
 Win32: When the taskbar is at the top of the screen creating the tabbar causes
 the window to move unnecessarily. (William E. Skeith III, 2012 Jan 12)
@@ -83,12 +70,6 @@ URXVT:
 - Patch for urxvt mouse support after shell command. (Issue 31)
 - Use urxvt mouse support also in xterm.  Explanations:
   http://www.midnight-commander.org/ticket/2662
-
-Patch for using QuickFixCmdPre for more commands. (Marcin Szamotulski, 2012
-Feb 1, update Feb 2)
-
-Patch for pasting in the Ex command line is slow. (Dominique Pelle, 2012 Feb
-19)
 
 When running Vim in silent ex mode, an existing swapfile causes Vim to wait
 for a user action without a prompt. (Maarten Billemont, 2012 Feb 3)
@@ -106,6 +87,9 @@ Recognize objcpp. (Austin Ziegler, 2012 Feb 15)
     required for a few options.  Only do it for those options to avoid the
     side effect.
 Patch by Kana Natsuno, 2011 Nov 12.
+
+Using Ctrl-] in a mapping does not expand abbreviations. Patch by Christian
+Brabandt, 2012 Mar 2.
 
 Patch to fix member confusion in Lua interface. (Taro Muraoka, 2012 Jan 8)
 Update Jan 9.
@@ -136,6 +120,8 @@ Name it "CompleteFuncDone".
 
 Patch for Make_mvc.mak and Make_ming.mak for Ruby support. (Yasuhiro
 Matsumoto, 2012 Jan 30)
+
+Patch to add completion for :history command.  (Dominique Pelle, 2012 Feb 26)
 
 Use a count before "v" and "V" to select that many characters or lines?
 (Kikyous)
@@ -197,6 +183,9 @@ Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
 only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
 21, Ben Fritz, 2010 Sep 14)
 
+Win32: Does building a 64 bit version with VC9 give warnings for int
+conversions? (Mike Williams)
+
 Win32: Patch to use task dialogs when available. (Sergiu Dotenco, 2011 Sep 17)
 New feature, requires testing.  Made some remarks.
 
@@ -250,6 +239,10 @@ Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 Bug: Windows 7 64 bit system freezes  when 'clipboard' set to "unnamed" and
 doing ":g/test/d".  Putting every delete on the clipboard? (Robert Chan, 2011
 Jun 17)
+
+When there is a ">" in a line that "gq" wraps to the start of the next line,
+then the following line will pick it up as a leader.  Should get the leader
+from the first line, not a wrapped line. (Matt Ackeret, 2012 Feb 27)
 
 Using ":break" or something else that stops executing commands inside a
 ":finally" does not rethrow a previously uncaught exception. (ZyX, 2010 Oct

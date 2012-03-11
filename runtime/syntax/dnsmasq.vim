@@ -1,13 +1,18 @@
-" Vim syntax file
-" Language:	dnsmasq configuration file
+" Vim file
 " Maintainer:	Thilo Six <T.Six@gmx.de>
-" Version:	2.59-1
-" Last Change:	2011 Dec 11
+" Version:	2.60-1
+" Last Change:	2012 Mar 10
 " Modeline:	vim: ts=8:sw=2:sts=2:
+" File:		runtime/syntax/dnsmasq.vim
 "
 " Credits:	Igor N. Prischepoff
 "		Doug Kearns
 "		David Ne\v{c}as
+"
+" License:	VIM License
+"		see ":help copyright"
+"
+" Description:	highlight dnsmasq configuration files
 "
 " Options:	You might want to add this to your vimrc:
 "
@@ -18,7 +23,6 @@
 "		    let dnsmasq_backrgound_light = 1
 "		endif
 "
-"
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -28,10 +32,8 @@ elseif exists("b:current_syntax") || &compatible
     finish
 endif
 
-" predictable environment:
-let s:keepcpo = &cpo
+let s:cpo_save = &cpo
 set cpo&vim
-
 
 if !exists("b:dnsmasq_backrgound_light")
 	if exists("dnsmasq_backrgound_light")
@@ -106,6 +108,7 @@ syn match DnsmasqKeyword    "^\s*dhcp-authoritative\>"
 syn match DnsmasqKeyword    "^\s*dhcp-boot\>"
 syn match DnsmasqKeyword    "^\s*dhcp-broadcast\>"
 syn match DnsmasqKeyword    "^\s*dhcp-circuitid\>"
+syn match DnsmasqKeyword    "^\s*dhcp-client-update\>"
 syn match DnsmasqKeyword    "^\s*dhcp-fqdn\>"
 syn match DnsmasqKeyword    "^\s*dhcp-generate-names\>"
 syn match DnsmasqKeyword    "^\s*dhcp-host\>"
@@ -114,6 +117,7 @@ syn match DnsmasqKeyword    "^\s*dhcp-ignore\>"
 syn match DnsmasqKeyword    "^\s*dhcp-ignore-names\>"
 syn match DnsmasqKeyword    "^\s*dhcp-lease-max\>"
 syn match DnsmasqKeyword    "^\s*dhcp-leasefile\>"
+syn match DnsmasqKeyword    "^\s*dhcp-luascript\>"
 syn match DnsmasqKeyword    "^\s*dhcp-mac\>"
 syn match DnsmasqKeyword    "^\s*dhcp-match\>"
 syn match DnsmasqKeyword    "^\s*dhcp-no-override\>"
@@ -134,6 +138,7 @@ syn match DnsmasqKeyword    "^\s*domain\>"
 syn match DnsmasqKeyword    "^\s*domain-needed\>"
 syn match DnsmasqKeyword    "^\s*edns-packet-max\>"
 syn match DnsmasqKeyword    "^\s*enable-dbus\>"
+syn match DnsmasqKeyword    "^\s*enable-ra\>"
 syn match DnsmasqKeyword    "^\s*enable-tftp\>"
 syn match DnsmasqKeyword    "^\s*except-interface\>"
 syn match DnsmasqKeyword    "^\s*expand-hosts\>"
@@ -145,9 +150,9 @@ syn match DnsmasqKeyword    "^\s*keep-in-foreground\>"
 syn match DnsmasqKeyword    "^\s*leasefile-ro\>"
 syn match DnsmasqKeyword    "^\s*listen-address\>"
 syn match DnsmasqKeyword    "^\s*local\>"
+syn match DnsmasqKeyword    "^\s*localmx\>"
 syn match DnsmasqKeyword    "^\s*local-ttl\>"
 syn match DnsmasqKeyword    "^\s*localise-queries\>"
-syn match DnsmasqKeyword    "^\s*localmx\>"
 syn match DnsmasqKeyword    "^\s*log-async\>"
 syn match DnsmasqKeyword    "^\s*log-dhcp\>"
 syn match DnsmasqKeyword    "^\s*log-facility\>"
@@ -217,6 +222,6 @@ hi def link DnsmasqValues	Normal
 
 let b:current_syntax = "dnsmasq"
 
-let &cpo = s:keepcpo
-unlet s:keepcpo
+let &cpo = s:cpo_save
+unlet s:cpo_save
 

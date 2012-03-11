@@ -34,5 +34,6 @@ let &l:include = '\\input'
 setlocal suffixesadd=.tex
 
 let &cpo = s:save_cpo
+unlet s:save_cpo
 
 " vim:sts=2:sw=2:

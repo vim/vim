@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 Feb 05
+" Last Change:	2012 Feb 24
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -2316,6 +2316,9 @@ au BufNewFile,BufRead fglrxrc			setf xml
 " XLIFF (XML Localisation Interchange File Format) is also XML
 au BufNewFile,BufRead *.xlf			setf xml
 au BufNewFile,BufRead *.xliff			setf xml
+
+" XML User Interface Language
+au BufNewFile,BufRead *.xul			setf xml
 
 " X11 xmodmap (also see below)
 au BufNewFile,BufRead *Xmodmap			setf xmodmap

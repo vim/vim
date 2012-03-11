@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	man
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change:	2011 Jul 25
+" Last Change:	2012 Mar 6
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -34,6 +34,8 @@ if &filetype == "man"
     nnoremap <buffer> <c-]> :call <SID>PreGetPage(v:count)<CR>
     nnoremap <buffer> <c-t> :call <SID>PopPage()<CR>
   endif
+
+  let b:undo_ftplugin = "setlocal iskeyword<"
 
 endif
 

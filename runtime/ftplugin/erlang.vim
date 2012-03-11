@@ -19,6 +19,9 @@ else
 	let s:did_function_definitions = 1
 endif
 
+let s:cpo_save = &cpo
+set cpo&vim
+
 if !exists('g:erlang_keywordprg')
 	let g:erlang_keywordprg = 'erl -man'
 endif
@@ -76,3 +79,9 @@ function ErlangFoldText()
 endfunction
 
 call s:SetErlangOptions()
+
+let b:undo_ftplugin = "setlocal foldmethod< foldexpr< foldtext<"
+	\ . " comments< commentstring< formatoptions<"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

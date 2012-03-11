@@ -4,7 +4,7 @@
 " URL:		 http://sites.google.com/site/khorser/opensource/vim
 " Original author:    Dorai Sitaram <ds26@gte.com>
 " Original URL:		 http://www.ccs.neu.edu/~dorai/vimplugins/vimplugins.html
-" Last Change:   Jan 9, 2012
+" Last Change:   Mar 5, 2012
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -43,3 +43,5 @@ if exists("b:is_chicken") || exists("is_chicken")
     setl lispwords+=define-values,opt-lambda,case-lambda,syntax-rules,with-syntax,syntax-case
     setl lispwords+=cond-expand,and-let*,foreign-lambda,foreign-lambda*
 endif
+
+let b:undo_ftplugin = "setlocal comments< define< formatoptions< iskeyword< lispwords< lisp<"

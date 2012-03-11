@@ -12,7 +12,7 @@ endif
 " Don't load another plugin for this buffer
 let b:did_ftplugin = 1
 
-let cpo_save = &cpo
+let s:cpo_save = &cpo
 set cpo-=C
 
 let b:undo_ftplugin = "setl fo< com< tw< commentstring<"
@@ -57,5 +57,6 @@ if exists("loaded_matchit")
 endif
 
 setlocal ignorecase
-let &cpo = cpo_save
+let &cpo = s:cpo_save
+unlet s:cpo_save
 setlocal cpo+=M		" makes \%( match \)

@@ -2,7 +2,7 @@
 " Language:	OpenSSH client configuration file (ssh_config)
 " Author:	David Necas (Yeti)
 " Maintainer:   Leonard Ehrenfried <leonard.ehrenfried@web.de>	
-" Last Change:	2012 Feb 19
+" Last Change:	2012 Feb 24 
 " SSH Version:	5.9p1
 "
 
