@@ -913,24 +913,6 @@ int win_count() { return 1; }
 win_T *win_find_nr(int n) { return curwin; }
 #endif
 
-XS(XS_VIM_Msg);
-XS(XS_VIM_SetOption);
-XS(XS_VIM_DoCommand);
-XS(XS_VIM_Eval);
-XS(XS_VIM_Buffers);
-XS(XS_VIM_Windows);
-XS(XS_VIWIN_DESTROY);
-XS(XS_VIWIN_Buffer);
-XS(XS_VIWIN_SetHeight);
-XS(XS_VIWIN_Cursor);
-XS(XS_VIBUF_DESTROY);
-XS(XS_VIBUF_Name);
-XS(XS_VIBUF_Number);
-XS(XS_VIBUF_Count);
-XS(XS_VIBUF_Get);
-XS(XS_VIBUF_Set);
-XS(XS_VIBUF_Delete);
-XS(XS_VIBUF_Append);
 XS(boot_VIM);
 
     static void
