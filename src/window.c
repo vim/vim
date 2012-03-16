@@ -3676,13 +3676,6 @@ enter_tabpage(tp, old_curbuf)
     win_enter_ext(tp->tp_curwin, FALSE, TRUE);
     prevwin = next_prevwin;
 
-#ifdef FEAT_AUTOCMD
-    apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
-
-    if (old_curbuf != curbuf)
-	apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
-#endif
-
     last_status(FALSE);		/* status line may appear or disappear */
     (void)win_comp_pos();	/* recompute w_winrow for all windows */
     must_redraw = CLEAR;	/* need to redraw everything */
@@ -3710,6 +3703,14 @@ enter_tabpage(tp, old_curbuf)
     /* When 'guioptions' includes 'L' or 'R' may have to remove or add
      * scrollbars.  Have to update them anyway. */
     gui_may_update_scrollbars();
+#endif
+
+#ifdef FEAT_AUTOCMD
+    /* Apply autocommands after updating the display, when 'rows' and
+     * 'columns' have been set correctly. */
+    apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
+    if (old_curbuf != curbuf)
+	apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
 #endif
 
     redraw_all_later(CLEAR);

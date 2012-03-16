@@ -5371,6 +5371,12 @@ screen_line(row, coloff, endcol, clear_width
 # define CHAR_CELLS 1
 #endif
 
+    /* Check for illegal row and col, just in case. */
+    if (row >= Rows)
+	row = Rows - 1;
+    if (endcol > Columns)
+	endcol = Columns;
+
 # ifdef FEAT_CLIPBOARD
     clip_may_clear_selection(row, row);
 # endif
