@@ -6729,7 +6729,7 @@ ex_sign(eap)
 	if (idx == SIGNCMD_LIST && *arg == NUL)
 	{
 	    /* ":sign list": list all defined signs */
-	    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
+	    for (sp = first_sign; sp != NULL && !got_int; sp = sp->sn_next)
 		sign_list_defined(sp);
 	}
 	else if (*arg == NUL)

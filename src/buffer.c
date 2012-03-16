@@ -5557,7 +5557,7 @@ sign_list_placed(rbuf)
 	buf = firstbuf;
     else
 	buf = rbuf;
-    while (buf != NULL)
+    while (buf != NULL && !got_int)
     {
 	if (buf->b_signlist != NULL)
 	{
@@ -5565,7 +5565,7 @@ sign_list_placed(rbuf)
 	    MSG_PUTS_ATTR(lbuf, hl_attr(HLF_D));
 	    msg_putchar('\n');
 	}
-	for (p = buf->b_signlist; p != NULL; p = p->next)
+	for (p = buf->b_signlist; p != NULL && !got_int; p = p->next)
 	{
 	    vim_snprintf(lbuf, BUFSIZ, _("    line=%ld  id=%d  name=%s"),
 			   (long)p->lnum, p->id, sign_typenr2name(p->typenr));
