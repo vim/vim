@@ -22976,6 +22976,7 @@ read_viminfo_varlist(virp, writing)
 		    {
 			vim_free(tv.vval.v_string);
 			tv = *etv;
+			vim_free(etv);
 		    }
 		}
 
