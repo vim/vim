@@ -1569,6 +1569,26 @@ can_abandon(buf, forceit)
 		|| forceit);
 }
 
+static void add_bufnum __ARGS((int *bufnrs, int *bufnump, int nr));
+
+/*
+ * Add a buffer number to "bufnrs", unless it's already there.
+ */
+    static void
+add_bufnum(bufnrs, bufnump, nr)
+    int	    *bufnrs;
+    int	    *bufnump;
+    int	    nr;
+{
+    int i;
+
+    for (i = 0; i < *bufnump; ++i)
+	if (bufnrs[i] == nr)
+	    return;
+    bufnrs[*bufnump] = nr;
+    *bufnump = *bufnump + 1;
+}
+
 /*
  * Return TRUE if any buffer was changed and cannot be abandoned.
  * That changed buffer becomes the current buffer.
@@ -1577,32 +1597,64 @@ can_abandon(buf, forceit)
 check_changed_any(hidden)
     int		hidden;		/* Only check hidden buffers */
 {
+    int		ret = FALSE;
     buf_T	*buf;
     int		save;
+    int		i;
+    int		bufnum = 0;
+    int		bufcount = 0;
+    int		*bufnrs;
 #ifdef FEAT_WINDOWS
+    tabpage_T   *tp;
     win_T	*wp;
 #endif
 
-    for (;;)
-    {
-	/* check curbuf first: if it was changed we can't abandon it */
-	if (!hidden && curbufIsChanged())
-	    buf = curbuf;
-	else
-	{
-	    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
-		if ((!hidden || buf->b_nwindows == 0) && bufIsChanged(buf))
-		    break;
-	}
-	if (buf == NULL)    /* No buffers changed */
-	    return FALSE;
+    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	++bufcount;
 
-	/* Try auto-writing the buffer.  If this fails but the buffer no
-	 * longer exists it's not changed, that's OK. */
-	if (check_changed(buf, p_awa, TRUE, FALSE, TRUE) && buf_valid(buf))
-	    break;	    /* didn't save - still changes */
+    if (bufcount == 0)
+	return FALSE;
+
+    bufnrs = (int *)alloc(sizeof(int) * bufcount);
+    if (bufnrs == NULL)
+	return FALSE;
+
+    /* curbuf */
+    bufnrs[bufnum++] = curbuf->b_fnum;
+#ifdef FEAT_WINDOWS
+    /* buf in curtab */
+    FOR_ALL_WINDOWS(wp)
+	if (wp->w_buffer != curbuf)
+	    add_bufnum(bufnrs, &bufnum, wp->w_buffer->b_fnum);
+
+    /* buf in other tab */
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+	if (tp != curtab)
+	    for (wp = tp->tp_firstwin; wp != NULL; wp = wp->w_next)
+		add_bufnum(bufnrs, &bufnum, wp->w_buffer->b_fnum);
+#endif
+    /* any other buf */
+    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	add_bufnum(bufnrs, &bufnum, buf->b_fnum);
+
+    for (i = 0; i < bufnum; ++i)
+    {
+	buf = buflist_findnr(bufnrs[i]);
+	if (buf == NULL)
+	    continue;
+	if ((!hidden || buf->b_nwindows == 0) && bufIsChanged(buf))
+	{
+	    /* Try auto-writing the buffer.  If this fails but the buffer no
+	    * longer exists it's not changed, that's OK. */
+	    if (check_changed(buf, p_awa, TRUE, FALSE, TRUE) && buf_valid(buf))
+		break;	    /* didn't save - still changes */
+	}
     }
 
+    if (i >= bufnum)
+	goto theend;
+
+    ret = TRUE;
     exiting = FALSE;
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
     /*
@@ -1635,24 +1687,29 @@ check_changed_any(hidden)
 #ifdef FEAT_WINDOWS
     /* Try to find a window that contains the buffer. */
     if (buf != curbuf)
-	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_TAB_WINDOWS(tp, wp)
 	    if (wp->w_buffer == buf)
 	    {
-		win_goto(wp);
+		goto_tabpage_win(tp, wp);
 # ifdef FEAT_AUTOCMD
 		/* Paranoia: did autocms wipe out the buffer with changes? */
 		if (!buf_valid(buf))
-		    return TRUE;
+		{
+		    goto theend;
+		}
 # endif
-		break;
+		goto buf_found;
 	    }
+buf_found:
 #endif
 
     /* Open the changed buffer in the current window. */
     if (buf != curbuf)
 	set_curbuf(buf, DOBUF_GOTO);
 
-    return TRUE;
+theend:
+    vim_free(bufnrs);
+    return ret;
 }
 
 /*
@@ -3274,7 +3331,7 @@ ex_scriptnames(eap)
 	    home_replace(NULL, SCRIPT_ITEM(i).sn_name,
 						    NameBuff, MAXPATHL, TRUE);
 	    smsg((char_u *)"%3d: %s", i, NameBuff);
-        }
+	}
 }
 
 # if defined(BACKSLASH_IN_FILENAME) || defined(PROTO)
