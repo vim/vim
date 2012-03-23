@@ -2602,7 +2602,8 @@ op_insert(oap, count1)
 	firstline = ml_get(oap->start.lnum) + bd.textcol;
 	if (oap->op_type == OP_APPEND)
 	    firstline += bd.textlen;
-	if ((ins_len = (long)STRLEN(firstline) - pre_textlen) > 0)
+	if (pre_textlen >= 0
+		     && (ins_len = (long)STRLEN(firstline) - pre_textlen) > 0)
 	{
 	    ins_text = vim_strnsave(firstline, (int)ins_len);
 	    if (ins_text != NULL)
