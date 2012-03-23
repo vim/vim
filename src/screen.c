@@ -3501,9 +3501,11 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    char_attr = hl_attr(HLF_N);
 #ifdef FEAT_SYN_HL
 		    /* When 'cursorline' is set highlight the line number of
-		     * the current line differently. */
+		     * the current line differently.
+		     * TODO: Can we use CursorLine instead of CursorLineNr
+		     * when CursorLineNr isn't set? */
 		    if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
-			char_attr = hl_combine_attr(hl_attr(HLF_CUL), char_attr);
+			char_attr = hl_attr(HLF_CLN);
 #endif
 		}
 	    }
