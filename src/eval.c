@@ -20492,7 +20492,12 @@ ex_echo(eap)
 		/* Call msg_start() after eval1(), evaluating the expression
 		 * may cause a message to appear. */
 		if (eap->cmdidx == CMD_echo)
+		{
+		    /* Put the output below the command, makes scrolling back
+		     * at more prompt work. */
+		    msg_didout = TRUE;
 		    msg_start();
+		}
 	    }
 	    else if (eap->cmdidx == CMD_echo)
 		msg_puts_attr((char_u *)" ", echo_attr);
