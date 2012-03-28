@@ -1720,7 +1720,7 @@ $(VIMTARGET): auto/config.mk objects $(OBJ) version.c version.h
 		sh $(srcdir)/link.sh
 
 xxd/xxd$(EXEEXT): xxd/xxd.c
-	cd xxd; CC="$(CC)" CFLAGS="$(CPPFLAGS) $(CFLAGS)" \
+	cd xxd; CC="$(CC)" CFLAGS="$(CPPFLAGS) $(CFLAGS)" LDFLAGS="$(LDFLAGS)" \
 		$(MAKE) -f Makefile
 
 # Build the language specific files if they were unpacked.
