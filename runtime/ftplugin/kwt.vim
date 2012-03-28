@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Kimwitu++
 " Maintainer:	Michael Piefel <entwurf@piefel.de>
-" Last Change:	10 December 2011
+" Last Change:	10 March 2012
 
 " Behaves almost like C++
 runtime! ftplugin/cpp.vim ftplugin/cpp_*.vim ftplugin/cpp/*.vim
@@ -19,6 +19,14 @@ endif
 
 " Set the errorformat for the Kimwitu++ compiler
 set efm+=kc%.%#:\ error\ at\ %f:%l:\ %m
+
+if exists("b:undo_ftplugin")
+    let b:undo_ftplugin = b:undo_ftplugin . " | setlocal efm<"
+	\ . "| unlet! b:browsefiler"
+else
+    let b:undo_ftplugin = "setlocal efm<"
+	\ . "| unlet! b:browsefiler"
+endif
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

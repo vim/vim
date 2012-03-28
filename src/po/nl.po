@@ -9,12 +9,12 @@ msgstr ""
 "Project-Id-Version: vim 7.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-05-29 07:43+0200\n"
-"PO-Revision-Date: 2012-02-25 18:01+0100\n"
-"Last-Translator: Erwin Poeze <erwin.poeze@gmail.com>\n"
+"PO-Revision-Date: 2012-03-28 08:07+0200\n"
+"Last-Translator: YOUR NAME <E-MAIL@ADDRESS>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.nl>\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
@@ -105,12 +105,12 @@ msgstr "E87: kan niet voorbij het laatste buffer komen"
 
 #: buffer.c:1021
 msgid "E88: Cannot go before first buffer"
-msgstr "E88: kan niet voor het eerste buffer komen"
+msgstr "E88: kan niet vóór het eerste buffer komen"
 
 #: buffer.c:1063
 #, c-format
 msgid "E89: No write since last change for buffer %ld (add ! to override)"
-msgstr "E89: niets opgeslagen sinds laatste wijziging van buffer %ld (voeg ! toe om dit te negeren)"
+msgstr "E89: niets opgeslagen sinds laatste wijziging van buffer %ld (voeg ! toe om te forceren)"
 
 #: buffer.c:1080
 msgid "E90: Cannot unload last buffer"
@@ -209,7 +209,7 @@ msgstr "Alles"
 
 #: buffer.c:4188
 msgid "Bot"
-msgstr "Bod"
+msgstr "Bodem"
 
 #: buffer.c:4191
 msgid "Top"
@@ -1657,11 +1657,11 @@ msgstr "Gegroet, Vim-gebruiker!"
 
 #: ex_docmd.c:6492
 msgid "E784: Cannot close last tab page"
-msgstr "E784: laatste tab-pagina kan niet afgesloten worden"
+msgstr "E784: laatste tabpagina kan niet afgesloten worden"
 
 #: ex_docmd.c:6534
 msgid "Already only one tab page"
-msgstr "Reeds beperkt tot Ã©Ã©n tab-pagina"
+msgstr "Reeds beperkt tot één tabpagina"
 
 #: ex_docmd.c:7221
 msgid "Edit File in new window"
@@ -1670,7 +1670,7 @@ msgstr "Bestand in nieuw venster bewerken"
 #: ex_docmd.c:7347
 #, c-format
 msgid "Tab page %d"
-msgstr "Tab-pagina %d"
+msgstr "Tabpagina %d"
 
 #: ex_docmd.c:7739
 msgid "No swap file"
@@ -1694,7 +1694,7 @@ msgstr "E187: onbekend"
 
 #: ex_docmd.c:8128
 msgid "E465: :winsize requires two number arguments"
-msgstr "E465: :winsize vereist twee getalsargumenten"
+msgstr "E465: :winsize vereist twee getallen als argument"
 
 #: ex_docmd.c:8190
 #, c-format
@@ -1703,11 +1703,11 @@ msgstr "Vensterpositie: X %d, Y %d"
 
 #: ex_docmd.c:8195
 msgid "E188: Obtaining window position not implemented for this platform"
-msgstr "E188: verkrijgen van vensterpositie is voor dit platform niet geÃ¯mplementeerd"
+msgstr "E188: verkrijgen van vensterpositie is voor dit platform niet geïmplementeerd"
 
 #: ex_docmd.c:8205
 msgid "E466: :winpos requires two number arguments"
-msgstr "E466: :winpos vereist twee getalsargumenten"
+msgstr "E466: :winpos vereist twee getallen als argument"
 
 #: ex_docmd.c:8565
 msgid "Save Redirection"
@@ -3873,7 +3873,7 @@ msgstr "-unregister\t\tgvim afmelden voor OLE"
 
 #: main.c:3101
 msgid "-g\t\t\tRun using GUI (like \"gvim\")"
-msgstr "-g\t\t\tmet GUI opstarten (zoals \"gvim\")"
+msgstr "-g\t\t\tMet GUI opstarten (zoals \"gvim\")"
 
 #: main.c:3102
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
@@ -3913,7 +3913,7 @@ msgstr "-m\t\t\tAanpassingen (bestanden opslaan) niet toegestaan"
 
 #: main.c:3114
 msgid "-M\t\t\tModifications in text not allowed"
-msgstr "-M\t\t\tTektuele aanpassingen niet toegestaan"
+msgstr "-M\t\t\tTekstuele aanpassingen niet toegestaan"
 
 #: main.c:3115
 msgid "-b\t\t\tBinary mode"
@@ -3933,51 +3933,51 @@ msgstr "-N\t\t\tNiet volledig met Vi uitwisselbaar: 'nocompatible'"
 
 #: main.c:3121
 msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
-msgstr "-V[N][fname]\t\twees uitbundig [niveau N] [schrijf berichten naar fname]"
+msgstr "-V[N][fname]\t\tWees uitbundig [niveau N] [schrijf berichten naar fname]"
 
 #: main.c:3123
 msgid "-D\t\t\tDebugging mode"
-msgstr "-D\t\t\tfoutopspoormodus"
+msgstr "-D\t\t\tFoutopspoormodus"
 
 #: main.c:3125
 msgid "-n\t\t\tNo swap file, use memory only"
-msgstr "-n\t\t\tgeen wisselbestand, alleen geheugen gebruiken"
+msgstr "-n\t\t\tGeen wisselbestand, alleen geheugen gebruiken"
 
 #: main.c:3126
 msgid "-r\t\t\tList swap files and exit"
-msgstr "-r\t\t\twisselbestanden tonen en stoppen"
+msgstr "-r\t\t\tWisselbestanden tonen en stoppen"
 
 #: main.c:3127
 msgid "-r (with file name)\tRecover crashed session"
-msgstr "-r (met bestandsnaam)\therstel ontspoorde sessie"
+msgstr "-r (bestandsnaam)\tHerstel ontspoorde sessie"
 
 #: main.c:3128
 msgid "-L\t\t\tSame as -r"
-msgstr "-L\t\t\tgelijk aan -r"
+msgstr "-L\t\t\tGelijk aan -r"
 
 #: main.c:3130
 msgid "-f\t\t\tDon't use newcli to open window"
-msgstr "-f\t\t\tgebruik geen newcli om venster te openen"
+msgstr "-f\t\t\tGebruik geen newcli om venster te openen"
 
 #: main.c:3131
 msgid "-dev <device>\t\tUse <device> for I/O"
-msgstr "-dev <device>\t\tgebruik <device> voor in- en uitvoer"
+msgstr "-dev <device>\t\tGebruik <device> voor in- en uitvoer"
 
 #: main.c:3134
 msgid "-A\t\t\tstart in Arabic mode"
-msgstr ""
+msgstr "-A\t\t\tIn Arabische modus starten"
 
 #: main.c:3137
 msgid "-H\t\t\tStart in Hebrew mode"
-msgstr ""
+msgstr "-H\t\t\tIn Hebrewsche modus starten"
 
 #: main.c:3140
 msgid "-F\t\t\tStart in Farsi mode"
-msgstr ""
+msgstr "-F\t\t\tIn Perzische modus starten"
 
 #: main.c:3142
 msgid "-T <terminal>\tSet terminal type to <terminal>"
-msgstr ""
+msgstr "-T <terminal>\tTerminalsoort op <terminal> instellen"
 
 #: main.c:3143
 msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
@@ -3997,27 +3997,27 @@ msgstr "-p[N]\t\tN tabpagina's openen (standaard: 1 per bestand)"
 
 #: main.c:3150
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
-msgstr ""
+msgstr "-o[N]\t\tN vensters openen (standaard: 1 per bestand)"
 
 #: main.c:3151
 msgid "-O[N]\t\tLike -o but split vertically"
-msgstr ""
+msgstr "-O[N]\t\tGelijk aan -o maar vertikaal gesplitst"
 
 #: main.c:3153
 msgid "+\t\t\tStart at end of file"
-msgstr ""
+msgstr "+\t\t\tAan einde van bestand beginnen"
 
 #: main.c:3154
 msgid "+<lnum>\t\tStart at line <lnum>"
-msgstr ""
+msgstr "+<lnum>\t\tOp regel <lnum> beginnen"
 
 #: main.c:3155
 msgid "--cmd <command>\tExecute <command> before loading any vimrc file"
-msgstr ""
+msgstr "--cmd <opdracht>\tOpdracht <opdracht> uitvoeren voor enige vimrc-bestand"
 
 #: main.c:3156
 msgid "-c <command>\t\tExecute <command> after loading the first file"
-msgstr ""
+msgstr "-c <opdracht>\t\tOpdracht <opdracht> uitvoeren na eerste bestand"
 
 #: main.c:3157
 msgid "-S <session>\t\tSource file <session> after loading the first file"
@@ -4552,124 +4552,139 @@ msgid ""
 "You may want to delete the .swp file now.\n"
 "\n"
 msgstr ""
+"\n"
+"Het .swp-bestand kan nu verwijderd worden.\n"
+"\n"
 
 #. use msg() to start the scrolling properly
 #: memline.c:1462
 msgid "Swap files found:"
-msgstr ""
+msgstr "Gevonden wisselbestanden:"
 
 #: memline.c:1649
 msgid "   In current directory:\n"
-msgstr ""
+msgstr "   In huidige map:\n"
 
 #: memline.c:1651
 msgid "   Using specified name:\n"
-msgstr ""
+msgstr "   Gebruikt opgegeven naam:\n"
 
 #: memline.c:1655
 msgid "   In directory "
-msgstr ""
+msgstr "   In map "
 
 #: memline.c:1673
 msgid "      -- none --\n"
-msgstr ""
+msgstr "      -- geen --\n"
 
 #: memline.c:1748
 msgid "          owned by: "
-msgstr ""
+msgstr "          eigenaar: "
 
 #: memline.c:1750
 msgid "   dated: "
-msgstr ""
+msgstr "   datum: "
 
 #: memline.c:1754
 #: memline.c:3794
 msgid "             dated: "
-msgstr ""
+msgstr "             datum: "
 
 #: memline.c:1773
 msgid "         [from Vim version 3.0]"
-msgstr ""
+msgstr "         [van Vim-versie 3.0]"
 
 #: memline.c:1777
 msgid "         [does not look like a Vim swap file]"
-msgstr ""
+msgstr "         [lijkt geen Vvim-wisselbestand te zijn]"
 
 #: memline.c:1781
 msgid "         file name: "
-msgstr ""
+msgstr "      bestandsnaam: "
 
 #: memline.c:1787
 msgid ""
 "\n"
 "          modified: "
 msgstr ""
+"\n"
+"           bewerkt: "
 
 #: memline.c:1788
 msgid "YES"
-msgstr ""
+msgstr "JA"
 
 #: memline.c:1788
 msgid "no"
-msgstr ""
+msgstr "nee"
 
 #: memline.c:1792
 msgid ""
 "\n"
 "         user name: "
 msgstr ""
+"\n"
+"    gebruikersnaam: "
 
 #: memline.c:1799
 msgid "   host name: "
-msgstr ""
+msgstr "  host-naam:"
 
 #: memline.c:1801
 msgid ""
 "\n"
 "         host name: "
 msgstr ""
+"\n"
+"         host-naam: "
 
 #: memline.c:1807
 msgid ""
 "\n"
 "        process ID: "
 msgstr ""
+"\n"
+"         proces-id: "
 
 #: memline.c:1813
 msgid " (still running)"
-msgstr ""
+msgstr "    (nog actief)"
 
 #: memline.c:1825
 msgid ""
 "\n"
 "         [not usable with this version of Vim]"
 msgstr ""
+"\n"
+"         [onbruikbaar met deze versie van Vim]"
 
 #: memline.c:1828
 msgid ""
 "\n"
 "         [not usable on this computer]"
 msgstr ""
+"\n"
+"         [onbruikbaar op deze computer]"
 
 #: memline.c:1833
 msgid "         [cannot be read]"
-msgstr ""
+msgstr "         [lezen is onmogelijk]"
 
 #: memline.c:1837
 msgid "         [cannot be opened]"
-msgstr ""
+msgstr "         [openen is onmogelijk]"
 
 #: memline.c:2027
 msgid "E313: Cannot preserve, there is no swap file"
-msgstr ""
+msgstr "E313: kan niet worden behouden, want er is geen wisselbestand"
 
 #: memline.c:2080
 msgid "File preserved"
-msgstr ""
+msgstr "Bestand behouden"
 
 #: memline.c:2082
 msgid "E314: Preserve failed"
-msgstr ""
+msgstr "E314: behouden is mislukt"
 
 #: memline.c:2159
 #, c-format
@@ -4735,25 +4750,27 @@ msgstr ""
 #: memline.c:3595
 #, c-format
 msgid "E773: Symlink loop for \"%s\""
-msgstr ""
+msgstr "E773: Symbolische koppelingslus voor \"%s\""
 
 #: memline.c:3784
 msgid "E325: ATTENTION"
-msgstr ""
+msgstr "E325: OPGELET"
 
 #: memline.c:3785
 msgid ""
 "\n"
 "Found a swap file by the name \""
 msgstr ""
+"\n"
+"Er is een wisselbestand aangetroffen met de naam \""
 
 #: memline.c:3789
 msgid "While opening file \""
-msgstr ""
+msgstr "bij het openen van bestand \""
 
 #: memline.c:3802
 msgid "      NEWER than swap file!\n"
-msgstr ""
+msgstr "    NIEUWER dan het wisselbestand!\n"
 
 #. Some of these messages are long to allow translation to
 #. * other languages.
@@ -4764,30 +4781,38 @@ msgid ""
 "    If this is the case, be careful not to end up with two\n"
 "    different instances of the same file when making changes.\n"
 msgstr ""
+"\n"
+"(1) Mogelijk wordt dit bestand met een ander programma bewerkt.\n"
+"    Als dit het geval is, pas dan op niet met twee verschillende\n"
+"    versies van hetzelfde bestand te eindigen bij het bewerken.\n"
 
 #: memline.c:3807
 msgid "    Quit, or continue with caution.\n"
-msgstr ""
+msgstr "    Stop of ga aandachtig verder.\n"
 
 #: memline.c:3808
 msgid ""
 "\n"
 "(2) An edit session for this file crashed.\n"
 msgstr ""
+"\n"
+"(2) Een sessie waarin dit bestand werd bewerkt is onverhoeds gestopt.\n"
 
 #: memline.c:3809
 msgid "    If this is the case, use \":recover\" or \"vim -r "
-msgstr ""
+msgstr "    Als dit het geval is, gebruikt dan \":recover\" of \"vim -r "
 
 #: memline.c:3811
 msgid ""
 "\"\n"
 "    to recover the changes (see \":help recovery\").\n"
 msgstr ""
+"\"\n"
+"    om de aanpassingen te herstellen (zie \":help recovery\").\n"
 
 #: memline.c:3812
 msgid "    If you did this already, delete the swap file \""
-msgstr ""
+msgstr "    Als dit al gedaan is, verwijder dan het wisselbestand \""
 
 #: memline.c:3814
 msgid ""
@@ -4795,7 +4820,7 @@ msgid ""
 "    to avoid this message.\n"
 msgstr ""
 "\"\n"
-"    om dit bericht te verkomen.\n"
+"    om dit bericht te voorkomen.\n"
 
 #: memline.c:4233
 #: memline.c:4237
@@ -4823,6 +4848,11 @@ msgid ""
 "&Quit\n"
 "&Abort"
 msgstr ""
+"Alleen-lezen &openen\n"
+"Toch b&ewerken\n"
+"He&rstellen\n"
+"&Stoppen\n"
+"&Afbreken"
 
 #: memline.c:4251
 msgid ""
@@ -4833,28 +4863,34 @@ msgid ""
 "&Quit\n"
 "&Abort"
 msgstr ""
+"Alleen-lezen &openen\n"
+"Toch b&ewerken\n"
+"He&rstellen\n"
+"Verwij&deren\n"
+"&Stoppen\n"
+"&Afbreken"
 
 #: memline.c:4322
 msgid "E326: Too many swap files found"
-msgstr ""
+msgstr "E326: teveel wisselbestanden aangetroffen"
 
 #: menu.c:67
 msgid "E327: Part of menu-item path is not sub-menu"
-msgstr ""
+msgstr "E327: deel van menu-itempad is geen submenu"
 
 #: menu.c:68
 msgid "E328: Menu only exists in another mode"
-msgstr ""
+msgstr "E328: menu bestaat alleen in andere modus"
 
 #: menu.c:69
 #, c-format
 msgid "E329: No menu \"%s\""
-msgstr ""
+msgstr "E329: geen menu \"%s\""
 
 #. Only a mnemonic or accelerator is not valid.
 #: menu.c:480
 msgid "E792: Empty menu name"
-msgstr ""
+msgstr "E792: menunaam is leeg"
 
 #: menu.c:498
 msgid "E330: Menu path must not lead to a sub-menu"
@@ -5203,7 +5239,7 @@ msgstr "E663: einde van wijzigingslijst"
 
 #: normal.c:8854
 msgid "Type  :quit<Enter>  to exit Vim"
-msgstr "Typ   :quit<Enter>  om Vim te verlaten"
+msgstr "Typ :quit<Enter> om Vim te verlaten"
 
 #: ops.c:293
 #, c-format
@@ -7571,7 +7607,7 @@ msgid "Running in Vi compatible mode"
 msgstr "wordt uitgevoerd in Vi compatible-modus"
 
 #: version.c:1119
-msgid "type  :set nocp<Enter>        for Vim defaults"
+msgid "type :set nocp<Enter> for Vim defaults"
 msgstr "typ :set nocp<Enter>  voor standaardinstellingen van Vim"
 
 #: version.c:1120
@@ -7851,11 +7887,11 @@ msgstr ""
 
 #: globals.h:1430
 msgid "E19: Mark has invalid line number"
-msgstr ""
+msgstr "E19: markering heeft een ongeldig regelnummer"
 
 #: globals.h:1431
 msgid "E20: Mark not set"
-msgstr ""
+msgstr "E20: Markering is niet ingesteld"
 
 #: globals.h:1432
 msgid "E21: Cannot make changes, 'modifiable' is off"
@@ -7863,7 +7899,7 @@ msgstr "E21: kan geen veranderingen maken, 'modifiable' is uitgeschakeld"
 
 #: globals.h:1433
 msgid "E22: Scripts nested too deep"
-msgstr ""
+msgstr "E22: scripts "
 
 #: globals.h:1434
 msgid "E23: No alternate file"
@@ -7912,7 +7948,7 @@ msgstr ""
 
 #: globals.h:1455
 msgid "E479: No match"
-msgstr ""
+msgstr "E479: geen overeenkomst"
 
 #: globals.h:1456
 #, c-format
@@ -7946,51 +7982,51 @@ msgstr "E36: onvoldoende ruimte"
 #: globals.h:1466
 #, c-format
 msgid "E247: no registered server named \"%s\""
-msgstr ""
+msgstr "E247: \"%s\" niet gevonden als geregistreerde server"
 
 #: globals.h:1468
 #, c-format
 msgid "E482: Can't create file %s"
-msgstr ""
+msgstr "E482: aanmaken bestand %s is mislukt"
 
 #: globals.h:1469
 msgid "E483: Can't get temp file name"
-msgstr ""
+msgstr "E483: bepalen naam tijdelijk bestand is mislukt"
 
 #: globals.h:1470
 #, c-format
 msgid "E484: Can't open file %s"
-msgstr ""
+msgstr "E484: openen bestand %s is mislukt"
 
 #: globals.h:1471
 #, c-format
 msgid "E485: Can't read file %s"
-msgstr ""
+msgstr "E485: lezen bestand %s is mislukt"
 
 #: globals.h:1472
 msgid "E37: No write since last change (add ! to override)"
-msgstr "E37: niets opgeslagen sinds laatste wijziging (voeg ! toe om dit te negeren)"
+msgstr "E37: niets opgeslagen sinds laatste wijziging (voeg ! toe om te forceren)"
 
 #: globals.h:1473
 msgid "E38: Null argument"
-msgstr ""
+msgstr "E38: leeg argument (null)"
 
 #: globals.h:1475
 msgid "E39: Number expected"
-msgstr ""
+msgstr "E39: getal verwacht"
 
 #: globals.h:1478
 #, c-format
 msgid "E40: Can't open errorfile %s"
-msgstr ""
+msgstr "E40: openen foutenbestand %s is mislukt"
 
 #: globals.h:1481
 msgid "E233: cannot open display"
-msgstr ""
+msgstr "E233: openen scherm is mislukt"
 
 #: globals.h:1483
 msgid "E41: Out of memory!"
-msgstr ""
+msgstr "E41: te weinig geheugen!"
 
 #: globals.h:1485
 msgid "Pattern not found"
@@ -8053,7 +8089,7 @@ msgstr "E523: hier niet toegestaan"
 
 #: globals.h:1513
 msgid "E359: Screen mode setting not supported"
-msgstr ""
+msgstr "E359: instelling schermmodus niet ondersteund"
 
 #: globals.h:1515
 msgid "E49: Invalid scroll size"
@@ -8101,39 +8137,39 @@ msgstr "E78: onbekende markering"
 
 #: globals.h:1528
 msgid "E79: Cannot expand wildcards"
-msgstr ""
+msgstr "E79: vervangen jokertekens is mislukt"
 
 #: globals.h:1530
 msgid "E591: 'winheight' cannot be smaller than 'winminheight'"
-msgstr ""
+msgstr "E591: 'winheight' kan niet kleiner zijn dan 'winminheight'"
 
 #: globals.h:1532
 msgid "E592: 'winwidth' cannot be smaller than 'winminwidth'"
-msgstr ""
+msgstr "E592: 'winwidth' kan niet kleiner zijn dan 'winminwidth'"
 
 #: globals.h:1535
 msgid "E80: Error while writing"
-msgstr ""
+msgstr "E80: opslaan is mislukt"
 
 #: globals.h:1536
 msgid "Zero count"
-msgstr ""
+msgstr "Aantal is nul"
 
 #: globals.h:1538
 msgid "E81: Using <SID> not in a script context"
-msgstr ""
+msgstr "E81: <SID> wordt buiten de scriptcontext gebruikt"
 
 #: globals.h:1541
 msgid "E449: Invalid expression received"
-msgstr ""
+msgstr "E449: ontvangen expressie is ongeldig"
 
 #: globals.h:1544
 msgid "E463: Region is guarded, cannot modify"
-msgstr ""
+msgstr "E463: Regio is bescherm en kan niet worden veranderd"
 
 #: globals.h:1545
 msgid "E744: NetBeans does not allow changes in read-only files"
-msgstr ""
+msgstr "E744: NetBeans staat geen veranderingen in alleen-lezenbestanden toe"
 
 #: globals.h:1547
 #, c-format
@@ -8142,7 +8178,7 @@ msgstr "E685: interne fout: %s"
 
 #: globals.h:1548
 msgid "E363: pattern uses more memory than 'maxmempattern'"
-msgstr ""
+msgstr "E363: patroon gebruikt meer geheugen dan 'maxmempattern'"
 
 #: globals.h:1549
 msgid "E749: empty buffer"

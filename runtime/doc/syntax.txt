@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2012 Feb 11
+*syntax.txt*	For Vim version 7.3.  Last change: 2012 Mar 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -199,7 +199,8 @@ REPLACING AN EXISTING SYNTAX FILE			*mysyntaxfile-replace*
 If you don't like a distributed syntax file, or you have downloaded a new
 version, follow the same steps as for |mysyntaxfile| above.  Just make sure
 that you write the syntax file in a directory that is early in 'runtimepath'.
-Vim will only load the first syntax file found.
+Vim will only load the first syntax file found, assuming that it sets
+b:current_syntax.
 
 
 NAMING CONVENTIONS		    *group-name* *{group-name}* *E669* *W18*
@@ -754,7 +755,8 @@ c_no_ansi		don't do standard ANSI types and constants
 c_ansi_typedefs		 ... but do standard ANSI types
 c_ansi_constants	 ... but do standard ANSI constants
 c_no_utf		don't highlight \u and \U in strings
-c_syntax_for_h		use C syntax for *.h files, instead of C++
+c_syntax_for_h		for *.h files use C syntax instead of C++ and use objc
+			syntax instead of objcpp
 c_no_if0		don't highlight "#if 0" blocks as comments
 c_no_cformat		don't highlight %-formats in strings
 c_no_c99		don't highlight C99 standard items
@@ -4421,6 +4423,8 @@ IncSearch	'incsearch' highlighting; also used for the text replaced with
 							*hl-LineNr*
 LineNr		Line number for ":number" and ":#" commands, and when 'number'
 		or 'relativenumber' option is set.
+							*hl-CursorLineNr*
+CursorLineNr	Like LineNr when 'cursorline' is set for the cursor line.
 							*hl-MatchParen*
 MatchParen	The character under the cursor or just before it, if it
 		is a paired bracket, and its match. |pi_paren.txt|

@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.3.  Last change: 2011 Jan 06
+*repeat.txt*    For Vim version 7.3.  Last change: 2012 Mar 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -109,7 +109,7 @@ q			Stops recording.  (Implementation note: The 'q' that
 			it was the result of a mapping)  {Vi: no recording}
 
 							*@*
-@{0-9a-z".=*}		Execute the contents of register {0-9a-z".=*} [count]
+@{0-9a-z".=*+}		Execute the contents of register {0-9a-z".=*+} [count]
 			times.  Note that register '%' (name of the current
 			file) and '#' (name of the alternate file) cannot be
 			used.
@@ -123,8 +123,8 @@ q			Stops recording.  (Implementation note: The 'q' that
 							*@@* *E748*
 @@			Repeat the previous @{0-9a-z":*} [count] times.
 
-:[addr]*{0-9a-z".=}						*:@* *:star*
-:[addr]@{0-9a-z".=*}	Execute the contents of register {0-9a-z".=*} as an Ex
+:[addr]*{0-9a-z".=+}						*:@* *:star*
+:[addr]@{0-9a-z".=*+}	Execute the contents of register {0-9a-z".=*+} as an Ex
 			command.  First set cursor at line [addr] (default is
 			current line).  When the last line in the register does
 			not have a <CR> it will be added automatically when

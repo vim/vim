@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.3.  Last change: 2011 Feb 26
+*editing.txt*   For Vim version 7.3.  Last change: 2012 Mar 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1159,8 +1159,10 @@ MULTIPLE WINDOWS AND BUFFERS				*window-exit*
 							*:confirm* *:conf*
 :conf[irm] {command}	Execute {command}, and use a dialog when an
 			operation has to be confirmed.  Can be used on the
-			":q", ":qa" and ":w" commands (the latter to over-ride
-			a read-only setting).
+			|:q|, |:qa| and |:w| commands (the latter to override
+			a read-only setting), and any other command that can
+			fail in such a way, such as |:only|, |:buffer|,
+			|:bdelete|, etc.
 
 Examples: >
   :confirm w foo

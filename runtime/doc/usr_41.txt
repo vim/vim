@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.3.  Last change: 2011 Dec 15
+*usr_41.txt*	For Vim version 7.3.  Last change: 2012 Mar 16
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -1710,6 +1710,7 @@ make the script work for most people.  It is done like this: >
  12	set cpo&vim
  ..
  42	let &cpo = s:save_cpo
+ 43	unlet s:save_cpo
 
 We first store the old value of 'cpoptions' in the s:save_cpo variable.  At
 the end of the plugin this value is restored.
@@ -1956,6 +1957,7 @@ Here is the resulting complete example: >
  40	endif
  41
  42	let &cpo = s:save_cpo
+ 43	unlet s:save_cpo
 
 Line 33 wasn't explained yet.  It applies the new correction to the word under
 the cursor.  The |:normal| command is used to use the new abbreviation.  Note

@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.3.  Last change: 2011 Jul 22
+*starting.txt*  For Vim version 7.3.  Last change: 2012 Mar 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -248,7 +248,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		{not in Vi}
 
 							*-g*
--g		Start Vim in GUI mode.  See |gui|.  {not in Vi}
+-g		Start Vim in GUI mode.  See |gui|. For the opposite see |-v|.
+		{not in Vi}
 
 							*-v*
 -v		Start Ex in Vi mode.  Only makes a difference when the

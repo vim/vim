@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:     Falcon
 " Author:       Steven Oliver <oliver.steven@gmail.com>
-" Copyright:    Copyright (c) 2009, 2010, 2011 Steven Oliver
+" Copyright:    Copyright (c) 2009, 2010, 2011, 2012 Steven Oliver
 " License:      You may redistribute this under the same terms as Vim itself
 " --------------------------------------------------------------------------
 " GetLatestVimScripts: 2762 1 :AutoInstall: falcon.vim
@@ -39,6 +39,10 @@ if has("gui_win32") && !exists("b:browsefilter")
   let b:browsefilter = "Falcon Source Files (*.fal *.ftd)\t*.fal;*.ftd\n" .
                      \ "All Files (*.*)\t*.*\n"
 endif
+
+let b:undo_ftplugin = "setlocal tabstop< shiftwidth< expandtab< fileencoding<"
+	\ . " suffixesadd< comments<"
+	\ . "| unlet! b:browsefiler"
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

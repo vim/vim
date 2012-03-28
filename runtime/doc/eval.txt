@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2012 Mar 07
+*eval.txt*	For Vim version 7.3.  Last change: 2012 Mar 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3473,7 +3473,8 @@ glob({expr} [, {nosuf} [, {list}]])				*glob()*
 		matches, they are separated by <NL> characters.
 
 		If the expansion fails, the result is an empty String or List.
-		A name for a non-existing file is not included.
+		A name for a non-existing file is not included.  A symbolic
+		link is only included if it points to an existing file.
 
 		For most systems backticks can be used to get files names from
 		any external command.  Example: >
@@ -5779,9 +5780,9 @@ tabpagebuflist([{arg}])					*tabpagebuflist()*
 		omitted the current tab page is used.
 		When {arg} is invalid the number zero is returned.
 		To get a list of all buffers in all tabs use this: >
-			tablist = []
+			let buflist = []
 			for i in range(tabpagenr('$'))
-			   call extend(tablist, tabpagebuflist(i + 1))
+			   call extend(buflist, tabpagebuflist(i + 1))
 			endfor
 <		Note that a buffer may appear in more than one window.
 
@@ -6003,7 +6004,7 @@ virtcol({expr})						*virtcol()*
 		would be of unlimited width.  When there is a <Tab> at the
 		position, the returned Number will be the column at the end of
 		the <Tab>.  For example, for a <Tab> in column 1, with 'ts'
-		set to 8, it returns 8.
+		set to 8, it returns 8. |conceal| is ignored.
 		For the byte position use |col()|.
 		For the use of {expr} see |col()|.
 		When 'virtualedit' is used {expr} can be [lnum, col, off], where

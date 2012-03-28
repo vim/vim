@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2012 Feb 22
+*options.txt*	For Vim version 7.3.  Last change: 2012 Mar 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3772,9 +3772,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 'highlight' 'hl'	string	(default (as a single string):
 				     "8:SpecialKey,@:NonText,d:Directory,
 				     e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,
-				     M:ModeMsg,n:LineNr,r:Question,
-				     s:StatusLine,S:StatusLineNC,c:VertSplit,
-				     t:Title,v:Visual,w:WarningMsg,W:WildMenu,
+				     M:ModeMsg,n:LineNr,N:CursorLineNr,
+				     r:Question,s:StatusLine,S:StatusLineNC,
+				     c:VertSplit, t:Title,v:Visual,
+				     w:WarningMsg,W:WildMenu,
 				     f:Folded,F:FoldColumn,A:DiffAdd,
 				     C:DiffChange,D:DiffDelete,T:DiffText,
 				     >:SignColumn,B:SpellBad,P:SpellCap,
@@ -3800,6 +3801,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-ModeMsg|	 M  Mode (e.g., "-- INSERT --")
 	|hl-LineNr|	 n  line number for ":number" and ":#" commands, and
 			    when 'number' or 'relativenumber' option is set.
+	|hl-CursorLineNr|  N like n for when 'cursorline' is set.
 	|hl-Question|	 r  |hit-enter| prompt and yes/no questions
 	|hl-StatusLine|	 s  status line of current window |status-line|
 	|hl-StatusLineNC| S  status lines of not-current windows
@@ -5078,7 +5080,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	number.
 	When a long, wrapped line doesn't start with the first character, '-'
 	characters are put before the number.
-	See |hl-LineNr| for the highlighting used for the number.
+	See |hl-LineNr|  and |hl-CursorLineNr| for the highlighting used for
+	the number.
 	When setting this option, 'relativenumber' is reset.
 
 						*'numberwidth'* *'nuw'*
@@ -5477,7 +5480,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	number.
 	When a long, wrapped line doesn't start with the first character, '-'
 	characters are put before the number.
-	See |hl-LineNr| for the highlighting used for the number.
+	See |hl-LineNr|  and |hl-CursorLineNr| for the highlighting used for
+	the number.
 	When setting this option, 'number' is reset.
 
 						*'remap'* *'noremap'*
@@ -6563,6 +6567,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	evaluated and the result is used as the option value.  Example: >
 		:set statusline=%!MyStatusLine()
 <	The result can contain %{} items that will be evaluated too.
+	Note that the "%!" expression is evaluated in the context of the
+	current window and buffer, while %{} items are evaluated in the
+	context of the window that the statusline belongs to.
 
 	When there is error while evaluating the option then it will be made
 	empty to avoid further errors.  Otherwise screen updating would loop.

@@ -17,11 +17,15 @@ own window.
 VisVim is based upon VisEmacs by Christopher Payne
 (Copyright (C) Christopher Payne 1997).
 
-Author: Heiko Erhardt <Heiko.Erhardt@munich.netsurf.de>
+Author: Heiko Erhardt <heiko.erhardt@gmx.net>
 Based upon: VisEmacs by Christopher Payne <payneca@sagian.com>
 Version: 1.0
 Created: 23 Oct 1997
 Date: 23 Oct 1997
+
+VisVim was originally GNU GPL licensed, as stated below.  On March 21 2012
+Heiko Erhardt declared this work to be relicensed under the Vim license, as
+stated in ../../runtime/doc/uganda.txt (or ":help uganda" in Vim).
 
 VisVim is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -318,5 +322,5 @@ Known Problems
 Have fun!
 
 Heiko Erhardt
-Heiko.Erhardt@munich.netsurf.de
+heiko.erhardt@gmx.net
 

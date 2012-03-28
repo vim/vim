@@ -2,8 +2,8 @@
 " Language:		shell (sh) Korn shell (ksh) bash (sh)
 " Maintainer:		Dr. Charles E. Campbell, Jr.  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		Dec 09, 2011
-" Version:		121
+" Last Change:		Mar 19, 2012
+" Version:		122
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 " For options and settings, please use:      :help ft-sh-syntax
 " This file includes many ideas from ?ric Brunet (eric.brunet@ens.fr)
@@ -263,6 +263,7 @@ syn match   shEscape	contained	'\\.'         contains=@shCommandSubList
 if exists("b:is_kornshell") || exists("b:is_bash")
  syn region shCommandSub matchgroup=shCmdSubRegion start="\$("  skip='\\\\\|\\.' end=")"  contains=@shCommandSubList
  syn region shArithmetic matchgroup=shArithRegion  start="\$((" skip='\\\\\|\\.' end="))" contains=@shArithList
+ syn region shArithmetic matchgroup=shArithRegion  start="\$\[" skip='\\\\\|\\.' end="\]" contains=@shArithList
  syn match  shSkipInitWS contained	"^\s\+"
 elseif !exists("g:sh_no_error")
  syn region shCommandSub matchgroup=Error start="\$(" end=")" contains=@shCommandSubList
