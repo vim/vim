@@ -45,6 +45,7 @@ void msg_puts_attr __ARGS((char_u *s, int attr));
 void may_clear_sb_text __ARGS((void));
 void clear_sb_text __ARGS((void));
 void show_sb_text __ARGS((void));
+void msg_sb_eol __ARGS((void));
 int msg_use_printf __ARGS((void));
 void mch_errmsg __ARGS((char *str));
 void mch_msg __ARGS((char *str));

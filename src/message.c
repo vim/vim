@@ -2348,6 +2348,16 @@ msg_sb_start(mps)
 }
 
 /*
+ * Mark the last message chunk as finishing the line.
+ */
+    void
+msg_sb_eol()
+{
+    if (last_msgchunk != NULL)
+	last_msgchunk->sb_eol = TRUE;
+}
+
+/*
  * Display a screen line from previously displayed text at row "row".
  * Returns a pointer to the text for the next line (can be NULL).
  */
