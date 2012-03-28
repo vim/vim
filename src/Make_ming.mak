@@ -681,11 +681,9 @@ $(OUTDIR)/if_python3.o : if_python3.c $(INCL)
 $(OUTDIR)/%.o : %.c $(INCL)
 	$(CC) -c $(CFLAGS) $< -o $@
 
-$(OUTDIR)/vimres.res: vim.rc version.h gui_w32_rc.h
-	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) vim.rc $(OUTDIR)/vimres.res
-
-$(OUTDIR)/vimrc.o: $(OUTDIR)/vimres.res
-	$(WINDRES) $(WINDRES_FLAGS) $(OUTDIR)/vimres.res $(OUTDIR)/vimrc.o
+$(OUTDIR)/vimrc.o: vim.rc version.h gui_w32_rc.h
+	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) \
+	    --input-format=rc --output-format=coff -i vim.rc -o $@
 
 $(OUTDIR):
 	$(MKDIR) $(OUTDIR)
