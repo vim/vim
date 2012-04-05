@@ -460,6 +460,22 @@ The examples below assume a 'shiftwidth' of 4.
 		  a_short_line(argument,    a_short_line(argument,
 			       argument);		 argument);
 <
+							*cino-k*
+	kN    When in unclosed parentheses which follow "if", "for" or
+	      "while" and N is non-zero, overrides the behaviour defined by
+	      "(N": causes the indent to be N characters relative to the outer
+	      context (i.e. the line where "if", "for" or "while" is).  Has
+	      no effect on deeper levels of nesting.  Affects flags like "wN"
+	      only for the "if", "for" and "while" conditions.  If 0, defaults
+	      to behaviour defined by the "(N" flag.  (default: 0).
+
+		cino=(0			   cino=(0,ks >
+		  if (condition1	    if (condition1
+		      && condition2)		    && condition2)
+		      action();			action();
+		  function(argument1	    function(argument1
+			   && argument2);	     && argument2);
+<
 							*cino-m*
 	mN    When N is non-zero, line up a line starting with a closing
 	      parentheses with the first character of the line with the
@@ -530,14 +546,14 @@ The examples below assume a 'shiftwidth' of 4.
 
 								*cino-#*
 	#N    When N is non-zero recognize shell/Perl comments, starting with
-	      '#'.  Default N is zero: don't recognizes '#' comments.  Note
+	      '#'.  Default N is zero: don't recognize '#' comments.  Note
 	      that lines starting with # will still be seen as preprocessor
 	      lines.
 
 
 The defaults, spelled out in full, are:
 	cinoptions=>s,e0,n0,f0,{0,}0,^0,L-1,:s,=s,l0,b0,gs,hs,N0,ps,ts,is,+s,
-			c3,C0,/0,(2s,us,U0,w0,W0,m0,j0,J0,)20,*70,#0
+			c3,C0,/0,(2s,us,U0,w0,W0,k0,m0,j0,J0,)20,*70,#0
 
 Vim puts a line in column 1 if:
 - It starts with '#' (preprocessor directives), if 'cinkeys' contains '#'.

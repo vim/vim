@@ -5771,6 +5771,52 @@ cin_iswhileofdo(p, lnum, ind_maxparen)	    /* XXX */
 }
 
 /*
+ * Check whether in "p" there is an "if", "for" or "while" before offset.
+ * Return 0 if there is none.
+ * Otherwise return !0 and update "*poffset" to point to the place where the
+ * string was found.
+ */
+    static int
+cin_is_if_for_while_before_offset(line, offset, poffset)
+    char_u *line;
+    size_t offset;
+    int    *poffset;
+{
+
+    if (offset-- < 2)
+	return 0;
+    while (offset > 2 && vim_iswhite(line[offset]))
+	--offset;
+
+    offset -= 1;
+    if (!STRNCMP(line + offset, "if", 2))
+	goto probablyFound;
+
+    if (offset >= 1)
+    {
+	offset -= 1;
+	if (!STRNCMP(line + offset, "for", 3))
+	    goto probablyFound;
+
+	if (offset >= 2)
+	{
+	    offset -= 2;
+	    if (!STRNCMP(line + offset, "while", 5))
+		goto probablyFound;
+	}
+    }
+
+    return 0;
+probablyFound:
+    if (!offset || !vim_isIDc(line[offset - 1]))
+    {
+	*poffset = offset;
+	return 1;
+    }
+    return 0;
+}
+
+/*
  * Return TRUE if we are at the end of a do-while.
  *    do
  *       nothing;
@@ -6124,7 +6170,7 @@ find_start_brace(ind_maxcomment)	    /* XXX */
 
 /*
  * Find the matching '(', failing if it is in a comment.
- * Return NULL of no match found.
+ * Return NULL if no match found.
  */
     static pos_T *
 find_match_paren(ind_maxparen, ind_maxcomment)	    /* XXX */
@@ -6393,6 +6439,12 @@ get_c_indent()
      */
     int ind_cpp_namespace = 0;
 
+    /*
+     * handle continuation lines containing conditions of if(), for() and
+     * while()
+     */
+    int ind_if_for_while = 0;
+
     pos_T	cur_curpos;
     int		amount;
     int		scope_amount;
@@ -6437,6 +6489,7 @@ get_c_indent()
     int		cont_amount = 0;    /* amount for continuation line */
     int		original_line_islabel;
     int		added_to_amount = 0;
+    int		is_if_for_while = 0;
 
     for (options = curbuf->b_p_cino; *options; )
     {
@@ -6509,6 +6562,7 @@ get_c_indent()
 	    case 'l': ind_keep_case_label = n; break;
 	    case '#': ind_hash_comment = n; break;
 	    case 'N': ind_cpp_namespace = n; break;
+	    case 'k': ind_if_for_while = n; break;
 	}
 	if (*options == ',')
 	    ++options;
@@ -6812,6 +6866,35 @@ get_c_indent()
 	if (amount == -1)
 	{
 	    int	    ignore_paren_col = 0;
+	    int	    is_if_for_while = 0;
+
+	    if (ind_if_for_while)
+	    {
+		/* Look for the outermost opening parenthesis on this line
+		 * and check whether it belongs to an "if", "for" or "while". */
+
+		pos_T	    cursor_save = curwin->w_cursor;
+		pos_T	    outermost;
+		char_u	    *line;
+		int	    look_col;
+
+		trypos = &our_paren_pos;
+		do {
+		    outermost = *trypos;
+		    curwin->w_cursor.lnum = outermost.lnum;
+		    curwin->w_cursor.col = outermost.col;
+
+		    trypos = find_match_paren(ind_maxparen, ind_maxcomment);
+		} while (trypos && trypos->lnum == outermost.lnum);
+
+		curwin->w_cursor = cursor_save;
+
+		line = ml_get(outermost.lnum);
+
+		is_if_for_while =
+		    cin_is_if_for_while_before_offset(line, outermost.col,
+						      &outermost.col);
+	    }
 
 	    amount = skip_label(our_paren_pos.lnum, &look, ind_maxcomment);
 	    look = skipwhite(look);
@@ -6836,7 +6919,7 @@ get_c_indent()
 		curwin->w_cursor.lnum = save_lnum;
 		look = ml_get(our_paren_pos.lnum) + look_col;
 	    }
-	    if (theline[0] == ')' || ind_unclosed == 0
+	    if (theline[0] == ')' || (ind_unclosed == 0 && is_if_for_while == 0)
 		    || (!ind_unclosed_noignore && *look == '('
 						    && ignore_paren_col == 0))
 	    {
@@ -6907,7 +6990,8 @@ get_c_indent()
 	    {
 		/* Line up with the start of the matching paren line. */
 	    }
-	    else if (ind_unclosed == 0 || (!ind_unclosed_noignore
+	    else if ((ind_unclosed == 0 && is_if_for_while == 0)
+		     || (!ind_unclosed_noignore
 				    && *look == '(' && ignore_paren_col == 0))
 	    {
 		if (cur_amount != MAXCOL)
@@ -6943,7 +7027,12 @@ get_c_indent()
 		    if (find_match_paren(ind_maxparen, ind_maxcomment) != NULL)
 			amount += ind_unclosed2;
 		    else
-			amount += ind_unclosed;
+		    {
+			if (is_if_for_while)
+			    amount += ind_if_for_while;
+			else
+			    amount += ind_unclosed;
+		    }
 		}
 		/*
 		 * For a line starting with ')' use the minimum of the two

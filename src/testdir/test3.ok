@@ -1411,6 +1411,192 @@ void func(void)
 }
 
 
+void func(void)
+{
+	if (condition1
+			&& condition2)
+		action();
+	function(argument1
+			 && argument2);
+
+	if (c1 && (c2 ||
+				c3))
+		foo;
+	if (c1 &&
+			(c2 || c3))
+	{
+	}
+
+	if (   c1
+			&& (      c2
+					  || c3))
+		foo;
+	func( c1
+		  && (     c2
+				   || c3))
+		foo;
+}
+
+
+void func(void)
+{
+	if (condition1
+			&& condition2)
+		action();
+	function(argument1
+		&& argument2);
+
+	if (c1 && (c2 ||
+				c3))
+		foo;
+	if (c1 &&
+			(c2 || c3))
+	{
+	}
+
+	if (   c1
+			&& (      c2
+				|| c3))
+		foo;
+	func(   c1
+		&& (      c2
+			|| c3))
+		foo;
+}
+
+
+void func(void)
+{
+	if (condition1
+			&& condition2)
+		action();
+	function(argument1
+		&& argument2);
+
+	if (c1 && (c2 ||
+				c3))
+		foo;
+	if (c1 &&
+			(c2 || c3))
+	{
+	}
+	if (c123456789
+			&& (c22345
+				|| c3))
+		printf("foo\n");
+
+	c = c1 &&
+		(
+			c2 ||
+			c3
+		) && c4;
+}
+
+
+void func(void)
+{
+	if (condition1
+			&& condition2)
+		action();
+	function(argument1
+			 && argument2);
+
+	if (c1 && (c2 ||
+				c3))
+		foo;
+	if (c1 &&
+			(c2 || c3))
+	{
+	}
+	if (c123456789
+			&& (c22345
+				|| c3))
+		printf("foo\n");
+
+	if (   c1
+			&& (   c2
+				   || c3))
+		foo;
+
+	a_long_line(
+		argument,
+		argument);
+	a_short_line(argument,
+				 argument);
+}
+
+
+void func(void)
+{
+	if (condition1
+			&& condition2)
+		action();
+	function(argument1
+			&& argument2);
+
+	if (c1 && (c2 ||
+			  c3))
+		foo;
+	if (c1 &&
+			(c2 || c3))
+	{
+	}
+	if (c123456789
+			&& (c22345
+			  || c3))
+		printf("foo\n");
+}
+
+
+void func(void)
+{
+	if (condition1
+			&& condition2)
+		action();
+	function(argument1
+			 && argument2);
+
+	if (c1 && (c2 ||
+				c3))
+		foo;
+	if (c1 &&
+			(c2 || c3))
+	{
+	}
+	if (c123456789
+			&& (c22345
+				|| c3))
+		printf("foo\n");
+
+	if (   c1
+			&& (      c2
+				|| c3))
+		foo;
+	func(   c1
+		 && (      c2
+			 || c3))
+		foo;
+}
+
+
+void func(void)
+{
+	if (condition1
+	  && condition2)
+		action();
+	function(argument1
+		&& argument2);
+
+	if (c1 && (c2 ||
+		  c3))
+		foo;
+	if (c1 &&
+	  (c2 || c3))
+	{
+	}
+}
+
+
 NAMESPACESTART
 /* valid namespaces with normal indent */
 namespace

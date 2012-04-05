@@ -1574,6 +1574,220 @@ baz();
 }
 
 STARTTEST
+:set cino=k2s,(0
+2kdd3j=][
+ENDTEST
+
+void func(void)
+{
+	if (condition1
+	&& condition2)
+	action();
+	function(argument1
+	&& argument2);
+
+	if (c1 && (c2 ||
+	c3))
+	foo;
+	if (c1 &&
+	(c2 || c3))
+	{
+	}
+
+	if (   c1
+	&& (      c2
+	|| c3))
+	foo;
+	func( c1
+	&& (     c2
+	|| c3))
+	foo;
+}
+
+STARTTEST
+:set cino=k2s,(s
+2kdd3j=][
+ENDTEST
+
+void func(void)
+{
+	if (condition1
+	&& condition2)
+	action();
+	function(argument1
+	&& argument2);
+
+	if (c1 && (c2 ||
+	c3))
+	foo;
+	if (c1 &&
+	(c2 || c3))
+	{
+	}
+
+	if (   c1
+	&& (      c2
+	|| c3))
+	foo;
+	func(   c1
+	&& (      c2
+	|| c3))
+	foo;
+}
+
+STARTTEST
+:set cino=k2s,(s,U1
+2kdd3j=][
+ENDTEST
+
+void func(void)
+{
+	if (condition1
+	&& condition2)
+	action();
+	function(argument1
+	&& argument2);
+
+	if (c1 && (c2 ||
+	c3))
+	foo;
+	if (c1 &&
+	(c2 || c3))
+	{
+	}
+	if (c123456789
+	&& (c22345
+	|| c3))
+	printf("foo\n");
+
+	c = c1 &&
+	(
+	c2 ||
+	c3
+	) && c4;
+}
+
+STARTTEST
+:set cino=k2s,(0,W4
+2kdd3j=][
+ENDTEST
+
+void func(void)
+{
+	if (condition1
+	&& condition2)
+	action();
+	function(argument1
+	&& argument2);
+
+	if (c1 && (c2 ||
+	c3))
+	foo;
+	if (c1 &&
+	(c2 || c3))
+	{
+	}
+	if (c123456789
+	&& (c22345
+	|| c3))
+	printf("foo\n");
+
+	if (   c1
+	&& (   c2
+	|| c3))
+	foo;
+
+	a_long_line(
+	argument,
+	argument);
+	a_short_line(argument,
+	argument);
+}
+
+STARTTEST
+:set cino=k2s,u2
+2kdd3j=][
+ENDTEST
+
+void func(void)
+{
+	if (condition1
+	&& condition2)
+	action();
+	function(argument1
+	&& argument2);
+
+	if (c1 && (c2 ||
+	c3))
+	foo;
+	if (c1 &&
+	(c2 || c3))
+	{
+	}
+	if (c123456789
+	&& (c22345
+	|| c3))
+	printf("foo\n");
+}
+
+STARTTEST
+:set cino=k2s,(0,w1
+2kdd3j=][
+ENDTEST
+
+void func(void)
+{
+	if (condition1
+	&& condition2)
+	action();
+	function(argument1
+	&& argument2);
+
+	if (c1 && (c2 ||
+	c3))
+	foo;
+	if (c1 &&
+	(c2 || c3))
+	{
+	}
+	if (c123456789
+	&& (c22345
+	|| c3))
+	printf("foo\n");
+
+	if (   c1
+	&& (      c2
+	|| c3))
+	foo;
+	func(   c1
+	&& (      c2
+	|| c3))
+	foo;
+}
+
+STARTTEST
+:set cino=k2,(s
+2kdd3j=][
+ENDTEST
+
+void func(void)
+{
+	if (condition1
+	  && condition2)
+		action();
+	function(argument1
+		&& argument2);
+
+	if (c1 && (c2 ||
+		  c3))
+		foo;
+	if (c1 &&
+	  (c2 || c3))
+	{
+	}
+}
+
+STARTTEST
 :set cino=N-s
 /^NAMESPACESTART
 =/^NAMESPACEEND
