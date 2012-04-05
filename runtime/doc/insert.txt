@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.3.  Last change: 2012 Jan 26
+*insert.txt*    For Vim version 7.3.  Last change: 2012 Apr 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -398,7 +398,12 @@ An example for using CTRL-G u: >
 
 This redefines the backspace key to start a new undo sequence.  You can now
 undo the effect of the backspace key, without changing what you typed before
-that, with CTRL-O u.
+that, with CTRL-O u.  Another example: >
+
+	:inoremap <CR> <C-]><C-G>u<CR>
+
+This breaks undo at each line break.  It also expands abbreviations before
+this.
 
 Using CTRL-O splits undo: the text typed before and after it is undone
 separately.  If you want to avoid this (e.g., in a mapping) you might be able

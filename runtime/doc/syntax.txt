@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2012 Mar 28
+*syntax.txt*	For Vim version 7.3.  Last change: 2012 Apr 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2836,6 +2836,18 @@ following sets of characters: >
 By leaving one or more of these out, the associated conceal-character
 substitution will not be made.
 
+						*g:tex_isk*
+ Tex: Controlling What's In A Keyword~
+
+(La)Tex keywords normally use the characters 0-9,a-z,A-Z,192-255 only
+but the "_" is the only one that causes problems.  So, by default,
+syntax/tex.vim overrides the usual |'iskeyword'| setting (using |setlocal|)
+with one that works for LaTeX.
+
+However, one may override this iskeyword re-setting by setting the
+variable, g:tex_isk, in one's .vimrc to whatever one wishes and
+it will be used instead.
+ 
 
 TF						*tf.vim* *ft-tf-syntax*
 

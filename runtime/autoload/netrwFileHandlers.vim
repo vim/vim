@@ -1,9 +1,9 @@
 " netrwFileHandlers: contains various extension-based file handlers for
 "                    netrw's browsers' x command ("eXecute launcher")
 " Author:	Charles E. Campbell, Jr.
-" Date:		Sep 30, 2008
-" Version:	10
-" Copyright:    Copyright (C) 1999-2008 Charles E. Campbell, Jr. {{{1
+" Date:		Mar 14, 2012
+" Version:	11a
+" Copyright:    Copyright (C) 1999-2012 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
@@ -20,7 +20,7 @@
 if exists("g:loaded_netrwFileHandlers") || &cp
  finish
 endif
-let g:loaded_netrwFileHandlers= "v10"
+let g:loaded_netrwFileHandlers= "v11a"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** this version of netrwFileHandlers needs vim 7.2"
@@ -64,7 +64,7 @@ fun! netrwFileHandlers#Invoke(exten,fname)
 "   call Decho("let ret= netrwFileHandlers#NFH_".a:exten.'("'.fname.'")')
    exe "let ret= s:NFH_".a:exten.'("'.fname.'")'
   endif
-  
+
 "  call Dret("netrwFileHandlers#Invoke 0 : ret=".ret)
   return 0
 endfun
@@ -356,6 +356,7 @@ fun! s:NFH_obj(obj)
 endfun
 
 let &cpo= s:keepcpo
+unlet s:keepcpo
 " ---------------------------------------------------------------------
 "  Modelines: {{{1
 "  vim: fdm=marker

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 Mar 28
+" Last Change:	2012 Apr 05
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -2141,6 +2141,9 @@ au BufNewFile,BufReadPost *.tssop		setf tssop
 
 " TSS - Command Line (temporary)
 au BufNewFile,BufReadPost *.tsscl		setf tsscl
+
+" TWIG files
+au BufNewFile,BufReadPost *.twig		setf twig
 
 " Motif UIT/UIL files
 au BufNewFile,BufRead *.uit,*.uil		setf uil

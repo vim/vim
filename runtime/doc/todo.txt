@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Mar 28
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Apr 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -43,6 +43,8 @@ Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 Stack trace of crash: http://vpaste.net/GBt9S
 (Alexandre Provencio)
 
+":help!" gives error, should use current language. (thinkca, 2012 Apr 1)
+
 Once syntax and other runtime files have been fixed: add "set cp" to
 check.vim.  Use a function to run both with 'cp' and 'nocp'.
 
@@ -78,17 +80,6 @@ When exiting with unsaved changes, selecting an existing file in the file
 dialog, there is no dialog to ask whether the existing file should be
 overwritten. (Felipe G. Nievinski, 2011 Dec 22)
 
-Using Ctrl-] in a mapping does not expand abbreviations. Patch by Christian
-Brabandt, 2012 Mar 2.
-
-Patch to fix member confusion in Lua interface. (Taro Muraoka, 2012 Jan 8)
-Update Jan 9.
-Carvalho merged the patch:  New version 2012 Jan 19.
-
-Patch for option in 'cino' to specify more indent for continued conditions.
-(Lech Lorens, 2011 Nov 27)
-Isn't this already possible?  Update 2012 Feb 15.
-
 Docs fix for v:register. (Ingo Karkat, 2011 Sep 26, 27)
 v:register doesn't work exactly as expected. (David Fishburn, 2011 Sep 20)
 
@@ -112,7 +103,7 @@ Matsumoto, 2012 Jan 30)
 Patch to add completion for :history command.  (Dominique Pelle, 2012 Feb 26)
 
 Patch for 'backupcopy' default behavior for symlinks on Windows. (David Pope,
-2012 Mar 21)
+2012 Mar 21, update Mar 31)
 
 Use a count before "v" and "V" to select that many characters or lines?
 (Kikyous)
@@ -165,6 +156,12 @@ Needs more work.  Pinged 2012 Jan 4.
 'list' is set.  (Dennis Preiser)
 Patch 7.3.116 was the wrong solution.
 Christian Brabandt has another incomplete patch. (2011 Jul 13)
+
+'cursorline' is drawn incorrectly in diff mode. Patch by Christian Brabandt,
+2012 Apr 2.
+
+'cursorline' works on a text line only.  Add 'cursorscreenline' for
+highlighting the screen line. (Christian Brabandt, 2012 Mar 31)
 
 With concealed text mouse click doesn't put the cursor in the right position.
 (Herb Sitz)  Fix by Christian Brabandt, 2011 Jun 16.  Doesn't work properly,

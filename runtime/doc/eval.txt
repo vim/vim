@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2012 Mar 28
+*eval.txt*	For Vim version 7.3.  Last change: 2012 Apr 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3229,7 +3229,8 @@ getcmdpos()						*getcmdpos()*
 		Return the position of the cursor in the command line as a
 		byte count.  The first column is 1.
 		Only works when editing the command line, thus requires use of
-		|c_CTRL-\_e| or |c_CTRL-R_=|.  Returns 0 otherwise.
+		|c_CTRL-\_e| or |c_CTRL-R_=| or an expression mapping.
+		Returns 0 otherwise.
 		Also see |getcmdtype()|, |setcmdpos()| and |getcmdline()|.
 
 getcmdtype()						*getcmdtype()*
@@ -3242,8 +3243,8 @@ getcmdtype()						*getcmdtype()*
 		    @	|input()| command
 		    -	|:insert| or |:append| command
 		Only works when editing the command line, thus requires use of
-		|c_CTRL-\_e| or |c_CTRL-R_=|.  Returns an empty string
-		otherwise.
+		|c_CTRL-\_e| or |c_CTRL-R_=| or an expression mapping.
+		Returns an empty string otherwise.
 		Also see |getcmdpos()|, |setcmdpos()| and |getcmdline()|.
 
 							*getcwd()*
