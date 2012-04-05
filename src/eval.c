@@ -622,6 +622,9 @@ static void f_localtime __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_log __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_log10 __ARGS((typval_T *argvars, typval_T *rettv));
 #endif
+#ifdef FEAT_LUA
+static void f_luaeval __ARGS((typval_T *argvars, typval_T *rettv));
+#endif
 static void f_map __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_maparg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_mapcheck __ARGS((typval_T *argvars, typval_T *rettv));
@@ -6777,6 +6780,10 @@ garbage_collect()
     /* v: vars */
     set_ref_in_ht(&vimvarht, copyID);
 
+#ifdef FEAT_LUA
+    set_ref_in_lua(copyID);
+#endif
+
     /*
      * 2. Free lists and dictionaries that are not referenced.
      */
@@ -7945,6 +7952,9 @@ static struct fst
 #ifdef FEAT_FLOAT
     {"log",		1, 1, f_log},
     {"log10",		1, 1, f_log10},
+#endif
+#ifdef FEAT_LUA
+    {"luaeval",         1, 2, f_luaeval},
 #endif
     {"map",		2, 2, f_map},
     {"maparg",		1, 4, f_maparg},
@@ -13623,6 +13633,23 @@ f_log10(argvars, rettv)
 	rettv->vval.v_float = log10(f);
     else
 	rettv->vval.v_float = 0.0;
+}
+#endif
+
+#ifdef FEAT_LUA
+/*
+ * "luaeval()" function
+ */
+    static void
+f_luaeval(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u	*str;
+    char_u	buf[NUMBUFLEN];
+
+    str = get_tv_string_buf(&argvars[0], buf);
+    do_luaeval(str, argvars + 1, rettv);
 }
 #endif
 
