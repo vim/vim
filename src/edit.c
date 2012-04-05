@@ -1455,13 +1455,16 @@ normalchar:
 		    Insstart_blank_vcol = get_nolist_virtcol();
 	    }
 
-	    if (vim_iswordc(c) || !echeck_abbr(
+	    /* Insert a normal character and check for abbreviations on a
+	     * special character.  Let CTRL-] expand abbreviations without
+	     * inserting it. */
+	    if (vim_iswordc(c) || (!echeck_abbr(
 #ifdef FEAT_MBYTE
 			/* Add ABBR_OFF for characters above 0x100, this is
 			 * what check_abbr() expects. */
 			(has_mbyte && c >= 0x100) ? (c + ABBR_OFF) :
 #endif
-			c))
+                       c) && c != Ctrl_RSB))
 	    {
 		insert_special(c, FALSE, FALSE);
 #ifdef FEAT_RIGHTLEFT

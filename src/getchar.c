@@ -4352,8 +4352,9 @@ check_abbr(c, ptr, col, mincol)
 
     if (typebuf.tb_no_abbr_cnt)	/* abbrev. are not recursive */
 	return FALSE;
-    if ((KeyNoremap & (RM_NONE|RM_SCRIPT)) != 0)
-	/* no remapping implies no abbreviation */
+
+    /* no remapping implies no abbreviation, except for CTRL-] */
+    if ((KeyNoremap & (RM_NONE|RM_SCRIPT)) != 0 && c != Ctrl_RSB)
 	return FALSE;
 
     /*
