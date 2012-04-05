@@ -4,7 +4,7 @@
 # Authors:	Zoltan Arpadffy, <arpadffy@polarhome.com>
 #		Sandor Kopanyi,  <sandor.kopanyi@mailbox.hu>
 #
-# Last change:  2012 Mar 28
+# Last change:  2012 Apr 05
 #
 # This has been tested on VMS 6.2 to 8.3 on DEC Alpha, VAX and IA64.
 # Edit the lines in the Configuration section below to select.
@@ -89,6 +89,7 @@ SCRIPT = test1.out  test2.out  test3.out  test4.out  test5.out  \
 # with too many dots).
 #
 # Test 72: unknown reason
+# Test 85: no Lua interface
 
 .IFDEF WANT_GUI
 SCRIPT_GUI = test16.out

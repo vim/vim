@@ -13,6 +13,7 @@ VIMPROG = ../vim.exe
 # test25	uses symbolic link
 # test27	can't edit file with "*" in file name
 # test52	only for Win32
+# test85	no Lua interface
 
 SCRIPTS = test1.out test3.out test4.out test5.out test6.out \
 		test7.out test8.out test9.out \

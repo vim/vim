@@ -1,0 +1,42 @@
+Test for Lua interface and luaeval() function
+
+STARTTEST
+:so small.vim
+:so lua.vim
+:set nocompatible viminfo+=nviminfo
+:lua l = vim.list():add"item0":add"dictionary with list OK":add"item2"
+:lua h = vim.dict(); h.list = l
+:call garbagecollect()
+/^1
+:" change buffer contents
+:lua curbuf = vim.buffer()
+:lua curline = vim.eval"line('.')"
+:lua curbuf[curline] = "1 changed line 1"
+:" scalar test
+:let tmp_string = luaeval('"string"')
+:let tmp_1000 = luaeval('1000')
+:if printf("%s%.0f", tmp_string, tmp_1000) == "string1000"
+:let scalar_res = "OK"
+:else
+:let scalar_res = "FAILED"
+:endif
+:call append(search("^1"), "scalar test " . scalar_res)
+:" dictionary containing a list
+:let tmp = luaeval("h").list[1]
+:/^2/put =tmp
+:" circular list (at the same time test lists containing lists)
+:lua l[2] = l
+:let l2 = luaeval("h").list
+:if l2[2] == l2
+:let res = "OK"
+:else
+:let res = "FAILED"
+:endif
+:call setline(search("^3"), "circular test " . res)
+:?^1?,$w! test.out
+:qa!
+ENDTEST
+
+1 line 1
+2 line 2
+3 line 3
