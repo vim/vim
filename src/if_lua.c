@@ -95,6 +95,7 @@ static luaV_Dict *luaV_pushdict (lua_State *L, dict_T *dic);
 #define luaL_loadbufferx dll_luaL_loadbufferx
 #define luaL_argerror dll_luaL_argerror
 #endif
+#define luaL_checkany dll_luaL_checkany
 #define luaL_checklstring dll_luaL_checklstring
 #define luaL_checkinteger dll_luaL_checkinteger
 #define luaL_optinteger dll_luaL_optinteger
@@ -117,8 +118,8 @@ static luaV_Dict *luaV_pushdict (lua_State *L, dict_T *dic);
 #define lua_pcallk dll_lua_pcallk
 #define lua_getglobal dll_lua_getglobal
 #define lua_setglobal dll_lua_setglobal
-#define lua_typename dll_lua_typename
 #endif
+#define lua_typename dll_lua_typename
 #define lua_close dll_lua_close
 #define lua_gettop dll_lua_gettop
 #define lua_settop dll_lua_settop
@@ -151,6 +152,7 @@ static luaV_Dict *luaV_pushdict (lua_State *L, dict_T *dic);
 #define lua_rawset dll_lua_rawset
 #define lua_rawseti dll_lua_rawseti
 #define lua_setmetatable dll_lua_setmetatable
+#define lua_next dll_lua_next
 /* libs */
 #define luaopen_base dll_luaopen_base
 #define luaopen_table dll_luaopen_table
@@ -177,6 +179,7 @@ int (*dll_luaL_loadfilex) (lua_State *L, const char *filename, const char *mode)
 int (*dll_luaL_loadbufferx) (lua_State *L, const char *buff, size_t sz, const char *name, const char *mode);
 int (*dll_luaL_argerror) (lua_State *L, int numarg, const char *extramsg);
 #endif
+void (*dll_luaL_checkany) (lua_State *L, int narg);
 const char *(*dll_luaL_checklstring) (lua_State *L, int numArg, size_t *l);
 lua_Integer (*dll_luaL_checkinteger) (lua_State *L, int numArg);
 lua_Integer (*dll_luaL_optinteger) (lua_State *L, int nArg, lua_Integer def);
@@ -201,8 +204,8 @@ int (*dll_lua_pcallk) (lua_State *L, int nargs, int nresults, int errfunc,
         int ctx, lua_CFunction k);
 void (*dll_lua_getglobal) (lua_State *L, const char *var);
 void (*dll_lua_setglobal) (lua_State *L, const char *var);
-const char *(*dll_lua_typename) (lua_State *L, int tp);
 #endif
+const char *(*dll_lua_typename) (lua_State *L, int tp);
 void       (*dll_lua_close) (lua_State *L);
 int (*dll_lua_gettop) (lua_State *L);
 void (*dll_lua_settop) (lua_State *L, int idx);
@@ -235,6 +238,7 @@ void (*dll_lua_setfield) (lua_State *L, int idx, const char *k);
 void (*dll_lua_rawset) (lua_State *L, int idx);
 void (*dll_lua_rawseti) (lua_State *L, int idx, int n);
 int (*dll_lua_setmetatable) (lua_State *L, int objindex);
+int (*dll_lua_next) (lua_State *L, int idx);
 /* libs */
 int (*dll_luaopen_base) (lua_State *L);
 int (*dll_luaopen_table) (lua_State *L);
@@ -268,6 +272,7 @@ static const luaV_Reg luaV_dll[] = {
     {"luaL_loadbufferx", (luaV_function) &dll_luaL_loadbufferx},
     {"luaL_argerror", (luaV_function) &dll_luaL_argerror},
 #endif
+    {"luaL_checkany", (luaV_function) &dll_luaL_checkany},
     {"luaL_checklstring", (luaV_function) &dll_luaL_checklstring},
     {"luaL_checkinteger", (luaV_function) &dll_luaL_checkinteger},
     {"luaL_optinteger", (luaV_function) &dll_luaL_optinteger},
@@ -290,8 +295,8 @@ static const luaV_Reg luaV_dll[] = {
     {"lua_pcallk", (luaV_function) &dll_lua_pcallk},
     {"lua_getglobal", (luaV_function) &dll_lua_getglobal},
     {"lua_setglobal", (luaV_function) &dll_lua_setglobal},
-    {"lua_typename", (luaV_function) &dll_lua_typename},
 #endif
+    {"lua_typename", (luaV_function) &dll_lua_typename},
     {"lua_close", (luaV_function) &dll_lua_close},
     {"lua_gettop", (luaV_function) &dll_lua_gettop},
     {"lua_settop", (luaV_function) &dll_lua_settop},
@@ -324,6 +329,7 @@ static const luaV_Reg luaV_dll[] = {
     {"lua_rawset", (luaV_function) &dll_lua_rawset},
     {"lua_rawseti", (luaV_function) &dll_lua_rawseti},
     {"lua_setmetatable", (luaV_function) &dll_lua_setmetatable},
+    {"lua_next", (luaV_function) &dll_lua_next},
     /* libs */
     {"luaopen_base", (luaV_function) &dll_luaopen_base},
     {"luaopen_table", (luaV_function) &dll_luaopen_table},
@@ -1828,7 +1834,7 @@ ex_luado(exarg_T *eap)
     }
     luaV_setrange(L, eap->line1, eap->line2);
     luaL_buffinit(L, &b);
-    luaL_addlstring(&b, "return function(line) ", 22); /* header */
+    luaL_addlstring(&b, "return function(line, linenr) ", 30); /* header */
     luaL_addlstring(&b, s, strlen(s));
     luaL_addlstring(&b, " end", 4); /* footer */
     luaL_pushresult(&b);
@@ -1845,7 +1851,8 @@ ex_luado(exarg_T *eap)
     {
 	lua_pushvalue(L, -1); /* function */
 	luaV_pushline(L, curbuf, l); /* current line as arg */
-	if (lua_pcall(L, 1, 1, 0))
+	lua_pushinteger(L, l); /* current line number as arg */
+	if (lua_pcall(L, 2, 1, 0))
 	{
 	    luaV_emsg(L);
 	    break;
