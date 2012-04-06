@@ -6489,7 +6489,6 @@ get_c_indent()
     int		cont_amount = 0;    /* amount for continuation line */
     int		original_line_islabel;
     int		added_to_amount = 0;
-    int		is_if_for_while = 0;
 
     for (options = curbuf->b_p_cino; *options; )
     {
@@ -6876,7 +6875,6 @@ get_c_indent()
 		pos_T	    cursor_save = curwin->w_cursor;
 		pos_T	    outermost;
 		char_u	    *line;
-		int	    look_col;
 
 		trypos = &our_paren_pos;
 		do {
