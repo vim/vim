@@ -4972,6 +4972,7 @@ static int	cin_isif __ARGS((char_u *));
 static int	cin_iselse __ARGS((char_u *));
 static int	cin_isdo __ARGS((char_u *));
 static int	cin_iswhileofdo __ARGS((char_u *, linenr_T, int));
+static int	cin_is_if_for_while_before_offset __ARGS((char_u *line, int *poffset));
 static int	cin_iswhileofdo_end __ARGS((int terminated, int	ind_maxparen, int ind_maxcomment));
 static int	cin_isbreak __ARGS((char_u *));
 static int	cin_is_cpp_baseclass __ARGS((colnr_T *col));
@@ -5771,17 +5772,17 @@ cin_iswhileofdo(p, lnum, ind_maxparen)	    /* XXX */
 }
 
 /*
- * Check whether in "p" there is an "if", "for" or "while" before offset.
+ * Check whether in "p" there is an "if", "for" or "while" before "*poffset".
  * Return 0 if there is none.
  * Otherwise return !0 and update "*poffset" to point to the place where the
  * string was found.
  */
     static int
-cin_is_if_for_while_before_offset(line, offset, poffset)
+cin_is_if_for_while_before_offset(line, poffset)
     char_u *line;
-    size_t offset;
     int    *poffset;
 {
+    int offset = *poffset;
 
     if (offset-- < 2)
 	return 0;
@@ -5805,8 +5806,8 @@ cin_is_if_for_while_before_offset(line, offset, poffset)
 		goto probablyFound;
 	}
     }
-
     return 0;
+
 probablyFound:
     if (!offset || !vim_isIDc(line[offset - 1]))
     {
@@ -6890,8 +6891,7 @@ get_c_indent()
 		line = ml_get(outermost.lnum);
 
 		is_if_for_while =
-		    cin_is_if_for_while_before_offset(line, outermost.col,
-						      &outermost.col);
+		    cin_is_if_for_while_before_offset(line, &outermost.col);
 	    }
 
 	    amount = skip_label(our_paren_pos.lnum, &look, ind_maxcomment);
