@@ -324,7 +324,6 @@ call s:NetrwInit("g:netrw_localmkdir","mkdir")
 if !executable(g:netrw_localmkdir)
  call netrw#ErrorMsg(s:NOTE,"consider setting g:netrw_localmkdir<".g:netrw_localmkdir."> to something that works",80)
 endif
-endif
 call s:NetrwInit("g:netrw_remote_mkdir","mkdir")
 if exists("g:netrw_local_movecmd")
  let g:netrw_localmovecmd= g:netrw_local_movecmd"

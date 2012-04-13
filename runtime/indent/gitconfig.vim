@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	git config file
 " Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
-" Last Change:	2010 May 21
+" Last Change:	2012 April 7
 
 if exists("b:did_indent")
   finish
@@ -11,6 +11,8 @@ let b:did_indent = 1
 setlocal autoindent
 setlocal indentexpr=GetGitconfigIndent()
 setlocal indentkeys=o,O,*<Return>,0[,],0;,0#,=,!^F
+
+let b:undo_indent = 'setl ai< inde< indk<'
 
 " Only define the function once.
 if exists("*GetGitconfigIndent")

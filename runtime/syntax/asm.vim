@@ -3,7 +3,7 @@
 " Maintainer:	Erik Wognsen <erik.wognsen@gmail.com>
 "		Previous maintainer:
 "		Kevin Dahlhausen <kdahlhaus@yahoo.com>
-" Last Change:	2012 Jan 5
+" Last Change:	2012 Apr 09
 
 " Thanks to Ori Avtalion for feedback on the comment markers!
 
@@ -55,6 +55,11 @@ syn keyword asmTodo		contained TODO
 
 " GAS supports one type of multi line comments:
 syn region asmComment		start="/\*" end="\*/" contains=asmTodo
+
+" GAS (undocumentedly?) supports C++ style comments. Unlike in C/C++ however,
+" a backslash ending a C++ style comment does not extend the comment to the
+" next line (hence the syntax region does not define 'skip="\\$"')
+syn region asmComment		start="//" end="$" keepend contains=asmTodo
 
 " Line comment characters depend on the target architecture and command line
 " options and some comments may double as logical line number directives or

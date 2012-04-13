@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	git commit file
 " Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
-" Last Change:	2010 May 21
+" Last Change:	2012 April 7
 
 " Only do this when not done yet for this buffer
 if (exists("b:did_ftplugin"))
@@ -11,13 +11,14 @@ endif
 runtime! ftplugin/git.vim
 let b:did_ftplugin = 1
 
+setlocal nomodeline
+
+let b:undo_ftplugin = 'setl modeline<'
+
 if &textwidth == 0
   " make sure that log messages play nice with git-log on standard terminals
   setlocal textwidth=72
-  if !exists("b:undo_ftplugin")
-    let b:undo_ftplugin = ""
-  endif
-  let b:undo_ftplugin = b:undo_ftplugin . "|setl tw<"
+  let b:undo_ftplugin .= "|setl tw<"
 endif
 
 if exists("g:no_gitcommit_commands") || v:version < 700
@@ -28,8 +29,6 @@ if !exists("b:git_dir")
   let b:git_dir = expand("%:p:h")
 endif
 
-" Automatically diffing can be done with:
-"   autocmd FileType gitcommit DiffGitCached | wincmd p
 command! -bang -bar -buffer -complete=custom,s:diffcomplete -nargs=* DiffGitCached :call s:gitdiffcached(<bang>0,b:git_dir,<f-args>)
 
 function! s:diffcomplete(A,L,P)
@@ -58,11 +57,11 @@ function! s:gitdiffcached(bang,gitdir,...)
   else
     let extra = "-p --stat=".&columns
   endif
-  call system(git." diff --cached --no-color ".extra." > ".(exists("*shellescape") ? shellescape(name) : name))
+  call system(git." diff --cached --no-color --no-ext-diff ".extra." > ".(exists("*shellescape") ? shellescape(name) : name))
   exe "pedit ".(exists("*fnameescape") ? fnameescape(name) : name)
   wincmd P
   let b:git_dir = a:gitdir
   command! -bang -bar -buffer -complete=custom,s:diffcomplete -nargs=* DiffGitCached :call s:gitdiffcached(<bang>0,b:git_dir,<f-args>)
-  nnoremap <silent> q :q<CR>
+  nnoremap <buffer> <silent> q :q<CR>
   setlocal buftype=nowrite nobuflisted noswapfile nomodifiable filetype=git
 endfunction

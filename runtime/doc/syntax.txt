@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2012 Apr 05
+*syntax.txt*	For Vim version 7.3.  Last change: 2012 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2841,7 +2841,7 @@ substitution will not be made.
 
 (La)Tex keywords normally use the characters 0-9,a-z,A-Z,192-255 only
 but the "_" is the only one that causes problems.  So, by default,
-syntax/tex.vim overrides the usual |'iskeyword'| setting (using |setlocal|)
+syntax/tex.vim overrides the usual |'iskeyword'| setting (using |:setlocal|)
 with one that works for LaTeX.
 
 However, one may override this iskeyword re-setting by setting the

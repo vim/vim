@@ -3630,9 +3630,6 @@ E287	mbyte.txt	/*E287*
 E288	mbyte.txt	/*E288*
 E289	mbyte.txt	/*E289*
 E29	change.txt	/*E29*
-E290	mbyte.txt	/*E290*
-E291	mbyte.txt	/*E291*
-E292	mbyte.txt	/*E292*
 E293	message.txt	/*E293*
 E294	message.txt	/*E294*
 E295	message.txt	/*E295*
@@ -4995,6 +4992,7 @@ cino-g	indent.txt	/*cino-g*
 cino-h	indent.txt	/*cino-h*
 cino-i	indent.txt	/*cino-i*
 cino-j	indent.txt	/*cino-j*
+cino-k	indent.txt	/*cino-k*
 cino-l	indent.txt	/*cino-l*
 cino-m	indent.txt	/*cino-m*
 cino-n	indent.txt	/*cino-n*
@@ -5829,6 +5827,7 @@ g:netrw_cygwin	pi_netrw.txt	/*g:netrw_cygwin*
 g:netrw_dav_cmd	pi_netrw.txt	/*g:netrw_dav_cmd*
 g:netrw_decompress	pi_netrw.txt	/*g:netrw_decompress*
 g:netrw_dirhistmax	pi_netrw.txt	/*g:netrw_dirhistmax*
+g:netrw_errorlvl	pi_netrw.txt	/*g:netrw_errorlvl*
 g:netrw_fastbrowse	pi_netrw.txt	/*g:netrw_fastbrowse*
 g:netrw_fetch_cmd	pi_netrw.txt	/*g:netrw_fetch_cmd*
 g:netrw_fname_escape	pi_netrw.txt	/*g:netrw_fname_escape*
@@ -5836,6 +5835,7 @@ g:netrw_ftp	pi_netrw.txt	/*g:netrw_ftp*
 g:netrw_ftp_browse_reject	pi_netrw.txt	/*g:netrw_ftp_browse_reject*
 g:netrw_ftp_cmd	pi_netrw.txt	/*g:netrw_ftp_cmd*
 g:netrw_ftp_list_cmd	pi_netrw.txt	/*g:netrw_ftp_list_cmd*
+g:netrw_ftp_options	pi_netrw.txt	/*g:netrw_ftp_options*
 g:netrw_ftp_sizelist_cmd	pi_netrw.txt	/*g:netrw_ftp_sizelist_cmd*
 g:netrw_ftp_timelist_cmd	pi_netrw.txt	/*g:netrw_ftp_timelist_cmd*
 g:netrw_ftpextracmd	pi_netrw.txt	/*g:netrw_ftpextracmd*
@@ -5850,10 +5850,10 @@ g:netrw_keepdir	pi_netrw.txt	/*g:netrw_keepdir*
 g:netrw_list_cmd	pi_netrw.txt	/*g:netrw_list_cmd*
 g:netrw_list_hide	pi_netrw.txt	/*g:netrw_list_hide*
 g:netrw_liststyle	pi_netrw.txt	/*g:netrw_liststyle*
-g:netrw_local_mkdir	pi_netrw.txt	/*g:netrw_local_mkdir*
-g:netrw_local_rmdir	pi_netrw.txt	/*g:netrw_local_rmdir*
 g:netrw_localcopycmd	pi_netrw.txt	/*g:netrw_localcopycmd*
+g:netrw_localmkdir	pi_netrw.txt	/*g:netrw_localmkdir*
 g:netrw_localmovecmd	pi_netrw.txt	/*g:netrw_localmovecmd*
+g:netrw_localrmdir	pi_netrw.txt	/*g:netrw_localrmdir*
 g:netrw_maxfilenamelen	pi_netrw.txt	/*g:netrw_maxfilenamelen*
 g:netrw_menu	pi_netrw.txt	/*g:netrw_menu*
 g:netrw_mkdir_cmd	pi_netrw.txt	/*g:netrw_mkdir_cmd*
@@ -5902,6 +5902,7 @@ g:tar_readoptions	pi_tar.txt	/*g:tar_readoptions*
 g:tar_secure	pi_tar.txt	/*g:tar_secure*
 g:tar_writeoptions	pi_tar.txt	/*g:tar_writeoptions*
 g:tex_conceal	syntax.txt	/*g:tex_conceal*
+g:tex_isk	syntax.txt	/*g:tex_isk*
 g:var	eval.txt	/*g:var*
 g:vimball_home	pi_vimball.txt	/*g:vimball_home*
 g:vimball_mkdir	pi_vimball.txt	/*g:vimball_mkdir*
@@ -6183,6 +6184,7 @@ hl-Cursor	syntax.txt	/*hl-Cursor*
 hl-CursorColumn	syntax.txt	/*hl-CursorColumn*
 hl-CursorIM	syntax.txt	/*hl-CursorIM*
 hl-CursorLine	syntax.txt	/*hl-CursorLine*
+hl-CursorLineNr	syntax.txt	/*hl-CursorLineNr*
 hl-DiffAdd	syntax.txt	/*hl-DiffAdd*
 hl-DiffChange	syntax.txt	/*hl-DiffChange*
 hl-DiffDelete	syntax.txt	/*hl-DiffDelete*
@@ -6559,6 +6561,9 @@ lpc.vim	syntax.txt	/*lpc.vim*
 lua	if_lua.txt	/*lua*
 lua-buffer	if_lua.txt	/*lua-buffer*
 lua-commands	if_lua.txt	/*lua-commands*
+lua-dict	if_lua.txt	/*lua-dict*
+lua-list	if_lua.txt	/*lua-list*
+lua-luaeval	if_lua.txt	/*lua-luaeval*
 lua-vim	if_lua.txt	/*lua-vim*
 lua-window	if_lua.txt	/*lua-window*
 lua.vim	syntax.txt	/*lua.vim*
@@ -6935,8 +6940,11 @@ netrw-updir	pi_netrw.txt	/*netrw-updir*
 netrw-urls	pi_netrw.txt	/*netrw-urls*
 netrw-userpass	pi_netrw.txt	/*netrw-userpass*
 netrw-v	pi_netrw.txt	/*netrw-v*
+netrw-var	pi_netrw.txt	/*netrw-var*
 netrw-variables	pi_netrw.txt	/*netrw-variables*
 netrw-vexplore	pi_netrw.txt	/*netrw-vexplore*
+netrw-windows-netrc	pi_netrw.txt	/*netrw-windows-netrc*
+netrw-windows-s	pi_netrw.txt	/*netrw-windows-s*
 netrw-write	pi_netrw.txt	/*netrw-write*
 netrw-x	pi_netrw.txt	/*netrw-x*
 netrw-xfer	pi_netrw.txt	/*netrw-xfer*

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2012 Apr 01
+*eval.txt*	For Vim version 7.3.  Last change: 2012 Apr 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5092,7 +5092,7 @@ setline({lnum}, {text})					*setline()*
 		will be set to the items in the list.  Example: >
 			:call setline(5, ['aaa', 'bbb', 'ccc'])
 <		This is equivalent to: >
-			:for [n, l] in [[5, 6, 7], ['aaa', 'bbb', 'ccc']]
+			:for [n, l] in [[5, 'aaa'], [6, 'bbb'], [7, 'ccc']]
 			:  call setline(n, l)
 			:endfor
 <		Note: The '[ and '] marks are not set.

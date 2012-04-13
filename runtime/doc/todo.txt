@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Apr 05
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Apr 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -129,6 +129,8 @@ Patch to pass list to or(), and() and xor(). (Yasuhiro Matsumoto, 2012 Feb 8)
 
 Patch to improve "it" and "at" text object matching. (Christian Brabandt, 2011
 Nov 20)
+
+Patch to add ":py3do". (Lilydjwg, 2012 Apr 7)
 
 `[ moves to character after insert, instead of the last inserted character.
 (Yukihiro Nakadaira, 2011 Dec 9)

@@ -59,13 +59,14 @@ Example:
 <
 
 							*:luado*
-:[range]luado {body}	Execute Lua function "function (line) {body} end" for
-			each line in the [range], with the function argument
-			being set to the text of each line in turn, without a
-			trailing <EOL>. If the value returned by the function
-			is a string it becomes the text of the line in the
-			current turn. The default for [range] is the whole
-			file: "1,$".		      {not in Vi}
+:[range]luado {body}	Execute Lua function "function (line, linenr) {body}
+			end" for each line in the [range], with the function
+			argument being set to the text of each line in turn,
+			without a trailing <EOL>, and the current line number.
+			If the value returned by the function is a string it
+			becomes the text of the line in the current turn. The
+			default for [range] is the whole file: "1,$".
+							{not in Vi}
 
 Examples:
 >

@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.3.  Last change: 2011 Aug 14
+*windows.txt*   For Vim version 7.3.  Last change: 2012 Apr 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -174,7 +174,8 @@ CTRL-W CTRL_N						*CTRL-W_CTRL-N*
 		2. WinEnter for the new window
 		3. BufLeave for the current buffer
 		4. BufEnter for the new buffer
-		This behaves like a ":split" first, and then a ":e" command.
+		This behaves like a ":split" first, and then an ":enew"
+		command.
 
 :[N]vne[w] [++opt] [+cmd] [file]			*:vne* *:vnew*
 		Like |:new|, but split vertically.  If 'equalalways' is set
@@ -183,7 +184,8 @@ CTRL-W CTRL_N						*CTRL-W_CTRL-N*
 
 :[N]new [++opt] [+cmd] {file}
 :[N]sp[lit] [++opt] [+cmd] {file}			*:split_f*
-		Create a new window and start editing file {file} in it.
+		Create a new window and start editing file {file} in it.  This
+		behaves like a ":split" first, and then an ":e" command.
 		If [+cmd] is given, execute the command when the file has been
 		loaded |+cmd|.
 		Also see |++opt|.
