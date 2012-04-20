@@ -77,6 +77,11 @@ OutputWrite(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "et#", ENC_OPT, &str, &len))
 	return NULL;
 
+    /* TODO: This works around a gcc optimizer problem and avoids Vim
+     * from crashing.  Should find a real solution. */
+    if (str == NULL)
+	return NULL;
+
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
     writer((writefn)(error ? emsg : msg), (char_u *)str, len);
