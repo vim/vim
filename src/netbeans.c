@@ -1812,14 +1812,15 @@ nb_do_cmd(
 			char_u *oldline = ml_get(lnum);
 			char_u *newline;
 
-			/* Insert halfway a line.  For simplicity we assume we
-			 * need to append to the line. */
+			/* Insert halfway a line. */
 			newline = alloc_check(
 				       (unsigned)(STRLEN(oldline) + len + 1));
 			if (newline != NULL)
 			{
-			    STRCPY(newline, oldline);
+			    mch_memmove(newline, oldline, (size_t)pos->col);
+			    newline[pos->col] = NUL;
 			    STRCAT(newline, args);
+			    STRCAT(newline, oldline + pos->col);
 			    ml_replace(lnum, newline, FALSE);
 			}
 		    }
