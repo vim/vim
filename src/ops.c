@@ -1720,9 +1720,14 @@ op_delete(oap)
 		did_yank = TRUE;
 	}
 
-	/* Yank into small delete register when no register specified and the
-	 * delete is within one line. */
-	if (oap->regname == 0 && oap->motion_type != MLINE
+	/* Yank into small delete register when no named register specified
+	 * and the delete is within one line. */
+	if ((
+#ifdef FEAT_CLIPBOARD
+            ((clip_unnamed & CLIP_UNNAMED) && oap->regname == '*') ||
+            ((clip_unnamed & CLIP_UNNAMED_PLUS) && oap->regname == '+') ||
+#endif
+	    oap->regname == 0) && oap->motion_type != MLINE
 						      && oap->line_count == 1)
 	{
 	    oap->regname = '-';
