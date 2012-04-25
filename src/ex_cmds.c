@@ -3421,7 +3421,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 		     * and re-attach to buffer, perhaps.
 		     */
 		    if (curwin->w_s == &(curwin->w_buffer->b_s))
-			    curwin->w_s = &(buf->b_s);
+			curwin->w_s = &(buf->b_s);
 #endif
 		    curwin->w_buffer = buf;
 		    curbuf = buf;
@@ -5965,6 +5965,29 @@ find_help_tags(arg, num_matches, matches, keep_lang)
 		break;
 	  }
 	  *d = NUL;
+
+	  if (*IObuff == '`')
+	  {
+	      if (d > IObuff + 2 && d[-1] == '`')
+	      {
+		  /* remove the backticks from `command` */
+		  mch_memmove(IObuff, IObuff + 1, STRLEN(IObuff));
+		  d[-2] = NUL;
+	      }
+	      else if (d > IObuff + 3 && d[-2] == '`' && d[-1] == ',')
+	      {
+		  /* remove the backticks and comma from `command`, */
+		  mch_memmove(IObuff, IObuff + 1, STRLEN(IObuff));
+		  d[-3] = NUL;
+	      }
+	      else if (d > IObuff + 4 && d[-3] == '`'
+					     && d[-2] == '\\' && d[-1] == '.')
+	      {
+		  /* remove the backticks and dot from `command`\. */
+		  mch_memmove(IObuff, IObuff + 1, STRLEN(IObuff));
+		  d[-4] = NUL;
+	      }
+	  }
 	}
     }
 
