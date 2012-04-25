@@ -1489,6 +1489,7 @@ dialog_changed(buf, checkall)
     char_u	buff[DIALOG_MSG_SIZE];
     int		ret;
     buf_T	*buf2;
+    exarg_T     ea;
 
     dialog_msg(buff, _("Save changes to \"%s\"?"),
 			(buf->b_fname != NULL) ?
@@ -1498,13 +1499,19 @@ dialog_changed(buf, checkall)
     else
 	ret = vim_dialog_yesnocancel(VIM_QUESTION, NULL, buff, 1);
 
+    /* Init ea pseudo-structure, this is needed for the check_overwrite()
+     * function. */
+    ea.append = ea.forceit = FALSE;
+
     if (ret == VIM_YES)
     {
 #ifdef FEAT_BROWSE
 	/* May get file name, when there is none */
 	browse_save_fname(buf);
 #endif
-	if (buf->b_fname != NULL)   /* didn't hit Cancel */
+	if (buf->b_fname != NULL && check_overwrite(&ea, buf,
+				    buf->b_fname, buf->b_ffname, FALSE) == OK)
+	    /* didn't hit Cancel */
 	    (void)buf_write_all(buf, FALSE);
     }
     else if (ret == VIM_NO)
@@ -1532,7 +1539,9 @@ dialog_changed(buf, checkall)
 		/* May get file name, when there is none */
 		browse_save_fname(buf2);
 #endif
-		if (buf2->b_fname != NULL)   /* didn't hit Cancel */
+		if (buf2->b_fname != NULL && check_overwrite(&ea, buf2,
+				  buf2->b_fname, buf2->b_ffname, FALSE) == OK)
+		    /* didn't hit Cancel */
 		    (void)buf_write_all(buf2, FALSE);
 #ifdef FEAT_AUTOCMD
 		/* an autocommand may have deleted the buffer */

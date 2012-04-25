@@ -23,6 +23,7 @@ void ex_file __ARGS((exarg_T *eap));
 void ex_update __ARGS((exarg_T *eap));
 void ex_write __ARGS((exarg_T *eap));
 int do_write __ARGS((exarg_T *eap));
+int check_overwrite __ARGS((exarg_T *eap, buf_T *buf, char_u *fname, char_u *ffname, int other));
 void ex_wnext __ARGS((exarg_T *eap));
 void do_wqall __ARGS((exarg_T *eap));
 int not_writing __ARGS((void));
