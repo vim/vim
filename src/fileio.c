@@ -2655,10 +2655,6 @@ failed:
     }
 #endif
 
-    /* Reset now, following writes should not omit the EOL.  Also, the line
-     * number will become invalid because of edits. */
-    curbuf->b_no_eol_lnum = 0;
-
     if (recoverymode && error)
 	return FAIL;
     return OK;
@@ -5097,6 +5093,8 @@ nofail:
 #endif
     {
 	aco_save_T	aco;
+
+	curbuf->b_no_eol_lnum = 0;  /* in case it was set by the previous read */
 
 	/*
 	 * Apply POST autocommands.
