@@ -130,9 +130,10 @@ static void	qf_set_title __ARGS((qf_info_T *qi));
 static void	qf_fill_buffer __ARGS((qf_info_T *qi));
 #endif
 static char_u	*get_mef_name __ARGS((void));
-static buf_T	*load_dummy_buffer __ARGS((char_u *fname));
-static void	wipe_dummy_buffer __ARGS((buf_T *buf));
-static void	unload_dummy_buffer __ARGS((buf_T *buf));
+static void	restore_start_dir __ARGS((char_u *dirname_start));
+static buf_T	*load_dummy_buffer __ARGS((char_u *fname, char_u *dirname_start, char_u *resulting_dir));
+static void	wipe_dummy_buffer __ARGS((buf_T *buf, char_u *dirname_start));
+static void	unload_dummy_buffer __ARGS((buf_T *buf, char_u *dirname_start));
 static qf_info_T *ll_get_or_alloc_list __ARGS((win_T *));
 
 /* Quickfix window check helper macro */
@@ -3237,19 +3238,7 @@ ex_vimgrep(eap)
 
 	    /* Load file into a buffer, so that 'fileencoding' is detected,
 	     * autocommands applied, etc. */
-	    buf = load_dummy_buffer(fname);
-
-	    /* When autocommands changed directory: go back.  We assume it was
-	     * ":lcd %:p:h". */
-	    mch_dirname(dirname_now, MAXPATHL);
-	    if (STRCMP(dirname_start, dirname_now) != 0)
-	    {
-		exarg_T ea;
-
-		ea.arg = dirname_start;
-		ea.cmdidx = CMD_lcd;
-		ex_cd(&ea);
-	    }
+	    buf = load_dummy_buffer(fname, dirname_start, dirname_now);
 
 	    p_mls = save_mls;
 #if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
@@ -3320,7 +3309,7 @@ ex_vimgrep(eap)
 		{
 		    /* Never keep a dummy buffer if there is another buffer
 		     * with the same name. */
-		    wipe_dummy_buffer(buf);
+		    wipe_dummy_buffer(buf, dirname_start);
 		    buf = NULL;
 		}
 		else if (!cmdmod.hide
@@ -3336,12 +3325,12 @@ ex_vimgrep(eap)
 		     * many swap files. */
 		    if (!found_match)
 		    {
-			wipe_dummy_buffer(buf);
+			wipe_dummy_buffer(buf, dirname_start);
 			buf = NULL;
 		    }
 		    else if (buf != first_match_buf || (flags & VGR_NOJUMP))
 		    {
-			unload_dummy_buffer(buf);
+			unload_dummy_buffer(buf, dirname_start);
 			buf = NULL;
 		    }
 		}
@@ -3487,13 +3476,48 @@ skip_vimgrep_pat(p, s, flags)
 }
 
 /*
- * Load file "fname" into a dummy buffer and return the buffer pointer.
+ * Restore current working directory to "dirname_start" if they differ, taking
+ * into account whether it is set locally or globally.
+ */
+    static void
+restore_start_dir(dirname_start)
+    char_u	*dirname_start;
+{
+    char_u *dirname_now = alloc(MAXPATHL);
+
+    if (NULL != dirname_now)
+    {
+	mch_dirname(dirname_now, MAXPATHL);
+	if (STRCMP(dirname_start, dirname_now) != 0)
+	{
+	    /* If the directory has changed, change it back by building up an
+	     * appropriate ex command and executing it. */
+	    exarg_T ea;
+
+	    ea.arg = dirname_start;
+	    ea.cmdidx = (curwin->w_localdir == NULL) ? CMD_cd : CMD_lcd;
+	    ex_cd(&ea);
+	}
+    }
+}
+
+/*
+ * Load file "fname" into a dummy buffer and return the buffer pointer,
+ * placing the directory resulting from the buffer load into the
+ * "resulting_dir" pointer. "resulting_dir" must be allocated by the caller
+ * prior to calling this function. Restores directory to "dirname_start" prior
+ * to returning, if autocmds or the 'autochdir' option have changed it.
+ *
+ * If creating the dummy buffer does not fail, must call unload_dummy_buffer()
+ * or wipe_dummy_buffer() later!
+ *
  * Returns NULL if it fails.
- * Must call unload_dummy_buffer() or wipe_dummy_buffer() later!
  */
     static buf_T *
-load_dummy_buffer(fname)
+load_dummy_buffer(fname, dirname_start, resulting_dir)
     char_u	*fname;
+    char_u	*dirname_start;  /* in: old directory */
+    char_u	*resulting_dir;  /* out: new directory */
 {
     buf_T	*newbuf;
     buf_T	*newbuf_to_wipe = NULL;
@@ -3548,22 +3572,33 @@ load_dummy_buffer(fname)
 	    wipe_buffer(newbuf_to_wipe, FALSE);
     }
 
+    /*
+     * When autocommands/'autochdir' option changed directory: go back.
+     * Let the caller know what the resulting dir was first, in case it is
+     * important.
+     */
+    mch_dirname(resulting_dir, MAXPATHL);
+    restore_start_dir(dirname_start);
+
     if (!buf_valid(newbuf))
 	return NULL;
     if (failed)
     {
-	wipe_dummy_buffer(newbuf);
+	wipe_dummy_buffer(newbuf, dirname_start);
 	return NULL;
     }
     return newbuf;
 }
 
 /*
- * Wipe out the dummy buffer that load_dummy_buffer() created.
+ * Wipe out the dummy buffer that load_dummy_buffer() created. Restores
+ * directory to "dirname_start" prior to returning, if autocmds or the
+ * 'autochdir' option have changed it.
  */
     static void
-wipe_dummy_buffer(buf)
+wipe_dummy_buffer(buf, dirname_start)
     buf_T	*buf;
+    char_u	*dirname_start;
 {
     if (curbuf != buf)		/* safety check */
     {
@@ -3583,18 +3618,28 @@ wipe_dummy_buffer(buf)
 	 * new aborting error, interrupt, or uncaught exception. */
 	leave_cleanup(&cs);
 #endif
+	/* When autocommands/'autochdir' option changed directory: go back. */
+	restore_start_dir(dirname_start);
     }
 }
 
 /*
- * Unload the dummy buffer that load_dummy_buffer() created.
+ * Unload the dummy buffer that load_dummy_buffer() created. Restores
+ * directory to "dirname_start" prior to returning, if autocmds or the
+ * 'autochdir' option have changed it.
  */
     static void
-unload_dummy_buffer(buf)
+unload_dummy_buffer(buf, dirname_start)
     buf_T	*buf;
+    char_u	*dirname_start;
 {
     if (curbuf != buf)		/* safety check */
+    {
 	close_buffer(NULL, buf, DOBUF_UNLOAD, FALSE);
+
+	/* When autocommands/'autochdir' option changed directory: go back. */
+	restore_start_dir(dirname_start);
+    }
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
