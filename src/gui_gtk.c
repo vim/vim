@@ -90,6 +90,11 @@ typedef int GtkWidget;
 static void entry_activate_cb(GtkWidget *widget, gpointer data);
 static void entry_changed_cb(GtkWidget *entry, GtkWidget *dialog);
 static void find_replace_cb(GtkWidget *widget, gpointer data);
+static void recent_func_log_func(
+	const gchar *log_domain,
+	GLogLevelFlags log_level,
+	const gchar *message,
+	gpointer user_data);
 
 #if defined(FEAT_TOOLBAR)
 /*
@@ -839,6 +844,8 @@ gui_mch_browse(int saving UNUSED,
     GtkWidget		*fc;
 #endif
     char_u		dirbuf[MAXPATHL];
+    guint		log_handler;
+    const gchar		*domain = "Gtk";
 
     title = CONVERT_TO_UTF8(title);
 
@@ -852,6 +859,11 @@ gui_mch_browse(int saving UNUSED,
 
     /* If our pointer is currently hidden, then we should show it. */
     gui_mch_mousehide(FALSE);
+
+    /* Hack: The GTK file dialog warns when it can't access a new file, this
+     * makes it shut up. http://bugzilla.gnome.org/show_bug.cgi?id=664587 */
+    log_handler = g_log_set_handler(domain, G_LOG_LEVEL_WARNING,
+						  recent_func_log_func, NULL);
 
 #ifdef USE_FILE_CHOOSER
     /* We create the dialog each time, so that the button text can be "Open"
@@ -916,6 +928,7 @@ gui_mch_browse(int saving UNUSED,
     gtk_widget_show(gui.filedlg);
     gtk_main();
 #endif
+    g_log_remove_handler(domain, log_handler);
 
     CONVERT_TO_UTF8_FREE(title);
     if (gui.browse_fname == NULL)
@@ -1882,3 +1895,14 @@ ex_helpfind(eap)
      * backwards compatibility anyway. */
     do_cmdline_cmd((char_u *)"emenu ToolBar.FindHelp");
 }
+
+    static void
+recent_func_log_func(const gchar *log_domain UNUSED,
+		     GLogLevelFlags log_level UNUSED,
+		     const gchar *message UNUSED,
+		     gpointer user_data UNUSED)
+{
+    /* We just want to suppress the warnings. */
+    /* http://bugzilla.gnome.org/show_bug.cgi?id=664587 */
+}
+
