@@ -2617,6 +2617,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :resize	windows.txt	/*:resize*
 :ret	change.txt	/*:ret*
 :retab	change.txt	/*:retab*
+:retab!	change.txt	/*:retab!*
 :retu	eval.txt	/*:retu*
 :return	eval.txt	/*:return*
 :rew	editing.txt	/*:rew*
@@ -4745,6 +4746,7 @@ autocmds-kept	version5.txt	/*autocmds-kept*
 autocommand	autocmd.txt	/*autocommand*
 autocommand-events	autocmd.txt	/*autocommand-events*
 autocommand-pattern	autocmd.txt	/*autocommand-pattern*
+autoformat	change.txt	/*autoformat*
 autoload	eval.txt	/*autoload*
 autoload-functions	eval.txt	/*autoload-functions*
 avoid-hit-enter	version5.txt	/*avoid-hit-enter*

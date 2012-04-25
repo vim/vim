@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Apr 13
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Apr 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -43,17 +43,21 @@ Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 Stack trace of crash: http://vpaste.net/GBt9S
 (Alexandre Provencio)
 
-":help!" gives error, should use current language. (thinkca, 2012 Apr 1)
-
 Once syntax and other runtime files have been fixed: add "set cp" to
 check.vim.  Use a function to run both with 'cp' and 'nocp'.
 
 GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
 
+Patch: home_replace() does not work whtn 8.3 filename. (Yasuhiro
+Matsumoto, 2012 Apr 18)  Asked for another version of the patch.
+
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
+
+Patch for crash involving curwin->w_s. (Christian Brabandt, 2012 Apr 20)
+What is the cause?  Leaks memory?  Other solution?
 
 Issue 54: document behavior of -complete, also expands arg.
 
@@ -76,15 +80,6 @@ When running Vim in silent ex mode, an existing swapfile causes Vim to wait
 for a user action without a prompt. (Maarten Billemont, 2012 Feb 3)
 Do give the prompt? Quit with an error?
 
-When exiting with unsaved changes, selecting an existing file in the file
-dialog, there is no dialog to ask whether the existing file should be
-overwritten. (Felipe G. Nievinski, 2011 Dec 22)
-
-Docs fix for v:register. (Ingo Karkat, 2011 Sep 26, 27)
-v:register doesn't work exactly as expected. (David Fishburn, 2011 Sep 20)
-
-Patch for: vimgrep fails when 'autochdir' is set. (Ben Fritz, 2012 Feb 4)
-
 Patch for: (Christian Brabandt, 2011 Aug 22)
 -   Make it possible to enter "r<C-E>" and "r<C-Y>" (get character from line
     below/above).
@@ -105,6 +100,10 @@ Patch to add completion for :history command.  (Dominique Pelle, 2012 Feb 26)
 Patch for 'backupcopy' default behavior for symlinks on Windows. (David Pope,
 2012 Mar 21, update Mar 31)
 
+Patch to list user digraphs. (Christian Brabandt, 2012 Apr 14)
+
+Patch for input method status. (Hirohito Higashi, 2012 Apr 18)
+
 Use a count before "v" and "V" to select that many characters or lines?
 (Kikyous)
 
@@ -113,6 +112,9 @@ Patch Sep 18.
 
 Patch for has('unnamedplus') docs. (Tony Mechelynck, 2011 Sep 27)
 And one for gui_x11.txt.
+
+Patch for Python: add pyeval()(zyx, 2012 Apr 15, update Apr 16)
+Also changes for Lua.  Update Apr 19.  Update Apr 22.
 
 ":cd" doesn't work when current directory path contains "**".
 finddir() has the same problem.  (Yukihiro Nakadaira, 2012 Jan 10)
@@ -362,6 +364,7 @@ When putting text in the cut buffer (when exiting) and conversion doesn't work
 properly, Prepend "ENC==={value of 'enc'}:" to the text and don't convert?
 Then it should at least work from Vim to Vim and in other applications it's
 clear why it doesn't work.
+Experimental patch by Christian Brabandt, 2012 Apr 19.
 
 Editing a file with a ^M with 'ff' set to "mac", opening a help file, then the
 ^M is displayed as ^J sometimes.  Getting 'ff' value from wrong window/buffer?

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Vim help file
 " Maintainer:	Bram Moolenaar (Bram@vim.org)
-" Last Change:	2012 Jan 08
+" Last Change:	2012 Apr 25
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -38,6 +38,7 @@ syn match helpVim		"Vim version [0-9.a-z]\+"
 syn match helpVim		"VIM REFERENCE.*"
 syn match helpOption		"'[a-z]\{2,\}'"
 syn match helpOption		"'t_..'"
+syn match helpCommand		"`[^` ]*`"hs=s+1,he=e-1
 syn match helpHeader		"\s*\zs.\{-}\ze\s\=\~$" nextgroup=helpIgnore
 syn match helpGraphic		".* \ze`$" nextgroup=helpIgnore
 if has("conceal")
@@ -155,6 +156,7 @@ hi def link helpHeadline	Statement
 hi def link helpHeader		PreProc
 hi def link helpSectionDelim	PreProc
 hi def link helpVim		Identifier
+hi def link helpCommand		Comment
 hi def link helpExample		Comment
 hi def link helpOption		Type
 hi def link helpNotVi		Special

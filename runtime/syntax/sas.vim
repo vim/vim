@@ -1,7 +1,9 @@
 " Vim syntax file
 " Language:	SAS
 " Maintainer:	James Kidd <james.kidd@covance.com>
-" Last Change:  18 Jul 2008 by Paulo Tanimoto <ptanimoto@gmail.com>
+" Last Change:  2012 Apr 20
+"               Corrected bug causing some keywords to appear as strings instead
+"               18 Jul 2008 by Paulo Tanimoto <ptanimoto@gmail.com>
 "               Fixed comments with * taking multiple lines.
 "               Fixed highlighting of macro keywords.
 "               Added words to cases that didn't fit anywhere.
@@ -211,16 +213,7 @@ syn keyword sasTodo	TODO TBD FIXME contained
 
 " These don't fit anywhere else (Bob Heckel).
 " Added others that were missing.
-syn match sasUnderscore	"_ALL_"
-syn match sasUnderscore "_AUTOMATIC_"
-syn match sasUnderscore	"_CHARACTER_"
-syn match sasUnderscore	"_INFILE_"
-syn match sasUnderscore	"_N_"
-syn match sasUnderscore "_NAME_"
-syn match sasUnderscore	"_NULL_"
-syn match sasUnderscore	"_NUMERIC_"
-syn match sasUnderscore "_USER_"
-syn match sasUnderscore	"_WEBOUT_"
+syn keyword sasUnderscore	_ALL_ _AUTOMATIC_ _CHARACTER_ _INFILE_ _N_ _NAME_ _NULL_ _NUMERIC_ _USER_ _WEBOUT_
 
 " End of SAS Functions
 

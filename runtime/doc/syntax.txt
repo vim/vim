@@ -2721,7 +2721,14 @@ Some folks like to include things like source code in comments and so would
 prefer that spell checking be disabled in comments in LaTeX files.  To do
 this, put the following in your <.vimrc>: >
       let g:tex_comment_nospell= 1
-<
+The comment lines >
+	% nospell{
+	...
+	% nospell}
+will suppress spell checking between them.  These comment lines spelling
+control are known to be fragile; for example, don't include any of the section
+commands (\part, \chapter, \section, \paragraph, etc) inside nospell blocks
+or interleave environments (such as math) across nospell blocks.
 								*tex-verb*
  Tex: Want Spell Checking in Verbatim Zones?~
 
@@ -2828,6 +2835,7 @@ You may selectively use conceal mode by setting g:tex_conceal in your
 following sets of characters: >
 
 	a = accents/ligatures
+	b = bold and italic
 	d = delimiters
 	m = math symbols
 	g = Greek

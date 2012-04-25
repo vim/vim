@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2012 Apr 13
+*eval.txt*	For Vim version 7.3.  Last change: 2012 Apr 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1544,15 +1544,18 @@ v:profiling	Normally zero.	Set to one after using ":profile start".
 
 					*v:progname* *progname-variable*
 v:progname	Contains the name (with path removed) with which Vim was
-		invoked.  Allows you to do special initialisations for "view",
-		"evim" etc., or any other name you might symlink to Vim.
+		invoked.  Allows you to do special initialisations for |view|,
+		|evim| etc., or any other name you might symlink to Vim.
 		Read-only.
 
 					*v:register* *register-variable*
 v:register	The name of the register in effect for the current normal mode
-		command.  If none is supplied it is the default register '"',
-		unless 'clipboard' contains "unnamed" or "unnamedplus", then
-		it is '*' or '+'.
+		command (regardless of whether that command actually used a
+		register).  Or for the currently executing normal mode mapping
+		(use this in custom commands that take a register).
+		If none is supplied it is the default register '"', unless
+		'clipboard' contains "unnamed" or "unnamedplus", then it is
+		'*' or '+'.
 		Also see |getreg()| and |setreg()|
 
 					*v:scrollstart* *scrollstart-variable*
@@ -1844,6 +1847,7 @@ lispindent( {lnum})		Number	Lisp indent for line {lnum}
 localtime()			Number	current time
 log( {expr})			Float	natural logarithm (base e) of {expr}
 log10( {expr})			Float	logarithm of Float {expr} to base 10
+luaeval( {expr}[, {expr}])	any	evaluate |Lua| expression
 map( {expr}, {string})		List/Dict  change each item in {expr} to {expr}
 maparg( {name}[, {mode} [, {abbr} [, {dict}]]])
 				String or Dict
@@ -3997,6 +4001,20 @@ log10({expr})						*log10()*
 <			-2.0
 		{only available when compiled with the |+float| feature}
 		
+luaeval({expr}[, {expr}])					*luaeval()*
+		Evaluate Lua expression {expr} and return its result converted 
+		to Vim data structures. Second {expr} may hold additional 
+		argument accessible as _A inside first {expr}.
+		Strings are returned as they are.
+		Boolean objects are converted to numbers.
+		Numbers are converted to |Float| values if vim was compiled 
+		with |+float| and to numbers otherwise.
+		Dictionaries and lists obtained by vim.eval() are returned 
+		as-is.
+		Other objects are returned as zero without any errors.
+		See |lua-luaeval| for more details.
+		{only available when compiled with the |+lua| feature}
+
 map({expr}, {string})					*map()*
 		{expr} must be a |List| or a |Dictionary|.
 		Replace each item in {expr} with the result of evaluating
@@ -4321,7 +4339,7 @@ mode([expr])	Return a string that indicates the current mode.
 
 mzeval({expr})							*mzeval()*
 		Evaluate MzScheme expression {expr} and return its result
-		convert to Vim data structures.
+		converted to Vim data structures.
 		Numbers and strings are returned as they are.
 		Pairs (including lists and improper lists) and vectors are
 		returned as Vim |Lists|.

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         dircolors(1) input file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-06-23
+" Latest Revision:  2012-04-25
 
 if exists("b:current_syntax")
   finish
@@ -17,6 +17,8 @@ syn region  dircolorsComment    start='#' end='$' contains=dircolorsTodo,@Spell
 syn keyword dircolorsKeyword    TERM LEFT LEFTCODE RIGHT RIGHTCODE END ENDCODE
 
 syn keyword dircolorsKeyword    NORMAL NORM FILE DIR LNK LINK SYMLINK ORPHAN
+                                \ RESET MULTIHARDLINK CAPABILITY SETUID SETGID
+                                \ STICKY STICKY_OTHER_WRITABLE OTHER_WRITABLE 
                                 \ MISSING FIFO PIPE SOCK BLK BLOCK CHR CHAR
                                 \ DOOR EXEC
                                 \ nextgroup=@dircolorsColors skipwhite

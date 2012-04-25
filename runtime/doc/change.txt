@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.3.  Last change: 2012 Jan 04
+*change.txt*    For Vim version 7.3.  Last change: 2012 Apr 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -80,8 +80,8 @@ For inserting text see |insert.txt|.
 			(default: current line |cmdline-ranges|) [into
 			register x].
 
-These commands delete text.  You can repeat them with the "." command
-(except ":d") and undo them.  Use Visual mode to delete blocks of text.  See
+These commands delete text.  You can repeat them with the `.` command
+(except `:d`) and undo them.  Use Visual mode to delete blocks of text.  See
 |registers| for an explanation of registers.
 
 An exception for the d{motion} command: If the motion is not linewise, the
@@ -132,7 +132,7 @@ gJ			Join [count] lines, with a minimum of two lines.
 			See |ex-flags| for [flags].
 
 These commands delete the <EOL> between lines.  This has the effect of joining
-multiple lines into one line.  You can repeat these commands (except ":j") and
+multiple lines into one line.  You can repeat these commands (except `:j`) and
 undo them.
 
 These commands, except "gJ", insert one space in place of the <EOL> unless
@@ -465,9 +465,9 @@ much as possible to make the indent.  You can use ">><<" to replace an indent
 made out of spaces with the same indent made out of <Tab>s (and a few spaces
 if necessary).  If the 'expandtab' option is on, Vim uses only spaces.  Then
 you can use ">><<" to replace <Tab>s in the indent by spaces (or use
-":retab!").
+`:retab!`).
 
-To move a line several 'shiftwidth's, use Visual mode or the ":" commands.
+To move a line several 'shiftwidth's, use Visual mode or the `:` commands.
 For example: >
 	Vjj4>		move three lines 4 indents to the right
 	:<<<		move current line 3 indents to the left
@@ -487,7 +487,7 @@ Examples of filters are "sort", which sorts lines alphabetically, and
 works like a filter; not all versions do).  The 'shell' option specifies the
 shell Vim uses to execute the filter command (See also the 'shelltype'
 option).  You can repeat filter commands with ".".  Vim does not recognize a
-comment (starting with '"') after the ":!" command.
+comment (starting with '"') after the `:!` command.
 
 							*!*
 !{motion}{filter}	Filter {motion} text lines through the external
@@ -574,34 +574,34 @@ For other systems the tmpnam() library function is used.
 			Repeat last :substitute with same search pattern and
 			substitute string, but without the same flags.  You
 			may add [flags], see |:s_flags|.
-			Note that after ":substitute" the '&' flag can't be
+			Note that after `:substitute` the '&' flag can't be
 			used, it's recognized as a pattern separator.
-			The space between ":substitute" and the 'c', 'g' and
+			The space between `:substitute` and the 'c', 'g' and
 			'r' flags isn't required, but in scripts it's a good
 			idea to keep it to avoid confusion.
 
 :[range]~[&][flags] [count]					*:~*
 			Repeat last substitute with same substitute string
 			but with last used search pattern.  This is like
-			":&r".  See |:s_flags| for [flags].
+			`:&r`.  See |:s_flags| for [flags].
 
 								*&*
-&			Synonym for ":s" (repeat last substitute).  Note
+&			Synonym for `:s` (repeat last substitute).  Note
 			that the flags are not remembered, thus it might
-			actually work differently.  You can use ":&&" to keep
+			actually work differently.  You can use `:&&` to keep
 			the flags.
 
 								*g&*
-g&			Synonym for ":%s//~/&" (repeat last substitute on all
+g&			Synonym for `:%s//~/&` (repeat last substitute on all
 			lines with the same flags).
 			Mnemonic: global substitute. {not in Vi}
 
 						*:snomagic* *:sno*
-:[range]sno[magic] ...	Same as ":substitute", but always use 'nomagic'.
+:[range]sno[magic] ...	Same as `:substitute`, but always use 'nomagic'.
 			{not in Vi}
 
 						*:smagic* *:sm*
-:[range]sm[agic] ...	Same as ":substitute", but always use 'magic'.
+:[range]sm[agic] ...	Same as `:substitute`, but always use 'magic'.
 			{not in Vi}
 
 							*:s_flags*
@@ -611,7 +611,7 @@ The flags that you can use for the substitute commands:
 	command.  Examples: >
 		:&&
 		:s/this/that/&
-<	Note that ":s" and ":&" don't keep the flags.
+<	Note that `:s` and `:&` don't keep the flags.
 	{not in Vi}
 
 [c]	Confirm each substitution.  Vim highlights the matching string (with
@@ -667,14 +667,14 @@ The flags that you can use for the substitute commands:
 
 [l]	Like [p] but print the text like |:list|.
 
-[r]	Only useful in combination with ":&" or ":s" without arguments.  ":&r"
-	works the same way as ":~":  When the search pattern is empty, use the
+[r]	Only useful in combination with `:&` or `:s` without arguments.  `:&r`
+	works the same way as `:~`:  When the search pattern is empty, use the
 	previously used search pattern instead of the search pattern from the
-	last substitute or ":global".  If the last command that did a search
-	was a substitute or ":global", there is no effect.  If the last
+	last substitute or `:global`.  If the last command that did a search
+	was a substitute or `:global`, there is no effect.  If the last
 	command was a search command such as "/", use the pattern from that
 	command.
-	For ":s" with an argument this already happens: >
+	For `:s` with an argument this already happens: >
 		:s/blue/red/
 		/green
 		:s//red/   or  :~   or  :&r
@@ -691,9 +691,9 @@ reason is that the flags can only be found by skipping the pattern, and in
 order to skip the pattern the "magicness" must be known.  Catch 22!
 
 If the {pattern} for the substitute command is empty, the command uses the
-pattern from the last substitute or ":global" command.  If there is none, but
+pattern from the last substitute or `:global` command.  If there is none, but
 there is a previous search pattern, that one is used.  With the [r] flag, the
-command uses the pattern from the last substitute, ":global", or search
+command uses the pattern from the last substitute, `:global`, or search
 command.
 
 If the {string} is omitted the substitute is done as if it's empty.  Thus the
@@ -848,7 +848,7 @@ This replaces each 'E' character with a euro sign.  Read more in |<Char->|.
 
 
 4.4 Changing tabs					*change-tabs*
-							*:ret* *:retab*
+							*:ret* *:retab* *:retab!*
 :[range]ret[ab][!] [new_tabstop]
 			Replace all sequences of white-space containing a
 			<Tab> with new strings of white-space using the new
@@ -867,7 +867,7 @@ This replaces each 'E' character with a euro sign.  Read more in |<Char->|.
 			Careful: This command modifies any <Tab> characters
 			inside of strings in a C program.  Use "\t" to avoid
 			this (that's a good habit anyway).
-			":retab!" may also change a sequence of spaces by
+			`:retab!` may also change a sequence of spaces by
 			<Tab> characters, which can mess up a printf().
 			{not in Vi}
 			Not available when |+ex_extra| feature was disabled at
@@ -977,8 +977,12 @@ inside of strings can change!  Also see 'softtabstop' option. >
 			current line).  This always works |linewise|, thus
 			this command can be used to put a yanked block as new
 			lines.
-			The cursor is left on the first non-blank in the last
-			new line.
+			If no register is specified, it depends on the 'cb'
+			option: If 'cb' contains "unnamedplus", paste from the
+			+ register |quoteplus|.  Otherwise, if 'cb' contains
+			"unnamed", paste from the * register |quote_star|.
+			Otherwise, paste from the unnamed register
+			|quote_quote|.
 			The register can also be '=' followed by an optional
 			expression.  The expression continues until the end of
 			the command.  You need to escape the '|' and '"'
@@ -1183,7 +1187,7 @@ nothing is returned.  {not in Vi}
 
 9. Last search pattern register	"/			*quote_/* *quote/*
 Contains the most recent search-pattern.  This is used for "n" and 'hlsearch'.
-It is writable with ":let", you can change it to have 'hlsearch' highlight
+It is writable with `:let`, you can change it to have 'hlsearch' highlight
 other matches without actually searching.  You can't yank or delete into this
 register.  The search direction is available in |v:searchforward|.
 Note that the valued is restored when returning from a function
@@ -1191,12 +1195,12 @@ Note that the valued is restored when returning from a function
 {not in Vi}
 
 							*@/*
-You can write to a register with a ":let" command |:let-@|.  Example: >
+You can write to a register with a `:let` command |:let-@|.  Example: >
 	:let @/ = "the"
 
 If you use a put command without specifying a register, Vim uses the register
 that was last filled (this is also the contents of the unnamed register).  If
-you are confused, use the ":dis" command to find out what Vim will put (this
+you are confused, use the `:dis` command to find out what Vim will put (this
 command displays all named and numbered registers; the unnamed register is
 labelled '"').
 
@@ -1555,7 +1559,7 @@ Some examples:
 	:set fo=tcrq
 <
 
-Automatic formatting					*auto-format*
+Automatic formatting				*auto-format* *autoformat*
 
 When the 'a' flag is present in 'formatoptions' text is formatted
 automatically when inserting text or deleting text.  This works nice for
@@ -1664,7 +1668,7 @@ found here: |sort()|.
 			last search pattern is used.  This allows trying out
 			a pattern first.
 
-Note that using ":sort" with ":global" doesn't sort the matching lines, it's
+Note that using `:sort` with `:global` doesn't sort the matching lines, it's
 quite useless.
 
 The details about sorting depend on the library function used.  There is no

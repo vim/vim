@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.3.  Last change: 2012 Apr 05
+*insert.txt*    For Vim version 7.3.  Last change: 2012 Apr 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -383,8 +383,11 @@ will then always put the cursor on it).  Or use CTRL-\ CTRL-O, but then
 beware of the cursor possibly being beyond the end of the line.
 
 The CTRL-O command takes you to Normal mode.  If you then use a command enter
-Insert mode again it doesn't nest.  Thus when typing "a<C-O>a" and then <Esc>
-takes you back to Normal mode, you do not need to type <Esc> twice.
+Insert mode again it normally doesn't nest.  Thus when typing "a<C-O>a" and
+then <Esc> takes you back to Normal mode, you do not need to type <Esc> twice.
+An exception is when not typing the command, e.g. when executing a mapping or
+sourcing a script.  This makes mappings work that briefly switch to Insert
+mode.
 
 The shifted cursor keys are not available on all terminals.
 

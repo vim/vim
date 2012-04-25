@@ -2,13 +2,14 @@
 " Language:     Subversion (svn) commit file
 " Maintainer:   Dmitry Vasiliev <dima at hlabs dot org>
 " URL:          https://github.com/hdima/vim-scripts/blob/master/syntax/svn.vim
-" Last Change:  2012-02-11
+" Last Change:  2012-04-15
 " Filenames:    svn-commit*.tmp
-" Version:      1.7
+" Version:      1.8
 
 " Contributors:
 "   Stefano Zacchiroli
 "   A. S. Budden
+"   Myk Taylor
 
 " For version 5.x: Clear all syntax items.
 " For version 6.x: Quit when a syntax file was already loaded.
@@ -20,9 +21,10 @@ endif
 
 syn region svnRegion    start="^--.*--$" end="\%$" contains=ALL contains=@NoSpell
 syn match svnRemoved    "^D    .*$" contained
-syn match svnAdded      "^A[ M]   .*$" contained
-syn match svnModified   "^M[ M]   .*$" contained
-syn match svnProperty   "^_M   .*$" contained
+syn match svnRenamed    "^R[ M][ U][ +] .*$" contained
+syn match svnAdded      "^A[ M][ U][ +] .*$" contained
+syn match svnModified   "^M[ M][ U]  .*$" contained
+syn match svnProperty   "^_M[ U]  .*$" contained
 
 " Synchronization.
 syn sync clear
@@ -44,6 +46,7 @@ if version >= 508 || !exists("did_svn_syn_inits")
   HiLink svnAdded       Identifier
   HiLink svnModified    Special
   HiLink svnProperty    Special
+  HiLink svnRenamed     Special
 
   delcommand HiLink
 endif

@@ -241,9 +241,8 @@ msgstr " 文件名补全 (^F^N^P)"
 msgid " Tag completion (^]^N^P)"
 msgstr " Tag 补全 (^]^N^P)"
 
-#, fuzzy
-#~ msgid " Path pattern completion (^N^P)"
-#~ msgstr " 路径模式补全 (^N^P)"
+msgid " Path pattern completion (^N^P)"
+msgstr " 头文件模式补全 (^N^P)"
 
 msgid " Definition completion (^D^N^P)"
 msgstr " 定义补全 (^D^N^P)"
@@ -5284,7 +5283,7 @@ msgstr "Vim: 读错误，退出中...\n"
 
 #. must display the prompt
 msgid "No undo possible; continue anyway"
-msgstr "无法撤销；请继续"
+msgstr "无法撤销；仍然继续"
 
 msgid "Already at oldest change"
 msgstr "已位于最旧的改变"
@@ -5601,13 +5600,13 @@ msgid "type  :help cp-default<Enter> for info on this"
 msgstr "输入  :help cp-default<Enter> 查看相关说明    "
 
 msgid "menu  Help->Orphans           for information    "
-msgstr "菜单  Help->Orphans           查看说明           "
+msgstr "菜单  帮助->孤儿           查看说明           "
 
 msgid "Running modeless, typed text is inserted"
 msgstr "无模式运行，输入文字即插入"
 
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
-msgstr "菜单  Edit->Global Settings->Toggle Insert Mode  "
+msgstr "菜单  编辑->全局设定->开/关插入模式  "
 
 #, fuzzy
 #~ msgid "                              for two modes      "

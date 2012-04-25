@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	    DocBook
 " Maintainer:	    Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2010-10-14
+" Latest Revision:  2012-04-25
 
 if exists('b:did_ftplugin')
   finish
@@ -20,3 +20,5 @@ if b:docbk_type == 'sgml'
 else
   runtime! ftplugin/xml.vim ftplugin/xml_*.vim ftplugin/xml/*.vim
 endif
+
+let b:undo_ftplugin = "unlet! b:docbk_type"

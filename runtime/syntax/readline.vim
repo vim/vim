@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         readline(3) configuration file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2011-05-02
+" Latest Revision:  2012-04-25
 "   readline_has_bash - if defined add support for bash specific
 "                       settings/functions
 
@@ -256,7 +256,7 @@ syn keyword readlineFunction    contained
                               \ possible-completions
                               \ insert-completions
                               \ menu-complete
-                              \ menu-complete-or-backward
+                              \ menu-complete-backward
                               \ delete-char-or-list
                               \
                               \ start-kbd-macro

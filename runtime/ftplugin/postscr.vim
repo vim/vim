@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	PostScript
 " Maintainer:	Mike Williams <mrw@eandem.co.uk>
-" Last Change:  16th January 2012
+" Last Change:  24th April 2012
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -33,3 +33,6 @@ endif
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
+
+let b:undo_ftplugin = "setlocal comments< formatoptions<"
+    \ . "| unlet! b:browsefiler b:match_ignorecase b:match_words"
