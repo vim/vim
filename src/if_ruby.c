@@ -1238,7 +1238,7 @@ static VALUE window_set_cursor(VALUE self, VALUE pos)
     return Qnil;
 }
 
-static VALUE f_nop(VALUE self)
+static VALUE f_nop(VALUE self UNUSED)
 {
     return Qnil;
 }
