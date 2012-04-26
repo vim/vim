@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Apr 25
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Apr 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -43,6 +43,11 @@ Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 Stack trace of crash: http://vpaste.net/GBt9S
 (Alexandre Provencio)
 
+Patch for IBM z/OS makefile. (Stephen Bovy, 2012 Apr 26)
+
+Test 77 fails if cksum uses tabs instead of spaces. (Michael Soyka, 2012 Apr
+25)
+
 Once syntax and other runtime files have been fixed: add "set cp" to
 check.vim.  Use a function to run both with 'cp' and 'nocp'.
 
@@ -58,6 +63,7 @@ Stocker, 2012 Jan 5)
 
 Patch for crash involving curwin->w_s. (Christian Brabandt, 2012 Apr 20)
 What is the cause?  Leaks memory?  Other solution?
+More debug info Apr 26.
 
 Issue 54: document behavior of -complete, also expands arg.
 

@@ -980,7 +980,7 @@ inside of strings can change!  Also see 'softtabstop' option. >
 			If no register is specified, it depends on the 'cb'
 			option: If 'cb' contains "unnamedplus", paste from the
 			+ register |quoteplus|.  Otherwise, if 'cb' contains
-			"unnamed", paste from the * register |quote_star|.
+			"unnamed", paste from the * register |quotestar|.
 			Otherwise, paste from the unnamed register
 			|quote_quote|.
 			The register can also be '=' followed by an optional

@@ -20,5 +20,4 @@ if has("gui_win32") && !exists("b:browsefilter")
   let b:browsefilter = "DOS Batch Files (*.bat, *.cmd)\t*.bat;*.cmd\nAll Files (*.*)\t*.*\n"
 endif
 
-let b:undo_ftplugin = "setlocal comments< formatoptions<"
-    \ . "| unlet! b:browsefiler"
+let b:undo_ftplugin = "setlocal comments< formatoptions< | unlet! b:browsefiler"

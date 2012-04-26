@@ -31,8 +31,8 @@ if has("gui_win32") && !exists("b:browsefilter")
     \ "All Files (*.*)\t*.*\n"
 endif
 
-let &cpo = s:cpo_save
-unlet s:cpo_save
-
 let b:undo_ftplugin = "setlocal comments< formatoptions<"
     \ . "| unlet! b:browsefiler b:match_ignorecase b:match_words"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

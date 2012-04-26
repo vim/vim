@@ -6569,6 +6569,7 @@ lua-luaeval	if_lua.txt	/*lua-luaeval*
 lua-vim	if_lua.txt	/*lua-vim*
 lua-window	if_lua.txt	/*lua-window*
 lua.vim	syntax.txt	/*lua.vim*
+luaeval()	eval.txt	/*luaeval()*
 m	motion.txt	/*m*
 m'	motion.txt	/*m'*
 m[	motion.txt	/*m[*

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2012 Mar 28
+*options.txt*	For Vim version 7.3.  Last change: 2012 Apr 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7119,8 +7119,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	the file should contain words with similar meaning, separated by
 	non-keyword characters (white space is preferred).  Maximum line
 	length is 510 bytes.
-	To obtain a file to be used here, check out the wordlist FAQ at
-	http://www.hyphenologist.co.uk .
 	To include a comma in a file name precede it with a backslash.  Spaces
 	after a comma are ignored, otherwise spaces are included in the file
 	name.  See |option-backslash| about using backslashes.
