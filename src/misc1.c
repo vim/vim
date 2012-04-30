@@ -9461,6 +9461,7 @@ unix_expandpath(gap, path, wildoff, flags, didstar)
 
     /*
      * Find the first part in the path name that contains a wildcard.
+     * When EW_ICASE is set every letter is considered to be a wildcard.
      * Copy it into "buf", including the preceding characters.
      */
     p = buf;
@@ -9480,7 +9481,12 @@ unix_expandpath(gap, path, wildoff, flags, didstar)
 	    s = p + 1;
 	}
 	else if (path_end >= path + wildoff
-			 && vim_strchr((char_u *)"*?[{~$", *path_end) != NULL)
+			 && (vim_strchr((char_u *)"*?[{~$", *path_end) != NULL
+#ifndef CASE_INSENSITIVE_FILENAME
+			     || ((flags & EW_ICASE)
+					       && isalpha(PTR2CHAR(path_end)))
+#endif
+			     ))
 	    e = p;
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
