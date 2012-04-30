@@ -15,6 +15,9 @@
 "    Help Page: compiler-decada
 "------------------------------------------------------------------------------
 
+let s:keepcpo= &cpo
+set cpo&vim
+
 if (exists("current_compiler")	    &&
    \ current_compiler == "decada")  ||
    \ version < 700
@@ -43,6 +46,9 @@ endif
 
 execute "CompilerSet makeprg="     . escape (g:decada.Make_Command, ' ')
 execute "CompilerSet errorformat=" . escape (g:decada.Error_Format, ' ')
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 finish " 1}}}
 

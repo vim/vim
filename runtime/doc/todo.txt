@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Apr 26
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Apr 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,19 +34,12 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Go through list of maintainers that didn't respond. (Thilo Six, Mar 19)
-
 Go through more coverity reports.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
 Stack trace of crash: http://vpaste.net/GBt9S
 (Alexandre Provencio)
-
-Patch for IBM z/OS makefile. (Stephen Bovy, 2012 Apr 26)
-
-Test 77 fails if cksum uses tabs instead of spaces. (Michael Soyka, 2012 Apr
-25)
 
 Once syntax and other runtime files have been fixed: add "set cp" to
 check.vim.  Use a function to run both with 'cp' and 'nocp'.
@@ -63,9 +56,11 @@ Stocker, 2012 Jan 5)
 
 Patch for crash involving curwin->w_s. (Christian Brabandt, 2012 Apr 20)
 What is the cause?  Leaks memory?  Other solution?
-More debug info Apr 26.
+More debug info Apr 26.  Patch with proper fix Apr 26.  Update 28 Apr.
 
 Issue 54: document behavior of -complete, also expands arg.
+
+Cursor on wrong line after ":copen". (John Beckett, 2012 Apr 30)
 
 Syntax update problem in one buffer opened in two windows, bottom window is
 not correctly updated. (Paul Harris, 2012 Feb 27)
@@ -86,6 +81,8 @@ When running Vim in silent ex mode, an existing swapfile causes Vim to wait
 for a user action without a prompt. (Maarten Billemont, 2012 Feb 3)
 Do give the prompt? Quit with an error?
 
+Patch for undofile(). (Christian Brabandt, 2012 Apr 27)
+
 Patch for: (Christian Brabandt, 2011 Aug 22)
 -   Make it possible to enter "r<C-E>" and "r<C-Y>" (get character from line
     below/above).
@@ -93,6 +90,9 @@ Patch for: (Christian Brabandt, 2011 Aug 22)
 Patch for: (Christian Brabandt, 2011 Aug 24, updated patch)
 8   ":sign unplace * file={filename}" should work.  Also: ":sign unplace *
     buffer={bufnr}".  So one can remove all signs for one file/buffer.
+
+Patch for auto copy selecting to + register. (by Christian Brabant, in email
+from Sergey Vakulenko, 2012 Apr 27)
 
 Patch to add "onselected" callback for completion. (Taro Muraoka, 2011 Sep 24)
 Another for CompleteFuncOk. (Florian Klein, 2012 Jan 31)
@@ -283,6 +283,10 @@ it: Pablo Contreras, 2010 Oct 12  Windows XP and 7.  Font is never freed?
 When setting a local option value from the global value, add a script ID that
 indicates this, so that ":verbose set" can give a hint.  Check with options in
 the help file.
+
+Patch for IBM z/OS makefile. (Stephen Bovy, 2012 Apr 26)
+Patch for configure (Stephen Bovy, 2012 Apr 28)
+Updates later.
 
 After patch 7.3.097 still get E15. (Yukihiro Nakadaira, 2011 Jan 18)
 Also for another example (ZyX, 2011 Jan 24)

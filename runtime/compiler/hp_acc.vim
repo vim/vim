@@ -2,7 +2,7 @@
 " Compiler:	HP aCC
 " Maintainer:	Matthias Ulrich <matthias-ulrich@web.de>
 " URL:          http://www.subhome.de/vim/hp_acc.vim
-" Last Change:	2005 Nov 19
+" Last Change:	2012 Apr 30
 "
 "  aCC --version says: "HP ANSI C++ B3910B A.03.13"
 "  This compiler has been tested on:
@@ -19,6 +19,8 @@ if exists("current_compiler")
   finish
 endif
 let current_compiler = "hp_acc"
+let s:keepcpo= &cpo
+set cpo&vim
 
 if exists(":CompilerSet") != 2		" older Vim always used :setlocal
   command -nargs=* CompilerSet setlocal <args>
@@ -29,5 +31,8 @@ CompilerSet errorformat=%A%trror\ %n\:\ \"%f\"\\,\ line\ %l\ \#\ %m,
          \%A%tarning\ %n\:\ \"%f\"\\,\ line\ %l\ \#\ %m\ %#,
          \%Z\ \ \ \ %p^%.%#,
          \%-C%.%#
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim:ts=8:sw=4:cindent

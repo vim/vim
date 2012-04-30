@@ -2,13 +2,15 @@
 " Language:		Python
 " Maintainer:		Bram Moolenaar <Bram@vim.org>
 " Original Author:	David Bustos <bustos@caltech.edu>
-" Last Change:		2006 Jun 18
+" Last Change:		2012 Apr 30
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
   finish
 endif
 let b:did_indent = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 " Some preliminary settings
 setlocal nolisp		" Make sure lisp indenting doesn't supersede us
@@ -189,5 +191,8 @@ function GetPythonIndent(lnum)
   return -1
 
 endfunction
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim:sw=2

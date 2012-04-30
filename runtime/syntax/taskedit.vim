@@ -11,6 +11,8 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 syn match taskeditHeading	"^\s*#\s*Name\s\+Editable details\s*$" contained
 syn match taskeditHeading	"^\s*#\s*-\+\s\+-\+\s*$" contained
@@ -31,5 +33,8 @@ hi def link taskeditReadOnly	Special
 hi def link taskeditString	String
 
 let b:current_syntax = "taskedit"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim:noexpandtab

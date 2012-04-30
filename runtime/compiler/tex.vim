@@ -1,11 +1,13 @@
 " Vim compiler file
 " Compiler:     TeX
 " Maintainer:   Artem Chuprina <ran@ran.pp.ru>
-" Last Change:  2004 Mar 27
+" Last Change:  2012 Apr 30
 
 if exists("current_compiler")
 	finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 if exists(":CompilerSet") != 2		" older Vim always used :setlocal
   command -nargs=* CompilerSet setlocal <args>
@@ -29,9 +31,6 @@ if exists('b:tex_ignore_makefile') || exists('g:tex_ignore_makefile') ||
 else
 	let current_compiler = 'make'
 endif
-
-let s:cpo_save = &cpo
-set cpo-=C
 
 " Value errorformat are taken from vim help, see :help errorformat-LaTeX, with
 " addition from Srinath Avadhanula <srinath@fastmail.fm>
@@ -64,5 +63,5 @@ CompilerSet errorformat=%E!\ LaTeX\ %trror:\ %m,
 	\%+Q%*[^()])%r,
 	\%+Q[%\\d%*[^()])%r
 
-let &cpo = s:cpo_save
-unlet s:cpo_save
+let &cpo = s:keepcpo
+unlet s:keepcpo

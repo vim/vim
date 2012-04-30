@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:     Abaqus finite element input file (www.abaqus.com)
 " Maintainer:   Carl Osterwisch <osterwischc@asme.org>
-" Last Change:  2012 Mar 11
+" Last Change:  2012 Apr 30
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin") | finish | endif
@@ -51,7 +51,7 @@ if has("gui_win32") && !exists("b:browsefilter")
     \ "Abaqus Results (*.dat)\t*.dat\n" .
     \ "Abaqus Messages (*.pre *.msg *.sta)\t*.pre;*.msg;*.sta\n" .
     \ "All Files (*.*)\t*.*\n"
-    let b:undo_ftplugin .= "|unlet b:browsefilter"
+    let b:undo_ftplugin .= "|unlet! b:browsefilter"
 endif
 
 " Define patterns for the matchit plugin
@@ -62,7 +62,7 @@ if exists("loaded_matchit") && !exists("b:match_words")
     \ '\*assembly:\*end\s*assembly,' .
     \ '\*instance:\*end\s*instance,' .
     \ '\*step:\*end\s*step'
-    let b:undo_ftplugin .= "|unlet b:match_ignorecase b:match_words"
+    let b:undo_ftplugin .= "|unlet! b:match_ignorecase b:match_words"
 endif
 
 " Define keys used to move [count] keywords backward or forward.
@@ -84,6 +84,13 @@ endfunction
 
 let b:undo_ftplugin .= "|unmap <buffer> [[|unmap <buffer> ]]"
     \ . "|unmap <buffer> <LocalLeader><LocalLeader>"
+
+" Undo must be done in nocompatible mode for <LocalLeader>.
+let b:undo_ftplugin = "let s:cpo_save = &cpoptions|"
+    \ . "set cpoptions&vim|"
+    \ . b:undo_ftplugin
+    \ . "|let &cpoptions = s:cpo_save"
+    \ . "|unlet s:cpo_save"
 
 " Restore saved compatibility options
 let &cpoptions = s:cpo_save

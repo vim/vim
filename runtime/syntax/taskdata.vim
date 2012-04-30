@@ -11,6 +11,8 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 " Key Names for values.
 syn keyword taskdataKey		description due end entry imask mask parent
@@ -39,5 +41,8 @@ hi def link taskdataUUID 	Special
 hi def link taskdataUndo 	Type
 
 let b:current_syntax = "taskdata"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim:noexpandtab

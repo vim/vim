@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	po (gettext)
 " Maintainer:	Dwayne Bailey <dwayne@translate.org.za>
-" Last Change:	2010 Sep 21
+" Last Change:	2012 Apr 30
 " Contributors: Dwayne Bailey (Most advanced syntax highlighting)
 "               Leonardo Fontenelle (Spell checking)
 "               Nam SungHyun <namsh@kldp.org> (Original maintainer)
@@ -13,6 +13,8 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 syn sync minlines=10
 
@@ -131,5 +133,8 @@ if version >= 508 || !exists("did_po_syn_inits")
 endif
 
 let b:current_syntax = "po"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim:set ts=8 sts=2 sw=2 noet:

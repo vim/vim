@@ -1,12 +1,14 @@
 " Menu Translations:	Afrikaas
 " Maintainer:		Danie Roux <droux@tuks.co.za>
-" Last Change:		2003 Mar 30
+" Last Change:		2012 Apr 30
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 " The translations below are in latin1, but they work for cp1252 and
 " iso-8859-15 without conversion as well.
@@ -150,3 +152,6 @@ menutrans o&ff\ (this\ file)	&Af\ (die\ leêr)
 menutrans Co&lor\ test		Toets\ die\ &kleure
 menutrans &Highlight\ test	Toets\ die\ verligting
 menutrans &Convert\ to\ HTML	Verwissel\ na\ HTML
+
+let s:keepcpo= &cpo
+set cpo&vim

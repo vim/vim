@@ -12,6 +12,8 @@
 if exists("b:current_syntax")
     finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 " Fvwm configuration files are case insensitive
 syn case ignore
@@ -635,3 +637,6 @@ hi def link fvwmShortcutKey	SpecialChar
 hi def link fvwmModuleName	Function
 
 let b:current_syntax = "fvwm"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

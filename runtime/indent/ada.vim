@@ -28,6 +28,8 @@
 if exists("b:did_indent") || version < 700
    finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 let b:did_indent = 45
 
@@ -291,6 +293,9 @@ function GetAdaIndent()
 
    return ind
 endfunction GetAdaIndent
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 finish " 1}}}
 

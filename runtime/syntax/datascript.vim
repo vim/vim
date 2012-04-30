@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Datascript
 " Maintainer:	Dominique Pelle <dominique.pelle@gmail.com>
-" Last Change:	2010-08-01
+" Last Change:	2012 Apr 30
 "
 " DataScript is a formal language for modelling binary datatypes,
 " bitstreams or file formats. For more information, see:
@@ -12,6 +12,8 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 syn keyword dsPackage      import package
 syn keyword dsType         bit string
@@ -88,3 +90,6 @@ hi def link cCommentL           dsComment
 hi def link dsComment           Comment
 
 let b:current_syntax = "datascript"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

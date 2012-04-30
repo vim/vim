@@ -8,8 +8,8 @@ if exists("b:did_ftplugin") | finish | endif
 
 " Make sure the continuation lines below do not cause problems in
 " compatibility mode.
-let s:save_cpo = &cpo
-set cpo-=C
+let s:keepcpo= &cpo
+set cpo&vim
 
 " Define some defaults in case the included ftplugins don't set them.
 let s:undo_ftplugin = ""
@@ -79,5 +79,5 @@ let b:undo_ftplugin = "setlocal commentstring< include< omnifunc<" .
 	    \	      s:undo_ftplugin
 
 " Restore the saved compatibility options.
-let &cpo = s:save_cpo
-unlet s:save_cpo
+let &cpo = s:keepcpo
+unlet s:keepcpo

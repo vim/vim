@@ -2,7 +2,7 @@
 " Language: Valgrind Memory Debugger Output
 " Maintainer: Roger Luethi <rl@hellgate.ch>
 " Program URL: http://devel-home.kde.org/~sewardj/
-" Last Change: 2002 Apr 07
+" Last Change: 2012 Apr 30
 "
 " Notes: mostly based on strace.vim and xml.vim
 
@@ -10,6 +10,8 @@
 if exists("b:current_syntax")
 	finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 syn case match
 syn sync minlines=50
@@ -97,3 +99,6 @@ hi def link valgrindBin		Comment
 hi def link valgrindSrc		Statement
 
 let b:current_syntax = "valgrind"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

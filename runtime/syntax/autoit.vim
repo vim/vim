@@ -6,6 +6,15 @@
 " Script URL:	http://www.vim.org/scripts/script.php?script_id=1239
 " ChangeLog:	Please visit the script URL for detailed change information
 
+" Quit when a syntax file was already loaded.
+if exists("b:current_syntax")
+  finish
+endif
+let s:keepcpo= &cpo
+set cpo&vim
+
+let b:current_syntax = "autoit"
+
 " AutoIt is not case dependent
 syn case ignore
 
@@ -1108,4 +1117,8 @@ hi def link autoitOption Type
 hi def link autoitStyle Type
 hi def link autoitConst Type
 hi def link autoitSend Type
+
 syn sync minlines=50
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

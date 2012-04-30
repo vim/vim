@@ -29,6 +29,8 @@
 if version < 700
    finish
 endif 
+let s:keepcpo= &cpo
+set cpo&vim
 
 " Section: Constants {{{1
 "
@@ -618,6 +620,9 @@ lockvar  g:ada#DotWordRegex
 lockvar  g:ada#Comment
 lockvar! g:ada#Keywords
 lockvar! g:ada#Ctags_Kinds
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 finish " 1}}}
 

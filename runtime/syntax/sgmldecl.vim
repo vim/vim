@@ -12,6 +12,8 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 syn case ignore
 
@@ -76,4 +78,8 @@ if version >= 508 || !exists("did_sgmldecl_syntax_init")
 endif
 
 let b:current_syntax = "sgmldecl"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
+
 " vim:set tw=78 ts=4:

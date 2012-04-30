@@ -1,12 +1,14 @@
 " Vim syntax file
 " Language:	Linden Scripting Language
 " Maintainer:	Timo Frenay <timo@frenay.net>
-" Last Change:	2008 Mar 29
+" Last Change:	2012 Apr 30
 
 " Quit when a syntax file was already loaded
 if exists("b:current_syntax")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 " Initializations
 syn case match
@@ -268,5 +270,8 @@ hi def link lslTypecast     Operator
 hi def link lslComment      Comment
 
 let b:current_syntax = "lsl"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim: ts=8

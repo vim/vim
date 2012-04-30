@@ -17,11 +17,11 @@
 "    Help Page: compiler-gnat
 "------------------------------------------------------------------------------
 
-if (exists("current_compiler")	    &&
-   \ current_compiler == "gnat")    ||
-   \ version < 700
+if (exists("current_compiler")&& current_compiler == "gnat") || version < 700
    finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 let current_compiler = "gnat"
 
@@ -61,6 +61,9 @@ endif
 
 execute "CompilerSet makeprg="     . escape (g:gnat.Get_Command('Make'), ' ')
 execute "CompilerSet errorformat=" . escape (g:gnat.Error_Format, ' ')
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 finish " 1}}}
 

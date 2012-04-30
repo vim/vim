@@ -3,7 +3,7 @@
 " Maintainer:	    Kazunobu Kuriyama <kazunobu.kuriyama@nifty.com>
 " Ex-maintainer:    Anthony Hodsdon <ahodsdon@fastmail.fm>
 " First Author:	    Valentino Kyriakides <1kyriaki@informatik.uni-hamburg.de>
-" Last Change:	    2007 Feb 21
+" Last Change:	    2012 Apr 30
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -12,6 +12,8 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 if &filetype != 'objcpp'
   " Read the C syntax to start with
@@ -106,5 +108,8 @@ if version >= 508 || !exists("did_objc_syntax_inits")
 endif
 
 let b:current_syntax = "objc"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim: ts=8

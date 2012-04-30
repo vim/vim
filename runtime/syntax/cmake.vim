@@ -18,6 +18,8 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 syn case ignore
 syn match cmakeEscaped /\(\\\\\|\\"\|\\n\|\\t\)/ contained
@@ -77,5 +79,8 @@ if version >= 508 || !exists("did_cmake_syntax_inits")
 endif
 
 let b:current_syntax = "cmake"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 "EOF"
