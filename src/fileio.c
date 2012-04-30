@@ -8982,6 +8982,10 @@ win_found:
 		    && buf_valid(aco->new_curbuf)
 		    && aco->new_curbuf->b_ml.ml_mfp != NULL)
 	    {
+# if defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
+		if (curwin->w_s == &curbuf->b_s)
+		    curwin->w_s = &aco->new_curbuf->b_s;
+# endif
 		--curbuf->b_nwindows;
 		curbuf = aco->new_curbuf;
 		curwin->w_buffer = curbuf;
