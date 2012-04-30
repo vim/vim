@@ -21,7 +21,9 @@ ggdG
 :while i <= 2000000 | call append(i, range(i, i + 99)) | let i += 100 | endwhile
 ggdd
 :w! Xtest
-:!cksum Xtest > test.out
+:r !cksum Xtest
+:s/\s/ /g
+:.w! test.out
 :qa!
 ENDTEST
 
