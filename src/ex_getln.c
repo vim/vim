@@ -25,7 +25,7 @@ struct cmdline_info
     int		cmdlen;		/* number of chars in command line */
     int		cmdpos;		/* current cursor position */
     int		cmdspos;	/* cursor column on screen */
-    int		cmdfirstc;	/* ':', '/', '?', '=' or NUL */
+    int		cmdfirstc;	/* ':', '/', '?', '=', '>' or NUL */
     int		cmdindent;	/* number of spaces before cmdline */
     char_u	*cmdprompt;	/* message in front of cmdline */
     int		cmdattr;	/* attributes for prompt */
@@ -111,6 +111,9 @@ static int	expand_showtail __ARGS((expand_T *xp));
 #ifdef FEAT_CMDL_COMPL
 static int	expand_shellcmd __ARGS((char_u *filepat, int *num_file, char_u ***file, int flagsarg));
 static int	ExpandRTDir __ARGS((char_u *pat, int *num_file, char_u ***file, char *dirname[]));
+# ifdef FEAT_CMDHIST
+static char_u	*get_history_arg __ARGS((expand_T *xp, int idx));
+# endif
 # if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
 static int	ExpandUserDefined __ARGS((expand_T *xp, regmatch_T *regmatch, int *num_file, char_u ***file));
 static int	ExpandUserList __ARGS((expand_T *xp, int *num_file, char_u ***file));
@@ -4628,6 +4631,9 @@ ExpandFromContext(xp, pat, num_file, file, options)
 	{
 	    {EXPAND_COMMANDS, get_command_name, FALSE, TRUE},
 	    {EXPAND_BEHAVE, get_behave_arg, TRUE, TRUE},
+#ifdef FEAT_CMDHIST
+	    {EXPAND_HISTORY, get_history_arg, TRUE, TRUE},
+#endif
 #ifdef FEAT_USR_CMDS
 	    {EXPAND_USER_COMMANDS, get_user_commands, FALSE, TRUE},
 	    {EXPAND_USER_CMD_FLAGS, get_user_cmd_flags, FALSE, TRUE},
@@ -5244,6 +5250,34 @@ static char *(history_names[]) =
     "debug",
     NULL
 };
+
+#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
+/*
+ * Function given to ExpandGeneric() to obtain the possible first
+ * arguments of the ":history command.
+ */
+    static char_u *
+get_history_arg(xp, idx)
+    expand_T	*xp UNUSED;
+    int		idx;
+{
+    static char_u compl[2] = { NUL, NUL };
+    char *short_names = ":=@>?/";
+    int short_names_count = STRLEN(short_names);
+    int history_name_count = sizeof(history_names) / sizeof(char *) - 1;
+
+    if (idx < short_names_count)
+    {
+	compl[0] = (char_u)short_names[idx];
+	return compl;
+    }
+    if (idx < short_names_count + history_name_count)
+	return (char_u *)history_names[idx - short_names_count];
+    if (idx == short_names_count + history_name_count)
+	return (char_u *)"all";
+    return NULL;
+}
+#endif
 
 /*
  * init_history() - Initialize the command line history.

@@ -330,12 +330,12 @@ terminals)
 
 :his[tory] [{name}] [{first}][, [{last}]]
 		List the contents of history {name} which can be:
-		c[md]	 or :	command-line history
-		s[earch] or /	search string history
-		e[xpr]	 or =	expression register history
-		i[nput]	 or @	input line history
-		d[ebug]	 or >	debug command history
-		a[ll]		all of the above
+		c[md]	 or :		command-line history
+		s[earch] or / or ?	search string history
+		e[xpr]	 or =		expression register history
+		i[nput]	 or @		input line history
+		d[ebug]	 or >		debug command history
+		a[ll]			all of the above
 		{not in Vi}
 
 		If the numbers {first} and/or {last} are given, the respective

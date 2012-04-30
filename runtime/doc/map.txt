@@ -1219,6 +1219,7 @@ completion can be enabled:
 
 	-complete=augroup	autocmd groups
 	-complete=buffer	buffer names
+	-complete=behave	:behave suboptions
 	-complete=color		color schemes
 	-complete=command	Ex command (and arguments)
 	-complete=compiler	compilers
@@ -1233,6 +1234,7 @@ completion can be enabled:
 	-complete=function	function name
 	-complete=help		help subjects
 	-complete=highlight	highlight groups
+	-complete=history	:history suboptions
 	-complete=locale	locale names (as output of locale -a)
 	-complete=mapping	mapping name
 	-complete=menu		menus
