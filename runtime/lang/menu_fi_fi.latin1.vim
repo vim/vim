@@ -1,12 +1,14 @@
 " Menu Translations:	Finnish
 " Maintainer:		Flammie Pirinen <flammie@iki.fi>
-" Last Change:		2007 Sep 04
+" Last Change:		2012 May 01
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 " Translations should be in latin1, if it requires latin9 or even unicode,
 " change this:
@@ -469,5 +471,8 @@ fun! Do_toolbar_tmenu()
   tmenu ToolBar.Help				Vimin ohje
   tmenu ToolBar.FindHelp			Etsi ohjeesta
 endfun
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim: set fileencoding=latin1

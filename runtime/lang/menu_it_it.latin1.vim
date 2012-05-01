@@ -2,13 +2,15 @@
 " Maintainer:		Antonio Colombo <azc100@gmail.com>
 "			Vlad Sandrini <vlad.gently@gmail.com>
 "			Luciano Montanaro <mikelima@cirulla.net>
-" Last Change:	2010 Ago 13
+" Last Change:	2012 May 01
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 scriptencoding iso-8859-1
 
@@ -347,5 +349,8 @@ endif
     tmenu ToolBar.FindHelp	Cerca in Aiuto
   endfun
 endif
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim: set sw=2 :

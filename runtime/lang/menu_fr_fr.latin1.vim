@@ -2,13 +2,15 @@
 " Maintainer:		Adrien Beau <version.francaise@free.fr>
 " First Version:	Francois Thunus <thunus@systran.fr>
 " Last Modification:    David Blanchet <david.blanchet@free.fr>
-" Last Change:		2006 Apr 30
+" Last Change:		2012 May 01
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 " The translations below are in latin1, but they work for cp1252 and
 " iso-8859-15 without conversion as well.
@@ -466,3 +468,6 @@ menutrans &Off					&Off
 menutrans Co&lor\ test				Tester\ les\ co&uleurs
 menutrans &Highlight\ test			Tester\ les\ g&roupes\ de\ surbrillance
 menutrans &Convert\ to\ HTML			Con&vertir\ en\ HTML
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

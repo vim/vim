@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.3.  Last change: 2012 Apr 25
+*change.txt*    For Vim version 7.3.  Last change: 2012 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -260,6 +260,12 @@ r{char}			Replace the character under the cursor with {char}.
 			<CR>.  CTRL-V <NL> replaces with a <Nul>.
 			{Vi: CTRL-V <CR> still replaces with a line break,
 			cannot replace something with a <CR>}
+
+			If {char} is CTRL-E or CTRL-Y the character from the
+			line below or above is used, just like with |i_CTRL-E|
+			and |i_CTRL-Y|.  This also works with a count, thus
+			`10r<C-E>` copies 10 characters from the line below.
+
 			If you give a [count], Vim replaces [count] characters
 			with [count] {char}s.  When {char} is a <CR> or <NL>,
 			however, Vim inserts only one <CR>: "5r<CR>" replaces

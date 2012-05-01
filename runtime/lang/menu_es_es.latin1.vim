@@ -2,7 +2,7 @@
 " Previous translator:	Alejandro López-Valencia <dradul@users.sourceforge.net>
 " Last translator:	Omar Campagne Polaino <ocampagne@gmail.com>
 " Version:		7.2.245
-" Last Change:		2009 Sep 03
+" Last Change:		2012 May 01
 "
 
 " Quit when menu translations have already been done.
@@ -10,6 +10,8 @@ if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 " The translations below are in latin1, but they work for cp1252,
 " iso-8859-15 without conversion as well.
@@ -316,3 +318,6 @@ menutrans &Convert\ to\ HTML		&Convertir\ a\ HTML
 
 " Find Help dialog text
 let g:menutrans_help_dialog = "Introduzca un nombre de comando o palabra para obtener ayuda;\n\nAnteponga i_ para comandos de entrada (e.g.: i_CTRL-X)\nAnteponga c_ para comandos de la línea de comandos (e.g.: c_<Del>)\nAnteponga ` para un nombre de opción (e.g.: `shiftwidth`)"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

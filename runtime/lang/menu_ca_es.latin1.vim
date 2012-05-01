@@ -9,6 +9,8 @@ if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 " The translations below are in latin1, but they work for cp1252,
 " iso-8859-15 without conversion as well.
@@ -311,3 +313,5 @@ menutrans Config			Configuració
 menutrans Set\ '&syntax'\ only		Només\ el\ ressalt\ de\ sintaxi
 menutrans Set\ '&filetype'\ too		Carrega\ també\ els\ plugins
 
+let &cpo = s:keepcpo
+unlet s:keepcpo

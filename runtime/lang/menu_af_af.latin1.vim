@@ -1,6 +1,6 @@
 " Menu Translations:	Afrikaas
 " Maintainer:		Danie Roux <droux@tuks.co.za>
-" Last Change:		2012 Apr 30
+" Last Change:		2012 May 01
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -153,5 +153,5 @@ menutrans Co&lor\ test		Toets\ die\ &kleure
 menutrans &Highlight\ test	Toets\ die\ verligting
 menutrans &Convert\ to\ HTML	Verwissel\ na\ HTML
 
-let s:keepcpo= &cpo
-set cpo&vim
+let &cpo = s:keepcpo
+unlet s:keepcpo

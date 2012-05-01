@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Apr 30
+*todo.txt*      For Vim version 7.3.  Last change: 2012 May 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,15 +34,14 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+patch to fix helphelp.txt from Ken Takata.  https://gist.github.com/2559599
+
 Go through more coverity reports.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
 Stack trace of crash: http://vpaste.net/GBt9S
 (Alexandre Provencio)
-
-Once syntax and other runtime files have been fixed: add "set cp" to
-check.vim.  Use a function to run both with 'cp' and 'nocp'.
 
 GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
@@ -53,10 +52,6 @@ Matsumoto, 2012 Apr 18)  Asked for another version of the patch.
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
-
-Patch for crash involving curwin->w_s. (Christian Brabandt, 2012 Apr 20)
-What is the cause?  Leaks memory?  Other solution?
-More debug info Apr 26.  Patch with proper fix Apr 26.  Update 28 Apr.
 
 Issue 54: document behavior of -complete, also expands arg.
 
@@ -81,12 +76,6 @@ When running Vim in silent ex mode, an existing swapfile causes Vim to wait
 for a user action without a prompt. (Maarten Billemont, 2012 Feb 3)
 Do give the prompt? Quit with an error?
 
-Patch for undofile(). (Christian Brabandt, 2012 Apr 27)
-
-Patch for: (Christian Brabandt, 2011 Aug 22)
--   Make it possible to enter "r<C-E>" and "r<C-Y>" (get character from line
-    below/above).
-
 Patch for: (Christian Brabandt, 2011 Aug 24, updated patch)
 8   ":sign unplace * file={filename}" should work.  Also: ":sign unplace *
     buffer={bufnr}".  So one can remove all signs for one file/buffer.
@@ -100,8 +89,6 @@ Name it "CompleteFuncDone".
 
 Patch for Make_mvc.mak and Make_ming.mak for Ruby support. (Yasuhiro
 Matsumoto, 2012 Jan 30)
-
-Patch to add completion for :history command.  (Dominique Pelle, 2012 Feb 26)
 
 Patch for 'backupcopy' default behavior for symlinks on Windows. (David Pope,
 2012 Mar 21, update Mar 31)

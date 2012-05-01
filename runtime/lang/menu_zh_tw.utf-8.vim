@@ -1,6 +1,6 @@
 " Menu Translations:	Traditional Chinese
 " Translated By:	Hung-Te Lin	<piaip@csie.ntu.edu.tw>
-" Last Change:		2005/01/28 02:51:38
+" Last Change:		2012 May 01
 
 " {{{ Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -8,6 +8,9 @@ if exists("did_menu_trans")
 endif
 let did_menu_trans = 1
 " }}}
+
+let s:keepcpo= &cpo
+set cpo&vim
 
 scriptencoding utf-8
 
@@ -281,5 +284,8 @@ if has("toolbar")
   endfun
 endif
 " }}}
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim:foldmethod=marker:nowrap:foldcolumn=2:foldlevel=1

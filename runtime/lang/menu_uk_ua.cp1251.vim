@@ -12,6 +12,9 @@ if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
+
 scriptencoding cp1251
 
 " Help menu
@@ -244,3 +247,5 @@ let g:menutrans_tags_dialog = "¬каж≥ть назви файл≥в пом≥ток\n–озд≥л€йте назви ко
 let g:menutrans_textwidth_dialog = "¬каж≥ть нову ширину тексту (0 дл€ в≥дм≥ни фоматуванн€)"
 let g:menutrans_fileformat_dialog = "¬ибер≥ть формат файлу"
 
+let &cpo = s:keepcpo
+unlet s:keepcpo

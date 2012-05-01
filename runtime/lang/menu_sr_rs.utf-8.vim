@@ -7,6 +7,9 @@ if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
+
 scriptencoding utf-8
 
 " Help menu
@@ -257,5 +260,8 @@ let g:menutrans_textwidth_dialog = "Унесите нову ширину тек�
 let g:menutrans_fileformat_dialog = "Изаберите врсту датотеке"
 
 let menutrans_no_file = "[Нема датотеке]"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim: tw=0 keymap=serbian

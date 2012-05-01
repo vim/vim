@@ -7,6 +7,8 @@ if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 " Help menu
 menutrans &Help		      Pomo&c
@@ -256,3 +258,6 @@ let g:menutrans_textwidth_dialog = "Unesite novu sirinu teksta (0 sprecava prelo
 let g:menutrans_fileformat_dialog = "Izaberite vrstu datoteke"
 
 let menutrans_no_file = "[Nema datoteke]"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

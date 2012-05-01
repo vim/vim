@@ -9,6 +9,8 @@ if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 " This causes trouble for a broken iconv (symptom: last character is always
 " ??).  Without this it works fine anyway, because gbk/cp936 is a superset of
@@ -264,3 +266,6 @@ menutrans &Highlight\ test		高亮测试(&H)
 menutrans &Convert\ to\ HTML		转换成\ HTML(&C)
 menutrans Set\ '&syntax'\ only		仅设定\ 'syntax'(&S)
 menutrans Set\ '&filetype'\ too		也设定\ 'filetype'(&F)
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

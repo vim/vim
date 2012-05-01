@@ -10,6 +10,8 @@ if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 " The translations below are in latin1, but they work for cp1252 and
 " iso-8859-15 without conversion as well.
@@ -302,3 +304,6 @@ let g:menutrans_tags_dialog = "Geben Sie die Namen der 'tag'-Dateien ein.\nTrenn
 let g:menutrans_textwidth_dialog = "Geben Sie eine neue Text-Breite ein (oder 0, um die Formatierung abzuschalten)"
 let g:menutrans_fileformat_dialog = "Wählen Sie ein Datei-Format aus"
 " }}}
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

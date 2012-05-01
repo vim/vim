@@ -9,8 +9,8 @@ if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
-
-
+let s:keepcpo= &cpo
+set cpo&vim
 
 " {{{ File menu
 menutrans &File				&Soubor
@@ -262,3 +262,6 @@ if has("toolbar")
   endfun
 endif
 " }}}
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

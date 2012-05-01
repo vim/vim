@@ -1,6 +1,6 @@
 " Menu Translations: Português do Brasil
 " Maintainer: José de Paula <jose@infoviaweb.com>
-" Last Change: 2006-09-19 02:30:00-03:00
+" Last Change: 2012 May 01
 "
 
 " Quit when menu translations have already been done.
@@ -8,6 +8,8 @@ if exists("did_menu_trans")
 	finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 " Translations in latin1 (ISO-8859-1), and should work in
 " latin9 (ISO-8859-15)
@@ -283,3 +285,6 @@ menutrans &Convert\ to\ HTML		&Converter\ para\ HTML
 
 " Find Help dialog text
 let g:menutrans_help_dialog = "Digite um comando ou palavra para obter ajuda;\n\nAnteponha i_ para comandos de entrada (ex.: i_CTRL-X)\nAnteponha c_ para comandos da linha de comandos (ex.: c_<Del>)\nAnteponha ` para um nome de opção (ex.: `shiftwidth`)"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

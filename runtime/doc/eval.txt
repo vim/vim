@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2012 Apr 25
+*eval.txt*	For Vim version 7.3.  Last change: 2012 Apr 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5964,6 +5964,8 @@ undofile({name})					*undofile()*
 		the undo file exists.
 		{name} is always expanded to the full path, since that is what
 		is used internally.
+		If {name} is empty undofile() returns an empty string, since a
+		buffer without a file name will not write an undo file.
 		Useful in combination with |:wundo| and |:rundo|.
 		When compiled without the +persistent_undo option this always
 		returns an empty string.

@@ -1,7 +1,7 @@
 " Menu Translations:	Hungarian (Magyar)
 " Original Translation:	Zoltán Árpádffy
 " Maintained By:	Kontra Gergely <kgergely@mcl.hu>
-" Last Change:		2003 May 31
+" Last Change:		2012 May 01
 " I'm working on defining (unaccented) hotkeys for everything.
 " I want to remove y and z hotkeys, because on the hungarian keymap they're at
 " a differrent place.
@@ -27,6 +27,8 @@ if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 scriptencoding iso-8859-2
 
@@ -256,3 +258,6 @@ let g:menutrans_path_dialog = "Írd be a keresett fájl lehetséges elérési útjait,
 let g:menutrans_tags_dialog = "Írd be a tag fájl lehetséges elérési útjait, vesszõvel elválasztva"
 let g:menutrans_textwidth_dialog = "Írd be a szöveg szélességét (0 = formázás kikapcsolva)"
 let g:menutrans_fileformat_dialog = "Válaszd ki a fájl formátumát"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

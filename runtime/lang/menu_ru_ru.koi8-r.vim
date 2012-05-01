@@ -16,6 +16,8 @@ if exists("did_menu_trans")
    finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 scriptencoding koi8-r
 
@@ -294,3 +296,6 @@ let g:menutrans_fileformat_dialog = "Выберите формат файла."
 let g:menutrans_fileformat_choices = "&Unix\n&Dos\n&Mac\nО&тмена"
 "
 let menutrans_no_file = "[Нет файла]"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

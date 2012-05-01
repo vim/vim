@@ -1,12 +1,14 @@
 " Menu Translations:	Korean
 " Maintainer:		SungHyun Nam <goweol@gmail.com>
-" Last Change:		2011 Mar 22
+" Last Change:		2012 May 01
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 scriptencoding utf-8
 
@@ -259,3 +261,5 @@ menutrans Co&lor\ test		색\ 시험(&l)
 menutrans &Highlight\ test	Highlight\ 시험(&H)
 menutrans &Convert\ to\ HTML	HTML로\ 변환(&C)
 
+let &cpo = s:keepcpo
+unlet s:keepcpo

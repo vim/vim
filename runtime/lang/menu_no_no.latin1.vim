@@ -1,6 +1,6 @@
 " Menu Translations:	Norwegian / Norsk (Bokmål)
 " Maintainer:		Øyvind A. Holm <sunny@sunbase.org>
-" Last Change:		2004-05-16 20:00:52 +0200
+" Last Change:		2012 May 01
 " menu_no_no.latin1.vim 289 2004-05-16 18:00:52Z sunny
 
 " Quit when menu translations have already been done.
@@ -8,6 +8,8 @@ if exists("did_menu_trans")
 	finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 " The translations below are in ISO-8859-1, but they work for ISO-8859-15 and
 " CP1252 without conversion as well.
@@ -228,6 +230,9 @@ endif
 	let g:menutrans_tags_dialog = "Skriv navn på tagfiler.\nSkill navnene med komma."
 	let g:menutrans_textwidth_dialog = "Velg ny tekstbredde (0 for å forhindre formatering): "
 	let g:menutrans_fileformat_dialog = "Velg filformat som filen skal lagres med"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 "    vim: set ts=8 sw=8 :
 " vim600: set fdm=indent :

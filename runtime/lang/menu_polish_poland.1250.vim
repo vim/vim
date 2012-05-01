@@ -8,6 +8,8 @@ if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 scriptencoding cp1250
 
@@ -285,3 +287,6 @@ let g:menutrans_tags_dialog = "Podaj nazwy plików tagów.\nProszê rozdzielaæ nazw
 let g:menutrans_textwidth_dialog = "WprowadŸ now¹ szerokoœæ tekstu (0 wy³¹cza przewijanie): "
 let g:menutrans_fileformat_dialog = "Wybierz format w którym ten plik ma byæ zapisany"
 let g:menutrans_fileformat_choices = "&Unix\n&Dos\n&Mac\n&Anuluj"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

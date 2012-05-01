@@ -1,12 +1,14 @@
 " Menu Translations:	Esperanto
 " Maintainer:		Dominique PELLE <dominique.pelle@free.fr>
-" Last Change:		2008 Mar 01
+" Last Change:		2012 May 01
 " 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 scriptencoding utf-8
 
@@ -455,3 +457,6 @@ menutrans &Off					M&alŝaltita
 menutrans Co&lor\ test				Testo\ de\ &koloroj
 menutrans &Highlight\ test			Testo\ de\ &emfazo
 menutrans &Convert\ to\ HTML			Konverti\ al\ &HTML
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

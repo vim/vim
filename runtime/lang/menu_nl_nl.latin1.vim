@@ -1,12 +1,14 @@
 " Menu Translations:	Nederlands
 " Maintainer:		Bram Moolenaar
-" Last Change:	2004 May 05
+" Last Change:	2012 May 01
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 " The translations below are in latin1, but they work for cp1252 and
 " iso-8859-15 without conversion as well.
@@ -238,3 +240,6 @@ let g:menutrans_path_dialog = "Typ het zoekpad voor bestanden.\nGebruik commas t
 let g:menutrans_tags_dialog = "Typ namen van tag bestanden.\nGebruik commas tussen de namen."
 let g:menutrans_textwidth_dialog = "Typ de nieuwe tekst breedte (0 om formatteren uit the schakelen): "
 let g:menutrans_fileformat_dialog = "Selecteer formaat voor het schrijven van het bestand"
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
