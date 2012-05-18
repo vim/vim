@@ -14643,7 +14643,9 @@ f_readfile(argvars, rettv)
 		    long growmin  = (long)((p - start) * 2 + prevlen);
 		    prevsize = grow50pc > growmin ? grow50pc : growmin;
 		}
-		if ((newprev = vim_realloc(prev, prevsize)) == NULL)
+		newprev = prev == NULL ? alloc(prevsize)
+						: vim_realloc(prev, prevsize);
+		if (newprev == NULL)
 		{
 		    do_outofmem_msg((long_u)prevsize);
 		    failed = TRUE;
