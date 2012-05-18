@@ -14494,13 +14494,15 @@ spell_soundfold_wsal(slang, inword, res)
     int		p0 = -333;
     int		c0;
     int		did_white = FALSE;
+    int		wordlen;
+
 
     /*
      * Convert the multi-byte string to a wide-character string.
      * Remove accents, if wanted.  We actually remove all non-word characters.
      * But keep white space.
      */
-    n = 0;
+    wordlen = 0;
     for (s = inword; *s != NUL; )
     {
 	t = s;
@@ -14521,12 +14523,12 @@ spell_soundfold_wsal(slang, inword, res)
 		    continue;
 	    }
 	}
-	word[n++] = c;
+	word[wordlen++] = c;
     }
-    word[n] = NUL;
+    word[wordlen] = NUL;
 
     /*
-     * This comes from Aspell phonet.cpp.
+     * This algorithm comes from Aspell phonet.cpp.
      * Converted from C++ to C.  Added support for multi-byte chars.
      * Changed to keep spaces.
      */
@@ -14711,7 +14713,7 @@ spell_soundfold_wsal(slang, inword, res)
 			    }
 			if (k > k0)
 			    mch_memmove(word + i + k0, word + i + k,
-				    sizeof(int) * (STRLEN(word + i + k) + 1));
+				    sizeof(int) * (wordlen - (i + k) + 1));
 
 			/* new "actual letter" */
 			c = word[i];
@@ -14739,7 +14741,7 @@ spell_soundfold_wsal(slang, inword, res)
 			    if (c != NUL)
 				wres[reslen++] = c;
 			    mch_memmove(word, word + i + 1,
-				    sizeof(int) * (STRLEN(word + i + 1) + 1));
+				       sizeof(int) * (wordlen - (i + 1) + 1));
 			    i = 0;
 			    z0 = 1;
 			}
