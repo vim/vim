@@ -270,6 +270,12 @@ gui_do_fork()
     }
     /* Child */
 
+#ifdef FEAT_GUI_GTK
+    /* Call gtk_init_check() here after fork(). See gui_init_check(). */
+    if (gui_mch_init_check() != OK)
+	exit(1);
+#endif
+
 # if defined(HAVE_SETSID) || defined(HAVE_SETPGID)
     /*
      * Change our process group.  On some systems/shells a CTRL-C in the
@@ -430,7 +436,17 @@ gui_init_check()
 #ifdef ALWAYS_USE_GUI
     result = OK;
 #else
+# ifdef FEAT_GUI_GTK
+    /*
+     * Note: Don't call gtk_init_check() before fork, it will be called after
+     * the fork. When calling it before fork, it make vim hang for a while.
+     * See gui_do_fork().
+     * Use a simpler check if the GUI window can probably be opened.
+     */
+    result = gui.dofork ? gui_mch_early_init_check() : gui_mch_init_check();
+# else
     result = gui_mch_init_check();
+# endif
 #endif
     return result;
 }

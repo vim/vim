@@ -1414,7 +1414,29 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
 }
 
 /*
- * Check if the GUI can be started.  Called before gvimrc is sourced.
+ * Check if the GUI can be started.  Called before gvimrc is sourced and
+ * before fork().
+ * Return OK or FAIL.
+ */
+    int
+gui_mch_early_init_check(void)
+{
+    char_u *p;
+
+    /* Guess that when $DISPLAY isn't set the GUI can't start. */
+    p = mch_getenv((char_u *)"DISPLAY");
+    if (p == NULL || *p == NUL)
+    {
+	gui.dying = TRUE;
+	EMSG(_((char *)e_opendisp));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Check if the GUI can be started.  Called before gvimrc is sourced but after
+ * fork().
  * Return OK or FAIL.
  */
     int
@@ -3050,7 +3072,7 @@ gui_gtk_set_selection_targets(void)
 
     for (i = 0; i < (int)N_SELECTION_TARGETS; ++i)
     {
-	/* OpenOffice tries to use TARGET_HTML and fails when it doesn't
+	/* OpenOffice tries to use TARGET_HTML and fails when we don't
 	 * return something, instead of trying another target. Therefore only
 	 * offer TARGET_HTML when it works. */
 	if (!clip_html && selection_targets[i].info == TARGET_HTML)

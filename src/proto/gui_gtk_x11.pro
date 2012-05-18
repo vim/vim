@@ -4,6 +4,7 @@ void gui_mch_free_all __ARGS((void));
 void gui_mch_set_blinking __ARGS((long waittime, long on, long off));
 void gui_mch_stop_blink __ARGS((void));
 void gui_mch_start_blink __ARGS((void));
+int gui_mch_early_init_check __ARGS((void));
 int gui_mch_init_check __ARGS((void));
 void gui_mch_show_tabline __ARGS((int showit));
 int gui_mch_showing_tabline __ARGS((void));
