@@ -13,17 +13,11 @@
 " TODO:
 "   - improve synchronizing.
 
-if version < 600
-    syntax clear
-    let __dtd_cpo_save__ = &cpo
-    set cpo&
-else
-    if exists("b:current_syntax")
-	finish
-    endif
-    let s:dtd_cpo_save = &cpo
-    set cpo&vim
+if exists("b:current_syntax")
+    finish
 endif
+let s:dtd_cpo_save = &cpo
+set cpo&vim
 
 if !exists("dtd_ignore_case")
     " I prefer having the case takes into consideration.
@@ -168,13 +162,8 @@ if version >= 508 || !exists("did_dtd_syn_inits")
     delcommand HiLink
 endif
 
-if version < 600
-    let &cpo = __dtd_cpo_save__
-    unlet __dtd_cpo_save__
-else
-    let &cpo = s:dtd_cpo_save
-    unlet s:dtd_cpo_save
-endif
+let &cpo = s:dtd_cpo_save
+unlet s:dtd_cpo_save
 
 let b:current_syntax = "dtd"
 

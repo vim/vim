@@ -15,6 +15,8 @@ setlocal nosmartindent
 if exists("*GetXinetdIndent")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 function s:count_braces(lnum, count_open)
   let n_open = 0
@@ -48,3 +50,6 @@ function GetXinetdIndent()
   return indent(pnum) + s:count_braces(pnum, 1) * &sw
         \ - s:count_braces(v:lnum, 0) * &sw
 endfunction
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

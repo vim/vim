@@ -15,6 +15,8 @@ setlocal nosmartindent
 if exists("*GetCSSIndent")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 function s:prevnonblanknoncomment(lnum)
   let lnum = a:lnum
@@ -74,3 +76,6 @@ function GetCSSIndent()
   return indent(pnum) + s:count_braces(pnum, 1) * &sw
         \ - s:count_braces(v:lnum, 0) * &sw
 endfunction
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

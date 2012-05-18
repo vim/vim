@@ -1,6 +1,6 @@
 " Language:	xml
 " Maintainer:	Johannes Zellner <johannes@zellner.org>
-" Last Change:	2009-05-26 00:17:25
+" Last Change:	2012 May 18
 " Notes:	1) does not indent pure non-xml code (e.g. embedded scripts)
 "		2) will be confused by unbalanced tags in comments
 "		or CDATA sections.
@@ -12,12 +12,12 @@ if exists("b:did_indent")
     finish
 endif
 let b:did_indent = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 " [-- local settings (must come before aborting the script) --]
 setlocal indentexpr=XmlIndentGet(v:lnum,1)
 setlocal indentkeys=o,O,*<Return>,<>>,<<>,/,{,}
-
-set cpo-=C
 
 if !exists('b:xml_indent_open')
     let b:xml_indent_open = '.\{-}<\a'
@@ -92,5 +92,8 @@ fun! XmlIndentGet(lnum, use_syntax_check)
 
     return ind
 endfun
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim:ts=8

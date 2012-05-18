@@ -48,6 +48,8 @@ setlocal indentexpr=GetSQLIndent()
 if exists("*GetSQLIndent")
     finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 " List of all the statements that start a new block.
 " These are typically words that start a line.
@@ -381,5 +383,8 @@ function GetSQLIndent()
     " echom 'final - indent ' . ind
     return s:ModuloIndent(ind)
 endfunction
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim:sw=4:

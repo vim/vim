@@ -9,6 +9,8 @@ if exists("b:did_ftplugin")
   finish
 endif
 let b:did_ftplugin = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 "{{{  Indent settings
 " Set shift width for indent
@@ -42,3 +44,6 @@ let b:undo_ftplugin = "setlocal shiftwidth< softtabstop< expandtab<"
 	\ . " formatoptions< comments< textwidth<"
 	\ . "| unlet! b:browsefiler"
 "}}}
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

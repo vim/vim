@@ -23,6 +23,8 @@ setlocal indentkeys+==ENDIF(,ENDFOREACH(,ENDMACRO(,ELSE(,ELSEIF(,ENDWHILE(
 if exists("*CMakeGetIndent")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 fun! CMakeGetIndent(lnum)
   let this_line = getline(a:lnum)
@@ -83,3 +85,6 @@ fun! CMakeGetIndent(lnum)
 
   return ind
 endfun
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

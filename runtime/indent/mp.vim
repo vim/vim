@@ -1,7 +1,7 @@
 " MetaPost indent file
 " Language:	MetaPost
 " Maintainer:	Eugene Minkovskii <emin@mccme.ru>
-" Last Change:	2003 Nov 21
+" Last Change:	2012 May 18
 " Version: 0.1
 " ==========================================================================
 
@@ -56,6 +56,8 @@ setlocal indentkeys+=;,<:>,=if,=for,=def,=end,=else,=fi
 if exists("*GetMetaPostIndent")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 " Auxiliary Definitions: {{{1
 function! MetaNextNonblankNoncomment(pos)
@@ -202,5 +204,8 @@ function! GetMetaPostIndent()
   return ind
 endfunction
 "
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim:sw=2:fdm=marker

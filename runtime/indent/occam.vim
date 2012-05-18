@@ -20,6 +20,8 @@ setlocal indentkeys=o,O,0=:
 if exists("*GetOccamIndent")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 "{{{  Indent definitions
 " Define carriage return indent
@@ -180,3 +182,6 @@ function GetOccamIndent()
 
 endfunction
 "}}}
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	Vim script
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2011 Mar 22
+" Last Change:	2012 May 18
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -16,6 +16,8 @@ setlocal indentkeys+==end,=else,=cat,=fina,=END,0\\
 if exists("*GetVimIndent")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 function GetVimIndent()
   " Find a non-blank line above the current line.
@@ -78,5 +80,8 @@ function GetVimIndent()
 
   return ind
 endfunction
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim:sw=2

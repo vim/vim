@@ -1,6 +1,6 @@
 " IDL (Interactive Data Language) indent file.
 " Language: IDL (ft=idlang)
-" Last change:	2002 Sep 23
+" Last change:	2012 May 18
 " Maintainer: Aleksandar Jelenak <ajelenak AT yahoo.com>
 
 " Only load this indent file when no other was loaded.
@@ -9,8 +9,7 @@ if exists("b:did_indent")
 endif
 let b:did_indent = 1
 
-setlocal indentkeys=o,O,0=endif,0=ENDIF,0=endelse,0=ENDELSE,0=endwhile,
-		    \0=ENDWHILE,0=endfor,0=ENDFOR,0=endrep,0=ENDREP
+setlocal indentkeys=o,O,0=endif,0=ENDIF,0=endelse,0=ENDELSE,0=endwhile,0=ENDWHILE,0=endfor,0=ENDFOR,0=endrep,0=ENDREP
 
 setlocal indentexpr=GetIdlangIndent(v:lnum)
 

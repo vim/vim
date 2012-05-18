@@ -43,36 +43,23 @@ Bug caused by patch 7.3.449. (Alex Afros, May 16)
 Add link to i/OS version on download page:
 http://applidium.com/en/applications/vim/
 
-Patch to fix helptags for multi-byte encoding. (Yasuhiro Matsumoto, 2012 May
-10)
-
 GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
 
-Patch for completefunction. (Mtsushita Shougo, 2012 May 11)
-
 Patch: home_replace() does not work whtn 8.3 filename. (Yasuhiro
 Matsumoto, 2012 Apr 18)  Asked for another version of the patch.
+Again May 18.
 
 Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
 
-Gvim startup hangs in Ubuntu 12.04. (Yasuhiro Matsumoto, 2012 May 2)
-Patch available on github.  Updated May 8 and May 9?.
-
 Spell checking: "zg" doesn't pick up the "ß" character. (Axel Bender, 2012 May
-1)  Christian Brabandt reports a crash when doing something similar. (May 2)
-Fix for this: Christian Brabandt, 2012 May 9.
-
-Patch to avoid a crash when using MEM_PROFILE. (Dominique Pelle, 2012 May 14)
+1)
 
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
 
 Issue 54: document behavior of -complete, also expands arg.
-
-Patch to make ":diffupdate" check for buffers changed outside of Vim.
-(Christian Brabandt, 2012 May 13, update later)
 
 Cursor on wrong line after ":copen". (John Beckett, 2012 Apr 30)
 Fix by Christian Brabandt, 2012 May 2.  But calling changed_window_setting()
@@ -166,9 +153,6 @@ Updated syntax file for ssh_config, maintainer doesn't respond.
 BufWinLeave triggers too late when quitting last window in a tab page. (Lech
 Lorens, 2012 Feb 21)
 
-"fC" doesn't position the cursor correctly when there are concealed
-characters.  Patch by Christian Brabandt, 2011 Oct 11)
-
 Patch for 'transparency' option. (Sergiu Dotenco, 2011 Sep 17)
 Only for MS-Windows.  No documentation.  Do we want this?
 
@@ -184,12 +168,9 @@ Christian Brabandt has another incomplete patch. (2011 Jul 13)
 Also: Alignment in help with tabs gets messed up, esp. at ":help index".
 Probably need to make a tab work like there was no concealing.  Possibly with
 an option.  Like line wrapping works as if there is no concealing.
-
-'cursorline' is drawn incorrectly in diff mode. Patch by Christian Brabandt,
-2012 Apr 2.
-
-'cursorline' works on a text line only.  Add 'cursorscreenline' for
-highlighting the screen line. (Christian Brabandt, 2012 Mar 31)
+Patch by Dominique Pelle, Also fixes "fC" problem.
+    "fC" doesn't position the cursor correctly when there are concealed
+    characters.  Patch by Christian Brabandt, 2011 Oct 11)
 
 With concealed text mouse click doesn't put the cursor in the right position.
 (Herb Sitz)  Fix by Christian Brabandt, 2011 Jun 16.  Doesn't work properly,
@@ -198,6 +179,12 @@ need to make the change in where RET_WIN_BUF_CHARTABSIZE() is called.
 Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
 only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
 21, Ben Fritz, 2010 Sep 14)
+
+'cursorline' is drawn incorrectly in diff mode. Patch by Christian Brabandt,
+2012 Apr 2.
+
+'cursorline' works on a text line only.  Add 'cursorscreenline' for
+highlighting the screen line. (Christian Brabandt, 2012 Mar 31)
 
 Win32: Does building a 64 bit version with VC9 give warnings for int
 conversions? (Mike Williams)
@@ -1121,6 +1108,7 @@ Latest version: 2011 May 18
 8   Windows install with NSIS: make it possible to do a silent install, see
     http://nsis.sourceforge.net/Docs/Chapter4.html#4.12
     Version from Guopeng Wen that does this (2010 Dec 27)
+Alternative: MSI installer: https://github.com/petrkle/vim-msi/
 
 Windows installer should install 32-bit version of right-click handler also on
 64-bit systems. (Brian Cunningham, 2011 Dec 28)

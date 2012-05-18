@@ -5,7 +5,7 @@
 " $Date: 2004/12/09 21:33:52 $
 " $Revision: 1.3 $
 " URL: http://www.djoce.net/page/vim/
-" Last Change:	2004 Sept 14 : removed specific value for tab (sw)
+" Last Change:	2012 May 18
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -37,6 +37,8 @@ let s:inheritance_dent = '\s*\(redefine\|rename\|export\)\>'
 if exists("*GetEiffelIndent")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 function GetEiffelIndent()
 
@@ -102,5 +104,8 @@ function GetEiffelIndent()
 
   return ind
 endfunction
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim:sw=2

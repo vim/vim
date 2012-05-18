@@ -10,6 +10,8 @@ endif
 
 " Don't load another plugin for this buffer
 let b:did_ftplugin = 1
+let s:keepcpo= &cpo
+set cpo&vim
 
 " Set 'formatoptions' to break comment lines but not other lines,
 " and insert the comment leader when hitting <CR> or using "o".
@@ -22,3 +24,6 @@ if has("gui_win32") && !exists("b:browsefilter")
     let b:browsefilter = "C# Source Files (*.cs)\t*.cs\n" .
 		       \ "All Files (*.*)\t*.*\n"
 endif
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

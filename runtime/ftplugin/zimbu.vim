@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Zimbu
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 May 17
+" Last Change:	2012 May 18
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -15,7 +15,7 @@ let b:did_ftplugin = 1
 let s:cpo_save = &cpo
 set cpo-=C
 
-let b:undo_ftplugin = "setl fo< com< ofu< | if has('vms') | setl isk< | endif"
+let b:undo_ftplugin = "setl fo< com< ofu< efm< tw< et< sts< sw< | if has('vms') | setl isk< | endif"
 
 " Set 'formatoptions' to break comment lines but not other lines,
 " and insert the comment leader when hitting <CR> or using "o".

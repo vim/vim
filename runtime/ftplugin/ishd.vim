@@ -8,6 +8,8 @@ let b:did_ftplugin = 1
 
 setlocal foldmethod=syntax
 
+" Using line continuation here.
+let s:cpo_save = &cpo
 set cpo-=C
 
 " matchit support
@@ -26,3 +28,6 @@ if has("gui_win32") && !exists("b:browsefilter")
     let b:browsefilter = "InstallShield Files (*.rul)\t*.rul\n" .
 		       \ "All Files (*.*)\t*.*\n"
 endif
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

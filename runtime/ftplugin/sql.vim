@@ -2,7 +2,7 @@
 " Language:    SQL (Common for Oracle, Microsoft SQL Server, Sybase)
 " Version:     8.0
 " Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
-" Last Change: 2012 Mar 11
+" Last Change: 2012 May 18
 " Download:    http://vim.sourceforge.net/script.php?script_id=454
 
 " For more details please use:
@@ -67,7 +67,7 @@ if exists("b:did_ftplugin")
 endif
 
 let s:save_cpo = &cpo
-set cpo=
+set cpo&vim
 
 " Disable autowrapping for code, but enable for comments
 " t	Auto-wrap text using textwidth

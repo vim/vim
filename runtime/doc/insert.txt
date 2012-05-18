@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.3.  Last change: 2012 Apr 20
+*insert.txt*    For Vim version 7.3.  Last change: 2012 May 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1017,9 +1017,13 @@ The function must return the column where the completion starts.  It must be a
 number between zero and the cursor column "col('.')".  This involves looking
 at the characters just before the cursor and including those characters that
 could be part of the completed item.  The text between this column and the
-cursor column will be replaced with the matches.  Return -1 if no completion
-can be done, the completion will be cancelled with an error message.  Return
--2 to cancel silently.
+cursor column will be replaced with the matches.
+
+Special return values:
+   -1 If no completion can be done, the completion will be cancelled with an
+      error message.
+   -2 To cancel silently and stay in completion mode.
+   -3 To cancel silently and leave completion mode.
 
 On the second invocation the arguments are:
    a:findstart  0

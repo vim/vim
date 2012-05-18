@@ -2,7 +2,7 @@
 " Language:	Java
 " Previous Maintainer: Toby Allsopp <toby.allsopp@peace.com>
 " Current Maintainer: Hong Xu <xuhdev@gmail.com>
-" Last Change:	2012 Jan 20
+" Last Change:	2012 May 18
 " Version: 1.0
 " License: Same as Vim.
 " Copyright (c) 2012 Hong Xu
@@ -29,6 +29,8 @@ let b:undo_indent = "set cin< cino< indentkeys< indentexpr<"
 if exists("*GetJavaIndent")
   finish
 endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 function! SkipJavaBlanksAndComments(startline)
   let lnum = a:startline
@@ -138,5 +140,8 @@ function GetJavaIndent()
 
   return theIndent
 endfunction
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vi: sw=2 et
