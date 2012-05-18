@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:	Scheme (R5RS + some R6RS extras)
-" Last Change:	2012 Feb 04
+" Last Change:	2012 May 13
 " Maintainer:	Sergey Khorev <sergey.khorev@gmail.com>
 " Original author:	Dirk van Deun <dirk@igwe.vub.ac.be>
 
@@ -157,11 +157,11 @@ syn region schemeStruc matchgroup=Delimiter start="\[" matchgroup=Delimiter end=
 syn region schemeStruc matchgroup=Delimiter start="#\[" matchgroup=Delimiter end="\]" contains=ALL
 
 " Simple literals:
-syn region schemeString start=+\%(\\\)\@<!"+ skip=+\\[\\"]+ end=+"+
+syn region schemeString start=+\%(\\\)\@<!"+ skip=+\\[\\"]+ end=+"+ contains=@Spell
 
 " Comments:
 
-syn match	schemeComment	";.*$"
+syn match	schemeComment	";.*$" contains=@Spell
 
 
 " Writing out the complete description of Scheme numerals without
@@ -192,7 +192,7 @@ syn match schemeCharacter "#\\x[0-9a-fA-F]\+"
 if exists("b:is_mzscheme") || exists("is_mzscheme")
     " MzScheme extensions
     " multiline comment
-    syn region	schemeComment start="#|" end="|#"
+    syn region	schemeComment start="#|" end="|#" contains=@Spell
 
     " #%xxx are the special MzScheme identifiers
     syn match schemeOther "#%[-a-z!$%&*/:<=>?^_~0-9+.@#%]\+"
@@ -250,7 +250,7 @@ endif
 
 if exists("b:is_chicken") || exists("is_chicken")
     " multiline comment
-    syntax region schemeMultilineComment start=/#|/ end=/|#/ contains=schemeMultilineComment
+    syntax region schemeMultilineComment start=/#|/ end=/|#/ contains=@Spell,schemeMultilineComment
 
     syn match schemeOther "##[-a-z!$%&*/:<=>?^_~0-9+.@#%]\+"
     syn match schemeExtSyntax "#:[-a-z!$%&*/:<=>?^_~0-9+.@#%]\+"
@@ -265,7 +265,7 @@ if exists("b:is_chicken") || exists("is_chicken")
     syn keyword schemeExtFunc ##core#inline ##sys#error ##sys#update-errno
 
     " here-string
-    syn region schemeString start=+#<<\s*\z(.*\)+ end=+^\z1$+
+    syn region schemeString start=+#<<\s*\z(.*\)+ end=+^\z1$+ contains=@Spell
 
     if filereadable(expand("<sfile>:p:h")."/cpp.vim")
 	unlet! b:current_syntax
@@ -285,7 +285,7 @@ if exists("b:is_chicken") || exists("is_chicken")
 
     " suggested by Alex Queiroz
     syn match schemeExtSyntax "#![-a-z!$%&*/:<=>?^_~0-9+.@#%]\+"
-    syn region schemeString start=+#<#\s*\z(.*\)+ end=+^\z1$+
+    syn region schemeString start=+#<#\s*\z(.*\)+ end=+^\z1$+ contains=@Spell
 endif
 
 " Synchronization and the wrapping up...

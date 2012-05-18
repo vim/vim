@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.3.  Last change: 2011 Nov 26
+*pattern.txt*   For Vim version 7.3.  Last change: 2012 May 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -637,10 +637,10 @@ overview.
 							*/\@!*
 \@!	Matches with zero width if the preceding atom does NOT match at the
 	current position. |/zero-width| {not in Vi}
-	Like '(?!pattern)" in Perl.
+	Like "(?!pattern)" in Perl.
 	Example			matches ~
 	foo\(bar\)\@!		any "foo" not followed by "bar"
-	a.\{-}p\@!		"a", "ap", "aap", "app", etc. not immediately
+	a.\{-}p\@!		"a", "ap", "app", "appp", etc. not immediately
 				followed by a "p"
 	if \(\(then\)\@!.\)*$	"if " not followed by "then"
 
@@ -648,7 +648,7 @@ overview.
 	does not match.  "a.*p\@!" will match from an "a" to the end of the
 	line, because ".*" can match all characters in the line and the "p"
 	doesn't match at the end of the line.  "a.\{-}p\@!" will match any
-	"a", "ap", "aap", etc. that isn't followed by a "p", because the "."
+	"a", "ap", "app", etc. that isn't followed by a "p", because the "."
 	can match a "p" and "p\@!" doesn't match after that.
 
 	You can't use "\@!" to look for a non-match before the matching
@@ -667,7 +667,7 @@ overview.
 							*/\@<=*
 \@<=	Matches with zero width if the preceding atom matches just before what
 	follows. |/zero-width| {not in Vi}
-	Like '(?<=pattern)" in Perl, but Vim allows non-fixed-width patterns.
+	Like "(?<=pattern)" in Perl, but Vim allows non-fixed-width patterns.
 	Example			matches ~
 	\(an\_s\+\)\@<=file	"file" after "an" and white space or an
 				end-of-line
@@ -691,7 +691,7 @@ overview.
 	before what follows.  Thus this matches if there is no position in the
 	current or previous line where the atom matches such that it ends just
 	before what follows.  |/zero-width| {not in Vi}
-	Like '(?<!pattern)" in Perl, but Vim allows non-fixed-width patterns.
+	Like "(?<!pattern)" in Perl, but Vim allows non-fixed-width patterns.
 	The match with the preceding atom is made to end just before the match
 	with what follows, thus an atom that ends in ".*" will work.
 	Warning: This can be slow (because many positions need to be checked

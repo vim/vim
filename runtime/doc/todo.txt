@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 May 01
+*todo.txt*      For Vim version 7.3.  Last change: 2012 May 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,20 +34,36 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-patch to fix helphelp.txt from Ken Takata.  https://gist.github.com/2559599
-
 Go through more coverity reports.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
-Stack trace of crash: http://vpaste.net/GBt9S
-(Alexandre Provencio)
+Bug caused by patch 7.3.449. (Alex Afros, May 16)
+
+Add link to i/OS version on download page:
+http://applidium.com/en/applications/vim/
+
+Patch to fix helptags for multi-byte encoding. (Yasuhiro Matsumoto, 2012 May
+10)
 
 GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
 
+Patch for completefunction. (Mtsushita Shougo, 2012 May 11)
+
 Patch: home_replace() does not work whtn 8.3 filename. (Yasuhiro
 Matsumoto, 2012 Apr 18)  Asked for another version of the patch.
+
+Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
+
+Gvim startup hangs in Ubuntu 12.04. (Yasuhiro Matsumoto, 2012 May 2)
+Patch available on github.  Updated May 8 and May 9?.
+
+Spell checking: "zg" doesn't pick up the "ß" character. (Axel Bender, 2012 May
+1)  Christian Brabandt reports a crash when doing something similar. (May 2)
+Fix for this: Christian Brabandt, 2012 May 9.
+
+Patch to avoid a crash when using MEM_PROFILE. (Dominique Pelle, 2012 May 14)
 
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
@@ -55,7 +71,12 @@ Stocker, 2012 Jan 5)
 
 Issue 54: document behavior of -complete, also expands arg.
 
+Patch to make ":diffupdate" check for buffers changed outside of Vim.
+(Christian Brabandt, 2012 May 13, update later)
+
 Cursor on wrong line after ":copen". (John Beckett, 2012 Apr 30)
+Fix by Christian Brabandt, 2012 May 2.  But calling changed_window_setting()
+would be a simpler solution.
 
 Syntax update problem in one buffer opened in two windows, bottom window is
 not correctly updated. (Paul Harris, 2012 Feb 27)
@@ -71,6 +92,13 @@ URXVT:
 - will get stuck if byte sequence does not containe expected semicolon.
 - Use urxvt mouse support also in xterm.  Explanations:
   http://www.midnight-commander.org/ticket/2662
+
+Patches from Debian for python ftplugin. (Thilo Six, 2012 May 6)
+Also patches from Debian for Spanish translations.
+
+Patch for IBM z/OS makefile. (Stephen Bovy, 2012 Apr 26)
+Patch for configure (Stephen Bovy, 2012 Apr 28)
+Updates later. Context diff May 7.
 
 When running Vim in silent ex mode, an existing swapfile causes Vim to wait
 for a user action without a prompt. (Maarten Billemont, 2012 Feb 3)
@@ -106,8 +134,8 @@ Patch Sep 18.
 Patch for has('unnamedplus') docs. (Tony Mechelynck, 2011 Sep 27)
 And one for gui_x11.txt.
 
-Patch for Python: add pyeval()(zyx, 2012 Apr 15, update Apr 16)
-Also changes for Lua.  Update Apr 19.  Update Apr 22.
+Patch for Python: add pyeval() and vim.bindeval() (zyx, 2012 Apr 15, update
+Apr 16) Also changes for Lua.  Update Apr 19.  Update Apr 22.
 
 ":cd" doesn't work when current directory path contains "**".
 finddir() has the same problem.  (Yukihiro Nakadaira, 2012 Jan 10)
@@ -153,6 +181,9 @@ Needs more work.  Pinged 2012 Jan 4.
 'list' is set.  (Dennis Preiser)
 Patch 7.3.116 was the wrong solution.
 Christian Brabandt has another incomplete patch. (2011 Jul 13)
+Also: Alignment in help with tabs gets messed up, esp. at ":help index".
+Probably need to make a tab work like there was no concealing.  Possibly with
+an option.  Like line wrapping works as if there is no concealing.
 
 'cursorline' is drawn incorrectly in diff mode. Patch by Christian Brabandt,
 2012 Apr 2.
@@ -270,10 +301,6 @@ it: Pablo Contreras, 2010 Oct 12  Windows XP and 7.  Font is never freed?
 When setting a local option value from the global value, add a script ID that
 indicates this, so that ":verbose set" can give a hint.  Check with options in
 the help file.
-
-Patch for IBM z/OS makefile. (Stephen Bovy, 2012 Apr 26)
-Patch for configure (Stephen Bovy, 2012 Apr 28)
-Updates later.
 
 After patch 7.3.097 still get E15. (Yukihiro Nakadaira, 2011 Jan 18)
 Also for another example (ZyX, 2011 Jan 24)

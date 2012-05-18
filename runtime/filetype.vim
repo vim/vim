@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 Apr 18
+" Last Change:	2012 May 18
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1842,7 +1842,7 @@ au BufNewFile,BufRead .zsh*,.zlog*,.zcompdump*  call s:StarSetf('zsh')
 au BufNewFile,BufRead *.zsh			setf zsh
 
 " Scheme
-au BufNewFile,BufRead *.scm,*.ss		setf scheme
+au BufNewFile,BufRead *.scm,*.ss,*.rkt		setf scheme
 
 " Screen RC
 au BufNewFile,BufRead .screenrc,screenrc	setf screen
@@ -2370,6 +2370,9 @@ au BufNewFile,BufRead *.yaml,*.yml		setf yaml
 
 " yum conf (close enough to dosini)
 au BufNewFile,BufRead */etc/yum.conf 		setf dosini
+
+" Zimbu
+au BufNewFile,BufRead *.zu 			setf zimbu
 
 " Zope
 "   dtml (zope dynamic template markup language), pt (zope page template),

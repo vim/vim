@@ -92,7 +92,8 @@ map <Esc><Space> <Space>
 fun! s:NextPage()
   if line(".") == line("$")
     if argidx() + 1 >= argc()
-      quit
+      " Don't quit at the end of the last file
+      return
     endif
     next
     1

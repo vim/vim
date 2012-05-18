@@ -5,7 +5,7 @@
 " License: This file can be redistribued and/or modified under the same terms
 "   as Vim itself.
 " Filenames: /tmp/crontab.* used by "crontab -e"
-" Last Change: 2011-04-21
+" Last Change: 2012-05-16
 "
 " crontab line format:
 " Minutes   Hours   Days   Months   Days_of_Week   Commands # comments
@@ -22,16 +22,14 @@ syntax match crontabMin "^\s*[-0-9/,.*]\+" nextgroup=crontabHr skipwhite
 syntax match crontabHr "\s[-0-9/,.*]\+" nextgroup=crontabDay skipwhite contained
 syntax match crontabDay "\s[-0-9/,.*]\+" nextgroup=crontabMnth skipwhite contained
 
-syntax case ignore
 syntax match crontabMnth "\s[-a-z0-9/,.*]\+" nextgroup=crontabDow skipwhite contained
 syntax keyword crontabMnth12 contained jan feb mar apr may jun jul aug sep oct nov dec
 
 syntax match crontabDow "\s[-a-z0-9/,.*]\+" nextgroup=crontabCmd skipwhite contained
 syntax keyword crontabDow7 contained sun mon tue wed thu fri sat
 
-syntax case match
 syntax region crontabCmd start="\S" end="$" skipwhite contained keepend contains=crontabPercent
-syntax match crontabCmnt "^\s*#.*"
+syntax match crontabCmnt "^\s*#.*" contains=@Spell
 syntax match crontabPercent "[^\\]%.*"lc=1 contained
 
 syntax match crontabNick "^\s*@\(reboot\|yearly\|annually\|monthly\|weekly\|daily\|midnight\|hourly\)\>" nextgroup=crontabCmd skipwhite

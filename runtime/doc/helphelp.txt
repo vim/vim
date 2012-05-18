@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 7.3.  Last change: 2010 Sep 14
+*helphelp.txt*	For Vim version 7.3.  Last change: 2012 May 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -218,11 +218,12 @@ files.  Vim will search for all help in "doc" directories in 'runtimepath'.
 This is only available when compiled with the |+multi_lang| feature.
 
 At this moment translations are available for:
-	Chinese - multiple authors
-	French  - translated by David Blanchet
-	Italian - translated by Antonio Colombo
-	Polish  - translated by Mikolaj Machowski
-	Russian - translated by Vassily Ragosin
+	Chinese  - multiple authors
+	French   - translated by David Blanchet
+	Italian  - translated by Antonio Colombo
+	Japanese - multiple authors
+	Polish   - translated by Mikolaj Machowski
+	Russian  - translated by Vassily Ragosin
 See the Vim website to find them: http://www.vim.org/translations.php
 
 A set of translated help files consists of these files:

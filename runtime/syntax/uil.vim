@@ -1,9 +1,8 @@
 " Vim syntax file
 " Language:	Motif UIL (User Interface Language)
 " Maintainer:	Thomas Koehler <jean-luc@picard.franken.de>
-" Last Change:	2009 Dec 04
+" Last Change:	2012 May 14
 " URL:		http://gott-gehabt.de/800_wer_wir_sind/thomas/Homepage/Computer/vim/syntax/uil.vim
-
 
 " Quit when a syntax file was already loaded
 if version < 600
@@ -21,22 +20,22 @@ syn keyword uilType	user_defined	xbitmapfile
 
 syn keyword uilTodo contained	TODO
 
-" String and Character contstants
+" String and Character constants
 " Highlight special characters (those which have a backslash) differently
 syn match   uilSpecial contained "\\\d\d\d\|\\."
-syn region  uilString		start=+"+  skip=+\\\\\|\\"+  end=+"+  contains=uilSpecial
+syn region  uilString		start=+"+  skip=+\\\\\|\\"+  end=+"+  contains=@Spell,uilSpecial
 syn match   uilCharacter	"'[^\\]'"
-syn region  uilString		start=+'+  skip=+\\\\\|\\"+  end=+'+  contains=uilSpecial
+syn region  uilString		start=+'+  skip=+\\\\\|\\"+  end=+'+  contains=@Spell,uilSpecial
 syn match   uilSpecialCharacter	"'\\.'"
 syn match   uilSpecialStatement	"Xm[^ =(){}]*"
 syn match   uilSpecialFunction	"MrmNcreateCallback"
 syn match   uilRessource	"XmN[^ =(){}]*"
 
 syn match  uilNumber		"-\=\<\d*\.\=\d\+\(e\=f\=\|[uU]\=[lL]\=\)\>"
-syn match  uilNumber		"0[xX][0-9a-fA-F]\+\>"
+syn match  uilNumber		"0[xX]\x\+\>"
 
-syn region uilComment		start="/\*"  end="\*/" contains=uilTodo
-syn match  uilComment		"!.*" contains=uilTodo
+syn region uilComment		start="/\*"  end="\*/" contains=@Spell,uilTodo
+syn match  uilComment		"!.*" contains=@Spell,uilTodo
 syn match  uilCommentError	"\*/"
 
 syn region uilPreCondit		start="^#\s*\(if\>\|ifdef\>\|ifndef\>\|elif\>\|else\>\|endif\>\)"  skip="\\$"  end="$" contains=uilComment,uilString,uilCharacter,uilNumber,uilCommentError

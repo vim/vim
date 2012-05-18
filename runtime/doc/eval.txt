@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2012 Apr 30
+*eval.txt*	For Vim version 7.3.  Last change: 2012 May 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2317,7 +2317,7 @@ col({expr})	The result is a Number, which is the byte index of the column
 		position given with {expr}.  The accepted positions are:
 		    .	    the cursor position
 		    $	    the end of the cursor line (the result is the
-			    number of characters in the cursor line plus one)
+			    number of bytes in the cursor line plus one)
 		    'x	    position of mark x (if the mark is not set, 0 is
 			    returned)
 		Additionally {expr} can be [lnum, col]: a |List| with the line
@@ -4874,7 +4874,7 @@ search({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*search()*
 		A zero value is equal to not giving the argument.
 
 		When the {timeout} argument is given the search stops when
-		more than this many milli seconds have passed.	Thus when
+		more than this many milliseconds have passed.	Thus when
 		{timeout} is 500 the search stops after half a second.
 		The value must not be negative.  A zero value is like not
 		giving the argument.

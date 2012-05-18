@@ -1,4 +1,4 @@
-*os_win32.txt*  For Vim version 7.3.  Last change: 2011 Aug 14
+*os_win32.txt*  For Vim version 7.3.  Last change: 2012 May 18
 
 
 		  VIM REFERENCE MANUAL    by George Reilly
@@ -314,8 +314,8 @@ A. When using :! to run an external command, you can run it with "start": >
    not have to be closed before Vim.
    To avoid this special treatment, use ":! start".
    There are two optional arguments (see the next Q):
-       /min  the window will be minimized.
-       /b"   no console window will be opened
+       /min  the window will be minimized
+       /b    no console window will be opened
    You can use only one of these flags at a time.  A second one will be
    treated as the start of the command.
 

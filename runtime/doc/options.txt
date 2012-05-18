@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2012 Apr 28
+*options.txt*	For Vim version 7.3.  Last change: 2012 May 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1046,6 +1046,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Watch out for special characters, see |option-backslash|.
 	When $TMPDIR, $TMP or $TEMP is not defined, it is not used for the
 	default value.  "/tmp/*" is only used for Unix.
+
+	WARNING: Not having a backup file means that when Vim fails to write
+	your buffer correctly and then, for whatever reason, Vim exits, you
+	lose both the original file and what you were writing.  Only disable
+	backups if you don't care about losing the file.
 
 	Note that environment variables are not expanded.  If you want to use
 	$HOME you must expand it explicitly, e.g.: >
@@ -8140,8 +8145,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 	Make a backup before overwriting a file.  The backup is removed after
 	the file was successfully written, unless the 'backup' option is
-	also on.  Reset this option if your file system is almost full.  See
-	|backup-table| for another explanation.
+	also on.
+	WARNING: Switching this option off means that when Vim fails to write
+	your buffer correctly and then, for whatever reason, Vim exits, you
+	lose both the original file and what you were writing.  Only reset
+	this option if your file system is almost full and it makes the write
+	fail (and make sure not to exit Vim until the write was successful).
+	See |backup-table| for another explanation.
 	When the 'backupskip' pattern matches, a backup is not made anyway.
 	NOTE: This option is set to the default value when 'compatible' is
 	set.

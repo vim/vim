@@ -2,9 +2,9 @@
 " Language: resolver configuration file
 " Maintainer: David Necas (Yeti) <yeti@physics.muni.cz>
 " Original Maintaner: Radu Dineiu <littledragon@altern.org>
-" License: This file can be redistribued and/or modified under the same terms
+" License: This file can be redistributed and/or modified under the same terms
 "   as Vim itself.
-" Last Change: 2012-02-21
+" Last Change: 2012-05-15
 
 if version < 600
 	syntax clear
@@ -14,7 +14,7 @@ endif
 
 " Errors, comments and operators
 syn match resolvError /./
-syn match resolvComment /\s*[#;].*$/
+syn match resolvComment /\s*[#;].*$/ contains=@Spell
 syn match resolvOperator /[\/:]/ contained
 
 " IP
@@ -25,8 +25,7 @@ syn match resolvIPSpecial /\%(127\.\d\{1,3}\.\d\{1,3}\.\d\{1,3}\)/ contained
 " General
 syn match resolvIP contained /\%(\d\{1,4}\.\)\{3}\d\{1,4}/ contains=@resolvIPCluster
 syn match resolvIPNetmask contained /\%(\d\{1,4}\.\)\{3}\d\{1,4}\%(\/\%(\%(\d\{1,4}\.\)\{,3}\d\{1,4}\)\)\?/ contains=resolvOperator,@resolvIPCluster
-syn match resolvHostname contained /\w\{-}\.[-0-9A-Za-z_.]*/
-syn match resolvDomainname contained /[-0-9A-Za-z_.]\+/
+syn match resolvHostname contained /\w\{-}\.[-0-9A-Za-z_\.]*/
 
 " Particular
 syn match resolvIPNameserver contained /\%(\%(\d\{1,4}\.\)\{3}\d\{1,4}\%(\s\|$\)\)\+/ contains=@resolvIPCluster
@@ -36,7 +35,7 @@ syn match resolvIPNetmaskSortList contained /\%(\%(\d\{1,4}\.\)\{3}\d\{1,4}\%(\/
 " Identifiers
 syn match resolvNameserver /^\s*nameserver\>/ nextgroup=resolvIPNameserver skipwhite
 syn match resolvLwserver /^\s*lwserver\>/ nextgroup=resolvIPNameserver skipwhite
-syn match resolvDomain /^\s*domain\>/ nextgroup=resolvDomainname skipwhite
+syn match resolvDomain /^\s*domain\>/ nextgroup=resolvHostname skipwhite
 syn match resolvSearch /^\s*search\>/ nextgroup=resolvHostnameSearch skipwhite
 syn match resolvSortList /^\s*sortlist\>/ nextgroup=resolvIPNetmaskSortList skipwhite
 syn match resolvOptions /^\s*options\>/ nextgroup=resolvOption skipwhite
@@ -61,7 +60,6 @@ if version >= 508 || !exists("did_config_syntax_inits")
 	HiLink resolvIP Number
 	HiLink resolvIPNetmask Number
 	HiLink resolvHostname String
-	HiLink resolvDomainname String
 	HiLink resolvOption String
 
 	HiLink resolvIPNameserver Number

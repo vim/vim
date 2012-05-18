@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	awk, nawk, gawk, mawk
 " Maintainer:	Antonio Colombo <azc100@gmail.com>
-" Last Change:	2012 Jan 31
+" Last Change:	2012 May 18
 
 " AWK  ref.  is: Alfred V. Aho, Brian W. Kernighan, Peter J. Weinberger
 " The AWK Programming Language, Addison-Wesley, 1988
@@ -90,7 +90,7 @@ syn match   awkRegExp	contained "[?.*{}|+]"
 
 " String and Character constants
 " Highlight special characters (those which have a backslash) differently
-syn region  awkString	start=+"+  skip=+\\\\\|\\"+  end=+"+  contains=awkSpecialCharacter,awkSpecialPrintf
+syn region  awkString	start=+"+  skip=+\\\\\|\\"+  end=+"+  contains=@Spell,awkSpecialCharacter,awkSpecialPrintf
 syn match   awkSpecialCharacter contained "\\."
 
 " Some of these combinations may seem weird, but they work.
@@ -132,7 +132,7 @@ syn case match
 " Put this above those to override them.
 " Put this in a 'match "\<printf\=\>.*;\="' to make it not override
 " less/greater than (most of the time), but it won't work yet because
-" keywords allways have precedence over match & region.
+" keywords always have precedence over match & region.
 " File I/O: (print foo, bar > "filename") & for nawk (getline < "filename")
 "syn match  awkFileIO		contained ">"
 "syn match  awkFileIO		contained "<"
@@ -141,7 +141,7 @@ syn case match
 syn match  awkSemicolon	";"
 syn match  awkComma		","
 
-syn match  awkComment	"#.*" contains=awkTodo
+syn match  awkComment	"#.*" contains=@Spell,awkTodo
 
 syn match  awkLineSkip	"\\$"
 
@@ -158,7 +158,7 @@ syn sync ccomment awkArray maxlines=10
 
 " define the default highlighting
 " For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlightling yet
+" For version 5.8 and later: only when an item doesn't have highlighting yet
 if version >= 508 || !exists("did_awk_syn_inits")
   if version < 508
     let did_awk_syn_inits = 1
