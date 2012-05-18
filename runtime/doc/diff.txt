@@ -178,7 +178,7 @@ buffer.  If you don't want a buffer to remain used for the diff do ":set
 nodiff" before hiding it.
 
 							*:diffu* *:diffupdate*
-:diffu[pdate]			Update the diff highlighting and folds.
+:diffu[pdate][!]		Update the diff highlighting and folds.
 
 Vim attempts to keep the differences updated when you make changes to the
 text.  This mostly takes care of inserted and deleted lines.  Changes within a
@@ -187,6 +187,9 @@ To force the differences to be updated use: >
 
 	:diffupdate
 
+If the ! is included Vim will check if the file was changed externally and
+needs to be reloaded.  It will prompt for each changed file, like `:checktime`
+was used.
 
 Vim will show filler lines for lines that are missing in one window but are
 present in another.  These lines were inserted in another file or deleted in

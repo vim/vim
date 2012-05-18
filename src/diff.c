@@ -783,6 +783,15 @@ ex_diffupdate(eap)
 	goto theend;
     }
 
+    /* :diffupdate! */
+    if (eap != NULL && eap->forceit)
+	for (idx_new = idx_orig; idx_new < DB_COUNT; ++idx_new)
+	{
+	    buf = curtab->tp_diffbuf[idx_new];
+	    if (buf_valid(buf))
+		buf_check_timestamp(buf, FALSE);
+	}
+
     /* Write the first buffer to a tempfile. */
     buf = curtab->tp_diffbuf[idx_orig];
     if (diff_write(buf, tmp_orig) == FAIL)
