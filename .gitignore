@@ -46,6 +46,7 @@ gvimext.lib
 src/po/*.ck 
 src/testdir/mbyte.vim 
 src/testdir/mzscheme.vim 
+src/testdir/lua.vim 
 src/testdir/small.vim 
 src/testdir/tiny.vim 
 src/testdir/test*.out
