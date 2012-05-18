@@ -5205,9 +5205,17 @@ ins_complete(c)
 	    }
 
 	    /* Return value -2 means the user complete function wants to
-	     * cancel the complete without an error. */
+	     * cancel the complete without an error.
+	     * Return value -3 does the same as -2 and leaves CTRL-X mode.*/
 	    if (col == -2)
 		return FAIL;
+	    if (col == -3)
+	    {
+		ctrl_x_mode = 0;
+		edit_submode = NULL;
+		msg_clr_cmdline();
+		return FAIL;
+	    }
 
 	    /*
 	     * Reset extended parameters of completion, when start new
