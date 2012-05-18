@@ -10191,7 +10191,7 @@ f_extend(argvars, rettv)
 			EMSG2(_("E737: Key already exists: %s"), hi2->hi_key);
 			break;
 		    }
-		    else if (*action == 'f')
+		    else if (*action == 'f' && HI2DI(hi2) != di1)
 		    {
 			clear_tv(&di1->di_tv);
 			copy_tv(&HI2DI(hi2)->di_tv, &di1->di_tv);

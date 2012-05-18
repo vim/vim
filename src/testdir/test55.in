@@ -352,6 +352,24 @@ let l = [0, 1, 2, 3]
 :let dict4copy = deepcopy(dict4)
 :$put =(l == lcopy)
 :$put =(dict4 == dict4copy)
+:"
+:" Pass the same List to extend()
+:let l = [1, 2, 3, 4, 5]
+:call extend(l, l)
+:$put =string(l)
+:"
+:" Pass the same Dict to extend()
+:let d = { 'a': {'b': 'B'}}
+:call extend(d, d)
+:$put =string(d)
+:"
+:" Pass the same Dict to extend() with "error"
+:try
+:  call extend(d, d, "error")
+:catch
+:  $put =v:exception[:15] . v:exception[-1:-1]
+:endtry
+:$put =string(d)
 :endfun
 :"
 :call Test(1, 2, [3, 4], {5: 6})  " This may take a while
