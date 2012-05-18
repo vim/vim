@@ -6535,7 +6535,10 @@ helptags_one(dir, ext, tagfname, add_help_tags)
 	    p1 = vim_strchr(IObuff, '*');	/* find first '*' */
 	    while (p1 != NULL)
 	    {
-		p2 = vim_strchr(p1 + 1, '*');	/* find second '*' */
+		/* Use vim_strbyte() instead of vim_strchr() so that when
+		 * 'encoding' is dbcs it still works, don't find '*' in the
+		 * second byte. */
+		p2 = vim_strbyte(p1 + 1, '*');	/* find second '*' */
 		if (p2 != NULL && p2 > p1 + 1)	/* skip "*" and "**" */
 		{
 		    for (s = p1 + 1; s < p2; ++s)
