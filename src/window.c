@@ -23,6 +23,7 @@ static void win_rotate __ARGS((int, int));
 static void win_totop __ARGS((int size, int flags));
 static void win_equal_rec __ARGS((win_T *next_curwin, int current, frame_T *topfr, int dir, int col, int row, int width, int height));
 static int last_window __ARGS((void));
+static int close_last_window_tabpage __ARGS((win_T *win, int free_buf, tabpage_T *prev_curtab));
 static win_T *win_free_mem __ARGS((win_T *win, int *dirp, tabpage_T *tp));
 static frame_T *win_altframe __ARGS((win_T *win, tabpage_T *tp));
 static tabpage_T *alt_tabpage __ARGS((void));
@@ -2105,6 +2106,42 @@ one_window()
 }
 
 /*
+ * Close the possibly last window in a tab page.
+ * Returns TRUE when the window was closed already.
+ */
+    static int
+close_last_window_tabpage(win, free_buf, prev_curtab)
+    win_T	*win;
+    int		free_buf;
+    tabpage_T   *prev_curtab;
+{
+    if (firstwin == lastwin)
+    {
+	/*
+	 * Closing the last window in a tab page.  First go to another tab
+	 * page and then close the window and the tab page.  This avoids that
+	 * curwin and curtab are invalid while we are freeing memory, they may
+	 * be used in GUI events.
+	 */
+	goto_tabpage_tp(alt_tabpage());
+	redraw_tabline = TRUE;
+
+	/* Safety check: Autocommands may have closed the window when jumping
+	 * to the other tab page. */
+	if (valid_tabpage(prev_curtab) && prev_curtab->tp_firstwin == win)
+	{
+	    int	    h = tabline_height();
+
+	    win_close_othertab(win, free_buf, prev_curtab);
+	    if (h != tabline_height())
+		shell_new_rows();
+	}
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
  * Close window "win".  Only works for the current tab page.
  * If "free_buf" is TRUE related buffer may be unloaded.
  *
@@ -2143,29 +2180,11 @@ win_close(win, free_buf)
     }
 #endif
 
-    /*
-     * When closing the last window in a tab page first go to another tab
-     * page and then close the window and the tab page.  This avoids that
-     * curwin and curtab are not invalid while we are freeing memory, they may
-     * be used in GUI events.
-     */
-    if (firstwin == lastwin)
-    {
-	goto_tabpage_tp(alt_tabpage());
-	redraw_tabline = TRUE;
-
-	/* Safety check: Autocommands may have closed the window when jumping
-	 * to the other tab page. */
-	if (valid_tabpage(prev_curtab) && prev_curtab->tp_firstwin == win)
-	{
-	    int	    h = tabline_height();
-
-	    win_close_othertab(win, free_buf, prev_curtab);
-	    if (h != tabline_height())
-		shell_new_rows();
-	}
-	return;
-    }
+    /* When closing the last window in a tab page first go to another tab page
+     * and then close the window and the tab page to avoid that curwin and
+     * curtab are invalid while we are freeing memory. */
+    if (close_last_window_tabpage(win, free_buf, prev_curtab))
+      return;
 
     /* When closing the help window, try restoring a snapshot after closing
      * the window.  Otherwise clear the snapshot, it's now invalid. */
@@ -2225,7 +2244,8 @@ win_close(win, free_buf)
 
     /* Autocommands may have closed the window already, or closed the only
      * other window or moved to another tab page. */
-    if (!win_valid(win) || last_window() || curtab != prev_curtab)
+    if (!win_valid(win) || last_window() || curtab != prev_curtab
+	    || close_last_window_tabpage(win, free_buf, prev_curtab))
 	return;
 
     /* Free the memory used for the window and get the window that received
@@ -2310,7 +2330,7 @@ win_close(win, free_buf)
 
 /*
  * Close window "win" in tab page "tp", which is not the current tab page.
- * This may be the last window ih that tab page and result in closing the tab,
+ * This may be the last window in that tab page and result in closing the tab,
  * thus "tp" may become invalid!
  * Caller must check if buffer is hidden and whether the tabline needs to be
  * updated.
