@@ -102,6 +102,10 @@ gui_start()
     else
 #endif
     {
+	/* If there is 'f' in 'guioptions' and specify -g argument,
+	 * gui_mch_init_check() was not called yet.  */
+	if (gui_mch_init_check() != OK)
+	    exit(1);
 	gui_attempt_start();
     }
 
