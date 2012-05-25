@@ -29,9 +29,9 @@ static int	restart_VIsual_select = 0;
 static void	set_vcount_ca __ARGS((cmdarg_T *cap, int *set_prevcount));
 #endif
 static int
-# ifdef __BORLANDC__
-_RTLENTRYF
-# endif
+#ifdef __BORLANDC__
+    _RTLENTRYF
+#endif
 		nv_compare __ARGS((const void *s1, const void *s2));
 static int	find_command __ARGS((int cmdchar));
 static void	op_colon __ARGS((oparg_T *oap));
