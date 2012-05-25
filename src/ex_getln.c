@@ -5263,7 +5263,7 @@ get_history_arg(xp, idx)
 {
     static char_u compl[2] = { NUL, NUL };
     char *short_names = ":=@>?/";
-    int short_names_count = STRLEN(short_names);
+    int short_names_count = (int)STRLEN(short_names);
     int history_name_count = sizeof(history_names) / sizeof(char *) - 1;
 
     if (idx < short_names_count)
