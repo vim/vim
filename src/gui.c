@@ -102,10 +102,12 @@ gui_start()
     else
 #endif
     {
+#ifdef FEAT_GUI_GTK
 	/* If there is 'f' in 'guioptions' and specify -g argument,
 	 * gui_mch_init_check() was not called yet.  */
 	if (gui_mch_init_check() != OK)
 	    exit(1);
+#endif
 	gui_attempt_start();
     }
 
