@@ -10108,22 +10108,40 @@ get_nolist_virtcol()
 do_insert_char_pre(c)
     int c;
 {
-    char_u *res;
+    char_u	*res;
+#ifdef FEAT_MBYTE
+    char_u	buf[MB_MAXBYTES + 1];
+#else
+    char_u	buf[2];
+#endif
 
     /* Return quickly when there is nothing to do. */
     if (!has_insertcharpre())
 	return NULL;
 
+#ifdef FEAT_MBYTE
+    if (has_mbyte)
+	buf[(*mb_char2bytes)(c, buf)] = NUL;
+    else
+#endif
+    {
+	buf[0] = c;
+	buf[1] = NUL;
+    }
+
     /* Lock the text to avoid weird things from happening. */
     ++textlock;
-    set_vim_var_char(c);  /* set v:char */
+    set_vim_var_string(VV_CHAR, buf, -1);  /* set v:char */
 
+    res = NULL;
     if (apply_autocmds(EVENT_INSERTCHARPRE, NULL, NULL, FALSE, curbuf))
-	/* Get the new value of v:char.  It may be empty or more than one
-	 * character. */
-	res = vim_strsave(get_vim_var_str(VV_CHAR));
-    else
-	res = NULL;
+    {
+	/* Get the value of v:char.  It may be empty or more than one
+	 * character.  Only use it when changed, otherwise continue with the
+	 * original character to avoid breaking autoindent. */
+	if (STRCMP(buf, get_vim_var_str(VV_CHAR)) != 0)
+	    res = vim_strsave(get_vim_var_str(VV_CHAR));
+    }
 
     set_vim_var_string(VV_CHAR, NULL, -1);  /* clear v:char */
     --textlock;
