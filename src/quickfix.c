@@ -247,7 +247,7 @@ qf_init_ext(qi, efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast,
 			{'t', "."},
 			{'m', ".\\+"},
 			{'r', ".*"},
-			{'p', "[- .]*"},
+			{'p', "[- 	.]*"},
 			{'v', "\\d\\+"},
 			{'s', ".\\+"}
 		    };
@@ -677,11 +677,23 @@ restofline:
 		}
 		if ((i = (int)fmt_ptr->addr[7]) > 0)		/* %p */
 		{
+		    char_u	*match_ptr;
+
 		    if (regmatch.startp[i] == NULL || regmatch.endp[i] == NULL)
 			continue;
-		    col = (int)(regmatch.endp[i] - regmatch.startp[i] + 1);
-		    if (*((char_u *)regmatch.startp[i]) != TAB)
-			use_viscol = TRUE;
+		    col = 0;
+		    for (match_ptr = regmatch.startp[i];
+				   match_ptr != regmatch.endp[i]; ++match_ptr)
+		    {
+			++col;
+			if (*match_ptr == TAB)
+			{
+			    col += 7;
+			    col -= col % 8;
+			}
+		    }
+		    ++col;
+		    use_viscol = TRUE;
 		}
 		if ((i = (int)fmt_ptr->addr[8]) > 0)		/* %v */
 		{
