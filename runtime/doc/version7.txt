@@ -9072,7 +9072,7 @@ Patch 7.2.280
 Problem:    A redraw in a custom statusline with %! may cause a crash.
 	    (Yukihiro Nakadaira)
 Solution:   Make a copy of 'statusline'.  Also fix typo in function name
-	    redraw_custum_statusline. (partly by Dominique Pelle)
+	    redraw_custom_statusline. (partly by Dominique Pelle)
 Files:	    src/screen.c
 
 Patch 7.2.281

@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	Vim script
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 May 18
+" Last Change:	2012 May 20
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -11,6 +11,8 @@ let b:did_indent = 1
 
 setlocal indentexpr=GetVimIndent()
 setlocal indentkeys+==end,=else,=cat,=fina,=END,0\\
+
+let b:undo_indent = "setl indentkeys< indentexpr<"
 
 " Only define the function once.
 if exists("*GetVimIndent")
@@ -54,7 +56,7 @@ function GetVimIndent()
     if i >= 0
       let ind += &sw
       if strpart(line, i, 1) == '|' && has('syntax_items')
-            \ && synIDattr(synID(lnum, i, 1), "name") =~ '\(Comment\|String\)$' 
+            \ && synIDattr(synID(lnum, i, 1), "name") =~ '\(Comment\|String\)$'
         let ind -= &sw
       endif
     endif

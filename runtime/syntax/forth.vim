@@ -1,13 +1,13 @@
 " Vim syntax file
 " Language:    FORTH
 " Maintainer:  Christian V. J. Brüssow <cvjb@cvjb.de>
-" Last Change: Sa 07 Jan 2012 21:30:55 CET
+" Last Change: So 27 Mai 2012 15:56:28 CEST
 " Filenames:   *.fs,*.ft
 " URL:	       http://www.cvjb.de/comp/vim/forth.vim
 
-" $Id: forth.vim,v 1.13 2012/01/07 21:31:31 bruessow Exp $
+" $Id: forth.vim,v 1.14 2012/05/27 15:57:22 bruessow Exp $
 
-" The list of keywords is incomplete, compared with the offical ANS
+" The list of keywords is incomplete, compared with the official ANS
 " wordlist. If you use this language, please improve it, and send me
 " the patches.
 "
@@ -16,6 +16,10 @@
 " for forth.vim).
 
 " Many Thanks to...
+"
+" 2012-05-13:
+" Dominique Pellé <dominique dot pelle at gmail dot com> for sending the
+" patch to allow spellchecking of strings, comments, ...
 " 
 " 2012-01-07:
 " Thilo Six <T.Six at gmx dot de> send a patch for cpoptions.
@@ -44,7 +48,7 @@
 " Bill McCarthy <WJMc@...> and Ilya Sher <ilya-vim@...>
 " Who found a bug in the ccomment line in 2004!!!
 " I'm really very sorry, that it has taken two years to fix that
-" in the offical version of this file. Shame on me.
+" in the official version of this file. Shame on me.
 " I think my face will be red the next ten years...
 "
 " 2006-05-21:
@@ -256,22 +260,22 @@ syn match forthInteger '\<%[0-1]*[0-1]\+\>'
 syn match forthFloat '\<-\=\d*[.]\=\d\+[DdEe]\d\+\>'
 syn match forthFloat '\<-\=\d*[.]\=\d\+[DdEe][-+]\d\+\>'
 
-" XXX If you find this overkill you can remove it. this has to come after the
+" XXX If you find this overkill you can remove it. This has to come after the
 " highlighting for numbers otherwise it has no effect.
 syn region forthComment start='0 \[if\]' end='\[endif\]' end='\[then\]' contains=forthTodo
 
 " Strings
-syn region forthString start=+\.*\"+ end=+"+ end=+$+
+syn region forthString start=+\.*\"+ end=+"+ end=+$+ contains=@Spell
 " XXX
-syn region forthString start=+s\"+ end=+"+ end=+$+
-syn region forthString start=+c\"+ end=+"+ end=+$+
+syn region forthString start=+s\"+ end=+"+ end=+$+ contains=@Spell
+syn region forthString start=+c\"+ end=+"+ end=+$+ contains=@Spell
 
 " Comments
-syn match forthComment '\\\s.*$' contains=forthTodo,forthSpaceError
-syn region forthComment start='\\S\s' end='.*' contains=forthTodo,forthSpaceError
-syn match forthComment '\.(\s[^)]*)' contains=forthTodo,forthSpaceError
-syn region forthComment start='\(^\|\s\)\zs(\s' skip='\\)' end=')' contains=forthTodo,forthSpaceError
-syn region forthComment start='/\*' end='\*/' contains=forthTodo,forthSpaceError
+syn match forthComment '\\\s.*$' contains=@Spell,forthTodo,forthSpaceError
+syn region forthComment start='\\S\s' end='.*' contains=@Spell,forthTodo,forthSpaceError
+syn match forthComment '\.(\s[^)]*)' contains=@Spell,forthTodo,forthSpaceError
+syn region forthComment start='\(^\|\s\)\zs(\s' skip='\\)' end=')' contains=@Spell,forthTodo,forthSpaceError
+syn region forthComment start='/\*' end='\*/' contains=@Spell,forthTodo,forthSpaceError
 
 " Include files
 syn match forthInclude '^INCLUDE\s\+\k\+'
@@ -295,7 +299,7 @@ if version >= 508 || !exists("did_forth_syn_inits")
 	command -nargs=+ HiLink hi def link <args>
     endif
 
-    " The default methods for highlighting. Can be overriden later.
+    " The default methods for highlighting. Can be overridden later.
     HiLink forthTodo Todo
     HiLink forthOperators Operator
     HiLink forthMath Number

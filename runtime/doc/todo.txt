@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 May 18
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Jun 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,26 +38,21 @@ Go through more coverity reports.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
-Bug caused by patch 7.3.449. (Alex Afros, May 16)
-
-Add link to i/OS version on download page:
-http://applidium.com/en/applications/vim/
-
 GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
 
 Patch: home_replace() does not work whtn 8.3 filename. (Yasuhiro
 Matsumoto, 2012 Apr 18)  Asked for another version of the patch.
-Again May 18.
+Again May 18.  Update May 29 on github.  Does not handle multi-byte chars.
 
 Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
-
-Spell checking: "zg" doesn't pick up the "ß" character. (Axel Bender, 2012 May
-1)
 
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
+
+Patch for this request: (Lech Lorens, 2012 May 26)
+7   Add 'j' flag to 'formatoptions': Remove comment leader when joining lines.
 
 Issue 54: document behavior of -complete, also expands arg.
 
@@ -75,17 +70,26 @@ Win32: When the taskbar is at the top of the screen creating the tabbar causes
 the window to move unnecessarily. (William E. Skeith III, 2012 Jan 12)
 Patch: 2012 Jan 13  Needs more work (2012 Feb 2)
 
+ml_get error when using syntastic plugin. (Alex Efros, 2012 May 24)
+Probably caused by recursive use of :lclose.
+May also crash Vim (May 25)
+Patch by Christian Brabandt, May 26.  Is this right?
+
+Help for b:undo_indent'. (Thilo Six, 2012 May 28)
+Also question if examples are correct.
+
+Docs patch for BufRead/BufReadPost. (Gary Johnson, 2012 May 28)
+
 URXVT:
 - will get stuck if byte sequence does not containe expected semicolon.
 - Use urxvt mouse support also in xterm.  Explanations:
   http://www.midnight-commander.org/ticket/2662
 
-Patches from Debian for python ftplugin. (Thilo Six, 2012 May 6)
-Also patches from Debian for Spanish translations.
-
 Patch for IBM z/OS makefile. (Stephen Bovy, 2012 Apr 26)
 Patch for configure (Stephen Bovy, 2012 Apr 28)
 Updates later. Context diff May 7.
+
+Patch to support browserfilter for GTK. (Christian Brabandt, 2012 May 22)
 
 When running Vim in silent ex mode, an existing swapfile causes Vim to wait
 for a user action without a prompt. (Maarten Billemont, 2012 Feb 3)
@@ -112,9 +116,6 @@ Patch to list user digraphs. (Christian Brabandt, 2012 Apr 14)
 
 Patch for input method status. (Hirohito Higashi, 2012 Apr 18)
 
-Use a count before "v" and "V" to select that many characters or lines?
-(Kikyous)
-
 Problem with winfixheight and resizing. (Yukihiro Nakadaira, 2011 Sep 17)
 Patch Sep 18.
 
@@ -140,12 +141,17 @@ Patch to pass list to or(), and() and xor(). (Yasuhiro Matsumoto, 2012 Feb 8)
 Patch to improve "it" and "at" text object matching. (Christian Brabandt, 2011
 Nov 20)
 
+Patch to improve GUI find/replace dialog. (Christian Brabandt, 2012 May 26)
+
 Patch to add ":py3do". (Lilydjwg, 2012 Apr 7)
 
 `[ moves to character after insert, instead of the last inserted character.
 (Yukihiro Nakadaira, 2011 Dec 9)
 
 Plugin for Modeleasy. (Massimiliano Tripoli, 2011 Nov 29)
+
+When using remote-silent the -R flag is not passed on. (Axel Bender, 2012 May
+31)
 
 Updated syntax file for ssh_config, maintainer doesn't respond.
 (Leonard Ehrenfried, 2011 Sep 26)
@@ -160,6 +166,8 @@ Patch to support cursor shape in Cygwin console. (Ben bgold, 2011 Dec 27)
 
 Patch to support UTF-8 for Hangul. (Shawn Y.H. Kim, 2011 May 1)
 Needs more work.  Pinged 2012 Jan 4.
+
+Issue 64: when 'incsearch' is on can't paste LF on command line.
 
 'cursorline' is displayed too short when there are concealed characters and
 'list' is set.  (Dennis Preiser)
@@ -3942,7 +3950,6 @@ Insert mode:
 -   Add option to 'cindent' to set indent for comments outside of {}?
 -   Make a command to line up a comment after a code line with a previous
     comment after a code line.	Can 'cindent' do this automatically?
-7   Add 'j' flag to 'formatoptions': Remove comment leader when joining lines.
 -   When 'cindent'ing a '}', showmatch is done before fixing the indent.  It
     looks better when the indent is fixed before the showmatch. (Webb)
 -   Add option to make indenting work in comments too (for commented-out

@@ -1,11 +1,18 @@
 " Vim syntax file
-" Language: 	gnash(1) configuration files
+" Maintainer: 	Thilo Six
+" Contact:	<vim-dev at vim dot org>
+"		http://www.vim.org/maillist.php#vim-dev
+"
+" Description: 	highlight gnash configuration files
 "		http://www.gnu.org/software/gnash/manual/gnashuser.html#gnashrc
-" Maintainer: 	Thilo Six <T.Six@gmx.de>
-" Last Change: 	2011 Dec 11
+" File:		runtime/syntax/gnash.vim
+" Last Change: 	2012 May 19
 " Modeline:	vim: ts=8:sw=2:sts=2:
-" Credidts:	derived from readline.vim
-"		Nikolai Weibull
+"
+" Credits:	derived from Nikolai Weibulls readline.vim
+"
+" License:	VIM License
+"		Vim is Charityware, see ":help Uganda"
 "
 
 " For version 5.x: Clear all syntax items
@@ -20,8 +27,8 @@ syn case match
 syn keyword GnashTodo	    contained TODO FIXME XXX NOTE
 
 " Comments
-syn match   GnashComment    "^#.*$"   contains=GnashTodo
-syn match   GnashComment    "\s#.*$"  contains=GnashTodo
+syn match   GnashComment    "^#.*$"   contains=@Spell,GnashTodo
+syn match   GnashComment    "\s#.*$"  contains=@Spell,GnashTodo
 
 syn match   GnashNumber	    display '\<\d\+\>'
 
@@ -84,7 +91,6 @@ hi def link GnashOn	    Identifier
 hi def link GnashOff	    Preproc
 hi def link GnashComment    Comment
 hi def link GnashTodo	    Todo
-hi def link GnashString	    String
 hi def link GnashNumber	    Type
 hi def link GnashSet	    String
 hi def link GnashKeyword    Keyword

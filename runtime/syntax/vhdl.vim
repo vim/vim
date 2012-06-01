@@ -2,8 +2,8 @@
 " Language:	VHDL
 " Maintainer:	Czo <Olivier.Sirol@lip6.fr>
 " Credits:	Stephan Hegel <stephan.hegel@snc.siemens.com.cn>
-" Last Changed:	2012 Feb 03 by Thilo Six
-" $Id: vhdl.vim,v 1.1 2004/06/13 15:34:56 vimboss Exp $
+" Last Change:	2012 Jun 01
+" 		(Dominique Pelle added @Spell)
 
 " VHSIC Hardware Description Language
 " Very High Scale Integrated Circuit
@@ -57,11 +57,11 @@ syn match   vhdlStatement "\<\(if\|else\)\>"
 syn match   vhdlNone      "\<else\s\+if\>$"
 syn match   vhdlNone      "\<else\s\+if\>\s"
 
-" Predifined VHDL types
+" Predefined VHDL types
 syn keyword vhdlType bit bit_vector
 syn keyword vhdlType character boolean integer real time
 syn keyword vhdlType string severity_level
-" Predifined standard ieee VHDL types
+" Predefined standard ieee VHDL types
 syn keyword vhdlType positive natural signed unsigned
 syn keyword vhdlType line text
 syn keyword vhdlType std_logic std_logic_vector
@@ -129,7 +129,7 @@ syn match  vhdlVector "B\"[01_]\+\""
 syn match  vhdlVector "O\"[0-7_]\+\""
 syn match  vhdlVector "X\"[0-9a-f_]\+\""
 syn match  vhdlCharacter "'.'"
-syn region vhdlString start=+"+  end=+"+
+syn region vhdlString start=+"+  end=+"+ contains=@Spell
 
 " floating numbers
 syn match vhdlNumber "-\=\<\d\+\.\d\+\(E[+\-]\=\d\+\)\>"
@@ -151,7 +151,7 @@ syn match   vhdlSpecial  "[().,;]"
 syn match vhdlTime "\<\d\+\s\+\(\([fpnum]s\)\|\(sec\)\|\(min\)\|\(hr\)\)\>"
 syn match vhdlTime "\<\d\+\.\d\+\s\+\(\([fpnum]s\)\|\(sec\)\|\(min\)\|\(hr\)\)\>"
 
-syn match vhdlComment "--.*$"
+syn match vhdlComment "--.*$" contains=@Spell
 " syn match vhdlGlobal "[\'$#~!%@?\^\[\]{}\\]"
 
 " Define the default highlighting.

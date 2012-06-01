@@ -1,7 +1,8 @@
 " Vim syntax file
 " Language:	bc - An arbitrary precision calculator language
 " Maintainer:	Vladimir Scholtz <vlado@gjh.sk>
-" Last change:	2001 Sep 02
+" Last change:	2012 Jun 01
+" 		(Dominique Pelle added @Spell)
 " Available on:	www.gjh.sk/~vlado/bc.vim
 
 " For version 5.x: Clear all syntax items
@@ -31,14 +32,14 @@ syn keyword bcConstant BC_ENV_ARGS BC_LINE_LENGTH
 syn match bcIdentifier		"[a-z_][a-z0-9_]*"
 
 " String
- syn match bcString		"\"[^"]*\""
+ syn match bcString		"\"[^"]*\"" contains=@Spell
 
 " Number
 syn match bcNumber		"[0-9]\+"
 
 " Comment
-syn match bcComment		"\#.*"
-syn region bcComment		start="/\*" end="\*/"
+syn match bcComment		"\#.*" contains=@Spell
+syn region bcComment		start="/\*" end="\*/" contains=@Spell
 
 " Parent ()
 syn cluster bcAll contains=bcList,bcIdentifier,bcNumber,bcKeyword,bcType,bcConstant,bcString,bcParentError

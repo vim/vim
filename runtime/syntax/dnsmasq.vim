@@ -1,18 +1,21 @@
-" Vim file
-" Maintainer:	Thilo Six <T.Six@gmx.de>
-" Version:	2.60-1
-" Last Change:	2012 Mar 10
-" Modeline:	vim: ts=8:sw=2:sts=2:
+" Vim syntax file
+" Maintainer:	Thilo Six
+" Contact:	<vim-dev at vim dot org>
+"		http://www.vim.org/maillist.php#vim-dev
+"
+" Description:	highlight dnsmasq configuration files
 " File:		runtime/syntax/dnsmasq.vim
+" Version:	2.61-1
+" Last Change:	2012 May 19
+" Modeline:	vim: ts=8:sw=2:sts=2:
 "
 " Credits:	Igor N. Prischepoff
 "		Doug Kearns
 "		David Ne\v{c}as
+"		Christian Brabandt
 "
 " License:	VIM License
-"		see ":help copyright"
-"
-" Description:	highlight dnsmasq configuration files
+"		Vim is Charityware, see ":help Uganda"
 "
 " Options:	You might want to add this to your vimrc:
 "
@@ -51,23 +54,21 @@ syn match   DnsmasqValues   "=.*"hs=s+1 contains=DnsmasqComment,DnsmasqSpecial
 syn match   DnsmasqSpecial  display '=\|@\|,\|!\|:'	  nextgroup=DnsmasqValues
 syn match   DnsmasqSpecial  "#"
 
-syn match   DnsmasqIPv4	    "\(\d\{1,3}\.\)\{3}\d\{1,3}"  nextgroup=DnsmasqSubnet2,DnsmasqRange
-syn match   DnsmasqSubnet   "\<255.\(\d\{1,3}\.\)\{2}\d\{1,3}"
-syn match   DnsmasqSubnet2  contained "\/\(\d\{1,2}\)\>"
+syn match   DnsmasqIPv4	    "\<\(\(25\_[0-5]\|2\_[0-4]\_[0-9]\|\_[01]\?\_[0-9]\_[0-9]\?\)\.\)\{3\}\(25\_[0-5]\|2\_[0-4]\_[0-9]\|\_[01]\?\_[0-9]\_[0-9]\?\)\>"	nextgroup=DnsmasqSubnet2,DnsmasqRange
+syn match   DnsmasqSubnet   "\<255.\(\(25\_[0-5]\|2\_[0-4]\_[0-9]\|\_[01]\?\_[0-9]\_[0-9]\?\)\.\)\{2\}\(25\_[0-5]\|2\_[0-4]\_[0-9]\|\_[01]\?\_[0-9]\_[0-9]\?\)\>"
+syn match   DnsmasqSubnet2  contained "\/\([0-4]\?[0-9]\)\>"
 syn match   DnsmasqRange    contained "-"
 syn match   DnsmasqMac	    "\<\(\x\x\?:\)\{5}\x\x\?"
 
 syn match   DnsmasqTime	    "\<\(\d\{1,3}\)[hm]\>"
 
 " String
-syn match   DnsmasqString   "\".*\""
-syn match   DnsmasqString   "'.*'"
+syn match   DnsmasqString   "\".*\""  contains=@Spell
+syn match   DnsmasqString   "'.*'"    contains=@Spell
 
 " Comments
-syn match   DnsmasqComment  "^#.*$"   contains=DnsmasqTodo
-syn match   DnsmasqComment  "\s#.*$"  contains=DnsmasqTodo
-
 syn keyword DnsmasqTodo	    FIXME TODO XXX NOTE contained
+syn match   DnsmasqComment  "\(^\|\s\+\)#.*$"   contains=@Spell,DnsmasqTodo
 
 " highlight trailing spaces
 syn match   DnsmasqTrailSpace	   "[ \t]\+$"
@@ -109,6 +110,7 @@ syn match DnsmasqKeyword    "^\s*dhcp-boot\>"
 syn match DnsmasqKeyword    "^\s*dhcp-broadcast\>"
 syn match DnsmasqKeyword    "^\s*dhcp-circuitid\>"
 syn match DnsmasqKeyword    "^\s*dhcp-client-update\>"
+syn match DnsmasqKeyword    "^\s*dhcp-duid\>"
 syn match DnsmasqKeyword    "^\s*dhcp-fqdn\>"
 syn match DnsmasqKeyword    "^\s*dhcp-generate-names\>"
 syn match DnsmasqKeyword    "^\s*dhcp-host\>"
@@ -144,6 +146,7 @@ syn match DnsmasqKeyword    "^\s*except-interface\>"
 syn match DnsmasqKeyword    "^\s*expand-hosts\>"
 syn match DnsmasqKeyword    "^\s*filterwin2k\>"
 syn match DnsmasqKeyword    "^\s*group\>"
+syn match DnsmasqKeyword    "^\s*host-record\>"
 syn match DnsmasqKeyword    "^\s*interface\>"
 syn match DnsmasqKeyword    "^\s*interface-name\>"
 syn match DnsmasqKeyword    "^\s*keep-in-foreground\>"
@@ -189,6 +192,7 @@ syn match DnsmasqKeyword    "^\s*strict-order\>"
 syn match DnsmasqKeyword    "^\s*tag-if\>"
 syn match DnsmasqKeyword    "^\s*test\>"
 syn match DnsmasqKeyword    "^\s*tftp-max\>"
+syn match DnsmasqKeyword    "^\s*tftp-lowercase\>"
 syn match DnsmasqKeyword    "^\s*tftp-no-blocksize\>"
 syn match DnsmasqKeyword    "^\s*tftp-port-range\>"
 syn match DnsmasqKeyword    "^\s*tftp-root\>"
@@ -200,11 +204,9 @@ syn match DnsmasqKeyword    "^\s*version\>"
 
 
 if b:dnsmasq_backrgound_light == 1
-    hi def DnsmasqParams	ctermfg=DarkGreen guifg=DarkGreen
     hi def DnsmasqKeyword	ctermfg=DarkGreen guifg=DarkGreen
 else
     hi def link DnsmasqKeyword  Keyword
-    hi def link DnsmasqParams   Keyword
 endif
 hi def link DnsmasqKeywordSpecial Type
 hi def link DnsmasqTodo		Todo

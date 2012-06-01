@@ -1,4 +1,4 @@
-*uganda.txt*    For Vim version 7.3.  Last change: 2010 Aug 07
+*uganda.txt*    For Vim version 7.3.  Last change: 2012 May 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -266,7 +266,7 @@ Credit Card:	You can use PayPal to send money with a Credit card.  This is
 Others:		Transfer to one of these accounts if possible:
 		    Postbank, account 4548774
 				Swift code: INGB NL 2A
-				IBAN: NL47 PSTB 0004 5487 74
+				IBAN: NL95 INGB 0004 5487 74
 			under the name "stichting ICCF Holland", Lisse
 		    If that doesn't work:
 		    Rabobank Lisse, account 3765.05.117

@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	    CSS
 " Maintainer:	    Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2010-12-22
+" Latest Revision:  2012-05-30
 
 if exists("b:did_indent")
   finish
@@ -11,6 +11,8 @@ let b:did_indent = 1
 setlocal indentexpr=GetCSSIndent()
 setlocal indentkeys=0{,0},!^F,o,O
 setlocal nosmartindent
+
+let b:undo_indent = "setl smartindent< indentkeys< indentexpr<"
 
 if exists("*GetCSSIndent")
   finish

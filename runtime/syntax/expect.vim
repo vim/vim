@@ -1,7 +1,8 @@
 " Vim syntax file
 " Language:	Expect
 " Maintainer:	Ralph Jennings <knowbudy@oro.net>
-" Last Change:	2001 May 09
+" Last Change:	2012 Jun 01
+" 		(Dominique Pelle added @Spell)
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -72,11 +73,12 @@ syn case ignore
   "syn match  expectIdentifier	"\<[a-z_][a-z0-9_]*\>"
 syn case match
 
-syn region  expectString	start=+"+  end=+"+  contains=expectVariables,expectSpecial
+syn region  expectString	start=+"+  end=+"+  contains=@Spell,expectVariables,expectSpecial
 
 " Are these really comments in Expect? (I never use it, so I'm just guessing).
 syn keyword expectTodo		contained TODO
-syn match   expectComment		"#.*$" contains=expectTodo
+syn match   expectComment	"#.*$" contains=@Spell,expectTodo
+syn match   expectSharpBang	"\%^#!.*"
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
@@ -89,6 +91,7 @@ if version >= 508 || !exists("did_expect_syntax_inits")
     command -nargs=+ HiLink hi def link <args>
   endif
 
+  HiLink expectSharpBang	PreProc
   HiLink expectVariables	Special
   HiLink expectCommand		Function
   HiLink expectStatement	Statement

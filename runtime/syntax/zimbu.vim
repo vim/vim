@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Zimbu
 " Maintainer:	Bram Moolenaar
-" Last Change:	2012 May 17
+" Last Change:	2012 Jun 01
 
 if exists("b:current_syntax")
   finish

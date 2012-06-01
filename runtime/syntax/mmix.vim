@@ -1,12 +1,13 @@
 " Vim syntax file
 " Language:	MMIX
 " Maintainer:	Dirk Hüsken, <huesken@informatik.uni-tuebingen.de>
-" Last Change:	Wed Apr 24 01:18:52 CEST 2002
+" Last Change:	2012 Jun 01
+" 		(Dominique Pelle added @Spell)
 " Filenames:	*.mms
 " URL: http://homepages.uni-tuebingen.de/student/dirk.huesken/vim/syntax/mmix.vim
 
 " Limitations:	Comments must start with either % or //
-"		(preferrably %, Knuth-Style)
+"		(preferably %, Knuth-Style)
 
 if version < 600
   syntax clear
@@ -23,7 +24,7 @@ syn keyword mmixType	byte wyde tetra octa
 syn match decNumber		"[0-9]*"
 syn match octNumber		"0[0-7][0-7]\+"
 syn match hexNumber		"#[0-9a-fA-F]\+"
-syn region mmixString		start=+"+ skip=+\\"+ end=+"+
+syn region mmixString		start=+"+ skip=+\\"+ end=+"+ contains=@Spell
 syn match mmixChar		"'.'"
 
 " ...and more special MMIX stuff
@@ -40,9 +41,9 @@ syn match mmixLabel		"[0-9][HBF]"
 syn keyword mmixPseudo		is loc greg
 
 " comments
-syn match mmixComment		"%.*"
-syn match mmixComment		"//.*"
-syn match mmixComment		"^\*.*"
+syn match mmixComment		"%.*" contains=@Spell
+syn match mmixComment		"//.*" contains=@Spell
+syn match mmixComment		"^\*.*" contains=@Spell
 
 
 syn keyword mmixOpcode	trap fcmp fun feql fadd fix fsub fixu

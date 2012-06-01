@@ -913,8 +913,8 @@ Basic items
 	%n		error number (finds a number)
 	%m		error message (finds a string)
 	%r		matches the "rest" of a single-line file message %O/P/Q
-	%p		pointer line (finds a sequence of '-', '.' or ' ' and
-			uses the length for the column number)
+	%p		pointer line (finds a sequence of '-', '.', ' ' or
+			tabs and uses the length for the column number)
 	%*{conv}	any scanf non-assignable conversion
 	%%		the single '%' character
 	%s		search text (finds a string)

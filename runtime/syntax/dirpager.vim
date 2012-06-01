@@ -1,11 +1,20 @@
 " Vim syntax file
-" Language:	  directory pager
-" Maintainer:	  Thilo Six <T.Six@gmx.de>
-" Derived From:	  Nikolai Weibulls dircolors.vim
-" Last Change:	  2011 Dec 11
+" Maintainer:	  Thilo Six
+" Contact:	  <vim-dev at vim dot org>
+"		  http://www.vim.org/maillist.php#vim-dev
+"
+" Description:	  display directory content inside Vim with syntax
+"		  highlighting
+" File:		  runtime/syntax/dirpager.vim
+" Last Change:	  2012 May 19
 " Modeline:	  vim: ts=8:sw=2:sts=2:
 "
-" usage: $ ls -la | view -c "set ft=dirpager" -
+" Credits:	  dirpager.vim is derived from Nikolai Weibulls dircolors.vim
+"
+" License:	  VIM License
+"		  Vim is Charityware, see ":help Uganda"
+"
+" Usage:	  $ ls -la | view -c "set ft=dirpager" -
 "
 "
 ",----[ ls(1posix) ]--------------------------------------------------
@@ -19,7 +28,6 @@
 "       l (ell)	Symbolic link.
 "       p	FIFO.
 "       -	Regular file.
-"`--------------------------------------------------------------------
 "
 
 if exists("b:current_syntax") || &compatible

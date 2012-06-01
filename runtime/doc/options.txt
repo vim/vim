@@ -744,7 +744,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	- Reset the 'rightleft' option.
 	- Disable the use of 'keymap' (without changing its value).
 	Note that 'arabicshape' and 'delcombine' are not reset (it is a global
-	option.
+	option).
 	Also see |arabic.txt|.
 
 					*'arabicshape'* *'arshape'*
@@ -2130,7 +2130,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			and the cursor is right in front of the searched
 			character, the cursor won't move. When not included,
 			the cursor would skip over it and jump to the
-			following occurence.
+			following occurrence.
 
 	POSIX flags.  These are not included in the Vi default value, except
 	when $VIM_POSIX was set on startup. |posix|
@@ -6299,7 +6299,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Override the 'ignorecase' option if the search pattern contains upper
 	case characters.  Only used when the search pattern is typed and
 	'ignorecase' option is on.  Used for the commands "/", "?", "n", "N",
-	":g" and ":s".  Not used for "*", "#", "gd", tag search, etc..  After
+	":g" and ":s".  Not used for "*", "#", "gd", tag search, etc.  After
 	"*" and "#" you can make 'smartcase' used by doing a "/" command,
 	recalling the search pattern from history and hitting <Enter>.
 	NOTE: This option is reset when 'compatible' is set.

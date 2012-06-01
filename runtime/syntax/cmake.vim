@@ -4,7 +4,8 @@
 " Language:     CMake
 " Author:       Andy Cedilnik <andy.cedilnik@kitware.com>
 " Maintainer:   Karthik Krishnan <karthik.krishnan@kitware.com>
-" Last Change:  $Date: 2008-08-25 14:31:28 $
+" Last Change:  2012 Jun 01
+" 		(Dominique Pelle added @Spell)
 " Version:      $Revision: 1.10 $
 "
 " Licence:      The CMake license applies to this file. See
@@ -23,7 +24,7 @@ set cpo&vim
 
 syn case ignore
 syn match cmakeEscaped /\(\\\\\|\\"\|\\n\|\\t\)/ contained
-syn region cmakeComment start="#" end="$" contains=cmakeTodo
+syn region cmakeComment start="#" end="$" contains=@Spell,cmakeTodo
 syn region cmakeRegistry start=/\[/ end=/]/
             \ contained oneline contains=CONTAINED,cmakeTodo,cmakeEscaped
 syn region cmakeVariableValue start=/\${/ end=/}/

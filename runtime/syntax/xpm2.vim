@@ -1,7 +1,8 @@
 " Vim syntax file
 " Language:	X Pixmap v2
 " Maintainer:	Steve Wall (hitched97@velnet.com)
-" Last Change:	2012 Feb 03 by Thilo Six
+" Last Change:	2012 Jun 01
+" 		(Dominique Pelle added @Spell)
 " Version:	5.8
 "
 " Made from xpm.vim by Ronald Schild <rs@scutum.de>
@@ -19,7 +20,7 @@ set cpo&vim
 
 syn region  xpm2PixelString	start="^"  end="$"  contains=@xpm2Colors
 syn keyword xpm2Todo		TODO FIXME XXX  contained
-syn match   xpm2Comment		"\!.*$"  contains=xpm2Todo
+syn match   xpm2Comment		"\!.*$"  contains=@Spell,xpm2Todo
 
 
 if version < 508

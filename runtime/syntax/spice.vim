@@ -1,7 +1,8 @@
 " Vim syntax file
 " Language:	Spice circuit simulator input netlist
 " Maintainer:	Noam Halevy <Noam.Halevy.motorola.com>
-" Last Change:	12/08/99
+" Last Change:	2012 Jun 01
+" 		(Dominique Pelle added @Spell)
 "
 " This is based on sh.vim by Lennart Schultz
 " but greatly simplified
@@ -19,8 +20,8 @@ syn case ignore
 
 syn keyword	spiceTodo	contained TODO
 
-syn match spiceComment  "^ \=\*.*$"
-syn match spiceComment  "\$.*$"
+syn match spiceComment  "^ \=\*.*$" contains=@Spell
+syn match spiceComment  "\$.*$" contains=@Spell
 
 " Numbers, all with engineering suffixes and optional units
 "==========================================================
