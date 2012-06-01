@@ -1535,6 +1535,7 @@ write_error:
 	/* For systems that support ACL: get the ACL from the original file. */
 	acl = mch_get_acl(buf->b_ffname);
 	mch_set_acl(file_name, acl);
+	mch_free_acl(acl);
     }
 #endif
 
