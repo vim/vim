@@ -4721,8 +4721,6 @@ spell_free_all()
 	int_wordlist = NULL;
     }
 
-    init_spell_chartab();
-
     vim_free(repl_to);
     repl_to = NULL;
     vim_free(repl_from);
