@@ -1066,7 +1066,7 @@ arabic_shape(c, ccp, c1p, prev_c, prev_c1, next_c)
 
     if (curr_c != c && ccp != NULL)
     {
-	char_u buf[MB_MAXBYTES];
+	char_u buf[MB_MAXBYTES + 1];
 
 	/* Update the first byte of the character. */
 	(*mb_char2bytes)(curr_c, buf);

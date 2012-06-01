@@ -1932,7 +1932,7 @@ ins_char(c)
     int		c;
 {
 #if defined(FEAT_MBYTE) || defined(PROTO)
-    char_u	buf[MB_MAXBYTES];
+    char_u	buf[MB_MAXBYTES + 1];
     int		n;
 
     n = (*mb_char2bytes)(c, buf);

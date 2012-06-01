@@ -1703,6 +1703,8 @@ int vim_memcmp __ARGS((void *, void *, size_t));
  * character of up to 6 bytes, or one 16-bit character of up to three bytes
  * plus six following composing characters of three bytes each. */
 # define MB_MAXBYTES	21
+#else
+# define MB_MAXBYTES	1
 #endif
 
 #if (defined(FEAT_PROFILE) || defined(FEAT_RELTIME)) && !defined(PROTO)
@@ -2017,6 +2019,7 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
  #pragma warning(disable : 4312)
 #endif
 
+/* Note: a NULL argument for vim_realloc() is not portable, don't use it. */
 #if defined(MEM_PROFILE)
 # define vim_realloc(ptr, size)  mem_realloc((ptr), (size))
 #else

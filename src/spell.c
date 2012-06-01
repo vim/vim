@@ -13694,7 +13694,7 @@ similar_chars(slang, c1, c2)
 {
     int		m1, m2;
 #ifdef FEAT_MBYTE
-    char_u	buf[MB_MAXBYTES];
+    char_u	buf[MB_MAXBYTES + 1];
     hashitem_T  *hi;
 
     if (c1 >= 256)

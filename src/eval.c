@@ -19170,11 +19170,7 @@ get_vim_var_list(idx)
 set_vim_var_char(c)
     int c;
 {
-#ifdef FEAT_MBYTE
-    char_u	buf[MB_MAXBYTES];
-#else
-    char_u	buf[2];
-#endif
+    char_u	buf[MB_MAXBYTES + 1];
 
 #ifdef FEAT_MBYTE
     if (has_mbyte)

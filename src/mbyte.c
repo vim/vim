@@ -708,7 +708,7 @@ codepage_invalid:
 	     */
 	    n = (i & 0x80) ? 2 : 1;
 # else
-	    char buf[MB_MAXBYTES];
+	    char buf[MB_MAXBYTES + 1];
 # ifdef X_LOCALE
 #  ifndef mblen
 #   define mblen _Xmblen
@@ -1953,7 +1953,7 @@ utfc_ptr2char_len(p, pcc, maxlen)
 /*
  * Convert the character at screen position "off" to a sequence of bytes.
  * Includes the composing characters.
- * "buf" must at least have the length MB_MAXBYTES.
+ * "buf" must at least have the length MB_MAXBYTES + 1.
  * Only to be used when ScreenLinesUC[off] != 0.
  * Returns the produced number of bytes.
  */

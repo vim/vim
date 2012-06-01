@@ -1648,11 +1648,7 @@ static int  pc_status;
 #define PC_STATUS_RIGHT	1	/* right halve of double-wide char */
 #define PC_STATUS_LEFT	2	/* left halve of double-wide char */
 #define PC_STATUS_SET	3	/* pc_bytes was filled */
-#ifdef FEAT_MBYTE
 static char_u pc_bytes[MB_MAXBYTES + 1]; /* saved bytes */
-#else
-static char_u pc_bytes[2];		/* saved bytes */
-#endif
 static int  pc_attr;
 static int  pc_row;
 static int  pc_col;
@@ -6819,11 +6815,7 @@ set_last_insert(c)
     char_u	*s;
 
     vim_free(last_insert);
-#ifdef FEAT_MBYTE
     last_insert = alloc(MB_MAXBYTES * 3 + 5);
-#else
-    last_insert = alloc(6);
-#endif
     if (last_insert != NULL)
     {
 	s = last_insert;
@@ -6861,7 +6853,7 @@ add_char2buf(c, s)
     char_u	*s;
 {
 #ifdef FEAT_MBYTE
-    char_u	temp[MB_MAXBYTES];
+    char_u	temp[MB_MAXBYTES + 1];
     int		i;
     int		len;
 
@@ -7423,7 +7415,7 @@ mb_replace_pop_ins(cc)
     int		cc;
 {
     int		n;
-    char_u	buf[MB_MAXBYTES];
+    char_u	buf[MB_MAXBYTES + 1];
     int		i;
     int		c;
 
@@ -10109,11 +10101,7 @@ do_insert_char_pre(c)
     int c;
 {
     char_u	*res;
-#ifdef FEAT_MBYTE
     char_u	buf[MB_MAXBYTES + 1];
-#else
-    char_u	buf[2];
-#endif
 
     /* Return quickly when there is nothing to do. */
     if (!has_insertcharpre())

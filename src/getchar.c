@@ -723,7 +723,7 @@ read_redo(init, old_redo)
     int				c;
 #ifdef FEAT_MBYTE
     int				n;
-    char_u			buf[MB_MAXBYTES];
+    char_u			buf[MB_MAXBYTES + 1];
     int				i;
 #endif
 
@@ -1072,7 +1072,7 @@ ins_char_typebuf(c)
     int	    c;
 {
 #ifdef FEAT_MBYTE
-    char_u	buf[MB_MAXBYTES];
+    char_u	buf[MB_MAXBYTES + 1];
 #else
     char_u	buf[4];
 #endif
@@ -1547,7 +1547,7 @@ vgetc()
     int		c, c2;
 #ifdef FEAT_MBYTE
     int		n;
-    char_u	buf[MB_MAXBYTES];
+    char_u	buf[MB_MAXBYTES + 1];
     int		i;
 #endif
 
@@ -4335,11 +4335,7 @@ check_abbr(c, ptr, col, mincol)
     int		scol;		/* starting column of the abbr. */
     int		j;
     char_u	*s;
-#ifdef FEAT_MBYTE
     char_u	tb[MB_MAXBYTES + 4];
-#else
-    char_u	tb[4];
-#endif
     mapblock_T	*mp;
 #ifdef FEAT_LOCALMAP
     mapblock_T	*mp2;
