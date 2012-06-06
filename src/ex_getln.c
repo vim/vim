@@ -2764,6 +2764,11 @@ unputcmdline()
     msg_no_more = TRUE;
     if (ccline.cmdlen == ccline.cmdpos)
 	msg_putchar(' ');
+#ifdef FEAT_MBYTE
+    else if (has_mbyte)
+	draw_cmdline(ccline.cmdpos,
+			       (*mb_ptr2len)(ccline.cmdbuff + ccline.cmdpos));
+#endif
     else
 	draw_cmdline(ccline.cmdpos, 1);
     msg_no_more = FALSE;
