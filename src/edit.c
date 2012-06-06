@@ -5847,7 +5847,7 @@ insertchar(c, flags, second_indent)
 	 * Need to remove existing (middle) comment leader and insert end
 	 * comment leader.  First, check what comment leader we can find.
 	 */
-	i = get_leader_len(line = ml_get_curline(), &p, FALSE);
+	i = get_leader_len(line = ml_get_curline(), &p, FALSE, TRUE);
 	if (i > 0 && vim_strchr(p, COM_MIDDLE) != NULL)	/* Just checking */
 	{
 	    /* Skip middle-comment string */
@@ -6085,7 +6085,7 @@ internal_format(textwidth, second_indent, flags, format_only, c)
 
 	/* Don't break until after the comment leader */
 	if (do_comments)
-	    leader_len = get_leader_len(ml_get_curline(), NULL, FALSE);
+	    leader_len = get_leader_len(ml_get_curline(), NULL, FALSE, TRUE);
 	else
 	    leader_len = 0;
 
@@ -6411,7 +6411,7 @@ auto_format(trailblank, prev_line)
     /* With the 'c' flag in 'formatoptions' and 't' missing: only format
      * comments. */
     if (has_format_option(FO_WRAP_COMS) && !has_format_option(FO_WRAP)
-				     && get_leader_len(old, NULL, FALSE) == 0)
+				     && get_leader_len(old, NULL, FALSE, TRUE) == 0)
 	return;
 #endif
 
@@ -8565,7 +8565,7 @@ ins_del()
     {
 	temp = curwin->w_cursor.col;
 	if (!can_bs(BS_EOL)		/* only if "eol" included */
-		|| do_join(2, FALSE, TRUE) == FAIL)
+		|| do_join(2, FALSE, TRUE, FALSE) == FAIL)
 	    vim_beep();
 	else
 	    curwin->w_cursor.col = temp;
@@ -8746,7 +8746,7 @@ ins_bs(c, mode, inserted_space_p)
 			ptr[len - 1] = NUL;
 		}
 
-		(void)do_join(2, FALSE, FALSE);
+		(void)do_join(2, FALSE, FALSE, FALSE);
 		if (temp == NUL && gchar_cursor() != NUL)
 		    inc_cursor();
 	    }

@@ -1548,7 +1548,7 @@ searchc(cap, t_cmd)
     int			len;
     int			stop = TRUE;
 #ifdef FEAT_MBYTE
-    static char_u	bytes[MB_MAXBYTES];
+    static char_u	bytes[MB_MAXBYTES + 1];
     static int		bytelen = 1;	/* >1 for multi-byte char */
 #endif
 
@@ -4901,7 +4901,7 @@ search_line:
 #ifdef FEAT_COMMENTS
 			if ((*line != '#' ||
 				STRNCMP(skipwhite(line + 1), "define", 6) != 0)
-				&& get_leader_len(line, NULL, FALSE))
+				&& get_leader_len(line, NULL, FALSE, TRUE))
 			    matched = FALSE;
 
 			/*

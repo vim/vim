@@ -36,7 +36,7 @@ void adjust_cursor_eol __ARGS((void));
 int preprocs_left __ARGS((void));
 int get_register_name __ARGS((int num));
 void ex_display __ARGS((exarg_T *eap));
-int do_join __ARGS((long count, int insert_space, int save_undo));
+int do_join __ARGS((long count, int insert_space, int save_undo, int use_formatoptions));
 void op_format __ARGS((oparg_T *oap, int keep_cursor));
 void op_formatexpr __ARGS((oparg_T *oap));
 int fex_format __ARGS((linenr_T lnum, long count, int c));
