@@ -4306,7 +4306,7 @@ do_join(count, insert_space, save_undo, use_formatoptions)
     colnr_T	col = 0;
     int		ret = OK;
 #if defined(FEAT_COMMENTS) || defined(PROTO)
-    int		*comments;
+    int		*comments = NULL;
     int		remove_comments = (use_formatoptions == TRUE)
 				  && has_format_option(FO_REMOVE_COMS);
     int		prev_was_comment;
