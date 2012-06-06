@@ -90,11 +90,13 @@ typedef int GtkWidget;
 static void entry_activate_cb(GtkWidget *widget, gpointer data);
 static void entry_changed_cb(GtkWidget *entry, GtkWidget *dialog);
 static void find_replace_cb(GtkWidget *widget, gpointer data);
+#if defined(FEAT_BROWSE) || defined(PROTO)
 static void recent_func_log_func(
 	const gchar *log_domain,
 	GLogLevelFlags log_level,
 	const gchar *message,
 	gpointer user_data);
+#endif
 
 #if defined(FEAT_TOOLBAR)
 /*
@@ -1896,6 +1898,7 @@ ex_helpfind(eap)
     do_cmdline_cmd((char_u *)"emenu ToolBar.FindHelp");
 }
 
+#if defined(FEAT_BROWSE) || defined(PROTO)
     static void
 recent_func_log_func(const gchar *log_domain UNUSED,
 		     GLogLevelFlags log_level UNUSED,
@@ -1905,4 +1908,4 @@ recent_func_log_func(const gchar *log_domain UNUSED,
     /* We just want to suppress the warnings. */
     /* http://bugzilla.gnome.org/show_bug.cgi?id=664587 */
 }
-
+#endif
