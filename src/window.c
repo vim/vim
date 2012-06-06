@@ -2034,7 +2034,11 @@ close_windows(buf, keep_curwin)
 
     for (wp = firstwin; wp != NULL && lastwin != firstwin; )
     {
-	if (wp->w_buffer == buf && (!keep_curwin || wp != curwin))
+	if (wp->w_buffer == buf && (!keep_curwin || wp != curwin)
+#ifdef FEAT_AUTOCMD
+		&& !(wp->w_closing || wp->w_buffer->b_closing)
+#endif
+		)
 	{
 	    win_close(wp, FALSE);
 
@@ -2051,7 +2055,11 @@ close_windows(buf, keep_curwin)
 	nexttp = tp->tp_next;
 	if (tp != curtab)
 	    for (wp = tp->tp_firstwin; wp != NULL; wp = wp->w_next)
-		if (wp->w_buffer == buf)
+		if (wp->w_buffer == buf
+#ifdef FEAT_AUTOCMD
+		    && !(wp->w_closing || wp->w_buffer->b_closing)
+#endif
+		    )
 		{
 		    win_close_othertab(wp, FALSE, tp);
 
@@ -2168,6 +2176,8 @@ win_close(win, free_buf)
     }
 
 #ifdef FEAT_AUTOCMD
+    if (win->w_closing || win->w_buffer->b_closing)
+	return; /* window is already being closed */
     if (win == aucmd_win)
     {
 	EMSG(_("E813: Cannot close autocmd window"));
@@ -2203,17 +2213,26 @@ win_close(win, free_buf)
 	wp = frame2win(win_altframe(win, NULL));
 
 	/*
-	 * Be careful: If autocommands delete the window, return now.
+	 * Be careful: If autocommands delete the window or cause this window
+	 * to be the last one left, return now.
 	 */
 	if (wp->w_buffer != curbuf)
 	{
 	    other_buffer = TRUE;
+	    win->w_closing = TRUE;
 	    apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf);
-	    if (!win_valid(win) || last_window())
+	    if (!win_valid(win))
+		return;
+	    win->w_closing = FALSE;
+	    if (last_window())
 		return;
 	}
+	win->w_closing = TRUE;
 	apply_autocmds(EVENT_WINLEAVE, NULL, NULL, FALSE, curbuf);
-	if (!win_valid(win) || last_window())
+	if (!win_valid(win))
+	    return;
+	win->w_closing = FALSE;
+	if (last_window())
 	    return;
 # ifdef FEAT_EVAL
 	/* autocmds may abort script processing */
@@ -2240,7 +2259,16 @@ win_close(win, free_buf)
      * Close the link to the buffer.
      */
     if (win->w_buffer != NULL)
-	close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0, TRUE);
+    {
+#ifdef FEAT_AUTOCMD
+	win->w_closing = TRUE;
+#endif
+	close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0, FALSE);
+#ifdef FEAT_AUTOCMD
+	if (win_valid(win))
+	    win->w_closing = FALSE;
+#endif
+    }
 
     /* Autocommands may have closed the window already, or closed the only
      * other window or moved to another tab page. */
@@ -2345,6 +2373,11 @@ win_close_othertab(win, free_buf, tp)
     int		dir;
     tabpage_T   *ptp = NULL;
     int		free_tp = FALSE;
+
+#ifdef FEAT_AUTOCMD
+    if (win->w_closing || win->w_buffer->b_closing)
+	return; /* window is already being closed */
+#endif
 
     /* Close the link to the buffer. */
     close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0, FALSE);

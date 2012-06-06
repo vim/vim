@@ -6459,7 +6459,9 @@ ex_quit(eap)
     }
 #ifdef FEAT_AUTOCMD
     apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, curbuf);
-    if (curbuf_locked())
+    /* Refuse to quick when locked or when the buffer in the last window is
+     * being closed (can only happen in autocommands). */
+    if (curbuf_locked() || (curbuf->b_nwindows == 1 && curbuf->b_closing))
 	return;
 #endif
 

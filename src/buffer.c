@@ -377,28 +377,35 @@ close_buffer(win, buf, action, abort_if_last)
     /* When the buffer is no longer in a window, trigger BufWinLeave */
     if (buf->b_nwindows == 1)
     {
+	buf->b_closing = TRUE;
 	apply_autocmds(EVENT_BUFWINLEAVE, buf->b_fname, buf->b_fname,
 								  FALSE, buf);
-	/* Return if autocommands deleted the buffer or made it the only one. */
-	if (!buf_valid(buf) || (abort_if_last && one_window()))
+	if (!buf_valid(buf))
 	{
+	    /* Autocommands deleted the buffer. */
+aucmd_abort:
 	    EMSG(_(e_auabort));
 	    return;
 	}
+	buf->b_closing = FALSE;
+	if (abort_if_last && one_window())
+	    /* Autocommands made this the only window. */
+	    goto aucmd_abort;
 
 	/* When the buffer becomes hidden, but is not unloaded, trigger
 	 * BufHidden */
 	if (!unload_buf)
 	{
+	    buf->b_closing = TRUE;
 	    apply_autocmds(EVENT_BUFHIDDEN, buf->b_fname, buf->b_fname,
 								  FALSE, buf);
-	    /* Return if autocommands deleted the buffer or made it the only
-	     * one. */
-	    if (!buf_valid(buf) || (abort_if_last && one_window()))
-	    {
-		EMSG(_(e_auabort));
-		return;
-	    }
+	    if (!buf_valid(buf))
+		/* Autocommands deleted the buffer. */
+		goto aucmd_abort;
+	    buf->b_closing = FALSE;
+	    if (abort_if_last && one_window())
+		/* Autocommands made this the only window. */
+		goto aucmd_abort;
 	}
 # ifdef FEAT_EVAL
 	if (aborting())	    /* autocmds may abort script processing */
@@ -552,6 +559,7 @@ buf_freeall(buf, flags)
 #ifdef FEAT_AUTOCMD
     int		is_curbuf = (buf == curbuf);
 
+    buf->b_closing = TRUE;
     apply_autocmds(EVENT_BUFUNLOAD, buf->b_fname, buf->b_fname, FALSE, buf);
     if (!buf_valid(buf))	    /* autocommands may delete the buffer */
 	return;
@@ -568,6 +576,7 @@ buf_freeall(buf, flags)
 	if (!buf_valid(buf))	    /* autocommands may delete the buffer */
 	    return;
     }
+    buf->b_closing = FALSE;
 # ifdef FEAT_EVAL
     if (aborting())	    /* autocmds may abort script processing */
 	return;
@@ -1150,6 +1159,9 @@ do_buffer(action, start, dir, count, forceit)
 	 * a window with this buffer.
 	 */
 	while (buf == curbuf
+# ifdef FEAT_AUTOCMD
+		   && !(curwin->w_closing || curwin->w_buffer->b_closing)
+# endif
 		   && (firstwin != lastwin || first_tabpage->tp_next != NULL))
 	    win_close(curwin, FALSE);
 #endif
@@ -4750,7 +4762,11 @@ ex_buffer_all(eap)
 #ifdef FEAT_WINDOWS
 		    || (had_tab > 0 && wp != firstwin)
 #endif
-		    ) && firstwin != lastwin)
+		    ) && firstwin != lastwin
+#ifdef FEAT_AUTOCMD
+		    && !(wp->w_closing || wp->w_buffer->b_closing)
+#endif
+		    )
 	    {
 		win_close(wp, FALSE);
 #ifdef FEAT_AUTOCMD
