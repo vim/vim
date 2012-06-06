@@ -6458,6 +6458,7 @@ ex_quit(eap)
 	return;
     }
 #ifdef FEAT_AUTOCMD
+    apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, curbuf);
     if (curbuf_locked())
 	return;
 #endif
