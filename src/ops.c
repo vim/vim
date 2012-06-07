@@ -4352,7 +4352,7 @@ do_join(count, insert_space, save_undo, use_formatoptions)
 
 		char_u *new_curr = skip_comment(curr, TRUE, insert_space,
 							   &prev_was_comment);
-		comments[t] = new_curr - curr;
+		comments[t] = (int)(new_curr - curr);
 		curr = new_curr;
 	    }
 	    else
