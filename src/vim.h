@@ -1072,12 +1072,14 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define INSCHAR_DO_COM	2	/* format comments */
 #define INSCHAR_CTRLV	4	/* char typed just after CTRL-V */
 #define INSCHAR_NO_FEX	8	/* don't use 'formatexpr' */
+#define INSCHAR_COM_LIST 16	/* format comments with list/2nd line indent */
 
 /* flags for open_line() */
 #define OPENLINE_DELSPACES  1	/* delete spaces after cursor */
 #define OPENLINE_DO_COM	    2	/* format comments */
 #define OPENLINE_KEEPTRAIL  4	/* keep trailing spaces */
 #define OPENLINE_MARKFIX    8	/* fix mark positions */
+#define OPENLINE_COM_LIST  16	/* format comments with list/2nd line indent */
 
 /*
  * There are four history tables:

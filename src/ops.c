@@ -1727,8 +1727,8 @@ op_delete(oap)
 	 * and the delete is within one line. */
 	if ((
 #ifdef FEAT_CLIPBOARD
-            ((clip_unnamed & CLIP_UNNAMED) && oap->regname == '*') ||
-            ((clip_unnamed & CLIP_UNNAMED_PLUS) && oap->regname == '+') ||
+	    ((clip_unnamed & CLIP_UNNAMED) && oap->regname == '*') ||
+	    ((clip_unnamed & CLIP_UNNAMED_PLUS) && oap->regname == '+') ||
 #endif
 	    oap->regname == 0) && oap->motion_type != MLINE
 						      && oap->line_count == 1)
@@ -4208,10 +4208,10 @@ dis_msg(p, skip_esc)
  * "is_comment".
  * line - line to be processed,
  * process - if FALSE, will only check whether the line ends with an unclosed
- *           comment,
+ *	     comment,
  * include_space - whether to also skip space following the comment leader,
  * is_comment - will indicate whether the current line ends with an unclosed
- *              comment.
+ *		comment.
  */
     static char_u *
 skip_comment(line, process, include_space, is_comment)
@@ -4723,9 +4723,11 @@ format_lines(line_count, avoid_fex)
     char_u	*leader_flags = NULL;	/* flags for leader of current line */
     char_u	*next_leader_flags;	/* flags for leader of next line */
     int		do_comments;		/* format comments */
+    int		do_comments_list = 0;	/* format comments with 'n' or '2' */
 #endif
     int		advance = TRUE;
-    int		second_indent = -1;
+    int		second_indent = -1;	/* indent for second line (comment
+					 * aware) */
     int		do_second_indent;
     int		do_number_indent;
     int		do_trail_white;
@@ -4828,18 +4830,46 @@ format_lines(line_count, avoid_fex)
 	    if (first_par_line
 		    && (do_second_indent || do_number_indent)
 		    && prev_is_end_par
-		    && curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count
-#ifdef FEAT_COMMENTS
-		    && leader_len == 0
-		    && next_leader_len == 0
-#endif
-		    )
+		    && curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
 	    {
-		if (do_second_indent
-			&& !lineempty(curwin->w_cursor.lnum + 1))
-		    second_indent = get_indent_lnum(curwin->w_cursor.lnum + 1);
+		if (do_second_indent && !lineempty(curwin->w_cursor.lnum + 1))
+		{
+#ifdef FEAT_COMMENTS
+		    if (leader_len == 0 && next_leader_len == 0)
+		    {
+			/* no comment found */
+#endif
+			second_indent =
+				   get_indent_lnum(curwin->w_cursor.lnum + 1);
+#ifdef FEAT_COMMENTS
+		    }
+		    else
+		    {
+			second_indent = next_leader_len;
+			do_comments_list = 1;
+		    }
+#endif
+		}
 		else if (do_number_indent)
-		    second_indent = get_number_indent(curwin->w_cursor.lnum);
+		{
+#ifdef FEAT_COMMENTS
+		    if (leader_len == 0 && next_leader_len == 0)
+		    {
+			/* no comment found */
+#endif
+			second_indent =
+				     get_number_indent(curwin->w_cursor.lnum);
+#ifdef FEAT_COMMENTS
+		    }
+		    else
+		    {
+			/* get_number_indent() is now "comment aware"... */
+			second_indent =
+				     get_number_indent(curwin->w_cursor.lnum);
+			do_comments_list = 1;
+		    }
+#endif
+		}
 	    }
 
 	    /*
@@ -4878,6 +4908,8 @@ format_lines(line_count, avoid_fex)
 		insertchar(NUL, INSCHAR_FORMAT
 #ifdef FEAT_COMMENTS
 			+ (do_comments ? INSCHAR_DO_COM : 0)
+			+ (do_comments && do_comments_list
+						       ? INSCHAR_COM_LIST : 0)
 #endif
 			+ (avoid_fex ? INSCHAR_NO_FEX : 0), second_indent);
 		State = old_State;

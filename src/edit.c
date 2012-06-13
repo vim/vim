@@ -1463,7 +1463,7 @@ normalchar:
 			 * what check_abbr() expects. */
 			(has_mbyte && c >= 0x100) ? (c + ABBR_OFF) :
 #endif
-                       c) && c != Ctrl_RSB))
+		       c) && c != Ctrl_RSB))
 	    {
 		insert_special(c, FALSE, FALSE);
 #ifdef FEAT_RIGHTLEFT
@@ -5769,6 +5769,16 @@ insert_special(c, allow_modmask, ctrlv)
 # define WHITECHAR(cc) vim_iswhite(cc)
 #endif
 
+/*
+ * "flags": INSCHAR_FORMAT - force formatting
+ *	    INSCHAR_CTRLV  - char typed just after CTRL-V
+ *	    INSCHAR_NO_FEX - don't use 'formatexpr'
+ *
+ *   NOTE: passes the flags value straight through to internal_format() which,
+ *	   beside INSCHAR_FORMAT (above), is also looking for these:
+ *	    INSCHAR_DO_COM   - format comments
+ *	    INSCHAR_COM_LIST - format comments with num list or 2nd line indent
+ */
     void
 insertchar(c, flags, second_indent)
     int		c;			/* character to insert or NUL */
@@ -6011,6 +6021,9 @@ insertchar(c, flags, second_indent)
 
 /*
  * Format text at the current insert position.
+ *
+ * If the INSCHAR_COM_LIST flag is present, then the value of second_indent
+ * will be the comment leader length sent to open_line().
  */
     static void
 internal_format(textwidth, second_indent, flags, format_only, c)
@@ -6289,23 +6302,36 @@ internal_format(textwidth, second_indent, flags, format_only, c)
 		+ (fo_white_par ? OPENLINE_KEEPTRAIL : 0)
 #ifdef FEAT_COMMENTS
 		+ (do_comments ? OPENLINE_DO_COM : 0)
+		+ ((flags & INSCHAR_COM_LIST) ? OPENLINE_COM_LIST : 0)
 #endif
-		, old_indent);
-	old_indent = 0;
+		, ((flags & INSCHAR_COM_LIST) ? second_indent : old_indent));
+	if (!(flags & INSCHAR_COM_LIST))
+	    old_indent = 0;
 
 	replace_offset = 0;
 	if (first_line)
 	{
-	    if (second_indent < 0 && has_format_option(FO_Q_NUMBER))
-		second_indent = get_number_indent(curwin->w_cursor.lnum -1);
-	    if (second_indent >= 0)
+	    if (!(flags & INSCHAR_COM_LIST))
 	    {
+		/*
+		 * This section is for numeric lists w/o comments.  If comment
+		 * indents are needed with numeric lists (formatoptions=nq),
+		 * then the INSCHAR_COM_LIST flag will cause the corresponding
+		 * OPENLINE_COM_LIST flag to be passed through to open_line()
+		 * (as seen above)...
+		 */
+		if (second_indent < 0 && has_format_option(FO_Q_NUMBER))
+		    second_indent = get_number_indent(curwin->w_cursor.lnum -1);
+		if (second_indent >= 0)
+		{
 #ifdef FEAT_VREPLACE
-		if (State & VREPLACE_FLAG)
-		    change_indent(INDENT_SET, second_indent, FALSE, NUL, TRUE);
-		else
+		    if (State & VREPLACE_FLAG)
+			change_indent(INDENT_SET, second_indent,
+							    FALSE, NUL, TRUE);
+		    else
 #endif
-		    (void)set_indent(second_indent, SIN_CHANGED);
+			(void)set_indent(second_indent, SIN_CHANGED);
+		}
 	    }
 	    first_line = FALSE;
 	}

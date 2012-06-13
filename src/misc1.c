@@ -423,27 +423,70 @@ get_number_indent(lnum)
 {
     colnr_T	col;
     pos_T	pos;
-    regmmatch_T	regmatch;
 
     if (lnum > curbuf->b_ml.ml_line_count)
 	return -1;
     pos.lnum = 0;
-    regmatch.regprog = vim_regcomp(curbuf->b_p_flp, RE_MAGIC);
-    if (regmatch.regprog != NULL)
+
+#ifdef FEAT_COMMENTS
+    if (has_format_option(FO_Q_COMS) && has_format_option(FO_Q_NUMBER))
     {
-	regmatch.rmm_ic = FALSE;
-	regmatch.rmm_maxcol = 0;
-	if (vim_regexec_multi(&regmatch, curwin, curbuf, lnum,
-							    (colnr_T)0, NULL))
+	regmatch_T  regmatch;
+	int	    lead_len;	      /* length of comment leader */
+
+	lead_len = get_leader_len(ml_get(lnum), NULL, FALSE, TRUE);
+	regmatch.regprog = vim_regcomp(curbuf->b_p_flp, RE_MAGIC);
+	if (regmatch.regprog != NULL)
 	{
-	    pos.lnum = regmatch.endpos[0].lnum + lnum;
-	    pos.col = regmatch.endpos[0].col;
+	    regmatch.rm_ic = FALSE;
+
+	    /* vim_regexec() expects a pointer to a line.  This lets us
+	     * start matching for the flp beyond any comment leader...  */
+	    if (vim_regexec(&regmatch, ml_get(lnum) + lead_len, (colnr_T)0))
+	    {
+		pos.lnum = lnum;
+		pos.col  = *regmatch.endp - (ml_get(lnum) + lead_len);
+		pos.col += lead_len;
 #ifdef FEAT_VIRTUALEDIT
-	    pos.coladd = 0;
+		pos.coladd = 0;
 #endif
+	    }
 	}
 	vim_free(regmatch.regprog);
     }
+    else
+    {
+	/*
+	 * What follows is the orig code that is not "comment aware"...
+	 *
+	 * I'm not sure if regmmatch_T (multi-match) is needed in this case.
+	 * It may be true that this section would work properly using the
+	 * regmatch_T code above, in which case, these two seperate sections
+	 * should be consolidated w/ FEAT_COMMENTS making lead_len > 0...
+	 */
+#endif
+	regmmatch_T  regmatch;
+
+	regmatch.regprog = vim_regcomp(curbuf->b_p_flp, RE_MAGIC);
+
+	if (regmatch.regprog != NULL)
+	{
+	    regmatch.rmm_ic = FALSE;
+	    regmatch.rmm_maxcol = 0;
+	    if (vim_regexec_multi(&regmatch, curwin, curbuf,
+						      lnum, (colnr_T)0, NULL))
+	    {
+		pos.lnum = regmatch.endpos[0].lnum + lnum;
+		pos.col = regmatch.endpos[0].col;
+#ifdef FEAT_VIRTUALEDIT
+		pos.coladd = 0;
+#endif
+	    }
+	    vim_free(regmatch.regprog);
+	}
+#ifdef FEAT_COMMENTS
+    }
+#endif
 
     if (pos.lnum == 0 || *ml_get_pos(&pos) == NUL)
 	return -1;
@@ -502,14 +545,18 @@ cin_is_cinword(line)
  *	    OPENLINE_DO_COM	format comments
  *	    OPENLINE_KEEPTRAIL	keep trailing spaces
  *	    OPENLINE_MARKFIX	adjust mark positions after the line break
+ *	    OPENLINE_COM_LIST	format comments with list or 2nd line indent
+ *
+ * "second_line_indent": indent for after ^^D in Insert mode or if flag
+ *			  OPENLINE_COM_LIST
  *
  * Return TRUE for success, FALSE for failure
  */
     int
-open_line(dir, flags, old_indent)
+open_line(dir, flags, second_line_indent)
     int		dir;		/* FORWARD or BACKWARD */
     int		flags;
-    int		old_indent;	/* indent for after ^^D in Insert mode */
+    int		second_line_indent;
 {
     char_u	*saved_line;		/* copy of the original line */
     char_u	*next_line = NULL;	/* copy of the next line */
@@ -650,8 +697,8 @@ open_line(dir, flags, old_indent)
 	 * count white space on current line
 	 */
 	newindent = get_indent_str(saved_line, (int)curbuf->b_p_ts);
-	if (newindent == 0)
-	    newindent = old_indent;	/* for ^^D command in insert mode */
+	if (newindent == 0 && !(flags & OPENLINE_COM_LIST))
+	    newindent = second_line_indent; /* for ^^D command in insert mode */
 
 #ifdef FEAT_SMARTINDENT
 	/*
@@ -1008,8 +1055,8 @@ open_line(dir, flags, old_indent)
 	if (lead_len)
 	{
 	    /* allocate buffer (may concatenate p_exta later) */
-	    leader = alloc(lead_len + lead_repl_len + extra_space +
-							      extra_len + 1);
+	    leader = alloc(lead_len + lead_repl_len + extra_space + extra_len
+			 + (second_line_indent > 0 ? second_line_indent : 0));
 	    allocated = leader;		    /* remember to free it later */
 
 	    if (leader == NULL)
@@ -1304,6 +1351,20 @@ open_line(dir, flags, old_indent)
     /* concatenate leader and p_extra, if there is a leader */
     if (lead_len)
     {
+	if (flags & OPENLINE_COM_LIST && second_line_indent > 0)
+	{
+	    int i;
+	    int padding = second_line_indent - (newindent + STRLEN(leader));
+
+	    /* Here whitespace is inserted after the comment char.
+	     * Below, set_indent(newindent, SIN_INSERT) will insert the
+	     * whitespace needed before the comment char. */
+	    for (i = 0; i < padding; i++)
+	    {
+		STRCAT(leader, " ");
+		newcol++;
+	    }
+	}
 	STRCAT(leader, p_extra);
 	p_extra = leader;
 	did_ai = TRUE;	    /* So truncating blanks works with comments */
@@ -4966,8 +5027,8 @@ add_pathsep(p)
     char_u  *
 FullName_save(fname, force)
     char_u	*fname;
-    int		force;	    /* force expansion, even when it already looks
-			       like a full path name */
+    int		force;		/* force expansion, even when it already looks
+				 * like a full path name */
 {
     char_u	*buf;
     char_u	*new_fname = NULL;

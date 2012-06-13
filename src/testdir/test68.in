@@ -51,6 +51,27 @@ a b
 }
 
 STARTTEST
+/^{/+1
+:set tw=5 fo=qn comments=:#
+gwap
+ENDTEST
+
+{
+# 1 a b
+}
+
+STARTTEST
+/^{/+1
+:set tw=5 fo=q2 comments=:#
+gwap
+ENDTEST
+
+{
+# x
+#   a b
+}
+
+STARTTEST
 /^{/+2
 :set tw& fo=a
 I^^
