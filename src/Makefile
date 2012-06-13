@@ -875,6 +875,10 @@ LINT_OPTIONS = -beprxzF
 #CFLAGS = -O -Qtarget=m88110compat
 #EXTRA_LIBS = -lgen
 
+# The value of QUOTESED comes from auto/config.mk.
+# Uncomment the next line to use the default value.
+# QUOTESED = sed -e 's/[\\"]/\\&/g' -e 's/\\"/"/' -e 's/\\";$$/";/'
+
 ##################### end of system specific lines ################### }}}
 
 ### Names of the programs and targets  {{{1
@@ -2411,7 +2415,6 @@ auto/if_perl.c: if_perl.xs
 auto/osdef.h: auto/config.h osdef.sh osdef1.h.in osdef2.h.in
 	CC="$(CC) $(OSDEF_CFLAGS)" srcdir=$(srcdir) sh $(srcdir)/osdef.sh
 
-QUOTESED = sed -e 's/[\\"]/\\&/g' -e 's/\\"/"/' -e 's/\\";$$/";/'
 auto/pathdef.c: Makefile auto/config.mk
 	-@echo creating $@
 	-@echo '/* pathdef.c */' > $@

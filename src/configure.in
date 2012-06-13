@@ -329,15 +329,18 @@ case `uname` in
 		  echo ""
 		  echo "------------------------------------------"
 		  echo " On z/OS Unix, the environment variable"
-		  echo " __CC_${ccn}MODE must be set to \"1\"!"
+		  echo " _CC_${ccn}MODE must be set to \"1\"!"
 		  echo " Do:"
 		  echo "    export _CC_${ccn}MODE=1"
 		  echo " and then call configure again."
 		  echo "------------------------------------------"
 		  exit 1
 		fi
-		CFLAGS="$CFLAGS -D_ALL_SOURCE -Wc,float\\(IEEE\\)";
-                LDFLAGS="$LDFLAGS -Wl,EDIT=NO"
+		# Set CFLAGS for configure process.
+		# This will be reset later for config.mk.
+		# Use haltonmsg to force error for missing H files.
+		CFLAGS="$CFLAGS -D_ALL_SOURCE -Wc,float(ieee),haltonmsg(3296)";
+		LDFLAGS="$LDFLAGS -Wl,EDIT=NO"
 		AC_MSG_RESULT(yes)
 		;;
     *)		zOSUnix="no";
@@ -2378,10 +2381,15 @@ dnl Only use the Xm directory when compiling Motif, don't use it for Athena
 if test -z "$SKIP_MOTIF"; then
   cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
-  AC_CHECK_HEADERS(Xm/Xm.h Xm/XpmP.h Xm/JoinSideT.h Xm/TraitP.h Xm/Manager.h \
-		   Xm/UnhighlightT.h Xm/Notebook.h)
+  if test "$zOSUnix" = "yes"; then
+	xmheader="Xm/Xm.h"
+  else
+	xmheader="Xm/Xm.h Xm/XpmP.h Xm/JoinSideT.h Xm/TraitP.h Xm/Manager.h
+  	   Xm/UnhighlightT.h Xm/Notebook.h"  
+  fi    
+  AC_CHECK_HEADERS($xmheader)
 
-  if test $ac_cv_header_Xm_XpmP_h = yes; then
+  if test "x$ac_cv_header_Xm_XpmP_h" = "xyes"; then
     dnl Solaris uses XpmAttributes_21, very annoying.
     AC_MSG_CHECKING([for XpmAttributes_21 in Xm/XpmP.h])
     AC_TRY_COMPILE([#include <Xm/XpmP.h>], [XpmAttributes_21 attr;],
@@ -3641,6 +3649,11 @@ else
   AC_MSG_RESULT(no)
 fi
 AC_SUBST(LINK_AS_NEEDED)
+
+# IBM z/OS reset CFLAGS for config.mk
+if test "$zOSUnix" = "yes"; then
+	CFLAGS="-D_ALL_SOURCE -Wc,float\(ieee\),dll"
+fi
 
 dnl write output files
 AC_OUTPUT(auto/config.mk:config.mk.in)
