@@ -977,6 +977,24 @@ main ( int first_par, /*
 
 STARTTEST
 :set cin
+:set cino=es,n0s
+/main
+=][
+ENDTEST
+
+main(void)
+{
+	/* Make sure that cino=X0s is not parsed like cino=Xs. */
+	if (cond)
+		foo();
+	else
+	{
+		bar();
+	}
+}
+
+STARTTEST
+:set cin
 :set cino=
 ]]=][
 ENDTEST

@@ -6635,6 +6635,7 @@ get_c_indent()
     int		whilelevel;
     linenr_T	lnum;
     char_u	*options;
+    char_u	*digits;
     int		fraction = 0;	    /* init for GCC */
     int		divider;
     int		n;
@@ -6650,6 +6651,7 @@ get_c_indent()
 	l = options++;
 	if (*options == '-')
 	    ++options;
+	digits = options;	    /* remember where the digits start */
 	n = getdigits(&options);
 	divider = 0;
 	if (*options == '.')	    /* ".5s" means a fraction */
@@ -6666,7 +6668,7 @@ get_c_indent()
 	}
 	if (*options == 's')	    /* "2s" means two times 'shiftwidth' */
 	{
-	    if (n == 0 && fraction == 0)
+	    if (options == digits)
 		n = curbuf->b_p_sw;	/* just "s" is one 'shiftwidth' */
 	    else
 	    {

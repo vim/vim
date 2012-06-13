@@ -940,6 +940,18 @@ main ( int first_par, /*
 }
 
 
+main(void)
+{
+	/* Make sure that cino=X0s is not parsed like cino=Xs. */
+	if (cond)
+		foo();
+	else
+	{
+		bar();
+	}
+}
+
+
 {
 	do
 	{
