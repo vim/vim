@@ -66,6 +66,8 @@ if (condition) // Remove the next comment leader! OK, I will.
 {
 /* Make sure the previous comment leader is not removed.  */
 /* Make sure the previous comment leader is not removed.  */
+/* List: item1 foo bar baz foo bar baz item2 foo bar baz foo bar baz */
+/* List: item1 foo bar baz foo bar baz item2 foo bar baz foo bar baz */
 // Should the next comment leader be left alone?  Yes.
 // Should the next comment leader be left alone?  Yes.
 /* Here the comment leader should be left intact. */ // And so should this one.

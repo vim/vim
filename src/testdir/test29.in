@@ -103,12 +103,15 @@ if (condition) // Remove the next comment leader!
 
 STARTTEST
 /^{/+1
-:set comments=s1:/*,mb:*,ex:*/,://
+:set comments=sO:*\ -,mO:*\ \ ,exO:*/
+:set comments+=s1:/*,mb:*,ex:*/,://
 :set comments+=s1:>#,mb:#,ex:#<,:<
 :set cpoptions-=j joinspaces fo=j
 :set backspace=eol,start
 :.,+3join
 j4J
+:.,+8join
+j9J
 :.,+2join
 j3J
 :.,+2join
@@ -130,6 +133,24 @@ ENDTEST
 
 /*
  * Make sure the previous comment leader is not removed.
+ */
+
+/* List:
+ * - item1
+ *   foo bar baz
+ *   foo bar baz
+ * - item2
+ *   foo bar baz
+ *   foo bar baz
+ */
+
+/* List:
+ * - item1
+ *   foo bar baz
+ *   foo bar baz
+ * - item2
+ *   foo bar baz
+ *   foo bar baz
  */
 
 // Should the next comment leader be left alone?

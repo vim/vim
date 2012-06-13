@@ -4250,15 +4250,13 @@ skip_comment(line, process, include_space, is_comment)
 	return line;
 
     /* Find:
-     * - COM_START,
      * - COM_END,
      * - colon,
      * whichever comes first.
      */
     while (*comment_flags)
     {
-	if (*comment_flags == COM_START
-		|| *comment_flags == COM_END
+	if (*comment_flags == COM_END
 		|| *comment_flags == ':')
 	{
 	    break;
@@ -4267,9 +4265,8 @@ skip_comment(line, process, include_space, is_comment)
     }
 
     /* If we found a colon, it means that we are not processing a line
-     * starting with an opening or a closing part of a three-part
-     * comment. That's good, because we don't want to remove those as
-     * this would be annoying.
+     * starting with a closing part of a three-part comment. That's good,
+     * because we don't want to remove those as this would be annoying.
      */
     if (*comment_flags == ':' || *comment_flags == NUL)
 	line += lead_len;
