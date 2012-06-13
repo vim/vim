@@ -45,7 +45,7 @@ static void new_frame __ARGS((win_T *wp));
 #if defined(FEAT_WINDOWS) || defined(PROTO)
 static tabpage_T *alloc_tabpage __ARGS((void));
 static int leave_tabpage __ARGS((buf_T *new_curbuf));
-static void enter_tabpage __ARGS((tabpage_T *tp, buf_T *old_curbuf));
+static void enter_tabpage __ARGS((tabpage_T *tp, buf_T *old_curbuf, int trigger_autocmds));
 static void frame_fix_height __ARGS((win_T *wp));
 static int frame_minheight __ARGS((frame_T *topfrp, win_T *next_curwin));
 static void win_enter_ext __ARGS((win_T *wp, int undo_sync, int no_curwin));
@@ -355,11 +355,11 @@ newwindow:
 						     && valid_tabpage(oldtab))
 		    {
 			newtab = curtab;
-			goto_tabpage_tp(oldtab);
+			goto_tabpage_tp(oldtab, TRUE);
 			if (curwin == wp)
 			    win_close(curwin, FALSE);
 			if (valid_tabpage(newtab))
-			    goto_tabpage_tp(newtab);
+			    goto_tabpage_tp(newtab, TRUE);
 		    }
 		}
 		break;
@@ -2130,8 +2130,10 @@ close_last_window_tabpage(win, free_buf, prev_curtab)
 	 * page and then close the window and the tab page.  This avoids that
 	 * curwin and curtab are invalid while we are freeing memory, they may
 	 * be used in GUI events.
+	 * Don't trigger autocommands yet, they may use wrong values, so do
+	 * that below.
 	 */
-	goto_tabpage_tp(alt_tabpage());
+	goto_tabpage_tp(alt_tabpage(), FALSE);
 	redraw_tabline = TRUE;
 
 	/* Safety check: Autocommands may have closed the window when jumping
@@ -2144,6 +2146,12 @@ close_last_window_tabpage(win, free_buf, prev_curtab)
 	    if (h != tabline_height())
 		shell_new_rows();
 	}
+	/* Since goto_tabpage_tp above did not trigger *Enter autocommands, do
+	 * that now. */
+#ifdef FEAT_AUTOCMD
+	apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
+	apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
+#endif
 	return TRUE;
     }
     return FALSE;
@@ -3556,7 +3564,7 @@ win_new_tabpage(after)
     }
 
     /* Failed, get back the previous Tab page */
-    enter_tabpage(curtab, curbuf);
+    enter_tabpage(curtab, curbuf, TRUE);
     return FAIL;
 }
 
@@ -3709,11 +3717,13 @@ leave_tabpage(new_curbuf)
 /*
  * Start using tab page "tp".
  * Only to be used after leave_tabpage() or freeing the current tab page.
+ * Only trigger *Enter autocommands when trigger_autocmds is TRUE.
  */
     static void
-enter_tabpage(tp, old_curbuf)
+enter_tabpage(tp, old_curbuf, trigger_autocmds)
     tabpage_T	*tp;
     buf_T	*old_curbuf UNUSED;
+    int         trigger_autocmds;
 {
     int		old_off = tp->tp_firstwin->w_winrow;
     win_T	*next_prevwin = tp->tp_prevwin;
@@ -3761,9 +3771,12 @@ enter_tabpage(tp, old_curbuf)
 #ifdef FEAT_AUTOCMD
     /* Apply autocommands after updating the display, when 'rows' and
      * 'columns' have been set correctly. */
-    apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
-    if (old_curbuf != curbuf)
-	apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
+    if (trigger_autocmds)
+    {
+	apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
+	if (old_curbuf != curbuf)
+	    apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
+    }
 #endif
 
     redraw_all_later(CLEAR);
@@ -3839,7 +3852,7 @@ goto_tabpage(n)
 	}
     }
 
-    goto_tabpage_tp(tp);
+    goto_tabpage_tp(tp, TRUE);
 
 #ifdef FEAT_GUI_TABLINE
     if (gui_use_tabline())
@@ -3849,11 +3862,13 @@ goto_tabpage(n)
 
 /*
  * Go to tabpage "tp".
+ * Only trigger *Enter autocommands when trigger_autocmds is TRUE.
  * Note: doesn't update the GUI tab.
  */
     void
-goto_tabpage_tp(tp)
+goto_tabpage_tp(tp, trigger_autocmds)
     tabpage_T	*tp;
+    int         trigger_autocmds;
 {
     /* Don't repeat a message in another tab page. */
     set_keep_msg(NULL, 0);
@@ -3861,9 +3876,9 @@ goto_tabpage_tp(tp)
     if (tp != curtab && leave_tabpage(tp->tp_curwin->w_buffer) == OK)
     {
 	if (valid_tabpage(tp))
-	    enter_tabpage(tp, curbuf);
+	    enter_tabpage(tp, curbuf, trigger_autocmds);
 	else
-	    enter_tabpage(curtab, curbuf);
+	    enter_tabpage(curtab, curbuf, trigger_autocmds);
     }
 }
 
@@ -3876,7 +3891,7 @@ goto_tabpage_win(tp, wp)
     tabpage_T	*tp;
     win_T	*wp;
 {
-    goto_tabpage_tp(tp);
+    goto_tabpage_tp(tp, TRUE);
     if (curtab == tp && win_valid(wp))
     {
 	win_enter(wp, TRUE);

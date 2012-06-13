@@ -2476,7 +2476,7 @@ ex_listdo(eap)
 		/* go to window "tp" */
 		if (!valid_tabpage(tp))
 		    break;
-		goto_tabpage_tp(tp);
+		goto_tabpage_tp(tp, TRUE);
 		tp = tp->tp_next;
 	    }
 #endif
