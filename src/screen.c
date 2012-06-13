@@ -89,6 +89,9 @@
 
 #include "vim.h"
 
+#define MB_FILLER_CHAR '<'  /* character used when a double-width character
+			     * doesn't fit. */
+
 /*
  * The attributes that are actually active for writing to the screen.
  */
@@ -4016,7 +4019,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		if (n_skip > 0 && mb_l > 1 && n_extra == 0)
 		{
 		    n_extra = 1;
-		    c_extra = '<';
+		    c_extra = MB_FILLER_CHAR;
 		    c = ' ';
 		    if (area_attr == 0 && search_attr == 0)
 		    {
@@ -4576,6 +4579,15 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    c = lcs_prec;
 	    lcs_prec_todo = NUL;
 #ifdef FEAT_MBYTE
+	    if (has_mbyte && (*mb_char2cells)(mb_c) > 1)
+	    {
+		/* Double-width character being overwritten by the "precedes"
+		 * character, need to fill up half the character. */
+		c_extra = MB_FILLER_CHAR;
+		n_extra = 1;
+		n_attr = 2;
+		extra_attr = hl_attr(HLF_AT);
+	    }
 	    mb_c = c;
 	    if (enc_utf8 && (*mb_char2len)(c) > 1)
 	    {
