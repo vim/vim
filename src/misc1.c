@@ -445,8 +445,7 @@ get_number_indent(lnum)
 	    if (vim_regexec(&regmatch, ml_get(lnum) + lead_len, (colnr_T)0))
 	    {
 		pos.lnum = lnum;
-		pos.col  = *regmatch.endp - (ml_get(lnum) + lead_len);
-		pos.col += lead_len;
+		pos.col = (colnr_T)(*regmatch.endp - ml_get(lnum));
 #ifdef FEAT_VIRTUALEDIT
 		pos.coladd = 0;
 #endif
@@ -1354,7 +1353,8 @@ open_line(dir, flags, second_line_indent)
 	if (flags & OPENLINE_COM_LIST && second_line_indent > 0)
 	{
 	    int i;
-	    int padding = second_line_indent - (newindent + STRLEN(leader));
+	    int padding = second_line_indent
+					  - (newindent + (int)STRLEN(leader));
 
 	    /* Here whitespace is inserted after the comment char.
 	     * Below, set_indent(newindent, SIN_INSERT) will insert the
