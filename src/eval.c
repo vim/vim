@@ -19981,6 +19981,7 @@ init_var_dict(dict, dict_var)
     dictitem_T	*dict_var;
 {
     hash_init(&dict->dv_hashtab);
+    dict->dv_lock = 0;
     dict->dv_refcount = DO_NOT_FREE_CNT;
     dict->dv_copyID = 0;
     dict_var->di_tv.vval.v_dict = dict;
