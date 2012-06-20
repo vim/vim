@@ -3467,10 +3467,14 @@ ins_compl_addleader(c)
 	(*mb_char2bytes)(c, buf);
 	buf[cc] = NUL;
 	ins_char_bytes(buf, cc);
+	AppendToRedobuff(buf);
     }
     else
 #endif
+    {
 	ins_char(c);
+	AppendCharToRedobuff(c);
+    }
 
     /* If we didn't complete finding matches we must search again. */
     if (ins_compl_need_restart())
