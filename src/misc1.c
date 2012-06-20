@@ -4499,7 +4499,7 @@ home_replace(buf, src, dst, dstlen, one)
 {
     size_t	dirlen = 0, envlen = 0;
     size_t	len;
-    char_u	*homedir_env;
+    char_u	*homedir_env, *homedir_env_orig;
     char_u	*p;
 
     if (src == NULL)
@@ -4525,9 +4525,24 @@ home_replace(buf, src, dst, dstlen, one)
 	dirlen = STRLEN(homedir);
 
 #ifdef VMS
-    homedir_env = mch_getenv((char_u *)"SYS$LOGIN");
+    homedir_env_orig = homedir_env = mch_getenv((char_u *)"SYS$LOGIN");
 #else
-    homedir_env = mch_getenv((char_u *)"HOME");
+    homedir_env_orig = homedir_env = mch_getenv((char_u *)"HOME");
+#endif
+#if defined(FEAT_MODIFY_FNAME) || defined(WIN3264)
+    if (vim_strchr(homedir_env, '~') != NULL)
+    {
+	int	usedlen = 0;
+	int	flen;
+	char_u	*fbuf = NULL;
+
+	flen = (int)STRLEN(homedir_env);
+	(void)modify_fname(":p", &usedlen, &homedir_env, &fbuf, &flen);
+	flen = (int)STRLEN(homedir_env);
+	if (flen > 0 && vim_ispathsep(homedir_env[flen - 1]))
+	    /* Remove the trailing / that is added to a directory. */
+	    homedir_env[flen - 1] = NUL;
+    }
 #endif
 
     if (homedir_env != NULL && *homedir_env == NUL)
@@ -4585,6 +4600,9 @@ home_replace(buf, src, dst, dstlen, one)
     /* if (dstlen == 0) out of space, what to do??? */
 
     *dst = NUL;
+
+    if (homedir_env != homedir_env_orig)
+	vim_free(homedir_env);
 }
 
 /*
