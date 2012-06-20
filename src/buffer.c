@@ -1363,6 +1363,7 @@ set_curbuf(buf, action)
     int		action;
 {
     buf_T	*prevbuf;
+    win_T	*prevwin;
     int		unload = (action == DOBUF_UNLOAD || action == DOBUF_DEL
 						     || action == DOBUF_WIPE);
 
@@ -1402,22 +1403,30 @@ set_curbuf(buf, action)
 	if (buf_valid(prevbuf))
 #endif
 	{
+	    prevwin = curwin;
 	    if (prevbuf == curbuf)
 		u_sync(FALSE);
 	    close_buffer(prevbuf == curwin->w_buffer ? curwin : NULL, prevbuf,
 		    unload ? action : (action == DOBUF_GOTO
 			&& !P_HID(prevbuf)
 			&& !bufIsChanged(prevbuf)) ? DOBUF_UNLOAD : 0, FALSE);
+	    if (curwin != prevwin && win_valid(prevwin))
+	      /* autocommands changed curwin, Grr! */
+	      curwin = prevwin;
 	}
     }
 #ifdef FEAT_AUTOCMD
     /* An autocommand may have deleted "buf", already entered it (e.g., when
-     * it did ":bunload") or aborted the script processing! */
-# ifdef FEAT_EVAL
-    if (buf_valid(buf) && buf != curbuf && !aborting())
-# else
-    if (buf_valid(buf) && buf != curbuf)
-# endif
+     * it did ":bunload") or aborted the script processing!
+     * If curwin->w_buffer is null, enter_buffer() will make it valid again */
+    if ((buf_valid(buf) && buf != curbuf
+#ifdef FEAT_EVAL
+	    && !aborting()
+#endif
+#ifdef FEAT_WINDOWS
+	 ) || curwin->w_buffer == NULL
+#endif
+       )
 #endif
 	enter_buffer(buf);
 }
