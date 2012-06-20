@@ -596,10 +596,15 @@ ex_breakdel(eap)
     garray_T	*gap;
 
     gap = &dbg_breakp;
-#ifdef FEAT_PROFILE
     if (eap->cmdidx == CMD_profdel)
+    {
+#ifdef FEAT_PROFILE
 	gap = &prof_ga;
+#else
+	ex_ni(eap);
+	return;
 #endif
+    }
 
     if (vim_isdigit(*eap->arg))
     {
