@@ -1363,7 +1363,9 @@ set_curbuf(buf, action)
     int		action;
 {
     buf_T	*prevbuf;
+#ifdef FEAT_WINDOWS
     win_T	*prevwin;
+#endif
     int		unload = (action == DOBUF_UNLOAD || action == DOBUF_DEL
 						     || action == DOBUF_WIPE);
 
@@ -1403,16 +1405,20 @@ set_curbuf(buf, action)
 	if (buf_valid(prevbuf))
 #endif
 	{
+#ifdef FEAT_WINDOWS
 	    prevwin = curwin;
+#endif
 	    if (prevbuf == curbuf)
 		u_sync(FALSE);
 	    close_buffer(prevbuf == curwin->w_buffer ? curwin : NULL, prevbuf,
 		    unload ? action : (action == DOBUF_GOTO
 			&& !P_HID(prevbuf)
 			&& !bufIsChanged(prevbuf)) ? DOBUF_UNLOAD : 0, FALSE);
+#ifdef FEAT_WINDOWS
 	    if (curwin != prevwin && win_valid(prevwin))
 	      /* autocommands changed curwin, Grr! */
 	      curwin = prevwin;
+#endif
 	}
     }
 #ifdef FEAT_AUTOCMD
@@ -1420,12 +1426,12 @@ set_curbuf(buf, action)
      * it did ":bunload") or aborted the script processing!
      * If curwin->w_buffer is null, enter_buffer() will make it valid again */
     if ((buf_valid(buf) && buf != curbuf
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 	    && !aborting()
-#endif
-#ifdef FEAT_WINDOWS
+# endif
+# ifdef FEAT_WINDOWS
 	 ) || curwin->w_buffer == NULL
-#endif
+# endif
        )
 #endif
 	enter_buffer(buf);
