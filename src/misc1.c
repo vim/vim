@@ -460,7 +460,7 @@ get_number_indent(lnum)
 	 *
 	 * I'm not sure if regmmatch_T (multi-match) is needed in this case.
 	 * It may be true that this section would work properly using the
-	 * regmatch_T code above, in which case, these two seperate sections
+	 * regmatch_T code above, in which case, these two separate sections
 	 * should be consolidated w/ FEAT_COMMENTS making lead_len > 0...
 	 */
 #endif
@@ -1053,9 +1053,9 @@ open_line(dir, flags, second_line_indent)
 	}
 	if (lead_len)
 	{
-	    /* allocate buffer (may concatenate p_exta later) */
+	    /* allocate buffer (may concatenate p_extra later) */
 	    leader = alloc(lead_len + lead_repl_len + extra_space + extra_len
-			 + (second_line_indent > 0 ? second_line_indent : 0));
+		     + (second_line_indent > 0 ? second_line_indent : 0) + 1);
 	    allocated = leader;		    /* remember to free it later */
 
 	    if (leader == NULL)
@@ -3342,7 +3342,7 @@ get_keystroke()
 	    buf = alloc(buflen);
 	else if (maxlen < 10)
 	{
-	    /* Need some more space. This migth happen when receiving a long
+	    /* Need some more space. This might happen when receiving a long
 	     * escape sequence. */
 	    buflen += 100;
 	    buf = vim_realloc(buf, buflen);
