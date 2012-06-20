@@ -4537,7 +4537,8 @@ home_replace(buf, src, dst, dstlen, one)
 	char_u	*fbuf = NULL;
 
 	flen = (int)STRLEN(homedir_env);
-	(void)modify_fname(":p", &usedlen, &homedir_env, &fbuf, &flen);
+	(void)modify_fname((char_u *)":p", &usedlen,
+						  &homedir_env, &fbuf, &flen);
 	flen = (int)STRLEN(homedir_env);
 	if (flen > 0 && vim_ispathsep(homedir_env[flen - 1]))
 	    /* Remove the trailing / that is added to a directory. */
