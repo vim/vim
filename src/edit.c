@@ -3467,13 +3467,15 @@ ins_compl_addleader(c)
 	(*mb_char2bytes)(c, buf);
 	buf[cc] = NUL;
 	ins_char_bytes(buf, cc);
-	AppendToRedobuff(buf);
+	if (compl_opt_refresh_always)
+	    AppendToRedobuff(buf);
     }
     else
 #endif
     {
 	ins_char(c);
-	AppendCharToRedobuff(c);
+	if (compl_opt_refresh_always)
+	    AppendCharToRedobuff(c);
     }
 
     /* If we didn't complete finding matches we must search again. */
@@ -3481,7 +3483,7 @@ ins_compl_addleader(c)
 	ins_compl_restart();
 
     /* When 'always' is set, don't reset compl_leader. While completing,
-     * cursor don't point original position, changing compl_leader would
+     * cursor doesn't point original position, changing compl_leader would
      * break redo. */
     if (!compl_opt_refresh_always)
     {
