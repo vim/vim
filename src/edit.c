@@ -6320,14 +6320,15 @@ internal_format(textwidth, second_indent, flags, format_only, c)
 	    if (!(flags & INSCHAR_COM_LIST))
 	    {
 		/*
-		 * This section is for numeric lists w/o comments.  If comment
-		 * indents are needed with numeric lists (formatoptions=nq),
-		 * then the INSCHAR_COM_LIST flag will cause the corresponding
-		 * OPENLINE_COM_LIST flag to be passed through to open_line()
-		 * (as seen above)...
+		 * This section is for auto-wrap of numeric lists.  When not
+		 * in insert mode (i.e. format_lines()), the INSCHAR_COM_LIST
+		 * flag will be set and open_line() will handle it (as seen
+		 * above).  The code here (and in get_number_indent()) will
+		 * recognize comments if needed...
 		 */
 		if (second_indent < 0 && has_format_option(FO_Q_NUMBER))
-		    second_indent = get_number_indent(curwin->w_cursor.lnum -1);
+		    second_indent =
+				 get_number_indent(curwin->w_cursor.lnum - 1);
 		if (second_indent >= 0)
 		{
 #ifdef FEAT_VREPLACE
@@ -6336,7 +6337,31 @@ internal_format(textwidth, second_indent, flags, format_only, c)
 							    FALSE, NUL, TRUE);
 		    else
 #endif
+#ifdef FEAT_COMMENTS
+			if (leader_len > 0 && second_indent - leader_len > 0)
+		    {
+			int i;
+			int padding = second_indent - leader_len;
+
+			/* We started at the first_line of a numbered list
+			 * that has a comment.  the open_line() function has
+			 * inserted the proper comment leader and positioned
+			 * the cursor at the end of the split line.  Now we
+			 * add the additional whitespace needed after the
+			 * comment leader for the numbered list.  */
+			for (i = 0; i < padding; i++)
+			{
+			    ins_str((char_u *)" ");
+			    changed_bytes(curwin->w_cursor.lnum, leader_len);
+			}
+		    }
+		    else
+		    {
+#endif
 			(void)set_indent(second_indent, SIN_CHANGED);
+#ifdef FEAT_COMMENTS
+		    }
+#endif
 		}
 	    }
 	    first_line = FALSE;

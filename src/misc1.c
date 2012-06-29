@@ -424,68 +424,35 @@ get_number_indent(lnum)
     colnr_T	col;
     pos_T	pos;
 
+    regmatch_T	regmatch;
+    int		lead_len = 0;	/* length of comment leader */
+
     if (lnum > curbuf->b_ml.ml_line_count)
 	return -1;
     pos.lnum = 0;
 
 #ifdef FEAT_COMMENTS
-    if (has_format_option(FO_Q_COMS) && has_format_option(FO_Q_NUMBER))
-    {
-	regmatch_T  regmatch;
-	int	    lead_len;	      /* length of comment leader */
-
+    /* In format_lines() (i.e. not insert mode), fo+=q is needed too...  */
+    if ((State & INSERT) || has_format_option(FO_Q_COMS))
 	lead_len = get_leader_len(ml_get(lnum), NULL, FALSE, TRUE);
-	regmatch.regprog = vim_regcomp(curbuf->b_p_flp, RE_MAGIC);
-	if (regmatch.regprog != NULL)
-	{
-	    regmatch.rm_ic = FALSE;
-
-	    /* vim_regexec() expects a pointer to a line.  This lets us
-	     * start matching for the flp beyond any comment leader...  */
-	    if (vim_regexec(&regmatch, ml_get(lnum) + lead_len, (colnr_T)0))
-	    {
-		pos.lnum = lnum;
-		pos.col = (colnr_T)(*regmatch.endp - ml_get(lnum));
-#ifdef FEAT_VIRTUALEDIT
-		pos.coladd = 0;
 #endif
-	    }
-	}
-	vim_free(regmatch.regprog);
-    }
-    else
+    regmatch.regprog = vim_regcomp(curbuf->b_p_flp, RE_MAGIC);
+    if (regmatch.regprog != NULL)
     {
-	/*
-	 * What follows is the orig code that is not "comment aware"...
-	 *
-	 * I'm not sure if regmmatch_T (multi-match) is needed in this case.
-	 * It may be true that this section would work properly using the
-	 * regmatch_T code above, in which case, these two separate sections
-	 * should be consolidated w/ FEAT_COMMENTS making lead_len > 0...
-	 */
-#endif
-	regmmatch_T  regmatch;
+	regmatch.rm_ic = FALSE;
 
-	regmatch.regprog = vim_regcomp(curbuf->b_p_flp, RE_MAGIC);
-
-	if (regmatch.regprog != NULL)
+	/* vim_regexec() expects a pointer to a line.  This lets us
+	 * start matching for the flp beyond any comment leader...  */
+	if (vim_regexec(&regmatch, ml_get(lnum) + lead_len, (colnr_T)0))
 	{
-	    regmatch.rmm_ic = FALSE;
-	    regmatch.rmm_maxcol = 0;
-	    if (vim_regexec_multi(&regmatch, curwin, curbuf,
-						      lnum, (colnr_T)0, NULL))
-	    {
-		pos.lnum = regmatch.endpos[0].lnum + lnum;
-		pos.col = regmatch.endpos[0].col;
+	    pos.lnum = lnum;
+	    pos.col = (colnr_T)(*regmatch.endp - ml_get(lnum));
 #ifdef FEAT_VIRTUALEDIT
-		pos.coladd = 0;
+	    pos.coladd = 0;
 #endif
-	    }
-	    vim_free(regmatch.regprog);
 	}
-#ifdef FEAT_COMMENTS
     }
-#endif
+    vim_free(regmatch.regprog);
 
     if (pos.lnum == 0 || *ml_get_pos(&pos) == NUL)
 	return -1;
