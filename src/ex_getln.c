@@ -3133,7 +3133,8 @@ cmdline_paste_str(s, literally)
 	    else
 #endif
 		c = *s++;
-	    if (cv == Ctrl_V || c == ESC || c == Ctrl_C || c == CAR || c == NL
+	    if (cv == Ctrl_V || c == ESC || c == Ctrl_C
+		    || c == CAR || c == NL || c == Ctrl_L
 #ifdef UNIX
 		    || c == intr_char
 #endif
@@ -4692,7 +4693,7 @@ ExpandFromContext(xp, pat, num_file, file, options)
 		if (tab[i].ic)
 		    regmatch.rm_ic = TRUE;
 		ret = ExpandGeneric(xp, &regmatch, num_file, file,
-                                                tab[i].func, tab[i].escaped);
+						tab[i].func, tab[i].escaped);
 		break;
 	    }
     }
@@ -5125,7 +5126,7 @@ ExpandRTDir(pat, num_file, file, dirnames)
 	vim_free(matches);
     }
     if (ga.ga_len == 0)
-        return FAIL;
+	return FAIL;
 
     /* Sort and remove duplicates which can happen when specifying multiple
      * directories in dirnames. */
