@@ -71,6 +71,10 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PySequenceMethods Py_ssize_t
 #endif
 
+#if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
+# define PY_USE_CAPSULE
+#endif
+
 #if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02050000
 # define PyInt Py_ssize_t
 # define PyInquiry lenfunc
@@ -220,8 +224,13 @@ struct PyMethodDef { Py_ssize_t a; };
 #  define PyObject_Malloc dll_PyObject_Malloc
 #  define PyObject_Free dll_PyObject_Free
 # endif
-# define PyCapsule_New dll_PyCapsule_New
-# define PyCapsule_GetPointer dll_PyCapsule_GetPointer
+# ifdef PY_USE_CAPSULE
+#  define PyCapsule_New dll_PyCapsule_New
+#  define PyCapsule_GetPointer dll_PyCapsule_GetPointer
+# else
+#  define PyCObject_FromVoidPtr dll_PyCObject_FromVoidPtr
+#  define PyCObject_AsVoidPtr dll_PyCObject_AsVoidPtr
+# endif
 
 /*
  * Pointers for dynamic link
@@ -309,8 +318,13 @@ static int (*dll_PyType_IsSubtype)(PyTypeObject *, PyTypeObject *);
 static void* (*dll_PyObject_Malloc)(size_t);
 static void (*dll_PyObject_Free)(void*);
 # endif
+# ifdef PY_USE_CAPSULE
 static PyObject* (*dll_PyCapsule_New)(void *, char *, PyCapsule_Destructor);
 static void* (*dll_PyCapsule_GetPointer)(PyObject *, char *);
+# else
+static PyCObject* (*dll_PyCObject_FromVoidPtr)(void *cobj, void (*destr)(void *));
+static void* (*dll_PyCObject_AsVoidPtr)(PyCObject *);
+# endif
 
 static HINSTANCE hinstPython = 0; /* Instance of python.dll */
 
@@ -403,7 +417,8 @@ static struct
     {"PyType_Ready", (PYTHON_PROC*)&dll_PyType_Ready},
     {"Py_BuildValue", (PYTHON_PROC*)&dll_Py_BuildValue},
     {"Py_FindMethod", (PYTHON_PROC*)&dll_Py_FindMethod},
-# if (PY_VERSION_HEX >= 0x02050000) && SIZEOF_SIZE_T != SIZEOF_INT
+# if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02050000 \
+	&& SIZEOF_SIZE_T != SIZEOF_INT
     {"Py_InitModule4_64", (PYTHON_PROC*)&dll_Py_InitModule4},
 # else
     {"Py_InitModule4", (PYTHON_PROC*)&dll_Py_InitModule4},
@@ -424,8 +439,13 @@ static struct
     {"PyObject_Malloc", (PYTHON_PROC*)&dll_PyObject_Malloc},
     {"PyObject_Free", (PYTHON_PROC*)&dll_PyObject_Free},
 # endif
+# ifdef PY_USE_CAPSULE
     {"PyCapsule_New", (PYTHON_PROC*)&dll_PyCapsule_New},
     {"PyCapsule_GetPointer", (PYTHON_PROC*)&dll_PyCapsule_GetPointer},
+# else
+    {"PyCObject_FromVoidPtr", (PYTHON_PROC*)&dll_PyCObject_FromVoidPtr},
+    {"PyCObject_AsVoidPtr", (PYTHON_PROC*)&dll_PyCObject_AsVoidPtr},
+# endif
     {"", NULL},
 };
 

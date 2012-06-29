@@ -56,7 +56,7 @@ static struct PyMethodDef OutputMethods[] = {
     /* name,	    function,		calling,    documentation */
     {"write",	    OutputWrite,	1,	    ""},
     {"writelines",  OutputWritelines,	1,	    ""},
-    {"flush",       OutputFlush,        1,          ""},
+    {"flush",	    OutputFlush,	1,	    ""},
     { NULL,	    NULL,		0,	    NULL}
 };
 
@@ -506,8 +506,8 @@ static struct PyMethodDef VimMethods[] = {
     /* name,	     function,		calling,    documentation */
     {"command",	     VimCommand,	1,	    "Execute a Vim ex-mode command" },
     {"eval",	     VimEval,		1,	    "Evaluate an expression using Vim evaluator" },
-    {"bindeval",     VimEvalPy,         1,          "Like eval(), but returns objects attached to vim ones"},
-    {"strwidth",     VimStrwidth,       1,          "Screen string width, counts <Tab> as having width 1"},
+    {"bindeval",     VimEvalPy,		1,	    "Like eval(), but returns objects attached to vim ones"},
+    {"strwidth",     VimStrwidth,	1,	    "Screen string width, counts <Tab> as having width 1"},
     { NULL,	     NULL,		0,	    NULL }
 };
 
@@ -2432,17 +2432,32 @@ typedef int (*pytotvfunc)(PyObject *, typval_T *, PyObject *);
 convert_dl(PyObject *obj, typval_T *tv,
 				    pytotvfunc py_to_tv, PyObject *lookupDict)
 {
+# ifdef PY_USE_CAPSULE
     PyObject	*capsule;
+# else
+    PyCObject	*cobject;
+# endif
     char	hexBuf[sizeof(void *) * 2 + 3];
 
     sprintf(hexBuf, "%p", obj);
 
+# ifdef PY_USE_CAPSULE
     capsule = PyDict_GetItemString(lookupDict, hexBuf);
     if (capsule == NULL)
+# else
+    cobject = (PyCObject *)PyDict_GetItemString(lookupDict, hexBuf);
+    if (cobject == NULL)
+# endif
     {
+# ifdef PY_USE_CAPSULE
 	capsule = PyCapsule_New(tv, NULL, NULL);
 	PyDict_SetItemString(lookupDict, hexBuf, capsule);
 	Py_DECREF(capsule);
+# else
+	cobject = PyCObject_FromVoidPtr(tv, NULL);
+	PyDict_SetItemString(lookupDict, hexBuf, cobject);
+	Py_DECREF(cobject);
+# endif
 	if (py_to_tv(obj, tv, lookupDict) == -1)
 	{
 	    tv->v_type = VAR_UNKNOWN;
@@ -2458,7 +2473,13 @@ convert_dl(PyObject *obj, typval_T *tv,
     }
     else
     {
-	typval_T	*v = PyCapsule_GetPointer(capsule, NULL);
+	typval_T	*v;
+
+# ifdef PY_USE_CAPSULE
+	v = PyCapsule_GetPointer(capsule, NULL);
+# else
+	v = PyCObject_AsVoidPtr(cobject);
+# endif
 	copy_tv(v, tv);
     }
     return 0;
