@@ -513,8 +513,8 @@ EXTERN VimClipboard clip_plus;	/* CLIPBOARD selection in X11 */
 #  define ONE_CLIPBOARD
 # endif
 
-#define CLIP_UNNAMED      1
-#define CLIP_UNNAMED_PLUS 2
+# define CLIP_UNNAMED      1
+# define CLIP_UNNAMED_PLUS 2
 EXTERN int	clip_unnamed INIT(= 0); /* above two values or'ed */
 
 EXTERN int	clip_autoselect INIT(= FALSE);
@@ -737,9 +737,9 @@ EXTERN int	can_si_back INIT(= FALSE);
 #endif
 
 EXTERN pos_T	saved_cursor		/* w_cursor before formatting text. */
-# ifdef DO_INIT
+#ifdef DO_INIT
 	= INIT_POS_T(0, 0, 0)
-# endif
+#endif
 	;
 
 /*
@@ -807,9 +807,9 @@ EXTERN int	enc_latin9 INIT(= FALSE);	/* 'encoding' is latin9 */
 # endif
 EXTERN int	has_mbyte INIT(= 0);		/* any multi-byte encoding */
 
-#if defined(WIN3264) && defined(FEAT_MBYTE)
+# if defined(WIN3264) && defined(FEAT_MBYTE)
 EXTERN int	wide_WindowProc INIT(= FALSE);	/* use wide WindowProc() */
-#endif
+# endif
 
 /*
  * To speed up BYTELEN() we fill a table with the byte lengths whenever
@@ -1099,8 +1099,8 @@ EXTERN char_u	langmap_mapchar[256];	/* mapping for language keys */
 EXTERN int  save_p_ls INIT(= -1);	/* Save 'laststatus' setting */
 EXTERN int  save_p_wmh INIT(= -1);	/* Save 'winminheight' setting */
 EXTERN int  wild_menu_showing INIT(= 0);
-#define WM_SHOWN	1		/* wildmenu showing */
-#define WM_SCROLLED	2		/* wildmenu showing with scroll */
+# define WM_SHOWN	1		/* wildmenu showing */
+# define WM_SCROLLED	2		/* wildmenu showing with scroll */
 #endif
 
 #ifdef MSWIN
@@ -1310,9 +1310,9 @@ EXTERN Window	clientWindow INIT(= None);
 EXTERN Atom	commProperty INIT(= None);
 EXTERN char_u	*serverDelayedStartName INIT(= NULL);
 # else
-# ifdef PROTO
+#  ifdef PROTO
 typedef int HWND;
-# endif
+#  endif
 EXTERN HWND	clientWindow INIT(= 0);
 # endif
 #endif
