@@ -3189,7 +3189,7 @@ ex_vimgrep(eap)
 	    ;
 
     /* parse the list of arguments */
-    if (get_arglist_exp(p, &fcount, &fnames) == FAIL)
+    if (get_arglist_exp(p, &fcount, &fnames, TRUE) == FAIL)
 	goto theend;
     if (fcount == 0)
     {

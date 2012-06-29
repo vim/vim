@@ -8553,7 +8553,7 @@ ex_mkspell(eap)
     }
 
     /* Expand all the remaining arguments (e.g., $VIMRUNTIME). */
-    if (get_arglist_exp(arg, &fcount, &fnames) == OK)
+    if (get_arglist_exp(arg, &fcount, &fnames, FALSE) == OK)
     {
 	mkspell(fcount, fnames, ascii, eap->forceit, FALSE);
 	FreeWild(fcount, fnames);
