@@ -818,21 +818,21 @@ DictionaryAssItem(PyObject *self, PyObject *keyObject, PyObject *valObject)
 
     if (valObject == NULL)
     {
+	hashitem_T	*hi;
+
 	if (di == NULL)
 	{
 	    PyErr_SetString(PyExc_IndexError, _("no such key in dictionary"));
 	    return -1;
 	}
-	hashitem_T	*hi = hash_find(&d->dv_hashtab, di->di_key);
+	hi = hash_find(&d->dv_hashtab, di->di_key);
 	hash_remove(&d->dv_hashtab, hi);
 	dictitem_free(di);
 	return 0;
     }
 
     if (ConvertFromPyObject(valObject, &tv) == -1)
-    {
 	return -1;
-    }
 
     if (di == NULL)
     {
