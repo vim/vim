@@ -424,30 +424,21 @@ static int get_string_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int get_lit_string_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int get_list_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int rettv_list_alloc __ARGS((typval_T *rettv));
-static listitem_T *listitem_alloc __ARGS((void));
 static void listitem_free __ARGS((listitem_T *item));
-static void listitem_remove __ARGS((list_T *l, listitem_T *item));
 static long list_len __ARGS((list_T *l));
 static int list_equal __ARGS((list_T *l1, list_T *l2, int ic, int recursive));
 static int dict_equal __ARGS((dict_T *d1, dict_T *d2, int ic, int recursive));
 static int tv_equal __ARGS((typval_T *tv1, typval_T *tv2, int ic, int recursive));
-static listitem_T *list_find __ARGS((list_T *l, long n));
 static long list_find_nr __ARGS((list_T *l, long idx, int *errorp));
 static long list_idx_of_item __ARGS((list_T *l, listitem_T *item));
-static void list_append __ARGS((list_T *l, listitem_T *item));
 static int list_append_number __ARGS((list_T *l, varnumber_T n));
-static int list_insert_tv __ARGS((list_T *l, typval_T *tv, listitem_T *item));
 static int list_extend __ARGS((list_T	*l1, list_T *l2, listitem_T *bef));
 static int list_concat __ARGS((list_T *l1, list_T *l2, typval_T *tv));
 static list_T *list_copy __ARGS((list_T *orig, int deep, int copyID));
-static void list_remove __ARGS((list_T *l, listitem_T *item, listitem_T *item2));
 static char_u *list2string __ARGS((typval_T *tv, int copyID));
 static int list_join_inner __ARGS((garray_T *gap, list_T *l, char_u *sep, int echo_style, int copyID, garray_T *join_gap));
 static int list_join __ARGS((garray_T *gap, list_T *l, char_u *sep, int echo, int copyID));
 static int free_unref_items __ARGS((int copyID));
-static void set_ref_in_ht __ARGS((hashtab_T *ht, int copyID));
-static void set_ref_in_list __ARGS((list_T *l, int copyID));
-static void set_ref_in_item __ARGS((typval_T *tv, int copyID));
 static int rettv_dict_alloc __ARGS((typval_T *rettv));
 static void dict_free __ARGS((dict_T *d, int recurse));
 static dictitem_T *dictitem_copy __ARGS((dictitem_T *org));
@@ -654,6 +645,12 @@ static void f_pow __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_prevnonblank __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_printf __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_pumvisible __ARGS((typval_T *argvars, typval_T *rettv));
+#ifdef FEAT_PYTHON3
+static void f_py3eval __ARGS((typval_T *argvars, typval_T *rettv));
+#endif
+#ifdef FEAT_PYTHON
+static void f_pyeval __ARGS((typval_T *argvars, typval_T *rettv));
+#endif
 static void f_range __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_readfile __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_reltime __ARGS((typval_T *argvars, typval_T *rettv));
@@ -824,8 +821,6 @@ static int script_autoload __ARGS((char_u *name, int reload));
 static char_u *autoload_name __ARGS((char_u *name));
 static void cat_func_name __ARGS((char_u *buf, ufunc_T *fp));
 static void func_free __ARGS((ufunc_T *fp));
-static void func_unref __ARGS((char_u *name));
-static void func_ref __ARGS((char_u *name));
 static void call_user_func __ARGS((ufunc_T *fp, int argcount, typval_T *argvars, typval_T *rettv, linenr_T firstline, linenr_T lastline, dict_T *selfdict));
 static int can_free_funccal __ARGS((funccall_T *fc, int copyID)) ;
 static void free_funccal __ARGS((funccall_T *fc, int free_val));
@@ -5927,7 +5922,7 @@ list_free(l, recurse)
 /*
  * Allocate a list item.
  */
-    static listitem_T *
+    listitem_T *
 listitem_alloc()
 {
     return (listitem_T *)alloc(sizeof(listitem_T));
@@ -5947,7 +5942,7 @@ listitem_free(item)
 /*
  * Remove a list item from a List and free it.  Also clears the value.
  */
-    static void
+    void
 listitem_remove(l, item)
     list_T  *l;
     listitem_T *item;
@@ -6123,7 +6118,7 @@ tv_equal(tv1, tv2, ic, recursive)
  * A negative index is counted from the end; -1 is the last item.
  * Returns NULL when "n" is out of range.
  */
-    static listitem_T *
+    listitem_T *
 list_find(l, n)
     list_T	*l;
     long	n;
@@ -6265,7 +6260,7 @@ list_idx_of_item(l, item)
 /*
  * Append item "item" to the end of list "l".
  */
-    static void
+    void
 list_append(l, item)
     list_T	*l;
     listitem_T	*item;
@@ -6378,7 +6373,7 @@ list_append_number(l, n)
  * If "item" is NULL append at the end.
  * Return FAIL when out of memory.
  */
-    static int
+    int
 list_insert_tv(l, tv, item)
     list_T	*l;
     typval_T	*tv;
@@ -6523,7 +6518,7 @@ list_copy(orig, deep, copyID)
  * Remove items "item" to "item2" from list "l".
  * Does not free the listitem or the value!
  */
-    static void
+    void
 list_remove(l, item, item2)
     list_T	*l;
     listitem_T	*item;
@@ -6785,6 +6780,14 @@ garbage_collect()
     set_ref_in_lua(copyID);
 #endif
 
+#ifdef FEAT_PYTHON
+    set_ref_in_python(copyID);
+#endif
+
+#ifdef FEAT_PYTHON3
+    set_ref_in_python3(copyID);
+#endif
+
     /*
      * 2. Free lists and dictionaries that are not referenced.
      */
@@ -6870,7 +6873,7 @@ free_unref_items(copyID)
 /*
  * Mark all lists and dicts referenced through hashtab "ht" with "copyID".
  */
-    static void
+    void
 set_ref_in_ht(ht, copyID)
     hashtab_T	*ht;
     int		copyID;
@@ -6890,7 +6893,7 @@ set_ref_in_ht(ht, copyID)
 /*
  * Mark all lists and dicts referenced through list "l" with "copyID".
  */
-    static void
+    void
 set_ref_in_list(l, copyID)
     list_T	*l;
     int		copyID;
@@ -6904,7 +6907,7 @@ set_ref_in_list(l, copyID)
 /*
  * Mark all lists and dicts referenced through typval "tv" with "copyID".
  */
-    static void
+    void
 set_ref_in_item(tv, copyID)
     typval_T	*tv;
     int		copyID;
@@ -7986,6 +7989,12 @@ static struct fst
     {"prevnonblank",	1, 1, f_prevnonblank},
     {"printf",		2, 19, f_printf},
     {"pumvisible",	0, 0, f_pumvisible},
+#ifdef FEAT_PYTHON3
+    {"py3eval",		1, 1, f_py3eval},
+#endif
+#ifdef FEAT_PYTHON
+    {"pyeval",		1, 1, f_pyeval},
+#endif
     {"range",		1, 3, f_range},
     {"readfile",	1, 3, f_readfile},
     {"reltime",		0, 2, f_reltime},
@@ -9150,6 +9159,45 @@ f_byteidx(argvars, rettv)
 #endif
 }
 
+    int
+func_call(name, args, selfdict, rettv)
+    char_u	*name;
+    typval_T	*args;
+    dict_T	*selfdict;
+    typval_T	*rettv;
+{
+    listitem_T	*item;
+    typval_T	argv[MAX_FUNC_ARGS + 1];
+    int		argc = 0;
+    int		dummy;
+    int		r = 0;
+
+    for (item = args->vval.v_list->lv_first; item != NULL;
+							 item = item->li_next)
+    {
+	if (argc == MAX_FUNC_ARGS)
+	{
+	    EMSG(_("E699: Too many arguments"));
+	    break;
+	}
+	/* Make a copy of each argument.  This is needed to be able to set
+	 * v_lock to VAR_FIXED in the copy without changing the original list.
+	 */
+	copy_tv(&item->li_tv, &argv[argc++]);
+    }
+
+    if (item == NULL)
+	r = call_func(name, (int)STRLEN(name), rettv, argc, argv,
+				 curwin->w_cursor.lnum, curwin->w_cursor.lnum,
+						      &dummy, TRUE, selfdict);
+
+    /* Free the arguments. */
+    while (argc > 0)
+	clear_tv(&argv[--argc]);
+
+    return r;
+}
+
 /*
  * "call(func, arglist)" function
  */
@@ -9159,10 +9207,6 @@ f_call(argvars, rettv)
     typval_T	*rettv;
 {
     char_u	*func;
-    typval_T	argv[MAX_FUNC_ARGS + 1];
-    int		argc = 0;
-    listitem_T	*item;
-    int		dummy;
     dict_T	*selfdict = NULL;
 
     if (argvars[1].v_type != VAR_LIST)
@@ -9190,28 +9234,7 @@ f_call(argvars, rettv)
 	selfdict = argvars[2].vval.v_dict;
     }
 
-    for (item = argvars[1].vval.v_list->lv_first; item != NULL;
-							 item = item->li_next)
-    {
-	if (argc == MAX_FUNC_ARGS)
-	{
-	    EMSG(_("E699: Too many arguments"));
-	    break;
-	}
-	/* Make a copy of each argument.  This is needed to be able to set
-	 * v_lock to VAR_FIXED in the copy without changing the original list.
-	 */
-	copy_tv(&item->li_tv, &argv[argc++]);
-    }
-
-    if (item == NULL)
-	(void)call_func(func, (int)STRLEN(func), rettv, argc, argv,
-				 curwin->w_cursor.lnum, curwin->w_cursor.lnum,
-						      &dummy, TRUE, selfdict);
-
-    /* Free the arguments. */
-    while (argc > 0)
-	clear_tv(&argv[--argc]);
+    (void)func_call(func, &argvars[1], selfdict, rettv);
 }
 
 #ifdef FEAT_FLOAT
@@ -14423,6 +14446,40 @@ f_pumvisible(argvars, rettv)
 	rettv->vval.v_number = 1;
 #endif
 }
+
+#ifdef FEAT_PYTHON3
+/*
+ * "py3eval()" function
+ */
+    static void
+f_py3eval(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u	*str;
+    char_u	buf[NUMBUFLEN];
+
+    str = get_tv_string_buf(&argvars[0], buf);
+    do_py3eval(str, rettv);
+}
+#endif
+
+#ifdef FEAT_PYTHON
+/*
+ * "pyeval()" function
+ */
+    static void
+f_pyeval(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u	*str;
+    char_u	buf[NUMBUFLEN];
+
+    str = get_tv_string_buf(&argvars[0], buf);
+    do_pyeval(str, rettv);
+}
+#endif
 
 /*
  * "range()" function
@@ -22139,7 +22196,7 @@ func_free(fp)
  * Unreference a Function: decrement the reference count and free it when it
  * becomes zero.  Only for numbered functions.
  */
-    static void
+    void
 func_unref(name)
     char_u	*name;
 {
@@ -22163,7 +22220,7 @@ func_unref(name)
 /*
  * Count a reference to a Function.
  */
-    static void
+    void
 func_ref(name)
     char_u	*name;
 {

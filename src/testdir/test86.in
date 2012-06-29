@@ -1,0 +1,211 @@
+Tests for various python features.     vim: set ft=vim :
+
+STARTTEST
+:so small.vim
+:if !has('python') | e! test.ok | wq! test.out | endif
+:py import vim
+:fun Test()
+:let l = []
+:py l=vim.bindeval('l')
+:py f=vim.bindeval('function("strlen")')
+:" Extending List directly with different types
+:py l.extend([1, "as'd", [1, 2, f, {'a': 1}]])
+:$put =string(l)
+:$put =string(l[-1])
+:try
+:  $put =string(l[-4])
+:catch
+:  $put =v:exception[:13]
+:endtry
+:" List assignment
+:py l[0]=0
+:$put =string(l)
+:py l[-2]=f
+:$put =string(l)
+:"
+:" Extending Dictionary directly with different types
+:let d = {}
+:py d=vim.bindeval('d')
+:py d['1']='asd'
+:py d['b']=[1, 2, f]
+:py d['-1']={'a': 1}
+:let dkeys = []
+:py dk=vim.bindeval('dkeys')
+:py dkeys=d.keys()
+:py dkeys.sort()
+:py dk.extend(dkeys)
+:$put =string(dkeys)
+:for [key, val] in sort(items(d))
+:  $put =string(key) . ' : ' . string(val)
+:  unlet key val
+:endfor
+:"
+:" removing items with del
+:py del l[2]
+:$put =string(l)
+:let l = range(8)
+:py l=vim.bindeval('l')
+:try
+:   py del l[:3]
+:   py del l[1:]
+:catch
+:   $put =v:exception
+:endtry
+:$put =string(l)
+:"
+:py del d['-1']
+:$put =string(d)
+:"
+:" removing items out of range: silently skip items that don't exist
+:let l = [0, 1, 2, 3]
+:py l=vim.bindeval('l')
+:" The following two ranges delete nothing as they match empty list:
+:py del l[2:1]
+:$put =string(l)
+:py del l[2:2]
+:$put =string(l)
+:py del l[2:3]
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py l=vim.bindeval('l')
+:py del l[2:4]
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py l=vim.bindeval('l')
+:py del l[2:5]
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py l=vim.bindeval('l')
+:py del l[2:6]
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py l=vim.bindeval('l')
+:" The following two ranges delete nothing as they match empty list:
+:py del l[-1:2]
+:$put =string(l)
+:py del l[-2:2]
+:$put =string(l)
+:py del l[-3:2]
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py l=vim.bindeval('l')
+:py del l[-4:2]
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py l=vim.bindeval('l')
+:py del l[-5:2]
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py l=vim.bindeval('l')
+:py del l[-6:2]
+:$put =string(l)
+:"
+:" Slice assignment to a list
+:let l = [0, 1, 2, 3]
+:py l=vim.bindeval('l')
+:py l[0:0]=['a']
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py l=vim.bindeval('l')
+:py l[1:2]=['b']
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py l=vim.bindeval('l')
+:py l[2:4]=['c']
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py l=vim.bindeval('l')
+:py l[4:4]=['d']
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py l=vim.bindeval('l')
+:py l[-1:2]=['e']
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py l=vim.bindeval('l')
+:py l[-10:2]=['f']
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py l=vim.bindeval('l')
+:py l[2:-10]=['g']
+:$put =string(l)
+:let l = []
+:py l=vim.bindeval('l')
+:py l[0:0]=['h']
+:$put =string(l)
+:"
+:" Locked variables
+:let l = [0, 1, 2, 3]
+:py l=vim.bindeval('l')
+:lockvar! l
+:py l[2]='i'
+:$put =string(l)
+:unlockvar! l
+:"
+:" Function calls
+:function New(...)
+:return ['NewStart']+a:000+['NewEnd']
+:endfunction
+:function DictNew(...) dict
+:return ['DictNewStart']+a:000+['DictNewEnd', self]
+:endfunction
+:let l=[function('New'), function('DictNew')]
+:py l=vim.bindeval('l')
+:py l.extend(list(l[0](1, 2, 3)))
+:$put =string(l)
+:py l.extend(list(l[1](1, 2, 3, self={'a': 'b'})))
+:$put =string(l)
+:py l.extend([l[0].name])
+:$put =string(l)
+:try
+:   py l[1](1, 2, 3)
+:catch
+:   $put =v:exception[:16]
+:endtry
+:delfunction New
+:try
+:   py l[0](1, 2, 3)
+:catch
+:   $put =v:exception[:16]
+:endtry
+:if has('float')
+:   let l=[0.0]
+:   py l=vim.bindeval('l')
+:   py l.extend([0.0])
+:   $put =string(l)
+:else
+:   $put ='[0.0, 0.0]'
+:endif
+:"
+:" pyeval()
+:let l=pyeval('range(3)')
+:$put =string(l)
+:let d=pyeval('{"a": "b", "c": 1, "d": ["e"]}')
+:$put =sort(items(d))
+:try
+:   let undef=pyeval('undefined_name')
+:catch
+:   $put =v:exception[:13]
+:endtry
+:try
+:   let vim=pyeval('vim')
+:catch
+:   $put =v:exception[:13]
+:endtry
+:if has('float')
+:   let f=pyeval('0.0')
+:   $put =string(f)
+:else
+:   $put ='0.0'
+:endif
+:endfun
+:"
+:call Test()
+:"
+:delfunc Test
+:call garbagecollect(1)
+:"
+:/^start:/,$wq! test.out
+ENDTEST
+
+start:

@@ -199,9 +199,9 @@ int (*dll_lua_pcall) (lua_State *L, int nargs, int nresults, int errfunc);
 lua_Number (*dll_lua_tonumberx) (lua_State *L, int idx, int *isnum);
 lua_Integer (*dll_lua_tointegerx) (lua_State *L, int idx, int *isnum);
 void (*dll_lua_callk) (lua_State *L, int nargs, int nresults, int ctx,
-        lua_CFunction k);
+	lua_CFunction k);
 int (*dll_lua_pcallk) (lua_State *L, int nargs, int nresults, int errfunc,
-        int ctx, lua_CFunction k);
+	int ctx, lua_CFunction k);
 void (*dll_lua_getglobal) (lua_State *L, const char *var);
 void (*dll_lua_setglobal) (lua_State *L, const char *var);
 #endif
@@ -394,7 +394,7 @@ lua_enabled(int verbose)
 luaL_typeerror (lua_State *L, int narg, const char *tname)
 {
     const char *msg = lua_pushfstring(L, "%s expected, got %s",
-            tname, luaL_typename(L, narg));
+	    tname, luaL_typename(L, narg));
     return luaL_argerror(L, narg, msg);
 }
 #endif
@@ -646,141 +646,6 @@ luaV_msgfunc(lua_State *L, msgfunc_T mf)
 	return 1; \
     }
 
-
-/* adapted from eval.c */
-
-#define listitem_alloc() (listitem_T *)alloc(sizeof(listitem_T))
-
-    static listitem_T *
-list_find (list_T *l, long n)
-{
-    listitem_T *li;
-    if (l == NULL || n < -l->lv_len || n >= l->lv_len)
-	return NULL;
-    if (n < 0) /* search backward? */
-	for (li = l->lv_last; n < -1; li = li->li_prev)
-	    n++;
-    else /* search forward */
-	for (li = l->lv_first; n > 0; li = li->li_next)
-	    n--;
-    return li;
-}
-
-    static void
-list_remove (list_T *l, listitem_T *li)
-{
-    listwatch_T *lw;
-    --l->lv_len;
-    /* fix watchers */
-    for (lw = l->lv_watch; lw != NULL; lw = lw->lw_next)
-	if (lw->lw_item == li)
-	    lw->lw_item = li->li_next;
-    /* fix list pointers */
-    if (li->li_next == NULL) /* last? */
-	l->lv_last = li->li_prev;
-    else
-	li->li_next->li_prev = li->li_prev;
-    if (li->li_prev == NULL) /* first? */
-	l->lv_first = li->li_next;
-    else
-	li->li_prev->li_next = li->li_next;
-    l->lv_idx_item = NULL;
-}
-
-    static void
-list_append(list_T *l, listitem_T *item)
-{
-    if (l->lv_last == NULL) /* empty list? */
-	l->lv_first = item;
-    else
-	l->lv_last->li_next = item;
-    item->li_prev = l->lv_last;
-    item->li_next = NULL;
-    l->lv_last = item;
-    ++l->lv_len;
-}
-
-    static int
-list_insert_tv(list_T *l, typval_T *tv, listitem_T *item)
-{
-    listitem_T	*ni = listitem_alloc();
-
-    if (ni == NULL)
-	return FAIL;
-    copy_tv(tv, &ni->li_tv);
-    if (item == NULL)
-	list_append(l, ni);
-    else
-    {
-	ni->li_prev = item->li_prev;
-	ni->li_next = item;
-	if (item->li_prev == NULL)
-	{
-	    l->lv_first = ni;
-	    ++l->lv_idx;
-	}
-	else
-	{
-	    item->li_prev->li_next = ni;
-	    l->lv_idx_item = NULL;
-	}
-	item->li_prev = ni;
-	++l->lv_len;
-    }
-    return OK;
-}
-
-/* set references */
-
-static void set_ref_in_tv (typval_T *tv, int copyID);
-
-    static void
-set_ref_in_dict(dict_T *d, int copyID)
-{
-    hashtab_T *ht = &d->dv_hashtab;
-    int n = ht->ht_used;
-    hashitem_T *hi;
-    for (hi = ht->ht_array; n > 0; ++hi)
-	if (!HASHITEM_EMPTY(hi))
-	{
-	    dictitem_T *di = dict_lookup(hi);
-	    set_ref_in_tv(&di->di_tv, copyID);
-	    --n;
-	}
-}
-
-    static void
-set_ref_in_list(list_T *l, int copyID)
-{
-    listitem_T *li;
-    for (li = l->lv_first; li != NULL; li = li->li_next)
-	set_ref_in_tv(&li->li_tv, copyID);
-}
-
-    static void
-set_ref_in_tv(typval_T *tv, int copyID)
-{
-    if (tv->v_type == VAR_LIST)
-    {
-	list_T *l = tv->vval.v_list;
-	if (l != NULL && l->lv_copyID != copyID)
-	{
-	    l->lv_copyID = copyID;
-	    set_ref_in_list(l, copyID);
-	}
-    }
-    else if (tv->v_type == VAR_DICT)
-    {
-	dict_T *d = tv->vval.v_dict;
-	if (d != NULL && d->dv_copyID != copyID)
-	{
-	    d->dv_copyID = copyID;
-	    set_ref_in_dict(d, copyID);
-	}
-    }
-}
-
-
 /* =======   List type   ======= */
 
     static luaV_List *
@@ -876,7 +741,7 @@ luaV_list_newindex (lua_State *L)
     if (li == NULL) return 0;
     if (lua_isnil(L, 3)) /* remove? */
     {
-	list_remove(l, li);
+	list_remove(l, li, li);
 	clear_tv(&li->li_tv);
 	vim_free(li);
     }
@@ -904,8 +769,7 @@ luaV_list_add (lua_State *L)
 	typval_T v;
 	lua_settop(L, 2);
 	luaV_totypval(L, 2, &v);
-	copy_tv(&v, &li->li_tv);
-	list_append(l, li);
+	list_append_tv(l, &v);
     }
     lua_settop(L, 1);
     return 1;
@@ -1682,7 +1546,7 @@ luaV_setref (lua_State *L)
 	    tv.vval.v_dict = (dict_T *) lua_touserdata(L, 4); /* key */
 	}
 	lua_pop(L, 2); /* metatable and value */
-	set_ref_in_tv(&tv, copyID);
+	set_ref_in_item(&tv, copyID);
     }
     return 0;
 }

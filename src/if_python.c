@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -55,6 +55,8 @@
 #undef HAVE_FCNTL_H /* Clash with os_win32.h */
 
 static void init_structs(void);
+
+#define PyBytes_FromString PyString_FromString
 
 /* No-op conversion functions, use with care! */
 #define PyString_AsBytes(obj) (obj)
@@ -122,11 +124,13 @@ struct PyMethodDef { Py_ssize_t a; };
 /* This makes if_python.c compile without warnings against Python 2.5
  * on Win32 and Win64. */
 # undef PyRun_SimpleString
+# undef PyRun_String
 # undef PyArg_Parse
 # undef PyArg_ParseTuple
 # undef Py_BuildValue
 # undef Py_InitModule4
 # undef Py_InitModule4_64
+# undef PyObject_CallMethod
 
 /*
  * Wrapper defines
@@ -134,6 +138,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyArg_Parse dll_PyArg_Parse
 # define PyArg_ParseTuple dll_PyArg_ParseTuple
 # define PyMem_Free dll_PyMem_Free
+# define PyMem_Malloc dll_PyMem_Malloc
 # define PyDict_SetItemString dll_PyDict_SetItemString
 # define PyErr_BadArgument dll_PyErr_BadArgument
 # define PyErr_Clear dll_PyErr_Clear
@@ -150,23 +155,48 @@ struct PyMethodDef { Py_ssize_t a; };
 # endif
 # define PyInt_AsLong dll_PyInt_AsLong
 # define PyInt_FromLong dll_PyInt_FromLong
+# define PyLong_AsLong dll_PyLong_AsLong
+# define PyLong_FromLong dll_PyLong_FromLong
 # define PyInt_Type (*dll_PyInt_Type)
+# define PyLong_Type (*dll_PyLong_Type)
 # define PyList_GetItem dll_PyList_GetItem
 # define PyList_Append dll_PyList_Append
 # define PyList_New dll_PyList_New
 # define PyList_SetItem dll_PyList_SetItem
 # define PyList_Size dll_PyList_Size
 # define PyList_Type (*dll_PyList_Type)
+# define PySequence_Check dll_PySequence_Check
+# define PySequence_Size dll_PySequence_Size
+# define PySequence_GetItem dll_PySequence_GetItem
+# define PyTuple_Size dll_PyTuple_Size
+# define PyTuple_GetItem dll_PyTuple_GetItem
+# define PyTuple_Type (*dll_PyTuple_Type)
 # define PyImport_ImportModule dll_PyImport_ImportModule
 # define PyDict_New dll_PyDict_New
 # define PyDict_GetItemString dll_PyDict_GetItemString
+# define PyDict_Next dll_PyDict_Next
+# ifdef PyMapping_Items
+#  define PY_NO_MAPPING_ITEMS
+# else
+#  define PyMapping_Items dll_PyMapping_Items
+# endif
+# define PyObject_CallMethod dll_PyObject_CallMethod
+# define PyMapping_Check dll_PyMapping_Check
+# define PyIter_Next dll_PyIter_Next
 # define PyModule_GetDict dll_PyModule_GetDict
 # define PyRun_SimpleString dll_PyRun_SimpleString
+# define PyRun_String dll_PyRun_String
 # define PyString_AsString dll_PyString_AsString
 # define PyString_FromString dll_PyString_FromString
 # define PyString_FromStringAndSize dll_PyString_FromStringAndSize
 # define PyString_Size dll_PyString_Size
 # define PyString_Type (*dll_PyString_Type)
+# define PyUnicode_Type (*dll_PyUnicode_Type)
+# define PyUnicodeUCS4_AsEncodedString (*dll_PyUnicodeUCS4_AsEncodedString)
+# define PyFloat_AsDouble dll_PyFloat_AsDouble
+# define PyFloat_FromDouble dll_PyFloat_FromDouble
+# define PyFloat_Type (*dll_PyFloat_Type)
+# define PyImport_AddModule (*dll_PyImport_AddModule)
 # define PySys_SetObject dll_PySys_SetObject
 # define PySys_SetArgv dll_PySys_SetArgv
 # define PyType_Type (*dll_PyType_Type)
@@ -179,8 +209,10 @@ struct PyMethodDef { Py_ssize_t a; };
 # define Py_Finalize dll_Py_Finalize
 # define Py_IsInitialized dll_Py_IsInitialized
 # define _PyObject_New dll__PyObject_New
+# define _PyObject_NextNotImplemented (*dll__PyObject_NextNotImplemented)
 # define _Py_NoneStruct (*dll__Py_NoneStruct)
 # define PyObject_Init dll__PyObject_Init
+# define PyObject_GetIter dll_PyObject_GetIter
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02020000
 #  define PyType_IsSubtype dll_PyType_IsSubtype
 # endif
@@ -188,6 +220,8 @@ struct PyMethodDef { Py_ssize_t a; };
 #  define PyObject_Malloc dll_PyObject_Malloc
 #  define PyObject_Free dll_PyObject_Free
 # endif
+# define PyCapsule_New dll_PyCapsule_New
+# define PyCapsule_GetPointer dll_PyCapsule_GetPointer
 
 /*
  * Pointers for dynamic link
@@ -195,6 +229,7 @@ struct PyMethodDef { Py_ssize_t a; };
 static int(*dll_PyArg_Parse)(PyObject *, char *, ...);
 static int(*dll_PyArg_ParseTuple)(PyObject *, char *, ...);
 static int(*dll_PyMem_Free)(void *);
+static void* (*dll_PyMem_Malloc)(size_t);
 static int(*dll_PyDict_SetItemString)(PyObject *dp, char *key, PyObject *item);
 static int(*dll_PyErr_BadArgument)(void);
 static void(*dll_PyErr_Clear)(void);
@@ -208,26 +243,48 @@ static PyThreadState*(*dll_PyEval_SaveThread)(void);
 # ifdef PY_CAN_RECURSE
 static PyGILState_STATE	(*dll_PyGILState_Ensure)(void);
 static void (*dll_PyGILState_Release)(PyGILState_STATE);
-#endif
+# endif
 static long(*dll_PyInt_AsLong)(PyObject *);
 static PyObject*(*dll_PyInt_FromLong)(long);
+static long(*dll_PyLong_AsLong)(PyObject *);
+static PyObject*(*dll_PyLong_FromLong)(long);
 static PyTypeObject* dll_PyInt_Type;
+static PyTypeObject* dll_PyLong_Type;
 static PyObject*(*dll_PyList_GetItem)(PyObject *, PyInt);
 static PyObject*(*dll_PyList_Append)(PyObject *, PyObject *);
 static PyObject*(*dll_PyList_New)(PyInt size);
 static int(*dll_PyList_SetItem)(PyObject *, PyInt, PyObject *);
 static PyInt(*dll_PyList_Size)(PyObject *);
 static PyTypeObject* dll_PyList_Type;
+static int (*dll_PySequence_Check)(PyObject *);
+static PyInt(*dll_PySequence_Size)(PyObject *);
+static PyObject*(*dll_PySequence_GetItem)(PyObject *, PyInt);
+static PyInt(*dll_PyTuple_Size)(PyObject *);
+static PyObject*(*dll_PyTuple_GetItem)(PyObject *, PyInt);
+static PyTypeObject* dll_PyTuple_Type;
 static PyObject*(*dll_PyImport_ImportModule)(const char *);
 static PyObject*(*dll_PyDict_New)(void);
 static PyObject*(*dll_PyDict_GetItemString)(PyObject *, const char *);
+static int (*dll_PyDict_Next)(PyObject *, Py_ssize_t *, PyObject **, PyObject **);
+# ifndef PY_NO_MAPPING_ITEMS
+static PyObject* (*dll_PyMapping_Items)(PyObject *);
+# endif
+static PyObject* (*dll_PyObject_CallMethod)(PyObject *, char *, PyObject *);
+static int (*dll_PyMapping_Check)(PyObject *);
+static PyObject* (*dll_PyIter_Next)(PyObject *);
 static PyObject*(*dll_PyModule_GetDict)(PyObject *);
 static int(*dll_PyRun_SimpleString)(char *);
+static PyObject *(*dll_PyRun_String)(char *, int, PyObject *, PyObject *);
 static char*(*dll_PyString_AsString)(PyObject *);
 static PyObject*(*dll_PyString_FromString)(const char *);
 static PyObject*(*dll_PyString_FromStringAndSize)(const char *, PyInt);
 static PyInt(*dll_PyString_Size)(PyObject *);
 static PyTypeObject* dll_PyString_Type;
+static PyTypeObject* dll_PyUnicode_Type;
+static PyObject *(*PyUnicodeUCS4_AsEncodedString)(PyObject *, char *, char *);
+static double(*dll_PyFloat_AsDouble)(PyObject *);
+static PyObject*(*dll_PyFloat_FromDouble)(double);
+static PyTypeObject* dll_PyFloat_Type;
 static int(*dll_PySys_SetObject)(char *, PyObject *);
 static int(*dll_PySys_SetArgv)(int, char **);
 static PyTypeObject* dll_PyType_Type;
@@ -235,12 +292,15 @@ static int (*dll_PyType_Ready)(PyTypeObject *type);
 static PyObject*(*dll_Py_BuildValue)(char *, ...);
 static PyObject*(*dll_Py_FindMethod)(struct PyMethodDef[], PyObject *, char *);
 static PyObject*(*dll_Py_InitModule4)(char *, struct PyMethodDef *, char *, PyObject *, int);
+static PyObject*(*dll_PyImport_AddModule)(char *);
 static void(*dll_Py_SetPythonHome)(char *home);
 static void(*dll_Py_Initialize)(void);
 static void(*dll_Py_Finalize)(void);
 static int(*dll_Py_IsInitialized)(void);
 static PyObject*(*dll__PyObject_New)(PyTypeObject *, PyObject *);
 static PyObject*(*dll__PyObject_Init)(PyObject *, PyTypeObject *);
+static PyObject* (*dll_PyObject_GetIter)(PyObject *);
+static iternextfunc dll__PyObject_NextNotImplemented;
 static PyObject* dll__Py_NoneStruct;
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02020000
 static int (*dll_PyType_IsSubtype)(PyTypeObject *, PyTypeObject *);
@@ -249,6 +309,8 @@ static int (*dll_PyType_IsSubtype)(PyTypeObject *, PyTypeObject *);
 static void* (*dll_PyObject_Malloc)(size_t);
 static void (*dll_PyObject_Free)(void*);
 # endif
+static PyObject* (*dll_PyCapsule_New)(void *, char *, PyCapsule_Destructor);
+static void* (*dll_PyCapsule_GetPointer)(PyObject *, char *);
 
 static HINSTANCE hinstPython = 0; /* Instance of python.dll */
 
@@ -278,6 +340,7 @@ static struct
     {"PyArg_Parse", (PYTHON_PROC*)&dll_PyArg_Parse},
     {"PyArg_ParseTuple", (PYTHON_PROC*)&dll_PyArg_ParseTuple},
     {"PyMem_Free", (PYTHON_PROC*)&dll_PyMem_Free},
+    {"PyMem_Malloc", (PYTHON_PROC*)&dll_PyMem_Malloc},
     {"PyDict_SetItemString", (PYTHON_PROC*)&dll_PyDict_SetItemString},
     {"PyErr_BadArgument", (PYTHON_PROC*)&dll_PyErr_BadArgument},
     {"PyErr_Clear", (PYTHON_PROC*)&dll_PyErr_Clear},
@@ -294,23 +357,46 @@ static struct
 # endif
     {"PyInt_AsLong", (PYTHON_PROC*)&dll_PyInt_AsLong},
     {"PyInt_FromLong", (PYTHON_PROC*)&dll_PyInt_FromLong},
+    {"PyLong_AsLong", (PYTHON_PROC*)&dll_PyLong_AsLong},
+    {"PyLong_FromLong", (PYTHON_PROC*)&dll_PyLong_FromLong},
     {"PyInt_Type", (PYTHON_PROC*)&dll_PyInt_Type},
+    {"PyLong_Type", (PYTHON_PROC*)&dll_PyLong_Type},
     {"PyList_GetItem", (PYTHON_PROC*)&dll_PyList_GetItem},
     {"PyList_Append", (PYTHON_PROC*)&dll_PyList_Append},
     {"PyList_New", (PYTHON_PROC*)&dll_PyList_New},
     {"PyList_SetItem", (PYTHON_PROC*)&dll_PyList_SetItem},
     {"PyList_Size", (PYTHON_PROC*)&dll_PyList_Size},
     {"PyList_Type", (PYTHON_PROC*)&dll_PyList_Type},
+    {"PySequence_GetItem", (PYTHON_PROC*)&dll_PySequence_GetItem},
+    {"PySequence_Size", (PYTHON_PROC*)&dll_PySequence_Size},
+    {"PySequence_Check", (PYTHON_PROC*)&dll_PySequence_Check},
+    {"PyTuple_GetItem", (PYTHON_PROC*)&dll_PyTuple_GetItem},
+    {"PyTuple_Size", (PYTHON_PROC*)&dll_PyTuple_Size},
+    {"PyTuple_Type", (PYTHON_PROC*)&dll_PyTuple_Type},
     {"PyImport_ImportModule", (PYTHON_PROC*)&dll_PyImport_ImportModule},
     {"PyDict_GetItemString", (PYTHON_PROC*)&dll_PyDict_GetItemString},
+    {"PyDict_Next", (PYTHON_PROC*)&dll_PyDict_Next},
     {"PyDict_New", (PYTHON_PROC*)&dll_PyDict_New},
+# ifndef PY_NO_MAPPING_ITEMS
+    {"PyMapping_Items", (PYTHON_PROC*)&dll_PyMapping_Items},
+# endif
+    {"PyObject_CallMethod", (PYTHON_PROC*)&dll_PyObject_CallMethod},
+    {"PyMapping_Check", (PYTHON_PROC*)&dll_PyMapping_Check},
+    {"PyIter_Next", (PYTHON_PROC*)&dll_PyIter_Next},
     {"PyModule_GetDict", (PYTHON_PROC*)&dll_PyModule_GetDict},
     {"PyRun_SimpleString", (PYTHON_PROC*)&dll_PyRun_SimpleString},
+    {"PyRun_String", (PYTHON_PROC*)&dll_PyRun_String},
     {"PyString_AsString", (PYTHON_PROC*)&dll_PyString_AsString},
     {"PyString_FromString", (PYTHON_PROC*)&dll_PyString_FromString},
     {"PyString_FromStringAndSize", (PYTHON_PROC*)&dll_PyString_FromStringAndSize},
     {"PyString_Size", (PYTHON_PROC*)&dll_PyString_Size},
     {"PyString_Type", (PYTHON_PROC*)&dll_PyString_Type},
+    {"PyUnicode_Type", (PYTHON_PROC*)&dll_PyUnicode_Type},
+    {"PyUnicodeUCS4_AsEncodedString", (PYTHON_PROC*)&dll_PyUnicodeUCS4_AsEncodedString},
+    {"PyFloat_Type", (PYTHON_PROC*)&dll_PyFloat_Type},
+    {"PyFloat_AsDouble", (PYTHON_PROC*)&dll_PyFloat_AsDouble},
+    {"PyFloat_FromDouble", (PYTHON_PROC*)&dll_PyFloat_FromDouble},
+    {"PyImport_AddModule", (PYTHON_PROC*)&dll_PyImport_AddModule},
     {"PySys_SetObject", (PYTHON_PROC*)&dll_PySys_SetObject},
     {"PySys_SetArgv", (PYTHON_PROC*)&dll_PySys_SetArgv},
     {"PyType_Type", (PYTHON_PROC*)&dll_PyType_Type},
@@ -328,6 +414,8 @@ static struct
     {"Py_IsInitialized", (PYTHON_PROC*)&dll_Py_IsInitialized},
     {"_PyObject_New", (PYTHON_PROC*)&dll__PyObject_New},
     {"PyObject_Init", (PYTHON_PROC*)&dll__PyObject_Init},
+    {"PyObject_GetIter", (PYTHON_PROC*)&dll_PyObject_GetIter},
+    {"_PyObject_NextNotImplemented", (PYTHON_PROC*)&dll__PyObject_NextNotImplemented},
     {"_Py_NoneStruct", (PYTHON_PROC*)&dll__Py_NoneStruct},
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02020000
     {"PyType_IsSubtype", (PYTHON_PROC*)&dll_PyType_IsSubtype},
@@ -336,6 +424,8 @@ static struct
     {"PyObject_Malloc", (PYTHON_PROC*)&dll_PyObject_Malloc},
     {"PyObject_Free", (PYTHON_PROC*)&dll_PyObject_Free},
 # endif
+    {"PyCapsule_New", (PYTHON_PROC*)&dll_PyCapsule_New},
+    {"PyCapsule_GetPointer", (PYTHON_PROC*)&dll_PyCapsule_GetPointer},
     {"", NULL},
 };
 
@@ -434,9 +524,24 @@ get_exceptions(void)
 
 static PyObject *BufferNew (buf_T *);
 static PyObject *WindowNew(win_T *);
+static PyObject *DictionaryNew(dict_T *);
 static PyObject *LineToString(const char *);
 
 static PyTypeObject RangeType;
+
+static int initialised = 0;
+#define PYINITIALISED initialised
+
+/* Add conversion from PyInt? */
+#define DICTKEY_GET(err) \
+    if (!PyString_Check(keyObject)) \
+    { \
+	PyErr_SetString(PyExc_TypeError, _("only string keys are allowed")); \
+	return err; \
+    } \
+    key = (char_u *) PyString_AsString(keyObject);
+#define DICTKEY_UNREF
+#define DICTKEY_DECL
 
 /*
  * Include the code shared with if_python3.c
@@ -450,6 +555,8 @@ static PyTypeObject RangeType;
 
 static PyInt RangeStart;
 static PyInt RangeEnd;
+
+static PyObject *globals;
 
 static void PythonIO_Flush(void);
 static int PythonIO_Init(void);
@@ -465,8 +572,6 @@ static int SetBufferLineList(buf_T *, PyInt, PyInt, PyObject *, PyInt *);
 /******************************************************
  * 1. Python interpreter main program.
  */
-
-static int initialised = 0;
 
 #if PYTHON_API_VERSION < 1007 /* Python 1.4 */
 typedef PyObject PyThreadState;
@@ -581,6 +686,8 @@ Python_Init(void)
 	if (PythonMod_Init())
 	    goto fail;
 
+	globals = PyModule_GetDict(PyImport_AddModule("__main__"));
+
 	/* Remove the element from sys.path that was added because of our
 	 * argv[0] value in PythonMod_Init().  Previously we used an empty
 	 * string, but dependinding on the OS we then get an empty entry or
@@ -609,7 +716,7 @@ fail:
  * External interface
  */
     static void
-DoPythonCommand(exarg_T *eap, const char *cmd)
+DoPythonCommand(exarg_T *eap, const char *cmd, typval_T *rettv)
 {
 #ifndef PY_CAN_RECURSE
     static int		recursive = 0;
@@ -639,8 +746,16 @@ DoPythonCommand(exarg_T *eap, const char *cmd)
     if (Python_Init())
 	goto theend;
 
-    RangeStart = eap->line1;
-    RangeEnd = eap->line2;
+    if (rettv == NULL)
+    {
+	RangeStart = eap->line1;
+	RangeEnd = eap->line2;
+    }
+    else
+    {
+	RangeStart = (PyInt) curwin->w_cursor.lnum;
+	RangeEnd = RangeStart;
+    }
     Python_Release_Vim();	    /* leave vim */
 
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
@@ -658,7 +773,23 @@ DoPythonCommand(exarg_T *eap, const char *cmd)
 
     Python_RestoreThread();	    /* enter python */
 
-    PyRun_SimpleString((char *)(cmd));
+    if (rettv == NULL)
+	PyRun_SimpleString((char *)(cmd));
+    else
+    {
+	PyObject	*r;
+
+	r = PyRun_String((char *)(cmd), Py_eval_input, globals, globals);
+	if (r == NULL)
+	    EMSG(_("E858: Eval did not return a valid python object"));
+	else
+	{
+	    if (ConvertFromPyObject(r, rettv) == -1)
+		EMSG(_("E859: Failed to convert returned python object to vim value"));
+	    Py_DECREF(r);
+	}
+	PyErr_Clear();
+    }
 
     Python_SaveThread();	    /* leave python */
 
@@ -680,7 +811,7 @@ theend:
 #ifndef PY_CAN_RECURSE
     --recursive;
 #endif
-    return;	    /* keeps lint happy */
+    return;
 }
 
 /*
@@ -695,9 +826,9 @@ ex_python(exarg_T *eap)
     if (!eap->skip)
     {
 	if (script == NULL)
-	    DoPythonCommand(eap, (char *)eap->arg);
+	    DoPythonCommand(eap, (char *)eap->arg, NULL);
 	else
-	    DoPythonCommand(eap, (char *)script);
+	    DoPythonCommand(eap, (char *)script, NULL);
     }
     vim_free(script);
 }
@@ -743,7 +874,7 @@ ex_pyfile(exarg_T *eap)
     *p++ = '\0';
 
     /* Execute the file */
-    DoPythonCommand(eap, buffer);
+    DoPythonCommand(eap, buffer, NULL);
 }
 
 /******************************************************
@@ -765,14 +896,16 @@ OutputGetattr(PyObject *self, char *name)
     static int
 OutputSetattr(PyObject *self, char *name, PyObject *val)
 {
-    if (val == NULL) {
+    if (val == NULL)
+    {
 	PyErr_SetString(PyExc_AttributeError, _("can't delete OutputObject attributes"));
 	return -1;
     }
 
     if (strcmp(name, "softspace") == 0)
     {
-	if (!PyInt_Check(val)) {
+	if (!PyInt_Check(val))
+	{
 	    PyErr_SetString(PyExc_TypeError, _("softspace must be an integer"));
 	    return -1;
 	}
@@ -799,6 +932,9 @@ PythonIO_Init(void)
 /******************************************************
  * 3. Implementation of the Vim module for Python
  */
+
+static PyObject *ConvertToPyObject(typval_T *);
+static int ConvertFromPyObject(PyObject *, typval_T *);
 
 /* Window type - Implementation functions
  * --------------------------------------
@@ -1441,6 +1577,172 @@ LineToString(const char *str)
     return result;
 }
 
+static void DictionaryDestructor(PyObject *);
+static PyObject *DictionaryGetattr(PyObject *, char*);
+
+static PyMappingMethods DictionaryAsMapping = {
+    (PyInquiry)		DictionaryLength,
+    (binaryfunc)	DictionaryItem,
+    (objobjargproc)	DictionaryAssItem,
+};
+
+static PyTypeObject DictionaryType = {
+    PyObject_HEAD_INIT(0)
+    0,
+    "vimdictionary",
+    sizeof(DictionaryObject),
+    0,
+
+    (destructor)  DictionaryDestructor,
+    (printfunc)   0,
+    (getattrfunc) DictionaryGetattr,
+    (setattrfunc) 0,
+    (cmpfunc)     0,
+    (reprfunc)    0,
+
+    0,			    /* as number */
+    0,			    /* as sequence */
+    &DictionaryAsMapping,   /* as mapping */
+
+    (hashfunc)    0,
+    (ternaryfunc) 0,
+    (reprfunc)    0,
+};
+
+    static void
+DictionaryDestructor(PyObject *self)
+{
+    DictionaryObject	*this = ((DictionaryObject *) (self));
+
+    pyll_remove(&this->ref, &lastdict);
+    dict_unref(this->dict);
+
+    Py_DECREF(self);
+}
+
+    static PyObject *
+DictionaryGetattr(PyObject *self, char *name)
+{
+    return Py_FindMethod(DictionaryMethods, self, name);
+}
+
+static void ListDestructor(PyObject *);
+static PyObject *ListGetattr(PyObject *, char *);
+
+static PySequenceMethods ListAsSeq = {
+    (PyInquiry)			ListLength,
+    (binaryfunc)		0,
+    (PyIntArgFunc)		0,
+    (PyIntArgFunc)		ListItem,
+    (PyIntIntArgFunc)		ListSlice,
+    (PyIntObjArgProc)		ListAssItem,
+    (PyIntIntObjArgProc)	ListAssSlice,
+    (objobjproc)		0,
+#if PY_MAJOR_VERSION >= 2
+    (binaryfunc)		ListConcatInPlace,
+    0,
+#endif
+};
+
+static PyTypeObject ListType = {
+    PyObject_HEAD_INIT(0)
+    0,
+    "vimlist",
+    sizeof(ListObject),
+    0,
+
+    (destructor)  ListDestructor,
+    (printfunc)   0,
+    (getattrfunc) ListGetattr,
+    (setattrfunc) 0,
+    (cmpfunc)     0,
+    (reprfunc)    0,
+
+    0,			    /* as number */
+    &ListAsSeq,		    /* as sequence */
+    0,			    /* as mapping */
+
+    (hashfunc)    0,
+    (ternaryfunc) 0,
+    (reprfunc)    0,
+};
+
+    static void
+ListDestructor(PyObject *self)
+{
+    ListObject	*this = ((ListObject *) (self));
+
+    pyll_remove(&this->ref, &lastlist);
+    list_unref(this->list);
+
+    Py_DECREF(self);
+}
+
+    static PyObject *
+ListGetattr(PyObject *self, char *name)
+{
+    return Py_FindMethod(ListMethods, self, name);
+}
+
+static void FunctionDestructor(PyObject *);
+static PyObject *FunctionGetattr(PyObject *, char *);
+
+static PyTypeObject FunctionType = {
+    PyObject_HEAD_INIT(0)
+    0,
+    "vimfunction",
+    sizeof(FunctionObject),
+    0,
+
+    (destructor)  FunctionDestructor,
+    (printfunc)   0,
+    (getattrfunc) FunctionGetattr,
+    (setattrfunc) 0,
+    (cmpfunc)     0,
+    (reprfunc)    0,
+
+    0,			    /* as number */
+    0,			    /* as sequence */
+    0,			    /* as mapping */
+
+    (hashfunc)    0,
+    (ternaryfunc) FunctionCall,
+    (reprfunc)    0,
+};
+
+    static void
+FunctionDestructor(PyObject *self)
+{
+    FunctionObject	*this = (FunctionObject *) (self);
+
+    func_unref(this->name);
+    PyMem_Del(this->name);
+
+    Py_DECREF(self);
+}
+
+    static PyObject *
+FunctionGetattr(PyObject *self, char *name)
+{
+    FunctionObject	*this = (FunctionObject *)(self);
+
+    if (strcmp(name, "name") == 0)
+	return PyString_FromString((char *)(this->name));
+    else
+	return Py_FindMethod(FunctionMethods, self, name);
+}
+
+    void
+do_pyeval (char_u *str, typval_T *rettv)
+{
+    DoPythonCommand(NULL, (char *) str, rettv);
+    switch(rettv->v_type)
+    {
+	case VAR_DICT: ++rettv->vval.v_dict->dv_refcount; break;
+	case VAR_LIST: ++rettv->vval.v_list->lv_refcount; break;
+	case VAR_FUNC: func_ref(rettv->vval.v_string);    break;
+    }
+}
 
 /* Don't generate a prototype for the next function, it generates an error on
  * newer Python versions. */
@@ -1452,6 +1754,12 @@ Py_GetProgramName(void)
     return "vim";
 }
 #endif /* Python 1.4 */
+
+    void
+set_ref_in_python (int copyID)
+{
+    set_ref_in_py(copyID);
+}
 
     static void
 init_structs(void)

@@ -1,0 +1,47 @@
+start:
+[1, 'as''d', [1, 2, function('strlen'), {'a': 1}]]
+[1, 2, function('strlen'), {'a': 1}]
+Vim(put):E684:
+[0, 'as''d', [1, 2, function('strlen'), {'a': 1}]]
+[0, function('strlen'), [1, 2, function('strlen'), {'a': 1}]]
+['-1', '1', 'b']
+'-1' : {'a': 1}
+'1' : 'asd'
+'b' : [1, 2, function('strlen')]
+[0, function('strlen')]
+[3]
+{'1': 'asd', 'b': [1, 2, function('strlen')]}
+[0, 1, 2, 3]
+[0, 1, 2, 3]
+[0, 1, 3]
+[0, 1]
+[0, 1]
+[0, 1]
+[0, 1, 2, 3]
+[0, 1, 2, 3]
+[0, 2, 3]
+[2, 3]
+[2, 3]
+[2, 3]
+['a', 0, 1, 2, 3]
+[0, 'b', 2, 3]
+[0, 1, 'c']
+[0, 1, 2, 3, 'd']
+[0, 1, 2, 'e', 3]
+['f', 2, 3]
+[0, 1, 'g', 2, 3]
+['h']
+[0, 1, 2, 3]
+[function('New'), function('DictNew'), 'NewStart', 1, 2, 3, 'NewEnd']
+[function('New'), function('DictNew'), 'NewStart', 1, 2, 3, 'NewEnd', 'DictNewStart', 1, 2, 3, 'DictNewEnd', {'a': 'b'}]
+[function('New'), function('DictNew'), 'NewStart', 1, 2, 3, 'NewEnd', 'DictNewStart', 1, 2, 3, 'DictNewEnd', {'a': 'b'}, 'New']
+Vim(python):E725:
+Vim(python):E117:
+[0.0, 0.0]
+[0, 1, 2]
+['a', 'b']
+['c', 1]
+['d', ['e']]
+Vim(let):E858:
+Vim(let):E859:
+0.0

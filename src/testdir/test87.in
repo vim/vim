@@ -1,0 +1,211 @@
+Tests for various python features.     vim: set ft=vim :
+
+STARTTEST
+:so small.vim
+:if !has('python3') | e! test.ok | wq! test.out | endif
+:py3 import vim
+:fun Test()
+:let l = []
+:py3 l=vim.bindeval('l')
+:py3 f=vim.bindeval('function("strlen")')
+:" Extending List directly with different types
+:py3 l+=[1, "as'd", [1, 2, f, {'a': 1}]]
+:$put =string(l)
+:$put =string(l[-1])
+:try
+:  $put =string(l[-4])
+:catch
+:  $put =v:exception[:13]
+:endtry
+:" List assignment
+:py3 l[0]=0
+:$put =string(l)
+:py3 l[-2]=f
+:$put =string(l)
+:"
+:" Extending Dictionary directly with different types
+:let d = {}
+:py3 d=vim.bindeval('d')
+:py3 d['1']='asd'
+:py3 d['b']=[1, 2, f]
+:py3 d['-1']={'a': 1}
+:let dkeys = []
+:py3 dk=vim.bindeval('dkeys')
+:py3 dkeys=d.keys()
+:py3 dkeys.sort()
+:py3 dk+=dkeys
+:$put =string(dkeys)
+:for [key, val] in sort(items(d))
+:  $put =string(key) . ' : ' . string(val)
+:  unlet key val
+:endfor
+:"
+:" removing items with del
+:py3 del l[2]
+:$put =string(l)
+:let l = range(8)
+:py3 l=vim.bindeval('l')
+:try
+:   py3 del l[:3]
+:   py3 del l[1:]
+:catch
+:   $put =v:exception
+:endtry
+:$put =string(l)
+:"
+:py3 del d['-1']
+:$put =string(d)
+:"
+:" removing items out of range: silently skip items that don't exist
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:" The following two ranges delete nothing as they match empty list:
+:py3 del l[2:1]
+:$put =string(l)
+:py3 del l[2:2]
+:$put =string(l)
+:py3 del l[2:3]
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:py3 del l[2:4]
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:py3 del l[2:5]
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:py3 del l[2:6]
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:" The following two ranges delete nothing as they match empty list:
+:py3 del l[-1:2]
+:$put =string(l)
+:py3 del l[-2:2]
+:$put =string(l)
+:py3 del l[-3:2]
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:py3 del l[-4:2]
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:py3 del l[-5:2]
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:py3 del l[-6:2]
+:$put =string(l)
+:"
+:" Slice assignment to a list
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:py3 l[0:0]=['a']
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:py3 l[1:2]=['b']
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:py3 l[2:4]=['c']
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:py3 l[4:4]=['d']
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:py3 l[-1:2]=['e']
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:py3 l[-10:2]=['f']
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:py3 l[2:-10]=['g']
+:$put =string(l)
+:let l = []
+:py3 l=vim.bindeval('l')
+:py3 l[0:0]=['h']
+:$put =string(l)
+:"
+:" Locked variables
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:lockvar! l
+:py3 l[2]='i'
+:$put =string(l)
+:unlockvar! l
+:"
+:" Function calls
+:function New(...)
+:return ['NewStart']+a:000+['NewEnd']
+:endfunction
+:function DictNew(...) dict
+:return ['DictNewStart']+a:000+['DictNewEnd', self]
+:endfunction
+:let l=[function('New'), function('DictNew')]
+:py3 l=vim.bindeval('l')
+:py3 l.extend(list(l[0](1, 2, 3)))
+:$put =string(l)
+:py3 l.extend(list(l[1](1, 2, 3, self={'a': 'b'})))
+:$put =string(l)
+:py3 l+=[l[0].name]
+:$put =string(l)
+:try
+:   py3 l[1](1, 2, 3)
+:catch
+:   $put =v:exception[:13]
+:endtry
+:delfunction New
+:try
+:   py3 l[0](1, 2, 3)
+:catch
+:   $put =v:exception[:13]
+:endtry
+:if has('float')
+:   let l=[0.0]
+:   py3 l=vim.bindeval('l')
+:   py3 l.extend([0.0])
+:   $put =string(l)
+:else
+:   $put ='[0.0, 0.0]'
+:endif
+:"
+:" py3eval()
+:let l=py3eval('[0, 1, 2]')
+:$put =string(l)
+:let d=py3eval('{"a": "b", "c": 1, "d": ["e"]}')
+:$put =sort(items(d))
+:try
+:   let undef=py3eval('undefined_name')
+:catch
+:   $put =v:exception[:13]
+:endtry
+:try
+:   let vim=py3eval('vim')
+:catch
+:   $put =v:exception[:13]
+:endtry
+:if has('float')
+:   let f=py3eval('0.0')
+:   $put =string(f)
+:else
+:   $put ='0.0'
+:endif
+:endfun
+:"
+:call Test()
+:"
+:delfunc Test
+:call garbagecollect(1)
+:"
+:/^start:/,$wq! test.out
+ENDTEST
+
+start:
