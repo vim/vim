@@ -1,7 +1,10 @@
 # Python script to get both the data and resource fork from a BinHex encoded
 # file.
-# Author: Taro Muraoka
-# Last Change: 2003 Oct 25
+# Author: MURAOKA Taro <koron.kaoriya@gmail.com>
+# Last Change: 2012 Jun 29
+#
+# Copyright (C) 2003,12 MURAOKA Taro <koron.kaoriya@gmail.com>
+# THIS FILE IS DISTRIBUTED UNDER THE VIM LICENSE.
 
 import sys
 import binhex
