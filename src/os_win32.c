@@ -4992,18 +4992,29 @@ mch_breakcheck(void)
 
 
 /*
- * How much memory is available?
+ * How much memory is available in Kbyte?
  * Return sum of available physical and page file memory.
  */
 /*ARGSUSED*/
     long_u
 mch_avail_mem(int special)
 {
-    MEMORYSTATUS	ms;
+    if (g_PlatformId != VER_PLATFORM_WIN32_NT)
+    {
+	MEMORYSTATUS	ms;
 
-    ms.dwLength = sizeof(MEMORYSTATUS);
-    GlobalMemoryStatus(&ms);
-    return (long_u) (ms.dwAvailPhys + ms.dwAvailPageFile);
+	ms.dwLength = sizeof(MEMORYSTATUS);
+	GlobalMemoryStatus(&ms);
+	return (long_u)((ms.dwAvailPhys + ms.dwAvailPageFile) >> 10);
+    }
+    else
+    {
+	MEMORYSTATUSEX	ms;
+
+	ms.dwLength = sizeof(MEMORYSTATUSEX);
+	GlobalMemoryStatusEx(&ms);
+	return (long_u)((ms.ullAvailPhys + ms.ullAvailPageFile) >> 10);
+    }
 }
 
 #ifdef FEAT_MBYTE

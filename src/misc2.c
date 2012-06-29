@@ -815,6 +815,7 @@ vim_mem_profile_dump()
 #else
 # define KEEP_ROOM (2 * 8192L)
 #endif
+#define KEEP_ROOM_KB (KEEP_ROOM / 1024L)
 
 /*
  * Note: if unsigned is 16 bits we can only allocate up to 64K with alloc().
@@ -940,7 +941,7 @@ lalloc(size, message)
 	    allocated = 0;
 # endif
 	    /* 3. check for available memory: call mch_avail_mem() */
-	    if (mch_avail_mem(TRUE) < KEEP_ROOM && !releasing)
+	    if (mch_avail_mem(TRUE) < KEEP_ROOM_KB && !releasing)
 	    {
 		free((char *)p);	/* System is low... no go! */
 		p = NULL;

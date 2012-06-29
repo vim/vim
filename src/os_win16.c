@@ -379,13 +379,13 @@ mch_breakcheck()
 
 
 /*
- * How much memory is available?
+ * How much memory is available in Kbyte?
  */
     long_u
 mch_avail_mem(
     int special)
 {
-    return GetFreeSpace(0);
+    return GetFreeSpace(0) >> 10;
 }
 
 

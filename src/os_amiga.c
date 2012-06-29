@@ -191,16 +191,16 @@ mch_char_avail()
 }
 
 /*
- * Return amount of memory still available.
+ * Return amount of memory still available in Kbyte.
  */
     long_u
 mch_avail_mem(special)
     int	    special;
 {
 #ifdef __amigaos4__
-    return (long_u)AvailMem(MEMF_ANY);
+    return (long_u)AvailMem(MEMF_ANY) >> 10;
 #else
-    return (long_u)AvailMem(special ? (long)MEMF_CHIP : (long)MEMF_ANY);
+    return (long_u)(AvailMem(special ? (long)MEMF_CHIP : (long)MEMF_ANY)) >> 10;
 #endif
 }
 

@@ -3154,7 +3154,7 @@ set_init_1()
 	{
 #ifdef HAVE_AVAIL_MEM
 	    /* Use amount of memory available at this moment. */
-	    n = (mch_avail_mem(FALSE) >> 11);
+	    n = (mch_avail_mem(FALSE) >> 1);
 #else
 # ifdef HAVE_TOTAL_MEM
 	    /* Use amount of memory available to Vim. */
@@ -6702,7 +6702,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     {
 	for (s = *varp; *s;)
 	{
-	    while(*s == ',' || *s == ' ')
+	    while (*s == ',' || *s == ' ')
 		s++;
 	    if (!*s)
 		break;
@@ -7391,7 +7391,7 @@ check_clipboard_option()
 	    new_unnamed |= CLIP_UNNAMED;
 	    p += 7;
 	}
-        else if (STRNCMP(p, "unnamedplus", 11) == 0
+	else if (STRNCMP(p, "unnamedplus", 11) == 0
 					    && (p[11] == ',' || p[11] == NUL))
 	{
 	    new_unnamed |= CLIP_UNNAMED_PLUS;

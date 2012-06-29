@@ -550,15 +550,15 @@ mch_update_cursor(void)
 #endif
 
 /*
- * Return amount of memory currently available.
+ * Return amount of memory currently available in Kbyte.
  */
     long_u
 mch_avail_mem(int special)
 {
 #ifdef DJGPP
-    return _go32_dpmi_remaining_virtual_memory();
+    return _go32_dpmi_remaining_virtual_memory() >> 10;
 #else
-    return coreleft();
+    return coreleft() >> 10;
 #endif
 }
 
