@@ -196,7 +196,8 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyString_Size dll_PyString_Size
 # define PyString_Type (*dll_PyString_Type)
 # define PyUnicode_Type (*dll_PyUnicode_Type)
-# define PyUnicodeUCS4_AsEncodedString (*dll_PyUnicodeUCS4_AsEncodedString)
+# undef PyUnicode_AsEncodedString
+# define PyUnicode_AsEncodedString py_PyUnicode_AsEncodedString
 # define PyFloat_AsDouble dll_PyFloat_AsDouble
 # define PyFloat_FromDouble dll_PyFloat_FromDouble
 # define PyFloat_Type (*dll_PyFloat_Type)
@@ -290,7 +291,7 @@ static PyObject*(*dll_PyString_FromStringAndSize)(const char *, PyInt);
 static PyInt(*dll_PyString_Size)(PyObject *);
 static PyTypeObject* dll_PyString_Type;
 static PyTypeObject* dll_PyUnicode_Type;
-static PyObject *(*PyUnicodeUCS4_AsEncodedString)(PyObject *, char *, char *);
+static PyObject *(*py_PyUnicode_AsEncodedString)(PyObject *, char *, char *);
 static double(*dll_PyFloat_AsDouble)(PyObject *);
 static PyObject*(*dll_PyFloat_FromDouble)(double);
 static PyTypeObject* dll_PyFloat_Type;
@@ -406,7 +407,6 @@ static struct
     {"PyString_Size", (PYTHON_PROC*)&dll_PyString_Size},
     {"PyString_Type", (PYTHON_PROC*)&dll_PyString_Type},
     {"PyUnicode_Type", (PYTHON_PROC*)&dll_PyUnicode_Type},
-    {"PyUnicodeUCS4_AsEncodedString", (PYTHON_PROC*)&dll_PyUnicodeUCS4_AsEncodedString},
     {"PyFloat_Type", (PYTHON_PROC*)&dll_PyFloat_Type},
     {"PyFloat_AsDouble", (PYTHON_PROC*)&dll_PyFloat_AsDouble},
     {"PyFloat_FromDouble", (PYTHON_PROC*)&dll_PyFloat_FromDouble},
@@ -471,6 +471,7 @@ end_dynamic_python(void)
 python_runtime_link_init(char *libname, int verbose)
 {
     int i;
+    void *ucs_as_encoded_string;
 
 #if !(defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)) && defined(UNIX) && defined(FEAT_PYTHON3)
     /* Can't have Python and Python3 loaded at the same time.
@@ -506,6 +507,25 @@ python_runtime_link_init(char *libname, int verbose)
 	    return FAIL;
 	}
     }
+
+    /* Load unicode functions separately as only the ucs2 or the ucs4 functions
+     * will be present in the library. */
+    ucs_as_encoded_string = symbol_from_dll(hinstPython,
+					     "PyUnicodeUCS2_AsEncodedString");
+    if (ucs_as_encoded_string == NULL)
+	ucs_as_encoded_string = symbol_from_dll(hinstPython,
+					     "PyUnicodeUCS4_AsEncodedString");
+    if (ucs_as_encoded_string != NULL)
+	py_PyUnicode_AsEncodedString = ucs_as_encoded_string;
+    else
+    {
+	close_dll(hinstPython);
+	hinstPython = 0;
+	if (verbose)
+	    EMSG2(_(e_loadfunc), "PyUnicode_UCSX_*");
+	return FAIL;
+    }
+
     return OK;
 }
 
