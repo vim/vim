@@ -327,8 +327,8 @@ static void (*dll_PyObject_Free)(void*);
 static PyObject* (*dll_PyCapsule_New)(void *, char *, PyCapsule_Destructor);
 static void* (*dll_PyCapsule_GetPointer)(PyObject *, char *);
 # else
-static PyCObject* (*dll_PyCObject_FromVoidPtr)(void *cobj, void (*destr)(void *));
-static void* (*dll_PyCObject_AsVoidPtr)(PyCObject *);
+static PyObject* (*dll_PyCObject_FromVoidPtr)(void *cobj, void (*destr)(void *));
+static void* (*dll_PyCObject_AsVoidPtr)(PyObject *);
 # endif
 
 static HINSTANCE hinstPython = 0; /* Instance of python.dll */
