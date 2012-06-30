@@ -214,7 +214,9 @@ struct PyMethodDef { Py_ssize_t a; };
 # define Py_Finalize dll_Py_Finalize
 # define Py_IsInitialized dll_Py_IsInitialized
 # define _PyObject_New dll__PyObject_New
-# define _PyObject_NextNotImplemented (*dll__PyObject_NextNotImplemented)
+# if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
+#  define _PyObject_NextNotImplemented (*dll__PyObject_NextNotImplemented)
+# endif
 # define _Py_NoneStruct (*dll__Py_NoneStruct)
 # define PyObject_Init dll__PyObject_Init
 # define PyObject_GetIter dll_PyObject_GetIter
@@ -310,7 +312,9 @@ static int(*dll_Py_IsInitialized)(void);
 static PyObject*(*dll__PyObject_New)(PyTypeObject *, PyObject *);
 static PyObject*(*dll__PyObject_Init)(PyObject *, PyTypeObject *);
 static PyObject* (*dll_PyObject_GetIter)(PyObject *);
+# if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
 static iternextfunc dll__PyObject_NextNotImplemented;
+# endif
 static PyObject* dll__Py_NoneStruct;
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02020000
 static int (*dll_PyType_IsSubtype)(PyTypeObject *, PyTypeObject *);
@@ -430,7 +434,9 @@ static struct
     {"_PyObject_New", (PYTHON_PROC*)&dll__PyObject_New},
     {"PyObject_Init", (PYTHON_PROC*)&dll__PyObject_Init},
     {"PyObject_GetIter", (PYTHON_PROC*)&dll_PyObject_GetIter},
+# if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
     {"_PyObject_NextNotImplemented", (PYTHON_PROC*)&dll__PyObject_NextNotImplemented},
+# endif
     {"_Py_NoneStruct", (PYTHON_PROC*)&dll__Py_NoneStruct},
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02020000
     {"PyType_IsSubtype", (PYTHON_PROC*)&dll_PyType_IsSubtype},
