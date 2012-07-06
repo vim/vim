@@ -2184,7 +2184,7 @@ win_close(win, free_buf)
     }
 
 #ifdef FEAT_AUTOCMD
-    if (win->w_closing || win->w_buffer->b_closing)
+    if (win->w_closing || (win->w_buffer != NULL && win->w_buffer->b_closing))
 	return; /* window is already being closed */
     if (win == aucmd_win)
     {
@@ -3723,7 +3723,7 @@ leave_tabpage(new_curbuf)
 enter_tabpage(tp, old_curbuf, trigger_autocmds)
     tabpage_T	*tp;
     buf_T	*old_curbuf UNUSED;
-    int         trigger_autocmds UNUSED;
+    int		trigger_autocmds UNUSED;
 {
     int		old_off = tp->tp_firstwin->w_winrow;
     win_T	*next_prevwin = tp->tp_prevwin;
@@ -3868,7 +3868,7 @@ goto_tabpage(n)
     void
 goto_tabpage_tp(tp, trigger_autocmds)
     tabpage_T	*tp;
-    int         trigger_autocmds;
+    int		trigger_autocmds;
 {
     /* Don't repeat a message in another tab page. */
     set_keep_msg(NULL, 0);
