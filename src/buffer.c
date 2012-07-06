@@ -1363,9 +1363,6 @@ set_curbuf(buf, action)
     int		action;
 {
     buf_T	*prevbuf;
-#ifdef FEAT_WINDOWS
-    win_T	*prevwin;
-#endif
     int		unload = (action == DOBUF_UNLOAD || action == DOBUF_DEL
 						     || action == DOBUF_WIPE);
 
@@ -1406,7 +1403,7 @@ set_curbuf(buf, action)
 #endif
 	{
 #ifdef FEAT_WINDOWS
-	    prevwin = curwin;
+	    win_T  *previouswin = curwin;
 #endif
 	    if (prevbuf == curbuf)
 		u_sync(FALSE);
@@ -1415,9 +1412,9 @@ set_curbuf(buf, action)
 			&& !P_HID(prevbuf)
 			&& !bufIsChanged(prevbuf)) ? DOBUF_UNLOAD : 0, FALSE);
 #ifdef FEAT_WINDOWS
-	    if (curwin != prevwin && win_valid(prevwin))
+	    if (curwin != previouswin && win_valid(previouswin))
 	      /* autocommands changed curwin, Grr! */
-	      curwin = prevwin;
+	      curwin = previouswin;
 #endif
 	}
     }
