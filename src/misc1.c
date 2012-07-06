@@ -4496,8 +4496,12 @@ home_replace(buf, src, dst, dstlen, one)
 #else
     homedir_env_orig = homedir_env = mch_getenv((char_u *)"HOME");
 #endif
+    /* Empty is the same as not set. */
+    if (homedir_env != NULL && *homedir_env == NUL)
+	homedir_env = NULL;
+
 #if defined(FEAT_MODIFY_FNAME) || defined(WIN3264)
-    if (vim_strchr(homedir_env, '~') != NULL)
+    if (homedir_env != NULL && vim_strchr(homedir_env, '~') != NULL)
     {
 	int	usedlen = 0;
 	int	flen;
@@ -4513,8 +4517,6 @@ home_replace(buf, src, dst, dstlen, one)
     }
 #endif
 
-    if (homedir_env != NULL && *homedir_env == NUL)
-	homedir_env = NULL;
     if (homedir_env != NULL)
 	envlen = STRLEN(homedir_env);
 
