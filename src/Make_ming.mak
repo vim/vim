@@ -52,7 +52,7 @@ POSTSCRIPT=no
 OLE=no
 # Set the default $(WINVER) to make it work with pre-Win2k
 ifndef WINVER
-WINVER = 0x0400
+WINVER = 0x0500
 endif
 # Set to yes to enable Cscope support
 CSCOPE=yes

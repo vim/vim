@@ -1,6 +1,6 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2010 Nov 03
+# Last updated by Dan Sharp.  Last Change: 2012 Jun 30
 #
 # Also read INSTALLpc.txt!
 #
@@ -48,7 +48,7 @@
 #		-L/lib/w32api to EXTRA_LIBS.
 # POSTSCRIPT	no or yes: set to yes for PostScript printing (no)
 # FEATURES	TINY, SMALL, NORMAL, BIG or HUGE (BIG)
-# WINVER	Lowest Win32 version to support.  (0x0400)
+# WINVER	Lowest Win32 version to support.  (0x0500)
 # CSCOPE	no or yes: to include cscope interface support (yes)
 # OPTIMIZE	SPACE, SPEED, or MAXSPEED: set optimization level (MAXSPEED)
 # NETBEANS	no or yes: to include netbeans interface support (yes when GUI
@@ -85,7 +85,7 @@ ARCH = i386
 endif
 
 ifndef WINVER
-WINVER = 0x0400
+WINVER = 0x0500
 endif
 
 ifndef CSCOPE
