@@ -6350,10 +6350,8 @@ internal_format(textwidth, second_indent, flags, format_only, c)
 			 * add the additional whitespace needed after the
 			 * comment leader for the numbered list.  */
 			for (i = 0; i < padding; i++)
-			{
 			    ins_str((char_u *)" ");
-			    changed_bytes(curwin->w_cursor.lnum, leader_len);
-			}
+			changed_bytes(curwin->w_cursor.lnum, leader_len);
 		    }
 		    else
 		    {
