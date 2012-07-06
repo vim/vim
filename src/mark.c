@@ -98,6 +98,19 @@ setmark_pos(c, pos, fnum)
 	return OK;
     }
 
+#ifdef FEAT_VISUAL
+    if (c == '<')
+    {
+	curbuf->b_visual.vi_start = *pos;
+	return OK;
+    }
+    if (c == '>')
+    {
+	curbuf->b_visual.vi_end = *pos;
+	return OK;
+    }
+#endif
+
 #ifndef EBCDIC
     if (c > 'z')	    /* some islower() and isupper() cannot handle
 				characters above 127 */
