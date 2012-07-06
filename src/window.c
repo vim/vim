@@ -3929,7 +3929,7 @@ tabpage_move(nr)
     }
 
     /* Re-insert it at the specified position. */
-    if (n == 0)
+    if (n <= 0)
     {
 	curtab->tp_next = first_tabpage;
 	first_tabpage = curtab;

@@ -93,6 +93,34 @@ STARTTEST
 :endif
 :"
 :"
+:for i in range(9) | tabnew | endfor
+1gt
+Go=tabpagenr()
+:tabmove 5
+i=tabpagenr()
+:tabmove -2
+i=tabpagenr()
+:tabmove +4
+i=tabpagenr()
+:tabmove
+i=tabpagenr()
+:tabmove -20
+i=tabpagenr()
+:tabmove +20
+i=tabpagenr()
+:3tabmove
+i=tabpagenr()
+:7tabmove 5
+i=tabpagenr()
+:let a='No error caught.'
+:try
+:tabmove foo
+:catch E474
+:let a='E474 caught.'
+:endtry
+i=a
+:"
+:"
 :/^Results/,$w! test.out
 :qa!
 ENDTEST
