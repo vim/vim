@@ -3824,6 +3824,11 @@ ins_compl_prep(c)
 	    if (want_cindent && in_cinkeys(KEY_COMPLETE, ' ', inindent(0)))
 		do_c_expr_indent();
 #endif
+#ifdef FEAT_AUTOCMD
+	    /* Trigger the CompleteDone event to give scripts a chance to act
+	     * upon the completion. */
+	    apply_autocmds(EVENT_COMPLETEDONE, NULL, NULL, FALSE, curbuf);
+#endif
 	}
     }
 
