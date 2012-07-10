@@ -57,7 +57,6 @@ static void	clear_wininfo __ARGS((buf_T *buf));
 
 #if defined(FEAT_SIGNS)
 static void insert_sign __ARGS((buf_T *buf, signlist_T *prev, signlist_T *next, int id, linenr_T lnum, int typenr));
-static void buf_delete_signs __ARGS((buf_T *buf));
 #endif
 
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
@@ -5537,7 +5536,7 @@ buf_signcount(buf, lnum)
 /*
  * Delete signs in buffer "buf".
  */
-    static void
+    void
 buf_delete_signs(buf)
     buf_T	*buf;
 {

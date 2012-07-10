@@ -153,8 +153,14 @@ REMOVING SIGNS						*:sign-unplace* *E159*
 		Remove the previously placed sign {id} from file {fname}.
 		See remark above about {fname} |:sign-fname|.
 
+:sign unplace * file={fname}
+		Remove all placed signs in file {fname}.
+
 :sign unplace {id} buffer={nr}
-		Same, but use buffer {nr}.
+		Remove the previously placed sign {id} from buffer {nr}.
+
+:sign unplace * buffer={nr}
+		Remove all placed signs in buffer {nr}.
 
 :sign unplace {id}
 		Remove the previously placed sign {id} from all files it

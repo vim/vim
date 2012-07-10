@@ -60,6 +60,7 @@ int buf_findsign __ARGS((buf_T *buf, int id));
 int buf_findsign_id __ARGS((buf_T *buf, linenr_T lnum));
 int buf_findsigntype_id __ARGS((buf_T *buf, linenr_T lnum, int typenr));
 int buf_signcount __ARGS((buf_T *buf, linenr_T lnum));
+void buf_delete_signs __ARGS((buf_T *buf));
 void buf_delete_all_signs __ARGS((void));
 void sign_list_placed __ARGS((buf_T *rbuf));
 void sign_mark_adjust __ARGS((linenr_T line1, linenr_T line2, long amount, long amount_after));
