@@ -5845,8 +5845,14 @@ uc_split_args(arg, lenp)
 	}
 	else
 	{
+#ifdef FEAT_MBYTE
+	    int charlen = (*mb_ptr2len)(p);
+	    len += charlen;
+	    p += charlen;
+#else
 	    ++len;
 	    ++p;
+#endif
 	}
     }
 
@@ -5889,7 +5895,7 @@ uc_split_args(arg, lenp)
 	}
 	else
 	{
-	    *q++ = *p++;
+	    MB_COPY_CHAR(p, q);
 	}
     }
     *q++ = '"';
