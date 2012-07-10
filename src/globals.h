@@ -517,7 +517,8 @@ EXTERN VimClipboard clip_plus;	/* CLIPBOARD selection in X11 */
 # define CLIP_UNNAMED_PLUS 2
 EXTERN int	clip_unnamed INIT(= 0); /* above two values or'ed */
 
-EXTERN int	clip_autoselect INIT(= FALSE);
+EXTERN int	clip_autoselect_star INIT(= FALSE);
+EXTERN int	clip_autoselect_plus INIT(= FALSE);
 EXTERN int	clip_autoselectml INIT(= FALSE);
 EXTERN int	clip_html INIT(= FALSE);
 EXTERN regprog_T *clip_exclude_prog INIT(= NULL);

@@ -1451,7 +1451,7 @@ do_pending_operator(cap, old_col, gui_yank)
      * This could call do_pending_operator() recursively, but that's OK
      * because gui_yank will be TRUE for the nested call.
      */
-    if (clip_star.available
+    if ((clip_star.available || clip_plus.available)
 	    && oap->op_type != OP_NOP
 	    && !gui_yank
 # ifdef FEAT_VISUAL

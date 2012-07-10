@@ -962,8 +962,14 @@ get_register(name, copy)
      * selection too. */
     if (name == '*' && clip_star.available)
     {
-	if (clip_isautosel())
-	    clip_update_selection();
+	if (clip_isautosel_star())
+	    clip_update_selection(&clip_star);
+	may_get_selection(name);
+    }
+    if (name == '+' && clip_plus.available)
+    {
+	if (clip_isautosel_plus())
+	    clip_update_selection(&clip_plus);
 	may_get_selection(name);
     }
 #endif
@@ -3190,7 +3196,8 @@ op_yank(oap, deleting, mess)
 
 	clip_own_selection(&clip_plus);
 	clip_gen_set_selection(&clip_plus);
-	if (!clip_isautosel() && !did_star && curr == &(y_regs[PLUS_REGISTER]))
+	if (!clip_isautosel_star() && !did_star
+					  && curr == &(y_regs[PLUS_REGISTER]))
 	{
 	    copy_yank_reg(&(y_regs[STAR_REGISTER]));
 	    clip_own_selection(&clip_star);

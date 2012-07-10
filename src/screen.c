@@ -519,8 +519,10 @@ update_screen(type)
 # endif
 # ifdef FEAT_CLIPBOARD
 		/* When Visual area changed, may have to update selection. */
-		if (clip_star.available && clip_isautosel())
-		    clip_update_selection();
+		if (clip_star.available && clip_isautosel_star())
+		    clip_update_selection(&clip_star);
+		if (clip_plus.available && clip_isautosel_plus())
+		    clip_update_selection(&clip_plus);
 # endif
 #ifdef FEAT_GUI
 		/* Remove the cursor before starting to do anything, because
@@ -814,8 +816,10 @@ updateWindow(wp)
 
 #ifdef FEAT_CLIPBOARD
     /* When Visual area changed, may have to update selection. */
-    if (clip_star.available && clip_isautosel())
-	clip_update_selection();
+    if (clip_star.available && clip_isautosel_star())
+	clip_update_selection(&clip_star);
+    if (clip_plus.available && clip_isautosel_plus())
+	clip_update_selection(&clip_plus);
 #endif
 
     win_update(wp);
@@ -3000,7 +3004,10 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    area_highlighting = TRUE;
 	    attr = hl_attr(HLF_V);
 #if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
-	    if (clip_star.available && !clip_star.owned && clip_isautosel())
+	    if ((clip_star.available && !clip_star.owned
+						     && clip_isautosel_star())
+		    || (clip_plus.available && !clip_plus.owned
+						    && clip_isautosel_plus()))
 		attr = hl_attr(HLF_VNC);
 #endif
 	}
@@ -9060,7 +9067,7 @@ screen_ins_lines(off, row, line_count, end, wp)
 	    || (wp != NULL && wp->w_width != Columns)
 # endif
        )
-	clip_clear_selection();
+	clip_clear_selection(&clip_star);
     else
 	clip_scroll_selection(-line_count);
 #endif
@@ -9281,7 +9288,7 @@ screen_del_lines(off, row, line_count, end, force, wp)
 	    || (wp != NULL && wp->w_width != Columns)
 # endif
        )
-	clip_clear_selection();
+	clip_clear_selection(&clip_star);
     else
 	clip_scroll_selection(line_count);
 #endif

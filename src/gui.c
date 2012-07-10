@@ -3154,7 +3154,7 @@ button_set:
     }
 
     if (clip_star.state != SELECT_CLEARED && !did_clip)
-	clip_clear_selection();
+	clip_clear_selection(&clip_star);
 #endif
 
     /* Don't put events in the input queue now. */

@@ -381,6 +381,8 @@ ui_breakcheck()
 
 #if defined(FEAT_CLIPBOARD) || defined(PROTO)
 
+static void clip_copy_selection __ARGS((VimClipboard *clip));
+
 /*
  * Selection stuff using Visual mode, for cutting and pasting text to other
  * windows.
@@ -423,9 +425,10 @@ clip_init(can_use)
  * this is called whenever VIsual mode is ended.
  */
     void
-clip_update_selection()
+clip_update_selection(clip)
+    VimClipboard    *clip;
 {
-    pos_T    start, end;
+    pos_T	    start, end;
 
     /* If visual mode is only due to a redo command ("."), then ignore it */
     if (!redo_VIsual_busy && VIsual_active && (State & NORMAL))
@@ -444,17 +447,17 @@ clip_update_selection()
 	    start = curwin->w_cursor;
 	    end = VIsual;
 	}
-	if (!equalpos(clip_star.start, start)
-		|| !equalpos(clip_star.end, end)
-		|| clip_star.vmode != VIsual_mode)
+	if (!equalpos(clip->start, start)
+		|| !equalpos(clip->end, end)
+		|| clip->vmode != VIsual_mode)
 	{
-	    clip_clear_selection();
-	    clip_star.start = start;
-	    clip_star.end = end;
-	    clip_star.vmode = VIsual_mode;
-	    clip_free_selection(&clip_star);
-	    clip_own_selection(&clip_star);
-	    clip_gen_set_selection(&clip_star);
+	    clip_clear_selection(clip);
+	    clip->start = start;
+	    clip->end = end;
+	    clip->vmode = VIsual_mode;
+	    clip_free_selection(clip);
+	    clip_own_selection(clip);
+	    clip_gen_set_selection(clip);
 	}
     }
 }
@@ -475,7 +478,7 @@ clip_own_selection(cbd)
 	int was_owned = cbd->owned;
 
 	cbd->owned = (clip_gen_own_selection(cbd) == OK);
-	if (!was_owned && cbd == &clip_star)
+	if (!was_owned && (cbd == &clip_star || cbd == &clip_plus))
 	{
 	    /* May have to show a different kind of highlighting for the
 	     * selected area.  There is no specific redraw command for this,
@@ -483,7 +486,8 @@ clip_own_selection(cbd)
 	    if (cbd->owned
 		    && (get_real_state() == VISUAL
 					    || get_real_state() == SELECTMODE)
-		    && clip_isautosel()
+		    && (cbd == &clip_star ? clip_isautosel_star()
+						      : clip_isautosel_plus())
 		    && hl_attr(HLF_V) != hl_attr(HLF_VNC))
 		redraw_curbuf_later(INVERTED_ALL);
 	}
@@ -502,12 +506,15 @@ clip_lose_selection(cbd)
 #ifdef FEAT_X11
     int	    was_owned = cbd->owned;
 #endif
-    int     visual_selection = (cbd == &clip_star);
+    int     visual_selection = FALSE;
+
+    if (cbd == &clip_star || cbd == &clip_plus)
+	visual_selection = TRUE;
 
     clip_free_selection(cbd);
     cbd->owned = FALSE;
     if (visual_selection)
-	clip_clear_selection();
+	clip_clear_selection(cbd);
     clip_gen_lose_selection(cbd);
 #ifdef FEAT_X11
     if (visual_selection)
@@ -518,7 +525,8 @@ clip_lose_selection(cbd)
 	if (was_owned
 		&& (get_real_state() == VISUAL
 					    || get_real_state() == SELECTMODE)
-		&& clip_isautosel()
+		&& (cbd == &clip_star ?
+				clip_isautosel_star() : clip_isautosel_plus())
 		&& hl_attr(HLF_V) != hl_attr(HLF_VNC))
 	{
 	    update_curbuf(INVERTED_ALL);
@@ -534,18 +542,18 @@ clip_lose_selection(cbd)
 #endif
 }
 
-    void
-clip_copy_selection()
+    static void
+clip_copy_selection(clip)
+    VimClipboard	*clip;
 {
-    if (VIsual_active && (State & NORMAL) && clip_star.available)
+    if (VIsual_active && (State & NORMAL) && clip->available)
     {
-	if (clip_isautosel())
-	    clip_update_selection();
-	clip_free_selection(&clip_star);
-	clip_own_selection(&clip_star);
-	if (clip_star.owned)
-	    clip_get_selection(&clip_star);
-	clip_gen_set_selection(&clip_star);
+	clip_update_selection(clip);
+	clip_free_selection(clip);
+	clip_own_selection(clip);
+	if (clip->owned)
+	    clip_get_selection(clip);
+	clip_gen_set_selection(clip);
     }
 }
 
@@ -555,21 +563,38 @@ clip_copy_selection()
     void
 clip_auto_select()
 {
-    if (clip_isautosel())
-	clip_copy_selection();
+    if (clip_isautosel_star())
+	clip_copy_selection(&clip_star);
+    if (clip_isautosel_plus())
+	clip_copy_selection(&clip_plus);
 }
 
 /*
- * Return TRUE if automatic selection of Visual area is desired.
+ * Return TRUE if automatic selection of Visual area is desired for the *
+ * register.
  */
     int
-clip_isautosel()
+clip_isautosel_star()
 {
     return (
 #ifdef FEAT_GUI
 	    gui.in_use ? (vim_strchr(p_go, GO_ASEL) != NULL) :
 #endif
-	    clip_autoselect);
+	    clip_autoselect_star);
+}
+
+/*
+ * Return TRUE if automatic selection of Visual area is desired for the +
+ * register.
+ */
+    int
+clip_isautosel_plus()
+{
+    return (
+#ifdef FEAT_GUI
+	    gui.in_use ? (vim_strchr(p_go, GO_ASELPLUS) != NULL) :
+#endif
+	    clip_autoselect_plus);
 }
 
 
@@ -657,7 +682,7 @@ clip_start_selection(col, row, repeated_click)
     VimClipboard	*cb = &clip_star;
 
     if (cb->state == SELECT_DONE)
-	clip_clear_selection();
+	clip_clear_selection(cb);
 
     row = check_row(row);
     col = check_col(col);
@@ -749,7 +774,7 @@ clip_process_selection(button, col, row, repeated_click)
 	printf("Selection ended: (%u,%u) to (%u,%u)\n", cb->start.lnum,
 		cb->start.col, cb->end.lnum, cb->end.col);
 #endif
-	if (clip_isautosel()
+	if (clip_isautosel_star()
 		|| (
 #ifdef FEAT_GUI
 		    gui.in_use ? (vim_strchr(p_go, GO_ASELML) != NULL) :
@@ -932,16 +957,16 @@ clip_may_redraw_selection(row, col, len)
  * Called from outside to clear selected region from the display
  */
     void
-clip_clear_selection()
+clip_clear_selection(cbd)
+    VimClipboard    *cbd;
 {
-    VimClipboard    *cb = &clip_star;
 
-    if (cb->state == SELECT_CLEARED)
+    if (cbd->state == SELECT_CLEARED)
 	return;
 
-    clip_invert_area((int)cb->start.lnum, cb->start.col, (int)cb->end.lnum,
-						     cb->end.col, CLIP_CLEAR);
-    cb->state = SELECT_CLEARED;
+    clip_invert_area((int)cbd->start.lnum, cbd->start.col, (int)cbd->end.lnum,
+						     cbd->end.col, CLIP_CLEAR);
+    cbd->state = SELECT_CLEARED;
 }
 
 /*
@@ -954,7 +979,7 @@ clip_may_clear_selection(row1, row2)
     if (clip_star.state == SELECT_DONE
 	    && row2 >= clip_star.start.lnum
 	    && row1 <= clip_star.end.lnum)
-	clip_clear_selection();
+	clip_clear_selection(&clip_star);
 }
 
 /*

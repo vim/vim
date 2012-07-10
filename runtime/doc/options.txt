@@ -1452,6 +1452,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option is a list of comma separated names.
 	These names are recognized:
 
+						*clipboard-unnamed*
 	unnamed		When included, Vim will use the clipboard register '*'
 			for all yank, delete, change and put operations which
 			would normally go to the unnamed register.  When a
@@ -1481,9 +1482,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 			"autoselect" flag is used.
 			Also applies to the modeless selection.
 
+						*clipboard-autoselectplus*
+	autoselectplus  Like "autoselect" but using the + register instead of
+			the * register.  Compare to the 'P' flag in
+			'guioptions'.
+
+						*clipboard-autoselectml*
 	autoselectml	Like "autoselect", but for the modeless selection
 			only.  Compare to the 'A' flag in 'guioptions'.
 
+						*clipboard-html*
 	html		When the clipboard contains HTML, use this when
 			pasting.  When putting text on the clipboard, mark it
 			as HTML.  This works to copy rendered HTML from
@@ -1494,6 +1502,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			Only supported for GTK version 2 and later.
 			Only available with the |+multi_byte| feature.
 
+						*clipboard-exclude*
 	exclude:{pattern}
 			Defines a pattern that is matched against the name of
 			the terminal 'term'.  If there is a match, no
@@ -3589,6 +3598,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		windowing system's global selection unless explicitly told to
 		by a yank or delete operation for the "* register.
 		The same applies to the modeless selection.
+								*'go-P'*
+	  'P'	Like autoselect but using the "+ register instead of the "*
+	  	register.
 								*'go-A'*
 	  'A'	Autoselect for the modeless selection.  Like 'a', but only
 		applies to the modeless selection.

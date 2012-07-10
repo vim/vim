@@ -229,6 +229,7 @@
 #define GO_MENUS	'm'		/* use menu bar */
 #define GO_NOSYSMENU	'M'		/* don't source system menu */
 #define GO_POINTER	'p'		/* pointer enter/leave callbacks */
+#define GO_ASELPLUS	'P'		/* autoselectPlus */
 #define GO_RIGHT	'r'		/* use right scrollbar */
 #define GO_VRIGHT	'R'		/* right scrollbar with vert split */
 #define GO_TEAROFF	't'		/* add tear-off menu items */
