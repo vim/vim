@@ -12044,6 +12044,11 @@ f_has(argvars, rettv)
 	"all_builtin_terms",
 # endif
 #endif
+#if defined(FEAT_BROWSE) && (defined(USE_FILE_CHOOSER) \
+	|| defined(FEAT_GUI_W32) \
+	|| defined(FEAT_GUI_MOTIF))
+	"browsefilter",
+#endif
 #ifdef FEAT_BYTEOFF
 	"byte_offset",
 #endif

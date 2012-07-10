@@ -2125,6 +2125,12 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 # endif
 #endif
 
+#if defined(FEAT_BROWSE) && defined(GTK_CHECK_VERSION)
+# if GTK_CHECK_VERSION(2,4,0)
+#  define USE_FILE_CHOOSER
+# endif
+#endif
+
 #ifndef FEAT_NETBEANS_INTG
 # undef NBDEBUG
 #endif

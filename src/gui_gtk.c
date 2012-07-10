@@ -779,9 +779,6 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
 /*
  * Implementation of the file selector related stuff
  */
-#if GTK_CHECK_VERSION(2,4,0)
-# define USE_FILE_CHOOSER
-#endif
 
 #ifndef USE_FILE_CHOOSER
     static void
