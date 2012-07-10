@@ -655,7 +655,6 @@ serverGetVimNames(dpy)
 	if (SendInit(dpy) < 0)
 	    return NULL;
     }
-    ga_init2(&ga, 1, 100);
 
     /*
      * Read the registry property.
@@ -1198,9 +1197,8 @@ serverEventProc(dpy, eventPtr)
 	if ((*p == 'c' || *p == 'k') && (p[1] == 0))
 	{
 	    Window	resWindow;
-	    char_u	*name, *script, *serial, *end, *res;
+	    char_u	*name, *script, *serial, *end;
 	    Bool	asKeys = *p == 'k';
-	    garray_T	reply;
 	    char_u	*enc;
 
 	    /*
@@ -1256,50 +1254,52 @@ serverEventProc(dpy, eventPtr)
 	    if (script == NULL || name == NULL)
 		continue;
 
-	    /*
-	     * Initialize the result property, so that we're ready at any
-	     * time if we need to return an error.
-	     */
-	    if (resWindow != None)
-	    {
-		ga_init2(&reply, 1, 100);
+            if (serverName != NULL && STRICMP(name, serverName) == 0)
+            {
+                script = serverConvert(enc, script, &tofree);
+                if (asKeys)
+                    server_to_input_buf(script);
+                else
+                {
+                    char_u      *res;
+
+                    res = eval_client_expr_to_string(script);
+		    if (resWindow != None)
+		    {
+			garray_T    reply;
+
+			/* Initialize the result property. */
+			ga_init2(&reply, 1, 100);
 #ifdef FEAT_MBYTE
-		ga_grow(&reply, 50 + STRLEN(p_enc));
-		sprintf(reply.ga_data, "%cr%c-E %s%c-s %s%c-r ",
+			ga_grow(&reply, 50 + STRLEN(p_enc));
+			sprintf(reply.ga_data, "%cr%c-E %s%c-s %s%c-r ",
 						   0, 0, p_enc, 0, serial, 0);
-		reply.ga_len = 14 + STRLEN(p_enc) + STRLEN(serial);
+			reply.ga_len = 14 + STRLEN(p_enc) + STRLEN(serial);
 #else
-		ga_grow(&reply, 50);
-		sprintf(reply.ga_data, "%cr%c-s %s%c-r ", 0, 0, serial, 0);
-		reply.ga_len = 10 + STRLEN(serial);
+			ga_grow(&reply, 50);
+			sprintf(reply.ga_data, "%cr%c-s %s%c-r ",
+							     0, 0, serial, 0);
+			reply.ga_len = 10 + STRLEN(serial);
 #endif
-	    }
-	    res = NULL;
-	    if (serverName != NULL && STRICMP(name, serverName) == 0)
-	    {
-		script = serverConvert(enc, script, &tofree);
-		if (asKeys)
-		    server_to_input_buf(script);
-		else
-		    res = eval_client_expr_to_string(script);
-		vim_free(tofree);
-	    }
-	    if (resWindow != None)
-	    {
-		if (res != NULL)
-		    ga_concat(&reply, res);
-		else if (asKeys == 0)
-		{
-		    ga_concat(&reply, (char_u *)_(e_invexprmsg));
-		    ga_append(&reply, 0);
-		    ga_concat(&reply, (char_u *)"-c 1");
-		}
-		ga_append(&reply, NUL);
-		(void)AppendPropCarefully(dpy, resWindow, commProperty,
-					   reply.ga_data, reply.ga_len);
-		ga_clear(&reply);
-	    }
-	    vim_free(res);
+
+			/* Evaluate the expression and return the result. */
+			if (res != NULL)
+			    ga_concat(&reply, res);
+			else
+			{
+			    ga_concat(&reply, (char_u *)_(e_invexprmsg));
+			    ga_append(&reply, 0);
+			    ga_concat(&reply, (char_u *)"-c 1");
+			}
+			ga_append(&reply, NUL);
+			(void)AppendPropCarefully(dpy, resWindow, commProperty,
+						 reply.ga_data, reply.ga_len);
+			ga_clear(&reply);
+		    }
+                    vim_free(res);
+                }
+                vim_free(tofree);
+            }
 	}
 	else if (*p == 'r' && p[1] == 0)
 	{
