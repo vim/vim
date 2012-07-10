@@ -572,61 +572,55 @@ ServerWait(dpy, w, endCond, endData, localLoop, seconds)
 {
     time_t	    start;
     time_t	    now;
-    time_t	    lastChk = 0;
     XEvent	    event;
-    XPropertyEvent *e = (XPropertyEvent *)&event;
-#   define SEND_MSEC_POLL 50
+
+#define UI_MSEC_DELAY 50
+#define SEND_MSEC_POLL 500
+#ifndef HAVE_SELECT
+    struct pollfd   fds;
+
+    fds.fd = ConnectionNumber(dpy);
+    fds.events = POLLIN;
+#else
+    fd_set	    fds;
+    struct timeval  tv;
+
+    tv.tv_sec = 0;
+    tv.tv_usec =  SEND_MSEC_POLL * 1000;
+    FD_ZERO(&fds);
+    FD_SET(ConnectionNumber(dpy), &fds);
+#endif
 
     time(&start);
-    while (endCond(endData) == 0)
+    while (TRUE)
     {
+	while (XCheckWindowEvent(dpy, commWindow, PropertyChangeMask, &event))
+	    serverEventProc(dpy, &event);
+
+	if (endCond(endData) != 0)
+	    break;
+	if (!WindowValid(dpy, w))
+	    break;
 	time(&now);
 	if (seconds >= 0 && (now - start) >= seconds)
 	    break;
-	if (now != lastChk)
-	{
-	    lastChk = now;
-	    if (!WindowValid(dpy, w))
-		break;
-	    /*
-	     * Sometimes the PropertyChange event doesn't come.
-	     * This can be seen in eg: vim -c 'echo remote_expr("gvim", "3+2")'
-	     */
-	    serverEventProc(dpy, NULL);
-	}
+
+	/* Just look out for the answer without calling back into Vim */
 	if (localLoop)
 	{
-	    /* Just look out for the answer without calling back into Vim */
 #ifndef HAVE_SELECT
-	    struct pollfd   fds;
-
-	    fds.fd = ConnectionNumber(dpy);
-	    fds.events = POLLIN;
 	    if (poll(&fds, 1, SEND_MSEC_POLL) < 0)
 		break;
 #else
-	    fd_set	    fds;
-	    struct timeval  tv;
-
-	    tv.tv_sec = 0;
-	    tv.tv_usec =  SEND_MSEC_POLL * 1000;
-	    FD_ZERO(&fds);
-	    FD_SET(ConnectionNumber(dpy), &fds);
-	    if (select(ConnectionNumber(dpy) + 1, &fds, NULL, NULL, &tv) < 0)
+	    if (select(FD_SETSIZE, &fds, NULL, NULL, &tv) < 0)
 		break;
 #endif
-	    while (XEventsQueued(dpy, QueuedAfterReading) > 0)
-	    {
-		XNextEvent(dpy, &event);
-		if (event.type == PropertyNotify && e->window == commWindow)
-		    serverEventProc(dpy, &event);
-	    }
 	}
 	else
 	{
 	    if (got_int)
 		break;
-	    ui_delay((long)SEND_MSEC_POLL, TRUE);
+	    ui_delay((long)UI_MSEC_DELAY, TRUE);
 	    ui_breakcheck();
 	}
     }
