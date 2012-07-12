@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2011 Aug 04
+" Last Change:	2012 Jul 10
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -40,7 +40,7 @@ let b:match_words = &matchpairs . ',^\s*#\s*if\(\|def\|ndef\)\>:^\s*#\s*elif\>:^
 let b:match_skip = 's:comment\|string\|character'
 
 " Win32 can filter files in the browse dialog
-if has("gui_win32") && !exists("b:browsefilter")
+if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
   if &ft == "cpp"
     let b:browsefilter = "C++ Source Files (*.cpp *.c++)\t*.cpp;*.c++\n" .
 	  \ "C Header Files (*.h)\t*.h\n" .

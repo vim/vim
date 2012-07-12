@@ -281,6 +281,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'go-F'	options.txt	/*'go-F'*
 'go-L'	options.txt	/*'go-L'*
 'go-M'	options.txt	/*'go-M'*
+'go-P'	options.txt	/*'go-P'*
 'go-R'	options.txt	/*'go-R'*
 'go-T'	options.txt	/*'go-T'*
 'go-a'	options.txt	/*'go-a'*
@@ -3408,6 +3409,7 @@ CmdwinLeave	autocmd.txt	/*CmdwinLeave*
 ColorScheme	autocmd.txt	/*ColorScheme*
 Command-line	cmdline.txt	/*Command-line*
 Command-line-mode	cmdline.txt	/*Command-line-mode*
+CompleteDone	autocmd.txt	/*CompleteDone*
 Contents	quickref.txt	/*Contents*
 Cscope	if_cscop.txt	/*Cscope*
 CursorHold	autocmd.txt	/*CursorHold*
@@ -4242,7 +4244,11 @@ E852	gui_x11.txt	/*E852*
 E853	eval.txt	/*E853*
 E854	options.txt	/*E854*
 E855	autocmd.txt	/*E855*
+E858	eval.txt	/*E858*
+E859	eval.txt	/*E859*
 E86	windows.txt	/*E86*
+E860	eval.txt	/*E860*
+E861	eval.txt	/*E861*
 E87	windows.txt	/*E87*
 E88	windows.txt	/*E88*
 E89	message.txt	/*E89*
@@ -4425,6 +4431,7 @@ QuickFixCmdPost	autocmd.txt	/*QuickFixCmdPost*
 QuickFixCmdPost-example	quickfix.txt	/*QuickFixCmdPost-example*
 QuickFixCmdPre	autocmd.txt	/*QuickFixCmdPre*
 Quickfix	quickfix.txt	/*Quickfix*
+QuitPre	autocmd.txt	/*QuitPre*
 R	change.txt	/*R*
 RISC-OS	os_risc.txt	/*RISC-OS*
 RISCOS	os_risc.txt	/*RISCOS*
@@ -5011,6 +5018,13 @@ clearmatches()	eval.txt	/*clearmatches()*
 client-server	remote.txt	/*client-server*
 clientserver	remote.txt	/*clientserver*
 clipboard	gui.txt	/*clipboard*
+clipboard-autoselect	options.txt	/*clipboard-autoselect*
+clipboard-autoselectml	options.txt	/*clipboard-autoselectml*
+clipboard-autoselectplus	options.txt	/*clipboard-autoselectplus*
+clipboard-exclude	options.txt	/*clipboard-exclude*
+clipboard-html	options.txt	/*clipboard-html*
+clipboard-unnamed	options.txt	/*clipboard-unnamed*
+clipboard-unnamedplus	options.txt	/*clipboard-unnamedplus*
 cmdarg-variable	eval.txt	/*cmdarg-variable*
 cmdbang-variable	eval.txt	/*cmdbang-variable*
 cmdline-arguments	vi_diff.txt	/*cmdline-arguments*
@@ -6513,6 +6527,13 @@ last-pattern	pattern.txt	/*last-pattern*
 last-position-jump	eval.txt	/*last-position-jump*
 last_buffer_nr()	eval.txt	/*last_buffer_nr()*
 lc_time-variable	eval.txt	/*lc_time-variable*
+lcs-conceal	options.txt	/*lcs-conceal*
+lcs-eol	options.txt	/*lcs-eol*
+lcs-extends	options.txt	/*lcs-extends*
+lcs-nbsp	options.txt	/*lcs-nbsp*
+lcs-precedes	options.txt	/*lcs-precedes*
+lcs-tab	options.txt	/*lcs-tab*
+lcs-trail	options.txt	/*lcs-trail*
 left-right-motions	motion.txt	/*left-right-motions*
 len()	eval.txt	/*len()*
 less	various.txt	/*less*
@@ -6564,6 +6585,7 @@ lua	if_lua.txt	/*lua*
 lua-buffer	if_lua.txt	/*lua-buffer*
 lua-commands	if_lua.txt	/*lua-commands*
 lua-dict	if_lua.txt	/*lua-dict*
+lua-eval	if_lua.txt	/*lua-eval*
 lua-list	if_lua.txt	/*lua-list*
 lua-luaeval	if_lua.txt	/*lua-luaeval*
 lua-vim	if_lua.txt	/*lua-vim*
@@ -6572,6 +6594,8 @@ lua.vim	syntax.txt	/*lua.vim*
 luaeval()	eval.txt	/*luaeval()*
 m	motion.txt	/*m*
 m'	motion.txt	/*m'*
+m<	motion.txt	/*m<*
+m>	motion.txt	/*m>*
 m[	motion.txt	/*m[*
 m]	motion.txt	/*m]*
 m`	motion.txt	/*m`*
@@ -7231,7 +7255,10 @@ pterm-mouse	options.txt	/*pterm-mouse*
 pumvisible()	eval.txt	/*pumvisible()*
 put	change.txt	/*put*
 put-Visual-mode	change.txt	/*put-Visual-mode*
+py3eval()	eval.txt	/*py3eval()*
+pyeval()	eval.txt	/*pyeval()*
 python	if_pyth.txt	/*python*
+python-bindeval	if_pyth.txt	/*python-bindeval*
 python-buffer	if_pyth.txt	/*python-buffer*
 python-buffers	if_pyth.txt	/*python-buffers*
 python-command	if_pyth.txt	/*python-command*
@@ -7243,6 +7270,7 @@ python-eval	if_pyth.txt	/*python-eval*
 python-examples	if_pyth.txt	/*python-examples*
 python-input	if_pyth.txt	/*python-input*
 python-output	if_pyth.txt	/*python-output*
+python-pyeval	if_pyth.txt	/*python-pyeval*
 python-range	if_pyth.txt	/*python-range*
 python-vim	if_pyth.txt	/*python-vim*
 python-window	if_pyth.txt	/*python-window*

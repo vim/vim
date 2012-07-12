@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.3.  Last change: 2011 Jul 19
+*motion.txt*    For Vim version 7.3.  Last change: 2012 Jul 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -749,6 +749,13 @@ m'  or  m`		Set the previous context mark.  This can be jumped to
 m[  or  m]		Set the |'[| or |']| mark.  Useful when an operator is
 			to be simulated by multiple commands.  (does not move
 			the cursor, this is not a motion command).
+
+						*m<* *m>*
+m<  or  m>		Set the |'<| or |'>| mark.  Useful to change what the
+			`gv` command selects.  (does not move the cursor, this
+			is not a motion command).
+			Note that the Visual mode cannot be set, only the
+			start and end position.
 
 						*:ma* *:mark* *E191*
 :[range]ma[rk] {a-zA-Z'}

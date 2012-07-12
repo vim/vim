@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2012 Apr 06
+*syntax.txt*	For Vim version 7.3.  Last change: 2012 Jun 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -650,7 +650,11 @@ The most flexible is to add a line in your assembly file containing: >
 	asmsyntax=nasm
 Replace "nasm" with the name of the real assembly syntax.  This line must be
 one of the first five lines in the file.  No non-white text must be
-immediately before or after this text.
+immediately before or after this text.  Note that specifying asmsyntax=foo is
+equivalent to setting ft=foo in a |modeline|, and that in case of a conflict
+between the two settings the one from the modeline will take precedence (in
+particular, if you have ft=asm in the modeline, you will get the GNU syntax
+highlighting regardless of what is specified as asmsyntax).
 
 The syntax type can always be overruled for a specific buffer by setting the
 b:asmsyntax variable: >
@@ -2909,7 +2913,7 @@ Some folding is now supported with syntax/vim.vim: >
    g:vimsyn_folding =~ 'P' : fold python   script
    g:vimsyn_folding =~ 'r' : fold ruby     script
    g:vimsyn_folding =~ 't' : fold tcl      script
-
+<
 							*g:vimsyn_noerror*
 Not all error highlighting that syntax/vim.vim does may be correct; VimL is a
 difficult language to highlight correctly.  A way to suppress error

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2012 May 18
+*eval.txt*	For Vim version 7.3.  Last change: 2012 Jul 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1880,6 +1880,8 @@ pow( {x}, {y})			Float	{x} to the power of {y}
 prevnonblank( {lnum})		Number	line nr of non-blank line <= {lnum}
 printf( {fmt}, {expr1}...)	String	format text
 pumvisible()			Number	whether popup menu is visible
+pyeval( {expr})			any	evaluate |Python| expression
+py3eval( {expr})		any	evaluate |python3| expression
 range( {expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
 readfile( {fname} [, {binary} [, {max}]])
@@ -3565,6 +3567,9 @@ histadd({history}, {item})				*histadd()*
 			"search" or "/"   search pattern history
 			"expr"	 or "="   typed expression history
 			"input"  or "@"	  input line history
+			"debug"  or ">"   debug command history
+		The {history} string does not need to be the whole name, one
+		character is sufficient.
 		If {item} does already exist in the history, it will be
 		shifted to become the newest entry.
 		The result is a Number: 1 if the operation was successful,
@@ -4033,7 +4038,7 @@ map({expr}, {string})					*map()*
 
 		The operation is done in-place.  If you want a |List| or
 		|Dictionary| to remain unmodified make a copy first: >
-			:let tlist = map(copy(mylist), ' & . "\t"')
+			:let tlist = map(copy(mylist), ' v:val . "\t"')
 
 <		Returns {expr}, the |List| or |Dictionary| that was filtered.
 		When an error is encountered while evaluating {string} no
@@ -4609,6 +4614,29 @@ pumvisible()						*pumvisible()*
 		otherwise.  See |ins-completion-menu|.
 		This can be used to avoid some things that would remove the
 		popup menu.
+
+							*E860* *E861*
+py3eval({expr})						*py3eval()*
+		Evaluate Python expression {expr} and return its result
+		converted to Vim data structures.
+		Numbers and strings are returned as they are (strings are 
+		copied though, unicode strings are additionally converted to 
+		'encoding').
+		Lists are represented as Vim |List| type.
+		Dictionaries are represented as Vim |Dictionary| type with 
+		keys converted to strings.
+		{only available when compiled with the |+python3| feature}
+
+							*E858* *E859*
+pyeval({expr})						*pyeval()*
+		Evaluate Python expression {expr} and return its result
+		converted to Vim data structures.
+		Numbers and strings are returned as they are (strings are 
+		copied though).
+		Lists are represented as Vim |List| type.
+		Dictionaries are represented as Vim |Dictionary| type with 
+		keys converted to strings.
+		{only available when compiled with the |+python| feature}
 
 							*E726* *E727*
 range({expr} [, {max} [, {stride}]])				*range()*
@@ -6219,6 +6247,7 @@ balloon_multiline	GUI supports multiline balloons.
 beos			BeOS version of Vim.
 browse			Compiled with |:browse| support, and browse() will
 			work.
+browsefilter		Compiled with support for |browsefilter|.
 builtin_terms		Compiled with some builtin terminals.
 byte_offset		Compiled with support for 'o' in 'statusline'
 cindent			Compiled with 'cindent' support.

@@ -6,13 +6,14 @@
 
 The Python Interface to Vim				*python* *Python*
 
-1. Commands			|python-commands|
-2. The vim module		|python-vim|
-3. Buffer objects		|python-buffer|
-4. Range objects		|python-range|
-5. Window objects		|python-window|
-6. Dynamic loading		|python-dynamic|
-7. Python 3			|python3|
+1. Commands					|python-commands|
+2. The vim module				|python-vim|
+3. Buffer objects				|python-buffer|
+4. Range objects				|python-range|
+5. Window objects				|python-window|
+6. pyeval(), py3eval() Vim functions		|python-pyeval|
+7. Dynamic loading				|python-dynamic|
+8. Python 3					|python3|
 
 {Vi does not have any of these commands}
 
@@ -149,6 +150,22 @@ vim.eval(str)						*python-eval*
 <	The latter will return a python list of python dicts, for instance:
 	[{'cmd': '/^eval_expr(arg, nextcmd)$/', 'static': 0, 'name':
 	'eval_expr', 'kind': 'f', 'filename': './src/eval.c'}]
+
+vim.bindeval(str)					*python-bindeval*
+	Like |python-eval|, but
+	1. if expression evaluates to |List| or |Dictionary| it is returned as 
+	   vimlist or vimdictionary python type that are connected to original 
+	   list or dictionary. Thus modifications to these objects imply 
+	   modifications of the original.
+	2. if expression evaluates to a function reference, then it returns 
+	   callable vimfunction object. Use self keyword argument to assign 
+	   |self| object for dictionary functions.
+
+	Note: this function has the same behavior as |lua-eval| (except that 
+	      lua does not support running vim functions), |python-eval| is 
+	      kept for backwards compatibility in order not to make scripts 
+	      relying on outputs of vim.eval() being a copy of original or 
+	      vim.eval("1") returning a string.
 
 
 
@@ -319,7 +336,13 @@ The height attribute is writable only if the screen is split horizontally.
 The width attribute is writable only if the screen is split vertically.
 
 ==============================================================================
-6. Dynamic loading					*python-dynamic*
+6. pyeval() and py3eval() Vim functions			*python-pyeval*
+
+To facilitate bi-directional interface, you can use |pyeval()| and |py3eval()| 
+functions to evaluate Python expressions and pass their values to VimL.
+
+==============================================================================
+7. Dynamic loading					*python-dynamic*
 
 On MS-Windows the Python library can be loaded dynamically.  The |:version|
 output then includes |+python/dyn|.
@@ -336,12 +359,13 @@ Currently the name is "python24.dll".  That is for Python 2.4.  To know for
 sure edit "gvim.exe" and search for "python\d*.dll\c".
 
 ==============================================================================
-7. Python 3						*python3*
+8. Python 3						*python3*
 
 							*:py3* *:python3*
 The |:py3| and |:python3| commands work similar to |:python|.
 							*:py3file*
 The |:py3file| command works similar to |:pyfile|.
+
 
 Vim can be built in four ways (:version output):
 1. No Python support	    (-python, -python3)

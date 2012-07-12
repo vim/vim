@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.3.  Last change: 2012 Feb 05
+*cmdline.txt*   For Vim version 7.3.  Last change: 2012 Jun 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -826,10 +826,11 @@ These modifiers can be given, in this order:
 		the home directory.  If the name is a directory a path
 		separator is added at the end.  For a file name that does not
 		exist and does not have an absolute path the result is
-		unpredictable.
+		unpredictable.  On MS-Windows an 8.3 filename is expanded to
+		the long name.
 	:8	Converts the path to 8.3 short format (currently only on
-		win32).  Will act on as much of a path that is an existing
-		path.
+		MS-Windows).  Will act on as much of a path that is an
+		existing path.
 	:~	Reduce file name to be relative to the home directory, if
 		possible.  File name is unmodified if it is not below the home
 		directory.

@@ -1,7 +1,7 @@
 " Set options and add mapping such that Vim behaves a lot like MS-Windows
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2006 Apr 02
+" Last change:	2012 Jun 13
 
 " bail out if this isn't wanted (mrsvim.vim uses this).
 if exists("g:skip_loading_mswin") && g:skip_loading_mswin
@@ -42,9 +42,10 @@ cmap <S-Insert>		<C-R>+
 " Visual mode without the +virtualedit feature.  They are pasted as if they
 " were characterwise instead.
 " Uses the paste.vim autoload script.
+" Use CTRL-G u to have CTRL-Z only undo the paste.
 
-exe 'inoremap <script> <C-V>' paste#paste_cmd['i']
-exe 'vnoremap <script> <C-V>' paste#paste_cmd['v']
+exe 'inoremap <script> <C-V> <C-G>u' . paste#paste_cmd['i']
+exe 'vnoremap <script> <C-V>' . paste#paste_cmd['v']
 
 imap <S-Insert>		<C-V>
 vmap <S-Insert>		<C-V>

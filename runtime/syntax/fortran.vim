@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Fortran 2008 (and earlier versions: 2003, 95, 90, and 77)
-" Version:	0.93
-" Last Change:	2012 Jan. 18
+" Version:	0.94
+" Last Change:	2012 June 18
 " Maintainer:	Ajit J. Thakkar (ajit AT unb.ca); <http://www.unb.ca/chem/ajit/>
 " Usage:	For instructions, do :help fortran-syntax from Vim
 " Credits:
@@ -233,7 +233,8 @@ syn match  fortranConditional	"\<end\s*select"
 syn match  fortranType	"\<end\s*type"
 syn match  fortranType	"\<in\s*out"
 
-syn keyword fortranType	procedure
+syn keyword fortranType	        procedure
+syn match  fortranType	        "\<module\ze\s\+procedure\>"
 syn keyword fortranIOR		namelist
 syn keyword fortranConditionalR	while
 syn keyword fortranIntrinsicR	achar iachar transfer

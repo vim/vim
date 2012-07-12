@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2011 Dec 30
+" Last Change:	2012 Jun 20
 
 let s:cpo_save = &cpo
 set cpo&vim
@@ -500,7 +500,7 @@ function! s:StructMembers(typename, items, all)
   endif
   if !cached
     while 1
-      exe 'silent! ' . n . 'vimgrep /\t' . typename . '\(\t\|$\)/j ' . fnames
+      exe 'silent! keepj noautocmd ' . n . 'vimgrep /\t' . typename . '\(\t\|$\)/j ' . fnames
 
       let qflist = getqflist()
       if len(qflist) > 0 || match(typename, "::") < 0

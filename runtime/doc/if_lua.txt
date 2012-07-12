@@ -1,4 +1,4 @@
-*if_lua.txt*    For Vim version 7.3.  Last change: 2012 Jan 16
+*if_lua.txt*    For Vim version 7.3.  Last change: 2012 Jun 29
 
 
 		  VIM REFERENCE MANUAL    by Luis Carvalho
@@ -313,7 +313,7 @@ Examples:
 <
 
 ==============================================================================
-7. The luaeval function					*lua-luaeval*
+7. The luaeval function					*lua-luaeval* *lua-eval*
 
 The (dual) equivalent of "vim.eval" for passing Lua values to Vim is
 "luaeval". "luaeval" takes an expression string and an optional argument and

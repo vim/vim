@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.3.  Last change: 2012 Apr 30
+*change.txt*    For Vim version 7.3.  Last change: 2012 Jun 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1502,6 +1502,7 @@ n	When formatting text, recognize numbered lists.  This actually uses
 			first line of a paragraph
 		second line of the same paragraph
 		third line.
+<	This also works inside comments, ignoring the comment leader.
 v	Vi-compatible auto-wrapping in insert mode: Only break a line at a
 	blank that you have entered during the current insert command.  (Note:
 	this is not 100% Vi compatible.  Vi has some "unexpected features" or

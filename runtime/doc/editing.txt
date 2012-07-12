@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.3.  Last change: 2012 Apr 03
+*editing.txt*   For Vim version 7.3.  Last change: 2012 Jul 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -377,8 +377,9 @@ command that accepts more than one file name (like ":next file1 file2")
 embedded spaces must be escaped with a backslash.
 
 						*wildcard* *wildcards*
-Wildcards in {file} are expanded.  Which wildcards are supported depends on
-the system.  These are the common ones:
+Wildcards in {file} are expanded, but as with file completion, 'wildignore'
+and 'suffixes' apply.  Which wildcards are supported depends on the system.
+These are the common ones:
 	?	matches one character
 	*	matches anything, including nothing
 	**	matches anything, including nothing, recurses into directories
@@ -422,9 +423,11 @@ You can have the backticks expanded as a Vim expression, instead of an
 external command, by using the syntax `={expr}` e.g.: >
 	:e `=tempname()`
 The expression can contain just about anything, thus this can also be used to
-avoid the special meaning of '"', '|', '%' and '#'.  Names are to be separated
-with line breaks.  When the result is a |List| then each item is used as a
-name.  Line breaks also separate names.
+avoid the special meaning of '"', '|', '%' and '#'.  However, 'wildignore'
+does apply like to other wildcars.
+If the expression returns a string then names are to be separated with line
+breaks.  When the result is a |List| then each item is used as a name.  Line
+breaks also separate names.
 
 							*++opt* *[++opt]*
 The [++opt] argument can be used to force the value of 'fileformat',
@@ -1066,6 +1069,7 @@ The names can be in upper- or lowercase.
 			If there are other tab pages and quitting the last
 			window in the current tab page the current tab page is
 			closed |tab-page|.
+			Triggers the |QuitPre| autocommand event.
 
 :conf[irm] q[uit]	Quit, but give prompt when changes have been made, or
 			the last file in the argument list has not been
@@ -1215,13 +1219,13 @@ For versions of Vim where browsing is not supported, the command is executed
 unmodified.
 
 							*browsefilter*
-For MS Windows, you can modify the filters that are used in the browse dialog.
-By setting the g:browsefilter or b:browsefilter variables, you can change the
-filters globally or locally to the buffer.  The variable is set to a string in
-the format "{filter label}\t{pattern};{pattern}\n" where {filter label} is the
-text that appears in the "Files of Type" comboBox, and {pattern} is the
-pattern which filters the filenames.  Several patterns can be given, separated
-by ';'.
+For MS Windows and GTK, you can modify the filters that are used in the browse
+dialog.  By setting the g:browsefilter or b:browsefilter variables, you can
+change the filters globally or locally to the buffer.  The variable is set to
+a string in the format "{filter label}\t{pattern};{pattern}\n" where {filter
+label} is the text that appears in the "Files of Type" comboBox, and {pattern}
+is the pattern which filters the filenames.  Several patterns can be given,
+separated by ';'.
 
 For Motif the same format is used, but only the very first pattern is actually
 used (Motif only offers one pattern, but you can edit it).
@@ -1229,7 +1233,7 @@ used (Motif only offers one pattern, but you can edit it).
 For example, to have only Vim files in the dialog, you could use the following
 command: >
 
-     let g:browsefilter="Vim Scripts\t*.vim\nVim Startup Files\t*vimrc\n"
+     let g:browsefilter = "Vim Scripts\t*.vim\nVim Startup Files\t*vimrc\n"
 
 You can override the filter setting on a per-buffer basis by setting the
 b:browsefilter variable.  You would most likely set b:browsefilter in a
@@ -1238,6 +1242,13 @@ the type of file you are currently editing.  Disadvantage: This makes it
 difficult to start editing a file of a different type.  To overcome this, you
 may want to add "All Files\t*.*\n" as the final filter, so that the user can
 still access any desired file.
+
+To avoid setting browsefilter when Vim does not actually support it, you can
+use has("browsefilter"): >
+
+	if has("browsefilter")
+	   let g:browsefilter = "whatever"
+	endif
 
 ==============================================================================
 7. The current directory				*current-directory*

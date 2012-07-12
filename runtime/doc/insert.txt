@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.3.  Last change: 2012 May 18
+*insert.txt*    For Vim version 7.3.  Last change: 2012 Jul 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -491,7 +491,7 @@ option}
 							*ins-smarttab*
 When the 'smarttab' option is on, a <Tab> inserts 'shiftwidth' positions at
 the beginning of a line and 'tabstop' positions in other places.  This means
-that often spaces instead of a <Tab> character are inserted.  When 'smarttab
+that often spaces instead of a <Tab> character are inserted.  When 'smarttab'
 is off, a <Tab> always inserts 'tabstop' positions, and 'shiftwidth' is only
 used for ">>" and the like.  {not in Vi}
 
@@ -1043,6 +1043,8 @@ that contains the List.  The Dict can have these items:
 			effect is that the function is called whenever the
 			leading text is changed.
 Other items are ignored.
+
+For acting upon end of completion, see the |CompleteDone| autocommand event.
 
 For example, the function can contain this: >
 	let matches = ... list of words ...

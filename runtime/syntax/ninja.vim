@@ -1,8 +1,8 @@
 " ninja build file syntax.
 " Language: ninja build file as described at
 "           http://martine.github.com/ninja/manual.html
-" Version: 1.1
-" Last Change: 2012/05/13
+" Version: 1.2
+" Last Change: 2012/06/01
 " Maintainer: Nicolas Weber <nicolasweber@gmx.de>
 
 " ninja lexer and parser are at
@@ -15,7 +15,7 @@ endif
 
 syn case match
 
-syn match ninjaComment /#.*/
+syn match ninjaComment /#.*/  contains=@Spell
 
 " Toplevel statements are the ones listed here and
 " toplevel variable assignments (ident '=' value).

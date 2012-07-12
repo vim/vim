@@ -7,19 +7,20 @@
     :progsearch VIM vim
 
 SPELLDIR = ..
+VIMRC = ../spell.vim
 FILES    = hu_HU.aff hu_HU.dic
 
 all: $SPELLDIR/hu.iso-8859-2.spl $SPELLDIR/hu.utf-8.spl \
         $SPELLDIR/hu.cp1250.spl ../README_hu.txt
 
 $SPELLDIR/hu.iso-8859-2.spl : $FILES
-        :sys env LANG=hu_HU.ISO8859-2 $VIM -u NONE -e -c "mkspell! $SPELLDIR/hu hu_HU" -c q
+        :sys env LANG=hu_HU.ISO8859-2 $VIM -u $VIMRC -e -c "mkspell! $SPELLDIR/hu hu_HU" -c q
 
 $SPELLDIR/hu.utf-8.spl : $FILES
-        :sys env LANG=hu_HU.UTF-8 $VIM -u NONE -e -c "mkspell! $SPELLDIR/hu hu_HU" -c q
+        :sys env LANG=hu_HU.UTF-8 $VIM -u $VIMRC -e -c "mkspell! $SPELLDIR/hu hu_HU" -c q
 
 $SPELLDIR/hu.cp1250.spl : $FILES
-        :sys $VIM -u NONE -e -c "set enc=cp1250" -c "mkspell! $SPELLDIR/hu hu_HU" -c q
+        :sys $VIM -u $VIMRC -e -c "set enc=cp1250" -c "mkspell! $SPELLDIR/hu hu_HU" -c q
 
 ../README_hu.txt: README_hu_HU.txt
         :copy $source $target

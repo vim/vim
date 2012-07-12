@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.3.  Last change: 2012 Feb 29
+*mbyte.txt*     For Vim version 7.3.  Last change: 2012 Jun 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -475,7 +475,7 @@ Useful utilities for converting the charset:
 	|charset| converter.  Supported |charset|: ISO-2022-CN, ISO-2022-JP,
 	ISO-2022-KR, EUC-CN, EUC-JP, EUC-KR, EUC-TW, UTF-7, UTF-8, ISO-8859
 	series, Shift_JIS, Big5 and HZ.  Lv can be found at:
-	http://www.ff.iij4u.or.jp/~nrt/freeware/lv4495.tar.gz
+	http://www.ff.iij4u.or.jp/~nrt/lv/index.html
 
 
 							*mbyte-conversion*
@@ -615,7 +615,7 @@ Each field means:
 	    charsets, such as JIS X 0208, if this field is 0, code points has
 	    the same value as GL, and GR if 1.
 
-For example, in case of a 14 dots font corresponding to JIS X 0208, it is
+For example, in case of a 16 dots font corresponding to JIS X 0208, it is
 written like:
     -misc-fixed-medium-r-normal--16-110-100-100-c-160-jisx0208.1990-0
 

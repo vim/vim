@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 7.3.  Last change: 2012 May 25
+*visual.txt*    For Vim version 7.3.  Last change: 2012 Jun 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -274,7 +274,10 @@ with {motion}, which is only ONE movement command.
 Another way to operate on the Visual area is using the |/\%V| item in a
 pattern.  For example, to replace all '(' in the Visual area with '#': >
 
-	:%s/\%V(/X/g
+	:'<,'>s/\%V(/#/g
+
+Note that the "'<,'>" will appear automatically when you press ":" in Visual
+mode.
 
 ==============================================================================
 5. Blockwise operators					*blockwise-operators*

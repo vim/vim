@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.3.  Last change: 2012 Feb 22
+*autocmd.txt*   For Vim version 7.3.  Last change: 2012 Jul 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -385,6 +385,10 @@ BufRead or BufReadPost		When starting to edit a new buffer, after
 				This does NOT work for ":r file".  Not used
 				when the file doesn't exist.  Also used after
 				successfully recovering a file.
+				Also triggered for the filetypedetect group
+				when executing ":filetype detect" and when
+				writing an unnamed buffer in a way that the
+				buffer gets a name.
 							*BufReadCmd*
 BufReadCmd			Before starting to edit a new buffer.  Should
 				read the file into the buffer. |Cmd-event|
@@ -473,6 +477,11 @@ CmdwinLeave			Before leaving the command-line window.
 				|cmdwin-char|
 							*ColorScheme*
 ColorScheme			After loading a color scheme. |:colorscheme|
+
+							*CompleteDone*
+CompleteDone			After Insert mode completion is done.  Either
+				when something was completed or abandoning
+				completion. |ins-completion|
 
 							*CursorHold*
 CursorHold			When the user doesn't press a key for the time
@@ -717,6 +726,12 @@ QuickFixCmdPost			Like QuickFixCmdPre, but after a quickfix
 				it is run after error file is read and before
 				moving to the first error. 
 				See |QuickFixCmdPost-example|.
+							*QuitPre*
+QuitPre				When using `:quit`, before deciding whether it
+				closes the current window or quits Vim.  Can
+				be used to close any non-essential window if
+				the current window is the last ordinary
+				window.
 							*RemoteReply*
 RemoteReply			When a reply from a Vim that functions as
 				server was received |server2client()|.  The

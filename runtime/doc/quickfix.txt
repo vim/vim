@@ -561,7 +561,9 @@ commands can be combined to create a NewGrep command: >
 					*:vim* *:vimgrep* *E682* *E683*
 :vim[grep][!] /{pattern}/[g][j] {file} ...
 			Search for {pattern} in the files {file} ... and set
-			the error list to the matches.
+			the error list to the matches.  Files matching
+			'wildignore' are ignored; files in 'suffixes' are
+			searched last.
 			Without the 'g' flag each line is added only once.
 			With 'g' every match is added.
 
