@@ -93,7 +93,7 @@ long get_tv_number_chk __ARGS((typval_T *varp, int *denote));
 char_u *get_tv_string_chk __ARGS((typval_T *varp));
 char_u *get_var_value __ARGS((char_u *name));
 void new_script_vars __ARGS((scid_T id));
-void init_var_dict __ARGS((dict_T *dict, dictitem_T *dict_var));
+void init_var_dict __ARGS((dict_T *dict, dictitem_T *dict_var, int scope));
 void vars_clear __ARGS((hashtab_T *ht));
 void copy_tv __ARGS((typval_T *from, typval_T *to));
 void ex_echo __ARGS((exarg_T *eap));

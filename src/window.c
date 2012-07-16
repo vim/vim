@@ -3468,7 +3468,7 @@ alloc_tabpage()
 # endif
 #ifdef FEAT_EVAL
 	/* init t: variables */
-	init_var_dict(&tp->tp_vars, &tp->tp_winvar);
+	init_var_dict(&tp->tp_vars, &tp->tp_winvar, VAR_SCOPE);
 #endif
 	tp->tp_ch_used = p_ch;
     }
@@ -4410,7 +4410,7 @@ win_alloc(after, hidden)
 #endif
 #ifdef FEAT_EVAL
 	/* init w: variables */
-	init_var_dict(&new_wp->w_vars, &new_wp->w_winvar);
+	init_var_dict(&new_wp->w_vars, &new_wp->w_winvar, VAR_SCOPE);
 #endif
 #ifdef FEAT_FOLDING
 	foldInitWin(new_wp);

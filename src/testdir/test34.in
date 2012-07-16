@@ -1,5 +1,6 @@
 Test for user functions.
 Also test an <expr> mapping calling a function.
+Also test that a builtin function cannot be replaced.
 
 STARTTEST
 :so small.vim
@@ -58,7 +59,10 @@ XX+-XX
 ---*---
 (one
 (two
-[(one again:$-5,$w! test.out
+[(one again:call append(line('$'), max([1, 2, 3]))
+:call extend(g:, {'max': function('min')})
+:call append(line('$'), max([1, 2, 3]))
+:$-7,$w! test.out
 :delfunc Table
 :delfunc Compute
 :delfunc Expr1

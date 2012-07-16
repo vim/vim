@@ -850,8 +850,8 @@ eval_init()
     int		    i;
     struct vimvar   *p;
 
-    init_var_dict(&globvardict, &globvars_var);
-    init_var_dict(&vimvardict, &vimvars_var);
+    init_var_dict(&globvardict, &globvars_var, VAR_DEF_SCOPE);
+    init_var_dict(&vimvardict, &vimvars_var, VAR_SCOPE);
     vimvardict.dv_lock = VAR_FIXED;
     hash_init(&compat_hashtab);
     hash_init(&func_hashtab);
@@ -2725,14 +2725,26 @@ get_lval(name, rettv, lp, unlet, skip, quiet, fne_flags)
 	    lp->ll_dict = lp->ll_tv->vval.v_dict;
 	    lp->ll_di = dict_find(lp->ll_dict, key, len);
 
-	    /* When assigning to g: check that a function and variable name is
-	     * valid. */
-	    if (rettv != NULL && lp->ll_dict == &globvardict)
+	    /* When assigning to a scope dictionary check that a function and
+	     * variable name is valid (only variable name unless it is l: or
+	     * g: dictionary). Disallow overwriting a builtin function. */
+	    if (rettv != NULL && lp->ll_dict->dv_scope != 0)
 	    {
-		if (rettv->v_type == VAR_FUNC
+		int prevval;
+		int wrong;
+
+		if (len != -1)
+		{
+		    prevval = key[len];
+		    key[len] = NUL;
+		}
+		wrong = (lp->ll_dict->dv_scope == VAR_DEF_SCOPE
+			       && rettv->v_type == VAR_FUNC
 			       && var_check_func_name(key, lp->ll_di == NULL))
-		    return NULL;
-		if (!valid_varname(key))
+			|| !valid_varname(key);
+		if (len != -1)
+		    key[len] = prevval;
+		if (wrong)
 		    return NULL;
 	    }
 
@@ -6951,7 +6963,7 @@ dict_alloc()
     d = (dict_T *)alloc(sizeof(dict_T));
     if (d != NULL)
     {
-	/* Add the list to the list of dicts for garbage collection. */
+	/* Add the dict to the list of dicts for garbage collection. */
 	if (first_dict != NULL)
 	    first_dict->dv_used_prev = d;
 	d->dv_used_next = first_dict;
@@ -6960,6 +6972,7 @@ dict_alloc()
 
 	hash_init(&d->dv_hashtab);
 	d->dv_lock = 0;
+	d->dv_scope = 0;
 	d->dv_refcount = 0;
 	d->dv_copyID = 0;
     }
@@ -10203,6 +10216,19 @@ f_extend(argvars, rettv)
 		{
 		    --todo;
 		    di1 = dict_find(d1, hi2->hi_key, -1);
+		    if (d1->dv_scope != 0)
+		    {
+			/* Disallow replacing a builtin function in l: and g:.
+			 * Check the key to be valid when adding to any
+			 * scope. */
+		        if (d1->dv_scope == VAR_DEF_SCOPE
+				&& HI2DI(hi2)->di_tv.v_type == VAR_FUNC
+				&& var_check_func_name(hi2->hi_key,
+								 di1 == NULL))
+			    break;
+			if (!valid_varname(hi2->hi_key))
+			    break;
+		    }
 		    if (di1 == NULL)
 		    {
 			di1 = dictitem_copy(HI2DI(hi2));
@@ -20027,7 +20053,7 @@ new_script_vars(id)
 	{
 	    sv = SCRIPT_SV(ga_scripts.ga_len + 1) =
 		(scriptvar_T *)alloc_clear(sizeof(scriptvar_T));
-	    init_var_dict(&sv->sv_dict, &sv->sv_var);
+	    init_var_dict(&sv->sv_dict, &sv->sv_var, VAR_SCOPE);
 	    ++ga_scripts.ga_len;
 	}
     }
@@ -20038,12 +20064,14 @@ new_script_vars(id)
  * point to it.
  */
     void
-init_var_dict(dict, dict_var)
+init_var_dict(dict, dict_var, scope)
     dict_T	*dict;
     dictitem_T	*dict_var;
+    int		scope;
 {
     hash_init(&dict->dv_hashtab);
     dict->dv_lock = 0;
+    dict->dv_scope = scope;
     dict->dv_refcount = DO_NOT_FREE_CNT;
     dict->dv_copyID = 0;
     dict_var->di_tv.vval.v_dict = dict;
@@ -22304,7 +22332,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     /*
      * Init l: variables.
      */
-    init_var_dict(&fc->l_vars, &fc->l_vars_var);
+    init_var_dict(&fc->l_vars, &fc->l_vars_var, VAR_DEF_SCOPE);
     if (selfdict != NULL)
     {
 	/* Set l:self to "selfdict".  Use "name" to avoid a warning from
@@ -22325,7 +22353,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
      * Set a:0 to "argcount".
      * Set a:000 to a list with room for the "..." arguments.
      */
-    init_var_dict(&fc->l_avars, &fc->l_avars_var);
+    init_var_dict(&fc->l_avars, &fc->l_avars_var, VAR_SCOPE);
     add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "0",
 				(varnumber_T)(argcount - fp->uf_args.ga_len));
     /* Use "name" to avoid a warning from some compiler that checks the

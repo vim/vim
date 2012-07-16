@@ -1747,7 +1747,8 @@ buflist_new(ffname, sfname, lnum, flags)
     buf->b_wininfo->wi_win = curwin;
 
 #ifdef FEAT_EVAL
-    init_var_dict(&buf->b_vars, &buf->b_bufvar);    /* init b: variables */
+    /* init b: variables */
+    init_var_dict(&buf->b_vars, &buf->b_bufvar, VAR_SCOPE);
 #endif
 #ifdef FEAT_SYN_HL
     hash_init(&buf->b_s.b_keywtab);
