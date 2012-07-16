@@ -463,6 +463,7 @@ RT_ALL =	\
 		runtime/macros/hanoi/hanoi.vim \
 		runtime/macros/hanoi/poster \
 		runtime/macros/justify.vim \
+		runtime/macros/less.bat \
 		runtime/macros/less.sh \
 		runtime/macros/less.vim \
 		runtime/macros/life/click.me \
@@ -666,6 +667,8 @@ EXTRA =		\
 
 # generic language files
 LANG_GEN = \
+		runtime/doc/*-de.1 \
+		runtime/doc/*-de.UTF-8.1 \
 		runtime/doc/*-fr.1 \
 		runtime/doc/*-fr.UTF-8.1 \
 		runtime/doc/*-it.1 \
