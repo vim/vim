@@ -259,6 +259,8 @@
  * PTR2CHAR(): get character from pointer.
  */
 #ifdef FEAT_MBYTE
+/* Get the length of the character p points to */
+# define MB_PTR2LEN(p)		(has_mbyte ? (*mb_ptr2len)(p) : 1)
 /* Advance multi-byte pointer, skip over composing chars. */
 # define mb_ptr_adv(p)	    p += has_mbyte ? (*mb_ptr2len)(p) : 1
 /* Advance multi-byte pointer, do not skip over composing chars. */
@@ -272,6 +274,7 @@
 # define MB_CHARLEN(p)	    (has_mbyte ? mb_charlen(p) : (int)STRLEN(p))
 # define PTR2CHAR(p)	    (has_mbyte ? mb_ptr2char(p) : (int)*(p))
 #else
+# define MB_PTR2LEN(p)		1
 # define mb_ptr_adv(p)		++p
 # define mb_cptr_adv(p)		++p
 # define mb_ptr_back(s, p)	--p

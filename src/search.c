@@ -5141,7 +5141,7 @@ exit_matched:
 		    && !(compl_cont_status & CONT_SOL)
 #endif
 		    && *startp != NUL
-		    && *(p = startp + 1) != NUL)
+		    && *(p = startp + MB_PTR2LEN(startp)) != NUL)
 		goto search_line;
 	}
 	line_breakcheck();
