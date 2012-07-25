@@ -2559,18 +2559,10 @@ objects/if_perl.o: auto/if_perl.c
 objects/if_perlsfio.o: if_perlsfio.c
 	$(CCC) $(PERL_CFLAGS) -o $@ if_perlsfio.c
 
-objects/py_config.o: $(PYTHON_CONFDIR)/config.c
-	$(CCC) $(PYTHON_CFLAGS) -o $@ $(PYTHON_CONFDIR)/config.c \
-		-I$(PYTHON_CONFDIR) -DHAVE_CONFIG_H -DNO_MAIN
-
 objects/py_getpath.o: $(PYTHON_CONFDIR)/getpath.c
 	$(CCC) $(PYTHON_CFLAGS) -o $@ $(PYTHON_CONFDIR)/getpath.c \
 		-I$(PYTHON_CONFDIR) -DHAVE_CONFIG_H -DNO_MAIN \
 		$(PYTHON_GETPATH_CFLAGS)
-
-objects/py3_config.o: $(PYTHON3_CONFDIR)/config.c
-	$(CCC) $(PYTHON3_CFLAGS) -o $@ $(PYTHON3_CONFDIR)/config.c \
-		-I$(PYTHON3_CONFDIR) -DHAVE_CONFIG_H -DNO_MAIN
 
 objects/if_python.o: if_python.c if_py_both.h
 	$(CCC) $(PYTHON_CFLAGS) $(PYTHON_CFLAGS_EXTRA) -o $@ if_python.c

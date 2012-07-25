@@ -916,12 +916,7 @@ eof
 	  PYTHON_CFLAGS="-I${vi_cv_path_python_pfx}/include/python${vi_cv_var_python_version} -I${vi_cv_path_python_epfx}/include/python${vi_cv_var_python_version} -DPYTHON_HOME=\\\"${vi_cv_path_python_pfx}\\\""
 	fi
 	PYTHON_SRC="if_python.c"
-	dnl For Mac OSX 10.2 config.o is included in the Python library.
-	if test "x$MACOSX" = "xyes"; then
-	  PYTHON_OBJ="objects/if_python.o"
-	else
-	  PYTHON_OBJ="objects/if_python.o objects/py_config.o"
-	fi
+	PYTHON_OBJ="objects/if_python.o"
 	if test "${vi_cv_var_python_version}" = "1.4"; then
 	   PYTHON_OBJ="$PYTHON_OBJ objects/py_getpath.o"
 	fi
@@ -1106,12 +1101,7 @@ eof
         PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -DPYTHON3_HOME=L\\\"${vi_cv_path_python3_pfx}\\\""
       fi
       PYTHON3_SRC="if_python3.c"
-      dnl For Mac OSX 10.2 config.o is included in the Python library.
-      if test "x$MACOSX" = "xyes"; then
-        PYTHON3_OBJ="objects/if_python3.o"
-      else
-        PYTHON3_OBJ="objects/if_python3.o objects/py3_config.o"
-      fi
+      PYTHON3_OBJ="objects/if_python3.o"
 
       dnl On FreeBSD linking with "-pthread" is required to use threads.
       dnl _THREAD_SAFE must be used for compiling then.
