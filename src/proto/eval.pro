@@ -23,7 +23,7 @@ int eval_to_number __ARGS((char_u *expr));
 list_T *eval_spell_expr __ARGS((char_u *badword, char_u *expr));
 int get_spellword __ARGS((list_T *list, char_u **pp));
 typval_T *eval_expr __ARGS((char_u *arg, char_u **nextcmd));
-int call_vim_function __ARGS((char_u *func, int argc, char_u **argv, int safe, typval_T *rettv));
+int call_vim_function __ARGS((char_u *func, int argc, char_u **argv, int safe, int str_arg_only, typval_T *rettv));
 void *call_func_retstr __ARGS((char_u *func, int argc, char_u **argv, int safe));
 long call_func_retnr __ARGS((char_u *func, int argc, char_u **argv, int safe));
 void *call_func_retlist __ARGS((char_u *func, int argc, char_u **argv, int safe));

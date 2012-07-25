@@ -3959,7 +3959,7 @@ expand_by_function(type, base)
     curbuf_save = curbuf;
 
     /* Call a function, which returns a list or dict. */
-    if (call_vim_function(funcname, 2, args, FALSE, &rettv) == OK)
+    if (call_vim_function(funcname, 2, args, FALSE, FALSE, &rettv) == OK)
     {
 	switch (rettv.v_type)
 	{
