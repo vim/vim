@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Jul 11
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Jul 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -48,20 +48,13 @@ List of broken mirrors. (Chris Pentago, 2012 Jun 15)
 
 Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
 
-Patch to fix black on black for terminal with 8 colors.
-(James McCoy, 2012 Jul 10)
-
-Patch to make winrestview() work better. (Lech Lorens, 2012 Jul 10)
-
 The CompleteDone autocommand needs some info passed to it:
 - The word that was selected (empty if abandoned complete)
 - Type of completion: tag, omnifunc, user func.
 
-Completefunc gets number passed instead of string.
-Patch from Yakuhiro Matsumoto, 2012 Jul 10
-
-User command complete can't handle spaces.  Patch by Yasuhiro Matsumoto, 2012
-Jul 11.
+":gundo" command: global undo.  Undoes changes spread over multiple files in
+the order they were made.  Also ":gredo".  Both with a count.  Useful when
+tests fail after making changes and you forgot in which files.
 
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
@@ -74,14 +67,21 @@ Issue 54: document behavior of -complete, also expands arg.
 
 Issue 72: 'autochdir' causes problems for :vimgrep.
 
+Patch for SGR mouse support. (Hayaki Saito, mail from Yakuhiro Matsumoto, 2012
+Jul 13)
+
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
+
+Patch to fix assigning to scope dictionaries for Python. (ZyX, 2012 Jul 16)
 
 Syntax update problem in one buffer opened in two windows, bottom window is
 not correctly updated. (Paul Harris, 2012 Feb 27)
 
 Patch to add getsid(). (Tyru, 2011 Oct 2)  Do we want this?  Update Oct 4.
 Or use expand('<sid>')?
+
+Patch to improve IME handling. (Yasuhiro Matsumoto, 2012 Jul 18)
 
 MS-Windows resizing problems:
 - Windows window on screen positioning: Patch by Yukihiro Nakadaira, 2012 Jun
@@ -105,6 +105,7 @@ URXVT:
   http://www.midnight-commander.org/ticket/2662
 
 Patch to add tests for if_xcmdsrv.c., Jul 8, need some more work. (Brian Burns)
+New tests Jul 13.   Update Jul 17.  Discussion Jul 18.
 
 When running Vim in silent ex mode, an existing swapfile causes Vim to wait
 for a user action without a prompt. (Maarten Billemont, 2012 Feb 3)
@@ -123,6 +124,9 @@ Patch for input method status. (Hirohito Higashi, 2012 Apr 18)
 Problem with winfixheight and resizing. (Yukihiro Nakadaira, 2011 Sep 17)
 Patch Sep 18.
 
+Patch for IME problems. Remove hacking code for old IM. (Yukihiro Nakadaira,
+2012 Jul 20)
+
 Patch for has('unnamedplus') docs. (Tony Mechelynck, 2011 Sep 27)
 And one for gui_x11.txt.
 
@@ -134,9 +138,6 @@ And one for gui_x11.txt.
 
 Problem with starting Visual block mode with :norm when 'virtualedit' is set.
 (David glts, 2012 Jun 5)
-
-When 'guioptions' contains 'c' (use console dialog) then inputdialog() returns
-a different value when the dialog is cancelled. (David Fishburn, 2012 Jul 10)
 
 ":cd" doesn't work when current directory path contains "**".
 finddir() has the same problem.  (Yukihiro Nakadaira, 2012 Jan 10)

@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.3.  Last change: 2012 Jul 06
+*motion.txt*    For Vim version 7.3.  Last change: 2012 Jul 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -57,7 +57,7 @@ or change text.  The following operators are available:
 	|>|	>	shift right
 	|<|	<	shift left
 	|zf|	zf	define a fold
-	|g@|    g@      call function set with the 'operatorfunc' option
+	|g@|	g@	call function set with the 'operatorfunc' option
 
 If the motion includes a count and the operator also had a count before it,
 the two counts are multiplied.  For example: "2d3w" deletes six words.
@@ -513,6 +513,8 @@ always select less text than the "a" commands.
 These commands are {not in Vi}.
 These commands are not available when the |+textobjects| feature has been
 disabled at compile time.
+Also see `gn` and `gN`, operating on the last search pattern.
+
 							*v_aw* *aw*
 aw			"a word", select [count] words (see |word|).
 			Leading or trailing white space is included, but not
@@ -689,6 +691,7 @@ movement commands are used.
 	"daw"	delete a word				*daw*
 	"diW"	delete inner WORD (see |WORD|)		*diW*
 	"daW"	delete a WORD (see |WORD|)		*daW*
+	"dgn"   delete the next search pattern match    *dgn*
 	"dd"	delete one line				|dd|
 	"dis"	delete inner sentence			*dis*
 	"das"	delete a sentence			*das*

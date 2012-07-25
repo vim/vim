@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.3.  Last change: 2011 Aug 06
+*index.txt*     For Vim version 7.3.  Last change: 2012 Jul 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -719,6 +719,8 @@ tag		char	      note action in Normal mode	~
 |gH|		gH		   start Select line mode
 |gI|		gI		2  like "I", but always start in column 1
 |gJ|		gJ		2  join lines without inserting space
+|gN|		gN	      1,2  find the previous match with the last used
+				   search pattern and Visually select it
 |gP|		["x]gP		2  put the text [from register x] before the
 				   cursor N times, leave the cursor after it
 |gQ|		gQ		    switch to "Ex" mode with Vim editing

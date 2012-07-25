@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2012 Jun 13
+*syntax.txt*	For Vim version 7.3.  Last change: 2012 Jul 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -380,200 +380,334 @@ settings, depending on which syntax is active.	Example: >
 This is not a syntax file itself, but a script that converts the current
 window into HTML.  Vim opens a new window in which it builds the HTML file.
 
+After you save the resulting file, you can view it with any browser.  The
+colors should be exactly the same as you see them in Vim.
+
 You are not supposed to set the 'filetype' or 'syntax' option to "2html"!
 Source the script to convert the current file: >
 
 	:runtime! syntax/2html.vim
 <
-							*:TOhtml*
-Or use the ":TOhtml" user command.  It is defined in a standard plugin.
-":TOhtml" also works with a range and in a Visual area: >
-
-	:10,40TOhtml
-
-Warning: This can be slow! The script must process every character of every
-line. Because it can take a long time, by default a progress bar is displayed
-in the statusline for each major step in the conversion process. If you don't
-like seeing this progress bar, you can disable it and get a very minor speed
-improvement with: >
-
-	let g:html_no_progress = 1
-
-":TOhtml" has another special feature: if the window is in diff mode, it will
-generate HTML that shows all the related windows.  This can be disabled by
-setting the g:html_diff_one_file variable: >
-
-	let g:html_diff_one_file = 1
-
-After you save the resulting file, you can view it with any browser.  The
-colors should be exactly the same as you see them in Vim.
-
-To restrict the conversion to a range of lines, use a range with the |:TOhtml|
-command, or set "g:html_start_line" and "g:html_end_line" to the first and
-last line to be converted.  Example, using the last set Visual area: >
-
-	:let g:html_start_line = line("'<")
-	:let g:html_end_line = line("'>")
-
-The lines are numbered according to 'number' option and the Number
-highlighting.  You can force lines to be numbered in the HTML output by
-setting "html_number_lines" to non-zero value: >
-   :let g:html_number_lines = 1
-Force to omit the line numbers by using a zero value: >
-   :let g:html_number_lines = 0
-Go back to the default to use 'number' by deleting the variable: >
-   :unlet g:html_number_lines
-
-By default, valid HTML 4.01 using cascading style sheets (CSS1) is generated.
-If you need to generate markup for really old browsers or some other user
-agent that lacks basic CSS support, use: >
-   :let g:html_use_css = 0
-
-Concealed text is removed from the HTML and replaced with the appropriate
-character from |:syn-cchar| or 'listchars' depending on the current value of
-'conceallevel'. If you always want to display all text in your document,
-either set 'conceallevel' to zero before invoking 2html, or use: >
-   :let g:html_ignore_conceal = 1
-
-Similarly, closed folds are put in the HTML as they are displayed.  If you
-don't want this, use the |zR| command before invoking 2html, or use: >
-   :let g:html_ignore_folding = 1
-
-You may want to generate HTML that includes all the data within the folds, and
-allow the user to view the folded data similar to how they would in Vim. To
-generate this dynamic fold information, use: >
-   :let g:html_dynamic_folds = 1
-
-Using html_dynamic_folds will imply html_use_css, because it would be far too
-difficult to do it for old browsers. However, html_ignore_folding overrides
-html_dynamic_folds.
-
-Using html_dynamic_folds will default to generating a foldcolumn in the html
-similar to Vim's foldcolumn, that will use javascript to open and close the
-folds in the HTML document. The width of this foldcolumn starts at the current
-setting of |'foldcolumn'| but grows to fit the greatest foldlevel in your
-document. If you do not want to show a foldcolumn at all, use: >
-   :let g:html_no_foldcolumn = 1
-
-Using this option, there will be no foldcolumn available to open the folds in
-the HTML. For this reason, another option is provided: html_hover_unfold.
-Enabling this option will use CSS 2.0 to allow a user to open a fold by
-hovering the mouse pointer over it. Note that old browsers (notably Internet
-Explorer 6) will not support this feature.  Browser-specific markup for IE6 is
-included to fall back to the normal CSS1 code so that the folds show up
-correctly for this browser, but they will not be openable without a
-foldcolumn. Note that using html_hover_unfold will allow modern browsers with
-disabled javascript to view closed folds. To use this option, use: >
-   :let g:html_hover_unfold = 1
-
-Setting html_no_foldcolumn with html_dynamic_folds will automatically set
-html_hover_unfold, because otherwise the folds wouldn't be dynamic.
-
-By default "<pre>" and "</pre>" are used around the text. When 'wrap' is set
-in the window being converted, the CSS 2.0 "white-space:pre-wrap" value is
-used to wrap the text. You can explicitly enable the wrapping with: >
-   :let g:html_pre_wrap = 1
-or disable with >
-   :let g:html_pre_wrap = 0
-This generates HTML that looks very close to the Vim window, but unfortunately
-there can be minor differences such as the lack of a 'showbreak' option in in
-the HTML, or where line breaks can occur.
-
-Another way to obtain text wrapping in the HTML, at the risk of making some
-things look even more different, is to use: >
-   :let g:html_no_pre = 1
-This will use <br> at the end of each line and use "&nbsp;" for repeated
-spaces. Doing it this way is more compatible with old browsers, but modern
-browsers support the "white-space" method.
-
-If you do stick with the default "<pre>" tags, <Tab> characters in the text
-are included in the generated output if they will have no effect on the
-appearance of the text and it looks like they are in the document
-intentionally. This allows for the HTML output to be copied and pasted from a
-browser without losing the actual whitespace used in the document.
-
-Specifically, <Tab> characters will be included if the 'tabstop' option is set
-to the default of 8, 'expandtab' is not set, and if neither the foldcolumn nor
-the line numbers are included in the HTML output (see options above). When any
-of these conditions are not met, any <Tab> characters in the text are expanded
-to the appropriate number of spaces in the HTML output.
-
-When "<pre>" is included, you can force |:TOhtml| to keep the tabs even if the
-other conditions are not met with: >
-   :let g:html_expand_tabs = 0
-Note that this can easily break text alignment and indentation in the HTML.
-
-Force tabs to be expanded even when they would be kept using: >
-   :let g:html_expand_tabs = 1
-
-For diff mode on a single file (with g:html_diff_one_file) a sequence of more
-than 3 filler lines is displayed as three lines with the middle line
-mentioning the total number of inserted lines.  If you prefer to see all the
-inserted lines as with the side-by-side diff, use: >
-    :let g:html_whole_filler = 1
-And to go back to displaying up to three lines again: >
-    :unlet g:html_whole_filler
-
-For most buffers, TOhtml uses the current value of 'fileencoding' if set, or
-'encoding' if not, to determine the charset and 'fileencoding' of the HTML
-file. 'encoding' is always used for certain 'buftype' values. In general, this
-works for the encodings mentioned specifically by name in |encoding-names|,
-but TOhtml will only automatically use those encodings which are widely
-supported. However, you can override this to support specific encodings that
-may not be automatically detected by default.
-
-To overrule all automatic charset detection, set g:html_use_encoding to the
-name of the charset to be used. TOhtml will try to determine the appropriate
-'fileencoding' setting from the charset, but you may need to set it manually
-if TOhtml cannot determine the encoding. It is recommended to set this
-variable to something widely supported, like UTF-8, for anything you will be
-hosting on a webserver: >
-   :let g:html_use_encoding = "UTF-8"
-You can also use this option to omit the line that specifies the charset
-entirely, by setting g:html_use_encoding to an empty string: >
-   :let g:html_use_encoding = ""
-To go back to the automatic mechanism, delete the g:html_use_encoding
-variable: >
-   :unlet g:html_use_encoding
-
-If you specify a charset with g:html_use_encoding for which TOhtml cannot
-automatically detect the corresponding 'fileencoding' setting, you can use
-g:html_encoding_override to allow TOhtml to detect the correct encoding.
-This is a dictionary of charset-encoding pairs that will replace existing
-pairs automatically detected by TOhtml, or supplement with new pairs. For
-example, to allow TOhtml to detect the HTML charset "windows-1252" properly as
-the encoding "8bit-cp1252", use: >
-   :let g:html_encoding_override = {'windows-1252': '8bit-cp1252'}
-<
-The g:html_charset_override is similar, it allows TOhtml to detect the HTML
-charset for any 'fileencoding' or 'encoding' which is not detected
-automatically. You can also use it to override specific existing
-encoding-charset pairs. For example, TOhtml will by default use UTF-8 for all
-Unicode/UCS encodings. To use UTF-16 and UTF-32 instead, use: >
-   :let g:html_charset_override = {'ucs-4': 'UTF-32', 'utf-16': 'UTF-16'}
-
-Note that documents encoded in either UTF-32 or UTF-16 have known
-compatibility problems with at least one major browser.
-
-					    *convert-to-XML* *convert-to-XHTML*
-If you do not like plain HTML, an alternative is to have the script generate
-XHTML (XML compliant HTML). To do this set the "html_use_xhtml" variable: >
-    :let g:html_use_xhtml = 1
-
-Any of the on/off options listed above can be enabled or disabled by setting
-them explicitly to the desired value, or restored to their default by removing
-the variable using |:unlet|.
+Many variables affect the output of 2html.vim; see below. Any of the on/off
+options listed below can be enabled or disabled by setting them explicitly to
+the desired value, or restored to their default by removing the variable using
+|:unlet|.
 
 Remarks:
 - Some truly ancient browsers may not show the background colors.
 - From most browsers you can also print the file (in color)!
-- This version of TOhtml may work with older versions of Vim, but some
+- The latest TOhtml may actually work with older versions of Vim, but some
   features such as conceal support will not function, and the colors may be
   incorrect for an old Vim without GUI support compiled in.
 
 Here is an example how to run the script over all .c and .h files from a
 Unix shell: >
    for f in *.[ch]; do gvim -f +"syn on" +"run! syntax/2html.vim" +"wq" +"q" $f; done
+<
+					*g:html_start_line* *g:html_end_line*
+To restrict the conversion to a range of lines, use a range with the |:TOhtml|
+command below, or set "g:html_start_line" and "g:html_end_line" to the first
+and last line to be converted.  Example, using the last set Visual area: >
+
+	:let g:html_start_line = line("'<")
+	:let g:html_end_line = line("'>")
+	:runtime! syntax/2html.vim
+<
+							*:TOhtml*
+:[range]TOhtml		The ":TOhtml" command is defined in a standard plugin.
+			This command will source |2html.vim| for you. When a
+			range is given, set |g:html_start_line| and
+			|g:html_end_line| to the start and end of the range,
+			respectively. Default range is the entire buffer.
+
+			If the current window is part of a |diff|, unless
+			|g:html_diff_one_file| is set, :TOhtml will convert
+			all windows which are part of the diff in the current
+			tab and place them side-by-side in a <table> element
+			in the generated HTML.
+
+			Examples: >
+
+	:10,40TOhtml " convert lines 10-40 to html
+	:'<,'>TOhtml " convert current/last visual selection
+	:TOhtml      " convert entire buffer
+<
+							*g:html_diff_one_file*
+Default: 0.
+When 0, all windows involved in a |diff| in the current tab page are converted
+to HTML and placed side-by-side in a <table> element.
+When 1, only the current buffer is converted.
+Example: >
+
+	let g:html_diff_one_file = 1
+<
+							 *g:html_whole_filler*
+Default: 0.
+When 0, if |g:html_diff_one_file| is 1, a sequence of more than 3 filler lines
+is displayed as three lines with the middle line mentioning the total number
+of inserted lines.
+When 1, always display all inserted lines as if |g:html_diff_one_file| were
+not set.
+>
+    :let g:html_whole_filler = 1
+<
+				     *TOhtml-performance* *g:html_no_progress*
+Default: 0.
+When 0, display a progress bar in the statusline for each major step in the
+2html.vim conversion process.
+When 1, do not display the progress bar. This offers a minor speed improvement
+but you won't have any idea how much longer the conversion might take; for big
+files it can take a long time!
+Example: >
+
+	let g:html_no_progress = 1
+<
+You can obtain better performance improvements by also instructing Vim to not
+run interactively, so that too much time is not taken to redraw as the script
+moves through the buffer, switches windows, and the like: >
+
+  vim -E -s -c "let g:html_no_progress=1" -c "syntax on" -c "set ft=c" -c "runtime syntax/2html.vim" -cwqa myfile.c
+<
+Note that the -s flag prevents loading your .vimrc and any plugins, so you
+need to explicitly source/enable anything that will affect the HTML
+conversion. See |-E| and |-s-ex| for details. It is probably best to create a
+script to replace all the -c commands and use it with the -u flag instead of
+specifying each command separately.
+
+							 *g:html_number_lines*
+Default: current 'number' setting.
+When 0, buffer text is displayed in the generated HTML without line numbering.
+When 1, a column of line numbers is added to the generated HTML with the same
+highlighting as the line number column in Vim (|hl-LineNr|).
+Force line numbers even if 'number' is not set: >
+   :let g:html_number_lines = 1
+Force to omit the line numbers: >
+   :let g:html_number_lines = 0
+Go back to the default to use 'number' by deleting the variable: >
+   :unlet g:html_number_lines
+<
+							      *g:html_use_css*
+Default: 1.
+When 1, generate valid HTML 4.01 markup with CSS1 styling, supported in all
+modern browsers and most old browsers.
+When 0, generate <font> tags and similar outdated markup. This is not
+recommended but it may work better in really old browsers, email clients,
+forum posts, and similar situations where basic CSS support is unavailable.
+Example: >
+   :let g:html_use_css = 0
+<
+						       *g:html_ignore_conceal*
+Default: 0.
+When 0, concealed text is removed from the HTML and replaced with a character
+from |:syn-cchar| or 'listchars' as appropriate, depending on the current
+value of 'conceallevel'.
+When 1, include all text from the buffer in the generated HTML, even if it is
+|conceal|ed.
+
+Either of the following commands will ensure that all text in the buffer is
+included in the generated HTML (unless it is folded): >
+   :let g:html_ignore_conceal = 1
+   :setl conceallevel=0
+<
+						       *g:html_ignore_folding*
+Default: 0.
+When 0, text in a closed fold is replaced by the text shown for the fold in
+Vim (|fold-foldtext|). See |g:html_dynamic_folds| if you also want to allow
+the user to expand the fold as in Vim to see the text inside.
+When 1, include all text from the buffer in the generated HTML; whether the
+text is in a fold has no impact at all. |g:html_dynamic_folds| has no effect.
+
+Either of these commands will ensure that all text in the buffer is included
+in the generated HTML (unless it is concealed): >
+   zR
+   :let g:html_ignore_folding = 1
+<
+							*g:html_dynamic_folds*
+Default: 0.
+When 0, text in a closed fold is not included at all in the generated HTML.
+When 1, generate javascript to open a fold and show the text within, just like
+in Vim.
+
+Setting this variable to 1 causes 2html.vim to always use CSS for styling,
+regardless of what |g:html_use_css| is set to.
+
+This variable is ignored when |g:html_ignore_folding| is set.
+>
+   :let g:html_dynamic_folds = 1
+<
+							*g:html_no_foldcolumn*
+Default: 0.
+When 0, if |g:html_dynamic_folds| is 1, generate a column of text similar to
+Vim's foldcolumn (|fold-foldcolumn|) the user can click on to toggle folds
+open or closed. The minimum width of the generated text column is the current
+'foldcolumn' setting.
+When 1, do not generate this column; instead, hovering the mouse cursor over
+folded text will open the fold as if |g:html_hover_unfold| were set.
+>
+   :let g:html_no_foldcolumn = 1
+<
+				*TOhtml-uncopyable-text* *g:html_prevent_copy*
+Default: empty string.
+This option prevents certain regions of the generated HTML from being copied,
+when you select all text in document rendered in a browser and copy it. Useful
+for allowing users to copy-paste only the source text even if a fold column or
+line numbers are shown in the generated content. Specify regions to be
+affected in this way as follows:
+	f:	fold column
+	n:	line numbers (also within fold text)
+	t:	fold text
+	d:	diff filler
+
+Example, to make the fold column and line numbers uncopyable: >
+	:let g:html_prevent_copy = "fn"
+<
+This feature is currently implemented by inserting read-only <input> elements
+into the markup to contain the uncopyable areas. This does not work well in
+all cases. When pasting to some applications which understand HTML, the
+<input> elements also get pasted. But plain-text paste destinations should
+always work.
+
+							   *g:html_no_invalid*
+Default: 0.
+When 0, if |g:html_prevent_copy| is non-empty, an invalid attribute is
+intentionally inserted into the <input> element for the uncopyable areas. This
+increases the number of applications you can paste to without also pasting the
+<input> elements. Specifically, Microsoft Word will not paste the <input>
+elements if they contain this invalid attribute.
+When 1, no invalid markup is ever intentionally inserted, and the generated
+page should validate. However, be careful pasting into Microsoft Word when
+|g:html_prevent_copy| is non-empty; it can be hard to get rid of the <input>
+elements which get pasted.
+
+							 *g:html_hover_unfold*
+Default: 0.
+When 0, the only way to open a fold generated by 2html.vim with
+|g:html_dynamic_folds| set, is to click on the generated fold column.
+When 1, use CSS 2.0 to allow the user to open a fold by moving the mouse
+cursor over the displayed fold text. This is useful to allow users with
+disabled javascript to view the folded text.
+
+Note that old browsers (notably Internet Explorer 6) will not support this
+feature.  Browser-specific markup for IE6 is included to fall back to the
+normal CSS1 styling so that the folds show up correctly for this browser, but
+they will not be openable without a foldcolumn.
+>
+   :let g:html_hover_unfold = 1
+<
+					  *TOhtml-wrap-text* *g:html_pre_wrap*
+Default: current 'wrap' setting.
+When 0, if |g:html_no_pre| is 0 or unset, the text in the generated HTML does
+not wrap at the edge of the browser window.
+When 1, if |g:html_use_css| is 1, the CSS 2.0 "white-space:pre-wrap" value is
+used, causing the text to wrap at whitespace at the edge of the browser
+window.
+Explicitly enable text wrapping: >
+   :let g:html_pre_wrap = 1
+Explicitly disable wrapping: >
+   :let g:html_pre_wrap = 0
+Go back to default, determine wrapping from 'wrap' setting: >
+   :unlet g:html_pre_wrap
+<
+							       *g:html_no_pre*
+Default: 0.
+When 0, buffer text in the generated HTML is surrounded by <pre>...</pre>
+tags. Series of whitespace is shown as in Vim without special markup, and tab
+characters can be included literally (see |g:html_expand_tabs|).
+When 1 (not recommended), the <pre> tags are omitted, and a plain <div> is
+used instead. Whitespace is replaced by a series of &nbsp; character
+references, and <br> is used to end each line. This is another way to allow
+text in the generated HTML is wrap (see |g:html_pre_wrap|) which also works in
+old browsers, but may cause noticeable differences between Vim's display and
+the rendered page generated by 2html.vim.
+>
+   :let g:html_no_pre = 1
+<
+							  *g:html_expand_tabs*
+Default: 1 if 'tabstop' is 8, 'expandtab' is 0, and no fold column or line
+		numbers occur in the generated HTML;
+	 0 otherwise.
+When 0, <Tab> characters in the buffer text are replaced with an appropriate
+number of space characters, or &nbsp; references if |g:html_no_pre| is 1.
+When 1, if |g:html_no_pre| is 0 or unset, <Tab> characters in the buffer text
+are included as-is in the generated HTML. This is useful for when you want to
+allow copy and paste from a browser without losing the actual whitespace in
+the source document. Note that this can easily break text alignment and
+indentation in the HTML, unless set by default.
+
+Force |2html.vim| to keep <Tab> characters: >
+   :let g:html_expand_tabs = 0
+<
+Force tabs to be expanded: >
+   :let g:html_expand_tabs = 1
+<
+				    *TOhtml-encoding-detect* *TOhtml-encoding*
+It is highly recommended to set your desired encoding with
+|g:html_use_encoding| for any content which will be placed on a web server.
+
+If you do not specify an encoding, |2html.vim| uses the preferred IANA name
+for the current value of 'fileencoding' if set, or 'encoding' if not.
+'encoding' is always used for certain 'buftype' values. 'fileencoding' will be
+set to match the chosen document encoding.
+
+Automatic detection works for the encodings mentioned specifically by name in
+|encoding-names|, but TOhtml will only automatically use those encodings with
+wide browser support. However, you can override this to support specific
+encodings that may not be automatically detected by default (see options
+below). See http://www.iana.org/assignments/character-sets for the IANA names.
+
+Note, by default all Unicode encodings are converted to UTF-8 with no BOM in
+the generated HTML, as recommended by W3C:
+
+	http://www.w3.org/International/questions/qa-choosing-encodings
+	http://www.w3.org/International/questions/qa-byte-order-mark
+
+							 *g:html_use_encoding*
+Default: none, uses IANA name for current 'fileencoding' as above.
+To overrule all automatic charset detection, set g:html_use_encoding to the
+name of the charset to be used. It is recommended to set this variable to
+something widely supported, like UTF-8, for anything you will be hosting on a
+webserver: >
+   :let g:html_use_encoding = "UTF-8"
+You can also use this option to omit the line that specifies the charset
+entirely, by setting g:html_use_encoding to an empty string (NOT recommended): >
+   :let g:html_use_encoding = ""
+To go back to the automatic mechanism, delete the |g:html_use_encoding|
+variable: >
+   :unlet g:html_use_encoding
+<
+						    *g:html_encoding_override*
+Default: none, autoload/tohtml.vim contains default conversions for encodings
+		mentioned by name at |encoding-names|.
+This option allows |2html.vim| to detect the correct 'fileencoding' when you
+specify an encoding with |g:html_use_encoding| which is not in the default
+list of conversions.
+
+This is a dictionary of charset-encoding pairs that will replace existing
+pairs automatically detected by TOhtml, or supplement with new pairs.
+
+Detect the HTML charset "windows-1252" as the encoding "8bit-cp1252": >
+   :let g:html_encoding_override = {'windows-1252': '8bit-cp1252'}
+<
+						     *g:html_charset_override*
+Default: none, autoload/tohtml.vim contains default conversions for encodings
+		mentioned by name at |encoding-names| and which have wide
+		browser support.
+This option allows |2html.vim| to detect the HTML charset for any
+'fileencoding' or 'encoding' which is not detected automatically. You can also
+use it to override specific existing encoding-charset pairs. For example,
+TOhtml will by default use UTF-8 for all Unicode/UCS encodings. To use UTF-16
+and UTF-32 instead, use: >
+   :let g:html_charset_override = {'ucs-4': 'UTF-32', 'utf-16': 'UTF-16'}
+
+Note that documents encoded in either UTF-32 or UTF-16 have known
+compatibility problems with some major browsers.
+
+			*convert-to-XML* *convert-to-XHTML* *g:html_use_xhtml*
+Default: 0.
+When 0, generate standard HTML 4.01 (strict when possible).
+When 1, generate XHTML 1.0 instead (XML compliant HTML).
+>
+    :let g:html_use_xhtml = 1
 <
 
 ABEL						*abel.vim* *ft-abel-syntax*

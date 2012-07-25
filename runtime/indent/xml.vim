@@ -1,6 +1,6 @@
 " Language:	xml
 " Maintainer:	Johannes Zellner <johannes@zellner.org>
-" Last Change:	2012 May 18
+" Last Change:	2012 Jul 25
 " Notes:	1) does not indent pure non-xml code (e.g. embedded scripts)
 "		2) will be confused by unbalanced tags in comments
 "		or CDATA sections.
@@ -31,8 +31,16 @@ if !exists('b:xml_indent_close')
     " let b:xml_indent_close = '.\{-}</\(address\)\@!'
 endif
 
+let &cpo = s:keepcpo
+unlet s:keepcpo
+
 " [-- finish, if the function already exists --]
-if exists('*XmlIndentGet') | finish | endif
+if exists('*XmlIndentGet')
+  finish
+endif
+
+let s:keepcpo= &cpo
+set cpo&vim
 
 fun! <SID>XmlIndentWithPattern(line, pat)
     let s = substitute('x'.a:line, a:pat, "\1", 'g')

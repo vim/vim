@@ -3,7 +3,7 @@
 # vimparse.pl - Reformats the error messages of the Perl interpreter for use
 # with the quickfix mode of Vim
 #
-# Copyright (©) 2001 by Jörg Ziefle <joerg.ziefle@gmx.de>
+# Copyright (c) 2001 by Joerg Ziefle <joerg.ziefle@gmx.de>
 # You may use and distribute this software under the same terms as Perl itself.
 #
 # Usage: put one of the two configurations below in your ~/.vimrc (without the

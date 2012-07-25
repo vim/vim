@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Vim help file
 " Maintainer:	Bram Moolenaar (Bram@vim.org)
-" Last Change:	2012 May 18
+" Last Change:	2012 Jul 16
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -12,8 +12,8 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 syn match helpHeadline		"^[-A-Z .][-A-Z0-9 .()]*[ \t]\+\*"me=e-1
-syn match helpSectionDelim	"^=\{3,}.*===$"
-syn match helpSectionDelim	"^-\{3,}.*--$"
+syn match helpSectionDelim	"^===.*===$"
+syn match helpSectionDelim	"^---.*--$"
 syn region helpExample		matchgroup=helpIgnore start=" >$" start="^>$" end="^[^ \t]"me=e-1 end="^<"
 if has("ebcdic")
   syn match helpHyperTextJump	"\\\@<!|[^"*|]\+|" contains=helpBar

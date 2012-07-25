@@ -1,40 +1,95 @@
 " Vim plugin for converting a syntax highlighted file to HTML.
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2011 May 26
+" Last Change: 2012 Jul 12
 "
 " The core of the code is in $VIMRUNTIME/autoload/tohtml.vim and
 " $VIMRUNTIME/syntax/2html.vim
 "
-" TODO:
+" TODO: {{{
+"   * Bug: still a 1px gap throughout the fold column when html_prevent_copy is
+"     "fn" in some browsers. Specifically, in Chromium on Ubuntu (but not Chrome
+"     on Windows). Perhaps it is font related?
+"   * Bug: still some gaps in the fold column when html_prevent_copy contains
+"     'd' and showing the whole diff (observed in multiple browsers). Only gaps
+"     on diff lines though.
+"   * anchors on each line so you can do file.html#1234 to get to line 1234
+"   * add a modeline to the generated html to set nofoldenable or fdm=manual
+"     because syntax folding takes a terribly long time to work with the weird
+"     formatting the script does.
 "   * Options for generating the CSS in external style sheets. New :TOcss
 "     command to convert the current color scheme into a (mostly) generic CSS
 "     stylesheet which can be re-used. Alternate stylesheet support?
+"   * Undercurl support via CSS3, with fallback to dotted or something:
+"	https://groups.google.com/d/topic/vim_use/BzXA6He1pHg/discussion
+"   * Redo updates for modified default foldtext (v11) when/if the patch is
+"     accepted to modify it.
+"   * Test case +diff_one_file-dynamic_folds+expand_tabs-hover_unfold
+"		+ignore_conceal-ignore_folding+no_foldcolumn+no_pre+no_progress
+"		+number_lines-pre_wrap-use_css+use_xhtml+whole_filler.xhtml
+"     does not show the whole diff filler as it is supposed to.
+"   * Add option for not generating the hyperlink on stuff that looks like a
+"     URL? Or just color the link to fit with the colorscheme (and only special
+"     when hovering)?
+"   * Bug: when 'isprint' is wrong for the current encoding, will generate
+"     invalid content. Can/should anything be done about this? Maybe a separate
+"     plugin to correct 'isprint' based on encoding?
+"   * Check to see if the windows-125\d encodings actually work in Unix without
+"     the 8bit- prefix. Add prefix to autoload dictionaries for Unix if not.
+"   * Font auto-detection similar to
+"     http://www.vim.org/scripts/script.php?script_id=2384 but for a variety of
+"     platforms.
+"   * Error thrown when sourcing 2html.vim directly when plugins are not loaded.
 "   * Pull in code from http://www.vim.org/scripts/script.php?script_id=3113 :
 "	- listchars support
 "	- full-line background highlight
 "	- other?
-"   * Font auto-detection similar to
-"     http://www.vim.org/scripts/script.php?script_id=2384
-"   * Explicitly trigger IE8+ Standards Mode?
-"   * Make it so deleted lines in a diff don't create side-scrolling
+"   * Explicitly trigger IE8+ Standards Mode? Doesn't seem necessary yet.
+"   * Make it so deleted lines in a diff don't create side-scrolling (get it
+"     free with full-line background highlight above).
 "   * Restore open/closed folds and cursor position after processing each file
-"     with option not to restore for speed increase
-"   * Undercurl support via dotted bottom border?
+"     with option not to restore for speed increase.
 "   * Add extra meta info (generation time, etc.)?
 "   * Tidy up so we can use strict doctype in even more situations
 "   * Implementation detail: add threshold for writing the lines to the html
 "     buffer before we're done (5000 or so lines should do it)
 "   * TODO comments for code cleanup scattered throughout
-"
+"}}}
 
 if exists('g:loaded_2html_plugin')
   finish
 endif
-let g:loaded_2html_plugin = 'vim7.3_v10'
+let g:loaded_2html_plugin = 'vim7.3_v12'
 
 "
-" Changelog:
-"   7.3_v10 (this version): Fix error E684 when converting a range wholly inside
+" Changelog: {{{
+"
+"   7.3_v12 (this version): Fix modeline mangling to also work for when multiple
+"                           highlight groups make up the start-of-modeline text.
+"                           Improve render time of page with uncopyable regions
+"                           by not using one-input-per-char. Change name of
+"                           uncopyable option from html_unselectable to
+"                           html_prevent_copy. Added html_no_invalid option and
+"                           default to inserting invalid markup for uncopyable
+"                           regions to prevent MS Word from pasting undeletable
+"                           <input> elements. Fix 'cpo' handling (Thilo Six).
+"                7.3_v12b1: Add html_unselectable option. Rework logic to
+"                           eliminate post-processing substitute commands in
+"                           favor of doing the work up front. Remove unnecessary
+"                           special treatment of 'LineNr' highlight group. Minor
+"                           speed improvements. Fix modeline mangling in
+"                           generated output so it works for text in the first
+"                           column. Fix missing line number and fold column in
+"                           diff filler lines. Fix that some fonts have a 1px
+"                           gap (using a dirty hack, improvements welcome). Add
+"                           "colorscheme" meta tag. Does NOT include support for
+"                           the new default foldtext added in v11, as the patch
+"                           adding it has not yet been included in Vim.
+"   7.3_v11 ( unreleased ): Support new default foldtext from patch by Christian
+"                           Brabandt in
+"                           http://groups.google.com/d/topic/vim_dev/B6FSGfq9VoI/discussion.
+"                           This patch has not yet been included in Vim, thus
+"                           these changes are removed in the next version.
+"   7.3_v10 (fd09a9c8468e): Fix error E684 when converting a range wholly inside
 "                           multiple nested folds with dynamic folding on.
 "                           Also fix problem with foldtext in this situation.
 "   7.3_v9  (0877b8d6370e): Add html_pre_wrap option active with html_use_css
@@ -81,14 +136,15 @@ let g:loaded_2html_plugin = 'vim7.3_v10'
 "                           diff colors and the normal syntax colors
 "   7.3_v1  (e7751177126b): Add conceal support and meta tags in output
 "   Pre-v1 baseline: Mercurial changeset 3c9324c0800e
+"}}}
 
 " Define the :TOhtml command when:
 " - 'compatible' is not set
 " - this plugin was not already loaded
-" - user commands are available.
+" - user commands are available. {{{
 if !&cp && !exists(":TOhtml") && has("user_commands")
   command -range=% TOhtml :call tohtml#Convert2HTML(<line1>, <line2>)
-endif
+endif "}}}
 
 " Make sure any patches will probably use consistent indent
-"   vim: ts=8 sw=2 sts=2 noet
+"   vim: ts=8 sw=2 sts=2 noet fdm=marker
