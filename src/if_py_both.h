@@ -1284,9 +1284,10 @@ FunctionCall(PyObject *self, PyObject *argsObject, PyObject *kwargs)
 	selfdictObject = PyDict_GetItemString(kwargs, "self");
 	if (selfdictObject != NULL)
 	{
-	    if (!PyDict_Check(selfdictObject))
+	    if (!PyMapping_Check(selfdictObject))
 	    {
-		PyErr_SetString(PyExc_TypeError, _("'self' argument must be a dictionary"));
+		PyErr_SetString(PyExc_TypeError,
+				   _("'self' argument must be a dictionary"));
 		clear_tv(&args);
 		return NULL;
 	    }
