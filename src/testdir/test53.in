@@ -28,6 +28,13 @@ fXdat
 :put =matchstr(\"abcd\", \".\", 0, -1) " a
 :put =match(\"abcd\", \".\", 0, 5) " -1
 :put =match(\"abcd\", \".\", 0, -1) " 0
+/^foobar
+gncsearchmatch/one\_s*two\_s
+:1
+gnd
+/[a]bcdx
+:1
+2gnd
 :/^start:/,/^end:/wq! test.out
 ENDTEST
 
@@ -45,4 +52,9 @@ voo "nah" sdf " asdf" sdf " sdf" sd
 -<b>asdf<i>Xasdf</i>asdf</b>-
 -<b>asdX<i>as<b />df</i>asdf</b>-
 </begin>
+SEARCH:
+foobar
+one
+two
+abcdx | abcdx | abcdx
 end:

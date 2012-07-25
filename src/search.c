@@ -3397,6 +3397,151 @@ current_word(oap, count, include, bigword)
     return OK;
 }
 
+#if defined(FEAT_VISUAL) || defined(PROTO)
+/*
+ * Find next search match under cursor, cursor at end.
+ * Used while an operator is pending, and in Visual mode.
+ * TODO: redo only works when used in operator pending mode
+ */
+    int
+current_search(count, forward)
+    long	count;
+    int		forward;	/* move forward or backwards */
+{
+    pos_T	start_pos;	/* position before the pattern */
+    pos_T	orig_pos;	/* position of the cursor at beginning */
+    pos_T	pos;		/* position after the pattern */
+    int		i;
+    int		dir;
+    int		result;		/* result of various function calls */
+    char_u	old_p_ws = p_ws;
+    int		visual_active = FALSE;
+    int		flags = 0;
+    pos_T	save_VIsual;
+
+
+    /* wrapping should not occur */
+    p_ws = FALSE;
+
+    /* Correct cursor when 'selection' is exclusive */
+    if (VIsual_active && *p_sel == 'e' && lt(VIsual, curwin->w_cursor))
+	dec_cursor();
+
+    if (VIsual_active)
+    {
+	orig_pos = curwin->w_cursor;
+	save_VIsual = VIsual;
+	visual_active = TRUE;
+
+	/* just started visual selection, only one character */
+	if (equalpos(VIsual, curwin->w_cursor))
+	    visual_active = FALSE;
+
+	pos = curwin->w_cursor;
+	start_pos = VIsual;
+
+	/* make sure, searching further will extend the match */
+	if (VIsual_active)
+	{
+	    if (forward)
+		incl(&pos);
+	    else
+		decl(&pos);
+	}
+    }
+    else
+	orig_pos = pos = start_pos = curwin->w_cursor;
+
+    /*
+     * The trick is to first search backwards and then search forward again,
+     * so that a match at the current cursor position will be correctly
+     * captured.
+     */
+    for (i = 0; i < 2; i++)
+    {
+	if (i && count == 1)
+	    flags = SEARCH_START;
+
+	if (forward)
+	    dir = i;
+	else
+	    dir = !i;
+	result = searchit(curwin, curbuf, &pos, (dir ? FORWARD : BACKWARD),
+		spats[last_idx].pat, (long) (i ? count : 1),
+		SEARCH_KEEP | flags | (dir ? 0 : SEARCH_END),
+		RE_SEARCH, 0, NULL);
+
+	/* First search may fail, but then start searching from the
+	 * beginning of the file (cursor might be on the search match)
+	 * except when Visual mode is active, so that extending the visual
+	 * selection works. */
+	if (!result && i) /* not found, abort */
+	{
+	    curwin->w_cursor = orig_pos;
+	    if (VIsual_active)
+		VIsual = save_VIsual;
+	    p_ws = old_p_ws;
+	    return FAIL;
+	}
+	else if (!i && !result && !visual_active)
+	{
+	    if (forward) /* try again from start of buffer */
+	    {
+		clearpos(&pos);
+	    }
+	    else /* try again from end of buffer */
+	    {
+		/* searching backwards, so set pos to last line and col */
+		pos.lnum = curwin->w_buffer->b_ml.ml_line_count;
+		pos.col  = STRLEN(ml_get(curwin->w_buffer->b_ml.ml_line_count));
+	    }
+	}
+
+    }
+
+    start_pos = pos;
+    flags = (forward ? SEARCH_END : 0);
+
+    /* move to match */
+    result = searchit(curwin, curbuf, &pos, (forward ? FORWARD : BACKWARD),
+	    spats[last_idx].pat, 0L, flags | SEARCH_KEEP, RE_SEARCH, 0, NULL);
+
+    if (!VIsual_active)
+	VIsual = start_pos;
+
+    p_ws = old_p_ws;
+    curwin->w_cursor = pos;
+    VIsual_active = TRUE;
+    VIsual_mode = 'v';
+
+    if (VIsual_active)
+    {
+	redraw_curbuf_later(INVERTED);	/* update the inversion */
+	if (*p_sel == 'e' && ltoreq(VIsual, curwin->w_cursor))
+	    inc_cursor();
+    }
+
+#ifdef FEAT_FOLDING
+    if (fdo_flags & FDO_SEARCH && KeyTyped)
+	foldOpenCursor();
+#endif
+
+    may_start_select('c');
+#ifdef FEAT_MOUSE
+    setmouse();
+#endif
+#ifdef FEAT_CLIPBOARD
+    /* Make sure the clipboard gets updated.  Needed because start and
+     * end are still the same, and the selection needs to be owned */
+    clip_star.vmode = NUL;
+#endif
+    redraw_curbuf_later(INVERTED);
+    showmode();
+
+    return OK;
+}
+#endif /* FEAT_VISUAL */
+
 /*
  * Find sentence(s) under the cursor, cursor at end.
  * When Visual active, extend it by one or more sentences.
@@ -3420,7 +3565,7 @@ current_sent(oap, count, include)
 
 #ifdef FEAT_VISUAL
     /*
-     * When visual area is bigger than one character: Extend it.
+     * When the Visual area is bigger than one character: Extend it.
      */
     if (VIsual_active && !equalpos(start_pos, VIsual))
     {
@@ -3508,8 +3653,8 @@ extend:
 #endif
 
     /*
-     * If cursor started on blank, check if it is just before the start of the
-     * next sentence.
+     * If the cursor started on a blank, check if it is just before the start
+     * of the next sentence.
      */
     while (c = gchar_pos(&pos), vim_iswhite(c))	/* vim_iswhite() is a macro */
 	incl(&pos);
@@ -3558,7 +3703,7 @@ extend:
 #ifdef FEAT_VISUAL
     if (VIsual_active)
     {
-	/* avoid getting stuck with "is" on a single space before a sent. */
+	/* Avoid getting stuck with "is" on a single space before a sentence. */
 	if (equalpos(start_pos, curwin->w_cursor))
 	    goto extend;
 	if (*p_sel == 'e')

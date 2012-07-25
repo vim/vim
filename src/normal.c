@@ -1780,10 +1780,18 @@ do_pending_operator(cap, old_col, gui_yank)
 	    {
 		/* Prepare for redoing.  Only use the nchar field for "r",
 		 * otherwise it might be the second char of the operator. */
-		prep_redo(oap->regname, 0L, NUL, 'v',
-				get_op_char(oap->op_type),
-				get_extra_op_char(oap->op_type),
-				oap->op_type == OP_REPLACE ? cap->nchar : NUL);
+		if (cap->cmdchar == 'g' && (cap->nchar == 'n'
+							|| cap->nchar == 'N'))
+		    /* "gn" and "gN" are a bit different */
+		    prep_redo(oap->regname, 0L, NUL, cap->cmdchar, cap->nchar,
+					get_op_char(oap->op_type),
+					get_extra_op_char(oap->op_type));
+		else
+		    prep_redo(oap->regname, 0L, NUL, 'v',
+					get_op_char(oap->op_type),
+					get_extra_op_char(oap->op_type),
+					oap->op_type == OP_REPLACE
+							  ? cap->nchar : NUL);
 		if (!redo_VIsual_busy)
 		{
 		    redo_VIsual_mode = resel_VIsual_mode;
@@ -7986,6 +7994,17 @@ nv_g_cmd(cap)
 	cap->cmdchar = cap->nchar + ('v' - 'h');
 	cap->arg = TRUE;
 	nv_visual(cap);
+	break;
+
+    /* "gn", "gN" visually select next/previous search match
+     * "gn" selects next match
+     * "gN" selects previous match
+     */
+    case 'N':
+    case 'n':
+	if (!current_search(cap->count1, cap->nchar == 'n'))
+	    beep_flush();
+
 	break;
 #endif /* FEAT_VISUAL */
 

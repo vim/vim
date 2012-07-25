@@ -27,6 +27,7 @@ int bck_word __ARGS((long count, int bigword, int stop));
 int end_word __ARGS((long count, int bigword, int stop, int empty));
 int bckend_word __ARGS((long count, int bigword, int eol));
 int current_word __ARGS((oparg_T *oap, long count, int include, int bigword));
+int current_search __ARGS((long count, int forward));
 int current_sent __ARGS((oparg_T *oap, long count, int include));
 int current_block __ARGS((oparg_T *oap, long count, int include, int what, int other));
 int current_tagblock __ARGS((oparg_T *oap, long count_arg, int include));
