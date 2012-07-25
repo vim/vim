@@ -1,4 +1,6 @@
-Tests for "gf" on ${VAR}
+Tests for:
+- "gf" on ${VAR},
+- ":checkpath!" with various 'include' settings.
 
 STARTTEST
 :so small.vim
@@ -20,8 +22,99 @@ STARTTEST
 :endif
 gf
 :w! test.out
-:qa!
+:brewind
 ENDTEST
 
 	${CDIR}/test17a.in
 	$TDIR/test17a.in
+
+STARTTEST
+:" check for 'include' without \zs or \ze
+:lang C
+:!rm -f ./Xbase.a
+:!rm -rf ./Xdir1
+:!mkdir -p Xdir1/dir2
+:e Xdir1/dir2/foo.a
+i#include   "bar.a"
+:w
+:e Xdir1/dir2/bar.a
+i#include      "baz.a"
+:w
+:e Xdir1/dir2/baz.a
+i#include            "foo.a"
+:w
+:e Xbase.a
+:set path=Xdir1/dir2
+i#include    <foo.a>
+:w
+:redir! >>test.out
+:checkpath!
+:redir END
+:brewind
+ENDTEST
+
+STARTTEST
+:" check for 'include' with \zs and \ze
+:!rm -f ./Xbase.b
+:!rm -rf ./Xdir1
+:!mkdir -p Xdir1/dir2
+:let &include='^\s*%inc\s*/\zs[^/]\+\ze'
+:function! DotsToSlashes()
+:  return substitute(v:fname, '\.', '/', 'g') . '.b'
+:endfunction
+:let &includeexpr='DotsToSlashes()'
+:e Xdir1/dir2/foo.b
+i%inc   /bar/
+:w
+:e Xdir1/dir2/bar.b
+i%inc      /baz/
+:w
+:e Xdir1/dir2/baz.b
+i%inc            /foo/
+:w
+:e Xbase.b
+:set path=Xdir1/dir2
+i%inc    /foo/
+:w
+:redir! >>test.out
+:checkpath!
+:redir END
+:brewind
+ENDTEST
+
+STARTTEST
+:" check for 'include' with \zs and no \ze
+:!rm -f ./Xbase.c
+:!rm -rf ./Xdir1
+:!mkdir -p Xdir1/dir2
+:let &include='^\s*%inc\s*\%([[:upper:]][^[:space:]]*\s\+\)\?\zs\S\+\ze'
+:function! StripNewlineChar()
+:  if v:fname =~ '\n$'
+:    return v:fname[:-2]
+:  endif
+:  return v:fname
+:endfunction
+:let &includeexpr='StripNewlineChar()'
+:e Xdir1/dir2/foo.c
+i%inc   bar.c
+:w
+:e Xdir1/dir2/bar.c
+i%inc      baz.c
+:w
+:e Xdir1/dir2/baz.c
+i%inc            foo.c
+:w
+:e Xdir1/dir2/FALSE.c
+i%inc            foo.c
+:w
+:e Xbase.c
+:set path=Xdir1/dir2
+i%inc    FALSE.c foo.c
+:w
+:redir! >>test.out
+:checkpath!
+:redir END
+:brewind
+:q
+ENDTEST
+
