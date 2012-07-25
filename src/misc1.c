@@ -1329,6 +1329,7 @@ open_line(dir, flags, second_line_indent)
 	    for (i = 0; i < padding; i++)
 	    {
 		STRCAT(leader, " ");
+		less_cols--;
 		newcol++;
 	    }
 	}

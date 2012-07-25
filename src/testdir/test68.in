@@ -94,6 +94,16 @@ ENDTEST
 }
 
 STARTTEST
+/mno pqr/
+:setl tw=20 fo=an12wcq comments=s1:/*,mb:*,ex:*/
+A vwx yz
+ENDTEST
+
+/* abc def ghi jkl 
+ *    mno pqr stu
+ */
+
+STARTTEST
 /^#/
 :setl tw=12 fo=tqnc comments=:#
 A foobar
