@@ -8002,7 +8002,9 @@ nv_g_cmd(cap)
      */
     case 'N':
     case 'n':
+#ifdef FEAT_VISUAL
 	if (!current_search(cap->count1, cap->nchar == 'n'))
+#endif
 	    beep_flush();
 
 	break;
