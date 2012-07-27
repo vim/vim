@@ -3837,16 +3837,11 @@ set_one_cmd_context(xp, buff)
 		    while (*p)
 		    {
 			if (*p == ' ')
-			{
 			    /* argument starts after a space */
 			    arg = p + 1;
-			}
-			else
-			{
-			    if (*p == '\\' && *(p + 1) != NUL)
-				++p; /* skip over escaped character */
-			    mb_ptr_adv(p);
-			}
+			else if (*p == '\\' && *(p + 1) != NUL)
+			    ++p; /* skip over escaped character */
+			mb_ptr_adv(p);
 		    }
 		    xp->xp_pattern = arg;
 		}
