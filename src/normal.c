@@ -7995,6 +7995,7 @@ nv_g_cmd(cap)
 	cap->arg = TRUE;
 	nv_visual(cap);
 	break;
+#endif /* FEAT_VISUAL */
 
     /* "gn", "gN" visually select next/previous search match
      * "gn" selects next match
@@ -8006,9 +8007,7 @@ nv_g_cmd(cap)
 	if (!current_search(cap->count1, cap->nchar == 'n'))
 #endif
 	    beep_flush();
-
 	break;
-#endif /* FEAT_VISUAL */
 
     /*
      * "gj" and "gk" two new funny movement keys -- up and down
