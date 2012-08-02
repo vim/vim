@@ -3319,6 +3319,8 @@ mch_system_classic(char *cmd, int options)
 	    {
 		TranslateMessage(&msg);
 		pDispatchMessage(&msg);
+		delay = 1;
+		continue;
 	    }
 	    if (WaitForSingleObject(pi.hProcess, delay) != WAIT_TIMEOUT)
 		break;
