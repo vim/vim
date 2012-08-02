@@ -63,6 +63,8 @@
 #	  RUBY_VER=[Ruby version, eg 16, 17] (default is 18)
 #	  RUBY_VER_LONG=[Ruby version, eg 1.6, 1.7] (default is 1.8)
 #	    You must set RUBY_VER_LONG when change RUBY_VER.
+#	    You must set RUBY_API_VER to RUBY_VER_LONG.
+#	    Don't set ruby API version to RUBY_VER like 191.
 #
 #	Tcl interface:
 #	  TCL=[Path to Tcl directory]
@@ -807,28 +809,31 @@ RUBY_VER = 18
 !ifndef RUBY_VER_LONG
 RUBY_VER_LONG = 1.8
 !endif
+!ifndef RUBY_API_VER
+RUBY_API_VER = $(RUBY_VER_LONG:.=)
+!endif
 
 !if $(RUBY_VER) >= 18
 !ifndef RUBY_PLATFORM
 RUBY_PLATFORM = i386-mswin32
 !endif
 !ifndef RUBY_INSTALL_NAME
-RUBY_INSTALL_NAME = msvcrt-ruby$(RUBY_VER)
+RUBY_INSTALL_NAME = msvcrt-ruby$(RUBY_API_VER)
 !endif
 !else
 !ifndef RUBY_PLATFORM
 RUBY_PLATFORM = i586-mswin32
 !endif
 !ifndef RUBY_INSTALL_NAME
-RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_VER)
+RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_API_VER)
 !endif
 !endif # $(RUBY_VER) >= 18
 
 !message Ruby requested (version $(RUBY_VER)) - root dir is "$(RUBY)"
 CFLAGS = $(CFLAGS) -DFEAT_RUBY
 RUBY_OBJ = $(OUTDIR)\if_ruby.obj
-!if $(RUBY_VER) >= 190
-RUBY_INC = /I "$(RUBY)\include\ruby-$(RUBY_VER_LONG)\$(RUBY_PLATFORM)" /I "$(RUBY)\include\ruby-$(RUBY_VER_LONG)"
+!if $(RUBY_VER) >= 19
+RUBY_INC = /I "$(RUBY)\lib\ruby\$(RUBY_VER_LONG)\$(RUBY_PLATFORM)" /I "$(RUBY)\include\ruby-$(RUBY_VER_LONG)" /I "$(RUBY)\include\ruby-$(RUBY_VER_LONG)\$(RUBY_PLATFORM)"
 !else
 RUBY_INC = /I "$(RUBY)\lib\ruby\$(RUBY_VER_LONG)\$(RUBY_PLATFORM)"
 !endif

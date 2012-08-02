@@ -260,7 +260,9 @@ endif
 #	  DYNAMIC_RUBY=yes (to load the Ruby DLL dynamically)
 #	  RUBY_VER=[Ruby version, eg 16, 17] (default is 16)
 #	  RUBY_VER_LONG=[Ruby version, eg 1.6, 1.7] (default is 1.6)
-#	    You must set RUBY_VER_LONG when change RUBY_VER.
+#	    You must set RUBY_VER_LONG when changing RUBY_VER.
+#	    You must set RUBY_API_VER version to RUBY_VER_LONG.
+#	    Don't set ruby API version to RUBY_VER like 191.
 #RUBY=c:/ruby
 ifdef RUBY
 ifndef DYNAMIC_RUBY
@@ -272,6 +274,9 @@ RUBY_VER = 16
 endif
 ifndef RUBY_VER_LONG
 RUBY_VER_LONG = 1.6
+endif
+ifndef RUBY_API_VER
+RUBY_API_VER = $(subst .,,$(RUBY_VER_LONG))
 endif
 
 ifndef RUBY_PLATFORM
@@ -288,9 +293,9 @@ endif
 
 ifndef RUBY_INSTALL_NAME
 ifeq ($(RUBY_VER), 16)
-RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_VER)
+RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_API_VER)
 else
-RUBY_INSTALL_NAME = msvcrt-ruby$(RUBY_VER)
+RUBY_INSTALL_NAME = msvcrt-ruby$(RUBY_API_VER)
 endif
 endif
 
