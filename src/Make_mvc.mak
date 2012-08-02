@@ -281,7 +281,11 @@ NETBEANS_LIB	= WSock32.lib
 
 !ifdef XPM
 # XPM - Include support for XPM signs
-# you can get xpm.lib from http://iamphet.nm.ru/xpm or create it yourself
+# You need to download or build  xpm.lib somehow.
+# You can get the most recent version of libXpm-*.zip from
+#   http://cgit.freedesktop.org/xorg/lib/libXpm
+# from which you must build xpm.lib yourself
+#   OR get and unpack: ftp://ftp.vim.org/pub/vim/pcextra/xpm.zip
 XPM_OBJ   = $(OBJDIR)/xpm_w32.obj
 XPM_DEFS  = -DFEAT_XPM_W32
 XPM_LIB   = $(XPM)\lib\libXpm.lib
