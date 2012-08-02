@@ -4621,7 +4621,8 @@ current_search(count, forward)
 	    {
 		/* searching backwards, so set pos to last line and col */
 		pos.lnum = curwin->w_buffer->b_ml.ml_line_count;
-		pos.col  = STRLEN(ml_get(curwin->w_buffer->b_ml.ml_line_count));
+		pos.col  = (colnr_T)STRLEN(
+				ml_get(curwin->w_buffer->b_ml.ml_line_count));
 	    }
 	}
 

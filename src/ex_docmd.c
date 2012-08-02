@@ -3392,7 +3392,7 @@ set_one_cmd_context(xp, buff)
     /* Find start of last argument (argument just before cursor): */
     p = buff;
     xp->xp_pattern = p;
-    len = STRLEN(buff);
+    len = (int)STRLEN(buff);
     while (*p && p < buff + len)
     {
 	if (*p == ' ' || *p == TAB)
