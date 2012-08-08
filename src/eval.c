@@ -12966,7 +12966,7 @@ get_user_input(argvars, rettv, inputdialog)
 	    rettv->vval.v_string =
 		getcmdline_prompt(inputsecret_flag ? NUL : '@', p, echo_attr,
 				  xp_type, xp_arg);
-	if (rettv->vval.v_string == NULL
+	if (inputdialog && rettv->vval.v_string == NULL
 		&& argvars[1].v_type != VAR_UNKNOWN
 		&& argvars[2].v_type != VAR_UNKNOWN)
 	    rettv->vval.v_string = vim_strsave(get_tv_string_buf(
