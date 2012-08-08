@@ -332,7 +332,7 @@ shift_line(left, round, amount, call_changed_bytes)
 {
     int		count;
     int		i, j;
-    int		p_sw = (int)curbuf->b_p_sw;
+    int		p_sw = (int)get_sw_value();
 
     count = get_indent();	/* get current indent */
 
@@ -388,7 +388,7 @@ shift_block(oap, amount)
     int			total;
     char_u		*newp, *oldp;
     int			oldcol = curwin->w_cursor.col;
-    int			p_sw = (int)curbuf->b_p_sw;
+    int			p_sw = (int)get_sw_value();
     int			p_ts = (int)curbuf->b_p_ts;
     struct block_def	bd;
     int			incr;

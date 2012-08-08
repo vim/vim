@@ -1389,9 +1389,11 @@ open_line(dir, flags, second_line_indent)
 #ifdef FEAT_SMARTINDENT
 	if (did_si)
 	{
+	    int        sw = (int)get_sw_value();
+
 	    if (p_sr)
-		newindent -= newindent % (int)curbuf->b_p_sw;
-	    newindent += (int)curbuf->b_p_sw;
+		newindent -= newindent % sw;
+	    newindent += sw;
 	}
 #endif
 	/* Copy the indent */
@@ -6461,11 +6463,14 @@ find_last_paren(l, start, end)
     int
 get_c_indent()
 {
+    int sw = (int)get_sw_value();
+
     /*
      * spaces from a block's opening brace the prevailing indent for that
      * block should be
      */
-    int ind_level = curbuf->b_p_sw;
+
+    int ind_level = sw;
 
     /*
      * spaces from the edge of the line an open brace that's at the end of a
@@ -6512,12 +6517,12 @@ get_c_indent()
     /*
      * spaces from the switch() indent a "case xx" label should be located
      */
-    int ind_case = curbuf->b_p_sw;
+    int ind_case = sw;
 
     /*
      * spaces from the "case xx:" code after a switch() should be located
      */
-    int ind_case_code = curbuf->b_p_sw;
+    int ind_case_code = sw;
 
     /*
      * lineup break at end of case in switch() with case label
@@ -6528,45 +6533,45 @@ get_c_indent()
      * spaces from the class declaration indent a scope declaration label
      * should be located
      */
-    int ind_scopedecl = curbuf->b_p_sw;
+    int ind_scopedecl = sw;
 
     /*
      * spaces from the scope declaration label code should be located
      */
-    int ind_scopedecl_code = curbuf->b_p_sw;
+    int ind_scopedecl_code = sw;
 
     /*
      * amount K&R-style parameters should be indented
      */
-    int ind_param = curbuf->b_p_sw;
+    int ind_param = sw;
 
     /*
      * amount a function type spec should be indented
      */
-    int ind_func_type = curbuf->b_p_sw;
+    int ind_func_type = sw;
 
     /*
      * amount a cpp base class declaration or constructor initialization
      * should be indented
      */
-    int ind_cpp_baseclass = curbuf->b_p_sw;
+    int ind_cpp_baseclass = sw;
 
     /*
      * additional spaces beyond the prevailing indent a continuation line
      * should be located
      */
-    int ind_continuation = curbuf->b_p_sw;
+    int ind_continuation = sw;
 
     /*
      * spaces from the indent of the line with an unclosed parentheses
      */
-    int ind_unclosed = curbuf->b_p_sw * 2;
+    int ind_unclosed = sw * 2;
 
     /*
      * spaces from the indent of the line with an unclosed parentheses, which
      * itself is also unclosed
      */
-    int ind_unclosed2 = curbuf->b_p_sw;
+    int ind_unclosed2 = sw;
 
     /*
      * suppress ignoring spaces from the indent of a line starting with an
@@ -6719,12 +6724,12 @@ get_c_indent()
 	if (*options == 's')	    /* "2s" means two times 'shiftwidth' */
 	{
 	    if (options == digits)
-		n = curbuf->b_p_sw;	/* just "s" is one 'shiftwidth' */
+		n = sw;	/* just "s" is one 'shiftwidth' */
 	    else
 	    {
-		n *= curbuf->b_p_sw;
+		n *= sw;
 		if (divider)
-		    n += (curbuf->b_p_sw * fraction + divider / 2) / divider;
+		    n += (sw * fraction + divider / 2) / divider;
 	    }
 	    ++options;
 	}

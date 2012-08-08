@@ -2268,10 +2268,12 @@ getexmodeline(promptc, cookie, indent)
 
 	    if (c1 == Ctrl_T)
 	    {
+		long        sw = get_sw_value();
+
 		p = (char_u *)line_ga.ga_data;
 		p[line_ga.ga_len] = NUL;
 		indent = get_indent_str(p, 8);
-		indent += curbuf->b_p_sw - indent % curbuf->b_p_sw;
+		indent += sw - indent % sw;
 add_indent:
 		while (get_indent_str(p, 8) < indent)
 		{
@@ -2323,7 +2325,7 @@ redraw:
 		    p[line_ga.ga_len] = NUL;
 		    indent = get_indent_str(p, 8);
 		    --indent;
-		    indent -= indent % curbuf->b_p_sw;
+		    indent -= indent % get_sw_value();
 		}
 		while (get_indent_str(p, 8) > indent)
 		{

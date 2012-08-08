@@ -8125,7 +8125,7 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
     need_mouse_correct = TRUE;
 #endif
 
-    if (curbuf->b_p_sw <= 0)
+    if (curbuf->b_p_sw < 0)
     {
 	errmsg = e_positive;
 	curbuf->b_p_sw = curbuf->b_p_ts;
@@ -11418,4 +11418,14 @@ check_ff_value(p)
     char_u	*p;
 {
     return check_opt_strings(p, p_ff_values, FALSE);
+}
+
+/*
+ * Return the effective shiftwidth value for current buffer, using the
+ * 'tabstop' value when 'shiftwidth' is zero.
+ */
+    long
+get_sw_value()
+{
+    return curbuf->b_p_sw ? curbuf->b_p_sw : curbuf->b_p_ts;
 }

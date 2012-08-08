@@ -3025,7 +3025,7 @@ foldlevelIndent(flp)
 	    flp->lvl = -1;
     }
     else
-	flp->lvl = get_indent_buf(buf, lnum) / buf->b_p_sw;
+	flp->lvl = get_indent_buf(buf, lnum) / get_sw_value();
     if (flp->lvl > flp->wp->w_p_fdn)
     {
 	flp->lvl = flp->wp->w_p_fdn;

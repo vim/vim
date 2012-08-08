@@ -56,4 +56,5 @@ int can_bs __ARGS((int what));
 void save_file_ff __ARGS((buf_T *buf));
 int file_ff_differs __ARGS((buf_T *buf, int ignore_empty));
 int check_ff_value __ARGS((char_u *p));
+long get_sw_value __ARGS((void));
 /* vim: set ft=c : */
