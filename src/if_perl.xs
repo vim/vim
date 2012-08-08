@@ -76,6 +76,12 @@
 # define EXTERN_C
 #endif
 
+#if (PERL_REVISION == 5) && (PERL_VERSION >= 14) && defined(_MSC_VER)
+/* Using PL_errgv to get the error message after perl_eval_sv() causes a crash
+ * with MSVC and Perl version 5.14. */
+# define AVOID_PL_ERRGV
+#endif
+
 /* Compatibility hacks over */
 
 static PerlInterpreter *perl_interp = NULL;
@@ -796,7 +802,11 @@ ex_perl(eap)
 
     SvREFCNT_dec(sv);
 
+#ifdef AVOID_PL_ERRGV
+    err = SvPV(perl_get_sv("@", GV_ADD), length);
+#else
     err = SvPV(GvSV(PL_errgv), length);
+#endif
 
     FREETMPS;
     LEAVE;
@@ -866,7 +876,11 @@ ex_perldo(eap)
     sv_catpvn(sv, "}", 1);
     perl_eval_sv(sv, G_DISCARD | G_NOARGS);
     SvREFCNT_dec(sv);
+#ifdef AVOID_PL_ERRGV
+    str = SvPV(perl_get_sv("@", GV_ADD), length);
+#else
     str = SvPV(GvSV(PL_errgv), length);
+#endif
     if (length)
 	goto err;
 
@@ -880,7 +894,11 @@ ex_perldo(eap)
 	sv_setpv(GvSV(PL_defgv), (char *)ml_get(i));
 	PUSHMARK(sp);
 	perl_call_pv("VIM::perldo", G_SCALAR | G_EVAL);
+#ifdef AVOID_PL_ERRGV
+	str = SvPV(perl_get_sv("@", GV_ADD), length);
+#else
 	str = SvPV(GvSV(PL_errgv), length);
+#endif
 	if (length)
 	    break;
 	SPAGAIN;
