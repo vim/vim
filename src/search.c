@@ -4546,6 +4546,9 @@ current_search(count, forward)
     int		visual_active = FALSE;
     int		flags = 0;
     pos_T	save_VIsual;
+    regmmatch_T	regmatch;
+    int		nmatched = 0;
+    int		zerowidth = FALSE;
 
 
     /* wrapping should not occur */
@@ -4581,23 +4584,42 @@ current_search(count, forward)
 	orig_pos = pos = start_pos = curwin->w_cursor;
 
     /*
+     * Check for zero-width pattern.
+     */
+    if (search_regcomp(spats[last_idx].pat, RE_SEARCH, RE_SEARCH,
+			     ((SEARCH_HIS + SEARCH_KEEP)), &regmatch) == FAIL)
+	return FAIL;
+
+    /* Zero-width pattern should match somewhere, then we can check if start
+     * and end are in the same position. */
+    nmatched = vim_regexec_multi(&regmatch, curwin, curbuf,
+				     curwin->w_cursor.lnum, (colnr_T)0, NULL);
+    if (called_emsg)
+	return FAIL;
+    if (nmatched && regmatch.startpos[0].lnum == regmatch.endpos[0].lnum
+		 && regmatch.endpos[0].col == regmatch.startpos[0].col)
+	zerowidth = TRUE;
+    vim_free(regmatch.regprog);
+
+    /*
      * The trick is to first search backwards and then search forward again,
      * so that a match at the current cursor position will be correctly
      * captured.
      */
     for (i = 0; i < 2; i++)
     {
-	if (i && count == 1)
-	    flags = SEARCH_START;
-
 	if (forward)
 	    dir = i;
 	else
 	    dir = !i;
+
+	flags = 0;
+	if (!dir && !zerowidth)
+	    flags = SEARCH_END;
+
 	result = searchit(curwin, curbuf, &pos, (dir ? FORWARD : BACKWARD),
 		spats[last_idx].pat, (long) (i ? count : 1),
-		SEARCH_KEEP | flags | (dir ? 0 : SEARCH_END),
-		RE_SEARCH, 0, NULL);
+		SEARCH_KEEP | flags, RE_SEARCH, 0, NULL);
 
 	/* First search may fail, but then start searching from the
 	 * beginning of the file (cursor might be on the search match)
@@ -4629,10 +4651,12 @@ current_search(count, forward)
     }
 
     start_pos = pos;
-    flags = (forward ? SEARCH_END : 0);
+    flags = forward ? SEARCH_END : 0;
 
-    /* move to match */
-    result = searchit(curwin, curbuf, &pos, (forward ? FORWARD : BACKWARD),
+    /* move to match, except for zero-width matches, in which case, we are
+     * already on the next match */
+    if (!zerowidth)
+	result = searchit(curwin, curbuf, &pos, (forward ? FORWARD : BACKWARD),
 	    spats[last_idx].pat, 0L, flags | SEARCH_KEEP, RE_SEARCH, 0, NULL);
 
     if (!VIsual_active)
