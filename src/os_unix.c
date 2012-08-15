@@ -2159,10 +2159,13 @@ use_xterm_like_mouse(name)
  * Return 1 for "xterm".
  * Return 2 for "xterm2".
  * Return 3 for "urxvt".
+ * Return 4 for "sgr".
  */
     int
 use_xterm_mouse()
 {
+    if (ttym_flags == TTYM_SGR)
+	return 4;
     if (ttym_flags == TTYM_URXVT)
 	return 3;
     if (ttym_flags == TTYM_XTERM2)
@@ -3339,11 +3342,23 @@ mch_setmouse(on)
     xterm_mouse_vers = use_xterm_mouse();
 
 # ifdef FEAT_MOUSE_URXVT
-    if (ttym_flags == TTYM_URXVT) {
+    if (ttym_flags == TTYM_URXVT)
+    {
 	out_str_nf((char_u *)
 		   (on
 		   ? IF_EB("\033[?1015h", ESC_STR "[?1015h")
 		   : IF_EB("\033[?1015l", ESC_STR "[?1015l")));
+	ison = on;
+    }
+# endif
+
+# ifdef FEAT_MOUSE_SGR
+    if (ttym_flags == TTYM_SGR)
+    {
+	out_str_nf((char_u *)
+		   (on
+		   ? IF_EB("\033[?1006h", ESC_STR "[?1006h")
+		   : IF_EB("\033[?1006l", ESC_STR "[?1006l")));
 	ison = on;
     }
 # endif
@@ -3576,6 +3591,27 @@ check_mouse_termcode()
     }
     else
 	del_mouse_termcode(KS_URXVT_MOUSE);
+# endif
+# ifdef FEAT_MOUSE_SGR
+    /* same as the dec mouse */
+    if (use_xterm_mouse() == 4
+#  ifdef FEAT_GUI
+	    && !gui.in_use
+#  endif
+	    )
+    {
+	set_mouse_termcode(KS_SGR_MOUSE, (char_u *)(term_is_8bit(T_NAME)
+		    ? IF_EB("\233<", CSI_STR "<")
+		    : IF_EB("\033[<", ESC_STR "[<")));
+
+	if (*p_mouse != NUL)
+	{
+	    mch_setmouse(FALSE);
+	    setmouse();
+	}
+    }
+    else
+	del_mouse_termcode(KS_SGR_MOUSE);
 # endif
 }
 #endif

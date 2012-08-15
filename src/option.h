@@ -822,7 +822,7 @@ EXTERN long	p_ttyscroll;	/* 'ttyscroll' */
 EXTERN char_u	*p_ttym;	/* 'ttymouse' */
 EXTERN unsigned ttym_flags;
 # ifdef IN_OPTION_C
-static char *(p_ttym_values[]) = {"xterm", "xterm2", "dec", "netterm", "jsbterm", "pterm", "urxvt", NULL};
+static char *(p_ttym_values[]) = {"xterm", "xterm2", "dec", "netterm", "jsbterm", "pterm", "urxvt", "sgr", NULL};
 # endif
 # define TTYM_XTERM		0x01
 # define TTYM_XTERM2		0x02
@@ -831,6 +831,7 @@ static char *(p_ttym_values[]) = {"xterm", "xterm2", "dec", "netterm", "jsbterm"
 # define TTYM_JSBTERM		0x10
 # define TTYM_PTERM		0x20
 # define TTYM_URXVT		0x40
+# define TTYM_SGR		0x80
 #endif
 EXTERN char_u	*p_udir;	/* 'undodir' */
 EXTERN long	p_ul;		/* 'undolevels' */

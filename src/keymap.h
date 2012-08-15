@@ -110,6 +110,9 @@
 /* Used for the urxvt mouse. */
 #define KS_URXVT_MOUSE		238
 
+/* Used for the sgr mouse. */
+#define KS_SGR_MOUSE		237
+
 /*
  * Filler used after KS_SPECIAL and others
  */
@@ -412,6 +415,7 @@ enum key_extra
 #define K_JSBTERM_MOUSE	TERMCAP2KEY(KS_JSBTERM_MOUSE, KE_FILLER)
 #define K_PTERM_MOUSE	TERMCAP2KEY(KS_PTERM_MOUSE, KE_FILLER)
 #define K_URXVT_MOUSE	TERMCAP2KEY(KS_URXVT_MOUSE, KE_FILLER)
+#define K_SGR_MOUSE	TERMCAP2KEY(KS_SGR_MOUSE, KE_FILLER)
 
 #define K_SELECT	TERMCAP2KEY(KS_SELECT, KE_FILLER)
 #define K_TEAROFF	TERMCAP2KEY(KS_TEAROFF, KE_FILLER)

@@ -1997,6 +1997,7 @@ set_termname(term)
 #  define HMT_JSBTERM	8
 #  define HMT_PTERM	16
 #  define HMT_URXVT	32
+#  define HMT_SGR	64
 static int has_mouse_termcode = 0;
 # endif
 
@@ -2035,6 +2036,11 @@ set_mouse_termcode(n, s)
 #   ifdef FEAT_MOUSE_URXVT
     if (n == KS_URXVT_MOUSE)
 	has_mouse_termcode |= HMT_URXVT;
+    else
+#   endif
+#   ifdef FEAT_MOUSE_SGR
+    if (n == KS_SGR_MOUSE)
+	has_mouse_termcode |= HMT_SGR;
     else
 #   endif
 	has_mouse_termcode |= HMT_NORMAL;
@@ -2077,6 +2083,11 @@ del_mouse_termcode(n)
 #   ifdef FEAT_MOUSE_URXVT
     if (n == KS_URXVT_MOUSE)
 	has_mouse_termcode &= ~HMT_URXVT;
+    else
+#   endif
+#   ifdef FEAT_MOUSE_SGR
+    if (n == KS_SGR_MOUSE)
+	has_mouse_termcode &= ~HMT_SGR;
     else
 #   endif
 	has_mouse_termcode &= ~HMT_NORMAL;
@@ -4023,7 +4034,8 @@ check_termcode(max_offset, buf, bufsize, buflen)
 #ifdef FEAT_TERMRESPONSE
 	if (key_name[0] == NUL
 	    /* URXVT mouse uses <ESC>[#;#;#M, but we are matching <ESC>[ */
-	    || key_name[0] == KS_URXVT_MOUSE)
+	    || key_name[0] == KS_URXVT_MOUSE
+	    || key_name[0] == KS_SGR_MOUSE)
 	{
 	    /* Check for xterm version string: "<Esc>[>{x};{vers};{y}c".  Also
 	     * eat other possible responses to t_RV, rxvt returns
@@ -4061,6 +4073,16 @@ check_termcode(max_offset, buf, bufsize, buflen)
 
 		    if (tp[1 + (tp[0] != CSI)] == '>' && j == 2)
 		    {
+# ifdef TTYM_SGR
+			if (extra >= 277
+# ifdef TTYM_URXVT
+				&& ttym_flags != TTYM_URXVT
+# endif
+				)
+			    set_option_value((char_u *)"ttym", 0L,
+							  (char_u *)"sgr", 0);
+                        else
+# endif
 			/* if xterm version >= 95 use mouse dragging */
 			if (extra >= 95
 # ifdef TTYM_URXVT
@@ -4147,21 +4169,24 @@ check_termcode(max_offset, buf, bufsize, buflen)
 	/*
 	 * If it is a mouse click, get the coordinates.
 	 */
-	if (key_name[0] == (int)KS_MOUSE
+	if (key_name[0] == KS_MOUSE
 # ifdef FEAT_MOUSE_JSB
-		|| key_name[0] == (int)KS_JSBTERM_MOUSE
+		|| key_name[0] == KS_JSBTERM_MOUSE
 # endif
 # ifdef FEAT_MOUSE_NET
-		|| key_name[0] == (int)KS_NETTERM_MOUSE
+		|| key_name[0] == KS_NETTERM_MOUSE
 # endif
 # ifdef FEAT_MOUSE_DEC
-		|| key_name[0] == (int)KS_DEC_MOUSE
+		|| key_name[0] == KS_DEC_MOUSE
 # endif
 # ifdef FEAT_MOUSE_PTERM
-		|| key_name[0] == (int)KS_PTERM_MOUSE
+		|| key_name[0] == KS_PTERM_MOUSE
 # endif
 # ifdef FEAT_MOUSE_URXVT
-		|| key_name[0] == (int)KS_URXVT_MOUSE
+		|| key_name[0] == KS_URXVT_MOUSE
+# endif
+# ifdef FEAT_MOUSE_SGR
+		|| key_name[0] == KS_SGR_MOUSE
 # endif
 		)
 	{
@@ -4243,8 +4268,9 @@ check_termcode(max_offset, buf, bufsize, buflen)
 		}
 	    }
 
-# ifdef FEAT_MOUSE_URXVT
-	    if (key_name[0] == (int)KS_URXVT_MOUSE)
+# if defined(FEAT_MOUSE_URXVT) || defined(FEAT_MOUSE_SGR)
+	    if (key_name[0] == KS_URXVT_MOUSE
+		|| key_name[0] == KS_SGR_MOUSE)
 	    {
 		for (;;)
 		{
@@ -4256,6 +4282,20 @@ check_termcode(max_offset, buf, bufsize, buflen)
 		     *		  ^-- row
 		     *	       ^----- column
 		     *	    ^-------- code
+		     *
+		     * SGR 1006 mouse reporting mode:
+		     * Almost identical to xterm mouse mode, except the values
+		     * are decimal instead of bytes.
+		     *
+		     * \033[<%d;%d;%dM
+		     *		   ^-- row
+		     *	        ^----- column
+		     *	     ^-------- code
+		     *
+		     * \033[<%d;%d;%dm        : mouse release event
+		     *		   ^-- row
+		     *	        ^----- column
+		     *	     ^-------- code
 		     */
 		    p = tp + slen;
 
@@ -4263,32 +4303,46 @@ check_termcode(max_offset, buf, bufsize, buflen)
 		    if (*p++ != ';')
 			return -1;
 
+		    /* when mouse reporting is SGR, add 32 to mouse code */
+                    if (key_name[0] == KS_SGR_MOUSE)
+                        mouse_code += 32;
+
 		    mouse_col = getdigits(&p) - 1;
 		    if (*p++ != ';')
 			return -1;
 
 		    mouse_row = getdigits(&p) - 1;
-		    if (*p++ != 'M')
+                    if (key_name[0] == KS_SGR_MOUSE && *p == 'm')
+			mouse_code |= MOUSE_RELEASE;
+                    else if (*p != 'M')
 			return -1;
+                    p++;
 
 		    slen += (int)(p - (tp + slen));
 
 		    /* skip this one if next one has same code (like xterm
 		     * case) */
 		    j = termcodes[idx].len;
-		    if (STRNCMP(tp, tp + slen, (size_t)j) == 0) {
-			/* check if the command is complete by looking for the
-			 * M */
+		    if (STRNCMP(tp, tp + slen, (size_t)j) == 0)
+		    {
 			int slen2;
 			int cmd_complete = 0;
-			for (slen2 = slen; slen2 < len; slen2++) {
-			    if (tp[slen2] == 'M') {
+
+			/* check if the command is complete by looking for the
+			 * 'M' */
+			for (slen2 = slen; slen2 < len; slen2++)
+			{
+			    if (tp[slen2] == 'M'
+                                || (key_name[0] == KS_SGR_MOUSE
+							 && tp[slen2] == 'm'))
+			    {
 				cmd_complete = 1;
 				break;
 			    }
 			}
 			p += j;
-			if (cmd_complete && getdigits(&p) == mouse_code) {
+			if (cmd_complete && getdigits(&p) == mouse_code)
+			{
 			    slen += j; /* skip the \033[ */
 			    continue;
 			}
@@ -4301,6 +4355,9 @@ check_termcode(max_offset, buf, bufsize, buflen)
 	if (key_name[0] == (int)KS_MOUSE
 #ifdef FEAT_MOUSE_URXVT
 	    || key_name[0] == (int)KS_URXVT_MOUSE
+#endif
+#ifdef FEAT_MOUSE_SGR
+	    || key_name[0] == KS_SGR_MOUSE
 #endif
 	    )
 	{
