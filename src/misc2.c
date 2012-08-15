@@ -1110,6 +1110,9 @@ free_all_mem()
     free_all_marks();
     alist_clear(&global_alist);
     free_homedir();
+# if defined(FEAT_CMDL_COMPL)
+    free_users();
+# endif
     free_search_patterns();
     free_old_sub();
     free_last_insert();

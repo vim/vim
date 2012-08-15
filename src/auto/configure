@@ -10631,7 +10631,7 @@ if test "x$vim_cv_getcwd_broken" = "xyes" ; then
 fi
 
 for ac_func in bcmp fchdir fchown fsync getcwd getpseudotty \
-	getpwnam getpwuid getrlimit gettimeofday getwd lstat memcmp \
+	getpwent getpwnam getpwuid getrlimit gettimeofday getwd lstat memcmp \
 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
 	setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigvec strcasecmp strerror strftime stricmp strncasecmp \

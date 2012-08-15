@@ -18,6 +18,11 @@ static char_u *vim_version_dir __ARGS((char_u *vimdir));
 static char_u *remove_tail __ARGS((char_u *p, char_u *pend, char_u *name));
 static int copy_indent __ARGS((int size, char_u	*src));
 
+/* All user names (for ~user completion as done by shell). */
+#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
+static garray_T	ga_users;
+#endif
+
 /*
  * Count the size (in window cells) of the indent in the current line.
  */
@@ -3782,6 +3787,14 @@ free_homedir()
 {
     vim_free(homedir);
 }
+
+# ifdef FEAT_CMDL_COMPL
+    void
+free_users()
+{
+    ga_clear_strings(&ga_users);
+}
+# endif
 #endif
 
 /*
@@ -4450,6 +4463,80 @@ get_env_name(xp, idx)
     name[n] = NUL;
     return name;
 # endif
+}
+
+/*
+ * Find all user names for user completion.
+ * Done only once and then cached.
+ */
+    static void
+init_users() {
+    static int	lazy_init_done = FALSE;
+
+    if (lazy_init_done)
+	return;
+
+    lazy_init_done = TRUE;
+    ga_init2(&ga_users, sizeof(char_u *), 20);
+
+# if defined(HAVE_GETPWENT) && defined(HAVE_PWD_H)
+    {
+	char_u*		user;
+	struct passwd*	pw;
+
+	setpwent();
+	while ((pw = getpwent()) != NULL)
+	    /* pw->pw_name shouldn't be NULL but just in case... */
+	    if (pw->pw_name != NULL)
+	    {
+		if (ga_grow(&ga_users, 1) == FAIL)
+		    break;
+		user = vim_strsave((char_u*)pw->pw_name);
+		if (user == NULL)
+		    break;
+		((char_u **)(ga_users.ga_data))[ga_users.ga_len++] = user;
+	    }
+	endpwent();
+    }
+# endif
+}
+
+/*
+ * Function given to ExpandGeneric() to obtain an user names.
+ */
+    char_u*
+get_users(xp, idx)
+    expand_T	*xp UNUSED;
+    int		idx;
+{
+    init_users();
+    if (idx < ga_users.ga_len)
+	return ((char_u **)ga_users.ga_data)[idx];
+    return NULL;
+}
+
+/*
+ * Check whether name matches a user name. Return:
+ * 0 if name does not match any user name.
+ * 1 if name partially matches the beginning of a user name.
+ * 2 is name fully matches a user name.
+ */
+int match_user(name)
+    char_u* name;
+{
+    int i;
+    int n = (int)STRLEN(name);
+    int result = 0;
+
+    init_users();
+    for (i = 0; i < ga_users.ga_len; i++)
+    {
+	if (STRCMP(((char_u **)ga_users.ga_data)[i], name) == 0)
+	    return 2; /* full match */
+	if (STRNCMP(((char_u **)ga_users.ga_data)[i], name, n) == 0)
+	    result = 1; /* partial match */
+    }
+    return result;
 }
 #endif
 

@@ -4336,6 +4336,7 @@ addstar(fname, len, context)
  *  EXPAND_EXPRESSION	    Complete internal or user defined function/variable
  *			    names in expressions, eg :while s^I
  *  EXPAND_ENV_VARS	    Complete environment variable names
+ *  EXPAND_USER		    Complete user names
  */
     static void
 set_expand_context(xp)
@@ -4681,6 +4682,7 @@ ExpandFromContext(xp, pat, num_file, file, options)
 	    {EXPAND_LOCALES, get_locales, TRUE, FALSE},
 #endif
 	    {EXPAND_ENV_VARS, get_env_name, TRUE, TRUE},
+	    {EXPAND_USER, get_users, TRUE, FALSE},
 	};
 	int	i;
 

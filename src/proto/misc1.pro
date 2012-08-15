@@ -50,6 +50,7 @@ void beep_flush __ARGS((void));
 void vim_beep __ARGS((void));
 void init_homedir __ARGS((void));
 void free_homedir __ARGS((void));
+void free_users __ARGS((void));
 char_u *expand_env_save __ARGS((char_u *src));
 char_u *expand_env_save_opt __ARGS((char_u *src, int one));
 void expand_env __ARGS((char_u *src, char_u *dst, int dstlen));
@@ -57,6 +58,8 @@ void expand_env_esc __ARGS((char_u *srcp, char_u *dst, int dstlen, int esc, int 
 char_u *vim_getenv __ARGS((char_u *name, int *mustfree));
 void vim_setenv __ARGS((char_u *name, char_u *val));
 char_u *get_env_name __ARGS((expand_T *xp, int idx));
+char_u *get_users __ARGS((expand_T *xp, int idx));
+int match_user __ARGS((char_u* name));
 void home_replace __ARGS((buf_T *buf, char_u *src, char_u *dst, int dstlen, int one));
 char_u *home_replace_save __ARGS((buf_T *buf, char_u *src));
 int fullpathcmp __ARGS((char_u *s1, char_u *s2, int checkname));

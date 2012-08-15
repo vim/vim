@@ -1244,6 +1244,7 @@ completion can be enabled:
 	-complete=syntax	syntax file names |'syntax'|
 	-complete=tag		tags
 	-complete=tag_listfiles	tags, file names are shown when CTRL-D is hit
+	-complete=user		user names
 	-complete=var		user variables
 	-complete=custom,{func} custom completion, defined via {func}
 	-complete=customlist,{func} custom completion, defined via {func}
