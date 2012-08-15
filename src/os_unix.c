@@ -5196,6 +5196,10 @@ select_eintr:
 	    FD_SET(ConnectionNumber(xterm_dpy), &rfds);
 	    if (maxfd < ConnectionNumber(xterm_dpy))
 		maxfd = ConnectionNumber(xterm_dpy);
+
+	    /* An event may have already been read but not handled.  In
+	     * particulary, XFlush may cause this. */
+	    xterm_update();
 	}
 # endif
 # ifdef FEAT_MOUSE_GPM
@@ -5216,14 +5220,14 @@ select_eintr:
 		maxfd = xsmp_icefd;
 	}
 # endif
-#ifdef FEAT_NETBEANS_INTG
+# ifdef FEAT_NETBEANS_INTG
 	if (nb_fd != -1)
 	{
 	    FD_SET(nb_fd, &rfds);
 	    if (maxfd < nb_fd)
 		maxfd = nb_fd;
 	}
-#endif
+# endif
 
 # ifdef OLD_VMS
 	/* Old VMS as v6.2 and older have broken select(). It waits more than
