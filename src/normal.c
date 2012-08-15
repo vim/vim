@@ -7786,7 +7786,10 @@ n_start_visual_mode(c)
      * virtualedit.  Recalculate curwin->w_cursor to avoid bad hilighting.
      */
     if (c == Ctrl_V && (ve_flags & VE_BLOCK) && gchar_cursor() == TAB)
+    {
+	validate_virtcol();
 	coladvance(curwin->w_virtcol);
+    }
 #endif
     VIsual = curwin->w_cursor;
 
