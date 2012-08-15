@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 7.3.  Last change: 2010 Jul 21
+*if_perl.txt*   For Vim version 7.3.  Last change: 2012 Aug 02
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -44,15 +44,17 @@ The Perl patches for Vim were made by:
 	Sven Verdoolaege <skimo@breughel.ufsia.ac.be>
 	Matt Gerassimof
 
-Perl for MS-Windows can be found at:
-http://www.perl.com/CPAN/ports/nt/Standard/x86/
+Perl for MS-Windows can be found at: http://www.perl.com/
+The ActiveState one should work.
 
 ==============================================================================
 3. Using the Perl interface				*perl-using*
 
 							*:perl* *:pe*
 :pe[rl] {cmd}		Execute Perl command {cmd}.  The current package
-			is "main".
+			is "main".  Simple example to test if `:perl` is
+			working: >
+				:perl VIM::Msg("Hello")
 
 :pe[rl] << {endpattern}
 {script}

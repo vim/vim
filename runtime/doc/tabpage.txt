@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.3.  Last change: 2010 Jul 31
+*tabpage.txt*   For Vim version 7.3.  Last change: 2012 Aug 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -113,7 +113,7 @@ something else.
 		this is a "safe" command.
 
 :tabc[lose][!] {count}
-		Close tab page {count}.  Fails in the same way as ':tabclose"
+		Close tab page {count}.  Fails in the same way as `:tabclose`
 		above.
 
 							*:tabo* *:tabonly*

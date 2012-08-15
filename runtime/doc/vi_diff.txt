@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 7.3.  Last change: 2011 Aug 29
+*vi_diff.txt*   For Vim version 7.3.  Last change: 2012 Aug 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -192,7 +192,7 @@ Syntax highlighting.					|:syntax|
 
 Spell checking.						|spell|
 	When the 'spell' option is set Vim will highlight spelling mistakes.
-	About 40 languages are currently supported, selected with the
+	About 50 languages are currently supported, selected with the
 	'spelllang' option.  In source code only comments and strings are
 	checked for spelling.
 
@@ -653,7 +653,7 @@ You can backspace, CTRL-U and CTRL-W over line breaks if the 'backspace' (bs)
 option includes "eol".  You can backspace over the start of insert if the
 'backspace' option includes "start".
 
-When the 'paste' option is set, a few option are reset and mapping in insert
+When the 'paste' option is set, a few options are reset and mapping in insert
 mode and abbreviation are disabled.  This allows for pasting text in windowing
 systems without unexpected results.  When the 'paste' option is reset, the old
 option values are restored.

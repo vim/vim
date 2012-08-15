@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 7.3.  Last change: 2010 Oct 27
+*if_ruby.txt*   For Vim version 7.3.  Last change: 2012 Aug 02
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda
@@ -25,7 +25,8 @@ downloading Ruby there.
 1. Commands						*ruby-commands*
 
 							*:ruby* *:rub*
-:rub[y] {cmd}		Execute Ruby command {cmd}.
+:rub[y] {cmd}		Execute Ruby command {cmd}.  A command to try it out: >
+				:ruby print "Hello"
 
 :rub[y] << {endpattern}
 {script}
@@ -39,9 +40,6 @@ downloading Ruby there.
 			Note: This command doesn't work when the Ruby feature
 			wasn't compiled in.  To avoid errors, see
 			|script-here|.
-
-Command to try it out: >
-	:ruby print "Hello"   # this is a comment
 
 Example Vim script: >
 
@@ -211,6 +209,8 @@ for sure edit "gvim.exe" and search for "ruby\d*.dll\c".
 
 If you want to build Vim with Ruby 1.9.1, you need to edit the config.h file
 and comment-out the check for _MSC_VER.
+You may also need to rename the include directory name to match the version,
+strangely for Ruby 1.9.3 the directory is called 1.9.1.
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:

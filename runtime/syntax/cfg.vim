@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Good old CFG files
 " Maintainer:	Igor N. Prischepoff (igor@tyumbit.ru, pri_igor@mail.ru)
-" Last change:	2001 Sep 02
+" Last change:	2012 Aug 11
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -18,7 +18,7 @@ syn match UncPath "\\\\\p*" contained
 "Dos Drive:\Path
 syn match CfgDirectory "[a-zA-Z]:\\\p*" contained
 "Parameters
-syn match   CfgParams    ".*="me=e-1 contains=CfgComment
+syn match   CfgParams    ".\{0}="me=e-1 contains=CfgComment
 "... and their values (don't want to highlight '=' sign)
 syn match   CfgValues    "=.*"hs=s+1 contains=CfgDirectory,UncPath,CfgComment,CfgString,CfgOnOff
 

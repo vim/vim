@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.3.  Last change: 2012 Feb 04
+*if_pyth.txt*   For Vim version 7.3.  Last change: 2012 Aug 02
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -27,7 +27,9 @@ The Python 3 interface is available only when Vim was compiled with the
 
 					*:python* *:py* *E205* *E263* *E264*
 :[range]py[thon] {stmt}
-			Execute Python statement {stmt}.
+			Execute Python statement {stmt}.  A simple check if
+			the `:python` command is working: >
+				:python print "Hello"
 
 :[range]py[thon] << {endmarker}
 {script}
@@ -362,8 +364,10 @@ sure edit "gvim.exe" and search for "python\d*.dll\c".
 8. Python 3						*python3*
 
 							*:py3* *:python3*
-The |:py3| and |:python3| commands work similar to |:python|.
-							*:py3file*
+The |:py3| and |:python3| commands work similar to |:python|.  A simple check
+if the `:py3` command is wrong: >
+	:py3 print("Hello")
+<							*:py3file*
 The |:py3file| command works similar to |:pyfile|.
 
 

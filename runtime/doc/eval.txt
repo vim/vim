@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2012 Jul 10
+*eval.txt*	For Vim version 7.3.  Last change: 2012 Aug 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3288,8 +3288,9 @@ getfperm({fname})					*getfperm()*
 		"rwx" flags represent, in turn, the permissions of the owner
 		of the file, the group the file belongs to, and other users.
 		If a user does not have a given permission the flag for this
-		is replaced with the string "-".  Example: >
+		is replaced with the string "-".  Examples: >
 			:echo getfperm("/etc/passwd")
+			:echo getfperm(expand("~/.vimrc"))
 <		This will hopefully (from a security point of view) display
 		the string "rw-r--r--" or even "rw-------".
 
@@ -6325,6 +6326,7 @@ mouse_gpm		Compiled with support for gpm (Linux console mouse)
 mouse_netterm		Compiled with support for netterm mouse.
 mouse_pterm		Compiled with support for qnx pterm mouse.
 mouse_sysmouse		Compiled with support for sysmouse (*BSD console mouse)
+mouse_sgr		Compiled with support for sgr mouse.
 mouse_urxvt		Compiled with support for urxvt mouse.
 mouse_xterm		Compiled with support for xterm mouse.
 mouseshape		Compiled with support for 'mouseshape'.

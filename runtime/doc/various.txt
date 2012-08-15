@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.3.  Last change: 2012 Jan 15
+*various.txt*   For Vim version 7.3.  Last change: 2012 Aug 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -355,6 +355,7 @@ N  *+mouse_gpm*		Unix only: Linux console mouse handling |gpm-mouse|
 B  *+mouse_netterm*	Unix only: netterm mouse handling |netterm-mouse|
 N  *+mouse_pterm*		QNX only: pterm mouse handling |qnx-terminal|
 N  *+mouse_sysmouse*	Unix only: *BSD console mouse handling |sysmouse|
+B  *+mouse_sgr*		Unix only: sgr mouse handling |sgr-mouse|
 N  *+mouse_urxvt*		Unix only: urxvt mouse handling |urxvt-mouse|
 N  *+mouse_xterm*		Unix only: xterm mouse handling |xterm-mouse|
 B  *+multi_byte*		16 and 32 bit characters |multibyte|
@@ -415,7 +416,7 @@ S  *+windows*		more than one window
 m  *+writebackup*		|'writebackup'| is default on
 m  *+xim*			X input method |xim|
    *+xfontset*		X fontset support |xfontset|
-m  *+xpm_w32*		Win32 GUI only: pixmap support |:sign-define|
+m  *+xpm_w32*		Win32 GUI only: pixmap support |w32-xpm-support|
    *+xsmp*		XSMP (X session management) support
    *+xsmp_interact*	interactive XSMP (X session management) support
 N  *+xterm_clipboard*	Unix only: xterm clipboard handling

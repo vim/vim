@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 7.3.  Last change: 2012 Jul 25
+*visual.txt*    For Vim version 7.3.  Last change: 2012 Aug 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -62,8 +62,15 @@ position.
 
 						*v* *characterwise-visual*
 [count]v		Start Visual mode per character.
-			With [count] select that many characters, like moving
-			the cursor right [count] characters.  One less when
+			With [count] select the same number of characters or
+			lines as used for the last Visual operation, but at
+			the current cursor position, multiplied by [count].
+			When the previous Visual operation was on a block both
+			the width and height of the block are multipiled by
+			[count].
+			When there was no previous Visual operation [count]
+			characters are selected.  This is like moving the
+			cursor right N * [count] characters.  One less when
 			'selection' is not "exclusive".
 
 						*V* *linewise-visual*

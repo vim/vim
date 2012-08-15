@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 Jun 20
+" Last Change:	2012 Aug 02
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1118,6 +1118,9 @@ au BufNewFile,BufRead *.nb			setf mma
 
 " Maya Extension Language
 au BufNewFile,BufRead *.mel			setf mel
+
+" Mercurial (hg) commit file
+au BufNewFile,BufRead hg-editor-*.txt		setf hgcommit
 
 " Mercurial config (looks like generic config file)
 au BufNewFile,BufRead *.hgrc,*hgrc		setf cfg

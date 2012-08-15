@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.3.  Last change: 2012 May 18
+*diff.txt*      For Vim version 7.3.  Last change: 2012 Aug 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -333,7 +333,7 @@ diff.  This example explains the format that Vim expects: >
 
 The "1a2" item appends the line "bbb".
 The "4d4" item deletes the line "111".
-The '7c7" item replaces the line "GGG" with "ggg".
+The "7c7" item replaces the line "GGG" with "ggg".
 
 When 'diffexpr' is not empty, Vim evaluates it to obtain a diff file in the
 format mentioned.  These variables are set to the file names used:

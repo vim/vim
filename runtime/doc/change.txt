@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.3.  Last change: 2012 Jun 13
+*change.txt*    For Vim version 7.3.  Last change: 2012 Aug 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -666,6 +666,8 @@ The flags that you can use for the substitute commands:
 [n]	Report the number of matches, do not actually substitute.  The [c]
 	flag is ignored.  The matches are reported as if 'report' is zero.
 	Useful to |count-items|.
+	If \= |sub-replace-expression| is used, the expression will be
+	evaluated in the |sandbox| at every match.
 
 [p]	Print the line containing the last substitute.
 

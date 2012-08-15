@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.3.  Last change: 2012 Jul 25
+*motion.txt*    For Vim version 7.3.  Last change: 2012 Aug 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -326,6 +326,7 @@ gg			Goto line [count], default first line, on the first
 			non-blank character |linewise|.  If 'startofline' not
 			set, keep the same column.
 
+							*:[range]*
 :[range]		Set the cursor on the last line number in [range].
 			[range] can also be just one line number, e.g., ":1"
 			or ":'m".

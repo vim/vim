@@ -1186,6 +1186,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 +mouse_gpm	various.txt	/*+mouse_gpm*
 +mouse_netterm	various.txt	/*+mouse_netterm*
 +mouse_pterm	various.txt	/*+mouse_pterm*
++mouse_sgr	various.txt	/*+mouse_sgr*
 +mouse_sysmouse	various.txt	/*+mouse_sysmouse*
 +mouse_urxvt	various.txt	/*+mouse_urxvt*
 +mouse_xterm	various.txt	/*+mouse_xterm*
@@ -1836,6 +1837,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :X	editing.txt	/*:X*
 :XMLent	insert.txt	/*:XMLent*
 :XMLns	insert.txt	/*:XMLns*
+:[range]	motion.txt	/*:[range]*
 :\bar	cmdline.txt	/*:\\bar*
 :_!	cmdline.txt	/*:_!*
 :_#	cmdline.txt	/*:_#*
@@ -5290,6 +5292,7 @@ develop-spell	develop.txt	/*develop-spell*
 develop-spell-suggestions	develop.txt	/*develop-spell-suggestions*
 develop.txt	develop.txt	/*develop.txt*
 development	develop.txt	/*development*
+dgn	motion.txt	/*dgn*
 dh	change.txt	/*dh*
 diB	motion.txt	/*diB*
 diW	motion.txt	/*diW*
@@ -7538,6 +7541,7 @@ setuid	change.txt	/*setuid*
 setwinvar()	eval.txt	/*setwinvar()*
 sftp	pi_netrw.txt	/*sftp*
 sgml.vim	syntax.txt	/*sgml.vim*
+sgr-mouse	options.txt	/*sgr-mouse*
 sh-awk	syntax.txt	/*sh-awk*
 sh-embed	syntax.txt	/*sh-embed*
 sh.vim	syntax.txt	/*sh.vim*
@@ -8493,6 +8497,7 @@ vt100-cursor-keys	term.txt	/*vt100-cursor-keys*
 vt100-function-keys	term.txt	/*vt100-function-keys*
 w	motion.txt	/*w*
 w32-clientserver	remote.txt	/*w32-clientserver*
+w32-xpm-support	gui_w32.txt	/*w32-xpm-support*
 w:current_syntax	syntax.txt	/*w:current_syntax*
 w:quickfix_title	quickfix.txt	/*w:quickfix_title*
 w:var	eval.txt	/*w:var*

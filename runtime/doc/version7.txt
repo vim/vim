@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.3.  Last change: 2010 Nov 03
+*version7.txt*  For Vim version 7.3.  Last change: 2012 Aug 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3587,7 +3587,7 @@ Files:	    src/eval.c, src/getchar.c, src/globals.h, src/main.c
 
 Patch 7.0.085
 Problem:    When doing "make test" the viminfo file is modified.
-Solution:   Use another viminfo file after setting 'compatible.
+Solution:   Use another viminfo file after setting 'compatible'.
 Files:	    src/testdir/test56.in
 
 Patch 7.0.086
@@ -7313,8 +7313,6 @@ Command line completion for :ownsyntax and :setfiletype. (Dominique Pelle)
 Command line completion for :lmap and :lunmap.
 
 Support syntax and filetype completion for user commands. (Christian Brabandt)
-
-Add completion for ":ownsyntax" and improve completion for ":filetype".
 
 Avoid use of the GTK main_loop() so that the GtkFileChooser can be used.
 (James Vega)

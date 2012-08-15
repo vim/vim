@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Jul 25
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Aug 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -43,9 +43,6 @@ GTK: problem with 'L' in 'guioptions' changing the window width.
 
 Checking runtime scripts: Thilo Six, 2012 Jun 6.
 
-List of broken mirrors. (Chris Pentago, 2012 Jun 15)
-/tmp/broken-mirrors.csv
-
 Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
 
 The CompleteDone autocommand needs some info passed to it:
@@ -60,20 +57,12 @@ Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
 
-Help for v/V is not quite right. (Ben Fritz, 2012 Jun 4)
-Change [count]v to select last visual area [count] times?
-
 Issue 54: document behavior of -complete, also expands arg.
 
 Issue 72: 'autochdir' causes problems for :vimgrep.
 
-Patch for SGR mouse support. (Hayaki Saito, mail from Yakuhiro Matsumoto, 2012
-Jul 13)
-
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
-
-Patch to fix assigning to scope dictionaries for Python. (ZyX, 2012 Jul 16)
 
 Syntax update problem in one buffer opened in two windows, bottom window is
 not correctly updated. (Paul Harris, 2012 Feb 27)
@@ -82,6 +71,12 @@ Patch to add getsid(). (Tyru, 2011 Oct 2)  Do we want this?  Update Oct 4.
 Or use expand('<sid>')?
 
 Patch to improve IME handling. (Yasuhiro Matsumoto, 2012 Jul 18)
+
+Patch for :tabcloseleft, after closing a tab go to left tab. (William Bowers,
+2012 Aug 4)
+
+Crash in autocmd that unloads buffers in a BufUnload event. (Andrew Pimlott,
+2012 Aug 11)  Disallow :new when BufUnload is being handled?
 
 MS-Windows resizing problems:
 - Windows window on screen positioning: Patch by Yukihiro Nakadaira, 2012 Jun
@@ -110,9 +105,6 @@ New tests Jul 13.   Update Jul 17.  Discussion Jul 18.
 When running Vim in silent ex mode, an existing swapfile causes Vim to wait
 for a user action without a prompt. (Maarten Billemont, 2012 Feb 3)
 Do give the prompt? Quit with an error?
-
-Patch for Make_mvc.mak and Make_ming.mak for Ruby support. (Yasuhiro
-Matsumoto, 2012 Jan 30)
 
 Patch for 'backupcopy' default behavior for symlinks on Windows. (David Pope,
 2012 Mar 21, update Mar 31)
@@ -289,6 +281,10 @@ Vim using lots of memory when joining lines. (John Little, 2010 Dec 3)
 
 Changes to manpage plugin. (Elias Toivanen, 2011 Jul 25)
 
+Patch to make "z=" work when 'spell' is off.  Does this have nasty side
+effects?  (Christian Brabandt, 2012 Aug 5)
+Would also need to do this for spellbadword() and spellsuggest().
+
 On 64 bit MS-Windows "long" is only 32 bits, but we sometimes need to store a
 64 bits value.  Change all number options to use nropt_T and define it to the
 right type.
@@ -394,7 +390,7 @@ Searching mixed with Visual mode doesn't redraw properly. (James Vega, 2010 Nov
 
 New esperanto spell file can't be processed. (Dominique Pelle, 2011 Jan 30)
 - move compflags to separate growarray?
-- instead of a regexp use a hashtable.  Expand '?', '*", '+'.  What would be
+- instead of a regexp use a hashtable.  Expand '?', '*', '+'.  What would be
   the maximum repeat for * and +?
 
 "L'Italie" noted as a spell error at start of the sentence. (Dominique Pelle,
@@ -547,7 +543,7 @@ Find tail?  Might have a / in argument.  Find space?  Might have space in
 path.
 
 Test 51 fails when language set to German. (Marco, 2011 Jan 9)
-Dominique can't reproduc it.
+Dominique can't reproduce it.
 
 'ambiwidth' should be global-local.
 
@@ -601,9 +597,6 @@ echo, just not for  ":call" and ":call call()". (Ted, 2011 Mar 17)
 When a:base in 'completefunc' starts with a number it's passed as a number,
 not a string. (Sean Ma)  Need to add flag to call_func_retlist() to force a
 string value.
-
-":e ~br<Tab>" does not complete to ":e /home/bram/".  Would need to use
-getpwent() to find all the matches.
 
 Invalid read error in Farsi mode. (Dominique Pelle, 2009 Aug 2)
 

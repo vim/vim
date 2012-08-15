@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         reStructuredText documentation format
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2010-01-23
+" Latest Revision:  2012-08-05
 
 if exists("b:current_syntax")
   finish
@@ -141,8 +141,8 @@ syn sync minlines=50 linebreaks=1
 
 hi def link rstTodo                         Todo
 hi def link rstComment                      Comment
-hi def link rstSections                     Type
-hi def link rstTransition                   Type
+hi def link rstSections                     Title
+hi def link rstTransition                   rstSections
 hi def link rstLiteralBlock                 String
 hi def link rstQuotedLiteralBlock           String
 hi def link rstDoctestBlock                 PreProc

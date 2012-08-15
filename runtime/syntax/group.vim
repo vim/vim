@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         group(5) user group file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2012-08-05
 
 if exists("b:current_syntax")
   finish
@@ -12,7 +12,7 @@ set cpo&vim
 
 syn match   groupBegin          display '^' nextgroup=groupName
 
-syn match   groupName           contained display '[a-z_][a-z0-9_-]\{0,15}'
+syn match   groupName           contained display '[^:]\+'
                                 \ nextgroup=groupPasswordColon
 
 syn match   groupPasswordColon  contained display ':'
@@ -30,7 +30,7 @@ syn match   groupGID            contained display '\d*'
 
 syn match   groupUserListColon  contained display ':' nextgroup=groupUserList
 
-syn match   groupUserList       contained '[a-z_][a-z0-9_-]*'
+syn match   groupUserList       contained '[^,]\+'
                                 \ nextgroup=groupUserListSep
 
 syn match   groupUserListSep    contained display ',' nextgroup=groupUserList

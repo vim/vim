@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.3.  Last change: 2012 Jul 10
+*editing.txt*   For Vim version 7.3.  Last change: 2012 Aug 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -393,7 +393,7 @@ is to use "path\[[]abc]".  Then the file "path[abc]" literally.
 					*starstar-wildcard*
 Expanding "**" is possible on Unix, Win32, Mac OS/X and a few other systems.
 This allows searching a directory tree.  This goes up to 100 directories deep.
-Note there are some commands where this works slightly different, see
+Note there are some commands where this works slightly differently, see
 |file-searching|.
 Example: >
 	:n **/*.txt

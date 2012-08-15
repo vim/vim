@@ -1,4 +1,4 @@
-*version5.txt*  For Vim version 7.3.  Last change: 2008 Dec 17
+*version5.txt*  For Vim version 7.3.  Last change: 2012 Aug 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -6,7 +6,7 @@
 Welcome to Vim Version 5.0!
 
 This document lists the differences between Vim 4.x and Vim 5.0.
-Although 5.0 is mentioned here, this is also for version 5.1, 5.2, etc..
+Although 5.0 is mentioned here, this is also for version 5.1, 5.2, etc.
 See |vi_diff.txt| for an overview of differences between Vi and Vim 5.0.
 See |version4.txt| for differences between Vim 3.0 and Vim 4.0.
 
@@ -3888,7 +3888,7 @@ character is typed.  Helps to close a /* */ comment in C. (Webb)
 When expand() has a second argument which is non-zero, don't use 'suffixes'
 and 'wildignore', return all matches.
 
-'O' flag in 'cpoptions: When not included, Vim will not overwrite a file, if
+'O' flag in 'cpoptions' When not included, Vim will not overwrite a file, if
 it didn't exist when editing started but it does exist when the buffer is
 written to the file.  The file must have been created outside of Vim, possibly
 without the user knowing it.  When this is detected after a shell command,
@@ -4499,7 +4499,7 @@ Could not get all windows back when using a smaller terminal screen.  Didn't
 restore all windows when "winsize" was not in 'sessionoptions'. (Webb)
 
 Command line completion for ":buffer" depended on 'ignorecase' for Unix, but
-not for DOS et al..  Now don't use 'ignorecase', but let it depend on whether
+not for DOS et al.  Now don't use 'ignorecase', but let it depend on whether
 file names are case sensitive or not (like when expanding file names).
 
 Win32 GUI: (Negri)

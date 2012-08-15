@@ -2,7 +2,7 @@
 " Language:	Lua 4.0, Lua 5.0, Lua 5.1 and Lua 5.2
 " Maintainer:	Marcus Aurelius Farias <masserahguard-lua 'at' yahoo com>
 " First Author:	Carlos Augusto Teixeira Mendes <cmendes 'at' inf puc-rio br>
-" Last Change:	2012 Feb 07
+" Last Change:	2012 Aug 12
 " Options:	lua_version = 4 or 5
 "		lua_subversion = 0 (4.0, 5.0) or 1 (5.1) or 2 (5.2)
 "		default 5.2
@@ -48,39 +48,41 @@ syn match luaComment "\%^#!.*"
 
 " catch errors caused by wrong parenthesis and wrong curly brackets or
 " keywords placed outside their respective blocks
+syn region luaParen      transparent                     start='(' end=')' contains=ALLBUT,luaParenError,luaTodo,luaSpecial,luaIfThen,luaElseifThen,luaElse,luaThenEnd,luaBlock,luaLoopBlock,luaIn,luaStatement
+syn region luaTableBlock transparent matchgroup=luaTable start="{" end="}" contains=ALLBUT,luaBraceError,luaTodo,luaSpecial,luaIfThen,luaElseifThen,luaElse,luaThenEnd,luaBlock,luaLoopBlock,luaIn,luaStatement
 
-syn region luaParen transparent start='(' end=')' contains=TOP,luaParenError
 syn match  luaParenError ")"
-syn match  luaError "}"
+syn match  luaBraceError "}"
 syn match  luaError "\<\%(end\|else\|elseif\|then\|until\|in\)\>"
 
-" Function declaration
-syn region luaFunctionBlock transparent matchgroup=luaFunction start="\<function\>" end="\<end\>" contains=TOP
-
-" else
-syn keyword luaCondElse matchgroup=luaCond contained containedin=luaCondEnd else
-
-" then ... end
-syn region luaCondEnd contained transparent matchgroup=luaCond start="\<then\>" end="\<end\>" contains=TOP
-
-" elseif ... then
-syn region luaCondElseif contained containedin=luaCondEnd transparent matchgroup=luaCond start="\<elseif\>" end="\<then\>" contains=TOP
+" function ... end
+syn region luaFunctionBlock transparent matchgroup=luaFunction start="\<function\>" end="\<end\>" contains=ALLBUT,luaTodo,luaSpecial,luaElseifThen,luaElse,luaThenEnd,luaIn
 
 " if ... then
-syn region luaCondStart transparent matchgroup=luaCond start="\<if\>" end="\<then\>"me=e-4 contains=TOP nextgroup=luaCondEnd skipwhite skipempty
+syn region luaIfThen transparent matchgroup=luaCond start="\<if\>" end="\<then\>"me=e-4           contains=ALLBUT,luaTodo,luaSpecial,luaElseifThen,luaElse,luaIn nextgroup=luaThenEnd skipwhite skipempty
+
+" then ... end
+syn region luaThenEnd contained transparent matchgroup=luaCond start="\<then\>" end="\<end\>" contains=ALLBUT,luaTodo,luaSpecial,luaThenEnd,luaIn
+
+" elseif ... then
+syn region luaElseifThen contained transparent matchgroup=luaCond start="\<elseif\>" end="\<then\>" contains=ALLBUT,luaTodo,luaSpecial,luaElseifThen,luaElse,luaThenEnd,luaIn
+
+" else
+syn keyword luaElse contained else
 
 " do ... end
-syn region luaBlock transparent matchgroup=luaStatement start="\<do\>" end="\<end\>" contains=TOP
+syn region luaBlock transparent matchgroup=luaStatement start="\<do\>" end="\<end\>"          contains=ALLBUT,luaTodo,luaSpecial,luaElseifThen,luaElse,luaThenEnd,luaIn
+
 " repeat ... until
-syn region luaRepeatBlock transparent matchgroup=luaRepeat start="\<repeat\>" end="\<until\>" contains=TOP
+syn region luaLoopBlock transparent matchgroup=luaRepeat start="\<repeat\>" end="\<until\>"   contains=ALLBUT,luaTodo,luaSpecial,luaElseifThen,luaElse,luaThenEnd,luaIn
 
 " while ... do
-syn region luaWhile transparent matchgroup=luaRepeat start="\<while\>" end="\<do\>"me=e-2 contains=TOP nextgroup=luaBlock skipwhite skipempty
+syn region luaLoopBlock transparent matchgroup=luaRepeat start="\<while\>" end="\<do\>"me=e-2 contains=ALLBUT,luaTodo,luaSpecial,luaIfThen,luaElseifThen,luaElse,luaThenEnd,luaIn nextgroup=luaBlock skipwhite skipempty
 
 " for ... do and for ... in ... do
-syn region luaFor transparent matchgroup=luaRepeat start="\<for\>" end="\<do\>"me=e-2 contains=TOP nextgroup=luaBlock skipwhite skipempty
+syn region luaLoopBlock transparent matchgroup=luaRepeat start="\<for\>" end="\<do\>"me=e-2   contains=ALLBUT,luaTodo,luaSpecial,luaIfThen,luaElseifThen,luaElse,luaThenEnd nextgroup=luaBlock skipwhite skipempty
 
-syn keyword luaFor contained containedin=luaFor in
+syn keyword luaIn contained in
 
 " other keywords
 syn keyword luaStatement return local break
@@ -130,9 +132,6 @@ if lua_version >= 5
     syn match luaNumber "\<0[xX][[:xdigit:].]\+\%([pP][-+]\=\d\+\)\=\>"
   endif
 endif
-
-" tables
-syn region luaTableBlock transparent matchgroup=luaTable start="{" end="}" contains=TOP,luaStatement
 
 syn keyword luaFunc assert collectgarbage dofile error next
 syn keyword luaFunc print rawget rawset tonumber tostring type _VERSION
@@ -343,15 +342,17 @@ if version >= 508 || !exists("did_lua_syntax_inits")
   HiLink luaString2		String
   HiLink luaNumber		Number
   HiLink luaOperator		Operator
+  HiLink luaIn			Operator
   HiLink luaConstant		Constant
   HiLink luaCond		Conditional
-  HiLink luaCondElse		Conditional
+  HiLink luaElse		Conditional
   HiLink luaFunction		Function
   HiLink luaComment		Comment
   HiLink luaTodo		Todo
   HiLink luaTable		Structure
   HiLink luaError		Error
   HiLink luaParenError		Error
+  HiLink luaBraceError		Error
   HiLink luaSpecial		SpecialChar
   HiLink luaFunc		Identifier
   HiLink luaLabel		Label

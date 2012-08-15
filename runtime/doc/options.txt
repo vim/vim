@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2012 Jul 10
+*options.txt*	For Vim version 7.3.  Last change: 2012 Aug 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6119,6 +6119,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to buffer
 	Number of spaces to use for each step of (auto)indent.  Used for
 	|'cindent'|, |>>|, |<<|, etc.
+	When zero the 'ts' value will be used.
 
 						*'shortmess'* *'shm'*
 'shortmess' 'shm'	string	(Vim default "filnxtToO", Vi default: "",
@@ -7425,6 +7426,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   pterm	QNX pterm mouse handling.
 							*urxvt-mouse*
 	   urxvt	Mouse handling for the urxvt (rxvt-unicode) terminal.
+							*sgr-mouse*
+	   sgr		Mouse handling for the terminal that emits SGR-styled
+			mouse reporting. Works with xterm version 277 or
+			later.
 
 	The mouse handling must be enabled at compile time |+mouse_xterm|
 	|+mouse_dec| |+mouse_netterm|.
