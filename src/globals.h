@@ -183,6 +183,8 @@ EXTERN int	did_endif INIT(= FALSE);    /* just had ":endif" */
 #endif
 EXTERN int	did_emsg;		    /* set by emsg() when the message
 					       is displayed or thrown */
+EXTERN int	did_emsg_syntax;	    /* did_emsg set because of a
+					       syntax error */
 EXTERN int	called_emsg;		    /* always set by emsg() */
 EXTERN int	ex_exitval INIT(= 0);	    /* exit value for ex mode */
 EXTERN int	emsg_on_display INIT(= FALSE);	/* there is an error message */

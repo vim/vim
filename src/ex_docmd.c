@@ -1295,7 +1295,14 @@ do_cmdline(cmdline, fgetline, cookie, flags)
 		&& cstack.cs_trylevel == 0
 #endif
 	    )
-	    && !(did_emsg && used_getline
+	    && !(did_emsg
+#ifdef FEAT_EVAL
+		/* Keep going when inside try/catch, so that the error can be
+		 * dealth with, except when it is a syntax error, it may cause
+		 * the :endtry to be missed. */
+		&& (cstack.cs_trylevel == 0 || did_emsg_syntax)
+#endif
+		&& used_getline
 			    && (getline_equal(fgetline, cookie, getexmodeline)
 			       || getline_equal(fgetline, cookie, getexline)))
 	    && (next_cmdline != NULL
@@ -1305,6 +1312,7 @@ do_cmdline(cmdline, fgetline, cookie, flags)
 			|| (flags & DOCMD_REPEAT)));
 
     vim_free(cmdline_copy);
+    did_emsg_syntax = FALSE;
 #ifdef FEAT_EVAL
     free_cmdlines(&lines_ga);
     ga_clear(&lines_ga);
@@ -2137,6 +2145,7 @@ do_one_cmd(cmdlinep, sourcing,
 	    if (!sourcing)
 		append_command(*cmdlinep);
 	    errormsg = IObuff;
+	    did_emsg_syntax = TRUE;
 	}
 	goto doend;
     }
