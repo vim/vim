@@ -4526,6 +4526,8 @@ current_quote(oap, count, include, quotechar)
 #endif /* FEAT_TEXTOBJ */
 
 #if defined(FEAT_VISUAL) || defined(PROTO)
+static int is_zerowidth __ARGS((char_u *pattern));
+
 /*
  * Find next search match under cursor, cursor at end.
  * Used while an operator is pending, and in Visual mode.
@@ -4546,10 +4548,7 @@ current_search(count, forward)
     int		visual_active = FALSE;
     int		flags = 0;
     pos_T	save_VIsual;
-    regmmatch_T	regmatch;
-    int		nmatched = 0;
     int		zerowidth = FALSE;
-
 
     /* wrapping should not occur */
     p_ws = FALSE;
@@ -4583,23 +4582,10 @@ current_search(count, forward)
     else
 	orig_pos = pos = start_pos = curwin->w_cursor;
 
-    /*
-     * Check for zero-width pattern.
-     */
-    if (search_regcomp(spats[last_idx].pat, RE_SEARCH, RE_SEARCH,
-			     ((SEARCH_HIS + SEARCH_KEEP)), &regmatch) == FAIL)
+    /* Is the pattern is zero-width? */
+    zerowidth = is_zerowidth(spats[last_idx].pat);
+    if (zerowidth == -1)
 	return FAIL;
-
-    /* Zero-width pattern should match somewhere, then we can check if start
-     * and end are in the same position. */
-    nmatched = vim_regexec_multi(&regmatch, curwin, curbuf,
-				     curwin->w_cursor.lnum, (colnr_T)0, NULL);
-    if (called_emsg)
-	return FAIL;
-    if (nmatched && regmatch.startpos[0].lnum == regmatch.endpos[0].lnum
-		 && regmatch.endpos[0].col == regmatch.startpos[0].col)
-	zerowidth = TRUE;
-    vim_free(regmatch.regprog);
 
     /*
      * The trick is to first search backwards and then search forward again,
@@ -4692,6 +4678,43 @@ current_search(count, forward)
     showmode();
 
     return OK;
+}
+
+/*
+ * Check if the pattern is zero-width.
+ * Returns TRUE, FALSE or -1 for failure.
+ */
+    static int
+is_zerowidth(pattern)
+    char_u	*pattern;
+{
+    regmmatch_T	regmatch;
+    int		nmatched = 0;
+    int		result = -1;
+    pos_T       pos;
+
+    if (search_regcomp(pattern, RE_SEARCH, RE_SEARCH,
+					      SEARCH_KEEP, &regmatch) == FAIL)
+	return -1;
+
+    /* move to match */
+    clearpos(&pos);
+    if (searchit(curwin, curbuf, &pos, FORWARD, spats[last_idx].pat, 1,
+				     SEARCH_KEEP, RE_SEARCH, 0, NULL) != FAIL)
+    {
+	/* Zero-width pattern should match somewhere, then we can check if
+	 * start and end are in the same position. */
+	nmatched = vim_regexec_multi(&regmatch, curwin, curbuf,
+						  pos.lnum, (colnr_T)0, NULL);
+
+	if (!called_emsg)
+	    result = (nmatched != 0
+		    && regmatch.startpos[0].lnum == regmatch.endpos[0].lnum
+		    && regmatch.startpos[0].col == regmatch.endpos[0].col);
+    }
+
+    vim_free(regmatch.regprog);
+    return result;
 }
 #endif /* FEAT_VISUAL */
 
