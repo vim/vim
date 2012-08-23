@@ -5332,8 +5332,9 @@ char_needs_redraw(off_from, off_to, cols)
 		    && (ScreenLinesUC[off_from] != ScreenLinesUC[off_to]
 			|| (ScreenLinesUC[off_from] != 0
 			    && comp_char_differs(off_from, off_to))
-			|| (cols > 1 && ScreenLines[off_from + 1]
-						 != ScreenLines[off_to + 1])))
+			|| ((*mb_off2cells)(off_from, off_from + cols) > 1
+			    && ScreenLines[off_from + 1]
+						  != ScreenLines[off_to + 1])))
 #endif
 	       ))
 	return TRUE;
