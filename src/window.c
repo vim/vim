@@ -2269,7 +2269,7 @@ win_close(win, free_buf)
 #ifdef FEAT_AUTOCMD
 	win->w_closing = TRUE;
 #endif
-	close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0, FALSE);
+	close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0, TRUE);
 #ifdef FEAT_AUTOCMD
 	if (win_valid(win))
 	    win->w_closing = FALSE;
