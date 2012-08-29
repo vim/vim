@@ -3373,7 +3373,7 @@ put_foldopen_recurse(fd, wp, gap, off)
 		/* open nested folds while this fold is open */
 		if (fprintf(fd, "%ld", fp->fd_top + off) < 0
 			|| put_eol(fd) == FAIL
-			|| put_line(fd, "normal zo") == FAIL)
+			|| put_line(fd, "normal! zo") == FAIL)
 		    return FAIL;
 		if (put_foldopen_recurse(fd, wp, &fp->fd_nested,
 							     off + fp->fd_top)
@@ -3417,7 +3417,7 @@ put_fold_open_close(fd, fp, off)
 {
     if (fprintf(fd, "%ld", fp->fd_top + off) < 0
 	    || put_eol(fd) == FAIL
-	    || fprintf(fd, "normal z%c",
+	    || fprintf(fd, "normal! z%c",
 			   fp->fd_flags == FD_CLOSED ? 'c' : 'o') < 0
 	    || put_eol(fd) == FAIL)
 	return FAIL;
