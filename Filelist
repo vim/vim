@@ -349,6 +349,12 @@ SRC_DOS_BIN =	\
 		src/vim*.ico \
 		src/vim.tlb \
 		src/vimtbar.lib \
+		src/xpm/COPYRIGHT \
+		src/xpm/README.txt \
+		src/xpm/include/*.h \
+		src/xpm/x64/lib/libXpm.lib \
+		src/xpm/x86/lib/libXpm.a \
+		src/xpm/x86/lib/libXpm.lib \
 		src/vimtbar.dll \
 		nsis/icons/*.bmp \
 		nsis/icons/*.ico \
