@@ -298,9 +298,6 @@ ui_get_shellsize()
     int	    retval;
 
 #ifdef FEAT_GUI
-    if (gui.starting)
-	/* possibly a system call during startup, check later */
-	return OK;
     if (gui.in_use)
 	retval = gui_get_shellsize();
     else
