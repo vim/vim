@@ -378,6 +378,16 @@ let l = [0, 1, 2, 3]
 :unlet dict
 :call garbagecollect(1)
 :"
+:" test for patch 7.3.637
+:let a = 'No error caught'
+:try|foldopen|catch|let a = matchstr(v:exception,'^[^ ]*')|endtry
+o=a:"
+:lang C
+:redir => a
+:try|foobar|catch|let a = matchstr(v:exception,'^[^ ]*')|endtry
+:redir END
+o=a:"
+:"
 :/^start:/,$wq! test.out
 ENDTEST
 

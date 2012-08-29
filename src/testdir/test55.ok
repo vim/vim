@@ -115,3 +115,9 @@ caught a:000[3]
 {'a': {'b': 'B'}}
 Vim(call):E737: a
 {'a': {'b': 'B'}}
+Vim(foldopen):E490:
+
+
+Error detected while processing :
+E492: Not an editor command: foobar|catch|let a = matchstr(v:exception,'^[^ ]*')|endtry
+

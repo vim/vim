@@ -21,4 +21,7 @@ a
 SEARCH:
 searchmatch
 abcdx |  | abcdx
+join lines
+zerowidth pattern
+elete first and last char
 end:
