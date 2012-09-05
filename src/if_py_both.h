@@ -607,6 +607,14 @@ pyll_add(PyObject *self, pylinkedlist_T *ref, pylinkedlist_T **last)
 
 static PyTypeObject DictionaryType;
 
+#define DICTKEY_GET_NOTEMPTY(err) \
+    DICTKEY_GET(err) \
+    if (*key == NUL) \
+    { \
+	PyErr_SetString(PyExc_ValueError, _("empty keys are not allowed")); \
+	return err; \
+    }
+
 typedef struct
 {
     PyObject_HEAD
@@ -659,7 +667,7 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookupDict)
 	if (valObject == NULL)
 	    return -1;
 
-	DICTKEY_GET(-1)
+	DICTKEY_GET_NOTEMPTY(-1)
 
 	di = dictitem_alloc(key);
 
@@ -730,7 +738,7 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookupDict)
 	    return -1;
 	}
 
-	DICTKEY_GET(-1)
+	DICTKEY_GET_NOTEMPTY(-1)
 
 	valObject = PyTuple_GetItem(litem, 1);
 	if (valObject == NULL)
@@ -784,16 +792,22 @@ DictionaryLength(PyObject *self)
 DictionaryItem(PyObject *self, PyObject *keyObject)
 {
     char_u	*key;
-    dictitem_T	*val;
+    dictitem_T	*di;
     DICTKEY_DECL
 
-    DICTKEY_GET(NULL)
+    DICTKEY_GET_NOTEMPTY(NULL)
 
-    val = dict_find(((DictionaryObject *) (self))->dict, key, -1);
+    di = dict_find(((DictionaryObject *) (self))->dict, key, -1);
+
+    if (di == NULL)
+    {
+	PyErr_SetString(PyExc_IndexError, _("no such key in dictionary"));
+	return NULL;
+    }
 
     DICTKEY_UNREF
 
-    return ConvertToPyObject(&val->di_tv);
+    return ConvertToPyObject(&di->di_tv);
 }
 
     static PyInt
@@ -811,7 +825,7 @@ DictionaryAssItem(PyObject *self, PyObject *keyObject, PyObject *valObject)
 	return -1;
     }
 
-    DICTKEY_GET(-1)
+    DICTKEY_GET_NOTEMPTY(-1)
 
     di = dict_find(d, key, -1);
 
