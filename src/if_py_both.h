@@ -74,16 +74,11 @@ static struct PyMethodDef OutputMethods[] = {
     static PyObject *
 OutputWrite(PyObject *self, PyObject *args)
 {
-    int len;
+    Py_ssize_t len;
     char *str = NULL;
     int error = ((OutputObject *)(self))->error;
 
     if (!PyArg_ParseTuple(args, "et#", ENC_OPT, &str, &len))
-	return NULL;
-
-    /* TODO: This works around a gcc optimizer problem and avoids Vim
-     * from crashing.  Should find a real solution. */
-    if (str == NULL)
 	return NULL;
 
     Py_BEGIN_ALLOW_THREADS
