@@ -4851,7 +4851,7 @@ do_sub(eap)
 #ifdef FEAT_EVAL
 		if (do_count)
 		{
-		    /* prevent accidently changing the buffer by a function */
+		    /* prevent accidentally changing the buffer by a function */
 		    save_ma = curbuf->b_p_ma;
 		    curbuf->b_p_ma = FALSE;
 		    sandbox++;
@@ -5264,7 +5264,7 @@ do_sub_msg(count_only)
  * is assumed to be 'p' if missing.
  *
  * This is implemented in two passes: first we scan the file for the pattern and
- * set a mark for each line that (not) matches. secondly we execute the command
+ * set a mark for each line that (not) matches. Secondly we execute the command
  * for each line that has a mark. This is required because after deleting
  * lines we do not know where to search for the next match.
  */
@@ -5896,9 +5896,14 @@ find_help_tags(arg, num_matches, matches, keep_lang)
 	}
 	else
 	{
-	  /* replace "[:...:]" with "\[:...:]"; "[+...]" with "\[++...]" */
-	    if (arg[0] == '[' && (arg[1] == ':'
-					 || (arg[1] == '+' && arg[2] == '+')))
+	  /* Replace:
+	   * "[:...:]" with "\[:...:]"
+	   * "[++...]" with "\[++...]"
+	   * "\{" with "\\{"
+	   */
+	    if ((arg[0] == '[' && (arg[1] == ':'
+			 || (arg[1] == '+' && arg[2] == '+')))
+		    || (arg[0] == '\\' && arg[1] == '{'))
 	      *d++ = '\\';
 
 	  for (s = arg; *s; ++s)
