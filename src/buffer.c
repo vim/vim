@@ -3234,12 +3234,15 @@ maketitle()
 	{
 	    /* format: "fname + (path) (1 of 2) - VIM" */
 
+#define SPACE_FOR_FNAME (IOSIZE - 100)
+#define SPACE_FOR_DIR   (IOSIZE - 20)
+#define SPACE_FOR_ARGNR (IOSIZE - 10)  /* at least room for " - VIM" */
 	    if (curbuf->b_fname == NULL)
-		vim_strncpy(buf, (char_u *)_("[No Name]"), IOSIZE - 100);
+		vim_strncpy(buf, (char_u *)_("[No Name]"), SPACE_FOR_FNAME);
 	    else
 	    {
 		p = transstr(gettail(curbuf->b_fname));
-		vim_strncpy(buf, p, IOSIZE - 100);
+		vim_strncpy(buf, p, SPACE_FOR_FNAME);
 		vim_free(p);
 	    }
 
@@ -3263,7 +3266,7 @@ maketitle()
 		buf[off++] = ' ';
 		buf[off++] = '(';
 		home_replace(curbuf, curbuf->b_ffname,
-					       buf + off, IOSIZE - off, TRUE);
+					buf + off, SPACE_FOR_DIR - off, TRUE);
 #ifdef BACKSLASH_IN_FILENAME
 		/* avoid "c:/name" to be reduced to "c" */
 		if (isalpha(buf[off]) && buf[off + 1] == ':')
@@ -3274,18 +3277,28 @@ maketitle()
 		if (p == buf + off)
 		    /* must be a help buffer */
 		    vim_strncpy(buf + off, (char_u *)_("help"),
-						  (size_t)(IOSIZE - off - 1));
+					   (size_t)(SPACE_FOR_DIR - off - 1));
 		else
 		    *p = NUL;
 
-		/* translate unprintable chars */
-		p = transstr(buf + off);
-		vim_strncpy(buf + off, p, (size_t)(IOSIZE - off - 1));
-		vim_free(p);
+		/* Translate unprintable chars and concatenate.  Keep some
+		 * room for the server name.  When there is no room (very long
+		 * file name) use (...). */
+		if (off < SPACE_FOR_DIR)
+		{
+		    p = transstr(buf + off);
+		    vim_strncpy(buf + off, p, (size_t)(SPACE_FOR_DIR - off));
+		    vim_free(p);
+		}
+		else
+		{
+		    vim_strncpy(buf + off, (char_u *)"...",
+					     (size_t)(SPACE_FOR_ARGNR - off));
+		}
 		STRCAT(buf, ")");
 	    }
 
-	    append_arg_number(curwin, buf, IOSIZE, FALSE);
+	    append_arg_number(curwin, buf, SPACE_FOR_ARGNR, FALSE);
 
 #if defined(FEAT_CLIENTSERVER)
 	    if (serverName != NULL)
