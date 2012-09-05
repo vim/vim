@@ -1025,8 +1025,8 @@ static int CurrentSetattr(PyObject *, char *, PyObject *);
 
 static PySequenceMethods BufferAsSeq = {
     (PyInquiry)		BufferLength,	    /* sq_length,    len(x)   */
-    (binaryfunc)	0, /* BufferConcat, */	     /* sq_concat,    x+y      */
-    (PyIntArgFunc)	0, /* BufferRepeat, */	     /* sq_repeat,    x*n      */
+    (binaryfunc)	0,		    /* BufferConcat, sq_concat, x+y */
+    (PyIntArgFunc)	0,		    /* BufferRepeat, sq_repeat, x*n */
     (PyIntArgFunc)	BufferItem,	    /* sq_item,      x[i]     */
     (PyIntIntArgFunc)	BufferSlice,	    /* sq_slice,     x[i:j]   */
     (PyIntObjArgProc)	BufferAssItem,	    /* sq_ass_item,  x[i]=v   */
@@ -1787,6 +1787,10 @@ do_pyeval (char_u *str, typval_T *rettv)
 	case VAR_DICT: ++rettv->vval.v_dict->dv_refcount; break;
 	case VAR_LIST: ++rettv->vval.v_list->lv_refcount; break;
 	case VAR_FUNC: func_ref(rettv->vval.v_string);    break;
+	case VAR_UNKNOWN:
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = 0;
+	    break;
     }
 }
 
