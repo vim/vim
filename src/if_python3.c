@@ -85,6 +85,7 @@ static void init_structs(void);
 #define PyString_AsString(obj) PyBytes_AsString(obj)
 #define PyString_Size(obj) PyBytes_GET_SIZE(bytes)
 #define PyString_FromString(repr) PyUnicode_FromString(repr)
+#define PyString_AsStringAndSize(obj, buffer, len) PyBytes_AsStringAndSize(obj, buffer, len)
 
 #if defined(DYNAMIC_PYTHON3) || defined(PROTO)
 
@@ -552,7 +553,7 @@ static int py3initialised = 0;
 #define DICTKEY_GET(err) \
     if (PyBytes_Check(keyObject)) \
     { \
-	if (PyBytes_AsStringAndSize(keyObject, (char **) &key, NULL) == -1) \
+	if (PyString_AsStringAndSize(keyObject, (char **) &key, NULL) == -1) \
 	    return err; \
     } \
     else if (PyUnicode_Check(keyObject)) \
@@ -560,7 +561,7 @@ static int py3initialised = 0;
 	bytes = PyString_AsBytes(keyObject); \
 	if (bytes == NULL) \
 	    return err; \
-	if (PyBytes_AsStringAndSize(bytes, (char **) &key, NULL) == -1) \
+	if (PyString_AsStringAndSize(bytes, (char **) &key, NULL) == -1) \
 	    return err; \
     } \
     else \
