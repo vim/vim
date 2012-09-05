@@ -172,6 +172,7 @@ static void init_structs(void);
 # define PyUnicode_AsEncodedString py3_PyUnicode_AsEncodedString
 # undef PyBytes_AsString
 # define PyBytes_AsString py3_PyBytes_AsString
+# define PyBytes_AsStringAndSize py3_PyBytes_AsStringAndSize
 # undef PyBytes_FromString
 # define PyBytes_FromString py3_PyBytes_FromString
 # define PyFloat_FromDouble py3_PyFloat_FromDouble
@@ -273,6 +274,7 @@ static int (*py3_PyImport_AppendInittab)(const char *name, PyObject* (*initfunc)
 static char* (*py3__PyUnicode_AsString)(PyObject *unicode);
 static PyObject* (*py3_PyUnicode_AsEncodedString)(PyObject *unicode, const char* encoding, const char* errors);
 static char* (*py3_PyBytes_AsString)(PyObject *bytes);
+static int (*py3_PyBytes_AsStringAndSize)(PyObject *bytes, char **buffer, int *length);
 static PyObject* (*py3_PyBytes_FromString)(char *str);
 static PyObject* (*py3_PyFloat_FromDouble)(double num);
 static double (*py3_PyFloat_AsDouble)(PyObject *);
@@ -379,6 +381,7 @@ static struct
     {"PyImport_AppendInittab", (PYTHON_PROC*)&py3_PyImport_AppendInittab},
     {"_PyUnicode_AsString", (PYTHON_PROC*)&py3__PyUnicode_AsString},
     {"PyBytes_AsString", (PYTHON_PROC*)&py3_PyBytes_AsString},
+    {"PyBytes_AsStringAndSize", (PYTHON_PROC*)&py3_PyBytes_AsStringAndSize},
     {"PyBytes_FromString", (PYTHON_PROC*)&py3_PyBytes_FromString},
     {"PyFloat_FromDouble", (PYTHON_PROC*)&py3_PyFloat_FromDouble},
     {"PyFloat_AsDouble", (PYTHON_PROC*)&py3_PyFloat_AsDouble},
@@ -544,17 +547,20 @@ static int py3initialised = 0;
 
 #define PYINITIALISED py3initialised
 
-/* Add conversion from PyInt? */
+#define DICTKEY_DECL PyObject *bytes = NULL;
+
 #define DICTKEY_GET(err) \
     if (PyBytes_Check(keyObject)) \
-	key = (char_u *) PyBytes_AsString(keyObject); \
+    { \
+	if (PyBytes_AsStringAndSize(keyObject, (char **) &key, NULL) == -1) \
+	    return err; \
+    } \
     else if (PyUnicode_Check(keyObject)) \
     { \
 	bytes = PyString_AsBytes(keyObject); \
 	if (bytes == NULL) \
 	    return err; \
-	key = (char_u *) PyBytes_AsString(bytes); \
-	if (key == NULL) \
+	if (PyBytes_AsStringAndSize(bytes, (char **) &key, NULL) == -1) \
 	    return err; \
     } \
     else \
@@ -562,11 +568,10 @@ static int py3initialised = 0;
 	PyErr_SetString(PyExc_TypeError, _("only string keys are allowed")); \
 	return err; \
     }
+
 #define DICTKEY_UNREF \
     if (bytes != NULL) \
 	Py_XDECREF(bytes);
-
-#define DICTKEY_DECL PyObject *bytes = NULL;
 
 /*
  * Include the code shared with if_python.c

@@ -191,6 +191,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyRun_SimpleString dll_PyRun_SimpleString
 # define PyRun_String dll_PyRun_String
 # define PyString_AsString dll_PyString_AsString
+# define PyString_AsStringAndSize dll_PyString_AsStringAndSize
 # define PyString_FromString dll_PyString_FromString
 # define PyString_FromStringAndSize dll_PyString_FromStringAndSize
 # define PyString_Size dll_PyString_Size
@@ -288,6 +289,7 @@ static PyObject*(*dll_PyModule_GetDict)(PyObject *);
 static int(*dll_PyRun_SimpleString)(char *);
 static PyObject *(*dll_PyRun_String)(char *, int, PyObject *, PyObject *);
 static char*(*dll_PyString_AsString)(PyObject *);
+static int(*dll_PyString_AsStringAndSize)(PyObject *, char **, int *);
 static PyObject*(*dll_PyString_FromString)(const char *);
 static PyObject*(*dll_PyString_FromStringAndSize)(const char *, PyInt);
 static PyInt(*dll_PyString_Size)(PyObject *);
@@ -406,6 +408,7 @@ static struct
     {"PyRun_SimpleString", (PYTHON_PROC*)&dll_PyRun_SimpleString},
     {"PyRun_String", (PYTHON_PROC*)&dll_PyRun_String},
     {"PyString_AsString", (PYTHON_PROC*)&dll_PyString_AsString},
+    {"PyString_AsStringAndSize", (PYTHON_PROC*)&dll_PyString_AsStringAndSize},
     {"PyString_FromString", (PYTHON_PROC*)&dll_PyString_FromString},
     {"PyString_FromStringAndSize", (PYTHON_PROC*)&dll_PyString_FromStringAndSize},
     {"PyString_Size", (PYTHON_PROC*)&dll_PyString_Size},
@@ -578,14 +581,15 @@ static PyTypeObject RangeType;
 static int initialised = 0;
 #define PYINITIALISED initialised
 
-/* Add conversion from PyInt? */
 #define DICTKEY_GET(err) \
     if (!PyString_Check(keyObject)) \
     { \
 	PyErr_SetString(PyExc_TypeError, _("only string keys are allowed")); \
 	return err; \
     } \
-    key = (char_u *) PyString_AsString(keyObject);
+    if (PyString_AsStringAndSize(keyObject, (char **) &key, NULL) == -1) \
+	return err;
+
 #define DICTKEY_UNREF
 #define DICTKEY_DECL
 
