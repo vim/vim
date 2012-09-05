@@ -40,7 +40,8 @@ gnd
 /\>\zs
 0gnd/^
 gnd$h/\zs
-gnd
+gnd/[u]niquepattern/s
+vlgnd
 :/^start:/,/^end:/wq! test.out
 ENDTEST
 
@@ -67,4 +68,5 @@ join
 lines
 zero width pattern
 delete first and last chars
+uniquepattern uniquepattern
 end:
