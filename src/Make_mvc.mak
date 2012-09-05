@@ -213,6 +213,7 @@ CPU = i386
 # We're on Windows 95
 CPU = i386
 !endif # !PROCESSOR_ARCHITECTURE
+OBJDIR = $(OBJDIR)$(CPU)
 
 # Build a retail version by default
 
@@ -283,10 +284,12 @@ NETBEANS_LIB	= WSock32.lib
 
 !ifndef XPM
 # XPM is not set, use the included xpm files, depending on the architecture.
-!if ("$(CPU)" == "AMD64") || ("$(CPU)" == "IA64")
+!if "$(CPU)" == "AMD64"
 XPM = xpm\x64
-!else
+!elseif "$(CPU)" == "i386"
 XPM = xpm\x86
+!else
+XPM = no
 !endif
 !endif
 !if "$(XPM)" != "no"

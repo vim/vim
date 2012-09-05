@@ -10,6 +10,9 @@ nmake -f Make_mvc.mak GUI=yes CSCOPE=yes NETBEANS=yes XPM=e:\hg\xpm\x86
 MinGW:
 mingw32-make -f Make_ming.mak GUI=yes CSCOPE=yes XPM=e:/hg/xpm/x86
 
+MinGW 64 for x64:
+mingw32-make -f Make_ming.mak GUI=yes ARCH=x86-64 XPM=E:\HG\xpm\x64
+
 Microsoft Visual C++ on x64 (tested with versions 2008 and 2010):
 nmake -f Make_mvc.mak GUI=yes CSCOPE=yes XPM=E:\HG\xpm\x64
 

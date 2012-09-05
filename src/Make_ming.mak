@@ -1,14 +1,15 @@
-# Makefile for VIM on Win32, using 'EGCS/mingw32 1.1.2'.
+# Makefile for VIM on Win32
+#
 # Info at http://www.mingw.org
-# Also requires 'GNU make 3.77', which you can get through a link
-# to 'JanJaap's page from the above page.
+# Alternative x86 and 64-builds: http://mingw-w64.sourceforge.net
+# Also requires GNU make, which you can download from the same sites.
 # Get missing libraries from http://gnuwin32.sf.net.
 #
 # Tested on Win32 NT 4 and Win95.
 #
-# To make everything, just 'make -f Make_ming.mak'
-# To make just e.g. gvim.exe, 'make -f Make_ming.mak gvim.exe'
-# After a run, you can 'make -f Make_ming.mak clean' to clean up
+# To make everything, just 'make -f Make_ming.mak'.
+# To make just e.g. gvim.exe, 'make -f Make_ming.mak gvim.exe'.
+# After a run, you can 'make -f Make_ming.mak clean' to clean up.
 #
 # NOTE: Sometimes 'GNU Make' will stop after building vimrun.exe -- I think
 # it's just run out of memory or something.  Run again, and it will continue
@@ -20,8 +21,8 @@
 # "make mpress" uses the MPRESS compressor for 32- and 64-bit EXEs:
 #     http://www.matcode.com/mpress.htm
 #
-# Maintained by Ron Aaron <ronaharon@yahoo.com>
-# updated 2003 Jan 20
+# Maintained by Ron Aaron <ronaharon@yahoo.com> et al.
+# Updated 2012 Sep 5.
 
 #>>>>> choose options:
 # set to yes for a debug build
@@ -31,32 +32,33 @@ OPTIMIZE=MAXSPEED
 # set to yes to make gvim, no for vim
 GUI=yes
 # FEATURES=[TINY | SMALL  | NORMAL | BIG | HUGE]
-# set to TINY to make minimal version (few features)
+# Set to TINY to make minimal version (few features).
 FEATURES=BIG
-# set to one of i386, i486, i586, i686 as the minimum target processor
+# Set to one of i386, i486, i586, i686 as the minimum target processor.
+# For amd64/x64 architecture set ARCH=x86-64 .
 ARCH=i386
-# set to yes to cross-compile from unix; no=native Windows
+# Set to yes to cross-compile from unix; no=native Windows.
 CROSS=no
-# set to path to iconv.h and libiconv.a to enable using 'iconv.dll'
+# Set to path to iconv.h and libiconv.a to enable using 'iconv.dll'.
 #ICONV="."
 ICONV=yes
 GETTEXT=yes
-# set to yes to include multibyte support
+# Set to yes to include multibyte support.
 MBYTE=yes
-# set to yes to include IME support
+# Set to yes to include IME support.
 IME=yes
 DYNAMIC_IME=yes
-# set to yes to enable writing a postscript file with :hardcopy
+# Set to yes to enable writing a postscript file with :hardcopy.
 POSTSCRIPT=no
-# set to yes to enable OLE support
+# Set to yes to enable OLE support.
 OLE=no
-# Set the default $(WINVER) to make it work with pre-Win2k
+# Set the default $(WINVER) to make it work with pre-Win2k.
 ifndef WINVER
 WINVER = 0x0500
 endif
-# Set to yes to enable Cscope support
+# Set to yes to enable Cscope support.
 CSCOPE=yes
-# Set to yes to enable Netbeans support
+# Set to yes to enable Netbeans support.
 NETBEANS=$(GUI)
 
 
@@ -431,11 +433,32 @@ endif
 endif
 endif
 
-ifdef XPM
 # Only allow XPM for a GUI build.
 ifeq (yes, $(GUI))
-CFLAGS += -DFEAT_XPM_W32 -I $(XPM)/include
+
+ifndef XPM
+ifeq ($(ARCH),i386)
+XPM = xpm/x86
 endif
+ifeq ($(ARCH),i486)
+XPM = xpm/x86
+endif
+ifeq ($(ARCH),i586)
+XPM = xpm/x86
+endif
+ifeq ($(ARCH),i686)
+XPM = xpm/x86
+endif
+ifeq ($(ARCH),x86-64)
+XPM = xpm/x64
+endif
+endif
+ifdef XPM
+ifneq ($(XPM),no)
+CFLAGS += -DFEAT_XPM_W32 -I $(XPM)/include -I $(XPM)/../include
+endif
+endif
+
 endif
 
 ifeq ($(DEBUG),yes)
@@ -565,10 +588,10 @@ TARGET := gvim$(DEBUG_SUFFIX).exe
 DEFINES += $(DEF_GUI)
 OBJ += $(GUIOBJ)
 LFLAGS += -mwindows
-OUTDIR = gobj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)
+OUTDIR = gobj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)$(ARCH)
 else
 TARGET := vim$(DEBUG_SUFFIX).exe
-OUTDIR = obj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)
+OUTDIR = obj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)$(ARCH)
 endif
 
 ifdef GETTEXT
