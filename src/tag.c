@@ -1443,6 +1443,8 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
 	orgpat.len = p_tl;
 
     prepare_pats(&orgpat, has_re);
+    if (has_re && orgpat.regmatch.regprog == NULL)
+	goto findtag_end;
 
 #ifdef FEAT_TAG_BINS
     /* This is only to avoid a compiler warning for using search_info
