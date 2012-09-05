@@ -38,10 +38,18 @@ Vim(put):E684:
 Vim(python):E725:
 Vim(python):E117:
 [0.0, 0.0]
+IndexError
+TypeError
+TypeError
+ValueError
+TypeError
+TypeError
 [0, 1, 2]
 ['a', 'b']
 ['c', 1]
 ['d', ['e']]
-Vim(let):E858:
-Vim(let):E859:
 0.0
+"\0":	Vim(let):E859:
+{"\0": 1}:	Vim(let):E859:
+undefined_name:	Vim(let):E858:
+vim:	Vim(let):E859:
