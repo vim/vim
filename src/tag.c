@@ -1797,7 +1797,7 @@ line_read_in:
 	     */
 	    if (state == TS_START)
 	    {
-		if (STRNCMP(lbuf, "!_TAG_", 6) <= 0)
+		if (STRNCMP(lbuf, "!_TAG_", 6) == 0)
 		{
 		    /*
 		     * Read header line.
