@@ -74,7 +74,7 @@ static struct PyMethodDef OutputMethods[] = {
     static PyObject *
 OutputWrite(PyObject *self, PyObject *args)
 {
-    Py_ssize_t len;
+    Py_ssize_t len = 0;
     char *str = NULL;
     int error = ((OutputObject *)(self))->error;
 

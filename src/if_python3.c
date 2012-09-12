@@ -42,8 +42,6 @@
 # undef _DEBUG
 #endif
 
-#define PY_SSIZE_T_CLEAN
-
 #ifdef F_BLANK
 # undef F_BLANK
 #endif
@@ -65,6 +63,10 @@
 #endif
 #undef main /* Defined in python.h - aargh */
 #undef HAVE_FCNTL_H /* Clash with os_win32.h */
+
+#if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02050000
+# define PY_SSIZE_T_CLEAN
+#endif
 
 static void init_structs(void);
 
@@ -328,7 +330,13 @@ static struct
     {"PySys_SetArgv", (PYTHON_PROC*)&py3_PySys_SetArgv},
     {"Py_SetPythonHome", (PYTHON_PROC*)&py3_Py_SetPythonHome},
     {"Py_Initialize", (PYTHON_PROC*)&py3_Py_Initialize},
+#ifndef PY_SSIZE_T_CLEAN
     {"PyArg_ParseTuple", (PYTHON_PROC*)&py3_PyArg_ParseTuple},
+    {"Py_BuildValue", (PYTHON_PROC*)&py3_Py_BuildValue},
+#else
+    {"_PyArg_ParseTuple_SizeT", (PYTHON_PROC*)&py3_PyArg_ParseTuple},
+    {"_Py_BuildValue_SizeT", (PYTHON_PROC*)&py3_Py_BuildValue},
+#endif
     {"PyMem_Free", (PYTHON_PROC*)&py3_PyMem_Free},
     {"PyMem_Malloc", (PYTHON_PROC*)&py3_PyMem_Malloc},
     {"PyList_New", (PYTHON_PROC*)&py3_PyList_New},
@@ -364,7 +372,6 @@ static struct
     {"PyObject_GetIter", (PYTHON_PROC*)&py3_PyObject_GetIter},
     {"PyLong_FromLong", (PYTHON_PROC*)&py3_PyLong_FromLong},
     {"PyDict_New", (PYTHON_PROC*)&py3_PyDict_New},
-    {"Py_BuildValue", (PYTHON_PROC*)&py3_Py_BuildValue},
     {"PyType_Ready", (PYTHON_PROC*)&py3_PyType_Ready},
     {"PyDict_SetItemString", (PYTHON_PROC*)&py3_PyDict_SetItemString},
     {"PyLong_AsLong", (PYTHON_PROC*)&py3_PyLong_AsLong},

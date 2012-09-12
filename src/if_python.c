@@ -44,8 +44,6 @@
 # undef _XOPEN_SOURCE	/* pyconfig.h defines it as well. */
 #endif
 
-#define PY_SSIZE_T_CLEAN
-
 #include <Python.h>
 #if defined(MACOS) && !defined(MACOS_X_UNIX)
 # include "macglue.h"
@@ -53,6 +51,10 @@
 #endif
 #undef main /* Defined in python.h - aargh */
 #undef HAVE_FCNTL_H /* Clash with os_win32.h */
+
+#if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02050000
+# define PY_SSIZE_T_CLEAN
+#endif
 
 static void init_structs(void);
 
@@ -358,8 +360,15 @@ static struct
     PYTHON_PROC *ptr;
 } python_funcname_table[] =
 {
+#ifndef PY_SSIZE_T_CLEAN
     {"PyArg_Parse", (PYTHON_PROC*)&dll_PyArg_Parse},
     {"PyArg_ParseTuple", (PYTHON_PROC*)&dll_PyArg_ParseTuple},
+    {"Py_BuildValue", (PYTHON_PROC*)&dll_Py_BuildValue},
+#else
+    {"_PyArg_Parse_SizeT", (PYTHON_PROC*)&dll_PyArg_Parse},
+    {"_PyArg_ParseTuple_SizeT", (PYTHON_PROC*)&dll_PyArg_ParseTuple},
+    {"_Py_BuildValue_SizeT", (PYTHON_PROC*)&dll_Py_BuildValue},
+#endif
     {"PyMem_Free", (PYTHON_PROC*)&dll_PyMem_Free},
     {"PyMem_Malloc", (PYTHON_PROC*)&dll_PyMem_Malloc},
     {"PyDict_SetItemString", (PYTHON_PROC*)&dll_PyDict_SetItemString},
@@ -422,7 +431,6 @@ static struct
     {"PySys_SetArgv", (PYTHON_PROC*)&dll_PySys_SetArgv},
     {"PyType_Type", (PYTHON_PROC*)&dll_PyType_Type},
     {"PyType_Ready", (PYTHON_PROC*)&dll_PyType_Ready},
-    {"Py_BuildValue", (PYTHON_PROC*)&dll_Py_BuildValue},
     {"Py_FindMethod", (PYTHON_PROC*)&dll_Py_FindMethod},
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02050000 \
 	&& SIZEOF_SIZE_T != SIZEOF_INT
