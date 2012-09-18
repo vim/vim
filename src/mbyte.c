@@ -3793,13 +3793,15 @@ mb_charlen_len(str, len)
 mb_unescape(pp)
     char_u **pp;
 {
-    static char_u	buf[MB_MAXBYTES + 1];
-    int			n, m = 0;
+    static char_u	buf[6];
+    int			n;
+    int			m = 0;
     char_u		*str = *pp;
 
     /* Must translate K_SPECIAL KS_SPECIAL KE_FILLER to K_SPECIAL and CSI
-     * KS_EXTRA KE_CSI to CSI. */
-    for (n = 0; str[n] != NUL && m <= MB_MAXBYTES; ++n)
+     * KS_EXTRA KE_CSI to CSI.
+     * Maximum length of a utf-8 character is 4 bytes. */
+    for (n = 0; str[n] != NUL && m < 4; ++n)
     {
 	if (str[n] == K_SPECIAL
 		&& str[n + 1] == KS_SPECIAL
@@ -3836,6 +3838,10 @@ mb_unescape(pp)
 	    *pp = str + n + 1;
 	    return buf;
 	}
+
+	/* Bail out quickly for ASCII. */
+	if (buf[0] < 128)
+	    break;
     }
     return NULL;
 }
