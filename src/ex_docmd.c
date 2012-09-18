@@ -6466,7 +6466,7 @@ ex_colorscheme(eap)
 #endif
     }
     else if (load_colors(eap->arg) == FAIL)
-	EMSG2(_("E185: Cannot find color scheme %s"), eap->arg);
+	EMSG2(_("E185: Cannot find color scheme '%s'"), eap->arg);
 }
 
     static void
