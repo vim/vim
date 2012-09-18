@@ -395,6 +395,9 @@ MSVCVER = 10.0
 !if "$(_NMAKE_VER)" == "10.00.30319.01"
 MSVCVER = 10.0
 !endif
+!if "$(_NMAKE_VER)" == "11.00.50727.1"
+MSVCVER = 11.0
+!endif
 !endif
 
 # Abort bulding VIM if version of VC is unrecognised.
@@ -409,7 +412,7 @@ MSVCVER = 10.0
 !endif
 
 # Convert processor ID to MVC-compatible number
-!if ("$(MSVCVER)" != "8.0") && ("$(MSVCVER)" != "9.0") && ("$(MSVCVER)" != "10.0")
+!if ("$(MSVCVER)" != "8.0") && ("$(MSVCVER)" != "9.0") && ("$(MSVCVER)" != "10.0") && ("$(MSVCVER)" != "11.0")
 !if "$(CPUNR)" == "i386"
 CPUARG = /G3
 !elseif "$(CPUNR)" == "i486"
@@ -443,7 +446,7 @@ OPTFLAG = /O2
 OPTFLAG = /Ox
 !endif
 
-!if ("$(MSVCVER)" == "8.0") || ("$(MSVCVER)" == "9.0") || ("$(MSVCVER)" == "10.0")
+!if ("$(MSVCVER)" == "8.0") || ("$(MSVCVER)" == "9.0") || ("$(MSVCVER)" == "10.0") || ("$(MSVCVER)" == "11.0")
 # Use link time code generation if not worried about size
 !if "$(OPTIMIZE)" != "SPACE"
 OPTFLAG = $(OPTFLAG) /GL
