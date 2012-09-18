@@ -178,6 +178,9 @@ static void ruby_vim_init(void);
 #define rb_hash_new			dll_rb_hash_new
 #define rb_inspect			dll_rb_inspect
 #define rb_int2inum			dll_rb_int2inum
+#define rb_fix2int			dll_rb_fix2int
+#define rb_num2int			dll_rb_num2int
+#define rb_num2uint			dll_rb_num2uint
 #define rb_lastline_get			dll_rb_lastline_get
 #define rb_lastline_set			dll_rb_lastline_set
 #define rb_load_protect			dll_rb_load_protect
@@ -268,7 +271,9 @@ static VALUE (*dll_rb_hash_aset) (VALUE, VALUE, VALUE);
 static VALUE (*dll_rb_hash_new) (void);
 static VALUE (*dll_rb_inspect) (VALUE);
 static VALUE (*dll_rb_int2inum) (long);
-static VALUE (*dll_rb_int2inum) (long);
+static long (*dll_rb_fix2int) (VALUE);
+static long (*dll_rb_num2int) (VALUE);
+static unsigned long (*dll_rb_num2uint) (VALUE);
 static VALUE (*dll_rb_lastline_get) (void);
 static void (*dll_rb_lastline_set) (VALUE);
 static void (*dll_rb_load_protect) (VALUE, int, int*);
@@ -377,6 +382,9 @@ static struct
     {"rb_hash_new", (RUBY_PROC*)&dll_rb_hash_new},
     {"rb_inspect", (RUBY_PROC*)&dll_rb_inspect},
     {"rb_int2inum", (RUBY_PROC*)&dll_rb_int2inum},
+    {"rb_fix2int", (RUBY_PROC*)&dll_rb_fix2int},
+    {"rb_num2int", (RUBY_PROC*)&dll_rb_num2int},
+    {"rb_num2uint", (RUBY_PROC*)&dll_rb_num2uint},
     {"rb_lastline_get", (RUBY_PROC*)&dll_rb_lastline_get},
     {"rb_lastline_set", (RUBY_PROC*)&dll_rb_lastline_set},
     {"rb_load_protect", (RUBY_PROC*)&dll_rb_load_protect},
