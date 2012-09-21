@@ -93,7 +93,7 @@ Details
       This is also the keymap when 'keymap=hebrew' is set.  The advantage of
       'keymap' is that it works properly when using UTF8, e.g. it inserts the
       correct characters; 'hkmap' does not.  The 'keymap' keyboard can also
-      insert niqud and te`amim.  To see what those mappings are,look at the
+      insert niqud and te`amim.  To see what those mappings are, look at the
       keymap file 'hebrew.vim' etc.
 
 

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 Aug 02
+" Last Change:	2012 Sep 06
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1771,6 +1771,10 @@ func! SetFileTypeSH(name)
   elseif a:name =~ '\<tcsh\>'
     " Some .sh scripts contain #!/bin/tcsh.
     call SetFileTypeShell("tcsh")
+    return
+  elseif a:name =~ '\<zsh\>'
+    " Some .sh scripts contain #!/bin/zsh.
+    call SetFileTypeShell("zsh")
     return
   elseif a:name =~ '\<ksh\>'
     let b:is_kornshell = 1

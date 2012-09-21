@@ -159,6 +159,26 @@ vim.bindeval(str)					*python-bindeval*
 	   vimlist or vimdictionary python type that are connected to original 
 	   list or dictionary. Thus modifications to these objects imply 
 	   modifications of the original.
+
+	   Additionally, vimlist and vimdictionary type have read-write 
+	   `.locked` attribute that returns
+	     Value           Meaning ~
+	     zero            Variable is not locked
+	     vim.VAR_LOCKED  Variable is locked, but can be unlocked
+	     vim.VAR_FIXED   Variable is locked and can’t be unlocked
+	   integer constants. If variable is not fixed, you can do 
+	   `var.locked=True` to lock it and `var.locked=False` to unlock. 
+	   There is no recursive locking like |:lockvar|! does. There is also 
+	   no way to lock a specific key or check whether it is locked (in any 
+	   case these locks are ignored by anything except |:let|: |extend()| 
+	   does not care, neither does python interface).
+
+	   Vimdictionary type also supports `.scope` attribute which is one of
+	     Value              Meaning ~
+	     zero               Dictionary is not a scope one
+	     vim.VAR_DEF_SCOPE  Function-local or global scope dictionary
+	     vim.VAR_SCOPE      Other scope dictionary
+
 	2. if expression evaluates to a function reference, then it returns 
 	   callable vimfunction object. Use self keyword argument to assign 
 	   |self| object for dictionary functions.

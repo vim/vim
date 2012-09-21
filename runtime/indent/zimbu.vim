@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	Zimbu
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2011 Jun 19
+" Last Change:	2012 Sep 08
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -101,7 +101,7 @@ func GetZimbuIndent(lnum)
     endwhile
   endif
 
-  if prevline =~ '^\s*\(IF\|\|ELSEIF\|ELSE\|GENERATE_IF\|\|GENERATE_ELSEIF\|GENERATE_ELSE\|WHILE\|REPEAT\|TRY\|CATCH\|FINALLY\|FOR\|DO\|SWITCH\|CASE\|DEFAULT\|FUNC\|VIRTUAL\|ABSTRACT\|DEFINE\|REPLACE\|FINAL\|PROC\|MAIN\|NEW\|ENUM\|CLASS\|BITS\|MODULE\|SHARED\)\>'
+  if prevline =~ '^\s*\(IF\|\|ELSEIF\|ELSE\|GENERATE_IF\|\|GENERATE_ELSEIF\|GENERATE_ELSE\|WHILE\|REPEAT\|TRY\|CATCH\|FINALLY\|FOR\|DO\|SWITCH\|CASE\|DEFAULT\|FUNC\|VIRTUAL\|ABSTRACT\|DEFINE\|REPLACE\|FINAL\|PROC\|MAIN\|NEW\|ENUM\|CLASS\|INTERFACE\|BITS\|MODULE\|SHARED\)\>'
     let plindent += &sw
   endif
   if thisline =~ '^\s*\(}\|ELSEIF\>\|ELSE\>\|CATCH\|FINALLY\|GENERATE_ELSEIF\>\|GENERATE_ELSE\>\|UNTIL\>\)'

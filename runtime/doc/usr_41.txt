@@ -1681,7 +1681,7 @@ in your plugin file!
 HEADER
 
 You will probably add new corrections to the plugin and soon have several
-versions laying around.  And when distributing this file, people will want to
+versions lying around.  And when distributing this file, people will want to
 know who wrote this wonderful plugin and where they can send remarks.
 Therefore, put a header at the top of your plugin: >
 

@@ -1,7 +1,7 @@
 " Vim tutor support file
 " Author: Eduardo F. Amatria <eferna1@platea.pntic.mec.es>
 " Maintainer: Bram Moolenaar
-" Last Change:	2008 Jul 21
+" Last Change:	2012 Sep 21
 
 " This Vim script is used for detecting if a translation of the
 " tutor file exist, i.e., a tutor.xx file, where xx is the language.
@@ -72,14 +72,20 @@ if s:ext =~? '\.ko'
   endif
 endif
 
-" The Chinese tutor is available in two encodings, guess which one to use
+" The Chinese tutor is available in three encodings, guess which one to use
 " This segment is from the above lines and modified by
 " Mendel L Chan <beos@turbolinux.com.cn> for Chinese vim tutorial
+" When 'encoding' is utf-8, choose between China (simplified) and Taiwan
+" (traditional) based on the language, suggested by Alick Zhao.
 if s:ext =~? '\.zh'
   if &enc =~ 'big5\|cp950'
     let s:ext = ".zh.big5"
   elseif &enc != 'utf-8'
     let s:ext = ".zh.euc"
+  elseif s:ext =~? 'zh_tw' || (exists("s:lang") && s:lang =~? 'zh_tw')
+    let s:ext = ".zh_tw"
+  else
+    let s:ext = ".zh_cn"
   endif
 endif
 

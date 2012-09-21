@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Aug 15
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Sep 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,6 +36,9 @@ not be repeated below, unless there is extra information.
 
 Go through more coverity reports.
 
+Ruby problem, patch in issue 49. (Sep 19)
+Also in email from Ondruch?
+
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
 GTK: problem with 'L' in 'guioptions' changing the window width.
@@ -43,11 +46,34 @@ GTK: problem with 'L' in 'guioptions' changing the window width.
 
 Checking runtime scripts: Thilo Six, 2012 Jun 6.
 
+Crash with 1023 byte directory name. (Danek Duvall, 2012 Sep 19)
+
+Patch for SGR mouse with older xterm. (Hayaki Saito, 2012 Sep 19)
+
+Patch for crash with an autocommand. (ZyX, 2012 Sep 6, second one)
+Also patch for garbage, but use vim_strncpy() instead.
+
+Patch to fix crash on Win32 when setting 'encoding'. (Jiri Sedlak, 2012 Sep
+12)
+
+Patch to update example using empty(). (ZyX, 2012 Sep 13)
+
 Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
+
+Updated French and Esperanto files. (Dominique Pelle, 2012 Aug 19)
+
+When showing diffs filler lines may be hidden at first.
+Patch by Christian Brabandt, 2012 Sep 6.
+
+Patch for memory leaks on exception. (ZyX, 2012 Sep 9)
 
 The CompleteDone autocommand needs some info passed to it:
 - The word that was selected (empty if abandoned complete)
 - Type of completion: tag, omnifunc, user func.
+
+mouse_sgr is not ordered alphabetically in :version output.
+Docs list mouse_urxvt as normal feature, should be big. (Hayaki Saito, 2012
+Aug 16)
 
 ":gundo" command: global undo.  Undoes changes spread over multiple files in
 the order they were made.  Also ":gredo".  Both with a count.  Useful when
@@ -57,26 +83,44 @@ Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
 
+Patch for IME handling, adds 'imactivatefunc' and 'imstatusfunc' option.
+(Yukihiro Nakadaira, 2012 Aug 16)
+Patch to improve IME handling. (Yasuhiro Matsumoto, 2012 Jul 18)
+
 Issue 54: document behavior of -complete, also expands arg.
+
+Patch for if_lua. (Luis Carvalho, 2012 Aug 26, update Aug 29, another Aug 30,
+then Sep 1)
 
 Issue 72: 'autochdir' causes problems for :vimgrep.
 
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
 
+Win32: patch for current directory, "loading iof conv". (Ken Takata, 2012 Sep
+15)
+
 Syntax update problem in one buffer opened in two windows, bottom window is
 not correctly updated. (Paul Harris, 2012 Feb 27)
+
+Patch to add assignments in cscope. (Uli Meis, Estabrooks, 2012 Sep 1)
+Alternate patch by Gary Johnson, Sep 4.
 
 Patch to add getsid(). (Tyru, 2011 Oct 2)  Do we want this?  Update Oct 4.
 Or use expand('<sid>')?
 
-Patch to improve IME handling. (Yasuhiro Matsumoto, 2012 Jul 18)
-
 Patch for :tabcloseleft, after closing a tab go to left tab. (William Bowers,
 2012 Aug 4)
 
+Patch for Tab behavior with 'conceal'. (Dominique Pelle, 2012 Mar 18)
+Patch to test functionality of 'conceal' with tabs. (Simon Ruderich, 2012 Sep
+5)  Update with screencol() and screenrow() functions: Sep 7.
+
 Crash in autocmd that unloads buffers in a BufUnload event. (Andrew Pimlott,
 2012 Aug 11)  Disallow :new when BufUnload is being handled?
+
+MS-Windows ACL support doesn't work well.  Patch from Ken Takata, 2012 Aug 29.
+Update Aug 31.
 
 MS-Windows resizing problems:
 - Windows window on screen positioning: Patch by Yukihiro Nakadaira, 2012 Jun
@@ -94,6 +138,9 @@ The input map for CTRL-O in mswin.vim causes problems after CTRL-X CTRL-O.
 Suggestion for another map. (Philip Mat, 2012 Jun 18)
 But use "gi" instead of "a".  Or use CTRL-\ CTRL-O.
 
+Patch to support user name completion on MS-Windows. (Yasuhiro Matsumoto, 2012
+Aug 16)
+
 URXVT:
 - will get stuck if byte sequence does not containe expected semicolon.
 - Use urxvt mouse support also in xterm.  Explanations:
@@ -108,16 +155,22 @@ Do give the prompt? Quit with an error?
 
 Patch for 'backupcopy' default behavior for symlinks on Windows. (David Pope,
 2012 Mar 21, update Mar 31)
+With fix for memory leak: Ken Takata, 2012 Aug 24
 
 Patch to list user digraphs. (Christian Brabandt, 2012 Apr 14)
 
 Patch for input method status. (Hirohito Higashi, 2012 Apr 18)
+
+Patch to print the result of a :python command. (Maxim Philippov
+<philippovmi@gmail.com>, 2012 Aug 16)  Update Aug 17.
 
 Problem with winfixheight and resizing. (Yukihiro Nakadaira, 2011 Sep 17)
 Patch Sep 18.
 
 Patch for IME problems. Remove hacking code for old IM. (Yukihiro Nakadaira,
 2012 Jul 20)
+
+/[^\n] does match at a line break.  Expected to do the same as /.
 
 Patch for has('unnamedplus') docs. (Tony Mechelynck, 2011 Sep 27)
 And one for gui_x11.txt.
@@ -161,9 +214,6 @@ Patch to add ":py3do". (Lilydjwg, 2012 Apr 7)
 (Yukihiro Nakadaira, 2011 Dec 9)
 
 Plugin for Modeleasy. (Massimiliano Tripoli, 2011 Nov 29)
-
-When using remote-silent the -R flag is not passed on. (Axel Bender, 2012 May
-31)
 
 Updated syntax file for ssh_config, maintainer doesn't respond.
 (Leonard Ehrenfried, 2011 Sep 26)
@@ -725,10 +775,6 @@ Support a 'systemencoding' option (for Unix).  It specifies the encoding of
 file names. (Kikuchan, 2010 Oct 5).  Useful on a latin1 or double-byte Asian
 system when 'encoding' is "utf-8".
 
-Win32: A --remote command that has a directory name starting with a ( doesn't
-work, the backslash is removed, assuming that it escapes the (. (Valery
-Kondakoff, 2009 May 13)
-
 Win32 GUI: Changing manifest helps for dpi changes (Joe Castro, 2009 Mar 27)
 
 Win32 GUI: last message from startup doesn't show up when there is an echoerr
@@ -914,6 +960,15 @@ escaping characters where the backslash is not removed later.  Asked Chris for
 an alternate solution, also for src/ex_getln.c.
 This also fails when the file or directory name contains "%". (Thoml, 2008
 July 7)
+Using --remote-silent while the current directory has a # in the name does not
+work, the # needs to be escaped. (Tramblay Bruno, 2012 Sep 15)
+
+When using remote-silent the -R flag is not passed on. (Axel Bender, 2012 May
+31)
+
+Win32: A --remote command that has a directory name starting with a ( doesn't
+work, the backslash is removed, assuming that it escapes the (. (Valery
+Kondakoff, 2009 May 13)
 
 Problem with 'langmap' being used on the rhs of a mapping. (Nikolai Weibull,
 2008 May 14)

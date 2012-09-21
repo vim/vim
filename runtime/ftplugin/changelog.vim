@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:         generic Changelog file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2011-05-02
+" Latest Revision:  2012-08-23
 " Variables:
 "   g:changelog_timeformat (deprecated: use g:changelog_dateformat instead) -
 "       description: the timeformat used in ChangeLog entries.
@@ -106,10 +106,10 @@ if &filetype == 'changelog'
 
   function! s:passwd_field(line, field)
     let fields = split(a:line, ':', 1)
-    if len(fields) < field
+    if len(fields) < a:field
       return ""
     endif
-    return fields[field - 1]
+    return fields[a:field - 1]
   endfunction
 
   function! s:capitalize(word)

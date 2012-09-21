@@ -66,7 +66,7 @@ position.
 			lines as used for the last Visual operation, but at
 			the current cursor position, multiplied by [count].
 			When the previous Visual operation was on a block both
-			the width and height of the block are multipiled by
+			the width and height of the block are multiplied by
 			[count].
 			When there was no previous Visual operation [count]
 			characters are selected.  This is like moving the

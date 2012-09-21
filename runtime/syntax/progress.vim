@@ -3,20 +3,20 @@
 " Filename extensions:	*.p (collides with Pascal),
 "			*.i (collides with assembler)
 "			*.w (collides with cweb)
-" Maintainer:		Philip Uren	    <philuSPAX@ieee.org> Remove SPAX spam block
-" Contributors:         Chris Ruprecht	    <chris@ruprecht.org>
-"			Philip Uren	    <philu@computer.org>
-"			Mikhail Kuperblum   <mikhail@whasup.com>
-"			John Florian	    <jflorian@voyager.net>
-" Version:              11
-" Last Change:		May 11 2012
+" Maintainer:		Philip Uren	<philuSPAX@ieee.org> Remove SPAX spam block
+" Contributors:         Chris Ruprecht	<chris@ruprecht.org>
+"					Philip Uren		<philu@computer.org>
+"					Mikhail Kuperblum	<mikhail@whasup.com>
+"					John Florian		<jflorian@voyager.net>
+" Version:              12
+" Last Change:		Aug 16 2012
 
 " For version 5.x: Clear all syntax item
 " For version 6.x: Quit when a syntax file was already loaded
 if version < 600
-    syntax clear
+	syntax clear
 elseif exists("b:current_syntax")
-    finish
+	finish
 endif
 
 let s:cpo_save = &cpo
@@ -34,7 +34,7 @@ set expandtab
 syn case ignore
 
 " Progress Blocks of code and mismatched "end." errors.
-syn match   ProgressEndError	    "\<end\>"
+syn match   ProgressEndError		"\<end\>"
 syn region ProgressDoBlock transparent matchgroup=ProgressDo start="\<do\>" matchgroup=ProgressDo end="\<end\>" contains=ALLBUT,ProgressProcedure,ProgressFunction
 syn region ProgressForBlock transparent matchgroup=ProgressFor start="\<for\>" matchgroup=ProgressFor end="\<end\>" contains=ALLBUT,ProgressProcedure,ProgressFunction
 syn region ProgressRepeatBlock transparent matchgroup=ProgressRepeat start="\<repeat\>" matchgroup=ProgressRepeat end="\<end\>" contains=ALLBUT,ProgressProcedure,ProgressFunction
@@ -44,20 +44,20 @@ syn region ProgressCaseBlock transparent matchgroup=ProgressCase start="\<case\>
 " and they could go in ProgressReserved,
 " but I found it more helpful to highlight them in a different color.
 syn keyword ProgressConditional	if else then when otherwise
-syn keyword ProgressFor		    each where
+syn keyword ProgressFor				each where
 
 " Make those TODO and debugging notes stand out!
-syn keyword ProgressTodo	    contained	TODO BUG FIX
-syn keyword ProgressDebug	    contained	DEBUG
+syn keyword ProgressTodo			contained	TODO BUG FIX
+syn keyword ProgressDebug			contained	DEBUG
 syn keyword ProgressDebug			debugger
 
 " If you like to highlight the whole line of
 " the start and end of procedures
 " to make the whole block of code stand out:
-syn match ProgressProcedure	"^\s*procedure.*"
-syn match ProgressProcedure	"^\s*end\s\s*procedure.*"
-syn match ProgressFunction	"^\s*function.*"
-syn match ProgressFunction	"^\s*end\s\s*function.*"
+syn match ProgressProcedure		"^\s*procedure.*"
+syn match ProgressProcedure		"^\s*end\s\s*procedure.*"
+syn match ProgressFunction		"^\s*function.*"
+syn match ProgressFunction		"^\s*end\s\s*function.*"
 " ... otherwise use this:
 " syn keyword ProgressFunction	procedure function
 
@@ -99,14 +99,14 @@ syn keyword ProgressReserved	window-maxim[ized] window-minim[ized] window-normal
 " Strings. Handles embedded quotes.
 " Note that, for some reason, Progress doesn't use the backslash, "\"
 " as the escape character; it uses tilde, "~".
-syn region ProgressString   matchgroup=ProgressQuote	start=+"+ end=+"+   skip=+\~'\|\~\~+
-syn region ProgressString   matchgroup=ProgressQuote	start=+'+ end=+'+   skip=+\~'\|\~\~+
+syn region ProgressString	matchgroup=ProgressQuote	start=+"+ end=+"+	skip=+\~'\|\~\~+ contains=@Spell
+syn region ProgressString	matchgroup=ProgressQuote	start=+'+ end=+'+	skip=+\~'\|\~\~+ contains=@Spell
 
 syn match  ProgressIdentifier		"\<[a-zA-Z_][a-zA-Z0-9_]*\>()"
 
 " syn match  ProgressDelimiter		"()"
 
-syn match  ProgressMatrixDelimiter  "[][]"
+syn match  ProgressMatrixDelimiter	"[][]"
 " If you prefer you can highlight the range:
 "syn match  ProgressMatrixDelimiter	"[\d\+\.\.\d\+]"
 
@@ -114,7 +114,7 @@ syn match  ProgressNumber		"\<\-\=\d\+\(u\=l\=\|lu\|f\)\>"
 syn match  ProgressByte			"\$[0-9a-fA-F]\+"
 
 " More values: Logicals, and Progress's unknown value, ?.
-syn match   ProgressNumber		"?"
+syn match   ProgressNumber				"?"
 syn keyword ProgressNumber		true false yes no
 
 " If you don't like tabs:
@@ -123,9 +123,9 @@ syn match ProgressShowTab "\t"
 " If you don't like white space on the end of lines, uncomment this:
 " syn match   ProgressSpaceError "\s\+$"
 
-syn region ProgressComment	start="/\*"  end="\*/" contains=ProgressComment,ProgressTodo,ProgressDebug
-syn region ProgressInclude	start="^[   ]*[{]" end="[}]" contains=ProgressPreProc,ProgressOperator,ProgressString,ProgressComment
-syn region ProgressPreProc	start="&" end="\>" contained
+syn region ProgressComment		start="/\*"  end="\*/" contains=ProgressComment,ProgressTodo,ProgressDebug,@Spell
+syn region ProgressInclude		start="^[ 	]*[{]" end="[}]" contains=ProgressPreProc,ProgressOperator,ProgressString,ProgressComment
+syn region ProgressPreProc		start="&" end="\>" contained
 
 " This next line works reasonably well.
 " syn match ProgressOperator        "[!;|)(:.><+*=-]"
@@ -277,7 +277,7 @@ syn keyword ProgressOperator	write-fragment write-message write-processing-instr
 syn keyword ProgressOperator	xml-data-type xml-node-name xml-node-type xml-schema-pat[h] xml-suppress-namespace-processing y y-of year year-offset yes-no
 syn keyword ProgressOperator	yes-no-cancel
 
-syn keyword ProgressType    char[acter] int[eger] int64 dec[imal] log[ical] da[te] datetime datetime-tz
+syn keyword ProgressType	char[acter] int[eger] int64 dec[imal] log[ical] da[te] datetime datetime-tz
 
 syn sync lines=800
 
@@ -285,40 +285,40 @@ syn sync lines=800
 " For version 5.7 and earlier: only when not done already
 " For version 5.8 and later: only when an item doesn't have highlighting yet
 if version >= 508 || !exists("did_progress_syntax_inits")
-    if version < 508
-	let did_progress_syntax_inits = 1
-	command -nargs=+ HiLink hi link <args>
-    else
-	command -nargs=+ HiLink hi def link <args>
-    endif
+	if version < 508
+		let did_progress_syntax_inits = 1
+		command -nargs=+ HiLink hi link <args>
+	else
+		command -nargs=+ HiLink hi def link <args>
+	endif
 
-    " The default methods for highlighting. Can be overridden later.
-    HiLink ProgressByte		    Number
-    HiLink ProgressCase		    Repeat
-    HiLink ProgressComment	    Comment
-    HiLink ProgressConditional	    Conditional
-    HiLink ProgressDebug		Debug
-    HiLink ProgressDo			Repeat
-    HiLink ProgressEndError	    Error
-    HiLink ProgressFor		    Repeat
-    HiLink ProgressFunction	    Procedure
-    HiLink ProgressIdentifier		Identifier
-    HiLink ProgressInclude	    Include
-    HiLink ProgressMatrixDelimiter  Identifier
-    HiLink ProgressNumber		Number
-    HiLink ProgressOperator	    Operator
-    HiLink ProgressPreProc	    PreProc
-    HiLink ProgressProcedure		Procedure
-    HiLink ProgressQuote		Delimiter
-    HiLink ProgressRepeat		Repeat
-    HiLink ProgressReserved	    Statement
-    HiLink ProgressSpaceError		Error
-    HiLink ProgressString		String
-    HiLink ProgressTodo		    Todo
-    HiLink ProgressType		    Statement
-    HiLink ProgressShowTab	    Error
+	" The default methods for highlighting. Can be overridden later.
+	HiLink ProgressByte		Number
+	HiLink ProgressCase		Repeat
+	HiLink ProgressComment		Comment
+	HiLink ProgressConditional	Conditional
+	HiLink ProgressDebug		Debug
+	HiLink ProgressDo		Repeat
+	HiLink ProgressEndError		Error
+	HiLink ProgressFor		Repeat
+	HiLink ProgressFunction		Procedure
+	HiLink ProgressIdentifier	Identifier
+	HiLink ProgressInclude		Include
+	HiLink ProgressMatrixDelimiter	Identifier
+	HiLink ProgressNumber		Number
+	HiLink ProgressOperator		Operator
+	HiLink ProgressPreProc		PreProc
+	HiLink ProgressProcedure	Procedure
+	HiLink ProgressQuote		Delimiter
+	HiLink ProgressRepeat		Repeat
+	HiLink ProgressReserved		Statement
+	HiLink ProgressSpaceError	Error
+	HiLink ProgressString		String
+	HiLink ProgressTodo		Todo
+	HiLink ProgressType		Statement
+	HiLink ProgressShowTab		Error
 
-    delcommand HiLink
+	delcommand HiLink
 endif
 
 let b:current_syntax = "progress"
@@ -326,4 +326,4 @@ let b:current_syntax = "progress"
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
-" vim: ts=8 sw=4
+" vim: ts=8 sw=8

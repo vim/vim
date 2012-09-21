@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.3.  Last change: 2012 Aug 08
+*diff.txt*      For Vim version 7.3.  Last change: 2012 Sep 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -86,16 +86,16 @@ diff mode.  You could use a construct like this: >
 While already in Vim you can start diff mode in three ways.
 
 							*E98*
-:diffsplit {filename}					*:diffs* *:diffsplit*
+:diffs[plit] {filename}					*:diffs* *:diffsplit*
 		Open a new window on the file {filename}.  The options are set
 		as for "vimdiff" for the current and the newly opened window.
 		Also see 'diffexpr'.
 
 							*:difft* *:diffthis*
-:diffthis	Make the current window part of the diff windows.  This sets
+:difft[his]	Make the current window part of the diff windows.  This sets
 		the options like for "vimdiff".
 
-:diffpatch {patchfile}				 *E816* *:diffp* *:diffpatch*
+:diffp[atch] {patchfile}				 *E816* *:diffp* *:diffpatch*
 		Use the current buffer, patch it with the diff found in
 		{patchfile} and open a buffer on the result.  The options are
 		set as for "vimdiff".
@@ -123,9 +123,9 @@ Since the option values are remembered with the buffer, you can edit another
 file for a moment and come back to the same file and be in diff mode again.
 
 							*:diffo* *:diffoff*
-:diffoff	Switch off diff mode for the current window.
+:diffo[ff]	Switch off diff mode for the current window.
 
-:diffoff!	Switch off diff mode for the current window and in all windows
+:diffo[ff]!	Switch off diff mode for the current window and in all windows
 		in the current tab page where 'diff' is set.
 
 The ":diffoff" command resets the relevant options to their default value.

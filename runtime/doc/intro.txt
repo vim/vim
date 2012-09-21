@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.3.  Last change: 2011 May 15
+*intro.txt*     For Vim version 7.3.  Last change: 2012 Sep 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -394,6 +394,8 @@ CTRL-{char}	{char} typed as a control character; that is, typing {char}
 							*quotecommandquote*
 "command"	A reference to a command that you can type is enclosed in
 		double quotes.
+`command`		New style command, this distinguishes it from other
+		quoted text and strings.
 
 					*key-notation* *key-codes* *keycodes*
 These names for keys are used in the documentation.  They can also be used

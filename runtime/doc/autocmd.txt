@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.3.  Last change: 2012 Jul 10
+*autocmd.txt*   For Vim version 7.3.  Last change: 2012 Sep 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -263,8 +263,10 @@ Name			triggered by ~
 	Startup and exit
 |VimEnter|		after doing all the startup stuff
 |GUIEnter|		after starting the GUI successfully
+|GUIFailed|		after starting the GUI failed
 |TermResponse|		after the terminal response to |t_RV| is received
 
+|QuitPre|			when using `:quit`, before deciding whether to quit
 |VimLeavePre|		before exiting Vim, before writing the viminfo file
 |VimLeave|		before exiting Vim, after writing the viminfo file
 
@@ -312,6 +314,7 @@ Name			triggered by ~
 |SessionLoadPost|	after loading a session file
 
 |MenuPopup|		just before showing the popup menu
+|CompleteDone|		after Insert mode completion is done
 
 |User|			to be used in combination with ":doautocmd"
 

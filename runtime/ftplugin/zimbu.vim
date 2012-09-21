@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Zimbu
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 May 18
+" Last Change:	2012 Sep 08
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -34,7 +34,7 @@ setlocal errorformat^=%f\ line\ %l\ col\ %c:\ %m,ERROR:\ %m
 
 " When the matchit plugin is loaded, this makes the % command skip parens and
 " braces in comments.
-let b:match_words = '\(^\s*\)\@<=\(MODULE\|CLASS\|INTERFACE\|BITS\|ENUM\|SHARED\|FUNC\|REPLACE\|DEFINE\|PROC\|EQUAL\|MAIN\|IF\|GENERATE_IF\|WHILE\|REPEAT\|WITH\|DO\|FOR\|SWITCH\|TRY\)\>\|{\s*$:\(^\s*\)\@<=\(ELSE\|ELSEIF\|GENERATE_ELSE\|GENERATE_ELSEIF\|CATCH\|FINALLY\)\>:\(^\s*\)\@<=}\|\<UNTIL\>'
+let b:match_words = '\(^\s*\)\@<=\(MODULE\|CLASS\|INTERFACE\|BITS\|ENUM\|SHARED\|FUNC\|REPLACE\|DEFINE\|PROC\|EQUAL\|MAIN\|IF\|GENERATE_IF\|WHILE\|REPEAT\|WITH\|DO\|FOR\|SWITCH\|TRY\)\>\|{\s*$:\(^\s*\)\@<=\(ELSE\|ELSEIF\|GENERATE_ELSE\|GENERATE_ELSEIF\|CATCH\|FINALLY\)\>:\(^\s*\)\@<=\(}\|\<UNTIL\>\)'
 
 let b:match_skip = 's:comment\|string\|zimbuchar'
 
@@ -43,12 +43,36 @@ setlocal et sts=2 sw=2
 
 " Does replace when a dot, space or closing brace is typed.
 func! GCUpperDot(what)
-  let col = col(".") - strlen(a:what)
-  if v:char != ' ' && v:char != "\r" && v:char != "\x1b" && v:char != '.' && v:char != ')' && v:char != '}'
+  if v:char != ' ' && v:char != "\r" && v:char != "\x1b" && v:char != '.' && v:char != ')' && v:char != '}' && v:char != ','
     " no space or dot after the typed text
     let g:got_char = v:char
     return a:what
   endif
+  return GCUpperCommon(a:what)
+endfunc
+
+" Does not replace when a dot is typed.
+func! GCUpper(what)
+  if v:char != ' ' && v:char != "\r" && v:char != "\x1b" && v:char != ')' && v:char != ','
+    " no space or other "terminating" character after the typed text
+    let g:got_char = v:char
+    return a:what
+  endif
+  return GCUpperCommon(a:what)
+endfunc
+
+" Only replaces when a space is typed.
+func! GCUpperSpace(what)
+  if v:char != ' '
+    " no space after the typed text
+    let g:got_char = v:char
+    return a:what
+  endif
+  return GCUpperCommon(a:what)
+endfunc
+
+func! GCUpperCommon(what)
+  let col = col(".") - strlen(a:what)
   if col > 1 && getline('.')[col - 2] != ' '
     " no space before the typed text
     let g:got_char = 999
@@ -64,34 +88,15 @@ func! GCUpperDot(what)
   return toupper(a:what)
 endfunc
 
-" Does not replace when a dot is typed.
-func! GCUpper(what)
-  if v:char != ' ' && v:char != "\r" && v:char != "\x1b" && v:char != ')'
-    " no space after the typed text
-    let g:got_char = v:char
-    return a:what
-  endif
-  return GCUpperDot(a:what)
-endfunc
-
-" Only replaces when a space is typed.
-func! GCUpperSpace(what)
-  if v:char != ' '
-    " no space after the typed text
-    let g:got_char = v:char
-    return a:what
-  endif
-  return GCUpperDot(a:what)
-endfunc
-
 iabbr <buffer> <expr> alias GCUpperSpace("alias")
 iabbr <buffer> <expr> arg GCUpperDot("arg")
-iabbr <buffer> <expr> bad GCUpper("bad")
 iabbr <buffer> <expr> break GCUpper("break")
 iabbr <buffer> <expr> case GCUpperSpace("case")
 iabbr <buffer> <expr> catch GCUpperSpace("catch")
 iabbr <buffer> <expr> check GCUpperDot("check")
 iabbr <buffer> <expr> class GCUpperSpace("class")
+iabbr <buffer> <expr> interface GCUpperSpace("interface")
+iabbr <buffer> <expr> implements GCUpperSpace("implements")
 iabbr <buffer> <expr> shared GCUpperSpace("shared")
 iabbr <buffer> <expr> continue GCUpper("continue")
 iabbr <buffer> <expr> default GCUpper("default")
