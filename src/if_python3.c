@@ -161,7 +161,6 @@ static void init_structs(void);
 # define PyRun_String py3_PyRun_String
 # define PySys_SetObject py3_PySys_SetObject
 # define PySys_SetArgv py3_PySys_SetArgv
-# define PyType_Type (*py3_PyType_Type)
 # define PyType_Ready py3_PyType_Ready
 #undef Py_BuildValue
 # define Py_BuildValue py3_Py_BuildValue
@@ -170,6 +169,8 @@ static void init_structs(void);
 # define Py_Finalize py3_Py_Finalize
 # define Py_IsInitialized py3_Py_IsInitialized
 # define _Py_NoneStruct (*py3__Py_NoneStruct)
+# define _Py_FalseStruct (*py3__Py_FalseStruct)
+# define _Py_TrueStruct (*py3__Py_TrueStruct)
 # define _PyObject_NextNotImplemented (*py3__PyObject_NextNotImplemented)
 # define PyModule_AddObject py3_PyModule_AddObject
 # define PyImport_AppendInittab py3_PyImport_AppendInittab
@@ -184,8 +185,10 @@ static void init_structs(void);
 # define PyFloat_FromDouble py3_PyFloat_FromDouble
 # define PyFloat_AsDouble py3_PyFloat_AsDouble
 # define PyObject_GenericGetAttr py3_PyObject_GenericGetAttr
+# define PyType_Type (*py3_PyType_Type)
 # define PySlice_Type (*py3_PySlice_Type)
 # define PyFloat_Type (*py3_PyFloat_Type)
+# define PyBool_Type (*py3_PyBool_Type)
 # define PyErr_NewException py3_PyErr_NewException
 # ifdef Py_DEBUG
 #  define _Py_NegativeRefcount py3__Py_NegativeRefcount
@@ -245,7 +248,6 @@ static PyObject* (*py3_PyList_GetItem)(PyObject *, Py_ssize_t);
 static PyObject* (*py3_PyImport_ImportModule)(const char *);
 static PyObject* (*py3_PyImport_AddModule)(const char *);
 static int (*py3_PyErr_BadArgument)(void);
-static PyTypeObject* py3_PyType_Type;
 static PyObject* (*py3_PyErr_Occurred)(void);
 static PyObject* (*py3_PyModule_GetDict)(PyObject *);
 static int (*py3_PyList_SetItem)(PyObject *, Py_ssize_t, PyObject *);
@@ -275,6 +277,8 @@ static void (*py3_PyErr_Clear)(void);
 static PyObject*(*py3__PyObject_Init)(PyObject *, PyTypeObject *);
 static iternextfunc py3__PyObject_NextNotImplemented;
 static PyObject* py3__Py_NoneStruct;
+static PyObject* py3__Py_FalseStruct;
+static PyObject* py3__Py_TrueStruct;
 static int (*py3_PyModule_AddObject)(PyObject *m, const char *name, PyObject *o);
 static int (*py3_PyImport_AppendInittab)(const char *name, PyObject* (*initfunc)(void));
 static char* (*py3__PyUnicode_AsString)(PyObject *unicode);
@@ -288,8 +292,10 @@ static PyObject* (*py3_PyObject_GenericGetAttr)(PyObject *obj, PyObject *name);
 static PyObject* (*py3_PyModule_Create2)(struct PyModuleDef* module, int module_api_version);
 static PyObject* (*py3_PyType_GenericAlloc)(PyTypeObject *type, Py_ssize_t nitems);
 static PyObject* (*py3_PyType_GenericNew)(PyTypeObject *type, PyObject *args, PyObject *kwds);
+static PyTypeObject* py3_PyType_Type;
 static PyTypeObject* py3_PySlice_Type;
 static PyTypeObject* py3_PyFloat_Type;
+static PyTypeObject* py3_PyBool_Type;
 static PyObject* (*py3_PyErr_NewException)(char *name, PyObject *base, PyObject *dict);
 static PyObject* (*py3_PyCapsule_New)(void *, char *, PyCapsule_Destructor);
 static void* (*py3_PyCapsule_GetPointer)(PyObject *, char *);
@@ -363,7 +369,6 @@ static struct
     {"PyImport_ImportModule", (PYTHON_PROC*)&py3_PyImport_ImportModule},
     {"PyImport_AddModule", (PYTHON_PROC*)&py3_PyImport_AddModule},
     {"PyErr_BadArgument", (PYTHON_PROC*)&py3_PyErr_BadArgument},
-    {"PyType_Type", (PYTHON_PROC*)&py3_PyType_Type},
     {"PyErr_Occurred", (PYTHON_PROC*)&py3_PyErr_Occurred},
     {"PyModule_GetDict", (PYTHON_PROC*)&py3_PyModule_GetDict},
     {"PyList_SetItem", (PYTHON_PROC*)&py3_PyList_SetItem},
@@ -386,6 +391,8 @@ static struct
     {"Py_IsInitialized", (PYTHON_PROC*)&py3_Py_IsInitialized},
     {"_PyObject_NextNotImplemented", (PYTHON_PROC*)&py3__PyObject_NextNotImplemented},
     {"_Py_NoneStruct", (PYTHON_PROC*)&py3__Py_NoneStruct},
+    {"_Py_FalseStruct", (PYTHON_PROC*)&py3__Py_FalseStruct},
+    {"_Py_TrueStruct", (PYTHON_PROC*)&py3__Py_TrueStruct},
     {"PyErr_Clear", (PYTHON_PROC*)&py3_PyErr_Clear},
     {"PyObject_Init", (PYTHON_PROC*)&py3__PyObject_Init},
     {"PyModule_AddObject", (PYTHON_PROC*)&py3_PyModule_AddObject},
@@ -400,8 +407,10 @@ static struct
     {"PyModule_Create2", (PYTHON_PROC*)&py3_PyModule_Create2},
     {"PyType_GenericAlloc", (PYTHON_PROC*)&py3_PyType_GenericAlloc},
     {"PyType_GenericNew", (PYTHON_PROC*)&py3_PyType_GenericNew},
+    {"PyType_Type", (PYTHON_PROC*)&py3_PyType_Type},
     {"PySlice_Type", (PYTHON_PROC*)&py3_PySlice_Type},
     {"PyFloat_Type", (PYTHON_PROC*)&py3_PyFloat_Type},
+    {"PyBool_Type", (PYTHON_PROC*)&py3_PyBool_Type},
     {"PyErr_NewException", (PYTHON_PROC*)&py3_PyErr_NewException},
 # ifdef Py_DEBUG
     {"_Py_NegativeRefcount", (PYTHON_PROC*)&py3__Py_NegativeRefcount},
@@ -1534,6 +1543,28 @@ static PyMappingMethods DictionaryAsMapping = {
     /* mp_ass_subscript */ (objobjargproc) DictionaryAssItem,
 };
 
+    static PyObject *
+DictionaryGetattro(PyObject *self, PyObject *nameobj)
+{
+    DictionaryObject	*this = ((DictionaryObject *) (self));
+
+    GET_ATTR_STRING(name, nameobj);
+
+    if (strcmp(name, "locked") == 0)
+	return PyLong_FromLong(this->dict->dv_lock);
+    else if (strcmp(name, "scope") == 0)
+	return PyLong_FromLong(this->dict->dv_scope);
+
+    return PyObject_GenericGetAttr(self, nameobj);
+}
+
+    static int
+DictionarySetattro(PyObject *self, PyObject *nameobj, PyObject *val)
+{
+    GET_ATTR_STRING(name, nameobj);
+    return DictionarySetattr((DictionaryObject *) self, name, val);
+}
+
 static PyTypeObject DictionaryType;
 
     static void
@@ -1625,6 +1656,24 @@ ListAsSubscript(PyObject *self, PyObject *idxObject, PyObject *obj)
     }
 }
 
+    static PyObject *
+ListGetattro(PyObject *self, PyObject *nameobj)
+{
+    GET_ATTR_STRING(name, nameobj);
+
+    if (strcmp(name, "locked") == 0)
+	return PyLong_FromLong(((ListObject *) (self))->list->lv_lock);
+
+    return PyObject_GenericGetAttr(self, nameobj);
+}
+
+    static int
+ListSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
+{
+    GET_ATTR_STRING(name, nameobj);
+    return ListSetattr((ListObject *) self, name, val);
+}
+
     static void
 ListDestructor(PyObject *self)
 {
@@ -1713,6 +1762,7 @@ static struct PyModuleDef vimmodule;
 PyMODINIT_FUNC Py3Init_vim(void)
 {
     PyObject *mod;
+    PyObject *tmp;
     /* The special value is removed from sys.path in Python3_Init(). */
     static wchar_t *(argv[2]) = {L"/must>not&exist/foo", NULL};
 
@@ -1743,6 +1793,16 @@ PyMODINIT_FUNC Py3Init_vim(void)
     PyModule_AddObject(mod, "current", (PyObject *)(void *)&TheCurrent);
     Py_INCREF((PyObject *)(void *)&TheWindowList);
     PyModule_AddObject(mod, "windows", (PyObject *)(void *)&TheWindowList);
+
+#define ADD_INT_CONSTANT(name, value) \
+    tmp = PyLong_FromLong(value); \
+    Py_INCREF(tmp); \
+    PyModule_AddObject(mod, name, tmp)
+
+    ADD_INT_CONSTANT("VAR_LOCKED",     VAR_LOCKED);
+    ADD_INT_CONSTANT("VAR_FIXED",      VAR_FIXED);
+    ADD_INT_CONSTANT("VAR_SCOPE",      VAR_SCOPE);
+    ADD_INT_CONSTANT("VAR_DEF_SCOPE",  VAR_DEF_SCOPE);
 
     if (PyErr_Occurred())
 	return NULL;
@@ -1899,6 +1959,8 @@ init_structs(void)
     vim_memset(&DictionaryType, 0, sizeof(DictionaryType));
     DictionaryType.tp_name = "vim.dictionary";
     DictionaryType.tp_basicsize = sizeof(DictionaryObject);
+    DictionaryType.tp_getattro = DictionaryGetattro;
+    DictionaryType.tp_setattro = DictionarySetattro;
     DictionaryType.tp_dealloc = DictionaryDestructor;
     DictionaryType.tp_as_mapping = &DictionaryAsMapping;
     DictionaryType.tp_flags = Py_TPFLAGS_DEFAULT;
@@ -1909,6 +1971,8 @@ init_structs(void)
     ListType.tp_name = "vim.list";
     ListType.tp_dealloc = ListDestructor;
     ListType.tp_basicsize = sizeof(ListObject);
+    ListType.tp_getattro = ListGetattro;
+    ListType.tp_setattro = ListSetattro;
     ListType.tp_as_sequence = &ListAsSeq;
     ListType.tp_as_mapping = &ListAsMapping;
     ListType.tp_flags = Py_TPFLAGS_DEFAULT;

@@ -44,6 +44,16 @@ TypeError
 ValueError
 TypeError
 TypeError
+d : locked:0;scope:0
+dl : locked:1;scope:0
+v: : locked:2;scope:1
+g: : locked:0;scope:2
+d:{'abc': 1}
+dl:{'def': 1}
+l : locked:0
+ll : locked:1
+l:[0]
+ll:[1]
 [0, 1, 2]
 ['a', 'b']
 ['c', 1]

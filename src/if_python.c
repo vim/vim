@@ -163,6 +163,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyInt_FromLong dll_PyInt_FromLong
 # define PyLong_AsLong dll_PyLong_AsLong
 # define PyLong_FromLong dll_PyLong_FromLong
+# define PyBool_Type (*dll_PyBool_Type)
 # define PyInt_Type (*dll_PyInt_Type)
 # define PyLong_Type (*dll_PyLong_Type)
 # define PyList_GetItem dll_PyList_GetItem
@@ -221,6 +222,8 @@ struct PyMethodDef { Py_ssize_t a; };
 #  define _PyObject_NextNotImplemented (*dll__PyObject_NextNotImplemented)
 # endif
 # define _Py_NoneStruct (*dll__Py_NoneStruct)
+# define _Py_ZeroStruct (*dll__Py_ZeroStruct)
+# define _Py_TrueStruct (*dll__Py_TrueStruct)
 # define PyObject_Init dll__PyObject_Init
 # define PyObject_GetIter dll_PyObject_GetIter
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02020000
@@ -263,6 +266,7 @@ static long(*dll_PyInt_AsLong)(PyObject *);
 static PyObject*(*dll_PyInt_FromLong)(long);
 static long(*dll_PyLong_AsLong)(PyObject *);
 static PyObject*(*dll_PyLong_FromLong)(long);
+static PyTypeObject* dll_PyBool_Type;
 static PyTypeObject* dll_PyInt_Type;
 static PyTypeObject* dll_PyLong_Type;
 static PyObject*(*dll_PyList_GetItem)(PyObject *, PyInt);
@@ -320,6 +324,8 @@ static PyObject* (*dll_PyObject_GetIter)(PyObject *);
 static iternextfunc dll__PyObject_NextNotImplemented;
 # endif
 static PyObject* dll__Py_NoneStruct;
+static PyObject* _Py_ZeroStruct;
+static PyObject* dll__Py_TrueStruct;
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02020000
 static int (*dll_PyType_IsSubtype)(PyTypeObject *, PyTypeObject *);
 # endif
@@ -389,6 +395,7 @@ static struct
     {"PyInt_FromLong", (PYTHON_PROC*)&dll_PyInt_FromLong},
     {"PyLong_AsLong", (PYTHON_PROC*)&dll_PyLong_AsLong},
     {"PyLong_FromLong", (PYTHON_PROC*)&dll_PyLong_FromLong},
+    {"PyBool_Type", (PYTHON_PROC*)&dll_PyBool_Type},
     {"PyInt_Type", (PYTHON_PROC*)&dll_PyInt_Type},
     {"PyLong_Type", (PYTHON_PROC*)&dll_PyLong_Type},
     {"PyList_GetItem", (PYTHON_PROC*)&dll_PyList_GetItem},
@@ -449,6 +456,8 @@ static struct
     {"_PyObject_NextNotImplemented", (PYTHON_PROC*)&dll__PyObject_NextNotImplemented},
 # endif
     {"_Py_NoneStruct", (PYTHON_PROC*)&dll__Py_NoneStruct},
+    {"_Py_ZeroStruct", (PYTHON_PROC*)&dll__Py_ZeroStruct},
+    {"_Py_TrueStruct", (PYTHON_PROC*)&dll__Py_TrueStruct},
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02020000
     {"PyType_IsSubtype", (PYTHON_PROC*)&dll_PyType_IsSubtype},
 # endif
@@ -1563,6 +1572,10 @@ PythonMod_Init(void)
     PyDict_SetItemString(dict, "buffers", (PyObject *)(void *)&TheBufferList);
     PyDict_SetItemString(dict, "current", (PyObject *)(void *)&TheCurrent);
     PyDict_SetItemString(dict, "windows", (PyObject *)(void *)&TheWindowList);
+    PyDict_SetItemString(dict, "VAR_LOCKED",    PyInt_FromLong(VAR_LOCKED));
+    PyDict_SetItemString(dict, "VAR_FIXED",     PyInt_FromLong(VAR_FIXED));
+    PyDict_SetItemString(dict, "VAR_SCOPE",     PyInt_FromLong(VAR_SCOPE));
+    PyDict_SetItemString(dict, "VAR_DEF_SCOPE", PyInt_FromLong(VAR_DEF_SCOPE));
 
     if (PyErr_Occurred())
 	return -1;
@@ -1629,7 +1642,7 @@ static PyTypeObject DictionaryType = {
     (destructor)  DictionaryDestructor,
     (printfunc)   0,
     (getattrfunc) DictionaryGetattr,
-    (setattrfunc) 0,
+    (setattrfunc) DictionarySetattr,
     (cmpfunc)     0,
     (reprfunc)    0,
 
@@ -1656,6 +1669,13 @@ DictionaryDestructor(PyObject *self)
     static PyObject *
 DictionaryGetattr(PyObject *self, char *name)
 {
+    DictionaryObject	*this = ((DictionaryObject *) (self));
+
+    if (strcmp(name, "locked") == 0)
+	return PyInt_FromLong(this->dict->dv_lock);
+    else if (strcmp(name, "scope") == 0)
+	return PyInt_FromLong(this->dict->dv_scope);
+
     return Py_FindMethod(DictionaryMethods, self, name);
 }
 
@@ -1687,7 +1707,7 @@ static PyTypeObject ListType = {
     (destructor)  ListDestructor,
     (printfunc)   0,
     (getattrfunc) ListGetattr,
-    (setattrfunc) 0,
+    (setattrfunc) ListSetattr,
     (cmpfunc)     0,
     (reprfunc)    0,
 
@@ -1714,6 +1734,9 @@ ListDestructor(PyObject *self)
     static PyObject *
 ListGetattr(PyObject *self, char *name)
 {
+    if (strcmp(name, "locked") == 0)
+	return PyInt_FromLong(((ListObject *)(self))->list->lv_lock);
+
     return Py_FindMethod(ListMethods, self, name);
 }
 

@@ -808,6 +808,44 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookupDict)
 }
 
     static PyInt
+DictionarySetattr(DictionaryObject *self, char *name, PyObject *val)
+{
+    if (val == NULL)
+    {
+	PyErr_SetString(PyExc_AttributeError, _("Cannot delete DictionaryObject attributes"));
+	return -1;
+    }
+
+    if (strcmp(name, "locked") == 0)
+    {
+	if (self->dict->dv_lock == VAR_FIXED)
+	{
+	    PyErr_SetString(PyExc_TypeError, _("Cannot modify fixed dictionary"));
+	    return -1;
+	}
+	else
+	{
+	    if (!PyBool_Check(val))
+	    {
+		PyErr_SetString(PyExc_TypeError, _("Only boolean objects are allowed"));
+		return -1;
+	    }
+
+	    if (val == Py_True)
+		self->dict->dv_lock = VAR_LOCKED;
+	    else
+		self->dict->dv_lock = 0;
+	}
+	return 0;
+    }
+    else
+    {
+	PyErr_SetString(PyExc_AttributeError, _("Cannot set this attribute"));
+	return -1;
+    }
+}
+
+    static PyInt
 DictionaryLength(PyObject *self)
 {
     return ((PyInt) ((((DictionaryObject *)(self))->dict->dv_hashtab.ht_used)));
@@ -1269,6 +1307,44 @@ ListConcatInPlace(PyObject *self, PyObject *obj)
 
     Py_INCREF(self);
     return self;
+}
+
+    static int
+ListSetattr(ListObject *self, char *name, PyObject *val)
+{
+    if (val == NULL)
+    {
+	PyErr_SetString(PyExc_AttributeError, _("Cannot delete DictionaryObject attributes"));
+	return -1;
+    }
+
+    if (strcmp(name, "locked") == 0)
+    {
+	if (self->list->lv_lock == VAR_FIXED)
+	{
+	    PyErr_SetString(PyExc_TypeError, _("Cannot modify fixed list"));
+	    return -1;
+	}
+	else
+	{
+	    if (!PyBool_Check(val))
+	    {
+		PyErr_SetString(PyExc_TypeError, _("Only boolean objects are allowed"));
+		return -1;
+	    }
+
+	    if (val == Py_True)
+		self->list->lv_lock = VAR_LOCKED;
+	    else
+		self->list->lv_lock = 0;
+	}
+	return 0;
+    }
+    else
+    {
+	PyErr_SetString(PyExc_AttributeError, _("Cannot set this attribute"));
+	return -1;
+    }
 }
 
 static struct PyMethodDef ListMethods[] = {
