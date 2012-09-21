@@ -799,13 +799,13 @@ DictionaryItem(PyObject *self, PyObject *keyObject)
 
     di = dict_find(((DictionaryObject *) (self))->dict, key, -1);
 
+    DICTKEY_UNREF
+
     if (di == NULL)
     {
 	PyErr_SetString(PyExc_IndexError, _("no such key in dictionary"));
 	return NULL;
     }
-
-    DICTKEY_UNREF
 
     return ConvertToPyObject(&di->di_tv);
 }
@@ -835,6 +835,7 @@ DictionaryAssItem(PyObject *self, PyObject *keyObject, PyObject *valObject)
 
 	if (di == NULL)
 	{
+	    DICTKEY_UNREF
 	    PyErr_SetString(PyExc_IndexError, _("no such key in dictionary"));
 	    return -1;
 	}
@@ -859,6 +860,7 @@ DictionaryAssItem(PyObject *self, PyObject *keyObject, PyObject *valObject)
 
 	if (dict_add(d, di) == FAIL)
 	{
+	    DICTKEY_UNREF
 	    vim_free(di);
 	    PyErr_SetVim(_("failed to add key to dictionary"));
 	    return -1;
