@@ -155,7 +155,7 @@ typedef int perl_key;
 # define Perl_set_context dll_Perl_set_context
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 14)
 # define Perl_sv_2bool_flags dll_Perl_sv_2bool_flags
-# define Perl_xs_apiversion_bootcheck dll_Perl_xs_apiversion_bootcheck 
+# define Perl_xs_apiversion_bootcheck dll_Perl_xs_apiversion_bootcheck
 # else
 # define Perl_sv_2bool dll_Perl_sv_2bool
 # endif
@@ -225,6 +225,9 @@ typedef int perl_key;
 # define Perl_call_list dll_Perl_call_list
 # define Perl_Iscopestack_ix_ptr dll_Perl_Iscopestack_ix_ptr
 # define Perl_Iunitcheckav_ptr dll_Perl_Iunitcheckav_ptr
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 14)
+#  define PL_thr_key *dll_PL_thr_key
+# endif
 
 /*
  * Declare HANDLE for perl.dll and function pointers.
@@ -335,6 +338,7 @@ static AV** (*Perl_Iunitcheckav_ptr)(register PerlInterpreter*);
 #endif
 
 #if (PERL_REVISION == 5) && (PERL_VERSION >= 14)
+static perl_key* dll_PL_thr_key;
 #else
 static GV** (*Perl_Idefgv_ptr)(register PerlInterpreter*);
 static GV** (*Perl_Ierrgv_ptr)(register PerlInterpreter*);
@@ -453,6 +457,7 @@ static struct {
 # endif
 #endif
 #if (PERL_REVISION == 5) && (PERL_VERSION >= 14)
+    {"PL_thr_key", (PERL_PROC*)&dll_PL_thr_key},
 #else
     {"Perl_Idefgv_ptr", (PERL_PROC*)&Perl_Idefgv_ptr},
     {"Perl_Ierrgv_ptr", (PERL_PROC*)&Perl_Ierrgv_ptr},
