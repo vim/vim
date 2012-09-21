@@ -951,31 +951,6 @@ OutputGetattr(PyObject *self, char *name)
     return Py_FindMethod(OutputMethods, self, name);
 }
 
-    static int
-OutputSetattr(PyObject *self, char *name, PyObject *val)
-{
-    if (val == NULL)
-    {
-	PyErr_SetString(PyExc_AttributeError, _("can't delete OutputObject attributes"));
-	return -1;
-    }
-
-    if (strcmp(name, "softspace") == 0)
-    {
-	if (!PyInt_Check(val))
-	{
-	    PyErr_SetString(PyExc_TypeError, _("softspace must be an integer"));
-	    return -1;
-	}
-
-	((OutputObject *)(self))->softspace = PyInt_AsLong(val);
-	return 0;
-    }
-
-    PyErr_SetString(PyExc_AttributeError, _("invalid attribute"));
-    return -1;
-}
-
 /***************/
 
     static int

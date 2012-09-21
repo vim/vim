@@ -88,6 +88,9 @@ static void init_structs(void);
 #define PyString_Size(obj) PyBytes_GET_SIZE(bytes)
 #define PyString_FromString(repr) PyUnicode_FromString(repr)
 #define PyString_AsStringAndSize(obj, buffer, len) PyBytes_AsStringAndSize(obj, buffer, len)
+#define PyInt_Check(obj) PyLong_Check(obj)
+#define PyInt_FromLong(i) PyLong_FromLong(i)
+#define PyInt_AsLong(obj) PyLong_AsLong(obj)
 
 #if defined(DYNAMIC_PYTHON3) || defined(PROTO)
 
@@ -586,6 +589,11 @@ static int py3initialised = 0;
  */
 #include "if_py_both.h"
 
+#define GET_ATTR_STRING(name, nameobj) \
+    char	*name = ""; \
+    if(PyUnicode_Check(nameobj)) \
+        name = _PyUnicode_AsString(nameobj)
+
 #define PY3OBJ_DELETED(obj) (obj->ob_base.ob_refcnt<=0)
 
     static void
@@ -923,9 +931,7 @@ ex_py3file(exarg_T *eap)
     static PyObject *
 OutputGetattro(PyObject *self, PyObject *nameobj)
 {
-    char *name = "";
-    if (PyUnicode_Check(nameobj))
-	name = _PyUnicode_AsString(nameobj);
+    GET_ATTR_STRING(name, nameobj);
 
     if (strcmp(name, "softspace") == 0)
 	return PyLong_FromLong(((OutputObject *)(self))->softspace);
@@ -936,30 +942,9 @@ OutputGetattro(PyObject *self, PyObject *nameobj)
     static int
 OutputSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
 {
-    char *name = "";
-    if (PyUnicode_Check(nameobj))
-	name = _PyUnicode_AsString(nameobj);
+    GET_ATTR_STRING(name, nameobj);
 
-    if (val == NULL)
-    {
-	PyErr_SetString(PyExc_AttributeError, _("can't delete OutputObject attributes"));
-	return -1;
-    }
-
-    if (strcmp(name, "softspace") == 0)
-    {
-	if (!PyLong_Check(val))
-	{
-	    PyErr_SetString(PyExc_TypeError, _("softspace must be an integer"));
-	    return -1;
-	}
-
-	((OutputObject *)(self))->softspace = PyLong_AsLong(val);
-	return 0;
-    }
-
-    PyErr_SetString(PyExc_AttributeError, _("invalid attribute"));
-    return -1;
+    return OutputSetattr(self, name, val);
 }
 
 /***************/
@@ -1091,9 +1076,7 @@ BufferGetattro(PyObject *self, PyObject*nameobj)
 {
     BufferObject *this = (BufferObject *)(self);
 
-    char *name = "";
-    if (PyUnicode_Check(nameobj))
-	name = _PyUnicode_AsString(nameobj);
+    GET_ATTR_STRING(name, nameobj);
 
     if (CheckBuffer(this))
 	return NULL;
@@ -1257,9 +1240,7 @@ RangeDestructor(PyObject *self)
     static PyObject *
 RangeGetattro(PyObject *self, PyObject *nameobj)
 {
-    char *name = "";
-    if (PyUnicode_Check(nameobj))
-	name = _PyUnicode_AsString(nameobj);
+    GET_ATTR_STRING(name, nameobj);
 
     if (strcmp(name, "start") == 0)
 	return Py_BuildValue("n", ((RangeObject *)(self))->start - 1);
@@ -1430,10 +1411,7 @@ WindowGetattro(PyObject *self, PyObject *nameobj)
 {
     WindowObject *this = (WindowObject *)(self);
 
-    char *name = "";
-    if (PyUnicode_Check(nameobj))
-	name = _PyUnicode_AsString(nameobj);
-
+    GET_ATTR_STRING(name, nameobj);
 
     if (CheckWindow(this))
 	return NULL;
@@ -1461,10 +1439,7 @@ WindowGetattro(PyObject *self, PyObject *nameobj)
     static int
 WindowSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
 {
-    char *name = "";
-
-    if (PyUnicode_Check(nameobj))
-	name = _PyUnicode_AsString(nameobj);
+    GET_ATTR_STRING(name, nameobj);
 
     return WindowSetattr(self, name, val);
 }
@@ -1508,9 +1483,7 @@ static PyTypeObject CurrentType;
     static PyObject *
 CurrentGetattro(PyObject *self UNUSED, PyObject *nameobj)
 {
-    char *name = "";
-    if (PyUnicode_Check(nameobj))
-	name = _PyUnicode_AsString(nameobj);
+    GET_ATTR_STRING(name, nameobj);
 
     if (strcmp(name, "buffer") == 0)
 	return (PyObject *)BufferNew(curbuf);
@@ -1681,9 +1654,8 @@ FunctionDestructor(PyObject *self)
 FunctionGetattro(PyObject *self, PyObject *nameobj)
 {
     FunctionObject	*this = (FunctionObject *)(self);
-    char	*name = "";
-    if (PyUnicode_Check(nameobj))
-	name = _PyUnicode_AsString(nameobj);
+
+    GET_ATTR_STRING(name, nameobj);
 
     if (strcmp(name, "name") == 0)
 	return PyUnicode_FromString((char *)(this->name));
