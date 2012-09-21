@@ -30,8 +30,8 @@ src/auto/pathdef.c
 *.suo
 *.res
 *.RES
+src/if_perl.c
 src/pathdef.c
-src/perl.c
 src/Obj*/pathdef.c
 gvimext.dll
 gvimext.lib

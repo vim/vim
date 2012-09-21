@@ -315,6 +315,9 @@ static STRLEN* (*Perl_Tna_ptr)(register PerlInterpreter*);
 static void (*Perl_sv_free2)(pTHX_ SV*);
 static void (*Perl_sys_init)(int* argc, char*** argv);
 static void (*Perl_sys_term)(void);
+static void (*Perl_call_list)(pTHX_ I32, AV*);
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 14)
+# else
 static SV** (*Perl_ISv_ptr)(register PerlInterpreter*);
 static SV*** (*Perl_Istack_max_ptr)(register PerlInterpreter*);
 static SV*** (*Perl_Istack_base_ptr)(register PerlInterpreter*);
@@ -326,16 +329,19 @@ static I32** (*Perl_Imarkstack_ptr_ptr)(register PerlInterpreter*);
 static I32** (*Perl_Imarkstack_max_ptr)(register PerlInterpreter*);
 static SV*** (*Perl_Istack_sp_ptr)(register PerlInterpreter*);
 static OP** (*Perl_Iop_ptr)(register PerlInterpreter*);
-static void (*Perl_call_list)(pTHX_ I32, AV*);
 static I32* (*Perl_Iscopestack_ix_ptr)(register PerlInterpreter*);
 static AV** (*Perl_Iunitcheckav_ptr)(register PerlInterpreter*);
+# endif
 #endif
 
+#if (PERL_REVISION == 5) && (PERL_VERSION >= 14)
+#else
 static GV** (*Perl_Idefgv_ptr)(register PerlInterpreter*);
 static GV** (*Perl_Ierrgv_ptr)(register PerlInterpreter*);
 static SV* (*Perl_Isv_yes_ptr)(register PerlInterpreter*);
-static void (*boot_DynaLoader)_((pTHX_ CV*));
 static perl_key* (*Perl_Gthr_key_ptr)_((pTHX));
+#endif
+static void (*boot_DynaLoader)_((pTHX_ CV*));
 
 /*
  * Table of name to function pointer of perl.
