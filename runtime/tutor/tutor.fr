@@ -707,7 +707,7 @@ NOTE : Si vous quittez Vim et le redémarrez de nouveau avec le fichier TEST,
      Vérifiez que vous voyez  :'<,'>w TEST  avant de d'appuyer sur <Entrée>.
 
   5. Vim va enregistrer les lignes sélectionnées dans le fichier TEST.
-     Utilisez  :!dir  ou  !ls pour le voir. Ne l'effacez pas encore !
+     Utilisez  :!dir  ou  :!ls pour le voir. Ne l'effacez pas encore !
      Nous allons l'utiliser dans la leçon suivante.
 
 NOTE : L'appui de  v  démarre la sélection Visuelle. Vous pouvez déplacer le

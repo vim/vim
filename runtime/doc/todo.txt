@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Sep 21
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Oct 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,17 +36,19 @@ not be repeated below, unless there is extra information.
 
 Go through more coverity reports.
 
-Ruby problem, patch in issue 49. (Sep 19)
-Also in email from Ondruch?
-
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
-
-GTK: problem with 'L' in 'guioptions' changing the window width.
-(Aaron Cornelius, 2012 Feb 6)
 
 Checking runtime scripts: Thilo Six, 2012 Jun 6.
 
 Crash with 1023 byte directory name. (Danek Duvall, 2012 Sep 19)
+
+Patch for wrong text in balloon, Issue 58. (Dominique Pelle)
+
+Patch for menu.vim to correct message about adding spell file.
+(Jiri Sedlak, 2012 Sep 24)
+
+GTK: problem with 'L' in 'guioptions' changing the window width.
+(Aaron Cornelius, 2012 Feb 6)
 
 Patch for SGR mouse with older xterm. (Hayaki Saito, 2012 Sep 19)
 
@@ -79,15 +81,31 @@ Aug 16)
 the order they were made.  Also ":gredo".  Both with a count.  Useful when
 tests fail after making changes and you forgot in which files.
 
+Crash with vimdiff. (Don Cruickshank, 2012 Sep 23)
+
+Win32: use 'guifontwide' for IME composition. (Taro Muraoka, 2012 Sep 30)
+Update Oct 2.
+
+Patch to make multibyte input work on Win32 console when codepage differs from
+'encoding'. (Ken Takata, 2012 Sep 29)
+
+It's possible to defined an input() function that overrides the built-in one.
+(ZyX, 2012 Sep 28)
+
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
+
+Patch to support 'u' in interactive substitute. (Christian Brabandt, 2012 Sep
+28)  Asked for tests.
 
 Patch for IME handling, adds 'imactivatefunc' and 'imstatusfunc' option.
 (Yukihiro Nakadaira, 2012 Aug 16)
 Patch to improve IME handling. (Yasuhiro Matsumoto, 2012 Jul 18)
 
 Issue 54: document behavior of -complete, also expands arg.
+
+New syntax files for apt. (quidame, 2012 Sep 21)
 
 Patch for if_lua. (Luis Carvalho, 2012 Aug 26, update Aug 29, another Aug 30,
 then Sep 1)
@@ -156,6 +174,7 @@ Do give the prompt? Quit with an error?
 Patch for 'backupcopy' default behavior for symlinks on Windows. (David Pope,
 2012 Mar 21, update Mar 31)
 With fix for memory leak: Ken Takata, 2012 Aug 24
+Another update Sep 24.
 
 Patch to list user digraphs. (Christian Brabandt, 2012 Apr 14)
 

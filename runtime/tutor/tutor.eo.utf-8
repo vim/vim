@@ -645,7 +645,7 @@ RIMARKO: Ĉiuj  :  komandoj devas finiĝi per tajpo de <Enenklavo>
   3. Nun tajpu:   :w TESTO   (kie TESTO estas la elektita dosiernomo)
 
   4. Tio konservas la tutan dosieron (instruilon de Vim) kun la nomo TESTO.
-     Por kontroli tion, tajpu   :!dir   aŭ   !ls   denove por vidigi vian
+     Por kontroli tion, tajpu   :!dir   aŭ   :!ls   denove por vidigi vian
      dosierujon.
 
 RIMARKO: Se vi volus eliri el Vim kaj restartigi ĝin denove per  vim TESTO,

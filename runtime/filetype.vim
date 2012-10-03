@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 Sep 06
+" Last Change:	2012 Oct 03
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -632,6 +632,9 @@ au BufNewFile,BufRead *.dsl			setf dsl
 
 " DTD (Document Type Definition for XML)
 au BufNewFile,BufRead *.dtd			setf dtd
+
+" DTS/DSTI (device tree files)
+au BufNewFile,BufRead *.dts,*.dtsi		setf dts
 
 " EDIF (*.edf,*.edif,*.edn,*.edo)
 au BufNewFile,BufRead *.ed\(f\|if\|n\|o\)	setf edif

@@ -659,7 +659,7 @@ NAPOMENA:  Ako bi napustili Vim i ponovno ga pokrenuli sa vim TEST ,
      Provjerite da zaista pi¹e  :'<,'>w TEST
      prije nego ¹to pritisnite <ENTER>.
 
-  5. Vim æe spremiti oznaèeni tekst u TEST.  Provjerite sa :!dir  ili  !ls .
+  5. Vim æe spremiti oznaèeni tekst u TEST.  Provjerite sa :!dir  ili  :!ls .
      Nemojte je jo¹ brisati!  Koristiti æe te je u sljedeæoj lekciji.
 
 NAPOMENA:  Tipka  v  zapoèinje Vizualno oznaèavanje.  Mo¾ete pomicati kursor

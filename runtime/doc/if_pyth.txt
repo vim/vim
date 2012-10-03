@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.3.  Last change: 2012 Aug 02
+*if_pyth.txt*   For Vim version 7.3.  Last change: 2012 Sep 23
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -165,7 +165,7 @@ vim.bindeval(str)					*python-bindeval*
 	     Value           Meaning ~
 	     zero            Variable is not locked
 	     vim.VAR_LOCKED  Variable is locked, but can be unlocked
-	     vim.VAR_FIXED   Variable is locked and can’t be unlocked
+	     vim.VAR_FIXED   Variable is locked and can't be unlocked
 	   integer constants. If variable is not fixed, you can do 
 	   `var.locked=True` to lock it and `var.locked=False` to unlock. 
 	   There is no recursive locking like |:lockvar|! does. There is also 

@@ -658,7 +658,7 @@ Merk: Hvis du nå hadde avsluttet Vim og startet på nytt igjen med «vim TEST»
   4. Trykk  w TEST  , der TEST er et filnavn som ikke finnes enda. Kontroller
      at du ser	:'<,'>w TEST  før du trykker Enter.
 
-  5. Vim vil skrive de valgte linjene til filen TEST. Bruk  :!dir  eller  !ls
+  5. Vim vil skrive de valgte linjene til filen TEST. Bruk  :!dir  eller  :!ls
      for å se den. Ikke slett den enda! Vi vil bruke den i neste leksjon.
 
 MERK: Ved å trykke  v  startes visuelt valg. Du kan flytte markøren rundt for

@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 Feb 11
+" Last Change:	2012 Sep 25
 
 " This file sets up for syntax highlighting.
 " It is loaded from "syntax.vim" and "manual.vim".
@@ -46,6 +46,8 @@ fun! s:SynSet()
       echohl None
     endif
     let s = &filetype
+  elseif s == "OFF"
+    let s = ""
   endif
 
   if s != ""

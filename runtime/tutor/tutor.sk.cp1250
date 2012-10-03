@@ -671,7 +671,7 @@ Poznámka: že ak ukonèíš prácu s editorom Vim a znovu ho spustíš príkazom
   4. Napíš w TEST  , kde TEST je meno súboru, ktorý zatial neexistuje.
      Skontroluj, e vidíš  :'<,'>w TEST  predtým než stlaèíš Enter.
 
-  5. Vim zapíše oznaèené riadky do súboru TEST. Použi :!dir  alebo  !ls
+  5. Vim zapíše oznaèené riadky do súboru TEST. Použi :!dir  alebo  :!ls
      pre overenie. Zatial ho ešte nemaž! Použijeme ho v ïalšej lekcii.
 
 POZNÁMKA: Stlaèením klávesy  v  sa spustí vizuálne oznaèovanie.
