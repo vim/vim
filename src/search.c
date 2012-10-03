@@ -4650,8 +4650,15 @@ current_search(count, forward)
     if (VIsual_active)
     {
 	redraw_curbuf_later(INVERTED);	/* update the inversion */
-	if (*p_sel == 'e' && ltoreq(VIsual, curwin->w_cursor))
-	    inc_cursor();
+	if (*p_sel == 'e')
+	{
+	    /* Correction for exclusive selection depends on the direction. */
+	    if (forward && ltoreq(VIsual, curwin->w_cursor))
+		inc_cursor();
+	    else if (!forward && ltoreq(curwin->w_cursor, VIsual))
+		inc(&VIsual);
+	}
+
     }
 
 #ifdef FEAT_FOLDING
