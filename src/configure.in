@@ -1442,24 +1442,30 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
     AC_MSG_CHECKING(Ruby version)
     if $vi_cv_path_ruby -e '(VERSION rescue RUBY_VERSION) >= "1.6.0" or exit 1' >/dev/null 2>/dev/null; then
       AC_MSG_RESULT(OK)
+      AC_MSG_CHECKING(Ruby rbconfig)
+      ruby_rbconfig="RbConfig"
+      if ! $vi_cv_path_ruby -r rbconfig -e 'RbConfig' >/dev/null 2>/dev/null; then
+	ruby_rbconfig="Config"
+      fi
+      AC_MSG_RESULT($ruby_rbconfig)
       AC_MSG_CHECKING(Ruby header files)
-      rubyhdrdir=`$vi_cv_path_ruby -r mkmf -e 'print Config::CONFIG[["rubyhdrdir"]] || Config::CONFIG[["archdir"]] || $hdrdir' 2>/dev/null`
+      rubyhdrdir=`$vi_cv_path_ruby -r mkmf -e "print $ruby_rbconfig::CONFIG[['rubyhdrdir']] || $ruby_rbconfig::CONFIG[['archdir']] || \\$hdrdir" 2>/dev/null`
       if test "X$rubyhdrdir" != "X"; then
 	AC_MSG_RESULT($rubyhdrdir)
 	RUBY_CFLAGS="-I$rubyhdrdir"
-        rubyarch=`$vi_cv_path_ruby -r rbconfig -e 'print Config::CONFIG[["arch"]]'`
+        rubyarch=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG[['arch']]"`
         if test -d "$rubyhdrdir/$rubyarch"; then
           RUBY_CFLAGS="$RUBY_CFLAGS -I$rubyhdrdir/$rubyarch"
         fi
-        rubyversion=`$vi_cv_path_ruby -r rbconfig -e 'print Config::CONFIG[["ruby_version"]].gsub(/\./, "")[[0,2]]'`
+        rubyversion=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG[['ruby_version']].gsub(/\./, '')[[0,2]]"`
         RUBY_CFLAGS="$RUBY_CFLAGS -DRUBY_VERSION=$rubyversion"
-	rubylibs=`$vi_cv_path_ruby -r rbconfig -e 'print Config::CONFIG[["LIBS"]]'`
+	rubylibs=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG[['LIBS']]"`
 	if test "X$rubylibs" != "X"; then
 	  RUBY_LIBS="$rubylibs"
 	fi
-	librubyarg=`$vi_cv_path_ruby -r rbconfig -e 'print Config.expand(Config::CONFIG[["LIBRUBYARG"]])'`
-	librubya=`$vi_cv_path_ruby -r rbconfig -e 'print Config.expand(Config::CONFIG[["LIBRUBY_A"]])'`
-  rubylibdir=`$vi_cv_path_ruby -r rbconfig -e 'print Config.expand(Config::CONFIG[["libdir"]])'`
+	librubyarg=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig.expand($ruby_rbconfig::CONFIG[['LIBRUBYARG']])"`
+	librubya=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig.expand($ruby_rbconfig::CONFIG[['LIBRUBY_A']])"`
+  rubylibdir=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig.expand($ruby_rbconfig::CONFIG[['libdir']])"`
 	if test -f "$rubylibdir/$librubya"; then
 	  librubyarg="$librubyarg"
     RUBY_LIBS="$RUBY_LIBS -L$rubylibdir"
@@ -1472,7 +1478,7 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 	if test "X$librubyarg" != "X"; then
 	  RUBY_LIBS="$librubyarg $RUBY_LIBS"
 	fi
-	rubyldflags=`$vi_cv_path_ruby -r rbconfig -e 'print Config::CONFIG[["LDFLAGS"]]'`
+	rubyldflags=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG[['LDFLAGS']]"`
 	if test "X$rubyldflags" != "X"; then
 	  dnl Ruby on Mac OS X 10.5 adds "-arch" flags but these should only
 	  dnl be included if requested by passing --with-mac-arch to
@@ -1487,7 +1493,7 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 	RUBY_PRO="if_ruby.pro"
 	AC_DEFINE(FEAT_RUBY)
 	if test "$enable_rubyinterp" = "dynamic"; then
-	  libruby=`$vi_cv_path_ruby -r rbconfig -e 'puts Config::CONFIG[["LIBRUBY_SO"]]'`
+	  libruby=`$vi_cv_path_ruby -r rbconfig -e "puts $ruby_rbconfig::CONFIG[['LIBRUBY_SO']]"`
 	  AC_DEFINE(DYNAMIC_RUBY)
 	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby\\\" -DDYNAMIC_RUBY_VER=$rubyversion $RUBY_CFLAGS"
 	  RUBY_LIBS=

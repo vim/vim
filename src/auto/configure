@@ -6332,26 +6332,34 @@ $as_echo_n "checking Ruby version... " >&6; }
     if $vi_cv_path_ruby -e '(VERSION rescue RUBY_VERSION) >= "1.6.0" or exit 1' >/dev/null 2>/dev/null; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: OK" >&5
 $as_echo "OK" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking Ruby rbconfig" >&5
+$as_echo_n "checking Ruby rbconfig... " >&6; }
+      ruby_rbconfig="RbConfig"
+      if ! $vi_cv_path_ruby -r rbconfig -e 'RbConfig' >/dev/null 2>/dev/null; then
+	ruby_rbconfig="Config"
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ruby_rbconfig" >&5
+$as_echo "$ruby_rbconfig" >&6; }
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking Ruby header files" >&5
 $as_echo_n "checking Ruby header files... " >&6; }
-      rubyhdrdir=`$vi_cv_path_ruby -r mkmf -e 'print Config::CONFIG["rubyhdrdir"] || Config::CONFIG["archdir"] || $hdrdir' 2>/dev/null`
+      rubyhdrdir=`$vi_cv_path_ruby -r mkmf -e "print $ruby_rbconfig::CONFIG['rubyhdrdir'] || $ruby_rbconfig::CONFIG['archdir'] || \\$hdrdir" 2>/dev/null`
       if test "X$rubyhdrdir" != "X"; then
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rubyhdrdir" >&5
 $as_echo "$rubyhdrdir" >&6; }
 	RUBY_CFLAGS="-I$rubyhdrdir"
-        rubyarch=`$vi_cv_path_ruby -r rbconfig -e 'print Config::CONFIG["arch"]'`
+        rubyarch=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG['arch']"`
         if test -d "$rubyhdrdir/$rubyarch"; then
           RUBY_CFLAGS="$RUBY_CFLAGS -I$rubyhdrdir/$rubyarch"
         fi
-        rubyversion=`$vi_cv_path_ruby -r rbconfig -e 'print Config::CONFIG["ruby_version"].gsub(/\./, "")[0,2]'`
+        rubyversion=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG['ruby_version'].gsub(/\./, '')[0,2]"`
         RUBY_CFLAGS="$RUBY_CFLAGS -DRUBY_VERSION=$rubyversion"
-	rubylibs=`$vi_cv_path_ruby -r rbconfig -e 'print Config::CONFIG["LIBS"]'`
+	rubylibs=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG['LIBS']"`
 	if test "X$rubylibs" != "X"; then
 	  RUBY_LIBS="$rubylibs"
 	fi
-	librubyarg=`$vi_cv_path_ruby -r rbconfig -e 'print Config.expand(Config::CONFIG["LIBRUBYARG"])'`
-	librubya=`$vi_cv_path_ruby -r rbconfig -e 'print Config.expand(Config::CONFIG["LIBRUBY_A"])'`
-  rubylibdir=`$vi_cv_path_ruby -r rbconfig -e 'print Config.expand(Config::CONFIG["libdir"])'`
+	librubyarg=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig.expand($ruby_rbconfig::CONFIG['LIBRUBYARG'])"`
+	librubya=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig.expand($ruby_rbconfig::CONFIG['LIBRUBY_A'])"`
+  rubylibdir=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig.expand($ruby_rbconfig::CONFIG['libdir'])"`
 	if test -f "$rubylibdir/$librubya"; then
 	  librubyarg="$librubyarg"
     RUBY_LIBS="$RUBY_LIBS -L$rubylibdir"
@@ -6363,7 +6371,7 @@ $as_echo "$rubyhdrdir" >&6; }
 	if test "X$librubyarg" != "X"; then
 	  RUBY_LIBS="$librubyarg $RUBY_LIBS"
 	fi
-	rubyldflags=`$vi_cv_path_ruby -r rbconfig -e 'print Config::CONFIG["LDFLAGS"]'`
+	rubyldflags=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG['LDFLAGS']"`
 	if test "X$rubyldflags" != "X"; then
 	  	  	  	  rubyldflags=`echo "$rubyldflags" | sed -e 's/-arch\ ppc//' -e 's/-arch\ i386//' -e 's/-arch\ x86_64//'`
 	  if test "X$rubyldflags" != "X"; then
@@ -6376,7 +6384,7 @@ $as_echo "$rubyhdrdir" >&6; }
 	$as_echo "#define FEAT_RUBY 1" >>confdefs.h
 
 	if test "$enable_rubyinterp" = "dynamic"; then
-	  libruby=`$vi_cv_path_ruby -r rbconfig -e 'puts Config::CONFIG["LIBRUBY_SO"]'`
+	  libruby=`$vi_cv_path_ruby -r rbconfig -e "puts $ruby_rbconfig::CONFIG['LIBRUBY_SO']"`
 	  $as_echo "#define DYNAMIC_RUBY 1" >>confdefs.h
 
 	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby\\\" -DDYNAMIC_RUBY_VER=$rubyversion $RUBY_CFLAGS"
