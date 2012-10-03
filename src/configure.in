@@ -455,31 +455,31 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
 
   LUA_INC=
   if test "X$vi_cv_path_lua_pfx" != "X"; then
+    dnl -- try to find Lua executable
+    AC_PATH_PROG(vi_cv_path_lua, lua)
+    if test "X$vi_cv_path_lua" != "X"; then
+      dnl -- find Lua version
+      AC_CACHE_CHECK(Lua version, vi_cv_version_lua,
+      [ vi_cv_version_lua=`${vi_cv_path_lua} -e "print(_VERSION)" | sed 's/.* //'` ])
+    fi
     AC_MSG_CHECKING(if lua.h can be found in $vi_cv_path_lua_pfx/include)
     if test -f $vi_cv_path_lua_pfx/include/lua.h; then
       AC_MSG_RESULT(yes)
     else
       AC_MSG_RESULT(no)
-      dnl -- try to find Lua executable
-      AC_PATH_PROG(vi_cv_path_lua, lua)
-      if test "X$vi_cv_path_lua" != "X"; then
-        dnl -- find Lua version
-        AC_CACHE_CHECK(Lua version, vi_cv_version_lua,
-        [ vi_cv_version_lua=`${vi_cv_path_lua} -e "print(_VERSION)" | sed 's/.* //'` ])
-        AC_MSG_CHECKING(if lua.h can be found in $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua)
-        if test -f $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua/lua.h; then
-          AC_MSG_RESULT(yes)
-          LUA_INC=/lua$vi_cv_version_lua
-        else
-          AC_MSG_RESULT(no)
-          vi_cv_path_lua_pfx=
-        fi
+      AC_MSG_CHECKING(if lua.h can be found in $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua)
+      if test -f $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua/lua.h; then
+        AC_MSG_RESULT(yes)
+        LUA_INC=/lua$vi_cv_version_lua
+      else
+        AC_MSG_RESULT(no)
+        vi_cv_path_lua_pfx=
       fi
     fi
   fi
 
   if test "X$vi_cv_path_lua_pfx" != "X"; then
-    if test "X$vi_cv_version_lua" != "X"; then
+    if test "X$LUA_INC" != "X"; then
       dnl Test alternate location using version
       LUA_LIBS="-L${vi_cv_path_lua_pfx}/lib -llua$vi_cv_version_lua"
     else
@@ -491,17 +491,22 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
     LUA_PRO="if_lua.pro"
     AC_DEFINE(FEAT_LUA)
     if test "$enable_luainterp" = "dynamic"; then
-      dnl Determine the SONAME for the current version, but fallback to
-      dnl liblua${vi_cv_version_lua}.so if no SONAME-versioned file is found.
-      for i in 0 1 2 3 4 5 6 7 8 9; do
-	if test -f "${vi_cv_path_lua_pfx}/lib/liblua${vi_cv_version_lua}.so.$i"; then
-	  LUA_SONAME=".$i"
-	  break
-	fi
-      done
+      if test -f "${vi_cv_path_lua_pfx}/bin/cyglua-${vi_cv_version_lua}.dll"; then
+	vi_cv_dll_name_lua="cyglua-${vi_cv_version_lua}.dll"
+      else
+	dnl Determine the SONAME for the current version, but fallback to
+	dnl liblua${vi_cv_version_lua}.so if no SONAME-versioned file is found.
+	for i in 0 1 2 3 4 5 6 7 8 9; do
+	  if test -f "${vi_cv_path_lua_pfx}/lib/liblua${vi_cv_version_lua}.so.$i"; then
+	    LUA_SONAME=".$i"
+	    break
+	  fi
+	done
+	vi_cv_dll_name_lua="liblua${vi_cv_version_lua}.so$LUA_SONAME"
+      fi
       AC_DEFINE(DYNAMIC_LUA)
       LUA_LIBS=""
-      LUA_CFLAGS="-DDYNAMIC_LUA_DLL=\\\"liblua${vi_cv_version_lua}.so$LUA_SONAME\\\" $LUA_CFLAGS"
+      LUA_CFLAGS="-DDYNAMIC_LUA_DLL=\\\"${vi_cv_dll_name_lua}\\\" $LUA_CFLAGS"
     fi
   fi
   if test "$fail_if_missing" = "yes" -a -z "$LUA_SRC"; then
