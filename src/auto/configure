@@ -6376,7 +6376,7 @@ $as_echo "$rubyhdrdir" >&6; }
 	$as_echo "#define FEAT_RUBY 1" >>confdefs.h
 
 	if test "$enable_rubyinterp" = "dynamic"; then
-	  libruby=`$vi_cv_path_ruby -r rbconfig -e 'printf "lib%s.%s\n", Config::CONFIG["RUBY_SO_NAME"], Config::CONFIG["DLEXT"]'`
+	  libruby=`$vi_cv_path_ruby -r rbconfig -e 'puts Config::CONFIG["LIBRUBY_SO"]'`
 	  $as_echo "#define DYNAMIC_RUBY 1" >>confdefs.h
 
 	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby\\\" -DDYNAMIC_RUBY_VER=$rubyversion $RUBY_CFLAGS"
