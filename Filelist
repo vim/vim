@@ -693,10 +693,17 @@ LANG_GEN = \
 		runtime/tutor/Makefile \
 		runtime/tutor/tutor.utf-8 \
 		runtime/tutor/tutor.?? \
-		runtime/tutor/tutor.??.* \
-		runtime/tutor/tutor.??_??.* \
+		runtime/tutor/tutor.??.utf-8 \
+		runtime/tutor/tutor.??.euc \
+		runtime/tutor/tutor.??.sjis \
+		runtime/tutor/tutor.??.iso9 \
+		runtime/tutor/tutor.??.big5 \
+		runtime/tutor/tutor.??.cp1250 \
+		runtime/tutor/tutor.??.cp1251 \
+		runtime/tutor/tutor.??.cp737 \
+		runtime/tutor/tutor.??_??.utf-8 \
 		runtime/tutor/tutor.bar \
-		runtime/tutor/tutor.bar.* \
+		runtime/tutor/tutor.bar.utf-8 \
 		runtime/spell/README.txt \
 		runtime/spell/??/*.diff \
 		runtime/spell/??/main.aap \
