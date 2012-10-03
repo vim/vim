@@ -9876,7 +9876,7 @@ get_trans_bufname(buf)
     buf_T	*buf;
 {
     if (buf_spname(buf) != NULL)
-	STRCPY(NameBuff, buf_spname(buf));
+	vim_strncpy(NameBuff, buf_spname(buf), MAXPATHL - 1);
     else
 	home_replace(buf, buf->b_fname, NameBuff, MAXPATHL, TRUE);
     trans_characters(NameBuff, MAXPATHL);

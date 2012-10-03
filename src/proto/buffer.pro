@@ -51,7 +51,7 @@ void ex_buffer_all __ARGS((exarg_T *eap));
 void do_modelines __ARGS((int flags));
 int read_viminfo_bufferlist __ARGS((vir_T *virp, int writing));
 void write_viminfo_bufferlist __ARGS((FILE *fp));
-char *buf_spname __ARGS((buf_T *buf));
+char_u *buf_spname __ARGS((buf_T *buf));
 void buf_addsign __ARGS((buf_T *buf, int id, linenr_T lnum, int typenr));
 linenr_T buf_change_sign_type __ARGS((buf_T *buf, int markId, int typenr));
 int buf_getsigntype __ARGS((buf_T *buf, linenr_T lnum, int type));

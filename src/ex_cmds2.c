@@ -1688,8 +1688,7 @@ check_changed_any(hidden)
 	    msg_didout = FALSE;
 	}
 	if (EMSG2(_("E162: No write since last change for buffer \"%s\""),
-		    buf_spname(buf) != NULL ? (char_u *)buf_spname(buf) :
-		    buf->b_fname))
+		    buf_spname(buf) != NULL ? buf_spname(buf) : buf->b_fname))
 	{
 	    save = no_wait_return;
 	    no_wait_return = FALSE;

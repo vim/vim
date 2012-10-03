@@ -7602,7 +7602,7 @@ ex_tabs(eap)
 	    msg_putchar(bufIsChanged(wp->w_buffer) ? '+' : ' ');
 	    msg_putchar(' ');
 	    if (buf_spname(wp->w_buffer) != NULL)
-		STRCPY(IObuff, buf_spname(wp->w_buffer));
+		vim_strncpy(IObuff, buf_spname(wp->w_buffer), IOSIZE - 1);
 	    else
 		home_replace(wp->w_buffer, wp->w_buffer->b_fname,
 							IObuff, IOSIZE, TRUE);

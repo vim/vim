@@ -2635,7 +2635,7 @@ buflist_list(eap)
 	    continue;
 	msg_putchar('\n');
 	if (buf_spname(buf) != NULL)
-	    STRCPY(NameBuff, buf_spname(buf));
+	    vim_strncpy(NameBuff, buf_spname(buf), MAXPATHL - 1);
 	else
 	    home_replace(buf, buf->b_fname, NameBuff, MAXPATHL, TRUE);
 
@@ -3350,7 +3350,7 @@ maketitle()
 	else
 	{
 	    if (buf_spname(curbuf) != NULL)
-		i_name = (char_u *)buf_spname(curbuf);
+		i_name = buf_spname(curbuf);
 	    else		    /* use file name only in icon */
 		i_name = gettail(curbuf->b_ffname);
 	    *i_str = NUL;
@@ -3766,7 +3766,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar,
 	case STL_FILENAME:
 	    fillable = FALSE;	/* don't change ' ' to fillchar */
 	    if (buf_spname(wp->w_buffer) != NULL)
-		STRCPY(NameBuff, buf_spname(wp->w_buffer));
+		vim_strncpy(NameBuff, buf_spname(wp->w_buffer), MAXPATHL - 1);
 	    else
 	    {
 		t = (opt == STL_FULLPATH) ? wp->w_buffer->b_ffname
@@ -5244,7 +5244,7 @@ write_viminfo_bufferlist(fp)
  * Return special buffer name.
  * Returns NULL when the buffer has a normal file name.
  */
-    char *
+    char_u *
 buf_spname(buf)
     buf_T	*buf;
 {
@@ -5263,9 +5263,9 @@ buf_spname(buf)
 		goto win_found;
 win_found:
 	if (win != NULL && win->w_llist_ref != NULL)
-	    return _(msg_loclist);
+	    return (char_u *)_(msg_loclist);
 	else
-	    return _(msg_qflist);
+	    return (char_u *)_(msg_qflist);
     }
 #endif
 #ifdef FEAT_QUICKFIX
@@ -5274,12 +5274,12 @@ win_found:
     if (bt_nofile(buf))
     {
 	if (buf->b_sfname != NULL)
-	    return (char *)buf->b_sfname;
-	return _("[Scratch]");
+	    return buf->b_sfname;
+	return (char_u *)_("[Scratch]");
     }
 #endif
     if (buf->b_fname == NULL)
-	return _("[No Name]");
+	return (char_u *)_("[No Name]");
     return NULL;
 }
 
