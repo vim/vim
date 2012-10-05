@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 Oct 03
+" Last Change:	2012 Oct 05
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -127,6 +127,11 @@ au BufNewFile,BufRead .asoundrc,*/usr/share/alsa/alsa.conf,*/etc/asound.conf set
 
 " Arc Macro Language
 au BufNewFile,BufRead *.aml			setf aml
+
+" APT config file
+au BufNewFile,BufRead apt.conf                 setf aptconf
+au BufNewFile,BufRead */.aptitude/config       setf aptconf
+au BufNewFile,BufRead */etc/apt/apt.conf.d/{[-_[:alnum:]]\+,[-_.[:alnum:]]\+.conf} setf aptconf
 
 " Arch Inventory file
 au BufNewFile,BufRead .arch-inventory,=tagging-method	setf arch

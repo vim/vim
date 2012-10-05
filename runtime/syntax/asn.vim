@@ -2,7 +2,7 @@
 " Language:	ASN.1
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/asn.vim
-" Last Change:	2001 Apr 26
+" Last Change:	2012 Oct 05
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -11,6 +11,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " keyword definitions
 syn keyword asnExternal		DEFINITIONS BEGIN END IMPORTS EXPORTS FROM
@@ -76,6 +79,8 @@ if version >= 508 || !exists("did_asn_syn_inits")
   delcommand HiLink
 endif
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 let b:current_syntax = "asn"
 
 " vim: ts=8

@@ -2,7 +2,7 @@
 " Language:	JavaCC, a Java Compiler Compiler written by JavaSoft
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/javacc.vim
-" Last Change:	2001 Jun 20
+" Last Change:	2012 Oct 05
 
 " Uses java.vim, and adds a few special things for JavaCC Parser files.
 " Those files usually have the extension  *.jj
@@ -14,6 +14,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " source the java.vim file
 if version < 600
@@ -44,7 +47,7 @@ syn keyword javaccPackages options DEBUG_PARSER DEBUG_LOOKAHEAD DEBUG_TOKEN_MANA
 syn keyword javaccPackages COMMON_TOKEN_ACTION IGNORE_CASE CHOICE_AMBIGUITY_CHECK
 syn keyword javaccPackages OTHER_AMBIGUITY_CHECK STATIC LOOKAHEAD ERROR_REPORTING
 syn keyword javaccPackages USER_TOKEN_MANAGER  USER_CHAR_STREAM JAVA_UNICODE_ESCAPE
-syn keyword javaccPackages UNICODE_INPUT
+syn keyword javaccPackages UNICODE_INPUT JDK_VERSION
 syn match javaccPackages "PARSER_END([^)]*)"
 syn match javaccPackages "PARSER_BEGIN([^)]*)"
 syn match javaccSpecToken "<EOF>"
@@ -73,5 +76,7 @@ if version >= 508 || !exists("did_css_syn_inits")
 endif
 
 let b:current_syntax = "javacc"
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: ts=8

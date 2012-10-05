@@ -5,7 +5,7 @@
 "               Yeti            (Add full CSS2, HTML4 support)
 "               Nikolai Weibull (Add CSS2 support)
 " Maintainer:   Jules Wang      <w.jq0722@gmail.com>
-" Last Change:  2012 Aug 21
+" Last Change:  2012 Oct 05
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -17,6 +17,9 @@ if !exists("main_syntax")
 endif
   let main_syntax = 'css'
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 syn case ignore
 
@@ -449,6 +452,7 @@ if main_syntax == 'css'
   unlet main_syntax
 endif
 
-
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8
 

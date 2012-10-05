@@ -2,7 +2,7 @@
 " Language:	HTML
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/html.vim
-" Last Change:  2006 Jun 19
+" Last Change:	2012 Oct 05
 
 " Please check :help html.vim for some comments and a description of the options
 
@@ -16,6 +16,9 @@ if !exists("main_syntax")
   endif
   let main_syntax = 'html'
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " don't use standard HiLink, it will not work with included syntax files
 if version < 508
@@ -37,7 +40,7 @@ syn region  htmlString   contained start=+"+ end=+"+ contains=htmlSpecialChar,ja
 syn region  htmlString   contained start=+'+ end=+'+ contains=htmlSpecialChar,javaScriptExpression,@htmlPreproc
 syn match   htmlValue    contained "=[\t ]*[^'" \t>][^ \t>]*"hs=s+1   contains=javaScriptExpression,@htmlPreproc
 syn region  htmlEndTag             start=+</+      end=+>+ contains=htmlTagN,htmlTagError
-syn region  htmlTag                start=+<[^/]+   end=+>+ contains=htmlTagN,htmlString,htmlArg,htmlValue,htmlTagError,htmlEvent,htmlCssDefinition,@htmlPreproc,@htmlArgCluster
+syn region  htmlTag                start=+<[^/]+   end=+>+ fold contains=htmlTagN,htmlString,htmlArg,htmlValue,htmlTagError,htmlEvent,htmlCssDefinition,@htmlPreproc,@htmlArgCluster
 syn match   htmlTagN     contained +<\s*[-a-zA-Z0-9]\++hs=s+1 contains=htmlTagName,htmlSpecialTagName,@htmlTagNameCluster
 syn match   htmlTagN     contained +</\s*[-a-zA-Z0-9]\++hs=s+2 contains=htmlTagName,htmlSpecialTagName,@htmlTagNameCluster
 syn match   htmlTagError contained "[^>]<"ms=s+1
@@ -98,11 +101,11 @@ syn match htmlSpecialChar "&#\=[0-9A-Za-z]\{1,8};"
 
 " Comments (the real ones or the old netscape ones)
 if exists("html_wrong_comments")
-  syn region htmlComment                start=+<!--+    end=+--\s*>+
+  syn region htmlComment                start=+<!--+    end=+--\s*>+ contains=@Spell
 else
-  syn region htmlComment                start=+<!+      end=+>+   contains=htmlCommentPart,htmlCommentError
+  syn region htmlComment                start=+<!+      end=+>+   contains=htmlCommentPart,htmlCommentError,@Spell
   syn match  htmlCommentError contained "[^><!]"
-  syn region htmlCommentPart  contained start=+--+      end=+--\s*+  contains=@htmlPreProc
+  syn region htmlCommentPart  contained start=+--+      end=+--\s*+  contains=@htmlPreProc,@Spell
 endif
 syn region htmlComment                  start=+<!DOCTYPE+ keepend end=+>+
 
@@ -147,7 +150,8 @@ if !exists("html_no_rendering")
   syn region htmlItalicUnderlineBold contained start="<b\>" end="</b>"me=e-4 contains=@htmlTop
   syn region htmlItalicUnderlineBold contained start="<strong\>" end="</strong>"me=e-9 contains=@htmlTop
 
-  syn region htmlLink start="<a\>\_[^>]*\<href\>" end="</a>"me=e-4 contains=@Spell,htmlTag,htmlEndTag,htmlSpecialChar,htmlPreProc,htmlComment,javaScript,@htmlPreproc
+  syn match htmlLeadingSpace "^\s\+" contained
+  syn region htmlLink start="<a\>\_[^>]*\<href\>" end="</a>"me=e-4 contains=@Spell,htmlTag,htmlEndTag,htmlSpecialChar,htmlPreProc,htmlComment,htmlLeadingSpace,javaScript,@htmlPreproc
   syn region htmlH1 start="<h1\>" end="</h1>"me=e-5 contains=@htmlTop
   syn region htmlH2 start="<h2\>" end="</h2>"me=e-5 contains=@htmlTop
   syn region htmlH3 start="<h3\>" end="</h3>"me=e-5 contains=@htmlTop
@@ -164,8 +168,8 @@ if main_syntax != 'java' || exists("java_javascript")
   " JAVA SCRIPT
   syn include @htmlJavaScript syntax/javascript.vim
   unlet b:current_syntax
-  syn region  javaScript start=+<script[^>]*>+ keepend end=+</script>+me=s-1 contains=@htmlJavaScript,htmlCssStyleComment,htmlScriptTag,@htmlPreproc
-  syn region  htmlScriptTag     contained start=+<script+ end=+>+       contains=htmlTagN,htmlString,htmlArg,htmlValue,htmlTagError,htmlEvent
+  syn region  javaScript start=+<script\_[^>]*>+ keepend end=+</script>+me=s-1 contains=@htmlJavaScript,htmlCssStyleComment,htmlScriptTag,@htmlPreproc
+  syn region  htmlScriptTag     contained start=+<script+ end=+>+ fold contains=htmlTagN,htmlString,htmlArg,htmlValue,htmlTagError,htmlEvent
   HtmlHiLink htmlScriptTag htmlTag
 
   " html events (i.e. arguments that include javascript commands)
@@ -189,7 +193,7 @@ if main_syntax != 'java' || exists("java_vb")
   " VB SCRIPT
   syn include @htmlVbScript syntax/vb.vim
   unlet b:current_syntax
-  syn region  javaScript start=+<script [^>]*language *=[^>]*vbscript[^>]*>+ keepend end=+</script>+me=s-1 contains=@htmlVbScript,htmlCssStyleComment,htmlScriptTag,@htmlPreproc
+  syn region  javaScript start=+<script \_[^>]*language *=\_[^>]*vbscript\_[^>]*>+ keepend end=+</script>+me=s-1 contains=@htmlVbScript,htmlCssStyleComment,htmlScriptTag,@htmlPreproc
 endif
 
 syn cluster htmlJavaScript      add=@htmlPreproc
@@ -246,6 +250,7 @@ if version >= 508 || !exists("did_html_syn_inits")
     HtmlHiLink htmlItalicBoldUnderline     htmlBoldUnderlineItalic
     HtmlHiLink htmlItalicUnderlineBold     htmlBoldUnderlineItalic
     HtmlHiLink htmlLink                    Underlined
+    HtmlHiLink htmlLeadingSpace            None
     if !exists("html_my_rendering")
       hi def htmlBold                term=bold cterm=bold gui=bold
       hi def htmlBoldUnderline       term=bold,underline cterm=bold,underline gui=bold,underline
@@ -289,4 +294,6 @@ if main_syntax == 'html'
   unlet main_syntax
 endif
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8

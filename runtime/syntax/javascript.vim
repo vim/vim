@@ -7,7 +7,7 @@
 "		(ss) repaired several quoting and grouping glitches
 "		(ss) fixed regex parsing issue with multiple qualifiers [gi]
 "		(ss) additional factoring of keywords, globals, and members
-" Last Change:	2010 Mar 25
+" Last Change:	2012 Oct 05
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -22,6 +22,9 @@ if !exists("main_syntax")
   endif
   let main_syntax = 'javascript'
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Drop fold if it set but vim doesn't support it.
 if version < 600 && exists("javaScript_fold")
@@ -131,5 +134,7 @@ let b:current_syntax = "javascript"
 if main_syntax == 'javascript'
   unlet main_syntax
 endif
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: ts=8

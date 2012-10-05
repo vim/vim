@@ -2,7 +2,7 @@
 " Language:	Makefile
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/make.vim
-" Last Change:	2008 Aug 04
+" Last Change:	2012 Oct 05
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -11,6 +11,10 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
+
 
 " some special characters
 syn match makeSpecial	"^\s*[@+-]\+"
@@ -25,8 +29,8 @@ syn match makeOverride	"^ *override"
 hi link makeOverride makeStatement
 hi link makeExport makeStatement
 
-" Koehler: catch unmatched define/endef keywords.  endef only matches it is by itself on a line
-syn region makeDefine start="^\s*define\s" end="^\s*endef\s*$" contains=makeStatement,makeIdent,makePreCondit,makeDefine
+" catch unmatched define/endef keywords.  endef only matches it is by itself on a line, possibly followed by a commend
+syn region makeDefine start="^\s*define\s" end="^\s*endef\s*\(#.*\)\?$" contains=makeStatement,makeIdent,makePreCondit,makeDefine
 
 " Microsoft Makefile specials
 syn case ignore
@@ -48,8 +52,8 @@ syn match makeConfig "@[A-Za-z0-9_]\+@"
 
 " make targets
 " syn match makeSpecTarget	"^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|EXPORT_ALL_VARIABLES\|KEEP_STATE\|LIBPATTERNS\|NOTPARALLEL\|DELETE_ON_ERROR\|INTERMEDIATE\|POSIX\|SECONDARY\)\>"
-syn match makeImplicit		"^\.[A-Za-z0-9_./\t -]\+\s*:[^=]"me=e-2 nextgroup=makeSource
 syn match makeImplicit		"^\.[A-Za-z0-9_./\t -]\+\s*:$"me=e-1 nextgroup=makeSource
+syn match makeImplicit		"^\.[A-Za-z0-9_./\t -]\+\s*:[^=]"me=e-2 nextgroup=makeSource
 
 syn region makeTarget	transparent matchgroup=makeTarget start="^[A-Za-z0-9_./$()%-][A-Za-z0-9_./\t $()%-]*:\{1,2}[^:=]"rs=e-1 end=";"re=e-1,me=e-1 end="[^\\]$" keepend contains=makeIdent,makeSpecTarget,makeNextLine skipnl nextGroup=makeCommands
 syn match makeTarget		"^[A-Za-z0-9_./$()%*@-][A-Za-z0-9_./\t $()%*@-]*::\=\s*$" contains=makeIdent,makeSpecTarget skipnl nextgroup=makeCommands,makeCommandError
@@ -134,4 +138,6 @@ endif
 
 let b:current_syntax = "make"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8

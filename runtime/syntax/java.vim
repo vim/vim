@@ -1,7 +1,8 @@
-" Vim syntax file " Language:	  Java
+" Vim syntax file
+" Language:	Java
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/java.vim
-" Last Change:	2011 Dec 30
+" Last Change:	2012 Oct 05
 
 " Please check :help java.vim for comments on some of the options available.
 
@@ -17,6 +18,9 @@ if !exists("main_syntax")
   syn region javaFold start="{" end="}" transparent fold
 endif
 
+let s:cpo_save = &cpo
+set cpo&vim
+
 " don't use standard HiLink, it will not work with included syntax files
 if version < 508
   command! -nargs=+ JavaHiLink hi link <args>
@@ -26,7 +30,8 @@ endif
 
 " some characters that cannot be in a java program (outside a string)
 syn match javaError "[\\@`]"
-syn match javaError "<<<\|\.\.\|=>\|<>\|||=\|&&=\|[^-]->\|\*\/"
+syn match javaError "<<<\|\.\.\|=>\|||=\|&&=\|[^-]->\|\*\/"
+
 syn match javaOK "\.\.\."
 
 " use separate name so that it can be deleted in javacc.vim
@@ -161,7 +166,7 @@ if !exists("java_ignore_javadoc") && main_syntax != 'jsp'
   syn region  javaDocComment	start="/\*\*"  end="\*/" keepend contains=javaCommentTitle,@javaHtml,javaDocTags,javaDocSeeTag,javaTodo,@Spell
   syn region  javaCommentTitle	contained matchgroup=javaDocComment start="/\*\*"   matchgroup=javaCommentTitle keepend end="\.$" end="\.[ \t\r<&]"me=e-1 end="[^{]@"me=s-2,he=s-1 end="\*/"me=s-1,he=s-1 contains=@javaHtml,javaCommentStar,javaTodo,@Spell,javaDocTags,javaDocSeeTag
 
-  syn region javaDocTags	 contained start="{@\(link\|linkplain\|inherit[Dd]oc\|doc[rR]oot\|value\)" end="}"
+  syn region javaDocTags	 contained start="{@\(code\|link\|linkplain\|inherit[Dd]oc\|doc[rR]oot\|value\)" end="}"
   syn match  javaDocTags	 contained "@\(param\|exception\|throws\|since\)\s\+\S\+" contains=javaDocParam
   syn match  javaDocParam	 contained "\s\S\+"
   syn match  javaDocTags	 contained "@\(version\|author\|return\|deprecated\|serial\|serialField\|serialData\)\>"
@@ -341,5 +346,7 @@ if main_syntax == 'java'
 endif
 
 let b:spell_options="contained"
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: ts=8

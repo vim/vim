@@ -2,7 +2,7 @@
 " Language:	GDB command files
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/gdb.vim
-" Last Change:	2009 May 25
+" Last Change:	2012 Oct 05
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -11,6 +11,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 syn keyword gdbInfo contained address architecture args breakpoints catch common copying dcache
 syn keyword gdbInfo contained display files float frame functions handle line
@@ -32,7 +35,7 @@ syn match gdbFuncDef "\<define\>.*"
 syn match gdbStatmentContainer "^\s*\S\+" contains=gdbStatement,gdbFuncDef
 syn match gdbStatement "^\s*info" nextgroup=gdbInfo skipwhite skipempty
 
-" some commonly used abreviations
+" some commonly used abbreviations
 syn keyword gdbStatement c disp undisp disas p
 
 syn region gdbDocument matchgroup=gdbFuncDef start="\<document\>.*$" matchgroup=gdbFuncDef end="^end\s*$"
@@ -65,12 +68,12 @@ syn match gdbSet "\<input-radix\>"
 syn match gdbSet "\<demangle-style\>"
 syn match gdbSet "\<output-radix\>"
 
-syn match gdbComment "^\s*#.*"
+syn match gdbComment "^\s*#.*" contains=@Spell
 
 syn match gdbVariable "\$\K\k*"
 
 " Strings and constants
-syn region  gdbString		start=+"+  skip=+\\\\\|\\"+  end=+"+
+syn region  gdbString		start=+"+  skip=+\\\\\|\\"+  end=+"+ contains=@Spell
 syn match   gdbCharacter	"'[^']*'" contains=gdbSpecialChar,gdbSpecialCharError
 syn match   gdbCharacter	"'\\''" contains=gdbSpecialChar
 syn match   gdbCharacter	"'[^\\]'"
@@ -108,4 +111,6 @@ endif
 
 let b:current_syntax = "gdb"
 
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: ts=8

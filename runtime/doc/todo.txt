@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Oct 03
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Oct 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -33,6 +33,11 @@ not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Patch with Test for patch  7.3.673 (Christian Brabandt, 2012 Oct 3)
+
+Patch for C-\ e when editing expression. (Christian Brabandt, 2012 Oct 3)
+Correction by ZyX.
 
 Go through more coverity reports.
 
@@ -81,6 +86,8 @@ Aug 16)
 the order they were made.  Also ":gredo".  Both with a count.  Useful when
 tests fail after making changes and you forgot in which files.
 
+Patch to make updating tabline faster. (Arseny Kapoulkine, 2012 Oct 3)
+
 Crash with vimdiff. (Don Cruickshank, 2012 Sep 23)
 
 Win32: use 'guifontwide' for IME composition. (Taro Muraoka, 2012 Sep 30)
@@ -117,6 +124,9 @@ MS-Windows: Crash opening very long file name starting with "\\".
 
 Win32: patch for current directory, "loading iof conv". (Ken Takata, 2012 Sep
 15)
+
+It's probably a good idea to make a negative value for 'sts' use the value of
+'sw'.  Patch by So8res, Oct 3 2012
 
 Syntax update problem in one buffer opened in two windows, bottom window is
 not correctly updated. (Paul Harris, 2012 Feb 27)
