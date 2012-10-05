@@ -351,7 +351,8 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 
     if (our_tv->v_type == VAR_STRING)
     {
-	result = Py_BuildValue("s", our_tv->vval.v_string);
+	result = Py_BuildValue("s", our_tv->vval.v_string == NULL
+					? "" : (char *)our_tv->vval.v_string);
     }
     else if (our_tv->v_type == VAR_NUMBER)
     {
@@ -2751,7 +2752,8 @@ ConvertToPyObject(typval_T *tv)
     switch (tv->v_type)
     {
 	case VAR_STRING:
-	    return PyBytes_FromString((char *) tv->vval.v_string);
+	    return PyBytes_FromString(tv->vval.v_string == NULL
+					    ? "" : (char *)tv->vval.v_string);
 	case VAR_NUMBER:
 	    return PyLong_FromLong((long) tv->vval.v_number);
 #ifdef FEAT_FLOAT
@@ -2763,7 +2765,8 @@ ConvertToPyObject(typval_T *tv)
 	case VAR_DICT:
 	    return DictionaryNew(tv->vval.v_dict);
 	case VAR_FUNC:
-	    return FunctionNew(tv->vval.v_string);
+	    return FunctionNew(tv->vval.v_string == NULL
+					  ? (char_u *)"" : tv->vval.v_string);
 	case VAR_UNKNOWN:
 	    Py_INCREF(Py_None);
 	    return Py_None;
