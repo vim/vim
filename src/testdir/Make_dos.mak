@@ -62,6 +62,7 @@ clean:
 	-if exist tiny.vim del tiny.vim
 	-if exist mbyte.vim del mbyte.vim
 	-if exist mzscheme.vim del mzscheme.vim
+	-if exist lua.vim del lua.vim
 	-del X*
 	-if exist viminfo del viminfo
 

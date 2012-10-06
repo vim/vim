@@ -85,6 +85,7 @@ clean:
 	-$(DEL) tiny.vim
 	-$(DEL) mbyte.vim
 	-$(DEL) mzscheme.vim
+	-$(DEL) lua.vim
 	-$(DEL) X*
 	-$(DEL) viminfo
 

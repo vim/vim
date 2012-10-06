@@ -48,10 +48,10 @@ report:
 $(SCRIPTS) $(SCRIPTS_GUI): $(VIMPROG)
 
 clean:
-	-rm -rf *.out *.failed *.rej *.orig test.log tiny.vim small.vim mbyte.vim mzscheme.vim test.ok X* valgrind.* viminfo
+	-rm -rf *.out *.failed *.rej *.orig test.log tiny.vim small.vim mbyte.vim mzscheme.vim lua.vim test.ok X* valgrind.* viminfo
 
 test1.out: test1.in
-	-rm -f $*.failed tiny.vim small.vim mbyte.vim mzscheme.vim test.ok X* viminfo
+	-rm -f $*.failed tiny.vim small.vim mbyte.vim mzscheme.vim lua.vim test.ok X* viminfo
 	$(VALGRIND) $(VIMPROG) -u unix.vim -U NONE --noplugin -s dotest.in $*.in
 	@/bin/sh -c "if diff test.out $*.ok; \
 		then mv -f test.out $*.out; \
@@ -73,7 +73,7 @@ test1.out: test1.in
 		  fi \
 		else echo $* NO OUTPUT >>test.log; \
 		fi"
-#	-rm -rf X* test.ok viminfo
+	-rm -rf X* test.ok viminfo
 
 test49.out: test49.vim
 
