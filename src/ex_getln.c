@@ -667,9 +667,10 @@ getcmdline(firstc, count, indent)
 	    c = plain_vgetc();
 	    --no_mapping;
 	    --allow_keys;
-	    /* CTRL-\ e doesn't work when obtaining an expression. */
-	    if (c != Ctrl_N && c != Ctrl_G
-				     && (c != 'e' || ccline.cmdfirstc == '='))
+	    /* CTRL-\ e doesn't work when obtaining an expression, unless it
+	     * is in a mapping. */
+	    if (c != Ctrl_N && c != Ctrl_G && (c != 'e'
+				    || (ccline.cmdfirstc == '=' && KeyTyped)))
 	    {
 		vungetc(c);
 		c = Ctrl_BSL;
