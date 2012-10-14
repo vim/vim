@@ -2649,7 +2649,8 @@ vim_to_mzscheme(typval_T *vim_value, int depth, Scheme_Hash_Table *visited)
 	new_value = FALSE;
     else if (vim_value->v_type == VAR_STRING)
     {
-	result = scheme_make_string((char *)vim_value->vval.v_string);
+	result = scheme_make_string(vim_value->vval.v_string == NULL
+				    ? "" : (char *)vim_value->vval.v_string);
 	MZ_GC_CHECK();
     }
     else if (vim_value->v_type == VAR_NUMBER)

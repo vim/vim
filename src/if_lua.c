@@ -464,7 +464,8 @@ luaV_pushtypval(lua_State *L, typval_T *tv)
     switch (tv->v_type)
     {
 	case VAR_STRING:
-	    lua_pushstring(L, (char *) tv->vval.v_string);
+	    lua_pushstring(L, tv->vval.v_string == NULL
+					    ? "" : (char *)tv->vval.v_string);
 	    break;
 	case VAR_NUMBER:
 	    lua_pushinteger(L, (int) tv->vval.v_number);
