@@ -2512,15 +2512,12 @@ mch_FullName(fname, buf, len, force)
 	}
 
 	l = STRLEN(buf);
-	if (l >= len)
-	    retval = FAIL;
+	if (l >= len - 1)
+	    retval = FAIL; /* no space for trailing "/" */
 #ifndef VMS
-	else
-	{
-	    if (l > 0 && buf[l - 1] != '/' && *fname != NUL
+	else if (l > 0 && buf[l - 1] != '/' && *fname != NUL
 						   && STRCMP(fname, ".") != 0)
-		STRCAT(buf, "/");
-	}
+	    STRCAT(buf, "/");
 #endif
     }
 
