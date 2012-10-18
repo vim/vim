@@ -845,7 +845,6 @@ gui_mch_browse(int saving UNUSED,
     char_u		dirbuf[MAXPATHL];
     guint		log_handler;
     const gchar		*domain = "Gtk";
-    GtkFileFilter	*gfilter;
 
     title = CONVERT_TO_UTF8(title);
 
@@ -883,6 +882,7 @@ gui_mch_browse(int saving UNUSED,
 	int     i = 0;
 	char_u  *patt;
 	char_u  *p = filter;
+	GtkFileFilter	*gfilter;
 
 	gfilter = gtk_file_filter_new();
 	patt = alloc(STRLEN(filter));
