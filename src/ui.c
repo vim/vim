@@ -98,7 +98,7 @@ ui_inchar_undo(s, len)
 #endif
 
 /*
- * ui_inchar(): low level input funcion.
+ * ui_inchar(): low level input function.
  * Get characters from the keyboard.
  * Return the number of characters that are available.
  * If "wtime" == 0 do not wait for characters.
@@ -493,7 +493,7 @@ clip_own_selection(cbd)
 	}
     }
 #else
-    /* Only own the clibpard when we didn't own it yet. */
+    /* Only own the clipboard when we didn't own it yet. */
     if (!cbd->owned && cbd->available)
 	cbd->owned = (clip_gen_own_selection(cbd) == OK);
 #endif
@@ -3132,7 +3132,7 @@ vcol2col(wp, lnum, vcol)
     char_u	*start;
 
     start = ptr = ml_get_buf(wp->w_buffer, lnum, FALSE);
-    while (count <= vcol && *ptr != NUL)
+    while (count < vcol && *ptr != NUL)
     {
 	count += win_lbr_chartabsize(wp, ptr, count, NULL);
 	mb_ptr_adv(ptr);

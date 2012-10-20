@@ -359,7 +359,7 @@ get_beval_info(beval, getword, winp, lnump, textp, colp)
 			}
 		    }
 
-		    col = vcol2col(wp, lnum, col) - 1;
+		    col = vcol2col(wp, lnum, col);
 
 		    if (VIsual_active
 			    && wp->w_buffer == curwin->w_buffer
@@ -377,8 +377,10 @@ get_beval_info(beval, getword, winp, lnump, textp, colp)
 			    return FAIL;
 
 			lbuf = ml_get_buf(curwin->w_buffer, VIsual.lnum, FALSE);
-			lbuf = vim_strnsave(lbuf + spos->col,
-				     epos->col - spos->col + (*p_sel != 'e'));
+			len = epos->col - spos->col;
+			if (*p_sel != 'e')
+			    len += MB_PTR2LEN(lbuf + epos->col);
+			lbuf = vim_strnsave(lbuf + spos->col, len);
 			lnum = spos->lnum;
 			col = spos->col;
 		    }
