@@ -105,7 +105,7 @@ static GuiFont font_name2handle __ARGS((char_u *name));
 # ifdef FEAT_XFONTSET
 static GuiFontset fontset_name2handle __ARGS((char_u *name, int fixed_width));
 # endif
-static void hl_do_font __ARGS((int idx, char_u *arg, int do_normal, int do_menu, int do_tooltip));
+static void hl_do_font __ARGS((int idx, char_u *arg, int do_normal, int do_menu, int do_tooltip, int free_font));
 #endif
 
 /*
@@ -7259,14 +7259,13 @@ do_highlight(line, forceit, init)
 		HL_TABLE()[idx].sg_fontset = NOFONTSET;
 # endif
 		hl_do_font(idx, arg, is_normal_group, is_menu_group,
-							    is_tooltip_group);
+						     is_tooltip_group, FALSE);
 
 # ifdef FEAT_XFONTSET
 		if (HL_TABLE()[idx].sg_fontset != NOFONTSET)
 		{
-		    /* New fontset was accepted. Free the old one, if there was
-		     * one.
-		     */
+		    /* New fontset was accepted. Free the old one, if there
+		     * was one. */
 		    gui_mch_free_fontset(temp_sg_fontset);
 		    vim_free(HL_TABLE()[idx].sg_font_name);
 		    HL_TABLE()[idx].sg_font_name = vim_strsave(arg);
@@ -7277,8 +7276,7 @@ do_highlight(line, forceit, init)
 		if (HL_TABLE()[idx].sg_font != NOFONT)
 		{
 		    /* New font was accepted. Free the old one, if there was
-		     * one.
-		     */
+		     * one. */
 		    gui_mch_free_font(temp_sg_font);
 		    vim_free(HL_TABLE()[idx].sg_font_name);
 		    HL_TABLE()[idx].sg_font_name = vim_strsave(arg);
@@ -8064,12 +8062,13 @@ fontset_name2handle(name, fixed_width)
  * Get the font or fontset for one highlight group.
  */
     static void
-hl_do_font(idx, arg, do_normal, do_menu, do_tooltip)
+hl_do_font(idx, arg, do_normal, do_menu, do_tooltip, free_font)
     int		idx;
     char_u	*arg;
     int		do_normal;		/* set normal font */
     int		do_menu UNUSED;		/* set menu font */
     int		do_tooltip UNUSED;	/* set tooltip font */
+    int		free_font;		/* free current font/fontset */
 {
 # ifdef FEAT_XFONTSET
     /* If 'guifontset' is not empty, first try using the name as a
@@ -8083,6 +8082,8 @@ hl_do_font(idx, arg, do_normal, do_menu, do_tooltip)
 	|| do_tooltip
 #  endif
 	    )
+	if (free_fontset)
+	    gui_mch_free_fontset(HL_TABLE()[idx].sg_fontset);
 	HL_TABLE()[idx].sg_fontset = fontset_name2handle(arg, 0
 #  ifdef FONTSET_ALWAYS
 		|| do_menu
@@ -8093,8 +8094,8 @@ hl_do_font(idx, arg, do_normal, do_menu, do_tooltip)
 		);
     if (HL_TABLE()[idx].sg_fontset != NOFONTSET)
     {
-	/* If it worked and it's the Normal group, use it as the
-	 * normal fontset.  Same for the Menu group. */
+	/* If it worked and it's the Normal group, use it as the normal
+	 * fontset.  Same for the Menu group. */
 	if (do_normal)
 	    gui_init_font(arg, TRUE);
 #   if (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)) && defined(FEAT_MENU)
@@ -8126,6 +8127,8 @@ hl_do_font(idx, arg, do_normal, do_menu, do_tooltip)
     else
 # endif
     {
+	if (free_font)
+	    gui_mch_free_font(HL_TABLE()[idx].sg_font);
 	HL_TABLE()[idx].sg_font = font_name2handle(arg);
 	/* If it worked and it's the Normal group, use it as the
 	 * normal font.  Same for the Menu group. */
@@ -9162,7 +9165,7 @@ gui_do_one_color(idx, do_menu, do_tooltip)
     if (HL_TABLE()[idx].sg_font_name != NULL)
     {
 	hl_do_font(idx, HL_TABLE()[idx].sg_font_name, FALSE, do_menu,
-		   do_tooltip);
+							    do_tooltip, TRUE);
 	didit = TRUE;
     }
     if (HL_TABLE()[idx].sg_gui_fg_name != NULL)
