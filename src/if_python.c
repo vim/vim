@@ -740,9 +740,10 @@ Python_Init(void)
 #else
 	PyMac_Initialize();
 #endif
-	/* Initialise threads and save the state using PyGILState_Ensure.
-	 * Without this call, thread-specific state (such as the system trace
-	 * hook), will be lost between invocations of Python code.  */
+	/* Initialise threads, and save the state using PyGILState_Ensure.
+	 * Without the call to PyGILState_Ensure, thread specific state (such
+	 * as the system trace hook), will be lost between invocations of
+	 * Python code. */
 	PyEval_InitThreads();
 	pygilstate = PyGILState_Ensure();
 #ifdef DYNAMIC_PYTHON
