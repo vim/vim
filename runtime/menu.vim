@@ -434,6 +434,10 @@ if has("spell")
       let enc = &enc
     endif
 
+    if !exists("g:menutrans_set_lang_to")
+      let g:menutrans_set_lang_to = 'Set language to'
+    endif
+
     let found = 0
     let s = globpath(&rtp, "spell/*." . enc . ".spl")
     if s != ""
@@ -441,8 +445,9 @@ if has("spell")
       for f in split(s, "\n")
 	let nm = substitute(f, '.*spell[/\\]\(..\)\.[^/\\]*\.spl', '\1', "")
 	if nm != "en" && nm !~ '/'
+          let _nm = nm
 	  let found += 1
-	  let menuname = '&Tools.&Spelling.Set\ language\ to\ "' . nm . '"'
+	  let menuname = '&Tools.&Spelling.' . escape(g:menutrans_set_lang_to, "\\. \t|") . '\ "' . nm . '"'
 	  exe 'an 40.335.' . n . ' ' . menuname . ' :set spl=' . nm . ' spell<CR>'
 	  let s:undo_spellang += ['aun ' . menuname]
 	endif
@@ -452,7 +457,7 @@ if has("spell")
     if found == 0
       echomsg "Could not find other spell files"
     elseif found == 1
-      echomsg "Found spell file " . nm
+      echomsg "Found spell file " . _nm
     else
       echomsg "Found " . found . " more spell files"
     endif
