@@ -373,6 +373,10 @@ MSVCVER = 5.0
 MSVCVER = 6.0
 CPU = ix86
 !endif
+!if "$(_NMAKE_VER)" == "6.00.9782.0"
+MSVCVER = 6.0
+CPU = ix86
+!endif
 !if "$(_NMAKE_VER)" == "7.00.9466"
 MSVCVER = 7.0
 !endif
