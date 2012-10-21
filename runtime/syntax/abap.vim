@@ -1,8 +1,9 @@
 " Vim ABAP syntax file
 "    Language: SAP - ABAP/R4
-"    Revision: 1.0
-"  Maintainer: Marius Piedallu van Wyk <marius@e.co.za>
-" Last Change: 2006 Apr 13
+"    Revision: 2.0
+"  Maintainer: Marius Piedallu van Wyk <lailoken@gmail.com>
+" Last Change: 2012 Oct 12
+"     Comment: Thanks to EPI-USE Labs for all your assistance. :)
 
 " For version  < 6.0: Clear all syntax items
 " For version >= 6.0: Quit when a syntax file was already loaded
@@ -16,73 +17,126 @@ endif
 syn case ignore
 
 " Symbol Operators
-syn match   abapSymbolOperator  "[+\-/=<>$]"
-syn match   abapSymbolOperator  "\*"
-syn match   abapSymbolOperator  "[<>]="
-syn match   abapSymbolOperator  "<>"
-syn match   abapSymbolOperator  "\*\*"
-syn match   abapSymbolOperator  "[()]"
-syn match   abapSymbolOperator  "[:,\.]"
+syn match   abapSymbolOperator  "\W+\W"
+syn match   abapSymbolOperator  "\W-\W"
+syn match   abapSymbolOperator  "\W/\W"
+syn match   abapSymbolOperator  "\W%\W"
+syn match   abapSymbolOperator  "\W=\W"
+syn match   abapSymbolOperator  "\W<\W"
+syn match   abapSymbolOperator  "\W>\W"
+syn match   abapSymbolOperator  "\W\*\W"
+syn match   abapSymbolOperator  "\W[<>]=\W"
+syn match   abapSymbolOperator  "\W<>\W"
+syn match   abapSymbolOperator  "\W\*\*\W"
+syn match   abapSymbolOperator  "\[\]"
+syn match   abapSymbolOperator  "->\*\?"
+syn match   abapSymbolOperator  "=>"
+syn match   abapSymbolOperator  "[()~:,\.&$]"
 
 " Literals
-syn region  abapString matchgroup=abapString start="'" end="'" contains=abapStringEscape
-syn match   abapStringEscape contained "''"
+syn region  abapCharString matchgroup=abapCharString start="'" end="'" contains=abapCharStringEscape
+syn match   abapCharStringEscape contained "''"
 
-syn match   abapNumber  "-\=\<\d\+\>"
+syn region  abapString matchgroup=abapString start="`" end="`" contains=abapStringEscape
+syn match   abapStringEscape contained "``"
+
+syn match   abapNumber  "\-\=\<\d\+\>"
 syn region  abapHex     matchgroup=abapHex start="X'" end="'"
 
 if version >= 600
-  setlocal iskeyword=-,48-57,_,A-Z,a-z
+  setlocal iskeyword=48-57,_,A-Z,a-z,/
 else
-  set iskeyword=-,48-57,_,A-Z,a-z
+  set iskeyword=48-57,_,A-Z,a-z,/
 endif
 
+syn match   abapNamespace        "/\w\+/"
+
+" multi-word statements
+syn match   abapComplexStatement "\(WITH\W\+\(HEADER\W\+LINE\|FRAME\|KEY\)\|WITH\)"
+syn match   abapComplexStatement "NO\W\+STANDARD\W\+PAGE\W\+HEADING"
+syn match   abapComplexStatement "\(EXIT\W\+FROM\W\+STEP\W\+LOOP\|EXIT\)"
+syn match   abapComplexStatement "\(BEGIN\W\+OF\W\+\(BLOCK\|LINE\)\|BEGIN\W\+OF\)"
+syn match   abapComplexStatement "\(END\W\+OF\W\+\(BLOCK\|LINE\)\|END\W\+OF\)"
+syn match   abapComplexStatement "NO\W\+INTERVALS"
+syn match   abapComplexStatement "RESPECTING\W\+BLANKS"
+syn match   abapComplexStatement "SEPARATED\W\+BY"
+syn match   abapComplexStatement "\(USING\W\+\(EDIT\W\+MASK\)\|USING\)"
+syn match   abapComplexStatement "\(WHERE\W\+\(LINE\)\)"
+syn match   abapComplexStatement "RADIOBUTTON\W\+GROUP"
+syn match   abapComplexStatement "REF\W\+TO"
+syn match   abapComplexStatement "\(PUBLIC\|PRIVATE\|PROTECTED\)\(\W\+SECTION\)\?"
+syn match   abapComplexStatement "DELETING\W\+\(TRAILING\|LEADING\)"
+syn match   abapComplexStatement "\(ALL\W\+OCCURRENCES\)\|\(\(FIRST\|LAST\)\W\+OCCURRENCE\)"
+syn match   abapComplexStatement "INHERITING\W\+FROM"
+
+" hyphenated-word statements
+syn match   abapComplexStatement "LINE-COUNT"
+syn match   abapComplexStatement "ADD-CORRESPONDING"
+syn match   abapComplexStatement "AUTHORITY-CHECK"
+syn match   abapComplexStatement "BREAK-POINT"
+syn match   abapComplexStatement "CLASS-DATA"
+syn match   abapComplexStatement "CLASS-METHODS"
+syn match   abapComplexStatement "CLASS-METHOD"
+syn match   abapComplexStatement "DIVIDE-CORRESPONDING"
+syn match   abapComplexStatement "EDITOR-CALL"
+syn match   abapComplexStatement "END-OF-DEFINITION"
+syn match   abapComplexStatement "END-OF-PAGE"
+syn match   abapComplexStatement "END-OF-SELECTION"
+syn match   abapComplexStatement "FIELD-GROUPS"
+syn match   abapComplexStatement "FIELD-SYMBOLS"
+syn match   abapComplexStatement "FUNCTION-POOL"
+syn match   abapComplexStatement "MOVE-CORRESPONDING"
+syn match   abapComplexStatement "MULTIPLY-CORRESPONDING"
+syn match   abapComplexStatement "NEW-LINE"
+syn match   abapComplexStatement "NEW-PAGE"
+syn match   abapComplexStatement "NEW-SECTION"
+syn match   abapComplexStatement "PRINT-CONTROL"
+syn match   abapComplexStatement "RP-PROVIDE-FROM-LAST"
+syn match   abapComplexStatement "SELECT-OPTIONS"
+syn match   abapComplexStatement "SELECTION-SCREEN"
+syn match   abapComplexStatement "START-OF-SELECTION"
+syn match   abapComplexStatement "SUBTRACT-CORRESPONDING"
+syn match   abapComplexStatement "SYNTAX-CHECK"
+syn match   abapComplexStatement "SYNTAX-TRACE"
+syn match   abapComplexStatement "TOP-OF-PAGE"
+syn match   abapComplexStatement "TYPE-POOL"
+syn match   abapComplexStatement "TYPE-POOLS"
+syn match   abapComplexStatement "LINE-SIZE"
+syn match   abapComplexStatement "LINE-COUNT"
+syn match   abapComplexStatement "MESSAGE-ID"
+syn match   abapComplexStatement "DISPLAY-MODE"
+syn match   abapComplexStatement "READ\(-ONLY\)\?"
+
 " ABAP statements
-syn keyword abapStatement ADD ADD-CORRESPONDING ASSIGN AT AUTHORITY-CHECK
-syn keyword abapStatement BACK BREAK-POINT
-syn keyword abapStatement CALL CASE CHECK CLEAR CLOSE CNT COLLECT COMMIT COMMUNICATION COMPUTE CONCATENATE CONDENSE CONSTANTS CONTINUE CONTROLS CONVERT CREATE CURRENCY
-syn keyword abapStatement DATA DEFINE DELETE DESCRIBE DETAIL DIVIDE DIVIDE-CORRESPONDING DO
-syn keyword abapStatement EDITOR-CALL ELSE ELSEIF END-OF-DEFINITION END-OF-PAGE END-OF-SELECTION ENDAT ENDCASE ENDDO ENDEXEC ENDFORM ENDFUNCTION ENDIF ENDIFEND ENDLOOP ENDMODULE ENDON ENDPROVIDE ENDSELECT ENDWHILE EXEC EXPORT EXPORTING EXTRACT
-syn keyword abapStatement FETCH FIELD-GROUPS FIELD-SYMBOLS FIELDS FORM FORMAT FREE FUNCTION FUNCTION-POOL
+syn keyword abapStatement ADD ALIAS ALIASES ASSERT ASSIGN ASSIGNING AT
+syn keyword abapStatement BACK BOUND
+syn keyword abapStatement CALL CASE CATCH CHECK CLASS CLEAR CLOSE CNT COLLECT COMMIT COMMUNICATION COMPUTE CONCATENATE CONDENSE CONSTANTS CONTINUE CONTROLS CONVERT CREATE CURRENCY
+syn keyword abapStatement DATA DEFINE DEFINITION DEFERRED DELETE DESCRIBE DETAIL DIVIDE DO
+syn keyword abapStatement ELSE ELSEIF ENDAT ENDCASE ENDCLASS ENDDO ENDEXEC ENDFORM ENDFUNCTION ENDIF ENDIFEND ENDINTERFACE ENDLOOP ENDMETHOD ENDMODULE ENDON ENDPROVIDE ENDSELECT ENDTRY ENDWHILE EVENT EVENTS EXEC EXIT EXPORT EXPORTING EXTRACT
+syn keyword abapStatement FETCH FIELDS FORM FORMAT FREE FROM FUNCTION
 syn keyword abapStatement GENERATE GET
 syn keyword abapStatement HIDE
-syn keyword abapStatement IF IMPORT IMPORTING INDEX INFOTYPES INITIALIZATION INPUT INSERT
-syn keyword abapStatement LEAVE LIKE LOAD LOCAL LOOP
-syn keyword abapStatement MESSAGE MODIFY MODULE MOVE MOVE-CORRESPONDING MULTIPLY MULTIPLY-CORRESPONDING
-syn keyword abapStatement NEW-LINE NEW-PAGE NEW-SECTION
-syn keyword abapStatement ON OVERLAY
-syn keyword abapStatement PACK PARAMETERS PERFORM POSITION PRINT-CONTROL PROGRAM PROVIDE PUT
-syn keyword abapStatement RAISE RANGES READ RECEIVE REFRESH REJECT REPLACE REPORT RESERVE RESTORE ROLLBACK RP-PROVIDE-FROM-LAST
-syn keyword abapStatement SCAN SCROLL SEARCH SELECT SELECT-OPTIONS SELECTION-SCREEN SET SHIFT SKIP SORT SPLIT START-OF-SELECTION STATICS STOP SUBMIT SUBTRACT SUBTRACT-CORRESPONDING SUM SUMMARY SUPPRESS SYNTAX-CHECK SYNTAX-TRACE
-syn keyword abapStatement TABLES TOP-OF-PAGE TRANSFER TRANSLATE TYPE TYPE-POOL TYPE-POOLS TYPES
-syn keyword abapStatement UNPACK UPDATE
+syn keyword abapStatement IF IMPORT IMPORTING INDEX INFOTYPES INITIAL INITIALIZATION INTERFACE INTERFACES INPUT INSERT IMPLEMENTATION IS
+syn keyword abapStatement LEAVE LIKE LINE LOAD LOCAL LOOP
+syn keyword abapStatement MESSAGE METHOD METHODS MODIFY MODULE MOVE MULTIPLY
+syn keyword abapStatement ON OVERLAY OPTIONAL OTHERS
+syn keyword abapStatement PACK PARAMETERS PERFORM POSITION PROGRAM PROVIDE PUT
+syn keyword abapStatement RAISE RANGES RECEIVE REDEFINITION REFERENCE REFRESH REJECT REPLACE REPORT RESERVE RESTORE RETURNING ROLLBACK
+syn keyword abapStatement SCAN SCROLL SEARCH SELECT SET SHIFT SKIP SORT SORTED SPLIT STANDARD STATICS STEP STOP SUBMIT SUBTRACT SUM SUMMARY SUPPRESS
+syn keyword abapStatement TABLES TIMES TRANSFER TRANSLATE TRY TYPE TYPES
+syn keyword abapStatement UNASSIGN ULINE UNPACK UPDATE
 syn keyword abapStatement WHEN WHILE WINDOW WRITE
 
 " More statemets
 syn keyword abapStatement OCCURS STRUCTURE OBJECT PROPERTY
 syn keyword abapStatement CASTING APPEND RAISING VALUE COLOR
-syn keyword abapStatement LINE-SIZE LINE-COUNT MESSAGE-ID
-syn keyword abapStatement CHANGING EXCEPTIONS DEFAULT CHECKBOX COMMENT
-syn keyword abapStatement ID NUMBER FOR DISPLAY-MODE TITLE OUTPUT
-
-" More multi-word statements
-syn match   abapStatement "\(\W\|^\)\(WITH\W\+\(HEADER\W\+LINE\|FRAME\|KEY\)\|WITH\)\(\W\|$\)"ms=s+1,me=e-1
-syn match   abapStatement "\(\W\|^\)NO\W\+STANDARD\W\+PAGE\W\+HEADING\(\W\|$\)"ms=s+1,me=e-1
-syn match   abapStatement "\(\W\|^\)\(EXIT\W\+FROM\W\+STEP\W\+LOOP\|EXIT\)\(\W\|$\)"ms=s+1,me=e-1
-syn match   abapStatement "\(\W\|^\)\(BEGIN\W\+OF\W\+\(BLOCK\|LINE\)\|BEGIN\W\+OF\)\(\W\|$\)"ms=s+1,me=e-1
-syn match   abapStatement "\(\W\|^\)\(END\W\+OF\W\+\(BLOCK\|LINE\)\|END\W\+OF\)\(\W\|$\)"ms=s+1,me=e-1
-syn match   abapStatement "\(\W\|^\)IS\W\+INITIAL\(\W\|$\)"ms=s+1,me=e-1
-syn match   abapStatement "\(\W\|^\)NO\W\+INTERVALS\(\W\|$\)"ms=s+1,me=e-1
-syn match   abapStatement "\(\W\|^\)SEPARATED\W\+BY\(\W\|$\)"ms=s+1,me=e-1
-syn match   abapStatement "\(\W\|^\)\(USING\W\+\(EDIT\W\+MASK\)\|USING\)\(\W\|$\)"ms=s+1,me=e-1
-syn match   abapStatement "\(\W\|^\)\(WHERE\W\+\(LINE\)\)\(\W\|$\)"ms=s+1,me=e-1
-syn match   abapStatement "\(\W\|^\)RADIOBUTTON\W\+GROUP\(\W\|$\)"ms=s+1,me=e-1
-syn match   abapStatement "\(\W\|^\)REF\W\+TO\(\W\|$\)"ms=s+1,me=e-1
+syn keyword abapStatement CHANGING EXCEPTION EXCEPTIONS DEFAULT CHECKBOX COMMENT
+syn keyword abapStatement ID NUMBER FOR TITLE OUTPUT
 
 " Special ABAP specific tables:
 syn match   abapSpecial       "\(\W\|^\)\(sy\|\(p\|pa\)\d\d\d\d\|t\d\d\d.\|innnn\)\(\W\|$\)"ms=s+1,me=e-1
 syn match   abapSpecialTables "\(sy\|\(p\|pa\)\d\d\d\d\|t\d\d\d.\|innnn\)-"me=e-1 contained
-syn match   abapSpecial       "\(\W\|^\)\w\+-\(\w\+-\w\+\|\w\+\)"ms=s+1 contains=abapSpecialTables
+syn match   abapSpecial       "\(\W\|^\)\w\+-\(\w\+-\w\+\|\w\+\)"ms=s+1 contains=abapSpecialTables,abapStatement,abapComplexStatement
 
 " Pointer
 syn match   abapSpecial  "<\w\+>"
@@ -94,7 +148,7 @@ syn keyword abapSpecial  TRUE FALSE NULL SPACE
 syn region abapInclude   start="include" end="." contains=abapComment
 
 " Types
-syn keyword abapTypes    c n i p f d t x
+syn keyword abapTypes    c n i p f d t x string xstring decfloat16 decfloat34
 
 " Atritmitic operators
 syn keyword abapOperator abs sign ceil floor trunc frac acos asin atan cos sin tan
@@ -107,7 +161,7 @@ syn keyword abapOperator strlen xstrlen charlen numofchar dbmaxlen
 syn keyword abapOperator lines
 
 " Table operators (SELECT operators)
-syn keyword abapOperator INTO FROM WHERE GROUP BY HAVING ORDER BY SINGLE
+syn keyword abapOperator INTO WHERE GROUP BY HAVING ORDER BY SINGLE
 syn keyword abapOperator APPENDING CORRESPONDING FIELDS OF TABLE
 syn keyword abapOperator LEFT RIGHT OUTER INNER JOIN AS CLIENT SPECIFIED BYPASSING BUFFER UP TO ROWS CONNECTING
 syn keyword abapOperator EQ NE LT LE GT GE NOT AND OR XOR IN LIKE BETWEEN
@@ -119,6 +173,7 @@ syn match   abapError    "\.\."
 syn region  abapComment  start="^\*" end="$" contains=abapTodo
 syn match   abapComment  "\".*" contains=abapTodo
 syn keyword abapTodo     contained TODO NOTE
+syn match   abapTodo     "\#EC\W\+\w\+"
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
@@ -134,13 +189,18 @@ if version >= 508 || !exists("did_abap_syntax_inits")
   HiLink abapError          Error
   HiLink abapComment        Comment
   HiLink abapInclude        Include
+  HiLink abapStatement      Statement
+  HiLink abapComplexStatement      Statement
   HiLink abapSpecial        Special
+  HiLink abapNamespace      Special
   HiLink abapSpecialTables  PreProc
   HiLink abapSymbolOperator abapOperator
   HiLink abapOperator       Operator
-  HiLink abapStatement      Statement
+  HiLink abapCharString     String
   HiLink abapString         String
   HiLink abapFloat          Float
+  HiLink abapTypes          Type
+  HiLink abapSymbol         Structure
   HiLink abapNumber         Number
   HiLink abapHex            Number
 

@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.3.  Last change: 2012 Jun 06
+*mbyte.txt*     For Vim version 7.3.  Last change: 2012 Oct 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -1084,6 +1084,13 @@ also add this line: >
 Since the mapping is defined with |:lnoremap| the resulting quote will not be
 used for the start of another character.
 The "accents" keymap uses this.				*keymap-accents*
+
+The first column can also be in |<>| form:
+	<C-c>		Ctrl-C
+	<A-c>		Alt-c
+	<A-C>		Alt-C
+Note that the Alt mappings may not work, depending on your keyboard and
+terminal.
 
 Although it's possible to have more than one character in the second column,
 this is unusual.  But you can use various ways to specify the character: >

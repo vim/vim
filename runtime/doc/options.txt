@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2012 Aug 15
+*options.txt*	For Vim version 7.3.  Last change: 2012 Oct 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -756,7 +756,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	When on and 'termbidi' is off, the required visual character
 	corrections that need to take place for displaying the Arabic language
-	take affect.  Shaping, in essence, gets enabled; the term is a broad
+	take effect.  Shaping, in essence, gets enabled; the term is a broad
 	one which encompasses:
 	  a) the changing/morphing of characters based on their location
 	     within a word (initial, medial, final and stand-alone).
@@ -6119,7 +6119,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to buffer
 	Number of spaces to use for each step of (auto)indent.  Used for
 	|'cindent'|, |>>|, |<<|, etc.
-	When zero the 'ts' value will be used.
+	When zero the 'ts' value will be used.  Use the |shiftwidth()|
+	function to get the effective shiftwidth value.
 
 						*'shortmess'* *'shm'*
 'shortmess' 'shm'	string	(Vim default "filnxtToO", Vi default: "",
@@ -6383,6 +6384,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	of 8, while being able to edit like it is set to 'sts'.  However,
 	commands like "x" still work on the actual characters.
 	When 'sts' is zero, this feature is off.
+	When 'sts' is negative, the value of 'shiftwidth' is used.
 	'softtabstop' is set to 0 when the 'paste' option is set.
 	See also |ins-expandtab|.  When 'expandtab' is not set, the number of
 	spaces is minimized by using <Tab>s.

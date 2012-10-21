@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2012 Sep 05
+*eval.txt*	For Vim version 7.3.  Last change: 2012 Oct 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -91,8 +91,8 @@ For boolean operators Numbers are used.  Zero is FALSE, non-zero is TRUE.
 Note that in the command >
 	:if "foo"
 "foo" is converted to 0, which means FALSE.  To test for a non-empty string,
-use strlen(): >
-	:if strlen("foo")
+use empty(): >
+	:if !empty("foo")
 <				*E745* *E728* *E703* *E729* *E730* *E731*
 List, Dictionary and Funcref types are not automatically converted.
 

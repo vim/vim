@@ -3,7 +3,7 @@
 " Maintainer:  Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
 " Former Maintainers: Gerfried Fuchs <alfie@ist.org>
 "                     Wichert Akkerman <wakkerma@debian.org>
-" Last Change: 2011 Dec 09
+" Last Change: 2012 Jun 06
 " URL: http://anonscm.debian.org/hg/pkg-vim/vim/raw-file/unstable/runtime/syntax/debcontrol.vim
 
 " Standard syntax initialization
@@ -45,7 +45,7 @@ syn match	debcontrolEmail	"[_=[:alnum:]\.+-]\+@[[:alnum:]\./\-]\+"
 syn match	debcontrolEmail	"<.\{-}>"
 
 " #-Comments
-syn match debcontrolComment "^#.*$"
+syn match debcontrolComment "^#.*$" contains=@Spell
 
 syn case ignore
 
@@ -69,6 +69,7 @@ syn region debcontrolStrictField start="^\%(XS-\)\=DM-Upload-Allowed" end="$" co
 " Catch-all for the other legal fields
 syn region debcontrolField start="^\%(\%(XSBC-Original-\)\=Maintainer\|Standards-Version\|Essential\|Bugs\|Origin\|X[SB]-Python-Version\|\%(XS-\)\=Vcs-Mtn\):" end="$" contains=debcontrolKey,debcontrolVariable,debcontrolEmail oneline
 syn region debcontrolMultiField start="^\%(Build-\%(Conflicts\|Depends\)\%(-Indep\)\=\|\%(Pre-\)\=Depends\|Recommends\|Suggests\|Provides\|Replaces\|Conflicts\|Enhances\|Breaks\|Uploaders\|Description\):" skip="^ " end="^$"me=s-1 end="^[^ #]"me=s-1 contains=debcontrolKey,debcontrolEmail,debcontrolVariable,debcontrolComment
+syn region debcontrolMultiFieldSpell start="^\%(Description\):" skip="^ " end="^$"me=s-1 end="^[^ #]"me=s-1 contains=debcontrolKey,debcontrolEmail,debcontrolVariable,debcontrolComment,@Spell
 
 " Associate our matches and regions with pretty colours
 if version >= 508 || !exists("did_debcontrol_syn_inits")

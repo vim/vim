@@ -7550,6 +7550,7 @@ shell_error-variable	eval.txt	/*shell_error-variable*
 shellescape()	eval.txt	/*shellescape()*
 shift	intro.txt	/*shift*
 shift-left-right	change.txt	/*shift-left-right*
+shiftwidth()	eval.txt	/*shiftwidth()*
 short-name-changed	version4.txt	/*short-name-changed*
 showing-menus	gui.txt	/*showing-menus*
 sign-commands	sign.txt	/*sign-commands*

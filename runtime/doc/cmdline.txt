@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.3.  Last change: 2012 Jun 20
+*cmdline.txt*   For Vim version 7.3.  Last change: 2012 Oct 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -217,7 +217,7 @@ CTRL-\ e {expr}						*c_CTRL-\_e*
 			   :return cmd
 			:endfunc
 <		This doesn't work recursively, thus not when already editing
-		an expression.
+		an expression.  But it is possible to use in a mapping.
 
 							*c_CTRL-Y*
 CTRL-Y		When there is a modeless selection, copy the selection into

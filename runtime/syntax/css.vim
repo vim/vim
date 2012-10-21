@@ -5,7 +5,8 @@
 "               Yeti            (Add full CSS2, HTML4 support)
 "               Nikolai Weibull (Add CSS2 support)
 " Maintainer:   Jules Wang      <w.jq0722@gmail.com>
-" Last Change:  2012 Oct 05
+" URL:          https://github.com/JulesWang/css.vim
+" Last Change:  2012 Dec 15
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -90,7 +91,37 @@ syn region cssFontDescriptorFunction contained matchgroup=cssFunctionName start=
 syn match cssUnicodeRange contained "U+[0-9A-Fa-f?]\+"
 syn match cssUnicodeRange contained "U+\x\+-\x\+"
 
+" The 16 basic color names
 syn keyword cssColor contained aqua black blue fuchsia gray green lime maroon navy olive purple red silver teal yellow
+
+" 130 more color names
+syn keyword cssColor contained aliceblue antiquewhite aquamarine azure
+syn keyword cssColor contained beige bisque blanchedalmond blueviolet brown burlywood
+syn keyword cssColor contained cadetblue chartreuse chocolate coral cornflowerblue cornsilk crimson cyan
+syn match cssColor contained /dark\(blue\|cyan\|goldenrod\|gray\|green\|grey\|khaki\)/
+syn match cssColor contained /dark\(magenta\|olivegreen\|orange\|orchid\|red\|salmon\|seagreen\)/
+syn match cssColor contained /darkslate\(blue\|gray\|grey\)/
+syn match cssColor contained /dark\(turquoise\|violet\)/
+syn keyword cssColor contained deeppink deepskyblue dimgray dimgrey dodgerblue firebrick
+syn keyword cssColor contained floralwhite forestgreen gainsboro ghostwhite gold
+syn keyword cssColor contained goldenrod greenyellow grey honeydew hotpink
+syn keyword cssColor contained indianred indigo ivory khaki lavender lavenderblush lawngreen
+syn keyword cssColor contained lemonchiffon limegreen linen magenta
+syn match cssColor contained /light\(blue\|coral\|cyan\|goldenrodyellow\|gray\|green\)/
+syn match cssColor contained /light\(grey\|pink\|salmon\|seagreen\|skyblue\|yellow\)/
+syn match cssColor contained /light\(slategray\|slategrey\|steelblue\)/
+syn match cssColor contained /medium\(aquamarine\|blue\|orchid\|purple\|seagreen\)/
+syn match cssColor contained /medium\(slateblue\|springgreen\|turquoise\|violetred\)/
+syn keyword cssColor contained midnightblue mintcream mistyrose moccasin navajowhite
+syn keyword cssColor contained oldlace olivedrab orange orangered orchid
+syn match cssColor contained /pale\(goldenrod\|green\|turquoise\|violetred\)/
+syn keyword cssColor contained papayawhip peachpuff peru pink plum powderblue
+syn keyword cssColor contained rosybrown royalblue saddlebrown salmon sandybrown
+syn keyword cssColor contained seagreen seashell sienna skyblue slateblue
+syn keyword cssColor contained slategray slategrey snow springgreen steelblue tan
+syn keyword cssColor contained thistle tomato turquoise violet wheat
+syn keyword cssColor contained whitesmoke yellowgreen
+
 " FIXME: These are actually case-insentivie too, but (a) specs recommend using
 " mixed-case (b) it's hard to highlight the word `Background' correctly in
 " all situations

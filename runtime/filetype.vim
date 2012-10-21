@@ -1566,7 +1566,7 @@ au BufNewFile,BufRead *.reg
 au BufNewFile,BufRead *.rib			setf rib
 
 " Rexx
-au BufNewFile,BufRead *.rexx,*.rex,*.jrexx,*.rxj,*.orx	setf rexx
+au BufNewFile,BufRead *.rex,*.orx,*.rxo,*.rxj,*.jrexx,*.rexxj,*.rexx,*.testGroup,*.testUnit	setf rexx
 
 " R (Splus)
 if has("fname_case")
@@ -1884,6 +1884,8 @@ au BufNewFile,BufRead *.st			setf st
 au BufNewFile,BufRead *.cls
 	\ if getline(1) =~ '^%' |
 	\  setf tex |
+	\ elseif getline(1)[0] == '#' && getline(1) =~ 'rexx' |
+	\  setf rexx |
 	\ else |
 	\  setf st |
 	\ endif

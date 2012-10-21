@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	APT config file
 " Maintainer:	Yann Amar <quidame@poivron.org>
-" Last Change:	2012 Oct 05
+" Last Change:	2012 Oct 06
 
 " For version 5.x: Clear all syntax items
 " For version 6.x and 7.x: Quit when a syntax file was already loaded
@@ -16,6 +16,7 @@ endif
 
 let s:cpo_save = &cpo
 set cpo&vim
+
 
 " Errors:
 " Catch all that is not overridden by next rules/items:
@@ -490,4 +491,3 @@ let b:current_syntax = "aptconf"
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
-
