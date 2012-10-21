@@ -108,7 +108,7 @@
  */
 #define CMDBUFFSIZE 1024	/* size of the command processing buffer */
 
-/* _MAX_PATH is only 256 (stdlib.h), but we want more for the 'path' option,
+/* _MAX_PATH is only 260 (stdlib.h), but we want more for the 'path' option,
  * thus use a larger number. */
 #define MAXPATHL	1024
 
