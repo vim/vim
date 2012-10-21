@@ -288,18 +288,26 @@ unescape_shellxquote(char_u *p, char_u *escaped)
 vimLoadLib(char *name)
 {
     HINSTANCE dll = NULL;
-    char old_dir[MAXPATHL];
+    TCHAR old_dir[MAXPATHL];
 
+    /* NOTE: Do not use mch_dirname() and mch_chdir() here, they may call
+     * vimLoadLib() recursively, which causes a stack overflow. */
     if (exe_path == NULL)
 	get_exe_name();
-    if (exe_path != NULL && mch_dirname(old_dir, MAXPATHL) == OK)
+    if (exe_path != NULL && GetCurrentDirectory(MAXPATHL, old_dir) != 0)
     {
 	/* Change directory to where the executable is, both to make sure we
 	 * find a .dll there and to avoid looking for a .dll in the current
 	 * directory. */
-	mch_chdir(exe_path);
+	SetCurrentDirectory(exe_path);
 	dll = LoadLibrary(name);
-	mch_chdir(old_dir);
+	SetCurrentDirectory(old_dir);
+    }
+    else
+    {
+	/* We are not able to change directory to where the executable is, try
+	 * to load library anyway. */
+	dll = LoadLibrary(name);
     }
     return dll;
 }
