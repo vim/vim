@@ -960,8 +960,11 @@ getcount:
 #ifdef FEAT_CMDL_INFO
 	    need_flushbuf |= add_to_showcmd(ca.nchar);
 #endif
+	    /* For "gn" from redo, need to get one more char to determine the
+	     * operator */
 	    if (ca.nchar == 'r' || ca.nchar == '\'' || ca.nchar == '`'
-						      || ca.nchar == Ctrl_BSL)
+						       || ca.nchar == Ctrl_BSL
+		  || ((ca.nchar == 'n' || ca.nchar == 'N') && !stuff_empty()))
 	    {
 		cp = &ca.extra_char;	/* need to get a third character */
 		if (ca.nchar != 'r')
@@ -1083,6 +1086,8 @@ getcount:
 		ca.nchar = ca.extra_char;
 		idx = find_command(ca.cmdchar);
 	    }
+	    else if (ca.nchar == 'n' || ca.nchar == 'N')
+		ca.oap->op_type = get_op_type(*cp, NUL);
 	    else if (*cp == Ctrl_BSL)
 	    {
 		long towait = (p_ttm >= 0 ? p_ttm : p_tm);
@@ -8009,7 +8014,7 @@ nv_g_cmd(cap)
 #ifdef FEAT_VISUAL
 	if (!current_search(cap->count1, cap->nchar == 'n'))
 #endif
-	    beep_flush();
+	    clearopbeep(oap);
 	break;
 
     /*
