@@ -16664,7 +16664,7 @@ f_shellescape(argvars, rettv)
  */
     static void
 f_shiftwidth(argvars, rettv)
-    typval_T	*argvars;
+    typval_T	*argvars UNUSED;
     typval_T	*rettv;
 {
     rettv->vval.v_number = get_sw_value();
