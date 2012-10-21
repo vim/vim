@@ -12276,8 +12276,14 @@ f_has(argvars, rettv)
 # ifdef FEAT_MOUSE_PTERM
 	"mouse_pterm",
 # endif
+# ifdef FEAT_MOUSE_SGR
+	"mouse_sgr",
+# endif
 # ifdef FEAT_SYSMOUSE
 	"mouse_sysmouse",
+# endif
+# ifdef FEAT_MOUSE_URXVT
+	"mouse_urxvt",
 # endif
 # ifdef FEAT_MOUSE_XTERM
 	"mouse_xterm",
