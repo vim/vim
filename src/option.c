@@ -7573,24 +7573,30 @@ set_bool_option(opt_idx, varp, value, opt_flags)
     /* 'undofile' */
     else if ((int *)varp == &curbuf->b_p_udf || (int *)varp == &p_udf)
     {
-	char_u	hash[UNDO_HASH_SIZE];
-	buf_T	*save_curbuf = curbuf;
-
-	for (curbuf = firstbuf; curbuf != NULL; curbuf = curbuf->b_next)
+	/* Only take action when the option was set. When reset we do not
+	 * delete the undo file, the option may be set again without making
+	 * any changes in between. */
+	if (curbuf->b_p_udf || p_udf)
 	{
-	    /* When 'undofile' is set globally: for every buffer, otherwise
-	     * only for the current buffer: Try to read in the undofile, if
-	     * one exists and the buffer wasn't changed and the buffer was
-	     * loaded. */
-	    if ((curbuf == save_curbuf
-				|| (opt_flags & OPT_GLOBAL) || opt_flags == 0)
-		    && !curbufIsChanged() && curbuf->b_ml.ml_mfp != NULL)
+	    char_u	hash[UNDO_HASH_SIZE];
+	    buf_T	*save_curbuf = curbuf;
+
+	    for (curbuf = firstbuf; curbuf != NULL; curbuf = curbuf->b_next)
 	    {
-		u_compute_hash(hash);
-		u_read_undo(NULL, hash, curbuf->b_fname);
+		/* When 'undofile' is set globally: for every buffer, otherwise
+		 * only for the current buffer: Try to read in the undofile,
+		 * if one exists, the buffer wasn't changed and the buffer was
+		 * loaded */
+		if ((curbuf == save_curbuf
+				|| (opt_flags & OPT_GLOBAL) || opt_flags == 0)
+			&& !curbufIsChanged() && curbuf->b_ml.ml_mfp != NULL)
+		{
+		    u_compute_hash(hash);
+		    u_read_undo(NULL, hash, curbuf->b_fname);
+		}
 	    }
+	    curbuf = save_curbuf;
 	}
-	curbuf = save_curbuf;
     }
 #endif
 
