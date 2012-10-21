@@ -4079,24 +4079,22 @@ check_termcode(max_offset, buf, bufsize, buflen)
 
 		    if (tp[1 + (tp[0] != CSI)] == '>' && j == 2)
 		    {
+			/* Only set 'ttymouse' automatically if it was not set
+			 * by the user already. */
+			if (!option_was_set((char_u *)"ttym"))
+			{
 # ifdef TTYM_SGR
-			if (extra >= 277
-# ifdef TTYM_URXVT
-				&& ttym_flags != TTYM_URXVT
-# endif
-				)
-			    set_option_value((char_u *)"ttym", 0L,
+			    if (extra >= 277)
+				set_option_value((char_u *)"ttym", 0L,
 							  (char_u *)"sgr", 0);
-                        else
+			    else
 # endif
-			/* if xterm version >= 95 use mouse dragging */
-			if (extra >= 95
-# ifdef TTYM_URXVT
-				&& ttym_flags != TTYM_URXVT
-# endif
-				)
-			    set_option_value((char_u *)"ttym", 0L,
+			    /* if xterm version >= 95 use mouse dragging */
+			    if (extra >= 95)
+				set_option_value((char_u *)"ttym", 0L,
 						       (char_u *)"xterm2", 0);
+			}
+
 			/* if xterm version >= 141 try to get termcap codes */
 			if (extra >= 141)
 			{
