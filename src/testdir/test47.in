@@ -36,7 +36,22 @@ j:let three = three . "-" . winline()
 :call append("$", two)
 :call append("$", three)
 :$-2,$w! test.out
-:unlet one two three
+:" Test that diffing shows correct filler lines
+:diffoff!
+:windo :bw!
+:enew
+:put =range(4,10)
+:1d _
+:vnew
+:put =range(1,10)
+:1d _
+:windo :diffthis
+:wincmd h
+:let w0=line('w0')
+:enew
+:put =w0
+:.w >> test.out
+:unlet! one two three w0
 :qa!
 ENDTEST
 

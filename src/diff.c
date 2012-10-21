@@ -615,11 +615,13 @@ diff_redraw(dofold)
 #endif
 	    /* A change may have made filler lines invalid, need to take care
 	     * of that for other windows. */
-	    if (wp != curwin && wp->w_topfill > 0)
+	    n = diff_check(wp, wp->w_topline);
+	    if ((wp != curwin && wp->w_topfill > 0) || n > 0)
 	    {
-		n = diff_check(wp, wp->w_topline);
 		if (wp->w_topfill > n)
 		    wp->w_topfill = (n < 0 ? 0 : n);
+		else if (n > 0 && n > wp->w_topfill)
+		    wp->w_topfill = n;
 	    }
 	}
 }
