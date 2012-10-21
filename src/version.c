@@ -348,6 +348,7 @@ static char *(features[]) =
 # else
 	"-mouse",
 #endif
+
 #if defined(UNIX) || defined(VMS)
 # ifdef FEAT_MOUSE_DEC
 	"+mouse_dec",
@@ -369,27 +370,8 @@ static char *(features[]) =
 # else
 	"-mouse_netterm",
 # endif
-# ifdef FEAT_SYSMOUSE
-	"+mouse_sysmouse",
-# else
-	"-mouse_sysmouse",
-# endif
-# ifdef FEAT_MOUSE_XTERM
-	"+mouse_xterm",
-# else
-	"-mouse_xterm",
-# endif
-# ifdef FEAT_MOUSE_URXVT
-	"+mouse_urxvt",
-# else
-	"-mouse_urxvt",
-# endif
-# ifdef FEAT_MOUSE_SGR
-	"+mouse_sgr",
-# else
-	"-mouse_sgr",
-# endif
 #endif
+
 #ifdef __QNX__
 # ifdef FEAT_MOUSE_PTERM
 	"+mouse_pterm",
@@ -397,6 +379,30 @@ static char *(features[]) =
 	"-mouse_pterm",
 # endif
 #endif
+
+#if defined(UNIX) || defined(VMS)
+# ifdef FEAT_MOUSE_SGR
+	"+mouse_sgr",
+# else
+	"-mouse_sgr",
+# endif
+# ifdef FEAT_SYSMOUSE
+	"+mouse_sysmouse",
+# else
+	"-mouse_sysmouse",
+# endif
+# ifdef FEAT_MOUSE_URXVT
+	"+mouse_urxvt",
+# else
+	"-mouse_urxvt",
+# endif
+# ifdef FEAT_MOUSE_XTERM
+	"+mouse_xterm",
+# else
+	"-mouse_xterm",
+# endif
+#endif
+
 #ifdef FEAT_MBYTE_IME
 # ifdef DYNAMIC_IME
 	"+multi_byte_ime/dyn",
@@ -719,6 +725,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    705,
 /**/
     704,
 /**/
