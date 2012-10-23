@@ -1086,7 +1086,7 @@ getcount:
 		ca.nchar = ca.extra_char;
 		idx = find_command(ca.cmdchar);
 	    }
-	    else if (ca.nchar == 'n' || ca.nchar == 'N')
+	    else if ((ca.nchar == 'n' || ca.nchar == 'N') && ca.cmdchar == 'g')
 		ca.oap->op_type = get_op_type(*cp, NUL);
 	    else if (*cp == Ctrl_BSL)
 	    {
