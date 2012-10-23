@@ -407,6 +407,9 @@ MSVCVER = 10.0
 !if "$(_NMAKE_VER)" == "10.00.30319.01"
 MSVCVER = 10.0
 !endif
+!if "$(_NMAKE_VER)" == "10.00.40219.01"
+MSVCVER = 10.0
+!endif
 !if "$(_NMAKE_VER)" == "11.00.50727.1"
 MSVCVER = 11.0
 !endif
