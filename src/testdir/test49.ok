@@ -85,8 +85,10 @@ Results of test49.vim:
 *** Test  83: OK (2835)
 *** Test  84: OK (934782101)
 *** Test  85: OK (198689)
---- Test  86: All tests were run with throwing exceptions on error.
+--- Test  86: No Crash for vimgrep on BufUnload
+*** Test  86: OK (0)
+--- Test  87: All tests were run with throwing exceptions on error.
 	      The $VIMNOERRTHROW control is not configured.
---- Test  86: All tests were run with throwing exceptions on interrupt.
+--- Test  87: All tests were run with throwing exceptions on interrupt.
 	      The $VIMNOINTTHROW control is not configured.
-*** Test  86: OK (50443995)
+*** Test  87: OK (50443995)

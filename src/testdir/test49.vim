@@ -9603,9 +9603,28 @@ delfunction Delete_autocommands
 
 Xcheck 198689
 
+"-------------------------------------------------------------------------------
+" Test 86   setloclist crash						    {{{1
+"
+"	    Executing a setloclist() on BufUnload shouldn't crash Vim
+"-------------------------------------------------------------------------------
+
+func F
+    au BufUnload * :call setloclist(0, [{'bufnr':1, 'lnum':1, 'col':1, 'text': 'tango down'}])
+
+    :lvimgrep /.*/ *
+endfunc
+
+XpathINIT
+
+ExecAsScript F
+
+delfunction F
+Xout  "No Crash for vimgrep on BufUnload"
+Xcheck 0 
 
 "-------------------------------------------------------------------------------
-" Test 86:  $VIMNOERRTHROW and $VIMNOINTTHROW support			    {{{1
+" Test 87:  $VIMNOERRTHROW and $VIMNOINTTHROW support			    {{{1
 "
 "	    It is possible to configure Vim for throwing exceptions on error
 "	    or interrupt, controlled by variables $VIMNOERRTHROW and
