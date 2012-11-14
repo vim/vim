@@ -4290,6 +4290,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 	    case '%':
 	    case 'c':
 	    case 's':
+	    case 'S':
 		length_modifier = '\0';
 		str_arg_l = 1;
 		switch (fmt_spec)
@@ -4318,6 +4319,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 		    }
 
 		case 's':
+		case 'S':
 		    str_arg =
 #ifndef HAVE_STDARG_H
 				(char *)get_a_arg(arg_idx);
@@ -4354,6 +4356,24 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 			str_arg_l = (q == NULL) ? precision
 						      : (size_t)(q - str_arg);
 		    }
+#ifdef FEAT_MBYTE
+		    if (fmt_spec == 'S')
+		    {
+			if (min_field_width != 0)
+			    min_field_width += STRLEN(str_arg)
+				     - mb_string2cells((char_u *)str_arg, -1);
+			if (precision)
+			{
+			    char_u *p1 = (char_u *)str_arg;
+			    size_t i;
+
+			    for (i = 0; i < precision && *p1; i++)
+				p1 += mb_ptr2len(p1);
+
+			    str_arg_l = precision = p1 - (char_u *)str_arg;
+			}
+		    }
+#endif
 		    break;
 
 		default:

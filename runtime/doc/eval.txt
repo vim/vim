@@ -4451,6 +4451,7 @@ printf({fmt}, {expr1} ...)				*printf()*
 
 		Often used items are:
 		  %s	string
+		  %6S	string right-aligned in 6 display cells
 		  %6s	string right-aligned in 6 bytes
 		  %.9s	string truncated to 9 bytes
 		  %c	single byte
@@ -4565,6 +4566,10 @@ printf({fmt}, {expr1} ...)				*printf()*
 		s	The text of the String argument is used.  If a
 			precision is specified, no more bytes than the number
 			specified are used.
+		S	The text of the String argument is used.  If a
+			precision is specified, no more display cells than the
+			number specified are used.  Without the |+multi_byte|
+			feature works just like 's'.
 
 							*printf-f* *E807*
 		f	The Float argument is converted into a string of the 
