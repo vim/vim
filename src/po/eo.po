@@ -23,8 +23,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Esperanto)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-01-22 15:37+0100\n"
-"PO-Revision-Date: 2012-01-22 15:38+0100\n"
+"POT-Creation-Date: 2012-08-19 06:35+0200\n"
+"PO-Revision-Date: 2012-08-19 06:41+0200\n"
 "Last-Translator: Dominique PELLÉ <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "Language: eo\n"
@@ -53,6 +53,9 @@ msgstr "[Listo de lokoj]"
 # DP: Ĉu vere indas traduki Quickfix?
 msgid "[Quickfix List]"
 msgstr "[Listo de rapidriparoj]"
+
+msgid "E855: Autocommands caused command to abort"
+msgstr "E855: Aŭtokomandoj haltigis komandon"
 
 msgid "E82: Cannot allocate any buffer, exiting..."
 msgstr "E82: Ne eblas disponigi iun ajn bufron, nun eliras..."
@@ -2635,6 +2638,10 @@ msgstr "nepermesita en sabloludejo de Vim"
 msgid "E836: This Vim cannot execute :python after using :py3"
 msgstr "E836: Vim ne povas plenumi :python post uzo de :py3"
 
+#. Add conversion from PyInt?
+msgid "only string keys are allowed"
+msgstr "nur ĉenaj ŝlosiloj estas permisataj"
+
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
 "loaded."
@@ -2644,6 +2651,12 @@ msgstr ""
 
 msgid "E659: Cannot invoke Python recursively"
 msgstr "E659: Ne eblas alvoki Pitonon rekursie"
+
+msgid "E858: Eval did not return a valid python object"
+msgstr "E858: Eval ne revenis kun valida python-objekto"
+
+msgid "E859: Failed to convert returned python object to vim value"
+msgstr "E859: Konverto de revena python-objekto al vim-valoro fiaskis"
 
 msgid "can't delete OutputObject attributes"
 msgstr "ne eblas forviŝi atributojn de OutputObject"
@@ -2660,6 +2673,12 @@ msgstr "<bufra objekto (forviŝita) ĉe %p>"
 
 msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: Vim ne povas plenumi :py3  post uzo de :python"
+
+msgid "E860: Eval did not return a valid python 3 object"
+msgstr "E860: Eval ne revenis kun valida python3-objekto"
+
+msgid "E861: Failed to convert returned python 3 object to vim value"
+msgstr "E861: Konverto de revena python3-objekto al vim-valoro fiaskis"
 
 msgid "E265: $_ must be an instance of String"
 msgstr "E265: $_ devas esti apero de Ĉeno"
@@ -2849,12 +2868,6 @@ msgstr ""
 "E571: Bedaŭrinde tiu komando estas malŝaltita: la biblioteko Tcl ne "
 "ŝargeblis."
 
-msgid ""
-"E281: TCL ERROR: exit code is not int!? Please report this to vim-dev@vim.org"
-msgstr ""
-"E281: TCL-ERARO: elira kodo ne estas entjera!? Bv. retpoŝti al vim-dev@vim."
-"org"
-
 #, c-format
 msgid "E572: exit code %d"
 msgstr "E572: elira kodo %d"
@@ -3011,6 +3024,9 @@ msgstr "-v\t\t\tReĝimo Vi (kiel \"vi\")"
 
 msgid "-e\t\t\tEx mode (like \"ex\")"
 msgstr "-e\t\t\tReĝimo Ex (kiel \"ex\")"
+
+msgid "-E\t\t\tImproved Ex mode"
+msgstr "-E\t\t\tPlibonigita Ex-reĝimo"
 
 msgid "-s\t\t\tSilent (batch) mode (only for \"ex\")"
 msgstr "-s\t\t\tSilenta (stapla) reĝimo (nur por \"ex\")"
@@ -3268,6 +3284,9 @@ msgstr "--role <rolo>\tDoni unikan rolon por identigi la ĉefan fenestron"
 
 msgid "--socketid <xid>\tOpen Vim inside another GTK widget"
 msgstr "--socketid <xid>\tMalfermi Vim en alia GTK fenestraĵo"
+
+msgid "--echo-wid\t\tMake gvim echo the Window ID on stdout"
+msgstr "--echo-wid\t\tIgas gvim afiŝi la identigilon de vindozo sur stdout"
 
 msgid "-P <parent title>\tOpen Vim inside parent application"
 msgstr "-P <gepatra titolo>\tMalfermi Vim en gepatra aplikaĵo"
@@ -6556,6 +6575,42 @@ msgstr "E264: Pitono: Eraro de pravalorizo de eneligaj objektoj"
 msgid "no such buffer"
 msgstr "ne estas tia bufro"
 
+msgid "failed to add key to dictionary"
+msgstr "aldono de ŝlosilo al vortaro fiaskis"
+
+msgid "dict is locked"
+msgstr "vortaro estas ŝlosita"
+
+msgid "no such key in dictionary"
+msgstr "tiu ŝlosilo ne ekzistas en vortaro"
+
+msgid "internal error: failed to get vim list item"
+msgstr "interna eraro: obteno de vim-a listero fiaskis"
+
+msgid "list is locked"
+msgstr "listo estas ŝlosita"
+
+msgid "Failed to add item to list"
+msgstr "Aldono de listero fiaskis"
+
+msgid "internal error: no vim list item"
+msgstr "interna eraro: neniu vim-a listero"
+
+msgid "can only assign lists to slice"
+msgstr "nur eblas pravalorizi listojn al segmento"
+
+msgid "internal error: failed to add item to list"
+msgstr "interna eraro: aldono de listero fiaskis"
+
+msgid "can only concatenate with lists"
+msgstr "eblas nur kunmeti kun listoj"
+
+msgid "'self' argument must be a dictionary"
+msgstr "argumento 'self' devas esti vortaro"
+
+msgid "failed to run function"
+msgstr "fiaskis ruli funkcion"
+
 msgid "attempt to refer to deleted window"
 msgstr "provo de referenco al forviŝita fenestro"
 
@@ -6583,22 +6638,11 @@ msgstr "ne estas tia fenestro"
 msgid "attempt to refer to deleted buffer"
 msgstr "provo de referenco al forviŝita bufro"
 
-#~ msgid ""
-#~ "\n"
-#~ "Arguments recognised by gvim (RISC OS version):\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Argumentoj agnoskitaj de gvim (versio RISC OS):\n"
+msgid "unable to convert to vim structure"
+msgstr "ne povis konverti al vim-strukturo"
 
-#~ msgid "--columns <number>\tInitial width of window in columns"
-#~ msgstr "--columns <nombro>\tKomenca larĝo de fenestro en kolumnoj"
+msgid "NULL reference passed"
+msgstr "NULL-referenco argumento"
 
-#~ msgid "--rows <number>\tInitial height of window in rows"
-#~ msgstr "--rows <nombro>\tKomenca alto de fenestro en vicoj"
-
-#~ msgid ""
-#~ "\n"
-#~ "RISC OS version"
-#~ msgstr ""
-#~ "\n"
-#~ "Versio RISC operaciumo"
+msgid "internal error: invalid value type"
+msgstr "interna eraro: nevalida typo de valoro"

@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 7.3.  Last change: 2012 Aug 02
+*if_perl.txt*   For Vim version 7.3.  Last change: 2012 Oct 25
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -175,7 +175,8 @@ VIM::Windows([{wn}...])	With no arguments, returns a list of all the windows
 VIM::DoCommand({cmd})	Executes Ex command {cmd}.
 
 							*perl-Eval*
-VIM::Eval({expr})	Evaluates {expr} and returns (success, val).
+VIM::Eval({expr})	Evaluates {expr} and returns (success, value) in list 
+			context or just value in scalar context.
 			success=1 indicates that val contains the value of
 			{expr}; success=0 indicates a failure to evaluate
 			the expression.  '@x' returns the contents of register

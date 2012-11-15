@@ -1,4 +1,4 @@
-*usr_21.txt*	For Vim version 7.3.  Last change: 2008 Nov 09
+*usr_21.txt*	For Vim version 7.3.  Last change: 2012 Nov 02
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -282,7 +282,7 @@ example, use: >
 SESSION HERE, SESSION THERE
 
 The obvious way to use sessions is when working on different projects.
-Suppose you store you session files in the directory "~/.vim".  You are
+Suppose you store your session files in the directory "~/.vim".  You are
 currently working on the "secret" project and have to switch to the "boring"
 project: >
 
@@ -295,7 +295,7 @@ is saved, using ":mksession!".  This overwrites the previous session.  The
 next time you load the secret session you can continue where you were at this
 point.  And finally you load the new "boring" session.
 
-If you open help windows, split and close various window, and generally mess
+If you open help windows, split and close various windows, and generally mess
 up the window layout, you can go back to the last saved session: >
 
 	:source ~/.vim/boring.vim
@@ -423,10 +423,10 @@ and nine numbered 1 to 9.
 A VIEW WITH A NAME
 
 The second basic way to use views is by storing the view in a file with a name
-you chose.  This view can be loaded while editing another file.  Vim will then
-switch to editing the file specified in the view.  Thus you can use this to
-quickly switch to editing another file, with all its options set as you saved
-them.
+you choose.  This view can be loaded while editing another file.  Vim will
+then switch to editing the file specified in the view.  Thus you can use this
+to quickly switch to editing another file, with all its options set as you
+saved them.
    For example, to save the view of the current file: >
 
 	:mkview ~/.vim/main.vim

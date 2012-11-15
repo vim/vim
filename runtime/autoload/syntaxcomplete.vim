@@ -1,11 +1,27 @@
 " Vim completion script
 " Language:    All languages, uses existing syntax highlighting rules
 " Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
-" Version:     8.0
-" Last Change: 2011 Nov 02
+" Version:     10.0
+" Last Change: 2012 Oct 20
 " Usage:       For detailed help, ":help ft-syntax-omni" 
 
 " History
+"
+" Version 10.0
+"     Cycle through all the character ranges specified in the
+"     iskeyword option and build a list of valid word separators.
+"     Prior to this change, only actual characters were used, 
+"     where for example ASCII "45" == "-".  If "45" were used 
+"     in iskeyword the hyphen would not be picked up.  
+"     This introduces a new option, since the character ranges
+"     specified could be multibyte:
+"         let g:omni_syntax_use_single_byte = 1
+"     This by default will only allow single byte ASCII 
+"     characters to be added and an additional check to ensure
+"     the charater is printable (see documentation for isprint).
+"
+" Version 9.0
+"     Add the check for cpo.
 "
 " Version 8.0
 "     Updated SyntaxCSyntaxGroupItems()
@@ -50,7 +66,11 @@ endif
 if exists('g:loaded_syntax_completion')
     finish 
 endif
-let g:loaded_syntax_completion = 80
+let g:loaded_syntax_completion = 100
+
+" Turn on support for line continuations when creating the script
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Set ignorecase to the ftplugin standard
 " This is the default setting, but if you define a buffer local
@@ -65,6 +85,18 @@ endif
 " variable you can override this on a per filetype.
 if !exists('g:omni_syntax_use_iskeyword')
     let g:omni_syntax_use_iskeyword = 1
+endif
+
+" When using iskeyword, this setting controls whether the characters
+" should be limited to single byte characters.
+if !exists('g:omni_syntax_use_single_byte')
+    let g:omni_syntax_use_single_byte = 1
+endif
+
+" When using iskeyword, this setting controls whether the characters
+" should be limited to single byte characters.
+if !exists('g:omni_syntax_use_iskeyword_numeric')
+    let g:omni_syntax_use_iskeyword_numeric = 1
 endif
 
 " Only display items in the completion window that are at least
@@ -446,19 +478,66 @@ function! s:SyntaxCSyntaxGroupItems( group_name, syntax_full )
             " This will replace non-word characters with spaces.
             let syn_list = substitute( syn_list, '[^0-9A-Za-z_ ]', ' ', 'g' )
         else
-            let accept_chars = ','.&iskeyword.','
-            " Remove all character ranges
-            " let accept_chars = substitute(accept_chars, ',[^,]\+-[^,]\+,', ',', 'g')
-            let accept_chars = substitute(accept_chars, ',\@<=[^,]\+-[^,]\+,', '', 'g')
-            " Remove all numeric specifications
-            " let accept_chars = substitute(accept_chars, ',\d\{-},', ',', 'g')
-            let accept_chars = substitute(accept_chars, ',\@<=\d\{-},', '', 'g')
-            " Remove all commas
-            let accept_chars = substitute(accept_chars, ',', '', 'g')
-            " Escape special regex characters
-            let accept_chars = escape(accept_chars, '\\/.*$^~[]' )
-            " Remove all characters that are not acceptable
-            let syn_list = substitute( syn_list, '[^0-9A-Za-z_ '.accept_chars.']', ' ', 'g' )
+            if g:omni_syntax_use_iskeyword_numeric == 1
+                " iskeyword can contain value like this
+                " 38,42,43,45,47-58,60-62,64-90,97-122,_,+,-,*,/,%,<,=,>,:,$,?,!,@-@,94
+                " Numeric values convert to their ASCII equivalent using the
+                " nr2char() function.
+                "     &       38
+                "     *       42 
+                "     +       43
+                "     -       45 
+                "     ^       94
+                " Iterate through all numeric specifications and convert those 
+                " to their ascii equivalent ensuring the character is printable.
+                " If so, add it to the list.
+                let accepted_chars = ''
+                for item in split(&iskeyword, ',')
+                    if item =~ '-'
+                        " This is a character range (ie 47-58), 
+                        " cycle through each character within the range
+                        let [b:start, b:end] = split(item, '-')
+                        for range_item in range( b:start, b:end )
+                            if range_item <= 127 || g:omni_syntax_use_single_byte == 0
+                                if nr2char(range_item) =~ '\p'
+                                    let accepted_chars = accepted_chars . nr2char(range_item)
+                                endif
+                            endif
+                        endfor
+                    elseif item =~ '^\d\+$'
+                        " Only numeric, translate to a character
+                        if item < 127 || g:omni_syntax_use_single_byte == 0
+                            if nr2char(item) =~ '\p'
+                                let accepted_chars = accepted_chars . nr2char(item)
+                            endif
+                        endif
+                    else
+                        if char2nr(item) < 127 || g:omni_syntax_use_single_byte == 0
+                            if item =~ '\p'
+                                let accepted_chars = accepted_chars . item
+                            endif
+                        endif
+                    endif
+                endfor
+                " Escape special regex characters
+                let accepted_chars = escape(accepted_chars, '\\/.*$^~[]' )
+                " Remove all characters that are not acceptable
+                let syn_list = substitute( syn_list, '[^A-Za-z'.accepted_chars.']', ' ', 'g' )
+            else
+                let accept_chars = ','.&iskeyword.','
+                " Remove all character ranges
+                " let accept_chars = substitute(accept_chars, ',[^,]\+-[^,]\+,', ',', 'g')
+                let accept_chars = substitute(accept_chars, ',\@<=[^,]\+-[^,]\+,', '', 'g')
+                " Remove all numeric specifications
+                " let accept_chars = substitute(accept_chars, ',\d\{-},', ',', 'g')
+                let accept_chars = substitute(accept_chars, ',\@<=\d\{-},', '', 'g')
+                " Remove all commas
+                let accept_chars = substitute(accept_chars, ',', '', 'g')
+                " Escape special regex characters
+                let accept_chars = escape(accept_chars, '\\/.*$^~[]' )
+                " Remove all characters that are not acceptable
+                let syn_list = substitute( syn_list, '[^0-9A-Za-z_'.accept_chars.']', ' ', 'g' )
+            endif
         endif
 
         if b:omni_syntax_minimum_length > 0
@@ -471,3 +550,27 @@ function! s:SyntaxCSyntaxGroupItems( group_name, syntax_full )
 
     return syn_list
 endfunction
+
+function! OmniSyntaxShowChars(spec)
+  let result = []
+  for item in split(a:spec, ',')
+    if len(item) > 1
+      if item == '@-@'
+        call add(result, char2nr(item))
+      else
+        call extend(result, call('range', split(item, '-')))
+      endif
+    else
+      if item == '@'  " assume this is [A-Za-z]
+        for [c1, c2] in [['A', 'Z'], ['a', 'z']]
+          call extend(result, range(char2nr(c1), char2nr(c2)))
+        endfor
+      else
+        call add(result, char2nr(item))
+      endif
+    endif
+  endfor
+  return join(map(result, 'nr2char(v:val)'), ', ')
+endfunction
+let &cpo = s:cpo_save
+unlet s:cpo_save

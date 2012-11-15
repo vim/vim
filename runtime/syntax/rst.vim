@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         reStructuredText documentation format
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2012-08-05
+" Latest Revision:  2012-11-01
 
 if exists("b:current_syntax")
   finish
@@ -139,6 +139,27 @@ syn match   rstStandaloneHyperlink  contains=@NoSpell
 " though.
 syn sync minlines=50 linebreaks=1
 
+syn region rstCodeBlock contained matchgroup=rstDirective
+      \ start=+\%(sourcecode\|code\%(-block\)\=\)::\s+
+      \ skip=+^$+
+      \ end=+^\s\@!+ 
+      \ contains=@NoSpell
+syn cluster rstDirectives add=rstCodeBlock
+
+if !exists('g:rst_syntax_code_list')
+    let g:rst_syntax_code_list = ['vim', 'java', 'cpp', 'lisp', 'php', 'python', 'perl']
+endif
+
+for code in g:rst_syntax_code_list
+    unlet! b:current_syntax
+    exe 'syn include @rst'.code.' syntax/'.code.'.vim'
+    exe 'syn region rstDirective'.code.' matchgroup=rstDirective fold '
+                \.'start=#\%(sourcecode\|code\%(-block\)\=\)::\s\+'.code.'\s*$# '
+                \.'skip=#^$# '
+                \.'end=#^\s\@!# contains=@NoSpell,@rst'.code
+    exe 'syn cluster rstDirectives add=rstDirective'.code
+endfor
+
 hi def link rstTodo                         Todo
 hi def link rstComment                      Comment
 hi def link rstSections                     Title
@@ -168,6 +189,7 @@ hi def link rstFootnoteReference            Identifier
 hi def link rstCitationReference            Identifier
 hi def link rstHyperLinkReference           Identifier
 hi def link rstStandaloneHyperlink          Identifier
+hi def link rstCodeBlock                    String
 
 let b:current_syntax = "rst"
 

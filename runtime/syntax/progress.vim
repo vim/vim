@@ -3,13 +3,13 @@
 " Filename extensions:	*.p (collides with Pascal),
 "			*.i (collides with assembler)
 "			*.w (collides with cweb)
-" Maintainer:		Philip Uren	<philuSPAX@ieee.org> Remove SPAX spam block
-" Contributors:         Chris Ruprecht	<chris@ruprecht.org>
-"					Philip Uren		<philu@computer.org>
-"					Mikhail Kuperblum	<mikhail@whasup.com>
-"					John Florian		<jflorian@voyager.net>
-" Version:              12
-" Last Change:		Aug 16 2012
+" Maintainer:		Philip Uren		<philuSPAXY@ieee.org> Remove SPAXY spam block
+" Contributors:         Matthew Stickney	<mtstickneySPAXY@gmail.com>
+" 			Chris Ruprecht		<chrisSPAXY@ruprecht.org>
+"			Mikhail Kuperblum	<mikhailSPAXY@whasup.com>
+"			John Florian		<jflorianSPAXY@voyager.net>
+" Version:              13
+" Last Change:		Nov 11 2012
 
 " For version 5.x: Clear all syntax item
 " For version 6.x: Quit when a syntax file was already loaded
@@ -99,8 +99,8 @@ syn keyword ProgressReserved	window-maxim[ized] window-minim[ized] window-normal
 " Strings. Handles embedded quotes.
 " Note that, for some reason, Progress doesn't use the backslash, "\"
 " as the escape character; it uses tilde, "~".
-syn region ProgressString	matchgroup=ProgressQuote	start=+"+ end=+"+	skip=+\~'\|\~\~+ contains=@Spell
-syn region ProgressString	matchgroup=ProgressQuote	start=+'+ end=+'+	skip=+\~'\|\~\~+ contains=@Spell
+syn region ProgressString matchgroup=ProgressQuote start=+"+ end=+"+ skip=+\~'\|\~\~\|\~"+ contains=@Spell
+syn region ProgressString matchgroup=ProgressQuote start=+'+ end=+'+ skip=+\~'\|\~\~\|\~"+ contains=@Spell
 
 syn match  ProgressIdentifier		"\<[a-zA-Z_][a-zA-Z0-9_]*\>()"
 

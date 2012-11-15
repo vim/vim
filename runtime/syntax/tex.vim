@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
-" Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Apr 24, 2012
-" Version:	73
+" Maintainer:	Charles E. Campbell <NdrchipO@ScampbellPfamily.AbizM>
+" Last Change:	Nov 14, 2012
+" Version:	75
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -155,7 +155,7 @@ endif
 " Try to flag {} and () mismatches: {{{1
 if !exists("g:tex_no_error")
  syn region texMatcher		matchgroup=Delimiter start="{" skip="\\\\\|\\[{}]"	end="}"		contains=@texMatchGroup,texError
- syn region texMatcher		matchgroup=Delimiter start="\["				end="]"		contains=@texMatchGroup,texError
+ syn region texMatcher		matchgroup=Delimiter start="\["				end="]"		contains=@texMatchGroup,texError,@NoSpell
 else
  syn region texMatcher		matchgroup=Delimiter start="{" skip="\\\\\|\\[{}]"	end="}"		contains=@texMatchGroup
  syn region texMatcher		matchgroup=Delimiter start="\["				end="]"		contains=@texMatchGroup
@@ -723,7 +723,7 @@ if has("conceal") && &enc == 'utf-8'
     \ ['leftarrowtail'	, '↢'],
     \ ['leftharpoondown', '↽'],
     \ ['leftharpoonup'	, '↼'],
-    \ ['leftrightarrow'	, '⇔'],
+    \ ['leftrightarrow'	, '↔'],
     \ ['Leftrightarrow'	, '⇔'],
     \ ['leftrightsquigarrow', '↭'],
     \ ['leftthreetimes'	, '⋋'],

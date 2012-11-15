@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Yacc
-" Maintainer:	Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Aug 12, 2010
-" Version:	9
+" Maintainer:	Charles E. Campbell <NdrOchipS@PcampbellAfamily.Mbiz>
+" Last Change:	Nov 14, 2012
+" Version:	10
 " URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Options: {{{1
@@ -20,18 +20,24 @@ endif
 " ---------------------------------------------------------------------
 "  Folding Support {{{1
 if has("folding")
- com! -nargs=+ HiFold	<args> fold
+ com! -nargs=+ SynFold	<args> fold
 else
- com! -nargs=+ HiFold	<args>
+ com! -nargs=+ SynFold	<args>
 endif
 
 " ---------------------------------------------------------------------
 " Read the C syntax to start with {{{1
-if exists("g:yacc_uses_cpp")
- syn include @yaccCode	<sfile>:p:h/cpp.vim
-else
- syn include @yaccCode	<sfile>:p:h/c.vim
+" Read the C/C++ syntax to start with
+let s:Cpath= fnameescape(expand("<sfile>:p:h").(exists("g:yacc_uses_cpp")? "/cpp.vim" : "/c.vim"))
+if !filereadable(s:Cpath)
+ for s:Cpath in split(globpath(&rtp,(exists("g:yacc_uses_cpp")? "syntax/cpp.vim" : "syntax/c.vim")),"\n")
+  if filereadable(fnameescape(s:Cpath))
+   let s:Cpath= fnameescape(s:Cpath)
+   break
+  endif
+ endfor
 endif
+exe "syn include @yaccCode ".s:Cpath
 
 " ---------------------------------------------------------------------
 "  Yacc Clusters: {{{1
@@ -40,12 +46,12 @@ syn cluster yaccRulesCluster	contains=yaccNonterminal,yaccString
 
 " ---------------------------------------------------------------------
 "  Yacc Sections: {{{1
-HiFold syn	region	yaccInit	start='.'ms=s-1,rs=s-1	matchgroup=yaccSectionSep	end='^%%$'me=e-2,re=e-2	contains=@yaccInitCluster	nextgroup=yaccRules	skipwhite skipempty contained
-HiFold syn	region	yaccInit2      start='\%^.'ms=s-1,rs=s-1	matchgroup=yaccSectionSep	end='^%%$'me=e-2,re=e-2	contains=@yaccInitCluster	nextgroup=yaccRules	skipwhite skipempty
-HiFold syn	region	yaccHeader2	matchgroup=yaccSep	start="^\s*\zs%{"	end="^\s*%}"		contains=@yaccCode	nextgroup=yaccInit	skipwhite skipempty contained
-HiFold syn	region	yaccHeader	matchgroup=yaccSep	start="^\s*\zs%{"	end="^\s*%}"		contains=@yaccCode	nextgroup=yaccInit	skipwhite skipempty
-HiFold syn	region	yaccRules	matchgroup=yaccSectionSep	start='^%%$'		end='^%%$'me=e-2,re=e-2	contains=@yaccRulesCluster	nextgroup=yaccEndCode	skipwhite skipempty contained
-HiFold syn	region	yaccEndCode	matchgroup=yaccSectionSep	start='^%%$'		end='\%$'		contains=@yaccCode	contained
+SynFold syn	region	yaccInit	start='.'ms=s-1,rs=s-1	matchgroup=yaccSectionSep	end='^%%$'me=e-2,re=e-2	contains=@yaccInitCluster	nextgroup=yaccRules	skipwhite skipempty contained
+SynFold syn	region	yaccInit2      start='\%^.'ms=s-1,rs=s-1	matchgroup=yaccSectionSep	end='^%%$'me=e-2,re=e-2	contains=@yaccInitCluster	nextgroup=yaccRules	skipwhite skipempty
+SynFold syn	region	yaccHeader2	matchgroup=yaccSep	start="^\s*\zs%{"	end="^\s*%}"		contains=@yaccCode	nextgroup=yaccInit	skipwhite skipempty contained
+SynFold syn	region	yaccHeader	matchgroup=yaccSep	start="^\s*\zs%{"	end="^\s*%}"		contains=@yaccCode	nextgroup=yaccInit	skipwhite skipempty
+SynFold syn	region	yaccRules	matchgroup=yaccSectionSep	start='^%%$'		end='^%%$'me=e-2,re=e-2	contains=@yaccRulesCluster	nextgroup=yaccEndCode	skipwhite skipempty contained
+SynFold syn	region	yaccEndCode	matchgroup=yaccSectionSep	start='^%%$'		end='\%$'		contains=@yaccCode	contained
 
 " ---------------------------------------------------------------------
 " Yacc Commands: {{{1
@@ -63,11 +69,11 @@ syn	match	yaccKey	"\$\(<[a-zA-Z_][a-zA-Z_0-9]*>\)\=[\$0-9]\+"	contained
 syn	keyword	yaccKeyActn	yyerrok yyclearin	contained
 
 syn	match	yaccUnionStart	"^%union"	skipwhite skipnl nextgroup=yaccUnion	contained
-HiFold syn	region	yaccUnion	matchgroup=yaccCurly start="{" matchgroup=yaccCurly end="}" contains=@yaccCode	contained
+SynFold syn	region	yaccUnion	matchgroup=yaccCurly start="{" matchgroup=yaccCurly end="}" contains=@yaccCode	contained
 syn	match	yaccBrkt	"[<>]"	contained
 syn	match	yaccType	"<[a-zA-Z_][a-zA-Z0-9_]*>"	contains=yaccBrkt	contained
 
-HiFold syn	region	yaccNonterminal	start="^\s*\a\w*\ze\_s*\(/\*\_.\{-}\*/\)\=\_s*:"	matchgroup=yaccDelim end=";"	matchgroup=yaccSectionSep end='^%%$'me=e-2,re=e-2 contains=yaccAction,yaccDelim,yaccString,yaccComment	contained
+SynFold syn	region	yaccNonterminal	start="^\s*\a\w*\ze\_s*\(/\*\_.\{-}\*/\)\=\_s*:"	matchgroup=yaccDelim end=";"	matchgroup=yaccSectionSep end='^%%$'me=e-2,re=e-2 contains=yaccAction,yaccDelim,yaccString,yaccComment	contained
 syn	region	yaccComment	start="/\*"	end="\*/"
 syn	match	yaccString	"'[^']*'"	contained
 
@@ -75,7 +81,8 @@ syn	match	yaccString	"'[^']*'"	contained
 " ---------------------------------------------------------------------
 " I'd really like to highlight just the outer {}.  Any suggestions??? {{{1
 syn	match	yaccCurlyError	"[{}]"
-HiFold syn	region	yaccAction	matchgroup=yaccCurly start="{" end="}" contains=@yaccCode	contained
+SynFold syn	region	yaccAction	matchgroup=yaccCurly start="{" end="}" 	contains=@yaccCode,yaccVar		contained
+syn	match	yaccVar	'\$\d\+\|\$\$\|\$<\I\i*>\$\|\$<\I\i*>\d\+'	containedin=cParen,cPreProc,cMulti	contained
 
 " ---------------------------------------------------------------------
 " Yacc synchronization: {{{1
@@ -84,39 +91,30 @@ syn sync fromstart
 " ---------------------------------------------------------------------
 " Define the default highlighting. {{{1
 if !exists("did_yacc_syn_inits")
-  command -nargs=+ HiLink hi def link <args>
-
-  " Internal yacc highlighting links {{{2
-  HiLink yaccBrkt	yaccStmt
-  HiLink yaccKey	yaccStmt
-  HiLink yaccOper	yaccStmt
-  HiLink yaccUnionStart	yaccKey
-
-  " External yacc highlighting links {{{2
-  HiLink yaccComment	Comment
-  HiLink yaccCurly	Delimiter
-  HiLink yaccCurlyError	Error
-  HiLink yaccDefines	cDefine
-  HiLink yaccParseParam	yaccParseOption
-  HiLink yaccParseOption	cDefine
-  HiLink yaccNonterminal	Function
-  HiLink yaccDelim	Delimiter
-  HiLink yaccKeyActn	Special
-  HiLink yaccSectionSep	Todo
-  HiLink yaccSep	Delimiter
-  HiLink yaccString	String
-  HiLink yaccStmt	Statement
-  HiLink yaccType	Type
-
-  " since Bram doesn't like my Delimiter :| {{{2
-  HiLink Delimiter	Type
-
-  delcommand HiLink
+  hi def link yaccBrkt	yaccStmt
+  hi def link yaccComment	Comment
+  hi def link yaccCurly	Delimiter
+  hi def link yaccCurlyError	Error
+  hi def link yaccDefines	cDefine
+  hi def link yaccDelim	Delimiter
+  hi def link yaccKeyActn	Special
+  hi def link yaccKey	yaccStmt
+  hi def link yaccNonterminal	Function
+  hi def link yaccOper	yaccStmt
+  hi def link yaccParseOption	cDefine
+  hi def link yaccParseParam	yaccParseOption
+  hi def link yaccSectionSep	Todo
+  hi def link yaccSep	Delimiter
+  hi def link yaccStmt	Statement
+  hi def link yaccString	String
+  hi def link yaccType	Type
+  hi def link yaccUnionStart	yaccKey
+  hi def link yaccVar	Special
 endif
 
 " ---------------------------------------------------------------------
 "  Cleanup: {{{1
-delcommand HiFold
+delcommand SynFold
 let b:current_syntax = "yacc"
 
 " ---------------------------------------------------------------------

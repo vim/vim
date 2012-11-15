@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2012 Jul 16
+*syntax.txt*	For Vim version 7.3.  Last change: 2012 Nov 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2487,6 +2487,12 @@ command line before loading a file with the readline syntax: >
 
 This will add highlighting for the commands that BASH (version 2.05a and
 later, and part earlier) adds.
+
+
+RESTRUCTURED TEXT			*rst.vim* *ft-rst-syntax*
+
+You may set what syntax definitions should be used for code blocks via
+	let rst_syntax_code_list = ['vim', 'lisp', ...]
 
 
 REXX						*rexx.vim* *ft-rexx-syntax*

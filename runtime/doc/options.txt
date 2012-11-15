@@ -7496,7 +7496,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	For more information about this feature see |undo-persistence|.
 	The undo file is not read when 'undoreload' causes the buffer from
 	before a reload to be saved for undo.
-	WARNING: this is a very new feature.  Use at your own risk!
+	When 'undofile' is turned off the undo file is NOT deleted.
 
 						*'undolevels'* *'ul'*
 'undolevels' 'ul'	number	(default 100, 1000 for Unix, VMS,

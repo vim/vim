@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.3.  Last change: 2012 Apr 13
+*windows.txt*   For Vim version 7.3.  Last change: 2012 Nov 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -939,9 +939,9 @@ list of buffers. |unlisted-buffer|
 :buffers[!]					*:buffers* *:ls*
 :ls[!]		Show all buffers.  Example:
 
-			1 #h  "/test/text"		line 1 ~
-			2u    "asdf"			line 0 ~
-			3 %a+ "version.c"		line 1 ~
+			1 #h   "/test/text"		line 1 ~
+			2u     "asdf"			line 0 ~
+			3 %a + "version.c"		line 1 ~
 
 		When the [!] is included the list will show unlisted buffers
 		(the term "unlisted" is a bit confusing then...).

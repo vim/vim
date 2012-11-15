@@ -106,7 +106,7 @@ fun! netrwSettings#NetrwSettings()
    put = 'let g:netrw_browsex_viewer    = (not defined)'
   endif
   put = 'let g:netrw_compress          = '.g:netrw_compress
-  put = 'let g:netrw_cursorline        = '.g:netrw_cursorline
+  put = 'let g:netrw_cursor            = '.g:netrw_cursor
   let decompressline= line("$")
   put ='let g:netrw_decompress...'
   put = 'let g:netrw_dirhistmax        = '.g:netrw_dirhistmax
@@ -125,9 +125,9 @@ fun! netrwSettings#NetrwSettings()
   put = 'let g:netrw_list_hide         = '.g:netrw_list_hide
   put = 'let g:netrw_liststyle         = '.g:netrw_liststyle
   put = 'let g:netrw_localcopycmd      = '.g:netrw_localcopycmd
-  put = 'let g:netrw_local_mkdir       = '.g:netrw_local_mkdir
+  put = 'let g:netrw_localmkdir        = '.g:netrw_localmkdir
   put = 'let g:netrw_localmovecmd      = '.g:netrw_localmovecmd
-  put = 'let g:netrw_local_rmdir       = '.g:netrw_local_rmdir
+  put = 'let g:netrw_localrmdir       = '.g:netrw_localrmdir
   put = 'let g:netrw_maxfilenamelen    = '.g:netrw_maxfilenamelen
   put = 'let g:netrw_menu              = '.g:netrw_menu
   put = 'let g:netrw_mkdir_cmd         = '.g:netrw_mkdir_cmd

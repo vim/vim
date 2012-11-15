@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Oct 21
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Nov 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -43,20 +43,9 @@ Checking runtime scripts: Thilo Six, 2012 Jun 6.
 GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
 
-Patch to fix undofile hash computed when not necessary. (Christian Brabandt,
-2012 Oct 16, update Oct 18)
-
-Patch to fix repeating "cgn". (Christian Brabandt, 2012 Oct 16)
-Update Oct 17.
-
 Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
 
-Updated French and Esperanto files. (Dominique Pelle, 2012 Aug 19)
-
-When showing diffs filler lines may be hidden at first.
-Patch by Christian Brabandt, 2012 Sep 6.  Update Oct 11.
-
-Patch for memory leaks on exception. (ZyX, 2012 Sep 9)
+Patches for two problems, with explanations. (Christian Brabandt, 2012 Oct 22)
 
 The CompleteDone autocommand needs some info passed to it:
 - The word that was selected (empty if abandoned complete)
@@ -67,6 +56,19 @@ And use file name completion on a file with spaces. (Frederic Hardy, 2009 Mar
 23)
 Patch by Christian Brabandt, 2012 Oct 18.  Update Oct 19.
 
+Patch to reset did_endif. (Christian Brabandt,, 2012 Oct 23)
+How about a test?
+
+Patch for Tab behavior with 'conceal'. (Dominique Pelle, 2012 Mar 18)
+Patch to test functionality of 'conceal' with tabs. (Simon Ruderich, 2012 Sep
+5)  Update with screencol() and screenrow() functions: Sep 7.
+
+Patch for integer overflow in move.c. (Dominique Pelle, 2012 Nov 6)
+
+Patch for undefined integer behavior. (Dominique Pelle, 2012 Nov 4, second one)
+
+Patch to have Python interface not depend on multi-byte.
+
 mouse_sgr is not ordered alphabetically in :version output.
 Docs list mouse_urxvt as normal feature, should be big. (Hayaki Saito, 2012
 Aug 16)
@@ -76,11 +78,15 @@ the order they were made.  Also ":gredo".  Both with a count.  Useful when
 tests fail after making changes and you forgot in which files.
 
 Patch to make updating tabline faster. (Arseny Kapoulkine, 2012 Oct 3)
+Also remove the "rc" variable.
 
 Crash with vimdiff. (Don Cruickshank, 2012 Sep 23)
 
 Win32: use 'guifontwide' for IME composition. (Taro Muraoka, 2012 Sep 30)
 Update Oct 2.
+
+Patch to fix :s command with confirm and typing "a". (Christian Brabandt, 2012
+Oct 28)
 
 Patch to make multibyte input work on Win32 console when codepage differs from
 'encoding'. (Ken Takata, 2012 Sep 29)
@@ -91,6 +97,11 @@ It's possible to defined an input() function that overrides the built-in one.
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
+
+Problem caused by patch 7.3.638: window->open does not update window
+correctly. Issue 91.
+
+Do allow real tags above the !_TAG entries. Undo older patch. Issue 90.
 
 Patch to support 'u' in interactive substitute. (Christian Brabandt, 2012 Sep
 28)  With tests: Oct 9.
@@ -103,13 +114,12 @@ Issue 54: document behavior of -complete, also expands arg.
 
 New syntax files for apt. (quidame, 2012 Sep 21)
 
+'ff' is wrong for one-line file without EOL. (Issue 77)
+
 Patch for if_lua. (Luis Carvalho, 2012 Aug 26, update Aug 29, another Aug 30,
 then Sep 1, reminder Oct 14)
 
 Issue 72: 'autochdir' causes problems for :vimgrep.
-
-:setlocal does not work in the sandbox, but :set does.  Both should work in a
-similar way (not setting some options). (Michael Henry, 2012 Oct 20)
 
 In the ATTENTION message about an existing swap file, mention the name of the
 process that is running.  It might actually be some other program, e.g. after
@@ -117,9 +127,6 @@ a reboot.
 
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
-
-Win32: patch for current directory, "loading iof conv". (Ken Takata, 2012 Sep
-15)
 
 It's probably a good idea to make a negative value for 'sts' use the value of
 'sw'.  Patch by So8res, Oct 3 2012
@@ -136,9 +143,12 @@ Or use expand('<sid>')?
 Patch for :tabcloseleft, after closing a tab go to left tab. (William Bowers,
 2012 Aug 4)
 
-Patch for Tab behavior with 'conceal'. (Dominique Pelle, 2012 Mar 18)
-Patch to test functionality of 'conceal' with tabs. (Simon Ruderich, 2012 Sep
-5)  Update with screencol() and screenrow() functions: Sep 7.
+Patch with suggestions for starting.txt. (Tony Mechelynck, 2012 Oct 24)
+But use Gnome instead of GTK?
+
+Should be possible to enable/disable matchparen per window or buffer.
+Add a check for b:no_match_paren in Highlight_matching_Pair() (Marcin
+Szamotulski, 2012 Nov 8)
 
 Crash in autocmd that unloads buffers in a BufUnload event. (Andrew Pimlott,
 2012 Aug 11)  Disallow :new when BufUnload is being handled?
@@ -158,6 +168,9 @@ MS-Windows resizing problems:
 Help for b:undo_indent'. (Thilo Six, 2012 May 28)
 Also question if examples are correct.
 
+It should be possible to make globpath() return a list instead of a string,
+like with glob(). (Greg Novack, 2012 Nov 2)
+
 The input map for CTRL-O in mswin.vim causes problems after CTRL-X CTRL-O.
 Suggestion for another map. (Philip Mat, 2012 Jun 18)
 But use "gi" instead of "a".  Or use CTRL-\ CTRL-O.
@@ -169,10 +182,15 @@ Have an option for spell checking to not mark any Chinese, Japanese or other
 double-width characters as error.  Or perhaps all characters above 256.
 (Bill Sun)  Helps a lot for mixed Asian and latin text.
 
+When there are no command line arguments ":next" and ":argu" give E163, which
+is confusing.  Should say "the argument list is empty".
+
 URXVT:
 - will get stuck if byte sequence does not containe expected semicolon.
 - Use urxvt mouse support also in xterm.  Explanations:
   http://www.midnight-commander.org/ticket/2662
+
+MS-Windows: test 17 fails.  Analysis by Michael Soyka, 2012 Nov 5.
 
 Patch to add tests for if_xcmdsrv.c., Jul 8, need some more work. (Brian Burns)
 New tests Jul 13.   Update Jul 17.  Discussion Jul 18.
@@ -817,7 +835,7 @@ very high. (Yegappan Lakshmanan, 2010 Jul 22, Michael Peeters, 2010 Jul 22)
 Directory wrong in session file, caused by ":lcd" in BufEnter autocommand.
 (Felix Kater, 2009 Mar 3)
 
-Session file generates error upon loading, cause bu --remote-silent-tab.
+Session file generates error upon loading, cause by --remote-silent-tab.
 (7tommm (ytommm) 2010 Nov 24)
 
 Using ~ works OK on 'a' with composing char, but not on 0x0418  with composing
@@ -937,8 +955,6 @@ You can type ":w ++bad=x fname", but the ++bad argument is ignored.  Give an
 error message?  Or is this easy to implement?  (Nathan Stratton Treadway, 2008
 Aug 20)  This is in ucs2bytes(), search for 0xBF.  Using the ++bad argument is
 at the other match for 0xBF.
-
-Fix for matchparen HL doesn't work.  beep.
 
 When adding "-complete=file" to a user command this also changes how the
 argument is processed for <f-args>. (Ivan Tishchenko, 2008 Aug 19)
@@ -1588,6 +1604,9 @@ Win32, NTFS: When editing a specific infostream directly and 'backupcopy' is
 "auto" should detect this situation and work like 'backupcopy' is "yes".  File
 name is something like "c:\path\foo.txt:bar", includes a colon.  (Alex
 Jakushev, 2008 Feb 1)
+
+printf() uses the field width in bytes. Can it be made character width,
+perhaps with a modifier?  What does Posix say?
 
 Small problem displaying diff filler line when opening windows with a script.
 (David Luyer, 2007 Mar 1 ~/Mail/oldmail/mool/in.15872 )

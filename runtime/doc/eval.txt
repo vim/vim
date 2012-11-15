@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2012 Oct 21
+*eval.txt*	For Vim version 7.3.  Last change: 2012 Nov 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5483,7 +5483,8 @@ split({expr} [, {pattern} [, {keepempty}]])			*split()*
 		empty each white-separated sequence of characters becomes an
 		item.
 		Otherwise the string is split where {pattern} matches,
-		removing the matched characters.
+		removing the matched characters. 'ignorecase' is not used
+		here, add \c to ignore case. |/\c|
 		When the first or last item is empty it is omitted, unless the
 		{keepempty} argument is given and it's non-zero.
 		Other empty items are kept when {pattern} matches at least one
