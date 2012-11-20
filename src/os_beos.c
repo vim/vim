@@ -13,7 +13,10 @@
 
 #include <float.h>
 #include <termios.h>
-#include <kernel/OS.h>
+#ifndef PROTO
+# include <kernel/OS.h>
+#endif
+
 #include "vim.h"
 
 #if USE_THREAD_FOR_INPUT_WITH_TIMEOUT

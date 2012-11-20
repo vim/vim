@@ -23,7 +23,10 @@
 
 #include "vim.h"
 
-#include <conio.h>
+/* cproto fails on missing include files */
+#ifndef PROTO
+# include <conio.h>
+#endif
 
 /*
  * MS-DOS only code, not used for Win16.
@@ -31,17 +34,19 @@
 #ifndef WIN16
 
 
-#include <bios.h>
-#ifdef DJGPP
-# include <dpmi.h>
-# include <signal.h>
-# include <sys/movedata.h>
-# include <crt0.h>
-# ifdef FEAT_CLIPBOARD
-#  include <sys/segments.h>
+#ifndef PROTO
+# include <bios.h>
+# ifdef DJGPP
+#  include <dpmi.h>
+#  include <signal.h>
+#  include <sys/movedata.h>
+#  include <crt0.h>
+#  ifdef FEAT_CLIPBOARD
+#   include <sys/segments.h>
+#  endif
+# else
+#  include <alloc.h>
 # endif
-#else
-# include <alloc.h>
 #endif
 
 #if defined(DJGPP) || defined(PROTO)
@@ -2130,8 +2135,10 @@ mch_rename(const char *OldFile, const char *NewFile)
 
 #undef setlocale
 
-#include <go32.h>
-#include <inlines/ctype.ha>
+#ifndef PROTO
+# include <go32.h>
+# include <inlines/ctype.ha>
+#endif
 #include <locale.h>
 
 #define UPCASE (__dj_ISALNUM | __dj_ISALPHA | __dj_ISGRAPH | __dj_ISPRINT | __dj_ISUPPER)

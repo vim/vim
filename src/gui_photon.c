@@ -13,8 +13,11 @@
 
 #include "vim.h"
 
-#ifdef FEAT_TOOLBAR
-# include <photon/PxImage.h>
+/* cproto fails on missing include files */
+#ifndef PROTO
+# ifdef FEAT_TOOLBAR
+#  include <photon/PxImage.h>
+# endif
 #endif
 
 #if !defined(__QNX__)

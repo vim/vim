@@ -53,9 +53,12 @@
 
 #define FNAME_ILLEGAL "\"*?><|" /* illegal characters in a file name */
 
-#include <dos.h>
-#include <dir.h>
-#include <time.h>
+/* cproto fails on missing include files */
+#ifndef PROTO
+# include <dos.h>
+# include <dir.h>
+# include <time.h>
+#endif
 
 #ifdef DJGPP
 # include <unistd.h>

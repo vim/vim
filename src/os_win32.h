@@ -12,7 +12,10 @@
 
 #include "os_dos.h"		/* common MS-DOS and Win32 stuff */
 #ifndef __CYGWIN__
-#include <direct.h>		/* for _mkdir() */
+/* cproto fails on missing include files */
+# ifndef PROTO
+#  include <direct.h>		/* for _mkdir() */
+# endif
 #endif
 
 /* Stop the VC2005 compiler from nagging. */
@@ -101,7 +104,9 @@
 #ifndef COBJMACROS
 # define COBJMACROS	/* For OLE: Enable "friendlier" access to objects */
 #endif
-#include <windows.h>
+#ifndef PROTO
+# include <windows.h>
+#endif
 
 /*
  * Win32 has plenty of memory, use large buffers
@@ -194,6 +199,8 @@ Trace(char *pszFormat, ...);
 # define vim_mkdir(x, y) mch_mkdir(x)
 #endif
 
+#ifndef PROTO
+
 /* Enable common dialogs input unicode from IME if posible. */
 #ifdef FEAT_MBYTE
     /* The variables are defined in os_win32.c. */
@@ -207,3 +214,5 @@ extern BOOL (WINAPI *pPeekMessage)(LPMSG, HWND, UINT, UINT, UINT);
 # define pIsDialogMessage IsDialogMessage
 # define pPeekMessage PeekMessage
 #endif
+
+#endif /* PROTO */

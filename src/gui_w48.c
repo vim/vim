@@ -25,6 +25,10 @@
 #ifdef DEBUG
 # include <tchar.h>
 #endif
+
+/* cproto fails on missing include files */
+#ifndef PROTO
+
 #ifndef __MINGW32__
 # include <shellapi.h>
 #endif
@@ -43,6 +47,8 @@
 #ifdef GLOBAL_IME
 # include "glbl_ime.h"
 #endif
+
+#endif /* PROTO */
 
 #ifdef FEAT_MENU
 # define MENUHINTS		/* show menu hints in command line */

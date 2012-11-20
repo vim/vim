@@ -198,11 +198,17 @@ static BalloonEval  *cur_beval = NULL;
 static UINT_PTR	    BevalTimerId = 0;
 static DWORD	    LastActivity = 0;
 
+
+/* cproto fails on missing include files */
+#ifndef PROTO
+
 /*
  * excerpts from headers since this may not be presented
  * in the extremely old compilers
  */
-#include <pshpack1.h>
+# include <pshpack1.h>
+
+#endif
 
 typedef struct _DllVersionInfo
 {
@@ -213,7 +219,9 @@ typedef struct _DllVersionInfo
     DWORD dwPlatformID;
 } DLLVERSIONINFO;
 
-#include <poppack.h>
+#ifndef PROTO
+# include <poppack.h>
+#endif
 
 typedef struct tagTOOLINFOA_NEW
 {

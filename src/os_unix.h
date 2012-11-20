@@ -198,6 +198,9 @@
 # define HAVE_TOTAL_MEM
 #endif
 
+
+#ifndef PROTO
+
 #ifdef VMS
 # include <unixio.h>
 # include <unixlib.h>
@@ -226,7 +229,11 @@
 # ifdef FEAT_GUI_GTK
 #  include "gui_gtk_vms.h"
 # endif
+#endif
 
+#endif /* PROTO */
+
+#ifdef VMS
 typedef struct dsc$descriptor   DESC;
 #endif
 

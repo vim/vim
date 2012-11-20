@@ -56,6 +56,9 @@
 # define TEMPNAMELEN	12
 #endif
 
+/* cproto fails on missing include files */
+#ifndef PROTO
+
 #include <exec/types.h>
 #include <libraries/dos.h>
 #include <libraries/dosextens.h>
@@ -66,6 +69,8 @@
 # include <proto/dos.h>
 # include <proto/intuition.h>
 #endif
+
+#endif /* PROTO */
 
 #define FNAME_ILLEGAL ";*?`#%" /* illegal characters in a file name */
 
@@ -85,12 +90,15 @@ typedef long off_t;
 # include <unistd.h>
 #endif
 
+#ifndef PROTO
 /*
  * arpbase.h must be included before functions.h
  */
 #ifdef FEAT_ARP
 # include <libraries/arpbase.h>
 #endif
+
+#endif /* PROTO */
 
 /*
  * This won't be needed if you have a version of Lattice 4.01 without broken

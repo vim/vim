@@ -22,16 +22,23 @@
 
 #include "vim.h"
 
-#include <dos.h>
+/* cproto fails on missing include files */
+#ifndef PROTO
+# include <dos.h>
+#endif
+
 #include <string.h>
 #include <sys/types.h>
 #include <signal.h>
 #include <limits.h>
-#include <process.h>
 
-#undef chdir
-#include <direct.h>
-#include <shellapi.h>	/* required for FindExecutable() */
+#ifndef PROTO
+# include <process.h>
+
+# undef chdir
+# include <direct.h>
+# include <shellapi.h>	/* required for FindExecutable() */
+#endif
 
 
 /* Record all output and all keyboard & mouse input */

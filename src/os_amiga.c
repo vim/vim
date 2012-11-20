@@ -22,6 +22,9 @@
 #undef TRUE		/* will be redefined by exec/types.h */
 #undef FALSE
 
+/* cproto fails on missing include files, skip them */
+#ifndef PROTO
+
 #ifndef LATTICE
 # include <exec/types.h>
 # include <exec/exec.h>
@@ -54,6 +57,8 @@
 #if defined(LATTICE) && !defined(SASC) && defined(FEAT_ARP)
 # include <libraries/arp_pragmas.h>
 #endif
+
+#endif /* PROTO */
 
 /*
  * At this point TRUE and FALSE are defined as 1L and 0L, but we want 1 and 0.
@@ -283,7 +288,9 @@ mch_init()
 #endif
 }
 
-#include <workbench/startup.h>
+#ifndef PROTO
+# include <workbench/startup.h>
+#endif
 
 /*
  * Check_win checks whether we have an interactive window.
@@ -1002,7 +1009,9 @@ mch_screenmode(arg)
  * Heavely modified by mool.
  */
 
-#include <devices/conunit.h>
+#ifndef PROTO
+# include <devices/conunit.h>
+#endif
 
 /*
  * try to get the real window size
@@ -1129,9 +1138,11 @@ out_num(n)
  * say 'oml lib:amiga.lib -r sendpacket.o'
  */
 
+#ifndef PROTO
 /* #include <proto/exec.h> */
 /* #include <proto/dos.h> */
-#include <exec/memory.h>
+# include <exec/memory.h>
+#endif
 
 /*
  * Function - dos_packet written by Phil Lindsay, Carolyn Scheppner, and Andy

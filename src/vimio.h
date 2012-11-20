@@ -13,4 +13,7 @@
 # define _CRT_NONSTDC_NO_DEPRECATE
 #endif
 
-#include <io.h>
+/* cproto fails on missing include files */
+#ifndef PROTO
+# include <io.h>
+#endif

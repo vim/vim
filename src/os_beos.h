@@ -22,4 +22,6 @@
 
 /* select emulation */
 
-#include <net/socket.h>		/* for typedefs and #defines only */
+#ifndef PROTO
+# include <net/socket.h>		/* for typedefs and #defines only */
+#endif

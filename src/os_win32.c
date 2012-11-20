@@ -29,7 +29,11 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <limits.h>
-#include <process.h>
+
+/* cproto fails on missing include files */
+#ifndef PROTO
+# include <process.h>
+#endif
 
 #undef chdir
 #ifdef __GNUC__
@@ -40,8 +44,10 @@
 # include <direct.h>
 #endif
 
-#if defined(FEAT_TITLE) && !defined(FEAT_GUI_W32)
-# include <shellapi.h>
+#ifndef PROTO
+# if defined(FEAT_TITLE) && !defined(FEAT_GUI_W32)
+#  include <shellapi.h>
+# endif
 #endif
 
 #ifdef __MINGW32__
@@ -125,6 +131,7 @@ typedef int TRUSTEE;
 typedef int WORD;
 typedef int WCHAR;
 typedef void VOID;
+typedef int BY_HANDLE_FILE_INFORMATION;
 #endif
 
 #ifndef FEAT_GUI_W32
@@ -152,6 +159,8 @@ static PFNGCKLN    s_pfnGetConsoleKeyboardLayoutName = NULL;
 # define wcsicmp(a, b) wcscmpi((a), (b))
 #endif
 
+#ifndef PROTO
+
 /* Enable common dialogs input unicode from IME if posible. */
 #ifdef FEAT_MBYTE
 LRESULT (WINAPI *pDispatchMessage)(LPMSG) = DispatchMessage;
@@ -159,6 +168,8 @@ BOOL (WINAPI *pGetMessage)(LPMSG, HWND, UINT, UINT) = GetMessage;
 BOOL (WINAPI *pIsDialogMessage)(HWND, LPMSG) = IsDialogMessage;
 BOOL (WINAPI *pPeekMessage)(LPMSG, HWND, UINT, UINT, UINT) = PeekMessage;
 #endif
+
+#endif /* PROTO */
 
 #ifndef FEAT_GUI_W32
 /* Win32 Console handles for input and output */
@@ -453,7 +464,10 @@ null_libintl_textdomain(const char *domainname)
 DWORD g_PlatformId;
 
 #ifdef HAVE_ACL
-# include <aclapi.h>
+# ifndef PROTO
+#  include <aclapi.h>
+# endif
+
 /*
  * These are needed to dynamically load the ADVAPI DLL, which is not
  * implemented under Windows 95 (and causes VIM to crash)
@@ -1658,8 +1672,10 @@ theend:
 #endif /* FEAT_GUI_W32 */
 }
 
-#ifndef __MINGW32__
-# include <shellapi.h>	/* required for FindExecutable() */
+#ifndef PROTO
+# ifndef __MINGW32__
+#  include <shellapi.h>	/* required for FindExecutable() */
+# endif
 #endif
 
 /*

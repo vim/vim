@@ -1521,7 +1521,12 @@ get_dialog_font_metrics(void)
 
 
 #if defined(FEAT_TOOLBAR) || defined(PROTO)
-#include "gui_w3~1.h"
+
+/* cproto fails on missing include files */
+#ifndef PROTO
+# include "gui_w3~1.h"
+#endif
+
 /*
  * Create the toolbar, initially unpopulated.
  *  (just like the menu, there are no defaults, it's all

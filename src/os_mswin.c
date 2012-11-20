@@ -26,13 +26,18 @@
 
 #ifdef WIN16
 # define SHORT_FNAME		/* always 8.3 file name */
-# include <dos.h>
+/* cproto fails on missing include files */
+# ifndef PROTO
+#  include <dos.h>
+# endif
 # include <string.h>
 #endif
 #include <sys/types.h>
 #include <signal.h>
 #include <limits.h>
-#include <process.h>
+#ifndef PROTO
+# include <process.h>
+#endif
 
 #undef chdir
 #ifdef __GNUC__
@@ -43,19 +48,22 @@
 # include <direct.h>
 #endif
 
-#if defined(FEAT_TITLE) && !defined(FEAT_GUI_W32)
-# include <shellapi.h>
+#ifndef PROTO
+# if defined(FEAT_TITLE) && !defined(FEAT_GUI_W32)
+#  include <shellapi.h>
+# endif
+
+# if defined(FEAT_PRINTER) && !defined(FEAT_POSTSCRIPT)
+#  include <dlgs.h>
+#  ifdef WIN3264
+#   include <winspool.h>
+#  else
+#   include <print.h>
+#  endif
+#  include <commdlg.h>
 #endif
 
-#if defined(FEAT_PRINTER) && !defined(FEAT_POSTSCRIPT)
-# include <dlgs.h>
-# ifdef WIN3264
-#  include <winspool.h>
-# else
-#  include <print.h>
-# endif
-# include <commdlg.h>
-#endif
+#endif /* PROTO */
 
 #ifdef __MINGW32__
 # ifndef FROM_LEFT_1ST_BUTTON_PRESSED
@@ -2410,7 +2418,9 @@ mch_print_set_fg(long_u fgcol)
 
 
 #if defined(FEAT_SHORTCUT) || defined(PROTO)
-# include <shlobj.h>
+# ifndef PROTO
+#  include <shlobj.h>
+# endif
 
 /*
  * When "fname" is the name of a shortcut (*.lnk) resolve the file it points
