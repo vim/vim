@@ -657,7 +657,6 @@ static Py_ssize_t RangeEnd;
 static PyObject *globals;
 
 static int PythonIO_Init(void);
-static void PythonIO_Fini(void);
 PyMODINIT_FUNC Py3Init_vim(void);
 
 /******************************************************
@@ -685,7 +684,6 @@ python3_end()
 	// acquire lock before finalizing
 	pygilstate = PyGILState_Ensure();
 
-	PythonIO_Fini();
 	Py_Finalize();
     }
 
@@ -987,13 +985,6 @@ PythonIO_Init(void)
 {
     PyType_Ready(&OutputType);
     return PythonIO_Init_io();
-}
-
-    static void
-PythonIO_Fini(void)
-{
-    PySys_SetObject("stdout", NULL);
-    PySys_SetObject("stderr", NULL);
 }
 
 /******************************************************
