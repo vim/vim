@@ -1702,6 +1702,11 @@ buflist_new(ffname, sfname, lnum, flags)
 #endif
 	/* buf->b_nwindows = 0; why was this here? */
 	free_buffer_stuff(buf, FALSE);	/* delete local variables et al. */
+
+	/* Init the options. */
+	buf->b_p_initialized = FALSE;
+	buf_copy_options(buf, BCO_ENTER);
+
 #ifdef FEAT_KEYMAP
 	/* need to reload lmaps and set b:keymap_name */
 	curbuf->b_kmap_state |= KEYMAP_INIT;
