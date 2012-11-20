@@ -905,13 +905,7 @@ gui_init_font(font_list, fontset)
 # endif
 	    gui_mch_set_font(gui.norm_font);
 #endif
-	gui_set_shellsize(FALSE,
-#ifdef MSWIN
-		TRUE
-#else
-		FALSE
-#endif
-		, RESIZE_BOTH);
+	gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
     }
 
     return ret;
