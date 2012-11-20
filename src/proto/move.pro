@@ -24,7 +24,7 @@ int win_col_off __ARGS((win_T *wp));
 int curwin_col_off __ARGS((void));
 int win_col_off2 __ARGS((win_T *wp));
 int curwin_col_off2 __ARGS((void));
-void curs_columns __ARGS((int scroll));
+void curs_columns __ARGS((int may_scroll));
 void scrolldown __ARGS((long line_count, int byfold));
 void scrollup __ARGS((long line_count, int byfold));
 void check_topfill __ARGS((win_T *wp, int down));

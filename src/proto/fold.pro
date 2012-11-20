@@ -27,7 +27,7 @@ void clearFolding __ARGS((win_T *win));
 void foldUpdate __ARGS((win_T *wp, linenr_T top, linenr_T bot));
 void foldUpdateAll __ARGS((win_T *win));
 int foldMoveTo __ARGS((int updown, int dir, long count));
-void foldInitWin __ARGS((win_T *newwin));
+void foldInitWin __ARGS((win_T *new_win));
 int find_wl_entry __ARGS((win_T *win, linenr_T lnum));
 void foldAdjustVisual __ARGS((void));
 void foldAdjustCursor __ARGS((void));

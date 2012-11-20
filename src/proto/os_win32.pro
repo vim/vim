@@ -22,7 +22,7 @@ void mch_hide __ARGS((char_u *name));
 int mch_isdir __ARGS((char_u *name));
 int mch_mkdir __ARGS((char_u *name));
 int mch_is_linked __ARGS((char_u *fname));
-int win32_fileinfo __ARGS((char_u *name, BY_HANDLE_FILE_INFORMATION *lpFileInfo));
+int win32_fileinfo __ARGS((char_u *fname, BY_HANDLE_FILE_INFORMATION *info));
 int mch_writable __ARGS((char_u *name));
 int mch_can_exe __ARGS((char_u *name));
 int mch_nodetype __ARGS((char_u *name));
