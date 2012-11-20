@@ -55,7 +55,7 @@ LoadXpmImage(filename, hImage, hShape)
 	return -1;
     if (shp == NULL)
     {
-        if (img)
+	if (img)
 	    XDestroyImage(img);
 	return -1;
     }

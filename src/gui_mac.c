@@ -5728,7 +5728,7 @@ gui_mch_dialog(
 	case VIM_QUESTION: useIcon = kNoteIcon; break;
 	case VIM_WARNING:  useIcon = kCautionIcon; break;
 	case VIM_ERROR:    useIcon = kStopIcon; break;
-	default:           useIcon = kStopIcon;
+	default:	   useIcon = kStopIcon;
     }
     AppendDITL(theDialog, iconDITL, overlayDITL);
     ReleaseResource(iconDITL);

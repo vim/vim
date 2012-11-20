@@ -978,7 +978,7 @@ nb_free()
     buf_list_used = 0;
 
     /* free the queued key commands */
-    while(key_node != NULL && key_node != &keyHead)
+    while (key_node != NULL && key_node != &keyHead)
     {
 	keyQ_T *next = key_node->next;
 	vim_free(key_node->keystr);
@@ -993,7 +993,7 @@ nb_free()
     }
 
     /* free the queued netbeans commands */
-    while(cmd_node != NULL && cmd_node != &head)
+    while (cmd_node != NULL && cmd_node != &head)
     {
 	queue_T *next = cmd_node->next;
 	vim_free(cmd_node->buffer);

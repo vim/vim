@@ -449,7 +449,7 @@ find_sniff_cmd(cmd)
     if (!sniff_cmd)
     {
 	struct sn_cmd_list *list = sniff_cmd_ext;
-	while(list)
+	while (list)
 	{
 	    if (!strcmp(cmd, list->sniff_cmd->cmd_name))
 	    {
@@ -479,7 +479,7 @@ add_sniff_cmd(cmd, def, msg)
 	/* unescape message text */
 	char *p = msg;
 	char *end = p+strlen(msg);
-	while(*p)
+	while (*p)
 	{
 	    if (*p == '\\')
 		mch_memmove(p,p+1,end-p);
@@ -489,7 +489,7 @@ add_sniff_cmd(cmd, def, msg)
 	SNIFF_TRACE1("request def = %s\n",def);
 	SNIFF_TRACE1("request msg = %s\n",msg);
 
-	while(list && list->next_cmd)
+	while (list && list->next_cmd)
 	    list = list->next_cmd;
 	if (!list)
 	    sniff_cmd_ext = cmd_node;
@@ -628,7 +628,7 @@ sniff_disconnect(immediately)
 	    gui_mch_wait_for_chars(0L);
 #endif
 #ifdef WIN32
-	while(sniffBufStart != NULL)
+	while (sniffBufStart != NULL)
 	{
 	    struct sniffBufNode *node = sniffBufStart;
 	    sniffBufStart = sniffBufStart->next;
@@ -789,7 +789,7 @@ HandleSniffRequest(buffer)
     command   = buffer[0];
     arguments = &buffer[1];
     token = strtok(arguments, sniff_rq_sep);
-    while(argc <3)
+    while (argc <3)
     {
 	if (token)
 	{
@@ -925,7 +925,7 @@ HandleSniffRequest(buffer)
 	default :
 	    break;
     }
-    while(argc)
+    while (argc)
 	vim_free(argv[--argc]);
 }
 
