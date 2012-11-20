@@ -336,11 +336,11 @@ static void* (*ruby_process_options)(int, char**);
 #endif
 
 #ifdef RUBY19_OR_LATER
-SIGNED_VALUE rb_num2long_stub(VALUE x)
+static SIGNED_VALUE rb_num2long_stub(VALUE x)
 {
     return dll_rb_num2long(x);
 }
-VALUE rb_int2big_stub(SIGNED_VALUE x)
+static VALUE rb_int2big_stub(SIGNED_VALUE x)
 {
     return dll_rb_int2big(x);
 }
