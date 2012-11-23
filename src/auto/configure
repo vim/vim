@@ -4957,26 +4957,49 @@ $as_echo "no" >&6; }
 	MZSCHEME_LIBS="${MZSCHEME_LIBS} -R ${vi_cv_path_mzscheme_pfx}/lib"
       fi
     fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for racket collects directory" >&5
+$as_echo_n "checking for racket collects directory... " >&6; }
     if test -d $vi_cv_path_mzscheme_pfx/lib/plt/collects; then
-      SCHEME_COLLECTS=lib/plt/
+      SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/lib/plt/
     else
       if test -d $vi_cv_path_mzscheme_pfx/lib/racket/collects; then
-	SCHEME_COLLECTS=lib/racket/
+	SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/lib/racket/
+      else
+	if test -d $vi_cv_path_mzscheme_pfx/share/racket/collects; then
+	  SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/share/racket/
+	fi
       fi
     fi
-    if test -f "${vi_cv_path_mzscheme_pfx}/${SCHEME_COLLECTS}collects/scheme/base.ss" ; then
+    if test "X$SCHEME_COLLECTS" != "X" ; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${SCHEME_COLLECTS}" >&5
+$as_echo "${SCHEME_COLLECTS}" >&6; }
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
+$as_echo "not found" >&6; }
+    fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for mzscheme_base.c" >&5
+$as_echo_n "checking for mzscheme_base.c... " >&6; }
+    if test -f "${SCHEME_COLLECTS}collects/scheme/base.ss" ; then
       MZSCHEME_EXTRA="mzscheme_base.c"
     else
-      if test -f "${vi_cv_path_mzscheme_pfx}/${SCHEME_COLLECTS}collects/scheme/base.rkt" ; then
+      if test -f "${SCHEME_COLLECTS}collects/scheme/base.rkt" ; then
 	MZSCHEME_EXTRA="mzscheme_base.c"
       fi
     fi
     if test "X$MZSCHEME_EXTRA" != "X" ; then
             MZSCHEME_CFLAGS="${MZSCHEME_CFLAGS} -DINCLUDE_MZSCHEME_BASE"
       MZSCHEME_MZC="${vi_cv_path_mzscheme_pfx}/bin/mzc"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: needed" >&5
+$as_echo "needed" >&6; }
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: not needed" >&5
+$as_echo "not needed" >&6; }
     fi
+
     MZSCHEME_CFLAGS="${MZSCHEME_CFLAGS} -I${SCHEME_INC} \
-      -DMZSCHEME_COLLECTS='\"${vi_cv_path_mzscheme_pfx}/${SCHEME_COLLECTS}collects\"'"
+      -DMZSCHEME_COLLECTS='\"${SCHEME_COLLECTS}collects\"'"
     MZSCHEME_SRC="if_mzsch.c"
     MZSCHEME_OBJ="objects/if_mzsch.o"
     MZSCHEME_PRO="if_mzsch.pro"
