@@ -1528,14 +1528,14 @@ do_cmdline(cmdline, fgetline, cookie, flags)
 	}
     }
 
-#ifndef FEAT_EVAL
+#ifdef FEAT_EVAL
+    did_endif = FALSE;  /* in case do_cmdline used recursively */
+#else
     /*
      * Reset if_level, in case a sourced script file contains more ":if" than
      * ":endif" (could be ":if x | foo | endif").
      */
     if_level = 0;
-
-    did_endif = FALSE;  /* in case do_cmdline used recursively */
 #endif
 
     --call_depth;
