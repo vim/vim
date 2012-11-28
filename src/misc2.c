@@ -3860,7 +3860,7 @@ static ulg keys[3]; /* keys defining the pseudo-random sequence */
     ush temp; \
  \
     temp = (ush)keys[2] | 2; \
-    t = (int)(((unsigned)(temp * (temp ^ 1)) >> 8) & 0xff); \
+    t = (int)(((unsigned)(temp * (temp ^ 1U)) >> 8) & 0xff); \
 }
 
 /*
@@ -4002,7 +4002,7 @@ crypt_decode(ptr, len)
 	    ush temp;
 
 	    temp = (ush)keys[2] | 2;
-	    temp = (int)(((unsigned)(temp * (temp ^ 1)) >> 8) & 0xff);
+	    temp = (int)(((unsigned)(temp * (temp ^ 1U)) >> 8) & 0xff);
 	    UPDATE_KEYS_ZIP(*p ^= temp);
 	}
     else

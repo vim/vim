@@ -138,7 +138,7 @@ hash_lookup(ht, key, hash)
     hash_T	perturb;
     hashitem_T	*freeitem;
     hashitem_T	*hi;
-    int		idx;
+    unsigned	idx;
 
 #ifdef HT_DEBUG
     ++hash_count_lookup;
@@ -150,7 +150,7 @@ hash_lookup(ht, key, hash)
      * - skip over a removed item
      * - return if the item matches
      */
-    idx = (int)(hash & ht->ht_mask);
+    idx = (unsigned)(hash & ht->ht_mask);
     hi = &ht->ht_array[idx];
 
     if (hi->hi_key == NULL)
@@ -176,7 +176,7 @@ hash_lookup(ht, key, hash)
 #ifdef HT_DEBUG
 	++hash_count_perturb;	    /* count a "miss" for hashtab lookup */
 #endif
-	idx = (int)((idx << 2) + idx + perturb + 1);
+	idx = (unsigned)((idx << 2U) + idx + perturb + 1U);
 	hi = &ht->ht_array[idx & ht->ht_mask];
 	if (hi->hi_key == NULL)
 	    return freeitem == NULL ? hi : freeitem;
@@ -342,7 +342,7 @@ hash_may_resize(ht, minitems)
     hashitem_T	temparray[HT_INIT_SIZE];
     hashitem_T	*oldarray, *newarray;
     hashitem_T	*olditem, *newitem;
-    int		newi;
+    unsigned	newi;
     int		todo;
     long_u	oldsize, newsize;
     long_u	minsize;
@@ -448,13 +448,13 @@ hash_may_resize(ht, minitems)
 	     * the algorithm to find an item in hash_lookup().  But we only
 	     * need to search for a NULL key, thus it's simpler.
 	     */
-	    newi = (int)(olditem->hi_hash & newmask);
+	    newi = (unsigned)(olditem->hi_hash & newmask);
 	    newitem = &newarray[newi];
 
 	    if (newitem->hi_key != NULL)
 		for (perturb = olditem->hi_hash; ; perturb >>= PERTURB_SHIFT)
 		{
-		    newi = (int)((newi << 2) + newi + perturb + 1);
+		    newi = (unsigned)((newi << 2U) + newi + perturb + 1U);
 		    newitem = &newarray[newi & newmask];
 		    if (newitem->hi_key == NULL)
 			break;
