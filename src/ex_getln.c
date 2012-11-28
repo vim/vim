@@ -102,7 +102,7 @@ static void	cmdline_del __ARGS((int from));
 static void	redrawcmdprompt __ARGS((void));
 static void	cursorcmd __ARGS((void));
 static int	ccheck_abbr __ARGS((int));
-static int	nextwild __ARGS((expand_T *xp, int type, int options));
+static int	nextwild __ARGS((expand_T *xp, int type, int options, int escape));
 static void	escape_fname __ARGS((char_u **pp));
 static int	showmatches __ARGS((expand_T *xp, int wildmenu));
 static void	set_expand_context __ARGS((expand_T *xp));
@@ -810,9 +810,11 @@ getcmdline(firstc, count, indent)
 		    did_wild_list = TRUE;
 		}
 		if (wim_flags[wim_index] & WIM_LONGEST)
-		    res = nextwild(&xpc, WILD_LONGEST, WILD_NO_BEEP);
+		    res = nextwild(&xpc, WILD_LONGEST, WILD_NO_BEEP,
+							       firstc != '@');
 		else if (wim_flags[wim_index] & WIM_FULL)
-		    res = nextwild(&xpc, WILD_NEXT, WILD_NO_BEEP);
+		    res = nextwild(&xpc, WILD_NEXT, WILD_NO_BEEP,
+							       firstc != '@');
 		else
 		    res = OK;	    /* don't insert 'wildchar' now */
 	    }
@@ -823,9 +825,11 @@ getcmdline(firstc, count, indent)
 		/* if 'wildmode' first contains "longest", get longest
 		 * common part */
 		if (wim_flags[0] & WIM_LONGEST)
-		    res = nextwild(&xpc, WILD_LONGEST, WILD_NO_BEEP);
+		    res = nextwild(&xpc, WILD_LONGEST, WILD_NO_BEEP,
+							       firstc != '@');
 		else
-		    res = nextwild(&xpc, WILD_EXPAND_KEEP, WILD_NO_BEEP);
+		    res = nextwild(&xpc, WILD_EXPAND_KEEP, WILD_NO_BEEP,
+							       firstc != '@');
 
 		/* if interrupted while completing, behave like it failed */
 		if (got_int)
@@ -860,7 +864,8 @@ getcmdline(firstc, count, indent)
 			    int p_wmnu_save = p_wmnu;
 			    p_wmnu = 0;
 #endif
-			    nextwild(&xpc, WILD_PREV, 0); /* remove match */
+			    /* remove match */
+			    nextwild(&xpc, WILD_PREV, 0, firstc != '@');
 #ifdef FEAT_WILDMENU
 			    p_wmnu = p_wmnu_save;
 #endif
@@ -874,9 +879,11 @@ getcmdline(firstc, count, indent)
 			redrawcmd();
 			did_wild_list = TRUE;
 			if (wim_flags[wim_index] & WIM_LONGEST)
-			    nextwild(&xpc, WILD_LONGEST, WILD_NO_BEEP);
+			    nextwild(&xpc, WILD_LONGEST, WILD_NO_BEEP,
+							       firstc != '@');
 			else if (wim_flags[wim_index] & WIM_FULL)
-			    nextwild(&xpc, WILD_NEXT, WILD_NO_BEEP);
+			    nextwild(&xpc, WILD_NEXT, WILD_NO_BEEP,
+							       firstc != '@');
 		    }
 		    else
 			vim_beep();
@@ -899,9 +906,9 @@ getcmdline(firstc, count, indent)
 	/* <S-Tab> goes to last match, in a clumsy way */
 	if (c == K_S_TAB && KeyTyped)
 	{
-	    if (nextwild(&xpc, WILD_EXPAND_KEEP, 0) == OK
-		    && nextwild(&xpc, WILD_PREV, 0) == OK
-		    && nextwild(&xpc, WILD_PREV, 0) == OK)
+	    if (nextwild(&xpc, WILD_EXPAND_KEEP, 0, firstc != '@') == OK
+		    && nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK
+		    && nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK)
 		goto cmdline_changed;
 	}
 
@@ -1418,7 +1425,7 @@ getcmdline(firstc, count, indent)
 		goto cmdline_not_changed;
 
 	case Ctrl_A:	    /* all matches */
-		if (nextwild(&xpc, WILD_ALL, 0) == FAIL)
+		if (nextwild(&xpc, WILD_ALL, 0, firstc != '@') == FAIL)
 		    break;
 		goto cmdline_changed;
 
@@ -1454,7 +1461,7 @@ getcmdline(firstc, count, indent)
 #endif
 
 		/* completion: longest common part */
-		if (nextwild(&xpc, WILD_LONGEST, 0) == FAIL)
+		if (nextwild(&xpc, WILD_LONGEST, 0, firstc != '@') == FAIL)
 		    break;
 		goto cmdline_changed;
 
@@ -1462,8 +1469,8 @@ getcmdline(firstc, count, indent)
 	case Ctrl_P:	    /* previous match */
 		if (xpc.xp_numfiles > 0)
 		{
-		    if (nextwild(&xpc, (c == Ctrl_P) ? WILD_PREV : WILD_NEXT, 0)
-								      == FAIL)
+		    if (nextwild(&xpc, (c == Ctrl_P) ? WILD_PREV : WILD_NEXT,
+						    0, firstc != '@') == FAIL)
 			break;
 		    goto cmdline_changed;
 		}
@@ -3338,10 +3345,11 @@ sort_func_compare(s1, s2)
  * normal character (instead of being expanded).  This allows :s/^I^D etc.
  */
     static int
-nextwild(xp, type, options)
+nextwild(xp, type, options, escape)
     expand_T	*xp;
     int		type;
     int		options;	/* extra options for ExpandOne() */
+    int		escape;		/* if TRUE, escape the returned matches */
 {
     int		i, j;
     char_u	*p1;
@@ -3390,7 +3398,9 @@ nextwild(xp, type, options)
 	else
 	{
 	    int use_options = options |
-		    WILD_HOME_REPLACE|WILD_ADD_SLASH|WILD_SILENT|WILD_ESCAPE;
+		    WILD_HOME_REPLACE|WILD_ADD_SLASH|WILD_SILENT;
+	    if (escape)
+		use_options |= WILD_ESCAPE;
 
 	    if (p_wic)
 		use_options += WILD_ICASE;
