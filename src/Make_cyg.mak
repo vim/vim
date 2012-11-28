@@ -21,7 +21,11 @@
 #   TCL_VER	define to version of TCL being used (83)
 #   DYNAMIC_TCL no or yes: use yes to load the TCL DLL dynamically (yes)
 # RUBY		define to path to Ruby dir to get Ruby support (not defined)
-#   RUBY_VER	define to version of Ruby being used (16)
+#   RUBY_VER		define to version of Ruby being used (16)
+#   RUBY_VER_LONG	same, but in format with dot. (1.6)
+#	    You must set RUBY_VER_LONG when changing RUBY_VER.
+#	    You must set RUBY_API_VER version to RUBY_VER_LONG.
+#	    Don't set ruby API version to RUBY_VER like 191.
 #   DYNAMIC_RUBY no or yes: use yes to load the Ruby DLL dynamically (yes)
 # MZSCHEME	define to path to MzScheme dir to get MZSCHEME support (not defined)
 #   MZSCHEME_VER      define to version of MzScheme being used (209_000)
@@ -217,8 +221,15 @@ RUBY_INSTALL_NAME = msvcrt-ruby$(RUBY_VER)
 endif
 endif
 
+ifeq (19, $(word 1,$(sort 19 $(RUBY_VER))))
+RUBY_19_OR_LATER = 1
+endif
+
 DEFINES += -DFEAT_RUBY
 INCLUDES += -I$(RUBY)/lib/ruby/$(RUBY_VER_LONG)/$(RUBY_PLATFORM)
+ifdef RUBY_19_OR_LATER
+INCLUDES += -I$(RUBY)/include/ruby-$(RUBY_VER_LONG) -I$(RUBY)/include/ruby-$(RUBY_VER_LONG)/$(RUBY_PLATFORM)
+endif
 EXTRA_OBJS += $(OUTDIR)/if_ruby.o
 
 ifeq (yes, $(DYNAMIC_RUBY))
