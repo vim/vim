@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Nov 15
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Nov 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -45,29 +45,19 @@ GTK: problem with 'L' in 'guioptions' changing the window width.
 
 Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
 
-Patches for two problems, with explanations. (Christian Brabandt, 2012 Oct 22)
-
 The CompleteDone autocommand needs some info passed to it:
 - The word that was selected (empty if abandoned complete)
 - Type of completion: tag, omnifunc, user func.
-
-Unwanted file name escaping: ":echo input('file:' , '', 'file')"
-And use file name completion on a file with spaces. (Frederic Hardy, 2009 Mar
-23)
-Patch by Christian Brabandt, 2012 Oct 18.  Update Oct 19.
-
-Patch to reset did_endif. (Christian Brabandt,, 2012 Oct 23)
-How about a test?
 
 Patch for Tab behavior with 'conceal'. (Dominique Pelle, 2012 Mar 18)
 Patch to test functionality of 'conceal' with tabs. (Simon Ruderich, 2012 Sep
 5)  Update with screencol() and screenrow() functions: Sep 7.
 
-Patch for integer overflow in move.c. (Dominique Pelle, 2012 Nov 6)
-
 Patch for undefined integer behavior. (Dominique Pelle, 2012 Nov 4, second one)
 
 Patch to have Python interface not depend on multi-byte.
+
+Patch to fix justify.vim. (James McCoy, 2012 Nov 23)
 
 mouse_sgr is not ordered alphabetically in :version output.
 Docs list mouse_urxvt as normal feature, should be big. (Hayaki Saito, 2012
@@ -81,6 +71,12 @@ Patch to make updating tabline faster. (Arseny Kapoulkine, 2012 Oct 3)
 Also remove the "rc" variable.
 
 Crash with vimdiff. (Don Cruickshank, 2012 Sep 23)
+
+Patch to support subdirectories for help files. (Charles Campbell, 2012 Nov
+21)
+
+Patch for mzscheme.  (Sergey Khorev, 2012 Nov 19)
+What about ignoring SEGV?
 
 Win32: use 'guifontwide' for IME composition. (Taro Muraoka, 2012 Sep 30)
 Update Oct 2.
@@ -97,6 +93,9 @@ It's possible to defined an input() function that overrides the built-in one.
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
+
+Problem parsing expression with function(). (Andy Wokula, 2012 Nov 22)
+Patch by Christian Brabandt, Nov 22.  Tests in another patch, Nov 23.
 
 Problem caused by patch 7.3.638: window->open does not update window
 correctly. Issue 91.
@@ -120,6 +119,11 @@ Patch for if_lua. (Luis Carvalho, 2012 Aug 26, update Aug 29, another Aug 30,
 then Sep 1, reminder Oct 14)
 
 Issue 72: 'autochdir' causes problems for :vimgrep.
+
+Undo problem: line not removed as expected when using setline() from Insert
+mode. (Israel Chauca, 2010 May 13, more in second msg)
+Break undo when CTRL-R = changes the text?  Or save more lines?
+Patch by Christian Brabandt, 2012 Nov 16.
 
 In the ATTENTION message about an existing swap file, mention the name of the
 process that is running.  It might actually be some other program, e.g. after
@@ -327,6 +331,9 @@ Need to escape $HOME on Windows?  (ZyX, 2011 Jul 21)
 Oct 26)
 
 Bug in repeating Visual "u". (Lawrence Kesteloot, 2010 Dec 20)
+
+Using "p" in Visual mode while specifying the small delete register "-
+overwrites the register before it is put. (Marcin Szamotulski, 2012 Nov 23)
 
 With "unamedplus" in 'clipboard' pasting in Visual mode causes error for empty
 register. (Michael Seiwald, 2011 Jun 28)  I can't reproduce it.
@@ -672,10 +679,6 @@ Problem with stop directory in findfile(). (Adam Simpkins, 2009 Aug 26)
 
 Using ']' as the end of a range in a pattern requires double escaping:
      /[@-\\]]  (Andy Wokula, 2011 Jun 28)
-
-Undo problem: line not removed as expected when using setline() from Insert
-mode. (Israel Chauca, 2010 May 13, more in second msg)
-Break undo when CTRL-R = changes the text?  Or save more lines?
 
 Slow combination of folding and PHP syntax highlighting.  Script to reproduce
 it.  Caused by "syntax sync fromstart" in combination with patch 7.2.274.

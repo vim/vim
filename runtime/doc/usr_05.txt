@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 7.3.  Last change: 2009 Jun 04
+*usr_05.txt*	For Vim version 7.3.  Last change: 2012 Nov 20
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -49,8 +49,7 @@ For MS-DOS and MS-Windows you can use one of these:
 
 The vimrc file can contain all the commands that you type after a colon.  The
 most simple ones are for setting options.  For example, if you want Vim to
-always start with the 'incsearch' option on, add this line you your vimrc
-file: >
+always start with the 'incsearch' option on, add this line your vimrc file: >
 
 	set incsearch
 

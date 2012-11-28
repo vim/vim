@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2012 Nov 02
+*syntax.txt*	For Vim version 7.3.  Last change: 2012 Nov 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1089,6 +1089,10 @@ Simpler is setting the filetype to "docbkxml" or "docbksgml": >
 	:set filetype=docbksgml
 or: >
 	:set filetype=docbkxml
+
+You can specify the DocBook version: >
+	:let docbk_ver = 3
+When not set 4 is used.
 
 
 DOSBATCH				*dosbatch.vim* *ft-dosbatch-syntax*

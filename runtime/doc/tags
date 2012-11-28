@@ -5728,6 +5728,7 @@ ft-quake-syntax	syntax.txt	/*ft-quake-syntax*
 ft-r-indent	indent.txt	/*ft-r-indent*
 ft-readline-syntax	syntax.txt	/*ft-readline-syntax*
 ft-rexx-syntax	syntax.txt	/*ft-rexx-syntax*
+ft-rst-syntax	syntax.txt	/*ft-rst-syntax*
 ft-ruby-omni	insert.txt	/*ft-ruby-omni*
 ft-ruby-syntax	syntax.txt	/*ft-ruby-syntax*
 ft-scheme-syntax	syntax.txt	/*ft-scheme-syntax*
@@ -5872,6 +5873,7 @@ g:netrw_cygwin	pi_netrw.txt	/*g:netrw_cygwin*
 g:netrw_dav_cmd	pi_netrw.txt	/*g:netrw_dav_cmd*
 g:netrw_decompress	pi_netrw.txt	/*g:netrw_decompress*
 g:netrw_dirhistmax	pi_netrw.txt	/*g:netrw_dirhistmax*
+g:netrw_dynamic_maxfilenamelen	pi_netrw.txt	/*g:netrw_dynamic_maxfilenamelen*
 g:netrw_errorlvl	pi_netrw.txt	/*g:netrw_errorlvl*
 g:netrw_fastbrowse	pi_netrw.txt	/*g:netrw_fastbrowse*
 g:netrw_fetch_cmd	pi_netrw.txt	/*g:netrw_fetch_cmd*
@@ -6840,6 +6842,7 @@ netrw-R	pi_netrw.txt	/*netrw-R*
 netrw-S	pi_netrw.txt	/*netrw-S*
 netrw-T	pi_netrw.txt	/*netrw-T*
 netrw-U	pi_netrw.txt	/*netrw-U*
+netrw-X	pi_netrw.txt	/*netrw-X*
 netrw-a	pi_netrw.txt	/*netrw-a*
 netrw-activate	pi_netrw.txt	/*netrw-activate*
 netrw-bookmark	pi_netrw.txt	/*netrw-bookmark*
@@ -7426,6 +7429,7 @@ rileft.txt	rileft.txt	/*rileft.txt*
 riscos	os_risc.txt	/*riscos*
 rot13	change.txt	/*rot13*
 round()	eval.txt	/*round()*
+rst.vim	syntax.txt	/*rst.vim*
 rsync	pi_netrw.txt	/*rsync*
 ruby	if_ruby.txt	/*ruby*
 ruby-buffer	if_ruby.txt	/*ruby-buffer*

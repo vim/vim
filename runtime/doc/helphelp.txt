@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 7.3.  Last change: 2012 May 18
+*helphelp.txt*	For Vim version 7.3.  Last change: 2012 Nov 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -194,11 +194,12 @@ command: >
 				*E154* *E150* *E151* *E152* *E153* *E670*
 :helpt[ags] [++t] {dir}
 			Generate the help tags file(s) for directory {dir}.
-			All "*.txt" and "*.??x" files in the directory are
-			scanned for a help tag definition in between stars.
-			The "*.??x" files are for translated docs, they
-			generate the "tags-??" file, see |help-translated|.
-			The generated tags files are sorted.
+			All "*.txt" and "*.??x" files in the directory and
+			sub-directories are scanned for a help tag definition
+			in between stars.  The "*.??x" files are for
+			translated docs, they generate the "tags-??" file, see
+			|help-translated|.  The generated tags files are
+			sorted.
 			When there are duplicates an error message is given.
 			An existing tags file is silently overwritten.
 			The optional "++t" argument forces adding the

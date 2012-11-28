@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 Oct 05
+" Last Change:	2012 Nov 28
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1745,7 +1745,8 @@ au BufNewFile,BufRead *.sgm,*.sgml
 	\ if getline(1).getline(2).getline(3).getline(4).getline(5) =~? 'linuxdoc' |
 	\   setf sgmllnx |
 	\ elseif getline(1) =~ '<!DOCTYPE.*DocBook' || getline(2) =~ '<!DOCTYPE.*DocBook' |
-	\   let b:docbk_type="sgml" |
+	\   let b:docbk_type = "sgml" |
+	\   let b:docbk_ver = 4 |
 	\   setf docbk |
 	\ else |
 	\   setf sgml |
@@ -2307,8 +2308,16 @@ func! s:FTxml()
   let n = 1
   while n < 100 && n < line("$")
     let line = getline(n)
-    if line =~ '<!DOCTYPE.*DocBook'
+    " DocBook 4 or DocBook 5.
+    let is_docbook4 = line =~ '<!DOCTYPE.*DocBook'
+    let is_docbook5 = line =~ ' xmlns="http://docbook.org/ns/docbook"'
+    if is_docbook4 || is_docbook5
       let b:docbk_type = "xml"
+      if is_docbook5
+	let b:docbk_ver = 5
+      else
+	let b:docbk_ver = 4
+      endif
       setf docbk
       return
     endif
