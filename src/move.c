@@ -2576,7 +2576,7 @@ get_scroll_overlap(lp, dir)
     else
 	topline_back(lp);
     h2 = lp->height;
-    if (h2 + h1 > min_height)
+    if (h2 == MAXCOL || h2 + h1 > min_height)
     {
 	*lp = loff0;	/* no overlap */
 	return;
@@ -2588,7 +2588,7 @@ get_scroll_overlap(lp, dir)
     else
 	topline_back(lp);
     h3 = lp->height;
-    if (h3 + h2 > min_height)
+    if (h3 == MAXCOL || h3 + h2 > min_height)
     {
 	*lp = loff0;	/* no overlap */
 	return;
@@ -2600,7 +2600,7 @@ get_scroll_overlap(lp, dir)
     else
 	topline_back(lp);
     h4 = lp->height;
-    if (h4 + h3 + h2 > min_height || h3 + h2 + h1 > min_height)
+    if (h4 == MAXCOL || h4 + h3 + h2 > min_height || h3 + h2 + h1 > min_height)
 	*lp = loff1;	/* 1 line overlap */
     else
 	*lp = loff2;	/* 2 lines overlap */
