@@ -898,11 +898,7 @@ qf_new_list(qi, qf_title, wp)
      * way with ":grep'.
      */
     while (qi->qf_listcount > qi->qf_curlist + 1)
-    {
-	if (wp != NULL && wp->w_llist == qi)
-	    wp->w_llist = NULL;
 	qf_free(qi, --qi->qf_listcount);
-    }
 
     /*
      * When the stack is full, remove to oldest entry
@@ -910,8 +906,6 @@ qf_new_list(qi, qf_title, wp)
      */
     if (qi->qf_listcount == LISTCOUNT)
     {
-	if (wp != NULL && wp->w_llist == qi)
-	    wp->w_llist = NULL;
 	qf_free(qi, 0);
 	for (i = 1; i < LISTCOUNT; ++i)
 	    qi->qf_lists[i - 1] = qi->qf_lists[i];
@@ -2135,9 +2129,12 @@ qf_free(qi, idx)
     while (qi->qf_lists[idx].qf_count)
     {
 	qfp = qi->qf_lists[idx].qf_start->qf_next;
-	vim_free(qi->qf_lists[idx].qf_start->qf_text);
-	vim_free(qi->qf_lists[idx].qf_start->qf_pattern);
-	vim_free(qi->qf_lists[idx].qf_start);
+	if (qi->qf_lists[idx].qf_title != NULL)
+	{
+	    vim_free(qi->qf_lists[idx].qf_start->qf_text);
+	    vim_free(qi->qf_lists[idx].qf_start->qf_pattern);
+	    vim_free(qi->qf_lists[idx].qf_start);
+	}
 	qi->qf_lists[idx].qf_start = qfp;
 	--qi->qf_lists[idx].qf_count;
     }
