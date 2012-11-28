@@ -657,7 +657,7 @@ static Py_ssize_t RangeEnd;
 static PyObject *globals;
 
 static int PythonIO_Init(void);
-PyMODINIT_FUNC Py3Init_vim(void);
+static PyObject *Py3Init_vim(void);
 
 /******************************************************
  * 1. Python interpreter main program.
@@ -1773,8 +1773,8 @@ PyDoc_STRVAR(vim_module_doc,"vim python interface\n");
 
 static struct PyModuleDef vimmodule;
 
-#ifndef PROTO
-PyMODINIT_FUNC Py3Init_vim(void)
+    static PyObject *
+Py3Init_vim(void)
 {
     PyObject *mod;
     PyObject *tmp;
@@ -1824,7 +1824,6 @@ PyMODINIT_FUNC Py3Init_vim(void)
 
     return mod;
 }
-#endif
 
 /*************************************************************************
  * 4. Utility functions for handling the interface between Vim and Python.
