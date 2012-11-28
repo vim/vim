@@ -147,8 +147,8 @@ static char *(main_errors[]) =
 #define ME_INVALID_ARG		5
 };
 
-#ifndef NO_VIM_MAIN	/* skip this for unittests */
 #ifndef PROTO		/* don't want a prototype for main() */
+#ifndef NO_VIM_MAIN	/* skip this for unittests */
     int
 # ifdef VIMDLL
 _export
@@ -570,15 +570,27 @@ main
 	return mzscheme_main(2, args);
     }
 }
+#endif
+#endif /* NO_VIM_MAIN */
 
-int vim_main2(int argc, char **argv)
+/* vim_main2() needs to be produced when FEAT_MZSCHEME is defined even when
+ * NO_VIM_MAIN is defined. */
+#ifdef FEAT_MZSCHEME
+    int
+vim_main2(int argc UNUSED, char **argv UNUSED)
 {
+# ifndef NO_VIM_MAIN
     char_u	*fname = (char_u *)argv[0];
     mparm_T	params;
 
     memcpy(&params, argv[1], sizeof(params));
+# else
+    return 0;
+}
+# endif
 #endif
 
+#ifndef NO_VIM_MAIN
     /* Execute --cmd arguments. */
     exe_pre_commands(&params);
 
@@ -999,8 +1011,8 @@ int vim_main2(int argc, char **argv)
 
     return 0;
 }
-#endif /* PROTO */
 #endif /* NO_VIM_MAIN */
+#endif /* PROTO */
 
 /*
  * Main loop: Execute Normal mode commands until exiting Vim.
