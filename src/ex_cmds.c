@@ -6344,10 +6344,10 @@ ex_helptags(eap)
     }
 
 #ifdef FEAT_MULTI_LANG
-    /* Get a list of all files in the directory. */
+    /* Get a list of all files in the help directory and in subdirectories. */
     STRCPY(NameBuff, dirname);
     add_pathsep(NameBuff);
-    STRCAT(NameBuff, "*");
+    STRCAT(NameBuff, "**");
     if (gen_expand_wildcards(1, &NameBuff, &filecount, &files,
 						    EW_FILE|EW_SILENT) == FAIL
 	    || filecount == 0)
@@ -6436,8 +6436,8 @@ ex_helptags(eap)
 helptags_one(dir, ext, tagfname, add_help_tags)
     char_u	*dir;		/* doc directory */
     char_u	*ext;		/* suffix, ".txt", ".itx", ".frx", etc. */
-    char_u	*tagfname;      /* "tags" for English, "tags-fr" for French. */
-    int		add_help_tags;  /* add "help-tags" tag */
+    char_u	*tagfname;	/* "tags" for English, "tags-fr" for French. */
+    int		add_help_tags;	/* add "help-tags" tag */
 {
     FILE	*fd_tags;
     FILE	*fd;
@@ -6449,6 +6449,7 @@ helptags_one(dir, ext, tagfname, add_help_tags)
     char_u	*s;
     int		i;
     char_u	*fname;
+    int		dirlen;
 # ifdef FEAT_MBYTE
     int		utf8 = MAYBE;
     int		this_utf8;
@@ -6459,9 +6460,9 @@ helptags_one(dir, ext, tagfname, add_help_tags)
     /*
      * Find all *.txt files.
      */
+    dirlen = STRLEN(dir);
     STRCPY(NameBuff, dir);
-    add_pathsep(NameBuff);
-    STRCAT(NameBuff, "*");
+    STRCAT(NameBuff, "/**/*");
     STRCAT(NameBuff, ext);
     if (gen_expand_wildcards(1, &NameBuff, &filecount, &files,
 						    EW_FILE|EW_SILENT) == FAIL
@@ -6522,7 +6523,7 @@ helptags_one(dir, ext, tagfname, add_help_tags)
 	    EMSG2(_("E153: Unable to open %s for reading"), files[fi]);
 	    continue;
 	}
-	fname = gettail(files[fi]);
+	fname = files[fi] + dirlen + 1;
 
 # ifdef FEAT_MBYTE
 	firstline = TRUE;
