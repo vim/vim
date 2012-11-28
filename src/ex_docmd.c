@@ -1536,6 +1536,8 @@ do_cmdline(cmdline, fgetline, cookie, flags)
     if_level = 0;
 #endif
 
+    did_endif = FALSE;  /* in case do_cmdline used recursively */
+
     --call_depth;
     return retval;
 }
