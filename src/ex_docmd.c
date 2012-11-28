@@ -1534,9 +1534,9 @@ do_cmdline(cmdline, fgetline, cookie, flags)
      * ":endif" (could be ":if x | foo | endif").
      */
     if_level = 0;
-#endif
 
     did_endif = FALSE;  /* in case do_cmdline used recursively */
+#endif
 
     --call_depth;
     return retval;
