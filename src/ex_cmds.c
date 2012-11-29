@@ -6460,7 +6460,7 @@ helptags_one(dir, ext, tagfname, add_help_tags)
     /*
      * Find all *.txt files.
      */
-    dirlen = STRLEN(dir);
+    dirlen = (int)STRLEN(dir);
     STRCPY(NameBuff, dir);
     STRCAT(NameBuff, "/**/*");
     STRCAT(NameBuff, ext);
