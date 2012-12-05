@@ -1864,7 +1864,12 @@ set_termname(term)
 	}
 #  endif
 	if (p != NULL)
+	{
 	    set_option_value((char_u *)"ttym", 0L, p, 0);
+	    /* Reset the WAS_SET flag, 'ttymouse' can be set to "sgr" or
+	     * "xterm2" in check_termcode(). */
+	    reset_option_was_set((char_u *)"ttym");
+	}
 	if (p == NULL
 #   ifdef FEAT_GUI
 		|| gui.in_use

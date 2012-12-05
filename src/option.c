@@ -11179,6 +11179,19 @@ option_was_set(name)
 }
 
 /*
+ * Reset the flag indicating option "name" was set.
+ */
+    void
+reset_option_was_set(name)
+    char_u	*name;
+{
+    int idx = findoption(name);
+
+    if (idx >= 0)
+	options[idx].flags &= ~P_WAS_SET;
+}
+
+/*
  * compatible_set() - Called when 'compatible' has been set or unset.
  *
  * When 'compatible' set: Set all relevant options (those that have the P_VIM)
