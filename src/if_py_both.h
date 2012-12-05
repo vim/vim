@@ -520,7 +520,13 @@ VimStrwidth(PyObject *self UNUSED, PyObject *args)
     if (!PyArg_ParseTuple(args, "s", &expr))
 	return NULL;
 
-    return PyLong_FromLong(mb_string2cells((char_u *)expr, (int)STRLEN(expr)));
+    return PyLong_FromLong(
+#ifdef FEAT_MBYTE
+	    mb_string2cells((char_u *)expr, (int)STRLEN(expr))
+#else
+	    STRLEN(expr)
+#endif
+	    );
 }
 
 /*
