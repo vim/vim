@@ -1903,6 +1903,8 @@ repeat( {expr}, {count})	String	repeat {expr} {count} times
 resolve( {filename})		String	get filename a shortcut points to
 reverse( {list})		List	reverse {list} in-place
 round( {expr})			Float	round off {expr}
+screencol()			Number	current cursor column
+screenrow()			Number	current cursor row
 search( {pattern} [, {flags} [, {stopline} [, {timeout}]]])
 				Number	search for {pattern}
 searchdecl( {name} [, {global} [, {thisblock}]])

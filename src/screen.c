@@ -10264,3 +10264,23 @@ number_width(wp)
     return n;
 }
 #endif
+
+/*
+ * Return the current cursor column. This is the actual position on the
+ * screen. First column is 0.
+ */
+    int
+screen_screencol()
+{
+    return screen_cur_col;
+}
+
+/*
+ * Return the current cursor row. This is the actual position on the screen.
+ * First row is 0.
+ */
+    int
+screen_screenrow()
+{
+    return screen_cur_row;
+}

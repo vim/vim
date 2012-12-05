@@ -13,7 +13,7 @@ VIMPROG = ../vim
 
 SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test7.out test8.out test9.out test10.out test11.out \
-		test12.out  test13.out test14.out test15.out test17.out \
+		test12.out test13.out test14.out test15.out test17.out \
 		test18.out test19.out test20.out test21.out test22.out \
 		test23.out test24.out test25.out test26.out test27.out \
 		test28.out test29.out test30.out test31.out test32.out \
@@ -27,7 +27,7 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test69.out test70.out test71.out test72.out test73.out \
 		test74.out test75.out test76.out test77.out test78.out \
 		test79.out test80.out test81.out test82.out test83.out \
-		test84.out test85.out test86.out test87.out
+		test84.out test85.out test86.out test87.out test88.out
 
 SCRIPTS_GUI = test16.out
 

@@ -50,4 +50,6 @@ int redrawing __ARGS((void));
 int messaging __ARGS((void));
 void showruler __ARGS((int always));
 int number_width __ARGS((win_T *wp));
+int screen_screencol __ARGS((void));
+int screen_screenrow __ARGS((void));
 /* vim: set ft=c : */
