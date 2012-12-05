@@ -1729,11 +1729,13 @@ do_one_cmd(cmdlinep, sourcing,
     ++ex_nesting_level;
 #endif
 
-	/* when not editing the last file :q has to be typed twice */
+    /* When the last file has not been edited :q has to be typed twice. */
     if (quitmore
 #ifdef FEAT_EVAL
 	    /* avoid that a function call in 'statusline' does this */
 	    && !getline_equal(fgetline, cookie, get_func_line)
+	    /* avoid that an autocommand, e.g. QuitPre, does this */
+	    && !getline_equal(fgetline, cookie, getnextac)
 #endif
 	    )
 	--quitmore;

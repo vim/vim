@@ -7774,7 +7774,6 @@ static char_u *find_end_event __ARGS((char_u *arg, int have_group));
 static int event_ignored __ARGS((event_T event));
 static int au_get_grouparg __ARGS((char_u **argp));
 static int do_autocmd_event __ARGS((event_T event, char_u *pat, int nested, char_u *cmd, int forceit, int group));
-static char_u *getnextac __ARGS((int c, void *cookie, int indent));
 static int apply_autocmds_group __ARGS((event_T event, char_u *fname, char_u *fname_io, int force, int group, buf_T *buf, exarg_T *eap));
 static void auto_next_pat __ARGS((AutoPatCmd *apc, int stop_at_last));
 
@@ -9613,7 +9612,7 @@ auto_next_pat(apc, stop_at_last)
  * Called by do_cmdline() to get the next line for ":if".
  * Returns allocated string, or NULL for end of autocommands.
  */
-    static char_u *
+    char_u *
 getnextac(c, cookie, indent)
     int	    c UNUSED;
     void    *cookie;
