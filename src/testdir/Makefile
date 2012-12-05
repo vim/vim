@@ -47,12 +47,16 @@ report:
 
 $(SCRIPTS) $(SCRIPTS_GUI): $(VIMPROG)
 
+RM_ON_RUN = test.out X* viminfo
+RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim lua.vim test.ok
+RUN_VIM = $(VALGRIND) $(VIMPROG) -u unix.vim -U NONE --noplugin -s dotest.in
+
 clean:
-	-rm -rf *.out *.failed *.rej *.orig test.log tiny.vim small.vim mbyte.vim mzscheme.vim lua.vim test.ok X* valgrind.* viminfo
+	-rm -rf *.out *.failed *.rej *.orig test.log $(RM_ON_RUN) $(RM_ON_START) valgrind.*
 
 test1.out: test1.in
-	-rm -f $*.failed tiny.vim small.vim mbyte.vim mzscheme.vim lua.vim test.ok X* viminfo
-	$(VALGRIND) $(VIMPROG) -u unix.vim -U NONE --noplugin -s dotest.in $*.in
+	-rm -rf $*.failed $(RM_ON_RUN) $(RM_ON_START)
+	$(RUN_VIM) $*.in
 	@/bin/sh -c "if diff test.out $*.ok; \
 		then mv -f test.out $*.out; \
 		else echo; \
@@ -61,11 +65,22 @@ test1.out: test1.in
 	-rm -rf X* viminfo
 
 .in.out:
-	-rm -rf $*.failed test.ok test.out X* viminfo
+	-rm -rf $*.failed test.ok $(RM_ON_RUN)
 	cp $*.ok test.ok
 	# Sleep a moment to avoid that the xterm title is messed up
 	@-sleep .2
-	-$(VALGRIND) $(VIMPROG) -u unix.vim -U NONE --noplugin -s dotest.in $*.in
+	-$(RUN_VIM) $*.in
+
+	# For flaky tests retry one time.
+	@/bin/sh -c "if test -f test.out -a $* = test61; then \
+		  if diff test.out $*.ok; \
+		  then echo flaky test ok first time; \
+		  else rm -rf $*.failed $(RM_ON_RUN); \
+			$(RUN_VIM) $*.in; \
+		  fi \
+		fi"
+
+	# Check if the test.out file matches test.ok.
 	@/bin/sh -c "if test -f test.out; then\
 		  if diff test.out $*.ok; \
 		  then mv -f test.out $*.out; \
