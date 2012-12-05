@@ -4269,7 +4269,20 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		{
 		    /* tab amount depends on current column */
 		    n_extra = (int)wp->w_buffer->b_p_ts
-				   - VCOL_HLC % (int)wp->w_buffer->b_p_ts - 1;
+					- vcol % (int)wp->w_buffer->b_p_ts - 1;
+#ifdef FEAT_CONCEAL
+		    /* Tab alignment should be identical regardless of
+		     * 'conceallevel' value. So tab compensates of all
+		     * previous concealed characters, and thus resets vcol_off
+		     * and boguscols accumulated so far in the line. Note that
+		     * the tab can be longer than 'tabstop' when there
+		     * are concealed characters. */
+		    n_extra += vcol_off;
+		    vcol -= vcol_off;
+		    vcol_off = 0;
+		    col -= boguscols;
+		    boguscols = 0;
+#endif
 #ifdef FEAT_MBYTE
 		    mb_utf8 = FALSE;	/* don't draw as UTF-8 */
 #endif
