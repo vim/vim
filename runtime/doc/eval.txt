@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2012 Nov 21
+*eval.txt*	For Vim version 7.3.  Last change: 2012 Dec 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4874,8 +4874,27 @@ round({expr})							*round()*
 			echo round(-4.5)
 <			-5.0
 		{only available when compiled with the |+float| feature}
-		
-		
+
+screencol()							*screencol()*
+		The result is a Number, which is the current screen column of
+		the cursor. The leftmost column has number 1.
+		This function is mainly used for testing.
+
+		Note: Always returns the current screen column, thus if used
+		in a command (e.g. ":echo screencol()") it will return the
+		column inside the command line, which is 1 when the command is
+		executed. To get the cursor position in the file use one of
+		the following mappings: >
+			nnoremap <expr> GG ":echom ".screencol()."\n"
+			nnoremap <silent> GG :echom screencol()<CR>
+<
+screenrow()							*screenrow()*
+		The result is a Number, which is the current screen row of the
+		cursor.  The top line has number one.
+		This function is mainly used for testing.
+
+		Note: Same restrictions as with |screencol()|.
+
 search({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*search()*
 		Search for regexp pattern {pattern}.  The search starts at the
 		cursor position (you can use |cursor()| to set it).

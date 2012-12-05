@@ -1,4 +1,4 @@
-*uganda.txt*    For Vim version 7.3.  Last change: 2012 May 28
+*uganda.txt*    For Vim version 7.3.  Last change: 2012 Dec 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -238,6 +238,7 @@ Canada:		Contact Kibaale Children's Fund (KCF) in Surrey, Canada.  They
 Holland:	Transfer to the account of "Stichting ICCF Holland" in Lisse.
 		This will allow for tax deduction if you live in Holland.
 			Postbank, nr. 4548774
+			IBAN: NL95 INGB 0004 5487 74
 
 Germany:	It is possible to make donations that allow for a tax return.
 		Check the ICCF web site for the latest information:

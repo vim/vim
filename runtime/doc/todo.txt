@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Nov 28
+*todo.txt*      For Vim version 7.3.  Last change: 2012 Dec 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,6 +34,10 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+On external command get the message: 
+     SIGCHLD handler called (some thread has SIGCHLD unblocked)
+From MzScheme
+
 Go through more coverity reports.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
@@ -49,19 +53,10 @@ The CompleteDone autocommand needs some info passed to it:
 - The word that was selected (empty if abandoned complete)
 - Type of completion: tag, omnifunc, user func.
 
-Patch for Tab behavior with 'conceal'. (Dominique Pelle, 2012 Mar 18)
-Patch to test functionality of 'conceal' with tabs. (Simon Ruderich, 2012 Sep
-5)  Update with screencol() and screenrow() functions: Sep 7.
+Patch for matchit.vim. (Mike Morearty, 2012 Nov 28)
 
-Patch for undefined integer behavior. (Dominique Pelle, 2012 Nov 4, second one)
-
-Patch to have Python interface not depend on multi-byte.
-
-Patch to fix justify.vim. (James McCoy, 2012 Nov 23)
-
-mouse_sgr is not ordered alphabetically in :version output.
-Docs list mouse_urxvt as normal feature, should be big. (Hayaki Saito, 2012
-Aug 16)
+Patch to fix that the QuitPre autocommand clears the quitmore flag. (Techlive
+Zheng, 2012 Nov 28)
 
 ":gundo" command: global undo.  Undoes changes spread over multiple files in
 the order they were made.  Also ":gredo".  Both with a count.  Useful when
@@ -69,6 +64,8 @@ tests fail after making changes and you forgot in which files.
 
 Patch to make updating tabline faster. (Arseny Kapoulkine, 2012 Oct 3)
 Also remove the "rc" variable.
+
+Patch to make "- register not always used. (Christian Brabandt, 2012 Nov 28)
 
 Crash with vimdiff. (Don Cruickshank, 2012 Sep 23)
 
@@ -83,6 +80,10 @@ Update Oct 2.
 
 Patch to fix :s command with confirm and typing "a". (Christian Brabandt, 2012
 Oct 28)
+
+/[^\n] does match at a line break.  Expected to do the same as /.
+Patch by Christian Brabandt, 2012 Dec 1.
+Test files in archive in another message.
 
 Patch to make multibyte input work on Win32 console when codepage differs from
 'encoding'. (Ken Takata, 2012 Sep 29)
@@ -190,7 +191,7 @@ When there are no command line arguments ":next" and ":argu" give E163, which
 is confusing.  Should say "the argument list is empty".
 
 URXVT:
-- will get stuck if byte sequence does not containe expected semicolon.
+- will get stuck if byte sequence does not contain the expected semicolon.
 - Use urxvt mouse support also in xterm.  Explanations:
   http://www.midnight-commander.org/ticket/2662
 
@@ -220,8 +221,6 @@ Patch Sep 18.
 
 Patch for IME problems. Remove hacking code for old IM. (Yukihiro Nakadaira,
 2012 Jul 20)
-
-/[^\n] does match at a line break.  Expected to do the same as /.
 
 Patch for has('unnamedplus') docs. (Tony Mechelynck, 2011 Sep 27)
 And one for gui_x11.txt.
@@ -289,12 +288,6 @@ On MS-Windows a temp dir with a & init causes system() to fail. (Ben Fritz,
 'list' is set.  (Dennis Preiser)
 Patch 7.3.116 was the wrong solution.
 Christian Brabandt has another incomplete patch. (2011 Jul 13)
-Also: Alignment in help with tabs gets messed up, esp. at ":help index".
-Probably need to make a tab work like there was no concealing.  Possibly with
-an option.  Like line wrapping works as if there is no concealing.
-Patch by Dominique Pelle, Also fixes "fC" problem.
-    "fC" doesn't position the cursor correctly when there are concealed
-    characters.  Patch by Christian Brabandt, 2011 Oct 11)
 
 With concealed text mouse click doesn't put the cursor in the right position.
 (Herb Sitz)  Fix by Christian Brabandt, 2011 Jun 16.  Doesn't work properly,
@@ -358,9 +351,6 @@ Christoph Ebersbach, 2011 Jul 3)
 
 Windows keys not set properly on Windows 7?  (cncyber, 2010 Aug 26)
 
-This line hangs Vim, because of syntax HL:
-call append(line, "INFO  ....12....18....24....30....36....42....48....54....60....66....72....78%$")
-
 When using a Vim server, a # in the path causes an error message.
 (Jeff Lanzarotta, 2011 Feb 17)
 
@@ -412,9 +402,6 @@ mapping, how to restore the script ID?
 
 Bug in try/catch: return with invalid compare throws error that isn't caught.
 (ZyX, 2011 Jan 26)
-
-Highlighting stops working after changing it many times.  Script to reproduce
-it: Pablo Contreras, 2010 Oct 12  Windows XP and 7.  Font is never freed?
 
 When setting a local option value from the global value, add a script ID that
 indicates this, so that ":verbose set" can give a hint.  Check with options in
@@ -641,6 +628,11 @@ or replace with a character and continue?
 Add local time at start of --startuptime output.
 Requires configure check for localtime().
 Use format year-month-day hr:min:sec.
+
+Patch to add "combine" to :syntax, combines highlight attributes. (Nate
+Soares, 2012 Dec 3)
+
+Patch to make ":hi link" also take arguments. (Nate Soares, 2012 Dec 4)
 
 Shell not recognized properly if it ends in "csh -f". (James Vega, 2009 Nov 3)
 Find tail?  Might have a / in argument.  Find space?  Might have space in
@@ -1294,10 +1286,6 @@ Win64: Seek error in swap file for a very big file (3 Gbyte).  Check storing
 pointer in long and seek offset in 64 bit var.
 
 Win32: patch for fullscreen mode. (Liushaolin, 2008 April 17)
-
-Win32: When there is 4 Gbyte of memory mch_avail_mem() doesn't work properly.
-Unfinished patch by Jelle Geerts, 2008 Aug 24.
-Let mch_avail_mem() return Kbyte instead?
 
 Win32: When 'shell' is bash shellescape() doesn't always do the right thing.
 Depends on 'shellslash', 'shellquote' and 'shellxquote', but shellescape()

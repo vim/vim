@@ -1,23 +1,43 @@
 " Vim OMNI completion script for SQL
 " Language:    SQL
 " Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
-" Version:     12.0
-" Last Change: 2012 Feb 08
+" Version:     14.0
+" Last Change: 2012 Dec 04
+" Homepage:    http://www.vim.org/scripts/script.php?script_id=1572
 " Usage:       For detailed help
 "              ":help sql.txt"
 "              or ":help ft-sql-omni"
 "              or read $VIMRUNTIME/doc/sql.txt
 
 " History
-" Version 12.0
+"
+" Version 14.0 (Dec 2012)
+"     - BF: Added check for cpo
+"
+" Version 13.0 (Dec 2012)
+"     - NF: When completing column lists or drilling into a table
+"           and g:omni_sql_include_owner is enabled, the
+"           only the table name would be replaced with the column
+"           list instead of the table name and owner (if specified).
+"     - NF: When completing column lists using table aliases
+"           and g:omni_sql_include_owner is enabled, account
+"           for the owner name when looking up the table
+"           list instead of the table name and owner (if specified).
+"     - BF: When completing column lists or drilling into a table
+"           and g:omni_sql_include_owner is enabled, the
+"           column list could often not be found for the table.
+"     - BF: When OMNI popped up, possibly the wrong word
+"           would be replaced for column and column list options.
+"
+" Version 12.0 (Feb 2012)
 "     - Partial column name completion did not work when a table
 "       name or table alias was provided (Jonas Enberg).
 "     - Improved the handling of column completion.  First we match any
 "       columns from a previous completion.  If not matches are found, we
-"       consider the partial name to be a table or table alias for the 
+"       consider the partial name to be a table or table alias for the
 "       query and attempt to match on it.
 "
-" Version 11.0
+" Version 11.0 (Jan 2012)
 "     Added g:omni_sql_default_compl_type variable
 "         - You can specify which type of completion to default to
 "           when pressing <C-X><C-O>.  The entire list of available
@@ -40,7 +60,7 @@
 "         - Prepends error message with SQLComplete so you know who issued
 "           the error.
 "
-" Version 9.0
+" Version 9.0 (May 2010)
 "     This change removes some of the support for tables with spaces in their
 "     names in order to simplify the regexes used to pull out query table
 "     aliases for more robust table name and column name code completion.
@@ -51,10 +71,10 @@
 "     Incorrectly re-executed the g:ftplugin_sql_omni_key_right and g:ftplugin_sql_omni_key_left
 "     when drilling in and out of a column list for a table.
 "
-" Version 7.0
+" Version 7.0 (Jan 2010)
 "     Better handling of object names
 "
-" Version 6.0
+" Version 6.0 (Apr 2008)
 "     Supports object names with spaces "my table name"
 "
 " Set completion with CTRL-X CTRL-O to autoloaded function.
@@ -71,7 +91,9 @@ endif
 if exists('g:loaded_sql_completion')
     finish
 endif
-let g:loaded_sql_completion = 120
+let g:loaded_sql_completion = 130
+let s:keepcpo= &cpo
+set cpo&vim
 
 " Maintains filename of dictionary
 let s:sql_file_table        = ""
@@ -137,6 +159,13 @@ if !exists('g:omni_sql_default_compl_type')
 endif
 
 " This function is used for the 'omnifunc' option.
+" It is called twice by omni and it is responsible
+" for returning the completion list of items.
+" But it must also determine context of what to complete
+" and what to "replace" with the completion.
+" The a:base, is replaced directly with what the user
+" chooses from the choices.
+" The s:prepend provides context for the completion.
 function! sqlcomplete#Complete(findstart, base)
 
     " Default to table name completion
@@ -145,6 +174,7 @@ function! sqlcomplete#Complete(findstart, base)
     if exists('b:sql_compl_type')
         let compl_type = b:sql_compl_type
     endif
+    let begindot = 0
 
     " First pass through this function determines how much of the line should
     " be replaced by whatever is chosen from the completion list
@@ -153,7 +183,6 @@ function! sqlcomplete#Complete(findstart, base)
         let line     = getline('.')
         let start    = col('.') - 1
         let lastword = -1
-        let begindot = 0
         " Check if the first character is a ".", for column completion
         if line[start - 1] == '.'
             let begindot = 1
@@ -179,7 +208,10 @@ function! sqlcomplete#Complete(findstart, base)
                 " If lastword has already been set for column completion
                 " break from the loop, since we do not also want to pickup
                 " a table name if it was also supplied.
+                " Unless g:omni_sql_include_owner == 1, then we can
+                " include the ownername.
                 if lastword != -1 && compl_type == 'column'
+                            \ && g:omni_sql_include_owner == 0
                     break
                 endif
                 " If column completion was specified stop at the "." if
@@ -191,7 +223,7 @@ function! sqlcomplete#Complete(findstart, base)
                 " If omni_sql_include_owner = 0, do not include the table
                 " name as part of the substitution, so break here
                 if lastword == -1 &&
-                            \ compl_type =~ 'table\|view\|procedure\column_csv' &&
+                            \ compl_type =~ '\<\(table\|view\|procedure\|column\|column_csv\)\>' &&
                             \ g:omni_sql_include_owner == 0
                     let lastword = start
                     break
@@ -288,6 +320,12 @@ function! sqlcomplete#Complete(findstart, base)
             let table  = matchstr( base, '^\(.*\.\)\?\zs.*\ze\..*' )
             let column = matchstr( base, '.*\.\zs.*' )
 
+            if g:omni_sql_include_owner == 1 && owner == '' && table != '' && column != ''
+                let owner  = table
+                let table  = column
+                let column = ''
+            endif
+
             " It is pretty well impossible to determine if the user
             " has entered:
             "    owner.table
@@ -370,7 +408,16 @@ function! sqlcomplete#Complete(findstart, base)
                 let list_type     = 'csv'
             endif
 
-            let compl_list  = s:SQLCGetColumns(table, list_type)
+            " If we are including the OWNER for the objects, then for
+            " table completion, if we have it, it should be included
+            " as there can be the same table names in a database yet
+            " with different owner names.
+            if g:omni_sql_include_owner == 1 && owner != '' && table != ''
+                let compl_list  = s:SQLCGetColumns(owner.'.'.table, list_type)
+            else
+                let compl_list  = s:SQLCGetColumns(table, list_type)
+            endif
+
             if column != ''
                 " If no column prefix has been provided and the table
                 " name was provided, append it to each of the items
@@ -393,11 +440,14 @@ function! sqlcomplete#Complete(findstart, base)
         endif
     elseif compl_type == 'resetCache'
         " Reset all cached items
-        let s:tbl_name  = []
-        let s:tbl_alias = []
-        let s:tbl_cols  = []
-        let s:syn_list  = []
-        let s:syn_value = []
+        let s:tbl_name           = []
+        let s:tbl_alias          = []
+        let s:tbl_cols           = []
+        let s:syn_list           = []
+        let s:syn_value          = []
+        let s:sql_file_table     = ""
+        let s:sql_file_procedure = ""
+        let s:sql_file_view      = ""
 
         let msg = "All SQL cached items have been removed."
         call s:SQLCWarningMsg(msg)
@@ -423,10 +473,25 @@ function! sqlcomplete#Complete(findstart, base)
         " let expr = 'v:val '.(g:omni_sql_ignorecase==1?'=~?':'=~#').' "\\(^'.base.'\\|\\(\\.\\)\\?'.base.'\\)"'
         " let expr = 'v:val '.(g:omni_sql_ignorecase==1?'=~?':'=~#').' "\\(^'.base.'\\|\\([^.]*\\)\\?'.base.'\\)"'
         let compl_list = filter(deepcopy(compl_list), expr)
+
+        if empty(compl_list) && compl_type == 'table' && base =~ '\.$'
+            " It is possible we could be looking for column name completion
+            " and the user simply hit C-X C-O to lets try it as well
+            " since we had no hits with the tables.
+            " If the base ends with a . it is hard to know if we are
+            " completing table names or column names.
+            let list_type = ''
+
+            let compl_list  = s:SQLCGetColumns(base, list_type)
+        endif
     endif
 
     if exists('b:sql_compl_savefunc') && b:sql_compl_savefunc != ""
         let &omnifunc = b:sql_compl_savefunc
+    endif
+
+    if empty(compl_list)
+        call s:SQLCWarningMsg( 'Could not find type['.compl_type.'] using prepend[.'.s:prepended.'] base['.a:base.']' )
     endif
 
     return compl_list
@@ -664,8 +729,26 @@ function! s:SQLCGetObjectOwner(object)
 endfunction
 
 function! s:SQLCGetColumns(table_name, list_type)
+    if a:table_name =~ '\.'
+        " Check if the owner/creator has been specified
+        let owner  = matchstr( a:table_name, '^\zs.*\ze\..*\..*' )
+        let table  = matchstr( a:table_name, '^\(.*\.\)\?\zs.*\ze\..*' )
+        let column = matchstr( a:table_name, '.*\.\zs.*' )
+
+        if g:omni_sql_include_owner == 1 && owner == '' && table != '' && column != ''
+            let owner  = table
+            let table  = column
+            let column = ''
+        endif
+    else
+        let owner  = ''
+        let table  = matchstr(a:table_name, '^["\[\]a-zA-Z0-9_ ]\+\ze\.\?')
+        let column = ''
+    endif
+
     " Check if the table name was provided as part of the column name
-    let table_name   = matchstr(a:table_name, '^["\[\]a-zA-Z0-9_ ]\+\ze\.\?')
+    " let table_name   = matchstr(a:table_name, '^["\[\]a-zA-Z0-9_ ]\+\ze\.\?')
+    let table_name   = table
     let table_cols   = []
     let table_alias  = ''
     let move_to_top  = 1
@@ -786,7 +869,12 @@ function! s:SQLCGetColumns(table_name, list_type)
 
              if table_name_new != ''
                  let table_alias = table_name
-                 let table_name  = matchstr( table_name_new, '^\(.*\.\)\?\zs.*\ze' )
+                 if g:omni_sql_include_owner == 1
+                    let table_name  = matchstr( table_name_new, '^\zs\(.\{-}\.\)\?\(.\{-}\.\)\?.*\ze' )
+                 else
+                     " let table_name  = matchstr( table_name_new, '^\(.*\.\)\?\zs.*\ze' )
+                    let table_name  = matchstr( table_name_new, '^\(.\{-}\.\)\?\zs\(.\{-}\.\)\?.*\ze' )
+                 endif
 
                  let list_idx = index(s:tbl_name, table_name, 0, &ignorecase)
                  if list_idx > -1
@@ -828,7 +916,8 @@ function! s:SQLCGetColumns(table_name, list_type)
     if empty(table_cols)
         " Specify silent mode, no messages to the user (tbl, 1)
         " Specify do not comma separate (tbl, 1, 1)
-        let table_cols_str = DB_getListColumn(table_name, 1, 1)
+        " let table_cols_str = DB_getListColumn(table_name, 1, 1)
+        let table_cols_str = DB_getListColumn((owner!=''?owner.'.':'').table_name, 1, 1)
 
         if table_cols_str != ""
             let s:tbl_name  = add( s:tbl_name,  table_name )
@@ -854,3 +943,7 @@ function! s:SQLCGetColumns(table_name, list_type)
 
     return table_cols
 endfunction
+"  Restore:
+let &cpo= s:keepcpo
+unlet s:keepcpo
+" vim: ts=4 fdm=marker
