@@ -1,6 +1,6 @@
 " Vim script language tests
 " Author:	Servatius Brandt <Servatius.Brandt@fujitsu-siemens.com>
-" Last Change:	2010 Sep 29
+" Last Change:	2012 Nov 23
 
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1
@@ -9604,7 +9604,7 @@ delfunction Delete_autocommands
 Xcheck 198689
 
 "-------------------------------------------------------------------------------
-" Test 86   setloclist crash						    {{{1
+" Test 86:  setloclist crash						    {{{1
 "
 "	    Executing a setloclist() on BufUnload shouldn't crash Vim
 "-------------------------------------------------------------------------------
