@@ -54,8 +54,12 @@ $5lrxa<-- should be 'x'
 ^O3li4li4li   <-- should show the name of a noted text editor
 ^o4li4li4li   <-- and its version number-dd
 :"
+:" Test for yanking and pasting using the small delete register
+gg/^foo
+dewve"-p
 :wq! test.out
 ENDTEST
+foo, bar
 keyword keyw
 all your base are belong to us
 1 2 3 4 5 6
