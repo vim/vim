@@ -3351,6 +3351,12 @@ do_put(regname, dir, count, flags)
 	    return;
     }
 
+#ifdef FEAT_AUTOCMD
+    /* Autocommands may be executed when saving lines for undo, which may make
+     * y_array invalid.  Start undo now to avoid that. */
+    u_save(curwin->w_cursor.lnum, curwin->w_cursor.lnum + 1);
+#endif
+
     if (insert_string != NULL)
     {
 	y_type = MCHAR;
