@@ -131,7 +131,7 @@ function! s:Match_wrapper(word, forward, mode) range
     " let default = substitute(escape(&mps, '[$^.*~\\/?]'), '[,:]\+',
     "  \ '\\|', 'g').'\|\/\*\|\*\/\|#if\>\|#ifdef\>\|#else\>\|#elif\>\|#endif\>'
     let default = escape(&mps, '[$^.*~\\/?]') . (strlen(&mps) ? "," : "") .
-      \ '\/\*:\*\/,#if\%(def\)\=:#else\>:#elif\>:#endif\>'
+      \ '\/\*:\*\/,#\s*if\%(def\)\=:#\s*else\>:#\s*elif\>:#\s*endif\>'
     " s:all = pattern with all the keywords
     let match_words = match_words . (strlen(match_words) ? "," : "") . default
     if match_words !~ s:notslash . '\\\d'
@@ -649,7 +649,7 @@ fun! s:MultiMatch(spflag, mode)
   "   s:all	regexp based on s:pat and the default groups
   " This part is copied and slightly modified from s:Match_wrapper().
   let default = escape(&mps, '[$^.*~\\/?]') . (strlen(&mps) ? "," : "") .
-    \ '\/\*:\*\/,#if\%(def\)\=:#else\>:#elif\>:#endif\>'
+    \ '\/\*:\*\/,#\s*if\%(def\)\=:#\s*else\>:#\s*elif\>:#\s*endif\>'
   " Allow b:match_words = "GetVimMatchWords()" .
   if b:match_words =~ ":"
     let match_words = b:match_words
