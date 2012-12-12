@@ -1,4 +1,5 @@
 Tests for "r<Tab>" with 'smarttab' and 'expandtab' set/not set.
+Also test that dv_ works correctly
 
 STARTTEST
 :so small.vim
@@ -16,7 +17,9 @@ r
 :" Test that copyindent works with expandtab set
 :set expandtab smartindent copyindent ts=8 sw=8 sts=8
 o{
-x:?^start?,$w! test.out
+x:set nosol
+/Second line/
+fwdv_:?^start?,$w! test.out
 :qa!
 ENDTEST
 
@@ -27,3 +30,4 @@ test text
     a cde
     f ghi
 test text
+  Second line beginning with whitespace
