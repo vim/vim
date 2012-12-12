@@ -838,7 +838,7 @@ AC_ARG_ENABLE(pythoninterp,
 AC_MSG_RESULT($enable_pythoninterp)
 if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; then
   dnl -- find the python executable
-  AC_PATH_PROG(vi_cv_path_python, python)
+  AC_PATH_PROGS(vi_cv_path_python, python2 python)
   if test "X$vi_cv_path_python" != "X"; then
 
     dnl -- get its version number
@@ -1028,7 +1028,7 @@ AC_ARG_ENABLE(python3interp,
 AC_MSG_RESULT($enable_python3interp)
 if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; then
   dnl -- find the python3 executable
-  AC_PATH_PROG(vi_cv_path_python3, python3)
+  AC_PATH_PROGS(vi_cv_path_python3, python3 python)
   if test "X$vi_cv_path_python3" != "X"; then
 
     dnl -- get its version number

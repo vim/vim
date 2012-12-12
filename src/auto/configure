@@ -5214,8 +5214,10 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_pythoninterp" >&5
 $as_echo "$enable_pythoninterp" >&6; }
 if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; then
-    # Extract the first word of "python", so it can be a program name with args.
-set dummy python; ac_word=$2
+    for ac_prog in python2 python
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if test "${ac_cv_path_vi_cv_path_python+set}" = set; then :
@@ -5253,6 +5255,9 @@ else
 $as_echo "no" >&6; }
 fi
 
+
+  test -n "$vi_cv_path_python" && break
+done
 
   if test "X$vi_cv_path_python" != "X"; then
 
@@ -5509,8 +5514,10 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_python3interp" >&5
 $as_echo "$enable_python3interp" >&6; }
 if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; then
-    # Extract the first word of "python3", so it can be a program name with args.
-set dummy python3; ac_word=$2
+    for ac_prog in python3 python
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if test "${ac_cv_path_vi_cv_path_python3+set}" = set; then :
@@ -5548,6 +5555,9 @@ else
 $as_echo "no" >&6; }
 fi
 
+
+  test -n "$vi_cv_path_python3" && break
+done
 
   if test "X$vi_cv_path_python3" != "X"; then
 
