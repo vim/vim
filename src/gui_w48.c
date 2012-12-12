@@ -2452,7 +2452,6 @@ gui_mch_update_tabline(void)
     TCITEM	tie;
     int		nr = 0;
     int		curtabidx = 0;
-    RECT	rc;
 #ifdef FEAT_MBYTE
     static int	use_unicode = FALSE;
     int		uu;
@@ -2479,13 +2478,16 @@ gui_mch_update_tabline(void)
     tie.mask = TCIF_TEXT;
     tie.iImage = -1;
 
+    /* Disable redraw for tab updates to eliminate O(N^2) draws. */
+    SendMessage(s_tabhwnd, WM_SETREDRAW, (WPARAM)FALSE, 0);
+
     /* Add a label for each tab page.  They all contain the same text area. */
     for (tp = first_tabpage; tp != NULL; tp = tp->tp_next, ++nr)
     {
 	if (tp == curtab)
 	    curtabidx = nr;
 
-	if (!TabCtrl_GetItemRect(s_tabhwnd, nr, &rc))
+	if (nr >= TabCtrl_GetItemCount(s_tabhwnd))
 	{
 	    /* Add the tab */
 	    tie.pszText = "-Empty-";
@@ -2519,11 +2521,14 @@ gui_mch_update_tabline(void)
     }
 
     /* Remove any old labels. */
-    while (TabCtrl_GetItemRect(s_tabhwnd, nr, &rc))
+    while (nr < TabCtrl_GetItemCount(s_tabhwnd))
 	TabCtrl_DeleteItem(s_tabhwnd, nr);
 
     if (TabCtrl_GetCurSel(s_tabhwnd) != curtabidx)
 	TabCtrl_SetCurSel(s_tabhwnd, curtabidx);
+
+    /* Re-enable redraw. This should trigger a repaint. */
+    SendMessage(s_tabhwnd, WM_SETREDRAW, (WPARAM)TRUE, 0);
 }
 
 /*
