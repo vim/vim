@@ -2527,8 +2527,10 @@ gui_mch_update_tabline(void)
     if (TabCtrl_GetCurSel(s_tabhwnd) != curtabidx)
 	TabCtrl_SetCurSel(s_tabhwnd, curtabidx);
 
-    /* Re-enable redraw. This should trigger a repaint. */
+    /* Re-enable redraw and redraw. */
     SendMessage(s_tabhwnd, WM_SETREDRAW, (WPARAM)TRUE, 0);
+    RedrawWindow(s_tabhwnd, NULL, NULL,
+		    RDW_ERASE | RDW_FRAME | RDW_INVALIDATE | RDW_ALLCHILDREN);
 }
 
 /*
