@@ -5849,14 +5849,14 @@ find_help_tags(arg, num_matches, matches, keep_lang)
     int		i;
     static char *(mtable[]) = {"*", "g*", "[*", "]*", ":*",
 			       "/*", "/\\*", "\"*", "**",
-			       "/\\(\\)",
+			       "cpo-*", "/\\(\\)",
 			       "?", ":?", "?<CR>", "g?", "g?g?", "g??", "z?",
 			       "/\\?", "/\\z(\\)", "\\=", ":s\\=",
 			       "[count]", "[quotex]", "[range]",
 			       "[pattern]", "\\|", "\\%$"};
     static char *(rtable[]) = {"star", "gstar", "[star", "]star", ":star",
 			       "/star", "/\\\\star", "quotestar", "starstar",
-			       "/\\\\(\\\\)",
+			       "cpo-star", "/\\\\(\\\\)",
 			       "?", ":?", "?<CR>", "g?", "g?g?", "g??", "z?",
 			       "/\\\\?", "/\\\\z(\\\\)", "\\\\=", ":s\\\\=",
 			       "\\[count]", "\\[quotex]", "\\[range]",
