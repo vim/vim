@@ -5200,6 +5200,12 @@ outofmem:
 	    EMSG2(_(e_patnotf2), get_search_pat());
     }
 
+#ifdef FEAT_FOLDING
+    if (do_ask && hasAnyFolding(curwin))
+	/* Cursor position may require updating */
+	changed_window_setting();
+#endif
+
     vim_free(regmatch.regprog);
 }
 
