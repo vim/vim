@@ -7523,7 +7523,7 @@ nv_gomark(cap)
     pos_T	*pos;
     int		c;
 #ifdef FEAT_FOLDING
-    linenr_T	lnum = curwin->w_cursor.lnum;
+    pos_T	old_cursor = curwin->w_cursor;
     int		old_KeyTyped = KeyTyped;    /* getting file may reset it */
 #endif
 
@@ -7552,7 +7552,7 @@ nv_gomark(cap)
 #endif
 #ifdef FEAT_FOLDING
     if (cap->oap->op_type == OP_NOP
-	    && (pos == (pos_T *)-1 || lnum != curwin->w_cursor.lnum)
+	    && (pos == (pos_T *)-1 || !equalpos(old_cursor, *pos))
 	    && (fdo_flags & FDO_MARK)
 	    && old_KeyTyped)
 	foldOpenCursor();
