@@ -104,7 +104,7 @@
 # endif
 #endif
 #if defined(MACOS_X) || defined(MACOS_CLASSIC)
-#  define MACOS
+# define MACOS
 #endif
 #if defined(MACOS_X) && defined(MACOS_CLASSIC)
     Error: To compile for both MACOS X and Classic use a Classic Carbon
@@ -490,7 +490,7 @@ typedef unsigned long u8char_T;	    /* long should be 32 bits or more */
 #  include <string.h>
 # endif
 # if defined(HAVE_STRINGS_H) && !defined(NO_STRINGS_WITH_STRING_H)
-#   include <strings.h>
+#  include <strings.h>
 # endif
 # ifdef HAVE_STAT_H
 #  include <stat.h>
@@ -515,22 +515,22 @@ typedef unsigned long u8char_T;	    /* long should be 32 bits or more */
 # include <stdarg.h>
 #endif
 
-# if defined(HAVE_SYS_SELECT_H) && \
+#if defined(HAVE_SYS_SELECT_H) && \
 	(!defined(HAVE_SYS_TIME_H) || defined(SYS_SELECT_WITH_SYS_TIME))
-#  include <sys/select.h>
-# endif
+# include <sys/select.h>
+#endif
 
-# ifndef HAVE_SELECT
-#  ifdef HAVE_SYS_POLL_H
-#   include <sys/poll.h>
+#ifndef HAVE_SELECT
+# ifdef HAVE_SYS_POLL_H
+#  include <sys/poll.h>
+#  define HAVE_POLL
+# else
+#  ifdef HAVE_POLL_H
+#   include <poll.h>
 #   define HAVE_POLL
-#  else
-#   ifdef HAVE_POLL_H
-#    include <poll.h>
-#    define HAVE_POLL
-#   endif
 #  endif
 # endif
+#endif
 
 /* ================ end of the header file puzzle =============== */
 
@@ -1877,8 +1877,8 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 /* VIM_ATOM_NAME is the older Vim-specific selection type for X11.  Still
  * supported for when a mix of Vim versions is used. VIMENC_ATOM_NAME includes
  * the encoding to support Vims using different 'encoding' values. */
-#define VIM_ATOM_NAME "_VIM_TEXT"
-#define VIMENC_ATOM_NAME "_VIMENC_TEXT"
+# define VIM_ATOM_NAME "_VIM_TEXT"
+# define VIMENC_ATOM_NAME "_VIMENC_TEXT"
 
 /* Selection states for modeless selection */
 # define SELECT_CLEARED		0
