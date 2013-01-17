@@ -1376,6 +1376,9 @@ getout(exitval)
 	    for (wp = (tp == curtab)
 		    ? firstwin : tp->tp_firstwin; wp != NULL; wp = wp->w_next)
 	    {
+		if (wp->w_buffer == NULL)
+		    /* Autocmd must have close the buffer already, skip. */
+		    continue;
 		buf = wp->w_buffer;
 		if (buf->b_changedtick != -1)
 		{
