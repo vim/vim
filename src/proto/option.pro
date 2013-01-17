@@ -59,4 +59,5 @@ int file_ff_differs __ARGS((buf_T *buf, int ignore_empty));
 int check_ff_value __ARGS((char_u *p));
 long get_sw_value __ARGS((void));
 long get_sts_value __ARGS((void));
+void find_mps_values __ARGS((int *initc, int *findc, int *backwards, int switchit));
 /* vim: set ft=c : */

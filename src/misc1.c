@@ -2288,14 +2288,18 @@ ins_char_bytes(buf, charlen)
      */
     if (p_sm && (State & INSERT)
 	    && msg_silent == 0
-#ifdef FEAT_MBYTE
-	    && charlen == 1
-#endif
 #ifdef FEAT_INS_EXPAND
 	    && !ins_compl_active()
 #endif
        )
-	showmatch(c);
+    {
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	    showmatch(mb_ptr2char(buf));
+	else
+#endif
+	    showmatch(c);
+    }
 
 #ifdef FEAT_RIGHTLEFT
     if (!p_ri || (State & REPLACE_FLAG))

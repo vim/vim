@@ -6149,16 +6149,46 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     /* 'matchpairs' */
     else if (gvarp == &p_mps)
     {
-	/* Check for "x:y,x:y" */
-	for (p = *varp; *p != NUL; p += 4)
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
 	{
-	    if (p[1] != ':' || p[2] == NUL || (p[3] != NUL && p[3] != ','))
+	    for (p = *varp; *p != NUL; ++p)
 	    {
-		errmsg = e_invarg;
-		break;
+		int x2,x3 = -1;
+
+		if (*p != NUL)
+		    p += mb_ptr2len(p);
+		if (*p != NUL)
+		    x2 = *p++;
+		if (*p != NUL)
+		{
+		    x3 = mb_ptr2char(p);
+		    p += mb_ptr2len(p);
+		}
+		if (x2 != ':' || x2 == -1 || x3 == -1
+						  || (*p != NUL && *p != ','))
+		{
+		    errmsg = e_invarg;
+		    break;
+		}
+		if (*p == NUL)
+		    break;
 	    }
-	    if (p[3] == NUL)
-		break;
+	}
+	else
+#endif
+	{
+	    /* Check for "x:y,x:y" */
+	    for (p = *varp; *p != NUL; p += 4)
+	    {
+		if (p[1] != ':' || p[2] == NUL || (p[3] != NUL && p[3] != ','))
+		{
+		    errmsg = e_invarg;
+		    break;
+		}
+		if (p[3] == NUL)
+		    break;
+	    }
 	}
     }
 
@@ -11452,4 +11482,102 @@ get_sw_value()
 get_sts_value()
 {
     return curbuf->b_p_sts < 0 ? get_sw_value() : curbuf->b_p_sts;
+}
+
+/*
+ * Check matchpairs option for "*initc".
+ * If there is a match set "*initc" to the matching character and "*findc" to
+ * the opposite character.  Set "*backwards" to the direction.
+ * When "switchit" is TRUE swap the direction.
+ */
+    void
+find_mps_values(initc, findc, backwards, switchit)
+    int	    *initc;
+    int	    *findc;
+    int	    *backwards;
+    int	    switchit;
+{
+    char_u	*ptr;
+
+    ptr = curbuf->b_p_mps;
+    while (*ptr != NUL)
+    {
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	{
+	    char_u *prev;
+
+	    if (mb_ptr2char(ptr) == *initc)
+	    {
+		if (switchit)
+		{
+		    *findc = *initc;
+		    *initc = mb_ptr2char(ptr + mb_ptr2len(ptr) + 1);
+		    *backwards = TRUE;
+		}
+		else
+		{
+		    *findc = mb_ptr2char(ptr + mb_ptr2len(ptr) + 1);
+		    *backwards = FALSE;
+		}
+		return;
+	    }
+	    prev = ptr;
+	    ptr += mb_ptr2len(ptr) + 1;
+	    if (mb_ptr2char(ptr) == *initc)
+	    {
+		if (switchit)
+		{
+		    *findc = *initc;
+		    *initc = mb_ptr2char(prev);
+		    *backwards = FALSE;
+		}
+		else
+		{
+		    *findc = mb_ptr2char(prev);
+		    *backwards = TRUE;
+		}
+		return;
+	    }
+	    ptr += mb_ptr2len(ptr);
+	}
+	else
+#endif
+	{
+	    if (*ptr == *initc)
+	    {
+		if (switchit)
+		{
+		    *backwards = TRUE;
+		    *findc = *initc;
+		    *initc = ptr[2];
+		}
+		else
+		{
+		    *backwards = FALSE;
+		    *findc = ptr[2];
+		}
+		return;
+	    }
+	    ptr += 2;
+	    if (*ptr == *initc)
+	    {
+		if (switchit)
+		{
+		    *backwards = FALSE;
+		    *findc = *initc;
+		    *initc = ptr[-2];
+		}
+		else
+		{
+		    *backwards = TRUE;
+		    *findc =  ptr[-2];
+		}
+		return;
+	    }
+	    ++ptr;
+	}
+	if (*ptr == ',')
+	    ++ptr;
+    }
 }

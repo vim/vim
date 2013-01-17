@@ -1,4 +1,5 @@
 Test for multi-byte text formatting.
+Also test, that 'mps' with multibyte chars works.
 
 STARTTEST
 :so mbyte.vim
@@ -133,6 +134,15 @@ ENDTEST
 
 }
 
+STARTTEST
+/^{/+1
+:set mps+=u2018:u2019
+d%
+ENDTEST
+
+{
+‘ two three ’ four
+}
 STARTTEST
 :g/^STARTTEST/.,/^ENDTEST/d
 :1;/^Results/,$wq! test.out

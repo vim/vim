@@ -1786,28 +1786,8 @@ findmatchlimit(oap, initc, flags, maxtravel)
     }
     else if (initc != '#' && initc != NUL)
     {
-	/* 'matchpairs' is "x:y,x:y" */
-	for (ptr = curbuf->b_p_mps; *ptr; ptr += 2)
-	{
-	    if (*ptr == initc)
-	    {
-		findc = initc;
-		initc = ptr[2];
-		backwards = TRUE;
-		break;
-	    }
-	    ptr += 2;
-	    if (*ptr == initc)
-	    {
-		findc = initc;
-		initc = ptr[-2];
-		backwards = FALSE;
-		break;
-	    }
-	    if (ptr[1] != ',')
-		break;
-	}
-	if (!findc)		/* invalid initc! */
+	find_mps_values(&initc, &findc, &backwards, TRUE);
+	if (findc == NUL)
 	    return NULL;
     }
     /*
@@ -1886,36 +1866,14 @@ findmatchlimit(oap, initc, flags, maxtravel)
 		    --pos.col;
 		for (;;)
 		{
-		    initc = linep[pos.col];
+		    initc = PTR2CHAR(linep + pos.col);
 		    if (initc == NUL)
 			break;
 
-		    for (ptr = curbuf->b_p_mps; *ptr; ++ptr)
-		    {
-			if (*ptr == initc)
-			{
-			    findc = ptr[2];
-			    backwards = FALSE;
-			    break;
-			}
-			ptr += 2;
-			if (*ptr == initc)
-			{
-			    findc = ptr[-2];
-			    backwards = TRUE;
-			    break;
-			}
-			if (!*++ptr)
-			    break;
-		    }
+		    find_mps_values(&initc, &findc, &backwards, FALSE);
 		    if (findc)
 			break;
-#ifdef FEAT_MBYTE
-		    if (has_mbyte)
-			pos.col += (*mb_ptr2len)(linep + pos.col);
-		    else
-#endif
-			++pos.col;
+		    pos.col += MB_PTR2LEN(linep + pos.col);
 		}
 		if (!findc)
 		{
@@ -2260,7 +2218,8 @@ findmatchlimit(oap, initc, flags, maxtravel)
 	 *   inquote if the number of quotes in a line is even, unless this
 	 *   line or the previous one ends in a '\'.  Complicated, isn't it?
 	 */
-	switch (c = linep[pos.col])
+	c = PTR2CHAR(linep + pos.col);
+	switch (c)
 	{
 	case NUL:
 	    /* at end of line without trailing backslash, reset inquote */
@@ -2469,20 +2428,23 @@ showmatch(c)
      * Only show match for chars in the 'matchpairs' option.
      */
     /* 'matchpairs' is "x:y,x:y" */
-    for (p = curbuf->b_p_mps; *p != NUL; p += 2)
+    for (p = curbuf->b_p_mps; *p != NUL; ++p)
     {
+	if (PTR2CHAR(p) == c
 #ifdef FEAT_RIGHTLEFT
-	if (*p == c && (curwin->w_p_rl ^ p_ri))
-	    break;
+		    && (curwin->w_p_rl ^ p_ri)
 #endif
-	p += 2;
-	if (*p == c
+	   )
+	    break;
+	p += MB_PTR2LEN(p) + 1;
+	if (PTR2CHAR(p) == c
 #ifdef FEAT_RIGHTLEFT
 		&& !(curwin->w_p_rl ^ p_ri)
 #endif
 	   )
 	    break;
-	if (p[1] != ',')
+	p += MB_PTR2LEN(p);
+	if (*p == NUL)
 	    return;
     }
 
