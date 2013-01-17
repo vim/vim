@@ -6154,7 +6154,8 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	{
 	    for (p = *varp; *p != NUL; ++p)
 	    {
-		int x2,x3 = -1;
+		int x2 = -1;
+		int x3 = -1;
 
 		if (*p != NUL)
 		    p += mb_ptr2len(p);
@@ -6165,8 +6166,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 		    x3 = mb_ptr2char(p);
 		    p += mb_ptr2len(p);
 		}
-		if (x2 != ':' || x2 == -1 || x3 == -1
-						  || (*p != NUL && *p != ','))
+		if (x2 != ':' || x3 == -1 || (*p != NUL && *p != ','))
 		{
 		    errmsg = e_invarg;
 		    break;
