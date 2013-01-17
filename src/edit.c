@@ -372,6 +372,8 @@ edit(cmdchar, startln, count)
      */
     if (cmdchar != 'r' && cmdchar != 'v')
     {
+	pos_T   save_cursor = curwin->w_cursor;
+
 # ifdef FEAT_EVAL
 	if (cmdchar == 'R')
 	    ptr = (char_u *)"r";
@@ -382,6 +384,19 @@ edit(cmdchar, startln, count)
 	set_vim_var_string(VV_INSERTMODE, ptr, 1);
 # endif
 	apply_autocmds(EVENT_INSERTENTER, NULL, NULL, FALSE, curbuf);
+
+	/* Since Insert mode was not started yet a call to check_cursor_col()
+	 * may have moved the cursor, especially with the "A" command. */
+	if (curwin->w_cursor.col != save_cursor.col
+		&& curwin->w_cursor.lnum == save_cursor.lnum)
+	{
+	    int save_state = State;
+
+	    curwin->w_cursor = save_cursor;
+	    State = INSERT;
+	    check_cursor_col();
+	    State = save_state;
+	}
     }
 #endif
 
