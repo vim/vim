@@ -4317,6 +4317,8 @@ get_iconv_import_func(HINSTANCE hInst, const char *funcname)
 							    .VirtualAddress);
     for (; pImpDesc->FirstThunk; ++pImpDesc)
     {
+	if (!pImpDesc->OriginalFirstThunk)
+	    continue;
 	pIAT = (PIMAGE_THUNK_DATA)(pImage + pImpDesc->FirstThunk);
 	pINT = (PIMAGE_THUNK_DATA)(pImage + pImpDesc->OriginalFirstThunk);
 	for (; pIAT->u1.Function; ++pIAT, ++pINT)
