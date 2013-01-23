@@ -59,15 +59,6 @@
 #endif
 
 /*
- * On some systems, when we compile with the GUI, we always use it.  On Mac
- * there is no terminal version, and on Windows we can't figure out how to
- * fork one off with :gui.
- */
-#if defined(FEAT_GUI_MSWIN) || (defined(FEAT_GUI_MAC) && !defined(MACOS_X_UNIX))
-# define ALWAYS_USE_GUI
-#endif
-
-/*
  * On some systems scrolling needs to be done right away instead of in the
  * main loop.
  */
