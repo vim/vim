@@ -4325,7 +4325,8 @@ get_iconv_import_func(HINSTANCE hInst, const char *funcname)
 	{
 	    if (IMAGE_SNAP_BY_ORDINAL(pINT->u1.Ordinal))
 		continue;
-	    pImpName = (PIMAGE_IMPORT_BY_NAME)(pImage + pINT->u1.AddressOfData);
+	    pImpName = (PIMAGE_IMPORT_BY_NAME)(pImage
+					+ (UINT_PTR)(pINT->u1.AddressOfData));
 	    if (strcmp(pImpName->Name, funcname) == 0)
 		return (void *)pIAT->u1.Function;
 	}
