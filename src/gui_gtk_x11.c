@@ -3130,8 +3130,16 @@ gui_mch_init(void)
      * exits on failure, but that's a non-issue because we already called
      * gtk_init_check() in gui_mch_init_check(). */
     if (using_gnome)
+    {
 	gnome_program_init(VIMPACKAGE, VIM_VERSION_SHORT,
 			   LIBGNOMEUI_MODULE, gui_argc, gui_argv, NULL);
+# if defined(FEAT_FLOAT) && defined(LC_NUMERIC)
+	/* Make sure strtod() uses a decimal point, not a comma. Gnome init
+	 * may change it. */
+	if (setlocale(LC_NUMERIC, NULL) != (char *) "C")
+	   setlocale(LC_NUMERIC, "C");
+# endif
+    }
 #endif
     vim_free(gui_argv);
     gui_argv = NULL;
