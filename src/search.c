@@ -572,7 +572,8 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
 	extra_col = 0;
 #ifdef FEAT_MBYTE
     /* Watch out for the "col" being MAXCOL - 2, used in a closed fold. */
-    else if (has_mbyte && pos->lnum >= 1 && pos->lnum <= buf->b_ml.ml_line_count
+    else if (dir != BACKWARD && has_mbyte
+		    && pos->lnum >= 1 && pos->lnum <= buf->b_ml.ml_line_count
 						     && pos->col < MAXCOL - 2)
     {
 	ptr = ml_get_buf(buf, pos->lnum, FALSE) + pos->col;
