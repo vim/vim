@@ -1954,9 +1954,9 @@ syn_current_attr(syncing, displaying, can_spell, keep_state)
 	    if (do_keywords)
 	    {
 	      line = syn_getcurline();
-	      if (vim_iswordc_buf(line + current_col, syn_buf)
+	      if (vim_iswordp_buf(line + current_col, syn_buf)
 		      && (current_col == 0
-			  || !vim_iswordc_buf(line + current_col - 1
+			  || !vim_iswordp_buf(line + current_col - 1
 #ifdef FEAT_MBYTE
 			      - (has_mbyte
 				  ? (*mb_head_off)(line, line + current_col - 1)
@@ -3280,7 +3280,7 @@ check_keyword_id(line, startcol, endcolp, flagsp, next_listp, cur_si, ccharp)
 #endif
 	    ++kwlen;
     }
-    while (vim_iswordc_buf(kwp + kwlen, syn_buf));
+    while (vim_iswordp_buf(kwp + kwlen, syn_buf));
 
     if (kwlen > MAXKEYWLEN)
 	return 0;

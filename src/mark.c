@@ -304,7 +304,7 @@ movechangelist(count)
 #endif
 
 /*
- * Find mark "c".
+ * Find mark "c" in buffer pointed to by "buf".
  * If "changefile" is TRUE it's allowed to edit another file for '0, 'A, etc.
  * If "fnum" is not NULL store the fnum there for '0, 'A etc., don't edit
  * another file.
@@ -315,15 +315,25 @@ movechangelist(count)
  * - -1 if mark is in other file and jumped there (only if changefile is TRUE)
  */
     pos_T *
+getmark_buf(buf, c, changefile)
+    buf_T	*buf;
+    int		c;
+    int		changefile;
+{
+    return getmark_buf_fnum(buf, c, changefile, NULL);
+}
+
+    pos_T *
 getmark(c, changefile)
     int		c;
     int		changefile;
 {
-    return getmark_fnum(c, changefile, NULL);
+    return getmark_buf_fnum(curbuf, c, changefile, NULL);
 }
 
     pos_T *
-getmark_fnum(c, changefile, fnum)
+getmark_buf_fnum(buf, c, changefile, fnum)
+    buf_T	*buf;
     int		c;
     int		changefile;
     int		*fnum;
@@ -351,15 +361,15 @@ getmark_fnum(c, changefile, fnum)
 	posp = &pos_copy;		/*   w_pcmark may be changed soon */
     }
     else if (c == '"')			/* to pos when leaving buffer */
-	posp = &(curbuf->b_last_cursor);
+	posp = &(buf->b_last_cursor);
     else if (c == '^')			/* to where Insert mode stopped */
-	posp = &(curbuf->b_last_insert);
+	posp = &(buf->b_last_insert);
     else if (c == '.')			/* to where last change was made */
-	posp = &(curbuf->b_last_change);
+	posp = &(buf->b_last_change);
     else if (c == '[')			/* to start of previous operator */
-	posp = &(curbuf->b_op_start);
+	posp = &(buf->b_op_start);
     else if (c == ']')			/* to end of previous operator */
-	posp = &(curbuf->b_op_end);
+	posp = &(buf->b_op_end);
     else if (c == '{' || c == '}')	/* to previous/next paragraph */
     {
 	pos_T	pos;
@@ -395,8 +405,8 @@ getmark_fnum(c, changefile, fnum)
 #ifdef FEAT_VISUAL
     else if (c == '<' || c == '>')	/* start/end of visual area */
     {
-	startp = &curbuf->b_visual.vi_start;
-	endp = &curbuf->b_visual.vi_end;
+	startp = &buf->b_visual.vi_start;
+	endp = &buf->b_visual.vi_end;
 	if ((c == '<') == lt(*startp, *endp))
 	    posp = startp;
 	else
@@ -404,7 +414,7 @@ getmark_fnum(c, changefile, fnum)
 	/*
 	 * For Visual line mode, set mark at begin or end of line
 	 */
-	if (curbuf->b_visual.vi_mode == 'V')
+	if (buf->b_visual.vi_mode == 'V')
 	{
 	    pos_copy = *posp;
 	    posp = &pos_copy;
@@ -420,7 +430,7 @@ getmark_fnum(c, changefile, fnum)
 #endif
     else if (ASCII_ISLOWER(c))		/* normal named mark */
     {
-	posp = &(curbuf->b_namedm[c - 'a']);
+	posp = &(buf->b_namedm[c - 'a']);
     }
     else if (ASCII_ISUPPER(c) || VIM_ISDIGIT(c))	/* named file mark */
     {
@@ -435,7 +445,7 @@ getmark_fnum(c, changefile, fnum)
 
 	if (fnum != NULL)
 	    *fnum = namedfm[c].fmark.fnum;
-	else if (namedfm[c].fmark.fnum != curbuf->b_fnum)
+	else if (namedfm[c].fmark.fnum != buf->b_fnum)
 	{
 	    /* mark is in another file */
 	    posp = &pos_copy;

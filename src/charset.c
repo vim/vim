@@ -905,6 +905,14 @@ vim_isIDc(c)
 vim_iswordc(c)
     int c;
 {
+    return vim_iswordc_buf(c, curbuf);
+}
+
+    int
+vim_iswordc_buf(c, buf)
+    int		c;
+    buf_T	*buf;
+{
 #ifdef FEAT_MBYTE
     if (c >= 0x100)
     {
@@ -914,7 +922,7 @@ vim_iswordc(c)
 	    return utf_class(c) >= 2;
     }
 #endif
-    return (c > 0 && c < 0x100 && GET_CHARTAB(curbuf, c) != 0);
+    return (c > 0 && c < 0x100 && GET_CHARTAB(buf, c) != 0);
 }
 
 /*
@@ -933,7 +941,7 @@ vim_iswordp(p)
 
 #if defined(FEAT_SYN_HL) || defined(PROTO)
     int
-vim_iswordc_buf(p, buf)
+vim_iswordp_buf(p, buf)
     char_u	*p;
     buf_T	*buf;
 {
