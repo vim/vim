@@ -1002,6 +1002,9 @@ gui_get_wide_font()
     else
 #endif
 	gui.wide_font = font;
+#ifdef FEAT_GUI_MSWIN
+    gui_mch_wide_font_changed();
+#endif
     return OK;
 }
 #endif

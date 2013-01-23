@@ -3560,6 +3560,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	to set 'guifontwide' at all unless you want to override the choice
 	made by Pango/Xft.
 
+	Windows +multibyte only:		*guifontwide_win_mbyte*
+
+	If set and vaild, 'guifontwide' is used for IME instead of 'guifont'.
+
 						*'guiheadroom'* *'ghr'*
 'guiheadroom' 'ghr'	number	(default 50)
 			global
