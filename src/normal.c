@@ -7552,6 +7552,7 @@ nv_gomark(cap)
 #endif
 #ifdef FEAT_FOLDING
     if (cap->oap->op_type == OP_NOP
+	    && pos != NULL
 	    && (pos == (pos_T *)-1 || !equalpos(old_cursor, *pos))
 	    && (fdo_flags & FDO_MARK)
 	    && old_KeyTyped)
