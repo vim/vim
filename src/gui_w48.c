@@ -3107,7 +3107,8 @@ update_im_font()
     LOGFONT	lf_wide;
 
     if (p_guifontwide != NULL && *p_guifontwide != NUL
-	    && get_logfont(&lf_wide, p_guifontwide, NULL, TRUE) == OK)
+	    && gui.wide_font != NOFONT
+	    && GetObject((HFONT)gui.wide_font, sizeof(lf_wide), &lf_wide))
 	norm_logfont = lf_wide;
     else
 	norm_logfont = sub_logfont;
