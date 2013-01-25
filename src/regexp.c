@@ -3413,7 +3413,7 @@ static unsigned	reg_tofreelen;
  * reg_startpos		<invalid>		reg_mmatch->startpos
  * reg_endpos		<invalid>		reg_mmatch->endpos
  * reg_win		NULL			window in which to search
- * reg_buf		<invalid>		buffer in which to search
+ * reg_buf		curbuf			buffer in which to search
  * reg_firstlnum	<invalid>		first line in which to search
  * reg_maxline		0			last line nr
  * reg_line_lbr		FALSE or TRUE		FALSE
@@ -3571,6 +3571,7 @@ vim_regexec(rmp, line, col)
     reg_mmatch = NULL;
     reg_maxline = 0;
     reg_line_lbr = FALSE;
+    reg_buf = curbuf;
     reg_win = NULL;
     ireg_ic = rmp->rm_ic;
 #ifdef FEAT_MBYTE
@@ -3595,6 +3596,7 @@ vim_regexec_nl(rmp, line, col)
     reg_mmatch = NULL;
     reg_maxline = 0;
     reg_line_lbr = TRUE;
+    reg_buf = curbuf;
     reg_win = NULL;
     ireg_ic = rmp->rm_ic;
 #ifdef FEAT_MBYTE
@@ -4311,8 +4313,8 @@ regmatch(scan)
 #endif
 	    else
 	    {
-		if (!vim_iswordc_buf(c, reg_buf)
-			|| (reginput > regline && vim_iswordc_buf(reginput[-1], reg_buf)))
+		if (!vim_iswordc_buf(c, reg_buf) || (reginput > regline
+				   && vim_iswordc_buf(reginput[-1], reg_buf)))
 		    status = RA_NOMATCH;
 	    }
 	    break;
@@ -7135,6 +7137,7 @@ vim_regsub(rmp, source, dest, copy, magic, backslash)
     reg_match = rmp;
     reg_mmatch = NULL;
     reg_maxline = 0;
+    reg_buf = curbuf;
     return vim_regsub_both(source, dest, copy, magic, backslash);
 }
 #endif
