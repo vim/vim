@@ -740,12 +740,11 @@ Python_Init(void)
 #else
 	PyMac_Initialize();
 #endif
-	/* Initialise threads, and save the state using PyGILState_Ensure.
-	 * Without the call to PyGILState_Ensure, thread specific state (such
-	 * as the system trace hook), will be lost between invocations of
-	 * Python code. */
+	/* Initialise threads, and below save the state using
+	 * PyGILState_Ensure.  Without the call to PyGILState_Ensure, thread
+	 * specific state (such as the system trace hook), will be lost
+	 * between invocations of Python code. */
 	PyEval_InitThreads();
-	pygilstate = PyGILState_Ensure();
 #ifdef DYNAMIC_PYTHON
 	get_exceptions();
 #endif
@@ -756,6 +755,10 @@ Python_Init(void)
 	if (PythonMod_Init())
 	    goto fail;
 
+	/* The first python thread is vim's, release the lock. */
+	Python_SaveThread();
+	pygilstate = PyGILState_Ensure();
+
 	globals = PyModule_GetDict(PyImport_AddModule("__main__"));
 
 	/* Remove the element from sys.path that was added because of our
@@ -764,8 +767,7 @@ Python_Init(void)
 	 * the current directory in sys.path. */
 	PyRun_SimpleString("import sys; sys.path = filter(lambda x: x != '/must>not&exist', sys.path)");
 
-	/* the first python thread is vim's, release the lock */
-	Python_SaveThread();
+	PyGILState_Release(pygilstate);
 
 	initialised = 1;
     }
