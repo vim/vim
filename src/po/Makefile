@@ -176,6 +176,10 @@ uninstall:
 
 converted: $(MOCONVERTED)
 
+# nl.po was added later, if it does not exist use an empty file.
+nl.po:
+	touch nl.po
+
 # Norwegian/Bokmal: "nb" is an alias for "no".
 # Copying the file is not efficient, but I don't know of another way to make
 # this work.
