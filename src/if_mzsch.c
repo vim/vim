@@ -1483,7 +1483,7 @@ vim_command(void *data, int argc, Scheme_Object **argv)
 
 /* (eval {expr-string}) */
     static Scheme_Object *
-vim_eval(void *data, int argc, Scheme_Object **argv)
+vim_eval(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 {
 #ifdef FEAT_EVAL
     Vim_Prim		*prim = (Vim_Prim *)data;
@@ -1686,10 +1686,12 @@ get_curr_win(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
     static Scheme_Object *
 get_window_count(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 {
-    win_T   *w;
     int	    n = 0;
+#ifdef FEAT_WINDOWS
+    win_T   *w;
 
     for (w = firstwin; w != NULL; w = w->w_next)
+#endif
 	++n;
     return scheme_make_integer(n);
 }
@@ -1701,12 +1703,14 @@ get_window_list(void *data, int argc, Scheme_Object **argv)
     Vim_Prim	    *prim = (Vim_Prim *)data;
     vim_mz_buffer   *buf;
     Scheme_Object   *list;
-    win_T	    *w;
+    win_T	    *w = firstwin;
 
     buf = get_buffer_arg(prim->name, 0, argc, argv);
     list = scheme_null;
 
-    for (w = firstwin; w != NULL; w = w->w_next)
+#ifdef FEAT_WINDOWS
+    for ( ; w != NULL; w = w->w_next)
+#endif
 	if (w->w_buffer == buf->buf)
 	{
 	    list = scheme_make_pair(window_new(w), list);
@@ -1755,14 +1759,16 @@ window_new(win_T *win)
 
 /* (get-win-num [window]) */
     static Scheme_Object *
-get_window_num(void *data, int argc, Scheme_Object **argv)
+get_window_num(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 {
+    int		nr = 1;
+#ifdef FEAT_WINDOWS
     Vim_Prim	*prim = (Vim_Prim *)data;
     win_T	*win = get_window_arg(prim->name, 0, argc, argv)->win;
-    int		nr = 1;
     win_T	*wp;
 
     for (wp = firstwin; wp != win; wp = wp->w_next)
+#endif
 	++nr;
 
     return scheme_make_integer(nr);
@@ -1773,14 +1779,16 @@ get_window_num(void *data, int argc, Scheme_Object **argv)
 get_window_by_num(void *data, int argc, Scheme_Object **argv)
 {
     Vim_Prim	*prim = (Vim_Prim *)data;
-    win_T	*win;
+    win_T	*win = firstwin;
     int		fnum;
 
     fnum = SCHEME_INT_VAL(GUARANTEE_INTEGER(prim->name, 0));
     if (fnum < 1)
 	scheme_signal_error(_("window index is out of range"));
 
-    for (win = firstwin; win != NULL; win = win->w_next, --fnum)
+#ifdef FEAT_WINDOWS
+    for ( ; win != NULL; win = win->w_next, --fnum)
+#endif
 	if (fnum == 1)	    /* to be 1-based */
 	    return window_new(win);
 

@@ -1345,6 +1345,8 @@ LINT_EXTRA = -DUSE_SNIFF -DHANGUL_INPUT -D"__attribute__(x)="
 
 DEPEND_CFLAGS = -DPROTO -DDEPEND -DFEAT_GUI $(LINT_CFLAGS)
 
+# Note: MZSCHEME_LIBS must come before LIBS, because LIBS adds -lm which is
+# needed by racket.
 ALL_LIB_DIRS = $(GUI_LIBS_DIR) $(X_LIBS_DIR)
 ALL_LIBS = \
 	   $(GUI_LIBS1) \
@@ -1353,10 +1355,10 @@ ALL_LIBS = \
 	   $(X_PRE_LIBS) \
 	   $(X_LIBS) \
 	   $(X_EXTRA_LIBS) \
+	   $(MZSCHEME_LIBS) \
 	   $(LIBS) \
 	   $(EXTRA_LIBS) \
 	   $(LUA_LIBS) \
-	   $(MZSCHEME_LIBS) \
 	   $(PERL_LIBS) \
 	   $(PYTHON_LIBS) \
 	   $(PYTHON3_LIBS) \
