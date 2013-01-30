@@ -939,19 +939,17 @@ vim_iswordp(p)
     return GET_CHARTAB(curbuf, *p) != 0;
 }
 
-#if defined(FEAT_SYN_HL) || defined(PROTO)
     int
 vim_iswordp_buf(p, buf)
     char_u	*p;
     buf_T	*buf;
 {
-# ifdef FEAT_MBYTE
+#ifdef FEAT_MBYTE
     if (has_mbyte && MB_BYTE2LEN(*p) > 1)
 	return mb_get_class(p) >= 2;
-# endif
+#endif
     return (GET_CHARTAB(buf, *p) != 0);
 }
-#endif
 
 /*
  * return TRUE if 'c' is a valid file-name character
