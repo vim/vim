@@ -74,6 +74,7 @@ long get_dict_number __ARGS((dict_T *d, char_u *key));
 char_u *get_function_name __ARGS((expand_T *xp, int idx));
 char_u *get_expr_name __ARGS((expand_T *xp, int idx));
 int func_call __ARGS((char_u *name, typval_T *args, dict_T *selfdict, typval_T *rettv));
+void mzscheme_call_vim __ARGS((char_u *name, typval_T *args, typval_T *rettv));
 long do_searchpair __ARGS((char_u *spat, char_u *mpat, char_u *epat, int dir, char_u *skip, int flags, pos_T *match_pos, linenr_T lnum_stop, long time_limit));
 void set_vim_var_nr __ARGS((int idx, long val));
 long get_vim_var_nr __ARGS((int idx));

@@ -14333,6 +14333,22 @@ f_mzeval(argvars, rettv)
     str = get_tv_string_buf(&argvars[0], buf);
     do_mzeval(str, rettv);
 }
+
+    void
+mzscheme_call_vim(name, args, rettv)
+    char_u	*name;
+    typval_T	*args;
+    typval_T	*rettv;
+{
+    typval_T argvars[3];
+
+    argvars[0].v_type = VAR_STRING;
+    argvars[0].vval.v_string = name;
+    copy_tv(args, &argvars[1]);
+    argvars[2].v_type = VAR_UNKNOWN;
+    f_call(argvars, rettv);
+    clear_tv(&argvars[1]);
+}
 #endif
 
 /*

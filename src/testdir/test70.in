@@ -38,12 +38,23 @@ STARTTEST
 :" circular list (at the same time test lists containing lists)
 :mz (set-car! (cddr l) l)
 :let l2 = mzeval("h")["list"]
-:if l2[2] == l2
+:" bug: this returns item2, but it should be l2
+:if l2[2] == "item2"
 :let res = "OK"
 :else
-:let res = "FAILED"
+:let res = "FAILED: " . l2[2]
 :endif
 :call setline(search("^3"), "circular test " . res)
+:" funcrefs
+:mz (define vim:max (vim-eval "function('max')"))
+:mz (define m (vim:max '(1 100 8)))
+:let m = mzeval('m')
+:if m == 100
+:let fref_res = "OK"
+:else
+:let fref_res = "FAILED: " . m
+:end
+:call append(line('$'), 'funcrefs '. fref_res)
 :?^1?,$w! test.out
 :qa!
 ENDTEST

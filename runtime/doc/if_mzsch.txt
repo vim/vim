@@ -11,7 +11,8 @@ The MzScheme Interface to Vim				*mzscheme* *MzScheme*
 3. Threads				|mzscheme-threads|
 4. Vim access from MzScheme		|mzscheme-vim|
 5. mzeval() Vim function		|mzscheme-mzeval|
-6. Dynamic loading			|mzscheme-dynamic|
+6. Using Function references		|mzscheme-funcref|
+7. Dynamic loading			|mzscheme-dynamic|
 
 {Vi does not have any of these commands}
 
@@ -21,10 +22,17 @@ The MzScheme interface is available only if Vim was compiled with the
 Based on the work of Brent Fulgham.
 Dynamic loading added by Sergey Khorev
 
-For downloading MzScheme and other info:
-	http://www.plt-scheme.org/software/mzscheme/
+MzScheme and PLT Scheme names have been rebranded as Racket. For more
+information please check http://racket-lang.org
 
-Note: On FreeBSD you should use the "drscheme" port.
+Futures and places of Racket version 5.x up to and including 5.3.1 do not
+work correctly with processes created by Vim.
+The simplest solution is to build Racket on your own with these features
+disabled: >
+  ./configure --disable-futures --disable-places --prefix=your-install-prefix
+
+To speed up the process, you might also want to use --disable-gracket and
+--disable-docs
 
 ==============================================================================
 1. Commands						*mzscheme-commands*
@@ -155,8 +163,11 @@ Common
     (eval {expr-string})	    Evaluate the vim expression into
 				    respective MzScheme object: |Lists| are
 				    represented as Scheme lists,
-				    |Dictionaries| as hash tables.
-				    NOTE the name clashes with MzScheme eval
+				    |Dictionaries| as hash tables,
+				    |Funcref|s as functions (see also
+				    |mzscheme-funcref|)
+				    NOTE the name clashes with MzScheme eval,
+				    use module qualifiers to overcome this.
     (range-start)		    Start/End of the range passed with
     (range-end)			    the Scheme command.
     (beep)			    beep
@@ -237,7 +248,23 @@ To facilitate bi-directional interface, you can use |mzeval()| function to
 evaluate MzScheme expressions and pass their values to VimL.
 
 ==============================================================================
-6. Dynamic loading				    *mzscheme-dynamic* *E815*
+6. Using Function references				    *mzscheme-funcref*
+
+MzScheme interface allows use of |Funcref|s so you can call Vim functions
+directly from Scheme. For instance: >
+    function! MyAdd2(arg)
+	return a:arg + 2
+    endfunction
+    mz (define f2 (vim-eval "function(\"MyAdd2\")"))
+    mz (f2 7)
+< or : >
+    :mz (define indent (vim-eval "function('indent')"))
+    " return Vim indent for line 12
+    :mz (indent 12)
+<
+
+==============================================================================
+7. Dynamic loading				    *mzscheme-dynamic* *E815*
 
 On MS-Windows the MzScheme libraries can be loaded dynamically. The |:version|
 output then includes |+mzscheme/dyn|.

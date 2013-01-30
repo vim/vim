@@ -617,7 +617,8 @@ if test "$enable_mzschemeinterp" = "yes"; then
 
   if test "X$vi_cv_path_mzscheme_pfx" != "X"; then
     if test "x$MACOSX" = "xyes"; then
-      MZSCHEME_LIBS="-framework PLT_MzScheme"
+      MZSCHEME_LIBS="-framework Racket"
+      MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
     elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzscheme3m.a"; then
       MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libmzscheme3m.a"
       MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
@@ -660,6 +661,10 @@ if test "$enable_mzschemeinterp" = "yes"; then
       else
 	if test -d $vi_cv_path_mzscheme_pfx/share/racket/collects; then
 	  SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/share/racket/
+	else
+	  if test -d $vi_cv_path_mzscheme_pfx/collects; then
+	    SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/
+	  fi
 	fi
       fi
     fi
