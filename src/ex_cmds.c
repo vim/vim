@@ -4764,8 +4764,8 @@ do_sub(eap)
 					 * substitute may have inserted or
 					 * deleted characters before the
 					 * cursor. */
-					len_change = STRLEN(new_line)
-							  - STRLEN(orig_line);
+					len_change = (int)STRLEN(new_line)
+						     - (int)STRLEN(orig_line);
 					curwin->w_cursor.col += len_change;
 					ml_replace(lnum, new_line, FALSE);
 				    }
