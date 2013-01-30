@@ -2319,6 +2319,7 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 	{
 	    int	    w = number_width(wp);
 	    long num;
+	    char *fmt = "%*ld ";
 
 	    if (len > w + 1)
 		len = w + 1;
@@ -2327,10 +2328,17 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 		/* 'number' */
 		num = (long)lnum;
 	    else
+	    {
 		/* 'relativenumber', don't use negative numbers */
 		num = labs((long)get_cursor_rel_lnum(wp, lnum));
+		if (num == 0)
+		{
+		    num = lnum;
+		    fmt = "%-*ld ";
+		}
+	    }
 
-	    sprintf((char *)buf, "%*ld ", w, num);
+	    sprintf((char *)buf, fmt, w, num);
 #ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
 		/* the line number isn't reversed */
@@ -3484,15 +3492,23 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			    )
 		    {
 			long num;
+			char *fmt = "%*ld ";
 
 			if (wp->w_p_nu)
 			    /* 'number' */
 			    num = (long)lnum;
 			else
+			{
 			    /* 'relativenumber', don't use negative numbers */
 			    num = labs((long)get_cursor_rel_lnum(wp, lnum));
+			    if (num == 0)
+			    {
+				num = lnum;
+				fmt = "%-*ld ";
+			    }
+			}
 
-			sprintf((char *)extra, "%*ld ",
+			sprintf((char *)extra, fmt,
 						number_width(wp), num);
 			if (wp->w_skipcol > 0)
 			    for (p_extra = extra; *p_extra == ' '; ++p_extra)
@@ -3513,7 +3529,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		     * the current line differently.
 		     * TODO: Can we use CursorLine instead of CursorLineNr
 		     * when CursorLineNr isn't set? */
-		    if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
+		    if ((wp->w_p_cul || wp->w_p_rnu)
+						 && lnum == wp->w_cursor.lnum)
 			char_attr = hl_attr(HLF_CLN);
 #endif
 		}
@@ -10238,12 +10255,7 @@ number_width(wp)
     int		n;
     linenr_T	lnum;
 
-    if (wp->w_p_nu)
-	/* 'number' */
-	lnum = wp->w_buffer->b_ml.ml_line_count;
-    else
-	/* 'relativenumber' */
-	lnum = wp->w_height;
+    lnum = wp->w_buffer->b_ml.ml_line_count;
 
     if (lnum == wp->w_nrwidth_line_count)
 	return wp->w_nrwidth_width;
