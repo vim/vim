@@ -2397,13 +2397,15 @@ collection:
 			    /* '\n' in range: also match NL */
 			    if (ret != JUST_CALC_SIZE)
 			    {
-				if (*ret == ANYBUT)
-				    *ret = ANYBUT + ADD_NL;
-				else if (*ret == ANYOF)
+				/* Using \n inside [^] does not change what
+				 * matches. "[^\n]" is the same as ".". */
+				if (*ret == ANYOF)
+				{
 				    *ret = ANYOF + ADD_NL;
+				    *flagp |= HASNL;
+				}
 				/* else: must have had a \n already */
 			    }
-			    *flagp |= HASNL;
 			    regparse++;
 			    startc = -1;
 			}
@@ -4344,6 +4346,7 @@ regmatch(scan)
 	    break; /* Matched with EOW */
 
 	  case ANY:
+	    /* ANY does not match new lines. */
 	    if (c == NUL)
 		status = RA_NOMATCH;
 	    else
