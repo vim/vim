@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.3.  Last change: 2012 Sep 23
+*if_pyth.txt*   For Vim version 7.3.  Last change: 2013 Jan 30
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -54,8 +54,8 @@ Example: >
 	EOF
 	endfunction
 <
-Note: Python is very sensitive to the indenting.  Also make sure the "class"
-line and "EOF" do not have any indent.
+Note: Python is very sensitive to the indenting.  Make sure the "class" line
+and "EOF" do not have any indent.
 
 							*:pyfile* *:pyf*
 :[range]pyf[ile] {file}

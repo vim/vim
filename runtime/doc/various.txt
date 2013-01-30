@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.3.  Last change: 2012 Dec 05
+*various.txt*   For Vim version 7.3.  Last change: 2012 Dec 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -174,27 +174,37 @@ g8			Print the hex values of the bytes used in the
 			the command-line.  {commands} are executed like they
 			are typed.  For undo all commands are undone together.
 			Execution stops when an error is encountered.
+
 			If the [!] is given, mappings will not be used.
+			Without it, when this command is called from a
+			non-remappable mapping (|:noremap|), the argument can
+			be mapped anyway.
+
 			{commands} should be a complete command.  If
 			{commands} does not finish a command, the last one
 			will be aborted as if <Esc> or <C-C> was typed.
-			The display isn't updated while ":normal" is busy.
 			This implies that an insert command must be completed
 			(to start Insert mode, see |:startinsert|).  A ":"
 			command must be completed as well.  And you can't use
 			"Q" or "gQ" to start Ex mode.
+
+			The display is not updated while ":normal" is busy.
+
 			{commands} cannot start with a space.  Put a count of
 			1 (one) before it, "1 " is one space.
+
 			The 'insertmode' option is ignored for {commands}.
+
 			This command cannot be followed by another command,
 			since any '|' is considered part of the command.
+
 			This command can be used recursively, but the depth is
 			limited by 'maxmapdepth'.
-			When this command is called from a non-remappable
-			mapping |:noremap|, the argument can be mapped anyway.
+
 			An alternative is to use |:execute|, which uses an
 			expression as argument.  This allows the use of
 			printable characters to represent special characters.
+
 			Example: >
 				:exe "normal \<c-w>\<c-w>"
 <			{not in Vi, of course}

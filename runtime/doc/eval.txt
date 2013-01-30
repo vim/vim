@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2012 Dec 05
+*eval.txt*	For Vim version 7.3.  Last change: 2013 Jan 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5943,8 +5943,9 @@ taglist({expr})							*taglist()*
 		If there are no matching tags, then an empty list is returned.
 
 		To get an exact tag match, the anchors '^' and '$' should be
-		used in {expr}.  Refer to |tag-regexp| for more information
-		about the tag search regular expression pattern.
+		used in {expr}.  This also make the function work faster.
+		Refer to |tag-regexp| for more information about the tag
+		search regular expression pattern.
 
 		Refer to |'tags'| for information about how the tags file is
 		located by Vim. Refer to |tags-file-format| for the format of

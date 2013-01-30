@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.3.  Last change: 2012 May 18
+*pattern.txt*   For Vim version 7.3.  Last change: 2013 Jan 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -993,6 +993,8 @@ x	A single character, with no special meaning, matches itself
 	[xyz]		any 'x', 'y' or 'z'
 	[a-zA-Z]$	any alphabetic character at the end of a line
 	\c[a-z]$	same
+	[А-яЁё]		Russian alphabet (with utf-8 and cp1251)
+
 								*/[\n]*
 	With "\_" prepended the collection also includes the end-of-line.
 	The same can be done by including "\n" in the collection.  The

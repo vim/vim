@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 Oct 21
+" Last Change:	2012 Dec 06
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -132,7 +132,7 @@ an 10.610 &File.Sa&ve-Exit<Tab>:wqa		:confirm wqa<CR>
 an 10.620 &File.E&xit<Tab>:qa			:confirm qa<CR>
 
 func! <SID>SelectAll()
-  exe "norm gg" . (&slm == "" ? "VG" : "gH\<C-O>G")
+  exe "norm! gg" . (&slm == "" ? "VG" : "gH\<C-O>G")
 endfunc
 
 func! s:FnameEscape(fname)

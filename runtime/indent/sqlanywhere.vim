@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:    SQL
 " Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
-" Last Change: 2012 Dec 05
+" Last Change: 2012 Dec 06
 " Version:     3.0
 " Download:    http://vim.sourceforge.net/script.php?script_id=495
 
@@ -36,8 +36,6 @@ if exists("b:did_indent")
 endif
 let b:did_indent     = 1
 let b:current_indent = "sqlanywhere"
-let s:keepcpo= &cpo
-set cpo&vim
 
 setlocal indentkeys-=0{
 setlocal indentkeys-=0}
@@ -56,6 +54,13 @@ setlocal indentkeys+==~end,=~else,=~elseif,=~elsif,0=~when,0=)
 " GetSQLIndent is executed whenever one of the expressions
 " in the indentkeys is typed
 setlocal indentexpr=GetSQLIndent()
+
+" Only define the functions once.
+if exists("*GetSQLIndent")
+    finish
+endif
+let s:keepcpo= &cpo
+set cpo&vim
 
 " List of all the statements that start a new block.
 " These are typically words that start a line.

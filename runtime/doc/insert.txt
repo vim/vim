@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.3.  Last change: 2012 Jul 10
+*insert.txt*    For Vim version 7.3.  Last change: 2013 Jan 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -380,7 +380,9 @@ The CTRL-O command sometimes has a side effect: If the cursor was beyond the
 end of the line, it will be put on the last character in the line.  In
 mappings it's often better to use <Esc> (first put an "x" in the text, <Esc>
 will then always put the cursor on it).  Or use CTRL-\ CTRL-O, but then
-beware of the cursor possibly being beyond the end of the line.
+beware of the cursor possibly being beyond the end of the line.  Note that the
+command following CTRL-\ CTRL-O can still move the cursor, it is not restored
+to its original position.
 
 The CTRL-O command takes you to Normal mode.  If you then use a command enter
 Insert mode again it normally doesn't nest.  Thus when typing "a<C-O>a" and

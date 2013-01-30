@@ -2754,16 +2754,16 @@ msgid "-Z\t\t\tRestricted mode (like \"rvim\")"
 msgstr "-Z\t\t\tEingeschränkter Modus (wie \"rvim\")"
 
 msgid "-m\t\t\tModifications (writing files) not allowed"
-msgstr "-m\t\t\tModifikatioen (beim Schreiben von Dateien) sind nicht erlaubt"
+msgstr "-m\t\t\tModifikationen (beim Schreiben von Dateien) sind nicht erlaubt"
 
 msgid "-M\t\t\tModifications in text not allowed"
-msgstr "-M\t\t\tModifikatioen im Text nicht erlaubt"
+msgstr "-M\t\t\tModifikationen im Text nicht erlaubt"
 
 msgid "-b\t\t\tBinary mode"
 msgstr "-b\t\t\tBinärmodus"
 
 msgid "-l\t\t\tLisp mode"
-msgstr "-l\t\t\tList Modus"
+msgstr "-l\t\t\tLisp Modus"
 
 msgid "-C\t\t\tCompatible with Vi: 'compatible'"
 msgstr "-C\t\t\tKompatibel zu Vi: 'compatible'"

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2012 Nov 28
+*syntax.txt*	For Vim version 7.3.  Last change: 2013 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3903,9 +3903,9 @@ External matches					*:syn-ext-match*
 These extra regular expression items are available in region patterns:
 
 						*/\z(* */\z(\)* *E50* *E52*
-    \z(\)	Marks the sub-expression as "external", meaning that it is can
-		be accessed from another pattern match.  Currently only usable
-		in defining a syntax region start pattern.
+    \z(\)	Marks the sub-expression as "external", meaning that it can be
+		accessed from another pattern match.  Currently only usable in
+		defining a syntax region start pattern.
 
 					*/\z1* */\z2* */\z3* */\z4* */\z5*
     \z1  ...  \z9			*/\z6* */\z7* */\z8* */\z9* *E66* *E67*
@@ -4592,7 +4592,8 @@ IncSearch	'incsearch' highlighting; also used for the text replaced with
 LineNr		Line number for ":number" and ":#" commands, and when 'number'
 		or 'relativenumber' option is set.
 							*hl-CursorLineNr*
-CursorLineNr	Like LineNr when 'cursorline' is set for the cursor line.
+CursorLineNr	Like LineNr when 'cursorline' or 'relativenumber' is set for
+		the cursor line.
 							*hl-MatchParen*
 MatchParen	The character under the cursor or just before it, if it
 		is a paired bracket, and its match. |pi_paren.txt|

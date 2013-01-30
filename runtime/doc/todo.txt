@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2012 Dec 05
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,9 +34,8 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-On external command get the message: 
-     SIGCHLD handler called (some thread has SIGCHLD unblocked)
-From MzScheme
+Several syntax file match "^\s*" which may get underlined if that's in the
+highlight group.  Add a "\zs" after it?
 
 Go through more coverity reports.
 
@@ -53,30 +52,8 @@ The CompleteDone autocommand needs some info passed to it:
 - The word that was selected (empty if abandoned complete)
 - Type of completion: tag, omnifunc, user func.
 
-Patch for matchit.vim. (Mike Morearty, 2012 Nov 28)
-
-Patch to fix that the QuitPre autocommand clears the quitmore flag. (Techlive
-Zheng, 2012 Nov 28)
-
-":gundo" command: global undo.  Undoes changes spread over multiple files in
-the order they were made.  Also ":gredo".  Both with a count.  Useful when
-tests fail after making changes and you forgot in which files.
-
-Patch to make updating tabline faster. (Arseny Kapoulkine, 2012 Oct 3)
-Also remove the "rc" variable.
-
-Patch to make "- register not always used. (Christian Brabandt, 2012 Nov 28)
-
-Crash with vimdiff. (Don Cruickshank, 2012 Sep 23)
-
-Patch to support subdirectories for help files. (Charles Campbell, 2012 Nov
-21)
-
 Patch for mzscheme.  (Sergey Khorev, 2012 Nov 19)
-What about ignoring SEGV?
-
-Win32: use 'guifontwide' for IME composition. (Taro Muraoka, 2012 Sep 30)
-Update Oct 2.
+Updated patch 2013 Jan 28.
 
 Patch to fix :s command with confirm and typing "a". (Christian Brabandt, 2012
 Oct 28)
@@ -88,23 +65,44 @@ Test files in archive in another message.
 Patch to make multibyte input work on Win32 console when codepage differs from
 'encoding'. (Ken Takata, 2012 Sep 29)
 
-It's possible to defined an input() function that overrides the built-in one.
+Patch for building with Ruby and Cygwin. (Ken Takata, 2013 Jan 9)
+
+Patch to make 'relativenumber' show the current lnum instead of zero.
+(Nazri Ramliy, 2013 Jan 29)
+
+It's possible to define an input() function that overrides the built-in one.
 (ZyX, 2012 Sep 28)
+
+Patch to add sha256() function. (Tyru, 2013 Jan 8)
+
+Patch to make pyeval() print error messages. (ZyX, 2013 Jan 12)
 
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
 
+Patch for Win32 clipboard under Cygwin. (Frodak Baksik, Feb 15)
+    Sutcliffe says it works well.
+    Update 2007 May 22 for Vim 7.1
+    Update 2008 Dec 2008 for Vim 7.2.xx (Sharonov)
+    Update by Ken Takata (2012 Dec 31, 2013 Jan 4, 2013 Jan 26)
+
 Problem parsing expression with function(). (Andy Wokula, 2012 Nov 22)
 Patch by Christian Brabandt, Nov 22.  Tests in another patch, Nov 23.
 
+Patch to add default value to getbufvar() et al. (Hirohito Higashi, 2013 Jan 1)
+
 Problem caused by patch 7.3.638: window->open does not update window
 correctly. Issue 91.
+
+Patch to fix compiler warnings for MingW 4.5.3. (Ken Takata, 2013 Jan 26)
 
 Do allow real tags above the !_TAG entries. Undo older patch. Issue 90.
 
 Patch to support 'u' in interactive substitute. (Christian Brabandt, 2012 Sep
 28)  With tests: Oct 9.
+
+Patch to make fold updates much faster. (Christian Brabandt, 2012 Dec)
 
 Patch for IME handling, adds 'imactivatefunc' and 'imstatusfunc' option.
 (Yukihiro Nakadaira, 2012 Aug 16)
@@ -136,6 +134,8 @@ MS-Windows: Crash opening very long file name starting with "\\".
 It's probably a good idea to make a negative value for 'sts' use the value of
 'sw'.  Patch by So8res, Oct 3 2012
 
+patch to add "combine" flag to  syntax commands. (so8res, 2012 Dec 6)
+
 Syntax update problem in one buffer opened in two windows, bottom window is
 not correctly updated. (Paul Harris, 2012 Feb 27)
 
@@ -145,8 +145,21 @@ Alternate patch by Gary Johnson, Sep 4.
 Patch to add getsid(). (Tyru, 2011 Oct 2)  Do we want this?  Update Oct 4.
 Or use expand('<sid>')?
 
+Patch to make confirm() display colors. (Christian Brabandt, 2012 Nov 9)
+
+Patch to add functions for signs. (Christian Brabandt,, 2013 Jan 27)
+
+Patch to use directX to draw text on Windows.  Adds the 'directx' option.
+(Taro Muraoka, 2013 Jan 25)
+
+b:undo_ftplugin cannot call a script-local function. (Boris Danilov, 2013 Jan
+7)
+
 Patch for :tabcloseleft, after closing a tab go to left tab. (William Bowers,
 2012 Aug 4)
+
+Patch to improve equivalence classes in regexp patterns.
+(Christian Brabandt, 2013 Jan 16, update Jan 17)
 
 Patch with suggestions for starting.txt. (Tony Mechelynck, 2012 Oct 24)
 But use Gnome instead of GTK?
@@ -160,6 +173,7 @@ Crash in autocmd that unloads buffers in a BufUnload event. (Andrew Pimlott,
 
 MS-Windows ACL support doesn't work well.  Patch from Ken Takata, 2012 Aug 29.
 Update Aug 31.
+Another patch for MingW, 2012 Dec 29.
 
 MS-Windows resizing problems:
 - Windows window on screen positioning: Patch by Yukihiro Nakadaira, 2012 Jun
@@ -260,7 +274,7 @@ Update Jun 2.
 
 Patch to add ":py3do". (Lilydjwg, 2012 Apr 7)
 
-`[ moves to character after insert, instead of the last inserted character.
+`] moves to character after insert, instead of the last inserted character.
 (Yukihiro Nakadaira, 2011 Dec 9)
 
 Plugin for Modeleasy. (Massimiliano Tripoli, 2011 Nov 29)
@@ -387,6 +401,11 @@ string() can't parse back "inf" and "nan".  Fix documentation or fix code?
 (ZyX, 2010 Aug 23)
 
 Make 'formatprg' global-local. (Sung Pae)
+
+When a buffer-local mapping is used, but a global mapping starts with the same
+characters, Vim currently waits for the next typed character to find out if
+the global mapping matches.  It is probably better to let the local mapping
+win and not wait. (discussion with Andy Wokula, 2013 Jan 30)
 
 When doing "redir => s:foo" in a script and then "redir END" somewhere else
 (e.g. in a function) it can't find s:foo.
@@ -515,6 +534,9 @@ Patch to add 'systemencoding', convert between 'encoding' and this for file
 names, shell commands and the like.  (Kikuchan, 2010 Oct 14)
 Assume the system converts between the actual encoding of the filesystem to
 the system encoding (usually utf-8).
+
+Patch to add GUI colors to the terminal, when it supports it. (ZyX, 2013 Jan
+26)
 
 Problem producing tags file when hebrew.frx is present.  It has a BOM.
 Results in E670. (Tony Mechelynck, 2010 May 2)
@@ -714,7 +736,7 @@ to avoid changing 'eventignore'?
 Patch for displaying 0x200c and 0x200d. (Ali Gholami Rudi, 2009 May 6)
 Probably needs a bit of work.
 
-List of encoding aliases. (Takao Fujiware, 2009 Jul 18)
+List of encoding aliases. (Takao Fujiwara, 2009 Jul 18)
 Are they all OK?  Update Jul 22.
 
 Win32: Improved Makefile for MSVC. (Leonardo Valeri Manera, 2010 Aug 18)
@@ -744,7 +766,7 @@ Problem with <script> mappings (Andy Wokula, 2009 Mar 8)
 When starting Vim with "gvim -f -u non_existent_file > foo.txt" there are a
 few control characters in the output. (Dale Wiles, 2009 May 28)
 
-'cmdwinheight is only used in last window when 'winheight' is a large value.
+'cmdwinheight' is only used in last window when 'winheight' is a large value.
 (Tony Mechelynck, 2009 Apr 15)
 
 Status line containing winnr() isn't updated when splitting the window (Clark
@@ -1245,11 +1267,6 @@ makes his own wrapper).  Add a magic string with the version number to the
 Changes for Win32 makefile. (Mike Williams, 2007 Jan 22, Alexei Alexandrov,
 2007 Feb 8)
 
-Patch for Win32 clipboard under Cygwin. (Frodak Baksik, Feb 15)
-    Sutcliffe says it works well.
-    Update 2007 May 22 for Vim 7.1
-    Update 2008 Dec 2008 for Vim 7.2.xx (Sharonov)
-
 Win32: Can't complete shell command names.  Why is setting xp_context in
 set_one_cmd_context() inside #ifndef BACKSLASH_IN_FILENAME?
 
@@ -1664,7 +1681,8 @@ Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
 2010 Jun 30)
 
 
-At next release:
+At next release 7.4:
+-   Build a huge version by default.
 -   Rename src/Makefile and create a new one like toplevel Makefile that
     creates auto/config.mk when it's not there? (Ben Schmidt, 2011 Feb 11)
 -   Improve plugin handling: Automatic updates, handle dependencies?
@@ -4297,6 +4315,7 @@ Incsearch:
 
 
 Searching:
+9   Should have an option for :vimgrep to find lines without a match.
 8   Add "g/" and "gb" to search for a pattern in the Visually selected text?
     "g?" is already used for rot13.
     The vis.vim script has a ":S" command that does something like this.
@@ -4428,6 +4447,9 @@ Searching:
 
 
 Undo:
+9   ":gundo" command: global undo.  Undoes changes spread over multiple files
+    in the order they were made.  Also ":gredo".  Both with a count.  Useful
+    when tests fail after making changes and you forgot in which files.
 9   After undo/redo, in the message show whether the buffer is modified or
     not.
 8   Use timestamps for undo, so that a version a certain time ago can be found
@@ -4612,6 +4634,7 @@ Options:
 7   There is 'titleold', why is there no 'iconold'? (Chazelas)
 7   Make 'scrolloff' a global-local option, so that it can be different in the
     quickfix window, for example. (Gary Holloway)
+    Also do 'sidescrolloff'.
 
 
 External commands:
