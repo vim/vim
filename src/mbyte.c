@@ -869,11 +869,19 @@ remove_bom(s)
 mb_get_class(p)
     char_u	*p;
 {
+    return mb_get_class_buf(p, curbuf);
+}
+
+    int
+mb_get_class_buf(p, buf)
+    char_u	*p;
+    buf_T	*buf;
+{
     if (MB_BYTE2LEN(p[0]) == 1)
     {
 	if (p[0] == NUL || vim_iswhite(p[0]))
 	    return 0;
-	if (vim_iswordc(p[0]))
+	if (vim_iswordc_buf(p[0], buf))
 	    return 2;
 	return 1;
     }

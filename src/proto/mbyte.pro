@@ -4,6 +4,7 @@ char_u *mb_init __ARGS((void));
 int bomb_size __ARGS((void));
 void remove_bom __ARGS((char_u *s));
 int mb_get_class __ARGS((char_u *p));
+int mb_get_class_buf __ARGS((char_u *p, buf_T *buf));
 int dbcs_class __ARGS((unsigned lead, unsigned trail));
 int latin_char2len __ARGS((int c));
 int latin_char2bytes __ARGS((int c, char_u *buf));

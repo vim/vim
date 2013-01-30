@@ -4013,8 +4013,8 @@ static int reg_prev_class __ARGS((void));
 reg_prev_class()
 {
     if (reginput > regline)
-	return mb_get_class(reginput - 1
-				     - (*mb_head_off)(regline, reginput - 1));
+	return mb_get_class_buf(reginput - 1
+			    - (*mb_head_off)(regline, reginput - 1), reg_buf);
     return -1;
 }
 
@@ -4304,7 +4304,7 @@ regmatch(scan)
 		int this_class;
 
 		/* Get class of current and previous char (if it exists). */
-		this_class = mb_get_class(reginput);
+		this_class = mb_get_class_buf(reginput, reg_buf);
 		if (this_class <= 1)
 		    status = RA_NOMATCH;  /* not on a word at all */
 		else if (reg_prev_class() == this_class)
@@ -4328,7 +4328,7 @@ regmatch(scan)
 		int this_class, prev_class;
 
 		/* Get class of current and previous char (if it exists). */
-		this_class = mb_get_class(reginput);
+		this_class = mb_get_class_buf(reginput, reg_buf);
 		prev_class = reg_prev_class();
 		if (this_class == prev_class
 			|| prev_class == 0 || prev_class == 1)
@@ -4365,14 +4365,14 @@ regmatch(scan)
 	    break;
 
 	  case KWORD:
-	    if (!vim_iswordp(reginput))
+	    if (!vim_iswordp_buf(reginput, reg_buf))
 		status = RA_NOMATCH;
 	    else
 		ADVANCE_REGINPUT();
 	    break;
 
 	  case SKWORD:
-	    if (VIM_ISDIGIT(*reginput) || !vim_iswordp(reginput))
+	    if (VIM_ISDIGIT(*reginput) || !vim_iswordp_buf(reginput, reg_buf))
 		status = RA_NOMATCH;
 	    else
 		ADVANCE_REGINPUT();
@@ -5734,7 +5734,8 @@ regrepeat(p, maxcount)
       case SKWORD + ADD_NL:
 	while (count < maxcount)
 	{
-	    if (vim_iswordp(scan) && (testval || !VIM_ISDIGIT(*scan)))
+	    if (vim_iswordp_buf(scan, reg_buf)
+					  && (testval || !VIM_ISDIGIT(*scan)))
 	    {
 		mb_ptr_adv(scan);
 	    }
