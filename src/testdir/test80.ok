@@ -99,3 +99,9 @@ TEST_7:
 AA
 B
 B
+
+
+TEST_8:
+N,,NX
+N,,NY
+N,,NZ
