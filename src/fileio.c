@@ -7243,6 +7243,9 @@ buf_reload(buf, orig_mode)
 	 * reset it, might have had a read error. */
 	if (orig_mode == curbuf->b_orig_mode)
 	    curbuf->b_p_ro |= old_ro;
+
+	/* Modelines must override settings done by autocommands. */
+	do_modelines(0);
     }
 
     /* restore curwin/curbuf and a few other things */
