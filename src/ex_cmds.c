@@ -4727,6 +4727,8 @@ do_sub(eap)
 			}
 			else
 			{
+			    char_u *orig_line = NULL;
+			    int    len_change = 0;
 #ifdef FEAT_FOLDING
 			    int save_p_fen = curwin->w_p_fen;
 
@@ -4737,9 +4739,43 @@ do_sub(eap)
 			    temp = RedrawingDisabled;
 			    RedrawingDisabled = 0;
 
+			    if (new_start != NULL)
+			    {
+				/* There already was a substitution, we would
+				 * like to show this to the user.  We cannot
+				 * really update the line, it would change
+				 * what matches.  Temporarily replace the line
+				 * and change it back afterwards. */
+				orig_line = vim_strsave(ml_get(lnum));
+				if (orig_line != NULL)
+				{
+				    char_u *new_line = concat_str(new_start,
+						     sub_firstline + copycol);
+
+				    if (new_line == NULL)
+				    {
+					vim_free(orig_line);
+					orig_line = NULL;
+				    }
+				    else
+				    {
+					/* Position the cursor relative to the
+					 * end of the line, the previous
+					 * substitute may have inserted or
+					 * deleted characters before the
+					 * cursor. */
+					len_change = STRLEN(new_line)
+							  - STRLEN(orig_line);
+					curwin->w_cursor.col += len_change;
+					ml_replace(lnum, new_line, FALSE);
+				    }
+				}
+			    }
+
 			    search_match_lines = regmatch.endpos[0].lnum
 						  - regmatch.startpos[0].lnum;
-			    search_match_endcol = regmatch.endpos[0].col;
+			    search_match_endcol = regmatch.endpos[0].col
+								 + len_change;
 			    highlight_match = TRUE;
 
 			    update_topline();
@@ -4781,6 +4817,10 @@ do_sub(eap)
 			    msg_didout = FALSE;	/* don't scroll up */
 			    msg_col = 0;
 			    gotocmdline(TRUE);
+
+			    /* restore the line */
+			    if (orig_line != NULL)
+				ml_replace(lnum, orig_line, FALSE);
 			}
 
 			need_wait_return = FALSE; /* no hit-return prompt */
@@ -5045,14 +5085,10 @@ skip:
 		 * The check for nmatch_tl is needed for when multi-line
 		 * matching must replace the lines before trying to do another
 		 * match, otherwise "\@<=" won't work.
-		 * When asking the user we like to show the already replaced
-		 * text, but don't do it when "\<@=" or "\<@!" is used, it
-		 * changes what matches.
 		 * When the match starts below where we start searching also
 		 * need to replace the line first (using \zs after \n).
 		 */
 		if (lastone
-			|| (do_ask && !re_lookbehind(regmatch.regprog))
 			|| nmatch_tl > 0
 			|| (nmatch = vim_regexec_multi(&regmatch, curwin,
 							curbuf, sub_firstlnum,
