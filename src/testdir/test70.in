@@ -38,8 +38,7 @@ STARTTEST
 :" circular list (at the same time test lists containing lists)
 :mz (set-car! (cddr l) l)
 :let l2 = mzeval("h")["list"]
-:" bug: this returns item2, but it should be l2
-:if l2[2] == "item2"
+:if l2[2] == l2
 :let res = "OK"
 :else
 :let res = "FAILED: " . l2[2]

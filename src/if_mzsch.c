@@ -965,6 +965,7 @@ startup_mzscheme(void)
 #ifdef MZSCHEME_COLLECTS
     /* setup 'current-library-collection-paths' parameter */
 # if MZSCHEME_VERSION_MAJOR >= 299
+#  ifdef MACOS
     {
 	Scheme_Object	*coll_byte_string = NULL;
 	Scheme_Object	*coll_char_string = NULL;
@@ -985,6 +986,36 @@ startup_mzscheme(void)
 	MZ_GC_CHECK();
 	MZ_GC_UNREG();
     }
+#  else
+   {
+	Scheme_Object	*coll_byte_string = NULL;
+	Scheme_Object	*coll_char_string = NULL;
+	Scheme_Object	*coll_path = NULL;
+	Scheme_Object	*coll_pair = NULL;
+	Scheme_Config	*config = NULL;
+
+	MZ_GC_DECL_REG(5);
+	MZ_GC_VAR_IN_REG(0, coll_byte_string);
+	MZ_GC_VAR_IN_REG(1, coll_char_string);
+	MZ_GC_VAR_IN_REG(2, coll_path);
+	MZ_GC_VAR_IN_REG(3, coll_pair);
+	MZ_GC_VAR_IN_REG(4, config);
+	MZ_GC_REG();
+	coll_byte_string = scheme_make_byte_string(MZSCHEME_COLLECTS);
+	MZ_GC_CHECK();
+	coll_char_string = scheme_byte_string_to_char_string(coll_byte_string);
+	MZ_GC_CHECK();
+	coll_path = scheme_char_string_to_path(coll_char_string);
+	MZ_GC_CHECK();
+	coll_pair = scheme_make_pair(coll_path, scheme_null);
+	MZ_GC_CHECK();
+	config = scheme_current_config();
+	MZ_GC_CHECK();
+	scheme_set_param(config, MZCONFIG_COLLECTION_PATHS, coll_pair);
+	MZ_GC_CHECK();
+	MZ_GC_UNREG();
+    }
+#  endif
 # else
     {
 	Scheme_Object	*coll_string = NULL;
