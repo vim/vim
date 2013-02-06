@@ -4878,7 +4878,7 @@ do_sub(eap)
 			goto skip;
 		    }
 		    if (got_quit)
-			break;
+			goto skip;
 		}
 
 		/* Move the cursor to the start of the match, so that we can
