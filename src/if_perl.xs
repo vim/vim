@@ -1048,7 +1048,7 @@ Buffers(...)
 	{
 	    SV *sv = ST(i);
 	    if (SvIOK(sv))
-		b = SvIV(ST(i));
+		b = (int) SvIV(ST(i));
 	    else
 	    {
 		char_u *pat;
@@ -1091,7 +1091,7 @@ Windows(...)
     {
 	for (i = 0; i < items; i++)
 	{
-	    w = SvIV(ST(i));
+	    w = (int) SvIV(ST(i));
 	    vimwin = win_find_nr(w);
 	    if (vimwin)
 		XPUSHs(newWINrv(newSV(0), vimwin));
@@ -1154,8 +1154,8 @@ Cursor(win, ...)
 
       if (!win_valid(win))
 	  win = curwin;
-      lnum = SvIV(ST(1));
-      col = SvIV(ST(2));
+      lnum = (int) SvIV(ST(1));
+      col = (int) SvIV(ST(2));
       win->w_cursor.lnum = lnum;
       win->w_cursor.col = col;
       check_cursor();		    /* put cursor on an existing line */
@@ -1216,7 +1216,7 @@ Get(vimbuf, ...)
     {
 	for (i = 1; i < items; i++)
 	{
-	    lnum = SvIV(ST(i));
+	    lnum = (long) SvIV(ST(i));
 	    if (lnum > 0 && lnum <= vimbuf->b_ml.ml_line_count)
 	    {
 		line = ml_get_buf(vimbuf, lnum, FALSE);
@@ -1239,7 +1239,7 @@ Set(vimbuf, ...)
 	if (items < 3)
 	    croak("Usage: VIBUF::Set(vimbuf, lnum, @lines)");
 
-	lnum = SvIV(ST(1));
+	lnum = (long) SvIV(ST(1));
 	for(i = 2; i < items; i++, lnum++)
 	{
 	    line = SvPV(ST(i),PL_na);
@@ -1274,13 +1274,13 @@ Delete(vimbuf, ...)
     {
 	if (items == 2)
 	{
-	    lnum = SvIV(ST(1));
+	    lnum = (long) SvIV(ST(1));
 	    count = 1;
 	}
 	else if (items == 3)
 	{
-	    lnum = SvIV(ST(1));
-	    count = 1 + SvIV(ST(2)) - lnum;
+	    lnum = (long) SvIV(ST(1));
+	    count = (long) 1 + SvIV(ST(2)) - lnum;
 	    if (count == 0)
 		count = 1;
 	    if (count < 0)
@@ -1331,7 +1331,7 @@ Append(vimbuf, ...)
 	if (items < 3)
 	    croak("Usage: VIBUF::Append(vimbuf, lnum, @lines)");
 
-	lnum = SvIV(ST(1));
+	lnum = (long) SvIV(ST(1));
 	for (i = 2; i < items; i++, lnum++)
 	{
 	    line = SvPV(ST(i),PL_na);
