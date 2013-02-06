@@ -1441,7 +1441,9 @@ set_curbuf(buf, action)
 enter_buffer(buf)
     buf_T	*buf;
 {
+#ifdef FEAT_SYN_HL
     long old_tw = curbuf->b_p_tw;
+#endif
 
     /* Copy buffer and window local option values.  Not for a help buffer. */
     buf_copy_options(buf, BCO_ENTER | BCO_NOHELP);
