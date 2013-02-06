@@ -284,7 +284,12 @@ buf_init_chartab(buf, global)
 		}
 		++c;
 	    }
+
+	    c = *p;
 	    p = skip_to_option_part(p);
+	    if (c == ',' && *p == NUL)
+		/* Trailing comma is not allowed. */
+		return FAIL;
 	}
     }
     chartab_initialized = TRUE;
