@@ -1047,6 +1047,7 @@ mark_adjust(line1, line2, amount, amount_after)
 #ifdef FEAT_WINDOWS
     tabpage_T	*tab;
 #endif
+    static pos_T initpos = INIT_POS_T(1, 0, 0);
 
     if (line2 < line1 && amount_after == 0L)	    /* nothing to do */
 	return;
@@ -1071,6 +1072,11 @@ mark_adjust(line1, line2, amount, amount_after)
 
 	/* last change position */
 	one_adjust(&(curbuf->b_last_change.lnum));
+
+	/* last cursor position, if it was set */
+	if (!equalpos(curbuf->b_last_cursor, initpos))
+	    one_adjust(&(curbuf->b_last_cursor.lnum));
+
 
 #ifdef FEAT_JUMPLIST
 	/* list of change positions */
