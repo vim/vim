@@ -4737,13 +4737,15 @@ $as_echo "no" >&6; }
       if test -f "${vi_cv_path_lua_pfx}/bin/cyglua-${vi_cv_version_lua}.dll"; then
 	vi_cv_dll_name_lua="cyglua-${vi_cv_version_lua}.dll"
       else
-			for i in 0 1 2 3 4 5 6 7 8 9; do
-	  if test -f "${vi_cv_path_lua_pfx}/lib/liblua${vi_cv_version_lua}.so.$i"; then
-	    LUA_SONAME=".$i"
-	    break
-	  fi
+			for LUA_SOVER in "${vi_cv_version_lua}.so" ".so.${vi_cv_version_lua}"; do
+	  for i in 0 1 2 3 4 5 6 7 8 9; do
+	    if test -f "${vi_cv_path_lua_pfx}/lib/liblua${LUA_SOVER}.$i"; then
+	      LUA_SONAME=".$i"
+	      break
+	    fi
+	  done
+	  vi_cv_dll_name_lua="liblua${LUA_SOVER}$LUA_SONAME"
 	done
-	vi_cv_dll_name_lua="liblua${vi_cv_version_lua}.so$LUA_SONAME"
       fi
       $as_echo "#define DYNAMIC_LUA 1" >>confdefs.h
 

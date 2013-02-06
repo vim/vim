@@ -496,13 +496,15 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
       else
 	dnl Determine the SONAME for the current version, but fallback to
 	dnl liblua${vi_cv_version_lua}.so if no SONAME-versioned file is found.
-	for i in 0 1 2 3 4 5 6 7 8 9; do
-	  if test -f "${vi_cv_path_lua_pfx}/lib/liblua${vi_cv_version_lua}.so.$i"; then
-	    LUA_SONAME=".$i"
-	    break
-	  fi
+	for LUA_SOVER in "${vi_cv_version_lua}.so" ".so.${vi_cv_version_lua}"; do
+	  for i in 0 1 2 3 4 5 6 7 8 9; do
+	    if test -f "${vi_cv_path_lua_pfx}/lib/liblua${LUA_SOVER}.$i"; then
+	      LUA_SONAME=".$i"
+	      break
+	    fi
+	  done
+	  vi_cv_dll_name_lua="liblua${LUA_SOVER}$LUA_SONAME"
 	done
-	vi_cv_dll_name_lua="liblua${vi_cv_version_lua}.so$LUA_SONAME"
       fi
       AC_DEFINE(DYNAMIC_LUA)
       LUA_LIBS=""
