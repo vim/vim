@@ -17,7 +17,7 @@ Vim's Win32 Graphical User Interface			*gui-w32* *win32-gui*
 
 Other relevant documentation:
 |gui.txt|	For generic items of the GUI.
-|os_win32.txt|  For Win32 specific items.
+|os_win32.txt| 	For Win32 specific items.
 
 {Vi does not have a Windows GUI}
 

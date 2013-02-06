@@ -248,7 +248,7 @@ Subjects that can be read independently.
 		|28.7|	Folding by syntax
 		|28.8|	Folding by expression
 		|28.9|	Folding unchanged lines
-		|28.10| Which fold method to use?
+		|28.10|	Which fold method to use?
 
 |usr_29.txt|  Moving through programs
 		|29.1|	Using tags

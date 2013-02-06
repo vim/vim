@@ -577,6 +577,106 @@ $VIMRUNTIME/indent directory for examples.
 REMARKS ABOUT SPECIFIC INDENT FILES ~
 
 
+CLOJURE					*ft-clojure-indent* *clojure-indent*
+
+Clojure indentation differs somewhat from traditional Lisps, due in part to
+the use of square and curly brackets, and otherwise by community convention.
+These conventions are not always universally followed, so the Clojure indent
+script offers a few configurable options, listed below.
+
+If the current vim does not include searchpairpos(), the indent script falls
+back to normal 'lisp' indenting, and the following options are ignored.
+
+							*g:clojure_maxlines*
+
+Set maximum scan distance of searchpairpos(). Larger values trade performance
+for correctness when dealing with very long forms. A value of 0 will scan
+without limits.
+>
+	" Default
+	let g:clojure_maxlines = 100
+<
+
+						*g:clojure_fuzzy_indent*
+					*g:clojure_fuzzy_indent_patterns*
+					*g:clojure_fuzzy_indent_blacklist*
+
+The 'lispwords' option is a list of comma-separated words that mark special
+forms whose subforms must be indented with two spaces.
+
+For example:
+>
+	(defn bad []
+	      "Incorrect indentation")
+
+	(defn good []
+	  "Correct indentation")
+<
+If you would like to specify 'lispwords' with a |pattern| instead, you can use
+the fuzzy indent feature:
+>
+	" Default
+	let g:clojure_fuzzy_indent = 1
+	let g:clojure_fuzzy_indent_patterns = ['^with', '^def', '^let']
+	let g:clojure_fuzzy_indent_blacklist =
+		\ ['-fn$', '\v^with-%(meta|out-str|loading-context)$']
+
+	" Legacy comma-delimited string version; the list format above is
+	" recommended. Note that patterns are implicitly anchored with ^ and $
+	let g:clojure_fuzzy_indent_patterns = 'with.*,def.*,let.*'
+<
+|g:clojure_fuzzy_indent_patterns| and |g:clojure_fuzzy_indent_blacklist| are
+|Lists| of patterns that will be matched against the unquoted, unqualified
+symbol at the head of a list. This means that a pattern like "^foo" will match
+all these candidates: "foobar", "my.ns/foobar", and "#'foobar".
+
+Each candidate word is tested for special treatment in this order:
+
+	1. Return true if word is literally in 'lispwords'
+	2. Return false if word matches a pattern in
+	   |g:clojure_fuzzy_indent_blacklist|
+	3. Return true if word matches a pattern in
+	   |g:clojure_fuzzy_indent_patterns|
+	4. Return false and indent normally otherwise
+
+					*g:clojure_special_indent_words*
+
+Some forms in Clojure are indented so that every subform is indented only two
+spaces, regardless of 'lispwords'. If you have a custom construct that should
+be indented in this idiosyncratic fashion, you can add your symbols to the
+default list below.
+>
+	" Default
+	let g:clojure_special_indent_words =
+	   \ 'deftype,defrecord,reify,proxy,extend-type,extend-protocol,letfn'
+<
+
+					*g:clojure_align_multiline_strings*
+
+Align subsequent lines in multiline strings to the column after the opening
+quote, instead of the same column.
+
+For example:
+>
+	(def default
+	  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+	  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+	  enim ad minim veniam, quis nostrud exercitation ullamco laboris
+	  nisi ut aliquip ex ea commodo consequat.")
+
+	(def aligned
+	  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+	   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+	   enim ad minim veniam, quis nostrud exercitation ullamco laboris
+	   nisi ut aliquip ex ea commodo consequat.")
+<
+This option is off by default.
+>
+	" Default
+	let g:clojure_align_multiline_strings = 0
+<
+
+
 FORTRAN							*ft-fortran-indent*
 
 Block if, select case, where, and forall constructs are indented.  So are

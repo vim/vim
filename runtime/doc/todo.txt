@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Jan 30
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Feb 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,6 +34,12 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Substitute with confirmation and then "q" does not replace anything.
+(John McGowan)
+
+Download counter for scripts no longer incremented?
+Looks like it.
+
 Several syntax file match "^\s*" which may get underlined if that's in the
 highlight group.  Add a "\zs" after it?
 
@@ -43,24 +49,33 @@ Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
 Checking runtime scripts: Thilo Six, 2012 Jun 6.
 
+Patch for doc indenting. (Ken Takata, Feb 4)
+
 GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
 
+Configure change to detect Lua 5.2. (lilydjwg, 2013 Jan 31)
+
 Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
+
+Patch to avoid warnings in Perl code. (Christian Brabandt, 2013 Jan 30)
+
+The " mark is not updated for lines inserted above it. (Roland Eggner, 2013
+Feb 5)
+
+Look into patch to add 'linenumber' option. (Nazri Ramliy, 2013 Feb 4)
+
+Another patch for Python threads, 2 and 3. (Ken Takata, 2013 Jan 31)
+Does this really work?
+
+Patch for 'relativenumber' being reset unexpectedly. (Christian Brabandt, 2013
+Feb 1)  Tests Feb 2.
+
+Patch to avoid useless compare. (Hayaki Saito, 2013 Feb 2)
 
 The CompleteDone autocommand needs some info passed to it:
 - The word that was selected (empty if abandoned complete)
 - Type of completion: tag, omnifunc, user func.
-
-Patch for mzscheme.  (Sergey Khorev, 2012 Nov 19)
-Updated patch 2013 Jan 28.
-
-Patch to fix :s command with confirm and typing "a". (Christian Brabandt, 2012
-Oct 28)
-
-/[^\n] does match at a line break.  Expected to do the same as /.
-Patch by Christian Brabandt, 2012 Dec 1.
-Test files in archive in another message.
 
 Patch to make multibyte input work on Win32 console when codepage differs from
 'encoding'. (Ken Takata, 2012 Sep 29)
@@ -74,6 +89,8 @@ It's possible to define an input() function that overrides the built-in one.
 (ZyX, 2012 Sep 28)
 
 Patch to add sha256() function. (Tyru, 2013 Jan 8)
+Test by Higashi, 2013 Feb 2.
+All together (tyru, 2013 Feb 5)
 
 Patch to make pyeval() print error messages. (ZyX, 2013 Jan 12)
 
@@ -90,7 +107,8 @@ Patch for Win32 clipboard under Cygwin. (Frodak Baksik, Feb 15)
 Problem parsing expression with function(). (Andy Wokula, 2012 Nov 22)
 Patch by Christian Brabandt, Nov 22.  Tests in another patch, Nov 23.
 
-Patch to add default value to getbufvar() et al. (Hirohito Higashi, 2013 Jan 1)
+Patch to add default value to getbufvar() et al. (Shougo Matsushita, Hirohito
+Higashi, 2013 Jan 1)
 
 Problem caused by patch 7.3.638: window->open does not update window
 correctly. Issue 91.
@@ -406,6 +424,7 @@ When a buffer-local mapping is used, but a global mapping starts with the same
 characters, Vim currently waits for the next typed character to find out if
 the global mapping matches.  It is probably better to let the local mapping
 win and not wait. (discussion with Andy Wokula, 2013 Jan 30)
+Patch by Michael Henry, 2013 Jan 30.
 
 When doing "redir => s:foo" in a script and then "redir END" somewhere else
 (e.g. in a function) it can't find s:foo.

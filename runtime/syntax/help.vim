@@ -25,10 +25,12 @@ else
   syn match helpHyperTextEntry	"\*[#-)!+-~]\+\*$" contains=helpStar
 endif
 if has("conceal")
-  syn match helpBar		contained "[|`]" conceal
+  syn match helpBar		contained "|" conceal
+  syn match helpBacktick	contained "`" conceal
   syn match helpStar		contained "\*" conceal
 else
-  syn match helpBar		contained "[|`]"
+  syn match helpBar		contained "|"
+  syn match helpBacktick	contained "`"
   syn match helpStar		contained "\*"
 endif
 syn match helpNormal		"|.*====*|"
@@ -38,7 +40,7 @@ syn match helpVim		"Vim version [0-9.a-z]\+"
 syn match helpVim		"VIM REFERENCE.*"
 syn match helpOption		"'[a-z]\{2,\}'"
 syn match helpOption		"'t_..'"
-syn match helpCommand		"`[^` ]*`"hs=s+1,he=e-1 contains=helpBar
+syn match helpCommand		"`[^` ]*`"hs=s+1,he=e-1 contains=helpBacktick
 syn match helpHeader		"\s*\zs.\{-}\ze\s\=\~$" nextgroup=helpIgnore
 syn match helpGraphic		".* \ze`$" nextgroup=helpIgnore
 if has("conceal")
@@ -150,6 +152,7 @@ syn sync minlines=40
 hi def link helpIgnore		Ignore
 hi def link helpHyperTextJump	Subtitle
 hi def link helpBar		Ignore
+hi def link helpBacktick	Ignore
 hi def link helpStar		Ignore
 hi def link helpHyperTextEntry	String
 hi def link helpHeadline	Statement

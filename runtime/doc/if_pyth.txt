@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.3.  Last change: 2013 Jan 30
+*if_pyth.txt*   For Vim version 7.3.  Last change: 2013 Feb 03
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -385,7 +385,7 @@ sure edit "gvim.exe" and search for "python\d*.dll\c".
 
 							*:py3* *:python3*
 The |:py3| and |:python3| commands work similar to |:python|.  A simple check
-if the `:py3` command is wrong: >
+if the `:py3` command is working: >
 	:py3 print("Hello")
 <							*:py3file*
 The |:py3file| command works similar to |:pyfile|.

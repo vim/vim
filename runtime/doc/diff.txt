@@ -220,7 +220,7 @@ The diffs are highlighted with these groups:
 				that parts in the middle that are still the
 				same are highlighted anyway.  Only "iwhite" of
 				'diffopt' is used here.
-|hl-DiffDelete| DiffDelete	Deleted lines.  Also called filler lines,
+|hl-DiffDelete|	DiffDelete	Deleted lines.  Also called filler lines,
 				because they don't really exist in this
 				buffer.
 

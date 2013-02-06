@@ -17,9 +17,9 @@ elseif exists("b:current_syntax")
 endif
 
 if version >= 600
-	setlocal iskeyword=@,48-57,_,-,
+	setlocal iskeyword=@,48-57,_,-
 else
-	set iskeyword=@,48-57,_,-,
+	set iskeyword=@,48-57,_,-
 endif
 
 syn case ignore
