@@ -548,6 +548,11 @@ update_screen(type)
 #if defined(FEAT_SEARCH_EXTRA)
     end_search_hl();
 #endif
+#ifdef FEAT_INS_EXPAND
+    /* May need to redraw the popup menu. */
+    if (pum_visible())
+	pum_redraw();
+#endif
 
 #ifdef FEAT_WINDOWS
     /* Reset b_mod_set flags.  Going through all windows is probably faster
