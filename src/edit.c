@@ -3846,6 +3846,12 @@ ins_compl_prep(c)
 #endif
 	}
     }
+#ifdef FEAT_AUTOCMD
+    else if (ctrl_x_mode == CTRL_X_LOCAL_MSG)
+	/* Trigger the CompleteDone event to give scripts a chance to act
+	 * upon the (possibly failed) completion. */
+	apply_autocmds(EVENT_COMPLETEDONE, NULL, NULL, FALSE, curbuf);
+#endif
 
     /* reset continue_* if we left expansion-mode, if we stay they'll be
      * (re)set properly in ins_complete() */
