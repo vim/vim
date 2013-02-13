@@ -267,6 +267,54 @@ EOF
 :      $put =toput
 :   endtry
 :endfor
+:"
+:" threading
+:let l = [0]
+:py3 l=vim.bindeval('l')
+:py3 <<EOF
+import threading
+import time
+
+class T(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.t = 0
+        self.running = True
+
+    def run(self):
+        while self.running:
+            self.t += 1
+            time.sleep(0.1)
+
+t = T()
+t.start()
+EOF
+:sleep 1
+:py3 t.running = False
+:py3 t.join()
+:py3 l[0] = t.t > 8  # check if the background thread is working
+:$put =string(l)
+:"
+:" settrace
+:let l = []
+:py3 l=vim.bindeval('l')
+:py3 <<EOF
+import sys
+
+def traceit(frame, event, arg):
+    global l
+    if event == "line":
+        l += [frame.f_lineno]
+    return traceit
+
+def trace_main():
+    for i in range(5):
+        pass
+EOF
+:py3 sys.settrace(traceit)
+:py3 trace_main()
+:py3 sys.settrace(None)
+:$put =string(l)
 :endfun
 :"
 :call Test()

@@ -741,7 +741,7 @@ Python_Init(void)
 	PyMac_Initialize();
 #endif
 	/* Initialise threads, and below save the state using
-	 * PyGILState_Ensure.  Without the call to PyGILState_Ensure, thread
+	 * PyEval_SaveThread.  Without the call to PyEval_SaveThread, thread
 	 * specific state (such as the system trace hook), will be lost
 	 * between invocations of Python code. */
 	PyEval_InitThreads();
@@ -755,10 +755,6 @@ Python_Init(void)
 	if (PythonMod_Init())
 	    goto fail;
 
-	/* The first python thread is vim's, release the lock. */
-	Python_SaveThread();
-	pygilstate = PyGILState_Ensure();
-
 	globals = PyModule_GetDict(PyImport_AddModule("__main__"));
 
 	/* Remove the element from sys.path that was added because of our
@@ -767,7 +763,14 @@ Python_Init(void)
 	 * the current directory in sys.path. */
 	PyRun_SimpleString("import sys; sys.path = filter(lambda x: x != '/must>not&exist', sys.path)");
 
-	PyGILState_Release(pygilstate);
+	/* lock is created and acquired in PyEval_InitThreads() and thread
+	 * state is created in Py_Initialize()
+	 * there _PyGILState_NoteThreadState() also sets gilcounter to 1
+	 * (python must have threads enabled!)
+	 * so the following does both: unlock GIL and save thread state in TLS
+	 * without deleting thread state
+	 */
+	PyEval_SaveThread();
 
 	initialised = 1;
     }
