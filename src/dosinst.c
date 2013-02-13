@@ -375,7 +375,7 @@ get_vim_env(void)
 
     /* First get $VIMRUNTIME.  If it's set, remove the tail. */
     vim = getenv("VIMRUNTIME");
-    if (vim != NULL && *vim != 0)
+    if (vim != NULL && *vim != 0 && strlen(vim) < BUFSIZE)
     {
 	strcpy(buf, vim);
 	remove_tail(buf);
