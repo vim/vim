@@ -8809,12 +8809,18 @@ find_match(lookfor, ourscope, ind_maxparen, ind_maxcomment)
 get_expr_indent()
 {
     int		indent;
-    pos_T	pos;
+    pos_T	save_pos;
+    colnr_T	save_curswant;
+    int		save_set_curswant;
     int		save_State;
     int		use_sandbox = was_set_insecurely((char_u *)"indentexpr",
 								   OPT_LOCAL);
 
-    pos = curwin->w_cursor;
+    /* Save and restore cursor position and curswant, in case it was changed
+     * via :normal commands */
+    save_pos = curwin->w_cursor;
+    save_curswant = curwin->w_curswant;
+    save_set_curswant = curwin->w_set_curswant;
     set_vim_var_nr(VV_LNUM, curwin->w_cursor.lnum);
     if (use_sandbox)
 	++sandbox;
@@ -8829,7 +8835,9 @@ get_expr_indent()
      * command. */
     save_State = State;
     State = INSERT;
-    curwin->w_cursor = pos;
+    curwin->w_cursor = save_pos;
+    curwin->w_curswant = save_curswant;
+    curwin->w_set_curswant = save_set_curswant;
     check_cursor();
     State = save_State;
 
