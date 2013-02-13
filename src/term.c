@@ -4045,8 +4045,7 @@ check_termcode(max_offset, buf, bufsize, buflen)
 #ifdef FEAT_TERMRESPONSE
 	if (key_name[0] == NUL
 	    /* URXVT mouse uses <ESC>[#;#;#M, but we are matching <ESC>[ */
-	    || key_name[0] == KS_URXVT_MOUSE
-	    || key_name[0] == KS_SGR_MOUSE)
+	    || key_name[0] == KS_URXVT_MOUSE)
 	{
 	    /* Check for xterm version string: "<Esc>[>{x};{vers};{y}c".  Also
 	     * eat other possible responses to t_RV, rxvt returns
