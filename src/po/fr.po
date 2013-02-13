@@ -6,7 +6,7 @@
 #  FIRST AUTHOR  DindinX         <David.Odin@bigfoot.com>     2000.
 # SECOND AUTHOR  Adrien Beau     <version.francaise@free.fr>  2002, 2003.
 #  THIRD AUTHOR  David Blanchet  <david.blanchet@free.fr>     2006, 2008.
-# FOURTH AUTHOR  Dominique Pellé <dominique.pelle@gmail.com>  2008, 2012.
+# FOURTH AUTHOR  Dominique Pellé <dominique.pelle@gmail.com>  2008, 2013.
 #
 # Latest translation available at:
 #   http://dominique.pelle.free.fr/vim-fr.php
@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Français)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-08-19 06:35+0200\n"
-"PO-Revision-Date: 2012-08-19 06:48+0200\n"
+"POT-Creation-Date: 2013-02-10 14:05+0100\n"
+"PO-Revision-Date: 2013-02-10 14:48+0100\n"
 "Last-Translator: Dominique Pellé <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -1521,8 +1521,8 @@ msgid "unknown"
 msgstr "inconnu"
 
 #, c-format
-msgid "E185: Cannot find color scheme %s"
-msgstr "E185: Impossible de trouver le jeu de couleurs %s"
+msgid "E185: Cannot find color scheme '%s'"
+msgstr "E185: Impossible de trouver le jeu de couleurs '%s'"
 
 msgid "Greetings, Vim user!"
 msgstr "Bienvenue, utilisateur de Vim !"
@@ -2848,6 +2848,9 @@ msgstr "impossible d'insérer la ligne"
 msgid "string cannot contain newlines"
 msgstr "une chaîne ne peut pas contenir de saut-de-ligne"
 
+msgid "error converting Scheme values to Vim"
+msgstr "erreur lors de la conversion d'une valeur de Scheme à Vim"
+
 msgid "Vim error: ~a"
 msgstr "Erreur Vim : ~a"
 
@@ -2869,7 +2872,6 @@ msgstr "non autorisé dans le bac à sable"
 msgid "E836: This Vim cannot execute :python after using :py3"
 msgstr "E836: Vim ne peut pas exécuter :python après avoir utilisé :py3"
 
-#. Add conversion from PyInt?
 msgid "only string keys are allowed"
 msgstr "seule une chaine est autorisée comme clé"
 
@@ -2888,15 +2890,6 @@ msgstr "E858: Eval n'a pas retourné un objet python valide"
 
 msgid "E859: Failed to convert returned python object to vim value"
 msgstr "E859: Conversion d'objet python à une valeur de vim a échoué"
-
-msgid "can't delete OutputObject attributes"
-msgstr "impossible d'effacer les attributs d'OutputObject"
-
-msgid "softspace must be an integer"
-msgstr "softspace doit être un nombre entier"
-
-msgid "invalid attribute"
-msgstr "attribut invalide"
 
 #, c-format
 msgid "<buffer object (deleted) at %p>"
@@ -6833,6 +6826,15 @@ msgstr "La recherche a atteint le BAS, et continue en HAUT"
 msgid "Need encryption key for \"%s\""
 msgstr "Besoin de la clé de chiffrement pour \"%s\""
 
+msgid "can't delete OutputObject attributes"
+msgstr "impossible d'effacer les attributs d'OutputObject"
+
+msgid "softspace must be an integer"
+msgstr "softspace doit être un nombre entier"
+
+msgid "invalid attribute"
+msgstr "attribut invalide"
+
 msgid "writelines() requires list of strings"
 msgstr "writelines() requiert une liste de chaînes"
 
@@ -6842,14 +6844,29 @@ msgstr "E264: Python : Erreur d'initialisation des objets d'E/S"
 msgid "no such buffer"
 msgstr "ce tampon n'existe pas"
 
+msgid "empty keys are not allowed"
+msgstr "les clés vides ne sont pas autorisées"
+
 msgid "failed to add key to dictionary"
 msgstr "l'ajout de clé au dictionnaire a échoué"
 
-msgid "dict is locked"
-msgstr "dictionnaire est verrouillé"
+msgid "Cannot delete DictionaryObject attributes"
+msgstr "Impossible d'effacer les attributs de DictionaryObject"
+
+msgid "Cannot modify fixed dictionary"
+msgstr "Impossible de modifier un dictionnaire fixe"
+
+msgid "Only boolean objects are allowed"
+msgstr "Seuls les objets booléens sont autorisés"
+
+msgid "Cannot set this attribute"
+msgstr "Impossible d'initialiser cet attribut"
 
 msgid "no such key in dictionary"
 msgstr "cette clé est inexistante dans le dictionnaire"
+
+msgid "dict is locked"
+msgstr "dictionnaire est verrouillé"
 
 msgid "internal error: failed to get vim list item"
 msgstr "erreur interne : accès à un élément de liste a échoué"
@@ -6871,6 +6888,9 @@ msgstr "erreur interne : ajout d'élément à la liste a échoué"
 
 msgid "can only concatenate with lists"
 msgstr "on ne peut que concaténer avec des listes"
+
+msgid "Cannot modify fixed list"
+msgstr "Impossible de modifier une liste fixe"
 
 msgid "'self' argument must be a dictionary"
 msgstr "l'argument 'self' doit être un dictionnaire"

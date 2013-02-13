@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2013 Jan 31
+" Last Change:	2013 Feb 12
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1078,6 +1078,9 @@ au BufNewFile,BufRead *[mM]akefile,*.mk,*.mak,*.dsp setf make
 
 " MakeIndex
 au BufNewFile,BufRead *.ist,*.mst		setf ist
+
+" Mallard
+au BufNewFile,BufRead *.page			setf mallard
 
 " Manpage
 au BufNewFile,BufRead *.man			setf man

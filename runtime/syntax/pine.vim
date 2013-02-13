@@ -12,9 +12,9 @@ elseif exists("b:current_syntax")
 endif
 
 if version >= 600
-  setlocal iskeyword=@,48-57,_,128-167,224-235,-,
+  setlocal iskeyword=@,48-57,_,128-167,224-235,-
 else
-  set iskeyword=@,48-57,_,128-167,224-235,-,
+  set iskeyword=@,48-57,_,128-167,224-235,-
 endif
 
 syn keyword pineConfig addrbook-sort-rule

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2013 Jan 30
+*options.txt*	For Vim version 7.3.  Last change: 2013 Feb 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1463,11 +1463,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 			|gui-clipboard|.
 
 						*clipboard-unnamedplus*
-	unnamedplus	A variant of "unnamed" flag which uses the clipboard
-			register '+' (|quoteplus|) instead of register '*' for
-			all operations except yank.  Yank shall copy the text
-			into register '+' and also into '*' when "unnamed" is
-			included.
+	unnamedplus	A variant of the "unnamed" flag which uses the
+			clipboard register '+' (|quoteplus|) instead of
+			register '*' for all yank, delete, change and put
+			operations which would normally go to the unnamed
+			register.  When "unnamed" is also included to the
+			option, yank operations (but not delete, change or
+			put) will additionally copy the text into register
+			'*'.
 			Only available with the |+X11| feature.
 			Availability can be checked with: >
 				if has('unnamedplus')

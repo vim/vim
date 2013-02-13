@@ -504,7 +504,7 @@ Character classes {not in Vi}:				*/character-classes*
 	x	x	a character with no special meaning matches itself
 
 |/[]|	[]	\[]	any character specified inside the []
-|/\%[]| \%[]	\%[]	a sequence of optionally matched atoms
+|/\%[]|	\%[]	\%[]	a sequence of optionally matched atoms
 
 |/\c|	\c	\c	ignore case, do not use the 'ignorecase' option
 |/\C|	\C	\C	match case, do not use the 'ignorecase' option

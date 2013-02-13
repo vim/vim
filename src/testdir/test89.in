@@ -1,0 +1,15 @@
+Some tests for setting 'number' and 'relativenumber'
+
+STARTTEST
+:set hidden nocp nu rnu
+:redir @a | set nu? rnu? | redir END
+:e! xx
+:redir @b | set nu? rnu? | redir END
+:e! #
+:$put ='results:'
+:$put a
+:$put b
+:/^results/,$w! test.out
+:q!
+ENDTEST
+

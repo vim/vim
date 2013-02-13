@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Feb 06
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Feb 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,11 +34,9 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Substitute with confirmation and then "q" does not replace anything.
-(John McGowan)
-
 Download counter for scripts no longer incremented?
-Looks like it.
+Because SourceForge does not have the IP address now, see ticket
+https://sourceforge.net/p/forge/site-support/2461/?page=1
 
 Several syntax file match "^\s*" which may get underlined if that's in the
 highlight group.  Add a "\zs" after it?
@@ -49,29 +47,13 @@ Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
 Checking runtime scripts: Thilo Six, 2012 Jun 6.
 
-Patch for doc indenting. (Ken Takata, Feb 4)
-
 GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
 
-Configure change to detect Lua 5.2. (lilydjwg, 2013 Jan 31)
-
 Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
 
-Patch to avoid warnings in Perl code. (Christian Brabandt, 2013 Jan 30)
-
-The " mark is not updated for lines inserted above it. (Roland Eggner, 2013
-Feb 5)
-
-Look into patch to add 'linenumber' option. (Nazri Ramliy, 2013 Feb 4)
-
-Another patch for Python threads, 2 and 3. (Ken Takata, 2013 Jan 31)
-Does this really work?
-
-Patch for 'relativenumber' being reset unexpectedly. (Christian Brabandt, 2013
-Feb 1)  Tests Feb 2.
-
-Patch to avoid useless compare. (Hayaki Saito, 2013 Feb 2)
+Patch to trigger CompleteDone when there are no pattern matches. (Christian
+Brabandt, 2013 Feb 7)
 
 The CompleteDone autocommand needs some info passed to it:
 - The word that was selected (empty if abandoned complete)
@@ -107,11 +89,20 @@ Patch for Win32 clipboard under Cygwin. (Frodak Baksik, Feb 15)
 Problem parsing expression with function(). (Andy Wokula, 2012 Nov 22)
 Patch by Christian Brabandt, Nov 22.  Tests in another patch, Nov 23.
 
+Patch to detect value of 'ambiwidth' from the termresponse.
+(Hayaki Saito, 2013 Feb 11)
+
+Matchparen does not update match when indenting. (Marc Aldorasi, 2013 Feb 9)
+
 Patch to add default value to getbufvar() et al. (Shougo Matsushita, Hirohito
 Higashi, 2013 Jan 1)
 
 Problem caused by patch 7.3.638: window->open does not update window
 correctly. Issue 91.
+
+Patch to add argument to bufname() to only consider buffers in the current
+tab.  (Alexey Radkov, 2013 Feb 8)  Example in later email.
+Is this right?
 
 Patch to fix compiler warnings for MingW 4.5.3. (Ken Takata, 2013 Jan 26)
 
@@ -377,9 +368,6 @@ The error was 'RenderBadPicture (invalid Picture parameter)'.
    option to change this behavior. You can then get a meaningful
    backtrace from your debugger if you break on the gdk_x_error() function.)
 Check that number of pixels doesn't go above 65535?
-
-popup completion menu closes quickly when there is a fold in the buffer. (Jan
-Christoph Ebersbach, 2011 Jul 3)
 
 Windows keys not set properly on Windows 7?  (cncyber, 2010 Aug 26)
 
@@ -1591,9 +1579,6 @@ resulting in highlighted "{" in that window, not in the other.
 
 In mswin.vim: Instead of mapping <C-V> for Insert mode in a complicated way,
 can it be done like ":imap <C-V> <MiddleMouse>" without negative side effects?
-
-Completion menu disappears when using 'cursorcolumn'. (Sven-Hendrik Haase,
-2011 May 23)
 
 GTK: when the Tab pages bar appears or disappears while the window is
 maximized the window is no longer maximized.  Patch that has some idea but

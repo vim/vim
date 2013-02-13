@@ -25,16 +25,16 @@ $SPELLDIR/br.utf-8.spl : $FILES
 #
 # Fetching the files from OpenOffice.org.
 #
-OODIR = http://extensions.services.openoffice.org/e-files/2207/6
-:attr {fetch = $OODIR/%file%} dict-br_0.8.oxt
+OODIR = http://extensions.libreoffice.org/extension-center/an-drouizig-breton-spellchecker/releases/0.11/
+:attr {fetch = $OODIR/%file%} dict-br-0.11.oxt
 
 # The files don't depend on the .zip file so that we can delete it.
 # Only download the zip file if the targets don't exist.
 br_FR.aff br_FR.dic: {buildcheck=}
         :assertpkg unzip patch
-        :fetch dict-br_0.8.oxt
-        :sys $UNZIP dict-br_0.8.oxt
-        :delete dict-br_0.8.oxt
+        :fetch dict-br-0.11.oxt
+        :sys $UNZIP dict-br-0.11.oxt
+        :delete dict-br-0.11.oxt
         :copy dictionaries/br_FR.aff br_FR.aff
         :copy dictionaries/br_FR.dic br_FR.dic
         # The br_FR.aff file contains a BOM, remove it.
@@ -65,12 +65,12 @@ diff:
 
 check:
         :assertpkg unzip diff
-        :fetch dict-br_0.8.oxt
+        :fetch dict-br-0.11.oxt
         :mkdir tmp
         :cd tmp
         @try:
             @import stat
-            :sys $UNZIP ../dict-br_0.8.oxt
+            :sys $UNZIP ../dict-br-0.11.oxt
             :sys {force} diff ../dictionaries/br_FR.aff br_FR.aff >d
             @if os.stat('d')[stat.ST_SIZE] > 0:
                 :copy br_FR.aff ../br_FR.new.aff
@@ -80,7 +80,7 @@ check:
         @finally:
             :cd ..
             :delete {r}{f}{q} tmp
-            :delete dict-br_0.8.oxt
+            :delete dict-br-0.11.oxt
 
 
 # vim: set sts=4 sw=4 :

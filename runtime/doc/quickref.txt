@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.3.  Last change: 2012 Feb 22
+*quickref.txt*  For Vim version 7.3.  Last change: 2013 Feb 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -7,7 +7,7 @@
 
 							 *quickref* *Contents*
  tag	  subject			 tag	  subject	~
-|Q_ct|  list of help files		|Q_re|	Repeating commands
+|Q_ct|	list of help files		|Q_re|	Repeating commands
 |Q_lr|	motion: Left-right		|Q_km|	Key mapping
 |Q_ud|	motion: Up-down			|Q_ab|	Abbreviations
 |Q_tm|	motion: Text object		|Q_op|	Options
@@ -27,7 +27,7 @@
 |Q_co|	change: Complex			|Q_bu|	Buffer list commands
 |Q_vi|	Visual mode			|Q_sy|	Syntax highlighting
 |Q_to|	Text objects			|Q_gu|	GUI commands
-					|Q_fo|  Folding
+					|Q_fo|	Folding
 
 ------------------------------------------------------------------------------
 N is used to indicate an optional count that can be given before the command.
@@ -186,7 +186,7 @@ N is used to indicate an optional count that can be given before the command.
 |:marks|  :marks	print the active marks
 |CTRL-O|  N  CTRL-O	go to Nth older position in jump list
 |CTRL-I|  N  CTRL-I	go to Nth newer position in jump list
-|:ju|	  :ju[mps]	print the jump list
+|:ju|     :ju[mps]	print the jump list
 ------------------------------------------------------------------------------
 *Q_vm*		Various motions
 
@@ -204,30 +204,30 @@ N is used to indicate an optional count that can be given before the command.
 ------------------------------------------------------------------------------
 *Q_ta*		Using tags
 
-|:ta|	   :ta[g][!] {tag}	jump to tag {tag}
-|:ta|	   :[count]ta[g][!]	jump to [count]'th newer tag in tag list
+|:ta|      :ta[g][!] {tag}	jump to tag {tag}
+|:ta|      :[count]ta[g][!]	jump to [count]'th newer tag in tag list
 |CTRL-]|      CTRL-]		jump to the tag under cursor, unless changes
 				   have been made
-|:ts|	   :ts[elect][!] [tag]	list matching tags and select one to jump to
+|:ts|      :ts[elect][!] [tag]	list matching tags and select one to jump to
 |:tjump|   :tj[ump][!] [tag]	jump to tag [tag] or select from list when
 				   there are multiple matches
-|:ltag|	   :lt[ag][!] [tag]	jump to tag [tag] and add matching tags to the
+|:ltag|    :lt[ag][!] [tag]	jump to tag [tag] and add matching tags to the
 				   location list
 
-|:tags|	   :tags		print tag list
+|:tags|    :tags		print tag list
 |CTRL-T|   N  CTRL-T		jump back from Nth older tag in tag list
-|:po|	   :[count]po[p][!]	jump back from [count]'th older tag in tag list
+|:po|      :[count]po[p][!]	jump back from [count]'th older tag in tag list
 |:tnext|   :[count]tn[ext][!]	jump to [count]'th next matching tag
 |:tp|      :[count]tp[revious][!] jump to [count]'th previous matching tag
-|:tr|	   :[count]tr[ewind][!] jump to [count]'th matching tag
-|:tl|	   :tl[ast][!]		jump to last matching tag
+|:tr|      :[count]tr[ewind][!]	jump to [count]'th matching tag
+|:tl|      :tl[ast][!]		jump to last matching tag
 
-|:ptag|	   :pt[ag] {tag}	open a preview window to show tag {tag}
-|CTRL-W_}|     CTRL-W }		like CTRL-] but show tag in preview window
+|:ptag|    :pt[ag] {tag}	open a preview window to show tag {tag}
+|CTRL-W_}|    CTRL-W }		like CTRL-] but show tag in preview window
 |:pts|     :pts[elect]		like ":tselect" but show tag in preview window
 |:ptjump|  :ptj[ump]		like ":tjump" but show tag in preview window
 |:pclose|  :pc[lose]		close tag preview window
-|CTRL-W_z|     CTRL-W z		close tag preview window
+|CTRL-W_z|    CTRL-W z		close tag preview window
 ------------------------------------------------------------------------------
 *Q_sc*		Scrolling
 
@@ -260,7 +260,7 @@ These only work when 'wrap' is off:
 |:startreplace| :startr[eplace][!]  start Replace mode, at EOL when [!] used
 
 in Visual block mode:
-|v_b_I|    I	insert the same text in front of all the selected lines
+|v_b_I|	   I	insert the same text in front of all the selected lines
 |v_b_A|	   A	append the same text after all the selected lines
 ------------------------------------------------------------------------------
 *Q_ai*		Insert mode keys
@@ -334,16 +334,16 @@ In Insert or Command-line mode:
 *Q_de*		Deleting text
 
 |x|	N  x		delete N characters under and after the cursor
-|<Del>| N  <Del>	delete N characters under and after the cursor
+|<Del>|	N  <Del>	delete N characters under and after the cursor
 |X|	N  X		delete N characters before the cursor
 |d|	N  d{motion}	delete the text that is moved over with {motion}
-|v_d|	{visual}d	delete the highlighted text
+|v_d|	   {visual}d	delete the highlighted text
 |dd|	N  dd		delete N lines
 |D|	N  D		delete to the end of the line (and N-1 more lines)
 |J|	N  J		join N-1 lines (delete <EOL>s)
-|v_J|	{visual}J	join the highlighted lines
+|v_J|	   {visual}J	join the highlighted lines
 |gJ|	N  gJ		like "J", but without inserting spaces
-|v_gJ|	{visual}gJ	like "{visual}J", but without inserting spaces
+|v_gJ|	   {visual}gJ	like "{visual}J", but without inserting spaces
 |:d|	:[range]d [x]	delete [range] lines [into register x]
 ------------------------------------------------------------------------------
 *Q_cm*		Copying and moving text
@@ -369,7 +369,7 @@ In Insert or Command-line mode:
 |R|	  N  R		enter Replace mode (repeat the entered text N times)
 |gR|	  N  gR		enter virtual Replace mode: Like Replace mode but
 			   without affecting layout
-|v_b_r|	  {visual}r{char}
+|v_b_r|	     {visual}r{char}
 			in Visual block mode: Replace each char of the
 			   selected text with {char}
 
@@ -447,13 +447,13 @@ In Insert or Command-line mode:
 
 |visual-index|	list of Visual mode commands.
 
-|v|	   v		start highlighting characters  }  move cursor and use
-|V|	   V		start highlighting linewise    }  operator to affect
+|v|        v		start highlighting characters  }  move cursor and use
+|V|        V		start highlighting linewise    }  operator to affect
 |CTRL-V|   CTRL-V	start highlighting blockwise   }  highlighted text
-|v_o|	   o		exchange cursor position with start of highlighting
-|gv|	   gv		start highlighting on previous visual area
-|v_v|	   v		highlight characters or stop highlighting
-|v_V|	   V		highlight linewise or stop highlighting
+|v_o|      o		exchange cursor position with start of highlighting
+|gv|       gv		start highlighting on previous visual area
+|v_v|      v		highlight characters or stop highlighting
+|v_V|      V		highlight linewise or stop highlighting
 |v_CTRL-V| CTRL-V	highlight blockwise or stop highlighting
 ------------------------------------------------------------------------------
 *Q_to*		Text objects (only in Visual mode or after an operator)
@@ -509,8 +509,8 @@ In Insert or Command-line mode:
 ------------------------------------------------------------------------------
 *Q_km*		Key mapping
 
-|:map|	     :ma[p] {lhs} {rhs}	  map {lhs} to {rhs} in Normal and Visual mode
-|:map!|	     :ma[p]! {lhs} {rhs}  map {lhs} to {rhs} in Insert and Command-line
+|:map|       :ma[p] {lhs} {rhs}	  map {lhs} to {rhs} in Normal and Visual mode
+|:map!|      :ma[p]! {lhs} {rhs}  map {lhs} to {rhs} in Insert and Command-line
 				     mode
 |:noremap|   :no[remap][!] {lhs} {rhs}
 				  same as ":map", no remapping for this {rhs}
@@ -522,19 +522,19 @@ In Insert or Command-line mode:
 				     Normal and Visual mode
 |:map_l!|    :ma[p]! [lhs]	  list mappings (starting with [lhs]) for
 				     Insert and Command-line mode
-|:cmap|	     :cmap/:cunmap/:cnoremap
+|:cmap|      :cmap/:cunmap/:cnoremap
 				  like ":map!"/":unmap!"/":noremap!" but for
 				     Command-line mode only
-|:imap|	     :imap/:iunmap/:inoremap
+|:imap|      :imap/:iunmap/:inoremap
 				  like ":map!"/":unmap!"/":noremap!" but for
 				     Insert mode only
-|:nmap|	     :nmap/:nunmap/:nnoremap
+|:nmap|      :nmap/:nunmap/:nnoremap
 				  like ":map"/":unmap"/":noremap" but for
 				     Normal mode only
-|:vmap|	     :vmap/:vunmap/:vnoremap
+|:vmap|      :vmap/:vunmap/:vnoremap
 				  like ":map"/":unmap"/":noremap" but for
 				     Visual mode only
-|:omap|	     :omap/:ounmap/:onoremap
+|:omap|      :omap/:ounmap/:onoremap
 				  like ":map"/":unmap"/":noremap" but only for
 				     when an operator is pending
 |:mapc|      :mapc[lear]	  remove mappings for Normal and Visual mode
@@ -958,9 +958,9 @@ Short explanation of each option:		*option-list*
 ------------------------------------------------------------------------------
 *Q_ur*		Undo/Redo commands
 
-|u|	  N  u		undo last N changes
+|u|       N  u		undo last N changes
 |CTRL-R|  N  CTRL-R	redo last N undone changes
-|U|	     U		restore last changed line
+|U|          U		restore last changed line
 ------------------------------------------------------------------------------
 *Q_et*		External commands
 
@@ -1011,7 +1011,7 @@ Short explanation of each option:		*option-list*
 				   C4350, etc.)
 |:normal|	:norm[al][!] {commands}
 				execute Normal mode commands
-|Q|		Q		switch to "Ex" mode
+|Q|		   Q		switch to "Ex" mode
 
 |:redir|	:redir >{file}		redirect messages to {file}
 |:silent|	:silent[!] {command}	execute {command} silently
@@ -1087,11 +1087,11 @@ Context-sensitive completion on the command-line:
 ------------------------------------------------------------------------------
 *Q_ex*		Special Ex characters
 
-|:bar|	    |		separates two commands (not for ":global" and ":!")
+|:bar|      |		separates two commands (not for ":global" and ":!")
 |:quote|    "		begins comment
 
-|:_%|	    %		current file name (only where a file name is expected)
-|:_#|	    #[num]	alternate file name [num] (only where a file name is
+|:_%|       %		current file name (only where a file name is expected)
+|:_#|       #[num]	alternate file name [num] (only where a file name is
 			   expected)
 	Note: The next seven are typed literally; these are not special keys!
 |:<abuf>|   <abuf>	buffer number, for use in an autocommand (only where a
@@ -1171,18 +1171,18 @@ Context-sensitive completion on the command-line:
 	   Without !: Fail if changes have been made to the current buffer.
 	      With !: Discard any changes to the current buffer.
 |:edit_f|  :e[dit][!] {file}	edit {file}
-|:edit|	   :e[dit][!]		reload the current file
-|:enew|	   :ene[w][!]		edit a new, unnamed buffer
+|:edit|    :e[dit][!]		reload the current file
+|:enew|    :ene[w][!]		edit a new, unnamed buffer
 |:find|    :fin[d][!] {file}	find {file} in 'path' and edit it
 
-|CTRL-^|   N   CTRL-^		edit alternate file N (equivalent to ":e #N")
-|gf|	       gf  or ]f	edit the file whose name is under the cursor
-|:pwd|	   :pwd			print the current directory name
-|:cd|	   :cd [path]		change the current directory to [path]
-|:cd-|	   :cd -		back to previous current directory
-|:file|	   :f[ile]		print the current file name and the cursor
+|CTRL-^|   N  CTRL-^		edit alternate file N (equivalent to ":e #N")
+|gf|          gf  or ]f		edit the file whose name is under the cursor
+|:pwd|     :pwd			print the current directory name
+|:cd|      :cd [path]		change the current directory to [path]
+|:cd-|     :cd -		back to previous current directory
+|:file|    :f[ile]		print the current file name and the cursor
 				   position
-|:file|	   :f[ile] {name}	set the current file name to {name}
+|:file|    :f[ile] {name}	set the current file name to {name}
 |:files|   :files		show alternate file names
 ------------------------------------------------------------------------------
 *Q_fl*		Using the argument list			|argument-list|
@@ -1198,12 +1198,12 @@ Context-sensitive completion on the command-line:
 
 	     in current window    in new window	~
 |:argument|  :argu[ment] N	  :sar[gument] N	edit file N
-|:next|	     :n[ext]		  :sn[ext]		edit next file
+|:next|      :n[ext]		  :sn[ext]		edit next file
 |:next_f|    :n[ext] {arglist}	  :sn[ext] {arglist}	define new arg list
 							   and edit first file
-|:Next|	     :N[ext]		  :sN[ext]		edit previous file
+|:Next|      :N[ext]		  :sN[ext]		edit previous file
 |:first|     :fir[st]		  :sfir[st]		edit first file
-|:last|	     :la[st]		  :sla[st]		edit last file
+|:last|      :la[st]		  :sla[st]		edit last file
 ------------------------------------------------------------------------------
 *Q_wq*		Writing and quitting
 

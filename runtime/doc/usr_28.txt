@@ -18,7 +18,7 @@ This chapter explains the different ways this can be done.
 |28.7|	Folding by syntax
 |28.8|	Folding by expression
 |28.9|	Folding unchanged lines
-|28.10| Which fold method to use?
+|28.10|	Which fold method to use?
 
      Next chapter: |usr_29.txt|  Moving through programs
  Previous chapter: |usr_27.txt|  Search commands and patterns

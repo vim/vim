@@ -4,7 +4,7 @@
 " URL:		 http://sites.google.com/site/khorser/opensource/vim
 " Original author:    Dorai Sitaram <ds26@gte.com>
 " Original URL:		 http://www.ccs.neu.edu/~dorai/vimplugins/vimplugins.html
-" Last Change:   Mar 5, 2012
+" Last Change:   Feb 12, 2013
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -20,6 +20,7 @@ setl define=^\\s*(def\\k*
 setl formatoptions-=t
 setl iskeyword+=+,-,*,/,%,<,=,>,:,$,?,!,@-@,94
 setl lisp
+setl commentstring=;%s
 
 " make comments behaviour like in c.vim
 " e.g. insertion of ;;; and ;; on normal "O" or "o" when staying in comment
@@ -44,4 +45,4 @@ if exists("b:is_chicken") || exists("is_chicken")
     setl lispwords+=cond-expand,and-let*,foreign-lambda,foreign-lambda*
 endif
 
-let b:undo_ftplugin = "setlocal comments< define< formatoptions< iskeyword< lispwords< lisp<"
+let b:undo_ftplugin = "setlocal comments< define< formatoptions< iskeyword< lispwords< lisp< commentstring<"

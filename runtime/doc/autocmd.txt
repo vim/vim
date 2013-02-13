@@ -266,7 +266,7 @@ Name			triggered by ~
 |GUIFailed|		after starting the GUI failed
 |TermResponse|		after the terminal response to |t_RV| is received
 
-|QuitPre|			when using `:quit`, before deciding whether to quit
+|QuitPre|		when using `:quit`, before deciding whether to quit
 |VimLeavePre|		before exiting Vim, before writing the viminfo file
 |VimLeave|		before exiting Vim, after writing the viminfo file
 
