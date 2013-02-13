@@ -47,8 +47,8 @@
 #               (i386)
 # USEDLL	no or yes: set to yes to use the Runtime library DLL (no)
 #		For USEDLL=yes the cygwin1.dll is required to run Vim.
-#		"no" does not work with latest version of Cygwin, use
-#		Make_ming.mak instead.  Or set CC to gcc-3 and add
+#		For "no" the mingw-gcc-g++ package or the mingw64-i686-gcc-g++
+#		package is required to complie Vim.  Or set CC to gcc-3 and add
 #		-L/lib/w32api to EXTRA_LIBS.
 # POSTSCRIPT	no or yes: set to yes for PostScript printing (no)
 # FEATURES	TINY, SMALL, NORMAL, BIG or HUGE (BIG)
@@ -114,9 +114,17 @@ DEFINES = -DWIN32 -DHAVE_PATHDEF -DFEAT_$(FEATURES) \
 INCLUDES = -march=$(ARCH) -Iproto
 
 #>>>>> name of the compiler and linker, name of lib directory
-CROSS_COMPILE =
+ifeq (yes, $(USEDLL))
+# CROSS_COMPILE is used for the gvimext DLL.
+CROSS_COMPILE = i686-pc-mingw32-
 CC = gcc
 RC = windres
+else
+# i686-pc-mingw32-gcc, i686-w64-mingw32-gcc or gcc-3 can be used.
+CROSS_COMPILE = i686-pc-mingw32-
+CC = $(CROSS_COMPILE)gcc
+RC = $(CROSS_COMPILE)windres
+endif
 
 ##############################
 # DYNAMIC_PERL=yes and no both work
@@ -193,31 +201,37 @@ endif
 ##############################
 ifdef RUBY
 
-ifndef RUBY_VER
-RUBY_VER=16
-endif
-
-ifndef RUBY_VER_LONG
-RUBY_VER_LONG=1.6
-endif
-
 ifndef DYNAMIC_RUBY
-DYNAMIC_RUBY = yes
+DYNAMIC_RUBY=yes
+endif
+#  Set default value
+ifndef RUBY_VER
+RUBY_VER = 16
+endif
+ifndef RUBY_VER_LONG
+RUBY_VER_LONG = 1.6
+endif
+ifndef RUBY_API_VER
+RUBY_API_VER = $(subst .,,$(RUBY_VER_LONG))
 endif
 
+ifndef RUBY_PLATFORM
 ifeq ($(RUBY_VER), 16)
-ifndef RUBY_PLATFORM
 RUBY_PLATFORM = i586-mswin32
-endif
-ifndef RUBY_INSTALL_NAME
-RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_VER)
-endif
 else
-ifndef RUBY_PLATFORM
+ifneq ($(wildcard $(RUBY)/lib/ruby/$(RUBY_VER_LONG)/i386-mingw32),)
+RUBY_PLATFORM = i386-mingw32
+else
 RUBY_PLATFORM = i386-mswin32
 endif
+endif
+endif
+
 ifndef RUBY_INSTALL_NAME
-RUBY_INSTALL_NAME = msvcrt-ruby$(RUBY_VER)
+ifeq ($(RUBY_VER), 16)
+RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_API_VER)
+else
+RUBY_INSTALL_NAME = msvcrt-ruby$(RUBY_API_VER)
 endif
 endif
 
@@ -226,6 +240,10 @@ RUBY_19_OR_LATER = 1
 endif
 
 DEFINES += -DFEAT_RUBY
+ifneq ($(findstring w64-mingw32,$(CC)),)
+# A workaround for mingw-w64
+DEFINES += -DHAVE_STRUCT_TIMESPEC -DHAVE_STRUCT_TIMEZONE
+endif
 INCLUDES += -I$(RUBY)/lib/ruby/$(RUBY_VER_LONG)/$(RUBY_PLATFORM)
 ifdef RUBY_19_OR_LATER
 INCLUDES += -I$(RUBY)/include/ruby-$(RUBY_VER_LONG) -I$(RUBY)/include/ruby-$(RUBY_VER_LONG)/$(RUBY_PLATFORM)
