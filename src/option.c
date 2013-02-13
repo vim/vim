@@ -7109,7 +7109,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     return errmsg;
 }
 
-#ifdef FEAT_SYN_HL
+#if defined(FEAT_SYN_HL) || defined(PROTO)
 /*
  * Simple int comparison function for use with qsort()
  */
@@ -7630,17 +7630,22 @@ set_bool_option(opt_idx, varp, value, opt_flags)
     }
 #endif
 
-    /* 'list', 'number' */
-    else if ((int *)varp == &curwin->w_p_list
-	  || (int *)varp == &curwin->w_p_nu
+    /* 'number', 'relativenumber' */
+    else if ((int *)varp == &curwin->w_p_nu
 	  || (int *)varp == &curwin->w_p_rnu)
     {
 	/* If 'number' is set, reset 'relativenumber'. */
 	/* If 'relativenumber' is set, reset 'number'. */
 	if ((int *)varp == &curwin->w_p_nu && curwin->w_p_nu)
+	{
 	    curwin->w_p_rnu = FALSE;
+	    curwin->w_allbuf_opt.wo_rnu = FALSE;
+	}
 	if ((int *)varp == &curwin->w_p_rnu && curwin->w_p_rnu)
+	{
 	    curwin->w_p_nu = FALSE;
+	    curwin->w_allbuf_opt.wo_nu = FALSE;
+	}
     }
 
     else if ((int *)varp == &curbuf->b_p_ro)
