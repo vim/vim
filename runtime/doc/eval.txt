@@ -1931,6 +1931,7 @@ settabvar( {nr}, {varname}, {val})	set {varname} in tab page {nr} to {val}
 settabwinvar( {tabnr}, {winnr}, {varname}, {val})    set {varname} in window
 					{winnr} in tab page {tabnr} to {val}
 setwinvar( {nr}, {varname}, {val})	set {varname} in window {nr} to {val}
+sha256( {string})		String	SHA256 checksum of {string}
 shellescape( {string} [, {special}])
 				String	escape {string} for use as shell
 					command argument
@@ -5335,6 +5336,11 @@ setwinvar({nr}, {varname}, {val})			*setwinvar()*
 		Examples: >
 			:call setwinvar(1, "&list", 0)
 			:call setwinvar(2, "myvar", "foobar")
+
+sha256({string})						*sha256()*
+		Returns a String with 64 hex charactes, which is the SHA256
+		checksum of {string}.
+		{only available when compiled with the |+cryptv| feature}
 
 shellescape({string} [, {special}])			*shellescape()*
 		Escape {string} for use as a shell command argument.

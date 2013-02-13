@@ -273,14 +273,13 @@ sha256_finish(ctx, digest)
 #endif /* FEAT_CRYPT || FEAT_PERSISTENT_UNDO */
 
 #if defined(FEAT_CRYPT) || defined(PROTO)
-static char_u *sha256_bytes __ARGS((char_u *buf, int buf_len, char_u *salt, int salt_len));
 static unsigned int get_some_time __ARGS((void));
 
 /*
  * Returns hex digest of "buf[buf_len]" in a static array.
  * if "salt" is not NULL also do "salt[salt_len]".
  */
-    static char_u *
+    char_u *
 sha256_bytes(buf, buf_len, salt, salt_len)
     char_u *buf;
     int    buf_len;
