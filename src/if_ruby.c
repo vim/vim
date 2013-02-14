@@ -1210,21 +1210,21 @@ static VALUE window_set_height(VALUE self, VALUE height)
     return height;
 }
 
-static VALUE window_width(VALUE self)
+static VALUE window_width(VALUE self UNUSED)
 {
-    win_T *win = get_win(self);
-
-    return INT2NUM(win->w_width);
+    return INT2NUM(W_WIDTH(get_win(self)));
 }
 
-static VALUE window_set_width(VALUE self, VALUE width)
+static VALUE window_set_width(VALUE self UNUSED, VALUE width)
 {
+#ifdef FEAT_VERTSPLIT
     win_T *win = get_win(self);
     win_T *savewin = curwin;
 
     curwin = win;
     win_setwidth(NUM2INT(width));
     curwin = savewin;
+#endif
     return width;
 }
 

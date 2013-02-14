@@ -845,8 +845,9 @@ luaV_dict_len (lua_State *L)
 }
 
     static int
-luaV_dict_iter (lua_State *L)
+luaV_dict_iter (lua_State *L UNUSED)
 {
+#ifdef FEAT_EVAL
     hashitem_T *hi = (hashitem_T *) lua_touserdata(L, lua_upvalueindex(2));
     int n = lua_tointeger(L, lua_upvalueindex(3));
     dictitem_T *di;
@@ -860,6 +861,9 @@ luaV_dict_iter (lua_State *L)
     lua_pushinteger(L, n - 1);
     lua_replace(L, lua_upvalueindex(3));
     return 2;
+#else
+    return 0;
+#endif
 }
 
     static int
