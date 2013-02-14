@@ -1,6 +1,7 @@
 Some tests for setting 'number' and 'relativenumber'
 
 STARTTEST
+:so small.vim
 :set hidden nocp nu rnu
 :redir @a | set nu? rnu? | redir END
 :e! xx
