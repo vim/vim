@@ -917,7 +917,9 @@ eval_clear()
     hash_clear(&compat_hashtab);
 
     free_scriptnames();
+# if defined(FEAT_CMDL_COMPL)
     free_locales();
+# endif
 
     /* global variables */
     vars_clear(&globvarht);
@@ -1561,8 +1563,6 @@ eval_expr(arg, nextcmd)
 }
 
 
-#if (defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)) \
-	|| defined(FEAT_COMPL_FUNC) || defined(PROTO)
 /*
  * Call some vimL function and return the result in "*rettv".
  * Uses argv[argc] for the function arguments.  Only Number and String
@@ -1640,6 +1640,33 @@ call_vim_function(func, argc, argv, safe, str_arg_only, rettv)
     return ret;
 }
 
+/*
+ * Call vimL function "func" and return the result as a number.
+ * Returns -1 when calling the function fails.
+ * Uses argv[argc] for the function arguments.
+ */
+    long
+call_func_retnr(func, argc, argv, safe)
+    char_u      *func;
+    int		argc;
+    char_u      **argv;
+    int		safe;		/* use the sandbox */
+{
+    typval_T	rettv;
+    long	retval;
+
+    /* All arguments are passed as strings, no conversion to number. */
+    if (call_vim_function(func, argc, argv, safe, TRUE, &rettv) == FAIL)
+	return -1;
+
+    retval = get_tv_number_chk(&rettv, NULL);
+    clear_tv(&rettv);
+    return retval;
+}
+
+#if (defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)) \
+	|| defined(FEAT_COMPL_FUNC) || defined(PROTO)
+
 # if (defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)) || defined(PROTO)
 /*
  * Call vimL function "func" and return the result as a string.
@@ -1661,32 +1688,6 @@ call_func_retstr(func, argc, argv, safe)
 	return NULL;
 
     retval = vim_strsave(get_tv_string(&rettv));
-    clear_tv(&rettv);
-    return retval;
-}
-# endif
-
-# if defined(FEAT_COMPL_FUNC) || defined(PROTO)
-/*
- * Call vimL function "func" and return the result as a number.
- * Returns -1 when calling the function fails.
- * Uses argv[argc] for the function arguments.
- */
-    long
-call_func_retnr(func, argc, argv, safe)
-    char_u      *func;
-    int		argc;
-    char_u      **argv;
-    int		safe;		/* use the sandbox */
-{
-    typval_T	rettv;
-    long	retval;
-
-    /* All arguments are passed as strings, no conversion to number. */
-    if (call_vim_function(func, argc, argv, safe, TRUE, &rettv) == FAIL)
-	return -1;
-
-    retval = get_tv_number_chk(&rettv, NULL);
     clear_tv(&rettv);
     return retval;
 }
@@ -1719,7 +1720,6 @@ call_func_retlist(func, argc, argv, safe)
     return rettv.vval.v_list;
 }
 #endif
-
 
 /*
  * Save the current function call pointer, and set it to NULL.
@@ -9330,7 +9330,7 @@ f_char2nr(argvars, rettv)
  */
     static void
 f_cindent(argvars, rettv)
-    typval_T	*argvars;
+    typval_T	*argvars UNUSED;
     typval_T	*rettv;
 {
 #ifdef FEAT_CINDENT
@@ -10379,9 +10379,9 @@ static void findfilendir __ARGS((typval_T *argvars, typval_T *rettv, int find_wh
 
     static void
 findfilendir(argvars, rettv, find_what)
-    typval_T	*argvars;
+    typval_T	*argvars UNUSED;
     typval_T	*rettv;
-    int		find_what;
+    int		find_what UNUSED;
 {
 #ifdef FEAT_SEARCHPATH
     char_u	*fname;
@@ -10751,9 +10751,9 @@ static void foldclosed_both __ARGS((typval_T *argvars, typval_T *rettv, int end)
  */
     static void
 foldclosed_both(argvars, rettv, end)
-    typval_T	*argvars;
+    typval_T	*argvars UNUSED;
     typval_T	*rettv;
-    int		end;
+    int		end UNUSED;
 {
 #ifdef FEAT_FOLDING
     linenr_T	lnum;
@@ -10802,8 +10802,8 @@ f_foldclosedend(argvars, rettv)
  */
     static void
 f_foldlevel(argvars, rettv)
-    typval_T	*argvars;
-    typval_T	*rettv;
+    typval_T	*argvars UNUSED;
+    typval_T	*rettv UNUSED;
 {
 #ifdef FEAT_FOLDING
     linenr_T	lnum;
@@ -11583,7 +11583,7 @@ f_getline(argvars, rettv)
     static void
 f_getmatches(argvars, rettv)
     typval_T	*argvars UNUSED;
-    typval_T	*rettv;
+    typval_T	*rettv UNUSED;
 {
 #ifdef FEAT_SEARCH_EXTRA
     dict_T	*dict;
@@ -13589,7 +13589,7 @@ f_line2byte(argvars, rettv)
  */
     static void
 f_lispindent(argvars, rettv)
-    typval_T	*argvars;
+    typval_T	*argvars UNUSED;
     typval_T	*rettv;
 {
 #ifdef FEAT_LISP
@@ -13983,8 +13983,8 @@ f_match(argvars, rettv)
  */
     static void
 f_matchadd(argvars, rettv)
-    typval_T	*argvars;
-    typval_T	*rettv;
+    typval_T	*argvars UNUSED;
+    typval_T	*rettv UNUSED;
 {
 #ifdef FEAT_SEARCH_EXTRA
     char_u	buf[NUMBUFLEN];
@@ -14021,7 +14021,7 @@ f_matchadd(argvars, rettv)
  */
     static void
 f_matcharg(argvars, rettv)
-    typval_T	*argvars;
+    typval_T	*argvars UNUSED;
     typval_T	*rettv;
 {
     if (rettv_list_alloc(rettv) == OK)
@@ -14053,8 +14053,8 @@ f_matcharg(argvars, rettv)
  */
     static void
 f_matchdelete(argvars, rettv)
-    typval_T	*argvars;
-    typval_T	*rettv;
+    typval_T	*argvars UNUSED;
+    typval_T	*rettv UNUSED;
 {
 #ifdef FEAT_SEARCH_EXTRA
     rettv->vval.v_number = match_delete(curwin,
@@ -14871,8 +14871,8 @@ list2proftime(arg, tm)
  */
     static void
 f_reltime(argvars, rettv)
-    typval_T	*argvars;
-    typval_T	*rettv;
+    typval_T	*argvars UNUSED;
+    typval_T	*rettv UNUSED;
 {
 #ifdef FEAT_RELTIME
     proftime_T	res;
@@ -14920,7 +14920,7 @@ f_reltime(argvars, rettv)
  */
     static void
 f_reltimestr(argvars, rettv)
-    typval_T	*argvars;
+    typval_T	*argvars UNUSED;
     typval_T	*rettv;
 {
 #ifdef FEAT_RELTIME
@@ -15965,7 +15965,7 @@ do_searchpair(spat, mpat, epat, dir, skip, flags, match_pos,
     int		flags;	    /* SP_SETPCMARK and other SP_ values */
     pos_T	*match_pos;
     linenr_T	lnum_stop;  /* stop at this line if not zero */
-    long	time_limit; /* stop after this many msec */
+    long	time_limit UNUSED; /* stop after this many msec */
 {
     char_u	*save_cpo;
     char_u	*pat, *pat2 = NULL, *pat3 = NULL;
@@ -16390,8 +16390,8 @@ f_setloclist(argvars, rettv)
  */
     static void
 f_setmatches(argvars, rettv)
-    typval_T	*argvars;
-    typval_T	*rettv;
+    typval_T	*argvars UNUSED;
+    typval_T	*rettv UNUSED;
 {
 #ifdef FEAT_SEARCH_EXTRA
     list_T	*l;
@@ -18463,7 +18463,7 @@ f_type(argvars, rettv)
  */
     static void
 f_undofile(argvars, rettv)
-    typval_T	*argvars;
+    typval_T	*argvars UNUSED;
     typval_T	*rettv;
 {
     rettv->v_type = VAR_STRING;

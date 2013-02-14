@@ -1734,6 +1734,8 @@ do_one_cmd(cmdlinep, sourcing,
 #ifdef FEAT_EVAL
 	    /* avoid that a function call in 'statusline' does this */
 	    && !getline_equal(fgetline, cookie, get_func_line)
+#endif
+#ifdef FEAT_AUTOCMD
 	    /* avoid that an autocommand, e.g. QuitPre, does this */
 	    && !getline_equal(fgetline, cookie, getnextac)
 #endif
@@ -5375,7 +5377,9 @@ fail:
 #endif
     return FAIL;
 }
+#endif
 
+#if defined(FEAT_USR_CMDS) || defined(FEAT_EVAL) || defined(PROTO)
 /*
  * List of names for completion for ":command" with the EXPAND_ flag.
  * Must be alphabetical for completion.
@@ -5430,7 +5434,9 @@ static struct
     {EXPAND_USER_VARS, "var"},
     {0, NULL}
 };
+#endif
 
+#if defined(FEAT_USR_CMDS) || defined(PROTO)
     static void
 uc_list(name, name_len)
     char_u	*name;
@@ -6375,10 +6381,12 @@ parse_compl_arg(value, vallen, complp, argt, compl_arg)
     int		vallen;
     int		*complp;
     long	*argt;
-    char_u	**compl_arg;
+    char_u	**compl_arg UNUSED;
 {
     char_u	*arg = NULL;
+# if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
     size_t	arglen = 0;
+# endif
     int		i;
     int		valend = vallen;
 
@@ -6388,7 +6396,9 @@ parse_compl_arg(value, vallen, complp, argt, compl_arg)
 	if (value[i] == ',')
 	{
 	    arg = &value[i + 1];
+# if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
 	    arglen = vallen - i - 1;
+# endif
 	    valend = i;
 	    break;
 	}

@@ -5164,8 +5164,7 @@ gui_mch_haskey(char_u *name)
     return FAIL;
 }
 
-#if defined(FEAT_TITLE) \
-	|| defined(PROTO)
+#if defined(FEAT_TITLE) || defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the text window-id and display.  Only required for X-based GUI's
  */

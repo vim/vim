@@ -310,7 +310,6 @@ VimCommand(PyObject *self UNUSED, PyObject *args)
     return result;
 }
 
-#ifdef FEAT_EVAL
 /*
  * Function to translate a typval_T into a PyObject; this will recursively
  * translate lists/dictionaries into their Python equivalents.
@@ -425,12 +424,10 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 
     return result;
 }
-#endif
 
     static PyObject *
 VimEval(PyObject *self UNUSED, PyObject *args UNUSED)
 {
-#ifdef FEAT_EVAL
     char	*expr;
     typval_T	*our_tv;
     PyObject	*result;
@@ -466,10 +463,6 @@ VimEval(PyObject *self UNUSED, PyObject *args UNUSED)
     Py_END_ALLOW_THREADS
 
     return result;
-#else
-    PyErr_SetVim(_("expressions disabled at compile time"));
-    return NULL;
-#endif
 }
 
 static PyObject *ConvertToPyObject(typval_T *);
@@ -477,7 +470,6 @@ static PyObject *ConvertToPyObject(typval_T *);
     static PyObject *
 VimEvalPy(PyObject *self UNUSED, PyObject *args UNUSED)
 {
-#ifdef FEAT_EVAL
     char	*expr;
     typval_T	*our_tv;
     PyObject	*result;
@@ -506,10 +498,6 @@ VimEvalPy(PyObject *self UNUSED, PyObject *args UNUSED)
     Py_END_ALLOW_THREADS
 
     return result;
-#else
-    PyErr_SetVim(_("expressions disabled at compile time"));
-    return NULL;
-#endif
 }
 
     static PyObject *
@@ -946,7 +934,7 @@ DictionaryAssItem(PyObject *self, PyObject *keyObject, PyObject *valObject)
 }
 
     static PyObject *
-DictionaryListKeys(PyObject *self)
+DictionaryListKeys(PyObject *self UNUSED)
 {
     dict_T	*dict = ((DictionaryObject *)(self))->dict;
     long_u	todo = dict->dv_hashtab.ht_used;
@@ -2549,7 +2537,6 @@ set_string_copy(char_u *str, typval_T *tv)
     return 0;
 }
 
-#ifdef FEAT_EVAL
 typedef int (*pytotvfunc)(PyObject *, typval_T *, PyObject *);
 
     static int
@@ -2781,4 +2768,3 @@ ConvertToPyObject(typval_T *tv)
 	    return NULL;
     }
 }
-#endif
