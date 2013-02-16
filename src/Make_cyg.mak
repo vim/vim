@@ -106,6 +106,13 @@ ifndef OPTIMIZE
 OPTIMIZE = MAXSPEED
 endif
 
+
+# Link against the shared version of libstdc++ by default.  Set
+# STATIC_STDCPLUS to "yes" to link against static version instead.
+ifndef STATIC_STDCPLUS
+STATIC_STDCPLUS=no
+endif
+
 ### See feature.h for a list of optionals.
 ### Any other defines can be included here.
 
@@ -478,7 +485,12 @@ endif
 ifeq (yes, $(OLE))
 DEFINES += -DFEAT_OLE
 EXTRA_OBJS += $(OUTDIR)/if_ole.o
-EXTRA_LIBS += -loleaut32 -lstdc++
+EXTRA_LIBS += -loleaut32
+ifeq (yes, $(STATIC_STDCPLUS))
+EXTRA_LIBS += -Wl,-Bstatic -lstdc++ -lsupc++ -Wl,-Bdynamic
+else
+EXTRA_LIBS += -lstdc++
+endif
 endif
 
 ##############################
