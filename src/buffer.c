@@ -82,6 +82,9 @@ open_buffer(read_stdin, eap, flags)
 #ifdef FEAT_AUTOCMD
     buf_T	*old_curbuf;
 #endif
+#ifdef FEAT_SYN_HL
+    long	old_tw = curbuf->b_p_tw;
+#endif
 
     /*
      * The 'readonly' flag is only set when BF_NEVERLOADED is being reset.
@@ -113,6 +116,10 @@ open_buffer(read_stdin, eap, flags)
 	}
 	EMSG(_("E83: Cannot allocate buffer, using other one..."));
 	enter_buffer(curbuf);
+#ifdef FEAT_SYN_HL
+	if (old_tw != curbuf->b_p_tw)
+	    check_colorcolumn(curwin);
+#endif
 	return FAIL;
     }
 
@@ -786,6 +793,9 @@ handle_swap_exists(old_curbuf)
 # if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
     cleanup_T	cs;
 # endif
+#ifdef FEAT_SYN_HL
+    long	old_tw = curbuf->b_p_tw;
+#endif
 
     if (swap_exists_action == SEA_QUIT)
     {
@@ -804,7 +814,13 @@ handle_swap_exists(old_curbuf)
 	if (!buf_valid(old_curbuf) || old_curbuf == curbuf)
 	    old_curbuf = buflist_new(NULL, NULL, 1L, BLN_CURBUF | BLN_LISTED);
 	if (old_curbuf != NULL)
+	{
 	    enter_buffer(old_curbuf);
+#ifdef FEAT_SYN_HL
+	    if (old_tw != curbuf->b_p_tw)
+		check_colorcolumn(curwin);
+#endif
+	}
 	/* If "old_curbuf" is NULL we are in big trouble here... */
 
 # if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
@@ -1364,6 +1380,9 @@ set_curbuf(buf, action)
     buf_T	*prevbuf;
     int		unload = (action == DOBUF_UNLOAD || action == DOBUF_DEL
 						     || action == DOBUF_WIPE);
+#ifdef FEAT_SYN_HL
+    long	old_tw = curbuf->b_p_tw;
+#endif
 
     setpcmark();
     if (!cmdmod.keepalt)
@@ -1430,21 +1449,24 @@ set_curbuf(buf, action)
 # endif
        )
 #endif
+    {
 	enter_buffer(buf);
+#ifdef FEAT_SYN_HL
+	if (old_tw != curbuf->b_p_tw)
+	    check_colorcolumn(curwin);
+#endif
+    }
 }
 
 /*
  * Enter a new current buffer.
- * Old curbuf must have been abandoned already!
+ * Old curbuf must have been abandoned already!  This also means "curbuf" may
+ * be pointing to freed memory.
  */
     void
 enter_buffer(buf)
     buf_T	*buf;
 {
-#ifdef FEAT_SYN_HL
-    long old_tw = curbuf->b_p_tw;
-#endif
-
     /* Copy buffer and window local option values.  Not for a help buffer. */
     buf_copy_options(buf, BCO_ENTER | BCO_NOHELP);
     if (!buf->b_help)
@@ -1468,8 +1490,6 @@ enter_buffer(buf)
 
 #ifdef FEAT_SYN_HL
     curwin->w_s = &(buf->b_s);
-    if (old_tw != buf->b_p_tw)
-	check_colorcolumn(curwin);
 #endif
 
     /* Cursor on first line by default. */
