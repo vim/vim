@@ -34,6 +34,9 @@ static char	*mediumVersion = VIM_VERSION_MEDIUM;
 # if (defined(VMS) && defined(VAXC)) || defined(PROTO)
 char	longVersion[sizeof(VIM_VERSION_LONG_DATE) + sizeof(__DATE__)
 						      + sizeof(__TIME__) + 3];
+
+static void list_features __ARGS((void));
+
     void
 make_version()
 {
@@ -725,6 +728,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    826,
 /**/
     825,
 /**/
@@ -2435,6 +2440,74 @@ ex_version(eap)
     }
 }
 
+/*
+ * List all features aligned in columns, dictionary style.
+ */
+    static void
+list_features()
+{
+    int		i;
+    int		ncol;
+    int		nrow;
+    int		nfeat = 0;
+    int		width = 0;
+
+    /* Find the length of the longest feature name, use that + 1 as the column
+     * width */
+    for (i = 0; features[i] != NULL; ++i)
+    {
+	int l = STRLEN(features[i]);
+
+	if (l > width)
+	    width = l;
+	++nfeat;
+    }
+    width += 1;
+
+    if (Columns < width)
+    {
+	/* Not enough screen columns - show one per line */
+	for (i = 0; features[i] != NULL; ++i)
+	{
+	    version_msg(features[i]);
+	    if (msg_col > 0)
+		msg_putchar('\n');
+	}
+	return;
+    }
+
+    ncol = (int) Columns / width;
+    /* The rightmost column doesn't need a separator.
+     * Sacrifice it to fit in one more column if possible. */
+    if (Columns % width == width - 1)
+	ncol++;
+
+    nrow = nfeat / ncol + (nfeat % ncol ? 1 : 0);
+
+    for (i = 0; !got_int && i < nrow * ncol; ++i)
+    {
+	int idx = (i / ncol) + (i % ncol) * nrow;
+
+	if (idx < nfeat)
+	{
+	    int last_col = (i + 1) % ncol == 0;
+
+	    msg_puts((char_u *)features[idx]);
+	    if (last_col)
+	    {
+		if (msg_col > 0)
+		    msg_putchar('\n');
+	    }
+	    else
+	    {
+		while (msg_col % width)
+		    msg_putchar(' ');
+	    }
+	}
+	else
+	    msg_putchar('\n');
+    }
+}
     void
 list_version()
 {
@@ -2632,15 +2705,8 @@ list_version()
 #endif
     version_msg(_("  Features included (+) or not (-):\n"));
 
-    /* print all the features */
-    for (i = 0; features[i] != NULL; ++i)
-    {
-	version_msg(features[i]);
-	if (msg_col > 0)
-	    version_msg(" ");
-    }
+    list_features();
 
-    version_msg("\n");
 #ifdef SYS_VIMRC_FILE
     version_msg(_("   system vimrc file: \""));
     version_msg(SYS_VIMRC_FILE);
