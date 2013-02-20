@@ -21164,6 +21164,9 @@ ex_function(eap)
 	    if (arg[j] != NUL)
 		emsg_funcname((char *)e_invarg2, arg);
 	}
+	/* Disallow using the g: dict. */
+	if (fudi.fd_dict != NULL && fudi.fd_dict->dv_scope == VAR_DEF_SCOPE)
+	    EMSG(_("E862: Cannot use g: here"));
     }
 
     /*
