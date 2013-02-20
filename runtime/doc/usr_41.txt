@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.3.  Last change: 2012 Oct 13
+*usr_41.txt*	For Vim version 7.3.  Last change: 2013 Feb 20
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -863,12 +863,15 @@ Window size and position:			*window-size-functions*
 	winsaveview()		get view of current window
 	winrestview()		restore saved view of current window
 
-Various:					*various-functions*
-	mode()			get current editing mode
-	visualmode()		last visual mode used
+Mappings:				    *mapping-functions*
 	hasmapto()		check if a mapping exists
 	mapcheck()		check if a matching mapping exists
 	maparg()		get rhs of a mapping
+	wildmenumode()		check if the wildmode is active
+
+Various:					*various-functions*
+	mode()			get current editing mode
+	visualmode()		last visual mode used
 	exists()		check if a variable, function, etc. exists
 	has()			check if a feature is supported in Vim
 	changenr()		return number of most recent change

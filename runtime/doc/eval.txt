@@ -503,7 +503,7 @@ This removes all entries from "dict" with a value not matching 'x'.
 
 
 Dictionary function ~
-					*Dictionary-function* *self* *E725*
+				*Dictionary-function* *self* *E725* *E862*
 When a function is defined with the "dict" attribute it can be used in a
 special way with a dictionary.	Example: >
 	:function Mylen() dict

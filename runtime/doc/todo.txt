@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Feb 13
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Feb 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,6 +34,12 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Patch for Win32 clipboard under Cygwin. (Frodak Baksik, Feb 15)
+    Sutcliffe says it works well.
+    Update 2007 May 22 for Vim 7.1
+    Update 2008 Dec 2008 for Vim 7.2.xx (Sharonov)
+    Update by Ken Takata (2012 Dec 31, 2013 Jan 4, 2013 Jan 26)
+
 Download counter for scripts no longer incremented?
 Because SourceForge does not have the IP address now, see ticket
 https://sourceforge.net/p/forge/site-support/2461/?page=1
@@ -42,6 +48,10 @@ Several syntax file match "^\s*" which may get underlined if that's in the
 highlight group.  Add a "\zs" after it?
 
 Go through more coverity reports.
+
+Valgrind errors in test 16.
+
+Memory leaks in Lua, uncovered by test 85.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
@@ -52,39 +62,13 @@ GTK: problem with 'L' in 'guioptions' changing the window width.
 
 Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
 
-Patch to trigger CompleteDone when there are no pattern matches. (Christian
-Brabandt, 2013 Feb 7)
-
 The CompleteDone autocommand needs some info passed to it:
 - The word that was selected (empty if abandoned complete)
 - Type of completion: tag, omnifunc, user func.
 
-Patch to make multibyte input work on Win32 console when codepage differs from
-'encoding'. (Ken Takata, 2012 Sep 29)
-
-Patch for building with Ruby and Cygwin. (Ken Takata, 2013 Jan 9)
-
-Patch to make 'relativenumber' show the current lnum instead of zero.
-(Nazri Ramliy, 2013 Jan 29)
-
-It's possible to define an input() function that overrides the built-in one.
-(ZyX, 2012 Sep 28)
-
-Patch to add sha256() function. (Tyru, 2013 Jan 8)
-Test by Higashi, 2013 Feb 2.
-All together (tyru, 2013 Feb 5)
-
-Patch to make pyeval() print error messages. (ZyX, 2013 Jan 12)
-
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
-
-Patch for Win32 clipboard under Cygwin. (Frodak Baksik, Feb 15)
-    Sutcliffe says it works well.
-    Update 2007 May 22 for Vim 7.1
-    Update 2008 Dec 2008 for Vim 7.2.xx (Sharonov)
-    Update by Ken Takata (2012 Dec 31, 2013 Jan 4, 2013 Jan 26)
 
 Problem parsing expression with function(). (Andy Wokula, 2012 Nov 22)
 Patch by Christian Brabandt, Nov 22.  Tests in another patch, Nov 23.
@@ -93,18 +77,27 @@ Patch to detect value of 'ambiwidth' from the termresponse.
 (Hayaki Saito, 2013 Feb 11)
 
 Matchparen does not update match when indenting. (Marc Aldorasi, 2013 Feb 9)
-
-Patch to add default value to getbufvar() et al. (Shougo Matsushita, Hirohito
-Higashi, 2013 Jan 1)
+Possible patch by Christian Brabandt, 2013 Feb 13.
 
 Problem caused by patch 7.3.638: window->open does not update window
 correctly. Issue 91.
+
+Patch for this bug: Setting local value of 'number' resets global value.
+(Markus Heidelberg, 2013 Feb 17)
 
 Patch to add argument to bufname() to only consider buffers in the current
 tab.  (Alexey Radkov, 2013 Feb 8)  Example in later email.
 Is this right?
 
 Patch to fix compiler warnings for MingW 4.5.3. (Ken Takata, 2013 Jan 26)
+
+Bug: search() does not use the match at the cursor position if it's empty.
+(Christian Brabandt, 2013 Feb 16)  Patch later.
+
+Patch to make it possible to create Title Case in :s. with \L\u.
+(James McCoy, 2013 Feb 13)
+
+Patch to view coverage of the tests. (Nazri Ramliy, 2013 Feb 15)
 
 Do allow real tags above the !_TAG entries. Undo older patch. Issue 90.
 
@@ -144,6 +137,9 @@ It's probably a good idea to make a negative value for 'sts' use the value of
 'sw'.  Patch by So8res, Oct 3 2012
 
 patch to add "combine" flag to  syntax commands. (so8res, 2012 Dec 6)
+
+Bug in completion menu. (Olivier Teuliere, 2013 Feb 15)
+Patch by Christian Brabandt, Feb 16.
 
 Syntax update problem in one buffer opened in two windows, bottom window is
 not correctly updated. (Paul Harris, 2012 Feb 27)
@@ -412,7 +408,7 @@ When a buffer-local mapping is used, but a global mapping starts with the same
 characters, Vim currently waits for the next typed character to find out if
 the global mapping matches.  It is probably better to let the local mapping
 win and not wait. (discussion with Andy Wokula, 2013 Jan 30)
-Patch by Michael Henry, 2013 Jan 30.
+Patch by Michael Henry, 2013 Jan 30, update Feb 15.
 
 When doing "redir => s:foo" in a script and then "redir END" somewhere else
 (e.g. in a function) it can't find s:foo.
@@ -513,6 +509,9 @@ New esperanto spell file can't be processed. (Dominique Pelle, 2011 Jan 30)
 "L'Italie" noted as a spell error at start of the sentence. (Dominique Pelle,
 2011 Feb 27)
 
+Functions to read the actual contents of the screen, so that things like
+conceal can be tested. (Nazri Ramliy, 2013 Feb 18)
+
 Copy/paste between Vim and Google chrome doesn't work well for multi-byte
 characters. (Ben Haskell, 2010 Sep 17)
 When putting text in the cut buffer (when exiting) and conversion doesn't work
@@ -523,6 +522,9 @@ Experimental patch by Christian Brabandt, 2012 Apr 19.
 
 Editing a file with a ^M with 'ff' set to "mac", opening a help file, then the
 ^M is displayed as ^J sometimes.  Getting 'ff' value from wrong window/buffer?
+
+'colorcolumn' has higher priority than hlsearch.  Should probably be the other
+way around. (Nazri Ramliy, 2013 Feb 19)
 
 When Vim is put in the background (SIGTSTP) and then gets a SIGHUP it doesn't
 exit.  It exists as soon as back in the foreground. (Stephen Liang, 2011 Jan

@@ -3,7 +3,10 @@
 " Maintainer:	    Kazunobu Kuriyama <kazunobu.kuriyama@nifty.com>
 " Ex-maintainer:    Anthony Hodsdon <ahodsdon@fastmail.fm>
 " First Author:	    Valentino Kyriakides <1kyriaki@informatik.uni-hamburg.de>
-" Last Change:	    2012 Apr 30
+" Last Change:	    2013 Feb 20
+"
+" 2013 Feb 19       Revised based on a patch sent to the maintainer by 
+"                   Christos Kontas <xakon@yahoo.com> on 2012 Dec 12.
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -47,6 +50,11 @@ syn match  objcDirective    "@interface\|@implementation"
 syn match  objcDirective    "@class\|@end\|@defs"
 syn match  objcDirective    "@encode\|@protocol\|@selector"
 syn match  objcDirective    "@try\|@catch\|@finally\|@throw\|@synchronized"
+
+ " New directives introduced with Objc-2.0
+syn match  objcDirective    "@property\|@synthesize\|@dynamic"
+syn match  objcDirective    "@optional\|@required"
+syn match  objcDirective    "@autoreleasepool"
 
 " Match the ObjC method types
 "

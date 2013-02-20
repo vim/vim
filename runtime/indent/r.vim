@@ -1,14 +1,14 @@
 " Vim indent file
 " Language:	R
 " Author:	Jakson Alves de Aquino <jalvesaq@gmail.com>
-" Last Change:	Fri Oct 14, 2011  09:50PM
+" Last Change:	Fri Feb 15, 2013  08:11PM
 
 
 " Only load this indent file when no other was loaded.
-if exists("b:did_r_indent")
+if exists("b:did_indent")
     finish
 endif
-let b:did_r_indent = 1
+let b:did_indent = 1
 
 setlocal indentkeys=0{,0},:,!^F,o,O,e
 setlocal indentexpr=GetRIndent()
