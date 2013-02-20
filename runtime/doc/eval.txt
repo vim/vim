@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2013 Jan 23
+*eval.txt*	For Vim version 7.3.  Last change: 2013 Feb 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1777,7 +1777,8 @@ get( {list}, {idx} [, {def}])	any	get item {idx} from {list} or {def}
 get( {dict}, {key} [, {def}])	any	get item {key} from {dict} or {def}
 getbufline( {expr}, {lnum} [, {end}])
 				List	lines {lnum} to {end} of buffer {expr}
-getbufvar( {expr}, {varname})	any	variable {varname} in buffer {expr}
+getbufvar( {expr}, {varname} [, {def}])
+				any	variable {varname} in buffer {expr}
 getchar( [expr])		Number	get one character from the user
 getcharmod( )			Number	modifiers for the last typed character
 getcmdline()			String	return the current command-line
@@ -1798,12 +1799,14 @@ getpos( {expr})			List	position of cursor, mark, etc.
 getqflist()			List	list of quickfix items
 getreg( [{regname} [, 1]])	String	contents of register
 getregtype( [{regname}])	String	type of register
-gettabvar( {nr}, {varname})	any	variable {varname} in tab {nr}
-gettabwinvar( {tabnr}, {winnr}, {name})
+gettabvar( {nr}, {varname} [, {def}])
+				any	variable {varname} in tab {nr} or {def}
+gettabwinvar( {tabnr}, {winnr}, {name} [, {def}])
 				any	{name} in {winnr} in tab page {tabnr}
 getwinposx()			Number	X coord in pixels of GUI Vim window
 getwinposy()			Number	Y coord in pixels of GUI Vim window
-getwinvar( {nr}, {varname})	any	variable {varname} in window {nr}
+getwinvar( {nr}, {varname} [, {def}])
+				any	variable {varname} in window {nr}
 glob( {expr} [, {nosuf} [, {list}]])
 				any	expand file wildcards in {expr}
 globpath( {path}, {expr} [, {flag}])
@@ -3143,7 +3146,7 @@ getbufline({expr}, {lnum} [, {end}])
 		Example: >
 			:let lines = getbufline(bufnr("myfile"), 1, "$")
 
-getbufvar({expr}, {varname})				*getbufvar()*
+getbufvar({expr}, {varname} [, {def}])				*getbufvar()*
 		The result is the value of option or local buffer variable
 		{varname} in buffer {expr}.  Note that the name without "b:"
 		must be used.
@@ -3153,8 +3156,8 @@ getbufvar({expr}, {varname})				*getbufvar()*
 		doesn't work for a global variable, window-local variable or
 		window-local option.
 		For the use of {expr}, see |bufname()| above.
-		When the buffer or variable doesn't exist an empty string is
-		returned, there is no error message.
+		When the buffer or variable doesn't exist {def} or an empty
+		string is returned, there is no error message.
 		Examples: >
 			:let bufmodified = getbufvar(1, "&mod")
 			:echo "todo myvar = " . getbufvar("todo", "myvar")
@@ -3431,26 +3434,30 @@ getregtype([{regname}])					*getregtype()*
 		<CTRL-V> is one character with value 0x16.
 		If {regname} is not specified, |v:register| is used.
 
-gettabvar({tabnr}, {varname})				*gettabvar()*
+gettabvar({tabnr}, {varname} [, {def}])				*gettabvar()*
 		Get the value of a tab-local variable {varname} in tab page
 		{tabnr}. |t:var|
 		Tabs are numbered starting with one.
 		Note that the name without "t:" must be used.
+		When the tab or variable doesn't exist {def} or an empty
+		string is returned, there is no error message.
 
-gettabwinvar({tabnr}, {winnr}, {varname})		*gettabwinvar()*
+gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])		*gettabwinvar()*
 		Get the value of window-local variable {varname} in window
 		{winnr} in tab page {tabnr}.
 		When {varname} starts with "&" get the value of a window-local
 		option.
+		When {varname} is empty a dictionary with all window-local
+		variables is returned.
+		Note that {varname} must be the name without "w:".
 		Tabs are numbered starting with one.  For the current tabpage
 		use |getwinvar()|.
 		When {winnr} is zero the current window is used.
 		This also works for a global option, buffer-local option and
 		window-local option, but it doesn't work for a global variable
 		or buffer-local variable.
-		When {varname} is empty a dictionary with all window-local
-		variables is returned.
-		Note that {varname} must be the name without "w:".
+		When the tab, window or variable doesn't exist {def} or an
+		empty string is returned, there is no error message.
 		Examples: >
 			:let list_is_on = gettabwinvar(1, 2, '&list')
 			:echo "myvar = " . gettabwinvar(3, 1, 'myvar')
@@ -3465,7 +3472,7 @@ getwinposy()	The result is a Number, which is the Y coordinate in pixels of
 		the top of the GUI Vim window.	The result will be -1 if the
 		information is not available.
 
-getwinvar({winnr}, {varname})				*getwinvar()*
+getwinvar({winnr}, {varname} [, {def}])				*getwinvar()*
 		Like |gettabwinvar()| for the current tabpage.
 		Examples: >
 			:let list_is_on = getwinvar(2, '&list')

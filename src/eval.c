@@ -7916,7 +7916,7 @@ static struct fst
     {"garbagecollect",	0, 1, f_garbagecollect},
     {"get",		2, 3, f_get},
     {"getbufline",	2, 3, f_getbufline},
-    {"getbufvar",	2, 2, f_getbufvar},
+    {"getbufvar",	2, 3, f_getbufvar},
     {"getchar",		0, 1, f_getchar},
     {"getcharmod",	0, 0, f_getcharmod},
     {"getcmdline",	0, 0, f_getcmdline},
@@ -7936,11 +7936,11 @@ static struct fst
     {"getqflist",	0, 0, f_getqflist},
     {"getreg",		0, 2, f_getreg},
     {"getregtype",	0, 1, f_getregtype},
-    {"gettabvar",	2, 2, f_gettabvar},
-    {"gettabwinvar",	3, 3, f_gettabwinvar},
+    {"gettabvar",	2, 3, f_gettabvar},
+    {"gettabwinvar",	3, 4, f_gettabwinvar},
     {"getwinposx",	0, 0, f_getwinposx},
     {"getwinposy",	0, 0, f_getwinposy},
-    {"getwinvar",	2, 2, f_getwinvar},
+    {"getwinvar",	2, 3, f_getwinvar},
     {"glob",		1, 3, f_glob},
     {"globpath",	2, 3, f_globpath},
     {"has",		1, 1, f_has},
@@ -11115,8 +11115,14 @@ f_getbufvar(argvars, rettv)
     ++emsg_off;
     buf = get_buf_tv(&argvars[0]);
 
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
+    if (argvars[2].v_type != VAR_UNKNOWN)
+	/* set the default value */
+	copy_tv(&argvars[2], rettv);
+    else
+    {
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = NULL;
+    }
 
     if (buf != NULL && varname != NULL)
     {
@@ -11785,7 +11791,11 @@ f_gettabvar(argvars, rettv)
 	v = find_var_in_ht(&tp->tp_vars.dv_hashtab, varname, FALSE);
 	if (v != NULL)
 	    copy_tv(&v->di_tv, rettv);
+	else if (argvars[2].v_type != VAR_UNKNOWN)
+	    copy_tv(&argvars[2], rettv);
     }
+    else if (argvars[2].v_type != VAR_UNKNOWN)
+	copy_tv(&argvars[2], rettv);
 }
 
 /*
@@ -11907,8 +11917,14 @@ getwinvar(argvars, rettv, off)
     varname = get_tv_string_chk(&argvars[off + 1]);
     ++emsg_off;
 
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
+    if (argvars[off + 2].v_type != VAR_UNKNOWN)
+	/* set the default return value */
+	copy_tv(&argvars[off + 2], rettv);
+    else
+    {
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = NULL;
+    }
 
     if (win != NULL && varname != NULL)
     {
