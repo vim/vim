@@ -1993,6 +1993,7 @@ undotree()			List	undo file tree
 values( {dict})			List	values in {dict}
 virtcol( {expr})		Number	screen column of cursor or mark
 visualmode( [expr])		String	last visual mode used
+wildmenumode()			Number	whether 'wildmenu' mode is active
 winbufnr( {nr})			Number	buffer number of window {nr}
 wincol()			Number	window column of the cursor
 winheight( {nr})		Number	height of window {nr}
@@ -6161,6 +6162,18 @@ visualmode([expr])						*visualmode()*
 		non-empty strings, thus cause the mode to be cleared.  A List,
 		Dictionary or Float is not a Number or String, thus does not
 		cause the mode to be cleared.
+
+wildmenumode()					*wildmenumode()*
+		Returns non-zero when the wildmenu is active and zero
+		otherwise.  See 'wildmenu' and 'wildmode'.
+		This can be used in mappings to handle the 'wildcharm' option
+		gracefully. (Makes only sense with |mapmode-c| mappings).
+
+		For example to make <c-j> work like <down> in wildmode, use: >
+    :cnoremap <expr> <C-j> wildmenumode() ? "\<Down>\<Tab>" : "\<c-j>"
+<
+		(Note, this needs the 'wildcharm' option set appropriately).
+
 
 							*winbufnr()*
 winbufnr({nr})	The result is a Number, which is the number of the buffer
