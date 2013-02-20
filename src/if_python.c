@@ -148,6 +148,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyDict_SetItemString dll_PyDict_SetItemString
 # define PyErr_BadArgument dll_PyErr_BadArgument
 # define PyErr_Clear dll_PyErr_Clear
+# define PyErr_PrintEx dll_PyErr_PrintEx
 # define PyErr_NoMemory dll_PyErr_NoMemory
 # define PyErr_Occurred dll_PyErr_Occurred
 # define PyErr_SetNone dll_PyErr_SetNone
@@ -251,6 +252,7 @@ static void* (*dll_PyMem_Malloc)(size_t);
 static int(*dll_PyDict_SetItemString)(PyObject *dp, char *key, PyObject *item);
 static int(*dll_PyErr_BadArgument)(void);
 static void(*dll_PyErr_Clear)(void);
+static void(*dll_PyErr_PrintEx)(int);
 static PyObject*(*dll_PyErr_NoMemory)(void);
 static PyObject*(*dll_PyErr_Occurred)(void);
 static void(*dll_PyErr_SetNone)(PyObject *);
@@ -380,6 +382,7 @@ static struct
     {"PyDict_SetItemString", (PYTHON_PROC*)&dll_PyDict_SetItemString},
     {"PyErr_BadArgument", (PYTHON_PROC*)&dll_PyErr_BadArgument},
     {"PyErr_Clear", (PYTHON_PROC*)&dll_PyErr_Clear},
+    {"PyErr_PrintEx", (PYTHON_PROC*)&dll_PyErr_PrintEx},
     {"PyErr_NoMemory", (PYTHON_PROC*)&dll_PyErr_NoMemory},
     {"PyErr_Occurred", (PYTHON_PROC*)&dll_PyErr_Occurred},
     {"PyErr_SetNone", (PYTHON_PROC*)&dll_PyErr_SetNone},
@@ -856,7 +859,11 @@ DoPythonCommand(exarg_T *eap, const char *cmd, typval_T *rettv)
 
 	r = PyRun_String((char *)(cmd), Py_eval_input, globals, globals);
 	if (r == NULL)
+	{
+	    if (PyErr_Occurred() && !msg_silent)
+		PyErr_PrintEx(0);
 	    EMSG(_("E858: Eval did not return a valid python object"));
+	}
 	else
 	{
 	    if (ConvertFromPyObject(r, rettv) == -1)
