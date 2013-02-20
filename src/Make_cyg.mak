@@ -1,6 +1,6 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2012 Jun 30
+# Last updated by Dan Sharp.  Last Change: 2013 Feb 17
 #
 # Also read INSTALLpc.txt!
 #
@@ -487,7 +487,7 @@ DEFINES += -DFEAT_OLE
 EXTRA_OBJS += $(OUTDIR)/if_ole.o
 EXTRA_LIBS += -loleaut32
 ifeq (yes, $(STATIC_STDCPLUS))
-EXTRA_LIBS += -Wl,-Bstatic -lstdc++ -lsupc++ -Wl,-Bdynamic
+EXTRA_LIBS += -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic
 else
 EXTRA_LIBS += -lstdc++
 endif
