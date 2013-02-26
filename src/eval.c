@@ -5164,6 +5164,16 @@ eval7(arg, rettv, evaluate, want_string)
 		ret = get_func_tv(s, len, rettv, arg,
 			  curwin->w_cursor.lnum, curwin->w_cursor.lnum,
 			  &len, evaluate, NULL);
+
+		/* If evaluate is FALSE rettv->v_type was not set in
+		 * get_func_tv, but it's needed in handle_subscript() to parse
+		 * what follows. So set it here. */
+		if (rettv->v_type == VAR_UNKNOWN && !evaluate && **arg == '(')
+		{
+		    rettv->vval.v_string = vim_strsave("");
+		    rettv->v_type = VAR_FUNC;
+		}
+
 		/* Stop the expression evaluation when immediately
 		 * aborting on error, or when an interrupt occurred or
 		 * an exception was thrown but not caught. */
