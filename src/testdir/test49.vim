@@ -9624,7 +9624,38 @@ Xout  "No Crash for vimgrep on BufUnload"
 Xcheck 0 
 
 "-------------------------------------------------------------------------------
-" Test 87:  $VIMNOERRTHROW and $VIMNOINTTHROW support			    {{{1
+" Test 87   using (expr) ? funcref : funcref				    {{{1
+"
+"	    Vim needs to correctly parse the funcref and even when it does
+"	    not execute the funcref, it needs to consume the trailing ()
+"-------------------------------------------------------------------------------
+
+XpathINIT
+
+func Add2(x1, x2)
+    return a:x1 + a:x2
+endfu
+
+func GetStr()
+    return "abcdefghijklmnopqrstuvwxyp"
+endfu
+
+echo function('Add2')(2,3)
+
+Xout 1 ? function('Add2')(1,2) : function('Add2')(2,3)
+Xout 0 ? function('Add2')(1,2) : function('Add2')(2,3)
+" Make sure, GetStr() still works.
+Xout GetStr()[0:10]
+
+
+delfunction GetStr
+delfunction Add2
+Xout  "Successfully executed funcref Add2"
+
+Xcheck 0 
+
+"-------------------------------------------------------------------------------
+" Test 88:  $VIMNOERRTHROW and $VIMNOINTTHROW support			    {{{1
 "
 "	    It is possible to configure Vim for throwing exceptions on error
 "	    or interrupt, controlled by variables $VIMNOERRTHROW and
