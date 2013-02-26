@@ -729,6 +729,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    837,
+/**/
     836,
 /**/
     835,
@@ -2496,14 +2498,12 @@ list_features()
 	return;
     }
 
-    ncol = (int) Columns / width;
     /* The rightmost column doesn't need a separator.
      * Sacrifice it to fit in one more column if possible. */
-    if (Columns % width == width - 1)
-	ncol++;
-
+    ncol = (int) (Columns + 1) / width;
     nrow = nfeat / ncol + (nfeat % ncol ? 1 : 0);
 
+    /* i counts columns then rows.  idx counts rows then columns. */
     for (i = 0; !got_int && i < nrow * ncol; ++i)
     {
 	int idx = (i / ncol) + (i % ncol) * nrow;
@@ -2525,7 +2525,10 @@ list_features()
 	    }
 	}
 	else
-	    msg_putchar('\n');
+	{
+	    if (msg_col > 0)
+		msg_putchar('\n');
+	}
     }
 }
 
