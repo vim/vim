@@ -5170,7 +5170,7 @@ eval7(arg, rettv, evaluate, want_string)
 		 * what follows. So set it here. */
 		if (rettv->v_type == VAR_UNKNOWN && !evaluate && **arg == '(')
 		{
-		    rettv->vval.v_string = vim_strsave("");
+		    rettv->vval.v_string = vim_strsave((char_u *)"");
 		    rettv->v_type = VAR_FUNC;
 		}
 
