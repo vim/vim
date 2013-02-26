@@ -543,6 +543,7 @@ OBJ = \
 	$(OUTDIR)\ops.obj \
 	$(OUTDIR)\option.obj \
 	$(OUTDIR)\os_mswin.obj \
+	$(OUTDIR)\winclip.obj \
 	$(OUTDIR)\os_win32.obj \
 	$(OUTDIR)\pathdef.obj \
 	$(OUTDIR)\popupmnu.obj \
@@ -1149,6 +1150,8 @@ $(OUTDIR)/ops.obj:	$(OUTDIR) ops.c  $(INCL)
 
 $(OUTDIR)/os_mswin.obj:	$(OUTDIR) os_mswin.c  $(INCL)
 
+$(OUTDIR)/winclip.obj:	$(OUTDIR) winclip.c  $(INCL)
+
 $(OUTDIR)/os_win32.obj:	$(OUTDIR) os_win32.c  $(INCL) os_win32.h
 
 $(OUTDIR)/os_w32exe.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
@@ -1256,6 +1259,7 @@ proto.h: \
 	proto/ops.pro \
 	proto/option.pro \
 	proto/os_mswin.pro \
+	proto/winclip.pro \
 	proto/os_win32.pro \
 	proto/popupmnu.pro \
 	proto/quickfix.pro \

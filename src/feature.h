@@ -1129,6 +1129,11 @@
  * +xterm_clipboard	Unix only: Include code for handling the clipboard
  *			in an xterm like in the GUI.
  */
+
+#ifdef FEAT_CYGWIN_WIN32_CLIPBOARD
+# define FEAT_CLIPBOARD
+#endif
+
 #ifdef FEAT_GUI
 # ifndef FEAT_CLIPBOARD
 #  define FEAT_CLIPBOARD

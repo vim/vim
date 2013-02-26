@@ -61,6 +61,11 @@ static int selinux_enabled = -1;
 #  include <cygwin/version.h>
 #  include <sys/cygwin.h>	/* for cygwin_conv_to_posix_path() and/or
 				 * for cygwin_conv_path() */
+#  ifdef FEAT_CYGWIN_WIN32_CLIPBOARD
+#   define WIN32_LEAN_AND_MEAN
+#   include <windows.h>
+#   include "winclip.pro"
+#  endif
 # endif
 #endif
 
@@ -1222,6 +1227,9 @@ mch_init()
 
 #ifdef MACOS_CONVERT
     mac_conv_init();
+#endif
+#ifdef FEAT_CYGWIN_WIN32_CLIPBOARD
+    win_clip_init();
 #endif
 }
 

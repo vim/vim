@@ -107,6 +107,7 @@ ObjFiles = \
    $(INTDIR)\os_win16.obj\
    $(INTDIR)\os_msdos.obj\
    $(INTDIR)\os_mswin.obj\
+   $(INTDIR)\winclip.obj\
    $(INTDIR)\popupmnu.obj\
    $(INTDIR)\quickfix.obj\
    $(INTDIR)\regexp.obj\

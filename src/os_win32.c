@@ -1851,16 +1851,7 @@ mch_init(void)
 	set_option_value((char_u *)"grepprg", 0, (char_u *)"grep -n", 0);
 
 #ifdef FEAT_CLIPBOARD
-    clip_init(TRUE);
-
-    /*
-     * Vim's own clipboard format recognises whether the text is char, line,
-     * or rectangular block.  Only useful for copying between two Vims.
-     * "VimClipboard" was used for previous versions, using the first
-     * character to specify MCHAR, MLINE or MBLOCK.
-     */
-    clip_star.format = RegisterClipboardFormat("VimClipboard2");
-    clip_star.format_raw = RegisterClipboardFormat("VimRawBytes");
+    win_clip_init();
 #endif
 }
 
@@ -2345,16 +2336,7 @@ mch_init(void)
 #endif
 
 #ifdef FEAT_CLIPBOARD
-    clip_init(TRUE);
-
-    /*
-     * Vim's own clipboard format recognises whether the text is char, line, or
-     * rectangular block.  Only useful for copying between two Vims.
-     * "VimClipboard" was used for previous versions, using the first
-     * character to specify MCHAR, MLINE or MBLOCK.
-     */
-    clip_star.format = RegisterClipboardFormat("VimClipboard2");
-    clip_star.format_raw = RegisterClipboardFormat("VimRawBytes");
+    win_clip_init();
 #endif
 
     /* This will be NULL on anything but NT 4.0 */

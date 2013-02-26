@@ -2474,6 +2474,21 @@ dnl ---------------------------------------------------------------------------
 dnl end of GUI-checking
 dnl ---------------------------------------------------------------------------
 
+dnl Check for Cygwin, which needs an extra source file if not using X11
+AC_MSG_CHECKING(for CYGWIN environment)
+case `uname` in
+    CYGWIN*)    CYGWIN=yes; AC_MSG_RESULT(yes)
+                AC_MSG_CHECKING(for CYGWIN clipboard support)
+                if test "x$with_x" = "xno" ; then
+                  OS_EXTRA_SRC=winclip.c; OS_EXTRA_OBJ=objects/winclip.o
+                  AC_MSG_RESULT(yes)
+                  AC_DEFINE(FEAT_CYGWIN_WIN32_CLIPBOARD)
+                else
+                  AC_MSG_RESULT(no - using X11)
+                fi ;;
+
+    *)          CYGWIN=no; AC_MSG_RESULT(no);;
+esac
 
 dnl Only really enable hangul input when GUI and XFONTSET are available
 if test "$enable_hangulinput" = "yes"; then

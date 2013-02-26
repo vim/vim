@@ -547,6 +547,7 @@ OBJ = \
 	$(OUTDIR)/option.o \
 	$(OUTDIR)/os_win32.o \
 	$(OUTDIR)/os_mswin.o \
+	$(OUTDIR)/winclip.o \
 	$(OUTDIR)/pathdef.o \
 	$(OUTDIR)/popupmnu.o \
 	$(OUTDIR)/quickfix.o \

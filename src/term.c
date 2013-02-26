@@ -1853,7 +1853,9 @@ set_termname(term)
 #    ifdef FEAT_GUI
 	if (!gui.in_use)
 #    endif
+#    ifndef FEAT_CYGWIN_WIN32_CLIPBOARD
 	    clip_init(FALSE);
+#    endif
 #   endif
 	if (use_xterm_like_mouse(term))
 	{

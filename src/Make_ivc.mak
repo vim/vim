@@ -241,6 +241,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/ops.obj" \
 	"$(INTDIR)/option.obj" \
 	"$(INTDIR)/os_mswin.obj" \
+	"$(INTDIR)/winclip.obj" \
 	"$(INTDIR)/os_win32.obj" \
 	"$(INTDIR)/popupmnu.obj" \
 	"$(INTDIR)/quickfix.obj" \
@@ -597,6 +598,10 @@ SOURCE=.\option.c
 # Begin Source File
 
 SOURCE=.\os_mswin.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\winclip.c
 # End Source File
 # Begin Source File
 

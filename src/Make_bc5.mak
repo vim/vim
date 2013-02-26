@@ -694,7 +694,7 @@ vimobj = $(vimobj) \
 
 !if ($(OSTYPE)==WIN32)
 vimobj = $(vimobj) \
-	$(OBJDIR)\os_win32.obj $(OBJDIR)\os_mswin.obj
+	$(OBJDIR)\os_win32.obj $(OBJDIR)\os_mswin.obj $(OBJDIR)\winclip.obj
 !elif ($(OSTYPE)==DOS16)
 vimobj = $(vimobj) \
 	$(OBJDIR)\os_msdos.obj
