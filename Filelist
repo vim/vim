@@ -73,6 +73,7 @@ SRC_ALL =	\
 		src/version.c \
 		src/version.h \
 		src/vim.h \
+		src/winclip.c \
 		src/window.c \
 		src/xxd/xxd.c \
 		src/main.aap \
@@ -83,6 +84,7 @@ SRC_ALL =	\
 		src/testdir/test60.vim \
 		src/testdir/test83-tags? \
 		src/proto.h \
+		src/proto/arabic.pro \
 		src/proto/blowfish.pro \
 		src/proto/buffer.pro \
 		src/proto/charset.pro \
@@ -130,6 +132,7 @@ SRC_ALL =	\
 		src/proto/ui.pro \
 		src/proto/undo.pro \
 		src/proto/version.pro \
+		src/proto/winclip.pro \
 		src/proto/window.pro \
 
 
@@ -444,6 +447,7 @@ SRC_EXTRA =	\
 		src/os_beos.c \
 		src/os_beos.h \
 		src/os_beos.rsrc \
+		src/proto/os_beos.pro \
 		src/os_mint.h \
 		src/os_vms_fix.com \
 		src/toolbar.phi \
