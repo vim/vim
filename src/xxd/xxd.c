@@ -729,9 +729,10 @@ main(argc, argv)
       if (c == EOF && ferror(fp))
 	die(2);
 
-      if (p)
-	if (fputs("\n};\n" + 3 * (fp == stdin), fpo) == EOF)
-	  die(3);
+      if (p && fputs("\n", fpo) == EOF)
+	die(3);
+      if (fputs("};\n" + 3 * (fp == stdin), fpo) == EOF)
+	die(3);
 
       if (fp != stdin)
 	{
