@@ -5449,6 +5449,13 @@ regmatch(scan)
 			}
 		    }
 		    else
+#ifdef FEAT_MBYTE
+		    if (has_mbyte)
+			rp->rs_un.regsave.rs_u.pos.col -=
+			    (*mb_head_off)(regline, regline
+				    + rp->rs_un.regsave.rs_u.pos.col - 1) + 1;
+		    else
+#endif
 			--rp->rs_un.regsave.rs_u.pos.col;
 		}
 		else
