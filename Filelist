@@ -84,7 +84,6 @@ SRC_ALL =	\
 		src/testdir/test60.vim \
 		src/testdir/test83-tags? \
 		src/proto.h \
-		src/proto/arabic.pro \
 		src/proto/blowfish.pro \
 		src/proto/buffer.pro \
 		src/proto/charset.pro \
