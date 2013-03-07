@@ -5275,6 +5275,7 @@ static int	cin_isbreak __ARGS((char_u *));
 static int	cin_is_cpp_baseclass __ARGS((colnr_T *col));
 static int	get_baseclass_amount __ARGS((int col, int ind_maxparen, int ind_maxcomment, int ind_cpp_baseclass));
 static int	cin_ends_in __ARGS((char_u *, char_u *, char_u *));
+static int	cin_starts_with __ARGS((char_u *s, char *word));
 static int	cin_skip2pos __ARGS((pos_T *trypos));
 static pos_T	*find_start_brace __ARGS((int));
 static pos_T	*find_match_paren __ARGS((int, int));
@@ -5446,24 +5447,40 @@ cin_islabel(ind_maxcomment)		/* XXX */
 }
 
 /*
- * Recognize structure initialization and enumerations.
- * Q&D-Implementation:
- * check for "=" at end or "[typedef] enum" at beginning of line.
+ * Recognize structure initialization and enumerations:
+ * "[typedef] [static|public|protected|private] enum"
+ * "[typedef] [static|public|protected|private] = {"
  */
     static int
 cin_isinit(void)
 {
     char_u	*s;
+    static char *skip[] = {"static", "public", "protected", "private"};
 
     s = cin_skipcomment(ml_get_curline());
 
-    if (STRNCMP(s, "typedef", 7) == 0 && !vim_isIDc(s[7]))
+    if (cin_starts_with(s, "typedef"))
 	s = cin_skipcomment(s + 7);
 
-    if (STRNCMP(s, "static", 6) == 0 && !vim_isIDc(s[6]))
-	s = cin_skipcomment(s + 6);
+    for (;;)
+    {
+	int i, l;
 
-    if (STRNCMP(s, "enum", 4) == 0 && !vim_isIDc(s[4]))
+	for (i = 0; i < (int)(sizeof(skip) / sizeof(char *)); ++i)
+	{
+	    l = strlen(skip[i]);
+	    if (cin_starts_with(s, skip[i]))
+	    {
+		s = cin_skipcomment(s + l);
+		l = 0;
+		break;
+	    }
+	}
+	if (l != 0)
+	    break;
+    }
+
+    if (cin_starts_with(s, "enum"))
 	return TRUE;
 
     if (cin_ends_in(s, (char_u *)"=", (char_u *)"{"))
@@ -5481,7 +5498,7 @@ cin_iscase(s, strict)
     int strict; /* Allow relaxed check of case statement for JS */
 {
     s = cin_skipcomment(s);
-    if (STRNCMP(s, "case", 4) == 0 && !vim_isIDc(s[4]))
+    if (cin_starts_with(s, "case"))
     {
 	for (s += 4; *s; ++s)
 	{
@@ -6049,7 +6066,7 @@ cin_iswhileofdo(p, lnum, ind_maxparen)	    /* XXX */
     p = cin_skipcomment(p);
     if (*p == '}')		/* accept "} while (cond);" */
 	p = cin_skipcomment(p + 1);
-    if (STRNCMP(p, "while", 5) == 0 && !vim_isIDc(p[5]))
+    if (cin_starts_with(p, "while"))
     {
 	cursor_save = curwin->w_cursor;
 	curwin->w_cursor.lnum = lnum;
@@ -6156,7 +6173,7 @@ cin_iswhileofdo_end(terminated, ind_maxparen, ind_maxcomment)
 		    s = cin_skipcomment(ml_get(trypos->lnum));
 		    if (*s == '}')		/* accept "} while (cond);" */
 			s = cin_skipcomment(s + 1);
-		    if (STRNCMP(s, "while", 5) == 0 && !vim_isIDc(s[5]))
+		    if (cin_starts_with(s, "while"))
 		    {
 			curwin->w_cursor.lnum = trypos->lnum;
 			return TRUE;
@@ -6403,6 +6420,19 @@ cin_ends_in(s, find, ignore)
 	    ++p;
     }
     return FALSE;
+}
+
+/*
+ * Return TRUE when "s" starts with "word" and then a non-ID character.
+ */
+    static int
+cin_starts_with(s, word)
+    char_u *s;
+    char *word;
+{
+    int l = STRLEN(word);
+
+    return (STRNCMP(s, word, l) == 0 && !vim_isIDc(s[l]));
 }
 
 /*
