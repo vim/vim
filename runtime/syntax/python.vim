@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Python
 " Maintainer:	Neil Schemenauer <nas@python.ca>
-" Last Change:	2010 Sep 21
+" Last Change:	2013 Feb 26
 " Credits:	Zvezdan Petkovic <zpetkovic@acm.org>
 "		Neil Schemenauer <nas@python.ca>
 "		Dmitry Vasiliev
@@ -236,7 +236,7 @@ endif
 " Notice that the end of a string, either ''', or """, will end the contained
 " doctest too.  Thus, we do *not* need to have it as an end pattern.
 if !exists("python_no_doctest_highlight")
-  if !exists("python_no_doctest_code_higlight")
+  if !exists("python_no_doctest_code_highlight")
     syn region pythonDoctest
 	  \ start="^\s*>>>\s" end="^\s*$"
 	  \ contained contains=ALLBUT,pythonDoctest,@Spell

@@ -124,16 +124,17 @@ an 50.20.360 &Syntax.C.Config.Configure\.in :cal SetSyn("config")<CR>
 an 50.20.370 &Syntax.C.Config.Generic\ Config\ file :cal SetSyn("conf")<CR>
 an 50.20.380 &Syntax.C.CRM114 :cal SetSyn("crm")<CR>
 an 50.20.390 &Syntax.C.Crontab :cal SetSyn("crontab")<CR>
-an 50.20.400 &Syntax.C.CSP :cal SetSyn("csp")<CR>
-an 50.20.410 &Syntax.C.Ctrl-H :cal SetSyn("ctrlh")<CR>
-an 50.20.420 &Syntax.C.Cucumber :cal SetSyn("cucumber")<CR>
-an 50.20.430 &Syntax.C.CUDA :cal SetSyn("cuda")<CR>
-an 50.20.440 &Syntax.C.CUPL.CUPL :cal SetSyn("cupl")<CR>
-an 50.20.450 &Syntax.C.CUPL.Simulation :cal SetSyn("cuplsim")<CR>
-an 50.20.460 &Syntax.C.CVS.commit\ file :cal SetSyn("cvs")<CR>
-an 50.20.470 &Syntax.C.CVS.cvsrc :cal SetSyn("cvsrc")<CR>
-an 50.20.480 &Syntax.C.Cyn++ :cal SetSyn("cynpp")<CR>
-an 50.20.490 &Syntax.C.Cynlib :cal SetSyn("cynlib")<CR>
+an 50.20.400 &Syntax.C.CSDL :cal SetSyn("csdl")<CR>
+an 50.20.410 &Syntax.C.CSP :cal SetSyn("csp")<CR>
+an 50.20.420 &Syntax.C.Ctrl-H :cal SetSyn("ctrlh")<CR>
+an 50.20.430 &Syntax.C.Cucumber :cal SetSyn("cucumber")<CR>
+an 50.20.440 &Syntax.C.CUDA :cal SetSyn("cuda")<CR>
+an 50.20.450 &Syntax.C.CUPL.CUPL :cal SetSyn("cupl")<CR>
+an 50.20.460 &Syntax.C.CUPL.Simulation :cal SetSyn("cuplsim")<CR>
+an 50.20.470 &Syntax.C.CVS.commit\ file :cal SetSyn("cvs")<CR>
+an 50.20.480 &Syntax.C.CVS.cvsrc :cal SetSyn("cvsrc")<CR>
+an 50.20.490 &Syntax.C.Cyn++ :cal SetSyn("cynpp")<CR>
+an 50.20.500 &Syntax.C.Cynlib :cal SetSyn("cynlib")<CR>
 an 50.30.100 &Syntax.DE.D :cal SetSyn("d")<CR>
 an 50.30.110 &Syntax.DE.Datascript :cal SetSyn("datascript")<CR>
 an 50.30.120 &Syntax.DE.Debian.Debian\ ChangeLog :cal SetSyn("debchangelog")<CR>

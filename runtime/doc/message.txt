@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 7.3.  Last change: 2011 May 10
+*message.txt*   For Vim version 7.3.  Last change: 2013 Feb 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -730,7 +730,11 @@ Vim cannot create a temporary file.
   Can't open file {filename}
   Can't read file {filename}
 
-Vim cannot read a temporary file.
+Vim cannot read a temporary file.  Especially on Windows, this can be caused
+by wrong escaping of special characters for cmd.exe; the approach was
+changed with patch 7.3.443.  Try using |shellescape()| for all shell arguments
+given to |system()|, or explicitly add escaping with ^.  Also see
+'shellxquote' and 'shellxescape'.
 
 							*E464*  >
   Ambiguous use of user-defined command

@@ -1,12 +1,14 @@
 " Vim syntax file
-" Language:				CL
-" 					(pronounced alphabetically, and NOT known as Clever)
-" 					(CL was created by Multibase, http://www.mbase.com.au)
+" Language:		CL
+" 			(pronounced alphabetically: "Cee-El".
+" 			CL stands for Clever Language,
+" 			but the language is CL, not "Clever".
+" 			CL was created by Multibase, http://www.mbase.com.au)
 " Filename extensions:	*.ent
-"					*.eni
+"			*.eni
 " Maintainer:		Philip Uren	<philuSPAX@ieee.org> Remove SPAX spam block
-" Version:              5
-" Last Change:		Aug 16 2012
+" Version:              6
+" Last Change:		Mar 06 2013
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

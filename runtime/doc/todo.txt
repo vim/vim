@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Feb 20
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Mar 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,16 +34,6 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch for Win32 clipboard under Cygwin. (Frodak Baksik, Feb 15)
-    Sutcliffe says it works well.
-    Update 2007 May 22 for Vim 7.1
-    Update 2008 Dec 2008 for Vim 7.2.xx (Sharonov)
-    Update by Ken Takata (2012 Dec 31, 2013 Jan 4, 2013 Jan 26)
-
-Download counter for scripts no longer incremented?
-Because SourceForge does not have the IP address now, see ticket
-https://sourceforge.net/p/forge/site-support/2461/?page=1
-
 Several syntax file match "^\s*" which may get underlined if that's in the
 highlight group.  Add a "\zs" after it?
 
@@ -55,12 +45,37 @@ Memory leaks in Lua, uncovered by test 85.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
+Patch to build with Ruby 2.0 and Ming@ 64. (Ken Takata, 2013 Feb 28)
+
 Checking runtime scripts: Thilo Six, 2012 Jun 6.
 
 GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
 
+Patch for this problem: (David Bürgin (glts), 2013 Mar 5)
+8   ":g//" gives "Pattern not found error" with E486.  Should not use the
+    error number, it's not a regular error message.
+
+Patch to fix ":vimgrep //". (David Bürgin (glts), 2013 Mar 5)
+
+Updates for Debian runtime files. (James McCoy, 2013 Mar 3)
+Also an update for debcontrol in another message.
+
 Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
+
+Patch for ":sort" not properly handling an empty search pattern when there is
+no previous search pattern. (David Bürgin, 2013 Mar 4)
+
+system() breaks clipboard text.  (Yukihiro Nakadaira, 2013 Feb 28)
+Patch by Christian Brabandt, 2013 Mar 1.
+
+Patch for replace multi-byte character in multiple lines. (Yasuhiro Matsumoto,
+2013 Feb 27)
+
+Patch to avoid register being changed when yanking. (Christian Brabandt, 2013
+Feb 26)
+
+Patch to trigger QuitPre in more situations. (Tatsuro Fujii, 2013 Mar 3)
 
 The CompleteDone autocommand needs some info passed to it:
 - The word that was selected (empty if abandoned complete)
@@ -70,8 +85,8 @@ Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
 
-Problem parsing expression with function(). (Andy Wokula, 2012 Nov 22)
-Patch by Christian Brabandt, Nov 22.  Tests in another patch, Nov 23.
+Patch to fix wrong completion entry after using backspace. (reported by
+Olivier Teuliere, fixed by Christian Brabandt, 2013 Feb 26)
 
 Patch to detect value of 'ambiwidth' from the termresponse.
 (Hayaki Saito, 2013 Feb 11)
@@ -94,6 +109,9 @@ Patch to fix compiler warnings for MingW 4.5.3. (Ken Takata, 2013 Jan 26)
 Bug: search() does not use the match at the cursor position if it's empty.
 (Christian Brabandt, 2013 Feb 16)  Patch later.
 
+On Mac do not define CASE_INSENSITIVE_FILENAME ? (Richo Healey, 2013 Mar 3)
+But do set 'wildignorecase' ?
+
 Patch to make it possible to create Title Case in :s. with \L\u.
 (James McCoy, 2013 Feb 13)
 
@@ -111,6 +129,9 @@ Patch for IME handling, adds 'imactivatefunc' and 'imstatusfunc' option.
 Patch to improve IME handling. (Yasuhiro Matsumoto, 2012 Jul 18)
 
 Issue 54: document behavior of -complete, also expands arg.
+
+Matches might be highlighted correctly. Inefficient patch by Christian
+Brabandt, 2013 Feb 26.
 
 New syntax files for apt. (quidame, 2012 Sep 21)
 
@@ -152,7 +173,7 @@ Or use expand('<sid>')?
 
 Patch to make confirm() display colors. (Christian Brabandt, 2012 Nov 9)
 
-Patch to add functions for signs. (Christian Brabandt,, 2013 Jan 27)
+Patch to add functions for signs. (Christian Brabandt, 2013 Jan 27)
 
 Patch to use directX to draw text on Windows.  Adds the 'directx' option.
 (Taro Muraoka, 2013 Jan 25)
@@ -189,7 +210,7 @@ MS-Windows resizing problems:
 
 'iminsert' global value set when using ":setlocal iminsert"? (Wu, 2012 Jun 23)
 
-Help for b:undo_indent'. (Thilo Six, 2012 May 28)
+Help for 'b:undo_indent'. (Thilo Six, 2012 May 28)
 Also question if examples are correct.
 
 It should be possible to make globpath() return a list instead of a string,
@@ -260,6 +281,8 @@ Requires a rewrite of the file_file_in_path code.
 Problem with l: dictionary being locked in a function. (ZyX, 2011 Jul 21)
 
 Should use has("browsefilter") in ftplugins.  Requires patch 7.3.593.
+
+Update for vim2html.pl. (Tyru, 2013 Feb 22)
 
 Issue 48: foldopen error can't be caught by try/catch
 
@@ -2284,8 +2307,6 @@ Macintosh:
     the :catch commands are always executed, also when the file is edited
     normally.  Should reset did_emsg and undo side effects.  Also make sure
     the ATTENTION message shows up.  Servatius Brandt works on this.
-8   ":g//" gives "Pattern not found error" with E486.  Should not use the
-    error number, it's not a regular error message.
 7   Vimtutor leaves escape sequence in terminal. This is the xterm response to
     requesting the version number.  (Yasuhiro Matsumoto)
 8   When redirecting and using ":silent" the current column for displaying and

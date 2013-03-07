@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2013 Feb 20
+*options.txt*	For Vim version 7.3.  Last change: 2013 Feb 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -986,7 +986,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	- The backup file will be created in the first directory in the list
 	  where this is possible.  The directory must exist, Vim will not
 	  create it for you.
-	- Empty means that no backup file will be created ('patchmode' is
+	- Empty means that no backup file will be created ( 'patchmode' is
 	  impossible!).  Writing may fail because of this.
 	- A directory "." means to put the backup file in the same directory
 	  as the edited file.
@@ -1703,7 +1703,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	when CTRL-P or CTRL-N are used.  It is also used for whole-line
 	completion |i_CTRL-X_CTRL-L|.  It indicates the type of completion
 	and the places to scan.  It is a comma separated list of flags:
-	.	scan the current buffer ('wrapscan' is ignored)
+	.	scan the current buffer ( 'wrapscan' is ignored)
 	w	scan buffers from other windows
 	b	scan other loaded buffers that are in the buffer list
 	u	scan the unloaded buffers that are in the buffer list
@@ -7085,7 +7085,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 	Encoding used for the terminal.  This specifies what character
 	encoding the keyboard produces and the display will understand.  For
-	the GUI it only applies to the keyboard ('encoding' is used for the
+	the GUI it only applies to the keyboard ( 'encoding' is used for the
 	display).  Except for the Mac when 'macatsui' is off, then
 	'termencoding' should be "macroman".
 	In the Win32 console version the default value is the console codepage

@@ -600,7 +600,7 @@ For other systems the tmpnam() library function is used.
 								*g&*
 g&			Synonym for `:%s//~/&` (repeat last substitute with
 			last search pattern on all lines with the same flags).
-			For exaple, when you first do a substitution with
+			For example, when you first do a substitution with
 			`:s/pattern/repl/flags` and then `/search` for
 			something else, `g&` will do `:%s/search/repl/flags`.
 			Mnemonic: global substitute. {not in Vi}

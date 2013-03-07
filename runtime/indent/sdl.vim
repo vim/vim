@@ -73,7 +73,7 @@ function! GetSDLIndent()
 
   " Systems and packages are always in column 0
   if getline(v:lnum) =~? '^\s*\(\(end\)\=system\|\(end\)\=package\)'
-    return 0;
+    return 0
   endif
 
   " Put each end* where the corresponding begin was

@@ -1067,7 +1067,7 @@ The actual mappings are in the lines below "loadkeymap".  In the example "a"
 is mapped to "A" and "b" to "B".  Thus the first item is mapped to the second
 item.  This is done for each line, until the end of the file.
 These items are exactly the same as what can be used in a |:lnoremap| command,
-using "<buffer>" to make the mappings local to the buffer..
+using "<buffer>" to make the mappings local to the buffer.
 You can check the result with this command: >
 	:lmap
 The two items must be separated by white space.  You cannot include white

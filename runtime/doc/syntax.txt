@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2013 Jan 30
+*syntax.txt*	For Vim version 7.3.  Last change: 2013 Mar 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -997,6 +997,14 @@ comment highlighting, add the following line to your startup file: >
 	:let html_wrong_comments = 1
 
 The ColdFusion syntax file is based on the HTML syntax file.
+
+
+CPP						*cpp.vim* *ft-cpp-syntax*
+
+Most of things are same as |ft-c-syntax|.
+
+Variable		Highlight ~
+cpp_no_c11		don't highlight C++11 standard items
 
 
 CSH						*csh.vim* *ft-csh-syntax*
@@ -2440,23 +2448,32 @@ Pascal.  Use this if you don't use assembly and Pascal: >
 
 PYTHON						*python.vim* *ft-python-syntax*
 
-There are four options to control Python syntax highlighting.
+There are six options to control Python syntax highlighting.
 
 For highlighted numbers: >
-	:let python_highlight_numbers = 1
+	:let python_no_number_highlight = 1
 
 For highlighted builtin functions: >
-	:let python_highlight_builtins = 1
+	:let python_no_builtin_highlight = 1
 
 For highlighted standard exceptions: >
-	:let python_highlight_exceptions = 1
+	:let python_no_exception_highlight = 1
+
+For highlighted doctests and code inside: >
+	:let python_no_doctest_highlight = 1
+or >
+	:let python_no_doctest_code_highlight = 1
+(first option implies second one).
 
 For highlighted trailing whitespace and mix of spaces and tabs: >
-	:let python_highlight_space_errors = 1
+	:let python_space_error_highlight = 1
 
 If you want all possible Python highlighting (the same as setting the
-preceding three options): >
+preceding last option and unsetting all other ones): >
 	:let python_highlight_all = 1
+
+Note: only existence of these options matter, not their value. You can replace 
+      1 above with anything.
 
 
 QUAKE						*quake.vim* *ft-quake-syntax*

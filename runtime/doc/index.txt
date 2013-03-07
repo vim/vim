@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.3.  Last change: 2012 Jul 25
+*index.txt*     For Vim version 7.3.  Last change: 2013 Feb 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1134,7 +1134,7 @@ tag	      command	      action ~
 |:cgetbuffer|	:cgetb[uffer]	get errors from buffer
 |:cgetexpr|	:cgete[xpr]	get errors from expr
 |:cgetfile|	:cg[etfile]	read file with error messages
-|:changes|	:cha[nges]	print the change list
+|:changes|	:changes	print the change list
 |:chdir|	:chd[ir]	change directory
 |:checkpath|	:che[ckpath]	list included files
 |:checktime|	:checkt[ime]	check timestamp of loaded buffers
@@ -1383,7 +1383,7 @@ tag	      command	      action ~
 |:promptrepl|	:promptr[epl]	open GUI dialog for search/replace
 |:perldo|	:perld[o]	execute Perl command for each line
 |:pop|		:po[p]		jump to older entry in tag stack
-|:popup|	:pop[up]	popup a menu by name
+|:popup|	:popu[p]	popup a menu by name
 |:ppop|		:pp[op]		":pop" in preview window
 |:preserve|	:pre[serve]	write all text to swap file
 |:previous|	:prev[ious]	go to previous file in argument list
@@ -1469,7 +1469,7 @@ tag	      command	      action ~
 |:slast|	:sla[st]	split window and go to last file in the
 				argument list
 |:smagic|	:sm[agic]	:substitute with 'magic'
-|:smap|		:sma[p]		like ":map" but for Select mode
+|:smap|		:smap		like ":map" but for Select mode
 |:smapclear|	:smapc[lear]	remove all mappings for Select mode
 |:smenu|	:sme[nu]	add menu for Select mode
 |:snext|	:sn[ext]	split window and go to next file in the

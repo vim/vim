@@ -4251,6 +4251,7 @@ E859	eval.txt	/*E859*
 E86	windows.txt	/*E86*
 E860	eval.txt	/*E860*
 E861	eval.txt	/*E861*
+E862	eval.txt	/*E862*
 E87	windows.txt	/*E87*
 E88	windows.txt	/*E88*
 E89	message.txt	/*E89*
@@ -6694,6 +6695,7 @@ mapmode-s	map.txt	/*mapmode-s*
 mapmode-v	map.txt	/*mapmode-v*
 mapmode-x	map.txt	/*mapmode-x*
 mapping	map.txt	/*mapping*
+mapping-functions	usr_41.txt	/*mapping-functions*
 mark	motion.txt	/*mark*
 mark-functions	usr_41.txt	/*mark-functions*
 mark-motions	motion.txt	/*mark-motions*
@@ -7561,6 +7563,7 @@ sgr-mouse	options.txt	/*sgr-mouse*
 sh-awk	syntax.txt	/*sh-awk*
 sh-embed	syntax.txt	/*sh-embed*
 sh.vim	syntax.txt	/*sh.vim*
+sha256()	eval.txt	/*sha256()*
 shell-window	tips.txt	/*shell-window*
 shell_error-variable	eval.txt	/*shell_error-variable*
 shellescape()	eval.txt	/*shellescape()*
@@ -8523,6 +8526,7 @@ white-space	pattern.txt	/*white-space*
 whitespace	pattern.txt	/*whitespace*
 wildcard	editing.txt	/*wildcard*
 wildcards	editing.txt	/*wildcards*
+wildmenumode()	eval.txt	/*wildmenumode()*
 win16-!start	gui_w16.txt	/*win16-!start*
 win16-clipboard	gui_w16.txt	/*win16-clipboard*
 win16-colors	gui_w16.txt	/*win16-colors*

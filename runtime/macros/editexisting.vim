@@ -1,6 +1,6 @@
 " Vim Plugin:	Edit the file with an existing Vim if possible
 " Maintainer:	Bram Moolenaar
-" Last Change:	2008 May 29
+" Last Change:	2013 Feb 24
 
 " This is a plugin, drop it in your (Unix) ~/.vim/plugin or (Win32)
 " $VIM/vimfiles/plugin directory.  Or make a symbolic link, so that you
@@ -98,7 +98,7 @@ func! EditExisting(fname, command)
 	" Make this tab page the current one and find the window number.
 	exe 'tabnext ' . (i + 1)
 	let winnr = bufwinnr(a:fname)
-	break;
+	break
       endif
     endfor
   endif
