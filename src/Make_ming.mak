@@ -288,7 +288,11 @@ else
 ifneq ($(wildcard $(RUBY)/lib/ruby/$(RUBY_VER_LONG)/i386-mingw32),)
 RUBY_PLATFORM = i386-mingw32
 else
+ifneq ($(wildcard $(RUBY)/lib/ruby/$(RUBY_VER_LONG)/x64-mingw32),)
+RUBY_PLATFORM = x64-mingw32
+else
 RUBY_PLATFORM = i386-mswin32
+endif
 endif
 endif
 endif
@@ -297,7 +301,11 @@ ifndef RUBY_INSTALL_NAME
 ifeq ($(RUBY_VER), 16)
 RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_API_VER)
 else
+ifeq ($(ARCH),x86-64)
+RUBY_INSTALL_NAME = x64-msvcrt-ruby$(RUBY_API_VER)
+else
 RUBY_INSTALL_NAME = msvcrt-ruby$(RUBY_API_VER)
+endif
 endif
 endif
 

@@ -39,6 +39,9 @@
  */
 # define rb_cFalseClass		(*dll_rb_cFalseClass)
 # define rb_cFixnum		(*dll_rb_cFixnum)
+# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
+#  define rb_cFloat		(*dll_rb_cFloat)
+# endif
 # define rb_cNilClass		(*dll_rb_cNilClass)
 # define rb_cSymbol		(*dll_rb_cSymbol)
 # define rb_cTrueClass		(*dll_rb_cTrueClass)
@@ -249,6 +252,9 @@ static void ruby_vim_init(void);
 static VALUE (*dll_rb_assoc_new) (VALUE, VALUE);
 VALUE *dll_rb_cFalseClass;
 VALUE *dll_rb_cFixnum;
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
+VALUE *dll_rb_cFloat;
+#endif
 VALUE *dll_rb_cNilClass;
 static VALUE *dll_rb_cObject;
 VALUE *dll_rb_cSymbol;
@@ -352,7 +358,7 @@ rb_float_new_in_heap(double d)
 {
     return dll_rb_float_new(d);
 }
-unsigned long rb_num2ulong(VALUE x)
+VALUE rb_num2ulong(VALUE x)
 {
     return (long)RSHIFT((SIGNED_VALUE)(x),1);
 }
@@ -373,6 +379,9 @@ static struct
     {"rb_assoc_new", (RUBY_PROC*)&dll_rb_assoc_new},
     {"rb_cFalseClass", (RUBY_PROC*)&dll_rb_cFalseClass},
     {"rb_cFixnum", (RUBY_PROC*)&dll_rb_cFixnum},
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
+    {"rb_cFloat", (RUBY_PROC*)&dll_rb_cFloat},
+#endif
     {"rb_cNilClass", (RUBY_PROC*)&dll_rb_cNilClass},
     {"rb_cObject", (RUBY_PROC*)&dll_rb_cObject},
     {"rb_cSymbol", (RUBY_PROC*)&dll_rb_cSymbol},
