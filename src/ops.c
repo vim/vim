@@ -5828,6 +5828,8 @@ x11_export_final_selection()
 					       && len < 1024*1024 && len > 0)
     {
 #ifdef FEAT_MBYTE
+	int ok = TRUE;
+
 	/* The CUT_BUFFER0 is supposed to always contain latin1.  Convert from
 	 * 'enc' when it is a multi-byte encoding.  When 'enc' is an 8-bit
 	 * encoding conversion usually doesn't work, so keep the text as-is.
@@ -5842,6 +5844,7 @@ x11_export_final_selection()
 		int	intlen = len;
 		char_u	*conv_str;
 
+		vc.vc_fail = TRUE;
 		conv_str = string_convert(&vc, str, &intlen);
 		len = intlen;
 		if (conv_str != NULL)
@@ -5849,12 +5852,26 @@ x11_export_final_selection()
 		    vim_free(str);
 		    str = conv_str;
 		}
+		else
+		{
+		    ok = FALSE;
+		}
 		convert_setup(&vc, NULL, NULL);
 	    }
+	    else
+	    {
+		ok = FALSE;
+	    }
 	}
+
+	/* Do not store the string if conversion failed.  Better to use any
+	 * other selection than garbled text. */
+	if (ok)
 #endif
-	XStoreBuffer(dpy, (char *)str, (int)len, 0);
-	XFlush(dpy);
+	{
+	    XStoreBuffer(dpy, (char *)str, (int)len, 0);
+	    XFlush(dpy);
+	}
     }
 
     vim_free(str);
