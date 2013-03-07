@@ -3,6 +3,7 @@ Tests for List and Dictionary types.     vim: set ft=vim :
 STARTTEST
 :so small.vim
 :fun Test(...)
+:lang C
 :" Creating List directly with different types
 :let l = [1, 'as''d', [1, 2, function("strlen")], {'a': 1},]
 :$put =string(l)
