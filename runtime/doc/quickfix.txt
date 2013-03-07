@@ -574,6 +574,8 @@ commands can be combined to create a NewGrep command: >
 			'ignorecase' applies.  To overrule it put |/\c| in the
 			pattern to ignore case or |/\C| to match case.
 			'smartcase' is not used.
+			If {pattern} is empty (e.g. // is specified), the last
+			used search pattern is used. |last-pattern|
 
 			When a number is put before the command this is used
 			as the maximum number of matches to find.  Use

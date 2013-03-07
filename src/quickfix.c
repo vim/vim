@@ -3179,7 +3179,20 @@ ex_vimgrep(eap)
 	EMSG(_(e_invalpat));
 	goto theend;
     }
-    regmatch.regprog = vim_regcomp(s, RE_MAGIC);
+
+    if (s != NULL && *s == NUL)
+    {
+	/* Pattern is empty, use last search pattern. */
+	if (last_search_pat() == NULL)
+	{
+	    EMSG(_(e_noprevre));
+	    goto theend;
+	}
+	regmatch.regprog = vim_regcomp(last_search_pat(), RE_MAGIC);
+    }
+    else
+	regmatch.regprog = vim_regcomp(s, RE_MAGIC);
+
     if (regmatch.regprog == NULL)
 	goto theend;
     regmatch.rmm_ic = p_ic;
