@@ -318,6 +318,20 @@ no,
 maybe
 } soppie;
 
+public static enum
+{
+yes = 0,
+no,
+maybe
+} soppie;
+
+static private enum
+{
+yes = 0,
+no,
+maybe
+} soppie;
+
 {
 	int a,
 		b;
