@@ -7631,22 +7631,33 @@ set_bool_option(opt_idx, varp, value, opt_flags)
     }
 #endif
 
-    /* 'number', 'relativenumber' */
-    else if ((int *)varp == &curwin->w_p_nu
-	  || (int *)varp == &curwin->w_p_rnu)
+    /* If 'number' is set, reset 'relativenumber'. */
+    /* If 'relativenumber' is set, reset 'number'. */
+    else if ((int *)varp == &curwin->w_p_nu && curwin->w_p_nu)
     {
-	/* If 'number' is set, reset 'relativenumber'. */
-	/* If 'relativenumber' is set, reset 'number'. */
-	if ((int *)varp == &curwin->w_p_nu && curwin->w_p_nu)
-	{
-	    curwin->w_p_rnu = FALSE;
+	curwin->w_p_rnu = FALSE;
+
+	/* Only reset the global value if the own value is set globally. */
+	if (((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0))
 	    curwin->w_allbuf_opt.wo_rnu = FALSE;
-	}
-	if ((int *)varp == &curwin->w_p_rnu && curwin->w_p_rnu)
-	{
-	    curwin->w_p_nu = FALSE;
+    }
+    else if ((int *)varp == &curwin->w_p_rnu && curwin->w_p_rnu)
+    {
+	curwin->w_p_nu = FALSE;
+
+	/* Only reset the global value if the own value is set globally. */
+	if (((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0))
 	    curwin->w_allbuf_opt.wo_nu = FALSE;
-	}
+    }
+    else if ((int *)varp == &curwin->w_allbuf_opt.wo_nu
+						&& curwin->w_allbuf_opt.wo_nu)
+    {
+        curwin->w_allbuf_opt.wo_rnu = FALSE;
+    }
+    else if ((int *)varp == &curwin->w_allbuf_opt.wo_rnu
+					       && curwin->w_allbuf_opt.wo_rnu)
+    {
+        curwin->w_allbuf_opt.wo_nu = FALSE;
     }
 
     else if ((int *)varp == &curbuf->b_p_ro)
