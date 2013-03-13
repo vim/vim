@@ -111,6 +111,11 @@ char		*tgetstr __ARGS((char *, char **));
 #  define CRV_SENT	2	/* did send T_CRV, waiting for answer */
 #  define CRV_GOT	3	/* received T_CRV response */
 static int crv_status = CRV_GET;
+/* Request Cursor position report: */
+#  define U7_GET	1	/* send T_U7 when switched to RAW mode */
+#  define U7_SENT	2	/* did send T_U7, waiting for answer */
+#  define U7_GOT	3	/* received T_U7 response */
+static int u7_status = U7_GET;
 # endif
 
 /*
@@ -933,6 +938,7 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CWP,	IF_EB("\033[3;%d;%dt", ESC_STR "[3;%d;%dt")},
 #  endif
     {(int)KS_CRV,	IF_EB("\033[>c", ESC_STR "[>c")},
+    {(int)KS_U7,	IF_EB("\033[6n", ESC_STR "[6n")},
 
     {K_UP,		IF_EB("\033O*A", ESC_STR "O*A")},
     {K_DOWN,		IF_EB("\033O*B", ESC_STR "O*B")},
@@ -1221,6 +1227,7 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CWP,	"[%dCWP%d]"},
 #  endif
     {(int)KS_CRV,	"[CRV]"},
+    {(int)KS_U7,	"[U7]"},
     {K_UP,		"[KU]"},
     {K_DOWN,		"[KD]"},
     {K_LEFT,		"[KL]"},
@@ -1596,6 +1603,7 @@ set_termname(term)
 				{KS_TS, "ts"}, {KS_FS, "fs"},
 				{KS_CWP, "WP"}, {KS_CWS, "WS"},
 				{KS_CSI, "SI"}, {KS_CEI, "EI"},
+				{KS_U7, "u7"},
 				{(enum SpecialKey)0, NULL}
 			    };
 
@@ -3183,7 +3191,8 @@ settmode(tmode)
 		/* May need to check for T_CRV response and termcodes, it
 		 * doesn't work in Cooked mode, an external program may get
 		 * them. */
-		if (tmode != TMODE_RAW && crv_status == CRV_SENT)
+		if (tmode != TMODE_RAW && (crv_status == CRV_SENT
+					 || u7_status == U7_SENT))
 		    (void)vpeekc_nomap();
 		check_for_codes_from_term();
 	    }
@@ -3245,7 +3254,7 @@ stoptermcap()
 # endif
 	{
 	    /* May need to check for T_CRV response. */
-	    if (crv_status == CRV_SENT)
+	    if (crv_status == CRV_SENT || u7_status == U7_SENT)
 		(void)vpeekc_nomap();
 	    /* Check for termcodes first, otherwise an external program may
 	     * get them. */
@@ -3299,6 +3308,48 @@ may_req_termresponse()
 	(void)vpeekc_nomap();
     }
 }
+
+# if defined(FEAT_MBYTE) || defined(PROTO)
+/*
+ * Check how the terminal treats ambiguous character width (UAX #11).
+ * First, we move the cursor to (0, 0) and print a test ambiguous character
+ * \u25bd (WHITE DOWN-POINTING TRIANGLE) and query current cursor position.
+ * If the terminal treats \u25bd as single width, the position is (0, 1),
+ * or if it is treated as double width, that will be (0, 2).
+ * This function has the side effect that changes cursor position, so
+ * it must be called immediately after entering termcap mode.
+ */
+    void
+may_req_ambiguous_character_width()
+{
+    if (u7_status == U7_GET
+	    && cur_tmode == TMODE_RAW
+	    && termcap_active
+	    && p_ek
+#  ifdef UNIX
+	    && isatty(1)
+	    && isatty(read_cmd_fd)
+#  endif
+	    && *T_U7 != NUL
+	    && !option_was_set((char_u *)"ambiwidth"))
+    {
+	 char_u	buf[16];
+
+	 term_windgoto(0, 0);
+	 buf[mb_char2bytes(0x25bd, buf)] = 0;
+	 out_str(buf);
+	 out_str(T_U7);
+	 u7_status = U7_SENT;
+	 term_windgoto(0, 0);
+	 out_str((char_u *)"  ");
+	 term_windgoto(0, 0);
+	 /* check for the characters now, otherwise they might be eaten by
+	  * get_keystroke() */
+	 out_flush();
+	 (void)vpeekc_nomap();
+    }
+}
+# endif
 #endif
 
 /*
@@ -4049,13 +4100,22 @@ check_termcode(max_offset, buf, bufsize, buflen)
 	    /* URXVT mouse uses <ESC>[#;#;#M, but we are matching <ESC>[ */
 	    || key_name[0] == KS_URXVT_MOUSE)
 	{
-	    /* Check for xterm version string: "<Esc>[>{x};{vers};{y}c".  Also
-	     * eat other possible responses to t_RV, rxvt returns
-	     * "<Esc>[?1;2c".  Also accept CSI instead of <Esc>[.
-	     * mrxvt has been reported to have "+" in the version. Assume
-	     * the escape sequence ends with a letter or one of "{|}~". */
-	    if (*T_CRV != NUL && ((tp[0] == ESC && tp[1] == '[' && len >= 3)
-					       || (tp[0] == CSI && len >= 2)))
+	    /* Check for some responses from terminal start with "<Esc>[" or
+	     * CSI.
+	     *
+	     * - xterm version string: <Esc>[>{x};{vers};{y}c
+	     *   Also eat other possible responses to t_RV, rxvt returns
+	     *   "<Esc>[?1;2c". Also accept CSI instead of <Esc>[.
+	     *   mrxvt has been reported to have "+" in the version. Assume
+	     *   the escape sequence ends with a letter or one of "{|}~".
+	     *
+	     * - cursor position report: <Esc>[{row};{col}R
+	     *   The final byte is 'R'. now it is only used for checking for
+	     *   ambiguous-width character state.
+	     */
+	    if ((*T_CRV != NUL || *T_U7 != NUL)
+			&& ((tp[0] == ESC && tp[1] == '[' && len >= 3)
+			    || (tp[0] == CSI && len >= 2)))
 	    {
 		j = 0;
 		extra = 0;
@@ -4067,8 +4127,27 @@ check_termcode(max_offset, buf, bufsize, buflen)
 		if (i == len)
 		    return -1;		/* not enough characters */
 
+#ifdef FEAT_MBYTE
+		/* eat it when it has 2 arguments and ends in 'R' */
+		if (u7_status == U7_SENT && j == 1 && tp[i] == 'R')
+		{
+		    char *p = NULL;
+
+		    u7_status = U7_GOT;
+		    if (extra == 2)
+			p = "single";
+		    else if (extra == 3)
+			p = "double";
+		    if (p != NULL)
+			set_option_value((char_u *)"ambw", 0L, (char_u *)p, 0);
+		    key_name[0] = (int)KS_EXTRA;
+		    key_name[1] = (int)KE_IGNORE;
+		    slen = i + 1;
+		}
+		else
+#endif
 		/* eat it when at least one digit and ending in 'c' */
-		if (i > 2 + (tp[0] != CSI) && tp[i] == 'c')
+		if (*T_CRV != NUL && i > 2 + (tp[0] != CSI) && tp[i] == 'c')
 		{
 		    crv_status = CRV_GOT;
 

@@ -2900,6 +2900,7 @@ static struct vimoption
     p_term("t_op", T_OP)
     p_term("t_RI", T_CRI)
     p_term("t_RV", T_CRV)
+    p_term("t_u7", T_U7)
     p_term("t_Sb", T_CSB)
     p_term("t_Sf", T_CSF)
     p_term("t_se", T_SE)
