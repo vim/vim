@@ -59,6 +59,7 @@ void clip_mch_request_selection __ARGS((VimClipboard *cbd));
 void clip_mch_lose_selection __ARGS((VimClipboard *cbd));
 int clip_mch_own_selection __ARGS((VimClipboard *cbd));
 void clip_mch_set_selection __ARGS((VimClipboard *cbd));
+int clip_gtk_owner_exists __ARGS((VimClipboard *cbd));
 void gui_mch_menu_grey __ARGS((vimmenu_T *menu, int grey));
 void gui_mch_menu_hidden __ARGS((vimmenu_T *menu, int hidden));
 void gui_mch_draw_menubar __ARGS((void));

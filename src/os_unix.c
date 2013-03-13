@@ -1138,6 +1138,11 @@ sigcont_handler SIGDEFARG(sigarg)
 
 # if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
 static void loose_clipboard __ARGS((void));
+static void save_clipboard __ARGS((void));
+static void restore_clipboard __ARGS((void));
+
+static void *clip_star_save = NULL;
+static void *clip_plus_save = NULL;
 
 /*
  * Called when Vim is going to sleep or execute a shell command.
@@ -1156,6 +1161,42 @@ loose_clipboard()
 	    clip_lose_selection(&clip_plus);
 	if (x11_display != NULL)
 	    XFlush(x11_display);
+    }
+}
+
+/*
+ * Save clipboard text to restore later.
+ */
+    static void
+save_clipboard()
+{
+    if (clip_star.owned)
+	clip_star_save = get_register('*', TRUE);
+    if (clip_plus.owned)
+	clip_plus_save = get_register('+', TRUE);
+}
+
+/*
+ * Restore clipboard text if no one own the X selection.
+ */
+    static void
+restore_clipboard()
+{
+    if (clip_star_save != NULL)
+    {
+	if (!clip_gen_owner_exists(&clip_star))
+	    put_register('*', clip_star_save);
+	else
+	    free_register(clip_star_save);
+	clip_star_save = NULL;
+    }
+    if (clip_plus_save != NULL)
+    {
+	if (!clip_gen_owner_exists(&clip_plus))
+	    put_register('+', clip_plus_save);
+	else
+	    free_register(clip_plus_save);
+	clip_plus_save = NULL;
     }
 }
 #endif
@@ -3844,6 +3885,7 @@ mch_call_shell(cmd, options)
 	settmode(TMODE_COOK);	    /* set to normal mode */
 
 # if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+    save_clipboard();
     loose_clipboard();
 # endif
 
@@ -3917,6 +3959,9 @@ mch_call_shell(cmd, options)
 # ifdef FEAT_TITLE
     resettitle();
 # endif
+# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+    restore_clipboard();
+# endif
     return x;
 
 #else /* USE_SYSTEM */	    /* don't use system(), use fork()/exec() */
@@ -3965,6 +4010,9 @@ mch_call_shell(cmd, options)
 	settmode(TMODE_COOK);		/* set to normal mode */
 
 # if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+    /* Disown the clipboard, because is the executed command tries to obtain a
+     * selection and we own it we get a deadlock. */
+    save_clipboard();
     loose_clipboard();
 # endif
 
@@ -4835,6 +4883,9 @@ error:
 	    settmode(TMODE_RAW);	/* set to raw mode */
 # ifdef FEAT_TITLE
     resettitle();
+# endif
+# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+    restore_clipboard();
 # endif
     vim_free(newcmd);
 

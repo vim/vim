@@ -15,6 +15,7 @@ void get_yank_register __ARGS((int regname, int writing));
 int may_get_selection __ARGS((int regname));
 void *get_register __ARGS((int name, int copy));
 void put_register __ARGS((int name, void *reg));
+void free_register __ARGS((void *reg));
 int yank_register_mline __ARGS((int regname));
 int do_record __ARGS((int c));
 int do_execreg __ARGS((int regname, int colon, int addcr, int silent));

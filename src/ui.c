@@ -1456,6 +1456,21 @@ clip_gen_request_selection(cbd)
 #endif
 }
 
+    int
+clip_gen_owner_exists(cbd)
+    VimClipboard	*cbd;
+{
+#ifdef FEAT_XCLIPBOARD
+# ifdef FEAT_GUI_GTK
+    if (gui.in_use)
+	return clip_gtk_owner_exists(cbd);
+    else
+# endif
+	return clip_x11_owner_exists(cbd);
+#endif
+    return TRUE;
+}
+
 #endif /* FEAT_CLIPBOARD */
 
 /*****************************************************************************
@@ -2398,7 +2413,8 @@ clip_x11_lose_selection(myShell, cbd)
     Widget		myShell;
     VimClipboard	*cbd;
 {
-    XtDisownSelection(myShell, cbd->sel_atom, CurrentTime);
+    XtDisownSelection(myShell, cbd->sel_atom,
+				XtLastTimestampProcessed(XtDisplay(myShell)));
 }
 
     int
@@ -2439,6 +2455,13 @@ clip_x11_own_selection(myShell, cbd)
 clip_x11_set_selection(cbd)
     VimClipboard *cbd UNUSED;
 {
+}
+
+    int
+clip_x11_owner_exists(cbd)
+    VimClipboard	*cbd;
+{
+    return XGetSelectionOwner(X_DISPLAY, cbd->sel_atom) != None;
 }
 #endif
 

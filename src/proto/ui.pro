@@ -29,6 +29,7 @@ int clip_gen_own_selection __ARGS((VimClipboard *cbd));
 void clip_gen_lose_selection __ARGS((VimClipboard *cbd));
 void clip_gen_set_selection __ARGS((VimClipboard *cbd));
 void clip_gen_request_selection __ARGS((VimClipboard *cbd));
+int clip_gen_owner_exists __ARGS((VimClipboard *cbd));
 int vim_is_input_buf_full __ARGS((void));
 int vim_is_input_buf_empty __ARGS((void));
 int vim_free_in_input_buf __ARGS((void));
@@ -52,6 +53,7 @@ void clip_x11_request_selection __ARGS((Widget myShell, Display *dpy, VimClipboa
 void clip_x11_lose_selection __ARGS((Widget myShell, VimClipboard *cbd));
 int clip_x11_own_selection __ARGS((Widget myShell, VimClipboard *cbd));
 void clip_x11_set_selection __ARGS((VimClipboard *cbd));
+int clip_x11_owner_exists __ARGS((VimClipboard *cbd));
 void yank_cut_buffer0 __ARGS((Display *dpy, VimClipboard *cbd));
 int jump_to_mouse __ARGS((int flags, int *inclusive, int which_button));
 int mouse_comp_pos __ARGS((win_T *win, int *rowp, int *colp, linenr_T *lnump));

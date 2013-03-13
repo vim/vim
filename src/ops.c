@@ -1017,6 +1017,19 @@ put_register(name, reg)
     may_set_selection();
 # endif
 }
+
+    void
+free_register(reg)
+    void	*reg;
+{
+    struct yankreg tmp;
+
+    tmp = *y_current;
+    *y_current = *(struct yankreg *)reg;
+    free_yank_all();
+    vim_free(reg);
+    *y_current = tmp;
+}
 #endif
 
 #if defined(FEAT_MOUSE) || defined(PROTO)
