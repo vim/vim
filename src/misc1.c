@@ -5468,7 +5468,7 @@ cin_isinit(void)
 
 	for (i = 0; i < (int)(sizeof(skip) / sizeof(char *)); ++i)
 	{
-	    l = strlen(skip[i]);
+	    l = (int)strlen(skip[i]);
 	    if (cin_starts_with(s, skip[i]))
 	    {
 		s = cin_skipcomment(s + l);
@@ -6430,7 +6430,7 @@ cin_starts_with(s, word)
     char_u *s;
     char *word;
 {
-    int l = STRLEN(word);
+    int l = (int)STRLEN(word);
 
     return (STRNCMP(s, word, l) == 0 && !vim_isIDc(s[l]));
 }
