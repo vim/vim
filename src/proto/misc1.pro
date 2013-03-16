@@ -42,6 +42,7 @@ void unchanged __ARGS((buf_T *buf, int ff));
 void check_status __ARGS((buf_T *buf));
 void change_warning __ARGS((int col));
 int ask_yesno __ARGS((char_u *str, int direct));
+int is_mouse_key __ARGS((int c));
 int get_keystroke __ARGS((void));
 int get_number __ARGS((int colon, int *mouse_used));
 int prompt_for_number __ARGS((int *mouse_used));

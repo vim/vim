@@ -3288,6 +3288,38 @@ ask_yesno(str, direct)
     return r;
 }
 
+#if defined(FEAT_MOUSE) || defined(PROTO)
+/*
+ * Return TRUE if "c" is a mouse key.
+ */
+    int
+is_mouse_key(c)
+    int c;
+{
+    return c == K_LEFTMOUSE
+	|| c == K_LEFTMOUSE_NM
+	|| c == K_LEFTDRAG
+	|| c == K_LEFTRELEASE
+	|| c == K_LEFTRELEASE_NM
+	|| c == K_MIDDLEMOUSE
+	|| c == K_MIDDLEDRAG
+	|| c == K_MIDDLERELEASE
+	|| c == K_RIGHTMOUSE
+	|| c == K_RIGHTDRAG
+	|| c == K_RIGHTRELEASE
+	|| c == K_MOUSEDOWN
+	|| c == K_MOUSEUP
+	|| c == K_MOUSELEFT
+	|| c == K_MOUSERIGHT
+	|| c == K_X1MOUSE
+	|| c == K_X1DRAG
+	|| c == K_X1RELEASE
+	|| c == K_X2MOUSE
+	|| c == K_X2DRAG
+	|| c == K_X2RELEASE;
+}
+#endif
+
 /*
  * Get a key stroke directly from the user.
  * Ignores mouse clicks and scrollbar events, except a click for the left
@@ -3373,31 +3405,10 @@ get_keystroke()
 	    n = TO_SPECIAL(buf[1], buf[2]);
 	    if (buf[1] == KS_MODIFIER
 		    || n == K_IGNORE
-#ifdef FEAT_MOUSE
-		    || n == K_LEFTMOUSE_NM
-		    || n == K_LEFTDRAG
-		    || n == K_LEFTRELEASE
-		    || n == K_LEFTRELEASE_NM
-		    || n == K_MIDDLEMOUSE
-		    || n == K_MIDDLEDRAG
-		    || n == K_MIDDLERELEASE
-		    || n == K_RIGHTMOUSE
-		    || n == K_RIGHTDRAG
-		    || n == K_RIGHTRELEASE
-		    || n == K_MOUSEDOWN
-		    || n == K_MOUSEUP
-		    || n == K_MOUSELEFT
-		    || n == K_MOUSERIGHT
-		    || n == K_X1MOUSE
-		    || n == K_X1DRAG
-		    || n == K_X1RELEASE
-		    || n == K_X2MOUSE
-		    || n == K_X2DRAG
-		    || n == K_X2RELEASE
-# ifdef FEAT_GUI
+		    || (is_mouse_key(n) && n != K_LEFTMOUSE)
+#ifdef FEAT_GUI
 		    || n == K_VER_SCROLLBAR
 		    || n == K_HOR_SCROLLBAR
-# endif
 #endif
 	       )
 	    {

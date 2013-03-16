@@ -2443,7 +2443,31 @@ do_mouse(oap, c, dir, count, fixindent)
 		return FALSE;
 	}
 
-    which_button = get_mouse_button(KEY2TERMCAP1(c), &is_click, &is_drag);
+    for (;;)
+    {
+	which_button = get_mouse_button(KEY2TERMCAP1(c), &is_click, &is_drag);
+	if (is_drag)
+	{
+	    /* If the next character is the same mouse event then use that
+	     * one. Speeds up dragging the status line. */
+	    if (vpeekc() != NUL)
+	    {
+		int nc;
+		int save_mouse_row = mouse_row;
+		int save_mouse_col = mouse_col;
+
+		/* Need to get the character, peeking doesn't get the actual
+		 * one. */
+		nc = safe_vgetc();
+		if (c == nc)
+		    continue;
+		vungetc(nc);
+		mouse_row = save_mouse_row;
+		mouse_col = save_mouse_col;
+	    }
+	}
+	break;
+    }
 
 #ifdef FEAT_MOUSESHAPE
     /* May have stopped dragging the status or separator line.  The pointer is
