@@ -3926,8 +3926,7 @@ check_termcode(max_offset, buf, bufsize, buflen)
      * Check at several positions in typebuf.tb_buf[], to catch something like
      * "x<Up>" that can be mapped. Stop at max_offset, because characters
      * after that cannot be used for mapping, and with @r commands
-     * typebuf.tb_buf[]
-     * can become very long.
+     * typebuf.tb_buf[] can become very long.
      * This is used often, KEEP IT FAST!
      */
     for (offset = 0; offset < max_offset; ++offset)
@@ -4098,7 +4097,11 @@ check_termcode(max_offset, buf, bufsize, buflen)
 #ifdef FEAT_TERMRESPONSE
 	if (key_name[0] == NUL
 	    /* URXVT mouse uses <ESC>[#;#;#M, but we are matching <ESC>[ */
-	    || key_name[0] == KS_URXVT_MOUSE)
+	    || key_name[0] == KS_URXVT_MOUSE
+# ifdef FEAT_MBYTE
+	    || u7_status == U7_SENT
+# endif
+            )
 	{
 	    /* Check for some responses from terminal start with "<Esc>[" or
 	     * CSI.
@@ -4129,7 +4132,7 @@ check_termcode(max_offset, buf, bufsize, buflen)
 
 #ifdef FEAT_MBYTE
 		/* eat it when it has 2 arguments and ends in 'R' */
-		if (u7_status == U7_SENT && j == 1 && tp[i] == 'R')
+		if (j == 1 && tp[i] == 'R')
 		{
 		    char *p = NULL;
 
