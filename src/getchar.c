@@ -1337,6 +1337,10 @@ save_typebuf()
 
 static int old_char = -1;	/* character put back by vungetc() */
 static int old_mod_mask;	/* mod_mask for ungotten character */
+#ifdef FEAT_MOUSE
+static int old_mouse_row;	/* mouse_row related to old_char */
+static int old_mouse_col;	/* mouse_col related to old_char */
+#endif
 
 #if defined(FEAT_EVAL) || defined(FEAT_EX_EXTRA) || defined(PROTO)
 
@@ -1567,6 +1571,10 @@ vgetc()
 	c = old_char;
 	old_char = -1;
 	mod_mask = old_mod_mask;
+#ifdef FEAT_MOUSE
+	mouse_row = old_mouse_row;
+	mouse_col = old_mouse_col;
+#endif
     }
     else
     {
@@ -1877,6 +1885,10 @@ vungetc(c)	/* unget one character (can only be done once!) */
 {
     old_char = c;
     old_mod_mask = mod_mask;
+#ifdef FEAT_MOUSE
+    old_mouse_row = mouse_row;
+    old_mouse_col = mouse_col;
+#endif
 }
 
 /*
