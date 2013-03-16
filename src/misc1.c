@@ -3405,7 +3405,9 @@ get_keystroke()
 	    n = TO_SPECIAL(buf[1], buf[2]);
 	    if (buf[1] == KS_MODIFIER
 		    || n == K_IGNORE
+#ifdef FEAT_MOUSE
 		    || (is_mouse_key(n) && n != K_LEFTMOUSE)
+#endif
 #ifdef FEAT_GUI
 		    || n == K_VER_SCROLLBAR
 		    || n == K_HOR_SCROLLBAR
