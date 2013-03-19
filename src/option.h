@@ -453,6 +453,7 @@ EXTERN int	p_exrc;		/* 'exrc' */
 EXTERN char_u	*p_fencs;	/* 'fileencodings' */
 #endif
 EXTERN char_u	*p_ffs;		/* 'fileformats' */
+EXTERN long	p_fic;		/* 'fileignorecase' */
 #ifdef FEAT_FOLDING
 EXTERN char_u	*p_fcl;		/* 'foldclose' */
 EXTERN long	p_fdls;		/* 'foldlevelstart' */

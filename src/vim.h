@@ -1627,18 +1627,8 @@ void mch_memmove __ARGS((void *, void *, size_t));
  * (this does not account for maximum name lengths and things like "../dir",
  * thus it is not 100% accurate!)
  */
-#ifdef CASE_INSENSITIVE_FILENAME
-# ifdef BACKSLASH_IN_FILENAME
-#  define fnamecmp(x, y) vim_fnamecmp((x), (y))
-#  define fnamencmp(x, y, n) vim_fnamencmp((x), (y), (size_t)(n))
-# else
-#  define fnamecmp(x, y) MB_STRICMP((x), (y))
-#  define fnamencmp(x, y, n) MB_STRNICMP((x), (y), (n))
-# endif
-#else
-# define fnamecmp(x, y) strcmp((char *)(x), (char *)(y))
-# define fnamencmp(x, y, n) strncmp((char *)(x), (char *)(y), (size_t)(n))
-#endif
+#define fnamecmp(x, y) vim_fnamecmp((char_u *)(x), (char_u *)(y))
+#define fnamencmp(x, y, n) vim_fnamencmp((char_u *)(x), (char_u *)(y), (size_t)(n))
 
 #ifdef HAVE_MEMSET
 # define vim_memset(ptr, c, size)   memset((ptr), (c), (size))

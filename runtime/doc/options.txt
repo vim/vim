@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2013 Mar 13
+*options.txt*	For Vim version 7.3.  Last change: 2013 Mar 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2940,6 +2940,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	otherwise 'textauto' is set.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
+
+			*'fileignorecase'* *'wic'* *'nofileignorecase'* *'nowic'*
+'fileignorecase' 'wic'	boolean	(default on for systems where case in file
+				 names is normally ignored.
+			global
+			{not in Vi}
+	When set case is ignored when using file names and directories.
+	See 'wildignorecase' for only ignoring case when doing completion.
 
 					*'filetype'* *'ft'*
 'filetype' 'ft'		string (default: "")
@@ -7903,7 +7911,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 	When set case is ignored when completing file names and directories.
-	Has no effect on systems where file name case is generally ignored.
+	Has no effect when 'fileignorecase' is set.
 	Does not apply when the shell is used to expand wildcards, which
 	happens when there are special characters.
 

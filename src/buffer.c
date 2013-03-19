@@ -2401,12 +2401,7 @@ fname_match(prog, name)
     if (name != NULL)
     {
 	regmatch.regprog = prog;
-#ifdef CASE_INSENSITIVE_FILENAME
-	regmatch.rm_ic = TRUE;		/* Always ignore case */
-#else
-	regmatch.rm_ic = FALSE;		/* Never ignore case */
-#endif
-
+	regmatch.rm_ic = p_fic;	/* ignore case when 'fileignorecase' is set */
 	if (vim_regexec(&regmatch, name, (colnr_T)0))
 	    match = name;
 	else

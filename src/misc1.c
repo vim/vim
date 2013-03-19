@@ -5026,16 +5026,21 @@ dir_of_file_exists(fname)
     return retval;
 }
 
-#if (defined(CASE_INSENSITIVE_FILENAME) && defined(BACKSLASH_IN_FILENAME)) \
-	|| defined(PROTO)
 /*
- * Versions of fnamecmp() and fnamencmp() that handle '/' and '\' equally.
+ * Versions of fnamecmp() and fnamencmp() that handle '/' and '\' equally
+ * and deal with 'fileignorecase'.
  */
     int
 vim_fnamecmp(x, y)
     char_u	*x, *y;
 {
+#ifdef BACKSLASH_IN_FILENAME
     return vim_fnamencmp(x, y, MAXPATHL);
+#else
+    if (p_fic)
+	return MB_STRICMP(x, y);
+    return STRCMP(x, y);
+#endif
 }
 
     int
@@ -5043,9 +5048,11 @@ vim_fnamencmp(x, y, len)
     char_u	*x, *y;
     size_t	len;
 {
+#ifdef BACKSLASH_IN_FILENAME
+    /* TODO: multi-byte characters. */
     while (len > 0 && *x && *y)
     {
-	if (TOLOWER_LOC(*x) != TOLOWER_LOC(*y)
+	if ((p_fic ? TOLOWER_LOC(*x) != TOLOWER_LOC(*y) : *x != *y)
 		&& !(*x == '/' && *y == '\\')
 		&& !(*x == '\\' && *y == '/'))
 	    break;
@@ -5056,8 +5063,12 @@ vim_fnamencmp(x, y, len)
     if (len == 0)
 	return 0;
     return (*x - *y);
-}
+#else
+    if (p_fic)
+	return MB_STRNICMP(x, y, len);
+    return STRNCMP(x, y, len);
 #endif
+}
 
 /*
  * Concatenate file names fname1 and fname2 into allocated memory.
@@ -9835,11 +9846,8 @@ unix_expandpath(gap, path, wildoff, flags, didstar)
 	}
 	else if (path_end >= path + wildoff
 			 && (vim_strchr((char_u *)"*?[{~$", *path_end) != NULL
-#ifndef CASE_INSENSITIVE_FILENAME
-			     || ((flags & EW_ICASE)
-					       && isalpha(PTR2CHAR(path_end)))
-#endif
-			     ))
+			     || (!p_fic && (flags & EW_ICASE)
+					     && isalpha(PTR2CHAR(path_end)))))
 	    e = p;
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
@@ -9882,14 +9890,10 @@ unix_expandpath(gap, path, wildoff, flags, didstar)
     }
 
     /* compile the regexp into a program */
-#ifdef CASE_INSENSITIVE_FILENAME
-    regmatch.rm_ic = TRUE;		/* Behave like Terminal.app */
-#else
     if (flags & EW_ICASE)
 	regmatch.rm_ic = TRUE;		/* 'wildignorecase' set */
     else
-	regmatch.rm_ic = FALSE;		/* Don't ignore case */
-#endif
+	regmatch.rm_ic = p_fic;	/* ignore case when 'fileignorecase' is set */
     if (flags & (EW_NOERROR | EW_NOTWILD))
 	++emsg_silent;
     regmatch.regprog = vim_regcomp(pat, RE_MAGIC);

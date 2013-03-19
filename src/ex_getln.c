@@ -3653,19 +3653,16 @@ ExpandOne(xp, str, orig, options, mode)
 	{
 	    for (i = 0; i < xp->xp_numfiles; ++i)
 	    {
-#ifdef CASE_INSENSITIVE_FILENAME
-		if (xp->xp_context == EXPAND_DIRECTORIES
+		if (p_fic && (xp->xp_context == EXPAND_DIRECTORIES
 			|| xp->xp_context == EXPAND_FILES
 			|| xp->xp_context == EXPAND_SHELLCMD
-			|| xp->xp_context == EXPAND_BUFFERS)
+			|| xp->xp_context == EXPAND_BUFFERS))
 		{
 		    if (TOLOWER_LOC(xp->xp_files[i][len]) !=
 					    TOLOWER_LOC(xp->xp_files[0][len]))
 			break;
 		}
-		else
-#endif
-		     if (xp->xp_files[i][len] != xp->xp_files[0][len])
+		else if (xp->xp_files[i][len] != xp->xp_files[0][len])
 		    break;
 	    }
 	    if (i < xp->xp_numfiles)

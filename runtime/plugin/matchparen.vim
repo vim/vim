@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2011 Aug 27
+" Last Change: 2013 Mar 19
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)

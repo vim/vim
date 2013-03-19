@@ -5362,13 +5362,11 @@ ff_wc_equal(s1, s2)
     if (STRLEN(s1) != STRLEN(s2))
 	return FAIL;
 
+    /* TODO: handle multi-byte characters. */
     for (i = 0; s1[i] != NUL && s2[i] != NUL; i++)
     {
 	if (s1[i] != s2[i]
-#ifdef CASE_INSENSITIVE_FILENAME
-		&& TOUPPER_LOC(s1[i]) != TOUPPER_LOC(s2[i])
-#endif
-		)
+		      && (!p_fic || TOUPPER_LOC(s1[i]) != TOUPPER_LOC(s2[i])))
 	{
 	    if (i >= 2)
 		if (s1[i-1] == '*' && s1[i-2] == '*')
@@ -6123,12 +6121,7 @@ pathcmp(p, q, maxlen)
 	    break;
 	}
 
-	if (
-#ifdef CASE_INSENSITIVE_FILENAME
-		TOUPPER_LOC(p[i]) != TOUPPER_LOC(q[i])
-#else
-		p[i] != q[i]
-#endif
+	if ((p_fic ? TOUPPER_LOC(p[i]) != TOUPPER_LOC(q[i]) : p[i] != q[i])
 #ifdef BACKSLASH_IN_FILENAME
 		/* consider '/' and '\\' to be equal */
 		&& !((p[i] == '/' && q[i] == '\\')
