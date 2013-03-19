@@ -184,12 +184,14 @@ char * _fullpath(char *buf, char *fname, int len)
 }
 # endif
 
+# if !defined(__MINGW32__) || (__GNUC__ < 4)
 int _chdrive(int drive)
 {
     char temp [3] = "-:";
     temp[0] = drive + 'A' - 1;
     return !SetCurrentDirectory(temp);
 }
+# endif
 #else
 # ifdef __BORLANDC__
 /* being a more ANSI compliant compiler, BorlandC doesn't define _stricoll:

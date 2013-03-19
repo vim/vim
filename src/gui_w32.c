@@ -1614,7 +1614,7 @@ gui_mch_init(void)
 #endif
 
 #ifdef FEAT_EVAL
-# if _MSC_VER < 1400
+# ifndef HandleToLong
 /* HandleToLong() only exists in compilers that can do 64 bit builds */
 #  define HandleToLong(h) ((long)(h))
 # endif

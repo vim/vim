@@ -163,7 +163,7 @@ static PFNGCKLN    s_pfnGetConsoleKeyboardLayoutName = NULL;
 
 /* Enable common dialogs input unicode from IME if posible. */
 #ifdef FEAT_MBYTE
-LRESULT (WINAPI *pDispatchMessage)(LPMSG) = DispatchMessage;
+LRESULT (WINAPI *pDispatchMessage)(CONST MSG *) = DispatchMessage;
 BOOL (WINAPI *pGetMessage)(LPMSG, HWND, UINT, UINT) = GetMessage;
 BOOL (WINAPI *pIsDialogMessage)(HWND, LPMSG) = IsDialogMessage;
 BOOL (WINAPI *pPeekMessage)(LPMSG, HWND, UINT, UINT, UINT) = PeekMessage;
@@ -3464,7 +3464,7 @@ sub_process_writer(LPVOID param)
 		    && (lnum != curbuf->b_ml.ml_line_count
 			|| curbuf->b_p_eol)))
 	    {
-		WriteFile(g_hChildStd_IN_Wr, "\n", 1, &ignored, NULL);
+		WriteFile(g_hChildStd_IN_Wr, "\n", 1, (LPDWORD)&ignored, NULL);
 	    }
 
 	    ++lnum;

@@ -204,7 +204,7 @@ Trace(char *pszFormat, ...);
 /* Enable common dialogs input unicode from IME if posible. */
 #ifdef FEAT_MBYTE
     /* The variables are defined in os_win32.c. */
-extern LRESULT (WINAPI *pDispatchMessage)(LPMSG);
+extern LRESULT (WINAPI *pDispatchMessage)(CONST MSG *);
 extern BOOL (WINAPI *pGetMessage)(LPMSG, HWND, UINT, UINT);
 extern BOOL (WINAPI *pIsDialogMessage)(HWND, LPMSG);
 extern BOOL (WINAPI *pPeekMessage)(LPMSG, HWND, UINT, UINT, UINT);

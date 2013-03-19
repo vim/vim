@@ -3265,27 +3265,27 @@ gui_mch_settitle(
  * misc2.c! */
 static LPCSTR mshape_idcs[] =
 {
-    MAKEINTRESOURCE(IDC_ARROW),		/* arrow */
-    MAKEINTRESOURCE(0),			/* blank */
-    MAKEINTRESOURCE(IDC_IBEAM),		/* beam */
-    MAKEINTRESOURCE(IDC_SIZENS),	/* updown */
-    MAKEINTRESOURCE(IDC_SIZENS),	/* udsizing */
-    MAKEINTRESOURCE(IDC_SIZEWE),	/* leftright */
-    MAKEINTRESOURCE(IDC_SIZEWE),	/* lrsizing */
-    MAKEINTRESOURCE(IDC_WAIT),		/* busy */
+    IDC_ARROW,			/* arrow */
+    MAKEINTRESOURCE(0),		/* blank */
+    IDC_IBEAM,			/* beam */
+    IDC_SIZENS,			/* updown */
+    IDC_SIZENS,			/* udsizing */
+    IDC_SIZEWE,			/* leftright */
+    IDC_SIZEWE,			/* lrsizing */
+    IDC_WAIT,			/* busy */
 #ifdef WIN3264
-    MAKEINTRESOURCE(IDC_NO),		/* no */
+    IDC_NO,			/* no */
 #else
-    MAKEINTRESOURCE(IDC_ICON),		/* no */
+    IDC_ICON,			/* no */
 #endif
-    MAKEINTRESOURCE(IDC_ARROW),		/* crosshair */
-    MAKEINTRESOURCE(IDC_ARROW),		/* hand1 */
-    MAKEINTRESOURCE(IDC_ARROW),		/* hand2 */
-    MAKEINTRESOURCE(IDC_ARROW),		/* pencil */
-    MAKEINTRESOURCE(IDC_ARROW),		/* question */
-    MAKEINTRESOURCE(IDC_ARROW),		/* right-arrow */
-    MAKEINTRESOURCE(IDC_UPARROW),	/* up-arrow */
-    MAKEINTRESOURCE(IDC_ARROW)		/* last one */
+    IDC_ARROW,			/* crosshair */
+    IDC_ARROW,			/* hand1 */
+    IDC_ARROW,			/* hand2 */
+    IDC_ARROW,			/* pencil */
+    IDC_ARROW,			/* question */
+    IDC_ARROW,			/* right-arrow */
+    IDC_UPARROW,		/* up-arrow */
+    IDC_ARROW			/* last one */
 };
 
     void
@@ -3298,7 +3298,7 @@ mch_set_mouse_shape(int shape)
     else
     {
 	if (shape >= MSHAPE_NUMBERED)
-	    idc = MAKEINTRESOURCE(IDC_ARROW);
+	    idc = IDC_ARROW;
 	else
 	    idc = mshape_idcs[shape];
 #ifdef SetClassLongPtr
