@@ -132,6 +132,7 @@ static RETSIGTYPE sig_sysmouse __ARGS(SIGPROTOARG);
 #  include <X11/Shell.h>
 #  include <X11/StringDefs.h>
 static Widget	xterm_Shell = (Widget)0;
+static void clip_update __ARGS((void));
 static void xterm_update __ARGS((void));
 # endif
 
@@ -1138,11 +1139,13 @@ sigcont_handler SIGDEFARG(sigarg)
 
 # if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
 static void loose_clipboard __ARGS((void));
+# ifdef USE_SYSTEM
 static void save_clipboard __ARGS((void));
 static void restore_clipboard __ARGS((void));
 
 static void *clip_star_save = NULL;
 static void *clip_plus_save = NULL;
+# endif
 
 /*
  * Called when Vim is going to sleep or execute a shell command.
@@ -1164,6 +1167,7 @@ loose_clipboard()
     }
 }
 
+# ifdef USE_SYSTEM
 /*
  * Save clipboard text to restore later.
  */
@@ -1199,6 +1203,7 @@ restore_clipboard()
 	clip_plus_save = NULL;
     }
 }
+# endif
 #endif
 
 /*
@@ -4009,13 +4014,6 @@ mch_call_shell(cmd, options)
     if (options & SHELL_COOKED)
 	settmode(TMODE_COOK);		/* set to normal mode */
 
-# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
-    /* Disown the clipboard, because is the executed command tries to obtain a
-     * selection and we own it we get a deadlock. */
-    save_clipboard();
-    loose_clipboard();
-# endif
-
     /*
      * Do this loop twice:
      * 1: find number of arguments
@@ -4788,6 +4786,11 @@ mch_call_shell(cmd, options)
 		    }
 		    else
 			wait_pid = 0;
+
+# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+		    /* Handle any X events, e.g. serving the clipboard. */
+		    clip_update();
+# endif
 		}
 finished:
 		p_more = p_more_save;
@@ -4814,6 +4817,45 @@ finished:
 		    close(toshell_fd);
 		close(fromshell_fd);
 	    }
+# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+	    else
+	    {
+		/*
+		 * Similar to the loop above, but only handle X events, no
+		 * I/O.
+		 */
+		for (;;)
+		{
+		    if (got_int)
+		    {
+			/* CTRL-C sends a signal to the child, we ignore it
+			 * ourselves */
+#  ifdef HAVE_SETSID
+			kill(-pid, SIGINT);
+#  else
+			kill(0, SIGINT);
+#  endif
+			got_int = FALSE;
+		    }
+# ifdef __NeXT__
+		    wait_pid = wait4(pid, &status, WNOHANG, (struct rusage *)0);
+# else
+		    wait_pid = waitpid(pid, &status, WNOHANG);
+# endif
+		    if ((wait_pid == (pid_t)-1 && errno == ECHILD)
+			    || (wait_pid == pid && WIFEXITED(status)))
+		    {
+			wait_pid = pid;
+			break;
+		    }
+
+		    /* Handle any X events, e.g. serving the clipboard. */
+		    clip_update();
+
+		    mch_delay(10L, TRUE);
+		}
+	    }
+# endif
 
 	    /*
 	     * Wait until our child has exited.
@@ -4883,9 +4925,6 @@ error:
 	    settmode(TMODE_RAW);	/* set to raw mode */
 # ifdef FEAT_TITLE
     resettitle();
-# endif
-# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
-    restore_clipboard();
 # endif
     vim_free(newcmd);
 
@@ -6866,6 +6905,21 @@ clear_xterm_clip()
 #  endif
 }
 # endif
+
+/*
+ * Catch up with GUI or X events.
+ */
+    static void
+clip_update()
+{
+# ifdef FEAT_GUI
+    if (gui.in_use)
+	gui_mch_update();
+    else
+# endif
+    if (xterm_Shell != (Widget)0)
+	xterm_update();
+}
 
 /*
  * Catch up with any queued X events.  This may put keyboard input into the
