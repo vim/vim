@@ -5049,20 +5049,28 @@ vim_fnamencmp(x, y, len)
     size_t	len;
 {
 #ifdef BACKSLASH_IN_FILENAME
+    char_u	*px = x;
+    char_u	*py = y;
+    int		cx = NUL;
+    int		cy = NUL;
+
     /* TODO: multi-byte characters. */
-    while (len > 0 && *x && *y)
+    while (len > 0)
     {
-	if ((p_fic ? TOLOWER_LOC(*x) != TOLOWER_LOC(*y) : *x != *y)
-		&& !(*x == '/' && *y == '\\')
-		&& !(*x == '\\' && *y == '/'))
+	cx = PTR2CHAR(px);
+	cy = PTR2CHAR(py);
+	if (cx == NUL || cy == NUL
+	    || ((p_fic ? MB_TOLOWER(cx) != MB_TOLOWER(cy) : cx != cy)
+		&& !(cx == '/' && cy == '\\')
+		&& !(cx == '\\' && cy == '/')))
 	    break;
-	++x;
-	++y;
-	--len;
+	len -= MB_PTR2LEN(px);
+	px += MB_PTR2LEN(px);
+	py += MB_PTR2LEN(py);
     }
     if (len == 0)
 	return 0;
-    return (*x - *y);
+    return (cx - cy);
 #else
     if (p_fic)
 	return MB_STRNICMP(x, y, len);
