@@ -35,6 +35,8 @@ STARTTEST
 :$put =substitute('vVv', 'V', \"\b\", '')
 :$put =substitute('wWw', 'W', \"\\\", '')
 :$put =substitute('xXx', 'X', \"\r\", '')
+:$put =substitute('Y', 'Y', '\L\uyYy\l\EY', '')
+:$put =substitute('Z', 'Z', '\U\lZzZ\u\Ez', '')
 /^TEST_2
 ENDTEST
 
@@ -67,6 +69,8 @@ STARTTEST
 :$put =substitute('uUu', 'U', \"\n\", '')
 :$put =substitute('vVv', 'V', \"\b\", '')
 :$put =substitute('wWw', 'W', \"\\\", '')
+:$put =substitute('X', 'X', '\L\uxXx\l\EX', '')
+:$put =substitute('Y', 'Y', '\U\lYyY\u\Ey', '')
 /^TEST_3
 ENDTEST
 

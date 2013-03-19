@@ -7185,7 +7185,8 @@ vim_regsub_both(source, dest, copy, magic, backslash)
     int		c;
     int		cc;
     int		no = -1;
-    fptr_T	func = (fptr_T)NULL;
+    fptr_T	func_all = (fptr_T)NULL;
+    fptr_T	func_one = (fptr_T)NULL;
     linenr_T	clnum = 0;	/* init for GCC */
     int		len = 0;	/* init for GCC */
 #ifdef FEAT_EVAL
@@ -7318,16 +7319,16 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 	    {
 		switch (*src++)
 		{
-		case 'u':   func = (fptr_T)do_upper;
+		case 'u':   func_one = (fptr_T)do_upper;
 			    continue;
-		case 'U':   func = (fptr_T)do_Upper;
+		case 'U':   func_all = (fptr_T)do_Upper;
 			    continue;
-		case 'l':   func = (fptr_T)do_lower;
+		case 'l':   func_one = (fptr_T)do_lower;
 			    continue;
-		case 'L':   func = (fptr_T)do_Lower;
+		case 'L':   func_all = (fptr_T)do_Lower;
 			    continue;
 		case 'e':
-		case 'E':   func = (fptr_T)NULL;
+		case 'E':   func_one = func_all = (fptr_T)NULL;
 			    continue;
 		}
 	    }
@@ -7380,11 +7381,14 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 #endif
 
 	    /* Write to buffer, if copy is set. */
-	    if (func == (fptr_T)NULL)	/* just copy */
-		cc = c;
-	    else
+	    if (func_one != (fptr_T)NULL)
 		/* Turbo C complains without the typecast */
-		func = (fptr_T)(func(&cc, c));
+		func_one = (fptr_T)(func_one(&cc, c));
+	    else if (func_all != (fptr_T)NULL)
+		/* Turbo C complains without the typecast */
+		func_all = (fptr_T)(func_all(&cc, c));
+	    else /* just copy */
+		cc = c;
 
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
@@ -7495,11 +7499,14 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 #endif
 				c = *s;
 
-			    if (func == (fptr_T)NULL)	/* just copy */
-				cc = c;
-			    else
+			    if (func_one != (fptr_T)NULL)
 				/* Turbo C complains without the typecast */
-				func = (fptr_T)(func(&cc, c));
+				func_one = (fptr_T)(func_one(&cc, c));
+			    else if (func_all != (fptr_T)NULL)
+				/* Turbo C complains without the typecast */
+				func_all = (fptr_T)(func_all(&cc, c));
+			    else /* just copy */
+				cc = c;
 
 #ifdef FEAT_MBYTE
 			    if (has_mbyte)
