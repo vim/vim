@@ -17,7 +17,7 @@ int buflist_getfile __ARGS((int n, linenr_T lnum, int options, int forceit));
 void buflist_getfpos __ARGS((void));
 buf_T *buflist_findname_exp __ARGS((char_u *fname));
 buf_T *buflist_findname __ARGS((char_u *ffname));
-int buflist_findpat __ARGS((char_u *pattern, char_u *pattern_end, int unlisted, int diffmode));
+int buflist_findpat __ARGS((char_u *pattern, char_u *pattern_end, int unlisted, int diffmode, int curtab_only));
 int ExpandBufnames __ARGS((char_u *pat, int *num_file, char_u ***file, int options));
 buf_T *buflist_findnr __ARGS((int nr));
 char_u *buflist_nr2name __ARGS((int n, int fullname, int helptail));

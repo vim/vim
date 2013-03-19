@@ -2152,7 +2152,7 @@ ex_diffgetput(eap)
 	    i = atol((char *)eap->arg);
 	else
 	{
-	    i = buflist_findpat(eap->arg, p, FALSE, TRUE);
+	    i = buflist_findpat(eap->arg, p, FALSE, TRUE, FALSE);
 	    if (i < 0)
 		return;		/* error message already given */
 	}
