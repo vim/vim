@@ -7713,6 +7713,8 @@ static struct event_name
     {"TabLeave",	EVENT_TABLEAVE},
     {"TermChanged",	EVENT_TERMCHANGED},
     {"TermResponse",	EVENT_TERMRESPONSE},
+    {"TextChanged",	EVENT_TEXTCHANGED},
+    {"TextChangedI",	EVENT_TEXTCHANGEDI},
     {"User",		EVENT_USER},
     {"VimEnter",	EVENT_VIMENTER},
     {"VimLeave",	EVENT_VIMLEAVE},
@@ -9135,6 +9137,24 @@ has_cursormoved()
 has_cursormovedI()
 {
     return (first_autopat[(int)EVENT_CURSORMOVEDI] != NULL);
+}
+
+/*
+ * Return TRUE when there is a TextChanged autocommand defined.
+ */
+    int
+has_textchanged()
+{
+    return (first_autopat[(int)EVENT_TEXTCHANGED] != NULL);
+}
+
+/*
+ * Return TRUE when there is a TextChangedI autocommand defined.
+ */
+    int
+has_textchangedI()
+{
+    return (first_autopat[(int)EVENT_TEXTCHANGEDI] != NULL);
 }
 
 /*

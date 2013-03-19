@@ -1168,6 +1168,19 @@ main_loop(cmdwin, noexmode)
 	    }
 #endif
 
+#ifdef FEAT_AUTOCMD
+	    /* Trigger TextChanged if b_changedtick differs. */
+	    if (!finish_op && has_textchanged()
+		    && last_changedtick != curbuf->b_changedtick)
+	    {
+		if (last_changedtick_buf == curbuf)
+		    apply_autocmds(EVENT_TEXTCHANGED, NULL, NULL,
+							       FALSE, curbuf);
+		last_changedtick_buf = curbuf;
+		last_changedtick = curbuf->b_changedtick;
+	    }
+#endif
+
 #if defined(FEAT_DIFF) && defined(FEAT_SCROLLBIND)
 	    /* Scroll-binding for diff mode may have been postponed until
 	     * here.  Avoids doing it for every change. */

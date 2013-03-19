@@ -1593,6 +1593,21 @@ ins_redraw(ready)
 	    last_cursormoved = curwin->w_cursor;
 	}
 #endif
+#ifdef FEAT_AUTOCMD
+	/* Trigger TextChangedI if b_changedtick differs. */
+	if (!ready && has_textchangedI()
+		&& last_changedtick != curbuf->b_changedtick
+# ifdef FEAT_INS_EXPAND
+		&& !pum_visible()
+# endif
+		)
+	{
+	    if (last_changedtick_buf == curbuf)
+		apply_autocmds(EVENT_TEXTCHANGEDI, NULL, NULL, FALSE, curbuf);
+	    last_changedtick_buf = curbuf;
+	    last_changedtick = curbuf->b_changedtick;
+	}
+#endif
 	if (must_redraw)
 	    update_screen(0);
 	else if (clear_cmdline || redraw_cmdline)

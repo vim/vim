@@ -44,6 +44,8 @@ int has_cursorhold __ARGS((void));
 int trigger_cursorhold __ARGS((void));
 int has_cursormoved __ARGS((void));
 int has_cursormovedI __ARGS((void));
+int has_textchanged __ARGS((void));
+int has_textchangedI __ARGS((void));
 int has_insertcharpre __ARGS((void));
 void block_autocmds __ARGS((void));
 void unblock_autocmds __ARGS((void));

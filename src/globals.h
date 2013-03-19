@@ -1057,11 +1057,13 @@ EXTERN int	autocmd_fname_full;	     /* autocmd_fname is full path */
 EXTERN int	autocmd_bufnr INIT(= 0);     /* fnum for <abuf> on cmdline */
 EXTERN char_u	*autocmd_match INIT(= NULL); /* name for <amatch> on cmdline */
 EXTERN int	did_cursorhold INIT(= FALSE); /* set when CursorHold t'gerd */
-EXTERN pos_T	last_cursormoved	    /* for CursorMoved event */
+EXTERN pos_T	last_cursormoved	      /* for CursorMoved event */
 # ifdef DO_INIT
 			= INIT_POS_T(0, 0, 0)
 # endif
 			;
+EXTERN int	last_changedtick INIT(= 0);   /* for TextChanged event */
+EXTERN buf_T	*last_changedtick_buf INIT(= NULL);
 #endif
 
 #ifdef FEAT_WINDOWS
