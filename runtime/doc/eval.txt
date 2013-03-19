@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2013 Feb 20
+*eval.txt*	For Vim version 7.3.  Last change: 2013 Mar 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2583,6 +2583,8 @@ delete({fname})							*delete()*
 		which is 0 if the file was deleted successfully, and non-zero
 		when the deletion failed.
 		Use |remove()| to delete an item from a |List|.
+		To delete a line from the buffer use |:delete|.  Use |:exe|
+		when the line number is in a variable.
 
 							*did_filetype()*
 did_filetype()	Returns non-zero when autocommands are being executed and the

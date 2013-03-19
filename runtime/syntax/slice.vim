@@ -20,6 +20,7 @@ syn keyword sliceQualifier  const extends idempotent implements local nonmutatin
 syn keyword sliceBoolean    false true
 
 " Include directives
+syn region  sliceIncluded    display contained start=+"+ skip=+\\\\\|\\"+ end=+"+
 syn match   sliceIncluded   display contained "<[^>]*>"
 syn match   sliceInclude    display "^\s*#\s*include\>\s*["<]" contains=sliceIncluded
 

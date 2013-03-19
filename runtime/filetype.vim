@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2013 Feb 28
+" Last Change:	2013 Mar 16
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -138,6 +138,9 @@ au BufNewFile,BufRead .arch-inventory,=tagging-method	setf arch
 
 " ART*Enterprise (formerly ART-IM)
 au BufNewFile,BufRead *.art			setf art
+
+" AsciiDoc
+au BufNewFile,BufRead *.asciidoc		setf asciidoc
 
 " ASN.1
 au BufNewFile,BufRead *.asn,*.asn1		setf asn
@@ -749,12 +752,12 @@ au BufNewFile,BufRead *.mo,*.gdmo		setf gdmo
 au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 
 " Git
-au BufNewFile,BufRead *.git/COMMIT_EDITMSG 	setf gitcommit
-au BufNewFile,BufRead *.git/MERGE_MSG 		setf gitcommit
+au BufNewFile,BufRead *.git/COMMIT_EDITMSG	setf gitcommit
+au BufNewFile,BufRead *.git/MERGE_MSG		setf gitcommit
 au BufNewFile,BufRead *.git/config,.gitconfig,.gitmodules setf gitconfig
 au BufNewFile,BufRead *.git/modules/**/COMMIT_EDITMSG setf gitcommit
-au BufNewFile,BufRead *.git/modules/**/config 	setf gitconfig
-au BufNewFile,BufRead git-rebase-todo      	setf gitrebase
+au BufNewFile,BufRead *.git/modules/**/config	setf gitconfig
+au BufNewFile,BufRead git-rebase-todo		setf gitrebase
 au BufNewFile,BufRead .msg.[0-9]*
       \ if getline(1) =~ '^From.*# This line is ignored.$' |
       \   setf gitsendemail |
@@ -781,7 +784,7 @@ au BufNewFile,BufRead gnashrc,.gnashrc,gnashpluginrc,.gnashpluginrc setf gnash
 " Gitolite
 au BufNewFile,BufRead gitolite.conf		setf gitolite
 au BufNewFile,BufRead */gitolite-admin/conf/*	call s:StarSetf('gitolite')
-au BufNewFile,BufRead {,.}gitolite.rc,example.gitolite.rc 	setf perl
+au BufNewFile,BufRead {,.}gitolite.rc,example.gitolite.rc	setf perl
 
 " Gnuplot scripts
 au BufNewFile,BufRead *.gpi			setf gnuplot
@@ -2412,10 +2415,10 @@ endfunc
 au BufNewFile,BufRead *.yaml,*.yml		setf yaml
 
 " yum conf (close enough to dosini)
-au BufNewFile,BufRead */etc/yum.conf 		setf dosini
+au BufNewFile,BufRead */etc/yum.conf		setf dosini
 
 " Zimbu
-au BufNewFile,BufRead *.zu 			setf zimbu
+au BufNewFile,BufRead *.zu			setf zimbu
 
 " Zope
 "   dtml (zope dynamic template markup language), pt (zope page template),
@@ -2588,7 +2591,7 @@ au BufNewFile,BufRead *xmodmap*			call s:StarSetf('xmodmap')
 au BufNewFile,BufRead */etc/xinetd.d/*		call s:StarSetf('xinetd')
 
 " yum conf (close enough to dosini)
-au BufNewFile,BufRead */etc/yum.repos.d/* 	call s:StarSetf('dosini')
+au BufNewFile,BufRead */etc/yum.repos.d/*	call s:StarSetf('dosini')
 
 " Z-Shell script
 au BufNewFile,BufRead zsh*,zlog*		call s:StarSetf('zsh')

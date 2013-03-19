@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2013 Feb 28
+*options.txt*	For Vim version 7.3.  Last change: 2013 Mar 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -698,6 +698,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	to be set to "double" under CJK Windows 9x/ME or Windows 2k/XP
 	when the system locale is set to one of CJK locales.  See Unicode
 	Standard Annex #11 (http://www.unicode.org/reports/tr11).
+
+	Vim may set this option automatically at startup time when Vim is
+	compiled with the |+termresponse| feature and if |t_u7| is set to the
+	sescape sequense to request cursor position report.
 
 			*'antialias'* *'anti'* *'noantialias'* *'noanti'*
 'antialias' 'anti'	boolean (default: off)

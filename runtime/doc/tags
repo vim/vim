@@ -964,6 +964,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 't_te'	term.txt	/*'t_te'*
 't_ti'	term.txt	/*'t_ti'*
 't_ts'	term.txt	/*'t_ts'*
+'t_u7'	term.txt	/*'t_u7'*
 't_ue'	term.txt	/*'t_ue'*
 't_us'	term.txt	/*'t_us'*
 't_ut'	term.txt	/*'t_ut'*
@@ -5182,6 +5183,7 @@ cpo-w	options.txt	/*cpo-w*
 cpo-x	options.txt	/*cpo-x*
 cpo-y	options.txt	/*cpo-y*
 cpo-{	options.txt	/*cpo-{*
+cpp.vim	syntax.txt	/*cpp.vim*
 crash-recovery	recover.txt	/*crash-recovery*
 creating-menus	gui.txt	/*creating-menus*
 credits	intro.txt	/*credits*
@@ -5658,6 +5660,7 @@ ft-chill-syntax	syntax.txt	/*ft-chill-syntax*
 ft-clojure-indent	indent.txt	/*ft-clojure-indent*
 ft-cobol-syntax	syntax.txt	/*ft-cobol-syntax*
 ft-coldfusion-syntax	syntax.txt	/*ft-coldfusion-syntax*
+ft-cpp-syntax	syntax.txt	/*ft-cpp-syntax*
 ft-csh-syntax	syntax.txt	/*ft-csh-syntax*
 ft-css-omni	insert.txt	/*ft-css-omni*
 ft-cweb-syntax	syntax.txt	/*ft-cweb-syntax*
@@ -5958,6 +5961,7 @@ g:tar_readoptions	pi_tar.txt	/*g:tar_readoptions*
 g:tar_secure	pi_tar.txt	/*g:tar_secure*
 g:tar_writeoptions	pi_tar.txt	/*g:tar_writeoptions*
 g:tex_conceal	syntax.txt	/*g:tex_conceal*
+g:tex_fast	syntax.txt	/*g:tex_fast*
 g:tex_isk	syntax.txt	/*g:tex_isk*
 g:var	eval.txt	/*g:var*
 g:vimball_home	pi_vimball.txt	/*g:vimball_home*
@@ -7975,6 +7979,7 @@ t_ti	term.txt	/*t_ti*
 t_tp	version4.txt	/*t_tp*
 t_ts	term.txt	/*t_ts*
 t_ts_old	version4.txt	/*t_ts_old*
+t_u7	term.txt	/*t_u7*
 t_ue	term.txt	/*t_ue*
 t_undo	version4.txt	/*t_undo*
 t_us	term.txt	/*t_us*

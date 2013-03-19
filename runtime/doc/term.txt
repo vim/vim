@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.3.  Last change: 2011 Feb 16
+*term.txt*      For Vim version 7.3.  Last change: 2013 Mar 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -294,6 +294,8 @@ Added by Vim (there are no standard codes for these):
 		|termcap-cursor-shape|
 	t_RV	request terminal version string (for xterm)	*t_RV* *'t_RV'*
 		|xterm-8bit| |v:termresponse| |'ttymouse'| |xterm-codes|
+	t_u7	request cursor position (for xterm)		*t_u7* *'t_u7'*
+		see |'ambiwidth'|
 
 KEY CODES
 Note: Use the <> form if possible

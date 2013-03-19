@@ -2,9 +2,9 @@
 " Language:	Groovy
 " Original Author:	Alessio Pace <billy.corgan@tiscali.it>
 " Maintainer:	Tobias Rapp <yahuxo@gmx.de>
-" Version: 	0.1.11
+" Version: 	0.1.12
 " URL:	  http://www.vim.org/scripts/script.php?script_id=945
-" Last Change:	2012 Jan 08
+" Last Change:	2013 Mar 14
 
 " THE ORIGINAL AUTHOR'S NOTES:
 "
@@ -250,13 +250,17 @@ syn match   groovyComment          "/\*\*/"
 " Strings and constants
 syn match   groovySpecialError     contained "\\."
 syn match   groovySpecialCharError contained "[^']"
-syn match   groovySpecialChar      contained "\\\([4-9]\d\|[0-3]\d\d\|[\"\\'ntbrf]\|u\x\{4\}\)"
+syn match   groovySpecialChar      contained "\\\([4-9]\d\|[0-3]\d\d\|[\"\\'ntbrf]\|u\x\{4\}\|\$\)"
+syn match   groovyRegexChar        contained "\\."
 syn region  groovyString          start=+"+ end=+"+ end=+$+ contains=groovySpecialChar,groovySpecialError,@Spell,groovyELExpr
 syn region  groovyString          start=+'+ end=+'+ end=+$+ contains=groovySpecialChar,groovySpecialError,@Spell
 syn region  groovyString          start=+"""+ end=+"""+ contains=groovySpecialChar,groovySpecialError,@Spell,groovyELExpr
 syn region  groovyString          start=+'''+ end=+'''+ contains=groovySpecialChar,groovySpecialError,@Spell
+" regex string
+syn region groovyString           start='/[^/]'  end='/' contains=groovySpecialChar,groovyRegexChar,groovyELExpr
 " syn region groovyELExpr start=+${+ end=+}+ keepend contained
- syn match groovyELExpr /\${.\{-}}/ contained
+syn match groovyELExpr /\${.\{-}}/ contained
+syn match groovyELExpr /\$[a-zA-Z_][a-zA-Z0-9_.]*/ contained
 GroovyHiLink groovyELExpr Identifier
 
 " TODO: better matching. I am waiting to understand how it really works in groovy
@@ -415,6 +419,7 @@ if version >= 508 || !exists("did_groovy_syn_inits")
   GroovyHiLink groovySpecialError	Error
   GroovyHiLink groovySpecialCharError	Error
   GroovyHiLink groovyString		String
+  GroovyHiLink groovyRegexChar		String
   GroovyHiLink groovyCharacter		Character
   GroovyHiLink groovySpecialChar	SpecialChar
   GroovyHiLink groovyNumber		Number

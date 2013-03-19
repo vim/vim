@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.3.  Last change: 2012 Sep 05
+*autocmd.txt*   For Vim version 7.3.  Last change: 2013 Mar 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -730,11 +730,11 @@ QuickFixCmdPost			Like QuickFixCmdPre, but after a quickfix
 				moving to the first error. 
 				See |QuickFixCmdPost-example|.
 							*QuitPre*
-QuitPre				When using `:quit`, before deciding whether it
-				closes the current window or quits Vim.  Can
-				be used to close any non-essential window if
-				the current window is the last ordinary
-				window.
+QuitPre				When using `:quit`, `:wq` or `:qall`, before
+				deciding whether it closes the current window
+				or quits Vim.  Can be used to close any
+				non-essential window if the current window is
+				the last ordinary window.
 							*RemoteReply*
 RemoteReply			When a reply from a Vim that functions as
 				server was received |server2client()|.  The

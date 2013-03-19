@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.3.  Last change: 2012 Aug 04
+*motion.txt*    For Vim version 7.3.  Last change: 2013 Mar 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -104,13 +104,14 @@ strokes and has limited redo functionality.  See the chapter on Visual mode
 |Visual-mode|.
 
 You can use a ":" command for a motion.  For example "d:call FindEnd()".
-But this can't be redone with "." if the command is more than one line.
+But this can't be repeated with "." if the command is more than one line.
 This can be repeated: >
 	d:call search("f")<CR>
 This cannot be repeated: >
 	d:if 1<CR>
 	   call search("f")<CR>
 	endif<CR>
+Note that when using ":" any motion becomes characterwise exclusive.
 
 
 FORCING A MOTION TO BE LINEWISE, CHARACTERWISE OR BLOCKWISE
