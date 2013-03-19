@@ -2,6 +2,7 @@ Tests for "vaBiB", end could be wrong.
 Also test ":s/pat/sub/" with different ~s in sub.
 Also test for ^Vxff and ^Vo123 in Insert mode.
 Also test "[m", "]m", "[M" and "]M"
+Also test search()
 
 STARTTEST
 :so small.vim
@@ -34,6 +35,16 @@ j2]MaH:.w >>test.out
 2[MaJ:.w >>test.out
 k[MaK:.w >>test.out
 3[MaL:.w >>test.out
+:"
+/^foobar
+:let startline = line('.')
+:call search('foobar', 'c')
+:call append(line('$'), line('.') - startline)
+j:call search('^$', 'c')
+:call append(line('$'), line('.') - startline)
+:call search('^$', 'bc')
+:call append(line('$'), line('.') - startline)
+:/^search()/,$w >>test.out
 :qa!
 ENDTEST
 
@@ -64,3 +75,8 @@ Piece of Java
 		}
 	} e3
 }
+
+foobar
+
+
+search()
