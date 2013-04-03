@@ -44,6 +44,9 @@ j:call search('^$', 'c')
 :call append(line('$'), line('.') - startline)
 :call search('^$', 'bc')
 :call append(line('$'), line('.') - startline)
+/two
+:call search('.', 'c')
+:call append(line('$'), getline('.')[col('.') - 1:])
 :/^search()/,$w >>test.out
 :qa!
 ENDTEST
@@ -79,4 +82,5 @@ Piece of Java
 foobar
 
 
+one two
 search()
