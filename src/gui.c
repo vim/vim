@@ -991,7 +991,7 @@ gui_get_wide_font()
     }
 
     gui_mch_free_font(gui.wide_font);
-#ifdef FEAT_GUI_GTK
+# ifdef FEAT_GUI_GTK
     /* Avoid unnecessary overhead if 'guifontwide' is equal to 'guifont'. */
     if (font != NOFONT && gui.norm_font != NOFONT
 			 && pango_font_description_equal(font, gui.norm_font))
@@ -1000,11 +1000,11 @@ gui_get_wide_font()
 	gui_mch_free_font(font);
     }
     else
-#endif
+# endif
 	gui.wide_font = font;
-#ifdef FEAT_GUI_MSWIN
+# ifdef FEAT_GUI_MSWIN
     gui_mch_wide_font_changed();
-#endif
+# endif
     return OK;
 }
 #endif
