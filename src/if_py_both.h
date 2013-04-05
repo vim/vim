@@ -1139,7 +1139,7 @@ ListSlice(PyObject *self, Py_ssize_t first, Py_ssize_t last)
 
     for (i = 0; i < n; ++i)
     {
-	PyObject	*item = ListItem(self, i);
+	PyObject	*item = ListItem(self, first + i);
 	if (item == NULL)
 	{
 	    Py_DECREF(list);

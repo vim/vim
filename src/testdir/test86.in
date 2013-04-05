@@ -321,6 +321,31 @@ EOF
 :py trace_main()
 :py sys.settrace(None)
 :$put =string(l)
+:"
+:" Slice
+:py ll = vim.bindeval('[0, 1, 2, 3, 4, 5]')
+:py l = ll[:4]
+:$put =string(pyeval('l'))
+:py l = ll[2:]
+:$put =string(pyeval('l'))
+:py l = ll[:-4]
+:$put =string(pyeval('l'))
+:py l = ll[-2:]
+:$put =string(pyeval('l'))
+:py l = ll[2:4]
+:$put =string(pyeval('l'))
+:py l = ll[4:2]
+:$put =string(pyeval('l'))
+:py l = ll[-4:-2]
+:$put =string(pyeval('l'))
+:py l = ll[-2:-4]
+:$put =string(pyeval('l'))
+:py l = ll[:]
+:$put =string(pyeval('l'))
+:py l = ll[0:6]
+:$put =string(pyeval('l'))
+:py l = ll[-10:10]
+:$put =string(pyeval('l'))
 :endfun
 :"
 :call Test()
