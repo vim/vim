@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2013 Mar 16
+" Last Change:	2013 Apr 05
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1649,6 +1649,9 @@ au BufNewFile,BufRead resolv.conf		setf resolv
 
 " Relax NG Compact
 au BufNewFile,BufRead *.rnc			setf rnc
+
+" Relax NG XML
+au BufNewFile,BufRead *.rng			setf rng
 
 " RPL/2
 au BufNewFile,BufRead *.rpl			setf rpl

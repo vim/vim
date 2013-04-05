@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.3.  Last change: 2012 Nov 02
+*change.txt*    For Vim version 7.3.  Last change: 2013 Mar 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -784,6 +784,11 @@ Examples: >
   :s/abcde/abc^Mde/		 modifies "abcde"    to "abc", "de" (two lines)
   :s/$/\^M/			 modifies "abcde"    to "abcde^M"
   :s/\w\+/\u\0/g		 modifies "bla bla"  to "Bla Bla"
+  :s/\w\+/\L\u/g		 modifies "BLA bla"  to "Bla Bla"
+
+Note: "\L\u" can be used to capitalize the first letter of a word.  This is
+not compatible with Vi and older versions of Vim, where the "\u" would cancel
+out the "\L". Same for "\U\l".
 
 Note: In previous versions CTRL-V was handled in a special way.  Since this is
 not Vi compatible, this was removed.  Use a backslash instead.

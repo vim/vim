@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Aap recipe
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2003 Nov 04
+" Last Change:	2013 Apr 05
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -19,7 +19,7 @@ let b:undo_ftplugin = "setl fo< com< et<"
 setlocal fo-=t fo+=croql
 
 " Set 'comments' to format dashed lists in comments.
-setlocal comments=s:#\ -,m:#\ \,e:#,n:#,fb:-
+setlocal comments=s:#\ -,m:#\ \ ,e:#,n:#,fb:-
 
 " Expand tabs to spaces to avoid trouble.
 setlocal expandtab

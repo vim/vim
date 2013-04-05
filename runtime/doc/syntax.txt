@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2013 Mar 13
+*syntax.txt*	For Vim version 7.3.  Last change: 2013 Apr 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2069,7 +2069,7 @@ Therefore, you should be careful about not using more space between sentences
 than you intend to have in your final document.  For this reason, the common
 practice is to insert a carriage return immediately after all punctuation
 marks.  If you want to have "even" text in your final processed output, you
-need to maintaining regular spacing in the input text.  To mark both trailing
+need to maintain regular spacing in the input text.  To mark both trailing
 spaces and two or more spaces after a punctuation as an error, use: >
 
   :let nroff_space_errors = 1
@@ -4928,7 +4928,7 @@ restoring "b:current_syntax", since the syntax files do set
 
 Once a window has its own syntax, syntax commands executed from other windows
 on the same buffer (including :syntax clear) have no effect. Conversely, 
-syntax commands executed from that window do not effect other windows on the
+syntax commands executed from that window do not affect other windows on the
 same buffer.
 
 A window with its own syntax reverts to normal behavior when another buffer

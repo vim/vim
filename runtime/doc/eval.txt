@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2013 Mar 10
+*eval.txt*	For Vim version 7.3.  Last change: 2013 Mar 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1157,7 +1157,7 @@ This kind of variable is deleted when the buffer is wiped out or deleted with
 |:bdelete|.
 
 One local buffer variable is predefined:
-					*b:changedtick-variable* *changetick*
+					*b:changedtick* *changetick*
 b:changedtick	The total number of changes to the current buffer.  It is
 		incremented for each change.  An undo command is also a change
 		in this case.  This can be used to perform an action only when

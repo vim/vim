@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	dts/dtsi (device tree files)
 " Maintainer:	Daniel Mack <vim@zonque.org>
-" Last Change:	2013 Mar 11
+" Last Change:	2013 Apr 05
 
 if exists("b:current_syntax")
   finish
@@ -13,7 +13,7 @@ syntax region dtsBinaryProperty start="\[" end="\]"
 syntax match  dtsStringProperty "\".*\""
 syntax match  dtsKeyword        "/.*/"
 syntax match  dtsLabel          "^[[:space:]]*[[:alpha:][:digit:]_]\+:"
-syntax match  dtsNode           /[[:alpha:][:digit:]-_]\+\(@[0-9a-eA-E]\+\|\)[[:space:]]*{/he=e-1
+syntax match  dtsNode           /[[:alpha:][:digit:]-_]\+\(@[0-9a-fA-F]\+\|\)[[:space:]]*{/he=e-1
 syntax region dtsCellProperty   start="<" end=">" contains=dtsReference,dtsBinaryProperty,dtsStringProperty,dtsComment
 syntax region dtsCommentInner   start="/\*"  end="\*/"
 

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Mar 18
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Apr 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -47,9 +47,6 @@ Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
 Checking runtime scripts: Thilo Six, 2012 Jun 6.
 
-Patch to keep serving the selection while waiting for a child process.
-(Yukihiro Nakadaira, 2013 March 14)
-
 GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
 
@@ -59,37 +56,37 @@ The CompleteDone autocommand needs some info passed to it:
 - The word that was selected (empty if abandoned complete)
 - Type of completion: tag, omnifunc, user func.
 
+Patch to fix sorting order when 'fileignorecase' is set. (Hirohito Higashi,
+2013 Mar 20)  Update Mar 24.
+
+Using ":call foo#d.f()" doesn't autoload the "foo.vim" file.
+That is, calling a dictionary function on an autoloaded dict.
+Works OK for echo, just not for  ":call" and ":call call()". (Ted, 2011 Mar
+17)
+Patch by Christian Brabandt, 2013 Mar 23.
+
+Patch to make building with Ruby 2.0 on 64 bit system work. (eagletmt (Kohei
+Suzuki), 2013 Mar 25)
+
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
 
-Matchparen does not update match when indenting. (Marc Aldorasi, 2013 Feb 9)
-Possible patch by Christian Brabandt, 2013 Feb 13.
+Patch to avoid that visul motion breaks repeat with ".". (Sung Pae, 2013 Mar
+25)
 
-Remarks about the more message and a patch to change behavior. (cptstubing,
-2013 Mar 16)
-
-Patch to set antialiasing style on Windows. (Ondrej Balaz, 2013 Mar 14)
+Patch to fix problem introduced by 7.3.859, reusing "p". (Christian Brabandt,
+2013 Mar 20)
 
 Problem caused by patch 7.3.638: window->open does not update window
 correctly. Issue 91.
 
-Patch to add argument to bufname() to only consider buffers in the current
-tab.  (Alexey Radkov, 2013 Feb 8)  Example in later email.
-Is this right?
-
-Patch to fix compiler warnings for MingW 4.5.3. (Ken Takata, 2013 Jan 26)
-
-Bug: search() does not use the match at the cursor position if it's empty.
-(Christian Brabandt, 2013 Feb 16)  Patch later.
-
-On Mac do not define CASE_INSENSITIVE_FILENAME ? (Richo Healey, 2013 Mar 3)
-But do set 'wildignorecase' ?
-
-Patch to make it possible to create Title Case in :s. with \L\u.
-(James McCoy, 2013 Feb 13)
+Patch to fix that 'cedit' is recognized after :normal. (Christian Brabandt,
+2013 Mar 19, later message)
 
 Patch to view coverage of the tests. (Nazri Ramliy, 2013 Feb 15)
+
+Patch to make vim.bindeval() in Python work. (Yukihiro Nakadaira, 2013 Mar 25)
 
 Do allow real tags above the !_TAG entries. Undo older patch. Issue 90.
 
@@ -97,6 +94,8 @@ Patch to support 'u' in interactive substitute. (Christian Brabandt, 2012 Sep
 28)  With tests: Oct 9.
 
 Patch to make fold updates much faster. (Christian Brabandt, 2012 Dec)
+
+Patch to add more testing for Visual operators. (glts, 2013 Mar 28)
 
 Patch for IME handling, adds 'imactivatefunc' and 'imstatusfunc' option.
 (Yukihiro Nakadaira, 2012 Aug 16)
@@ -109,6 +108,9 @@ Brabandt, 2013 Feb 26.
 
 New syntax files for apt. (quidame, 2012 Sep 21)
 
+Patch to use bold/italic fonts when 'guifontewide' is set. (Ken Takata, 2013
+Mar 31)
+
 v:register is not directly reset to " after a delete command that specifies a
 register.  It is reset after the next command. (Steve Vermeulen, 2013 Mar 16)
 
@@ -116,6 +118,13 @@ register.  It is reset after the next command. (Steve Vermeulen, 2013 Mar 16)
 
 Patch for if_lua. (Luis Carvalho, 2012 Aug 26, update Aug 29, another Aug 30,
 then Sep 1, reminder Oct 14)
+
+Patch to check if 'foldexpr' sets did_emsg. (Christian Brabandt, 2013 Mar 20)
+
+Patch to set antialiasing style on Windows. (Ondrej Balaz, 2013 Mar 14)
+Needs a different check for CLEARTYPE_QUALITY.
+
+Patch for repeating change that uses ":normal". (glts, 2013 March 23)
 
 Issue 72: 'autochdir' causes problems for :vimgrep.
 
@@ -152,8 +161,8 @@ Patch to make confirm() display colors. (Christian Brabandt, 2012 Nov 9)
 
 Patch to add functions for signs. (Christian Brabandt, 2013 Jan 27)
 
-Patch to use directX to draw text on Windows.  Adds the 'directx' option.
-(Taro Muraoka, 2013 Jan 25)
+Patch to use directX to draw text on Windows.  Adds the 'renderoptions'
+option.  (Taro Muraoka, 2013 Jan 25, update 2013 Apr 3)
 
 Problem with refresh:always in completion. (Tyler Wade, 2013 Mar 17)
 
@@ -189,6 +198,9 @@ MS-Windows resizing problems:
 
 'iminsert' global value set when using ":setlocal iminsert"? (Wu, 2012 Jun 23)
 
+Patch to append regesp to tag commands to make it possible to select one out
+of many matches. (Cody Cutler, 2013 Mar 28)
+
 Help for 'b:undo_indent'. (Thilo Six, 2012 May 28)
 Also question if examples are correct.
 
@@ -215,6 +227,9 @@ URXVT:
   http://www.midnight-commander.org/ticket/2662
 
 MS-Windows: test 17 fails.  Analysis by Michael Soyka, 2012 Nov 5.
+
+Combining characters are not used when executing a register with :@w.
+(William Fugh, 2013 Apr 5, more info from Ben Fritz)
 
 Patch to add tests for if_xcmdsrv.c., Jul 8, need some more work. (Brian Burns)
 New tests Jul 13.   Update Jul 17.  Discussion Jul 18.
@@ -709,9 +724,6 @@ Syntax priority problem. (Charles Campbell, 2011 Sep 15)
 
 When completion inserts the first match, it may trigger the line to be folded.
 Disable updating folds while completion is active? (Peter Odding, 2010 Jun 9)
-
-Using ":call foo#d.f()" doesn't autoload the "foo.vim" file.  Works OK for
-echo, just not for  ":call" and ":call call()". (Ted, 2011 Mar 17)
 
 When a:base in 'completefunc' starts with a number it's passed as a number,
 not a string. (Sean Ma)  Need to add flag to call_func_retlist() to force a
@@ -3968,9 +3980,6 @@ Command line completion:
 
 
 Command line history:
-9   Remember which command lines were actually typed and were not loaded from
-    viminfo.  When writing viminfo append only these lines, so that lines from
-    other Vim's are not overwritten.
 -   Add "KeyWasTyped" flag: It's reset before each command and set when a
     character from the keyboard is consumed. Value is used to decide to put a
     command line in history or not. Put line in history if it didn't

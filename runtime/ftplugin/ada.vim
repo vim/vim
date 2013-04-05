@@ -7,7 +7,7 @@
 "		Neil Bird <neil@fnxweb.com>
 "      $Author: krischik $
 "	 $Date: 2008-07-08 16:29:01 +0200 (Di, 08 Jul 2008) $
-"      Version: 4.6
+"      Version: 4.6 with patch from David Bürgin
 "    $Revision: 887 $
 "     $HeadURL: https://gnuada.svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/ftplugin/ada.vim $
 "      History: 24.05.2006 MK Unified Headers
@@ -42,7 +42,7 @@ set cpoptions-=C
 
 " Section: Comments  {{{1
 "
-setlocal comments=O:--,:--\ \
+setlocal comments=O:--,:--\ \ 
 setlocal commentstring=--\ \ %s
 setlocal complete=.,w,b,u,t,i
 

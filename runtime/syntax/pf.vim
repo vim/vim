@@ -1,7 +1,8 @@
 " pf syntax file
-" Language:	OpenBSD packet filter configuration (pf.conf)
-" Maintainer:	Camiel Dobbelaar <cd@sentia.nl>
-" Last Change:	2003 May 27
+" Language:        OpenBSD packet filter configuration (pf.conf)
+" Original Author: Camiel Dobbelaar <cd@sentia.nl>
+" Maintainer:      Lauri Tirkkonen <lotheac@iki.fi>
+" Last Change:     2013 Apr 02
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -14,7 +15,7 @@ endif
 setlocal foldmethod=syntax
 syn sync fromstart
 
-syn cluster	pfNotLS		contains=pfComment,pfTodo,pfVarAssign
+syn cluster	pfNotLS		contains=pfTodo,pfVarAssign
 syn keyword	pfCmd		altq anchor antispoof binat nat pass
 syn keyword	pfCmd		queue rdr scrub table set
 syn keyword	pfService	auth bgp domain finger ftp http https ident
