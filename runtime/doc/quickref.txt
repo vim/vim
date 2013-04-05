@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.3.  Last change: 2013 Feb 06
+*quickref.txt*  For Vim version 7.3.  Last change: 2013 Apr 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -691,6 +691,7 @@ Short explanation of each option:		*option-list*
 'fileencodings'   'fencs'   automatically detected character encodings
 'fileformat'	  'ff'	    file format used for file I/O
 'fileformats'	  'ffs'     automatically detected values for 'fileformat'
+'fileignorecase'  'fic'     ignore case when using file names
 'filetype'	  'ft'	    type of file, used for autocommands
 'fillchars'	  'fcs'     characters to use for displaying special items
 'fkmap'		  'fk'	    Farsi keyboard mapping
