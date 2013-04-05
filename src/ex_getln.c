@@ -56,6 +56,7 @@ static int	new_cmdpos;	/* position set by set_cmdline_pos() */
 typedef struct hist_entry
 {
     int		hisnum;		/* identifying number */
+    int		viminfo;	/* when TRUE hisstr comes from viminfo */
     char_u	*hisstr;	/* actual entry, separator char after the NUL */
 } histentry_T;
 
@@ -113,6 +114,7 @@ static int	expand_shellcmd __ARGS((char_u *filepat, int *num_file, char_u ***fil
 static int	ExpandRTDir __ARGS((char_u *pat, int *num_file, char_u ***file, char *dirname[]));
 # ifdef FEAT_CMDHIST
 static char_u	*get_history_arg __ARGS((expand_T *xp, int idx));
+static void	clear_hist_entry __ARGS((histentry_T *hisptr));
 # endif
 # if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
 static int	ExpandUserDefined __ARGS((expand_T *xp, regmatch_T *regmatch, int *num_file, char_u ***file));
@@ -5343,10 +5345,7 @@ init_history()
 		if (hisidx[type] < 0)		/* there are no entries yet */
 		{
 		    for (i = 0; i < newlen; ++i)
-		    {
-			temp[i].hisnum = 0;
-			temp[i].hisstr = NULL;
-		    }
+			clear_hist_entry(&temp[i]);
 		}
 		else if (newlen > hislen)	/* array becomes bigger */
 		{
@@ -5354,10 +5353,7 @@ init_history()
 			temp[i] = history[type][i];
 		    j = i;
 		    for ( ; i <= newlen - (hislen - hisidx[type]); ++i)
-		    {
-			temp[i].hisnum = 0;
-			temp[i].hisstr = NULL;
-		    }
+			clear_hist_entry(&temp[i]);
 		    for ( ; j < hislen; ++i, ++j)
 			temp[i] = history[type][j];
 		}
@@ -5383,6 +5379,15 @@ init_history()
 	}
 	hislen = newlen;
     }
+}
+
+    static void
+clear_hist_entry(hisptr)
+    histentry_T	*hisptr;
+{
+    hisptr->hisnum = 0;
+    hisptr->viminfo = FALSE;
+    hisptr->hisstr = NULL;
 }
 
 /*
@@ -5433,8 +5438,9 @@ in_history(type, str, move_to_front, sep)
 	    history[type][last_i] = history[type][i];
 	    last_i = i;
 	}
-	history[type][i].hisstr = str;
 	history[type][i].hisnum = ++hisnum[type];
+	history[type][i].viminfo = FALSE;
+	history[type][i].hisstr = str;
 	return TRUE;
     }
     return FALSE;
@@ -5498,8 +5504,7 @@ add_to_history(histype, new_entry, in_map, sep)
 	    /* Current line is from the same mapping, remove it */
 	    hisptr = &history[HIST_SEARCH][hisidx[HIST_SEARCH]];
 	    vim_free(hisptr->hisstr);
-	    hisptr->hisstr = NULL;
-	    hisptr->hisnum = 0;
+	    clear_hist_entry(hisptr);
 	    --hisnum[histype];
 	    if (--hisidx[HIST_SEARCH] < 0)
 		hisidx[HIST_SEARCH] = hislen - 1;
@@ -5520,6 +5525,7 @@ add_to_history(histype, new_entry, in_map, sep)
 	    hisptr->hisstr[len + 1] = sep;
 
 	hisptr->hisnum = ++hisnum[histype];
+	hisptr->viminfo = FALSE;
 	if (histype == HIST_SEARCH && in_map)
 	    last_maptick = maptick;
     }
@@ -5709,8 +5715,7 @@ clr_history(histype)
 	for (i = hislen; i--;)
 	{
 	    vim_free(hisptr->hisstr);
-	    hisptr->hisnum = 0;
-	    hisptr++->hisstr = NULL;
+	    clear_hist_entry(hisptr);
 	}
 	hisidx[histype] = -1;	/* mark history as cleared */
 	hisnum[histype] = 0;	/* reset identifier counter */
@@ -5755,16 +5760,14 @@ del_history_entry(histype, str)
 	    {
 		found = TRUE;
 		vim_free(hisptr->hisstr);
-		hisptr->hisstr = NULL;
-		hisptr->hisnum = 0;
+		clear_hist_entry(hisptr);
 	    }
 	    else
 	    {
 		if (i != last)
 		{
 		    history[histype][last] = *hisptr;
-		    hisptr->hisstr = NULL;
-		    hisptr->hisnum = 0;
+		    clear_hist_entry(hisptr);
 		}
 		if (--last < 0)
 		    last += hislen;
@@ -5808,8 +5811,7 @@ del_history_idx(histype, idx)
 	history[histype][i] = history[histype][j];
 	i = j;
     }
-    history[histype][i].hisstr = NULL;
-    history[histype][i].hisnum = 0;
+    clear_hist_entry(&history[histype][i]);
     if (--i < 0)
 	i += hislen;
     hisidx[histype] = i;
@@ -6043,12 +6045,11 @@ prepare_viminfo_history(asklen)
 
     for (type = 0; type < HIST_COUNT; ++type)
     {
-	/*
-	 * Count the number of empty spaces in the history list.  If there are
-	 * more spaces available than we request, then fill them up.
-	 */
+	/* Count the number of empty spaces in the history list.  Entries read
+	 * from viminfo previously are also considered empty.  If there are
+	 * more spaces available than we request, then fill them up. */
 	for (i = 0, num = 0; i < hislen; i++)
-	    if (history[type][i].hisstr == NULL)
+	    if (history[type][i].hisstr == NULL || history[type][i].viminfo)
 		num++;
 	len = asklen;
 	if (num > len)
@@ -6141,7 +6142,8 @@ finish_viminfo_history()
 		hisidx[type] = hislen - 1;
 	    do
 	    {
-		if (history[type][idx].hisstr != NULL)
+		if (history[type][idx].hisstr != NULL
+						|| history[type][idx].viminfo)
 		    break;
 		if (++idx == hislen)
 		    idx = 0;
@@ -6153,6 +6155,7 @@ finish_viminfo_history()
 	{
 	    vim_free(history[type][idx].hisstr);
 	    history[type][idx].hisstr = viminfo_history[type][i];
+	    history[type][idx].viminfo = TRUE;
 	    if (--idx < 0)
 		idx = hislen - 1;
 	}
