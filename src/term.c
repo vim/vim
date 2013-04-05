@@ -4137,6 +4137,9 @@ check_termcode(max_offset, buf, bufsize, buflen)
 		    char *p = NULL;
 
 		    u7_status = U7_GOT;
+# ifdef FEAT_AUTOCMD
+		    did_cursorhold = TRUE;
+# endif
 		    if (extra == 2)
 			p = "single";
 		    else if (extra == 3)
@@ -4153,6 +4156,9 @@ check_termcode(max_offset, buf, bufsize, buflen)
 		if (*T_CRV != NUL && i > 2 + (tp[0] != CSI) && tp[i] == 'c')
 		{
 		    crv_status = CRV_GOT;
+# ifdef FEAT_AUTOCMD
+		    did_cursorhold = TRUE;
+# endif
 
 		    /* If this code starts with CSI, you can bet that the
 		     * terminal uses 8-bit codes. */
