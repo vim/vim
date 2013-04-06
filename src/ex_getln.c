@@ -114,12 +114,14 @@ static int	expand_shellcmd __ARGS((char_u *filepat, int *num_file, char_u ***fil
 static int	ExpandRTDir __ARGS((char_u *pat, int *num_file, char_u ***file, char *dirname[]));
 # ifdef FEAT_CMDHIST
 static char_u	*get_history_arg __ARGS((expand_T *xp, int idx));
-static void	clear_hist_entry __ARGS((histentry_T *hisptr));
 # endif
 # if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
 static int	ExpandUserDefined __ARGS((expand_T *xp, regmatch_T *regmatch, int *num_file, char_u ***file));
 static int	ExpandUserList __ARGS((expand_T *xp, int *num_file, char_u ***file));
 # endif
+#endif
+#ifdef FEAT_CMDHIST
+static void	clear_hist_entry __ARGS((histentry_T *hisptr));
 #endif
 
 #ifdef FEAT_CMDWIN
