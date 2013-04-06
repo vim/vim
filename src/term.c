@@ -4134,18 +4134,18 @@ check_termcode(max_offset, buf, bufsize, buflen)
 		/* eat it when it has 2 arguments and ends in 'R' */
 		if (j == 1 && tp[i] == 'R')
 		{
-		    char *p = NULL;
+		    char *aw = NULL;
 
 		    u7_status = U7_GOT;
 # ifdef FEAT_AUTOCMD
 		    did_cursorhold = TRUE;
 # endif
 		    if (extra == 2)
-			p = "single";
+			aw = "single";
 		    else if (extra == 3)
-			p = "double";
-		    if (p != NULL)
-			set_option_value((char_u *)"ambw", 0L, (char_u *)p, 0);
+			aw = "double";
+		    if (aw != NULL)
+			set_option_value((char_u *)"ambw", 0L, (char_u *)aw, 0);
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
 		    slen = i + 1;
