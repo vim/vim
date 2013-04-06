@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Apr 05
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -59,6 +59,8 @@ The CompleteDone autocommand needs some info passed to it:
 Patch to fix sorting order when 'fileignorecase' is set. (Hirohito Higashi,
 2013 Mar 20)  Update Mar 24.
 
+Patch to add test for what 7.3.879 fixes. (David Bürgin / glts, 2013 Apr 6)
+
 Using ":call foo#d.f()" doesn't autoload the "foo.vim" file.
 That is, calling a dictionary function on an autoloaded dict.
 Works OK for echo, just not for  ":call" and ":call call()". (Ted, 2011 Mar
@@ -74,9 +76,6 @@ Stocker, 2012 Jan 5)
 
 Patch to avoid that visul motion breaks repeat with ".". (Sung Pae, 2013 Mar
 25)
-
-Patch to fix problem introduced by 7.3.859, reusing "p". (Christian Brabandt,
-2013 Mar 20)
 
 Problem caused by patch 7.3.638: window->open does not update window
 correctly. Issue 91.
