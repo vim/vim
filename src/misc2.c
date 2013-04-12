@@ -6099,52 +6099,59 @@ pathcmp(p, q, maxlen)
     int maxlen;
 {
     int		i;
+    int		c1, c2;
     const char	*s = NULL;
 
-    for (i = 0; maxlen < 0 || i < maxlen; ++i)
+    for (i = 0; maxlen < 0 || i < maxlen; i += MB_PTR2LEN((char_u *)p + i))
     {
+	c1 = PTR2CHAR((char_u *)p + i);
+	c2 = PTR2CHAR((char_u *)q + i);
+
 	/* End of "p": check if "q" also ends or just has a slash. */
-	if (p[i] == NUL)
+	if (c1 == NUL)
 	{
-	    if (q[i] == NUL)  /* full match */
+	    if (c2 == NUL)  /* full match */
 		return 0;
 	    s = q;
 	    break;
 	}
 
 	/* End of "q": check if "p" just has a slash. */
-	if (q[i] == NUL)
+	if (c2 == NUL)
 	{
 	    s = p;
 	    break;
 	}
 
-	if ((p_fic ? TOUPPER_LOC(p[i]) != TOUPPER_LOC(q[i]) : p[i] != q[i])
+	if ((p_fic ? MB_TOUPPER(c1) != MB_TOUPPER(c2) : c1 != c2)
 #ifdef BACKSLASH_IN_FILENAME
 		/* consider '/' and '\\' to be equal */
-		&& !((p[i] == '/' && q[i] == '\\')
-		    || (p[i] == '\\' && q[i] == '/'))
+		&& !((c1 == '/' && c2 == '\\')
+		    || (c1 == '\\' && c2 == '/'))
 #endif
 		)
 	{
-	    if (vim_ispathsep(p[i]))
+	    if (vim_ispathsep(c1))
 		return -1;
-	    if (vim_ispathsep(q[i]))
+	    if (vim_ispathsep(c2))
 		return 1;
-	    return ((char_u *)p)[i] - ((char_u *)q)[i];	    /* no match */
+	    return p_fic ? MB_TOUPPER(c1) - MB_TOUPPER(c2)
+		    : c1 - c2;  /* no match */
 	}
     }
     if (s == NULL)	/* "i" ran into "maxlen" */
 	return 0;
 
+    c1 = PTR2CHAR((char_u *)s + i);
+    c2 = PTR2CHAR((char_u *)s + i + MB_PTR2LEN((char_u *)s + i));
     /* ignore a trailing slash, but not "//" or ":/" */
-    if (s[i + 1] == NUL
+    if (c2 == NUL
 	    && i > 0
 	    && !after_pathsep((char_u *)s, (char_u *)s + i)
 #ifdef BACKSLASH_IN_FILENAME
-	    && (s[i] == '/' || s[i] == '\\')
+	    && (c1 == '/' || c1 == '\\')
 #else
-	    && s[i] == '/'
+	    && c1 == '/'
 #endif
        )
 	return 0;   /* match with trailing slash */
