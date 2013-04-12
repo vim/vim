@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Apr 06
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Apr 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41,8 +41,6 @@ Go through more coverity reports.
 
 Valgrind errors in test 16.
 
-Memory leaks in Lua, uncovered by test 85.
-
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
 Checking runtime scripts: Thilo Six, 2012 Jun 6.
@@ -55,11 +53,6 @@ Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
 The CompleteDone autocommand needs some info passed to it:
 - The word that was selected (empty if abandoned complete)
 - Type of completion: tag, omnifunc, user func.
-
-Patch to fix sorting order when 'fileignorecase' is set. (Hirohito Higashi,
-2013 Mar 20)  Update Mar 24.
-
-Patch to add test for what 7.3.879 fixes. (David Bürgin / glts, 2013 Apr 6)
 
 Using ":call foo#d.f()" doesn't autoload the "foo.vim" file.
 That is, calling a dictionary function on an autoloaded dict.
@@ -142,7 +135,14 @@ MS-Windows: Crash opening very long file name starting with "\\".
 It's probably a good idea to make a negative value for 'sts' use the value of
 'sw'.  Patch by So8res, Oct 3 2012
 
+Test 79 fails on Windows only. (Michael Soyka, 2013 Apr 11).
+What makes the test script mapping continue after an error?
+
 patch to add "combine" flag to  syntax commands. (so8res, 2012 Dec 6)
+
+Combining characters are not used when executing a register with :@w.
+(William Fugh, 2013 Apr 5, more info from Ben Fritz)
+Patch by Christian Brabandt, 2013 Apr 6.  Second one.
 
 Bug in completion menu. (Olivier Teuliere, 2013 Feb 15)
 Patch by Christian Brabandt, Feb 16.
@@ -226,9 +226,6 @@ URXVT:
   http://www.midnight-commander.org/ticket/2662
 
 MS-Windows: test 17 fails.  Analysis by Michael Soyka, 2012 Nov 5.
-
-Combining characters are not used when executing a register with :@w.
-(William Fugh, 2013 Apr 5, more info from Ben Fritz)
 
 Patch to add tests for if_xcmdsrv.c., Jul 8, need some more work. (Brian Burns)
 New tests Jul 13.   Update Jul 17.  Discussion Jul 18.

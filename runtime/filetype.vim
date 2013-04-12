@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2013 Apr 06
+" Last Change:	2013 Apr 08
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1638,10 +1638,6 @@ func! s:FTr()
   endif
 endfunc
 
-" ReDIF
-" TODO: Not all .rdf files are redif, need a better way to detect.
-" au BufRead,BufNewFile *.rdf			setf redif
-
 " Remind
 au BufNewFile,BufRead .reminders,*.remind,*.rem		setf remind
 
@@ -2566,6 +2562,20 @@ au BufNewFile,BufRead *termcap*
 	\ if !did_filetype()
 	\|  let b:ptcap_type = "term" | call s:StarSetf('ptcap')
 	\|endif
+
+" ReDIF
+" Only used when the .rdf file was not detected to be XML.
+au BufRead,BufNewFile *.rdf			call s:Redif()
+func! s:Redif()
+  let lnum = 1
+  while lnum <= 5 && lnum < line('$')
+    if getline(lnum) =~ "^\ctemplate-type:"
+      setf redif
+      return
+    endif
+    let lnum = lnum + 1
+  endwhile
+endfunc
 
 " Remind
 au BufNewFile,BufRead .reminders*		call s:StarSetf('remind')
