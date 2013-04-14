@@ -6130,7 +6130,7 @@ finish_viminfo_history()
     for (type = 0; type < HIST_COUNT; ++type)
     {
 	if (history[type] == NULL)
-	    return;
+	    continue;
 	idx = hisidx[type] + viminfo_hisidx[type];
 	if (idx >= hislen)
 	    idx -= hislen;
@@ -6182,6 +6182,7 @@ write_viminfo_history(fp)
     int	    num_saved;
     char_u  *p;
     int	    c;
+    int     round;
 
     init_history();
     if (hislen == 0)
@@ -6200,26 +6201,50 @@ write_viminfo_history(fp)
 					_("Input Line"));
 	if (num_saved > hislen)
 	    num_saved = hislen;
-	i = hisidx[type];
-	if (i >= 0)
-	    while (num_saved--)
-	    {
-		p = history[type][i].hisstr;
-		if (p != NULL)
+
+	/*
+	 * Merge typed and viminfo history:
+	 * round 1: history of typed commands.
+	 * round 2: history from recently read viminfo.
+	 */
+	for (round = 1; round <= 2; ++round)
+	{
+	    i = round == 1 ? hisidx[type] : 0;
+	    if (i >= 0)
+		while (num_saved > 0
+			&& !(round == 2 && i >= viminfo_hisidx[type]))
 		{
-		    fputc(hist_type2char(type, TRUE), fp);
-		    /* For the search history: put the separator in the second
-		     * column; use a space if there isn't one. */
-		    if (type == HIST_SEARCH)
+		    p = round == 1 ? history[type][i].hisstr
+						   : viminfo_history[type][i];
+		    if (p != NULL)
 		    {
-			c = p[STRLEN(p) + 1];
-			putc(c == NUL ? ' ' : c, fp);
+			--num_saved;
+			fputc(hist_type2char(type, TRUE), fp);
+			/* For the search history: put the separator in the
+			 * second column; use a space if there isn't one. */
+			if (type == HIST_SEARCH)
+			{
+			    c = p[STRLEN(p) + 1];
+			    putc(c == NUL ? ' ' : c, fp);
+			}
+			viminfo_writestring(fp, p);
 		    }
-		    viminfo_writestring(fp, p);
+		    if (round == 1)
+		    {
+			/* Decrement index, loop around and stop when back at
+			 * the start. */
+			if (--i < 0)
+			    i = hislen - 1;
+			if (i == hisidx[type])
+			    break;
+		    }
+		    else
+		    {
+			/* Increment index. Stop at the end in the while. */
+			++i;
+		    }
 		}
-		if (--i < 0)
-		    i = hislen - 1;
-	    }
+	}
     }
 }
 #endif /* FEAT_VIMINFO */
