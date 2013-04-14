@@ -2113,7 +2113,7 @@ read_viminfo_up_to_marks(virp, forceit, writing)
     buf_T	*buf;
 
 #ifdef FEAT_CMDHIST
-    prepare_viminfo_history(forceit ? 9999 : 0);
+    prepare_viminfo_history(forceit ? 9999 : 0, writing);
 #endif
     eof = viminfo_readline(virp);
     while (!eof && virp->vir_line[0] != '>')
@@ -2161,7 +2161,7 @@ read_viminfo_up_to_marks(virp, forceit, writing)
 	    case '=':
 	    case '@':
 #ifdef FEAT_CMDHIST
-		eof = read_viminfo_history(virp);
+		eof = read_viminfo_history(virp, writing);
 #else
 		eof = viminfo_readline(virp);
 #endif
@@ -2182,7 +2182,8 @@ read_viminfo_up_to_marks(virp, forceit, writing)
 
 #ifdef FEAT_CMDHIST
     /* Finish reading history items. */
-    finish_viminfo_history();
+    if (!writing)
+	finish_viminfo_history();
 #endif
 
     /* Change file names to buffer numbers for fmarks. */

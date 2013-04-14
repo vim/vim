@@ -68,7 +68,7 @@ static int	hislen = 0;		/* actual length of history tables */
 
 static int	hist_char2type __ARGS((int c));
 
-static int	in_history __ARGS((int, char_u *, int, int));
+static int	in_history __ARGS((int, char_u *, int, int, int));
 # ifdef FEAT_EVAL
 static int	calc_hist_idx __ARGS((int histype, int num));
 # endif
@@ -5397,11 +5397,12 @@ clear_hist_entry(hisptr)
  * If 'move_to_front' is TRUE, matching entry is moved to end of history.
  */
     static int
-in_history(type, str, move_to_front, sep)
+in_history(type, str, move_to_front, sep, writing)
     int	    type;
     char_u  *str;
     int	    move_to_front;	/* Move the entry to the front if it exists */
     int	    sep;
+    int	    writing;		/* ignore entries read from viminfo */
 {
     int	    i;
     int	    last_i = -1;
@@ -5419,6 +5420,7 @@ in_history(type, str, move_to_front, sep)
 	 * well. */
 	p = history[type][i].hisstr;
 	if (STRCMP(str, p) == 0
+		&& !(writing && history[type][i].viminfo)
 		&& (type != HIST_SEARCH || sep == p[STRLEN(p) + 1]))
 	{
 	    if (!move_to_front)
@@ -5513,7 +5515,7 @@ add_to_history(histype, new_entry, in_map, sep)
 	}
 	last_maptick = -1;
     }
-    if (!in_history(histype, new_entry, TRUE, sep))
+    if (!in_history(histype, new_entry, TRUE, sep, FALSE))
     {
 	if (++hisidx[histype] == hislen)
 	    hisidx[histype] = 0;
@@ -6032,8 +6034,9 @@ hist_type2char(type, use_question)
  * This allocates history arrays to store the read history lines.
  */
     void
-prepare_viminfo_history(asklen)
+prepare_viminfo_history(asklen, writing)
     int	    asklen;
+    int	    writing;
 {
     int	    i;
     int	    num;
@@ -6041,7 +6044,7 @@ prepare_viminfo_history(asklen)
     int	    len;
 
     init_history();
-    viminfo_add_at_front = (asklen != 0);
+    viminfo_add_at_front = (asklen != 0 && !writing);
     if (asklen > hislen)
 	asklen = hislen;
 
@@ -6073,8 +6076,9 @@ prepare_viminfo_history(asklen)
  * new.
  */
     int
-read_viminfo_history(virp)
+read_viminfo_history(virp, writing)
     vir_T	*virp;
+    int		writing;
 {
     int		type;
     long_u	len;
@@ -6090,7 +6094,7 @@ read_viminfo_history(virp)
 	    int sep = (*val == ' ' ? NUL : *val);
 
 	    if (!in_history(type, val + (type == HIST_SEARCH),
-						   viminfo_add_at_front, sep))
+					  viminfo_add_at_front, sep, writing))
 	    {
 		/* Need to re-allocate to append the separator byte. */
 		len = STRLEN(val);
@@ -6120,6 +6124,9 @@ read_viminfo_history(virp)
     return viminfo_readline(virp);
 }
 
+/*
+ * Finish reading history lines from viminfo.  Not used when writing viminfo.
+ */
     void
 finish_viminfo_history()
 {
@@ -6216,7 +6223,7 @@ write_viminfo_history(fp)
 		{
 		    p = round == 1 ? history[type][i].hisstr
 						   : viminfo_history[type][i];
-		    if (p != NULL)
+		    if (p != NULL && (round == 2 || !history[type][i].viminfo))
 		    {
 			--num_saved;
 			fputc(hist_type2char(type, TRUE), fp);
@@ -6245,6 +6252,10 @@ write_viminfo_history(fp)
 		    }
 		}
 	}
+	for (i = 0; i < viminfo_hisidx[type]; ++i)
+	    vim_free(viminfo_history[type][i]);
+	vim_free(viminfo_history[type]);
+	viminfo_history[type] = NULL;
     }
 }
 #endif /* FEAT_VIMINFO */
