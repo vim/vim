@@ -88,6 +88,14 @@
 # define rb_int2big rb_int2big_stub
 #endif
 
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20 \
+	&& SIZEOF_INT < SIZEOF_LONG
+/* Ruby 2.0 defines a number of static functions which use rb_fix2int and
+ * rb_num2int if SIZEOF_INT < SIZEOF_LONG (64bit) */
+# define rb_fix2int rb_fix2int_stub
+# define rb_num2int rb_num2int_stub
+#endif
+
 #include <ruby.h>
 #ifdef RUBY19_OR_LATER
 # include <ruby/encoding.h>
@@ -352,6 +360,17 @@ VALUE rb_int2big_stub(SIGNED_VALUE x)
 {
     return dll_rb_int2big(x);
 }
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20 \
+	&& SIZEOF_INT < SIZEOF_LONG
+long rb_fix2int_stub(VALUE x)
+{
+    return dll_rb_fix2int(x);
+}
+long rb_num2int_stub(VALUE x)
+{
+    return dll_rb_num2int(x);
+}
+#endif
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
 VALUE
 rb_float_new_in_heap(double d)
