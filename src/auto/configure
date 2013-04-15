@@ -4737,15 +4737,24 @@ $as_echo "no" >&6; }
       if test -f "${vi_cv_path_lua_pfx}/bin/cyglua-${vi_cv_version_lua}.dll"; then
 	vi_cv_dll_name_lua="cyglua-${vi_cv_version_lua}.dll"
       else
-			for LUA_SOVER in "${vi_cv_version_lua}.so" ".so.${vi_cv_version_lua}"; do
-	  for i in 0 1 2 3 4 5 6 7 8 9; do
-	    if test -f "${vi_cv_path_lua_pfx}/lib/liblua${LUA_SOVER}.$i"; then
-	      LUA_SONAME=".$i"
-	      break
-	    fi
+	multiarch=`dpkg-architecture -qDEB_HOST_MULTIARCH 2> /dev/null`
+	if test "X$multiarch" != "X"; then
+	  lib_multiarch="lib/${multiarch}"
+	fi
+			for subdir in "${lib_multiarch}" lib64 lib; do
+	  if test -z "$subdir"; then
+	    continue
+	  fi
+	  for sover in "${vi_cv_version_lua}.so" "-${vi_cv_version_lua}.so" ".so.${vi_cv_version_lua}"; do
+	    for i in .0 .1 .2 .3 .4 .5 .6 .7 .8 .9 ""; do
+	      if test -f "${vi_cv_path_lua_pfx}/${subdir}/liblua${sover}$i"; then
+		sover2="$i"
+		break 3
+	      fi
+	    done
 	  done
-	  vi_cv_dll_name_lua="liblua${LUA_SOVER}$LUA_SONAME"
 	done
+	vi_cv_dll_name_lua="liblua${sover}$sover2"
       fi
       $as_echo "#define DYNAMIC_LUA 1" >>confdefs.h
 
