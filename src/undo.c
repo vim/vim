@@ -216,6 +216,7 @@ u_check(int newhead_may_be_NULL)
 
 /*
  * Save the current line for both the "u" and "U" command.
+ * Careful: may trigger autocommands that reload the buffer.
  * Returns OK or FAIL.
  */
     int
@@ -238,8 +239,9 @@ u_save(top, bot)
     if (undo_off)
 	return OK;
 
-    if (top > curbuf->b_ml.ml_line_count ||
-			    top >= bot || bot > curbuf->b_ml.ml_line_count + 1)
+    if (top > curbuf->b_ml.ml_line_count
+	    || top >= bot
+	    || bot > curbuf->b_ml.ml_line_count + 1)
 	return FALSE;	/* rely on caller to do error messages */
 
     if (top + 2 == bot)
