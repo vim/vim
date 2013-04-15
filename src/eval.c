@@ -788,7 +788,7 @@ static char_u *get_tv_string __ARGS((typval_T *varp));
 static char_u *get_tv_string_buf __ARGS((typval_T *varp, char_u *buf));
 static char_u *get_tv_string_buf_chk __ARGS((typval_T *varp, char_u *buf));
 static dictitem_T *find_var __ARGS((char_u *name, hashtab_T **htp));
-static dictitem_T *find_var_in_ht __ARGS((hashtab_T *ht, char_u *varname, int writing));
+static dictitem_T *find_var_in_ht __ARGS((hashtab_T *ht, int htname, char_u *varname, int writing));
 static hashtab_T *find_var_ht __ARGS((char_u *name, char_u **varname));
 static void vars_clear_ext __ARGS((hashtab_T *ht, int free_val));
 static void delete_var __ARGS((hashtab_T *ht, hashitem_T *hi));
@@ -11150,13 +11150,10 @@ f_getbufvar(argvars, rettv)
 	}
 	else
 	{
-	    if (*varname == NUL)
-		/* let getbufvar({nr}, "") return the "b:" dictionary.  The
-		 * scope prefix before the NUL byte is required by
-		 * find_var_in_ht(). */
-		varname = (char_u *)"b:" + 2;
-	    /* look up the variable */
-	    v = find_var_in_ht(&curbuf->b_vars->dv_hashtab, varname, FALSE);
+	    /* Look up the variable. */
+	    /* Let getbufvar({nr}, "") return the "b:" dictionary. */
+	    v = find_var_in_ht(&curbuf->b_vars->dv_hashtab,
+							 'b', varname, FALSE);
 	    if (v != NULL)
 		copy_tv(&v->di_tv, rettv);
 	}
@@ -11779,7 +11776,7 @@ f_gettabvar(argvars, rettv)
     if (tp != NULL && varname != NULL)
     {
 	/* look up the variable */
-	v = find_var_in_ht(&tp->tp_vars->dv_hashtab, varname, FALSE);
+	v = find_var_in_ht(&tp->tp_vars->dv_hashtab, 0, varname, FALSE);
 	if (v != NULL)
 	    copy_tv(&v->di_tv, rettv);
 	else if (argvars[2].v_type != VAR_UNKNOWN)
@@ -11929,13 +11926,9 @@ getwinvar(argvars, rettv, off)
 	    get_option_tv(&varname, rettv, 1);
 	else
 	{
-	    if (*varname == NUL)
-		/* let getwinvar({nr}, "") return the "w:" dictionary.  The
-		 * scope prefix before the NUL byte is required by
-		 * find_var_in_ht(). */
-		varname = (char_u *)"w:" + 2;
-	    /* look up the variable */
-	    v = find_var_in_ht(&win->w_vars->dv_hashtab, varname, FALSE);
+	    /* Look up the variable. */
+	    /* Let getwinvar({nr}, "") return the "w:" dictionary. */
+	    v = find_var_in_ht(&win->w_vars->dv_hashtab, 'w', varname, FALSE);
 	    if (v != NULL)
 		copy_tv(&v->di_tv, rettv);
 	}
@@ -20041,16 +20034,17 @@ find_var(name, htp)
 	*htp = ht;
     if (ht == NULL)
 	return NULL;
-    return find_var_in_ht(ht, varname, htp != NULL);
+    return find_var_in_ht(ht, *name, varname, htp != NULL);
 }
 
 /*
- * Find variable "varname" in hashtab "ht".
+ * Find variable "varname" in hashtab "ht" with name "htname".
  * Returns NULL if not found.
  */
     static dictitem_T *
-find_var_in_ht(ht, varname, writing)
+find_var_in_ht(ht, htname, varname, writing)
     hashtab_T	*ht;
+    int		htname;
     char_u	*varname;
     int		writing;
 {
@@ -20059,7 +20053,7 @@ find_var_in_ht(ht, varname, writing)
     if (*varname == NUL)
     {
 	/* Must be something like "s:", otherwise "ht" would be NULL. */
-	switch (varname[-2])
+	switch (htname)
 	{
 	    case 's': return &SCRIPT_SV(current_SID)->sv_var;
 	    case 'g': return &globvars_var;
@@ -20389,7 +20383,7 @@ set_var(name, tv, copy)
 	EMSG2(_(e_illvar), name);
 	return;
     }
-    v = find_var_in_ht(ht, varname, TRUE);
+    v = find_var_in_ht(ht, 0, varname, TRUE);
 
     if (tv->v_type == VAR_FUNC && var_check_func_name(name, v == NULL))
 	return;
