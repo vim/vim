@@ -1611,7 +1611,7 @@ struct file_buffer
 
 #ifdef FEAT_EVAL
     dictitem_T	b_bufvar;	/* variable for "b:" Dictionary */
-    dict_T	b_vars;		/* internal variables, local to buffer */
+    dict_T	*b_vars;	/* internal variables, local to buffer */
 #endif
 
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
@@ -1757,7 +1757,7 @@ struct tabpage_S
     frame_T	    *(tp_snapshot[SNAP_COUNT]);  /* window layout snapshots */
 #ifdef FEAT_EVAL
     dictitem_T	    tp_winvar;	    /* variable for "t:" Dictionary */
-    dict_T	    tp_vars;	    /* internal variables, local to tab page */
+    dict_T	    *tp_vars;	    /* internal variables, local to tab page */
 #endif
 };
 
@@ -2080,7 +2080,7 @@ struct window_S
 
 #ifdef FEAT_EVAL
     dictitem_T	w_winvar;	/* variable for "w:" Dictionary */
-    dict_T	w_vars;		/* internal variables, local to window */
+    dict_T	*w_vars;	/* internal variables, local to window */
 #endif
 
 #if defined(FEAT_RIGHTLEFT) && defined(FEAT_FKMAP)

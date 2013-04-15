@@ -8955,8 +8955,8 @@ win_found:
 	    /* Hmm, original window disappeared.  Just use the first one. */
 	    curwin = firstwin;
 # ifdef FEAT_EVAL
-	vars_clear(&aucmd_win->w_vars.dv_hashtab);  /* free all w: variables */
-	hash_init(&aucmd_win->w_vars.dv_hashtab);   /* re-use the hashtab */
+	vars_clear(&aucmd_win->w_vars->dv_hashtab);  /* free all w: variables */
+	hash_init(&aucmd_win->w_vars->dv_hashtab);   /* re-use the hashtab */
 # endif
 #else
 	curwin = aco->save_curwin;

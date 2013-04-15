@@ -2131,7 +2131,7 @@ list_buf_vars(first)
 {
     char_u	numbuf[NUMBUFLEN];
 
-    list_hashtable_vars(&curbuf->b_vars.dv_hashtab, (char_u *)"b:",
+    list_hashtable_vars(&curbuf->b_vars->dv_hashtab, (char_u *)"b:",
 								 TRUE, first);
 
     sprintf((char *)numbuf, "%ld", (long)curbuf->b_changedtick);
@@ -2146,7 +2146,7 @@ list_buf_vars(first)
 list_win_vars(first)
     int *first;
 {
-    list_hashtable_vars(&curwin->w_vars.dv_hashtab,
+    list_hashtable_vars(&curwin->w_vars->dv_hashtab,
 						 (char_u *)"w:", TRUE, first);
 }
 
@@ -2158,7 +2158,7 @@ list_win_vars(first)
 list_tab_vars(first)
     int *first;
 {
-    list_hashtable_vars(&curtab->tp_vars.dv_hashtab,
+    list_hashtable_vars(&curtab->tp_vars->dv_hashtab,
 						 (char_u *)"t:", TRUE, first);
 }
 #endif
@@ -3948,7 +3948,7 @@ get_user_var_name(xp, idx)
     }
 
     /* b: variables */
-    ht = &curbuf->b_vars.dv_hashtab;
+    ht = &curbuf->b_vars->dv_hashtab;
     if (bdone < ht->ht_used)
     {
 	if (bdone++ == 0)
@@ -3966,7 +3966,7 @@ get_user_var_name(xp, idx)
     }
 
     /* w: variables */
-    ht = &curwin->w_vars.dv_hashtab;
+    ht = &curwin->w_vars->dv_hashtab;
     if (wdone < ht->ht_used)
     {
 	if (wdone++ == 0)
@@ -3980,7 +3980,7 @@ get_user_var_name(xp, idx)
 
 #ifdef FEAT_WINDOWS
     /* t: variables */
-    ht = &curtab->tp_vars.dv_hashtab;
+    ht = &curtab->tp_vars->dv_hashtab;
     if (tdone < ht->ht_used)
     {
 	if (tdone++ == 0)
@@ -6787,16 +6787,16 @@ garbage_collect()
 
     /* buffer-local variables */
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
-	set_ref_in_ht(&buf->b_vars.dv_hashtab, copyID);
+	set_ref_in_item(&buf->b_bufvar.di_tv, copyID);
 
     /* window-local variables */
     FOR_ALL_TAB_WINDOWS(tp, wp)
-	set_ref_in_ht(&wp->w_vars.dv_hashtab, copyID);
+	set_ref_in_item(&wp->w_winvar.di_tv, copyID);
 
 #ifdef FEAT_WINDOWS
     /* tabpage-local variables */
     for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
-	set_ref_in_ht(&tp->tp_vars.dv_hashtab, copyID);
+	set_ref_in_item(&tp->tp_winvar.di_tv, copyID);
 #endif
 
     /* global variables */
@@ -11156,7 +11156,7 @@ f_getbufvar(argvars, rettv)
 		 * find_var_in_ht(). */
 		varname = (char_u *)"b:" + 2;
 	    /* look up the variable */
-	    v = find_var_in_ht(&curbuf->b_vars.dv_hashtab, varname, FALSE);
+	    v = find_var_in_ht(&curbuf->b_vars->dv_hashtab, varname, FALSE);
 	    if (v != NULL)
 		copy_tv(&v->di_tv, rettv);
 	}
@@ -11779,7 +11779,7 @@ f_gettabvar(argvars, rettv)
     if (tp != NULL && varname != NULL)
     {
 	/* look up the variable */
-	v = find_var_in_ht(&tp->tp_vars.dv_hashtab, varname, FALSE);
+	v = find_var_in_ht(&tp->tp_vars->dv_hashtab, varname, FALSE);
 	if (v != NULL)
 	    copy_tv(&v->di_tv, rettv);
 	else if (argvars[2].v_type != VAR_UNKNOWN)
@@ -11935,7 +11935,7 @@ getwinvar(argvars, rettv, off)
 		 * find_var_in_ht(). */
 		varname = (char_u *)"w:" + 2;
 	    /* look up the variable */
-	    v = find_var_in_ht(&win->w_vars.dv_hashtab, varname, FALSE);
+	    v = find_var_in_ht(&win->w_vars->dv_hashtab, varname, FALSE);
 	    if (v != NULL)
 		copy_tv(&v->di_tv, rettv);
 	}
@@ -14333,7 +14333,7 @@ f_mode(argvars, rettv)
     rettv->v_type = VAR_STRING;
 }
 
-#ifdef FEAT_MZSCHEME
+#if defined(FEAT_MZSCHEME) || defined(PROTO)
 /*
  * "mzeval()" function
  */
@@ -20134,12 +20134,12 @@ find_var_ht(name, varname)
 			       || vim_strchr(name + 2, AUTOLOAD_CHAR) != NULL)
 	return NULL;
     if (*name == 'b')				/* buffer variable */
-	return &curbuf->b_vars.dv_hashtab;
+	return &curbuf->b_vars->dv_hashtab;
     if (*name == 'w')				/* window variable */
-	return &curwin->w_vars.dv_hashtab;
+	return &curwin->w_vars->dv_hashtab;
 #ifdef FEAT_WINDOWS
     if (*name == 't')				/* tab page variable */
-	return &curtab->tp_vars.dv_hashtab;
+	return &curtab->tp_vars->dv_hashtab;
 #endif
     if (*name == 'v')				/* v: variable */
 	return &vimvarht;
@@ -20226,6 +20226,19 @@ init_var_dict(dict, dict_var, scope)
     dict_var->di_tv.v_lock = VAR_FIXED;
     dict_var->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
     dict_var->di_key[0] = NUL;
+}
+
+/*
+ * Unreference a dictionary initialized by init_var_dict().
+ */
+    void
+unref_var_dict(dict)
+    dict_T	*dict;
+{
+    /* Now the dict needs to be freed if no one else is using it, go back to
+     * normal reference counting. */
+    dict->dv_refcount -= DO_NOT_FREE_CNT - 1;
+    dict_unref(dict);
 }
 
 /*
