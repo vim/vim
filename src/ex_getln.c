@@ -6216,7 +6216,15 @@ write_viminfo_history(fp)
 	 */
 	for (round = 1; round <= 2; ++round)
 	{
-	    i = round == 1 ? hisidx[type] : 0;
+	    if (round == 1)
+		/* start at newest entry, somewhere in the list */
+		i = hisidx[type];
+	    else if (viminfo_hisidx[type] > 0)
+		/* start at newest entry, first in the list */
+		i = 0;
+	    else
+		/* empty list */
+		i = -1;
 	    if (i >= 0)
 		while (num_saved > 0
 			&& !(round == 2 && i >= viminfo_hisidx[type]))
