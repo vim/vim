@@ -6264,6 +6264,7 @@ write_viminfo_history(fp)
 	    vim_free(viminfo_history[type][i]);
 	vim_free(viminfo_history[type]);
 	viminfo_history[type] = NULL;
+	viminfo_hisidx[type] = 0;
     }
 }
 #endif /* FEAT_VIMINFO */
