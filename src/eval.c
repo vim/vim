@@ -6792,6 +6792,10 @@ garbage_collect()
     /* window-local variables */
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	set_ref_in_item(&wp->w_winvar.di_tv, copyID);
+#ifdef FEAT_AUTOCMD
+    if (aucmd_win != NULL)
+	set_ref_in_item(&aucmd_win->w_winvar.di_tv, copyID);
+#endif
 
 #ifdef FEAT_WINDOWS
     /* tabpage-local variables */
