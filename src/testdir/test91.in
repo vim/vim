@@ -4,9 +4,10 @@ vim: set ft=vim :
 STARTTEST
 :so small.vim
 :"
-:" test for getbufvar()
-:let b:var_num = 1234
-:let def_num = 5678
+:" Test for getbufvar()
+:" Use strings to test for memory leaks.
+:let b:var_num = '1234'
+:let def_num = '5678'
 :$put =string(getbufvar(1, 'var_num'))
 :$put =string(getbufvar(1, 'var_num', def_num))
 :$put =string(getbufvar(1, ''))

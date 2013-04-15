@@ -11120,20 +11120,15 @@ f_getbufvar(argvars, rettv)
     buf_T	*save_curbuf;
     char_u	*varname;
     dictitem_T	*v;
+    int		done = FALSE;
 
     (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
     varname = get_tv_string_chk(&argvars[1]);
     ++emsg_off;
     buf = get_buf_tv(&argvars[0], FALSE);
 
-    if (argvars[2].v_type != VAR_UNKNOWN)
-	/* set the default value */
-	copy_tv(&argvars[2], rettv);
-    else
-    {
-	rettv->v_type = VAR_STRING;
-	rettv->vval.v_string = NULL;
-    }
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
 
     if (buf != NULL && varname != NULL)
     {
@@ -11142,11 +11137,15 @@ f_getbufvar(argvars, rettv)
 	curbuf = buf;
 
 	if (*varname == '&')	/* buffer-local-option */
-	    get_option_tv(&varname, rettv, TRUE);
+	{
+	    if (get_option_tv(&varname, rettv, TRUE) == OK)
+		done = TRUE;
+	}
 	else if (STRCMP(varname, "changedtick") == 0)
 	{
 	    rettv->v_type = VAR_NUMBER;
 	    rettv->vval.v_number = curbuf->b_changedtick;
+	    done = TRUE;
 	}
 	else
 	{
@@ -11155,12 +11154,19 @@ f_getbufvar(argvars, rettv)
 	    v = find_var_in_ht(&curbuf->b_vars->dv_hashtab,
 							 'b', varname, FALSE);
 	    if (v != NULL)
+	    {
 		copy_tv(&v->di_tv, rettv);
+		done = TRUE;
+	    }
 	}
 
 	/* restore previous notion of curbuf */
 	curbuf = save_curbuf;
     }
+
+    if (!done && argvars[2].v_type != VAR_UNKNOWN)
+	/* use the default value */
+	copy_tv(&argvars[2], rettv);
 
     --emsg_off;
 }
@@ -11767,6 +11773,7 @@ f_gettabvar(argvars, rettv)
     tabpage_T	*tp;
     dictitem_T	*v;
     char_u	*varname;
+    int		done = FALSE;
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
@@ -11778,11 +11785,13 @@ f_gettabvar(argvars, rettv)
 	/* look up the variable */
 	v = find_var_in_ht(&tp->tp_vars->dv_hashtab, 0, varname, FALSE);
 	if (v != NULL)
+	{
 	    copy_tv(&v->di_tv, rettv);
-	else if (argvars[2].v_type != VAR_UNKNOWN)
-	    copy_tv(&argvars[2], rettv);
+	    done = TRUE;
+	}
     }
-    else if (argvars[2].v_type != VAR_UNKNOWN)
+
+    if (!done && argvars[2].v_type != VAR_UNKNOWN)
 	copy_tv(&argvars[2], rettv);
 }
 
@@ -11894,6 +11903,7 @@ getwinvar(argvars, rettv, off)
     char_u	*varname;
     dictitem_T	*v;
     tabpage_T	*tp;
+    int		done = FALSE;
 
 #ifdef FEAT_WINDOWS
     if (off == 1)
@@ -11905,14 +11915,8 @@ getwinvar(argvars, rettv, off)
     varname = get_tv_string_chk(&argvars[off + 1]);
     ++emsg_off;
 
-    if (argvars[off + 2].v_type != VAR_UNKNOWN)
-	/* set the default return value */
-	copy_tv(&argvars[off + 2], rettv);
-    else
-    {
-	rettv->v_type = VAR_STRING;
-	rettv->vval.v_string = NULL;
-    }
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
 
     if (win != NULL && varname != NULL)
     {
@@ -11923,20 +11927,30 @@ getwinvar(argvars, rettv, off)
 	curbuf = win->w_buffer;
 
 	if (*varname == '&')	/* window-local-option */
-	    get_option_tv(&varname, rettv, 1);
+	{
+	    if (get_option_tv(&varname, rettv, 1) == OK)
+		done = TRUE;
+	}
 	else
 	{
 	    /* Look up the variable. */
 	    /* Let getwinvar({nr}, "") return the "w:" dictionary. */
 	    v = find_var_in_ht(&win->w_vars->dv_hashtab, 'w', varname, FALSE);
 	    if (v != NULL)
+	    {
 		copy_tv(&v->di_tv, rettv);
+		done = TRUE;
+	    }
 	}
 
 	/* restore previous notion of curwin */
 	curwin = oldcurwin;
 	curbuf = curwin->w_buffer;
     }
+
+    if (!done && argvars[off + 2].v_type != VAR_UNKNOWN)
+	/* use the default return value */
+	copy_tv(&argvars[off + 2], rettv);
 
     --emsg_off;
 }
