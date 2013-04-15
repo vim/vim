@@ -1088,6 +1088,13 @@
 # endif
 #endif
 
+/*
+ * Note: Only one of the following may be defined:
+ * FEAT_MOUSE_GPM
+ * FEAT_SYSMOUSE
+ * FEAT_MOUSE_JSB
+ * FEAT_MOUSE_PTERM
+ */
 #if defined(FEAT_NORMAL) && defined(HAVE_GPM)
 # define FEAT_MOUSE_GPM
 #endif
