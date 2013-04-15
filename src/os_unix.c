@@ -3493,13 +3493,14 @@ mch_setmouse(on)
 	     *	  4 = Windows Cross Hair
 	     *	  5 = Windows UP Arrow
 	     */
-#ifdef JSBTERM_MOUSE_NONADVANCED /* Disables full feedback of pointer movements */
+#  ifdef JSBTERM_MOUSE_NONADVANCED
+	    /* Disables full feedback of pointer movements */
 	    out_str_nf((char_u *)IF_EB("\033[0~ZwLMRK1Q\033\\",
 					 ESC_STR "[0~ZwLMRK1Q" ESC_STR "\\"));
-#else
+#  else
 	    out_str_nf((char_u *)IF_EB("\033[0~ZwLMRK+1Q\033\\",
 					ESC_STR "[0~ZwLMRK+1Q" ESC_STR "\\"));
-#endif
+#  endif
 	    ison = TRUE;
 	}
 	else
