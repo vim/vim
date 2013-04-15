@@ -709,8 +709,7 @@ luaV_list_index (lua_State *L)
     {
 	const char *s = lua_tostring(L, 2);
 	if (strncmp(s, "add", 3) == 0
-		|| strncmp(s, "insert", 6) == 0
-		|| strncmp(s, "extend", 6) == 0)
+		|| strncmp(s, "insert", 6) == 0)
 	{
 	    lua_getmetatable(L, 1);
 	    lua_getfield(L, -1, s);
@@ -745,6 +744,7 @@ luaV_list_newindex (lua_State *L)
 	luaV_totypval(L, 3, &v);
 	clear_tv(&li->li_tv);
 	copy_tv(&v, &li->li_tv);
+	clear_tv(&v);
     }
     return 0;
 }
@@ -754,17 +754,17 @@ luaV_list_add (lua_State *L)
 {
     luaV_List *lis = luaV_checkudata(L, 1, LUAVIM_LIST);
     list_T *l = (list_T *) luaV_checkcache(L, (void *) *lis);
-    listitem_T *li;
+    typval_T v;
     if (l->lv_lock)
 	luaL_error(L, "list is locked");
-    li = listitem_alloc();
-    if (li != NULL)
+    lua_settop(L, 2);
+    luaV_totypval(L, 2, &v);
+    if (list_append_tv(l, &v) == FAIL)
     {
-	typval_T v;
-	lua_settop(L, 2);
-	luaV_totypval(L, 2, &v);
-	list_append_tv(l, &v);
+	clear_tv(&v);
+	luaL_error(L, "Failed to add item to list");
     }
+    clear_tv(&v);
     lua_settop(L, 1);
     return 1;
 }
@@ -787,7 +787,12 @@ luaV_list_insert (lua_State *L)
     }
     lua_settop(L, 2);
     luaV_totypval(L, 2, &v);
-    list_insert_tv(l, &v, li);
+    if (list_insert_tv(l, &v, li) == FAIL)
+    {
+	clear_tv(&v);
+	luaL_error(L, "Failed to add item to list");
+    }
+    clear_tv(&v);
     lua_settop(L, 1);
     return 1;
 }
@@ -908,6 +913,7 @@ luaV_dict_newindex (lua_State *L)
 	typval_T v;
 	luaV_totypval(L, 3, &v);
 	copy_tv(&v, &di->di_tv);
+	clear_tv(&v);
     }
     return 0;
 }
@@ -1323,6 +1329,7 @@ luaV_eval(lua_State *L)
     typval_T *tv = eval_expr((char_u *) luaL_checkstring(L, 1), NULL);
     if (tv == NULL) luaL_error(L, "invalid expression");
     luaV_pushtypval(L, tv);
+    free_tv(tv);
     return 1;
 }
 
