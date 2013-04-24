@@ -738,6 +738,8 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookupDict)
     tv->vval.v_dict = d;
 
     list = PyMapping_Items(obj);
+    if (list == NULL)
+	return -1;
     lsize = PyList_Size(list);
     while (lsize--)
     {
