@@ -69,8 +69,10 @@ test1.out: test1.in
 .in.out:
 	-rm -rf $*.failed test.ok $(RM_ON_RUN)
 	cp $*.ok test.ok
-	# Sleep a moment to avoid that the xterm title is messed up
-	@-sleep .2
+	# Sleep a moment to avoid that the xterm title is messed up.
+	# 200 msec is sufficient, but only modern sleep supports a fraction of
+	# a second, fall back to a second if it fails.
+	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
 	-$(RUN_VIM) $*.in
 
 	# For flaky tests retry one time.
