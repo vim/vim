@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.3.  Last change: 2013 Jan 25
+*pattern.txt*   For Vim version 7.3.  Last change: 2013 Apr 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1061,6 +1061,8 @@ x	A single character, with no special meaning, matches itself
 	  any character that's not in "^]-\bdertnoUux".  "[\xyz]" matches '\',
 	  'x', 'y' and 'z'.  It's better to use "\\" though, future expansions
 	  may use other characters after '\'.
+	- Omitting the trailing ] is not considered an error. "[]" works like
+	  "[]]", it matches the ']' character.
 	- The following translations are accepted when the 'l' flag is not
 	  included in 'cpoptions' {not in Vi}:
 		\e	<Esc>

@@ -1,12 +1,12 @@
-*pi_zip.txt*	For Vim version 7.3.  Last change: 2012 Jan 17
+*pi_zip.txt*	For Vim version 7.3.  Last change: 2013 Apr 17
 
 				+====================+
 				| Zip File Interface |
 				+====================+
 
-Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
+Author:  Charles E. Campbell  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
-Copyright: Copyright (C) 2005-2011 Charles E Campbell, Jr *zip-copyright*
+Copyright: Copyright (C) 2005-2012 Charles E Campbell	 *zip-copyright*
 	The VIM LICENSE (see |copyright|) applies to the files in this
 	package, including zipPlugin.vim, zip.vim, and pi_zip.vim.  except use
 	"zip.vim" instead of "VIM".  Like anything else that's free, zip.vim
@@ -85,8 +85,13 @@ Copyright: Copyright (C) 2005-2011 Charles E Campbell, Jr *zip-copyright*
 
 ==============================================================================
 4. History							*zip-history* {{{1
+   v26 Nov 15, 2012 * (Jason Spiro) provided a lot of new extensions that
+		      are synonyms for .zip
    v25 Jun 27, 2011 * using keepj with unzip -Z
 		      (consistent with the -p variant)
+		    * (Ben Staniford) now uses
+			has("win32unix") && executable("cygpath")
+		      before converting to cygwin-style paths
    v24 Jun 21, 2010 * (Cédric Bosdonnat) unzip seems to need its filenames
 		      fnameescape'd as well as shellquote'd
 		    * (Motoya Kurotsu) inserted keepj before 0d to protect

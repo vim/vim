@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Make
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Jun 17
+" Last Change:	2013 Apr 22
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -26,3 +26,8 @@ setlocal commentstring=#\ %s
 
 " Including files.
 let &l:include = '^\s*include'
+
+" For matchit.vim, suggested by Albert Netymk.
+if exists("loaded_matchit")
+  let b:match_words = '\<if\(n\)\=\(eq\|def\)\>:\<else\>:\<endif\>,\<define\>:\<endef\>'
+endif

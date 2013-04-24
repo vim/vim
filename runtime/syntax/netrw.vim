@@ -1,7 +1,7 @@
 " Language   : Netrw Remote-Directory Listing Syntax
 " Maintainer : Charles E. Campbell, Jr.
-" Last change: Jan 14, 2009
-" Version    : 16
+" Last change: Dec 18, 2012
+" Version    : 17
 " ---------------------------------------------------------------------
 
 " Syntax Clearing: {{{1
@@ -56,13 +56,16 @@ if exists("g:netrw_special_syntax") && netrw_special_syntax
  if has("unix")
   syn match netrwCoreDump	"\<core\%(\.\d\+\)\=\>"				contains=netrwTreeBar,@NoSpell
  endif
+ syn match netrwLex		"\(\S\+ \)*\S\+\.\%(l\|lex\)\>"			contains=netrwTreeBar,@NoSpell
+ syn match netrwYacc		"\(\S\+ \)*\S\+\.y\>"				contains=netrwTreeBar,@NoSpell
  syn match netrwData		"\(\S\+ \)*\S\+\.dat\>"				contains=netrwTreeBar,@NoSpell
- syn match netrwHdr		"\(\S\+ \)*\S\+\.h\>"				contains=netrwTreeBar,@NoSpell
+ syn match netrwDoc		"\(\S\+ \)*\S\+\.\%(doc\|txt\|pdf\|ps\)"	contains=netrwTreeBar,@NoSpell
+ syn match netrwHdr		"\(\S\+ \)*\S\+\.\%(h\|hpp\)\>"			contains=netrwTreeBar,@NoSpell
  syn match netrwLib		"\(\S\+ \)*\S*\.\%(a\|so\|lib\|dll\)\>"		contains=netrwTreeBar,@NoSpell
  syn match netrwMakeFile	"\<[mM]akefile\>\|\(\S\+ \)*\S\+\.mak\>"	contains=netrwTreeBar,@NoSpell
  syn match netrwObj		"\(\S\+ \)*\S*\.\%(o\|obj\)\>"			contains=netrwTreeBar,@NoSpell
- syn match netrwTags    	"\<tags\>"					contains=netrwTreeBar,@NoSpell
  syn match netrwTags		"\<\(ANmenu\|ANtags\)\>"			contains=netrwTreeBar,@NoSpell
+ syn match netrwTags    	"\<tags\>"					contains=netrwTreeBar,@NoSpell
  syn match netrwTilde		"\(\S\+ \)*\S\+\~\*\=\>"			contains=netrwTreeBar,@NoSpell
  syn match netrwTmp		"\<tmp\(\S\+ \)*\S\+\>\|\(\S\+ \)*\S*tmp\>"	contains=netrwTreeBar,@NoSpell
 endif
@@ -95,12 +98,15 @@ if !exists("did_drchip_netrwlist_syntax")
  hi default link netrwCompress	Folded
  hi default link netrwCoreDump	WarningMsg
  hi default link netrwData	DiffChange
+ hi default link netrwHdr	netrwPlain
+ hi default link netrwLex	netrwPlain
  hi default link netrwLib	DiffChange
  hi default link netrwMakefile	DiffChange
  hi default link netrwObj	Folded
  hi default link netrwTilde	Folded
  hi default link netrwTmp	Folded
  hi default link netrwTags	Folded
+ hi default link netrwYacc	netrwPlain
 endif
 
 " Current Syntax: {{{1

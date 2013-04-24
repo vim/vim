@@ -1,6 +1,6 @@
 " ---------------------------------------------------------------------
 " getscriptPlugin.vim
-"  Author:	Charles E. Campbell, Jr.
+"  Author:	Charles E. Campbell
 "  Date:	Jan 07, 2008
 "  Installing:	:help glvs-install
 "  Usage:	:help glvs
@@ -19,7 +19,7 @@ if &cp || exists("g:loaded_getscriptPlugin")
  endif
  finish
 endif
-let g:loaded_getscriptPlugin = "v34"
+let g:loaded_getscriptPlugin = "v35"
 let s:keepcpo                = &cpo
 set cpo&vim
 

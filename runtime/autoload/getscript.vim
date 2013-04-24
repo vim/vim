@@ -1,8 +1,8 @@
 " ---------------------------------------------------------------------
 " getscript.vim
-"  Author:	Charles E. Campbell, Jr.
-"  Date:	Jan 17, 2012
-"  Version:	34
+"  Author:	Charles E. Campbell
+"  Date:	Apr 17, 2013
+"  Version:	35
 "  Installing:	:help glvs-install
 "  Usage:	:help glvs
 "
@@ -15,7 +15,7 @@
 if exists("g:loaded_getscript")
  finish
 endif
-let g:loaded_getscript= "v34"
+let g:loaded_getscript= "v35"
 if &cp
  echoerr "GetLatestVimScripts is not vi-compatible; not loaded (you need to set nocp)"
  finish
@@ -72,6 +72,11 @@ endif
 " by default, allow autoinstall lines to work
 if !exists("g:GetLatestVimScripts_allowautoinstall")
  let g:GetLatestVimScripts_allowautoinstall= 1
+endif
+
+" set up default scriptaddr address
+if !exists("g:GetLatestVimScripts_scriptaddr")
+ let g:GetLatestVimScripts_scriptaddr = 'http://vim.sourceforge.net/script.php?script_id='
 endif
 
 "" For debugging:
@@ -314,7 +319,7 @@ fun! getscript#GetLatestVimScripts()
   if &mod
    silent! w!
   endif
-  q
+  q!
 
   " restore events and current directory
   exe "cd ".fnameescape(substitute(origdir,'\','/','ge'))
@@ -415,7 +420,7 @@ fun! s:GetOneScript(...)
   echo 'considering <'.aicmmnt.'> scriptid='.scriptid.' srcid='.srcid
 
   " grab a copy of the plugin's vim.sourceforge.net webpage
-  let scriptaddr = 'http://vim.sourceforge.net/script.php?script_id='.scriptid
+  let scriptaddr = g:GetLatestVimScripts_scriptaddr.scriptid
   let tmpfile    = tempname()
   let v:errmsg   = ""
 

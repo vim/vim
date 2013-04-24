@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	APT config file
 " Maintainer:	Yann Amar <quidame@poivron.org>
-" Last Change:	2012 Oct 06
+" Last Change:	2013 Apr 12
 
 " For version 5.x: Clear all syntax items
 " For version 6.x and 7.x: Quit when a syntax file was already loaded
@@ -16,7 +16,6 @@ endif
 
 let s:cpo_save = &cpo
 set cpo&vim
-
 
 " Errors:
 " Catch all that is not overridden by next rules/items:
@@ -198,6 +197,24 @@ syn keyword	aptconfAptitudeUI contained
 	\ Package-Status-Format Pause-After-Download Preview-Limit
 	\ Prompt-On-Exit Styles ViewTabs
 
+syn keyword	aptconfAptitudeUIKeyBindings contained
+	\ ApplySolution Begin BugReport Cancel Changelog ChangePkgTreeGrouping
+	\ ChangePkgTreeLimit ChangePkgTreeSorting ClearAuto CollapseAll
+	\ CollapseTree Commit Confirm Cycle CycleNext CycleOrder CyclePrev
+	\ DelBOL DelBack DelEOL DelForward Dependencies DescriptionCycle
+	\ DescriptionDown DescriptionUp DoInstallRun Down DpkgReconfigure
+	\ DumpResolver EditHier End ExamineSolution ExpandAll ExpandTree
+	\ FirstSolution ForbidUpgrade ForgetNewPackages Help HistoryNext
+	\ HistoryPrev Hold Install InstallSingle Keep LastSolution Left
+	\ LevelDown LevelUp MarkUpgradable MineFlagSquare MineLoadGame
+	\ MineSaveGame MineSweepSquare MineUncoverSquare MineUncoverSweepSquare
+	\ NextPage NextSolution No Parent PrevPage PrevSolution Purge
+	\ PushButton Quit QuitProgram RejectBreakHolds Refresh Remove
+	\ ReInstall RepeatSearchBack ReSearch ReverseDependencies Right
+	\ SaveHier Search SearchBack SearchBroken SetAuto ShowHideDescription
+	\ SolutionActionApprove SolutionActionReject ToggleExpanded
+	\ ToggleMenuActive Undo Up UpdatePackageList Versions Yes
+
 syn keyword	aptconfAptitudeUIStyles contained
 	\ Bullet ChangeLogNewerVersion Default DepBroken DisabledMenuEntry
 	\ DownloadHit DownloadProgress EditLine Error Header HighlightedMenuBar
@@ -220,7 +237,8 @@ syn cluster	aptconfAptitude_ contains=aptconfAptitude,
 	\ aptconfAptitudeCmdlineSafeUpgrade,aptconfAptitudeLogging,
 	\ aptconfAptitudeProblemResolver,aptconfAptitudeSafeResolver,
 	\ aptconfAptitudeScreenshot,aptconfAptitudeSections,aptconfAptitudeUI,
-	\ aptconfAptitudeUIStyles,aptconfAptitudeUIStylesElements
+	\ aptconfAptitudeUIKeyBindings,aptconfAptitudeUIStyles,
+	\ aptconfAptitudeUIStylesElements
 " }}}
 " DebTags: {{{
 syn keyword	aptconfDebTags contained
@@ -449,6 +467,7 @@ hi def link aptconfAptitudeSafeResolver		aptconfOption
 hi def link aptconfAptitudeScreenshot		aptconfOption
 hi def link aptconfAptitudeSections		aptconfOption
 hi def link aptconfAptitudeUI			aptconfOption
+hi def link aptconfAptitudeUIKeyBindings	aptconfOption
 hi def link aptconfAptitudeUIStyles		aptconfOption
 hi def link aptconfAptitudeUIStylesElements	aptconfOption
 

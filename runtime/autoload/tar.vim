@@ -1,13 +1,13 @@
 " tar.vim: Handles browsing tarfiles
 "            AUTOLOAD PORTION
-" Date:			Jan 17, 2012
-" Version:		28
-" Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
+" Date:			Apr 17, 2013
+" Version:		29
+" Maintainer:	Charles E Campbell <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:		Vim License  (see vim's :help license)
 "
 "	Contains many ideas from Michael Toren's <tar.vim>
 "
-" Copyright:    Copyright (C) 2005-2011 Charles E. Campbell, Jr. {{{1
+" Copyright:    Copyright (C) 2005-2011 Charles E. Campbell {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
@@ -22,7 +22,7 @@
 if &cp || exists("g:loaded_tar")
  finish
 endif
-let g:loaded_tar= "v28"
+let g:loaded_tar= "v29"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** this version of tar needs vim 7.2"
@@ -31,6 +31,7 @@ if v:version < 702
 endif
 let s:keepcpo= &cpo
 set cpo&vim
+"DechoTabOn
 "call Decho("loading autoload/tar.vim")
 
 " ---------------------------------------------------------------------
@@ -80,7 +81,7 @@ endif
 
 " set up shell quoting character
 if !exists("g:tar_shq")
- if exists("&shq") && &shq != ""
+ if exists("+shq") && exists("&shq") && &shq != ""
   let g:tar_shq= &shq
  elseif has("win32") || has("win95") || has("win64") || has("win16")
   if exists("g:netrw_cygwin") && g:netrw_cygwin
@@ -147,7 +148,7 @@ fun! tar#Browse(tarfile)
   keepj $
 
   let tarfile= a:tarfile
-  if has("win32") && executable("cygpath")
+  if has("win32unix") && executable("cygpath")
    " assuming cygwin
    let tarfile=substitute(system("cygpath -u ".shellescape(tarfile,0)),'\n$','','e')
   endif
@@ -227,7 +228,7 @@ fun! s:TarBrowseSelect()
   " about to make a new window, need to use b:tarfile
   let tarfile= b:tarfile
   let curfile= expand("%")
-  if has("win32") && executable("cygpath")
+  if has("win32unix") && executable("cygpath")
    " assuming cygwin
    let tarfile=substitute(system("cygpath -u ".shellescape(tarfile,0)),'\n$','','e')
   endif
@@ -239,6 +240,8 @@ fun! s:TarBrowseSelect()
   let s:tblfile_{winnr()}= curfile
   call tar#Read("tarfile:".tarfile.'::'.fname,1)
   filetype detect
+  set nomod
+  exe 'com! -buffer -nargs=? -complete=file TarDiff	:call tar#Diff(<q-args>,"'.fnameescape(fname).'")'
 
   let &report= repkeep
 "  call Dret("TarBrowseSelect : s:tblfile_".winnr()."<".s:tblfile_{winnr()}.">")
@@ -252,7 +255,7 @@ fun! tar#Read(fname,mode)
   set report=10
   let tarfile = substitute(a:fname,'tarfile:\(.\{-}\)::.*$','\1','')
   let fname   = substitute(a:fname,'tarfile:.\{-}::\(.*\)$','\1','')
-  if has("win32") && executable("cygpath")
+  if has("win32unix") && executable("cygpath")
    " assuming cygwin
    let tarfile=substitute(system("cygpath -u ".shellescape(tarfile,0)),'\n$','','e')
   endif
@@ -425,7 +428,7 @@ fun! tar#Write(fname)
  
    if fname =~ '/'
     let dirpath = substitute(fname,'/[^/]\+$','','e')
-    if executable("cygpath")
+    if has("win32unix") && executable("cygpath")
      let dirpath = substitute(system("cygpath ".shellescape(dirpath, 0)),'\n','','e')
     endif
     call mkdir(dirpath,"p")
@@ -445,7 +448,7 @@ fun! tar#Write(fname)
     let tar_secure= " "
    endif
    exe "w! ".fnameescape(fname)
-   if executable("cygpath")
+   if has("win32unix") && executable("cygpath")
     let tarfile = substitute(system("cygpath ".shellescape(tarfile,0)),'\n','','e')
    endif
  
@@ -498,6 +501,30 @@ fun! tar#Write(fname)
 
   let &report= repkeep
 "  call Dret("tar#Write")
+endfun
+
+" ---------------------------------------------------------------------
+" tar#Diff: {{{2
+fun! tar#Diff(userfname,fname)
+"  call Dfunc("tar#Diff(userfname<".a:userfname."> fname<".a:fname.")")
+  let fname= a:fname
+  if a:userfname != ""
+   let fname= a:userfname
+  endif
+  if filereadable(fname)
+   " sets current file (from tarball) for diff'ing
+   " splits window vertically
+   " opens original file, sets it for diff'ing
+   " sets up b:tardiff_otherbuf variables so each buffer knows about the other (for closing purposes)
+   diffthis
+   wincmd v
+   exe "e ".fnameescape(fname)
+   diffthis
+  else
+   redraw!
+   echo "***warning*** unable to read file<".fname.">"
+  endif
+"  call Dret("tar#Diff")
 endfun
 
 " ---------------------------------------------------------------------

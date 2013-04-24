@@ -3,7 +3,7 @@
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
 #
-# Last Change: 24-Feb-2013.
+# Last Change: 17-Apr-2013.
 #
 # Copyright (C) 2001-12 MURAOKA Taro <koron.kaoriya@gmail.com>
 # THIS FILE IS DISTRIBUTED UNDER THE VIM LICENSE.
@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim 7.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-24 12:38+0900\n"
-"PO-Revision-Date: 2013-02-24 13:30+0900\n"
+"POT-Creation-Date: 2013-04-17 19:56+0900\n"
+"PO-Revision-Date: 2013-04-17 20:00+0900\n"
 "Last-Translator: MURAOKA Taro <koron.kaoriya@gmail.com>\n"
 "Language-Team: MURAOKA Taro <koron.kaoriya@gmail.com>\n"
 "Language: Japanese\n"
@@ -569,7 +569,7 @@ msgid "add() argument"
 msgstr "add() の引数"
 
 msgid "E699: Too many arguments"
-msgstr "E699: が多過ぎます"
+msgstr "E699: 引数が多過ぎます"
 
 msgid "E785: complete() can only be used in Insert mode"
 msgstr "E785: complete() は挿入モードでしか利用できません"
@@ -685,7 +685,7 @@ msgid "E730: using List as a String"
 msgstr "E730: リスト型を文字列として扱っています"
 
 msgid "E731: using Dictionary as a String"
-msgstr "E731: 変数型を文字列として扱っています"
+msgstr "E731: 辞書型を文字列として扱っています"
 
 msgid "E806: using Float as a String"
 msgstr "E806: 浮動小数点数を文字列として扱っています"
@@ -997,6 +997,10 @@ msgstr "E148: globalコマンドに正規表現が指定されていません"
 #, c-format
 msgid "Pattern found in every line: %s"
 msgstr "パターンが全ての行で見つかりました: %s"
+
+#, c-format
+msgid "Pattern not found: %s"
+msgstr "パターンは見つかりませんでした: %s"
 
 msgid ""
 "\n"

@@ -367,7 +367,7 @@ msgstr "E684: Indeksi %ld luettelon rajojen ulkopuolella"
 
 #, c-format
 msgid "E121: Undefined variable: %s"
-msgstr "E121: Määrittelemätön muuttuja %s"
+msgstr "E121: Määrittelemätön muuttuja: %s"
 
 msgid "E111: Missing ']'"
 msgstr "E111: ] puuttuu"
@@ -392,7 +392,7 @@ msgstr "E715: Sanakirja tarvitaan"
 
 #, c-format
 msgid "E118: Too many arguments for function: %s"
-msgstr "E118: Liikaa argumentteja funktiolle %s"
+msgstr "E118: Liikaa argumentteja funktiolle: %s"
 
 #, c-format
 msgid "E716: Key not present in Dictionary: %s"
@@ -1266,7 +1266,7 @@ msgstr "E179: -complete vaatii argumentin"
 
 #, c-format
 msgid "E181: Invalid attribute: %s"
-msgstr "E181: Virheellinen attribuutti %s"
+msgstr "E181: Virheellinen attribuutti: %s"
 
 msgid "E182: Invalid command name"
 msgstr "E182: Virheellinen komennon nimi"
@@ -2220,7 +2220,7 @@ msgstr "E253: Fontsetin nimi: %s\n"
 
 #, c-format
 msgid "Font0: %s\n"
-msgstr "Fontti0. %s\n"
+msgstr "Fontti0: %s\n"
 
 #, c-format
 msgid "Font1: %s\n"
@@ -2481,7 +2481,7 @@ msgstr ""
 
 #, c-format
 msgid "E625: cannot open cscope database: %s"
-msgstr "E625: ei voi avata csope-tietokantaa %s"
+msgstr "E625: ei voi avata cscope-tietokantaa: %s"
 
 msgid "E626: cannot get cscope database information"
 msgstr "E626: ei voi hakea cscope-tietokannan tietoja"
@@ -5328,7 +5328,7 @@ msgstr "E397: Tiedostonimi puuttuu"
 
 #, c-format
 msgid "E789: Missing ']': %s"
-msgstr "E789: ] puuttuu; %s"
+msgstr "E789: ] puuttuu: %s"
 
 #, c-format
 msgid "E398: Missing '=': %s"
@@ -6173,11 +6173,11 @@ msgstr "E474: Virheellinen argumentti"
 
 #, c-format
 msgid "E475: Invalid argument: %s"
-msgstr "E475: Virheellinen argumentti %s"
+msgstr "E475: Virheellinen argumentti: %s"
 
 #, c-format
 msgid "E15: Invalid expression: %s"
-msgstr "E15: Virheellinen ilmaus %s"
+msgstr "E15: Virheellinen ilmaus: %s"
 
 msgid "E16: Invalid range"
 msgstr "E16: Virheellinen arvoalue"

@@ -1,10 +1,10 @@
 " zip.vim: Handles browsing zipfiles
 "            AUTOLOAD PORTION
-" Date:		Jan 17, 2012
-" Version:	25
-" Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
+" Date:		Apr 17, 2013
+" Version:	26
+" Maintainer:	Charles E Campbell <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:	Vim License  (see vim's :help license)
-" Copyright:    Copyright (C) 2005-2012 Charles E. Campbell, Jr. {{{1
+" Copyright:    Copyright (C) 2005-2012 Charles E. Campbell {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
@@ -19,7 +19,7 @@
 if &cp || exists("g:loaded_zip")
  finish
 endif
-let g:loaded_zip= "v25"
+let g:loaded_zip= "v26"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** this version of zip needs vim 7.2"
@@ -188,13 +188,23 @@ fun! zip#Read(fname,mode)
   else
    let zipfile = substitute(a:fname,'^.\{-}zipfile:\(.\{-}\)::[^\\].*$','\1','')
    let fname   = substitute(a:fname,'^.\{-}zipfile:.\{-}::\([^\\].*\)$','\1','')
-   let fname = substitute(fname, '[', '[[]', 'g')
+   let fname   = substitute(fname, '[', '[[]', 'g')
   endif
 "  call Decho("zipfile<".zipfile.">")
 "  call Decho("fname  <".fname.">")
 
-"  call Decho("exe r! ".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fnameescape(fname),1))
-  exe "keepj sil! r! ".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fnameescape(fname),1)
+  " the following code does much the same thing as
+  "   exe "keepj sil! r! ".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fnameescape(fname),1)
+  " but allows zipfile:... entries in quickfix lists
+  let temp = tempname()
+  let fn   = expand('%:p')
+  exe "sil! !".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fnameescape(fname),1).' > '.temp
+"  call Decho("exe sil! !".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fnameescape(fname),1).' > '.temp)
+  sil exe 'keepalt file '.temp
+  sil keepj e!
+  sil exe 'keepalt file '.fnameescape(fn)
+  call delete(temp)
+
   filetype detect
 
   " cleanup
@@ -267,7 +277,7 @@ fun! zip#Write(fname)
 
   if fname =~ '/'
    let dirpath = substitute(fname,'/[^/]\+$','','e')
-   if executable("cygpath")
+   if has("win32unix") && executable("cygpath")
     let dirpath = substitute(system("cygpath ".s:Escape(dirpath,0)),'\n','','e')
    endif
 "   call Decho("mkdir(dirpath<".dirpath.">,p)")
@@ -279,7 +289,7 @@ fun! zip#Write(fname)
 "  call Decho("zipfile<".zipfile."> fname<".fname.">")
 
   exe "w! ".fnameescape(fname)
-  if executable("cygpath")
+  if has("win32unix") && executable("cygpath")
    let zipfile = substitute(system("cygpath ".s:Escape(zipfile,0)),'\n','','e')
   endif
 

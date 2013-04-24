@@ -1,6 +1,6 @@
 " tarPlugin.vim -- a Vim plugin for browsing tarfiles
 " Original was copyright (c) 2002, Michael C. Toren <mct@toren.net>
-" Modified by Charles E. Campbell, Jr.
+" Modified by Charles E. Campbell
 " Distributed under the GNU General Public License.
 "
 " Updates are available from <http://michael.toren.net/code/>.  If you
@@ -14,7 +14,7 @@
 if &cp || exists("g:loaded_tarPlugin")
  finish
 endif
-let g:loaded_tarPlugin = "v28"
+let g:loaded_tarPlugin = "v29"
 let s:keepcpo          = &cpo
 set cpo&vim
 

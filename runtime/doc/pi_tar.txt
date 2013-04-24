@@ -1,10 +1,10 @@
-*pi_tar.txt*	For Vim version 7.3.  Last change: 2012 Jan 17
+*pi_tar.txt*	For Vim version 7.3.  Last change: 2013 Apr 17
 
 		       +====================+
 		       | Tar File Interface |
 		       +====================+
 
-Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
+Author:  Charles E. Campbell  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
 Copyright 2005-2012:					*tar-copyright*
 	The VIM LICENSE (see |copyright|) applies to the files in this
@@ -50,6 +50,21 @@ Copyright 2005-2012:					*tar-copyright*
 	*g:tar_extractcmd* , which by default is >
 		"tar -xf"
 <
+						*:TarDiff*
+   DIFFERENCING SUPPORT~
+
+   :TarDiff [filename]
+
+	This command will attempt to show the differences between the tarball
+	version of a file and the associated file on the system.  In order to
+	find that file on the system, the script uses the path associated with
+	the file mentioned in the tarball.  If the current directory is not
+	correct for that path, :TarDiff will fail to find the associated file.
+
+	If the [filename] is given, that that filename (and path) will be used
+	to specify the associated file.
+
+
    PREVENTING LOADING~
 
    If for some reason you do not wish to use vim to examine tar'd files,

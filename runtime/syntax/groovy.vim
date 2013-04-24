@@ -2,9 +2,9 @@
 " Language:	Groovy
 " Original Author:	Alessio Pace <billy.corgan@tiscali.it>
 " Maintainer:	Tobias Rapp <yahuxo@gmx.de>
-" Version: 	0.1.12
+" Version: 	0.1.13
 " URL:	  http://www.vim.org/scripts/script.php?script_id=945
-" Last Change:	2013 Mar 14
+" Last Change:	2013 Apr 24
 
 " THE ORIGINAL AUTHOR'S NOTES:
 "
@@ -74,7 +74,7 @@ endif
 
 " keyword definitions
 syn keyword groovyExternal        native package
-syn match groovyExternal          "\<import\(\s\+static\>\)\?"
+syn match groovyExternal          "\<import\>\(\s\+static\>\)\?"
 syn keyword groovyError           goto const
 syn keyword groovyConditional     if else switch
 syn keyword groovyRepeat          while for do

@@ -1,8 +1,8 @@
 " netrwSettings.vim: makes netrw settings simpler
 " Date:		Sep 03, 2008
-" Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
+" Maintainer:	Charles E Campbell <drchipNOSPAM at campbellfamily dot biz>
 " Version:	13
-" Copyright:    Copyright (C) 1999-2007 Charles E. Campbell, Jr. {{{1
+" Copyright:    Copyright (C) 1999-2007 Charles E. Campbell {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
@@ -63,7 +63,7 @@ fun! netrwSettings#NetrwSettings()
   endif
 
   put ='+ ---------------------------------------------'
-  put ='+  NetrwSettings:  by Charles E. Campbell, Jr.'
+  put ='+  NetrwSettings:  by Charles E. Campbell'
   put ='+ Press <F1> with cursor atop any line for help'
   put ='+ ---------------------------------------------'
   let s:netrw_settings_stop= line(".")

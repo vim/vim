@@ -1834,6 +1834,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :RmVimball	pi_vimball.txt	/*:RmVimball*
 :Sexplore	pi_netrw.txt	/*:Sexplore*
 :TOhtml	syntax.txt	/*:TOhtml*
+:TarDiff	pi_tar.txt	/*:TarDiff*
 :Texplore	pi_netrw.txt	/*:Texplore*
 :UseVimball	pi_vimball.txt	/*:UseVimball*
 :Vexplore	pi_netrw.txt	/*:Vexplore*
@@ -6862,7 +6863,8 @@ netrw-O	pi_netrw.txt	/*netrw-O*
 netrw-P	pi_netrw.txt	/*netrw-P*
 netrw-R	pi_netrw.txt	/*netrw-R*
 netrw-S	pi_netrw.txt	/*netrw-S*
-netrw-T	pi_netrw.txt	/*netrw-T*
+netrw-Tb	pi_netrw.txt	/*netrw-Tb*
+netrw-Th	pi_netrw.txt	/*netrw-Th*
 netrw-U	pi_netrw.txt	/*netrw-U*
 netrw-X	pi_netrw.txt	/*netrw-X*
 netrw-a	pi_netrw.txt	/*netrw-a*
@@ -6931,6 +6933,7 @@ netrw-listbookmark	pi_netrw.txt	/*netrw-listbookmark*
 netrw-listhack	pi_netrw.txt	/*netrw-listhack*
 netrw-login	pi_netrw.txt	/*netrw-login*
 netrw-mB	pi_netrw.txt	/*netrw-mB*
+netrw-mF	pi_netrw.txt	/*netrw-mF*
 netrw-mT	pi_netrw.txt	/*netrw-mT*
 netrw-mb	pi_netrw.txt	/*netrw-mb*
 netrw-mc	pi_netrw.txt	/*netrw-mc*
@@ -6985,6 +6988,7 @@ netrw-prvwin	pi_netrw.txt	/*netrw-prvwin*
 netrw-pscp	pi_netrw.txt	/*netrw-pscp*
 netrw-psftp	pi_netrw.txt	/*netrw-psftp*
 netrw-putty	pi_netrw.txt	/*netrw-putty*
+netrw-qF	pi_netrw.txt	/*netrw-qF*
 netrw-qb	pi_netrw.txt	/*netrw-qb*
 netrw-qf	pi_netrw.txt	/*netrw-qf*
 netrw-quickcom	pi_netrw.txt	/*netrw-quickcom*
@@ -7328,7 +7332,9 @@ python-input	if_pyth.txt	/*python-input*
 python-output	if_pyth.txt	/*python-output*
 python-pyeval	if_pyth.txt	/*python-pyeval*
 python-range	if_pyth.txt	/*python-range*
+python-vars	if_pyth.txt	/*python-vars*
 python-vim	if_pyth.txt	/*python-vim*
+python-vvars	if_pyth.txt	/*python-vvars*
 python-window	if_pyth.txt	/*python-window*
 python-windows	if_pyth.txt	/*python-windows*
 python.vim	syntax.txt	/*python.vim*

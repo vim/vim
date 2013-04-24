@@ -1,9 +1,9 @@
 " netrwPlugin.vim: Handles file transfer and remote directory listing across a network
 "            PLUGIN SECTION
-" Date:		Aug 24, 2011
-" Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
+" Date:		Dec 06, 2012
+" Maintainer:	Charles E Campbell <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
-" Copyright:    Copyright (C) 1999-2008 Charles E. Campbell, Jr. {{{1
+" Copyright:    Copyright (C) 1999-2012 Charles E. Campbell {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
@@ -20,7 +20,7 @@
 if &cp || exists("g:loaded_netrwPlugin")
  finish
 endif
-let g:loaded_netrwPlugin = "v146"
+let g:loaded_netrwPlugin = "v148"
 if v:version < 702
  echohl WarningMsg | echo "***netrw*** you need vim version 7.2 for this version of netrw" | echohl None
  finish
@@ -48,10 +48,10 @@ augroup END
 augroup Network
  au!
  au BufReadCmd   file://*		call netrw#FileUrlRead(expand("<amatch>"))
- au BufReadCmd   ftp://*,rcp://*,scp://*,http://*,https://*,dav://*,davs://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".fnameescape(expand("<amatch>"))|call netrw#Nread(2,expand("<amatch>"))|exe "silent doau BufReadPost ".fnameescape(expand("<amatch>"))
- au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,https://*,dav://*,davs://*,rsync://*,sftp://*	exe "silent doau FileReadPre ".fnameescape(expand("<amatch>"))|call netrw#Nread(1,expand("<amatch>"))|exe "silent doau FileReadPost ".fnameescape(expand("<amatch>"))
- au BufWriteCmd  ftp://*,rcp://*,scp://*,dav://*,davs://*,rsync://*,sftp://*			exe "silent doau BufWritePre ".fnameescape(expand("<amatch>"))|exe 'Nwrite '.fnameescape(expand("<amatch>"))|exe "silent doau BufWritePost ".fnameescape(expand("<amatch>"))
- au FileWriteCmd ftp://*,rcp://*,scp://*,dav://*,davs://*,rsync://*,sftp://*			exe "silent doau FileWritePre ".fnameescape(expand("<amatch>"))|exe "'[,']".'Nwrite '.fnameescape(expand("<amatch>"))|exe "silent doau FileWritePost ".fnameescape(expand("<amatch>"))
+ au BufReadCmd   ftp://*,rcp://*,scp://*,http://*,https://*,dav://*,davs://*,rsync://*,sftp://*	exe "sil doau BufReadPre ".fnameescape(expand("<amatch>"))|call netrw#Nread(2,expand("<amatch>"))|exe "sil doau BufReadPost ".fnameescape(expand("<amatch>"))
+ au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,https://*,dav://*,davs://*,rsync://*,sftp://*	exe "sil doau FileReadPre ".fnameescape(expand("<amatch>"))|call netrw#Nread(1,expand("<amatch>"))|exe "sil doau FileReadPost ".fnameescape(expand("<amatch>"))
+ au BufWriteCmd  ftp://*,rcp://*,scp://*,dav://*,davs://*,rsync://*,sftp://*			exe "sil doau BufWritePre ".fnameescape(expand("<amatch>"))|exe 'Nwrite '.fnameescape(expand("<amatch>"))|exe "sil doau BufWritePost ".fnameescape(expand("<amatch>"))
+ au FileWriteCmd ftp://*,rcp://*,scp://*,dav://*,davs://*,rsync://*,sftp://*			exe "sil doau FileWritePre ".fnameescape(expand("<amatch>"))|exe "'[,']".'Nwrite '.fnameescape(expand("<amatch>"))|exe "sil doau FileWritePost ".fnameescape(expand("<amatch>"))
  try
   au SourceCmd   ftp://*,rcp://*,scp://*,http://*,https://*,dav://*,davs://*,rsync://*,sftp://*	exe 'Nsource '.fnameescape(expand("<amatch>"))
  catch /^Vim\%((\a\+)\)\=:E216/

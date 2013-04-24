@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:          ReDIF
 " Maintainer:        Axel Castellane <axel.castellane@polytechnique.edu>
-" Last Change:       2013 April 08
+" Last Change:       2013 April 17
 " Original Author:   Axel Castellane
 " Source:            http://openlib.org/acmes/root/docu/redif_1.html
 " File Extension:    rdf
@@ -581,6 +581,7 @@ syntax region redifArgumentNameMiddle start=/\%(^\S\{-}:\)\@!\S/ end=/^\S\{-}:/m
 syntax region redifArgumentNamePrefix start=/\%(^\S\{-}:\)\@!\S/ end=/^\S\{-}:/me=s-1 contained
 syntax region redifArgumentNameSuffix start=/\%(^\S\{-}:\)\@!\S/ end=/^\S\{-}:/me=s-1 contained
 syntax region redifArgumentName start=/\%(^\S\{-}:\)\@!\S/ end=/^\S\{-}:/me=s-1 contained
+syntax region redifArgumentNumber start=/\%(^\S\{-}:\)\@!\S/ end=/^\S\{-}:/me=s-1 contained
 syntax region redifArgumentOrderHomepage start=/\%(^\S\{-}:\)\@!\S/ end=/^\S\{-}:/me=s-1 contained
 syntax region redifArgumentOrderURL start=/\%(^\S\{-}:\)\@!\S/ end=/^\S\{-}:/me=s-1 contained
 syntax region redifArgumentPhone start=/\%(^\S\{-}:\)\@!\S/ end=/^\S\{-}:/me=s-1 contained
@@ -793,12 +794,11 @@ highlight def link redifSpecialPublicationStatus redifSpecial
 "    Month
 "    TODO Are numbers also allowed?
 syntax match redifArgumentMonth /\%(^\S\{-}:\)\@!\S.*/ contains=redifGoodMonth contained display
-syntax match redifGoodMonth /\<\(Jan\%(uary\)\=\|Feb\%(ruary\)\=\|Mar\%(ch\)\=\|Apr\%(il\)\=\|May\|June\=\|July\=\|Aug\%(ust\)\=\|Sep\%(tember\)\=\|Oct\%(ober\)\=\|Nov\%(ember\)\=\|Dec\%(ember\)\=\)\>/ nextgroup=redifWrongLineEnding contained display
+syntax match redifGoodMonth /\<\(Jan\%(uary\)\=\|Feb\%(ruary\)\=\|Mar\%(ch\)\=\|Apr\%(il\)\=\|May\|June\=\|July\=\|Aug\%(ust\)\=\|Sep\%(tember\)\=\|Oct\%(ober\)\=\|Nov\%(ember\)\=\|Dec\%(ember\)\=\)\>/ contained display
 
 highlight def link redifGoodMonth redifSpecial
 
-"    Integers: Number, Volume, Chapter
-syntax match redifArgumentNumber /\%(^\S\{-}:\)\@!\S.*/ contains=redifCorrectInteger contained display
+"    Integers: Volume, Chapter
 syntax match redifArgumentVolume /\%(^\S\{-}:\)\@!\S.*/ contains=redifCorrectInteger contained display
 syntax match redifArgumentChapter /\%(^\S\{-}:\)\@!\S.*/ contains=redifCorrectInteger contained display
 syntax match redifCorrectInteger /[1-9]\d*/ nextgroup=redifWrongLineEnding contained display
@@ -815,19 +815,19 @@ highlight def link redifArgumentYear redifError
 "    Edition
 "    Based on the example in the documentation.
 syntax match redifArgumentEdition /\%(^\S\{-}:\)\@!\S.*/ contains=redifGoodEdition contained display
-syntax match redifGoodEdition /1st\|2nd\|3rd\|[4-9]th\|[1-9]\d*\%(1st\|2nd\|3rd\|[4-9]th\)\|[1-9]\d*/ nextgroup=redifWrongLineEnding contained display
+syntax match redifGoodEdition /1st\|2nd\|3rd\|[4-9]th\|[1-9]\d*\%(1st\|2nd\|3rd\|[4-9]th\)\|[1-9]\d*/ contained display
 
 highlight def link redifGoodEdition redifSpecial
 
 "    ISBN
 syntax match redifArgumentISBN /\%(^\S\{-}:\)\@!\S.*/ contains=redifGoodISBN contained display
-syntax match redifGoodISBN /\d[0-9-]\{8,15}\d/ nextgroup=redifWrongLineEnding contained display
+syntax match redifGoodISBN /\d[0-9-]\{8,15}\d/ contained display
 
 highlight def link redifGoodISBN redifSpecial
 
 "    ISSN
 syntax match redifArgumentISSN /\%(^\S\{-}:\)\@!\S.*/ contains=redifGoodISSN contained display
-syntax match redifGoodISSN /\d\{4}-\d\{3}[0-9X]/ nextgroup=redifWrongLineEnding contained display
+syntax match redifGoodISSN /\d\{4}-\d\{3}[0-9X]/ contained display
 
 highlight def link redifGoodISSN redifSpecial
 
@@ -862,7 +862,7 @@ highlight def link redifArgumentRevisionDate redifError
 
 "    Classification-JEL
 syntax match redifArgumentClassificationJEL /\%(^\S\{-}:\)\@!\S.*/ contains=redifCorrectJEL contained display
-syntax match redifCorrectJEL /\<\u\d\{,2}\%([,; \t]\s*\)\=/ contains=redifSpecialJEL nextgroup=redifWrongLineEnding contained display
+syntax match redifCorrectJEL /\<\%(\u\d\{,2}[,; \t]\s*\)*\u\d\{,2}/ contains=redifSpecialJEL nextgroup=redifWrongLineEnding contained display
 syntax match redifSpecialJEL /\<\u\d\{,2}/ contained display
 
 highlight def link redifArgumentClassificationJEL redifError
