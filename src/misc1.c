@@ -10135,6 +10135,15 @@ expand_path_option(curdir, gap)
 
 	if (ga_grow(gap, 1) == FAIL)
 	    break;
+
+# if defined(MSWIN) || defined(MSDOS)
+	/* Avoid the path ending in a backslash, it fails when a comma is
+	 * appended. */
+	len = STRLEN(buf);
+	if (buf[len - 1] == '\\')
+	    buf[len - 1] = '/';
+# endif
+
 	p = vim_strsave(buf);
 	if (p == NULL)
 	    break;

@@ -158,6 +158,16 @@ SVoyager 2:w
 :" Find the file containing 'E.T.' in the Xfind/in/path directory
 :find file	
 :exec "w >>" . test_out
+:"
+:" Test that completion works when path=.,,
+:"
+:set path=.,,
+:" Open Jimmy Hoffa file
+:e in/file.txt
+:exec "w >>" . test_out
+:" Search for the file containing Holy Grail in same directory as in/path.txt
+:find stu	
+:exec "w >>" . test_out
 :q
 :exec "cd " . cwd
 :call DeleteDirectory("Xfind")
