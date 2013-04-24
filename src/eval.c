@@ -113,12 +113,7 @@ static char *e_letwrong = N_("E734: Wrong variable type for %s=");
 static char *e_nofunc = N_("E130: Unknown function: %s");
 static char *e_illvar = N_("E461: Illegal variable name: %s");
 
-/*
- * All user-defined global variables are stored in dictionary "globvardict".
- * "globvars_var" is the variable that is used for "g:".
- */
-static dict_T		globvardict;
-static dictitem_T	globvars_var;
+static dictitem_T	globvars_var;		/* variable used for g: */
 #define globvarht globvardict.dv_hashtab
 
 /*
@@ -370,12 +365,7 @@ static struct vimvar
 #define vv_list		vv_di.di_tv.vval.v_list
 #define vv_tv		vv_di.di_tv
 
-/*
- * The v: variables are stored in dictionary "vimvardict".
- * "vimvars_var" is the variable that is used for the "l:" scope.
- */
-static dict_T		vimvardict;
-static dictitem_T	vimvars_var;
+static dictitem_T	vimvars_var;		/* variable used for v: */
 #define vimvarht  vimvardict.dv_hashtab
 
 static void prepare_vimvar __ARGS((int idx, typval_T *save_tv));

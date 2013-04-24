@@ -237,6 +237,11 @@ vim.current						*python-current*
 	"current range".  A range is a bit like a buffer, but with all access
 	restricted to a subset of lines.  See |python-range| for more details.
 
+vim.vars						*python-vars*
+vim.vvars						*python-vvars*
+	Dictionary-like objects holding dictionaries with global (|g:|) and 
+	vim (|v:|) variables respectively. Identical to `vim.bindeval("g:")`, 
+	but faster.
 
 Output from Python					*python-output*
 	Vim displays all Python code output in the Vim message area.  Normal
@@ -307,6 +312,7 @@ Examples (assume b is the current buffer) >
 	:py n = len(b)			# number of lines
 	:py (row,col) = b.mark('a')	# named mark
 	:py r = b.range(1,5)		# a sub-range of the buffer
+	:py b.vars["foo"] = "bar"	# assign b:foo variable
 
 ==============================================================================
 4. Range objects					*python-range*
@@ -354,6 +360,9 @@ Window attributes are:
 				This is a tuple, (row,col).
 	height (read-write)	The window height, in rows
 	width (read-write)	The window width, in columns
+	vars (read-only)	The window |w:| variables. Attribute is 
+				unassignable, but you can change window 
+				variables this way
 The height attribute is writable only if the screen is split horizontally.
 The width attribute is writable only if the screen is split vertically.
 

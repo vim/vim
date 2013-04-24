@@ -1330,6 +1330,7 @@ PythonMod_Init(void)
 {
     PyObject *mod;
     PyObject *dict;
+    PyObject *tmp;
     /* The special value is removed from sys.path in Python_Init(). */
     static char *(argv[2]) = {"/must>not&exist/foo", NULL};
 
@@ -1353,6 +1354,12 @@ PythonMod_Init(void)
     PyDict_SetItemString(dict, "buffers", (PyObject *)(void *)&TheBufferList);
     PyDict_SetItemString(dict, "current", (PyObject *)(void *)&TheCurrent);
     PyDict_SetItemString(dict, "windows", (PyObject *)(void *)&TheWindowList);
+    tmp = DictionaryNew(&globvardict);
+    PyDict_SetItemString(dict, "vars",    tmp);
+    Py_DECREF(tmp);
+    tmp = DictionaryNew(&vimvardict);
+    PyDict_SetItemString(dict, "vvars",   tmp);
+    Py_DECREF(tmp);
     PyDict_SetItemString(dict, "VAR_LOCKED",    PyInt_FromLong(VAR_LOCKED));
     PyDict_SetItemString(dict, "VAR_FIXED",     PyInt_FromLong(VAR_FIXED));
     PyDict_SetItemString(dict, "VAR_SCOPE",     PyInt_FromLong(VAR_SCOPE));

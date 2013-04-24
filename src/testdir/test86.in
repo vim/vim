@@ -346,6 +346,19 @@ EOF
 :$put =string(pyeval('l'))
 :py l = ll[-10:10]
 :$put =string(pyeval('l'))
+:"
+:" Vars
+:let g:foo = 'bac'
+:let w:abc = 'def'
+:let b:baz = 'bar'
+:try
+:  throw "Abc"
+:catch
+:  put =pyeval('vim.vvars[''exception'']')
+:endtry
+:put =pyeval('vim.vars[''foo'']')
+:put =pyeval('vim.current.window.vars[''abc'']')
+:put =pyeval('vim.current.buffer.vars[''baz'']')
 :endfun
 :"
 :call Test()

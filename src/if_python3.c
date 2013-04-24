@@ -1647,6 +1647,9 @@ Py3Init_vim(void)
     Py_INCREF((PyObject *)(void *)&TheWindowList);
     PyModule_AddObject(mod, "windows", (PyObject *)(void *)&TheWindowList);
 
+    PyModule_AddObject(mod, "vars", DictionaryNew(&globvardict));
+    PyModule_AddObject(mod, "vvars", DictionaryNew(&vimvardict));
+
 #define ADD_INT_CONSTANT(name, value) \
     tmp = PyLong_FromLong(value); \
     Py_INCREF(tmp); \

@@ -1532,8 +1532,10 @@ WindowAttr(WindowObject *this, char *name)
     else if (strcmp(name, "width") == 0)
 	return Py_BuildValue("l", (long)(W_WIDTH(this->win)));
 #endif
+    else if (strcmp(name, "vars") == 0)
+	return DictionaryNew(this->win->w_vars);
     else if (strcmp(name,"__members__") == 0)
-	return Py_BuildValue("[sss]", "buffer", "cursor", "height");
+	return Py_BuildValue("[ssss]", "buffer", "cursor", "height", "vars");
     else
 	return NULL;
 }
@@ -2495,8 +2497,10 @@ BufferAttr(BufferObject *this, char *name)
 	return Py_BuildValue("s", this->buf->b_ffname);
     else if (strcmp(name, "number") == 0)
 	return Py_BuildValue(Py_ssize_t_fmt, this->buf->b_fnum);
+    else if (strcmp(name, "vars") == 0)
+	return DictionaryNew(this->buf->b_vars);
     else if (strcmp(name,"__members__") == 0)
-	return Py_BuildValue("[ss]", "name", "number");
+	return Py_BuildValue("[sss]", "name", "number", "vars");
     else
 	return NULL;
 }

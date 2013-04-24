@@ -315,6 +315,19 @@ EOF
 :py3 trace_main()
 :py3 sys.settrace(None)
 :$put =string(l)
+:"
+:" Vars
+:let g:foo = 'bac'
+:let w:abc = 'def'
+:let b:baz = 'bar'
+:try
+:  throw "Abc"
+:catch
+:  put =py3eval('vim.vvars[''exception'']')
+:endtry
+:put =py3eval('vim.vars[''foo'']')
+:put =py3eval('vim.current.window.vars[''abc'']')
+:put =py3eval('vim.current.buffer.vars[''baz'']')
 :endfun
 :"
 :call Test()

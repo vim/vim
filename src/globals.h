@@ -180,6 +180,8 @@ EXTERN int	emsg_skip INIT(= 0);	    /* don't display errors for
 EXTERN int	emsg_severe INIT(= FALSE);   /* use message of next of several
 					       emsg() calls for throw */
 EXTERN int	did_endif INIT(= FALSE);    /* just had ":endif" */
+EXTERN dict_T	vimvardict;		    /* Dictionary with v: variables */
+EXTERN dict_T	globvardict;		    /* Dictionary with g: variables */
 #endif
 EXTERN int	did_emsg;		    /* set by emsg() when the message
 					       is displayed or thrown */
