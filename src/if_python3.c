@@ -327,12 +327,14 @@ static HINSTANCE hinstPy3 = 0; /* Instance of python.dll */
 /* Imported exception objects */
 static PyObject *p3imp_PyExc_AttributeError;
 static PyObject *p3imp_PyExc_IndexError;
+static PyObject *p3imp_PyExc_KeyError;
 static PyObject *p3imp_PyExc_KeyboardInterrupt;
 static PyObject *p3imp_PyExc_TypeError;
 static PyObject *p3imp_PyExc_ValueError;
 
 # define PyExc_AttributeError p3imp_PyExc_AttributeError
 # define PyExc_IndexError p3imp_PyExc_IndexError
+# define PyExc_KeyError p3imp_PyExc_KeyError
 # define PyExc_KeyboardInterrupt p3imp_PyExc_KeyboardInterrupt
 # define PyExc_TypeError p3imp_PyExc_TypeError
 # define PyExc_ValueError p3imp_PyExc_ValueError
@@ -567,11 +569,13 @@ get_py3_exceptions()
     PyObject *exdict = PyModule_GetDict(exmod);
     p3imp_PyExc_AttributeError = PyDict_GetItemString(exdict, "AttributeError");
     p3imp_PyExc_IndexError = PyDict_GetItemString(exdict, "IndexError");
+    p3imp_PyExc_KeyError = PyDict_GetItemString(exdict, "KeyError");
     p3imp_PyExc_KeyboardInterrupt = PyDict_GetItemString(exdict, "KeyboardInterrupt");
     p3imp_PyExc_TypeError = PyDict_GetItemString(exdict, "TypeError");
     p3imp_PyExc_ValueError = PyDict_GetItemString(exdict, "ValueError");
     Py_XINCREF(p3imp_PyExc_AttributeError);
     Py_XINCREF(p3imp_PyExc_IndexError);
+    Py_XINCREF(p3imp_PyExc_KeyError);
     Py_XINCREF(p3imp_PyExc_KeyboardInterrupt);
     Py_XINCREF(p3imp_PyExc_TypeError);
     Py_XINCREF(p3imp_PyExc_ValueError);

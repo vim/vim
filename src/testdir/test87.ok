@@ -38,7 +38,7 @@ Vim(put):E684:
 Vim(py3):E725:
 Vim(py3):E117:
 [0.0, 0.0]
-IndexError
+KeyError
 TypeError
 TypeError
 ValueError

@@ -861,7 +861,7 @@ DictionaryItem(PyObject *self, PyObject *keyObject)
 
     if (di == NULL)
     {
-	PyErr_SetString(PyExc_IndexError, _("no such key in dictionary"));
+	PyErr_SetString(PyExc_KeyError, _("no such key in dictionary"));
 	return NULL;
     }
 
