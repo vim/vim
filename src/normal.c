@@ -1504,11 +1504,14 @@ do_pending_operator(cap, old_col, gui_yank)
 	}
 #endif
 
-	/* only redo yank when 'y' flag is in 'cpoptions' */
-	/* never redo "zf" (define fold) */
+	/* Only redo yank when 'y' flag is in 'cpoptions'. */
+	/* Never redo "zf" (define fold). */
 	if ((vim_strchr(p_cpo, CPO_YANK) != NULL || oap->op_type != OP_YANK)
 #ifdef FEAT_VISUAL
-		&& (!VIsual_active || oap->motion_force)
+		&& ((!VIsual_active || oap->motion_force)
+		    /* Also redo Operator-pending Visual mode mappings */
+		    || (VIsual_active && cap->cmdchar == ':'
+						 && oap->op_type != OP_COLON))
 #endif
 		&& cap->cmdchar != 'D'
 #ifdef FEAT_FOLDING
@@ -1797,7 +1800,7 @@ do_pending_operator(cap, old_col, gui_yank)
 		    prep_redo(oap->regname, 0L, NUL, cap->cmdchar, cap->nchar,
 					get_op_char(oap->op_type),
 					get_extra_op_char(oap->op_type));
-		else
+		else if (cap->cmdchar != ':')
 		    prep_redo(oap->regname, 0L, NUL, 'v',
 					get_op_char(oap->op_type),
 					get_extra_op_char(oap->op_type),
