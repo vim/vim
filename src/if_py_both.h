@@ -2853,7 +2853,6 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookupDict)
 	tv->v_type = VAR_FUNC;
 	func_ref(tv->vval.v_string);
     }
-#if PY_MAJOR_VERSION >= 3
     else if (PyBytes_Check(obj))
     {
 	char_u	*result;
@@ -2868,30 +2867,6 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookupDict)
 
 	tv->v_type = VAR_STRING;
     }
-    else if (PyUnicode_Check(obj))
-    {
-	PyObject	*bytes;
-	char_u	*result;
-
-	bytes = PyString_AsBytes(obj);
-	if (bytes == NULL)
-	    return -1;
-
-	if(PyString_AsStringAndSize(bytes, (char **) &result, NULL) == -1)
-	    return -1;
-	if (result == NULL)
-	    return -1;
-
-	if (set_string_copy(result, tv) == -1)
-	{
-	    Py_XDECREF(bytes);
-	    return -1;
-	}
-	Py_XDECREF(bytes);
-
-	tv->v_type = VAR_STRING;
-    }
-#else
     else if (PyUnicode_Check(obj))
     {
 	PyObject	*bytes;
@@ -2915,20 +2890,7 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookupDict)
 
 	tv->v_type = VAR_STRING;
     }
-    else if (PyString_Check(obj))
-    {
-	char_u	*result;
-
-	if(PyString_AsStringAndSize(obj, (char **) &result, NULL) == -1)
-	    return -1;
-	if (result == NULL)
-	    return -1;
-
-	if (set_string_copy(result, tv) == -1)
-	    return -1;
-
-	tv->v_type = VAR_STRING;
-    }
+#if PY_MAJOR_VERSION < 3
     else if (PyInt_Check(obj))
     {
 	tv->v_type = VAR_NUMBER;

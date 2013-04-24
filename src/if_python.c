@@ -59,6 +59,7 @@
 static void init_structs(void);
 
 #define PyBytes_FromString PyString_FromString
+#define PyBytes_Check PyString_Check
 
 /* No-op conversion functions, use with care! */
 #define PyString_AsBytes(obj) (obj)
