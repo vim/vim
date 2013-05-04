@@ -30,9 +30,6 @@ STARTTEST
 :  call setpos("'>", [0, line2, col2, 0])
 :  normal! gv
 :endfunction
-:function MoveToEndCount(count)
-:  normal! v:count . e
-:endfunction
 :
 :" Visual modes followed by operator
 /^apple
@@ -59,7 +56,7 @@ cW-l.l2.l.:
 /^Juniper
 g?\WfD.:
 /^Lemon
-yiWPlciWNew:
+yiWPlciWNewfr.:
 :
 :" Patch 7.3.879: Properly abort Operator-pending mode for "dv:<Esc>" etc.
 /^zzzz
