@@ -10139,7 +10139,7 @@ expand_path_option(curdir, gap)
 # if defined(MSWIN) || defined(MSDOS)
 	/* Avoid the path ending in a backslash, it fails when a comma is
 	 * appended. */
-	len = STRLEN(buf);
+	len = (int)STRLEN(buf);
 	if (buf[len - 1] == '\\')
 	    buf[len - 1] = '/';
 # endif
