@@ -7656,7 +7656,11 @@ fi
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking if X11 header files implicitly declare return values" >&5
 $as_echo_n "checking if X11 header files implicitly declare return values... " >&6; }
     cflags_save=$CFLAGS
-    CFLAGS="$CFLAGS $X_CFLAGS -Werror"
+        if test "$GCC" = yes; then
+      CFLAGS="$CFLAGS $X_CFLAGS -Werror"
+    else
+      CFLAGS="$CFLAGS $X_CFLAGS"
+    fi
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <X11/Xlib.h>

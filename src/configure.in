@@ -1751,7 +1751,12 @@ else
     dnl Check that the X11 header files don't use implicit declarations
     AC_MSG_CHECKING(if X11 header files implicitly declare return values)
     cflags_save=$CFLAGS
-    CFLAGS="$CFLAGS $X_CFLAGS -Werror"
+    dnl -Werror is GCC only, others like Solaris Studio might not like it
+    if test "$GCC" = yes; then
+      CFLAGS="$CFLAGS $X_CFLAGS -Werror"
+    else
+      CFLAGS="$CFLAGS $X_CFLAGS"
+    fi
     AC_TRY_COMPILE([#include <X11/Xlib.h>], ,
 	AC_MSG_RESULT(no),
 	CFLAGS="$CFLAGS -Wno-implicit-int"
