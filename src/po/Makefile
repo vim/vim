@@ -176,9 +176,10 @@ uninstall:
 
 converted: $(MOCONVERTED)
 
-# nl.po was added later, if it does not exist use an empty file.
+# nl.po was added later, if it does not exist use a file with just a # in it
+# (an empty file doesn't work with old msgfmt).
 nl.po:
-	touch nl.po
+	@( echo \# > nl.po )
 
 # Norwegian/Bokmal: "nb" is an alias for "no".
 # Copying the file is not efficient, but I don't know of another way to make
