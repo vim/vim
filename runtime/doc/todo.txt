@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Apr 24
+*todo.txt*      For Vim version 7.3.  Last change: 2013 May 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -48,6 +48,8 @@ GTK: problem with 'L' in 'guioptions' changing the window width.
 
 Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
 
+Nederlandse vertaling tutor. (Rob Bishoff, 2013 Apr 24)
+
 The CompleteDone autocommand needs some info passed to it:
 - The word that was selected (empty if abandoned complete)
 - Type of completion: tag, omnifunc, user func.
@@ -76,7 +78,21 @@ Patch to view coverage of the tests. (Nazri Ramliy, 2013 Feb 15)
 
 Patch to make vim.bindeval() in Python work. (Yukihiro Nakadaira, 2013 Mar 25)
 
+Patch to avoid wrong error message for 1.0[0]. (Yasuhiro Matsumoto, 2013 May
+1)
+
+Patch to invert characters differently in GTK. (Yukihiro Nakadaira, 2013 May
+5)
+
+Patch for 'backupcopy' default behavior for symlinks on Windows. (David Pope,
+2012 Mar 21, update Mar 31)
+With fix for memory leak: Ken Takata, 2012 Aug 24
+Another update Sep 24.
+Also patch from Joerg Bornemann, 2013 Apr 30.
+
 Do allow real tags above the !_TAG entries. Undo older patch. Issue 90.
+
+Patch to add the bufferlist() function. (Yegappan Lakshmanan, 2013 May 5)
 
 Patch to support 'u' in interactive substitute. (Christian Brabandt, 2012 Sep
 28)  With tests: Oct 9.
@@ -93,6 +109,30 @@ Break undo when CTRL-R = changes the text?  Or save more lines?
 Patch by Christian Brabandt, 2012 Nov 16.
 
 Issue 54: document behavior of -complete, also expands arg.
+
+Python patch 7: move more to if_py_boty. (ZyX 2013 Apr 26)
+Python patch 8: add vim.window.number. (ZyX 2013 Apr 26)
+Python patch 9: remove useless calls.. (ZyX 2013 Apr 26)
+Python patch 10: window position. (ZyX 2013 Apr 26)
+Python patch 11: reorder code in if_py_both (ZyX 2013 Apr 28)
+Python patch 12: fix SEGVs (ZyX 2013 Apr 28)
+Python patch 13: negative indices were failing (ZyX 2013 Apr 28)
+Python patch 14: tests for previous fixes (ZyX 2013 Apr 28)
+Python patch 15: make buflist a bufmap (ZyX 2013 Apr 28)  incompatible?
+Python patch 16: fix name of FunctionType (ZyX 2013 Apr 28)
+Python patch 17: add iterators (ZyX 2013 Apr 28)
+Python patch 18: Python 2.2 support (ZyX 2013 Apr 28)
+Python patch 19: drop support for old Pythons (ZyX 2013 Apr 28)
+Python patch 20: tests for vim.buffers (ZyX 2013 Apr 28, second one)
+Python patch 20a: tests for vim.bufferlist (ZyX 2013 May 1)
+Python patch 21: add vim.tabpages and vim.current.tabpage (ZyX 2013 May 1)
+Python patch 22: make KeyErrors use PyErr_SetObject (ZyX 2013 May 1)
+Python patch 23: transform and clean python exceptions (ZyX 2013 May 1)
+Python patch 24: add ability to assign to more vim.current attributes (ZyX
+		2013 May 1)
+Python patch 25: make vim.error Exception subclass (ZyX 2013 May 1)
+Python patch 26: check whether PyObject_IsTrue failed (ZyX 2013 May 1)
+Python patch 27: add tests for various python interfaces (ZyX 2013 May 1)
 
 Matches might be highlighted correctly. Inefficient patch by Christian
 Brabandt, 2013 Feb 26.
@@ -117,6 +157,8 @@ Patch for if_lua. (Luis Carvalho, 2012 Aug 26, update Aug 29, another Aug 30,
 then Sep 1, reminder Oct 14)
 
 Patch to check if 'foldexpr' sets did_emsg. (Christian Brabandt, 2013 Mar 20)
+
+No completion for :xmap and :smap. (Yukihiro Nakadaira, 2013 May 5)
 
 Patch to set antialiasing style on Windows. (Ondrej Balaz, 2013 Mar 14)
 Needs a different check for CLEARTYPE_QUALITY.
@@ -234,11 +276,6 @@ New tests Jul 13.   Update Jul 17.  Discussion Jul 18.
 When running Vim in silent ex mode, an existing swapfile causes Vim to wait
 for a user action without a prompt. (Maarten Billemont, 2012 Feb 3)
 Do give the prompt? Quit with an error?
-
-Patch for 'backupcopy' default behavior for symlinks on Windows. (David Pope,
-2012 Mar 21, update Mar 31)
-With fix for memory leak: Ken Takata, 2012 Aug 24
-Another update Sep 24.
 
 Patch to list user digraphs. (Christian Brabandt, 2012 Apr 14)
 
@@ -4169,7 +4206,7 @@ Select mode:
 8   In blockwise mode, typed characters are inserted in front of the block,
     backspace deletes a column before the block. (Steve Hall)
 7   Alt-leftmouse starts block mode selection in MS Word.
-    See http://www.vim.org/tips/tip.php?tip_id=743
+    See http://vim.wikia.com/wiki/Use_Alt-Mouse_to_select_blockwise.
 7   Add Cmdline-select mode.  Like Select mode, but used on the command line.
     - Change gui_send_mouse_event() to pass on mouse events when 'mouse'
       contains 'C' or 'A'.

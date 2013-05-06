@@ -4777,6 +4777,7 @@ aw	motion.txt	/*aw*
 a{	motion.txt	/*a{*
 a}	motion.txt	/*a}*
 b	motion.txt	/*b*
+b:	eval.txt	/*b:*
 b:changedtick	eval.txt	/*b:changedtick*
 b:changelog_name	filetype.txt	/*b:changelog_name*
 b:current_syntax-variable	syntax.txt	/*b:current_syntax-variable*
@@ -5805,6 +5806,7 @@ g,	motion.txt	/*g,*
 g-	undo.txt	/*g-*
 g0	motion.txt	/*g0*
 g8	various.txt	/*g8*
+g:	eval.txt	/*g:*
 g:NetrwTopLvlMenu	pi_netrw.txt	/*g:NetrwTopLvlMenu*
 g:Netrw_corehandler	pi_netrw.txt	/*g:Netrw_corehandler*
 g:Netrw_funcref	pi_netrw.txt	/*g:Netrw_funcref*
@@ -6572,6 +6574,7 @@ keypad-point	intro.txt	/*keypad-point*
 keys()	eval.txt	/*keys()*
 known-bugs	todo.txt	/*known-bugs*
 l	motion.txt	/*l*
+l:	eval.txt	/*l:*
 l:var	eval.txt	/*l:var*
 lCursor	mbyte.txt	/*lCursor*
 lace.vim	syntax.txt	/*lace.vim*
@@ -7329,6 +7332,7 @@ python-error	if_pyth.txt	/*python-error*
 python-eval	if_pyth.txt	/*python-eval*
 python-examples	if_pyth.txt	/*python-examples*
 python-input	if_pyth.txt	/*python-input*
+python-options	if_pyth.txt	/*python-options*
 python-output	if_pyth.txt	/*python-output*
 python-pyeval	if_pyth.txt	/*python-pyeval*
 python-range	if_pyth.txt	/*python-range*
@@ -8242,6 +8246,7 @@ utf-8-in-xwindows	mbyte.txt	/*utf-8-in-xwindows*
 utf-8-typing	mbyte.txt	/*utf-8-typing*
 utf8	mbyte.txt	/*utf8*
 v	visual.txt	/*v*
+v:	eval.txt	/*v:*
 v:beval_bufnr	eval.txt	/*v:beval_bufnr*
 v:beval_col	eval.txt	/*v:beval_col*
 v:beval_lnum	eval.txt	/*v:beval_lnum*
@@ -8535,6 +8540,7 @@ vt100-function-keys	term.txt	/*vt100-function-keys*
 w	motion.txt	/*w*
 w32-clientserver	remote.txt	/*w32-clientserver*
 w32-xpm-support	gui_w32.txt	/*w32-xpm-support*
+w:	eval.txt	/*w:*
 w:current_syntax	syntax.txt	/*w:current_syntax*
 w:quickfix_title	quickfix.txt	/*w:quickfix_title*
 w:var	eval.txt	/*w:var*

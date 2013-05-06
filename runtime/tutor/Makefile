@@ -18,6 +18,7 @@ all: tutor.utf-8 \
 	tutor.it.utf-8 \
 	tutor.ja.sjis tutor.ja.euc \
 	tutor.ko.euc \
+	tutor.nl \
 	tutor.no.utf-8 \
 	tutor.nb \
 	tutor.nb.utf-8 \
@@ -72,6 +73,9 @@ tutor.ja.euc: tutor.ja.utf-8
 
 tutor.ko.euc: tutor.ko.utf-8
 	iconv -f UTF-8 -t EUC-KR tutor.ko.utf-8 > tutor.ko.euc
+
+tutor.nl: tutor.nl.utf-8
+	iconv -f UTF-8 -t ISO-8859-1 tutor.nl.utf-8 > tutor.nl
 
 tutor.no.utf-8: tutor.no
 	iconv -f ISO-8859-1 -t UTF-8 tutor.no > tutor.no.utf-8

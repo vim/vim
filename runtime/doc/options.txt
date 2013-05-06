@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2013 Apr 05
+*options.txt*	For Vim version 7.3.  Last change: 2013 Apr 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -277,8 +277,10 @@ Now the 'list' option is not set, because ":set nolist" resets the global
 value, ":setlocal list" only changes the local value and ":e two" gets the
 global value.  Note that if you do this next: >
 	:e one
-You will not get back the 'list' value as it was the last time you edited
-"one".  The options local to a window are not remembered for each buffer.
+You will get back the 'list' value as it was the last time you edited "one".
+The options local to a window are remembered for each buffer.  This also
+happens when the buffer is not loaded, but they are lost when the buffer is
+wiped out |:bwipe|.
 
 							*:setl* *:setlocal*
 :setl[ocal] ...		Like ":set" but set only the value local to the

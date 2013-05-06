@@ -2,7 +2,8 @@
 " Language:		Clean
 " Author:		Pieter van Engelen <pietere@sci.kun.nl>
 " Co-Author:	Arthur van Leeuwen <arthurvl@sci.kun.nl>
-" Last Change:	2011 Dec 25 by Thilo Six
+" Previous Change:	2011 Dec 25 by Thilo Six
+" Last Change:	2013 Apr 25 by Jurriën Stutterheim
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -18,7 +19,7 @@ set cpo&vim
 " Some Clean-keywords
 syn keyword cleanConditional if case
 syn keyword cleanLabel let! with where in of
-syn keyword cleanInclude from import
+syn keyword cleanInclude from import qualified
 syn keyword cleanSpecial Start
 syn keyword cleanKeyword infixl infixr infix
 syn keyword cleanBasicType Int Real Char Bool String

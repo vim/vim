@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2013 Mar 19
+*eval.txt*	For Vim version 7.3.  Last change: 2013 May 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1150,7 +1150,7 @@ delete all script-local variables: >
 	:    unlet s:[k]
 	:endfor
 <
-						*buffer-variable* *b:var*
+						*buffer-variable* *b:var* *b:*
 A variable name that is preceded with "b:" is local to the current buffer.
 Thus you can have several "b:foo" variables, one for each buffer.
 This kind of variable is deleted when the buffer is wiped out or deleted with
@@ -1167,7 +1167,7 @@ b:changedtick	The total number of changes to the current buffer.  It is
 		    :	call My_Update()
 		    :endif
 <
-						*window-variable* *w:var*
+						*window-variable* *w:var* *w:*
 A variable name that is preceded with "w:" is local to the current window.  It
 is deleted when the window is closed.
 
@@ -1176,12 +1176,12 @@ A variable name that is preceded with "t:" is local to the current tab page,
 It is deleted when the tab page is closed. {not available when compiled
 without the |+windows| feature}
 
-						*global-variable* *g:var*
+						*global-variable* *g:var* *g:*
 Inside functions global variables are accessed with "g:".  Omitting this will
 access a variable local to a function.	But "g:" can also be used in any other
 place if you like.
 
-						*local-variable* *l:var*
+						*local-variable* *l:var* *l:*
 Inside functions local variables are accessed without prepending anything.
 But you can also prepend "l:" if you like.  However, without prepending "l:"
 you may run into reserved variable names.  For example "count".  By itself it
@@ -1264,7 +1264,7 @@ Note that this means that filetype plugins don't get a different set of script
 variables for each buffer.  Use local buffer variables instead |b:var|.
 
 
-Predefined Vim variables:			*vim-variable* *v:var*
+Predefined Vim variables:			*vim-variable* *v:var* *v:*
 
 					*v:beval_col* *beval_col-variable*
 v:beval_col	The number of the column, over which the mouse pointer is.

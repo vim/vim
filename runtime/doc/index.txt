@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.3.  Last change: 2013 Feb 28
+*index.txt*     For Vim version 7.3.  Last change: 2013 May 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -725,6 +725,7 @@ tag		char	      note action in Normal mode	~
 				   cursor N times, leave the cursor after it
 |gQ|		gQ		    switch to "Ex" mode with Vim editing
 |gR|		gR		2  enter Virtual Replace mode
+|gT|		gT		   go to the previous tab page
 |gU|		gU{motion}	2  make Nmove text uppercase
 |gV|		gV		   don't reselect the previous Visual area
 				   when executing a mapping or menu in Select
@@ -762,6 +763,7 @@ tag		char	      note action in Normal mode	~
 |gq|		gq{motion}	2  format Nmove text
 |gr|		gr{char}	2  virtual replace N chars with {char}
 |gs|		gs		   go to sleep for N seconds (default 1)
+|gt|		gt		   go to the next tab page
 |gu|		gu{motion}	2  make Nmove text lowercase
 |gv|		gv		   reselect the previous Visual area
 |gw|		gw{motion}	2  format Nmove text and keep cursor

@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.3.  Last change: 2012 Apr 13
+*map.txt*       For Vim version 7.3.  Last change: 2013 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -49,7 +49,7 @@ modes.
 :nm[ap]	{lhs} {rhs}		|mapmode-n|		*:nm* *:nmap*
 :vm[ap]	{lhs} {rhs}		|mapmode-v|		*:vm* *:vmap*
 :xm[ap]	{lhs} {rhs}		|mapmode-x|		*:xm* *:xmap*
-:smap	{lhs} {rhs}		|mapmode-s|		      *:smap*
+:smap	{lhs} {rhs}		|mapmode-s|		    *:smap*
 :om[ap]	{lhs} {rhs}		|mapmode-o|		*:om* *:omap*
 :map!	{lhs} {rhs}		|mapmode-ic|		*:map!*
 :im[ap]	{lhs} {rhs}		|mapmode-i|		*:im* *:imap*
