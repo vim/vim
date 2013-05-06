@@ -4616,9 +4616,21 @@ vim_strsave_escape_csi(p)
 	    }
 	    else
 	    {
+#ifdef FEAT_MBYTE
+		int len  = mb_char2len(PTR2CHAR(s));
+		int len2 = mb_ptr2len(s);
+#endif
 		/* Add character, possibly multi-byte to destination, escaping
 		 * CSI and K_SPECIAL. */
 		d = add_char2buf(PTR2CHAR(s), d);
+#ifdef FEAT_MBYTE
+		while (len < len2)
+		{
+		    /* add following combining char */
+		    d = add_char2buf(PTR2CHAR(s + len), d);
+		    len += mb_char2len(PTR2CHAR(s + len));
+		}
+#endif
 		mb_ptr_adv(s);
 	    }
 	}
