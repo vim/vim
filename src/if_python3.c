@@ -1628,6 +1628,7 @@ Py3Init_vim(void)
     PyType_Ready(&DictionaryType);
     PyType_Ready(&ListType);
     PyType_Ready(&FunctionType);
+    PyType_Ready(&OptionsType);
 
     /* Set sys.argv[] to avoid a crash in warn(). */
     PySys_SetArgv(1, argv);
@@ -1649,6 +1650,8 @@ Py3Init_vim(void)
 
     PyModule_AddObject(mod, "vars", DictionaryNew(&globvardict));
     PyModule_AddObject(mod, "vvars", DictionaryNew(&vimvardict));
+    PyModule_AddObject(mod, "options",
+	    OptionsNew(SREQ_GLOBAL, NULL, dummy_check, NULL));
 
 #define ADD_INT_CONSTANT(name, value) \
     tmp = PyLong_FromLong(value); \

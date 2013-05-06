@@ -80,3 +80,229 @@ Abc
 bac
 def
 bar
+>>> paste
+  p/gopts1: False
+  inv: 2! ValueError
+  p/wopts1! KeyError
+  inv: 2! KeyError
+  wopts1! KeyError
+  wopts2! KeyError
+  wopts3! KeyError
+  p/bopts1! KeyError
+  inv: 2! KeyError
+  bopts1! KeyError
+  bopts2! KeyError
+  bopts3! KeyError
+  G: 1
+  W: 1:1 2:1 3:1 4:1
+  B: 1:1 2:1 3:1 4:1
+  del wopts3! KeyError
+  del bopts3! KeyError
+  G: 1
+  W: 1:1 2:1 3:1 4:1
+  B: 1:1 2:1 3:1 4:1
+>>> previewheight
+  p/gopts1: 12
+  inv: 'a'! ValueError
+  p/wopts1! KeyError
+  inv: 'a'! KeyError
+  wopts1! KeyError
+  wopts2! KeyError
+  wopts3! KeyError
+  p/bopts1! KeyError
+  inv: 'a'! KeyError
+  bopts1! KeyError
+  bopts2! KeyError
+  bopts3! KeyError
+  G: 5
+  W: 1:5 2:5 3:5 4:5
+  B: 1:5 2:5 3:5 4:5
+  del wopts3! KeyError
+  del bopts3! KeyError
+  G: 5
+  W: 1:5 2:5 3:5 4:5
+  B: 1:5 2:5 3:5 4:5
+>>> operatorfunc
+  p/gopts1: ''
+  inv: 2! ValueError
+  p/wopts1! KeyError
+  inv: 2! KeyError
+  wopts1! KeyError
+  wopts2! KeyError
+  wopts3! KeyError
+  p/bopts1! KeyError
+  inv: 2! KeyError
+  bopts1! KeyError
+  bopts2! KeyError
+  bopts3! KeyError
+  G: 'A'
+  W: 1:'A' 2:'A' 3:'A' 4:'A'
+  B: 1:'A' 2:'A' 3:'A' 4:'A'
+  del wopts3! KeyError
+  del bopts3! KeyError
+  G: 'A'
+  W: 1:'A' 2:'A' 3:'A' 4:'A'
+  B: 1:'A' 2:'A' 3:'A' 4:'A'
+>>> number
+  p/gopts1! KeyError
+  inv: 0! KeyError
+  gopts1! KeyError
+  p/wopts1: False
+  p/bopts1! KeyError
+  inv: 0! KeyError
+  bopts1! KeyError
+  bopts2! KeyError
+  bopts3! KeyError
+  G: 0
+  W: 1:1 2:1 3:0 4:0
+  B: 1:1 2:1 3:0 4:0
+  del wopts3! ValueError
+  del bopts3! KeyError
+  G: 0
+  W: 1:1 2:1 3:0 4:0
+  B: 1:1 2:1 3:0 4:0
+>>> numberwidth
+  p/gopts1! KeyError
+  inv: -100! KeyError
+  gopts1! KeyError
+  p/wopts1: 8
+  p/bopts1! KeyError
+  inv: -100! KeyError
+  bopts1! KeyError
+  bopts2! KeyError
+  bopts3! KeyError
+  G: 8
+  W: 1:3 2:5 3:2 4:8
+  B: 1:3 2:5 3:2 4:8
+  del wopts3! ValueError
+  del bopts3! KeyError
+  G: 8
+  W: 1:3 2:5 3:2 4:8
+  B: 1:3 2:5 3:2 4:8
+>>> colorcolumn
+  p/gopts1! KeyError
+  inv: 'abc'! KeyError
+  gopts1! KeyError
+  p/wopts1: ''
+  p/bopts1! KeyError
+  inv: 'abc'! KeyError
+  bopts1! KeyError
+  bopts2! KeyError
+  bopts3! KeyError
+  G: ''
+  W: 1:'+2' 2:'+3' 3:'+1' 4:''
+  B: 1:'+2' 2:'+3' 3:'+1' 4:''
+  del wopts3! ValueError
+  del bopts3! KeyError
+  G: ''
+  W: 1:'+2' 2:'+3' 3:'+1' 4:''
+  B: 1:'+2' 2:'+3' 3:'+1' 4:''
+>>> statusline
+  p/gopts1: ''
+  inv: 0! ValueError
+  p/wopts1: None
+  inv: 0! ValueError
+  p/bopts1! KeyError
+  inv: 0! KeyError
+  bopts1! KeyError
+  bopts2! KeyError
+  bopts3! KeyError
+  G: '1'
+  W: 1:'2' 2:'4' 3:'1' 4:'1'
+  B: 1:'2' 2:'4' 3:'1' 4:'1'
+  del bopts3! KeyError
+  G: '1'
+  W: 1:'2' 2:'1' 3:'1' 4:'1'
+  B: 1:'2' 2:'1' 3:'1' 4:'1'
+>>> autoindent
+  p/gopts1! KeyError
+  inv: 2! KeyError
+  gopts1! KeyError
+  p/wopts1! KeyError
+  inv: 2! KeyError
+  wopts1! KeyError
+  wopts2! KeyError
+  wopts3! KeyError
+  p/bopts1: False
+  inv: 2! ValueError
+  G: 0
+  W: 1:1 2:1 3:0 4:0
+  B: 1:1 2:1 3:0 4:0
+  del wopts3! KeyError
+  del bopts3! ValueError
+  G: 0
+  W: 1:1 2:1 3:0 4:0
+  B: 1:1 2:1 3:0 4:0
+>>> iminsert
+  p/gopts1! KeyError
+  inv: 3! KeyError
+  gopts1! KeyError
+  p/wopts1! KeyError
+  inv: 3! KeyError
+  wopts1! KeyError
+  wopts2! KeyError
+  wopts3! KeyError
+  p/bopts1: 2
+  G: 1
+  W: 1:2 2:1 3:0 4:2
+  B: 1:2 2:1 3:0 4:2
+  del wopts3! KeyError
+  del bopts3! ValueError
+  G: 1
+  W: 1:2 2:1 3:0 4:2
+  B: 1:2 2:1 3:0 4:2
+>>> omnifunc
+  p/gopts1! KeyError
+  inv: 1! KeyError
+  gopts1! KeyError
+  p/wopts1! KeyError
+  inv: 1! KeyError
+  wopts1! KeyError
+  wopts2! KeyError
+  wopts3! KeyError
+  p/bopts1: ''
+  inv: 1! ValueError
+  G: ''
+  W: 1:'B' 2:'C' 3:'A' 4:''
+  B: 1:'B' 2:'C' 3:'A' 4:''
+  del wopts3! KeyError
+  del bopts3! ValueError
+  G: ''
+  W: 1:'B' 2:'C' 3:'A' 4:''
+  B: 1:'B' 2:'C' 3:'A' 4:''
+>>> preserveindent
+  p/gopts1! KeyError
+  inv: 2! KeyError
+  gopts1! KeyError
+  p/wopts1! KeyError
+  inv: 2! KeyError
+  wopts1! KeyError
+  wopts2! KeyError
+  wopts3! KeyError
+  p/bopts1: False
+  inv: 2! ValueError
+  G: 0
+  W: 1:1 2:1 3:0 4:0
+  B: 1:1 2:1 3:0 4:0
+  del wopts3! KeyError
+  del bopts3! ValueError
+  G: 0
+  W: 1:1 2:1 3:0 4:0
+  B: 1:1 2:1 3:0 4:0
+>>> path
+  p/gopts1: '.,/usr/include,,'
+  inv: 0! ValueError
+  p/wopts1! KeyError
+  inv: 0! KeyError
+  wopts1! KeyError
+  wopts2! KeyError
+  wopts3! KeyError
+  p/bopts1: None
+  inv: 0! ValueError
+  G: '.,,'
+  W: 1:',,' 2:'.' 3:'.,,' 4:'.,,'
+  B: 1:',,' 2:'.' 3:'.,,' 4:'.,,'
+  del wopts3! KeyError
+  G: '.,,'
+  W: 1:',,' 2:'.,,' 3:'.,,' 4:'.,,'
+  B: 1:',,' 2:'.,,' 3:'.,,' 4:'.,,'

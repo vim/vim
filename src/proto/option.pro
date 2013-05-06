@@ -22,6 +22,7 @@ void set_string_option_direct __ARGS((char_u *name, int opt_idx, char_u *val, in
 char_u *check_colorcolumn __ARGS((win_T *wp));
 char_u *check_stl_option __ARGS((char_u *s));
 int get_option_value __ARGS((char_u *name, long *numval, char_u **stringval, int opt_flags));
+int get_option_value_strict __ARGS((char_u *name, long *numval, char_u **stringval, int opt_type, void *from));
 void set_option_value __ARGS((char_u *name, long number, char_u *string, int opt_flags));
 char_u *get_term_code __ARGS((char_u *tname));
 char_u *get_highlight_default __ARGS((void));
@@ -33,6 +34,7 @@ void free_termoptions __ARGS((void));
 void free_one_termoption __ARGS((char_u *var));
 void set_term_defaults __ARGS((void));
 void comp_col __ARGS((void));
+void unset_global_local_option __ARGS((char_u *name, void *from));
 char_u *get_equalprg __ARGS((void));
 void win_copy_options __ARGS((win_T *wp_from, win_T *wp_to));
 void copy_winopt __ARGS((winopt_T *from, winopt_T *to));

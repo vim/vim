@@ -1497,6 +1497,279 @@ static struct PyMethodDef FunctionMethods[] = {
     { NULL,	    NULL,		0,	    NULL }
 };
 
+/*
+ * Options object
+ */
+
+static PyTypeObject OptionsType;
+
+typedef int (*checkfun)(void *);
+
+typedef struct
+{
+    PyObject_HEAD
+    int opt_type;
+    void *from;
+    checkfun Check;
+    PyObject *fromObj;
+} OptionsObject;
+
+    static PyObject *
+OptionsItem(OptionsObject *this, PyObject *keyObject)
+{
+    char_u	*key;
+    int		flags;
+    long	numval;
+    char_u	*stringval;
+
+    if (this->Check(this->from))
+	return NULL;
+
+    DICTKEY_DECL
+
+    DICTKEY_GET_NOTEMPTY(NULL)
+
+    flags = get_option_value_strict(key, &numval, &stringval,
+				    this->opt_type, this->from);
+
+    DICTKEY_UNREF
+
+    if (flags == 0)
+    {
+	PyErr_SetString(PyExc_KeyError, "Option does not exist in given scope");
+	return NULL;
+    }
+
+    if (flags & SOPT_UNSET)
+    {
+	Py_INCREF(Py_None);
+	return Py_None;
+    }
+    else if (flags & SOPT_BOOL)
+    {
+	PyObject *r;
+	r = numval ? Py_True : Py_False;
+	Py_INCREF(r);
+	return r;
+    }
+    else if (flags & SOPT_NUM)
+	return PyInt_FromLong(numval);
+    else if (flags & SOPT_STRING)
+    {
+	if (stringval)
+	    return PyBytes_FromString((char *) stringval);
+	else
+	{
+	    PyErr_SetString(PyExc_ValueError, "Unable to get option value");
+	    return NULL;
+	}
+    }
+    else
+    {
+	PyErr_SetVim("Internal error: unknown option type. Should not happen");
+	return NULL;
+    }
+}
+
+    static int
+set_option_value_for(key, numval, stringval, opt_flags, opt_type, from)
+    char_u	*key;
+    int		numval;
+    char_u	*stringval;
+    int		opt_flags;
+    int		opt_type;
+    void	*from;
+{
+    win_T	*save_curwin;
+    tabpage_T	*save_curtab;
+    aco_save_T	aco;
+    int		r = 0;
+
+    switch (opt_type)
+    {
+	case SREQ_WIN:
+	    if (switch_win(&save_curwin, &save_curtab, (win_T *) from, curtab)
+								      == FAIL)
+	    {
+		PyErr_SetVim("Problem while switching windows.");
+		return -1;
+	    }
+	    set_option_value(key, numval, stringval, opt_flags);
+	    restore_win(save_curwin, save_curtab);
+	    break;
+	case SREQ_BUF:
+	    aucmd_prepbuf(&aco, (buf_T *) from);
+	    set_option_value(key, numval, stringval, opt_flags);
+	    aucmd_restbuf(&aco);
+	    break;
+	case SREQ_GLOBAL:
+	    set_option_value(key, numval, stringval, opt_flags);
+	    break;
+    }
+    return r;
+}
+
+    static int
+OptionsAssItem(OptionsObject *this, PyObject *keyObject, PyObject *valObject)
+{
+    char_u	*key;
+    int		flags;
+    int		opt_flags;
+    int		r = 0;
+
+    if (this->Check(this->from))
+	return -1;
+
+    DICTKEY_DECL
+
+    DICTKEY_GET_NOTEMPTY(-1)
+
+    flags = get_option_value_strict(key, NULL, NULL,
+				    this->opt_type, this->from);
+
+    DICTKEY_UNREF
+
+    if (flags == 0)
+    {
+	PyErr_SetString(PyExc_KeyError, "Option does not exist in given scope");
+	return -1;
+    }
+
+    if (valObject == NULL)
+    {
+	if (this->opt_type == SREQ_GLOBAL)
+	{
+	    PyErr_SetString(PyExc_ValueError, "Unable to unset global option");
+	    return -1;
+	}
+	else if (!(flags & SOPT_GLOBAL))
+	{
+	    PyErr_SetString(PyExc_ValueError, "Unable to unset option without "
+						"global value");
+	    return -1;
+	}
+	else
+	{
+	    unset_global_local_option(key, this->from);
+	    return 0;
+	}
+    }
+
+    opt_flags = (this->opt_type ? OPT_LOCAL : OPT_GLOBAL);
+
+    if (flags & SOPT_BOOL)
+    {
+	if (!PyBool_Check(valObject))
+	{
+	    PyErr_SetString(PyExc_ValueError, "Object must be boolean");
+	    return -1;
+	}
+
+	r = set_option_value_for(key, (valObject == Py_True), NULL, opt_flags,
+				this->opt_type, this->from);
+    }
+    else if (flags & SOPT_NUM)
+    {
+	int val;
+
+#if PY_MAJOR_VERSION < 3
+	if (PyInt_Check(valObject))
+	    val = PyInt_AsLong(valObject);
+	else
+#endif
+	if (PyLong_Check(valObject))
+	    val = PyLong_AsLong(valObject);
+	else
+	{
+	    PyErr_SetString(PyExc_ValueError, "Object must be integer");
+	    return -1;
+	}
+
+	r = set_option_value_for(key, val, NULL, opt_flags,
+				this->opt_type, this->from);
+    }
+    else
+    {
+	char_u	*val;
+	if (PyBytes_Check(valObject))
+	{
+
+	    if (PyString_AsStringAndSize(valObject, (char **) &val, NULL) == -1)
+		return -1;
+	    if (val == NULL)
+		return -1;
+
+	    val = vim_strsave(val);
+	}
+	else if (PyUnicode_Check(valObject))
+	{
+	    PyObject	*bytes;
+
+	    bytes = PyUnicode_AsEncodedString(valObject, (char *)ENC_OPT, NULL);
+	    if (bytes == NULL)
+		return -1;
+
+	    if(PyString_AsStringAndSize(bytes, (char **) &val, NULL) == -1)
+		return -1;
+	    if (val == NULL)
+		return -1;
+
+	    val = vim_strsave(val);
+	    Py_XDECREF(bytes);
+	}
+	else
+	{
+	    PyErr_SetString(PyExc_ValueError, "Object must be string");
+	    return -1;
+	}
+
+	r = set_option_value_for(key, 0, val, opt_flags,
+				this->opt_type, this->from);
+	vim_free(val);
+    }
+
+    return r;
+}
+
+    static int
+dummy_check(void *arg UNUSED)
+{
+    return 0;
+}
+
+    static PyObject *
+OptionsNew(int opt_type, void *from, checkfun Check, PyObject *fromObj)
+{
+    OptionsObject	*self;
+
+    self = PyObject_NEW(OptionsObject, &OptionsType);
+    if (self == NULL)
+	return NULL;
+
+    self->opt_type = opt_type;
+    self->from = from;
+    self->Check = Check;
+    self->fromObj = fromObj;
+    if (fromObj)
+	Py_INCREF(fromObj);
+
+    return (PyObject *)(self);
+}
+
+    static void
+OptionsDestructor(PyObject *self)
+{
+    if (((OptionsObject *)(self))->fromObj)
+	Py_DECREF(((OptionsObject *)(self))->fromObj);
+    DESTRUCTOR_FINISH(self);
+}
+
+static PyMappingMethods OptionsAsMapping = {
+    (lenfunc)       NULL,
+    (binaryfunc)    OptionsItem,
+    (objobjargproc) OptionsAssItem,
+};
+
 #define INVALID_WINDOW_VALUE ((win_T *)(-1))
 
     static int
@@ -1534,8 +1807,12 @@ WindowAttr(WindowObject *this, char *name)
 #endif
     else if (strcmp(name, "vars") == 0)
 	return DictionaryNew(this->win->w_vars);
+    else if (strcmp(name, "options") == 0)
+	return OptionsNew(SREQ_WIN, this->win, (checkfun) CheckWindow,
+			(PyObject *) this);
     else if (strcmp(name,"__members__") == 0)
-	return Py_BuildValue("[ssss]", "buffer", "cursor", "height", "vars");
+	return Py_BuildValue("[sssss]", "buffer", "cursor", "height", "vars",
+		"options");
     else
 	return NULL;
 }
@@ -2499,8 +2776,11 @@ BufferAttr(BufferObject *this, char *name)
 	return Py_BuildValue(Py_ssize_t_fmt, this->buf->b_fnum);
     else if (strcmp(name, "vars") == 0)
 	return DictionaryNew(this->buf->b_vars);
+    else if (strcmp(name, "options") == 0)
+	return OptionsNew(SREQ_BUF, this->buf, (checkfun) CheckBuffer,
+			(PyObject *) this);
     else if (strcmp(name,"__members__") == 0)
-	return Py_BuildValue("[sss]", "name", "number", "vars");
+	return Py_BuildValue("[ssss]", "name", "number", "vars", "options");
     else
 	return NULL;
 }
@@ -3120,6 +3400,14 @@ init_structs(void)
 #else
     FunctionType.tp_getattr = FunctionGetattr;
 #endif
+
+    vim_memset(&OptionsType, 0, sizeof(OptionsType));
+    OptionsType.tp_name = "vim.options";
+    OptionsType.tp_basicsize = sizeof(OptionsObject);
+    OptionsType.tp_flags = Py_TPFLAGS_DEFAULT;
+    OptionsType.tp_doc = "object for manipulating options";
+    OptionsType.tp_as_mapping = &OptionsAsMapping;
+    OptionsType.tp_dealloc = OptionsDestructor;
 
 #if PY_MAJOR_VERSION >= 3
     vim_memset(&vimmodule, 0, sizeof(vimmodule));

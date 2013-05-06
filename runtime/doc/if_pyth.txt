@@ -243,6 +243,18 @@ vim.vvars						*python-vvars*
 	vim (|v:|) variables respectively. Identical to `vim.bindeval("g:")`, 
 	but faster.
 
+vim.options						*python-options*
+	Object partly supporting mapping protocol (supports setting and 
+	getting items) providing a read-write access to global options.
+	Note: unlike |:set| this provides access only to global options. You
+	cannot use this object to obtain or set local options' values or
+	access local-only options in any fashion. Raises KeyError if no global
+	option with such name exists (i.e. does not raise KeyError for
+	|global-local| options and global only options, but does for window-
+	and buffer-local ones).  Use |python-buffer| objects to access to
+	buffer-local options and |python-window| objects to access to
+	window-local options.
+
 Output from Python					*python-output*
 	Vim displays all Python code output in the Vim message area.  Normal
 	output appears as information messages, and error output appears as
@@ -283,6 +295,17 @@ Buffer indexes start at zero, as is normal in Python.  This differs from vim
 line numbers, which start from 1.  This is particularly relevant when dealing
 with marks (see below) which use vim line numbers.
 
+The buffer object attributes are:
+	b.vars		Dictionary-like object used to access 
+			|buffer-variable|s.
+	b.options	Mapping object (supports item getting, setting and 
+			deleting) that provides access to buffer-local options 
+			and buffer-local values of |global-local| options. Use 
+			|python-window|.options if option is window-local, 
+			this object will raise KeyError. If option is 
+			|global-local| and local value is missing getting it 
+			will return None.
+
 The buffer object methods are:
 	b.append(str)	Append a line to the buffer
 	b.append(str, nr)  Idem, below line "nr"
@@ -313,6 +336,8 @@ Examples (assume b is the current buffer) >
 	:py (row,col) = b.mark('a')	# named mark
 	:py r = b.range(1,5)		# a sub-range of the buffer
 	:py b.vars["foo"] = "bar"	# assign b:foo variable
+	:py b.options["ff"] = "dos"	# set fileformat
+	:py del b.options["ar"]		# same as :set autoread<
 
 ==============================================================================
 4. Range objects					*python-range*
@@ -363,6 +388,14 @@ Window attributes are:
 	vars (read-only)	The window |w:| variables. Attribute is 
 				unassignable, but you can change window 
 				variables this way
+	options (read-only)	The window-local options. Attribute is 
+				unassignable, but you can change window 
+				options this way. Provides access only to 
+				window-local options, for buffer-local use 
+				|python-buffer| and for global ones use 
+				|python-options|. If option is |global-local| 
+				and local value is missing getting it will 
+				return None.
 The height attribute is writable only if the screen is split horizontally.
 The width attribute is writable only if the screen is split vertically.
 

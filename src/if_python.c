@@ -1341,6 +1341,7 @@ PythonMod_Init(void)
     PyType_Ready(&BufListType);
     PyType_Ready(&WinListType);
     PyType_Ready(&CurrentType);
+    PyType_Ready(&OptionsType);
 
     /* Set sys.argv[] to avoid a crash in warn(). */
     PySys_SetArgv(1, argv);
@@ -1359,6 +1360,9 @@ PythonMod_Init(void)
     Py_DECREF(tmp);
     tmp = DictionaryNew(&vimvardict);
     PyDict_SetItemString(dict, "vvars",   tmp);
+    Py_DECREF(tmp);
+    tmp = OptionsNew(SREQ_GLOBAL, NULL, dummy_check, NULL);
+    PyDict_SetItemString(dict, "options", tmp);
     Py_DECREF(tmp);
     PyDict_SetItemString(dict, "VAR_LOCKED",    PyInt_FromLong(VAR_LOCKED));
     PyDict_SetItemString(dict, "VAR_FIXED",     PyInt_FromLong(VAR_FIXED));

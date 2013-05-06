@@ -328,6 +328,125 @@ EOF
 :put =py3eval('vim.vars[''foo'']')
 :put =py3eval('vim.current.window.vars[''abc'']')
 :put =py3eval('vim.current.buffer.vars[''baz'']')
+:"
+:" Options
+:" paste:          boolean, global
+:" previewheight   number,  global
+:" operatorfunc:   string,  global
+:" number:         boolean, window-local
+:" numberwidth:    number,  window-local
+:" colorcolumn:    string,  window-local
+:" statusline:     string,  window-local/global
+:" autoindent:     boolean, buffer-local
+:" iminsert:       number,  buffer-local
+:" omnifunc:       string,  buffer-local
+:" preserveindent: boolean, buffer-local/global
+:" path:           string,  buffer-local/global
+:let g:bufs=[bufnr('%')]
+:new
+:let g:bufs+=[bufnr('%')]
+:vnew
+:let g:bufs+=[bufnr('%')]
+:wincmd j
+:vnew
+:let g:bufs+=[bufnr('%')]
+:wincmd l
+:fun RecVars(opt)
+:  let gval =string(eval('&g:'.a:opt))
+:  let wvals=join(map(range(1, 4),  'v:val.":".string(getwinvar(v:val, "&".a:opt))'))
+:  let bvals=join(map(copy(g:bufs), 'v:val.":".string(getbufvar(v:val, "&".a:opt))'))
+:  put ='  G: '.gval
+:  put ='  W: '.wvals
+:  put ='  B: '.wvals
+:endfun
+py3 << EOF
+def e(s, g=globals(), l=locals()):
+    try:
+        exec(s, g, l)
+    except Exception as e:
+        vim.command('throw ' + repr(e.__class__.__name__))
+
+def ev(s, g=globals(), l=locals()):
+    try:
+        return eval(s, g, l)
+    except Exception as e:
+        vim.command('throw ' + repr(e.__class__.__name__))
+        return 0
+EOF
+:function E(s)
+:   python3 e(vim.eval('a:s'))
+:endfunction
+:function Ev(s)
+:   return py3eval('ev(vim.eval("a:s"))')
+:endfunction
+:py3 gopts1=vim.options
+:py3 wopts1=vim.windows[2].options
+:py3 wopts2=vim.windows[0].options
+:py3 wopts3=vim.windows[1].options
+:py3 bopts1=vim.buffers[vim.bindeval("g:bufs")[2]].options
+:py3 bopts2=vim.buffers[vim.bindeval("g:bufs")[1]].options
+:py3 bopts3=vim.buffers[vim.bindeval("g:bufs")[0]].options
+:let lst=[]
+:let lst+=[['paste',          1,     0,     1,     2,      1,    1,      0    ]]
+:let lst+=[['previewheight',  5,     1,     6,     'a',    0,    1,      0    ]]
+:let lst+=[['operatorfunc',   'A',   'B',   'C',   2,      0,    1,      0    ]]
+:let lst+=[['number',         0,     1,     1,     0,      1,    0,      1    ]]
+:let lst+=[['numberwidth',    2,     3,     5,     -100,   0,    0,      1    ]]
+:let lst+=[['colorcolumn',    '+1',  '+2',  '+3',  'abc',  0,    0,      1    ]]
+:let lst+=[['statusline',     '1',   '2',   '4',   0,      0,    1,      1    ]]
+:let lst+=[['autoindent',     0,     1,     1,     2,      1,    0,      2    ]]
+:let lst+=[['iminsert',       0,     2,     1,     3,      0,    0,      2    ]]
+:let lst+=[['omnifunc',       'A',   'B',   'C',   1,      0,    0,      2    ]]
+:let lst+=[['preserveindent', 0,     1,     1,     2,      1,    1,      2    ]]
+:let lst+=[['path',           '.,,', ',,',  '.',   0,      0,    1,      2    ]]
+:for       [oname,            oval1, oval2, oval3, invval, bool, global, local] in lst
+:   py3 oname=vim.eval('oname')
+:   py3 oval1=vim.bindeval('oval1')
+:   py3 oval2=vim.bindeval('oval2')
+:   py3 oval3=vim.bindeval('oval3')
+:   if invval is 0 || invval is 1
+:       py3 invval=bool(vim.bindeval('invval'))
+:   else
+:       py3 invval=vim.bindeval('invval')
+:   endif
+:   if bool
+:       py3 oval1=bool(oval1)
+:       py3 oval2=bool(oval2)
+:       py3 oval3=bool(oval3)
+:   endif
+:   put ='>>> '.oname
+:   for v in ['gopts1', 'wopts1', 'bopts1']
+:       try
+:           put ='  p/'.v.': '.Ev('repr('.v.'['''.oname.'''])')
+:       catch
+:           put ='  p/'.v.'! '.v:exception
+:       endtry
+:       try
+:           call E(v.'["'.oname.'"]=invval')
+:       catch
+:           put ='  inv: '.string(invval).'! '.v:exception
+:       endtry
+:       for vv in (v is# 'gopts1' ? [v] : [v, v[:-2].'2', v[:-2].'3'])
+:           let val=substitute(vv, '^.opts', 'oval', '')
+:           try
+:               call E(vv.'["'.oname.'"]='.val)
+:           catch
+:               put ='  '.vv.'! '.v:exception
+:           endtry
+:       endfor
+:   endfor
+:   call RecVars(oname)
+:   for v in ['wopts3', 'bopts3']
+:       try
+:           call E('del '.v.'["'.oname.'"]')
+:       catch
+:           put ='  del '.v.'! '.v:exception
+:       endtry
+:   endfor
+:   call RecVars(oname)
+endtry
+:endfor
+:only
 :endfun
 :"
 :call Test()
