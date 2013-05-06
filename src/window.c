@@ -44,11 +44,11 @@ static int win_alloc_firstwin __ARGS((win_T *oldwin));
 static void new_frame __ARGS((win_T *wp));
 #if defined(FEAT_WINDOWS) || defined(PROTO)
 static tabpage_T *alloc_tabpage __ARGS((void));
-static int leave_tabpage __ARGS((buf_T *new_curbuf));
-static void enter_tabpage __ARGS((tabpage_T *tp, buf_T *old_curbuf, int trigger_autocmds));
+static int leave_tabpage __ARGS((buf_T *new_curbuf, int trigger_leave_autocmds));
+static void enter_tabpage __ARGS((tabpage_T *tp, buf_T *old_curbuf, int trigger_enter_autocmds, int trigger_leave_autocmds));
 static void frame_fix_height __ARGS((win_T *wp));
 static int frame_minheight __ARGS((frame_T *topfrp, win_T *next_curwin));
-static void win_enter_ext __ARGS((win_T *wp, int undo_sync, int no_curwin));
+static void win_enter_ext __ARGS((win_T *wp, int undo_sync, int no_curwin, int trigger_enter_autocmds, int trigger_leave_autocmds));
 static void win_free __ARGS((win_T *wp, tabpage_T *tp));
 static void frame_append __ARGS((frame_T *after, frame_T *frp));
 static void frame_insert __ARGS((frame_T *before, frame_T *frp));
@@ -353,11 +353,11 @@ newwindow:
 						     && valid_tabpage(oldtab))
 		    {
 			newtab = curtab;
-			goto_tabpage_tp(oldtab, TRUE);
+			goto_tabpage_tp(oldtab, TRUE, TRUE);
 			if (curwin == wp)
 			    win_close(curwin, FALSE);
 			if (valid_tabpage(newtab))
-			    goto_tabpage_tp(newtab, TRUE);
+			    goto_tabpage_tp(newtab, TRUE, TRUE);
 		    }
 		}
 		break;
@@ -2124,6 +2124,8 @@ close_last_window_tabpage(win, free_buf, prev_curtab)
 {
     if (firstwin == lastwin)
     {
+	buf_T	*old_curbuf = curbuf;
+
 	/*
 	 * Closing the last window in a tab page.  First go to another tab
 	 * page and then close the window and the tab page.  This avoids that
@@ -2132,7 +2134,7 @@ close_last_window_tabpage(win, free_buf, prev_curtab)
 	 * Don't trigger autocommands yet, they may use wrong values, so do
 	 * that below.
 	 */
-	goto_tabpage_tp(alt_tabpage(), FALSE);
+	goto_tabpage_tp(alt_tabpage(), FALSE, TRUE);
 	redraw_tabline = TRUE;
 
 	/* Safety check: Autocommands may have closed the window when jumping
@@ -2148,8 +2150,10 @@ close_last_window_tabpage(win, free_buf, prev_curtab)
 	/* Since goto_tabpage_tp above did not trigger *Enter autocommands, do
 	 * that now. */
 #ifdef FEAT_AUTOCMD
-	apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
 	apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
+	apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
+	if (old_curbuf != curbuf)
+	    apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
 #endif
 	return TRUE;
     }
@@ -2341,7 +2345,7 @@ win_close(win, free_buf)
 	win_comp_pos();
     if (close_curwin)
     {
-	win_enter_ext(wp, FALSE, TRUE);
+	win_enter_ext(wp, FALSE, TRUE, TRUE, TRUE);
 #ifdef FEAT_AUTOCMD
 	if (other_buffer)
 	    /* careful: after this wp and win may be invalid! */
@@ -3529,7 +3533,7 @@ win_new_tabpage(after)
 	return FAIL;
 
     /* Remember the current windows in this Tab page. */
-    if (leave_tabpage(curbuf) == FAIL)
+    if (leave_tabpage(curbuf, TRUE) == FAIL)
     {
 	vim_free(newtp);
 	return FAIL;
@@ -3574,14 +3578,14 @@ win_new_tabpage(after)
 
 	redraw_all_later(CLEAR);
 #ifdef FEAT_AUTOCMD
-	apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
 	apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
+	apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
 #endif
 	return OK;
     }
 
     /* Failed, get back the previous Tab page */
-    enter_tabpage(curtab, curbuf, TRUE);
+    enter_tabpage(curtab, curbuf, TRUE, TRUE);
     return FAIL;
 }
 
@@ -3692,9 +3696,10 @@ tabpage_index(ftp)
  * Careful: When OK is returned need to get a new tab page very very soon!
  */
     static int
-leave_tabpage(new_curbuf)
+leave_tabpage(new_curbuf, trigger_leave_autocmds)
     buf_T	*new_curbuf UNUSED;    /* what is going to be the new curbuf,
 				       NULL if unknown */
+    int		trigger_leave_autocmds UNUSED;
 {
     tabpage_T	*tp = curtab;
 
@@ -3702,18 +3707,21 @@ leave_tabpage(new_curbuf)
     reset_VIsual_and_resel();	/* stop Visual mode */
 #endif
 #ifdef FEAT_AUTOCMD
-    if (new_curbuf != curbuf)
+    if (trigger_leave_autocmds)
     {
-	apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf);
+	if (new_curbuf != curbuf)
+	{
+	    apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf);
+	    if (curtab != tp)
+		return FAIL;
+	}
+	apply_autocmds(EVENT_WINLEAVE, NULL, NULL, FALSE, curbuf);
+	if (curtab != tp)
+	    return FAIL;
+	apply_autocmds(EVENT_TABLEAVE, NULL, NULL, FALSE, curbuf);
 	if (curtab != tp)
 	    return FAIL;
     }
-    apply_autocmds(EVENT_WINLEAVE, NULL, NULL, FALSE, curbuf);
-    if (curtab != tp)
-	return FAIL;
-    apply_autocmds(EVENT_TABLEAVE, NULL, NULL, FALSE, curbuf);
-    if (curtab != tp)
-	return FAIL;
 #endif
 #if defined(FEAT_GUI)
     /* Remove the scrollbars.  They may be added back later. */
@@ -3734,13 +3742,15 @@ leave_tabpage(new_curbuf)
 /*
  * Start using tab page "tp".
  * Only to be used after leave_tabpage() or freeing the current tab page.
- * Only trigger *Enter autocommands when trigger_autocmds is TRUE.
+ * Only trigger *Enter autocommands when trigger_enter_autocmds is TRUE.
+ * Only trigger *Leave autocommands when trigger_leave_autocmds is TRUE.
  */
     static void
-enter_tabpage(tp, old_curbuf, trigger_autocmds)
+enter_tabpage(tp, old_curbuf, trigger_enter_autocmds, trigger_leave_autocmds)
     tabpage_T	*tp;
     buf_T	*old_curbuf UNUSED;
-    int		trigger_autocmds UNUSED;
+    int		trigger_enter_autocmds UNUSED;
+    int		trigger_leave_autocmds UNUSED;
 {
     int		old_off = tp->tp_firstwin->w_winrow;
     win_T	*next_prevwin = tp->tp_prevwin;
@@ -3753,7 +3763,7 @@ enter_tabpage(tp, old_curbuf, trigger_autocmds)
     /* We would like doing the TabEnter event first, but we don't have a
      * valid current window yet, which may break some commands.
      * This triggers autocommands, thus may make "tp" invalid. */
-    win_enter_ext(tp->tp_curwin, FALSE, TRUE);
+    win_enter_ext(tp->tp_curwin, FALSE, TRUE, trigger_enter_autocmds, trigger_leave_autocmds);
     prevwin = next_prevwin;
 
     last_status(FALSE);		/* status line may appear or disappear */
@@ -3788,7 +3798,7 @@ enter_tabpage(tp, old_curbuf, trigger_autocmds)
 #ifdef FEAT_AUTOCMD
     /* Apply autocommands after updating the display, when 'rows' and
      * 'columns' have been set correctly. */
-    if (trigger_autocmds)
+    if (trigger_enter_autocmds)
     {
 	apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
 	if (old_curbuf != curbuf)
@@ -3869,7 +3879,7 @@ goto_tabpage(n)
 	}
     }
 
-    goto_tabpage_tp(tp, TRUE);
+    goto_tabpage_tp(tp, TRUE, TRUE);
 
 #ifdef FEAT_GUI_TABLINE
     if (gui_use_tabline())
@@ -3879,23 +3889,28 @@ goto_tabpage(n)
 
 /*
  * Go to tabpage "tp".
- * Only trigger *Enter autocommands when trigger_autocmds is TRUE.
+ * Only trigger *Enter autocommands when trigger_enter_autocmds is TRUE.
+ * Only trigger *Leave autocommands when trigger_leave_autocmds is TRUE.
  * Note: doesn't update the GUI tab.
  */
     void
-goto_tabpage_tp(tp, trigger_autocmds)
+goto_tabpage_tp(tp, trigger_enter_autocmds, trigger_leave_autocmds)
     tabpage_T	*tp;
-    int		trigger_autocmds;
+    int		trigger_enter_autocmds;
+    int		trigger_leave_autocmds;
 {
     /* Don't repeat a message in another tab page. */
     set_keep_msg(NULL, 0);
 
-    if (tp != curtab && leave_tabpage(tp->tp_curwin->w_buffer) == OK)
+    if (tp != curtab && leave_tabpage(tp->tp_curwin->w_buffer,
+					trigger_leave_autocmds) == OK)
     {
 	if (valid_tabpage(tp))
-	    enter_tabpage(tp, curbuf, trigger_autocmds);
+	    enter_tabpage(tp, curbuf, trigger_enter_autocmds,
+		    trigger_leave_autocmds);
 	else
-	    enter_tabpage(curtab, curbuf, trigger_autocmds);
+	    enter_tabpage(curtab, curbuf, trigger_enter_autocmds,
+		    trigger_leave_autocmds);
     }
 }
 
@@ -3908,7 +3923,7 @@ goto_tabpage_win(tp, wp)
     tabpage_T	*tp;
     win_T	*wp;
 {
-    goto_tabpage_tp(tp, TRUE);
+    goto_tabpage_tp(tp, TRUE, TRUE);
     if (curtab == tp && win_valid(wp))
     {
 	win_enter(wp, TRUE);
@@ -4168,7 +4183,7 @@ win_enter(wp, undo_sync)
     win_T	*wp;
     int		undo_sync;
 {
-    win_enter_ext(wp, undo_sync, FALSE);
+    win_enter_ext(wp, undo_sync, FALSE, TRUE, TRUE);
 }
 
 /*
@@ -4177,10 +4192,12 @@ win_enter(wp, undo_sync)
  * been closed and isn't valid.
  */
     static void
-win_enter_ext(wp, undo_sync, curwin_invalid)
+win_enter_ext(wp, undo_sync, curwin_invalid, trigger_enter_autocmds, trigger_leave_autocmds)
     win_T	*wp;
     int		undo_sync;
     int		curwin_invalid;
+    int		trigger_enter_autocmds UNUSED;
+    int		trigger_leave_autocmds UNUSED;
 {
 #ifdef FEAT_AUTOCMD
     int		other_buffer = FALSE;
@@ -4190,7 +4207,7 @@ win_enter_ext(wp, undo_sync, curwin_invalid)
 	return;
 
 #ifdef FEAT_AUTOCMD
-    if (!curwin_invalid)
+    if (!curwin_invalid && trigger_leave_autocmds)
     {
 	/*
 	 * Be careful: If autocommands delete the window, return now.
@@ -4259,9 +4276,12 @@ win_enter_ext(wp, undo_sync, curwin_invalid)
     }
 
 #ifdef FEAT_AUTOCMD
-    apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
-    if (other_buffer)
-	apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
+    if (trigger_enter_autocmds)
+    {
+	apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
+	if (other_buffer)
+	    apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
+    }
 #endif
 
 #ifdef FEAT_TITLE

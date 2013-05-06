@@ -8934,7 +8934,7 @@ aucmd_restbuf(aco)
 		if (wp == aucmd_win)
 		{
 		    if (tp != curtab)
-			goto_tabpage_tp(tp, TRUE);
+			goto_tabpage_tp(tp, TRUE, TRUE);
 		    win_goto(aucmd_win);
 		    goto win_found;
 		}

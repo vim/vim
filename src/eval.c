@@ -16604,7 +16604,7 @@ f_settabvar(argvars, rettv)
     if (tp != NULL && varname != NULL && varp != NULL)
     {
 	save_curtab = curtab;
-	goto_tabpage_tp(tp, TRUE);
+	goto_tabpage_tp(tp, FALSE, FALSE);
 
 	tabvarname = alloc((unsigned)STRLEN(varname) + 3);
 	if (tabvarname != NULL)
@@ -16617,7 +16617,7 @@ f_settabvar(argvars, rettv)
 
 	/* Restore current tabpage */
 	if (valid_tabpage(save_curtab))
-	    goto_tabpage_tp(save_curtab, TRUE);
+	    goto_tabpage_tp(save_curtab, FALSE, FALSE);
     }
 }
 
@@ -16654,7 +16654,7 @@ switch_win(save_curwin, save_curtab, win, tp)
     /* set curwin to be our win, temporarily */
     *save_curwin = curwin;
     *save_curtab = curtab;
-    goto_tabpage_tp(tp, TRUE);
+    goto_tabpage_tp(tp, FALSE, FALSE);
     if (!win_valid(win))
 	return FAIL;
     curwin = win;
@@ -16672,7 +16672,7 @@ restore_win(save_curwin, save_curtab)
     /* Restore current tabpage and window, if still valid (autocommands can
      * make them invalid). */
     if (valid_tabpage(save_curtab))
-	goto_tabpage_tp(save_curtab, TRUE);
+	goto_tabpage_tp(save_curtab, FALSE, FALSE);
     if (win_valid(save_curwin))
     {
 	curwin = save_curwin;

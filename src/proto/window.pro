@@ -27,7 +27,7 @@ int valid_tabpage __ARGS((tabpage_T *tpc));
 tabpage_T *find_tabpage __ARGS((int n));
 int tabpage_index __ARGS((tabpage_T *ftp));
 void goto_tabpage __ARGS((int n));
-void goto_tabpage_tp __ARGS((tabpage_T *tp, int trigger_autocmds));
+void goto_tabpage_tp __ARGS((tabpage_T *tp, int trigger_enter_autocmds, int trigger_leave_autocmds));
 void goto_tabpage_win __ARGS((tabpage_T *tp, win_T *wp));
 void tabpage_move __ARGS((int nr));
 void win_goto __ARGS((win_T *wp));

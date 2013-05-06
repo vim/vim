@@ -18,3 +18,71 @@ tab drop 3: pass
 4
 6
 E474 caught.
+=== tab split ===
+WinLeave
+TabLeave
+WinEnter
+TabEnter
+=== tabnew ===
+WinLeave
+TabLeave
+WinEnter
+TabEnter
+BufLeave
+BufEnter
+a b c
+=== call map(range(1, tabpagenr('$')), 'settabvar(v:val, ===
+a b c
+=== vsplit ===
+WinLeave
+WinEnter
+=== tabnext 1 ===
+BufLeave
+WinLeave
+TabLeave
+WinEnter
+TabEnter
+BufEnter
+a a
+=== call map(copy(winr), 'settabwinvar('.tabn.', v:val, ===
+a a
+=== tabnext 3 ===
+BufLeave
+WinLeave
+TabLeave
+WinEnter
+TabEnter
+=== tabnext 2 ===
+=== tabclose 3 ===
+2/2
+=== tabnew ===
+WinLeave
+TabLeave
+WinEnter
+TabEnter
+BufLeave
+BufEnter
+=== tabnext 1 ===
+BufLeave
+WinLeave
+TabLeave
+WinEnter
+TabEnter
+BufEnter
+=== tabnext 3 ===
+BufLeave
+WinLeave
+TabLeave
+WinEnter
+TabEnter
+=== tabnext 2 ===
+BufLeave
+WinLeave
+TabLeave
+WinEnter
+TabEnter
+=== tabnext 2 ===
+=== tabclose 3 ===
+BufEnter
+=== tabclose 3 ===
+2/2

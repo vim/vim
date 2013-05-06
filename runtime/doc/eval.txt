@@ -5320,8 +5320,6 @@ settabvar({tabnr}, {varname}, {val})			*settabvar()*
 		|t:var|
 		Note that the variable name without "t:" must be used.
 		Tabs are numbered starting with one.
-		Vim briefly goes to the tab page {tabnr}, this may trigger
-		TabLeave and TabEnter autocommands.
 		This function is not available in the |sandbox|.
 
 settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
@@ -5334,8 +5332,6 @@ settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 		doesn't work for a global or local buffer variable.
 		For a local buffer option the global value is unchanged.
 		Note that the variable name without "w:" must be used.
-		Vim briefly goes to the tab page {tabnr}, this may trigger
-		TabLeave and TabEnter autocommands.
 		Examples: >
 			:call settabwinvar(1, 1, "&list", 0)
 			:call settabwinvar(3, 2, "myvar", "foobar")

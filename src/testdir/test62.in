@@ -120,6 +120,68 @@ i=tabpagenr()
 :endtry
 i=a
 :"
+:" Test autocommands
+:tabonly!
+:let g:r=[]
+:command -nargs=1 -bar C :call add(g:r, '=== ' . <q-args> . ' ===')|<args>
+:function Test()
+    let hasau=has('autocmd')
+    if hasau
+        autocmd TabEnter * :call add(g:r, 'TabEnter')
+        autocmd WinEnter * :call add(g:r, 'WinEnter')
+        autocmd BufEnter * :call add(g:r, 'BufEnter')
+        autocmd TabLeave * :call add(g:r, 'TabLeave')
+        autocmd WinLeave * :call add(g:r, 'WinLeave')
+        autocmd BufLeave * :call add(g:r, 'BufLeave')
+    endif
+    let t:a='a'
+    C tab split
+    if !hasau
+        let g:r+=['WinLeave', 'TabLeave', 'WinEnter', 'TabEnter']
+    endif
+    let t:a='b'
+    C tabnew
+    if !hasau
+        let g:r+=['WinLeave', 'TabLeave', 'WinEnter', 'TabEnter', 'BufLeave', 'BufEnter']
+    endif
+    let t:a='c'
+    call add(g:r, join(map(range(1, tabpagenr('$')), 'gettabvar(v:val, "a")')))
+    C call map(range(1, tabpagenr('$')), 'settabvar(v:val, "a", v:val*2)')
+    call add(g:r, join(map(range(1, tabpagenr('$')), 'gettabvar(v:val, "a")')))
+    let w:a='a'
+    C vsplit
+    if !hasau
+        let g:r+=['WinLeave', 'WinEnter']
+    endif
+    let w:a='a'
+    let tabn=tabpagenr()
+    let winr=range(1, winnr('$'))
+    C tabnext 1
+    if !hasau
+        let g:r+=['BufLeave', 'WinLeave', 'TabLeave', 'WinEnter', 'TabEnter', 'BufEnter']
+    endif
+    call add(g:r, join(map(copy(winr), 'gettabwinvar('.tabn.', v:val, "a")')))
+    C call map(copy(winr), 'settabwinvar('.tabn.', v:val, "a", v:val*2)')
+    call add(g:r, join(map(copy(winr), 'gettabwinvar('.tabn.', v:val, "a")')))
+    if hasau
+        augroup TabDestructive
+            autocmd TabEnter * :C tabnext 2 | C tabclose 3
+        augroup END
+        C tabnext 3
+        let g:r+=[tabpagenr().'/'.tabpagenr('$')]
+        autocmd! TabDestructive TabEnter
+        C tabnew
+        C tabnext 1
+        autocmd TabDestructive TabEnter * nested :C tabnext 2 | C tabclose 3
+        C tabnext 3
+        let g:r+=[tabpagenr().'/'.tabpagenr('$')]
+    else
+        let g:r+=["=== tabnext 3 ===","BufLeave","WinLeave","TabLeave","WinEnter","TabEnter","=== tabnext 2 ===","=== tabclose 3 ===","2/2","=== tabnew ===","WinLeave","TabLeave","WinEnter","TabEnter","BufLeave","BufEnter","=== tabnext 1 ===","BufLeave","WinLeave","TabLeave","WinEnter","TabEnter","BufEnter","=== tabnext 3 ===","BufLeave","WinLeave","TabLeave","WinEnter","TabEnter","=== tabnext 2 ===","BufLeave","WinLeave","TabLeave","WinEnter","TabEnter","=== tabnext 2 ===","=== tabclose 3 ===","BufEnter","=== tabclose 3 ===","2/2",]
+    endif
+endfunction
+:call Test()
+:$ put =g:r
+:"
 :"
 :/^Results/,$w! test.out
 :qa!
