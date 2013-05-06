@@ -1521,11 +1521,10 @@ OptionsItem(OptionsObject *this, PyObject *keyObject)
     int		flags;
     long	numval;
     char_u	*stringval;
+    DICTKEY_DECL
 
     if (this->Check(this->from))
 	return NULL;
-
-    DICTKEY_DECL
 
     DICTKEY_GET_NOTEMPTY(NULL)
 
@@ -1616,11 +1615,10 @@ OptionsAssItem(OptionsObject *this, PyObject *keyObject, PyObject *valObject)
     int		flags;
     int		opt_flags;
     int		r = 0;
+    DICTKEY_DECL
 
     if (this->Check(this->from))
 	return -1;
-
-    DICTKEY_DECL
 
     DICTKEY_GET_NOTEMPTY(-1)
 
