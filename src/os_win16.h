@@ -50,7 +50,7 @@
 #endif
 
 /* toupper() is not really broken, but it's very slow.	Probably because of
- * using unicde characters on Windows NT */
+ * using unicode characters on Windows NT */
 #define BROKEN_TOUPPER
 
 #define FNAME_ILLEGAL "\"*?><|" /* illegal characters in a file name */

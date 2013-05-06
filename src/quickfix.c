@@ -3235,7 +3235,7 @@ ex_vimgrep(eap)
     mch_dirname(dirname_start, MAXPATHL);
 
 #ifdef FEAT_AUTOCMD
-     /* Remeber the value of qf_start, so that we can check for autocommands
+     /* Remember the value of qf_start, so that we can check for autocommands
       * changing the current quickfix list. */
     cur_qf_start = qi->qf_lists[qi->qf_curlist].qf_start;
 #endif

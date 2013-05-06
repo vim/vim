@@ -4044,7 +4044,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 
 		/* If a double-width char doesn't fit at the left side display
 		 * a '<' in the first column.  Don't do this for unprintable
-		 * charactes. */
+		 * characters. */
 		if (n_skip > 0 && mb_l > 1 && n_extra == 0)
 		{
 		    n_extra = 1;

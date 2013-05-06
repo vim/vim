@@ -903,7 +903,7 @@ dbcs_class(lead, trail)
 {
     switch (enc_dbcs)
     {
-	/* please add classfy routine for your language in here */
+	/* please add classify routine for your language in here */
 
 	case DBCS_JPNU:	/* ? */
 	case DBCS_JPN:
@@ -1003,7 +1003,7 @@ dbcs_class(lead, trail)
 		 * 26 : Box Drawings
 		 * 27 : Unit Symbols
 		 * 28 : Circled/Parenthesized Letter
-		 * 29 : Hirigana/Katakana
+		 * 29 : Hiragana/Katakana
 		 * 30 : Cyrillic Letter
 		 */
 
@@ -1054,7 +1054,7 @@ dbcs_class(lead, trail)
 			    return 28;
 		    case 0xAA:
 		    case 0xAB:
-			/* Hirigana/Katakana */
+			/* Hiragana/Katakana */
 			return 29;
 		    case 0xAC:
 			/* Cyrillic Letter */
@@ -4599,7 +4599,7 @@ im_commit_cb(GtkIMContext *context UNUSED,
     }
 
     /* The thing which setting "preedit_start_col" to MAXCOL means that
-     * "preedit_start_col" will be set forcely when calling
+     * "preedit_start_col" will be set forcedly when calling
      * preedit_changed_cb() next time.
      * "preedit_start_col" should not reset with MAXCOL on this part. Vim
      * is simulating the preediting by using add_to_input_str(). when

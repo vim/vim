@@ -1841,7 +1841,7 @@ conv_to_pvim()
 }
 
 /*
- * Convert the Farsi VIM into Farsi 3342 standad.
+ * Convert the Farsi VIM into Farsi 3342 standard.
  */
     void
 conv_to_pstd()

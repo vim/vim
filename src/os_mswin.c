@@ -1794,7 +1794,7 @@ win32_set_foreground()
  *
  * So we create a hidden window, and arrange to destroy it on exit.
  */
-HWND message_window = 0;	    /* window that's handling messsages */
+HWND message_window = 0;	    /* window that's handling messages */
 
 #define VIM_CLASSNAME      "VIM_MESSAGES"
 #define VIM_CLASSNAME_LEN  (sizeof(VIM_CLASSNAME) - 1)
@@ -1857,7 +1857,7 @@ CleanUpMessaging(void)
 
 static int save_reply(HWND server, char_u *reply, int expr);
 
-/*s
+/*
  * The window procedure for the hidden message window.
  * It handles callback messages and notifications from servers.
  * In order to process these messages, it is necessary to run a
@@ -2603,7 +2603,7 @@ init_logfont(LOGFONT *lf)
 
     ReleaseDC(hwnd, hdc);
 
-    /* If we couldn't find a useable font, return failure */
+    /* If we couldn't find a usable font, return failure */
     if (n == 1)
 	return FAIL;
 

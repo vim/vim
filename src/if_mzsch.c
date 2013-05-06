@@ -3053,7 +3053,7 @@ mzscheme_to_vim_impl(Scheme_Object *obj, typval_T *tv, int depth,
 		status = FAIL;
 	    else
 	    {
-		/* add the value in advance to allow handling of self-referencial
+		/* add the value in advance to allow handling of self-referential
 		 * data structures */
 		typval_T    *visited_tv = (typval_T *)alloc(sizeof(typval_T));
 		copy_tv(tv, visited_tv);
@@ -3088,7 +3088,7 @@ mzscheme_to_vim_impl(Scheme_Object *obj, typval_T *tv, int depth,
 			if (status == FAIL)
 			    break;
 		    }
-		    /* impoper list not terminated with null
+		    /* improper list not terminated with null
 		     * need to handle the last element */
 		    if (status == OK && !SCHEME_NULLP(curr))
 		    {
@@ -3136,7 +3136,7 @@ mzscheme_to_vim_impl(Scheme_Object *obj, typval_T *tv, int depth,
 	    {
 		if (((Scheme_Hash_Table *) obj)->vals[i] != NULL)
 		{
-		    /* generate item for `diplay'ed Scheme key */
+		    /* generate item for `display'ed Scheme key */
 		    dictitem_T  *item = dictitem_alloc((char_u *)string_to_line(
 				((Scheme_Hash_Table *) obj)->keys[i]));
 		    /* convert Scheme val to Vim and add it to the dict */

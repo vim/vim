@@ -1257,7 +1257,7 @@ selection_received_cb(GtkWidget		*widget UNUSED,
 	}
     }
 
-    /* Chop off any traiing NUL bytes.  OpenOffice sends these. */
+    /* Chop off any trailing NUL bytes.  OpenOffice sends these. */
     while (len > 0 && text[len - 1] == NUL)
 	--len;
 

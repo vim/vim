@@ -2160,7 +2160,7 @@ py_fix_cursor(linenr_T lo, linenr_T hi, linenr_T extra)
     static int
 SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 {
-    /* First of all, we check the thpe of the supplied Python object.
+    /* First of all, we check the type of the supplied Python object.
      * There are three cases:
      *	  1. NULL, or None - this is a deletion.
      *	  2. A string	   - this is a replacement.
@@ -2251,7 +2251,7 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
     static int
 SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_change)
 {
-    /* First of all, we check the thpe of the supplied Python object.
+    /* First of all, we check the type of the supplied Python object.
      * There are three cases:
      *	  1. NULL, or None - this is a deletion.
      *	  2. A list	   - this is a replacement.
@@ -2428,7 +2428,7 @@ SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_cha
     }
 }
 
-/* Insert a number of lines into the specified buffer after the specifed line.
+/* Insert a number of lines into the specified buffer after the specified line.
  * The line number is in Vim format (1-based). The lines to be inserted are
  * given as a Python list of string objects or as a single string. The lines
  * to be added are checked for validity and correct format. Errors are
@@ -2819,7 +2819,7 @@ BufferMark(PyObject *self, PyObject *args)
 	return NULL;
     }
 
-    /* Ckeck for keyboard interrupt */
+    /* Check for keyboard interrupt */
     if (VimErrorCheck())
 	return NULL;
 

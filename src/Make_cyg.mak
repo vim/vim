@@ -1,6 +1,6 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2013 Feb 17
+# Last updated by Dan Sharp.  Last Change: 2013 Apr 22
 #
 # Also read INSTALLpc.txt!
 #
@@ -48,7 +48,7 @@
 # USEDLL	no or yes: set to yes to use the Runtime library DLL (no)
 #		For USEDLL=yes the cygwin1.dll is required to run Vim.
 #		For "no" the mingw-gcc-g++ package or the mingw64-i686-gcc-g++
-#		package is required to complie Vim.  Or set CC to gcc-3 and add
+#		package is required to compile Vim.  Or set CC to gcc-3 and add
 #		-L/lib/w32api to EXTRA_LIBS.
 # POSTSCRIPT	no or yes: set to yes for PostScript printing (no)
 # FEATURES	TINY, SMALL, NORMAL, BIG or HUGE (BIG)

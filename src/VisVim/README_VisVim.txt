@@ -220,7 +220,7 @@ Troubleshooting
 		 2. Close Visual Studio.
 		 3. Delete VisVim.dll or move it somewhere it can't be found.
 		 4. Run Visual Studio.
-		 5. Tools -> Cursomize ->Add-ins and Macro-Files.
+		 5. Tools -> Customize ->Add-ins and Macro-Files.
 		 6. A message appears:
 		    ".../VisVim.dll" "This add-in no longer exists.  It will
 		    no longer be displayed."
@@ -298,7 +298,7 @@ P9  Switching to DevStudio using ALT-TAB may get annoying. Would be nice to
 P8  Execute :tag command in Vim for word under cursor in DevStudio
 
 P7  Controlling the Visual Studio Debugger from inside Vim
-    See message above. Also a 'Debug' highligh group and a
+    See message above. Also a 'Debug' highlight group and a
     command to highlight a certain line would be necessary.
 
 P6  Provide an option to open the current file in VisVim in

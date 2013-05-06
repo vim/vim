@@ -5,7 +5,7 @@
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
 " - when 'compatible' is set
-" - the "CursorMoved" autocmd event is not availble.
+" - the "CursorMoved" autocmd event is not available.
 if exists("g:loaded_matchparen") || &cp || !exists("##CursorMoved")
   finish
 endif

@@ -30,7 +30,7 @@ $ !	Check for the existence of VIM, and die if it isn't there.
 $ !
 $	if f$search ("vim:vim.exe") .eqs. ""
 $	then
-$	    write sys$error "Error - Can't run tutoral. VIM not found."
+$	    write sys$error "Error - Can't run tutorial. VIM not found."
 $	    exit
 $	endif
 $ !

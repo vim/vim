@@ -41,7 +41,7 @@
 #define USE_AEVENT		/* Enable AEVENT */
 #undef USE_OFFSETED_WINDOW	/* Debugging feature: start Vim window OFFSETed */
 
-/* Compile as CodeWarior External Editor */
+/* Compile as CodeWarrior External Editor */
 #if defined(FEAT_CW_EDITOR) && !defined(USE_AEVENT)
 # define USE_AEVENT /* Need Apple Event Support */
 #endif
@@ -1478,7 +1478,7 @@ GetFontPanelSelection(char_u *outName)
 /*
  *  gui_mac_get_menu_item_index
  *
- *  Returns the index inside the menu wher
+ *  Returns the index inside the menu where
  */
     short /* Should we return MenuItemIndex? */
 gui_mac_get_menu_item_index(vimmenu_T *pMenu)
@@ -1693,7 +1693,7 @@ gui_mac_doInContentClick(EventRecord *theEvent, WindowPtr whichWindow)
 
     if (theControl != NUL)
     {
-	/* We hit a scollbar */
+	/* We hit a scrollbar */
 
 	if (thePortion != kControlIndicatorPart)
 	{
@@ -2630,7 +2630,7 @@ gui_mac_handle_contextual_menu(event)
     {
 	/* Handle the menu CntxMenuID, CntxMenuItem */
 	/* The submenu can be handle directly by gui_mac_handle_menu */
-	/* But what about the current menu, is the meny changed by ContextualMenuSelect */
+	/* But what about the current menu, is the many changed by ContextualMenuSelect */
 	gui_mac_handle_menu((CntxMenuID << 16) + CntxMenuItem);
     }
     else if (CntxMenuID == kCMShowHelpSelected)
@@ -5356,7 +5356,7 @@ gui_mch_browse(
     char_u *initdir,
     char_u *filter)
 {
-    /* TODO: Add Ammon's safety checl (Dany) */
+    /* TODO: Add Ammon's safety check (Dany) */
     NavReplyRecord	reply;
     char_u		*fname = NULL;
     char_u		**fnames = NULL;
@@ -5704,7 +5704,7 @@ gui_mch_dialog(
 
 	/* Resize the button to fit its name */
 	width = StringWidth(name) + 2 * dfltButtonEdge;
-	/* Limite the size of any button to an acceptable value. */
+	/* Limit the size of any button to an acceptable value. */
 	/* TODO: Should be based on the message width */
 	if (width > maxButtonWidth)
 	    width = maxButtonWidth;
@@ -5887,7 +5887,7 @@ gui_mch_dialog(
     /* Free the modal filterProc */
     DisposeRoutineDescriptor(dialogUPP);
 
-    /* Get ride of th edialog (free memory) */
+    /* Get ride of the dialog (free memory) */
     DisposeDialog(theDialog);
 
     return itemHit;
@@ -5967,9 +5967,9 @@ gui_mch_setmouse(int x, int y)
 	/* New way */
 
 	/*
-	 * Get first devoice with one button.
-	 * This will probably be the standad mouse
-	 * startat head of cursor dev list
+	 * Get first device with one button.
+	 * This will probably be the standard mouse
+	 * start at head of cursor dev list
 	 *
 	 */
 
@@ -6151,7 +6151,7 @@ GetFSSpecFromPath(char_u *file, FSSpec *fileFSSpec)
 }
 
 /*
- * Convert a FSSpec to a fuill path
+ * Convert a FSSpec to a full path
  */
 
 char_u *FullPathFromFSSpec_save(FSSpec file)
@@ -6215,8 +6215,8 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
 
 #ifdef USE_UNIXFILENAME
     /*
-     * The function used here are available in Carbon, but
-     * do nothing une MacOS 8 and 9
+     * The functions used here are available in Carbon, but do nothing on
+     * MacOS 8 and 9.
      */
     if (error == fnfErr)
     {
@@ -6544,7 +6544,7 @@ static ControlRef dataBrowser = NULL;
 
 // when the tabline is hidden, vim doesn't call update_tabline(). When
 // the tabline is shown again, show_tabline() is called before update_tabline(),
-// and because of this, the tab labels and vims internal tabs are out of sync
+// and because of this, the tab labels and vim's internal tabs are out of sync
 // for a very short time. to prevent inconsistent state, we store the labels
 // of the tabs, not pointers to the tabs (which are invalid for a short time).
 static CFStringRef *tabLabels = NULL;
@@ -6578,7 +6578,7 @@ dbItemDataCallback(ControlRef browser,
 
     // assert(property == kTabsColumn); // why is this violated??
 
-    // changeValue is true if we have a modifieable list and data was changed.
+    // changeValue is true if we have a modifiable list and data was changed.
     // In our case, it's always false.
     // (that is: if (changeValue) updateInternalData(); else return
     // internalData();

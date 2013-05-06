@@ -61,7 +61,7 @@ static PgColor_t gui_ph_mouse_color =	Pg_BLACK;
 static PhPoint_t    gui_ph_raw_offset;
 static PtWidget_t   *gui_ph_timer_cursor;   /* handle cursor blinking */
 static PtWidget_t   *gui_ph_timer_timeout;  /* used in gui_mch_wait_for_chars */
-static short	    is_timeout;		    /* Has the timeout occured? */
+static short	    is_timeout;		    /* Has the timeout occurred? */
 
 /*
  * This is set inside the mouse callback for a right mouse
@@ -1156,7 +1156,7 @@ gui_mch_init(void)
     PtSetArg(&args[ n++ ], Pt_ARG_POS, &pos, 0);
 
 #ifdef USE_PANEL_GROUP
-    /* Put in a temprary place holder title */
+    /* Put in a temporary place holder title */
     PtSetArg(&args[ n++ ], Pt_ARG_PG_PANEL_TITLES, &empty_title, 1);
 
     gui.vimPanelGroup = PtCreateWidget(PtPanelGroup, gui.vimWindow, n, args);
@@ -1527,7 +1527,7 @@ gui_mch_dialog(
     /* There is one less separator than buttons, so bump up the button count */
     button_count = 1;
 
-    /* Count string length and number of seperators */
+    /* Count string length and number of separators */
     for (str = buttons; *str; str++)
     {
 	len++;

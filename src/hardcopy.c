@@ -2186,7 +2186,7 @@ prt_dsc_requirements(duplex, tumble, collate, color, num_copies)
     if (num_copies > 1)
     {
 	prt_write_string(" numcopies(");
-	/* Note: no space wanted so dont use prt_write_int() */
+	/* Note: no space wanted so don't use prt_write_int() */
 	sprintf((char *)prt_line_buffer, "%d", num_copies);
 	prt_write_file(prt_line_buffer);
 	prt_write_string(")");

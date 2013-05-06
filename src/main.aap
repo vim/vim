@@ -1213,9 +1213,9 @@ bundle-rsrc {virtual}: os_mac.rsr.hqx
     :move gui_mac.rsrc.rsrcfork $(RESDIR)/$(VIMNAME).rsrc
 
 # po/Make_osx.pl says something about generating a Mac message file
-# for Ukrananian.  Would somebody using Mac OS X in Ukranian
+# for Ukrainian.  Would somebody using Mac OS X in Ukrainian
 # *really* be upset that Carbon Vim was not localised in
-# Ukranian?
+# Ukrainian?
 #
 #bundle-language: bundle-dir po/Make_osx.pl
 #	cd po && perl Make_osx.pl --outdir ../$(RESDIR) $(MULTILANG)

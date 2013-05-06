@@ -3279,7 +3279,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	overwriting = FALSE;
 
     if (exiting)
-	settmode(TMODE_COOK);	    /* when exiting allow typahead now */
+	settmode(TMODE_COOK);	    /* when exiting allow typeahead now */
 
     ++no_wait_return;		    /* don't wait for return yet */
 
@@ -3303,7 +3303,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	int		empty_memline = (buf->b_ml.ml_mfp == NULL);
 
 	/*
-	 * Apply PRE aucocommands.
+	 * Apply PRE autocommands.
 	 * Set curbuf to the buffer to be written.
 	 * Careful: The autocommands may call buf_write() recursively!
 	 */
@@ -8866,7 +8866,7 @@ aucmd_prepbuf(aco, buf)
     else
     {
 	/* There is no window for "buf", use "aucmd_win".  To minimize the side
-	 * effects, insert it in a the current tab page.
+	 * effects, insert it in the current tab page.
 	 * Anything related to a window (e.g., setting folds) may have
 	 * unexpected results. */
 	aco->use_aucmd_win = TRUE;

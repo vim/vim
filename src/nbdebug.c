@@ -17,7 +17,7 @@
  * debugging startup problems because gvim will be started automatically from
  * netbeans and cannot be run directly from a debugger. The only way to debug
  * a gvim started by netbeans is by attaching a debugger to it. Without this
- * tool all starup code will have completed before you can get the pid and
+ * tool all startup code will have completed before you can get the pid and
  * attach.
  *
  * The second tool is a log tool.

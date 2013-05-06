@@ -628,7 +628,7 @@ mf_sync(mfp, flags)
 	 * sync from the system itself).
 	 */
 #  if defined(__EMX__)
-   error "Dont use fsync with EMX! Read emxdoc.doc or emxfix01.doc for info."
+   error "Don't use fsync with EMX! Read emxdoc.doc or emxfix01.doc for info."
 #  endif
 	if (STRCMP(p_sws, "fsync") == 0)
 	{
@@ -1075,7 +1075,7 @@ mf_write(mfp, hp)
 	if (nr > mfp->mf_infile_count)		/* beyond end of file */
 	{
 	    nr = mfp->mf_infile_count;
-	    hp2 = mf_find_hash(mfp, nr);	/* NULL catched below */
+	    hp2 = mf_find_hash(mfp, nr);	/* NULL caught below */
 	}
 	else
 	    hp2 = hp;
@@ -1184,7 +1184,7 @@ mf_trans_add(mfp, hp)
     {
 	new_bnum = freep->bh_bnum;
 	/*
-	 * If the page count of the free block was larger, recude it.
+	 * If the page count of the free block was larger, reduce it.
 	 * If the page count matches, remove the block from the free list
 	 */
 	if (freep->bh_page_count > page_count)
@@ -1309,7 +1309,7 @@ mf_do_open(mfp, fname, flags)
     mf_set_ffname(mfp);
 #if defined(MSDOS) || defined(MSWIN)
     /*
-     * A ":!cd e:xxx" may change the directory without us knowning, use the
+     * A ":!cd e:xxx" may change the directory without us knowing, use the
      * full pathname always.  Careful: This frees fname!
      */
     mf_fullname(mfp);

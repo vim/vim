@@ -726,7 +726,7 @@ pointerEvent(beval, event)
     BalloonEval	*beval;
     XEvent	*event;
 {
-    Position	distance;	    /* a measure of how much the ponter moved */
+    Position	distance;	    /* a measure of how much the pointer moved */
     Position	delta;		    /* used to compute distance */
 
     switch (event->type)

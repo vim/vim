@@ -306,7 +306,7 @@ esac
 AC_SUBST(line_break)
 
 if test "$cf_cv_ebcdic" = "yes"; then
-dnl If we have EBCDIC we most likley have z/OS Unix, let's test it!
+dnl If we have EBCDIC we most likely have z/OS Unix, let's test it!
 AC_MSG_CHECKING(for z/OS Unix)
 case `uname` in
     OS/390)	zOSUnix="yes";
@@ -1228,7 +1228,7 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
     /* If this program fails, then RTLD_GLOBAL is needed.
      * RTLD_GLOBAL will be used and then it is not possible to
      * have both python versions enabled in the same vim instance.
-     * Only the first pyhton version used will be switched on.
+     * Only the first python version used will be switched on.
      */
 
     int no_rtl_global_needed_for(char *python_instsoname, char *prefix)
@@ -1274,7 +1274,7 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
     /* If this program fails, then RTLD_GLOBAL is needed.
      * RTLD_GLOBAL will be used and then it is not possible to
      * have both python versions enabled in the same vim instance.
-     * Only the first pyhton version used will be switched on.
+     * Only the first python version used will be switched on.
      */
 
     int no_rtl_global_needed_for(char *python_instsoname, wchar_t *prefix)
@@ -3002,7 +3002,7 @@ rm -f conftest_grp
 if test "x$vim_cv_tty_group" != "xworld" ; then
   AC_DEFINE_UNQUOTED(PTYGROUP,$vim_cv_tty_group)
   if test "x$vim_cv_tty_mode" = "x" ; then
-    AC_MSG_ERROR([It seems you're cross compiling and have 'vim_cv_tty_group' set, please also set the environment variable 'vim_cv_tty_mode' to the correct mode (propably 0620)])
+    AC_MSG_ERROR([It seems you're cross compiling and have 'vim_cv_tty_group' set, please also set the environment variable 'vim_cv_tty_mode' to the correct mode (probably 0620)])
   else
     AC_DEFINE(PTYMODE, 0620)
   fi

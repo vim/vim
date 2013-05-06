@@ -826,7 +826,7 @@ gui_shell_closed()
 #endif
 
 /*
- * Set the font.  "font_list" is a a comma separated list of font names.  The
+ * Set the font.  "font_list" is a comma separated list of font names.  The
  * first font name that works is used.  If none is found, use the default
  * font.
  * If "fontset" is TRUE, the "font_list" is used as one name for the fontset.
@@ -2376,7 +2376,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
     {
 	int	start;		/* index of bytes to be drawn */
 	int	cells;		/* cellwidth of bytes to be drawn */
-	int	thislen;	/* length of bytes to be drawin */
+	int	thislen;	/* length of bytes to be drawn */
 	int	cn;		/* cellwidth of current char */
 	int	i;		/* index of current char */
 	int	c;		/* current char value */
@@ -3886,7 +3886,7 @@ gui_drag_scrollbar(sb, value, still_dragging)
 	gui.dragged_sb = SBAR_NONE;
 #ifdef FEAT_GUI_GTK
 	/* Keep the "dragged_wp" value until after the scrolling, for when the
-	 * moust button is released.  GTK2 doesn't send the button-up event. */
+	 * mouse button is released.  GTK2 doesn't send the button-up event. */
 	gui.dragged_wp = NULL;
 #endif
     }

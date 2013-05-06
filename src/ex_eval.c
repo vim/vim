@@ -44,7 +44,7 @@ static char_u	*get_end_emsg __ARGS((struct condstack *cstack));
  * executed.  Otherwise, errors and/or interrupts are converted into catchable
  * exceptions (did_throw additionally set), which terminate the script only if
  * not caught.  For user exceptions, only did_throw is set.  (Note: got_int can
- * be set asyncronously afterwards by a SIGINT, so did_throw && got_int is not
+ * be set asynchronously afterwards by a SIGINT, so did_throw && got_int is not
  * a reliant test that the exception currently being thrown is an interrupt
  * exception.  Similarly, did_emsg can be set afterwards on an error in an
  * (unskipped) conditional command inside an inactive conditional, so did_throw
@@ -2091,11 +2091,11 @@ leave_cleanup(csp)
  * Values used for "searched_cond" are (CSF_WHILE | CSF_FOR) or CSF_TRY or 0,
  * the latter meaning the innermost try conditional not in its finally clause.
  * "inclusive" tells whether the conditional searched for should be made
- * inactive itself (a try conditional not in its finally claused possibly find
+ * inactive itself (a try conditional not in its finally clause possibly find
  * before is always made inactive).  If "inclusive" is TRUE and
  * "searched_cond" is CSF_TRY|CSF_SILENT, the saved former value of
  * "emsg_silent", if reset when the try conditional finally reached was
- * entered, is restored (unsed by ex_endtry()).  This is normally done only
+ * entered, is restored (used by ex_endtry()).  This is normally done only
  * when such a try conditional is left.
  */
     int

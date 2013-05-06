@@ -6069,7 +6069,7 @@ in_id_list(cur_si, list, ssp, contained)
     static int	depth = 0;
     int		r;
 
-    /* If spp has a "containedin" list and "cur_si" is in it, return TRUE. */
+    /* If ssp has a "containedin" list and "cur_si" is in it, return TRUE. */
     if (cur_si != NULL && ssp->cont_in_list != NULL
 					    && !(cur_si->si_flags & HL_MATCH))
     {

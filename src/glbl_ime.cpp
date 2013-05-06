@@ -156,7 +156,7 @@ global_ime_TranslateMessage(CONST MSG *lpMsg)
 }
 
 /*
- * Set position of IME compotision window.
+ * Set position of IME composition window.
  *
  * You have to call this before starting composition.  If once composition
  * started, this can take no effect until that composition have finished.  So

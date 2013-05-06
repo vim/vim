@@ -645,7 +645,7 @@ static void GUIDtochar(const GUID &guid, char *GUID, int length)
     CoTaskMemFree(wGUID);
 }
 
-// Delete a key and all of its descendents
+// Delete a key and all of its descendants
 static void RecursiveDeleteKey(HKEY hKeyParent, const char *child)
 {
     // Open the child
@@ -655,7 +655,7 @@ static void RecursiveDeleteKey(HKEY hKeyParent, const char *child)
     if (result != ERROR_SUCCESS)
 	return;
 
-    // Enumerate all of the decendents of this child
+    // Enumerate all of the descendants of this child
     FILETIME time;
     char buffer[1024];
     DWORD size = 1024;
@@ -663,7 +663,7 @@ static void RecursiveDeleteKey(HKEY hKeyParent, const char *child)
     while (RegEnumKeyEx(hKeyChild, 0, buffer, &size, NULL,
 			NULL, NULL, &time) == S_OK)
     {
-	// Delete the decendents of this child
+	// Delete the descendants of this child
 	RecursiveDeleteKey(hKeyChild, buffer);
 	size = 256;
     }

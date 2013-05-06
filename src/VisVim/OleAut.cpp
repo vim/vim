@@ -654,7 +654,7 @@ void COleAutomationControl::ErrDiag ()
 	}
 
 	char Buf[256];
-	sprintf (Buf, "An OLE error occured:\r\nCode = %s\r\nResult = %lx.",
+	sprintf (Buf, "An OLE error occurred:\r\nCode = %s\r\nResult = %lx.",
 		 (char*) ErrName, m_hResult);
 	MessageBox (NULL, Buf, "OLE Error", MB_OK);
 }

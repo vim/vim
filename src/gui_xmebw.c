@@ -345,7 +345,7 @@ set_pixmap(XmEnhancedButtonWidget eb)
 	    &eb->primitive.top_shadow_color,
 	    &eb->primitive.highlight_color);
 
-    /* Setup color subsititution table. */
+    /* Setup color substitution table. */
     color[0].pixel = eb->core.background_pixel;
     color[1].pixel = eb->core.background_pixel;
     color[2].pixel = eb->core.background_pixel;
@@ -919,8 +919,8 @@ set_size(XmEnhancedButtonWidget newtb)
     }
 
     /*
-     * Plase note that we manipulate the width only in case of push buttons not
-     * used in the context of a menu pane.
+     * Please note that we manipulate the width only in case of push buttons
+     * not used in the context of a menu pane.
      */
     if (Lab_IsMenupane(newtb))
     {
@@ -1006,7 +1006,7 @@ Initialize(Widget rq, Widget ebw, ArgList args UNUSED, Cardinal *n UNUSED)
 	XmString str;
 	set_pixmap(eb);
 
-	/* FIXME: this is not the perfect way to deal with menues, which do not
+	/* FIXME: this is not the perfect way to deal with menus, which do not
 	 * have any string set right now.  */
 	str = XmStringCreateLocalized("");
 	XtVaSetValues((Widget) eb, XmNlabelString, str, NULL);

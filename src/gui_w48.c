@@ -1222,7 +1222,7 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
 
     /* When side scroll bar is unshown, the size of window will change.
      * then, the text area move left or right. thus client rect should be
-     * forcely redraw. (Yasuhiro Matsumoto) */
+     * forcedly redrawn. (Yasuhiro Matsumoto) */
     if (oldx != x || oldy != y)
     {
 	InvalidateRect(s_hwnd, NULL, FALSE);

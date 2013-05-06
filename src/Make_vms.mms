@@ -34,7 +34,7 @@ DECC = YES
 # SMALL  - Few features enabled, as basic as possible
 # NORMAL - A default selection of features enabled
 # BIG    - Many features enabled, as rich as possible. (default)
-# HUGE   - All possible featues enabled.
+# HUGE   - All possible features enabled.
 # Please select one of these alternatives above.
 MODEL = HUGE
 
@@ -55,7 +55,7 @@ MODEL = HUGE
 # Comment out if you want the compiler version with :ver command.
 # NOTE: This part can make some complications if you're using some
 # predefined symbols/flags for your compiler. If does, just leave behind
-# the comment varialbe CCVER.
+# the comment variable CCVER.
 CCVER = YES
 
 # Uncomment if want a debug version. Resulting executable is DVIM.EXE

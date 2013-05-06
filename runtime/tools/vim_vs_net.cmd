@@ -7,12 +7,12 @@
 @rem      Arguments - +$(CurLine) $(ItemPath)
 @rem      Init Dir  - Empty
 @rem
-@rem Coutesy of Brian Sturk
+@rem Courtesy of Brian Sturk
 @rem
 @rem --remote-silent +%1 is a command +954, move ahead 954 lines
 @rem --remote-silent %2 full path to file
 @rem In Vim
-@rem    :h --remote-silent for mor details
+@rem    :h --remote-silent for more details
 @rem
 @rem --servername VS_NET
 @rem This will create a new instance of vim called VS_NET.  So if you

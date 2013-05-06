@@ -3687,7 +3687,7 @@ tabpage_index(ftp)
 
 /*
  * Prepare for leaving the current tab page.
- * When autocomands change "curtab" we don't leave the tab page and return
+ * When autocommands change "curtab" we don't leave the tab page and return
  * FAIL.
  * Careful: When OK is returned need to get a new tab page very very soon!
  */

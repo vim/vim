@@ -418,7 +418,7 @@ MSVCVER = 11.0
 !endif
 !endif
 
-# Abort bulding VIM if version of VC is unrecognised.
+# Abort building VIM if version of VC is unrecognised.
 !ifndef MSVCVER
 !message *** ERROR
 !message Cannot determine Visual C version being used.  If you are using the

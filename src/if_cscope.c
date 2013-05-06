@@ -1192,9 +1192,8 @@ cs_find_common(opt, pat, forceit, verbose, use_ll, cmdline)
     if (nummatches == NULL)
 	return FALSE;
 
-    /* send query to all open connections, then count the total number
-     * of matches so we can alloc matchesp all in one swell foop
-     */
+    /* Send query to all open connections, then count the total number
+     * of matches so we can alloc all in one swell foop. */
     for (i = 0; i < csinfo_size; i++)
 	nummatches[i] = 0;
     totmatches = 0;

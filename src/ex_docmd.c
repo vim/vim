@@ -1093,7 +1093,7 @@ do_cmdline(cmdline, fgetline, cookie, flags)
 		msg_didany = FALSE; /* no output yet */
 		msg_start();
 		msg_scroll = TRUE;  /* put messages below each other */
-		++no_wait_return;   /* dont wait for return until finished */
+		++no_wait_return;   /* don't wait for return until finished */
 		++RedrawingDisabled;
 		did_inc = TRUE;
 	    }
@@ -1298,7 +1298,7 @@ do_cmdline(cmdline, fgetline, cookie, flags)
 	    && !(did_emsg
 #ifdef FEAT_EVAL
 		/* Keep going when inside try/catch, so that the error can be
-		 * dealth with, except when it is a syntax error, it may cause
+		 * deal with, except when it is a syntax error, it may cause
 		 * the :endtry to be missed. */
 		&& (cstack.cs_trylevel == 0 || did_emsg_syntax)
 #endif
@@ -10982,7 +10982,7 @@ ses_put_fname(fd, name, flagp)
 		*p = '/';
     }
 
-    /* escapse special characters */
+    /* escape special characters */
     p = vim_strsave_fnameescape(sname, FALSE);
     vim_free(sname);
     if (p == NULL)

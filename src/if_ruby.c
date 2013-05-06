@@ -113,7 +113,7 @@
 #endif
 
 /*
- * Backward compatiblity for Ruby 1.8 and earlier.
+ * Backward compatibility for Ruby 1.8 and earlier.
  * Ruby 1.9 does not provide STR2CSTR, instead StringValuePtr is provided.
  * Ruby 1.9 does not provide RXXX(s)->len and RXXX(s)->ptr, instead
  * RXXX_LEN(s) and RXXX_PTR(s) are provided.
@@ -1333,7 +1333,7 @@ static void ruby_vim_init(void)
     rb_global_variable(&objtbl);
 
     /* The Vim module used to be called "VIM", but "Vim" is better.  Make an
-     * alias "VIM" for backwards compatiblity. */
+     * alias "VIM" for backwards compatibility. */
     mVIM = rb_define_module("Vim");
     rb_define_const(rb_cObject, "VIM", mVIM);
     rb_define_const(mVIM, "VERSION_MAJOR", INT2NUM(VIM_VERSION_MAJOR));

@@ -118,7 +118,7 @@ mch_write(p, len)
 }
 
 /*
- * mch_inchar(): low level input funcion.
+ * mch_inchar(): low level input function.
  * Get a characters from the keyboard.
  * If time == 0 do not wait for characters.
  * If time == n wait a short time for characters.

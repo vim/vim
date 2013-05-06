@@ -519,7 +519,7 @@ createXpmImages(path, xpm, sen)
 	    &color[TOP_SHADOW].pixel,
 	    &color[HIGHLIGHT].pixel);
 
-    /* Setup the color subsititution table */
+    /* Setup the color substitution table */
     attrs.valuemask = XpmColorSymbols;
     attrs.colorsymbols = color;
     attrs.numsymbols = 5;

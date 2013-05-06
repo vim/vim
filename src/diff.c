@@ -1110,7 +1110,7 @@ ex_diffsplit(eap)
 }
 
 /*
- * Set options to show difs for the current window.
+ * Set options to show diffs for the current window.
  */
     void
 ex_diffthis(eap)

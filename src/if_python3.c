@@ -766,7 +766,7 @@ Python3_Init(void)
 
 	/* Remove the element from sys.path that was added because of our
 	 * argv[0] value in Py3Init_vim().  Previously we used an empty
-	 * string, but dependinding on the OS we then get an empty entry or
+	 * string, but depending on the OS we then get an empty entry or
 	 * the current directory in sys.path.
 	 * Only after vim has been imported, the element does exist in
 	 * sys.path.

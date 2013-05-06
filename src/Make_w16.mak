@@ -4,7 +4,7 @@
 # *************************************************************
 # * WARNING!
 # * This was originally produced by the IDE, but has since been
-# * modifed to make it work properly. Adjust with care!
+# * modified to make it work properly. Adjust with care!
 # * In particular, leave LinkerLocalOptsAtW16_gvim16dexe alone
 # * unless you are a guru.
 # *************************************************************

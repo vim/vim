@@ -45,7 +45,7 @@
 /* Get stat.h or something similar. Comment: How come some OS get in in vim.h */
 # include <sys/stat.h>
 /* && defined(HAVE_CURSE) */
-/* The curses.h from MacOS X provides by default some BACKWARD compatibilty
+/* The curses.h from MacOS X provides by default some BACKWARD compatibility
  * definition which can cause us problem later on. So we undefine a few of them. */
 # include <curses.h>
 # undef reg

@@ -26,7 +26,7 @@
 
 
 /*
- * EnahncedButton class structure.
+ * EnhancedButton class structure.
  */
 typedef struct _XmEnhancedButtonClassPart
 {
@@ -49,7 +49,7 @@ typedef struct
 extern XmEnhancedButtonClassRec xmEnhancedButtonClassRec;
 
 /*
- * EnahncedButton instance record.
+ * EnhancedButton instance record.
  */
 typedef struct _XmEnhancedButtonPart
 {

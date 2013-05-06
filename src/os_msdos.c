@@ -702,7 +702,7 @@ vim_kbhit(void)
  * If Vim should work over the serial line after a 'ctty com1' we must use
  * kbhit() and getch(). (jw)
  * Usually kbhit() is not used, because then CTRL-C and CTRL-P
- * will be catched by DOS (mool).
+ * will be caught by DOS (mool).
  *
  * return TRUE if a character is available, FALSE otherwise
  */
@@ -971,7 +971,7 @@ got3:			    s += 3;
 }
 
 /*
- * mch_inchar(): low level input funcion.
+ * mch_inchar(): low level input function.
  * Get a characters from the keyboard.
  * If time == 0 do not wait for characters.
  * If time == n wait a short time for characters.
@@ -993,7 +993,7 @@ mch_inchar(
 
     /*
      * if we got a ctrl-C when we were busy, there will be a "^C" somewhere
-     * on the sceen, so we need to redisplay it.
+     * on the screen, so we need to redisplay it.
      */
     if (delayed_redraw)
     {
@@ -1745,7 +1745,7 @@ mch_settmode(int tmode)
 mch_setmouse(int on)
 {
     mouse_active = on;
-    mouse_hidden = TRUE;	/* dont show it until moved */
+    mouse_hidden = TRUE;	/* don't show it until moved */
 }
 #endif
 
@@ -2438,7 +2438,7 @@ Win16OpenClipboard(void)
     long    start_time;
     int	    tick_count;
 
-    /* int 02xf, AX = 0x1701 attempts to open the Windows clipboard.  Upon
+    /* int 0x2f, AX = 0x1701 attempts to open the Windows clipboard.  Upon
      * return from the interrupt, if AX is non-zero, the clipboard was
      * successfully opened.  If AX is zero, the clipboard could not be opened
      * because it is currently in use by another process.
@@ -2533,7 +2533,7 @@ Win16EmptyClipboard(void)
 {
     __dpmi_regs  dpmi_regs;
 
-    /* int 02xf, AX = 0x1702 attempts to empty the Windows clipboard.  Upon
+    /* int 0x2f, AX = 0x1702 attempts to empty the Windows clipboard.  Upon
      * return from the interrupt, if AX == 0, the clipboard could not be
      * emptied (for some reason).
      */
@@ -2616,7 +2616,7 @@ Win16GetClipboardData(int clip_data_format)
     case CF_TEXT:		    /* Windows text */
     case CF_OEMTEXT:		    /* DOS (OEM) text */
 
-	/* int 02xf, AX = 0x1704 returns the number of bytes of data currently
+	/* int 0x2f, AX = 0x1704 returns the number of bytes of data currently
 	 * on the Windows clipboard, for the specified format.  Upon return
 	 * from the interrupt, DX:AX = the number of bytes, rounded up to the
 	 * nearest multiple of 32.
@@ -2820,7 +2820,7 @@ Win16SetClipboardData(
 	clip_data_size);		/* how many bytes to copy */
 
     /* Send data from the DOS transfer buffer to the Windows clipboard.
-     * int 02xf, AX = 0x1703 sends SI:CX bytes of data from the buffer
+     * int 0x2f, AX = 0x1703 sends SI:CX bytes of data from the buffer
      * at ES:BX, to the clipboard.
      */
     dpmi_regs.x.ax = 0x1703;			/* send clipboard data */

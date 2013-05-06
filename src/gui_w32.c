@@ -1258,7 +1258,7 @@ gui_mch_prepare(int *argc, char **argv)
 
 #ifdef FEAT_NETBEANS_INTG
     {
-	/* stolen from gui_x11.x */
+	/* stolen from gui_x11.c */
 	int arg;
 
 	for (arg = 1; arg < *argc; arg++)
@@ -1676,7 +1676,7 @@ gui_mch_set_shellsize(int width, int height,
      * used by the taskbar or appbars. */
     get_work_area(&workarea_rect);
 
-    /* Get current posision of our window.  Note that the .left and .top are
+    /* Get current position of our window.  Note that the .left and .top are
      * relative to the work area.  */
     wndpl.length = sizeof(WINDOWPLACEMENT);
     GetWindowPlacement(s_hwnd, &wndpl);
@@ -3100,7 +3100,7 @@ gui_mch_dialog(
 	return -1;
 
     /*
-     * make a copy of 'buttons' to fiddle with it.  complier grizzles because
+     * make a copy of 'buttons' to fiddle with it.  compiler grizzles because
      * vim_strsave() doesn't take a const arg (why not?), so cast away the
      * const.
      */
@@ -4391,7 +4391,7 @@ gui_mch_register_sign(signfile)
     }
 
     sign.hImage = NULL;
-    ext = signfile + STRLEN(signfile) - 4; /* get extention */
+    ext = signfile + STRLEN(signfile) - 4; /* get extension */
     if (ext > signfile)
     {
 	int do_load = 1;

@@ -251,7 +251,7 @@ clean:
 
 # generate GlobalSymbolTable, which speeds up the compile time.
 #
-# A preprocessing stage is used to work arounda bug in the GST generator, in
+# A preprocessing stage is used to work around a bug in the GST generator, in
 # that it does not handle nested makefiles properly in this stage.
 # Ignore error message for not producing any code (105).
 $(GST): scoptions vim.h keymap.h macros.h ascii.h term.h structs.h
@@ -283,7 +283,7 @@ $(PRO): $(GST) vim.h
 .c.pro:
 	$(CC) $(CFLAGS) GPFILE=proto/$*.pro $(PROPT) $*.c
 
-# dependancies
+# dependencies
 blowfish.o:		blowfish.c
 proto/blowfish.pro:	blowfish.c
 buffer.o:		buffer.c

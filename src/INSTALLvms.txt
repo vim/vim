@@ -330,7 +330,7 @@ perl_env :
      Also VMS_JACKETS.EXE from OpenVMS Porting Library.
 
      Please note, that GTK uses /name=(as_is,short)/float=ieee/ieee=denorm
-     complier directives that is not compatible with "standard" VMS usage,
+     compiler directives that is not compatible with "standard" VMS usage,
      therefore other external features might fail as PERL, PYTHON and TCL
      support.
 

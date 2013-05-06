@@ -161,7 +161,7 @@ static PFNGCKLN    s_pfnGetConsoleKeyboardLayoutName = NULL;
 
 #ifndef PROTO
 
-/* Enable common dialogs input unicode from IME if posible. */
+/* Enable common dialogs input unicode from IME if possible. */
 #ifdef FEAT_MBYTE
 LRESULT (WINAPI *pDispatchMessage)(CONST MSG *) = DispatchMessage;
 BOOL (WINAPI *pGetMessage)(LPMSG, HWND, UINT, UINT) = GetMessage;
@@ -1032,7 +1032,7 @@ decode_mouse_event(
 	    DWORD dwLR = (pmer->dwButtonState & LEFT_RIGHT);
 
 	    /* if either left or right button only is pressed, see if the
-	     * the next mouse event has both of them pressed */
+	     * next mouse event has both of them pressed */
 	    if (dwLR == LEFT || dwLR == RIGHT)
 	    {
 		for (;;)

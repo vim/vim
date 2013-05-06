@@ -201,7 +201,7 @@ Trace(char *pszFormat, ...);
 
 #ifndef PROTO
 
-/* Enable common dialogs input unicode from IME if posible. */
+/* Enable common dialogs input unicode from IME if possible. */
 #ifdef FEAT_MBYTE
     /* The variables are defined in os_win32.c. */
 extern LRESULT (WINAPI *pDispatchMessage)(CONST MSG *);

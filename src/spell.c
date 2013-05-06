@@ -4228,7 +4228,7 @@ did_set_spelllang(wp)
     ga_init2(&ga, sizeof(langp_T), 2);
     clear_midword(wp);
 
-    /* Make a copy of 'spellang', the SpellFileMissing autocommands may change
+    /* Make a copy of 'spelllang', the SpellFileMissing autocommands may change
      * it under our fingers. */
     spl_copy = vim_strsave(wp->w_s->b_p_spl);
     if (spl_copy == NULL)
@@ -7645,7 +7645,7 @@ tree_add_word(spin, word, root, flags, region, affixID)
 
 	/* Compress both trees.  Either they both have many nodes, which makes
 	 * compression useful, or one of them is small, which means
-	 * compression goes fast.  But when filling the souldfold word tree
+	 * compression goes fast.  But when filling the soundfold word tree
 	 * there is no keep-case tree. */
 	wordtree_compress(spin, spin->si_foldroot);
 	if (affixID >= 0)
@@ -8671,7 +8671,7 @@ sug_filltree(spin, slang)
     unsigned	words_done = 0;
     int		wordcount[MAXWLEN];
 
-    /* We use si_foldroot for the souldfolded trie. */
+    /* We use si_foldroot for the soundfolded trie. */
     spin->si_foldroot = wordtree_alloc(spin);
     if (spin->si_foldroot == NULL)
 	return FAIL;
@@ -13019,7 +13019,7 @@ score_comp_sal(su)
 
 /*
  * Combine the list of suggestions in su->su_ga and su->su_sga.
- * They are intwined.
+ * They are entwined.
  */
     static void
 score_combine(su)
@@ -13457,7 +13457,7 @@ badword:
 
 		/* Add a small penalty for changing the first letter from
 		 * lower to upper case.  Helps for "tath" -> "Kath", which is
-		 * less common thatn "tath" -> "path".  Don't do it when the
+		 * less common than "tath" -> "path".  Don't do it when the
 		 * letter is the same, that has already been counted. */
 		gc = PTR2CHAR(p);
 		if (SPELL_ISUPPER(gc))

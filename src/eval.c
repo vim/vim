@@ -16669,7 +16669,7 @@ restore_win(save_curwin, save_curtab)
     tabpage_T	*save_curtab;
 {
 #ifdef FEAT_WINDOWS
-    /* Restore current tabpage and window, if still valid (autocomands can
+    /* Restore current tabpage and window, if still valid (autocommands can
      * make them invalid). */
     if (valid_tabpage(save_curtab))
 	goto_tabpage_tp(save_curtab, TRUE);
