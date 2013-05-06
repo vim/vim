@@ -9705,9 +9705,7 @@ unset_global_local_option(name, from)
 {
     struct vimoption *p;
     int		opt_idx;
-
-    buf_T *buf = (buf_T *) from;
-    win_T *win = (win_T *) from;
+    buf_T	*buf = (buf_T *)from;
 
     opt_idx = findoption(name);
     p = &(options[opt_idx]);
@@ -9716,60 +9714,60 @@ unset_global_local_option(name, from)
     {
 	/* global option with local value: use local value if it's been set */
 	case PV_EP:
-	    *buf->b_p_ep = NUL;
+	    clear_string_option(&buf->b_p_ep);
 	    break;
 	case PV_KP:
-	    *buf->b_p_kp = NUL;
+	    clear_string_option(&buf->b_p_kp);
 	    break;
 	case PV_PATH:
-	    *buf->b_p_path = NUL;
+	    clear_string_option(&buf->b_p_path);
 	    break;
 	case PV_AR:
 	    buf->b_p_ar = -1;
 	    break;
 	case PV_TAGS:
-	    *buf->b_p_tags = NUL;
+	    clear_string_option(&buf->b_p_tags);
 	    break;
 #ifdef FEAT_FIND_ID
 	case PV_DEF:
-	    *buf->b_p_def = NUL;
+	    clear_string_option(&buf->b_p_def);
 	    break;
 	case PV_INC:
-	    *buf->b_p_inc = NUL;
+	    clear_string_option(&buf->b_p_inc);
 	    break;
 #endif
 #ifdef FEAT_INS_EXPAND
 	case PV_DICT:
-	    *buf->b_p_dict = NUL;
+	    clear_string_option(&buf->b_p_dict);
 	    break;
 	case PV_TSR:
-	    *buf->b_p_tsr = NUL;
+	    clear_string_option(&buf->b_p_tsr);
 	    break;
 #endif
 #ifdef FEAT_QUICKFIX
 	case PV_EFM:
-	    *buf->b_p_efm = NUL;
+	    clear_string_option(&buf->b_p_efm);
 	    break;
 	case PV_GP:
-	    *buf->b_p_gp = NUL;
+	    clear_string_option(&buf->b_p_gp);
 	    break;
 	case PV_MP:
-	    *buf->b_p_mp = NUL;
+	    clear_string_option(&buf->b_p_mp);
 	    break;
 #endif
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
 	case PV_BEXPR:
-	    *buf->b_p_bexpr = NUL;
+	    clear_string_option(&buf->b_p_bexpr);
 	    break;
 #endif
 #if defined(FEAT_CRYPT)
 	case PV_CM:
-	    *buf->b_p_cm = NUL;
+	    clear_string_option(&buf->b_p_cm);
 	    break;
 #endif
 #ifdef FEAT_STL_OPT
 	case PV_STL:
-	    *win->w_p_stl = NUL;
+	    clear_string_option(&((win_T *)from)->w_p_stl);
 	    break;
 #endif
     }
