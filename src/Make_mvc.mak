@@ -416,6 +416,9 @@ MSVCVER = 11.0
 !if "$(_NMAKE_VER)" == "11.00.51106.1"
 MSVCVER = 11.0
 !endif
+!if "$(_NMAKE_VER)" == "11.00.60315.1"
+MSVCVER = 11.0
+!endif
 !endif
 
 # Abort building VIM if version of VC is unrecognised.
