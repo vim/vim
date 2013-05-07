@@ -3889,6 +3889,8 @@ set_one_cmd_context(xp, buff)
 	case CMD_imap:	    case CMD_inoremap:
 	case CMD_cmap:	    case CMD_cnoremap:
 	case CMD_lmap:	    case CMD_lnoremap:
+	case CMD_smap:	    case CMD_snoremap:
+	case CMD_xmap:	    case CMD_xnoremap:
 	    return set_context_in_map_cmd(xp, cmd, arg, forceit,
 						     FALSE, FALSE, ea.cmdidx);
 	case CMD_unmap:
@@ -3898,6 +3900,8 @@ set_one_cmd_context(xp, buff)
 	case CMD_iunmap:
 	case CMD_cunmap:
 	case CMD_lunmap:
+	case CMD_sunmap:
+	case CMD_xunmap:
 	    return set_context_in_map_cmd(xp, cmd, arg, forceit,
 						      FALSE, TRUE, ea.cmdidx);
 	case CMD_abbreviate:	case CMD_noreabbrev:
