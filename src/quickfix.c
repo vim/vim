@@ -2085,7 +2085,7 @@ qf_age(eap)
 	    if (qi->qf_curlist == 0)
 	    {
 		EMSG(_("E380: At bottom of quickfix stack"));
-		return;
+		break;
 	    }
 	    --qi->qf_curlist;
 	}
@@ -2094,13 +2094,12 @@ qf_age(eap)
 	    if (qi->qf_curlist >= qi->qf_listcount - 1)
 	    {
 		EMSG(_("E381: At top of quickfix stack"));
-		return;
+		break;
 	    }
 	    ++qi->qf_curlist;
 	}
     }
     qf_msg(qi);
-
 }
 
     static void
