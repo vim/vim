@@ -192,6 +192,13 @@ main
     params.window_count = -1;
 #endif
 
+#ifdef FEAT_RUBY
+    {
+	int ruby_stack_start;
+	vim_ruby_init((void *)&ruby_stack_start);
+    }
+#endif
+
 #ifdef FEAT_TCL
     vim_tcl_init(params.argv[0]);
 #endif

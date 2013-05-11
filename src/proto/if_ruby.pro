@@ -6,4 +6,5 @@ void ex_rubydo __ARGS((exarg_T *eap));
 void ex_rubyfile __ARGS((exarg_T *eap));
 void ruby_buffer_free __ARGS((buf_T *buf));
 void ruby_window_free __ARGS((win_T *win));
+void vim_ruby_init __ARGS((void *stack_start));
 /* vim: set ft=c : */
