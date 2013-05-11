@@ -8847,7 +8847,7 @@ get_option_value_strict(name, numval, stringval, opt_type, from)
     void	*from;
 {
     int		opt_idx;
-    char_u	*varp;
+    char_u	*varp = NULL;
     struct vimoption *p;
     int		r = 0;
 
