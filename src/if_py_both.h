@@ -1782,9 +1782,49 @@ CheckWindow(WindowObject *this)
     return 0;
 }
 
+/* Window object
+ */
+
 static int WindowSetattr(PyObject *, char *, PyObject *);
 static PyObject *WindowRepr(PyObject *);
 static PyTypeObject WindowType;
+
+    static PyObject *
+WindowNew(win_T *win)
+{
+    /* We need to handle deletion of windows underneath us.
+     * If we add a "w_python*_ref" field to the win_T structure,
+     * then we can get at it in win_free() in vim. We then
+     * need to create only ONE Python object per window - if
+     * we try to create a second, just INCREF the existing one
+     * and return it. The (single) Python object referring to
+     * the window is stored in "w_python*_ref".
+     * On a win_free() we set the Python object's win_T* field
+     * to an invalid value. We trap all uses of a window
+     * object, and reject them if the win_T* field is invalid.
+     *
+     * Python2 and Python3 get different fields and different objects: 
+     * w_python_ref and w_python3_ref fields respectively.
+     */
+
+    WindowObject *self;
+
+    if (WIN_PYTHON_REF(win))
+    {
+	self = WIN_PYTHON_REF(win);
+	Py_INCREF(self);
+    }
+    else
+    {
+	self = PyObject_NEW(WindowObject, &WindowType);
+	if (self == NULL)
+	    return NULL;
+	self->win = win;
+	WIN_PYTHON_REF(win) = self;
+    }
+
+    return (PyObject *)(self);
+}
 
     static PyObject *
 WindowAttr(WindowObject *this, char *name)
@@ -1809,7 +1849,7 @@ WindowAttr(WindowObject *this, char *name)
 	return OptionsNew(SREQ_WIN, this->win, (checkfun) CheckWindow,
 			(PyObject *) this);
     else if (strcmp(name,"__members__") == 0)
-	return Py_BuildValue("[sssss]", "buffer", "cursor", "height", "vars",
+	return Py_BuildValue("[ssssss]", "buffer", "cursor", "height", "vars",
 		"options");
     else
 	return NULL;
@@ -1821,11 +1861,7 @@ WindowDestructor(PyObject *self)
     WindowObject *this = (WindowObject *)(self);
 
     if (this->win && this->win != INVALID_WINDOW_VALUE)
-#if PY_MAJOR_VERSION >= 3
-	this->win->w_python3_ref = NULL;
-#else
-	this->win->w_python_ref = NULL;
-#endif
+	WIN_PYTHON_REF(this->win) = NULL;
 
     DESTRUCTOR_FINISH(self);
 }
@@ -2756,13 +2792,48 @@ BufferDestructor(PyObject *self)
     BufferObject *this = (BufferObject *)(self);
 
     if (this->buf && this->buf != INVALID_BUFFER_VALUE)
-#if PY_MAJOR_VERSION >= 3
-	this->buf->b_python3_ref = NULL;
-#else
-	this->buf->b_python_ref = NULL;
-#endif
+	BUF_PYTHON_REF(this->buf) = NULL;
 
     DESTRUCTOR_FINISH(self);
+}
+
+    static PyObject *
+BufferNew(buf_T *buf)
+{
+    /* We need to handle deletion of buffers underneath us.
+     * If we add a "b_python*_ref" field to the buf_T structure,
+     * then we can get at it in buf_freeall() in vim. We then
+     * need to create only ONE Python object per buffer - if
+     * we try to create a second, just INCREF the existing one
+     * and return it. The (single) Python object referring to
+     * the buffer is stored in "b_python*_ref".
+     * Question: what to do on a buf_freeall(). We'll probably
+     * have to either delete the Python object (DECREF it to
+     * zero - a bad idea, as it leaves dangling refs!) or
+     * set the buf_T * value to an invalid value (-1?), which
+     * means we need checks in all access functions... Bah.
+     *
+     * Python2 and Python3 get different fields and different objects: 
+     * b_python_ref and b_python3_ref fields respectively.
+     */
+
+    BufferObject *self;
+
+    if (BUF_PYTHON_REF(buf) != NULL)
+    {
+	self = BUF_PYTHON_REF(buf);
+	Py_INCREF(self);
+    }
+    else
+    {
+	self = PyObject_NEW(BufferObject, &BufferType);
+	if (self == NULL)
+	    return NULL;
+	self->buf = buf;
+	BUF_PYTHON_REF(buf) = self;
+    }
+
+    return (PyObject *)(self);
 }
 
     static PyObject *
@@ -2781,6 +2852,30 @@ BufferAttr(BufferObject *this, char *name)
 	return Py_BuildValue("[ssss]", "name", "number", "vars", "options");
     else
 	return NULL;
+}
+
+    static PyInt
+BufferLength(PyObject *self)
+{
+    /* HOW DO WE SIGNAL AN ERROR FROM THIS FUNCTION? */
+    if (CheckBuffer((BufferObject *)(self)))
+	return -1; /* ??? */
+
+    return (PyInt)(((BufferObject *)(self))->buf->b_ml.ml_line_count);
+}
+
+    static PyObject *
+BufferItem(PyObject *self, PyInt n)
+{
+    return RBItem((BufferObject *)(self), n, 1,
+		  (PyInt)((BufferObject *)(self))->buf->b_ml.ml_line_count);
+}
+
+    static PyObject *
+BufferSlice(PyObject *self, PyInt lo, PyInt hi)
+{
+    return RBSlice((BufferObject *)(self), lo, hi, 1,
+		   (PyInt)((BufferObject *)(self))->buf->b_ml.ml_line_count);
 }
 
     static PyObject *

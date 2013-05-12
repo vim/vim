@@ -621,6 +621,9 @@ static int py3initialised = 0;
 
 #define DESTRUCTOR_FINISH(self) Py_TYPE(self)->tp_free((PyObject*)self);
 
+#define WIN_PYTHON_REF(win) win->w_python3_ref
+#define BUF_PYTHON_REF(buf) buf->b_python3_ref
+
     static void
 call_PyObject_Free(void *p)
 {
@@ -1067,44 +1070,8 @@ static PyMappingMethods BufferAsMapping = {
 };
 
 
-/* Buffer object - Definitions
+/* Buffer object
  */
-
-    static PyObject *
-BufferNew(buf_T *buf)
-{
-    /* We need to handle deletion of buffers underneath us.
-     * If we add a "b_python3_ref" field to the buf_T structure,
-     * then we can get at it in buf_freeall() in vim. We then
-     * need to create only ONE Python object per buffer - if
-     * we try to create a second, just INCREF the existing one
-     * and return it. The (single) Python object referring to
-     * the buffer is stored in "b_python3_ref".
-     * Question: what to do on a buf_freeall(). We'll probably
-     * have to either delete the Python object (DECREF it to
-     * zero - a bad idea, as it leaves dangling refs!) or
-     * set the buf_T * value to an invalid value (-1?), which
-     * means we need checks in all access functions... Bah.
-     */
-
-    BufferObject *self;
-
-    if (buf->b_python3_ref != NULL)
-    {
-	self = buf->b_python3_ref;
-	Py_INCREF(self);
-    }
-    else
-    {
-	self = PyObject_NEW(BufferObject, &BufferType);
-	buf->b_python3_ref = self;
-	if (self == NULL)
-	    return NULL;
-	self->buf = buf;
-    }
-
-    return (PyObject *)(self);
-}
 
     static PyObject *
 BufferGetattro(PyObject *self, PyObject*nameobj)
@@ -1131,29 +1098,6 @@ BufferDir(PyObject *self UNUSED, PyObject *args UNUSED)
 }
 
 /******************/
-
-    static Py_ssize_t
-BufferLength(PyObject *self)
-{
-    if (CheckBuffer((BufferObject *)(self)))
-	return -1;
-
-    return (Py_ssize_t)(((BufferObject *)(self))->buf->b_ml.ml_line_count);
-}
-
-    static PyObject *
-BufferItem(PyObject *self, Py_ssize_t n)
-{
-    return RBItem((BufferObject *)(self), n, 1,
-	       (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count);
-}
-
-    static PyObject *
-BufferSlice(PyObject *self, Py_ssize_t lo, Py_ssize_t hi)
-{
-    return RBSlice((BufferObject *)(self), lo, hi, 1,
-	       (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count);
-}
 
     static PyObject *
 BufferSubscript(PyObject *self, PyObject* idx)
@@ -1340,40 +1284,6 @@ static PySequenceMethods BufListAsSeq = {
 
 /* Window object - Implementation
  */
-
-    static PyObject *
-WindowNew(win_T *win)
-{
-    /* We need to handle deletion of windows underneath us.
-     * If we add a "w_python3_ref" field to the win_T structure,
-     * then we can get at it in win_free() in vim. We then
-     * need to create only ONE Python object per window - if
-     * we try to create a second, just INCREF the existing one
-     * and return it. The (single) Python object referring to
-     * the window is stored in "w_python3_ref".
-     * On a win_free() we set the Python object's win_T* field
-     * to an invalid value. We trap all uses of a window
-     * object, and reject them if the win_T* field is invalid.
-     */
-
-    WindowObject *self;
-
-    if (win->w_python3_ref)
-    {
-	self = win->w_python3_ref;
-	Py_INCREF(self);
-    }
-    else
-    {
-	self = PyObject_NEW(WindowObject, &WindowType);
-	if (self == NULL)
-	    return NULL;
-	self->win = win;
-	win->w_python3_ref = self;
-    }
-
-    return (PyObject *)(self);
-}
 
     static PyObject *
 WindowGetattro(PyObject *self, PyObject *nameobj)
@@ -1575,11 +1485,11 @@ FunctionGetattro(PyObject *self, PyObject *nameobj)
     void
 python3_buffer_free(buf_T *buf)
 {
-    if (buf->b_python3_ref != NULL)
+    if (BUF_PYTHON_REF(buf) != NULL)
     {
-	BufferObject *bp = buf->b_python3_ref;
+	BufferObject *bp = BUF_PYTHON_REF(buf);
 	bp->buf = INVALID_BUFFER_VALUE;
-	buf->b_python3_ref = NULL;
+	BUF_PYTHON_REF(buf) = NULL;
     }
 }
 
@@ -1587,11 +1497,11 @@ python3_buffer_free(buf_T *buf)
     void
 python3_window_free(win_T *win)
 {
-    if (win->w_python3_ref != NULL)
+    if (WIN_PYTHON_REF(win) != NULL)
     {
-	WindowObject *wp = win->w_python3_ref;
+	WindowObject *wp = WIN_PYTHON_REF(win);
 	wp->win = INVALID_WINDOW_VALUE;
-	win->w_python3_ref = NULL;
+	WIN_PYTHON_REF(win) = NULL;
     }
 }
 #endif
