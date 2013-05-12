@@ -6731,3 +6731,20 @@ get_match(wp, id)
     return cur;
 }
 #endif
+
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) || defined(PROTO)
+    int
+get_win_number(win_T *wp)
+{
+    int		i = 1;
+    win_T	*w;
+
+    for (w = firstwin; w != NULL && w != wp; w = W_NEXT(w))
+	++i;
+
+    if (w == NULL)
+	return 0;
+    else
+	return i;
+}
+#endif

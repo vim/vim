@@ -74,4 +74,5 @@ int match_add __ARGS((win_T *wp, char_u *grp, char_u *pat, int prio, int id));
 int match_delete __ARGS((win_T *wp, int id, int perr));
 void clear_matches __ARGS((win_T *wp));
 matchitem_T *get_match __ARGS((win_T *wp, int id));
+int get_win_number __ARGS((win_T *wp));
 /* vim: set ft=c : */

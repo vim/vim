@@ -396,6 +396,10 @@ Window attributes are:
 				|python-options|. If option is |global-local| 
 				and local value is missing getting it will 
 				return None.
+	number (read-only)	Window number.  The first window has number 1.
+				This is zero in case it cannot be determined
+				(e.g. when the window object belongs to other
+				tab page).
 The height attribute is writable only if the screen is split horizontally.
 The width attribute is writable only if the screen is split vertically.
 

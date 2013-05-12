@@ -1848,9 +1848,11 @@ WindowAttr(WindowObject *this, char *name)
     else if (strcmp(name, "options") == 0)
 	return OptionsNew(SREQ_WIN, this->win, (checkfun) CheckWindow,
 			(PyObject *) this);
+    else if (strcmp(name, "number") == 0)
+	return PyLong_FromLong((long) get_win_number(this->win));
     else if (strcmp(name,"__members__") == 0)
 	return Py_BuildValue("[ssssss]", "buffer", "cursor", "height", "vars",
-		"options");
+		"options", "number");
     else
 	return NULL;
 }
@@ -1974,17 +1976,13 @@ WindowRepr(PyObject *self)
     }
     else
     {
-	int	i = 0;
-	win_T	*w;
+	int	w = get_win_number(this->win);
 
-	for (w = firstwin; w != NULL && w != this->win; w = W_NEXT(w))
-	    ++i;
-
-	if (w == NULL)
+	if (w == 0)
 	    vim_snprintf(repr, 100, _("<window object (unknown) at %p>"),
 								      (self));
 	else
-	    vim_snprintf(repr, 100, _("<window %d>"), i);
+	    vim_snprintf(repr, 100, _("<window %d>"), w - 1);
 
 	return PyString_FromString(repr);
     }
