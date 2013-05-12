@@ -158,108 +158,112 @@ static void error_print(int);
 static void ruby_io_init(void);
 static void ruby_vim_init(void);
 
-#if defined(DYNAMIC_RUBY) || defined(PROTO)
-#ifdef PROTO
-# define HINSTANCE int		/* for generating prototypes */
+#if defined(__ia64) && !defined(ruby_init_stack)
+# define ruby_init_stack(addr) ruby_init_stack((addr), rb_ia64_bsp())
 #endif
+
+#if defined(DYNAMIC_RUBY) || defined(PROTO)
+# ifdef PROTO
+#  define HINSTANCE int		/* for generating prototypes */
+# endif
 
 /*
  * Wrapper defines
  */
-#define rb_assoc_new			dll_rb_assoc_new
-#define rb_cObject			(*dll_rb_cObject)
-#define rb_check_type			dll_rb_check_type
-#define rb_class_path			dll_rb_class_path
-#define rb_data_object_alloc		dll_rb_data_object_alloc
-#define rb_define_class_under		dll_rb_define_class_under
-#define rb_define_const			dll_rb_define_const
-#define rb_define_global_function	dll_rb_define_global_function
-#define rb_define_method		dll_rb_define_method
-#define rb_define_module		dll_rb_define_module
-#define rb_define_module_function	dll_rb_define_module_function
-#define rb_define_singleton_method	dll_rb_define_singleton_method
-#define rb_define_virtual_variable	dll_rb_define_virtual_variable
-#define rb_stdout			(*dll_rb_stdout)
-#define rb_eArgError			(*dll_rb_eArgError)
-#define rb_eIndexError			(*dll_rb_eIndexError)
-#define rb_eRuntimeError		(*dll_rb_eRuntimeError)
-#define rb_eStandardError		(*dll_rb_eStandardError)
-#define rb_eval_string_protect		dll_rb_eval_string_protect
-#define rb_global_variable		dll_rb_global_variable
-#define rb_hash_aset			dll_rb_hash_aset
-#define rb_hash_new			dll_rb_hash_new
-#define rb_inspect			dll_rb_inspect
-#define rb_int2inum			dll_rb_int2inum
-#if SIZEOF_INT < SIZEOF_LONG /* 64 bits only */
-#define rb_fix2int			dll_rb_fix2int
-#define rb_num2int			dll_rb_num2int
-#define rb_num2uint			dll_rb_num2uint
-#endif
-#define rb_lastline_get			dll_rb_lastline_get
-#define rb_lastline_set			dll_rb_lastline_set
-#define rb_load_protect			dll_rb_load_protect
-#ifndef RUBY19_OR_LATER
-#define rb_num2long			dll_rb_num2long
-#endif
-#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER <= 19
-#define rb_num2ulong			dll_rb_num2ulong
-#endif
-#define rb_obj_alloc			dll_rb_obj_alloc
-#define rb_obj_as_string		dll_rb_obj_as_string
-#define rb_obj_id			dll_rb_obj_id
-#define rb_raise			dll_rb_raise
-#define rb_str_cat			dll_rb_str_cat
-#define rb_str_concat			dll_rb_str_concat
-#define rb_str_new			dll_rb_str_new
-#ifdef rb_str_new2
+# define rb_assoc_new			dll_rb_assoc_new
+# define rb_cObject			(*dll_rb_cObject)
+# define rb_check_type			dll_rb_check_type
+# define rb_class_path			dll_rb_class_path
+# define rb_data_object_alloc		dll_rb_data_object_alloc
+# define rb_define_class_under		dll_rb_define_class_under
+# define rb_define_const			dll_rb_define_const
+# define rb_define_global_function	dll_rb_define_global_function
+# define rb_define_method		dll_rb_define_method
+# define rb_define_module		dll_rb_define_module
+# define rb_define_module_function	dll_rb_define_module_function
+# define rb_define_singleton_method	dll_rb_define_singleton_method
+# define rb_define_virtual_variable	dll_rb_define_virtual_variable
+# define rb_stdout			(*dll_rb_stdout)
+# define rb_eArgError			(*dll_rb_eArgError)
+# define rb_eIndexError			(*dll_rb_eIndexError)
+# define rb_eRuntimeError		(*dll_rb_eRuntimeError)
+# define rb_eStandardError		(*dll_rb_eStandardError)
+# define rb_eval_string_protect		dll_rb_eval_string_protect
+# define rb_global_variable		dll_rb_global_variable
+# define rb_hash_aset			dll_rb_hash_aset
+# define rb_hash_new			dll_rb_hash_new
+# define rb_inspect			dll_rb_inspect
+# define rb_int2inum			dll_rb_int2inum
+# if SIZEOF_INT < SIZEOF_LONG /* 64 bits only */
+#  define rb_fix2int			dll_rb_fix2int
+#  define rb_num2int			dll_rb_num2int
+#  define rb_num2uint			dll_rb_num2uint
+# endif
+# define rb_lastline_get			dll_rb_lastline_get
+# define rb_lastline_set			dll_rb_lastline_set
+# define rb_load_protect			dll_rb_load_protect
+# ifndef RUBY19_OR_LATER
+#  define rb_num2long			dll_rb_num2long
+# endif
+# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER <= 19
+#  define rb_num2ulong			dll_rb_num2ulong
+# endif
+# define rb_obj_alloc			dll_rb_obj_alloc
+# define rb_obj_as_string		dll_rb_obj_as_string
+# define rb_obj_id			dll_rb_obj_id
+# define rb_raise			dll_rb_raise
+# define rb_str_cat			dll_rb_str_cat
+# define rb_str_concat			dll_rb_str_concat
+# define rb_str_new			dll_rb_str_new
+# ifdef rb_str_new2
 /* Ruby may #define rb_str_new2 to use rb_str_new_cstr. */
-# define need_rb_str_new_cstr 1
+#  define need_rb_str_new_cstr 1
 /* Ruby's headers #define rb_str_new_cstr to make use of GCC's
  * __builtin_constant_p extension. */
-# undef rb_str_new_cstr
-# define rb_str_new_cstr		dll_rb_str_new_cstr
-#else
-# define rb_str_new2			dll_rb_str_new2
-#endif
-#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
-# define rb_string_value		dll_rb_string_value
-# define rb_string_value_ptr		dll_rb_string_value_ptr
-# define rb_float_new			dll_rb_float_new
-# define rb_ary_new			dll_rb_ary_new
-# define rb_ary_push			dll_rb_ary_push
-# ifdef __ia64
-#  define rb_ia64_bsp		dll_rb_ia64_bsp
-#  undef ruby_init_stack
-#  define ruby_init_stack(addr)	dll_ruby_init_stack((addr), rb_ia64_bsp())
+#  undef rb_str_new_cstr
+#  define rb_str_new_cstr		dll_rb_str_new_cstr
 # else
-#  define ruby_init_stack	dll_ruby_init_stack
+#  define rb_str_new2			dll_rb_str_new2
 # endif
-#else
-# define rb_str2cstr			dll_rb_str2cstr
-#endif
-#ifdef RUBY19_OR_LATER
-# define rb_errinfo			dll_rb_errinfo
-#else
-# define ruby_errinfo			(*dll_ruby_errinfo)
-#endif
-#define ruby_init			dll_ruby_init
-#define ruby_init_loadpath		dll_ruby_init_loadpath
-#ifdef WIN3264
-# define NtInitialize			dll_NtInitialize
 # if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
-#  define rb_w32_snprintf		dll_rb_w32_snprintf
+#  define rb_string_value		dll_rb_string_value
+#  define rb_string_value_ptr		dll_rb_string_value_ptr
+#  define rb_float_new			dll_rb_float_new
+#  define rb_ary_new			dll_rb_ary_new
+#  define rb_ary_push			dll_rb_ary_push
+#  ifdef __ia64
+#   define rb_ia64_bsp		dll_rb_ia64_bsp
+#   undef ruby_init_stack
+#   define ruby_init_stack(addr)	dll_ruby_init_stack((addr), rb_ia64_bsp())
+#  else
+#   define ruby_init_stack	dll_ruby_init_stack
+#  endif
+# else
+#  define rb_str2cstr			dll_rb_str2cstr
 # endif
-#endif
+# ifdef RUBY19_OR_LATER
+#  define rb_errinfo			dll_rb_errinfo
+# else
+#  define ruby_errinfo			(*dll_ruby_errinfo)
+# endif
+# define ruby_init			dll_ruby_init
+# define ruby_init_loadpath		dll_ruby_init_loadpath
+# ifdef WIN3264
+#  define NtInitialize			dll_NtInitialize
+#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
+#   define rb_w32_snprintf		dll_rb_w32_snprintf
+#  endif
+# endif
 
-#ifdef RUBY19_OR_LATER
-# define ruby_script			dll_ruby_script
-# define rb_enc_find_index		dll_rb_enc_find_index
-# define rb_enc_find			dll_rb_enc_find
-# define rb_enc_str_new			dll_rb_enc_str_new
-# define rb_sprintf			dll_rb_sprintf
-# define rb_require			dll_rb_require
-# define ruby_process_options		dll_ruby_process_options
-#endif
+# ifdef RUBY19_OR_LATER
+#  define ruby_script			dll_ruby_script
+#  define rb_enc_find_index		dll_rb_enc_find_index
+#  define rb_enc_find			dll_rb_enc_find
+#  define rb_enc_str_new			dll_rb_enc_str_new
+#  define rb_sprintf			dll_rb_sprintf
+#  define rb_require			dll_rb_require
+#  define ruby_process_options		dll_ruby_process_options
+# endif
 
 /*
  * Pointers for dynamic link
@@ -267,9 +271,9 @@ static void ruby_vim_init(void);
 static VALUE (*dll_rb_assoc_new) (VALUE, VALUE);
 VALUE *dll_rb_cFalseClass;
 VALUE *dll_rb_cFixnum;
-#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
+# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
 VALUE *dll_rb_cFloat;
-#endif
+# endif
 VALUE *dll_rb_cNilClass;
 static VALUE *dll_rb_cObject;
 VALUE *dll_rb_cSymbol;
@@ -296,11 +300,11 @@ static VALUE (*dll_rb_hash_aset) (VALUE, VALUE, VALUE);
 static VALUE (*dll_rb_hash_new) (void);
 static VALUE (*dll_rb_inspect) (VALUE);
 static VALUE (*dll_rb_int2inum) (long);
-#if SIZEOF_INT < SIZEOF_LONG /* 64 bits only */
+# if SIZEOF_INT < SIZEOF_LONG /* 64 bits only */
 static long (*dll_rb_fix2int) (VALUE);
 static long (*dll_rb_num2int) (VALUE);
 static unsigned long (*dll_rb_num2uint) (VALUE);
-#endif
+# endif
 static VALUE (*dll_rb_lastline_get) (void);
 static void (*dll_rb_lastline_set) (VALUE);
 static void (*dll_rb_load_protect) (VALUE, int, int*);
@@ -310,50 +314,50 @@ static VALUE (*dll_rb_obj_alloc) (VALUE);
 static VALUE (*dll_rb_obj_as_string) (VALUE);
 static VALUE (*dll_rb_obj_id) (VALUE);
 static void (*dll_rb_raise) (VALUE, const char*, ...);
-#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
+# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
 static VALUE (*dll_rb_string_value) (volatile VALUE*);
-#else
+# else
 static char *(*dll_rb_str2cstr) (VALUE,int*);
-#endif
+# endif
 static VALUE (*dll_rb_str_cat) (VALUE, const char*, long);
 static VALUE (*dll_rb_str_concat) (VALUE, VALUE);
 static VALUE (*dll_rb_str_new) (const char*, long);
-#ifdef need_rb_str_new_cstr
+# ifdef need_rb_str_new_cstr
 /* Ruby may #define rb_str_new2 to use rb_str_new_cstr. */
 static VALUE (*dll_rb_str_new_cstr) (const char*);
-#else
+# else
 static VALUE (*dll_rb_str_new2) (const char*);
-#endif
-#ifdef RUBY19_OR_LATER
+# endif
+# ifdef RUBY19_OR_LATER
 static VALUE (*dll_rb_errinfo) (void);
-#else
+# else
 static VALUE *dll_ruby_errinfo;
-#endif
+# endif
 static void (*dll_ruby_init) (void);
 static void (*dll_ruby_init_loadpath) (void);
-#ifdef WIN3264
+# ifdef WIN3264
 static void (*dll_NtInitialize) (int*, char***);
-# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
+#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
 static int (*dll_rb_w32_snprintf)(char*, size_t, const char*, ...);
+#  endif
 # endif
-#endif
-#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
+# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
 static char * (*dll_rb_string_value_ptr) (volatile VALUE*);
 static VALUE (*dll_rb_float_new) (double);
 static VALUE (*dll_rb_ary_new) (void);
 static VALUE (*dll_rb_ary_push) (VALUE, VALUE);
-# ifdef __ia64
+#  ifdef __ia64
 static void * (*dll_rb_ia64_bsp) (void);
 static void (*dll_ruby_init_stack)(VALUE*, void*);
-# else
+#  else
 static void (*dll_ruby_init_stack)(VALUE*);
+#  endif
 # endif
-#endif
-#ifdef RUBY19_OR_LATER
+# ifdef RUBY19_OR_LATER
 static VALUE (*dll_rb_int2big)(SIGNED_VALUE);
-#endif
+# endif
 
-#ifdef RUBY19_OR_LATER
+# ifdef RUBY19_OR_LATER
 static void (*dll_ruby_script) (const char*);
 static int (*dll_rb_enc_find_index) (const char*);
 static rb_encoding* (*dll_rb_enc_find) (const char*);
@@ -361,9 +365,9 @@ static VALUE (*dll_rb_enc_str_new) (const char*, long, rb_encoding*);
 static VALUE (*dll_rb_sprintf) (const char*, ...);
 static VALUE (*dll_rb_require) (const char*);
 static void* (*ruby_process_options)(int, char**);
-#endif
+# endif
 
-#if defined(RUBY19_OR_LATER) && !defined(PROTO)
+# if defined(RUBY19_OR_LATER) && !defined(PROTO)
 SIGNED_VALUE rb_num2long_stub(VALUE x)
 {
     return dll_rb_num2long(x);
@@ -372,7 +376,7 @@ VALUE rb_int2big_stub(SIGNED_VALUE x)
 {
     return dll_rb_int2big(x);
 }
-#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20 \
+#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20 \
 	&& SIZEOF_INT < SIZEOF_LONG
 long rb_fix2int_stub(VALUE x)
 {
@@ -382,8 +386,8 @@ long rb_num2int_stub(VALUE x)
 {
     return dll_rb_num2int(x);
 }
-#endif
-#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
+#  endif
+#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
 VALUE
 rb_float_new_in_heap(double d)
 {
@@ -393,8 +397,8 @@ VALUE rb_num2ulong(VALUE x)
 {
     return (long)RSHIFT((SIGNED_VALUE)(x),1);
 }
-#endif
-#endif
+#  endif
+# endif
 
 static HINSTANCE hinstRuby = NULL; /* Instance of ruby.dll */
 
@@ -410,9 +414,9 @@ static struct
     {"rb_assoc_new", (RUBY_PROC*)&dll_rb_assoc_new},
     {"rb_cFalseClass", (RUBY_PROC*)&dll_rb_cFalseClass},
     {"rb_cFixnum", (RUBY_PROC*)&dll_rb_cFixnum},
-#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
+# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
     {"rb_cFloat", (RUBY_PROC*)&dll_rb_cFloat},
-#endif
+# endif
     {"rb_cNilClass", (RUBY_PROC*)&dll_rb_cNilClass},
     {"rb_cObject", (RUBY_PROC*)&dll_rb_cObject},
     {"rb_cSymbol", (RUBY_PROC*)&dll_rb_cSymbol},
@@ -439,11 +443,11 @@ static struct
     {"rb_hash_new", (RUBY_PROC*)&dll_rb_hash_new},
     {"rb_inspect", (RUBY_PROC*)&dll_rb_inspect},
     {"rb_int2inum", (RUBY_PROC*)&dll_rb_int2inum},
-#if SIZEOF_INT < SIZEOF_LONG /* 64 bits only */
+# if SIZEOF_INT < SIZEOF_LONG /* 64 bits only */
     {"rb_fix2int", (RUBY_PROC*)&dll_rb_fix2int},
     {"rb_num2int", (RUBY_PROC*)&dll_rb_num2int},
     {"rb_num2uint", (RUBY_PROC*)&dll_rb_num2uint},
-#endif
+# endif
     {"rb_lastline_get", (RUBY_PROC*)&dll_rb_lastline_get},
     {"rb_lastline_set", (RUBY_PROC*)&dll_rb_lastline_set},
     {"rb_load_protect", (RUBY_PROC*)&dll_rb_load_protect},
@@ -453,53 +457,53 @@ static struct
     {"rb_obj_as_string", (RUBY_PROC*)&dll_rb_obj_as_string},
     {"rb_obj_id", (RUBY_PROC*)&dll_rb_obj_id},
     {"rb_raise", (RUBY_PROC*)&dll_rb_raise},
-#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
+# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
     {"rb_string_value", (RUBY_PROC*)&dll_rb_string_value},
-#else
+# else
     {"rb_str2cstr", (RUBY_PROC*)&dll_rb_str2cstr},
-#endif
+# endif
     {"rb_str_cat", (RUBY_PROC*)&dll_rb_str_cat},
     {"rb_str_concat", (RUBY_PROC*)&dll_rb_str_concat},
     {"rb_str_new", (RUBY_PROC*)&dll_rb_str_new},
-#ifdef need_rb_str_new_cstr
+# ifdef need_rb_str_new_cstr
     {"rb_str_new_cstr", (RUBY_PROC*)&dll_rb_str_new_cstr},
-#else
+# else
     {"rb_str_new2", (RUBY_PROC*)&dll_rb_str_new2},
-#endif
-#ifdef RUBY19_OR_LATER
+# endif
+# ifdef RUBY19_OR_LATER
     {"rb_errinfo", (RUBY_PROC*)&dll_rb_errinfo},
-#else
+# else
     {"ruby_errinfo", (RUBY_PROC*)&dll_ruby_errinfo},
-#endif
+# endif
     {"ruby_init", (RUBY_PROC*)&dll_ruby_init},
     {"ruby_init_loadpath", (RUBY_PROC*)&dll_ruby_init_loadpath},
-#ifdef WIN3264
+# ifdef WIN3264
     {
-# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER < 19
+#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER < 19
     "NtInitialize",
-# else
+#  else
     "ruby_sysinit",
-# endif
+#  endif
 			(RUBY_PROC*)&dll_NtInitialize},
-# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
+#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
     {"rb_w32_snprintf", (RUBY_PROC*)&dll_rb_w32_snprintf},
+#  endif
 # endif
-#endif
-#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
+# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
     {"rb_string_value_ptr", (RUBY_PROC*)&dll_rb_string_value_ptr},
-# ifdef __ia64
+#  ifdef __ia64
     {"rb_ia64_bsp", (RUBY_PROC*)&dll_rb_ia64_bsp},
-# endif
+#  endif
     {"ruby_init_stack", (RUBY_PROC*)&dll_ruby_init_stack},
-# if DYNAMIC_RUBY_VER <= 19
+#  if DYNAMIC_RUBY_VER <= 19
     {"rb_float_new", (RUBY_PROC*)&dll_rb_float_new},
-# else
+#  else
     {"rb_float_new_in_heap", (RUBY_PROC*)&dll_rb_float_new},
-# endif
+#  endif
     {"rb_ary_new", (RUBY_PROC*)&dll_rb_ary_new},
     {"rb_ary_push", (RUBY_PROC*)&dll_rb_ary_push},
-#endif
-#ifdef RUBY19_OR_LATER
+# endif
+# ifdef RUBY19_OR_LATER
     {"rb_int2big", (RUBY_PROC*)&dll_rb_int2big},
     {"ruby_script", (RUBY_PROC*)&dll_ruby_script},
     {"rb_enc_find_index", (RUBY_PROC*)&dll_rb_enc_find_index},
@@ -508,7 +512,7 @@ static struct
     {"rb_sprintf", (RUBY_PROC*)&dll_rb_sprintf},
     {"rb_require", (RUBY_PROC*)&dll_rb_require},
     {"ruby_process_options", (RUBY_PROC*)&dll_ruby_process_options},
-#endif
+# endif
     {"", NULL},
 };
 
