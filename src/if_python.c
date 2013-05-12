@@ -1073,17 +1073,13 @@ BufferGetattr(PyObject *self, char *name)
     static PyInt
 BufferAssItem(PyObject *self, PyInt n, PyObject *val)
 {
-    return RBAsItem((BufferObject *)(self), n, val, 1,
-		     (PyInt)((BufferObject *)(self))->buf->b_ml.ml_line_count,
-		     NULL);
+    return RBAsItem((BufferObject *)(self), n, val, 1, -1, NULL);
 }
 
     static PyInt
 BufferAssSlice(PyObject *self, PyInt lo, PyInt hi, PyObject *val)
 {
-    return RBAsSlice((BufferObject *)(self), lo, hi, val, 1,
-		      (PyInt)((BufferObject *)(self))->buf->b_ml.ml_line_count,
-		      NULL);
+    return RBAsSlice((BufferObject *)(self), lo, hi, val, 1, -1, NULL);
 }
 
 static PySequenceMethods RangeAsSeq = {

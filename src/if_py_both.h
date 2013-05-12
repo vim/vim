@@ -2391,6 +2391,9 @@ RBItem(BufferObject *self, PyInt n, PyInt start, PyInt end)
     if (CheckBuffer(self))
 	return NULL;
 
+    if (end == -1)
+	end = self->buf->b_ml.ml_line_count;
+
     if (n < 0 || n > end - start)
     {
 	PyErr_SetString(PyExc_IndexError, _("line number out of range"));
@@ -2407,6 +2410,9 @@ RBSlice(BufferObject *self, PyInt lo, PyInt hi, PyInt start, PyInt end)
 
     if (CheckBuffer(self))
 	return NULL;
+
+    if (end == -1)
+	end = self->buf->b_ml.ml_line_count;
 
     size = end - start + 1;
 
@@ -2432,6 +2438,9 @@ RBAsItem(BufferObject *self, PyInt n, PyObject *val, PyInt start, PyInt end, PyI
     if (CheckBuffer(self))
 	return -1;
 
+    if (end == -1)
+	end = self->buf->b_ml.ml_line_count;
+
     if (n < 0 || n > end - start)
     {
 	PyErr_SetString(PyExc_IndexError, _("line number out of range"));
@@ -2456,6 +2465,9 @@ RBAsSlice(BufferObject *self, PyInt lo, PyInt hi, PyObject *val, PyInt start, Py
     /* Self must be a valid buffer */
     if (CheckBuffer(self))
 	return -1;
+
+    if (end == -1)
+	end = self->buf->b_ml.ml_line_count;
 
     /* Sort out the slice range */
     size = end - start + 1;
@@ -2492,6 +2504,9 @@ RBAppend(BufferObject *self, PyObject *args, PyInt start, PyInt end, PyInt *new_
 
     if (CheckBuffer(self))
 	return NULL;
+
+    if (end == -1)
+	end = self->buf->b_ml.ml_line_count;
 
     max = n = end - start + 1;
 
@@ -2700,15 +2715,13 @@ BufferLength(PyObject *self)
     static PyObject *
 BufferItem(PyObject *self, PyInt n)
 {
-    return RBItem((BufferObject *)(self), n, 1,
-		  (PyInt)((BufferObject *)(self))->buf->b_ml.ml_line_count);
+    return RBItem((BufferObject *)(self), n, 1, -1);
 }
 
     static PyObject *
 BufferSlice(PyObject *self, PyInt lo, PyInt hi)
 {
-    return RBSlice((BufferObject *)(self), lo, hi, 1,
-		   (PyInt)((BufferObject *)(self))->buf->b_ml.ml_line_count);
+    return RBSlice((BufferObject *)(self), lo, hi, 1, -1);
 }
 
     static PyObject *
@@ -2732,9 +2745,7 @@ BufferAttr(BufferObject *this, char *name)
     static PyObject *
 BufferAppend(PyObject *self, PyObject *args)
 {
-    return RBAppend((BufferObject *)(self), args, 1,
-		    (PyInt)((BufferObject *)(self))->buf->b_ml.ml_line_count,
-		    NULL);
+    return RBAppend((BufferObject *)(self), args, 1, -1, NULL);
 }
 
     static PyObject *

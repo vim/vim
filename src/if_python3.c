@@ -1110,6 +1110,9 @@ BufferSubscript(PyObject *self, PyObject* idx)
     {
 	Py_ssize_t start, stop, step, slicelen;
 
+	if (CheckBuffer((BufferObject *) self))
+	    return NULL;
+
 	if (PySlice_GetIndicesEx((PyObject *)idx,
 	      (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count+1,
 	      &start, &stop,
@@ -1138,6 +1141,9 @@ BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val)
     } else if (PySlice_Check(idx))
     {
 	Py_ssize_t start, stop, step, slicelen;
+
+	if (CheckBuffer((BufferObject *) self))
+	    return -1;
 
 	if (PySlice_GetIndicesEx((PyObject *)idx,
 	      (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count+1,
