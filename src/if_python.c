@@ -1019,9 +1019,6 @@ static int ConvertFromPyObject(PyObject *, typval_T *);
 
 #define BufferType_Check(obj) ((obj)->ob_type == &BufferType)
 
-static PyInt BufferLength(PyObject *);
-static PyObject *BufferItem(PyObject *, PyInt);
-static PyObject *BufferSlice(PyObject *, PyInt, PyInt);
 static PyInt BufferAssItem(PyObject *, PyInt, PyObject *);
 static PyInt BufferAssSlice(PyObject *, PyInt, PyInt, PyObject *);
 
