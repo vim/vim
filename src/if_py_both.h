@@ -1839,9 +1839,15 @@ WindowAttr(WindowObject *this, char *name)
     }
     else if (strcmp(name, "height") == 0)
 	return PyLong_FromLong((long)(this->win->w_height));
+#ifdef FEAT_WINDOWS
+    else if (strcmp(name, "row") == 0)
+	return PyLong_FromLong((long)(this->win->w_winrow));
+#endif
 #ifdef FEAT_VERTSPLIT
     else if (strcmp(name, "width") == 0)
 	return PyLong_FromLong((long)(W_WIDTH(this->win)));
+    else if (strcmp(name, "col") == 0)
+	return PyLong_FromLong((long)(W_WINCOL(this->win)));
 #endif
     else if (strcmp(name, "vars") == 0)
 	return DictionaryNew(this->win->w_vars);
@@ -1851,8 +1857,8 @@ WindowAttr(WindowObject *this, char *name)
     else if (strcmp(name, "number") == 0)
 	return PyLong_FromLong((long) get_win_number(this->win));
     else if (strcmp(name,"__members__") == 0)
-	return Py_BuildValue("[ssssss]", "buffer", "cursor", "height", "vars",
-		"options", "number");
+	return Py_BuildValue("[ssssssss]", "buffer", "cursor", "height", "vars",
+		"options", "number", "row", "col");
     else
 	return NULL;
 }
