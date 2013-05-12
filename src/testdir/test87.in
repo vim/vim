@@ -444,9 +444,50 @@ EOF
 :       endtry
 :   endfor
 :   call RecVars(oname)
-endtry
 :endfor
 :only
+:"
+:" Test buffer object
+:vnew
+:put ='First line'
+:put ='Second line'
+:put ='Third line'
+:1 delete _
+:py3 b=vim.current.buffer
+:wincmd w
+:mark a
+py3 << EOF
+cb = vim.current.buffer
+# Tests BufferAppend and BufferItem
+cb.append(b[0])
+# Tests BufferSlice and BufferAssSlice
+cb.append('abc') # Will be overwritten
+cb[-1:] = b[:-2]
+# Test BufferLength and BufferAssSlice
+cb.append('def') # Will not be overwritten
+cb[len(cb):] = b[:]
+# Test BufferAssItem and BufferMark
+cb.append('ghi') # Will be overwritten
+cb[-1] = repr((len(cb) - cb.mark('a')[0], cb.mark('a')[1]))
+# Test BufferRepr
+cb.append(repr(cb) + repr(b))
+# Modify foreign buffer
+b.append('foo')
+b[0]='bar'
+b[0:0]=['baz']
+vim.command('call append("$", getbufline(%i, 1, "$"))' % b.number)
+# Test CheckBuffer
+vim.command('bwipeout! ' + str(b.number))
+for expr in ('b[1]','b[:] = ["A", "B"]','b[:]','b.append("abc")'):
+    try:
+        exec(expr)
+    except vim.error:
+        pass
+    else:
+        # Usually a SEGV here
+        # Should not happen in any case
+        cb.append('No exception for ' + expr)
+EOF
 :endfun
 :"
 :call Test()

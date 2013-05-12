@@ -2394,6 +2394,9 @@ RBItem(BufferObject *self, PyInt n, PyInt start, PyInt end)
     if (end == -1)
 	end = self->buf->b_ml.ml_line_count;
 
+    if (n < 0)
+	n += end - start + 1;
+
     if (n < 0 || n > end - start)
     {
 	PyErr_SetString(PyExc_IndexError, _("line number out of range"));
@@ -2440,6 +2443,9 @@ RBAsItem(BufferObject *self, PyInt n, PyObject *val, PyInt start, PyInt end, PyI
 
     if (end == -1)
 	end = self->buf->b_ml.ml_line_count;
+
+    if (n < 0)
+	n += end - start + 1;
 
     if (n < 0 || n > end - start)
     {

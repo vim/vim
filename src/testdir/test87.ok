@@ -295,3 +295,16 @@ bar
   G: '.,,'
   W: 1:',,' 2:'.,,' 3:'.,,' 4:'.,,'
   B: 1:',,' 2:'.,,' 3:'.,,' 4:'.,,'
+First line
+First line
+def
+First line
+Second line
+Third line
+(7, 2)
+<buffer test87.in><buffer >
+baz
+bar
+Second line
+Third line
+foo
