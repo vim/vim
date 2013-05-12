@@ -1838,10 +1838,10 @@ WindowAttr(WindowObject *this, char *name)
 	return Py_BuildValue("(ll)", (long)(pos->lnum), (long)(pos->col));
     }
     else if (strcmp(name, "height") == 0)
-	return Py_BuildValue("l", (long)(this->win->w_height));
+	return PyLong_FromLong((long)(this->win->w_height));
 #ifdef FEAT_VERTSPLIT
     else if (strcmp(name, "width") == 0)
-	return Py_BuildValue("l", (long)(W_WIDTH(this->win)));
+	return PyLong_FromLong((long)(W_WIDTH(this->win)));
 #endif
     else if (strcmp(name, "vars") == 0)
 	return DictionaryNew(this->win->w_vars);
