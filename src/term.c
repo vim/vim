@@ -3253,9 +3253,19 @@ stoptermcap()
 	if (!gui.in_use && !gui.starting)
 # endif
 	{
-	    /* May need to check for T_CRV response. */
+	    /* May need to discard T_CRV or T_U7 response. */
 	    if (crv_status == CRV_SENT || u7_status == U7_SENT)
-		(void)vpeekc_nomap();
+	    {
+# ifdef UNIX
+		/* Give the terminal a chance to respond. */
+		mch_delay(100L, FALSE);
+# endif
+# ifdef TCIFLUSH
+		/* Discard data received but not read. */
+		if (exiting)
+		    tcflush(fileno(stdin), TCIFLUSH);
+# endif
+	    }
 	    /* Check for termcodes first, otherwise an external program may
 	     * get them. */
 	    check_for_codes_from_term();
