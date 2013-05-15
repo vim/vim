@@ -1007,7 +1007,8 @@ ex_py3file(exarg_T *eap)
     DoPy3Command(eap, buffer, NULL);
 }
 
-void ex_py3do(exarg_T *eap)
+    void
+ex_py3do(exarg_T *eap)
 {
     linenr_T		i;
     const char		*code_hdr = "def " DOPY_FUNC "(line, linenr):\n ";
@@ -1068,8 +1069,7 @@ void ex_py3do(exarg_T *eap)
 	{
 	    if (!PyUnicode_Check(pyret))
 	    {
-		/* TODO: a proper error number */
-		EMSG(_("E000: return value must be an instance of str"));
+		EMSG(_("E863: return value must be an instance of str"));
 		Py_XDECREF(pyret);
 		status = 1;
 		goto out;
