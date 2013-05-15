@@ -4126,9 +4126,11 @@ check_termcode(max_offset, buf, bufsize, buflen)
 	     *   The final byte is 'R'. now it is only used for checking for
 	     *   ambiguous-width character state.
 	     */
+	    p = tp[0] == CSI ? tp + 1 : tp + 2;
 	    if ((*T_CRV != NUL || *T_U7 != NUL)
 			&& ((tp[0] == ESC && tp[1] == '[' && len >= 3)
-			    || (tp[0] == CSI && len >= 2)))
+			    || (tp[0] == CSI && len >= 2))
+			&& (VIM_ISDIGIT(*p) || *p == '>' || *p == '?'))
 	    {
 		j = 0;
 		extra = 0;
@@ -4136,7 +4138,7 @@ check_termcode(max_offset, buf, bufsize, buflen)
 				&& !(tp[i] >= '{' && tp[i] <= '~')
 				&& !ASCII_ISALPHA(tp[i]); ++i)
 		    if (tp[i] == ';' && ++j == 1)
-			extra = atoi((char *)tp + i + 1);
+			extra = i + 1;
 		if (i == len)
 		    return -1;		/* not enough characters */
 
@@ -4150,6 +4152,8 @@ check_termcode(max_offset, buf, bufsize, buflen)
 # ifdef FEAT_AUTOCMD
 		    did_cursorhold = TRUE;
 # endif
+		    if (extra > 0)
+			extra = atoi((char *)tp + extra);
 		    if (extra == 2)
 			aw = "single";
 		    else if (extra == 3)
@@ -4178,6 +4182,8 @@ check_termcode(max_offset, buf, bufsize, buflen)
 		    /* rxvt sends its version number: "20703" is 2.7.3.
 		     * Ignore it for when the user has set 'term' to xterm,
 		     * even though it's an rxvt. */
+		    if (extra > 0)
+			extra = atoi((char *)tp + extra);
 		    if (extra > 20000)
 			extra = 0;
 
