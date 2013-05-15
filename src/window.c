@@ -2124,7 +2124,9 @@ close_last_window_tabpage(win, free_buf, prev_curtab)
 {
     if (firstwin == lastwin)
     {
+#ifdef FEAT_AUTOCMD
 	buf_T	*old_curbuf = curbuf;
+#endif
 
 	/*
 	 * Closing the last window in a tab page.  First go to another tab
