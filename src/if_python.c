@@ -1131,24 +1131,6 @@ RangeAssSlice(PyObject *self, PyInt lo, PyInt hi, PyObject *val)
 		      &((RangeObject *)(self))->end);
 }
 
-/* Buffer list object - Definitions
- */
-
-static PySequenceMethods BufListAsSeq = {
-    (PyInquiry)		BufListLength,	    /* sq_length,    len(x)   */
-    (binaryfunc)	0,		    /* sq_concat,    x+y      */
-    (PyIntArgFunc)	0,		    /* sq_repeat,    x*n      */
-    (PyIntArgFunc)	BufListItem,	    /* sq_item,      x[i]     */
-    (PyIntIntArgFunc)	0,		    /* sq_slice,     x[i:j]   */
-    (PyIntObjArgProc)	0,		    /* sq_ass_item,  x[i]=v   */
-    (PyIntIntObjArgProc) 0,		    /* sq_ass_slice, x[i:j]=v */
-    (objobjproc)	0,
-#if PY_MAJOR_VERSION >= 2
-    (binaryfunc)	0,
-    0,
-#endif
-};
-
 /* Window object - Implementation
  */
 
@@ -1212,9 +1194,9 @@ python_window_free(win_T *win)
 }
 #endif
 
-static BufListObject TheBufferList =
+static BufMapObject TheBufferMap =
 {
-    PyObject_HEAD_INIT(&BufListType)
+    PyObject_HEAD_INIT(&BufMapType)
 };
 
 static WinListObject TheWindowList =
@@ -1240,7 +1222,7 @@ PythonMod_Init(void)
     PyType_Ready(&BufferType);
     PyType_Ready(&RangeType);
     PyType_Ready(&WindowType);
-    PyType_Ready(&BufListType);
+    PyType_Ready(&BufMapType);
     PyType_Ready(&WinListType);
     PyType_Ready(&CurrentType);
     PyType_Ready(&OptionsType);
@@ -1254,7 +1236,7 @@ PythonMod_Init(void)
     VimError = Py_BuildValue("s", "vim.error");
 
     PyDict_SetItemString(dict, "error", VimError);
-    PyDict_SetItemString(dict, "buffers", (PyObject *)(void *)&TheBufferList);
+    PyDict_SetItemString(dict, "buffers", (PyObject *)(void *)&TheBufferMap);
     PyDict_SetItemString(dict, "current", (PyObject *)(void *)&TheCurrent);
     PyDict_SetItemString(dict, "windows", (PyObject *)(void *)&TheWindowList);
     tmp = DictionaryNew(&globvardict);

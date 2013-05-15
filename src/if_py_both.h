@@ -534,16 +534,15 @@ static struct PyMethodDef VimMethods[] = {
  * Buffer list object - Implementation
  */
 
-static PyTypeObject BufListType;
-static PySequenceMethods BufListAsSeq;
+static PyTypeObject BufMapType;
 
 typedef struct
 {
     PyObject_HEAD
-} BufListObject;
+} BufMapObject;
 
     static PyInt
-BufListLength(PyObject *self UNUSED)
+BufMapLength(PyObject *self UNUSED)
 {
     buf_T	*b = firstbuf;
     PyInt	n = 0;
@@ -558,19 +557,40 @@ BufListLength(PyObject *self UNUSED)
 }
 
     static PyObject *
-BufListItem(PyObject *self UNUSED, PyInt n)
+BufMapItem(PyObject *self UNUSED, PyObject *keyObject)
 {
-    buf_T *b;
+    buf_T	*b;
+    int		bnr;
 
-    for (b = firstbuf; b; b = b->b_next, --n)
+#if PY_MAJOR_VERSION < 3
+    if (PyInt_Check(keyObject))
+	bnr = PyInt_AsLong(keyObject);
+    else
+#endif
+    if (PyLong_Check(keyObject))
+	bnr = PyLong_AsLong(keyObject);
+    else
     {
-	if (n == 0)
-	    return BufferNew(b);
+	PyErr_SetString(PyExc_ValueError, _("key must be integer"));
+	return NULL;
     }
 
-    PyErr_SetString(PyExc_IndexError, _("no such buffer"));
-    return NULL;
+    b = buflist_findnr(bnr);
+
+    if (b)
+	return BufferNew(b);
+    else
+    {
+	PyErr_SetString(PyExc_KeyError, _("no such buffer"));
+	return NULL;
+    }
 }
+
+static PyMappingMethods BufMapAsMapping = {
+    (lenfunc)       BufMapLength,
+    (binaryfunc)    BufMapItem,
+    (objobjargproc) 0,
+};
 
 typedef struct pylinkedlist_S {
     struct pylinkedlist_S	*pll_next;
@@ -3401,11 +3421,11 @@ init_structs(void)
     WindowType.tp_setattr = WindowSetattr;
 #endif
 
-    vim_memset(&BufListType, 0, sizeof(BufListType));
-    BufListType.tp_name = "vim.bufferlist";
-    BufListType.tp_basicsize = sizeof(BufListObject);
-    BufListType.tp_as_sequence = &BufListAsSeq;
-    BufListType.tp_flags = Py_TPFLAGS_DEFAULT;
+    vim_memset(&BufMapType, 0, sizeof(BufMapType));
+    BufMapType.tp_name = "vim.bufferlist";
+    BufMapType.tp_basicsize = sizeof(BufMapObject);
+    BufMapType.tp_as_mapping = &BufMapAsMapping;
+    BufMapType.tp_flags = Py_TPFLAGS_DEFAULT;
     BufferType.tp_doc = "vim buffer list";
 
     vim_memset(&WinListType, 0, sizeof(WinListType));

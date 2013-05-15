@@ -209,12 +209,11 @@ Constants of the "vim" module
 	to which the variables referred.
 
 vim.buffers						*python-buffers*
-	A sequence object providing access to the list of vim buffers.  The
+	A mapping object providing access to the list of vim buffers.  The
 	object supports the following operations: >
 	    :py b = vim.buffers[i]	# Indexing (read-only)
 	    :py b in vim.buffers	# Membership test
 	    :py n = len(vim.buffers)	# Number of elements
-	    :py for b in vim.buffers:	# Sequential access
 <
 vim.windows						*python-windows*
 	A sequence object providing access to the list of vim windows.  The

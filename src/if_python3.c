@@ -1272,22 +1272,6 @@ RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val)
     }
 }
 
-/* Buffer list object - Definitions
- */
-
-static PySequenceMethods BufListAsSeq = {
-    (lenfunc)		BufListLength,	    /* sq_length,    len(x)   */
-    (binaryfunc)	0,		    /* sq_concat,    x+y      */
-    (ssizeargfunc)	0,		    /* sq_repeat,    x*n      */
-    (ssizeargfunc)	BufListItem,	    /* sq_item,      x[i]     */
-    0,					    /* was_sq_slice,	 x[i:j]   */
-    (ssizeobjargproc)	0,		    /* sq_as_item,  x[i]=v   */
-    0,					    /* sq_ass_slice, x[i:j]=v */
-    0,					    /* sq_contains */
-    0,					    /* sq_inplace_concat */
-    0,					    /* sq_inplace_repeat */
-};
-
 /* Window object - Implementation
  */
 
@@ -1512,9 +1496,9 @@ python3_window_free(win_T *win)
 }
 #endif
 
-static BufListObject TheBufferList =
+static BufMapObject TheBufferMap =
 {
-    PyObject_HEAD_INIT(&BufListType)
+    PyObject_HEAD_INIT(&BufMapType)
 };
 
 static WinListObject TheWindowList =
@@ -1538,7 +1522,7 @@ Py3Init_vim(void)
     PyType_Ready(&BufferType);
     PyType_Ready(&RangeType);
     PyType_Ready(&WindowType);
-    PyType_Ready(&BufListType);
+    PyType_Ready(&BufMapType);
     PyType_Ready(&WinListType);
     PyType_Ready(&CurrentType);
     PyType_Ready(&DictionaryType);
@@ -1557,8 +1541,8 @@ Py3Init_vim(void)
     Py_INCREF(VimError);
 
     PyModule_AddObject(mod, "error", VimError);
-    Py_INCREF((PyObject *)(void *)&TheBufferList);
-    PyModule_AddObject(mod, "buffers", (PyObject *)(void *)&TheBufferList);
+    Py_INCREF((PyObject *)(void *)&TheBufferMap);
+    PyModule_AddObject(mod, "buffers", (PyObject *)(void *)&TheBufferMap);
     Py_INCREF((PyObject *)(void *)&TheCurrent);
     PyModule_AddObject(mod, "current", (PyObject *)(void *)&TheCurrent);
     Py_INCREF((PyObject *)(void *)&TheWindowList);
