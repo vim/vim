@@ -1219,6 +1219,7 @@ PythonMod_Init(void)
     static char *(argv[2]) = {"/must>not&exist/foo", NULL};
 
     /* Fixups... */
+    PyType_Ready(&IterType);
     PyType_Ready(&BufferType);
     PyType_Ready(&RangeType);
     PyType_Ready(&WindowType);

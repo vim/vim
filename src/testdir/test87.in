@@ -446,6 +446,9 @@ EOF
 :   call RecVars(oname)
 :endfor
 :only
+:for buf in g:bufs[1:]
+:   execute 'bwipeout!' buf
+:endfor
 :"
 :" Test buffer object
 :vnew
@@ -488,6 +491,62 @@ for expr in ('b[1]','b[:] = ["A", "B"]','b[:]','b.append("abc")'):
         # Should not happen in any case
         cb.append('No exception for ' + expr)
 EOF
+:"
+:" Test vim.buffers object
+:set hidden
+:edit a
+:buffer #
+:edit b
+:buffer #
+:edit c
+:buffer #
+py3 << EOF
+# Check GCing iterator that was not fully exhausted
+i = iter(vim.buffers)
+cb.append('i:' + str(next(i)))
+# and also check creating more then one iterator at a time
+i2 = iter(vim.buffers)
+cb.append('i2:' + str(next(i2)))
+cb.append('i:' + str(next(i)))
+# The following should trigger GC and not cause any problems
+del i
+del i2
+i3 = iter(vim.buffers)
+cb.append('i3:' + str(next(i3)))
+del i3
+
+prevnum = 0
+for b in vim.buffers:
+    # Check buffer order
+    if prevnum >= b.number:
+        cb.append('!!! Buffer numbers not in strictly ascending order')
+    # Check indexing: vim.buffers[number].number == number
+    cb.append(str(b.number) + ':' + repr(vim.buffers[b.number]) + '=' + repr(b))
+    prevnum = b.number
+
+cb.append(str(len(vim.buffers)))
+
+bnums = list(map(lambda b: b.number, vim.buffers))[1:]
+
+# Test wiping out buffer with existing iterator
+i4 = iter(vim.buffers)
+cb.append('i4:' + str(next(i4)))
+vim.command('bwipeout! ' + str(bnums.pop(0)))
+try:
+    next(i4)
+except vim.error:
+    pass
+else:
+    cb.append('!!!! No vim.error')
+i4 = iter(vim.buffers)
+vim.command('bwipeout! ' + str(bnums.pop(-1)))
+vim.command('bwipeout! ' + str(bnums.pop(-1)))
+cb.append('i4:' + str(next(i4)))
+try:
+    next(i4)
+except StopIteration:
+    cb.append('StopIteration')
+EOF
 :endfun
 :"
 :call Test()
@@ -496,6 +555,7 @@ EOF
 :call garbagecollect(1)
 :"
 :/^start:/,$wq! test.out
+:call getchar()
 ENDTEST
 
 start:

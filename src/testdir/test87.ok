@@ -308,3 +308,15 @@ bar
 Second line
 Third line
 foo
+i:<buffer test87.in>
+i2:<buffer test87.in>
+i:<buffer a>
+i3:<buffer test87.in>
+1:<buffer test87.in>=<buffer test87.in>
+6:<buffer a>=<buffer a>
+7:<buffer b>=<buffer b>
+8:<buffer c>=<buffer c>
+4
+i4:<buffer test87.in>
+i4:<buffer test87.in>
+StopIteration

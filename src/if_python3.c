@@ -1519,6 +1519,7 @@ Py3Init_vim(void)
     /* The special value is removed from sys.path in Python3_Init(). */
     static wchar_t *(argv[2]) = {L"/must>not&exist/foo", NULL};
 
+    PyType_Ready(&IterType);
     PyType_Ready(&BufferType);
     PyType_Ready(&RangeType);
     PyType_Ready(&WindowType);

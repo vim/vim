@@ -214,6 +214,7 @@ vim.buffers						*python-buffers*
 	    :py b = vim.buffers[i]	# Indexing (read-only)
 	    :py b in vim.buffers	# Membership test
 	    :py n = len(vim.buffers)	# Number of elements
+	    :py for b in vim.buffers:	# Iterating over buffer list
 <
 vim.windows						*python-windows*
 	A sequence object providing access to the list of vim windows.  The

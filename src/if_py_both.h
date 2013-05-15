@@ -531,66 +531,62 @@ static struct PyMethodDef VimMethods[] = {
 };
 
 /*
- * Buffer list object - Implementation
+ * Generic iterator object
  */
 
-static PyTypeObject BufMapType;
+static PyTypeObject IterType;
+
+typedef PyObject *(*nextfun)(void **);
+typedef void (*destructorfun)(void *);
+
+/* Main purpose of this object is removing the need for do python initialization 
+ * (i.e. PyType_Ready and setting type attributes) for a big bunch of objects.
+ */
 
 typedef struct
 {
     PyObject_HEAD
-} BufMapObject;
+    void *cur;
+    nextfun next;
+    destructorfun destruct;
+} IterObject;
 
-    static PyInt
-BufMapLength(PyObject *self UNUSED)
+    static PyObject *
+IterNew(void *start, destructorfun destruct, nextfun next)
 {
-    buf_T	*b = firstbuf;
-    PyInt	n = 0;
+    IterObject *self;
 
-    while (b)
-    {
-	++n;
-	b = b->b_next;
-    }
+    self = PyObject_NEW(IterObject, &IterType);
+    self->cur = start;
+    self->next = next;
+    self->destruct = destruct;
 
-    return n;
+    return (PyObject *)(self);
+}
+
+    static void
+IterDestructor(PyObject *self)
+{
+    IterObject *this = (IterObject *)(self);
+
+    this->destruct(this->cur);
+
+    DESTRUCTOR_FINISH(self);
 }
 
     static PyObject *
-BufMapItem(PyObject *self UNUSED, PyObject *keyObject)
+IterNext(PyObject *self)
 {
-    buf_T	*b;
-    int		bnr;
+    IterObject *this = (IterObject *)(self);
 
-#if PY_MAJOR_VERSION < 3
-    if (PyInt_Check(keyObject))
-	bnr = PyInt_AsLong(keyObject);
-    else
-#endif
-    if (PyLong_Check(keyObject))
-	bnr = PyLong_AsLong(keyObject);
-    else
-    {
-	PyErr_SetString(PyExc_ValueError, _("key must be integer"));
-	return NULL;
-    }
-
-    b = buflist_findnr(bnr);
-
-    if (b)
-	return BufferNew(b);
-    else
-    {
-	PyErr_SetString(PyExc_KeyError, _("no such buffer"));
-	return NULL;
-    }
+    return this->next(&this->cur);
 }
 
-static PyMappingMethods BufMapAsMapping = {
-    (lenfunc)       BufMapLength,
-    (binaryfunc)    BufMapItem,
-    (objobjargproc) 0,
-};
+    static PyObject *
+IterIter(PyObject *self)
+{
+    return self;
+}
 
 typedef struct pylinkedlist_S {
     struct pylinkedlist_S	*pll_next;
@@ -988,6 +984,55 @@ ListSlice(PyObject *self, Py_ssize_t first, Py_ssize_t last)
     }
 
     return list;
+}
+
+typedef struct
+{
+    listwatch_T	lw;
+    list_T	*list;
+} listiterinfo_T;
+
+    static void
+ListIterDestruct(listiterinfo_T *lii)
+{
+    list_rem_watch(lii->list, &lii->lw);
+    PyMem_Free(lii);
+}
+
+    static PyObject *
+ListIterNext(listiterinfo_T **lii)
+{
+    PyObject	*r;
+
+    if (!((*lii)->lw.lw_item))
+	return NULL;
+
+    if (!(r = ConvertToPyObject(&((*lii)->lw.lw_item->li_tv))))
+	return NULL;
+
+    (*lii)->lw.lw_item = (*lii)->lw.lw_item->li_next;
+
+    return r;
+}
+
+    static PyObject *
+ListIter(PyObject *self)
+{
+    listiterinfo_T	*lii;
+    list_T	*l = ((ListObject *) (self))->list;
+
+    if (!(lii = PyMem_New(listiterinfo_T, 1)))
+    {
+	PyErr_NoMemory();
+	return NULL;
+    }
+
+    list_add_watch(l, &lii->lw);
+    lii->lw.lw_item = l->lv_first;
+    lii->list = l;
+
+    return IterNew(lii,
+	    (destructorfun) ListIterDestruct, (nextfun) ListIterNext);
 }
 
     static int
@@ -2869,6 +2914,116 @@ static struct PyMethodDef BufferMethods[] = {
     { NULL,	    NULL,		0,	    NULL }
 };
 
+/*
+ * Buffer list object - Implementation
+ */
+
+static PyTypeObject BufMapType;
+
+typedef struct
+{
+    PyObject_HEAD
+} BufMapObject;
+
+    static PyInt
+BufMapLength(PyObject *self UNUSED)
+{
+    buf_T	*b = firstbuf;
+    PyInt	n = 0;
+
+    while (b)
+    {
+	++n;
+	b = b->b_next;
+    }
+
+    return n;
+}
+
+    static PyObject *
+BufMapItem(PyObject *self UNUSED, PyObject *keyObject)
+{
+    buf_T	*b;
+    int		bnr;
+
+#if PY_MAJOR_VERSION < 3
+    if (PyInt_Check(keyObject))
+	bnr = PyInt_AsLong(keyObject);
+    else
+#endif
+    if (PyLong_Check(keyObject))
+	bnr = PyLong_AsLong(keyObject);
+    else
+    {
+	PyErr_SetString(PyExc_ValueError, _("key must be integer"));
+	return NULL;
+    }
+
+    b = buflist_findnr(bnr);
+
+    if (b)
+	return BufferNew(b);
+    else
+    {
+	PyErr_SetString(PyExc_KeyError, _("no such buffer"));
+	return NULL;
+    }
+}
+
+    static void
+BufMapIterDestruct(PyObject *buffer)
+{
+    /* Iteration was stopped before all buffers were processed */
+    if (buffer)
+    {
+	Py_DECREF(buffer);
+    }
+}
+
+    static PyObject *
+BufMapIterNext(PyObject **buffer)
+{
+    PyObject	*next;
+    PyObject	*r;
+
+    if (!*buffer)
+	return NULL;
+
+    r = *buffer;
+
+    if (CheckBuffer((BufferObject *)(r)))
+    {
+	*buffer = NULL;
+	return NULL;
+    }
+
+    if (!((BufferObject *)(r))->buf->b_next)
+	next = NULL;
+    else if (!(next = BufferNew(((BufferObject *)(r))->buf->b_next)))
+	return NULL;
+    *buffer = next;
+    /* Do not increment reference: we no longer hold it (decref), but whoever on 
+     * other side will hold (incref). Decref+incref = nothing.
+     */
+    return r;
+}
+
+    static PyObject *
+BufMapIter(PyObject *self UNUSED)
+{
+    PyObject *buffer;
+
+    buffer = BufferNew(firstbuf);
+    return IterNew(buffer,
+	    (destructorfun) BufMapIterDestruct, (nextfun) BufMapIterNext);
+}
+
+static PyMappingMethods BufMapAsMapping = {
+    (lenfunc)       BufMapLength,
+    (binaryfunc)    BufMapItem,
+    (objobjargproc) 0,
+};
+
 /* Current items object
  */
 
@@ -3383,6 +3538,14 @@ init_structs(void)
     OutputType.tp_setattr = OutputSetattr;
 #endif
 
+    vim_memset(&IterType, 0, sizeof(IterType));
+    IterType.tp_name = "vim.iter";
+    IterType.tp_basicsize = sizeof(IterObject);
+    IterType.tp_flags = Py_TPFLAGS_DEFAULT;
+    IterType.tp_doc = "generic iterator object";
+    IterType.tp_iter = IterIter;
+    IterType.tp_iternext = IterNext;
+
     vim_memset(&BufferType, 0, sizeof(BufferType));
     BufferType.tp_name = "vim.buffer";
     BufferType.tp_basicsize = sizeof(BufferType);
@@ -3426,6 +3589,7 @@ init_structs(void)
     BufMapType.tp_basicsize = sizeof(BufMapObject);
     BufMapType.tp_as_mapping = &BufMapAsMapping;
     BufMapType.tp_flags = Py_TPFLAGS_DEFAULT;
+    BufMapType.tp_iter = BufMapIter;
     BufferType.tp_doc = "vim buffer list";
 
     vim_memset(&WinListType, 0, sizeof(WinListType));
@@ -3492,6 +3656,7 @@ init_structs(void)
     ListType.tp_flags = Py_TPFLAGS_DEFAULT;
     ListType.tp_doc = "list pushing modifications to vim structure";
     ListType.tp_methods = ListMethods;
+    ListType.tp_iter = ListIter;
 #if PY_MAJOR_VERSION >= 3
     ListType.tp_getattro = ListGetattro;
     ListType.tp_setattro = ListSetattro;
@@ -3501,7 +3666,7 @@ init_structs(void)
 #endif
 
     vim_memset(&FunctionType, 0, sizeof(FunctionType));
-    FunctionType.tp_name = "vim.list";
+    FunctionType.tp_name = "vim.function";
     FunctionType.tp_basicsize = sizeof(FunctionObject);
     FunctionType.tp_dealloc = FunctionDestructor;
     FunctionType.tp_call = FunctionCall;

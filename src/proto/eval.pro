@@ -127,4 +127,6 @@ int modify_fname __ARGS((char_u *src, int *usedlen, char_u **fnamep, char_u **bu
 char_u *do_string_sub __ARGS((char_u *str, char_u *pat, char_u *sub, char_u *flags));
 int switch_win __ARGS((win_T **, tabpage_T **, win_T *, tabpage_T *));
 void restore_win __ARGS((win_T *, tabpage_T *));
+void list_add_watch __ARGS((list_T *l, listwatch_T *lw));
+void list_rem_watch __ARGS((list_T *l, listwatch_T *lwrem));
 /* vim: set ft=c : */
