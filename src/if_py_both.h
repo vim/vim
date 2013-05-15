@@ -566,7 +566,6 @@ IterNew(void *start, destructorfun destruct, nextfun next)
     return (PyObject *)(self);
 }
 
-#if 0 /* unused */
     static void
 IterDestructor(PyObject *self)
 {
@@ -576,7 +575,6 @@ IterDestructor(PyObject *self)
 
     DESTRUCTOR_FINISH(self);
 }
-#endif
 
     static PyObject *
 IterNext(PyObject *self)
@@ -3823,6 +3821,7 @@ init_structs(void)
     IterType.tp_doc = "generic iterator object";
     IterType.tp_iter = IterIter;
     IterType.tp_iternext = IterNext;
+    IterType.tp_dealloc = IterDestructor;
 
     vim_memset(&BufferType, 0, sizeof(BufferType));
     BufferType.tp_name = "vim.buffer";
