@@ -223,6 +223,20 @@ vim.windows						*python-windows*
 	    :py w in vim.windows	# Membership test
 	    :py n = len(vim.windows)	# Number of elements
 	    :py for w in vim.windows:	# Sequential access
+<	Note: vim.windows object always accesses current tab page,. 
+	|python-tabpage|.windows objects are bound to parent |python-tabpage| 
+	object and always use windows from that tab page (or throw vim.error 
+	in case tab page was deleted). You can keep a reference to both 
+	without keeping a reference to vim module object or |python-tabpage|, 
+	they will not loose their properties in this case.
+
+vim.tabpages						*python-tabpages*
+	A sequence object providing access to the list of vim tab pages. The 
+	object supports the following operations: >
+	    :py t = vim.tabpages[i]	# Indexing (read-only)
+	    :py t in vim.tabpages	# Membership test
+	    :py n = len(vim.tabpages)	# Number of elements
+	    :py for t in vim.tabpages:	# Sequential access
 <
 vim.current						*python-current*
 	An object providing access (via specific attributes) to various
@@ -230,6 +244,7 @@ vim.current						*python-current*
 		vim.current.line	The current line (RW)		String
 		vim.current.buffer	The current buffer (RO)		Buffer
 		vim.current.window	The current window (RO)		Window
+		vim.current.tabpage	The current tab page (RO)	TabPage
 		vim.current.range	The current line range (RO)	Range
 
 	The last case deserves a little explanation.  When the :python or
@@ -375,6 +390,8 @@ Example (assume r is the current range):
 Window objects represent vim windows.  You can obtain them in a number of ways:
 	- via vim.current.window (|python-current|)
 	- from indexing vim.windows (|python-windows|)
+	- from indexing "windows" attribute of a tab page (|python-tabpage|)
+	- from the "window" attribute of a tab page (|python-tabpage|)
 
 You can manipulate window objects only through their attributes.  They have no
 methods, and no sequence or other interface.
@@ -405,6 +422,24 @@ Window attributes are:
 
 The height attribute is writable only if the screen is split horizontally.
 The width attribute is writable only if the screen is split vertically.
+
+==============================================================================
+6. Tab page objects					*python-tabpage*
+
+Tab page objects represent vim tab pages. You can obtain them in a number of 
+ways:
+	- via vim.current.tabpage (|python-current|)
+	- from indexing vim.tabpages (|python-tabpages|)
+
+You can use this object to access tab page windows. They have no methods and 
+no sequence or other interfaces.
+
+Tab page attributes are:
+	number		The tab page number like the one returned by 
+			|tabpagenr()|.
+	windows		Like |python-windows|, but for current tab page.
+	vars		The tab page |t:| variables.
+	window		Current tabpage window.
 
 ==============================================================================
 6. pyeval() and py3eval() Vim functions			*python-pyeval*

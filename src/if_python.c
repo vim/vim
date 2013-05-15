@@ -624,10 +624,12 @@ static int initialised = 0;
 
 #define WIN_PYTHON_REF(win) win->w_python_ref
 #define BUF_PYTHON_REF(buf) buf->b_python_ref
+#define TAB_PYTHON_REF(tab) tab->tp_python_ref
 
 static PyObject *OutputGetattr(PyObject *, char *);
 static PyObject *BufferGetattr(PyObject *, char *);
 static PyObject *WindowGetattr(PyObject *, char *);
+static PyObject *TabPageGetattr(PyObject *, char *);
 static PyObject *RangeGetattr(PyObject *, char *);
 static PyObject *DictionaryGetattr(PyObject *, char*);
 static PyObject *ListGetattr(PyObject *, char *);
@@ -1137,6 +1139,24 @@ RangeAssSlice(PyObject *self, PyInt lo, PyInt hi, PyObject *val)
 		      &((RangeObject *)(self))->end);
 }
 
+/* TabPage object - Implementation
+ */
+
+    static PyObject *
+TabPageGetattr(PyObject *self, char *name)
+{
+    PyObject *r;
+
+    if (CheckTabPage((TabPageObject *)(self)))
+	return NULL;
+
+    r = TabPageAttr((TabPageObject *)(self), name);
+    if (r || PyErr_Occurred())
+	return r;
+    else
+	return Py_FindMethod(TabPageMethods, self, name);
+}
+
 /* Window object - Implementation
  */
 
@@ -1154,6 +1174,24 @@ WindowGetattr(PyObject *self, char *name)
     else
 	return Py_FindMethod(WindowMethods, self, name);
 }
+
+/* Tab page list object - Definitions
+ */
+
+static PySequenceMethods TabListAsSeq = {
+    (PyInquiry)		TabListLength,	    /* sq_length,    len(x)   */
+    (binaryfunc)	0,		    /* sq_concat,    x+y      */
+    (PyIntArgFunc)	0,		    /* sq_repeat,    x*n      */
+    (PyIntArgFunc)	TabListItem,	    /* sq_item,      x[i]     */
+    (PyIntIntArgFunc)	0,		    /* sq_slice,     x[i:j]   */
+    (PyIntObjArgProc)	0,		    /* sq_ass_item,  x[i]=v   */
+    (PyIntIntObjArgProc) 0,		    /* sq_ass_slice, x[i:j]=v */
+    (objobjproc)	0,
+#if PY_MAJOR_VERSION >= 2
+    (binaryfunc)	0,
+    0,
+#endif
+};
 
 /* Window list object - Definitions
  */
@@ -1198,6 +1236,17 @@ python_window_free(win_T *win)
 	WIN_PYTHON_REF(win) = NULL;
     }
 }
+
+    void
+python_tabpage_free(tabpage_T *tab)
+{
+    if (TAB_PYTHON_REF(tab) != NULL)
+    {
+	TabPageObject *tp = TAB_PYTHON_REF(tab);
+	tp->tab = INVALID_TABPAGE_VALUE;
+	TAB_PYTHON_REF(tab) = NULL;
+    }
+}
 #endif
 
 static BufMapObject TheBufferMap =
@@ -1208,11 +1257,17 @@ static BufMapObject TheBufferMap =
 static WinListObject TheWindowList =
 {
     PyObject_HEAD_INIT(&WinListType)
+    NULL
 };
 
 static CurrentObject TheCurrent =
 {
     PyObject_HEAD_INIT(&CurrentType)
+};
+
+static TabListObject TheTabPageList =
+{
+    PyObject_HEAD_INIT(&TabListType)
 };
 
     static int
@@ -1229,8 +1284,10 @@ PythonMod_Init(void)
     PyType_Ready(&BufferType);
     PyType_Ready(&RangeType);
     PyType_Ready(&WindowType);
+    PyType_Ready(&TabPageType);
     PyType_Ready(&BufMapType);
     PyType_Ready(&WinListType);
+    PyType_Ready(&TabListType);
     PyType_Ready(&CurrentType);
     PyType_Ready(&OptionsType);
 
@@ -1246,6 +1303,7 @@ PythonMod_Init(void)
     PyDict_SetItemString(dict, "buffers", (PyObject *)(void *)&TheBufferMap);
     PyDict_SetItemString(dict, "current", (PyObject *)(void *)&TheCurrent);
     PyDict_SetItemString(dict, "windows", (PyObject *)(void *)&TheWindowList);
+    PyDict_SetItemString(dict, "tabpages", (PyObject *)(void *)&TheTabPageList);
     tmp = DictionaryNew(&globvardict);
     PyDict_SetItemString(dict, "vars",    tmp);
     Py_DECREF(tmp);

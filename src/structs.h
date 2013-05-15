@@ -1759,6 +1759,14 @@ struct tabpage_S
     dictitem_T	    tp_winvar;	    /* variable for "t:" Dictionary */
     dict_T	    *tp_vars;	    /* internal variables, local to tab page */
 #endif
+
+#ifdef FEAT_PYTHON
+    void	    *tp_python_ref;	/* The Python value for this tab page */
+#endif
+
+#ifdef FEAT_PYTHON3
+    void	    *tp_python3_ref;	/* The Python value for this tab page */
+#endif
 };
 
 /*

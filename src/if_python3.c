@@ -626,6 +626,7 @@ static int py3initialised = 0;
 
 #define WIN_PYTHON_REF(win) win->w_python3_ref
 #define BUF_PYTHON_REF(buf) buf->b_python3_ref
+#define TAB_PYTHON_REF(tab) tab->tp_python3_ref
 
     static void
 call_PyObject_Free(void *p)
@@ -652,6 +653,7 @@ call_PyType_GenericAlloc(PyTypeObject *type, Py_ssize_t nitems)
 static PyObject *OutputGetattro(PyObject *, PyObject *);
 static int OutputSetattro(PyObject *, PyObject *, PyObject *);
 static PyObject *BufferGetattro(PyObject *, PyObject *);
+static PyObject *TabPageGetattro(PyObject *, PyObject *);
 static PyObject *WindowGetattro(PyObject *, PyObject *);
 static int WindowSetattro(PyObject *, PyObject *, PyObject *);
 static PyObject *RangeGetattro(PyObject *, PyObject *);
@@ -1275,6 +1277,26 @@ RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val)
     }
 }
 
+/* TabPage object - Implementation
+ */
+
+    static PyObject *
+TabPageGetattro(PyObject *self, PyObject *nameobj)
+{
+    PyObject *r;
+
+    GET_ATTR_STRING(name, nameobj);
+
+    if (CheckTabPage((TabPageObject *)(self)))
+	return NULL;
+
+    r = TabPageAttr((TabPageObject *)(self), name);
+    if (r || PyErr_Occurred())
+	return r;
+    else
+	return PyObject_GenericGetAttr(self, nameobj);
+}
+
 /* Window object - Implementation
  */
 
@@ -1302,6 +1324,22 @@ WindowSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
 
     return WindowSetattr(self, name, val);
 }
+
+/* Tab page list object - Definitions
+ */
+
+static PySequenceMethods TabListAsSeq = {
+    (lenfunc)	     TabListLength,	    /* sq_length,    len(x)   */
+    (binaryfunc)     0,			    /* sq_concat,    x+y      */
+    (ssizeargfunc)   0,			    /* sq_repeat,    x*n      */
+    (ssizeargfunc)   TabListItem,	    /* sq_item,      x[i]     */
+    0,					    /* sq_slice,     x[i:j]   */
+    (ssizeobjargproc)0,			    /* sq_as_item,  x[i]=v   */
+    0,					    /* sq_ass_slice, x[i:j]=v */
+    0,					    /* sq_contains */
+    0,					    /* sq_inplace_concat */
+    0,					    /* sq_inplace_repeat */
+};
 
 /* Window list object - Definitions
  */
@@ -1497,6 +1535,17 @@ python3_window_free(win_T *win)
 	WIN_PYTHON_REF(win) = NULL;
     }
 }
+
+    void
+python3_tabpage_free(tabpage_T *tab)
+{
+    if (TAB_PYTHON_REF(tab) != NULL)
+    {
+	TabPageObject *tp = TAB_PYTHON_REF(tab);
+	tp->tab = INVALID_TABPAGE_VALUE;
+	TAB_PYTHON_REF(tab) = NULL;
+    }
+}
 #endif
 
 static BufMapObject TheBufferMap =
@@ -1507,11 +1556,17 @@ static BufMapObject TheBufferMap =
 static WinListObject TheWindowList =
 {
     PyObject_HEAD_INIT(&WinListType)
+    NULL
 };
 
 static CurrentObject TheCurrent =
 {
     PyObject_HEAD_INIT(&CurrentType)
+};
+
+static TabListObject TheTabPageList =
+{
+    PyObject_HEAD_INIT(&TabListType)
 };
 
     static PyObject *
@@ -1526,8 +1581,10 @@ Py3Init_vim(void)
     PyType_Ready(&BufferType);
     PyType_Ready(&RangeType);
     PyType_Ready(&WindowType);
+    PyType_Ready(&TabPageType);
     PyType_Ready(&BufMapType);
     PyType_Ready(&WinListType);
+    PyType_Ready(&TabListType);
     PyType_Ready(&CurrentType);
     PyType_Ready(&DictionaryType);
     PyType_Ready(&ListType);
@@ -1551,6 +1608,8 @@ Py3Init_vim(void)
     PyModule_AddObject(mod, "current", (PyObject *)(void *)&TheCurrent);
     Py_INCREF((PyObject *)(void *)&TheWindowList);
     PyModule_AddObject(mod, "windows", (PyObject *)(void *)&TheWindowList);
+    Py_INCREF((PyObject *)(void *)&TheTabPageList);
+    PyModule_AddObject(mod, "tabpages", (PyObject *)(void *)&TheTabPageList);
 
     PyModule_AddObject(mod, "vars", DictionaryNew(&globvardict));
     PyModule_AddObject(mod, "vvars", DictionaryNew(&vimvardict));

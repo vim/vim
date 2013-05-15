@@ -27,6 +27,7 @@ typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
 
 #define INVALID_BUFFER_VALUE ((buf_T *)(-1))
 #define INVALID_WINDOW_VALUE ((win_T *)(-1))
+#define INVALID_TABPAGE_VALUE ((tabpage_T *)(-1))
 
 static int ConvertFromPyObject(PyObject *, typval_T *);
 static int _ConvertFromPyObject(PyObject *, typval_T *, PyObject *);
@@ -1579,6 +1580,155 @@ static PyMappingMethods OptionsAsMapping = {
     (objobjargproc) OptionsAssItem,
 };
 
+/* Tabpage object
+ */
+
+typedef struct
+{
+    PyObject_HEAD
+    tabpage_T	*tab;
+} TabPageObject;
+
+static PyObject *WinListNew(TabPageObject *tabObject);
+
+static PyTypeObject TabPageType;
+
+    static int
+CheckTabPage(TabPageObject *this)
+{
+    if (this->tab == INVALID_TABPAGE_VALUE)
+    {
+	PyErr_SetVim(_("attempt to refer to deleted tab page"));
+	return -1;
+    }
+
+    return 0;
+}
+
+    static PyObject *
+TabPageNew(tabpage_T *tab)
+{
+    TabPageObject *self;
+
+    if (TAB_PYTHON_REF(tab))
+    {
+	self = TAB_PYTHON_REF(tab);
+	Py_INCREF(self);
+    }
+    else
+    {
+	self = PyObject_NEW(TabPageObject, &TabPageType);
+	if (self == NULL)
+	    return NULL;
+	self->tab = tab;
+	TAB_PYTHON_REF(tab) = self;
+    }
+
+    return (PyObject *)(self);
+}
+
+    static void
+TabPageDestructor(PyObject *self)
+{
+    TabPageObject *this = (TabPageObject *)(self);
+
+    if (this->tab && this->tab != INVALID_TABPAGE_VALUE)
+	TAB_PYTHON_REF(this->tab) = NULL;
+
+    DESTRUCTOR_FINISH(self);
+}
+
+    static PyObject *
+TabPageAttr(TabPageObject *this, char *name)
+{
+    if (strcmp(name, "windows") == 0)
+	return WinListNew(this);
+    else if (strcmp(name, "number") == 0)
+	return PyLong_FromLong((long) get_tab_number(this->tab));
+    else if (strcmp(name, "vars") == 0)
+	return DictionaryNew(this->tab->tp_vars);
+    else if (strcmp(name, "window") == 0)
+    {
+	/* For current tab window.c does not bother to set or update tp_curwin
+	 */
+	if (this->tab == curtab)
+	    return WindowNew(curwin);
+	else
+	    return WindowNew(this->tab->tp_curwin);
+    }
+    return NULL;
+}
+
+    static PyObject *
+TabPageRepr(PyObject *self)
+{
+    static char repr[100];
+    TabPageObject *this = (TabPageObject *)(self);
+
+    if (this->tab == INVALID_TABPAGE_VALUE)
+    {
+	vim_snprintf(repr, 100, _("<tabpage object (deleted) at %p>"), (self));
+	return PyString_FromString(repr);
+    }
+    else
+    {
+	int	t = get_tab_number(this->tab);
+
+	if (t == 0)
+	    vim_snprintf(repr, 100, _("<tabpage object (unknown) at %p>"),
+								      (self));
+	else
+	    vim_snprintf(repr, 100, _("<tabpage %d>"), t - 1);
+
+	return PyString_FromString(repr);
+    }
+}
+
+static struct PyMethodDef TabPageMethods[] = {
+    /* name,	    function,		calling,    documentation */
+    { NULL,	    NULL,		0,	    NULL }
+};
+
+/*
+ * Window list object
+ */
+
+static PyTypeObject TabListType;
+static PySequenceMethods TabListAsSeq;
+
+typedef struct
+{
+    PyObject_HEAD
+} TabListObject;
+
+    static PyInt
+TabListLength(PyObject *self UNUSED)
+{
+    tabpage_T	*tp = first_tabpage;
+    PyInt	n = 0;
+
+    while (tp != NULL)
+    {
+	++n;
+	tp = tp->tp_next;
+    }
+
+    return n;
+}
+
+    static PyObject *
+TabListItem(PyObject *self UNUSED, PyInt n)
+{
+    tabpage_T	*tp;
+
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next, --n)
+	if (n == 0)
+	    return TabPageNew(tp);
+
+    PyErr_SetString(PyExc_IndexError, _("no such tab page"));
+    return NULL;
+}
+
 /* Window object
  */
 
@@ -1588,8 +1738,6 @@ typedef struct
     win_T	*win;
 } WindowObject;
 
-static int WindowSetattr(PyObject *, char *, PyObject *);
-static PyObject *WindowRepr(PyObject *);
 static PyTypeObject WindowType;
 
     static int
@@ -1681,7 +1829,7 @@ WindowAttr(WindowObject *this, char *name)
 	return OptionsNew(SREQ_WIN, this->win, (checkfun) CheckWindow,
 			(PyObject *) this);
     else if (strcmp(name, "number") == 0)
-	return PyLong_FromLong((long) get_win_number(this->win));
+	return PyLong_FromLong((long) get_win_number(this->win, firstwin));
     else if (strcmp(name,"__members__") == 0)
 	return Py_BuildValue("[ssssssss]", "buffer", "cursor", "height", "vars",
 		"options", "number", "row", "col");
@@ -1797,7 +1945,7 @@ WindowRepr(PyObject *self)
     }
     else
     {
-	int	w = get_win_number(this->win);
+	int	w = get_win_number(this->win, firstwin);
 
 	if (w == 0)
 	    vim_snprintf(repr, 100, _("<window object (unknown) at %p>"),
@@ -1824,13 +1972,58 @@ static PySequenceMethods WinListAsSeq;
 typedef struct
 {
     PyObject_HEAD
+    TabPageObject	*tabObject;
 } WinListObject;
 
-    static PyInt
-WinListLength(PyObject *self UNUSED)
+    static PyObject *
+WinListNew(TabPageObject *tabObject)
 {
-    win_T	*w = firstwin;
+    WinListObject	*self;
+
+    self = PyObject_NEW(WinListObject, &WinListType);
+    self->tabObject = tabObject;
+    Py_INCREF(tabObject);
+
+    return (PyObject *)(self);
+}
+
+    static void
+WinListDestructor(PyObject *self)
+{
+    TabPageObject	*tabObject = ((WinListObject *)(self))->tabObject;
+
+    if (tabObject)
+	Py_DECREF((PyObject *)(tabObject));
+
+    DESTRUCTOR_FINISH(self);
+}
+
+    static win_T *
+get_firstwin(WinListObject *this)
+{
+    if (this->tabObject)
+    {
+	if (CheckTabPage(this->tabObject))
+	    return NULL;
+	/* For current tab window.c does not bother to set or update tp_firstwin
+	 */
+	else if (this->tabObject->tab == curtab)
+	    return firstwin;
+	else
+	    return this->tabObject->tab->tp_firstwin;
+    }
+    else
+	return firstwin;
+}
+
+    static PyInt
+WinListLength(PyObject *self)
+{
+    win_T	*w;
     PyInt	n = 0;
+
+    if (!(w = get_firstwin((WinListObject *)(self))))
+	return -1;
 
     while (w != NULL)
     {
@@ -1842,11 +2035,14 @@ WinListLength(PyObject *self UNUSED)
 }
 
     static PyObject *
-WinListItem(PyObject *self UNUSED, PyInt n)
+WinListItem(PyObject *self, PyInt n)
 {
     win_T *w;
 
-    for (w = firstwin; w != NULL; w = W_NEXT(w), --n)
+    if (!(w = get_firstwin((WinListObject *)(self))))
+	return NULL;
+
+    for (; w != NULL; w = W_NEXT(w), --n)
 	if (n == 0)
 	    return WindowNew(w);
 
@@ -3018,12 +3214,15 @@ CurrentGetattr(PyObject *self UNUSED, char *name)
 	return (PyObject *)BufferNew(curbuf);
     else if (strcmp(name, "window") == 0)
 	return (PyObject *)WindowNew(curwin);
+    else if (strcmp(name, "tabpage") == 0)
+	return (PyObject *)TabPageNew(curtab);
     else if (strcmp(name, "line") == 0)
 	return GetBufferLine(curbuf, (PyInt)curwin->w_cursor.lnum);
     else if (strcmp(name, "range") == 0)
 	return RangeNew(curbuf, RangeStart, RangeEnd);
     else if (strcmp(name,"__members__") == 0)
-	return Py_BuildValue("[ssss]", "buffer", "window", "line", "range");
+	return Py_BuildValue("[sssss]", "buffer", "window", "line", "range",
+		"tabpage");
     else
     {
 	PyErr_SetString(PyExc_AttributeError, name);
@@ -3568,6 +3767,23 @@ init_structs(void)
     WindowType.tp_setattr = WindowSetattr;
 #endif
 
+    vim_memset(&TabPageType, 0, sizeof(TabPageType));
+    TabPageType.tp_name = "vim.tabpage";
+    TabPageType.tp_basicsize = sizeof(TabPageObject);
+    TabPageType.tp_dealloc = TabPageDestructor;
+    TabPageType.tp_repr = TabPageRepr;
+    TabPageType.tp_flags = Py_TPFLAGS_DEFAULT;
+    TabPageType.tp_doc = "vim tab page object";
+    TabPageType.tp_methods = TabPageMethods;
+#if PY_MAJOR_VERSION >= 3
+    TabPageType.tp_getattro = TabPageGetattro;
+    TabPageType.tp_alloc = call_PyType_GenericAlloc;
+    TabPageType.tp_new = call_PyType_GenericNew;
+    TabPageType.tp_free = call_PyObject_Free;
+#else
+    TabPageType.tp_getattr = TabPageGetattr;
+#endif
+
     vim_memset(&BufMapType, 0, sizeof(BufMapType));
     BufMapType.tp_name = "vim.bufferlist";
     BufMapType.tp_basicsize = sizeof(BufMapObject);
@@ -3582,6 +3798,14 @@ init_structs(void)
     WinListType.tp_as_sequence = &WinListAsSeq;
     WinListType.tp_flags = Py_TPFLAGS_DEFAULT;
     WinListType.tp_doc = "vim window list";
+    WinListType.tp_dealloc = WinListDestructor;
+
+    vim_memset(&TabListType, 0, sizeof(TabListType));
+    TabListType.tp_name = "vim.tabpagelist";
+    TabListType.tp_basicsize = sizeof(TabListType);
+    TabListType.tp_as_sequence = &TabListAsSeq;
+    TabListType.tp_flags = Py_TPFLAGS_DEFAULT;
+    TabListType.tp_doc = "vim tab page list";
 
     vim_memset(&RangeType, 0, sizeof(RangeType));
     RangeType.tp_name = "vim.range";
