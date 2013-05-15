@@ -149,6 +149,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyMem_Malloc dll_PyMem_Malloc
 # define PyDict_SetItemString dll_PyDict_SetItemString
 # define PyErr_BadArgument dll_PyErr_BadArgument
+# define PyErr_NewException dll_PyErr_NewException
 # define PyErr_Clear dll_PyErr_Clear
 # define PyErr_PrintEx dll_PyErr_PrintEx
 # define PyErr_NoMemory dll_PyErr_NoMemory
@@ -255,6 +256,7 @@ static int(*dll_PyMem_Free)(void *);
 static void* (*dll_PyMem_Malloc)(size_t);
 static int(*dll_PyDict_SetItemString)(PyObject *dp, char *key, PyObject *item);
 static int(*dll_PyErr_BadArgument)(void);
+static PyObject *(*dll_PyErr_NewException)(char *, PyObject *, PyObject *);
 static void(*dll_PyErr_Clear)(void);
 static void(*dll_PyErr_PrintEx)(int);
 static PyObject*(*dll_PyErr_NoMemory)(void);
@@ -391,6 +393,7 @@ static struct
     {"PyMem_Malloc", (PYTHON_PROC*)&dll_PyMem_Malloc},
     {"PyDict_SetItemString", (PYTHON_PROC*)&dll_PyDict_SetItemString},
     {"PyErr_BadArgument", (PYTHON_PROC*)&dll_PyErr_BadArgument},
+    {"PyErr_NewException", (PYTHON_PROC*)&dll_PyErr_NewException},
     {"PyErr_Clear", (PYTHON_PROC*)&dll_PyErr_Clear},
     {"PyErr_PrintEx", (PYTHON_PROC*)&dll_PyErr_PrintEx},
     {"PyErr_NoMemory", (PYTHON_PROC*)&dll_PyErr_NoMemory},
@@ -1304,7 +1307,7 @@ PythonMod_Init(void)
     mod = Py_InitModule4("vim", VimMethods, (char *)NULL, (PyObject *)NULL, PYTHON_API_VERSION);
     dict = PyModule_GetDict(mod);
 
-    VimError = Py_BuildValue("s", "vim.error");
+    VimError = PyErr_NewException("vim.error", NULL, NULL);
 
     PyDict_SetItemString(dict, "error", VimError);
     PyDict_SetItemString(dict, "buffers", (PyObject *)(void *)&TheBufferMap);

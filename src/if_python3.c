@@ -1606,8 +1606,8 @@ Py3Init_vim(void)
 	return NULL;
 
     VimError = PyErr_NewException("vim.error", NULL, NULL);
-    Py_INCREF(VimError);
 
+    Py_INCREF(VimError);
     PyModule_AddObject(mod, "error", VimError);
     Py_INCREF((PyObject *)(void *)&TheBufferMap);
     PyModule_AddObject(mod, "buffers", (PyObject *)(void *)&TheBufferMap);
