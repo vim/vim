@@ -128,6 +128,7 @@ static void init_structs(void);
 # define PyErr_Occurred py3_PyErr_Occurred
 # define PyErr_SetNone py3_PyErr_SetNone
 # define PyErr_SetString py3_PyErr_SetString
+# define PyErr_SetObject py3_PyErr_SetObject
 # define PyEval_InitThreads py3_PyEval_InitThreads
 # define PyEval_RestoreThread py3_PyEval_RestoreThread
 # define PyEval_SaveThread py3_PyEval_SaveThread
@@ -250,6 +251,7 @@ static int (*py3_PySlice_GetIndicesEx)(PyObject *r, Py_ssize_t length,
 static PyObject* (*py3_PyErr_NoMemory)(void);
 static void (*py3_Py_Finalize)(void);
 static void (*py3_PyErr_SetString)(PyObject *, const char *);
+static void (*py3_PyErr_SetObject)(PyObject *, PyObject *);
 static int (*py3_PyRun_SimpleString)(char *);
 static PyObject* (*py3_PyRun_String)(char *, int, PyObject *, PyObject *);
 static PyObject* (*py3_PyList_GetItem)(PyObject *, Py_ssize_t);
@@ -379,6 +381,7 @@ static struct
     {"PyErr_NoMemory", (PYTHON_PROC*)&py3_PyErr_NoMemory},
     {"Py_Finalize", (PYTHON_PROC*)&py3_Py_Finalize},
     {"PyErr_SetString", (PYTHON_PROC*)&py3_PyErr_SetString},
+    {"PyErr_SetObject", (PYTHON_PROC*)&py3_PyErr_SetObject},
     {"PyRun_SimpleString", (PYTHON_PROC*)&py3_PyRun_SimpleString},
     {"PyRun_String", (PYTHON_PROC*)&py3_PyRun_String},
     {"PyList_GetItem", (PYTHON_PROC*)&py3_PyList_GetItem},

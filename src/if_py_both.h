@@ -734,7 +734,7 @@ DictionaryItem(PyObject *self, PyObject *keyObject)
 
     if (di == NULL)
     {
-	PyErr_SetString(PyExc_KeyError, _("no such key in dictionary"));
+	PyErr_SetObject(PyExc_KeyError, keyObject);
 	return NULL;
     }
 
@@ -767,7 +767,7 @@ DictionaryAssItem(PyObject *self, PyObject *keyObject, PyObject *valObject)
 	if (di == NULL)
 	{
 	    DICTKEY_UNREF
-	    PyErr_SetString(PyExc_IndexError, _("no such key in dictionary"));
+	    PyErr_SetObject(PyExc_KeyError, keyObject);
 	    return -1;
 	}
 	hi = hash_find(&d->dv_hashtab, di->di_key);
@@ -1353,7 +1353,7 @@ OptionsItem(OptionsObject *this, PyObject *keyObject)
 
     if (flags == 0)
     {
-	PyErr_SetString(PyExc_KeyError, "Option does not exist in given scope");
+	PyErr_SetObject(PyExc_KeyError, keyObject);
 	return NULL;
     }
 
@@ -1447,7 +1447,7 @@ OptionsAssItem(OptionsObject *this, PyObject *keyObject, PyObject *valObject)
 
     if (flags == 0)
     {
-	PyErr_SetString(PyExc_KeyError, "Option does not exist in given scope");
+	PyErr_SetObject(PyExc_KeyError, keyObject);
 	return -1;
     }
 
@@ -3145,7 +3145,7 @@ BufMapItem(PyObject *self UNUSED, PyObject *keyObject)
 	return BufferNew(b);
     else
     {
-	PyErr_SetString(PyExc_KeyError, _("no such buffer"));
+	PyErr_SetObject(PyExc_KeyError, keyObject);
 	return NULL;
     }
 }
