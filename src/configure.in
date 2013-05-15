@@ -863,10 +863,10 @@ if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; th
 	    ${vi_cv_path_python} -c 'import sys; print sys.version[:3]'`
     ]])
 
-    dnl -- it must be at least version 1.4
-    AC_MSG_CHECKING(Python is 1.4 or better)
+    dnl -- it must be at least version 2.2
+    AC_MSG_CHECKING(Python is 2.2 or better)
     if ${vi_cv_path_python} -c \
-	"import sys; sys.exit(${vi_cv_var_python_version} < 1.4)"
+	"import sys; sys.exit(${vi_cv_var_python_version} < 2.2)"
     then
       AC_MSG_RESULT(yep)
 

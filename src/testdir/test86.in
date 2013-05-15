@@ -183,38 +183,21 @@ STARTTEST
 :   $put ='[0.0, 0.0]'
 :endif
 :let messages=[]
-:py <<EOF
+py <<EOF
 d=vim.bindeval('{}')
 m=vim.bindeval('messages')
-try:
-    d['abc']
-except Exception as e:
-    m.extend([e.__class__.__name__])
+def em(expr, g=globals(), l=locals()):
+    try:
+        exec(expr, g, l)
+    except:
+        m.extend([sys.exc_type.__name__])
 
-try:
-    d['abc']="\0"
-except Exception as e:
-    m.extend([e.__class__.__name__])
-
-try:
-    d['abc']=vim
-except Exception as e:
-    m.extend([e.__class__.__name__])
-
-try:
-    d['']=1
-except Exception as e:
-    m.extend([e.__class__.__name__])
-
-try:
-    d['a\0b']=1
-except Exception as e:
-    m.extend([e.__class__.__name__])
-
-try:
-    d[b'a\0b']=1
-except Exception as e:
-    m.extend([e.__class__.__name__])
+em('d["abc"]')
+em('d["abc"]="\\0"')
+em('d["abc"]=vim')
+em('d[""]=1')
+em('d["a\\0b"]=1')
+em('d[u"a\\0b"]=1')
 EOF
 :$put =messages
 :unlet messages
@@ -394,14 +377,14 @@ py << EOF
 def e(s, g=globals(), l=locals()):
     try:
         exec(s, g, l)
-    except Exception as e:
-        vim.command('throw ' + repr(e.__class__.__name__))
+    except:
+        vim.command('throw ' + repr(sys.exc_type.__name__))
 
 def ev(s, g=globals(), l=locals()):
     try:
         return eval(s, g, l)
-    except Exception as e:
-        vim.command('throw ' + repr(e.__class__.__name__))
+    except:
+        vim.command('throw ' + repr(sys.exc_type.__name__))
         return 0
 EOF
 :function E(s)

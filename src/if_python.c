@@ -229,6 +229,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define _Py_TrueStruct (*dll__Py_TrueStruct)
 # define PyObject_Init dll__PyObject_Init
 # define PyObject_GetIter dll_PyObject_GetIter
+# define PyObject_IsTrue dll_PyObject_IsTrue
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02020000
 #  define PyType_IsSubtype dll_PyType_IsSubtype
 # endif
@@ -324,6 +325,7 @@ static int(*dll_Py_IsInitialized)(void);
 static PyObject*(*dll__PyObject_New)(PyTypeObject *, PyObject *);
 static PyObject*(*dll__PyObject_Init)(PyObject *, PyTypeObject *);
 static PyObject* (*dll_PyObject_GetIter)(PyObject *);
+static int (*dll_PyObject_IsTrue)(PyObject *);
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
 static iternextfunc dll__PyObject_NextNotImplemented;
 # endif
@@ -459,6 +461,7 @@ static struct
     {"_PyObject_New", (PYTHON_PROC*)&dll__PyObject_New},
     {"PyObject_Init", (PYTHON_PROC*)&dll__PyObject_Init},
     {"PyObject_GetIter", (PYTHON_PROC*)&dll_PyObject_GetIter},
+    {"PyObject_IsTrue", (PYTHON_PROC*)&dll_PyObject_IsTrue},
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
     {"_PyObject_NextNotImplemented", (PYTHON_PROC*)&dll__PyObject_NextNotImplemented},
 # endif
@@ -787,7 +790,10 @@ Python_Init(void)
 	 * so the following does both: unlock GIL and save thread state in TLS
 	 * without deleting thread state
 	 */
-	PyEval_SaveThread();
+#ifndef PY_CAN_RECURSE
+	saved_python_thread =
+#endif
+	    PyEval_SaveThread();
 
 	initialised = 1;
     }

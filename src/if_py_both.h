@@ -564,6 +564,7 @@ IterNew(void *start, destructorfun destruct, nextfun next)
     return (PyObject *)(self);
 }
 
+#if 0 /* unused */
     static void
 IterDestructor(PyObject *self)
 {
@@ -573,6 +574,7 @@ IterDestructor(PyObject *self)
 
     DESTRUCTOR_FINISH(self);
 }
+#endif
 
     static PyObject *
 IterNext(PyObject *self)
@@ -696,13 +698,7 @@ DictionarySetattr(PyObject *self, char *name, PyObject *val)
 	}
 	else
 	{
-	    if (!PyBool_Check(val))
-	    {
-		PyErr_SetString(PyExc_TypeError, _("Only boolean objects are allowed"));
-		return -1;
-	    }
-
-	    if (val == Py_True)
+	    if (PyObject_IsTrue(val))
 		this->dict->dv_lock = VAR_LOCKED;
 	    else
 		this->dict->dv_lock = 0;
@@ -1202,13 +1198,7 @@ ListSetattr(PyObject *self, char *name, PyObject *val)
 	}
 	else
 	{
-	    if (!PyBool_Check(val))
-	    {
-		PyErr_SetString(PyExc_TypeError, _("Only boolean objects are allowed"));
-		return -1;
-	    }
-
-	    if (val == Py_True)
+	    if (PyObject_IsTrue(val))
 		this->list->lv_lock = VAR_LOCKED;
 	    else
 		this->list->lv_lock = 0;
@@ -1484,14 +1474,8 @@ OptionsAssItem(OptionsObject *this, PyObject *keyObject, PyObject *valObject)
 
     if (flags & SOPT_BOOL)
     {
-	if (!PyBool_Check(valObject))
-	{
-	    PyErr_SetString(PyExc_ValueError, "Object must be boolean");
-	    return -1;
-	}
-
-	r = set_option_value_for(key, (valObject == Py_True), NULL, opt_flags,
-				this->opt_type, this->from);
+	r = set_option_value_for(key, PyObject_IsTrue(valObject), NULL,
+				opt_flags, this->opt_type, this->from);
     }
     else if (flags & SOPT_NUM)
     {
