@@ -80,6 +80,7 @@ Abc
 bac
 def
 bar
+jkl
 >>> paste
   p/gopts1: False
   p/wopts1! KeyError
@@ -328,3 +329,33 @@ i3:<buffer test86.in>
 i4:<buffer test86.in>
 i4:<buffer test86.in>
 StopIteration
+Number of tabs: 4
+Current tab pages:
+  <tabpage 0>(1): 1 windows, current is <window object (unknown)>
+  Windows:
+    <window object (unknown)>(0): displays buffer <buffer test86.in>; cursor is at (954, 0)
+  <tabpage 1>(2): 1 windows, current is <window object (unknown)>
+  Windows:
+    <window object (unknown)>(0): displays buffer <buffer 0>; cursor is at (1, 0)
+  <tabpage 2>(3): 2 windows, current is <window object (unknown)>
+  Windows:
+    <window object (unknown)>(0): displays buffer <buffer a.1>; cursor is at (1, 0)
+    <window object (unknown)>(0): displays buffer <buffer 1>; cursor is at (1, 0)
+  <tabpage 3>(4): 4 windows, current is <window 0>
+  Windows:
+    <window 0>(1): displays buffer <buffer c.2>; cursor is at (1, 0)
+    <window 1>(2): displays buffer <buffer b.2>; cursor is at (1, 0)
+    <window 2>(3): displays buffer <buffer a.2>; cursor is at (1, 0)
+    <window 3>(4): displays buffer <buffer 2>; cursor is at (1, 0)
+Number of windows in current tab page: 4
+Current tab page: <tabpage 3>
+Current window: <window 0>: <window 0> is <window 0>
+Current buffer: <buffer c.2>: <buffer c.2> is <buffer c.2> is <buffer c.2>
+ValueError at assigning foreign tab window
+Type error at assigning None to vim.current.window
+Type error at assigning None to vim.current.tabpage
+Type error at assigning None to vim.current.buffer
+Current tab page: <tabpage 2>
+Current window: <window 0>
+Current buffer: <buffer test86.in>
+Current line: 'Type error at assigning None to vim.current.buffer'
