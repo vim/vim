@@ -358,6 +358,7 @@ static PyObject *imp_PyExc_KeyError;
 static PyObject *imp_PyExc_KeyboardInterrupt;
 static PyObject *imp_PyExc_TypeError;
 static PyObject *imp_PyExc_ValueError;
+static PyObject *imp_PyExc_RuntimeError;
 
 # define PyExc_AttributeError imp_PyExc_AttributeError
 # define PyExc_IndexError imp_PyExc_IndexError
@@ -365,6 +366,7 @@ static PyObject *imp_PyExc_ValueError;
 # define PyExc_KeyboardInterrupt imp_PyExc_KeyboardInterrupt
 # define PyExc_TypeError imp_PyExc_TypeError
 # define PyExc_ValueError imp_PyExc_ValueError
+# define PyExc_RuntimeError imp_PyExc_RuntimeError
 
 /*
  * Table of name to function pointer of python.
@@ -593,12 +595,14 @@ get_exceptions(void)
     imp_PyExc_KeyboardInterrupt = PyDict_GetItemString(exdict, "KeyboardInterrupt");
     imp_PyExc_TypeError = PyDict_GetItemString(exdict, "TypeError");
     imp_PyExc_ValueError = PyDict_GetItemString(exdict, "ValueError");
+    imp_PyExc_RuntimeError = PyDict_GetItemString(exdict, "RuntimeError");
     Py_XINCREF(imp_PyExc_AttributeError);
     Py_XINCREF(imp_PyExc_IndexError);
     Py_XINCREF(imp_PyExc_KeyError);
     Py_XINCREF(imp_PyExc_KeyboardInterrupt);
     Py_XINCREF(imp_PyExc_TypeError);
     Py_XINCREF(imp_PyExc_ValueError);
+    Py_XINCREF(imp_PyExc_RuntimeError);
     Py_XDECREF(exmod);
 }
 #endif /* DYNAMIC_PYTHON */

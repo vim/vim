@@ -336,6 +336,7 @@ static PyObject *p3imp_PyExc_KeyError;
 static PyObject *p3imp_PyExc_KeyboardInterrupt;
 static PyObject *p3imp_PyExc_TypeError;
 static PyObject *p3imp_PyExc_ValueError;
+static PyObject *p3imp_PyExc_RuntimeError;
 
 # define PyExc_AttributeError p3imp_PyExc_AttributeError
 # define PyExc_IndexError p3imp_PyExc_IndexError
@@ -343,6 +344,7 @@ static PyObject *p3imp_PyExc_ValueError;
 # define PyExc_KeyboardInterrupt p3imp_PyExc_KeyboardInterrupt
 # define PyExc_TypeError p3imp_PyExc_TypeError
 # define PyExc_ValueError p3imp_PyExc_ValueError
+# define PyExc_RuntimeError p3imp_PyExc_RuntimeError
 
 /*
  * Table of name to function pointer of python.
@@ -580,12 +582,14 @@ get_py3_exceptions()
     p3imp_PyExc_KeyboardInterrupt = PyDict_GetItemString(exdict, "KeyboardInterrupt");
     p3imp_PyExc_TypeError = PyDict_GetItemString(exdict, "TypeError");
     p3imp_PyExc_ValueError = PyDict_GetItemString(exdict, "ValueError");
+    p3imp_PyExc_RuntimeError = PyDict_GetItemString(exdict, "RuntimeError");
     Py_XINCREF(p3imp_PyExc_AttributeError);
     Py_XINCREF(p3imp_PyExc_IndexError);
     Py_XINCREF(p3imp_PyExc_KeyError);
     Py_XINCREF(p3imp_PyExc_KeyboardInterrupt);
     Py_XINCREF(p3imp_PyExc_TypeError);
     Py_XINCREF(p3imp_PyExc_ValueError);
+    Py_XINCREF(p3imp_PyExc_RuntimeError);
     Py_XDECREF(exmod);
 }
 #endif /* DYNAMIC_PYTHON3 */
@@ -1132,7 +1136,7 @@ BufferSubscript(PyObject *self, PyObject* idx)
     }
     else
     {
-	PyErr_SetString(PyExc_IndexError, "Index must be int or slice");
+	PyErr_SetString(PyExc_TypeError, _("index must be int or slice"));
 	return NULL;
     }
 }
@@ -1166,7 +1170,7 @@ BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val)
     }
     else
     {
-	PyErr_SetString(PyExc_IndexError, "Index must be int or slice");
+	PyErr_SetString(PyExc_TypeError, _("index must be int or slice"));
 	return -1;
     }
 }
@@ -1248,7 +1252,7 @@ RangeSubscript(PyObject *self, PyObject* idx)
     }
     else
     {
-	PyErr_SetString(PyExc_IndexError, "Index must be int or slice");
+	PyErr_SetString(PyExc_TypeError, _("index must be int or slice"));
 	return NULL;
     }
 }
@@ -1275,7 +1279,7 @@ RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val)
     }
     else
     {
-	PyErr_SetString(PyExc_IndexError, "Index must be int or slice");
+	PyErr_SetString(PyExc_TypeError, _("index must be int or slice"));
 	return -1;
     }
 }
@@ -1450,7 +1454,7 @@ ListSubscript(PyObject *self, PyObject* idxObject)
     }
     else
     {
-	PyErr_SetString(PyExc_IndexError, "Index must be int or slice");
+	PyErr_SetString(PyExc_TypeError, _("index must be int or slice"));
 	return NULL;
     }
 }
@@ -1474,7 +1478,7 @@ ListAsSubscript(PyObject *self, PyObject *idxObject, PyObject *obj)
     }
     else
     {
-	PyErr_SetString(PyExc_IndexError, "Index must be int or slice");
+	PyErr_SetString(PyExc_TypeError, _("index must be int or slice"));
 	return -1;
     }
 }

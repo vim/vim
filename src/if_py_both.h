@@ -71,7 +71,8 @@ OutputSetattr(PyObject *self, char *name, PyObject *val)
 {
     if (val == NULL)
     {
-	PyErr_SetString(PyExc_AttributeError, _("can't delete OutputObject attributes"));
+	PyErr_SetString(PyExc_AttributeError,
+		_("can't delete OutputObject attributes"));
 	return -1;
     }
 
@@ -919,7 +920,7 @@ ListItem(PyObject *self, Py_ssize_t index)
 
     if (index>=ListLength(self))
     {
-	PyErr_SetString(PyExc_IndexError, "list index out of range");
+	PyErr_SetString(PyExc_IndexError, _("list index out of range"));
 	return NULL;
     }
     li = list_find(((ListObject *) (self))->list, (long) index);
@@ -1047,7 +1048,7 @@ ListAssItem(PyObject *self, Py_ssize_t index, PyObject *obj)
     }
     if (index>length || (index==length && obj==NULL))
     {
-	PyErr_SetString(PyExc_IndexError, "list index out of range");
+	PyErr_SetString(PyExc_IndexError, _("list index out of range"));
 	return -1;
     }
 
@@ -1186,7 +1187,8 @@ ListSetattr(PyObject *self, char *name, PyObject *val)
 
     if (val == NULL)
     {
-	PyErr_SetString(PyExc_AttributeError, _("Cannot delete DictionaryObject attributes"));
+	PyErr_SetString(PyExc_AttributeError,
+		_("cannot delete vim.dictionary attributes"));
 	return -1;
     }
 
@@ -1194,7 +1196,7 @@ ListSetattr(PyObject *self, char *name, PyObject *val)
     {
 	if (this->list->lv_lock == VAR_FIXED)
 	{
-	    PyErr_SetString(PyExc_TypeError, _("Cannot modify fixed list"));
+	    PyErr_SetString(PyExc_TypeError, _("cannot modify fixed list"));
 	    return -1;
 	}
 	else
@@ -1208,7 +1210,7 @@ ListSetattr(PyObject *self, char *name, PyObject *val)
     }
     else
     {
-	PyErr_SetString(PyExc_AttributeError, _("Cannot set this attribute"));
+	PyErr_SetString(PyExc_AttributeError, _("cannot set this attribute"));
 	return -1;
     }
 }
@@ -1377,7 +1379,8 @@ OptionsItem(OptionsObject *this, PyObject *keyObject)
 	    return PyBytes_FromString((char *) stringval);
 	else
 	{
-	    PyErr_SetString(PyExc_ValueError, "Unable to get option value");
+	    PyErr_SetString(PyExc_RuntimeError,
+		    _("unable to get option value"));
 	    return NULL;
 	}
     }
@@ -1455,13 +1458,14 @@ OptionsAssItem(OptionsObject *this, PyObject *keyObject, PyObject *valObject)
     {
 	if (this->opt_type == SREQ_GLOBAL)
 	{
-	    PyErr_SetString(PyExc_ValueError, "Unable to unset global option");
+	    PyErr_SetString(PyExc_ValueError,
+		    _("unable to unset global option"));
 	    return -1;
 	}
 	else if (!(flags & SOPT_GLOBAL))
 	{
-	    PyErr_SetString(PyExc_ValueError, "Unable to unset option without "
-						"global value");
+	    PyErr_SetString(PyExc_ValueError, _("unable to unset option "
+						"without global value"));
 	    return -1;
 	}
 	else
@@ -1491,7 +1495,7 @@ OptionsAssItem(OptionsObject *this, PyObject *keyObject, PyObject *valObject)
 	    val = PyLong_AsLong(valObject);
 	else
 	{
-	    PyErr_SetString(PyExc_ValueError, "Object must be integer");
+	    PyErr_SetString(PyExc_TypeError, _("object must be integer"));
 	    return -1;
 	}
 
@@ -1529,7 +1533,7 @@ OptionsAssItem(OptionsObject *this, PyObject *keyObject, PyObject *valObject)
 	}
 	else
 	{
-	    PyErr_SetString(PyExc_ValueError, "Object must be string");
+	    PyErr_SetString(PyExc_TypeError, _("object must be string"));
 	    return -1;
 	}
 
@@ -2766,7 +2770,7 @@ RBAppend(BufferObject *self, PyObject *args, PyInt start, PyInt end, PyInt *new_
 
     if (n < 0 || n > max)
     {
-	PyErr_SetString(PyExc_ValueError, _("line number out of range"));
+	PyErr_SetString(PyExc_IndexError, _("line number out of range"));
 	return NULL;
     }
 
@@ -3135,7 +3139,7 @@ BufMapItem(PyObject *self UNUSED, PyObject *keyObject)
 	bnr = PyLong_AsLong(keyObject);
     else
     {
-	PyErr_SetString(PyExc_ValueError, _("key must be integer"));
+	PyErr_SetString(PyExc_TypeError, _("key must be integer"));
 	return NULL;
     }
 
@@ -3654,7 +3658,8 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookupDict)
 	return convert_dl(obj, tv, pymap_to_tv, lookupDict);
     else
     {
-	PyErr_SetString(PyExc_TypeError, _("unable to convert to vim structure"));
+	PyErr_SetString(PyExc_TypeError,
+		_("unable to convert to vim structure"));
 	return -1;
     }
     return 0;
