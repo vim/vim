@@ -3244,6 +3244,80 @@ CurrentSetattr(PyObject *self UNUSED, char *name, PyObject *value)
 
 	return 0;
     }
+    else if (strcmp(name, "buffer") == 0)
+    {
+	int count;
+
+	if (value->ob_type != &BufferType)
+	{
+	    PyErr_SetString(PyExc_TypeError, _("expected vim.buffer object"));
+	    return -1;
+	}
+
+	if (CheckBuffer((BufferObject *)(value)))
+	    return -1;
+	count = ((BufferObject *)(value))->buf->b_fnum;
+
+	if (do_buffer(DOBUF_GOTO, DOBUF_FIRST, FORWARD, count, 0) == FAIL)
+	{
+	    PyErr_SetVim(_("failed to switch to given buffer"));
+	    return -1;
+	}
+
+	return 0;
+    }
+    else if (strcmp(name, "window") == 0)
+    {
+	int count;
+
+	if (value->ob_type != &WindowType)
+	{
+	    PyErr_SetString(PyExc_TypeError, _("expected vim.window object"));
+	    return -1;
+	}
+
+	if (CheckWindow((WindowObject *)(value)))
+	    return -1;
+	count = get_win_number(((WindowObject *)(value))->win, firstwin);
+
+	if (!count)
+	{
+	    PyErr_SetString(PyExc_ValueError,
+		    _("failed to find window in the current tab page"));
+	    return -1;
+	}
+
+	win_goto(((WindowObject *)(value))->win);
+	if (((WindowObject *)(value))->win != curwin)
+	{
+	    PyErr_SetString(PyExc_RuntimeError,
+		    _("did not switch to the specified window"));
+	    return -1;
+	}
+
+	return 0;
+    }
+    else if (strcmp(name, "tabpage") == 0)
+    {
+	if (value->ob_type != &TabPageType)
+	{
+	    PyErr_SetString(PyExc_TypeError, _("expected vim.tabpage object"));
+	    return -1;
+	}
+
+	if (CheckTabPage((TabPageObject *)(value)))
+	    return -1;
+
+	goto_tabpage_tp(((TabPageObject *)(value))->tab, TRUE, TRUE);
+	if (((TabPageObject *)(value))->tab != curtab)
+	{
+	    PyErr_SetString(PyExc_RuntimeError,
+		    _("did not switch to the specified tab page"));
+	    return -1;
+	}
+
+	return 0;
+    }
     else
     {
 	PyErr_SetString(PyExc_AttributeError, name);

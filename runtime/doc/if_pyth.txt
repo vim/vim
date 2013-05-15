@@ -242,9 +242,9 @@ vim.current						*python-current*
 	An object providing access (via specific attributes) to various
 	"current" objects available in vim:
 		vim.current.line	The current line (RW)		String
-		vim.current.buffer	The current buffer (RO)		Buffer
-		vim.current.window	The current window (RO)		Window
-		vim.current.tabpage	The current tab page (RO)	TabPage
+		vim.current.buffer	The current buffer (RW)		Buffer
+		vim.current.window	The current window (RW)		Window
+		vim.current.tabpage	The current tab page (RW)	TabPage
 		vim.current.range	The current line range (RO)	Range
 
 	The last case deserves a little explanation.  When the :python or
@@ -252,6 +252,22 @@ vim.current						*python-current*
 	"current range".  A range is a bit like a buffer, but with all access
 	restricted to a subset of lines.  See |python-range| for more details.
 
+	Note: When assigning to vim.current.{buffer,window,tabpage} it expects 
+	valid |python-buffer|, |python-window| or |python-tabpage| objects 
+	respectively. Assigning triggers normal (with |autocommand|s) 
+	switching to given buffer, window or tab page. It is the only way to 
+	switch UI objects in python: you can't assign to 
+	|python-tabpage|.window attribute. To switch without triggering 
+	autocommands use >
+	    py << EOF
+	    saved_eventignore = vim.options['eventignore']
+	    vim.options['eventignore'] = 'all'
+	    try:
+	        vim.current.buffer = vim.buffers[2] # Switch to buffer 2
+	    finally:
+	        vim.options['eventignore'] = saved_eventignore
+	    EOF
+<
 vim.vars						*python-vars*
 vim.vvars						*python-vvars*
 	Dictionary-like objects holding dictionaries with global (|g:|) and 
