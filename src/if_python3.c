@@ -699,8 +699,6 @@ static PyObject *Py3Init_vim(void);
  * 1. Python interpreter main program.
  */
 
-static PyGILState_STATE pygilstate = PyGILState_UNLOCKED;
-
     void
 python3_end()
 {
@@ -718,7 +716,7 @@ python3_end()
     if (Py_IsInitialized())
     {
 	// acquire lock before finalizing
-	pygilstate = PyGILState_Ensure();
+	PyGILState_Ensure();
 
 	Py_Finalize();
     }
@@ -826,6 +824,7 @@ DoPy3Command(exarg_T *eap, const char *cmd, typval_T *rettv)
 #endif
     PyObject		*cmdstr;
     PyObject		*cmdbytes;
+    PyGILState_STATE	pygilstate;
 
 #if defined(MACOS) && !defined(MACOS_X_UNIX)
     GetPort(&oldPort);

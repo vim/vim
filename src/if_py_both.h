@@ -1298,7 +1298,14 @@ FunctionCall(PyObject *self, PyObject *argsObject, PyObject *kwargs)
 	}
     }
 
+    Py_BEGIN_ALLOW_THREADS
+    Python_Lock_Vim();
+
     error = func_call(name, &args, selfdict, &rettv);
+
+    Python_Release_Vim();
+    Py_END_ALLOW_THREADS
+
     if (error != OK)
     {
 	result = NULL;

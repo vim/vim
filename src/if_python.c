@@ -676,11 +676,8 @@ static int SetBufferLineList(buf_T *, PyInt, PyInt, PyObject *, PyInt *);
 typedef PyObject PyThreadState;
 #endif
 
-#ifdef PY_CAN_RECURSE
-static PyGILState_STATE pygilstate = PyGILState_UNLOCKED;
-#else
+#ifndef PY_CAN_RECURSE
 static PyThreadState *saved_python_thread = NULL;
-#endif
 
 /*
  * Suspend a thread of the Python interpreter, other threads are allowed to
@@ -689,11 +686,7 @@ static PyThreadState *saved_python_thread = NULL;
     static void
 Python_SaveThread(void)
 {
-#ifdef PY_CAN_RECURSE
-    PyGILState_Release(pygilstate);
-#else
     saved_python_thread = PyEval_SaveThread();
-#endif
 }
 
 /*
@@ -703,13 +696,10 @@ Python_SaveThread(void)
     static void
 Python_RestoreThread(void)
 {
-#ifdef PY_CAN_RECURSE
-    pygilstate = PyGILState_Ensure();
-#else
     PyEval_RestoreThread(saved_python_thread);
     saved_python_thread = NULL;
-#endif
 }
+#endif
 
     void
 python_end()
@@ -725,14 +715,22 @@ python_end()
 #ifdef DYNAMIC_PYTHON
     if (hinstPython && Py_IsInitialized())
     {
+# ifdef PY_CAN_RECURSE
+	PyGILState_Ensure();
+# else
 	Python_RestoreThread();	    /* enter python */
+# endif
 	Py_Finalize();
     }
     end_dynamic_python();
 #else
     if (Py_IsInitialized())
     {
+# ifdef PY_CAN_RECURSE
+	PyGILState_Ensure();
+# else
 	Python_RestoreThread();	    /* enter python */
+# endif
 	Py_Finalize();
     }
 #endif
@@ -837,6 +835,9 @@ DoPythonCommand(exarg_T *eap, const char *cmd, typval_T *rettv)
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
     char		*saved_locale;
 #endif
+#ifdef PY_CAN_RECURSE
+    PyGILState_STATE	pygilstate;
+#endif
 
 #ifndef PY_CAN_RECURSE
     if (recursive)
@@ -881,7 +882,11 @@ DoPythonCommand(exarg_T *eap, const char *cmd, typval_T *rettv)
     }
 #endif
 
+#ifdef PY_CAN_RECURSE
+    pygilstate = PyGILState_Ensure();
+#else
     Python_RestoreThread();	    /* enter python */
+#endif
 
     if (rettv == NULL)
 	PyRun_SimpleString((char *)(cmd));
@@ -905,7 +910,11 @@ DoPythonCommand(exarg_T *eap, const char *cmd, typval_T *rettv)
 	PyErr_Clear();
     }
 
+#ifdef PY_CAN_RECURSE
+    PyGILState_Release(pygilstate);
+#else
     Python_SaveThread();	    /* leave python */
+#endif
 
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
     if (saved_locale != NULL)
