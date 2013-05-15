@@ -76,6 +76,7 @@ static void init_structs(void);
 #else
 # define CODEC_ERROR_HANDLER NULL
 #endif
+#define DOPY_FUNC "_vim_pydo"
 
 /* Python 3 does not support CObjects, always use Capsules */
 #define PY_USE_CAPSULE
@@ -126,6 +127,7 @@ static void init_structs(void);
 # define PyErr_PrintEx py3_PyErr_PrintEx
 # define PyErr_NoMemory py3_PyErr_NoMemory
 # define PyErr_Occurred py3_PyErr_Occurred
+# define PyErr_PrintEx py3_PyErr_PrintEx
 # define PyErr_SetNone py3_PyErr_SetNone
 # define PyErr_SetString py3_PyErr_SetString
 # define PyErr_SetObject py3_PyErr_SetObject
@@ -148,7 +150,6 @@ static void init_structs(void);
 # define PyTuple_GetItem py3_PyTuple_GetItem
 # define PySlice_GetIndicesEx py3_PySlice_GetIndicesEx
 # define PyImport_ImportModule py3_PyImport_ImportModule
-# define PyImport_AddModule py3_PyImport_AddModule
 # define PyObject_Init py3__PyObject_Init
 # define PyDict_New py3_PyDict_New
 # define PyDict_GetItemString py3_PyDict_GetItemString
@@ -163,6 +164,11 @@ static void init_structs(void);
 # define PyRun_SimpleString py3_PyRun_SimpleString
 #undef PyRun_String
 # define PyRun_String py3_PyRun_String
+# define PyObject_GetAttrString py3_PyObject_GetAttrString
+# define PyObject_SetAttrString py3_PyObject_SetAttrString
+# define PyObject_CallFunctionObjArgs py3_PyObject_CallFunctionObjArgs
+# define PyEval_GetLocals py3_PyEval_GetLocals
+# define PyEval_GetGlobals py3_PyEval_GetGlobals
 # define PySys_SetObject py3_PySys_SetObject
 # define PySys_SetArgv py3_PySys_SetArgv
 # define PyType_Ready py3_PyType_Ready
@@ -178,6 +184,7 @@ static void init_structs(void);
 # define _PyObject_NextNotImplemented (*py3__PyObject_NextNotImplemented)
 # define PyModule_AddObject py3_PyModule_AddObject
 # define PyImport_AppendInittab py3_PyImport_AppendInittab
+# define PyImport_AddModule py3_PyImport_AddModule
 # if PY_VERSION_HEX >= 0x030300f0
 #  undef _PyUnicode_AsString
 #  define _PyUnicode_AsString py3_PyUnicode_AsUTF8
@@ -254,6 +261,11 @@ static void (*py3_PyErr_SetString)(PyObject *, const char *);
 static void (*py3_PyErr_SetObject)(PyObject *, PyObject *);
 static int (*py3_PyRun_SimpleString)(char *);
 static PyObject* (*py3_PyRun_String)(char *, int, PyObject *, PyObject *);
+static PyObject* (*py3_PyObject_GetAttrString)(PyObject *, const char *);
+static PyObject* (*py3_PyObject_SetAttrString)(PyObject *, const char *, PyObject *);
+static PyObject* (*py3_PyObject_CallFunctionObjArgs)(PyObject *, ...);
+static PyObject* (*py3_PyEval_GetGlobals)();
+static PyObject* (*py3_PyEval_GetLocals)();
 static PyObject* (*py3_PyList_GetItem)(PyObject *, Py_ssize_t);
 static PyObject* (*py3_PyImport_ImportModule)(const char *);
 static PyObject* (*py3_PyImport_AddModule)(const char *);
@@ -386,6 +398,11 @@ static struct
     {"PyErr_SetObject", (PYTHON_PROC*)&py3_PyErr_SetObject},
     {"PyRun_SimpleString", (PYTHON_PROC*)&py3_PyRun_SimpleString},
     {"PyRun_String", (PYTHON_PROC*)&py3_PyRun_String},
+    {"PyObject_GetAttrString", (PYTHON_PROC*)&py3_PyObject_GetAttrString},
+    {"PyObject_SetAttrString", (PYTHON_PROC*)&py3_PyObject_SetAttrString},
+    {"PyObject_CallFunctionObjArgs", (PYTHON_PROC*)&py3_PyObject_CallFunctionObjArgs},
+    {"PyEval_GetGlobals", (PYTHON_PROC*)&py3_PyEval_GetGlobals},
+    {"PyEval_GetLocals", (PYTHON_PROC*)&py3_PyEval_GetLocals},
     {"PyList_GetItem", (PYTHON_PROC*)&py3_PyList_GetItem},
     {"PyImport_ImportModule", (PYTHON_PROC*)&py3_PyImport_ImportModule},
     {"PyImport_AddModule", (PYTHON_PROC*)&py3_PyImport_AddModule},
@@ -988,6 +1005,100 @@ ex_py3file(exarg_T *eap)
 
     /* Execute the file */
     DoPy3Command(eap, buffer, NULL);
+}
+
+void ex_py3do(exarg_T *eap)
+{
+    linenr_T		i;
+    const char		*code_hdr = "def " DOPY_FUNC "(line, linenr):\n ";
+    const char		*s = (const char *) eap->arg;
+    size_t		len;
+    char		*code;
+    int			status;
+    PyObject		*pyfunc, *pymain;
+    PyGILState_STATE	pygilstate;
+
+    if (Python3_Init())
+	goto theend;
+
+    if (u_save(eap->line1 - 1, eap->line2 + 1) != OK)
+    {
+	EMSG(_("cannot save undo information"));
+	return;
+    }
+    len = strlen(code_hdr) + strlen(s);
+    code = malloc(len + 1);
+    STRCPY(code, code_hdr);
+    STRNCAT(code, s, len + 1);
+    pygilstate = PyGILState_Ensure();
+    status = PyRun_SimpleString(code);
+    vim_free(code);
+    if (status)
+    {
+	EMSG(_("failed to run the code"));
+	return;
+    }
+    status = 0; /* good */
+    pymain = PyImport_AddModule("__main__");
+    pyfunc = PyObject_GetAttrString(pymain, DOPY_FUNC);
+    PyGILState_Release(pygilstate);
+
+    for (i = eap->line1; i <= eap->line2; i++)
+    {
+	const char *line;
+	PyObject *pyline, *pylinenr, *pyret, *pybytes;
+
+	line = (char *)ml_get(i);
+	pygilstate = PyGILState_Ensure();
+	pyline = PyUnicode_Decode(line, strlen(line),
+		(char *)ENC_OPT, CODEC_ERROR_HANDLER);
+	pylinenr = PyLong_FromLong(i);
+	pyret = PyObject_CallFunctionObjArgs(pyfunc, pyline, pylinenr, NULL);
+	Py_DECREF(pyline);
+	Py_DECREF(pylinenr);
+	if (!pyret)
+	{
+	    PyErr_PrintEx(0);
+	    PythonIO_Flush();
+	    status = 1;
+	    goto out;
+	}
+
+	if (pyret && pyret != Py_None)
+	{
+	    if (!PyUnicode_Check(pyret))
+	    {
+		/* TODO: a proper error number */
+		EMSG(_("E000: return value must be an instance of str"));
+		Py_XDECREF(pyret);
+		status = 1;
+		goto out;
+	    }
+	    pybytes = PyUnicode_AsEncodedString(pyret,
+		    (char *)ENC_OPT, CODEC_ERROR_HANDLER);
+	    ml_replace(i, (char_u *) PyBytes_AsString(pybytes), 1);
+	    Py_DECREF(pybytes);
+	    changed();
+#ifdef SYNTAX_HL
+	    syn_changed(i); /* recompute syntax hl. for this line */
+#endif
+	}
+	Py_XDECREF(pyret);
+	PythonIO_Flush();
+	PyGILState_Release(pygilstate);
+    }
+    pygilstate = PyGILState_Ensure();
+out:
+    Py_DECREF(pyfunc);
+    PyObject_SetAttrString(pymain, DOPY_FUNC, NULL);
+    PyGILState_Release(pygilstate);
+    if (status)
+	return;
+    check_cursor();
+    update_curbuf(NOT_VALID);
+
+theend:
+    return;
 }
 
 /******************************************************

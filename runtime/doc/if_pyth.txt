@@ -490,6 +490,21 @@ if the `:py3` command is working: >
 <							*:py3file*
 The |:py3file| command works similar to |:pyfile|.
 
+							*:py3do*
+:[range]py3do {body}	Execute Python function "def _vim_pydo(line, linenr):
+			{body}" for each line in the [range], with the
+			function arguments being set to the text of each line
+			in turn, without a trailing <EOL>, and the current
+			line number. The function should return a string or
+			None. If a string is returned, it becomes the text of
+			the line in the current turn. The default for [range]
+			is the whole file: "1,$".
+			{not in Vi}
+
+Examples:
+>
+	:py3do return "%s\t%d" % (line[::-1], len(line))
+	:py3do if line: return "%4d: %s" % (linenr, line)
 
 Vim can be built in four ways (:version output):
 1. No Python support	    (-python, -python3)

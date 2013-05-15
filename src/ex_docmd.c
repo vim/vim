@@ -272,6 +272,7 @@ static void	ex_popup __ARGS((exarg_T *eap));
 #endif
 #ifndef FEAT_PYTHON3
 # define ex_py3			ex_script_ni
+# define ex_py3do		ex_ni
 # define ex_py3file		ex_ni
 #endif
 #ifndef FEAT_TCL
