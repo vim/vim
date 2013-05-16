@@ -5,10 +5,10 @@ This would require recompiling Python with:
   ./configure --without-pymalloc
 See http://svn.python.org/view/python/trunk/Misc/README.valgrind?view=markup
 
-
 STARTTEST
 :so small.vim
 :if !has('python') | e! test.ok | wq! test.out | endif
+:lang C
 :py import vim
 :fun Test()
 :let l = []

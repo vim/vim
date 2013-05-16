@@ -3,6 +3,7 @@ Tests for various python features.     vim: set ft=vim :
 STARTTEST
 :so small.vim
 :if !has('python3') | e! test.ok | wq! test.out | endif
+:lang C
 :py3 import vim
 :fun Test()
 :let l = []
