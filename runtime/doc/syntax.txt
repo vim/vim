@@ -1239,17 +1239,17 @@ to your startup file.
 
 ERLANG						*erlang.vim* *ft-erlang-syntax*
 
-The erlang highlighting supports Erlang (ERicsson LANGuage).
-Erlang is case sensitive and default extension is ".erl".
+Erlang is a functional programming language developed by Ericsson.  Files with
+the following extentions are recognized as Erlang files: erl, hrl, yaws.
 
-If you want to disable keywords highlighting, put in your .vimrc: >
-	:let erlang_keywords = 1
-If you want to disable built-in-functions highlighting, put in your
-.vimrc file: >
-	:let erlang_functions = 1
-If you want to disable special characters highlighting, put in
-your .vimrc: >
-	:let erlang_characters = 1
+The BIFs (built-in functions) are highlighted by default. To disable this,
+put the following line in your vimrc: >
+
+      :let g:erlang_highlight_bifs = 0
+
+To enable highlighting some special atoms, put this in your vimrc: >
+
+      :let g:erlang_highlight_special_atoms = 1
 
 
 FLEXWIKI				*flexwiki.vim* *ft-flexwiki-syntax*

@@ -1,8 +1,8 @@
 " SQL filetype plugin file
 " Language:    SQL (Common for Oracle, Microsoft SQL Server, Sybase)
-" Version:     10.0
+" Version:     11.0
 " Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
-" Last Change: 2012 Dec 04
+" Last Change: 2013 May 13
 " Download:    http://vim.sourceforge.net/script.php?script_id=454
 
 " For more details please use:
@@ -35,6 +35,10 @@
 "     :SQLGetType
 "
 " History
+"
+" Version 11.0 (May 2013)
+"
+" NF: Updated to use SyntaxComplete's new regex support for syntax groups.
 "
 " Version 10.0 (Dec 2012)
 "
@@ -189,7 +193,7 @@ if !exists("*SQL_SetType")
 
         " Remove any cached SQL since a new sytax will have different
         " items and groups
-        if !exists('g:loaded_sql_completion') || 100 == g:loaded_sql_completion
+        if !exists('g:loaded_sql_completion') || g:loaded_sql_completion >= 100
             call sqlcomplete#ResetCacheSyntax()
         endif
 
@@ -458,6 +462,8 @@ if exists('&omnifunc')
     " OMNI function prior to setting up the SQL OMNI function
     let b:sql_compl_savefunc = &omnifunc
 
+    " Source it to determine it's version
+    runtime autoload/sqlcomplete.vim
     " This is used by the sqlcomplete.vim plugin
     " Source it for it's global functions
     runtime autoload/syntaxcomplete.vim
@@ -466,14 +472,20 @@ if exists('&omnifunc')
     " Prevent the intellisense plugin from loading
     let b:sql_vis = 1
     if !exists('g:omni_sql_no_default_maps')
+        let regex_extra = ''
+        if exists('g:loaded_syntax_completion') && exists('g:loaded_sql_completion')
+            if g:loaded_syntax_completion > 120 && g:loaded_sql_completion > 140
+                let regex_extra = '\\w*'
+            endif
+        endif
         " Static maps which use populate the completion list
         " using Vim's syntax highlighting rules
         exec 'inoremap <buffer> '.g:ftplugin_sql_omni_key.'a <C-\><C-O>:call sqlcomplete#Map("syntax")<CR><C-X><C-O>'
-        exec 'inoremap <buffer> '.g:ftplugin_sql_omni_key.'k <C-\><C-O>:call sqlcomplete#Map("sqlKeyword")<CR><C-X><C-O>'
-        exec 'inoremap <buffer> '.g:ftplugin_sql_omni_key.'f <C-\><C-O>:call sqlcomplete#Map("sqlFunction")<CR><C-X><C-O>'
-        exec 'inoremap <buffer> '.g:ftplugin_sql_omni_key.'o <C-\><C-O>:call sqlcomplete#Map("sqlOption")<CR><C-X><C-O>'
-        exec 'inoremap <buffer> '.g:ftplugin_sql_omni_key.'T <C-\><C-O>:call sqlcomplete#Map("sqlType")<CR><C-X><C-O>'
-        exec 'inoremap <buffer> '.g:ftplugin_sql_omni_key.'s <C-\><C-O>:call sqlcomplete#Map("sqlStatement")<CR><C-X><C-O>'
+        exec 'inoremap <buffer> '.g:ftplugin_sql_omni_key.'k <C-\><C-O>:call sqlcomplete#Map("sqlKeyword'.regex_extra.'")<CR><C-X><C-O>'
+        exec 'inoremap <buffer> '.g:ftplugin_sql_omni_key.'f <C-\><C-O>:call sqlcomplete#Map("sqlFunction'.regex_extra.'")<CR><C-X><C-O>'
+        exec 'inoremap <buffer> '.g:ftplugin_sql_omni_key.'o <C-\><C-O>:call sqlcomplete#Map("sqlOption'.regex_extra.'")<CR><C-X><C-O>'
+        exec 'inoremap <buffer> '.g:ftplugin_sql_omni_key.'T <C-\><C-O>:call sqlcomplete#Map("sqlType'.regex_extra.'")<CR><C-X><C-O>'
+        exec 'inoremap <buffer> '.g:ftplugin_sql_omni_key.'s <C-\><C-O>:call sqlcomplete#Map("sqlStatement'.regex_extra.'")<CR><C-X><C-O>'
         " Dynamic maps which use populate the completion list
         " using the dbext.vim plugin
         exec 'inoremap <buffer> '.g:ftplugin_sql_omni_key.'t <C-\><C-O>:call sqlcomplete#Map("table")<CR><C-X><C-O>'
@@ -510,4 +522,3 @@ let &cpo = s:save_cpo
 unlet s:save_cpo
 
 " vim:sw=4:
-

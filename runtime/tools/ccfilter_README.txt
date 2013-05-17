@@ -11,7 +11,7 @@ so you would normally compile it with one of the following:
     cc -D_IRIX    ccfilter.c -o ccfilter
     cc -D_SOLARIS ccfilter.c -o ccfilter
     cc -D_HPUX    ccfilter.c -o ccfilter
-You can then copy ccfilter to it's target destination (i.e: /usr/local/bin).
+You can then copy ccfilter to its target destination (i.e: /usr/local/bin).
 The man page ccfilter.1 has to be copied to somewhere in your MANPATH,
 under a man1 directory (i.e: /usr/local/man/man1).
 

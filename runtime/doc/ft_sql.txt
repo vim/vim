@@ -1,4 +1,4 @@
-*ft_sql.txt*	For Vim version 7.3.  Last change: 2013 Apr 05
+*ft_sql.txt*	For Vim version 7.3.  Last change: 2013 May 15
 
 by David Fishburn
 
@@ -349,6 +349,7 @@ may not work properly on all platforms: >
 The static maps (which are based on the syntax highlight groups) follow this
 format: >
     imap <buffer> <C-C>k <C-\><C-O>:call sqlcomplete#Map('sqlKeyword')<CR><C-X><C-O>
+    imap <buffer> <C-C>k <C-\><C-O>:call sqlcomplete#Map('sqlKeyword\w*')<CR><C-X><C-O>
 
 This command breaks down as: >
     imap		   - Create an insert map
@@ -369,6 +370,9 @@ This command breaks down as: >
 			     command while editing a SQL file.
     'sqlKeyword'	   - Display the items for the sqlKeyword highlight
 			     group
+    'sqlKeyword\w*'	   - A second option available with Vim 7.4 which
+                             uses a regular expression to determine which
+			     syntax groups to use
     )<CR>		   - Execute the :let command
     <C-X><C-O>		   - Trigger the standard omni completion key stroke.
 			     Passing in 'sqlKeyword' instructs the SQL

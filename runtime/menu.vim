@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 Dec 06
+" Last Change:	2013 May 17
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -308,8 +308,10 @@ fun! s:TextWidth()
   endif
   let n = inputdialog(g:menutrans_textwidth_dialog, &tw)
   if n != ""
-    " remove leading zeros to avoid it being used as an octal number
-    let &tw = substitute(n, "^0*", "", "")
+    " Remove leading zeros to avoid it being used as an octal number.
+    " But keep a zero by itself.
+    let tw = substitute(n, "^0*", "", "")
+    let &tw = tw == '' ? 0 : tw 
   endif
 endfun
 

@@ -328,7 +328,7 @@ Note: Use the <> form if possible
 	t_k8	<F8>		function key 8		*<F8>*	*t_k8* *'t_k8'*
 	t_k9	<F9>		function key 9		*<F9>*	*t_k9* *'t_k9'*
 	t_k;	<F10>		function key 10		*<F10>*	*t_k;* *'t_k;'*
-	t_F1	<F11>		function key 11		*<F11>* *t_F1* *'t_F1'*
+	t_F1	<F11>		function key 11		*<F11>*	*t_F1* *'t_F1'*
 	t_F2	<F12>		function key 12		*<F12>*	*t_F2* *'t_F2'*
 	t_F3	<F13>		function key 13		*<F13>*	*t_F3* *'t_F3'*
 	t_F4	<F14>		function key 14		*<F14>*	*t_F4* *'t_F4'*
@@ -358,9 +358,9 @@ Note: Use the <> form if possible
 	t_kI	<Insert>	insert key			*t_kI* *'t_kI'*
 	t_kD	<Del>		delete key			*t_kD* *'t_kD'*
 	t_kb	<BS>		backspace key			*t_kb* *'t_kb'*
-	t_kB	<S-Tab>		back-tab (shift-tab)  *<S-Tab>* *t_kB* *'t_kB'*
+	t_kB	<S-Tab>		back-tab (shift-tab)  *<S-Tab>*	*t_kB* *'t_kB'*
 	t_kh	<Home>		home key			*t_kh* *'t_kh'*
-	t_#2	<S-Home>	shifted home key     *<S-Home>* *t_#2* *'t_#2'*
+	t_#2	<S-Home>	shifted home key     *<S-Home>*	*t_#2* *'t_#2'*
 		<xHome>		alternate home key		*<xHome>*
 	t_@7	<End>		end key				*t_@7* *'t_@7'*
 	t_*7	<S-End>		shifted end key	*<S-End>* *t_star7* *'t_star7'*
@@ -373,8 +373,8 @@ Note: Use the <> form if possible
 	t_K5	<kPageDown>	keypad page-down key		*t_K5* *'t_K5'*
 	t_K6	<kPlus>		keypad plus key	      *<kPlus>*	*t_K6* *'t_K6'*
 	t_K7	<kMinus>	keypad minus key     *<kMinus>*	*t_K7* *'t_K7'*
-	t_K8	<kDivide>	keypad divide	    *<kDivide>* *t_K8* *'t_K8'*
-	t_K9	<kMultiply>	keypad multiply   *<kMultiply>* *t_K9* *'t_K9'*
+	t_K8	<kDivide>	keypad divide	    *<kDivide>*	*t_K8* *'t_K8'*
+	t_K9	<kMultiply>	keypad multiply   *<kMultiply>*	*t_K9* *'t_K9'*
 	t_KA	<kEnter>	keypad enter key     *<kEnter>*	*t_KA* *'t_KA'*
 	t_KB	<kPoint>	keypad decimal point *<kPoint>*	*t_KB* *'t_KB'*
 	t_KC	<k0>		keypad 0		 *<k0>*	*t_KC* *'t_KC'*

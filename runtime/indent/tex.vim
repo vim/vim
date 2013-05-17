@@ -1,6 +1,6 @@
 " Vim indent file
 " Language:     LaTeX
-" Maintainer:   Zhou YiChao <broken.zhou AT gmail.com>
+" Maintainer:   YiChao Zhou <broken.zhou AT gmail.com>
 " Created:      Sat, 16 Feb 2002 16:50:19 +0100
 " Last Change:	2012 Mar 18 19:19:50
 " Version: 0.7
@@ -46,6 +46,9 @@
 "               (*) Modify indentkeys.
 "               2012/03/18 by Zhou Yichao <broken.zhou AT gmail.com>
 "               (*) Add &cpo
+"               2013/05/02 by Zhou Yichao <broken.zhou AT gmail.com>
+"               (*) Fix problem about GetTeXIndent checker. Thank Albert Netymk
+"                   for reporting this.
 " }}}
 
 " Document: {{{
@@ -106,10 +109,6 @@
 " }}} 
 
 " Only define the function once
-if exists("*GetTeXIndent")
-    finish
-endif
-
 if exists("b:did_indent")
     finish
 endif
@@ -158,7 +157,7 @@ exec 'setlocal indentkeys+=[,(,{,),},],\&' . substitute(g:tex_items, '^\|\(\\|\)
 let g:tex_items = '^\s*' . substitute(g:tex_items, '^\(\^\\s\*\)*', '', '')
 " }}}
 
-function GetTeXIndent() " {{{
+function! GetTeXIndent() " {{{
     " Find a non-blank line above the current line.
     let lnum = prevnonblank(v:lnum - 1)
 

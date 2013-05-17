@@ -1,8 +1,8 @@
 " Vim OMNI completion script for SQL
 " Language:    SQL
 " Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
-" Version:     14.0
-" Last Change: 2012 Dec 04
+" Version:     15.0
+" Last Change: 2013 May 13
 " Homepage:    http://www.vim.org/scripts/script.php?script_id=1572
 " Usage:       For detailed help
 "              ":help sql.txt"
@@ -10,6 +10,18 @@
 "              or read $VIMRUNTIME/doc/sql.txt
 
 " History
+"
+" TODO
+"     - Jonas Enberg - if no table is found when using column completion
+"       look backwards to a FROM clause and find the first table
+"       and complete it.
+"
+" Version 15.0 (May 2013)
+"     - NF: Changed the SQL precached syntax items, omni_sql_precache_syntax_groups,
+"           to use regular expressions to pick up extended syntax group names.
+"           This requires an updated SyntaxComplete plugin version 13.0.
+"           If the required versions have not been installed, previous
+"           behaviour will not be impacted.
 "
 " Version 14.0 (Dec 2012)
 "     - BF: Added check for cpo
@@ -91,7 +103,7 @@ endif
 if exists('g:loaded_sql_completion')
     finish
 endif
-let g:loaded_sql_completion = 130
+let g:loaded_sql_completion = 150
 let s:keepcpo= &cpo
 set cpo&vim
 
@@ -110,12 +122,14 @@ let s:syn_value             = []
 " Used in conjunction with the syntaxcomplete plugin
 let s:save_inc              = ""
 let s:save_exc              = ""
-if exists('g:omni_syntax_group_include_sql')
-    let s:save_inc = g:omni_syntax_group_include_sql
+if !exists('g:omni_syntax_group_include_sql')
+    let g:omni_syntax_group_include_sql = ''
 endif
-if exists('g:omni_syntax_group_exclude_sql')
-    let s:save_exc = g:omni_syntax_group_exclude_sql
+if !exists('g:omni_syntax_group_exclude_sql')
+    let g:omni_syntax_group_exclude_sql = ''
 endif
+let s:save_inc = g:omni_syntax_group_include_sql
+let s:save_exc = g:omni_syntax_group_exclude_sql
 
 " Used with the column list
 let s:save_prev_table       = ""
@@ -127,12 +141,12 @@ endif
 " Default syntax items to precache
 if !exists('g:omni_sql_precache_syntax_groups')
     let g:omni_sql_precache_syntax_groups = [
-                \ 'syntax',
-                \ 'sqlKeyword',
-                \ 'sqlFunction',
-                \ 'sqlOption',
-                \ 'sqlType',
-                \ 'sqlStatement'
+                \ 'syntax\w*',
+                \ 'sqlKeyword\w*',
+                \ 'sqlFunction\w*',
+                \ 'sqlOption\w*',
+                \ 'sqlType\w*',
+                \ 'sqlStatement\w*'
                 \ ]
 endif
 " Set ignorecase to the ftplugin standard
@@ -621,19 +635,23 @@ function! s:SQLCGetSyntaxList(syn_group)
         " Return previously cached value
         let compl_list = s:syn_value[list_idx]
     else
+        let s:save_inc = g:omni_syntax_group_include_sql
+        let s:save_exc = g:omni_syntax_group_exclude_sql
+        let g:omni_syntax_group_include_sql = ''
+        let g:omni_syntax_group_exclude_sql = ''
+
         " Request the syntax list items from the
         " syntax completion plugin
         if syn_group == 'syntax'
             " Handle this special case.  This allows the user
             " to indicate they want all the syntax items available,
             " so do not specify a specific include list.
-            let g:omni_syntax_group_include_sql = ''
+            let syn_value                       = syntaxcomplete#OmniSyntaxList()
         else
             " The user has specified a specific syntax group
             let g:omni_syntax_group_include_sql = syn_group
+            let syn_value                       = syntaxcomplete#OmniSyntaxList(syn_group)
         endif
-        let g:omni_syntax_group_exclude_sql = ''
-        let syn_value                       = syntaxcomplete#OmniSyntaxList()
         let g:omni_syntax_group_include_sql = s:save_inc
         let g:omni_syntax_group_exclude_sql = s:save_exc
         " Cache these values for later use

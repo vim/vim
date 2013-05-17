@@ -1,18 +1,34 @@
 " Vim completion script
 " Language:    All languages, uses existing syntax highlighting rules
 " Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
-" Version:     11.0
-" Last Change: 2012 Dec 04
+" Version:     13.0
+" Last Change: 2013 May 14
 " Usage:       For detailed help, ":help ft-syntax-omni"
 
 " History
 "
+" Version 13.0
+"   - Extended the option omni_syntax_group_include_{filetype}
+"     to accept a comma separated list of regex's rather than
+"     string.  For example, for the javascript filetype you could
+"     use:
+"        let g:omni_syntax_group_include_javascript = 'javascript\w\+,jquery\w\+'
+"   - Some syntax files (perl.vim) use the match // syntax as a mechanism
+"     to identify keywords.  This update attempts to parse the
+"     match syntax and pull out syntax items which are at least
+"     3 words or more.
+"
+" Version 12.0
+"   - It is possible to have '-' as part of iskeyword, when
+"     checking for character ranges, tighten up the regex.
+"     E688: More targets than List items.
+"
 " Version 11.0
-"     Corrected which characters required escaping during
+"   - Corrected which characters required escaping during
 "     substitution calls.
 "
 " Version 10.0
-"     Cycle through all the character ranges specified in the
+"   - Cycle through all the character ranges specified in the
 "     iskeyword option and build a list of valid word separators.
 "     Prior to this change, only actual characters were used,
 "     where for example ASCII "45" == "-".  If "45" were used
@@ -20,30 +36,30 @@
 "     This introduces a new option, since the character ranges
 "     specified could be multibyte:
 "         let g:omni_syntax_use_single_byte = 1
-"     This by default will only allow single byte ASCII
+"   - This by default will only allow single byte ASCII
 "     characters to be added and an additional check to ensure
 "     the charater is printable (see documentation for isprint).
 "
 " Version 9.0
-"     Add the check for cpo.
+"   - Add the check for cpo.
 "
 " Version 8.0
-"     Updated SyntaxCSyntaxGroupItems()
+"   - Updated SyntaxCSyntaxGroupItems()
 "         - Some additional syntax items were also allowed
 "           on nextgroup= lines which were ignored by default.
 "           Now these lines are processed independently.
 "
 " Version 7.0
-"     Updated syntaxcomplete#OmniSyntaxList()
+"   - Updated syntaxcomplete#OmniSyntaxList()
 "         - Looking up the syntax groups defined from a syntax file
 "           looked for only 1 format of {filetype}GroupName, but some
 "           syntax writers use this format as well:
 "               {b:current_syntax}GroupName
-"           OmniSyntaxList() will now check for both if the first
+"   -       OmniSyntaxList() will now check for both if the first
 "           method does not find a match.
 "
 " Version 6.0
-"     Added syntaxcomplete#OmniSyntaxList()
+"   - Added syntaxcomplete#OmniSyntaxList()
 "         - Allows other plugins to use this for their own
 "           purposes.
 "         - It will return a List of all syntax items for the
@@ -52,7 +68,7 @@
 "           sqlcomplete plugin to populate a Choose box.
 "
 " Version 5.0
-"     Updated SyntaxCSyntaxGroupItems()
+"   - Updated SyntaxCSyntaxGroupItems()
 "         - When processing a list of syntax groups, the final group
 "           was missed in function SyntaxCSyntaxGroupItems.
 "
@@ -70,7 +86,7 @@ endif
 if exists('g:loaded_syntax_completion')
     finish
 endif
-let g:loaded_syntax_completion = 110
+let g:loaded_syntax_completion = 130
 
 " Turn on support for line continuations when creating the script
 let s:cpo_save = &cpo
@@ -113,7 +129,8 @@ endif
 
 " This script will build a completion list based on the syntax
 " elements defined by the files in $VIMRUNTIME/syntax.
-let s:syn_remove_words = 'match,matchgroup=,contains,'.
+" let s:syn_remove_words = 'match,matchgroup=,contains,'.
+let s:syn_remove_words = 'matchgroup=,contains,'.
             \ 'links to,start=,end='
             " \ 'links to,start=,end=,nextgroup='
 
@@ -275,9 +292,19 @@ function! OmniSyntaxList(...)
     "     sqlType
     "     sqlOperators
     "     sqlKeyword ...
-    redir @l
-    silent! exec 'syntax list '.join(list_parms)
-    redir END
+    if !empty(list_parms) && empty(substitute(join(list_parms), '[a-zA-Z ]', '', 'g'))
+        " If list_parms only includes word characters, use it to limit
+        " the syntax elements.
+        " If using regex syntax list will fail to find those items, so
+        " simply grab the who syntax list.
+        redir @l
+        silent! exec 'syntax list '.join(list_parms)
+        redir END
+    else
+        redir @l
+        silent! exec 'syntax list'
+        redir END
+    endif
 
     let syntax_full = "\n".@l
     let @l = saveL
@@ -311,82 +338,167 @@ function! OmniSyntaxList(...)
         endif
     endif
 
-    " Sometimes filetypes can be composite names, like c.doxygen
-    " Loop through each individual part looking for the syntax
-    " items specific to each individual filetype.
+    if empty(list_parms)
+        let list_parms = [&filetype.'\w\+']
+    endif
+
     let syn_list = ''
-    let ftindex  = 0
-    let ftindex  = match(&filetype, '\w\+', ftindex)
+    let index    = 0
+    for group_regex in list_parms
+        " Sometimes filetypes can be composite names, like c.doxygen
+        " Loop through each individual part looking for the syntax
+        " items specific to each individual filetype.
+        " let ftindex  = 0
+        " let ftindex  = match(syntax_full, group_regex, ftindex)
 
-    while ftindex > -1
-        let ft_part_name = matchstr( &filetype, '\w\+', ftindex )
+        " while ftindex > -1
+            " let ft_part_name = matchstr( syntax_full, '\w\+', ftindex )
 
-        " Syntax rules can contain items for more than just the current
-        " filetype.  They can contain additional items added by the user
-        " via autocmds or their vimrc.
-        " Some syntax files can be combined (html, php, jsp).
-        " We want only items that begin with the filetype we are interested in.
-        let next_group_regex = '\n' .
-                    \ '\zs'.ft_part_name.'\w\+\ze'.
-                    \ '\s\+xxx\s\+'
-        let index    = 0
-        let index    = match(syntax_full, next_group_regex, index)
-
-        if index == -1 && exists('b:current_syntax') && ft_part_name != b:current_syntax
-            " There appears to be two standards when writing syntax files.
-            " Either items begin as:
-            "     syn keyword {filetype}Keyword         values ...
-            "     let b:current_syntax = "sql"
-            "     let b:current_syntax = "sqlanywhere"
-            " Or
-            "     syn keyword {syntax_filename}Keyword  values ...
-            "     let b:current_syntax = "mysql"
-            " So, we will make the format of finding the syntax group names
-            " a bit more flexible and look for both if the first fails to
-            " find a match.
+            " Syntax rules can contain items for more than just the current
+            " filetype.  They can contain additional items added by the user
+            " via autocmds or their vimrc.
+            " Some syntax files can be combined (html, php, jsp).
+            " We want only items that begin with the filetype we are interested in.
             let next_group_regex = '\n' .
-                        \ '\zs'.b:current_syntax.'\w\+\ze'.
+                        \ '\zs'.group_regex.'\ze'.
                         \ '\s\+xxx\s\+'
-            let index    = 0
             let index    = match(syntax_full, next_group_regex, index)
-        endif
 
-        while index > -1
-            let group_name = matchstr( syntax_full, '\w\+', index )
-
-            let get_syn_list = 1
-            for exclude_group_name in list_exclude_groups
-                if '\<'.exclude_group_name.'\>' =~ '\<'.group_name.'\>'
-                    let get_syn_list = 0
-                endif
-            endfor
-
-            " This code is no longer needed in version 6.0 since we have
-            " augmented the syntax list command to only retrieve the syntax
-            " groups we are interested in.
-            "
-            " if get_syn_list == 1
-            "     if syntax_group_include_{filetype} != ''
-            "         if '\<'.syntax_group_include_{filetype}.'\>' !~ '\<'.group_name.'\>'
-            "             let get_syn_list = 0
-            "         endif
-            "     endif
-            " endif
-
-            if get_syn_list == 1
-                " Pass in the full syntax listing, plus the group name we
-                " are interested in.
-                let extra_syn_list = s:SyntaxCSyntaxGroupItems(group_name, syntax_full)
-                let syn_list = syn_list . extra_syn_list . "\n"
+            " For the matched group name, strip off any of the regex special
+            " characters and see if we get a match with the current syntax
+            if index == -1 && exists('b:current_syntax') && substitute(group_regex, '[^a-zA-Z ]\+.*', '', 'g') !~ '^'.b:current_syntax
+                " There appears to be two standards when writing syntax files.
+                " Either items begin as:
+                "     syn keyword {filetype}Keyword         values ...
+                "     let b:current_syntax = "sql"
+                "     let b:current_syntax = "sqlanywhere"
+                " Or
+                "     syn keyword {syntax_filename}Keyword  values ...
+                "     let b:current_syntax = "mysql"
+                " So, we will make the format of finding the syntax group names
+                " a bit more flexible and look for both if the first fails to
+                " find a match.
+                let next_group_regex = '\n' .
+                            \ '\zs'.b:current_syntax.'\w\+\ze'.
+                            \ '\s\+xxx\s\+'
+                let index    = 0
+                let index    = match(syntax_full, next_group_regex, index)
             endif
 
-            let index = index + strlen(group_name)
-            let index = match(syntax_full, next_group_regex, index)
-        endwhile
+            while index > -1
+                let group_name = matchstr( syntax_full, '\w\+', index )
 
-        let ftindex  = ftindex + len(ft_part_name)
-        let ftindex  = match( &filetype, '\w\+', ftindex )
-    endwhile
+                let get_syn_list = 1
+                for exclude_group_name in list_exclude_groups
+                    if '\<'.exclude_group_name.'\>' =~ '\<'.group_name.'\>'
+                        let get_syn_list = 0
+                    endif
+                endfor
+
+                " This code is no longer needed in version 6.0 since we have
+                " augmented the syntax list command to only retrieve the syntax
+                " groups we are interested in.
+                "
+                " if get_syn_list == 1
+                "     if syntax_group_include_{filetype} != ''
+                "         if '\<'.syntax_group_include_{filetype}.'\>' !~ '\<'.group_name.'\>'
+                "             let get_syn_list = 0
+                "         endif
+                "     endif
+                " endif
+
+                if get_syn_list == 1
+                    " Pass in the full syntax listing, plus the group name we
+                    " are interested in.
+                    let extra_syn_list = s:SyntaxCSyntaxGroupItems(group_name, syntax_full)
+                    let syn_list = syn_list . extra_syn_list . "\n"
+                endif
+
+                let index = index + strlen(group_name)
+                let index = match(syntax_full, next_group_regex, index)
+            endwhile
+
+            " let ftindex  = ftindex + len(ft_part_name)
+            " let ftindex  = match( syntax_full, group_regex, ftindex )
+        " endwhile
+    endfor
+
+"   " Sometimes filetypes can be composite names, like c.doxygen
+"   " Loop through each individual part looking for the syntax
+"   " items specific to each individual filetype.
+"   let syn_list = ''
+"   let ftindex  = 0
+"   let ftindex  = match(&filetype, '\w\+', ftindex)
+
+"   while ftindex > -1
+"       let ft_part_name = matchstr( &filetype, '\w\+', ftindex )
+
+"       " Syntax rules can contain items for more than just the current
+"       " filetype.  They can contain additional items added by the user
+"       " via autocmds or their vimrc.
+"       " Some syntax files can be combined (html, php, jsp).
+"       " We want only items that begin with the filetype we are interested in.
+"       let next_group_regex = '\n' .
+"                   \ '\zs'.ft_part_name.'\w\+\ze'.
+"                   \ '\s\+xxx\s\+'
+"       let index    = 0
+"       let index    = match(syntax_full, next_group_regex, index)
+
+"       if index == -1 && exists('b:current_syntax') && ft_part_name != b:current_syntax
+"           " There appears to be two standards when writing syntax files.
+"           " Either items begin as:
+"           "     syn keyword {filetype}Keyword         values ...
+"           "     let b:current_syntax = "sql"
+"           "     let b:current_syntax = "sqlanywhere"
+"           " Or
+"           "     syn keyword {syntax_filename}Keyword  values ...
+"           "     let b:current_syntax = "mysql"
+"           " So, we will make the format of finding the syntax group names
+"           " a bit more flexible and look for both if the first fails to
+"           " find a match.
+"           let next_group_regex = '\n' .
+"                       \ '\zs'.b:current_syntax.'\w\+\ze'.
+"                       \ '\s\+xxx\s\+'
+"           let index    = 0
+"           let index    = match(syntax_full, next_group_regex, index)
+"       endif
+
+"       while index > -1
+"           let group_name = matchstr( syntax_full, '\w\+', index )
+
+"           let get_syn_list = 1
+"           for exclude_group_name in list_exclude_groups
+"               if '\<'.exclude_group_name.'\>' =~ '\<'.group_name.'\>'
+"                   let get_syn_list = 0
+"               endif
+"           endfor
+
+"           " This code is no longer needed in version 6.0 since we have
+"           " augmented the syntax list command to only retrieve the syntax
+"           " groups we are interested in.
+"           "
+"           " if get_syn_list == 1
+"           "     if syntax_group_include_{filetype} != ''
+"           "         if '\<'.syntax_group_include_{filetype}.'\>' !~ '\<'.group_name.'\>'
+"           "             let get_syn_list = 0
+"           "         endif
+"           "     endif
+"           " endif
+
+"           if get_syn_list == 1
+"               " Pass in the full syntax listing, plus the group name we
+"               " are interested in.
+"               let extra_syn_list = s:SyntaxCSyntaxGroupItems(group_name, syntax_full)
+"               let syn_list = syn_list . extra_syn_list . "\n"
+"           endif
+
+"           let index = index + strlen(group_name)
+"           let index = match(syntax_full, next_group_regex, index)
+"       endwhile
+
+"       let ftindex  = ftindex + len(ft_part_name)
+"       let ftindex  = match( &filetype, '\w\+', ftindex )
+"   endwhile
 
     " Convert the string to a List and sort it.
     let compl_list = sort(split(syn_list))
@@ -454,10 +566,65 @@ function! s:SyntaxCSyntaxGroupItems( group_name, syntax_full )
                     \    , "\n", 'g'
                     \  )
 
+        " Attempt to deal with lines using the match syntax
+        " javaScriptDocTags xxx match /@\(param\|argument\|requires\|file\)\>/
+        " Though it can use any types of regex, so this plugin will attempt
+        " to restrict it
+        " 1.  Only use \( or \%( constructs remove all else
+        " 2   Remove and []s
+        " 3.  Account for match //constructs
+        "                       \%(\%(ms\|me\|hs\|he\|rs\|re\|lc\)\S\+\)\?
+        " 4.  Hope for the best
+        "
+        "
+        let syn_list_old = syn_list
+        while syn_list =~ '\<match\>\s\+\/'
+            if syn_list =~ 'perlElseIfError'
+                let syn_list = syn_list
+            endif
+            " Check if the match has words at least 3 characters long
+            if syn_list =~ '\<match \/\zs.\{-}\<\w\{3,}\>.\{-}\ze\\\@<!\/\%(\%(ms\|me\|hs\|he\|rs\|re\|lc\)\S\+\)\?\s\+'
+                " Remove everything after / and before the first \(
+                let syn_list = substitute( syn_list, '\<match \/\zs.\{-}\ze\\%\?(.\{-}\\\@<!\/\%(\%(ms\|me\|hs\|he\|rs\|re\|lc\)\S\+\)\?\s\+', '', 'g' )
+                " Remove everything after \) and up to the ending /
+                let syn_list = substitute( syn_list, '\<match \/.\{-}\\)\zs.\{-}\ze\/\%(\%(ms\|me\|hs\|he\|rs\|re\|lc\)\S\+\)\?\s\+', '', 'g' )
+
+                " Remove any character classes
+                " let syn_list = substitute( syn_list, '\<match /\zs.\{-}\[[^]]*\].\{-}\ze\/ ', '', 'g' )
+                let syn_list = substitute( syn_list, '\%(\<match \/[^/]\{-}\)\@<=\[[^]]*\]\ze.\{-}\\\@<!\/\%(\%(ms\|me\|hs\|he\|rs\|re\|lc\)\S\+\)\?', '', 'g' )
+                " Remove any words < 3 characters
+                let syn_list = substitute( syn_list, '\%(\<match \/[^/]\{-}\)\@<=\<\w\{1,2}\>\ze.\{-}\\\@<!\/\%(\%(ms\|me\|hs\|he\|rs\|re\|lc\)\S\+\)\?\s\+', '', 'g' )
+                " Remove all non-word characters
+                " let syn_list = substitute( syn_list, '\<match /\zs.\{-}\<\W\+\>.\{-}\ze\/ ', "", 'g' )
+                " let syn_list = substitute( syn_list, '\%(\<match \/[^/]\{-}\)\@<=\W\+\ze.\{-}\/ ', ' ', 'g' )
+                " Do this by using the outer substitue() call to gather all
+                " text between the match /.../ tags.
+                " The inner substitute() call operates on the text selected
+                " and replaces all non-word characters.
+                let syn_list = substitute( syn_list, '\<match \/\zs\(.\{-}\)\ze\\\@<!\/\%(\%(ms\|me\|hs\|he\|rs\|re\|lc\)\S\+\)\?\s\+'
+                            \ , '\=substitute(submatch(1), "\\W\\+", " ", "g")'
+                            \ , 'g' )
+                " Remove the match / / syntax
+                let syn_list = substitute( syn_list, '\<match \/\(.\{-}\)\/\%(\%(ms\|me\|hs\|he\|rs\|re\|lc\)\S\+\)\?\s\+', '\1', 'g' )
+            else
+                " No words long enough, remove the match
+                " Remove the match syntax
+                " let syn_list = substitute( syn_list, '\<match \/[^\/]*\/\%(\%(ms\|me\|hs\|he\|rs\|re\|lc\)\S\+\)\?\s\+', '', 'g' )
+                let syn_list = substitute( syn_list, '\<match \/\%(.\{-}\)\?\/\%(\%(ms\|me\|hs\|he\|rs\|re\|lc\)\S\+\)\?\s\+', '', 'g' )
+            endif
+            if syn_list =~ '\<match\>\s\+\/'
+                " Problem removing the match / / tags
+                let syn_list = ''
+            endif
+        endwhile
+
+
         " Now strip off the newline + blank space + contained.
         " Also include lines with nextgroup=@someName skip_key_words syntax_element
+                    " \    syn_list, '\%(^\|\n\)\@<=\s*\<\(contained\|nextgroup=\)'
+                    " \    syn_list, '\%(^\|\n\)\@<=\s*\<\(contained\|nextgroup=[@a-zA-Z,]*\)'
         let syn_list = substitute(
-                    \    syn_list, '\%(^\|\n\)\@<=\s*\<\(contained\|nextgroup=\)'
+                    \    syn_list, '\<\(contained\|nextgroup=[@a-zA-Z,]*\)'
                     \    , "", 'g'
                     \ )
 
@@ -497,7 +664,7 @@ function! s:SyntaxCSyntaxGroupItems( group_name, syntax_full )
                 " If so, add it to the list.
                 let accepted_chars = ''
                 for item in split(&iskeyword, ',')
-                    if item =~ '-'
+                    if item =~ '\d-\d'
                         " This is a character range (ie 47-58),
                         " cycle through each character within the range
                         let [b:start, b:end] = split(item, '-')

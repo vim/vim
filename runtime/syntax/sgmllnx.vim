@@ -1,8 +1,7 @@
 " Vim syntax file
 " Language:	SGML-linuxdoc (supported by old sgmltools-1.x)
-"		(for more information, visit www.sgmltools.org)
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change:	2008 Sep 17
+" Last Change:	2013 May 13
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -29,7 +28,7 @@ syn region sgmllnxSpecial	oneline start="&" end=";"
 syn keyword sgmllnxTagName contained article author date toc title sect verb
 syn keyword sgmllnxTagName contained abstract tscreen p itemize item enum
 syn keyword sgmllnxTagName contained descrip quote htmlurl code ref
-syn keyword sgmllnxTagName contained tt tag bf
+syn keyword sgmllnxTagName contained tt tag bf it url
 syn match   sgmllnxTagName contained "sect\d\+"
 
 " Comments

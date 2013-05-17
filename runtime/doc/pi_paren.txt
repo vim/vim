@@ -1,4 +1,4 @@
-*pi_paren.txt*  For Vim version 7.3.  Last change: 2008 Jun 16
+*pi_paren.txt*  For Vim version 7.3.  Last change: 2013 May 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -46,7 +46,10 @@ are:
   closed folds.
 - 'synmaxcol' times 2 bytes before or after the cursor to avoid a delay
   in a long line with syntax highlighting.
-
+- A timeout of 300 msec (60 msec in Insert mode). This can be changed with the
+  g:matchparen_timeout and g:matchparen_insert_timeout variables and their
+  buffer-local equivalents b:matchparen_timeout and
+  b:matchparen_insert_timeout.
 
 If you would like the |%| command to work better, the matchit plugin can be
 used, see |matchit-install|.  This plugin also helps to skip matches in

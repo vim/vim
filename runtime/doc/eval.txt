@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2013 May 06
+*eval.txt*	For Vim version 7.3.  Last change: 2013 May 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1171,7 +1171,7 @@ b:changedtick	The total number of changes to the current buffer.  It is
 A variable name that is preceded with "w:" is local to the current window.  It
 is deleted when the window is closed.
 
-						*tabpage-variable* *t:var*
+						*tabpage-variable* *t:var* *t:*
 A variable name that is preceded with "t:" is local to the current tab page,
 It is deleted when the tab page is closed. {not available when compiled
 without the |+windows| feature}

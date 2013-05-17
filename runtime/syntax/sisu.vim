@@ -1,8 +1,8 @@
 " SiSU Vim syntax file
 " SiSU Maintainer: Ralph Amissah <ralph@amissah.com>
-" SiSU Markup:     SiSU (sisu-3.1.0)
-" Last Change:     2011-10-03
-" URL:             <http://git.sisudoc.org/?p=code/sisu.git;a=blob;f=data/sisu/v3/conf/editor-syntax-etc/vim/syntax/sisu.vim;hb=HEAD>
+" SiSU Markup:     SiSU (sisu-4.0.9)
+" Last Change:     2013-02-22
+" URL (sisu-4.1.0): <http://git.sisudoc.org/?p=code/sisu.git;a=blob;f=data/sisu/conf/editor-syntax-etc/vim/syntax/sisu.vim;hb=HEAD>
 "(originally looked at Ruby Vim by Mirko Nasato)
 
 if version < 600
@@ -20,14 +20,9 @@ syn match sisu_error contains=sisu_link,sisu_error_wspace "<![^ei]\S\+!>"
 "% "Markers Identifiers:
 if !exists("sisu_no_identifiers")
   syn match   sisu_mark_endnote                                           "\~^"
-  syn match   sisu_break               contains=@NoSpell                  " \\\\\( \|$\)"
-  syn match   sisu_break               contains=@NoSpell                  "<br>\|<br />"
-  syn match   sisu_control             contains=@NoSpell                  "^<:p[bn]>\s*$"
- "syn match   sisu_control             contains=@NoSpell                  "^<\(br\)\?:\(pg\|pgn\|pn\)>\s*$"
- "syn match   sisu_control             contains=@NoSpell                  "^\[\(br\)\?:\(pg\|pgn\|pn\)\]\s*$"
+  syn match   sisu_break               contains=@NoSpell                  " \\\\\( \|$\)\|<br>\|<br />"
+  syn match   sisu_control             contains=@NoSpell                  "^\(-\\\\-\|=\\\\=\|-\.\.-\|<:p[bn]>\)\s*$"
   syn match   sisu_control             contains=@NoSpell                  "^<:\(bo\|---\)>\s*$"
- "syn match   sisu_control             contains=@NoSpell                  "^<\(br\)\?:\(pr\|o\)>\s*$"
- "syn match   sisu_control             contains=@NoSpell                  "^\[\(br\)\?:\(pr\|o\)\]\s*$"
   syn match   sisu_marktail                                               "[~-]#"
   syn match   sisu_control                                                "\""
   syn match   sisu_underline                                              "\(^\| \)_[a-zA-Z0-9]\+_\([ .,]\|$\)"
@@ -43,11 +38,12 @@ if !exists("sisu_no_identifiers")
   syn match   sisu_sub_header_title                                       "^\s\+:\(subtitle\|short\|edition\|language\|lang_char\|note\):\s" "group=sisu_header_content
   syn match   sisu_sub_header_creator                                     "^\s\+:\(author\|editor\|contributor\|illustrator\|photographer\|translator\|digitized_by\|prepared_by\|audio\|video\):\s"                               " &hon &institution
   syn match   sisu_sub_header_rights                                      "^\s\+:\(copyright\|text\|translation\|illustrations\|photographs\|preparation\|digitization\|audio\|video\|license\|all\):\s"                   " access_rights license
-  syn match   sisu_sub_header_classify                                    "^\s\+:\(topic_register\|coverage\|format\|identifier\|keywords\|relation\|subject\|type\|dewey\|loc\|oclc\|pg\|isbn\):\s"
-  syn match   sisu_sub_header_date                                       "^\s\+:\(added_to_site\|available\|created\|issued\|modified\|published\|valid\|translated\|original_publication\):\s"
+  syn match   sisu_sub_header_classify                                    "^\s\+:\(topic_register\|keywords\|subject\|dewey\|loc\):\s"
+  syn match   sisu_sub_header_identifier                                  "^\s\+:\(oclc\|isbn\):\s"
+  syn match   sisu_sub_header_date                                        "^\s\+:\(added_to_site\|available\|created\|issued\|modified\|published\|valid\|translated\|original_publication\):\s"
   syn match   sisu_sub_header_original                                    "^\s\+:\(publisher\|date\|language\|lang_char\|institution\|nationality\|source\):\s"
-  syn match   sisu_sub_header_make                                        "^\s\+:\(headings\|num_top\|breaks\|language\|italics\|bold\|emphasis\|plaintext_wrap\|texpdf_font_mono\|texpdf_font\|skin\|stamp\|promo\|ad\|manpage\):\s"
-  syn match   sisu_sub_header_notes                                       "^\s\+:\(abstract\|comment\|description\|history\|prefix\|prefix_[ab]\|suffix\):\s"
+  syn match   sisu_sub_header_make                                        "^\s\+:\(headings\|num_top\|breaks\|language\|italics\|bold\|emphasis\|substitute\|omit\|plaintext_wrap\|texpdf_font_mono\|texpdf_font\|stamp\|promo\|ad\|manpage\|home_button_text\|home_button_image\|cover_image\|footer\):\s"
+  syn match   sisu_sub_header_notes                                       "^\s\+:\(description\|abstract\|comment\|coverage\|relation\|source\|history\|type\|format\|prefix\|prefix_[ab]\|suffix\):\s"
 
 "% "semantic markers: (ignore)
   syn match   sisu_sem_marker                                             ";{\|};[a-z._]*[a-z]"
@@ -85,6 +81,8 @@ syn region sisu_header_content contains=sisu_error,sisu_comment,sisu_break,sisu_
 syn region sisu_header_content contains=sisu_error,sisu_comment,sisu_break,sisu_link,sisu_sub_header_rights matchgroup=sisu_header start="^[@]rights:[+-]\?\(\s\|\n\)"rs=e-1 end="\n$"
 " classify document
 syn region sisu_header_content contains=sisu_error,sisu_comment,sisu_break,sisu_link,sisu_sub_header_classify matchgroup=sisu_header start="^[@]classify:[+-]\?\(\s\|\n\)"rs=e-1 end="\n$"
+" identifier document
+syn region sisu_header_content contains=sisu_error,sisu_comment,sisu_break,sisu_link,sisu_sub_header_identifier matchgroup=sisu_header start="^[@]identifier:[+-]\?\(\s\|\n\)"rs=e-1 end="\n$"
 " original language (depreciated)
 syn region sisu_header_content contains=sisu_error,sisu_comment,sisu_break,sisu_link,sisu_sub_header_original matchgroup=sisu_header start="^[@]original:[+-]\?\(\s\|\n\)"rs=e-1 end="\n$"
 " notes
@@ -219,6 +217,7 @@ hi def link sisu_sub_header_date       Statement
 hi def link sisu_sub_header_publisher  Statement
 hi def link sisu_sub_header_rights     Statement
 hi def link sisu_sub_header_classify   Statement
+hi def link sisu_sub_header_identifier Statement
 hi def link sisu_sub_header_original   Statement
 hi def link sisu_sub_header_links      Statement
 hi def link sisu_sub_header_notes      Statement

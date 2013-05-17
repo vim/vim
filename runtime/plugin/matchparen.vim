@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2013 Mar 19
+" Last Change: 2013 May 08
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -10,6 +10,13 @@ if exists("g:loaded_matchparen") || &cp || !exists("##CursorMoved")
   finish
 endif
 let g:loaded_matchparen = 1
+
+if !exists("g:matchparen_timeout")
+  let g:matchparen_timeout = 300
+endif
+if !exists("g:matchparen_insert_timeout")
+  let g:matchparen_insert_timeout = 60
+endif
 
 augroup matchparen
   " Replace all matchparen autocommands
@@ -99,10 +106,15 @@ function! s:Highlight_Matching_Pair()
     let stopline = stoplinetop
   endif
 
+  " Limit the search time to 300 msec to avoid a hang on very long lines.
+  " This fails when a timeout is not supported.
+  if mode() == 'i' || mode() == 'R'
+    let timeout = exists("b:matchparen_insert_timeout") ? b:matchparen_insert_timeout : g:matchparen_insert_timeout
+  else
+    let timeout = exists("b:matchparen_timeout") ? b:matchparen_timeout : g:matchparen_timeout
+  endif
   try
-    " Limit the search time to 300 msec to avoid a hang on very long lines.
-    " This fails when a timeout is not supported.
-    let [m_lnum, m_col] = searchpairpos(c, '', c2, s_flags, s_skip, stopline, 300)
+    let [m_lnum, m_col] = searchpairpos(c, '', c2, s_flags, s_skip, stopline, timeout)
   catch /E118/
     " Can't use the timeout, restrict the stopline a bit more to avoid taking
     " a long time on closed folds and long lines.

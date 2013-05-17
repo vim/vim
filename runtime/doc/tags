@@ -2590,7 +2590,9 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :pwd	editing.txt	/*:pwd*
 :py	if_pyth.txt	/*:py*
 :py3	if_pyth.txt	/*:py3*
+:py3do	if_pyth.txt	/*:py3do*
 :py3file	if_pyth.txt	/*:py3file*
+:pydo	if_pyth.txt	/*:pydo*
 :pyf	if_pyth.txt	/*:pyf*
 :pyfile	if_pyth.txt	/*:pyfile*
 :python	if_pyth.txt	/*:python*
@@ -4258,6 +4260,7 @@ E86	windows.txt	/*E86*
 E860	eval.txt	/*E860*
 E861	eval.txt	/*E861*
 E862	eval.txt	/*E862*
+E863	if_pyth.txt	/*E863*
 E87	windows.txt	/*E87*
 E88	windows.txt	/*E88*
 E89	message.txt	/*E89*
@@ -7336,6 +7339,8 @@ python-options	if_pyth.txt	/*python-options*
 python-output	if_pyth.txt	/*python-output*
 python-pyeval	if_pyth.txt	/*python-pyeval*
 python-range	if_pyth.txt	/*python-range*
+python-tabpage	if_pyth.txt	/*python-tabpage*
+python-tabpages	if_pyth.txt	/*python-tabpages*
 python-vars	if_pyth.txt	/*python-vars*
 python-vim	if_pyth.txt	/*python-vim*
 python-vvars	if_pyth.txt	/*python-vvars*
@@ -7851,6 +7856,7 @@ system-functions	usr_41.txt	/*system-functions*
 system-vimrc	starting.txt	/*system-vimrc*
 s~	change.txt	/*s~*
 t	motion.txt	/*t*
+t:	eval.txt	/*t:*
 t:var	eval.txt	/*t:var*
 t_#2	term.txt	/*t_#2*
 t_#4	term.txt	/*t_#4*
