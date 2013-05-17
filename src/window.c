@@ -4058,6 +4058,25 @@ win_find_nr(winnr)
 }
 #endif
 
+#if (defined(FEAT_WINDOWS) && defined(FEAT_PYTHON)) || defined(PROTO)
+/*
+ * Find the tabpage for window "win".
+ */
+    tabpage_T *
+win_find_tabpage(win)
+    win_T	*win;
+{
+    win_T	*wp;
+    tabpage_T	*tp;
+
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+	for (wp = tp->tp_firstwin; wp != NULL; wp = wp->w_next)
+	    if (wp == win)
+		return tp;
+    return NULL;
+}
+#endif
+
 #ifdef FEAT_VERTSPLIT
 /*
  * Move to window above or below "count" times.
@@ -6548,6 +6567,105 @@ restore_snapshot_rec(sn, fr)
     return wp;
 }
 
+#endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Set "win" to be the curwin and "tp" to be the current tab page.
+ * restore_win() MUST be called to undo.
+ * No autocommands will be executed.
+ * Returns FAIL if switching to "win" failed.
+ */
+    int
+switch_win(save_curwin, save_curtab, win, tp)
+    win_T	**save_curwin;
+    tabpage_T	**save_curtab;
+    win_T	*win;
+    tabpage_T	*tp;
+{
+# ifdef FEAT_AUTOCMD
+    block_autocmds();
+# endif
+# ifdef FEAT_WINDOWS
+    *save_curwin = curwin;
+    if (tp != NULL)
+    {
+	*save_curtab = curtab;
+	goto_tabpage_tp(tp, FALSE, FALSE);
+    }
+    if (!win_valid(win))
+    {
+# ifdef FEAT_AUTOCMD
+	unblock_autocmds();
+# endif
+	return FAIL;
+    }
+    curwin = win;
+    curbuf = curwin->w_buffer;
+# endif
+    return OK;
+}
+
+/*
+ * Restore current tabpage and window saved by switch_win(), if still valid.
+ */
+    void
+restore_win(save_curwin, save_curtab)
+    win_T	*save_curwin;
+    tabpage_T	*save_curtab;
+{
+# ifdef FEAT_WINDOWS
+    if (save_curtab != NULL && valid_tabpage(save_curtab))
+	goto_tabpage_tp(save_curtab, FALSE, FALSE);
+    if (win_valid(save_curwin))
+    {
+	curwin = save_curwin;
+	curbuf = curwin->w_buffer;
+    }
+# endif
+# ifdef FEAT_AUTOCMD
+    unblock_autocmds();
+# endif
+}
+
+/*
+ * Make "buf" the current buffer.  restore_buffer() MUST be called to undo.
+ * No autocommands will be executed.  Use aucmd_prepbuf() if there are any.
+ */
+    void
+switch_buffer(save_curbuf, buf)
+    buf_T *buf;
+    buf_T **save_curbuf;
+{
+# ifdef FEAT_AUTOCMD
+    block_autocmds();
+# endif
+    *save_curbuf = curbuf;
+    --curbuf->b_nwindows;
+    curbuf = buf;
+    curwin->w_buffer = buf;
+    ++curbuf->b_nwindows;
+}
+
+/*
+ * Restore the current buffer after using switch_buffer().
+ */
+    void
+restore_buffer(save_curbuf)
+    buf_T *save_curbuf;
+{
+# ifdef FEAT_AUTOCMD
+    unblock_autocmds();
+# endif
+    /* Check for valid buffer, just in case. */
+    if (buf_valid(save_curbuf))
+    {
+	--curbuf->b_nwindows;
+	curwin->w_buffer = save_curbuf;
+	curbuf = save_curbuf;
+	++curbuf->b_nwindows;
+    }
+}
 #endif
 
 #if (defined(FEAT_GUI) && defined(FEAT_VERTSPLIT)) || defined(PROTO)

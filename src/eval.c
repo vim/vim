@@ -11894,7 +11894,7 @@ getwinvar(argvars, rettv, off)
     win_T	*win, *oldcurwin;
     char_u	*varname;
     dictitem_T	*v;
-    tabpage_T	*tp;
+    tabpage_T	*tp, *oldtabpage;
     int		done = FALSE;
 
 #ifdef FEAT_WINDOWS
@@ -11912,11 +11912,9 @@ getwinvar(argvars, rettv, off)
 
     if (win != NULL && varname != NULL)
     {
-	/* Set curwin to be our win, temporarily.  Also set curbuf, so
-	 * that we can get buffer-local options. */
-	oldcurwin = curwin;
-	curwin = win;
-	curbuf = win->w_buffer;
+	/* Set curwin to be our win, temporarily.  Also set the tabpage,
+	 * otherwise the window is not valid. */
+	switch_win(&oldcurwin, &oldtabpage, win, tp);
 
 	if (*varname == '&')	/* window-local-option */
 	{
@@ -11936,8 +11934,7 @@ getwinvar(argvars, rettv, off)
 	}
 
 	/* restore previous notion of curwin */
-	curwin = oldcurwin;
-	curbuf = curwin->w_buffer;
+	restore_win(oldcurwin, oldtabpage);
     }
 
     if (!done && argvars[off + 2].v_type != VAR_UNKNOWN)
@@ -16639,44 +16636,6 @@ f_setwinvar(argvars, rettv)
     typval_T	*rettv;
 {
     setwinvar(argvars, rettv, 0);
-}
-
-    int
-switch_win(save_curwin, save_curtab, win, tp)
-    win_T	**save_curwin;
-    tabpage_T	**save_curtab;
-    win_T	*win;
-    tabpage_T	*tp;
-{
-#ifdef FEAT_WINDOWS
-    /* set curwin to be our win, temporarily */
-    *save_curwin = curwin;
-    *save_curtab = curtab;
-    goto_tabpage_tp(tp, FALSE, FALSE);
-    if (!win_valid(win))
-	return FAIL;
-    curwin = win;
-    curbuf = curwin->w_buffer;
-#endif
-    return OK;
-}
-
-    void
-restore_win(save_curwin, save_curtab)
-    win_T	*save_curwin;
-    tabpage_T	*save_curtab;
-{
-#ifdef FEAT_WINDOWS
-    /* Restore current tabpage and window, if still valid (autocommands can
-     * make them invalid). */
-    if (valid_tabpage(save_curtab))
-	goto_tabpage_tp(save_curtab, FALSE, FALSE);
-    if (win_valid(save_curwin))
-    {
-	curwin = save_curwin;
-	curbuf = curwin->w_buffer;
-    }
-#endif
 }
 
 /*

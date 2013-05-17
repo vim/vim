@@ -33,6 +33,8 @@ void prof_child_enter __ARGS((proftime_T *tm));
 void prof_child_exit __ARGS((proftime_T *tm));
 int eval_foldexpr __ARGS((char_u *arg, int *cp));
 void ex_let __ARGS((exarg_T *eap));
+void list_add_watch __ARGS((list_T *l, listwatch_T *lw));
+void list_rem_watch __ARGS((list_T *l, listwatch_T *lwrem));
 void *eval_for_line __ARGS((char_u *arg, int *errp, char_u **nextcmdp, int skip));
 int next_for_item __ARGS((void *fi_void, char_u *arg));
 void free_for_info __ARGS((void *fi_void));
@@ -125,8 +127,4 @@ void last_set_msg __ARGS((scid_T scriptID));
 void ex_oldfiles __ARGS((exarg_T *eap));
 int modify_fname __ARGS((char_u *src, int *usedlen, char_u **fnamep, char_u **bufp, int *fnamelen));
 char_u *do_string_sub __ARGS((char_u *str, char_u *pat, char_u *sub, char_u *flags));
-int switch_win __ARGS((win_T **, tabpage_T **, win_T *, tabpage_T *));
-void restore_win __ARGS((win_T *, tabpage_T *));
-void list_add_watch __ARGS((list_T *l, listwatch_T *lw));
-void list_rem_watch __ARGS((list_T *l, listwatch_T *lwrem));
 /* vim: set ft=c : */

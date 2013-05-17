@@ -1413,14 +1413,14 @@ set_option_value_for(key, numval, stringval, opt_flags, opt_type, from)
 {
     win_T	*save_curwin;
     tabpage_T	*save_curtab;
-    aco_save_T	aco;
+    buf_T	*save_curbuf;
     int		r = 0;
 
     switch (opt_type)
     {
 	case SREQ_WIN:
-	    if (switch_win(&save_curwin, &save_curtab, (win_T *) from, curtab)
-								      == FAIL)
+	    if (switch_win(&save_curwin, &save_curtab, (win_T *)from,
+				     win_find_tabpage((win_T *)from)) == FAIL)
 	    {
 		PyErr_SetVim("Problem while switching windows.");
 		return -1;
@@ -1429,9 +1429,9 @@ set_option_value_for(key, numval, stringval, opt_flags, opt_type, from)
 	    restore_win(save_curwin, save_curtab);
 	    break;
 	case SREQ_BUF:
-	    aucmd_prepbuf(&aco, (buf_T *) from);
+	    switch_buffer(&save_curbuf, (buf_T *)from);
 	    set_option_value(key, numval, stringval, opt_flags);
-	    aucmd_restbuf(&aco);
+	    restore_buffer(save_curbuf);
 	    break;
 	case SREQ_GLOBAL:
 	    set_option_value(key, numval, stringval, opt_flags);
@@ -2240,10 +2240,10 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
      */
     if (line == Py_None || line == NULL)
     {
-	buf_T *savebuf = curbuf;
+	buf_T *savebuf;
 
 	PyErr_Clear();
-	curbuf = buf;
+	switch_buffer(&savebuf, buf);
 
 	if (u_savedel((linenr_T)n, 1L) == FAIL)
 	    PyErr_SetVim(_("cannot save undo information"));
@@ -2251,12 +2251,12 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	    PyErr_SetVim(_("cannot delete line"));
 	else
 	{
-	    if (buf == curwin->w_buffer)
+	    if (buf == savebuf)
 		py_fix_cursor((linenr_T)n, (linenr_T)n + 1, (linenr_T)-1);
 	    deleted_lines_mark((linenr_T)n, 1L);
 	}
 
-	curbuf = savebuf;
+	restore_buffer(savebuf);
 
 	if (PyErr_Occurred() || VimErrorCheck())
 	    return FAIL;
@@ -2269,14 +2269,14 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
     else if (PyString_Check(line))
     {
 	char *save = StringToLine(line);
-	buf_T *savebuf = curbuf;
+	buf_T *savebuf;
 
 	if (save == NULL)
 	    return FAIL;
 
 	/* We do not need to free "save" if ml_replace() consumes it. */
 	PyErr_Clear();
-	curbuf = buf;
+	switch_buffer(&savebuf, buf);
 
 	if (u_savesub((linenr_T)n) == FAIL)
 	{
@@ -2291,10 +2291,10 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	else
 	    changed_bytes((linenr_T)n, 0);
 
-	curbuf = savebuf;
+	restore_buffer(savebuf);
 
 	/* Check that the cursor is not beyond the end of the line now. */
-	if (buf == curwin->w_buffer)
+	if (buf == savebuf)
 	    check_cursor_col();
 
 	if (PyErr_Occurred() || VimErrorCheck())
@@ -2333,10 +2333,10 @@ SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_cha
     {
 	PyInt	i;
 	PyInt	n = (int)(hi - lo);
-	buf_T	*savebuf = curbuf;
+	buf_T	*savebuf;
 
 	PyErr_Clear();
-	curbuf = buf;
+	switch_buffer(&savebuf, buf);
 
 	if (u_savedel((linenr_T)lo, (long)n) == FAIL)
 	    PyErr_SetVim(_("cannot save undo information"));
@@ -2350,12 +2350,12 @@ SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_cha
 		    break;
 		}
 	    }
-	    if (buf == curwin->w_buffer)
+	    if (buf == savebuf)
 		py_fix_cursor((linenr_T)lo, (linenr_T)hi, (linenr_T)-n);
 	    deleted_lines_mark((linenr_T)lo, (long)i);
 	}
 
-	curbuf = savebuf;
+	restore_buffer(savebuf);
 
 	if (PyErr_Occurred() || VimErrorCheck())
 	    return FAIL;
@@ -2400,10 +2400,10 @@ SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_cha
 	    }
 	}
 
-	savebuf = curbuf;
-
 	PyErr_Clear();
-	curbuf = buf;
+
+	// START of region without "return".  Must call restore_buffer()!
+	switch_buffer(&savebuf, buf);
 
 	if (u_save((linenr_T)(lo-1), (linenr_T)hi) == FAIL)
 	    PyErr_SetVim(_("cannot save undo information"));
@@ -2480,10 +2480,11 @@ SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_cha
 						  (long)MAXLNUM, (long)extra);
 	changed_lines((linenr_T)lo, 0, (linenr_T)hi, (long)extra);
 
-	if (buf == curwin->w_buffer)
+	if (buf == savebuf)
 	    py_fix_cursor((linenr_T)lo, (linenr_T)hi, (linenr_T)extra);
 
-	curbuf = savebuf;
+	// END of region without "return".
+	restore_buffer(savebuf);
 
 	if (PyErr_Occurred() || VimErrorCheck())
 	    return FAIL;
@@ -2522,10 +2523,8 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	if (str == NULL)
 	    return FAIL;
 
-	savebuf = curbuf;
-
 	PyErr_Clear();
-	curbuf = buf;
+	switch_buffer(&savebuf, buf);
 
 	if (u_save((linenr_T)n, (linenr_T)(n+1)) == FAIL)
 	    PyErr_SetVim(_("cannot save undo information"));
@@ -2535,7 +2534,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	    appended_lines_mark((linenr_T)n, 1L);
 
 	vim_free(str);
-	curbuf = savebuf;
+	restore_buffer(savebuf);
 	update_screen(VALID);
 
 	if (PyErr_Occurred() || VimErrorCheck())
@@ -2574,10 +2573,8 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	    }
 	}
 
-	savebuf = curbuf;
-
 	PyErr_Clear();
-	curbuf = buf;
+	switch_buffer(&savebuf, buf);
 
 	if (u_save((linenr_T)n, (linenr_T)(n + 1)) == FAIL)
 	    PyErr_SetVim(_("cannot save undo information"));
@@ -2607,7 +2604,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	 */
 	vim_free(array);
 
-	curbuf = savebuf;
+	restore_buffer(savebuf);
 	update_screen(VALID);
 
 	if (PyErr_Occurred() || VimErrorCheck())
@@ -3023,7 +3020,7 @@ BufferMark(PyObject *self, PyObject *args)
     pos_T	*posp;
     char	*pmark;
     char	mark;
-    buf_T	*curbuf_save;
+    buf_T	*savebuf;
 
     if (CheckBuffer((BufferObject *)(self)))
 	return NULL;
@@ -3032,10 +3029,9 @@ BufferMark(PyObject *self, PyObject *args)
 	return NULL;
     mark = *pmark;
 
-    curbuf_save = curbuf;
-    curbuf = ((BufferObject *)(self))->buf;
+    switch_buffer(&savebuf, ((BufferObject *)(self))->buf);
     posp = getmark(mark, FALSE);
-    curbuf = curbuf_save;
+    restore_buffer(savebuf);
 
     if (posp == NULL)
     {
