@@ -474,7 +474,7 @@ VimEval(PyObject *self UNUSED, PyObject *args UNUSED)
 static PyObject *ConvertToPyObject(typval_T *);
 
     static PyObject *
-VimEvalPy(PyObject *self UNUSED, PyObject *args UNUSED)
+VimEvalPy(PyObject *self UNUSED, PyObject *args)
 {
     char	*expr;
     typval_T	*our_tv;
@@ -547,9 +547,9 @@ typedef void (*destructorfun)(void *);
 typedef int (*traversefun)(void *, visitproc, void *);
 typedef int (*clearfun)(void **);
 
-/* Main purpose of this object is removing the need for do python initialization 
- * (i.e. PyType_Ready and setting type attributes) for a big bunch of objects.
- */
+/* Main purpose of this object is removing the need for do python
+ * initialization (i.e. PyType_Ready and setting type attributes) for a big
+ * bunch of objects. */
 
 typedef struct
 {
@@ -597,6 +597,11 @@ IterTraverse(PyObject *self, visitproc visit, void *arg)
     else
 	return 0;
 }
+
+/* Mac OSX defines clear() somewhere. */
+#ifdef clear
+# undef clear
+#endif
 
     static int
 IterClear(PyObject *self)
@@ -3287,9 +3292,8 @@ BufMapIterNext(PyObject **buffer)
     else if (!(next = BufferNew(((BufferObject *)(r))->buf->b_next)))
 	return NULL;
     *buffer = next;
-    /* Do not increment reference: we no longer hold it (decref), but whoever on 
-     * other side will hold (incref). Decref+incref = nothing.
-     */
+    /* Do not increment reference: we no longer hold it (decref), but whoever
+     * on other side will hold (incref). Decref+incref = nothing. */
     return r;
 }
 
