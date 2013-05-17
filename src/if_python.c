@@ -610,11 +610,6 @@ get_exceptions(void)
 }
 #endif /* DYNAMIC_PYTHON */
 
-static PyObject *BufferNew (buf_T *);
-static PyObject *WindowNew(win_T *);
-static PyObject *DictionaryNew(dict_T *);
-static PyObject *LineToString(const char *);
-
 static int initialised = 0;
 #define PYINITIALISED initialised
 

@@ -611,9 +611,6 @@ get_py3_exceptions()
 }
 #endif /* DYNAMIC_PYTHON3 */
 
-static PyObject *BufferNew (buf_T *);
-static PyObject *WindowNew(win_T *);
-static PyObject *LineToString(const char *);
 static PyObject *BufferDir(PyObject *, PyObject *);
 
 static int py3initialised = 0;

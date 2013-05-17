@@ -31,6 +31,9 @@ typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
 
 static int ConvertFromPyObject(PyObject *, typval_T *);
 static int _ConvertFromPyObject(PyObject *, typval_T *, PyObject *);
+static PyObject *WindowNew(win_T *, tabpage_T *);
+static PyObject *BufferNew (buf_T *);
+static PyObject *LineToString(const char *);
 
 static PyInt RangeStart;
 static PyInt RangeEnd;
@@ -1670,9 +1673,9 @@ TabPageAttr(TabPageObject *this, char *name)
 	/* For current tab window.c does not bother to set or update tp_curwin
 	 */
 	if (this->tab == curtab)
-	    return WindowNew(curwin);
+	    return WindowNew(curwin, curtab);
 	else
-	    return WindowNew(this->tab->tp_curwin);
+	    return WindowNew(this->tab->tp_curwin, this->tab);
     }
     return NULL;
 }
@@ -1754,6 +1757,7 @@ typedef struct
 {
     PyObject_HEAD
     win_T	*win;
+    TabPageObject	*tabObject;
 } WindowObject;
 
 static PyTypeObject WindowType;
@@ -1771,7 +1775,7 @@ CheckWindow(WindowObject *this)
 }
 
     static PyObject *
-WindowNew(win_T *win)
+WindowNew(win_T *win, tabpage_T *tab)
 {
     /* We need to handle deletion of windows underneath us.
      * If we add a "w_python*_ref" field to the win_T structure,
@@ -1804,6 +1808,8 @@ WindowNew(win_T *win)
 	WIN_PYTHON_REF(win) = self;
     }
 
+    self->tabObject = ((TabPageObject *)(TabPageNew(tab)));
+
     return (PyObject *)(self);
 }
 
@@ -1815,7 +1821,27 @@ WindowDestructor(PyObject *self)
     if (this->win && this->win != INVALID_WINDOW_VALUE)
 	WIN_PYTHON_REF(this->win) = NULL;
 
+    Py_DECREF(((PyObject *)(this->tabObject)));
+
     DESTRUCTOR_FINISH(self);
+}
+
+    static win_T *
+get_firstwin(TabPageObject *tabObject)
+{
+    if (tabObject)
+    {
+	if (CheckTabPage(tabObject))
+	    return NULL;
+	/* For current tab window.c does not bother to set or update tp_firstwin
+	 */
+	else if (tabObject->tab == curtab)
+	    return firstwin;
+	else
+	    return tabObject->tab->tp_firstwin;
+    }
+    else
+	return firstwin;
 }
 
     static PyObject *
@@ -1847,10 +1873,20 @@ WindowAttr(WindowObject *this, char *name)
 	return OptionsNew(SREQ_WIN, this->win, (checkfun) CheckWindow,
 			(PyObject *) this);
     else if (strcmp(name, "number") == 0)
-	return PyLong_FromLong((long) get_win_number(this->win, firstwin));
+    {
+	if (CheckTabPage(this->tabObject))
+	    return NULL;
+	return PyLong_FromLong((long)
+		get_win_number(this->win, get_firstwin(this->tabObject)));
+    }
+    else if (strcmp(name, "tabpage") == 0)
+    {
+	Py_INCREF(this->tabObject);
+	return (PyObject *)(this->tabObject);
+    }
     else if (strcmp(name,"__members__") == 0)
-	return Py_BuildValue("[ssssssss]", "buffer", "cursor", "height", "vars",
-		"options", "number", "row", "col");
+	return Py_BuildValue("[sssssssss]", "buffer", "cursor", "height",
+		"vars", "options", "number", "row", "col", "tabpage");
     else
 	return NULL;
 }
@@ -2016,31 +2052,13 @@ WinListDestructor(PyObject *self)
     DESTRUCTOR_FINISH(self);
 }
 
-    static win_T *
-get_firstwin(WinListObject *this)
-{
-    if (this->tabObject)
-    {
-	if (CheckTabPage(this->tabObject))
-	    return NULL;
-	/* For current tab window.c does not bother to set or update tp_firstwin
-	 */
-	else if (this->tabObject->tab == curtab)
-	    return firstwin;
-	else
-	    return this->tabObject->tab->tp_firstwin;
-    }
-    else
-	return firstwin;
-}
-
     static PyInt
 WinListLength(PyObject *self)
 {
     win_T	*w;
     PyInt	n = 0;
 
-    if (!(w = get_firstwin((WinListObject *)(self))))
+    if (!(w = get_firstwin(((WinListObject *)(self))->tabObject)))
 	return -1;
 
     while (w != NULL)
@@ -2055,14 +2073,15 @@ WinListLength(PyObject *self)
     static PyObject *
 WinListItem(PyObject *self, PyInt n)
 {
+    WinListObject	*this = ((WinListObject *)(self));
     win_T *w;
 
-    if (!(w = get_firstwin((WinListObject *)(self))))
+    if (!(w = get_firstwin(this->tabObject)))
 	return NULL;
 
     for (; w != NULL; w = W_NEXT(w), --n)
 	if (n == 0)
-	    return WindowNew(w);
+	    return WindowNew(w, this->tabObject? this->tabObject->tab: curtab);
 
     PyErr_SetString(PyExc_IndexError, _("no such window"));
     return NULL;
@@ -3227,7 +3246,7 @@ CurrentGetattr(PyObject *self UNUSED, char *name)
     if (strcmp(name, "buffer") == 0)
 	return (PyObject *)BufferNew(curbuf);
     else if (strcmp(name, "window") == 0)
-	return (PyObject *)WindowNew(curwin);
+	return (PyObject *)WindowNew(curwin, curtab);
     else if (strcmp(name, "tabpage") == 0)
 	return (PyObject *)TabPageNew(curtab);
     else if (strcmp(name, "line") == 0)

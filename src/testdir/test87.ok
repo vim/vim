@@ -322,14 +322,14 @@ Number of tabs: 4
 Current tab pages:
   <tabpage 0>(1): 1 windows, current is <window object (unknown)>
   Windows:
-    <window object (unknown)>(0): displays buffer <buffer test87.in>; cursor is at (930, 0)
+    <window object (unknown)>(1): displays buffer <buffer test87.in>; cursor is at (930, 0)
   <tabpage 1>(2): 1 windows, current is <window object (unknown)>
   Windows:
-    <window object (unknown)>(0): displays buffer <buffer 0>; cursor is at (1, 0)
+    <window object (unknown)>(1): displays buffer <buffer 0>; cursor is at (1, 0)
   <tabpage 2>(3): 2 windows, current is <window object (unknown)>
   Windows:
-    <window object (unknown)>(0): displays buffer <buffer a.1>; cursor is at (1, 0)
-    <window object (unknown)>(0): displays buffer <buffer 1>; cursor is at (1, 0)
+    <window object (unknown)>(1): displays buffer <buffer a.1>; cursor is at (1, 0)
+    <window object (unknown)>(2): displays buffer <buffer 1>; cursor is at (1, 0)
   <tabpage 3>(4): 4 windows, current is <window 0>
   Windows:
     <window 0>(1): displays buffer <buffer c.2>; cursor is at (1, 0)
