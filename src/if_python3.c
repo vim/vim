@@ -76,7 +76,6 @@ static void init_structs(void);
 #else
 # define CODEC_ERROR_HANDLER NULL
 #endif
-#define DOPY_FUNC "_vim_pydo"
 
 /* Python 3 does not support CObjects, always use Capsules */
 #define PY_USE_CAPSULE

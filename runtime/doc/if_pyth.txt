@@ -57,6 +57,22 @@ Example: >
 Note: Python is very sensitive to the indenting.  Make sure the "class" line
 and "EOF" do not have any indent.
 
+							*:pydo*
+:[range]pydo {body}	Execute Python function "def _vim_pydo(line, linenr):
+			{body}" for each line in the [range], with the
+			function arguments being set to the text of each line
+			in turn, without a trailing <EOL>, and the current
+			line number. The function should return a string or
+			None. If a string is returned, it becomes the text of
+			the line in the current turn. The default for [range]
+			is the whole file: "1,$".
+			{not in Vi}
+
+Examples:
+>
+	:pydo return "%s\t%d" % (line[::-1], len(line))
+	:pydo if line: return "%4d: %s" % (linenr, line)
+<
 							*:pyfile* *:pyf*
 :[range]pyf[ile] {file}
 			Execute the Python script in {file}.  The whole
@@ -485,27 +501,14 @@ sure edit "gvim.exe" and search for "python\d*.dll\c".
 8. Python 3						*python3*
 
 							*:py3* *:python3*
-The |:py3| and |:python3| commands work similar to |:python|.  A simple check
+The `:py3` and `:python3` commands work similar to `:python`.  A simple check
 if the `:py3` command is working: >
 	:py3 print("Hello")
 <							*:py3file*
-The |:py3file| command works similar to |:pyfile|.
-
+The `:py3file` command works similar to `:pyfile`.
 							*:py3do* *E863*
-:[range]py3do {body}	Execute Python function "def _vim_pydo(line, linenr):
-			{body}" for each line in the [range], with the
-			function arguments being set to the text of each line
-			in turn, without a trailing <EOL>, and the current
-			line number. The function should return a string or
-			None. If a string is returned, it becomes the text of
-			the line in the current turn. The default for [range]
-			is the whole file: "1,$".
-			{not in Vi}
+The `:py3do` command works similar to `:pydo`.
 
-Examples:
->
-	:py3do return "%s\t%d" % (line[::-1], len(line))
-	:py3do if line: return "%4d: %s" % (linenr, line)
 
 Vim can be built in four ways (:version output):
 1. No Python support	    (-python, -python3)

@@ -22,6 +22,7 @@ typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
 #else
 # define ENC_OPT "latin1"
 #endif
+#define DOPY_FUNC "_vim_pydo"
 
 #define PyErr_SetVim(str) PyErr_SetString(VimError, str)
 
