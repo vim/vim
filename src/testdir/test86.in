@@ -354,7 +354,7 @@ EOF
 :" colorcolumn:    string,  window-local
 :" statusline:     string,  window-local/global
 :" autoindent:     boolean, buffer-local
-:" iminsert:       number,  buffer-local
+:" shiftwidth:     number,  buffer-local
 :" omnifunc:       string,  buffer-local
 :" preserveindent: boolean, buffer-local/global
 :" path:           string,  buffer-local/global
@@ -411,7 +411,7 @@ EOF
 :let lst+=[['colorcolumn',    '+1',  '+2',  '+3',  'abc',  0,    0,      1    ]]
 :let lst+=[['statusline',     '1',   '2',   '4',   0,      0,    1,      1    ]]
 :let lst+=[['autoindent',     0,     1,     1,     2,      1,    0,      2    ]]
-:let lst+=[['iminsert',       0,     2,     1,     3,      0,    0,      2    ]]
+:let lst+=[['shiftwidth',     0,     2,     1,     3,      0,    0,      2    ]]
 :let lst+=[['omnifunc',       'A',   'B',   'C',   1,      0,    0,      2    ]]
 :let lst+=[['preserveindent', 0,     1,     1,     2,      1,    1,      2    ]]
 :let lst+=[['path',           '.,,', ',,',  '.',   0,      0,    1,      2    ]]
