@@ -543,6 +543,8 @@ static PyTypeObject IterType;
 
 typedef PyObject *(*nextfun)(void **);
 typedef void (*destructorfun)(void *);
+typedef int (*traversefun)(void *, visitproc, void *);
+typedef int (*clearfun)(void **);
 
 /* Main purpose of this object is removing the need for do python initialization 
  * (i.e. PyType_Ready and setting type attributes) for a big bunch of objects.
@@ -554,10 +556,13 @@ typedef struct
     void *cur;
     nextfun next;
     destructorfun destruct;
+    traversefun traverse;
+    clearfun clear;
 } IterObject;
 
     static PyObject *
-IterNew(void *start, destructorfun destruct, nextfun next)
+IterNew(void *start, destructorfun destruct, nextfun next, traversefun traverse,
+	clearfun clear)
 {
     IterObject *self;
 
@@ -565,6 +570,8 @@ IterNew(void *start, destructorfun destruct, nextfun next)
     self->cur = start;
     self->next = next;
     self->destruct = destruct;
+    self->traverse = traverse;
+    self->clear = clear;
 
     return (PyObject *)(self);
 }
@@ -577,6 +584,28 @@ IterDestructor(PyObject *self)
     this->destruct(this->cur);
 
     DESTRUCTOR_FINISH(self);
+}
+
+    static int
+IterTraverse(PyObject *self, visitproc visit, void *arg)
+{
+    IterObject *this = (IterObject *)(self);
+
+    if (this->traverse != NULL)
+	return this->traverse(this->cur, visit, arg);
+    else
+	return 0;
+}
+
+    static int
+IterClear(PyObject *self)
+{
+    IterObject *this = (IterObject *)(self);
+
+    if (this->clear != NULL)
+	return this->clear(&this->cur);
+    else
+	return 0;
 }
 
     static PyObject *
@@ -1034,7 +1063,8 @@ ListIter(PyObject *self)
     lii->list = l;
 
     return IterNew(lii,
-	    (destructorfun) ListIterDestruct, (nextfun) ListIterNext);
+	    (destructorfun) ListIterDestruct, (nextfun) ListIterNext,
+	    NULL, NULL);
 }
 
     static int
@@ -1348,6 +1378,53 @@ typedef struct
     PyObject *fromObj;
 } OptionsObject;
 
+    static int
+dummy_check(void *arg UNUSED)
+{
+    return 0;
+}
+
+    static PyObject *
+OptionsNew(int opt_type, void *from, checkfun Check, PyObject *fromObj)
+{
+    OptionsObject	*self;
+
+    self = PyObject_NEW(OptionsObject, &OptionsType);
+    if (self == NULL)
+	return NULL;
+
+    self->opt_type = opt_type;
+    self->from = from;
+    self->Check = Check;
+    self->fromObj = fromObj;
+    if (fromObj)
+	Py_INCREF(fromObj);
+
+    return (PyObject *)(self);
+}
+
+    static void
+OptionsDestructor(PyObject *self)
+{
+    if (((OptionsObject *)(self))->fromObj)
+	Py_DECREF(((OptionsObject *)(self))->fromObj);
+    DESTRUCTOR_FINISH(self);
+}
+
+    static int
+OptionsTraverse(PyObject *self, visitproc visit, void *arg)
+{
+    Py_VISIT(((OptionsObject *)(self))->fromObj);
+    return 0;
+}
+
+    static int
+OptionsClear(PyObject *self)
+{
+    Py_CLEAR(((OptionsObject *)(self))->fromObj);
+    return 0;
+}
+
     static PyObject *
 OptionsItem(OptionsObject *this, PyObject *keyObject)
 {
@@ -1560,39 +1637,6 @@ OptionsAssItem(OptionsObject *this, PyObject *keyObject, PyObject *valObject)
     }
 
     return r;
-}
-
-    static int
-dummy_check(void *arg UNUSED)
-{
-    return 0;
-}
-
-    static PyObject *
-OptionsNew(int opt_type, void *from, checkfun Check, PyObject *fromObj)
-{
-    OptionsObject	*self;
-
-    self = PyObject_NEW(OptionsObject, &OptionsType);
-    if (self == NULL)
-	return NULL;
-
-    self->opt_type = opt_type;
-    self->from = from;
-    self->Check = Check;
-    self->fromObj = fromObj;
-    if (fromObj)
-	Py_INCREF(fromObj);
-
-    return (PyObject *)(self);
-}
-
-    static void
-OptionsDestructor(PyObject *self)
-{
-    if (((OptionsObject *)(self))->fromObj)
-	Py_DECREF(((OptionsObject *)(self))->fromObj);
-    DESTRUCTOR_FINISH(self);
 }
 
 static PyMappingMethods OptionsAsMapping = {
@@ -1842,6 +1886,19 @@ get_firstwin(TabPageObject *tabObject)
     }
     else
 	return firstwin;
+}
+    static int
+WindowTraverse(PyObject *self, visitproc visit, void *arg)
+{
+    Py_VISIT(((PyObject *)(((WindowObject *)(self))->tabObject)));
+    return 0;
+}
+
+    static int
+WindowClear(PyObject *self)
+{
+    Py_CLEAR((((WindowObject *)(self))->tabObject));
+    return 0;
 }
 
     static PyObject *
@@ -3193,6 +3250,20 @@ BufMapIterDestruct(PyObject *buffer)
     }
 }
 
+    static int
+BufMapIterTraverse(PyObject *buffer, visitproc visit, void *arg)
+{
+    Py_VISIT(buffer);
+    return 0;
+}
+
+    static int
+BufMapIterClear(PyObject **buffer)
+{
+    Py_CLEAR(*buffer);
+    return 0;
+}
+
     static PyObject *
 BufMapIterNext(PyObject **buffer)
 {
@@ -3228,7 +3299,8 @@ BufMapIter(PyObject *self UNUSED)
 
     buffer = BufferNew(firstbuf);
     return IterNew(buffer,
-	    (destructorfun) BufMapIterDestruct, (nextfun) BufMapIterNext);
+	    (destructorfun) BufMapIterDestruct, (nextfun) BufMapIterNext,
+	    (traversefun) BufMapIterTraverse, (clearfun) BufMapIterClear);
 }
 
 static PyMappingMethods BufMapAsMapping = {
@@ -3837,6 +3909,8 @@ init_structs(void)
     IterType.tp_iter = IterIter;
     IterType.tp_iternext = IterNext;
     IterType.tp_dealloc = IterDestructor;
+    IterType.tp_traverse = IterTraverse;
+    IterType.tp_clear = IterClear;
 
     vim_memset(&BufferType, 0, sizeof(BufferType));
     BufferType.tp_name = "vim.buffer";
@@ -3865,6 +3939,8 @@ init_structs(void)
     WindowType.tp_flags = Py_TPFLAGS_DEFAULT;
     WindowType.tp_doc = "vim Window object";
     WindowType.tp_methods = WindowMethods;
+    WindowType.tp_traverse = WindowTraverse;
+    WindowType.tp_clear = WindowClear;
 #if PY_MAJOR_VERSION >= 3
     WindowType.tp_getattro = WindowGetattro;
     WindowType.tp_setattro = WindowSetattro;
@@ -4003,6 +4079,8 @@ init_structs(void)
     OptionsType.tp_doc = "object for manipulating options";
     OptionsType.tp_as_mapping = &OptionsAsMapping;
     OptionsType.tp_dealloc = OptionsDestructor;
+    OptionsType.tp_traverse = OptionsTraverse;
+    OptionsType.tp_clear = OptionsClear;
 
 #if PY_MAJOR_VERSION >= 3
     vim_memset(&vimmodule, 0, sizeof(vimmodule));
