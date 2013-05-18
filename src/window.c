@@ -4058,7 +4058,8 @@ win_find_nr(winnr)
 }
 #endif
 
-#if (defined(FEAT_WINDOWS) && defined(FEAT_PYTHON)) || defined(PROTO)
+#if (defined(FEAT_WINDOWS) && (defined(FEAT_PYTHON) || defined(FEAT_PYTHON3))) \
+	|| defined(PROTO)
 /*
  * Find the tabpage for window "win".
  */
