@@ -1,0 +1,63 @@
+Test for regexp patterns with multi-byte support.
+See test64 for the non-multi-byte tests.
+
+A pattern that gives the expected result produces OK, so that we know it was
+actually tried.
+
+STARTTEST
+:so small.vim
+:so mbyte.vim
+:" tl is a List of Lists with:
+:"    regexp pattern
+:"    text to test the pattern on
+:"    expected match (optional)
+:"    expected submatch 1 (optional)
+:"    expected submatch 2 (optional)
+:"    etc.
+:"  When there is no match use only the first two items.
+:let tl = []
+
+:"""" Multi-byte character tests. These will fail unless vim is compiled
+:"""" with Multibyte (FEAT_MBYTE) or BIG/HUGE features.
+:call add(tl, ['[[:alpha:][=a=]]\+', '879 aiaãâaiuvna ', 'aiaãâaiuvna'])
+:call add(tl, ['[[=a=]]\+', 'ddaãâbcd', 'aãâ'])								" equivalence classes
+:call add(tl, ['[^ม ]\+', 'มม oijasoifjos ifjoisj f osij j มมมมม abcd', 'oijasoifjos'])
+:call add(tl, [' [^ ]\+', 'start มabcdม ', ' มabcdม'])
+:call add(tl, ['[ม[:alpha:][=a=]]\+', '879 aiaãมâมaiuvna ', 'aiaãมâมaiuvna'])
+
+:"""" Run the tests
+
+:"
+:for t in tl
+:  let l = matchlist(t[1], t[0])
+:" check the match itself
+:  if len(l) == 0 && len(t) > 2
+:    $put ='ERROR: pat: \"' . t[0] . '\", text: \"' . t[1] . '\", did not match, expected: \"' . t[2] . '\"'
+:  elseif len(l) > 0 && len(t) == 2
+:    $put ='ERROR: pat: \"' . t[0] . '\", text: \"' . t[1] . '\", match: \"' . l[0] . '\", expected no match'
+:  elseif len(t) > 2 && l[0] != t[2]
+:    $put ='ERROR: pat: \"' . t[0] . '\", text: \"' . t[1] . '\", match: \"' . l[0] . '\", expected: \"' . t[2] . '\"'
+:  else
+:    $put ='OK - ' . t[0]
+:  endif
+:  if len(l) > 0
+:"   check all the nine submatches
+:    for i in range(1, 9)
+:      if len(t) <= i + 2
+:        let e = ''
+:      else
+:        let e = t[i + 2]
+:      endif
+:      if l[i] != e
+:        $put ='ERROR: pat: \"' . t[0] . '\", text: \"' . t[1] . '\", submatch ' . i . ': \"' . l[i] . '\", expected: \"' . e . '\"'
+:      endif
+:    endfor
+:    unlet i
+:  endif
+:endfor
+:unlet t tl e l
+
+:/\%#=1^Results/,$wq! test.out
+ENDTEST
+
+Results of test95:

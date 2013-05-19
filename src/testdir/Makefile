@@ -29,7 +29,7 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test79.out test80.out test81.out test82.out test83.out \
 		test84.out test85.out test86.out test87.out test88.out \
 		test89.out test90.out test91.out test92.out test93.out \
-		test94.out
+		test94.out test95.out
 
 SCRIPTS_GUI = test16.out
 
@@ -85,12 +85,15 @@ test1.out: test1.in
 		fi"
 
 	# Check if the test.out file matches test.ok.
-	@/bin/sh -c "if test -f test.out; then\
+	@/bin/sh -c "if test -f test.out; then \
 		  if diff test.out $*.ok; \
 		  then mv -f test.out $*.out; \
 		  else echo $* FAILED >>test.log; mv -f test.out $*.failed; \
 		  fi \
 		else echo $* NO OUTPUT >>test.log; \
+		fi"
+	@/bin/sh -c "if test -f valgrind; then\
+		  mv -f valgrind valgrind.$*; \
 		fi"
 	-rm -rf X* test.ok viminfo
 

@@ -2077,6 +2077,9 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)2000L, (char_u *)0L} SCRIPTID_INIT},
+    {"regexpengine", "re",  P_NUM|P_VI_DEF,
+			    (char_u *)&p_re, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
     {"relativenumber", "rnu", P_BOOL|P_VI_DEF|P_RWIN,
 			    (char_u *)VAR_WIN, PV_RNU,
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
@@ -8603,6 +8606,11 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
     {
 	errmsg = e_positive;
 	p_hi = 0;
+    }
+    if (p_re < 0 || p_re > 2)
+    {
+	errmsg = e_invarg;
+	p_re = 0;
     }
     if (p_report < 0)
     {

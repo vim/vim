@@ -1,102 +1,230 @@
 Results of test64:
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
-OK
+OK - ab
+OK - b
+OK - bc*
+OK - bc\{-}
+OK - bc\{-}\(d\)
+OK - bc*
+OK - c*
+OK - bc*
+OK - c*
+OK - bc\+
+OK - bc\+
+OK - a\|ab
+OK - c\?
+OK - bc\?
+OK - bc\?
+OK - \va{1}
+OK - \va{2}
+OK - \va{2}
+OK - \va{2}
+OK - \va{2}
+OK - \va{2}
+OK - \va{2}
+OK - \vb{1}
+OK - \vba{2}
+OK - \vba{3}
+OK - \v(ab){1}
+OK - \v(ab){1}
+OK - \v(ab){1}
+OK - \v(ab){0,2}
+OK - \v(ab){0,2}
+OK - \v(ab){1,2}
+OK - \v(ab){1,2}
+OK - \v(ab){2,4}
+OK - \v(ab){2,4}
+OK - \v(ab){2}
+OK - \v(ab){2}
+OK - \v(ab){2}
+OK - \v(ab){2}
+OK - \v((ab){2}){2}
+OK - \v((ab){2}){2}
+OK - \v(a{1}){1}
+OK - \v(a{2}){1}
+OK - \v(a{2}){1}
+OK - \v(a{2}){1}
+OK - \v(a{1}){2}
+OK - \v(a{1}){2}
+OK - \v(a{2})+
+OK - \v(a{2})+
+OK - \v(a{2}){1}
+OK - \v(a{1}){2}
+OK - \v(a{1}){1}
+OK - \v(a{2}){2}
+OK - \v(a{2}){2}
+OK - \v(a+){2}
+OK - \v(a{3}){2}
+OK - \v(a{1,2}){2}
+OK - \v(a{1,3}){2}
+OK - \v(a{1,3}){2}
+OK - \v(a{1,3}){3}
+OK - \v(a{1,2}){2}
+OK - \v(a+)+
+OK - \v(a+)+
+OK - \v(a+){1,2}
+OK - \v(a+)(a+)
+OK - \v(a{3})+
+OK - \v(a|b|c)+
+OK - \v(a|b|c){2}
+OK - \v(abc){2}
+OK - \v(abc){2}
+OK - a*
+OK - \v(a*)+
+OK - \v((ab)+)+
+OK - \v(((ab)+)+)+
+OK - \v(((ab)+)+)+
+OK - \v(a{0,2})+
+OK - \v(a*)+
+OK - \v((a*)+)+
+OK - \v((ab)*)+
+OK - \va{1,3}
+OK - \va{2,3}
+OK - \v((ab)+|c*)+
+OK - \v(a{2})|(b{3})
+OK - \va{2}|b{2}
+OK - \v(a)+|(c)+
+OK - \vab{2,3}c
+OK - \vab{2,3}c
+OK - \vab{2,3}cd{2,3}e
+OK - \va(bc){2}d
+OK - \va*a{2}
+OK - \va*a{2}
+OK - \va*a{2}
+OK - \va*a{2}
+OK - \va*b*|a*c*
+OK - \va{1}b{1}|a{1}b{1}
+OK - \v(a)
+OK - \v(a)(b)
+OK - \v(ab)(b)(c)
+OK - \v((a)(b))
+OK - \v(a)|(b)
+OK - \v(a*)+
+OK - x
+OK - ab
+OK - ab
+OK - ab
+OK - x*
+OK - x*
+OK - x*
+OK - x\+
+OK - x\+
+OK - x\+
+OK - x\+
+OK - x\=
+OK - x\=
+OK - x\=
+OK - x\?
+OK - x\?
+OK - x\?
+OK - a\{0,0}
+OK - a\{0,1}
+OK - a\{1,0}
+OK - a\{3,6}
+OK - a\{3,6}
+OK - a\{3,6}
+OK - a\{0}
+OK - a\{2}
+OK - a\{2}
+OK - a\{2}
+OK - a\{0,}
+OK - a\{0,}
+OK - a\{2,}
+OK - a\{2,}
+OK - a\{,0}
+OK - a\{,5}
+OK - a\{,5}
+OK - a\{}
+OK - a\{}
+OK - a\{-0,0}
+OK - a\{-0,1}
+OK - a\{-3,6}
+OK - a\{-3,6}
+OK - a\{-3,6}
+OK - a\{-0}
+OK - a\{-2}
+OK - a\{-2}
+OK - a\{-0,}
+OK - a\{-0,}
+OK - a\{-2,}
+OK - a\{-2,}
+OK - a\{-,0}
+OK - a\{-,5}
+OK - a\{-,5}
+OK - a\{-}
+OK - a\{-}
+OK - \(abc\)*
+OK - \(ab\)\+
+OK - \(abaaaaa\)*cd
+OK - \(test1\)\? \(test2\)\?
+OK - \(test1\)\= \(test2\) \(test4443\)\=
+OK - \(\(sub1\) hello \(sub 2\)\)
+OK - \(\(\(yyxxzz\)\)\)
+OK - \v((ab)+|c+)+
+OK - \v((ab)|c*)+
+OK - \v(a(c*)+b)+
+OK - \v(a|b*)+
+OK - a\{-2,7}
+OK - a\{2,7}
+OK - \vx(.{-,8})yz(.*)
+OK - \vx(.*)yz(.*)
+OK - \v(a{1,2}){-2,3}
+OK - \v(a{-1,3})+
+OK - \d\+e\d\d
+OK - \v[a]
+OK - a[bcd]
+OK - a[b-d]
+OK - [a-d][e-f][x-x]d
+OK - \v[[:alpha:]]+
+OK - [[:alpha:]\+]
+OK - [^abc]\+
+OK - [^abc]
+OK - [^abc]\+
+OK - [^a-d]\+
+OK - [a-f]*
+OK - [a-f]*
+OK - [^a-f]\+
+OK - [a-c]\{-3,6}
+OK - [^[:alpha:]]\+
+OK - [-a]
+OK - [a-]
+OK - [-./[:alnum:]_~]\+
+OK - [\]\^\-\\]\+
+OK - [[.a.]]\+
+OK - abc[0-9]*ddd
+OK - abc[0-9]*ddd
+OK - \_[0-9]\+
+OK - [0-9\n]\+
+OK - [0-9]
+OK - [^0-9]
+OK - [0-9a-fA-F]*
+OK - [^0-9A-Fa-f]\+
+OK - [a-z_A-Z0-9]\+
+OK - [a-z]
+OK - [a-zA-Z]
+OK - [A-Z]
+OK - \C[^A-Z]\+
+OK - xx \ze test
+OK - abc\zeend
+OK - abc\zsdd
+OK - aa \zsax
+OK - abc \zsmatch\ze abc
+OK - \v(a \zsif .*){2}
+OK - abc\@=
+OK - abc\@=cd
+OK - abc\@=
+OK - abcd\@=e
+OK - abcd\@=e
+OK - \v(abc)@=..
+OK - \(.*John\)\@=.*Bob
+OK - \(John.*\)\@=.*Bob
+OK - .*John\&.*Bob
+OK - .*John\&.*Bob
+OK - \v(test1)@=.*yep
+OK - [[:alpha:]]\{-2,6}
+OK - [^[=a=]]\+
+OK - 
+OK - \v(())
+OK - \v%(ab(xyz)c)
+OK - \v(test|)empty
+OK - \v(a|aa)(a|aa)
+192.168.0.1

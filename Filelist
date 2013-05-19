@@ -57,6 +57,7 @@ SRC_ALL =	\
 		src/popupmnu.c \
 		src/quickfix.c \
 		src/regexp.c \
+		src/regexp_nfa.c \
 		src/regexp.h \
 		src/screen.c \
 		src/search.c \

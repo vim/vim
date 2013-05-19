@@ -1,0 +1,6 @@
+Results of test95:
+OK - [[:alpha:][=a=]]\+
+OK - [[=a=]]\+
+OK - [^ม ]\+
+OK -  [^ ]\+
+OK - [ม[:alpha:][=a=]]\+

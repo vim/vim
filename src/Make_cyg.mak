@@ -672,6 +672,9 @@ endif
 $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_DEP)
 	$(CC) -c $(CFLAGS) netbeans.c -o $(OUTDIR)/netbeans.o
 
+$(OUTDIR)/regexp.o:		regexp.c regexp_nfa.c $(INCL)
+	$(CC) -c $(CFLAGS) regexp.c -o $(OUTDIR)/regexp.o
+
 $(OUTDIR)/if_mzsch.o:	if_mzsch.c $(INCL) if_mzsch.h $(MZ_EXTRA_DEP)
 	$(CC) -c $(CFLAGS) if_mzsch.c -o $(OUTDIR)/if_mzsch.o
 

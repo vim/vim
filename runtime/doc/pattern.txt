@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.3.  Last change: 2013 Apr 20
+*pattern.txt*   For Vim version 7.3.  Last change: 2013 May 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -350,6 +350,27 @@ For starters, read chapter 27 of the user manual |usr_27.txt|.
 		or  \z( pattern \)		|/\z(|
 
 
+				*/\%#=* *two-engines*
+Vim includes two regexp engines:
+1. An old, backtracking engine that supports everything.
+2. A new, NFA engine that works much faster on some patterns, but does not
+   support everything.
+
+Vim will automatically select the right engine for you.  However, if you run
+into a problem or want to specifically select one engine or the other, you can
+prepend one of the following to the pattern:
+
+	\%#=0	Force automatic selection.  Only has an effect when
+	        'regexpengine' has been set to a non-zero value.
+	\%#=1	Force using the old engine.
+	\%#=2	Force using the NFA engine.
+
+You can also use the 'regexpengine' option to change the default.
+
+			 *E864* *E868* *E874* *E875* *E876* *E877* *E878*
+If selecting the NFA engine and it runs into something that is not implemented
+the pattern will not match.  This is only useful when debugging Vim.
+
 ==============================================================================
 3. Magic							*/magic*
 
@@ -396,9 +417,10 @@ pattern.
 
 ==============================================================================
 4. Overview of pattern items				*pattern-overview*
+						*E865* *E866* *E867* *E869*
 
 Overview of multi items.				*/multi* *E61* *E62*
-More explanation and examples below, follow the links.			*E64*
+More explanation and examples below, follow the links.		*E64* *E871*
 
 	  multi ~
      'magic' 'nomagic'	matches of the preceding atom ~
@@ -508,12 +530,14 @@ Character classes {not in Vi}:				*/character-classes*
 
 |/\c|	\c	\c	ignore case, do not use the 'ignorecase' option
 |/\C|	\C	\C	match case, do not use the 'ignorecase' option
+|/\Z|	\Z	\Z	ignore differences in Unicode "combining characters".
+			Useful when searching voweled Hebrew or Arabic text.
+
 |/\m|	\m	\m	'magic' on for the following chars in the pattern
 |/\M|	\M	\M	'magic' off for the following chars in the pattern
 |/\v|	\v	\v	the following chars in the pattern are "very magic"
 |/\V|	\V	\V	the following chars in the pattern are "very nomagic"
-|/\Z|	\Z	\Z	ignore differences in Unicode "combining characters".
-			Useful when searching voweled Hebrew or Arabic text.
+|/\%#=|   \%#=1   \%#=1   select regexp engine |/zero-width|
 
 |/\%d|	\%d	\%d	match specified decimal character (eg \%d123)
 |/\%x|	\%x	\%x	match specified hex character (eg \%x2a)
@@ -581,7 +605,7 @@ overview.
 \?	Just like \=.  Cannot be used when searching backwards with the "?"
 	command. {not in Vi}
 
-						*/\{* *E58* *E60* *E554*
+					*/\{* *E58* *E60* *E554* *E870*
 \{n,m}	Matches n to m of the preceding atom, as many as possible
 \{n}	Matches n of the preceding atom
 \{n,}	Matches at least n of the preceding atom, as many as possible
@@ -962,7 +986,8 @@ match ASCII characters, as indicated by the range.
 ~	matches the last given substitute string	*/~* */\~*
 
 \(\)	A pattern enclosed by escaped parentheses.	*/\(* */\(\)* */\)*
-	E.g., "\(^a\)" matches 'a' at the start of a line.  *E51* *E54* *E55*
+	E.g., "\(^a\)" matches 'a' at the start of a line.
+	*E51* *E54* *E55* *E872* *E873*
 
 \1      Matches the same string that was matched by	*/\1* *E65*
 	the first sub-expression in \( and \). {not in Vi}
