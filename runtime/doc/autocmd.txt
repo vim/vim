@@ -691,8 +691,11 @@ InsertCharPre			When a character is typed in Insert mode,
 InsertEnter			Just before starting Insert mode.  Also for
 				Replace mode and Virtual Replace mode.  The
 				|v:insertmode| variable indicates the mode.
-				Be careful not to move the cursor or do
-				anything else that the user does not expect.
+				Be careful not to do anything else that the
+				user does not expect.
+				The cursor is restored afterwards.  If you do
+				not want that set |v:char| to a non-empty
+				string.
 							*InsertLeave*
 InsertLeave			When leaving Insert mode.  Also when using
 				CTRL-O |i_CTRL-O|.  But not for |i_CTRL-C|.

@@ -382,13 +382,21 @@ edit(cmdchar, startln, count)
 	else
 	    ptr = (char_u *)"i";
 	set_vim_var_string(VV_INSERTMODE, ptr, 1);
+	set_vim_var_string(VV_CHAR, NULL, -1);  /* clear v:char */
 # endif
 	apply_autocmds(EVENT_INSERTENTER, NULL, NULL, FALSE, curbuf);
 
-	/* Since Insert mode was not started yet a call to check_cursor_col()
-	 * may have moved the cursor, especially with the "A" command. */
-	if (curwin->w_cursor.col != save_cursor.col
-		&& curwin->w_cursor.lnum == save_cursor.lnum)
+	/* Make sure the cursor didn't move.  Do call check_cursor_col() in
+	 * case the text was modified.  Since Insert mode was not started yet
+	 * a call to check_cursor_col() may move the cursor, especially with
+	 * the "A" command, thus set State to avoid that. Also check that the
+	 * line number is still valid (lines may have been deleted).
+	 * Do not restore if v:char was set to a non-empty string. */
+	if (!equalpos(curwin->w_cursor, save_cursor)
+# ifdef FEAT_EVAL
+		&& *get_vim_var_str(VV_CHAR) == NUL
+# endif
+		&& save_cursor.lnum <= curbuf->b_ml.ml_line_count)
 	{
 	    int save_state = State;
 
