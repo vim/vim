@@ -273,7 +273,7 @@ nfa_recognize_char_class(start, end, extra_newl)
 	NFA_HEAD, NFA_NHEAD, NFA_ALPHA, NFA_NALPHA,
 	NFA_LOWER, NFA_NLOWER, NFA_UPPER, NFA_NUPPER
     };
-    char_u	myconfig[9];
+    char_u	myconfig[10];
     char_u	config[NCONFIGS][9] = {
 	"000000100",	/* digit */
 	"100000100",	/* non digit */
@@ -400,7 +400,7 @@ nfa_recognize_char_class(start, end, extra_newl)
     }
     /* try to recognize character classes */
     for (i = 0; i < NCONFIGS; i++)
-	if (STRNCMP(myconfig, config[i],8) == 0)
+	if (STRNCMP(myconfig, config[i], 8) == 0)
 	    return classid[i] + extra_newl;
 
     /* fallthrough => no success so far */
@@ -759,7 +759,7 @@ nfa_regatom()
 	case Magic('&'):
 	case Magic(')'):
 	    syntax_error = TRUE;
-	    EMSG2(_(e_misplaced), no_Magic(c));
+	    EMSGN(_(e_misplaced), no_Magic(c));
 	    return FAIL;
 
 	case Magic('='):
@@ -770,7 +770,7 @@ nfa_regatom()
 	case Magic('{'):
 	    /* these should follow an atom, not form an atom */
 	    syntax_error = TRUE;
-	    EMSG2(_(e_misplaced), no_Magic(c));
+	    EMSGN(_(e_misplaced), no_Magic(c));
 	    return FAIL;
 
 	case Magic('~'):		/* previous substitute pattern */
@@ -816,7 +816,7 @@ nfa_regatom()
 		    return FAIL;
 		default:
 		    syntax_error = TRUE;
-		    EMSG2(_("E867: (NFA) Unknown operator '\\z%c'"),
+		    EMSGN(_("E867: (NFA) Unknown operator '\\z%c'"),
 								 no_Magic(c));
 		    return FAIL;
 	    }
@@ -1363,7 +1363,7 @@ nfa_regpiece()
 		    return FAIL;
 		default:
 		    syntax_error = TRUE;
-		    EMSG2(_("E869: (NFA) Unknown operator '\\@%c'"), op);
+		    EMSGN(_("E869: (NFA) Unknown operator '\\@%c'"), op);
 		    return FAIL;
 	    }
 	    break;
