@@ -9,6 +9,8 @@
 /* Comment this out to disable log files. They can get pretty big */
 # define ENABLE_LOG
 # define LOG_NAME "log_nfarun.log"
+# define NFA_REGEXP_DEBUG_LOG
+# define NFA_REGEXP_DEBUG_LOG_NAME	"nfa_regexp_debug.log"
 #endif
 
 /* Upper limit allowed for {m,n} repetitions handled by NFA */
@@ -2849,12 +2851,12 @@ nfa_regmatch(start, submatch, m)
     int		*listids = NULL;
     int		j = 0;
     int		len = 0;
-#ifdef DEBUG
-    FILE	*debug = fopen("list.log", "a");
+#ifdef NFA_REGEXP_DEBUG_LOG
+    FILE	*debug = fopen(NFA_REGEXP_DEBUG_LOG_NAME, "a");
 
     if (debug == NULL)
     {
-	EMSG(_("(NFA) COULD NOT OPEN list.log !"));
+	EMSG2(_("(NFA) COULD NOT OPEN %s !"), NFA_REGEXP_DEBUG_LOG_NAME);
 	return FALSE;
     }
 #endif
@@ -2950,7 +2952,7 @@ again:
 	fprintf(log_fd, "\n");
 #endif
 
-#ifdef DEBUG
+#ifdef NFA_REGEXP_DEBUG_LOG
 	fprintf(debug, "\n-------------------\n");
 #endif
 
@@ -2966,7 +2968,7 @@ again:
 	    else
 		t = &thislist->t[i];
 
-#ifdef DEBUG
+#ifdef NFA_REGEXP_DEBUG_LOG
 	    nfa_set_code(t->state->c);
 	    fprintf(debug, "%s, ", code);
 #endif
@@ -3436,7 +3438,7 @@ theend:
     if (listids != NULL)
 	vim_free(listids);
 #undef ADD_POS_NEG_STATE
-#ifdef DEBUG
+#ifdef NFA_REGEXP_DEBUG_LOG
     fclose(debug);
 #endif
 

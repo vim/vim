@@ -51,6 +51,8 @@
 # define BT_REGEXP_DUMP
 /* save the debugging data to a file instead of displaying it */
 # define BT_REGEXP_LOG
+# define BT_REGEXP_DEBUG_LOG
+# define BT_REGEXP_DEBUG_LOG_NAME	"bt_regexp_debug.log"
 #endif
 
 /*
@@ -7828,11 +7830,11 @@ vim_regcomp(expr_arg, re_flags)
 
     if (prog == NULL)	    /* error compiling regexp with initial engine */
     {
-#ifdef DEBUG
+#ifdef BT_REGEXP_DEBUG_LOG
 	if (regexp_engine != BACKTRACKING_ENGINE)   /* debugging log for NFA */
 	{
 	    FILE *f;
-	    f = fopen("debug.log", "a");
+	    f = fopen(BT_REGEXP_DEBUG_LOG_NAME, "a");
 	    if (f)
 	    {
 		if (!syntax_error)
@@ -7842,7 +7844,8 @@ vim_regcomp(expr_arg, re_flags)
 		fclose(f);
 	    }
 	    else
-		EMSG("(NFA) Could not open \"debug.log\" to write !!!");
+		EMSG2("(NFA) Could not open \"%s\" to write !!!",
+                        BT_REGEXP_DEBUG_LOG_NAME);
 	    /*
 	    if (syntax_error)
 		EMSG("NFA Regexp: Syntax Error !");
