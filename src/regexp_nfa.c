@@ -224,16 +224,16 @@ nfa_regcomp_start(expr, re_flags)
     char_u	*expr;
     int		re_flags;	    /* see vim_regcomp() */
 {
-    int		postfix_size;
+    size_t	postfix_size;
 
     nstate = 0;
     istate = 0;
     /* A reasonable estimation for size */
-    nstate_max = (STRLEN(expr) + 1) * NFA_POSTFIX_MULTIPLIER;
+    nstate_max = (int)(STRLEN(expr) + 1) * NFA_POSTFIX_MULTIPLIER;
 
     /* Some items blow up in size, such as [A-z].  Add more space for that.
      * TODO: some patterns may still fail. */
-//    nstate_max += 1000;
+    nstate_max += 1000;
 
     /* Size for postfix representation of expr. */
     postfix_size = sizeof(*post_start) * nstate_max;
@@ -2177,7 +2177,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	     * No new state added here. */
 	    if (nfa_calc_size == TRUE)
 	    {
-		nstate += 0;
+		/* nstate += 0; */
 		break;
 	    }
 	    e2 = POP();
@@ -2190,7 +2190,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    /* Negation of a character */
 	    if (nfa_calc_size == TRUE)
 	    {
-		nstate += 0;
+		/* nstate += 0; */
 		break;
 	    }
 	    e1 = POP();
@@ -2204,7 +2204,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    /* Alternation */
 	    if (nfa_calc_size == TRUE)
 	    {
-		nstate ++;
+		nstate++;
 		break;
 	    }
 	    e2 = POP();
@@ -2219,7 +2219,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    /* Zero or more */
 	    if (nfa_calc_size == TRUE)
 	    {
-		nstate ++;
+		nstate++;
 		break;
 	    }
 	    e = POP();
@@ -2234,7 +2234,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    /* one or zero atoms=> greedy match */
 	    if (nfa_calc_size == TRUE)
 	    {
-		nstate ++;
+		nstate++;
 		break;
 	    }
 	    e = POP();
@@ -2248,7 +2248,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    /* zero or one atoms => non-greedy match */
 	    if (nfa_calc_size == TRUE)
 	    {
-		nstate ++;
+		nstate++;
 		break;
 	    }
 	    e = POP();
@@ -2262,7 +2262,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    /* One or more */
 	    if (nfa_calc_size == TRUE)
 	    {
-		nstate ++;
+		nstate++;
 		break;
 	    }
 	    e = POP();
@@ -2278,7 +2278,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	     * with max/min count of 0 */
 	    if (nfa_calc_size == TRUE)
 	    {
-		nstate ++;
+		nstate++;
 		break;
 	    }
 	    s = new_state(NFA_SKIP_CHAR, NULL, NULL);
@@ -2392,7 +2392,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    /* Operands */
 	    if (nfa_calc_size == TRUE)
 	    {
-		nstate ++;
+		nstate++;
 		break;
 	    }
 	    s = new_state(*p, NULL, NULL);
@@ -2407,7 +2407,7 @@ post2nfa(postfix, end, nfa_calc_size)
 
     if (nfa_calc_size == TRUE)
     {
-	nstate ++;
+	nstate++;
 	return NULL;	/* Return value when counting size is ignored anyway */
     }
 
@@ -2583,7 +2583,7 @@ addstate(l, state, m, off, lid, match)
 		save.startpos[subidx] = m->startpos[subidx];
 		save.endpos[subidx] = m->endpos[subidx];
 		m->startpos[subidx].lnum = reglnum;
-		m->startpos[subidx].col = reginput - regline + off;
+		m->startpos[subidx].col = (colnr_T)(reginput - regline + off);
 	    }
 	    else
 	    {
@@ -2631,7 +2631,7 @@ addstate(l, state, m, off, lid, match)
 		save.startpos[subidx] = m->startpos[subidx];
 		save.endpos[subidx] = m->endpos[subidx];
 		m->endpos[subidx].lnum = reglnum;
-		m->endpos[subidx].col = reginput - regline + off;
+		m->endpos[subidx].col = (colnr_T)(reginput - regline + off);
 	    }
 	    else
 	    {
@@ -3620,7 +3620,7 @@ nfa_regcomp(expr, re_flags)
     int		re_flags;
 {
     nfa_regprog_T	*prog;
-    int			prog_size;
+    size_t		prog_size;
     int			*postfix;
 
     if (expr == NULL)
