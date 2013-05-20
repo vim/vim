@@ -231,14 +231,19 @@ nfa_regcomp_start(expr, re_flags)
     /* A reasonable estimation for size */
     nstate_max = (STRLEN(expr) + 1) * NFA_POSTFIX_MULTIPLIER;
 
-    /* Size for postfix representation of expr */
+    /* Some items blow up in size, such as [A-z].  Add more space for that.
+     * TODO: some patterns may still fail. */
+//    nstate_max += 1000;
+
+    /* Size for postfix representation of expr. */
     postfix_size = sizeof(*post_start) * nstate_max;
+
     post_start = (int *)lalloc(postfix_size, TRUE);
     if (post_start == NULL)
 	return FAIL;
     vim_memset(post_start, 0, postfix_size);
     post_ptr = post_start;
-    post_end = post_start + postfix_size;
+    post_end = post_start + nstate_max;
     nfa_has_zend = FALSE;
 
     regcomp_start(expr, re_flags);
