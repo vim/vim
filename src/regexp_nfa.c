@@ -1961,14 +1961,17 @@ static void st_push __ARGS((Frag_T s, Frag_T **p, Frag_T *stack_end));
 static Frag_T st_pop __ARGS((Frag_T **p, Frag_T *stack));
 
 /*
- * Initialize Frag_T struct.
+ * Initialize a Frag_T struct and return it.
  */
     static Frag_T
 frag(start, out)
     nfa_state_T	*start;
     Ptrlist	*out;
 {
-    Frag_T n = { start, out };
+    Frag_T n;
+
+    n.start = start;
+    n.out = out;
     return n;
 }
 
@@ -2144,7 +2147,7 @@ post2nfa(postfix, end, nfa_calc_size)
     if (postfix == NULL)
 	return NULL;
 
-#define PUSH(s)	    st_push ((s), &stackp, stack_end)
+#define PUSH(s)	    st_push((s), &stackp, stack_end)
 #define POP()	    st_pop(&stackp, stack);		\
 		    if (stackp < stack)			\
 		    {					\
