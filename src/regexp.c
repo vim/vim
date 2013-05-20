@@ -5758,7 +5758,7 @@ regrepeat(p, maxcount)
       case SIDENT + ADD_NL:
 	while (count < maxcount)
 	{
-	    if (vim_isIDc(*scan) && (testval || !VIM_ISDIGIT(*scan)))
+	    if (vim_isIDc(PTR2CHAR(scan)) && (testval || !VIM_ISDIGIT(*scan)))
 	    {
 		mb_ptr_adv(scan);
 	    }
@@ -5819,7 +5819,7 @@ regrepeat(p, maxcount)
       case SFNAME + ADD_NL:
 	while (count < maxcount)
 	{
-	    if (vim_isfilec(*scan) && (testval || !VIM_ISDIGIT(*scan)))
+	    if (vim_isfilec(PTR2CHAR(scan)) && (testval || !VIM_ISDIGIT(*scan)))
 	    {
 		mb_ptr_adv(scan);
 	    }

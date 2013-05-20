@@ -203,6 +203,10 @@ OK - [a-z]
 OK - [a-zA-Z]
 OK - [A-Z]
 OK - \C[^A-Z]\+
+OK - \i\+
+OK - \%#=1\i\+
+OK - \f\+
+OK - \%#=1\i\+
 OK - xx \ze test
 OK - abc\zeend
 OK - abc\zsdd

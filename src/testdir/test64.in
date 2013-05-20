@@ -262,6 +262,10 @@ STARTTEST
 :call add(tl, ['[a-zA-Z]', 'a', 'a'])
 :call add(tl, ['[A-Z]', 'a'])
 :call add(tl, ['\C[^A-Z]\+', 'ABCOIJDEOIFNSD jsfoij sa', ' jsfoij sa'])
+:call add(tl, ['\i\+', '&*§xx ', 'xx'])
+:call add(tl, ['\%#=1\i\+', '&*§xx ', 'xx'])
+:call add(tl, ['\f\+', '&*fname ', 'fname'])
+:call add(tl, ['\%#=1\i\+', '&*fname ', 'fname'])
 
 :"""" Tests for \z features
 :call add(tl, ['xx \ze test', 'xx '])					" must match after \ze
