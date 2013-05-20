@@ -158,8 +158,10 @@ static void error_print(int);
 static void ruby_io_init(void);
 static void ruby_vim_init(void);
 
-#if defined(__ia64) && !defined(ruby_init_stack)
-# define ruby_init_stack(addr) ruby_init_stack((addr), rb_ia64_bsp())
+#if defined(RUBY19_OR_LATER) || defined(RUBY_INIT_STACK)
+# if defined(__ia64) && !defined(ruby_init_stack)
+#  define ruby_init_stack(addr) ruby_init_stack((addr), rb_ia64_bsp())
+# endif
 #endif
 
 #if defined(DYNAMIC_RUBY) || defined(PROTO)
@@ -231,12 +233,14 @@ static void ruby_vim_init(void);
 #  define rb_float_new			dll_rb_float_new
 #  define rb_ary_new			dll_rb_ary_new
 #  define rb_ary_push			dll_rb_ary_push
-#  ifdef __ia64
-#   define rb_ia64_bsp		dll_rb_ia64_bsp
-#   undef ruby_init_stack
-#   define ruby_init_stack(addr)	dll_ruby_init_stack((addr), rb_ia64_bsp())
-#  else
-#   define ruby_init_stack	dll_ruby_init_stack
+#  if defined(RUBY19_OR_LATER) || defined(RUBY_INIT_STACK)
+#   ifdef __ia64
+#    define rb_ia64_bsp			dll_rb_ia64_bsp
+#    undef ruby_init_stack
+#    define ruby_init_stack(addr)	dll_ruby_init_stack((addr), rb_ia64_bsp())
+#   else
+#    define ruby_init_stack		dll_ruby_init_stack
+#   endif
 #  endif
 # else
 #  define rb_str2cstr			dll_rb_str2cstr
@@ -346,11 +350,13 @@ static char * (*dll_rb_string_value_ptr) (volatile VALUE*);
 static VALUE (*dll_rb_float_new) (double);
 static VALUE (*dll_rb_ary_new) (void);
 static VALUE (*dll_rb_ary_push) (VALUE, VALUE);
-#  ifdef __ia64
+#  if defined(RUBY19_OR_LATER) || defined(RUBY_INIT_STACK)
+#   ifdef __ia64
 static void * (*dll_rb_ia64_bsp) (void);
 static void (*dll_ruby_init_stack)(VALUE*, void*);
-#  else
+#   else
 static void (*dll_ruby_init_stack)(VALUE*);
+#   endif
 #  endif
 # endif
 # ifdef RUBY19_OR_LATER
@@ -491,10 +497,6 @@ static struct
 # endif
 # if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
     {"rb_string_value_ptr", (RUBY_PROC*)&dll_rb_string_value_ptr},
-#  ifdef __ia64
-    {"rb_ia64_bsp", (RUBY_PROC*)&dll_rb_ia64_bsp},
-#  endif
-    {"ruby_init_stack", (RUBY_PROC*)&dll_ruby_init_stack},
 #  if DYNAMIC_RUBY_VER <= 19
     {"rb_float_new", (RUBY_PROC*)&dll_rb_float_new},
 #  else
@@ -512,6 +514,12 @@ static struct
     {"rb_sprintf", (RUBY_PROC*)&dll_rb_sprintf},
     {"rb_require", (RUBY_PROC*)&dll_rb_require},
     {"ruby_process_options", (RUBY_PROC*)&dll_ruby_process_options},
+# endif
+# if defined(RUBY19_OR_LATER) || defined(RUBY_INIT_STACK)
+#  ifdef __ia64
+    {"rb_ia64_bsp", (RUBY_PROC*)&dll_rb_ia64_bsp},
+#  endif
+    {"ruby_init_stack", (RUBY_PROC*)&dll_ruby_init_stack},
 # endif
     {"", NULL},
 };
@@ -735,7 +743,7 @@ static int ensure_ruby_initialized(void)
 	    NtInitialize(&argc, &argv);
 #endif
 	    {
-#if defined(RUBY_VERSION) && RUBY_VERSION >= 18
+#if defined(RUBY19_OR_LATER) || defined(RUBY_INIT_STACK)
 		ruby_init_stack(ruby_stack_start);
 #endif
 		ruby_init();
