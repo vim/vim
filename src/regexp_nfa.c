@@ -1826,13 +1826,13 @@ nfa_postfix_dump(expr, retval)
 	else if (retval == OK)
 	    fprintf(f, ">>> NFA engine succeeded !\n");
 	fprintf(f, "Regexp: \"%s\"\nPostfix notation (char): \"", expr);
-	for (p=post_start; *p; p++)
+	for (p = post_start; *p && p < post_end; p++)
 	{
 	    nfa_set_code(*p);
 	    fprintf(f, "%s, ", code);
 	}
 	fprintf(f, "\"\nPostfix notation (int): ");
-	for (p=post_start; *p; p++)
+	for (p = post_start; *p && p < post_end; p++)
 		fprintf(f, "%d ", *p);
 	fprintf(f, "\n\n");
 	fclose(f);
@@ -2667,11 +2667,11 @@ check_char_class(class, c)
     switch (class)
     {
 	case NFA_CLASS_ALNUM:
-	    if (isalnum(c))
+	    if (c >= 1 && c <= 255 && isalnum(c))
 		return OK;
 	    break;
 	case NFA_CLASS_ALPHA:
-	    if (isalpha(c))
+	    if (c >= 1 && c <= 255 && isalpha(c))
 		return OK;
 	    break;
 	case NFA_CLASS_BLANK:
@@ -2679,7 +2679,7 @@ check_char_class(class, c)
 		return OK;
 	    break;
 	case NFA_CLASS_CNTRL:
-	    if (iscntrl(c))
+	    if (c >= 1 && c <= 255 && iscntrl(c))
 		return OK;
 	    break;
 	case NFA_CLASS_DIGIT:
@@ -2687,7 +2687,7 @@ check_char_class(class, c)
 		return OK;
 	    break;
 	case NFA_CLASS_GRAPH:
-	    if (isgraph(c))
+	    if (c >= 1 && c <= 255 && isgraph(c))
 		return OK;
 	    break;
 	case NFA_CLASS_LOWER:
@@ -2699,7 +2699,7 @@ check_char_class(class, c)
 		return OK;
 	    break;
 	case NFA_CLASS_PUNCT:
-	    if (ispunct(c))
+	    if (c >= 1 && c <= 255 && ispunct(c))
 		return OK;
 	    break;
 	case NFA_CLASS_SPACE:
