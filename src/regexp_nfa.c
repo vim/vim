@@ -17,8 +17,6 @@
 #define	    NFA_BRACES_MAXLIMIT		    10
 /* For allocating space for the postfix representation */
 #define	    NFA_POSTFIX_MULTIPLIER	    (NFA_BRACES_MAXLIMIT + 2)*2
-/* Size of stack, used when converting the postfix regexp into NFA */
-#define	    NFA_STACK_SIZE		    1024
 
 enum
 {
@@ -2160,9 +2158,9 @@ post2nfa(postfix, end, nfa_calc_size)
     if (nfa_calc_size == FALSE)
     {
 	/* Allocate space for the stack. Max states on the stack : nstate */
-	stack = (Frag_T *) lalloc((nstate + 1)*sizeof(Frag_T), TRUE);
+	stack = (Frag_T *) lalloc((nstate + 1) * sizeof(Frag_T), TRUE);
 	stackp = stack;
-	stack_end = stack + NFA_STACK_SIZE;
+	stack_end = stack + (nstate + 1);
     }
 
     for (p = postfix; p < end; ++p)
