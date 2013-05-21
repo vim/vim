@@ -272,20 +272,42 @@ static PyObject *VimError;
 /* Check to see whether a Vim error has been reported, or a keyboard
  * interrupt has been detected.
  */
+
+    static void
+VimTryStart(void)
+{
+    ++trylevel;
+}
+
     static int
-VimErrorCheck(void)
+VimTryEnd(void)
+{
+    --trylevel;
+    if (got_int)
+    {
+	PyErr_SetNone(PyExc_KeyboardInterrupt);
+	return 1;
+    }
+    else if (!did_throw)
+	return 0;
+    else if (PyErr_Occurred())
+	return 1;
+    else
+    {
+	PyErr_SetVim((char *) current_exception->value);
+	discard_current_exception();
+	return 1;
+    }
+}
+
+    static int
+VimCheckInterrupt(void)
 {
     if (got_int)
     {
 	PyErr_SetNone(PyExc_KeyboardInterrupt);
 	return 1;
     }
-    else if (did_emsg && !PyErr_Occurred())
-    {
-	PyErr_SetNone(VimError);
-	return 1;
-    }
-
     return 0;
 }
 
@@ -306,16 +328,18 @@ VimCommand(PyObject *self UNUSED, PyObject *args)
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
 
+    VimTryStart();
     do_cmdline_cmd((char_u *)cmd);
     update_screen(VALID);
 
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
 
-    if (VimErrorCheck())
+    if (VimTryEnd())
 	result = NULL;
     else
 	result = Py_None;
+
 
     Py_XINCREF(result);
     return result;
@@ -449,10 +473,13 @@ VimEval(PyObject *self UNUSED, PyObject *args UNUSED)
 
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
+    VimTryStart();
     our_tv = eval_expr((char_u *)expr, NULL);
-
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
+
+    if (VimTryEnd())
+	return NULL;
 
     if (our_tv == NULL)
     {
@@ -490,10 +517,13 @@ VimEvalPy(PyObject *self UNUSED, PyObject *args)
 
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
+    VimTryStart();
     our_tv = eval_expr((char_u *)expr, NULL);
-
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
+
+    if (VimTryEnd())
+	return NULL;
 
     if (our_tv == NULL)
     {
@@ -1324,12 +1354,15 @@ FunctionCall(FunctionObject *self, PyObject *argsObject, PyObject *kwargs)
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
 
+    VimTryStart();
     error = func_call(name, &args, selfdict, &rettv);
 
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
 
-    if (error != OK)
+    if (VimTryEnd())
+	result = NULL;
+    else if (error != OK)
     {
 	result = NULL;
 	PyErr_SetVim(_("failed to run function"));
@@ -1486,14 +1519,16 @@ set_option_value_for(key, numval, stringval, opt_flags, opt_type, from)
     win_T	*save_curwin;
     tabpage_T	*save_curtab;
     buf_T	*save_curbuf;
-    int		r = 0;
 
+    VimTryStart();
     switch (opt_type)
     {
 	case SREQ_WIN:
 	    if (switch_win(&save_curwin, &save_curtab, (win_T *)from,
 				     win_find_tabpage((win_T *)from)) == FAIL)
 	    {
+		if (VimTryEnd())
+		    return -1;
 		PyErr_SetVim("Problem while switching windows.");
 		return -1;
 	    }
@@ -1509,7 +1544,7 @@ set_option_value_for(key, numval, stringval, opt_flags, opt_type, from)
 	    set_option_value(key, numval, stringval, opt_flags);
 	    break;
     }
-    return r;
+    return VimTryEnd();
 }
 
     static int
@@ -1961,7 +1996,7 @@ WindowSetattr(WindowObject *self, char *name, PyObject *val)
 	}
 
 	/* Check for keyboard interrupts */
-	if (VimErrorCheck())
+	if (VimCheckInterrupt())
 	    return -1;
 
 	self->win->w_cursor.lnum = lnum;
@@ -1988,11 +2023,11 @@ WindowSetattr(WindowObject *self, char *name, PyObject *val)
 #endif
 	savewin = curwin;
 	curwin = self->win;
+
+	VimTryStart();
 	win_setheight(height);
 	curwin = savewin;
-
-	/* Check for keyboard interrupts */
-	if (VimErrorCheck())
+	if (VimTryEnd())
 	    return -1;
 
 	return 0;
@@ -2011,11 +2046,11 @@ WindowSetattr(WindowObject *self, char *name, PyObject *val)
 #endif
 	savewin = curwin;
 	curwin = self->win;
+
+	VimTryStart();
 	win_setwidth(width);
 	curwin = savewin;
-
-	/* Check for keyboard interrupts */
-	if (VimErrorCheck())
+	if (VimTryEnd())
 	    return -1;
 
 	return 0;
@@ -2304,6 +2339,8 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	PyErr_Clear();
 	switch_buffer(&savebuf, buf);
 
+	VimTryStart();
+
 	if (u_savedel((linenr_T)n, 1L) == FAIL)
 	    PyErr_SetVim(_("cannot save undo information"));
 	else if (ml_delete((linenr_T)n, FALSE) == FAIL)
@@ -2317,7 +2354,7 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 
 	restore_buffer(savebuf);
 
-	if (PyErr_Occurred() || VimErrorCheck())
+	if (VimTryEnd())
 	    return FAIL;
 
 	if (len_change)
@@ -2332,6 +2369,8 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 
 	if (save == NULL)
 	    return FAIL;
+
+	VimTryStart();
 
 	/* We do not need to free "save" if ml_replace() consumes it. */
 	PyErr_Clear();
@@ -2356,7 +2395,7 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	if (buf == savebuf)
 	    check_cursor_col();
 
-	if (PyErr_Occurred() || VimErrorCheck())
+	if (VimTryEnd())
 	    return FAIL;
 
 	if (len_change)
@@ -2395,6 +2434,7 @@ SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_cha
 	buf_T	*savebuf;
 
 	PyErr_Clear();
+	VimTryStart();
 	switch_buffer(&savebuf, buf);
 
 	if (u_savedel((linenr_T)lo, (long)n) == FAIL)
@@ -2416,7 +2456,7 @@ SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_cha
 
 	restore_buffer(savebuf);
 
-	if (PyErr_Occurred() || VimErrorCheck())
+	if (VimTryEnd())
 	    return FAIL;
 
 	if (len_change)
@@ -2459,6 +2499,7 @@ SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_cha
 	    }
 	}
 
+	VimTryStart();
 	PyErr_Clear();
 
 	// START of region without "return".  Must call restore_buffer()!
@@ -2545,7 +2586,7 @@ SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_cha
 	// END of region without "return".
 	restore_buffer(savebuf);
 
-	if (PyErr_Occurred() || VimErrorCheck())
+	if (VimTryEnd())
 	    return FAIL;
 
 	if (len_change)
@@ -2583,6 +2624,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	    return FAIL;
 
 	PyErr_Clear();
+	VimTryStart();
 	switch_buffer(&savebuf, buf);
 
 	if (u_save((linenr_T)n, (linenr_T)(n+1)) == FAIL)
@@ -2596,7 +2638,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	restore_buffer(savebuf);
 	update_screen(VALID);
 
-	if (PyErr_Occurred() || VimErrorCheck())
+	if (VimTryEnd())
 	    return FAIL;
 
 	if (len_change)
@@ -2633,6 +2675,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	}
 
 	PyErr_Clear();
+	VimTryStart();
 	switch_buffer(&savebuf, buf);
 
 	if (u_save((linenr_T)n, (linenr_T)(n + 1)) == FAIL)
@@ -2666,7 +2709,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	restore_buffer(savebuf);
 	update_screen(VALID);
 
-	if (PyErr_Occurred() || VimErrorCheck())
+	if (VimTryEnd())
 	    return FAIL;
 
 	if (len_change)
@@ -2896,7 +2939,7 @@ RangeNew(buf_T *buf, PyInt start, PyInt end)
     static void
 RangeDestructor(RangeObject *self)
 {
-    Py_DECREF(self->buf);
+    Py_XDECREF(self->buf);
     DESTRUCTOR_FINISH(self);
 }
 
@@ -3078,19 +3121,18 @@ BufferMark(BufferObject *self, PyObject *args)
 	return NULL;
     mark = *pmark;
 
+    VimTryStart();
     switch_buffer(&savebuf, self->buf);
     posp = getmark(mark, FALSE);
     restore_buffer(savebuf);
+    if (VimTryEnd())
+	return NULL;
 
     if (posp == NULL)
     {
 	PyErr_SetVim(_("invalid mark name"));
 	return NULL;
     }
-
-    /* Check for keyboard interrupt */
-    if (VimErrorCheck())
-	return NULL;
 
     if (posp->lnum <= 0)
     {
@@ -3330,13 +3372,16 @@ CurrentSetattr(PyObject *self UNUSED, char *name, PyObject *value)
 	    return -1;
 	count = ((BufferObject *)(value))->buf->b_fnum;
 
+	VimTryStart();
 	if (do_buffer(DOBUF_GOTO, DOBUF_FIRST, FORWARD, count, 0) == FAIL)
 	{
+	    if (VimTryEnd())
+		return -1;
 	    PyErr_SetVim(_("failed to switch to given buffer"));
 	    return -1;
 	}
 
-	return 0;
+	return VimTryEnd();
     }
     else if (strcmp(name, "window") == 0)
     {
@@ -3359,15 +3404,18 @@ CurrentSetattr(PyObject *self UNUSED, char *name, PyObject *value)
 	    return -1;
 	}
 
+	VimTryStart();
 	win_goto(((WindowObject *)(value))->win);
 	if (((WindowObject *)(value))->win != curwin)
 	{
+	    if (VimTryEnd())
+		return -1;
 	    PyErr_SetString(PyExc_RuntimeError,
 		    _("did not switch to the specified window"));
 	    return -1;
 	}
 
-	return 0;
+	return VimTryEnd();
     }
     else if (strcmp(name, "tabpage") == 0)
     {
@@ -3380,15 +3428,18 @@ CurrentSetattr(PyObject *self UNUSED, char *name, PyObject *value)
 	if (CheckTabPage((TabPageObject *)(value)))
 	    return -1;
 
+	VimTryStart();
 	goto_tabpage_tp(((TabPageObject *)(value))->tab, TRUE, TRUE);
 	if (((TabPageObject *)(value))->tab != curtab)
 	{
+	    if (VimTryEnd())
+		return -1;
 	    PyErr_SetString(PyExc_RuntimeError,
 		    _("did not switch to the specified tab page"));
 	    return -1;
 	}
 
-	return 0;
+	return VimTryEnd();
     }
     else
     {

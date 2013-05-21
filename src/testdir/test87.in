@@ -367,20 +367,24 @@ def e(s, g=globals(), l=locals()):
     try:
         exec(s, g, l)
     except Exception as e:
-        vim.command('throw ' + repr(e.__class__.__name__))
+        vim.command('return ' + repr(e.__class__.__name__))
 
 def ev(s, g=globals(), l=locals()):
     try:
         return eval(s, g, l)
     except Exception as e:
-        vim.command('throw ' + repr(e.__class__.__name__))
+        vim.command('let exc=' + repr(e.__class__.__name__))
         return 0
 EOF
 :function E(s)
 :   python3 e(vim.eval('a:s'))
 :endfunction
 :function Ev(s)
-:   return py3eval('ev(vim.eval("a:s"))')
+:   let r=py3eval('ev(vim.eval("a:s"))')
+:   if exists('exc')
+:       throw exc
+:   endif
+:   return r
 :endfunction
 :py3 gopts1=vim.options
 :py3 wopts1=vim.windows[2].options
@@ -424,27 +428,24 @@ EOF
 :       catch
 :           put ='  p/'.v.'! '.v:exception
 :       endtry
-:       try
-:           call E(v.'["'.oname.'"]=invval')
-:       catch
-:           put ='  inv: '.string(invval).'! '.v:exception
-:       endtry
+:       let r=E(v.'['''.oname.''']=invval')
+:       if r isnot 0
+:           put ='  inv: '.string(invval).'! '.r
+:       endif
 :       for vv in (v is# 'gopts1' ? [v] : [v, v[:-2].'2', v[:-2].'3'])
 :           let val=substitute(vv, '^.opts', 'oval', '')
-:           try
-:               call E(vv.'["'.oname.'"]='.val)
-:           catch
-:               put ='  '.vv.'! '.v:exception
-:           endtry
+:           let r=E(vv.'['''.oname.''']='.val)
+:           if r isnot 0
+:               put ='  '.vv.'! '.r
+:           endif
 :       endfor
 :   endfor
 :   call RecVars(oname)
 :   for v in ['wopts3', 'bopts3']
-:       try
-:           call E('del '.v.'["'.oname.'"]')
-:       catch
-:           put ='  del '.v.'! '.v:exception
-:       endtry
+:       let r=E('del '.v.'["'.oname.'"]')
+:       if r isnot 0
+:           put ='  del '.v.'! '.r
+:       endif
 :   endfor
 :   call RecVars(oname)
 :endfor
@@ -637,6 +638,25 @@ for expr, attr in (
     ('vim.current.tabpage',              'TabPage'),
 ):
     cb.append(expr + ':' + attr + ':' + repr(type(eval(expr)) is getattr(vim, attr)))
+EOF
+:"
+:" Test exceptions
+:fun Exe(e)
+:   execute a:e
+:endfun
+py3 << EOF
+def ee(expr, g=globals(), l=locals()):
+    try:
+        exec(expr, g, l)
+    except Exception as e:
+        cb.append(repr((e.__class__, e)))
+Exe = vim.bindeval('function("Exe")')
+ee('vim.command("throw \'abc\'")')
+ee('Exe("throw \'def\'")')
+ee('vim.eval("Exe(\'throw \'\'ghi\'\'\')")')
+ee('vim.eval("Exe(\'echoerr \'\'jkl\'\'\')")')
+ee('vim.eval("Exe(\'xxx_non_existent_command_xxx\')")')
+ee('vim.bindeval("Exe(\'xxx_non_existent_command_xxx\')")')
 EOF
 :endfun
 :"
