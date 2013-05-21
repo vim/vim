@@ -333,7 +333,7 @@ Number of tabs: 4
 Current tab pages:
   <tabpage 0>(1): 1 windows, current is <window object (unknown)>
   Windows:
-    <window object (unknown)>(1): displays buffer <buffer test86.in>; cursor is at (954, 0)
+    <window object (unknown)>(1): displays buffer <buffer test86.in>; cursor is at (970, 0)
   <tabpage 1>(2): 1 windows, current is <window object (unknown)>
   Windows:
     <window object (unknown)>(1): displays buffer <buffer 0>; cursor is at (1, 0)
@@ -359,3 +359,12 @@ Current tab page: <tabpage 2>
 Current window: <window 0>
 Current buffer: <buffer test86.in>
 Current line: 'Type error at assigning None to vim.current.buffer'
+vim.vars:Dictionary:True
+vim.options:Options:True
+vim.bindeval("{}"):Dictionary:True
+vim.bindeval("[]"):List:True
+vim.bindeval("function('tr')"):Function:True
+vim.current.buffer:Buffer:True
+vim.current.range:Range:True
+vim.current.window:Window:True
+vim.current.tabpage:TabPage:True

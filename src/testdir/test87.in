@@ -622,6 +622,22 @@ for b in vim.buffers:
 EOF
 :tabonly!
 :only!
+:"
+:" Test types
+py3 << EOF
+for expr, attr in (
+    ('vim.vars',                         'Dictionary'),
+    ('vim.options',                      'Options'),
+    ('vim.bindeval("{}")',               'Dictionary'),
+    ('vim.bindeval("[]")',               'List'),
+    ('vim.bindeval("function(\'tr\')")', 'Function'),
+    ('vim.current.buffer',               'Buffer'),
+    ('vim.current.range',                'Range'),
+    ('vim.current.window',               'Window'),
+    ('vim.current.tabpage',              'TabPage'),
+):
+    cb.append(expr + ':' + attr + ':' + repr(type(eval(expr)) is getattr(vim, attr)))
+EOF
 :endfun
 :"
 :call Test()

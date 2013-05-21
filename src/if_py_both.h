@@ -4245,6 +4245,15 @@ static struct object_constant {
     {"windows",  (PyObject *)(void *)&TheWindowList},
     {"tabpages", (PyObject *)(void *)&TheTabPageList},
     {"current",  (PyObject *)(void *)&TheCurrent},
+
+    {"Buffer",     (PyObject *)&BufferType},
+    {"Range",      (PyObject *)&RangeType},
+    {"Window",     (PyObject *)&WindowType},
+    {"TabPage",    (PyObject *)&TabPageType},
+    {"Dictionary", (PyObject *)&DictionaryType},
+    {"List",       (PyObject *)&ListType},
+    {"Function",   (PyObject *)&FunctionType},
+    {"Options",    (PyObject *)&OptionsType},
 };
 
 typedef int (*object_adder)(PyObject *, const char *, PyObject *);
