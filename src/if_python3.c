@@ -68,8 +68,6 @@
 # define PY_SSIZE_T_CLEAN
 #endif
 
-static void init_structs(void);
-
 /* The "surrogateescape" error handler is new in Python 3.1 */
 #if PY_VERSION_HEX >= 0x030100f0
 # define CODEC_ERROR_HANDLER "surrogateescape"
@@ -610,8 +608,6 @@ get_py3_exceptions()
 }
 #endif /* DYNAMIC_PYTHON3 */
 
-static PyObject *BufferDir(PyObject *, PyObject *);
-
 static int py3initialised = 0;
 
 #define PYINITIALISED py3initialised
@@ -670,6 +666,7 @@ call_PyType_GenericAlloc(PyTypeObject *type, Py_ssize_t nitems)
     return PyType_GenericAlloc(type,nitems);
 }
 
+static PyObject *BufferDir(PyObject *);
 static PyObject *OutputGetattro(PyObject *, PyObject *);
 static int OutputSetattro(PyObject *, PyObject *, PyObject *);
 static PyObject *BufferGetattro(PyObject *, PyObject *);
@@ -1008,7 +1005,7 @@ OutputSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
 {
     GET_ATTR_STRING(name, nameobj);
 
-    return OutputSetattr(self, name, val);
+    return OutputSetattr((OutputObject *)(self), name, val);
 }
 
 /***************/
@@ -1036,11 +1033,8 @@ PythonIO_Init(void)
 
 #define BufferType_Check(obj) ((obj)->ob_base.ob_type == &BufferType)
 
-static Py_ssize_t BufferLength(PyObject *);
-static PyObject *BufferItem(PyObject *, Py_ssize_t);
 static PyObject* BufferSubscript(PyObject *self, PyObject *idx);
 static Py_ssize_t BufferAsSubscript(PyObject *self, PyObject *idx, PyObject *val);
-
 
 /* Line range type - Implementation functions
  * --------------------------------------
@@ -1097,7 +1091,7 @@ BufferGetattro(PyObject *self, PyObject*nameobj)
 }
 
     static PyObject *
-BufferDir(PyObject *self UNUSED, PyObject *args UNUSED)
+BufferDir(PyObject *self UNUSED)
 {
     return Py_BuildValue("[sssss]", "name", "number",
 						   "append", "mark", "range");
@@ -1111,7 +1105,7 @@ BufferSubscript(PyObject *self, PyObject* idx)
     if (PyLong_Check(idx))
     {
 	long _idx = PyLong_AsLong(idx);
-	return BufferItem(self,_idx);
+	return BufferItem((BufferObject *)(self), _idx);
     } else if (PySlice_Check(idx))
     {
 	Py_ssize_t start, stop, step, slicelen;
@@ -1126,7 +1120,7 @@ BufferSubscript(PyObject *self, PyObject* idx)
 	{
 	    return NULL;
 	}
-	return BufferSlice(self, start, stop);
+	return BufferSlice((BufferObject *)(self), start, stop);
     }
     else
     {
@@ -1230,7 +1224,7 @@ RangeSubscript(PyObject *self, PyObject* idx)
     if (PyLong_Check(idx))
     {
 	long _idx = PyLong_AsLong(idx);
-	return RangeItem(self,_idx);
+	return RangeItem((RangeObject *)(self), _idx);
     } else if (PySlice_Check(idx))
     {
 	Py_ssize_t start, stop, step, slicelen;
@@ -1242,7 +1236,7 @@ RangeSubscript(PyObject *self, PyObject* idx)
 	{
 	    return NULL;
 	}
-	return RangeSlice(self, start, stop);
+	return RangeSlice((RangeObject *)(self), start, stop);
     }
     else
     {
@@ -1323,7 +1317,7 @@ WindowSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
 {
     GET_ATTR_STRING(name, nameobj);
 
-    return WindowSetattr(self, name, val);
+    return WindowSetattr((WindowObject *)(self), name, val);
 }
 
 /* Tab page list object - Definitions
@@ -1377,8 +1371,6 @@ CurrentSetattro(PyObject *self, PyObject *nameobj, PyObject *value)
 /* Dictionary object - Definitions
  */
 
-static PyInt DictionaryLength(PyObject *);
-
     static PyObject *
 DictionaryGetattro(PyObject *self, PyObject *nameobj)
 {
@@ -1398,14 +1390,11 @@ DictionaryGetattro(PyObject *self, PyObject *nameobj)
 DictionarySetattro(PyObject *self, PyObject *nameobj, PyObject *val)
 {
     GET_ATTR_STRING(name, nameobj);
-    return DictionarySetattr(self, name, val);
+    return DictionarySetattr((DictionaryObject *)(self), name, val);
 }
 
 /* List object - Definitions
  */
-
-static PyInt ListLength(PyObject *);
-static PyObject *ListItem(PyObject *, Py_ssize_t);
 
 static PySequenceMethods ListAsSeq = {
     (lenfunc)		ListLength,	 /* sq_length,	  len(x)   */
@@ -1430,21 +1419,21 @@ static PyMappingMethods ListAsMapping = {
 };
 
     static PyObject *
-ListSubscript(PyObject *self, PyObject* idxObject)
+ListSubscript(PyObject *self, PyObject* idx)
 {
-    if (PyLong_Check(idxObject))
+    if (PyLong_Check(idx))
     {
-	long idx = PyLong_AsLong(idxObject);
-	return ListItem(self, idx);
+	long _idx = PyLong_AsLong(idx);
+	return ListItem((ListObject *)(self), _idx);
     }
-    else if (PySlice_Check(idxObject))
+    else if (PySlice_Check(idx))
     {
 	Py_ssize_t start, stop, step, slicelen;
 
-	if (PySlice_GetIndicesEx(idxObject, ListLength(self), &start, &stop,
-				 &step, &slicelen) < 0)
+	if (PySlice_GetIndicesEx(idx, ListLength((ListObject *)(self)),
+				 &start, &stop, &step, &slicelen) < 0)
 	    return NULL;
-	return ListSlice(self, start, stop);
+	return ListSlice((ListObject *)(self), start, stop);
     }
     else
     {
@@ -1454,21 +1443,21 @@ ListSubscript(PyObject *self, PyObject* idxObject)
 }
 
     static Py_ssize_t
-ListAsSubscript(PyObject *self, PyObject *idxObject, PyObject *obj)
+ListAsSubscript(PyObject *self, PyObject *idx, PyObject *obj)
 {
-    if (PyLong_Check(idxObject))
+    if (PyLong_Check(idx))
     {
-	long idx = PyLong_AsLong(idxObject);
-	return ListAssItem(self, idx, obj);
+	long _idx = PyLong_AsLong(idx);
+	return ListAssItem((ListObject *)(self), _idx, obj);
     }
-    else if (PySlice_Check(idxObject))
+    else if (PySlice_Check(idx))
     {
 	Py_ssize_t start, stop, step, slicelen;
 
-	if (PySlice_GetIndicesEx(idxObject, ListLength(self), &start, &stop,
-				 &step, &slicelen) < 0)
+	if (PySlice_GetIndicesEx(idx, ListLength((ListObject *)(self)),
+				 &start, &stop, &step, &slicelen) < 0)
 	    return -1;
-	return ListAssSlice(self, start, stop, obj);
+	return ListAssSlice((ListObject *)(self), start, stop, obj);
     }
     else
     {
@@ -1492,7 +1481,7 @@ ListGetattro(PyObject *self, PyObject *nameobj)
 ListSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
 {
     GET_ATTR_STRING(name, nameobj);
-    return ListSetattr(self, name, val);
+    return ListSetattr((ListObject *)(self), name, val);
 }
 
 /* Function object - Definitions

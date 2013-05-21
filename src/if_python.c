@@ -56,8 +56,6 @@
 # define PY_SSIZE_T_CLEAN
 #endif
 
-static void init_structs(void);
-
 #define PyBytes_FromString PyString_FromString
 #define PyBytes_Check PyString_Check
 
@@ -659,15 +657,8 @@ static PyObject *FunctionGetattr(PyObject *, char *);
  * Internal function prototypes.
  */
 
-static void PythonIO_Flush(void);
 static int PythonIO_Init(void);
 static int PythonMod_Init(void);
-
-/* Utility functions for the vim/python interface
- * ----------------------------------------------
- */
-
-static int SetBufferLineList(buf_T *, PyInt, PyInt, PyObject *, PyInt *);
 
 
 /******************************************************
@@ -1016,9 +1007,6 @@ PythonIO_Init(void)
 /******************************************************
  * 3. Implementation of the Vim module for Python
  */
-
-static PyObject *ConvertToPyObject(typval_T *);
-static int ConvertFromPyObject(PyObject *, typval_T *);
 
 /* Window type - Implementation functions
  * --------------------------------------
