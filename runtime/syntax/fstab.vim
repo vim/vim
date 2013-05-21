@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language: fstab file
-" Maintaner: Radu Dineiu <radu.dineiu@gmail.com>
-" URL: http://ld.yi.org/vim/fstab.vim
-" Last Change: 2009 Feb 04
-" Version: 0.93
+" Maintainer: Radu Dineiu <radu.dineiu@gmail.com>
+" URL: https://raw.github.com/rid9/vim-fstab/master/fstab.vim
+" Last Change: 2013 May 21
+" Version: 1.0
 "
 " Credits:
 "   David Necas (Yeti) <yeti@physics.muni.cz>
@@ -11,10 +11,13 @@
 "   Georgi Georgiev <chutz@gg3.net>
 "   James Vega <jamessan@debian.org>
 "   Elias Probst <mail@eliasprobst.eu>
-"
+
 " Options:
 "   let fstab_unknown_fs_errors = 1
 "     highlight unknown filesystems as errors
+"
+"   let fstab_unknown_device_errors = 0
+"     do not highlight unknown devices as errors
 
 if version < 600
 	syntax clear
@@ -22,15 +25,18 @@ elseif exists("b:current_syntax")
 	finish
 endif
 
+let s:cpo_save = &cpo
+set cpo&vim
+
 " General
 syn cluster fsGeneralCluster contains=fsComment
-syn match fsComment /\s*#.*/
+syn match fsComment /\s*#.*/ contains=@Spell
 syn match fsOperator /[,=:#]/
 
 " Device
 syn cluster fsDeviceCluster contains=fsOperator,fsDeviceKeyword,fsDeviceError
 syn match fsDeviceError /\%([^a-zA-Z0-9_\/#@:\.-]\|^\w\{-}\ze\W\)/ contained
-syn keyword fsDeviceKeyword contained none proc linproc tmpfs devpts sysfs usbfs
+syn keyword fsDeviceKeyword contained none proc linproc tmpfs devpts devtmpfs sysfs usbfs
 syn keyword fsDeviceKeyword contained LABEL nextgroup=fsDeviceLabel
 syn keyword fsDeviceKeyword contained UUID nextgroup=fsDeviceUUID
 syn keyword fsDeviceKeyword contained sshfs nextgroup=fsDeviceSshfs
@@ -47,7 +53,7 @@ syn keyword fsMountPointKeyword contained none swap
 " Type
 syn cluster fsTypeCluster contains=fsTypeKeyword,fsTypeUnknown
 syn match fsTypeUnknown /\s\+\zs\w\+/ contained
-syn keyword fsTypeKeyword contained adfs ados affs atfs audiofs auto autofs befs bfs cd9660 cfs cifs coda cramfs devfs devpts e2compr efs ext2 ext2fs ext3 ext4 fdesc ffs filecore fuse hfs hpfs iso9660 jffs jffs2 jfs kernfs lfs linprocfs mfs minix msdos ncpfs nfs none ntfs null nwfs overlay ovlfs portal proc procfs ptyfs qnx4 reiserfs romfs shm smbfs sshfs std subfs swap sysfs sysv tcfs tmpfs udf ufs umap umsdos union usbfs userfs vfat vs3fs vxfs wrapfs wvfs xfs zisofs
+syn keyword fsTypeKeyword contained adfs ados affs anon_inodefs atfs audiofs auto autofs bdev befs bfs btrfs binfmt_misc cd9660 cfs cgroup cifs coda configfs cpuset cramfs devfs devpts devtmpfs e2compr efs ext2 ext2fs ext3 ext4 fdesc ffs filecore fuse fuseblk fusectl hfs hpfs hugetlbfs iso9660 jffs jffs2 jfs kernfs lfs linprocfs mfs minix mqueue msdos ncpfs nfs nfsd nilfs2 none ntfs null nwfs overlay ovlfs pipefs portal proc procfs pstore ptyfs qnx4 reiserfs ramfs romfs securityfs shm smbfs squashfs sockfs sshfs std subfs swap sysfs sysv tcfs tmpfs udf ufs umap umsdos union usbfs userfs vfat vs3fs vxfs wrapfs wvfs xenfs xfs zisofs
 
 " Options
 " -------
@@ -71,6 +77,11 @@ syn match fsOptionsKeywords contained /\<\%(prefix\|volume\|root\)=/ nextgroup=f
 syn match fsOptionsKeywords contained /\<bs=/ nextgroup=fsOptionsSize
 syn keyword fsOptionsKeywords contained protect usemp verbose
 
+" Options: btrfs
+syn match fsOptionsKeywords contained /\<\%(subvol\|subvolid\|subvolrootid\|device\|compress\|compress-force\|fatal_errors\)=/ nextgroup=fsOptionsString
+syn match fsOptionsKeywords contained /\<\%(max_inline\|alloc_start\|thread_pool\|metadata_ratio\|check_int_print_mask\)=/ nextgroup=fsOptionsNumber
+syn keyword fsOptionsKeywords contained degraded nodatasum nodatacow nobarrier ssd ssd_spread noacl notreelog flushoncommit space_cache nospace_cache clear_cache user_subvol_rm_allowed autodefrag inode_cache enospc_debug recovery check_int check_int_data skip_balance discard
+
 " Options: cd9660
 syn keyword fsOptionsKeywords contained extatt gens norrip nostrictjoilet
 
@@ -84,7 +95,7 @@ syn match fsOptionsKeywords contained /\<\%(res[gu]id\|sb\)=/ nextgroup=fsOption
 syn keyword fsOptionsExt2Check contained none normal strict
 syn keyword fsOptionsExt2Errors contained continue panic
 syn match fsOptionsExt2Errors contained /\<remount-ro\>/
-syn keyword fsOptionsKeywords contained acl bsddf minixdf debug grpid bsdgroups minixdf noacl nocheck nogrpid oldalloc orlov sysvgroups nouid32 nobh user_xattr nouser_xattr
+syn keyword fsOptionsKeywords contained acl bsddf minixdf debug grpid bsdgroups minixdf nocheck nogrpid oldalloc orlov sysvgroups nouid32 nobh user_xattr nouser_xattr
 
 " Options: ext3
 syn match fsOptionsKeywords contained /\<journal=/ nextgroup=fsOptionsExt3Journal
@@ -92,7 +103,7 @@ syn match fsOptionsKeywords contained /\<data=/ nextgroup=fsOptionsExt3Data
 syn match fsOptionsKeywords contained /\<commit=/ nextgroup=fsOptionsNumber
 syn keyword fsOptionsExt3Journal contained update inum
 syn keyword fsOptionsExt3Data contained journal ordered writeback
-syn keyword fsOptionsKeywords contained noload user_xattr nouser_xattr acl noacl
+syn keyword fsOptionsKeywords contained noload user_xattr nouser_xattr acl
 
 " Options: ext4
 syn match fsOptionsKeywords contained /\<journal=/ nextgroup=fsOptionsExt4Journal
@@ -216,7 +227,7 @@ syn match fsOptions /\s\+.\{-}\s/me=e-1 nextgroup=fsFreqPass contains=@fsOptions
 syn match fsFreqPass /\s\+.\{-}$/ contains=@fsFreqPassCluster,@fsGeneralCluster contained
 
 " Whole line comments
-syn match fsCommentLine /^#.*$/
+syn match fsCommentLine /^#.*$/ contains=@Spell
 
 if version >= 508 || !exists("did_config_syntax_inits")
 	if version < 508
@@ -241,7 +252,10 @@ if version >= 508 || !exists("did_config_syntax_inits")
 		HiLink fsTypeUnknown Error
 	endif
 
-	HiLink fsDeviceError Error
+	if !exists('fstab_unknown_device_errors') || fstab_unknown_device_errors == 1
+		HiLink fsDeviceError Error
+	endif
+
 	HiLink fsMountPointError Error
 	HiLink fsMountPointKeyword Keyword
 	HiLink fsFreqPassError Error
@@ -276,5 +290,8 @@ if version >= 508 || !exists("did_config_syntax_inits")
 endif
 
 let b:current_syntax = "fstab"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: ts=8 ft=vim

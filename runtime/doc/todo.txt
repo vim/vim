@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 May 17
+*todo.txt*      For Vim version 7.3.  Last change: 2013 May 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,7 +34,17 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Rename src/Makefile and create a new one like toplevel Makefile that creates
+auto/config.mk when it's not there? (Ben Schmidt, 2011 Feb 11)
+
 --- Python interface
+
+Python: thread with refactoring patches. (ZyX, May 19, 16:46 and later)
+9
+10
+11
+
+Configure doesn't find Python 3 on Ubuntu 13.04. (Ken Takata, Apr 13)
 
 Python SystemExit exception is not handled properly.  Patch to catch the
 exception and give an error. (Yasuhiro Matsumoto)
@@ -45,9 +55,10 @@ Patch to print the result of a :python command. (Maxim Philippov
 Patch no longer applies.
 
 ":python os.chdir('/tmp')" makes short buffer names invalid. (Xavier de Gaye)
-Check directory and call shorten_fnames()?  Better: make os.chdir()
-invoke the interal :cd implementation, that takes care of all side
-effects.
+Patch to make os.chdir() handle side effects. (Xavier de Gaye, 2013 May 17)
+Update May 19, also for os.fchdir().
+Adds a $VIMRUNTIME/python directory.
+ZyX: OK to add python and python3 directory.
 
 Mac: OS/X 10.4 with Python 2.5 installed: configure finds an extra argument
 that breaks the build. (Brian Victor, 2008 Sep 1)
@@ -65,34 +76,74 @@ Vim script.  Requires converting the arguments and return value.
 --- runtime files
 
 Syntax file for protocol buffers. (Feng Xiao, 2013 May 9)
-Has an ugly copyright notice.  No conflict with Vim license?
+Has an ugly copyright notice.
+Add statement that it does not conflict with Vim license.
 
 Patch for JavaScript syntax. (Kevin Locke, 2013 May 9)
 Claudio didn't respond yet.
 
 --- Fast regexp engine
 
-Including NFA regexp code.  Latest version probably is:
-https://code.google.com/p/vim-soc2008-regexp/source/browse/trunk/vim72-re/src/regexp_nfa.c
-Patch updated by Ken Takata. (May 13)
+Duplicate condition in line 1094. (Ken Takata)  Should be 'r'?
 
-To be able to run tests:
-- set defaultre=old / nfa / auto
-- In pattern use "\%#= to set the engine: 0 = automatic, 1 = old 2 = nfa
+Multi-byte problem? Marc Weber
+    echo matchlist('1', '\%#=1\o{\?Ä\Z')
+    echo matchlist('1', '\%#=2\o{\?Ä\Z')
+
+Difference in matching this pattern: (Marc Weber)
+   echo matchlist("t", '\%#=1ú\Z')
+   echo matchlist("t", '\%#=2ú\Z')
+
+Difference in matching this pattern:
+    echo matchlist('google', '\%#=1\<go*\|go')
+    echo matchlist('google', '\%#=2\<go*\|go')
+
+Difference in matching this pattern: (Marc Weber)
+  echo matchlist("\na", '\%#=1\_F')
+  echo matchlist("\na", '\%#=0\_F')
+  echo matchlist("\na", '\%#=2\_F')
+
+Don't set curbuf, use reg_buf.
+
+Estimation of number of items is wrong, can be much larger.
+When running out of space, retry with more space?
+
+nfa_regcomp() should not use nstate_max but the actual number of states for
+allocating the prog?
 
 Get example files for many languages. Compare syntax highlighting with old and
 new regexp, find regexp constructs where NFA does not work correctly.
-Idea for comparing output: use format.vim (ZyX, 2013 May 12)
-MakeSynChk from Charles Campbell. (May 14)
+source ~/vim/regexp/runold.vim  to update the "old" files.
+source ~/vim/regexp/runnew.vim  to update the "new" files
+source ~/vim/regexp/diff.vim    to find differences
+Diffs in these files:
+- csh02: line 2, "13" is not highlighted after -misc-fixed-bold-r-normal-
+  as cshNumber
+- csh02: line 7, similar problem.
+- tst28.tex line 8 \alpha in texStatement instead of texGreek
 
+It's very slow compared to the old engine...
 Performance tests:
-- ~/vim/test/veryslow.js (file from Daniel Fetchinson)
+- ~/vim/test/veryslow.js  display last line (file from Daniel Fetchinson)
 - ~/vim/test/slowsearch
 - ~/vim/test/rgb.vim
 - ~/vim/text/FeiqCfg.xml (file from Netjune)
 - ~/vim/text/edl.svg  (also XML)
 - search for  a.*e*exn  in the vim executable.  Go to last line to use
   'hlsearch'.
+- Slow combination of folding and PHP syntax highlighting.  Script to
+  reproduce it.  Caused by "syntax sync fromstart" in combination with patch
+  7.2.274.  (Christian Brabandt, 2010 May 27) Generally, folding with
+  'foldmethod' set to "syntax" is slow.  Do profiling to find out why.
+- Does not use any of the optimizations, such as required start pattern.
+- When lists are empty in nfa_regmatch() and match is true, it keeps looping
+  without doing anything.
+
+"\ze" is currently disabled for NFA, can this be fixed?
+
+"\_[0-9]\?\>" does not match at end of line, disabled.
+
+Items with \%u, \%x, \%o, \%d do not work with the new engine.
 
 --- bug fixes
 
@@ -144,6 +195,12 @@ Patch by Christian Brabandt, Feb 16.
 
 'cursorline' is drawn incorrectly in diff mode. Patch by Christian Brabandt,
 2012 Apr 2.
+
+When someone does a silly thing such as setting rows and columns to 65535,
+handle the out-of-memory and set them to sane values? (jimmywang, 2013 May 17)
+
+InsertEnter doesn't prevent the cursor from moving when it goes to another
+line.
 
 --- slightly incompatible changes
 
@@ -203,9 +260,11 @@ Patch to invert characters differently in GTK. (Yukihiro Nakadaira, 2013 May
 5)
 
 Patch to add the bufferlist() function. (Yegappan Lakshmanan, 2013 May 5)
+May 17: with winlist() and tabpagelist().
+May 19: with local variables.
 
 Patch to allow setting w:quickfix_title via setqflist() and setloclist()
-functions. (Christian Brabandt, 2013 May 8, update May 11)
+functions. (Christian Brabandt, 2013 May 8, update May 21)
 
 Patch to support 'u' in interactive substitute. (Christian Brabandt, 2012 Sep
 28)  With tests: Oct 9.
@@ -778,12 +837,6 @@ Problem with stop directory in findfile(). (Adam Simpkins, 2009 Aug 26)
 
 Using ']' as the end of a range in a pattern requires double escaping:
      /[@-\\]]  (Andy Wokula, 2011 Jun 28)
-
-Slow combination of folding and PHP syntax highlighting.  Script to reproduce
-it.  Caused by "syntax sync fromstart" in combination with patch 7.2.274.
-(Christian Brabandt, 2010 May 27)
-Generally, folding with 'foldmethod' set to "syntax" is slow.  Do profiling to
-find out why.
 
 Syntax priority problem. (Charles Campbell, 2011 Sep 15)
 
@@ -1737,10 +1790,8 @@ Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
 2010 Jun 30)
 
 
-At next release 7.4:
+At next release:
 -   Build a huge version by default.
--   Rename src/Makefile and create a new one like toplevel Makefile that
-    creates auto/config.mk when it's not there? (Ben Schmidt, 2011 Feb 11)
 -   Improve plugin handling: Automatic updates, handle dependencies?
     E.g. Vundle: https://github.com/gmarik/vundle
 

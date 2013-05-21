@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2013 Apr 27
+*options.txt*	For Vim version 7.3.  Last change: 2013 May 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5515,6 +5515,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When redrawing takes more than this many milliseconds no further
 	matches will be highlighted.  This is used to avoid that Vim hangs
 	when using a very complicated pattern.
+
+						*'regexpengine''* *'re'*
+'regexpengine' 're'	number	(default 0)
+			global
+			{not in Vi}
+	This selects the default regexp engine. |two-engines|
+	The possible values are:
+		0	automatic selection
+		1	old engine
+		2	NFA engine
+	Note that when using the NFA engine and the pattern contains something
+	that is not supported the pattern will not match.  This is only useful
+	for debugging the regexp engine.
 
 		*'relativenumber'* *'rnu'* *'norelativenumber'* *'nornu'*
 'relativenumber' 'rnu'	boolean	(default off)

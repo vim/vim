@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2013 Apr 05
+" Last Change:	2013 May 20
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -258,6 +258,8 @@ call append("$", "incsearch\tshow match for partly typed search command")
 call <SID>BinOptionG("is", &is)
 call append("$", "magic\tchange the way backslashes are used in search patterns")
 call <SID>BinOptionG("magic", &magic)
+call append("$", "regexpengine\tselect the default regexp engine used")
+call <SID>OptionG("re", &re)
 call append("$", "ignorecase\tignore case when using a search pattern")
 call <SID>BinOptionG("ic", &ic)
 call append("$", "smartcase\toverride 'ignorecase' when pattern has upper case characters")

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2013 May 17
+*eval.txt*	For Vim version 7.3.  Last change: 2013 May 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1297,7 +1297,7 @@ v:beval_winnr	The number of the window, over which the mouse pointer is. Only
 					*v:char* *char-variable*
 v:char		Argument for evaluating 'formatexpr' and used for the typed
 		character when using <expr> in an abbreviation |:map-<expr>|.
-		It is also used by the |InsertCharPre| event.
+		It is also used by the |InsertCharPre| and |InsertEnter| events.
 
 			*v:charconvert_from* *charconvert_from-variable*
 v:charconvert_from
@@ -4639,7 +4639,7 @@ pumvisible()						*pumvisible()*
 		This can be used to avoid some things that would remove the
 		popup menu.
 
-							*E860* *E861*
+							*E860*
 py3eval({expr})						*py3eval()*
 		Evaluate Python expression {expr} and return its result
 		converted to Vim data structures.

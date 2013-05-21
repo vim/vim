@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.3.  Last change: 2012 Oct 06
+*mbyte.txt*     For Vim version 7.3.  Last change: 2013 May 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -48,9 +48,9 @@ COMPILING
 If you already have a compiled Vim program, check if the |+multi_byte| feature
 is included.  The |:version| command can be used for this.
 
-If +multi_byte is not included, you should compile Vim with "big" features.
-You can further tune what features are included.  See the INSTALL files in the
-source directory.
+If +multi_byte is not included, you should compile Vim with "normal", "big" or
+"huge" features.  You can further tune what features are included.  See the
+INSTALL files in the source directory.
 
 
 LOCALE

@@ -102,12 +102,11 @@ syn match rComplex "\<\d\+[Ee][-+]\=\d\+i"
 
 syn match rOperator    "&"
 syn match rOperator    '-'
-syn match rOperator    '*'
+syn match rOperator    '\*'
 syn match rOperator    '+'
 syn match rOperator    '='
 syn match rOperator    "[|!<>^~`/:@]"
 syn match rOperator    "%\{2}\|%\*%\|%\/%\|%in%\|%o%\|%x%"
-syn match rOpError  '*\{3}'
 syn match rOpError  '//'
 syn match rOpError  '&&&'
 syn match rOpError  '|||'

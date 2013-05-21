@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.3.  Last change: 2012 Dec 06
+*various.txt*   For Vim version 7.3.  Last change: 2013 May 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -368,7 +368,7 @@ N  *+mouse_sysmouse*	Unix only: *BSD console mouse handling |sysmouse|
 B  *+mouse_sgr*		Unix only: sgr mouse handling |sgr-mouse|
 B  *+mouse_urxvt*	Unix only: urxvt mouse handling |urxvt-mouse|
 N  *+mouse_xterm*	Unix only: xterm mouse handling |xterm-mouse|
-B  *+multi_byte*	16 and 32 bit characters |multibyte|
+N  *+multi_byte*	16 and 32 bit characters |multibyte|
    *+multi_byte_ime*	Win32 input method for multibyte chars |multibyte-ime|
 N  *+multi_lang*	non-English language support |multi-lang|
 m  *+mzscheme*		Mzscheme interface |mzscheme|

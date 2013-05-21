@@ -4261,7 +4261,6 @@ E858	eval.txt	/*E858*
 E859	eval.txt	/*E859*
 E86	windows.txt	/*E86*
 E860	eval.txt	/*E860*
-E861	eval.txt	/*E861*
 E862	eval.txt	/*E862*
 E863	if_pyth.txt	/*E863*
 E864	pattern.txt	/*E864*
@@ -5903,6 +5902,7 @@ g:html_whole_filler	syntax.txt	/*g:html_whole_filler*
 g:netrw_alto	pi_netrw.txt	/*g:netrw_alto*
 g:netrw_altv	pi_netrw.txt	/*g:netrw_altv*
 g:netrw_banner	pi_netrw.txt	/*g:netrw_banner*
+g:netrw_bannerbackslash	pi_netrw.txt	/*g:netrw_bannerbackslash*
 g:netrw_browse_split	pi_netrw.txt	/*g:netrw_browse_split*
 g:netrw_browsex_viewer	pi_netrw.txt	/*g:netrw_browsex_viewer*
 g:netrw_bufsettings	pi_netrw.txt	/*g:netrw_bufsettings*

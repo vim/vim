@@ -1,7 +1,7 @@
 " netrwSettings.vim: makes netrw settings simpler
-" Date:		Sep 03, 2008
+" Date:		May 03, 2013
 " Maintainer:	Charles E Campbell <drchipNOSPAM at campbellfamily dot biz>
-" Version:	13
+" Version:	14a	ASTRO-ONLY
 " Copyright:    Copyright (C) 1999-2007 Charles E. Campbell {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
@@ -19,7 +19,7 @@
 if exists("g:loaded_netrwSettings") || &cp
   finish
 endif
-let g:loaded_netrwSettings = "v13"
+let g:loaded_netrwSettings = "v14a"
 if v:version < 700
  echohl WarningMsg
  echo "***warning*** this version of netrwSettings needs vim 7.0"
@@ -88,6 +88,7 @@ fun! netrwSettings#NetrwSettings()
   put = 'let g:netrw_ftpmode           = '.g:netrw_ftpmode
   put = 'let g:netrw_ignorenetrc       = '.g:netrw_ignorenetrc
   put = 'let g:netrw_sshport           = '.g:netrw_sshport
+  put = 'let g:netrw_silent            = '.g:netrw_silent
   put = 'let g:netrw_use_nt_rcp        = '.g:netrw_use_nt_rcp
   put = 'let g:netrw_win95ftp          = '.g:netrw_win95ftp
   let s:netrw_xfer_stop= line(".")
@@ -99,27 +100,50 @@ fun! netrwSettings#NetrwSettings()
   put ='+ Netrw Browser Control'
   put = 'let g:netrw_alto              = '.g:netrw_alto
   put = 'let g:netrw_altv              = '.g:netrw_altv
+  put = 'let g:netrw_banner            = '.g:netrw_banner
+  if exists("g:netrw_bannerbackslash")
+   put = 'let g:netrw_bannerbackslash   = '.g:netrw_bannerbackslash
+  else
+   put = '\" let g:netrw_bannerbackslash   = (not defined)'
+  endif
   put = 'let g:netrw_browse_split      = '.g:netrw_browse_split
   if exists("g:netrw_browsex_viewer")
-   put = 'let g:netrw_browsex_viewer    = '.g:netrw_browsex_viewer
+   put = 'let g:netrw_browsex_viewer   = '.g:netrw_browsex_viewer
   else
-   put = 'let g:netrw_browsex_viewer    = (not defined)'
+   put = '\" let g:netrw_browsex_viewer   = (not defined)'
   endif
   put = 'let g:netrw_compress          = '.g:netrw_compress
+  if exists("g:Netrw_corehandler")
+   put = 'let g:Netrw_corehandler      = '.g:Netrw_corehandler
+  else
+   put = '\" let g:Netrw_corehandler      = (not defined)'
+  endif
+  put = 'let g:netrw_ctags             = '.g:netrw_ctags
   put = 'let g:netrw_cursor            = '.g:netrw_cursor
   let decompressline= line("$")
-  put ='let g:netrw_decompress...'
+  put = 'let g:netrw_decompress        = '.string(g:netrw_decompress)
+  if exists("g:netrw_dynamic_maxfilenamelen")
+   put = 'let g:netrw_dynamic_maxfilenamelen='.g:netrw_dynamic_maxfilenamelen
+  else
+   put = '\" let g:netrw_dynamic_maxfilenamelen= (not defined)'
+  endif
   put = 'let g:netrw_dirhistmax        = '.g:netrw_dirhistmax
+  put = 'let g:netrw_errorlvl          = '.g:netrw_errorlvl
   put = 'let g:netrw_fastbrowse        = '.g:netrw_fastbrowse
   let fnameescline= line("$")
-  put = 'let g:netrw_fname_escape...'
+  put = 'let g:netrw_fname_escape      = '.string(g:netrw_fname_escape)
   put = 'let g:netrw_ftp_browse_reject = '.g:netrw_ftp_browse_reject
   put = 'let g:netrw_ftp_list_cmd      = '.g:netrw_ftp_list_cmd
   put = 'let g:netrw_ftp_sizelist_cmd  = '.g:netrw_ftp_sizelist_cmd
   put = 'let g:netrw_ftp_timelist_cmd  = '.g:netrw_ftp_timelist_cmd
   let globescline= line("$")
-  put ='let g:netrw_glob_escape...'
+  put = 'let g:netrw_glob_escape       = '.string(g:netrw_glob_escape)
   put = 'let g:netrw_hide              = '.g:netrw_hide
+  if exists("g:netrw_home")
+   put = 'let g:netrw_home              = '.g:netrw_home
+  else
+   put = '\" let g:netrw_home              = (not defined)'
+  endif
   put = 'let g:netrw_keepdir           = '.g:netrw_keepdir
   put = 'let g:netrw_list_cmd          = '.g:netrw_list_cmd
   put = 'let g:netrw_list_hide         = '.g:netrw_list_hide
@@ -127,23 +151,30 @@ fun! netrwSettings#NetrwSettings()
   put = 'let g:netrw_localcopycmd      = '.g:netrw_localcopycmd
   put = 'let g:netrw_localmkdir        = '.g:netrw_localmkdir
   put = 'let g:netrw_localmovecmd      = '.g:netrw_localmovecmd
-  put = 'let g:netrw_localrmdir       = '.g:netrw_localrmdir
+  put = 'let g:netrw_localrmdir        = '.g:netrw_localrmdir
   put = 'let g:netrw_maxfilenamelen    = '.g:netrw_maxfilenamelen
   put = 'let g:netrw_menu              = '.g:netrw_menu
+  put = 'let g:netrw_mousemaps         = '.g:netrw_mousemaps
   put = 'let g:netrw_mkdir_cmd         = '.g:netrw_mkdir_cmd
+  if exists("g:netrw_nobeval")
+   put = 'let g:netrw_nobeval           = '.g:netrw_nobeval
+  else
+   put = '\" let g:netrw_nobeval           = (not defined)'
+  endif
+  put = 'let g:netrw_remote_mkdir      = '.g:netrw_remote_mkdir
   put = 'let g:netrw_preview           = '.g:netrw_preview
   put = 'let g:netrw_rename_cmd        = '.g:netrw_rename_cmd
   put = 'let g:netrw_retmap            = '.g:netrw_retmap
   put = 'let g:netrw_rm_cmd            = '.g:netrw_rm_cmd
   put = 'let g:netrw_rmdir_cmd         = '.g:netrw_rmdir_cmd
   put = 'let g:netrw_rmf_cmd           = '.g:netrw_rmf_cmd
-  put = 'let g:netrw_silent            = '.g:netrw_silent
   put = 'let g:netrw_sort_by           = '.g:netrw_sort_by
   put = 'let g:netrw_sort_direction    = '.g:netrw_sort_direction
   put = 'let g:netrw_sort_options      = '.g:netrw_sort_options
   put = 'let g:netrw_sort_sequence     = '.g:netrw_sort_sequence
   put = 'let g:netrw_special_syntax    = '.g:netrw_special_syntax
   put = 'let g:netrw_ssh_browse_reject = '.g:netrw_ssh_browse_reject
+  put = 'let g:netrw_ssh_cmd           = '.g:netrw_ssh_cmd
   put = 'let g:netrw_scpport           = '.g:netrw_scpport
   put = 'let g:netrw_sepchr            = '.g:netrw_sepchr
   put = 'let g:netrw_sshport           = '.g:netrw_sshport

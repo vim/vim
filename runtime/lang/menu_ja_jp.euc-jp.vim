@@ -2,9 +2,9 @@
 "
 " Menu Translations:	Japanese (EUC-JP)
 " Translated By:	MURAOKA Taro  <koron.kaoriya@gmail.com>
-" Last Change:		24-Feb-2013.
+" Last Change:		12-May-2013.
 "
-" Copyright (C) 2001-12 MURAOKA Taro <koron.kaoriya@gmail.com>
+" Copyright (C) 2001-13 MURAOKA Taro <koron.kaoriya@gmail.com>
 " THIS FILE IS DISTRIBUTED UNDER THE VIM LICENSE.
 
 " Quit when menu translations have already been done.
@@ -298,50 +298,6 @@ menutrans on/off\ for\ &This\ file
 menutrans Co&lor\ test		カラーテスト(&L)
 menutrans &Highlight\ test	ハイライトテスト(&H)
 menutrans &Convert\ to\ HTML	HTMLへコンバート(&C)
-
-" Japanese specific menu
-" 成否はiconv次第、必ずしも指定したエンコードになるわけではないことに注意
-if has('iconv')
-  " iconvのバージョン判定
-  let s:support_jisx0213 = (iconv("\x87\x64\x87\x6a", 'cp932', 'euc-jisx0213') ==# "\xad\xc5\xad\xcb") ? 1 : 0
-
-  " 読み込み
-  an 10.395 &File.-SEPICONV- <Nop>
-  an 10.396.100.100 &File.エンコード指定(&E)\.\.\..開く(&O)\.\.\..SJIS(&S)<Tab>fenc=cp932 :browse confirm e ++enc=cp932<CR>
-  if !s:support_jisx0213
-    an 10.396.100.110 &File.エンコード指定(&E)\.\.\..開く(&O)\.\.\..EUC(&E)<Tab>fenc=euc-jp :browse confirm e ++enc=euc-jp<CR>
-    an 10.396.100.120 &File.エンコード指定(&E)\.\.\..開く(&O)\.\.\..JIS(&J)<Tab>fenc=iso-2022-jp :browse confirm e ++enc=iso-2022-jp<CR>
-  else
-    an 10.396.100.110 &File.エンコード指定(&E)\.\.\..開く(&O)\.\.\..EUC(&E)<Tab>fenc=euc-jisx0213 :browse confirm e ++enc=euc-jisx0213<CR>
-    an 10.396.100.120 &File.エンコード指定(&E)\.\.\..開く(&O)\.\.\..JIS(&J)<Tab>fenc=iso-2022-jp-3 :browse confirm e ++enc=iso-2022-jp-3<CR>
-  endif
-  an 10.396.100.130 &File.エンコード指定(&E)\.\.\..開く(&O)\.\.\..UTF-8(&8)<Tab>fenc=utf-8 :browse confirm e ++enc=utf-8<CR>
-
-  " 再読込
-  an 10.396.110.100 &File.エンコード指定(&E)\.\.\..再読込(&R)\.\.\..SJIS(&S)<Tab>fenc=cp932 :e ++enc=cp932<CR>
-  if !s:support_jisx0213
-    an 10.396.110.110 &File.エンコード指定(&E)\.\.\..再読込(&R)\.\.\..EUC(&E)<Tab>fenc=euc-jp :e ++enc=euc-jp<CR>
-    an 10.396.110.120 &File.エンコード指定(&E)\.\.\..再読込(&R)\.\.\..JIS(&J)<Tab>fenc=iso-2022-jp :e ++enc=iso-2022-jp<CR>
-  else
-    an 10.396.110.110 &File.エンコード指定(&E)\.\.\..再読込(&R)\.\.\..EUC(&E)<Tab>fenc=euc-jisx0213 :e ++enc=euc-jisx0213<CR>
-    an 10.396.110.120 &File.エンコード指定(&E)\.\.\..再読込(&R)\.\.\..JIS(&J)<Tab>fenc=iso-2022-jp-3 :e ++enc=iso-2022-jp-3<CR>
-  endif
-  an 10.396.110.130 &File.エンコード指定(&E)\.\.\..再読込(&R)\.\.\..UTF-8(&8)<Tab>fenc=utf-8 :e ++enc=utf-8<CR>
-
-  " 保存
-  an 10.396.115 &File.エンコード指定(&E)\.\.\..-SEP1- <Nop>
-  an 10.396.120.100 &File.エンコード指定(&E)\.\.\..保存(&S)\.\.\..SJIS(&S)<Tab>fenc=cp932 :set fenc=cp932 \| w<CR>
-  if !s:support_jisx0213
-    an 10.396.120.110 &File.エンコード指定(&E)\.\.\..保存(&S)\.\.\..EUC(&E)<Tab>fenc=euc-jp :set fenc=euc-jp \| w<CR>
-    an 10.396.120.120 &File.エンコード指定(&E)\.\.\..保存(&S)\.\.\..JIS(&J)<Tab>fenc=iso-2022-jp :set fenc=iso-2022-jp \| w<CR>
-  else
-    an 10.396.120.110 &File.エンコード指定(&E)\.\.\..保存(&S)\.\.\..EUC(&E)<Tab>fenc=euc-jisx0213 :set fenc=euc-jisx0213 \| w<CR>
-    an 10.396.120.120 &File.エンコード指定(&E)\.\.\..保存(&S)\.\.\..JIS(&J)<Tab>fenc=iso-2022-jp-3 :set fenc=iso-2022-jp-3 \| w<CR>
-  endif
-  an 10.396.120.130 &File.エンコード指定(&E)\.\.\..保存(&S)\.\.\..UTF-8(&8)<Tab>fenc=utf-8 :set fenc=utf-8 \| w<CR>
-
-  unlet s:support_jisx0213
-endif
 
 let &cpo = s:keepcpo
 unlet s:keepcpo

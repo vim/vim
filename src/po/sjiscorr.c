@@ -18,10 +18,10 @@ main(argc, argv)
 	{
 		for (p = buffer; *p != 0; p++)
 		{
-			if (strncmp(p, "charset=euc-jp", 14) == 0)
+			if (strncmp(p, "charset=utf-8", 13) == 0)
 			{
 				fputs("charset=cp932", stdout);
-				p += 13;
+				p += 12;
 			}
 			else if (strncmp(p, "ja.po - Japanese message file", 29) == 0)
 			{

@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.3.  Last change: 2013 Apr 19
+*pi_netrw.txt*  For Vim version 7.3.  Last change: 2013 May 18
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -146,13 +146,13 @@ and has lines resembling >
 <
 Windows' ftp doesn't support .netrc; however, one may have in one's .vimrc:  >
 
-   let g:netrw_ftp_cmd= 'c:\Windows\System32\ftp -s:C:\Users\Myself\MACHINE'
+   let g:netrw_ftp_cmd= 'c:\Windows\System32\ftp -s:C:\Users\MyUserName\MACHINE'
 <
-Netrw will substitute the host's machine name for MACHINE from the url it is
+Netrw will substitute the host's machine name for "MACHINE" from the url it is
 attempting to open, and so one may specify >
 	userid
 	password
-for each site in a separate file in c:\Users\Myself\.
+for each site in a separate file: c:\Users\MyUserName\MachineName.
 
 Now about browsing -- when you just want to look around before editing a
 file.  For browsing on your current host, just "edit" a directory: >
@@ -320,6 +320,8 @@ CHANGING USERID AND PASSWORD		*netrw-chgup* *netrw-userpass* {{{2
 	:call NetUserPass()			-- prompts for uid and password
 	:call NetUserPass("uid")		-- prompts for password
 	:call NetUserPass("uid","password")	-- sets global uid and password
+
+(Related topics: |ftp| |netrw-userpass| |netrw-start|)
 
 NETRW VARIABLES AND SETTINGS				*netrw-variables* {{{2
     (Also see:
@@ -927,6 +929,7 @@ itself:
      endfunction
     endif
 >
+(Related topics: |ftp| |netrw-userpass| |netrw-start|)
 
 ==============================================================================
 9. Browsing		*netrw-browsing* *netrw-browse* *netrw-help* {{{1
@@ -2125,6 +2128,10 @@ your browsing preferences.  (see also: |netrw-settings|)
 				NOTE: suppressing the banner is a new feature
 				which may cause problems.
 
+  *g:netrw_bannerbackslash*	if this variable exists and is not zero, the
+				banner will be displayed with backslashes
+				rather than forward slashes.
+
   *g:netrw_browse_split*	when browsing, <cr> will open the file by:
 				=0: re-using the same window
 				=1: horizontally splitting the window first
@@ -2306,13 +2313,13 @@ your browsing preferences.  (see also: |netrw-settings|)
 				Copies marked files (|netrw-mf|) to target
 				directory (|netrw-mt|, |netrw-mc|)
 
+  *g:netrw_localmkdir*		command for making a local directory
+				 default: "mkdir"
+
   *g:netrw_localmovecmd*	="mv" Linux/Unix/MacOS/Cygwin
 				="move" Windows
 				Moves marked files (|netrw-mf|) to target
 				directory (|netrw-mt|, |netrw-mm|)
-
-  *g:netrw_localmkdir*		command for making a local directory
-				 default: "mkdir"
 
   *g:netrw_localrmdir*		remove directory command (rmdir)
 				 default: "rmdir"
@@ -2416,17 +2423,17 @@ your browsing preferences.  (see also: |netrw-settings|)
 <				into one's <.vimrc> to use one's own
 				preferences.
 
-  *g:netrw_ssh_cmd*		One may specify an executable command
-				to use instead of ssh for remote actions
-				such as listing, file removal, etc.
-				 default: ssh
-
   *g:netrw_ssh_browse_reject*	ssh can sometimes produce unwanted lines,
 				messages, banners, and whatnot that one doesn't
 				want masquerading as "directories" and "files".
 				Use this pattern to remove such embedded
 				messages.  By default its value is:
 					 '^total\s\+\d\+$'
+
+  *g:netrw_ssh_cmd*		One may specify an executable command
+				to use instead of ssh for remote actions
+				such as listing, file removal, etc.
+				 default: ssh
 
 
   *g:netrw_tmpfile_escape*	=' &;'
@@ -2990,6 +2997,19 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 12. History						*netrw-history* {{{1
 
+	v149:	Apr 18, 2013	* in wide listing format, now have maps for
+				  w and b to move to next/previous file
+		Apr 26, 2013	* one may now copy files in the same
+				  directory; netrw will issue requests for
+				  what names the files should be copied under
+		Apr 29, 2013	* Trying Benzinger's problem again.  Seems
+				  that commenting out the BufEnter and
+				  installing VimEnter (only) works.  Weird
+				  problem!  (tree listing, vim -O Dir1 Dir2)
+		May 01, 2013	* :Explore ftp://... wasn't working.  Fixed.
+		May 02, 2013	* introduced |g:netrw_bannerbackslash| as
+				  requested by Paul Domaskis.
+		May 18, 2013	* More fixes for windows (not cygwin)
 	v148:	Apr 16, 2013	* changed Netrw's Style menu to allow direct
 				  choice of listing style, hiding style, and
 				  sorting style

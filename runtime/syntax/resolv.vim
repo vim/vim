@@ -1,10 +1,13 @@
 " Vim syntax file
 " Language: resolver configuration file
-" Maintainer: David Necas (Yeti) <yeti@physics.muni.cz>
-" Original Maintaner: Radu Dineiu <littledragon@altern.org>
-" License: This file can be redistributed and/or modified under the same terms
-"   as Vim itself.
-" Last Change: 2012-05-24
+" Maintainer: Radu Dineiu <radu.dineiu@gmail.com>
+" URL: https://raw.github.com/rid9/vim-resolv/master/resolv.vim
+" Last Change: 2013 May 21
+" Version: 1.0
+"
+" Credits:
+"   David Necas (Yeti) <yeti@physics.muni.cz>
+"   Stefano Zacchiroli <zack@debian.org>
 
 if version < 600
 	syntax clear
@@ -14,18 +17,18 @@ endif
 
 " Errors, comments and operators
 syn match resolvError /./
-syn match resolvComment /\s*[#;].*$/ contains=@Spell
-syn match resolvOperator /[/:]/ contained
+syn match resolvComment /\s*[#;].*$/
+syn match resolvOperator /[\/:]/ contained
 
 " IP
 syn cluster resolvIPCluster contains=resolvIPError,resolvIPSpecial
-syn match resolvIPError /\%(\d\{4,}\|25[6-9]\|2[6-9]\d\|[3-9]\d\{2}\)[.0-9]*/ contained
+syn match resolvIPError /\%(\d\{4,}\|25[6-9]\|2[6-9]\d\|[3-9]\d\{2}\)[\.0-9]*/ contained
 syn match resolvIPSpecial /\%(127\.\d\{1,3}\.\d\{1,3}\.\d\{1,3}\)/ contained
 
 " General
 syn match resolvIP contained /\%(\d\{1,4}\.\)\{3}\d\{1,4}/ contains=@resolvIPCluster
 syn match resolvIPNetmask contained /\%(\d\{1,4}\.\)\{3}\d\{1,4}\%(\/\%(\%(\d\{1,4}\.\)\{,3}\d\{1,4}\)\)\?/ contains=resolvOperator,@resolvIPCluster
-syn match resolvHostname contained /\w\{-}\.[-0-9A-Za-z_.]*/
+syn match resolvHostname contained /\w\{-}\.[-0-9A-Za-z_\.]*/
 
 " Particular
 syn match resolvIPNameserver contained /\%(\%(\d\{1,4}\.\)\{3}\d\{1,4}\%(\s\|$\)\)\+/ contains=@resolvIPCluster
@@ -41,8 +44,6 @@ syn match resolvSortList /^\s*sortlist\>/ nextgroup=resolvIPNetmaskSortList skip
 syn match resolvOptions /^\s*options\>/ nextgroup=resolvOption skipwhite
 
 " Options
-" FIXME: The manual page and the source code do not exactly agree on the set
-" of allowed options
 syn match resolvOption /\<\%(debug\|no_tld_query\|rotate\|no-check-names\|inet6\)\>/ contained nextgroup=resolvOption skipwhite
 syn match resolvOption /\<\%(ndots\|timeout\|attempts\):\d\+\>/ contained contains=resolvOperator nextgroup=resolvOption skipwhite
 

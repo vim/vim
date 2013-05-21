@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.3.  Last change: 2012 Mar 16
+*starting.txt*  For Vim version 7.3.  Last change: 2013 May 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -438,6 +438,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		option should be used when Vim is started by a program that
 		will wait for the edit session to finish (e.g., mail or
 		readnews).  See |amiga-window|.
+
+		MS-Windows: This option is not always supported.
 		{not in Vi}
 
 
