@@ -2833,7 +2833,6 @@ nfa_regmatch(start, submatch, m)
     int		old_reglnum = -1;
     int		reginput_updated = FALSE;
     thread_T	*t;
-    char_u	*cc;
     char_u	*old_reginput = NULL;
     char_u	*old_regline = NULL;
     nfa_state_T	*sta;
@@ -2931,7 +2930,6 @@ again:
 	}
 	if (c == NUL)
 	    n = 0;
-	cc = reginput;
 
 	/* swap lists */
 	thislist = &list[flag];
@@ -3261,12 +3259,12 @@ again:
 		break;
 
 	    case NFA_KWORD:	/*  \k	*/
-		result = vim_iswordp(cc);
+		result = vim_iswordp(reginput);
 		ADD_POS_NEG_STATE(t->state);
 		break;
 
 	    case NFA_SKWORD:	/*  \K	*/
-		result = !VIM_ISDIGIT(c) && vim_iswordp(cc);
+		result = !VIM_ISDIGIT(c) && vim_iswordp(reginput);
 		ADD_POS_NEG_STATE(t->state);
 		break;
 
@@ -3281,12 +3279,12 @@ again:
 		break;
 
 	    case NFA_PRINT:	/*  \p	*/
-		result = ptr2cells(cc) == 1;
+		result = ptr2cells(reginput) == 1;
 		ADD_POS_NEG_STATE(t->state);
 		break;
 
 	    case NFA_SPRINT:	/*  \P	*/
-		result = !VIM_ISDIGIT(c) && ptr2cells(cc) == 1;
+		result = !VIM_ISDIGIT(c) && ptr2cells(reginput) == 1;
 		ADD_POS_NEG_STATE(t->state);
 		break;
 
