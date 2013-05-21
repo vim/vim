@@ -693,6 +693,8 @@ static PyObject *FunctionGetattro(PyObject *, PyObject *);
 
 static struct PyModuleDef vimmodule;
 
+#define PY_CAN_RECURSE
+
 /*
  * Include the code shared with if_python.c
  */

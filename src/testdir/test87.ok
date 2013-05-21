@@ -322,7 +322,7 @@ Number of tabs: 4
 Current tab pages:
   <tabpage 0>(1): 1 windows, current is <window object (unknown)>
   Windows:
-    <window object (unknown)>(1): displays buffer <buffer test87.in>; cursor is at (966, 0)
+    <window object (unknown)>(1): displays buffer <buffer test87.in>; cursor is at (27, 0)
   <tabpage 1>(2): 1 windows, current is <window object (unknown)>
   Windows:
     <window object (unknown)>(1): displays buffer <buffer 0>; cursor is at (1, 0)

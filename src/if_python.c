@@ -641,7 +641,7 @@ static int initialised = 0;
 #define DICTKEY_UNREF
 #define DICTKEY_DECL
 
-#define DESTRUCTOR_FINISH(self) Py_TYPE(self)->tp_free((PyObject*)self);
+#define DESTRUCTOR_FINISH(self) self->ob_type->tp_free((PyObject*)self);
 
 #define WIN_PYTHON_REF(win) win->w_python_ref
 #define BUF_PYTHON_REF(buf) buf->b_python_ref
@@ -655,6 +655,15 @@ static PyObject *RangeGetattr(PyObject *, char *);
 static PyObject *DictionaryGetattr(PyObject *, char*);
 static PyObject *ListGetattr(PyObject *, char *);
 static PyObject *FunctionGetattr(PyObject *, char *);
+
+#ifndef Py_VISIT
+# define Py_VISIT(obj) visit(obj, arg)
+#endif
+#ifndef Py_CLEAR
+# define Py_CLEAR(obj) \
+    Py_XDECREF(obj); \
+    obj = NULL;
+#endif
 
 /*
  * Include the code shared with if_python3.c
@@ -881,7 +890,11 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
     Python_RestoreThread();	    /* enter python */
 #endif
 
-    run((char *) cmd, arg, &pygilstate);
+    run((char *) cmd, arg
+#ifdef PY_CAN_RECURSE
+	    , &pygilstate
+#endif
+	    );
 
 #ifdef PY_CAN_RECURSE
     PyGILState_Release(pygilstate);

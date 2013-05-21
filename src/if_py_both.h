@@ -31,7 +31,11 @@ typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
 #define INVALID_TABPAGE_VALUE ((tabpage_T *)(-1))
 
 typedef void (*rangeinitializer)(void *);
-typedef void (*runner)(const char *, void *, PyGILState_STATE *);
+typedef void (*runner)(const char *, void *
+#ifdef PY_CAN_RECURSE
+	, PyGILState_STATE *
+#endif
+	);
 
 static int ConvertFromPyObject(PyObject *, typval_T *);
 static int _ConvertFromPyObject(PyObject *, typval_T *, PyObject *);
@@ -3489,7 +3493,11 @@ init_range_eval(typval_T *rettv UNUSED)
 }
 
     static void
-run_cmd(const char *cmd, void *arg UNUSED, PyGILState_STATE *pygilstate UNUSED)
+run_cmd(const char *cmd, void *arg UNUSED
+#ifdef PY_CAN_RECURSE
+	, PyGILState_STATE *pygilstate UNUSED
+#endif
+	)
 {
     PyRun_SimpleString((char *) cmd);
 }
@@ -3498,7 +3506,11 @@ static const char	*code_hdr = "def " DOPY_FUNC "(line, linenr):\n ";
 static int		code_hdr_len = 30;
 
     static void
-run_do(const char *cmd, void *arg UNUSED, PyGILState_STATE *pygilstate)
+run_do(const char *cmd, void *arg UNUSED
+#ifdef PY_CAN_RECURSE
+	, PyGILState_STATE *pygilstate
+#endif
+	)
 {
     PyInt	lnum;
     size_t	len;
@@ -3528,13 +3540,17 @@ run_do(const char *cmd, void *arg UNUSED, PyGILState_STATE *pygilstate)
     status = 0;
     pymain = PyImport_AddModule("__main__");
     pyfunc = PyObject_GetAttrString(pymain, DOPY_FUNC);
+#ifdef PY_CAN_RECURSE
     PyGILState_Release(*pygilstate);
+#endif
 
     for (lnum = RangeStart; lnum <= RangeEnd; ++lnum)
     {
 	PyObject	*line, *linenr, *ret;
 
+#ifdef PY_CAN_RECURSE
 	*pygilstate = PyGILState_Ensure();
+#endif
 	if (!(line = GetBufferLine(curbuf, lnum)))
 	    goto err;
 	if (!(linenr = PyInt_FromLong((long) lnum)))
@@ -3554,17 +3570,23 @@ run_do(const char *cmd, void *arg UNUSED, PyGILState_STATE *pygilstate)
 
 	Py_XDECREF(ret);
 	PythonIO_Flush();
+#ifdef PY_CAN_RECURSE
 	PyGILState_Release(*pygilstate);
+#endif
     }
     goto out;
 err:
+#ifdef PY_CAN_RECURSE
     *pygilstate = PyGILState_Ensure();
+#endif
     PyErr_PrintEx(0);
     PythonIO_Flush();
     status = 1;
 out:
+#ifdef PY_CAN_RECURSE
     if (!status)
 	*pygilstate = PyGILState_Ensure();
+#endif
     Py_DECREF(pyfunc);
     PyObject_SetAttrString(pymain, DOPY_FUNC, NULL);
     if (status)
@@ -3574,7 +3596,11 @@ out:
 }
 
     static void
-run_eval(const char *cmd, typval_T *rettv, PyGILState_STATE *pygilstate UNUSED)
+run_eval(const char *cmd, typval_T *rettv
+#ifdef PY_CAN_RECURSE
+	, PyGILState_STATE *pygilstate UNUSED
+#endif
+	)
 {
     PyObject	*r;
 

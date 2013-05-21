@@ -518,6 +518,10 @@ EOF
 :edit c
 :buffer #
 py << EOF
+try:
+    from __builtin__ import next
+except ImportError:
+    next = lambda o: o.next()
 # Check GCing iterator that was not fully exhausted
 i = iter(vim.buffers)
 cb.append('i:' + str(next(i)))
@@ -577,15 +581,22 @@ py << EOF
 cb.append('Number of tabs: ' + str(len(vim.tabpages)))
 cb.append('Current tab pages:')
 def W(w):
-    if '(unknown)' in repr(w):
+    if repr(w).find('(unknown)') != -1:
         return '<window object (unknown)>'
     else:
         return repr(w)
+
+def Cursor(w, start=len(cb)):
+    if w.buffer is cb:
+        return repr((start - w.cursor[0], w.cursor[1]))
+    else:
+        return repr(w.cursor)
+
 for t in vim.tabpages:
     cb.append('  ' + repr(t) + '(' + str(t.number) + ')' + ': ' + str(len(t.windows)) + ' windows, current is ' + W(t.window))
     cb.append('  Windows:')
     for w in t.windows:
-        cb.append('    ' + W(w) + '(' + str(w.number) + ')' + ': displays buffer ' + repr(w.buffer) + '; cursor is at ' + repr(w.cursor))
+        cb.append('    ' + W(w) + '(' + str(w.number) + ')' + ': displays buffer ' + repr(w.buffer) + '; cursor is at ' + Cursor(w))
         # Other values depend on the size of the terminal, so they are checked partly:
         for attr in ('height', 'row', 'width', 'col'):
             try:
