@@ -3125,15 +3125,16 @@ again:
 		    int this_class;
 
 		    /* Get class of current and previous char (if it exists). */
-		    this_class = mb_get_class(reginput);
+		    this_class = mb_get_class_buf(reginput, reg_buf);
 		    if (this_class <= 1)
 			bow = FALSE;
 		    else if (reg_prev_class() == this_class)
 			bow = FALSE;
 		}
 #endif
-		else if (!vim_iswordc(c)
-			|| (reginput > regline && vim_iswordc(reginput[-1])))
+		else if (!vim_iswordc_buf(c, reg_buf)
+			   || (reginput > regline
+				   && vim_iswordc_buf(reginput[-1], reg_buf)))
 		    bow = FALSE;
 		if (bow)
 		    addstate(thislist, t->state->out, &t->sub, 0, listid,
@@ -3153,15 +3154,15 @@ again:
 		    int this_class, prev_class;
 
 		    /* Get class of current and previous char (if it exists). */
-		    this_class = mb_get_class(reginput);
+		    this_class = mb_get_class_buf(reginput, reg_buf);
 		    prev_class = reg_prev_class();
 		    if (this_class == prev_class
 					|| prev_class == 0 || prev_class == 1)
 			eow = FALSE;
 		}
 #endif
-		else if (!vim_iswordc(reginput[-1])
-				    || (reginput[0] != NUL && vim_iswordc(c)))
+		else if (!vim_iswordc_buf(reginput[-1], reg_buf)
+			|| (reginput[0] != NUL && vim_iswordc_buf(c, reg_buf)))
 		    eow = FALSE;
 		if (eow)
 		    addstate(thislist, t->state->out, &t->sub, 0, listid,
@@ -3267,12 +3268,12 @@ again:
 		break;
 
 	    case NFA_KWORD:	/*  \k	*/
-		result = vim_iswordp(reginput);
+		result = vim_iswordp_buf(reginput, reg_buf);
 		ADD_POS_NEG_STATE(t->state);
 		break;
 
 	    case NFA_SKWORD:	/*  \K	*/
-		result = !VIM_ISDIGIT(c) && vim_iswordp(reginput);
+		result = !VIM_ISDIGIT(c) && vim_iswordp_buf(reginput, reg_buf);
 		ADD_POS_NEG_STATE(t->state);
 		break;
 
@@ -3826,9 +3827,6 @@ nfa_regexec_multi(rmp, win, buf, lnum, col, tm)
     colnr_T	col;		/* column to start looking for match */
     proftime_T	*tm UNUSED;	/* timeout limit or NULL */
 {
-    long	r;
-    buf_T	*save_curbuf = curbuf;
-
     reg_match = NULL;
     reg_mmatch = rmp;
     reg_buf = buf;
@@ -3842,12 +3840,7 @@ nfa_regexec_multi(rmp, win, buf, lnum, col, tm)
 #endif
     ireg_maxcol = rmp->rmm_maxcol;
 
-    /* Need to switch to buffer "buf" to make vim_iswordc() work. */
-    curbuf = buf;
-    r = nfa_regexec_both(NULL, col);
-    curbuf = save_curbuf;
-
-    return r;
+    return nfa_regexec_both(NULL, col);
 }
 
 #ifdef DEBUG
