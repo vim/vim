@@ -666,7 +666,7 @@ call_PyType_GenericAlloc(PyTypeObject *type, Py_ssize_t nitems)
     return PyType_GenericAlloc(type,nitems);
 }
 
-static PyObject *BufferDir(PyObject *);
+static PyObject *BufferDir(PyObject *, PyObject *);
 static PyObject *OutputGetattro(PyObject *, PyObject *);
 static int OutputSetattro(PyObject *, PyObject *, PyObject *);
 static PyObject *BufferGetattro(PyObject *, PyObject *);
@@ -1091,7 +1091,7 @@ BufferGetattro(PyObject *self, PyObject*nameobj)
 }
 
     static PyObject *
-BufferDir(PyObject *self UNUSED)
+BufferDir(PyObject *self UNUSED, PyObject *args UNUSED)
 {
     return Py_BuildValue("[sssss]", "name", "number",
 						   "append", "mark", "range");

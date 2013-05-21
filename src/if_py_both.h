@@ -220,7 +220,7 @@ OutputWritelines(OutputObject *self, PyObject *args)
 }
 
     static PyObject *
-OutputFlush(PyObject *self UNUSED)
+OutputFlush(PyObject *self UNUSED, PyObject *args UNUSED)
 {
     /* do nothing */
     Py_INCREF(Py_None);
@@ -230,11 +230,11 @@ OutputFlush(PyObject *self UNUSED)
 /***************/
 
 static struct PyMethodDef OutputMethods[] = {
-    /* name,	    function,				calling,	doc */
-    {"write",	    (PyCFunction)OutputWrite,		METH_VARARGS,	""},
-    {"writelines",  (PyCFunction)OutputWritelines,	METH_VARARGS,	""},
-    {"flush",	    (PyCFunction)OutputFlush,		METH_NOARGS,	""},
-    { NULL,	    NULL,				0,		NULL}
+    /* name,	    function,				calling,    doc */
+    {"write",	    (PyCFunction)OutputWrite,		1,	    ""},
+    {"writelines",  (PyCFunction)OutputWritelines,	1,	    ""},
+    {"flush",	    (PyCFunction)OutputFlush,		1,	    ""},
+    { NULL,	    NULL,				0,	    NULL}
 };
 
 static OutputObject Output =
@@ -533,12 +533,12 @@ VimStrwidth(PyObject *self UNUSED, PyObject *args)
  */
 
 static struct PyMethodDef VimMethods[] = {
-    /* name,	     function,		calling,	documentation */
-    {"command",	     VimCommand,	METH_VARARGS,	"Execute a Vim ex-mode command" },
-    {"eval",	     VimEval,		METH_VARARGS,	"Evaluate an expression using Vim evaluator" },
-    {"bindeval",     VimEvalPy,		METH_VARARGS,	"Like eval(), but returns objects attached to vim ones"},
-    {"strwidth",     VimStrwidth,	METH_VARARGS,	"Screen string width, counts <Tab> as having width 1"},
-    { NULL,	     NULL,		0,		NULL }
+    /* name,	     function,		calling,    documentation */
+    {"command",	     VimCommand,	1,	    "Execute a Vim ex-mode command" },
+    {"eval",	     VimEval,		1,	    "Evaluate an expression using Vim evaluator" },
+    {"bindeval",     VimEvalPy,		1,	    "Like eval(), but returns objects attached to vim ones"},
+    {"strwidth",     VimStrwidth,	1,	    "Screen string width, counts <Tab> as having width 1"},
+    { NULL,	     NULL,		0,	    NULL }
 };
 
 /*
@@ -868,8 +868,8 @@ static PyMappingMethods DictionaryAsMapping = {
 };
 
 static struct PyMethodDef DictionaryMethods[] = {
-    {"keys",	(PyCFunction)DictionaryListKeys,	METH_NOARGS,	""},
-    { NULL,	NULL,					0,		NULL }
+    {"keys", (PyCFunction)DictionaryListKeys, METH_NOARGS, ""},
+    { NULL,	    NULL,		0,	    NULL }
 };
 
 static PyTypeObject ListType;
@@ -1248,8 +1248,8 @@ ListSetattr(ListObject *self, char *name, PyObject *val)
 }
 
 static struct PyMethodDef ListMethods[] = {
-    {"extend",	(PyCFunction)ListConcatInPlace,	METH_O,	""},
-    { NULL,	NULL,				0,	NULL }
+    {"extend", (PyCFunction)ListConcatInPlace, METH_O, ""},
+    { NULL,	    NULL,		0,	    NULL }
 };
 
 typedef struct
@@ -1349,8 +1349,8 @@ FunctionCall(FunctionObject *self, PyObject *argsObject, PyObject *kwargs)
 }
 
 static struct PyMethodDef FunctionMethods[] = {
-    {"__call__",    (PyCFunction)FunctionCall,	METH_VARARGS|METH_KEYWORDS, ""},
-    { NULL,	    NULL,			0,			   NULL}
+    {"__call__",    (PyCFunction)FunctionCall, METH_VARARGS|METH_KEYWORDS, ""},
+    { NULL,	    NULL,		0,	    NULL }
 };
 
 /*
@@ -2960,9 +2960,9 @@ RangeRepr(RangeObject *self)
 }
 
 static struct PyMethodDef RangeMethods[] = {
-    /* name,	function,			calling,	documentation */
-    {"append",	(PyCFunction)RangeAppend,	METH_VARARGS,	"Append data to the Vim range" },
-    { NULL,	NULL,				0,		NULL }
+    /* name,	    function,			calling,    documentation */
+    {"append",	    (PyCFunction)RangeAppend,	1,	    "Append data to the Vim range" },
+    { NULL,	    NULL,			0,	    NULL }
 };
 
 static PyTypeObject BufferType;
@@ -3146,14 +3146,14 @@ BufferRepr(BufferObject *self)
 }
 
 static struct PyMethodDef BufferMethods[] = {
-    /* name,	    function,			calling,	documentation */
-    {"append",	    (PyCFunction)BufferAppend,	METH_VARARGS,	"Append data to Vim buffer" },
-    {"mark",	    (PyCFunction)BufferMark,	METH_VARARGS,	"Return (row,col) representing position of named mark" },
-    {"range",	    (PyCFunction)BufferRange,	METH_VARARGS,	"Return a range object which represents the part of the given buffer between line numbers s and e" },
+    /* name,	    function,			calling,    documentation */
+    {"append",	    (PyCFunction)BufferAppend,	1,	    "Append data to Vim buffer" },
+    {"mark",	    (PyCFunction)BufferMark,	1,	    "Return (row,col) representing position of named mark" },
+    {"range",	    (PyCFunction)BufferRange,	1,	    "Return a range object which represents the part of the given buffer between line numbers s and e" },
 #if PY_VERSION_HEX >= 0x03000000
-    {"__dir__",	    (PyCFunction)BufferDir,	METH_NOARGS,	"List buffer attributes" },
+    {"__dir__",	    (PyCFunction)BufferDir,	4,	    "List its attributes" },
 #endif
-    { NULL,	    NULL,			0,		NULL }
+    { NULL,	    NULL,			0,	    NULL }
 };
 
 /*
