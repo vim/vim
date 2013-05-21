@@ -2951,6 +2951,11 @@ again:
 #ifdef NFA_REGEXP_DEBUG_LOG
 	fprintf(debug, "\n-------------------\n");
 #endif
+	/*
+	 * If the state lists are empty we can stop.
+	 */
+	if (thislist->n == 0 && neglist->n == 0)
+	    break;
 
 	/* compute nextlist */
 	for (i = 0; i < thislist->n || neglist->n > 0; ++i)
