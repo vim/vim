@@ -213,6 +213,9 @@
 #  define PyObject_Malloc py3_PyObject_Malloc
 #  define PyObject_Free py3_PyObject_Free
 # endif
+# define _PyObject_GC_New py3__PyObject_GC_New
+# define PyObject_GC_Del py3_PyObject_GC_Del
+# define PyObject_GC_UnTrack py3_PyObject_GC_UnTrack
 # define PyType_GenericAlloc py3_PyType_GenericAlloc
 # define PyType_GenericNew py3_PyType_GenericNew
 # define PyModule_Create2 py3_PyModule_Create2
@@ -334,6 +337,9 @@ static void* (*py3_PyCapsule_GetPointer)(PyObject *, char *);
     static void (*py3_PyObject_Free)(void*);
     static void* (*py3_PyObject_Malloc)(size_t);
 # endif
+static PyObject*(*py3__PyObject_GC_New)(PyTypeObject *);
+static void(*py3_PyObject_GC_Del)(void *);
+static void(*py3_PyObject_GC_UnTrack)(void *);
 static int (*py3_PyType_IsSubtype)(PyTypeObject *, PyTypeObject *);
 
 static HINSTANCE hinstPy3 = 0; /* Instance of python.dll */
@@ -463,6 +469,9 @@ static struct
     {"PyObject_Malloc", (PYTHON_PROC*)&py3_PyObject_Malloc},
     {"PyObject_Free", (PYTHON_PROC*)&py3_PyObject_Free},
 # endif
+    {"_PyObject_GC_New", (PYTHON_PROC*)&py3__PyObject_GC_New},
+    {"PyObject_GC_Del", (PYTHON_PROC*)&py3_PyObject_GC_Del},
+    {"PyObject_GC_UnTrack", (PYTHON_PROC*)&py3_PyObject_GC_UnTrack},
     {"PyType_IsSubtype", (PYTHON_PROC*)&py3_PyType_IsSubtype},
     {"PyCapsule_New", (PYTHON_PROC*)&py3_PyCapsule_New},
     {"PyCapsule_GetPointer", (PYTHON_PROC*)&py3_PyCapsule_GetPointer},
@@ -638,7 +647,7 @@ static int py3initialised = 0;
     if (bytes != NULL) \
 	Py_XDECREF(bytes);
 
-#define DESTRUCTOR_FINISH(self) Py_TYPE(self)->tp_free((PyObject*)self);
+#define DESTRUCTOR_FINISH(self) Py_TYPE(self)->tp_free((PyObject*)self)
 
 #define WIN_PYTHON_REF(win) win->w_python3_ref
 #define BUF_PYTHON_REF(buf) buf->b_python3_ref

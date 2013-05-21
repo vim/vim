@@ -461,7 +461,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 }
 
     static PyObject *
-VimEval(PyObject *self UNUSED, PyObject *args UNUSED)
+VimEval(PyObject *self UNUSED, PyObject *args)
 {
     char	*expr;
     typval_T	*our_tv;
@@ -602,7 +602,7 @@ IterNew(void *start, destructorfun destruct, nextfun next, traversefun traverse,
 {
     IterObject *self;
 
-    self = PyObject_NEW(IterObject, &IterType);
+    self = PyObject_GC_New(IterObject, &IterType);
     self->cur = start;
     self->next = next;
     self->destruct = destruct;
@@ -615,9 +615,9 @@ IterNew(void *start, destructorfun destruct, nextfun next, traversefun traverse,
     static void
 IterDestructor(IterObject *self)
 {
+    PyObject_GC_UnTrack((void *)(self));
     self->destruct(self->cur);
-
-    DESTRUCTOR_FINISH(self);
+    PyObject_GC_Del((void *)(self));
 }
 
     static int
@@ -1414,7 +1414,7 @@ OptionsNew(int opt_type, void *from, checkfun Check, PyObject *fromObj)
 {
     OptionsObject	*self;
 
-    self = PyObject_NEW(OptionsObject, &OptionsType);
+    self = PyObject_GC_New(OptionsObject, &OptionsType);
     if (self == NULL)
 	return NULL;
 
@@ -1431,9 +1431,9 @@ OptionsNew(int opt_type, void *from, checkfun Check, PyObject *fromObj)
     static void
 OptionsDestructor(OptionsObject *self)
 {
-    if (self->fromObj)
-	Py_DECREF(self->fromObj);
-    DESTRUCTOR_FINISH(self);
+    PyObject_GC_UnTrack((void *)(self));
+    Py_XDECREF(self->fromObj);
+    PyObject_GC_Del((void *)(self));
 }
 
     static int
@@ -1869,7 +1869,7 @@ WindowNew(win_T *win, tabpage_T *tab)
     }
     else
     {
-	self = PyObject_NEW(WindowObject, &WindowType);
+	self = PyObject_GC_New(WindowObject, &WindowType);
 	if (self == NULL)
 	    return NULL;
 	self->win = win;
@@ -1884,12 +1884,25 @@ WindowNew(win_T *win, tabpage_T *tab)
     static void
 WindowDestructor(WindowObject *self)
 {
+    PyObject_GC_UnTrack((void *)(self));
     if (self->win && self->win != INVALID_WINDOW_VALUE)
 	WIN_PYTHON_REF(self->win) = NULL;
+     Py_XDECREF(((PyObject *)(self->tabObject)));
+    PyObject_GC_Del((void *)(self));
+}
 
-    Py_DECREF(((PyObject *)(self->tabObject)));
+    static int
+WindowTraverse(WindowObject *self, visitproc visit, void *arg)
+{
+    Py_VISIT(((PyObject *)(self->tabObject)));
+    return 0;
+}
 
-    DESTRUCTOR_FINISH(self);
+    static int
+WindowClear(WindowObject *self)
+{
+    Py_CLEAR(self->tabObject);
+    return 0;
 }
 
     static win_T *
@@ -1908,19 +1921,6 @@ get_firstwin(TabPageObject *tabObject)
     }
     else
 	return firstwin;
-}
-    static int
-WindowTraverse(WindowObject *self, visitproc visit, void *arg)
-{
-    Py_VISIT(((PyObject *)(self->tabObject)));
-    return 0;
-}
-
-    static int
-WindowClear(WindowObject *self)
-{
-    Py_CLEAR(self->tabObject);
-    return 0;
 }
 
     static PyObject *
@@ -2917,7 +2917,7 @@ RangeNew(buf_T *buf, PyInt start, PyInt end)
 {
     BufferObject *bufr;
     RangeObject *self;
-    self = PyObject_NEW(RangeObject, &RangeType);
+    self = PyObject_GC_New(RangeObject, &RangeType);
     if (self == NULL)
 	return NULL;
 
@@ -2939,8 +2939,23 @@ RangeNew(buf_T *buf, PyInt start, PyInt end)
     static void
 RangeDestructor(RangeObject *self)
 {
+    PyObject_GC_UnTrack((void *)(self));
     Py_XDECREF(self->buf);
-    DESTRUCTOR_FINISH(self);
+    PyObject_GC_Del((void *)(self));
+}
+
+    static int
+RangeTraverse(RangeObject *self, visitproc visit, void *arg)
+{
+    Py_VISIT(((PyObject *)(self->buf)));
+    return 0;
+}
+
+    static int
+RangeClear(RangeObject *self)
+{
+    Py_CLEAR(self->buf);
+    return 0;
 }
 
     static PyInt
@@ -3267,14 +3282,16 @@ BufMapIterDestruct(PyObject *buffer)
     static int
 BufMapIterTraverse(PyObject *buffer, visitproc visit, void *arg)
 {
-    Py_VISIT(buffer);
+    if (buffer)
+	Py_VISIT(buffer);
     return 0;
 }
 
     static int
 BufMapIterClear(PyObject **buffer)
 {
-    Py_CLEAR(*buffer);
+    if (*buffer)
+	Py_CLEAR(*buffer);
     return 0;
 }
 
@@ -4144,6 +4161,8 @@ init_structs(void)
     RangeType.tp_flags = Py_TPFLAGS_DEFAULT;
     RangeType.tp_doc = "vim Range object";
     RangeType.tp_methods = RangeMethods;
+    RangeType.tp_traverse = (traverseproc)RangeTraverse;
+    RangeType.tp_clear = (inquiry)RangeClear;
 #if PY_MAJOR_VERSION >= 3
     RangeType.tp_getattro = (getattrofunc)RangeGetattro;
     RangeType.tp_alloc = call_PyType_GenericAlloc;

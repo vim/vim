@@ -224,6 +224,9 @@ struct PyMethodDef { Py_ssize_t a; };
 # define Py_Finalize dll_Py_Finalize
 # define Py_IsInitialized dll_Py_IsInitialized
 # define _PyObject_New dll__PyObject_New
+# define _PyObject_GC_New dll__PyObject_GC_New
+# define PyObject_GC_Del dll_PyObject_GC_Del
+# define PyObject_GC_UnTrack dll_PyObject_GC_UnTrack
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
 #  define _PyObject_NextNotImplemented (*dll__PyObject_NextNotImplemented)
 # endif
@@ -331,6 +334,9 @@ static void(*dll_Py_Initialize)(void);
 static void(*dll_Py_Finalize)(void);
 static int(*dll_Py_IsInitialized)(void);
 static PyObject*(*dll__PyObject_New)(PyTypeObject *, PyObject *);
+static PyObject*(*dll__PyObject_GC_New)(PyTypeObject *);
+static void(*dll_PyObject_GC_Del)(void *);
+static void(*dll_PyObject_GC_UnTrack)(void *);
 static PyObject*(*dll__PyObject_Init)(PyObject *, PyTypeObject *);
 static PyObject* (*dll_PyObject_GetIter)(PyObject *);
 static int (*dll_PyObject_IsTrue)(PyObject *);
@@ -474,6 +480,9 @@ static struct
     {"Py_Finalize", (PYTHON_PROC*)&dll_Py_Finalize},
     {"Py_IsInitialized", (PYTHON_PROC*)&dll_Py_IsInitialized},
     {"_PyObject_New", (PYTHON_PROC*)&dll__PyObject_New},
+    {"_PyObject_GC_New", (PYTHON_PROC*)&dll__PyObject_GC_New},
+    {"PyObject_GC_Del", (PYTHON_PROC*)&dll_PyObject_GC_Del},
+    {"PyObject_GC_UnTrack", (PYTHON_PROC*)&dll_PyObject_GC_UnTrack},
     {"PyObject_Init", (PYTHON_PROC*)&dll__PyObject_Init},
     {"PyObject_GetIter", (PYTHON_PROC*)&dll_PyObject_GetIter},
     {"PyObject_IsTrue", (PYTHON_PROC*)&dll_PyObject_IsTrue},
@@ -632,7 +641,7 @@ static int initialised = 0;
 #define DICTKEY_UNREF
 #define DICTKEY_DECL
 
-#define DESTRUCTOR_FINISH(self) Py_DECREF(self);
+#define DESTRUCTOR_FINISH(self) Py_TYPE(self)->tp_free((PyObject*)self);
 
 #define WIN_PYTHON_REF(win) win->w_python_ref
 #define BUF_PYTHON_REF(buf) buf->b_python_ref
