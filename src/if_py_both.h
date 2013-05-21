@@ -866,6 +866,7 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
     DICTKEY_UNREF
 
     copy_tv(&tv, &di->di_tv);
+    clear_tv(&tv);
     return 0;
 }
 
@@ -1129,6 +1130,7 @@ ListAssItem(ListObject *self, Py_ssize_t index, PyObject *obj)
     {
 	if (list_append_tv(l, &tv) == FAIL)
 	{
+	    clear_tv(&tv);
 	    PyErr_SetVim(_("Failed to add item to list"));
 	    return -1;
 	}
@@ -1138,6 +1140,7 @@ ListAssItem(ListObject *self, Py_ssize_t index, PyObject *obj)
 	li = list_find(l, (long) index);
 	clear_tv(&li->li_tv);
 	copy_tv(&tv, &li->li_tv);
+	clear_tv(&tv);
     }
     return 0;
 }
@@ -1204,9 +1207,11 @@ ListAssSlice(ListObject *self, Py_ssize_t first, Py_ssize_t last, PyObject *obj)
 	    return -1;
 	if (list_insert_tv(l, &v, li) == FAIL)
 	{
+	    clear_tv(&v);
 	    PyErr_SetVim(_("internal error: failed to add item to list"));
 	    return -1;
 	}
+	clear_tv(&v);
     }
     return 0;
 }
@@ -1346,7 +1351,10 @@ FunctionCall(FunctionObject *self, PyObject *argsObject, PyObject *kwargs)
 		return NULL;
 	    }
 	    if (ConvertFromPyObject(selfdictObject, &selfdicttv) == -1)
+	    {
+		clear_tv(&args);
 		return NULL;
+	    }
 	    selfdict = selfdicttv.vval.v_dict;
 	}
     }
@@ -1370,13 +1378,10 @@ FunctionCall(FunctionObject *self, PyObject *argsObject, PyObject *kwargs)
     else
 	result = ConvertToPyObject(&rettv);
 
-    /* FIXME Check what should really be cleared. */
     clear_tv(&args);
     clear_tv(&rettv);
-    /*
-     * if (selfdict!=NULL)
-     *     clear_tv(selfdicttv);
-     */
+    if (selfdict != NULL)
+	clear_tv(&selfdicttv);
 
     return result;
 }
@@ -1482,7 +1487,7 @@ OptionsItem(OptionsObject *self, PyObject *keyObject)
     }
     else if (flags & SOPT_BOOL)
     {
-	PyObject *r;
+	PyObject	*r;
 	r = numval ? Py_True : Py_False;
 	Py_INCREF(r);
 	return r;
@@ -1492,7 +1497,11 @@ OptionsItem(OptionsObject *self, PyObject *keyObject)
     else if (flags & SOPT_STRING)
     {
 	if (stringval)
-	    return PyBytes_FromString((char *) stringval);
+	{
+	    PyObject	*r = PyBytes_FromString((char *) stringval);
+	    vim_free(stringval);
+	    return r;
+	}
 	else
 	{
 	    PyErr_SetString(PyExc_RuntimeError,
@@ -1516,9 +1525,9 @@ set_option_value_for(key, numval, stringval, opt_flags, opt_type, from)
     int		opt_type;
     void	*from;
 {
-    win_T	*save_curwin;
-    tabpage_T	*save_curtab;
-    buf_T	*save_curbuf;
+    win_T	*save_curwin = NULL;
+    tabpage_T	*save_curtab = NULL;
+    buf_T	*save_curbuf = NULL;
 
     VimTryStart();
     switch (opt_type)
