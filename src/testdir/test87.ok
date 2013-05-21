@@ -155,6 +155,7 @@ jkl
   inv: -100! KeyError
   gopts1! KeyError
   p/wopts1: 8
+  inv: -100! error
   p/bopts1! KeyError
   inv: -100! KeyError
   bopts1! KeyError
@@ -173,6 +174,7 @@ jkl
   inv: 'abc'! KeyError
   gopts1! KeyError
   p/wopts1: b''
+  inv: 'abc'! error
   p/bopts1! KeyError
   inv: 'abc'! KeyError
   bopts1! KeyError
