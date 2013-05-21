@@ -7,7 +7,7 @@ actually tried.
 STARTTEST
 :so small.vim
 :so mbyte.vim
-:set encoding=utf-8 viminfo+=nviminfo
+:set nocp encoding=utf-8 viminfo+=nviminfo
 :" tl is a List of Lists with:
 :"    regexp pattern
 :"    text to test the pattern on
@@ -28,6 +28,15 @@ STARTTEST
 
 :" this is not a normal "i" but 0xec
 :call add(tl, ['\p\+', 'ìa', 'ìa'])
+
+:"""" Test recognition of some character classes
+:call add(tl, ['\i\+', '&*§xx ', 'xx'])
+:call add(tl, ['\%#=1\i\+', '&*§xx ', 'xx'])
+:call add(tl, ['\f\+', '&*fname ', 'fname'])
+:call add(tl, ['\%#=1\i\+', '&*fname ', 'fname'])
+
+:"""" Combining different tests and features
+:call add(tl, ['[^[=a=]]\+', 'ddaãâbcd', 'dd'])
 
 :"""" Run the tests
 

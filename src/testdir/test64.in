@@ -262,10 +262,6 @@ STARTTEST
 :call add(tl, ['[a-zA-Z]', 'a', 'a'])
 :call add(tl, ['[A-Z]', 'a'])
 :call add(tl, ['\C[^A-Z]\+', 'ABCOIJDEOIFNSD jsfoij sa', ' jsfoij sa'])
-:call add(tl, ['\i\+', '&*§xx ', 'xx'])
-:call add(tl, ['\%#=1\i\+', '&*§xx ', 'xx'])
-:call add(tl, ['\f\+', '&*fname ', 'fname'])
-:call add(tl, ['\%#=1\i\+', '&*fname ', 'fname'])
 
 :"""" Tests for \z features
 :call add(tl, ['xx \ze test', 'xx '])					" must match after \ze
@@ -290,13 +286,18 @@ STARTTEST
 
 :"""" Combining different tests and features
 :call add(tl, ['[[:alpha:]]\{-2,6}', '787abcdiuhsasiuhb4', 'ab'])
-:call add(tl, ['[^[=a=]]\+', 'ddaãâbcd', 'dd'])
 :call add(tl, ['', 'abcd', ''])
 :call add(tl, ['\v(())', 'any possible text', ''])
 :call add(tl, ['\v%(ab(xyz)c)', '   abxyzc ', 'abxyzc', 'xyz'])
 :call add(tl, ['\v(test|)empty', 'tesempty', 'empty', ''])
 :call add(tl, ['\v(a|aa)(a|aa)', 'aaa', 'aa', 'a', 'a'])
 
+:"""" \%u and friends
+:call add(tl, ['\%d32', 'yes no', ' '])
+:call add(tl, ['\%o40', 'yes no', ' '])
+:call add(tl, ['\%x20', 'yes no', ' '])
+:call add(tl, ['\%u0020', 'yes no', ' '])
+:call add(tl, ['\%U00000020', 'yes no', ' '])
 
 :"""" Run the tests
 
