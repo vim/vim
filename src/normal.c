@@ -701,6 +701,7 @@ normal_cmd(oap, toplevel)
 	else
 	    c = 'c';
 	msg_nowait = TRUE;	/* don't delay going to insert mode */
+	old_mapped_len = 0;	/* do go to Insert mode */
     }
 #endif
 
