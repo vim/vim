@@ -1091,7 +1091,7 @@ nfa_regatom()
 		    {
 			nfa_inc(&regparse);
 
-			if (*regparse == 'n' || *regparse == 'n')
+			if (*regparse == 'n')
 			    startc = reg_string ? NL : NFA_NEWL;
 			else
 			    if  (*regparse == 'd'
