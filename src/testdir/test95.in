@@ -1,4 +1,4 @@
-Test for regexp patterns with multi-byte support.
+Test for regexp patterns with multi-byte support, using utf-8.
 See test64 for the non-multi-byte tests.
 
 A pattern that gives the expected result produces OK, so that we know it was
@@ -7,6 +7,7 @@ actually tried.
 STARTTEST
 :so small.vim
 :so mbyte.vim
+:set encoding=utf-8 viminfo+=nviminfo
 :" tl is a List of Lists with:
 :"    regexp pattern
 :"    text to test the pattern on
