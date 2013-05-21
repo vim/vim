@@ -2931,7 +2931,7 @@ again:
 	}
 	if (c == NUL)
 	    n = 0;
-	cc = (char_u *)&c;
+	cc = reginput;
 
 	/* swap lists */
 	thislist = &list[flag];
@@ -2960,7 +2960,7 @@ again:
 	    if (neglist->n > 0)
 	    {
 		t = &neglist->t[0];
-		neglist->n --;
+		neglist->n--;
 		i--;
 	    }
 	    else

@@ -25,6 +25,9 @@ STARTTEST
 :call add(tl, [' [^ ]\+', 'start มabcdม ', ' มabcdม'])
 :call add(tl, ['[ม[:alpha:][=a=]]\+', '879 aiaãมâมaiuvna ', 'aiaãมâมaiuvna'])
 
+:" this is not a normal "i" but 0xec
+:call add(tl, ['\p\+', 'ìa', 'ìa'])
+
 :"""" Run the tests
 
 :"
