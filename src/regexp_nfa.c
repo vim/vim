@@ -2143,6 +2143,7 @@ post2nfa(postfix, end, nfa_calc_size)
     nfa_state_T	*s;
     nfa_state_T	*s1;
     nfa_state_T	*matchstate;
+    nfa_state_T	*ret = NULL;
 
     if (postfix == NULL)
 	return NULL;
@@ -2211,7 +2212,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    e1 = POP();
 	    s = new_state(NFA_SPLIT, e1.start, e2.start);
 	    if (s == NULL)
-		return NULL;
+		goto theend;
 	    PUSH(frag(s, append(e1.out, e2.out)));
 	    break;
 
@@ -2225,7 +2226,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    e = POP();
 	    s = new_state(NFA_SPLIT, e.start, NULL);
 	    if (s == NULL)
-		return NULL;
+		goto theend;
 	    patch(e.out, s);
 	    PUSH(frag(s, list1(&s->out1)));
 	    break;
@@ -2240,7 +2241,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    e = POP();
 	    s = new_state(NFA_SPLIT, e.start, NULL);
 	    if (s == NULL)
-		return NULL;
+		goto theend;
 	    PUSH(frag(s, append(e.out, list1(&s->out1))));
 	    break;
 
@@ -2254,7 +2255,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    e = POP();
 	    s = new_state(NFA_SPLIT, NULL, e.start);
 	    if (s == NULL)
-		return NULL;
+		goto theend;
 	    PUSH(frag(s, append(e.out, list1(&s->out))));
 	    break;
 
@@ -2268,7 +2269,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    e = POP();
 	    s = new_state(NFA_SPLIT, e.start, NULL);
 	    if (s == NULL)
-		return NULL;
+		goto theend;
 	    patch(e.out, s);
 	    PUSH(frag(e.start, list1(&s->out1)));
 	    break;
@@ -2283,7 +2284,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    }
 	    s = new_state(NFA_SKIP_CHAR, NULL, NULL);
 	    if (s == NULL)
-		return NULL;
+		goto theend;
 	    PUSH(frag(s, list1(&s->out)));
 	    break;
 
@@ -2293,7 +2294,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	     * END_INVISIBLE, similarly to MOPEN.
 	     */
 	    /* TODO: Maybe this drops the speed? */
-	    return NULL;
+	    goto theend;
 
 	    if (nfa_calc_size == TRUE)
 	    {
@@ -2303,12 +2304,12 @@ post2nfa(postfix, end, nfa_calc_size)
 	    e = POP();
 	    s1 = new_state(NFA_END_INVISIBLE, NULL, NULL);
 	    if (s1 == NULL)
-		return NULL;
+		goto theend;
 	    patch(e.out, s1);
 
 	    s = new_state(NFA_START_INVISIBLE, e.start, s1);
 	    if (s == NULL)
-		return NULL;
+		goto theend;
 	    PUSH(frag(s, list1(&s1->out)));
 	    break;
 
@@ -2357,10 +2358,10 @@ post2nfa(postfix, end, nfa_calc_size)
 	    {
 		s = new_state(mopen, NULL, NULL);
 		if (s == NULL)
-		    return NULL;
+		    goto theend;
 		s1 = new_state(mclose, NULL, NULL);
 		if (s1 == NULL)
-		    return NULL;
+		    goto theend;
 		patch(list1(&s->out), s1);
 		PUSH(frag(s, list1(&s1->out)));
 		break;
@@ -2371,11 +2372,11 @@ post2nfa(postfix, end, nfa_calc_size)
 	    e = POP();
 	    s = new_state(mopen, e.start, NULL);   /* `(' */
 	    if (s == NULL)
-		return NULL;
+		goto theend;
 
 	    s1 = new_state(mclose, NULL, NULL);   /* `)' */
 	    if (s1 == NULL)
-		return NULL;
+		goto theend;
 	    patch(e.out, s1);
 
 	    if (mopen == NFA_MULTIBYTE || mopen == NFA_COMPOSING)
@@ -2397,7 +2398,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    }
 	    s = new_state(*p, NULL, NULL);
 	    if (s == NULL)
-		return NULL;
+		goto theend;
 	    PUSH(frag(s, list1(&s->out)));
 	    break;
 
@@ -2408,7 +2409,7 @@ post2nfa(postfix, end, nfa_calc_size)
     if (nfa_calc_size == TRUE)
     {
 	nstate++;
-	return NULL;	/* Return value when counting size is ignored anyway */
+	goto theend;	/* Return value when counting size is ignored anyway */
     }
 
     e = POP();
@@ -2418,14 +2419,16 @@ post2nfa(postfix, end, nfa_calc_size)
     if (istate >= nstate)
 	EMSG_RET_NULL(_("E876: (NFA regexp) Not enough space to store the whole NFA "));
 
-    vim_free(stack);
-
     matchstate = &state_ptr[istate++]; /* the match state */
     matchstate->c = NFA_MATCH;
     matchstate->out = matchstate->out1 = NULL;
 
     patch(e.out, matchstate);
-    return e.start;
+    ret = e.start;
+
+theend:
+    vim_free(stack);
+    return ret;
 
 #undef POP1
 #undef PUSH1
