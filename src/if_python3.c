@@ -703,8 +703,6 @@ static struct PyModuleDef vimmodule;
  * Internal function prototypes.
  */
 
-static PyObject *globals;
-
 static int PythonIO_Init(void);
 static PyObject *Py3Init_vim(void);
 
@@ -827,7 +825,7 @@ fail:
  * External interface
  */
     static void
-DoPy3Command(exarg_T *eap, const char *cmd, typval_T *rettv)
+DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
 {
 #if defined(MACOS) && !defined(MACOS_X_UNIX)
     GrafPtr		oldPort;
@@ -848,16 +846,8 @@ DoPy3Command(exarg_T *eap, const char *cmd, typval_T *rettv)
     if (Python3_Init())
 	goto theend;
 
-    if (rettv == NULL)
-    {
-	RangeStart = eap->line1;
-	RangeEnd = eap->line2;
-    }
-    else
-    {
-	RangeStart = (PyInt) curwin->w_cursor.lnum;
-	RangeEnd = RangeStart;
-    }
+    init_range(arg);
+
     Python_Release_Vim();	    /* leave vim */
 
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
@@ -881,28 +871,8 @@ DoPy3Command(exarg_T *eap, const char *cmd, typval_T *rettv)
 					(char *)ENC_OPT, CODEC_ERROR_HANDLER);
     cmdbytes = PyUnicode_AsEncodedString(cmdstr, "utf-8", CODEC_ERROR_HANDLER);
     Py_XDECREF(cmdstr);
-    if (rettv == NULL)
-	PyRun_SimpleString(PyBytes_AsString(cmdbytes));
-    else
-    {
-	PyObject	*r;
 
-	r = PyRun_String(PyBytes_AsString(cmdbytes), Py_eval_input,
-			 globals, globals);
-	if (r == NULL)
-	{
-	    if (PyErr_Occurred() && !msg_silent)
-		PyErr_PrintEx(0);
-	    EMSG(_("E860: Eval did not return a valid python 3 object"));
-	}
-	else
-	{
-	    if (ConvertFromPyObject(r, rettv) == -1)
-		EMSG(_("E861: Failed to convert returned python 3 object to vim value"));
-	    Py_DECREF(r);
-	}
-	PyErr_Clear();
-    }
+    run(PyBytes_AsString(cmdbytes), arg, &pygilstate);
     Py_XDECREF(cmdbytes);
 
     PyGILState_Release(pygilstate);
@@ -936,10 +906,10 @@ ex_py3(exarg_T *eap)
     script = script_get(eap, eap->arg);
     if (!eap->skip)
     {
-	if (script == NULL)
-	    DoPy3Command(eap, (char *)eap->arg, NULL);
-	else
-	    DoPy3Command(eap, (char *)script, NULL);
+	DoPyCommand(script == NULL ? (char *) eap->arg : (char *) script,
+		(rangeinitializer) init_range_cmd,
+		(runner) run_cmd,
+		(void *) eap);
     }
     vim_free(script);
 }
@@ -1000,101 +970,19 @@ ex_py3file(exarg_T *eap)
 
 
     /* Execute the file */
-    DoPy3Command(eap, buffer, NULL);
+    DoPyCommand(buffer,
+	    (rangeinitializer) init_range_cmd,
+	    (runner) run_cmd,
+	    (void *) eap);
 }
 
     void
 ex_py3do(exarg_T *eap)
 {
-    linenr_T		i;
-    const char		*code_hdr = "def " DOPY_FUNC "(line, linenr):\n ";
-    const char		*s = (const char *) eap->arg;
-    size_t		len;
-    char		*code;
-    int			status;
-    PyObject		*pyfunc, *pymain;
-    PyGILState_STATE	pygilstate;
-
-    if (Python3_Init())
-	goto theend;
-
-    if (u_save(eap->line1 - 1, eap->line2 + 1) != OK)
-    {
-	EMSG(_("cannot save undo information"));
-	return;
-    }
-    len = strlen(code_hdr) + strlen(s);
-    code = malloc(len + 1);
-    STRCPY(code, code_hdr);
-    STRNCAT(code, s, len + 1);
-    pygilstate = PyGILState_Ensure();
-    status = PyRun_SimpleString(code);
-    vim_free(code);
-    if (status)
-    {
-	EMSG(_("failed to run the code"));
-	return;
-    }
-    status = 0; /* good */
-    pymain = PyImport_AddModule("__main__");
-    pyfunc = PyObject_GetAttrString(pymain, DOPY_FUNC);
-    PyGILState_Release(pygilstate);
-
-    for (i = eap->line1; i <= eap->line2; i++)
-    {
-	const char *line;
-	PyObject *pyline, *pylinenr, *pyret, *pybytes;
-
-	line = (char *)ml_get(i);
-	pygilstate = PyGILState_Ensure();
-	pyline = PyUnicode_Decode(line, strlen(line),
-		(char *)ENC_OPT, CODEC_ERROR_HANDLER);
-	pylinenr = PyLong_FromLong(i);
-	pyret = PyObject_CallFunctionObjArgs(pyfunc, pyline, pylinenr, NULL);
-	Py_DECREF(pyline);
-	Py_DECREF(pylinenr);
-	if (!pyret)
-	{
-	    PyErr_PrintEx(0);
-	    PythonIO_Flush();
-	    status = 1;
-	    goto out;
-	}
-
-	if (pyret && pyret != Py_None)
-	{
-	    if (!PyUnicode_Check(pyret))
-	    {
-		EMSG(_("E863: return value must be an instance of str"));
-		Py_XDECREF(pyret);
-		status = 1;
-		goto out;
-	    }
-	    pybytes = PyUnicode_AsEncodedString(pyret,
-		    (char *)ENC_OPT, CODEC_ERROR_HANDLER);
-	    ml_replace(i, (char_u *) PyBytes_AsString(pybytes), 1);
-	    Py_DECREF(pybytes);
-	    changed();
-#ifdef SYNTAX_HL
-	    syn_changed(i); /* recompute syntax hl. for this line */
-#endif
-	}
-	Py_XDECREF(pyret);
-	PythonIO_Flush();
-	PyGILState_Release(pygilstate);
-    }
-    pygilstate = PyGILState_Ensure();
-out:
-    Py_DECREF(pyfunc);
-    PyObject_SetAttrString(pymain, DOPY_FUNC, NULL);
-    PyGILState_Release(pygilstate);
-    if (status)
-	return;
-    check_cursor();
-    update_curbuf(NOT_VALID);
-
-theend:
-    return;
+    DoPyCommand((char *)eap->arg,
+	    (rangeinitializer)init_range_cmd,
+	    (runner)run_do,
+	    (void *)eap);
 }
 
 /******************************************************
@@ -1790,7 +1678,10 @@ LineToString(const char *str)
     void
 do_py3eval (char_u *str, typval_T *rettv)
 {
-    DoPy3Command(NULL, (char *) str, rettv);
+    DoPyCommand((char *) str,
+	    (rangeinitializer) init_range_eval,
+	    (runner) run_eval,
+	    (void *) rettv);
     switch(rettv->v_type)
     {
 	case VAR_DICT: ++rettv->vval.v_dict->dv_refcount; break;

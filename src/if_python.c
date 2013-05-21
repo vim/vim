@@ -659,8 +659,6 @@ static PyObject *FunctionGetattr(PyObject *, char *);
  * Internal function prototypes.
  */
 
-static PyObject *globals;
-
 static void PythonIO_Flush(void);
 static int PythonIO_Init(void);
 static int PythonMod_Init(void);
@@ -828,7 +826,7 @@ fail:
  * External interface
  */
     static void
-DoPythonCommand(exarg_T *eap, const char *cmd, typval_T *rettv)
+DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
 {
 #ifndef PY_CAN_RECURSE
     static int		recursive = 0;
@@ -861,16 +859,8 @@ DoPythonCommand(exarg_T *eap, const char *cmd, typval_T *rettv)
     if (Python_Init())
 	goto theend;
 
-    if (rettv == NULL)
-    {
-	RangeStart = eap->line1;
-	RangeEnd = eap->line2;
-    }
-    else
-    {
-	RangeStart = (PyInt) curwin->w_cursor.lnum;
-	RangeEnd = RangeStart;
-    }
+    init_range(arg);
+
     Python_Release_Vim();	    /* leave vim */
 
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
@@ -892,27 +882,7 @@ DoPythonCommand(exarg_T *eap, const char *cmd, typval_T *rettv)
     Python_RestoreThread();	    /* enter python */
 #endif
 
-    if (rettv == NULL)
-	PyRun_SimpleString((char *)(cmd));
-    else
-    {
-	PyObject	*r;
-
-	r = PyRun_String((char *)(cmd), Py_eval_input, globals, globals);
-	if (r == NULL)
-	{
-	    if (PyErr_Occurred() && !msg_silent)
-		PyErr_PrintEx(0);
-	    EMSG(_("E858: Eval did not return a valid python object"));
-	}
-	else
-	{
-	    if (ConvertFromPyObject(r, rettv) == -1)
-		EMSG(_("E859: Failed to convert returned python object to vim value"));
-	    Py_DECREF(r);
-	}
-	PyErr_Clear();
-    }
+    run((char *) cmd, arg, &pygilstate);
 
 #ifdef PY_CAN_RECURSE
     PyGILState_Release(pygilstate);
@@ -952,10 +922,10 @@ ex_python(exarg_T *eap)
     script = script_get(eap, eap->arg);
     if (!eap->skip)
     {
-	if (script == NULL)
-	    DoPythonCommand(eap, (char *)eap->arg, NULL);
-	else
-	    DoPythonCommand(eap, (char *)script, NULL);
+	DoPyCommand(script == NULL ? (char *) eap->arg : (char *) script,
+		(rangeinitializer) init_range_cmd,
+		(runner) run_cmd,
+		(void *) eap);
     }
     vim_free(script);
 }
@@ -1001,94 +971,19 @@ ex_pyfile(exarg_T *eap)
     *p++ = '\0';
 
     /* Execute the file */
-    DoPythonCommand(eap, buffer, NULL);
+    DoPyCommand(buffer,
+	    (rangeinitializer) init_range_cmd,
+	    (runner) run_cmd,
+	    (void *) eap);
 }
 
     void
 ex_pydo(exarg_T *eap)
 {
-    linenr_T		i;
-    const char		*code_hdr = "def " DOPY_FUNC "(line, linenr):\n ";
-    const char		*s = (const char *) eap->arg;
-    size_t		len;
-    char		*code;
-    int			status;
-    PyObject		*pyfunc, *pymain;
-    PyGILState_STATE	pygilstate;
-
-    if (Python_Init())
-        return;
-
-    if (u_save(eap->line1 - 1, eap->line2 + 1) != OK)
-    {
-	EMSG(_("cannot save undo information"));
-	return;
-    }
-    len = strlen(code_hdr) + strlen(s);
-    code = malloc(len + 1);
-    STRCPY(code, code_hdr);
-    STRNCAT(code, s, len + 1);
-    pygilstate = PyGILState_Ensure();
-    status = PyRun_SimpleString(code);
-    vim_free(code);
-    if (status)
-    {
-	EMSG(_("failed to run the code"));
-	return;
-    }
-    status = 0; /* good */
-    pymain = PyImport_AddModule("__main__");
-    pyfunc = PyObject_GetAttrString(pymain, DOPY_FUNC);
-    PyGILState_Release(pygilstate);
-
-    for (i = eap->line1; i <= eap->line2; i++)
-    {
-	const char *line;
-	PyObject *pyline, *pylinenr, *pyret;
-
-	line = (char *)ml_get(i);
-	pygilstate = PyGILState_Ensure();
-	pyline = PyString_FromStringAndSize(line, strlen(line));
-	pylinenr = PyLong_FromLong(i);
-	pyret = PyObject_CallFunctionObjArgs(pyfunc, pyline, pylinenr, NULL);
-	Py_DECREF(pyline);
-	Py_DECREF(pylinenr);
-	if (!pyret)
-	{
-	    PyErr_PrintEx(0);
-	    PythonIO_Flush();
-	    status = 1;
-	    goto out;
-	}
-
-	if (pyret && pyret != Py_None)
-	{
-	    if (!PyString_Check(pyret))
-	    {
-		EMSG(_("E863: return value must be an instance of str"));
-		Py_XDECREF(pyret);
-		status = 1;
-		goto out;
-	    }
-	    ml_replace(i, (char_u *) PyString_AsString(pyret), 1);
-	    changed();
-#ifdef SYNTAX_HL
-	    syn_changed(i); /* recompute syntax hl. for this line */
-#endif
-	}
-	Py_XDECREF(pyret);
-	PythonIO_Flush();
-	PyGILState_Release(pygilstate);
-    }
-    pygilstate = PyGILState_Ensure();
-out:
-    Py_DECREF(pyfunc);
-    PyObject_SetAttrString(pymain, DOPY_FUNC, NULL);
-    PyGILState_Release(pygilstate);
-    if (status)
-	return;
-    check_cursor();
-    update_curbuf(NOT_VALID);
+    DoPyCommand((char *)eap->arg,
+	    (rangeinitializer) init_range_cmd,
+	    (runner)run_do,
+	    (void *)eap);
 }
 
 /******************************************************
@@ -1525,7 +1420,10 @@ FunctionGetattr(PyObject *self, char *name)
     void
 do_pyeval (char_u *str, typval_T *rettv)
 {
-    DoPythonCommand(NULL, (char *) str, rettv);
+    DoPyCommand((char *) str,
+	    (rangeinitializer) init_range_eval,
+	    (runner) run_eval,
+	    (void *) rettv);
     switch(rettv->v_type)
     {
 	case VAR_DICT: ++rettv->vval.v_dict->dv_refcount; break;

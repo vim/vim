@@ -30,6 +30,9 @@ typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
 #define INVALID_WINDOW_VALUE ((win_T *)(-1))
 #define INVALID_TABPAGE_VALUE ((tabpage_T *)(-1))
 
+typedef void (*rangeinitializer)(void *);
+typedef void (*runner)(const char *, void *, PyGILState_STATE *);
+
 static int ConvertFromPyObject(PyObject *, typval_T *);
 static int _ConvertFromPyObject(PyObject *, typval_T *, PyObject *);
 static PyObject *WindowNew(win_T *, tabpage_T *);
@@ -38,6 +41,8 @@ static PyObject *LineToString(const char *);
 
 static PyInt RangeStart;
 static PyInt RangeEnd;
+
+static PyObject *globals;
 
 /*
  * obtain a lock on the Vim data structures
@@ -1296,7 +1301,7 @@ FunctionDestructor(PyObject *self)
     FunctionObject	*this = (FunctionObject *) (self);
 
     func_unref(this->name);
-    PyMem_Del(this->name);
+    PyMem_Free(this->name);
 
     DESTRUCTOR_FINISH(self);
 }
@@ -3429,6 +3434,126 @@ CurrentSetattr(PyObject *self UNUSED, char *name, PyObject *value)
 	PyErr_SetString(PyExc_AttributeError, name);
 	return -1;
     }
+}
+
+    static void
+init_range_cmd(exarg_T *eap)
+{
+    RangeStart = eap->line1;
+    RangeEnd = eap->line2;
+}
+
+    static void
+init_range_eval(typval_T *rettv UNUSED)
+{
+    RangeStart = (PyInt) curwin->w_cursor.lnum;
+    RangeEnd = RangeStart;
+}
+
+    static void
+run_cmd(const char *cmd, void *arg UNUSED, PyGILState_STATE *pygilstate UNUSED)
+{
+    PyRun_SimpleString((char *) cmd);
+}
+
+static const char	*code_hdr = "def " DOPY_FUNC "(line, linenr):\n ";
+static int		code_hdr_len = 30;
+
+    static void
+run_do(const char *cmd, void *arg UNUSED, PyGILState_STATE *pygilstate)
+{
+    PyInt	lnum;
+    size_t	len;
+    char	*code;
+    int		status;
+    PyObject	*pyfunc, *pymain;
+
+    if (u_save(RangeStart - 1, RangeEnd + 1) != OK)
+    {
+	EMSG(_("cannot save undo information"));
+	return;
+    }
+
+    len = code_hdr_len + STRLEN(cmd);
+    code = PyMem_New(char, len + 1);
+    memcpy(code, code_hdr, code_hdr_len);
+    STRCPY(code + code_hdr_len, cmd);
+    status = PyRun_SimpleString(code);
+    PyMem_Free(code);
+
+    if (status)
+    {
+	EMSG(_("failed to run the code"));
+	return;
+    }
+
+    status = 0;
+    pymain = PyImport_AddModule("__main__");
+    pyfunc = PyObject_GetAttrString(pymain, DOPY_FUNC);
+    PyGILState_Release(*pygilstate);
+
+    for (lnum = RangeStart; lnum <= RangeEnd; ++lnum)
+    {
+	PyObject	*line, *linenr, *ret;
+
+	*pygilstate = PyGILState_Ensure();
+	if (!(line = GetBufferLine(curbuf, lnum)))
+	    goto err;
+	if (!(linenr = PyInt_FromLong((long) lnum)))
+	{
+	    Py_DECREF(line);
+	    goto err;
+	}
+	ret = PyObject_CallFunctionObjArgs(pyfunc, line, linenr, NULL);
+	Py_DECREF(line);
+	Py_DECREF(linenr);
+	if (!ret)
+	    goto err;
+
+	if (ret != Py_None)
+	    if (SetBufferLine(curbuf, lnum, ret, NULL) == FAIL)
+		goto err;
+
+	Py_XDECREF(ret);
+	PythonIO_Flush();
+	PyGILState_Release(*pygilstate);
+    }
+    goto out;
+err:
+    *pygilstate = PyGILState_Ensure();
+    PyErr_PrintEx(0);
+    PythonIO_Flush();
+    status = 1;
+out:
+    if (!status)
+	*pygilstate = PyGILState_Ensure();
+    Py_DECREF(pyfunc);
+    PyObject_SetAttrString(pymain, DOPY_FUNC, NULL);
+    if (status)
+	return;
+    check_cursor();
+    update_curbuf(NOT_VALID);
+}
+
+    static void
+run_eval(const char *cmd, typval_T *rettv, PyGILState_STATE *pygilstate UNUSED)
+{
+    PyObject	*r;
+
+    r = PyRun_String((char *) cmd, Py_eval_input, globals, globals);
+    if (r == NULL)
+    {
+	if (PyErr_Occurred() && !msg_silent)
+	    PyErr_PrintEx(0);
+	EMSG(_("E858: Eval did not return a valid python object"));
+    }
+    else
+    {
+	if (ConvertFromPyObject(r, rettv) == -1)
+	    EMSG(_("E859: Failed to convert returned python object to vim value"));
+	Py_DECREF(r);
+    }
+    PyErr_Clear();
 }
 
     static void
