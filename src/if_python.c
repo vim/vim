@@ -657,7 +657,6 @@ static PyObject *FunctionGetattr(PyObject *, char *);
  * Internal function prototypes.
  */
 
-static int PythonIO_Init(void);
 static int PythonMod_Init(void);
 
 
@@ -772,7 +771,7 @@ Python_Init(void)
 	get_exceptions();
 #endif
 
-	if (PythonIO_Init())
+	if (PythonIO_Init_io())
 	    goto fail;
 
 	if (PythonMod_Init())
@@ -806,7 +805,7 @@ Python_Init(void)
 fail:
     /* We call PythonIO_Flush() here to print any Python errors.
      * This is OK, as it is possible to call this function even
-     * if PythonIO_Init() has not completed successfully (it will
+     * if PythonIO_Init_io() has not completed successfully (it will
      * not do anything in this case).
      */
     PythonIO_Flush();
@@ -991,17 +990,6 @@ OutputGetattr(PyObject *self, char *name)
 	return PyInt_FromLong(((OutputObject *)(self))->softspace);
 
     return Py_FindMethod(OutputMethods, self, name);
-}
-
-/***************/
-
-    static int
-PythonIO_Init(void)
-{
-    /* Fixups... */
-    PyType_Ready(&OutputType);
-
-    return PythonIO_Init_io();
 }
 
 /******************************************************
@@ -1242,47 +1230,26 @@ python_tabpage_free(tabpage_T *tab)
 }
 #endif
 
-static BufMapObject TheBufferMap =
+    static int
+add_object(PyObject *dict, const char *name, PyObject *object)
 {
-    PyObject_HEAD_INIT(&BufMapType)
-};
-
-static WinListObject TheWindowList =
-{
-    PyObject_HEAD_INIT(&WinListType)
-    NULL
-};
-
-static CurrentObject TheCurrent =
-{
-    PyObject_HEAD_INIT(&CurrentType)
-};
-
-static TabListObject TheTabPageList =
-{
-    PyObject_HEAD_INIT(&TabListType)
-};
+    if (PyDict_SetItemString(dict, (char *) name, object))
+	return -1;
+    Py_DECREF(object);
+    return 0;
+}
 
     static int
 PythonMod_Init(void)
 {
     PyObject *mod;
     PyObject *dict;
-    PyObject *tmp;
+
     /* The special value is removed from sys.path in Python_Init(). */
     static char *(argv[2]) = {"/must>not&exist/foo", NULL};
 
-    /* Fixups... */
-    PyType_Ready(&IterType);
-    PyType_Ready(&BufferType);
-    PyType_Ready(&RangeType);
-    PyType_Ready(&WindowType);
-    PyType_Ready(&TabPageType);
-    PyType_Ready(&BufMapType);
-    PyType_Ready(&WinListType);
-    PyType_Ready(&TabListType);
-    PyType_Ready(&CurrentType);
-    PyType_Ready(&OptionsType);
+    if (init_types())
+	return -1;
 
     /* Set sys.argv[] to avoid a crash in warn(). */
     PySys_SetArgv(1, argv);
@@ -1290,31 +1257,7 @@ PythonMod_Init(void)
     mod = Py_InitModule4("vim", VimMethods, (char *)NULL, (PyObject *)NULL, PYTHON_API_VERSION);
     dict = PyModule_GetDict(mod);
 
-    VimError = PyErr_NewException("vim.error", NULL, NULL);
-
-    PyDict_SetItemString(dict, "error", VimError);
-    PyDict_SetItemString(dict, "buffers", (PyObject *)(void *)&TheBufferMap);
-    PyDict_SetItemString(dict, "current", (PyObject *)(void *)&TheCurrent);
-    PyDict_SetItemString(dict, "windows", (PyObject *)(void *)&TheWindowList);
-    PyDict_SetItemString(dict, "tabpages", (PyObject *)(void *)&TheTabPageList);
-    tmp = DictionaryNew(&globvardict);
-    PyDict_SetItemString(dict, "vars",    tmp);
-    Py_DECREF(tmp);
-    tmp = DictionaryNew(&vimvardict);
-    PyDict_SetItemString(dict, "vvars",   tmp);
-    Py_DECREF(tmp);
-    tmp = OptionsNew(SREQ_GLOBAL, NULL, dummy_check, NULL);
-    PyDict_SetItemString(dict, "options", tmp);
-    Py_DECREF(tmp);
-    PyDict_SetItemString(dict, "VAR_LOCKED",    PyInt_FromLong(VAR_LOCKED));
-    PyDict_SetItemString(dict, "VAR_FIXED",     PyInt_FromLong(VAR_FIXED));
-    PyDict_SetItemString(dict, "VAR_SCOPE",     PyInt_FromLong(VAR_SCOPE));
-    PyDict_SetItemString(dict, "VAR_DEF_SCOPE", PyInt_FromLong(VAR_DEF_SCOPE));
-
-    if (PyErr_Occurred())
-	return -1;
-
-    return 0;
+    return populate_module(dict, add_object);
 }
 
 /*************************************************************************

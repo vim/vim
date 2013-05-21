@@ -4181,3 +4181,115 @@ init_structs(void)
     vimmodule.m_methods = VimMethods;
 #endif
 }
+
+#define PYTYPE_READY(type) \
+    if (PyType_Ready(&type)) \
+	return -1;
+
+    static int
+init_types()
+{
+    PYTYPE_READY(IterType);
+    PYTYPE_READY(BufferType);
+    PYTYPE_READY(RangeType);
+    PYTYPE_READY(WindowType);
+    PYTYPE_READY(TabPageType);
+    PYTYPE_READY(BufMapType);
+    PYTYPE_READY(WinListType);
+    PYTYPE_READY(TabListType);
+    PYTYPE_READY(CurrentType);
+    PYTYPE_READY(DictionaryType);
+    PYTYPE_READY(ListType);
+    PYTYPE_READY(FunctionType);
+    PYTYPE_READY(OptionsType);
+    PYTYPE_READY(OutputType);
+    return 0;
+}
+
+static BufMapObject TheBufferMap =
+{
+    PyObject_HEAD_INIT(&BufMapType)
+};
+
+static WinListObject TheWindowList =
+{
+    PyObject_HEAD_INIT(&WinListType)
+    NULL
+};
+
+static CurrentObject TheCurrent =
+{
+    PyObject_HEAD_INIT(&CurrentType)
+};
+
+static TabListObject TheTabPageList =
+{
+    PyObject_HEAD_INIT(&TabListType)
+};
+
+static struct numeric_constant {
+    char	*name;
+    int		value;
+} numeric_constants[] = {
+    {"VAR_LOCKED",	VAR_LOCKED},
+    {"VAR_FIXED",	VAR_FIXED},
+    {"VAR_SCOPE",	VAR_SCOPE},
+    {"VAR_DEF_SCOPE",	VAR_DEF_SCOPE},
+};
+
+static struct object_constant {
+    char	*name;
+    PyObject	*value;
+} object_constants[] = {
+    {"buffers",  (PyObject *)(void *)&TheBufferMap},
+    {"windows",  (PyObject *)(void *)&TheWindowList},
+    {"tabpages", (PyObject *)(void *)&TheTabPageList},
+    {"current",  (PyObject *)(void *)&TheCurrent},
+};
+
+typedef int (*object_adder)(PyObject *, const char *, PyObject *);
+
+#define ADD_OBJECT(m, name, obj) \
+    if (add_object(m, name, obj)) \
+	return -1;
+
+#define ADD_CHECKED_OBJECT(m, name, obj) \
+    { \
+	PyObject	*value = obj; \
+	if (!value) \
+	    return -1; \
+	ADD_OBJECT(m, name, value); \
+    }
+
+    static int
+populate_module(PyObject *m, object_adder add_object)
+{
+    int i;
+
+    for (i = 0; i < (int)(sizeof(numeric_constants)
+					   / sizeof(struct numeric_constant));
+	    ++i)
+	ADD_CHECKED_OBJECT(m, numeric_constants[i].name,
+		PyInt_FromLong(numeric_constants[i].value));
+
+    for (i = 0; i < (int)(sizeof(object_constants)
+					    / sizeof(struct object_constant));
+	    ++i)
+    {
+	PyObject	*value;
+
+	value = object_constants[i].value;
+	Py_INCREF(value);
+	ADD_OBJECT(m, object_constants[i].name, value);
+    }
+
+    if (!(VimError = PyErr_NewException("vim.error", NULL, NULL)))
+	return -1;
+    ADD_OBJECT(m, "error", VimError);
+
+    ADD_CHECKED_OBJECT(m, "vars",  DictionaryNew(&globvardict));
+    ADD_CHECKED_OBJECT(m, "vvars", DictionaryNew(&vimvardict));
+    ADD_CHECKED_OBJECT(m, "options",
+	    OptionsNew(SREQ_GLOBAL, NULL, dummy_check, NULL));
+    return 0;
+}
