@@ -6899,7 +6899,7 @@ mb_decompose(c, c1, c2, c3)
 {
     decomp_T d;
 
-    if (c >= 0x4b20 && c <= 0xfb4f)
+    if (c >= 0xfb20 && c <= 0xfb4f)
     {
 	d = decomp_table[c - 0xfb20];
 	*c1 = d.a;
