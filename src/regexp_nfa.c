@@ -3383,8 +3383,30 @@ again:
 		ADD_POS_NEG_STATE(t->state);
 		break;
 
+	    case NFA_MOPEN + 0:
+	    case NFA_MOPEN + 1:
+	    case NFA_MOPEN + 2:
+	    case NFA_MOPEN + 3:
+	    case NFA_MOPEN + 4:
+	    case NFA_MOPEN + 5:
+	    case NFA_MOPEN + 6:
+	    case NFA_MOPEN + 7:
+	    case NFA_MOPEN + 8:
+	    case NFA_MOPEN + 9:
+		/* handled below */
+		break;
+
+	    case NFA_SKIP_CHAR:
+	    case NFA_ZSTART:
+		/* TODO: should not happen? */
+		break;
+
 	    default:	/* regular character */
+		/* TODO: put this in #ifdef later */
+		if (t->state->c < -256)
+		    EMSGN("INTERNAL: Negative state char: %ld", t->state->c);
 		result = (no_Magic(t->state->c) == c);
+
 		if (!result)
 		    result = ireg_ic == TRUE
 				&& MB_TOLOWER(t->state->c) == MB_TOLOWER(c);
