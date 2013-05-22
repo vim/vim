@@ -2462,7 +2462,7 @@ addstate(l, state, m, off, lid, match)
     List		*l;	/* runtime state list */
     nfa_state_T		*state;	/* state to update */
     regsub_T		*m;	/* pointers to subexpressions */
-    int			off;
+    int			off;	/* byte offset, when -1 go to next line */
     int			lid;
     int			*match;	/* found match? */
 {
@@ -2585,8 +2585,17 @@ addstate(l, state, m, off, lid, match)
 	    {
 		save.startpos[subidx] = m->startpos[subidx];
 		save.endpos[subidx] = m->endpos[subidx];
-		m->startpos[subidx].lnum = reglnum;
-		m->startpos[subidx].col = (colnr_T)(reginput - regline + off);
+		if (off == -1)
+		{
+		    m->startpos[subidx].lnum = reglnum + 1;
+		    m->startpos[subidx].col = 0;
+		}
+		else
+		{
+		    m->startpos[subidx].lnum = reglnum;
+		    m->startpos[subidx].col =
+					  (colnr_T)(reginput - regline + off);
+		}
 	    }
 	    else
 	    {
@@ -2633,8 +2642,16 @@ addstate(l, state, m, off, lid, match)
 	    {
 		save.startpos[subidx] = m->startpos[subidx];
 		save.endpos[subidx] = m->endpos[subidx];
-		m->endpos[subidx].lnum = reglnum;
-		m->endpos[subidx].col = (colnr_T)(reginput - regline + off);
+		if (off == -1)
+		{
+		    m->endpos[subidx].lnum = reglnum + 1;
+		    m->endpos[subidx].col = 0;
+		}
+		else
+		{
+		    m->endpos[subidx].lnum = reglnum;
+		    m->endpos[subidx].col = (colnr_T)(reginput - regline + off);
+		}
 	    }
 	    else
 	    {
@@ -2834,7 +2851,7 @@ nfa_regmatch(start, submatch, m)
     int		match = FALSE;
     int		flag = 0;
     int		old_reglnum = -1;
-    int		reginput_updated = FALSE;
+    int		go_to_nextline;
     thread_T	*t;
     char_u	*old_reginput = NULL;
     char_u	*old_regline = NULL;
@@ -2917,8 +2934,8 @@ nfa_regmatch(start, submatch, m)
     /*
      * Run for each character.
      */
-    do {
-again:
+    for (;;)
+    {
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
@@ -2932,7 +2949,10 @@ again:
 	    n = 1;
 	}
 	if (c == NUL)
+	{
 	    n = 0;
+	    go_to_nextline = FALSE;
+	}
 
 	/* swap lists */
 	thislist = &list[flag];
@@ -3007,7 +3027,9 @@ again:
 				(char *)t->sub.end[j]);
 		fprintf(log_fd, "\n");
 #endif
-		goto nextchar;		/* found the left-most longest match */
+		/* Found the left-most longest match, do not look at any other
+		 * states at this position. */
+		goto nextchar;
 
 	    case NFA_END_INVISIBLE:
 		/* This is only encountered after a NFA_START_INVISIBLE node.
@@ -3206,15 +3228,13 @@ again:
 
 	    case NFA_NEWL:
 		if (!reg_line_lbr && REG_MULTI
-				&& c == NUL && reglnum <= reg_maxline)
+					&& c == NUL && reglnum <= reg_maxline)
 		{
-		    if (reginput_updated == FALSE)
-		    {
-			reg_nextline();
-			reginput_updated = TRUE;
-		    }
-		    addstate(nextlist, t->state->out, &t->sub, n, listid + 1,
-								    &match);
+		    go_to_nextline = TRUE;
+		    /* Pass -1 for the offset, which means taking the position
+		     * at the start of the next line. */
+		    addstate(nextlist, t->state->out, &t->sub, -1,
+							  listid + 1, &match);
 		}
 		break;
 
@@ -3247,8 +3267,7 @@ again:
 		break;
 
 	    case NFA_ANY:
-		/* Any printable char, not just any char. '\0' (end of input)
-		 * must not match */
+		/* Any char except '\0', (end of input) does not match. */
 		if (c > 0)
 		    addstate(nextlist, t->state->out, &t->sub, n, listid + 1,
 								    &match);
@@ -3433,12 +3452,6 @@ again:
 	    addstate(nextlist, start, m, n, listid + 1, &match);
 	}
 
-	if (reginput_updated)
-	{
-	    reginput_updated = FALSE;
-	    goto again;
-	}
-
 #ifdef ENABLE_LOG
 	fprintf(log_fd, ">>> Thislist had %d states available: ", thislist->n);
 	for (i = 0; i< thislist->n; i++)
@@ -3447,8 +3460,15 @@ again:
 #endif
 
 nextchar:
-	reginput += n;
-    } while (c || reginput_updated);
+	/* Advance to the next character, or advance to the next line, or
+	 * finish. */
+	if (n != 0)
+	    reginput += n;
+	else if (go_to_nextline)
+	    reg_nextline();
+	else
+	    break;
+    }
 
 #ifdef ENABLE_LOG
     if (log_fd != stderr)
