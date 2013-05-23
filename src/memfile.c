@@ -127,7 +127,7 @@ mf_open(fname, flags)
 {
     memfile_T		*mfp;
     off_t		size;
-#if defined(STATFS) && defined(UNIX) && !defined(__QNX__)
+#if defined(STATFS) && defined(UNIX) && !defined(__QNX__) && !defined(__minix)
 # define USE_FSTATFS
     struct STATFS	stf;
 #endif
