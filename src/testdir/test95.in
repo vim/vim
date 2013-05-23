@@ -30,10 +30,10 @@ STARTTEST
 :call add(tl, ['\p\+', 'ìa', 'ìa'])
 
 :"""" Test recognition of some character classes
-:call add(tl, ['\i\+', '&*§xx ', 'xx'])
-:call add(tl, ['\%#=1\i\+', '&*§xx ', 'xx'])
+:call add(tl, ['\i\+', '&*¨xx ', 'xx'])
+:call add(tl, ['\%#=1\i\+', '&*¨xx ', 'xx'])
 :call add(tl, ['\f\+', '&*fname ', 'fname'])
-:call add(tl, ['\%#=1\i\+', '&*fname ', 'fname'])
+:call add(tl, ['\%#=1\f\+', '&*fname ', 'fname'])
 
 :"""" Combining different tests and features
 :call add(tl, ['[^[=a=]]\+', 'ddaãâbcd', 'dd'])
