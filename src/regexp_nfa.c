@@ -679,9 +679,7 @@ nfa_regatom()
 
 	    /* "\_[" is collection plus newline */
 	    if (c == '[')
-		/* TODO: make this work
-		 * goto collection; */
-		return FAIL;
+		goto collection;
 
 	/* "\_x" is character class plus newline */
 	/*FALLTHROUGH*/
@@ -891,8 +889,8 @@ nfa_regatom()
 	    }
 	    break;
 
-/* collection: */
 	case Magic('['):
+collection:
 	    /*
 	     * Glue is emitted between several atoms from the [].
 	     * It is either NFA_OR, or NFA_CONCAT.
