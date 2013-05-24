@@ -41,6 +41,15 @@ STARTTEST
 
 :"""" Test \Z
 :call add(tl, ['ú\Z', 'x'])
+:call add(tl, ['יהוה\Z', 'יהוה', 'יהוה'])
+:call add(tl, ['יְהוָה\Z', 'יהוה', 'יהוה'])
+:call add(tl, ['יהוה\Z', 'יְהוָה', 'יְהוָה'])
+:call add(tl, ['יְהוָה\Z', 'יְהוָה', 'יְהוָה'])
+:call add(tl, ['יְ\Z', 'וְיַ', 'יַ'])
+:call add(tl, ["ק\u200d\u05b9x\\Z", "xק\u200d\u05b9xy", "ק\u200d\u05b9x"])
+:call add(tl, ["ק\u200d\u05b9x\\Z", "xק\u200dxy", "ק\u200dx"])
+:call add(tl, ["ק\u200dx\\Z", "xק\u200d\u05b9xy", "ק\u200d\u05b9x"])
+:call add(tl, ["ק\u200dx\\Z", "xק\u200dxy", "ק\u200dx"])
 
 :"""" Combining different tests and features
 :call add(tl, ['[^[=a=]]\+', 'ddaãâbcd', 'dd'])

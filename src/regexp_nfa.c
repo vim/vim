@@ -1184,14 +1184,15 @@ collection:
 		    EMIT(NFA_CONCAT);
 		}
 		return OK;
-	    }		/* if exists closing ] */
-	    else if (reg_strict)
+	    } /* if exists closing ] */
+
+	    if (reg_strict)
 	    {
 		syntax_error = TRUE;
 		EMSG_RET_FAIL(_(e_missingbracket));
 	    }
+	    /* FALLTHROUGH */
 
-	/* FALLTHROUGH */
 	default:
 	    {
 #ifdef FEAT_MBYTE
@@ -1214,7 +1215,7 @@ nfa_do_multibyte:
 			EMIT(c);
 			if (i > 0)
 			    EMIT(NFA_CONCAT);
-			if (i += utf_char2len(c) >= plen)
+			if ((i += utf_char2len(c)) >= plen)
 			    break;
 			c = utf_ptr2char(old_regparse + i);
 		    }
@@ -2269,7 +2270,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    /* TODO */
 	    if (regflags & RF_ICOMBINE)
 	    {
-		goto normalchar;
+		/* use the base character only */
 	    }
 #endif
 	    /* FALLTHROUGH */
@@ -3145,23 +3146,31 @@ nfa_regmatch(start, submatch, m)
 		result = OK;
 		sta = t->state->out;
 		len = 0;
-		while (sta->c != NFA_END_COMPOSING && len < n)
+		if (ireg_icombine)
 		{
-		    if (len > 0)
-			mc = mb_ptr2char(reginput + len);
-		    if (mc != sta->c)
-			break;
-		    len += mb_char2len(mc);
-		    sta = sta->out;
+		    /* If \Z was present, then ignore composing characters. */
+		    /* TODO: How about negated? */
+		    if (sta->c != c)
+			result = FAIL;
+		    len = n;
+		    while (sta->c != NFA_END_COMPOSING)
+			sta = sta->out;
 		}
+		else
+		    while (sta->c != NFA_END_COMPOSING && len < n)
+		    {
+			if (len > 0)
+			    mc = mb_ptr2char(reginput + len);
+			if (mc != sta->c)
+			    break;
+			len += mb_char2len(mc);
+			sta = sta->out;
+		    }
 
 		/* if input char length doesn't match regexp char length */
 		if (len < n || sta->c != NFA_END_COMPOSING)
 		    result = FAIL;
 		end = t->state->out1;	    /* NFA_END_COMPOSING */
-		/* If \Z was present, then ignore composing characters */
-		if (ireg_icombine)
-		    result = 1 ^ sta->negated;
 		ADD_POS_NEG_STATE(end);
 		break;
 	    }
