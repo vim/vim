@@ -2163,7 +2163,9 @@ WinListDestructor(WinListObject *self)
     TabPageObject	*tabObject = self->tabObject;
 
     if (tabObject)
+    {
 	Py_DECREF((PyObject *)(tabObject));
+    }
 
     DESTRUCTOR_FINISH(self);
 }
