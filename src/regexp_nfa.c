@@ -46,9 +46,6 @@ enum
     NFA_NCLOSE,			    /* End of subexpr. marked with \%( ... \) */
     NFA_START_INVISIBLE,
     NFA_END_INVISIBLE,
-    NFA_MULTIBYTE,		    /* Next nodes in NFA are part of the same
-				       multibyte char */
-    NFA_END_MULTIBYTE,		    /* End of multibyte char in the NFA */
     NFA_COMPOSING,		    /* Next nodes in NFA are part of the
 				       composing multibyte char */
     NFA_END_COMPOSING,		    /* End of a composing char in the NFA */
@@ -194,26 +191,6 @@ static long nfa_regexec_multi __ARGS((regmmatch_T *rmp, win_T *win, buf_T *buf, 
 			return FAIL;		\
 		    *post_ptr++ = c;		\
 		} while (0)
-
-#define EMIT_MBYTE(c)					    \
-			len = (*mb_char2bytes)(c, buf);	    \
-			EMIT(buf[0]);			    \
-			for (i = 1; i < len; i++)	    \
-			{				    \
-			    EMIT(buf[i]);		    \
-			    EMIT(NFA_CONCAT);		    \
-			}				    \
-			EMIT(NFA_MULTIBYTE);
-
-#define EMIT_COMPOSING_UTF(input)			    \
-			len = utfc_ptr2len(input);	    \
-			EMIT(input[0]);			    \
-			for (i = 1; i < len; i++)	    \
-			{				    \
-			    EMIT(input[i]);		    \
-			    EMIT(NFA_CONCAT);		    \
-			}				    \
-			EMIT(NFA_COMPOSING);
 
 /*
  * Initialize internal variables before NFA compilation.
@@ -611,8 +588,6 @@ nfa_regatom()
 #ifdef FEAT_MBYTE
     char_u	*old_regparse = regparse;
     int		clen;
-    int		len;
-    static char_u	buf[30];
     int		i;
 #endif
     int		extra = 0;
@@ -845,14 +820,7 @@ nfa_regatom()
 		    return FAIL;
 
 		    c = coll_get_char();
-#ifdef FEAT_MBYTE
-		    if ((*mb_char2len)(c) > 1)
-		    {
-			EMIT_MBYTE(c);
-		    }
-		    else
-#endif
-			EMIT(c);
+		    EMIT(c);
 		    break;
 
 		/* Catch \%^ and \%$ regardless of where they appear in the
@@ -1135,12 +1103,7 @@ collection:
 			     * skip it. */
 			    for (c = startc + 1; c <= endc; c++)
 			    {
-				if ((*mb_char2len)(c) > 1)
-				{
-				    EMIT_MBYTE(c);
-				}
-				else
-				    EMIT(c);
+				EMIT(c);
 				TRY_NEG();
 				EMIT_GLUE();
 			    }
@@ -1187,14 +1150,7 @@ collection:
 			if (got_coll_char == TRUE && startc == 0)
 			    EMIT(0x0a);
 			else
-#ifdef FEAT_MBYTE
-			    if ((*mb_char2len)(startc) > 1)
-			    {
-				EMIT_MBYTE(startc);
-			    }
-			    else
-#endif
-				EMIT(startc);
+			    EMIT(startc);
 			TRY_NEG();
 			EMIT_GLUE();
 		    }
@@ -1242,30 +1198,30 @@ collection:
 		int	plen;
 
 nfa_do_multibyte:
-		/* length of current char, with composing chars,
-		 * from pointer */
-		plen = (*mb_ptr2len)(old_regparse);
-		if (enc_utf8 && clen != plen)
+		/* Length of current char with composing chars. */
+		if (enc_utf8 && clen != (plen = (*mb_ptr2len)(old_regparse)))
 		{
-		    /* A composing character is always handled as a
-		     * separate atom, surrounded by NFA_COMPOSING and
-		     * NFA_END_COMPOSING. Note that right now we are
+		    /* A base character plus composing characters.
+		     * This requires creating a separate atom as if enclosing
+		     * the characters in (), where NFA_COMPOSING is the ( and
+		     * NFA_END_COMPOSING is the ). Note that right now we are
 		     * building the postfix form, not the NFA itself;
 		     * a composing char could be: a, b, c, NFA_COMPOSING
-		     * where 'a', 'b', 'c' are chars with codes > 256.
-		     */
-		    EMIT_COMPOSING_UTF(old_regparse);
+		     * where 'b' and 'c' are chars with codes > 256. */
+		    i = 0;
+		    for (;;)
+		    {
+			EMIT(c);
+			if (i > 0)
+			    EMIT(NFA_CONCAT);
+			if (i += utf_char2len(c) >= plen)
+			    break;
+			c = utf_ptr2char(old_regparse + i);
+		    }
+		    EMIT(NFA_COMPOSING);
 		    regparse = old_regparse + plen;
 		}
 		else
-		    /* A multi-byte character is always handled as a
-		     * separate atom, surrounded by NFA_MULTIBYTE and
-		     * NFA_END_MULTIBYTE */
-		    if (plen > 1)
-		    {
-			EMIT_MBYTE(c);
-		    }
-		    else
 #endif
 		{
 		    c = no_Magic(c);
@@ -1701,9 +1657,6 @@ nfa_set_code(c)
 	case NFA_NCLOSE:	    STRCPY(code, "NFA_MCLOSE_INVISIBLE"); break;
 	case NFA_START_INVISIBLE:   STRCPY(code, "NFA_START_INVISIBLE"); break;
 	case NFA_END_INVISIBLE:	    STRCPY(code, "NFA_END_INVISIBLE"); break;
-
-	case NFA_MULTIBYTE:	    STRCPY(code, "NFA_MULTIBYTE"); break;
-	case NFA_END_MULTIBYTE:	    STRCPY(code, "NFA_END_MULTIBYTE"); break;
 
 	case NFA_COMPOSING:	    STRCPY(code, "NFA_COMPOSING"); break;
 	case NFA_END_COMPOSING:	    STRCPY(code, "NFA_END_COMPOSING"); break;
@@ -2194,7 +2147,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    }
 	    e1 = POP();
 	    e1.start->negated = TRUE;
-	    if (e1.start->c == NFA_MULTIBYTE || e1.start->c == NFA_COMPOSING)
+	    if (e1.start->c == NFA_COMPOSING)
 		e1.start->out1->negated = TRUE;
 	    PUSH(e1);
 	    break;
@@ -2311,6 +2264,16 @@ post2nfa(postfix, end, nfa_calc_size)
 	    PUSH(frag(s, list1(&s1->out)));
 	    break;
 
+	case NFA_COMPOSING:	/* char with composing char */
+#if 0
+	    /* TODO */
+	    if (regflags & RF_ICOMBINE)
+	    {
+		goto normalchar;
+	    }
+#endif
+	    /* FALLTHROUGH */
+
 	case NFA_MOPEN + 0:	/* Submatch */
 	case NFA_MOPEN + 1:
 	case NFA_MOPEN + 2:
@@ -2322,8 +2285,6 @@ post2nfa(postfix, end, nfa_calc_size)
 	case NFA_MOPEN + 8:
 	case NFA_MOPEN + 9:
 	case NFA_NOPEN:		/* \%( "Invisible Submatch" */
-	case NFA_MULTIBYTE:	/* mbyte char */
-	case NFA_COMPOSING:	/* composing char */
 	    if (nfa_calc_size == TRUE)
 	    {
 		nstate += 2;
@@ -2335,9 +2296,6 @@ post2nfa(postfix, end, nfa_calc_size)
 	    {
 		case NFA_NOPEN:
 		    mclose = NFA_NCLOSE;
-		    break;
-		case NFA_MULTIBYTE:
-		    mclose = NFA_END_MULTIBYTE;
 		    break;
 		case NFA_COMPOSING:
 		    mclose = NFA_END_COMPOSING;
@@ -2377,9 +2335,8 @@ post2nfa(postfix, end, nfa_calc_size)
 		goto theend;
 	    patch(e.out, s1);
 
-	    if (mopen == NFA_MULTIBYTE || mopen == NFA_COMPOSING)
-		/* MULTIBYTE->out1 = END_MULTIBYTE
-		* COMPOSING->out1 = END_COMPOSING */
+	    if (mopen == NFA_COMPOSING)
+		/* COMPOSING->out1 = END_COMPOSING */
 		patch(list1(&s->out1), s1);
 
 	    PUSH(frag(s, list1(&s1->out)));
@@ -2540,16 +2497,7 @@ addstate(l, state, m, off, lid, match)
 	case NFA_COMPOSING:
 	    /* nfa_regmatch() will match all the bytes of this composing char. */
 	    break;
-
-	case NFA_MULTIBYTE:
-	    /* nfa_regmatch() will match all the bytes of this multibyte char. */
-	    break;
 #endif
-
-	case NFA_END_MULTIBYTE:
-	    /* Successfully matched this mbyte char */
-	    addstate(l, state->out, m, off, lid, match);
-	    break;
 
 	case NFA_NOPEN:
 	case NFA_NCLOSE:
@@ -2841,7 +2789,7 @@ nfa_regmatch(start, submatch, m)
     regsub_T		*submatch;
     regsub_T		*m;
 {
-    int		c = -1;
+    int		c;
     int		n;
     int		i = 0;
     int		result;
@@ -2859,7 +2807,6 @@ nfa_regmatch(start, submatch, m)
     List	*listtbl[2][2];
     List	*ll;
     int		listid = 1;
-    int		endnode;
     List	*thislist;
     List	*nextlist;
     List	*neglist;
@@ -3190,33 +3137,35 @@ nfa_regmatch(start, submatch, m)
 		break;
 	    }
 
-	    case NFA_MULTIBYTE:
+#ifdef FEAT_MBYTE
 	    case NFA_COMPOSING:
-	        endnode = t->state->c + 1;
+	    {
+		int mc = c;
+
 		result = OK;
 		sta = t->state->out;
-		len = 1;
-		while (sta->c != endnode && len <= n)
+		len = 0;
+		while (sta->c != NFA_END_COMPOSING && len < n)
 		{
-		    if (reginput[len-1] != sta->c)
-		    {
-			result = FAIL;
+		    if (len > 0)
+			mc = mb_ptr2char(reginput + len);
+		    if (mc != sta->c)
 			break;
-		    }
-		    len++;
+		    len += mb_char2len(mc);
 		    sta = sta->out;
 		}
 
 		/* if input char length doesn't match regexp char length */
-		if (len -1 < n || sta->c != endnode)
+		if (len < n || sta->c != NFA_END_COMPOSING)
 		    result = FAIL;
-		end = t->state->out1;	    /* NFA_END_MULTIBYTE or
-					       NFA_END_COMPOSING */
+		end = t->state->out1;	    /* NFA_END_COMPOSING */
 		/* If \Z was present, then ignore composing characters */
-		if (ireg_icombine && endnode == NFA_END_COMPOSING)
+		if (ireg_icombine)
 		    result = 1 ^ sta->negated;
 		ADD_POS_NEG_STATE(end);
 		break;
+	    }
+#endif
 
 	    case NFA_NEWL:
 		if (!reg_line_lbr && REG_MULTI
@@ -3425,6 +3374,14 @@ nfa_regmatch(start, submatch, m)
 		if (!result)
 		    result = ireg_ic == TRUE
 				&& MB_TOLOWER(t->state->c) == MB_TOLOWER(c);
+#ifdef FEAT_MBYTE
+		/* If there is a composing character which is not being
+		 * ignored there can be no match. Match with composing
+		 * character uses NFA_COMPOSING above. */
+		if (result && enc_utf8 && !ireg_icombine
+						      && n != utf_char2len(c))
+		    result = FALSE;
+#endif
 		ADD_POS_NEG_STATE(t->state);
 		break;
 	    }

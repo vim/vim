@@ -35,6 +35,10 @@ STARTTEST
 :call add(tl, ['\f\+', '&*fname ', 'fname'])
 :call add(tl, ['\%#=1\f\+', '&*fname ', 'fname'])
 
+:"""" Test composing character matching
+:call add(tl, ['.ม', 'xม่x yมy', 'yม'])
+:call add(tl, ['.ม่', 'xม่x yมy', 'xม่'])
+
 :"""" Test \Z
 :call add(tl, ['ú\Z', 'x'])
 
