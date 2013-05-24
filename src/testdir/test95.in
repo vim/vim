@@ -7,7 +7,7 @@ actually tried.
 STARTTEST
 :so small.vim
 :so mbyte.vim
-:set nocp encoding=utf-8 viminfo+=nviminfo
+:set nocp encoding=utf-8 viminfo+=nviminfo nomore
 :" tl is a List of Lists with:
 :"    regexp pattern
 :"    text to test the pattern on
@@ -35,11 +35,13 @@ STARTTEST
 :call add(tl, ['\f\+', '&*fname ', 'fname'])
 :call add(tl, ['\%#=1\f\+', '&*fname ', 'fname'])
 
+:"""" Test \Z
+:call add(tl, ['ú\Z', 'x'])
+
 :"""" Combining different tests and features
 :call add(tl, ['[^[=a=]]\+', 'ddaãâbcd', 'dd'])
 
 :"""" Run the tests
-
 :"
 :for t in tl
 :  let l = matchlist(t[1], t[0])

@@ -2859,7 +2859,7 @@ nfa_regmatch(start, submatch, m)
     List	*listtbl[2][2];
     List	*ll;
     int		listid = 1;
-    int		endnode = 0;
+    int		endnode;
     List	*thislist;
     List	*nextlist;
     List	*neglist;
@@ -3192,13 +3192,7 @@ nfa_regmatch(start, submatch, m)
 
 	    case NFA_MULTIBYTE:
 	    case NFA_COMPOSING:
-		switch (t->state->c)
-		{
-		    case NFA_MULTIBYTE:	    endnode = NFA_END_MULTIBYTE; break;
-		    case NFA_COMPOSING:	    endnode = NFA_END_COMPOSING; break;
-		    default:		    endnode = 0;
-		}
-
+	        endnode = t->state->c + 1;
 		result = OK;
 		sta = t->state->out;
 		len = 1;
@@ -3206,7 +3200,7 @@ nfa_regmatch(start, submatch, m)
 		{
 		    if (reginput[len-1] != sta->c)
 		    {
-			result = OK - 1;
+			result = FAIL;
 			break;
 		    }
 		    len++;
@@ -3215,11 +3209,11 @@ nfa_regmatch(start, submatch, m)
 
 		/* if input char length doesn't match regexp char length */
 		if (len -1 < n || sta->c != endnode)
-		    result = OK - 1;
+		    result = FAIL;
 		end = t->state->out1;	    /* NFA_END_MULTIBYTE or
 					       NFA_END_COMPOSING */
 		/* If \Z was present, then ignore composing characters */
-		if (regflags & RF_ICOMBINE)
+		if (ireg_icombine && endnode == NFA_END_COMPOSING)
 		    result = 1 ^ sta->negated;
 		ADD_POS_NEG_STATE(end);
 		break;
