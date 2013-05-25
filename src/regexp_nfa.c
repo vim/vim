@@ -1865,16 +1865,16 @@ nfa_print_state2(debugf, state, indent)
     /* grow indent for state->out */
     indent->ga_len -= 1;
     if (state->out1)
-	ga_concat(indent, "| ");
+	ga_concat(indent, (char_u *)"| ");
     else
-	ga_concat(indent, "  ");
+	ga_concat(indent, (char_u *)"  ");
     ga_append(indent, '\0');
 
     nfa_print_state2(debugf, state->out, indent);
 
     /* replace last part of indent for state->out1 */
     indent->ga_len -= 3;
-    ga_concat(indent, "  ");
+    ga_concat(indent, (char_u *)"  ");
     ga_append(indent, '\0');
 
     nfa_print_state2(debugf, state->out1, indent);
@@ -1948,7 +1948,6 @@ new_state(c, out, out1)
 
     s->id   = istate;
     s->lastlist = 0;
-    s->lastthread = NULL;
     s->visits = 0;
     s->negated = FALSE;
 
@@ -2498,6 +2497,7 @@ addstate(l, state, m, off, lid, match)
 {
     regsub_T		save;
     int			subidx = 0;
+    thread_T		*lastthread;
 
     if (l == NULL || state == NULL)
 	return;
@@ -2531,9 +2531,9 @@ addstate(l, state, m, off, lid, match)
 	    {
 		/* add the state to the list */
 		state->lastlist = lid;
-		state->lastthread = &l->t[l->n++];
-		state->lastthread->state = state;
-		state->lastthread->sub = *m;
+		lastthread = &l->t[l->n++];
+		lastthread->state = state;
+		lastthread->sub = *m;
 	    }
     }
 
@@ -2983,7 +2983,7 @@ nfa_regmatch(start, submatch, m)
 	fprintf(log_fd, ">>> Reginput is \"%s\"\n", reginput);
 	fprintf(log_fd, ">>> Advanced one character ... Current char is %c (code %d) \n", c, (int)c);
 	fprintf(log_fd, ">>> Thislist has %d states available: ", thislist->n);
-	for (i = 0; i< thislist->n; i++)
+	for (i = 0; i < thislist->n; i++)
 	    fprintf(log_fd, "%d  ", abs(thislist->t[i].state->id));
 	fprintf(log_fd, "\n");
 #endif
@@ -3690,7 +3690,6 @@ nfa_regexec_both(line, col)
 	prog->state[i].id = i;
 	prog->state[i].lastlist = 0;
 	prog->state[i].visits = 0;
-	prog->state[i].lastthread = NULL;
     }
 
     retval = nfa_regtry(prog->start, col);
