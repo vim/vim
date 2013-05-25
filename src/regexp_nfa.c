@@ -5,12 +5,28 @@
  * This file is included in "regexp.c".
  */
 
+/*
+ * Logging of NFA engine.
+ *
+ * The NFA engine can write four log files:
+ * - Error log: Contains NFA engine's fatal errors.
+ * - Dump log: Contains compiled NFA state machine's information.
+ * - Run log: Contains information of matching procedure.
+ * - Debug log: Contains detailed information of matching procedure. Can be
+ *   disabled by undefining NFA_REGEXP_DEBUG_LOG.
+ * The first one can also be used without debug mode.
+ * The last three are enabled when compiled as debug mode and individually
+ * disabled by commenting them out.
+ * The log files can get quite big!
+ * Do disable all of this when compiling Vim for debugging, undefine DEBUG in
+ * regexp.c
+ */
 #ifdef DEBUG
-/* Comment this out to disable log files. They can get pretty big */
+# define NFA_REGEXP_ERROR_LOG	"nfa_regexp_error.log"
 # define ENABLE_LOG
-# define LOG_NAME "log_nfarun.log"
-# define NFA_REGEXP_DEBUG_LOG
-# define NFA_REGEXP_DEBUG_LOG_NAME	"nfa_regexp_debug.log"
+# define NFA_REGEXP_DUMP_LOG	"nfa_regexp_dump.log"
+# define NFA_REGEXP_RUN_LOG	"nfa_regexp_run.log"
+# define NFA_REGEXP_DEBUG_LOG	"nfa_regexp_debug.log"
 #endif
 
 /* Upper limit allowed for {m,n} repetitions handled by NFA */
@@ -1769,7 +1785,7 @@ nfa_postfix_dump(expr, retval)
     int *p;
     FILE *f;
 
-    f = fopen("LOG.log", "a");
+    f = fopen(NFA_REGEXP_DUMP_LOG, "a");
     if (f != NULL)
     {
 	fprintf(f, "\n-------------------------\n");
@@ -1827,7 +1843,7 @@ nfa_print_state(debugf, state, ident)
 nfa_dump(prog)
     nfa_regprog_T *prog;
 {
-    FILE *debugf = fopen("LOG.log", "a");
+    FILE *debugf = fopen(NFA_REGEXP_DUMP_LOG, "a");
 
     if (debugf != NULL)
     {
@@ -1994,14 +2010,15 @@ static Frag_T empty;
 
     static void
 st_error(postfix, end, p)
-    int *postfix;
-    int *end;
-    int *p;
+    int *postfix UNUSED;
+    int *end UNUSED;
+    int *p UNUSED;
 {
+#ifdef NFA_REGEXP_ERROR_LOG
     FILE *df;
     int *p2;
 
-    df = fopen("stack.err", "a");
+    df = fopen(NFA_REGEXP_ERROR_LOG, "a");
     if (df)
     {
 	fprintf(df, "Error popping the stack!\n");
@@ -2036,6 +2053,7 @@ st_error(postfix, end, p)
 	fprintf(df, "\n--------------------------\n");
 	fclose(df);
     }
+#endif
     EMSG(_("E874: (NFA) Could not pop the stack !"));
 }
 
@@ -2148,8 +2166,10 @@ post2nfa(postfix, end, nfa_calc_size)
 	    }
 	    e1 = POP();
 	    e1.start->negated = TRUE;
+#ifdef FEAT_MBYTE
 	    if (e1.start->c == NFA_COMPOSING)
 		e1.start->out1->negated = TRUE;
+#endif
 	    PUSH(e1);
 	    break;
 
@@ -2265,6 +2285,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    PUSH(frag(s, list1(&s1->out)));
 	    break;
 
+#ifdef FEAT_MBYTE
 	case NFA_COMPOSING:	/* char with composing char */
 #if 0
 	    /* TODO */
@@ -2274,6 +2295,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    }
 #endif
 	    /* FALLTHROUGH */
+#endif
 
 	case NFA_MOPEN + 0:	/* Submatch */
 	case NFA_MOPEN + 1:
@@ -2298,9 +2320,11 @@ post2nfa(postfix, end, nfa_calc_size)
 		case NFA_NOPEN:
 		    mclose = NFA_NCLOSE;
 		    break;
+#ifdef FEAT_MBYTE
 		case NFA_COMPOSING:
 		    mclose = NFA_END_COMPOSING;
 		    break;
+#endif
 		default:
 		    /* NFA_MOPEN(0) ... NFA_MOPEN(9) */
 		    mclose = *p + NSUBEXP;
@@ -2336,9 +2360,11 @@ post2nfa(postfix, end, nfa_calc_size)
 		goto theend;
 	    patch(e.out, s1);
 
+#ifdef FEAT_MBYTE
 	    if (mopen == NFA_COMPOSING)
 		/* COMPOSING->out1 = END_COMPOSING */
 		patch(list1(&s->out1), s1);
+#endif
 
 	    PUSH(frag(s, list1(&s1->out)));
 	    break;
@@ -2802,8 +2828,6 @@ nfa_regmatch(start, submatch, m)
     thread_T	*t;
     char_u	*old_reginput = NULL;
     char_u	*old_regline = NULL;
-    nfa_state_T	*sta;
-    nfa_state_T *end;
     List	list[3];
     List	*listtbl[2][2];
     List	*ll;
@@ -2813,13 +2837,12 @@ nfa_regmatch(start, submatch, m)
     List	*neglist;
     int		*listids = NULL;
     int		j = 0;
-    int		len = 0;
 #ifdef NFA_REGEXP_DEBUG_LOG
-    FILE	*debug = fopen(NFA_REGEXP_DEBUG_LOG_NAME, "a");
+    FILE	*debug = fopen(NFA_REGEXP_DEBUG_LOG, "a");
 
     if (debug == NULL)
     {
-	EMSG2(_("(NFA) COULD NOT OPEN %s !"), NFA_REGEXP_DEBUG_LOG_NAME);
+	EMSG2(_("(NFA) COULD NOT OPEN %s !"), NFA_REGEXP_DEBUG_LOG);
 	return FALSE;
     }
 #endif
@@ -2836,7 +2859,7 @@ nfa_regmatch(start, submatch, m)
     vim_memset(list[2].t, 0, size);
 
 #ifdef ENABLE_LOG
-    log_fd = fopen(LOG_NAME, "a");
+    log_fd = fopen(NFA_REGEXP_RUN_LOG, "a");
     if (log_fd != NULL)
     {
 	fprintf(log_fd, "**********************************\n");
@@ -3025,7 +3048,7 @@ nfa_regmatch(start, submatch, m)
 		nfa_restore_listids(start, listids);
 
 #ifdef ENABLE_LOG
-		log_fd = fopen(LOG_NAME, "a");
+		log_fd = fopen(NFA_REGEXP_RUN_LOG, "a");
 		if (log_fd != NULL)
 		{
 		    fprintf(log_fd, "****************************\n");
@@ -3141,7 +3164,10 @@ nfa_regmatch(start, submatch, m)
 #ifdef FEAT_MBYTE
 	    case NFA_COMPOSING:
 	    {
-		int mc = c;
+		int	    mc = c;
+		int	    len = 0;
+		nfa_state_T *end;
+		nfa_state_T *sta;
 
 		result = OK;
 		sta = t->state->out;
@@ -3469,7 +3495,7 @@ nfa_regtry(start, col)
     need_clear_subexpr = TRUE;
 
 #ifdef ENABLE_LOG
-    f = fopen(LOG_NAME, "a");
+    f = fopen(NFA_REGEXP_RUN_LOG, "a");
     if (f != NULL)
     {
 	fprintf(f, "\n\n\n\n\n\n\t\t=======================================================\n");
@@ -3662,7 +3688,7 @@ nfa_regcomp(expr, re_flags)
      */
 #ifdef ENABLE_LOG
     {
-	FILE *f = fopen(LOG_NAME, "a");
+	FILE *f = fopen(NFA_REGEXP_RUN_LOG, "a");
 
 	if (f != NULL)
 	{
