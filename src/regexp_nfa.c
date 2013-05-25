@@ -604,7 +604,6 @@ nfa_regatom()
     char_u	*endp;
 #ifdef FEAT_MBYTE
     char_u	*old_regparse = regparse;
-    int		clen;
     int		i;
 #endif
     int		extra = 0;
@@ -623,15 +622,12 @@ nfa_regatom()
     cpo_bsl = vim_strchr(p_cpo, CPO_BACKSL) != NULL;
 
     c = getchr();
-
-#ifdef FEAT_MBYTE
-    /* clen has the length of the current char, without composing chars */
-    clen = (*mb_char2len)(c);
-    if (has_mbyte && clen > 1)
-	goto nfa_do_multibyte;
-#endif
     switch (c)
     {
+	case NUL:
+	    syntax_error = TRUE;
+	    EMSG_RET_FAIL(_("E865: (NFA) Regexp end encountered prematurely"));
+
 	case Magic('^'):
 	    EMIT(NFA_BOL);
 	    break;
@@ -747,10 +743,6 @@ nfa_regatom()
 		return FAIL;	    /* cascaded error */
 	    break;
 
-	case NUL:
-	    syntax_error = TRUE;
-	    EMSG_RET_FAIL(_("E865: (NFA) Regexp end encountered prematurely"));
-
 	case Magic('|'):
 	case Magic('&'):
 	case Magic(')'):
@@ -834,11 +826,26 @@ nfa_regatom()
 		case 'x':   /* %xab hex 2 */
 		case 'u':   /* %uabcd hex 4 */
 		case 'U':   /* %U1234abcd hex 8 */
-		    /* Not yet supported */
-		    return FAIL;
+		    {
+			int i;
 
-		    c = coll_get_char();
-		    EMIT(c);
+			switch (c)
+			{
+			    case 'd': i = getdecchrs(); break;
+			    case 'o': i = getoctchrs(); break;
+			    case 'x': i = gethexchrs(2); break;
+			    case 'u': i = gethexchrs(4); break;
+			    case 'U': i = gethexchrs(8); break;
+			    default:  i = -1; break;
+			}
+
+			if (i < 0)
+			    EMSG2_RET_FAIL(
+			       _("E678: Invalid character after %s%%[dxouU]"),
+				    reg_magic == MAGIC_ALL);
+			/* TODO: what if a composing character follows? */
+			EMIT(i);
+		    }
 		    break;
 
 		/* Catch \%^ and \%$ regardless of where they appear in the
@@ -1217,9 +1224,10 @@ collection:
 		int	plen;
 
 nfa_do_multibyte:
-		/* Length of current char with composing chars. */
-		if (enc_utf8 && (clen != (plen = (*mb_ptr2len)(old_regparse))
-			    || utf_iscomposing(c)))
+		/* plen is length of current char with composing chars */
+		if (enc_utf8 && ((*mb_char2len)(c)
+			    != (plen = (*mb_ptr2len)(old_regparse))
+						       || utf_iscomposing(c)))
 		{
 		    /* A base character plus composing characters, or just one
 		     * or more composing characters.
