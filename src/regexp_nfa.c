@@ -3758,7 +3758,7 @@ nfa_regcomp(expr, re_flags)
     char_u	*expr;
     int		re_flags;
 {
-    nfa_regprog_T	*prog;
+    nfa_regprog_T	*prog = NULL;
     size_t		prog_size;
     int			*postfix;
 
@@ -3774,15 +3774,8 @@ nfa_regcomp(expr, re_flags)
     if (nfa_regcomp_start(expr, re_flags) == FAIL)
 	return NULL;
 
-    /* Space for compiled regexp */
-    prog_size = sizeof(nfa_regprog_T) + sizeof(nfa_state_T) * nstate_max;
-    prog = (nfa_regprog_T *)lalloc(prog_size, TRUE);
-    if (prog == NULL)
-	goto fail;
-    vim_memset(prog, 0, prog_size);
-
     /* Build postfix form of the regexp. Needed to build the NFA
-     * (and count its size) */
+     * (and count its size). */
     postfix = re2post();
     if (postfix == NULL)
 	goto fail;	    /* Cascaded (syntax?) error */
@@ -3809,6 +3802,13 @@ nfa_regcomp(expr, re_flags)
      * Count number of NFA states in "nstate". Do not build the NFA.
      */
     post2nfa(postfix, post_ptr, TRUE);
+
+    /* Space for compiled regexp */
+    prog_size = sizeof(nfa_regprog_T) + sizeof(nfa_state_T) * nstate;
+    prog = (nfa_regprog_T *)lalloc(prog_size, TRUE);
+    if (prog == NULL)
+	goto fail;
+    vim_memset(prog, 0, prog_size);
     state_ptr = prog->state;
 
     /*
