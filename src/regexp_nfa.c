@@ -716,6 +716,7 @@ nfa_regatom()
 	     * the composing char is matched here. */
 	    if (enc_utf8 && c == Magic('.') && utf_iscomposing(peekchr()))
 	    {
+		old_regparse = regparse;
 		c = getchr();
 		goto nfa_do_multibyte;
 	    }
@@ -1217,9 +1218,11 @@ collection:
 
 nfa_do_multibyte:
 		/* Length of current char with composing chars. */
-		if (enc_utf8 && clen != (plen = (*mb_ptr2len)(old_regparse)))
+		if (enc_utf8 && (clen != (plen = (*mb_ptr2len)(old_regparse))
+			    || utf_iscomposing(c)))
 		{
-		    /* A base character plus composing characters.
+		    /* A base character plus composing characters, or just one
+		     * or more composing characters.
 		     * This requires creating a separate atom as if enclosing
 		     * the characters in (), where NFA_COMPOSING is the ( and
 		     * NFA_END_COMPOSING is the ). Note that right now we are
@@ -1400,7 +1403,6 @@ nfa_regpiece()
 	    /* Save pos after the repeated atom and the \{} */
 	    new_regparse = regparse;
 
-	    new_regparse = regparse;
 	    quest = (greedy == TRUE? NFA_QUEST : NFA_QUEST_NONGREEDY);
 	    for (i = 0; i < maxval; i++)
 	    {
@@ -3218,11 +3220,19 @@ nfa_regmatch(start, submatch, m)
 		result = OK;
 		sta = t->state->out;
 		len = 0;
+		if (utf_iscomposing(sta->c))
+		{
+		    /* Only match composing character(s), ignore base
+		     * character.  Used for ".{composing}" and "{composing}"
+		     * (no preceding character). */
+		    len += mb_char2len(c);
+		}
 		if (ireg_icombine)
 		{
-		    /* If \Z was present, then ignore composing characters. */
+		    /* If \Z was present, then ignore composing characters.
+		     * When ignoring the base character this always matches. */
 		    /* TODO: How about negated? */
-		    if (sta->c != c)
+		    if (len == 0 && sta->c != c)
 			result = FAIL;
 		    len = n;
 		    while (sta->c != NFA_END_COMPOSING)

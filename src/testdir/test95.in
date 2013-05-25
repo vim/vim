@@ -38,6 +38,15 @@ STARTTEST
 :"""" Test composing character matching
 :call add(tl, ['.ม', 'xม่x yมy', 'yม'])
 :call add(tl, ['.ม่', 'xม่x yมy', 'xม่'])
+:call add(tl, ["\u05b9", " x\u05b9 ", "x\u05b9"])
+:call add(tl, [".\u05b9", " x\u05b9 ", "x\u05b9"])
+:call add(tl, ["\u05b9\u05bb", " x\u05b9\u05bb ", "x\u05b9\u05bb"])
+:call add(tl, [".\u05b9\u05bb", " x\u05b9\u05bb ", "x\u05b9\u05bb"])
+:call add(tl, ["\u05bb\u05b9", " x\u05b9\u05bb "])
+:call add(tl, [".\u05bb\u05b9", " x\u05b9\u05bb "])
+:call add(tl, ["\u05b9", " y\u05bb x\u05b9 ", "x\u05b9"])
+:call add(tl, [".\u05b9", " y\u05bb x\u05b9 ", "x\u05b9"])
+
 
 :"""" Test \Z
 :call add(tl, ['ú\Z', 'x'])
@@ -50,6 +59,8 @@ STARTTEST
 :call add(tl, ["ק\u200d\u05b9x\\Z", "xק\u200dxy", "ק\u200dx"])
 :call add(tl, ["ק\u200dx\\Z", "xק\u200d\u05b9xy", "ק\u200d\u05b9x"])
 :call add(tl, ["ק\u200dx\\Z", "xק\u200dxy", "ק\u200dx"])
+:call add(tl, ["\u05b9\\+\\Z", "xyz", "xyz"])
+:call add(tl, ["\\Z\u05b9\\+", "xyz", "xyz"])
 
 :"""" Combining different tests and features
 :call add(tl, ['[^[=a=]]\+', 'ddaãâbcd', 'dd'])

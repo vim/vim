@@ -11,6 +11,14 @@ OK - \f\+
 OK - \%#=1\f\+
 OK - .ม
 OK - .ม่
+OK - ֹ
+OK - .ֹ
+OK - ֹֻ
+OK - .ֹֻ
+OK - ֹֻ
+OK - .ֹֻ
+OK - ֹ
+OK - .ֹ
 OK - ú\Z
 OK - יהוה\Z
 OK - יְהוָה\Z
@@ -21,4 +29,6 @@ OK - ק‍ֹx\Z
 OK - ק‍ֹx\Z
 OK - ק‍x\Z
 OK - ק‍x\Z
+OK - ֹ\+\Z
+OK - \Zֹ\+
 OK - [^[=a=]]\+
