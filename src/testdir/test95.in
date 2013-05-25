@@ -20,79 +20,90 @@ STARTTEST
 
 :"""" Multi-byte character tests. These will fail unless vim is compiled
 :"""" with Multibyte (FEAT_MBYTE) or BIG/HUGE features.
-:call add(tl, ['[[:alpha:][=a=]]\+', '879 aiaãâaiuvna ', 'aiaãâaiuvna'])
-:call add(tl, ['[[=a=]]\+', 'ddaãâbcd', 'aãâ'])								" equivalence classes
-:call add(tl, ['[^ม ]\+', 'มม oijasoifjos ifjoisj f osij j มมมมม abcd', 'oijasoifjos'])
-:call add(tl, [' [^ ]\+', 'start มabcdม ', ' มabcdม'])
-:call add(tl, ['[ม[:alpha:][=a=]]\+', '879 aiaãมâมaiuvna ', 'aiaãมâมaiuvna'])
+:call add(tl, [2, '[[:alpha:][=a=]]\+', '879 aiaãâaiuvna ', 'aiaãâaiuvna'])
+:call add(tl, [2, '[[=a=]]\+', 'ddaãâbcd', 'aãâ'])								" equivalence classes
+:call add(tl, [2, '[^ม ]\+', 'มม oijasoifjos ifjoisj f osij j มมมมม abcd', 'oijasoifjos'])
+:call add(tl, [2, ' [^ ]\+', 'start มabcdม ', ' มabcdม'])
+:call add(tl, [2, '[ม[:alpha:][=a=]]\+', '879 aiaãมâมaiuvna ', 'aiaãมâมaiuvna'])
 
 :" this is not a normal "i" but 0xec
-:call add(tl, ['\p\+', 'ìa', 'ìa'])
+:call add(tl, [2, '\p\+', 'ìa', 'ìa'])
 
 :"""" Test recognition of some character classes
-:call add(tl, ['\i\+', '&*¨xx ', 'xx'])
-:call add(tl, ['\%#=1\i\+', '&*¨xx ', 'xx'])
-:call add(tl, ['\f\+', '&*fname ', 'fname'])
-:call add(tl, ['\%#=1\f\+', '&*fname ', 'fname'])
+:call add(tl, [2, '\i\+', '&*¨xx ', 'xx'])
+:call add(tl, [2, '\f\+', '&*fname ', 'fname'])
 
 :"""" Test composing character matching
-:call add(tl, ['.ม', 'xม่x yมy', 'yม'])
-:call add(tl, ['.ม่', 'xม่x yมy', 'xม่'])
-:call add(tl, ["\u05b9", " x\u05b9 ", "x\u05b9"])
-:call add(tl, [".\u05b9", " x\u05b9 ", "x\u05b9"])
-:call add(tl, ["\u05b9\u05bb", " x\u05b9\u05bb ", "x\u05b9\u05bb"])
-:call add(tl, [".\u05b9\u05bb", " x\u05b9\u05bb ", "x\u05b9\u05bb"])
-:call add(tl, ["\u05bb\u05b9", " x\u05b9\u05bb "])
-:call add(tl, [".\u05bb\u05b9", " x\u05b9\u05bb "])
-:call add(tl, ["\u05b9", " y\u05bb x\u05b9 ", "x\u05b9"])
-:call add(tl, [".\u05b9", " y\u05bb x\u05b9 ", "x\u05b9"])
+:call add(tl, [2, '.ม', 'xม่x yมy', 'yม'])
+:call add(tl, [2, '.ม่', 'xม่x yมy', 'xม่'])
+:call add(tl, [2, "\u05b9", " x\u05b9 ", "x\u05b9"])
+:call add(tl, [2, ".\u05b9", " x\u05b9 ", "x\u05b9"])
+:call add(tl, [2, "\u05b9\u05bb", " x\u05b9\u05bb ", "x\u05b9\u05bb"])
+:call add(tl, [2, ".\u05b9\u05bb", " x\u05b9\u05bb ", "x\u05b9\u05bb"])
+:"call add(tl, [2, "\u05bb\u05b9", " x\u05b9\u05bb "])
+:"call add(tl, [2, ".\u05bb\u05b9", " x\u05b9\u05bb "])
+:call add(tl, [2, "\u05b9", " y\u05bb x\u05b9 ", "x\u05b9"])
+:call add(tl, [2, ".\u05b9", " y\u05bb x\u05b9 ", "x\u05b9"])
 
 
 :"""" Test \Z
-:call add(tl, ['ú\Z', 'x'])
-:call add(tl, ['יהוה\Z', 'יהוה', 'יהוה'])
-:call add(tl, ['יְהוָה\Z', 'יהוה', 'יהוה'])
-:call add(tl, ['יהוה\Z', 'יְהוָה', 'יְהוָה'])
-:call add(tl, ['יְהוָה\Z', 'יְהוָה', 'יְהוָה'])
-:call add(tl, ['יְ\Z', 'וְיַ', 'יַ'])
-:call add(tl, ["ק\u200d\u05b9x\\Z", "xק\u200d\u05b9xy", "ק\u200d\u05b9x"])
-:call add(tl, ["ק\u200d\u05b9x\\Z", "xק\u200dxy", "ק\u200dx"])
-:call add(tl, ["ק\u200dx\\Z", "xק\u200d\u05b9xy", "ק\u200d\u05b9x"])
-:call add(tl, ["ק\u200dx\\Z", "xק\u200dxy", "ק\u200dx"])
-:call add(tl, ["\u05b9\\+\\Z", "xyz", "xyz"])
-:call add(tl, ["\\Z\u05b9\\+", "xyz", "xyz"])
+:call add(tl, [2, 'ú\Z', 'x'])
+:call add(tl, [2, 'יהוה\Z', 'יהוה', 'יהוה'])
+:call add(tl, [2, 'יְהוָה\Z', 'יהוה', 'יהוה'])
+:call add(tl, [2, 'יהוה\Z', 'יְהוָה', 'יְהוָה'])
+:call add(tl, [2, 'יְהוָה\Z', 'יְהוָה', 'יְהוָה'])
+:call add(tl, [2, 'יְ\Z', 'וְיַ', 'יַ'])
+:call add(tl, [2, "ק\u200d\u05b9x\\Z", "xק\u200d\u05b9xy", "ק\u200d\u05b9x"])
+:call add(tl, [2, "ק\u200d\u05b9x\\Z", "xק\u200dxy", "ק\u200dx"])
+:call add(tl, [2, "ק\u200dx\\Z", "xק\u200d\u05b9xy", "ק\u200d\u05b9x"])
+:call add(tl, [2, "ק\u200dx\\Z", "xק\u200dxy", "ק\u200dx"])
+:"call add(tl, [2, "\u05b9\\Z", "xyz"])
+:"call add(tl, [2, "\\Z\u05b9", "xyz"])
+:"call add(tl, [2, "\u05b9\\+\\Z", "xyz", "xyz"])
+:"call add(tl, [2, "\\Z\u05b9\\+", "xyz", "xyz"])
 
 :"""" Combining different tests and features
-:call add(tl, ['[^[=a=]]\+', 'ddaãâbcd', 'dd'])
+:call add(tl, [2, '[^[=a=]]\+', 'ddaãâbcd', 'dd'])
 
 :"""" Run the tests
+
 :"
 :for t in tl
-:  let l = matchlist(t[1], t[0])
+:  let re = t[0]
+:  let pat = t[1]
+:  let text = t[2]
+:  let matchidx = 3
+:  for engine in [0, 1, 2]
+:    if engine == 2 && !re
+:      continue
+:    endif
+:    let &regexpengine = engine
+:    let l = matchlist(text, pat)
 :" check the match itself
-:  if len(l) == 0 && len(t) > 2
-:    $put ='ERROR: pat: \"' . t[0] . '\", text: \"' . t[1] . '\", did not match, expected: \"' . t[2] . '\"'
-:  elseif len(l) > 0 && len(t) == 2
-:    $put ='ERROR: pat: \"' . t[0] . '\", text: \"' . t[1] . '\", match: \"' . l[0] . '\", expected no match'
-:  elseif len(t) > 2 && l[0] != t[2]
-:    $put ='ERROR: pat: \"' . t[0] . '\", text: \"' . t[1] . '\", match: \"' . l[0] . '\", expected: \"' . t[2] . '\"'
-:  else
-:    $put ='OK - ' . t[0]
-:  endif
-:  if len(l) > 0
+:    if len(l) == 0 && len(t) > matchidx
+:      $put ='ERROR: pat: \"' . pat . '\", text: \"' . text . '\", did not match, expected: \"' . t[matchidx] . '\"'
+:    elseif len(l) > 0 && len(t) == matchidx
+:      $put ='ERROR: pat: \"' . pat . '\", text: \"' . text . '\", match: \"' . l[0] . '\", expected no match'
+:    elseif len(t) > matchidx && l[0] != t[matchidx]
+:      $put ='ERROR: pat: \"' . pat . '\", text: \"' . text . '\", match: \"' . l[0] . '\", expected: \"' . t[matchidx] . '\"'
+:    else
+:      $put ='OK ' . engine . ' - ' . pat
+:    endif
+:    if len(l) > 0
 :"   check all the nine submatches
-:    for i in range(1, 9)
-:      if len(t) <= i + 2
-:        let e = ''
-:      else
-:        let e = t[i + 2]
-:      endif
-:      if l[i] != e
-:        $put ='ERROR: pat: \"' . t[0] . '\", text: \"' . t[1] . '\", submatch ' . i . ': \"' . l[i] . '\", expected: \"' . e . '\"'
-:      endif
-:    endfor
-:    unlet i
-:  endif
+:      for i in range(1, 9)
+:        if len(t) <= matchidx + i
+:          let e = ''
+:        else
+:          let e = t[matchidx + i]
+:        endif
+:        if l[i] != e
+:          $put ='ERROR: pat: \"' . pat . '\", text: \"' . text . '\", submatch ' . i . ': \"' . l[i] . '\", expected: \"' . e . '\"'
+:        endif
+:      endfor
+:      unlet i
+:    endif
+:  endfor
 :endfor
 :unlet t tl e l
 
