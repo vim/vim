@@ -183,7 +183,8 @@ static int nfa_reg __ARGS((int paren));
 #ifdef DEBUG
 static void nfa_set_code __ARGS((int c));
 static void nfa_postfix_dump __ARGS((char_u *expr, int retval));
-static void nfa_print_state __ARGS((FILE *debugf, nfa_state_T *state, int ident));
+static void nfa_print_state __ARGS((FILE *debugf, nfa_state_T *state));
+static void nfa_print_state2 __ARGS((FILE *debugf, nfa_state_T *state, garray_T *indent));
 static void nfa_dump __ARGS((nfa_regprog_T *prog));
 #endif
 static int *re2post __ARGS((void));
@@ -1811,29 +1812,74 @@ nfa_postfix_dump(expr, retval)
  * Print the NFA starting with a root node "state".
  */
     static void
-nfa_print_state(debugf, state, ident)
+nfa_print_state(debugf, state)
     FILE *debugf;
     nfa_state_T *state;
-    int ident;
 {
-    int i;
+    garray_T indent;
+
+    ga_init2(&indent, 1, 64);
+    ga_append(&indent, '\0');
+    nfa_print_state2(debugf, state, &indent);
+    ga_clear(&indent);
+}
+
+    static void
+nfa_print_state2(debugf, state, indent)
+    FILE *debugf;
+    nfa_state_T *state;
+    garray_T *indent;
+{
+    char_u  *p;
 
     if (state == NULL)
 	return;
 
     fprintf(debugf, "(%2d)", abs(state->id));
-    for (i = 0; i < ident; i++)
-	fprintf(debugf, "%c", ' ');
+
+    /* Output indent */
+    p = (char_u *)indent->ga_data;
+    if (indent->ga_len >= 3)
+    {
+	int	last = indent->ga_len - 3;
+	char_u	save[2];
+
+	STRNCPY(save, &p[last], 2);
+	STRNCPY(&p[last], "+-", 2);
+	fprintf(debugf, " %s", p);
+	STRNCPY(&p[last], save, 2);
+    }
+    else
+	fprintf(debugf, " %s", p);
 
     nfa_set_code(state->c);
-    fprintf(debugf, "%s %s (%d) (id=%d)\n",
-		 state->negated ? "NOT" : "", code, state->c, abs(state->id));
+    fprintf(debugf, "%s%s (%d) (id=%d)\n",
+		 state->negated ? "NOT " : "", code, state->c, abs(state->id));
     if (state->id < 0)
 	return;
 
     state->id = abs(state->id) * -1;
-    nfa_print_state(debugf, state->out, ident + 4);
-    nfa_print_state(debugf, state->out1, ident + 4);
+
+    /* grow indent for state->out */
+    indent->ga_len -= 1;
+    if (state->out1)
+	ga_concat(indent, "| ");
+    else
+	ga_concat(indent, "  ");
+    ga_append(indent, '\0');
+
+    nfa_print_state2(debugf, state->out, indent);
+
+    /* replace last part of indent for state->out1 */
+    indent->ga_len -= 3;
+    ga_concat(indent, "  ");
+    ga_append(indent, '\0');
+
+    nfa_print_state2(debugf, state->out1, indent);
+
+    /* shrink indent */
+    indent->ga_len -= 3;
+    ga_append(indent, '\0');
 }
 
 /*
@@ -1847,7 +1893,7 @@ nfa_dump(prog)
 
     if (debugf != NULL)
     {
-	nfa_print_state(debugf, prog->start, 0);
+	nfa_print_state(debugf, prog->start);
 	fclose(debugf);
     }
 }
@@ -3505,7 +3551,7 @@ nfa_regtry(start, col)
 #endif
 	fprintf(f, "\tInput text is \"%s\" \n", reginput);
 	fprintf(f, "		=======================================================\n\n\n\n\n\n\n");
-	nfa_print_state(f, start, 0);
+	nfa_print_state(f, start);
 	fprintf(f, "\n\n");
 	fclose(f);
     }
