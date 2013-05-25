@@ -2471,24 +2471,27 @@ theend:
  * NFA execution code.
  ****************************************************************/
 
-/* thread_T contains runtime information of a NFA state */
-struct thread
+/* nfa_thread_T contains runtime information of a NFA state */
+typedef struct
 {
     nfa_state_T	*state;
-    regsub_T	sub;		/* submatch info */
-};
+    regsub_T	sub;		/* Submatch info. TODO: expensive! */
+} nfa_thread_T;
+
 
 typedef struct
 {
-    thread_T	*t;
-    int		n;
-} List;
+    nfa_thread_T    *t;
+    int		    n;
+} nfa_list_T;
 
-static void addstate __ARGS((List *l, nfa_state_T *state, regsub_T *m, int off, int lid, int *match));
+static void addstate __ARGS((nfa_list_T *l, nfa_state_T *state, regsub_T *m, int off, int lid, int *match));
+
+static void addstate_here __ARGS((nfa_list_T *l, nfa_state_T *state, regsub_T *m, int lid, int *match, int *ip));
 
     static void
 addstate(l, state, m, off, lid, match)
-    List		*l;	/* runtime state list */
+    nfa_list_T		*l;	/* runtime state list */
     nfa_state_T		*state;	/* state to update */
     regsub_T		*m;	/* pointers to subexpressions */
     int			off;	/* byte offset, when -1 go to next line */
@@ -2497,7 +2500,7 @@ addstate(l, state, m, off, lid, match)
 {
     regsub_T		save;
     int			subidx = 0;
-    thread_T		*lastthread;
+    nfa_thread_T	*lastthread;
 
     if (l == NULL || state == NULL)
 	return;
@@ -2533,7 +2536,7 @@ addstate(l, state, m, off, lid, match)
 		state->lastlist = lid;
 		lastthread = &l->t[l->n++];
 		lastthread->state = state;
-		lastthread->sub = *m;
+		lastthread->sub = *m; /* TODO: expensive! */
 	    }
     }
 
@@ -2695,6 +2698,54 @@ addstate(l, state, m, off, lid, match)
 	    }
 	    break;
     }
+}
+
+/*
+ * Like addstate(), but the new state(s) are put at position "*ip".
+ * Used for zero-width matches, next state to use is the added one.
+ * This makes sure the order of states to be tried does not change, which
+ * matters for alternatives.
+ */
+    static void
+addstate_here(l, state, m, lid, matchp, ip)
+    nfa_list_T		*l;	/* runtime state list */
+    nfa_state_T		*state;	/* state to update */
+    regsub_T		*m;	/* pointers to subexpressions */
+    int			lid;
+    int			*matchp;	/* found match? */
+    int			*ip;
+{
+    int tlen = l->n;
+    int count;
+    int i = *ip;
+
+    /* first add the state(s) at the end, so that we know how many there are */
+    addstate(l, state, m, 0, lid, matchp);
+
+    /* when "*ip" was at the end of the list, nothing to do */
+    if (i + 1 == tlen)
+	return;
+
+    /* re-order to put the new state at the current position */
+    count = l->n - tlen;
+    if (count > 1)
+    {
+	/* make space for new states, then move them from the
+	 * end to the current position */
+	mch_memmove(&(l->t[i + count]),
+		&(l->t[i + 1]),
+		sizeof(nfa_thread_T) * (l->n - i - 1));
+	mch_memmove(&(l->t[i]),
+		&(l->t[l->n - 1]),
+		sizeof(nfa_thread_T) * count);
+    }
+    else
+    {
+	/* overwrite the current state */
+	l->t[i] = l->t[l->n - 1];
+    }
+    --l->n;
+    *ip = i - 1;
 }
 
 /*
@@ -2872,17 +2923,17 @@ nfa_regmatch(start, submatch, m)
     int		match = FALSE;
     int		flag = 0;
     int		old_reglnum = -1;
-    int		go_to_nextline;
-    thread_T	*t;
+    int		go_to_nextline = FALSE;
+    nfa_thread_T *t;
     char_u	*old_reginput = NULL;
     char_u	*old_regline = NULL;
-    List	list[3];
-    List	*listtbl[2][2];
-    List	*ll;
+    nfa_list_T	list[3];
+    nfa_list_T	*listtbl[2][2];
+    nfa_list_T	*ll;
     int		listid = 1;
-    List	*thislist;
-    List	*nextlist;
-    List	*neglist;
+    nfa_list_T	*thislist;
+    nfa_list_T	*nextlist;
+    nfa_list_T	*neglist;
     int		*listids = NULL;
     int		j = 0;
 #ifdef NFA_REGEXP_DEBUG_LOG
@@ -2896,10 +2947,10 @@ nfa_regmatch(start, submatch, m)
 #endif
 
     /* Allocate memory for the lists of nodes */
-    size = (nstate + 1) * sizeof(thread_T);
-    list[0].t = (thread_T *)lalloc(size, TRUE);
-    list[1].t = (thread_T *)lalloc(size, TRUE);
-    list[2].t = (thread_T *)lalloc(size, TRUE);
+    size = (nstate + 1) * sizeof(nfa_thread_T);
+    list[0].t = (nfa_thread_T *)lalloc(size, TRUE);
+    list[1].t = (nfa_thread_T *)lalloc(size, TRUE);
+    list[2].t = (nfa_thread_T *)lalloc(size, TRUE);
     if (list[0].t == NULL || list[1].t == NULL || list[2].t == NULL)
 	goto theend;
     vim_memset(list[0].t, 0, size);
@@ -3056,8 +3107,8 @@ nfa_regmatch(start, submatch, m)
 		 * nfa_regmatch().  Submatches are stored in *m, and used in
 		 * the parent call. */
 		if (start->c == NFA_MOPEN + 0)
-		    addstate(thislist, t->state->out, &t->sub, 0, listid,
-								      &match);
+		    addstate_here(thislist, t->state->out, &t->sub, listid,
+								  &match, &i);
 		else
 		{
 		    *m = t->sub;
@@ -3130,8 +3181,8 @@ nfa_regmatch(start, submatch, m)
 			    t->sub.end[j] = m->end[j];
 			}
 		    /* t->state->out1 is the corresponding END_INVISIBLE node */
-		    addstate(thislist, t->state->out1->out, &t->sub, 0, listid,
-								    &match);
+		    addstate_here(thislist, t->state->out1->out, &t->sub,
+							  listid, &match, &i);
 		}
 		else
 		{
@@ -3142,14 +3193,14 @@ nfa_regmatch(start, submatch, m)
 
 	    case NFA_BOL:
 		if (reginput == regline)
-		    addstate(thislist, t->state->out, &t->sub, 0, listid,
-								    &match);
+		    addstate_here(thislist, t->state->out, &t->sub, listid,
+								  &match, &i);
 		break;
 
 	    case NFA_EOL:
 		if (c == NUL)
-		    addstate(thislist, t->state->out, &t->sub, 0, listid,
-								    &match);
+		    addstate_here(thislist, t->state->out, &t->sub, listid,
+								  &match, &i);
 		break;
 
 	    case NFA_BOW:
@@ -3176,8 +3227,8 @@ nfa_regmatch(start, submatch, m)
 				   && vim_iswordc_buf(reginput[-1], reg_buf)))
 		    bow = FALSE;
 		if (bow)
-		    addstate(thislist, t->state->out, &t->sub, 0, listid,
-								    &match);
+		    addstate_here(thislist, t->state->out, &t->sub, listid,
+								  &match, &i);
 		break;
 	    }
 
@@ -3204,8 +3255,8 @@ nfa_regmatch(start, submatch, m)
 			|| (reginput[0] != NUL && vim_iswordc_buf(c, reg_buf)))
 		    eow = FALSE;
 		if (eow)
-		    addstate(thislist, t->state->out, &t->sub, 0, listid,
-								    &match);
+		    addstate_here(thislist, t->state->out, &t->sub, listid,
+								  &match, &i);
 		break;
 	    }
 

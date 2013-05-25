@@ -29,8 +29,6 @@
 
 typedef struct regengine regengine_T;
 
-typedef struct thread thread_T;
-
 /*
  * Structure returned by vim_regcomp() to pass on to vim_regexec().
  * This is the general structure. For the actual matcher, two specific

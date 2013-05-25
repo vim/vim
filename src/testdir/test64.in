@@ -270,6 +270,7 @@ STARTTEST
 :call add(tl, ['aa \zsax', ' ax'])						" must match before \zs
 :call add(tl, ['abc \zsmatch\ze abc', 'abc abc abc match abc abc', 'match'])
 :call add(tl, ['\v(a \zsif .*){2}', 'a if then a if last', 'if last', 'a if last'])
+:call add(tl, ['\>\zs.', 'aword. ', '.'])
 
 :"""" Tests for \@ features
 :call add(tl, ['abc\@=', 'abc', 'ab'])
@@ -298,6 +299,12 @@ STARTTEST
 :call add(tl, ['\%x20', 'yes no', ' '])
 :call add(tl, ['\%u0020', 'yes no', ' '])
 :call add(tl, ['\%U00000020', 'yes no', ' '])
+
+:"""" Alternatives, must use first longest match
+:call add(tl, ['goo\|go', 'google', 'goo'])
+:call add(tl, ['\<goo\|\<go', 'google', 'goo'])
+:call add(tl, ['\<goo\|go', 'google', 'goo'])
+
 
 :"""" Run the tests
 

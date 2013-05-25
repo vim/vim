@@ -209,6 +209,7 @@ OK - abc\zsdd
 OK - aa \zsax
 OK - abc \zsmatch\ze abc
 OK - \v(a \zsif .*){2}
+OK - \>\zs.
 OK - abc\@=
 OK - abc\@=cd
 OK - abc\@=
@@ -231,4 +232,7 @@ OK - \%o40
 OK - \%x20
 OK - \%u0020
 OK - \%U00000020
+OK - goo\|go
+OK - \<goo\|\<go
+OK - \<goo\|go
 192.168.0.1
