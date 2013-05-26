@@ -165,9 +165,9 @@ static int *post_start;  /* holds the postfix form of r.e. */
 static int *post_end;
 static int *post_ptr;
 
-static int nstate;	/* Number of states in the NFA. */
+static int nstate;	/* Number of states in the NFA. Also used when
+			 * executing. */
 static int istate;	/* Index in the state vector, used in new_state() */
-static int nstate_max;	/* Upper bound of estimated number of states. */
 
 
 static int nfa_regcomp_start __ARGS((char_u*expr, int re_flags));
@@ -219,10 +219,11 @@ nfa_regcomp_start(expr, re_flags)
     int		re_flags;	    /* see vim_regcomp() */
 {
     size_t	postfix_size;
+    int		nstate_max;
 
     nstate = 0;
     istate = 0;
-    /* A reasonable estimation for size */
+    /* A reasonable estimation for maximum size */
     nstate_max = (int)(STRLEN(expr) + 1) * NFA_POSTFIX_MULTIPLIER;
 
     /* Some items blow up in size, such as [A-z].  Add more space for that.
@@ -1968,10 +1969,20 @@ new_state(c, out, out1)
  * Frag_T.out is a list of places that need to be set to the
  * next state for this fragment.
  */
+
+/* Since the out pointers in the list are always
+ * uninitialized, we use the pointers themselves
+ * as storage for the Ptrlists. */
 typedef union Ptrlist Ptrlist;
+union Ptrlist
+{
+    Ptrlist	*next;
+    nfa_state_T	*s;
+};
+
 struct Frag
 {
-    nfa_state_T   *start;
+    nfa_state_T *start;
     Ptrlist	*out;
 };
 typedef struct Frag Frag_T;
@@ -1997,17 +2008,6 @@ frag(start, out)
     n.out = out;
     return n;
 }
-
-/*
- * Since the out pointers in the list are always
- * uninitialized, we use the pointers themselves
- * as storage for the Ptrlists.
- */
-union Ptrlist
-{
-    Ptrlist	*next;
-    nfa_state_T	*s;
-};
 
 /*
  * Create singleton list containing just outp.
@@ -3358,13 +3358,19 @@ nfa_regmatch(start, submatch, m)
 #endif
 
 	    case NFA_NEWL:
-		if (!reg_line_lbr && REG_MULTI
-				     && curc == NUL && reglnum <= reg_maxline)
+		if (curc == NUL && !reg_line_lbr && REG_MULTI
+						    && reglnum <= reg_maxline)
 		{
 		    go_to_nextline = TRUE;
 		    /* Pass -1 for the offset, which means taking the position
 		     * at the start of the next line. */
 		    addstate(nextlist, t->state->out, &t->sub, -1,
+							  listid + 1, &match);
+		}
+		else if (curc == '\n' && reg_line_lbr)
+		{
+		    /* match \n as if it is an ordinary character */
+		    addstate(nextlist, t->state->out, &t->sub, 1,
 							  listid + 1, &match);
 		}
 		break;
@@ -3832,7 +3838,12 @@ nfa_regcomp(expr, re_flags)
      * (and count its size). */
     postfix = re2post();
     if (postfix == NULL)
+    {
+	/* TODO: only give this error for debugging? */
+	if (post_ptr >= post_end)
+	    EMSGN("Internal error: estimated max number of states insufficient: %ld", post_end - post_start);
 	goto fail;	    /* Cascaded (syntax?) error */
+    }
 
     /*
      * In order to build the NFA, we parse the input regexp twice:

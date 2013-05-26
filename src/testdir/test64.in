@@ -250,6 +250,9 @@ STARTTEST
 :call add(tl, [2, 'abc[0-9]*ddd', 'adf abc44482ddd oijs', 'abc44482ddd'])
 :call add(tl, [2, '\_[0-9]\+', 'asfi9888u', '9888'])
 :call add(tl, [2, '[0-9\n]\+', 'asfi9888u', '9888'])
+:call add(tl, [2, '\_[0-9]\+', "asfi\n9888u", "\n9888"])
+:call add(tl, [2, '\_f', "  \na ", "\n"])
+:call add(tl, [2, '\_f\+', "  \na ", "\na"])
 :"
 :"
 :"""" Test recognition of some character classes
