@@ -161,6 +161,10 @@ static int syntax_error = FALSE;
 /* NFA regexp \ze operator encountered. */
 static int nfa_has_zend = FALSE;
 
+/* Number of sub expressions actually being used during execution. 1 if only
+ * the whole match (subexpr 0) is used. */
+static int nfa_nsubexpr;
+
 static int *post_start;  /* holds the postfix form of r.e. */
 static int *post_end;
 static int *post_ptr;
@@ -1645,12 +1649,18 @@ nfa_reg(paren)
     return OK;
 }
 
-typedef struct
+typedef union
 {
-    char_u	*start[NSUBEXP];
-    char_u	*end[NSUBEXP];
-    lpos_T	startpos[NSUBEXP];
-    lpos_T	endpos[NSUBEXP];
+    struct multipos
+    {
+	lpos_T	start;
+	lpos_T	end;
+    } multilist[NSUBEXP];
+    struct linepos
+    {
+	char_u	*start;
+	char_u	*end;
+    } linelist[NSUBEXP];
 } regsub_T;
 
 static int nfa_regmatch __ARGS((nfa_state_T *start, regsub_T *submatch, regsub_T *m));
@@ -2479,36 +2489,39 @@ theend:
  * NFA execution code.
  ****************************************************************/
 
-/* nfa_thread_T contains runtime information of a NFA state */
+/* nfa_thread_T contains execution information of a NFA state */
 typedef struct
 {
     nfa_state_T	*state;
-    regsub_T	sub;		/* Submatch info. TODO: expensive! */
+    regsub_T	sub;		/* submatch info, only party used */
 } nfa_thread_T;
 
-
+/* nfa_list_T contains the alternative NFA execution states. */
 typedef struct
 {
     nfa_thread_T    *t;
     int		    n;
 } nfa_list_T;
 
-static void addstate __ARGS((nfa_list_T *l, nfa_state_T *state, regsub_T *m, int off, int lid, int *match));
+/* Used during execution: whether a match has been found. */
+static int nfa_match;
 
-static void addstate_here __ARGS((nfa_list_T *l, nfa_state_T *state, regsub_T *m, int lid, int *match, int *ip));
+static void addstate __ARGS((nfa_list_T *l, nfa_state_T *state, regsub_T *m, int off, int lid));
+
+static void addstate_here __ARGS((nfa_list_T *l, nfa_state_T *state, regsub_T *m, int lid, int *ip));
 
     static void
-addstate(l, state, m, off, lid, match)
+addstate(l, state, m, off, lid)
     nfa_list_T		*l;	/* runtime state list */
     nfa_state_T		*state;	/* state to update */
     regsub_T		*m;	/* pointers to subexpressions */
     int			off;	/* byte offset, when -1 go to next line */
     int			lid;
-    int			*match;	/* found match? */
 {
-    regsub_T		save;
-    int			subidx = 0;
+    int			subidx;
     nfa_thread_T	*lastthread;
+    lpos_T		save_lpos;
+    char_u		*save_ptr;
 
     if (l == NULL || state == NULL)
 	return;
@@ -2544,7 +2557,16 @@ addstate(l, state, m, off, lid, match)
 		state->lastlist = lid;
 		lastthread = &l->t[l->n++];
 		lastthread->state = state;
-		lastthread->sub = *m; /* TODO: expensive! */
+
+		/* Copy the match start and end positions. */
+		if (REG_MULTI)
+		    mch_memmove(&lastthread->sub.multilist[0],
+			        &m->multilist[0],
+				sizeof(struct multipos) * nfa_nsubexpr);
+		else
+		    mch_memmove(&lastthread->sub.linelist[0],
+			        &m->linelist[0],
+			        sizeof(struct linepos) * nfa_nsubexpr);
 	    }
     }
 
@@ -2556,16 +2578,16 @@ addstate(l, state, m, off, lid, match)
     switch (state->c)
     {
 	case NFA_MATCH:
-	    *match = TRUE;
+	    nfa_match = TRUE;
 	    break;
 
 	case NFA_SPLIT:
-	    addstate(l, state->out, m, off, lid, match);
-	    addstate(l, state->out1, m, off, lid, match);
+	    addstate(l, state->out, m, off, lid);
+	    addstate(l, state->out1, m, off, lid);
 	    break;
 
 	case NFA_SKIP_CHAR:
-	    addstate(l, state->out, m, off, lid, match);
+	    addstate(l, state->out, m, off, lid);
 	    break;
 
 #if 0
@@ -2587,7 +2609,7 @@ addstate(l, state, m, off, lid, match)
 
 	case NFA_NOPEN:
 	case NFA_NCLOSE:
-	    addstate(l, state->out, m, off, lid, match);
+	    addstate(l, state->out, m, off, lid);
 	    break;
 
 	/* If this state is reached, then a recursive call of nfa_regmatch()
@@ -2609,51 +2631,44 @@ addstate(l, state, m, off, lid, match)
 	case NFA_MOPEN + 8:
 	case NFA_MOPEN + 9:
 	case NFA_ZSTART:
-	    subidx = state->c - NFA_MOPEN;
 	    if (state->c == NFA_ZSTART)
 		subidx = 0;
+	    else
+		subidx = state->c - NFA_MOPEN;
 
 	    if (REG_MULTI)
 	    {
-		save.startpos[subidx] = m->startpos[subidx];
-		save.endpos[subidx] = m->endpos[subidx];
+		save_lpos = m->multilist[subidx].start;
 		if (off == -1)
 		{
-		    m->startpos[subidx].lnum = reglnum + 1;
-		    m->startpos[subidx].col = 0;
+		    m->multilist[subidx].start.lnum = reglnum + 1;
+		    m->multilist[subidx].start.col = 0;
 		}
 		else
 		{
-		    m->startpos[subidx].lnum = reglnum;
-		    m->startpos[subidx].col =
+		    m->multilist[subidx].start.lnum = reglnum;
+		    m->multilist[subidx].start.col =
 					  (colnr_T)(reginput - regline + off);
 		}
 	    }
 	    else
 	    {
-		save.start[subidx] = m->start[subidx];
-		save.end[subidx] = m->end[subidx];
-		m->start[subidx] = reginput + off;
+		save_ptr = m->linelist[subidx].start;
+		m->linelist[subidx].start = reginput + off;
 	    }
 
-	    addstate(l, state->out, m, off, lid, match);
+	    addstate(l, state->out, m, off, lid);
 
 	    if (REG_MULTI)
-	    {
-		m->startpos[subidx] = save.startpos[subidx];
-		m->endpos[subidx] = save.endpos[subidx];
-	    }
+		m->multilist[subidx].start = save_lpos;
 	    else
-	    {
-		m->start[subidx] = save.start[subidx];
-		m->end[subidx] = save.end[subidx];
-	    }
+		m->linelist[subidx].start = save_ptr;
 	    break;
 
 	case NFA_MCLOSE + 0:
 	    if (nfa_has_zend)
 	    {
-		addstate(l, state->out, m, off, lid, match);
+		addstate(l, state->out, m, off, lid);
 		break;
 	    }
 	case NFA_MCLOSE + 1:
@@ -2666,44 +2681,38 @@ addstate(l, state, m, off, lid, match)
 	case NFA_MCLOSE + 8:
 	case NFA_MCLOSE + 9:
 	case NFA_ZEND:
-	    subidx = state->c - NFA_MCLOSE;
 	    if (state->c == NFA_ZEND)
 		subidx = 0;
+	    else
+		subidx = state->c - NFA_MCLOSE;
 
 	    if (REG_MULTI)
 	    {
-		save.startpos[subidx] = m->startpos[subidx];
-		save.endpos[subidx] = m->endpos[subidx];
+		save_lpos = m->multilist[subidx].end;
 		if (off == -1)
 		{
-		    m->endpos[subidx].lnum = reglnum + 1;
-		    m->endpos[subidx].col = 0;
+		    m->multilist[subidx].end.lnum = reglnum + 1;
+		    m->multilist[subidx].end.col = 0;
 		}
 		else
 		{
-		    m->endpos[subidx].lnum = reglnum;
-		    m->endpos[subidx].col = (colnr_T)(reginput - regline + off);
+		    m->multilist[subidx].end.lnum = reglnum;
+		    m->multilist[subidx].end.col =
+					  (colnr_T)(reginput - regline + off);
 		}
 	    }
 	    else
 	    {
-		save.start[subidx] = m->start[subidx];
-		save.end[subidx] = m->end[subidx];
-		m->end[subidx] = reginput + off;
+		save_ptr = m->linelist[subidx].end;
+		m->linelist[subidx].end = reginput + off;
 	    }
 
-	    addstate(l, state->out, m, off, lid, match);
+	    addstate(l, state->out, m, off, lid);
 
 	    if (REG_MULTI)
-	    {
-		m->startpos[subidx] = save.startpos[subidx];
-		m->endpos[subidx] = save.endpos[subidx];
-	    }
+		m->multilist[subidx].end = save_lpos;
 	    else
-	    {
-		m->start[subidx] = save.start[subidx];
-		m->end[subidx] = save.end[subidx];
-	    }
+		m->linelist[subidx].end = save_ptr;
 	    break;
     }
 }
@@ -2715,12 +2724,11 @@ addstate(l, state, m, off, lid, match)
  * matters for alternatives.
  */
     static void
-addstate_here(l, state, m, lid, matchp, ip)
+addstate_here(l, state, m, lid, ip)
     nfa_list_T		*l;	/* runtime state list */
     nfa_state_T		*state;	/* state to update */
     regsub_T		*m;	/* pointers to subexpressions */
     int			lid;
-    int			*matchp;	/* found match? */
     int			*ip;
 {
     int tlen = l->n;
@@ -2728,7 +2736,7 @@ addstate_here(l, state, m, lid, matchp, ip)
     int i = *ip;
 
     /* first add the state(s) at the end, so that we know how many there are */
-    addstate(l, state, m, 0, lid, matchp);
+    addstate(l, state, m, 0, lid);
 
     /* when "*ip" was at the end of the list, nothing to do */
     if (i + 1 == tlen)
@@ -2925,7 +2933,6 @@ nfa_regmatch(start, submatch, m)
 {
     int		result;
     int		size = 0;
-    int		match = FALSE;
     int		flag = 0;
     int		old_reglnum = -1;
     int		go_to_nextline = FALSE;
@@ -2951,6 +2958,7 @@ nfa_regmatch(start, submatch, m)
 	return FALSE;
     }
 #endif
+    nfa_match = FALSE;
 
     /* Allocate memory for the lists of nodes */
     size = (nstate + 1) * sizeof(nfa_thread_T);
@@ -2989,7 +2997,7 @@ nfa_regmatch(start, submatch, m)
 #ifdef ENABLE_LOG
     fprintf(log_fd, "(---) STARTSTATE\n");
 #endif
-    addstate(thislist, start, m, 0, listid, &match);
+    addstate(thislist, start, m, 0, listid);
 
     /* There are two cases when the NFA advances: 1. input char matches the
      * NFA node and 2. input char does not match the NFA node, but the next
@@ -3002,7 +3010,7 @@ nfa_regmatch(start, submatch, m)
 #define	ADD_POS_NEG_STATE(node)						    \
     ll = listtbl[result ? 1 : 0][node->negated];			    \
     if (ll != NULL)							    \
-	addstate(ll, node->out , &t->sub, clen, listid + 1, &match);
+	addstate(ll, node->out , &t->sub, clen, listid + 1);
 
 
     /*
@@ -3090,7 +3098,7 @@ nfa_regmatch(start, submatch, m)
 	    switch (t->state->c)
 	    {
 	    case NFA_MATCH:
-		match = TRUE;
+		nfa_match = TRUE;
 		*submatch = t->sub;
 #ifdef ENABLE_LOG
 		for (j = 0; j < 4; j++)
@@ -3125,11 +3133,11 @@ nfa_regmatch(start, submatch, m)
 		 * the parent call. */
 		if (start->c == NFA_MOPEN + 0)
 		    addstate_here(thislist, t->state->out, &t->sub, listid,
-							    &match, &listidx);
+								    &listidx);
 		else
 		{
 		    *m = t->sub;
-		    match = TRUE;
+		    nfa_match = TRUE;
 		}
 		break;
 
@@ -3186,20 +3194,20 @@ nfa_regmatch(start, submatch, m)
 		    reglnum = old_reglnum;
 		    /* Copy submatch info from the recursive call */
 		    if (REG_MULTI)
-			for (j = 1; j < NSUBEXP; j++)
+			for (j = 1; j < nfa_nsubexpr; j++)
 			{
-			    t->sub.startpos[j] = m->startpos[j];
-			    t->sub.endpos[j] = m->endpos[j];
+			    t->sub.multilist[j].start = m->multilist[j].start;
+			    t->sub.multilist[j].end = m->multilist[j].end;
 			}
 		    else
-			for (j = 1; j < NSUBEXP; j++)
+			for (j = 1; j < nfa_nsubexpr; j++)
 			{
-			    t->sub.start[j] = m->start[j];
-			    t->sub.end[j] = m->end[j];
+			    t->sub.linelist[j].start = m->linelist[j].start;
+			    t->sub.linelist[j].end = m->linelist[j].end;
 			}
 		    /* t->state->out1 is the corresponding END_INVISIBLE node */
 		    addstate_here(thislist, t->state->out1->out, &t->sub,
-						    listid, &match, &listidx);
+							    listid, &listidx);
 		}
 		else
 		{
@@ -3211,13 +3219,13 @@ nfa_regmatch(start, submatch, m)
 	    case NFA_BOL:
 		if (reginput == regline)
 		    addstate_here(thislist, t->state->out, &t->sub, listid,
-							    &match, &listidx);
+								    &listidx);
 		break;
 
 	    case NFA_EOL:
 		if (curc == NUL)
 		    addstate_here(thislist, t->state->out, &t->sub, listid,
-							    &match, &listidx);
+								    &listidx);
 		break;
 
 	    case NFA_BOW:
@@ -3245,7 +3253,7 @@ nfa_regmatch(start, submatch, m)
 		    bow = FALSE;
 		if (bow)
 		    addstate_here(thislist, t->state->out, &t->sub, listid,
-							    &match, &listidx);
+								    &listidx);
 		break;
 	    }
 
@@ -3274,7 +3282,7 @@ nfa_regmatch(start, submatch, m)
 		    eow = FALSE;
 		if (eow)
 		    addstate_here(thislist, t->state->out, &t->sub, listid,
-							    &match, &listidx);
+								    &listidx);
 		break;
 	    }
 
@@ -3364,14 +3372,12 @@ nfa_regmatch(start, submatch, m)
 		    go_to_nextline = TRUE;
 		    /* Pass -1 for the offset, which means taking the position
 		     * at the start of the next line. */
-		    addstate(nextlist, t->state->out, &t->sub, -1,
-							  listid + 1, &match);
+		    addstate(nextlist, t->state->out, &t->sub, -1, listid + 1);
 		}
 		else if (curc == '\n' && reg_line_lbr)
 		{
 		    /* match \n as if it is an ordinary character */
-		    addstate(nextlist, t->state->out, &t->sub, 1,
-							  listid + 1, &match);
+		    addstate(nextlist, t->state->out, &t->sub, 1, listid + 1);
 		}
 		break;
 
@@ -3400,14 +3406,14 @@ nfa_regmatch(start, submatch, m)
 		 * CHAR(x), NFA_NOT, CHAR(y), NFA_NOT etc. */
 		if (curc > 0)
 		    addstate(nextlist, t->state->out, &t->sub, clen,
-							  listid + 1, &match);
+								  listid + 1);
 		break;
 
 	    case NFA_ANY:
 		/* Any char except '\0', (end of input) does not match. */
 		if (curc > 0)
 		    addstate(nextlist, t->state->out, &t->sub, clen,
-							  listid + 1, &match);
+								  listid + 1);
 		break;
 
 	    /*
@@ -3597,13 +3603,13 @@ nfa_regmatch(start, submatch, m)
 	 * Do not add the start state in recursive calls of nfa_regmatch(),
 	 * because recursive calls should only start in the first position.
 	 * Also don't start a match past the first line. */
-	if (match == FALSE && start->c == NFA_MOPEN + 0
+	if (nfa_match == FALSE && start->c == NFA_MOPEN + 0
 						 && reglnum == 0 && clen != 0)
 	{
 #ifdef ENABLE_LOG
 	    fprintf(log_fd, "(---) STARTSTATE\n");
 #endif
-	    addstate(nextlist, start, m, clen, listid + 1, &match);
+	    addstate(nextlist, start, m, clen, listid + 1);
 	}
 
 #ifdef ENABLE_LOG
@@ -3640,14 +3646,13 @@ theend:
     vim_free(list[1].t);
     vim_free(list[2].t);
     list[0].t = list[1].t = list[2].t = NULL;
-    if (listids != NULL)
-	vim_free(listids);
+    vim_free(listids);
 #undef ADD_POS_NEG_STATE
 #ifdef NFA_REGEXP_DEBUG_LOG
     fclose(debug);
 #endif
 
-    return match;
+    return nfa_match;
 }
 
 /*
@@ -3690,17 +3695,13 @@ nfa_regtry(start, col)
     if (REG_MULTI)
     {
 	/* Use 0xff to set lnum to -1 */
-	vim_memset(sub.startpos, 0xff, sizeof(lpos_T) * NSUBEXP);
-	vim_memset(sub.endpos, 0xff, sizeof(lpos_T) * NSUBEXP);
-	vim_memset(m.startpos, 0xff, sizeof(lpos_T) * NSUBEXP);
-	vim_memset(m.endpos, 0xff, sizeof(lpos_T) * NSUBEXP);
+	vim_memset(sub.multilist, 0xff, sizeof(struct multipos) * nfa_nsubexpr);
+	vim_memset(m.multilist, 0xff, sizeof(struct multipos) * nfa_nsubexpr);
     }
     else
     {
-	vim_memset(sub.start, 0, sizeof(char_u *) * NSUBEXP);
-	vim_memset(sub.end, 0, sizeof(char_u *) * NSUBEXP);
-	vim_memset(m.start, 0, sizeof(char_u *) * NSUBEXP);
-	vim_memset(m.end, 0, sizeof(char_u *) * NSUBEXP);
+	vim_memset(sub.linelist, 0, sizeof(struct linepos) * nfa_nsubexpr);
+	vim_memset(m.linelist, 0, sizeof(struct linepos) * nfa_nsubexpr);
     }
 
     if (nfa_regmatch(start, &sub, &m) == FALSE)
@@ -3709,10 +3710,10 @@ nfa_regtry(start, col)
     cleanup_subexpr();
     if (REG_MULTI)
     {
-	for (i = 0; i < NSUBEXP; i++)
+	for (i = 0; i < nfa_nsubexpr; i++)
 	{
-	    reg_startpos[i] = sub.startpos[i];
-	    reg_endpos[i] = sub.endpos[i];
+	    reg_startpos[i] = sub.multilist[i].start;
+	    reg_endpos[i] = sub.multilist[i].end;
 	}
 
 	if (reg_startpos[0].lnum < 0)
@@ -3731,10 +3732,10 @@ nfa_regtry(start, col)
     }
     else
     {
-	for (i = 0; i < NSUBEXP; i++)
+	for (i = 0; i < nfa_nsubexpr; i++)
 	{
-	    reg_startp[i] = sub.start[i];
-	    reg_endp[i] = sub.end[i];
+	    reg_startp[i] = sub.linelist[i].start;
+	    reg_endp[i] = sub.linelist[i].end;
 	}
 
 	if (reg_startp[0] == NULL)
@@ -3802,6 +3803,7 @@ nfa_regexec_both(line, col)
     reglnum = 0;    /* relative to line */
 
     nfa_has_zend = prog->has_zend;
+    nfa_nsubexpr = prog->nsubexp;
 
     nstate = prog->nstate;
     for (i = 0; i < nstate; ++i)
@@ -3896,6 +3898,7 @@ nfa_regcomp(expr, re_flags)
     prog->engine = &nfa_regengine;
     prog->nstate = nstate;
     prog->has_zend = nfa_has_zend;
+    prog->nsubexp = regnpar;
 #ifdef ENABLE_LOG
     nfa_postfix_dump(expr, OK);
     nfa_dump(prog);
