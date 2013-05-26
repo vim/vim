@@ -3164,19 +3164,19 @@ nfa_regmatch(start, submatch, m)
 			submatch->linelist[j].end = t->sub.linelist[j].end;
 		    }
 #ifdef ENABLE_LOG
-		for (j = 0; j < 4; j++)
+		for (j = 0; j < t->sub.in_use; j++)
 		    if (REG_MULTI)
 			fprintf(log_fd, "\n *** group %d, start: c=%d, l=%d, end: c=%d, l=%d",
 				j,
-				t->sub.startpos[j].col,
-				(int)t->sub.startpos[j].lnum,
-				t->sub.endpos[j].col,
-				(int)t->sub.endpos[j].lnum);
+				t->sub.multilist[j].start.col,
+				(int)t->sub.multilist[j].start.lnum,
+				t->sub.multilist[j].end.col,
+				(int)t->sub.multilist[j].end.lnum);
 		    else
 			fprintf(log_fd, "\n *** group %d, start: \"%s\", end: \"%s\"",
 				j,
-				(char *)t->sub.start[j],
-				(char *)t->sub.end[j]);
+				(char *)t->sub.linelist[j].start,
+				(char *)t->sub.linelist[j].end);
 		fprintf(log_fd, "\n");
 #endif
 		/* Found the left-most longest match, do not look at any other
