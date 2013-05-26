@@ -372,6 +372,12 @@ y$Gop:"
 :.+1,.+2yank
 Gop:"
 :"
+:" Check a pattern with a line break matches in the right position.
+/^Multiline
+/\S.*\nx
+:.yank
+y$Gop:"
+:"
 :"
 :/\%#=1^Results/,$wq! test.out
 ENDTEST
@@ -382,5 +388,12 @@ localnet/192.168.0.1
 Substitute here:
 <T="">Ta 5</Title>
 <T="">Ac 7</Title>
+
+Multiline:
+abc
+def
+ghi
+xjk
+lmn
 
 Results of test64:

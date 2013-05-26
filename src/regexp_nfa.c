@@ -3585,12 +3585,15 @@ nfa_regmatch(start, submatch, m)
 
 	} /* for (thislist = thislist; thislist->state; thislist++) */
 
-	/* The first found match is the leftmost one, but there may be a
-	 * longer one. Keep running the NFA, but don't start from the
-	 * beginning. Also, do not add the start state in recursive calls of
-	 * nfa_regmatch(), because recursive calls should only start in the
-	 * first position. */
-	if (match == FALSE && start->c == NFA_MOPEN + 0)
+	/* Look for the start of a match in the current position by adding the
+	 * start state to the list of states.
+	 * The first found match is the leftmost one, thus the order of states
+	 * matters!
+	 * Do not add the start state in recursive calls of nfa_regmatch(),
+	 * because recursive calls should only start in the first position.
+	 * Also don't start a match past the first line. */
+	if (match == FALSE && start->c == NFA_MOPEN + 0
+						 && reglnum == 0 && clen != 0)
 	{
 #ifdef ENABLE_LOG
 	    fprintf(log_fd, "(---) STARTSTATE\n");
