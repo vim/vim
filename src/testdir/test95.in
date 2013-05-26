@@ -62,10 +62,12 @@ STARTTEST
 :call add(tl, [2, "ק\u200d\u05b9x\\Z", "xק\u200dxy", "ק\u200dx"])
 :call add(tl, [2, "ק\u200dx\\Z", "xק\u200d\u05b9xy", "ק\u200d\u05b9x"])
 :call add(tl, [2, "ק\u200dx\\Z", "xק\u200dxy", "ק\u200dx"])
-:"call add(tl, [2, "\u05b9\\Z", "xyz"])
-:"call add(tl, [2, "\\Z\u05b9", "xyz"])
-:"call add(tl, [2, "\u05b9\\+\\Z", "xyz", "xyz"])
-:"call add(tl, [2, "\\Z\u05b9\\+", "xyz", "xyz"])
+:call add(tl, [2, "\u05b9\\Z", "xyz"])
+:call add(tl, [2, "\\Z\u05b9", "xyz"])
+:call add(tl, [2, "\u05b9\\Z", "xy\u05b9z", "y\u05b9"])
+:call add(tl, [2, "\\Z\u05b9", "xy\u05b9z", "y\u05b9"])
+:call add(tl, [1, "\u05b9\\+\\Z", "xy\u05b9z\u05b9 ", "y\u05b9z\u05b9"])
+:call add(tl, [1, "\\Z\u05b9\\+", "xy\u05b9z\u05b9 ", "y\u05b9z\u05b9"])
 
 :"""" Combining different tests and features
 :call add(tl, [2, '[^[=a=]]\+', 'ddaãâbcd', 'dd'])

@@ -3294,7 +3294,7 @@ nfa_regmatch(start, submatch, m)
 		     * (no preceding character). */
 		    len += mb_char2len(mc);
 		}
-		if (ireg_icombine)
+		if (ireg_icombine && len == 0)
 		{
 		    /* If \Z was present, then ignore composing characters.
 		     * When ignoring the base character this always matches. */
