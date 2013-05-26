@@ -1649,22 +1649,6 @@ nfa_reg(paren)
     return OK;
 }
 
-typedef union
-{
-    struct multipos
-    {
-	lpos_T	start;
-	lpos_T	end;
-    } multilist[NSUBEXP];
-    struct linepos
-    {
-	char_u	*start;
-	char_u	*end;
-    } linelist[NSUBEXP];
-} regsub_T;
-
-static int nfa_regmatch __ARGS((nfa_state_T *start, regsub_T *submatch, regsub_T *m));
-
 #ifdef DEBUG
 static char_u code[50];
 
@@ -2489,6 +2473,26 @@ theend:
  * NFA execution code.
  ****************************************************************/
 
+typedef struct
+{
+    int	    in_use; /* number of subexpr with useful info */
+
+    /* When REG_MULTI is TRUE multilist is used, otherwise linelist. */
+    union
+    {
+	struct multipos
+	{
+	    lpos_T	start;
+	    lpos_T	end;
+	} multilist[NSUBEXP];
+	struct linepos
+	{
+	    char_u	*start;
+	    char_u	*end;
+	} linelist[NSUBEXP];
+    };
+} regsub_T;
+
 /* nfa_thread_T contains execution information of a NFA state */
 typedef struct
 {
@@ -2507,7 +2511,6 @@ typedef struct
 static int nfa_match;
 
 static void addstate __ARGS((nfa_list_T *l, nfa_state_T *state, regsub_T *m, int off, int lid));
-
 static void addstate_here __ARGS((nfa_list_T *l, nfa_state_T *state, regsub_T *m, int lid, int *ip));
 
     static void
@@ -2521,7 +2524,9 @@ addstate(l, state, m, off, lid)
     int			subidx;
     nfa_thread_T	*lastthread;
     lpos_T		save_lpos;
+    int			save_in_use;
     char_u		*save_ptr;
+    int			i;
 
     if (l == NULL || state == NULL)
 	return;
@@ -2557,16 +2562,19 @@ addstate(l, state, m, off, lid)
 		state->lastlist = lid;
 		lastthread = &l->t[l->n++];
 		lastthread->state = state;
-
-		/* Copy the match start and end positions. */
-		if (REG_MULTI)
-		    mch_memmove(&lastthread->sub.multilist[0],
-			        &m->multilist[0],
-				sizeof(struct multipos) * nfa_nsubexpr);
-		else
-		    mch_memmove(&lastthread->sub.linelist[0],
-			        &m->linelist[0],
-			        sizeof(struct linepos) * nfa_nsubexpr);
+		lastthread->sub.in_use = m->in_use;
+		if (m->in_use > 0)
+		{
+		    /* Copy the match start and end positions. */
+		    if (REG_MULTI)
+			mch_memmove(&lastthread->sub.multilist[0],
+				    &m->multilist[0],
+				    sizeof(struct multipos) * m->in_use);
+		    else
+			mch_memmove(&lastthread->sub.linelist[0],
+				    &m->linelist[0],
+				    sizeof(struct linepos) * m->in_use);
+		}
 	    }
     }
 
@@ -2636,9 +2644,25 @@ addstate(l, state, m, off, lid)
 	    else
 		subidx = state->c - NFA_MOPEN;
 
+	    /* Set the position (with "off") in the subexpression.  Save and
+	     * restore it when it was in use.  Otherwise fill any gap. */
 	    if (REG_MULTI)
 	    {
-		save_lpos = m->multilist[subidx].start;
+		if (subidx < m->in_use)
+		{
+		    save_lpos = m->multilist[subidx].start;
+		    save_in_use = -1;
+		}
+		else
+		{
+		    save_in_use = m->in_use;
+		    for (i = m->in_use; i < subidx; ++i)
+		    {
+			m->multilist[i].start.lnum = -1;
+			m->multilist[i].end.lnum = -1;
+		    }
+		    m->in_use = subidx + 1;
+		}
 		if (off == -1)
 		{
 		    m->multilist[subidx].start.lnum = reglnum + 1;
@@ -2653,16 +2677,35 @@ addstate(l, state, m, off, lid)
 	    }
 	    else
 	    {
-		save_ptr = m->linelist[subidx].start;
+		if (subidx < m->in_use)
+		{
+		    save_ptr = m->linelist[subidx].start;
+		    save_in_use = -1;
+		}
+		else
+		{
+		    save_in_use = m->in_use;
+		    for (i = m->in_use; i < subidx; ++i)
+		    {
+			m->linelist[i].start = NULL;
+			m->linelist[i].end = NULL;
+		    }
+		    m->in_use = subidx + 1;
+		}
 		m->linelist[subidx].start = reginput + off;
 	    }
 
 	    addstate(l, state->out, m, off, lid);
 
-	    if (REG_MULTI)
-		m->multilist[subidx].start = save_lpos;
+	    if (save_in_use == -1)
+	    {
+		if (REG_MULTI)
+		    m->multilist[subidx].start = save_lpos;
+		else
+		    m->linelist[subidx].start = save_ptr;
+	    }
 	    else
-		m->linelist[subidx].start = save_ptr;
+		m->in_use = save_in_use;
 	    break;
 
 	case NFA_MCLOSE + 0:
@@ -2686,6 +2729,11 @@ addstate(l, state, m, off, lid)
 	    else
 		subidx = state->c - NFA_MCLOSE;
 
+	    /* We don't fill in gaps here, there must have been an MOPEN that
+	     * has done that. */
+	    save_in_use = m->in_use;
+	    if (m->in_use <= subidx)
+		m->in_use = subidx + 1;
 	    if (REG_MULTI)
 	    {
 		save_lpos = m->multilist[subidx].end;
@@ -2713,6 +2761,7 @@ addstate(l, state, m, off, lid)
 		m->multilist[subidx].end = save_lpos;
 	    else
 		m->linelist[subidx].end = save_ptr;
+	    m->in_use = save_in_use;
 	    break;
     }
 }
@@ -2917,6 +2966,8 @@ nfa_restore_listids(start, list)
     }
 }
 
+static int nfa_regmatch __ARGS((nfa_state_T *start, regsub_T *submatch, regsub_T *m));
+
 /*
  * Main matching routine.
  *
@@ -2960,7 +3011,7 @@ nfa_regmatch(start, submatch, m)
 #endif
     nfa_match = FALSE;
 
-    /* Allocate memory for the lists of nodes */
+    /* Allocate memory for the lists of nodes. */
     size = (nstate + 1) * sizeof(nfa_thread_T);
     list[0].t = (nfa_thread_T *)lalloc(size, TRUE);
     list[1].t = (nfa_thread_T *)lalloc(size, TRUE);
@@ -3099,7 +3150,19 @@ nfa_regmatch(start, submatch, m)
 	    {
 	    case NFA_MATCH:
 		nfa_match = TRUE;
-		*submatch = t->sub;
+		submatch->in_use = t->sub.in_use;
+		if (REG_MULTI)
+		    for (j = 0; j < submatch->in_use; j++)
+		    {
+			submatch->multilist[j].start = t->sub.multilist[j].start;
+			submatch->multilist[j].end = t->sub.multilist[j].end;
+		    }
+		else
+		    for (j = 0; j < submatch->in_use; j++)
+		    {
+			submatch->linelist[j].start = t->sub.linelist[j].start;
+			submatch->linelist[j].end = t->sub.linelist[j].end;
+		    }
 #ifdef ENABLE_LOG
 		for (j = 0; j < 4; j++)
 		    if (REG_MULTI)
@@ -3194,17 +3257,19 @@ nfa_regmatch(start, submatch, m)
 		    reglnum = old_reglnum;
 		    /* Copy submatch info from the recursive call */
 		    if (REG_MULTI)
-			for (j = 1; j < nfa_nsubexpr; j++)
+			for (j = 1; j < m->in_use; j++)
 			{
 			    t->sub.multilist[j].start = m->multilist[j].start;
 			    t->sub.multilist[j].end = m->multilist[j].end;
 			}
 		    else
-			for (j = 1; j < nfa_nsubexpr; j++)
+			for (j = 1; j < m->in_use; j++)
 			{
 			    t->sub.linelist[j].start = m->linelist[j].start;
 			    t->sub.linelist[j].end = m->linelist[j].end;
 			}
+		    t->sub.in_use = m->in_use;
+
 		    /* t->state->out1 is the corresponding END_INVISIBLE node */
 		    addstate_here(thislist, t->state->out1->out, &t->sub,
 							    listid, &listidx);
@@ -3703,6 +3768,8 @@ nfa_regtry(start, col)
 	vim_memset(sub.linelist, 0, sizeof(struct linepos) * nfa_nsubexpr);
 	vim_memset(m.linelist, 0, sizeof(struct linepos) * nfa_nsubexpr);
     }
+    sub.in_use = 0;
+    m.in_use = 0;
 
     if (nfa_regmatch(start, &sub, &m) == FALSE)
 	return 0;
@@ -3710,7 +3777,7 @@ nfa_regtry(start, col)
     cleanup_subexpr();
     if (REG_MULTI)
     {
-	for (i = 0; i < nfa_nsubexpr; i++)
+	for (i = 0; i < sub.in_use; i++)
 	{
 	    reg_startpos[i] = sub.multilist[i].start;
 	    reg_endpos[i] = sub.multilist[i].end;
@@ -3732,7 +3799,7 @@ nfa_regtry(start, col)
     }
     else
     {
-	for (i = 0; i < nfa_nsubexpr; i++)
+	for (i = 0; i < sub.in_use; i++)
 	{
 	    reg_startp[i] = sub.linelist[i].start;
 	    reg_endp[i] = sub.linelist[i].end;
