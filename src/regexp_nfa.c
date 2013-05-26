@@ -3563,14 +3563,18 @@ nfa_regmatch(start, submatch, m)
 		break;
 
 	    default:	/* regular character */
-		/* TODO: put this in #ifdef later */
-		if (t->state->c < -256)
-		    EMSGN("INTERNAL: Negative state char: %ld", t->state->c);
-		result = (no_Magic(t->state->c) == curc);
+	      {
+		int c = t->state->c;
 
-		if (!result)
-		    result = ireg_ic == TRUE
-			       && MB_TOLOWER(t->state->c) == MB_TOLOWER(curc);
+		/* TODO: put this in #ifdef later */
+		if (c < -256)
+		    EMSGN("INTERNAL: Negative state char: %ld", c);
+		if (is_Magic(c))
+		    c = un_Magic(c);
+		result = (c == curc);
+
+		if (!result && ireg_ic)
+		    result = MB_TOLOWER(c) == MB_TOLOWER(curc);
 #ifdef FEAT_MBYTE
 		/* If there is a composing character which is not being
 		 * ignored there can be no match. Match with composing
@@ -3581,6 +3585,7 @@ nfa_regmatch(start, submatch, m)
 #endif
 		ADD_POS_NEG_STATE(t->state);
 		break;
+	      }
 	    }
 
 	} /* for (thislist = thislist; thislist->state; thislist++) */
