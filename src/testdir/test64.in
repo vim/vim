@@ -15,11 +15,11 @@ STARTTEST
 :"    etc.
 :"  When there is no match use only the first two items.
 :let tl = []
-
+:"
 :""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 :"""" Previously written tests """"""""""""""""""""""""""""""""
 :""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
+:"
 :call add(tl, [2, 'ab', 'aab', 'ab'])
 :call add(tl, [2, 'b', 'abcdef', 'b'])
 :call add(tl, [2, 'bc*', 'abccccdef', 'bcccc'])
@@ -138,16 +138,16 @@ STARTTEST
 :"
 :call add(tl, [2, '\v(a*)+', 'aaaa', 'aaaa', ''])
 :call add(tl, [2, 'x', 'abcdef'])
-
+:"
 :""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 :""""" Simple tests """""""""""""""""""""""""""""""""""""""""""
 :""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
+:"
 :" Search single groups
 :call add(tl, [2, 'ab', 'aab', 'ab'])
 :call add(tl, [2, 'ab', 'baced'])
 :call add(tl, [2, 'ab', '                    ab           ', 'ab'])
-
+:"
 :" Search multi-modifiers
 :call add(tl, [2, 'x*', 'xcd', 'x'])
 :call add(tl, [2, 'x*', 'xxxxxxxxxxxxxxxxsofijiojgf', 'xxxxxxxxxxxxxxxx'])
@@ -162,7 +162,7 @@ STARTTEST
 :call add(tl, [2, 'x\?', 'x sdfoij', 'x'])
 :call add(tl, [2, 'x\?', 'abc sfoij', ''])                 " empty match is good
 :call add(tl, [2, 'x\?', 'xxxxxxxxxx c', 'x'])
-
+:"
 :call add(tl, [2, 'a\{0,0}', 'abcdfdoij', ''])
 :call add(tl, [2, 'a\{0,1}', 'asiubid axxxaaa', 'a'])      " same thing as 'a?'
 :call add(tl, [2, 'a\{1,0}', 'asiubid axxxaaa', 'a'])      " same thing as 'a\{0,1}'
@@ -182,7 +182,7 @@ STARTTEST
 :call add(tl, [2, 'a\{,5}', 'aaaaaaaaaa', 'aaaaa'])
 :call add(tl, [2, 'a\{}', 'bbbcddiuhfcd', ''])                 " same thing as 'a*'
 :call add(tl, [2, 'a\{}', 'aaaaioudfh coisf jda', 'aaaa'])
-
+:"
 :call add(tl, [2, 'a\{-0,0}', 'abcdfdoij', ''])
 :call add(tl, [2, 'a\{-0,1}', 'asiubid axxxaaa', ''])      " anti-greedy version of 'a?'
 :call add(tl, [2, 'a\{-3,6}', 'aa siofuh'])
@@ -200,7 +200,7 @@ STARTTEST
 :call add(tl, [2, 'a\{-,5}', 'aaaaaaaaaa', ''])
 :call add(tl, [0, 'a\{-}', 'bbbcddiuhfcd', ''])            " anti-greedy version of 'a*'
 :call add(tl, [0, 'a\{-}', 'aaaaioudfh coisf jda', ''])
-
+:"
 :" Test groups of characters and submatches
 :call add(tl, [2, '\(abc\)*', 'abcabcabc', 'abcabcabc', 'abc'])
 :call add(tl, [2, '\(ab\)\+', 'abababaaaaa', 'ababab', 'ab'])
@@ -213,7 +213,7 @@ STARTTEST
 :call add(tl, [2, '\v((ab)|c*)+', 'abcccaba', 'abcccab', '', 'ab'])
 :call add(tl, [2, '\v(a(c*)+b)+', 'acbababaaa', 'acbabab', 'ab', ''])
 :call add(tl, [2, '\v(a|b*)+', 'aaaa', 'aaaa', ''])
-
+:"
 :" Test greedy-ness and lazy-ness
 :call add(tl, [2, 'a\{-2,7}','aaaaaaaaaaaaa', 'aa'])
 :call add(tl, [2, 'a\{2,7}','aaaaaaaaaaaaaaaaaaaa', 'aaaaaaa'])
@@ -221,10 +221,10 @@ STARTTEST
 :call add(tl, [2, '\vx(.*)yz(.*)','xayxayzxayzxayz','xayxayzxayzxayz', 'ayxayzxayzxa',''])
 :call add(tl, [2, '\v(a{1,2}){-2,3}','aaaaaaa','aaaa','aa'])
 :call add(tl, [2, '\v(a{-1,3})+','aa','aa','a'])
-
+:"
 :" Test Character classes
 :call add(tl, [2, '\d\+e\d\d','test 10e23 fd','10e23'])
-
+:"
 :" Test collections and character range []
 :call add(tl, [2, '\v[a]', 'abcd', 'a'])
 :call add(tl, [2, 'a[bcd]', 'abcd', 'ab'])
@@ -250,8 +250,8 @@ STARTTEST
 :call add(tl, [2, 'abc[0-9]*ddd', 'adf abc44482ddd oijs', 'abc44482ddd'])
 :call add(tl, [2, '\_[0-9]\+', 'asfi9888u', '9888'])
 :call add(tl, [2, '[0-9\n]\+', 'asfi9888u', '9888'])
-
-
+:"
+:"
 :"""" Test recognition of some character classes
 :call add(tl, [2, '[0-9]', '8', '8'])
 :call add(tl, [2, '[^0-9]', '8'])
@@ -262,7 +262,7 @@ STARTTEST
 :call add(tl, [2, '[a-zA-Z]', 'a', 'a'])
 :call add(tl, [2, '[A-Z]', 'a'])
 :call add(tl, [2, '\C[^A-Z]\+', 'ABCOIJDEOIFNSD jsfoij sa', ' jsfoij sa'])
-
+:"
 :"""" Tests for \z features
 :call add(tl, [2, 'xx \ze test', 'xx '])					" must match after \ze
 :call add(tl, [0, 'abc\zeend', 'oij abcend', 'abc'])
@@ -271,7 +271,7 @@ STARTTEST
 :call add(tl, [0, 'abc \zsmatch\ze abc', 'abc abc abc match abc abc', 'match'])
 :call add(tl, [2, '\v(a \zsif .*){2}', 'a if then a if last', 'if last', 'a if last'])
 :call add(tl, [2, '\>\zs.', 'aword. ', '.'])
-
+:"
 :"""" Tests for \@ features
 :call add(tl, [0, 'abc\@=', 'abc', 'ab'])
 :call add(tl, [0, 'abc\@=cd', 'abcd', 'abcd'])
@@ -284,7 +284,7 @@ STARTTEST
 :call add(tl, [2, '.*John\&.*Bob', 'here is John, and here is B'])	" no match
 :call add(tl, [0, '.*John\&.*Bob', 'John is Bobs friend', 'John is Bob'])
 :call add(tl, [0, '\v(test1)@=.*yep', 'this is a test1, yep it is', 'test1, yep', 'test1'])
-
+:"
 :"""" Combining different tests and features
 :call add(tl, [2, '[[:alpha:]]\{-2,6}', '787abcdiuhsasiuhb4', 'ab'])
 :call add(tl, [2, '', 'abcd', ''])
@@ -292,22 +292,22 @@ STARTTEST
 :call add(tl, [2, '\v%(ab(xyz)c)', '   abxyzc ', 'abxyzc', 'xyz'])
 :call add(tl, [2, '\v(test|)empty', 'tesempty', 'empty', ''])
 :call add(tl, [2, '\v(a|aa)(a|aa)', 'aaa', 'aa', 'a', 'a'])
-
+:"
 :"""" \%u and friends
 :call add(tl, [2, '\%d32', 'yes no', ' '])
 :call add(tl, [2, '\%o40', 'yes no', ' '])
 :call add(tl, [2, '\%x20', 'yes no', ' '])
 :call add(tl, [2, '\%u0020', 'yes no', ' '])
 :call add(tl, [2, '\%U00000020', 'yes no', ' '])
-
+:"
 :"""" Alternatives, must use first longest match
 :call add(tl, [2, 'goo\|go', 'google', 'goo'])
 :call add(tl, [2, '\<goo\|\<go', 'google', 'goo'])
 :call add(tl, [2, '\<goo\|go', 'google', 'goo'])
-
-
+:"
+:"
 :"""" Run the tests
-
+:"
 :"
 :for t in tl
 :  let re = t[0]
@@ -347,7 +347,7 @@ STARTTEST
 :  endfor
 :endfor
 :unlet t tl e l
-
+:"
 :" Check that \_[0-9] matching EOL does not break a following \>
 :" This only works on a buffer line, not with expression evaluation
 /^Find this
@@ -359,11 +359,25 @@ y$Gop:"
 /^Find this
 /\%#=2\<\(\(25\_[0-5]\|2\_[0-4]\_[0-9]\|\_[01]\?\_[0-9]\_[0-9]\?\)\.\)\{3\}\(25\_[0-5]\|2\_[0-4]\_[0-9]\|\_[01]\?\_[0-9]\_[0-9]\?\)\>
 y$Gop:"
-
+:"
+:" Check that using a pattern on two lines doesn't get messed up by using
+:" matchstr() with \ze in between.
+:set re=0
+/^Substitute here
+:.+1,.+2s/""/\='"'.matchstr(getline("."), '\d\+\ze<').'"'
+/^Substitute here
+:.+1,.+2yank
+Gop:"
+:"
+:"
 :/\%#=1^Results/,$wq! test.out
 ENDTEST
 
 Find this:
 localnet/192.168.0.1
+
+Substitute here:
+<T="">Ta 5</Title>
+<T="">Ac 7</Title>
 
 Results of test64:

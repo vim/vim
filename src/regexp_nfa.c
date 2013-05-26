@@ -2651,7 +2651,7 @@ addstate(l, state, m, off, lid, match)
 	    break;
 
 	case NFA_MCLOSE + 0:
-	    if (nfa_has_zend == TRUE)
+	    if (nfa_has_zend)
 	    {
 		addstate(l, state->out, m, off, lid, match);
 		break;
@@ -3109,7 +3109,11 @@ nfa_regmatch(start, submatch, m)
 		fprintf(log_fd, "\n");
 #endif
 		/* Found the left-most longest match, do not look at any other
-		 * states at this position. */
+		 * states at this position.  When the list of states is going
+		 * to be empty quit without advancing, so that "reginput" is
+		 * correct. */
+		if (nextlist->n == 0 && neglist->n == 0)
+		    clen = 0;
 		goto nextchar;
 
 	    case NFA_END_INVISIBLE:
@@ -3783,8 +3787,9 @@ nfa_regexec_both(line, col)
     regline = line;
     reglnum = 0;    /* relative to line */
 
-    nstate = prog->nstate;
+    nfa_has_zend = prog->has_zend;
 
+    nstate = prog->nstate;
     for (i = 0; i < nstate; ++i)
     {
 	prog->state[i].id = i;
@@ -3871,6 +3876,7 @@ nfa_regcomp(expr, re_flags)
     prog->regflags = regflags;
     prog->engine = &nfa_regengine;
     prog->nstate = nstate;
+    prog->has_zend = nfa_has_zend;
 #ifdef ENABLE_LOG
     nfa_postfix_dump(expr, OK);
     nfa_dump(prog);
