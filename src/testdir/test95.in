@@ -9,6 +9,7 @@ STARTTEST
 :so mbyte.vim
 :set nocp encoding=utf-8 viminfo+=nviminfo nomore
 :" tl is a List of Lists with:
+:"    2: test auto/old/new  0: test auto/old  1: test auto/new
 :"    regexp pattern
 :"    text to test the pattern on
 :"    expected match (optional)
@@ -40,10 +41,14 @@ STARTTEST
 :call add(tl, [2, ".\u05b9", " x\u05b9 ", "x\u05b9"])
 :call add(tl, [2, "\u05b9\u05bb", " x\u05b9\u05bb ", "x\u05b9\u05bb"])
 :call add(tl, [2, ".\u05b9\u05bb", " x\u05b9\u05bb ", "x\u05b9\u05bb"])
-:"call add(tl, [2, "\u05bb\u05b9", " x\u05b9\u05bb "])
-:"call add(tl, [2, ".\u05bb\u05b9", " x\u05b9\u05bb "])
+:call add(tl, [2, "\u05bb\u05b9", " x\u05b9\u05bb ", "x\u05b9\u05bb"])
+:call add(tl, [2, ".\u05bb\u05b9", " x\u05b9\u05bb ", "x\u05b9\u05bb"])
 :call add(tl, [2, "\u05b9", " y\u05bb x\u05b9 ", "x\u05b9"])
 :call add(tl, [2, ".\u05b9", " y\u05bb x\u05b9 ", "x\u05b9"])
+:call add(tl, [2, "\u05b9", " y\u05bb\u05b9 x\u05b9 ", "y\u05bb\u05b9"])
+:call add(tl, [2, ".\u05b9", " y\u05bb\u05b9 x\u05b9 ", "y\u05bb\u05b9"])
+:call add(tl, [1, "\u05b9\u05bb", " y\u05b9 x\u05b9\u05bb ", "x\u05b9\u05bb"])
+:call add(tl, [2, ".\u05b9\u05bb", " y\u05bb x\u05b9\u05bb ", "x\u05b9\u05bb"])
 
 
 :"""" Test \Z
@@ -74,7 +79,7 @@ STARTTEST
 :  let text = t[2]
 :  let matchidx = 3
 :  for engine in [0, 1, 2]
-:    if engine == 2 && !re
+:    if engine == 2 && re == 0 || engine == 1 && re == 1
 :      continue
 :    endif
 :    let &regexpengine = engine

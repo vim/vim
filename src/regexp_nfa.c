@@ -3275,8 +3275,10 @@ nfa_regmatch(start, submatch, m)
 		int	    len = 0;
 		nfa_state_T *end;
 		nfa_state_T *sta;
+		int	    cchars[MAX_MCO];
+		int	    ccount = 0;
+		int	    j;
 
-		result = OK;
 		sta = t->state->out;
 		len = 0;
 		if (utf_iscomposing(sta->c))
@@ -3293,24 +3295,52 @@ nfa_regmatch(start, submatch, m)
 		    /* TODO: How about negated? */
 		    if (len == 0 && sta->c != c)
 			result = FAIL;
-		    len = n;
+		    else
+			result = OK;
 		    while (sta->c != NFA_END_COMPOSING)
 			sta = sta->out;
 		}
-		else
-		    while (sta->c != NFA_END_COMPOSING && len < n)
+
+		/* Check base character matches first, unless ignored. */
+		else if (len > 0 || mc == sta->c)
+		{
+		    if (len == 0)
 		    {
-			if (len > 0)
-			    mc = mb_ptr2char(reginput + len);
-			if (mc != sta->c)
-			    break;
 			len += mb_char2len(mc);
 			sta = sta->out;
 		    }
 
-		/* if input char length doesn't match regexp char length */
-		if (len < n || sta->c != NFA_END_COMPOSING)
+		    /* We don't care about the order of composing characters.
+		     * Get them into cchars[] first. */
+		    while (len < n)
+		    {
+			mc = mb_ptr2char(reginput + len);
+			cchars[ccount++] = mc;
+			len += mb_char2len(mc);
+			if (ccount == MAX_MCO)
+			    break;
+		    }
+
+		    /* Check that each composing char in the pattern matches a
+		     * composing char in the text.  We do not check if all
+		     * composing chars are matched. */
+		    result = OK;
+		    while (sta->c != NFA_END_COMPOSING)
+		    {
+			for (j = 0; j < ccount; ++j)
+			    if (cchars[j] == sta->c)
+				break;
+			if (j == ccount)
+			{
+			    result = FAIL;
+			    break;
+			}
+			sta = sta->out;
+		    }
+		}
+		else
 		    result = FAIL;
+
 		end = t->state->out1;	    /* NFA_END_COMPOSING */
 		ADD_POS_NEG_STATE(end);
 		break;
