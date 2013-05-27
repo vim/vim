@@ -2999,7 +2999,6 @@ nfa_regmatch(start, submatch, m)
     nfa_list_T	*nextlist;
     nfa_list_T	*neglist;
     int		*listids = NULL;
-    int		j = 0;
 #ifdef NFA_REGEXP_DEBUG_LOG
     FILE	*debug = fopen(NFA_REGEXP_DEBUG_LOG, "a");
 
@@ -3149,6 +3148,9 @@ nfa_regmatch(start, submatch, m)
 	    switch (t->state->c)
 	    {
 	    case NFA_MATCH:
+	      {
+		int j;
+
 		nfa_match = TRUE;
 		submatch->in_use = t->sub.in_use;
 		if (REG_MULTI)
@@ -3186,6 +3188,7 @@ nfa_regmatch(start, submatch, m)
 		if (nextlist->n == 0 && neglist->n == 0)
 		    clen = 0;
 		goto nextchar;
+	      }
 
 	    case NFA_END_INVISIBLE:
 		/* This is only encountered after a NFA_START_INVISIBLE node.
@@ -3251,6 +3254,8 @@ nfa_regmatch(start, submatch, m)
 #endif
 		if (result == TRUE)
 		{
+		    int j;
+
 		    /* Restore position in input text */
 		    reginput = old_reginput;
 		    regline = old_regline;
