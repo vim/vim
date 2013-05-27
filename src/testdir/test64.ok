@@ -617,6 +617,19 @@ OK 1 - xx \ze test
 OK 2 - xx \ze test
 OK 0 - abc\zeend
 OK 1 - abc\zeend
+OK 2 - abc\zeend
+OK 0 - aa\zebb\|aaxx
+OK 1 - aa\zebb\|aaxx
+OK 2 - aa\zebb\|aaxx
+OK 0 - aa\zebb\|aaxx
+OK 1 - aa\zebb\|aaxx
+OK 2 - aa\zebb\|aaxx
+OK 0 - aabb\|aa\zebb
+OK 1 - aabb\|aa\zebb
+OK 2 - aabb\|aa\zebb
+OK 0 - aa\zebb\|aaebb
+OK 1 - aa\zebb\|aaebb
+OK 2 - aa\zebb\|aaebb
 OK 0 - abc\zsdd
 OK 1 - abc\zsdd
 OK 2 - abc\zsdd
@@ -625,6 +638,7 @@ OK 1 - aa \zsax
 OK 2 - aa \zsax
 OK 0 - abc \zsmatch\ze abc
 OK 1 - abc \zsmatch\ze abc
+OK 2 - abc \zsmatch\ze abc
 OK 0 - \v(a \zsif .*){2}
 OK 1 - \v(a \zsif .*){2}
 OK 2 - \v(a \zsif .*){2}

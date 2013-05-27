@@ -151,8 +151,10 @@ STARTTEST
 :" Search multi-modifiers
 :call add(tl, [2, 'x*', 'xcd', 'x'])
 :call add(tl, [2, 'x*', 'xxxxxxxxxxxxxxxxsofijiojgf', 'xxxxxxxxxxxxxxxx'])
-:call add(tl, [2, 'x*', 'abcdoij', ''])                    " empty match is good
-:call add(tl, [2, 'x\+', 'abcdoin'])                       " no match here
+:" empty match is good
+:call add(tl, [2, 'x*', 'abcdoij', ''])
+:" no match here
+:call add(tl, [2, 'x\+', 'abcdoin'])
 :call add(tl, [2, 'x\+', 'abcdeoijdfxxiuhfij', 'xx'])
 :call add(tl, [2, 'x\+', 'xxxxx', 'xxxxx'])
 :call add(tl, [2, 'x\+', 'abc x siufhiush xxxxxxxxx', 'x'])
@@ -160,12 +162,15 @@ STARTTEST
 :call add(tl, [2, 'x\=', 'abc sfoij', '']) " empty match is good
 :call add(tl, [2, 'x\=', 'xxxxxxxxx c', 'x'])
 :call add(tl, [2, 'x\?', 'x sdfoij', 'x'])
-:call add(tl, [2, 'x\?', 'abc sfoij', ''])                 " empty match is good
+:" empty match is good
+:call add(tl, [2, 'x\?', 'abc sfoij', ''])
 :call add(tl, [2, 'x\?', 'xxxxxxxxxx c', 'x'])
 :"
 :call add(tl, [2, 'a\{0,0}', 'abcdfdoij', ''])
-:call add(tl, [2, 'a\{0,1}', 'asiubid axxxaaa', 'a'])      " same thing as 'a?'
-:call add(tl, [2, 'a\{1,0}', 'asiubid axxxaaa', 'a'])      " same thing as 'a\{0,1}'
+:" same thing as 'a?'
+:call add(tl, [2, 'a\{0,1}', 'asiubid axxxaaa', 'a'])
+:" same thing as 'a\{0,1}'
+:call add(tl, [2, 'a\{1,0}', 'asiubid axxxaaa', 'a'])
 :call add(tl, [2, 'a\{3,6}', 'aa siofuh'])
 :call add(tl, [2, 'a\{3,6}', 'aaaaa asfoij afaa', 'aaaaa'])
 :call add(tl, [2, 'a\{3,6}', 'aaaaaaaa', 'aaaaaa'])
@@ -173,18 +178,21 @@ STARTTEST
 :call add(tl, [2, 'a\{2}', 'aaaa', 'aa'])
 :call add(tl, [2, 'a\{2}', 'iuash fiusahfliusah fiushfilushfi uhsaifuh askfj nasfvius afg aaaa sfiuhuhiushf', 'aa'])
 :call add(tl, [2, 'a\{2}', 'abcdefghijklmnopqrestuvwxyz1234567890'])
-:call add(tl, [2, 'a\{0,}', 'oij sdigfusnf', ''])          " same thing as 'a*'
+:" same thing as 'a*'
+:call add(tl, [2, 'a\{0,}', 'oij sdigfusnf', ''])
 :call add(tl, [2, 'a\{0,}', 'aaaaa aa', 'aaaaa'])
 :call add(tl, [2, 'a\{2,}', 'sdfiougjdsafg'])
 :call add(tl, [0, 'a\{2,}', 'aaaaasfoij ', 'aaaaa'])
 :call add(tl, [2, 'a\{,0}', 'oidfguih iuhi hiu aaaa', ''])
 :call add(tl, [2, 'a\{,5}', 'abcd', 'a'])
 :call add(tl, [2, 'a\{,5}', 'aaaaaaaaaa', 'aaaaa'])
-:call add(tl, [2, 'a\{}', 'bbbcddiuhfcd', ''])                 " same thing as 'a*'
+:" same thing as 'a*'
+:call add(tl, [2, 'a\{}', 'bbbcddiuhfcd', ''])
 :call add(tl, [2, 'a\{}', 'aaaaioudfh coisf jda', 'aaaa'])
 :"
 :call add(tl, [2, 'a\{-0,0}', 'abcdfdoij', ''])
-:call add(tl, [2, 'a\{-0,1}', 'asiubid axxxaaa', ''])      " anti-greedy version of 'a?'
+:" anti-greedy version of 'a?'
+:call add(tl, [2, 'a\{-0,1}', 'asiubid axxxaaa', ''])
 :call add(tl, [2, 'a\{-3,6}', 'aa siofuh'])
 :call add(tl, [2, 'a\{-3,6}', 'aaaaa asfoij afaa', 'aaa'])
 :call add(tl, [2, 'a\{-3,6}', 'aaaaaaaa', 'aaa'])
@@ -198,7 +206,8 @@ STARTTEST
 :call add(tl, [2, 'a\{-,0}', 'oidfguih iuhi hiu aaaa', ''])
 :call add(tl, [2, 'a\{-,5}', 'abcd', ''])
 :call add(tl, [2, 'a\{-,5}', 'aaaaaaaaaa', ''])
-:call add(tl, [0, 'a\{-}', 'bbbcddiuhfcd', ''])            " anti-greedy version of 'a*'
+:" anti-greedy version of 'a*'
+:call add(tl, [0, 'a\{-}', 'bbbcddiuhfcd', ''])
 :call add(tl, [0, 'a\{-}', 'aaaaioudfh coisf jda', ''])
 :"
 :" Test groups of characters and submatches
@@ -243,10 +252,14 @@ STARTTEST
 :call add(tl, [2, '[^[:alpha:]]\+','abcccadfoij7787ysf287yrnccdu','7787'])
 :call add(tl, [2, '[-a]', '-', '-'])
 :call add(tl, [2, '[a-]', '-', '-'])
-:call add(tl, [2, '[-./[:alnum:]_~]\+', 'log13.file', 'log13.file'])		" filename regexp
-:call add(tl, [2, '[\]\^\-\\]\+', '\^\\\-\---^', '\^\\\-\---^'])			" special chars
-:call add(tl, [2, '[[.a.]]\+', 'aa', 'aa'])								" collation elem
-:call add(tl, [2, 'abc[0-9]*ddd', 'siuhabc ii'])							" middle of regexp
+:" filename regexp
+:call add(tl, [2, '[-./[:alnum:]_~]\+', 'log13.file', 'log13.file'])
+:" special chars
+:call add(tl, [2, '[\]\^\-\\]\+', '\^\\\-\---^', '\^\\\-\---^'])
+:" collation elem
+:call add(tl, [2, '[[.a.]]\+', 'aa', 'aa'])
+:" middle of regexp
+:call add(tl, [2, 'abc[0-9]*ddd', 'siuhabc ii'])
 :call add(tl, [2, 'abc[0-9]*ddd', 'adf abc44482ddd oijs', 'abc44482ddd'])
 :call add(tl, [2, '\_[0-9]\+', 'asfi9888u', '9888'])
 :call add(tl, [2, '[0-9\n]\+', 'asfi9888u', '9888'])
@@ -267,11 +280,17 @@ STARTTEST
 :call add(tl, [2, '\C[^A-Z]\+', 'ABCOIJDEOIFNSD jsfoij sa', ' jsfoij sa'])
 :"
 :"""" Tests for \z features
-:call add(tl, [2, 'xx \ze test', 'xx '])					" must match after \ze
-:call add(tl, [0, 'abc\zeend', 'oij abcend', 'abc'])
+:" match ends at \ze
+:call add(tl, [2, 'xx \ze test', 'xx '])
+:call add(tl, [2, 'abc\zeend', 'oij abcend', 'abc'])
+:call add(tl, [2, 'aa\zebb\|aaxx', ' aabb ', 'aa'])
+:call add(tl, [2, 'aa\zebb\|aaxx', ' aaxx ', 'aaxx'])
+:call add(tl, [2, 'aabb\|aa\zebb', ' aabb ', 'aabb'])
+:call add(tl, [2, 'aa\zebb\|aaebb', ' aabb ', 'aa'])
+:" match starts at \zs
 :call add(tl, [2, 'abc\zsdd', 'ddabcddxyzt', 'dd'])
-:call add(tl, [2, 'aa \zsax', ' ax'])						" must match before \zs
-:call add(tl, [0, 'abc \zsmatch\ze abc', 'abc abc abc match abc abc', 'match'])
+:call add(tl, [2, 'aa \zsax', ' ax'])
+:call add(tl, [2, 'abc \zsmatch\ze abc', 'abc abc abc match abc abc', 'match'])
 :call add(tl, [2, '\v(a \zsif .*){2}', 'a if then a if last', 'if last', 'a if last'])
 :call add(tl, [2, '\>\zs.', 'aword. ', '.'])
 :"
@@ -279,12 +298,16 @@ STARTTEST
 :call add(tl, [0, 'abc\@=', 'abc', 'ab'])
 :call add(tl, [0, 'abc\@=cd', 'abcd', 'abcd'])
 :call add(tl, [0, 'abc\@=', 'ababc', 'ab'])
-:call add(tl, [2, 'abcd\@=e', 'abcd'])                     " will never match, no matter the input text
-:call add(tl, [2, 'abcd\@=e', 'any text in here ... '])    " will never match
+:" will never match, no matter the input text
+:call add(tl, [2, 'abcd\@=e', 'abcd'])
+:" will never match
+:call add(tl, [2, 'abcd\@=e', 'any text in here ... '])
 :call add(tl, [0, '\v(abc)@=..', 'xabcd', 'ab', 'abc'])
-:call add(tl, [2, '\(.*John\)\@=.*Bob', 'here is John, and here is B'])	" no match
+:" no match
+:call add(tl, [2, '\(.*John\)\@=.*Bob', 'here is John, and here is B'])
 :call add(tl, [0, '\(John.*\)\@=.*Bob', 'John is Bobs friend', 'John is Bob', 'John is Bobs friend'])
-:call add(tl, [2, '.*John\&.*Bob', 'here is John, and here is B'])	" no match
+:" no match
+:call add(tl, [2, '.*John\&.*Bob', 'here is John, and here is B'])
 :call add(tl, [0, '.*John\&.*Bob', 'John is Bobs friend', 'John is Bob'])
 :call add(tl, [0, '\v(test1)@=.*yep', 'this is a test1, yep it is', 'test1, yep', 'test1'])
 :"

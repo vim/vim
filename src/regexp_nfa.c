@@ -159,7 +159,7 @@ static char_u e_misplaced[] = N_("E866: (NFA regexp) Misplaced %c");
 static int syntax_error = FALSE;
 
 /* NFA regexp \ze operator encountered. */
-static int nfa_has_zend = FALSE;
+static int nfa_has_zend;
 
 /* Number of sub expressions actually being used during execution. 1 if only
  * the whole match (subexpr 0) is used. */
@@ -791,9 +791,7 @@ nfa_regatom()
 		case 'e':
 		    EMIT(NFA_ZEND);
 		    nfa_has_zend = TRUE;
-		    /* TODO: Currently \ze does not work properly. */
-		    return FAIL;
-		    /* break; */
+		    break;
 		case '1':
 		case '2':
 		case '3':
@@ -2711,6 +2709,8 @@ addstate(l, state, m, off, lid)
 	case NFA_MCLOSE + 0:
 	    if (nfa_has_zend)
 	    {
+		/* Do not overwrite the position set by \ze. If no \ze
+		 * encountered end will be set in nfa_regtry(). */
 		addstate(l, state->out, m, off, lid);
 		break;
 	    }
@@ -3635,6 +3635,7 @@ nfa_regmatch(start, submatch, m)
 
 	    case NFA_SKIP_CHAR:
 	    case NFA_ZSTART:
+	    case NFA_ZEND:
 		/* TODO: should not happen? */
 		break;
 
@@ -3795,6 +3796,7 @@ nfa_regtry(start, col)
 	}
 	if (reg_endpos[0].lnum < 0)
 	{
+	    /* pattern has a \ze but it didn't match, use current end */
 	    reg_endpos[0].lnum = reglnum;
 	    reg_endpos[0].col = (int)(reginput - regline);
 	}
