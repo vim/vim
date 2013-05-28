@@ -3547,7 +3547,7 @@ run_do(const char *cmd, void *arg UNUSED
     int		status;
     PyObject	*pyfunc, *pymain;
 
-    if (u_save(RangeStart - 1, RangeEnd + 1) != OK)
+    if (u_save((linenr_T)RangeStart - 1, (linenr_T)RangeEnd + 1) != OK)
     {
 	EMSG(_("cannot save undo information"));
 	return;
