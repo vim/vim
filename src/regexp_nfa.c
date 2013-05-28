@@ -188,8 +188,6 @@ static int istate;	/* Index in the state vector, used in new_state() */
 static int nfa_regcomp_start __ARGS((char_u*expr, int re_flags));
 static int nfa_recognize_char_class __ARGS((char_u *start, char_u *end, int extra_newl));
 static int nfa_emit_equi_class __ARGS((int c, int neg));
-static void nfa_inc __ARGS((char_u **p));
-static void nfa_dec __ARGS((char_u **p));
 static int nfa_regatom __ARGS((void));
 static int nfa_regpiece __ARGS((void));
 static int nfa_regconcat __ARGS((void));
@@ -552,48 +550,6 @@ nfa_emit_equi_class(c, neg)
  * We try to reuse parsing functions in regexp.c to
  * minimize surprise and keep the syntax consistent.
  */
-
-/*
- * Increments the pointer "p" by one (multi-byte) character.
- */
-    static void
-nfa_inc(p)
-    char_u **p;
-{
-#ifdef FEAT_MBYTE
-    if (has_mbyte)
-	mb_ptr2char_adv(p);
-    else
-#endif
-	*p = *p + 1;
-}
-
-/*
- * Decrements the pointer "p" by one (multi-byte) character.
- */
-    static void
-nfa_dec(p)
-    char_u **p;
-{
-#ifdef FEAT_MBYTE
-    char_u *p2, *oldp;
-
-    if (has_mbyte)
-    {
-	oldp = *p;
-	/* Try to find the multibyte char that advances to the current
-	 * position. */
-	do
-	{
-	    *p = *p - 1;
-	    p2 = *p;
-	    mb_ptr2char_adv(&p2);
-	} while (p2 != oldp);
-    }
-#else
-    *p = *p - 1;
-#endif
-}
 
 /*
  * Parse the lowest level.
@@ -963,7 +919,7 @@ collection:
 			EMIT(NFA_OR);
 		    }
 		    regparse = endp;
-		    nfa_inc(&regparse);
+		    mb_ptr_adv(regparse);
 		    return OK;
 		}
 		/*
@@ -978,7 +934,7 @@ collection:
 		{
 		    negated = TRUE;
 		    glue = NFA_CONCAT;
-		    nfa_inc(&regparse);
+		    mb_ptr_adv(regparse);
 		}
 		if (*regparse == '-')
 		{
@@ -986,7 +942,7 @@ collection:
 		    EMIT(startc);
 		    TRY_NEG();
 		    EMIT_GLUE();
-		    nfa_inc(&regparse);
+		    mb_ptr_adv(regparse);
 		}
 		/* Emit the OR branches for each character in the [] */
 		emit_range = FALSE;
@@ -1090,7 +1046,7 @@ collection:
 		    {
 			emit_range = TRUE;
 			startc = oldstartc;
-			nfa_inc(&regparse);
+			mb_ptr_adv(regparse);
 			continue;	    /* reading the end of the range */
 		    }
 
@@ -1110,7 +1066,7 @@ collection:
 			    )
 			)
 		    {
-			nfa_inc(&regparse);
+			mb_ptr_adv(regparse);
 
 			if (*regparse == 'n')
 			    startc = reg_string ? NL : NFA_NEWL;
@@ -1125,7 +1081,7 @@ collection:
 				/* TODO(RE) This needs more testing */
 				startc = coll_get_char();
 				got_coll_char = TRUE;
-				nfa_dec(&regparse);
+				mb_ptr_back(old_regparse, regparse);
 			    }
 			    else
 			    {
@@ -1210,17 +1166,17 @@ collection:
 			EMIT_GLUE();
 		    }
 
-		    nfa_inc(&regparse);
+		    mb_ptr_adv(regparse);
 		} /* while (p < endp) */
 
-		nfa_dec(&regparse);
+		mb_ptr_back(old_regparse, regparse);
 		if (*regparse == '-')	    /* if last, '-' is just a char */
 		{
 		    EMIT('-');
 		    TRY_NEG();
 		    EMIT_GLUE();
 		}
-		nfa_inc(&regparse);
+		mb_ptr_adv(regparse);
 
 		if (extra == ADD_NL)	    /* \_[] also matches \n */
 		{
@@ -1231,7 +1187,7 @@ collection:
 
 		/* skip the trailing ] */
 		regparse = endp;
-		nfa_inc(&regparse);
+		mb_ptr_adv(regparse);
 		if (negated == TRUE)
 		{
 		    /* Mark end of negated char range */
