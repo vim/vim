@@ -2493,20 +2493,20 @@ typedef struct
 {
     int	    in_use; /* number of subexpr with useful info */
 
-    /* When REG_MULTI is TRUE multilist is used, otherwise linelist. */
+    /* When REG_MULTI is TRUE list.multi is used, otherwise list.line. */
     union
     {
 	struct multipos
 	{
 	    lpos_T	start;
 	    lpos_T	end;
-	} multilist[NSUBEXP];
+	} multi[NSUBEXP];
 	struct linepos
 	{
 	    char_u	*start;
 	    char_u	*end;
-	} linelist[NSUBEXP];
-    };
+	} line[NSUBEXP];
+    } list;
 } regsub_T;
 
 /* nfa_thread_T contains execution information of a NFA state */
@@ -2536,15 +2536,15 @@ log_subexpr(sub)
 	if (REG_MULTI)
 	    fprintf(log_fd, "\n *** group %d, start: c=%d, l=%d, end: c=%d, l=%d",
 		    j,
-		    sub->multilist[j].start.col,
-		    (int)sub->multilist[j].start.lnum,
-		    sub->multilist[j].end.col,
-		    (int)sub->multilist[j].end.lnum);
+		    sub->list.multi[j].start.col,
+		    (int)sub->list.multi[j].start.lnum,
+		    sub->list.multi[j].end.col,
+		    (int)sub->list.multi[j].end.lnum);
 	else
 	    fprintf(log_fd, "\n *** group %d, start: \"%s\", end: \"%s\"",
 		    j,
-		    (char *)sub->linelist[j].start,
-		    (char *)sub->linelist[j].end);
+		    (char *)sub->list.line[j].start,
+		    (char *)sub->list.line[j].end);
     fprintf(log_fd, "\n");
 }
 #endif
@@ -2626,12 +2626,12 @@ addstate(l, state, sub, off)
 	    {
 		/* Copy the match start and end positions. */
 		if (REG_MULTI)
-		    mch_memmove(&lastthread->sub.multilist[0],
-				&sub->multilist[0],
+		    mch_memmove(&lastthread->sub.list.multi[0],
+				&sub->list.multi[0],
 				sizeof(struct multipos) * sub->in_use);
 		else
-		    mch_memmove(&lastthread->sub.linelist[0],
-				&sub->linelist[0],
+		    mch_memmove(&lastthread->sub.list.line[0],
+				&sub->list.line[0],
 				sizeof(struct linepos) * sub->in_use);
 	    }
     }
@@ -2705,7 +2705,7 @@ addstate(l, state, sub, off)
 	    {
 		if (subidx < sub->in_use)
 		{
-		    save_lpos = sub->multilist[subidx].start;
+		    save_lpos = sub->list.multi[subidx].start;
 		    save_in_use = -1;
 		}
 		else
@@ -2713,20 +2713,20 @@ addstate(l, state, sub, off)
 		    save_in_use = sub->in_use;
 		    for (i = sub->in_use; i < subidx; ++i)
 		    {
-			sub->multilist[i].start.lnum = -1;
-			sub->multilist[i].end.lnum = -1;
+			sub->list.multi[i].start.lnum = -1;
+			sub->list.multi[i].end.lnum = -1;
 		    }
 		    sub->in_use = subidx + 1;
 		}
 		if (off == -1)
 		{
-		    sub->multilist[subidx].start.lnum = reglnum + 1;
-		    sub->multilist[subidx].start.col = 0;
+		    sub->list.multi[subidx].start.lnum = reglnum + 1;
+		    sub->list.multi[subidx].start.col = 0;
 		}
 		else
 		{
-		    sub->multilist[subidx].start.lnum = reglnum;
-		    sub->multilist[subidx].start.col =
+		    sub->list.multi[subidx].start.lnum = reglnum;
+		    sub->list.multi[subidx].start.col =
 					  (colnr_T)(reginput - regline + off);
 		}
 	    }
@@ -2734,7 +2734,7 @@ addstate(l, state, sub, off)
 	    {
 		if (subidx < sub->in_use)
 		{
-		    save_ptr = sub->linelist[subidx].start;
+		    save_ptr = sub->list.line[subidx].start;
 		    save_in_use = -1;
 		}
 		else
@@ -2742,12 +2742,12 @@ addstate(l, state, sub, off)
 		    save_in_use = sub->in_use;
 		    for (i = sub->in_use; i < subidx; ++i)
 		    {
-			sub->linelist[i].start = NULL;
-			sub->linelist[i].end = NULL;
+			sub->list.line[i].start = NULL;
+			sub->list.line[i].end = NULL;
 		    }
 		    sub->in_use = subidx + 1;
 		}
-		sub->linelist[subidx].start = reginput + off;
+		sub->list.line[subidx].start = reginput + off;
 	    }
 
 	    addstate(l, state->out, sub, off);
@@ -2755,9 +2755,9 @@ addstate(l, state, sub, off)
 	    if (save_in_use == -1)
 	    {
 		if (REG_MULTI)
-		    sub->multilist[subidx].start = save_lpos;
+		    sub->list.multi[subidx].start = save_lpos;
 		else
-		    sub->linelist[subidx].start = save_ptr;
+		    sub->list.line[subidx].start = save_ptr;
 	    }
 	    else
 		sub->in_use = save_in_use;
@@ -2793,31 +2793,31 @@ addstate(l, state, sub, off)
 		sub->in_use = subidx + 1;
 	    if (REG_MULTI)
 	    {
-		save_lpos = sub->multilist[subidx].end;
+		save_lpos = sub->list.multi[subidx].end;
 		if (off == -1)
 		{
-		    sub->multilist[subidx].end.lnum = reglnum + 1;
-		    sub->multilist[subidx].end.col = 0;
+		    sub->list.multi[subidx].end.lnum = reglnum + 1;
+		    sub->list.multi[subidx].end.col = 0;
 		}
 		else
 		{
-		    sub->multilist[subidx].end.lnum = reglnum;
-		    sub->multilist[subidx].end.col =
+		    sub->list.multi[subidx].end.lnum = reglnum;
+		    sub->list.multi[subidx].end.col =
 					  (colnr_T)(reginput - regline + off);
 		}
 	    }
 	    else
 	    {
-		save_ptr = sub->linelist[subidx].end;
-		sub->linelist[subidx].end = reginput + off;
+		save_ptr = sub->list.line[subidx].end;
+		sub->list.line[subidx].end = reginput + off;
 	    }
 
 	    addstate(l, state->out, sub, off);
 
 	    if (REG_MULTI)
-		sub->multilist[subidx].end = save_lpos;
+		sub->list.multi[subidx].end = save_lpos;
 	    else
-		sub->linelist[subidx].end = save_ptr;
+		sub->list.line[subidx].end = save_ptr;
 	    sub->in_use = save_in_use;
 	    break;
     }
@@ -2975,13 +2975,13 @@ retempty:
 
     if (REG_MULTI)
     {
-	if (sub->multilist[subidx].start.lnum < 0
-				       || sub->multilist[subidx].end.lnum < 0)
+	if (sub->list.multi[subidx].start.lnum < 0
+				       || sub->list.multi[subidx].end.lnum < 0)
 	    goto retempty;
 	/* TODO: line breaks */
-	len = sub->multilist[subidx].end.col
-					 - sub->multilist[subidx].start.col;
-	if (cstrncmp(regline + sub->multilist[subidx].start.col,
+	len = sub->list.multi[subidx].end.col
+					 - sub->list.multi[subidx].start.col;
+	if (cstrncmp(regline + sub->list.multi[subidx].start.col,
 							reginput, &len) == 0)
 	{
 	    *bytelen = len;
@@ -2990,11 +2990,11 @@ retempty:
     }
     else
     {
-	if (sub->linelist[subidx].start == NULL
-					 || sub->linelist[subidx].end == NULL)
+	if (sub->list.line[subidx].start == NULL
+					|| sub->list.line[subidx].end == NULL)
 	    goto retempty;
-	len = (int)(sub->linelist[subidx].end - sub->linelist[subidx].start);
-	if (cstrncmp(sub->linelist[subidx].start, reginput, &len) == 0)
+	len = (int)(sub->list.line[subidx].end - sub->list.line[subidx].start);
+	if (cstrncmp(sub->list.line[subidx].start, reginput, &len) == 0)
 	{
 	    *bytelen = len;
 	    return TRUE;
@@ -3260,15 +3260,16 @@ nfa_regmatch(start, submatch, m)
 		if (REG_MULTI)
 		    for (j = 0; j < submatch->in_use; j++)
 		    {
-			submatch->multilist[j].start =
-						    t->sub.multilist[j].start;
-			submatch->multilist[j].end = t->sub.multilist[j].end;
+			submatch->list.multi[j].start =
+						   t->sub.list.multi[j].start;
+			submatch->list.multi[j].end = t->sub.list.multi[j].end;
 		    }
 		else
 		    for (j = 0; j < submatch->in_use; j++)
 		    {
-			submatch->linelist[j].start = t->sub.linelist[j].start;
-			submatch->linelist[j].end = t->sub.linelist[j].end;
+			submatch->list.line[j].start =
+						    t->sub.list.line[j].start;
+			submatch->list.line[j].end = t->sub.list.line[j].end;
 		    }
 #ifdef ENABLE_LOG
 		log_subexpr(&t->sub);
@@ -3355,14 +3356,14 @@ nfa_regmatch(start, submatch, m)
 		    if (REG_MULTI)
 			for (j = 1; j < m->in_use; j++)
 			{
-			    t->sub.multilist[j].start = m->multilist[j].start;
-			    t->sub.multilist[j].end = m->multilist[j].end;
+			    t->sub.list.multi[j].start = m->list.multi[j].start;
+			    t->sub.list.multi[j].end = m->list.multi[j].end;
 			}
 		    else
 			for (j = 1; j < m->in_use; j++)
 			{
-			    t->sub.linelist[j].start = m->linelist[j].start;
-			    t->sub.linelist[j].end = m->linelist[j].end;
+			    t->sub.list.line[j].start = m->list.line[j].start;
+			    t->sub.list.line[j].end = m->list.line[j].end;
 			}
 		    t->sub.in_use = m->in_use;
 
@@ -3907,13 +3908,13 @@ nfa_regtry(start, col)
     if (REG_MULTI)
     {
 	/* Use 0xff to set lnum to -1 */
-	vim_memset(sub.multilist, 0xff, sizeof(struct multipos) * nfa_nsubexpr);
-	vim_memset(m.multilist, 0xff, sizeof(struct multipos) * nfa_nsubexpr);
+	vim_memset(sub.list.multi, 0xff, sizeof(struct multipos) * nfa_nsubexpr);
+	vim_memset(m.list.multi, 0xff, sizeof(struct multipos) * nfa_nsubexpr);
     }
     else
     {
-	vim_memset(sub.linelist, 0, sizeof(struct linepos) * nfa_nsubexpr);
-	vim_memset(m.linelist, 0, sizeof(struct linepos) * nfa_nsubexpr);
+	vim_memset(sub.list.line, 0, sizeof(struct linepos) * nfa_nsubexpr);
+	vim_memset(m.list.line, 0, sizeof(struct linepos) * nfa_nsubexpr);
     }
     sub.in_use = 0;
     m.in_use = 0;
@@ -3926,8 +3927,8 @@ nfa_regtry(start, col)
     {
 	for (i = 0; i < sub.in_use; i++)
 	{
-	    reg_startpos[i] = sub.multilist[i].start;
-	    reg_endpos[i] = sub.multilist[i].end;
+	    reg_startpos[i] = sub.list.multi[i].start;
+	    reg_endpos[i] = sub.list.multi[i].end;
 	}
 
 	if (reg_startpos[0].lnum < 0)
@@ -3949,8 +3950,8 @@ nfa_regtry(start, col)
     {
 	for (i = 0; i < sub.in_use; i++)
 	{
-	    reg_startp[i] = sub.linelist[i].start;
-	    reg_endp[i] = sub.linelist[i].end;
+	    reg_startp[i] = sub.list.line[i].start;
+	    reg_endp[i] = sub.list.line[i].end;
 	}
 
 	if (reg_startp[0] == NULL)
