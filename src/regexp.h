@@ -71,7 +71,6 @@ struct nfa_state
     nfa_state_T		*out1;
     int			id;
     int			lastlist;
-    int			visits;
     int			negated;
 };
 

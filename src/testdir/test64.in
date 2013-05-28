@@ -331,6 +331,10 @@ STARTTEST
 :call add(tl, [2, '\<goo\|\<go', 'google', 'goo'])
 :call add(tl, [2, '\<goo\|go', 'google', 'goo'])
 :"
+:"""" Back references
+:call add(tl, [2, '\(\i\+\) \1', ' abc abc', 'abc abc', 'abc'])
+:"call add(tl, [2, '\(\i\+\) \1', 'xgoo goox', 'goo goo', 'goo'])
+:call add(tl, [2, '\(a\)\(b\)\(c\)\(dd\)\(e\)\(f\)\(g\)\(h\)\(i\)\1\2\3\4\5\6\7\8\9', 'xabcddefghiabcddefghix', 'abcddefghiabcddefghi', 'a', 'b', 'c', 'dd', 'e', 'f', 'g', 'h', 'i'])
 :"
 :"""" Run the tests
 :"
