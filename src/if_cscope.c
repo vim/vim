@@ -2460,13 +2460,13 @@ cs_reset(eap)
 /*
  * PRIVATE: cs_resolve_file
  *
- * construct the full pathname to a file found in the cscope database.
+ * Construct the full pathname to a file found in the cscope database.
  * (Prepends ppath, if there is one and if it's not already prepended,
  * otherwise just uses the name found.)
  *
- * we need to prepend the prefix because on some cscope's (e.g., the one that
+ * We need to prepend the prefix because on some cscope's (e.g., the one that
  * ships with Solaris 2.6), the output never has the prefix prepended.
- * contrast this with my development system (Digital Unix), which does.
+ * Contrast this with my development system (Digital Unix), which does.
  */
     static char *
 cs_resolve_file(i, name)
@@ -2493,13 +2493,11 @@ cs_resolve_file(i, name)
 	if (csdir != NULL)
 	{
 	    vim_strncpy(csdir, (char_u *)csinfo[i].fname,
-		    gettail((char_u *)csinfo[i].fname) - 1 - (char_u *)csinfo[i].fname);
+		                       gettail((char_u *)csinfo[i].fname)
+						 - (char_u *)csinfo[i].fname);
 	    len += (int)STRLEN(csdir);
 	}
     }
-
-    if ((fullname = (char *)alloc(len)) == NULL)
-	return NULL;
 
     /* Note/example: this won't work if the cscope output already starts
      * "../.." and the prefix path is also "../..".  if something like this
@@ -2511,16 +2509,20 @@ cs_resolve_file(i, name)
 	    && name[0] != '\\' && name[1] != ':'
 #endif
        )
-	(void)sprintf(fullname, "%s/%s", csinfo[i].ppath, name);
-    else if (csdir != NULL && csinfo[i].fname != NULL && STRLEN(csdir) > 0)
+    {
+	if ((fullname = (char *)alloc(len)) != NULL)
+	    (void)sprintf(fullname, "%s/%s", csinfo[i].ppath, name);
+    }
+    else if (csdir != NULL && csinfo[i].fname != NULL && *csdir != NUL)
     {
 	/* Check for csdir to be non empty to avoid empty path concatenated to
-	 * cscope output. TODO: avoid the unnecessary alloc/free of fullname. */
-	vim_free(fullname);
+	 * cscope output. */
 	fullname = (char *)concat_fnames(csdir, (char_u *)name, TRUE);
     }
     else
-	(void)sprintf(fullname, "%s", name);
+    {
+	fullname = (char *)vim_strsave((char_u *)name);
+    }
 
     vim_free(csdir);
     return fullname;
