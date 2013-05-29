@@ -117,6 +117,18 @@ enum
     NFA_NLOWER,		/*	Match non-lowercase char */
     NFA_UPPER,		/*	Match uppercase char */
     NFA_NUPPER,		/*	Match non-uppercase char */
+
+    NFA_CURSOR,		/*	Match cursor pos */
+    NFA_LNUM,		/*	Match line number */
+    NFA_LNUM_GT,	/*	Match > line number */
+    NFA_LNUM_LT,	/*	Match < line number */
+    NFA_COL,		/*	Match cursor column */
+    NFA_COL_GT,		/*	Match > cursor column */
+    NFA_COL_LT,		/*	Match < cursor column */
+    NFA_VCOL,		/*	Match cursor virtual column */
+    NFA_VCOL_GT,	/*	Match > cursor virtual column */
+    NFA_VCOL_LT,	/*	Match < cursor virtual column */
+
     NFA_FIRST_NL = NFA_ANY + ADD_NL,
     NFA_LAST_NL = NFA_NUPPER + ADD_NL,
 
@@ -205,10 +217,11 @@ static nfa_state_T *new_state __ARGS((int c, nfa_state_T *out, nfa_state_T *out1
 static nfa_state_T *post2nfa __ARGS((int *postfix, int *end, int nfa_calc_size));
 static int check_char_class __ARGS((int class, int c));
 static void st_error __ARGS((int *postfix, int *end, int *p));
+static void nfa_set_neg_listids __ARGS((nfa_state_T *start));
+static void nfa_set_null_listids __ARGS((nfa_state_T *start));
 static void nfa_save_listids __ARGS((nfa_state_T *start, int *list));
 static void nfa_restore_listids __ARGS((nfa_state_T *start, int *list));
-static void nfa_set_null_listids __ARGS((nfa_state_T *start));
-static void nfa_set_neg_listids __ARGS((nfa_state_T *start));
+static int nfa_re_num_cmp __ARGS((long_u val, int op, long_u pos));
 static long nfa_regtry __ARGS((nfa_state_T *start, colnr_T col));
 static long nfa_regexec_both __ARGS((char_u *line, colnr_T col));
 static regprog_T *nfa_regcomp __ARGS((char_u *expr, int re_flags));
@@ -831,8 +844,7 @@ nfa_regatom()
 		    break;
 
 		case '#':
-		    /* TODO: not supported yet */
-		    return FAIL;
+		    EMIT(NFA_CURSOR);
 		    break;
 
 		case 'V':
@@ -844,23 +856,36 @@ nfa_regatom()
 		    /* TODO: \%[abc] not supported yet */
 		    return FAIL;
 
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-		case '<':
-		case '>':
-		case '\'':
-		    /* TODO: not supported yet */
-		    return FAIL;
-
 		default:
+		    {
+			long_u	n = 0;
+			int	cmp = c;
+
+			if (c == '<' || c == '>')
+			    c = getchr();
+			while (VIM_ISDIGIT(c))
+			{
+			    n = n * 10 + (c - '0');
+			    c = getchr();
+			}
+			if (c == 'l' || c == 'c' || c == 'v')
+			{
+			    EMIT(n);
+			    if (c == 'l')
+				EMIT(cmp == '<' ? NFA_LNUM_LT :
+					cmp == '>' ? NFA_LNUM_GT : NFA_LNUM);
+			    else if (c == 'c')
+				EMIT(cmp == '<' ? NFA_COL_LT :
+					cmp == '>' ? NFA_COL_GT : NFA_COL);
+			    else
+				EMIT(cmp == '<' ? NFA_VCOL_LT :
+					cmp == '>' ? NFA_VCOL_GT : NFA_VCOL);
+			    break;
+			}
+			else if (c == '\'')
+			    /* TODO: \%'m not supported yet */
+			    return FAIL;
+		    }
 		    syntax_error = TRUE;
 		    EMSGN(_("E867: (NFA) Unknown operator '\\%%%c'"),
 								 no_Magic(c));
@@ -1679,6 +1704,8 @@ nfa_set_code(c)
 
 	case NFA_PREV_ATOM_NO_WIDTH:
 			    STRCPY(code, "NFA_PREV_ATOM_NO_WIDTH"); break;
+	case NFA_PREV_ATOM_NO_WIDTH_NEG:
+			    STRCPY(code, "NFA_PREV_ATOM_NO_WIDTH_NEG"); break;
 	case NFA_NOPEN:		    STRCPY(code, "NFA_MOPEN_INVISIBLE"); break;
 	case NFA_NCLOSE:	    STRCPY(code, "NFA_MCLOSE_INVISIBLE"); break;
 	case NFA_START_INVISIBLE:   STRCPY(code, "NFA_START_INVISIBLE"); break;
@@ -2444,6 +2471,28 @@ post2nfa(postfix, end, nfa_calc_size)
 	    PUSH(frag(s, list1(&s1->out)));
 	    break;
 
+	case NFA_LNUM:
+	case NFA_LNUM_GT:
+	case NFA_LNUM_LT:
+	case NFA_VCOL:
+	case NFA_VCOL_GT:
+	case NFA_VCOL_LT:
+	case NFA_COL:
+	case NFA_COL_GT:
+	case NFA_COL_LT:
+	    if (nfa_calc_size == TRUE)
+	    {
+		nstate += 1;
+		break;
+	    }
+	    e1 = POP();
+	    s = new_state(*p, NULL, NULL);
+	    if (s == NULL)
+		goto theend;
+	    s->val = e1.start->c;
+	    PUSH(frag(s, list1(&s->out)));
+	    break;
+
 	case NFA_ZSTART:
 	case NFA_ZEND:
 	default:
@@ -3074,6 +3123,17 @@ nfa_restore_listids(start, list)
 	nfa_restore_listids(start->out, list);
 	nfa_restore_listids(start->out1, list);
     }
+}
+
+    static int
+nfa_re_num_cmp(val, op, pos)
+    long_u	val;
+    int		op;
+    long_u	pos;
+{
+    if (op == 1) return pos > val;
+    if (op == 2) return pos < val;
+    return val == pos;
 }
 
 static int nfa_regmatch __ARGS((nfa_state_T *start, regsub_T *submatch, regsub_T *m));
@@ -3789,6 +3849,45 @@ nfa_regmatch(start, submatch, m)
 	    case NFA_ZSTART:
 	    case NFA_ZEND:
 		/* TODO: should not happen? */
+		break;
+
+	    case NFA_LNUM:
+	    case NFA_LNUM_GT:
+	    case NFA_LNUM_LT:
+		result = (REG_MULTI &&
+			nfa_re_num_cmp(t->state->val, t->state->c - NFA_LNUM,
+			    (long_u)(reglnum + reg_firstlnum)));
+		if (result)
+		    addstate_here(thislist, t->state->out, &t->sub, &listidx);
+		break;
+
+	    case NFA_COL:
+	    case NFA_COL_GT:
+	    case NFA_COL_LT:
+		result = nfa_re_num_cmp(t->state->val, t->state->c - NFA_COL,
+			(long_u)(reginput - regline) + 1);
+		if (result)
+		    addstate_here(thislist, t->state->out, &t->sub, &listidx);
+		break;
+
+	    case NFA_VCOL:
+	    case NFA_VCOL_GT:
+	    case NFA_VCOL_LT:
+		result = nfa_re_num_cmp(t->state->val, t->state->c - NFA_VCOL,
+		    (long_u)win_linetabsize(
+			    reg_win == NULL ? curwin : reg_win,
+			    regline, (colnr_T)(reginput - regline)) + 1);
+		if (result)
+		    addstate_here(thislist, t->state->out, &t->sub, &listidx);
+		break;
+
+	    case NFA_CURSOR:
+		result = (reg_win != NULL
+			&& (reglnum + reg_firstlnum == reg_win->w_cursor.lnum)
+			&& ((colnr_T)(reginput - regline)
+						   == reg_win->w_cursor.col));
+		if (result)
+		    addstate_here(thislist, t->state->out, &t->sub, &listidx);
 		break;
 
 	    default:	/* regular character */

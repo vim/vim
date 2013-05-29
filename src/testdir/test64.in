@@ -413,12 +413,39 @@ Gop:"
 :.yank
 y$Gop:"
 :"
-:"
 :" Check a pattern with a look beind crossing a line boundary
 /^Behind:
 /\(<\_[xy]\+\)\@3<=start
 :.yank
 Gop:"
+:"
+:" Check patterns matching cursor position.
+:func! Postest()
+ new
+ call setline(1, ['ffooooo', 'boboooo', 'zoooooo', 'koooooo', 'moooooo', "\t\t\tfoo", 'abababababababfoo', 'bababababababafoo', '********_'])
+ call setpos('.', [0, 1, 0, 0])
+ s/\%>3c.//g
+ call setpos('.', [0, 2, 4, 0])
+ s/\%#.*$//g
+ call setpos('.', [0, 3, 0, 0])
+ s/\%<3c./_/g
+ %s/\%4l\%>5c./_/g
+ %s/\%6l\%>25v./_/g
+ %s/\%>6l\%3c./!/g
+ %s/\%>7l\%12c./?/g
+ %s/\%>7l\%<9l\%>5v\%<8v./#/g
+ 1,$yank
+ quit!
+endfunc
+Go-0-:set re=0
+:call Postest()
+:put
+o-1-:set re=1
+:call Postest()
+:put
+o-2-:set re=2
+:call Postest()
+:put
 :"
 :/\%#=1^Results/,$wq! test.out
 ENDTEST

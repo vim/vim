@@ -72,6 +72,7 @@ struct nfa_state
     int			id;
     int			lastlist;
     int			negated;
+    int			val;
 };
 
 /*
