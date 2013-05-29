@@ -32,9 +32,17 @@ typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
 
 #define DICTKEY_DECL \
     PyObject	*dictkey_todecref;
-#define DICTKEY_GET(err) \
+#define DICTKEY_GET(err, decref) \
     if (!(key = StringToChars(keyObject, &dictkey_todecref))) \
+    { \
+	if (decref) \
+	{ \
+	    Py_DECREF(keyObject); \
+	} \
 	return err; \
+    } \
+    if (decref && !dictkey_todecref) \
+	dictkey_todecref = keyObject; \
     if (*key == NUL) \
     { \
 	PyErr_SetString(PyExc_ValueError, _("empty keys are not allowed")); \
@@ -602,7 +610,6 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 		    Py_DECREF(newObj);
 		    return NULL;
 		}
-		Py_DECREF(newObj);
 	    }
 	}
     }
@@ -947,7 +954,7 @@ DictionaryItem(DictionaryObject *self, PyObject *keyObject)
     dictitem_T	*di;
     DICTKEY_DECL
 
-    DICTKEY_GET(NULL)
+    DICTKEY_GET(NULL, 0)
 
     di = dict_find(self->dict, key, -1);
 
@@ -977,7 +984,7 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
 	return -1;
     }
 
-    DICTKEY_GET(-1)
+    DICTKEY_GET(-1, 0)
 
     di = dict_find(dict, key, -1);
 
@@ -1650,7 +1657,7 @@ OptionsItem(OptionsObject *self, PyObject *keyObject)
     if (self->Check(self->from))
 	return NULL;
 
-    DICTKEY_GET(NULL)
+    DICTKEY_GET(NULL, 0)
 
     flags = get_option_value_strict(key, &numval, &stringval,
 				    self->opt_type, self->from);
@@ -1789,7 +1796,7 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
     if (self->Check(self->from))
 	return -1;
 
-    DICTKEY_GET(-1)
+    DICTKEY_GET(-1, 0)
 
     flags = get_option_value_strict(key, NULL, NULL,
 				    self->opt_type, self->from);
@@ -4029,12 +4036,10 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     {
 	DICTKEY_DECL
 
-	if (keyObject == NULL)
-	    return -1;
-	if (valObject == NULL)
+	if (keyObject == NULL || valObject == NULL)
 	    return -1;
 
-	DICTKEY_GET(-1)
+	DICTKEY_GET(-1, 0)
 
 	di = dictitem_alloc(key);
 
@@ -4055,6 +4060,7 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 
 	if (dict_add(dict, di) == FAIL)
 	{
+	    clear_tv(&di->di_tv);
 	    vim_free(di);
 	    PyErr_SetVim(_("failed to add key to dictionary"));
 	    return -1;
@@ -4100,23 +4106,24 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	    return -1;
 	}
 
-	keyObject = PyTuple_GetItem(litem, 0);
-	if (keyObject == NULL)
+	if (!(keyObject = PyTuple_GetItem(litem, 0)))
 	{
 	    Py_DECREF(list);
 	    Py_DECREF(litem);
 	    return -1;
 	}
 
-	DICTKEY_GET(-1)
+	DICTKEY_GET(-1, 1)
 
-	valObject = PyTuple_GetItem(litem, 1);
-	if (valObject == NULL)
+	if (!(valObject = PyTuple_GetItem(litem, 1)))
 	{
 	    Py_DECREF(list);
 	    Py_DECREF(litem);
+	    DICTKEY_UNREF
 	    return -1;
 	}
+
+	Py_DECREF(litem);
 
 	di = dictitem_alloc(key);
 
@@ -4125,7 +4132,7 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	if (di == NULL)
 	{
 	    Py_DECREF(list);
-	    Py_DECREF(litem);
+	    Py_DECREF(valObject);
 	    PyErr_NoMemory();
 	    return -1;
 	}
@@ -4135,18 +4142,20 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	{
 	    vim_free(di);
 	    Py_DECREF(list);
-	    Py_DECREF(litem);
+	    Py_DECREF(valObject);
 	    return -1;
 	}
+
+	Py_DECREF(valObject);
+
 	if (dict_add(dict, di) == FAIL)
 	{
+	    clear_tv(&di->di_tv);
 	    vim_free(di);
 	    Py_DECREF(list);
-	    Py_DECREF(litem);
 	    PyErr_SetVim(_("failed to add key to dictionary"));
 	    return -1;
 	}
-	Py_DECREF(litem);
     }
     Py_DECREF(list);
     return 0;
@@ -4201,13 +4210,18 @@ pyiter_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	li = listitem_alloc();
 	if (li == NULL)
 	{
+	    Py_DECREF(iterator);
 	    PyErr_NoMemory();
 	    return -1;
 	}
 	li->li_tv.v_lock = 0;
 
 	if (_ConvertFromPyObject(item, &li->li_tv, lookup_dict) == -1)
+	{
+	    Py_DECREF(item);
+	    Py_DECREF(iterator);
 	    return -1;
+	}
 
 	list_append(l, li);
 
@@ -4241,8 +4255,12 @@ convert_dl(PyObject *obj, typval_T *tv,
 # else
 	capsule = PyCObject_FromVoidPtr(tv, NULL);
 # endif
-	PyDict_SetItemString(lookup_dict, hexBuf, capsule);
-	Py_DECREF(capsule);
+	if (PyDict_SetItemString(lookup_dict, hexBuf, capsule))
+	{
+	    Py_DECREF(capsule);
+	    tv->v_type = VAR_UNKNOWN;
+	    return -1;
+	}
 	if (py_to_tv(obj, tv, lookup_dict) == -1)
 	{
 	    tv->v_type = VAR_UNKNOWN;
