@@ -4196,7 +4196,7 @@ pyiter_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     if (iterator == NULL)
 	return -1;
 
-    while ((item = PyIter_Next(obj)))
+    while ((item = PyIter_Next(iterator)))
     {
 	li = listitem_alloc();
 	if (li == NULL)
