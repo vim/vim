@@ -24,6 +24,11 @@
 
 /* uncomment this if used with the debug version of python */
 /* #define Py_DEBUG */
+/* Note: most of time you can add -DPy_DEBUG to CFLAGS in place of uncommenting 
+ */
+/* uncomment this if used with the debug version of python, but without its 
+ * allocator */
+/* #define Py_DEBUG_NO_PYMALLOC */
 
 #include "vim.h"
 
@@ -207,6 +212,11 @@
 #  define _Py_NegativeRefcount py3__Py_NegativeRefcount
 #  define _Py_RefTotal (*py3__Py_RefTotal)
 #  define _Py_Dealloc py3__Py_Dealloc
+#  define PyModule_Create2TraceRefs py3_PyModule_Create2TraceRefs
+# else
+#  define PyModule_Create2 py3_PyModule_Create2
+# endif
+# if defined(Py_DEBUG) && !defined(Py_DEBUG_NO_PYMALLOC)
 #  define _PyObject_DebugMalloc py3__PyObject_DebugMalloc
 #  define _PyObject_DebugFree py3__PyObject_DebugFree
 # else
@@ -218,7 +228,6 @@
 # define PyObject_GC_UnTrack py3_PyObject_GC_UnTrack
 # define PyType_GenericAlloc py3_PyType_GenericAlloc
 # define PyType_GenericNew py3_PyType_GenericNew
-# define PyModule_Create2 py3_PyModule_Create2
 # undef PyUnicode_FromString
 # define PyUnicode_FromString py3_PyUnicode_FromString
 # undef PyUnicode_Decode
@@ -227,7 +236,7 @@
 # define PyCapsule_New py3_PyCapsule_New
 # define PyCapsule_GetPointer py3_PyCapsule_GetPointer
 
-# ifdef Py_DEBUG
+# if defined(Py_DEBUG) && !defined(Py_DEBUG_NO_PYMALLOC)
 #  undef PyObject_NEW
 #  define PyObject_NEW(type, typeobj) \
 ( (type *) PyObject_Init( \
@@ -317,7 +326,6 @@ static PyObject* (*py3_PyBytes_FromString)(char *str);
 static PyObject* (*py3_PyFloat_FromDouble)(double num);
 static double (*py3_PyFloat_AsDouble)(PyObject *);
 static PyObject* (*py3_PyObject_GenericGetAttr)(PyObject *obj, PyObject *name);
-static PyObject* (*py3_PyModule_Create2)(struct PyModuleDef* module, int module_api_version);
 static PyObject* (*py3_PyType_GenericAlloc)(PyTypeObject *type, Py_ssize_t nitems);
 static PyObject* (*py3_PyType_GenericNew)(PyTypeObject *type, PyObject *args, PyObject *kwds);
 static PyTypeObject* py3_PyType_Type;
@@ -328,14 +336,19 @@ static PyObject* (*py3_PyErr_NewException)(char *name, PyObject *base, PyObject 
 static PyObject* (*py3_PyCapsule_New)(void *, char *, PyCapsule_Destructor);
 static void* (*py3_PyCapsule_GetPointer)(PyObject *, char *);
 # ifdef Py_DEBUG
-    static void (*py3__Py_NegativeRefcount)(const char *fname, int lineno, PyObject *op);
-    static Py_ssize_t* py3__Py_RefTotal;
-    static void (*py3__Py_Dealloc)(PyObject *obj);
-    static void (*py3__PyObject_DebugFree)(void*);
-    static void* (*py3__PyObject_DebugMalloc)(size_t);
+static void (*py3__Py_NegativeRefcount)(const char *fname, int lineno, PyObject *op);
+static Py_ssize_t* py3__Py_RefTotal;
+static void (*py3__Py_Dealloc)(PyObject *obj);
+static PyObject* (*py3_PyModule_Create2TraceRefs)(struct PyModuleDef* module, int module_api_version);
 # else
-    static void (*py3_PyObject_Free)(void*);
-    static void* (*py3_PyObject_Malloc)(size_t);
+static PyObject* (*py3_PyModule_Create2)(struct PyModuleDef* module, int module_api_version);
+# endif
+# if defined(Py_DEBUG) && !defined(Py_DEBUG_NO_PYMALLOC)
+static void (*py3__PyObject_DebugFree)(void*);
+static void* (*py3__PyObject_DebugMalloc)(size_t);
+# else
+static void (*py3_PyObject_Free)(void*);
+static void* (*py3_PyObject_Malloc)(size_t);
 # endif
 static PyObject*(*py3__PyObject_GC_New)(PyTypeObject *);
 static void(*py3_PyObject_GC_Del)(void *);
@@ -451,7 +464,6 @@ static struct
     {"PyFloat_FromDouble", (PYTHON_PROC*)&py3_PyFloat_FromDouble},
     {"PyFloat_AsDouble", (PYTHON_PROC*)&py3_PyFloat_AsDouble},
     {"PyObject_GenericGetAttr", (PYTHON_PROC*)&py3_PyObject_GenericGetAttr},
-    {"PyModule_Create2", (PYTHON_PROC*)&py3_PyModule_Create2},
     {"PyType_GenericAlloc", (PYTHON_PROC*)&py3_PyType_GenericAlloc},
     {"PyType_GenericNew", (PYTHON_PROC*)&py3_PyType_GenericNew},
     {"PyType_Type", (PYTHON_PROC*)&py3_PyType_Type},
@@ -463,6 +475,11 @@ static struct
     {"_Py_NegativeRefcount", (PYTHON_PROC*)&py3__Py_NegativeRefcount},
     {"_Py_RefTotal", (PYTHON_PROC*)&py3__Py_RefTotal},
     {"_Py_Dealloc", (PYTHON_PROC*)&py3__Py_Dealloc},
+    {"PyModule_Create2TraceRefs", (PYTHON_PROC*)&py3_PyModule_Create2TraceRefs},
+# else
+    {"PyModule_Create2", (PYTHON_PROC*)&py3_PyModule_Create2},
+# endif
+# if defined(Py_DEBUG) && !defined(Py_DEBUG_NO_PYMALLOC)
     {"_PyObject_DebugFree", (PYTHON_PROC*)&py3__PyObject_DebugFree},
     {"_PyObject_DebugMalloc", (PYTHON_PROC*)&py3__PyObject_DebugMalloc},
 # else
@@ -656,7 +673,7 @@ static int py3initialised = 0;
     static void
 call_PyObject_Free(void *p)
 {
-#ifdef Py_DEBUG
+#if defined(Py_DEBUG) && !defined(Py_DEBUG_NO_PYMALLOC)
     _PyObject_DebugFree(p);
 #else
     PyObject_Free(p);

@@ -21,6 +21,15 @@
 
 #include <limits.h>
 
+/* uncomment this if used with the debug version of python.
+ * Checked on 2.7.4. */
+/* #define Py_DEBUG */
+/* Note: most of time you can add -DPy_DEBUG to CFLAGS in place of uncommenting 
+ */
+/* uncomment this if used with the debug version of python, but without its 
+ * allocator */
+/* #define Py_DEBUG_NO_PYMALLOC */
+
 /* Python.h defines _POSIX_THREADS itself (if needed) */
 #ifdef _POSIX_THREADS
 # undef _POSIX_THREADS
@@ -240,8 +249,18 @@ struct PyMethodDef { Py_ssize_t a; };
 #  define PyType_IsSubtype dll_PyType_IsSubtype
 # endif
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02030000
-#  define PyObject_Malloc dll_PyObject_Malloc
-#  define PyObject_Free dll_PyObject_Free
+#  ifdef Py_DEBUG
+#   define _Py_NegativeRefcount dll__Py_NegativeRefcount
+#   define _Py_RefTotal (*dll__Py_RefTotal)
+#   define _Py_Dealloc dll__Py_Dealloc
+#  endif
+#  if defined(Py_DEBUG) && !defined(Py_DEBUG_NO_PYMALLOC)
+#   define _PyObject_DebugMalloc dll__PyObject_DebugMalloc
+#   define _PyObject_DebugFree dll__PyObject_DebugFree
+#  else
+#   define PyObject_Malloc dll_PyObject_Malloc
+#   define PyObject_Free dll_PyObject_Free
+#  endif
 # endif
 # ifdef PY_USE_CAPSULE
 #  define PyCapsule_New dll_PyCapsule_New
@@ -350,8 +369,18 @@ static PyObject* dll__Py_TrueStruct;
 static int (*dll_PyType_IsSubtype)(PyTypeObject *, PyTypeObject *);
 # endif
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02030000
+#  ifdef Py_DEBUG
+static void (*dll__Py_NegativeRefcount)(const char *fname, int lineno, PyObject *op);
+static Py_ssize_t* dll__Py_RefTotal;
+static void (*dll__Py_Dealloc)(PyObject *obj);
+#  endif
+#  if defined(Py_DEBUG) && !defined(Py_DEBUG_NO_PYMALLOC)
+static void (*dll__PyObject_DebugFree)(void*);
+static void* (*dll__PyObject_DebugMalloc)(size_t);
+#  else
 static void* (*dll_PyObject_Malloc)(size_t);
 static void (*dll_PyObject_Free)(void*);
+#  endif
 # endif
 # ifdef PY_USE_CAPSULE
 static PyObject* (*dll_PyCapsule_New)(void *, char *, PyCapsule_Destructor);
@@ -469,12 +498,6 @@ static struct
     {"PyType_Type", (PYTHON_PROC*)&dll_PyType_Type},
     {"PyType_Ready", (PYTHON_PROC*)&dll_PyType_Ready},
     {"Py_FindMethod", (PYTHON_PROC*)&dll_Py_FindMethod},
-# if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02050000 \
-	&& SIZEOF_SIZE_T != SIZEOF_INT
-    {"Py_InitModule4_64", (PYTHON_PROC*)&dll_Py_InitModule4},
-# else
-    {"Py_InitModule4", (PYTHON_PROC*)&dll_Py_InitModule4},
-# endif
     {"Py_SetPythonHome", (PYTHON_PROC*)&dll_Py_SetPythonHome},
     {"Py_Initialize", (PYTHON_PROC*)&dll_Py_Initialize},
     {"Py_Finalize", (PYTHON_PROC*)&dll_Py_Finalize},
@@ -496,8 +519,32 @@ static struct
     {"PyType_IsSubtype", (PYTHON_PROC*)&dll_PyType_IsSubtype},
 # endif
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02030000
+#  ifdef Py_DEBUG
+    {"_Py_NegativeRefcount", (PYTHON_PROC*)&dll__Py_NegativeRefcount},
+    {"_Py_RefTotal", (PYTHON_PROC*)&dll__Py_RefTotal},
+    {"_Py_Dealloc", (PYTHON_PROC*)&dll__Py_Dealloc},
+#  endif
+#  if defined(Py_DEBUG) && !defined(Py_DEBUG_NO_PYMALLOC)
+    {"_PyObject_DebugFree", (PYTHON_PROC*)&dll__PyObject_DebugFree},
+    {"_PyObject_DebugMalloc", (PYTHON_PROC*)&dll__PyObject_DebugMalloc},
+#  else
     {"PyObject_Malloc", (PYTHON_PROC*)&dll_PyObject_Malloc},
     {"PyObject_Free", (PYTHON_PROC*)&dll_PyObject_Free},
+#  endif
+# endif
+# if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02050000 \
+	&& SIZEOF_SIZE_T != SIZEOF_INT
+#  ifdef Py_DEBUG
+    {"Py_InitModule4TraceRefs_64", (PYTHON_PROC*)&dll_Py_InitModule4},
+#  else
+    {"Py_InitModule4_64", (PYTHON_PROC*)&dll_Py_InitModule4},
+#  endif
+# else
+#  ifdef Py_DEBUG
+    {"Py_InitModule4TraceRefs", (PYTHON_PROC*)&dll_Py_InitModule4},
+#  else
+    {"Py_InitModule4", (PYTHON_PROC*)&dll_Py_InitModule4},
+#  endif
 # endif
 # ifdef PY_USE_CAPSULE
     {"PyCapsule_New", (PYTHON_PROC*)&dll_PyCapsule_New},
