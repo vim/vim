@@ -701,6 +701,7 @@ static void	regmbc __ARGS((int c));
 # define CASEMBC(x)
 #endif
 static void	reginsert __ARGS((int, char_u *));
+static void	reginsert_nr __ARGS((int op, long val, char_u *opnd));
 static void	reginsert_limits __ARGS((int, long, long, char_u *));
 static char_u	*re_put_long __ARGS((char_u *pr, long_u val));
 static int	read_limits __ARGS((long *, long *));
@@ -1781,7 +1782,9 @@ regpiece(flagp)
 	case Magic('@'):
 	    {
 		int	lop = END;
+		int	nr;
 
+		nr = getdecchrs();
 		switch (no_Magic(getchr()))
 		{
 		    case '=': lop = MATCH; break;		  /* \@= */
@@ -1803,7 +1806,14 @@ regpiece(flagp)
 		    *flagp |= HASLOOKBH;
 		}
 		regtail(ret, regnode(END)); /* operand ends */
-		reginsert(lop, ret);
+		if (lop == BEHIND || lop == NOBEHIND)
+		{
+		    if (nr < 0)
+			nr = 0; /* no limit is same as zero limit */
+		    reginsert_nr(lop, nr, ret);
+		}
+		else
+		    reginsert(lop, ret);
 		break;
 	    }
 
@@ -2780,6 +2790,38 @@ reginsert(op, opnd)
 
 /*
  * Insert an operator in front of already-emitted operand.
+ * Add a number to the operator.
+ */
+    static void
+reginsert_nr(op, val, opnd)
+    int		op;
+    long	val;
+    char_u	*opnd;
+{
+    char_u	*src;
+    char_u	*dst;
+    char_u	*place;
+
+    if (regcode == JUST_CALC_SIZE)
+    {
+	regsize += 7;
+	return;
+    }
+    src = regcode;
+    regcode += 7;
+    dst = regcode;
+    while (src > opnd)
+	*--dst = *--src;
+
+    place = opnd;		/* Op node, where operand used to be. */
+    *place++ = op;
+    *place++ = NUL;
+    *place++ = NUL;
+    place = re_put_long(place, (long_u)val);
+}
+
+/*
+ * Insert an operator in front of already-emitted operand.
  * The operator has the given limit values as operands.  Also set next pointer.
  *
  * Means relocating the operand.
@@ -3182,7 +3224,7 @@ gethexchrs(maxinputlen)
 }
 
 /*
- * get and return the value of the decimal string immediately after the
+ * Get and return the value of the decimal string immediately after the
  * current position. Return -1 for invalid.  Consumes all digits.
  */
     static int
@@ -3200,6 +3242,7 @@ getdecchrs()
 	nr *= 10;
 	nr += c - '0';
 	++regparse;
+	curchr = -1; /* no longer valid */
     }
 
     if (i == 0)
@@ -5432,7 +5475,7 @@ regmatch(scan)
 		/* save the position after the found match for next */
 		reg_save(&(((regbehind_T *)rp) - 1)->save_after, &backpos);
 
-		/* start looking for a match with operand at the current
+		/* Start looking for a match with operand at the current
 		 * position.  Go back one character until we find the
 		 * result, hitting the start of the line or the previous
 		 * line (for multi-line matching).
@@ -5444,7 +5487,7 @@ regmatch(scan)
 		rp->rs_state = RS_BEHIND2;
 
 		reg_restore(&rp->rs_un.regsave, &backpos);
-		scan = OPERAND(rp->rs_scan);
+		scan = OPERAND(rp->rs_scan) + 4;
 	    }
 	    break;
 
@@ -5472,9 +5515,12 @@ regmatch(scan)
 	    }
 	    else
 	    {
+		long limit;
+
 		/* No match or a match that doesn't end where we want it: Go
 		 * back one character.  May go to previous line once. */
 		no = OK;
+		limit = OPERAND_MIN(rp->rs_scan);
 		if (REG_MULTI)
 		{
 		    if (rp->rs_un.regsave.rs_u.pos.col == 0)
@@ -5493,27 +5539,41 @@ regmatch(scan)
 			}
 		    }
 		    else
+		    {
 #ifdef FEAT_MBYTE
-		    if (has_mbyte)
-			rp->rs_un.regsave.rs_u.pos.col -=
-			    (*mb_head_off)(regline, regline
+			if (has_mbyte)
+			    rp->rs_un.regsave.rs_u.pos.col -=
+				(*mb_head_off)(regline, regline
 				    + rp->rs_un.regsave.rs_u.pos.col - 1) + 1;
-		    else
+			else
 #endif
-			--rp->rs_un.regsave.rs_u.pos.col;
+			    --rp->rs_un.regsave.rs_u.pos.col;
+			if (limit > 0
+				&& ((rp->rs_un.regsave.rs_u.pos.lnum
+						    < behind_pos.rs_u.pos.lnum
+					? (colnr_T)STRLEN(regline)
+					: behind_pos.rs_u.pos.col)
+				    - rp->rs_un.regsave.rs_u.pos.col > limit))
+			    no = FAIL;
+		    }
 		}
 		else
 		{
 		    if (rp->rs_un.regsave.rs_u.ptr == regline)
 			no = FAIL;
 		    else
-			--rp->rs_un.regsave.rs_u.ptr;
+		    {
+			mb_ptr_back(regline, rp->rs_un.regsave.rs_u.ptr);
+			if (limit > 0 && (long)(behind_pos.rs_u.ptr
+				     - rp->rs_un.regsave.rs_u.ptr) > limit)
+			    no = FAIL;
+		    }
 		}
 		if (no == OK)
 		{
 		    /* Advanced, prepare for finding match again. */
 		    reg_restore(&rp->rs_un.regsave, &backpos);
-		    scan = OPERAND(rp->rs_scan);
+		    scan = OPERAND(rp->rs_scan) + 4;
 		    if (status == RA_MATCH)
 		    {
 			/* We did match, so subexpr may have been changed,
@@ -7773,7 +7833,7 @@ static int regexp_engine = 0;
 #ifdef DEBUG
 static char_u regname[][30] = {
 		    "AUTOMATIC Regexp Engine",
-		    "BACKTACKING Regexp Engine",
+		    "BACKTRACKING Regexp Engine",
 		    "NFA Regexp Engine"
 			    };
 #endif

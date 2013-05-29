@@ -1331,6 +1331,16 @@ nfa_regpiece()
 		case '=':
 		    EMIT(NFA_PREV_ATOM_NO_WIDTH);
 		    break;
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
 		case '!':
 		case '<':
 		case '>':
@@ -3817,7 +3827,9 @@ nfa_regmatch(start, submatch, m)
 	 * because recursive calls should only start in the first position.
 	 * Also don't start a match past the first line. */
 	if (nfa_match == FALSE && start->c == NFA_MOPEN + 0
-						 && reglnum == 0 && clen != 0)
+		&& reglnum == 0 && clen != 0
+		&& (ireg_maxcol == 0
+			      || (colnr_T)(reginput - regline) < ireg_maxcol))
 	{
 #ifdef ENABLE_LOG
 	    fprintf(log_fd, "(---) STARTSTATE\n");

@@ -336,6 +336,14 @@ STARTTEST
 :"call add(tl, [2, '\(\i\+\) \1', 'xgoo goox', 'goo goo', 'goo'])
 :call add(tl, [2, '\(a\)\(b\)\(c\)\(dd\)\(e\)\(f\)\(g\)\(h\)\(i\)\1\2\3\4\5\6\7\8\9', 'xabcddefghiabcddefghix', 'abcddefghiabcddefghi', 'a', 'b', 'c', 'dd', 'e', 'f', 'g', 'h', 'i'])
 :"
+:"""" Look-behind with limit
+:call add(tl, [0, '<\@<=span.', 'xxspanxx<spanyyy', 'spany'])
+:call add(tl, [0, '<\@1<=span.', 'xxspanxx<spanyyy', 'spany'])
+:call add(tl, [0, '<\@2<=span.', 'xxspanxx<spanyyy', 'spany'])
+:call add(tl, [0, '\(<<\)\@<=span.', 'xxspanxxxx<spanxx<<spanyyy', 'spany', '<<'])
+:call add(tl, [0, '\(<<\)\@1<=span.', 'xxspanxxxx<spanxx<<spanyyy'])
+:call add(tl, [0, '\(<<\)\@2<=span.', 'xxspanxxxx<spanxx<<spanyyy', 'spany', '<<'])
+:"
 :"""" Run the tests
 :"
 :"
@@ -406,6 +414,12 @@ Gop:"
 y$Gop:"
 :"
 :"
+:" Check a pattern with a look beind crossing a line boundary
+/^Behind:
+/\(<\_[xy]\+\)\@3<=start
+:.yank
+Gop:"
+:"
 :/\%#=1^Results/,$wq! test.out
 ENDTEST
 
@@ -422,5 +436,13 @@ def
 ghi
 xjk
 lmn
+
+Behind:
+asdfasd<yyy
+xxstart1
+asdfasd<yy
+xxxxstart2
+asdfasd<yy
+xxxstart3
 
 Results of test64:
