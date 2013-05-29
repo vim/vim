@@ -432,8 +432,8 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 	sprintf(ptrBuf, "%p",
 		our_tv->v_type == VAR_LIST ? (void *)our_tv->vval.v_list
 					   : (void *)our_tv->vval.v_dict);
-	result = PyDict_GetItemString(lookupDict, ptrBuf);
-	if (result != NULL)
+
+	if ((result = PyDict_GetItemString(lookupDict, ptrBuf)))
 	{
 	    Py_INCREF(result);
 	    return result;
@@ -467,44 +467,72 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 	list_T		*list = our_tv->vval.v_list;
 	listitem_T	*curr;
 
-	result = PyList_New(0);
+	if (list == NULL)
+	    return NULL;
 
-	if (list != NULL)
+	if (!(result = PyList_New(0)))
+	    return NULL;
+
+	if (PyDict_SetItemString(lookupDict, ptrBuf, result))
 	{
-	    PyDict_SetItemString(lookupDict, ptrBuf, result);
+	    Py_DECREF(result);
+	    return NULL;
+	}
 
-	    for (curr = list->lv_first; curr != NULL; curr = curr->li_next)
+	for (curr = list->lv_first; curr != NULL; curr = curr->li_next)
+	{
+	    if (!(newObj = VimToPython(&curr->li_tv, depth + 1, lookupDict)))
 	    {
-		newObj = VimToPython(&curr->li_tv, depth + 1, lookupDict);
-		PyList_Append(result, newObj);
-		Py_DECREF(newObj);
+		Py_DECREF(result);
+		return NULL;
 	    }
+	    if (PyList_Append(result, newObj))
+	    {
+		Py_DECREF(newObj);
+		Py_DECREF(result);
+		return NULL;
+	    }
+	    Py_DECREF(newObj);
 	}
     }
     else if (our_tv->v_type == VAR_DICT)
     {
-	result = PyDict_New();
 
-	if (our_tv->vval.v_dict != NULL)
+	hashtab_T	*ht = &our_tv->vval.v_dict->dv_hashtab;
+	long_u	todo = ht->ht_used;
+	hashitem_T	*hi;
+	dictitem_T	*di;
+	if (our_tv->vval.v_dict == NULL)
+	    return NULL;
+
+	if (!(result = PyDict_New()))
+	    return NULL;
+
+	if (PyDict_SetItemString(lookupDict, ptrBuf, result))
 	{
-	    hashtab_T	*ht = &our_tv->vval.v_dict->dv_hashtab;
-	    long_u	todo = ht->ht_used;
-	    hashitem_T	*hi;
-	    dictitem_T	*di;
+	    Py_DECREF(result);
+	    return NULL;
+	}
 
-	    PyDict_SetItemString(lookupDict, ptrBuf, result);
-
-	    for (hi = ht->ht_array; todo > 0; ++hi)
+	for (hi = ht->ht_array; todo > 0; ++hi)
+	{
+	    if (!HASHITEM_EMPTY(hi))
 	    {
-		if (!HASHITEM_EMPTY(hi))
-		{
-		    --todo;
+		--todo;
 
-		    di = dict_lookup(hi);
-		    newObj = VimToPython(&di->di_tv, depth + 1, lookupDict);
-		    PyDict_SetItemString(result, (char *)hi->hi_key, newObj);
-		    Py_DECREF(newObj);
+		di = dict_lookup(hi);
+		if (!(newObj = VimToPython(&di->di_tv, depth + 1, lookupDict)))
+		{
+		    Py_DECREF(result);
+		    return NULL;
 		}
+		if (PyDict_SetItemString(result, (char *)hi->hi_key, newObj))
+		{
+		    Py_DECREF(result);
+		    Py_DECREF(newObj);
+		    return NULL;
+		}
+		Py_DECREF(newObj);
 	    }
 	}
     }
