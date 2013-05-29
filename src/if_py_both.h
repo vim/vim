@@ -1603,11 +1603,10 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
     flags = get_option_value_strict(key, NULL, NULL,
 				    self->opt_type, self->from);
 
-    DICTKEY_UNREF
-
     if (flags == 0)
     {
 	PyErr_SetObject(PyExc_KeyError, keyObject);
+	DICTKEY_UNREF
 	return -1;
     }
 
@@ -1617,17 +1616,20 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
 	{
 	    PyErr_SetString(PyExc_ValueError,
 		    _("unable to unset global option"));
+	    DICTKEY_UNREF
 	    return -1;
 	}
 	else if (!(flags & SOPT_GLOBAL))
 	{
 	    PyErr_SetString(PyExc_ValueError, _("unable to unset option "
 						"without global value"));
+	    DICTKEY_UNREF
 	    return -1;
 	}
 	else
 	{
 	    unset_global_local_option(key, self->from);
+	    DICTKEY_UNREF
 	    return 0;
 	}
     }
@@ -1639,9 +1641,10 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
 	int	istrue = PyObject_IsTrue(valObject);
 
 	if (istrue == -1)
-	    return -1;
-	r = set_option_value_for(key, istrue, NULL,
-				opt_flags, self->opt_type, self->from);
+	    r = -1;
+	else
+	    r = set_option_value_for(key, istrue, NULL,
+				    opt_flags, self->opt_type, self->from);
     }
     else if (flags & SOPT_NUM)
     {
@@ -1657,6 +1660,7 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
 	else
 	{
 	    PyErr_SetString(PyExc_TypeError, _("object must be integer"));
+	    DICTKEY_UNREF
 	    return -1;
 	}
 
@@ -1670,9 +1674,15 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
 	{
 
 	    if (PyString_AsStringAndSize(valObject, (char **) &val, NULL) == -1)
+	    {
+		DICTKEY_UNREF
 		return -1;
+	    }
 	    if (val == NULL)
+	    {
+		DICTKEY_UNREF
 		return -1;
+	    }
 
 	    val = vim_strsave(val);
 	}
@@ -1682,12 +1692,21 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
 
 	    bytes = PyUnicode_AsEncodedString(valObject, (char *)ENC_OPT, NULL);
 	    if (bytes == NULL)
+	    {
+		DICTKEY_UNREF
 		return -1;
+	    }
 
 	    if(PyString_AsStringAndSize(bytes, (char **) &val, NULL) == -1)
+	    {
+		DICTKEY_UNREF
 		return -1;
+	    }
 	    if (val == NULL)
+	    {
+		DICTKEY_UNREF
 		return -1;
+	    }
 
 	    val = vim_strsave(val);
 	    Py_XDECREF(bytes);
@@ -1695,6 +1714,7 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
 	else
 	{
 	    PyErr_SetString(PyExc_TypeError, _("object must be string"));
+	    DICTKEY_UNREF
 	    return -1;
 	}
 
@@ -1702,6 +1722,8 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
 				self->opt_type, self->from);
 	vim_free(val);
     }
+
+    DICTKEY_UNREF
 
     return r;
 }
