@@ -814,6 +814,7 @@ IterNext(IterObject *self)
     static PyObject *
 IterIter(PyObject *self)
 {
+    Py_INCREF(self);
     return self;
 }
 
