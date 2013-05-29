@@ -442,7 +442,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 
     if (our_tv->v_type == VAR_STRING)
     {
-	result = Py_BuildValue("s", our_tv->vval.v_string == NULL
+	result = PyString_FromString(our_tv->vval.v_string == NULL
 					? "" : (char *)our_tv->vval.v_string);
     }
     else if (our_tv->v_type == VAR_NUMBER)
@@ -451,7 +451,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 
 	/* For backwards compatibility numbers are stored as strings. */
 	sprintf(buf, "%ld", (long)our_tv->vval.v_number);
-	result = Py_BuildValue("s", buf);
+	result = PyString_FromString((char *) buf);
     }
 # ifdef FEAT_FLOAT
     else if (our_tv->v_type == VAR_FLOAT)
@@ -459,7 +459,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 	char buf[NUMBUFLEN];
 
 	sprintf(buf, "%f", our_tv->vval.v_float);
-	result = Py_BuildValue("s", buf);
+	result = PyString_FromString((char *) buf);
     }
 # endif
     else if (our_tv->v_type == VAR_LIST)
@@ -3256,7 +3256,8 @@ BufferAttrValid(BufferObject *self, char *name)
 BufferAttr(BufferObject *self, char *name)
 {
     if (strcmp(name, "name") == 0)
-	return Py_BuildValue("s", self->buf->b_ffname);
+	return PyString_FromString((self->buf->b_ffname == NULL
+				    ? "" : (char *) self->buf->b_ffname));
     else if (strcmp(name, "number") == 0)
 	return Py_BuildValue(Py_ssize_t_fmt, self->buf->b_fnum);
     else if (strcmp(name, "vars") == 0)
