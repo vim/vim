@@ -4461,7 +4461,7 @@ init_structs(void)
     vim_memset(&IterType, 0, sizeof(IterType));
     IterType.tp_name = "vim.iter";
     IterType.tp_basicsize = sizeof(IterObject);
-    IterType.tp_flags = Py_TPFLAGS_DEFAULT;
+    IterType.tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC;
     IterType.tp_doc = "generic iterator object";
     IterType.tp_iter = (getiterfunc)IterIter;
     IterType.tp_iternext = (iternextfunc)IterNext;
@@ -4495,7 +4495,7 @@ init_structs(void)
     WindowType.tp_basicsize = sizeof(WindowObject);
     WindowType.tp_dealloc = (destructor)WindowDestructor;
     WindowType.tp_repr = (reprfunc)WindowRepr;
-    WindowType.tp_flags = Py_TPFLAGS_DEFAULT;
+    WindowType.tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC;
     WindowType.tp_doc = "vim Window object";
     WindowType.tp_methods = WindowMethods;
     WindowType.tp_traverse = (traverseproc)WindowTraverse;
@@ -4558,7 +4558,7 @@ init_structs(void)
     RangeType.tp_repr = (reprfunc)RangeRepr;
     RangeType.tp_as_sequence = &RangeAsSeq;
     RangeType.tp_as_mapping = &RangeAsMapping;
-    RangeType.tp_flags = Py_TPFLAGS_DEFAULT;
+    RangeType.tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC;
     RangeType.tp_doc = "vim Range object";
     RangeType.tp_methods = RangeMethods;
     RangeType.tp_traverse = (traverseproc)RangeTraverse;
@@ -4637,7 +4637,7 @@ init_structs(void)
     vim_memset(&OptionsType, 0, sizeof(OptionsType));
     OptionsType.tp_name = "vim.options";
     OptionsType.tp_basicsize = sizeof(OptionsObject);
-    OptionsType.tp_flags = Py_TPFLAGS_DEFAULT;
+    OptionsType.tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC;
     OptionsType.tp_doc = "object for manipulating options";
     OptionsType.tp_as_mapping = &OptionsAsMapping;
     OptionsType.tp_dealloc = (destructor)OptionsDestructor;
