@@ -1067,11 +1067,14 @@ static PyMappingMethods BufferAsMapping = {
  */
 
     static PyObject *
-BufferGetattro(PyObject *self, PyObject*nameobj)
+BufferGetattro(PyObject *self, PyObject *nameobj)
 {
     PyObject *r;
 
     GET_ATTR_STRING(name, nameobj);
+
+    if ((r = BufferAttrValid((BufferObject *)(self), name)))
+	return r;
 
     if (CheckBuffer((BufferObject *)(self)))
 	return NULL;
@@ -1094,8 +1097,9 @@ BufferSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
     static PyObject *
 BufferDir(PyObject *self UNUSED)
 {
-    return Py_BuildValue("[sssss]", "name", "number",
-						   "append", "mark", "range");
+    return Py_BuildValue("[ssssssss]",
+	    "name", "number", "vars", "options", "valid",
+	    "append", "mark", "range");
 }
 
 /******************/
@@ -1283,6 +1287,9 @@ TabPageGetattro(PyObject *self, PyObject *nameobj)
 
     GET_ATTR_STRING(name, nameobj);
 
+    if ((r = TabPageAttrValid((TabPageObject *)(self), name)))
+	return r;
+
     if (CheckTabPage((TabPageObject *)(self)))
 	return NULL;
 
@@ -1302,6 +1309,9 @@ WindowGetattro(PyObject *self, PyObject *nameobj)
     PyObject *r;
 
     GET_ATTR_STRING(name, nameobj);
+
+    if ((r = WindowAttrValid((WindowObject *)(self), name)))
+	return r;
 
     if (CheckWindow((WindowObject *)(self)))
 	return NULL;

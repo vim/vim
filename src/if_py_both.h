@@ -1815,6 +1815,19 @@ TabPageDestructor(TabPageObject *self)
 }
 
     static PyObject *
+TabPageAttrValid(TabPageObject *self, char *name)
+{
+    PyObject *r;
+
+    if (strcmp(name, "valid") != 0)
+	return NULL;
+
+    r = ((self->tab == INVALID_TABPAGE_VALUE) ? Py_False : Py_True);
+    Py_INCREF(r);
+    return r;
+}
+
+    static PyObject *
 TabPageAttr(TabPageObject *self, char *name)
 {
     if (strcmp(name, "windows") == 0)
@@ -2010,6 +2023,19 @@ get_firstwin(TabPageObject *tabObject)
 }
 
     static PyObject *
+WindowAttrValid(WindowObject *self, char *name)
+{
+    PyObject *r;
+
+    if (strcmp(name, "valid") != 0)
+	return NULL;
+
+    r = ((self->win == INVALID_WINDOW_VALUE) ? Py_False : Py_True);
+    Py_INCREF(r);
+    return r;
+}
+
+    static PyObject *
 WindowAttr(WindowObject *self, char *name)
 {
     if (strcmp(name, "buffer") == 0)
@@ -2050,8 +2076,8 @@ WindowAttr(WindowObject *self, char *name)
 	return (PyObject *)(self->tabObject);
     }
     else if (strcmp(name,"__members__") == 0)
-	return Py_BuildValue("[sssssssss]", "buffer", "cursor", "height",
-		"vars", "options", "number", "row", "col", "tabpage");
+	return Py_BuildValue("[ssssssssss]", "buffer", "cursor", "height",
+		"vars", "options", "number", "row", "col", "tabpage", "valid");
     else
 	return NULL;
 }
@@ -3186,6 +3212,19 @@ BufferSlice(BufferObject *self, PyInt lo, PyInt hi)
 }
 
     static PyObject *
+BufferAttrValid(BufferObject *self, char *name)
+{
+    PyObject *r;
+
+    if (strcmp(name, "valid") != 0)
+	return NULL;
+
+    r = ((self->buf == INVALID_BUFFER_VALUE) ? Py_False : Py_True);
+    Py_INCREF(r);
+    return r;
+}
+
+    static PyObject *
 BufferAttr(BufferObject *self, char *name)
 {
     if (strcmp(name, "name") == 0)
@@ -3198,7 +3237,8 @@ BufferAttr(BufferObject *self, char *name)
 	return OptionsNew(SREQ_BUF, self->buf, (checkfun) CheckBuffer,
 			(PyObject *) self);
     else if (strcmp(name,"__members__") == 0)
-	return Py_BuildValue("[ssss]", "name", "number", "vars", "options");
+	return Py_BuildValue("[sssss]", "name", "number", "vars", "options",
+		"valid");
     else
 	return NULL;
 }

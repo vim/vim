@@ -500,6 +500,7 @@ for _b in vim.buffers:
     if _b is not cb:
         vim.command('bwipeout! ' + str(_b.number))
 del _b
+cb.append('valid: b:%s, cb:%s' % (repr(b.valid), repr(cb.valid)))
 for expr in ('b[1]','b[:] = ["A", "B"]','b[:]','b.append("abc")'):
     try:
         exec(expr)
@@ -641,9 +642,13 @@ cb.append('Current tab page: ' + repr(vim.current.tabpage))
 cb.append('Current window: ' + repr(vim.current.window))
 cb.append('Current buffer: ' + repr(vim.current.buffer))
 cb.append('Current line: ' + repr(vim.current.line))
+ws = list(vim.windows)
+ts = list(vim.tabpages)
 for b in vim.buffers:
     if b is not cb:
         vim.command('bwipeout! ' + str(b.number))
+cb.append('w.valid: ' + repr([w.valid for w in ws]))
+cb.append('t.valid: ' + repr([t.valid for t in ts]))
 EOF
 :tabonly!
 :only!

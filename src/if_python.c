@@ -1125,6 +1125,9 @@ BufferGetattr(PyObject *self, char *name)
 {
     PyObject *r;
 
+    if ((r = BufferAttrValid((BufferObject *)(self), name)))
+	return r;
+
     if (CheckBuffer((BufferObject *)(self)))
 	return NULL;
 
@@ -1206,6 +1209,9 @@ TabPageGetattr(PyObject *self, char *name)
 {
     PyObject *r;
 
+    if ((r = TabPageAttrValid((TabPageObject *)(self), name)))
+	return r;
+
     if (CheckTabPage((TabPageObject *)(self)))
 	return NULL;
 
@@ -1223,6 +1229,9 @@ TabPageGetattr(PyObject *self, char *name)
 WindowGetattr(PyObject *self, char *name)
 {
     PyObject *r;
+
+    if ((r = WindowAttrValid((WindowObject *)(self), name)))
+	return r;
 
     if (CheckWindow((WindowObject *)(self)))
 	return NULL;

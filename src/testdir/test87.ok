@@ -317,6 +317,7 @@ testdir/bar
 1:BufFilePre:1
 7:BufFilePost:1
 testdir/test87.in
+valid: b:False, cb:True
 i:<buffer test87.in>
 i2:<buffer test87.in>
 i:<buffer a>
@@ -333,7 +334,7 @@ Number of tabs: 4
 Current tab pages:
   <tabpage 0>(1): 1 windows, current is <window object (unknown)>
   Windows:
-    <window object (unknown)>(1): displays buffer <buffer test87.in>; cursor is at (36, 0)
+    <window object (unknown)>(1): displays buffer <buffer test87.in>; cursor is at (37, 0)
   <tabpage 1>(2): 1 windows, current is <window object (unknown)>
   Windows:
     <window object (unknown)>(1): displays buffer <buffer 0>; cursor is at (1, 0)
@@ -359,6 +360,8 @@ Current tab page: <tabpage 2>
 Current window: <window 0>
 Current buffer: <buffer test87.in>
 Current line: 'Type error at assigning None to vim.current.buffer'
+w.valid: [True, False]
+t.valid: [True, False, True, False]
 vim.vars:Dictionary:True
 vim.options:Options:True
 vim.bindeval("{}"):Dictionary:True
