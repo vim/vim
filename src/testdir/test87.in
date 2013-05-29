@@ -669,6 +669,24 @@ for expr, attr in (
     cb.append(expr + ':' + attr + ':' + repr(type(eval(expr)) is getattr(vim, attr)))
 EOF
 :"
+:" Test __dir__() method
+py3 << EOF
+for name, o in (
+        ('current',    vim.current),
+        ('buffer',     vim.current.buffer),
+        ('window',     vim.current.window),
+        ('tabpage',    vim.current.tabpage),
+        ('range',      vim.current.range),
+        ('dictionary', vim.bindeval('{}')),
+        ('list',       vim.bindeval('[]')),
+        ('function',   vim.bindeval('function("tr")')),
+        ('output',     sys.stdout),
+    ):
+    cb.append(name + ':' + ','.join(dir(o)))
+del name
+del o
+EOF
+:"
 :" Test exceptions
 :fun Exe(e)
 :   execute a:e

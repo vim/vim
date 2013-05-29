@@ -666,7 +666,6 @@ call_PyType_GenericAlloc(PyTypeObject *type, Py_ssize_t nitems)
     return PyType_GenericAlloc(type,nitems);
 }
 
-static PyObject *BufferDir(PyObject *);
 static PyObject *OutputGetattro(PyObject *, PyObject *);
 static int OutputSetattro(PyObject *, PyObject *, PyObject *);
 static PyObject *BufferGetattro(PyObject *, PyObject *);
@@ -1094,14 +1093,6 @@ BufferSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
     return BufferSetattr((BufferObject *)(self), name, val);
 }
 
-    static PyObject *
-BufferDir(PyObject *self UNUSED)
-{
-    return Py_BuildValue("[ssssssss]",
-	    "name", "number", "vars", "options", "valid",
-	    "append", "mark", "range");
-}
-
 /******************/
 
     static PyObject *
@@ -1368,8 +1359,11 @@ static PySequenceMethods WinListAsSeq = {
     static PyObject *
 CurrentGetattro(PyObject *self, PyObject *nameobj)
 {
+    PyObject	*r;
     GET_ATTR_STRING(name, nameobj);
-    return CurrentGetattr(self, name);
+    if (!(r = CurrentGetattr(self, name)))
+	return PyObject_GenericGetAttr(self, nameobj);
+    return r;
 }
 
     static int

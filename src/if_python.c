@@ -1066,6 +1066,8 @@ OutputGetattr(PyObject *self, char *name)
 {
     if (strcmp(name, "softspace") == 0)
 	return PyInt_FromLong(((OutputObject *)(self))->softspace);
+    else if (strcmp(name, "__members__") == 0)
+	return ObjectDir(NULL, OutputAttrs);
 
     return Py_FindMethod(OutputMethods, self, name);
 }
@@ -1177,6 +1179,8 @@ RangeGetattr(PyObject *self, char *name)
 	return Py_BuildValue(Py_ssize_t_fmt, ((RangeObject *)(self))->start - 1);
     else if (strcmp(name, "end") == 0)
 	return Py_BuildValue(Py_ssize_t_fmt, ((RangeObject *)(self))->end - 1);
+    else if (strcmp(name, "__members__") == 0)
+	return ObjectDir(NULL, RangeAttrs);
     else
 	return Py_FindMethod(RangeMethods, self, name);
 }
@@ -1396,6 +1400,8 @@ DictionaryGetattr(PyObject *self, char *name)
 	return PyInt_FromLong(this->dict->dv_lock);
     else if (strcmp(name, "scope") == 0)
 	return PyInt_FromLong(this->dict->dv_scope);
+    else if (strcmp(name, "__members__") == 0)
+	return ObjectDir(NULL, DictionaryAttrs);
 
     return Py_FindMethod(DictionaryMethods, self, name);
 }
@@ -1420,6 +1426,8 @@ ListGetattr(PyObject *self, char *name)
 {
     if (strcmp(name, "locked") == 0)
 	return PyInt_FromLong(((ListObject *)(self))->list->lv_lock);
+    else if (strcmp(name, "__members__") == 0)
+	return ObjectDir(NULL, ListAttrs);
 
     return Py_FindMethod(ListMethods, self, name);
 }
@@ -1431,6 +1439,8 @@ FunctionGetattr(PyObject *self, char *name)
 
     if (strcmp(name, "name") == 0)
 	return PyString_FromString((char *)(this->name));
+    else if (strcmp(name, "__members__") == 0)
+	return ObjectDir(NULL, FunctionAttrs);
     else
 	return Py_FindMethod(FunctionMethods, self, name);
 }
