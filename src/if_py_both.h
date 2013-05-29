@@ -475,7 +475,7 @@ VimCommand(PyObject *self UNUSED, PyObject *args)
  * you call VimToPython.
  */
     static PyObject *
-VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
+VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 {
     PyObject	*result;
     PyObject	*newObj;
@@ -489,7 +489,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 	return result;
     }
 
-    /* Check if we run into a recursive loop.  The item must be in lookupDict
+    /* Check if we run into a recursive loop.  The item must be in lookup_dict
      * then and we can use it again. */
     if ((our_tv->v_type == VAR_LIST && our_tv->vval.v_list != NULL)
 	    || (our_tv->v_type == VAR_DICT && our_tv->vval.v_dict != NULL))
@@ -498,7 +498,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 		our_tv->v_type == VAR_LIST ? (void *)our_tv->vval.v_list
 					   : (void *)our_tv->vval.v_dict);
 
-	if ((result = PyDict_GetItemString(lookupDict, ptrBuf)))
+	if ((result = PyDict_GetItemString(lookup_dict, ptrBuf)))
 	{
 	    Py_INCREF(result);
 	    return result;
@@ -538,7 +538,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 	if (!(result = PyList_New(0)))
 	    return NULL;
 
-	if (PyDict_SetItemString(lookupDict, ptrBuf, result))
+	if (PyDict_SetItemString(lookup_dict, ptrBuf, result))
 	{
 	    Py_DECREF(result);
 	    return NULL;
@@ -546,7 +546,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 
 	for (curr = list->lv_first; curr != NULL; curr = curr->li_next)
 	{
-	    if (!(newObj = VimToPython(&curr->li_tv, depth + 1, lookupDict)))
+	    if (!(newObj = VimToPython(&curr->li_tv, depth + 1, lookup_dict)))
 	    {
 		Py_DECREF(result);
 		return NULL;
@@ -573,7 +573,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 	if (!(result = PyDict_New()))
 	    return NULL;
 
-	if (PyDict_SetItemString(lookupDict, ptrBuf, result))
+	if (PyDict_SetItemString(lookup_dict, ptrBuf, result))
 	{
 	    Py_DECREF(result);
 	    return NULL;
@@ -586,7 +586,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 		--todo;
 
 		di = dict_lookup(hi);
-		if (!(newObj = VimToPython(&di->di_tv, depth + 1, lookupDict)))
+		if (!(newObj = VimToPython(&di->di_tv, depth + 1, lookup_dict)))
 		{
 		    Py_DECREF(result);
 		    return NULL;
@@ -970,11 +970,11 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
 {
     char_u	*key;
     typval_T	tv;
-    dict_T	*d = self->dict;
+    dict_T	*dict = self->dict;
     dictitem_T	*di;
     DICTKEY_DECL
 
-    if (d->dv_lock)
+    if (dict->dv_lock)
     {
 	PyErr_SetVim(_("dict is locked"));
 	return -1;
@@ -982,7 +982,7 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
 
     DICTKEY_GET_NOTEMPTY(-1)
 
-    di = dict_find(d, key, -1);
+    di = dict_find(dict, key, -1);
 
     if (valObject == NULL)
     {
@@ -994,8 +994,8 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
 	    PyErr_SetObject(PyExc_KeyError, keyObject);
 	    return -1;
 	}
-	hi = hash_find(&d->dv_hashtab, di->di_key);
-	hash_remove(&d->dv_hashtab, hi);
+	hi = hash_find(&dict->dv_hashtab, di->di_key);
+	hash_remove(&dict->dv_hashtab, hi);
 	dictitem_free(di);
 	return 0;
     }
@@ -1013,7 +1013,7 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
 	}
 	di->di_tv.v_lock = 0;
 
-	if (dict_add(d, di) == FAIL)
+	if (dict_add(dict, di) == FAIL)
 	{
 	    DICTKEY_UNREF
 	    vim_free(di);
@@ -1102,7 +1102,7 @@ ListDestructor(ListObject *self)
 }
 
     static int
-list_py_concat(list_T *l, PyObject *obj, PyObject *lookupDict)
+list_py_concat(list_T *l, PyObject *obj, PyObject *lookup_dict)
 {
     Py_ssize_t	i;
     Py_ssize_t	lsize = PySequence_Size(obj);
@@ -1122,7 +1122,7 @@ list_py_concat(list_T *l, PyObject *obj, PyObject *lookupDict)
 	litem = PySequence_GetItem(obj, i);
 	if (litem == NULL)
 	    return -1;
-	if (_ConvertFromPyObject(litem, &li->li_tv, lookupDict) == -1)
+	if (_ConvertFromPyObject(litem, &li->li_tv, lookup_dict) == -1)
 	    return -1;
 
 	list_append(l, li);
@@ -4009,24 +4009,24 @@ set_string_copy(char_u *str, typval_T *tv)
 }
 
     static int
-pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookupDict)
+pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 {
-    dict_T	*d;
+    dict_T	*dict;
     char_u	*key;
     dictitem_T	*di;
     PyObject	*keyObject;
     PyObject	*valObject;
     Py_ssize_t	iter = 0;
 
-    d = dict_alloc();
-    if (d == NULL)
+    dict = dict_alloc();
+    if (dict == NULL)
     {
 	PyErr_NoMemory();
 	return -1;
     }
 
     tv->v_type = VAR_DICT;
-    tv->vval.v_dict = d;
+    tv->vval.v_dict = dict;
 
     while (PyDict_Next(obj, &iter, &keyObject, &valObject))
     {
@@ -4050,12 +4050,13 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookupDict)
 	}
 	di->di_tv.v_lock = 0;
 
-	if (_ConvertFromPyObject(valObject, &di->di_tv, lookupDict) == -1)
+	if (_ConvertFromPyObject(valObject, &di->di_tv, lookup_dict) == -1)
 	{
 	    vim_free(di);
 	    return -1;
 	}
-	if (dict_add(d, di) == FAIL)
+
+	if (dict_add(dict, di) == FAIL)
 	{
 	    vim_free(di);
 	    PyErr_SetVim(_("failed to add key to dictionary"));
@@ -4066,9 +4067,9 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookupDict)
 }
 
     static int
-pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookupDict)
+pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 {
-    dict_T	*d;
+    dict_T	*dict;
     char_u	*key;
     dictitem_T	*di;
     PyObject	*list;
@@ -4077,15 +4078,15 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookupDict)
     PyObject	*valObject;
     Py_ssize_t	lsize;
 
-    d = dict_alloc();
-    if (d == NULL)
+    dict = dict_alloc();
+    if (dict == NULL)
     {
 	PyErr_NoMemory();
 	return -1;
     }
 
     tv->v_type = VAR_DICT;
-    tv->vval.v_dict = d;
+    tv->vval.v_dict = dict;
 
     list = PyMapping_Items(obj);
     if (list == NULL)
@@ -4133,14 +4134,14 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookupDict)
 	}
 	di->di_tv.v_lock = 0;
 
-	if (_ConvertFromPyObject(valObject, &di->di_tv, lookupDict) == -1)
+	if (_ConvertFromPyObject(valObject, &di->di_tv, lookup_dict) == -1)
 	{
 	    vim_free(di);
 	    Py_DECREF(list);
 	    Py_DECREF(litem);
 	    return -1;
 	}
-	if (dict_add(d, di) == FAIL)
+	if (dict_add(dict, di) == FAIL)
 	{
 	    vim_free(di);
 	    Py_DECREF(list);
@@ -4155,7 +4156,7 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookupDict)
 }
 
     static int
-pyseq_to_tv(PyObject *obj, typval_T *tv, PyObject *lookupDict)
+pyseq_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 {
     list_T	*l;
 
@@ -4169,14 +4170,14 @@ pyseq_to_tv(PyObject *obj, typval_T *tv, PyObject *lookupDict)
     tv->v_type = VAR_LIST;
     tv->vval.v_list = l;
 
-    if (list_py_concat(l, obj, lookupDict) == -1)
+    if (list_py_concat(l, obj, lookup_dict) == -1)
 	return -1;
 
     return 0;
 }
 
     static int
-pyiter_to_tv(PyObject *obj, typval_T *tv, PyObject *lookupDict)
+pyiter_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 {
     PyObject	*iterator = PyObject_GetIter(obj);
     PyObject	*item;
@@ -4208,7 +4209,7 @@ pyiter_to_tv(PyObject *obj, typval_T *tv, PyObject *lookupDict)
 	}
 	li->li_tv.v_lock = 0;
 
-	if (_ConvertFromPyObject(item, &li->li_tv, lookupDict) == -1)
+	if (_ConvertFromPyObject(item, &li->li_tv, lookup_dict) == -1)
 	    return -1;
 
 	list_append(l, li);
@@ -4224,7 +4225,7 @@ typedef int (*pytotvfunc)(PyObject *, typval_T *, PyObject *);
 
     static int
 convert_dl(PyObject *obj, typval_T *tv,
-				    pytotvfunc py_to_tv, PyObject *lookupDict)
+				    pytotvfunc py_to_tv, PyObject *lookup_dict)
 {
     PyObject	*capsule;
     char	hexBuf[sizeof(void *) * 2 + 3];
@@ -4232,9 +4233,9 @@ convert_dl(PyObject *obj, typval_T *tv,
     sprintf(hexBuf, "%p", obj);
 
 # ifdef PY_USE_CAPSULE
-    capsule = PyDict_GetItemString(lookupDict, hexBuf);
+    capsule = PyDict_GetItemString(lookup_dict, hexBuf);
 # else
-    capsule = (PyObject *)PyDict_GetItemString(lookupDict, hexBuf);
+    capsule = (PyObject *)PyDict_GetItemString(lookup_dict, hexBuf);
 # endif
     if (capsule == NULL)
     {
@@ -4243,9 +4244,9 @@ convert_dl(PyObject *obj, typval_T *tv,
 # else
 	capsule = PyCObject_FromVoidPtr(tv, NULL);
 # endif
-	PyDict_SetItemString(lookupDict, hexBuf, capsule);
+	PyDict_SetItemString(lookup_dict, hexBuf, capsule);
 	Py_DECREF(capsule);
-	if (py_to_tv(obj, tv, lookupDict) == -1)
+	if (py_to_tv(obj, tv, lookup_dict) == -1)
 	{
 	    tv->v_type = VAR_UNKNOWN;
 	    return -1;
@@ -4285,7 +4286,7 @@ ConvertFromPyObject(PyObject *obj, typval_T *tv)
 }
 
     static int
-_ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookupDict)
+_ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 {
     if (obj->ob_type == &DictionaryType)
     {
@@ -4357,7 +4358,7 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookupDict)
 	tv->vval.v_number = (varnumber_T) PyLong_AsLong(obj);
     }
     else if (PyDict_Check(obj))
-	return convert_dl(obj, tv, pydict_to_tv, lookupDict);
+	return convert_dl(obj, tv, pydict_to_tv, lookup_dict);
 #ifdef FEAT_FLOAT
     else if (PyFloat_Check(obj))
     {
@@ -4366,11 +4367,11 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookupDict)
     }
 #endif
     else if (PyIter_Check(obj))
-	return convert_dl(obj, tv, pyiter_to_tv, lookupDict);
+	return convert_dl(obj, tv, pyiter_to_tv, lookup_dict);
     else if (PySequence_Check(obj))
-	return convert_dl(obj, tv, pyseq_to_tv, lookupDict);
+	return convert_dl(obj, tv, pyseq_to_tv, lookup_dict);
     else if (PyMapping_Check(obj))
-	return convert_dl(obj, tv, pymap_to_tv, lookupDict);
+	return convert_dl(obj, tv, pymap_to_tv, lookup_dict);
     else
     {
 	PyErr_SetString(PyExc_TypeError,
