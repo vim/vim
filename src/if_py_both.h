@@ -30,6 +30,14 @@ typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
 #define INVALID_WINDOW_VALUE ((win_T *)(-1))
 #define INVALID_TABPAGE_VALUE ((tabpage_T *)(-1))
 
+#define DICTKEY_DECL \
+    PyObject	*dictkey_todecref;
+#define DICTKEY_GET(err) \
+    if (!(key = StringToChars(keyObject, &dictkey_todecref))) \
+	return err;
+#define DICTKEY_UNREF \
+    Py_XDECREF(dictkey_todecref);
+
 typedef void (*rangeinitializer)(void *);
 typedef void (*runner)(const char *, void *
 #ifdef PY_CAN_RECURSE
@@ -62,6 +70,51 @@ Python_Lock_Vim(void)
     static void
 Python_Release_Vim(void)
 {
+}
+
+/*
+ * The "todecref" argument holds a pointer to PyObject * that must be
+ * DECREF'ed after returned char_u * is no longer needed or NULL if all what
+ * was needed to generate returned value is object.
+ *
+ * Use Py_XDECREF to decrement reference count.
+ */
+    static char_u *
+StringToChars(PyObject *object, PyObject **todecref)
+{
+    char_u	*p;
+    PyObject	*bytes = NULL;
+
+    if (PyBytes_Check(object))
+    {
+
+	if (PyString_AsStringAndSize(object, (char **) &p, NULL) == -1)
+	    return NULL;
+	if (p == NULL)
+	    return NULL;
+
+	*todecref = NULL;
+    }
+    else if (PyUnicode_Check(object))
+    {
+	bytes = PyUnicode_AsEncodedString(object, (char *)ENC_OPT, NULL);
+	if (bytes == NULL)
+	    return NULL;
+
+	if(PyString_AsStringAndSize(bytes, (char **) &p, NULL) == -1)
+	    return NULL;
+	if (p == NULL)
+	    return NULL;
+
+	*todecref = bytes;
+    }
+    else
+    {
+	PyErr_SetString(PyExc_TypeError, _("object must be string"));
+	return NULL;
+    }
+
+    return (char_u *) p;
 }
 
 /* Output buffer management
@@ -1586,6 +1639,18 @@ set_option_value_for(key, numval, stringval, opt_flags, opt_type, from)
     return VimTryEnd();
 }
 
+    static void *
+py_memsave(void *p, size_t len)
+{
+    void	*r;
+    if (!(r = PyMem_Malloc(len)))
+	return NULL;
+    mch_memmove(r, p, len);
+    return r;
+}
+
+#define PY_STRSAVE(s) ((char_u *) py_memsave(s, STRLEN(s) + 1))
+
     static int
 OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
 {
@@ -1670,57 +1735,16 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
     else
     {
 	char_u	*val;
-	if (PyBytes_Check(valObject))
+	PyObject	*todecref;
+
+	if ((val = StringToChars(valObject, &todecref)))
 	{
-
-	    if (PyString_AsStringAndSize(valObject, (char **) &val, NULL) == -1)
-	    {
-		DICTKEY_UNREF
-		return -1;
-	    }
-	    if (val == NULL)
-	    {
-		DICTKEY_UNREF
-		return -1;
-	    }
-
-	    val = vim_strsave(val);
-	}
-	else if (PyUnicode_Check(valObject))
-	{
-	    PyObject	*bytes;
-
-	    bytes = PyUnicode_AsEncodedString(valObject, (char *)ENC_OPT, NULL);
-	    if (bytes == NULL)
-	    {
-		DICTKEY_UNREF
-		return -1;
-	    }
-
-	    if(PyString_AsStringAndSize(bytes, (char **) &val, NULL) == -1)
-	    {
-		DICTKEY_UNREF
-		return -1;
-	    }
-	    if (val == NULL)
-	    {
-		DICTKEY_UNREF
-		return -1;
-	    }
-
-	    val = vim_strsave(val);
-	    Py_XDECREF(bytes);
+	    r = set_option_value_for(key, 0, val, opt_flags,
+				    self->opt_type, self->from);
+	    Py_XDECREF(todecref);
 	}
 	else
-	{
-	    PyErr_SetString(PyExc_TypeError, _("object must be string"));
-	    DICTKEY_UNREF
-	    return -1;
-	}
-
-	r = set_option_value_for(key, 0, val, opt_flags,
-				self->opt_type, self->from);
-	vim_free(val);
+	    r = -1;
     }
 
     DICTKEY_UNREF
@@ -2541,7 +2565,7 @@ SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_cha
 	    array = NULL;
 	else
 	{
-	    array = (char **)alloc((unsigned)(new_len * sizeof(char *)));
+	    array = PyMem_New(char *, new_len);
 	    if (array == NULL)
 	    {
 		PyErr_NoMemory();
@@ -2558,7 +2582,7 @@ SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_cha
 	    {
 		while (i)
 		    vim_free(array[--i]);
-		vim_free(array);
+		PyMem_Free(array);
 		return FAIL;
 	    }
 	}
@@ -2635,7 +2659,7 @@ SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_cha
 	 * been dealt with (either freed, or the responsibility passed
 	 * to vim.
 	 */
-	vim_free(array);
+	PyMem_Free(array);
 
 	/* Adjust marks. Invalidate any which lie in the
 	 * changed range, and move any in the remainder of the buffer.
@@ -2717,7 +2741,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	char	**array;
 	buf_T	*savebuf;
 
-	array = (char **)alloc((unsigned)(size * sizeof(char *)));
+	array = PyMem_New(char *, size);
 	if (array == NULL)
 	{
 	    PyErr_NoMemory();
@@ -2733,7 +2757,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	    {
 		while (i)
 		    vim_free(array[--i]);
-		vim_free(array);
+		PyMem_Free(array);
 		return FAIL;
 	    }
 	}
@@ -2768,7 +2792,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	/* Free the array of lines. All of its contents have now
 	 * been freed.
 	 */
-	vim_free(array);
+	PyMem_Free(array);
 
 	restore_buffer(savebuf);
 	update_screen(VALID);
@@ -3177,6 +3201,45 @@ BufferAttr(BufferObject *self, char *name)
 	return Py_BuildValue("[ssss]", "name", "number", "vars", "options");
     else
 	return NULL;
+}
+
+    static int
+BufferSetattr(BufferObject *self, char *name, PyObject *valObject)
+{
+    if (CheckBuffer(self))
+	return -1;
+
+    if (strcmp(name, "name") == 0)
+    {
+	char_u	*val;
+	aco_save_T	aco;
+	int	r;
+	PyObject	*todecref;
+
+	if (!(val = StringToChars(valObject, &todecref)))
+	    return -1;
+
+	VimTryStart();
+	/* Using aucmd_*: autocommands will be executed by rename_buffer */
+	aucmd_prepbuf(&aco, self->buf);
+	r = rename_buffer(val);
+	aucmd_restbuf(&aco);
+	Py_XDECREF(todecref);
+	if (VimTryEnd())
+	    return -1;
+
+	if (r == FAIL)
+	{
+	    PyErr_SetVim(_("failed to rename buffer"));
+	    return -1;
+	}
+	return 0;
+    }
+    else
+    {
+	PyErr_SetString(PyExc_AttributeError, name);
+	return -1;
+    }
 }
 
     static PyObject *
@@ -4040,7 +4103,7 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookupDict)
 	if (result == NULL)
 	    return -1;
 
-	if (set_string_copy(result, tv) == -1)
+	if (set_string_copy(result, tv))
 	{
 	    Py_XDECREF(bytes);
 	    return -1;
@@ -4169,11 +4232,13 @@ init_structs(void)
     BufferType.tp_methods = BufferMethods;
 #if PY_MAJOR_VERSION >= 3
     BufferType.tp_getattro = (getattrofunc)BufferGetattro;
+    BufferType.tp_setattro = (setattrofunc)BufferSetattro;
     BufferType.tp_alloc = call_PyType_GenericAlloc;
     BufferType.tp_new = call_PyType_GenericNew;
     BufferType.tp_free = call_PyObject_Free;
 #else
     BufferType.tp_getattr = (getattrfunc)BufferGetattr;
+    BufferType.tp_setattr = (setattrfunc)BufferSetattr;
 #endif
 
     vim_memset(&WindowType, 0, sizeof(WindowType));

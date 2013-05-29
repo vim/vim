@@ -476,6 +476,10 @@ EOF
 :py b=vim.current.buffer
 :wincmd w
 :mark a
+:augroup BUFS
+:   autocmd BufFilePost * python cb.append(vim.eval('expand("<abuf>")') + ':BufFilePost:' + vim.eval('bufnr("%")'))
+:   autocmd BufFilePre * python cb.append(vim.eval('expand("<abuf>")') + ':BufFilePre:' + vim.eval('bufnr("%")'))
+:augroup END
 py << EOF
 cb = vim.current.buffer
 # Tests BufferAppend and BufferItem
@@ -496,9 +500,20 @@ b.append('foo')
 b[0]='bar'
 b[0:0]=['baz']
 vim.command('call append("$", getbufline(%i, 1, "$"))' % b.number)
+# Test assigning to name property
+old_name = cb.name
+cb.name = 'foo'
+cb.append(cb.name[-11:])
+b.name = 'bar'
+cb.append(b.name[-11:])
+cb.name = old_name
+cb.append(cb.name[-17:])
 # Test CheckBuffer
-vim.command('bwipeout! ' + str(b.number))
-for expr in ('b[1]','b[:] = ["A", "B"]','b[:]','b.append("abc")'):
+for _b in vim.buffers:
+    if _b is not cb:
+        vim.command('bwipeout! ' + str(_b.number))
+del _b
+for expr in ('b[1]','b[:] = ["A", "B"]','b[:]','b.append("abc")', 'b.name = "!"'):
     try:
         exec(expr)
     except vim.error:
@@ -507,7 +522,12 @@ for expr in ('b[1]','b[:] = ["A", "B"]','b[:]','b.append("abc")'):
         # Usually a SEGV here
         # Should not happen in any case
         cb.append('No exception for ' + expr)
+vim.command('cd .')
 EOF
+:augroup BUFS
+:   autocmd!
+:augroup END
+:augroup! BUFS
 :"
 :" Test vim.buffers object
 :set hidden
@@ -586,7 +606,9 @@ def W(w):
     else:
         return repr(w)
 
-def Cursor(w, start=len(cb)):
+start = len(cb)
+
+def Cursor(w):
     if w.buffer is cb:
         return repr((start - w.cursor[0], w.cursor[1]))
     else:

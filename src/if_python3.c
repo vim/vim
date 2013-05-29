@@ -638,32 +638,6 @@ static int py3initialised = 0;
 
 #define PYINITIALISED py3initialised
 
-#define DICTKEY_DECL PyObject *bytes = NULL;
-
-#define DICTKEY_GET(err) \
-    if (PyBytes_Check(keyObject)) \
-    { \
-	if (PyString_AsStringAndSize(keyObject, (char **) &key, NULL) == -1) \
-	    return err; \
-    } \
-    else if (PyUnicode_Check(keyObject)) \
-    { \
-	bytes = PyString_AsBytes(keyObject); \
-	if (bytes == NULL) \
-	    return err; \
-	if (PyString_AsStringAndSize(bytes, (char **) &key, NULL) == -1) \
-	    return err; \
-    } \
-    else \
-    { \
-	PyErr_SetString(PyExc_TypeError, _("only string keys are allowed")); \
-	return err; \
-    }
-
-#define DICTKEY_UNREF \
-    if (bytes != NULL) \
-	Py_XDECREF(bytes);
-
 #define DESTRUCTOR_FINISH(self) Py_TYPE(self)->tp_free((PyObject*)self)
 
 #define WIN_PYTHON_REF(win) win->w_python3_ref
@@ -696,6 +670,7 @@ static PyObject *BufferDir(PyObject *);
 static PyObject *OutputGetattro(PyObject *, PyObject *);
 static int OutputSetattro(PyObject *, PyObject *, PyObject *);
 static PyObject *BufferGetattro(PyObject *, PyObject *);
+static int BufferSetattro(PyObject *, PyObject *, PyObject *);
 static PyObject *TabPageGetattro(PyObject *, PyObject *);
 static PyObject *WindowGetattro(PyObject *, PyObject *);
 static int WindowSetattro(PyObject *, PyObject *, PyObject *);
@@ -1106,6 +1081,14 @@ BufferGetattro(PyObject *self, PyObject*nameobj)
 	return r;
     else
 	return PyObject_GenericGetAttr(self, nameobj);
+}
+
+    static int
+BufferSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
+{
+    GET_ATTR_STRING(name, nameobj);
+
+    return BufferSetattr((BufferObject *)(self), name, val);
 }
 
     static PyObject *

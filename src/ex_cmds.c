@@ -784,6 +784,7 @@ do_move(line1, line2, dest)
      */
     last_line = curbuf->b_ml.ml_line_count;
     mark_adjust(line1, line2, last_line - line2, 0L);
+    changed_lines(last_line - num_lines + 1, 0, last_line + 1, num_lines);
     if (dest >= line2)
     {
 	mark_adjust(line2 + 1, dest, -num_lines, 0L);
@@ -799,6 +800,7 @@ do_move(line1, line2, dest)
     curbuf->b_op_start.col = curbuf->b_op_end.col = 0;
     mark_adjust(last_line - num_lines + 1, last_line,
 					     -(last_line - dest - extra), 0L);
+    changed_lines(last_line - num_lines + 1, 0, last_line + 1, -extra);
 
     /*
      * Now we delete the original text -- webb
@@ -2414,6 +2416,58 @@ print_line(lnum, use_number, list)
     info_message = FALSE;
 }
 
+    int
+rename_buffer(new_fname)
+    char_u	*new_fname;
+{
+    char_u	*fname, *sfname, *xfname;
+#ifdef FEAT_AUTOCMD
+    buf_T	*buf = curbuf;
+
+    apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, buf);
+    /* buffer changed, don't change name now */
+    if (buf != curbuf)
+	return FAIL;
+# ifdef FEAT_EVAL
+    if (aborting())	    /* autocmds may abort script processing */
+	return FAIL;
+# endif
+#endif
+    /*
+     * The name of the current buffer will be changed.
+     * A new (unlisted) buffer entry needs to be made to hold the old file
+     * name, which will become the alternate file name.
+     * But don't set the alternate file name if the buffer didn't have a
+     * name.
+     */
+    fname = buf->b_ffname;
+    sfname = buf->b_sfname;
+    xfname = buf->b_fname;
+    buf->b_ffname = NULL;
+    buf->b_sfname = NULL;
+    if (setfname(buf, new_fname, NULL, TRUE) == FAIL)
+    {
+	buf->b_ffname = fname;
+	buf->b_sfname = sfname;
+	return FAIL;
+    }
+    buf->b_flags |= BF_NOTEDITED;
+    if (xfname != NULL && *xfname != NUL)
+    {
+	buf = buflist_new(fname, xfname, curwin->w_cursor.lnum, 0);
+	if (buf != NULL && !cmdmod.keepalt)
+	    curwin->w_alt_fnum = buf->b_fnum;
+    }
+    vim_free(fname);
+    vim_free(sfname);
+#ifdef FEAT_AUTOCMD
+    apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, buf);
+#endif
+    /* Change directories when the 'acd' option is set. */
+    DO_AUTOCHDIR
+    return OK;
+}
+
 /*
  * ":file[!] [fname]".
  */
@@ -2421,9 +2475,6 @@ print_line(lnum, use_number, list)
 ex_file(eap)
     exarg_T	*eap;
 {
-    char_u	*fname, *sfname, *xfname;
-    buf_T	*buf;
-
     /* ":0file" removes the file name.  Check for illegal uses ":3file",
      * "0file name", etc. */
     if (eap->addr_count > 0
@@ -2437,49 +2488,8 @@ ex_file(eap)
 
     if (*eap->arg != NUL || eap->addr_count == 1)
     {
-#ifdef FEAT_AUTOCMD
-	buf = curbuf;
-	apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, curbuf);
-	/* buffer changed, don't change name now */
-	if (buf != curbuf)
+	if (rename_buffer(eap->arg) == FAIL)
 	    return;
-# ifdef FEAT_EVAL
-	if (aborting())	    /* autocmds may abort script processing */
-	    return;
-# endif
-#endif
-	/*
-	 * The name of the current buffer will be changed.
-	 * A new (unlisted) buffer entry needs to be made to hold the old file
-	 * name, which will become the alternate file name.
-	 * But don't set the alternate file name if the buffer didn't have a
-	 * name.
-	 */
-	fname = curbuf->b_ffname;
-	sfname = curbuf->b_sfname;
-	xfname = curbuf->b_fname;
-	curbuf->b_ffname = NULL;
-	curbuf->b_sfname = NULL;
-	if (setfname(curbuf, eap->arg, NULL, TRUE) == FAIL)
-	{
-	    curbuf->b_ffname = fname;
-	    curbuf->b_sfname = sfname;
-	    return;
-	}
-	curbuf->b_flags |= BF_NOTEDITED;
-	if (xfname != NULL && *xfname != NUL)
-	{
-	    buf = buflist_new(fname, xfname, curwin->w_cursor.lnum, 0);
-	    if (buf != NULL && !cmdmod.keepalt)
-		curwin->w_alt_fnum = buf->b_fnum;
-	}
-	vim_free(fname);
-	vim_free(sfname);
-#ifdef FEAT_AUTOCMD
-	apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, curbuf);
-#endif
-	/* Change directories when the 'acd' option is set. */
-	DO_AUTOCHDIR
     }
     /* print full file name if :cd used */
     fileinfo(FALSE, FALSE, eap->forceit);

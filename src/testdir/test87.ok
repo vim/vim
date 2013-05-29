@@ -308,14 +308,23 @@ bar
 Second line
 Third line
 foo
+1:BufFilePre:1
+6:BufFilePost:1
+testdir/foo
+5:BufFilePre:5
+5:BufFilePost:5
+testdir/bar
+1:BufFilePre:1
+7:BufFilePost:1
+testdir/test87.in
 i:<buffer test87.in>
 i2:<buffer test87.in>
 i:<buffer a>
 i3:<buffer test87.in>
 1:<buffer test87.in>=<buffer test87.in>
-6:<buffer a>=<buffer a>
-7:<buffer b>=<buffer b>
-8:<buffer c>=<buffer c>
+8:<buffer a>=<buffer a>
+9:<buffer b>=<buffer b>
+10:<buffer c>=<buffer c>
 4
 i4:<buffer test87.in>
 i4:<buffer test87.in>
@@ -324,7 +333,7 @@ Number of tabs: 4
 Current tab pages:
   <tabpage 0>(1): 1 windows, current is <window object (unknown)>
   Windows:
-    <window object (unknown)>(1): displays buffer <buffer test87.in>; cursor is at (27, 0)
+    <window object (unknown)>(1): displays buffer <buffer test87.in>; cursor is at (36, 0)
   <tabpage 1>(2): 1 windows, current is <window object (unknown)>
   Windows:
     <window object (unknown)>(1): displays buffer <buffer 0>; cursor is at (1, 0)

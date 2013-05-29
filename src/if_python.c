@@ -676,18 +676,6 @@ get_exceptions(void)
 static int initialised = 0;
 #define PYINITIALISED initialised
 
-#define DICTKEY_GET(err) \
-    if (!PyString_Check(keyObject)) \
-    { \
-	PyErr_SetString(PyExc_TypeError, _("only string keys are allowed")); \
-	return err; \
-    } \
-    if (PyString_AsStringAndSize(keyObject, (char **) &key, NULL) == -1) \
-	return err;
-
-#define DICTKEY_UNREF
-#define DICTKEY_DECL
-
 #define DESTRUCTOR_FINISH(self) self->ob_type->tp_free((PyObject*)self);
 
 #define WIN_PYTHON_REF(win) win->w_python_ref
@@ -926,7 +914,7 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
     else
     {
 	/* Need to make a copy, value may change when setting new locale. */
-	saved_locale = (char *)vim_strsave((char_u *)saved_locale);
+	saved_locale = (char *) PY_STRSAVE(saved_locale);
 	(void)setlocale(LC_NUMERIC, "C");
     }
 #endif
@@ -953,7 +941,7 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
     if (saved_locale != NULL)
     {
 	(void)setlocale(LC_NUMERIC, saved_locale);
-	vim_free(saved_locale);
+	PyMem_Free(saved_locale);
     }
 #endif
 

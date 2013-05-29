@@ -250,7 +250,7 @@ vim.windows						*python-windows*
 	object and always use windows from that tab page (or throw vim.error 
 	in case tab page was deleted). You can keep a reference to both 
 	without keeping a reference to vim module object or |python-tabpage|, 
-	they will not loose their properties in this case.
+	they will not lose their properties in this case.
 
 vim.tabpages						*python-tabpages*
 	A sequence object providing access to the list of vim tab pages. The 
@@ -361,6 +361,11 @@ The buffer object attributes are:
 			this object will raise KeyError. If option is 
 			|global-local| and local value is missing getting it 
 			will return None.
+	b.name		String, RW. Contains buffer name (full path).
+			Note: when assigning to b.name |BufFilePre| and 
+			|BufFilePost| autocommands are launched.
+	b.number	Buffer number. Can be used as |python-buffers| key.
+			Read-only.
 
 The buffer object methods are:
 	b.append(str)	Append a line to the buffer

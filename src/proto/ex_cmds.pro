@@ -19,6 +19,7 @@ void viminfo_writestring __ARGS((FILE *fd, char_u *p));
 void do_fixdel __ARGS((exarg_T *eap));
 void print_line_no_prefix __ARGS((linenr_T lnum, int use_number, int list));
 void print_line __ARGS((linenr_T lnum, int use_number, int list));
+int rename_buffer __ARGS((char_u *new_fname));
 void ex_file __ARGS((exarg_T *eap));
 void ex_update __ARGS((exarg_T *eap));
 void ex_write __ARGS((exarg_T *eap));
