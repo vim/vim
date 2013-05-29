@@ -34,7 +34,12 @@ typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
     PyObject	*dictkey_todecref;
 #define DICTKEY_GET(err) \
     if (!(key = StringToChars(keyObject, &dictkey_todecref))) \
-	return err;
+	return err; \
+    if (*key == NUL) \
+    { \
+	PyErr_SetString(PyExc_ValueError, _("empty keys are not allowed")); \
+	return err; \
+    }
 #define DICTKEY_UNREF \
     Py_XDECREF(dictkey_todecref);
 
@@ -851,14 +856,6 @@ pyll_add(PyObject *self, pylinkedlist_T *ref, pylinkedlist_T **last)
 
 static PyTypeObject DictionaryType;
 
-#define DICTKEY_GET_NOTEMPTY(err) \
-    DICTKEY_GET(err) \
-    if (*key == NUL) \
-    { \
-	PyErr_SetString(PyExc_ValueError, _("empty keys are not allowed")); \
-	return err; \
-    }
-
 typedef struct
 {
     PyObject_HEAD
@@ -950,7 +947,7 @@ DictionaryItem(DictionaryObject *self, PyObject *keyObject)
     dictitem_T	*di;
     DICTKEY_DECL
 
-    DICTKEY_GET_NOTEMPTY(NULL)
+    DICTKEY_GET(NULL)
 
     di = dict_find(self->dict, key, -1);
 
@@ -980,7 +977,7 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
 	return -1;
     }
 
-    DICTKEY_GET_NOTEMPTY(-1)
+    DICTKEY_GET(-1)
 
     di = dict_find(dict, key, -1);
 
@@ -1653,7 +1650,7 @@ OptionsItem(OptionsObject *self, PyObject *keyObject)
     if (self->Check(self->from))
 	return NULL;
 
-    DICTKEY_GET_NOTEMPTY(NULL)
+    DICTKEY_GET(NULL)
 
     flags = get_option_value_strict(key, &numval, &stringval,
 				    self->opt_type, self->from);
@@ -1792,7 +1789,7 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
     if (self->Check(self->from))
 	return -1;
 
-    DICTKEY_GET_NOTEMPTY(-1)
+    DICTKEY_GET(-1)
 
     flags = get_option_value_strict(key, NULL, NULL,
 				    self->opt_type, self->from);
@@ -4037,7 +4034,7 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	if (valObject == NULL)
 	    return -1;
 
-	DICTKEY_GET_NOTEMPTY(-1)
+	DICTKEY_GET(-1)
 
 	di = dictitem_alloc(key);
 
@@ -4111,7 +4108,7 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	    return -1;
 	}
 
-	DICTKEY_GET_NOTEMPTY(-1)
+	DICTKEY_GET(-1)
 
 	valObject = PyTuple_GetItem(litem, 1);
 	if (valObject == NULL)
