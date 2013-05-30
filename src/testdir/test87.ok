@@ -4,13 +4,15 @@ start:
 Vim(put):E684:
 [0, 'as''d', [1, 2, function('strlen'), {'a': 1}]]
 [0, function('strlen'), [1, 2, function('strlen'), {'a': 1}]]
-[b'-1', b'0', b'1', b'b']
-[-1, <vim.dictionary object at >, <vim.list object at >, b'asd']
-[(b'-1', <vim.dictionary object at >), (b'0', -1), (b'1', b'asd'), (b'b', <vim.list object at >)]
+1
+[b'-1', b'0', b'1', b'b', b'f']
+[-1, <vim.Function '1'>, <vim.dictionary object at >, <vim.list object at >, b'asd']
+[(b'-1', <vim.dictionary object at >), (b'0', -1), (b'1', b'asd'), (b'b', <vim.list object at >), (b'f', <vim.Function '1'>)]
 '-1' : {'a': 1}
 '0' : -1
 '1' : 'asd'
 'b' : [1, 2, function('strlen')]
+'f' : function('1')
 [0, function('strlen')]
 [3]
 [1, 2, function('strlen')]
@@ -396,13 +398,14 @@ tabpage:__dir__,number,valid,vars,window,windows
 range:__dir__,append,end,start
 dictionary:__dir__,get,has_key,items,keys,locked,pop,popitem,scope,update,values
 list:__dir__,extend,locked
-function:__call__,__dir__,softspace
+function:__dir__,softspace
 output:__dir__,flush,softspace,write,writelines
 {}
 {'a': 1}
 {'a': 1}
 []
 ['a', 'b', 'c']
+function('tr')
 '
 abcdef
 line  :
@@ -413,6 +416,8 @@ abc'
 ['a', 'dup_a']
 ['a', 'a']
 ['a', 'b', 'c']
+[2, 2]
+[2, 2]
 (<class 'vim.error'>, error('abc',))
 (<class 'vim.error'>, error('def',))
 (<class 'vim.error'>, error('ghi',))

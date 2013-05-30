@@ -1991,30 +1991,73 @@ typedef struct
 
 static PyTypeObject FunctionType;
 
+#define NEW_FUNCTION(name) FunctionNew(&FunctionType, name)
+
     static PyObject *
-FunctionNew(char_u *name)
+FunctionNew(PyTypeObject *subtype, char_u *name)
 {
     FunctionObject	*self;
 
-    self = PyObject_NEW(FunctionObject, &FunctionType);
+    self = (FunctionObject *) subtype->tp_alloc(subtype, 0);
+
     if (self == NULL)
 	return NULL;
-    self->name = PyMem_New(char_u, STRLEN(name) + 1);
-    if (self->name == NULL)
+
+    if (isdigit(*name))
     {
-	PyErr_NoMemory();
+	if (!translated_function_exists(name))
+	{
+	    PyErr_SetString(PyExc_ValueError,
+		    _("unnamed function does not exist"));
+	    return NULL;
+	}
+	self->name = vim_strsave(name);
+	func_ref(self->name);
+    }
+    else
+    {
+	self->name = get_expanded_name(name, TRUE);
+	if (self->name == NULL)
+	{
+	    if (script_autoload(name, TRUE) && !aborting())
+		self->name = get_expanded_name(name, TRUE);
+	    if (self->name == NULL)
+	    {
+		PyErr_SetString(PyExc_ValueError, _("function does not exist"));
+		return NULL;
+	    }
+	}
+    }
+
+    return (PyObject *)(self);
+}
+
+    static PyObject *
+FunctionConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
+{
+    PyObject	*self;
+    char_u	*name;
+
+    if (kwargs)
+    {
+	PyErr_SetString(PyExc_TypeError,
+		_("function constructor does not accept keyword arguments"));
 	return NULL;
     }
-    STRCPY(self->name, name);
-    func_ref(name);
-    return (PyObject *)(self);
+
+    if (!PyArg_ParseTuple(args, "s", &name))
+	return NULL;
+
+    self = FunctionNew(subtype, name);
+
+    return self;
 }
 
     static void
 FunctionDestructor(FunctionObject *self)
 {
     func_unref(self->name);
-    PyMem_Free(self->name);
+    vim_free(self->name);
 
     DESTRUCTOR_FINISH(self);
 }
@@ -2093,7 +2136,6 @@ FunctionRepr(FunctionObject *self)
 }
 
 static struct PyMethodDef FunctionMethods[] = {
-    {"__call__",(PyCFunction)FunctionCall,  METH_VARARGS|METH_KEYWORDS,	""},
     {"__dir__",	(PyCFunction)FunctionDir,   METH_NOARGS,		""},
     { NULL,	NULL,			0,				NULL}
 };
@@ -4895,7 +4937,7 @@ ConvertToPyObject(typval_T *tv)
 	case VAR_DICT:
 	    return NEW_DICTIONARY(tv->vval.v_dict);
 	case VAR_FUNC:
-	    return FunctionNew(tv->vval.v_string == NULL
+	    return NEW_FUNCTION(tv->vval.v_string == NULL
 					  ? (char_u *)"" : tv->vval.v_string);
 	case VAR_UNKNOWN:
 	    Py_INCREF(Py_None);
@@ -5105,10 +5147,12 @@ init_structs(void)
     FunctionType.tp_basicsize = sizeof(FunctionObject);
     FunctionType.tp_dealloc = (destructor)FunctionDestructor;
     FunctionType.tp_call = (ternaryfunc)FunctionCall;
-    FunctionType.tp_flags = Py_TPFLAGS_DEFAULT;
+    FunctionType.tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE;
     FunctionType.tp_doc = "object that calls vim function";
     FunctionType.tp_methods = FunctionMethods;
     FunctionType.tp_repr = (reprfunc)FunctionRepr;
+    FunctionType.tp_new = (newfunc)FunctionConstructor;
+    FunctionType.tp_alloc = (allocfunc)PyType_GenericAlloc;
 #if PY_MAJOR_VERSION >= 3
     FunctionType.tp_getattro = (getattrofunc)FunctionGetattro;
 #else

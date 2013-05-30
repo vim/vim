@@ -26,6 +26,9 @@ STARTTEST
 :"
 :" Extending Dictionary directly with different types
 :let d = {}
+:fun d.f()
+:  return 1
+:endfun
 py3 << EOF
 d=vim.bindeval('d')
 d['1']='asd'
@@ -39,12 +42,13 @@ dk.sort(key=repr)
 dv.sort(key=repr)
 di.sort(key=repr)
 EOF
+:$put =py3eval('d[''f''](self={})')
 :$put =py3eval('repr(dk)')
 :$put =substitute(py3eval('repr(dv)'),'0x\x\+','','g')
 :$put =substitute(py3eval('repr(di)'),'0x\x\+','','g')
-:for [key, val] in sort(items(d))
-:  $put =string(key) . ' : ' . string(val)
-:  unlet key val
+:for [key, Val] in sort(items(d))
+:  $put =string(key) . ' : ' . string(Val)
+:  unlet key Val
 :endfor
 :"
 :" removing items with del
@@ -61,6 +65,7 @@ EOF
 :$put =string(l)
 :"
 :py3 del d['-1']
+:py3 del d['f']
 :$put =string(py3eval('d.get(''b'', 1)'))
 :$put =string(py3eval('d.pop(''b'')'))
 :$put =string(py3eval('d.get(''b'', 1)'))
@@ -182,9 +187,10 @@ EOF
 :catch
 :   $put =v:exception[:13]
 :endtry
+:py3 f=l[0]
 :delfunction New
 :try
-:   py3 l[0](1, 2, 3)
+:   py3 f(1, 2, 3)
 :catch
 :   $put =v:exception[:13]
 :endtry
@@ -698,6 +704,7 @@ EOF
 :$put =string(py3eval('vim.Dictionary(((''a'', 1),))'))
 :$put =string(py3eval('vim.List()'))
 :$put =string(py3eval('vim.List(iter(''abc''))'))
+:$put =string(py3eval('vim.Function(''tr'')'))
 :"
 :" Test stdout/stderr
 :redir => messages
@@ -708,6 +715,10 @@ EOF
 :redir END
 :$put =string(substitute(messages, '\d\+', '', 'g'))
 :" Test subclassing
+:fun Put(...)
+:   $put =string(a:000)
+:   return a:000
+:endfun
 py3 << EOF
 class DupDict(vim.Dictionary):
     def __setitem__(self, key, value):
@@ -723,10 +734,17 @@ class DupList(vim.List):
 dl = DupList()
 dl2 = DupList(iter('abc'))
 dl.extend(dl2[0])
+
+class DupFun(vim.Function):
+    def __call__(self, arg):
+        return super(DupFun, self).__call__(arg, arg)
+
+df = DupFun('Put')
 EOF
 :$put =string(sort(keys(py3eval('dd'))))
 :$put =string(py3eval('dl'))
 :$put =string(py3eval('dl2'))
+:$put =string(py3eval('df(2)'))
 :"
 :" Test exceptions
 :fun Exe(e)

@@ -21933,6 +21933,15 @@ free_all_functions()
 }
 #endif
 
+    int
+translated_function_exists(name)
+    char_u	*name;
+{
+    if (builtin_function(name))
+	return find_internal_func(name) >= 0;
+    return find_func(name) != NULL;
+}
+
 /*
  * Return TRUE if a function "name" exists.
  */
@@ -21950,12 +21959,7 @@ function_exists(name)
     /* Only accept "funcname", "funcname ", "funcname (..." and
      * "funcname(...", not "funcname!...". */
     if (p != NULL && (*nm == NUL || *nm == '('))
-    {
-	if (builtin_function(p))
-	    n = (find_internal_func(p) >= 0);
-	else
-	    n = (find_func(p) != NULL);
-    }
+	n = translated_function_exists(p);
     vim_free(p);
     return n;
 }
@@ -21971,18 +21975,9 @@ get_expanded_name(name, check)
     p = trans_function_name(&nm, FALSE, TFN_INT|TFN_QUIET, NULL);
 
     if (p != NULL && *nm == NUL)
-    {
-	if (!check)
+	if (!check || translated_function_exists(p))
 	    return p;
-	else if (builtin_function(p))
-	{
-	    if (find_internal_func(p) >= 0)
-		return p;
-	}
-	else
-	    if (find_func(p) != NULL)
-		return p;
-    }
+
     vim_free(p);
     return NULL;
 }
