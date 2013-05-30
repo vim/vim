@@ -810,7 +810,6 @@ static int
 # endif
 	prof_self_cmp __ARGS((const void *s1, const void *s2));
 #endif
-static int script_autoload __ARGS((char_u *name, int reload));
 static char_u *autoload_name __ARGS((char_u *name));
 static void cat_func_name __ARGS((char_u *buf, ufunc_T *fp));
 static void func_free __ARGS((ufunc_T *fp));
@@ -10946,16 +10945,25 @@ f_function(argvars, rettv)
     typval_T	*rettv;
 {
     char_u	*s;
+    char_u	*name = NULL;
 
     s = get_tv_string(&argvars[0]);
     if (s == NULL || *s == NUL || VIM_ISDIGIT(*s))
 	EMSG2(_(e_invarg2), s);
-    /* Don't check an autoload name for existence here. */
-    else if (vim_strchr(s, AUTOLOAD_CHAR) == NULL && !function_exists(s))
+    /* Don't check an autoload name for existence here, but still expand it 
+     * checking for validity */
+    else if ((name = get_expanded_name(s, vim_strchr(s, AUTOLOAD_CHAR) == NULL))
+									== NULL)
 	EMSG2(_("E700: Unknown function: %s"), s);
     else
     {
-	rettv->vval.v_string = vim_strsave(s);
+	if (name == NULL)
+	    /* Autoload function, need to copy string */
+	    rettv->vval.v_string = vim_strsave(s);
+	else
+	    /* Function found by get_expanded_name, string allocated by 
+	     * trans_function_name: no need to copy */
+	    rettv->vval.v_string = name;
 	rettv->v_type = VAR_FUNC;
     }
 }
@@ -21938,6 +21946,33 @@ function_exists(name)
     return n;
 }
 
+    char_u *
+get_expanded_name(name, check)
+    char_u	*name;
+    int		check;
+{
+    char_u	*nm = name;
+    char_u	*p;
+
+    p = trans_function_name(&nm, FALSE, TFN_INT|TFN_QUIET, NULL);
+
+    if (p != NULL && *nm == NUL)
+    {
+	if (!check)
+	    return p;
+	else if (builtin_function(p))
+	{
+	    if (find_internal_func(p) >= 0)
+		return p;
+	}
+	else
+	    if (find_func(p) != NULL)
+		return p;
+    }
+    vim_free(p);
+    return NULL;
+}
+
 /*
  * Return TRUE if "name" looks like a builtin function name: starts with a
  * lower case letter and doesn't contain a ':' or AUTOLOAD_CHAR.
@@ -22146,7 +22181,7 @@ prof_self_cmp(s1, s2)
  * If "name" has a package name try autoloading the script for it.
  * Return TRUE if a package was loaded.
  */
-    static int
+    int
 script_autoload(name, reload)
     char_u	*name;
     int		reload;	    /* load script again when already loaded */
