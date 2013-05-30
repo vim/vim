@@ -1740,8 +1740,8 @@ nfa_set_code(c)
 			    STRCPY(code, "NFA_PREV_ATOM_NO_WIDTH"); break;
 	case NFA_PREV_ATOM_NO_WIDTH_NEG:
 			    STRCPY(code, "NFA_PREV_ATOM_NO_WIDTH_NEG"); break;
-	case NFA_NOPEN:		    STRCPY(code, "NFA_MOPEN_INVISIBLE"); break;
-	case NFA_NCLOSE:	    STRCPY(code, "NFA_MCLOSE_INVISIBLE"); break;
+	case NFA_NOPEN:		    STRCPY(code, "NFA_NOPEN"); break;
+	case NFA_NCLOSE:	    STRCPY(code, "NFA_NCLOSE"); break;
 	case NFA_START_INVISIBLE:   STRCPY(code, "NFA_START_INVISIBLE"); break;
 	case NFA_END_INVISIBLE:	    STRCPY(code, "NFA_END_INVISIBLE"); break;
 
@@ -2373,12 +2373,9 @@ post2nfa(postfix, end, nfa_calc_size)
 	    break;
 
 	case NFA_PREV_ATOM_NO_WIDTH:
-	    /* The \@= operator: match the preceding atom with 0 width.
+	    /* The \@= operator: match the preceding atom with zero width.
 	     * Surrounds the preceding atom with START_INVISIBLE and
-	     * END_INVISIBLE, similarly to MOPEN.
-	     */
-	    /* TODO: Maybe this drops the speed? */
-	    goto theend;
+	     * END_INVISIBLE, similarly to MOPEN. */
 
 	    if (nfa_calc_size == TRUE)
 	    {
@@ -2745,6 +2742,9 @@ addstate(l, state, sub, off)
     int			save_in_use;
     char_u		*save_ptr;
     int			i;
+#ifdef ENABLE_LOG
+    int			did_print = FALSE;
+#endif
 
     if (l == NULL || state == NULL)
 	return;
@@ -2782,7 +2782,7 @@ addstate(l, state, sub, off)
 	    /* These nodes do not need to be added, but we need to bail out
 	     * when it was tried to be added to this list before. */
 	    if (state->lastlist == l->id)
-		return;
+		goto skip_add;
 	    state->lastlist = l->id;
 	    break;
 
@@ -2792,7 +2792,15 @@ addstate(l, state, sub, off)
 		/* This state is already in the list, don't add it again,
 		 * unless it is an MOPEN that is used for a backreference. */
 		if (!nfa_has_backref)
+		{
+skip_add:
+#ifdef ENABLE_LOG
+		    nfa_set_code(state->c);
+		    fprintf(log_fd, "> Not adding state %d to list %d. char %d: %s\n",
+			    abs(state->id), l->id, state->c, code);
+#endif
 		    return;
+		}
 
 		/* See if the same state is already in the list with the same
 		 * positions. */
@@ -2801,7 +2809,7 @@ addstate(l, state, sub, off)
 		    thread = &l->t[i];
 		    if (thread->state->id == state->id
 					  && sub_equal(&thread->sub, sub))
-			return;
+			goto skip_add;
 		}
 	    }
 
@@ -2832,12 +2840,39 @@ addstate(l, state, sub, off)
 				&sub->list.line[0],
 				sizeof(struct linepos) * sub->in_use);
 	    }
+#ifdef ENABLE_LOG
+	    {
+		int col;
+
+		if (thread->sub.in_use <= 0)
+		    col = -1;
+		else if (REG_MULTI)
+		    col = thread->sub.list.multi[0].start.col;
+		else
+		    col = (int)(thread->sub.list.line[0].start - regline);
+		nfa_set_code(state->c);
+		fprintf(log_fd, "> Adding state %d to list %d. char %d: %s (start col %d)\n",
+		        abs(state->id), l->id, state->c, code, col);
+		did_print = TRUE;
+	    }
+#endif
     }
 
 #ifdef ENABLE_LOG
-    nfa_set_code(state->c);
-    fprintf(log_fd, "> Adding state %d to list. Character %d: %s\n",
-	abs(state->id), state->c, code);
+    if (!did_print)
+    {
+	int col;
+
+	if (sub->in_use <= 0)
+	    col = -1;
+	else if (REG_MULTI)
+	    col = sub->list.multi[0].start.col;
+	else
+	    col = (int)(sub->list.line[0].start - regline);
+	nfa_set_code(state->c);
+	fprintf(log_fd, "> Processing state %d for list %d. char %d: %s (start col %d)\n",
+		abs(state->id), l->id, state->c, code, col);
+    }
 #endif
     switch (state->c)
     {
@@ -2872,14 +2907,6 @@ addstate(l, state, sub, off)
 	case NFA_NCLOSE:
 	    addstate(l, state->out, sub, off);
 	    break;
-
-	/* If this state is reached, then a recursive call of nfa_regmatch()
-	 * succeeded. the next call saves the found submatches in the
-	 * first state after the "invisible" branch. */
-#if 0
-	case NFA_END_INVISIBLE:
-	    break;
-#endif
 
 	case NFA_MOPEN + 0:
 	case NFA_MOPEN + 1:
@@ -3450,9 +3477,19 @@ nfa_regmatch(start, submatch, m)
 	    fprintf(debug, "%s, ", code);
 #endif
 #ifdef ENABLE_LOG
-	    nfa_set_code(t->state->c);
-	    fprintf(log_fd, "(%d) %s, code %d ... \n", abs(t->state->id),
-						      code, (int)t->state->c);
+	    {
+		int col;
+
+		if (t->sub.in_use <= 0)
+		    col = -1;
+		else if (REG_MULTI)
+		    col = t->sub.list.multi[0].start.col;
+		else
+		    col = (int)(t->sub.list.line[0].start - regline);
+		nfa_set_code(t->state->c);
+		fprintf(log_fd, "(%d) char %d %s (start col %d) ... \n",
+			abs(t->state->id), (int)t->state->c, code, col);
+	    }
 #endif
 
 	    /*
@@ -3504,6 +3541,7 @@ nfa_regmatch(start, submatch, m)
 		    addstate_here(thislist, t->state->out, &t->sub, &listidx);
 		else
 		{
+		    /* TODO: only copy positions in use. */
 		    *m = t->sub;
 		    nfa_match = TRUE;
 		}
@@ -3538,6 +3576,7 @@ nfa_regmatch(start, submatch, m)
 		result = nfa_regmatch(t->state->out, submatch, m);
 		nfa_set_neg_listids(start);
 		nfa_restore_listids(start, listids);
+		nfa_match = FALSE;
 
 #ifdef ENABLE_LOG
 		log_fd = fopen(NFA_REGEXP_RUN_LOG, "a");
@@ -3575,9 +3614,11 @@ nfa_regmatch(start, submatch, m)
 			    t->sub.list.line[j].start = m->list.line[j].start;
 			    t->sub.list.line[j].end = m->list.line[j].end;
 			}
-		    t->sub.in_use = m->in_use;
+		    if (m->in_use > t->sub.in_use)
+			t->sub.in_use = m->in_use;
 
-		    /* t->state->out1 is the corresponding END_INVISIBLE node */
+		    /* t->state->out1 is the corresponding END_INVISIBLE node;
+		     * Add it to the current list (zero-width match). */
 		    addstate_here(thislist, t->state->out1->out, &t->sub,
 								    &listidx);
 		}
@@ -4146,7 +4187,7 @@ nfa_regtry(start, col)
 	fprintf(f, "\tRegexp is \"%s\"\n", nfa_regengine.expr);
 #endif
 	fprintf(f, "\tInput text is \"%s\" \n", reginput);
-	fprintf(f, "		=======================================================\n\n\n\n\n\n\n");
+	fprintf(f, "		=======================================================\n\n");
 	nfa_print_state(f, start);
 	fprintf(f, "\n\n");
 	fclose(f);

@@ -294,22 +294,22 @@ STARTTEST
 :call add(tl, [2, '\v(a \zsif .*){2}', 'a if then a if last', 'if last', 'a if last'])
 :call add(tl, [2, '\>\zs.', 'aword. ', '.'])
 :"
-:"""" Tests for \@ features
-:call add(tl, [0, 'abc\@=', 'abc', 'ab'])
-:call add(tl, [0, 'abc\@=cd', 'abcd', 'abcd'])
-:call add(tl, [0, 'abc\@=', 'ababc', 'ab'])
+:"""" Tests for \@= and \& features
+:call add(tl, [2, 'abc\@=', 'abc', 'ab'])
+:call add(tl, [2, 'abc\@=cd', 'abcd', 'abcd'])
+:call add(tl, [2, 'abc\@=', 'ababc', 'ab'])
 :" will never match, no matter the input text
 :call add(tl, [2, 'abcd\@=e', 'abcd'])
 :" will never match
 :call add(tl, [2, 'abcd\@=e', 'any text in here ... '])
-:call add(tl, [0, '\v(abc)@=..', 'xabcd', 'ab', 'abc'])
+:call add(tl, [2, '\v(abc)@=..', 'xabcd', 'ab', 'abc'])
 :" no match
 :call add(tl, [2, '\(.*John\)\@=.*Bob', 'here is John, and here is B'])
-:call add(tl, [0, '\(John.*\)\@=.*Bob', 'John is Bobs friend', 'John is Bob', 'John is Bobs friend'])
+:call add(tl, [2, '\(John.*\)\@=.*Bob', 'John is Bobs friend', 'John is Bob', 'John is Bobs friend'])
 :" no match
 :call add(tl, [2, '.*John\&.*Bob', 'here is John, and here is B'])
-:call add(tl, [0, '.*John\&.*Bob', 'John is Bobs friend', 'John is Bob'])
-:call add(tl, [0, '\v(test1)@=.*yep', 'this is a test1, yep it is', 'test1, yep', 'test1'])
+:call add(tl, [2, '.*John\&.*Bob', 'John is Bobs friend', 'John is Bob'])
+:call add(tl, [2, '\v(test1)@=.*yep', 'this is a test1, yep it is', 'test1, yep', 'test1'])
 :"
 :"""" Combining different tests and features
 :call add(tl, [2, '[[:alpha:]]\{-2,6}', '787abcdiuhsasiuhb4', 'ab'])
