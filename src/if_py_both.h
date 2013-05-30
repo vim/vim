@@ -3304,10 +3304,10 @@ SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_cha
 
 	for (i = 0; i < new_len; ++i)
 	{
-	    PyObject *line = PyList_GetItem(list, i);
+	    PyObject *line;
 
-	    array[i] = StringToLine(line);
-	    if (array[i] == NULL)
+	    if (!(line = PyList_GetItem(list, i)) ||
+		!(array[i] = StringToLine(line)))
 	    {
 		while (i)
 		    vim_free(array[--i]);
@@ -3319,7 +3319,7 @@ SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_cha
 	VimTryStart();
 	PyErr_Clear();
 
-	// START of region without "return".  Must call restore_buffer()!
+	/* START of region without "return".  Must call restore_buffer()! */
 	switch_buffer(&savebuf, buf);
 
 	if (u_save((linenr_T)(lo-1), (linenr_T)hi) == FAIL)
@@ -3400,7 +3400,7 @@ SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_cha
 	if (buf == savebuf)
 	    py_fix_cursor((linenr_T)lo, (linenr_T)hi, (linenr_T)extra);
 
-	// END of region without "return".
+	/* END of region without "return". */
 	restore_buffer(savebuf);
 
 	if (VimTryEnd())
@@ -3479,10 +3479,10 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 
 	for (i = 0; i < size; ++i)
 	{
-	    PyObject *line = PyList_GetItem(lines, i);
-	    array[i] = StringToLine(line);
+	    PyObject *line;
 
-	    if (array[i] == NULL)
+	    if (!(line = PyList_GetItem(lines, i)) ||
+		!(array[i] = StringToLine(line)))
 	    {
 		while (i)
 		    vim_free(array[--i]);
@@ -4014,8 +4014,15 @@ BufferMark(BufferObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "s", &pmark))
 	return NULL;
-    mark = *pmark;
 
+    if (STRLEN(pmark) != 1)
+    {
+	PyErr_SetString(PyExc_ValueError,
+		_("mark name must be a single character"));
+	return NULL;
+    }
+
+    mark = *pmark;
     VimTryStart();
     switch_buffer(&savebuf, self->buf);
     posp = getmark(mark, FALSE);
@@ -4258,7 +4265,7 @@ CurrentSetattr(PyObject *self UNUSED, char *name, PyObject *value)
 
 	if (value->ob_type != &BufferType)
 	{
-	    PyErr_SetString(PyExc_TypeError, _("expected vim.buffer object"));
+	    PyErr_SetString(PyExc_TypeError, _("expected vim.Buffer object"));
 	    return -1;
 	}
 
@@ -4283,7 +4290,7 @@ CurrentSetattr(PyObject *self UNUSED, char *name, PyObject *value)
 
 	if (value->ob_type != &WindowType)
 	{
-	    PyErr_SetString(PyExc_TypeError, _("expected vim.window object"));
+	    PyErr_SetString(PyExc_TypeError, _("expected vim.Window object"));
 	    return -1;
 	}
 
@@ -4315,7 +4322,7 @@ CurrentSetattr(PyObject *self UNUSED, char *name, PyObject *value)
     {
 	if (value->ob_type != &TabPageType)
 	{
-	    PyErr_SetString(PyExc_TypeError, _("expected vim.tabpage object"));
+	    PyErr_SetString(PyExc_TypeError, _("expected vim.TabPage object"));
 	    return -1;
 	}
 
