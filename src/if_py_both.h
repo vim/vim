@@ -32,15 +32,8 @@ typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
 
 #define DICTKEY_DECL \
     PyObject	*dictkey_todecref = NULL;
-#define DICTKEY_CHECK_EMPTY(err) \
-    if (*key == NUL) \
-    { \
-	PyErr_SetString(PyExc_ValueError, _("empty keys are not allowed")); \
-	return err; \
-    }
-#define DICTKEY_SET_KEY (key = StringToChars(keyObject, &dictkey_todecref))
 #define DICTKEY_GET(err, decref) \
-    if (!DICTKEY_SET_KEY) \
+    if (!(key = StringToChars(keyObject, &dictkey_todecref))) \
     { \
 	if (decref) \
 	{ \
@@ -50,7 +43,11 @@ typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
     } \
     if (decref && !dictkey_todecref) \
 	dictkey_todecref = keyObject; \
-    DICTKEY_CHECK_EMPTY(err)
+    if (*key == NUL) \
+    { \
+	PyErr_SetString(PyExc_ValueError, _("empty keys are not allowed")); \
+	return err; \
+    }
 #define DICTKEY_UNREF \
     Py_XDECREF(dictkey_todecref);
 
@@ -4551,7 +4548,7 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 
     while (PyDict_Next(obj, &iter, &keyObject, &valObject))
     {
-	DICTKEY_DECL
+	PyObject	*todecref = NULL;
 
 	if (keyObject == NULL || valObject == NULL)
 	{
@@ -4559,16 +4556,21 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	    return -1;
 	}
 
-	if (!DICTKEY_SET_KEY)
+	if (!(key = StringToChars(keyObject, &todecref)))
 	{
 	    dict_unref(dict);
 	    return -1;
 	}
-	DICTKEY_CHECK_EMPTY(-1)
+	if (*key == NUL)
+	{
+	    dict_unref(dict);
+	    Py_XDECREF(todecref);
+	    return -1;
+	}
 
 	di = dictitem_alloc(key);
 
-	DICTKEY_UNREF
+	Py_XDECREF(todecref);
 
 	if (di == NULL)
 	{
@@ -4632,31 +4634,37 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 
     while ((keyObject = PyIter_Next(iterator)))
     {
-	DICTKEY_DECL
+	PyObject	*todecref;
 
-	if (!DICTKEY_SET_KEY)
+	if (!(key = StringToChars(keyObject, &todecref)))
 	{
+	    Py_DECREF(keyObject);
 	    Py_DECREF(iterator);
 	    dict_unref(dict);
-	    DICTKEY_UNREF
 	    return -1;
 	}
-	DICTKEY_CHECK_EMPTY(-1)
+	if (*key == NUL)
+	{
+	    Py_DECREF(keyObject);
+	    Py_DECREF(iterator);
+	    Py_XDECREF(todecref);
+	    dict_unref(dict);
+	    return -1;
+	}
 
 	if (!(valObject = PyObject_GetItem(obj, keyObject)))
 	{
 	    Py_DECREF(keyObject);
 	    Py_DECREF(iterator);
+	    Py_XDECREF(todecref);
 	    dict_unref(dict);
-	    DICTKEY_UNREF
 	    return -1;
 	}
 
 	di = dictitem_alloc(key);
 
-	DICTKEY_UNREF
-
 	Py_DECREF(keyObject);
+	Py_XDECREF(todecref);
 
 	if (di == NULL)
 	{
