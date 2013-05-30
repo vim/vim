@@ -2015,19 +2015,13 @@ FunctionNew(PyTypeObject *subtype, char_u *name)
 	func_ref(self->name);
     }
     else
-    {
-	self->name = get_expanded_name(name, TRUE);
-	if (self->name == NULL)
+	if ((self->name = get_expanded_name(name,
+				    vim_strchr(name, AUTOLOAD_CHAR) == NULL))
+		== NULL)
 	{
-	    if (script_autoload(name, TRUE) && !aborting())
-		self->name = get_expanded_name(name, TRUE);
-	    if (self->name == NULL)
-	    {
-		PyErr_SetString(PyExc_ValueError, _("function does not exist"));
-		return NULL;
-	    }
+	    PyErr_SetString(PyExc_ValueError, _("function does not exist"));
+	    return NULL;
 	}
-    }
 
     return (PyObject *)(self);
 }

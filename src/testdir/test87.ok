@@ -878,7 +878,7 @@ l.xxx = True:(<class 'AttributeError'>, AttributeError('cannot set this attribut
 >> FunctionConstructor
 vim.Function("123"):(<class 'ValueError'>, ValueError('unnamed function does not exist',))
 vim.Function("xxx_non_existent_function_xxx"):(<class 'ValueError'>, ValueError('function does not exist',))
-vim.Function("xxx#non#existent#function#xxx"):(<class 'ValueError'>, ValueError('function does not exist',))
+vim.Function("xxx#non#existent#function#xxx"):NOT FAILED
 >> FunctionCall
 >>> Testing StringToChars using f({%s : 1})
 f({1 : 1}):(<class 'TypeError'>, TypeError('object must be string',))

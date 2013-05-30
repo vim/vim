@@ -810,6 +810,7 @@ static int
 # endif
 	prof_self_cmp __ARGS((const void *s1, const void *s2));
 #endif
+static int script_autoload __ARGS((char_u *name, int reload));
 static char_u *autoload_name __ARGS((char_u *name));
 static void cat_func_name __ARGS((char_u *buf, ufunc_T *fp));
 static void func_free __ARGS((ufunc_T *fp));
@@ -828,10 +829,6 @@ static void setwinvar __ARGS((typval_T *argvars, typval_T *rettv, int off));
 static int compare_func_name __ARGS((const void *s1, const void *s2));
 static void sortFunctions __ARGS(());
 #endif
-
-
-/* Character used as separated in autoload function/variable names. */
-#define AUTOLOAD_CHAR '#'
 
 /*
  * Initialize the global and v: variables.
@@ -22190,7 +22187,7 @@ prof_self_cmp(s1, s2)
  * If "name" has a package name try autoloading the script for it.
  * Return TRUE if a package was loaded.
  */
-    int
+    static int
 script_autoload(name, reload)
     char_u	*name;
     int		reload;	    /* load script again when already loaded */

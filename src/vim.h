@@ -2243,4 +2243,7 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 #define SREQ_WIN	1	/* Request window-local option */
 #define SREQ_BUF	2	/* Request buffer-local option */
 
+/* Character used as separated in autoload function/variable names. */
+#define AUTOLOAD_CHAR '#'
+
 #endif /* VIM__H */

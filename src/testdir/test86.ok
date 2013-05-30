@@ -889,7 +889,7 @@ l.xxx = True:(<type 'exceptions.AttributeError'>, AttributeError('cannot set thi
 >> FunctionConstructor
 vim.Function("123"):(<type 'exceptions.ValueError'>, ValueError('unnamed function does not exist',))
 vim.Function("xxx_non_existent_function_xxx"):(<type 'exceptions.ValueError'>, ValueError('function does not exist',))
-vim.Function("xxx#non#existent#function#xxx"):(<type 'exceptions.ValueError'>, ValueError('function does not exist',))
+vim.Function("xxx#non#existent#function#xxx"):NOT FAILED
 >> FunctionCall
 >>> Testing StringToChars using f({%s : 1})
 f({1 : 1}):(<type 'exceptions.TypeError'>, TypeError('object must be string',))
