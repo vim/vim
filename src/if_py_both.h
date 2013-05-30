@@ -1584,6 +1584,12 @@ FunctionCall(FunctionObject *self, PyObject *argsObject, PyObject *kwargs)
     return result;
 }
 
+    static PyObject *
+FunctionRepr(FunctionObject *self)
+{
+    return PyString_FromFormat("<vim.Function '%s'>", self->name);
+}
+
 static struct PyMethodDef FunctionMethods[] = {
     {"__call__",(PyCFunction)FunctionCall,  METH_VARARGS|METH_KEYWORDS,	""},
     {"__dir__",	(PyCFunction)FunctionDir,   METH_NOARGS,		""},
@@ -4640,6 +4646,7 @@ init_structs(void)
     FunctionType.tp_flags = Py_TPFLAGS_DEFAULT;
     FunctionType.tp_doc = "object that calls vim function";
     FunctionType.tp_methods = FunctionMethods;
+    FunctionType.tp_repr = (reprfunc)FunctionRepr;
 #if PY_MAJOR_VERSION >= 3
     FunctionType.tp_getattro = (getattrofunc)FunctionGetattro;
 #else
