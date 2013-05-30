@@ -2873,6 +2873,7 @@ addstate(l, state, sub, off)
 
 	    /* Set the position (with "off") in the subexpression.  Save and
 	     * restore it when it was in use.  Otherwise fill any gap. */
+	    save_ptr = NULL;
 	    if (REG_MULTI)
 	    {
 		if (subidx < sub->in_use)
