@@ -480,17 +480,36 @@ vim.Dictionary object				*python-Dictionary*
                     vim.VAR_DEF_SCOPE  |g:| or |l:| dictionary
                     vim.VAR_SCOPE      Other scope dictionary,
                                        see |internal-variables|
-    Methods:
+    Methods (note: methods do not support keyword arguments):
         Method      Description ~
         keys()      Returns a list with dictionary keys.
         values()    Returns a list with dictionary values.
         items()     Returns a list of 2-tuples with dictionary contents.
-        update(iterable)
-        update(dictionary)
-        update(**kwargs)
+        update(iterable), update(dictionary), update(**kwargs)
                     Adds keys to dictionary.
+        get(key[, default=None])
+                    Obtain key from dictionary, returning the default if it is 
+                    not present.
+        pop(key[, default])
+                    Remove specified key from dictionary and return 
+                    corresponding value. If key is not found and default is 
+                    given returns the default, otherwise raises KeyError.
+        popitem(key)
+                    Remove specified key from dictionary and return a pair 
+                    with it and the corresponding value. Returned key is a new 
+                    object.
+        has_key(key)
+                    Check whether dictionary contains specified key, similar 
+                    to `key in dict`.
+
+        __new__(), __new__(iterable), __new__(dictionary), __new__(update)
+                    You can use `vim.Dictionary()` to create new vim 
+                    dictionaries. `d=vim.Dictionary(arg)` is the same as 
+                    `d=vim.bindeval('{}');d.update(arg)`. Without arguments 
+                    constructs empty dictionary.
+
     Examples: >
-        py d = vim.bindeval('{}')
+        d = vim.Dictionary(food="bar")		# Constructor
         d['a'] = 'b'				# Item assignment
         print d['a']				# getting item
         d.update({'c': 'd'})			# .update(dictionary)
@@ -501,6 +520,7 @@ vim.Dictionary object				*python-Dictionary*
         for key, val in d.items():		# .items()
         print isinstance(d, vim.Dictionary)	# True
         for key in d:				# Iteration over keys
+        class Dict(vim.Dictionary):		# Subclassing
 <
     Note: when iterating over keys you should not modify dictionary.
 
@@ -510,8 +530,14 @@ vim.List object					*python-List*
     following methods:
         Method          Description ~
         extend(item)    Add items to the list.
+
+        __new__(), __new__(iterable)
+                        You can use `vim.List()` to create new vim lists. 
+                        `l=vim.List(iterable)` is the same as 
+                        `l=vim.bindeval('[]');l.extend(iterable)`. Without 
+                        arguments constructs empty list.
     Examples: >
-        l = vim.bindeval('[]')
+        l = vim.List("abc")		# Constructor, result: ['a', 'b', 'c']
         l.extend(['abc', 'def'])	# .extend() method
         print l[1:]			# slicing
         l[:0] = ['ghi', 'jkl']		# slice assignment
@@ -519,13 +545,16 @@ vim.List object					*python-List*
         l[0] = 'mno'			# assignment
         for i in l:			# iteration
         print isinstance(l, vim.List)	# True
+        class List(vim.List):		# Subclassing
 
 vim.Function object				*python-Function*
     Function-like object, acting like vim |Funcref| object. Supports `.name` 
     attribute and is callable. Accepts special keyword argument `self`, see 
-    |Dictionary-function|.
+    |Dictionary-function|. You can also use `vim.Function(name)` constructor, 
+    it is the same as `vim.bindeval('function(%s)'%json.dumps(name))`.
+
     Examples: >
-        f = vim.bindeval('function("tr")')
+        f = vim.Function('tr')			# Constructor
         print f('abc', 'a', 'b')		# Calls tr('abc', 'a', 'b')
         vim.command('''
             function DictFun() dict
