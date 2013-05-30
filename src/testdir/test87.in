@@ -26,16 +26,22 @@ STARTTEST
 :"
 :" Extending Dictionary directly with different types
 :let d = {}
-:py3 d=vim.bindeval('d')
-:py3 d['1']='asd'
-:py3 d['b']=[1, 2, f]
-:py3 d['-1']={'a': 1}
-:let dkeys = []
-:py3 dk=vim.bindeval('dkeys')
-:py3 dkeys=d.keys()
-:py3 dkeys.sort()
-:py3 dk+=dkeys
-:$put =string(dkeys)
+py3 << EOF
+d=vim.bindeval('d')
+d['1']='asd'
+d.update(b=[1, 2, f])
+d.update((('-1', {'a': 1}),))
+d.update({'0': -1})
+dk = d.keys()
+dv = d.values()
+di = d.items()
+dk.sort(key=repr)
+dv.sort(key=repr)
+di.sort(key=repr)
+EOF
+:$put =py3eval('repr(dk)')
+:$put =substitute(py3eval('repr(dv)'),'0x\x\+','','g')
+:$put =substitute(py3eval('repr(di)'),'0x\x\+','','g')
 :for [key, val] in sort(items(d))
 :  $put =string(key) . ' : ' . string(val)
 :  unlet key val
@@ -55,7 +61,20 @@ STARTTEST
 :$put =string(l)
 :"
 :py3 del d['-1']
+:$put =string(py3eval('d.get(''b'', 1)'))
+:$put =string(py3eval('d.pop(''b'')'))
+:$put =string(py3eval('d.get(''b'', 1)'))
+:$put =string(py3eval('d.pop(''1'', 2)'))
+:$put =string(py3eval('d.pop(''1'', 2)'))
+:$put =py3eval('repr(d.has_key(''0''))')
+:$put =py3eval('repr(d.has_key(''1''))')
+:$put =py3eval('repr(''0'' in d)')
+:$put =py3eval('repr(''1'' in d)')
+:$put =py3eval('repr(list(iter(d)))')
 :$put =string(d)
+:$put =py3eval('repr(d.popitem(''0''))')
+:$put =py3eval('repr(d.get(''0''))')
+:$put =py3eval('repr(list(iter(d)))')
 :"
 :" removing items out of range: silently skip items that don't exist
 :let l = [0, 1, 2, 3]
@@ -181,35 +200,21 @@ STARTTEST
 :py3 <<EOF
 d=vim.bindeval('{}')
 m=vim.bindeval('messages')
-try:
-    d['abc']
-except Exception as e:
-    m.extend([e.__class__.__name__])
+def em(expr, g=globals(), l=locals()):
+    try:
+        exec(expr, g, l)
+    except Exception as e:
+        m.extend([e.__class__.__name__])
 
-try:
-    d['abc']="\0"
-except Exception as e:
-    m.extend([e.__class__.__name__])
+em('d["abc"]')
+em('d["abc"]="\\0"')
+em('d["abc"]=vim')
+em('d[""]=1')
+em('d["a\\0b"]=1')
+em('d[b"a\\0b"]=1')
 
-try:
-    d['abc']=vim
-except Exception as e:
-    m.extend([e.__class__.__name__])
-
-try:
-    d['']=1
-except Exception as e:
-    m.extend([e.__class__.__name__])
-
-try:
-    d['a\0b']=1
-except Exception as e:
-    m.extend([e.__class__.__name__])
-
-try:
-    d[b'a\0b']=1
-except Exception as e:
-    m.extend([e.__class__.__name__])
+em('d.pop("abc")')
+em('d.popitem("abc")')
 EOF
 :$put =messages
 :unlet messages
@@ -687,6 +692,10 @@ del name
 del o
 EOF
 :"
+:" Test vim.Dictionary.__new__
+:$put =string(py3eval('vim.Dictionary({})'))
+:$put =string(py3eval('vim.Dictionary(a=1)'))
+:$put =string(py3eval('vim.Dictionary(((''a'', 1),))'))
 :"
 :" Test stdout/stderr
 :redir => messages
@@ -696,6 +705,16 @@ EOF
 :py sys.stderr.writelines(iter('abc'))
 :redir END
 :$put =string(substitute(messages, '\d\+', '', 'g'))
+:" Test subclassing
+py3 << EOF
+class DupDict(vim.Dictionary):
+    def __setitem__(self, key, value):
+        super(DupDict, self).__setitem__(key, value)
+        super(DupDict, self).__setitem__('dup_' + key, value)
+dd = DupDict()
+dd['a'] = 'b'
+EOF
+:$put =string(sort(keys(py3eval('dd'))))
 :"
 :" Test exceptions
 :fun Exe(e)

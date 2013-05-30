@@ -12,9 +12,10 @@ The Python Interface to Vim				*python* *Python*
 4. Range objects				|python-range|
 5. Window objects				|python-window|
 6. Tab page objects				|python-tabpage|
-7. pyeval(), py3eval() Vim functions		|python-pyeval|
-8. Dynamic loading				|python-dynamic|
-9. Python 3					|python3|
+7. vim.bindeval objects				|python-bindeval-objects|
+8. pyeval(), py3eval() Vim functions		|python-pyeval|
+9. Dynamic loading				|python-dynamic|
+10. Python 3					|python3|
 
 {Vi does not have any of these commands}
 
@@ -171,47 +172,9 @@ vim.eval(str)						*python-eval*
 	'eval_expr', 'kind': 'f', 'filename': './src/eval.c'}]
 
 vim.bindeval(str)					*python-bindeval*
-	Like |python-eval|, but
-	1. if expression evaluates to |List| or |Dictionary| it is returned as 
-	   vimlist or vimdictionary python type that are connected to original 
-	   list or dictionary. Thus modifications to these objects imply 
-	   modifications of the original.
-
-	   Additionally, vim.List and vim.Dictionary type have read-write 
-	   `.locked` attribute that returns
-	     Value           Meaning ~
-	     zero            Variable is not locked
-	     vim.VAR_LOCKED  Variable is locked, but can be unlocked
-	     vim.VAR_FIXED   Variable is locked and can't be unlocked
-	   integer constants. If variable is not fixed, you can do 
-	   `var.locked=True` to lock it and `var.locked=False` to unlock. 
-	   There is no recursive locking like |:lockvar|! does. There is also 
-	   no way to lock a specific key or check whether it is locked (in any 
-	   case these locks are ignored by anything except |:let|: |extend()| 
-	   does not care, neither does python interface).
-
-	   vim.Dictionary type also supports `.scope` attribute which is one 
-	   of
-	     Value              Meaning ~
-	     zero               Dictionary is not a scope one
-	     vim.VAR_DEF_SCOPE  Function-local or global scope dictionary
-	     vim.VAR_SCOPE      Other scope dictionary
-
-	2. if expression evaluates to a function reference, then it returns 
-	   callable vim.Function object. Use self keyword argument to assign 
-	   |self| object for dictionary functions.
-
-	Note: this function has the same behavior as |lua-eval| (except that 
-	      lua does not support running vim functions), |python-eval| is 
-	      kept for backwards compatibility in order not to make scripts 
-	      relying on outputs of vim.eval() being a copy of original or 
-	      vim.eval("1") returning a string.
-
-	You can use "List", "Dictionary" and "Function" vim module attributes 
-	to test whether object has given type. These types are currently not 
-	subclassable, neither they contain constructors, so you can use them 
-	only for checks like `isinstance(obj, vim.List)`.
-
+	Like |python-eval|, but returns special objects described in 
+	|python-bindeval-objects|. These python objects let you modify (|List| 
+	or |Dictionary|) or call (|Funcref|) vim objecs.
 
 Error object of the "vim" module
 
@@ -497,13 +460,90 @@ Tab page attributes are:
 TabPage object type is available using "TabPage" attribute of vim module.
 
 ==============================================================================
-7. pyeval() and py3eval() Vim functions			*python-pyeval*
+7. vim.bindeval objects				*python-bindeval-objects*
+
+vim.Dictionary object				*python-Dictionary*
+    Dictionary-like object providing access to vim |Dictionary| type.
+    Attributes:
+        Attribute  Description ~
+        locked     One of                       *python-.locked*
+                    Value           Description ~
+                    zero            Variable is not locked
+                    vim.VAR_LOCKED  Variable is locked, but can be unlocked
+                    vim.VAR_FIXED   Variable is locked and can't be unlocked
+                   Read-write. You can unlock locked variable by assigning 
+                   `True` or `False` to this attribute. No recursive locking 
+                   is supported.
+        scope      One of
+                    Value              Description ~
+                    zero               Dictionary is not a scope one
+                    vim.VAR_DEF_SCOPE  |g:| or |l:| dictionary
+                    vim.VAR_SCOPE      Other scope dictionary,
+                                       see |internal-variables|
+    Methods:
+        Method      Description ~
+        keys()      Returns a list with dictionary keys.
+        values()    Returns a list with dictionary values.
+        items()     Returns a list of 2-tuples with dictionary contents.
+        update(iterable)
+        update(dictionary)
+        update(**kwargs)
+                    Adds keys to dictionary.
+    Examples: >
+        py d = vim.bindeval('{}')
+        d['a'] = 'b'				# Item assignment
+        print d['a']				# getting item
+        d.update({'c': 'd'})			# .update(dictionary)
+        d.update(e='f')				# .update(**kwargs)
+        d.update((('g', 'h'), ('i', 'j')))	# .update(iterable)
+        for key in d.keys():			# .keys()
+        for val in d.values():			# .values()
+        for key, val in d.items():		# .items()
+        print isinstance(d, vim.Dictionary)	# True
+        for key in d:				# Iteration over keys
+<
+    Note: when iterating over keys you should not modify dictionary.
+
+vim.List object					*python-List*
+    Sequence-like object providing access to vim |List| type.
+    Supports `.locked` attribute, see |python-.locked|. Also supports the 
+    following methods:
+        Method          Description ~
+        extend(item)    Add items to the list.
+    Examples: >
+        l = vim.bindeval('[]')
+        l.extend(['abc', 'def'])	# .extend() method
+        print l[1:]			# slicing
+        l[:0] = ['ghi', 'jkl']		# slice assignment
+        print l[0]			# getting item
+        l[0] = 'mno'			# assignment
+        for i in l:			# iteration
+        print isinstance(l, vim.List)	# True
+
+vim.Function object				*python-Function*
+    Function-like object, acting like vim |Funcref| object. Supports `.name` 
+    attribute and is callable. Accepts special keyword argument `self`, see 
+    |Dictionary-function|.
+    Examples: >
+        f = vim.bindeval('function("tr")')
+        print f('abc', 'a', 'b')		# Calls tr('abc', 'a', 'b')
+        vim.command('''
+            function DictFun() dict
+                return self
+            endfunction
+        ''')
+        f = vim.bindeval('function("DictFun")')
+        print f(self={})			# Like call('DictFun', [], {})
+        print isinstance(f, vim.Function)	# True
+
+==============================================================================
+8. pyeval() and py3eval() Vim functions			*python-pyeval*
 
 To facilitate bi-directional interface, you can use |pyeval()| and |py3eval()| 
 functions to evaluate Python expressions and pass their values to VimL.
 
 ==============================================================================
-8. Dynamic loading					*python-dynamic*
+9. Dynamic loading					*python-dynamic*
 
 On MS-Windows the Python library can be loaded dynamically.  The |:version|
 output then includes |+python/dyn|.
@@ -520,7 +560,7 @@ Currently the name is "python24.dll".  That is for Python 2.4.  To know for
 sure edit "gvim.exe" and search for "python\d*.dll\c".
 
 ==============================================================================
-9. Python 3						*python3*
+10. Python 3						*python3*
 
 							*:py3* *:python3*
 The `:py3` and `:python3` commands work similar to `:python`.  A simple check

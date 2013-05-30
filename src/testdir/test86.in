@@ -31,16 +31,22 @@ STARTTEST
 :"
 :" Extending Dictionary directly with different types
 :let d = {}
-:py d=vim.bindeval('d')
-:py d['1']='asd'
-:py d['b']=[1, 2, f]
-:py d['-1']={'a': 1}
-:let dkeys = []
-:py dk=vim.bindeval('dkeys')
-:py dkeys=d.keys()
-:py dkeys.sort()
-:py dk.extend(dkeys)
-:$put =string(dkeys)
+py << EOF
+d=vim.bindeval('d')
+d['1']='asd'
+d.update(b=[1, 2, f])
+d.update((('-1', {'a': 1}),))
+d.update({'0': -1})
+dk = d.keys()
+dv = d.values()
+di = d.items()
+dk.sort(key=repr)
+dv.sort(key=repr)
+di.sort(key=repr)
+EOF
+:$put =pyeval('repr(dk)')
+:$put =substitute(pyeval('repr(dv)'),'0x\x\+','','g')
+:$put =substitute(pyeval('repr(di)'),'0x\x\+','','g')
 :for [key, val] in sort(items(d))
 :  $put =string(key) . ' : ' . string(val)
 :  unlet key val
@@ -60,7 +66,20 @@ STARTTEST
 :$put =string(l)
 :"
 :py del d['-1']
+:$put =string(pyeval('d.get(''b'', 1)'))
+:$put =string(pyeval('d.pop(''b'')'))
+:$put =string(pyeval('d.get(''b'', 1)'))
+:$put =string(pyeval('d.pop(''1'', 2)'))
+:$put =string(pyeval('d.pop(''1'', 2)'))
+:$put =pyeval('repr(d.has_key(''0''))')
+:$put =pyeval('repr(d.has_key(''1''))')
+:$put =pyeval('repr(''0'' in d)')
+:$put =pyeval('repr(''1'' in d)')
+:$put =pyeval('repr(list(iter(d)))')
 :$put =string(d)
+:$put =pyeval('repr(d.popitem(''0''))')
+:$put =pyeval('repr(d.get(''0''))')
+:$put =pyeval('repr(list(iter(d)))')
 :"
 :" removing items out of range: silently skip items that don't exist
 :let l = [0, 1, 2, 3]
@@ -198,6 +217,9 @@ em('d["abc"]=vim')
 em('d[""]=1')
 em('d["a\\0b"]=1')
 em('d[u"a\\0b"]=1')
+
+em('d.pop("abc")')
+em('d.popitem("abc")')
 EOF
 :$put =messages
 :unlet messages
@@ -709,6 +731,10 @@ del name
 del o
 EOF
 :"
+:" Test vim.*.__new__
+:$put =string(pyeval('vim.Dictionary({})'))
+:$put =string(pyeval('vim.Dictionary(a=1)'))
+:$put =string(pyeval('vim.Dictionary(((''a'', 1),))'))
 :"
 :" Test stdout/stderr
 :redir => messages
@@ -718,6 +744,16 @@ EOF
 :py sys.stderr.writelines(iter('abc'))
 :redir END
 :$put =string(substitute(messages, '\d\+', '', 'g'))
+:" Test subclassing
+py << EOF
+class DupDict(vim.Dictionary):
+    def __setitem__(self, key, value):
+        super(DupDict, self).__setitem__(key, value)
+        super(DupDict, self).__setitem__('dup_' + key, value)
+dd = DupDict()
+dd['a'] = 'b'
+EOF
+:$put =string(sort(keys(pyeval('dd'))))
 :"
 :" Test exceptions
 :fun Exe(e)

@@ -75,6 +75,7 @@ int dict_add_list __ARGS((dict_T *d, char *key, list_T *list));
 dictitem_T *dict_find __ARGS((dict_T *d, char_u *key, int len));
 char_u *get_dict_string __ARGS((dict_T *d, char_u *key, int save));
 long get_dict_number __ARGS((dict_T *d, char_u *key));
+void dict_extend __ARGS((dict_T *d1, dict_T *d2, char_u *action));
 char_u *get_function_name __ARGS((expand_T *xp, int idx));
 char_u *get_expr_name __ARGS((expand_T *xp, int idx));
 char_u *get_expanded_name __ARGS((char_u *name, int check));

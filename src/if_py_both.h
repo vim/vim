@@ -31,7 +31,7 @@ typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
 #define INVALID_TABPAGE_VALUE ((tabpage_T *)(-1))
 
 #define DICTKEY_DECL \
-    PyObject	*dictkey_todecref;
+    PyObject	*dictkey_todecref = NULL;
 #define DICTKEY_CHECK_EMPTY(err) \
     if (*key == NUL) \
     { \
@@ -63,6 +63,7 @@ typedef void (*runner)(const char *, void *
 
 static int ConvertFromPyObject(PyObject *, typval_T *);
 static int _ConvertFromPyObject(PyObject *, typval_T *, PyObject *);
+static int ConvertFromPyMapping(PyObject *, typval_T *);
 static PyObject *WindowNew(win_T *, tabpage_T *);
 static PyObject *BufferNew (buf_T *);
 static PyObject *LineToString(const char *);
@@ -877,18 +878,65 @@ typedef struct
     pylinkedlist_T	ref;
 } DictionaryObject;
 
+static PyObject *DictionaryUpdate(DictionaryObject *, PyObject *, PyObject *);
+
+#define NEW_DICTIONARY(dict) DictionaryNew(&DictionaryType, dict)
+
     static PyObject *
-DictionaryNew(dict_T *dict)
+DictionaryNew(PyTypeObject *subtype, dict_T *dict)
 {
     DictionaryObject	*self;
 
-    self = PyObject_NEW(DictionaryObject, &DictionaryType);
+    self = (DictionaryObject *) subtype->tp_alloc(subtype, 0);
     if (self == NULL)
 	return NULL;
     self->dict = dict;
     ++dict->dv_refcount;
 
     pyll_add((PyObject *)(self), &self->ref, &lastdict);
+
+    return (PyObject *)(self);
+}
+
+    static dict_T *
+py_dict_alloc()
+{
+    dict_T	*r;
+
+    if (!(r = dict_alloc()))
+    {
+	PyErr_NoMemory();
+	return NULL;
+    }
+    ++r->dv_refcount;
+
+    return r;
+}
+
+    static PyObject *
+DictionaryConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
+{
+    DictionaryObject	*self;
+    dict_T	*dict;
+
+    if (!(dict = py_dict_alloc()))
+	return NULL;
+
+    self = (DictionaryObject *) DictionaryNew(subtype, dict);
+
+    --dict->dv_refcount;
+
+    if (kwargs || PyTuple_Size(args))
+    {
+	PyObject	*tmp;
+	if (!(tmp = DictionaryUpdate(self, args, kwargs)))
+	{
+	    Py_DECREF(self);
+	    return NULL;
+	}
+
+	Py_DECREF(tmp);
+    }
 
     return (PyObject *)(self);
 }
@@ -918,7 +966,8 @@ DictionarySetattr(DictionaryObject *self, char *name, PyObject *val)
 {
     if (val == NULL)
     {
-	PyErr_SetString(PyExc_AttributeError, _("Cannot delete DictionaryObject attributes"));
+	PyErr_SetString(PyExc_AttributeError,
+		_("cannot delete vim.Dictionary attributes"));
 	return -1;
     }
 
@@ -926,7 +975,7 @@ DictionarySetattr(DictionaryObject *self, char *name, PyObject *val)
     {
 	if (self->dict->dv_lock == VAR_FIXED)
 	{
-	    PyErr_SetString(PyExc_TypeError, _("Cannot modify fixed dictionary"));
+	    PyErr_SetString(PyExc_TypeError, _("cannot modify fixed dictionary"));
 	    return -1;
 	}
 	else
@@ -943,7 +992,7 @@ DictionarySetattr(DictionaryObject *self, char *name, PyObject *val)
     }
     else
     {
-	PyErr_SetString(PyExc_AttributeError, _("Cannot set this attribute"));
+	PyErr_SetString(PyExc_AttributeError, _("cannot set this attribute"));
 	return -1;
     }
 }
@@ -954,26 +1003,170 @@ DictionaryLength(DictionaryObject *self)
     return ((PyInt) (self->dict->dv_hashtab.ht_used));
 }
 
+#define DICT_FLAG_HAS_DEFAULT	0x01
+#define DICT_FLAG_POP		0x02
+#define DICT_FLAG_NONE_DEFAULT	0x04
+#define DICT_FLAG_RETURN_BOOL	0x08 /* Incompatible with DICT_FLAG_POP */
+#define DICT_FLAG_RETURN_PAIR	0x10
+
     static PyObject *
-DictionaryItem(DictionaryObject *self, PyObject *keyObject)
+_DictionaryItem(DictionaryObject *self, PyObject *args, int flags)
 {
+    PyObject	*keyObject;
+    PyObject	*defObject = ((flags & DICT_FLAG_NONE_DEFAULT)? Py_None : NULL);
+    PyObject	*r;
     char_u	*key;
     dictitem_T	*di;
+    dict_T	*dict = self->dict;
+    hashitem_T	*hi;
+
     DICTKEY_DECL
+
+    if (flags & DICT_FLAG_HAS_DEFAULT)
+    {
+	if (!PyArg_ParseTuple(args, "O|O", &keyObject, &defObject))
+	    return NULL;
+    }
+    else
+	keyObject = args;
+
+    if (flags & DICT_FLAG_RETURN_BOOL)
+	defObject = Py_False;
 
     DICTKEY_GET(NULL, 0)
 
-    di = dict_find(self->dict, key, -1);
+    hi = hash_find(&dict->dv_hashtab, key);
 
     DICTKEY_UNREF
 
-    if (di == NULL)
+    if (HASHITEM_EMPTY(hi))
     {
-	PyErr_SetObject(PyExc_KeyError, keyObject);
+	if (defObject)
+	{
+	    Py_INCREF(defObject);
+	    return defObject;
+	}
+	else
+	{
+	    PyErr_SetObject(PyExc_KeyError, keyObject);
+	    return NULL;
+	}
+    }
+    else if (flags & DICT_FLAG_RETURN_BOOL)
+    {
+	Py_INCREF(Py_True);
+	return Py_True;
+    }
+
+    di = dict_lookup(hi);
+
+    if (!(r = ConvertToPyObject(&di->di_tv)))
+	return NULL;
+
+    if (flags & DICT_FLAG_POP)
+    {
+	if (dict->dv_lock)
+	{
+	    PyErr_SetVim(_("dict is locked"));
+	    Py_DECREF(r);
+	    return NULL;
+	}
+
+	hash_remove(&dict->dv_hashtab, hi);
+	dictitem_free(di);
+    }
+
+    if (flags & DICT_FLAG_RETURN_PAIR)
+    {
+	PyObject	*tmp = r;
+
+	if (!(r = Py_BuildValue("(" Py_bytes_fmt "O)", hi->hi_key, tmp)))
+	{
+	    Py_DECREF(tmp);
+	    return NULL;
+	}
+    }
+
+    return r;
+}
+
+    static PyObject *
+DictionaryItem(DictionaryObject *self, PyObject *keyObject)
+{
+    return _DictionaryItem(self, keyObject, 0);
+}
+
+    static int
+DictionaryContains(DictionaryObject *self, PyObject *keyObject)
+{
+    PyObject	*rObj = _DictionaryItem(self, keyObject, DICT_FLAG_RETURN_BOOL);
+    int		r;
+
+    r = (rObj == Py_True);
+
+    Py_DECREF(Py_True);
+
+    return r;
+}
+
+typedef struct
+{
+    hashitem_T	*ht_array;
+    long_u	ht_used;
+    hashtab_T	*ht;
+    hashitem_T	*hi;
+    int		todo;
+} dictiterinfo_T;
+
+    static PyObject *
+DictionaryIterNext(dictiterinfo_T **dii)
+{
+    PyObject	*r;
+
+    if (!(*dii)->todo)
+	return NULL;
+
+    if ((*dii)->ht->ht_array != (*dii)->ht_array ||
+	    (*dii)->ht->ht_used != (*dii)->ht_used)
+    {
+	PyErr_SetString(PyExc_RuntimeError,
+		_("hashtab changed during iteration"));
 	return NULL;
     }
 
-    return ConvertToPyObject(&di->di_tv);
+    while (((*dii)->todo) && HASHITEM_EMPTY((*dii)->hi))
+	++((*dii)->hi);
+
+    --((*dii)->todo);
+
+    if (!(r = PyBytes_FromString((char *) (*dii)->hi->hi_key)))
+	return NULL;
+
+    return r;
+}
+
+    static PyObject *
+DictionaryIter(DictionaryObject *self)
+{
+    dictiterinfo_T	*dii;
+    hashtab_T		*ht;
+
+    if (!(dii = PyMem_New(dictiterinfo_T, 1)))
+    {
+	PyErr_NoMemory();
+	return NULL;
+    }
+
+    ht = &self->dict->dv_hashtab;
+    dii->ht_array = ht->ht_array;
+    dii->ht_used = ht->ht_used;
+    dii->ht = ht;
+    dii->hi = dii->ht_array;
+    dii->todo = dii->ht_used;
+
+    return IterNew(dii,
+	    (destructorfun) PyMem_Free, (nextfun) DictionaryIterNext,
+	    NULL, NULL);
 }
 
     static PyInt
@@ -1016,18 +1209,19 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
 
     if (di == NULL)
     {
-	di = dictitem_alloc(key);
-	if (di == NULL)
+	if (!(di = dictitem_alloc(key)))
 	{
 	    PyErr_NoMemory();
 	    return -1;
 	}
 	di->di_tv.v_lock = 0;
+	di->di_tv.v_type = VAR_UNKNOWN;
 
 	if (dict_add(dict, di) == FAIL)
 	{
 	    DICTKEY_UNREF
 	    vim_free(di);
+	    dictitem_free(di);
 	    PyErr_SetVim(_("failed to add key to dictionary"));
 	    return -1;
 	}
@@ -1042,27 +1236,269 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
     return 0;
 }
 
+typedef PyObject *(*hi_to_py)(hashitem_T *);
+
     static PyObject *
-DictionaryListKeys(DictionaryObject *self)
+DictionaryListObjects(DictionaryObject *self, hi_to_py hiconvert)
 {
     dict_T	*dict = self->dict;
     long_u	todo = dict->dv_hashtab.ht_used;
     Py_ssize_t	i = 0;
     PyObject	*r;
     hashitem_T	*hi;
+    PyObject	*newObj;
 
     r = PyList_New(todo);
     for (hi = dict->dv_hashtab.ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
-	    PyList_SetItem(r, i, PyBytes_FromString((char *)(hi->hi_key)));
+	    if (!(newObj = hiconvert(hi)))
+	    {
+		Py_DECREF(r);
+		return NULL;
+	    }
+	    if (PyList_SetItem(r, i, newObj))
+	    {
+		Py_DECREF(r);
+		Py_DECREF(newObj);
+		return NULL;
+	    }
 	    --todo;
 	    ++i;
 	}
     }
     return r;
 }
+
+    static PyObject *
+dict_key(hashitem_T *hi)
+{
+    return PyBytes_FromString((char *)(hi->hi_key));
+}
+
+    static PyObject *
+DictionaryListKeys(DictionaryObject *self)
+{
+    return DictionaryListObjects(self, dict_key);
+}
+
+    static PyObject *
+dict_val(hashitem_T *hi)
+{
+    dictitem_T	*di;
+
+    di = dict_lookup(hi);
+    return ConvertToPyObject(&di->di_tv);
+}
+
+    static PyObject *
+DictionaryListValues(DictionaryObject *self)
+{
+    return DictionaryListObjects(self, dict_val);
+}
+
+    static PyObject *
+dict_item(hashitem_T *hi)
+{
+    PyObject	*keyObject;
+    PyObject	*valObject;
+    PyObject	*r;
+
+    if (!(keyObject = dict_key(hi)))
+	return NULL;
+
+    if (!(valObject = dict_val(hi)))
+    {
+	Py_DECREF(keyObject);
+	return NULL;
+    }
+
+    r = Py_BuildValue("(OO)", keyObject, valObject);
+
+    Py_DECREF(keyObject);
+    Py_DECREF(valObject);
+
+    return r;
+}
+
+    static PyObject *
+DictionaryListItems(DictionaryObject *self)
+{
+    return DictionaryListObjects(self, dict_item);
+}
+
+    static PyObject *
+DictionaryUpdate(DictionaryObject *self, PyObject *args, PyObject *kwargs)
+{
+    dict_T	*dict = self->dict;
+
+    if (dict->dv_lock)
+    {
+	PyErr_SetVim(_("dict is locked"));
+	return NULL;
+    }
+
+    if (kwargs)
+    {
+	typval_T	tv;
+
+	if (ConvertFromPyMapping(kwargs, &tv) == -1)
+	    return NULL;
+
+	VimTryStart();
+	dict_extend(self->dict, tv.vval.v_dict, (char_u *) "force");
+	clear_tv(&tv);
+	if (VimTryEnd())
+	    return NULL;
+    }
+    else
+    {
+	PyObject	*object;
+
+	if (!PyArg_Parse(args, "(O)", &object))
+	    return NULL;
+
+	if (PyObject_HasAttrString(object, "keys"))
+	    return DictionaryUpdate(self, NULL, object);
+	else
+	{
+	    PyObject	*iterator;
+	    PyObject	*item;
+
+	    if (!(iterator = PyObject_GetIter(object)))
+		return NULL;
+
+	    while ((item = PyIter_Next(iterator)))
+	    {
+		PyObject	*fast;
+		PyObject	*keyObject;
+		PyObject	*valObject;
+		PyObject	*todecref;
+		char_u		*key;
+		dictitem_T	*di;
+
+		if (!(fast = PySequence_Fast(item, "")))
+		{
+		    Py_DECREF(iterator);
+		    Py_DECREF(item);
+		    return NULL;
+		}
+
+		Py_DECREF(item);
+
+		if (PySequence_Fast_GET_SIZE(fast) != 2)
+		{
+		    Py_DECREF(iterator);
+		    Py_DECREF(fast);
+		    PyErr_SetString(PyExc_ValueError,
+			    _("expected sequence element of size 2"));
+		    return NULL;
+		}
+
+		keyObject = PySequence_Fast_GET_ITEM(fast, 0);
+
+		if (!(key = StringToChars(keyObject, &todecref)))
+		{
+		    Py_DECREF(iterator);
+		    Py_DECREF(fast);
+		    return NULL;
+		}
+
+		di = dictitem_alloc(key);
+
+		Py_XDECREF(todecref);
+
+		if (di == NULL)
+		{
+		    Py_DECREF(fast);
+		    Py_DECREF(iterator);
+		    PyErr_NoMemory();
+		    return NULL;
+		}
+		di->di_tv.v_lock = 0;
+		di->di_tv.v_type = VAR_UNKNOWN;
+
+		valObject = PySequence_Fast_GET_ITEM(fast, 1);
+
+		if (ConvertFromPyObject(valObject, &di->di_tv) == -1)
+		{
+		    Py_DECREF(iterator);
+		    Py_DECREF(fast);
+		    dictitem_free(di);
+		    return NULL;
+		}
+
+		Py_DECREF(fast);
+
+		if (dict_add(dict, di) == FAIL)
+		{
+		    Py_DECREF(iterator);
+		    dictitem_free(di);
+		    PyErr_SetVim(_("failed to add key to dictionary"));
+		    return NULL;
+		}
+	    }
+
+	    Py_DECREF(iterator);
+
+	    /* Iterator may have finished due to an exception */
+	    if (PyErr_Occurred())
+		return NULL;
+	}
+    }
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+    static PyObject *
+DictionaryGet(DictionaryObject *self, PyObject *args)
+{
+    return _DictionaryItem(self, args,
+			    DICT_FLAG_HAS_DEFAULT|DICT_FLAG_NONE_DEFAULT);
+}
+
+    static PyObject *
+DictionaryPop(DictionaryObject *self, PyObject *args)
+{
+    return _DictionaryItem(self, args, DICT_FLAG_HAS_DEFAULT|DICT_FLAG_POP);
+}
+
+    static PyObject *
+DictionaryPopItem(DictionaryObject *self, PyObject *args)
+{
+    PyObject	*keyObject;
+
+    if (!PyArg_ParseTuple(args, "O", &keyObject))
+	return NULL;
+
+    return _DictionaryItem(self, keyObject,
+			    DICT_FLAG_POP|DICT_FLAG_RETURN_PAIR);
+}
+
+    static PyObject *
+DictionaryHasKey(DictionaryObject *self, PyObject *args)
+{
+    PyObject	*keyObject;
+
+    if (!PyArg_ParseTuple(args, "O", &keyObject))
+	return NULL;
+
+    return _DictionaryItem(self, keyObject, DICT_FLAG_RETURN_BOOL);
+}
+
+static PySequenceMethods DictionaryAsSeq = {
+    0,					/* sq_length */
+    0,					/* sq_concat */
+    0,					/* sq_repeat */
+    0,					/* sq_item */
+    0,					/* sq_slice */
+    0,					/* sq_ass_item */
+    0,					/* sq_ass_slice */
+    (objobjproc) DictionaryContains,	/* sq_contains */
+    0,					/* sq_inplace_concat */
+    0,					/* sq_inplace_repeat */
+};
 
 static PyMappingMethods DictionaryAsMapping = {
     (lenfunc)       DictionaryLength,
@@ -1072,6 +1508,13 @@ static PyMappingMethods DictionaryAsMapping = {
 
 static struct PyMethodDef DictionaryMethods[] = {
     {"keys",	(PyCFunction)DictionaryListKeys,	METH_NOARGS,	""},
+    {"values",	(PyCFunction)DictionaryListValues,	METH_NOARGS,	""},
+    {"items",	(PyCFunction)DictionaryListItems,	METH_NOARGS,	""},
+    {"update",	(PyCFunction)DictionaryUpdate,		METH_VARARGS|METH_KEYWORDS, ""},
+    {"get",	(PyCFunction)DictionaryGet,		METH_VARARGS,	""},
+    {"pop",	(PyCFunction)DictionaryPop,		METH_VARARGS,	""},
+    {"popitem",	(PyCFunction)DictionaryPopItem,		METH_VARARGS,	""},
+    {"has_key",	(PyCFunction)DictionaryHasKey,		METH_VARARGS,	""},
     {"__dir__",	(PyCFunction)DictionaryDir,		METH_NOARGS,	""},
     { NULL,	NULL,					0,		NULL}
 };
@@ -1541,14 +1984,7 @@ FunctionCall(FunctionObject *self, PyObject *argsObject, PyObject *kwargs)
 	selfdictObject = PyDict_GetItemString(kwargs, "self");
 	if (selfdictObject != NULL)
 	{
-	    if (!PyMapping_Check(selfdictObject))
-	    {
-		PyErr_SetString(PyExc_TypeError,
-				   _("'self' argument must be a dictionary"));
-		clear_tv(&args);
-		return NULL;
-	    }
-	    if (ConvertFromPyObject(selfdictObject, &selfdicttv) == -1)
+	    if (ConvertFromPyMapping(selfdictObject, &selfdicttv) == -1)
 	    {
 		clear_tv(&args);
 		return NULL;
@@ -1994,7 +2430,7 @@ TabPageAttr(TabPageObject *self, char *name)
     else if (strcmp(name, "number") == 0)
 	return PyLong_FromLong((long) get_tab_number(self->tab));
     else if (strcmp(name, "vars") == 0)
-	return DictionaryNew(self->tab->tp_vars);
+	return NEW_DICTIONARY(self->tab->tp_vars);
     else if (strcmp(name, "window") == 0)
     {
 	/* For current tab window.c does not bother to set or update tp_curwin
@@ -2225,7 +2661,7 @@ WindowAttr(WindowObject *self, char *name)
 	return PyLong_FromLong((long)(W_WINCOL(self->win)));
 #endif
     else if (strcmp(name, "vars") == 0)
-	return DictionaryNew(self->win->w_vars);
+	return NEW_DICTIONARY(self->win->w_vars);
     else if (strcmp(name, "options") == 0)
 	return OptionsNew(SREQ_WIN, self->win, (checkfun) CheckWindow,
 			(PyObject *) self);
@@ -3402,7 +3838,7 @@ BufferAttr(BufferObject *self, char *name)
     else if (strcmp(name, "number") == 0)
 	return Py_BuildValue(Py_ssize_t_fmt, self->buf->b_fnum);
     else if (strcmp(name, "vars") == 0)
-	return DictionaryNew(self->buf->b_vars);
+	return NEW_DICTIONARY(self->buf->b_vars);
     else if (strcmp(name, "options") == 0)
 	return OptionsNew(SREQ_BUF, self->buf, (checkfun) CheckBuffer,
 			(PyObject *) self);
@@ -4307,6 +4743,36 @@ convert_dl(PyObject *obj, typval_T *tv,
 }
 
     static int
+ConvertFromPyMapping(PyObject *obj, typval_T *tv)
+{
+    PyObject	*lookup_dict;
+    int		r;
+
+    if (!(lookup_dict = PyDict_New()))
+	return -1;
+
+    if (PyType_IsSubtype(obj->ob_type, &DictionaryType))
+    {
+	tv->v_type = VAR_DICT;
+	tv->vval.v_dict = (((DictionaryObject *)(obj))->dict);
+	++tv->vval.v_dict->dv_refcount;
+	r = 0;
+    }
+    else if (PyDict_Check(obj))
+	r = convert_dl(obj, tv, pydict_to_tv, lookup_dict);
+    else if (PyMapping_Check(obj))
+	r = convert_dl(obj, tv, pymap_to_tv, lookup_dict);
+    else
+    {
+	PyErr_SetString(PyExc_TypeError,
+		_("unable to convert object to vim dictionary"));
+	r = -1;
+    }
+    Py_DECREF(lookup_dict);
+    return r;
+}
+
+    static int
 ConvertFromPyObject(PyObject *obj, typval_T *tv)
 {
     PyObject	*lookup_dict;
@@ -4322,7 +4788,7 @@ ConvertFromPyObject(PyObject *obj, typval_T *tv)
     static int
 _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 {
-    if (obj->ob_type == &DictionaryType)
+    if (PyType_IsSubtype(obj->ob_type, &DictionaryType))
     {
 	tv->v_type = VAR_DICT;
 	tv->vval.v_dict = (((DictionaryObject *)(obj))->dict);
@@ -4437,7 +4903,7 @@ ConvertToPyObject(typval_T *tv)
 	case VAR_LIST:
 	    return ListNew(tv->vval.v_list);
 	case VAR_DICT:
-	    return DictionaryNew(tv->vval.v_dict);
+	    return NEW_DICTIONARY(tv->vval.v_dict);
 	case VAR_FUNC:
 	    return FunctionNew(tv->vval.v_string == NULL
 					  ? (char_u *)"" : tv->vval.v_string);
@@ -4608,10 +5074,14 @@ init_structs(void)
     DictionaryType.tp_name = "vim.dictionary";
     DictionaryType.tp_basicsize = sizeof(DictionaryObject);
     DictionaryType.tp_dealloc = (destructor)DictionaryDestructor;
+    DictionaryType.tp_as_sequence = &DictionaryAsSeq;
     DictionaryType.tp_as_mapping = &DictionaryAsMapping;
-    DictionaryType.tp_flags = Py_TPFLAGS_DEFAULT;
+    DictionaryType.tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE;
     DictionaryType.tp_doc = "dictionary pushing modifications to vim structure";
     DictionaryType.tp_methods = DictionaryMethods;
+    DictionaryType.tp_iter = (getiterfunc)DictionaryIter;
+    DictionaryType.tp_new = (newfunc)DictionaryConstructor;
+    DictionaryType.tp_alloc = (allocfunc)PyType_GenericAlloc;
 #if PY_MAJOR_VERSION >= 3
     DictionaryType.tp_getattro = (getattrofunc)DictionaryGetattro;
     DictionaryType.tp_setattro = (setattrofunc)DictionarySetattro;
@@ -4786,8 +5256,8 @@ populate_module(PyObject *m, object_adder add_object)
 	return -1;
     ADD_OBJECT(m, "error", VimError);
 
-    ADD_CHECKED_OBJECT(m, "vars",  DictionaryNew(&globvardict));
-    ADD_CHECKED_OBJECT(m, "vvars", DictionaryNew(&vimvardict));
+    ADD_CHECKED_OBJECT(m, "vars",  NEW_DICTIONARY(&globvardict));
+    ADD_CHECKED_OBJECT(m, "vvars", NEW_DICTIONARY(&vimvardict));
     ADD_CHECKED_OBJECT(m, "options",
 	    OptionsNew(SREQ_GLOBAL, NULL, dummy_check, NULL));
     return 0;

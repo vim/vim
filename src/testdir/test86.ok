@@ -4,13 +4,29 @@ start:
 Vim(put):E684:
 [0, 'as''d', [1, 2, function('strlen'), {'a': 1}]]
 [0, function('strlen'), [1, 2, function('strlen'), {'a': 1}]]
-['-1', '1', 'b']
+['-1', '0', '1', 'b']
+['asd', -1L, <vim.dictionary object at >, <vim.list object at >]
+[('-1', <vim.dictionary object at >), ('0', -1L), ('1', 'asd'), ('b', <vim.list object at >)]
 '-1' : {'a': 1}
+'0' : -1
 '1' : 'asd'
 'b' : [1, 2, function('strlen')]
 [0, function('strlen')]
 [3]
-{'1': 'asd', 'b': [1, 2, function('strlen')]}
+[1, 2, function('strlen')]
+[1, 2, function('strlen')]
+1
+'asd'
+2
+True
+False
+True
+False
+['0']
+{'0': -1}
+('', -1L)
+None
+[]
 [0, 1, 2, 3]
 [0, 1, 2, 3]
 [0, 1, 3]
@@ -44,6 +60,8 @@ TypeError
 ValueError
 TypeError
 TypeError
+KeyError
+KeyError
 d : locked:0;scope:0
 dl : locked:1;scope:0
 v: : locked:2;scope:1
@@ -387,10 +405,13 @@ buffer:__dir__,__members__,append,mark,name,number,options,range,valid,vars
 window:__dir__,__members__,buffer,col,cursor,height,number,options,row,tabpage,valid,vars
 tabpage:__dir__,__members__,number,valid,vars,window,windows
 range:__dir__,__members__,append,end,start
-dictionary:__dir__,__members__,keys,locked,scope
+dictionary:__dir__,__members__,get,has_key,items,keys,locked,pop,popitem,scope,update,values
 list:__dir__,__members__,extend,locked
 function:__call__,__dir__,__members__,softspace
 output:__dir__,__members__,flush,softspace,write,writelines
+{}
+{'a': 1}
+{'a': 1}
 '
 abcdef
 line  :
@@ -398,6 +419,7 @@ abcdef
 abc
 line  :
 abc'
+['a', 'dup_a']
 (<class 'vim.error'>, error('abc',))
 (<class 'vim.error'>, error('def',))
 (<class 'vim.error'>, error('ghi',))
