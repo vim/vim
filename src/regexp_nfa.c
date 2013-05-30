@@ -184,6 +184,9 @@ static int syntax_error = FALSE;
 /* NFA regexp \ze operator encountered. */
 static int nfa_has_zend;
 
+/* NFA regexp \1 .. \9 encountered. */
+static int nfa_has_backref;
+
 /* Number of sub expressions actually being used during execution. 1 if only
  * the whole match (subexpr 0) is used. */
 static int nfa_nsubexpr;
@@ -266,6 +269,7 @@ nfa_regcomp_start(expr, re_flags)
     post_ptr = post_start;
     post_end = post_start + nstate_max;
     nfa_has_zend = FALSE;
+    nfa_has_backref = FALSE;
 
     regcomp_start(expr, re_flags);
 
@@ -750,15 +754,18 @@ nfa_regatom()
 	    /* TODO: Not supported yet */
 	    return FAIL;
 
-	case Magic('1'): EMIT(NFA_BACKREF1); break;
-	case Magic('2'): EMIT(NFA_BACKREF2); break;
-	case Magic('3'): EMIT(NFA_BACKREF3); break;
-	case Magic('4'): EMIT(NFA_BACKREF4); break;
-	case Magic('5'): EMIT(NFA_BACKREF5); break;
-	case Magic('6'): EMIT(NFA_BACKREF6); break;
-	case Magic('7'): EMIT(NFA_BACKREF7); break;
-	case Magic('8'): EMIT(NFA_BACKREF8); break;
-	case Magic('9'): EMIT(NFA_BACKREF9); break;
+	case Magic('1'):
+	case Magic('2'):
+	case Magic('3'):
+	case Magic('4'):
+	case Magic('5'):
+	case Magic('6'):
+	case Magic('7'):
+	case Magic('8'):
+	case Magic('9'):
+	    EMIT(NFA_BACKREF1 + (no_Magic(c) - '1'));
+	    nfa_has_backref = TRUE;
+	    break;
 
 	case Magic('z'):
 	    c = no_Magic(getchr());
@@ -2581,7 +2588,8 @@ typedef struct
 typedef struct
 {
     nfa_thread_T    *t;		/* allocated array of states */
-    int		    n;		/* nr of states in "t" */
+    int		    n;		/* nr of states currently in "t" */
+    int		    len;	/* max nr of states in "t" */
     int		    id;		/* ID of the list */
 } nfa_list_T;
 
@@ -2612,8 +2620,91 @@ log_subexpr(sub)
 /* Used during execution: whether a match has been found. */
 static int nfa_match;
 
+static int sub_equal __ARGS((regsub_T *sub1, regsub_T *sub2));
 static void addstate __ARGS((nfa_list_T *l, nfa_state_T *state, regsub_T *sub, int off));
 static void addstate_here __ARGS((nfa_list_T *l, nfa_state_T *state, regsub_T *sub, int *ip));
+
+/*
+ * Return TRUE if "sub1" and "sub2" have the same positions.
+ */
+    static int
+sub_equal(sub1, sub2)
+    regsub_T	*sub1;
+    regsub_T	*sub2;
+{
+    int		i;
+    int		todo;
+    linenr_T	s1, e1;
+    linenr_T	s2, e2;
+    char_u	*sp1, *ep1;
+    char_u	*sp2, *ep2;
+
+    todo = sub1->in_use > sub2->in_use ? sub1->in_use : sub2->in_use;
+    if (REG_MULTI)
+    {
+	for (i = 0; i < todo; ++i)
+	{
+	    if (i < sub1->in_use)
+	    {
+		s1 = sub1->list.multi[i].start.lnum;
+		e1 = sub1->list.multi[i].end.lnum;
+	    }
+	    else
+	    {
+		s1 = 0;
+		e1 = 0;
+	    }
+	    if (i < sub2->in_use)
+	    {
+		s2 = sub2->list.multi[i].start.lnum;
+		e2 = sub2->list.multi[i].end.lnum;
+	    }
+	    else
+	    {
+		s2 = 0;
+		e2 = 0;
+	    }
+	    if (s1 != s2 || e1 != e2)
+		return FALSE;
+	    if (s1 != 0 && sub1->list.multi[i].start.col
+					     != sub2->list.multi[i].start.col)
+		return FALSE;
+	    if (e1 != 0 && sub1->list.multi[i].end.col
+					     != sub2->list.multi[i].end.col)
+		return FALSE;
+	}
+    }
+    else
+    {
+	for (i = 0; i < todo; ++i)
+	{
+	    if (i < sub1->in_use)
+	    {
+		sp1 = sub1->list.line[i].start;
+		ep1 = sub1->list.line[i].end;
+	    }
+	    else
+	    {
+		sp1 = NULL;
+		ep1 = NULL;
+	    }
+	    if (i < sub2->in_use)
+	    {
+		sp2 = sub2->list.line[i].start;
+		ep2 = sub2->list.line[i].end;
+	    }
+	    else
+	    {
+		sp2 = NULL;
+		ep2 = NULL;
+	    }
+	    if (sp1 != sp2 || ep1 != ep2)
+		return FALSE;
+	}
+    }
+
+    return TRUE;
+}
 
     static void
 addstate(l, state, sub, off)
@@ -2623,7 +2714,7 @@ addstate(l, state, sub, off)
     int			off;	/* byte offset, when -1 go to next line */
 {
     int			subidx;
-    nfa_thread_T	*lastthread;
+    nfa_thread_T	*thread;
     lpos_T		save_lpos;
     int			save_in_use;
     char_u		*save_ptr;
@@ -2674,23 +2765,44 @@ addstate(l, state, sub, off)
 	    {
 		/* This state is already in the list, don't add it again,
 		 * unless it is an MOPEN that is used for a backreference. */
-		return;
+		if (!nfa_has_backref)
+		    return;
+
+		/* See if the same state is already in the list with the same
+		 * positions. */
+		for (i = 0; i < l->n; ++i)
+		{
+		    thread = &l->t[i];
+		    if (thread->state->id == state->id
+					  && sub_equal(&thread->sub, sub))
+			return;
+		}
+	    }
+
+	    /* when there are backreferences the number of states may be (a
+	     * lot) bigger */
+	    if (nfa_has_backref && l->n == l->len)
+	    {
+		int newlen = l->len * 3 / 2 + 50;
+
+		l->t = vim_realloc(l->t, newlen * sizeof(nfa_thread_T));
+		l->len = newlen;
 	    }
 
 	    /* add the state to the list */
 	    state->lastlist = l->id;
-	    lastthread = &l->t[l->n++];
-	    lastthread->state = state;
-	    lastthread->sub.in_use = sub->in_use;
+	    thread = &l->t[l->n++];
+	    thread->state = state;
+	    thread->sub.in_use = sub->in_use;
 	    if (sub->in_use > 0)
 	    {
 		/* Copy the match start and end positions. */
 		if (REG_MULTI)
-		    mch_memmove(&lastthread->sub.list.multi[0],
+		    mch_memmove(&thread->sub.list.multi[0],
 				&sub->list.multi[0],
 				sizeof(struct multipos) * sub->in_use);
 		else
-		    mch_memmove(&lastthread->sub.list.line[0],
+		    mch_memmove(&thread->sub.list.line[0],
 				&sub->list.line[0],
 				sizeof(struct linepos) * sub->in_use);
 	    }
@@ -2909,7 +3021,12 @@ addstate_here(l, state, sub, ip)
 
     /* re-order to put the new state at the current position */
     count = l->n - tlen;
-    if (count > 1)
+    if (count == 1)
+    {
+	/* overwrite the current state */
+	l->t[i] = l->t[l->n - 1];
+    }
+    else if (count > 1)
     {
 	/* make space for new states, then move them from the
 	 * end to the current position */
@@ -2919,11 +3036,6 @@ addstate_here(l, state, sub, ip)
 	mch_memmove(&(l->t[i]),
 		&(l->t[l->n - 1]),
 		sizeof(nfa_thread_T) * count);
-    }
-    else
-    {
-	/* overwrite the current state */
-	l->t[i] = l->t[l->n - 1];
     }
     --l->n;
     *ip = i - 1;
@@ -3183,14 +3295,14 @@ nfa_regmatch(start, submatch, m)
 
     /* Allocate memory for the lists of nodes. */
     size = (nstate + 1) * sizeof(nfa_thread_T);
-    list[0].t = (nfa_thread_T *)lalloc(size, TRUE);
-    list[1].t = (nfa_thread_T *)lalloc(size, TRUE);
-    list[2].t = (nfa_thread_T *)lalloc(size, TRUE);
+    list[0].t = (nfa_thread_T *)lalloc_clear(size, TRUE);
+    list[0].len = nstate + 1;
+    list[1].t = (nfa_thread_T *)lalloc_clear(size, TRUE);
+    list[1].len = nstate + 1;
+    list[2].t = (nfa_thread_T *)lalloc_clear(size, TRUE);
+    list[2].len = nstate + 1;
     if (list[0].t == NULL || list[1].t == NULL || list[2].t == NULL)
 	goto theend;
-    vim_memset(list[0].t, 0, size);
-    vim_memset(list[1].t, 0, size);
-    vim_memset(list[2].t, 0, size);
 
 #ifdef ENABLE_LOG
     log_fd = fopen(NFA_REGEXP_RUN_LOG, "a");
@@ -3970,7 +4082,6 @@ theend:
     vim_free(list[0].t);
     vim_free(list[1].t);
     vim_free(list[2].t);
-    list[0].t = list[1].t = list[2].t = NULL;
     vim_free(listids);
 #undef ADD_POS_NEG_STATE
 #ifdef NFA_REGEXP_DEBUG_LOG
@@ -4131,6 +4242,7 @@ nfa_regexec_both(line, col)
     reglnum = 0;    /* relative to line */
 
     nfa_has_zend = prog->has_zend;
+    nfa_has_backref = prog->has_backref;
     nfa_nsubexpr = prog->nsubexp;
 
     nstate = prog->nstate;
@@ -4225,6 +4337,7 @@ nfa_regcomp(expr, re_flags)
     prog->engine = &nfa_regengine;
     prog->nstate = nstate;
     prog->has_zend = nfa_has_zend;
+    prog->has_backref = nfa_has_backref;
     prog->nsubexp = regnpar;
 #ifdef ENABLE_LOG
     nfa_postfix_dump(expr, OK);
