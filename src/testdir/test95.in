@@ -85,7 +85,11 @@ STARTTEST
 :      continue
 :    endif
 :    let &regexpengine = engine
-:    let l = matchlist(text, pat)
+:    try
+:      let l = matchlist(text, pat)
+:    catch
+:      $put ='ERROR: pat: \"' . pat . '\", text: \"' . text . '\", caused an exception: \"' . v:exception . '\"'
+:    endtry
 :" check the match itself
 :    if len(l) == 0 && len(t) > matchidx
 :      $put ='ERROR: pat: \"' . pat . '\", text: \"' . text . '\", did not match, expected: \"' . t[matchidx] . '\"'

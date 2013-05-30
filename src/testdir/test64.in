@@ -348,6 +348,9 @@ STARTTEST
 :call add(tl, [2, '\_[^8-9]\+', "asfi\n9888", "asfi\n"])
 :call add(tl, [2, '\_[^a]\+', "asfi\n9888", "sfi\n9888"])
 :"
+:"""" Requiring lots of states.
+:call add(tl, [0, '[0-9a-zA-Z]\{8}-\([0-9a-zA-Z]\{4}-\)\{3}[0-9a-zA-Z]\{12}', " 12345678-1234-1234-1234-123456789012 ", "12345678-1234-1234-1234-123456789012", "1234-"])
+:"
 :"
 :"""" Run the tests
 :"
@@ -361,7 +364,11 @@ STARTTEST
 :      continue
 :    endif
 :    let &regexpengine = engine
-:    let l = matchlist(text, pat)
+:    try
+:      let l = matchlist(text, pat)
+:    catch
+:      $put ='ERROR: pat: \"' . pat . '\", text: \"' . text . '\", caused an exception: \"' . v:exception . '\"'
+:    endtry
 :" check the match itself
 :    if len(l) == 0 && len(t) > matchidx
 :      $put ='ERROR: pat: \"' . pat . '\", text: \"' . text . '\", did not match, expected: \"' . t[matchidx] . '\"'

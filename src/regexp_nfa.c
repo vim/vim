@@ -233,7 +233,7 @@ static long nfa_regexec_multi __ARGS((regmmatch_T *rmp, win_T *win, buf_T *buf, 
 
 /* helper functions used when doing re2post() ... regatom() parsing */
 #define EMIT(c)	do {				\
-		    if (post_ptr >= post_end)	\
+		    if (post_ptr >= post_end && realloc_post_list() == FAIL) \
 			return FAIL;		\
 		    *post_ptr++ = c;		\
 		} while (0)
@@ -256,11 +256,11 @@ nfa_regcomp_start(expr, re_flags)
     nstate_max = (int)(STRLEN(expr) + 1) * NFA_POSTFIX_MULTIPLIER;
 
     /* Some items blow up in size, such as [A-z].  Add more space for that.
-     * TODO: some patterns may still fail. */
+     * When it is still not enough realloc_post_list() will be used. */
     nstate_max += 1000;
 
     /* Size for postfix representation of expr. */
-    postfix_size = sizeof(*post_start) * nstate_max;
+    postfix_size = sizeof(int) * nstate_max;
 
     post_start = (int *)lalloc(postfix_size, TRUE);
     if (post_start == NULL)
@@ -273,6 +273,31 @@ nfa_regcomp_start(expr, re_flags)
 
     regcomp_start(expr, re_flags);
 
+    return OK;
+}
+
+/*
+ * Allocate more space for post_start.  Called when
+ * running above the estimated number of states.
+ */
+    static int
+realloc_post_list()
+{
+    int   nstate_max = post_end - post_start;
+    int   new_max = nstate_max + 1000;
+    int   *new_start;
+    int	  *old_start;
+
+    new_start = (int *)lalloc(new_max * sizeof(int), TRUE);
+    if (new_start == NULL)
+	return FAIL;
+    mch_memmove(new_start, post_start, nstate_max * sizeof(int));
+    vim_memset(new_start + nstate_max, 0, 1000 * sizeof(int));
+    old_start = post_start;
+    post_start = new_start;
+    post_ptr = new_start + (post_ptr - old_start);
+    post_end = post_start + new_max;
+    vim_free(old_start);
     return OK;
 }
 
@@ -1306,7 +1331,8 @@ nfa_regpiece()
     int		greedy = TRUE;      /* Braces are prefixed with '-' ? */
     char_u	*old_regparse, *new_regparse;
     int		c2;
-    int		*old_post_ptr, *my_post_start;
+    int		old_post_pos;
+    int		my_post_start;
     int		old_regnpar;
     int		quest;
 
@@ -1317,7 +1343,7 @@ nfa_regpiece()
      * <atom>{m,n} is next */
     old_regnpar = regnpar;
     /* store current pos in the postfix form, for \{m,n} involving 0s */
-    my_post_start = post_ptr;
+    my_post_start = (int)(post_ptr - post_start);
 
     ret = nfa_regatom();
     if (ret == FAIL)
@@ -1430,14 +1456,14 @@ nfa_regpiece()
 	    if (maxval == 0)
 	    {
 		/* Ignore result of previous call to nfa_regatom() */
-		post_ptr = my_post_start;
+		post_ptr = post_start + my_post_start;
 		/* NFA_SKIP_CHAR has 0-length and works everywhere */
 		EMIT(NFA_SKIP_CHAR);
 		return OK;
 	    }
 
 	    /* Ignore previous call to nfa_regatom() */
-	    post_ptr = my_post_start;
+	    post_ptr = post_start + my_post_start;
 	    /* Save pos after the repeated atom and the \{} */
 	    new_regparse = regparse;
 
@@ -1449,13 +1475,13 @@ nfa_regpiece()
 		curchr = -1;
 		/* Restore count of parenthesis */
 		regnpar = old_regnpar;
-		old_post_ptr = post_ptr;
+		old_post_pos = (int)(post_ptr - post_start);
 		if (nfa_regatom() == FAIL)
 		    return FAIL;
 		/* after "minval" times, atoms are optional */
 		if (i + 1 > minval)
 		    EMIT(quest);
-		if (old_post_ptr != my_post_start)
+		if (old_post_pos != my_post_start)
 		    EMIT(NFA_CONCAT);
 	    }
 
@@ -1572,9 +1598,9 @@ nfa_regconcat()
 nfa_regbranch()
 {
     int		ch;
-    int		*old_post_ptr;
+    int		old_post_pos;
 
-    old_post_ptr = post_ptr;
+    old_post_pos = (int)(post_ptr - post_start);
 
     /* First branch, possibly the only one */
     if (nfa_regconcat() == FAIL)
@@ -1587,18 +1613,18 @@ nfa_regbranch()
 	skipchr();
 	EMIT(NFA_NOPEN);
 	EMIT(NFA_PREV_ATOM_NO_WIDTH);
-	old_post_ptr = post_ptr;
+	old_post_pos = (int)(post_ptr - post_start);
 	if (nfa_regconcat() == FAIL)
 	    return FAIL;
 	/* if concat is empty, skip a input char. But do emit a node */
-	if (old_post_ptr == post_ptr)
+	if (old_post_pos == (int)(post_ptr - post_start))
 	    EMIT(NFA_SKIP_CHAR);
 	EMIT(NFA_CONCAT);
 	ch = peekchr();
     }
 
     /* Even if a branch is empty, emit one node for it */
-    if (old_post_ptr == post_ptr)
+    if (old_post_pos == (int)(post_ptr - post_start))
 	EMIT(NFA_SKIP_CHAR);
 
     return OK;
