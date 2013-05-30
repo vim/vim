@@ -1390,6 +1390,9 @@ nfa_regpiece()
 		case '=':
 		    EMIT(NFA_PREV_ATOM_NO_WIDTH);
 		    break;
+		case '!':
+		    EMIT(NFA_PREV_ATOM_NO_WIDTH_NEG);
+		    break;
 		case '0':
 		case '1':
 		case '2':
@@ -1400,7 +1403,6 @@ nfa_regpiece()
 		case '7':
 		case '8':
 		case '9':
-		case '!':
 		case '<':
 		case '>':
 		    /* Not supported yet */
@@ -2373,7 +2375,9 @@ post2nfa(postfix, end, nfa_calc_size)
 	    break;
 
 	case NFA_PREV_ATOM_NO_WIDTH:
+	case NFA_PREV_ATOM_NO_WIDTH_NEG:
 	    /* The \@= operator: match the preceding atom with zero width.
+	     * The \@! operator: no match for the preceding atom.
 	     * Surrounds the preceding atom with START_INVISIBLE and
 	     * END_INVISIBLE, similarly to MOPEN. */
 
@@ -2391,6 +2395,12 @@ post2nfa(postfix, end, nfa_calc_size)
 	    s = new_state(NFA_START_INVISIBLE, e.start, s1);
 	    if (s == NULL)
 		goto theend;
+	    if (*p == NFA_PREV_ATOM_NO_WIDTH_NEG)
+	    {
+		s->negated = TRUE;
+		s1->negated = TRUE;
+	    }
+
 	    PUSH(frag(s, list1(&s1->out)));
 	    break;
 
@@ -3541,8 +3551,10 @@ nfa_regmatch(start, submatch, m)
 		    addstate_here(thislist, t->state->out, &t->sub, &listidx);
 		else
 		{
-		    /* TODO: only copy positions in use. */
-		    *m = t->sub;
+		    /* do not set submatches for \@! */
+		    if (!t->state->negated)
+			/* TODO: only copy positions in use. */
+			*m = t->sub;
 		    nfa_match = TRUE;
 		}
 		break;
@@ -3593,7 +3605,8 @@ nfa_regmatch(start, submatch, m)
 		    log_fd = stderr;
 		}
 #endif
-		if (result == TRUE)
+		/* for \@! it is a match when result is FALSE */
+		if (result != t->state->negated)
 		{
 		    int j;
 

@@ -678,6 +678,33 @@ OK 2 - .*John\&.*Bob
 OK 0 - \v(test1)@=.*yep
 OK 1 - \v(test1)@=.*yep
 OK 2 - \v(test1)@=.*yep
+OK 0 - foo\(bar\)\@!
+OK 1 - foo\(bar\)\@!
+OK 2 - foo\(bar\)\@!
+OK 0 - foo\(bar\)\@!
+OK 1 - foo\(bar\)\@!
+OK 2 - foo\(bar\)\@!
+OK 0 - if \(\(then\)\@!.\)*$
+OK 1 - if \(\(then\)\@!.\)*$
+OK 2 - if \(\(then\)\@!.\)*$
+OK 0 - if \(\(then\)\@!.\)*$
+OK 1 - if \(\(then\)\@!.\)*$
+OK 2 - if \(\(then\)\@!.\)*$
+OK 0 - \(foo\)\@!bar
+OK 1 - \(foo\)\@!bar
+OK 2 - \(foo\)\@!bar
+OK 0 - \(foo\)\@!...bar
+OK 1 - \(foo\)\@!...bar
+OK 2 - \(foo\)\@!...bar
+OK 0 - ^\%(.*bar\)\@!.*\zsfoo
+OK 1 - ^\%(.*bar\)\@!.*\zsfoo
+OK 2 - ^\%(.*bar\)\@!.*\zsfoo
+OK 0 - ^\%(.*bar\)\@!.*\zsfoo
+OK 1 - ^\%(.*bar\)\@!.*\zsfoo
+OK 2 - ^\%(.*bar\)\@!.*\zsfoo
+OK 0 - ^\%(.*bar\)\@!.*\zsfoo
+OK 1 - ^\%(.*bar\)\@!.*\zsfoo
+OK 2 - ^\%(.*bar\)\@!.*\zsfoo
 OK 0 - [[:alpha:]]\{-2,6}
 OK 1 - [[:alpha:]]\{-2,6}
 OK 2 - [[:alpha:]]\{-2,6}

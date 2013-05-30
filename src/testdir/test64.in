@@ -303,13 +303,20 @@ STARTTEST
 :" will never match
 :call add(tl, [2, 'abcd\@=e', 'any text in here ... '])
 :call add(tl, [2, '\v(abc)@=..', 'xabcd', 'ab', 'abc'])
-:" no match
 :call add(tl, [2, '\(.*John\)\@=.*Bob', 'here is John, and here is B'])
 :call add(tl, [2, '\(John.*\)\@=.*Bob', 'John is Bobs friend', 'John is Bob', 'John is Bobs friend'])
-:" no match
 :call add(tl, [2, '.*John\&.*Bob', 'here is John, and here is B'])
 :call add(tl, [2, '.*John\&.*Bob', 'John is Bobs friend', 'John is Bob'])
 :call add(tl, [2, '\v(test1)@=.*yep', 'this is a test1, yep it is', 'test1, yep', 'test1'])
+:call add(tl, [2, 'foo\(bar\)\@!', 'foobar'])
+:call add(tl, [2, 'foo\(bar\)\@!', 'foo bar', 'foo'])
+:call add(tl, [2, 'if \(\(then\)\@!.\)*$', ' if then else'])
+:call add(tl, [2, 'if \(\(then\)\@!.\)*$', ' if else ', 'if else ', ' '])
+:call add(tl, [2, '\(foo\)\@!bar', 'foobar', 'bar'])
+:call add(tl, [2, '\(foo\)\@!...bar', 'foobar'])
+:call add(tl, [2, '^\%(.*bar\)\@!.*\zsfoo', ' bar foo '])
+:call add(tl, [2, '^\%(.*bar\)\@!.*\zsfoo', ' foo bar '])
+:call add(tl, [2, '^\%(.*bar\)\@!.*\zsfoo', ' foo xxx ', 'foo'])
 :"
 :"""" Combining different tests and features
 :call add(tl, [2, '[[:alpha:]]\{-2,6}', '787abcdiuhsasiuhb4', 'ab'])
