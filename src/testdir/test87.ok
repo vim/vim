@@ -380,6 +380,13 @@ dictionary:__dir__,keys,locked,scope
 list:__dir__,extend,locked
 function:__call__,__dir__,softspace
 output:__dir__,flush,softspace,write,writelines
+'
+abcdef
+line  :
+abcdef
+abc
+line  :
+abc'
 (<class 'vim.error'>, error('abc',))
 (<class 'vim.error'>, error('def',))
 (<class 'vim.error'>, error('ghi',))

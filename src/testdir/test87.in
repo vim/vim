@@ -687,6 +687,16 @@ del name
 del o
 EOF
 :"
+:"
+:" Test stdout/stderr
+:redir => messages
+:py sys.stdout.write('abc') ; sys.stdout.write('def')
+:py sys.stderr.write('abc') ; sys.stderr.write('def')
+:py sys.stdout.writelines(iter('abc'))
+:py sys.stderr.writelines(iter('abc'))
+:redir END
+:$put =string(substitute(messages, '\d\+', '', 'g'))
+:"
 :" Test exceptions
 :fun Exe(e)
 :   execute a:e

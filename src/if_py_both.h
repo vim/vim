@@ -312,36 +312,30 @@ OutputWrite(OutputObject *self, PyObject *args)
     static PyObject *
 OutputWritelines(OutputObject *self, PyObject *args)
 {
-    PyInt n;
-    PyInt i;
-    PyObject *list;
+    PyObject	*seq;
+    PyObject	*iterator;
+    PyObject	*item;
     int error = self->error;
 
-    if (!PyArg_ParseTuple(args, "O", &list))
+    if (!PyArg_ParseTuple(args, "O", &seq))
 	return NULL;
-    Py_INCREF(list);
 
-    if (!PyList_Check(list))
-    {
-	PyErr_SetString(PyExc_TypeError, _("writelines() requires list of strings"));
-	Py_DECREF(list);
+    if (!(iterator = PyObject_GetIter(seq)))
 	return NULL;
-    }
 
-    n = PyList_Size(list);
-
-    for (i = 0; i < n; ++i)
+    while ((item = PyIter_Next(iterator)))
     {
-	PyObject *line = PyList_GetItem(list, i);
 	char *str = NULL;
 	PyInt len;
 
-	if (!PyArg_Parse(line, "et#", ENC_OPT, &str, &len))
+	if (!PyArg_Parse(item, "et#", ENC_OPT, &str, &len))
 	{
 	    PyErr_SetString(PyExc_TypeError, _("writelines() requires list of strings"));
-	    Py_DECREF(list);
+	    Py_DECREF(iterator);
+	    Py_DECREF(item);
 	    return NULL;
 	}
+	Py_DECREF(item);
 
 	Py_BEGIN_ALLOW_THREADS
 	Python_Lock_Vim();
@@ -351,7 +345,12 @@ OutputWritelines(OutputObject *self, PyObject *args)
 	PyMem_Free(str);
     }
 
-    Py_DECREF(list);
+    Py_DECREF(iterator);
+
+    /* Iterator may have finished due to an exception */
+    if (PyErr_Occurred())
+	return NULL;
+
     Py_INCREF(Py_None);
     return Py_None;
 }
