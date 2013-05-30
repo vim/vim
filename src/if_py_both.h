@@ -3807,7 +3807,7 @@ RangeRepr(RangeObject *self)
 	    name = "";
 
 	return PyString_FromFormat("<range %s (%d:%d)>",
-				    name, self->start, self->end);
+				    name, (int)self->start, (int)self->end);
     }
 }
 
