@@ -1530,12 +1530,14 @@ typedef struct
     pylinkedlist_T	ref;
 } ListObject;
 
+#define NEW_LIST(list) ListNew(&ListType, list)
+
     static PyObject *
-ListNew(list_T *list)
+ListNew(PyTypeObject *subtype, list_T *list)
 {
     ListObject	*self;
 
-    self = PyObject_NEW(ListObject, &ListType);
+    self = (ListObject *) subtype->tp_alloc(subtype, 0);
     if (self == NULL)
 	return NULL;
     self->list = list;
@@ -1546,6 +1548,107 @@ ListNew(list_T *list)
     return (PyObject *)(self);
 }
 
+    static list_T *
+py_list_alloc()
+{
+    list_T	*r;
+
+    if (!(r = list_alloc()))
+    {
+	PyErr_NoMemory();
+	return NULL;
+    }
+    ++r->lv_refcount;
+
+    return r;
+}
+
+    static int
+list_py_concat(list_T *l, PyObject *obj, PyObject *lookup_dict)
+{
+    PyObject	*iterator;
+    PyObject	*item;
+    listitem_T	*li;
+
+    if (!(iterator = PyObject_GetIter(obj)))
+	return -1;
+
+    while ((item = PyIter_Next(iterator)))
+    {
+	if (!(li = listitem_alloc()))
+	{
+	    PyErr_NoMemory();
+	    Py_DECREF(item);
+	    Py_DECREF(iterator);
+	    return -1;
+	}
+	li->li_tv.v_lock = 0;
+	li->li_tv.v_type = VAR_UNKNOWN;
+
+	if (_ConvertFromPyObject(item, &li->li_tv, lookup_dict) == -1)
+	{
+	    Py_DECREF(item);
+	    Py_DECREF(iterator);
+	    listitem_free(li);
+	    return -1;
+	}
+
+	Py_DECREF(item);
+
+	list_append(l, li);
+    }
+
+    Py_DECREF(iterator);
+
+    /* Iterator may have finished due to an exception */
+    if (PyErr_Occurred())
+	return -1;
+
+    return 0;
+}
+
+    static PyObject *
+ListConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
+{
+    list_T	*list;
+    PyObject	*obj = NULL;
+
+    if (kwargs)
+    {
+	PyErr_SetString(PyExc_TypeError,
+		_("list constructor does not accept keyword arguments"));
+	return NULL;
+    }
+
+    if (!PyArg_ParseTuple(args, "|O", &obj))
+	return NULL;
+
+    if (!(list = py_list_alloc()))
+	return NULL;
+
+    if (obj)
+    {
+	PyObject	*lookup_dict;
+
+	if (!(lookup_dict = PyDict_New()))
+	{
+	    list_unref(list);
+	    return NULL;
+	}
+
+	if (list_py_concat(list, obj, lookup_dict) == -1)
+	{
+	    Py_DECREF(lookup_dict);
+	    list_unref(list);
+	    return NULL;
+	}
+
+	Py_DECREF(lookup_dict);
+    }
+
+    return ListNew(subtype, list);
+}
+
     static void
 ListDestructor(ListObject *self)
 {
@@ -1553,35 +1656,6 @@ ListDestructor(ListObject *self)
     list_unref(self->list);
 
     DESTRUCTOR_FINISH(self);
-}
-
-    static int
-list_py_concat(list_T *l, PyObject *obj, PyObject *lookup_dict)
-{
-    Py_ssize_t	i;
-    Py_ssize_t	lsize = PySequence_Size(obj);
-    PyObject	*litem;
-    listitem_T	*li;
-
-    for(i=0; i<lsize; i++)
-    {
-	li = listitem_alloc();
-	if (li == NULL)
-	{
-	    PyErr_NoMemory();
-	    return -1;
-	}
-	li->li_tv.v_lock = 0;
-
-	litem = PySequence_GetItem(obj, i);
-	if (litem == NULL)
-	    return -1;
-	if (_ConvertFromPyObject(litem, &li->li_tv, lookup_dict) == -1)
-	    return -1;
-
-	list_append(l, li);
-    }
-    return 0;
 }
 
     static PyInt
@@ -1747,7 +1821,7 @@ ListAssItem(ListObject *self, Py_ssize_t index, PyObject *obj)
 	if (list_append_tv(l, &tv) == FAIL)
 	{
 	    clear_tv(&tv);
-	    PyErr_SetVim(_("Failed to add item to list"));
+	    PyErr_SetVim(_("failed to add item to list"));
 	    return -1;
 	}
     }
@@ -1765,13 +1839,13 @@ ListAssItem(ListObject *self, Py_ssize_t index, PyObject *obj)
 ListAssSlice(ListObject *self, Py_ssize_t first, Py_ssize_t last, PyObject *obj)
 {
     PyInt	size = ListLength(self);
-    Py_ssize_t	i;
-    Py_ssize_t	lsize;
-    PyObject	*litem;
+    PyObject	*iterator;
+    PyObject	*item;
     listitem_T	*li;
     listitem_T	*next;
     typval_T	v;
     list_T	*l = self->list;
+    PyInt	i;
 
     if (l->lv_lock)
     {
@@ -1806,21 +1880,18 @@ ListAssSlice(ListObject *self, Py_ssize_t first, Py_ssize_t last, PyObject *obj)
     if (obj == NULL)
 	return 0;
 
-    if (!PyList_Check(obj))
-    {
-	PyErr_SetString(PyExc_TypeError, _("can only assign lists to slice"));
+    if (!(iterator = PyObject_GetIter(obj)))
 	return -1;
-    }
 
-    lsize = PyList_Size(obj);
-
-    for(i=0; i<lsize; i++)
+    while ((item = PyIter_Next(iterator)))
     {
-	litem = PyList_GetItem(obj, i);
-	if (litem == NULL)
+	if (ConvertFromPyObject(item, &v) == -1)
+	{
+	    Py_DECREF(iterator);
+	    Py_DECREF(item);
 	    return -1;
-	if (ConvertFromPyObject(litem, &v) == -1)
-	    return -1;
+	}
+	Py_DECREF(item);
 	if (list_insert_tv(l, &v, li) == FAIL)
 	{
 	    clear_tv(&v);
@@ -1829,6 +1900,7 @@ ListAssSlice(ListObject *self, Py_ssize_t first, Py_ssize_t last, PyObject *obj)
 	}
 	clear_tv(&v);
     }
+    Py_DECREF(iterator);
     return 0;
 }
 
@@ -1841,12 +1913,6 @@ ListConcatInPlace(ListObject *self, PyObject *obj)
     if (l->lv_lock)
     {
 	PyErr_SetVim(_("list is locked"));
-	return NULL;
-    }
-
-    if (!PySequence_Check(obj))
-    {
-	PyErr_SetString(PyExc_TypeError, _("can only concatenate with lists"));
 	return NULL;
     }
 
@@ -1881,7 +1947,7 @@ ListSetattr(ListObject *self, char *name, PyObject *val)
     if (val == NULL)
     {
 	PyErr_SetString(PyExc_AttributeError,
-		_("cannot delete vim.dictionary attributes"));
+		_("cannot delete vim.List attributes"));
 	return -1;
     }
 
@@ -4591,21 +4657,6 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     return 0;
 }
 
-    static list_T *
-py_list_alloc()
-{
-    list_T	*r;
-
-    if (!(r = list_alloc()))
-    {
-	PyErr_NoMemory();
-	return NULL;
-    }
-    ++r->lv_refcount;
-
-    return r;
-}
-
     static int
 pyseq_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 {
@@ -4618,65 +4669,6 @@ pyseq_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     tv->vval.v_list = l;
 
     if (list_py_concat(l, obj, lookup_dict) == -1)
-    {
-	list_unref(l);
-	return -1;
-    }
-
-    --l->lv_refcount;
-    return 0;
-}
-
-    static int
-pyiter_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
-{
-    PyObject	*iterator;
-    PyObject	*item;
-    list_T	*l;
-    listitem_T	*li;
-
-    if (!(l = py_list_alloc()))
-	return -1;
-
-    tv->vval.v_list = l;
-    tv->v_type = VAR_LIST;
-
-    if (!(iterator = PyObject_GetIter(obj)))
-    {
-	list_unref(l);
-	return -1;
-    }
-
-    while ((item = PyIter_Next(iterator)))
-    {
-	li = listitem_alloc();
-	if (li == NULL)
-	{
-	    list_unref(l);
-	    Py_DECREF(iterator);
-	    PyErr_NoMemory();
-	    return -1;
-	}
-	li->li_tv.v_lock = 0;
-
-	if (_ConvertFromPyObject(item, &li->li_tv, lookup_dict) == -1)
-	{
-	    list_unref(l);
-	    listitem_free(li);
-	    Py_DECREF(item);
-	    Py_DECREF(iterator);
-	    return -1;
-	}
-
-	list_append(l, li);
-
-	Py_DECREF(item);
-    }
-
-    Py_DECREF(iterator);
-
-    /* Iterator may have finished due to an exception */
-    if (PyErr_Occurred())
     {
 	list_unref(l);
 	return -1;
@@ -4866,9 +4858,7 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	tv->vval.v_float = (float_T) PyFloat_AsDouble(obj);
     }
 #endif
-    else if (PyIter_Check(obj))
-	return convert_dl(obj, tv, pyiter_to_tv, lookup_dict);
-    else if (PySequence_Check(obj))
+    else if (PyIter_Check(obj) || PySequence_Check(obj))
 	return convert_dl(obj, tv, pyseq_to_tv, lookup_dict);
     else if (PyMapping_Check(obj))
 	return convert_dl(obj, tv, pymap_to_tv, lookup_dict);
@@ -4901,7 +4891,7 @@ ConvertToPyObject(typval_T *tv)
 	    return PyFloat_FromDouble((double) tv->vval.v_float);
 #endif
 	case VAR_LIST:
-	    return ListNew(tv->vval.v_list);
+	    return NEW_LIST(tv->vval.v_list);
 	case VAR_DICT:
 	    return NEW_DICTIONARY(tv->vval.v_dict);
 	case VAR_FUNC:
@@ -5096,10 +5086,12 @@ init_structs(void)
     ListType.tp_basicsize = sizeof(ListObject);
     ListType.tp_as_sequence = &ListAsSeq;
     ListType.tp_as_mapping = &ListAsMapping;
-    ListType.tp_flags = Py_TPFLAGS_DEFAULT;
+    ListType.tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE;
     ListType.tp_doc = "list pushing modifications to vim structure";
     ListType.tp_methods = ListMethods;
     ListType.tp_iter = (getiterfunc)ListIter;
+    ListType.tp_new = (newfunc)ListConstructor;
+    ListType.tp_alloc = (allocfunc)PyType_GenericAlloc;
 #if PY_MAJOR_VERSION >= 3
     ListType.tp_getattro = (getattrofunc)ListGetattro;
     ListType.tp_setattro = (setattrofunc)ListSetattro;

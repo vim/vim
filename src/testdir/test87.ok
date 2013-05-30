@@ -401,6 +401,8 @@ output:__dir__,flush,softspace,write,writelines
 {}
 {'a': 1}
 {'a': 1}
+[]
+['a', 'b', 'c']
 '
 abcdef
 line  :
@@ -409,6 +411,8 @@ abc
 line  :
 abc'
 ['a', 'dup_a']
+['a', 'a']
+['a', 'b', 'c']
 (<class 'vim.error'>, error('abc',))
 (<class 'vim.error'>, error('def',))
 (<class 'vim.error'>, error('ghi',))

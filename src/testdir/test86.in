@@ -735,6 +735,8 @@ EOF
 :$put =string(pyeval('vim.Dictionary({})'))
 :$put =string(pyeval('vim.Dictionary(a=1)'))
 :$put =string(pyeval('vim.Dictionary(((''a'', 1),))'))
+:$put =string(pyeval('vim.List()'))
+:$put =string(pyeval('vim.List(iter(''abc''))'))
 :"
 :" Test stdout/stderr
 :redir => messages
@@ -752,8 +754,18 @@ class DupDict(vim.Dictionary):
         super(DupDict, self).__setitem__('dup_' + key, value)
 dd = DupDict()
 dd['a'] = 'b'
+
+class DupList(vim.List):
+    def __getitem__(self, idx):
+        return [super(DupList, self).__getitem__(idx)] * 2
+
+dl = DupList()
+dl2 = DupList(iter('abc'))
+dl.extend(dl2[0])
 EOF
 :$put =string(sort(keys(pyeval('dd'))))
+:$put =string(pyeval('dl'))
+:$put =string(pyeval('dl2'))
 :"
 :" Test exceptions
 :fun Exe(e)

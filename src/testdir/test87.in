@@ -692,10 +692,12 @@ del name
 del o
 EOF
 :"
-:" Test vim.Dictionary.__new__
+:" Test vim.*.__new__
 :$put =string(py3eval('vim.Dictionary({})'))
 :$put =string(py3eval('vim.Dictionary(a=1)'))
 :$put =string(py3eval('vim.Dictionary(((''a'', 1),))'))
+:$put =string(py3eval('vim.List()'))
+:$put =string(py3eval('vim.List(iter(''abc''))'))
 :"
 :" Test stdout/stderr
 :redir => messages
@@ -713,8 +715,18 @@ class DupDict(vim.Dictionary):
         super(DupDict, self).__setitem__('dup_' + key, value)
 dd = DupDict()
 dd['a'] = 'b'
+
+class DupList(vim.List):
+    def __getitem__(self, idx):
+        return [super(DupList, self).__getitem__(idx)] * 2
+
+dl = DupList()
+dl2 = DupList(iter('abc'))
+dl.extend(dl2[0])
 EOF
 :$put =string(sort(keys(py3eval('dd'))))
+:$put =string(py3eval('dl'))
+:$put =string(py3eval('dl2'))
 :"
 :" Test exceptions
 :fun Exe(e)
