@@ -746,16 +746,281 @@ EOF
 :$put =string(py3eval('dl2'))
 :$put =string(py3eval('df(2)'))
 :"
+:" Test errors
+:fun F() dict
+:endfun
+:fun D()
+:endfun
+py3 << EOF
+def ee(expr, g=globals(), l=locals()):
+    try:
+        try:
+            exec(expr, g, l)
+        except Exception as e:
+            cb.append(expr + ':' + repr((e.__class__, e)))
+        else:
+            cb.append(expr + ':NOT FAILED')
+    except Exception as e:
+        cb.append(expr + '::' + repr((e.__class__, e)))
+
+d = vim.Dictionary()
+ned = vim.Dictionary(foo='bar', baz='abc')
+dl = vim.Dictionary(a=1)
+dl.locked = True
+l = vim.List()
+ll = vim.List('abc')
+ll.locked = True
+f = vim.Function('string')
+fd = vim.Function('F')
+fdel = vim.Function('D')
+vim.command('delfunction D')
+
+def subexpr_test(expr, name, subexprs):
+    cb.append('>>> Testing %s using %s' % (name, expr))
+    for subexpr in subexprs:
+        ee(expr % subexpr)
+    cb.append('<<< Finished')
+
+def stringtochars_test(expr):
+    return subexpr_test(expr, 'StringToChars', (
+        '1',       # Fail type checks
+        'u"\\0"',  # Fail PyString_AsStringAndSize(bytes, , NULL) check
+        '"\\0"',   # Fail PyString_AsStringAndSize(object, , NULL) check
+    ))
+
+class Mapping(object):
+    def __init__(self, d):
+        self.d = d
+
+    def __getitem__(self, key):
+        return self.d[key]
+
+    def keys(self):
+        return self.d.keys()
+
+    def items(self):
+        return self.d.items()
+
+def convertfrompyobject_test(expr, recurse=True):
+    # pydict_to_tv
+    stringtochars_test(expr % '{%s : 1}')
+    if recurse:
+        convertfrompyobject_test(expr % '{"abc" : %s}', False)
+    # pymap_to_tv
+    stringtochars_test(expr % 'Mapping({%s : 1})')
+    if recurse:
+        convertfrompyobject_test(expr % 'Mapping({"abc" : %s})', False)
+    # pyseq_to_tv
+    iter_test(expr)
+    return subexpr_test(expr, 'ConvertFromPyObject', (
+        'None',                 # Not conversible
+        '{"": 1}',              # Empty key not allowed
+        'FailingMapping()',     #
+        'FailingMappingKey()',  #
+    ))
+
+def convertfrompymapping_test(expr):
+    convertfrompyobject_test(expr)
+    return subexpr_test(expr, 'ConvertFromPyMapping', (
+        '[]',
+    ))
+
+def iter_test(expr):
+    return subexpr_test(expr, '*Iter*', (
+        'FailingIter()',
+        'FailingIterNext()',
+    ))
+
+class FailingTrue(object):
+    def __bool__(self):
+        raise NotImplementedError
+
+class FailingIter(object):
+    def __iter__(self):
+        raise NotImplementedError
+
+class FailingIterNext(object):
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        raise NotImplementedError
+
+class FailingMappingKey(object):
+    def __getitem__(self, item):
+        raise NotImplementedError
+
+    def keys(self):
+        return list("abc")
+
+class FailingMapping(object):
+    def __getitem__(self):
+        raise NotImplementedError
+
+    def keys(self):
+        raise NotImplementedError
+
+class FailingList(list):
+    def __getitem__(self, idx):
+        if i == 2:
+            raise NotImplementedError
+        else:
+            return super(FailingList, self).__getitem__(idx)
+
+cb.append("> Output")
+cb.append(">> OutputSetattr")
+ee('del sys.stdout.softspace')
+ee('sys.stdout.softspace = []')
+ee('sys.stdout.attr = None')
+cb.append(">> OutputWrite")
+ee('sys.stdout.write(None)')
+cb.append(">> OutputWriteLines")
+ee('sys.stdout.writelines(None)')
+ee('sys.stdout.writelines([1])')
+iter_test('sys.stdout.writelines(%s)')
+cb.append("> VimCommand")
+ee('vim.command(1)')
+#! Not checked: vim->python exceptions translating: checked later
+cb.append("> VimToPython")
+#! Not checked: everything: needs errors in internal python functions
+cb.append("> VimEval")
+ee('vim.eval(1)')
+#! Not checked: everything: needs errors in internal python functions
+cb.append("> VimEvalPy")
+ee('vim.bindeval(1)')
+#! Not checked: vim->python exceptions translating: checked later
+cb.append("> VimStrwidth")
+ee('vim.strwidth(1)')
+cb.append("> Dictionary")
+cb.append(">> DictionaryConstructor")
+ee('vim.Dictionary("abc")')
+##! Not checked: py_dict_alloc failure
+cb.append(">> DictionarySetattr")
+ee('del d.locked')
+ee('d.locked = FailingTrue()')
+ee('vim.vvars.locked = False')
+ee('d.scope = True')
+ee('d.xxx = True')
+cb.append(">> _DictionaryItem")
+ee('d.get("a", 2, 3)')
+stringtochars_test('d.get(%s)')
+ee('d.pop("a")')
+ee('dl.pop("a")')
+cb.append(">> DictionaryIterNext")
+ee('for i in ned: ned["a"] = 1')
+cb.append(">> DictionaryAssItem")
+ee('dl["b"] = 1')
+stringtochars_test('d[%s] = 1')
+convertfrompyobject_test('d["a"] = %s')
+cb.append(">> DictionaryUpdate")
+cb.append(">>> kwargs")
+cb.append(">>> iter")
+ee('d.update(FailingMapping())')
+ee('d.update([FailingIterNext()])')
+iter_test('d.update(%s)')
+convertfrompyobject_test('d.update(%s)')
+stringtochars_test('d.update(((%s, 0),))')
+convertfrompyobject_test('d.update((("a", %s),))')
+cb.append(">> DictionaryPopItem")
+ee('d.popitem(1, 2)')
+cb.append(">> DictionaryHasKey")
+ee('d.has_key()')
+cb.append("> List")
+cb.append(">> ListConstructor")
+ee('vim.List(1, 2)')
+ee('vim.List(a=1)')
+iter_test('vim.List(%s)')
+convertfrompyobject_test('vim.List([%s])')
+cb.append(">> ListItem")
+ee('l[1000]')
+cb.append(">> ListAssItem")
+ee('ll[1] = 2')
+ee('l[1000] = 3')
+cb.append(">> ListAssSlice")
+ee('ll[1:100] = "abc"')
+iter_test('l[:] = %s')
+convertfrompyobject_test('l[:] = [%s]')
+cb.append(">> ListConcatInPlace")
+iter_test('l.extend(%s)')
+convertfrompyobject_test('l.extend([%s])')
+cb.append(">> ListSetattr")
+ee('del l.locked')
+ee('l.locked = FailingTrue()')
+ee('l.xxx = True')
+cb.append("> Function")
+cb.append(">> FunctionConstructor")
+ee('vim.Function("123")')
+ee('vim.Function("xxx_non_existent_function_xxx")')
+ee('vim.Function("xxx#non#existent#function#xxx")')
+cb.append(">> FunctionCall")
+convertfrompyobject_test('f(%s)')
+convertfrompymapping_test('fd(self=%s)')
+cb.append("> TabPage")
+cb.append(">> TabPageAttr")
+ee('vim.current.tabpage.xxx')
+cb.append("> TabList")
+cb.append(">> TabListItem")
+ee('vim.tabpages[1000]')
+cb.append("> Window")
+cb.append(">> WindowAttr")
+ee('vim.current.window.xxx')
+cb.append(">> WindowSetattr")
+ee('vim.current.window.buffer = 0')
+ee('vim.current.window.cursor = (10000000000, 100000000)')
+ee('vim.current.window.cursor = True')
+ee('vim.current.window.height = "abc"')
+ee('vim.current.window.width  = "abc"')
+ee('vim.current.window.xxxxxx = True')
+cb.append("> WinList")
+cb.append(">> WinListItem")
+ee('vim.windows[1000]')
+cb.append("> Buffer")
+cb.append(">> StringToLine (indirect)")
+ee('vim.current.buffer[0] = "\\na"')
+cb.append(">> SetBufferLine (indirect)")
+ee('vim.current.buffer[0] = True')
+cb.append(">> SetBufferLines (indirect)")
+ee('vim.current.buffer[:] = True')
+ee('vim.current.buffer[:] = ["\\na", "bc"]')
+cb.append(">> InsertBufferLines (indirect)")
+ee('vim.current.buffer.append(None)')
+ee('vim.current.buffer.append(["\\na", "bc"])')
+ee('vim.current.buffer.append("\\nbc")')
+cb.append(">> RBItem")
+ee('vim.current.buffer[10000000000]')
+cb.append(">> RBAsItem")
+ee('vim.current.buffer[10000000000] = ""')
+cb.append(">> BufferAttr")
+ee('vim.current.buffer.xxx')
+cb.append(">> BufferSetattr")
+ee('vim.current.buffer.name = True')
+ee('vim.current.buffer.xxx = True')
+cb.append(">> BufferMark")
+ee('vim.current.buffer.mark(0)')
+ee('vim.current.buffer.mark("abc")')
+ee('vim.current.buffer.mark("!")')
+cb.append(">> BufferRange")
+ee('vim.current.buffer.range(1, 2, 3)')
+cb.append("> BufMap")
+cb.append(">> BufMapItem")
+ee('vim.buffers[None]')
+ee('vim.buffers[100000000]')
+cb.append("> Current")
+cb.append(">> CurrentGetattr")
+ee('vim.current.xxx')
+cb.append(">> CurrentSetattr")
+ee('vim.current.line = True')
+ee('vim.current.buffer = True')
+ee('vim.current.window = True')
+ee('vim.current.tabpage = True')
+ee('vim.current.xxx = True')
+EOF
+:"
 :" Test exceptions
 :fun Exe(e)
 :   execute a:e
 :endfun
 py3 << EOF
-def ee(expr, g=globals(), l=locals()):
-    try:
-        exec(expr, g, l)
-    except Exception as e:
-        cb.append(repr((e.__class__, e)))
 Exe = vim.bindeval('function("Exe")')
 ee('vim.command("throw \'abc\'")')
 ee('Exe("throw \'def\'")')
