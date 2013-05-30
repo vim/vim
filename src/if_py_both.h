@@ -2322,18 +2322,6 @@ set_option_value_for(key, numval, stringval, opt_flags, opt_type, from)
     return VimTryEnd();
 }
 
-    static void *
-py_memsave(void *p, size_t len)
-{
-    void	*r;
-    if (!(r = PyMem_Malloc(len)))
-	return NULL;
-    mch_memmove(r, p, len);
-    return r;
-}
-
-#define PY_STRSAVE(s) ((char_u *) py_memsave(s, STRLEN(s) + 1))
-
     static int
 OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
 {

@@ -737,6 +737,21 @@ static PyObject *FunctionGetattr(PyObject *, char *);
     }
 #endif
 
+#if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
+    static void *
+py_memsave(void *p, size_t len)
+{
+    void	*r;
+
+    if (!(r = PyMem_Malloc(len)))
+	return NULL;
+    mch_memmove(r, p, len);
+    return r;
+}
+
+# define PY_STRSAVE(s) ((char_u *) py_memsave(s, STRLEN(s) + 1))
+#endif
+
 /*
  * Include the code shared with if_python3.c
  */
