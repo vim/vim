@@ -197,11 +197,12 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyDict_GetItemString dll_PyDict_GetItemString
 # define PyDict_Next dll_PyDict_Next
 # define PyDict_Type (*dll_PyDict_Type)
-# ifdef PyMapping_Items
-#  define PY_NO_MAPPING_ITEMS
+# ifdef PyMapping_Keys
+#  define PY_NO_MAPPING_KEYS
 # else
-#  define PyMapping_Items dll_PyMapping_Items
+#  define PyMapping_Keys dll_PyMapping_Keys
 # endif
+# define PyObject_GetItem dll_PyObject_GetItem
 # define PyObject_CallMethod dll_PyObject_CallMethod
 # define PyMapping_Check dll_PyMapping_Check
 # define PyIter_Next dll_PyIter_Next
@@ -331,9 +332,10 @@ static PyObject*(*dll_PyDict_New)(void);
 static PyObject*(*dll_PyDict_GetItemString)(PyObject *, const char *);
 static int (*dll_PyDict_Next)(PyObject *, PyInt *, PyObject **, PyObject **);
 static PyTypeObject* dll_PyDict_Type;
-# ifndef PY_NO_MAPPING_ITEMS
-static PyObject* (*dll_PyMapping_Items)(PyObject *);
+# ifndef PY_NO_MAPPING_KEYS
+static PyObject* (*dll_PyMapping_Keys)(PyObject *);
 # endif
+static PyObject* (*dll_PyObject_GetItem)(PyObject *, PyObject *);
 static PyObject* (*dll_PyObject_CallMethod)(PyObject *, char *, PyObject *);
 static int (*dll_PyMapping_Check)(PyObject *);
 static PyObject* (*dll_PyIter_Next)(PyObject *);
@@ -494,9 +496,10 @@ static struct
     {"PyDict_Next", (PYTHON_PROC*)&dll_PyDict_Next},
     {"PyDict_New", (PYTHON_PROC*)&dll_PyDict_New},
     {"PyDict_Type", (PYTHON_PROC*)&dll_PyDict_Type},
-# ifndef PY_NO_MAPPING_ITEMS
-    {"PyMapping_Items", (PYTHON_PROC*)&dll_PyMapping_Items},
+# ifndef PY_NO_MAPPING_KEYS
+    {"PyMapping_Keys", (PYTHON_PROC*)&dll_PyMapping_Keys},
 # endif
+    {"PyObject_GetItem", (PYTHON_PROC*)&dll_PyObject_GetItem},
     {"PyObject_CallMethod", (PYTHON_PROC*)&dll_PyObject_CallMethod},
     {"PyMapping_Check", (PYTHON_PROC*)&dll_PyMapping_Check},
     {"PyIter_Next", (PYTHON_PROC*)&dll_PyIter_Next},

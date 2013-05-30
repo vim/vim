@@ -4612,10 +4612,9 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     char_u	*key;
     dictitem_T	*di;
     PyObject	*list;
-    PyObject	*litem;
+    PyObject	*iterator;
     PyObject	*keyObject;
     PyObject	*valObject;
-    Py_ssize_t	lsize;
 
     if (!(dict = dict_alloc()))
 	return -1;
@@ -4623,61 +4622,52 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     tv->v_type = VAR_DICT;
     tv->vval.v_dict = dict;
 
-    list = PyMapping_Items(obj);
-    if (list == NULL)
+    if (!(list = PyMapping_Keys(obj)))
     {
 	dict_unref(dict);
 	return -1;
     }
-    lsize = PyList_Size(list);
-    while (lsize--)
+
+    if (!(iterator = PyObject_GetIter(list)))
+    {
+	dict_unref(dict);
+	Py_DECREF(list);
+	return -1;
+    }
+    Py_DECREF(list);
+
+    while ((keyObject = PyIter_Next(iterator)))
     {
 	DICTKEY_DECL
 
-	litem = PyList_GetItem(list, lsize);
-	if (litem == NULL)
-	{
-	    Py_DECREF(list);
-	    dict_unref(dict);
-	    return -1;
-	}
-
-	if (!(keyObject = PyTuple_GetItem(litem, 0)))
-	{
-	    Py_DECREF(list);
-	    Py_DECREF(litem);
-	    dict_unref(dict);
-	    return -1;
-	}
-
 	if (!DICTKEY_SET_KEY)
 	{
+	    Py_DECREF(iterator);
 	    dict_unref(dict);
-	    Py_DECREF(list);
-	    Py_DECREF(litem);
 	    DICTKEY_UNREF
 	    return -1;
 	}
 	DICTKEY_CHECK_EMPTY(-1)
 
-	if (!(valObject = PyTuple_GetItem(litem, 1)))
+	if (!(valObject = PyObject_GetItem(obj, keyObject)))
 	{
-	    Py_DECREF(list);
-	    Py_DECREF(litem);
+	    Py_DECREF(keyObject);
+	    Py_DECREF(iterator);
 	    dict_unref(dict);
 	    DICTKEY_UNREF
 	    return -1;
 	}
 
-	Py_DECREF(litem);
-
 	di = dictitem_alloc(key);
 
 	DICTKEY_UNREF
 
+	Py_DECREF(keyObject);
+
 	if (di == NULL)
 	{
-	    Py_DECREF(list);
+	    Py_DECREF(iterator);
+	    Py_DECREF(valObject);
 	    dict_unref(dict);
 	    PyErr_NoMemory();
 	    return -1;
@@ -4686,23 +4676,26 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 
 	if (_ConvertFromPyObject(valObject, &di->di_tv, lookup_dict) == -1)
 	{
+	    Py_DECREF(iterator);
+	    Py_DECREF(valObject);
 	    vim_free(di);
 	    dict_unref(dict);
-	    Py_DECREF(list);
 	    return -1;
 	}
 
+	Py_DECREF(valObject);
+
 	if (dict_add(dict, di) == FAIL)
 	{
+	    Py_DECREF(iterator);
 	    dictitem_free(di);
 	    dict_unref(dict);
-	    Py_DECREF(list);
 	    PyErr_SetVim(_("failed to add key to dictionary"));
 	    return -1;
 	}
     }
+    Py_DECREF(iterator);
     --dict->dv_refcount;
-    Py_DECREF(list);
     return 0;
 }
 
@@ -4907,6 +4900,8 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	tv->vval.v_float = (float_T) PyFloat_AsDouble(obj);
     }
 #endif
+    else if (PyObject_HasAttrString(obj, "keys"))
+	return convert_dl(obj, tv, pymap_to_tv, lookup_dict);
     else if (PyIter_Check(obj) || PySequence_Check(obj))
 	return convert_dl(obj, tv, pyseq_to_tv, lookup_dict);
     else if (PyMapping_Check(obj))
