@@ -344,8 +344,12 @@ STARTTEST
 :call add(tl, [0, '\(<<\)\@1<=span.', 'xxspanxxxx<spanxx<<spanyyy'])
 :call add(tl, [0, '\(<<\)\@2<=span.', 'xxspanxxxx<spanxx<<spanyyy', 'spany', '<<'])
 :"
-:"""" Run the tests
+:"""" "\_" prepended negated collection matches EOL
+:call add(tl, [2, '\_[^8-9]\+', "asfi\n9888", "asfi\n"])
+:call add(tl, [2, '\_[^a]\+', "asfi\n9888", "sfi\n9888"])
 :"
+:"
+:"""" Run the tests
 :"
 :for t in tl
 :  let re = t[0]

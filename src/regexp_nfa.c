@@ -1203,13 +1203,6 @@ collection:
 		}
 		mb_ptr_adv(regparse);
 
-		if (extra == ADD_NL)	    /* \_[] also matches \n */
-		{
-		    EMIT(reg_string ? NL : NFA_NEWL);
-		    TRY_NEG();
-		    EMIT_GLUE();
-		}
-
 		/* skip the trailing ] */
 		regparse = endp;
 		mb_ptr_adv(regparse);
@@ -1219,6 +1212,14 @@ collection:
 		    EMIT(NFA_END_NEG_RANGE);
 		    EMIT(NFA_CONCAT);
 		}
+
+		/* \_[] also matches \n but it's not negated */
+		if (extra == ADD_NL)
+		{
+		    EMIT(reg_string ? NL : NFA_NEWL);
+		    EMIT(NFA_OR);
+		}
+
 		return OK;
 	    } /* if exists closing ] */
 
