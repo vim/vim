@@ -26,30 +26,12 @@ typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
 
 #define PyErr_SetVim(str) PyErr_SetString(VimError, str)
 
+#define RAISE_NO_EMPTY_KEYS PyErr_SetString(PyExc_ValueError, \
+						_("empty keys are not allowed"))
+
 #define INVALID_BUFFER_VALUE ((buf_T *)(-1))
 #define INVALID_WINDOW_VALUE ((win_T *)(-1))
 #define INVALID_TABPAGE_VALUE ((tabpage_T *)(-1))
-
-#define DICTKEY_DECL \
-    PyObject	*dictkey_todecref = NULL;
-#define DICTKEY_GET(err, decref) \
-    if (!(key = StringToChars(keyObject, &dictkey_todecref))) \
-    { \
-	if (decref) \
-	{ \
-	    Py_DECREF(keyObject); \
-	} \
-	return err; \
-    } \
-    if (decref && !dictkey_todecref) \
-	dictkey_todecref = keyObject; \
-    if (*key == NUL) \
-    { \
-	PyErr_SetString(PyExc_ValueError, _("empty keys are not allowed")); \
-	return err; \
-    }
-#define DICTKEY_UNREF \
-    Py_XDECREF(dictkey_todecref);
 
 typedef void (*rangeinitializer)(void *);
 typedef void (*runner)(const char *, void *
@@ -1016,8 +998,7 @@ _DictionaryItem(DictionaryObject *self, PyObject *args, int flags)
     dictitem_T	*di;
     dict_T	*dict = self->dict;
     hashitem_T	*hi;
-
-    DICTKEY_DECL
+    PyObject	*todecref;
 
     if (flags & DICT_FLAG_HAS_DEFAULT)
     {
@@ -1030,11 +1011,18 @@ _DictionaryItem(DictionaryObject *self, PyObject *args, int flags)
     if (flags & DICT_FLAG_RETURN_BOOL)
 	defObject = Py_False;
 
-    DICTKEY_GET(NULL, 0)
+    if (!(key = StringToChars(keyObject, &todecref)))
+	return NULL;
+
+    if (*key == NUL)
+    {
+	RAISE_NO_EMPTY_KEYS;
+	return NULL;
+    }
 
     hi = hash_find(&dict->dv_hashtab, key);
 
-    DICTKEY_UNREF
+    Py_XDECREF(todecref);
 
     if (HASHITEM_EMPTY(hi))
     {
@@ -1173,7 +1161,7 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
     typval_T	tv;
     dict_T	*dict = self->dict;
     dictitem_T	*di;
-    DICTKEY_DECL
+    PyObject	*todecref;
 
     if (dict->dv_lock)
     {
@@ -1181,7 +1169,13 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
 	return -1;
     }
 
-    DICTKEY_GET(-1, 0)
+    if (!(key = StringToChars(keyObject, &todecref)))
+	return -1;
+    if (*key == NUL)
+    {
+	RAISE_NO_EMPTY_KEYS;
+	return -1;
+    }
 
     di = dict_find(dict, key, -1);
 
@@ -1191,7 +1185,7 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
 
 	if (di == NULL)
 	{
-	    DICTKEY_UNREF
+	    Py_XDECREF(todecref);
 	    PyErr_SetObject(PyExc_KeyError, keyObject);
 	    return -1;
 	}
@@ -1208,6 +1202,7 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
     {
 	if (!(di = dictitem_alloc(key)))
 	{
+	    Py_XDECREF(todecref);
 	    PyErr_NoMemory();
 	    return -1;
 	}
@@ -1216,7 +1211,7 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
 
 	if (dict_add(dict, di) == FAIL)
 	{
-	    DICTKEY_UNREF
+	    Py_XDECREF(todecref);
 	    vim_free(di);
 	    dictitem_free(di);
 	    PyErr_SetVim(_("failed to add key to dictionary"));
@@ -1226,7 +1221,7 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
     else
 	clear_tv(&di->di_tv);
 
-    DICTKEY_UNREF
+    Py_XDECREF(todecref);
 
     copy_tv(&tv, &di->di_tv);
     clear_tv(&tv);
@@ -2202,17 +2197,23 @@ OptionsItem(OptionsObject *self, PyObject *keyObject)
     int		flags;
     long	numval;
     char_u	*stringval;
-    DICTKEY_DECL
+    PyObject	*todecref;
 
     if (self->Check(self->from))
 	return NULL;
 
-    DICTKEY_GET(NULL, 0)
+    if (!(key = StringToChars(keyObject, &todecref)))
+	return NULL;
+    if (*key == NUL)
+    {
+	RAISE_NO_EMPTY_KEYS;
+	return NULL;
+    }
 
     flags = get_option_value_strict(key, &numval, &stringval,
 				    self->opt_type, self->from);
 
-    DICTKEY_UNREF
+    Py_XDECREF(todecref);
 
     if (flags == 0)
     {
@@ -2329,12 +2330,18 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
     int		flags;
     int		opt_flags;
     int		r = 0;
-    DICTKEY_DECL
+    PyObject	*todecref;
 
     if (self->Check(self->from))
 	return -1;
 
-    DICTKEY_GET(-1, 0)
+    if (!(key = StringToChars(keyObject, &todecref)))
+	return -1;
+    if (*key == NUL)
+    {
+	RAISE_NO_EMPTY_KEYS;
+	return -1;
+    }
 
     flags = get_option_value_strict(key, NULL, NULL,
 				    self->opt_type, self->from);
@@ -2342,7 +2349,7 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
     if (flags == 0)
     {
 	PyErr_SetObject(PyExc_KeyError, keyObject);
-	DICTKEY_UNREF
+	Py_XDECREF(todecref);
 	return -1;
     }
 
@@ -2352,20 +2359,20 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
 	{
 	    PyErr_SetString(PyExc_ValueError,
 		    _("unable to unset global option"));
-	    DICTKEY_UNREF
+	    Py_XDECREF(todecref);
 	    return -1;
 	}
 	else if (!(flags & SOPT_GLOBAL))
 	{
 	    PyErr_SetString(PyExc_ValueError, _("unable to unset option "
 						"without global value"));
-	    DICTKEY_UNREF
+	    Py_XDECREF(todecref);
 	    return -1;
 	}
 	else
 	{
 	    unset_global_local_option(key, self->from);
-	    DICTKEY_UNREF
+	    Py_XDECREF(todecref);
 	    return 0;
 	}
     }
@@ -2396,7 +2403,7 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
 	else
 	{
 	    PyErr_SetString(PyExc_TypeError, _("object must be integer"));
-	    DICTKEY_UNREF
+	    Py_XDECREF(todecref);
 	    return -1;
 	}
 
@@ -2418,7 +2425,7 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
 	    r = -1;
     }
 
-    DICTKEY_UNREF
+    Py_XDECREF(todecref);
 
     return r;
 }
@@ -4528,7 +4535,7 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     PyObject	*valObject;
     Py_ssize_t	iter = 0;
 
-    if (!(dict = dict_alloc()))
+    if (!(dict = py_dict_alloc()))
 	return -1;
 
     tv->v_type = VAR_DICT;
@@ -4553,6 +4560,7 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	{
 	    dict_unref(dict);
 	    Py_XDECREF(todecref);
+	    RAISE_NO_EMPTY_KEYS;
 	    return -1;
 	}
 
@@ -4600,7 +4608,7 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     PyObject	*keyObject;
     PyObject	*valObject;
 
-    if (!(dict = dict_alloc()))
+    if (!(dict = py_dict_alloc()))
 	return -1;
 
     tv->v_type = VAR_DICT;
@@ -4637,6 +4645,7 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	    Py_DECREF(iterator);
 	    Py_XDECREF(todecref);
 	    dict_unref(dict);
+	    RAISE_NO_EMPTY_KEYS;
 	    return -1;
 	}
 
