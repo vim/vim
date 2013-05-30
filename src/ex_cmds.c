@@ -2421,10 +2421,11 @@ rename_buffer(new_fname)
     char_u	*new_fname;
 {
     char_u	*fname, *sfname, *xfname;
-#ifdef FEAT_AUTOCMD
-    buf_T	*buf = curbuf;
+    buf_T	*buf;
 
-    apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, buf);
+#ifdef FEAT_AUTOCMD
+    buf = curbuf;
+    apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, curbuf);
     /* buffer changed, don't change name now */
     if (buf != curbuf)
 	return FAIL;
@@ -2440,18 +2441,18 @@ rename_buffer(new_fname)
      * But don't set the alternate file name if the buffer didn't have a
      * name.
      */
-    fname = buf->b_ffname;
-    sfname = buf->b_sfname;
-    xfname = buf->b_fname;
-    buf->b_ffname = NULL;
-    buf->b_sfname = NULL;
-    if (setfname(buf, new_fname, NULL, TRUE) == FAIL)
+    fname = curbuf->b_ffname;
+    sfname = curbuf->b_sfname;
+    xfname = curbuf->b_fname;
+    curbuf->b_ffname = NULL;
+    curbuf->b_sfname = NULL;
+    if (setfname(curbuf, new_fname, NULL, TRUE) == FAIL)
     {
-	buf->b_ffname = fname;
-	buf->b_sfname = sfname;
+	curbuf->b_ffname = fname;
+	curbuf->b_sfname = sfname;
 	return FAIL;
     }
-    buf->b_flags |= BF_NOTEDITED;
+    curbuf->b_flags |= BF_NOTEDITED;
     if (xfname != NULL && *xfname != NUL)
     {
 	buf = buflist_new(fname, xfname, curwin->w_cursor.lnum, 0);
@@ -2461,7 +2462,7 @@ rename_buffer(new_fname)
     vim_free(fname);
     vim_free(sfname);
 #ifdef FEAT_AUTOCMD
-    apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, buf);
+    apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, curbuf);
 #endif
     /* Change directories when the 'acd' option is set. */
     DO_AUTOCHDIR

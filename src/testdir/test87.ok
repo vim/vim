@@ -309,13 +309,13 @@ Second line
 Third line
 foo
 1:BufFilePre:1
-6:BufFilePost:1
+1:BufFilePost:1
 testdir/foo
 5:BufFilePre:5
 5:BufFilePost:5
 testdir/bar
 1:BufFilePre:1
-7:BufFilePost:1
+1:BufFilePost:1
 testdir/test87.in
 valid: b:False, cb:True
 i:<buffer test87.in>
