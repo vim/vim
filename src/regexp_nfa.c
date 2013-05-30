@@ -890,7 +890,7 @@ nfa_regatom()
 
 		default:
 		    {
-			long_u	n = 0;
+			int	n = 0;
 			int	cmp = c;
 
 			if (c == '<' || c == '>')
