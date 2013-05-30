@@ -412,7 +412,6 @@ static int get_string_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int get_lit_string_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int get_list_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int rettv_list_alloc __ARGS((typval_T *rettv));
-static void listitem_free __ARGS((listitem_T *item));
 static long list_len __ARGS((list_T *l));
 static int list_equal __ARGS((list_T *l1, list_T *l2, int ic, int recursive));
 static int dict_equal __ARGS((dict_T *d1, dict_T *d2, int ic, int recursive));
@@ -428,7 +427,6 @@ static int list_join_inner __ARGS((garray_T *gap, list_T *l, char_u *sep, int ec
 static int list_join __ARGS((garray_T *gap, list_T *l, char_u *sep, int echo, int copyID));
 static int free_unref_items __ARGS((int copyID));
 static int rettv_dict_alloc __ARGS((typval_T *rettv));
-static void dict_free __ARGS((dict_T *d, int recurse));
 static dictitem_T *dictitem_copy __ARGS((dictitem_T *org));
 static void dictitem_remove __ARGS((dict_T *dict, dictitem_T *item));
 static dict_T *dict_copy __ARGS((dict_T *orig, int deep, int copyID));
@@ -5955,7 +5953,7 @@ listitem_alloc()
 /*
  * Free a list item.  Also clears the value.  Does not notify watchers.
  */
-    static void
+    void
 listitem_free(item)
     listitem_T *item;
 {
@@ -7031,7 +7029,7 @@ dict_unref(d)
  * Free a Dictionary, including all items it contains.
  * Ignores the reference count.
  */
-    static void
+    void
 dict_free(d, recurse)
     dict_T  *d;
     int	    recurse;	/* Free Lists and Dictionaries recursively. */
@@ -8353,7 +8351,7 @@ get_func_tv(name, len, rettv, arg, firstline, lastline, doesrange,
 
 /*
  * Call a function with its resolved parameters
- * Return OK when the function can't be called,  FAIL otherwise.
+ * Return FAIL when the function can't be called,  OK otherwise.
  * Also returns OK when an error was encountered while executing the function.
  */
     static int

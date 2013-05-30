@@ -32,8 +32,15 @@ typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
 
 #define DICTKEY_DECL \
     PyObject	*dictkey_todecref;
+#define DICTKEY_CHECK_EMPTY(err) \
+    if (*key == NUL) \
+    { \
+	PyErr_SetString(PyExc_ValueError, _("empty keys are not allowed")); \
+	return err; \
+    }
+#define DICTKEY_SET_KEY (key = StringToChars(keyObject, &dictkey_todecref))
 #define DICTKEY_GET(err, decref) \
-    if (!(key = StringToChars(keyObject, &dictkey_todecref))) \
+    if (!DICTKEY_SET_KEY) \
     { \
 	if (decref) \
 	{ \
@@ -43,11 +50,7 @@ typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
     } \
     if (decref && !dictkey_todecref) \
 	dictkey_todecref = keyObject; \
-    if (*key == NUL) \
-    { \
-	PyErr_SetString(PyExc_ValueError, _("empty keys are not allowed")); \
-	return err; \
-    }
+    DICTKEY_CHECK_EMPTY(err)
 #define DICTKEY_UNREF \
     Py_XDECREF(dictkey_todecref);
 
@@ -651,9 +654,13 @@ VimEval(PyObject *self UNUSED, PyObject *args)
 
     /* Convert the Vim type into a Python type.  Create a dictionary that's
      * used to check for recursive loops. */
-    lookup_dict = PyDict_New();
-    result = VimToPython(our_tv, 1, lookup_dict);
-    Py_DECREF(lookup_dict);
+    if (!(lookup_dict = PyDict_New()))
+	result = NULL;
+    else
+    {
+	result = VimToPython(our_tv, 1, lookup_dict);
+	Py_DECREF(lookup_dict);
+    }
 
 
     Py_BEGIN_ALLOW_THREADS
@@ -1401,7 +1408,9 @@ ListConcatInPlace(ListObject *self, PyObject *obj)
 	return NULL;
     }
 
-    lookup_dict = PyDict_New();
+    if (!(lookup_dict = PyDict_New()))
+	return NULL;
+
     if (list_py_concat(l, obj, lookup_dict) == -1)
     {
 	Py_DECREF(lookup_dict);
@@ -4023,12 +4032,8 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     PyObject	*valObject;
     Py_ssize_t	iter = 0;
 
-    dict = dict_alloc();
-    if (dict == NULL)
-    {
-	PyErr_NoMemory();
+    if (!(dict = dict_alloc()))
 	return -1;
-    }
 
     tv->v_type = VAR_DICT;
     tv->vval.v_dict = dict;
@@ -4038,9 +4043,17 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	DICTKEY_DECL
 
 	if (keyObject == NULL || valObject == NULL)
+	{
+	    dict_unref(dict);
 	    return -1;
+	}
 
-	DICTKEY_GET(-1, 0)
+	if (!DICTKEY_SET_KEY)
+	{
+	    dict_unref(dict);
+	    return -1;
+	}
+	DICTKEY_CHECK_EMPTY(-1)
 
 	di = dictitem_alloc(key);
 
@@ -4049,6 +4062,7 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	if (di == NULL)
 	{
 	    PyErr_NoMemory();
+	    dict_unref(dict);
 	    return -1;
 	}
 	di->di_tv.v_lock = 0;
@@ -4056,6 +4070,7 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	if (_ConvertFromPyObject(valObject, &di->di_tv, lookup_dict) == -1)
 	{
 	    vim_free(di);
+	    dict_unref(dict);
 	    return -1;
 	}
 
@@ -4063,10 +4078,13 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	{
 	    clear_tv(&di->di_tv);
 	    vim_free(di);
+	    dict_unref(dict);
 	    PyErr_SetVim(_("failed to add key to dictionary"));
 	    return -1;
 	}
     }
+
+    --dict->dv_refcount;
     return 0;
 }
 
@@ -4082,19 +4100,18 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     PyObject	*valObject;
     Py_ssize_t	lsize;
 
-    dict = dict_alloc();
-    if (dict == NULL)
-    {
-	PyErr_NoMemory();
+    if (!(dict = dict_alloc()))
 	return -1;
-    }
 
     tv->v_type = VAR_DICT;
     tv->vval.v_dict = dict;
 
     list = PyMapping_Items(obj);
     if (list == NULL)
+    {
+	dict_unref(dict);
 	return -1;
+    }
     lsize = PyList_Size(list);
     while (lsize--)
     {
@@ -4104,6 +4121,7 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	if (litem == NULL)
 	{
 	    Py_DECREF(list);
+	    dict_unref(dict);
 	    return -1;
 	}
 
@@ -4111,15 +4129,25 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	{
 	    Py_DECREF(list);
 	    Py_DECREF(litem);
+	    dict_unref(dict);
 	    return -1;
 	}
 
-	DICTKEY_GET(-1, 1)
+	if (!DICTKEY_SET_KEY)
+	{
+	    dict_unref(dict);
+	    Py_DECREF(list);
+	    Py_DECREF(litem);
+	    DICTKEY_UNREF
+	    return -1;
+	}
+	DICTKEY_CHECK_EMPTY(-1)
 
 	if (!(valObject = PyTuple_GetItem(litem, 1)))
 	{
 	    Py_DECREF(list);
 	    Py_DECREF(litem);
+	    dict_unref(dict);
 	    DICTKEY_UNREF
 	    return -1;
 	}
@@ -4133,7 +4161,7 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	if (di == NULL)
 	{
 	    Py_DECREF(list);
-	    Py_DECREF(valObject);
+	    dict_unref(dict);
 	    PyErr_NoMemory();
 	    return -1;
 	}
@@ -4142,24 +4170,38 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	if (_ConvertFromPyObject(valObject, &di->di_tv, lookup_dict) == -1)
 	{
 	    vim_free(di);
+	    dict_unref(dict);
 	    Py_DECREF(list);
-	    Py_DECREF(valObject);
 	    return -1;
 	}
 
-	Py_DECREF(valObject);
-
 	if (dict_add(dict, di) == FAIL)
 	{
-	    clear_tv(&di->di_tv);
-	    vim_free(di);
+	    dictitem_free(di);
+	    dict_unref(dict);
 	    Py_DECREF(list);
 	    PyErr_SetVim(_("failed to add key to dictionary"));
 	    return -1;
 	}
     }
+    --dict->dv_refcount;
     Py_DECREF(list);
     return 0;
+}
+
+    static list_T *
+py_list_alloc()
+{
+    list_T	*r;
+
+    if (!(r = list_alloc()))
+    {
+	PyErr_NoMemory();
+	return NULL;
+    }
+    ++r->lv_refcount;
+
+    return r;
 }
 
     static int
@@ -4167,50 +4209,48 @@ pyseq_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 {
     list_T	*l;
 
-    l = list_alloc();
-    if (l == NULL)
-    {
-	PyErr_NoMemory();
+    if (!(l = py_list_alloc()))
 	return -1;
-    }
 
     tv->v_type = VAR_LIST;
     tv->vval.v_list = l;
 
     if (list_py_concat(l, obj, lookup_dict) == -1)
+    {
+	list_unref(l);
 	return -1;
+    }
 
+    --l->lv_refcount;
     return 0;
 }
 
     static int
 pyiter_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 {
-    PyObject	*iterator = PyObject_GetIter(obj);
+    PyObject	*iterator;
     PyObject	*item;
     list_T	*l;
     listitem_T	*li;
 
-    l = list_alloc();
-
-    if (l == NULL)
-    {
-	PyErr_NoMemory();
+    if (!(l = py_list_alloc()))
 	return -1;
-    }
 
     tv->vval.v_list = l;
     tv->v_type = VAR_LIST;
 
-
-    if (iterator == NULL)
+    if (!(iterator = PyObject_GetIter(obj)))
+    {
+	list_unref(l);
 	return -1;
+    }
 
     while ((item = PyIter_Next(iterator)))
     {
 	li = listitem_alloc();
 	if (li == NULL)
 	{
+	    list_unref(l);
 	    Py_DECREF(iterator);
 	    PyErr_NoMemory();
 	    return -1;
@@ -4219,6 +4259,8 @@ pyiter_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 
 	if (_ConvertFromPyObject(item, &li->li_tv, lookup_dict) == -1)
 	{
+	    list_unref(l);
+	    listitem_free(li);
 	    Py_DECREF(item);
 	    Py_DECREF(iterator);
 	    return -1;
@@ -4230,6 +4272,15 @@ pyiter_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     }
 
     Py_DECREF(iterator);
+
+    /* Iterator may have finished due to an exception */
+    if (PyErr_Occurred())
+    {
+	list_unref(l);
+	return -1;
+    }
+
+    --l->lv_refcount;
     return 0;
 }
 
@@ -4295,7 +4346,8 @@ ConvertFromPyObject(PyObject *obj, typval_T *tv)
     PyObject	*lookup_dict;
     int		r;
 
-    lookup_dict = PyDict_New();
+    if (!(lookup_dict = PyDict_New()))
+	return -1;
     r = _ConvertFromPyObject(obj, tv, lookup_dict);
     Py_DECREF(lookup_dict);
     return r;
