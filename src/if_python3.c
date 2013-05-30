@@ -90,6 +90,7 @@
 #define PyString_AsString(obj) PyBytes_AsString(obj)
 #define PyString_Size(obj) PyBytes_GET_SIZE(bytes)
 #define PyString_FromString(repr) PyUnicode_FromString(repr)
+#define PyString_FromFormat PyUnicode_FromFormat
 #define PyString_AsStringAndSize(obj, buffer, len) PyBytes_AsStringAndSize(obj, buffer, len)
 #define PyInt_Check(obj) PyLong_Check(obj)
 #define PyInt_FromLong(i) PyLong_FromLong(i)
@@ -230,6 +231,16 @@
 # define PyType_GenericNew py3_PyType_GenericNew
 # undef PyUnicode_FromString
 # define PyUnicode_FromString py3_PyUnicode_FromString
+# ifndef PyUnicode_FromFormat
+#  define PyUnicode_FromFormat py3_PyUnicode_FromFormat
+# else
+#  define Py_UNICODE_USE_UCS_FUNCTIONS
+#  ifdef Py_UNICODE_WIDE
+#   define PyUnicodeUCS4_FromFormat py3_PyUnicodeUCS4_FromFormat
+#  else
+#   define PyUnicodeUCS2_FromFormat py3_PyUnicodeUCS2_FromFormat
+#  endif
+# endif
 # undef PyUnicode_Decode
 # define PyUnicode_Decode py3_PyUnicode_Decode
 # define PyType_IsSubtype py3_PyType_IsSubtype
@@ -293,6 +304,15 @@ static PyObject* (*py3_Py_BuildValue)(char *, ...);
 static int (*py3_PyType_Ready)(PyTypeObject *type);
 static int (*py3_PyDict_SetItemString)(PyObject *dp, char *key, PyObject *item);
 static PyObject* (*py3_PyUnicode_FromString)(const char *u);
+# ifndef Py_UNICODE_USE_UCS_FUNCTIONS
+static PyObject* (*py3_PyUnicode_FromFormat)(const char *u, ...);
+# else
+#  ifdef Py_UNICODE_WIDE
+static PyObject* (*py3_PyUnicodeUCS4_FromFormat)(const char *u, ...);
+#  else
+static PyObject* (*py3_PyUnicodeUCS2_FromFormat)(const char *u, ...);
+#  endif
+# endif
 static PyObject* (*py3_PyUnicode_Decode)(const char *u, Py_ssize_t size,
 	const char *encoding, const char *errors);
 static long (*py3_PyLong_AsLong)(PyObject *);
@@ -457,6 +477,15 @@ static struct
     {"PyUnicode_AsUTF8", (PYTHON_PROC*)&py3_PyUnicode_AsUTF8},
 # else
     {"_PyUnicode_AsString", (PYTHON_PROC*)&py3__PyUnicode_AsString},
+# endif
+# ifndef Py_UNICODE_USE_UCS_FUNCTIONS
+    {"PyUnicode_FromFormat", (PYTHON_PROC*)&py3_PyUnicode_FromFormat},
+# else
+#  ifdef Py_UNICODE_WIDE
+    {"PyUnicodeUCS4_FromFormat", (PYTHON_PROC*)&py3_PyUnicodeUCS4_FromFormat},
+#  else
+    {"PyUnicodeUCS2_FromFormat", (PYTHON_PROC*)&py3_PyUnicodeUCS2_FromFormat},
+#  endif
 # endif
     {"PyBytes_AsString", (PYTHON_PROC*)&py3_PyBytes_AsString},
     {"PyBytes_AsStringAndSize", (PYTHON_PROC*)&py3_PyBytes_AsStringAndSize},

@@ -2006,24 +2006,17 @@ TabPageAttr(TabPageObject *self, char *name)
     static PyObject *
 TabPageRepr(TabPageObject *self)
 {
-    static char repr[100];
-
     if (self->tab == INVALID_TABPAGE_VALUE)
-    {
-	vim_snprintf(repr, 100, _("<tabpage object (deleted) at %p>"), (self));
-	return PyString_FromString(repr);
-    }
+	return PyString_FromFormat("<tabpage object (deleted) at %p>", (self));
     else
     {
 	int	t = get_tab_number(self->tab);
 
 	if (t == 0)
-	    vim_snprintf(repr, 100, _("<tabpage object (unknown) at %p>"),
-								      (self));
+	    return PyString_FromFormat("<tabpage object (unknown) at %p>",
+					(self));
 	else
-	    vim_snprintf(repr, 100, _("<tabpage %d>"), t - 1);
-
-	return PyString_FromString(repr);
+	    return PyString_FromFormat("<tabpage %d>", t - 1);
     }
 }
 
@@ -2344,24 +2337,17 @@ WindowSetattr(WindowObject *self, char *name, PyObject *val)
     static PyObject *
 WindowRepr(WindowObject *self)
 {
-    static char repr[100];
-
     if (self->win == INVALID_WINDOW_VALUE)
-    {
-	vim_snprintf(repr, 100, _("<window object (deleted) at %p>"), (self));
-	return PyString_FromString(repr);
-    }
+	return PyString_FromFormat("<window object (deleted) at %p>", (self));
     else
     {
 	int	w = get_win_number(self->win, firstwin);
 
 	if (w == 0)
-	    vim_snprintf(repr, 100, _("<window object (unknown) at %p>"),
+	    return PyString_FromFormat("<window object (unknown) at %p>",
 								      (self));
 	else
-	    vim_snprintf(repr, 100, _("<window %d>"), w - 1);
-
-	return PyString_FromString(repr);
+	    return PyString_FromFormat("<window %d>", w - 1);
     }
 }
 
@@ -3281,31 +3267,18 @@ RangeAppend(RangeObject *self, PyObject *args)
     static PyObject *
 RangeRepr(RangeObject *self)
 {
-    static char repr[100];
-
     if (self->buf->buf == INVALID_BUFFER_VALUE)
-    {
-	vim_snprintf(repr, 100, "<range object (for deleted buffer) at %p>",
-								      (self));
-	return PyString_FromString(repr);
-    }
+	return PyString_FromFormat("<range object (for deleted buffer) at %p>",
+				    (self));
     else
     {
 	char *name = (char *)self->buf->buf->b_fname;
-	int len;
 
 	if (name == NULL)
 	    name = "";
-	len = (int)strlen(name);
 
-	if (len > 45)
-	    name = name + (45 - len);
-
-	vim_snprintf(repr, 100, "<range %s%s (%d:%d)>",
-		len > 45 ? "..." : "", name,
-		self->start, self->end);
-
-	return PyString_FromString(repr);
+	return PyString_FromFormat("<range %s (%d:%d)>",
+				    name, self->start, self->end);
     }
 }
 
@@ -3534,28 +3507,16 @@ BufferRange(BufferObject *self, PyObject *args)
     static PyObject *
 BufferRepr(BufferObject *self)
 {
-    static char repr[100];
-
     if (self->buf == INVALID_BUFFER_VALUE)
-    {
-	vim_snprintf(repr, 100, _("<buffer object (deleted) at %p>"), (self));
-	return PyString_FromString(repr);
-    }
+	return PyString_FromFormat("<buffer object (deleted) at %p>", self);
     else
     {
-	char *name = (char *)self->buf->b_fname;
-	PyInt len;
+	char	*name = (char *)self->buf->b_fname;
 
 	if (name == NULL)
 	    name = "";
-	len = strlen(name);
 
-	if (len > 35)
-	    name = name + (35 - len);
-
-	vim_snprintf(repr, 100, "<buffer %s%s>", len > 35 ? "..." : "", name);
-
-	return PyString_FromString(repr);
+	return PyString_FromFormat("<buffer %s>", name);
     }
 }
 
