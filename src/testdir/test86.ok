@@ -439,10 +439,6 @@ sys.stdout.write(None):(<type 'exceptions.TypeError'>, TypeError('coercing to Un
 >> OutputWriteLines
 sys.stdout.writelines(None):(<type 'exceptions.TypeError'>, TypeError("'NoneType' object is not iterable",))
 sys.stdout.writelines([1]):(<type 'exceptions.TypeError'>, TypeError('writelines() requires list of strings',))
->>> Testing *Iter* using sys.stdout.writelines(%s)
-sys.stdout.writelines(FailingIter()):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
-sys.stdout.writelines(FailingIterNext()):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
-<<< Finished
 > VimCommand
 vim.command(1):(<type 'exceptions.TypeError'>, TypeError('must be string, not int',))
 > VimToPython
@@ -544,10 +540,6 @@ d["a"] = FailingMappingKey():(<type 'exceptions.NotImplementedError'>, NotImplem
 >>> iter
 d.update(FailingMapping()):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 d.update([FailingIterNext()]):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
->>> Testing *Iter* using d.update(%s)
-d.update(FailingIter()):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
-d.update(FailingIterNext()):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
-<<< Finished
 >>> Testing StringToChars using d.update({%s : 1})
 d.update({1 : 1}):(<type 'exceptions.TypeError'>, TypeError('object must be string',))
 d.update({u"\0" : 1}):(<type 'exceptions.TypeError'>, TypeError('expected string without null bytes',))
@@ -681,10 +673,6 @@ d.has_key():(<type 'exceptions.TypeError'>, TypeError('function takes exactly 1 
 >> ListConstructor
 vim.List(1, 2):(<type 'exceptions.TypeError'>, TypeError('function takes at most 1 argument (2 given)',))
 vim.List(a=1):(<type 'exceptions.TypeError'>, TypeError('list constructor does not accept keyword arguments',))
->>> Testing *Iter* using vim.List(%s)
-vim.List(FailingIter()):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
-vim.List(FailingIterNext()):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
-<<< Finished
 >>> Testing StringToChars using vim.List([{%s : 1}])
 vim.List([{1 : 1}]):(<type 'exceptions.TypeError'>, TypeError('object must be string',))
 vim.List([{u"\0" : 1}]):(<type 'exceptions.TypeError'>, TypeError('expected string without null bytes',))
@@ -752,10 +740,6 @@ ll[1] = 2:(<class 'vim.error'>, error('list is locked',))
 l[1000] = 3:(<type 'exceptions.IndexError'>, IndexError('list index out of range',))
 >> ListAssSlice
 ll[1:100] = "abc":(<class 'vim.error'>, error('list is locked',))
->>> Testing *Iter* using l[:] = %s
-l[:] = FailingIter():(<type 'exceptions.NotImplementedError'>, NotImplementedError())
-l[:] = FailingIterNext():(<type 'exceptions.NotImplementedError'>, NotImplementedError())
-<<< Finished
 >>> Testing StringToChars using l[:] = [{%s : 1}]
 l[:] = [{1 : 1}]:(<type 'exceptions.TypeError'>, TypeError('object must be string',))
 l[:] = [{u"\0" : 1}]:(<type 'exceptions.TypeError'>, TypeError('expected string without null bytes',))
@@ -817,10 +801,6 @@ l[:] = [FailingMapping()]:(<type 'exceptions.NotImplementedError'>, NotImplement
 l[:] = [FailingMappingKey()]:(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
 >> ListConcatInPlace
->>> Testing *Iter* using l.extend(%s)
-l.extend(FailingIter()):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
-l.extend(FailingIterNext()):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
-<<< Finished
 >>> Testing StringToChars using l.extend([{%s : 1}])
 l.extend([{1 : 1}]):(<type 'exceptions.TypeError'>, TypeError('object must be string',))
 l.extend([{u"\0" : 1}]):(<type 'exceptions.TypeError'>, TypeError('expected string without null bytes',))
@@ -1025,7 +1005,7 @@ vim.tabpages[1000]:(<type 'exceptions.IndexError'>, IndexError('no such tab page
 vim.current.window.xxx:(<type 'exceptions.AttributeError'>, AttributeError('xxx',))
 >> WindowSetattr
 vim.current.window.buffer = 0:(<type 'exceptions.TypeError'>, TypeError('readonly attribute',))
-vim.current.window.cursor = (10000000000, 100000000):(<class 'vim.error'>, error('cursor position outside buffer',))
+vim.current.window.cursor = (100000000, 100000000):(<class 'vim.error'>, error('cursor position outside buffer',))
 vim.current.window.cursor = True:(<type 'exceptions.TypeError'>, TypeError('argument must be 2-item sequence, not bool',))
 vim.current.window.height = "abc":(<type 'exceptions.TypeError'>, TypeError('an integer is required',))
 vim.current.window.width  = "abc":(<type 'exceptions.TypeError'>, TypeError('an integer is required',))
@@ -1046,9 +1026,9 @@ vim.current.buffer.append(None):(<type 'exceptions.TypeError'>, TypeError('bad a
 vim.current.buffer.append(["\na", "bc"]):(<class 'vim.error'>, error('string cannot contain newlines',))
 vim.current.buffer.append("\nbc"):(<class 'vim.error'>, error('string cannot contain newlines',))
 >> RBItem
-vim.current.buffer[10000000000]:(<type 'exceptions.IndexError'>, IndexError('line number out of range',))
+vim.current.buffer[100000000]:(<type 'exceptions.IndexError'>, IndexError('line number out of range',))
 >> RBAsItem
-vim.current.buffer[10000000000] = "":(<type 'exceptions.IndexError'>, IndexError('line number out of range',))
+vim.current.buffer[100000000] = "":(<type 'exceptions.IndexError'>, IndexError('line number out of range',))
 >> BufferAttr
 vim.current.buffer.xxx:(<type 'exceptions.AttributeError'>, AttributeError('xxx',))
 >> BufferSetattr
