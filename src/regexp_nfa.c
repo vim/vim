@@ -29,11 +29,6 @@
 # define NFA_REGEXP_DEBUG_LOG	"nfa_regexp_debug.log"
 #endif
 
-/* Upper limit allowed for {m,n} repetitions handled by NFA */
-#define	    NFA_BRACES_MAXLIMIT		    10
-/* For allocating space for the postfix representation */
-#define	    NFA_POSTFIX_MULTIPLIER	    (NFA_BRACES_MAXLIMIT + 2)*2
-
 enum
 {
     NFA_SPLIT = -1024,
@@ -44,7 +39,6 @@ enum
     NFA_CONCAT,
     NFA_OR,
     NFA_STAR,
-    NFA_PLUS,
     NFA_QUEST,
     NFA_QUEST_NONGREEDY,	    /* Non-greedy version of \? */
     NFA_NOT,			    /* used for [^ab] negated char ranges */
@@ -253,7 +247,7 @@ nfa_regcomp_start(expr, re_flags)
     nstate = 0;
     istate = 0;
     /* A reasonable estimation for maximum size */
-    nstate_max = (int)(STRLEN(expr) + 1) * NFA_POSTFIX_MULTIPLIER;
+    nstate_max = (int)(STRLEN(expr) + 1) * 25;
 
     /* Some items blow up in size, such as [A-z].  Add more space for that.
      * When it is still not enough realloc_post_list() will be used. */
@@ -1365,10 +1359,9 @@ nfa_regpiece()
 	     * string.
 	     * The submatch will the empty string.
 	     *
-	     * In order to be consistent with the old engine, we disable
-	     * NFA_PLUS, and replace <atom>+ with <atom><atom>*
+	     * In order to be consistent with the old engine, we replace
+	     * <atom>+ with <atom><atom>*
 	     */
-	    /*	EMIT(NFA_PLUS);	 */
 	    regnpar = old_regnpar;
 	    regparse = old_regparse;
 	    curchr = -1;
@@ -1443,12 +1436,9 @@ nfa_regpiece()
 		break;
 	    }
 
-	    if (maxval > NFA_BRACES_MAXLIMIT)
-	    {
-		/* This would yield a huge automaton and use too much memory.
-		 * Revert to old engine */
+	    /* TODO: \{-} doesn't work yet */
+	    if (maxval == MAX_LIMIT && !greedy)
 		return FAIL;
-	    }
 
 	    /* Special case: x{0} or x{-0} */
 	    if (maxval == 0)
@@ -1478,9 +1468,16 @@ nfa_regpiece()
 		    return FAIL;
 		/* after "minval" times, atoms are optional */
 		if (i + 1 > minval)
-		    EMIT(quest);
+		{
+		    if (maxval == MAX_LIMIT)
+			EMIT(NFA_STAR);
+		    else
+			EMIT(quest);
+		}
 		if (old_post_pos != my_post_start)
 		    EMIT(NFA_CONCAT);
+		if (i + 1 > minval && maxval == MAX_LIMIT)
+		    break;
 	    }
 
 	    /* Go to just after the repeated atom and the \{} */
@@ -1779,7 +1776,6 @@ nfa_set_code(c)
 	case NFA_EOF:		STRCPY(code, "NFA_EOF "); break;
 	case NFA_BOF:		STRCPY(code, "NFA_BOF "); break;
 	case NFA_STAR:		STRCPY(code, "NFA_STAR "); break;
-	case NFA_PLUS:		STRCPY(code, "NFA_PLUS "); break;
 	case NFA_NOT:		STRCPY(code, "NFA_NOT "); break;
 	case NFA_SKIP_CHAR:	STRCPY(code, "NFA_SKIP_CHAR"); break;
 	case NFA_OR:		STRCPY(code, "NFA_OR"); break;
@@ -2341,21 +2337,6 @@ post2nfa(postfix, end, nfa_calc_size)
 	    if (s == NULL)
 		goto theend;
 	    PUSH(frag(s, append(e.out, list1(&s->out))));
-	    break;
-
-	case NFA_PLUS:
-	    /* One or more */
-	    if (nfa_calc_size == TRUE)
-	    {
-		nstate++;
-		break;
-	    }
-	    e = POP();
-	    s = new_state(NFA_SPLIT, e.start, NULL);
-	    if (s == NULL)
-		goto theend;
-	    patch(e.out, s);
-	    PUSH(frag(e.start, list1(&s->out1)));
 	    break;
 
 	case NFA_SKIP_CHAR:

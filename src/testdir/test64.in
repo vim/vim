@@ -182,7 +182,9 @@ STARTTEST
 :call add(tl, [2, 'a\{0,}', 'oij sdigfusnf', ''])
 :call add(tl, [2, 'a\{0,}', 'aaaaa aa', 'aaaaa'])
 :call add(tl, [2, 'a\{2,}', 'sdfiougjdsafg'])
-:call add(tl, [0, 'a\{2,}', 'aaaaasfoij ', 'aaaaa'])
+:call add(tl, [2, 'a\{2,}', 'aaaaasfoij ', 'aaaaa'])
+:call add(tl, [2, 'a\{5,}', 'xxaaaaxxx '])
+:call add(tl, [2, 'a\{5,}', 'xxaaaaaxxx ', 'aaaaa'])
 :call add(tl, [2, 'a\{,0}', 'oidfguih iuhi hiu aaaa', ''])
 :call add(tl, [2, 'a\{,5}', 'abcd', 'a'])
 :call add(tl, [2, 'a\{,5}', 'aaaaaaaaaa', 'aaaaa'])
@@ -225,7 +227,9 @@ STARTTEST
 :"
 :" Test greedy-ness and lazy-ness
 :call add(tl, [2, 'a\{-2,7}','aaaaaaaaaaaaa', 'aa'])
+:call add(tl, [2, 'a\{-2,7}x','aaaaaaaaax', 'aaaaaaax'])
 :call add(tl, [2, 'a\{2,7}','aaaaaaaaaaaaaaaaaaaa', 'aaaaaaa'])
+:call add(tl, [2, 'a\{2,7}x','aaaaaaaaax', 'aaaaaaax'])
 :call add(tl, [2, '\vx(.{-,8})yz(.*)','xayxayzxayzxayz','xayxayzxayzxayz','ayxa','xayzxayz'])
 :call add(tl, [2, '\vx(.*)yz(.*)','xayxayzxayzxayz','xayxayzxayzxayz', 'ayxayzxayzxa',''])
 :call add(tl, [2, '\v(a{1,2}){-2,3}','aaaaaaa','aaaa','aa'])
@@ -366,7 +370,7 @@ STARTTEST
 :call add(tl, [2, '\_[^a]\+', "asfi\n9888", "sfi\n9888"])
 :"
 :"""" Requiring lots of states.
-:call add(tl, [0, '[0-9a-zA-Z]\{8}-\([0-9a-zA-Z]\{4}-\)\{3}[0-9a-zA-Z]\{12}', " 12345678-1234-1234-1234-123456789012 ", "12345678-1234-1234-1234-123456789012", "1234-"])
+:call add(tl, [2, '[0-9a-zA-Z]\{8}-\([0-9a-zA-Z]\{4}-\)\{3}[0-9a-zA-Z]\{12}', " 12345678-1234-1234-1234-123456789012 ", "12345678-1234-1234-1234-123456789012", "1234-"])
 :"
 :"
 :"""" Run the tests
