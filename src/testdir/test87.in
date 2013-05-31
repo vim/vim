@@ -2,8 +2,6 @@ Tests for various python features.     vim: set ft=vim :
 
 STARTTEST
 :so small.vim
-:" HACK: currently crashes, skip the test
-:e! test.ok | wq! test.out
 :if !has('python3') | e! test.ok | wq! test.out | endif
 :lang C
 :py3 import vim
@@ -710,10 +708,10 @@ EOF
 :"
 :" Test stdout/stderr
 :redir => messages
-:py sys.stdout.write('abc') ; sys.stdout.write('def')
-:py sys.stderr.write('abc') ; sys.stderr.write('def')
-:py sys.stdout.writelines(iter('abc'))
-:py sys.stderr.writelines(iter('abc'))
+:py3 sys.stdout.write('abc') ; sys.stdout.write('def')
+:py3 sys.stderr.write('abc') ; sys.stderr.write('def')
+:py3 sys.stdout.writelines(iter('abc'))
+:py3 sys.stderr.writelines(iter('abc'))
 :redir END
 :$put =string(substitute(messages, '\d\+', '', 'g'))
 :" Test subclassing
@@ -759,7 +757,10 @@ def ee(expr, g=globals(), l=locals()):
         try:
             exec(expr, g, l)
         except Exception as e:
-            cb.append(expr + ':' + repr((e.__class__, e)))
+            if sys.version_info >= (3, 3) and e.__class__ is AttributeError and str(e).find('has no attribute')>=0 and not str(e).startswith("'vim."):
+                cb.append(expr + ':' + repr((e.__class__, AttributeError(str(e)[str(e).rfind(" '") + 2:-1]))))
+            else:
+                cb.append(expr + ':' + repr((e.__class__, e)))
         else:
             cb.append(expr + ':NOT FAILED')
     except Exception as e:
@@ -786,8 +787,8 @@ def subexpr_test(expr, name, subexprs):
 def stringtochars_test(expr):
     return subexpr_test(expr, 'StringToChars', (
         '1',       # Fail type checks
-        'u"\\0"',  # Fail PyString_AsStringAndSize(bytes, , NULL) check
-        '"\\0"',   # Fail PyString_AsStringAndSize(object, , NULL) check
+        'b"\\0"',  # Fail PyString_AsStringAndSize(object, , NULL) check
+        '"\\0"',   # Fail PyString_AsStringAndSize(bytes, , NULL) check
     ))
 
 class Mapping(object):
@@ -968,7 +969,7 @@ cb.append(">> WindowAttr")
 ee('vim.current.window.xxx')
 cb.append(">> WindowSetattr")
 ee('vim.current.window.buffer = 0')
-ee('vim.current.window.cursor = (10000000000, 100000000)')
+ee('vim.current.window.cursor = (100000000, 100000000)')
 ee('vim.current.window.cursor = True')
 ee('vim.current.window.height = "abc"')
 ee('vim.current.window.width  = "abc"')
@@ -989,9 +990,9 @@ ee('vim.current.buffer.append(None)')
 ee('vim.current.buffer.append(["\\na", "bc"])')
 ee('vim.current.buffer.append("\\nbc")')
 cb.append(">> RBItem")
-ee('vim.current.buffer[10000000000]')
+ee('vim.current.buffer[100000000]')
 cb.append(">> RBAsItem")
-ee('vim.current.buffer[10000000000] = ""')
+ee('vim.current.buffer[100000000] = ""')
 cb.append(">> BufferAttr")
 ee('vim.current.buffer.xxx')
 cb.append(">> BufferSetattr")
