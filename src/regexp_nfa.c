@@ -283,7 +283,7 @@ nfa_regcomp_start(expr, re_flags)
     static int
 realloc_post_list()
 {
-    int   nstate_max = post_end - post_start;
+    int   nstate_max = (int)(post_end - post_start);
     int   new_max = nstate_max + 1000;
     int   *new_start;
     int	  *old_start;

@@ -1100,7 +1100,7 @@ typedef struct
     long_u	ht_used;
     hashtab_T	*ht;
     hashitem_T	*hi;
-    int		todo;
+    long_u	todo;
 } dictiterinfo_T;
 
     static PyObject *
