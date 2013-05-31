@@ -669,6 +669,9 @@ OK 2 - \(.*John\)\@=.*Bob
 OK 0 - \(John.*\)\@=.*Bob
 OK 1 - \(John.*\)\@=.*Bob
 OK 2 - \(John.*\)\@=.*Bob
+OK 0 - \<\S\+\())\)\@=
+OK 1 - \<\S\+\())\)\@=
+OK 2 - \<\S\+\())\)\@=
 OK 0 - .*John\&.*Bob
 OK 1 - .*John\&.*Bob
 OK 2 - .*John\&.*Bob

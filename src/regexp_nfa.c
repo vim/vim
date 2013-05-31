@@ -3332,11 +3332,8 @@ nfa_regmatch(start, submatch, m)
     int		result;
     int		size = 0;
     int		flag = 0;
-    int		old_reglnum = -1;
     int		go_to_nextline = FALSE;
     nfa_thread_T *t;
-    char_u	*old_reginput = NULL;
-    char_u	*old_regline = NULL;
     nfa_list_T	list[3];
     nfa_list_T	*listtbl[2][2];
     nfa_list_T	*ll;
@@ -3560,15 +3557,18 @@ nfa_regmatch(start, submatch, m)
 		break;
 
 	    case NFA_START_INVISIBLE:
-		/* Save global variables, and call nfa_regmatch() to check if
-		 * the current concat matches at this position. The concat
-		 * ends with the node NFA_END_INVISIBLE */
-		old_reginput = reginput;
-		old_regline = regline;
-		old_reglnum = reglnum;
+	      {
+		char_u	*save_reginput = reginput;
+		char_u	*save_regline = regline;
+		int	save_reglnum = reglnum;
+		int	save_nfa_match = nfa_match;
+
+		/* Call nfa_regmatch() to check if the current concat matches
+		 * at this position. The concat ends with the node
+		 * NFA_END_INVISIBLE */
 		if (listids == NULL)
 		{
-		    listids = (int *) lalloc(sizeof(int) * nstate, TRUE);
+		    listids = (int *)lalloc(sizeof(int) * nstate, TRUE);
 		    if (listids == NULL)
 		    {
 			EMSG(_("E878: (NFA) Could not allocate memory for branch traversal!"));
@@ -3588,7 +3588,12 @@ nfa_regmatch(start, submatch, m)
 		result = nfa_regmatch(t->state->out, submatch, m);
 		nfa_set_neg_listids(start);
 		nfa_restore_listids(start, listids);
-		nfa_match = FALSE;
+
+		/* restore position in input text */
+		reginput = save_reginput;
+		regline = save_regline;
+		reglnum = save_reglnum;
+		nfa_match = save_nfa_match;
 
 #ifdef ENABLE_LOG
 		log_fd = fopen(NFA_REGEXP_RUN_LOG, "a");
@@ -3610,10 +3615,6 @@ nfa_regmatch(start, submatch, m)
 		{
 		    int j;
 
-		    /* Restore position in input text */
-		    reginput = old_reginput;
-		    regline = old_regline;
-		    reglnum = old_reglnum;
 		    /* Copy submatch info from the recursive call */
 		    if (REG_MULTI)
 			for (j = 1; j < m->in_use; j++)
@@ -3635,12 +3636,8 @@ nfa_regmatch(start, submatch, m)
 		    addstate_here(thislist, t->state->out1->out, &t->sub,
 								    &listidx);
 		}
-		else
-		{
-		    /* continue with next input char */
-		    reginput = old_reginput;
-		}
 		break;
+	      }
 
 	    case NFA_BOL:
 		if (reginput == regline)

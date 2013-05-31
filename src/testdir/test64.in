@@ -305,6 +305,7 @@ STARTTEST
 :call add(tl, [2, '\v(abc)@=..', 'xabcd', 'ab', 'abc'])
 :call add(tl, [2, '\(.*John\)\@=.*Bob', 'here is John, and here is B'])
 :call add(tl, [2, '\(John.*\)\@=.*Bob', 'John is Bobs friend', 'John is Bob', 'John is Bobs friend'])
+:call add(tl, [2, '\<\S\+\())\)\@=', '$((i=i+1))', 'i=i+1', '))'])
 :call add(tl, [2, '.*John\&.*Bob', 'here is John, and here is B'])
 :call add(tl, [2, '.*John\&.*Bob', 'John is Bobs friend', 'John is Bob'])
 :call add(tl, [2, '\v(test1)@=.*yep', 'this is a test1, yep it is', 'test1, yep', 'test1'])
