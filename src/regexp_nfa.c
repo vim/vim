@@ -865,14 +865,10 @@ nfa_regatom()
 		 * pattern -- regardless of whether or not it makes sense. */
 		case '^':
 		    EMIT(NFA_BOF);
-		    /* TODO: Not yet supported */
-		    return FAIL;
 		    break;
 
 		case '$':
 		    EMIT(NFA_EOF);
-		    /* TODO: Not yet supported */
-		    return FAIL;
 		    break;
 
 		case '#':
@@ -1780,6 +1776,8 @@ nfa_set_code(c)
 	case NFA_BOL:		STRCPY(code, "NFA_BOL "); break;
 	case NFA_EOW:		STRCPY(code, "NFA_EOW "); break;
 	case NFA_BOW:		STRCPY(code, "NFA_BOW "); break;
+	case NFA_EOF:		STRCPY(code, "NFA_EOF "); break;
+	case NFA_BOF:		STRCPY(code, "NFA_BOF "); break;
 	case NFA_STAR:		STRCPY(code, "NFA_STAR "); break;
 	case NFA_PLUS:		STRCPY(code, "NFA_PLUS "); break;
 	case NFA_NOT:		STRCPY(code, "NFA_NOT "); break;
@@ -3704,6 +3702,17 @@ nfa_regmatch(start, submatch, m)
 		    addstate_here(thislist, t->state->out, &t->sub, &listidx);
 		break;
 	    }
+
+	    case NFA_BOF:
+		if (reglnum == 0 && reginput == regline
+					&& (!REG_MULTI || reg_firstlnum == 1))
+		    addstate_here(thislist, t->state->out, &t->sub, &listidx);
+		break;
+
+	    case NFA_EOF:
+		if (reglnum == reg_maxline && curc == NUL)
+		    addstate_here(thislist, t->state->out, &t->sub, &listidx);
+		break;
 
 #ifdef FEAT_MBYTE
 	    case NFA_COMPOSING:

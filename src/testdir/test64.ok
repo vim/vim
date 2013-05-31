@@ -585,6 +585,30 @@ OK 2 - \_f
 OK 0 - \_f\+
 OK 1 - \_f\+
 OK 2 - \_f\+
+OK 0 - ^a.
+OK 1 - ^a.
+OK 2 - ^a.
+OK 0 - ^a.
+OK 1 - ^a.
+OK 2 - ^a.
+OK 0 - .a$
+OK 1 - .a$
+OK 2 - .a$
+OK 0 - .a$
+OK 1 - .a$
+OK 2 - .a$
+OK 0 - \%^a.
+OK 1 - \%^a.
+OK 2 - \%^a.
+OK 0 - \%^a
+OK 1 - \%^a
+OK 2 - \%^a
+OK 0 - .a\%$
+OK 1 - .a\%$
+OK 2 - .a\%$
+OK 0 - .a\%$
+OK 1 - .a\%$
+OK 2 - .a\%$
 OK 0 - [0-9]
 OK 1 - [0-9]
 OK 2 - [0-9]
@@ -818,3 +842,7 @@ moooooo
 ab!babababababfoo
 ba!ab##abab?bafoo
 **!*****_
+Test
+Test END
+EN
+E

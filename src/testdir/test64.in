@@ -267,6 +267,15 @@ STARTTEST
 :call add(tl, [2, '\_f', "  \na ", "\n"])
 :call add(tl, [2, '\_f\+', "  \na ", "\na"])
 :"
+:"""" Test start/end of line, start/end of file
+:call add(tl, [2, '^a.', "a_\nb ", "a_"])
+:call add(tl, [2, '^a.', "b a \na_"])
+:call add(tl, [2, '.a$', " a\n "])
+:call add(tl, [2, '.a$', " a b\n_a", "_a"])
+:call add(tl, [2, '\%^a.', "a a\na", "a "])
+:call add(tl, [2, '\%^a', " a \na "])
+:call add(tl, [2, '.a\%$', " a\n "])
+:call add(tl, [2, '.a\%$', " a\n_a", "_a"])
 :"
 :"""" Test recognition of some character classes
 :call add(tl, [2, '[0-9]', '8', '8'])
@@ -465,6 +474,15 @@ o-1-:set re=1
 o-2-:set re=2
 :call Postest()
 :put
+:"
+:" start and end of buffer
+/\%^
+yeGop:"
+50%/\%^..
+yeGopA END:"
+50%/\%$
+"ayb20gg/..\%$
+"bybGo"apo"bp:"
 :"
 :/\%#=1^Results/,$wq! test.out
 ENDTEST
