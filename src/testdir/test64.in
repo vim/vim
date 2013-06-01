@@ -188,6 +188,10 @@ STARTTEST
 :call add(tl, [2, 'a\{,0}', 'oidfguih iuhi hiu aaaa', ''])
 :call add(tl, [2, 'a\{,5}', 'abcd', 'a'])
 :call add(tl, [2, 'a\{,5}', 'aaaaaaaaaa', 'aaaaa'])
+:" leading star as normal char when \{} follows
+:call add(tl, [2, '^*\{4,}$', '***'])
+:call add(tl, [2, '^*\{4,}$', '****', '****'])
+:call add(tl, [2, '^*\{4,}$', '*****', '*****'])
 :" same thing as 'a*'
 :call add(tl, [2, 'a\{}', 'bbbcddiuhfcd', ''])
 :call add(tl, [2, 'a\{}', 'aaaaioudfh coisf jda', 'aaaa'])

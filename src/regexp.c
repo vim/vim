@@ -665,10 +665,25 @@ static int	nextchr;	/* used for ungetchr() */
 #define REG_ZPAREN	2	/* \z(\) */
 #define REG_NPAREN	3	/* \%(\) */
 
+typedef struct
+{
+     char_u	*regparse;
+     int	prevchr_len;
+     int	curchr;
+     int	prevchr;
+     int	prevprevchr;
+     int	nextchr;
+     int	at_start;
+     int	prev_at_start;
+     int	regnpar;
+} parse_state_T;
+
 /*
  * Forward declarations for vim_regcomp()'s friends.
  */
 static void	initchr __ARGS((char_u *));
+static void	save_parse_state __ARGS((parse_state_T *ps));
+static void	restore_parse_state __ARGS((parse_state_T *ps));
 static int	getchr __ARGS((void));
 static void	skipchr_keepstart __ARGS((void));
 static int	peekchr __ARGS((void));
@@ -2949,6 +2964,44 @@ initchr(str)
     at_start = TRUE;
     prev_at_start = FALSE;
 }
+
+/*
+ * Save the current parse state, so that it can be restored and parsing
+ * starts in the same state again.
+ */
+    static void
+save_parse_state(ps)
+    parse_state_T *ps;
+{
+    ps->regparse = regparse;
+    ps->prevchr_len = prevchr_len;
+    ps->curchr = curchr;
+    ps->prevchr = prevchr;
+    ps->prevprevchr = prevprevchr;
+    ps->nextchr = nextchr;
+    ps->at_start = at_start;
+    ps->prev_at_start = prev_at_start;
+    ps->regnpar = regnpar;
+}
+
+/*
+ * Restore a previously saved parse state.
+ */
+    static void
+restore_parse_state(ps)
+    parse_state_T *ps;
+{
+    regparse = ps->regparse;
+    prevchr_len = ps->prevchr_len;
+    curchr = ps->curchr;
+    prevchr = ps->prevchr;
+    prevprevchr = ps->prevprevchr;
+    nextchr = ps->nextchr;
+    at_start = ps->at_start;
+    prev_at_start = ps->prev_at_start;
+    regnpar = ps->regnpar;
+}
+
 
 /*
  * Get the next character without advancing.

@@ -1318,19 +1318,17 @@ nfa_regpiece()
     int		ret;
     long	minval, maxval;
     int		greedy = TRUE;      /* Braces are prefixed with '-' ? */
-    char_u	*old_regparse, *new_regparse;
+    parse_state_T old_state;
+    parse_state_T new_state;
     int		c2;
     int		old_post_pos;
     int		my_post_start;
-    int		old_regnpar;
     int		quest;
 
-    /* Save the current position in the regexp, so that we can use it if
-     * <atom>{m,n} is next. */
-    old_regparse = regparse;
-    /* Save current number of open parenthesis, so we can use it if
-     * <atom>{m,n} is next */
-    old_regnpar = regnpar;
+    /* Save the current parse state, so that we can use it if <atom>{m,n} is
+     * next. */
+    save_parse_state(&old_state);
+
     /* store current pos in the postfix form, for \{m,n} involving 0s */
     my_post_start = (int)(post_ptr - post_start);
 
@@ -1361,8 +1359,7 @@ nfa_regpiece()
 	     * In order to be consistent with the old engine, we replace
 	     * <atom>+ with <atom><atom>*
 	     */
-	    regnpar = old_regnpar;
-	    regparse = old_regparse;
+	    restore_parse_state(&old_state);
 	    curchr = -1;
 	    if (nfa_regatom() == FAIL)
 		return FAIL;
@@ -1452,17 +1449,14 @@ nfa_regpiece()
 
 	    /* Ignore previous call to nfa_regatom() */
 	    post_ptr = post_start + my_post_start;
-	    /* Save pos after the repeated atom and the \{} */
-	    new_regparse = regparse;
+	    /* Save parse state after the repeated atom and the \{} */
+	    save_parse_state(&new_state);
 
 	    quest = (greedy == TRUE? NFA_QUEST : NFA_QUEST_NONGREEDY);
 	    for (i = 0; i < maxval; i++)
 	    {
 		/* Goto beginning of the repeated atom */
-		regparse = old_regparse;
-		curchr = -1;
-		/* Restore count of parenthesis */
-		regnpar = old_regnpar;
+		restore_parse_state(&old_state);
 		old_post_pos = (int)(post_ptr - post_start);
 		if (nfa_regatom() == FAIL)
 		    return FAIL;
@@ -1486,7 +1480,7 @@ nfa_regpiece()
 	    }
 
 	    /* Go to just after the repeated atom and the \{} */
-	    regparse = new_regparse;
+	    restore_parse_state(&new_state);
 	    curchr = -1;
 
 	    break;
