@@ -270,6 +270,7 @@ STARTTEST
 :call add(tl, [2, '\_[0-9]\+', "asfi\n9888u", "\n9888"])
 :call add(tl, [2, '\_f', "  \na ", "\n"])
 :call add(tl, [2, '\_f\+', "  \na ", "\na"])
+:call add(tl, [2, '[0-9A-Za-z-_.]\+', " @0_a.A-{ ", "0_a.A-"])
 :"
 :"""" Test start/end of line, start/end of file
 :call add(tl, [2, '^a.', "a_\nb ", "a_"])

@@ -1089,8 +1089,9 @@ collection:
 			     * while loop. */
 			}
 		    }
-		    /* Try a range like 'a-x' or '\t-z' */
-		    if (*regparse == '-')
+		    /* Try a range like 'a-x' or '\t-z'. Also allows '-' as a
+		     * start character. */
+		    if (*regparse == '-' && oldstartc != -1)
 		    {
 			emit_range = TRUE;
 			startc = oldstartc;
@@ -1140,16 +1141,13 @@ collection:
 
 		    /* Normal printable char */
 		    if (startc == -1)
-#ifdef FEAT_MBYTE
-			startc = (*mb_ptr2char)(regparse);
-#else
-		    startc = *regparse;
-#endif
+			startc = PTR2CHAR(regparse);
 
 		    /* Previous char was '-', so this char is end of range. */
 		    if (emit_range)
 		    {
-			endc = startc; startc = oldstartc;
+			endc = startc;
+			startc = oldstartc;
 			if (startc > endc)
 			    EMSG_RET_FAIL(_(e_invrange));
 #ifdef FEAT_MBYTE
@@ -1166,7 +1164,6 @@ collection:
 				TRY_NEG();
 				EMIT_GLUE();
 			    }
-			    emit_range = FALSE;
 			}
 			else
 #endif
@@ -1190,8 +1187,9 @@ collection:
 				    TRY_NEG();
 				    EMIT_GLUE();
 				}
-			    emit_range = FALSE;
 			}
+			emit_range = FALSE;
+			startc = -1;
 		    }
 		    else
 		    {
