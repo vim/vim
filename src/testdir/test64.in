@@ -363,12 +363,13 @@ STARTTEST
 :call add(tl, [2, '\(a\)\(b\)\(c\)\(dd\)\(e\)\(f\)\(g\)\(h\)\(i\)\1\2\3\4\5\6\7\8\9', 'xabcddefghiabcddefghix', 'abcddefghiabcddefghi', 'a', 'b', 'c', 'dd', 'e', 'f', 'g', 'h', 'i'])
 :"
 :"""" Look-behind with limit
-:call add(tl, [0, '<\@<=span.', 'xxspanxx<spanyyy', 'spany'])
-:call add(tl, [0, '<\@1<=span.', 'xxspanxx<spanyyy', 'spany'])
-:call add(tl, [0, '<\@2<=span.', 'xxspanxx<spanyyy', 'spany'])
-:call add(tl, [0, '\(<<\)\@<=span.', 'xxspanxxxx<spanxx<<spanyyy', 'spany', '<<'])
-:call add(tl, [0, '\(<<\)\@1<=span.', 'xxspanxxxx<spanxx<<spanyyy'])
-:call add(tl, [0, '\(<<\)\@2<=span.', 'xxspanxxxx<spanxx<<spanyyy', 'spany', '<<'])
+:call add(tl, [2, '<\@<=span.', 'xxspanxx<spanyyy', 'spany'])
+:call add(tl, [2, '<\@1<=span.', 'xxspanxx<spanyyy', 'spany'])
+:call add(tl, [2, '<\@2<=span.', 'xxspanxx<spanyyy', 'spany'])
+:call add(tl, [2, '\(<<\)\@<=span.', 'xxspanxxxx<spanxx<<spanyyy', 'spany', '<<'])
+:call add(tl, [2, '\(<<\)\@1<=span.', 'xxspanxxxx<spanxx<<spanyyy'])
+:call add(tl, [2, '\(<<\)\@2<=span.', 'xxspanxxxx<spanxx<<spanyyy', 'spany', '<<'])
+:call add(tl, [2, '\(foo\)\@<!bar.', 'xx foobar1 xbar2 xx', 'bar2'])
 :"
 :"""" "\_" prepended negated collection matches EOL
 :call add(tl, [2, '\_[^8-9]\+', "asfi\n9888", "asfi\n"])
@@ -514,8 +515,8 @@ Behind:
 asdfasd<yyy
 xxstart1
 asdfasd<yy
-xxxxstart2
+xxxstart2
 asdfasd<yy
-xxxstart3
+xxstart3
 
 Results of test64:

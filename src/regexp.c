@@ -5576,7 +5576,14 @@ regmatch(scan)
 		limit = OPERAND_MIN(rp->rs_scan);
 		if (REG_MULTI)
 		{
-		    if (rp->rs_un.regsave.rs_u.pos.col == 0)
+		    if (limit > 0
+			    && ((rp->rs_un.regsave.rs_u.pos.lnum
+						    < behind_pos.rs_u.pos.lnum
+				    ? (colnr_T)STRLEN(regline)
+				    : behind_pos.rs_u.pos.col)
+				- rp->rs_un.regsave.rs_u.pos.col >= limit))
+			no = FAIL;
+		    else if (rp->rs_un.regsave.rs_u.pos.col == 0)
 		    {
 			if (rp->rs_un.regsave.rs_u.pos.lnum
 					< behind_pos.rs_u.pos.lnum
@@ -5601,13 +5608,6 @@ regmatch(scan)
 			else
 #endif
 			    --rp->rs_un.regsave.rs_u.pos.col;
-			if (limit > 0
-				&& ((rp->rs_un.regsave.rs_u.pos.lnum
-						    < behind_pos.rs_u.pos.lnum
-					? (colnr_T)STRLEN(regline)
-					: behind_pos.rs_u.pos.col)
-				    - rp->rs_un.regsave.rs_u.pos.col > limit))
-			    no = FAIL;
 		    }
 		}
 		else
