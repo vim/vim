@@ -2,7 +2,7 @@
 " vim: tw=0 ts=4 sw=4
 " Vim color file
 " Maintainer:	Ron Aaron <ron@ronware.org>
-" Last Change:	2006 Dec 10
+" Last Change:	2013 May 23
 
 hi clear
 set background=dark
@@ -43,6 +43,8 @@ hi MatchParen	  term=reverse  ctermfg=blue guibg=Blue
 hi TabLine		  term=bold,reverse  cterm=bold ctermfg=lightblue ctermbg=white gui=bold guifg=blue guibg=white
 hi TabLineFill	  term=bold,reverse  cterm=bold ctermfg=lightblue ctermbg=white gui=bold guifg=blue guibg=white
 hi TabLineSel	  term=reverse	ctermfg=white ctermbg=lightblue guifg=white guibg=blue
+hi Underlined	  term=underline cterm=bold,underline ctermfg=lightblue guifg=lightblue gui=bold,underline
+hi Ignore		  ctermfg=black ctermbg=black guifg=black guibg=black
 hi link IncSearch		Visual
 hi link String			Constant
 hi link Character		Constant

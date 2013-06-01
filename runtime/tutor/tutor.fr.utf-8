@@ -853,7 +853,7 @@ NOTE : Le mode Remplacement est comme le mode Insertion, mais tous les
 
   5. Tapez  p  pour coller le texte. Puis tapez :  un second <Échap> .
 
-  6. Utilisez le mode Visuel pour sélectionner "élément", copiez le avec  y  ,
+  6. Utilisez le mode Visuel pour sélectionner "élément", copiez-le avec  y  ,
      déplacez-vous à la fin de la ligne suivant avec  j$  et collez le texte
      à cet endroit avec  p .
 
@@ -1034,5 +1034,5 @@ NOTE : Le complètement fonctionne pour de nombreuses commandes. Essayez
   Dernières mises à jour par Dominique Pellé.
 
   E-mail :      dominique.pelle@gmail.com
-  Last Change : 2011 Nov 27
+  Last Change : 2013 May 10
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

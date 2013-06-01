@@ -2,7 +2,7 @@
 " Language:	TeX
 " Maintainer:	Charles E. Campbell <NdrchipO@ScampbellPfamily.AbizM>
 " Last Change:	Mar 11, 2013
-" Version:	77
+" Version:	78
 " URL:		http://www.drchip.org/astronaut/vim/index.html#SYNTAX_TEX
 "
 " Notes: {{{1
@@ -55,11 +55,20 @@ endif
 if exists("g:tex_no_error") && g:tex_no_error
  let s:tex_no_error= 1
 endif
-if exists("g:tex_fast") && g:tex_fast
+
+" by default, enable all region-based highlighting
+let s:tex_fast= "bcmMprsSvV"
+if exists("g:tex_fast")
+ if type(g:tex_fast) != 1
+  " g:tex_fast exists and is not a string, so
+  " turn off all optional region-based highighting
+  let s:tex_fast= ""
+ else
+  let s:tex_fast= g:tex_fast
+ endif
  let s:tex_no_error= 1
-endif
-if exists("g:tex_tex") && !exists("g:tex_no_error")
- let s:tex_no_error= 1
+else
+ let s:tex_fast= "bcmMprsSvV"
 endif
 
 " let user determine which classes of concealment will be supported
@@ -159,7 +168,7 @@ if !exists("tex_no_math")
 endif
 
 " Try to flag {} and () mismatches: {{{1
-if !exists("g:tex_fast") || g:tex_fast =~ 'm'
+if s:tex_fast =~ 'm'
   if !exists("s:tex_no_error")
    syn region texMatcher		matchgroup=Delimiter start="{" skip="\\\\\|\\[{}]"	end="}"		contains=@texMatchGroup,texError
    syn region texMatcher		matchgroup=Delimiter start="\["				end="]"		contains=@texMatchGroup,texError,@NoSpell
@@ -176,7 +185,7 @@ endif
 if !exists("s:tex_no_error")
  syn match  texError		"[}\])]"
 endif
-if !exists("g:tex_fast") || g:tex_fast =~ 'M'
+if s:tex_fast =~ 'M'
   if !exists("tex_no_math")
    if !exists("s:tex_no_error")
     syn match  texMathError	"}"	contained
@@ -220,14 +229,14 @@ syn match texLigature		"\\\([ijolL]\|ae\|oe\|ss\|AA\|AE\|OE\)$"
 
 " \begin{}/\end{} section markers: {{{1
 syn match  texBeginEnd		"\\begin\>\|\\end\>" nextgroup=texBeginEndName
-if !exists("g:tex_fast") || g:tex_fast =~ 'm'
+if s:tex_fast =~ 'm'
   syn region texBeginEndName	matchgroup=Delimiter	start="{"		end="}"	contained	nextgroup=texBeginEndModifier	contains=texComment
   syn region texBeginEndModifier	matchgroup=Delimiter	start="\["		end="]"	contained	contains=texComment,@NoSpell
 endif
 
 " \documentclass, \documentstyle, \usepackage: {{{1
 syn match  texDocType		"\\documentclass\>\|\\documentstyle\>\|\\usepackage\>"	nextgroup=texBeginEndName,texDocTypeArgs
-if !exists("g:tex_fast") || g:tex_fast =~ 'm'
+if s:tex_fast =~ 'm'
   syn region texDocTypeArgs	matchgroup=Delimiter start="\[" end="]"			contained	nextgroup=texBeginEndName	contains=texComment,@NoSpell
 endif
 
@@ -241,7 +250,7 @@ syn match texInput		"\\input\s\+[a-zA-Z/.0-9_^]\+"hs=s+7				contains=texStatemen
 syn match texInputFile		"\\include\(graphics\|list\)\=\(\[.\{-}\]\)\=\s*{.\{-}}"	contains=texStatement,texInputCurlies,texInputFileOpt
 syn match texInputFile		"\\\(epsfig\|input\|usepackage\)\s*\(\[.*\]\)\={.\{-}}"		contains=texStatement,texInputCurlies,texInputFileOpt
 syn match texInputCurlies	"[{}]"								contained
-if !exists("g:tex_fast") || g:tex_fast =~ 'm'
+if s:tex_fast =~ 'm'
  syn region texInputFileOpt	matchgroup=Delimiter start="\[" end="\]"			contained	contains=texComment
 endif
 
@@ -309,7 +318,7 @@ syn match texSpaceCode		"\\\(math\|cat\|del\|lc\|sf\|uc\)code`"me=e-1 nextgroup=
 syn match texSpaceCodeChar    "`\\\=.\(\^.\)\==\(\d\|\"\x\{1,6}\|`.\)"	contained
 
 " Sections, subsections, etc: {{{1
-if !exists("g:tex_fast") || g:tex_fast =~ 'p'
+if s:tex_fast =~ 'p'
   if !exists("g:tex_nospell") || !g:tex_nospell
    if g:tex_fold_enabled && has("folding")
     syn region texDocZone			matchgroup=texSection start='\\begin\s*{\s*document\s*}' end='\\end\s*{\s*document\s*}'											fold contains=@texFoldGroup,@texDocGroup,@Spell
@@ -362,7 +371,7 @@ if !exists("g:tex_fast") || g:tex_fast =~ 'p'
 endif
 
 " particular support for bold and italic {{{1
-if !exists("g:tex_fast") || g:tex_fast =~ 'b'
+if s:tex_fast =~ 'b'
   if s:tex_conceal =~ 'b'
    syn region texBoldStyle	matchgroup=texTypeStyle start="\\textbf\s*{" end="}" concealends contains=@texBoldGroup
    syn region texBoldItalStyle	matchgroup=texTypeStyle start="\\textit\s*{" end="}" concealends contains=@texItalGroup
@@ -372,7 +381,7 @@ if !exists("g:tex_fast") || g:tex_fast =~ 'b'
 endif
 
 " Bad Math (mismatched): {{{1
-if !exists("tex_no_math")
+if !exists("g:tex_no_math") && !exists("s:tex_no_error")
  syn match texBadMath		"\\end\s*{\s*\(array\|gathered\|bBpvV]matrix\|split\|subequations\|smallmatrix\|xxalignat\)\s*}"
  syn match texBadMath		"\\end\s*{\s*\(align\|alignat\|displaymath\|displaymath\|eqnarray\|equation\|flalign\|gather\|math\|multline\|xalignat\)\*\=\s*}"
  syn match texBadMath		"\\[\])]"
@@ -393,7 +402,7 @@ if !exists("tex_no_math")
     let foldcmd= ""
    endif
    exe "syn cluster texMathZones add=".grpname
-   if !exists("g:tex_fast") || g:tex_fast =~ 'M'
+   if s:tex_fast =~ 'M'
     exe 'syn region '.grpname.' start='."'".'\\begin\s*{\s*'.a:mathzone.'\s*}'."'".' end='."'".'\\end\s*{\s*'.a:mathzone.'\s*}'."'".' keepend contains=@texMathZoneGroup'.foldcmd
     exe 'syn sync match '.syncname.' grouphere '.grpname.' "\\begin\s*{\s*'.a:mathzone.'\*\s*}"'
     exe 'syn sync match '.syncname.' grouphere '.grpname.' "\\begin\s*{\s*'.a:mathzone.'\*\s*}"'
@@ -403,7 +412,7 @@ if !exists("tex_no_math")
     let grpname  = "texMathZone".a:sfx.'S'
     let syncname = "texSyncMathZone".a:sfx.'S'
     exe "syn cluster texMathZones add=".grpname
-    if !exists("g:tex_fast") || g:tex_fast =~ 'M'
+    if s:tex_fast =~ 'M'
      exe 'syn region '.grpname.' start='."'".'\\begin\s*{\s*'.a:mathzone.'\*\s*}'."'".' end='."'".'\\end\s*{\s*'.a:mathzone.'\*\s*}'."'".' keepend contains=@texMathZoneGroup'.foldcmd
      exe 'syn sync match '.syncname.' grouphere '.grpname.' "\\begin\s*{\s*'.a:mathzone.'\*\s*}"'
      exe 'syn sync match '.syncname.' grouphere '.grpname.' "\\begin\s*{\s*'.a:mathzone.'\*\s*}"'
@@ -427,7 +436,7 @@ if !exists("tex_no_math")
  call TexNewMathZone("L","xxalignat",0)
 
  " Inline Math Zones: {{{2
- if !exists("g:tex_fast") || g:tex_fast =~ 'M'
+ if s:tex_fast =~ 'M'
   if has("conceal") && &enc == 'utf-8' && s:tex_conceal =~ 'd'
    syn region texMathZoneV	matchgroup=Delimiter start="\\("			matchgroup=Delimiter end="\\)\|%stopzone\>"	keepend concealends contains=@texMathZoneGroup
    syn region texMathZoneW	matchgroup=Delimiter start="\\\["			matchgroup=Delimiter end="\\]\|%stopzone\>"	keepend concealends contains=@texMathZoneGroup
@@ -445,7 +454,7 @@ if !exists("tex_no_math")
  syn match texMathOper		"[_^=]" contained
 
  " Text Inside Math Zones: {{{2
- if !exists("g:tex_fast") || g:tex_fast =~ 'M'
+ if s:tex_fast =~ 'M'
   if !exists("g:tex_nospell") || !g:tex_nospell
    syn region texMathText matchgroup=texStatement start='\\\(\(inter\)\=text\|mbox\)\s*{'	end='}'	contains=@texFoldGroup,@Spell
   else
@@ -540,13 +549,13 @@ else
    " allows syntax-folding of 2 or more contiguous comment lines
    " single-line comments are not folded
    syn match  texComment	"%.*$"			contains=@texCommentGroup
-   if !exists("g:tex_fast") || g:tex_fast =~ 'c'
+   if s:tex_fast =~ 'c'
     syn region texComment	start="^\zs\s*%.*\_s*%"	skip="^\s*%"	end='^\ze\s*[^%]' fold
     syn region texNoSpell	contained fold		matchgroup=texComment start="%\s*nospell\s*{"	end="%\s*nospell\s*}"	contains=@texFoldGroup,@NoSpell
    endif
   else
    syn match texComment		"%.*$"			contains=@texCommentGroup
-   if !exists("g:tex_fast") || g:tex_fast =~ 'c'
+   if s:tex_fast =~ 'c'
     syn region texNoSpell	contained		matchgroup=texComment start="%\s*nospell\s*{"	end="%\s*nospell\s*}"	contains=@texFoldGroup,@NoSpell
    endif
   endif
@@ -555,7 +564,7 @@ endif
 " Separate lines used for verb` and verb# so that the end conditions {{{1
 " will appropriately terminate.
 " If g:tex_verbspell exists, then verbatim texZones will permit spellchecking there.
-if !exists("g:tex_fast") || g:tex_fast =~ 'v'
+if s:tex_fast =~ 'v'
   if exists("g:tex_verbspell") && g:tex_verbspell
    syn region texZone		start="\\begin{[vV]erbatim}"		end="\\end{[vV]erbatim}\|%stopzone\>"	contains=@Spell
    " listings package:
@@ -586,7 +595,7 @@ if !exists("g:tex_fast") || g:tex_fast =~ 'v'
 endif
 
 " Tex Reference Zones: {{{1
-if !exists("g:tex_fast") || g:tex_fast =~ 'r'
+if s:tex_fast =~ 'r'
   syn region texZone		matchgroup=texStatement start="@samp{"			end="}\|%stopzone\>"	contains=@texRefGroup
   syn region texRefZone		matchgroup=texStatement start="\\nocite{"		end="}\|%stopzone\>"	contains=@texRefGroup
   syn region texRefZone		matchgroup=texStatement start="\\bibliography{"		end="}\|%stopzone\>"	contains=@texRefGroup
@@ -600,13 +609,13 @@ syn match  texRefZone		'\\cite\%([tp]\*\=\)\=' nextgroup=texRefOption,texCite
 
 " Handle newcommand, newenvironment : {{{1
 syn match  texNewCmd				"\\newcommand\>"			nextgroup=texCmdName skipwhite skipnl
-if !exists("g:tex_fast") || g:tex_fast =~ 'V'
+if s:tex_fast =~ 'V'
   syn region texCmdName contained matchgroup=Delimiter start="{"rs=s+1  end="}"		nextgroup=texCmdArgs,texCmdBody skipwhite skipnl
   syn region texCmdArgs contained matchgroup=Delimiter start="\["rs=s+1 end="]"		nextgroup=texCmdBody skipwhite skipnl
   syn region texCmdBody contained matchgroup=Delimiter start="{"rs=s+1 skip="\\\\\|\\[{}]"	matchgroup=Delimiter end="}" contains=@texCmdGroup
 endif
 syn match  texNewEnv				"\\newenvironment\>"			nextgroup=texEnvName skipwhite skipnl
-if !exists("g:tex_fast") || g:tex_fast =~ 'V'
+if s:tex_fast =~ 'V'
   syn region texEnvName contained matchgroup=Delimiter start="{"rs=s+1  end="}"		nextgroup=texEnvBgn skipwhite skipnl
   syn region texEnvBgn  contained matchgroup=Delimiter start="{"rs=s+1  end="}"		nextgroup=texEnvEnd skipwhite skipnl contains=@texEnvGroup
   syn region texEnvEnd  contained matchgroup=Delimiter start="{"rs=s+1  end="}"		skipwhite skipnl contains=@texEnvGroup
@@ -632,11 +641,11 @@ syn match texString		"\(``\|''\|,,\)"
 
 " makeatletter -- makeatother sections
 if !exists("s:tex_no_error")
- if !exists("g:tex_fast") || g:tex_fast =~ 'S'
+ if s:tex_fast =~ 'S'
   syn region texStyle			matchgroup=texStatement start='\\makeatletter' end='\\makeatother'	contains=@texStyleGroup contained
  endif
  syn match  texStyleStatement		"\\[a-zA-Z@]\+"	contained
- if !exists("g:tex_fast") || g:tex_fast =~ 'S'
+ if s:tex_fast =~ 'S'
   syn region texStyleMatcher		matchgroup=Delimiter start="{" skip="\\\\\|\\[{}]"	end="}"		contains=@texStyleGroup,texError	contained
   syn region texStyleMatcher		matchgroup=Delimiter start="\["				end="]"		contains=@texStyleGroup,texError	contained
  endif
@@ -1014,7 +1023,7 @@ if has("conceal") && &enc == 'utf-8'
 
  " Superscripts/Subscripts {{{2
  if s:tex_conceal =~ 's'
-  if !exists("g:tex_fast") || g:tex_fast =~ 's'
+  if s:tex_fast =~ 's'
    syn region texSuperscript	matchgroup=Delimiter start='\^{'	skip="\\\\\|\\[{}]" end='}'	contained concealends contains=texSpecialChar,texSuperscripts,texStatement,texSubscript,texSuperscript,texMathMatcher
    syn region texSubscript	matchgroup=Delimiter start='_{'		skip="\\\\\|\\[{}]" end='}'	contained concealends contains=texSpecialChar,texSubscripts,texStatement,texSubscript,texSuperscript,texMathMatcher
   endif
@@ -1227,7 +1236,7 @@ if did_tex_syntax_inits == 1
  let did_tex_syntax_inits= 2
   " TeX highlighting groups which should share similar highlighting
   if !exists("s:tex_no_error")
-   if !exists("tex_no_math")
+   if !exists("g:tex_no_math")
     HiLink texBadMath		texError
     HiLink texMathDelimBad	texError
     HiLink texMathError		texError

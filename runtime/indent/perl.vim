@@ -1,8 +1,9 @@
 " Vim indent file
-" Language:     Perl 5
-" Author:       Andy Lester <andy@petdance.com>
-" URL:          http://github.com/petdance/vim-perl/tree/master
-" Last Change:  June 3, 2009
+" Language:      Perl 5
+" Maintainer:    vim-perl <vim-perl@googlegroups.com>
+" Homepage:      http://github.com/vim-perl/vim-perl
+" Bugs/requests: http://github.com/vim-perl/vim-perl/issues
+" Last Change:   May 12, 2013
 
 " Suggestions and improvements by :
 "   Aaron J. Sherman (use syntax for hints)
@@ -11,9 +12,9 @@
 " TODO things that are not or not properly indented (yet) :
 " - Continued statements
 "     print "foo",
-"	"bar";
+"       "bar";
 "     print "foo"
-"	if bar();
+"       if bar();
 " - Multiline regular expressions (m//x)
 " (The following probably needs modifying the perl syntax file)
 " - qw() lists
@@ -34,15 +35,10 @@ if !b:indent_use_syntax
     setlocal indentkeys+=0=EO
 endif
 
-" Only define the function once.
-if exists("*GetPerlIndent")
-    finish
-endif
-
 let s:cpo_save = &cpo
 set cpo-=C
 
-function GetPerlIndent()
+function! GetPerlIndent()
 
     " Get the line to be indented
     let cline = getline(v:lnum)
@@ -52,7 +48,7 @@ function GetPerlIndent()
         return 0
     endif
 
-    " Don't reindent coments on first column
+    " Don't reindent comments on first column
     if cline =~ '^#.'
         return 0
     endif
@@ -124,7 +120,12 @@ function GetPerlIndent()
     " Indent blocks enclosed by {}, (), or []
     if b:indent_use_syntax
         " Find a real opening brace
-        let bracepos = match(line, '[(){}\[\]]', matchend(line, '^\s*[)}\]]'))
+        " NOTE: Unlike Perl character classes, we do NOT need to escape the
+        " closing brackets with a backslash.  Doing so just puts a backslash
+        " in the character class and causes sorrow.  Instead, put the closing
+        " bracket as the first character in the class.
+        let braceclass = '[][(){}]'
+        let bracepos = match(line, braceclass, matchend(line, '^\s*[])}]'))
         while bracepos != -1
             let synid = synIDattr(synID(lnum, bracepos + 1, 0), "name")
             " If the brace is highlighted in one of those groups, indent it.
@@ -133,7 +134,7 @@ function GetPerlIndent()
                         \ || synid == "perlMatchStartEnd"
                         \ || synid == "perlHereDoc"
                         \ || synid =~ "^perlFiledescStatement"
-                        \ || synid =~ '^perl\(Sub\|Block\)Fold'
+                        \ || synid =~ '^perl\(Sub\|Block\|Package\)Fold'
                 let brace = strpart(line, bracepos, 1)
                 if brace == '(' || brace == '{' || brace == '['
                     let ind = ind + &sw
@@ -141,22 +142,22 @@ function GetPerlIndent()
                     let ind = ind - &sw
                 endif
             endif
-            let bracepos = match(line, '[(){}\[\]]', bracepos + 1)
+            let bracepos = match(line, braceclass, bracepos + 1)
         endwhile
-        let bracepos = matchend(cline, '^\s*[)}\]]')
+        let bracepos = matchend(cline, '^\s*[])}]')
         if bracepos != -1
             let synid = synIDattr(synID(v:lnum, bracepos, 0), "name")
             if synid == ""
                         \ || synid == "perlMatchStartEnd"
-                        \ || synid =~ '^perl\(Sub\|Block\)Fold'
+                        \ || synid =~ '^perl\(Sub\|Block\|Package\)Fold'
                 let ind = ind - &sw
             endif
         endif
     else
-        if line =~ '[{\[(]\s*\(#[^)}\]]*\)\=$'
+        if line =~ '[{[(]\s*\(#[^])}]*\)\=$'
             let ind = ind + &sw
         endif
-        if cline =~ '^\s*[)}\]]'
+        if cline =~ '^\s*[])}]'
             let ind = ind - &sw
         endif
     endif

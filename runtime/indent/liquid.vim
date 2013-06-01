@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:     Liquid
 " Maintainer:   Tim Pope <vimNOSPAM@tpope.org>
-" Last Change:  2012 May 07
+" Last Change:	2013 May 30
 
 if exists('b:did_indent')
   finish

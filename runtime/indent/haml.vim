@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	Haml
 " Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
-" Last Change:	2010 May 21
+" Last Change:	2013 May 30
 
 if exists("b:did_indent")
   finish
@@ -23,7 +23,7 @@ let s:attributes = '\%({.\{-\}}\|\[.\{-\}\]\)'
 let s:tag = '\%([%.#][[:alnum:]_-]\+\|'.s:attributes.'\)*[<>]*'
 
 if !exists('g:haml_self_closing_tags')
-  let g:haml_self_closing_tags = 'meta|link|img|hr|br'
+  let g:haml_self_closing_tags = 'base|link|meta|br|hr|img|input'
 endif
 
 function! GetHamlIndent()

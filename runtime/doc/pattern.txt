@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.3.  Last change: 2013 May 17
+*pattern.txt*   For Vim version 7.3.  Last change: 2013 May 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -698,6 +698,7 @@ overview.
 	For speed it's often much better to avoid this multi.  Try using "\zs"
 	instead |/\zs|.  To match the same as the above example:
 		an\_s\+\zsfile
+	At least set a limit for the look-behind, see below.
 
 	"\@<=" and "\@<!" check for matches just before what follows.
 	Theoretically these matches could start anywhere before this position.
@@ -710,6 +711,18 @@ overview.
 	Example			matches ~
 	\1\@<=,\([a-z]\+\)	",abc" in "abc,abc"
 
+\@123<=
+	Like "\@<=" but only look back 123 bytes. This avoids trying lots
+	of matches that are known to fail and make executing the pattern very
+	slow.  Example, check if there is a "<" just before "span":
+		/<\@1<=span
+	This will try matching "<" only one byte before "span", which is the
+	only place that works anyway.
+	After crossing a line boundary, the limit is relative to the end of
+	the line.  Thus the characters at the start of the line with the match
+	are not counted (this is just to keep it simple).
+	The number zero is the same as no limit.
+
 							*/\@<!*
 \@<!	Matches with zero width if the preceding atom does NOT match just
 	before what follows.  Thus this matches if there is no position in the
@@ -719,10 +732,15 @@ overview.
 	The match with the preceding atom is made to end just before the match
 	with what follows, thus an atom that ends in ".*" will work.
 	Warning: This can be slow (because many positions need to be checked
-	for a match).
+	for a match).  Use a limit if you can, see below.
 	Example			matches ~
 	\(foo\)\@<!bar		any "bar" that's not in "foobar"
 	\(\/\/.*\)\@<!in	"in" which is not after "//"
+
+\@123<!
+	Like "\@<!" but only look back 123 bytes. This avoids trying lots of
+	matches that are known to fail and make executing the pattern very
+	slow.
 
 							*/\@>*
 \@>	Matches the preceding atom like matching a whole pattern. {not in Vi}
@@ -1193,6 +1211,8 @@ When "\Z" appears anywhere in the pattern, composing characters are ignored.
 Thus only the base characters need to match, the composing characters may be
 different and the number of composing characters may differ.  Only relevant
 when 'encoding' is "utf-8".
+Exception: If the pattern starts with one or more composing characters, these
+must match.
 
 When a composing character appears at the start of the pattern of after an
 item that doesn't include the composing character, a match is found at any
@@ -1202,8 +1222,20 @@ When using a dot and a composing character, this works the same as the
 composing character by itself, except that it doesn't matter what comes before
 this.
 
-The order of composing characters matters, even though changing the order
-doesn't change what a character looks like.  This may change in the future.
+The order of composing characters does not matter.  Also, the text may have
+more composing characters than the pattern, it still matches.  But all
+composing characters in the pattern must be found in the text.
+
+Suppose B is a base character and x and y are composing characters:
+	pattern		text		match ~
+	Bxy		Bxy		yes (perfect match)
+	Bxy		Byx		yes (order ignored)
+	Bxy		By		no (x missing)
+	Bxy		Bx		no (y missing)
+	Bx		Bx		yes (perfect mach)
+	Bx		By		no (x missing)
+	Bx		Bxy		yes (extra y ignored)
+	Bx		Byx		yes (extra y ignored)
 
 ==============================================================================
 9. Compare with Perl patterns				*perl-patterns*

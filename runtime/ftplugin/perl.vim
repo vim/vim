@@ -1,8 +1,9 @@
 " Vim filetype plugin file
-" Language:     Perl
-" Maintainer:   Andy Lester <andy@petdance.com>
-" URL:          http://github.com/petdance/vim-perl
-" Last Change:  2012 Mar 11
+" Language:      Perl
+" Maintainer:    vim-perl <vim-perl@googlegroups.com>
+" Homepage:      http://github.com/vim-perl/vim-perl
+" Bugs/requests: http://github.com/vim-perl/vim-perl/issues
+" Last Change:   2013-05-11
 
 if exists("b:did_ftplugin") | finish | endif
 let b:did_ftplugin = 1
@@ -12,7 +13,8 @@ let b:did_ftplugin = 1
 let s:save_cpo = &cpo
 set cpo-=C
 
-setlocal formatoptions+=crq
+setlocal formatoptions-=t
+setlocal formatoptions+=crqol
 setlocal keywordprg=perldoc\ -f
 
 setlocal comments=:#
@@ -29,7 +31,7 @@ endif
 " Provided by Ned Konz <ned at bike-nomad dot com>
 "---------------------------------------------
 setlocal include=\\<\\(use\\\|require\\)\\>
-setlocal includeexpr=substitute(substitute(v:fname,'::','/','g'),'$','.pm','')
+setlocal includeexpr=substitute(substitute(substitute(v:fname,'::','/','g'),'->\*','',''),'$','.pm','')
 setlocal define=[^A-Za-z_]
 
 " The following line changes a global variable but is necessary to make
@@ -38,7 +40,7 @@ setlocal define=[^A-Za-z_]
 " problem for you, add an after/ftplugin/perl.vim file that contains
 "       set isfname-=:
 set isfname+=:
-"setlocal iskeyword=48-57,_,A-Z,a-z,:
+set iskeyword+=:
 
 " Set this once, globally.
 if !exists("perlpath")
@@ -60,12 +62,26 @@ if !exists("perlpath")
     endif
 endif
 
-let &l:path=perlpath
+" Append perlpath to the existing path value, if it is set.  Since we don't
+" use += to do it because of the commas in perlpath, we have to handle the
+" global / local settings, too.
+if &l:path == ""
+    if &g:path == ""
+        let &l:path=perlpath
+    else
+        let &l:path=&g:path.",".perlpath
+    endif
+else
+    let &l:path=&l:path.",".perlpath
+endif
 "---------------------------------------------
 
 " Undo the stuff we changed.
-let b:undo_ftplugin = "setlocal fo< com< cms< inc< inex< def< isf< kp<" .
+let b:undo_ftplugin = "setlocal fo< com< cms< inc< inex< def< isf< kp< path<" .
 	    \	      " | unlet! b:browsefilter"
+
+" proper matching for matchit plugin
+let b:match_skip = 's:comment\|string\|perlQQ\|perlShellCommand\|perlHereDoc\|perlSubstitution\|perlTranslation\|perlMatch\|perlFormatField'
 
 " Restore the saved compatibility options.
 let &cpo = s:save_cpo

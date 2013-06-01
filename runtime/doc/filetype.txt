@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 7.3.  Last change: 2011 Jun 19
+*filetype.txt*  For Vim version 7.3.  Last change: 2013 May 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -603,7 +603,7 @@ Since the text for this plugin is rather long it has been put in a separate
 file: |ft_sql.txt|.
 
 
-TEX							*ft-tex-plugin*
+TEX						*ft-tex-plugin* *g:tex_flavor*
 
 If the first line of a *.tex file has the form >
 	%&<format>

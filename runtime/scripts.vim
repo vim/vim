@@ -1,7 +1,7 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2012 Aug 30
+" Last change:	2013 May 24
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
@@ -326,6 +326,12 @@ else
   " Git output
   elseif s:line1 =~ '^\(commit\|tree\|object\) \x\{40\}\>\|^tag \S\+$'
     set ft=git
+
+   " Gprof (gnu profiler)
+   elseif s:line1 == 'Flat profile:'
+     \ && s:line2 == ''
+     \ && s:line3 =~ '^Each sample counts as .* seconds.$'
+     set ft=gprof
 
   " CVS diff
   else

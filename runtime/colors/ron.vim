@@ -2,7 +2,7 @@
 " vim: tw=0 ts=4 sw=4
 " Vim color file
 " Maintainer:	Ron Aaron <ron@ronware.org>
-" Last Change:	2003 May 02
+" Last Change:	2013 May 24
 
 set background=dark
 hi clear
@@ -11,7 +11,7 @@ if exists("syntax_on")
 endif
 let g:colors_name = "ron"
 hi Normal		guifg=cyan	guibg=black
-hi NonText		guifg=brown
+hi NonText		guifg=yellow guibg=#303030
 hi comment		guifg=green
 hi constant		guifg=cyan	gui=bold
 hi identifier	guifg=cyan	gui=NONE
@@ -24,10 +24,11 @@ hi WarningMsg	guifg=Black	guibg=Green
 hi Error		guibg=Red
 hi Todo			guifg=Black	guibg=orange
 hi Cursor		guibg=#60a060 guifg=#00ff00
-hi Search		guibg=lightslateblue
+hi Search		guibg=darkgray guifg=black gui=bold 
 hi IncSearch	gui=NONE guibg=steelblue
 hi LineNr		guifg=darkgrey
 hi title		guifg=darkgrey
+hi ShowMarksHL ctermfg=cyan ctermbg=lightblue cterm=bold guifg=yellow guibg=black  gui=bold
 hi StatusLineNC	gui=NONE guifg=lightblue guibg=darkblue
 hi StatusLine	gui=bold	guifg=cyan	guibg=blue
 hi label		guifg=gold2
@@ -41,3 +42,4 @@ hi DiffDelete   guibg=coral
 hi Folded		guibg=gray30
 hi FoldColumn	guibg=gray30 guifg=white
 hi cIf0			guifg=gray
+hi diffOnly	guifg=red gui=bold

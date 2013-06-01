@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 May 21
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Jun 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,15 +34,14 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Rename src/Makefile and create a new one like toplevel Makefile that creates
-auto/config.mk when it's not there? (Ben Schmidt, 2011 Feb 11)
-
 --- Python interface
 
-Python: thread with refactoring patches. (ZyX, May 19, 16:46 and later)
-9
-10
-11
+Patch from ZyX, May 30: Fix some possible memory problems
+
+Check: docs for .valid  patch by ZyX, May 30
+Correction by Roland Eggner, May 31.
+
+Tests are disabled because they fail.
 
 Configure doesn't find Python 3 on Ubuntu 13.04. (Ken Takata, Apr 13)
 
@@ -50,9 +49,7 @@ Python SystemExit exception is not handled properly.  Patch to catch the
 exception and give an error. (Yasuhiro Matsumoto)
 Does not work, tests fail.
 
-Patch to print the result of a :python command. (Maxim Philippov
-<philippovmi@gmail.com>, 2012 Aug 16)  Update Aug 17.
-Patch no longer applies.
+Patch to complete after :py3. (Taro Muraoka, 2013 May 31)
 
 ":python os.chdir('/tmp')" makes short buffer names invalid. (Xavier de Gaye)
 Patch to make os.chdir() handle side effects. (Xavier de Gaye, 2013 May 17)
@@ -71,7 +68,8 @@ Win32: The Python interface only works with one version of Python, selected at
 compile time.  Can this be made to work with version 2.1 and 2.2 dynamically?
 
 Python: Be able to define a Python function that can be called directly from
-Vim script.  Requires converting the arguments and return value.
+Vim script.  Requires converting the arguments and return value, like with
+vim.bindeval().
 
 --- runtime files
 
@@ -84,66 +82,60 @@ Claudio didn't respond yet.
 
 --- Fast regexp engine
 
-Duplicate condition in line 1094. (Ken Takata)  Should be 'r'?
+Error in HTML highlighting. (Hiroshi Shirosaki)
 
-Multi-byte problem? Marc Weber
-    echo matchlist('1', '\%#=1\o{\?Ä\Z')
-    echo matchlist('1', '\%#=2\o{\?Ä\Z')
+Tests for \{-} : Requires trying to start at every position?
+If so, rename nfa_has_backref to nfa_dup_states and re-use it for this.
 
-Difference in matching this pattern: (Marc Weber)
-   echo matchlist("t", '\%#=1ú\Z')
-   echo matchlist("t", '\%#=2ú\Z')
+Allow "^*" as a literal "*".
 
-Difference in matching this pattern:
-    echo matchlist('google', '\%#=1\<go*\|go')
-    echo matchlist('google', '\%#=2\<go*\|go')
+Need more testing for \1 back references.
 
-Difference in matching this pattern: (Marc Weber)
-  echo matchlist("\na", '\%#=1\_F')
-  echo matchlist("\na", '\%#=0\_F')
-  echo matchlist("\na", '\%#=2\_F')
+Profiling:
+    ./vim -s ~/vim/test/loop.vim
+    ./vim -s ~/vim/test/xml.vim  (Fix: Uses the old engine, see
+				bt_regexp_debug.log)
+	Need \@<=
+	NFA engine could not handle "[<]\@<=[^ /!?<>"']\+"
+	NFA engine could not handle "<!--\_.\{-}-->"
 
-Don't set curbuf, use reg_buf.
-
-Estimation of number of items is wrong, can be much larger.
-When running out of space, retry with more space?
-
-nfa_regcomp() should not use nstate_max but the actual number of states for
-allocating the prog?
+setting cpo_lit and cpo_bsl can be slow.  Make them global.
 
 Get example files for many languages. Compare syntax highlighting with old and
 new regexp, find regexp constructs where NFA does not work correctly.
 source ~/vim/regexp/runold.vim  to update the "old" files.
 source ~/vim/regexp/runnew.vim  to update the "new" files
 source ~/vim/regexp/diff.vim    to find differences
-Diffs in these files:
-- csh02: line 2, "13" is not highlighted after -misc-fixed-bold-r-normal-
-  as cshNumber
-- csh02: line 7, similar problem.
-- tst28.tex line 8 \alpha in texStatement instead of texGreek
+
+More test files from the src/pkg/regexp/testdata directory in the Go repo.
 
 It's very slow compared to the old engine...
 Performance tests:
+- ~/vim/text/FeiqCfg.xml (file from Netjune)
+- ~/vim/text/edl.svg  (also XML)
+- glts has five tests. (May 25)
 - ~/vim/test/veryslow.js  display last line (file from Daniel Fetchinson)
 - ~/vim/test/slowsearch
 - ~/vim/test/rgb.vim
-- ~/vim/text/FeiqCfg.xml (file from Netjune)
-- ~/vim/text/edl.svg  (also XML)
 - search for  a.*e*exn  in the vim executable.  Go to last line to use
   'hlsearch'.
 - Slow combination of folding and PHP syntax highlighting.  Script to
   reproduce it.  Caused by "syntax sync fromstart" in combination with patch
   7.2.274.  (Christian Brabandt, 2010 May 27) Generally, folding with
   'foldmethod' set to "syntax" is slow.  Do profiling to find out why.
-- Does not use any of the optimizations, such as required start pattern.
+- It does not use any of the optimizations, such as required start pattern.
 - When lists are empty in nfa_regmatch() and match is true, it keeps looping
   without doing anything.
 
-"\ze" is currently disabled for NFA, can this be fixed?
-
-"\_[0-9]\?\>" does not match at end of line, disabled.
-
-Items with \%u, \%x, \%o, \%d do not work with the new engine.
+Does not work (yet) with NFA:
+- \z() \z1 .. "\z9": Previously matched text in syn HL.
+- ~: previous substitute pattern. Requires recursive compilation?
+- \%u, \%x, \%o, \%d followed by a composing character
+- \%V Visual
+- \%[abc]
+- \%'  mark
+- \@<  match before zero-width
+- \@>  match whole pattern
 
 --- bug fixes
 
@@ -152,6 +144,8 @@ Patch to avoid wrong error message for 1.0[0]. (Yasuhiro Matsumoto, 2013 May
 
 Patch for if_lua. (Luis Carvalho, 2012 Aug 26, update Aug 29, another Aug 30,
 then Sep 1, reminder Oct 14)
+
+Patch for if_perl.  (Ike Devolder, May 27)
 
 Patch to check if 'foldexpr' sets did_emsg. (Christian Brabandt, 2013 Mar 20)
 
@@ -193,6 +187,9 @@ Another patch for MingW, 2012 Dec 29.
 Bug in completion menu. (Olivier Teuliere, 2013 Feb 15)
 Patch by Christian Brabandt, Feb 16.
 
+Issue 134: pasting in visual selection in empty buffer.
+Patch by Christian Brabandt, 2013 May 22.
+
 'cursorline' is drawn incorrectly in diff mode. Patch by Christian Brabandt,
 2012 Apr 2.
 
@@ -201,6 +198,9 @@ handle the out-of-memory and set them to sane values? (jimmywang, 2013 May 17)
 
 InsertEnter doesn't prevent the cursor from moving when it goes to another
 line.
+
+":diffoff" does not restore options from before starting diff mode.
+Patch by Christian Brabandt, 2013 May 26.
 
 --- slightly incompatible changes
 
@@ -216,6 +216,7 @@ the global mapping matches.  It is probably better to let the local mapping
 win and not wait. (discussion with Andy Wokula, 2013 Jan 30)
 Patch by Michael Henry, 2013 Jan 30, update Feb 15.
 
+Patch to store absolute path for cscope. (Christian Brabandt, 2013 May 31)
 
 ---- Fixes to be included before 7.4 above, less important stuff below ----
 
@@ -248,6 +249,10 @@ Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
 Stocker, 2012 Jan 5)
 
+Patch to support expression argument to sort() instead of a function name.
+Yasuhiro Matsumoto, 2013 May 31.
+Or should we add a more general mechanism, like lambda functions?
+
 Problem caused by patch 7.3.638: window->open does not update window
 correctly. Issue 91.
 
@@ -262,15 +267,15 @@ Patch to invert characters differently in GTK. (Yukihiro Nakadaira, 2013 May
 Patch to add the bufferlist() function. (Yegappan Lakshmanan, 2013 May 5)
 May 17: with winlist() and tabpagelist().
 May 19: with local variables.
-
-Patch to allow setting w:quickfix_title via setqflist() and setloclist()
-functions. (Christian Brabandt, 2013 May 8, update May 21)
+May 28: with options
 
 Patch to support 'u' in interactive substitute. (Christian Brabandt, 2012 Sep
 28)  With tests: Oct 9.
 
+Patch to allow setting w:quickfix_title via setqflist() and setloclist()
+functions. (Christian Brabandt, 2013 May 8, update May 21)
 Patch to add getlocstack() / setlocstack(). (Christian Brabandt, 2013 May 14)
-Second one.
+Second one. Update May 22.
 
 Patch to make fold updates much faster. (Christian Brabandt, 2012 Dec)
 
@@ -322,6 +327,10 @@ Patch to add functions for signs. (Christian Brabandt, 2013 Jan 27)
 
 Patch to use directX to draw text on Windows.  Adds the 'renderoptions'
 option.  (Taro Muraoka, 2013 Jan 25, update 2013 Apr 3, May 14)
+
+Patch to add 'completeselect' option.  Specifies how to select a candidate in
+insert completion. (Shougo, 2013 May 29)
+Update to add to existing 'completeopt'. 2013 May 30
 
 Problem with refresh:always in completion. (Tyler Wade, 2013 Mar 17)
 
@@ -408,6 +417,7 @@ And one for gui_x11.txt.
     Version for latest MacVim: Tobia Conforto, 2009 Nov 23
     More recent version: https://retracile.net/wiki/VimBreakIndent
     Posted to vim-dev by Taylor Hedberg, 2011 Nov 25
+    Update by Taylor Hedberg, 2013 May 30.
 
 ":cd" doesn't work when current directory path contains "**".
 finddir() has the same problem.  (Yukihiro Nakadaira, 2012 Jan 10)
@@ -1173,6 +1183,14 @@ Oct 19)  Check for "col" being "MAXCOL" separately?
 
 Unexpectedly inserting a double quote. (Anton Woellert, 2008 Mar 23)
 Works OK when 'cmdheight' is 2.
+
+8   Use a mechanism similar to omni completion to figure out the kind of tab
+    for CTRL-] and jump to the appropriate matching tag (if there are
+    several).
+    Alternative: be able to define a function that takes the tag name and uses
+    taglist() to find the right location.  With indication of using CTRL-] so
+    that the context can be taken into account. (Robert Webb)
+Patch by Christian Brabandt, 2013 May 31.
 
 Test54 should not use shell commands.  Make it portable.
 
@@ -3659,12 +3677,6 @@ Tags:
     make the filename or the whole option use |wildcards| globing, better
     would be to merge the 2 kinds of globing. originally (Erik Falor, 2008
     April 18), updated (Ian Kelling, 2008 July 4)
-8   Use a mechanism similar to omni completion to figure out the kind of tab
-    for CTRL-] and jump to the appropriate matching tag (if there are
-    several).
-    Alternative: be able to define a function that takes the tag name and uses
-    taglist() to find the right location.  With indication of using CTRL-] so
-    that the context can be taken into account. (Robert Webb)
 7   Can CTRL-] (jump to tag) include a following "." and "->" to restrict the
     number of possible matches? Check tags file for an item that has members.
     (Flemming Madsen)

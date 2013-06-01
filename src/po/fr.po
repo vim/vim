@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Français)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-10 14:05+0100\n"
-"PO-Revision-Date: 2013-02-10 14:48+0100\n"
+"POT-Creation-Date: 2013-05-27 04:55+0200\n"
+"PO-Revision-Date: 2013-05-27 10:22+0200\n"
 "Last-Translator: Dominique Pellé <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -47,7 +47,7 @@ msgid "[Quickfix List]"
 msgstr "[Liste Quickfix]"
 
 msgid "E855: Autocommands caused command to abort"
-msgstr "E855: Des autocommandes ont causé la termination de la commande"
+msgstr "E855: Des autocommandes ont causé la terminaison de la commande"
 
 # AB - Il faut respecter l'esprit plus que la lettre.
 msgid "E82: Cannot allocate any buffer, exiting..."
@@ -817,6 +817,9 @@ msgstr "E123: Fonction non définie : %s"
 msgid "E124: Missing '(': %s"
 msgstr "E124: Il manque '(' après %s"
 
+msgid "E862: Cannot use g: here"
+msgstr "E862: Impossible d'utiliser g: ici"
+
 #, c-format
 msgid "E125: Illegal argument: %s"
 msgstr "E125: Argument invalide : %s"
@@ -1163,6 +1166,10 @@ msgstr "E148: :global doit être suivi par une expression régulière"
 #, c-format
 msgid "Pattern found in every line: %s"
 msgstr "Motif trouvé dans toutes les lignes : %s"
+
+#, c-format
+msgid "Pattern not found: %s"
+msgstr "Motif introuvable: %s"
 
 # AB - Ne pas traduire le dollar.
 # AB - Ce message n'est volontairement pas traduit. En effet, il fait partie
@@ -2885,24 +2892,11 @@ msgstr ""
 msgid "E659: Cannot invoke Python recursively"
 msgstr "E659: Impossible d'invoquer Python récursivement"
 
-msgid "E858: Eval did not return a valid python object"
-msgstr "E858: Eval n'a pas retourné un objet python valide"
-
-msgid "E859: Failed to convert returned python object to vim value"
-msgstr "E859: Conversion d'objet python à une valeur de vim a échoué"
-
-#, c-format
-msgid "<buffer object (deleted) at %p>"
-msgstr "<objet tampon (effacé) à %p>"
-
 msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: Vim ne peut pas exécuter :py3 après avoir utilisé :python"
 
-msgid "E860: Eval did not return a valid python 3 object"
-msgstr "E860: Eval n'a pas retourné un object python 3 valid"
-
-msgid "E861: Failed to convert returned python 3 object to vim value"
-msgstr "E861: Conversion d'objet python 3 à une valeur de vim a échoué"
+msgid "index must be int or slice"
+msgstr "index doit être int ou slice"
 
 msgid "E265: $_ must be an instance of String"
 msgstr "E265: $_ doit être une instance de chaîne (String)"
@@ -5007,18 +5001,9 @@ msgstr "E777: Chaîne ou Liste attendue"
 msgid "E369: invalid item in %s%%[]"
 msgstr "E369: élément invalide dans %s%%[]"
 
-msgid "E339: Pattern too long"
-msgstr "E339: Motif trop long"
-
-msgid "E50: Too many \\z("
-msgstr "E50: Trop de \\z("
-
 #, c-format
-msgid "E51: Too many %s("
-msgstr "E51: Trop de %s("
-
-msgid "E52: Unmatched \\z("
-msgstr "E52: Pas de correspondance pour \\z("
+msgid "E769: Missing ] after %s["
+msgstr "E769: ']' manquant après %s["
 
 #, c-format
 msgid "E53: Unmatched %s%%("
@@ -5031,6 +5016,19 @@ msgstr "E54: %s( ouvrante non fermée"
 #, c-format
 msgid "E55: Unmatched %s)"
 msgstr "E55: %s) fermante non ouverte"
+
+msgid "E339: Pattern too long"
+msgstr "E339: Motif trop long"
+
+msgid "E50: Too many \\z("
+msgstr "E50: Trop de \\z("
+
+#, c-format
+msgid "E51: Too many %s("
+msgstr "E51: Trop de %s("
+
+msgid "E52: Unmatched \\z("
+msgstr "E52: Pas de correspondance pour \\z("
 
 #, c-format
 msgid "E59: invalid character after %s@"
@@ -5084,15 +5082,88 @@ msgid "E71: Invalid character after %s%%"
 msgstr "E71: Caractère invalide après %s%%"
 
 #, c-format
-msgid "E769: Missing ] after %s["
-msgstr "E769: ']' manquant après %s["
-
-#, c-format
 msgid "E554: Syntax error in %s{...}"
 msgstr "E554: Erreur de syntaxe dans %s{...}"
 
 msgid "External submatches:\n"
 msgstr "Sous-correspondances externes :\n"
+
+msgid ""
+"E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be "
+"used "
+msgstr ""
+"E864: \\%#= peut être suivi uniquement de 0, 1 ou 2. Le moteur automatique "
+"sera utilisé "
+
+#, c-format
+msgid "E866: (NFA regexp) Misplaced %c"
+msgstr "E866: (regexp NFA) %c au mauvais endroit"
+
+msgid "E865: (NFA) Regexp end encountered prematurely"
+msgstr "E865: (NFA) Fin de regexp rencontrée prématurément"
+
+#, c-format
+msgid "E867: (NFA) Unknown operator '\\z%c'"
+msgstr "E867: (NFA) Opérateur inconnu '\\z%c'"
+
+#. should never happen
+msgid "E868: Error building NFA with equivalence class!"
+msgstr "E868: Erreur lors de la construction du NFA avec classe d'équivalence"
+
+#, c-format
+msgid "E869: (NFA) Unknown operator '\\@%c'"
+msgstr "E869: (NFA) Opérateur inconnu '\\@%c'"
+
+msgid "E870: (NFA regexp) Error reading repetition limits"
+msgstr "E870: (regexp NFA) Erreur à la lecture des limites de répétition"
+
+msgid "E871: (NFA regexp) Can't have a multi follow a multi !"
+msgstr "E871: (regexp NFA) Un multi ne peut pas suivre un multi !"
+
+msgid "E872: (NFA regexp) Too many '('"
+msgstr "E872: (regexp NFA) Trop de '('"
+
+msgid "E873: (NFA regexp) proper termination error"
+msgstr "E873: (NFA regexp) erreur de terminaison"
+
+msgid "E874: (NFA) Could not pop the stack !"
+msgstr "E874: (NFA) Impossible de dépiler !"
+
+msgid ""
+"E875: (NFA regexp) (While converting from postfix to NFA), too many states "
+"left on stack"
+msgstr ""
+"E875: (regexp NFA) (lors de la conversion de postfix à NFA), il reste trop "
+"d'états sur la pile"
+
+msgid "E876: (NFA regexp) Not enough space to store the whole NFA "
+msgstr "E876: (regexp NFA) Pas assez de mémoire pour stocker le NFA"
+
+msgid "E999: (NFA regexp internal error) Should not process NOT node !"
+msgstr ""
+"E999: (erreur interne du regexp NFA) Un noeud 'NOT' ne devrait pas être "
+"traité !"
+
+#. should not be here :P
+msgid "E877: (NFA regexp) Invalid character class "
+msgstr "E877: (regexp NFA) Classe de caractère invalide "
+
+#, c-format
+msgid "(NFA) COULD NOT OPEN %s !"
+msgstr "(NFA) IMPOSSIBLE D'OUVRIR %s !"
+
+msgid ""
+"Could not open temporary log file for writing, displaying on stderr ... "
+msgstr ""
+"Impossible d'ouvrir le fichier de log temporaire en écriture, affichage sur "
+"stderr ... "
+
+msgid "E878: (NFA) Could not allocate memory for branch traversal!"
+msgstr ""
+"E878: (NFA) Impossible d'allouer la mémoire pour parcourir les branches!"
+
+msgid "Could not open temporary log file for writing "
+msgstr "Impossible d'ouvrir le fichier de log en écriture"
 
 msgid " VREPLACE"
 msgstr " VREMPLACEMENT"
@@ -5271,7 +5342,7 @@ msgstr "E770: Section non supportée dans le fichier orthographique"
 
 #, c-format
 msgid "Warning: region %s not supported"
-msgstr "Alerte : region %s non supportée"
+msgstr "Alerte : région %s non supportée"
 
 #, c-format
 msgid "Reading affix file %s ..."
@@ -6841,14 +6912,8 @@ msgstr "writelines() requiert une liste de chaînes"
 msgid "E264: Python: Error initialising I/O objects"
 msgstr "E264: Python : Erreur d'initialisation des objets d'E/S"
 
-msgid "no such buffer"
-msgstr "ce tampon n'existe pas"
-
 msgid "empty keys are not allowed"
 msgstr "les clés vides ne sont pas autorisées"
-
-msgid "failed to add key to dictionary"
-msgstr "l'ajout de clé au dictionnaire a échoué"
 
 msgid "Cannot delete DictionaryObject attributes"
 msgstr "Impossible d'effacer les attributs de DictionaryObject"
@@ -6856,17 +6921,17 @@ msgstr "Impossible d'effacer les attributs de DictionaryObject"
 msgid "Cannot modify fixed dictionary"
 msgstr "Impossible de modifier un dictionnaire fixe"
 
-msgid "Only boolean objects are allowed"
-msgstr "Seuls les objets booléens sont autorisés"
-
 msgid "Cannot set this attribute"
 msgstr "Impossible d'initialiser cet attribut"
 
-msgid "no such key in dictionary"
-msgstr "cette clé est inexistante dans le dictionnaire"
-
 msgid "dict is locked"
 msgstr "dictionnaire est verrouillé"
+
+msgid "failed to add key to dictionary"
+msgstr "l'ajout de clé au dictionnaire a échoué"
+
+msgid "list index out of range"
+msgstr "index de liste hors limites"
 
 msgid "internal error: failed to get vim list item"
 msgstr "erreur interne : accès à un élément de liste a échoué"
@@ -6889,14 +6954,53 @@ msgstr "erreur interne : ajout d'élément à la liste a échoué"
 msgid "can only concatenate with lists"
 msgstr "on ne peut que concaténer avec des listes"
 
-msgid "Cannot modify fixed list"
-msgstr "Impossible de modifier une liste fixe"
+msgid "cannot delete vim.dictionary attributes"
+msgstr "impossible d'effacer les attributs de vim.dictionary"
+
+msgid "cannot modify fixed list"
+msgstr "impossible de modifier une liste fixe"
+
+msgid "cannot set this attribute"
+msgstr "impossible d'initialiser cet attribut"
 
 msgid "'self' argument must be a dictionary"
 msgstr "l'argument 'self' doit être un dictionnaire"
 
 msgid "failed to run function"
 msgstr "exécution de la fonction a échoué"
+
+msgid "unable to get option value"
+msgstr "impossible d'obtenir la valeur d'une option"
+
+msgid "unable to unset global option"
+msgstr "impossible de désactiver une option globale"
+
+msgid "unable to unset option without global value"
+msgstr "impossible de désactiver une option sans une valeur globale"
+
+msgid "object must be integer"
+msgstr "objet doit être un nombre entier"
+
+msgid "object must be string"
+msgstr "objet doit être de type string"
+
+msgid "attempt to refer to deleted tab page"
+msgstr "tentative de référencer un onglet effacé"
+
+#, c-format
+msgid "<tabpage object (deleted) at %p>"
+msgstr "<objet onglet (effacé) à %p>"
+
+#, c-format
+msgid "<tabpage object (unknown) at %p>"
+msgstr "<objet onglet (inconnu) à %p>"
+
+#, c-format
+msgid "<tabpage %d>"
+msgstr "<onglet %d>"
+
+msgid "no such tab page"
+msgstr "cet onglet n'existe pas"
 
 msgid "attempt to refer to deleted window"
 msgstr "tentative de référencer une fenêtre effacée"
@@ -6925,6 +7029,43 @@ msgstr "Cette fenêtre n'existe pas"
 msgid "attempt to refer to deleted buffer"
 msgstr "tentative de référencer un tampon effacé"
 
+#, c-format
+msgid "<buffer object (deleted) at %p>"
+msgstr "<objet tampon (effacé) à %p>"
+
+msgid "key must be integer"
+msgstr "la clé doit être un nombre entier"
+
+msgid "expected vim.buffer object"
+msgstr "objet vim.buffer attendu"
+
+msgid "failed to switch to given buffer"
+msgstr "impossible de se déplacer au tampon donné"
+
+msgid "expected vim.window object"
+msgstr "objet vim.window attendu"
+
+msgid "failed to find window in the current tab page"
+msgstr "impossible de trouver une fenêtre dans l'onglet courant"
+
+msgid "did not switch to the specified window"
+msgstr "ne s'est pas déplacé à la fenêtre spécifiée"
+
+msgid "expected vim.tabpage object"
+msgstr "objet vim.tabpage attendu"
+
+msgid "did not switch to the specified tab page"
+msgstr "impossible de se déplacer à l'onglet spécifié"
+
+msgid "failed to run the code"
+msgstr "exécution du code a échoué"
+
+msgid "E858: Eval did not return a valid python object"
+msgstr "E858: Eval n'a pas retourné un objet python valide"
+
+msgid "E859: Failed to convert returned python object to vim value"
+msgstr "E859: Conversion d'objet python à une valeur de vim a échoué"
+
 msgid "unable to convert to vim structure"
 msgstr "conversion à une structure vim impossible"
 
@@ -6933,3 +7074,18 @@ msgstr "référence NULL passée"
 
 msgid "internal error: invalid value type"
 msgstr "erreur interne : type de valeur invalide"
+
+#~ msgid "E860: Eval did not return a valid python 3 object"
+#~ msgstr "E860: Eval n'a pas retourné un object python 3 valid"
+
+#~ msgid "E861: Failed to convert returned python 3 object to vim value"
+#~ msgstr "E861: Conversion d'objet python 3 à une valeur de vim a échoué"
+
+#~ msgid "E863: return value must be an instance of str"
+#~ msgstr "E863: valeur de retour doit être une instance de Str"
+
+#~ msgid "Only boolean objects are allowed"
+#~ msgstr "Seuls les objets booléens sont autorisés"
+
+#~ msgid "no such key in dictionary"
+#~ msgstr "cette clé est inexistante dans le dictionnaire"

@@ -1,7 +1,7 @@
 " Vim filetype plugin
-" Language:		Haml
-" Maintainer:		Tim Pope <vimNOSPAM@tpope.org>
-" Last Change:		2012 Mar 11
+" Language:	Haml
+" Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
+" Last Change:	2013 Jun 01
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -18,6 +18,7 @@ let s:match_words = ""
 
 runtime! ftplugin/html.vim ftplugin/html_*.vim ftplugin/html/*.vim
 unlet! b:did_ftplugin
+set matchpairs-=<:>
 
 " Override our defaults if these were set by an included ftplugin.
 if exists("b:undo_ftplugin")

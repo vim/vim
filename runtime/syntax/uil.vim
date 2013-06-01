@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Motif UIL (User Interface Language)
 " Maintainer:	Thomas Koehler <jean-luc@picard.franken.de>
-" Last Change:	2012 May 14
+" Last Change:	2013 May 23
 " URL:		http://gott-gehabt.de/800_wer_wir_sind/thomas/Homepage/Computer/vim/syntax/uil.vim
 
 " Quit when a syntax file was already loaded
@@ -25,11 +25,11 @@ syn keyword uilTodo contained	TODO
 syn match   uilSpecial contained "\\\d\d\d\|\\."
 syn region  uilString		start=+"+  skip=+\\\\\|\\"+  end=+"+  contains=@Spell,uilSpecial
 syn match   uilCharacter	"'[^\\]'"
-syn region  uilString		start=+'+  skip=+\\\\\|\\"+  end=+'+  contains=@Spell,uilSpecial
+syn region  uilString		start=+'+  skip=+\\\\\|\\'+  end=+'+  contains=@Spell,uilSpecial
 syn match   uilSpecialCharacter	"'\\.'"
-syn match   uilSpecialStatement	"Xm[^ =(){}]*"
+syn match   uilSpecialStatement	"Xm[^	 =(){}:;]*"
 syn match   uilSpecialFunction	"MrmNcreateCallback"
-syn match   uilRessource	"XmN[^ =(){}]*"
+syn match   uilRessource	"XmN[^	 =(){}:;]*"
 
 syn match  uilNumber		"-\=\<\d*\.\=\d\+\(e\=f\=\|[uU]\=[lL]\=\)\>"
 syn match  uilNumber		"0[xX]\x\+\>"

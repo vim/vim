@@ -2,7 +2,7 @@
 " Language:     Liquid
 " Maintainer:   Tim Pope <vimNOSPAM@tpope.org>
 " Filenames:    *.liquid
-" Last Change:	2010 May 21
+" Last Change:	2013 May 30
 
 if exists('b:current_syntax')
   finish
@@ -71,8 +71,9 @@ endif
 syn region  liquidStatement  matchgroup=liquidDelimiter start="{%" end="%}" contains=@liquidStatement containedin=ALLBUT,@liquidExempt keepend
 syn region  liquidExpression matchgroup=liquidDelimiter start="{{" end="}}" contains=@liquidExpression  containedin=ALLBUT,@liquidExempt keepend
 syn region  liquidComment    matchgroup=liquidDelimiter start="{%\s*comment\s*%}" end="{%\s*endcomment\s*%}" contains=liquidTodo,@Spell containedin=ALLBUT,@liquidExempt keepend
+syn region  liquidRaw        matchgroup=liquidDelimiter start="{%\s*raw\s*%}" end="{%\s*endraw\s*%}" contains=TOP,@liquidExempt containedin=ALLBUT,@liquidExempt keepend
 
-syn cluster liquidExempt contains=liquidStatement,liquidExpression,liquidComment,@liquidStatement,liquidYamlHead
+syn cluster liquidExempt contains=liquidStatement,liquidExpression,liquidComment,liquidRaw,@liquidStatement,liquidYamlHead
 syn cluster liquidStatement contains=liquidConditional,liquidRepeat,liquidKeyword,@liquidExpression
 syn cluster liquidExpression contains=liquidOperator,liquidString,liquidNumber,liquidFloat,liquidBoolean,liquidNull,liquidEmpty,liquidPipe,liquidForloop
 

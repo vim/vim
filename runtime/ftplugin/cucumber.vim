@@ -1,13 +1,16 @@
 " Vim filetype plugin
 " Language:	Cucumber
 " Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
-" Last Change:	2010 Aug 09
+" Last Change:	2013 Jun 01
 
 " Only do this when not done yet for this buffer
 if (exists("b:did_ftplugin"))
   finish
 endif
 let b:did_ftplugin = 1
+
+let s:keepcpo= &cpo
+set cpo&vim
 
 setlocal formatoptions-=t formatoptions+=croql
 setlocal comments=:# commentstring=#\ %s
@@ -18,11 +21,27 @@ let b:undo_ftplugin = "setl fo< com< cms< ofu<"
 let b:cucumber_root = expand('%:p:h:s?.*[\/]\%(features\|stories\)\zs[\/].*??')
 
 if !exists("g:no_plugin_maps") && !exists("g:no_cucumber_maps")
-  nmap <silent><buffer> <C-]>       :<C-U>exe <SID>jump('edit',v:count)<CR>
-  nmap <silent><buffer> <C-W>]      :<C-U>exe <SID>jump('split',v:count)<CR>
-  nmap <silent><buffer> <C-W><C-]>  :<C-U>exe <SID>jump('split',v:count)<CR>
-  nmap <silent><buffer> <C-W>}      :<C-U>exe <SID>jump('pedit',v:count)<CR>
-  let b:undo_ftplugin .= "| sil! iunmap! <C-]>| sil! iunmap! <C-W>]| sil! iunmap! <C-W><C-]>| sil! iunmap! <C-W>}"
+  nnoremap <silent><buffer> <C-]>       :<C-U>exe <SID>jump('edit',v:count)<CR>
+  nnoremap <silent><buffer> [<C-D>      :<C-U>exe <SID>jump('edit',v:count)<CR>
+  nnoremap <silent><buffer> ]<C-D>      :<C-U>exe <SID>jump('edit',v:count)<CR>
+  nnoremap <silent><buffer> <C-W>]      :<C-U>exe <SID>jump('split',v:count)<CR>
+  nnoremap <silent><buffer> <C-W><C-]>  :<C-U>exe <SID>jump('split',v:count)<CR>
+  nnoremap <silent><buffer> <C-W>d      :<C-U>exe <SID>jump('split',v:count)<CR>
+  nnoremap <silent><buffer> <C-W><C-D>  :<C-U>exe <SID>jump('split',v:count)<CR>
+  nnoremap <silent><buffer> <C-W>}      :<C-U>exe <SID>jump('pedit',v:count)<CR>
+  nnoremap <silent><buffer> [d          :<C-U>exe <SID>jump('pedit',v:count)<CR>
+  nnoremap <silent><buffer> ]d          :<C-U>exe <SID>jump('pedit',v:count)<CR>
+  let b:undo_ftplugin .=
+        \ "|sil! nunmap <buffer> <C-]>" .
+        \ "|sil! nunmap <buffer> [<C-D>" .
+        \ "|sil! nunmap <buffer> ]<C-D>" .
+        \ "|sil! nunmap <buffer> <C-W>]" .
+        \ "|sil! nunmap <buffer> <C-W><C-]>" .
+        \ "|sil! nunmap <buffer> <C-W>d" .
+        \ "|sil! nunmap <buffer> <C-W><C-D>" .
+        \ "|sil! nunmap <buffer> <C-W>}" .
+        \ "|sil! nunmap <buffer> [d" .
+        \ "|sil! nunmap <buffer> ]d"
 endif
 
 function! s:jump(command,count)
@@ -38,7 +57,7 @@ function! s:jump(command,count)
 endfunction
 
 function! s:allsteps()
-  let step_pattern = '\C^\s*\K\k*\>\s*\zs\S.\{-\}\ze\s*\%(do\|{\)\s*\%(|[^|]*|\s*\)\=\%($\|#\)'
+  let step_pattern = '\C^\s*\K\k*\>\s*(\=\s*\zs\S.\{-\}\ze\s*)\=\s*\%(do\|{\)\s*\%(|[^|]*|\s*\)\=\%($\|#\)'
   let steps = []
   for file in split(glob(b:cucumber_root.'/**/*.rb'),"\n")
     let lines = readfile(file)
@@ -55,7 +74,7 @@ function! s:allsteps()
 endfunction
 
 function! s:steps(lnum)
-  let c = indent(a:lnum) + 1
+  let c = match(getline(a:lnum), '\S') + 1
   while synIDattr(synID(a:lnum,c,1),'name') !~# '^$\|Region$'
     let c = c + 1
   endwhile
@@ -128,5 +147,8 @@ function! CucumberComplete(findstart,base) abort
   call filter(steps,'strpart(v:val,0,strlen(a:base)) ==# a:base')
   return sort(steps)
 endfunction
+
+let &cpo = s:keepcpo
+unlet s:keepcpo
 
 " vim:set sts=2 sw=2:

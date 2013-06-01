@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2013 May 17
+*options.txt*	For Vim version 7.3.  Last change: 2013 May 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5516,7 +5516,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	matches will be highlighted.  This is used to avoid that Vim hangs
 	when using a very complicated pattern.
 
-						*'regexpengine''* *'re'*
+						*'regexpengine'* *'re'*
 'regexpengine' 're'	number	(default 0)
 			global
 			{not in Vi}
@@ -7521,7 +7521,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	given, no further entry is used.
 	See |undo-persistence|.
 
-						*'undofile'* *'udf'*
+				*'undofile'* *'noundofile'* *'udf'* *'noudf'*
 'undofile' 'udf'	boolean	(default off)
 			local to buffer
 			{not in Vi}

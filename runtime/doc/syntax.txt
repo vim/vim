@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2013 Apr 05
+*syntax.txt*	For Vim version 7.3.  Last change: 2013 May 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -381,7 +381,11 @@ This is not a syntax file itself, but a script that converts the current
 window into HTML.  Vim opens a new window in which it builds the HTML file.
 
 After you save the resulting file, you can view it with any browser.  The
-colors should be exactly the same as you see them in Vim.
+colors should be exactly the same as you see them in Vim.  You can jump to
+specific lines by adding (for example) #L123 or #123 to the end of the URL in
+your browser's address bar (#123 only with javascript support). And with
+|g:html_dynamic_folds| enabled, you can show or hide the text that is folded
+in Vim.
 
 You are not supposed to set the 'filetype' or 'syntax' option to "2html"!
 Source the script to convert the current file: >
@@ -424,7 +428,11 @@ and last line to be converted.  Example, using the last set Visual area: >
 			|g:html_diff_one_file| is set, :TOhtml will convert
 			all windows which are part of the diff in the current
 			tab and place them side-by-side in a <table> element
-			in the generated HTML.
+			in the generated HTML. When this happens you can jump
+			to lines in specific windows with (for example) #W1L42
+			for line 42 in the first diffed window, or #W3L87 for
+			line 87 in the third. Omitting the window ID will
+			default to the first window if javascript is enabled.
 
 			Examples: >
 
@@ -1240,7 +1248,7 @@ to your startup file.
 ERLANG						*erlang.vim* *ft-erlang-syntax*
 
 Erlang is a functional programming language developed by Ericsson.  Files with
-the following extentions are recognized as Erlang files: erl, hrl, yaws.
+the following extensions are recognized as Erlang files: erl, hrl, yaws.
 
 The BIFs (built-in functions) are highlighted by default. To disable this,
 put the following line in your vimrc: >
@@ -2286,7 +2294,7 @@ For highlighting parent error ] or ): >
 
   let php_parent_error_close = 1
 
-For skipping an php end tag, if there exists an open ( or [ without a closing
+For skipping a php end tag, if there exists an open ( or [ without a closing
 one: >
 
   let php_parent_error_open = 1

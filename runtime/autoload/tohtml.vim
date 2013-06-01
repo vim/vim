@@ -1,6 +1,6 @@
 " Vim autoload file for the tohtml plugin.
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2012 Jun 30
+" Last Change: 2013 May 31
 "
 " Additional contributors:
 "
@@ -401,13 +401,13 @@ func! tohtml#Diff2HTML(win_list, buf_list) "{{{
   call add(html, '</head>')
   let body_line_num = len(html)
   if !empty(s:settings.prevent_copy)
-    call add(html, "<body onload='FixCharWidth();'>")
+    call add(html, "<body onload='FixCharWidth(); JumpToLine();'>")
     call add(html, "<!-- hidden divs used by javascript to get the width of a char -->")
     call add(html, "<div id='oneCharWidth'>0</div>")
     call add(html, "<div id='oneInputWidth'><input size='1' value='0'".tag_close."</div>")
     call add(html, "<div id='oneEmWidth' style='width: 1em;'></div>")
   else
-    call add(html, '<body>')
+    call add(html, '<body onload="JumpToLine();">')
   endif
   call add(html, "<table border='1' width='100%' id='vimCodeElement'>")
 
@@ -503,6 +503,11 @@ func! tohtml#Diff2HTML(win_list, buf_list) "{{{
   call add(html, s:body_end_line)
   call add(html, '</html>')
 
+  " The generated HTML is admittedly ugly and takes a LONG time to fold.
+  " Make sure the user doesn't do syntax folding when loading a generated file,
+  " using a modeline.
+  call add(html, '<!-- vim: set foldmethod=manual : -->')
+
   let i = 1
   let name = "Diff" . (s:settings.use_xhtml ? ".xhtml" : ".html")
   " Find an unused file name if current file name is already in use
@@ -539,14 +544,12 @@ func! tohtml#Diff2HTML(win_list, buf_list) "{{{
     " add required javascript in reverse order so we can just call append again
     " and again without adjusting {{{
 
-    " insert script closing tag if any javascript is needed
-    if s:settings.dynamic_folds || !empty(s:settings.prevent_copy)
-      call append(style_start, [
-	    \ '',
-	    \ s:settings.use_xhtml ? '//]]>' : '-->',
-	    \ "</script>"
-	    \ ])
-    endif
+    " insert script closing tag
+    call append(style_start, [
+	  \ '',
+	  \ s:settings.use_xhtml ? '//]]>' : '-->',
+	  \ "</script>"
+	  \ ])
 
     " insert script which corrects the size of small input elements in
     " prevent_copy mode. See 2html.vim for details on why this is needed and how
@@ -572,6 +575,55 @@ func! tohtml#Diff2HTML(win_list, buf_list) "{{{
 	    \ '}'
 	    \ ])
     endif
+    "
+    " insert javascript to get IDs from line numbers, and to open a fold before
+    " jumping to any lines contained therein
+    call append(style_start, [
+	  \ "  /* Always jump to new location even if the line was hidden inside a fold, or",
+	  \ "   * we corrected the raw number to a line ID.",
+	  \ "   */",
+	  \ "  if (lineElem) {",
+	  \ "    lineElem.scrollIntoView(true);",
+	  \ "  }",
+	  \ "  return true;",
+	  \ "}",
+	  \ "if ('onhashchange' in window) {",
+	  \ "  window.onhashchange = JumpToLine;",
+	  \ "}"
+	  \ ])
+    if s:settings.dynamic_folds
+      call append(style_start, [
+	    \ "",
+	    \ "  /* navigate upwards in the DOM tree to open all folds containing the line */",
+	    \ "  var node = lineElem;",
+	    \ "  while (node && node.id != 'vimCodeElement')",
+	    \ "  {",
+	    \ "    if (node.className == 'closed-fold')",
+	    \ "    {",
+	    \ "      /* toggle open the fold ID (remove window ID) */",
+	    \ "      toggleFold(node.id.substr(4));",
+	    \ "    }",
+	    \ "    node = node.parentNode;",
+	    \ "  }",
+	    \ ])
+    endif
+    call append(style_start, [
+	  \ "",
+	  \ "/* function to open any folds containing a jumped-to line before jumping to it */",
+	  \ "function JumpToLine()",
+	  \ "{",
+	  \ "  var lineNum;",
+	  \ "  lineNum = window.location.hash;",
+	  \ "  lineNum = lineNum.substr(1); /* strip off '#' */",
+	  \ "",
+	  \ "  if (lineNum.indexOf('L') == -1) {",
+	  \ "    lineNum = 'L'+lineNum;",
+	  \ "  }",
+	  \ "  if (lineNum.indexOf('W') == -1) {",
+	  \ "    lineNum = 'W1'+lineNum;",
+	  \ "  }",
+	  \ "  lineElem = document.getElementById(lineNum);"
+	  \ ])
 
     " Insert javascript to toggle matching folds open and closed in all windows,
     " if dynamic folding is active.
@@ -596,12 +648,11 @@ func! tohtml#Diff2HTML(win_list, buf_list) "{{{
 	    \ ])
     endif
 
-    " insert script tag if any javascript is needed
-    if s:settings.dynamic_folds || s:settings.prevent_copy != ""
-      call append(style_start, [
-	    \ "<script type='text/javascript'>",
-	    \ s:settings.use_xhtml ? '//<![CDATA[' : "<!--"])
-    endif "}}}
+    " insert script tag; javascript is always needed for the line number
+    " normalization for URL hashes
+    call append(style_start, [
+	  \ "<script type='text/javascript'>",
+	  \ s:settings.use_xhtml ? '//<![CDATA[' : "<!--"])
 
     " Insert styles from all the generated html documents and additional styles
     " for the table-based layout of the side-by-side diff. The diff should take

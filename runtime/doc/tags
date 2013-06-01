@@ -657,6 +657,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'nottybuiltin'	options.txt	/*'nottybuiltin'*
 'nottyfast'	options.txt	/*'nottyfast'*
 'notx'	options.txt	/*'notx'*
+'noudf'	options.txt	/*'noudf'*
+'noundofile'	options.txt	/*'noundofile'*
 'novb'	options.txt	/*'novb'*
 'novice'	vi_diff.txt	/*'novice'*
 'novisualbell'	options.txt	/*'novisualbell'*
@@ -740,7 +742,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'readonly'	options.txt	/*'readonly'*
 'redraw'	vi_diff.txt	/*'redraw'*
 'redrawtime'	options.txt	/*'redrawtime'*
-'regexpengine''	options.txt	/*'regexpengine''*
+'regexpengine'	options.txt	/*'regexpengine'*
 'relativenumber'	options.txt	/*'relativenumber'*
 'remap'	options.txt	/*'remap'*
 'report'	options.txt	/*'report'*
@@ -5992,6 +5994,7 @@ g:tar_secure	pi_tar.txt	/*g:tar_secure*
 g:tar_writeoptions	pi_tar.txt	/*g:tar_writeoptions*
 g:tex_conceal	syntax.txt	/*g:tex_conceal*
 g:tex_fast	syntax.txt	/*g:tex_fast*
+g:tex_flavor	filetype.txt	/*g:tex_flavor*
 g:tex_isk	syntax.txt	/*g:tex_isk*
 g:var	eval.txt	/*g:var*
 g:vimball_home	pi_vimball.txt	/*g:vimball_home*
@@ -7342,7 +7345,12 @@ put-Visual-mode	change.txt	/*put-Visual-mode*
 py3eval()	eval.txt	/*py3eval()*
 pyeval()	eval.txt	/*pyeval()*
 python	if_pyth.txt	/*python*
+python-.locked	if_pyth.txt	/*python-.locked*
+python-Dictionary	if_pyth.txt	/*python-Dictionary*
+python-Function	if_pyth.txt	/*python-Function*
+python-List	if_pyth.txt	/*python-List*
 python-bindeval	if_pyth.txt	/*python-bindeval*
+python-bindeval-objects	if_pyth.txt	/*python-bindeval-objects*
 python-buffer	if_pyth.txt	/*python-buffer*
 python-buffers	if_pyth.txt	/*python-buffers*
 python-command	if_pyth.txt	/*python-command*
