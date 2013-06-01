@@ -435,6 +435,7 @@ EOF
 :py bopts1=vim.buffers[vim.bindeval("g:bufs")[2]].options
 :py bopts2=vim.buffers[vim.bindeval("g:bufs")[1]].options
 :py bopts3=vim.buffers[vim.bindeval("g:bufs")[0]].options
+:set path=.,..,,
 :let lst=[]
 :let lst+=[['paste',          1,     0,     1,     2,      1,    1,      0    ]]
 :let lst+=[['previewheight',  5,     1,     6,     'a',    0,    1,      0    ]]
@@ -530,13 +531,14 @@ b[0]='bar'
 b[0:0]=['baz']
 vim.command('call append("$", getbufline(%i, 1, "$"))' % b.number)
 # Test assigning to name property
+import os
 old_name = cb.name
 cb.name = 'foo'
-cb.append(cb.name[-11:])
+cb.append(cb.name[-11:].replace(os.path.sep, '/'))
 b.name = 'bar'
-cb.append(b.name[-11:])
+cb.append(b.name[-11:].replace(os.path.sep, '/'))
 cb.name = old_name
-cb.append(cb.name[-17:])
+cb.append(cb.name[-17:].replace(os.path.sep, '/'))
 # Test CheckBuffer
 for _b in vim.buffers:
     if _b is not cb:

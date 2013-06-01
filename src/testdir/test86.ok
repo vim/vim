@@ -310,7 +310,7 @@ jkl
   W: 1:0 2:1 3:0 4:1
   B: 1:0 2:1 3:0 4:1
 >>> path
-  p/gopts1: '.,/usr/include,,'
+  p/gopts1: '.,..,,'
   inv: 0! TypeError
   p/wopts1! KeyError
   inv: 0! KeyError
