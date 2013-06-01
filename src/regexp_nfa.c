@@ -38,9 +38,10 @@ enum
 
     NFA_CONCAT,
     NFA_OR,
-    NFA_STAR,
-    NFA_QUEST,
-    NFA_QUEST_NONGREEDY,	    /* Non-greedy version of \? */
+    NFA_STAR,			    /* greedy * */
+    NFA_STAR_NONGREEDY,		    /* non-greedy * */
+    NFA_QUEST,			    /* greedy \? */
+    NFA_QUEST_NONGREEDY,	    /* non-greedy \? */
     NFA_NOT,			    /* used for [^ab] negated char ranges */
 
     NFA_BOL,			    /* ^    Begin line */
@@ -1430,15 +1431,16 @@ nfa_regpiece()
 	    }
 	    /*  <atom>{0,inf}, <atom>{0,} and <atom>{}  are equivalent to
 	     *  <atom>*  */
-	    if (minval == 0 && maxval == MAX_LIMIT && greedy)
+	    if (minval == 0 && maxval == MAX_LIMIT)
 	    {
-		EMIT(NFA_STAR);
+		if (greedy)
+		    /* \{}, \{0,} */
+		    EMIT(NFA_STAR);
+		else
+		    /* \{-}, \{-0,} */
+		    EMIT(NFA_STAR_NONGREEDY);
 		break;
 	    }
-
-	    /* TODO: \{-} doesn't work yet */
-	    if (maxval == MAX_LIMIT && !greedy)
-		return FAIL;
 
 	    /* Special case: x{0} or x{-0} */
 	    if (maxval == 0)
@@ -1470,7 +1472,12 @@ nfa_regpiece()
 		if (i + 1 > minval)
 		{
 		    if (maxval == MAX_LIMIT)
-			EMIT(NFA_STAR);
+		    {
+			if (greedy)
+			    EMIT(NFA_STAR);
+			else
+			    EMIT(NFA_STAR_NONGREEDY);
+		    }
 		    else
 			EMIT(quest);
 		}
@@ -1776,11 +1783,12 @@ nfa_set_code(c)
 	case NFA_EOF:		STRCPY(code, "NFA_EOF "); break;
 	case NFA_BOF:		STRCPY(code, "NFA_BOF "); break;
 	case NFA_STAR:		STRCPY(code, "NFA_STAR "); break;
+	case NFA_STAR_NONGREEDY: STRCPY(code, "NFA_STAR_NONGREEDY "); break;
+	case NFA_QUEST:		STRCPY(code, "NFA_QUEST"); break;
+	case NFA_QUEST_NONGREEDY: STRCPY(code, "NFA_QUEST_NON_GREEDY"); break;
 	case NFA_NOT:		STRCPY(code, "NFA_NOT "); break;
 	case NFA_SKIP_CHAR:	STRCPY(code, "NFA_SKIP_CHAR"); break;
 	case NFA_OR:		STRCPY(code, "NFA_OR"); break;
-	case NFA_QUEST:		STRCPY(code, "NFA_QUEST"); break;
-	case NFA_QUEST_NONGREEDY: STRCPY(code, "NFA_QUEST_NON_GREEDY"); break;
 	case NFA_END_NEG_RANGE:	STRCPY(code, "NFA_END_NEG_RANGE"); break;
 	case NFA_CLASS_ALNUM:	STRCPY(code, "NFA_CLASS_ALNUM"); break;
 	case NFA_CLASS_ALPHA:	STRCPY(code, "NFA_CLASS_ALPHA"); break;
@@ -2297,7 +2305,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    break;
 
 	case NFA_STAR:
-	    /* Zero or more */
+	    /* Zero or more, prefer more */
 	    if (nfa_calc_size == TRUE)
 	    {
 		nstate++;
@@ -2309,6 +2317,21 @@ post2nfa(postfix, end, nfa_calc_size)
 		goto theend;
 	    patch(e.out, s);
 	    PUSH(frag(s, list1(&s->out1)));
+	    break;
+
+	case NFA_STAR_NONGREEDY:
+	    /* Zero or more, prefer zero */
+	    if (nfa_calc_size == TRUE)
+	    {
+		nstate++;
+		break;
+	    }
+	    e = POP();
+	    s = new_state(NFA_SPLIT, NULL, e.start);
+	    if (s == NULL)
+		goto theend;
+	    patch(e.out, s);
+	    PUSH(frag(s, list1(&s->out)));
 	    break;
 
 	case NFA_QUEST:
