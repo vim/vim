@@ -247,7 +247,7 @@ static int *post_ptr;
 
 static int nstate;	/* Number of states in the NFA. Also used when
 			 * executing. */
-static int istate;	/* Index in the state vector, used in new_state() */
+static int istate;	/* Index in the state vector, used in alloc_state() */
 
 /* If not NULL match must end at this position */
 static save_se_T *nfa_endp = NULL;
@@ -268,7 +268,7 @@ static void nfa_print_state2 __ARGS((FILE *debugf, nfa_state_T *state, garray_T 
 static void nfa_dump __ARGS((nfa_regprog_T *prog));
 #endif
 static int *re2post __ARGS((void));
-static nfa_state_T *new_state __ARGS((int c, nfa_state_T *out, nfa_state_T *out1));
+static nfa_state_T *alloc_state __ARGS((int c, nfa_state_T *out, nfa_state_T *out1));
 static nfa_state_T *post2nfa __ARGS((int *postfix, int *end, int nfa_calc_size));
 static int check_char_class __ARGS((int class, int c));
 static void st_error __ARGS((int *postfix, int *end, int *p));
@@ -2134,7 +2134,7 @@ static nfa_state_T	*state_ptr; /* points to nfa_prog->state */
  * Allocate and initialize nfa_state_T.
  */
     static nfa_state_T *
-new_state(c, out, out1)
+alloc_state(c, out, out1)
     int		c;
     nfa_state_T	*out;
     nfa_state_T	*out1;
@@ -2431,7 +2431,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    }
 	    e2 = POP();
 	    e1 = POP();
-	    s = new_state(NFA_SPLIT, e1.start, e2.start);
+	    s = alloc_state(NFA_SPLIT, e1.start, e2.start);
 	    if (s == NULL)
 		goto theend;
 	    PUSH(frag(s, append(e1.out, e2.out)));
@@ -2445,7 +2445,7 @@ post2nfa(postfix, end, nfa_calc_size)
 		break;
 	    }
 	    e = POP();
-	    s = new_state(NFA_SPLIT, e.start, NULL);
+	    s = alloc_state(NFA_SPLIT, e.start, NULL);
 	    if (s == NULL)
 		goto theend;
 	    patch(e.out, s);
@@ -2460,7 +2460,7 @@ post2nfa(postfix, end, nfa_calc_size)
 		break;
 	    }
 	    e = POP();
-	    s = new_state(NFA_SPLIT, NULL, e.start);
+	    s = alloc_state(NFA_SPLIT, NULL, e.start);
 	    if (s == NULL)
 		goto theend;
 	    patch(e.out, s);
@@ -2475,7 +2475,7 @@ post2nfa(postfix, end, nfa_calc_size)
 		break;
 	    }
 	    e = POP();
-	    s = new_state(NFA_SPLIT, e.start, NULL);
+	    s = alloc_state(NFA_SPLIT, e.start, NULL);
 	    if (s == NULL)
 		goto theend;
 	    PUSH(frag(s, append(e.out, list1(&s->out1))));
@@ -2489,7 +2489,7 @@ post2nfa(postfix, end, nfa_calc_size)
 		break;
 	    }
 	    e = POP();
-	    s = new_state(NFA_SPLIT, NULL, e.start);
+	    s = alloc_state(NFA_SPLIT, NULL, e.start);
 	    if (s == NULL)
 		goto theend;
 	    PUSH(frag(s, append(e.out, list1(&s->out))));
@@ -2503,7 +2503,7 @@ post2nfa(postfix, end, nfa_calc_size)
 		nstate++;
 		break;
 	    }
-	    s = new_state(NFA_SKIP_CHAR, NULL, NULL);
+	    s = alloc_state(NFA_SKIP_CHAR, NULL, NULL);
 	    if (s == NULL)
 		goto theend;
 	    PUSH(frag(s, list1(&s->out)));
@@ -2526,12 +2526,12 @@ post2nfa(postfix, end, nfa_calc_size)
 		break;
 	    }
 	    e = POP();
-	    s1 = new_state(NFA_END_INVISIBLE, NULL, NULL);
+	    s1 = alloc_state(NFA_END_INVISIBLE, NULL, NULL);
 	    if (s1 == NULL)
 		goto theend;
 	    patch(e.out, s1);
 
-	    s = new_state(NFA_START_INVISIBLE, e.start, s1);
+	    s = alloc_state(NFA_START_INVISIBLE, e.start, s1);
 	    if (s == NULL)
 		goto theend;
 	    if (*p == NFA_PREV_ATOM_NO_WIDTH_NEG
@@ -2622,10 +2622,10 @@ post2nfa(postfix, end, nfa_calc_size)
 	     * empty groups of parenthesis, and empty mbyte chars */
 	    if (stackp == stack)
 	    {
-		s = new_state(mopen, NULL, NULL);
+		s = alloc_state(mopen, NULL, NULL);
 		if (s == NULL)
 		    goto theend;
-		s1 = new_state(mclose, NULL, NULL);
+		s1 = alloc_state(mclose, NULL, NULL);
 		if (s1 == NULL)
 		    goto theend;
 		patch(list1(&s->out), s1);
@@ -2636,11 +2636,11 @@ post2nfa(postfix, end, nfa_calc_size)
 	    /* At least one node was emitted before NFA_MOPEN, so
 	     * at least one node will be between NFA_MOPEN and NFA_MCLOSE */
 	    e = POP();
-	    s = new_state(mopen, e.start, NULL);   /* `(' */
+	    s = alloc_state(mopen, e.start, NULL);   /* `(' */
 	    if (s == NULL)
 		goto theend;
 
-	    s1 = new_state(mclose, NULL, NULL);   /* `)' */
+	    s1 = alloc_state(mclose, NULL, NULL);   /* `)' */
 	    if (s1 == NULL)
 		goto theend;
 	    patch(e.out, s1);
@@ -2679,10 +2679,10 @@ post2nfa(postfix, end, nfa_calc_size)
 		nstate += 2;
 		break;
 	    }
-	    s = new_state(*p, NULL, NULL);
+	    s = alloc_state(*p, NULL, NULL);
 	    if (s == NULL)
 		goto theend;
-	    s1 = new_state(NFA_SKIP, NULL, NULL);
+	    s1 = alloc_state(NFA_SKIP, NULL, NULL);
 	    if (s1 == NULL)
 		goto theend;
 	    patch(list1(&s->out), s1);
@@ -2704,7 +2704,7 @@ post2nfa(postfix, end, nfa_calc_size)
 		break;
 	    }
 	    e1 = POP();
-	    s = new_state(*p, NULL, NULL);
+	    s = alloc_state(*p, NULL, NULL);
 	    if (s == NULL)
 		goto theend;
 	    s->val = e1.start->c;
@@ -2720,7 +2720,7 @@ post2nfa(postfix, end, nfa_calc_size)
 		nstate++;
 		break;
 	    }
-	    s = new_state(*p, NULL, NULL);
+	    s = alloc_state(*p, NULL, NULL);
 	    if (s == NULL)
 		goto theend;
 	    PUSH(frag(s, list1(&s->out)));
@@ -4742,8 +4742,6 @@ nfa_regtry(prog, col)
 
     if (prog->reghasz == REX_SET)
     {
-	int		i;
-
 	cleanup_zsubexpr();
 	re_extmatch_out = make_extmatch();
 	for (i = 0; i < subs.synt.in_use; i++)
