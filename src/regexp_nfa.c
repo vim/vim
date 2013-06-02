@@ -249,6 +249,8 @@ static int nstate;	/* Number of states in the NFA. Also used when
 			 * executing. */
 static int istate;	/* Index in the state vector, used in new_state() */
 
+/* If not NULL match must end at this position */
+static save_se_T *nfa_endp = NULL;
 
 static int nfa_regcomp_start __ARGS((char_u*expr, int re_flags));
 static int nfa_recognize_char_class __ARGS((char_u *start, char_u *end, int extra_newl));
@@ -3080,6 +3082,18 @@ addstate(l, state, subs, off)
 	    state->lastlist = l->id;
 	    break;
 
+	case NFA_BOL:
+	case NFA_BOF:
+	    /* "^" won't match past end-of-line, don't bother trying.
+	     * Except when we are going to the next line for a look-behind
+	     * match. */
+	    if (reginput > regline
+		    && (nfa_endp == NULL
+			|| !REG_MULTI
+			|| reglnum == nfa_endp->se_u.pos.lnum))
+		goto skip_add;
+	    /* FALLTHROUGH */
+
 	default:
 	    if (state->lastlist == l->id)
 	    {
@@ -3659,24 +3673,23 @@ nfa_re_num_cmp(val, op, pos)
     return val == pos;
 }
 
-static int nfa_regmatch __ARGS((nfa_state_T *start, regsubs_T *submatch, regsubs_T *m, save_se_T *endp));
+static int nfa_regmatch __ARGS((nfa_state_T *start, regsubs_T *submatch, regsubs_T *m));
 
 /*
  * Main matching routine.
  *
  * Run NFA to determine whether it matches reginput.
  *
- * When "endp" is not NULL it is a required end-of-match position.
+ * When "nfa_endp" is not NULL it is a required end-of-match position.
  *
  * Return TRUE if there is a match, FALSE otherwise.
  * Note: Caller must ensure that: start != NULL.
  */
     static int
-nfa_regmatch(start, submatch, m, endp)
+nfa_regmatch(start, submatch, m)
     nfa_state_T		*start;
     regsubs_T		*submatch;
     regsubs_T		*m;
-    save_se_T		*endp;
 {
     int		result;
     int		size = 0;
@@ -3888,26 +3901,26 @@ nfa_regmatch(start, submatch, m, endp)
 		else
 		{
 #ifdef ENABLE_LOG
-		    if (endp != NULL)
+		    if (nfa_endp != NULL)
 		    {
 			if (REG_MULTI)
 			    fprintf(log_fd, "Current lnum: %d, endp lnum: %d; current col: %d, endp col: %d\n",
 				    (int)reglnum,
-				    (int)endp->se_u.pos.lnum,
+				    (int)nfa_endp->se_u.pos.lnum,
 				    (int)(reginput - regline),
-				    endp->se_u.pos.col);
+				    nfa_endp->se_u.pos.col);
 			else
 			    fprintf(log_fd, "Current col: %d, endp col: %d\n",
 				    (int)(reginput - regline),
-				    (int)(endp->se_u.ptr - reginput));
+				    (int)(nfa_endp->se_u.ptr - reginput));
 		    }
 #endif
-		    /* It's only a match if it ends at "endp" */
-		    if (endp != NULL && (REG_MULTI
-			    ? (reglnum != endp->se_u.pos.lnum
+		    /* It's only a match if it ends at "nfa_endp" */
+		    if (nfa_endp != NULL && (REG_MULTI
+			    ? (reglnum != nfa_endp->se_u.pos.lnum
 				|| (int)(reginput - regline)
-							!= endp->se_u.pos.col)
-			    : reginput != endp->se_u.ptr))
+						    != nfa_endp->se_u.pos.col)
+			    : reginput != nfa_endp->se_u.ptr))
 			break;
 
 		    /* do not set submatches for \@! */
@@ -3929,6 +3942,7 @@ nfa_regmatch(start, submatch, m, endp)
 		char_u	    *save_regline = regline;
 		int	    save_reglnum = reglnum;
 		int	    save_nfa_match = nfa_match;
+		save_se_T   *save_nfa_endp = nfa_endp;
 		save_se_T   endpos;
 		save_se_T   *endposp = NULL;
 
@@ -4012,7 +4026,8 @@ nfa_regmatch(start, submatch, m, endp)
 		 * recursion. */
 		nfa_save_listids(start, listids);
 		nfa_set_null_listids(start);
-		result = nfa_regmatch(t->state->out, submatch, m, endposp);
+		nfa_endp = endposp;
+		result = nfa_regmatch(t->state->out, submatch, m);
 		nfa_set_neg_listids(start);
 		nfa_restore_listids(start, listids);
 
@@ -4021,6 +4036,7 @@ nfa_regmatch(start, submatch, m, endp)
 		regline = save_regline;
 		reglnum = save_reglnum;
 		nfa_match = save_nfa_match;
+		nfa_endp = save_nfa_endp;
 
 #ifdef ENABLE_LOG
 		log_fd = fopen(NFA_REGEXP_RUN_LOG, "a");
@@ -4563,7 +4579,7 @@ nfa_regmatch(start, submatch, m, endp)
 	 * matters!
 	 * Do not add the start state in recursive calls of nfa_regmatch(),
 	 * because recursive calls should only start in the first position.
-	 * Unless "endp" is not NULL, then we match the end position.
+	 * Unless "nfa_endp" is not NULL, then we match the end position.
 	 * Also don't start a match past the first line. */
 	if (nfa_match == FALSE
 		&& ((start->c == NFA_MOPEN
@@ -4571,13 +4587,13 @@ nfa_regmatch(start, submatch, m, endp)
 			&& clen != 0
 			&& (ireg_maxcol == 0
 			    || (colnr_T)(reginput - regline) < ireg_maxcol))
-		    || (endp != NULL
+		    || (nfa_endp != NULL
 			&& (REG_MULTI
-			    ? (reglnum < endp->se_u.pos.lnum
-			       || (reglnum == endp->se_u.pos.lnum
+			    ? (reglnum < nfa_endp->se_u.pos.lnum
+			       || (reglnum == nfa_endp->se_u.pos.lnum
 			           && (int)(reginput - regline)
-						       < endp->se_u.pos.col))
-			    : reginput < endp->se_u.ptr))))
+						    < nfa_endp->se_u.pos.col))
+			    : reginput < nfa_endp->se_u.ptr))))
 	{
 #ifdef ENABLE_LOG
 	    fprintf(log_fd, "(---) STARTSTATE\n");
@@ -4601,8 +4617,8 @@ nextchar:
 	 * finish. */
 	if (clen != 0)
 	    reginput += clen;
-	else if (go_to_nextline || (endp != NULL && REG_MULTI
-					    && reglnum < endp->se_u.pos.lnum))
+	else if (go_to_nextline || (nfa_endp != NULL && REG_MULTI
+					&& reglnum < nfa_endp->se_u.pos.lnum))
 	    reg_nextline();
 	else
 	    break;
@@ -4678,7 +4694,7 @@ nfa_regtry(prog, col)
     clear_sub(&m.synt);
 #endif
 
-    if (nfa_regmatch(start, &subs, &m, NULL) == FALSE)
+    if (nfa_regmatch(start, &subs, &m) == FALSE)
 	return 0;
 
     cleanup_subexpr();
