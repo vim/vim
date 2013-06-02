@@ -1017,6 +1017,7 @@ _DictionaryItem(DictionaryObject *self, PyObject *args, int flags)
     if (*key == NUL)
     {
 	RAISE_NO_EMPTY_KEYS;
+	Py_XDECREF(todecref);
 	return NULL;
     }
 
@@ -1160,6 +1161,7 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
 
     if (!(key = StringToChars(keyObject, &todecref)))
 	return -1;
+
     if (*key == NUL)
     {
 	RAISE_NO_EMPTY_KEYS;
@@ -2216,9 +2218,11 @@ OptionsItem(OptionsObject *self, PyObject *keyObject)
 
     if (!(key = StringToChars(keyObject, &todecref)))
 	return NULL;
+
     if (*key == NUL)
     {
 	RAISE_NO_EMPTY_KEYS;
+	Py_XDECREF(todecref);
 	return NULL;
     }
 
@@ -2349,9 +2353,11 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
 
     if (!(key = StringToChars(keyObject, &todecref)))
 	return -1;
+
     if (*key == NUL)
     {
 	RAISE_NO_EMPTY_KEYS;
+	Py_XDECREF(todecref);
 	return -1;
     }
 
@@ -4568,6 +4574,7 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	    dict_unref(dict);
 	    return -1;
 	}
+
 	if (*key == NUL)
 	{
 	    dict_unref(dict);
@@ -4651,6 +4658,7 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	    dict_unref(dict);
 	    return -1;
 	}
+
 	if (*key == NUL)
 	{
 	    Py_DECREF(keyObject);
