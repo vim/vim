@@ -3133,12 +3133,12 @@ skip_add:
 	    {
 		int col;
 
-		if (thread->sub.in_use <= 0)
+		if (thread->subs.norm.in_use <= 0)
 		    col = -1;
 		else if (REG_MULTI)
-		    col = thread->sub.list.multi[0].start.col;
+		    col = thread->subs.norm.list.multi[0].start.col;
 		else
-		    col = (int)(thread->sub.list.line[0].start - regline);
+		    col = (int)(thread->subs.norm.list.line[0].start - regline);
 		nfa_set_code(state->c);
 		fprintf(log_fd, "> Adding state %d to list %d. char %d: %s (start col %d)\n",
 		        abs(state->id), l->id, state->c, code, col);
@@ -3152,12 +3152,12 @@ skip_add:
     {
 	int col;
 
-	if (sub->in_use <= 0)
+	if (subs->norm.in_use <= 0)
 	    col = -1;
 	else if (REG_MULTI)
-	    col = sub->list.multi[0].start.col;
+	    col = subs->norm.list.multi[0].start.col;
 	else
-	    col = (int)(sub->list.line[0].start - regline);
+	    col = (int)(subs->norm.list.line[0].start - regline);
 	nfa_set_code(state->c);
 	fprintf(log_fd, "> Processing state %d for list %d. char %d: %s (start col %d)\n",
 		abs(state->id), l->id, state->c, code, col);
@@ -3836,12 +3836,12 @@ nfa_regmatch(start, submatch, m, endp)
 	    {
 		int col;
 
-		if (t->sub.in_use <= 0)
+		if (t->subs.norm.in_use <= 0)
 		    col = -1;
 		else if (REG_MULTI)
-		    col = t->sub.list.multi[0].start.col;
+		    col = t->subs.norm.list.multi[0].start.col;
 		else
-		    col = (int)(t->sub.list.line[0].start - regline);
+		    col = (int)(t->subs.norm.list.line[0].start - regline);
 		nfa_set_code(t->state->c);
 		fprintf(log_fd, "(%d) char %d %s (start col %d) ... \n",
 			abs(t->state->id), (int)t->state->c, code, col);
@@ -4818,6 +4818,9 @@ nfa_regexec_both(line, col)
     nfa_has_zend = prog->has_zend;
     nfa_has_backref = prog->has_backref;
     nfa_nsubexpr = prog->nsubexp;
+#ifdef DEBUG
+    nfa_regengine.expr = prog->pattern;
+#endif
 
     nstate = prog->nstate;
     for (i = 0; i < nstate; ++i)
@@ -4827,6 +4830,10 @@ nfa_regexec_both(line, col)
     }
 
     retval = nfa_regtry(prog, col);
+
+#ifdef DEBUG
+    nfa_regengine.expr = NULL;
+#endif
 
 theend:
     return retval;
@@ -4920,6 +4927,10 @@ nfa_regcomp(expr, re_flags)
 #ifdef FEAT_SYN_HL
     /* Remember whether this pattern has any \z specials in it. */
     prog->reghasz = re_has_z;
+#endif
+#ifdef DEBUG
+    prog->pattern = vim_strsave(expr); /* memory will leak */
+    nfa_regengine.expr = NULL;
 #endif
 
 out:

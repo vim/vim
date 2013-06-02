@@ -86,12 +86,14 @@ typedef struct
     regengine_T		*engine;
     unsigned		regflags;
 
-    regprog_T		regprog;
-    nfa_state_T		*start;
+    nfa_state_T		*start;		/* points into state[] */
     int			has_zend;	/* pattern contains \ze */
     int			has_backref;	/* pattern contains \1 .. \9 */
 #ifdef FEAT_SYN_HL
     int			reghasz;
+#endif
+#ifdef DEBUG
+    char_u		*pattern;
 #endif
     int			nsubexp;	/* number of () */
     int			nstate;
