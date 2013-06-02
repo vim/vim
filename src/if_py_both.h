@@ -1236,6 +1236,7 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
     if (*key == NUL)
     {
 	RAISE_NO_EMPTY_KEYS;
+	Py_XDECREF(todecref);
 	return -1;
     }
 
@@ -1254,11 +1255,15 @@ DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObje
 	hi = hash_find(&dict->dv_hashtab, di->di_key);
 	hash_remove(&dict->dv_hashtab, hi);
 	dictitem_free(di);
+	Py_XDECREF(todecref);
 	return 0;
     }
 
     if (ConvertFromPyObject(valObject, &tv) == -1)
+    {
+	Py_XDECREF(todecref);
 	return -1;
+    }
 
     if (di == NULL)
     {
@@ -2505,11 +2510,8 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
 	PyObject	*todecref;
 
 	if ((val = StringToChars(valObject, &todecref)))
-	{
 	    r = set_option_value_for(key, 0, val, opt_flags,
 				    self->opt_type, self->from);
-	    Py_XDECREF(todecref);
-	}
 	else
 	    r = -1;
     }

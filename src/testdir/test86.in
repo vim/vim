@@ -867,6 +867,7 @@ def convertfrompyobject_test(expr, recurse=True):
     return subexpr_test(expr, 'ConvertFromPyObject', (
         'None',                 # Not conversible
         '{"": 1}',              # Empty key not allowed
+        '{u"": 1}',             # Same, but with unicode object
         'FailingMapping()',     #
         'FailingMappingKey()',  #
     ))

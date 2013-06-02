@@ -503,6 +503,7 @@ d["a"] = {"abc" : FailingIterNext()}:(<type 'exceptions.NotImplementedError'>, N
 >>> Testing ConvertFromPyObject using d["a"] = {"abc" : %s}
 d["a"] = {"abc" : None}:(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 d["a"] = {"abc" : {"": 1}}:(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+d["a"] = {"abc" : {u"": 1}}:(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 d["a"] = {"abc" : FailingMapping()}:(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 d["a"] = {"abc" : FailingMappingKey()}:(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -528,6 +529,7 @@ d["a"] = Mapping({"abc" : FailingIterNext()}):(<type 'exceptions.NotImplementedE
 >>> Testing ConvertFromPyObject using d["a"] = Mapping({"abc" : %s})
 d["a"] = Mapping({"abc" : None}):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 d["a"] = Mapping({"abc" : {"": 1}}):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+d["a"] = Mapping({"abc" : {u"": 1}}):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 d["a"] = Mapping({"abc" : FailingMapping()}):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 d["a"] = Mapping({"abc" : FailingMappingKey()}):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -538,6 +540,7 @@ d["a"] = FailingIterNext():(<type 'exceptions.NotImplementedError'>, NotImplemen
 >>> Testing ConvertFromPyObject using d["a"] = %s
 d["a"] = None:(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 d["a"] = {"": 1}:(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+d["a"] = {u"": 1}:(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 d["a"] = FailingMapping():(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 d["a"] = FailingMappingKey():(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -568,6 +571,7 @@ d.update({"abc" : FailingIterNext()}):(<type 'exceptions.NotImplementedError'>, 
 >>> Testing ConvertFromPyObject using d.update({"abc" : %s})
 d.update({"abc" : None}):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 d.update({"abc" : {"": 1}}):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+d.update({"abc" : {u"": 1}}):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 d.update({"abc" : FailingMapping()}):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 d.update({"abc" : FailingMappingKey()}):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -593,6 +597,7 @@ d.update(Mapping({"abc" : FailingIterNext()})):(<type 'exceptions.NotImplemented
 >>> Testing ConvertFromPyObject using d.update(Mapping({"abc" : %s}))
 d.update(Mapping({"abc" : None})):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 d.update(Mapping({"abc" : {"": 1}})):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+d.update(Mapping({"abc" : {u"": 1}})):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 d.update(Mapping({"abc" : FailingMapping()})):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 d.update(Mapping({"abc" : FailingMappingKey()})):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -603,6 +608,7 @@ d.update(FailingIterNext()):(<type 'exceptions.NotImplementedError'>, NotImpleme
 >>> Testing ConvertFromPyObject using d.update(%s)
 d.update(None):(<type 'exceptions.TypeError'>, TypeError("'NoneType' object is not iterable",))
 d.update({"": 1}):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+d.update({u"": 1}):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 d.update(FailingMapping()):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 d.update(FailingMappingKey()):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -633,6 +639,7 @@ d.update((("a", {"abc" : FailingIterNext()}),)):(<type 'exceptions.NotImplemente
 >>> Testing ConvertFromPyObject using d.update((("a", {"abc" : %s}),))
 d.update((("a", {"abc" : None}),)):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 d.update((("a", {"abc" : {"": 1}}),)):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+d.update((("a", {"abc" : {u"": 1}}),)):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 d.update((("a", {"abc" : FailingMapping()}),)):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 d.update((("a", {"abc" : FailingMappingKey()}),)):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -658,6 +665,7 @@ d.update((("a", Mapping({"abc" : FailingIterNext()})),)):(<type 'exceptions.NotI
 >>> Testing ConvertFromPyObject using d.update((("a", Mapping({"abc" : %s})),))
 d.update((("a", Mapping({"abc" : None})),)):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 d.update((("a", Mapping({"abc" : {"": 1}})),)):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+d.update((("a", Mapping({"abc" : {u"": 1}})),)):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 d.update((("a", Mapping({"abc" : FailingMapping()})),)):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 d.update((("a", Mapping({"abc" : FailingMappingKey()})),)):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -668,6 +676,7 @@ d.update((("a", FailingIterNext()),)):(<type 'exceptions.NotImplementedError'>, 
 >>> Testing ConvertFromPyObject using d.update((("a", %s),))
 d.update((("a", None),)):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 d.update((("a", {"": 1}),)):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+d.update((("a", {u"": 1}),)):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 d.update((("a", FailingMapping()),)):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 d.update((("a", FailingMappingKey()),)):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -701,6 +710,7 @@ vim.List([{"abc" : FailingIterNext()}]):(<type 'exceptions.NotImplementedError'>
 >>> Testing ConvertFromPyObject using vim.List([{"abc" : %s}])
 vim.List([{"abc" : None}]):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 vim.List([{"abc" : {"": 1}}]):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+vim.List([{"abc" : {u"": 1}}]):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 vim.List([{"abc" : FailingMapping()}]):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 vim.List([{"abc" : FailingMappingKey()}]):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -726,6 +736,7 @@ vim.List([Mapping({"abc" : FailingIterNext()})]):(<type 'exceptions.NotImplement
 >>> Testing ConvertFromPyObject using vim.List([Mapping({"abc" : %s})])
 vim.List([Mapping({"abc" : None})]):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 vim.List([Mapping({"abc" : {"": 1}})]):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+vim.List([Mapping({"abc" : {u"": 1}})]):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 vim.List([Mapping({"abc" : FailingMapping()})]):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 vim.List([Mapping({"abc" : FailingMappingKey()})]):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -736,6 +747,7 @@ vim.List([FailingIterNext()]):(<type 'exceptions.NotImplementedError'>, NotImple
 >>> Testing ConvertFromPyObject using vim.List([%s])
 vim.List([None]):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 vim.List([{"": 1}]):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+vim.List([{u"": 1}]):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 vim.List([FailingMapping()]):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 vim.List([FailingMappingKey()]):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -768,6 +780,7 @@ l[:] = [{"abc" : FailingIterNext()}]:(<type 'exceptions.NotImplementedError'>, N
 >>> Testing ConvertFromPyObject using l[:] = [{"abc" : %s}]
 l[:] = [{"abc" : None}]:(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 l[:] = [{"abc" : {"": 1}}]:(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+l[:] = [{"abc" : {u"": 1}}]:(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 l[:] = [{"abc" : FailingMapping()}]:(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 l[:] = [{"abc" : FailingMappingKey()}]:(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -793,6 +806,7 @@ l[:] = [Mapping({"abc" : FailingIterNext()})]:(<type 'exceptions.NotImplementedE
 >>> Testing ConvertFromPyObject using l[:] = [Mapping({"abc" : %s})]
 l[:] = [Mapping({"abc" : None})]:(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 l[:] = [Mapping({"abc" : {"": 1}})]:(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+l[:] = [Mapping({"abc" : {u"": 1}})]:(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 l[:] = [Mapping({"abc" : FailingMapping()})]:(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 l[:] = [Mapping({"abc" : FailingMappingKey()})]:(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -803,6 +817,7 @@ l[:] = [FailingIterNext()]:(<type 'exceptions.NotImplementedError'>, NotImplemen
 >>> Testing ConvertFromPyObject using l[:] = [%s]
 l[:] = [None]:(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 l[:] = [{"": 1}]:(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+l[:] = [{u"": 1}]:(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 l[:] = [FailingMapping()]:(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 l[:] = [FailingMappingKey()]:(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -829,6 +844,7 @@ l.extend([{"abc" : FailingIterNext()}]):(<type 'exceptions.NotImplementedError'>
 >>> Testing ConvertFromPyObject using l.extend([{"abc" : %s}])
 l.extend([{"abc" : None}]):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 l.extend([{"abc" : {"": 1}}]):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+l.extend([{"abc" : {u"": 1}}]):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 l.extend([{"abc" : FailingMapping()}]):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 l.extend([{"abc" : FailingMappingKey()}]):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -854,6 +870,7 @@ l.extend([Mapping({"abc" : FailingIterNext()})]):(<type 'exceptions.NotImplement
 >>> Testing ConvertFromPyObject using l.extend([Mapping({"abc" : %s})])
 l.extend([Mapping({"abc" : None})]):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 l.extend([Mapping({"abc" : {"": 1}})]):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+l.extend([Mapping({"abc" : {u"": 1}})]):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 l.extend([Mapping({"abc" : FailingMapping()})]):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 l.extend([Mapping({"abc" : FailingMappingKey()})]):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -864,6 +881,7 @@ l.extend([FailingIterNext()]):(<type 'exceptions.NotImplementedError'>, NotImple
 >>> Testing ConvertFromPyObject using l.extend([%s])
 l.extend([None]):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 l.extend([{"": 1}]):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+l.extend([{u"": 1}]):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 l.extend([FailingMapping()]):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 l.extend([FailingMappingKey()]):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -899,6 +917,7 @@ f({"abc" : FailingIterNext()}):(<type 'exceptions.NotImplementedError'>, NotImpl
 >>> Testing ConvertFromPyObject using f({"abc" : %s})
 f({"abc" : None}):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 f({"abc" : {"": 1}}):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+f({"abc" : {u"": 1}}):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 f({"abc" : FailingMapping()}):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 f({"abc" : FailingMappingKey()}):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -924,6 +943,7 @@ f(Mapping({"abc" : FailingIterNext()})):(<type 'exceptions.NotImplementedError'>
 >>> Testing ConvertFromPyObject using f(Mapping({"abc" : %s}))
 f(Mapping({"abc" : None})):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 f(Mapping({"abc" : {"": 1}})):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+f(Mapping({"abc" : {u"": 1}})):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 f(Mapping({"abc" : FailingMapping()})):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 f(Mapping({"abc" : FailingMappingKey()})):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -934,6 +954,7 @@ f(FailingIterNext()):(<type 'exceptions.NotImplementedError'>, NotImplementedErr
 >>> Testing ConvertFromPyObject using f(%s)
 f(None):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 f({"": 1}):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+f({u"": 1}):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 f(FailingMapping()):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 f(FailingMappingKey()):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -959,6 +980,7 @@ fd(self={"abc" : FailingIterNext()}):(<type 'exceptions.NotImplementedError'>, N
 >>> Testing ConvertFromPyObject using fd(self={"abc" : %s})
 fd(self={"abc" : None}):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 fd(self={"abc" : {"": 1}}):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+fd(self={"abc" : {u"": 1}}):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 fd(self={"abc" : FailingMapping()}):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 fd(self={"abc" : FailingMappingKey()}):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -984,6 +1006,7 @@ fd(self=Mapping({"abc" : FailingIterNext()})):(<type 'exceptions.NotImplementedE
 >>> Testing ConvertFromPyObject using fd(self=Mapping({"abc" : %s}))
 fd(self=Mapping({"abc" : None})):(<type 'exceptions.TypeError'>, TypeError('unable to convert to vim structure',))
 fd(self=Mapping({"abc" : {"": 1}})):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+fd(self=Mapping({"abc" : {u"": 1}})):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 fd(self=Mapping({"abc" : FailingMapping()})):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 fd(self=Mapping({"abc" : FailingMappingKey()})):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
@@ -994,6 +1017,7 @@ fd(self=FailingIterNext()):(<type 'exceptions.TypeError'>, TypeError('unable to 
 >>> Testing ConvertFromPyObject using fd(self=%s)
 fd(self=None):(<type 'exceptions.TypeError'>, TypeError('unable to convert object to vim dictionary',))
 fd(self={"": 1}):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
+fd(self={u"": 1}):(<type 'exceptions.ValueError'>, ValueError('empty keys are not allowed',))
 fd(self=FailingMapping()):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 fd(self=FailingMappingKey()):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
