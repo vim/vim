@@ -213,6 +213,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyObject_HasAttrString dll_PyObject_HasAttrString
 # define PyObject_SetAttrString dll_PyObject_SetAttrString
 # define PyObject_CallFunctionObjArgs dll_PyObject_CallFunctionObjArgs
+# define PyObject_Call dll_PyObject_Call
 # define PyString_AsString dll_PyString_AsString
 # define PyString_AsStringAndSize dll_PyString_AsStringAndSize
 # define PyString_FromString dll_PyString_FromString
@@ -346,6 +347,7 @@ static PyObject* (*dll_PyObject_GetAttrString)(PyObject *, const char *);
 static int (*dll_PyObject_HasAttrString)(PyObject *, const char *);
 static PyObject* (*dll_PyObject_SetAttrString)(PyObject *, const char *, PyObject *);
 static PyObject* (*dll_PyObject_CallFunctionObjArgs)(PyObject *, ...);
+static PyObject* (*dll_PyObject_Call)(PyObject *, PyObject *, PyObject *);
 static char*(*dll_PyString_AsString)(PyObject *);
 static int(*dll_PyString_AsStringAndSize)(PyObject *, char **, int *);
 static PyObject*(*dll_PyString_FromString)(const char *);
@@ -510,6 +512,7 @@ static struct
     {"PyObject_HasAttrString", (PYTHON_PROC*)&dll_PyObject_HasAttrString},
     {"PyObject_SetAttrString", (PYTHON_PROC*)&dll_PyObject_SetAttrString},
     {"PyObject_CallFunctionObjArgs", (PYTHON_PROC*)&dll_PyObject_CallFunctionObjArgs},
+    {"PyObject_Call", (PYTHON_PROC*)&dll_PyObject_Call},
     {"PyString_AsString", (PYTHON_PROC*)&dll_PyString_AsString},
     {"PyString_AsStringAndSize", (PYTHON_PROC*)&dll_PyString_AsStringAndSize},
     {"PyString_FromString", (PYTHON_PROC*)&dll_PyString_FromString},
@@ -1374,10 +1377,11 @@ PythonMod_Init(void)
     /* Set sys.argv[] to avoid a crash in warn(). */
     PySys_SetArgv(1, argv);
 
-    mod = Py_InitModule4("vim", VimMethods, (char *)NULL, (PyObject *)NULL, PYTHON_API_VERSION);
+    mod = Py_InitModule4("vim", VimMethods, (char *)NULL, (PyObject *)NULL,
+			    PYTHON_API_VERSION);
     dict = PyModule_GetDict(mod);
 
-    return populate_module(dict, add_object);
+    return populate_module(dict, add_object, PyDict_GetItemString);
 }
 
 /*************************************************************************

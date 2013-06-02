@@ -53,4 +53,5 @@ int put_eol __ARGS((FILE *fd));
 int put_line __ARGS((FILE *fd, char *s));
 void dialog_msg __ARGS((char_u *buff, char *format, char_u *fname));
 char_u *get_behave_arg __ARGS((expand_T *xp, int idx));
+void post_chdir __ARGS((int local));
 /* vim: set ft=c : */

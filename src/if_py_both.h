@@ -52,6 +52,10 @@ static PyInt RangeEnd;
 
 static PyObject *globals;
 
+static PyObject *py_chdir;
+static PyObject *py_fchdir;
+static PyObject *py_getcwd;
+
 /*
  * obtain a lock on the Vim data structures
  */
@@ -706,17 +710,84 @@ VimStrwidth(PyObject *self UNUSED, PyObject *args)
 	    );
 }
 
+    static PyObject *
+_VimChdir(PyObject *_chdir, PyObject *args, PyObject *kwargs)
+{
+    PyObject	*r;
+    PyObject	*newwd;
+    PyObject	*todecref;
+    char_u	*new_dir;
+
+    if (!(r = PyObject_Call(_chdir, args, kwargs)))
+	return NULL;
+
+    if (!(newwd = PyObject_CallFunctionObjArgs(py_getcwd, NULL)))
+    {
+	Py_DECREF(r);
+	return NULL;
+    }
+
+    if (!(new_dir = StringToChars(newwd, &todecref)))
+    {
+	Py_DECREF(r);
+	Py_DECREF(newwd);
+	return NULL;
+    }
+
+    VimTryStart();
+
+    if (vim_chdir(new_dir))
+    {
+	Py_DECREF(r);
+	Py_DECREF(newwd);
+	Py_XDECREF(todecref);
+
+	if (VimTryEnd())
+	    return NULL;
+
+	PyErr_SetVim(_("failed to change directory"));
+	return NULL;
+    }
+
+    Py_DECREF(newwd);
+    Py_XDECREF(todecref);
+
+    post_chdir(FALSE);
+
+    if (VimTryEnd())
+    {
+	Py_DECREF(r);
+	return NULL;
+    }
+
+    return r;
+}
+
+    static PyObject *
+VimChdir(PyObject *self UNUSED, PyObject *args, PyObject *kwargs)
+{
+    return _VimChdir(py_chdir, args, kwargs);
+}
+
+    static PyObject *
+VimFchdir(PyObject *self UNUSED, PyObject *args, PyObject *kwargs)
+{
+    return _VimChdir(py_fchdir, args, kwargs);
+}
+
 /*
  * Vim module - Definitions
  */
 
 static struct PyMethodDef VimMethods[] = {
-    /* name,	     function,		calling,	documentation */
-    {"command",	     VimCommand,	METH_VARARGS,	"Execute a Vim ex-mode command" },
-    {"eval",	     VimEval,		METH_VARARGS,	"Evaluate an expression using Vim evaluator" },
-    {"bindeval",     VimEvalPy,		METH_VARARGS,	"Like eval(), but returns objects attached to vim ones"},
-    {"strwidth",     VimStrwidth,	METH_VARARGS,	"Screen string width, counts <Tab> as having width 1"},
-    { NULL,	     NULL,		0,		NULL }
+    /* name,	     function,			calling,			documentation */
+    {"command",	     VimCommand,		METH_VARARGS,			"Execute a Vim ex-mode command" },
+    {"eval",	     VimEval,			METH_VARARGS,			"Evaluate an expression using Vim evaluator" },
+    {"bindeval",     VimEvalPy,			METH_VARARGS,			"Like eval(), but returns objects attached to vim ones"},
+    {"strwidth",     VimStrwidth,		METH_VARARGS,			"Screen string width, counts <Tab> as having width 1"},
+    {"chdir",	     (PyCFunction)VimChdir,	METH_VARARGS|METH_KEYWORDS,	"Change directory"},
+    {"fchdir",	     (PyCFunction)VimFchdir,	METH_VARARGS|METH_KEYWORDS,	"Change directory"},
+    { NULL,	     NULL,			0,				NULL }
 };
 
 /*
@@ -5274,6 +5345,7 @@ static struct object_constant {
 };
 
 typedef int (*object_adder)(PyObject *, const char *, PyObject *);
+typedef PyObject *(*attr_getter)(PyObject *, const char *);
 
 #define ADD_OBJECT(m, name, obj) \
     if (add_object(m, name, obj)) \
@@ -5288,9 +5360,10 @@ typedef int (*object_adder)(PyObject *, const char *, PyObject *);
     }
 
     static int
-populate_module(PyObject *m, object_adder add_object)
+populate_module(PyObject *m, object_adder add_object, attr_getter get_attr)
 {
     int i;
+    PyObject	*os;
 
     for (i = 0; i < (int)(sizeof(numeric_constants)
 					   / sizeof(struct numeric_constant));
@@ -5317,5 +5390,27 @@ populate_module(PyObject *m, object_adder add_object)
     ADD_CHECKED_OBJECT(m, "vvars", NEW_DICTIONARY(&vimvardict));
     ADD_CHECKED_OBJECT(m, "options",
 	    OptionsNew(SREQ_GLOBAL, NULL, dummy_check, NULL));
+
+    if (!(os = PyImport_ImportModule("os")))
+	return -1;
+    ADD_OBJECT(m, "os", os);
+
+    if (!(py_getcwd = PyObject_GetAttrString(os, "getcwd")))
+	return -1;
+    ADD_OBJECT(m, "_getcwd", py_getcwd)
+
+    if (!(py_chdir = PyObject_GetAttrString(os, "chdir")))
+	return -1;
+    ADD_OBJECT(m, "_chdir", py_chdir);
+    if (PyObject_SetAttrString(os, "chdir", get_attr(m, "chdir")))
+	return -1;
+
+    if ((py_fchdir = PyObject_GetAttrString(os, "fchdir")))
+    {
+	ADD_OBJECT(m, "_fchdir", py_fchdir);
+	if (PyObject_SetAttrString(os, "fchdir", get_attr(m, "fchdir")))
+	    return -1;
+    }
+
     return 0;
 }

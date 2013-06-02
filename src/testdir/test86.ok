@@ -429,6 +429,12 @@ abc'
 ['a', 'b', 'c']
 [2, 2]
 [2, 2]
+testdir
+test86.in
+src
+testdir/test86.in
+testdir
+test86.in
 > Output
 >> OutputSetattr
 del sys.stdout.softspace:(<type 'exceptions.AttributeError'>, AttributeError("can't delete OutputObject attributes",))

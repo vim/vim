@@ -174,6 +174,7 @@
 # define PyObject_HasAttrString py3_PyObject_HasAttrString
 # define PyObject_SetAttrString py3_PyObject_SetAttrString
 # define PyObject_CallFunctionObjArgs py3_PyObject_CallFunctionObjArgs
+# define PyObject_Call py3_PyObject_Call
 # define PyEval_GetLocals py3_PyEval_GetLocals
 # define PyEval_GetGlobals py3_PyEval_GetGlobals
 # define PySys_SetObject py3_PySys_SetObject
@@ -290,6 +291,7 @@ static PyObject* (*py3_PyObject_GetAttrString)(PyObject *, const char *);
 static int (*py3_PyObject_HasAttrString)(PyObject *, const char *);
 static PyObject* (*py3_PyObject_SetAttrString)(PyObject *, const char *, PyObject *);
 static PyObject* (*py3_PyObject_CallFunctionObjArgs)(PyObject *, ...);
+static PyObject* (*py3_PyObject_Call)(PyObject *, PyObject *, PyObject *);
 static PyObject* (*py3_PyEval_GetGlobals)();
 static PyObject* (*py3_PyEval_GetLocals)();
 static PyObject* (*py3_PyList_GetItem)(PyObject *, Py_ssize_t);
@@ -446,6 +448,7 @@ static struct
     {"PyObject_HasAttrString", (PYTHON_PROC*)&py3_PyObject_HasAttrString},
     {"PyObject_SetAttrString", (PYTHON_PROC*)&py3_PyObject_SetAttrString},
     {"PyObject_CallFunctionObjArgs", (PYTHON_PROC*)&py3_PyObject_CallFunctionObjArgs},
+    {"PyObject_Call", (PYTHON_PROC*)&py3_PyObject_Call},
     {"PyEval_GetGlobals", (PYTHON_PROC*)&py3_PyEval_GetGlobals},
     {"PyEval_GetLocals", (PYTHON_PROC*)&py3_PyEval_GetLocals},
     {"PyList_GetItem", (PYTHON_PROC*)&py3_PyList_GetItem},
@@ -1600,7 +1603,7 @@ Py3Init_vim(void)
     if (mod == NULL)
 	return NULL;
 
-    if (populate_module(mod, PyModule_AddObject))
+    if (populate_module(mod, PyModule_AddObject, PyObject_GetAttrString))
 	return NULL;
 
     return mod;

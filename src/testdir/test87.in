@@ -748,6 +748,20 @@ EOF
 :$put =string(py3eval('dl2'))
 :$put =string(py3eval('df(2)'))
 :"
+:" Test chdir
+py3 << EOF
+import os
+fnamemodify = vim.Function('fnamemodify')
+cb.append(str(fnamemodify('.', ':p:h:t')))
+cb.append(vim.eval('@%'))
+os.chdir('..')
+cb.append(str(fnamemodify('.', ':p:h:t')))
+cb.append(vim.eval('@%').replace(os.path.sep, '/'))
+os.chdir('testdir')
+cb.append(str(fnamemodify('.', ':p:h:t')))
+cb.append(vim.eval('@%'))
+EOF
+:"
 :" Test errors
 :fun F() dict
 :endfun
