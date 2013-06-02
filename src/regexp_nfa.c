@@ -4435,11 +4435,10 @@ nfa_regmatch(start, submatch, m, endp)
 		{
 		    if (bytelen == 0)
 		    {
-			/* empty match always works, add NFA_SKIP with zero to
-			 * be used next */
-			addstate_here(thislist, t->state->out, &t->subs,
+			/* empty match always works, output of NFA_SKIP to be
+			 * used next */
+			addstate_here(thislist, t->state->out->out, &t->subs,
 								    &listidx);
-			thislist->t[listidx + 1].count = 0;
 		    }
 		    else if (bytelen <= clen)
 		    {
