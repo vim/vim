@@ -174,7 +174,7 @@ vim.eval(str)						*python-eval*
 vim.bindeval(str)					*python-bindeval*
 	Like |python-eval|, but returns special objects described in 
 	|python-bindeval-objects|. These python objects let you modify (|List| 
-	or |Dictionary|) or call (|Funcref|) vim objecs.
+	or |Dictionary|) or call (|Funcref|) vim objects.
 
 Error object of the "vim" module
 
@@ -208,7 +208,7 @@ vim.windows						*python-windows*
 	    :py w in vim.windows	# Membership test
 	    :py n = len(vim.windows)	# Number of elements
 	    :py for w in vim.windows:	# Sequential access
-<	Note: vim.windows object always accesses current tab page,. 
+<	Note: vim.windows object always accesses current tab page. 
 	|python-tabpage|.windows objects are bound to parent |python-tabpage| 
 	object and always use windows from that tab page (or throw vim.error 
 	in case tab page was deleted). You can keep a reference to both 
@@ -494,10 +494,9 @@ vim.Dictionary object				*python-Dictionary*
                     Remove specified key from dictionary and return 
                     corresponding value. If key is not found and default is 
                     given returns the default, otherwise raises KeyError.
-        popitem(key)
-                    Remove specified key from dictionary and return a pair 
-                    with it and the corresponding value. Returned key is a new 
-                    object.
+        popitem()
+                    Remove random key from dictionary and return (key, value) 
+                    pair.
         has_key(key)
                     Check whether dictionary contains specified key, similar 
                     to `key in dict`.

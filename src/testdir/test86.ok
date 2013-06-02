@@ -26,7 +26,7 @@ True
 False
 ['0']
 {'0': -1}
-('', -1L)
+('0', -1L)
 None
 []
 [0, 1, 2, 3]
@@ -666,7 +666,7 @@ d.update((("a", FailingMapping()),)):(<type 'exceptions.NotImplementedError'>, N
 d.update((("a", FailingMappingKey()),)):(<type 'exceptions.NotImplementedError'>, NotImplementedError())
 <<< Finished
 >> DictionaryPopItem
-d.popitem(1, 2):(<type 'exceptions.TypeError'>, TypeError('function takes exactly 1 argument (2 given)',))
+d.popitem(1, 2):(<type 'exceptions.TypeError'>, TypeError('popitem() takes no arguments (2 given)',))
 >> DictionaryHasKey
 d.has_key():(<type 'exceptions.TypeError'>, TypeError('function takes exactly 1 argument (0 given)',))
 > List

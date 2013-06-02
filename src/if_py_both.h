@@ -1061,17 +1061,6 @@ _DictionaryItem(DictionaryObject *self, PyObject *args, int flags)
 	dictitem_free(di);
     }
 
-    if (flags & DICT_FLAG_RETURN_PAIR)
-    {
-	PyObject	*tmp = r;
-
-	if (!(r = Py_BuildValue("(" Py_bytes_fmt "O)", hi->hi_key, tmp)))
-	{
-	    Py_DECREF(tmp);
-	    return NULL;
-	}
-    }
-
     return r;
 }
 
@@ -1457,15 +1446,38 @@ DictionaryPop(DictionaryObject *self, PyObject *args)
 }
 
     static PyObject *
-DictionaryPopItem(DictionaryObject *self, PyObject *args)
+DictionaryPopItem(DictionaryObject *self)
 {
-    PyObject	*keyObject;
+    hashitem_T	*hi;
+    PyObject	*r;
+    PyObject	*valObject;
+    dictitem_T	*di;
 
-    if (!PyArg_ParseTuple(args, "O", &keyObject))
+    if (self->dict->dv_hashtab.ht_used == 0)
+    {
+	PyErr_SetNone(PyExc_KeyError);
+	return NULL;
+    }
+
+    hi = self->dict->dv_hashtab.ht_array;
+    while (HASHITEM_EMPTY(hi))
+	++hi;
+
+    di = dict_lookup(hi);
+
+    if (!(valObject = ConvertToPyObject(&di->di_tv)))
 	return NULL;
 
-    return _DictionaryItem(self, keyObject,
-			    DICT_FLAG_POP|DICT_FLAG_RETURN_PAIR);
+    if (!(r = Py_BuildValue("(" Py_bytes_fmt "O)", hi->hi_key, valObject)))
+    {
+	Py_DECREF(valObject);
+	return NULL;
+    }
+
+    hash_remove(&self->dict->dv_hashtab, hi);
+    dictitem_free(di);
+
+    return r;
 }
 
     static PyObject *
@@ -1505,7 +1517,7 @@ static struct PyMethodDef DictionaryMethods[] = {
     {"update",	(PyCFunction)DictionaryUpdate,		METH_VARARGS|METH_KEYWORDS, ""},
     {"get",	(PyCFunction)DictionaryGet,		METH_VARARGS,	""},
     {"pop",	(PyCFunction)DictionaryPop,		METH_VARARGS,	""},
-    {"popitem",	(PyCFunction)DictionaryPopItem,		METH_VARARGS,	""},
+    {"popitem",	(PyCFunction)DictionaryPopItem,		METH_NOARGS,	""},
     {"has_key",	(PyCFunction)DictionaryHasKey,		METH_VARARGS,	""},
     {"__dir__",	(PyCFunction)DictionaryDir,		METH_NOARGS,	""},
     { NULL,	NULL,					0,		NULL}

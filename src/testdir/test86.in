@@ -83,7 +83,7 @@ EOF
 :$put =pyeval('repr(''1'' in d)')
 :$put =pyeval('repr(list(iter(d)))')
 :$put =string(d)
-:$put =pyeval('repr(d.popitem(''0''))')
+:$put =pyeval('repr(d.popitem())')
 :$put =pyeval('repr(d.get(''0''))')
 :$put =pyeval('repr(list(iter(d)))')
 :"
@@ -226,7 +226,7 @@ em('d["a\\0b"]=1')
 em('d[u"a\\0b"]=1')
 
 em('d.pop("abc")')
-em('d.popitem("abc")')
+em('d.popitem()')
 EOF
 :$put =messages
 :unlet messages
