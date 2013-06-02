@@ -829,9 +829,26 @@ nfa_regatom()
 	    EMSGN(_(e_misplaced), no_Magic(c));
 	    return FAIL;
 
-	case Magic('~'):		/* previous substitute pattern */
-	    /* TODO: Not supported yet */
-	    return FAIL;
+	case Magic('~'):
+	    {
+		char_u	    *lp;
+
+		/* Previous substitute pattern.
+		 * Generated as "\%(pattern\)". */
+		if (reg_prev_sub == NULL)
+		{
+		    EMSG(_(e_nopresub));
+		    return FAIL;
+		}
+		for (lp = reg_prev_sub; *lp != NUL; mb_cptr_adv(lp))
+		{
+		    EMIT(PTR2CHAR(lp));
+		    if (lp != reg_prev_sub)
+			EMIT(NFA_CONCAT);
+		}
+		EMIT(NFA_NOPEN);
+		break;
+	    }
 
 	case Magic('1'):
 	case Magic('2'):
