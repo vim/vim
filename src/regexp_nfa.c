@@ -3665,7 +3665,136 @@ nfa_re_num_cmp(val, op, pos)
     return val == pos;
 }
 
+static int recursive_regmatch __ARGS((nfa_state_T *state, nfa_regprog_T *prog, regsubs_T *submatch, regsubs_T *m, int **listids));
 static int nfa_regmatch __ARGS((nfa_regprog_T *prog, nfa_state_T *start, regsubs_T *submatch, regsubs_T *m));
+
+/*
+ * Recursively call nfa_regmatch()
+ */
+    static int
+recursive_regmatch(state, prog, submatch, m, listids)
+    nfa_state_T	    *state;
+    nfa_regprog_T   *prog;
+    regsubs_T	    *submatch;
+    regsubs_T	    *m;
+    int		    **listids;
+{
+    char_u	*save_reginput = reginput;
+    char_u	*save_regline = regline;
+    int		save_reglnum = reglnum;
+    int		save_nfa_match = nfa_match;
+    save_se_T   *save_nfa_endp = nfa_endp;
+    save_se_T   endpos;
+    save_se_T   *endposp = NULL;
+    int		result;
+
+    if (state->c == NFA_START_INVISIBLE_BEFORE)
+    {
+	/* The recursive match must end at the current position. */
+	endposp = &endpos;
+	if (REG_MULTI)
+	{
+	    endpos.se_u.pos.col = (int)(reginput - regline);
+	    endpos.se_u.pos.lnum = reglnum;
+	}
+	else
+	    endpos.se_u.ptr = reginput;
+
+	/* Go back the specified number of bytes, or as far as the
+	 * start of the previous line, to try matching "\@<=" or
+	 * not matching "\@<!".
+	 * TODO: This is very inefficient! Would be better to
+	 * first check for a match with what follows. */
+	if (state->val <= 0)
+	{
+	    if (REG_MULTI)
+	    {
+		regline = reg_getline(--reglnum);
+		if (regline == NULL)
+		    /* can't go before the first line */
+		    regline = reg_getline(++reglnum);
+	    }
+	    reginput = regline;
+	}
+	else
+	{
+	    if (REG_MULTI && (int)(reginput - regline) < state->val)
+	    {
+		/* Not enough bytes in this line, go to end of
+		 * previous line. */
+		regline = reg_getline(--reglnum);
+		if (regline == NULL)
+		{
+		    /* can't go before the first line */
+		    regline = reg_getline(++reglnum);
+		    reginput = regline;
+		}
+		else
+		    reginput = regline + STRLEN(regline);
+	    }
+	    if ((int)(reginput - regline) >= state->val)
+	    {
+		reginput -= state->val;
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		    reginput -= mb_head_off(regline, reginput);
+#endif
+	    }
+	    else
+		reginput = regline;
+	}
+    }
+
+    /* Call nfa_regmatch() to check if the current concat matches
+     * at this position. The concat ends with the node
+     * NFA_END_INVISIBLE */
+    if (*listids == NULL)
+    {
+	*listids = (int *)lalloc(sizeof(int) * nstate, TRUE);
+	if (*listids == NULL)
+	{
+	    EMSG(_("E878: (NFA) Could not allocate memory for branch traversal!"));
+	    return 0;
+	}
+    }
+#ifdef ENABLE_LOG
+    if (log_fd != stderr)
+	fclose(log_fd);
+    log_fd = NULL;
+#endif
+    /* Have to clear the listid field of the NFA nodes, so that
+     * nfa_regmatch() and addstate() can run properly after
+     * recursion. */
+    nfa_save_listids(prog, *listids);
+    nfa_endp = endposp;
+    result = nfa_regmatch(prog, state->out, submatch, m);
+    nfa_restore_listids(prog, *listids);
+
+    /* restore position in input text */
+    reginput = save_reginput;
+    regline = save_regline;
+    reglnum = save_reglnum;
+    nfa_match = save_nfa_match;
+    nfa_endp = save_nfa_endp;
+
+#ifdef ENABLE_LOG
+    log_fd = fopen(NFA_REGEXP_RUN_LOG, "a");
+    if (log_fd != NULL)
+    {
+	fprintf(log_fd, "****************************\n");
+	fprintf(log_fd, "FINISHED RUNNING nfa_regmatch() recursively\n");
+	fprintf(log_fd, "MATCH = %s\n", result == TRUE ? "OK" : "FALSE");
+	fprintf(log_fd, "****************************\n");
+    }
+    else
+    {
+	EMSG(_("Could not open temporary log file for writing, displaying on stderr ... "));
+	log_fd = stderr;
+    }
+#endif
+
+    return result;
+}
 
 /*
  * Main matching routine.
@@ -3881,171 +4010,57 @@ nfa_regmatch(prog, start, submatch, m)
 	      }
 
 	    case NFA_END_INVISIBLE:
-		/* This is only encountered after a NFA_START_INVISIBLE or
+		/*
+		 * This is only encountered after a NFA_START_INVISIBLE or
 		 * NFA_START_INVISIBLE_BEFORE node.
 		 * They surround a zero-width group, used with "\@=", "\&",
 		 * "\@!", "\@<=" and "\@<!".
 		 * If we got here, it means that the current "invisible" group
 		 * finished successfully, so return control to the parent
-		 * nfa_regmatch().  Submatches are stored in *m, and used in
-		 * the parent call. */
-		if (start->c == NFA_MOPEN)
-		    /* TODO: do we ever get here? */
-		    addstate_here(thislist, t->state->out, &t->subs, &listidx);
-		else
-		{
+		 * nfa_regmatch().  For a look-behind match only when it ends
+		 * in the position in "nfa_endp".
+		 * Submatches are stored in *m, and used in the parent call.
+		 */
 #ifdef ENABLE_LOG
-		    if (nfa_endp != NULL)
-		    {
-			if (REG_MULTI)
-			    fprintf(log_fd, "Current lnum: %d, endp lnum: %d; current col: %d, endp col: %d\n",
-				    (int)reglnum,
-				    (int)nfa_endp->se_u.pos.lnum,
-				    (int)(reginput - regline),
-				    nfa_endp->se_u.pos.col);
-			else
-			    fprintf(log_fd, "Current col: %d, endp col: %d\n",
-				    (int)(reginput - regline),
-				    (int)(nfa_endp->se_u.ptr - reginput));
-		    }
-#endif
-		    /* It's only a match if it ends at "nfa_endp" */
-		    if (nfa_endp != NULL && (REG_MULTI
-			    ? (reglnum != nfa_endp->se_u.pos.lnum
-				|| (int)(reginput - regline)
-						    != nfa_endp->se_u.pos.col)
-			    : reginput != nfa_endp->se_u.ptr))
-			break;
-
-		    /* do not set submatches for \@! */
-		    if (!t->state->negated)
-		    {
-			copy_sub(&m->norm, &t->subs.norm);
-#ifdef FEAT_SYN_HL
-			if (nfa_has_zsubexpr)
-			    copy_sub(&m->synt, &t->subs.synt);
-#endif
-		    }
-		    nfa_match = TRUE;
+		if (nfa_endp != NULL)
+		{
+		    if (REG_MULTI)
+			fprintf(log_fd, "Current lnum: %d, endp lnum: %d; current col: %d, endp col: %d\n",
+				(int)reglnum,
+				(int)nfa_endp->se_u.pos.lnum,
+				(int)(reginput - regline),
+				nfa_endp->se_u.pos.col);
+		    else
+			fprintf(log_fd, "Current col: %d, endp col: %d\n",
+				(int)(reginput - regline),
+				(int)(nfa_endp->se_u.ptr - reginput));
 		}
+#endif
+		/* It's only a match if it ends at "nfa_endp" */
+		if (nfa_endp != NULL && (REG_MULTI
+			? (reglnum != nfa_endp->se_u.pos.lnum
+			    || (int)(reginput - regline)
+						!= nfa_endp->se_u.pos.col)
+			: reginput != nfa_endp->se_u.ptr))
+		    break;
+
+		/* do not set submatches for \@! */
+		if (!t->state->negated)
+		{
+		    copy_sub(&m->norm, &t->subs.norm);
+#ifdef FEAT_SYN_HL
+		    if (nfa_has_zsubexpr)
+			copy_sub(&m->synt, &t->subs.synt);
+#endif
+		}
+		nfa_match = TRUE;
 		break;
 
 	    case NFA_START_INVISIBLE:
 	    case NFA_START_INVISIBLE_BEFORE:
-	      {
-		char_u	    *save_reginput = reginput;
-		char_u	    *save_regline = regline;
-		int	    save_reglnum = reglnum;
-		int	    save_nfa_match = nfa_match;
-		save_se_T   *save_nfa_endp = nfa_endp;
-		save_se_T   endpos;
-		save_se_T   *endposp = NULL;
+		result = recursive_regmatch(t->state, prog, submatch, m,
+								    &listids);
 
-		if (t->state->c == NFA_START_INVISIBLE_BEFORE)
-		{
-		    /* The recursive match must end at the current position. */
-		    endposp = &endpos;
-		    if (REG_MULTI)
-		    {
-			endpos.se_u.pos.col = (int)(reginput - regline);
-			endpos.se_u.pos.lnum = reglnum;
-		    }
-		    else
-			endpos.se_u.ptr = reginput;
-
-		    /* Go back the specified number of bytes, or as far as the
-		     * start of the previous line, to try matching "\@<=" or
-		     * not matching "\@<!".
-		     * TODO: This is very inefficient! Would be better to
-		     * first check for a match with what follows. */
-		    if (t->state->val <= 0)
-		    {
-			if (REG_MULTI)
-			{
-			    regline = reg_getline(--reglnum);
-			    if (regline == NULL)
-				/* can't go before the first line */
-				regline = reg_getline(++reglnum);
-			}
-			reginput = regline;
-		    }
-		    else
-		    {
-			if (REG_MULTI
-				&& (int)(reginput - regline) < t->state->val)
-			{
-			    /* Not enough bytes in this line, go to end of
-			     * previous line. */
-			    regline = reg_getline(--reglnum);
-			    if (regline == NULL)
-			    {
-				/* can't go before the first line */
-				regline = reg_getline(++reglnum);
-				reginput = regline;
-			    }
-			    else
-				reginput = regline + STRLEN(regline);
-			}
-			if ((int)(reginput - regline) >= t->state->val)
-			{
-			    reginput -= t->state->val;
-#ifdef FEAT_MBYTE
-			    if (has_mbyte)
-				reginput -= mb_head_off(regline, reginput);
-#endif
-			}
-			else
-			    reginput = regline;
-		    }
-		}
-
-		/* Call nfa_regmatch() to check if the current concat matches
-		 * at this position. The concat ends with the node
-		 * NFA_END_INVISIBLE */
-		if (listids == NULL)
-		{
-		    listids = (int *)lalloc(sizeof(int) * nstate, TRUE);
-		    if (listids == NULL)
-		    {
-			EMSG(_("E878: (NFA) Could not allocate memory for branch traversal!"));
-			return 0;
-		    }
-		}
-#ifdef ENABLE_LOG
-		if (log_fd != stderr)
-		    fclose(log_fd);
-		log_fd = NULL;
-#endif
-		/* Have to clear the listid field of the NFA nodes, so that
-		 * nfa_regmatch() and addstate() can run properly after
-		 * recursion. */
-		nfa_save_listids(prog, listids);
-		nfa_endp = endposp;
-		result = nfa_regmatch(prog, t->state->out, submatch, m);
-		nfa_restore_listids(prog, listids);
-
-		/* restore position in input text */
-		reginput = save_reginput;
-		regline = save_regline;
-		reglnum = save_reglnum;
-		nfa_match = save_nfa_match;
-		nfa_endp = save_nfa_endp;
-
-#ifdef ENABLE_LOG
-		log_fd = fopen(NFA_REGEXP_RUN_LOG, "a");
-		if (log_fd != NULL)
-		{
-		    fprintf(log_fd, "****************************\n");
-		    fprintf(log_fd, "FINISHED RUNNING nfa_regmatch() recursively\n");
-		    fprintf(log_fd, "MATCH = %s\n", result == TRUE ? "OK" : "FALSE");
-		    fprintf(log_fd, "****************************\n");
-		}
-		else
-		{
-		    EMSG(_("Could not open temporary log file for writing, displaying on stderr ... "));
-		    log_fd = stderr;
-		}
-#endif
 		/* for \@! it is a match when result is FALSE */
 		if (result != t->state->negated)
 		{
@@ -4056,12 +4071,11 @@ nfa_regmatch(prog, start, submatch, m)
 #endif
 
 		    /* t->state->out1 is the corresponding END_INVISIBLE node;
-		     * Add it to the current list (zero-width match). */
+		     * Add its out to the current list (zero-width match). */
 		    addstate_here(thislist, t->state->out1->out, &t->subs,
 								    &listidx);
 		}
 		break;
-	      }
 
 	    case NFA_BOL:
 		if (reginput == regline)
