@@ -899,14 +899,19 @@ if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; th
       AC_CACHE_CHECK(Python's configuration directory,vi_cv_path_python_conf,
       [
 	vi_cv_path_python_conf=
-	for path in "${vi_cv_path_python_pfx}" "${vi_cv_path_python_epfx}"; do
-	  for subdir in lib64 lib share; do
-	    d="${path}/${subdir}/python${vi_cv_var_python_version}/config"
-	    if test -d "$d" && test -f "$d/config.c"; then
-	      vi_cv_path_python_conf="$d"
-	    fi
+	d=`${vi_cv_path_python} -c "import distutils.sysconfig; print distutils.sysconfig.get_config_var('LIBPL')"`
+	if test -d "$d" && test -f "$d/config.c"; then
+	  vi_cv_path_python_conf="$d"
+	else
+	  for path in "${vi_cv_path_python_pfx}" "${vi_cv_path_python_epfx}"; do
+	    for subdir in lib64 lib share; do
+	      d="${path}/${subdir}/python${vi_cv_var_python_version}/config"
+	      if test -d "$d" && test -f "$d/config.c"; then
+		vi_cv_path_python_conf="$d"
+	      fi
+	    done
 	  done
-	done
+	fi
       ])
 
       PYTHON_CONFDIR="${vi_cv_path_python_conf}"
@@ -1097,14 +1102,19 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
      if test "${vi_cv_var_python3_abiflags}" != ""; then
        config_dir="${config_dir}-${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
      fi
-     for path in "${vi_cv_path_python3_pfx}" "${vi_cv_path_python3_epfx}"; do
-       for subdir in lib64 lib share; do
-         d="${path}/${subdir}/python${vi_cv_var_python3_version}/${config_dir}"
-         if test -d "$d" && test -f "$d/config.c"; then
-           vi_cv_path_python3_conf="$d"
-         fi
+     d=`${vi_cv_path_python3} -c "import distutils.sysconfig; print(distutils.sysconfig.get_config_var('LIBPL'))"`
+     if test -d "$d" && test -f "$d/config.c"; then
+       vi_cv_path_python3_conf="$d"
+     else
+       for path in "${vi_cv_path_python3_pfx}" "${vi_cv_path_python3_epfx}"; do
+	 for subdir in lib64 lib share; do
+	   d="${path}/${subdir}/python${vi_cv_var_python3_version}/${config_dir}"
+	   if test -d "$d" && test -f "$d/config.c"; then
+	     vi_cv_path_python3_conf="$d"
+	   fi
+	 done
        done
-     done
+     fi
     ])
 
     PYTHON3_CONFDIR="${vi_cv_path_python3_conf}"
@@ -1498,14 +1508,14 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 	fi
 	librubyarg=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig.expand($ruby_rbconfig::CONFIG[['LIBRUBYARG']])"`
 	librubya=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig.expand($ruby_rbconfig::CONFIG[['LIBRUBY_A']])"`
-  rubylibdir=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig.expand($ruby_rbconfig::CONFIG[['libdir']])"`
+	rubylibdir=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig.expand($ruby_rbconfig::CONFIG[['libdir']])"`
 	if test -f "$rubylibdir/$librubya"; then
 	  librubyarg="$librubyarg"
-    RUBY_LIBS="$RUBY_LIBS -L$rubylibdir"
-  elif test "$librubyarg" = "libruby.a"; then
-    dnl required on Mac OS 10.3 where libruby.a doesn't exist
-    librubyarg="-lruby"
-    RUBY_LIBS="$RUBY_LIBS -L$rubylibdir"
+	  RUBY_LIBS="$RUBY_LIBS -L$rubylibdir"
+	elif test "$librubyarg" = "libruby.a"; then
+	  dnl required on Mac OS 10.3 where libruby.a doesn't exist
+	  librubyarg="-lruby"
+	  RUBY_LIBS="$RUBY_LIBS -L$rubylibdir"
 	fi
 
 	if test "X$librubyarg" != "X"; then
