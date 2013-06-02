@@ -237,6 +237,9 @@ static int nfa_has_zend;
 /* NFA regexp \1 .. \9 encountered. */
 static int nfa_has_backref;
 
+/* NFA regexp has \z( ), set zsubexpr. */
+static int nfa_has_zsubexpr;
+
 /* Number of sub expressions actually being used during execution. 1 if only
  * the whole match (subexpr 0) is used. */
 static int nfa_nsubexpr;
@@ -272,10 +275,8 @@ static nfa_state_T *alloc_state __ARGS((int c, nfa_state_T *out, nfa_state_T *ou
 static nfa_state_T *post2nfa __ARGS((int *postfix, int *end, int nfa_calc_size));
 static int check_char_class __ARGS((int class, int c));
 static void st_error __ARGS((int *postfix, int *end, int *p));
-static void nfa_set_neg_listids __ARGS((nfa_state_T *start));
-static void nfa_set_null_listids __ARGS((nfa_state_T *start));
-static void nfa_save_listids __ARGS((nfa_state_T *start, int *list));
-static void nfa_restore_listids __ARGS((nfa_state_T *start, int *list));
+static void nfa_save_listids __ARGS((nfa_regprog_T *prog, int *list));
+static void nfa_restore_listids __ARGS((nfa_regprog_T *prog, int *list));
 static int nfa_re_num_cmp __ARGS((long_u val, int op, long_u pos));
 static long nfa_regtry __ARGS((nfa_regprog_T *prog, colnr_T col));
 static long nfa_regexec_both __ARGS((char_u *line, colnr_T col));
@@ -3000,6 +3001,24 @@ sub_equal(sub1, sub2)
     return TRUE;
 }
 
+#ifdef ENABLE_LOG
+    static void
+report_state(char *action, regsub_T *sub, nfa_state_T *state, int lid);
+{
+    int col;
+
+    if (sub->in_use <= 0)
+	col = -1;
+    else if (REG_MULTI)
+	col = sub->list.multi[0].start.col;
+    else
+	col = (int)(sub->list.line[0].start - regline);
+    nfa_set_code(state->c);
+    fprintf(log_fd, "> %s state %d to list %d. char %d: %s (start col %d)\n",
+	    action, abs(state->id), lid, state->c, code, col);
+}
+#endif
+
     static void
 addstate(l, state, subs, off)
     nfa_list_T		*l;	/* runtime state list */
@@ -3118,7 +3137,8 @@ skip_add:
 		    if (thread->state->id == state->id
 			    && sub_equal(&thread->subs.norm, &subs->norm)
 #ifdef FEAT_SYN_HL
-			    && sub_equal(&thread->subs.synt, &subs->synt)
+			    && (!nfa_has_zsubexpr ||
+				   sub_equal(&thread->subs.synt, &subs->synt))
 #endif
 					  )
 			goto skip_add;
@@ -3141,41 +3161,18 @@ skip_add:
 	    thread->state = state;
 	    copy_sub(&thread->subs.norm, &subs->norm);
 #ifdef FEAT_SYN_HL
-	    copy_sub(&thread->subs.synt, &subs->synt);
+	    if (nfa_has_zsubexpr)
+		copy_sub(&thread->subs.synt, &subs->synt);
 #endif
 #ifdef ENABLE_LOG
-	    {
-		int col;
-
-		if (thread->subs.norm.in_use <= 0)
-		    col = -1;
-		else if (REG_MULTI)
-		    col = thread->subs.norm.list.multi[0].start.col;
-		else
-		    col = (int)(thread->subs.norm.list.line[0].start - regline);
-		nfa_set_code(state->c);
-		fprintf(log_fd, "> Adding state %d to list %d. char %d: %s (start col %d)\n",
-		        abs(state->id), l->id, state->c, code, col);
-		did_print = TRUE;
-	    }
+	    report_state("Adding", &thread->subs.norm, state, l->id);
+	    did_print = TRUE;
 #endif
     }
 
 #ifdef ENABLE_LOG
     if (!did_print)
-    {
-	int col;
-
-	if (subs->norm.in_use <= 0)
-	    col = -1;
-	else if (REG_MULTI)
-	    col = subs->norm.list.multi[0].start.col;
-	else
-	    col = (int)(subs->norm.list.line[0].start - regline);
-	nfa_set_code(state->c);
-	fprintf(log_fd, "> Processing state %d for list %d. char %d: %s (start col %d)\n",
-		abs(state->id), l->id, state->c, code, col);
-    }
+	report_state("Processing", &subs->norm, state, l->id);
 #endif
     switch (state->c)
     {
@@ -3600,49 +3597,24 @@ match_zref(subidx, bytelen)
 #endif
 
 /*
- * Set all NFA nodes' list ID equal to -1.
+ * Save list IDs for all NFA states of "prog" into "list".
+ * Also reset the IDs to zero.
  */
     static void
-nfa_set_neg_listids(start)
-    nfa_state_T	    *start;
-{
-    if (start != NULL && start->lastlist >= 0)
-    {
-	start->lastlist = -1;
-	nfa_set_neg_listids(start->out);
-	nfa_set_neg_listids(start->out1);
-    }
-}
-
-/*
- * Set all NFA nodes' list ID equal to 0.
- */
-    static void
-nfa_set_null_listids(start)
-    nfa_state_T	    *start;
-{
-    if (start != NULL && start->lastlist == -1)
-    {
-	start->lastlist = 0;
-	nfa_set_null_listids(start->out);
-	nfa_set_null_listids(start->out1);
-    }
-}
-
-/*
- * Save list IDs for all NFA states in "list".
- */
-    static void
-nfa_save_listids(start, list)
-    nfa_state_T	    *start;
+nfa_save_listids(prog, list)
+    nfa_regprog_T   *prog;
     int		    *list;
 {
-    if (start != NULL && start->lastlist != -1)
+    int		    i;
+    nfa_state_T	    *p;
+
+    /* Order in the list is reverse, it's a bit faster that way. */
+    p = &prog->state[0];
+    for (i = prog->nstate; --i >= 0; )
     {
-	list[abs(start->id)] = start->lastlist;
-	start->lastlist = -1;
-	nfa_save_listids(start->out, list);
-	nfa_save_listids(start->out1, list);
+	list[i] = p->lastlist;
+	p->lastlist = 0;
+	++p;
     }
 }
 
@@ -3650,15 +3622,18 @@ nfa_save_listids(start, list)
  * Restore list IDs from "list" to all NFA states.
  */
     static void
-nfa_restore_listids(start, list)
-    nfa_state_T	    *start;
+nfa_restore_listids(prog, list)
+    nfa_regprog_T   *prog;
     int		    *list;
 {
-    if (start != NULL && start->lastlist == -1)
+    int		    i;
+    nfa_state_T	    *p;
+
+    p = &prog->state[0];
+    for (i = prog->nstate; --i >= 0; )
     {
-	start->lastlist = list[abs(start->id)];
-	nfa_restore_listids(start->out, list);
-	nfa_restore_listids(start->out1, list);
+	p->lastlist = list[i];
+	++p;
     }
 }
 
@@ -3673,7 +3648,7 @@ nfa_re_num_cmp(val, op, pos)
     return val == pos;
 }
 
-static int nfa_regmatch __ARGS((nfa_state_T *start, regsubs_T *submatch, regsubs_T *m));
+static int nfa_regmatch __ARGS((nfa_regprog_T *prog, nfa_state_T *start, regsubs_T *submatch, regsubs_T *m));
 
 /*
  * Main matching routine.
@@ -3686,7 +3661,8 @@ static int nfa_regmatch __ARGS((nfa_state_T *start, regsubs_T *submatch, regsubs
  * Note: Caller must ensure that: start != NULL.
  */
     static int
-nfa_regmatch(start, submatch, m)
+nfa_regmatch(prog, start, submatch, m)
+    nfa_regprog_T	*prog;
     nfa_state_T		*start;
     regsubs_T		*submatch;
     regsubs_T		*m;
@@ -3872,7 +3848,8 @@ nfa_regmatch(start, submatch, m)
 		nfa_match = TRUE;
 		copy_sub(&submatch->norm, &t->subs.norm);
 #ifdef FEAT_SYN_HL
-		copy_sub(&submatch->synt, &t->subs.synt);
+		if (nfa_has_zsubexpr)
+		    copy_sub(&submatch->synt, &t->subs.synt);
 #endif
 #ifdef ENABLE_LOG
 		log_subsexpr(&t->subs);
@@ -3928,7 +3905,8 @@ nfa_regmatch(start, submatch, m)
 		    {
 			copy_sub(&m->norm, &t->subs.norm);
 #ifdef FEAT_SYN_HL
-			copy_sub(&m->synt, &t->subs.synt);
+			if (nfa_has_zsubexpr)
+			    copy_sub(&m->synt, &t->subs.synt);
 #endif
 		    }
 		    nfa_match = TRUE;
@@ -4024,12 +4002,10 @@ nfa_regmatch(start, submatch, m)
 		/* Have to clear the listid field of the NFA nodes, so that
 		 * nfa_regmatch() and addstate() can run properly after
 		 * recursion. */
-		nfa_save_listids(start, listids);
-		nfa_set_null_listids(start);
+		nfa_save_listids(prog, listids);
 		nfa_endp = endposp;
-		result = nfa_regmatch(t->state->out, submatch, m);
-		nfa_set_neg_listids(start);
-		nfa_restore_listids(start, listids);
+		result = nfa_regmatch(prog, t->state->out, submatch, m);
+		nfa_restore_listids(prog, listids);
 
 		/* restore position in input text */
 		reginput = save_reginput;
@@ -4665,7 +4641,12 @@ nfa_regtry(prog, col)
 #ifdef FEAT_SYN_HL
     /* Clear the external match subpointers if necessary. */
     if (prog->reghasz == REX_SET)
+    {
+	nfa_has_zsubexpr = TRUE;
 	need_clear_zsubexpr = TRUE;
+    }
+    else
+	nfa_has_zsubexpr = FALSE;
 #endif
 
 #ifdef ENABLE_LOG
@@ -4694,7 +4675,7 @@ nfa_regtry(prog, col)
     clear_sub(&m.synt);
 #endif
 
-    if (nfa_regmatch(start, &subs, &m) == FALSE)
+    if (nfa_regmatch(prog, start, &subs, &m) == FALSE)
 	return 0;
 
     cleanup_subexpr();
