@@ -361,6 +361,8 @@ static char_u e_missingbracket[] = N_("E769: Missing ] after %s[");
 static char_u e_unmatchedpp[] = N_("E53: Unmatched %s%%(");
 static char_u e_unmatchedp[] = N_("E54: Unmatched %s(");
 static char_u e_unmatchedpar[] = N_("E55: Unmatched %s)");
+static char_u e_z_not_allowed[] = N_("E66: \\z( not allowed here");
+static char_u e_z1_not_allowed[] = N_("E67: \\z1 et al. not allowed here");
 
 #define NOT_MULTI	0
 #define MULTI_ONE	1
@@ -2120,7 +2122,7 @@ regatom(flagp)
 	    {
 #ifdef FEAT_SYN_HL
 		case '(': if (reg_do_extmatch != REX_SET)
-			      EMSG_RET_NULL(_("E66: \\z( not allowed here"));
+			      EMSG_RET_NULL(_(e_z_not_allowed));
 			  if (one_exactly)
 			      EMSG_ONE_RET_NULL;
 			  ret = reg(REG_ZPAREN, &flags);
@@ -2139,7 +2141,7 @@ regatom(flagp)
 		case '7':
 		case '8':
 		case '9': if (reg_do_extmatch != REX_USE)
-			      EMSG_RET_NULL(_("E67: \\z1 et al. not allowed here"));
+			      EMSG_RET_NULL(_(e_z1_not_allowed));
 			  ret = regnode(ZREF + c - '0');
 			  re_has_z = REX_USE;
 			  break;

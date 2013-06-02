@@ -865,6 +865,8 @@ nfa_regatom()
 		case '8':
 		case '9':
 		    /* \z1...\z9 */
+		    if (reg_do_extmatch != REX_USE)
+			EMSG_RET_FAIL(_(e_z1_not_allowed));
 		    EMIT(NFA_ZREF1 + (no_Magic(c) - '1'));
 		    /* No need to set nfa_has_backref, the sub-matches don't
 		     * change when \z1 .. \z9 maches or not. */
@@ -872,6 +874,8 @@ nfa_regatom()
 		    break;
 		case '(':
 		    /* \z(  */
+		    if (reg_do_extmatch != REX_SET)
+			EMSG_RET_FAIL(_(e_z_not_allowed));
 		    if (nfa_reg(REG_ZPAREN) == FAIL)
 			return FAIL;	    /* cascaded error */
 		    re_has_z = REX_SET;
