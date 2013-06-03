@@ -5413,6 +5413,8 @@ populate_module(PyObject *m, object_adder add_object, attr_getter get_attr)
 	if (PyObject_SetAttrString(os, "fchdir", get_attr(m, "fchdir")))
 	    return -1;
     }
+    else
+	PyErr_Clear();
 
     return 0;
 }
