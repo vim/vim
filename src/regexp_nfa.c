@@ -255,6 +255,15 @@ static int istate;	/* Index in the state vector, used in alloc_state() */
 /* If not NULL match must end at this position */
 static save_se_T *nfa_endp = NULL;
 
+/* listid is global, so that it increases on recursive calls to
+ * nfa_regmatch(), which means we don't have to clear the lastlist field of
+ * all the states. */
+static int nfa_listid;
+static int nfa_alt_listid;
+
+/* 0 for first call to nfa_regmatch(), 1 for recursive call. */
+static int nfa_ll_index = 0;
+
 static int nfa_regcomp_start __ARGS((char_u*expr, int re_flags));
 static int nfa_recognize_char_class __ARGS((char_u *start, char_u *end, int extra_newl));
 static int nfa_emit_equi_class __ARGS((int c, int neg));
@@ -2169,7 +2178,8 @@ alloc_state(c, out, out1)
     s->out1 = out1;
 
     s->id   = istate;
-    s->lastlist = 0;
+    s->lastlist[0] = 0;
+    s->lastlist[1] = 0;
     s->negated = FALSE;
 
     return s;
@@ -3113,9 +3123,9 @@ addstate(l, state, subs, off)
 #endif
 	    /* These nodes do not need to be added, but we need to bail out
 	     * when it was tried to be added to this list before. */
-	    if (state->lastlist == l->id)
+	    if (state->lastlist[nfa_ll_index] == l->id)
 		goto skip_add;
-	    state->lastlist = l->id;
+	    state->lastlist[nfa_ll_index] = l->id;
 	    break;
 
 	case NFA_BOL:
@@ -3131,7 +3141,7 @@ addstate(l, state, subs, off)
 	    /* FALLTHROUGH */
 
 	default:
-	    if (state->lastlist == l->id)
+	    if (state->lastlist[nfa_ll_index] == l->id)
 	    {
 		/* This state is already in the list, don't add it again,
 		 * unless it is an MOPEN that is used for a backreference. */
@@ -3173,7 +3183,7 @@ skip_add:
 	    }
 
 	    /* add the state to the list */
-	    state->lastlist = l->id;
+	    state->lastlist[nfa_ll_index] = l->id;
 	    thread = &l->t[l->n++];
 	    thread->state = state;
 	    copy_sub(&thread->subs.norm, &subs->norm);
@@ -3616,6 +3626,7 @@ match_zref(subidx, bytelen)
 /*
  * Save list IDs for all NFA states of "prog" into "list".
  * Also reset the IDs to zero.
+ * Only used for the recursive value lastlist[1].
  */
     static void
 nfa_save_listids(prog, list)
@@ -3629,8 +3640,8 @@ nfa_save_listids(prog, list)
     p = &prog->state[0];
     for (i = prog->nstate; --i >= 0; )
     {
-	list[i] = p->lastlist;
-	p->lastlist = 0;
+	list[i] = p->lastlist[1];
+	p->lastlist[1] = 0;
 	++p;
     }
 }
@@ -3649,7 +3660,7 @@ nfa_restore_listids(prog, list)
     p = &prog->state[0];
     for (i = prog->nstate; --i >= 0; )
     {
-	p->lastlist = list[i];
+	p->lastlist[1] = list[i];
 	++p;
     }
 }
@@ -3683,10 +3694,12 @@ recursive_regmatch(state, prog, submatch, m, listids)
     char_u	*save_regline = regline;
     int		save_reglnum = reglnum;
     int		save_nfa_match = nfa_match;
+    int		save_nfa_listid = nfa_listid;
     save_se_T   *save_nfa_endp = nfa_endp;
     save_se_T   endpos;
     save_se_T   *endposp = NULL;
     int		result;
+    int		need_restore = FALSE;
 
     if (state->c == NFA_START_INVISIBLE_BEFORE)
     {
@@ -3745,30 +3758,52 @@ recursive_regmatch(state, prog, submatch, m, listids)
 	}
     }
 
-    /* Call nfa_regmatch() to check if the current concat matches
-     * at this position. The concat ends with the node
-     * NFA_END_INVISIBLE */
-    if (*listids == NULL)
-    {
-	*listids = (int *)lalloc(sizeof(int) * nstate, TRUE);
-	if (*listids == NULL)
-	{
-	    EMSG(_("E878: (NFA) Could not allocate memory for branch traversal!"));
-	    return 0;
-	}
-    }
 #ifdef ENABLE_LOG
     if (log_fd != stderr)
 	fclose(log_fd);
     log_fd = NULL;
 #endif
-    /* Have to clear the listid field of the NFA nodes, so that
-     * nfa_regmatch() and addstate() can run properly after
-     * recursion. */
-    nfa_save_listids(prog, *listids);
+    /* Have to clear the lastlist field of the NFA nodes, so that
+     * nfa_regmatch() and addstate() can run properly after recursion. */
+    if (nfa_ll_index == 1)
+    {
+	/* Already calling nfa_regmatch() recursively.  Save the lastlist[1]
+	 * values and clear them. */
+	if (*listids == NULL)
+	{
+	    *listids = (int *)lalloc(sizeof(int) * nstate, TRUE);
+	    if (*listids == NULL)
+	    {
+		EMSG(_("E878: (NFA) Could not allocate memory for branch traversal!"));
+		return 0;
+	    }
+	}
+	nfa_save_listids(prog, *listids);
+	need_restore = TRUE;
+	/* any value of nfa_listid will do */
+    }
+    else
+    {
+	/* First recursive nfa_regmatch() call, switch to the second lastlist
+	 * entry.  Make sure nfa_listid is different from a previous recursive
+	 * call, because some states may still have this ID. */
+	++nfa_ll_index;
+	if (nfa_listid <= nfa_alt_listid)
+	    nfa_listid = nfa_alt_listid;
+    }
+
+    /* Call nfa_regmatch() to check if the current concat matches at this
+     * position. The concat ends with the node NFA_END_INVISIBLE */
     nfa_endp = endposp;
     result = nfa_regmatch(prog, state->out, submatch, m);
-    nfa_restore_listids(prog, *listids);
+
+    if (need_restore)
+	nfa_restore_listids(prog, *listids);
+    else
+    {
+	--nfa_ll_index;
+	nfa_alt_listid = nfa_listid;
+    }
 
     /* restore position in input text */
     reginput = save_reginput;
@@ -3776,6 +3811,7 @@ recursive_regmatch(state, prog, submatch, m, listids)
     reglnum = save_reglnum;
     nfa_match = save_nfa_match;
     nfa_endp = save_nfa_endp;
+    nfa_listid = save_nfa_listid;
 
 #ifdef ENABLE_LOG
     log_fd = fopen(NFA_REGEXP_RUN_LOG, "a");
@@ -3821,7 +3857,6 @@ nfa_regmatch(prog, start, submatch, m)
     nfa_list_T	list[3];
     nfa_list_T	*listtbl[2][2];
     nfa_list_T	*ll;
-    int		listid = 1;
     int		listidx;
     nfa_list_T	*thislist;
     nfa_list_T	*nextlist;
@@ -3875,7 +3910,7 @@ nfa_regmatch(prog, start, submatch, m)
 #ifdef ENABLE_LOG
     fprintf(log_fd, "(---) STARTSTATE\n");
 #endif
-    thislist->id = listid;
+    thislist->id = nfa_listid + 1;
     addstate(thislist, start, m, 0);
 
     /* There are two cases when the NFA advances: 1. input char matches the
@@ -3923,10 +3958,10 @@ nfa_regmatch(prog, start, submatch, m)
 	nextlist = &list[flag ^= 1];
 	nextlist->n = 0;	    /* clear nextlist */
 	listtbl[1][0] = nextlist;
-	++listid;
-	thislist->id = listid;
-	nextlist->id = listid + 1;
-	neglist->id = listid + 1;
+	++nfa_listid;
+	thislist->id = nfa_listid;
+	nextlist->id = nfa_listid + 1;
+	neglist->id = nfa_listid + 1;
 
 #ifdef ENABLE_LOG
 	fprintf(log_fd, "------------------------------------------\n");
@@ -4843,6 +4878,8 @@ nfa_regexec_both(line, col)
     nfa_has_zend = prog->has_zend;
     nfa_has_backref = prog->has_backref;
     nfa_nsubexpr = prog->nsubexp;
+    nfa_listid = 1;
+    nfa_alt_listid = 2;
 #ifdef DEBUG
     nfa_regengine.expr = prog->pattern;
 #endif
@@ -4851,7 +4888,8 @@ nfa_regexec_both(line, col)
     for (i = 0; i < nstate; ++i)
     {
 	prog->state[i].id = i;
-	prog->state[i].lastlist = 0;
+	prog->state[i].lastlist[0] = 0;
+	prog->state[i].lastlist[1] = 0;
     }
 
     retval = nfa_regtry(prog, col);
