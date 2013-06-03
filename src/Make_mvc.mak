@@ -1113,10 +1113,10 @@ $(OUTDIR)/if_mzsch.obj: $(OUTDIR) if_mzsch.c if_mzsch.h $(INCL) $(MZSCHEME_EXTRA
 mzscheme_base.c:
 	$(MZSCHEME)\mzc --c-mods mzscheme_base.c ++lib scheme/base
 
-$(OUTDIR)/if_python.obj: $(OUTDIR) if_python.c  $(INCL)
+$(OUTDIR)/if_python.obj: $(OUTDIR) if_python.c if_py_both.h $(INCL)
 	$(CC) $(CFLAGS) $(PYTHON_INC) if_python.c
 
-$(OUTDIR)/if_python3.obj: $(OUTDIR) if_python3.c  $(INCL)
+$(OUTDIR)/if_python3.obj: $(OUTDIR) if_python3.c if_py_both.h $(INCL)
 	$(CC) $(CFLAGS) $(PYTHON3_INC) if_python3.c
 
 $(OUTDIR)/if_ole.obj: $(OUTDIR) if_ole.cpp  $(INCL) if_ole.h

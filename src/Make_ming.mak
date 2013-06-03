@@ -721,10 +721,10 @@ INCL = vim.h feature.h os_win32.h os_dos.h ascii.h keymap.h term.h macros.h \
 	structs.h regexp.h option.h ex_cmds.h proto.h globals.h farsi.h \
 	gui.h
 
-$(OUTDIR)/if_python.o : if_python.c $(INCL)
+$(OUTDIR)/if_python.o : if_python.c if_py_both.h $(INCL)
 	$(CC) -c $(CFLAGS) $(PYTHONINC) -DDYNAMIC_PYTHON_DLL=\"python$(PYTHON_VER).dll\" $< -o $@
 
-$(OUTDIR)/if_python3.o : if_python3.c $(INCL)
+$(OUTDIR)/if_python3.o : if_python3.c if_py_both.h $(INCL)
 	$(CC) -c $(CFLAGS) $(PYTHON3INC) -DDYNAMIC_PYTHON3_DLL=\"PYTHON$(PYTHON3_VER).dll\" $< -o $@
 
 $(OUTDIR)/%.o : %.c $(INCL)
