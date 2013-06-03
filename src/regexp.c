@@ -361,8 +361,10 @@ static char_u e_missingbracket[] = N_("E769: Missing ] after %s[");
 static char_u e_unmatchedpp[] = N_("E53: Unmatched %s%%(");
 static char_u e_unmatchedp[] = N_("E54: Unmatched %s(");
 static char_u e_unmatchedpar[] = N_("E55: Unmatched %s)");
+#ifdef FEAT_SYN_HL
 static char_u e_z_not_allowed[] = N_("E66: \\z( not allowed here");
 static char_u e_z1_not_allowed[] = N_("E67: \\z1 et al. not allowed here");
+#endif
 
 #define NOT_MULTI	0
 #define MULTI_ONE	1

@@ -237,8 +237,10 @@ static int nfa_has_zend;
 /* NFA regexp \1 .. \9 encountered. */
 static int nfa_has_backref;
 
+#ifdef FEAT_SYN_HL
 /* NFA regexp has \z( ), set zsubexpr. */
 static int nfa_has_zsubexpr;
+#endif
 
 /* Number of sub expressions actually being used during execution. 1 if only
  * the whole match (subexpr 0) is used. */
@@ -420,7 +422,7 @@ nfa_recognize_char_class(start, end, extra_newl)
     if (*p == '^')
     {
 	not = TRUE;
-	p ++;
+	p++;
     }
 
     while (p < end)
