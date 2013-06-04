@@ -380,38 +380,18 @@ nfa_recognize_char_class(start, end, extra_newl)
     char_u  *end;
     int	    extra_newl;
 {
-    int		i;
-    /* Each of these variables takes up a char in "config[]",
-     * in the order they are here. */
-    int		not = FALSE, af = FALSE, AF = FALSE, az = FALSE, AZ = FALSE,
-		o7 = FALSE, o9 = FALSE, underscore = FALSE, newl = FALSE;
+#   define CLASS_not		0x80
+#   define CLASS_af		0x40
+#   define CLASS_AF		0x20
+#   define CLASS_az		0x10
+#   define CLASS_AZ		0x08
+#   define CLASS_o7		0x04
+#   define CLASS_o9		0x02
+#   define CLASS_underscore	0x01
+
+    int		newl = FALSE;
     char_u	*p;
-#define NCONFIGS 16
-    int		classid[NCONFIGS] = {
-	NFA_DIGIT, NFA_NDIGIT, NFA_HEX, NFA_NHEX,
-	NFA_OCTAL, NFA_NOCTAL, NFA_WORD, NFA_NWORD,
-	NFA_HEAD, NFA_NHEAD, NFA_ALPHA, NFA_NALPHA,
-	NFA_LOWER, NFA_NLOWER, NFA_UPPER, NFA_NUPPER
-    };
-    char_u	myconfig[10];
-    char_u	config[NCONFIGS][9] = {
-	"000000100",	/* digit */
-	"100000100",	/* non digit */
-	"011000100",	/* hex-digit */
-	"111000100",	/* non hex-digit */
-	"000001000",	/* octal-digit */
-	"100001000",	/* [^0-7] */
-	"000110110",	/* [0-9A-Za-z_]	*/
-	"100110110",	/* [^0-9A-Za-z_] */
-	"000110010",	/* head of word */
-	"100110010",	/* not head of word */
-	"000110000",	/* alphabetic char a-z */
-	"100110000",	/* non alphabetic char */
-	"000100000",	/* lowercase letter */
-	"100100000",	/* non lowercase */
-	"000010000",	/* uppercase */
-	"100010000"	/* non uppercase */
-    };
+    int		config = 0;
 
     if (extra_newl == TRUE)
 	newl = TRUE;
@@ -421,7 +401,7 @@ nfa_recognize_char_class(start, end, extra_newl)
     p = start;
     if (*p == '^')
     {
-	not = TRUE;
+	config |= CLASS_not;
 	p++;
     }
 
@@ -434,37 +414,37 @@ nfa_recognize_char_class(start, end, extra_newl)
 		case '0':
 		    if (*(p + 2) == '9')
 		    {
-			o9 = TRUE;
+			config |= CLASS_o9;
 			break;
 		    }
 		    else
 		    if (*(p + 2) == '7')
 		    {
-			o7 = TRUE;
+			config |= CLASS_o7;
 			break;
 		    }
 		case 'a':
 		    if (*(p + 2) == 'z')
 		    {
-			az = TRUE;
+			config |= CLASS_az;
 			break;
 		    }
 		    else
 		    if (*(p + 2) == 'f')
 		    {
-			af = TRUE;
+			config |= CLASS_af;
 			break;
 		    }
 		case 'A':
 		    if (*(p + 2) == 'Z')
 		    {
-			AZ = TRUE;
+			config |= CLASS_AZ;
 			break;
 		    }
 		    else
 		    if (*(p + 2) == 'F')
 		    {
-			AF = TRUE;
+			config |= CLASS_AF;
 			break;
 		    }
 		/* FALLTHROUGH */
@@ -480,7 +460,7 @@ nfa_recognize_char_class(start, end, extra_newl)
 	}
 	else if (*p == '_')
 	{
-	    underscore = TRUE;
+	    config |= CLASS_underscore;
 	    p ++;
 	}
 	else if (*p == '\n')
@@ -495,38 +475,45 @@ nfa_recognize_char_class(start, end, extra_newl)
     if (p != end)
 	return FAIL;
 
-    /* build the config that represents the ranges we gathered */
-    STRCPY(myconfig, "000000000");
-    if (not == TRUE)
-	myconfig[0] = '1';
-    if (af == TRUE)
-	myconfig[1] = '1';
-    if (AF == TRUE)
-	myconfig[2] = '1';
-    if (az == TRUE)
-	myconfig[3] = '1';
-    if (AZ == TRUE)
-	myconfig[4] = '1';
-    if (o7 == TRUE)
-	myconfig[5] = '1';
-    if (o9 == TRUE)
-	myconfig[6] = '1';
-    if (underscore == TRUE)
-	myconfig[7] = '1';
     if (newl == TRUE)
-    {
-	myconfig[8] = '1';
 	extra_newl = ADD_NL;
+
+    switch (config)
+    {
+	case CLASS_o9:
+	    return extra_newl + NFA_DIGIT;
+	case CLASS_not |  CLASS_o9:
+	    return extra_newl + NFA_NDIGIT;
+	case CLASS_af | CLASS_AF | CLASS_o9:
+	    return extra_newl + NFA_HEX;
+	case CLASS_not | CLASS_af | CLASS_AF | CLASS_o9:
+	    return extra_newl + NFA_NHEX;
+	case CLASS_o7:
+	    return extra_newl + NFA_OCTAL;
+	case CLASS_not | CLASS_o7:
+	    return extra_newl + NFA_NOCTAL;
+	case CLASS_az | CLASS_AZ | CLASS_o9 | CLASS_underscore:
+	    return extra_newl + NFA_WORD;
+	case CLASS_not | CLASS_az | CLASS_AZ | CLASS_o9 | CLASS_underscore:
+	    return extra_newl + NFA_NWORD;
+	case CLASS_az | CLASS_AZ | CLASS_underscore:
+	    return extra_newl + NFA_HEAD;
+	case CLASS_not | CLASS_az | CLASS_AZ | CLASS_underscore:
+	    return extra_newl + NFA_NHEAD;
+	case CLASS_az | CLASS_AZ:
+	    return extra_newl + NFA_ALPHA;
+	case CLASS_not | CLASS_az | CLASS_AZ:
+	    return extra_newl + NFA_NALPHA;
+	case CLASS_az:
+	   return extra_newl + NFA_LOWER;
+	case CLASS_not | CLASS_az:
+	    return extra_newl + NFA_NLOWER;
+	case CLASS_AZ:
+	    return extra_newl + NFA_UPPER;
+	case CLASS_not | CLASS_AZ:
+	    return extra_newl + NFA_NUPPER;
     }
-    /* try to recognize character classes */
-    for (i = 0; i < NCONFIGS; i++)
-	if (STRNCMP(myconfig, config[i], 8) == 0)
-	    return classid[i] + extra_newl;
-
-    /* fallthrough => no success so far */
     return FAIL;
-
-#undef NCONFIGS
 }
 
 /*
@@ -900,7 +887,7 @@ nfa_regatom()
 			EMSG_RET_FAIL(_(e_z1_not_allowed));
 		    EMIT(NFA_ZREF1 + (no_Magic(c) - '1'));
 		    /* No need to set nfa_has_backref, the sub-matches don't
-		     * change when \z1 .. \z9 maches or not. */
+		     * change when \z1 .. \z9 matches or not. */
 		    re_has_z = REX_USE;
 		    break;
 		case '(':
@@ -4658,7 +4645,7 @@ nfa_regmatch(prog, start, submatch, m)
 		    }
 		    else
 		    {
-			/* skip ofer the matched characters, set character
+			/* skip over the matched characters, set character
 			 * count in NFA_SKIP */
 			ll = nextlist;
 			add_state = t->state->out;
