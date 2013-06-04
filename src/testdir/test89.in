@@ -1,4 +1,6 @@
 Some tests for setting 'number' and 'relativenumber'
+This is not all that useful now that the options are no longer reset when
+setting the other.
 
 STARTTEST
 :so small.vim

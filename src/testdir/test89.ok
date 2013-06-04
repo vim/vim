@@ -1,9 +1,9 @@
 results:
 
-nonumber
+  number
   relativenumber
 
-nonumber
+  number
   relativenumber
 :setlocal must NOT reset the other global value
 
@@ -12,11 +12,11 @@ nonumber
   relativenumber
 :setglobal MUST reset the other global value
 
-nonumber
+  number
 
-norelativenumber
+  relativenumber
 :set MUST reset the other global value
 
-nonumber
+  number
 
-norelativenumber
+  relativenumber

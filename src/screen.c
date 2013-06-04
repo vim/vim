@@ -2329,15 +2329,17 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 	    if (len > w + 1)
 		len = w + 1;
 
-	    if (wp->w_p_nu)
-		/* 'number' */
+	    if (wp->w_p_nu && !wp->w_p_rnu)
+		/* 'number' + 'norelativenumber' */
 		num = (long)lnum;
 	    else
 	    {
 		/* 'relativenumber', don't use negative numbers */
 		num = labs((long)get_cursor_rel_lnum(wp, lnum));
-		if (num == 0)
+		if (num == 0 && wp->w_p_nu && wp->w_p_rnu)
 		{
+		    /* 'number' + 'relativenumber': cursor line shows absolute
+		     * line number */
 		    num = lnum;
 		    fmt = "%-*ld ";
 		}
@@ -3499,15 +3501,16 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			long num;
 			char *fmt = "%*ld ";
 
-			if (wp->w_p_nu)
-			    /* 'number' */
+			if (wp->w_p_nu && !wp->w_p_rnu)
+			    /* 'number' + 'norelativenumber' */
 			    num = (long)lnum;
 			else
 			{
 			    /* 'relativenumber', don't use negative numbers */
 			    num = labs((long)get_cursor_rel_lnum(wp, lnum));
-			    if (num == 0)
+			    if (num == 0 && wp->w_p_nu && wp->w_p_rnu)
 			    {
+				/* 'number' + 'relativenumber' */
 				num = lnum;
 				fmt = "%-*ld ";
 			    }
@@ -10260,7 +10263,12 @@ number_width(wp)
     int		n;
     linenr_T	lnum;
 
-    lnum = wp->w_buffer->b_ml.ml_line_count;
+    if (wp->w_p_rnu && !wp->w_p_nu)
+	/* cursor line shows "0" */
+	lnum = wp->w_height;
+    else
+	/* cursor line shows absolute line number */
+	lnum = wp->w_buffer->b_ml.ml_line_count;
 
     if (lnum == wp->w_nrwidth_line_count)
 	return wp->w_nrwidth_width;
