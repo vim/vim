@@ -178,6 +178,7 @@ enum
     NFA_VCOL,		/*	Match cursor virtual column */
     NFA_VCOL_GT,	/*	Match > cursor virtual column */
     NFA_VCOL_LT,	/*	Match < cursor virtual column */
+    NFA_VISUAL,		/*	Match Visual area */
 
     NFA_FIRST_NL = NFA_ANY + ADD_NL,
     NFA_LAST_NL = NFA_NUPPER + ADD_NL,
@@ -960,8 +961,7 @@ nfa_regatom()
 		    break;
 
 		case 'V':
-		    /* TODO: not supported yet */
-		    return FAIL;
+		    EMIT(NFA_VISUAL);
 		    break;
 
 		case '[':
@@ -4728,6 +4728,13 @@ nfa_regmatch(prog, start, submatch, m)
 			&& (reglnum + reg_firstlnum == reg_win->w_cursor.lnum)
 			&& ((colnr_T)(reginput - regline)
 						   == reg_win->w_cursor.col));
+		if (result)
+		    addstate_here(thislist, t->state->out, &t->subs,
+							    t->pim, &listidx);
+		break;
+
+	    case NFA_VISUAL:
+		result = reg_match_visual();
 		if (result)
 		    addstate_here(thislist, t->state->out, &t->subs,
 							    t->pim, &listidx);

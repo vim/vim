@@ -458,6 +458,14 @@ y$Gop:"
 :.yank
 Gop:"
 :"
+:" Check matching Visual area
+/^Visual:
+jfxvfx:s/\%Ve/E/g
+jV:s/\%Va/A/g
+jfxfxj:s/\%Vo/O/g
+:/^Visual/+1,/^Visual/+4yank
+Gop:"
+:"
 :" Check patterns matching cursor position.
 :func! Postest()
  new
@@ -519,5 +527,11 @@ asdfasd<yy
 xxxstart2
 asdfasd<yy
 xxstart3
+
+Visual:
+thexe the thexethe
+andaxand andaxand
+oooxofor foroxooo
+oooxofor foroxooo
 
 Results of test64:
