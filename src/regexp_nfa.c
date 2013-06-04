@@ -2824,11 +2824,28 @@ typedef struct
 #endif
 } regsubs_T;
 
+/* nfa_pim_T stores a Postponed Invisible Match. */
+typedef struct nfa_pim_S nfa_pim_T;
+struct nfa_pim_S
+{
+    nfa_state_T	*state;
+    int		result;		/* NFA_PIM_TODO, NFA_PIM_[NO]MATCH */
+    nfa_pim_T	*pim;		/* another PIM at the same position */
+    regsubs_T	subs;		/* submatch info, only party used */
+};
+
+/* Values for done in nfa_pim_T. */
+#define NFA_PIM_TODO    0
+#define NFA_PIM_MATCH   1
+#define NFA_PIM_NOMATCH -1
+
+
 /* nfa_thread_T contains execution information of a NFA state */
 typedef struct
 {
     nfa_state_T	*state;
     int		count;
+    nfa_pim_T	*pim;		/* if not NULL: postponed invisible match */
     regsubs_T	subs;		/* submatch info, only party used */
 } nfa_thread_T;
 
@@ -2886,7 +2903,7 @@ static void copy_sub __ARGS((regsub_T *to, regsub_T *from));
 static void copy_sub_off __ARGS((regsub_T *to, regsub_T *from));
 static int sub_equal __ARGS((regsub_T *sub1, regsub_T *sub2));
 static void addstate __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs, int off));
-static void addstate_here __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs, int *ip));
+static void addstate_here __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs, nfa_pim_T *pim, int *ip));
 
     static void
 clear_sub(sub)
@@ -3032,7 +3049,7 @@ sub_equal(sub1, sub2)
 
 #ifdef ENABLE_LOG
     static void
-report_state(char *action, regsub_T *sub, nfa_state_T *state, int lid);
+report_state(char *action, regsub_T *sub, nfa_state_T *state, int lid)
 {
     int col;
 
@@ -3174,8 +3191,8 @@ skip_add:
 		}
 	    }
 
-	    /* when there are backreferences the number of states may be (a
-	     * lot) bigger */
+	    /* when there are backreferences or look-behind matches the number
+	     * of states may be (a lot) bigger */
 	    if (nfa_has_backref && l->n == l->len)
 	    {
 		int newlen = l->len * 3 / 2 + 50;
@@ -3188,6 +3205,7 @@ skip_add:
 	    state->lastlist[nfa_ll_index] = l->id;
 	    thread = &l->t[l->n++];
 	    thread->state = state;
+	    thread->pim = NULL;
 	    copy_sub(&thread->subs.norm, &subs->norm);
 #ifdef FEAT_SYN_HL
 	    if (nfa_has_zsubexpr)
@@ -3419,21 +3437,28 @@ skip_add:
  * matters for alternatives.
  */
     static void
-addstate_here(l, state, subs, ip)
+addstate_here(l, state, subs, pim, ip)
     nfa_list_T		*l;	/* runtime state list */
     nfa_state_T		*state;	/* state to update */
     regsubs_T		*subs;	/* pointers to subexpressions */
+    nfa_pim_T		*pim;   /* postponed look-behind match */
     int			*ip;
 {
     int tlen = l->n;
     int count;
-    int i = *ip;
+    int listidx = *ip;
+    int i;
 
     /* first add the state(s) at the end, so that we know how many there are */
     addstate(l, state, subs, 0);
 
+    /* fill in the "pim" field in the new states */
+    if (pim != NULL)
+	for (i = tlen; i < l->n; ++i)
+	    l->t[i].pim = pim;
+
     /* when "*ip" was at the end of the list, nothing to do */
-    if (i + 1 == tlen)
+    if (listidx + 1 == tlen)
 	return;
 
     /* re-order to put the new state at the current position */
@@ -3441,21 +3466,21 @@ addstate_here(l, state, subs, ip)
     if (count == 1)
     {
 	/* overwrite the current state */
-	l->t[i] = l->t[l->n - 1];
+	l->t[listidx] = l->t[l->n - 1];
     }
     else if (count > 1)
     {
 	/* make space for new states, then move them from the
 	 * end to the current position */
-	mch_memmove(&(l->t[i + count]),
-		&(l->t[i + 1]),
-		sizeof(nfa_thread_T) * (l->n - i - 1));
-	mch_memmove(&(l->t[i]),
+	mch_memmove(&(l->t[listidx + count]),
+		&(l->t[listidx + 1]),
+		sizeof(nfa_thread_T) * (l->n - listidx - 1));
+	mch_memmove(&(l->t[listidx]),
 		&(l->t[l->n - 1]),
 		sizeof(nfa_thread_T) * count);
     }
     --l->n;
-    *ip = i - 1;
+    *ip = listidx - 1;
 }
 
 /*
@@ -3834,6 +3859,45 @@ recursive_regmatch(state, prog, submatch, m, listids)
     return result;
 }
 
+static int failure_chance __ARGS((nfa_state_T *state, int depth));
+
+/*
+ * Estimate the chance of a match with "state" failing.
+ * NFA_ANY: 1
+ * specific character: 99
+ */
+    static int
+failure_chance(state, depth)
+    nfa_state_T *state;
+    int		depth;
+{
+    int c = state->c;
+    int l, r;
+
+    /* detect looping */
+    if (depth > 4)
+	return 1;
+
+    if (c == NFA_SPLIT)
+    {
+	if (state->out->c == NFA_SPLIT || state->out1->c == NFA_SPLIT)
+	    return 1;
+	l = failure_chance(state->out, depth + 1);
+	r = failure_chance(state->out1, depth + 1);
+	return l < r ? l : r;
+    }
+    if (c == NFA_ANY)
+	return 1;
+    if (c > 0)
+	return 99;
+    if ((c >= NFA_MOPEN && c <= NFA_MOPEN9)
+	    || (c >= NFA_ZOPEN && c <= NFA_ZOPEN9)
+	    || c == NFA_NOPEN)
+	return failure_chance(state->out, depth + 1);
+    /* something else */
+    return 50;
+}
+
 /*
  * Main matching routine.
  *
@@ -3864,6 +3928,10 @@ nfa_regmatch(prog, start, submatch, m)
     nfa_list_T	*nextlist;
     nfa_list_T	*neglist;
     int		*listids = NULL;
+    nfa_state_T *add_state;
+    int		 add_count;
+    int		 add_off;
+    garray_T	pimlist;
 #ifdef NFA_REGEXP_DEBUG_LOG
     FILE	*debug = fopen(NFA_REGEXP_DEBUG_LOG, "a");
 
@@ -3874,6 +3942,7 @@ nfa_regmatch(prog, start, submatch, m)
     }
 #endif
     nfa_match = FALSE;
+    ga_init2(&pimlist, sizeof(nfa_pim_T), 5);
 
     /* Allocate memory for the lists of nodes. */
     size = (nstate + 1) * sizeof(nfa_thread_T);
@@ -3923,11 +3992,12 @@ nfa_regmatch(prog, start, submatch, m)
     listtbl[0][1] = neglist;
     listtbl[1][0] = nextlist;
     listtbl[1][1] = NULL;
-#define	ADD_POS_NEG_STATE(node)						    \
-    ll = listtbl[result ? 1 : 0][node->negated];			    \
-    if (ll != NULL)							    \
-	addstate(ll, node->out , &t->subs, clen);
-
+#define	ADD_POS_NEG_STATE(state)			\
+    ll = listtbl[result ? 1 : 0][state->negated];	\
+    if (ll != NULL) {					\
+	add_state = state->out;				\
+	add_off = clen;					\
+    }
 
     /*
      * Run for each character.
@@ -3964,6 +4034,8 @@ nfa_regmatch(prog, start, submatch, m)
 	thislist->id = nfa_listid;
 	nextlist->id = nfa_listid + 1;
 	neglist->id = nfa_listid + 1;
+
+	pimlist.ga_len = 0;
 
 #ifdef ENABLE_LOG
 	fprintf(log_fd, "------------------------------------------\n");
@@ -4024,6 +4096,8 @@ nfa_regmatch(prog, start, submatch, m)
 	     * Handle the possible codes of the current state.
 	     * The most important is NFA_MATCH.
 	     */
+	    add_state = NULL;
+	    add_count = 0;
 	    switch (t->state->c)
 	    {
 	    case NFA_MATCH:
@@ -4095,33 +4169,88 @@ nfa_regmatch(prog, start, submatch, m)
 
 	    case NFA_START_INVISIBLE:
 	    case NFA_START_INVISIBLE_BEFORE:
-		result = recursive_regmatch(t->state, prog, submatch, m,
-								    &listids);
-
-		/* for \@! it is a match when result is FALSE */
-		if (result != t->state->negated)
+		/* If invisible match has a higher chance to fail, do it
+		 * right away.  Otherwise postpone it until what follows is
+		 * matching and causes addstate(nextlist, ..) to be called.
+		 * This is indicated by the "pim" field. */
 		{
-		    /* Copy submatch info from the recursive call */
-		    copy_sub_off(&t->subs.norm, &m->norm);
+		    nfa_pim_T *pim;
+		    int cout = t->state->out1->out->c;
+
+		    /* Do it directly when what follows is possibly end of
+		     * match (closing paren).
+		     * Postpone when it is \@<= or \@<!, these are expensive.
+		     * TODO: remove the check for t->pim and check multiple
+		     * where it's used?
+		     * Otherwise first do the one that has the highest chance
+		     * of failing. */
+		    if ((cout >= NFA_MCLOSE && cout <= NFA_MCLOSE9)
+			    || (cout >= NFA_ZCLOSE && cout <= NFA_ZCLOSE9)
+			    || cout == NFA_NCLOSE
+			    || t->pim != NULL
+			    || (t->state->c != NFA_START_INVISIBLE_BEFORE
+				&& failure_chance(t->state->out1->out, 0)
+					  < failure_chance(t->state->out, 0)))
+		    {
+			/*
+			 * First try matching the invisible match, then what
+			 * follows.
+			 */
+			result = recursive_regmatch(t->state, prog,
+						       submatch, m, &listids);
+
+			/* for \@! it is a match when result is FALSE */
+			if (result != t->state->negated)
+			{
+			    /* Copy submatch info from the recursive call */
+			    copy_sub_off(&t->subs.norm, &m->norm);
 #ifdef FEAT_SYN_HL
-		    copy_sub_off(&t->subs.synt, &m->synt);
+			    copy_sub_off(&t->subs.synt, &m->synt);
 #endif
 
-		    /* t->state->out1 is the corresponding END_INVISIBLE node;
-		     * Add its out to the current list (zero-width match). */
-		    addstate_here(thislist, t->state->out1->out, &t->subs,
-								    &listidx);
+			    /* t->state->out1 is the corresponding
+			     * END_INVISIBLE node; Add its out to the current
+			     * list (zero-width match). */
+			    addstate_here(thislist, t->state->out1->out,
+						  &t->subs, t->pim, &listidx);
+			}
+		    }
+		    else
+		    {
+			/*
+			 * First try matching what follows at the current
+			 * position.  Only if a match is found, addstate() is
+			 * called, then verify the invisible match matches.
+			 * Add a nfa_pim_T to the following states, it
+			 * contains info about the invisible match.
+			 */
+			if (ga_grow(&pimlist, 1) == FAIL)
+			    goto theend;
+			pim = (nfa_pim_T *)pimlist.ga_data + pimlist.ga_len;
+			++pimlist.ga_len;
+			pim->state = t->state;
+			pim->pim = NULL;
+			pim->result = NFA_PIM_TODO;
+
+			/* t->state->out1 is the corresponding END_INVISIBLE
+			 * node; Add its out to the current list (zero-width
+			 * match). */
+			addstate_here(thislist, t->state->out1->out, &t->subs,
+							       pim, &listidx);
+		    }
 		}
 		break;
 
 	    case NFA_BOL:
 		if (reginput == regline)
-		    addstate_here(thislist, t->state->out, &t->subs, &listidx);
+		    addstate_here(thislist, t->state->out, &t->subs,
+							    t->pim, &listidx);
 		break;
 
 	    case NFA_EOL:
 		if (curc == NUL)
-		    addstate_here(thislist, t->state->out, &t->subs, &listidx);
+		    addstate_here(thislist, t->state->out, &t->subs,
+							    t->pim, &listidx);
 		break;
 
 	    case NFA_BOW:
@@ -4148,7 +4277,8 @@ nfa_regmatch(prog, start, submatch, m)
 				   && vim_iswordc_buf(reginput[-1], reg_buf)))
 		    bow = FALSE;
 		if (bow)
-		    addstate_here(thislist, t->state->out, &t->subs, &listidx);
+		    addstate_here(thislist, t->state->out, &t->subs,
+							    t->pim, &listidx);
 		break;
 	    }
 
@@ -4176,19 +4306,22 @@ nfa_regmatch(prog, start, submatch, m)
 					   && vim_iswordc_buf(curc, reg_buf)))
 		    eow = FALSE;
 		if (eow)
-		    addstate_here(thislist, t->state->out, &t->subs, &listidx);
+		    addstate_here(thislist, t->state->out, &t->subs,
+							    t->pim, &listidx);
 		break;
 	    }
 
 	    case NFA_BOF:
 		if (reglnum == 0 && reginput == regline
 					&& (!REG_MULTI || reg_firstlnum == 1))
-		    addstate_here(thislist, t->state->out, &t->subs, &listidx);
+		    addstate_here(thislist, t->state->out, &t->subs,
+							    t->pim, &listidx);
 		break;
 
 	    case NFA_EOF:
 		if (reglnum == reg_maxline && curc == NUL)
-		    addstate_here(thislist, t->state->out, &t->subs, &listidx);
+		    addstate_here(thislist, t->state->out, &t->subs,
+							    t->pim, &listidx);
 		break;
 
 #ifdef FEAT_MBYTE
@@ -4277,12 +4410,16 @@ nfa_regmatch(prog, start, submatch, m)
 		    go_to_nextline = TRUE;
 		    /* Pass -1 for the offset, which means taking the position
 		     * at the start of the next line. */
-		    addstate(nextlist, t->state->out, &t->subs, -1);
+		    ll = nextlist;
+		    add_state = t->state->out;
+		    add_off = -1;
 		}
 		else if (curc == '\n' && reg_line_lbr)
 		{
 		    /* match \n as if it is an ordinary character */
-		    addstate(nextlist, t->state->out, &t->subs, 1);
+		    ll = nextlist;
+		    add_state = t->state->out;
+		    add_off = 1;
 		}
 		break;
 
@@ -4310,13 +4447,21 @@ nfa_regmatch(prog, start, submatch, m)
 		/* This follows a series of negated nodes, like:
 		 * CHAR(x), NFA_NOT, CHAR(y), NFA_NOT etc. */
 		if (curc > 0)
-		    addstate(nextlist, t->state->out, &t->subs, clen);
+		{
+		    ll = nextlist;
+		    add_state = t->state->out;
+		    add_off = clen;
+		}
 		break;
 
 	    case NFA_ANY:
 		/* Any char except '\0', (end of input) does not match. */
 		if (curc > 0)
-		    addstate(nextlist, t->state->out, &t->subs, clen);
+		{
+		    ll = nextlist;
+		    add_state = t->state->out;
+		    add_off = clen;
+		}
 		break;
 
 	    /*
@@ -4498,13 +4643,15 @@ nfa_regmatch(prog, start, submatch, m)
 			/* empty match always works, output of NFA_SKIP to be
 			 * used next */
 			addstate_here(thislist, t->state->out->out, &t->subs,
-								    &listidx);
+							    t->pim, &listidx);
 		    }
 		    else if (bytelen <= clen)
 		    {
 			/* match current character, jump ahead to out of
 			 * NFA_SKIP */
-			addstate(nextlist, t->state->out->out, &t->subs, clen);
+			ll = nextlist;
+			add_state = t->state->out->out;
+			add_off = clen;
 #ifdef ENABLE_LOG
 			log_subsexpr(&nextlist->t[nextlist->n - 1].subs);
 #endif
@@ -4513,8 +4660,10 @@ nfa_regmatch(prog, start, submatch, m)
 		    {
 			/* skip ofer the matched characters, set character
 			 * count in NFA_SKIP */
-			addstate(nextlist, t->state->out, &t->subs, bytelen);
-			nextlist->t[nextlist->n - 1].count = bytelen - clen;
+			ll = nextlist;
+			add_state = t->state->out;
+			add_off = bytelen;
+			add_count = bytelen - clen;
 #ifdef ENABLE_LOG
 			log_subsexpr(&nextlist->t[nextlist->n - 1].subs);
 #endif
@@ -4528,7 +4677,9 @@ nfa_regmatch(prog, start, submatch, m)
 	      if (t->count - clen <= 0)
 	      {
 		  /* end of match, go to what follows */
-		  addstate(nextlist, t->state->out, &t->subs, clen);
+		  ll = nextlist;
+		  add_state = t->state->out;
+		  add_off = clen;
 #ifdef ENABLE_LOG
 		  log_subsexpr(&nextlist->t[nextlist->n - 1].subs);
 #endif
@@ -4536,8 +4687,10 @@ nfa_regmatch(prog, start, submatch, m)
 	      else
 	      {
 		  /* add state again with decremented count */
-		  addstate(nextlist, t->state, &t->subs, 0);
-		  nextlist->t[nextlist->n - 1].count = t->count - clen;
+		  ll = nextlist;
+		  add_state = t->state;
+		  add_off = 0;
+		  add_count = t->count - clen;
 #ifdef ENABLE_LOG
 		  log_subsexpr(&nextlist->t[nextlist->n - 1].subs);
 #endif
@@ -4557,7 +4710,8 @@ nfa_regmatch(prog, start, submatch, m)
 			nfa_re_num_cmp(t->state->val, t->state->c - NFA_LNUM,
 			    (long_u)(reglnum + reg_firstlnum)));
 		if (result)
-		    addstate_here(thislist, t->state->out, &t->subs, &listidx);
+		    addstate_here(thislist, t->state->out, &t->subs,
+							    t->pim, &listidx);
 		break;
 
 	    case NFA_COL:
@@ -4566,7 +4720,8 @@ nfa_regmatch(prog, start, submatch, m)
 		result = nfa_re_num_cmp(t->state->val, t->state->c - NFA_COL,
 			(long_u)(reginput - regline) + 1);
 		if (result)
-		    addstate_here(thislist, t->state->out, &t->subs, &listidx);
+		    addstate_here(thislist, t->state->out, &t->subs,
+							    t->pim, &listidx);
 		break;
 
 	    case NFA_VCOL:
@@ -4577,7 +4732,8 @@ nfa_regmatch(prog, start, submatch, m)
 			    reg_win == NULL ? curwin : reg_win,
 			    regline, (colnr_T)(reginput - regline)) + 1);
 		if (result)
-		    addstate_here(thislist, t->state->out, &t->subs, &listidx);
+		    addstate_here(thislist, t->state->out, &t->subs,
+							    t->pim, &listidx);
 		break;
 
 	    case NFA_CURSOR:
@@ -4586,7 +4742,8 @@ nfa_regmatch(prog, start, submatch, m)
 			&& ((colnr_T)(reginput - regline)
 						   == reg_win->w_cursor.col));
 		if (result)
-		    addstate_here(thislist, t->state->out, &t->subs, &listidx);
+		    addstate_here(thislist, t->state->out, &t->subs,
+							    t->pim, &listidx);
 		break;
 
 	    default:	/* regular character */
@@ -4613,6 +4770,65 @@ nfa_regmatch(prog, start, submatch, m)
 		ADD_POS_NEG_STATE(t->state);
 		break;
 	      }
+
+	    } /* switch (t->state->c) */
+
+	    if (add_state != NULL)
+	    {
+		if (t->pim != NULL)
+		{
+		    /* postponed invisible match */
+		    /* TODO: also do t->pim->pim recursively? */
+		    if (t->pim->result == NFA_PIM_TODO)
+		    {
+#ifdef ENABLE_LOG
+			fprintf(log_fd, "\n");
+			fprintf(log_fd, "==================================\n");
+			fprintf(log_fd, "Postponed recursive nfa_regmatch()\n");
+			fprintf(log_fd, "\n");
+#endif
+			result = recursive_regmatch(t->pim->state,
+						 prog, submatch, m, &listids);
+			t->pim->result = result ? NFA_PIM_MATCH
+							    : NFA_PIM_NOMATCH;
+			/* for \@! it is a match when result is FALSE */
+			if (result != t->pim->state->negated)
+			{
+			    /* Copy submatch info from the recursive call */
+			    copy_sub_off(&t->pim->subs.norm, &m->norm);
+#ifdef FEAT_SYN_HL
+			    copy_sub_off(&t->pim->subs.synt, &m->synt);
+#endif
+			}
+		    }
+		    else
+		    {
+			result = (t->pim->result == NFA_PIM_MATCH);
+#ifdef ENABLE_LOG
+			fprintf(log_fd, "\n");
+			fprintf(log_fd, "Using previous recursive nfa_regmatch() result, result == %d\n", t->pim->result);
+			fprintf(log_fd, "MATCH = %s\n", result == TRUE ? "OK" : "FALSE");
+			fprintf(log_fd, "\n");
+#endif
+		    }
+
+		    /* for \@! it is a match when result is FALSE */
+		    if (result != t->pim->state->negated)
+		    {
+			/* Copy submatch info from the recursive call */
+			copy_sub_off(&t->subs.norm, &t->pim->subs.norm);
+#ifdef FEAT_SYN_HL
+			copy_sub_off(&t->subs.synt, &t->pim->subs.synt);
+#endif
+		    }
+		    else
+			/* look-behind match failed, don't add the state */
+			continue;
+		}
+
+		addstate(ll, add_state, &t->subs, add_off);
+		if (add_count > 0)
+		    nextlist->t[ll->n - 1].count = add_count;
 	    }
 
 	} /* for (thislist = thislist; thislist->state; thislist++) */
@@ -4680,6 +4896,7 @@ theend:
     vim_free(list[1].t);
     vim_free(list[2].t);
     vim_free(listids);
+    ga_clear(&pimlist);
 #undef ADD_POS_NEG_STATE
 #ifdef NFA_REGEXP_DEBUG_LOG
     fclose(debug);
