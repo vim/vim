@@ -3907,7 +3907,9 @@ failure_chance(state, depth)
     if (c > 0)
 	return 99;
     if ((c >= NFA_MOPEN && c <= NFA_MOPEN9)
+#ifdef FEAT_SYN_HL
 	    || (c >= NFA_ZOPEN && c <= NFA_ZOPEN9)
+#endif
 	    || c == NFA_NOPEN)
 	return failure_chance(state->out, depth + 1);
     /* something else */
@@ -4201,7 +4203,9 @@ nfa_regmatch(prog, start, submatch, m)
 		     * Otherwise first do the one that has the highest chance
 		     * of failing. */
 		    if ((cout >= NFA_MCLOSE && cout <= NFA_MCLOSE9)
+#ifdef FEAT_SYN_HL
 			    || (cout >= NFA_ZCLOSE && cout <= NFA_ZCLOSE9)
+#endif
 			    || cout == NFA_NCLOSE
 			    || t->pim != NULL
 			    || (t->state->c != NFA_START_INVISIBLE_BEFORE
