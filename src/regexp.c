@@ -4401,8 +4401,7 @@ regmatch(scan)
 	    break;
 
 	  case RE_MARK:
-	    /* Compare the mark position to the match position.  NOTE: Always
-	     * uses the current buffer. */
+	    /* Compare the mark position to the match position. */
 	    {
 		int	mark = OPERAND(scan)[0];
 		int	cmp = OPERAND(scan)[1];
@@ -4410,7 +4409,7 @@ regmatch(scan)
 
 		pos = getmark_buf(reg_buf, mark, FALSE);
 		if (pos == NULL		     /* mark doesn't exist */
-			|| pos->lnum <= 0    /* mark isn't set (in curbuf) */
+			|| pos->lnum <= 0    /* mark isn't set in reg_buf */
 			|| (pos->lnum == reglnum + reg_firstlnum
 				? (pos->col == (colnr_T)(reginput - regline)
 				    ? (cmp == '<' || cmp == '>')

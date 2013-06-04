@@ -178,6 +178,9 @@ enum
     NFA_VCOL,		/*	Match cursor virtual column */
     NFA_VCOL_GT,	/*	Match > cursor virtual column */
     NFA_VCOL_LT,	/*	Match < cursor virtual column */
+    NFA_MARK,		/*	Match mark */
+    NFA_MARK_GT,	/*	Match > mark */
+    NFA_MARK_LT,	/*	Match < mark */
     NFA_VISUAL,		/*	Match Visual area */
 
     NFA_FIRST_NL = NFA_ANY + ADD_NL,
@@ -984,19 +987,27 @@ nfa_regatom()
 			{
 			    EMIT(n);
 			    if (c == 'l')
+				/* \%{n}l  \%{n}<l  \%{n}>l  */
 				EMIT(cmp == '<' ? NFA_LNUM_LT :
-					cmp == '>' ? NFA_LNUM_GT : NFA_LNUM);
+				     cmp == '>' ? NFA_LNUM_GT : NFA_LNUM);
 			    else if (c == 'c')
+				/* \%{n}c  \%{n}<c  \%{n}>c  */
 				EMIT(cmp == '<' ? NFA_COL_LT :
-					cmp == '>' ? NFA_COL_GT : NFA_COL);
+				     cmp == '>' ? NFA_COL_GT : NFA_COL);
 			    else
+				/* \%{n}v  \%{n}<v  \%{n}>v  */
 				EMIT(cmp == '<' ? NFA_VCOL_LT :
-					cmp == '>' ? NFA_VCOL_GT : NFA_VCOL);
+				     cmp == '>' ? NFA_VCOL_GT : NFA_VCOL);
 			    break;
 			}
-			else if (c == '\'')
-			    /* TODO: \%'m not supported yet */
-			    return FAIL;
+			else if (c == '\'' && n == 0)
+			{
+			    /* \%'m  \%<'m  \%>'m  */
+			    EMIT(getchr());
+			    EMIT(cmp == '<' ? NFA_MARK_LT :
+				 cmp == '>' ? NFA_MARK_GT : NFA_MARK);
+			    break;
+			}
 		    }
 		    syntax_error = TRUE;
 		    EMSGN(_("E867: (NFA) Unknown operator '\\%%%c'"),
@@ -1931,6 +1942,21 @@ nfa_set_code(c)
 	case NFA_BOW:		STRCPY(code, "NFA_BOW "); break;
 	case NFA_EOF:		STRCPY(code, "NFA_EOF "); break;
 	case NFA_BOF:		STRCPY(code, "NFA_BOF "); break;
+	case NFA_LNUM:		STRCPY(code, "NFA_LNUM "); break;
+	case NFA_LNUM_GT:	STRCPY(code, "NFA_LNUM_GT "); break;
+	case NFA_LNUM_LT:	STRCPY(code, "NFA_LNUM_LT "); break;
+	case NFA_COL:		STRCPY(code, "NFA_COL "); break;
+	case NFA_COL_GT:	STRCPY(code, "NFA_COL_GT "); break;
+	case NFA_COL_LT:	STRCPY(code, "NFA_COL_LT "); break;
+	case NFA_VCOL:		STRCPY(code, "NFA_VCOL "); break;
+	case NFA_VCOL_GT:	STRCPY(code, "NFA_VCOL_GT "); break;
+	case NFA_VCOL_LT:	STRCPY(code, "NFA_VCOL_LT "); break;
+	case NFA_MARK:		STRCPY(code, "NFA_MARK "); break;
+	case NFA_MARK_GT:	STRCPY(code, "NFA_MARK_GT "); break;
+	case NFA_MARK_LT:	STRCPY(code, "NFA_MARK_LT "); break;
+	case NFA_CURSOR:	STRCPY(code, "NFA_CURSOR "); break;
+	case NFA_VISUAL:	STRCPY(code, "NFA_VISUAL "); break;
+
 	case NFA_STAR:		STRCPY(code, "NFA_STAR "); break;
 	case NFA_STAR_NONGREEDY: STRCPY(code, "NFA_STAR_NONGREEDY "); break;
 	case NFA_QUEST:		STRCPY(code, "NFA_QUEST"); break;
@@ -2715,6 +2741,9 @@ post2nfa(postfix, end, nfa_calc_size)
 	case NFA_COL:
 	case NFA_COL_GT:
 	case NFA_COL_LT:
+	case NFA_MARK:
+	case NFA_MARK_GT:
+	case NFA_MARK_LT:
 	    if (nfa_calc_size == TRUE)
 	    {
 		nstate += 1;
@@ -2724,7 +2753,7 @@ post2nfa(postfix, end, nfa_calc_size)
 	    s = alloc_state(*p, NULL, NULL);
 	    if (s == NULL)
 		goto theend;
-	    s->val = e1.start->c;
+	    s->val = e1.start->c; /* lnum, col or mark name */
 	    PUSH(frag(s, list1(&s->out)));
 	    break;
 
@@ -4722,6 +4751,30 @@ nfa_regmatch(prog, start, submatch, m)
 		    addstate_here(thislist, t->state->out, &t->subs,
 							    t->pim, &listidx);
 		break;
+
+	    case NFA_MARK:
+	    case NFA_MARK_GT:
+	    case NFA_MARK_LT:
+	      {
+		pos_T	*pos = getmark_buf(reg_buf, t->state->val, FALSE);
+
+		/* Compare the mark position to the match position. */
+		result = (pos != NULL		     /* mark doesn't exist */
+			&& pos->lnum > 0    /* mark isn't set in reg_buf */
+			&& (pos->lnum == reglnum + reg_firstlnum
+				? (pos->col == (colnr_T)(reginput - regline)
+				    ? t->state->c == NFA_MARK
+				    : (pos->col < (colnr_T)(reginput - regline)
+					? t->state->c == NFA_MARK_GT
+					: t->state->c == NFA_MARK_LT))
+				: (pos->lnum < reglnum + reg_firstlnum
+				    ? t->state->c == NFA_MARK_GT
+				    : t->state->c == NFA_MARK_LT)));
+		if (result)
+		    addstate_here(thislist, t->state->out, &t->subs,
+							    t->pim, &listidx);
+		break;
+	      }
 
 	    case NFA_CURSOR:
 		result = (reg_win != NULL
