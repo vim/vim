@@ -977,6 +977,9 @@ nfa_regatom()
 						      reg_magic == MAGIC_ALL);
 			    EMIT(c);
 			}
+			if (n == 0)
+			    EMSG2_RET_FAIL(_(e_empty_sb),
+						      reg_magic == MAGIC_ALL);
 			EMIT(NFA_OPT_CHARS);
 			EMIT(n);
 			break;

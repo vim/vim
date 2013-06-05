@@ -366,7 +366,7 @@ static char_u e_z_not_allowed[] = N_("E66: \\z( not allowed here");
 static char_u e_z1_not_allowed[] = N_("E67: \\z1 et al. not allowed here");
 #endif
 static char_u e_missing_sb[] = N_("E69: Missing ] after %s%%[");
-
+static char_u e_empty_sb[]  = N_("E70: Empty %s%%[]");
 #define NOT_MULTI	0
 #define MULTI_ONE	1
 #define MULTI_MULT	2
@@ -2227,7 +2227,7 @@ regatom(flagp)
 				      return NULL;
 			      }
 			      if (ret == NULL)
-				  EMSG2_RET_NULL(_("E70: Empty %s%%[]"),
+				  EMSG2_RET_NULL(_(e_empty_sb),
 						      reg_magic == MAGIC_ALL);
 			      lastbranch = regnode(BRANCH);
 			      br = regnode(NOTHING);
