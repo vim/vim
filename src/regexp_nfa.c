@@ -61,6 +61,7 @@ enum
     NFA_COMPOSING,		    /* Next nodes in NFA are part of the
 				       composing multibyte char */
     NFA_END_COMPOSING,		    /* End of a composing char in the NFA */
+    NFA_OPT_CHARS,		    /* \%[abc] */
 
     /* The following are used only in the postfix form, not in the NFA */
     NFA_PREV_ATOM_NO_WIDTH,	    /* Used for \@= */
@@ -972,8 +973,21 @@ nfa_regatom()
 #endif
 
 		case '[':
-		    /* TODO: \%[abc] not supported yet */
-		    return FAIL;
+		    {
+			int	    n;
+
+			/* \%[abc] */
+			for (n = 0; (c = getchr()) != ']'; ++n)
+			{
+			    if (c == NUL)
+				EMSG2_RET_FAIL(_(e_missing_sb),
+						      reg_magic == MAGIC_ALL);
+			    EMIT(c);
+			}
+			EMIT(NFA_OPT_CHARS);
+			EMIT(n);
+			break;
+		    }
 
 		default:
 		    {
@@ -989,7 +1003,6 @@ nfa_regatom()
 			}
 			if (c == 'l' || c == 'c' || c == 'v')
 			{
-			    EMIT(n);
 			    if (c == 'l')
 				/* \%{n}l  \%{n}<l  \%{n}>l  */
 				EMIT(cmp == '<' ? NFA_LNUM_LT :
@@ -1002,14 +1015,15 @@ nfa_regatom()
 				/* \%{n}v  \%{n}<v  \%{n}>v  */
 				EMIT(cmp == '<' ? NFA_VCOL_LT :
 				     cmp == '>' ? NFA_VCOL_GT : NFA_VCOL);
+			    EMIT(n);
 			    break;
 			}
 			else if (c == '\'' && n == 0)
 			{
 			    /* \%'m  \%<'m  \%>'m  */
-			    EMIT(getchr());
 			    EMIT(cmp == '<' ? NFA_MARK_LT :
 				 cmp == '>' ? NFA_MARK_GT : NFA_MARK);
+			    EMIT(getchr());
 			    break;
 			}
 		    }
@@ -1885,6 +1899,7 @@ nfa_set_code(c)
 
 	case NFA_COMPOSING:	    STRCPY(code, "NFA_COMPOSING"); break;
 	case NFA_END_COMPOSING:	    STRCPY(code, "NFA_END_COMPOSING"); break;
+	case NFA_OPT_CHARS:	    STRCPY(code, "NFA_OPT_CHARS"); break;
 
 	case NFA_MOPEN:
 	case NFA_MOPEN1:
@@ -2558,10 +2573,49 @@ post2nfa(postfix, end, nfa_calc_size)
 	    PUSH(frag(s, list1(&s->out)));
 	    break;
 
+	case NFA_OPT_CHARS:
+	  {
+	    int    n;
+
+	    /* \%[abc] */
+	    n = *++p; /* get number of characters */
+	    if (nfa_calc_size == TRUE)
+	    {
+		nstate += n;
+		break;
+	    }
+	    e1.out = NULL; /* stores list with out1's */
+	    s1 = NULL; /* previous NFA_SPLIT to connect to */
+	    while (n-- > 0)
+	    {
+		e = POP(); /* get character */
+		s = alloc_state(NFA_SPLIT, e.start, NULL);
+		if (s == NULL)
+		    goto theend;
+		if (e1.out == NULL)
+		    e1 = e;
+		patch(e.out, s1);
+		append(e1.out, list1(&s->out1));
+		s1 = s;
+	    }
+	    PUSH(frag(s, e1.out));
+	    break;
+	  }
+
 	case NFA_PREV_ATOM_NO_WIDTH:
 	case NFA_PREV_ATOM_NO_WIDTH_NEG:
 	case NFA_PREV_ATOM_JUST_BEFORE:
 	case NFA_PREV_ATOM_JUST_BEFORE_NEG:
+	  {
+	    int neg = (*p == NFA_PREV_ATOM_NO_WIDTH_NEG
+				      || *p == NFA_PREV_ATOM_JUST_BEFORE_NEG);
+	    int before = (*p == NFA_PREV_ATOM_JUST_BEFORE
+				      || *p == NFA_PREV_ATOM_JUST_BEFORE_NEG);
+	    int n;
+
+	    if (before)
+		n = *++p; /* get the count */
+
 	    /* The \@= operator: match the preceding atom with zero width.
 	     * The \@! operator: no match for the preceding atom.
 	     * The \@<= operator: match for the preceding atom.
@@ -2583,21 +2637,20 @@ post2nfa(postfix, end, nfa_calc_size)
 	    s = alloc_state(NFA_START_INVISIBLE, e.start, s1);
 	    if (s == NULL)
 		goto theend;
-	    if (*p == NFA_PREV_ATOM_NO_WIDTH_NEG
-				       || *p == NFA_PREV_ATOM_JUST_BEFORE_NEG)
+	    if (neg)
 	    {
 		s->negated = TRUE;
 		s1->negated = TRUE;
 	    }
-	    if (*p == NFA_PREV_ATOM_JUST_BEFORE
-				       || *p == NFA_PREV_ATOM_JUST_BEFORE_NEG)
+	    if (before)
 	    {
-		s->val = *++p; /* get the count */
+		s->val = n; /* store the count */
 		++s->c; /* NFA_START_INVISIBLE -> NFA_START_INVISIBLE_BEFORE */
 	    }
 
 	    PUSH(frag(s, list1(&s1->out)));
 	    break;
+	  }
 
 #ifdef FEAT_MBYTE
 	case NFA_COMPOSING:	/* char with composing char */
@@ -2750,18 +2803,21 @@ post2nfa(postfix, end, nfa_calc_size)
 	case NFA_MARK:
 	case NFA_MARK_GT:
 	case NFA_MARK_LT:
+	  {
+	    int n = *++p; /* lnum, col or mark name */
+
 	    if (nfa_calc_size == TRUE)
 	    {
 		nstate += 1;
 		break;
 	    }
-	    e1 = POP();
-	    s = alloc_state(*p, NULL, NULL);
+	    s = alloc_state(p[-1], NULL, NULL);
 	    if (s == NULL)
 		goto theend;
-	    s->val = e1.start->c; /* lnum, col or mark name */
+	    s->val = n;
 	    PUSH(frag(s, list1(&s->out)));
 	    break;
+	  }
 
 	case NFA_ZSTART:
 	case NFA_ZEND:

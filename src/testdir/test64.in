@@ -352,6 +352,19 @@ STARTTEST
 :call add(tl, [2, '\%u0020', 'yes no', ' '])
 :call add(tl, [2, '\%U00000020', 'yes no', ' '])
 :"
+:""""" \%[abc]
+:call add(tl, [2, 'foo\%[bar]', 'fobar'])
+:call add(tl, [2, 'foo\%[bar]', 'foobar', 'foobar'])
+:call add(tl, [2, 'foo\%[bar]', 'fooxx', 'foo'])
+:call add(tl, [2, 'foo\%[bar]', 'foobxx', 'foob'])
+:call add(tl, [2, 'foo\%[bar]', 'foobaxx', 'fooba'])
+:call add(tl, [2, 'foo\%[bar]', 'foobarxx', 'foobar'])
+:call add(tl, [2, 'foo\%[bar]x', 'foobxx', 'foobx'])
+:call add(tl, [2, 'foo\%[bar]x', 'foobarxx', 'foobarx'])
+:call add(tl, [2, '\%[bar]x', 'barxx', 'barx'])
+:call add(tl, [2, '\%[bar]x', 'bxx', 'bx'])
+:call add(tl, [2, '\%[bar]x', 'xxx', 'x'])
+:"
 :"""" Alternatives, must use first longest match
 :call add(tl, [2, 'goo\|go', 'google', 'goo'])
 :call add(tl, [2, '\<goo\|\<go', 'google', 'goo'])
