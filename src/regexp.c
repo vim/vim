@@ -6538,9 +6538,15 @@ regdump(pattern, r)
 	    end = next;
 	if (op == BRACE_LIMITS)
 	{
-	    /* Two short ints */
+	    /* Two ints */
 	    fprintf(f, " minval %ld, maxval %ld", OPERAND_MIN(s), OPERAND_MAX(s));
 	    s += 8;
+	}
+	else if (op == BEHIND || op == NOBEHIND)
+	{
+	    /* one int */
+	    fprintf(f, " count %ld", OPERAND_MIN(s));
+	    s += 4;
 	}
 	s += 3;
 	if (op == ANYOF || op == ANYOF + ADD_NL

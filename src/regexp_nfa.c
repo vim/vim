@@ -2960,10 +2960,15 @@ log_subexpr(sub)
 		    sub->list.multi[j].end.col,
 		    (int)sub->list.multi[j].end.lnum);
 	else
+	{
+	    char *s = (char *)sub->list.line[j].start;
+	    char *e = (char *)sub->list.line[j].end;
+
 	    fprintf(log_fd, "\n *** group %d, start: \"%s\", end: \"%s\"",
 		    j,
-		    (char *)sub->list.line[j].start,
-		    (char *)sub->list.line[j].end);
+		    s == NULL ? "NULL" : s,
+		    e == NULL ? "NULL" : e);
+	}
     fprintf(log_fd, "\n");
 }
 #endif
