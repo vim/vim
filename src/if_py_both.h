@@ -718,6 +718,8 @@ _VimChdir(PyObject *_chdir, PyObject *args, PyObject *kwargs)
     PyObject	*todecref;
     char_u	*new_dir;
 
+    if (_chdir == NULL)
+	return NULL;
     if (!(r = PyObject_Call(_chdir, args, kwargs)))
 	return NULL;
 
