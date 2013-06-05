@@ -2580,6 +2580,7 @@ post2nfa(postfix, end, nfa_calc_size)
 		nstate += n;
 		break;
 	    }
+	    s = NULL; /* avoid compiler warning */
 	    e1.out = NULL; /* stores list with out1's */
 	    s1 = NULL; /* previous NFA_SPLIT to connect to */
 	    while (n-- > 0)
