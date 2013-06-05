@@ -181,7 +181,9 @@ enum
     NFA_MARK,		/*	Match mark */
     NFA_MARK_GT,	/*	Match > mark */
     NFA_MARK_LT,	/*	Match < mark */
+#ifdef FEAT_VISUAL
     NFA_VISUAL,		/*	Match Visual area */
+#endif
 
     NFA_FIRST_NL = NFA_ANY + ADD_NL,
     NFA_LAST_NL = NFA_NUPPER + ADD_NL,
@@ -963,9 +965,11 @@ nfa_regatom()
 		    EMIT(NFA_CURSOR);
 		    break;
 
+#ifdef FEAT_VISUAL
 		case 'V':
 		    EMIT(NFA_VISUAL);
 		    break;
+#endif
 
 		case '[':
 		    /* TODO: \%[abc] not supported yet */
@@ -1955,7 +1959,9 @@ nfa_set_code(c)
 	case NFA_MARK_GT:	STRCPY(code, "NFA_MARK_GT "); break;
 	case NFA_MARK_LT:	STRCPY(code, "NFA_MARK_LT "); break;
 	case NFA_CURSOR:	STRCPY(code, "NFA_CURSOR "); break;
+#ifdef FEAT_VISUAL
 	case NFA_VISUAL:	STRCPY(code, "NFA_VISUAL "); break;
+#endif
 
 	case NFA_STAR:		STRCPY(code, "NFA_STAR "); break;
 	case NFA_STAR_NONGREEDY: STRCPY(code, "NFA_STAR_NONGREEDY "); break;
@@ -4790,12 +4796,14 @@ nfa_regmatch(prog, start, submatch, m)
 							    t->pim, &listidx);
 		break;
 
+#ifdef FEAT_VISUAL
 	    case NFA_VISUAL:
 		result = reg_match_visual();
 		if (result)
 		    addstate_here(thislist, t->state->out, &t->subs,
 							    t->pim, &listidx);
 		break;
+#endif
 
 	    default:	/* regular character */
 	      {
