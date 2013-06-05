@@ -221,23 +221,6 @@ static int nfa_classcodes[] = {
 
 static char_u e_misplaced[] = N_("E866: (NFA regexp) Misplaced %c");
 
-/*
- * NFA errors can be of 3 types:
- * *** NFA runtime errors, when something unknown goes wrong. The NFA fails
- *     silently and revert the to backtracking engine.
- *     syntax_error = FALSE;
- * *** Regexp syntax errors, when the input regexp is not syntactically correct.
- *     The NFA engine displays an error message, and nothing else happens.
- *     syntax_error = TRUE
- * *** Unsupported features, when the input regexp uses an operator that is not
- *     implemented in the NFA. The NFA engine fails silently, and reverts to the
- *     old backtracking engine.
- *     syntax_error = FALSE
- * "The NFA fails" means that "compiling the regexp with the NFA fails":
- * nfa_regcomp() returns FAIL.
- */
-static int syntax_error = FALSE;
-
 /* NFA regexp \ze operator encountered. */
 static int nfa_has_zend;
 
@@ -692,7 +675,6 @@ nfa_regatom()
     switch (c)
     {
 	case NUL:
-	    syntax_error = TRUE;
 	    EMSG_RET_FAIL(_("E865: (NFA) Regexp end encountered prematurely"));
 
 	case Magic('^'):
@@ -814,7 +796,6 @@ nfa_regatom()
 	case Magic('|'):
 	case Magic('&'):
 	case Magic(')'):
-	    syntax_error = TRUE;
 	    EMSGN(_(e_misplaced), no_Magic(c));
 	    return FAIL;
 
@@ -825,7 +806,6 @@ nfa_regatom()
 	case Magic('*'):
 	case Magic('{'):
 	    /* these should follow an atom, not form an atom */
-	    syntax_error = TRUE;
 	    EMSGN(_(e_misplaced), no_Magic(c));
 	    return FAIL;
 
@@ -902,7 +882,6 @@ nfa_regatom()
 		    break;
 #endif
 		default:
-		    syntax_error = TRUE;
 		    EMSGN(_("E867: (NFA) Unknown operator '\\z%c'"),
 								 no_Magic(c));
 		    return FAIL;
@@ -1023,7 +1002,6 @@ nfa_regatom()
 			    break;
 			}
 		    }
-		    syntax_error = TRUE;
 		    EMSGN(_("E867: (NFA) Unknown operator '\\%%%c'"),
 								 no_Magic(c));
 		    return FAIL;
@@ -1359,10 +1337,7 @@ collection:
 	    } /* if exists closing ] */
 
 	    if (reg_strict)
-	    {
-		syntax_error = TRUE;
 		EMSG_RET_FAIL(_(e_missingbracket));
-	    }
 	    /* FALLTHROUGH */
 
 	default:
@@ -1512,7 +1487,6 @@ nfa_regpiece()
 	    }
 	    if (i == 0)
 	    {
-		syntax_error = TRUE;
 		EMSGN(_("E869: (NFA) Unknown operator '\\@%c'"), op);
 		return FAIL;
 	    }
@@ -1543,10 +1517,8 @@ nfa_regpiece()
 		greedy = FALSE;
 	    }
 	    if (!read_limits(&minval, &maxval))
-	    {
-		syntax_error = TRUE;
 		EMSG_RET_FAIL(_("E870: (NFA regexp) Error reading repetition limits"));
-	    }
+
 	    /*  <atom>{0,inf}, <atom>{0,} and <atom>{}  are equivalent to
 	     *  <atom>*  */
 	    if (minval == 0 && maxval == MAX_LIMIT)
@@ -1614,11 +1586,8 @@ nfa_regpiece()
     }	/* end switch */
 
     if (re_multi_type(peekchr()) != NOT_MULTI)
-    {
 	/* Can't have a multi follow a multi. */
-	syntax_error = TRUE;
 	EMSG_RET_FAIL(_("E871: (NFA regexp) Can't have a multi follow a multi !"));
-    }
 
     return OK;
 }
@@ -1767,10 +1736,7 @@ nfa_reg(paren)
     if (paren == REG_PAREN)
     {
 	if (regnpar >= NSUBEXP) /* Too many `(' */
-	{
-	    syntax_error = TRUE;
 	    EMSG_RET_FAIL(_("E872: (NFA regexp) Too many '('"));
-	}
 	parno = regnpar++;
     }
 #ifdef FEAT_SYN_HL
@@ -1778,10 +1744,7 @@ nfa_reg(paren)
     {
 	/* Make a ZOPEN node. */
 	if (regnzpar >= NSUBEXP)
-	{
-	    syntax_error = TRUE;
 	    EMSG_RET_FAIL(_("E879: (NFA regexp) Too many \\z("));
-	}
 	parno = regnzpar++;
     }
 #endif
@@ -1800,7 +1763,6 @@ nfa_reg(paren)
     /* Check for proper termination. */
     if (paren != REG_NOPAREN && getchr() != Magic(')'))
     {
-	syntax_error = TRUE;
 	if (paren == REG_NPAREN)
 	    EMSG2_RET_FAIL(_(e_unmatchedpp), reg_magic == MAGIC_ALL);
 	else
@@ -1808,7 +1770,6 @@ nfa_reg(paren)
     }
     else if (paren == REG_NOPAREN && peekchr() != NUL)
     {
-	syntax_error = TRUE;
 	if (peekchr() == Magic(')'))
 	    EMSG2_RET_FAIL(_(e_unmatchedpar), reg_magic == MAGIC_ALL);
 	else

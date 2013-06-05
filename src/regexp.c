@@ -7924,7 +7924,6 @@ vim_regcomp(expr_arg, re_flags)
     regprog_T   *prog = NULL;
     char_u	*expr = expr_arg;
 
-    syntax_error = FALSE;
     regexp_engine = p_re;
 
     /* Check for prefix "\%#=", that sets the regexp engine */
@@ -7971,19 +7970,12 @@ vim_regcomp(expr_arg, re_flags)
 	    f = fopen(BT_REGEXP_DEBUG_LOG_NAME, "a");
 	    if (f)
 	    {
-		if (!syntax_error)
-		    fprintf(f, "NFA engine could not handle \"%s\"\n", expr);
-		else
-		    fprintf(f, "Syntax error in \"%s\"\n", expr);
+		fprintf(f, "Syntax error in \"%s\"\n", expr);
 		fclose(f);
 	    }
 	    else
 		EMSG2("(NFA) Could not open \"%s\" to write !!!",
                         BT_REGEXP_DEBUG_LOG_NAME);
-	    /*
-	    if (syntax_error)
-		EMSG("NFA Regexp: Syntax Error !");
-	    */
 	}
 #endif
 	/*
@@ -7992,11 +7984,8 @@ vim_regcomp(expr_arg, re_flags)
 	 * NFA engine.
 	 */
 	if (regexp_engine == AUTOMATIC_ENGINE)
-	    if (!syntax_error)
-		prog = bt_regengine.regcomp(expr, re_flags);
-
-    }	    /* endif prog==NULL */
-
+	    prog = bt_regengine.regcomp(expr, re_flags);
+    }
 
     return prog;
 }
