@@ -686,12 +686,7 @@ nfa_regatom()
     int		startc = -1;
     int		endc = -1;
     int		oldstartc = -1;
-    int		cpo_lit;	/* 'cpoptions' contains 'l' flag */
-    int		cpo_bsl;	/* 'cpoptions' contains '\' flag */
     int		glue;		/* ID that will "glue" nodes together */
-
-    cpo_lit = vim_strchr(p_cpo, CPO_LITERAL) != NULL;
-    cpo_bsl = vim_strchr(p_cpo, CPO_BACKSL) != NULL;
 
     c = getchr();
     switch (c)
@@ -1224,10 +1219,10 @@ collection:
 		     * Posix doesn't recognize backslash at all.
 		     */
 		    if (*regparse == '\\'
-			    && !cpo_bsl
+			    && !reg_cpo_bsl
 			    && regparse + 1 <= endp
 			    && (vim_strchr(REGEXP_INRANGE, regparse[1]) != NULL
-				|| (!cpo_lit
+				|| (!reg_cpo_lit
 				    && vim_strchr(REGEXP_ABBR, regparse[1])
 								      != NULL)
 			    )
