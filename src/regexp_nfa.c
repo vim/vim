@@ -57,7 +57,9 @@ enum
     NFA_NCLOSE,			    /* End of subexpr. marked with \%( ... \) */
     NFA_START_INVISIBLE,
     NFA_START_INVISIBLE_BEFORE,
+    NFA_START_PATTERN,
     NFA_END_INVISIBLE,
+    NFA_END_PATTERN,
     NFA_COMPOSING,		    /* Next nodes in NFA are part of the
 				       composing multibyte char */
     NFA_END_COMPOSING,		    /* End of a composing char in the NFA */
@@ -1505,9 +1507,9 @@ nfa_regpiece()
 			i = NFA_PREV_ATOM_JUST_BEFORE_NEG;
 		    break;
 		case '>':
-		    /* \@> Not supported yet */
-		    /* i = NFA_PREV_ATOM_LIKE_PATTERN; */
-		    return FAIL;
+		    /* \@>  */
+		    i = NFA_PREV_ATOM_LIKE_PATTERN;
+		    break;
 	    }
 	    if (i == 0)
 	    {
@@ -1885,12 +1887,17 @@ nfa_set_code(c)
 			    STRCPY(code, "NFA_PREV_ATOM_JUST_BEFORE"); break;
 	case NFA_PREV_ATOM_JUST_BEFORE_NEG:
 			 STRCPY(code, "NFA_PREV_ATOM_JUST_BEFORE_NEG"); break;
+	case NFA_PREV_ATOM_LIKE_PATTERN:
+			    STRCPY(code, "NFA_PREV_ATOM_LIKE_PATTERN"); break;
+
 	case NFA_NOPEN:		    STRCPY(code, "NFA_NOPEN"); break;
 	case NFA_NCLOSE:	    STRCPY(code, "NFA_NCLOSE"); break;
 	case NFA_START_INVISIBLE:   STRCPY(code, "NFA_START_INVISIBLE"); break;
 	case NFA_START_INVISIBLE_BEFORE:
 			    STRCPY(code, "NFA_START_INVISIBLE_BEFORE"); break;
+	case NFA_START_PATTERN:   STRCPY(code, "NFA_START_PATTERN"); break;
 	case NFA_END_INVISIBLE:	    STRCPY(code, "NFA_END_INVISIBLE"); break;
+	case NFA_END_PATTERN:	    STRCPY(code, "NFA_END_PATTERN"); break;
 
 	case NFA_COMPOSING:	    STRCPY(code, "NFA_COMPOSING"); break;
 	case NFA_END_COMPOSING:	    STRCPY(code, "NFA_END_COMPOSING"); break;
@@ -2601,12 +2608,26 @@ post2nfa(postfix, end, nfa_calc_size)
 	case NFA_PREV_ATOM_NO_WIDTH_NEG:
 	case NFA_PREV_ATOM_JUST_BEFORE:
 	case NFA_PREV_ATOM_JUST_BEFORE_NEG:
+	case NFA_PREV_ATOM_LIKE_PATTERN:
 	  {
 	    int neg = (*p == NFA_PREV_ATOM_NO_WIDTH_NEG
 				      || *p == NFA_PREV_ATOM_JUST_BEFORE_NEG);
 	    int before = (*p == NFA_PREV_ATOM_JUST_BEFORE
 				      || *p == NFA_PREV_ATOM_JUST_BEFORE_NEG);
-	    int n;
+	    int pattern = (*p == NFA_PREV_ATOM_LIKE_PATTERN);
+	    int start_state = NFA_START_INVISIBLE;
+	    int end_state = NFA_END_INVISIBLE;
+	    int n = 0;
+	    nfa_state_T *zend;
+	    nfa_state_T *skip;
+
+	    if (before)
+		start_state = NFA_START_INVISIBLE_BEFORE;
+	    else if (pattern)
+	    {
+		start_state = NFA_START_PATTERN;
+		end_state = NFA_END_PATTERN;
+	    }
 
 	    if (before)
 		n = *++p; /* get the count */
@@ -2620,16 +2641,15 @@ post2nfa(postfix, end, nfa_calc_size)
 
 	    if (nfa_calc_size == TRUE)
 	    {
-		nstate += 2;
+		nstate += pattern ? 4 : 2;
 		break;
 	    }
 	    e = POP();
-	    s1 = alloc_state(NFA_END_INVISIBLE, NULL, NULL);
+	    s1 = alloc_state(end_state, NULL, NULL);
 	    if (s1 == NULL)
 		goto theend;
-	    patch(e.out, s1);
 
-	    s = alloc_state(NFA_START_INVISIBLE, e.start, s1);
+	    s = alloc_state(start_state, e.start, s1);
 	    if (s == NULL)
 		goto theend;
 	    if (neg)
@@ -2638,12 +2658,21 @@ post2nfa(postfix, end, nfa_calc_size)
 		s1->negated = TRUE;
 	    }
 	    if (before)
-	    {
 		s->val = n; /* store the count */
-		++s->c; /* NFA_START_INVISIBLE -> NFA_START_INVISIBLE_BEFORE */
+	    if (pattern)
+	    {
+		/* NFA_ZEND -> NFA_END_PATTERN -> NFA_SKIP -> what follows. */
+		skip = alloc_state(NFA_SKIP, NULL, NULL);
+		zend = alloc_state(NFA_ZEND, s1, NULL);
+		s1->out= skip;
+		patch(e.out, zend);
+		PUSH(frag(s, list1(&skip->out)));
 	    }
-
-	    PUSH(frag(s, list1(&s1->out)));
+	    else
+	    {
+		patch(e.out, s1);
+		PUSH(frag(s, list1(&s1->out)));
+	    }
 	    break;
 	  }
 
@@ -2953,7 +2982,7 @@ log_subexpr(sub)
 
     for (j = 0; j < sub->in_use; j++)
 	if (REG_MULTI)
-	    fprintf(log_fd, "\n *** group %d, start: c=%d, l=%d, end: c=%d, l=%d",
+	    fprintf(log_fd, "*** group %d, start: c=%d, l=%d, end: c=%d, l=%d\n",
 		    j,
 		    sub->list.multi[j].start.col,
 		    (int)sub->list.multi[j].start.lnum,
@@ -2964,12 +2993,11 @@ log_subexpr(sub)
 	    char *s = (char *)sub->list.line[j].start;
 	    char *e = (char *)sub->list.line[j].end;
 
-	    fprintf(log_fd, "\n *** group %d, start: \"%s\", end: \"%s\"",
+	    fprintf(log_fd, "*** group %d, start: \"%s\", end: \"%s\"\n",
 		    j,
 		    s == NULL ? "NULL" : s,
 		    e == NULL ? "NULL" : e);
 	}
-    fprintf(log_fd, "\n");
 }
 #endif
 
@@ -4317,6 +4345,7 @@ nfa_regmatch(prog, start, submatch, m)
 	      }
 
 	    case NFA_END_INVISIBLE:
+	    case NFA_END_PATTERN:
 		/*
 		 * This is only encountered after a NFA_START_INVISIBLE or
 		 * NFA_START_INVISIBLE_BEFORE node.
@@ -4343,7 +4372,8 @@ nfa_regmatch(prog, start, submatch, m)
 				(int)(nfa_endp->se_u.ptr - reginput));
 		}
 #endif
-		/* It's only a match if it ends at "nfa_endp" */
+		/* If "nfa_endp" is set it's only a match if it ends at
+		 * "nfa_endp" */
 		if (nfa_endp != NULL && (REG_MULTI
 			? (reglnum != nfa_endp->se_u.pos.lnum
 			    || (int)(reginput - regline)
@@ -4360,6 +4390,10 @@ nfa_regmatch(prog, start, submatch, m)
 			copy_sub(&m->synt, &t->subs.synt);
 #endif
 		}
+#ifdef ENABLE_LOG
+		fprintf(log_fd, "Match found:\n");
+		log_subsexpr(m);
+#endif
 		nfa_match = TRUE;
 		break;
 
@@ -4431,6 +4465,63 @@ nfa_regmatch(prog, start, submatch, m)
 			 * match). */
 			addstate_here(thislist, t->state->out1->out, &t->subs,
 							       pim, &listidx);
+		    }
+		}
+		break;
+
+	    case NFA_START_PATTERN:
+		/* First try matching the pattern. */
+		result = recursive_regmatch(t->state, prog,
+						       submatch, m, &listids);
+		if (result)
+		{
+		    int bytelen;
+
+#ifdef ENABLE_LOG
+		    fprintf(log_fd, "NFA_START_PATTERN matches:\n");
+		    log_subsexpr(m);
+#endif
+		    /* Copy submatch info from the recursive call */
+		    copy_sub_off(&t->subs.norm, &m->norm);
+#ifdef FEAT_SYN_HL
+		    copy_sub_off(&t->subs.synt, &m->synt);
+#endif
+		    /* Now we need to skip over the matched text and then
+		     * continue with what follows. */
+		    if (REG_MULTI)
+			/* TODO: multi-line match */
+			bytelen = m->norm.list.multi[0].end.col
+						  - (int)(reginput - regline);
+		    else
+			bytelen = (int)(m->norm.list.line[0].end - reginput);
+
+#ifdef ENABLE_LOG
+		    fprintf(log_fd, "NFA_START_PATTERN length: %d\n", bytelen);
+#endif
+		    if (bytelen == 0)
+		    {
+			/* empty match, output of corresponding
+			 * NFA_END_PATTERN/NFA_SKIP to be used at current
+			 * position */
+			addstate_here(thislist, t->state->out1->out->out,
+						  &t->subs, t->pim, &listidx);
+		    }
+		    else if (bytelen <= clen)
+		    {
+			/* match current character, output of corresponding
+			 * NFA_END_PATTERN to be used at next position. */
+			ll = nextlist;
+			add_state = t->state->out1->out->out;
+			add_off = clen;
+		    }
+		    else
+		    {
+			/* skip over the matched characters, set character
+			 * count in NFA_SKIP */
+			ll = nextlist;
+			add_state = t->state->out1->out;
+			add_off = bytelen;
+			add_count = bytelen - clen;
 		    }
 		}
 		break;
@@ -4846,9 +4937,6 @@ nfa_regmatch(prog, start, submatch, m)
 			ll = nextlist;
 			add_state = t->state->out->out;
 			add_off = clen;
-#ifdef ENABLE_LOG
-			log_subsexpr(&nextlist->t[nextlist->n - 1].subs);
-#endif
 		    }
 		    else
 		    {
@@ -4858,9 +4946,6 @@ nfa_regmatch(prog, start, submatch, m)
 			add_state = t->state->out;
 			add_off = bytelen;
 			add_count = bytelen - clen;
-#ifdef ENABLE_LOG
-			log_subsexpr(&nextlist->t[nextlist->n - 1].subs);
-#endif
 		    }
 		}
 		break;
@@ -4873,9 +4958,6 @@ nfa_regmatch(prog, start, submatch, m)
 		  ll = nextlist;
 		  add_state = t->state->out;
 		  add_off = clen;
-#ifdef ENABLE_LOG
-		  log_subsexpr(&nextlist->t[nextlist->n - 1].subs);
-#endif
 	      }
 	      else
 	      {
@@ -4884,9 +4966,6 @@ nfa_regmatch(prog, start, submatch, m)
 		  add_state = t->state;
 		  add_off = 0;
 		  add_count = t->count - clen;
-#ifdef ENABLE_LOG
-		  log_subsexpr(&nextlist->t[nextlist->n - 1].subs);
-#endif
 	      }
 	      break;
 
@@ -5158,13 +5237,12 @@ nfa_regtry(prog, col)
     f = fopen(NFA_REGEXP_RUN_LOG, "a");
     if (f != NULL)
     {
-	fprintf(f, "\n\n\n\n\n\n\t\t=======================================================\n");
-	fprintf(f, "		=======================================================\n");
+	fprintf(f, "\n\n\t=======================================================\n");
 #ifdef DEBUG
 	fprintf(f, "\tRegexp is \"%s\"\n", nfa_regengine.expr);
 #endif
 	fprintf(f, "\tInput text is \"%s\" \n", reginput);
-	fprintf(f, "		=======================================================\n\n");
+	fprintf(f, "\t=======================================================\n\n");
 	nfa_print_state(f, start);
 	fprintf(f, "\n\n");
 	fclose(f);
