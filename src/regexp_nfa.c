@@ -3169,6 +3169,7 @@ addstate(l, state, subs, off)
 	case NFA_SPLIT:
 	case NFA_NOT:
 	case NFA_NOPEN:
+	case NFA_SKIP_CHAR:
 	case NFA_NCLOSE:
 	case NFA_MCLOSE:
 	case NFA_MCLOSE1:
@@ -3192,6 +3193,7 @@ addstate(l, state, subs, off)
 	case NFA_ZCLOSE8:
 	case NFA_ZCLOSE9:
 #endif
+	case NFA_ZEND:
 	    /* These nodes are not added themselves but their "out" and/or
 	     * "out1" may be added below.  */
 	    break;
@@ -3218,6 +3220,7 @@ addstate(l, state, subs, off)
 	case NFA_ZOPEN8:
 	case NFA_ZOPEN9:
 #endif
+	case NFA_ZSTART:
 	    /* These nodes do not need to be added, but we need to bail out
 	     * when it was tried to be added to this list before. */
 	    if (state->lastlist[nfa_ll_index] == l->id)
@@ -4362,10 +4365,6 @@ nfa_regmatch(prog, start, submatch, m)
 
 	    case NFA_START_INVISIBLE:
 	    case NFA_START_INVISIBLE_BEFORE:
-		/* If invisible match has a higher chance to fail, do it
-		 * right away.  Otherwise postpone it until what follows is
-		 * matching and causes addstate(nextlist, ..) to be called.
-		 * This is indicated by the "pim" field. */
 		{
 		    nfa_pim_T *pim;
 		    int cout = t->state->out1->out->c;
@@ -4863,12 +4862,11 @@ nfa_regmatch(prog, start, submatch, m)
 			log_subsexpr(&nextlist->t[nextlist->n - 1].subs);
 #endif
 		    }
-
 		}
 		break;
 	      }
 	    case NFA_SKIP:
-	      /* charater of previous matching \1 .. \9 */
+	      /* character of previous matching \1 .. \9  or \@> */
 	      if (t->count - clen <= 0)
 	      {
 		  /* end of match, go to what follows */
@@ -4891,12 +4889,6 @@ nfa_regmatch(prog, start, submatch, m)
 #endif
 	      }
 	      break;
-
-	    case NFA_SKIP_CHAR:
-	    case NFA_ZSTART:
-	    case NFA_ZEND:
-		/* TODO: should not happen? */
-		break;
 
 	    case NFA_LNUM:
 	    case NFA_LNUM_GT:
