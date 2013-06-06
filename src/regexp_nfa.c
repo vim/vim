@@ -256,7 +256,7 @@ static int nfa_alt_listid;
 /* 0 for first call to nfa_regmatch(), 1 for recursive call. */
 static int nfa_ll_index = 0;
 
-static int nfa_regcomp_start __ARGS((char_u*expr, int re_flags));
+static int nfa_regcomp_start __ARGS((char_u *expr, int re_flags));
 static int nfa_recognize_char_class __ARGS((char_u *start, char_u *end, int extra_newl));
 static int nfa_emit_equi_class __ARGS((int c, int neg));
 static int nfa_regatom __ARGS((void));
@@ -2927,7 +2927,8 @@ log_subsexpr(subs)
 {
     log_subexpr(&subs->norm);
 # ifdef FEAT_SYN_HL
-    log_subexpr(&subs->synt);
+    if (nfa_has_zsubexpr)
+	log_subexpr(&subs->synt);
 # endif
 }
 

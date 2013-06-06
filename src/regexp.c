@@ -6548,6 +6548,12 @@ regdump(pattern, r)
 	    fprintf(f, " count %ld", OPERAND_MIN(s));
 	    s += 4;
 	}
+	else if (op == RE_LNUM || op == RE_COL || op == RE_VCOL)
+	{
+	    /* one int plus comperator */
+	    fprintf(f, " count %ld", OPERAND_MIN(s));
+	    s += 5;
+	}
 	s += 3;
 	if (op == ANYOF || op == ANYOF + ADD_NL
 		|| op == ANYBUT || op == ANYBUT + ADD_NL
