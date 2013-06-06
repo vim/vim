@@ -257,6 +257,8 @@ static int nfa_alt_listid;
 static int nfa_ll_index = 0;
 
 static int nfa_regcomp_start __ARGS((char_u *expr, int re_flags));
+static int nfa_get_reganch __ARGS((nfa_state_T *start, int depth));
+static int nfa_get_regstart __ARGS((nfa_state_T *start, int depth));
 static int nfa_recognize_char_class __ARGS((char_u *start, char_u *end, int extra_newl));
 static int nfa_emit_equi_class __ARGS((int c, int neg));
 static int nfa_regatom __ARGS((void));
@@ -328,6 +330,155 @@ nfa_regcomp_start(expr, re_flags)
     regcomp_start(expr, re_flags);
 
     return OK;
+}
+
+/*
+ * Figure out if the NFA state list starts with an anchor, must match at start
+ * of the line.
+ */
+    static int
+nfa_get_reganch(start, depth)
+    nfa_state_T *start;
+    int		depth;
+{
+    nfa_state_T *p = start;
+
+    if (depth > 4)
+	return 0;
+
+    while (p != NULL)
+    {
+	switch (p->c)
+	{
+	    case NFA_BOL:
+	    case NFA_BOF:
+		return 1; /* yes! */
+
+	    case NFA_ZSTART:
+	    case NFA_ZEND:
+	    case NFA_CURSOR:
+	    case NFA_VISUAL:
+
+	    case NFA_MOPEN:
+	    case NFA_MOPEN1:
+	    case NFA_MOPEN2:
+	    case NFA_MOPEN3:
+	    case NFA_MOPEN4:
+	    case NFA_MOPEN5:
+	    case NFA_MOPEN6:
+	    case NFA_MOPEN7:
+	    case NFA_MOPEN8:
+	    case NFA_MOPEN9:
+	    case NFA_NOPEN:
+#ifdef FEAT_SYN_HL
+	    case NFA_ZOPEN:
+	    case NFA_ZOPEN1:
+	    case NFA_ZOPEN2:
+	    case NFA_ZOPEN3:
+	    case NFA_ZOPEN4:
+	    case NFA_ZOPEN5:
+	    case NFA_ZOPEN6:
+	    case NFA_ZOPEN7:
+	    case NFA_ZOPEN8:
+	    case NFA_ZOPEN9:
+#endif
+		p = p->out;
+		break;
+
+	    case NFA_SPLIT:
+		return nfa_get_reganch(p->out, depth + 1)
+				       && nfa_get_reganch(p->out1, depth + 1);
+
+	    default:
+		return 0; /* noooo */
+	}
+    }
+    return 0;
+}
+
+/*
+ * Figure out if the NFA state list starts with a character which must match
+ * at start of the match.
+ */
+    static int
+nfa_get_regstart(start, depth)
+    nfa_state_T *start;
+    int		depth;
+{
+    nfa_state_T *p = start;
+
+    if (depth > 4)
+	return 0;
+
+    while (p != NULL)
+    {
+	switch (p->c)
+	{
+	    /* all kinds of zero-width matches */
+	    case NFA_BOL:
+	    case NFA_BOF:
+	    case NFA_BOW:
+	    case NFA_EOW:
+	    case NFA_ZSTART:
+	    case NFA_ZEND:
+	    case NFA_CURSOR:
+	    case NFA_VISUAL:
+	    case NFA_LNUM:
+	    case NFA_LNUM_GT:
+	    case NFA_LNUM_LT:
+	    case NFA_COL:
+	    case NFA_COL_GT:
+	    case NFA_COL_LT:
+	    case NFA_VCOL:
+	    case NFA_VCOL_GT:
+	    case NFA_VCOL_LT:
+	    case NFA_MARK:
+	    case NFA_MARK_GT:
+	    case NFA_MARK_LT:
+
+	    case NFA_MOPEN:
+	    case NFA_MOPEN1:
+	    case NFA_MOPEN2:
+	    case NFA_MOPEN3:
+	    case NFA_MOPEN4:
+	    case NFA_MOPEN5:
+	    case NFA_MOPEN6:
+	    case NFA_MOPEN7:
+	    case NFA_MOPEN8:
+	    case NFA_MOPEN9:
+	    case NFA_NOPEN:
+#ifdef FEAT_SYN_HL
+	    case NFA_ZOPEN:
+	    case NFA_ZOPEN1:
+	    case NFA_ZOPEN2:
+	    case NFA_ZOPEN3:
+	    case NFA_ZOPEN4:
+	    case NFA_ZOPEN5:
+	    case NFA_ZOPEN6:
+	    case NFA_ZOPEN7:
+	    case NFA_ZOPEN8:
+	    case NFA_ZOPEN9:
+#endif
+		p = p->out;
+		break;
+
+	    case NFA_SPLIT:
+	    {
+		int c1 = nfa_get_regstart(p->out, depth + 1);
+		int c2 = nfa_get_regstart(p->out1, depth + 1);
+
+		if (c1 == c2)
+		    return c1; /* yes! */
+		return 0;
+	    }
+
+	    default:
+		if (p->c > 0 && !p->negated)
+		    return p->c; /* yes! */
+		return 0;
+	}
+    }
+    return 0;
 }
 
 /*
@@ -2121,6 +2272,10 @@ nfa_dump(prog)
     if (debugf != NULL)
     {
 	nfa_print_state(debugf, prog->start);
+
+	fprintf(debugf, "reganch: %d\n", prog->reganch);
+	fprintf(debugf, "regstart: %d\n", prog->regstart);
+
 	fclose(debugf);
     }
 }
@@ -4248,6 +4403,10 @@ nfa_regmatch(prog, start, submatch, m)
 		t = &neglist->t[0];
 		neglist->n--;
 		listidx--;
+#ifdef ENABLE_LOG
+		fprintf(log_fd, "     using neglist entry, %d remaining\n",
+			neglist->n);
+#endif
 	    }
 	    else
 		t = &thislist->t[listidx];
@@ -4688,7 +4847,7 @@ nfa_regmatch(prog, start, submatch, m)
 
 	    case NFA_END_NEG_RANGE:
 		/* This follows a series of negated nodes, like:
-		 * CHAR(x), NFA_NOT, CHAR(y), NFA_NOT etc. */
+		 * NOT CHAR(x), NOT CHAR(y), etc. */
 		if (curc > 0)
 		{
 		    ll = nextlist;
@@ -5304,13 +5463,14 @@ nfa_regtry(prog, col)
  * Returns 0 for failure, number of lines contained in the match otherwise.
  */
     static long
-nfa_regexec_both(line, col)
+nfa_regexec_both(line, startcol)
     char_u	*line;
-    colnr_T	col;		/* column to start looking for match */
+    colnr_T	startcol;	/* column to start looking for match */
 {
     nfa_regprog_T   *prog;
     long	    retval = 0L;
     int		    i;
+    colnr_T	    col = startcol;
 
     if (REG_MULTI)
     {
@@ -5332,10 +5492,6 @@ nfa_regexec_both(line, col)
 	EMSG(_(e_null));
 	goto theend;
     }
-
-    /* If the start column is past the maximum column: no need to try. */
-    if (ireg_maxcol > 0 && col >= ireg_maxcol)
-	goto theend;
 
     /* If pattern contains "\c" or "\C": overrule value of ireg_ic */
     if (prog->regflags & RF_ICASE)
@@ -5360,6 +5516,32 @@ nfa_regexec_both(line, col)
 #ifdef DEBUG
     nfa_regengine.expr = prog->pattern;
 #endif
+
+    if (prog->reganch && col > 0)
+	return 0L;
+
+    if (prog->regstart != NUL)
+    {
+	char_u *s;
+
+	/* Skip until the char we know it must start with.
+	 * Used often, do some work to avoid call overhead. */
+	if (!ireg_ic
+#ifdef FEAT_MBYTE
+		    && !has_mbyte
+#endif
+		    )
+	    s = vim_strbyte(regline + col, prog->regstart);
+	else
+	    s = cstrchr(regline + col, prog->regstart);
+	if (s == NULL)
+	    return 0L;
+	col = (int)(s - regline);
+    }
+
+    /* If the start column is past the maximum column: no need to try. */
+    if (ireg_maxcol > 0 && col >= ireg_maxcol)
+	goto theend;
 
     nstate = prog->nstate;
     for (i = 0; i < nstate; ++i)
@@ -5459,6 +5641,10 @@ nfa_regcomp(expr, re_flags)
     prog->has_zend = nfa_has_zend;
     prog->has_backref = nfa_has_backref;
     prog->nsubexp = regnpar;
+
+    prog->reganch = nfa_get_reganch(prog->start, 0);
+    prog->regstart = nfa_get_regstart(prog->start, 0);
+
 #ifdef ENABLE_LOG
     nfa_postfix_dump(expr, OK);
     nfa_dump(prog);

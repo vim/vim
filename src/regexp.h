@@ -87,6 +87,10 @@ typedef struct
     unsigned		regflags;
 
     nfa_state_T		*start;		/* points into state[] */
+
+    int			reganch;	/* pattern starts with ^ */
+    int			regstart;	/* char at start of pattern */
+
     int			has_zend;	/* pattern contains \ze */
     int			has_backref;	/* pattern contains \1 .. \9 */
 #ifdef FEAT_SYN_HL
