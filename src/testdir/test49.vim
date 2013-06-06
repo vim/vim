@@ -1,6 +1,6 @@
 " Vim script language tests
 " Author:	Servatius Brandt <Servatius.Brandt@fujitsu-siemens.com>
-" Last Change:	2012 Nov 23
+" Last Change:	2013 Jun 06
 
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1
@@ -9612,7 +9612,7 @@ Xcheck 198689
 func F
     au BufUnload * :call setloclist(0, [{'bufnr':1, 'lnum':1, 'col':1, 'text': 'tango down'}])
 
-    :lvimgrep /.*/ *
+    :lvimgrep /.*/ *.mak
 endfunc
 
 XpathINIT
