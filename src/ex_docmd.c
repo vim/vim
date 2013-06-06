@@ -242,7 +242,7 @@ static void	ex_popup __ARGS((exarg_T *eap));
 # define ex_syntax		ex_ni
 # define ex_ownsyntax		ex_ni
 #endif
-#if !defined(FEAT_SYN_HL) || !defined(FEAT_RELTIME)
+#if !defined(FEAT_SYN_HL) || !defined(FEAT_PROFILE)
 # define ex_syntime		ex_ni
 #endif
 #ifndef FEAT_SPELL

@@ -1206,7 +1206,7 @@ struct dictvar_S
 typedef struct qf_info_S qf_info_T;
 #endif
 
-#ifdef FEAT_RELTIME
+#ifdef FEAT_PROFILE
 /*
  * Used for :syntime: timing of executing a syntax pattern.
  */
@@ -1242,7 +1242,7 @@ typedef struct {
     long	b_syn_sync_linebreaks;	/* offset for multi-line pattern */
     char_u	*b_syn_linecont_pat;	/* line continuation pattern */
     regprog_T	*b_syn_linecont_prog;	/* line continuation program */
-#ifdef FEAT_RELTIME
+#ifdef FEAT_PROFILE
     syn_time_T  b_syn_linecont_time;
 #endif
     int		b_syn_linecont_ic;	/* ignore-case flag for above */

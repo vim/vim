@@ -153,7 +153,7 @@ typedef struct syn_pattern
     short	 sp_syn_match_id;	/* highlight group ID of pattern */
     char_u	*sp_pattern;		/* regexp to match, pattern */
     regprog_T	*sp_prog;		/* regexp to match, program */
-#ifdef FEAT_RELTIME
+#ifdef FEAT_PROFILE
     syn_time_T	 sp_time;
 #endif
     int		 sp_ic;			/* ignore-case flag for sp_prog */
@@ -400,7 +400,7 @@ static short *copy_id_list __ARGS((short *list));
 static int in_id_list __ARGS((stateitem_T *item, short *cont_list, struct sp_syn *ssp, int contained));
 static int push_current_state __ARGS((int idx));
 static void pop_current_state __ARGS((void));
-#ifdef FEAT_RELTIME
+#ifdef FEAT_PROFILE
 static void syn_clear_time __ARGS((syn_time_T *tt));
 static void syntime_clear __ARGS((void));
 #ifdef __BORLANDC__
@@ -3261,7 +3261,7 @@ syn_regexec(rmp, lnum, col, st)
     syn_time_T  *st;
 {
     int r;
-#ifdef FEAT_RELTIME
+#ifdef FEAT_PROFILE
     proftime_T	pt;
 
     if (syn_time_on)
@@ -3271,7 +3271,7 @@ syn_regexec(rmp, lnum, col, st)
     rmp->rmm_maxcol = syn_buf->b_p_smc;
     r = vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col, NULL);
 
-#ifdef FEAT_RELTIME
+#ifdef FEAT_PROFILE
     if (syn_time_on)
     {
 	profile_end(&pt);
@@ -5658,7 +5658,7 @@ get_syn_pattern(arg, ci)
     if (ci->sp_prog == NULL)
 	return NULL;
     ci->sp_ic = curwin->w_s->b_syn_ic;
-#ifdef FEAT_RELTIME
+#ifdef FEAT_PROFILE
     syn_clear_time(&ci->sp_time);
 #endif
 
@@ -5837,7 +5837,7 @@ syn_cmd_sync(eap, syncing)
 		curwin->w_s->b_syn_linecont_prog =
 		       vim_regcomp(curwin->w_s->b_syn_linecont_pat, RE_MAGIC);
 		p_cpo = cpo_save;
-#ifdef FEAT_RELTIME
+#ifdef FEAT_PROFILE
 		syn_clear_time(&curwin->w_s->b_syn_linecont_time);
 #endif
 
@@ -6526,7 +6526,7 @@ syn_get_foldlevel(wp, lnum)
 }
 #endif
 
-#ifdef FEAT_RELTIME
+#ifdef FEAT_PROFILE
 /*
  * ":syntime".
  */
