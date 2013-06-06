@@ -21891,6 +21891,12 @@ list_func_head(fp, indent)
 	MSG_PUTS("...");
     }
     msg_putchar(')');
+    if (fp->uf_flags & FC_ABORT)
+	MSG_PUTS(" abort");
+    if (fp->uf_flags & FC_RANGE)
+	MSG_PUTS(" range");
+    if (fp->uf_flags & FC_DICT)
+	MSG_PUTS(" dict");
     msg_clr_eos();
     if (p_verbose > 0)
 	last_set_msg(fp->uf_script_ID);
