@@ -319,7 +319,6 @@ nfa_regcomp_start(expr, re_flags)
     post_start = (int *)lalloc(postfix_size, TRUE);
     if (post_start == NULL)
 	return FAIL;
-    vim_memset(post_start, 0, postfix_size);
     post_ptr = post_start;
     post_end = post_start + nstate_max;
     nfa_has_zend = FALSE;
@@ -347,7 +346,6 @@ realloc_post_list()
     if (new_start == NULL)
 	return FAIL;
     mch_memmove(new_start, post_start, nstate_max * sizeof(int));
-    vim_memset(new_start + nstate_max, 0, 1000 * sizeof(int));
     old_start = post_start;
     post_start = new_start;
     post_ptr = new_start + (post_ptr - old_start);
@@ -4127,11 +4125,11 @@ nfa_regmatch(prog, start, submatch, m)
 
     /* Allocate memory for the lists of nodes. */
     size = (nstate + 1) * sizeof(nfa_thread_T);
-    list[0].t = (nfa_thread_T *)lalloc_clear(size, TRUE);
+    list[0].t = (nfa_thread_T *)lalloc(size, TRUE);
     list[0].len = nstate + 1;
-    list[1].t = (nfa_thread_T *)lalloc_clear(size, TRUE);
+    list[1].t = (nfa_thread_T *)lalloc(size, TRUE);
     list[1].len = nstate + 1;
-    list[2].t = (nfa_thread_T *)lalloc_clear(size, TRUE);
+    list[2].t = (nfa_thread_T *)lalloc(size, TRUE);
     list[2].len = nstate + 1;
     if (list[0].t == NULL || list[1].t == NULL || list[2].t == NULL)
 	goto theend;
@@ -4390,7 +4388,8 @@ nfa_regmatch(prog, start, submatch, m)
 			    /* Copy submatch info from the recursive call */
 			    copy_sub_off(&t->subs.norm, &m->norm);
 #ifdef FEAT_SYN_HL
-			    copy_sub_off(&t->subs.synt, &m->synt);
+			    if (nfa_has_zsubexpr)
+				copy_sub_off(&t->subs.synt, &m->synt);
 #endif
 
 			    /* t->state->out1 is the corresponding
@@ -4441,7 +4440,8 @@ nfa_regmatch(prog, start, submatch, m)
 		    /* Copy submatch info from the recursive call */
 		    copy_sub_off(&t->subs.norm, &m->norm);
 #ifdef FEAT_SYN_HL
-		    copy_sub_off(&t->subs.synt, &m->synt);
+		    if (nfa_has_zsubexpr)
+			copy_sub_off(&t->subs.synt, &m->synt);
 #endif
 		    /* Now we need to skip over the matched text and then
 		     * continue with what follows. */
@@ -5053,7 +5053,8 @@ nfa_regmatch(prog, start, submatch, m)
 			    /* Copy submatch info from the recursive call */
 			    copy_sub_off(&t->pim->subs.norm, &m->norm);
 #ifdef FEAT_SYN_HL
-			    copy_sub_off(&t->pim->subs.synt, &m->synt);
+			    if (nfa_has_zsubexpr)
+				copy_sub_off(&t->pim->subs.synt, &m->synt);
 #endif
 			}
 		    }
@@ -5074,7 +5075,8 @@ nfa_regmatch(prog, start, submatch, m)
 			/* Copy submatch info from the recursive call */
 			copy_sub_off(&t->subs.norm, &t->pim->subs.norm);
 #ifdef FEAT_SYN_HL
-			copy_sub_off(&t->subs.synt, &t->pim->subs.synt);
+			if (nfa_has_zsubexpr)
+			    copy_sub_off(&t->subs.synt, &t->pim->subs.synt);
 #endif
 		    }
 		    else
@@ -5440,7 +5442,6 @@ nfa_regcomp(expr, re_flags)
     prog = (nfa_regprog_T *)lalloc(prog_size, TRUE);
     if (prog == NULL)
 	goto fail;
-    vim_memset(prog, 0, prog_size);
     state_ptr = prog->state;
 
     /*
