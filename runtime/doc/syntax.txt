@@ -37,6 +37,7 @@ In the User Manual:
 15. Highlighting tags		|tag-highlight|
 16. Window-local syntax		|:ownsyntax|
 17. Color xterms		|xterm-color|
+18. When syntax is slow		|:syntime|
 
 {Vi does not have any of these commands}
 
@@ -5085,5 +5086,61 @@ open-source program for MS-Windows. >
 Also make sure TTpro's Setup / Window / Full Color is enabled, and make sure
 that Setup / Font / Enable Bold is NOT enabled.
 (info provided by John Love-Jensen <eljay@Adobe.COM>)
+
+
+==============================================================================
+18. When syntax is slow						*:syntime*
+
+This is aimed at authors of a syntax file.
+
+If your syntax causes redrawing to be slow, here are a few hints on making it
+faster.  To see slowness switch on some features that usually interfere, such
+as 'relativenumber' and |folding|.
+
+To find out what patterns are consuming most time, get an overview with this
+sequence: >
+	:syntime on
+	[ redraw the text at least once with CTRL-L ]
+	:syntime report
+
+This will display a list of syntax patterns that were used, sorted by the time
+it took to match them against the text.
+
+:syntime on		Start measuring syntax times.  This will add some
+			overhead to compute the time spent on syntax pattern
+			matching.
+
+:syntime off		Stop measuring syntax times.
+
+:syntime clear		Set all the counters to zero, restart measuring.
+
+:syntime report		Show the syntax items used since ":syntime on" in the
+			current window.  Use a wider display to see more of
+			the output.
+
+			The list is sorted by total time. The columns are:
+			TOTAL		Total time in seconds spent on
+					matching this pattern.
+			COUNT		Number of times the pattern was used.
+			MATCH		Number of times the pattern actually
+					matched
+			SLOWEST		The longest time for one try.
+			AVERAGE		The average time for one try.
+			NAME		Name of the syntax item.  Note that
+					this is not unique.
+			PATTERN		The pattern being used.
+
+Pattern matching gets slow when it has to try many alternatives.  Try to
+include as much literal text as possible to reduce the number of ways a
+pattern does NOT match.
+
+When using the "\@<=" and "\@<!" items, add a maximum size to avoid trying at
+all positions in the current and previous line.  For example, if the item is
+literal text specify the size of that text (in bytes):
+
+"<\@<=span"   	Matches "span" in "<span".  This tries matching with "<" in
+		many places.
+"<\@1<=span"  	Matches the same, but only tries one byte before "span".
+
 
  vim:tw=78:sw=4:ts=8:ft=help:norl:

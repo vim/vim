@@ -153,6 +153,9 @@ typedef struct syn_pattern
     short	 sp_syn_match_id;	/* highlight group ID of pattern */
     char_u	*sp_pattern;		/* regexp to match, pattern */
     regprog_T	*sp_prog;		/* regexp to match, program */
+#ifdef FEAT_RELTIME
+    syn_time_T	 sp_time;
+#endif
     int		 sp_ic;			/* ignore-case flag for sp_prog */
     short	 sp_off_flags;		/* see below */
     int		 sp_offsets[SPO_COUNT];	/* offsets */
@@ -268,6 +271,8 @@ static keyentry_T dumkey;
  * "keepend" on the stack.
  */
 static int keepend_level = -1;
+
+static char msg_no_items[] = N_("No Syntax items defined for this buffer");
 
 /*
  * For the current state we need to remember more than just the idx.
@@ -395,6 +400,21 @@ static short *copy_id_list __ARGS((short *list));
 static int in_id_list __ARGS((stateitem_T *item, short *cont_list, struct sp_syn *ssp, int contained));
 static int push_current_state __ARGS((int idx));
 static void pop_current_state __ARGS((void));
+#ifdef FEAT_RELTIME
+static void syn_clear_time __ARGS((syn_time_T *tt));
+static void syntime_clear __ARGS((void));
+#ifdef __BORLANDC__
+static int _RTLENTRYF syn_compare_syntime __ARGS((const void *v1, const void *v2));
+#else
+static int syn_compare_syntime __ARGS((const void *v1, const void *v2));
+#endif
+static void syntime_report __ARGS((void));
+static int syn_time_on = FALSE;
+# define IF_SYN_TIME(p) (p)
+#else
+# define IF_SYN_TIME(p) NULL
+typedef int syn_time_T;
+#endif
 
 static void syn_stack_apply_changes_block __ARGS((synblock_T *block, buf_T *buf));
 static void find_endpos __ARGS((int idx, lpos_T *startpos, lpos_T *m_endpos, lpos_T *hl_endpos, long *flagsp, lpos_T *end_endpos, int *end_idx, reg_extmatch_T *start_ext));
@@ -406,7 +426,7 @@ static void limit_pos_zero __ARGS((lpos_T *pos, lpos_T *limit));
 static void syn_add_end_off __ARGS((lpos_T *result, regmmatch_T *regmatch, synpat_T *spp, int idx, int extra));
 static void syn_add_start_off __ARGS((lpos_T *result, regmmatch_T *regmatch, synpat_T *spp, int idx, int extra));
 static char_u *syn_getcurline __ARGS((void));
-static int syn_regexec __ARGS((regmmatch_T *rmp, linenr_T lnum, colnr_T col));
+static int syn_regexec __ARGS((regmmatch_T *rmp, linenr_T lnum, colnr_T col, syn_time_T *st));
 static int check_keyword_id __ARGS((char_u *line, int startcol, int *endcol, long *flags, short **next_list, stateitem_T *cur_si, int *ccharp));
 static void syn_cmd_case __ARGS((exarg_T *eap, int syncing));
 static void syn_cmd_spell __ARGS((exarg_T *eap, int syncing));
@@ -977,7 +997,8 @@ syn_match_linecont(lnum)
     {
 	regmatch.rmm_ic = syn_block->b_syn_linecont_ic;
 	regmatch.regprog = syn_block->b_syn_linecont_prog;
-	return syn_regexec(&regmatch, lnum, (colnr_T)0);
+	return syn_regexec(&regmatch, lnum, (colnr_T)0,
+				IF_SYN_TIME(&syn_block->b_syn_linecont_time));
     }
     return FALSE;
 }
@@ -2068,8 +2089,10 @@ syn_current_attr(syncing, displaying, can_spell, keep_state)
 
 			    regmatch.rmm_ic = spp->sp_ic;
 			    regmatch.regprog = spp->sp_prog;
-			    if (!syn_regexec(&regmatch, current_lnum,
-							     (colnr_T)lc_col))
+			    if (!syn_regexec(&regmatch,
+					     current_lnum,
+					     (colnr_T)lc_col,
+				             IF_SYN_TIME(&spp->sp_time)))
 			    {
 				/* no match in this line, try another one */
 				spp->sp_startcol = MAXCOL;
@@ -2950,7 +2973,8 @@ find_endpos(idx, startpos, m_endpos, hl_endpos, flagsp, end_endpos,
 
 	    regmatch.rmm_ic = spp->sp_ic;
 	    regmatch.regprog = spp->sp_prog;
-	    if (syn_regexec(&regmatch, startpos->lnum, lc_col))
+	    if (syn_regexec(&regmatch, startpos->lnum, lc_col,
+						  IF_SYN_TIME(&spp->sp_time)))
 	    {
 		if (best_idx == -1 || regmatch.startpos[0].col
 					      < best_regmatch.startpos[0].col)
@@ -2981,7 +3005,8 @@ find_endpos(idx, startpos, m_endpos, hl_endpos, flagsp, end_endpos,
 		lc_col = 0;
 	    regmatch.rmm_ic = spp_skip->sp_ic;
 	    regmatch.regprog = spp_skip->sp_prog;
-	    if (syn_regexec(&regmatch, startpos->lnum, lc_col)
+	    if (syn_regexec(&regmatch, startpos->lnum, lc_col,
+					      IF_SYN_TIME(&spp_skip->sp_time))
 		    && regmatch.startpos[0].col
 					     <= best_regmatch.startpos[0].col)
 	    {
@@ -3229,13 +3254,37 @@ syn_getcurline()
  * Returns TRUE when there is a match.
  */
     static int
-syn_regexec(rmp, lnum, col)
+syn_regexec(rmp, lnum, col, st)
     regmmatch_T	*rmp;
     linenr_T	lnum;
     colnr_T	col;
+    syn_time_T  *st;
 {
+    int r;
+#ifdef FEAT_RELTIME
+    proftime_T	pt;
+
+    if (syn_time_on)
+	profile_start(&pt);
+#endif
+
     rmp->rmm_maxcol = syn_buf->b_p_smc;
-    if (vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col, NULL) > 0)
+    r = vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col, NULL);
+
+#ifdef FEAT_RELTIME
+    if (syn_time_on)
+    {
+	profile_end(&pt);
+	profile_add(&st->total, &pt);
+	if (profile_cmp(&pt, &st->slowest) < 0)
+	    st->slowest = pt;
+	++st->count;
+	if (r > 0)
+	    ++st->match;
+    }
+#endif
+
+    if (r > 0)
     {
 	rmp->startpos[0].lnum += lnum;
 	rmp->endpos[0].lnum += lnum;
@@ -3769,7 +3818,7 @@ syn_cmd_list(eap, syncing)
 
     if (!syntax_present(curwin))
     {
-	MSG(_("No Syntax items defined for this buffer"));
+	MSG(_(msg_no_items));
 	return;
     }
 
@@ -5609,6 +5658,9 @@ get_syn_pattern(arg, ci)
     if (ci->sp_prog == NULL)
 	return NULL;
     ci->sp_ic = curwin->w_s->b_syn_ic;
+#ifdef FEAT_RELTIME
+    syn_clear_time(&ci->sp_time);
+#endif
 
     /*
      * Check for a match, highlight or region offset.
@@ -5783,8 +5835,11 @@ syn_cmd_sync(eap, syncing)
 		cpo_save = p_cpo;
 		p_cpo = (char_u *)"";
 		curwin->w_s->b_syn_linecont_prog =
-			    vim_regcomp(curwin->w_s->b_syn_linecont_pat, RE_MAGIC);
+		       vim_regcomp(curwin->w_s->b_syn_linecont_pat, RE_MAGIC);
 		p_cpo = cpo_save;
+#ifdef FEAT_RELTIME
+		syn_clear_time(&curwin->w_s->b_syn_linecont_time);
+#endif
 
 		if (curwin->w_s->b_syn_linecont_prog == NULL)
 		{
@@ -6468,6 +6523,179 @@ syn_get_foldlevel(wp, lnum)
 	    level = 0;
     }
     return level;
+}
+#endif
+
+#ifdef FEAT_RELTIME
+/*
+ * ":syntime".
+ */
+    void
+ex_syntime(eap)
+    exarg_T	*eap;
+{
+    if (STRCMP(eap->arg, "on") == 0)
+	syn_time_on = TRUE;
+    else if (STRCMP(eap->arg, "off") == 0)
+	syn_time_on = FALSE;
+    else if (STRCMP(eap->arg, "clear") == 0)
+	syntime_clear();
+    else if (STRCMP(eap->arg, "report") == 0)
+	syntime_report();
+    else
+	EMSG2(_(e_invarg2), eap->arg);
+}
+
+    static void
+syn_clear_time(st)
+    syn_time_T *st;
+{
+    profile_zero(&st->total);
+    profile_zero(&st->slowest);
+    st->count = 0;
+    st->match = 0;
+}
+
+/*
+ * Clear the syntax timing for the current buffer.
+ */
+    static void
+syntime_clear()
+{
+    int		idx;
+    synpat_T	*spp;
+
+    if (!syntax_present(curwin))
+    {
+	MSG(_(msg_no_items));
+	return;
+    }
+    for (idx = 0; idx < curwin->w_s->b_syn_patterns.ga_len; ++idx)
+    {
+	spp = &(SYN_ITEMS(curwin->w_s)[idx]);
+	syn_clear_time(&spp->sp_time);
+    }
+}
+
+typedef struct
+{
+    proftime_T	total;
+    int		count;
+    int		match;
+    proftime_T	slowest;
+    proftime_T	average;
+    int		id;
+    char_u	*pattern;
+} time_entry_T;
+
+    static int
+#ifdef __BORLANDC__
+_RTLENTRYF
+#endif
+syn_compare_syntime(v1, v2)
+    const void	*v1;
+    const void	*v2;
+{
+    const time_entry_T	*s1 = v1;
+    const time_entry_T	*s2 = v2;
+
+    return profile_cmp(&s1->total, &s2->total);
+}
+
+/*
+ * Clear the syntax timing for the current buffer.
+ */
+    static void
+syntime_report()
+{
+    int		idx;
+    synpat_T	*spp;
+    proftime_T	tm;
+    int		len;
+    proftime_T	total_total;
+    int		total_count = 0;
+    garray_T    ga;
+    time_entry_T *p;
+
+    if (!syntax_present(curwin))
+    {
+	MSG(_(msg_no_items));
+	return;
+    }
+
+    ga_init2(&ga, sizeof(time_entry_T), 50);
+    profile_zero(&total_total);
+    for (idx = 0; idx < curwin->w_s->b_syn_patterns.ga_len; ++idx)
+    {
+	spp = &(SYN_ITEMS(curwin->w_s)[idx]);
+	if (spp->sp_time.count > 0)
+	{
+	    ga_grow(&ga, 1);
+	    p = ((time_entry_T *)ga.ga_data) + ga.ga_len;
+	    p->total = spp->sp_time.total;
+	    profile_add(&total_total, &spp->sp_time.total);
+	    p->count = spp->sp_time.count;
+	    p->match = spp->sp_time.match;
+	    total_count += spp->sp_time.count;
+	    p->slowest = spp->sp_time.slowest;
+# ifdef FEAT_FLOAT
+	    profile_divide(&spp->sp_time.total, spp->sp_time.count, &tm);
+	    p->average = tm;
+# endif
+	    p->id = spp->sp_syn.id;
+	    p->pattern = spp->sp_pattern;
+	    ++ga.ga_len;
+	}
+    }
+
+    /* sort on total time */
+    qsort(ga.ga_data, (size_t)ga.ga_len, sizeof(time_entry_T), syn_compare_syntime);
+
+    MSG_PUTS_TITLE(_("  TOTAL      COUNT  MATCH   SLOWEST     AVERAGE   NAME               PATTERN"));
+    MSG_PUTS("\n");
+    for (idx = 0; idx < ga.ga_len && !got_int; ++idx)
+    {
+	spp = &(SYN_ITEMS(curwin->w_s)[idx]);
+	p = ((time_entry_T *)ga.ga_data) + idx;
+
+	MSG_PUTS(profile_msg(&p->total));
+	MSG_PUTS(" "); /* make sure there is always a separating space */
+	msg_advance(13);
+	msg_outnum(p->count);
+	MSG_PUTS(" ");
+	msg_advance(20);
+	msg_outnum(p->match);
+	MSG_PUTS(" ");
+	msg_advance(26);
+	MSG_PUTS(profile_msg(&p->slowest));
+	MSG_PUTS(" ");
+	msg_advance(38);
+# ifdef FEAT_FLOAT
+	MSG_PUTS(profile_msg(&p->average));
+	MSG_PUTS(" ");
+# endif
+	msg_advance(50);
+	msg_outtrans(HL_TABLE()[p->id - 1].sg_name);
+	MSG_PUTS(" ");
+
+	msg_advance(69);
+	if (Columns < 80)
+	    len = 20; /* will wrap anyway */
+	else
+	    len = Columns - 70;
+	if (len > (int)STRLEN(p->pattern))
+	    len = (int)STRLEN(p->pattern);
+	msg_outtrans_len(p->pattern, len);
+	MSG_PUTS("\n");
+    }
+    if (!got_int)
+    {
+	MSG_PUTS("\n");
+	MSG_PUTS(profile_msg(&total_total));
+	msg_advance(13);
+	msg_outnum(total_count);
+	MSG_PUTS("\n");
+    }
 }
 #endif
 

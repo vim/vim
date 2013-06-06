@@ -1206,6 +1206,18 @@ struct dictvar_S
 typedef struct qf_info_S qf_info_T;
 #endif
 
+#ifdef FEAT_RELTIME
+/*
+ * Used for :syntime: timing of executing a syntax pattern.
+ */
+typedef struct {
+    proftime_T	total;		/* total time used */
+    proftime_T	slowest;	/* time of slowest call */
+    long	count;		/* nr of times used */
+    long	match;		/* nr of times matched */
+} syn_time_T;
+#endif
+
 /*
  * These are items normally related to a buffer.  But when using ":ownsyntax"
  * a window may have its own instance.
@@ -1230,6 +1242,9 @@ typedef struct {
     long	b_syn_sync_linebreaks;	/* offset for multi-line pattern */
     char_u	*b_syn_linecont_pat;	/* line continuation pattern */
     regprog_T	*b_syn_linecont_prog;	/* line continuation program */
+#ifdef FEAT_RELTIME
+    syn_time_T  b_syn_linecont_time;
+#endif
     int		b_syn_linecont_ic;	/* ignore-case flag for above */
     int		b_syn_topgrp;		/* for ":syntax include" */
 # ifdef FEAT_CONCEAL

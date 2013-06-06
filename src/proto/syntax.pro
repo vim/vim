@@ -19,6 +19,7 @@ int get_syntax_info __ARGS((int *seqnrp));
 int syn_get_sub_char __ARGS((void));
 int syn_get_stack_item __ARGS((int i));
 int syn_get_foldlevel __ARGS((win_T *wp, long lnum));
+void ex_syntime __ARGS((exarg_T *eap));
 void init_highlight __ARGS((int both, int reset));
 int load_colors __ARGS((char_u *name));
 void do_highlight __ARGS((char_u *line, int forceit, int init));

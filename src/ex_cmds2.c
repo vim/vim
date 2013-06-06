@@ -958,6 +958,36 @@ profile_zero(tm)
 
 # endif  /* FEAT_PROFILE || FEAT_RELTIME */
 
+#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME) && defined(FEAT_FLOAT)
+# if defined(HAVE_MATH_H)
+#  include <math.h>
+# endif
+
+/*
+ * Divide the time "tm" by "count" and store in "tm2".
+ */
+    void
+profile_divide(tm, count, tm2)
+    proftime_T  *tm;
+    proftime_T  *tm2;
+    int		count;
+{
+    if (count == 0)
+	profile_zero(tm2);
+    else
+    {
+# ifdef WIN3264
+	tm2->QuadPart = tm->QuadPart / count;
+# else
+	double usec = (tm->tv_sec * 1000000.0 + tm->tv_usec) / count;
+
+	tm2->tv_sec = floor(usec / 1000000.0);
+	tm2->tv_usec = round(usec - (tm2->tv_sec * 1000000.0));
+# endif
+    }
+}
+#endif
+
 # if defined(FEAT_PROFILE) || defined(PROTO)
 /*
  * Functions for profiling.
@@ -1050,7 +1080,7 @@ profile_equal(tm1, tm2)
  */
     int
 profile_cmp(tm1, tm2)
-    proftime_T *tm1, *tm2;
+    const proftime_T *tm1, *tm2;
 {
 # ifdef WIN3264
     return (int)(tm2->QuadPart - tm1->QuadPart);
