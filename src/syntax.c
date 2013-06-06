@@ -3258,7 +3258,7 @@ syn_regexec(rmp, lnum, col, st)
     regmmatch_T	*rmp;
     linenr_T	lnum;
     colnr_T	col;
-    syn_time_T  *st;
+    syn_time_T  *st UNUSED;
 {
     int r;
 #ifdef FEAT_PROFILE
@@ -6649,7 +6649,8 @@ syntime_report()
     }
 
     /* sort on total time */
-    qsort(ga.ga_data, (size_t)ga.ga_len, sizeof(time_entry_T), syn_compare_syntime);
+    qsort(ga.ga_data, (size_t)ga.ga_len, sizeof(time_entry_T),
+							 syn_compare_syntime);
 
     MSG_PUTS_TITLE(_("  TOTAL      COUNT  MATCH   SLOWEST     AVERAGE   NAME               PATTERN"));
     MSG_PUTS("\n");
