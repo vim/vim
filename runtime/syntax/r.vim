@@ -3,7 +3,7 @@
 " Maintainer:	      Jakson Aquino <jalvesaq@gmail.com>
 " Former Maintainers: Vaidotas Zemlys <zemlys@gmail.com>
 " 		      Tom Payne <tom@tompayne.org>
-" Last Change:	      Sun Feb 20, 2011  12:06PM
+" Last Change:	      Sun May 19, 2013  05:59PM
 " Filenames:	      *.R *.r *.Rhistory *.Rt
 " 
 " NOTE: The highlighting of R functions is defined in the
@@ -30,7 +30,16 @@ endif
 syn case match
 
 " Comment
-syn match rComment contains=@Spell "\#.*"
+syn match rComment contains=@Spell "#.*"
+
+" Roxygen
+syn match rOKeyword contained "@\(param\|return\|name\|rdname\|examples\|include\|docType\)"
+syn match rOKeyword contained "@\(S3method\|TODO\|aliases\|alias\|assignee\|author\|callGraphDepth\|callGraph\)"
+syn match rOKeyword contained "@\(callGraphPrimitives\|concept\|exportClass\|exportMethod\|exportPattern\|export\|formals\)"
+syn match rOKeyword contained "@\(format\|importClassesFrom\|importFrom\|importMethodsFrom\|import\|keywords\)"
+syn match rOKeyword contained "@\(method\|nord\|note\|references\|seealso\|setClass\|slot\|source\|title\|usage\)"
+syn match rOComment contains=@Spell,rOKeyword "#'.*"
+
 
 if &filetype == "rhelp"
   " string enclosed in double quotes
@@ -65,7 +74,7 @@ syn keyword rConditional if else
 syn keyword rRepeat      for in repeat while
 
 " Constant (not really)
-syn keyword rConstant T F LETTERS letters month.ab month.name pi
+syn keyword rConstant T F LETTERS letters month.abb month.name pi
 syn keyword rConstant R.version.string
 
 syn keyword rNumber   NA_integer_ NA_real_ NA_complex_ NA_character_ 
@@ -105,8 +114,13 @@ syn match rOperator    '-'
 syn match rOperator    '\*'
 syn match rOperator    '+'
 syn match rOperator    '='
-syn match rOperator    "[|!<>^~`/:@]"
-syn match rOperator    "%\{2}\|%\*%\|%\/%\|%in%\|%o%\|%x%"
+if &filetype != "rmd" && &filetype != "rrst"
+  syn match rOperator    "[|!<>^~/:]"
+else
+  syn match rOperator    "[|!<>^~`/:]"
+endif
+syn match rOperator    "%\{2}\|%\S*%"
+syn match rOpError  '\*\{3}'
 syn match rOpError  '//'
 syn match rOpError  '&&&'
 syn match rOpError  '|||'
@@ -140,9 +154,11 @@ syn match rParenError "[\]}]" contained
 runtime r-plugin/functions.vim
 
 syn match rDollar display contained "\$"
+syn match rDollar display contained "@"
 
 " List elements will not be highlighted as functions:
 syn match rLstElmt "\$[a-zA-Z0-9\\._]*" contains=rDollar
+syn match rLstElmt "@[a-zA-Z0-9\\._]*" contains=rDollar
 
 " Functions that may add new objects
 syn keyword rPreProc     library require attach detach source
@@ -156,7 +172,9 @@ endif
 syn keyword rType array category character complex double function integer list logical matrix numeric vector data.frame 
 
 " Name of object with spaces
-syn region rNameWSpace start="`" end="`"
+if &filetype != "rmd" && &filetype != "rrst"
+  syn region rNameWSpace start="`" end="`"
+endif
 
 if &filetype == "rhelp"
   syn match rhPreProc "^#ifdef.*" 
@@ -169,6 +187,7 @@ hi def link rArrow       Statement
 hi def link rBoolean     Boolean
 hi def link rBraceError  Error
 hi def link rComment     Comment
+hi def link rOComment    Comment
 hi def link rComplex     Number
 hi def link rConditional Conditional
 hi def link rConstant    Constant
@@ -195,6 +214,7 @@ hi def link rStatement   Statement
 hi def link rString      String
 hi def link rStrError    Error
 hi def link rType        Type
+hi def link rOKeyword    Title
 
 let b:current_syntax="r"
 

@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.3.  Last change: 2013 May 25
+*if_pyth.txt*   For Vim version 7.3.  Last change: 2013 Jun 02
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -340,7 +340,7 @@ The buffer object attributes are:
 			|BufFilePost| autocommands are launched.
 	b.number	Buffer number. Can be used as |python-buffers| key.
 			Read-only.
-	b.valid		True or False. Buffer object becames invalid when 
+	b.valid		True or False. Buffer object becomes invalid when 
 			corresponding buffer is wiped out.
 
 The buffer object methods are:
@@ -446,7 +446,7 @@ Window attributes are:
 	row, col (read-only)	On-screen window position in display cells.
 				First position is zero.
 	tabpage (read-only)	Window tab page.
-	valid (read-write)	True or False. Window object becames invalid 
+	valid (read-write)	True or False. Window object becomes invalid 
 				when corresponding window is closed.
 
 The height attribute is writable only if the screen is split horizontally.
@@ -471,7 +471,7 @@ Tab page attributes are:
 	windows		Like |python-windows|, but for current tab page.
 	vars		The tab page |t:| variables.
 	window		Current tabpage window.
-	valid		True or False. Tab page object becames invalid when 
+	valid		True or False. Tab page object becomes invalid when 
 			corresponding tab page is closed.
 
 TabPage object type is available using "TabPage" attribute of vim module.

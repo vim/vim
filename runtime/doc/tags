@@ -2876,6 +2876,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :syntax-enable	syntax.txt	/*:syntax-enable*
 :syntax-on	syntax.txt	/*:syntax-on*
 :syntax-reset	syntax.txt	/*:syntax-reset*
+:syntime	syntax.txt	/*:syntime*
 :t	change.txt	/*:t*
 :tN	tagsrch.txt	/*:tN*
 :tNext	tagsrch.txt	/*:tNext*
@@ -4281,6 +4282,7 @@ E875	pattern.txt	/*E875*
 E876	pattern.txt	/*E876*
 E877	pattern.txt	/*E877*
 E878	pattern.txt	/*E878*
+E879	syntax.txt	/*E879*
 E88	windows.txt	/*E88*
 E89	message.txt	/*E89*
 E90	message.txt	/*E90*
@@ -7159,6 +7161,7 @@ notation	intro.txt	/*notation*
 notepad	gui_w32.txt	/*notepad*
 nr2char()	eval.txt	/*nr2char()*
 nroff.vim	syntax.txt	/*nroff.vim*
+number_relativenumber	options.txt	/*number_relativenumber*
 numbered-function	eval.txt	/*numbered-function*
 o	insert.txt	/*o*
 o_CTRL-V	motion.txt	/*o_CTRL-V*
@@ -7353,6 +7356,7 @@ python-bindeval	if_pyth.txt	/*python-bindeval*
 python-bindeval-objects	if_pyth.txt	/*python-bindeval-objects*
 python-buffer	if_pyth.txt	/*python-buffer*
 python-buffers	if_pyth.txt	/*python-buffers*
+python-chdir	if_pyth.txt	/*python-chdir*
 python-command	if_pyth.txt	/*python-command*
 python-commands	if_pyth.txt	/*python-commands*
 python-current	if_pyth.txt	/*python-current*
@@ -7360,11 +7364,13 @@ python-dynamic	if_pyth.txt	/*python-dynamic*
 python-error	if_pyth.txt	/*python-error*
 python-eval	if_pyth.txt	/*python-eval*
 python-examples	if_pyth.txt	/*python-examples*
+python-fchdir	if_pyth.txt	/*python-fchdir*
 python-input	if_pyth.txt	/*python-input*
 python-options	if_pyth.txt	/*python-options*
 python-output	if_pyth.txt	/*python-output*
 python-pyeval	if_pyth.txt	/*python-pyeval*
 python-range	if_pyth.txt	/*python-range*
+python-strwidth	if_pyth.txt	/*python-strwidth*
 python-tabpage	if_pyth.txt	/*python-tabpage*
 python-tabpages	if_pyth.txt	/*python-tabpages*
 python-vars	if_pyth.txt	/*python-vars*

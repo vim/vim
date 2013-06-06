@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2013 May 31
+*syntax.txt*	For Vim version 7.3.  Last change: 2013 Jun 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3957,7 +3957,7 @@ External matches					*:syn-ext-match*
 
 These extra regular expression items are available in region patterns:
 
-						*/\z(* */\z(\)* *E50* *E52*
+					*/\z(* */\z(\)* *E50* *E52* *E879*
     \z(\)	Marks the sub-expression as "external", meaning that it can be
 		accessed from another pattern match.  Currently only usable in
 		defining a syntax region start pattern.
@@ -5096,6 +5096,9 @@ This is aimed at authors of a syntax file.
 If your syntax causes redrawing to be slow, here are a few hints on making it
 faster.  To see slowness switch on some features that usually interfere, such
 as 'relativenumber' and |folding|.
+
+Note: this is only available when compiled with the |+profile| feature.
+You many need to build Vim with "huge" features.
 
 To find out what patterns are consuming most time, get an overview with this
 sequence: >

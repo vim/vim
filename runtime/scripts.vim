@@ -152,6 +152,10 @@ if s:line1 =~ "^#!"
   elseif s:name =~ 'cfengine'
     set ft=cfengine
 
+    " Erlang scripts
+  elseif s:name =~ 'escript'
+    set ft=erlang
+
   endif
   unlet s:name
 
@@ -332,6 +336,11 @@ else
      \ && s:line2 == ''
      \ && s:line3 =~ '^Each sample counts as .* seconds.$'
      set ft=gprof
+
+  " Erlang terms
+  " (See also: http://www.gnu.org/software/emacs/manual/html_node/emacs/Choosing-Modes.html#Choosing-Modes)
+  elseif s:line1 =~? '-\*-.*erlang.*-\*-'
+    set ft=erlang
 
   " CVS diff
   else

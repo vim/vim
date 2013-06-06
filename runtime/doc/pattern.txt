@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.3.  Last change: 2013 May 29
+*pattern.txt*   For Vim version 7.3.  Last change: 2013 Jun 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1232,7 +1232,7 @@ Suppose B is a base character and x and y are composing characters:
 	Bxy		Byx		yes (order ignored)
 	Bxy		By		no (x missing)
 	Bxy		Bx		no (y missing)
-	Bx		Bx		yes (perfect mach)
+	Bx		Bx		yes (perfect match)
 	Bx		By		no (x missing)
 	Bx		Bxy		yes (extra y ignored)
 	Bx		Byx		yes (extra y ignored)

@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.3.  Last change: 2013 May 17
+*index.txt*     For Vim version 7.3.  Last change: 2013 Jun 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1510,6 +1510,7 @@ tag	      command	      action ~
 |:sview|	:sv[iew]	split window and edit file read-only
 |:swapname|	:sw[apname]	show the name of the current swap file
 |:syntax|	:sy[ntax]	syntax highlighting
+|:syntime|	:synti[me]	measure syntax highlighting speed
 |:syncbind|	:sync[bind]	sync scroll binding
 |:t|		:t		same as ":copy"
 |:tNext|	:tN[ext]	jump to previous matching tag

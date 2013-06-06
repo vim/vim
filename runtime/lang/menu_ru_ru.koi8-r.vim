@@ -1,9 +1,10 @@
 " Menu Translations:	Russian
-" Maintainer:		vassily ragosin <vrr[at]users.sourceforge.net>
-" Last Change:		26 Apr 2004
+" Maintainer:		Sergey Alyoshin <alyoshin.s@gmail.com>
+" Previous Maintainer:	vassily ragosin <vrr[at]users.sourceforge.net>
+" Last Change:		29 May 2013
 " URL:			cvs://cvs.sf.net:/cvsroot/ruvim/extras/menu/menu_ru_ru.vim
 "
-" $Id: menu_ru_ru.koi8-r.vim,v 1.2 2004/06/16 11:19:21 vimboss Exp $
+" $Id: menu_ru_ru.vim,v 1.1 2004/06/13 16:09:10 vimboss Exp $
 "
 " Adopted for RuVim project by Vassily Ragosin.
 " First translation: Tim Alexeevsky <realtim [at] mail.ru>,
@@ -50,6 +51,7 @@ menutrans &About			&Заставка
 " File menu
 menutrans &Open\.\.\.<Tab>:e		&Открыть\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	По&делить\ окно\.\.\.<Tab>:sp
+menutrans Open\ Tab\.\.\.<Tab>:tabnew	Открыть\ в&кладку\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		&Новый<Tab>:enew
 menutrans &Close<Tab>:close		&Закрыть<Tab>:close
 "--------------------
@@ -77,51 +79,57 @@ menutrans Put\ &After<Tab>]p		Вклеить\ по&сле<Tab>]p
 menutrans &Delete<Tab>x			&Удалить<Tab>x
 menutrans &Select\ All<Tab>ggVG		В&ыделить\ всё<Tab>ggVG
 "--------------------
+" Athena GUI only
+menutrans &Find<Tab>/			&Поиск<Tab>/
+menutrans Find\ and\ Rep&lace<Tab>:%s	Поиск\ и\ &замена<Tab>:%s
+" End Athena GUI only
 menutrans &Find\.\.\.<Tab>/		&Поиск\.\.\.<Tab>/
 menutrans Find\ and\ Rep&lace\.\.\.	Поиск\ и\ &замена\.\.\.
 menutrans Find\ and\ Rep&lace\.\.\.<Tab>:%s	Поиск\ и\ &замена\.\.\.<Tab>:%s
-menutrans Find\ and\ Rep&lace\.\.\.<Tab>:s     Поиск\ и\ &замена\.\.\.<Tab>:s
+menutrans Find\ and\ Rep&lace\.\.\.<Tab>:s	Поиск\ и\ &замена\.\.\.<Tab>:s
 "--------------------
 menutrans Settings\ &Window		Окно\ настройки\ &опций
+menutrans Startup\ &Settings		Настройки\ запус&ка
 menutrans &Global\ Settings		&Глобальные\ настройки
 menutrans F&ile\ Settings		Настройки\ &файлов
 menutrans C&olor\ Scheme		&Цветовая\ схема
 menutrans &Keymap			Раскладка\ кл&авиатуры
 menutrans Select\ Fo&nt\.\.\.		Выбор\ &шрифта\.\.\.
 ">>>----------------- Edit/Global settings
-menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	 Подсветка\ &найденных\ соответствий<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		 &Регистронезависимый\ поиск<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!		 Показывать\ парные\ &элементы<Tab>:set\ sm!
-menutrans &Context\ lines				 Стр&ок\ вокруг\ курсора
-menutrans &Virtual\ Edit				 Вир&туальное\ редактирование
-menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		 Режим\ &Вставки<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!		 &Совместимость\ с\ Vi<Tab>:set\ cp!
-menutrans Search\ &Path\.\.\.				 &Путь\ для\ поиска\ файлов\.\.\.
-menutrans Ta&g\ Files\.\.\.				 Файлы\ &меток\.\.\.
+menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Подсветка\ &найденных\ соответствий<Tab>:set\ hls!
+menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		&Регистронезависимый\ поиск<Tab>:set\ ic!
+menutrans Toggle\ &Showmatch<Tab>:set\ sm!		Показывать\ парные\ &элементы<Tab>:set\ sm!
+menutrans &Context\ lines				Стр&ок\ вокруг\ курсора
+menutrans &Virtual\ Edit				Вир&туальное\ редактирование
+menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		Режим\ &Вставки<Tab>:set\ im!
+menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!		&Совместимость\ с\ Vi<Tab>:set\ cp!
+menutrans Search\ &Path\.\.\.				&Путь\ для\ поиска\ файлов\.\.\.
+menutrans Ta&g\ Files\.\.\.				Файлы\ &меток\.\.\.
 "
-menutrans Toggle\ &Toolbar				 &Инструментальная\ панель
-menutrans Toggle\ &Bottom\ Scrollbar			 Полоса\ прокрутки\ вни&зу
-menutrans Toggle\ &Left\ Scrollbar			 Полоса\ прокрутки\ с&лева
-menutrans Toggle\ &Right\ Scrollbar			 Полоса\ прокрутки\ спр&ава
+menutrans Toggle\ &Toolbar				&Инструментальная\ панель
+menutrans Toggle\ &Bottom\ Scrollbar			Полоса\ прокрутки\ вни&зу
+menutrans Toggle\ &Left\ Scrollbar			Полоса\ прокрутки\ с&лева
+menutrans Toggle\ &Right\ Scrollbar			Полоса\ прокрутки\ спр&ава
 ">>>->>>------------- Edit/Global settings/Virtual edit
-menutrans Never						 Выключено
-menutrans Block\ Selection				 При\ выделении\ блока
-menutrans Insert\ mode					 В\ режиме\ Вставки
-menutrans Block\ and\ Insert				 При\ выделении\ блока\ и\ в\ режиме\ Вставки
-menutrans Always					 Включено\ всегда
+menutrans Never						Выключено
+menutrans Block\ Selection				При\ выделении\ блока
+menutrans Insert\ mode					В\ режиме\ Вставки
+menutrans Block\ and\ Insert				При\ выделении\ блока\ и\ в\ режиме\ Вставки
+menutrans Always					Включено\ всегда
 ">>>----------------- Edit/File settings
-menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	 &Нумерация\ строк<Tab>:set\ nu!
-menutrans Toggle\ &List\ Mode<Tab>:set\ list!		 Отобра&жение\ невидимых\ символов<Tab>:set\ list!
-menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!		 &Перенос\ длинных\ строк<Tab>:set\ wrap!
-menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!	 Перенос\ &целых\ слов<Tab>:set\ lbr!
-menutrans Toggle\ &expand-tab<Tab>:set\ et!		 Про&белы\ вместо\ табуляции<Tab>:set\ et!
-menutrans Toggle\ &auto-indent<Tab>:set\ ai!		 Автоматическое\ форматирование\ &отступов<Tab>:set\ ai!
-menutrans Toggle\ &C-indenting<Tab>:set\ cin!		 Форматирование\ отступов\ в\ &стиле\ C<Tab>:set\ cin!
+menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	&Нумерация\ строк<Tab>:set\ nu!
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Относите&льная\ нумерация\ строк<Tab>:set\ nru!
+menutrans Toggle\ &List\ Mode<Tab>:set\ list!		Отобра&жение\ невидимых\ символов<Tab>:set\ list!
+menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!		&Перенос\ длинных\ строк<Tab>:set\ wrap!
+menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!	Перенос\ &целых\ слов<Tab>:set\ lbr!
+menutrans Toggle\ &expand-tab<Tab>:set\ et!		Про&белы\ вместо\ табуляции<Tab>:set\ et!
+menutrans Toggle\ &auto-indent<Tab>:set\ ai!		Автоматическое\ форматирование\ &отступов<Tab>:set\ ai!
+menutrans Toggle\ &C-indenting<Tab>:set\ cin!		Форматирование\ отступов\ в\ &стиле\ C<Tab>:set\ cin!
 ">>>---
-menutrans &Shiftwidth					 Вели&чина\ отступа
-menutrans Soft\ &Tabstop				 Ширина\ &табуляции
-menutrans Te&xt\ Width\.\.\.				 &Ширина\ текста\.\.\.
-menutrans &File\ Format\.\.\.				 &Формат\ файла\.\.\.
+menutrans &Shiftwidth					Вели&чина\ отступа
+menutrans Soft\ &Tabstop				Ширина\ &табуляции
+menutrans Te&xt\ Width\.\.\.				&Ширина\ текста\.\.\.
+menutrans &File\ Format\.\.\.				&Формат\ файла\.\.\.
 "
 "
 "
@@ -131,6 +139,7 @@ menutrans Jump\ &back<Tab>^T				&Вернуться\ назад<Tab>^T
 menutrans Build\ &Tags\ File				Создать\ &файл\ меток
 "-------------------
 menutrans &Folding					Работа\ со\ &складками
+menutrans &Spelling					Пр&авописание
 menutrans &Diff						&Отличия\ (diff)
 "-------------------
 menutrans &Make<Tab>:make				Ко&мпиляция<Tab>:make
@@ -141,10 +150,26 @@ menutrans &Previous\ Error<Tab>:cp			П&редыдущая\ ошибка<Tab>:cp
 menutrans &Older\ List<Tab>:cold			Более\ стар&ый\ список\ ошибок<Tab>:cold
 menutrans N&ewer\ List<Tab>:cnew			Более\ све&жий\ список\ ошибок<Tab>:cnew
 menutrans Error\ &Window				Ок&но\ ошибок
-menutrans &Set\ Compiler				Выбор\ &компилятора
+menutrans Se&T\ Compiler				Выбор\ &компилятора
 "-------------------
 menutrans &Convert\ to\ HEX<Tab>:%!xxd			П&еревести\ в\ HEX<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r			Перевести\ и&з\ HEX<Tab>:%!xxd\ -r
+">>>---------------- Tools/Spelling
+menutrans &Spell\ Check\ On				&Вкл\ проверку\ правописания
+menutrans Spell\ Check\ &Off				Вы&кл\ проверку\ правописания
+menutrans To\ &Next\ error<Tab>]s			&Следующая\ ошибка
+menutrans To\ &Previous\ error<Tab>[s			&Предыдущая\ ошибка
+menutrans Suggest\ &Corrections<Tab>z=			Предложить\ исп&равления
+menutrans &Repeat\ correction<Tab>:spellrepall		Пов&торить\ исправление\ для\ всех
+"-------------------
+menutrans Set\ language\ to\ "en"			Установить\ язык\ "en"
+menutrans Set\ language\ to\ "en_au"			Установить\ язык\ "en_au"
+menutrans Set\ language\ to\ "en_ca"			Установить\ язык\ "en_ca"
+menutrans Set\ language\ to\ "en_gb"			Установить\ язык\ "en_gb"
+menutrans Set\ language\ to\ "en_nz"			Установить\ язык\ "en_nz"
+menutrans Set\ language\ to\ "en_us"			Установить\ язык\ "en_us"
+menutrans &Find\ More\ Languages			&Найти\ больше\ языков
+let g:menutrans_set_lang_to =				'Установить язык'
 ">>>---------------- Folds
 menutrans &Enable/Disable\ folds<Tab>zi			Вкл/выкл\ &складки<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv			Открыть\ строку\ с\ &курсором<Tab>zv
@@ -219,7 +244,7 @@ menutrans M&in\ Height<Tab>^W1_				Минимальная\ высо&та<Tab>^W1_
 menutrans Max\ &Width<Tab>^W\|				Максимальная\ &ширина<Tab>^W\|
 menutrans Min\ Widt&h<Tab>^W1\|				Минимал&ьная\ ширина<Tab>^W1\|
 ">>>----------------- Window/Move To
-menutrans &Top<Tab>^WK					На&верх<Tab>^WK
+menutrans &Top<Tab>^WK					В&верх<Tab>^WK
 menutrans &Bottom<Tab>^WJ				В&низ<Tab>^WJ
 menutrans &Left\ side<Tab>^WH				В&лево<Tab>^WH
 menutrans &Right\ side<Tab>^WL				В&право<Tab>^WL

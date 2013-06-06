@@ -4,7 +4,7 @@
 " Contributors: Edwin Fine <efine145_nospam01 at usa dot net>
 "               Pawel 'kTT' Salata <rockplayer.pl@gmail.com>
 "               Ricardo Catalinas Jiménez <jimenezrick@gmail.com>
-" Last Update:  2013-Mar-05
+" Last Update:  2013-Jun-01
 " License:      Vim license
 " URL:          https://github.com/hcs42/vim-erlang
 
@@ -1086,61 +1086,73 @@ function! s:ErlangCalcIndent2(lnum, stack)
           endif
         endif
 
-      elseif token == 'end'
-        let [lnum_new, col_new] = s:SearchEndPair(lnum, curr_col)
+      elseif index(['end', ')', ']', '}', '>>'], token) != -1
 
-        if lnum_new == 0
-          return s:IndentError('Matching token for "end" not found',
-                              \token, stack)
-        else
-          if lnum_new != lnum
-            call s:Log('    Tokenize for "end" <<<<')
-            let [lnum, indtokens] = s:TokenizeLine(lnum_new, 'up')
-            call s:Log('    >>>> Tokenize for "end"')
+        " If we can be sure that there is synchronization in the Erlang
+        " syntax, we use searchpair to make the script quicker. Otherwise we
+        " just push the token onto the stack and keep parsing.
+    
+        " No synchronization -> no searchpair optimization
+        if !exists('b:erlang_syntax_synced')
+          call s:Push(stack, token)
+
+        " We don't have searchpair optimization for '>>'
+        elseif token == '>>'
+          call s:Push(stack, token)
+
+        elseif token == 'end'
+          let [lnum_new, col_new] = s:SearchEndPair(lnum, curr_col)
+
+          if lnum_new == 0
+            return s:IndentError('Matching token for "end" not found',
+                                \token, stack)
+          else
+            if lnum_new != lnum
+              call s:Log('    Tokenize for "end" <<<<')
+              let [lnum, indtokens] = s:TokenizeLine(lnum_new, 'up')
+              call s:Log('    >>>> Tokenize for "end"')
+            endif
+
+            let [success, i] = s:GetIndtokenAtCol(indtokens, col_new)
+            if !success | return i | endif
+            let [token, curr_vcol, curr_col] = indtokens[i]
+            call s:Log('    Match for "end" in line ' . lnum_new . ': ' .
+                      \string(indtokens[i]))
           endif
 
-          let [success, i] = s:GetIndtokenAtCol(indtokens, col_new)
-          if !success | return i | endif
-          let [token, curr_vcol, curr_col] = indtokens[i]
-          call s:Log('    Match for "end" in line ' . lnum_new . ': ' .
-                    \string(indtokens[i]))
-        endif
+        else " token is one of the following: ')', ']', '}'
 
-      elseif index([')', ']', '}'], token) != -1
+          call s:Push(stack, token)
 
-        call s:Push(stack, token)
+          " We have to escape '[', because this string will be interpreted as a
+          " regexp
+          let open_paren = (token == ')' ? '(' :
+                           \token == ']' ? '\[' :
+                           \               '{')
 
-        " We have to escape '[', because this string will be interpreted as a
-        " regexp
-        let open_paren = (token == ')' ? '(' :
-                         \token == ']' ? '\[' :
-                         \               '{')
+          let [lnum_new, col_new] = s:SearchPair(lnum, curr_col,
+                                                \open_paren, '', token)
 
-        let [lnum_new, col_new] = s:SearchPair(lnum, curr_col,
-                                              \open_paren, '', token)
+          if lnum_new == 0
+            return s:IndentError('Matching token not found',
+                                \token, stack)
+          else
+            if lnum_new != lnum
+              call s:Log('    Tokenize the opening paren <<<<')
+              let [lnum, indtokens] = s:TokenizeLine(lnum_new, 'up')
+              call s:Log('    >>>>')
+            endif
 
-        if lnum_new == 0
-          return s:IndentError('Matching token not found',
-                              \token, stack)
-        else
-          if lnum_new != lnum
-            call s:Log('    Tokenize the opening paren <<<<')
-            let [lnum, indtokens] = s:TokenizeLine(lnum_new, 'up')
-            call s:Log('    >>>>')
+            let [success, i] = s:GetIndtokenAtCol(indtokens, col_new)
+            if !success | return i | endif
+            let [token, curr_vcol, curr_col] = indtokens[i]
+            call s:Log('    Match in line ' . lnum_new . ': ' .
+                      \string(indtokens[i]))
+
+            " Go back to the beginning of the loop and handle the opening paren
+            continue
           endif
-
-          let [success, i] = s:GetIndtokenAtCol(indtokens, col_new)
-          if !success | return i | endif
-          let [token, curr_vcol, curr_col] = indtokens[i]
-          call s:Log('    Match in line ' . lnum_new . ': ' .
-                    \string(indtokens[i]))
-
-          " Go back to the beginning of the loop and handle the opening paren
-          continue
         endif
-
-      elseif token == '>>'
-        call s:Push(stack, token)
 
       elseif token == ';'
 
@@ -1323,7 +1335,10 @@ function! ErlangIndent()
 
     let curr_col = len(ml[1])
 
-    if ml[2] == 'end'
+    " If we can be sure that there is synchronization in the Erlang
+    " syntax, we use searchpair to make the script quicker.
+    if ml[2] == 'end' && exists('b:erlang_syntax_synced')
+
       let [lnum, col] = s:SearchEndPair(v:lnum, curr_col)
 
       if lnum == 0

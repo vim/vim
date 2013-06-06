@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         reStructuredText documentation format
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2012-11-01
+" Latest Revision:  2013-06-03
 
 if exists("b:current_syntax")
   finish
@@ -135,10 +135,6 @@ execute 'syn match rstHyperlinkReference' .
 syn match   rstStandaloneHyperlink  contains=@NoSpell
       \ "\<\%(\%(\%(https\=\|file\|ftp\|gopher\)://\|\%(mailto\|news\):\)[^[:space:]'\"<>]\+\|www[[:alnum:]_-]*\.[[:alnum:]_-]\+\.[^[:space:]'\"<>]\+\)[[:alnum:]/]"
 
-" TODO: Use better syncing.  I don’t know the specifics of syncing well enough,
-" though.
-syn sync minlines=50 linebreaks=1
-
 syn region rstCodeBlock contained matchgroup=rstDirective
       \ start=+\%(sourcecode\|code\%(-block\)\=\)::\s+
       \ skip=+^$+
@@ -159,6 +155,9 @@ for code in g:rst_syntax_code_list
                 \.'end=#^\s\@!# contains=@NoSpell,@rst'.code
     exe 'syn cluster rstDirectives add=rstDirective'.code
 endfor
+
+" TODO: Use better syncing.
+syn sync minlines=50 linebreaks=2
 
 hi def link rstTodo                         Todo
 hi def link rstComment                      Comment

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2013 Mar 13
+" Last Change:	2013 Jun 06
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")

@@ -1,3 +1,8 @@
+" Vim compiler file
+" Compiler:	Sass
+" Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
+" Last Change:	2013 May 30
+
 if exists("current_compiler")
   finish
 endif

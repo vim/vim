@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Jun 01
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Jun 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,33 +34,17 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Make it possible to test the status line: add screenchar(col, row).
+Use screen_getbytes().
+Could also add screenattr(col, row), but value is unpredictable.
+Functions to read the actual contents of the screen, so that things like
+conceal can be tested. (Nazri Ramliy, 2013 Feb 18)
+
+function() does not work like before. (lilydjwg, 2013 Jun 4)
+I guess this is caused by patch 7.3.1058:
+"Call of funcref does not succeed in other script."
+
 --- Python interface
-
-Patch from ZyX, May 30: Fix some possible memory problems
-
-Check: docs for .valid  patch by ZyX, May 30
-Correction by Roland Eggner, May 31.
-
-Tests are disabled because they fail.
-
-Configure doesn't find Python 3 on Ubuntu 13.04. (Ken Takata, Apr 13)
-
-Python SystemExit exception is not handled properly.  Patch to catch the
-exception and give an error. (Yasuhiro Matsumoto)
-Does not work, tests fail.
-
-Patch to complete after :py3. (Taro Muraoka, 2013 May 31)
-
-":python os.chdir('/tmp')" makes short buffer names invalid. (Xavier de Gaye)
-Patch to make os.chdir() handle side effects. (Xavier de Gaye, 2013 May 17)
-Update May 19, also for os.fchdir().
-Adds a $VIMRUNTIME/python directory.
-ZyX: OK to add python and python3 directory.
-
-Mac: OS/X 10.4 with Python 2.5 installed: configure finds an extra argument
-that breaks the build. (Brian Victor, 2008 Sep 1)
-
-Patch to access screen under Python. (Marko Mahni, 2010 Jul 18)
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
@@ -71,7 +55,18 @@ Python: Be able to define a Python function that can be called directly from
 Vim script.  Requires converting the arguments and return value, like with
 vim.bindeval().
 
+Python SystemExit exception is not handled properly.  Patch to catch the
+exception and give an error. (Yasuhiro Matsumoto)
+Does not work, tests fail.
+
+Python: crash in test 86 because of int/size_t mixup? (Jun Takimoto, 2013 Jun
+6)
+
+Add a $VIMRUNTIME/python and $VIMRUNTIME/python3 directories?
+
 --- runtime files
+
+Alternate html indent file by Andy Wokula, script 2075.
 
 Syntax file for protocol buffers. (Feng Xiao, 2013 May 9)
 Has an ugly copyright notice.
@@ -80,32 +75,22 @@ Add statement that it does not conflict with Vim license.
 Patch for JavaScript syntax. (Kevin Locke, 2013 May 9)
 Claudio didn't respond yet.
 
---- Fast regexp engine
+upstream_dat, usserver_log et al. syntax files. (Rob Owens, 2013 Jun 5)
 
-Error in HTML highlighting. (Hiroshi Shirosaki)
+--- New regexp engine
 
-Tests for \{-} : Requires trying to start at every position?
-If so, rename nfa_has_backref to nfa_dup_states and re-use it for this.
+Does not work (yet) with NFA:
+- \%u, \%x, \%o, \%d followed by a composing character
 
-Allow "^*" as a literal "*".
-
-Need more testing for \1 back references.
+Don't call nfa_regmatch() recursively if the "out" state is not going to be
+added anyway.  In run log:
+    > Not adding state 6 to list 4. char -971: NFA_SKIP
 
 Profiling:
+    ./vim -s ~/vim/test/alsa.vim
+    ./vim -s ~/vim/test/todo.vim
     ./vim -s ~/vim/test/loop.vim
-    ./vim -s ~/vim/test/xml.vim  (Fix: Uses the old engine, see
-				bt_regexp_debug.log)
-	Need \@<=
-	NFA engine could not handle "[<]\@<=[^ /!?<>"']\+"
-	NFA engine could not handle "<!--\_.\{-}-->"
-
-setting cpo_lit and cpo_bsl can be slow.  Make them global.
-
-Get example files for many languages. Compare syntax highlighting with old and
-new regexp, find regexp constructs where NFA does not work correctly.
-source ~/vim/regexp/runold.vim  to update the "old" files.
-source ~/vim/regexp/runnew.vim  to update the "new" files
-source ~/vim/regexp/diff.vim    to find differences
+    ./vim -s ~/vim/test/xml.vim
 
 More test files from the src/pkg/regexp/testdata directory in the Go repo.
 
@@ -127,17 +112,13 @@ Performance tests:
 - When lists are empty in nfa_regmatch() and match is true, it keeps looping
   without doing anything.
 
-Does not work (yet) with NFA:
-- \z() \z1 .. "\z9": Previously matched text in syn HL.
-- ~: previous substitute pattern. Requires recursive compilation?
-- \%u, \%x, \%o, \%d followed by a composing character
-- \%V Visual
-- \%[abc]
-- \%'  mark
-- \@<  match before zero-width
-- \@>  match whole pattern
+BT engine: After \@> match and failing submatches are not cleared.
+See test64.
 
 --- bug fixes
+
+:wviminfo does not write old history entries. (Roland Eggner, 2013 Jun 5)
+Another message Jun 6.
 
 Patch to avoid wrong error message for 1.0[0]. (Yasuhiro Matsumoto, 2013 May
 1)
@@ -190,6 +171,9 @@ Patch by Christian Brabandt, Feb 16.
 Issue 134: pasting in visual selection in empty buffer.
 Patch by Christian Brabandt, 2013 May 22.
 
+Patch to fix "gn" on single character matches. (Christian Brabandt, 2013 Jun
+2)
+
 'cursorline' is drawn incorrectly in diff mode. Patch by Christian Brabandt,
 2012 Apr 2.
 
@@ -201,6 +185,12 @@ line.
 
 ":diffoff" does not restore options from before starting diff mode.
 Patch by Christian Brabandt, 2013 May 26.
+
+Can't use multi-byte fill character in custom status line.
+Patch by Christian Wellenbrock, 2013 Jun 2.  Update Jun 3 (second one).
+
+Patch to fix glob() and globpath() with escaped special characters.
+(Adnan Zafar, 2013 Jun 2, tests Jun 3)
 
 --- slightly incompatible changes
 
@@ -263,6 +253,9 @@ Patch to view coverage of the tests. (Nazri Ramliy, 2013 Feb 15)
 
 Patch to invert characters differently in GTK. (Yukihiro Nakadaira, 2013 May
 5)
+
+Bug with 'cursorline' in diff mode.  Line being scrolled into view gets
+highlighted as the cursor line.  (Alessandro Ivaldi, 2013 Jun 4)
 
 Patch to add the bufferlist() function. (Yegappan Lakshmanan, 2013 May 5)
 May 17: with winlist() and tabpagelist().
@@ -355,6 +348,9 @@ Szamotulski, 2012 Nov 8)
 
 Crash in autocmd that unloads buffers in a BufUnload event. (Andrew Pimlott,
 2012 Aug 11)  Disallow :new when BufUnload is being handled?
+
+Patch to add ":ldo" and ":cdo", execute commands over quickfix list and
+location list. (Yegappan Lakshmanan, 2013 Jun 2)
 
 MS-Windows resizing problems:
 - Windows window on screen positioning: Patch by Yukihiro Nakadaira, 2012 Jun
@@ -549,6 +545,8 @@ Patch to make "z=" work when 'spell' is off.  Does this have nasty side
 effects?  (Christian Brabandt, 2012 Aug 5)
 Would also need to do this for spellbadword() and spellsuggest().
 
+Patch for variable tabstops.
+
 On 64 bit MS-Windows "long" is only 32 bits, but we sometimes need to store a
 64 bits value.  Change all number options to use nropt_T and define it to the
 right type.
@@ -656,9 +654,6 @@ New esperanto spell file can't be processed. (Dominique Pelle, 2011 Jan 30)
 
 "L'Italie" noted as a spell error at start of the sentence. (Dominique Pelle,
 2011 Feb 27)
-
-Functions to read the actual contents of the screen, so that things like
-conceal can be tested. (Nazri Ramliy, 2013 Feb 18)
 
 Copy/paste between Vim and Google chrome doesn't work well for multi-byte
 characters. (Ben Haskell, 2010 Sep 17)
@@ -4336,7 +4331,7 @@ More advanced repeating commands:
 -   Add "." command for visual mode: redo last visual command (e.g. ":fmt").
 7   Repeating "d:{cmd}" with "." doesn't work. (Benji Fisher)  Somehow remember
     the command line so that it can be repeated?
--   Add "gn": repeat last movement command.  Including count.
+-   Add command to repeat last movement.  Including count.
 -   Add "." command after operator: repeat last command of same operator.  E.g.
     "c." will repeat last change, also when "x" used since then (Webb).
     "y." will repeat last yank.
