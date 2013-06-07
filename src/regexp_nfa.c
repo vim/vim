@@ -4332,9 +4332,10 @@ nfa_regmatch(prog, start, submatch, m)
     nfa_list_T	*nextlist;
     int		*listids = NULL;
     nfa_state_T *add_state;
-    int		 add_count;
-    int		 add_off;
+    int		add_count;
+    int		add_off;
     garray_T	pimlist;
+    int		toplevel = start->c == NFA_MOPEN;
 #ifdef NFA_REGEXP_DEBUG_LOG
     FILE	*debug = fopen(NFA_REGEXP_DEBUG_LOG, "a");
 
@@ -4378,10 +4379,26 @@ nfa_regmatch(prog, start, submatch, m)
     nextlist = &list[1];
     nextlist->n = 0;
 #ifdef ENABLE_LOG
-    fprintf(log_fd, "(---) STARTSTATE\n");
+    fprintf(log_fd, "(---) STARTSTATE first\n");
 #endif
     thislist->id = nfa_listid + 1;
-    addstate(thislist, start, m, 0);
+
+    /* Inline optimized code for addstate(thislist, start, m, 0) if we know
+     * it's the first MOPEN. */
+    if (toplevel)
+    {
+	if (REG_MULTI)
+	{
+	    m->norm.list.multi[0].start.lnum = reglnum;
+	    m->norm.list.multi[0].start.col = (colnr_T)(reginput - regline);
+	}
+	else
+	    m->norm.list.line[0].start = reginput;
+	m->norm.in_use = 1;
+	addstate(thislist, start->out, m, 0);
+    }
+    else
+	addstate(thislist, start, m, 0);
 
 #define	ADD_STATE_IF_MATCH(state)			\
     if (result) {					\
@@ -5382,7 +5399,7 @@ nfa_regmatch(prog, start, submatch, m)
 	 * Unless "nfa_endp" is not NULL, then we match the end position.
 	 * Also don't start a match past the first line. */
 	if (nfa_match == FALSE
-		&& ((start->c == NFA_MOPEN
+		&& ((toplevel
 			&& reglnum == 0
 			&& clen != 0
 			&& (ireg_maxcol == 0
@@ -5398,7 +5415,19 @@ nfa_regmatch(prog, start, submatch, m)
 #ifdef ENABLE_LOG
 	    fprintf(log_fd, "(---) STARTSTATE\n");
 #endif
-	    addstate(nextlist, start, m, clen);
+	    /* Inline optimized code for addstate() if we know the state is
+	     * the first MOPEN. */
+	    if (toplevel)
+	    {
+		if (REG_MULTI)
+		    m->norm.list.multi[0].start.col =
+					 (colnr_T)(reginput - regline) + clen;
+		else
+		    m->norm.list.line[0].start = reginput + clen;
+		addstate(nextlist, start->out, m, clen);
+	    }
+	    else
+		addstate(nextlist, start, m, clen);
 	}
 
 #ifdef ENABLE_LOG
