@@ -1577,7 +1577,7 @@ str2special(sp, from)
 	{
 	    c = TO_SPECIAL(str[1], str[2]);
 	    str += 2;
-	    if (c == K_ZERO)	/* display <Nul> as ^@ */
+	    if (c == KS_ZERO)	/* display <Nul> as ^@ or <Nul> */
 		c = NUL;
 	}
 	if (IS_SPECIAL(c) || modifiers)	/* special key */
