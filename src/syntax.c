@@ -6689,6 +6689,7 @@ syntime_report()
 	msg_outtrans_len(p->pattern, len);
 	MSG_PUTS("\n");
     }
+    ga_clear(&ga);
     if (!got_int)
     {
 	MSG_PUTS("\n");
