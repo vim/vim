@@ -64,9 +64,12 @@ enum
     NFA_NOPEN,			    /* Start of subexpression marked with \%( */
     NFA_NCLOSE,			    /* End of subexpr. marked with \%( ... \) */
     NFA_START_INVISIBLE,
+    NFA_START_INVISIBLE_NEG,
     NFA_START_INVISIBLE_BEFORE,
+    NFA_START_INVISIBLE_BEFORE_NEG,
     NFA_START_PATTERN,
     NFA_END_INVISIBLE,
+    NFA_END_INVISIBLE_NEG,
     NFA_END_PATTERN,
     NFA_COMPOSING,		    /* Next nodes in NFA are part of the
 				       composing multibyte char */
@@ -481,7 +484,7 @@ nfa_get_regstart(start, depth)
 	    }
 
 	    default:
-		if (p->c > 0 && !p->negated)
+		if (p->c > 0)
 		    return p->c; /* yes! */
 		return 0;
 	}
@@ -1991,10 +1994,15 @@ nfa_set_code(c)
 	case NFA_NOPEN:		    STRCPY(code, "NFA_NOPEN"); break;
 	case NFA_NCLOSE:	    STRCPY(code, "NFA_NCLOSE"); break;
 	case NFA_START_INVISIBLE:   STRCPY(code, "NFA_START_INVISIBLE"); break;
+	case NFA_START_INVISIBLE_NEG:
+			       STRCPY(code, "NFA_START_INVISIBLE_NEG"); break;
 	case NFA_START_INVISIBLE_BEFORE:
 			    STRCPY(code, "NFA_START_INVISIBLE_BEFORE"); break;
+	case NFA_START_INVISIBLE_BEFORE_NEG:
+			STRCPY(code, "NFA_START_INVISIBLE_BEFORE_NEG"); break;
 	case NFA_START_PATTERN:   STRCPY(code, "NFA_START_PATTERN"); break;
 	case NFA_END_INVISIBLE:	    STRCPY(code, "NFA_END_INVISIBLE"); break;
+	case NFA_END_INVISIBLE_NEG: STRCPY(code, "NFA_END_INVISIBLE_NEG"); break;
 	case NFA_END_PATTERN:	    STRCPY(code, "NFA_END_PATTERN"); break;
 
 	case NFA_COMPOSING:	    STRCPY(code, "NFA_COMPOSING"); break;
@@ -2227,8 +2235,7 @@ nfa_print_state2(debugf, state, indent)
 	fprintf(debugf, " %s", p);
 
     nfa_set_code(state->c);
-    fprintf(debugf, "%s%s (%d) (id=%d) val=%d\n",
-		 state->negated ? "NOT " : "",
+    fprintf(debugf, "%s (%d) (id=%d) val=%d\n",
 		 code,
 		 state->c,
 		 abs(state->id),
@@ -2330,7 +2337,6 @@ alloc_state(c, out, out1)
     s->id   = istate;
     s->lastlist[0] = 0;
     s->lastlist[1] = 0;
-    s->negated = FALSE;
 
     return s;
 }
@@ -2741,23 +2747,37 @@ post2nfa(postfix, end, nfa_calc_size)
 	case NFA_PREV_ATOM_JUST_BEFORE_NEG:
 	case NFA_PREV_ATOM_LIKE_PATTERN:
 	  {
-	    int neg = (*p == NFA_PREV_ATOM_NO_WIDTH_NEG
-				      || *p == NFA_PREV_ATOM_JUST_BEFORE_NEG);
 	    int before = (*p == NFA_PREV_ATOM_JUST_BEFORE
 				      || *p == NFA_PREV_ATOM_JUST_BEFORE_NEG);
 	    int pattern = (*p == NFA_PREV_ATOM_LIKE_PATTERN);
-	    int start_state = NFA_START_INVISIBLE;
-	    int end_state = NFA_END_INVISIBLE;
+	    int start_state;
+	    int end_state;
 	    int n = 0;
 	    nfa_state_T *zend;
 	    nfa_state_T *skip;
 
-	    if (before)
-		start_state = NFA_START_INVISIBLE_BEFORE;
-	    else if (pattern)
+	    switch (*p)
 	    {
-		start_state = NFA_START_PATTERN;
-		end_state = NFA_END_PATTERN;
+		case NFA_PREV_ATOM_NO_WIDTH:
+		    start_state = NFA_START_INVISIBLE;
+		    end_state = NFA_END_INVISIBLE;
+		    break;
+		case NFA_PREV_ATOM_NO_WIDTH_NEG:
+		    start_state = NFA_START_INVISIBLE_NEG;
+		    end_state = NFA_END_INVISIBLE_NEG;
+		    break;
+		case NFA_PREV_ATOM_JUST_BEFORE:
+		    start_state = NFA_START_INVISIBLE_BEFORE;
+		    end_state = NFA_END_INVISIBLE;
+		    break;
+		case NFA_PREV_ATOM_JUST_BEFORE_NEG:
+		    start_state = NFA_START_INVISIBLE_BEFORE_NEG;
+		    end_state = NFA_END_INVISIBLE_NEG;
+		    break;
+		case NFA_PREV_ATOM_LIKE_PATTERN:
+		    start_state = NFA_START_PATTERN;
+		    end_state = NFA_END_PATTERN;
+		    break;
 	    }
 
 	    if (before)
@@ -2783,11 +2803,6 @@ post2nfa(postfix, end, nfa_calc_size)
 	    s = alloc_state(start_state, e.start, s1);
 	    if (s == NULL)
 		goto theend;
-	    if (neg)
-	    {
-		s->negated = TRUE;
-		s1->negated = TRUE;
-	    }
 	    if (before)
 		s->val = n; /* store the count */
 	    if (pattern)
@@ -3009,7 +3024,6 @@ post2nfa(postfix, end, nfa_calc_size)
     matchstate = &state_ptr[istate++]; /* the match state */
     matchstate->c = NFA_MATCH;
     matchstate->out = matchstate->out1 = NULL;
-    matchstate->negated = FALSE;
     matchstate->id = 0;
 
     patch(e.out, matchstate);
@@ -3772,7 +3786,7 @@ check_char_class(class, c)
 		return OK;
 	    break;
 	case NFA_CLASS_SPACE:
-	    if ((c >=9 && c <= 13) || (c == ' '))
+	    if ((c >= 9 && c <= 13) || (c == ' '))
 		return OK;
 	    break;
 	case NFA_CLASS_UPPER:
@@ -3971,7 +3985,8 @@ recursive_regmatch(state, prog, submatch, m, listids)
     int		result;
     int		need_restore = FALSE;
 
-    if (state->c == NFA_START_INVISIBLE_BEFORE)
+    if (state->c == NFA_START_INVISIBLE_BEFORE
+        || state->c == NFA_START_INVISIBLE_BEFORE_NEG)
     {
 	/* The recursive match must end at the current position. */
 	endposp = &endpos;
@@ -4452,6 +4467,7 @@ nfa_regmatch(prog, start, submatch, m)
 	      }
 
 	    case NFA_END_INVISIBLE:
+	    case NFA_END_INVISIBLE_NEG:
 	    case NFA_END_PATTERN:
 		/*
 		 * This is only encountered after a NFA_START_INVISIBLE or
@@ -4489,7 +4505,7 @@ nfa_regmatch(prog, start, submatch, m)
 		    break;
 
 		/* do not set submatches for \@! */
-		if (!t->state->negated)
+		if (t->state->c != NFA_END_INVISIBLE_NEG)
 		{
 		    copy_sub(&m->norm, &t->subs.norm);
 #ifdef FEAT_SYN_HL
@@ -4505,7 +4521,9 @@ nfa_regmatch(prog, start, submatch, m)
 		break;
 
 	    case NFA_START_INVISIBLE:
+	    case NFA_START_INVISIBLE_NEG:
 	    case NFA_START_INVISIBLE_BEFORE:
+	    case NFA_START_INVISIBLE_BEFORE_NEG:
 		{
 		    nfa_pim_T *pim;
 		    int cout = t->state->out1->out->c;
@@ -4524,6 +4542,7 @@ nfa_regmatch(prog, start, submatch, m)
 			    || cout == NFA_NCLOSE
 			    || t->pim != NULL
 			    || (t->state->c != NFA_START_INVISIBLE_BEFORE
+			        && t->state->c != NFA_START_INVISIBLE_BEFORE_NEG
 				&& failure_chance(t->state->out1->out, 0)
 					  < failure_chance(t->state->out, 0)))
 		    {
@@ -4534,8 +4553,11 @@ nfa_regmatch(prog, start, submatch, m)
 			result = recursive_regmatch(t->state, prog,
 						       submatch, m, &listids);
 
-			/* for \@! it is a match when result is FALSE */
-			if (result != t->state->negated)
+			/* for \@! and \@<! it is a match when the result is
+			 * FALSE */
+			if (result != (t->state->c == NFA_START_INVISIBLE_NEG
+			            || t->state->c
+					   == NFA_START_INVISIBLE_BEFORE_NEG))
 			{
 			    /* Copy submatch info from the recursive call */
 			    copy_sub_off(&t->subs.norm, &m->norm);
@@ -4646,11 +4668,10 @@ nfa_regmatch(prog, start, submatch, m)
 		break;
 
 	    case NFA_BOW:
-	    {
-		int bow = TRUE;
+		result = TRUE;
 
 		if (curc == NUL)
-		    bow = FALSE;
+		    result = FALSE;
 #ifdef FEAT_MBYTE
 		else if (has_mbyte)
 		{
@@ -4659,27 +4680,24 @@ nfa_regmatch(prog, start, submatch, m)
 		    /* Get class of current and previous char (if it exists). */
 		    this_class = mb_get_class_buf(reginput, reg_buf);
 		    if (this_class <= 1)
-			bow = FALSE;
+			result = FALSE;
 		    else if (reg_prev_class() == this_class)
-			bow = FALSE;
+			result = FALSE;
 		}
 #endif
 		else if (!vim_iswordc_buf(curc, reg_buf)
 			   || (reginput > regline
 				   && vim_iswordc_buf(reginput[-1], reg_buf)))
-		    bow = FALSE;
-		if (bow)
+		    result = FALSE;
+		if (result)
 		    addstate_here(thislist, t->state->out, &t->subs,
 							    t->pim, &listidx);
 		break;
-	    }
 
 	    case NFA_EOW:
-	    {
-		int eow = TRUE;
-
+		result = TRUE;
 		if (reginput == regline)
-		    eow = FALSE;
+		    result = FALSE;
 #ifdef FEAT_MBYTE
 		else if (has_mbyte)
 		{
@@ -4690,18 +4708,17 @@ nfa_regmatch(prog, start, submatch, m)
 		    prev_class = reg_prev_class();
 		    if (this_class == prev_class
 					|| prev_class == 0 || prev_class == 1)
-			eow = FALSE;
+			result = FALSE;
 		}
 #endif
 		else if (!vim_iswordc_buf(reginput[-1], reg_buf)
 			|| (reginput[0] != NUL
 					   && vim_iswordc_buf(curc, reg_buf)))
-		    eow = FALSE;
-		if (eow)
+		    result = FALSE;
+		if (result)
 		    addstate_here(thislist, t->state->out, &t->subs,
 							    t->pim, &listidx);
 		break;
-	    }
 
 	    case NFA_BOF:
 		if (reglnum == 0 && reginput == regline
@@ -4740,7 +4757,6 @@ nfa_regmatch(prog, start, submatch, m)
 		{
 		    /* If \Z was present, then ignore composing characters.
 		     * When ignoring the base character this always matches. */
-		    /* TODO: How about negated? */
 		    if (len == 0 && sta->c != curc)
 			result = FAIL;
 		    else
@@ -4811,26 +4827,6 @@ nfa_regmatch(prog, start, submatch, m)
 		    add_state = t->state->out;
 		    add_off = 1;
 		}
-		break;
-
-	    case NFA_CLASS_ALNUM:
-	    case NFA_CLASS_ALPHA:
-	    case NFA_CLASS_BLANK:
-	    case NFA_CLASS_CNTRL:
-	    case NFA_CLASS_DIGIT:
-	    case NFA_CLASS_GRAPH:
-	    case NFA_CLASS_LOWER:
-	    case NFA_CLASS_PRINT:
-	    case NFA_CLASS_PUNCT:
-	    case NFA_CLASS_SPACE:
-	    case NFA_CLASS_UPPER:
-	    case NFA_CLASS_XDIGIT:
-	    case NFA_CLASS_TAB:
-	    case NFA_CLASS_RETURN:
-	    case NFA_CLASS_BACKSPACE:
-	    case NFA_CLASS_ESCAPE:
-		result = check_char_class(t->state->c, curc);
-		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_START_COLL:
@@ -5212,10 +5208,8 @@ nfa_regmatch(prog, start, submatch, m)
 		int c = t->state->c;
 
 		/* TODO: put this in #ifdef later */
-		if (c < -256)
+		if (c < 0)
 		    EMSGN("INTERNAL: Negative state char: %ld", c);
-		if (is_Magic(c))
-		    c = un_Magic(c);
 		result = (c == curc);
 
 		if (!result && ireg_ic)
@@ -5252,8 +5246,12 @@ nfa_regmatch(prog, start, submatch, m)
 						 prog, submatch, m, &listids);
 			t->pim->result = result ? NFA_PIM_MATCH
 							    : NFA_PIM_NOMATCH;
-			/* for \@! it is a match when result is FALSE */
-			if (result != t->pim->state->negated)
+			/* for \@! and \@<! it is a match when the result is
+			 * FALSE */
+			if (result != (t->pim->state->c
+						    == NFA_START_INVISIBLE_NEG
+			            || t->pim->state->c
+					   == NFA_START_INVISIBLE_BEFORE_NEG))
 			{
 			    /* Copy submatch info from the recursive call */
 			    copy_sub_off(&t->pim->subs.norm, &m->norm);
@@ -5274,8 +5272,10 @@ nfa_regmatch(prog, start, submatch, m)
 #endif
 		    }
 
-		    /* for \@! it is a match when result is FALSE */
-		    if (result != t->pim->state->negated)
+		    /* for \@! and \@<! it is a match when result is FALSE */
+		    if (result != (t->pim->state->c == NFA_START_INVISIBLE_NEG
+			        || t->pim->state->c
+					   == NFA_START_INVISIBLE_BEFORE_NEG))
 		    {
 			/* Copy submatch info from the recursive call */
 			copy_sub_off(&t->subs.norm, &t->pim->subs.norm);

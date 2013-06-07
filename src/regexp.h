@@ -73,7 +73,6 @@ struct nfa_state
     nfa_state_T		*out1;
     int			id;
     int			lastlist[2]; /* 0: normal, 1: recursive */
-    int			negated;
     int			val;
 };
 
