@@ -6281,7 +6281,7 @@ win_redr_status(wp)
 	}
 	if (wp->w_buffer->b_p_ro)
 	{
-	    STRCPY(p + len, "[RO]");
+	    STRCPY(p + len, _("[RO]"));
 	    len += 4;
 	}
 

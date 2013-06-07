@@ -3139,7 +3139,7 @@ fileinfo(fullname, shorthelp, dont_truncate)
 #endif
 					? _("[New file]") : "",
 	    (curbuf->b_flags & BF_READERR) ? _("[Read errors]") : "",
-	    curbuf->b_p_ro ? (shortmess(SHM_RO) ? "[RO]"
+	    curbuf->b_p_ro ? (shortmess(SHM_RO) ? _("[RO]")
 						      : _("[readonly]")) : "",
 	    (curbufIsChanged() || (curbuf->b_flags & BF_WRITE_MASK)
 							  || curbuf->b_p_ro) ?
@@ -3976,7 +3976,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar,
 	case STL_ROFLAG_ALT:
 	    itemisflag = TRUE;
 	    if (wp->w_buffer->b_p_ro)
-		str = (char_u *)((opt == STL_ROFLAG_ALT) ? ",RO" : "[RO]");
+		str = (char_u *)((opt == STL_ROFLAG_ALT) ? ",RO" : _("[RO]"));
 	    break;
 
 	case STL_HELPFLAG:
