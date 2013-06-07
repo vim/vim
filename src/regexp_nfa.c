@@ -4276,13 +4276,10 @@ nfa_regmatch(prog, start, submatch, m)
     int		flag = 0;
     int		go_to_nextline = FALSE;
     nfa_thread_T *t;
-    nfa_list_T	list[3];
-    nfa_list_T	*listtbl[2][2];
-    nfa_list_T	*ll;
+    nfa_list_T	list[2];
     int		listidx;
     nfa_list_T	*thislist;
     nfa_list_T	*nextlist;
-    nfa_list_T	*neglist;
     int		*listids = NULL;
     nfa_state_T *add_state;
     int		 add_count;
@@ -4306,9 +4303,7 @@ nfa_regmatch(prog, start, submatch, m)
     list[0].len = nstate + 1;
     list[1].t = (nfa_thread_T *)lalloc(size, TRUE);
     list[1].len = nstate + 1;
-    list[2].t = (nfa_thread_T *)lalloc(size, TRUE);
-    list[2].len = nstate + 1;
-    if (list[0].t == NULL || list[1].t == NULL || list[2].t == NULL)
+    if (list[0].t == NULL || list[1].t == NULL)
 	goto theend;
 
 #ifdef ENABLE_LOG
@@ -4332,25 +4327,14 @@ nfa_regmatch(prog, start, submatch, m)
     thislist->n = 0;
     nextlist = &list[1];
     nextlist->n = 0;
-    neglist = &list[2];
-    neglist->n = 0;
 #ifdef ENABLE_LOG
     fprintf(log_fd, "(---) STARTSTATE\n");
 #endif
     thislist->id = nfa_listid + 1;
     addstate(thislist, start, m, 0);
 
-    /* There are two cases when the NFA advances: 1. input char matches the
-     * NFA node and 2. input char does not match the NFA node and the state
-     * has the negated flag. The following macro calls addstate() according to
-     * these rules. It is used A LOT, so use the "listtbl" table for speed */
-    listtbl[0][0] = NULL;
-    listtbl[0][1] = neglist;
-    listtbl[1][0] = nextlist;
-    listtbl[1][1] = NULL;
-#define	ADD_POS_NEG_STATE(state)			\
-    ll = listtbl[result ? 1 : 0][state->negated];	\
-    if (ll != NULL) {					\
+#define	ADD_STATE_IF_MATCH(state)			\
+    if (result) {					\
 	add_state = state->out;				\
 	add_off = clen;					\
     }
@@ -4385,11 +4369,9 @@ nfa_regmatch(prog, start, submatch, m)
 	thislist = &list[flag];
 	nextlist = &list[flag ^= 1];
 	nextlist->n = 0;	    /* clear nextlist */
-	listtbl[1][0] = nextlist;
 	++nfa_listid;
 	thislist->id = nfa_listid;
 	nextlist->id = nfa_listid + 1;
-	neglist->id = nfa_listid + 1;
 
 	pimlist.ga_len = 0;
 
@@ -4413,24 +4395,13 @@ nfa_regmatch(prog, start, submatch, m)
 	/*
 	 * If the state lists are empty we can stop.
 	 */
-	if (thislist->n == 0 && neglist->n == 0)
+	if (thislist->n == 0)
 	    break;
 
 	/* compute nextlist */
-	for (listidx = 0; listidx < thislist->n || neglist->n > 0; ++listidx)
+	for (listidx = 0; listidx < thislist->n; ++listidx)
 	{
-	    if (neglist->n > 0)
-	    {
-		t = &neglist->t[0];
-		neglist->n--;
-		listidx--;
-#ifdef ENABLE_LOG
-		fprintf(log_fd, "     using neglist entry, %d remaining\n",
-			neglist->n);
-#endif
-	    }
-	    else
-		t = &thislist->t[listidx];
+	    t = &thislist->t[listidx];
 
 #ifdef NFA_REGEXP_DEBUG_LOG
 	    nfa_set_code(t->state->c);
@@ -4475,7 +4446,7 @@ nfa_regmatch(prog, start, submatch, m)
 		 * states at this position.  When the list of states is going
 		 * to be empty quit without advancing, so that "reginput" is
 		 * correct. */
-		if (nextlist->n == 0 && neglist->n == 0)
+		if (nextlist->n == 0)
 		    clen = 0;
 		goto nextchar;
 	      }
@@ -4648,7 +4619,6 @@ nfa_regmatch(prog, start, submatch, m)
 		    {
 			/* match current character, output of corresponding
 			 * NFA_END_PATTERN to be used at next position. */
-			ll = nextlist;
 			add_state = t->state->out1->out->out;
 			add_off = clen;
 		    }
@@ -4656,7 +4626,6 @@ nfa_regmatch(prog, start, submatch, m)
 		    {
 			/* skip over the matched characters, set character
 			 * count in NFA_SKIP */
-			ll = nextlist;
 			add_state = t->state->out1->out;
 			add_off = bytelen;
 			add_count = bytelen - clen;
@@ -4821,7 +4790,7 @@ nfa_regmatch(prog, start, submatch, m)
 		    result = FAIL;
 
 		end = t->state->out1;	    /* NFA_END_COMPOSING */
-		ADD_POS_NEG_STATE(end);
+		ADD_STATE_IF_MATCH(end);
 		break;
 	    }
 #endif
@@ -4833,14 +4802,12 @@ nfa_regmatch(prog, start, submatch, m)
 		    go_to_nextline = TRUE;
 		    /* Pass -1 for the offset, which means taking the position
 		     * at the start of the next line. */
-		    ll = nextlist;
 		    add_state = t->state->out;
 		    add_off = -1;
 		}
 		else if (curc == '\n' && reg_line_lbr)
 		{
 		    /* match \n as if it is an ordinary character */
-		    ll = nextlist;
 		    add_state = t->state->out;
 		    add_off = 1;
 		}
@@ -4863,7 +4830,7 @@ nfa_regmatch(prog, start, submatch, m)
 	    case NFA_CLASS_BACKSPACE:
 	    case NFA_CLASS_ESCAPE:
 		result = check_char_class(t->state->c, curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_START_COLL:
@@ -4933,7 +4900,6 @@ nfa_regmatch(prog, start, submatch, m)
 		{
 		    /* next state is in out of the NFA_END_COLL, out1 of
 		     * START points to the END state */
-		    ll = nextlist;
 		    add_state = t->state->out1->out;
 		    add_off = clen;
 		}
@@ -4944,7 +4910,6 @@ nfa_regmatch(prog, start, submatch, m)
 		/* Any char except '\0', (end of input) does not match. */
 		if (curc > 0)
 		{
-		    ll = nextlist;
 		    add_state = t->state->out;
 		    add_off = clen;
 		}
@@ -4955,133 +4920,133 @@ nfa_regmatch(prog, start, submatch, m)
 	     */
 	    case NFA_IDENT:	/*  \i	*/
 		result = vim_isIDc(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_SIDENT:	/*  \I	*/
 		result = !VIM_ISDIGIT(curc) && vim_isIDc(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_KWORD:	/*  \k	*/
 		result = vim_iswordp_buf(reginput, reg_buf);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_SKWORD:	/*  \K	*/
 		result = !VIM_ISDIGIT(curc)
 					&& vim_iswordp_buf(reginput, reg_buf);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_FNAME:	/*  \f	*/
 		result = vim_isfilec(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_SFNAME:	/*  \F	*/
 		result = !VIM_ISDIGIT(curc) && vim_isfilec(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_PRINT:	/*  \p	*/
 		result = ptr2cells(reginput) == 1;
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_SPRINT:	/*  \P	*/
 		result = !VIM_ISDIGIT(curc) && ptr2cells(reginput) == 1;
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_WHITE:	/*  \s	*/
 		result = vim_iswhite(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_NWHITE:	/*  \S	*/
 		result = curc != NUL && !vim_iswhite(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_DIGIT:	/*  \d	*/
 		result = ri_digit(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_NDIGIT:	/*  \D	*/
 		result = curc != NUL && !ri_digit(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_HEX:	/*  \x	*/
 		result = ri_hex(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_NHEX:	/*  \X	*/
 		result = curc != NUL && !ri_hex(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_OCTAL:	/*  \o	*/
 		result = ri_octal(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_NOCTAL:	/*  \O	*/
 		result = curc != NUL && !ri_octal(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_WORD:	/*  \w	*/
 		result = ri_word(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_NWORD:	/*  \W	*/
 		result = curc != NUL && !ri_word(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_HEAD:	/*  \h	*/
 		result = ri_head(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_NHEAD:	/*  \H	*/
 		result = curc != NUL && !ri_head(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_ALPHA:	/*  \a	*/
 		result = ri_alpha(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_NALPHA:	/*  \A	*/
 		result = curc != NUL && !ri_alpha(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_LOWER:	/*  \l	*/
 		result = ri_lower(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_NLOWER:	/*  \L	*/
 		result = curc != NUL && !ri_lower(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_UPPER:	/*  \u	*/
 		result = ri_upper(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_NUPPER:	/* \U	*/
 		result = curc != NUL && !ri_upper(curc);
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_BACKREF1:
@@ -5135,7 +5100,6 @@ nfa_regmatch(prog, start, submatch, m)
 		    {
 			/* match current character, jump ahead to out of
 			 * NFA_SKIP */
-			ll = nextlist;
 			add_state = t->state->out->out;
 			add_off = clen;
 		    }
@@ -5143,7 +5107,6 @@ nfa_regmatch(prog, start, submatch, m)
 		    {
 			/* skip over the matched characters, set character
 			 * count in NFA_SKIP */
-			ll = nextlist;
 			add_state = t->state->out;
 			add_off = bytelen;
 			add_count = bytelen - clen;
@@ -5156,14 +5119,12 @@ nfa_regmatch(prog, start, submatch, m)
 	      if (t->count - clen <= 0)
 	      {
 		  /* end of match, go to what follows */
-		  ll = nextlist;
 		  add_state = t->state->out;
 		  add_off = clen;
 	      }
 	      else
 	      {
 		  /* add state again with decremented count */
-		  ll = nextlist;
 		  add_state = t->state;
 		  add_off = 0;
 		  add_count = t->count - clen;
@@ -5267,7 +5228,7 @@ nfa_regmatch(prog, start, submatch, m)
 						&& clen != utf_char2len(curc))
 		    result = FALSE;
 #endif
-		ADD_POS_NEG_STATE(t->state);
+		ADD_STATE_IF_MATCH(t->state);
 		break;
 	      }
 
@@ -5328,9 +5289,9 @@ nfa_regmatch(prog, start, submatch, m)
 			continue;
 		}
 
-		addstate(ll, add_state, &t->subs, add_off);
+		addstate(nextlist, add_state, &t->subs, add_off);
 		if (add_count > 0)
-		    nextlist->t[ll->n - 1].count = add_count;
+		    nextlist->t[nextlist->n - 1].count = add_count;
 	    }
 
 	} /* for (thislist = thislist; thislist->state; thislist++) */
@@ -5396,10 +5357,9 @@ theend:
     /* Free memory */
     vim_free(list[0].t);
     vim_free(list[1].t);
-    vim_free(list[2].t);
     vim_free(listids);
     ga_clear(&pimlist);
-#undef ADD_POS_NEG_STATE
+#undef ADD_STATE_IF_MATCH
 #ifdef NFA_REGEXP_DEBUG_LOG
     fclose(debug);
 #endif
