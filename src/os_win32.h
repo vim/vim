@@ -80,7 +80,6 @@
 #ifndef FEAT_GUI_W32		/* GUI works different */
 # define BREAKCHECK_SKIP    1	/* call mch_breakcheck() each time, it's fast */
 #endif
-#define HAVE_AVAIL_MEM
 
 #define HAVE_PUTENV		/* at least Bcc 5.2 and MSC have it */
 

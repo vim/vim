@@ -5048,37 +5048,6 @@ mch_breakcheck(void)
 }
 
 
-/*
- * How much memory is available in Kbyte?
- * Return sum of available physical and page file memory.
- */
-/*ARGSUSED*/
-    long_u
-mch_avail_mem(int special)
-{
-#ifdef MEMORYSTATUSEX
-    PlatformId();
-    if (g_PlatformId == VER_PLATFORM_WIN32_NT)
-    {
-	MEMORYSTATUSEX	ms;
-
-	/* Need to use GlobalMemoryStatusEx() when there is more memory than
-	 * what fits in 32 bits. But it's not always available. */
-	ms.dwLength = sizeof(MEMORYSTATUSEX);
-	GlobalMemoryStatusEx(&ms);
-	return (long_u)((ms.ullAvailPhys + ms.ullAvailPageFile) >> 10);
-    }
-    else
-#endif
-    {
-	MEMORYSTATUS	ms;
-
-	ms.dwLength = sizeof(MEMORYSTATUS);
-	GlobalMemoryStatus(&ms);
-	return (long_u)((ms.dwAvailPhys + ms.dwAvailPageFile) >> 10);
-    }
-}
-
 #ifdef FEAT_MBYTE
 /*
  * Same code as below, but with wide functions and no comments.
