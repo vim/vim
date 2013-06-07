@@ -3156,6 +3156,8 @@ static void clear_sub __ARGS((regsub_T *sub));
 static void copy_sub __ARGS((regsub_T *to, regsub_T *from));
 static void copy_sub_off __ARGS((regsub_T *to, regsub_T *from));
 static int sub_equal __ARGS((regsub_T *sub1, regsub_T *sub2));
+static int has_state_with_pos __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs));
+static int state_in_list __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs));
 static void addstate __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs, int off));
 static void addstate_here __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs, nfa_pim_T *pim, int *ip));
 
@@ -3319,6 +3321,51 @@ report_state(char *action, regsub_T *sub, nfa_state_T *state, int lid)
 }
 #endif
 
+/*
+ * Return TRUE if the same state is already in list "l" with the same
+ * positions as "subs".
+ */
+    static int
+has_state_with_pos(l, state, subs)
+    nfa_list_T		*l;	/* runtime state list */
+    nfa_state_T		*state;	/* state to update */
+    regsubs_T		*subs;	/* pointers to subexpressions */
+{
+    nfa_thread_T	*thread;
+    int			i;
+
+    for (i = 0; i < l->n; ++i)
+    {
+	thread = &l->t[i];
+	if (thread->state->id == state->id
+		&& sub_equal(&thread->subs.norm, &subs->norm)
+#ifdef FEAT_SYN_HL
+		&& (!nfa_has_zsubexpr ||
+		       sub_equal(&thread->subs.synt, &subs->synt))
+#endif
+			      )
+	    return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Return TRUE if "state" is already in list "l".
+ */
+    static int
+state_in_list(l, state, subs)
+    nfa_list_T		*l;	/* runtime state list */
+    nfa_state_T		*state;	/* state to update */
+    regsubs_T		*subs;	/* pointers to subexpressions */
+{
+    if (state->lastlist[nfa_ll_index] == l->id)
+    {
+	if (!nfa_has_backref || has_state_with_pos(l, state, subs))
+	    return TRUE;
+    }
+    return FALSE;
+}
+
     static void
 addstate(l, state, subs, off)
     nfa_list_T		*l;	/* runtime state list */
@@ -3431,20 +3478,8 @@ skip_add:
 		    return;
 		}
 
-		/* See if the same state is already in the list with the same
-		 * positions. */
-		for (i = 0; i < l->n; ++i)
-		{
-		    thread = &l->t[i];
-		    if (thread->state->id == state->id
-			    && sub_equal(&thread->subs.norm, &subs->norm)
-#ifdef FEAT_SYN_HL
-			    && (!nfa_has_zsubexpr ||
-				   sub_equal(&thread->subs.synt, &subs->synt))
-#endif
-					  )
-			goto skip_add;
-		}
+		if (has_state_with_pos(l, state, subs))
+		    goto skip_add;
 	    }
 
 	    /* when there are backreferences or look-behind matches the number
@@ -4600,6 +4635,47 @@ nfa_regmatch(prog, start, submatch, m)
 		break;
 
 	    case NFA_START_PATTERN:
+	      {
+		nfa_state_T *skip = NULL;
+#ifdef ENABLE_LOG
+		int	    skip_lid = 0;
+#endif
+
+		/* There is no point in trying to match the pattern if the
+		 * output state is not going to be added to the list. */
+		if (state_in_list(nextlist, t->state->out1->out, &t->subs))
+		{
+		    skip = t->state->out1->out;
+#ifdef ENABLE_LOG
+		    skip_lid = nextlist->id;
+#endif
+		}
+		else if (state_in_list(nextlist,
+					  t->state->out1->out->out, &t->subs))
+		{
+		    skip = t->state->out1->out->out;
+#ifdef ENABLE_LOG
+		    skip_lid = nextlist->id;
+#endif
+		}
+		else if(state_in_list(thislist,
+					  t->state->out1->out->out, &t->subs))
+		{
+		    skip = t->state->out1->out->out;
+#ifdef ENABLE_LOG
+		    skip_lid = thislist->id;
+#endif
+		}
+		if (skip != NULL)
+		{
+#ifdef ENABLE_LOG
+		    nfa_set_code(skip->c);
+		    fprintf(log_fd, "> Not trying to match pattern, output state %d is already in list %d. char %d: %s\n",
+			    abs(skip->id), skip_lid, skip->c, code);
+#endif
+		    break;
+		}
+
 		/* First try matching the pattern. */
 		result = recursive_regmatch(t->state, prog,
 						       submatch, m, &listids);
@@ -4654,6 +4730,7 @@ nfa_regmatch(prog, start, submatch, m)
 		    }
 		}
 		break;
+	      }
 
 	    case NFA_BOL:
 		if (reginput == regline)
