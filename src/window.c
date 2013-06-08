@@ -6818,7 +6818,7 @@ match_delete(wp, id, perr)
 	wp->w_match_head = cur->next;
     else
 	prev->next = cur->next;
-    vim_free(cur->match.regprog);
+    vim_regfree(cur->match.regprog);
     vim_free(cur->pattern);
     vim_free(cur);
     redraw_later(SOME_VALID);
@@ -6837,7 +6837,7 @@ clear_matches(wp)
     while (wp->w_match_head != NULL)
     {
 	m = wp->w_match_head->next;
-	vim_free(wp->w_match_head->match.regprog);
+	vim_regfree(wp->w_match_head->match.regprog);
 	vim_free(wp->w_match_head->pattern);
 	vim_free(wp->w_match_head);
 	wp->w_match_head = m;

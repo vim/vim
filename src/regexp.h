@@ -89,6 +89,7 @@ typedef struct
 
     int			reganch;	/* pattern starts with ^ */
     int			regstart;	/* char at start of pattern */
+    char_u		*match_text;	/* plain text to match with */
 
     int			has_zend;	/* pattern contains \ze */
     int			has_backref;	/* pattern contains \1 .. \9 */
@@ -147,6 +148,7 @@ typedef struct
 struct regengine
 {
     regprog_T	*(*regcomp)(char_u*, int);
+    void	(*regfree)(regprog_T *);
     int		(*regexec)(regmatch_T*, char_u*, colnr_T);
 #if defined(FEAT_MODIFY_FNAME) || defined(FEAT_EVAL) \
 	|| defined(FIND_REPLACE_DIALOG) || defined(PROTO)

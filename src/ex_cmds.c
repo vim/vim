@@ -571,7 +571,7 @@ sortend:
     vim_free(nrs);
     vim_free(sortbuf1);
     vim_free(sortbuf2);
-    vim_free(regmatch.regprog);
+    vim_regfree(regmatch.regprog);
     if (got_int)
 	EMSG(_(e_interr));
 }
@@ -5261,7 +5261,7 @@ outofmem:
 	changed_window_setting();
 #endif
 
-    vim_free(regmatch.regprog);
+    vim_regfree(regmatch.regprog);
 }
 
 /*
@@ -5436,7 +5436,7 @@ ex_global(eap)
 	global_exe(cmd);
 
     ml_clearmarked();	   /* clear rest of the marks */
-    vim_free(regmatch.regprog);
+    vim_regfree(regmatch.regprog);
 }
 
 /*

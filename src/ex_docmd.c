@@ -7779,7 +7779,7 @@ ex_open(eap)
 		curwin->w_cursor.col = (colnr_T)(regmatch.startp[0] - p);
 	    else
 		EMSG(_(e_nomatch));
-	    vim_free(regmatch.regprog);
+	    vim_regfree(regmatch.regprog);
 	}
 	/* Move to the NUL, ignore any other arguments. */
 	eap->arg += STRLEN(eap->arg);

@@ -270,6 +270,7 @@ static int nfa_ll_index = 0;
 static int nfa_regcomp_start __ARGS((char_u *expr, int re_flags));
 static int nfa_get_reganch __ARGS((nfa_state_T *start, int depth));
 static int nfa_get_regstart __ARGS((nfa_state_T *start, int depth));
+static char_u *nfa_get_match_text __ARGS((nfa_state_T *start));
 static int nfa_recognize_char_class __ARGS((char_u *start, char_u *end, int extra_newl));
 static int nfa_emit_equi_class __ARGS((int c));
 static int nfa_regatom __ARGS((void));
@@ -295,6 +296,7 @@ static int nfa_re_num_cmp __ARGS((long_u val, int op, long_u pos));
 static long nfa_regtry __ARGS((nfa_regprog_T *prog, colnr_T col));
 static long nfa_regexec_both __ARGS((char_u *line, colnr_T col));
 static regprog_T *nfa_regcomp __ARGS((char_u *expr, int re_flags));
+static void nfa_regfree __ARGS((regprog_T *prog));
 static int nfa_regexec __ARGS((regmatch_T *rmp, char_u *line, colnr_T col));
 static long nfa_regexec_multi __ARGS((regmmatch_T *rmp, win_T *win, buf_T *buf, linenr_T lnum, colnr_T col, proftime_T *tm));
 
@@ -490,6 +492,52 @@ nfa_get_regstart(start, depth)
 	}
     }
     return 0;
+}
+
+/*
+ * Figure out if the NFA state list contains just literal text and nothing
+ * else.  If so return a string with what must match after regstart.
+ * Otherwise return NULL.
+ */
+    static char_u *
+nfa_get_match_text(start)
+    nfa_state_T *start;
+{
+    nfa_state_T *p = start;
+    int		len = 0;
+    char_u	*ret;
+    char_u	*s;
+
+    if (p->c != NFA_MOPEN)
+	return NULL; /* just in case */
+    p = p->out;
+    while (p->c > 0)
+    {
+	len += MB_CHAR2LEN(p->c);
+	p = p->out;
+    }
+    if (p->c != NFA_MCLOSE || p->out->c != NFA_MATCH)
+	return NULL;
+
+    ret = alloc(len);
+    if (ret != NULL)
+    {
+	len = 0;
+	p = start->out->out; /* skip first char, it goes into regstart */
+	s = ret;
+	while (p->c > 0)
+	{
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+		s += (*mb_char2bytes)(p->c, s);
+	    else
+#endif
+		*s++ = p->c;
+	    p = p->out;
+	}
+	*s = NUL;
+    }
+    return ret;
 }
 
 /*
@@ -2280,8 +2328,13 @@ nfa_dump(prog)
     {
 	nfa_print_state(debugf, prog->start);
 
-	fprintf(debugf, "reganch: %d\n", prog->reganch);
-	fprintf(debugf, "regstart: %d\n", prog->regstart);
+	if (prog->reganch)
+	    fprintf(debugf, "reganch: %d\n", prog->reganch);
+	if (prog->regstart != NUL)
+	    fprintf(debugf, "regstart: %c (decimal: %d)\n",
+					      prog->regstart, prog->regstart);
+	if (prog->match_text != NULL)
+	    fprintf(debugf, "match_text: \"%s\"\n", prog->match_text);
 
 	fclose(debugf);
     }
@@ -4154,6 +4207,7 @@ recursive_regmatch(state, prog, submatch, m, listids)
 
 static int failure_chance __ARGS((nfa_state_T *state, int depth));
 static int skip_to_start __ARGS((int c, colnr_T *colp));
+static long find_match_text __ARGS((colnr_T startcol, int regstart, char_u *match_text));
 
 /*
  * Estimate the chance of a match with "state" failing.
@@ -4328,6 +4382,69 @@ skip_to_start(c, colp)
 	return FAIL;
     *colp = (int)(s - regline);
     return OK;
+}
+
+/*
+ * Check for a match with match_text.
+ * Called after skip_to_start() has find regstart.
+ * Returns zero for no match, 1 for a match.
+ */
+    static long
+find_match_text(startcol, regstart, match_text)
+    colnr_T startcol;
+    int	    regstart;
+    char_u  *match_text;
+{
+    colnr_T col = startcol;
+    int	    c1, c2;
+    int	    len1, len2;
+    int	    match;
+
+    for (;;)
+    {
+	match = TRUE;
+	len2 = MB_CHAR2LEN(regstart); /* skip regstart */
+	for (len1 = 0; match_text[len1] != NUL; len1 += MB_CHAR2LEN(c1))
+	{
+	    c1 = PTR2CHAR(match_text + len1);
+	    c2 = PTR2CHAR(regline + col + len2);
+	    if (c1 != c2 && (!ireg_ic || MB_TOLOWER(c1) != MB_TOLOWER(c2)))
+	    {
+		match = FALSE;
+		break;
+	    }
+	    len2 += MB_CHAR2LEN(c2);
+	}
+	if (match
+#ifdef FEAT_MBYTE
+		/* check that no composing char follows */
+		&& !(enc_utf8
+			   && utf_iscomposing(PTR2CHAR(regline + col + len2)))
+#endif
+		)
+	{
+	    cleanup_subexpr();
+	    if (REG_MULTI)
+	    {
+		reg_startpos[0].lnum = reglnum;
+		reg_startpos[0].col = col;
+		reg_endpos[0].lnum = reglnum;
+		reg_endpos[0].col = col + len2;
+	    }
+	    else
+	    {
+		reg_startp[0] = regline + col;
+		reg_endp[0] = regline + col + len2;
+	    }
+	    return 1L;
+	}
+
+	/* Try finding regstart after the current match. */
+	col += MB_CHAR2LEN(regstart); /* skip regstart */
+	if (skip_to_start(regstart, &col) == FAIL)
+	    break;
+    }
+    return 0L;
 }
 
 /*
@@ -5584,17 +5701,6 @@ nfa_regtry(prog, col)
 #endif
 
     reginput = regline + col;
-    need_clear_subexpr = TRUE;
-#ifdef FEAT_SYN_HL
-    /* Clear the external match subpointers if necessary. */
-    if (prog->reghasz == REX_SET)
-    {
-	nfa_has_zsubexpr = TRUE;
-	need_clear_zsubexpr = TRUE;
-    }
-    else
-	nfa_has_zsubexpr = FALSE;
-#endif
 
 #ifdef ENABLE_LOG
     f = fopen(NFA_REGEXP_RUN_LOG, "a");
@@ -5764,11 +5870,30 @@ nfa_regexec_both(line, startcol)
     if (prog->reganch && col > 0)
 	return 0L;
 
+    need_clear_subexpr = TRUE;
+#ifdef FEAT_SYN_HL
+    /* Clear the external match subpointers if necessary. */
+    if (prog->reghasz == REX_SET)
+    {
+	nfa_has_zsubexpr = TRUE;
+	need_clear_zsubexpr = TRUE;
+    }
+    else
+	nfa_has_zsubexpr = FALSE;
+#endif
+
     if (prog->regstart != NUL)
+    {
 	/* Skip ahead until a character we know the match must start with.
 	 * When there is none there is no match. */
 	if (skip_to_start(prog->regstart, &col) == FAIL)
 	    return 0L;
+
+	/* If match_text is set it contains the full text that must match.
+	 * Nothing else to try. Doesn't handle combining chars well. */
+	if (prog->match_text != NULL && !ireg_icombine)
+	    return find_match_text(col, prog->regstart, prog->match_text);
+    }
 
     /* If the start column is past the maximum column: no need to try. */
     if (ireg_maxcol > 0 && col >= ireg_maxcol)
@@ -5876,6 +6001,8 @@ nfa_regcomp(expr, re_flags)
     prog->reganch = nfa_get_reganch(prog->start, 0);
     prog->regstart = nfa_get_regstart(prog->start, 0);
 
+    prog->match_text = nfa_get_match_text(prog->start);
+
 #ifdef ENABLE_LOG
     nfa_postfix_dump(expr, OK);
     nfa_dump(prog);
@@ -5885,7 +6012,7 @@ nfa_regcomp(expr, re_flags)
     prog->reghasz = re_has_z;
 #endif
 #ifdef DEBUG
-    prog->pattern = vim_strsave(expr); /* memory will leak */
+    prog->pattern = vim_strsave(expr);
     nfa_regengine.expr = NULL;
 #endif
 
@@ -5907,6 +6034,22 @@ fail:
     goto out;
 }
 
+/*
+ * Free a compiled regexp program, returned by nfa_regcomp().
+ */
+    static void
+nfa_regfree(prog)
+    regprog_T   *prog;
+{
+    if (prog != NULL)
+    {
+	vim_free(((nfa_regprog_T *)prog)->match_text);
+#ifdef DEBUG
+	vim_free(((nfa_regprog_T *)prog)->pattern);
+#endif
+	vim_free(prog);
+    }
+}
 
 /*
  * Match a regexp against a string.

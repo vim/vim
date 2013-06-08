@@ -2658,7 +2658,7 @@ slang_clear(lp)
     ga_clear(gap);
 
     for (i = 0; i < lp->sl_prefixcnt; ++i)
-	vim_free(lp->sl_prefprog[i]);
+	vim_regfree(lp->sl_prefprog[i]);
     lp->sl_prefixcnt = 0;
     vim_free(lp->sl_prefprog);
     lp->sl_prefprog = NULL;
@@ -2669,7 +2669,7 @@ slang_clear(lp)
     vim_free(lp->sl_midword);
     lp->sl_midword = NULL;
 
-    vim_free(lp->sl_compprog);
+    vim_regfree(lp->sl_compprog);
     vim_free(lp->sl_comprules);
     vim_free(lp->sl_compstartflags);
     vim_free(lp->sl_compallflags);
@@ -5802,7 +5802,7 @@ spell_read_aff(spin, fname)
 					{
 					    sprintf((char *)buf, "^%s",
 							  aff_entry->ae_cond);
-					    vim_free(aff_entry->ae_prog);
+					    vim_regfree(aff_entry->ae_prog);
 					    aff_entry->ae_prog = vim_regcomp(
 						    buf, RE_MAGIC + RE_STRING);
 					}
@@ -6507,7 +6507,7 @@ spell_free_aff(aff)
 		--todo;
 		ah = HI2AH(hi);
 		for (ae = ah->ah_first; ae != NULL; ae = ae->ae_next)
-		    vim_free(ae->ae_prog);
+		    vim_regfree(ae->ae_prog);
 	    }
 	}
 	if (ht == &aff->af_suff)

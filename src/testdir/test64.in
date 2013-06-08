@@ -260,6 +260,8 @@ STARTTEST
 :call add(tl, [2, '[^[:alpha:]]\+','abcccadfoij7787ysf287yrnccdu','7787'])
 :call add(tl, [2, '[-a]', '-', '-'])
 :call add(tl, [2, '[a-]', '-', '-'])
+:call add(tl, [2, '[a-f]*\c','ABCDEFGH','ABCDEF'])
+:call add(tl, [2, '[abc][xyz]\c','-af-AF-BY--','BY'])
 :" filename regexp
 :call add(tl, [2, '[-./[:alnum:]_~]\+', 'log13.file', 'log13.file'])
 :" special chars
@@ -384,6 +386,12 @@ STARTTEST
 :call add(tl, [2, '\(<<\)\@1<=span.', 'xxspanxxxx<spanxx<<spanyyy'])
 :call add(tl, [2, '\(<<\)\@2<=span.', 'xxspanxxxx<spanxx<<spanyyy', 'spany', '<<'])
 :call add(tl, [2, '\(foo\)\@<!bar.', 'xx foobar1 xbar2 xx', 'bar2'])
+:"
+:" look-behind match in front of a zero-width item
+:call add(tl, [2, '\v\C%(<Last Changed:\s+)@<=.*$', '" test header'])
+:call add(tl, [2, '\v\C%(<Last Changed:\s+)@<=.*$', '" Last Changed: 1970', '1970'])
+:call add(tl, [2, '\(foo\)\@<=\>', 'foobar'])
+:call add(tl, [2, '\(foo\)\@<=\>', 'barfoo', '', 'foo'])
 :"
 :""""" \@>
 :call add(tl, [2, '\(a*\)\@>a', 'aaaa'])

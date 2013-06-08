@@ -7082,7 +7082,7 @@ end_search_hl()
 {
     if (search_hl.rm.regprog != NULL)
     {
-	vim_free(search_hl.rm.regprog);
+	vim_regfree(search_hl.rm.regprog);
 	search_hl.rm.regprog = NULL;
     }
 }
@@ -7284,7 +7284,7 @@ next_search_hl(win, shl, lnum, mincol)
 	    if (shl == &search_hl)
 	    {
 		/* don't free regprog in the match list, it's a copy */
-		vim_free(shl->rm.regprog);
+		vim_regfree(shl->rm.regprog);
 		no_hlsearch = TRUE;
 	    }
 	    shl->rm.regprog = NULL;

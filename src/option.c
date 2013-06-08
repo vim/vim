@@ -7491,7 +7491,7 @@ check_clipboard_option()
 	clip_autoselect_plus = new_autoselect_plus;
 	clip_autoselectml = new_autoselectml;
 	clip_html = new_html;
-	vim_free(clip_exclude_prog);
+	vim_regfree(clip_exclude_prog);
 	clip_exclude_prog = new_exclude_prog;
 #ifdef FEAT_GUI_GTK
 	if (gui.in_use)
@@ -7502,7 +7502,7 @@ check_clipboard_option()
 #endif
     }
     else
-	vim_free(new_exclude_prog);
+	vim_regfree(new_exclude_prog);
 
     return errmsg;
 }
@@ -7529,16 +7529,16 @@ compile_cap_prog(synblock)
 	if (re != NULL)
 	{
 	    synblock->b_cap_prog = vim_regcomp(re, RE_MAGIC);
+	    vim_free(re);
 	    if (synblock->b_cap_prog == NULL)
 	    {
 		synblock->b_cap_prog = rp; /* restore the previous program */
 		return e_invarg;
 	    }
-	    vim_free(re);
 	}
     }
 
-    vim_free(rp);
+    vim_regfree(rp);
     return NULL;
 }
 #endif

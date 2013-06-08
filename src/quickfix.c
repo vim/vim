@@ -863,7 +863,7 @@ qf_init_ok:
     for (fmt_ptr = fmt_first; fmt_ptr != NULL; fmt_ptr = fmt_first)
     {
 	fmt_first = fmt_ptr->next;
-	vim_free(fmt_ptr->prog);
+	vim_regfree(fmt_ptr->prog);
 	vim_free(fmt_ptr);
     }
     qf_clean_dir_stack(&dir_stack);
@@ -3487,7 +3487,7 @@ theend:
     vim_free(dirname_now);
     vim_free(dirname_start);
     vim_free(target_dir);
-    vim_free(regmatch.regprog);
+    vim_regfree(regmatch.regprog);
 }
 
 /*
@@ -4178,7 +4178,7 @@ ex_helpgrep(eap)
 	    }
 	}
 
-	vim_free(regmatch.regprog);
+	vim_regfree(regmatch.regprog);
 #ifdef FEAT_MBYTE
 	if (vc.vc_type != CONV_NONE)
 	    convert_setup(&vc, NULL, NULL);

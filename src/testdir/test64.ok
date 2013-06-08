@@ -584,6 +584,12 @@ OK 2 - [-a]
 OK 0 - [a-]
 OK 1 - [a-]
 OK 2 - [a-]
+OK 0 - [a-f]*\c
+OK 1 - [a-f]*\c
+OK 2 - [a-f]*\c
+OK 0 - [abc][xyz]\c
+OK 1 - [abc][xyz]\c
+OK 2 - [abc][xyz]\c
 OK 0 - [-./[:alnum:]_~]\+
 OK 1 - [-./[:alnum:]_~]\+
 OK 2 - [-./[:alnum:]_~]\+
@@ -872,6 +878,18 @@ OK 2 - \(<<\)\@2<=span.
 OK 0 - \(foo\)\@<!bar.
 OK 1 - \(foo\)\@<!bar.
 OK 2 - \(foo\)\@<!bar.
+OK 0 - \v\C%(<Last Changed:\s+)@<=.*$
+OK 1 - \v\C%(<Last Changed:\s+)@<=.*$
+OK 2 - \v\C%(<Last Changed:\s+)@<=.*$
+OK 0 - \v\C%(<Last Changed:\s+)@<=.*$
+OK 1 - \v\C%(<Last Changed:\s+)@<=.*$
+OK 2 - \v\C%(<Last Changed:\s+)@<=.*$
+OK 0 - \(foo\)\@<=\>
+OK 1 - \(foo\)\@<=\>
+OK 2 - \(foo\)\@<=\>
+OK 0 - \(foo\)\@<=\>
+OK 1 - \(foo\)\@<=\>
+OK 2 - \(foo\)\@<=\>
 OK 0 - \(a*\)\@>a
 OK 1 - \(a*\)\@>a
 OK 2 - \(a*\)\@>a

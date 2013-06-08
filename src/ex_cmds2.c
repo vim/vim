@@ -652,7 +652,7 @@ ex_breakdel(eap)
 	while (gap->ga_len > 0)
 	{
 	    vim_free(DEBUGGY(gap, todel).dbg_name);
-	    vim_free(DEBUGGY(gap, todel).dbg_prog);
+	    vim_regfree(DEBUGGY(gap, todel).dbg_prog);
 	    --gap->ga_len;
 	    if (todel < gap->ga_len)
 		mch_memmove(&DEBUGGY(gap, todel), &DEBUGGY(gap, todel + 1),
@@ -1985,7 +1985,7 @@ do_arglist(str, what, after)
 		    --match;
 		}
 
-	    vim_free(regmatch.regprog);
+	    vim_regfree(regmatch.regprog);
 	    vim_free(p);
 	    if (!didone)
 		EMSG2(_(e_nomatch2), ((char_u **)new_ga.ga_data)[i]);

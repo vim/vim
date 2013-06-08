@@ -456,8 +456,8 @@ get_number_indent(lnum)
 	    pos.coladd = 0;
 #endif
 	}
+	vim_regfree(regmatch.regprog);
     }
-    vim_free(regmatch.regprog);
 
     if (pos.lnum == 0 || *ml_get_pos(&pos) == NUL)
 	return -1;
@@ -9751,7 +9751,7 @@ dos_expandpath(
 # endif
 #endif
     vim_free(buf);
-    vim_free(regmatch.regprog);
+    vim_regfree(regmatch.regprog);
     vim_free(matchname);
 
     matches = gap->ga_len - start_len;
@@ -9993,7 +9993,7 @@ unix_expandpath(gap, path, wildoff, flags, didstar)
     }
 
     vim_free(buf);
-    vim_free(regmatch.regprog);
+    vim_regfree(regmatch.regprog);
 
     matches = gap->ga_len - start_len;
     if (matches > 0)
@@ -10358,7 +10358,7 @@ theend:
 	vim_free(in_curdir);
     }
     ga_clear_strings(&path_ga);
-    vim_free(regmatch.regprog);
+    vim_regfree(regmatch.regprog);
 
     if (sort_again)
 	remove_duplicates(gap);

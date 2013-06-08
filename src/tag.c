@@ -2491,7 +2491,7 @@ line_read_in:
 
 findtag_end:
     vim_free(lbuf);
-    vim_free(orgpat.regmatch.regprog);
+    vim_regfree(orgpat.regmatch.regprog);
     vim_free(tag_fname);
 #ifdef FEAT_EMACS_TAGS
     vim_free(ebuf);

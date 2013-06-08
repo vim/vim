@@ -1134,7 +1134,7 @@ free_all_mem()
     /* Free some global vars. */
     vim_free(username);
 # ifdef FEAT_CLIPBOARD
-    vim_free(clip_exclude_prog);
+    vim_regfree(clip_exclude_prog);
 # endif
     vim_free(last_cmdline);
 # ifdef FEAT_CMDHIST
@@ -5008,8 +5008,8 @@ vim_findfile(search_ctx_arg)
 #endif
 		{
 		    /*
-		     * we don't have further wildcards to expand, so we have to
-		     * check for the final file now
+		     * We don't have further wildcards to expand, so we have to
+		     * check for the final file now.
 		     */
 		    for (i = stackp->ffs_filearray_cur;
 					  i < stackp->ffs_filearray_size; ++i)

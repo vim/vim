@@ -5319,7 +5319,7 @@ gui_do_findrepl(flags, find_text, repl_text, down)
 	    }
 	    else
 		MSG(_("No match at cursor, finding next"));
-	    vim_free(regmatch.regprog);
+	    vim_regfree(regmatch.regprog);
 	}
     }
 

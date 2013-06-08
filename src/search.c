@@ -972,7 +972,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
     }
     while (--count > 0 && found);   /* stop after count matches or no match */
 
-    vim_free(regmatch.regprog);
+    vim_regfree(regmatch.regprog);
 
     called_emsg |= save_called_emsg;
 
@@ -4680,7 +4680,7 @@ is_zerowidth(pattern)
     }
 
     called_emsg |= save_called_emsg;
-    vim_free(regmatch.regprog);
+    vim_regfree(regmatch.regprog);
     return result;
 }
 #endif /* FEAT_VISUAL */
@@ -5402,9 +5402,9 @@ exit_matched:
 
 fpip_end:
     vim_free(file_line);
-    vim_free(regmatch.regprog);
-    vim_free(incl_regmatch.regprog);
-    vim_free(def_regmatch.regprog);
+    vim_regfree(regmatch.regprog);
+    vim_regfree(incl_regmatch.regprog);
+    vim_regfree(def_regmatch.regprog);
 }
 
     static void
