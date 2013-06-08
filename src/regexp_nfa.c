@@ -2794,6 +2794,7 @@ nfa_max_width(startstate, depth)
     /* unrecognized */
     return -1;
 }
+
 /*
  * Convert a postfix form into its equivalent NFA.
  * Return the NFA start state on success, NULL otherwise.
@@ -3433,6 +3434,7 @@ static void copy_sub __ARGS((regsub_T *to, regsub_T *from));
 static void copy_sub_off __ARGS((regsub_T *to, regsub_T *from));
 static int sub_equal __ARGS((regsub_T *sub1, regsub_T *sub2));
 static int has_state_with_pos __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs));
+static int match_follows __ARGS((nfa_state_T *startstate, int depth));
 static int state_in_list __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs));
 static void addstate __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs, int off));
 static void addstate_here __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs, nfa_pim_T *pim, int *ip));
@@ -3624,6 +3626,88 @@ has_state_with_pos(l, state, subs)
     }
     return FALSE;
 }
+
+/*
+ * Return TRUE if "state" leads to a NFA_MATCH without advancing the input.
+ */
+    static int
+match_follows(startstate, depth)
+    nfa_state_T *startstate;
+    int		depth;
+{
+    nfa_state_T	    *state = startstate;
+
+    /* avoid too much recursion */
+    if (depth > 10)
+	return FALSE;
+
+    for (;;)
+    {
+	switch (state->c)
+	{
+	    case NFA_MATCH:
+		return TRUE;
+
+	    case NFA_SPLIT:
+		return match_follows(state->out, depth + 1)
+				     || match_follows(state->out1, depth + 1);
+
+	    case NFA_START_INVISIBLE:
+	    case NFA_START_INVISIBLE_BEFORE:
+	    case NFA_START_INVISIBLE_NEG:
+	    case NFA_START_INVISIBLE_BEFORE_NEG:
+	    case NFA_COMPOSING:
+		/* skip ahead to next state */
+		state = state->out1->out;
+		break;
+
+	    case NFA_ANY:
+	    case NFA_IDENT:
+	    case NFA_SIDENT:
+	    case NFA_KWORD:
+	    case NFA_SKWORD:
+	    case NFA_FNAME:
+	    case NFA_SFNAME:
+	    case NFA_PRINT:
+	    case NFA_SPRINT:
+	    case NFA_WHITE:
+	    case NFA_NWHITE:
+	    case NFA_DIGIT:
+	    case NFA_NDIGIT:
+	    case NFA_HEX:
+	    case NFA_NHEX:
+	    case NFA_OCTAL:
+	    case NFA_NOCTAL:
+	    case NFA_WORD:
+	    case NFA_NWORD:
+	    case NFA_HEAD:
+	    case NFA_NHEAD:
+	    case NFA_ALPHA:
+	    case NFA_NALPHA:
+	    case NFA_LOWER:
+	    case NFA_NLOWER:
+	    case NFA_UPPER:
+	    case NFA_NUPPER:
+	    case NFA_START_COLL:
+	    case NFA_START_NEG_COLL:
+	    case NFA_NEWL:
+		/* state will advance input */
+		return FALSE;
+
+	    default:
+		if (state->c > 0)
+		    /* state will advance input */
+		    return FALSE;
+
+		/* Others: zero-width or possibly zero-width, might still find
+		 * a match at the same position, keep looking. */
+		break;
+	}
+	state = state->out;
+    }
+    return FALSE;
+}
+
 
 /*
  * Return TRUE if "state" is already in list "l".
@@ -5714,9 +5798,11 @@ nfa_regmatch(prog, start, submatch, m)
 
 	    if (add_state != NULL)
 	    {
-		if (t->pim != NULL)
+		/* Handle the postponed invisible match before advancing to
+		 * the next character and for a zero-width match if the match
+		 * might end without advancing. */
+		if (t->pim != NULL && (!add_here || match_follows(add_state, 0)))
 		{
-		    /* postponed invisible match */
 		    if (t->pim->result == NFA_PIM_TODO)
 		    {
 #ifdef ENABLE_LOG
@@ -5773,7 +5859,7 @@ nfa_regmatch(prog, start, submatch, m)
 		}
 
 		if (add_here)
-		    addstate_here(thislist, add_state, &t->subs, NULL, &listidx);
+		    addstate_here(thislist, add_state, &t->subs, t->pim, &listidx);
 		else
 		{
 		    addstate(nextlist, add_state, &t->subs, add_off);
