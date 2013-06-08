@@ -6577,6 +6577,27 @@ syntime_clear()
     }
 }
 
+#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
+/*
+ * Function given to ExpandGeneric() to obtain the possible arguments of the
+ * ":syntime {on,off,clear,report}" command.
+ */
+    char_u *
+get_syntime_arg(xp, idx)
+    expand_T	*xp UNUSED;
+    int		idx;
+{
+    switch (idx)
+    {
+	case 0: return (char_u *)"on";
+	case 1: return (char_u *)"off";
+	case 2: return (char_u *)"clear";
+	case 3: return (char_u *)"report";
+    }
+    return NULL;
+}
+#endif
+
 typedef struct
 {
     proftime_T	total;
@@ -6610,7 +6631,9 @@ syntime_report()
 {
     int		idx;
     synpat_T	*spp;
+# ifdef FEAT_FLOAT
     proftime_T	tm;
+# endif
     int		len;
     proftime_T	total_total;
     int		total_count = 0;

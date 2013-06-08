@@ -20,6 +20,7 @@ int syn_get_sub_char __ARGS((void));
 int syn_get_stack_item __ARGS((int i));
 int syn_get_foldlevel __ARGS((win_T *wp, long lnum));
 void ex_syntime __ARGS((exarg_T *eap));
+char_u *get_syntime_arg __ARGS((expand_T *xp, int idx));
 void init_highlight __ARGS((int both, int reset));
 int load_colors __ARGS((char_u *name));
 void do_highlight __ARGS((char_u *line, int forceit, int init));
