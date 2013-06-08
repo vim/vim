@@ -4153,6 +4153,7 @@ recursive_regmatch(state, prog, submatch, m, listids)
 }
 
 static int failure_chance __ARGS((nfa_state_T *state, int depth));
+static int skip_to_start __ARGS((int c, colnr_T *colp));
 
 /*
  * Estimate the chance of a match with "state" failing.
@@ -4302,6 +4303,31 @@ failure_chance(state, depth)
 
     /* something else, includes character classes */
     return 50;
+}
+
+/*
+ * Skip until the char "c" we know a match must start with.
+ */
+    static int
+skip_to_start(c, colp)
+    int		c;
+    colnr_T	*colp;
+{
+    char_u *s;
+
+    /* Used often, do some work to avoid call overhead. */
+    if (!ireg_ic
+#ifdef FEAT_MBYTE
+		&& !has_mbyte
+#endif
+		)
+	s = vim_strbyte(regline + *colp, c);
+    else
+	s = cstrchr(regline + *colp, c);
+    if (s == NULL)
+	return FAIL;
+    *colp = (int)(s - regline);
+    return OK;
 }
 
 /*
@@ -5449,12 +5475,50 @@ nfa_regmatch(prog, start, submatch, m)
 	     * the first MOPEN. */
 	    if (toplevel)
 	    {
-		if (REG_MULTI)
-		    m->norm.list.multi[0].start.col =
+		int add = TRUE;
+		int c;
+
+		if (prog->regstart != NUL && clen != 0)
+		{
+		    if (nextlist->n == 0)
+		    {
+			colnr_T col = (colnr_T)(reginput - regline) + clen;
+
+			/* Nextlist is empty, we can skip ahead to the
+			 * character that must appear at the start. */
+			if (skip_to_start(prog->regstart, &col) == FAIL)
+			    break;
+#ifdef ENABLE_LOG
+			fprintf(log_fd, "  Skipping ahead %d bytes to regstart\n",
+				col - ((colnr_T)(reginput - regline) + clen));
+#endif
+			reginput = regline + col - clen;
+		    }
+		    else
+		    {
+			/* Checking if the required start character matches is
+			 * cheaper than adding a state that won't match. */
+			c = PTR2CHAR(reginput + clen);
+			if (c != prog->regstart && (!ireg_ic || MB_TOLOWER(c)
+					       != MB_TOLOWER(prog->regstart)))
+			{
+#ifdef ENABLE_LOG
+			    fprintf(log_fd, "  Skipping start state, regstart does not match\n");
+#endif
+			    add = FALSE;
+			}
+		    }
+		}
+
+		if (add)
+		{
+		    if (REG_MULTI)
+			m->norm.list.multi[0].start.col =
 					 (colnr_T)(reginput - regline) + clen;
-		else
-		    m->norm.list.line[0].start = reginput + clen;
-		addstate(nextlist, start->out, m, clen);
+		    else
+			m->norm.list.line[0].start = reginput + clen;
+		    addstate(nextlist, start->out, m, clen);
+		}
 	    }
 	    else
 		addstate(nextlist, start, m, clen);
@@ -5701,23 +5765,10 @@ nfa_regexec_both(line, startcol)
 	return 0L;
 
     if (prog->regstart != NUL)
-    {
-	char_u *s;
-
-	/* Skip until the char we know it must start with.
-	 * Used often, do some work to avoid call overhead. */
-	if (!ireg_ic
-#ifdef FEAT_MBYTE
-		    && !has_mbyte
-#endif
-		    )
-	    s = vim_strbyte(regline + col, prog->regstart);
-	else
-	    s = cstrchr(regline + col, prog->regstart);
-	if (s == NULL)
+	/* Skip ahead until a character we know the match must start with.
+	 * When there is none there is no match. */
+	if (skip_to_start(prog->regstart, &col) == FAIL)
 	    return 0L;
-	col = (int)(s - regline);
-    }
 
     /* If the start column is past the maximum column: no need to try. */
     if (ireg_maxcol > 0 && col >= ireg_maxcol)
