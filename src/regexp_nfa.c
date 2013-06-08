@@ -6198,7 +6198,11 @@ nfa_regexec_both(line, startcol)
 
 	/* If match_text is set it contains the full text that must match.
 	 * Nothing else to try. Doesn't handle combining chars well. */
-	if (prog->match_text != NULL && !ireg_icombine)
+	if (prog->match_text != NULL
+#ifdef FEAT_MBYTE
+		    && !ireg_icombine
+#endif
+		)
 	    return find_match_text(col, prog->regstart, prog->match_text);
     }
 
