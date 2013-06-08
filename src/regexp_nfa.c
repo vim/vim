@@ -38,19 +38,19 @@ enum
     NFA_START_COLL,		    /* [abc] start */
     NFA_END_COLL,		    /* [abc] end */
     NFA_START_NEG_COLL,		    /* [^abc] start */
-    NFA_END_NEG_COLL,		    /* [^abc] end (only used in postfix) */
-    NFA_RANGE,			    /* range of the two previous items (only
-				     * used in postfix) */
+    NFA_END_NEG_COLL,		    /* [^abc] end (postfix only) */
+    NFA_RANGE,			    /* range of the two previous items
+				     * (postfix only) */
     NFA_RANGE_MIN,		    /* low end of a range  */
     NFA_RANGE_MAX,		    /* high end of a range  */
 
-    NFA_CONCAT,			    /* concatenate two previous items (only
-				     * used in postfix) */
-    NFA_OR,
-    NFA_STAR,			    /* greedy * */
-    NFA_STAR_NONGREEDY,		    /* non-greedy * */
-    NFA_QUEST,			    /* greedy \? */
-    NFA_QUEST_NONGREEDY,	    /* non-greedy \? */
+    NFA_CONCAT,			    /* concatenate two previous items (postfix
+				     * only) */
+    NFA_OR,			    /* \| (postfix only) */
+    NFA_STAR,			    /* greedy * (posfix only) */
+    NFA_STAR_NONGREEDY,		    /* non-greedy * (postfix only) */
+    NFA_QUEST,			    /* greedy \? (postfix only) */
+    NFA_QUEST_NONGREEDY,	    /* non-greedy \? (postfix only) */
 
     NFA_BOL,			    /* ^    Begin line */
     NFA_EOL,			    /* $    End line */
@@ -153,8 +153,6 @@ enum
 
     /* NFA_FIRST_NL */
     NFA_ANY,		/*	Match any one character. */
-    NFA_ANYOF,		/*	Match any character in this string. */
-    NFA_ANYBUT,		/*	Match any character not in this string. */
     NFA_IDENT,		/*	Match identifier char */
     NFA_SIDENT,		/*	Match identifier char but no digit */
     NFA_KWORD,		/*	Match keyword char */
@@ -496,8 +494,8 @@ nfa_get_regstart(start, depth)
 
 /*
  * Figure out if the NFA state list contains just literal text and nothing
- * else.  If so return a string with what must match after regstart.
- * Otherwise return NULL.
+ * else.  If so return a string in allocated memory with what must match after
+ * regstart.  Otherwise return NULL.
  */
     static char_u *
 nfa_get_match_text(start)
@@ -2578,6 +2576,225 @@ st_pop(p, stack)
 }
 
 /*
+ * Estimate the maximum byte length of anything matching "state".
+ * When unknown or unlimited return -1.
+ */
+    static int
+nfa_max_width(startstate, depth)
+    nfa_state_T *startstate;
+    int		depth;
+{
+    int		    l, r;
+    nfa_state_T	    *state = startstate;
+    int		    len = 0;
+
+    /* detect looping in a NFA_SPLIT */
+    if (depth > 4)
+	return -1;
+
+    for (;;)
+    {
+	switch (state->c)
+	{
+	    case NFA_END_INVISIBLE:
+	    case NFA_END_INVISIBLE_NEG:
+		/* the end, return what we have */
+		return len;
+
+	    case NFA_SPLIT:
+		/* two alternatives, use the maximum */
+		l = nfa_max_width(state->out, depth + 1);
+		r = nfa_max_width(state->out1, depth + 1);
+		if (l < 0 || r < 0)
+		    return -1;
+		return len + (l > r ? l : r);
+
+	    case NFA_ANY:
+	    case NFA_START_COLL:
+	    case NFA_START_NEG_COLL:
+		/* matches some character, including composing chars */
+#ifdef FEAT_MBYTE
+		if (enc_utf8)
+		    len += MB_MAXBYTES;
+		else if (has_mbyte)
+		    len += 2;
+		else
+#endif
+		    ++len;
+		if (state->c != NFA_ANY)
+		{
+		    /* skip over the characters */
+		    state = state->out1->out;
+		    continue;
+		}
+		break;
+
+	    case NFA_DIGIT:
+	    case NFA_WHITE:
+	    case NFA_HEX:
+	    case NFA_OCTAL:
+		/* ascii */
+		++len;
+		break;
+
+	    case NFA_IDENT:
+	    case NFA_SIDENT:
+	    case NFA_KWORD:
+	    case NFA_SKWORD:
+	    case NFA_FNAME:
+	    case NFA_SFNAME:
+	    case NFA_PRINT:
+	    case NFA_SPRINT:
+	    case NFA_NWHITE:
+	    case NFA_NDIGIT:
+	    case NFA_NHEX:
+	    case NFA_NOCTAL:
+	    case NFA_WORD:
+	    case NFA_NWORD:
+	    case NFA_HEAD:
+	    case NFA_NHEAD:
+	    case NFA_ALPHA:
+	    case NFA_NALPHA:
+	    case NFA_LOWER:
+	    case NFA_NLOWER:
+	    case NFA_UPPER:
+	    case NFA_NUPPER:
+		/* possibly non-ascii */
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		    len += 3;
+		else
+#endif
+		    ++len;
+		break;
+
+	    case NFA_START_INVISIBLE:
+	    case NFA_START_INVISIBLE_NEG:
+	    case NFA_START_INVISIBLE_BEFORE:
+	    case NFA_START_INVISIBLE_BEFORE_NEG:
+		/* zero-width, out1 points to the END state */
+		state = state->out1->out;
+		continue;
+
+	    case NFA_BACKREF1:
+	    case NFA_BACKREF2:
+	    case NFA_BACKREF3:
+	    case NFA_BACKREF4:
+	    case NFA_BACKREF5:
+	    case NFA_BACKREF6:
+	    case NFA_BACKREF7:
+	    case NFA_BACKREF8:
+	    case NFA_BACKREF9:
+#ifdef FEAT_SYN_HL
+	    case NFA_ZREF1:
+	    case NFA_ZREF2:
+	    case NFA_ZREF3:
+	    case NFA_ZREF4:
+	    case NFA_ZREF5:
+	    case NFA_ZREF6:
+	    case NFA_ZREF7:
+	    case NFA_ZREF8:
+	    case NFA_ZREF9:
+#endif
+	    case NFA_NEWL:
+	    case NFA_SKIP:
+		/* unknown width */
+		return -1;
+
+	    case NFA_BOL:
+	    case NFA_EOL:
+	    case NFA_BOF:
+	    case NFA_EOF:
+	    case NFA_BOW:
+	    case NFA_EOW:
+	    case NFA_MOPEN:
+	    case NFA_MOPEN1:
+	    case NFA_MOPEN2:
+	    case NFA_MOPEN3:
+	    case NFA_MOPEN4:
+	    case NFA_MOPEN5:
+	    case NFA_MOPEN6:
+	    case NFA_MOPEN7:
+	    case NFA_MOPEN8:
+	    case NFA_MOPEN9:
+#ifdef FEAT_SYN_HL
+	    case NFA_ZOPEN:
+	    case NFA_ZOPEN1:
+	    case NFA_ZOPEN2:
+	    case NFA_ZOPEN3:
+	    case NFA_ZOPEN4:
+	    case NFA_ZOPEN5:
+	    case NFA_ZOPEN6:
+	    case NFA_ZOPEN7:
+	    case NFA_ZOPEN8:
+	    case NFA_ZOPEN9:
+	    case NFA_ZCLOSE:
+	    case NFA_ZCLOSE1:
+	    case NFA_ZCLOSE2:
+	    case NFA_ZCLOSE3:
+	    case NFA_ZCLOSE4:
+	    case NFA_ZCLOSE5:
+	    case NFA_ZCLOSE6:
+	    case NFA_ZCLOSE7:
+	    case NFA_ZCLOSE8:
+	    case NFA_ZCLOSE9:
+#endif
+	    case NFA_MCLOSE:
+	    case NFA_MCLOSE1:
+	    case NFA_MCLOSE2:
+	    case NFA_MCLOSE3:
+	    case NFA_MCLOSE4:
+	    case NFA_MCLOSE5:
+	    case NFA_MCLOSE6:
+	    case NFA_MCLOSE7:
+	    case NFA_MCLOSE8:
+	    case NFA_MCLOSE9:
+	    case NFA_NOPEN:
+	    case NFA_NCLOSE:
+
+	    case NFA_LNUM_GT:
+	    case NFA_LNUM_LT:
+	    case NFA_COL_GT:
+	    case NFA_COL_LT:
+	    case NFA_VCOL_GT:
+	    case NFA_VCOL_LT:
+	    case NFA_MARK_GT:
+	    case NFA_MARK_LT:
+	    case NFA_VISUAL:
+	    case NFA_LNUM:
+	    case NFA_CURSOR:
+	    case NFA_COL:
+	    case NFA_VCOL:
+	    case NFA_MARK:
+
+	    case NFA_ZSTART:
+	    case NFA_ZEND:
+	    case NFA_OPT_CHARS:
+	    case NFA_SKIP_CHAR:
+	    case NFA_START_PATTERN:
+	    case NFA_END_PATTERN:
+	    case NFA_COMPOSING:
+	    case NFA_END_COMPOSING:
+		/* zero-width */
+		break;
+
+	    default:
+		if (state->c < 0)
+		    /* don't know what this is */
+		    return -1;
+		/* normal character */
+		len += MB_CHAR2LEN(state->c);
+		break;
+	}
+
+	/* normal way to continue */
+	state = state->out;
+    }
+
+    /* unrecognized */
+    return -1;
+}
+/*
  * Convert a postfix form into its equivalent NFA.
  * Return the NFA start state on success, NULL otherwise.
  */
@@ -2856,8 +3073,6 @@ post2nfa(postfix, end, nfa_calc_size)
 	    s = alloc_state(start_state, e.start, s1);
 	    if (s == NULL)
 		goto theend;
-	    if (before)
-		s->val = n; /* store the count */
 	    if (pattern)
 	    {
 		/* NFA_ZEND -> NFA_END_PATTERN -> NFA_SKIP -> what follows. */
@@ -2871,6 +3086,14 @@ post2nfa(postfix, end, nfa_calc_size)
 	    {
 		patch(e.out, s1);
 		PUSH(frag(s, list1(&s1->out)));
+		if (before)
+		{
+		    if (n <= 0)
+			/* See if we can guess the maximum width, it avoids a
+			 * lot of pointless tries. */
+			n = nfa_max_width(e.start, 0);
+		    s->val = n; /* store the count */
+		}
 	    }
 	    break;
 	  }
@@ -4088,9 +4311,8 @@ recursive_regmatch(state, prog, submatch, m, listids)
 
 	/* Go back the specified number of bytes, or as far as the
 	 * start of the previous line, to try matching "\@<=" or
-	 * not matching "\@<!".
-	 * TODO: This is very inefficient! Would be better to
-	 * first check for a match with what follows. */
+	 * not matching "\@<!". This is very ineffecient, limit the number of
+	 * bytes if possible. */
 	if (state->val <= 0)
 	{
 	    if (REG_MULTI)
@@ -4386,7 +4608,7 @@ skip_to_start(c, colp)
 
 /*
  * Check for a match with match_text.
- * Called after skip_to_start() has find regstart.
+ * Called after skip_to_start() has found regstart.
  * Returns zero for no match, 1 for a match.
  */
     static long
@@ -4736,7 +4958,6 @@ nfa_regmatch(prog, start, submatch, m)
 #ifdef FEAT_SYN_HL
 			    || (cout >= NFA_ZCLOSE && cout <= NFA_ZCLOSE9)
 #endif
-			    || cout == NFA_NCLOSE
 			    || t->pim != NULL
 			    || (t->state->c != NFA_START_INVISIBLE_BEFORE
 			        && t->state->c != NFA_START_INVISIBLE_BEFORE_NEG
