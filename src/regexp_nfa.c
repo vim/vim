@@ -4332,6 +4332,7 @@ nfa_regmatch(prog, start, submatch, m)
     nfa_list_T	*nextlist;
     int		*listids = NULL;
     nfa_state_T *add_state;
+    int		add_here;
     int		add_count;
     int		add_off;
     garray_T	pimlist;
@@ -4495,6 +4496,7 @@ nfa_regmatch(prog, start, submatch, m)
 	     * The most important is NFA_MATCH.
 	     */
 	    add_state = NULL;
+	    add_here = FALSE;
 	    add_count = 0;
 	    switch (t->state->c)
 	    {
@@ -4621,18 +4623,18 @@ nfa_regmatch(prog, start, submatch, m)
 			    /* t->state->out1 is the corresponding
 			     * END_INVISIBLE node; Add its out to the current
 			     * list (zero-width match). */
-			    addstate_here(thislist, t->state->out1->out,
-						  &t->subs, t->pim, &listidx);
+			    add_here = TRUE;
+			    add_state = t->state->out1->out;
 			}
 		    }
 		    else
 		    {
 			/*
 			 * First try matching what follows at the current
-			 * position.  Only if a match is found, addstate() is
-			 * called, then verify the invisible match matches.
-			 * Add a nfa_pim_T to the following states, it
-			 * contains info about the invisible match.
+			 * position.  Only if a match is found, before
+			 * addstate() is called, then verify the invisible
+			 * match matches.  Add a nfa_pim_T to the following
+			 * states, it contains info about the invisible match.
 			 */
 			if (ga_grow(&pimlist, 1) == FAIL)
 			    goto theend;
@@ -4727,8 +4729,8 @@ nfa_regmatch(prog, start, submatch, m)
 			/* empty match, output of corresponding
 			 * NFA_END_PATTERN/NFA_SKIP to be used at current
 			 * position */
-			addstate_here(thislist, t->state->out1->out->out,
-						  &t->subs, t->pim, &listidx);
+			add_here = TRUE;
+			add_state = t->state->out1->out->out;
 		    }
 		    else if (bytelen <= clen)
 		    {
@@ -4751,14 +4753,18 @@ nfa_regmatch(prog, start, submatch, m)
 
 	    case NFA_BOL:
 		if (reginput == regline)
-		    addstate_here(thislist, t->state->out, &t->subs,
-							    t->pim, &listidx);
+		{
+		    add_here = TRUE;
+		    add_state = t->state->out;
+		}
 		break;
 
 	    case NFA_EOL:
 		if (curc == NUL)
-		    addstate_here(thislist, t->state->out, &t->subs,
-							    t->pim, &listidx);
+		{
+		    add_here = TRUE;
+		    add_state = t->state->out;
+		}
 		break;
 
 	    case NFA_BOW:
@@ -4784,8 +4790,10 @@ nfa_regmatch(prog, start, submatch, m)
 				   && vim_iswordc_buf(reginput[-1], reg_buf)))
 		    result = FALSE;
 		if (result)
-		    addstate_here(thislist, t->state->out, &t->subs,
-							    t->pim, &listidx);
+		{
+		    add_here = TRUE;
+		    add_state = t->state->out;
+		}
 		break;
 
 	    case NFA_EOW:
@@ -4810,21 +4818,27 @@ nfa_regmatch(prog, start, submatch, m)
 					   && vim_iswordc_buf(curc, reg_buf)))
 		    result = FALSE;
 		if (result)
-		    addstate_here(thislist, t->state->out, &t->subs,
-							    t->pim, &listidx);
+		{
+		    add_here = TRUE;
+		    add_state = t->state->out;
+		}
 		break;
 
 	    case NFA_BOF:
 		if (reglnum == 0 && reginput == regline
 					&& (!REG_MULTI || reg_firstlnum == 1))
-		    addstate_here(thislist, t->state->out, &t->subs,
-							    t->pim, &listidx);
+		{
+		    add_here = TRUE;
+		    add_state = t->state->out;
+		}
 		break;
 
 	    case NFA_EOF:
 		if (reglnum == reg_maxline && curc == NUL)
-		    addstate_here(thislist, t->state->out, &t->subs,
-							    t->pim, &listidx);
+		{
+		    add_here = TRUE;
+		    add_state = t->state->out;
+		}
 		break;
 
 #ifdef FEAT_MBYTE
@@ -5183,8 +5197,8 @@ nfa_regmatch(prog, start, submatch, m)
 		    {
 			/* empty match always works, output of NFA_SKIP to be
 			 * used next */
-			addstate_here(thislist, t->state->out->out, &t->subs,
-							    t->pim, &listidx);
+			add_here = TRUE;
+			add_state = t->state->out->out;
 		    }
 		    else if (bytelen <= clen)
 		    {
@@ -5228,8 +5242,10 @@ nfa_regmatch(prog, start, submatch, m)
 			nfa_re_num_cmp(t->state->val, t->state->c - NFA_LNUM,
 			    (long_u)(reglnum + reg_firstlnum)));
 		if (result)
-		    addstate_here(thislist, t->state->out, &t->subs,
-							    t->pim, &listidx);
+		{
+		    add_here = TRUE;
+		    add_state = t->state->out;
+		}
 		break;
 
 	    case NFA_COL:
@@ -5238,8 +5254,10 @@ nfa_regmatch(prog, start, submatch, m)
 		result = nfa_re_num_cmp(t->state->val, t->state->c - NFA_COL,
 			(long_u)(reginput - regline) + 1);
 		if (result)
-		    addstate_here(thislist, t->state->out, &t->subs,
-							    t->pim, &listidx);
+		{
+		    add_here = TRUE;
+		    add_state = t->state->out;
+		}
 		break;
 
 	    case NFA_VCOL:
@@ -5250,8 +5268,10 @@ nfa_regmatch(prog, start, submatch, m)
 			    reg_win == NULL ? curwin : reg_win,
 			    regline, (colnr_T)(reginput - regline)) + 1);
 		if (result)
-		    addstate_here(thislist, t->state->out, &t->subs,
-							    t->pim, &listidx);
+		{
+		    add_here = TRUE;
+		    add_state = t->state->out;
+		}
 		break;
 
 	    case NFA_MARK:
@@ -5273,8 +5293,10 @@ nfa_regmatch(prog, start, submatch, m)
 				    ? t->state->c == NFA_MARK_GT
 				    : t->state->c == NFA_MARK_LT)));
 		if (result)
-		    addstate_here(thislist, t->state->out, &t->subs,
-							    t->pim, &listidx);
+		{
+		    add_here = TRUE;
+		    add_state = t->state->out;
+		}
 		break;
 	      }
 
@@ -5284,16 +5306,20 @@ nfa_regmatch(prog, start, submatch, m)
 			&& ((colnr_T)(reginput - regline)
 						   == reg_win->w_cursor.col));
 		if (result)
-		    addstate_here(thislist, t->state->out, &t->subs,
-							    t->pim, &listidx);
+		{
+		    add_here = TRUE;
+		    add_state = t->state->out;
+		}
 		break;
 
 	    case NFA_VISUAL:
 #ifdef FEAT_VISUAL
 		result = reg_match_visual();
 		if (result)
-		    addstate_here(thislist, t->state->out, &t->subs,
-							    t->pim, &listidx);
+		{
+		    add_here = TRUE;
+		    add_state = t->state->out;
+		}
 #endif
 		break;
 
@@ -5327,7 +5353,6 @@ nfa_regmatch(prog, start, submatch, m)
 		if (t->pim != NULL)
 		{
 		    /* postponed invisible match */
-		    /* TODO: also do t->pim->pim recursively? */
 		    if (t->pim->result == NFA_PIM_TODO)
 		    {
 #ifdef ENABLE_LOG
@@ -5383,9 +5408,14 @@ nfa_regmatch(prog, start, submatch, m)
 			continue;
 		}
 
-		addstate(nextlist, add_state, &t->subs, add_off);
-		if (add_count > 0)
-		    nextlist->t[nextlist->n - 1].count = add_count;
+		if (add_here)
+		    addstate_here(thislist, add_state, &t->subs, NULL, &listidx);
+		else
+		{
+		    addstate(nextlist, add_state, &t->subs, add_off);
+		    if (add_count > 0)
+			nextlist->t[nextlist->n - 1].count = add_count;
+		}
 	    }
 
 	} /* for (thislist = thislist; thislist->state; thislist++) */
