@@ -3795,14 +3795,8 @@ addstate(l, state, subs, pim, off)
     int			did_print = FALSE;
 #endif
 
-    if (l == NULL || state == NULL)
-	return;
-
     switch (state->c)
     {
-	case NFA_SPLIT:
-	case NFA_NOPEN:
-	case NFA_SKIP_CHAR:
 	case NFA_NCLOSE:
 	case NFA_MCLOSE:
 	case NFA_MCLOSE1:
@@ -3827,6 +3821,9 @@ addstate(l, state, subs, pim, off)
 	case NFA_ZCLOSE9:
 #endif
 	case NFA_ZEND:
+	case NFA_SPLIT:
+	case NFA_NOPEN:
+	case NFA_SKIP_CHAR:
 	    /* These nodes are not added themselves but their "out" and/or
 	     * "out1" may be added below.  */
 	    break;
@@ -3889,12 +3886,14 @@ skip_add:
 		    return;
 		}
 
+		/* Do not add the state again when it exists with the same
+		 * positions. */
 		if (has_state_with_pos(l, state, subs))
 		    goto skip_add;
 	    }
 
-	    /* when there are backreferences or look-behind matches the number
-	     * of states may be (a lot) bigger */
+	    /* When there are backreferences the number of states may be (a
+	     * lot) bigger than anticipated. */
 	    if (nfa_has_backref && l->n == l->len)
 	    {
 		int newlen = l->len * 3 / 2 + 50;
@@ -3985,8 +3984,8 @@ skip_add:
 		sub = &subs->norm;
 	    }
 
-	    /* Set the position (with "off") in the subexpression.  Save and
-	     * restore it when it was in use.  Otherwise fill any gap. */
+	    /* Set the position (with "off" added) in the subexpression.  Save
+	     * and restore it when it was in use.  Otherwise fill any gap. */
 	    save_ptr = NULL;
 	    if (REG_MULTI)
 	    {
