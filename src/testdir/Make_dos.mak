@@ -77,5 +77,5 @@ clean:
 	-del X*
 	-del X*.*
 	-del test.ok
-	-rmdir /s /q Xfind
+	-rd /s /q Xfind
 	-if exist viminfo del viminfo
