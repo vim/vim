@@ -2734,6 +2734,8 @@ get_lval(name, rettv, lp, unlet, skip, quiet, fne_flags)
 		    prevval = key[len];
 		    key[len] = NUL;
 		}
+		else
+		    prevval = 0; /* avoid compiler warning */
 		wrong = (lp->ll_dict->dv_scope == VAR_DEF_SCOPE
 			       && rettv->v_type == VAR_FUNC
 			       && var_check_func_name(key, lp->ll_di == NULL))

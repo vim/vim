@@ -3045,7 +3045,7 @@ post2nfa(postfix, end, nfa_calc_size)
 		    start_state = NFA_START_INVISIBLE_BEFORE_NEG;
 		    end_state = NFA_END_INVISIBLE_NEG;
 		    break;
-		case NFA_PREV_ATOM_LIKE_PATTERN:
+		default: /* NFA_PREV_ATOM_LIKE_PATTERN: */
 		    start_state = NFA_START_PATTERN;
 		    end_state = NFA_END_PATTERN;
 		    break;
@@ -4853,7 +4853,7 @@ nfa_regmatch(prog, start, submatch, m)
     nfa_state_T *add_state;
     int		add_here;
     int		add_count;
-    int		add_off;
+    int		add_off = 0;
     int		toplevel = start->c == NFA_MOPEN;
 #ifdef NFA_REGEXP_DEBUG_LOG
     FILE	*debug = fopen(NFA_REGEXP_DEBUG_LOG, "a");
