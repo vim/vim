@@ -53,17 +53,20 @@
 # undef _XOPEN_SOURCE	/* pyconfig.h defines it as well. */
 #endif
 
+#define PY_SSIZE_T_CLEAN
+
 #include <Python.h>
+
+#if !defined(PY_VERSION_HEX) || PY_VERSION_HEX < 0x02050000
+# undef PY_SSIZE_T_CLEAN
+#endif
+
 #if defined(MACOS) && !defined(MACOS_X_UNIX)
 # include "macglue.h"
 # include <CodeFragments.h>
 #endif
 #undef main /* Defined in python.h - aargh */
 #undef HAVE_FCNTL_H /* Clash with os_win32.h */
-
-#if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02050000
-# define PY_SSIZE_T_CLEAN
-#endif
 
 #define PyBytes_FromString PyString_FromString
 #define PyBytes_Check PyString_Check

@@ -24,9 +24,9 @@
 
 /* uncomment this if used with the debug version of python */
 /* #define Py_DEBUG */
-/* Note: most of time you can add -DPy_DEBUG to CFLAGS in place of uncommenting 
+/* Note: most of time you can add -DPy_DEBUG to CFLAGS in place of uncommenting
  */
-/* uncomment this if used with the debug version of python, but without its 
+/* uncomment this if used with the debug version of python, but without its
  * allocator */
 /* #define Py_DEBUG_NO_PYMALLOC */
 
@@ -61,17 +61,16 @@
 # undef _XOPEN_SOURCE	/* pyconfig.h defines it as well. */
 #endif
 
+#define PY_SSIZE_T_CLEAN
+
 #include <Python.h>
+
 #if defined(MACOS) && !defined(MACOS_X_UNIX)
 # include "macglue.h"
 # include <CodeFragments.h>
 #endif
 #undef main /* Defined in python.h - aargh */
 #undef HAVE_FCNTL_H /* Clash with os_win32.h */
-
-#if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02050000
-# define PY_SSIZE_T_CLEAN
-#endif
 
 /* The "surrogateescape" error handler is new in Python 3.1 */
 #if PY_VERSION_HEX >= 0x030100f0
