@@ -24,9 +24,9 @@
 /* uncomment this if used with the debug version of python.
  * Checked on 2.7.4. */
 /* #define Py_DEBUG */
-/* Note: most of time you can add -DPy_DEBUG to CFLAGS in place of uncommenting 
+/* Note: most of time you can add -DPy_DEBUG to CFLAGS in place of uncommenting
  */
-/* uncomment this if used with the debug version of python, but without its 
+/* uncomment this if used with the debug version of python, but without its
  * allocator */
 /* #define Py_DEBUG_NO_PYMALLOC */
 
@@ -168,6 +168,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyErr_SetNone dll_PyErr_SetNone
 # define PyErr_SetString dll_PyErr_SetString
 # define PyErr_SetObject dll_PyErr_SetObject
+# define PyErr_ExceptionMatches dll_PyErr_ExceptionMatches
 # define PyEval_InitThreads dll_PyEval_InitThreads
 # define PyEval_RestoreThread dll_PyEval_RestoreThread
 # define PyEval_SaveThread dll_PyEval_SaveThread
@@ -184,6 +185,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyLong_Type (*dll_PyLong_Type)
 # define PyList_GetItem dll_PyList_GetItem
 # define PyList_Append dll_PyList_Append
+# define PyList_Insert dll_PyList_Insert
 # define PyList_New dll_PyList_New
 # define PyList_SetItem dll_PyList_SetItem
 # define PyList_Size dll_PyList_Size
@@ -233,6 +235,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyFloat_Type (*dll_PyFloat_Type)
 # define PyImport_AddModule (*dll_PyImport_AddModule)
 # define PySys_SetObject dll_PySys_SetObject
+# define PySys_GetObject dll_PySys_GetObject
 # define PySys_SetArgv dll_PySys_SetArgv
 # define PyType_Type (*dll_PyType_Type)
 # define PyType_Ready (*dll_PyType_Ready)
@@ -305,6 +308,7 @@ static PyObject*(*dll_PyErr_Occurred)(void);
 static void(*dll_PyErr_SetNone)(PyObject *);
 static void(*dll_PyErr_SetString)(PyObject *, const char *);
 static void(*dll_PyErr_SetObject)(PyObject *, PyObject *);
+static int(*dll_PyErr_ExceptionMatches)(PyObject *);
 static void(*dll_PyEval_InitThreads)(void);
 static void(*dll_PyEval_RestoreThread)(PyThreadState *);
 static PyThreadState*(*dll_PyEval_SaveThread)(void);
@@ -320,7 +324,8 @@ static PyTypeObject* dll_PyBool_Type;
 static PyTypeObject* dll_PyInt_Type;
 static PyTypeObject* dll_PyLong_Type;
 static PyObject*(*dll_PyList_GetItem)(PyObject *, PyInt);
-static PyObject*(*dll_PyList_Append)(PyObject *, PyObject *);
+static int(*dll_PyList_Append)(PyObject *, PyObject *);
+static int(*dll_PyList_Insert)(PyObject *, int, PyObject *);
 static PyObject*(*dll_PyList_New)(PyInt size);
 static int(*dll_PyList_SetItem)(PyObject *, PyInt, PyObject *);
 static PyInt(*dll_PyList_Size)(PyObject *);
@@ -366,6 +371,7 @@ static double(*dll_PyFloat_AsDouble)(PyObject *);
 static PyObject*(*dll_PyFloat_FromDouble)(double);
 static PyTypeObject* dll_PyFloat_Type;
 static int(*dll_PySys_SetObject)(char *, PyObject *);
+static PyObject *(*dll_PySys_GetObject)(char *);
 static int(*dll_PySys_SetArgv)(int, char **);
 static PyTypeObject* dll_PyType_Type;
 static int (*dll_PyType_Ready)(PyTypeObject *type);
@@ -431,6 +437,7 @@ static PyObject *imp_PyExc_KeyboardInterrupt;
 static PyObject *imp_PyExc_TypeError;
 static PyObject *imp_PyExc_ValueError;
 static PyObject *imp_PyExc_RuntimeError;
+static PyObject *imp_PyExc_ImportError;
 
 # define PyExc_AttributeError imp_PyExc_AttributeError
 # define PyExc_IndexError imp_PyExc_IndexError
@@ -439,6 +446,7 @@ static PyObject *imp_PyExc_RuntimeError;
 # define PyExc_TypeError imp_PyExc_TypeError
 # define PyExc_ValueError imp_PyExc_ValueError
 # define PyExc_RuntimeError imp_PyExc_RuntimeError
+# define PyExc_ImportError imp_PyExc_ImportError
 
 /*
  * Table of name to function pointer of python.
@@ -471,6 +479,7 @@ static struct
     {"PyErr_SetNone", (PYTHON_PROC*)&dll_PyErr_SetNone},
     {"PyErr_SetString", (PYTHON_PROC*)&dll_PyErr_SetString},
     {"PyErr_SetObject", (PYTHON_PROC*)&dll_PyErr_SetObject},
+    {"PyErr_ExceptionMatches", (PYTHON_PROC*)&dll_PyErr_ExceptionMatches},
     {"PyEval_InitThreads", (PYTHON_PROC*)&dll_PyEval_InitThreads},
     {"PyEval_RestoreThread", (PYTHON_PROC*)&dll_PyEval_RestoreThread},
     {"PyEval_SaveThread", (PYTHON_PROC*)&dll_PyEval_SaveThread},
@@ -487,6 +496,7 @@ static struct
     {"PyLong_Type", (PYTHON_PROC*)&dll_PyLong_Type},
     {"PyList_GetItem", (PYTHON_PROC*)&dll_PyList_GetItem},
     {"PyList_Append", (PYTHON_PROC*)&dll_PyList_Append},
+    {"PyList_Insert", (PYTHON_PROC*)&dll_PyList_Insert},
     {"PyList_New", (PYTHON_PROC*)&dll_PyList_New},
     {"PyList_SetItem", (PYTHON_PROC*)&dll_PyList_SetItem},
     {"PyList_Size", (PYTHON_PROC*)&dll_PyList_Size},
@@ -532,6 +542,7 @@ static struct
     {"PyFloat_FromDouble", (PYTHON_PROC*)&dll_PyFloat_FromDouble},
     {"PyImport_AddModule", (PYTHON_PROC*)&dll_PyImport_AddModule},
     {"PySys_SetObject", (PYTHON_PROC*)&dll_PySys_SetObject},
+    {"PySys_GetObject", (PYTHON_PROC*)&dll_PySys_GetObject},
     {"PySys_SetArgv", (PYTHON_PROC*)&dll_PySys_SetArgv},
     {"PyType_Type", (PYTHON_PROC*)&dll_PyType_Type},
     {"PyType_Ready", (PYTHON_PROC*)&dll_PyType_Ready},
@@ -706,6 +717,7 @@ get_exceptions(void)
     imp_PyExc_TypeError = PyDict_GetItemString(exdict, "TypeError");
     imp_PyExc_ValueError = PyDict_GetItemString(exdict, "ValueError");
     imp_PyExc_RuntimeError = PyDict_GetItemString(exdict, "RuntimeError");
+    imp_PyExc_ImportError = PyDict_GetItemString(exdict, "ImportError");
     Py_XINCREF(imp_PyExc_AttributeError);
     Py_XINCREF(imp_PyExc_IndexError);
     Py_XINCREF(imp_PyExc_KeyError);
@@ -713,6 +725,7 @@ get_exceptions(void)
     Py_XINCREF(imp_PyExc_TypeError);
     Py_XINCREF(imp_PyExc_ValueError);
     Py_XINCREF(imp_PyExc_RuntimeError);
+    Py_XINCREF(imp_PyExc_ImportError);
     Py_XDECREF(exmod);
 }
 #endif /* DYNAMIC_PYTHON */
@@ -734,6 +747,10 @@ static PyObject *RangeGetattr(PyObject *, char *);
 static PyObject *DictionaryGetattr(PyObject *, char*);
 static PyObject *ListGetattr(PyObject *, char *);
 static PyObject *FunctionGetattr(PyObject *, char *);
+
+static PyObject *LoaderLoadModule(PyObject *, PyObject *);
+static PyObject *FinderFindModule(PyObject *, PyObject *);
+static PyObject *VimPathHook(PyObject *, PyObject *);
 
 #ifndef Py_VISIT
 # define Py_VISIT(obj) visit(obj, arg)
@@ -1359,11 +1376,112 @@ python_tabpage_free(tabpage_T *tab)
 }
 #endif
 
+    static PyObject *
+LoaderLoadModule(PyObject *self, PyObject *args)
+{
+    char	*fullname;
+    PyObject	*path;
+    PyObject	*meta_path;
+    PyObject	*path_hooks;
+    PyObject	*new_path;
+    PyObject	*r;
+    PyObject	*new_list;
+
+    if (!PyArg_ParseTuple(args, "s", &fullname))
+	return NULL;
+
+    if (!(new_path = Vim_GetPaths(self)))
+	return NULL;
+
+    if (!(new_list = PyList_New(0)))
+	return NULL;
+
+#define GET_SYS_OBJECT(objstr, obj) \
+    obj = PySys_GetObject(objstr); \
+    PyErr_Clear(); \
+    Py_XINCREF(obj);
+
+    GET_SYS_OBJECT("meta_path", meta_path);
+    if (PySys_SetObject("meta_path", new_list))
+    {
+	Py_XDECREF(meta_path);
+	Py_DECREF(new_list);
+	return NULL;
+    }
+    Py_DECREF(new_list); /* Now it becomes a reference borrowed from
+			    sys.meta_path */
+
+#define RESTORE_SYS_OBJECT(objstr, obj) \
+    if (obj) \
+    { \
+	PySys_SetObject(objstr, obj); \
+	Py_DECREF(obj); \
+    }
+
+    GET_SYS_OBJECT("path_hooks", path_hooks);
+    if (PySys_SetObject("path_hooks", new_list))
+    {
+	RESTORE_SYS_OBJECT("meta_path", meta_path);
+	Py_XDECREF(path_hooks);
+	return NULL;
+    }
+
+    GET_SYS_OBJECT("path", path);
+    if (PySys_SetObject("path", new_path))
+    {
+	RESTORE_SYS_OBJECT("meta_path", meta_path);
+	RESTORE_SYS_OBJECT("path_hooks", path_hooks);
+	Py_XDECREF(path);
+	return NULL;
+    }
+    Py_DECREF(new_path);
+
+    r = PyImport_ImportModule(fullname);
+
+    RESTORE_SYS_OBJECT("meta_path", meta_path);
+    RESTORE_SYS_OBJECT("path_hooks", path_hooks);
+    RESTORE_SYS_OBJECT("path", path);
+
+    if (PyErr_Occurred())
+    {
+	Py_XDECREF(r);
+	return NULL;
+    }
+
+    return r;
+}
+
+    static PyObject *
+FinderFindModule(PyObject *self UNUSED, PyObject *args UNUSED)
+{
+    /*
+     * Don't bother actually finding the module, it is delegated to the "loader"
+     * object (which is basically the same object: vim module).
+     */
+    Py_INCREF(vim_module);
+    return vim_module;
+}
+
+    static PyObject *
+VimPathHook(PyObject *self UNUSED, PyObject *args)
+{
+    char	*path;
+
+    if (PyArg_ParseTuple(args, "s", &path)
+	    && STRCMP(path, vim_special_path) == 0)
+    {
+	Py_INCREF(vim_module);
+	return vim_module;
+    }
+
+    PyErr_Clear();
+    PyErr_SetNone(PyExc_ImportError);
+    return NULL;
+}
+
     static int
 PythonMod_Init(void)
 {
-    PyObject *mod;
-
     /* The special value is removed from sys.path in Python_Init(). */
     static char *(argv[2]) = {"/must>not&exist/foo", NULL};
 
@@ -1373,10 +1491,17 @@ PythonMod_Init(void)
     /* Set sys.argv[] to avoid a crash in warn(). */
     PySys_SetArgv(1, argv);
 
-    mod = Py_InitModule4("vim", VimMethods, (char *)NULL, (PyObject *)NULL,
-			    PYTHON_API_VERSION);
+    vim_module = Py_InitModule4("vim", VimMethods, (char *)NULL,
+				(PyObject *)NULL, PYTHON_API_VERSION);
 
-    return populate_module(mod, PyModule_AddObject, PyObject_GetAttrString);
+    if (populate_module(vim_module, PyModule_AddObject,
+			   PyObject_GetAttrString))
+	return -1;
+
+    if (init_sys_path())
+	return -1;
+
+    return 0;
 }
 
 /*************************************************************************

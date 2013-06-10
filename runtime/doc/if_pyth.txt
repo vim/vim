@@ -180,6 +180,12 @@ vim.strwidth(str)					*python-strwidth*
 	Like |strwidth()|: returns number of display cells str occupies, tab 
 	is counted as one cell.
 
+vim.foreach_rtp(callable)				*python-foreach_rtp*
+	Call the given callable for each path in 'runtimepath' until either 
+	callable returns something but None, the exception is raised or there 
+	are no longer paths. If stopped in case callable returned non-None, 
+	vim.foreach_rtp function returns the value returned by callable.
+
 vim.chdir(*args, **kwargs)				*python-chdir*
 vim.fchdir(*args, **kwargs)				*python-fchdir*
 	Run os.chdir or os.fchdir, then all appropriate vim stuff.
@@ -299,6 +305,113 @@ Output from Python					*python-output*
 	Input (via sys.stdin, including input() and raw_input()) is not
 	supported, and may cause the program to crash.  This should probably be
 	fixed.
+
+		    *python2-directory* *python3-directory* *pythonx-directory*
+Python 'runtimepath' handling				*python-special-path*
+
+In python vim.VIM_SPECIAL_PATH special directory is used as a replacement for 
+the list of paths found in 'runtimepath': with this directory in sys.path and 
+vim.path_hooks in sys.path_hooks python will try to load module from 
+{rtp}/python2 (or python3) and {rtp}/pythonx (for both python versions) for 
+each {rtp} found in 'runtimepath'.
+
+Implementation for python 2 is the following: usual importing code with empty 
+lists in place of sys.path_hooks and sys.meta_path. Code is similar to the 
+below, but written in C: >
+
+    # Assuming vim variable is already accessible and is set to the current 
+    # module
+    import sys
+
+    def find_module(fullname):
+        return vim
+
+    def load_module(fullname):
+        # see vim._get_paths below
+        new_path = _get_paths()
+
+        try:         old_path = sys.path
+        except: pass
+        try:         old_meta_path = sys.meta_path
+        except: pass
+        try:         old_path_hooks = sys.path_hooks
+        except: pass
+
+        sys.meta_path = []
+        sys.path_hooks = sys.meta_path
+        sys.path = new_path
+
+        try:
+            exec ('import ' + fullname + ' as m')  # No actual exec in C code
+            return m
+        finally:
+            e = None
+            try:                        sys.path = old_path
+            except Exception as e: pass
+            try:                        sys.meta_path = old_meta_path
+            except Exception as e: pass
+            try:                        sys.path_hooks = old_path_hooks
+            except Exception as e: pass
+            if e:
+                raise e
+
+    def path_hook(d):
+        if d == VIM_SPECIAL_PATH:
+            return vim
+        raise ImportError
+
+    sys.path_hooks.append(path_hook)
+
+Implementation for python 3 is cleaner: code is similar to the following, but, 
+again, written in C: >
+
+    from importlib.machinery import PathFinder
+    import sys
+
+    class Finder(PathFinder):
+        @classmethod
+        def find_module(cls, fullname):
+            # see vim._get_paths below
+            new_path = _get_paths()
+
+            # super().find_module is also a class method
+            # super() is not used because this variant is easier to implement 
+            # in C
+            return PathFinder.find_module(fullname, new_path)
+
+    def path_hook(path):
+        if path == VIM_SPECIAL_PATH:
+            return Finder
+        raise ImportError
+
+    sys.path_hooks.append(path_hook)
+
+vim.VIM_SPECIAL_PATH					*python-VIM_SPECIAL_PATH*
+	String constant used in conjunction with vim path hook. If path hook 
+	installed by vim is requested to handle anything but path equal to 
+	vim.VIM_SPECIAL_PATH constant it raises ImportError. In the only other 
+	case it uses special loader.
+
+	Note: you must not use value of this constant directly, always use 
+	      vim.VIM_SPECIAL_PATH object.
+
+vim.load_module(name)					*python-load_module*
+vim.find_module(...)					*python-find_module*
+vim.path_hook(path)					*python-path_hook*
+	Methods or objects used to implement path loading as described above. 
+	You should not be using any of these directly except for vim.path_hook 
+	in case you need to do something with sys.meta_path. It is not 
+	guaranteed that any of the objects will exist in the future vim 
+	versions. In fact, load_module and find_module methods do not exists 
+	in python3.
+
+vim._get_paths						*python-_get_paths*
+	Methods returning a list of paths which will be searched for by path 
+	hook. You should not rely on this method being present in future 
+	versions, but can use it for debugging.
+
+	It returns a list of {rtp}/python2 (or {rtp}/python3) and 
+	{rtp}/pythonx directories for each {rtp} in 'runtimepath'.
 
 ==============================================================================
 3. Buffer objects					*python-buffer*

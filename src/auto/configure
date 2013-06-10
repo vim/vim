@@ -5289,10 +5289,10 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $vi_cv_var_python_version" >&5
 $as_echo "$vi_cv_var_python_version" >&6; }
 
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking Python is 2.2 or better" >&5
-$as_echo_n "checking Python is 2.2 or better... " >&6; }
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking Python is 2.3 or better" >&5
+$as_echo_n "checking Python is 2.3 or better... " >&6; }
     if ${vi_cv_path_python} -c \
-	"import sys; sys.exit(${vi_cv_var_python_version} < 2.2)"
+	"import sys; sys.exit(${vi_cv_var_python_version} < 2.3)"
     then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yep" >&5
 $as_echo "yep" >&6; }

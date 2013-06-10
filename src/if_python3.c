@@ -134,6 +134,7 @@
 # define PyErr_SetNone py3_PyErr_SetNone
 # define PyErr_SetString py3_PyErr_SetString
 # define PyErr_SetObject py3_PyErr_SetObject
+# define PyErr_ExceptionMatches py3_PyErr_ExceptionMatches
 # define PyEval_InitThreads py3_PyEval_InitThreads
 # define PyEval_RestoreThread py3_PyEval_RestoreThread
 # define PyEval_SaveThread py3_PyEval_SaveThread
@@ -143,6 +144,7 @@
 # define PyLong_FromLong py3_PyLong_FromLong
 # define PyList_GetItem py3_PyList_GetItem
 # define PyList_Append py3_PyList_Append
+# define PyList_Insert py3_PyList_Insert
 # define PyList_New py3_PyList_New
 # define PyList_SetItem py3_PyList_SetItem
 # define PyList_Size py3_PyList_Size
@@ -177,6 +179,7 @@
 # define PyEval_GetLocals py3_PyEval_GetLocals
 # define PyEval_GetGlobals py3_PyEval_GetGlobals
 # define PySys_SetObject py3_PySys_SetObject
+# define PySys_GetObject py3_PySys_GetObject
 # define PySys_SetArgv py3_PySys_SetArgv
 # define PyType_Ready py3_PyType_Ready
 #undef Py_BuildValue
@@ -268,7 +271,9 @@ static PyObject* (*py3_PyList_New)(Py_ssize_t size);
 static PyGILState_STATE (*py3_PyGILState_Ensure)(void);
 static void (*py3_PyGILState_Release)(PyGILState_STATE);
 static int (*py3_PySys_SetObject)(char *, PyObject *);
-static PyObject* (*py3_PyList_Append)(PyObject *, PyObject *);
+static PyObject* (*py3_PySys_GetObject)(char *);
+static int (*py3_PyList_Append)(PyObject *, PyObject *);
+static int (*py3_PyList_Insert)(PyObject *, int, PyObject *);
 static Py_ssize_t (*py3_PyList_Size)(PyObject *);
 static int (*py3_PySequence_Check)(PyObject *);
 static Py_ssize_t (*py3_PySequence_Size)(PyObject *);
@@ -284,6 +289,7 @@ static PyObject* (*py3_PyErr_NoMemory)(void);
 static void (*py3_Py_Finalize)(void);
 static void (*py3_PyErr_SetString)(PyObject *, const char *);
 static void (*py3_PyErr_SetObject)(PyObject *, PyObject *);
+static int (*py3_PyErr_ExceptionMatches)(PyObject *);
 static int (*py3_PyRun_SimpleString)(char *);
 static PyObject* (*py3_PyRun_String)(char *, int, PyObject *, PyObject *);
 static PyObject* (*py3_PyObject_GetAttrString)(PyObject *, const char *);
@@ -393,6 +399,7 @@ static PyObject *p3imp_PyExc_KeyboardInterrupt;
 static PyObject *p3imp_PyExc_TypeError;
 static PyObject *p3imp_PyExc_ValueError;
 static PyObject *p3imp_PyExc_RuntimeError;
+static PyObject *p3imp_PyExc_ImportError;
 
 # define PyExc_AttributeError p3imp_PyExc_AttributeError
 # define PyExc_IndexError p3imp_PyExc_IndexError
@@ -401,6 +408,7 @@ static PyObject *p3imp_PyExc_RuntimeError;
 # define PyExc_TypeError p3imp_PyExc_TypeError
 # define PyExc_ValueError p3imp_PyExc_ValueError
 # define PyExc_RuntimeError p3imp_PyExc_RuntimeError
+# define PyExc_ImportError p3imp_PyExc_ImportError
 
 /*
  * Table of name to function pointer of python.
@@ -428,7 +436,9 @@ static struct
     {"PyGILState_Ensure", (PYTHON_PROC*)&py3_PyGILState_Ensure},
     {"PyGILState_Release", (PYTHON_PROC*)&py3_PyGILState_Release},
     {"PySys_SetObject", (PYTHON_PROC*)&py3_PySys_SetObject},
+    {"PySys_GetObject", (PYTHON_PROC*)&py3_PySys_GetObject},
     {"PyList_Append", (PYTHON_PROC*)&py3_PyList_Append},
+    {"PyList_Insert", (PYTHON_PROC*)&py3_PyList_Insert},
     {"PyList_Size", (PYTHON_PROC*)&py3_PyList_Size},
     {"PySequence_Check", (PYTHON_PROC*)&py3_PySequence_Check},
     {"PySequence_Size", (PYTHON_PROC*)&py3_PySequence_Size},
@@ -441,6 +451,7 @@ static struct
     {"Py_Finalize", (PYTHON_PROC*)&py3_Py_Finalize},
     {"PyErr_SetString", (PYTHON_PROC*)&py3_PyErr_SetString},
     {"PyErr_SetObject", (PYTHON_PROC*)&py3_PyErr_SetObject},
+    {"PyErr_ExceptionMatches", (PYTHON_PROC*)&py3_PyErr_ExceptionMatches},
     {"PyRun_SimpleString", (PYTHON_PROC*)&py3_PyRun_SimpleString},
     {"PyRun_String", (PYTHON_PROC*)&py3_PyRun_String},
     {"PyObject_GetAttrString", (PYTHON_PROC*)&py3_PyObject_GetAttrString},
@@ -664,6 +675,7 @@ get_py3_exceptions()
     p3imp_PyExc_TypeError = PyDict_GetItemString(exdict, "TypeError");
     p3imp_PyExc_ValueError = PyDict_GetItemString(exdict, "ValueError");
     p3imp_PyExc_RuntimeError = PyDict_GetItemString(exdict, "RuntimeError");
+    p3imp_PyExc_ImportError = PyDict_GetItemString(exdict, "ImportError");
     Py_XINCREF(p3imp_PyExc_AttributeError);
     Py_XINCREF(p3imp_PyExc_IndexError);
     Py_XINCREF(p3imp_PyExc_KeyError);
@@ -671,6 +683,7 @@ get_py3_exceptions()
     Py_XINCREF(p3imp_PyExc_TypeError);
     Py_XINCREF(p3imp_PyExc_ValueError);
     Py_XINCREF(p3imp_PyExc_RuntimeError);
+    Py_XINCREF(p3imp_PyExc_ImportError);
     Py_XDECREF(exmod);
 }
 #endif /* DYNAMIC_PYTHON3 */
@@ -723,7 +736,12 @@ static PyObject *ListGetattro(PyObject *, PyObject *);
 static int ListSetattro(PyObject *, PyObject *, PyObject *);
 static PyObject *FunctionGetattro(PyObject *, PyObject *);
 
+static PyObject *VimPathHook(PyObject *, PyObject *);
+
 static struct PyModuleDef vimmodule;
+
+static PyObject *path_finder;
+static PyObject *py_find_module = NULL;
 
 #define PY_CAN_RECURSE
 
@@ -1585,12 +1603,70 @@ python3_tabpage_free(tabpage_T *tab)
 #endif
 
     static PyObject *
+VimPathHook(PyObject *self UNUSED, PyObject *args)
+{
+    char	*path;
+
+    if (PyArg_ParseTuple(args, "s", &path)
+	    && STRCMP(path, vim_special_path) == 0)
+    {
+	Py_INCREF(&FinderType);
+	return (PyObject *) &FinderType;
+    }
+
+    PyErr_Clear();
+    PyErr_SetNone(PyExc_ImportError);
+    return NULL;
+}
+
+    static PyObject *
+FinderFindModule(PyObject *cls UNUSED, PyObject *fullname)
+{
+    PyObject	*new_path;
+    PyObject	*r;
+
+    if (!(new_path = Vim_GetPaths(NULL)))
+	return NULL;
+
+    /* call find_module of the super() class */
+    r = PyObject_CallFunctionObjArgs(py_find_module, fullname, new_path, NULL);
+
+    Py_DECREF(new_path);
+
+    return r;
+}
+
+static struct PyMethodDef FinderMethods[] = {
+    {"find_module",	FinderFindModule,	METH_CLASS|METH_O,	""},
+    {NULL,		NULL,			0,			NULL}
+};
+
+    static PyObject *
 Py3Init_vim(void)
 {
-    PyObject *mod;
-
     /* The special value is removed from sys.path in Python3_Init(). */
     static wchar_t *(argv[2]) = {L"/must>not&exist/foo", NULL};
+    PyObject	*importlib_machinery;
+
+    if (!(importlib_machinery = PyImport_ImportModule("importlib.machinery")))
+	return NULL;
+
+    if (!(path_finder = PyObject_GetAttrString(importlib_machinery,
+					       "PathFinder")))
+    {
+	Py_DECREF(importlib_machinery);
+	return NULL;
+    }
+
+    Py_DECREF(importlib_machinery);
+
+    vim_memset(&FinderType, 0, sizeof(FinderObject));
+    FinderType.tp_name = "vim.Finder";
+    FinderType.tp_basicsize = sizeof(FinderObject);
+    FinderType.tp_base = (PyTypeObject *) path_finder;
+    FinderType.tp_flags = Py_TPFLAGS_DEFAULT;
+    FinderType.tp_doc = "Vim finder class, for use with path hook";
+    FinderType.tp_methods = FinderMethods;
 
     if (init_types())
 	return NULL;
@@ -1598,14 +1674,16 @@ Py3Init_vim(void)
     /* Set sys.argv[] to avoid a crash in warn(). */
     PySys_SetArgv(1, argv);
 
-    mod = PyModule_Create(&vimmodule);
-    if (mod == NULL)
+    if ((vim_module = PyModule_Create(&vimmodule)) == NULL)
 	return NULL;
 
-    if (populate_module(mod, PyModule_AddObject, PyObject_GetAttrString))
+    if (populate_module(vim_module, PyModule_AddObject, PyObject_GetAttrString))
 	return NULL;
 
-    return mod;
+    if (init_sys_path())
+	return NULL;
+
+    return vim_module;
 }
 
 /*************************************************************************

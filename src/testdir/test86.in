@@ -1069,6 +1069,14 @@ ee('vim.current.tabpage = True')
 ee('vim.current.xxx = True')
 EOF
 :"
+:" Test import  TODO: BROKEN
+:"py << EOF
+:"vim.options['rtp'] = os.getcwd().replace(',', '\\,').replace('\\', '\\\\')
+:"from module import dir as d
+:"from modulex import ddir
+:"cb.append(d + ',' + ddir)
+:"EOF
+:"
 :" Test exceptions
 :fun Exe(e)
 :   execute a:e
