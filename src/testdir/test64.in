@@ -392,6 +392,7 @@ STARTTEST
 :call add(tl, [2, '\v\C%(<Last Changed:\s+)@<=.*$', '" Last Changed: 1970', '1970'])
 :call add(tl, [2, '\(foo\)\@<=\>', 'foobar'])
 :call add(tl, [2, '\(foo\)\@<=\>', 'barfoo', '', 'foo'])
+:call add(tl, [2, '\(foo\)\@<=.*', 'foobar', 'bar', 'foo'])
 :"
 :""""" \@>
 :call add(tl, [2, '\(a*\)\@>a', 'aaaa'])

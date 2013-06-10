@@ -4587,6 +4587,7 @@ static long find_match_text __ARGS((colnr_T startcol, int regstart, char_u *matc
 
 /*
  * Estimate the chance of a match with "state" failing.
+ * empty match: 0
  * NFA_ANY: 1
  * specific character: 99
  */
@@ -4616,7 +4617,9 @@ failure_chance(state, depth)
 	case NFA_ANY:
 	    /* matches anything, unlikely to fail */
 	    return 1;
+
 	case NFA_MATCH:
+	case NFA_MCLOSE:
 	    /* empty match works always */
 	    return 0;
 
@@ -4664,7 +4667,6 @@ failure_chance(state, depth)
 	case NFA_ZCLOSE9:
 #endif
 	case NFA_NOPEN:
-	case NFA_MCLOSE:
 	case NFA_MCLOSE1:
 	case NFA_MCLOSE2:
 	case NFA_MCLOSE3:
@@ -5095,23 +5097,46 @@ nfa_regmatch(prog, start, submatch, m)
 	    case NFA_START_INVISIBLE_BEFORE:
 	    case NFA_START_INVISIBLE_BEFORE_NEG:
 		{
-		    int cout = t->state->out1->out->c;
+		    int directly = FALSE;
 
-		    /* Do it directly when what follows is possibly end of
-		     * match (closing paren).
-		     * Do it directly if there already is a PIM.
-		     * Postpone when it is \@<= or \@<!, these are expensive.
-		     * Otherwise first do the one that has the highest chance
-		     * of failing. */
-		    if ((cout >= NFA_MCLOSE && cout <= NFA_MCLOSE9)
-#ifdef FEAT_SYN_HL
-			    || (cout >= NFA_ZCLOSE && cout <= NFA_ZCLOSE9)
+#ifdef ENABLE_LOG
+		    fprintf(log_fd, "Failure chance invisible: %d, what follows: %d\n",
+			    failure_chance(t->state->out, 0),
+			    failure_chance(t->state->out1->out, 0));
 #endif
-			    || t->pim.result != NFA_PIM_UNUSED
-			    || (t->state->c != NFA_START_INVISIBLE_BEFORE
-			        && t->state->c != NFA_START_INVISIBLE_BEFORE_NEG
-				&& failure_chance(t->state->out1->out, 0)
-					  < failure_chance(t->state->out, 0)))
+		    /* Do it directly when what follows is possibly the end of
+		     * the match.
+		     * Do it directly if there already is a PIM.
+		     * Postpone when the invisible match is expensive or has a
+		     * lower chance of failing. */
+		    if (match_follows(t->state->out1->out, 0)
+					   || t->pim.result != NFA_PIM_UNUSED)
+			directly = TRUE;
+		    else
+		    {
+			int ch_invisible = failure_chance(t->state->out, 0);
+			int ch_follows = failure_chance(t->state->out1->out, 0);
+
+			if (t->state->c == NFA_START_INVISIBLE_BEFORE
+			     || t->state->c == NFA_START_INVISIBLE_BEFORE_NEG)
+			{
+			    /* "before" matches are very expensive when
+			     * unbounded, always prefer what follows then,
+			     * unless what follows will always match.
+			     * Otherwise strongly prefer what follows. */
+			    if (t->state->val <= 0 && ch_follows > 0)
+				directly = FALSE;
+			    else
+				directly = ch_follows * 10 < ch_invisible;
+			}
+			else
+			{
+			    /* normal invisible, first do the one with the
+			     * highest failure chance */
+			    directly = ch_follows < ch_invisible;
+			}
+		    }
+		    if (directly)
 		    {
 			/*
 			 * First try matching the invisible match, then what
