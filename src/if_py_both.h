@@ -5354,6 +5354,7 @@ populate_module(PyObject *m, object_adder add_object, attr_getter get_attr)
 {
     int		i;
     PyObject	*other_module;
+    PyObject	*attr;
 
     for (i = 0; i < (int)(sizeof(numeric_constants)
 					   / sizeof(struct numeric_constant));
@@ -5392,14 +5393,26 @@ populate_module(PyObject *m, object_adder add_object, attr_getter get_attr)
     if (!(py_chdir = PyObject_GetAttrString(other_module, "chdir")))
 	return -1;
     ADD_OBJECT(m, "_chdir", py_chdir);
-    if (PyObject_SetAttrString(other_module, "chdir", get_attr(m, "chdir")))
+    if (!(attr = get_attr(m, "chdir")))
 	return -1;
+    if (PyObject_SetAttrString(other_module, "chdir", attr))
+    {
+	Py_DECREF(attr);
+	return -1;
+    }
+    Py_DECREF(attr);
 
     if ((py_fchdir = PyObject_GetAttrString(other_module, "fchdir")))
     {
 	ADD_OBJECT(m, "_fchdir", py_fchdir);
-	if (PyObject_SetAttrString(other_module,"fchdir",get_attr(m,"fchdir")))
+	if (!(attr = get_attr(m, "fchdir")))
 	    return -1;
+	if (PyObject_SetAttrString(other_module, "fchdir", attr))
+	{
+	    Py_DECREF(attr);
+	    return -1;
+	}
+	Py_DECREF(attr);
     }
     else
 	PyErr_Clear();

@@ -210,6 +210,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyMapping_Check dll_PyMapping_Check
 # define PyIter_Next dll_PyIter_Next
 # define PyModule_GetDict dll_PyModule_GetDict
+# define PyModule_AddObject dll_PyModule_AddObject
 # define PyRun_SimpleString dll_PyRun_SimpleString
 # define PyRun_String dll_PyRun_String
 # define PyObject_GetAttrString dll_PyObject_GetAttrString
@@ -344,6 +345,7 @@ static PyObject* (*dll_PyObject_CallMethod)(PyObject *, char *, PyObject *);
 static int (*dll_PyMapping_Check)(PyObject *);
 static PyObject* (*dll_PyIter_Next)(PyObject *);
 static PyObject*(*dll_PyModule_GetDict)(PyObject *);
+static int(*dll_PyModule_AddObject)(PyObject *, const char *, PyObject *);
 static int(*dll_PyRun_SimpleString)(char *);
 static PyObject *(*dll_PyRun_String)(char *, int, PyObject *, PyObject *);
 static PyObject* (*dll_PyObject_GetAttrString)(PyObject *, const char *);
@@ -509,6 +511,7 @@ static struct
     {"PyMapping_Check", (PYTHON_PROC*)&dll_PyMapping_Check},
     {"PyIter_Next", (PYTHON_PROC*)&dll_PyIter_Next},
     {"PyModule_GetDict", (PYTHON_PROC*)&dll_PyModule_GetDict},
+    {"PyModule_AddObject", (PYTHON_PROC*)&dll_PyModule_AddObject},
     {"PyRun_SimpleString", (PYTHON_PROC*)&dll_PyRun_SimpleString},
     {"PyRun_String", (PYTHON_PROC*)&dll_PyRun_String},
     {"PyObject_GetAttrString", (PYTHON_PROC*)&dll_PyObject_GetAttrString},
@@ -1357,19 +1360,9 @@ python_tabpage_free(tabpage_T *tab)
 #endif
 
     static int
-add_object(PyObject *dict, const char *name, PyObject *object)
-{
-    if (PyDict_SetItemString(dict, (char *) name, object))
-	return -1;
-    Py_DECREF(object);
-    return 0;
-}
-
-    static int
 PythonMod_Init(void)
 {
     PyObject *mod;
-    PyObject *dict;
 
     /* The special value is removed from sys.path in Python_Init(). */
     static char *(argv[2]) = {"/must>not&exist/foo", NULL};
@@ -1382,9 +1375,8 @@ PythonMod_Init(void)
 
     mod = Py_InitModule4("vim", VimMethods, (char *)NULL, (PyObject *)NULL,
 			    PYTHON_API_VERSION);
-    dict = PyModule_GetDict(mod);
 
-    return populate_module(dict, add_object, PyDict_GetItemString);
+    return populate_module(mod, PyModule_AddObject, PyObject_GetAttrString);
 }
 
 /*************************************************************************
