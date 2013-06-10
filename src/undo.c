@@ -1514,8 +1514,10 @@ u_write_undo(name, forceit, buf, hash)
 	write_ok = TRUE;
 #ifdef U_DEBUG
     if (headers_written != buf->b_u_numhead)
-	EMSG3("Written %ld headers, but numhead is %ld",
-					   headers_written, buf->b_u_numhead);
+    {
+	EMSGN("Written %ld headers, ...", headers_written);
+	EMSGN("... but numhead is %ld", buf->b_u_numhead);
+    }
 #endif
 
 write_error:
