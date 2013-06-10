@@ -375,8 +375,10 @@ static OutputObject Error =
     static int
 PythonIO_Init_io(void)
 {
-    PySys_SetObject("stdout", (PyObject *)(void *)&Output);
-    PySys_SetObject("stderr", (PyObject *)(void *)&Error);
+    if (PySys_SetObject("stdout", (PyObject *)(void *)&Output))
+	return -1;
+    if (PySys_SetObject("stderr", (PyObject *)(void *)&Error))
+	return -1;
 
     if (PyErr_Occurred())
     {
@@ -1319,12 +1321,7 @@ DictionaryListObjects(DictionaryObject *self, hi_to_py hiconvert)
 		Py_DECREF(r);
 		return NULL;
 	    }
-	    if (PyList_SetItem(r, i, newObj))
-	    {
-		Py_DECREF(r);
-		Py_DECREF(newObj);
-		return NULL;
-	    }
+	    PyList_SET_ITEM(r, i, newObj);
 	    --todo;
 	    ++i;
 	}
@@ -1808,12 +1805,7 @@ ListSlice(ListObject *self, Py_ssize_t first, Py_ssize_t last)
 	    return NULL;
 	}
 
-	if ((PyList_SetItem(list, ((reversed)?(n-i-1):(i)), item)))
-	{
-	    Py_DECREF(item);
-	    Py_DECREF(list);
-	    return NULL;
-	}
+	PyList_SET_ITEM(list, ((reversed)?(n-i-1):(i)), item);
     }
 
     return list;
@@ -3164,13 +3156,7 @@ GetBufferLineList(buf_T *buf, PyInt lo, PyInt hi)
 	    return NULL;
 	}
 
-	/* Set the list item */
-	if (PyList_SetItem(list, i, str))
-	{
-	    Py_DECREF(str);
-	    Py_DECREF(list);
-	    return NULL;
-	}
+	PyList_SET_ITEM(list, i, str);
     }
 
     /* The ownership of the Python list is passed to the caller (ie,
@@ -5366,8 +5352,8 @@ typedef PyObject *(*attr_getter)(PyObject *, const char *);
     static int
 populate_module(PyObject *m, object_adder add_object, attr_getter get_attr)
 {
-    int i;
-    PyObject	*os;
+    int		i;
+    PyObject	*other_module;
 
     for (i = 0; i < (int)(sizeof(numeric_constants)
 					   / sizeof(struct numeric_constant));
@@ -5395,24 +5381,24 @@ populate_module(PyObject *m, object_adder add_object, attr_getter get_attr)
     ADD_CHECKED_OBJECT(m, "options",
 	    OptionsNew(SREQ_GLOBAL, NULL, dummy_check, NULL));
 
-    if (!(os = PyImport_ImportModule("os")))
+    if (!(other_module = PyImport_ImportModule("os")))
 	return -1;
-    ADD_OBJECT(m, "os", os);
+    ADD_OBJECT(m, "os", other_module);
 
-    if (!(py_getcwd = PyObject_GetAttrString(os, "getcwd")))
+    if (!(py_getcwd = PyObject_GetAttrString(other_module, "getcwd")))
 	return -1;
     ADD_OBJECT(m, "_getcwd", py_getcwd)
 
-    if (!(py_chdir = PyObject_GetAttrString(os, "chdir")))
+    if (!(py_chdir = PyObject_GetAttrString(other_module, "chdir")))
 	return -1;
     ADD_OBJECT(m, "_chdir", py_chdir);
-    if (PyObject_SetAttrString(os, "chdir", get_attr(m, "chdir")))
+    if (PyObject_SetAttrString(other_module, "chdir", get_attr(m, "chdir")))
 	return -1;
 
-    if ((py_fchdir = PyObject_GetAttrString(os, "fchdir")))
+    if ((py_fchdir = PyObject_GetAttrString(other_module, "fchdir")))
     {
 	ADD_OBJECT(m, "_fchdir", py_fchdir);
-	if (PyObject_SetAttrString(os, "fchdir", get_attr(m, "fchdir")))
+	if (PyObject_SetAttrString(other_module,"fchdir",get_attr(m,"fchdir")))
 	    return -1;
     }
     else
