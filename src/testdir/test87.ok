@@ -1092,6 +1092,7 @@ vim.current.buffer = True:(<class 'TypeError'>, TypeError('expected vim.Buffer o
 vim.current.window = True:(<class 'TypeError'>, TypeError('expected vim.Window object',))
 vim.current.tabpage = True:(<class 'TypeError'>, TypeError('expected vim.TabPage object',))
 vim.current.xxx = True:(<class 'AttributeError'>, AttributeError('xxx',))
+3,xx
 vim.command("throw 'abc'"):(<class 'vim.error'>, error('abc',))
 Exe("throw 'def'"):(<class 'vim.error'>, error('def',))
 vim.eval("Exe('throw ''ghi''')"):(<class 'vim.error'>, error('ghi',))
