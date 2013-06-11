@@ -986,6 +986,9 @@ eof
 	    threadsafe_flag="-D_THREAD_SAFE"
 	    thread_lib="-pthread"
 	  fi
+	  if test "`(uname) 2>/dev/null`" = SunOS; then
+	    threadsafe_flag="-pthreads"
+	  fi
 	fi
 	libs_save_old=$LIBS
 	if test -n "$threadsafe_flag"; then
@@ -1022,7 +1025,6 @@ eof
 	  PYTHON_LIBS=
 	  PYTHON_CFLAGS=
 	fi
-
       fi
     else
       AC_MSG_RESULT(too old)
@@ -1058,78 +1060,85 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
           ${vi_cv_path_python3} -c 'import sys; print(sys.version[:3])'`
     ]])
 
-    dnl -- get abiflags for python 3.2 or higher (PEP 3149)
-    AC_CACHE_CHECK(Python's abiflags,vi_cv_var_python3_abiflags,
-    [
-     vi_cv_var_python3_abiflags=
-     if ${vi_cv_path_python3} -c \
-         "import sys; sys.exit(${vi_cv_var_python3_version} < 3.2)"
-     then
-       vi_cv_var_python3_abiflags=`${vi_cv_path_python3} -c \    
-         "import sys; print(sys.abiflags)"`
-     fi ])
+    dnl -- it must be at least version 3
+    AC_MSG_CHECKING(Python is 3.0 or better)
+    if ${vi_cv_path_python3} -c \
+      "import sys; sys.exit(${vi_cv_var_python3_version} < 3.0)"
+    then
+      AC_MSG_RESULT(yep)
 
-    dnl -- find where python3 thinks it was installed
-    AC_CACHE_CHECK(Python's install prefix,vi_cv_path_python3_pfx,
-    [ vi_cv_path_python3_pfx=`
-     ${vi_cv_path_python3} -c \
-     "import sys; print(sys.prefix)"` ])
-
-    dnl -- and where it thinks it runs
-    AC_CACHE_CHECK(Python's execution prefix,vi_cv_path_python3_epfx,
-    [ vi_cv_path_python3_epfx=`
-     ${vi_cv_path_python3} -c \
-     "import sys; print(sys.exec_prefix)"` ])
-
-    dnl -- python3's internal library path
-
-    AC_CACHE_VAL(vi_cv_path_python3path,
-    [ vi_cv_path_python3path=`
-     unset PYTHONPATH;
-     ${vi_cv_path_python3} -c \
-     "import sys, string; print(':'.join(sys.path))"` ])
-
-    dnl -- where the Python implementation library archives are
-
-    AC_ARG_WITH(python3-config-dir,
-     [  --with-python3-config-dir=PATH  Python's config directory],
-     [ vi_cv_path_python3_conf="${withval}" ] )
-
-    AC_CACHE_CHECK(Python's configuration directory,vi_cv_path_python3_conf,
-    [
-     vi_cv_path_python3_conf=
-     config_dir="config"
-     if test "${vi_cv_var_python3_abiflags}" != ""; then
-       config_dir="${config_dir}-${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
-     fi
-     d=`${vi_cv_path_python3} -c "import distutils.sysconfig; print(distutils.sysconfig.get_config_var('LIBPL'))"`
-     if test -d "$d" && test -f "$d/config.c"; then
-       vi_cv_path_python3_conf="$d"
-     else
-       for path in "${vi_cv_path_python3_pfx}" "${vi_cv_path_python3_epfx}"; do
-	 for subdir in lib64 lib share; do
-	   d="${path}/${subdir}/python${vi_cv_var_python3_version}/${config_dir}"
-	   if test -d "$d" && test -f "$d/config.c"; then
-	     vi_cv_path_python3_conf="$d"
-	   fi
-	 done
-       done
-     fi
-    ])
-
-    PYTHON3_CONFDIR="${vi_cv_path_python3_conf}"
-
-    if test "X$PYTHON3_CONFDIR" = "X"; then
-      AC_MSG_RESULT([can't find it!])
-    else
-
-      dnl -- we need to examine Python's config/Makefile too
-      dnl    see what the interpreter is built from
-      AC_CACHE_VAL(vi_cv_path_python3_plibs,
+      dnl -- get abiflags for python 3.2 or higher (PEP 3149)
+      AC_CACHE_CHECK(Python's abiflags,vi_cv_var_python3_abiflags,
       [
-          pwd=`pwd`
-          tmp_mkf="$pwd/config-PyMake$$"
-          cat -- "${PYTHON3_CONFDIR}/Makefile" - <<'eof' >"${tmp_mkf}"
+       vi_cv_var_python3_abiflags=
+       if ${vi_cv_path_python3} -c \
+           "import sys; sys.exit(${vi_cv_var_python3_version} < 3.2)"
+       then
+         vi_cv_var_python3_abiflags=`${vi_cv_path_python3} -c \    
+           "import sys; print(sys.abiflags)"`
+       fi ])
+  
+      dnl -- find where python3 thinks it was installed
+      AC_CACHE_CHECK(Python's install prefix,vi_cv_path_python3_pfx,
+      [ vi_cv_path_python3_pfx=`
+       ${vi_cv_path_python3} -c \
+       "import sys; print(sys.prefix)"` ])
+  
+      dnl -- and where it thinks it runs
+      AC_CACHE_CHECK(Python's execution prefix,vi_cv_path_python3_epfx,
+      [ vi_cv_path_python3_epfx=`
+       ${vi_cv_path_python3} -c \
+       "import sys; print(sys.exec_prefix)"` ])
+  
+      dnl -- python3's internal library path
+  
+      AC_CACHE_VAL(vi_cv_path_python3path,
+      [ vi_cv_path_python3path=`
+       unset PYTHONPATH;
+       ${vi_cv_path_python3} -c \
+       "import sys, string; print(':'.join(sys.path))"` ])
+  
+      dnl -- where the Python implementation library archives are
+  
+      AC_ARG_WITH(python3-config-dir,
+       [  --with-python3-config-dir=PATH  Python's config directory],
+       [ vi_cv_path_python3_conf="${withval}" ] )
+  
+      AC_CACHE_CHECK(Python's configuration directory,vi_cv_path_python3_conf,
+      [
+       vi_cv_path_python3_conf=
+       config_dir="config"
+       if test "${vi_cv_var_python3_abiflags}" != ""; then
+         config_dir="${config_dir}-${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
+       fi
+       d=`${vi_cv_path_python3} -c "import distutils.sysconfig; print(distutils.sysconfig.get_config_var('LIBPL'))"`
+       if test -d "$d" && test -f "$d/config.c"; then
+         vi_cv_path_python3_conf="$d"
+       else
+         for path in "${vi_cv_path_python3_pfx}" "${vi_cv_path_python3_epfx}"; do
+	   for subdir in lib64 lib share; do
+	     d="${path}/${subdir}/python${vi_cv_var_python3_version}/${config_dir}"
+	     if test -d "$d" && test -f "$d/config.c"; then
+	       vi_cv_path_python3_conf="$d"
+	     fi
+	   done
+         done
+       fi
+      ])
+  
+      PYTHON3_CONFDIR="${vi_cv_path_python3_conf}"
+  
+      if test "X$PYTHON3_CONFDIR" = "X"; then
+        AC_MSG_RESULT([can't find it!])
+      else
+  
+        dnl -- we need to examine Python's config/Makefile too
+        dnl    see what the interpreter is built from
+        AC_CACHE_VAL(vi_cv_path_python3_plibs,
+        [
+            pwd=`pwd`
+            tmp_mkf="$pwd/config-PyMake$$"
+            cat -- "${PYTHON3_CONFDIR}/Makefile" - <<'eof' >"${tmp_mkf}"
 __:
 	@echo "python3_BASEMODLIBS='$(BASEMODLIBS)'"
 	@echo "python3_LIBS='$(LIBS)'"
@@ -1137,81 +1146,87 @@ __:
 	@echo "python3_DLLLIBRARY='$(DLLLIBRARY)'"
 	@echo "python3_INSTSONAME='$(INSTSONAME)'"
 eof
-          dnl -- delete the lines from make about Entering/Leaving directory
-          eval "`cd ${PYTHON3_CONFDIR} && make -f "${tmp_mkf}" __ | sed '/ directory /d'`"
-          rm -f -- "${tmp_mkf}"
-	  vi_cv_path_python3_plibs="-L${PYTHON3_CONFDIR} -lpython${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
-          vi_cv_path_python3_plibs="${vi_cv_path_python3_plibs} ${python3_BASEMODLIBS} ${python3_LIBS} ${python3_SYSLIBS}"
-          dnl remove -ltermcap, it can conflict with an earlier -lncurses
-          vi_cv_path_python3_plibs=`echo $vi_cv_path_python3_plibs | sed s/-ltermcap//`
-          vi_cv_path_python3_plibs=`echo $vi_cv_path_python3_plibs | sed s/-lffi//`
-      ])
-
-      if test "X$python3_DLLLIBRARY" != "X"; then
-	python3_INSTSONAME="$python3_DLLLIBRARY"
-      fi
-      PYTHON3_LIBS="${vi_cv_path_python3_plibs}"
-      if test "${vi_cv_path_python3_pfx}" = "${vi_cv_path_python3_epfx}"; then
-        PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -DPYTHON3_HOME=L\\\"${vi_cv_path_python3_pfx}\\\""
-      else
-        PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -DPYTHON3_HOME=L\\\"${vi_cv_path_python3_pfx}\\\""
-      fi
-      PYTHON3_SRC="if_python3.c"
-      PYTHON3_OBJ="objects/if_python3.o"
-
-      dnl On FreeBSD linking with "-pthread" is required to use threads.
-      dnl _THREAD_SAFE must be used for compiling then.
-      dnl The "-pthread" is added to $LIBS, so that the following check for
-      dnl sigaltstack() will look in libc_r (it's there in libc!).
-      dnl Otherwise, when using GCC, try adding -pthread to $CFLAGS.  GCC
-      dnl will then define target-specific defines, e.g., -D_REENTRANT.
-      dnl Don't do this for Mac OSX, -pthread will generate a warning.
-      AC_MSG_CHECKING([if -pthread should be used])
-      threadsafe_flag=
-      thread_lib=
-      dnl if test "x$MACOSX" != "xyes"; then
-      if test "`(uname) 2>/dev/null`" != Darwin; then
-        test "$GCC" = yes && threadsafe_flag="-pthread"
-        if test "`(uname) 2>/dev/null`" = FreeBSD; then
-          threadsafe_flag="-D_THREAD_SAFE"
-          thread_lib="-pthread"
+            dnl -- delete the lines from make about Entering/Leaving directory
+            eval "`cd ${PYTHON3_CONFDIR} && make -f "${tmp_mkf}" __ | sed '/ directory /d'`"
+            rm -f -- "${tmp_mkf}"
+	    vi_cv_path_python3_plibs="-L${PYTHON3_CONFDIR} -lpython${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
+            vi_cv_path_python3_plibs="${vi_cv_path_python3_plibs} ${python3_BASEMODLIBS} ${python3_LIBS} ${python3_SYSLIBS}"
+            dnl remove -ltermcap, it can conflict with an earlier -lncurses
+            vi_cv_path_python3_plibs=`echo $vi_cv_path_python3_plibs | sed s/-ltermcap//`
+            vi_cv_path_python3_plibs=`echo $vi_cv_path_python3_plibs | sed s/-lffi//`
+        ])
+  
+        if test "X$python3_DLLLIBRARY" != "X"; then
+	  python3_INSTSONAME="$python3_DLLLIBRARY"
+        fi
+        PYTHON3_LIBS="${vi_cv_path_python3_plibs}"
+        if test "${vi_cv_path_python3_pfx}" = "${vi_cv_path_python3_epfx}"; then
+          PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -DPYTHON3_HOME=L\\\"${vi_cv_path_python3_pfx}\\\""
+        else
+          PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -DPYTHON3_HOME=L\\\"${vi_cv_path_python3_pfx}\\\""
+        fi
+        PYTHON3_SRC="if_python3.c"
+        PYTHON3_OBJ="objects/if_python3.o"
+  
+        dnl On FreeBSD linking with "-pthread" is required to use threads.
+        dnl _THREAD_SAFE must be used for compiling then.
+        dnl The "-pthread" is added to $LIBS, so that the following check for
+        dnl sigaltstack() will look in libc_r (it's there in libc!).
+        dnl Otherwise, when using GCC, try adding -pthread to $CFLAGS.  GCC
+        dnl will then define target-specific defines, e.g., -D_REENTRANT.
+        dnl Don't do this for Mac OSX, -pthread will generate a warning.
+        AC_MSG_CHECKING([if -pthread should be used])
+        threadsafe_flag=
+        thread_lib=
+        dnl if test "x$MACOSX" != "xyes"; then
+        if test "`(uname) 2>/dev/null`" != Darwin; then
+          test "$GCC" = yes && threadsafe_flag="-pthread"
+          if test "`(uname) 2>/dev/null`" = FreeBSD; then
+            threadsafe_flag="-D_THREAD_SAFE"
+            thread_lib="-pthread"
+          fi
+          if test "`(uname) 2>/dev/null`" = SunOS; then
+            threadsafe_flag="-pthreads"
+          fi
+        fi
+        libs_save_old=$LIBS
+        if test -n "$threadsafe_flag"; then
+          cflags_save=$CFLAGS
+          CFLAGS="$CFLAGS $threadsafe_flag"
+          LIBS="$LIBS $thread_lib"
+          AC_TRY_LINK(,[ ],
+             AC_MSG_RESULT(yes); PYTHON3_CFLAGS="$PYTHON3_CFLAGS $threadsafe_flag",
+             AC_MSG_RESULT(no); LIBS=$libs_save_old
+             )
+          CFLAGS=$cflags_save
+        else
+          AC_MSG_RESULT(no)
+        fi
+  
+        dnl check that compiling a simple program still works with the flags
+        dnl added for Python.
+        AC_MSG_CHECKING([if compile and link flags for Python 3 are sane])
+        cflags_save=$CFLAGS
+        libs_save=$LIBS
+        CFLAGS="$CFLAGS $PYTHON3_CFLAGS"
+        LIBS="$LIBS $PYTHON3_LIBS"
+        AC_TRY_LINK(,[ ],
+               AC_MSG_RESULT(yes); python3_ok=yes,
+               AC_MSG_RESULT(no: PYTHON3 DISABLED); python3_ok=no)
+        CFLAGS=$cflags_save
+        LIBS=$libs_save
+        if test "$python3_ok" = yes; then
+          AC_DEFINE(FEAT_PYTHON3)
+        else
+          LIBS=$libs_save_old
+          PYTHON3_SRC=
+          PYTHON3_OBJ=
+          PYTHON3_LIBS=
+          PYTHON3_CFLAGS=
         fi
       fi
-      libs_save_old=$LIBS
-      if test -n "$threadsafe_flag"; then
-        cflags_save=$CFLAGS
-        CFLAGS="$CFLAGS $threadsafe_flag"
-        LIBS="$LIBS $thread_lib"
-        AC_TRY_LINK(,[ ],
-           AC_MSG_RESULT(yes); PYTHON3_CFLAGS="$PYTHON3_CFLAGS $threadsafe_flag",
-           AC_MSG_RESULT(no); LIBS=$libs_save_old
-           )
-        CFLAGS=$cflags_save
-      else
-        AC_MSG_RESULT(no)
-      fi
-
-      dnl check that compiling a simple program still works with the flags
-      dnl added for Python.
-      AC_MSG_CHECKING([if compile and link flags for Python 3 are sane])
-      cflags_save=$CFLAGS
-      libs_save=$LIBS
-      CFLAGS="$CFLAGS $PYTHON3_CFLAGS"
-      LIBS="$LIBS $PYTHON3_LIBS"
-      AC_TRY_LINK(,[ ],
-             AC_MSG_RESULT(yes); python3_ok=yes,
-             AC_MSG_RESULT(no: PYTHON3 DISABLED); python3_ok=no)
-      CFLAGS=$cflags_save
-      LIBS=$libs_save
-      if test "$python3_ok" = yes; then
-        AC_DEFINE(FEAT_PYTHON3)
-      else
-        LIBS=$libs_save_old
-        PYTHON3_SRC=
-        PYTHON3_OBJ=
-        PYTHON3_LIBS=
-        PYTHON3_CFLAGS=
-      fi
+    else
+      AC_MSG_RESULT(too old)
     fi
   fi
 fi
@@ -2442,7 +2457,7 @@ if test -z "$SKIP_MOTIF"; then
 	xmheader="Xm/Xm.h"
   else
 	xmheader="Xm/Xm.h Xm/XpmP.h Xm/JoinSideT.h Xm/TraitP.h Xm/Manager.h
-  	   Xm/UnhighlightT.h Xm/Notebook.h"  
+	   Xm/UnhighlightT.h Xm/Notebook.h"  
   fi    
   AC_CHECK_HEADERS($xmheader)
 
@@ -3356,7 +3371,7 @@ AC_TRY_COMPILE(
 [#include <sys/types.h>
 #include <sys/sysinfo.h>],
 [	struct sysinfo sinfo;
- 	sinfo.mem_unit = 1;
+	sinfo.mem_unit = 1;
 	],
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SYSINFO_MEM_UNIT),
 	AC_MSG_RESULT(no))
