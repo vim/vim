@@ -1906,6 +1906,8 @@ repeat( {expr}, {count})	String	repeat {expr} {count} times
 resolve( {filename})		String	get filename a shortcut points to
 reverse( {list})		List	reverse {list} in-place
 round( {expr})			Float	round off {expr}
+screenattr( {row}, {col})	Number	attribute at screen position
+screenchar( {row}, {col})	Number	character at screen position
 screencol()			Number	current cursor column
 screenrow()			Number	current cursor row
 search( {pattern} [, {flags} [, {stopline} [, {timeout}]]])
@@ -4889,6 +4891,21 @@ round({expr})							*round()*
 			echo round(-4.5)
 <			-5.0
 		{only available when compiled with the |+float| feature}
+
+screenattr(row, col)						*screenattr()*
+		Like screenchar(), but return the attribute.  This is a rather
+		arbitrary number that can only be used to compare to the
+		attribute at other positions.
+
+screenchar(row, col)						*screenchar()*
+		The result is a Number, which is the character at position
+		[row, col] on the screen.  This works for every possible
+		screen position, also status lines, window separators and the
+		command line.  The top left position is row one, column one
+		The character excludes composing characters.  For double-byte
+		encodings it may only be the first byte.
+		This is mainly to be used for testing.
+		Returns -1 when row or col is out of range.
 
 screencol()							*screencol()*
 		The result is a Number, which is the current screen column of
