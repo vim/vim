@@ -6391,8 +6391,8 @@ nfa_regcomp(expr, re_flags)
      */
     post2nfa(postfix, post_ptr, TRUE);
 
-    /* Space for compiled regexp */
-    prog_size = sizeof(nfa_regprog_T) + sizeof(nfa_state_T) * nstate;
+    /* allocate the regprog with space for the compiled regexp */
+    prog_size = sizeof(nfa_regprog_T) + sizeof(nfa_state_T) * (nstate - 1);
     prog = (nfa_regprog_T *)lalloc(prog_size, TRUE);
     if (prog == NULL)
 	goto fail;

@@ -101,7 +101,7 @@ typedef struct
 #endif
     int			nsubexp;	/* number of () */
     int			nstate;
-    nfa_state_T		state[0];	/* actually longer.. */
+    nfa_state_T		state[1];	/* actually longer.. */
 } nfa_regprog_T;
 
 /*
