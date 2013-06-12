@@ -315,7 +315,7 @@ vim.path_hooks in sys.path_hooks python will try to load module from
 {rtp}/python2 (or python3) and {rtp}/pythonx (for both python versions) for 
 each {rtp} found in 'runtimepath'.
 
-Implementation for python 2 is similar to the following, but written in C: >
+Implementation is similar to the following, but written in C: >
 
     from imp import find_module, load_module
     import vim
@@ -344,16 +344,16 @@ Implementation for python 2 is similar to the following, but written in C: >
     # matter for python which object has find_module function attached to as 
     # an attribute.
     class VimPathFinder(object):
+        @classmethod
         def find_module(cls, fullname, path=None):
             try:
                 return VimModuleLoader(_find_module(fullname, fullname, path or vim._get_paths()))
             except ImportError:
                 return None
-        find_module = classmethod(find_module)
 
+        @classmethod
         def load_module(cls, fullname, path=None):
             return _find_module(fullname, fullname, path or vim._get_paths())
-        load_module = classmethod(load_module)
 
     def hook(path):
         if path == vim.VIM_SPECIAL_PATH:
@@ -362,30 +362,6 @@ Implementation for python 2 is similar to the following, but written in C: >
             raise ImportError
 
     sys.path_hooks.append(hook)
-
-Implementation for python 3 is cleaner: code is similar to the following, but, 
-again, written in C: >
-
-    from importlib.machinery import PathFinder
-    import sys
-
-    class Finder(PathFinder):
-        @classmethod
-        def find_module(cls, fullname):
-            # see vim._get_paths below
-            new_path = _get_paths()
-
-            # super().find_module is also a class method
-            # super() is not used because this variant is easier to implement 
-            # in C
-            return PathFinder.find_module(fullname, new_path)
-
-    def path_hook(path):
-        if path == VIM_SPECIAL_PATH:
-            return Finder
-        raise ImportError
-
-    sys.path_hooks.append(path_hook)
 
 vim.VIM_SPECIAL_PATH					*python-VIM_SPECIAL_PATH*
 	String constant used in conjunction with vim path hook. If path hook 
@@ -402,8 +378,7 @@ vim.path_hook(path)					*python-path_hook*
 	You should not be using any of these directly except for vim.path_hook 
 	in case you need to do something with sys.meta_path. It is not 
 	guaranteed that any of the objects will exist in the future vim 
-	versions. In fact, find_module methods do not exists 
-	in python3.
+	versions.
 
 vim._get_paths						*python-_get_paths*
 	Methods returning a list of paths which will be searched for by path 
