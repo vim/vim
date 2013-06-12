@@ -3120,7 +3120,7 @@ modifier_len(cmd)
 	for (j = 0; p[j] != NUL; ++j)
 	    if (p[j] != cmdmods[i].name[j])
 		break;
-	if (!isalpha(p[j]) && j >= cmdmods[i].minlen
+	if (!ASCII_ISALPHA(p[j]) && j >= cmdmods[i].minlen
 					&& (p == cmd || cmdmods[i].has_count))
 	    return j + (int)(p - cmd);
     }

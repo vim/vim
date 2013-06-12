@@ -99,6 +99,11 @@
 # define MB_TOUPPER(c)	TOUPPER_LOC(c)
 #endif
 
+/* Use our own isdigit() replacement, because on MS-Windows isdigit() returns
+ * non-zero for superscript 1.  Also avoids that isdigit() crashes for numbers
+ * below 0 and above 255.  */
+#define VIM_ISDIGIT(c) ((unsigned)(c) - '0' < 10)
+
 /* Like isalpha() but reject non-ASCII characters.  Can't be used with a
  * special key (negative value). */
 #ifdef EBCDIC
@@ -107,16 +112,11 @@
 # define ASCII_ISLOWER(c) islower(c)
 # define ASCII_ISUPPER(c) isupper(c)
 #else
-# define ASCII_ISALPHA(c) ((c) < 0x7f && isalpha(c))
-# define ASCII_ISALNUM(c) ((c) < 0x7f && isalnum(c))
 # define ASCII_ISLOWER(c) ((unsigned)(c) - 'a' < 26)
 # define ASCII_ISUPPER(c) ((unsigned)(c) - 'A' < 26)
+# define ASCII_ISALPHA(c) (ASCII_ISUPPER(c) || ASCII_ISLOWER(c))
+# define ASCII_ISALNUM(c) (ASCII_ISALPHA(c) || VIM_ISDIGIT(c))
 #endif
-
-/* Use our own isdigit() replacement, because on MS-Windows isdigit() returns
- * non-zero for superscript 1.  Also avoids that isdigit() crashes for numbers
- * below 0 and above 255.  */
-#define VIM_ISDIGIT(c) ((unsigned)(c) - '0' < 10)
 
 /* macro version of chartab().
  * Only works with values 0-255!
