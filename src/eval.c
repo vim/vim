@@ -112,6 +112,7 @@ static char *e_dictrange = N_("E719: Cannot use [:] with a Dictionary");
 static char *e_letwrong = N_("E734: Wrong variable type for %s=");
 static char *e_nofunc = N_("E130: Unknown function: %s");
 static char *e_illvar = N_("E461: Illegal variable name: %s");
+static char *e_float_as_string = N_("E806: using Float as a String");
 
 static dictitem_T	globvars_var;		/* variable used for g: */
 #define globvarht globvardict.dv_hashtab
@@ -5268,16 +5269,20 @@ eval_index(arg, rettv, evaluate, verbose)
     char_u	*s;
     char_u	*key = NULL;
 
-    if (rettv->v_type == VAR_FUNC
-#ifdef FEAT_FLOAT
-	    || rettv->v_type == VAR_FLOAT
-#endif
-	    )
+    if (rettv->v_type == VAR_FUNC)
     {
 	if (verbose)
 	    EMSG(_("E695: Cannot index a Funcref"));
 	return FAIL;
     }
+#ifdef FEAT_FLOAT
+    else if (rettv->v_type == VAR_FLOAT)
+    {
+	if (verbose)
+	    EMSG(_(e_float_as_string));
+	return FAIL;
+    }
+#endif
 
     if (**arg == '.')
     {
@@ -20085,7 +20090,7 @@ get_tv_string_buf_chk(varp, buf)
 	    break;
 #ifdef FEAT_FLOAT
 	case VAR_FLOAT:
-	    EMSG(_("E806: using Float as a String"));
+	    EMSG(_(e_float_as_string));
 	    break;
 #endif
 	case VAR_STRING:
