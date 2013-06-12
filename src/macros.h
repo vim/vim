@@ -109,15 +109,14 @@
 #else
 # define ASCII_ISALPHA(c) ((c) < 0x7f && isalpha(c))
 # define ASCII_ISALNUM(c) ((c) < 0x7f && isalnum(c))
-# define ASCII_ISLOWER(c) ((c) < 0x7f && islower(c))
-# define ASCII_ISUPPER(c) ((c) < 0x7f && isupper(c))
+# define ASCII_ISLOWER(c) ((unsigned)(c) - 'a' < 26)
+# define ASCII_ISUPPER(c) ((unsigned)(c) - 'A' < 26)
 #endif
 
 /* Use our own isdigit() replacement, because on MS-Windows isdigit() returns
  * non-zero for superscript 1.  Also avoids that isdigit() crashes for numbers
- * below 0 and above 255.  For complicated arguments and in/decrement use
- * vim_isdigit() instead. */
-#define VIM_ISDIGIT(c) ((c) >= '0' && (c) <= '9')
+ * below 0 and above 255.  */
+#define VIM_ISDIGIT(c) ((unsigned)(c) - '0' < 10)
 
 /* macro version of chartab().
  * Only works with values 0-255!
