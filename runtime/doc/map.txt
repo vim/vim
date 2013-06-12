@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.3.  Last change: 2013 May 05
+*map.txt*       For Vim version 7.3.  Last change: 2013 Jun 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -175,6 +175,7 @@ The "<buffer>" argument can also be used to clear mappings: >
 	:mapclear <buffer>
 Local mappings are also cleared when a buffer is deleted, but not when it is
 unloaded.  Just like local option values.
+Also see |map-precedence|.
 
 						*:map-<silent>* *:map-silent*
 To define a mapping which will not be echoed on the command line, add
@@ -653,6 +654,18 @@ only wait for one second (or as long as specified with the 'timeoutlen'
 option).  After that it assumes that the 'q' is to be interpreted as such.  If
 you type slowly, or your system is slow, reset the 'timeout' option.  Then you
 might want to set the 'ttimeout' option.
+
+                            				*map-precedence*
+Buffer-local mappings (defined using |:map-<buffer>|) take precedence over
+global mappings.  When a buffer-local mapping is the same as a global mapping,
+Vim will use the buffer-local mapping.  In addition, Vim will use a complete
+buffer-local mapping immediately, even if a longer global mapping has the
+buffer-local mapping as a prefix.  For example, given the following two
+mappings: >
+    :map <buffer> \a   :echo "Local \a"<CR>
+    :map          \abc :echo "Global \abc"<CR>
+The buffer-local mapping \a will be used immediately.  Vim will not wait for
+more characters to see if the user might be typing \abc.
 
 							*map-keys-fails*
 There are situations where key codes might not be recognized:

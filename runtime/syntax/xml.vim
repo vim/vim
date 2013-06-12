@@ -3,7 +3,7 @@
 " Maintainer:	Johannes Zellner <johannes@zellner.org>
 "		Author and previous maintainer:
 "		Paul Siegmann <pauls@euronet.nl>
-" Last Change:	2013 May 29
+" Last Change:	2013 Jun 07
 " Filenames:	*.xml
 " $Id: xml.vim,v 1.3 2006/04/11 21:32:00 vimboss Exp $
 
@@ -81,7 +81,7 @@ syn match   xmlEqual +=+ display
 "      ^^^^^^^^^^^^^
 "
 syn match   xmlAttrib
-    \ +[-'"<]\@2<!\<[a-zA-Z:_][-.0-9a-zA-Z0-9:_]*\>\(['">]\@!\|$\)+
+    \ +[-'"<]\@1<!\<[a-zA-Z:_][-.0-9a-zA-Z:_]*\>\%(['">]\@!\|$\)+
     \ contained
     \ contains=xmlAttribPunct,@xmlAttribHook
     \ display
@@ -122,7 +122,7 @@ endif
 "  ^^^
 "
 syn match   xmlTagName
-    \ +[<]\@2<=[^ /!?<>"']\++
+    \ +<\@1<=[^ /!?<>"']\++
     \ contained
     \ contains=xmlNamespace,xmlAttribPunct,@xmlTagHook
     \ display

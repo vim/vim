@@ -1468,9 +1468,9 @@ knows how to color highlight.  It can be used for any filetype and provides a
 minimal language-sensitive completion.
 
 To enable syntax code completion you can run: >
-	setlocal omnifunc=syntaxcomplete#Complete
+    setlocal omnifunc=syntaxcomplete#Complete
 
-You can automate this by placing the following in your vimrc (after any
+You can automate this by placing the following in your |.vimrc| (after any
 ":filetype" command): >
     if has("autocmd") && exists("+omnifunc")
 	autocmd Filetype *
@@ -1487,7 +1487,7 @@ customize which syntax groups to include or exclude from the list.  Let's have
 a look at the PHP filetype to see how this works.
 
 If you edit a file called, index.php, run the following command: >
-	:syntax list
+    syntax list
 
 The first thing you will notice is that there are many different syntax groups.
 The PHP language can include elements from different languages like HTML,
@@ -1496,24 +1496,38 @@ that begin with the filetype, "php", in this case.  For example these syntax
 groups are included by default with the PHP: phpEnvVar, phpIntVar,
 phpFunctions.
 
-The PHP language has an enormous number of items which it knows how to syntax
-highlight.  This means these items will be available within the omni
-completion list.  Some people may find this list unwieldy or are only
-interested in certain items.
+If you wish non-filetype syntax items to also be included, you can use a 
+regular expression syntax (added in version 13.0 of autoload\syntaxcomplete.vim)
+to add items.  Looking at the output from ":syntax list" while editing a PHP file 
+I can see some of these entries: >
+    htmlArg,htmlTag,htmlTagName,javaScriptStatement,javaScriptGlobalObjects
 
-There are two ways to prune this list (if necessary).  If you find certain
-syntax groups you do not wish displayed you can add the following to your
-vimrc: >
-	let g:omni_syntax_group_exclude_php = 'phpCoreConstant,phpConstant'
+To pick up any JavaScript and HTML keyword syntax groups while editing a PHP
+file, you can use 3 different regexs, one for each language.  Or you can 
+simply restrict the include groups to a particular value, without using 
+a regex string: >
+    let g:omni_syntax_group_include_php = 'php\w\+,javaScript\w\+,html\w\+'
+    let g:omni_syntax_group_include_php = 'phpFunctions,phpMethods'
+<
+The basic form of this variable is: >
+    let g:omni_syntax_group_include_{filetype} = 'regex,comma,separated'
+
+The PHP language has an enormous number of items which it knows how to syntax
+highlight.  These these items will be available within the omni completion
+list.  
+
+Some people may find this list unwieldy or are only interested in certain
+items.  There are two ways to prune this list (if necessary).  If you find
+certain syntax groups you do not wish displayed you can use two different 
+methods to identify these groups.  The first specifically lists the syntax 
+groups by name.  The second uses a regular expression to identify both 
+syntax groups.  Simply add one the following to your vimrc: >
+    let g:omni_syntax_group_exclude_php = 'phpCoreConstant,phpConstant'
+    let g:omni_syntax_group_exclude_php = 'php\w*Constant'
 
 Add as many syntax groups to this list by comma separating them.  The basic
 form of this variable is: >
-	let g:omni_syntax_group_exclude_{filetype} = 'comma,separated,list'
-
-For completeness the opposite is also true.  Creating this variable in your
-vimrc will only include the items in the phpFunctions and phpMethods syntax
-groups: >
-	let g:omni_syntax_group_include_php = 'phpFunctions,phpMethods'
+    let g:omni_syntax_group_exclude_{filetype} = 'regex,comma,separated'
 
 You can create as many of these variables as you need, varying only the
 filetype at the end of the variable name.
@@ -1553,6 +1567,9 @@ To retrieve only the syntax items for the sqlOperator syntax group: >
 
 To retrieve all syntax items for both the sqlOperator and sqlType groups: >
     echo OmniSyntaxList( ['sqlOperator', 'sqlType'] )
+
+A regular expression can also be used: >
+    echo OmniSyntaxList( ['sql\w\+'] )
 
 From within a plugin, you would typically assign the output to a List: >
     let myKeywords = []

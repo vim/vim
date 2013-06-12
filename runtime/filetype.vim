@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2013 Jun 01
+" Last Change:	2013 Jun 12
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -870,6 +870,9 @@ au BufNewFile,BufRead */etc/hosts.allow,*/etc/hosts.deny  setf hostsaccess
 " Hyper Builder
 au BufNewFile,BufRead *.hb			setf hb
 
+" Httest
+au BufNewFile,BufRead *.htt,*.htb		setf httest
+
 " Icon
 au BufNewFile,BufRead *.icn			setf icon
 
@@ -1547,6 +1550,9 @@ au BufNewFile,BufRead *.pdb			setf prolog
 
 " Promela
 au BufNewFile,BufRead *.pml			setf promela
+
+" Google protocol buffers
+au BufNewFile,BufRead *.proto			setf proto
 
 " Protocols
 au BufNewFile,BufRead */etc/protocols		setf protocols

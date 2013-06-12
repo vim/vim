@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language: Syntax for Gprof Output
 " Maintainer: Dominique Pelle <dominique.pelle@gmail.com>
-" Last Change: 2012 May 20
+" Last Change: 2013 Jun 09
 
 " Quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -32,7 +32,7 @@ syn match gprofCallGraphFunction "\s\+\(\d\+\.\d\+\s\+\)\{3}\([0-9+]\+\)\?\s\+[a
 syn match gprofCallGraphSeparator "^-\+$"
 syn region gprofCallGraphTrailer
   \ start="This table describes the call tree of the program"
-  \ end="^\s*the cycle.$"
+  \ end="^\s*the cycle\.$"
 
 " Index
 syn region gprofIndex

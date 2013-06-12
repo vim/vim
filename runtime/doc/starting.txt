@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.3.  Last change: 2013 May 29
+*starting.txt*  For Vim version 7.3.  Last change: 2013 Jun 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -757,11 +757,21 @@ accordingly.  Vim proceeds in this order:
 	file, but "exrc" is what Vi always used, "vimrc" is a Vim specific
 	name.  Also see |vimrc-intro|.
 
-	Recommended place for your personal initializations:
-		Unix		    $HOME/.vimrc
-		OS/2		    $HOME/.vimrc or $VIM/.vimrc (or _vimrc)
-		MS-DOS and Win32    $HOME/_vimrc or $VIM/_vimrc
-		Amiga		    s:.vimrc or $VIM/.vimrc
+	Places for your personal initializations:
+		Unix		$HOME/.vimrc or $HOME/.vim/vimrc
+		OS/2		$HOME/.vimrc, $HOME/vimfiles/vimrc
+				or $VIM/.vimrc (or _vimrc)
+		MS-Windows	$HOME/_vimrc, $HOME/vimfiles/vimrc
+				or $VIM/_vimrc
+		Amiga		s:.vimrc, home:.vimrc, home:vimfiles:vimrc
+				or $VIM/.vimrc
+
+	The files are searched in the order specified above and only the first
+	one that is found is read.
+
+	RECOMMENDATION: Put all your Vim configuration stuff in the
+	$HOME/.vim/ directory ($HOME/vimfiles/ for MS-Windows). That makes it
+	easy to copy it to another system.
 
 	If Vim was started with "-u filename", the file "filename" is used.
 	All following initializations until 4. are skipped.
@@ -791,12 +801,15 @@ accordingly.  Vim proceeds in this order:
 	-  The environment variable VIMINIT (see also |compatible-default|) (*)
 	   The value of $VIMINIT is used as an Ex command line.
 	-  The user vimrc file(s):
-		    "$HOME/.vimrc"	(for Unix and OS/2) (*)
-		    "s:.vimrc"		(for Amiga) (*)
-		    "home:.vimrc"	(for Amiga) (*)
-		    "$VIM/.vimrc"	(for OS/2 and Amiga) (*)
-		    "$HOME/_vimrc"	(for MS-DOS and Win32) (*)
-		    "$VIM/_vimrc"	(for MS-DOS and Win32) (*)
+		    "$HOME/.vimrc"	   (for Unix and OS/2) (*)
+		    "$HOME/.vim/vimrc"	   (for Unix and OS/2) (*)
+		    "s:.vimrc"		   (for Amiga) (*)
+		    "home:.vimrc"	   (for Amiga) (*)
+		    "home:vimfiles:vimrc"  (for Amiga) (*)
+		    "$VIM/.vimrc"	   (for OS/2 and Amiga) (*)
+		    "$HOME/_vimrc"	   (for MS-DOS and Win32) (*)
+		    "$HOME/vimfiles/vimrc" (for MS-DOS and Win32) (*)
+		    "$VIM/_vimrc"	   (for MS-DOS and Win32) (*)
 		Note: For Unix, OS/2 and Amiga, when ".vimrc" does not exist,
 		"_vimrc" is also tried, in case an MS-DOS compatible file
 		system is used.  For MS-DOS and Win32 ".vimrc" is checked

@@ -1,9 +1,7 @@
 " Vim completion script
 " Language:             Ruby
 " Maintainer:           Mark Guzman <segfault@hasno.info>
-" Last Change:          2009 Sep 28
-" URL:                  http://vim-ruby.rubyforge.org
-" Anon CVS:             See above site
+" URL:                  https://github.com/vim-ruby/vim-ruby
 " Release Coordinator:  Doug Kearns <dougkearns@gmail.com>
 " Maintainer Version:   0.8.1
 " ----------------------------------------------------------------------------
@@ -12,16 +10,23 @@
 " ----------------------------------------------------------------------------
 
 " {{{ requirement checks
+
+function! s:ErrMsg(msg)
+    echohl ErrorMsg
+    echo a:msg
+    echohl None
+endfunction
+
 if !has('ruby')
-    s:ErrMsg( "Error: Rubycomplete requires vim compiled with +ruby" )
-    s:ErrMsg( "Error: falling back to syntax completion" )
+    call s:ErrMsg( "Error: Rubycomplete requires vim compiled with +ruby" )
+    call s:ErrMsg( "Error: falling back to syntax completion" )
     " lets fall back to syntax completion
     setlocal omnifunc=syntaxcomplete#Complete
     finish
 endif
 
 if version < 700
-    s:ErrMsg( "Error: Required vim >= 7.0" )
+    call s:ErrMsg( "Error: Required vim >= 7.0" )
     finish
 endif
 " }}} requirement checks
@@ -50,12 +55,6 @@ endif
 
 " {{{ vim-side support functions
 let s:rubycomplete_debug = 0
-
-function! s:ErrMsg(msg)
-    echohl ErrorMsg
-    echo a:msg
-    echohl None
-endfunction
 
 function! s:dprint(msg)
     if s:rubycomplete_debug == 1
@@ -133,7 +132,7 @@ function! s:GetRubyVarType(v)
     let stopline = 1
     let vtp = ''
     let pos = getpos('.')
-    let sstr = '^\s*#\s*@var\s*'.a:v.'\>\s\+[^ \t]\+\s*$'
+    let sstr = '^\s*#\s*@var\s*'.escape(a:v, '*').'\>\s\+[^ \t]\+\s*$'
     let [lnum,lcol] = searchpos(sstr,'nb',stopline)
     if lnum != 0 && lcol != 0
         call setpos('.',pos)
@@ -275,7 +274,7 @@ class VimRubyCompletion
     pare = /^\s*class\s*(.*)\s*<\s*(.*)\s*\n/.match( classdef )
     load_buffer_class( $2 ) if pare != nil  && $2 != name # load parent class if needed
 
-    mixre = /.*\n\s*include\s*(.*)\s*\n/.match( classdef )
+    mixre = /.*\n\s*(include|prepend)\s*(.*)\s*\n/.match( classdef )
     load_buffer_module( $2 ) if mixre != nil && $2 != name # load mixins if needed
 
     begin
@@ -362,6 +361,10 @@ class VimRubyCompletion
 
   def dprint( txt )
     print txt if @@debug
+  end
+
+  def escape_vim_singlequote_string(str)
+    str.to_s.gsub(/'/,"\\'")
   end
 
   def get_buffer_entity_list( type )
@@ -526,9 +529,9 @@ class VimRubyCompletion
   end
 
   def clean_sel(sel, msg)
-    sel.delete_if { |x| x == nil }
-    sel.uniq!
-    sel.grep(/^#{Regexp.quote(msg)}/) if msg != nil
+    ret = sel.reject{|x|x.nil?}.uniq
+    ret = ret.grep(/^#{Regexp.quote(msg)}/) if msg != nil
+    ret
   end
 
   def get_rails_view_methods
@@ -767,10 +770,10 @@ class VimRubyCompletion
     constants = clean_sel( constants, message )
 
     valid = []
-    valid += methods.collect { |m| { :name => m, :type => 'm' } }
-    valid += variables.collect { |v| { :name => v, :type => 'v' } }
-    valid += classes.collect { |c| { :name => c, :type => 't' } }
-    valid += constants.collect { |d| { :name => d, :type => 'd' } }
+    valid += methods.collect { |m| { :name => m.to_s, :type => 'm' } }
+    valid += variables.collect { |v| { :name => v.to_s, :type => 'v' } }
+    valid += classes.collect { |c| { :name => c.to_s, :type => 't' } }
+    valid += constants.collect { |d| { :name => d.to_s, :type => 'd' } }
     valid.sort! { |x,y| x[:name] <=> y[:name] }
 
     outp = ""
@@ -779,7 +782,7 @@ class VimRubyCompletion
     rg.step(150) do |x|
       stpos = 0+x
       enpos = 150+x
-      valid[stpos..enpos].each { |c| outp += "{'word':'%s','item':'%s','kind':'%s'}," % [ c[:name], c[:name], c[:type] ] }
+      valid[stpos..enpos].each { |c| outp += "{'word':'%s','item':'%s','kind':'%s'}," % [ c[:name], c[:name], c[:type] ].map{|x|escape_vim_singlequote_string(x)} }
       outp.sub!(/,$/, '')
 
       VIM::command("call extend(g:rubycomplete_completions, [%s])" % outp)

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3.  Last change: 2013 May 21
+*eval.txt*	For Vim version 7.3.  Last change: 2013 Jun 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2775,7 +2775,8 @@ expand({expr} [, {nosuf} [, {list}]])				*expand()*
 		file name contains a space]
 
 		If the expansion fails, the result is an empty string.	A name
-		for a non-existing file is not included.
+		for a non-existing file is not included, unless {expr} does
+		not start with '%', '#' or '<', see below.
 
 		When {expr} starts with '%', '#' or '<', the expansion is done
 		like for the |cmdline-special| variables with their associated

@@ -1,6 +1,6 @@
 " Language:    gprof
 " Maintainer:  Dominique Pelle <dominique.pelle@gmail.com>
-" Last Change: 2012 May 20
+" Last Change: 2013 Jun 09
 
 " When cursor is on one line of the gprof call graph,
 " calling this function jumps to this function in the call graph.
@@ -13,20 +13,20 @@ fun! <SID>GprofJumpToFunctionIndex()
   let l:line = getline('.')
   if l:line =~ '[\d\+\]$'
     " We're in a line in the call graph.
-    norm $y%
+    norm! $y%
     call search('^' . escape(@", '[]'), 'sw')
-    norm zz
+    norm! zz
   elseif l:line =~ '^\(\s\+[0-9\.]\+\)\{3}\s\+'
     " We're in line in the flat profile.
-    norm 55|y$
-    call search('^\[\d\+\].*\d\s\+' .  escape(@", '[]*.'), 'sW')
-    norm zz
+    norm! 55|eby$
+    call search('^\[\d\+\].*\d\s\+' .  escape(@", '[]*.') . '\>', 'sW')
+    norm! zz
   endif
 endfun
 
 " Pressing <C-]> on a line in the gprof flat profile or in
 " the call graph, jumps to the corresponding function inside
 " the flat profile.
-map <silent> <C-]> :call <SID>GprofJumpToFunctionIndex()<CR>
+map <buffer> <silent> <C-]> :call <SID>GprofJumpToFunctionIndex()<CR>
 
 " vim:sw=2 fdm=indent

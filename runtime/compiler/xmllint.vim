@@ -1,8 +1,7 @@
 " Vim compiler file
 " Compiler:	xmllint
-" Maintainer:	Doug Kearns <djkea2@gus.gscit.monash.edu.au>
-" URL:		http://gus.gscit.monash.edu.au/~djkea2/vim/compiler/xmllint.vim
-" Last Change:	2004 Nov 27
+" Maintainer:	Doug Kearns <dougkearns@gmail.com>
+" Last Change:	2013 Jun 1
 
 if exists("current_compiler")
   finish
@@ -18,10 +17,8 @@ set cpo-=C
 
 CompilerSet makeprg=xmllint\ --valid\ --noout\ 
 
-CompilerSet errorformat=%E%f:%l:\ error:\ %m,
-		    \%W%f:%l:\ warning:\ %m,
-		    \%E%f:%l:\ validity\ error:\ %m,
-		    \%W%f:%l:\ validity\ warning:\ %m,
+CompilerSet errorformat=%+E%f:%l:\ %.%#\ error\ :\ %m,
+		    \%+W%f:%l:\ %.%#\ warning\ :\ %m,
 		    \%-Z%p^,
 		    \%-G%.%#
 

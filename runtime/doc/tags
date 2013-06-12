@@ -496,8 +496,10 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'nocopyindent'	options.txt	/*'nocopyindent'*
 'nocp'	options.txt	/*'nocp'*
 'nocrb'	options.txt	/*'nocrb'*
+'nocscoperelative'	options.txt	/*'nocscoperelative'*
 'nocscopetag'	options.txt	/*'nocscopetag'*
 'nocscopeverbose'	options.txt	/*'nocscopeverbose'*
+'nocsre'	options.txt	/*'nocsre'*
 'nocst'	options.txt	/*'nocst'*
 'nocsverb'	options.txt	/*'nocsverb'*
 'nocuc'	options.txt	/*'nocuc'*
@@ -5716,6 +5718,7 @@ ft-gitcommit-plugin	filetype.txt	/*ft-gitcommit-plugin*
 ft-groff-syntax	syntax.txt	/*ft-groff-syntax*
 ft-gsp-syntax	syntax.txt	/*ft-gsp-syntax*
 ft-haskell-syntax	syntax.txt	/*ft-haskell-syntax*
+ft-html-indent	indent.txt	/*ft-html-indent*
 ft-html-omni	insert.txt	/*ft-html-omni*
 ft-html-syntax	syntax.txt	/*ft-html-syntax*
 ft-htmlos-syntax	syntax.txt	/*ft-htmlos-syntax*
@@ -6342,6 +6345,8 @@ howto.txt	howto.txt	/*howto.txt*
 hpterm	term.txt	/*hpterm*
 hpterm-color	syntax.txt	/*hpterm-color*
 html-flavor	insert.txt	/*html-flavor*
+html-indent	indent.txt	/*html-indent*
+html-indenting	indent.txt	/*html-indenting*
 html.vim	syntax.txt	/*html.vim*
 htmlos.vim	syntax.txt	/*htmlos.vim*
 http	pi_netrw.txt	/*http*
@@ -6708,6 +6713,7 @@ map-listing	map.txt	/*map-listing*
 map-modes	map.txt	/*map-modes*
 map-multibyte	map.txt	/*map-multibyte*
 map-overview	map.txt	/*map-overview*
+map-precedence	map.txt	/*map-precedence*
 map-self-destroy	tips.txt	/*map-self-destroy*
 map-typing	map.txt	/*map-typing*
 map-which-keys	map.txt	/*map-which-keys*
@@ -7352,6 +7358,8 @@ python-.locked	if_pyth.txt	/*python-.locked*
 python-Dictionary	if_pyth.txt	/*python-Dictionary*
 python-Function	if_pyth.txt	/*python-Function*
 python-List	if_pyth.txt	/*python-List*
+python-VIM_SPECIAL_PATH	if_pyth.txt	/*python-VIM_SPECIAL_PATH*
+python-_get_paths	if_pyth.txt	/*python-_get_paths*
 python-bindeval	if_pyth.txt	/*python-bindeval*
 python-bindeval-objects	if_pyth.txt	/*python-bindeval-objects*
 python-buffer	if_pyth.txt	/*python-buffer*
@@ -7365,11 +7373,15 @@ python-error	if_pyth.txt	/*python-error*
 python-eval	if_pyth.txt	/*python-eval*
 python-examples	if_pyth.txt	/*python-examples*
 python-fchdir	if_pyth.txt	/*python-fchdir*
+python-find_module	if_pyth.txt	/*python-find_module*
+python-foreach_rtp	if_pyth.txt	/*python-foreach_rtp*
 python-input	if_pyth.txt	/*python-input*
 python-options	if_pyth.txt	/*python-options*
 python-output	if_pyth.txt	/*python-output*
+python-path_hook	if_pyth.txt	/*python-path_hook*
 python-pyeval	if_pyth.txt	/*python-pyeval*
 python-range	if_pyth.txt	/*python-range*
+python-special-path	if_pyth.txt	/*python-special-path*
 python-strwidth	if_pyth.txt	/*python-strwidth*
 python-tabpage	if_pyth.txt	/*python-tabpage*
 python-tabpages	if_pyth.txt	/*python-tabpages*
@@ -7379,7 +7391,10 @@ python-vvars	if_pyth.txt	/*python-vvars*
 python-window	if_pyth.txt	/*python-window*
 python-windows	if_pyth.txt	/*python-windows*
 python.vim	syntax.txt	/*python.vim*
+python2-directory	if_pyth.txt	/*python2-directory*
 python3	if_pyth.txt	/*python3*
+python3-directory	if_pyth.txt	/*python3-directory*
+pythonx-directory	if_pyth.txt	/*pythonx-directory*
 q	repeat.txt	/*q*
 q/	cmdline.txt	/*q\/*
 q:	cmdline.txt	/*q:*
@@ -7550,6 +7565,8 @@ save-file	editing.txt	/*save-file*
 save-settings	starting.txt	/*save-settings*
 scheme.vim	syntax.txt	/*scheme.vim*
 scp	pi_netrw.txt	/*scp*
+screenattr()	eval.txt	/*screenattr()*
+screenchar()	eval.txt	/*screenchar()*
 screencol()	eval.txt	/*screencol()*
 screenrow()	eval.txt	/*screenrow()*
 script	usr_41.txt	/*script*

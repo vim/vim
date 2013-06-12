@@ -1,9 +1,7 @@
 " Vim filetype plugin
 " Language:		eRuby
 " Maintainer:		Tim Pope <vimNOSPAM@tpope.org>
-" Last Change:		2012 Mar 11
-" URL:			http://vim-ruby.rubyforge.org
-" Anon CVS:		See above site
+" URL:			https://github.com/vim-ruby/vim-ruby
 " Release Coordinator:	Doug Kearns <dougkearns@gmail.com>
 
 " Only do this when not done yet for this buffer
@@ -23,12 +21,11 @@ if !exists("g:eruby_default_subtype")
   let g:eruby_default_subtype = "html"
 endif
 
-if !exists("b:eruby_subtype")
+if &filetype =~ '^eruby\.'
+  let b:eruby_subtype = matchstr(&filetype,'^eruby\.\zs\w\+')
+elseif !exists("b:eruby_subtype")
   let s:lines = getline(1)."\n".getline(2)."\n".getline(3)."\n".getline(4)."\n".getline(5)."\n".getline("$")
   let b:eruby_subtype = matchstr(s:lines,'eruby_subtype=\zs\w\+')
-  if b:eruby_subtype == ''
-    let b:eruby_subtype = matchstr(&filetype,'^eruby\.\zs\w\+')
-  endif
   if b:eruby_subtype == ''
     let b:eruby_subtype = matchstr(substitute(expand("%:t"),'\c\%(\.erb\|\.eruby\|\.erubis\)\+$','',''),'\.\zs\w\+$')
   endif

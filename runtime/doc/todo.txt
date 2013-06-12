@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Jun 06
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Jun 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,17 +34,10 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Make it possible to test the status line: add screenchar(col, row).
-Use screen_getbytes().
-Could also add screenattr(col, row), but value is unpredictable.
-Functions to read the actual contents of the screen, so that things like
-conceal can be tested. (Nazri Ramliy, 2013 Feb 18)
-
-function() does not work like before. (lilydjwg, 2013 Jun 4)
-I guess this is caused by patch 7.3.1058:
-"Call of funcref does not succeed in other script."
-
 --- Python interface
+
+Test 87 fails.
+Test 86 fails on some systems.
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
@@ -58,62 +51,6 @@ vim.bindeval().
 Python SystemExit exception is not handled properly.  Patch to catch the
 exception and give an error. (Yasuhiro Matsumoto)
 Does not work, tests fail.
-
-Python: crash in test 86 because of int/size_t mixup? (Jun Takimoto, 2013 Jun
-6)
-
-Add a $VIMRUNTIME/python and $VIMRUNTIME/python3 directories?
-
---- runtime files
-
-Alternate html indent file by Andy Wokula, script 2075.
-
-Syntax file for protocol buffers. (Feng Xiao, 2013 May 9)
-Has an ugly copyright notice.
-Add statement that it does not conflict with Vim license.
-
-Patch for JavaScript syntax. (Kevin Locke, 2013 May 9)
-Claudio didn't respond yet.
-
-upstream_dat, usserver_log et al. syntax files. (Rob Owens, 2013 Jun 5)
-
---- New regexp engine
-
-Does not work (yet) with NFA:
-- \%u, \%x, \%o, \%d followed by a composing character
-
-Don't call nfa_regmatch() recursively if the "out" state is not going to be
-added anyway.  In run log:
-    > Not adding state 6 to list 4. char -971: NFA_SKIP
-
-Profiling:
-    ./vim -s ~/vim/test/alsa.vim
-    ./vim -s ~/vim/test/todo.vim
-    ./vim -s ~/vim/test/loop.vim
-    ./vim -s ~/vim/test/xml.vim
-
-More test files from the src/pkg/regexp/testdata directory in the Go repo.
-
-It's very slow compared to the old engine...
-Performance tests:
-- ~/vim/text/FeiqCfg.xml (file from Netjune)
-- ~/vim/text/edl.svg  (also XML)
-- glts has five tests. (May 25)
-- ~/vim/test/veryslow.js  display last line (file from Daniel Fetchinson)
-- ~/vim/test/slowsearch
-- ~/vim/test/rgb.vim
-- search for  a.*e*exn  in the vim executable.  Go to last line to use
-  'hlsearch'.
-- Slow combination of folding and PHP syntax highlighting.  Script to
-  reproduce it.  Caused by "syntax sync fromstart" in combination with patch
-  7.2.274.  (Christian Brabandt, 2010 May 27) Generally, folding with
-  'foldmethod' set to "syntax" is slow.  Do profiling to find out why.
-- It does not use any of the optimizations, such as required start pattern.
-- When lists are empty in nfa_regmatch() and match is true, it keeps looping
-  without doing anything.
-
-BT engine: After \@> match and failing submatches are not cleared.
-See test64.
 
 --- bug fixes
 
@@ -157,6 +94,8 @@ Patch for IME problems. Remove hacking code for old IM. (Yukihiro Nakadaira,
 
 Patch to fix finding toolbar bitmaps.  Issue 129.
 
+Suggestion to remove __QNXNTO__ in gui.c. (Sean Boudreau, 2013 Jun 7)
+
 Combining characters are not used when executing a register with :@w.
 (William Fugh, 2013 Apr 5, more info from Ben Fritz)
 Patch by Christian Brabandt, 2013 Apr 6.  Second one.
@@ -173,6 +112,8 @@ Patch by Christian Brabandt, 2013 May 22.
 
 Patch to fix "gn" on single character matches. (Christian Brabandt, 2013 Jun
 2)
+
+Patch for cscope connection (Narendran, 2013 Jun 10)
 
 'cursorline' is drawn incorrectly in diff mode. Patch by Christian Brabandt,
 2012 Apr 2.
@@ -192,23 +133,10 @@ Patch by Christian Wellenbrock, 2013 Jun 2.  Update Jun 3 (second one).
 Patch to fix glob() and globpath() with escaped special characters.
 (Adnan Zafar, 2013 Jun 2, tests Jun 3)
 
---- slightly incompatible changes
-
-Patch to load ~/.vim/vimrc when ~/.vimrc isn't found. (Lech Lorens, 2013 Apr
-13)
-
-It's probably a good idea to make a negative value for 'sts' use the value of
-'sw'.  Patch by So8res, Oct 3 2012
-
-When a buffer-local mapping is used, but a global mapping starts with the same
-characters, Vim currently waits for the next typed character to find out if
-the global mapping matches.  It is probably better to let the local mapping
-win and not wait. (discussion with Andy Wokula, 2013 Jan 30)
-Patch by Michael Henry, 2013 Jan 30, update Feb 15.
-
-Patch to store absolute path for cscope. (Christian Brabandt, 2013 May 31)
-
 ---- Fixes to be included before 7.4 above, less important stuff below ----
+
+Patch to make has() check for Vim version and patch at the same time.
+(Marc Weber, 2013 Jun 7)
 
 Several syntax file match "^\s*" which may get underlined if that's in the
 highlight group.  Add a "\zs" after it?
@@ -218,6 +146,9 @@ Go through more coverity reports.
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
 Checking runtime scripts: Thilo Six, 2012 Jun 6.
+
+Fold can't be opened after ":move". (Ein Brown)
+Patch from Christian Brabandt doesn't fix it completely.
 
 GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
@@ -539,6 +470,9 @@ Using ":break" or something else that stops executing commands inside a
 
 Vim using lots of memory when joining lines. (John Little, 2010 Dec 3)
 
+BT regexp engine: After trying a \@> match and failing, submatches are not
+cleared.  See test64.
+
 Changes to manpage plugin. (Elias Toivanen, 2011 Jul 25)
 
 Patch to make "z=" work when 'spell' is off.  Does this have nasty side
@@ -678,6 +612,32 @@ the command line. (Ingo Karkat, 2011 Jan 25)
 
 Since patch 7.2.46 Yankring plugin has become very slow, eventually make Vim
 crash? (Raiwil, 2010 Nov 17)
+
+Does not work with NFA regexp engine:
+- \%u, \%x, \%o, \%d followed by a composing character
+
+Regexp engine performance:
+- Profiling:
+	./vim -u NONE -s ~/vim/test/ruby.vim
+	./vim -u NONE -s ~/vim/test/loop.vim
+	./vim -u NONE -s ~/vim/test/alsa.vim
+	./vim -s ~/vim/test/todo.vim
+	./vim -s ~/vim/test/xml.vim
+    Dominique Pelle:  xmlSyncDT is particularly slow (Jun 7)
+- More test files from the src/pkg/regexp/testdata directory in the Go repo.
+- Performance tests:
+  - Using asciidoc syntax. (Marek Schimara, 2013 Jun 6)
+  - ~/vim/text/FeiqCfg.xml (file from Netjune)
+  - ~/vim/text/edl.svg  (also XML)
+  - glts has five tests. (May 25)
+  - ~/vim/test/slowsearch
+  - ~/vim/test/rgb.vim
+  - search for  a.*e*exn  in the vim executable.  Go to last line to use
+    'hlsearch'.
+  - Slow combination of folding and PHP syntax highlighting.  Script to
+    reproduce it.  Caused by "syntax sync fromstart" in combination with patch
+    7.2.274.  (Christian Brabandt, 2010 May 27) Generally, folding with
+    'foldmethod' set to "syntax" is slow.  Do profiling to find out why.
 
 Patch to add 'systemencoding', convert between 'encoding' and this for file
 names, shell commands and the like.  (Kikuchan, 2010 Oct 14)

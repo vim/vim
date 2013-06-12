@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2013 Jun 04
+*options.txt*	For Vim version 7.3.  Last change: 2013 Jun 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2243,7 +2243,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Specifies whether to use quickfix window to show cscope results.
 	See |cscopequickfix|.
 
-						*'cscoperelative'* *'csre'*
+		*'cscoperelative'* *'csre'* *'nocscoperelative'* *'nocsre'*
 'cscoperelative' 'csre' boolean (default off)
 			global
 			{not available when compiled without the |+cscope|
