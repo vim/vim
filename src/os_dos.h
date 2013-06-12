@@ -20,7 +20,10 @@
 # define USR_VIMRC_FILE		"$HOME\\_vimrc"
 #endif
 #ifndef USR_VIMRC_FILE2
-# define USR_VIMRC_FILE2	"$VIM\\_vimrc"
+# define USR_VIMRC_FILE2	"$HOME\\vimfiles\\vimrc"
+#endif
+#ifndef USR_VIMRC_FILE3
+# define USR_VIMRC_FILE3	"$VIM\\_vimrc"
 #endif
 #ifndef EVIM_FILE
 # define EVIM_FILE		"$VIMRUNTIME\\evim.vim"
@@ -41,7 +44,10 @@
 #  define USR_GVIMRC_FILE	"$HOME\\_gvimrc"
 # endif
 # ifndef USR_GVIMRC_FILE2
-#  define USR_GVIMRC_FILE2	"$VIM\\_gvimrc"
+#  define USR_GVIMRC_FILE2	"$HOME\\vimfiles\\gvimrc"
+# endif
+# ifndef USR_GVIMRC_FILE3
+#  define USR_GVIMRC_FILE3	"$VIM\\_gvimrc"
 # endif
 # ifndef SYS_MENU_FILE
 #  define SYS_MENU_FILE		"$VIMRUNTIME\\menu.vim"

@@ -547,10 +547,14 @@ gui_init()
 		 && do_source((char_u *)USR_GVIMRC_FILE2, TRUE,
 							  DOSO_GVIMRC) == FAIL
 #endif
+#ifdef USR_GVIMRC_FILE3
+		 && do_source((char_u *)USR_GVIMRC_FILE3, TRUE,
+							  DOSO_GVIMRC) == FAIL
+#endif
 				)
 	    {
-#ifdef USR_GVIMRC_FILE3
-		(void)do_source((char_u *)USR_GVIMRC_FILE3, TRUE, DOSO_GVIMRC);
+#ifdef USR_GVIMRC_FILE4
+		(void)do_source((char_u *)USR_GVIMRC_FILE4, TRUE, DOSO_GVIMRC);
 #endif
 	    }
 
@@ -591,6 +595,10 @@ gui_init()
 #endif
 #ifdef USR_GVIMRC_FILE3
 			&& fullpathcmp((char_u *)USR_GVIMRC_FILE3,
+				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
+#endif
+#ifdef USR_GVIMRC_FILE4
+			&& fullpathcmp((char_u *)USR_GVIMRC_FILE4,
 				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
 #endif
 			)

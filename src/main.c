@@ -2981,6 +2981,10 @@ source_startup_scripts(parmp)
 		&& do_source((char_u *)USR_VIMRC_FILE3, TRUE,
 							   DOSO_VIMRC) == FAIL
 #endif
+#ifdef USR_VIMRC_FILE4
+		&& do_source((char_u *)USR_VIMRC_FILE4, TRUE,
+							   DOSO_VIMRC) == FAIL
+#endif
 		&& process_env((char_u *)"EXINIT", FALSE) == FAIL
 		&& do_source((char_u *)USR_EXRC_FILE, FALSE, DOSO_NONE) == FAIL)
 	    {

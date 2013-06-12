@@ -158,7 +158,10 @@ typedef long off_t;
 # define USR_VIMRC_FILE2 "home:.vimrc"
 #endif
 #ifndef USR_VIMRC_FILE3
-# define USR_VIMRC_FILE3 "$VIM/.vimrc"
+# define USR_VIMRC_FILE3 "home:vimfiles:vimrc"
+#endif
+#ifndef USR_VIMRC_FILE4
+# define USR_VIMRC_FILE4 "$VIM/.vimrc"
 #endif
 #ifndef EVIM_FILE
 # define EVIM_FILE	"$VIMRUNTIME/evim.vim"
@@ -171,7 +174,10 @@ typedef long off_t;
 # define USR_GVIMRC_FILE2 "home:.gvimrc"
 #endif
 #ifndef USR_GVIMRC_FILE3
-# define USR_GVIMRC_FILE3 "$VIM/.gvimrc"
+# define USR_GVIMRC_FILE3 "home:vimfiles:gvimrc"
+#endif
+#ifndef USR_GVIMRC_FILE4
+# define USR_GVIMRC_FILE4 "$VIM/.gvimrc"
 #endif
 
 #ifdef FEAT_VIMINFO

@@ -294,11 +294,24 @@ typedef struct dsc$descriptor   DESC;
 # endif
 #endif
 
-#if !defined(USR_VIMRC_FILE2) && defined(OS2)
-# define USR_VIMRC_FILE2 "$VIM/.vimrc"
+
+#if !defined(USR_EXRC_FILE2)
+# ifdef OS2
+#  define USR_VIMRC_FILE2	"$HOME/vimfiles/vimrc"
+# else
+#  ifdef VMS
+#   define USR_VIMRC_FILE2	"sys$login:vimfiles:vimrc"
+#  else
+#    define USR_VIMRC_FILE2	"~/.vim/vimrc"
+#  endif
+# endif
 #endif
-#if !defined(USR_VIMRC_FILE2) && defined(VMS)
-# define USR_VIMRC_FILE2 "sys$login:_vimrc"
+
+#if !defined(USR_VIMRC_FILE3) && defined(OS2)
+# define USR_VIMRC_FILE3 "$VIM/.vimrc"
+#endif
+#if !defined(USR_VIMRC_FILE3) && defined(VMS)
+# define USR_VIMRC_FILE3 "sys$login:_vimrc"
 #endif
 
 #ifndef USR_GVIMRC_FILE
@@ -309,9 +322,21 @@ typedef struct dsc$descriptor   DESC;
 # endif
 #endif
 
+#ifndef USR_GVIMRC_FILE2
+# ifdef OS2
+#  define USR_GVIMRC_FILE2	"$HOME/vimfiles/gvimrc"
+# else
+#  ifdef VMS
+#   define USR_GVIMRC_FILE2	"sys$login:vimfiles:gvimrc"
+#  else
+#   define USR_GVIMRC_FILE2	"~/.vim/gvimrc"
+#  endif
+# endif
+#endif
+
 #ifdef VMS
-# ifndef USR_GVIMRC_FILE2
-#  define USR_GVIMRC_FILE2  "sys$login:_gvimrc"
+# ifndef USR_GVIMRC_FILE3
+#  define USR_GVIMRC_FILE3  "sys$login:_gvimrc"
 # endif
 #endif
 
