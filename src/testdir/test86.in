@@ -45,9 +45,10 @@ d.update({'0': -1})
 dk = d.keys()
 dv = d.values()
 di = d.items()
-dk.sort(key=repr)
-dv.sort(key=repr)
-di.sort(key=repr)
+cmpfun = lambda a, b: cmp(repr(a), repr(b))
+dk.sort(cmpfun)
+dv.sort(cmpfun)
+di.sort(cmpfun)
 EOF
 :$put =pyeval('d[''f''](self={})')
 :$put =pyeval('repr(dk)')
@@ -813,7 +814,17 @@ def ee(expr, g=globals(), l=locals()):
     try:
         exec(expr, g, l)
     except:
-        cb.append(expr + ':' + repr(sys.exc_info()[:2]))
+        ei = sys.exc_info()
+        msg = sys.exc_info()[0].__name__ + ':' + repr(sys.exc_info()[1].args)
+        msg = msg.replace('TypeError:(\'argument 1 ', 'TypeError:(\'')
+        if expr.find('None') > -1:
+            msg = msg.replace('TypeError:(\'iteration over non-sequence\',)',
+                              'TypeError:("\'NoneType\' object is not iterable",)')
+        if expr == 'fd(self=[])':
+            # HACK: PyMapping_Check changed meaning
+            msg = msg.replace('AttributeError:(\'keys\',)',
+                              'TypeError:(\'unable to convert object to vim dictionary\',)')
+        cb.append(expr + ':' + msg)
     else:
         cb.append(expr + ':NOT FAILED')
 d = vim.Dictionary()
