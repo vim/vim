@@ -2,6 +2,7 @@ Tests for various python features.     vim: set ft=vim :
 
 STARTTEST
 :so small.vim
+:set noswapfile
 :if !has('python3') | e! test.ok | wq! test.out | endif
 :lang C
 :py3 import vim
@@ -1038,10 +1039,16 @@ EOF
 :"
 :" Test import
 py3 << EOF
+sys.path.insert(0, os.path.join(os.getcwd(), 'python_before'))
+sys.path.append(os.path.join(os.getcwd(), 'python_after'))
 vim.options['rtp'] = os.getcwd().replace(',', '\\,').replace('\\', '\\\\')
 from module import dir as d
 from modulex import ddir
 cb.append(d + ',' + ddir)
+import before
+cb.append(before.dir)
+import after
+cb.append(after.dir)
 EOF
 :"
 :" Test exceptions

@@ -940,7 +940,6 @@ static struct PyMethodDef VimMethods[] = {
     {"foreach_rtp", VimForeachRTP,		METH_VARARGS,			"Call given callable for each path in &rtp"},
 #if PY_MAJOR_VERSION < 3
     {"find_module", FinderFindModule,		METH_VARARGS,			"Internal use only, returns loader object for any input it receives"},
-    {"load_module", LoaderLoadModule,		METH_VARARGS,			"Internal use only, tries importing the given module from &rtp by temporary mocking sys.path (to an rtp-based one) and unsetting sys.meta_path and sys.path_hooks"},
 #endif
     {"path_hook",   VimPathHook,		METH_VARARGS,			"Hook function to install in sys.path_hooks"},
     {"_get_paths",  (PyCFunction)Vim_GetPaths,	METH_NOARGS,			"Get &rtp-based additions to sys.path"},
@@ -5195,6 +5194,13 @@ typedef struct
     PyObject_HEAD
 } FinderObject;
 static PyTypeObject FinderType;
+#else
+typedef struct
+{
+    PyObject_HEAD
+    PyObject	*module;
+} LoaderObject;
+static PyTypeObject LoaderType;
 #endif
 
     static void
@@ -5444,6 +5450,8 @@ init_types()
     PYTYPE_READY(OutputType);
 #if PY_MAJOR_VERSION >= 3
     PYTYPE_READY(FinderType);
+#else
+    PYTYPE_READY(LoaderType);
 #endif
     return 0;
 }
@@ -5570,6 +5578,8 @@ static struct object_constant {
     {"Options",    (PyObject *)&OptionsType},
 #if PY_MAJOR_VERSION >= 3
     {"Finder",     (PyObject *)&FinderType},
+#else
+    {"Loader",     (PyObject *)&LoaderType},
 #endif
 };
 
@@ -5666,6 +5676,9 @@ populate_module(PyObject *m, object_adder add_object, attr_getter get_attr)
     ADD_CHECKED_OBJECT(m, "_find_module",
 	    (py_find_module = PyObject_GetAttrString(path_finder,
 						     "find_module")));
+#else
+    ADD_OBJECT(m, "_find_module", py_find_module);
+    ADD_OBJECT(m, "_load_module", py_load_module);
 #endif
 
     return 0;

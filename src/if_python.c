@@ -150,6 +150,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # undef Py_InitModule4
 # undef Py_InitModule4_64
 # undef PyObject_CallMethod
+# undef PyObject_CallFunction
 
 /*
  * Wrapper defines
@@ -219,6 +220,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyObject_HasAttrString dll_PyObject_HasAttrString
 # define PyObject_SetAttrString dll_PyObject_SetAttrString
 # define PyObject_CallFunctionObjArgs dll_PyObject_CallFunctionObjArgs
+# define PyObject_CallFunction dll_PyObject_CallFunction
 # define PyObject_Call dll_PyObject_Call
 # define PyString_AsString dll_PyString_AsString
 # define PyString_AsStringAndSize dll_PyString_AsStringAndSize
@@ -357,6 +359,7 @@ static PyObject* (*dll_PyObject_GetAttrString)(PyObject *, const char *);
 static int (*dll_PyObject_HasAttrString)(PyObject *, const char *);
 static PyObject* (*dll_PyObject_SetAttrString)(PyObject *, const char *, PyObject *);
 static PyObject* (*dll_PyObject_CallFunctionObjArgs)(PyObject *, ...);
+static PyObject* (*dll_PyObject_CallFunction)(PyObject *, char *, ...);
 static PyObject* (*dll_PyObject_Call)(PyObject *, PyObject *, PyObject *);
 static char*(*dll_PyString_AsString)(PyObject *);
 static int(*dll_PyString_AsStringAndSize)(PyObject *, char **, int *);
@@ -528,6 +531,7 @@ static struct
     {"PyObject_HasAttrString", (PYTHON_PROC*)&dll_PyObject_HasAttrString},
     {"PyObject_SetAttrString", (PYTHON_PROC*)&dll_PyObject_SetAttrString},
     {"PyObject_CallFunctionObjArgs", (PYTHON_PROC*)&dll_PyObject_CallFunctionObjArgs},
+    {"PyObject_CallFunction", (PYTHON_PROC*)&dll_PyObject_CallFunction},
     {"PyObject_Call", (PYTHON_PROC*)&dll_PyObject_Call},
     {"PyString_AsString", (PYTHON_PROC*)&dll_PyString_AsString},
     {"PyString_AsStringAndSize", (PYTHON_PROC*)&dll_PyString_AsStringAndSize},
@@ -748,9 +752,11 @@ static PyObject *DictionaryGetattr(PyObject *, char*);
 static PyObject *ListGetattr(PyObject *, char *);
 static PyObject *FunctionGetattr(PyObject *, char *);
 
-static PyObject *LoaderLoadModule(PyObject *, PyObject *);
 static PyObject *FinderFindModule(PyObject *, PyObject *);
 static PyObject *VimPathHook(PyObject *, PyObject *);
+
+static PyObject *py_find_module;
+static PyObject *py_load_module;
 
 #ifndef Py_VISIT
 # define Py_VISIT(obj) visit(obj, arg)
@@ -1376,16 +1382,127 @@ python_tabpage_free(tabpage_T *tab)
 }
 #endif
 
+    static void
+LoaderDestructor(LoaderObject *self)
+{
+    Py_DECREF(self->module);
+    DESTRUCTOR_FINISH(self);
+}
+
     static PyObject *
-LoaderLoadModule(PyObject *self, PyObject *args)
+LoaderLoadModule(LoaderObject *self, PyObject *args UNUSED)
+{
+    PyObject	*r = self->module;
+
+    Py_INCREF(r);
+    return r;
+}
+
+static struct PyMethodDef LoaderMethods[] = {
+    /* name,	    function,				calling,	doc */
+    {"load_module", (PyCFunction)LoaderLoadModule,	METH_VARARGS,	""},
+    { NULL,	    NULL,				0,		NULL}
+};
+
+    static PyObject *
+call_load_module(char *name, int len, PyObject *find_module_result)
+{
+    PyObject	*fd, *pathname, *description;
+
+    if (!PyTuple_Check(find_module_result)
+	    || PyTuple_GET_SIZE(find_module_result) != 3)
+    {
+	PyErr_SetString(PyExc_TypeError,
+		_("expected 3-tuple as imp.find_module() result"));
+	return NULL;
+    }
+
+    if (!(fd = PyTuple_GET_ITEM(find_module_result, 0))
+	    || !(pathname = PyTuple_GET_ITEM(find_module_result, 1))
+	    || !(description = PyTuple_GET_ITEM(find_module_result, 2)))
+    {
+	PyErr_SetString(PyExc_RuntimeError,
+		_("internal error: imp.find_module returned tuple with NULL"));
+	return NULL;
+    }
+
+    return PyObject_CallFunction(py_load_module,
+	    "s#OOO", name, len, fd, pathname, description);
+}
+
+    static PyObject *
+find_module(char *fullname, char *tail, PyObject *new_path)
+{
+    PyObject	*find_module_result;
+    PyObject	*module;
+    char	*dot;
+
+    if ((dot = (char *) vim_strchr((char_u *) tail, '.')))
+    {
+	/*
+	 * There is a dot in the name: call find_module recursively without the 
+	 * first component
+	 */
+	PyObject	*newest_path;
+	int		partlen = (int) (dot - 1 - tail);
+
+	if (!(find_module_result = PyObject_CallFunction(py_find_module,
+			"s#O", tail, partlen, new_path)))
+	    return NULL;
+
+	if (!(module = call_load_module(
+			fullname,
+			((int) (tail - fullname)) + partlen,
+			find_module_result)))
+	{
+	    Py_DECREF(find_module_result);
+	    return NULL;
+	}
+
+	Py_DECREF(find_module_result);
+
+	if (!(newest_path = PyObject_GetAttrString(module, "__path__")))
+	{
+	    Py_DECREF(module);
+	    return NULL;
+	}
+
+	Py_DECREF(module);
+
+	module = find_module(fullname, dot + 1, newest_path);
+
+	Py_DECREF(newest_path);
+
+	return module;
+    }
+    else
+    {
+	if (!(find_module_result = PyObject_CallFunction(py_find_module,
+			"sO", tail, new_path)))
+	    return NULL;
+
+	if (!(module = call_load_module(
+			fullname,
+			STRLEN(fullname),
+			find_module_result)))
+	{
+	    Py_DECREF(find_module_result);
+	    return NULL;
+	}
+
+	Py_DECREF(find_module_result);
+
+	return module;
+    }
+}
+
+    static PyObject *
+FinderFindModule(PyObject *self, PyObject *args)
 {
     char	*fullname;
-    PyObject	*path;
-    PyObject	*meta_path;
-    PyObject	*path_hooks;
+    PyObject	*module;
     PyObject	*new_path;
-    PyObject	*r;
-    PyObject	*new_list;
+    LoaderObject	*loader;
 
     if (!PyArg_ParseTuple(args, "s", &fullname))
 	return NULL;
@@ -1393,73 +1510,25 @@ LoaderLoadModule(PyObject *self, PyObject *args)
     if (!(new_path = Vim_GetPaths(self)))
 	return NULL;
 
-    if (!(new_list = PyList_New(0)))
-	return NULL;
+    module = find_module(fullname, fullname, new_path);
 
-#define GET_SYS_OBJECT(objstr, obj) \
-    obj = PySys_GetObject(objstr); \
-    PyErr_Clear(); \
-    Py_XINCREF(obj);
-
-    GET_SYS_OBJECT("meta_path", meta_path);
-    if (PySys_SetObject("meta_path", new_list))
-    {
-	Py_XDECREF(meta_path);
-	Py_DECREF(new_list);
-	return NULL;
-    }
-    Py_DECREF(new_list); /* Now it becomes a reference borrowed from
-			    sys.meta_path */
-
-#define RESTORE_SYS_OBJECT(objstr, obj) \
-    if (obj) \
-    { \
-	PySys_SetObject(objstr, obj); \
-	Py_DECREF(obj); \
-    }
-
-    GET_SYS_OBJECT("path_hooks", path_hooks);
-    if (PySys_SetObject("path_hooks", new_list))
-    {
-	RESTORE_SYS_OBJECT("meta_path", meta_path);
-	Py_XDECREF(path_hooks);
-	return NULL;
-    }
-
-    GET_SYS_OBJECT("path", path);
-    if (PySys_SetObject("path", new_path))
-    {
-	RESTORE_SYS_OBJECT("meta_path", meta_path);
-	RESTORE_SYS_OBJECT("path_hooks", path_hooks);
-	Py_XDECREF(path);
-	return NULL;
-    }
     Py_DECREF(new_path);
 
-    r = PyImport_ImportModule(fullname);
-
-    RESTORE_SYS_OBJECT("meta_path", meta_path);
-    RESTORE_SYS_OBJECT("path_hooks", path_hooks);
-    RESTORE_SYS_OBJECT("path", path);
-
-    if (PyErr_Occurred())
+    if (!module)
     {
-	Py_XDECREF(r);
+	Py_INCREF(Py_None);
+	return Py_None;
+    }
+
+    if (!(loader = PyObject_NEW(LoaderObject, &LoaderType)))
+    {
+	Py_DECREF(module);
 	return NULL;
     }
 
-    return r;
-}
+    loader->module = module;
 
-    static PyObject *
-FinderFindModule(PyObject *self UNUSED, PyObject *args UNUSED)
-{
-    /*
-     * Don't bother actually finding the module, it is delegated to the "loader"
-     * object (which is basically the same object: vim module).
-     */
-    Py_INCREF(vim_module);
-    return vim_module;
+    return (PyObject *) loader;
 }
 
     static PyObject *
@@ -1483,7 +1552,34 @@ VimPathHook(PyObject *self UNUSED, PyObject *args)
 PythonMod_Init(void)
 {
     /* The special value is removed from sys.path in Python_Init(). */
-    static char *(argv[2]) = {"/must>not&exist/foo", NULL};
+    static char	*(argv[2]) = {"/must>not&exist/foo", NULL};
+    PyObject	*imp;
+
+    if (!(imp = PyImport_ImportModule("imp")))
+	return -1;
+
+    if (!(py_find_module = PyObject_GetAttrString(imp, "find_module")))
+    {
+	Py_DECREF(imp);
+	return -1;
+    }
+
+    if (!(py_load_module = PyObject_GetAttrString(imp, "load_module")))
+    {
+	Py_DECREF(py_find_module);
+	Py_DECREF(imp);
+	return -1;
+    }
+
+    Py_DECREF(imp);
+
+    vim_memset(&LoaderType, 0, sizeof(LoaderType));
+    LoaderType.tp_name = "vim.Loader";
+    LoaderType.tp_basicsize = sizeof(LoaderObject);
+    LoaderType.tp_flags = Py_TPFLAGS_DEFAULT;
+    LoaderType.tp_doc = "vim message object";
+    LoaderType.tp_methods = LoaderMethods;
+    LoaderType.tp_dealloc = (destructor)LoaderDestructor;
 
     if (init_types())
 	return -1;

@@ -87,6 +87,8 @@ SRC_ALL =	\
 		src/testdir/python2/*.py \
 		src/testdir/python3/*.py \
 		src/testdir/pythonx/*.py \
+		src/testdir/python_after/*.py \
+		src/testdir/python_before/*.py \
 		src/proto.h \
 		src/proto/blowfish.pro \
 		src/proto/buffer.pro \
