@@ -21,6 +21,8 @@ int mch_setperm __ARGS((char_u *name, long perm));
 void mch_hide __ARGS((char_u *name));
 int mch_isdir __ARGS((char_u *name));
 int mch_mkdir __ARGS((char_u *name));
+int mch_is_hard_link __ARGS((char_u *fname));
+int mch_is_symbolic_link __ARGS((char_u *fname));
 int mch_is_linked __ARGS((char_u *fname));
 int win32_fileinfo __ARGS((char_u *fname, BY_HANDLE_FILE_INFORMATION *info));
 int mch_writable __ARGS((char_u *name));

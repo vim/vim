@@ -78,6 +78,16 @@
 # endif
 #endif
 
+/*
+ * Reparse Point
+ */
+#ifndef FILE_ATTRIBUTE_REPARSE_POINT
+# define FILE_ATTRIBUTE_REPARSE_POINT	0x00000400
+#endif
+#ifndef IO_REPARSE_TAG_SYMLINK
+# define IO_REPARSE_TAG_SYMLINK		0xA000000C
+#endif
+
 /* Record all output and all keyboard & mouse input */
 /* #define MCH_WRITE_DUMP */
 
@@ -218,6 +228,10 @@ static int s_dont_use_vimrun = TRUE;
 static int need_vimrun_warning = FALSE;
 static char *vimrun_path = "vimrun ";
 #endif
+
+static int win32_getattrs(char_u *name);
+static int win32_setattrs(char_u *name, int attrs);
+static int win32_set_archive(char_u *name);
 
 #ifndef FEAT_GUI_W32
 static int suppress_winsize = 1;	/* don't fiddle with console */
@@ -2623,57 +2637,54 @@ mch_dirname(
 /*
  * get file permissions for `name'
  * -1 : error
- * else FILE_ATTRIBUTE_* defined in winnt.h
+ * else mode_t
  */
     long
 mch_getperm(char_u *name)
 {
-#ifdef FEAT_MBYTE
-    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-    {
-	WCHAR	*p = enc_to_utf16(name, NULL);
-	long	n;
+    struct stat st;
+    int n;
 
-	if (p != NULL)
-	{
-	    n = (long)GetFileAttributesW(p);
-	    vim_free(p);
-	    if (n >= 0 || GetLastError() != ERROR_CALL_NOT_IMPLEMENTED)
-		return n;
-	    /* Retry with non-wide function (for Windows 98). */
-	}
-    }
-#endif
-    return (long)GetFileAttributes((char *)name);
+    n = mch_stat(name, &st);
+    return n == 0 ? (int)st.st_mode : -1;
 }
 
 
 /*
  * set file permission for `name' to `perm'
+ *
+ * return FAIL for failure, OK otherwise
  */
     int
 mch_setperm(
     char_u  *name,
     long    perm)
 {
-    perm |= FILE_ATTRIBUTE_ARCHIVE;	/* file has changed, set archive bit */
+    long	n;
 #ifdef FEAT_MBYTE
+    WCHAR *p;
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
-	WCHAR	*p = enc_to_utf16(name, NULL);
-	long	n;
+	p = enc_to_utf16(name, NULL);
 
 	if (p != NULL)
 	{
-	    n = (long)SetFileAttributesW(p, perm);
+	    n = _wchmod(p, perm);
 	    vim_free(p);
-	    if (n || GetLastError() != ERROR_CALL_NOT_IMPLEMENTED)
-		return n ? OK : FAIL;
+	    if (n == -1 && GetLastError() != ERROR_CALL_NOT_IMPLEMENTED)
+		return FAIL;
 	    /* Retry with non-wide function (for Windows 98). */
 	}
     }
+    if (p == NULL)
 #endif
-    return SetFileAttributes((char *)name, perm) ? OK : FAIL;
+	n = _chmod(name, perm);
+    if (n == -1)
+	return FAIL;
+
+    win32_set_archive(name);
+
+    return OK;
 }
 
 /*
@@ -2682,49 +2693,12 @@ mch_setperm(
     void
 mch_hide(char_u *name)
 {
-    int		perm;
-#ifdef FEAT_MBYTE
-    WCHAR	*p = NULL;
+    int attrs = win32_getattrs(name);
+    if (attrs == -1)
+	return;
 
-    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-	p = enc_to_utf16(name, NULL);
-#endif
-
-#ifdef FEAT_MBYTE
-    if (p != NULL)
-    {
-	perm = GetFileAttributesW(p);
-	if (perm < 0 && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
-	{
-	    /* Retry with non-wide function (for Windows 98). */
-	    vim_free(p);
-	    p = NULL;
-	}
-    }
-    if (p == NULL)
-#endif
-	perm = GetFileAttributes((char *)name);
-    if (perm >= 0)
-    {
-	perm |= FILE_ATTRIBUTE_HIDDEN;
-#ifdef FEAT_MBYTE
-	if (p != NULL)
-	{
-	    if (SetFileAttributesW(p, perm) == 0
-		    && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
-	    {
-		/* Retry with non-wide function (for Windows 98). */
-		vim_free(p);
-		p = NULL;
-	    }
-	}
-	if (p == NULL)
-#endif
-	    SetFileAttributes((char *)name, perm);
-    }
-#ifdef FEAT_MBYTE
-    vim_free(p);
-#endif
+    attrs |= FILE_ATTRIBUTE_HIDDEN;
+    win32_setattrs(name, attrs);
 }
 
 /*
@@ -2734,7 +2708,7 @@ mch_hide(char_u *name)
     int
 mch_isdir(char_u *name)
 {
-    int f = mch_getperm(name);
+    int f = win32_getattrs(name);
 
     if (f == -1)
 	return FALSE;		    /* file does not exist at all */
@@ -2770,12 +2744,80 @@ mch_mkdir(char_u *name)
  * Return TRUE if file "fname" has more than one link.
  */
     int
-mch_is_linked(char_u *fname)
+mch_is_hard_link(char_u *fname)
 {
     BY_HANDLE_FILE_INFORMATION info;
 
     return win32_fileinfo(fname, &info) == FILEINFO_OK
 						   && info.nNumberOfLinks > 1;
+}
+
+/*
+ * Return TRUE if file "fname" is a symbolic link.
+ */
+    int
+mch_is_symbolic_link(char_u *fname)
+{
+    HANDLE		hFind;
+    int			res = FALSE;
+    WIN32_FIND_DATAA	findDataA;
+    DWORD		fileFlags = 0, reparseTag = 0;
+#ifdef FEAT_MBYTE
+    WCHAR		*wn = NULL;
+    WIN32_FIND_DATAW	findDataW;
+
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+	wn = enc_to_utf16(fname, NULL);
+    if (wn != NULL)
+    {
+	hFind = FindFirstFileW(wn, &findDataW);
+	vim_free(wn);
+	if (hFind == INVALID_HANDLE_VALUE
+		&& GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
+	{
+	    /* Retry with non-wide function (for Windows 98). */
+	    hFind = FindFirstFile(fname, &findDataA);
+	    if (hFind != INVALID_HANDLE_VALUE)
+	    {
+		fileFlags = findDataA.dwFileAttributes;
+		reparseTag = findDataA.dwReserved0;
+	    }
+	}
+	else
+	{
+	    fileFlags = findDataW.dwFileAttributes;
+	    reparseTag = findDataW.dwReserved0;
+	}
+    }
+#else
+    hFind = FindFirstFile(fname, &findDataA);
+    if (hFind != INVALID_HANDLE_VALUE)
+    {
+	fileFlags = findDataA.dwFileAttributes;
+	reparseTag = findDataA.dwReserved0;
+    }
+#endif
+
+    if (hFind != INVALID_HANDLE_VALUE)
+	FindClose(hFind);
+
+    if ((fileFlags & FILE_ATTRIBUTE_REPARSE_POINT)
+	    && reparseTag == IO_REPARSE_TAG_SYMLINK)
+	res = TRUE;
+
+    return res;
+}
+
+/*
+ * Return TRUE if file "fname" has more than one link or if it is a symbolic
+ * link.
+ */
+    int
+mch_is_linked(char_u *fname)
+{
+    if (mch_is_hard_link(fname) || mch_is_symbolic_link(fname))
+	return TRUE;
+    return FALSE;
 }
 
 /*
@@ -2842,6 +2884,92 @@ win32_fileinfo(char_u *fname, BY_HANDLE_FILE_INFORMATION *info)
 }
 
 /*
+ * get file attributes for `name'
+ * -1 : error
+ * else FILE_ATTRIBUTE_* defined in winnt.h
+ */
+    static
+    int
+win32_getattrs(char_u *name)
+{
+    int		attr;
+#ifdef FEAT_MBYTE
+    WCHAR	*p = NULL;
+
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+	p = enc_to_utf16(name, NULL);
+
+    if (p != NULL)
+    {
+	attr = GetFileAttributesW(p);
+	if (attr < 0 && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
+	{
+	    /* Retry with non-wide function (for Windows 98). */
+	    vim_free(p);
+	    p = NULL;
+	}
+    }
+    if (p == NULL)
+#endif
+	attr = GetFileAttributes((char *)name);
+#ifdef FEAT_MBYTE
+    vim_free(p);
+#endif
+    return attr;
+}
+
+/*
+ * set file attributes for `name' to `attrs'
+ *
+ * return -1 for failure, 0 otherwise
+ */
+    static
+    int
+win32_setattrs(char_u *name, int attrs)
+{
+    int res;
+#ifdef FEAT_MBYTE
+    WCHAR	*p = NULL;
+
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+	p = enc_to_utf16(name, NULL);
+
+    if (p != NULL)
+    {
+	res = SetFileAttributesW(p, attrs);
+	if (res == FALSE
+	    && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
+	{
+	    /* Retry with non-wide function (for Windows 98). */
+	    vim_free(p);
+	    p = NULL;
+	}
+    }
+    if (p == NULL)
+#endif
+	res = SetFileAttributes((char *)name, attrs);
+#ifdef FEAT_MBYTE
+    vim_free(p);
+#endif
+    return res ? 0 : -1;
+}
+
+/*
+ * Set archive flag for "name".
+ */
+    static
+    int
+win32_set_archive(char_u *name)
+{
+    int attrs = win32_getattrs(name);
+    if (attrs == -1)
+	return -1;
+
+    attrs |= FILE_ATTRIBUTE_ARCHIVE;
+    return win32_setattrs(name, attrs);
+}
+
+/*
  * Return TRUE if file or directory "name" is writable (not readonly).
  * Strange semantics of Win32: a readonly directory is writable, but you can't
  * delete a file.  Let's say this means it is writable.
@@ -2849,10 +2977,10 @@ win32_fileinfo(char_u *fname, BY_HANDLE_FILE_INFORMATION *info)
     int
 mch_writable(char_u *name)
 {
-    int perm = mch_getperm(name);
+    int attrs = win32_getattrs(name);
 
-    return (perm != -1 && (!(perm & FILE_ATTRIBUTE_READONLY)
-				       || (perm & FILE_ATTRIBUTE_DIRECTORY)));
+    return (attrs != -1 && (!(attrs & FILE_ATTRIBUTE_READONLY)
+			  || (attrs & FILE_ATTRIBUTE_DIRECTORY)));
 }
 
 /*
@@ -5012,13 +5140,16 @@ mch_remove(char_u *name)
 #ifdef FEAT_MBYTE
     WCHAR	*wn = NULL;
     int		n;
+#endif
 
+    win32_setattrs(name, FILE_ATTRIBUTE_NORMAL);
+
+#ifdef FEAT_MBYTE
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
 	wn = enc_to_utf16(name, NULL);
 	if (wn != NULL)
 	{
-	    SetFileAttributesW(wn, FILE_ATTRIBUTE_NORMAL);
 	    n = DeleteFileW(wn) ? 0 : -1;
 	    vim_free(wn);
 	    if (n == 0 || GetLastError() != ERROR_CALL_NOT_IMPLEMENTED)
@@ -5027,7 +5158,6 @@ mch_remove(char_u *name)
 	}
     }
 #endif
-    SetFileAttributes(name, FILE_ATTRIBUTE_NORMAL);
     return DeleteFile(name) ? 0 : -1;
 }
 
