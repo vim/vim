@@ -7614,16 +7614,16 @@ typedef struct AutoCmd
 
 typedef struct AutoPat
 {
-    int		    group;		/* group ID */
     char_u	    *pat;		/* pattern as typed (NULL when pattern
 					   has been removed) */
-    int		    patlen;		/* strlen() of pat */
     regprog_T	    *reg_prog;		/* compiled regprog for pattern */
-    char	    allow_dirs;		/* Pattern may match whole path */
-    char	    last;		/* last pattern for apply_autocmds() */
     AutoCmd	    *cmds;		/* list of commands to do */
     struct AutoPat  *next;		/* next AutoPat in AutoPat list */
+    int		    group;		/* group ID */
+    int		    patlen;		/* strlen() of pat */
     int		    buflocal_nr;	/* !=0 for buffer-local AutoPat */
+    char	    allow_dirs;		/* Pattern may match whole path */
+    char	    last;		/* last pattern for apply_autocmds() */
 } AutoPat;
 
 static struct event_name

@@ -1180,12 +1180,12 @@ typedef struct dictitem_S dictitem_T;
  */
 struct dictvar_S
 {
-    int		dv_refcount;	/* reference count */
-    hashtab_T	dv_hashtab;	/* hashtab that refers to the items */
-    int		dv_copyID;	/* ID used by deepcopy() */
-    dict_T	*dv_copydict;	/* copied dict used by deepcopy() */
     char	dv_lock;	/* zero, VAR_LOCKED, VAR_FIXED */
     char	dv_scope;	/* zero, VAR_SCOPE, VAR_DEF_SCOPE */
+    int		dv_refcount;	/* reference count */
+    int		dv_copyID;	/* ID used by deepcopy() */
+    hashtab_T	dv_hashtab;	/* hashtab that refers to the items */
+    dict_T	*dv_copydict;	/* copied dict used by deepcopy() */
     dict_T	*dv_used_next;	/* next dict in used dicts list */
     dict_T	*dv_used_prev;	/* previous dict in used dicts list */
 };
