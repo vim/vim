@@ -1924,6 +1924,7 @@ vgetorpeek(advance)
     mapblock_T	*mp;
 #ifdef FEAT_LOCALMAP
     mapblock_T	*mp2;
+    int		expecting_global_mappings;
 #endif
     mapblock_T	*mp_match;
     int		mp_match_len = 0;
@@ -2105,6 +2106,7 @@ vgetorpeek(advance)
 			/* First try buffer-local mappings. */
 			mp = curbuf->b_maphash[MAP_HASH(local_State, c1)];
 			mp2 = maphash[MAP_HASH(local_State, c1)];
+			expecting_global_mappings = (mp && mp2);
 			if (mp == NULL)
 			{
 			    mp = mp2;
@@ -2128,6 +2130,16 @@ vgetorpeek(advance)
 #endif
 				(mp = mp->m_next))
 			{
+#ifdef FEAT_LOCALMAP
+			    if (expecting_global_mappings && mp2 == NULL)
+			    {
+				/* This is the first global mapping. If we've
+				 * got a complete buffer-local match, use it. */
+				if (mp_match)
+				    break;
+				expecting_global_mappings = FALSE;
+			    }
+#endif
 			    /*
 			     * Only consider an entry if the first character
 			     * matches and it is for the current state.
