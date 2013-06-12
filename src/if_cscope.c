@@ -539,12 +539,27 @@ cs_add_common(arg1, arg2, flags)
     char	*fname2 = NULL;
     char	*ppath = NULL;
     int		i;
+#ifdef FEAT_MODIFY_FNAME
+    int		len;
+    int		usedlen = 0;
+    char_u	*fbuf = NULL;
+#endif
 
     /* get the filename (arg1), expand it, and try to stat it */
     if ((fname = (char *)alloc(MAXPATHL + 1)) == NULL)
 	goto add_err;
 
     expand_env((char_u *)arg1, (char_u *)fname, MAXPATHL);
+#ifdef FEAT_MODIFY_FNAME
+    len = (int)STRLEN(fname);
+    fbuf = (char_u *)fname;
+    (void)modify_fname((char_u *)":p", &usedlen,
+					      (char_u **)&fname, &fbuf, &len);
+    if (fname == NULL)
+	goto add_err;
+    fname = (char *)vim_strnsave((char_u *)fname, len);
+    vim_free(fbuf);
+#endif
     ret = stat(fname, &statbuf);
     if (ret < 0)
     {
