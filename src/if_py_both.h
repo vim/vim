@@ -992,7 +992,7 @@ find_module(char *fullname, char *tail, PyObject *new_path)
     if ((dot = (char *) vim_strchr((char_u *) tail, '.')))
     {
 	/*
-	 * There is a dot in the name: call find_module recursively without the 
+	 * There is a dot in the name: call find_module recursively without the
 	 * first component
 	 */
 	PyObject	*newest_path;
@@ -1035,7 +1035,7 @@ find_module(char *fullname, char *tail, PyObject *new_path)
 
 	if (!(module = call_load_module(
 			fullname,
-			STRLEN(fullname),
+			(int)STRLEN(fullname),
 			find_module_result)))
 	{
 	    Py_DECREF(find_module_result);

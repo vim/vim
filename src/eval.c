@@ -10980,7 +10980,8 @@ f_function(argvars, rettv)
 	     * also work, but some plugins depend on the name being printable
 	     * text. */
 	    sprintf(sid_buf, "<SNR>%ld_", (long)current_SID);
-	    rettv->vval.v_string = alloc(STRLEN(sid_buf) + STRLEN(s + 2) + 1);
+	    rettv->vval.v_string =
+			    alloc((int)(STRLEN(sid_buf) + STRLEN(s + 2) + 1));
 	    if (rettv->vval.v_string != NULL)
 	    {
 		STRCPY(rettv->vval.v_string, sid_buf);
