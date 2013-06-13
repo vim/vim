@@ -4495,7 +4495,6 @@ recursive_regmatch(state, pim, prog, submatch, m, listids)
     int		    **listids;
 {
     char_u	*save_reginput = reginput;
-    char_u	*save_regline = regline;
     int		save_reglnum = reglnum;
     int		save_nfa_match = nfa_match;
     int		save_nfa_listid = nfa_listid;
@@ -4633,8 +4632,9 @@ recursive_regmatch(state, pim, prog, submatch, m, listids)
 
     /* restore position in input text */
     reginput = save_reginput;
-    regline = save_regline;
     reglnum = save_reglnum;
+    if (REG_MULTI)
+	regline = reg_getline(reglnum);
     nfa_match = save_nfa_match;
     nfa_endp = save_nfa_endp;
     nfa_listid = save_nfa_listid;
