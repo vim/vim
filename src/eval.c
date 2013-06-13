@@ -10976,21 +10976,22 @@ f_function(argvars, rettv)
 	EMSG2(_("E700: Unknown function: %s"), s);
     else
     {
-	if (STRNCMP(s, "s:", 2) == 0)
+	if (STRNCMP(s, "s:", 2) == 0 || STRNCMP(s, "<SID>", 5) == 0)
 	{
 	    char	sid_buf[25];
+	    int		off = *s == 's' ? 2 : 5;
 
-	    /* Expand s: into <SNR>nr_, so that the function can also be
-	     * called from another script. Using trans_function_name() would
-	     * also work, but some plugins depend on the name being printable
-	     * text. */
+	    /* Expand s: and <SID> into <SNR>nr_, so that the function can
+	     * also be called from another script. Using trans_function_name()
+	     * would also work, but some plugins depend on the name being
+	     * printable text. */
 	    sprintf(sid_buf, "<SNR>%ld_", (long)current_SID);
 	    rettv->vval.v_string =
-			    alloc((int)(STRLEN(sid_buf) + STRLEN(s + 2) + 1));
+			    alloc((int)(STRLEN(sid_buf) + STRLEN(s + off) + 1));
 	    if (rettv->vval.v_string != NULL)
 	    {
 		STRCPY(rettv->vval.v_string, sid_buf);
-		STRCAT(rettv->vval.v_string, s + 2);
+		STRCAT(rettv->vval.v_string, s + off);
 	    }
 	}
 	else
