@@ -425,13 +425,8 @@ static struct
     {"PySys_SetArgv", (PYTHON_PROC*)&py3_PySys_SetArgv},
     {"Py_SetPythonHome", (PYTHON_PROC*)&py3_Py_SetPythonHome},
     {"Py_Initialize", (PYTHON_PROC*)&py3_Py_Initialize},
-# ifndef PY_SSIZE_T_CLEAN
-    {"PyArg_ParseTuple", (PYTHON_PROC*)&py3_PyArg_ParseTuple},
-    {"Py_BuildValue", (PYTHON_PROC*)&py3_Py_BuildValue},
-# else
     {"_PyArg_ParseTuple_SizeT", (PYTHON_PROC*)&py3_PyArg_ParseTuple},
     {"_Py_BuildValue_SizeT", (PYTHON_PROC*)&py3_Py_BuildValue},
-# endif
     {"PyMem_Free", (PYTHON_PROC*)&py3_PyMem_Free},
     {"PyMem_Malloc", (PYTHON_PROC*)&py3_PyMem_Malloc},
     {"PyList_New", (PYTHON_PROC*)&py3_PyList_New},
@@ -488,7 +483,7 @@ static struct
     {"PyEval_InitThreads", (PYTHON_PROC*)&py3_PyEval_InitThreads},
     {"PyEval_RestoreThread", (PYTHON_PROC*)&py3_PyEval_RestoreThread},
     {"PyEval_SaveThread", (PYTHON_PROC*)&py3_PyEval_SaveThread},
-    {"PyArg_Parse", (PYTHON_PROC*)&py3_PyArg_Parse},
+    {"_PyArg_Parse_SizeT", (PYTHON_PROC*)&py3_PyArg_Parse},
     {"Py_IsInitialized", (PYTHON_PROC*)&py3_Py_IsInitialized},
     {"_PyObject_NextNotImplemented", (PYTHON_PROC*)&py3__PyObject_NextNotImplemented},
     {"_Py_NoneStruct", (PYTHON_PROC*)&py3__Py_NoneStruct},
