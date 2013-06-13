@@ -480,6 +480,12 @@ Gop:"
 :.yank
 y$Gop:"
 :"
+:" Check a pattern with a line break and ^ and $
+/^Abc:
+/a\n^b$\n^c/e
+:.yank
+Gop:"
+:"
 :" Check a pattern with a look beind crossing a line boundary
 /^Behind:
 /\(<\_[xy]\+\)\@3<=start
@@ -554,6 +560,11 @@ def
 ghi
 xjk
 lmn
+
+Abc:
+a
+b
+c
 
 Behind:
 asdfasd<yyy

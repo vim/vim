@@ -3936,9 +3936,10 @@ addstate(l, state, subs, pim, off)
 	case NFA_BOL:
 	case NFA_BOF:
 	    /* "^" won't match past end-of-line, don't bother trying.
-	     * Except when we are going to the next line for a look-behind
-	     * match. */
+	     * Except when at the end of the line, or when we are going to the
+	     * next line for a look-behind match. */
 	    if (reginput > regline
+		    && *reginput != NUL
 		    && (nfa_endp == NULL
 			|| !REG_MULTI
 			|| reglnum == nfa_endp->se_u.pos.lnum))
