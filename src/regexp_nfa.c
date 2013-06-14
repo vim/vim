@@ -4686,6 +4686,18 @@ failure_chance(state, depth)
 	    /* empty match works always */
 	    return 0;
 
+	case NFA_START_INVISIBLE:
+	case NFA_START_INVISIBLE_FIRST:
+	case NFA_START_INVISIBLE_NEG:
+	case NFA_START_INVISIBLE_NEG_FIRST:
+	case NFA_START_INVISIBLE_BEFORE:
+	case NFA_START_INVISIBLE_BEFORE_FIRST:
+	case NFA_START_INVISIBLE_BEFORE_NEG:
+	case NFA_START_INVISIBLE_BEFORE_NEG_FIRST:
+	case NFA_START_PATTERN:
+	    /* recursive regmatch is expensive, use low failure chance */
+	    return 5;
+
 	case NFA_BOL:
 	case NFA_EOL:
 	case NFA_BOF:
@@ -5264,7 +5276,7 @@ nfa_regmatch(prog, start, submatch, m)
 		    skip_lid = nextlist->id;
 #endif
 		}
-		else if(state_in_list(thislist,
+		else if (state_in_list(thislist,
 					  t->state->out1->out->out, &t->subs))
 		{
 		    skip = t->state->out1->out->out;
