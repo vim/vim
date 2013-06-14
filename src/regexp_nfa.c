@@ -3612,7 +3612,7 @@ copy_sub_off(to, from)
 }
 
 /*
- * Return TRUE if "sub1" and "sub2" have the same positions.
+ * Return TRUE if "sub1" and "sub2" have the same start positions.
  */
     static int
 sub_equal(sub1, sub2)
@@ -3621,10 +3621,10 @@ sub_equal(sub1, sub2)
 {
     int		i;
     int		todo;
-    linenr_T	s1, e1;
-    linenr_T	s2, e2;
-    char_u	*sp1, *ep1;
-    char_u	*sp2, *ep2;
+    linenr_T	s1;
+    linenr_T	s2;
+    char_u	*sp1;
+    char_u	*sp2;
 
     todo = sub1->in_use > sub2->in_use ? sub1->in_use : sub2->in_use;
     if (REG_MULTI)
@@ -3632,32 +3632,17 @@ sub_equal(sub1, sub2)
 	for (i = 0; i < todo; ++i)
 	{
 	    if (i < sub1->in_use)
-	    {
 		s1 = sub1->list.multi[i].start.lnum;
-		e1 = sub1->list.multi[i].end.lnum;
-	    }
 	    else
-	    {
 		s1 = 0;
-		e1 = 0;
-	    }
 	    if (i < sub2->in_use)
-	    {
 		s2 = sub2->list.multi[i].start.lnum;
-		e2 = sub2->list.multi[i].end.lnum;
-	    }
 	    else
-	    {
 		s2 = 0;
-		e2 = 0;
-	    }
-	    if (s1 != s2 || e1 != e2)
+	    if (s1 != s2)
 		return FALSE;
 	    if (s1 != 0 && sub1->list.multi[i].start.col
 					     != sub2->list.multi[i].start.col)
-		return FALSE;
-	    if (e1 != 0 && sub1->list.multi[i].end.col
-					     != sub2->list.multi[i].end.col)
 		return FALSE;
 	}
     }
@@ -3666,26 +3651,14 @@ sub_equal(sub1, sub2)
 	for (i = 0; i < todo; ++i)
 	{
 	    if (i < sub1->in_use)
-	    {
 		sp1 = sub1->list.line[i].start;
-		ep1 = sub1->list.line[i].end;
-	    }
 	    else
-	    {
 		sp1 = NULL;
-		ep1 = NULL;
-	    }
 	    if (i < sub2->in_use)
-	    {
 		sp2 = sub2->list.line[i].start;
-		ep2 = sub2->list.line[i].end;
-	    }
 	    else
-	    {
 		sp2 = NULL;
-		ep2 = NULL;
-	    }
-	    if (sp1 != sp2 || ep1 != ep2)
+	    if (sp1 != sp2)
 		return FALSE;
 	}
     }
@@ -3735,8 +3708,8 @@ has_state_with_pos(l, state, subs)
 	if (thread->state->id == state->id
 		&& sub_equal(&thread->subs.norm, &subs->norm)
 #ifdef FEAT_SYN_HL
-		&& (!nfa_has_zsubexpr ||
-		       sub_equal(&thread->subs.synt, &subs->synt))
+		&& (!nfa_has_zsubexpr
+				|| sub_equal(&thread->subs.synt, &subs->synt))
 #endif
 			      )
 	    return TRUE;
