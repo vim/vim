@@ -1229,6 +1229,9 @@ eof
       AC_MSG_RESULT(too old)
     fi
   fi
+  if test "$fail_if_missing" = "yes" -a "$python3_ok" != "yes"; then
+    AC_MSG_ERROR([could not configure python3])
+  fi
 fi
 
 AC_SUBST(PYTHON3_CONFDIR)

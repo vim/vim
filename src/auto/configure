@@ -5826,6 +5826,9 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "too old" >&6; }
     fi
   fi
+  if test "$fail_if_missing" = "yes" -a "$python3_ok" != "yes"; then
+    as_fn_error "could not configure python3" "$LINENO" 5
+  fi
 fi
 
 
