@@ -5026,7 +5026,7 @@ regmatch(scan)
 					    reg_startpos[no].col,
 					    reg_endpos[no].lnum,
 					    reg_endpos[no].col,
-					    NULL);
+					    &len);
 			}
 		    }
 		}
