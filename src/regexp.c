@@ -3519,6 +3519,7 @@ static void	save_se_one __ARGS((save_se_T *savep, char_u **pp));
 	*(pp) = (savep)->se_u.ptr; }
 
 static int	re_num_cmp __ARGS((long_u val, char_u *scan));
+static int	match_with_backref __ARGS((linenr_T start_lnum, colnr_T start_col, linenr_T end_lnum, colnr_T end_col, int *bytelen));
 static int	regmatch __ARGS((char_u *prog));
 static int	regrepeat __ARGS((char_u *p, long maxcount));
 
@@ -4979,9 +4980,6 @@ regmatch(scan)
 	  case BACKREF + 9:
 	    {
 		int		len;
-		linenr_T	clnum;
-		colnr_T		ccol;
-		char_u		*p;
 
 		no = op - BACKREF;
 		cleanup_subexpr();
@@ -5023,67 +5021,12 @@ regmatch(scan)
 			{
 			    /* Messy situation: Need to compare between two
 			     * lines. */
-			    ccol = reg_startpos[no].col;
-			    clnum = reg_startpos[no].lnum;
-			    for (;;)
-			    {
-				/* Since getting one line may invalidate
-				 * the other, need to make copy.  Slow! */
-				if (regline != reg_tofree)
-				{
-				    len = (int)STRLEN(regline);
-				    if (reg_tofree == NULL
-						 || len >= (int)reg_tofreelen)
-				    {
-					len += 50;	/* get some extra */
-					vim_free(reg_tofree);
-					reg_tofree = alloc(len);
-					if (reg_tofree == NULL)
-					{
-					    status = RA_FAIL; /* outof memory!*/
-					    break;
-					}
-					reg_tofreelen = len;
-				    }
-				    STRCPY(reg_tofree, regline);
-				    reginput = reg_tofree
-						       + (reginput - regline);
-				    regline = reg_tofree;
-				}
-
-				/* Get the line to compare with. */
-				p = reg_getline(clnum);
-				if (clnum == reg_endpos[no].lnum)
-				    len = reg_endpos[no].col - ccol;
-				else
-				    len = (int)STRLEN(p + ccol);
-
-				if (cstrncmp(p + ccol, reginput, &len) != 0)
-				{
-				    status = RA_NOMATCH;  /* doesn't match */
-				    break;
-				}
-				if (clnum == reg_endpos[no].lnum)
-				    break;		/* match and at end! */
-				if (reglnum >= reg_maxline)
-				{
-				    status = RA_NOMATCH;  /* text too short */
-				    break;
-				}
-
-				/* Advance to next line. */
-				reg_nextline();
-				++clnum;
-				ccol = 0;
-				if (got_int)
-				{
-				    status = RA_FAIL;
-				    break;
-				}
-			    }
-
-			    /* found a match!  Note that regline may now point
-			     * to a copy of the line, that should not matter. */
+			    status = match_with_backref(
+					    reg_startpos[no].lnum,
+					    reg_startpos[no].col,
+					    reg_endpos[no].lnum,
+					    reg_endpos[no].col,
+					    NULL);
 			}
 		    }
 		}
@@ -6505,6 +6448,75 @@ re_num_cmp(val, scan)
     return val == n;
 }
 
+/*
+ * Check whether a backreference matches.
+ * Returns RA_FAIL, RA_NOMATCH or RA_MATCH.
+ * If "bytelen" is not NULL, it is set to the bytelength of the whole match.
+ */
+    static int
+match_with_backref(start_lnum, start_col, end_lnum, end_col, bytelen)
+    linenr_T start_lnum;
+    colnr_T  start_col;
+    linenr_T end_lnum;
+    colnr_T  end_col;
+    int	     *bytelen;
+{
+    linenr_T	clnum = start_lnum;
+    colnr_T	ccol = start_col;
+    int		len;
+    char_u	*p;
+
+    if (bytelen != NULL)
+	*bytelen = 0;
+    for (;;)
+    {
+	/* Since getting one line may invalidate the other, need to make copy.
+	 * Slow! */
+	if (regline != reg_tofree)
+	{
+	    len = (int)STRLEN(regline);
+	    if (reg_tofree == NULL || len >= (int)reg_tofreelen)
+	    {
+		len += 50;	/* get some extra */
+		vim_free(reg_tofree);
+		reg_tofree = alloc(len);
+		if (reg_tofree == NULL)
+		    return RA_FAIL; /* out of memory!*/
+		reg_tofreelen = len;
+	    }
+	    STRCPY(reg_tofree, regline);
+	    reginput = reg_tofree + (reginput - regline);
+	    regline = reg_tofree;
+	}
+
+	/* Get the line to compare with. */
+	p = reg_getline(clnum);
+	if (clnum == end_lnum)
+	    len = end_col - ccol;
+	else
+	    len = (int)STRLEN(p + ccol);
+
+	if (cstrncmp(p + ccol, reginput, &len) != 0)
+	    return RA_NOMATCH;  /* doesn't match */
+	if (bytelen != NULL)
+	    *bytelen += len;
+	if (clnum == end_lnum)
+	    break;		/* match and at end! */
+	if (reglnum >= reg_maxline)
+	    return RA_NOMATCH;  /* text too short */
+
+	/* Advance to next line. */
+	reg_nextline();
+	++clnum;
+	ccol = 0;
+	if (got_int)
+	    return RA_FAIL;
+    }
+
+    /* found a match!  Note that regline may now point to a copy of the line,
+     * that should not matter. */
+    return RA_MATCH;
+}
 
 #ifdef BT_REGEXP_DUMP
 

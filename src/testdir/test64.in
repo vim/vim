@@ -486,6 +486,12 @@ y$Gop:"
 :.yank
 Gop:"
 :"
+:" Check using a backref matching in a previous line
+/^Backref:
+/\v.*\/(.*)\n.*\/\1$
+:.yank
+Gop:"
+:"
 :" Check a pattern with a look beind crossing a line boundary
 /^Behind:
 /\(<\_[xy]\+\)\@3<=start
@@ -565,6 +571,13 @@ Abc:
 a
 b
 c
+
+Backref:
+./Dir1/Dir2/zyxwvuts.txt
+./Dir1/Dir2/abcdefgh.bat
+
+./Dir1/Dir2/file1.txt
+./OtherDir1/OtherDir2/file1.txt
 
 Behind:
 asdfasd<yyy

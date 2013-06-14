@@ -4367,14 +4367,27 @@ retempty:
 	if (sub->list.multi[subidx].start.lnum < 0
 				       || sub->list.multi[subidx].end.lnum < 0)
 	    goto retempty;
-	/* TODO: line breaks */
-	len = sub->list.multi[subidx].end.col
-					 - sub->list.multi[subidx].start.col;
-	if (cstrncmp(regline + sub->list.multi[subidx].start.col,
-							reginput, &len) == 0)
+	if (sub->list.multi[subidx].start.lnum == reglnum
+			       && sub->list.multi[subidx].end.lnum == reglnum)
 	{
-	    *bytelen = len;
-	    return TRUE;
+	    len = sub->list.multi[subidx].end.col
+					  - sub->list.multi[subidx].start.col;
+	    if (cstrncmp(regline + sub->list.multi[subidx].start.col,
+							 reginput, &len) == 0)
+	    {
+		*bytelen = len;
+		return TRUE;
+	    }
+	}
+	else
+	{
+	    if (match_with_backref(
+			sub->list.multi[subidx].start.lnum,
+			sub->list.multi[subidx].start.col,
+			sub->list.multi[subidx].end.lnum,
+			sub->list.multi[subidx].end.col,
+			bytelen) == RA_MATCH)
+		return TRUE;
 	}
     }
     else
