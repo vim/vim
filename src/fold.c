@@ -1930,8 +1930,22 @@ get_foldtext(wp, lnum, lnume, foldinfo, buf)
     char_u	*buf;
 {
     char_u	*text = NULL;
-
 #ifdef FEAT_EVAL
+     /* an error occurred when evaluating 'fdt' setting */
+    static int	    got_fdt_error = FALSE;
+    int		    save_did_emsg = did_emsg;
+    static win_T    *last_wp = NULL;
+    static linenr_T last_lnum = 0;
+
+    if (last_wp != wp || last_wp == NULL
+					|| last_lnum > lnum || last_lnum == 0)
+	/* window changed, try evaluating foldtext setting once again */
+	got_fdt_error = FALSE;
+
+    if (!got_fdt_error)
+	/* a previous error should not abort evaluating 'foldexpr' */
+	did_emsg = FALSE;
+
     if (*wp->w_p_fdt != NUL)
     {
 	char_u	dashes[MAX_LEVEL + 2];
@@ -1952,18 +1966,31 @@ get_foldtext(wp, lnum, lnume, foldinfo, buf)
 	dashes[level] = NUL;
 	set_vim_var_string(VV_FOLDDASHES, dashes, -1);
 	set_vim_var_nr(VV_FOLDLEVEL, (long)level);
-	save_curwin = curwin;
-	curwin = wp;
-	curbuf = wp->w_buffer;
 
-	++emsg_off;
-	text = eval_to_string_safe(wp->w_p_fdt, NULL,
+	/* skip evaluating foldtext on errors */
+	if (!got_fdt_error)
+	{
+	    save_curwin = curwin;
+	    curwin = wp;
+	    curbuf = wp->w_buffer;
+
+	    ++emsg_silent; /* handle exceptions, but don't display errors */
+	    text = eval_to_string_safe(wp->w_p_fdt, NULL,
 			 was_set_insecurely((char_u *)"foldtext", OPT_LOCAL));
-	--emsg_off;
+	    --emsg_silent;
 
-	curwin = save_curwin;
-	curbuf = curwin->w_buffer;
+	    if (text == NULL || did_emsg)
+		got_fdt_error = TRUE;
+
+	    curwin = save_curwin;
+	    curbuf = curwin->w_buffer;
+	}
+	last_lnum = lnum;
+	last_wp   = wp;
 	set_vim_var_string(VV_FOLDDASHES, NULL, -1);
+
+	if (!did_emsg && save_did_emsg)
+	    did_emsg = save_did_emsg;
 
 	if (text != NULL)
 	{
