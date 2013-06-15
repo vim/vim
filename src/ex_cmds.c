@@ -1722,11 +1722,11 @@ read_viminfo(file, flags)
 }
 
 /*
- * write_viminfo() -- Write the viminfo file.  The old one is read in first so
- * that effectively a merge of current info and old info is done.  This allows
- * multiple vims to run simultaneously, without losing any marks etc.  If
- * forceit is TRUE, then the old file is not read in, and only internal info is
- * written to the file. -- webb
+ * Write the viminfo file.  The old one is read in first so that effectively a
+ * merge of current info and old info is done.  This allows multiple vims to
+ * run simultaneously, without losing any marks etc.
+ * If "forceit" is TRUE, then the old file is not read in, and only internal
+ * info is written to the file.
  */
     void
 write_viminfo(file, forceit)
@@ -2047,6 +2047,7 @@ do_viminfo(fp_in, fp_out, flags)
     int		count = 0;
     int		eof = FALSE;
     vir_T	vir;
+    int		merge = FALSE;
 
     if ((vir.vir_line = alloc(LSIZE)) == NULL)
 	return;
@@ -2058,9 +2059,12 @@ do_viminfo(fp_in, fp_out, flags)
     if (fp_in != NULL)
     {
 	if (flags & VIF_WANT_INFO)
+	{
 	    eof = read_viminfo_up_to_marks(&vir,
 					 flags & VIF_FORCEIT, fp_out != NULL);
-	else
+	    merge = TRUE;
+	}
+	else if (flags != 0)
 	    /* Skip info, find start of marks */
 	    while (!(eof = viminfo_readline(&vir))
 		    && vir.vir_line[0] != '>')
@@ -2079,7 +2083,7 @@ do_viminfo(fp_in, fp_out, flags)
 	write_viminfo_search_pattern(fp_out);
 	write_viminfo_sub_string(fp_out);
 #ifdef FEAT_CMDHIST
-	write_viminfo_history(fp_out);
+	write_viminfo_history(fp_out, merge);
 #endif
 	write_viminfo_registers(fp_out);
 #ifdef FEAT_EVAL

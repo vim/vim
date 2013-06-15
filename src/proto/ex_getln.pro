@@ -51,7 +51,7 @@ void ex_history __ARGS((exarg_T *eap));
 void prepare_viminfo_history __ARGS((int asklen, int writing));
 int read_viminfo_history __ARGS((vir_T *virp, int writing));
 void finish_viminfo_history __ARGS((void));
-void write_viminfo_history __ARGS((FILE *fp));
+void write_viminfo_history __ARGS((FILE *fp, int merge));
 void cmd_pchar __ARGS((int c, int offset));
 int cmd_gchar __ARGS((int offset));
 char_u *script_get __ARGS((exarg_T *eap, char_u *cmd));
