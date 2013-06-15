@@ -6674,6 +6674,7 @@ lua-buffer	if_lua.txt	/*lua-buffer*
 lua-commands	if_lua.txt	/*lua-commands*
 lua-dict	if_lua.txt	/*lua-dict*
 lua-eval	if_lua.txt	/*lua-eval*
+lua-funcref	if_lua.txt	/*lua-funcref*
 lua-list	if_lua.txt	/*lua-list*
 lua-luaeval	if_lua.txt	/*lua-luaeval*
 lua-vim	if_lua.txt	/*lua-vim*

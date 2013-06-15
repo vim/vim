@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.3.  Last change: 2013 May 19
+*autocmd.txt*   For Vim version 7.3.  Last change: 2013 Jun 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -513,9 +513,9 @@ CursorHold			When the user doesn't press a key for the time
 CursorHoldI			Just like CursorHold, but in Insert mode.
 
 							*CursorMoved*
-CursorMoved			After the cursor was moved in Normal mode.
-				Also when the text of the cursor line has been
-				changed, e.g., with "x", "rx" or "p".
+CursorMoved			After the cursor was moved in Normal or Visual
+				mode.  Also when the text of the cursor line
+				has been changed, e.g., with "x", "rx" or "p".
 				Not triggered when there is typeahead or when
 				an operator is pending.
 				For an example see |match-parens|.

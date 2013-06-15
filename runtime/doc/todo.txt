@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Jun 12
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Jun 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,9 +36,6 @@ not be repeated below, unless there is extra information.
 
 --- Python interface
 
-Test 87 fails.
-Test 86 fails on some systems.
-
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
 Win32: The Python interface only works with one version of Python, selected at
@@ -53,30 +50,6 @@ exception and give an error. (Yasuhiro Matsumoto)
 Does not work, tests fail.
 
 --- bug fixes
-
-:wviminfo does not write old history entries. (Roland Eggner, 2013 Jun 5)
-Another message Jun 6.
-
-Patch to avoid wrong error message for 1.0[0]. (Yasuhiro Matsumoto, 2013 May
-1)
-
-Patch for if_lua. (Luis Carvalho, 2012 Aug 26, update Aug 29, another Aug 30,
-then Sep 1, reminder Oct 14)
-
-Patch for if_perl.  (Ike Devolder, May 27)
-
-Patch to check if 'foldexpr' sets did_emsg. (Christian Brabandt, 2013 Mar 20)
-
-Patch for 'backupcopy' default behavior for symlinks on Windows. (David Pope,
-2012 Mar 21, update Mar 31)
-With fix for memory leak: Ken Takata, 2012 Aug 24
-Another update Sep 24.
-Also patch from Joerg Bornemann, 2013 Apr 30.
-
-Undo problem: line not removed as expected when using setline() from Insert
-mode. (Israel Chauca, 2010 May 13, more in second msg)
-Break undo when CTRL-R = changes the text?  Or save more lines?
-Patch by Christian Brabandt, 2012 Nov 16.
 
 Do allow real tags above the !_TAG entries. Undo older patch. Issue 90.
 

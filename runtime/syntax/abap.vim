@@ -2,7 +2,7 @@
 "    Language: SAP - ABAP/R4
 "    Revision: 2.1
 "  Maintainer: Marius Piedallu van Wyk <lailoken@gmail.com>
-" Last Change: 2012 Oct 23
+" Last Change: 2013 Jun 13
 "     Comment: Thanks to EPI-USE Labs for all your assistance. :)
 
 " For version  < 6.0: Clear all syntax items
@@ -140,7 +140,7 @@ syn keyword abapStatement CHANGING EXCEPTION EXCEPTIONS DEFAULT CHECKBOX COMMENT
 syn keyword abapStatement ID NUMBER FOR TITLE OUTPUT
 
 " Special ABAP specific tables:
-syn match   abapSpecialTables "\<\(sy\|\(p\|pa\)\d\d\d\d\|t\d\d\d.\|innnn\)-"me=e-1 contained
+syn match   abapSpecialTables "\<\(sy\|\(hrp\|p\|pa\)\d\d\d\d\|t\d\d\d.\|innnn\)-"me=e-1 contained
 syn match   abapStructure     "\<\w\+-[^\>]"me=e-2 contains=abapSpecialTables,abapStatement,abapComplexStatement
 syn match   abapField         "-\w\+"ms=s+1
 

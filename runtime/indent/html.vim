@@ -3,8 +3,8 @@
 " File:		html.vim (Vimscript #2075)
 " Author:	Andy Wokula <anwoku@yahoo.de>
 " Last Change:	2013 Jun 12
-" Rev Days:     9
-" Version:	0.8
+" Rev Days:     13
+" Version:	0.9
 " Vim Version:	Vim7
 " Description:
 "   Improved version of the distributed html indent script, faster on a
@@ -15,7 +15,10 @@
 "	indent/css.vim (2006 Dec 20) from N. Weibull
 "
 " History:
-" 2011 Sep 09	added HTML5 tags (thx to J. Zuckerman)
+" 2012 Oct 21	(v0.9) added support for shiftwidth()
+" 2011 Sep 09	(v0.8) added HTML5 tags (thx to J. Zuckerman)
+" 2008 Apr 28	(v0.6) revised customization
+" 2008 Mar 09	(v0.5) fixed 'indk' issue (thx to C.J. Robinson)
 " }}}
 
 " Init Folklore, check user settings (2nd time ++) "{{{
@@ -36,6 +39,15 @@ if exists("*HtmlIndent")
     finish
 endif
 
+" Patch 7.3.694
+if exists('*shiftwidth')
+    let s:ShiftWidth = function('shiftwidth')
+else
+    func! s:ShiftWidth()
+	return &shiftwidth
+    endfunc
+endif
+
 let s:cpo_save = &cpo
 set cpo-=C
 "}}}
@@ -50,7 +62,7 @@ func! HtmlIndent_CheckUserSettings() "{{{
 
     let indone = {"zero": 0
 		\,"auto": "indent(prevnonblank(v:lnum-1))"
-		\,"inc": "b:indent.blocktagind + &shiftwidth"}
+		\,"inc": "b:indent.blocktagind + s:ShiftWidth()"}
     if exists("g:html_indent_script1")
 	let s:js1indent = get(indone, g:html_indent_script1, indone.zero)
     endif
@@ -196,7 +208,7 @@ func! s:Blocktag(blocktag, ind) "{{{
 	endif
 	let s:newstate.blocklnr = v:lnum
 	" save allover indent for the endtag
-	let s:newstate.blocktagind = b:indent.baseindent + (s:nextrel + s:curind) * &shiftwidth
+	let s:newstate.blocktagind = b:indent.baseindent + (s:nextrel + s:curind) * s:ShiftWidth()
 	if a:ind == 3
 	    return "SCRIPT"    " all except this must be lowercase
 	    " line is to be checked again for the type attribute
@@ -277,7 +289,7 @@ func! s:FreshState(lnum) "{{{
 	" check preceding tags in the line:
 	let s:altline = tagline[: stopcol-2]
 	call s:CountITags(1)
-	let state.blocktagind = indent(stopline) + (s:curind + s:nextrel) * &shiftwidth
+	let state.blocktagind = indent(stopline) + (s:curind + s:nextrel) * s:ShiftWidth()
 	return state
     elseif stopline == state.lnum
 	" handle special case: previous line (= state.lnum) contains a
@@ -288,7 +300,7 @@ func! s:FreshState(lnum) "{{{
 	    let [bline, bcol] = searchpos('<'.blocktag[1:].'\>', "bW")
 	    let s:altline = tolower(getline(bline)[: bcol-2])
 	    call s:CountITags(1)
-	    let state.baseindent = indent(bline) + (s:nextrel+s:curline) * &shiftwidth
+	    let state.baseindent = indent(bline) + (s:nextrel+s:curline) * s:ShiftWidth()
 	    return state
 	endif
     endif
@@ -303,7 +315,7 @@ func! s:FreshState(lnum) "{{{
 	" check preceding tags in the line:
 	let s:altline = tolower(getline(comline)[: comcol-2])
 	call s:CountITags(1)
-	let state.blocktagind = indent(comline) + (s:curind + s:nextrel) * &shiftwidth
+	let state.blocktagind = indent(comline) + (s:curind + s:nextrel) * s:ShiftWidth()
 	return state
     endif
 
@@ -320,18 +332,18 @@ func! s:FreshState(lnum) "{{{
 	    let s:altline = tolower(getline(comline)[: comcol-2])
 	endif
 	call s:CountITags(1)
-	let state.baseindent = indent(comline) + (s:nextrel+s:curline) * &shiftwidth
+	let state.baseindent = indent(comline) + (s:nextrel+s:curline) * s:ShiftWidth()
 	return state
 	" TODO check tags that follow "-->"
     endif
 
     " else no comments
     call s:CountITags(1)
-    let state.baseindent = indent(state.lnum) + s:nextrel * &shiftwidth
+    let state.baseindent = indent(state.lnum) + s:nextrel * s:ShiftWidth()
     " line starts with end tag
     let swendtag = match(s:altline, '^\s*</') >= 0
     if !swendtag
-	let state.baseindent += s:curind * &shiftwidth
+	let state.baseindent += s:curind * s:ShiftWidth()
     endif
     return state
 endfunc "}}}
@@ -373,10 +385,10 @@ func! s:CSSIndent() "{{{
 	" indent for first content line after comments
 	return eval(s:css1indent)
     endif
-    let ind = indent(pnum) + s:css_countbraces(pnum, 1) * &sw
+    let ind = indent(pnum) + s:css_countbraces(pnum, 1) * s:ShiftWidth()
     let pline = getline(pnum)
     if pline =~ '}\s*$'
-	let ind -= (s:css_countbraces(pnum, 0) - (pline =~ '^\s*}')) * &sw
+	let ind -= (s:css_countbraces(pnum, 0) - (pline =~ '^\s*}')) * s:ShiftWidth()
     endif
     return ind
 endfunc "}}}
@@ -421,11 +433,12 @@ endfunc "}}}
 
 func! HtmlIndent() "{{{
     let s:curline = tolower(getline(v:lnum))
+    let indentunit = s:ShiftWidth()
 
     let s:newstate = {}
     let s:newstate.lnum = v:lnum
 
-    " is the first non-blank in the line the start of a tag?
+    " does the line start with a closing tag?
     let swendtag = match(s:curline, '^\s*</') >= 0
 
     if prevnonblank(v:lnum-1) == b:indent.lnum && s:usestate
@@ -446,11 +459,11 @@ func! HtmlIndent() "{{{
 	    let s:curline = strpart(s:curline, blockend+strlen(endtag))
 	    call s:CountITags()
 	    if swendtag && b:indent.block != 5
-		let indent = b:indent.blocktagind + s:curind * &shiftwidth
-		let s:newstate.baseindent = indent + s:nextrel * &shiftwidth
+		let indent = b:indent.blocktagind + s:curind * indentunit
+		let s:newstate.baseindent = indent + s:nextrel * indentunit
 	    else
 		let indent = s:Alien{b:indent.block}()
-		let s:newstate.baseindent = b:indent.blocktagind + s:nextrel * &shiftwidth
+		let s:newstate.baseindent = b:indent.blocktagind + s:nextrel * indentunit
 	    endif
 	    call extend(b:indent, s:newstate, "force")
 	    return indent
@@ -467,11 +480,11 @@ func! HtmlIndent() "{{{
 	let s:newstate.block = b:indent.block
 	call s:CountITags()
 	if swendtag
-	    let indent = b:indent.baseindent + s:curind * &shiftwidth
-	    let s:newstate.baseindent = indent + s:nextrel * &shiftwidth
+	    let indent = b:indent.baseindent + s:curind * indentunit
+	    let s:newstate.baseindent = indent + s:nextrel * indentunit
 	else
 	    let indent = b:indent.baseindent
-	    let s:newstate.baseindent = indent + (s:curind + s:nextrel) * &shiftwidth
+	    let s:newstate.baseindent = indent + (s:curind + s:nextrel) * indentunit
 	endif
 	call extend(b:indent, s:newstate, "force")
 	return indent

@@ -10,9 +10,10 @@ The Lua Interface to Vim				*lua* *Lua*
 2. The vim module		|lua-vim|
 3. List userdata		|lua-list|
 4. Dict userdata		|lua-dict|
-5. Buffer userdata		|lua-buffer|
-6. Window userdata		|lua-window|
-7. The luaeval function		|lua-luaeval|
+5. Funcref userdata		|lua-funcref|
+6. Buffer userdata		|lua-buffer|
+7. Window userdata		|lua-window|
+8. The luaeval function		|lua-luaeval|
 
 {Vi does not have any of these commands}
 
@@ -110,9 +111,31 @@ input range are stored in "vim.firstline" and "vim.lastline" respectively. The
 module also includes routines for buffer, window, and current line queries,
 Vim evaluation and command execution, and others.
 
-	vim.list()		Returns an empty list (see |List|).
-
-	vim.dict()		Returns an empty dictionary (see |Dictionary|).
+	vim.list([arg])		Returns an empty list or, if "arg" is a Lua
+				table with numeric keys 1, ..., n (a
+				"sequence"), returns a list l such that l[i] =
+				arg[i] for i = 1, ..., n (see |List|).
+				Non-numeric keys are not used to initialize
+				the list. See also |lua-eval| for conversion
+				rules. Example: >
+					:lua t = {math.pi, false, say = 'hi'}
+					:echo luaeval('vim.list(t)')
+					:" [3.141593, 0], 'say' is ignored
+<
+	vim.dict([arg])		Returns an empty dictionary or, if "arg" is a
+				Lua table, returns a dict d such that d[k] =
+				arg[k] for all string keys k in "arg" (see
+				|Dictionary|). Number keys are converted to
+				strings. Keys that are not strings are not
+				used to initialize the dictionary. See also
+				|lua-eval| for conversion rules. Example: >
+					:lua t = {math.pi, false, say = 'hi'}
+					:echo luaeval('vim.dict(t)')
+					:" {'say': 'hi'}, numeric keys ignored
+<
+	vim.funcref({name})	Returns a Funcref to function {name} (see
+				|Funcref|). It is equivalent to Vim's
+				"function".
 
 	vim.buffer([arg])	If "arg" is a number, returns buffer with
 				number "arg" in the buffer list or, if "arg"
@@ -131,9 +154,9 @@ Vim evaluation and command execution, and others.
 
 	vim.type({arg})		Returns the type of {arg}. It is equivalent to
 				Lua's "type" function, but returns "list",
-				"dict", "buffer", or "window" if {arg} is a
-				list, dictionary, buffer, or window,
-				respectively. Examples: >
+				"dict", "funcref", "buffer", or "window" if
+				{arg} is a list, dictionary, funcref, buffer,
+				or window, respectively. Examples: >
 					:lua l = vim.list()
 					:lua print(type(l), vim.type(l))
 					:" userdata list
@@ -229,7 +252,40 @@ Examples:
 <
 
 ==============================================================================
-5. Buffer userdata					*lua-buffer*
+5. Funcref userdata					*lua-funcref*
+
+Funcref userdata represent funcref variables in Vim. Funcrefs that were
+defined with a "dict" attribute need to be obtained as a dictionary key
+in order to have "self" properly assigned to the dictionary (see examples
+below.) A funcref "f" has the following properties:
+
+Properties
+----------
+	o "#f" is the name of the function referenced by "f"
+	o "f(...)" calls the function referenced by "f" (with arguments)
+
+Examples:
+>
+	:function I(x)
+	:  return a:x
+	:  endfunction
+	:let R = function('I')
+	:lua i1 = vim.funcref('I')
+	:lua i2 = vim.eval('R')
+	:lua print(#i1, #i2) -- both 'I'
+	:lua print(i1, i2, #i2(i1) == #i1(i2))
+	:function Mylen() dict
+	:  return len(self.data)
+	:  endfunction
+	:let mydict = {'data': [0, 1, 2, 3]}
+	:lua d = vim.eval('mydict'); d.len = vim.funcref('Mylen')
+	:echo mydict.len()
+	:lua l = d.len -- assign d as 'self'
+	:lua print(l())
+<
+
+==============================================================================
+6. Buffer userdata					*lua-buffer*
 
 Buffer userdata represent vim buffers. A buffer userdata "b" has the following
 properties and methods:
@@ -281,7 +337,7 @@ Examples:
 <
 
 ==============================================================================
-6. Window userdata					*lua-window*
+7. Window userdata					*lua-window*
 
 Window objects represent vim windows. A window userdata "w" has the following
 properties and methods:
@@ -313,7 +369,7 @@ Examples:
 <
 
 ==============================================================================
-7. The luaeval function					*lua-luaeval* *lua-eval*
+8. The luaeval function					*lua-luaeval* *lua-eval*
 
 The (dual) equivalent of "vim.eval" for passing Lua values to Vim is
 "luaeval". "luaeval" takes an expression string and an optional argument and
@@ -325,7 +381,13 @@ returns the result of the expression. It is semantically equivalent in Lua to:
 	    return chunk(arg) -- return typval
 	end
 <
-Note that "_A" receives the argument to "luaeval". Examples: >
+Note that "_A" receives the argument to "luaeval". Lua numbers, strings, and
+list, dict, and funcref userdata are converted to their Vim respective types,
+while Lua booleans are converted to numbers. An error is thrown if conversion
+of any of the remaining Lua types, including userdata other than lists, dicts,
+and funcrefs, is attempted.
+
+Examples: >
 
 	:echo luaeval('math.pi')
 	:lua a = vim.list():add('newlist')

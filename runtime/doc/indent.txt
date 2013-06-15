@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.3.  Last change: 2013 Jun 12
+*indent.txt*    For Vim version 7.3.  Last change: 2013 Jun 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -745,7 +745,7 @@ You can set the indent for the first line after <script> and <style>
       "inc"	auto indent + one indent step
 
 Many tags increase the indent for what follows per default (see "Add Indent
-Tags" below in this script).  You can add further tags with: >
+Tags" in the script).  You can add further tags with: >
 
       :let g:html_indent_inctags = "html,body,head,tbody"
 
@@ -757,7 +757,7 @@ Default value is empty for both variables.  Note: the initial "inctags" are
 only defined once per Vim session.
 
 User variables are only read when the script is sourced.  To enable your
-changes during a session, without reloaind the html file, you can manually
+changes during a session, without reloading the HTML file, you can manually
 do: >
 
       :call HtmlIndent_CheckUserSettings()
@@ -765,11 +765,11 @@ do: >
 Detail:
   Calculation of indent inside "blocktags" with "alien" content:
       BLOCKTAG   INDENT EXPR	    WHEN APPLICABLE ~
-      <script> : {customizable}   if first line of block
-      	 : cindent(v:lnum)  if attributes empty or contain "java"
-      	 : -1		    else (vbscript, tcl, ...)
-      <style>  : {customizable}   if first line of block
-      	 : GetCSSIndent()   else
+      <script> : {customizable}	    if first line of block
+	       : cindent(v:lnum)    if attributes empty or contain "java"
+	       : -1		    else (vbscript, tcl, ...)
+      <style>  : {customizable}	    if first line of block
+	       : GetCSSIndent()	    else
       <!-- --> : -1
 
 

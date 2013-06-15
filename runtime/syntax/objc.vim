@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:     Objective-C
 " Maintainer:   Kazunobu Kuriyama <kazunobu.kuriyama@nifty.com>
-" Last Change:  2013 Jun 12
+" Last Change:  2013 Jun 13
 " Remark:       Modern Objective-C Edition
 
 """ Preparation for loading ObjC stuff
@@ -20,7 +20,7 @@ set cpo&vim
 syn keyword objcPreProcMacro __OBJC__ __OBJC2__ __clang__
 
 " Defined Types
-syn keyword objcPrincipalType id Class SEL IMP BOOL
+syn keyword objcPrincipalType id Class SEL IMP BOOL instancetype
 syn keyword objcUsefulTerm nil Nil NO YES
 
 " Preprocessor Directives
@@ -37,6 +37,7 @@ syn match objcInternalRep display /@selector\>\|@encode\>/
 syn match objcException display /@try\>\|@throw\>\|@catch\|@finally\>/
 syn match objcThread display /@synchronized\>/
 syn match objcPool display /@autoreleasepool\>/
+syn match objcModuleImport display /@import\>/
 
 " ObjC Constant Strings
 syn match objcSpecial display contained "%@"
@@ -84,7 +85,7 @@ syn match objcProtocolList display /<\h\w*\(\s*,\s*\h\w*\)*>/ contains=objcPrinc
 
 " shorthand
 syn cluster objcCEntities contains=cType,cStructure,cStorageClass,cString,cCharacter,cSpecialCharacter,cNumbers,cConstant,cOperator,cComment,cCommentL,cStatement,cLabel,cConditional,cRepeat
-syn cluster objcObjCEntities contains=objcHiddenArgument,objcPrincipalType,objcString,objcUsefulTerm,objcProtocol,objcInternalRep,objcException,objcThread,objcPool,@objcTypeQualifier,objcLiteralSyntaxNumber,objcLiteralSyntaxOp,objcLiteralSyntaxChar,objcLiteralSyntaxSpecialChar,objcProtocolList,objcColon,objcFastEnumKeyword,objcType,objcClass,objcMacro,objcEnum,objcEnumValue,objcExceptionValue,objcNotificationValue,objcConstVar,objcPreProcMacro
+syn cluster objcObjCEntities contains=objcHiddenArgument,objcPrincipalType,objcString,objcUsefulTerm,objcProtocol,objcInternalRep,objcException,objcThread,objcPool,objcModuleImport,@objcTypeQualifier,objcLiteralSyntaxNumber,objcLiteralSyntaxOp,objcLiteralSyntaxChar,objcLiteralSyntaxSpecialChar,objcProtocolList,objcColon,objcFastEnumKeyword,objcType,objcClass,objcMacro,objcEnum,objcEnumValue,objcExceptionValue,objcNotificationValue,objcConstVar,objcPreProcMacro
 
 " Objective-C Message Expressions
 syn region objcMethodCall start=/\[/ end=/\]/ contains=objcMethodCall,objcBlocks,@objcObjCEntities,@objcCEntities
@@ -399,6 +400,7 @@ hi def link objcInternalRep                 cOperator
 hi def link objcException                   cOperator
 hi def link objcThread                      cOperator
 hi def link objcPool                        cOperator
+hi def link objcModuleImport                cOperator
 hi def link objcSpecial                     cSpecial
 hi def link objcString                      cString
 hi def link objcHiddenArgument              cStatement
