@@ -1638,6 +1638,10 @@ win_update(wp)
 # endif
 					syntax_check_changed(lnum)))
 #endif
+#ifdef FEAT_SEARCH_EXTRA
+				/* match in fixed position might need redraw */
+				||  wp->w_match_head != NULL
+#endif
 				)))))
 	{
 #ifdef FEAT_SEARCH_EXTRA
