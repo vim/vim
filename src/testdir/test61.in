@@ -84,6 +84,16 @@ ggO---:0put c
 ggO---:0put b
 ggO---:0put a
 ggO---:w >>test.out
+:so small.vim
+:set nocp
+:enew!
+oa
+:set ul=100
+ob
+:set ul=100
+o1a2=setline('.','1234')
+
+uu:%w >>test.out
 :qa!
 ENDTEST
 
