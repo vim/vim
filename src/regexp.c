@@ -5021,12 +5021,15 @@ regmatch(scan)
 			{
 			    /* Messy situation: Need to compare between two
 			     * lines. */
-			    status = match_with_backref(
+			    int r = match_with_backref(
 					    reg_startpos[no].lnum,
 					    reg_startpos[no].col,
 					    reg_endpos[no].lnum,
 					    reg_endpos[no].col,
 					    &len);
+
+			    if (r != RA_MATCH)
+				status = r;
 			}
 		    }
 		}
