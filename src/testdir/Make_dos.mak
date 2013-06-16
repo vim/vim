@@ -40,22 +40,24 @@ SCRIPTS_GUI = test16.out
 
 .SUFFIXES: .in .out
 
-nongui:	fixff $(SCRIPTS16) $(SCRIPTS)
-	echo ALL DONE
+nongui:	fixff $(SCRIPTS16) $(SCRIPTS) report
 
-small:
-	echo ALL DONE
+small:	report
 
-gui:	fixff $(SCRIPTS16) $(SCRIPTS) $(SCRIPTS_GUI)
-	echo ALL DONE
+gui:	fixff $(SCRIPTS16) $(SCRIPTS) $(SCRIPTS_GUI) report
 
-win32:	fixff $(SCRIPTS16) $(SCRIPTS) $(SCRIPTS32)
-	echo ALL DONE
+win32:	fixff $(SCRIPTS16) $(SCRIPTS) $(SCRIPTS32) report
 
 fixff:
 	-$(VIMPROG) -u dos.vim --noplugin "+argdo set ff=dos|upd" +q *.in *.ok
 	-$(VIMPROG) -u dos.vim --noplugin "+argdo set ff=unix|upd" +q \
 		dotest.in test60.ok test71.ok test74.ok
+
+report:
+	@echo ""
+	@echo Test results:
+	@IF EXIST test.log ( type test.log & echo TEST FAILURE & exit /b 1 ) \
+		ELSE ( ECHO ALL DONE )
 
 clean:
 	-del *.out
@@ -67,15 +69,18 @@ clean:
 	-if exist lua.vim del lua.vim
 	-del X*
 	-if exist viminfo del viminfo
+	-del test.log
 
 .in.out:
 	copy $*.ok test.ok
 	$(VIMPROG) -u dos.vim -U NONE --noplugin -s dotest.in $*.in
-	diff test.out $*.ok
-	-if exist $*.out del $*.out
-	rename test.out $*.out
+	@diff test.out $*.ok & if errorlevel 1 (echo $* FAILED >> test.log ) \
+		else ( del /F $*.out & rename test.out $*.out )
 	-del X*
 	-del X*.*
 	-del test.ok
 	-rd /s /q Xfind
 	-if exist viminfo del viminfo
+
+nolog:
+	-del test.log
