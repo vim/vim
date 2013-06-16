@@ -1897,7 +1897,6 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	HWND		sender = (HWND)wParam;
 	COPYDATASTRUCT	reply;
 	char_u		*res;
-	char_u		winstr[30];
 	int		retval;
 	char_u		*str;
 	char_u		*tofree;
@@ -1970,6 +1969,8 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 #ifdef FEAT_AUTOCMD
 		else if (data->dwData == COPYDATA_REPLY)
 		{
+		    char_u	winstr[30];
+
 		    sprintf((char *)winstr, PRINTF_HEX_LONG_U, (long_u)sender);
 		    apply_autocmds(EVENT_REMOTEREPLY, winstr, str,
 								TRUE, curbuf);
