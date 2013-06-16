@@ -1278,7 +1278,7 @@ DictionaryNew(PyTypeObject *subtype, dict_T *dict)
 }
 
     static dict_T *
-py_dict_alloc()
+py_dict_alloc(void)
 {
     dict_T	*r;
 
@@ -1545,7 +1545,8 @@ DictionaryIter(DictionaryObject *self)
 }
 
     static PyInt
-DictionaryAssItem(DictionaryObject *self, PyObject *keyObject, PyObject *valObject)
+DictionaryAssItem(
+	DictionaryObject *self, PyObject *keyObject, PyObject *valObject)
 {
     char_u	*key;
     typval_T	tv;
@@ -2669,11 +2670,7 @@ OptionsItem(OptionsObject *self, PyObject *keyObject)
 }
 
     static int
-set_option_value_err(key, numval, stringval, opt_flags)
-    char_u	*key;
-    int		numval;
-    char_u	*stringval;
-    int		opt_flags;
+set_option_value_err(char_u *key, int numval, char_u *stringval, int opt_flags)
 {
     char_u	*errmsg;
 
@@ -2688,13 +2685,13 @@ set_option_value_err(key, numval, stringval, opt_flags)
 }
 
     static int
-set_option_value_for(key, numval, stringval, opt_flags, opt_type, from)
-    char_u	*key;
-    int		numval;
-    char_u	*stringval;
-    int		opt_flags;
-    int		opt_type;
-    void	*from;
+set_option_value_for(
+	char_u *key,
+	int numval,
+	char_u *stringval,
+	int opt_flags,
+	int opt_type,
+	void *from)
 {
     win_T	*save_curwin = NULL;
     tabpage_T	*save_curtab = NULL;
@@ -5619,7 +5616,7 @@ init_types()
 }
 
     static int
-init_sys_path()
+init_sys_path(void)
 {
     PyObject	*path;
     PyObject	*path_hook;
