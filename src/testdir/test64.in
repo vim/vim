@@ -408,6 +408,8 @@ STARTTEST
 :"""" Requiring lots of states.
 :call add(tl, [2, '[0-9a-zA-Z]\{8}-\([0-9a-zA-Z]\{4}-\)\{3}[0-9a-zA-Z]\{12}', " 12345678-1234-1234-1234-123456789012 ", "12345678-1234-1234-1234-123456789012", "1234-"])
 :"
+:"""" Skip adding state twice
+:call add(tl, [2, '^\%(\%(^\s*#\s*if\>\|#\s*if\)\)\(\%>1c.*$\)\@=', "#if FOO", "#if", ' FOO'])
 :"
 :"""" Run the tests
 :"

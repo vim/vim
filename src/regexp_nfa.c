@@ -4210,6 +4210,8 @@ addstate_here(l, state, subs, pim, ip)
 
     /* re-order to put the new state at the current position */
     count = l->n - tlen;
+    if (count == 0)
+	return; /* no state got added */
     if (count == 1)
     {
 	/* overwrite the current state */
