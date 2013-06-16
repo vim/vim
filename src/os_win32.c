@@ -2789,14 +2789,16 @@ mch_is_symbolic_link(char_u *fname)
 	    reparseTag = findDataW.dwReserved0;
 	}
     }
-#else
-    hFind = FindFirstFile(fname, &findDataA);
-    if (hFind != INVALID_HANDLE_VALUE)
-    {
-	fileFlags = findDataA.dwFileAttributes;
-	reparseTag = findDataA.dwReserved0;
-    }
+    else
 #endif
+    {
+	hFind = FindFirstFile(fname, &findDataA);
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
+	    fileFlags = findDataA.dwFileAttributes;
+	    reparseTag = findDataA.dwReserved0;
+	}
+    }
 
     if (hFind != INVALID_HANDLE_VALUE)
 	FindClose(hFind);
