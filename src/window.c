@@ -3774,7 +3774,8 @@ enter_tabpage(tp, old_curbuf, trigger_enter_autocmds, trigger_leave_autocmds)
     /* We would like doing the TabEnter event first, but we don't have a
      * valid current window yet, which may break some commands.
      * This triggers autocommands, thus may make "tp" invalid. */
-    win_enter_ext(tp->tp_curwin, FALSE, TRUE, trigger_enter_autocmds, trigger_leave_autocmds);
+    win_enter_ext(tp->tp_curwin, FALSE, TRUE,
+			      trigger_enter_autocmds, trigger_leave_autocmds);
     prevwin = next_prevwin;
 
     last_status(FALSE);		/* status line may appear or disappear */
@@ -6575,14 +6576,17 @@ restore_snapshot_rec(sn, fr)
  * Set "win" to be the curwin and "tp" to be the current tab page.
  * restore_win() MUST be called to undo.
  * No autocommands will be executed.
+ * When "no_display" is TRUE the display won't be affected, no redraw is
+ * triggered, another tabpage access is limited.
  * Returns FAIL if switching to "win" failed.
  */
     int
-switch_win(save_curwin, save_curtab, win, tp)
+switch_win(save_curwin, save_curtab, win, tp, no_display)
     win_T	**save_curwin;
     tabpage_T	**save_curtab;
     win_T	*win;
     tabpage_T	*tp;
+    int		no_display;
 {
 # ifdef FEAT_AUTOCMD
     block_autocmds();
@@ -6592,7 +6596,16 @@ switch_win(save_curwin, save_curtab, win, tp)
     if (tp != NULL)
     {
 	*save_curtab = curtab;
-	goto_tabpage_tp(tp, FALSE, FALSE);
+	if (no_display)
+	{
+	    curtab->tp_firstwin = firstwin;
+	    curtab->tp_lastwin = lastwin;
+	    curtab = tp;
+	    firstwin = curtab->tp_firstwin;
+	    lastwin = curtab->tp_lastwin;
+	}
+	else
+	    goto_tabpage_tp(tp, FALSE, FALSE);
     }
     if (!win_valid(win))
     {
@@ -6609,15 +6622,29 @@ switch_win(save_curwin, save_curtab, win, tp)
 
 /*
  * Restore current tabpage and window saved by switch_win(), if still valid.
+ * When "no_display" is TRUE the display won't be affected, no redraw is
+ * triggered.
  */
     void
-restore_win(save_curwin, save_curtab)
+restore_win(save_curwin, save_curtab, no_display)
     win_T	*save_curwin;
     tabpage_T	*save_curtab;
+    int		no_display;
 {
 # ifdef FEAT_WINDOWS
     if (save_curtab != NULL && valid_tabpage(save_curtab))
-	goto_tabpage_tp(save_curtab, FALSE, FALSE);
+    {
+	if (no_display)
+	{
+	    curtab->tp_firstwin = firstwin;
+	    curtab->tp_lastwin = lastwin;
+	    curtab = save_curtab;
+	    firstwin = curtab->tp_firstwin;
+	    lastwin = curtab->tp_lastwin;
+	}
+	else
+	    goto_tabpage_tp(save_curtab, FALSE, FALSE);
+    }
     if (win_valid(save_curwin))
     {
 	curwin = save_curwin;

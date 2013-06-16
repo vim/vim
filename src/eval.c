@@ -11952,7 +11952,7 @@ getwinvar(argvars, rettv, off)
     {
 	/* Set curwin to be our win, temporarily.  Also set the tabpage,
 	 * otherwise the window is not valid. */
-	switch_win(&oldcurwin, &oldtabpage, win, tp);
+	switch_win(&oldcurwin, &oldtabpage, win, tp, TRUE);
 
 	if (*varname == '&')	/* window-local-option */
 	{
@@ -11972,7 +11972,7 @@ getwinvar(argvars, rettv, off)
 	}
 
 	/* restore previous notion of curwin */
-	restore_win(oldcurwin, oldtabpage);
+	restore_win(oldcurwin, oldtabpage, TRUE);
     }
 
     if (!done && argvars[off + 2].v_type != VAR_UNKNOWN)
@@ -16775,7 +16775,7 @@ setwinvar(argvars, rettv, off)
     if (win != NULL && varname != NULL && varp != NULL)
     {
 #ifdef FEAT_WINDOWS
-	if (switch_win(&save_curwin, &save_curtab, win, tp) == FAIL)
+	if (switch_win(&save_curwin, &save_curtab, win, tp, TRUE) == FAIL)
 	    return;
 #endif
 
@@ -16804,7 +16804,7 @@ setwinvar(argvars, rettv, off)
 	}
 
 #ifdef FEAT_WINDOWS
-	restore_win(save_curwin, save_curtab);
+	restore_win(save_curwin, save_curtab, TRUE);
 #endif
     }
 }

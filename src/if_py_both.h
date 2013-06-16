@@ -2706,7 +2706,7 @@ set_option_value_for(key, numval, stringval, opt_flags, opt_type, from)
     {
 	case SREQ_WIN:
 	    if (switch_win(&save_curwin, &save_curtab, (win_T *)from,
-				     win_find_tabpage((win_T *)from)) == FAIL)
+			      win_find_tabpage((win_T *)from), FALSE) == FAIL)
 	    {
 		if (VimTryEnd())
 		    return -1;
@@ -2714,7 +2714,7 @@ set_option_value_for(key, numval, stringval, opt_flags, opt_type, from)
 		return -1;
 	    }
 	    r = set_option_value_err(key, numval, stringval, opt_flags);
-	    restore_win(save_curwin, save_curtab);
+	    restore_win(save_curwin, save_curtab, FALSE);
 	    if (r == FAIL)
 		return -1;
 	    break;
