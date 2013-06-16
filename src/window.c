@@ -6582,11 +6582,11 @@ restore_snapshot_rec(sn, fr)
  */
     int
 switch_win(save_curwin, save_curtab, win, tp, no_display)
-    win_T	**save_curwin;
-    tabpage_T	**save_curtab;
-    win_T	*win;
-    tabpage_T	*tp;
-    int		no_display;
+    win_T	**save_curwin UNUSED;
+    tabpage_T	**save_curtab UNUSED;
+    win_T	*win UNUSED;
+    tabpage_T	*tp UNUSED;
+    int		no_display UNUSED;
 {
 # ifdef FEAT_AUTOCMD
     block_autocmds();
@@ -6627,9 +6627,9 @@ switch_win(save_curwin, save_curtab, win, tp, no_display)
  */
     void
 restore_win(save_curwin, save_curtab, no_display)
-    win_T	*save_curwin;
-    tabpage_T	*save_curtab;
-    int		no_display;
+    win_T	*save_curwin UNUSED;
+    tabpage_T	*save_curtab UNUSED;
+    int		no_display UNUSED;
 {
 # ifdef FEAT_WINDOWS
     if (save_curtab != NULL && valid_tabpage(save_curtab))
@@ -6906,9 +6906,10 @@ get_win_number(win_T *wp, win_T *first_win)
 }
 
     int
-get_tab_number(tabpage_T *tp)
+get_tab_number(tabpage_T *tp UNUSED)
 {
     int		i = 1;
+# ifdef FEAT_WINDOWS
     tabpage_T	*t;
 
     for (t = first_tabpage; t != NULL && t != tp; t = t->tp_next)
@@ -6917,6 +6918,7 @@ get_tab_number(tabpage_T *tp)
     if (t == NULL)
 	return 0;
     else
+# endif
 	return i;
 }
 #endif
