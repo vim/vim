@@ -2277,8 +2277,10 @@ if test -z "$SKIP_MOTIF"; then
     dnl Remove "-L" from before $GUI_LIB_LOC if it's there
     GUI_LIB_LOC="`echo $GUI_LIB_LOC|sed 's%-L%%g'`"
 
+    dnl Ubuntu has libXm.so in /usr/lib/i386-linux-gnu and elsewhere.  The
+    dnl linker will figure out which one to use, we only check if one exists.
     AC_MSG_CHECKING(for location of Motif GUI libs)
-    gui_libs="`echo $x_libraries|sed 's%/[^/][^/]*$%%'` `echo "$gui_XXX" | sed s/XXX/lib/g` `echo "$GUI_INC_LOC" | sed s/include/lib/` $GUI_LIB_LOC"
+    gui_libs="`echo $x_libraries|sed 's%/[^/][^/]*$%%'` `echo "$gui_XXX" | sed s/XXX/lib/g` /usr/lib/i386-linux-gnu /usr/lib/x86_64-linux-gnu `echo "$GUI_INC_LOC" | sed s/include/lib/` $GUI_LIB_LOC"
     GUI_LIB_LOC=
     for try in $gui_libs; do
       for libtry in "$try"/libXm.a "$try"/libXm.so* "$try"/libXm.sl "$try"/libXm.dylib; do
@@ -2289,7 +2291,9 @@ if test -z "$SKIP_MOTIF"; then
     done
     if test -n "$GUI_LIB_LOC"; then
       dnl Remove /usr/lib, it causes trouble on some systems
-      if test "$GUI_LIB_LOC" = /usr/lib; then
+      if test "$GUI_LIB_LOC" = /usr/lib \
+	   -o "$GUI_LIB_LOC" = /usr/lib/i386-linux-gnu \
+	   -o "$GUI_LIB_LOC" = /usr/lib/x86_64-linux-gnu; then
 	GUI_LIB_LOC=
 	AC_MSG_RESULT(in default path)
       else

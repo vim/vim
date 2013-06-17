@@ -8346,9 +8346,9 @@ $as_echo "no" >&6; }
 
         GUI_LIB_LOC="`echo $GUI_LIB_LOC|sed 's%-L%%g'`"
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for location of Motif GUI libs" >&5
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for location of Motif GUI libs" >&5
 $as_echo_n "checking for location of Motif GUI libs... " >&6; }
-    gui_libs="`echo $x_libraries|sed 's%/^/^/*$%%'` `echo "$gui_XXX" | sed s/XXX/lib/g` `echo "$GUI_INC_LOC" | sed s/include/lib/` $GUI_LIB_LOC"
+    gui_libs="`echo $x_libraries|sed 's%/^/^/*$%%'` `echo "$gui_XXX" | sed s/XXX/lib/g` /usr/lib/i386-linux-gnu /usr/lib/x86_64-linux-gnu `echo "$GUI_INC_LOC" | sed s/include/lib/` $GUI_LIB_LOC"
     GUI_LIB_LOC=
     for try in $gui_libs; do
       for libtry in "$try"/libXm.a "$try"/libXm.so* "$try"/libXm.sl "$try"/libXm.dylib; do
@@ -8358,7 +8358,9 @@ $as_echo_n "checking for location of Motif GUI libs... " >&6; }
       done
     done
     if test -n "$GUI_LIB_LOC"; then
-            if test "$GUI_LIB_LOC" = /usr/lib; then
+            if test "$GUI_LIB_LOC" = /usr/lib \
+	   -o "$GUI_LIB_LOC" = /usr/lib/i386-linux-gnu \
+	   -o "$GUI_LIB_LOC" = /usr/lib/x86_64-linux-gnu; then
 	GUI_LIB_LOC=
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: in default path" >&5
 $as_echo "in default path" >&6; }
