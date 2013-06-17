@@ -61,6 +61,7 @@ report:
 
 clean:
 	-del *.out
+	-del *.failed
 	-if exist test.ok del test.ok
 	-if exist small.vim del small.vim
 	-if exist tiny.vim del tiny.vim
@@ -68,18 +69,22 @@ clean:
 	-if exist mzscheme.vim del mzscheme.vim
 	-if exist lua.vim del lua.vim
 	-del X*
+	-if exist Xdir1 rd /s /q Xdir1
+	-if exist Xfind rd /s /q Xfind
 	-if exist viminfo del viminfo
 	-del test.log
 
 .in.out:
+	-if exist $*.failed del $*.failed
 	copy $*.ok test.ok
 	$(VIMPROG) -u dos.vim -U NONE --noplugin -s dotest.in $*.in
-	@diff test.out $*.ok & if errorlevel 1 (echo $* FAILED >> test.log ) \
-		else ( del /F $*.out & rename test.out $*.out )
+	@diff test.out $*.ok & if errorlevel 1 \
+		( move /y test.out $*.failed & echo $* FAILED >> test.log ) \
+		else ( move /y test.out $*.out )
 	-del X*
-	-del X*.*
 	-del test.ok
-	-rd /s /q Xfind
+	-if exist Xdir1 rd /s /q Xdir1
+	-if exist Xfind rd /s /q Xfind
 	-if exist viminfo del viminfo
 
 nolog:
