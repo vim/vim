@@ -366,6 +366,7 @@ STARTTEST
 :call add(tl, [2, '\%[bar]x', 'barxx', 'barx'])
 :call add(tl, [2, '\%[bar]x', 'bxx', 'bx'])
 :call add(tl, [2, '\%[bar]x', 'xxx', 'x'])
+:call add(tl, [2, 'b\%[[ao]r]', 'bar bor', 'bar'])
 :"
 :"""" Alternatives, must use first longest match
 :call add(tl, [2, 'goo\|go', 'google', 'goo'])

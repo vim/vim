@@ -1150,13 +1150,16 @@ nfa_regatom()
 			int	    n;
 
 			/* \%[abc] */
-			for (n = 0; (c = getchr()) != ']'; ++n)
+			for (n = 0; (c = peekchr()) != ']'; ++n)
 			{
 			    if (c == NUL)
 				EMSG2_RET_FAIL(_(e_missing_sb),
 						      reg_magic == MAGIC_ALL);
-			    EMIT(c);
+			    /* recursive call! */
+			    if (nfa_regatom() == FAIL)
+				return FAIL;
 			}
+			getchr();  /* get the ] */
 			if (n == 0)
 			    EMSG2_RET_FAIL(_(e_empty_sb),
 						      reg_magic == MAGIC_ALL);

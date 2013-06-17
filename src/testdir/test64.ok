@@ -836,6 +836,9 @@ OK 2 - \%[bar]x
 OK 0 - \%[bar]x
 OK 1 - \%[bar]x
 OK 2 - \%[bar]x
+OK 0 - b\%[[ao]r]
+OK 1 - b\%[[ao]r]
+OK 2 - b\%[[ao]r]
 OK 0 - goo\|go
 OK 1 - goo\|go
 OK 2 - goo\|go
