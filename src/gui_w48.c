@@ -3123,8 +3123,42 @@ update_im_font()
     void
 gui_mch_wide_font_changed()
 {
+# ifndef MSWIN16_FASTTEXT
+    LOGFONT lf;
+# endif
+
 # ifdef FEAT_MBYTE_IME
     update_im_font();
+# endif
+
+# ifndef MSWIN16_FASTTEXT
+    gui_mch_free_font(gui.wide_ital_font);
+    gui.wide_ital_font = NOFONT;
+    gui_mch_free_font(gui.wide_bold_font);
+    gui.wide_bold_font = NOFONT;
+    gui_mch_free_font(gui.wide_boldital_font);
+    gui.wide_boldital_font = NOFONT;
+
+    if (gui.wide_font
+	&& GetObject((HFONT)gui.wide_font, sizeof(lf), &lf))
+    {
+	if (!lf.lfItalic)
+	{
+	    lf.lfItalic = TRUE;
+	    gui.wide_ital_font = get_font_handle(&lf);
+	    lf.lfItalic = FALSE;
+	}
+	if (lf.lfWeight < FW_BOLD)
+	{
+	    lf.lfWeight = FW_BOLD;
+	    gui.wide_bold_font = get_font_handle(&lf);
+	    if (!lf.lfItalic)
+	    {
+		lf.lfItalic = TRUE;
+		gui.wide_boldital_font = get_font_handle(&lf);
+	    }
+	}
+    }
 # endif
 }
 #endif

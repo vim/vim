@@ -410,6 +410,14 @@ gui_init_check()
     gui.fontset = NOFONTSET;
 # endif
 #endif
+#ifdef FEAT_MBYTE
+    gui.wide_font = NOFONT;
+# ifndef FEAT_GUI_GTK
+    gui.wide_bold_font = NOFONT;
+    gui.wide_ital_font = NOFONT;
+    gui.wide_boldital_font = NOFONT;
+# endif
+#endif
 
 #ifdef FEAT_MENU
 # ifndef FEAT_GUI_GTK
@@ -1012,6 +1020,11 @@ gui_get_wide_font()
 	gui.wide_font = font;
 # ifdef FEAT_GUI_MSWIN
     gui_mch_wide_font_changed();
+# else
+    /*
+     * TODO: setup wide_bold_font, wide_ital_font and wide_boldital_font to
+     * support those fonts for 'guifontwide'.
+     */
 # endif
     return OK;
 }
@@ -2180,6 +2193,9 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
     guicolor_T	sp_color;
 #if !defined(MSWIN16_FASTTEXT) && !defined(FEAT_GUI_GTK)
     GuiFont	font = NOFONT;
+# ifdef FEAT_MBYTE
+    GuiFont	wide_font = NOFONT;
+# endif
 # ifdef FEAT_XFONTSET
     GuiFontset	fontset = NOFONTSET;
 # endif
@@ -2269,6 +2285,23 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 	}
 	else
 	    font = gui.norm_font;
+
+# ifdef FEAT_MBYTE
+	/*
+	 * Choose correct wide_font by font.  wide_font should be set with font
+	 * at same time in above block.  But it will make many "ifdef" nasty
+	 * blocks.  So we do it here.
+	 */
+	if (font == gui.boldital_font && gui.wide_boldital_font)
+	    wide_font = gui.wide_boldital_font;
+	else if (font == gui.bold_font && gui.wide_bold_font)
+	    wide_font = gui.wide_bold_font;
+	else if (font == gui.ital_font && gui.wide_ital_font)
+	    wide_font = gui.wide_ital_font;
+	else if (font == gui.norm_font && gui.wide_font)
+	    wide_font = gui.wide_font;
+# endif
+
     }
 # ifdef FEAT_XFONTSET
     if (fontset != NOFONTSET)
@@ -2407,7 +2440,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 #  ifdef FEAT_XFONTSET
 		    && fontset == NOFONTSET
 #  endif
-		    && gui.wide_font != NOFONT)
+		    && wide_font != NOFONT)
 		curr_wide = TRUE;
 	    else
 		curr_wide = FALSE;
@@ -2441,7 +2474,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 		if (thislen > 0)
 		{
 		    if (prev_wide)
-			gui_mch_set_font(gui.wide_font);
+			gui_mch_set_font(wide_font);
 		    gui_mch_draw_string(gui.row, scol, s + start, thislen,
 								  draw_flags);
 		    if (prev_wide)

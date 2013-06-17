@@ -311,7 +311,12 @@ typedef struct Gui
 # endif
 #endif
 #ifdef FEAT_MBYTE
-    GuiFont	wide_font;	    /* 'guifontwide' font */
+    GuiFont	wide_font;	    /* Normal 'guifontwide' font */
+# ifndef FEAT_GUI_GTK
+    GuiFont	wide_bold_font;	    /* Bold 'guifontwide' font */
+    GuiFont	wide_ital_font;	    /* Italic 'guifontwide' font */
+    GuiFont	wide_boldital_font; /* Bold-Italic 'guifontwide' font */
+# endif
 #endif
 #ifdef FEAT_XFONTSET
     GuiFontset	fontset;	    /* set of fonts for multi-byte chars */
