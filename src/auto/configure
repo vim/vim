@@ -5133,6 +5133,7 @@ $as_echo_n "checking if compile and link flags for Perl are sane... " >&6; }
       ldflags_save=$LDFLAGS
       CFLAGS="$CFLAGS $perlcppflags"
       LIBS="$LIBS $perllibs"
+      perlldflags=`echo "$perlldflags" | sed -e 's/^ *//g'`
       LDFLAGS="$perlldflags $LDFLAGS"
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -5162,7 +5163,9 @@ rm -f core conftest.err conftest.$ac_objext \
 	  	  PERL_CFLAGS=`echo "$perlcppflags" | sed -e 's/-pipe //' -e 's/-W[^ ]*//'`
 	fi
 	if test "X$perlldflags" != "X"; then
-	  LDFLAGS="$perlldflags $LDFLAGS"
+	  if test "X`echo \"$LDFLAGS\" | grep -F -e \"$perlldflags\"`" = "X"; then
+	    LDFLAGS="$perlldflags $LDFLAGS"
+	  fi
 	fi
 	PERL_LIBS=$perllibs
 	PERL_SRC="auto/if_perl.c if_perlsfio.c"
@@ -6454,7 +6457,9 @@ $as_echo "$rubyhdrdir" >&6; }
 	if test "X$rubyldflags" != "X"; then
 	  	  	  	  rubyldflags=`echo "$rubyldflags" | sed -e 's/-arch\ ppc//' -e 's/-arch\ i386//' -e 's/-arch\ x86_64//'`
 	  if test "X$rubyldflags" != "X"; then
-	    LDFLAGS="$rubyldflags $LDFLAGS"
+	    if test "X`echo \"$LDFLAGS\" | grep -F -e \"$rubyldflags\"`" = "X"; then
+	      LDFLAGS="$rubyldflags $LDFLAGS"
+	    fi
 	  fi
 	fi
 	RUBY_SRC="if_ruby.c"
@@ -12690,7 +12695,7 @@ $as_echo "no" >&6; }
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we need -D_FORTIFY_SOURCE=1" >&5
 $as_echo_n "checking whether we need -D_FORTIFY_SOURCE=1... " >&6; }
   if test "$gccmajor" -gt "3"; then
-    CFLAGS=`echo "$CFLAGS" | sed -e 's/-Wp,-D_FORTIFY_SOURCE=.//g' -e 's/-D_FORTIFY_SOURCE=.//g' -e 's/$/ -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1/'`
+    CFLAGS=`echo "$CFLAGS" | sed -e 's/ *-Wp,-D_FORTIFY_SOURCE=.//g' -e 's/ *-D_FORTIFY_SOURCE=.//g' -e 's/ *-U_FORTIFY_SOURCE//g' -e 's/$/ -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1/'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
   else
@@ -12705,7 +12710,7 @@ $as_echo_n "checking linker --as-needed support... " >&6; }
 LINK_AS_NEEDED=
 # Check if linker supports --as-needed and --no-as-needed options
 if $CC -Wl,--help 2>/dev/null | grep as-needed > /dev/null; then
-  LDFLAGS="$LDFLAGS -Wl,--as-needed"
+  LDFLAGS=`echo "$LDFLAGS" | sed -e 's/ *-Wl,--as-needed//g' | sed -e 's/$/ -Wl,--as-needed/'`
   LINK_AS_NEEDED=yes
 fi
 if test "$LINK_AS_NEEDED" = yes; then

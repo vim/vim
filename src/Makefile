@@ -1655,6 +1655,11 @@ tools: $(TOOLS)
 # sure configure is run when it's needed.
 #
 config auto/config.mk: auto/configure config.mk.in config.h.in
+	if test -f auto/config.cache && \
+	    grep '^ac_cv_env_CFLAGS_value=' auto/config.cache > /dev/null && \
+	    ! grep -x -F 'ac_cv_env_CFLAGS_value=$(CFLAGS)' auto/config.cache > /dev/null; then \
+		rm auto/config.cache; \
+	fi
 	GUI_INC_LOC="$(GUI_INC_LOC)" GUI_LIB_LOC="$(GUI_LIB_LOC)" \
 		CC="$(CC)" CPPFLAGS="$(CPPFLAGS)" CFLAGS="$(CFLAGS)" \
 		LDFLAGS="$(LDFLAGS)" $(CONF_SHELL) srcdir="$(srcdir)" \
