@@ -23,6 +23,7 @@ ggdd
 :w! Xtest
 :r !cksum Xtest
 :s/\s/ /g
+:set fileformat&
 :.w! test.out
 :qa!
 ENDTEST

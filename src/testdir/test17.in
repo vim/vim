@@ -9,6 +9,13 @@ STARTTEST
 :else
 : set isfname=@,48-57,/,.,-,_,+,,,$,:,~,{,}
 :endif
+:function! DeleteDirectory(dir)
+: if has("win16") || has("win32") || has("win64") || has("dos16") || has("dos32")
+:  exec "silent !rmdir /Q /S " . a:dir
+: else
+:  exec "silent !rm -rf " . a:dir
+: endif
+:endfun
 :if has("unix")
 :let $CDIR = "."
 /CDIR
@@ -20,6 +27,11 @@ STARTTEST
 :endif
 /TDIR
 :endif
+:" Dummy writing for making that sure gf doesn't fail even if the current
+:" file is modified. It can be occurred when executing the following command
+:" directly on Windows without fixing the 'fileformat':
+:"  > nmake -f Make_dos.mak test17.out
+:w! test.out
 gf
 :w! test.out
 :brewind
@@ -31,10 +43,11 @@ ENDTEST
 STARTTEST
 :" check for 'include' without \zs or \ze
 :lang C
-:!rm -f ./Xbase.a
-:!rm -rf ./Xdir1
-:!mkdir -p Xdir1/dir2
-:e Xdir1/dir2/foo.a
+:call delete("./Xbase.a")
+:call DeleteDirectory("Xdir1")
+:!mkdir Xdir1
+:!mkdir "Xdir1/dir2"
+:e! Xdir1/dir2/foo.a
 i#include   "bar.a"
 :w
 :e Xdir1/dir2/bar.a
@@ -55,15 +68,16 @@ ENDTEST
 
 STARTTEST
 :" check for 'include' with \zs and \ze
-:!rm -f ./Xbase.b
-:!rm -rf ./Xdir1
-:!mkdir -p Xdir1/dir2
+:call delete("./Xbase.b")
+:call DeleteDirectory("Xdir1")
+:!mkdir Xdir1
+:!mkdir "Xdir1/dir2"
 :let &include='^\s*%inc\s*/\zs[^/]\+\ze'
 :function! DotsToSlashes()
 :  return substitute(v:fname, '\.', '/', 'g') . '.b'
 :endfunction
 :let &includeexpr='DotsToSlashes()'
-:e Xdir1/dir2/foo.b
+:e! Xdir1/dir2/foo.b
 i%inc   /bar/
 :w
 :e Xdir1/dir2/bar.b
@@ -84,9 +98,10 @@ ENDTEST
 
 STARTTEST
 :" check for 'include' with \zs and no \ze
-:!rm -f ./Xbase.c
-:!rm -rf ./Xdir1
-:!mkdir -p Xdir1/dir2
+:call delete("./Xbase.c")
+:call DeleteDirectory("Xdir1")
+:!mkdir Xdir1
+:!mkdir "Xdir1/dir2"
 :let &include='^\s*%inc\s*\%([[:upper:]][^[:space:]]*\s\+\)\?\zs\S\+\ze'
 :function! StripNewlineChar()
 :  if v:fname =~ '\n$'
@@ -95,7 +110,7 @@ STARTTEST
 :  return v:fname
 :endfunction
 :let &includeexpr='StripNewlineChar()'
-:e Xdir1/dir2/foo.c
+:e! Xdir1/dir2/foo.c
 i%inc   bar.c
 :w
 :e Xdir1/dir2/bar.c
@@ -115,6 +130,10 @@ i%inc    FALSE.c foo.c
 :checkpath!
 :redir END
 :brewind
+:" replace "\" to "/" for Windows
+:e test.out
+:%s#\\#/#g
+:w
 :q
 ENDTEST
 

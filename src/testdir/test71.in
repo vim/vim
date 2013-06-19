@@ -8,7 +8,7 @@ STARTTEST
 :let cm0_bytes = getline('.', '.')
 :/^start of cm=blowfish bytes/+1
 :let cm1_bytes = getline('.', '.')
-:bwipe
+:bwipe!
 :call append(0, text_lines)
 :$d
 :X

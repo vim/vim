@@ -33,7 +33,7 @@ endfun
 	" This could change for CygWin to //cygdrive/c
 	let dir1='c:/x.x.y'
 	if filereadable(dir1) || isdirectory(dir1)
-		call confirm( "'".dir1."' exists, cannot run test" )
+		echo "FATAL: '".dir1."' exists, cannot run test"
 		return
 	endif
 	let file1=dir1.'/zz.y.txt'
@@ -41,13 +41,18 @@ endfun
 	let dir2=dir1.'/VimIsTheGreatestSinceSlicedBread'
 	let file2=dir2.'/z.txt'
 	let nofile2=dir2.'/zz.txt'
-	let resdir1='c:/XX2235~1.Y'
+	call MakeDir( dir1 )
+	let resdir1 = substitute(fnamemodify(dir1, ':p:8'), '\\$', '', '')
+	if resdir1 !~ '\V\^c:/XX\x\x\x\x~1.Y\$'
+		echo "FATAL: unexpected short name: " . resdir1
+		echo "INFO: please report your OS to vim-dev"
+		return
+	endif
 	let resfile1=resdir1.'/ZZY~1.TXT'
 	let resnofile1=resdir1.'/z.y.txt'
 	let resdir2=resdir1.'/VIMIST~1'
 	let resfile2=resdir2.'/z.txt'
 	let resnofile2=resdir2.'/zz.txt'
-	call MakeDir( dir1 )
 	call MakeDir( dir2 )
 	call MakeFile( file1 )
 	call MakeFile( file2 )
