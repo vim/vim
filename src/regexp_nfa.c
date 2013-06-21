@@ -2611,7 +2611,7 @@ nfa_max_width(startstate, depth)
     if (depth > 4)
 	return -1;
 
-    for (;;)
+    while (state != NULL)
     {
 	switch (state->c)
 	{
@@ -2810,7 +2810,7 @@ nfa_max_width(startstate, depth)
 	state = state->out;
     }
 
-    /* unrecognized */
+    /* unrecognized, "cannot happen" */
     return -1;
 }
 

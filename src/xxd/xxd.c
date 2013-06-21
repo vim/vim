@@ -722,7 +722,7 @@ main(argc, argv)
       while ((length < 0 || p < length) && (c = getc(fp)) != EOF)
 	{
 	  if (fprintf(fpo, (hexx == hexxa) ? "%s0x%02x" : "%s0X%02X",
-		(p % cols) ? ", " : ",\n  "+2*!p,  c) < 0)
+		(p % cols) ? ", " : &",\n  "[2*!p],  c) < 0)
 	    die(3);
 	  p++;
 	}
@@ -731,7 +731,7 @@ main(argc, argv)
 
       if (p && fputs("\n", fpo) == EOF)
 	die(3);
-      if (fputs("};\n" + 3 * (fp == stdin), fpo) == EOF)
+      if (fputs(&"};\n"[3 * (fp == stdin)], fpo) == EOF)
 	die(3);
 
       if (fp != stdin)
