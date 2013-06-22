@@ -3653,7 +3653,7 @@ find_replace_keypress(w, frdp, event)
     static void
 set_label(w, label)
     Widget w;
-    char_u *label;
+    char *label;
 {
     XmString	str;
     char_u	*p, *next;
@@ -3662,7 +3662,7 @@ set_label(w, label)
     if (!w)
 	return;
 
-    p = vim_strsave(label);
+    p = vim_strsave((char_u *)label);
     if (p == NULL)
 	return;
     for (next = p; *next; ++next)
