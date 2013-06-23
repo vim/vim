@@ -1169,7 +1169,7 @@ BufferSubscript(PyObject *self, PyObject* idx)
     }
     else
     {
-	PyErr_SetString(PyExc_TypeError, _("index must be int or slice"));
+	PyErr_SET_STRING(PyExc_TypeError, "index must be int or slice");
 	return NULL;
     }
 }
@@ -1203,7 +1203,7 @@ BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val)
     }
     else
     {
-	PyErr_SetString(PyExc_TypeError, _("index must be int or slice"));
+	PyErr_SET_STRING(PyExc_TypeError, "index must be int or slice");
 	return -1;
     }
 }
@@ -1285,7 +1285,7 @@ RangeSubscript(PyObject *self, PyObject* idx)
     }
     else
     {
-	PyErr_SetString(PyExc_TypeError, _("index must be int or slice"));
+	PyErr_SET_STRING(PyExc_TypeError, "index must be int or slice");
 	return NULL;
     }
 }
@@ -1312,7 +1312,7 @@ RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val)
     }
     else
     {
-	PyErr_SetString(PyExc_TypeError, _("index must be int or slice"));
+	PyErr_SET_STRING(PyExc_TypeError, "index must be int or slice");
 	return -1;
     }
 }
@@ -1491,7 +1491,7 @@ ListSubscript(PyObject *self, PyObject* idx)
     }
     else
     {
-	PyErr_SetString(PyExc_TypeError, _("index must be int or slice"));
+	PyErr_SET_STRING(PyExc_TypeError, "index must be int or slice");
 	return NULL;
     }
 }
@@ -1515,7 +1515,7 @@ ListAsSubscript(PyObject *self, PyObject *idx, PyObject *obj)
     }
     else
     {
-	PyErr_SetString(PyExc_TypeError, _("index must be int or slice"));
+	PyErr_SET_STRING(PyExc_TypeError, "index must be int or slice");
 	return -1;
     }
 }
