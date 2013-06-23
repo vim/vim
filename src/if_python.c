@@ -160,6 +160,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyErr_BadArgument dll_PyErr_BadArgument
 # define PyErr_NewException dll_PyErr_NewException
 # define PyErr_Clear dll_PyErr_Clear
+# define PyErr_Format dll_PyErr_Format
 # define PyErr_PrintEx dll_PyErr_PrintEx
 # define PyErr_NoMemory dll_PyErr_NoMemory
 # define PyErr_Occurred dll_PyErr_Occurred
@@ -301,6 +302,7 @@ static int(*dll_PyDict_SetItemString)(PyObject *dp, char *key, PyObject *item);
 static int(*dll_PyErr_BadArgument)(void);
 static PyObject *(*dll_PyErr_NewException)(char *, PyObject *, PyObject *);
 static void(*dll_PyErr_Clear)(void);
+static PyObject*(*dll_PyErr_Format)(PyObject *, const char *, ...);
 static void(*dll_PyErr_PrintEx)(int);
 static PyObject*(*dll_PyErr_NoMemory)(void);
 static PyObject*(*dll_PyErr_Occurred)(void);
@@ -473,6 +475,7 @@ static struct
     {"PyErr_BadArgument", (PYTHON_PROC*)&dll_PyErr_BadArgument},
     {"PyErr_NewException", (PYTHON_PROC*)&dll_PyErr_NewException},
     {"PyErr_Clear", (PYTHON_PROC*)&dll_PyErr_Clear},
+    {"PyErr_Format", (PYTHON_PROC*)&dll_PyErr_Format},
     {"PyErr_PrintEx", (PYTHON_PROC*)&dll_PyErr_PrintEx},
     {"PyErr_NoMemory", (PYTHON_PROC*)&dll_PyErr_NoMemory},
     {"PyErr_Occurred", (PYTHON_PROC*)&dll_PyErr_Occurred},

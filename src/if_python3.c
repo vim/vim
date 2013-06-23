@@ -122,6 +122,7 @@
 # define PyDict_SetItemString py3_PyDict_SetItemString
 # define PyErr_BadArgument py3_PyErr_BadArgument
 # define PyErr_Clear py3_PyErr_Clear
+# define PyErr_Format py3_PyErr_Format
 # define PyErr_PrintEx py3_PyErr_PrintEx
 # define PyErr_NoMemory py3_PyErr_NoMemory
 # define PyErr_Occurred py3_PyErr_Occurred
@@ -337,6 +338,7 @@ static int (*py3_PyMem_Free)(void *);
 static void* (*py3_PyMem_Malloc)(size_t);
 static int (*py3_Py_IsInitialized)(void);
 static void (*py3_PyErr_Clear)(void);
+static PyObject* (*py3_PyErr_Format)(PyObject *, const char *, ...);
 static void (*py3_PyErr_PrintEx)(int);
 static PyObject*(*py3__PyObject_Init)(PyObject *, PyTypeObject *);
 static iternextfunc py3__PyObject_NextNotImplemented;
@@ -485,6 +487,7 @@ static struct
     {"_Py_FalseStruct", (PYTHON_PROC*)&py3__Py_FalseStruct},
     {"_Py_TrueStruct", (PYTHON_PROC*)&py3__Py_TrueStruct},
     {"PyErr_Clear", (PYTHON_PROC*)&py3_PyErr_Clear},
+    {"PyErr_Format", (PYTHON_PROC*)&py3_PyErr_Format},
     {"PyErr_PrintEx", (PYTHON_PROC*)&py3_PyErr_PrintEx},
     {"PyObject_Init", (PYTHON_PROC*)&py3__PyObject_Init},
     {"PyModule_AddObject", (PYTHON_PROC*)&py3_PyModule_AddObject},
@@ -1169,7 +1172,7 @@ BufferSubscript(PyObject *self, PyObject* idx)
     }
     else
     {
-	PyErr_SET_STRING(PyExc_TypeError, "index must be int or slice");
+	RAISE_INVALID_INDEX_TYPE(idx);
 	return NULL;
     }
 }
@@ -1203,7 +1206,7 @@ BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val)
     }
     else
     {
-	PyErr_SET_STRING(PyExc_TypeError, "index must be int or slice");
+	RAISE_INVALID_INDEX_TYPE(idx);
 	return -1;
     }
 }
@@ -1285,7 +1288,7 @@ RangeSubscript(PyObject *self, PyObject* idx)
     }
     else
     {
-	PyErr_SET_STRING(PyExc_TypeError, "index must be int or slice");
+	RAISE_INVALID_INDEX_TYPE(idx);
 	return NULL;
     }
 }
@@ -1312,7 +1315,7 @@ RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val)
     }
     else
     {
-	PyErr_SET_STRING(PyExc_TypeError, "index must be int or slice");
+	RAISE_INVALID_INDEX_TYPE(idx);
 	return -1;
     }
 }
@@ -1491,7 +1494,7 @@ ListSubscript(PyObject *self, PyObject* idx)
     }
     else
     {
-	PyErr_SET_STRING(PyExc_TypeError, "index must be int or slice");
+	RAISE_INVALID_INDEX_TYPE(idx);
 	return NULL;
     }
 }
@@ -1515,7 +1518,7 @@ ListAsSubscript(PyObject *self, PyObject *idx, PyObject *obj)
     }
     else
     {
-	PyErr_SET_STRING(PyExc_TypeError, "index must be int or slice");
+	RAISE_INVALID_INDEX_TYPE(idx);
 	return -1;
     }
 }
