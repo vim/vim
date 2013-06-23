@@ -1199,6 +1199,14 @@ FinderFindModule(PyObject *self, PyObject *args)
 
     if (!module)
     {
+	if (PyErr_Occurred())
+	{
+	    if (PyErr_ExceptionMatches(PyExc_ImportError))
+		PyErr_Clear();
+	    else
+		return NULL;
+	}
+
 	Py_INCREF(Py_None);
 	return Py_None;
     }

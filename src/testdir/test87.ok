@@ -486,7 +486,7 @@ vim.foreach_rtp(int, 2):(<class 'TypeError'>, TypeError('foreach_rtp() takes exa
 > import
 import xxx_no_such_module_xxx:(<class 'ImportError'>, ImportError('No module named xxx_no_such_module_xxx',))
 import failing_import:(<class 'ImportError'>, ImportError('No module named failing_import',))
-import failing:(<class 'ImportError'>, ImportError('No module named failing',))
+import failing:(<class 'NotImplementedError'>, NotImplementedError())
 > Dictionary
 >> DictionaryConstructor
 vim.Dictionary("abcI"):(<class 'ValueError'>, ValueError('expected sequence element of size 2, but got sequence of size 1',))
