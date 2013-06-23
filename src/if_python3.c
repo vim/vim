@@ -1623,7 +1623,7 @@ Py3Init_vim(void)
     if ((vim_module = PyModule_Create(&vimmodule)) == NULL)
 	return NULL;
 
-    if (populate_module(vim_module, PyModule_AddObject, PyObject_GetAttrString))
+    if (populate_module(vim_module))
 	return NULL;
 
     if (init_sys_path())

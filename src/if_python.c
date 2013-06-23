@@ -1404,8 +1404,7 @@ PythonMod_Init(void)
     vim_module = Py_InitModule4("vim", VimMethods, (char *)NULL,
 				(PyObject *)NULL, PYTHON_API_VERSION);
 
-    if (populate_module(vim_module, PyModule_AddObject,
-			   PyObject_GetAttrString))
+    if (populate_module(vim_module))
 	return -1;
 
     if (init_sys_path())

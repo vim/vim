@@ -216,6 +216,7 @@ EOF
 :let messages=[]
 :delfunction DictNew
 py <<EOF
+import sys
 d=vim.bindeval('{}')
 m=vim.bindeval('messages')
 def em(expr, g=globals(), l=locals()):
@@ -297,7 +298,7 @@ EOF
 :" threading
 :let l = [0]
 :py l=vim.bindeval('l')
-:py <<EOF
+py <<EOF
 import threading
 import time
 
@@ -327,7 +328,7 @@ EOF
 :" settrace
 :let l = []
 :py l=vim.bindeval('l')
-:py <<EOF
+py <<EOF
 import sys
 
 def traceit(frame, event, arg):
@@ -342,9 +343,9 @@ def trace_main():
 EOF
 :py sys.settrace(traceit)
 :py trace_main()
+:py sys.settrace(None)
 :py del traceit
 :py del trace_main
-:py sys.settrace(None)
 :$put =string(l)
 :"
 :" Slice
@@ -880,10 +881,16 @@ def ee(expr, g=globals(), l=locals()):
         if expr.find('None') > -1:
             msg = msg.replace('TypeError:(\'iteration over non-sequence\',)',
                               'TypeError:("\'NoneType\' object is not iterable",)')
+        if expr.find('FailingNumber') > -1:
+            msg = msg.replace(', not \'FailingNumber\'', '').replace('"', '\'')
+            msg = msg.replace('TypeError:(\'iteration over non-sequence\',)',
+                              'TypeError:("\'FailingNumber\' object is not iterable",)')
+        if msg.find('(\'\'') > -1 or msg.find('(\'can\'t') > -1:
+            msg = msg.replace('(\'', '("').replace('\',)', '",)')
         if expr == 'fd(self=[])':
             # HACK: PyMapping_Check changed meaning
             msg = msg.replace('AttributeError:(\'keys\',)',
-                              'TypeError:(\'unable to convert object to vim dictionary\',)')
+                              'TypeError:(\'unable to convert list to vim dictionary\',)')
         cb.append(expr + ':' + msg)
     else:
         cb.append(expr + ':NOT FAILED')
@@ -942,6 +949,7 @@ def convertfrompyobject_test(expr, recurse=True):
         '{u"": 1}',             # Same, but with unicode object
         'FailingMapping()',     #
         'FailingMappingKey()',  #
+        'FailingNumber()',      #
     ))
 
 def convertfrompymapping_test(expr):
@@ -956,66 +964,104 @@ def iter_test(expr):
         'FailingIterNext()',
     ))
 
+def number_test(expr, natural=False, unsigned=False):
+    if natural:
+        unsigned = True
+    return subexpr_test(expr, 'NumberToLong', (
+        '[]',
+        'None',
+    ) + (unsigned and ('-1',) or ())
+    + (natural and ('0',) or ()))
+
 class FailingTrue(object):
     def __nonzero__(self):
-        raise NotImplementedError
+        raise NotImplementedError('bool')
 
 class FailingIter(object):
     def __iter__(self):
-        raise NotImplementedError
+        raise NotImplementedError('iter')
 
 class FailingIterNext(object):
     def __iter__(self):
         return self
 
     def next(self):
-        raise NotImplementedError
+        raise NotImplementedError('next')
 
 class FailingMappingKey(object):
     def __getitem__(self, item):
-        raise NotImplementedError
+        raise NotImplementedError('getitem:mappingkey')
 
     def keys(self):
         return list("abcH")
 
 class FailingMapping(object):
     def __getitem__(self):
-        raise NotImplementedError
+        raise NotImplementedError('getitem:mapping')
 
     def keys(self):
-        raise NotImplementedError
+        raise NotImplementedError('keys')
 
 class FailingList(list):
     def __getitem__(self, idx):
         if i == 2:
-            raise NotImplementedError
+            raise NotImplementedError('getitem:list')
         else:
             return super(FailingList, self).__getitem__(idx)
+
+class NoArgsCall(object):
+    def __call__(self):
+        pass
+
+class FailingCall(object):
+    def __call__(self, path):
+        raise NotImplementedError('call')
+
+class FailingNumber(object):
+    def __int__(self):
+        raise NotImplementedError('int')
 
 cb.append("> Output")
 cb.append(">> OutputSetattr")
 ee('del sys.stdout.softspace')
-ee('sys.stdout.softspace = []')
+number_test('sys.stdout.softspace = %s', unsigned=True)
+number_test('sys.stderr.softspace = %s', unsigned=True)
 ee('sys.stdout.attr = None')
 cb.append(">> OutputWrite")
 ee('sys.stdout.write(None)')
 cb.append(">> OutputWriteLines")
 ee('sys.stdout.writelines(None)')
 ee('sys.stdout.writelines([1])')
-#iter_test('sys.stdout.writelines(%s)')
+iter_test('sys.stdout.writelines(%s)')
 cb.append("> VimCommand")
-ee('vim.command(1)')
+stringtochars_test('vim.command(%s)')
+ee('vim.command("", 2)')
 #! Not checked: vim->python exceptions translating: checked later
 cb.append("> VimToPython")
 #! Not checked: everything: needs errors in internal python functions
 cb.append("> VimEval")
-ee('vim.eval(1)')
+stringtochars_test('vim.eval(%s)')
+ee('vim.eval("", FailingTrue())')
 #! Not checked: everything: needs errors in internal python functions
 cb.append("> VimEvalPy")
-ee('vim.bindeval(1)')
+stringtochars_test('vim.bindeval(%s)')
+ee('vim.eval("", 2)')
 #! Not checked: vim->python exceptions translating: checked later
 cb.append("> VimStrwidth")
-ee('vim.strwidth(1)')
+stringtochars_test('vim.strwidth(%s)')
+cb.append("> VimForeachRTP")
+ee('vim.foreach_rtp(None)')
+ee('vim.foreach_rtp(NoArgsCall())')
+ee('vim.foreach_rtp(FailingCall())')
+ee('vim.foreach_rtp(int, 2)')
+cb.append('> import')
+old_rtp = vim.options['rtp']
+vim.options['rtp'] = os.getcwd().replace(',', '\\,').replace('\\', '\\\\')
+ee('import xxx_no_such_module_xxx')
+ee('import failing_import')
+ee('import failing')
+vim.options['rtp'] = old_rtp
+del old_rtp
 cb.append("> Dictionary")
 cb.append(">> DictionaryConstructor")
 ee('vim.Dictionary("abcI")')
@@ -1043,7 +1089,7 @@ cb.append(">>> kwargs")
 cb.append(">>> iter")
 ee('d.update(FailingMapping())')
 ee('d.update([FailingIterNext()])')
-#iter_test('d.update(%s)')
+iter_test('d.update(%s)')
 convertfrompyobject_test('d.update(%s)')
 stringtochars_test('d.update(((%s, 0),))')
 convertfrompyobject_test('d.update((("a", %s),))')
@@ -1055,7 +1101,7 @@ cb.append("> List")
 cb.append(">> ListConstructor")
 ee('vim.List(1, 2)')
 ee('vim.List(a=1)')
-#iter_test('vim.List(%s)')
+iter_test('vim.List(%s)')
 convertfrompyobject_test('vim.List([%s])')
 cb.append(">> ListItem")
 ee('l[1000]')
@@ -1064,10 +1110,10 @@ ee('ll[1] = 2')
 ee('l[1000] = 3')
 cb.append(">> ListAssSlice")
 ee('ll[1:100] = "abcJ"')
-#iter_test('l[:] = %s')
+iter_test('l[:] = %s')
 convertfrompyobject_test('l[:] = [%s]')
 cb.append(">> ListConcatInPlace")
-#iter_test('l.extend(%s)')
+iter_test('l.extend(%s)')
 convertfrompyobject_test('l.extend([%s])')
 cb.append(">> ListSetattr")
 ee('del l.locked')
@@ -1094,14 +1140,15 @@ cb.append(">> WindowSetattr")
 ee('vim.current.window.buffer = 0')
 ee('vim.current.window.cursor = (100000000, 100000000)')
 ee('vim.current.window.cursor = True')
-ee('vim.current.window.height = "abcK"')
-ee('vim.current.window.width  = "abcL"')
+number_test('vim.current.window.height = %s', unsigned=True)
+number_test('vim.current.window.width = %s', unsigned=True)
 ee('vim.current.window.xxxxxx = True')
 cb.append("> WinList")
 cb.append(">> WinListItem")
 ee('vim.windows[1000]')
 cb.append("> Buffer")
 cb.append(">> StringToLine (indirect)")
+ee('vim.current.buffer[0] = u"\\na"')
 ee('vim.current.buffer[0] = "\\na"')
 cb.append(">> SetBufferLine (indirect)")
 ee('vim.current.buffer[0] = True')
@@ -1129,8 +1176,8 @@ cb.append(">> BufferRange")
 ee('vim.current.buffer.range(1, 2, 3)')
 cb.append("> BufMap")
 cb.append(">> BufMapItem")
-ee('vim.buffers[None]')
 ee('vim.buffers[100000000]')
+number_test('vim.buffers[%s]', natural=True)
 cb.append("> Current")
 cb.append(">> CurrentGetattr")
 ee('vim.current.xxx')
@@ -1154,12 +1201,16 @@ del Mapping
 del convertfrompyobject_test
 del convertfrompymapping_test
 del iter_test
+del number_test
 del FailingTrue
 del FailingIter
 del FailingIterNext
 del FailingMapping
 del FailingMappingKey
 del FailingList
+del NoArgsCall
+del FailingCall
+del FailingNumber
 EOF
 :delfunction F
 :"
@@ -1168,6 +1219,16 @@ py << EOF
 sys.path.insert(0, os.path.join(os.getcwd(), 'python_before'))
 sys.path.append(os.path.join(os.getcwd(), 'python_after'))
 vim.options['rtp'] = os.getcwd().replace(',', '\\,').replace('\\', '\\\\')
+l = []
+def callback(path):
+    l.append(path[-len('/testdir'):])
+vim.foreach_rtp(callback)
+cb.append(repr(l))
+del l
+def callback(path):
+    return path[-len('/testdir'):]
+cb.append(repr(vim.foreach_rtp(callback)))
+del callback
 from module import dir as d
 from modulex import ddir
 cb.append(d + ',' + ddir)
@@ -1175,10 +1236,19 @@ import before
 cb.append(before.dir)
 import after
 cb.append(after.dir)
+import topmodule as tm
+import topmodule.submodule as tms
+import topmodule.submodule.subsubmodule.subsubsubmodule as tmsss
+cb.append(tm.__file__.replace('.pyc', '.py')[-len('modulex/topmodule/__init__.py'):])
+cb.append(tms.__file__.replace('.pyc', '.py')[-len('modulex/topmodule/submodule/__init__.py'):])
+cb.append(tmsss.__file__.replace('.pyc', '.py')[-len('modulex/topmodule/submodule/subsubmodule/subsubsubmodule.py'):])
 del before
 del after
 del d
 del ddir
+del tm
+del tms
+del tmsss
 EOF
 :"
 :" Test exceptions
@@ -1232,6 +1302,7 @@ EOF
 :call garbagecollect(1)
 :"
 :/^start:/,$wq! test.out
+:" vim: et ts=4 isk-=\:
 :call getchar()
 ENDTEST
 
