@@ -544,20 +544,30 @@ VimTryStart(void)
 VimTryEnd(void)
 {
     --trylevel;
+    /* Without this it stops processing all subsequent VimL commands and 
+     * generates strange error messages if I e.g. try calling Test() in a cycle */
+    did_emsg = FALSE;
+    /* Keyboard interrupt should be preferred over anything else */
     if (got_int)
     {
+	did_throw = got_int = FALSE;
 	PyErr_SetNone(PyExc_KeyboardInterrupt);
-	return 1;
+	return -1;
     }
     else if (!did_throw)
-	return 0;
+	return (PyErr_Occurred() ? -1 : 0);
+    /* Python exception is preferred over vim one; unlikely to occur though */
     else if (PyErr_Occurred())
-	return 1;
+    {
+	did_throw = FALSE;
+	return -1;
+    }
+    /* Finally transform VimL exception to python one */
     else
     {
 	PyErr_SetVim((char *) current_exception->value);
 	discard_current_exception();
-	return 1;
+	return -1;
     }
 }
 
@@ -2649,7 +2659,14 @@ FunctionCall(FunctionObject *self, PyObject *argsObject, PyObject *kwargs)
     static PyObject *
 FunctionRepr(FunctionObject *self)
 {
-    return PyString_FromFormat("<vim.Function '%s'>", self->name);
+#ifdef Py_TRACE_REFS
+    /* For unknown reason self->name may be NULL after calling 
+     * Finalize */
+    return PyString_FromFormat("<vim.Function '%s'>",
+	    (self->name == NULL ? "<NULL>" : (char *) self->name));
+#else
+    return PyString_FromFormat("<vim.Function '%s'>", (char *) self->name);
+#endif
 }
 
 static struct PyMethodDef FunctionMethods[] = {
@@ -3534,6 +3551,7 @@ StringToLine(PyObject *obj)
 	else
 	{
 	    PyErr_SET_VIM("string cannot contain newlines");
+	    Py_XDECREF(bytes);
 	    return NULL;
 	}
     }
@@ -3545,6 +3563,7 @@ StringToLine(PyObject *obj)
     if (save == NULL)
     {
 	PyErr_NoMemory();
+	Py_XDECREF(bytes);
 	return NULL;
     }
 
@@ -4551,6 +4570,7 @@ BufferMark(BufferObject *self, PyObject *pmarkObject)
     {
 	PyErr_SET_STRING(PyExc_ValueError,
 		"mark name must be a single character");
+	Py_XDECREF(todecref);
 	return NULL;
     }
 
@@ -5298,6 +5318,9 @@ convert_dl(PyObject *obj, typval_T *tv,
 	    tv->v_type = VAR_UNKNOWN;
 	    return -1;
 	}
+
+	Py_DECREF(capsule);
+
 	if (py_to_tv(obj, tv, lookup_dict) == -1)
 	{
 	    tv->v_type = VAR_UNKNOWN;
@@ -5378,13 +5401,13 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	tv->vval.v_dict = (((DictionaryObject *)(obj))->dict);
 	++tv->vval.v_dict->dv_refcount;
     }
-    else if (obj->ob_type == &ListType)
+    else if (PyType_IsSubtype(obj->ob_type, &ListType))
     {
 	tv->v_type = VAR_LIST;
 	tv->vval.v_list = (((ListObject *)(obj))->list);
 	++tv->vval.v_list->lv_refcount;
     }
-    else if (obj->ob_type == &FunctionType)
+    else if (PyType_IsSubtype(obj->ob_type, &FunctionType))
     {
 	if (set_string_copy(((FunctionObject *) (obj))->name, tv) == -1)
 	    return -1;

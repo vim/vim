@@ -11,8 +11,8 @@ STARTTEST
 :set noswapfile
 :if !has('python') | e! test.ok | wq! test.out | endif
 :lang C
-:py import vim
 :fun Test()
+:py import vim
 :let l = []
 :py l=vim.bindeval('l')
 :py f=vim.bindeval('function("strlen")')
@@ -58,6 +58,9 @@ EOF
 :  $put =string(key) . ' : ' . string(Val)
 :  unlet key Val
 :endfor
+:py del dk
+:py del di
+:py del dv
 :"
 :" removing items with del
 :py del l[2]
@@ -176,12 +179,12 @@ EOF
 :unlockvar! l
 :"
 :" Function calls
-:function New(...)
-:return ['NewStart']+a:000+['NewEnd']
-:endfunction
-:function DictNew(...) dict
-:return ['DictNewStart']+a:000+['DictNewEnd', self]
-:endfunction
+:fun New(...)
+:   return ['NewStart']+a:000+['NewEnd']
+:endfun
+:fun DictNew(...) dict
+:   return ['DictNewStart']+a:000+['DictNewEnd', self]
+:endfun
 :let l=[function('New'), function('DictNew')]
 :py l=vim.bindeval('l')
 :py l.extend(list(l[0](1, 2, 3)))
@@ -211,6 +214,7 @@ EOF
 :   $put ='[0.0, 0.0]'
 :endif
 :let messages=[]
+:delfunction DictNew
 py <<EOF
 d=vim.bindeval('{}')
 m=vim.bindeval('messages')
@@ -220,15 +224,17 @@ def em(expr, g=globals(), l=locals()):
     except:
         m.extend([sys.exc_type.__name__])
 
-em('d["abc"]')
-em('d["abc"]="\\0"')
-em('d["abc"]=vim')
+em('d["abc1"]')
+em('d["abc1"]="\\0"')
+em('d["abc1"]=vim')
 em('d[""]=1')
 em('d["a\\0b"]=1')
 em('d[u"a\\0b"]=1')
 
-em('d.pop("abc")')
+em('d.pop("abc1")')
 em('d.popitem()')
+del em
+del m
 EOF
 :$put =messages
 :unlet messages
@@ -240,8 +246,8 @@ EOF
 :    let toput=s.' : '.join(map(['locked', 'scope'], 'v:val.":".pyeval(name.".".v:val)'), ';')
 :    $put =toput
 :endfor
-:silent! let d.abc=1
-:silent! let dl.abc=1
+:silent! let d.abc2=1
+:silent! let dl.abc3=1
 :py d.locked=True
 :py dl.locked=False
 :silent! let d.def=1
@@ -307,12 +313,15 @@ class T(threading.Thread):
             time.sleep(0.1)
 
 t = T()
+del T
 t.start()
 EOF
 :sleep 1
 :py t.running = False
 :py t.join()
 :py l[0] = t.t > 8  # check if the background thread is working
+:py del time
+:py del threading
 :$put =string(l)
 :"
 :" settrace
@@ -333,6 +342,8 @@ def trace_main():
 EOF
 :py sys.settrace(traceit)
 :py trace_main()
+:py del traceit
+:py del trace_main
 :py sys.settrace(None)
 :$put =string(l)
 :"
@@ -363,7 +374,7 @@ EOF
 :"
 :" Vars
 :let g:foo = 'bac'
-:let w:abc = 'def'
+:let w:abc3 = 'def'
 :let b:baz = 'bar'
 :let t:bar = 'jkl'
 :try
@@ -372,7 +383,7 @@ EOF
 :  put =pyeval('vim.vvars[''exception'']')
 :endtry
 :put =pyeval('vim.vars[''foo'']')
-:put =pyeval('vim.current.window.vars[''abc'']')
+:put =pyeval('vim.current.window.vars[''abc3'']')
 :put =pyeval('vim.current.buffer.vars[''baz'']')
 :put =pyeval('vim.current.tabpage.vars[''bar'']')
 :"
@@ -420,16 +431,16 @@ def ev(s, g=globals(), l=locals()):
         vim.command('let exc=' + repr(sys.exc_type.__name__))
         return 0
 EOF
-:function E(s)
+:fun E(s)
 :   python e(vim.eval('a:s'))
-:endfunction
-:function Ev(s)
+:endfun
+:fun Ev(s)
 :   let r=pyeval('ev(vim.eval("a:s"))')
 :   if exists('exc')
 :       throw exc
 :   endif
 :   return r
-:endfunction
+:endfun
 :py gopts1=vim.options
 :py wopts1=vim.windows[2].options
 :py wopts2=vim.windows[0].options
@@ -444,7 +455,7 @@ EOF
 :let lst+=[['operatorfunc',   'A',   'B',   'C',   2,      0,    1,      0    ]]
 :let lst+=[['number',         0,     1,     1,     0,      1,    0,      1    ]]
 :let lst+=[['numberwidth',    2,     3,     5,     -100,   0,    0,      1    ]]
-:let lst+=[['colorcolumn',    '+1',  '+2',  '+3',  'abc',  0,    0,      1    ]]
+:let lst+=[['colorcolumn',    '+1',  '+2',  '+3',  'abc4',  0,    0,      1    ]]
 :let lst+=[['statusline',     '1',   '2',   '4',   0,      0,    1,      1    ]]
 :let lst+=[['autoindent',     0,     1,     1,     2,      1,    0,      2    ]]
 :let lst+=[['shiftwidth',     0,     2,     1,     3,      0,    0,      2    ]]
@@ -494,10 +505,27 @@ EOF
 :   endfor
 :   call RecVars(oname)
 :endfor
+:delfunction RecVars
+:delfunction E
+:delfunction Ev
+:py del ev
+:py del e
 :only
 :for buf in g:bufs[1:]
 :   execute 'bwipeout!' buf
 :endfor
+:py del gopts1
+:py del wopts1
+:py del wopts2
+:py del wopts3
+:py del bopts1
+:py del bopts2
+:py del bopts3
+:py del oval1
+:py del oval2
+:py del oval3
+:py del oname
+:py del invval
 :"
 :" Test buffer object
 :vnew
@@ -517,7 +545,7 @@ cb = vim.current.buffer
 # Tests BufferAppend and BufferItem
 cb.append(b[0])
 # Tests BufferSlice and BufferAssSlice
-cb.append('abc') # Will be overwritten
+cb.append('abc5') # Will be overwritten
 cb[-1:] = b[:-2]
 # Test BufferLength and BufferAssSlice
 cb.append('def') # Will not be overwritten
@@ -541,13 +569,14 @@ b.name = 'bar'
 cb.append(b.name[-11:].replace(os.path.sep, '/'))
 cb.name = old_name
 cb.append(cb.name[-17:].replace(os.path.sep, '/'))
+del old_name
 # Test CheckBuffer
 for _b in vim.buffers:
     if _b is not cb:
         vim.command('bwipeout! ' + str(_b.number))
 del _b
 cb.append('valid: b:%s, cb:%s' % (repr(b.valid), repr(cb.valid)))
-for expr in ('b[1]','b[:] = ["A", "B"]','b[:]','b.append("abc")', 'b.name = "!"'):
+for expr in ('b[1]','b[:] = ["A", "B"]','b[:]','b.append("abc6")', 'b.name = "!"'):
     try:
         exec(expr)
     except vim.error:
@@ -557,6 +586,7 @@ for expr in ('b[1]','b[:] = ["A", "B"]','b[:]','b.append("abc")', 'b.name = "!"'
         # Should not happen in any case
         cb.append('No exception for ' + expr)
 vim.command('cd .')
+del b
 EOF
 :augroup BUFS
 :   autocmd!
@@ -598,6 +628,7 @@ for b in vim.buffers:
     # Check indexing: vim.buffers[number].number == number
     cb.append(str(b.number) + ':' + repr(vim.buffers[b.number]) + '=' + repr(b))
     prevnum = b.number
+del prevnum
 
 cb.append(str(len(vim.buffers)))
 
@@ -621,6 +652,8 @@ try:
     next(i4)
 except StopIteration:
     cb.append('StopIteration')
+del i4
+del bnums
 EOF
 :"
 :" Test vim.{tabpage,window}list and vim.{tabpage,window} objects
@@ -663,7 +696,11 @@ for t in vim.tabpages:
                     raise ValueError
             except Exception:
                 cb.append('!!!!!! Error while getting attribute ' + attr + ': ' + sys.exc_type.__name__)
+        del aval
+        del attr
         w.cursor = (len(w.buffer), 0)
+del W
+del Cursor
 cb.append('Number of windows in current tab page: ' + str(len(vim.windows)))
 if list(vim.windows) != list(vim.current.tabpage.windows):
     cb.append('!!!!!! Windows differ')
@@ -676,6 +713,7 @@ def H(o):
 cb.append('Current tab page: ' + repr(vim.current.tabpage))
 cb.append('Current window: ' + repr(vim.current.window) + ': ' + H(vim.current.window) + ' is ' + H(vim.current.tabpage.window))
 cb.append('Current buffer: ' + repr(vim.current.buffer) + ': ' + H(vim.current.buffer) + ' is ' + H(vim.current.window.buffer)+ ' is ' + H(vim.current.tabpage.window.buffer))
+del H
 # Assigning: fails
 try:
     vim.current.window = vim.tabpages[0].window
@@ -687,6 +725,7 @@ for attr in ('window', 'tabpage', 'buffer'):
         setattr(vim.current, attr, None)
     except TypeError:
         cb.append('Type error at assigning None to vim.current.' + attr)
+del attr
 
 # Assigning: success
 vim.current.tabpage = vim.tabpages[-2]
@@ -702,8 +741,13 @@ ts = list(vim.tabpages)
 for b in vim.buffers:
     if b is not cb:
         vim.command('bwipeout! ' + str(b.number))
+del b
 cb.append('w.valid: ' + repr([w.valid for w in ws]))
 cb.append('t.valid: ' + repr([t.valid for t in ts]))
+del w
+del t
+del ts
+del ws
 EOF
 :tabonly!
 :only!
@@ -722,6 +766,8 @@ for expr, attr in (
     ('vim.current.tabpage',              'TabPage'),
 ):
     cb.append(expr + ':' + attr + ':' + repr(type(eval(expr)) is getattr(vim, attr)))
+del expr
+del attr
 EOF
 :"
 :" Test __dir__() method
@@ -747,15 +793,15 @@ EOF
 :$put =string(pyeval('vim.Dictionary(a=1)'))
 :$put =string(pyeval('vim.Dictionary(((''a'', 1),))'))
 :$put =string(pyeval('vim.List()'))
-:$put =string(pyeval('vim.List(iter(''abc''))'))
+:$put =string(pyeval('vim.List(iter(''abc7''))'))
 :$put =string(pyeval('vim.Function(''tr'')'))
 :"
 :" Test stdout/stderr
 :redir => messages
-:py sys.stdout.write('abc') ; sys.stdout.write('def')
-:py sys.stderr.write('abc') ; sys.stderr.write('def')
-:py sys.stdout.writelines(iter('abc'))
-:py sys.stderr.writelines(iter('abc'))
+:py sys.stdout.write('abc8') ; sys.stdout.write('def')
+:py sys.stderr.write('abc9') ; sys.stderr.write('def')
+:py sys.stdout.writelines(iter('abcA'))
+:py sys.stderr.writelines(iter('abcB'))
 :redir END
 :$put =string(substitute(messages, '\d\+', '', 'g'))
 :" Test subclassing
@@ -776,7 +822,7 @@ class DupList(vim.List):
         return [super(DupList, self).__getitem__(idx)] * 2
 
 dl = DupList()
-dl2 = DupList(iter('abc'))
+dl2 = DupList(iter('abcC'))
 dl.extend(dl2[0])
 
 class DupFun(vim.Function):
@@ -789,6 +835,19 @@ EOF
 :$put =string(pyeval('dl'))
 :$put =string(pyeval('dl2'))
 :$put =string(pyeval('df(2)'))
+:$put =string(pyeval('dl') is# pyeval('dl'))
+:$put =string(pyeval('dd') is# pyeval('dd'))
+:$put =string(pyeval('df'))
+:delfunction Put
+py << EOF
+del DupDict
+del DupList
+del DupFun
+del dd
+del dl
+del dl2
+del df
+EOF
 :"
 :" Test chdir
 py << EOF
@@ -802,6 +861,7 @@ cb.append(vim.eval('@%').replace(os.path.sep, '/'))
 os.chdir('testdir')
 cb.append(fnamemodify('.', ':p:h:t'))
 cb.append(vim.eval('@%'))
+del fnamemodify
 EOF
 :"
 :" Test errors
@@ -828,11 +888,11 @@ def ee(expr, g=globals(), l=locals()):
     else:
         cb.append(expr + ':NOT FAILED')
 d = vim.Dictionary()
-ned = vim.Dictionary(foo='bar', baz='abc')
+ned = vim.Dictionary(foo='bar', baz='abcD')
 dl = vim.Dictionary(a=1)
 dl.locked = True
 l = vim.List()
-ll = vim.List('abc')
+ll = vim.List('abcE')
 ll.locked = True
 f = vim.Function('string')
 fd = vim.Function('F')
@@ -869,11 +929,11 @@ def convertfrompyobject_test(expr, recurse=True):
     # pydict_to_tv
     stringtochars_test(expr % '{%s : 1}')
     if recurse:
-        convertfrompyobject_test(expr % '{"abc" : %s}', False)
+        convertfrompyobject_test(expr % '{"abcF" : %s}', False)
     # pymap_to_tv
     stringtochars_test(expr % 'Mapping({%s : 1})')
     if recurse:
-        convertfrompyobject_test(expr % 'Mapping({"abc" : %s})', False)
+        convertfrompyobject_test(expr % 'Mapping({"abcG" : %s})', False)
     # pyseq_to_tv
     iter_test(expr)
     return subexpr_test(expr, 'ConvertFromPyObject', (
@@ -916,7 +976,7 @@ class FailingMappingKey(object):
         raise NotImplementedError
 
     def keys(self):
-        return list("abc")
+        return list("abcH")
 
 class FailingMapping(object):
     def __getitem__(self):
@@ -958,7 +1018,7 @@ cb.append("> VimStrwidth")
 ee('vim.strwidth(1)')
 cb.append("> Dictionary")
 cb.append(">> DictionaryConstructor")
-ee('vim.Dictionary("abc")')
+ee('vim.Dictionary("abcI")')
 ##! Not checked: py_dict_alloc failure
 cb.append(">> DictionarySetattr")
 ee('del d.locked')
@@ -973,6 +1033,7 @@ ee('d.pop("a")')
 ee('dl.pop("a")')
 cb.append(">> DictionaryIterNext")
 ee('for i in ned: ned["a"] = 1')
+del i
 cb.append(">> DictionaryAssItem")
 ee('dl["b"] = 1')
 stringtochars_test('d[%s] = 1')
@@ -1002,7 +1063,7 @@ cb.append(">> ListAssItem")
 ee('ll[1] = 2')
 ee('l[1000] = 3')
 cb.append(">> ListAssSlice")
-ee('ll[1:100] = "abc"')
+ee('ll[1:100] = "abcJ"')
 #iter_test('l[:] = %s')
 convertfrompyobject_test('l[:] = [%s]')
 cb.append(">> ListConcatInPlace")
@@ -1033,8 +1094,8 @@ cb.append(">> WindowSetattr")
 ee('vim.current.window.buffer = 0')
 ee('vim.current.window.cursor = (100000000, 100000000)')
 ee('vim.current.window.cursor = True')
-ee('vim.current.window.height = "abc"')
-ee('vim.current.window.width  = "abc"')
+ee('vim.current.window.height = "abcK"')
+ee('vim.current.window.width  = "abcL"')
 ee('vim.current.window.xxxxxx = True')
 cb.append("> WinList")
 cb.append(">> WinListItem")
@@ -1044,7 +1105,7 @@ cb.append(">> StringToLine (indirect)")
 ee('vim.current.buffer[0] = "\\na"')
 cb.append(">> SetBufferLine (indirect)")
 ee('vim.current.buffer[0] = True')
-cb.append(">> SetBufferLines (indirect)")
+cb.append(">> SetBufferLineList (indirect)")
 ee('vim.current.buffer[:] = True')
 ee('vim.current.buffer[:] = ["\\na", "bc"]')
 cb.append(">> InsertBufferLines (indirect)")
@@ -1062,7 +1123,7 @@ ee('vim.current.buffer.name = True')
 ee('vim.current.buffer.xxx = True')
 cb.append(">> BufferMark")
 ee('vim.current.buffer.mark(0)')
-ee('vim.current.buffer.mark("abc")')
+ee('vim.current.buffer.mark("abcM")')
 ee('vim.current.buffer.mark("!")')
 cb.append(">> BufferRange")
 ee('vim.current.buffer.range(1, 2, 3)')
@@ -1079,7 +1140,28 @@ ee('vim.current.buffer = True')
 ee('vim.current.window = True')
 ee('vim.current.tabpage = True')
 ee('vim.current.xxx = True')
+del d
+del ned
+del dl
+del l
+del ll
+del f
+del fd
+del fdel
+del subexpr_test
+del stringtochars_test
+del Mapping
+del convertfrompyobject_test
+del convertfrompymapping_test
+del iter_test
+del FailingTrue
+del FailingIter
+del FailingIterNext
+del FailingMapping
+del FailingMappingKey
+del FailingList
 EOF
+:delfunction F
 :"
 :" Test import
 py << EOF
@@ -1093,6 +1175,10 @@ import before
 cb.append(before.dir)
 import after
 cb.append(after.dir)
+del before
+del after
+del d
+del ddir
 EOF
 :"
 :" Test exceptions
@@ -1101,18 +1187,48 @@ EOF
 :endfun
 py << EOF
 Exe = vim.bindeval('function("Exe")')
-ee('vim.command("throw \'abc\'")')
+ee('vim.command("throw \'abcN\'")')
 ee('Exe("throw \'def\'")')
 ee('vim.eval("Exe(\'throw \'\'ghi\'\'\')")')
 ee('vim.eval("Exe(\'echoerr \'\'jkl\'\'\')")')
 ee('vim.eval("Exe(\'xxx_non_existent_command_xxx\')")')
 ee('vim.bindeval("Exe(\'xxx_non_existent_command_xxx\')")')
+del Exe
+EOF
+:delfunction Exe
+:"
+:" Cleanup
+py << EOF
+del cb
+del ee
+del sys
+del os
+del vim
 EOF
 :endfun
 :"
-:call Test()
+:fun RunTest()
+:let checkrefs = !empty($PYTHONDUMPREFS)
+:let start = getline(1, '$')
+:for i in range(checkrefs ? 10 : 1)
+:   if i != 0
+:       %d _
+:       call setline(1, start)
+:   endif
+:   call Test()
+:   if i == 0
+:       let result = getline(1, '$')
+:   endif
+:endfor
+:if checkrefs
+:   %d _
+:   call setline(1, result)
+:endif
+:endfun
 :"
-:delfunc Test
+:call RunTest()
+:delfunction RunTest
+:delfunction Test
 :call garbagecollect(1)
 :"
 :/^start:/,$wq! test.out
