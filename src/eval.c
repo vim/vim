@@ -3228,7 +3228,7 @@ next_for_item(fi_void, arg)
     void	*fi_void;
     char_u	*arg;
 {
-    forinfo_T    *fi = (forinfo_T *)fi_void;
+    forinfo_T	*fi = (forinfo_T *)fi_void;
     int		result;
     listitem_T	*item;
 
