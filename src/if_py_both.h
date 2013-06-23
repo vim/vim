@@ -151,6 +151,95 @@ StringToChars(PyObject *object, PyObject **todecref)
     return (char_u *) p;
 }
 
+#define NUMBER_LONG     1
+#define NUMBER_INT      2
+#define NUMBER_NATURAL  4
+#define NUMBER_UNSIGNED 8
+
+    static int
+NumberToLong(PyObject *obj, long *result, int flags)
+{
+#if PY_MAJOR_VERSION < 3
+    if (PyInt_Check(obj))
+    {
+	*result = PyInt_AsLong(obj);
+	if (PyErr_Occurred())
+	    return -1;
+    }
+    else
+#endif
+    if (PyLong_Check(obj))
+    {
+	*result = PyLong_AsLong(obj);
+	if (PyErr_Occurred())
+	    return -1;
+    }
+    else if (PyNumber_Check(obj))
+    {
+	PyObject	*num;
+
+	if (!(num = PyNumber_Long(obj)))
+	    return -1;
+
+	*result = PyLong_AsLong(num);
+
+	Py_DECREF(num);
+
+	if (PyErr_Occurred())
+	    return -1;
+    }
+    else
+    {
+	PyErr_FORMAT(PyExc_TypeError,
+#if PY_MAJOR_VERSION < 3
+		"expected int(), long() or something supporting "
+		"coercing to long(), but got %s"
+#else
+		"expected int() or something supporting coercing to int(), "
+		"but got %s"
+#endif
+		, Py_TYPE_NAME(obj));
+	return -1;
+    }
+
+    if (flags & NUMBER_INT)
+    {
+	if (*result > INT_MAX)
+	{
+	    PyErr_SET_STRING(PyExc_OverflowError,
+		    "value is too large to fit into C int type");
+	    return -1;
+	}
+	else if (*result < INT_MIN)
+	{
+	    PyErr_SET_STRING(PyExc_OverflowError,
+		    "value is too small to fit into C int type");
+	    return -1;
+	}
+    }
+
+    if (flags & NUMBER_NATURAL)
+    {
+	if (*result <= 0)
+	{
+	    PyErr_SET_STRING(PyExc_ValueError,
+		    "number must be greater then zero");
+	    return -1;
+	}
+    }
+    else if (flags & NUMBER_UNSIGNED)
+    {
+	if (*result < 0)
+	{
+	    PyErr_SET_STRING(PyExc_ValueError,
+		    "number must be greater or equal to zero");
+	    return -1;
+	}
+    }
+
+    return 0;
+}
+
     static int
 add_string(PyObject *list, char *s)
 {
@@ -243,13 +332,8 @@ OutputSetattr(OutputObject *self, char *name, PyObject *val)
 
     if (strcmp(name, "softspace") == 0)
     {
-	if (!PyInt_Check(val))
-	{
-	    PyErr_SET_STRING(PyExc_TypeError, "softspace must be an integer");
+	if (NumberToLong(val, &(self->softspace), NUMBER_UNSIGNED))
 	    return -1;
-	}
-
-	self->softspace = PyInt_AsLong(val);
 	return 0;
     }
 
@@ -2839,23 +2923,15 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
     }
     else if (flags & SOPT_NUM)
     {
-	int val;
+	long	val;
 
-#if PY_MAJOR_VERSION < 3
-	if (PyInt_Check(valObject))
-	    val = PyInt_AsLong(valObject);
-	else
-#endif
-	if (PyLong_Check(valObject))
-	    val = PyLong_AsLong(valObject);
-	else
+	if (NumberToLong(valObject, &val, NUMBER_INT))
 	{
-	    PyErr_SET_STRING(PyExc_TypeError, "object must be integer");
 	    Py_XDECREF(todecref);
 	    return -1;
 	}
 
-	r = set_option_value_for(key, val, NULL, opt_flags,
+	r = set_option_value_for(key, (int) val, NULL, opt_flags,
 				self->opt_type, self->from);
     }
     else
@@ -3265,10 +3341,10 @@ WindowSetattr(WindowObject *self, char *name, PyObject *val)
     }
     else if (strcmp(name, "height") == 0)
     {
-	int	height;
+	long	height;
 	win_T	*savewin;
 
-	if (!PyArg_Parse(val, "i", &height))
+	if (NumberToLong(val, &height, NUMBER_INT))
 	    return -1;
 
 #ifdef FEAT_GUI
@@ -3278,7 +3354,7 @@ WindowSetattr(WindowObject *self, char *name, PyObject *val)
 	curwin = self->win;
 
 	VimTryStart();
-	win_setheight(height);
+	win_setheight((int) height);
 	curwin = savewin;
 	if (VimTryEnd())
 	    return -1;
@@ -3288,10 +3364,10 @@ WindowSetattr(WindowObject *self, char *name, PyObject *val)
 #ifdef FEAT_VERTSPLIT
     else if (strcmp(name, "width") == 0)
     {
-	int	width;
+	long	width;
 	win_T	*savewin;
 
-	if (!PyArg_Parse(val, "i", &width))
+	if (NumberToLong(val, &width, NUMBER_INT))
 	    return -1;
 
 #ifdef FEAT_GUI
@@ -3301,7 +3377,7 @@ WindowSetattr(WindowObject *self, char *name, PyObject *val)
 	curwin = self->win;
 
 	VimTryStart();
-	win_setwidth(width);
+	win_setwidth((int) width);
 	curwin = savewin;
 	if (VimTryEnd())
 	    return -1;
@@ -4555,22 +4631,12 @@ BufMapLength(PyObject *self UNUSED)
 BufMapItem(PyObject *self UNUSED, PyObject *keyObject)
 {
     buf_T	*b;
-    int		bnr;
+    long	bnr;
 
-#if PY_MAJOR_VERSION < 3
-    if (PyInt_Check(keyObject))
-	bnr = PyInt_AsLong(keyObject);
-    else
-#endif
-    if (PyLong_Check(keyObject))
-	bnr = PyLong_AsLong(keyObject);
-    else
-    {
-	PyErr_SET_STRING(PyExc_TypeError, "key must be integer");
+    if (NumberToLong(keyObject, &bnr, NUMBER_INT|NUMBER_NATURAL))
 	return NULL;
-    }
 
-    b = buflist_findnr(bnr);
+    b = buflist_findnr((int) bnr);
 
     if (b)
 	return BufferNew(b);
@@ -5345,12 +5411,16 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     {
 	tv->v_type = VAR_NUMBER;
 	tv->vval.v_number = (varnumber_T) PyInt_AsLong(obj);
+	if (PyErr_Occurred())
+	    return -1;
     }
 #endif
     else if (PyLong_Check(obj))
     {
 	tv->v_type = VAR_NUMBER;
 	tv->vval.v_number = (varnumber_T) PyLong_AsLong(obj);
+	if (PyErr_Occurred())
+	    return -1;
     }
     else if (PyDict_Check(obj))
 	return convert_dl(obj, tv, pydict_to_tv, lookup_dict);
@@ -5367,6 +5437,18 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	return convert_dl(obj, tv, pyseq_to_tv, lookup_dict);
     else if (PyMapping_Check(obj))
 	return convert_dl(obj, tv, pymap_to_tv, lookup_dict);
+    else if (PyNumber_Check(obj))
+    {
+	PyObject	*num;
+
+	if (!(num = PyNumber_Long(obj)))
+	    return -1;
+
+	tv->v_type = VAR_NUMBER;
+	tv->vval.v_number = (varnumber_T) PyLong_AsLong(num);
+
+	Py_DECREF(num);
+    }
     else
     {
 	PyErr_FORMAT(PyExc_TypeError,

@@ -438,7 +438,7 @@ test86.in
 > Output
 >> OutputSetattr
 del sys.stdout.softspace:AttributeError:("can't delete OutputObject attributes",)
-sys.stdout.softspace = []:TypeError:('softspace must be an integer',)
+sys.stdout.softspace = []:TypeError:('expected int(), long() or something supporting coercing to long(), but got list',)
 sys.stdout.attr = None:AttributeError:('invalid attribute: attr',)
 >> OutputWrite
 sys.stdout.write(None):TypeError:('coercing to Unicode: need string or buffer, NoneType found',)
@@ -1037,8 +1037,8 @@ vim.current.window.xxx:AttributeError:('xxx',)
 vim.current.window.buffer = 0:TypeError:('readonly attribute: buffer',)
 vim.current.window.cursor = (100000000, 100000000):error:('cursor position outside buffer',)
 vim.current.window.cursor = True:TypeError:('argument must be 2-item sequence, not bool',)
-vim.current.window.height = "abc":TypeError:('an integer is required',)
-vim.current.window.width  = "abc":TypeError:('an integer is required',)
+vim.current.window.height = "abc":TypeError:('expected int(), long() or something supporting coercing to long(), but got str',)
+vim.current.window.width  = "abc":TypeError:('expected int(), long() or something supporting coercing to long(), but got str',)
 vim.current.window.xxxxxx = True:AttributeError:('xxxxxx',)
 > WinList
 >> WinListItem
@@ -1072,7 +1072,7 @@ vim.current.buffer.mark("!"):error:('invalid mark name',)
 vim.current.buffer.range(1, 2, 3):TypeError:('function takes exactly 2 arguments (3 given)',)
 > BufMap
 >> BufMapItem
-vim.buffers[None]:TypeError:('key must be integer',)
+vim.buffers[None]:TypeError:('expected int(), long() or something supporting coercing to long(), but got NoneType',)
 vim.buffers[100000000]:KeyError:(100000000,)
 > Current
 >> CurrentGetattr

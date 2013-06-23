@@ -427,7 +427,7 @@ test87.in
 > Output
 >> OutputSetattr
 del sys.stdout.softspace:(<class 'AttributeError'>, AttributeError("can't delete OutputObject attributes",))
-sys.stdout.softspace = []:(<class 'TypeError'>, TypeError('softspace must be an integer',))
+sys.stdout.softspace = []:(<class 'TypeError'>, TypeError('expected int() or something supporting coercing to int(), but got list',))
 sys.stdout.attr = None:(<class 'AttributeError'>, AttributeError('invalid attribute: attr',))
 >> OutputWrite
 sys.stdout.write(None):(<class 'TypeError'>, TypeError("Can't convert 'NoneType' object to str implicitly",))
@@ -1046,8 +1046,8 @@ vim.current.window.xxx:(<class 'AttributeError'>, AttributeError("'vim.window' o
 vim.current.window.buffer = 0:(<class 'TypeError'>, TypeError('readonly attribute: buffer',))
 vim.current.window.cursor = (100000000, 100000000):(<class 'vim.error'>, error('cursor position outside buffer',))
 vim.current.window.cursor = True:(<class 'TypeError'>, TypeError('argument must be 2-item sequence, not bool',))
-vim.current.window.height = "abc":(<class 'TypeError'>, TypeError('an integer is required',))
-vim.current.window.width  = "abc":(<class 'TypeError'>, TypeError('an integer is required',))
+vim.current.window.height = "abc":(<class 'TypeError'>, TypeError('expected int() or something supporting coercing to int(), but got str',))
+vim.current.window.width  = "abc":(<class 'TypeError'>, TypeError('expected int() or something supporting coercing to int(), but got str',))
 vim.current.window.xxxxxx = True:(<class 'AttributeError'>, AttributeError('xxxxxx',))
 > WinList
 >> WinListItem
@@ -1081,7 +1081,7 @@ vim.current.buffer.mark("!"):(<class 'vim.error'>, error('invalid mark name',))
 vim.current.buffer.range(1, 2, 3):(<class 'TypeError'>, TypeError('function takes exactly 2 arguments (3 given)',))
 > BufMap
 >> BufMapItem
-vim.buffers[None]:(<class 'TypeError'>, TypeError('key must be integer',))
+vim.buffers[None]:(<class 'TypeError'>, TypeError('expected int() or something supporting coercing to int(), but got NoneType',))
 vim.buffers[100000000]:(<class 'KeyError'>, KeyError(100000000,))
 > Current
 >> CurrentGetattr
