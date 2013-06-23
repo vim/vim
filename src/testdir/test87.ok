@@ -433,7 +433,7 @@ sys.stdout.attr = None:(<class 'AttributeError'>, AttributeError('invalid attrib
 sys.stdout.write(None):(<class 'TypeError'>, TypeError("Can't convert 'NoneType' object to str implicitly",))
 >> OutputWriteLines
 sys.stdout.writelines(None):(<class 'TypeError'>, TypeError("'NoneType' object is not iterable",))
-sys.stdout.writelines([1]):(<class 'TypeError'>, TypeError('writelines() requires list of strings',))
+sys.stdout.writelines([1]):(<class 'TypeError'>, TypeError("Can't convert 'int' object to str implicitly",))
 >>> Testing *Iter* using sys.stdout.writelines(%s)
 sys.stdout.writelines(FailingIter()):(<class 'NotImplementedError'>, NotImplementedError())
 sys.stdout.writelines(FailingIterNext()):(<class 'NotImplementedError'>, NotImplementedError())

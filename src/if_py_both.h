@@ -281,15 +281,15 @@ writer(writefn fn, char_u *str, PyInt n)
     }
 }
 
-    static PyObject *
-OutputWrite(OutputObject *self, PyObject *args)
+    static int
+write_output(OutputObject *self, PyObject *string)
 {
-    Py_ssize_t len = 0;
-    char *str = NULL;
-    int error = self->error;
+    Py_ssize_t	len = 0;
+    char	*str = NULL;
+    int		error = self->error;
 
-    if (!PyArg_ParseTuple(args, "et#", ENC_OPT, &str, &len))
-	return NULL;
+    if (!PyArg_Parse(string, "et#", ENC_OPT, &str, &len))
+	return -1;
 
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
@@ -298,44 +298,37 @@ OutputWrite(OutputObject *self, PyObject *args)
     Py_END_ALLOW_THREADS
     PyMem_Free(str);
 
+    return 0;
+}
+
+    static PyObject *
+OutputWrite(OutputObject *self, PyObject *string)
+{
+    if (write_output(self, string))
+	return NULL;
+
     Py_INCREF(Py_None);
     return Py_None;
 }
 
     static PyObject *
-OutputWritelines(OutputObject *self, PyObject *args)
+OutputWritelines(OutputObject *self, PyObject *seq)
 {
-    PyObject	*seq;
     PyObject	*iterator;
     PyObject	*item;
-    int error = self->error;
-
-    if (!PyArg_ParseTuple(args, "O", &seq))
-	return NULL;
 
     if (!(iterator = PyObject_GetIter(seq)))
 	return NULL;
 
     while ((item = PyIter_Next(iterator)))
     {
-	char *str = NULL;
-	PyInt len;
-
-	if (!PyArg_Parse(item, "et#", ENC_OPT, &str, &len))
+	if (write_output(self, item))
 	{
-	    PyErr_SetString(PyExc_TypeError, _("writelines() requires list of strings"));
 	    Py_DECREF(iterator);
 	    Py_DECREF(item);
 	    return NULL;
 	}
 	Py_DECREF(item);
-
-	Py_BEGIN_ALLOW_THREADS
-	Python_Lock_Vim();
-	writer((writefn)(error ? emsg : msg), (char_u *)str, len);
-	Python_Release_Vim();
-	Py_END_ALLOW_THREADS
-	PyMem_Free(str);
     }
 
     Py_DECREF(iterator);
@@ -360,8 +353,8 @@ OutputFlush(PyObject *self UNUSED)
 
 static struct PyMethodDef OutputMethods[] = {
     /* name,	    function,				calling,	doc */
-    {"write",	    (PyCFunction)OutputWrite,		METH_VARARGS,	""},
-    {"writelines",  (PyCFunction)OutputWritelines,	METH_VARARGS,	""},
+    {"write",	    (PyCFunction)OutputWrite,		METH_O,		""},
+    {"writelines",  (PyCFunction)OutputWritelines,	METH_O,		""},
     {"flush",	    (PyCFunction)OutputFlush,		METH_NOARGS,	""},
     {"__dir__",	    (PyCFunction)OutputDir,		METH_NOARGS,	""},
     { NULL,	    NULL,				0,		NULL}
@@ -3009,7 +3002,8 @@ TabListItem(PyObject *self UNUSED, PyInt n)
     return NULL;
 }
 
-/* Window object
+/*
+ * Window object
  */
 
 typedef struct
