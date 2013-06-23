@@ -18,7 +18,7 @@ typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
 #endif
 
 #ifdef FEAT_MBYTE
-# define ENC_OPT p_enc
+# define ENC_OPT ((char *)p_enc)
 #else
 # define ENC_OPT "latin1"
 #endif
@@ -92,28 +92,29 @@ Python_Release_Vim(void)
 StringToChars(PyObject *object, PyObject **todecref)
 {
     char_u	*p;
-    PyObject	*bytes = NULL;
 
     if (PyBytes_Check(object))
     {
 
-	if (PyString_AsStringAndSize(object, (char **) &p, NULL) == -1)
-	    return NULL;
-	if (p == NULL)
+	if (PyBytes_AsStringAndSize(object, (char **) &p, NULL) == -1
+		|| p == NULL)
 	    return NULL;
 
 	*todecref = NULL;
     }
     else if (PyUnicode_Check(object))
     {
-	bytes = PyUnicode_AsEncodedString(object, (char *)ENC_OPT, NULL);
-	if (bytes == NULL)
+	PyObject	*bytes;
+
+	if (!(bytes = PyUnicode_AsEncodedString(object, ENC_OPT, NULL)))
 	    return NULL;
 
-	if(PyString_AsStringAndSize(bytes, (char **) &p, NULL) == -1)
+	if(PyBytes_AsStringAndSize(bytes, (char **) &p, NULL) == -1
+		|| p == NULL)
+	{
+	    Py_DECREF(bytes);
 	    return NULL;
-	if (p == NULL)
-	    return NULL;
+	}
 
 	*todecref = bytes;
     }
@@ -133,6 +134,7 @@ add_string(PyObject *list, char *s)
 
     if (!(string = PyString_FromString(s)))
 	return -1;
+
     if (PyList_Append(list, string))
     {
 	Py_DECREF(string);
@@ -534,10 +536,8 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
     }
 
     if (our_tv->v_type == VAR_STRING)
-    {
 	result = PyString_FromString(our_tv->vval.v_string == NULL
 					? "" : (char *)our_tv->vval.v_string);
-    }
     else if (our_tv->v_type == VAR_NUMBER)
     {
 	char buf[NUMBUFLEN];
@@ -3385,22 +3385,31 @@ WinListItem(WinListObject *self, PyInt n)
     static char *
 StringToLine(PyObject *obj)
 {
-    const char *str;
-    char *save;
-    PyObject *bytes;
-    PyInt len;
-    PyInt i;
-    char *p;
+    char	*str;
+    char	*save;
+    PyObject	*bytes = NULL;
+    Py_ssize_t	len;
+    PyInt	i;
+    char	*p;
 
-    if (obj == NULL || !PyString_Check(obj))
+    if (PyBytes_Check(obj))
     {
-	PyErr_BadArgument();
-	return NULL;
+	if (PyBytes_AsStringAndSize(obj, &str, &len) == -1
+		|| str == NULL)
+	    return NULL;
     }
+    else if (PyUnicode_Check(obj))
+    {
+	if (!(bytes = PyUnicode_AsEncodedString(obj, ENC_OPT, NULL)))
+	    return NULL;
 
-    bytes = PyString_AsBytes(obj);  /* for Python 2 this does nothing */
-    str = PyString_AsString(bytes);
-    len = PyString_Size(bytes);
+	if(PyBytes_AsStringAndSize(bytes, &str, &len) == -1
+		|| str == NULL)
+	{
+	    Py_DECREF(bytes);
+	    return NULL;
+	}
+    }
 
     /*
      * Error checking: String must not contain newlines, as we
@@ -3439,7 +3448,7 @@ StringToLine(PyObject *obj)
     }
 
     save[i] = '\0';
-    PyString_FreeBytes(bytes);  /* Python 2 does nothing here */
+    Py_XDECREF(bytes);  /* Python 2 does nothing here */
 
     return save;
 }
@@ -3568,10 +3577,10 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 
 	return OK;
     }
-    else if (PyString_Check(line))
+    else if (PyBytes_Check(line) || PyUnicode_Check(line))
     {
-	char *save = StringToLine(line);
-	buf_T *savebuf;
+	char	*save = StringToLine(line);
+	buf_T	*savebuf;
 
 	if (save == NULL)
 	    return FAIL;
@@ -3821,7 +3830,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
     /* First of all, we check the type of the supplied Python object.
      * It must be a string or a list, or the call is in error.
      */
-    if (PyString_Check(lines))
+    if (PyBytes_Check(lines) || PyUnicode_Check(lines))
     {
 	char	*str = StringToLine(lines);
 	buf_T	*savebuf;
@@ -5254,7 +5263,7 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     {
 	char_u	*result;
 
-	if (PyString_AsStringAndSize(obj, (char **) &result, NULL) == -1)
+	if (PyBytes_AsStringAndSize(obj, (char **) &result, NULL) == -1)
 	    return -1;
 	if (result == NULL)
 	    return -1;
@@ -5269,11 +5278,11 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	PyObject	*bytes;
 	char_u	*result;
 
-	bytes = PyUnicode_AsEncodedString(obj, (char *)ENC_OPT, NULL);
+	bytes = PyUnicode_AsEncodedString(obj, ENC_OPT, NULL);
 	if (bytes == NULL)
 	    return -1;
 
-	if(PyString_AsStringAndSize(bytes, (char **) &result, NULL) == -1)
+	if(PyBytes_AsStringAndSize(bytes, (char **) &result, NULL) == -1)
 	    return -1;
 	if (result == NULL)
 	    return -1;

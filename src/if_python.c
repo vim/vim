@@ -68,12 +68,9 @@
 #undef main /* Defined in python.h - aargh */
 #undef HAVE_FCNTL_H /* Clash with os_win32.h */
 
-#define PyBytes_FromString PyString_FromString
-#define PyBytes_Check PyString_Check
-
-/* No-op conversion functions, use with care! */
-#define PyString_AsBytes(obj) (obj)
-#define PyString_FreeBytes(obj)
+#define PyBytes_FromString      PyString_FromString
+#define PyBytes_Check           PyString_Check
+#define PyBytes_AsStringAndSize PyString_AsStringAndSize
 
 #if !defined(FEAT_PYTHON) && defined(PROTO)
 /* Use this to be able to generate prototypes without python being used. */

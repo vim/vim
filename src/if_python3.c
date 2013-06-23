@@ -84,13 +84,8 @@
 
 #define PyInt Py_ssize_t
 #define PyString_Check(obj) PyUnicode_Check(obj)
-#define PyString_AsBytes(obj) PyUnicode_AsEncodedString(obj, (char *)ENC_OPT, CODEC_ERROR_HANDLER)
-#define PyString_FreeBytes(obj) Py_XDECREF(bytes)
-#define PyString_AsString(obj) PyBytes_AsString(obj)
-#define PyString_Size(obj) PyBytes_GET_SIZE(bytes)
 #define PyString_FromString(repr) PyUnicode_FromString(repr)
 #define PyString_FromFormat PyUnicode_FromFormat
-#define PyString_AsStringAndSize(obj, buffer, len) PyBytes_AsStringAndSize(obj, buffer, len)
 #define PyInt_Check(obj) PyLong_Check(obj)
 #define PyInt_FromLong(i) PyLong_FromLong(i)
 #define PyInt_AsLong(obj) PyLong_AsLong(obj)
@@ -357,7 +352,7 @@ static char* (*py3__PyUnicode_AsString)(PyObject *unicode);
 # endif
 static PyObject* (*py3_PyUnicode_AsEncodedString)(PyObject *unicode, const char* encoding, const char* errors);
 static char* (*py3_PyBytes_AsString)(PyObject *bytes);
-static int (*py3_PyBytes_AsStringAndSize)(PyObject *bytes, char **buffer, int *length);
+static int (*py3_PyBytes_AsStringAndSize)(PyObject *bytes, char **buffer, Py_ssize_t *length);
 static PyObject* (*py3_PyBytes_FromString)(char *str);
 static PyObject* (*py3_PyFloat_FromDouble)(double num);
 static double (*py3_PyFloat_AsDouble)(PyObject *);
