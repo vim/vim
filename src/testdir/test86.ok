@@ -446,14 +446,14 @@ sys.stdout.write(None):TypeError:('coercing to Unicode: need string or buffer, N
 sys.stdout.writelines(None):TypeError:("'NoneType' object is not iterable",)
 sys.stdout.writelines([1]):TypeError:('coercing to Unicode: need string or buffer, int found',)
 > VimCommand
-vim.command(1):TypeError:('must be string, not int',)
+vim.command(1):TypeError:('object must be string',)
 > VimToPython
 > VimEval
-vim.eval(1):TypeError:('must be string, not int',)
+vim.eval(1):TypeError:('object must be string',)
 > VimEvalPy
-vim.bindeval(1):TypeError:('must be string, not int',)
+vim.bindeval(1):TypeError:('object must be string',)
 > VimStrwidth
-vim.strwidth(1):TypeError:('must be string, not int',)
+vim.strwidth(1):TypeError:('object must be string',)
 > Dictionary
 >> DictionaryConstructor
 vim.Dictionary("abc"):ValueError:('expected sequence element of size 2',)
@@ -683,7 +683,7 @@ d.update((("a", FailingMappingKey()),)):NotImplementedError:()
 >> DictionaryPopItem
 d.popitem(1, 2):TypeError:('popitem() takes no arguments (2 given)',)
 >> DictionaryHasKey
-d.has_key():TypeError:('function takes exactly 1 argument (0 given)',)
+d.has_key():TypeError:('has_key() takes exactly one argument (0 given)',)
 > List
 >> ListConstructor
 vim.List(1, 2):TypeError:('function takes at most 1 argument (2 given)',)
@@ -1065,7 +1065,7 @@ vim.current.buffer.xxx:AttributeError:('xxx',)
 vim.current.buffer.name = True:TypeError:('object must be string',)
 vim.current.buffer.xxx = True:AttributeError:('xxx',)
 >> BufferMark
-vim.current.buffer.mark(0):TypeError:('must be string, not int',)
+vim.current.buffer.mark(0):TypeError:('object must be string',)
 vim.current.buffer.mark("abc"):ValueError:('mark name must be a single character',)
 vim.current.buffer.mark("!"):error:('invalid mark name',)
 >> BufferRange

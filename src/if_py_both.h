@@ -466,21 +466,20 @@ VimCheckInterrupt(void)
  */
 
     static PyObject *
-VimCommand(PyObject *self UNUSED, PyObject *args)
+VimCommand(PyObject *self UNUSED, PyObject *string)
 {
-    char *cmd;
-    PyObject *result;
+    char_u	*cmd;
+    PyObject	*result;
+    PyObject	*todecref;
 
-    if (!PyArg_ParseTuple(args, "s", &cmd))
+    if (!(cmd = StringToChars(string, &todecref)))
 	return NULL;
-
-    PyErr_Clear();
 
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
 
     VimTryStart();
-    do_cmdline_cmd((char_u *)cmd);
+    do_cmdline_cmd(cmd);
     update_screen(VALID);
 
     Python_Release_Vim();
@@ -491,8 +490,8 @@ VimCommand(PyObject *self UNUSED, PyObject *args)
     else
 	result = Py_None;
 
-
     Py_XINCREF(result);
+    Py_XDECREF(todecref);
     return result;
 }
 
@@ -641,20 +640,27 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
     static PyObject *
 VimEval(PyObject *self UNUSED, PyObject *args)
 {
-    char	*expr;
+    char_u	*expr;
     typval_T	*our_tv;
+    PyObject	*string;
+    PyObject	*todecref;
     PyObject	*result;
-    PyObject    *lookup_dict;
+    PyObject	*lookup_dict;
 
-    if (!PyArg_ParseTuple(args, "s", &expr))
+    if (!PyArg_ParseTuple(args, "O", &string))
+	return NULL;
+
+    if (!(expr = StringToChars(string, &todecref)))
 	return NULL;
 
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
     VimTryStart();
-    our_tv = eval_expr((char_u *)expr, NULL);
+    our_tv = eval_expr(expr, NULL);
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
+
+    Py_XDECREF(todecref);
 
     if (VimTryEnd())
 	return NULL;
@@ -688,21 +694,24 @@ VimEval(PyObject *self UNUSED, PyObject *args)
 static PyObject *ConvertToPyObject(typval_T *);
 
     static PyObject *
-VimEvalPy(PyObject *self UNUSED, PyObject *args)
+VimEvalPy(PyObject *self UNUSED, PyObject *string)
 {
-    char	*expr;
     typval_T	*our_tv;
     PyObject	*result;
+    char_u	*expr;
+    PyObject	*todecref;
 
-    if (!PyArg_ParseTuple(args, "s", &expr))
+    if (!(expr = StringToChars(string, &todecref)))
 	return NULL;
 
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
     VimTryStart();
-    our_tv = eval_expr((char_u *)expr, NULL);
+    our_tv = eval_expr(expr, NULL);
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
+
+    Py_XDECREF(todecref);
 
     if (VimTryEnd())
 	return NULL;
@@ -724,20 +733,24 @@ VimEvalPy(PyObject *self UNUSED, PyObject *args)
 }
 
     static PyObject *
-VimStrwidth(PyObject *self UNUSED, PyObject *args)
+VimStrwidth(PyObject *self UNUSED, PyObject *string)
 {
-    char	*expr;
+    char_u	*str;
+    PyObject	*todecref;
+    int		result;
 
-    if (!PyArg_ParseTuple(args, "s", &expr))
+    if (!(str = StringToChars(string, &todecref)))
 	return NULL;
 
-    return PyLong_FromLong(
 #ifdef FEAT_MBYTE
-	    mb_string2cells((char_u *)expr, (int)STRLEN(expr))
+    result = mb_string2cells(str, (int)STRLEN(str));
 #else
-	    STRLEN(expr)
+    result = STRLEN(str);
 #endif
-	    );
+
+    Py_XDECREF(todecref);
+
+    return PyLong_FromLong(result);
 }
 
     static PyObject *
@@ -840,13 +853,11 @@ map_rtp_callback(char_u *path, void *_data)
 }
 
     static PyObject *
-VimForeachRTP(PyObject *self UNUSED, PyObject *args)
+VimForeachRTP(PyObject *self UNUSED, PyObject *callable)
 {
     map_rtp_data	data;
 
-    if (!PyArg_ParseTuple(args, "O", &data.callable))
-	return NULL;
-
+    data.callable = callable;
     data.result = NULL;
 
     do_in_runtimepath(NULL, FALSE, &map_rtp_callback, &data);
@@ -1099,13 +1110,13 @@ VimPathHook(PyObject *self UNUSED, PyObject *args)
 
 static struct PyMethodDef VimMethods[] = {
     /* name,	    function,			calling,			documentation */
-    {"command",	    VimCommand,			METH_VARARGS,			"Execute a Vim ex-mode command" },
+    {"command",	    VimCommand,			METH_O,				"Execute a Vim ex-mode command" },
     {"eval",	    VimEval,			METH_VARARGS,			"Evaluate an expression using Vim evaluator" },
-    {"bindeval",    VimEvalPy,			METH_VARARGS,			"Like eval(), but returns objects attached to vim ones"},
-    {"strwidth",    VimStrwidth,		METH_VARARGS,			"Screen string width, counts <Tab> as having width 1"},
+    {"bindeval",    VimEvalPy,			METH_O,				"Like eval(), but returns objects attached to vim ones"},
+    {"strwidth",    VimStrwidth,		METH_O,				"Screen string width, counts <Tab> as having width 1"},
     {"chdir",	    (PyCFunction)VimChdir,	METH_VARARGS|METH_KEYWORDS,	"Change directory"},
     {"fchdir",	    (PyCFunction)VimFchdir,	METH_VARARGS|METH_KEYWORDS,	"Change directory"},
-    {"foreach_rtp", VimForeachRTP,		METH_VARARGS,			"Call given callable for each path in &rtp"},
+    {"foreach_rtp", VimForeachRTP,		METH_O,				"Call given callable for each path in &rtp"},
     {"find_module", FinderFindModule,		METH_VARARGS,			"Internal use only, returns loader object for any input it receives"},
     {"path_hook",   VimPathHook,		METH_VARARGS,			"Hook function to install in sys.path_hooks"},
     {"_get_paths",  (PyCFunction)Vim_GetPaths,	METH_NOARGS,			"Get &rtp-based additions to sys.path"},
@@ -1733,7 +1744,7 @@ DictionaryUpdate(DictionaryObject *self, PyObject *args, PyObject *kwargs)
     {
 	PyObject	*object;
 
-	if (!PyArg_Parse(args, "(O)", &object))
+	if (!PyArg_ParseTuple(args, "O", &object))
 	    return NULL;
 
 	if (PyObject_HasAttrString(object, "keys"))
@@ -1877,13 +1888,8 @@ DictionaryPopItem(DictionaryObject *self)
 }
 
     static PyObject *
-DictionaryHasKey(DictionaryObject *self, PyObject *args)
+DictionaryHasKey(DictionaryObject *self, PyObject *keyObject)
 {
-    PyObject	*keyObject;
-
-    if (!PyArg_ParseTuple(args, "O", &keyObject))
-	return NULL;
-
     return _DictionaryItem(self, keyObject, DICT_FLAG_RETURN_BOOL);
 }
 
@@ -1914,7 +1920,7 @@ static struct PyMethodDef DictionaryMethods[] = {
     {"get",	(PyCFunction)DictionaryGet,		METH_VARARGS,	""},
     {"pop",	(PyCFunction)DictionaryPop,		METH_VARARGS,	""},
     {"popitem",	(PyCFunction)DictionaryPopItem,		METH_NOARGS,	""},
-    {"has_key",	(PyCFunction)DictionaryHasKey,		METH_VARARGS,	""},
+    {"has_key",	(PyCFunction)DictionaryHasKey,		METH_O,		""},
     {"__dir__",	(PyCFunction)DictionaryDir,		METH_NOARGS,	""},
     { NULL,	NULL,					0,		NULL}
 };
@@ -2434,10 +2440,12 @@ FunctionConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
 	return NULL;
     }
 
-    if (!PyArg_ParseTuple(args, "s", &name))
+    if (!PyArg_ParseTuple(args, "et", "ascii", &name))
 	return NULL;
 
     self = FunctionNew(subtype, name);
+
+    PyMem_Free(name);
 
     return self;
 }
@@ -4383,20 +4391,21 @@ BufferAppend(BufferObject *self, PyObject *args)
 }
 
     static PyObject *
-BufferMark(BufferObject *self, PyObject *args)
+BufferMark(BufferObject *self, PyObject *pmarkObject)
 {
     pos_T	*posp;
-    char	*pmark;
-    char	mark;
+    char_u	*pmark;
+    char_u	mark;
     buf_T	*savebuf;
+    PyObject	*todecref;
 
     if (CheckBuffer(self))
 	return NULL;
 
-    if (!PyArg_ParseTuple(args, "s", &pmark))
+    if (!(pmark = StringToChars(pmarkObject, &todecref)))
 	return NULL;
 
-    if (STRLEN(pmark) != 1)
+    if (pmark[0] == '\0' || pmark[1] != '\0')
     {
 	PyErr_SetString(PyExc_ValueError,
 		_("mark name must be a single character"));
@@ -4404,6 +4413,9 @@ BufferMark(BufferObject *self, PyObject *args)
     }
 
     mark = *pmark;
+
+    Py_XDECREF(todecref);
+
     VimTryStart();
     switch_buffer(&savebuf, self->buf);
     posp = getmark(mark, FALSE);
@@ -4461,7 +4473,7 @@ BufferRepr(BufferObject *self)
 static struct PyMethodDef BufferMethods[] = {
     /* name,	    function,			calling,	documentation */
     {"append",	    (PyCFunction)BufferAppend,	METH_VARARGS,	"Append data to Vim buffer" },
-    {"mark",	    (PyCFunction)BufferMark,	METH_VARARGS,	"Return (row,col) representing position of named mark" },
+    {"mark",	    (PyCFunction)BufferMark,	METH_O,		"Return (row,col) representing position of named mark" },
     {"range",	    (PyCFunction)BufferRange,	METH_VARARGS,	"Return a range object which represents the part of the given buffer between line numbers s and e" },
     {"__dir__",	    (PyCFunction)BufferDir,	METH_NOARGS,	""},
     { NULL,	    NULL,			0,		NULL}

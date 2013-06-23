@@ -439,14 +439,14 @@ sys.stdout.writelines(FailingIter()):(<class 'NotImplementedError'>, NotImplemen
 sys.stdout.writelines(FailingIterNext()):(<class 'NotImplementedError'>, NotImplementedError())
 <<< Finished
 > VimCommand
-vim.command(1):(<class 'TypeError'>, TypeError('must be str, not int',))
+vim.command(1):(<class 'TypeError'>, TypeError('object must be string',))
 > VimToPython
 > VimEval
-vim.eval(1):(<class 'TypeError'>, TypeError('must be str, not int',))
+vim.eval(1):(<class 'TypeError'>, TypeError('object must be string',))
 > VimEvalPy
-vim.bindeval(1):(<class 'TypeError'>, TypeError('must be str, not int',))
+vim.bindeval(1):(<class 'TypeError'>, TypeError('object must be string',))
 > VimStrwidth
-vim.strwidth(1):(<class 'TypeError'>, TypeError('must be str, not int',))
+vim.strwidth(1):(<class 'TypeError'>, TypeError('object must be string',))
 > Dictionary
 >> DictionaryConstructor
 vim.Dictionary("abc"):(<class 'ValueError'>, ValueError('expected sequence element of size 2',))
@@ -680,7 +680,7 @@ d.update((("a", FailingMappingKey()),)):(<class 'NotImplementedError'>, NotImple
 >> DictionaryPopItem
 d.popitem(1, 2):(<class 'TypeError'>, TypeError('popitem() takes no arguments (2 given)',))
 >> DictionaryHasKey
-d.has_key():(<class 'TypeError'>, TypeError('function takes exactly 1 argument (0 given)',))
+d.has_key():(<class 'TypeError'>, TypeError('has_key() takes exactly one argument (0 given)',))
 > List
 >> ListConstructor
 vim.List(1, 2):(<class 'TypeError'>, TypeError('function takes at most 1 argument (2 given)',))
@@ -1074,7 +1074,7 @@ vim.current.buffer.xxx:(<class 'AttributeError'>, AttributeError("'vim.buffer' o
 vim.current.buffer.name = True:(<class 'TypeError'>, TypeError('object must be string',))
 vim.current.buffer.xxx = True:(<class 'AttributeError'>, AttributeError('xxx',))
 >> BufferMark
-vim.current.buffer.mark(0):(<class 'TypeError'>, TypeError('must be str, not int',))
+vim.current.buffer.mark(0):(<class 'TypeError'>, TypeError('object must be string',))
 vim.current.buffer.mark("abc"):(<class 'ValueError'>, ValueError('mark name must be a single character',))
 vim.current.buffer.mark("!"):(<class 'vim.error'>, error('invalid mark name',))
 >> BufferRange
