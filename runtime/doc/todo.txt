@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Jun 15
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Jun 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,6 +36,9 @@ not be repeated below, unless there is extra information.
 
 --- Python interface
 
+Test 86 fails on MS-Windows. (Taro Muraoka, 2013 Jun 24)
+Can we fix this in code instead of in the test?
+
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
 Win32: The Python interface only works with one version of Python, selected at
@@ -51,21 +54,19 @@ Does not work, tests fail.
 
 --- bug fixes
 
-Do allow real tags above the !_TAG entries. Undo older patch. Issue 90.
-
-Matches might be highlighted correctly. Inefficient patch by Christian
-Brabandt, 2013 Feb 26.
-
-Patch to use bold/italic fonts when 'guifontewide' is set. (Ken Takata, 2013
-Mar 31)
-
 Problem with winfixheight and resizing. (Yukihiro Nakadaira, 2011 Sep 17)
 Patch Sep 18.
 
 Patch for IME problems. Remove hacking code for old IM. (Yukihiro Nakadaira,
 2012 Jul 20)
 
+Modeline is not triggered when using Vim: instead of vim:. It's very hard to
+see why it doesn't work.
+
 Patch to fix finding toolbar bitmaps.  Issue 129.
+
+Patch to avoid clang warnings when building with Athena.
+(Dominique Pelle, 2013 Jun 22)
 
 Suggestion to remove __QNXNTO__ in gui.c. (Sean Boudreau, 2013 Jun 7)
 
@@ -105,6 +106,9 @@ Patch by Christian Wellenbrock, 2013 Jun 2.  Update Jun 3 (second one).
 
 Patch to fix glob() and globpath() with escaped special characters.
 (Adnan Zafar, 2013 Jun 2, tests Jun 3)
+
+Bug in findfile() directory matching. (Markus Braun Ben Fritz, 2013 Jun 20)
+Patch by Christian Brabandt (2013 Jun 22)
 
 ---- Fixes to be included before 7.4 above, less important stuff below ----
 
@@ -158,6 +162,9 @@ Patch to view coverage of the tests. (Nazri Ramliy, 2013 Feb 15)
 Patch to invert characters differently in GTK. (Yukihiro Nakadaira, 2013 May
 5)
 
+Patch to add "Q" and "A" responses to interactive :substitute. They are
+carried over when using :global. (Christian Brabandt, 2013 Jun 19)
+
 Bug with 'cursorline' in diff mode.  Line being scrolled into view gets
 highlighted as the cursor line.  (Alessandro Ivaldi, 2013 Jun 4)
 
@@ -194,6 +201,10 @@ v:register is not directly reset to " after a delete command that specifies a
 register.  It is reset after the next command. (Steve Vermeulen, 2013 Mar 16)
 
 'ff' is wrong for one-line file without EOL. (Issue 77)
+
+Can add a function to a dict using a weird key:
+    let dict['/foo'] = function('tr')
+Disallow? (thinca, 2013 Jun 17)
 
 Patch to set antialiasing style on Windows. (Ondrej Balaz, 2013 Mar 14)
 Needs a different check for CLEARTYPE_QUALITY.
@@ -267,6 +278,8 @@ MS-Windows resizing problems:
 
 Patch to append regexp to tag commands to make it possible to select one out
 of many matches. (Cody Cutler, 2013 Mar 28)
+
+Patch to add tagfunc().  Cleaned up by Christian Brabandt, 2013 Jun 22.
 
 Help for 'b:undo_indent'. (Thilo Six, 2012 May 28)
 Also question if examples are correct.

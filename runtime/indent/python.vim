@@ -2,7 +2,7 @@
 " Language:		Python
 " Maintainer:		Bram Moolenaar <Bram@vim.org>
 " Original Author:	David Bustos <bustos@caltech.edu>
-" Last Change:		2012 May 01
+" Last Change:		2013 Jun 21
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -36,7 +36,7 @@ function GetPythonIndent(lnum)
     if a:lnum > 1 && getline(a:lnum - 2) =~ '\\$'
       return indent(a:lnum - 1)
     endif
-    return indent(a:lnum - 1) + (exists("g:pyindent_continue") ? eval(g:pyindent_continue) : (&sw * 2))
+    return indent(a:lnum - 1) + (exists("g:pyindent_continue") ? eval(g:pyindent_continue) : (shiftwidth() * 2))
   endif
 
   " If the start of the line is in a string don't change the indent.
@@ -89,9 +89,9 @@ function GetPythonIndent(lnum)
 	  \ . " synIDattr(synID(line('.'), col('.'), 1), 'name')"
 	  \ . " =~ '\\(Comment\\|String\\)$'")
       if pp > 0
-	return indent(plnum) + (exists("g:pyindent_nested_paren") ? eval(g:pyindent_nested_paren) : &sw)
+	return indent(plnum) + (exists("g:pyindent_nested_paren") ? eval(g:pyindent_nested_paren) : shiftwidth())
       endif
-      return indent(plnum) + (exists("g:pyindent_open_paren") ? eval(g:pyindent_open_paren) : (&sw * 2))
+      return indent(plnum) + (exists("g:pyindent_open_paren") ? eval(g:pyindent_open_paren) : (shiftwidth() * 2))
     endif
     if plnumstart == p
       return indent(plnum)
@@ -134,15 +134,15 @@ function GetPythonIndent(lnum)
 
   " If the previous line ended with a colon, indent this line
   if pline =~ ':\s*$'
-    return plindent + &sw
+    return plindent + shiftwidth()
   endif
 
   " If the previous line was a stop-execution statement...
   if getline(plnum) =~ '^\s*\(break\|continue\|raise\|return\|pass\)\>'
     " See if the user has already dedented
-    if indent(a:lnum) > indent(plnum) - &sw
+    if indent(a:lnum) > indent(plnum) - shiftwidth()
       " If not, recommend one dedent
-      return indent(plnum) - &sw
+      return indent(plnum) - shiftwidth()
     endif
     " Otherwise, trust the user
     return -1
@@ -173,11 +173,11 @@ function GetPythonIndent(lnum)
     endif
 
     " Or the user has already dedented
-    if indent(a:lnum) <= plindent - &sw
+    if indent(a:lnum) <= plindent - shiftwidth()
       return -1
     endif
 
-    return plindent - &sw
+    return plindent - shiftwidth()
   endif
 
   " When after a () construct we probably want to go back to the start line.

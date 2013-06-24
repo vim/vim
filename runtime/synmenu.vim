@@ -2,7 +2,7 @@
 " This file is normally sourced from menu.vim.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2010 Jul 26
+" Last Change:	2013 Jun 24
 
 " Define the SetSyn function, used for the Syntax menu entries.
 " Set 'filetype' and also 'syntax' if it is manually selected.
@@ -243,6 +243,11 @@ an 50.50.360 &Syntax.HIJK.Informix\ 4GL :cal SetSyn("fgl")<CR>
 an 50.50.370 &Syntax.HIJK.Initng :cal SetSyn("initng")<CR>
 an 50.50.380 &Syntax.HIJK.Inittab :cal SetSyn("inittab")<CR>
 an 50.50.390 &Syntax.HIJK.Inno\ setup :cal SetSyn("iss")<CR>
+an 50.50.393 &Syntax.HIJK.Innovation\ Data\ Processing.Upstream\ dat :cal SetSyn ("upstreamdat")<CR>
+an 50.50.394 &Syntax.HIJK.Innovation\ Data\ Processing.Upstream\ log :cal SetSyn ("upstreamlog")<CR>
+an 50.50.395 &Syntax.HIJK.Innovation\ Data\ Processing.Upstream\ Install\ log :cal SetSyn ("upstreaminstalllog")<CR>
+an 50.50.396 &Syntax.HIJK.Innovation\ Data\ Processing.Usserver\ log :cal SetSyn ("usserverlog")<CR>
+an 50.50.397 &Syntax.HIJK.Innovation\ Data\ Processing.USW2KAgt\ log :cal SetSyn ("usw2kagtlog")<CR>
 an 50.50.400 &Syntax.HIJK.InstallShield\ script :cal SetSyn("ishd")<CR>
 an 50.50.410 &Syntax.HIJK.Interactive\ Data\ Lang :cal SetSyn("idlang")<CR>
 an 50.50.420 &Syntax.HIJK.IPfilter :cal SetSyn("ipfilter")<CR>

@@ -65,8 +65,7 @@ language.
 	make xx
 
     This will extract all the strings from Vim and merge them in with the
-    existing translations.  Requires the GNU gettext utilities.  Also requires
-    unpacking the extra archive.
+    existing translations.  Requires the GNU gettext utilities.
     Your original xx.po file will be copied to xx.po.orig
 
     -- After you do this, you MUST do the next three steps! --

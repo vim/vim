@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2013 Jun 12
+" Last Change:	2013 Jun 24
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -929,6 +929,23 @@ au BufNewFile,BufRead *.inf,*.INF		setf inform
 
 " Initng
 au BufNewFile,BufRead */etc/initng/**/*.i,*.ii	setf initng
+
+" Innovation Data Processing
+au BufRead,BufNewFile UPSTREAM.DAT,upstream.dat 	setf upstreamdat
+au BufRead,BufNewFile UPSTREAM.*.DAT,upstream.*.dat 	setf upstreamdat
+au BufRead,BufNewFile *.UPSTREAM.DAT,*.upstream.dat 	setf upstreamdat
+au BufRead,BufNewFile UPSTREAM.LOG,upstream.log 	setf upstreamlog
+au BufRead,BufNewFile UPSTREAM.*.LOG,upstream.*.log 	setf upstreamlog
+au BufRead,BufNewFile *.UPSTREAM.LOG,*.upstream.log 	setf upstreamlog
+au BufRead,BufNewFile UPSTREAMInstall.log,upstreaminstall.log setf upstreaminstalllog
+au BufRead,BufNewFile UPSTREAMInstall.*.log,upstreaminstall.*.log setf upstreaminstalllog
+au BufRead,BufNewFile *.UPSTREAMInstall.log,*.upstreaminstall.log setf upstreaminstalllog
+au BufRead,BufNewFile USSERVER.LOG,usserver.log 	setf usserverlog
+au BufRead,BufNewFile USSERVER.*.LOG,usserver.*.log 	setf usserverlog
+au BufRead,BufNewFile *.USSERVER.LOG,*.usserver.log 	setf usserverlog
+au BufRead,BufNewFile USW2KAgt.log,usw2kagt.log 	setf usw2kagtlog
+au BufRead,BufNewFile USW2KAgt.*.log,usw2kagt.*.log 	setf usw2kagtlog
+au BufRead,BufNewFile *.USW2KAgt.log,*.usw2kagt.log 	setf usw2kagtlog
 
 " Ipfilter
 au BufNewFile,BufRead ipf.conf,ipf6.conf,ipf.rules	setf ipfilter

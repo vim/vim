@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.3.  Last change: 2013 Jun 06
+*index.txt*     For Vim version 7.3.  Last change: 2013 Jun 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -801,6 +801,10 @@ tag		char	      note action in Normal mode	~
 |zE|		zE		   eliminate all folds
 |zF|		zF		   create a fold for N lines
 |zG|		zG		   mark word as good spelled word
+|zH|		zH		   when 'wrap' off scroll half a screenwidth
+				   to the right
+|zL|		zL		   when 'wrap' off scroll half a screenwidth
+				   to the left
 |zM|		zM		   set 'foldlevel' to zero
 |zN|		zN		   set 'foldenable'
 |zO|		zO		   open folds recursively

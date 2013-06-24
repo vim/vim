@@ -4808,6 +4808,7 @@ b:changedtick	eval.txt	/*b:changedtick*
 b:changelog_name	filetype.txt	/*b:changelog_name*
 b:current_syntax-variable	syntax.txt	/*b:current_syntax-variable*
 b:netrw_lastfile	pi_netrw.txt	/*b:netrw_lastfile*
+b:tex_stylish	syntax.txt	/*b:tex_stylish*
 b:var	eval.txt	/*b:var*
 baan-folding	syntax.txt	/*baan-folding*
 baan-syntax	syntax.txt	/*baan-syntax*
@@ -5665,6 +5666,7 @@ format-comments	change.txt	/*format-comments*
 formatting	change.txt	/*formatting*
 formfeed	intro.txt	/*formfeed*
 fortran.vim	syntax.txt	/*fortran.vim*
+friendship	intro.txt	/*friendship*
 frombook	usr_01.txt	/*frombook*
 ft-abel-syntax	syntax.txt	/*ft-abel-syntax*
 ft-ada-commands	ft_ada.txt	/*ft-ada-commands*
@@ -5997,10 +5999,18 @@ g:tar_nomax	pi_tar.txt	/*g:tar_nomax*
 g:tar_readoptions	pi_tar.txt	/*g:tar_readoptions*
 g:tar_secure	pi_tar.txt	/*g:tar_secure*
 g:tar_writeoptions	pi_tar.txt	/*g:tar_writeoptions*
+g:tex_comment_nospell	syntax.txt	/*g:tex_comment_nospell*
 g:tex_conceal	syntax.txt	/*g:tex_conceal*
 g:tex_fast	syntax.txt	/*g:tex_fast*
+g:tex_fast	syntax.txt	/*g:tex_fast*
 g:tex_flavor	filetype.txt	/*g:tex_flavor*
+g:tex_fold_enabled	syntax.txt	/*g:tex_fold_enabled*
 g:tex_isk	syntax.txt	/*g:tex_isk*
+g:tex_isk	syntax.txt	/*g:tex_isk*
+g:tex_no_error	syntax.txt	/*g:tex_no_error*
+g:tex_nospell	syntax.txt	/*g:tex_nospell*
+g:tex_stylish	syntax.txt	/*g:tex_stylish*
+g:tex_verbspell	syntax.txt	/*g:tex_verbspell*
 g:var	eval.txt	/*g:var*
 g:vimball_home	pi_vimball.txt	/*g:vimball_home*
 g:vimball_mkdir	pi_vimball.txt	/*g:vimball_mkdir*
@@ -6134,6 +6144,7 @@ graphic-option-gone	version4.txt	/*graphic-option-gone*
 greek	options.txt	/*greek*
 grep	quickfix.txt	/*grep*
 groff.vim	syntax.txt	/*groff.vim*
+gross-national-happiness	intro.txt	/*gross-national-happiness*
 group-name	syntax.txt	/*group-name*
 gs	various.txt	/*gs*
 gsp.vim	syntax.txt	/*gsp.vim*
@@ -6614,6 +6625,7 @@ language-mapping	map.txt	/*language-mapping*
 last-pattern	pattern.txt	/*last-pattern*
 last-position-jump	eval.txt	/*last-position-jump*
 last_buffer_nr()	eval.txt	/*last_buffer_nr()*
+latex-syntax	syntax.txt	/*latex-syntax*
 lc_time-variable	eval.txt	/*lc_time-variable*
 lcs-conceal	options.txt	/*lcs-conceal*
 lcs-eol	options.txt	/*lcs-eol*
@@ -6667,6 +6679,7 @@ location-list-window	quickfix.txt	/*location-list-window*
 log()	eval.txt	/*log()*
 log10()	eval.txt	/*log10()*
 long-lines	version5.txt	/*long-lines*
+love	intro.txt	/*love*
 lowercase	change.txt	/*lowercase*
 lpc.vim	syntax.txt	/*lpc.vim*
 lua	if_lua.txt	/*lua*
@@ -7244,6 +7257,7 @@ pattern-searches	pattern.txt	/*pattern-searches*
 pattern.txt	pattern.txt	/*pattern.txt*
 patterns-composing	pattern.txt	/*patterns-composing*
 pdev-option	print.txt	/*pdev-option*
+peace	intro.txt	/*peace*
 penc-option	print.txt	/*penc-option*
 perl	if_perl.txt	/*perl*
 perl-Append	if_perl.txt	/*perl-Append*
@@ -8186,7 +8200,9 @@ tex-nospell	syntax.txt	/*tex-nospell*
 tex-package	syntax.txt	/*tex-package*
 tex-runon	syntax.txt	/*tex-runon*
 tex-slow	syntax.txt	/*tex-slow*
+tex-stopzone	syntax.txt	/*tex-stopzone*
 tex-style	syntax.txt	/*tex-style*
+tex-sync	syntax.txt	/*tex-sync*
 tex-verb	syntax.txt	/*tex-verb*
 tex.vim	syntax.txt	/*tex.vim*
 text-functions	usr_41.txt	/*text-functions*

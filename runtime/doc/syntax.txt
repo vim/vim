@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2013 Jun 06
+*syntax.txt*	For Vim version 7.3.  Last change: 2013 Jun 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1318,8 +1318,8 @@ FORTRAN					*fortran.vim* *ft-fortran-syntax*
 
 Default highlighting and dialect ~
 Highlighting appropriate for Fortran 2008 is used by default.  This choice
-should be appropriate for most users most of the time because Fortran 2008 is 
-almost a superset of previous versions (Fortran 2003, 95, 90, and 77). 
+should be appropriate for most users most of the time because Fortran 2008 is
+almost a superset of previous versions (Fortran 2003, 95, 90, and 77).
 
 Fortran source code form ~
 Fortran code can be in either fixed or free source form.  Note that the
@@ -1410,7 +1410,7 @@ items.
 
 If you use F, the advantage of setting the dialect appropriately is that
 other legacy features excluded from F will be highlighted as todo items and
-that free source form will be assumed. 
+that free source form will be assumed.
 
 The dialect can be selected in various ways.  If all your fortran files use
 the same dialect, set the global variable fortran_dialect in your .vimrc prior
@@ -1444,13 +1444,13 @@ Fortran comment of the form >
 For previous versions of the syntax, you may have set fortran_dialect to the
 now-obsolete values "f77", "f90", "f95", or "elf". Such settings will be
 silently handled as "f08". Users of "elf" may wish to experiment with "F"
-instead. 
+instead.
 
 The syntax/fortran.vim script contains embedded comments that tell you how to
 comment and/or uncomment some lines to (a) activate recognition of some
 non-standard, vendor-supplied intrinsics and (b) to prevent features deleted
 or declared obsolescent in the 2008 standard from being highlighted as todo
-items. 
+items.
 
 Limitations ~
 Parenthesis checking does not catch too few closing parentheses.  Hollerith
@@ -2197,9 +2197,11 @@ PERL						*perl.vim* *ft-perl-syntax*
 
 There are a number of possible options to the perl syntax highlighting.
 
-If you use POD files or POD segments, you might: >
+Inline POD highlighting is now turned on by default.  If you don't wish
+to have the added complexity of highlighting POD embedded within Perl
+files, you may set the 'perl_include_pod' option to 0: >
 
-	:let perl_include_pod = 1
+	:let perl_include_pod = 0
 
 The reduce the complexity of parsing (and increase performance) you can switch
 off two elements in the parsing of variable names and contents. >
@@ -2252,13 +2254,20 @@ If you want to fold blocks in if statements, etc. as well set the following: >
 
 	:let perl_fold_blocks = 1
 
-To avoid folding packages or subs when perl_fold is let, let the appropriate
-variable(s): >
+Subroutines are folded by default if 'perl_fold' is set.  If you do not want
+this, you can set 'perl_nofold_subs': >
 
-	:unlet perl_nofold_packages
-	:unlet perl_nofold_subs
+	:let perl_nofold_subs = 1
 
+Anonymous subroutines are not folded by default; you may enable their folding
+via 'perl_fold_anonymous_subs': >
 
+	:let perl_fold_anonymous_subs = 1
+
+Packages are also folded by default if 'perl_fold' is set.  To disable this
+behavior, set 'perl_nofold_packages': >
+
+	:let perl_nofold_packages = 1
 
 PHP3 and PHP4		*php.vim* *php3.vim* *ft-php-syntax* *ft-php3-syntax*
 
@@ -2481,7 +2490,7 @@ If you want all possible Python highlighting (the same as setting the
 preceding last option and unsetting all other ones): >
 	:let python_highlight_all = 1
 
-Note: only existence of these options matter, not their value. You can replace 
+Note: only existence of these options matter, not their value. You can replace
       1 above with anything.
 
 
@@ -2874,9 +2883,24 @@ tcsh_minlines is 100.  The disadvantage of using a larger number is that
 redrawing can become slow.
 
 
-TEX						*tex.vim* *ft-tex-syntax*
+TEX				*tex.vim* *ft-tex-syntax* *latex-syntax*
 
-								*tex-folding*
+			Tex Contents~
+	Tex: Want Syntax Folding?			|tex-folding|
+	Tex: No Spell Checking Wanted			|g:tex_nospell|
+	Tex: Don't Want Spell Checking In Comments?	|tex-nospell|
+	Tex: Want Spell Checking in Verbatim Zones?	|tex-verb|
+	Tex: Run-on Comments or MathZones		|tex-runon|
+	Tex: Slow Syntax Highlighting?			|tex-slow|
+	Tex: Want To Highlight More Commands?		|tex-morecommands|
+	Tex: Excessive Error Highlighting?		|tex-error|
+	Tex: Need a new Math Group?			|tex-math|
+	Tex: Starting a New Style?			|tex-style|
+	Tex: Taking Advantage of Conceal Mode		|tex-conceal|
+	Tex: Selective Conceal Mode			|g:tex_conceal|
+	Tex: Controlling iskeyword			|g:tex_isk|
+
+				*tex-folding* *g:tex_fold_enabled*
  Tex: Want Syntax Folding? ~
 
 As of version 28 of <syntax/tex.vim>, syntax-based folding of parts, chapters,
@@ -2886,24 +2910,27 @@ in your <.vimrc>, and :set fdm=syntax.  I suggest doing the latter via a
 modeline at the end of your LaTeX file: >
 	% vim: fdm=syntax
 If your system becomes too slow, then you might wish to look into >
- 	http://vim.wikia.com/wiki/Keep_folds_closed_while_inserting_text
+	https://vimhelp.appspot.com/vim_faq.txt.html#faq-29.7
 <
-								*tex-nospell*
+						*g:tex_nospell*
+ Tex: No Spell Checking Wanted~
+
+If you don't want spell checking anywhere in your LaTeX document, put >
+	let g:tex_nospell=1
+into your .vimrc.  If you merely wish to suppress spell checking inside
+comments only, see |g:tex_comment_nospell|.
+
+				*tex-nospell* *g:tex_comment_nospell*
  Tex: Don't Want Spell Checking In Comments? ~
 
 Some folks like to include things like source code in comments and so would
 prefer that spell checking be disabled in comments in LaTeX files.  To do
 this, put the following in your <.vimrc>: >
       let g:tex_comment_nospell= 1
-The comment lines >
-	% nospell{
-	...
-	% nospell}
-will suppress spell checking between them.  These comment lines spelling
-control are known to be fragile; for example, don't include any of the section
-commands (\part, \chapter, \section, \paragraph, etc) inside nospell blocks
-or interleave environments (such as math) across nospell blocks.
-								*tex-verb*
+If you want to suppress spell checking everywhere inside your LaTeX document,
+see |g:tex_nospell|.
+
+				*tex-verb* *g:tex_verbspell*
  Tex: Want Spell Checking in Verbatim Zones?~
 
 Often verbatim regions are used for things like source code; seldom does
@@ -2911,7 +2938,7 @@ one want source code spell-checked.  However, for those of you who do
 want your verbatim zones spell-checked, put the following in your <.vimrc>: >
 	let g:tex_verbspell= 1
 <
-								*tex-runon*
+					*tex-runon* *tex-stopzone*
  Tex: Run-on Comments or MathZones ~
 
 The <syntax/tex.vim> highlighting supports TeX, LaTeX, and some AmsTeX.  The
@@ -2924,7 +2951,7 @@ special "TeX comment" has been provided >
 which will forcibly terminate the highlighting of either a texZone or a
 texMathZone.
 
-								*tex-slow*
+					*tex-slow* *tex-sync*
  Tex: Slow Syntax Highlighting? ~
 
 If you have a slow computer, you may wish to reduce the values for >
@@ -2966,7 +2993,39 @@ selectively to enable just some syntax highlighting: >
 As an example, let g:tex_fast= "M" will allow math-associated highlighting
 but suppress all the other region-based syntax highlighting.
 
-					    *tex-morecommands* *tex-package*
+Another cause of slow highlighting is due to syntax-driven folding; see
+|tex-folding| for a way around this.
+
+					*g:tex_fast*
+
+Finally, if syntax highlighting is still too slow, you may set >
+
+	:let g:tex_fast= ""
+
+in your .vimrc.  Used this way, the g:tex_fast variable causes the syntax
+highlighting script to avoid defining any regions and associated
+synchronization.  The result will be much faster syntax highlighting; the
+price: you will no longer have as much highlighting or any syntax-based
+folding, and you will be missing syntax-based error checking.
+
+You may decide that some syntax is acceptable; you may use the following table
+selectively to enable just some syntax highlighting: >
+
+    b : allow bold and italic syntax
+    c : allow texComment syntax
+    m : allow texMatcher syntax (ie. {...} and [...])
+    M : allow texMath syntax
+    p : allow parts, chapter, section, etc syntax
+    r : allow texRefZone syntax (nocite, bibliography, label, pageref, eqref)
+    s : allow superscript/subscript regions
+    S : allow texStyle syntax
+    v : allow verbatim syntax
+    V : allow texNewEnv and texNewCmd syntax
+<
+As an example, let g:tex_fast= "M" will allow math-associated highlighting
+but suppress all the other region-based syntax highlighting.
+
+					*tex-morecommands* *tex-package*
  Tex: Want To Highlight More Commands? ~
 
 LaTeX is a programmable language, and so there are thousands of packages full
@@ -2978,14 +3037,14 @@ by syntax/tex.vim.  Please consider uploading any extensions that you write,
 which typically would go in $HOME/after/syntax/tex/[pkgname].vim, to
 http://vim.sf.net/.
 
-								*tex-error*
+					*tex-error* *g:tex_no_error*
  Tex: Excessive Error Highlighting? ~
 
 The <tex.vim> supports lexical error checking of various sorts.  Thus,
 although the error checking is ofttimes very useful, it can indicate
 errors where none actually are.  If this proves to be a problem for you,
 you may put in your <.vimrc> the following statement: >
-	let tex_no_error=1
+	let g:tex_no_error=1
 and all error checking by <syntax/tex.vim> will be suppressed.
 
 								*tex-math*
@@ -3003,7 +3062,7 @@ and then to the call to it in .vim/after/syntax/tex.vim.
 The "starform" variable, if true, implies that your new math group
 has a starred form (ie. eqnarray*).
 
-								*tex-style*
+					*tex-style* *b:tex_stylish*
  Tex: Starting a New Style? ~
 
 One may use "\makeatletter" in *.tex files, thereby making the use of "@" in
@@ -3030,12 +3089,12 @@ In fact, only a few characters are supported as subscripts.
 One way to use this is to have vertically split windows (see |CTRL-W_v|); one
 with |'conceallevel'| at 0 and the other at 2; and both using |'scrollbind'|.
 
-							*g:tex_conceal*
+					*g:tex_conceal*
  Tex: Selective Conceal Mode~
 
 You may selectively use conceal mode by setting g:tex_conceal in your
-<.vimrc>.  By default it is set to "admgs" to enable conceal for the
-following sets of characters: >
+<.vimrc>.  By default, g:tex_conceal is set to "admgs" to enable concealment
+for the following sets of characters: >
 
 	a = accents/ligatures
 	b = bold and italic
@@ -3058,7 +3117,7 @@ with one that works for LaTeX.
 However, one may override this iskeyword re-setting by setting the
 variable, g:tex_isk, in one's .vimrc to whatever one wishes and
 it will be used instead.
- 
+
 
 TF						*tf.vim* *ft-tf-syntax*
 
@@ -3068,6 +3127,26 @@ For syncing, minlines defaults to 100.	If you prefer another value, you can
 set "tf_minlines" to the value you desire.  Example: >
 
 	:let tf_minlines = your choice
+
+						*g:tex_isk* *g:tex_stylish*
+ Tex: Controlling iskeyword~
+
+Normally, LaTeX keywords support 0-9, a-z, A-z, and 192-255 only. Latex
+keywords don't support the underscore - except when in *.sty files.  The
+syntax highlighting script handles this with the following logic:
+
+	* If g:tex_stylish exists and is 1
+		then the file will be treated as a "sty" file, so the "_"
+		will be allowed as part of keywords
+		(irregardless of g:tex_isk)
+	* Else if the file's suffix is sty, cls, clo, dtx, or ltx,
+		then the file will be treated as a "sty" file, so the "_"
+		will be allowed as part of keywords
+		(irregardless of g:tex_isk)
+
+	* If g:tex_isk exists, then it will be used for the local 'iskeyword'
+	* Else the local 'iskeyword' will be set to 48-57,a-z,A-Z,192-255
+
 
 
 VIM			*vim.vim*		*ft-vim-syntax*
@@ -4936,7 +5015,7 @@ restoring "b:current_syntax", since the syntax files do set
 "w:current_syntax".
 
 Once a window has its own syntax, syntax commands executed from other windows
-on the same buffer (including :syntax clear) have no effect. Conversely, 
+on the same buffer (including :syntax clear) have no effect. Conversely,
 syntax commands executed from that window do not affect other windows on the
 same buffer.
 
@@ -5141,9 +5220,9 @@ When using the "\@<=" and "\@<!" items, add a maximum size to avoid trying at
 all positions in the current and previous line.  For example, if the item is
 literal text specify the size of that text (in bytes):
 
-"<\@<=span"   	Matches "span" in "<span".  This tries matching with "<" in
+"<\@<=span"	Matches "span" in "<span".  This tries matching with "<" in
 		many places.
-"<\@1<=span"  	Matches the same, but only tries one byte before "span".
+"<\@1<=span"	Matches the same, but only tries one byte before "span".
 
 
  vim:tw=78:sw=4:ts=8:ft=help:norl:
