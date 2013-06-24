@@ -3549,12 +3549,25 @@ StringToLine(PyObject *obj)
 	if (!(bytes = PyUnicode_AsEncodedString(obj, ENC_OPT, NULL)))
 	    return NULL;
 
-	if(PyBytes_AsStringAndSize(bytes, &str, &len) == -1
+	if (PyBytes_AsStringAndSize(bytes, &str, &len) == -1
 		|| str == NULL)
 	{
 	    Py_DECREF(bytes);
 	    return NULL;
 	}
+    }
+    else
+    {
+#if PY_MAJOR_VERSION < 3
+	PyErr_FORMAT(PyExc_TypeError,
+		N_("expected str() or unicode() instance, but got %s"),
+		Py_TYPE_NAME(obj));
+#else
+	PyErr_FORMAT(PyExc_TypeError,
+		N_("expected bytes() or str() instance, but got %s"),
+		Py_TYPE_NAME(obj));
+#endif
+	return NULL;
     }
 
     /*
