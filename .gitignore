@@ -36,6 +36,9 @@ src/Obj*/pathdef.c
 gvimext.dll
 gvimext.lib
 
+# Mac OSX
+src/xxd/xxd.dSYM
+
 # All platforms
 *.rej
 *.orig

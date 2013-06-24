@@ -139,13 +139,15 @@ StringToChars(PyObject *obj, PyObject **todecref)
     }
     else
     {
-	PyErr_FORMAT(PyExc_TypeError,
 #if PY_MAJOR_VERSION < 3
-		N_("expected str() or unicode() instance, but got %s")
+	PyErr_FORMAT(PyExc_TypeError,
+		N_("expected str() or unicode() instance, but got %s"),
+		Py_TYPE_NAME(obj));
 #else
-		N_("expected bytes() or str() instance, but got %s")
+	PyErr_FORMAT(PyExc_TypeError,
+		N_("expected bytes() or str() instance, but got %s"),
+		Py_TYPE_NAME(obj));
 #endif
-		, Py_TYPE_NAME(obj));
 	return NULL;
     }
 
@@ -191,15 +193,17 @@ NumberToLong(PyObject *obj, long *result, int flags)
     }
     else
     {
-	PyErr_FORMAT(PyExc_TypeError,
 #if PY_MAJOR_VERSION < 3
+	PyErr_FORMAT(PyExc_TypeError,
 		N_("expected int(), long() or something supporting "
-		   "coercing to long(), but got %s")
+		   "coercing to long(), but got %s"),
+		Py_TYPE_NAME(obj));
 #else
+	PyErr_FORMAT(PyExc_TypeError,
 		N_("expected int() or something supporting coercing to int(), "
-		   "but got %s")
+		   "but got %s"),
+		Py_TYPE_NAME(obj));
 #endif
-		, Py_TYPE_NAME(obj));
 	return -1;
     }
 
