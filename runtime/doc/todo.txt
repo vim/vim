@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Jun 24
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Jun 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,7 +36,8 @@ not be repeated below, unless there is extra information.
 
 --- Python interface
 
-Test 86 fails on MS-Windows. (Taro Muraoka, 2013 Jun 24)
+Test 86 fails on MS-Windows, using backslashes instead of forward slashes.
+(Taro Muraoka, 2013 Jun 24)
 Can we fix this in code instead of in the test?
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
@@ -64,6 +65,9 @@ Modeline is not triggered when using Vim: instead of vim:. It's very hard to
 see why it doesn't work.
 
 Patch to fix finding toolbar bitmaps.  Issue 129.
+
+Patch 7.3.1200 doesn't fix the problem in all cases. (Hirohito Higashi, 2013
+Jun 24)
 
 Patch to avoid clang warnings when building with Athena.
 (Dominique Pelle, 2013 Jun 22)
@@ -201,10 +205,6 @@ v:register is not directly reset to " after a delete command that specifies a
 register.  It is reset after the next command. (Steve Vermeulen, 2013 Mar 16)
 
 'ff' is wrong for one-line file without EOL. (Issue 77)
-
-Can add a function to a dict using a weird key:
-    let dict['/foo'] = function('tr')
-Disallow? (thinca, 2013 Jun 17)
 
 Patch to set antialiasing style on Windows. (Ondrej Balaz, 2013 Mar 14)
 Needs a different check for CLEARTYPE_QUALITY.

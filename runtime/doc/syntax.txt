@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2013 Jun 24
+*syntax.txt*	For Vim version 7.3.  Last change: 2013 Jun 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -379,12 +379,12 @@ settings, depending on which syntax is active.	Example: >
 2HTML						*2html.vim* *convert-to-HTML*
 
 This is not a syntax file itself, but a script that converts the current
-window into HTML.  Vim opens a new window in which it builds the HTML file.
+window into HTML. Vim opens a new window in which it builds the HTML file.
 
-After you save the resulting file, you can view it with any browser.  The
-colors should be exactly the same as you see them in Vim.  You can jump to
-specific lines by adding (for example) #L123 or #123 to the end of the URL in
-your browser's address bar (#123 only with javascript support). And with
+After you save the resulting file, you can view it with any browser. The
+colors should be exactly the same as you see them in Vim.  With
+|g:html_line_ids| you can jump to specific lines by adding (for example) #L123
+or #123 to the end of the URL in your browser's address bar. And with
 |g:html_dynamic_folds| enabled, you can show or hide the text that is folded
 in Vim.
 
@@ -425,15 +425,14 @@ and last line to be converted.  Example, using the last set Visual area: >
 			|g:html_end_line| to the start and end of the range,
 			respectively. Default range is the entire buffer.
 
-			If the current window is part of a |diff|, unless
-			|g:html_diff_one_file| is set, :TOhtml will convert
-			all windows which are part of the diff in the current
-			tab and place them side-by-side in a <table> element
-			in the generated HTML. When this happens you can jump
-			to lines in specific windows with (for example) #W1L42
-			for line 42 in the first diffed window, or #W3L87 for
-			line 87 in the third. Omitting the window ID will
-			default to the first window if javascript is enabled.
+                        If the current window is part of a |diff|, unless
+                        |g:html_diff_one_file| is set, :TOhtml will convert
+                        all windows which are part of the diff in the current
+                        tab and place them side-by-side in a <table> element
+                        in the generated HTML. With |g:html_line_ids| you can
+                        jump to lines in specific windows with (for example)
+                        #W1L42 for line 42 in the first diffed window, or
+                        #W3L87 for line 87 in the third.
 
 			Examples: >
 
@@ -443,9 +442,9 @@ and last line to be converted.  Example, using the last set Visual area: >
 <
 							*g:html_diff_one_file*
 Default: 0.
-When 0, all windows involved in a |diff| in the current tab page are converted
-to HTML and placed side-by-side in a <table> element.
-When 1, only the current buffer is converted.
+When 0, and using |:TOhtml| all windows involved in a |diff| in the current tab
+page are converted to HTML and placed side-by-side in a <table> element. When
+1, only the current buffer is converted.
 Example: >
 
 	let g:html_diff_one_file = 1
@@ -494,6 +493,23 @@ Force to omit the line numbers: >
    :let g:html_number_lines = 0
 Go back to the default to use 'number' by deleting the variable: >
    :unlet g:html_number_lines
+<
+                                                             *g:html_line_ids*
+Default: 1 if |g:html_number_lines| is set, 0 otherwise.
+When 1, adds an HTML id attribute to each line number, or to an empty <span>
+inserted for that purpose if no line numbers are shown. This ID attribute
+takes the form of L123 for single-buffer HTML pages, or W2L123 for diff-view
+pages, and is used to jump to a specific line (in a specific window of a diff
+view). Javascript is inserted to open any closed dynamic folds
+(|g:html_dynamic_folds|) containing the specificed line before jumping. The
+javascript also allows omitting the window ID in the url, and the leading L.
+For example: >
+
+	page.html#L123	jumps to line 123 in a single-buffer file
+	page.html#123	does the same
+
+	diff.html#W1L42	jumps to line 42 in the first window in a diff
+	diff.html#42	does the same
 <
 							      *g:html_use_css*
 Default: 1.
@@ -603,6 +619,25 @@ they will not be openable without a foldcolumn.
 >
    :let g:html_hover_unfold = 1
 <
+							      *g:html_id_expr*
+Default: ""
+Dynamic folding and jumping to line IDs rely on unique IDs within the document
+to work. If generated HTML is copied into a larger document, these IDs are no
+longer guaranteed to be unique. Set g:html_id_expr to an expression Vim can
+evaluate to get a unique string to append to each ID used in a given document,
+so that the full IDs will be unique even when combined with other content in a
+larger HTML document. Example, to append _ and the buffer number to each ID: >
+
+	:let g:html_id_expr = '"_".bufnr("%")'
+<
+To append a string "_mystring" to the end of each ID: >
+
+	:let g:html_id_expr = '"_mystring"'
+<
+Note, when converting a diff view to HTML, the expression will only be
+evaluated for the first window in the diff, and the result used for all the
+windows.
+
 					  *TOhtml-wrap-text* *g:html_pre_wrap*
 Default: current 'wrap' setting.
 When 0, if |g:html_no_pre| is 0 or unset, the text in the generated HTML does

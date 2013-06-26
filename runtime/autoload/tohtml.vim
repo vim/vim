@@ -1,6 +1,6 @@
 " Vim autoload file for the tohtml plugin.
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2013 May 31
+" Last Change: 2013 Jun 19
 "
 " Additional contributors:
 "
@@ -401,15 +401,15 @@ func! tohtml#Diff2HTML(win_list, buf_list) "{{{
   call add(html, '</head>')
   let body_line_num = len(html)
   if !empty(s:settings.prevent_copy)
-    call add(html, "<body onload='FixCharWidth(); JumpToLine();'>")
+    call add(html, "<body onload='FixCharWidth();".(s:settings.line_ids ? " JumpToLine();" : "")."'>")
     call add(html, "<!-- hidden divs used by javascript to get the width of a char -->")
     call add(html, "<div id='oneCharWidth'>0</div>")
     call add(html, "<div id='oneInputWidth'><input size='1' value='0'".tag_close."</div>")
     call add(html, "<div id='oneEmWidth' style='width: 1em;'></div>")
   else
-    call add(html, '<body onload="JumpToLine();">')
+    call add(html, '<body'.(s:settings.line_ids ? ' onload="JumpToLine();"' : '').'>')
   endif
-  call add(html, "<table border='1' width='100%' id='vimCodeElement'>")
+  call add(html, "<table border='1' width='100%' id='vimCodeElement".s:settings.id_suffix."'>")
 
   call add(html, '<tr>')
   for buf in a:win_list
@@ -475,7 +475,7 @@ func! tohtml#Diff2HTML(win_list, buf_list) "{{{
     let temp = getline(1,'$')
     " clean out id on the main content container because we already set it on
     " the table
-    let temp[0] = substitute(temp[0], " id='vimCodeElement'", "", "")
+    let temp[0] = substitute(temp[0], " id='vimCodeElement[^']*'", "", "")
     " undo deletion of start and end part
     " so we can later save the file as valid html
     " TODO: restore using grabbed lines if undolevel is 1?
@@ -568,9 +568,9 @@ func! tohtml#Diff2HTML(win_list, buf_list) "{{{
 	    \ '  var emWidth = document.getElementById("oneEmWidth").clientWidth;',
 	    \ '  if (inputWidth > goodWidth) {',
 	    \ '    while (ratio < 100*goodWidth/emWidth && ratio < 100) {',
-	    \ '    ratio += 5;',
-	    \ '  }',
-	    \ '  document.getElementById("vimCodeElement").className = "em"+ratio;',
+	    \ '      ratio += 5;',
+	    \ '    }',
+	    \ '    document.getElementById("vimCodeElement'.s:settings.id_suffix.'").className = "em"+ratio;',
 	    \ '  }',
 	    \ '}'
 	    \ ])
@@ -596,7 +596,7 @@ func! tohtml#Diff2HTML(win_list, buf_list) "{{{
 	    \ "",
 	    \ "  /* navigate upwards in the DOM tree to open all folds containing the line */",
 	    \ "  var node = lineElem;",
-	    \ "  while (node && node.id != 'vimCodeElement')",
+	    \ "  while (node && node.id != 'vimCodeElement".s:settings.id_suffix."')",
 	    \ "  {",
 	    \ "    if (node.className == 'closed-fold')",
 	    \ "    {",
@@ -722,6 +722,7 @@ func! tohtml#GetUserSettings() "{{{
     call tohtml#GetOption(user_settings,     'no_invalid', 0 )
     call tohtml#GetOption(user_settings,   'whole_filler', 0 )
     call tohtml#GetOption(user_settings,      'use_xhtml', 0 )
+    call tohtml#GetOption(user_settings,       'line_ids', user_settings.number_lines )
     " }}}
     
     " override those settings that need it {{{
@@ -853,6 +854,20 @@ func! tohtml#GetUserSettings() "{{{
     endif
     if empty(user_settings.prevent_copy)
       let user_settings.no_invalid = 0
+    endif
+
+    if exists('g:html_id_expr')
+      let user_settings.id_suffix = eval(g:html_id_expr)
+      if user_settings.id_suffix !~ '^[-_:.A-Za-z0-9]*$'
+	echohl WarningMsg
+	echomsg '2html: g:html_id_expr evaluated to invalid string for HTML id attributes'
+	echomsg '2html: Omitting user-specified suffix'
+	echohl None
+	sleep 3
+	let user_settings.id_suffix=""
+      endif
+    else
+      let user_settings.id_suffix=""
     endif
 
     " TODO: font

@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2013 May 31
+" Last Change: 2013 Jun 19
 "
 " Additional contributors:
 "
@@ -450,30 +450,42 @@ endfun
 " element is supposed to be unselectable or not
 if s:settings.prevent_copy =~# 'n'
   if s:settings.number_lines
-    function! s:HtmlFormat_n(text, style_id, diff_style_id, lnr)
-      if a:lnr > 0
-	return s:HtmlFormat(a:text, a:style_id, a:diff_style_id, 'id="'.(exists('g:html_diff_win_num') ? 'W'.g:html_diff_win_num : "").'L'.a:lnr.'" ', 1)
-      else
+    if s:settings.line_ids
+      function! s:HtmlFormat_n(text, style_id, diff_style_id, lnr)
+	if a:lnr > 0
+	  return s:HtmlFormat(a:text, a:style_id, a:diff_style_id, 'id="'.(exists('g:html_diff_win_num') ? 'W'.g:html_diff_win_num : "").'L'.a:lnr.s:settings.id_suffix.'" ', 1)
+	else
+	  return s:HtmlFormat(a:text, a:style_id, a:diff_style_id, "", 1)
+	endif
+      endfun
+    else
+      function! s:HtmlFormat_n(text, style_id, diff_style_id, lnr)
 	return s:HtmlFormat(a:text, a:style_id, a:diff_style_id, "", 1)
-      endif
-    endfun
-  else
+      endfun
+    endif
+  elseif s:settings.line_ids
     " if lines are not being numbered the only reason this function gets called
     " is to put the line IDs on each line; "text" will be emtpy but lnr will
     " always be non-zero, however we don't want to use the <input> because that
     " won't work as nice for empty text
     function! s:HtmlFormat_n(text, style_id, diff_style_id, lnr)
-      return s:HtmlFormat(a:text, a:style_id, a:diff_style_id, 'id="'.(exists('g:html_diff_win_num') ? 'W'.g:html_diff_win_num : "").'L'.a:lnr.'" ', 0)
+      return s:HtmlFormat(a:text, a:style_id, a:diff_style_id, 'id="'.(exists('g:html_diff_win_num') ? 'W'.g:html_diff_win_num : "").'L'.a:lnr.s:settings.id_suffix.'" ', 0)
     endfun
   endif
 else
-  function! s:HtmlFormat_n(text, style_id, diff_style_id, lnr)
-    if a:lnr > 0
-      return s:HtmlFormat(a:text, a:style_id, a:diff_style_id, 'id="'.(exists('g:html_diff_win_num') ? 'W'.g:html_diff_win_num : "").'L'.a:lnr.'" ', 0)
-    else
+  if s:settings.line_ids
+    function! s:HtmlFormat_n(text, style_id, diff_style_id, lnr)
+      if a:lnr > 0
+	return s:HtmlFormat(a:text, a:style_id, a:diff_style_id, 'id="'.(exists('g:html_diff_win_num') ? 'W'.g:html_diff_win_num : "").'L'.a:lnr.s:settings.id_suffix.'" ', 0)
+      else
+	return s:HtmlFormat(a:text, a:style_id, a:diff_style_id, "", 0)
+      endif
+    endfun
+  else
+    function! s:HtmlFormat_n(text, style_id, diff_style_id, lnr)
       return s:HtmlFormat(a:text, a:style_id, a:diff_style_id, "", 0)
-    endif
-  endfun
+    endfun
+  endif
 endif
 if s:settings.prevent_copy =~# 'd'
   function! s:HtmlFormat_d(text, style_id, diff_style_id)
@@ -818,50 +830,52 @@ if s:settings.dynamic_folds
 	\ ])
 endif
 
-" insert javascript to get IDs from line numbers, and to open a fold before
-" jumping to any lines contained therein
-call extend(s:lines, [
-      \ "",
-      \ "/* function to open any folds containing a jumped-to line before jumping to it */",
-      \ "function JumpToLine()",
-      \ "{",
-      \ "  var lineNum;",
-      \ "  lineNum = window.location.hash;",
-      \ "  lineNum = lineNum.substr(1); /* strip off '#' */",
-      \ "",
-      \ "  if (lineNum.indexOf('L') == -1) {",
-      \ "    lineNum = 'L'+lineNum;",
-      \ "  }",
-      \ "  lineElem = document.getElementById(lineNum);"
-      \ ])
-if s:settings.dynamic_folds
+if s:settings.line_ids
+  " insert javascript to get IDs from line numbers, and to open a fold before
+  " jumping to any lines contained therein
   call extend(s:lines, [
 	\ "",
-	\ "  /* navigate upwards in the DOM tree to open all folds containing the line */",
-	\ "  var node = lineElem;",
-	\ "  while (node && node.id != 'vimCodeElement')",
-	\ "  {",
-	\ "    if (node.className == 'closed-fold')",
-	\ "    {",
-	\ "      node.className = 'open-fold';",
-	\ "    }",
-	\ "    node = node.parentNode;",
+	\ "/* function to open any folds containing a jumped-to line before jumping to it */",
+	\ "function JumpToLine()",
+	\ "{",
+	\ "  var lineNum;",
+	\ "  lineNum = window.location.hash;",
+	\ "  lineNum = lineNum.substr(1); /* strip off '#' */",
+	\ "",
+	\ "  if (lineNum.indexOf('L') == -1) {",
+	\ "    lineNum = 'L'+lineNum;",
 	\ "  }",
+	\ "  lineElem = document.getElementById(lineNum);"
+	\ ])
+  if s:settings.dynamic_folds
+    call extend(s:lines, [
+	  \ "",
+	  \ "  /* navigate upwards in the DOM tree to open all folds containing the line */",
+	  \ "  var node = lineElem;",
+	  \ "  while (node && node.id != 'vimCodeElement".s:settings.id_suffix."')",
+	  \ "  {",
+	  \ "    if (node.className == 'closed-fold')",
+	  \ "    {",
+	  \ "      node.className = 'open-fold';",
+	  \ "    }",
+	  \ "    node = node.parentNode;",
+	  \ "  }",
+	  \ ])
+  endif
+  call extend(s:lines, [
+	\ "  /* Always jump to new location even if the line was hidden inside a fold, or",
+	\ "   * we corrected the raw number to a line ID.",
+	\ "   */",
+	\ "  if (lineElem) {",
+	\ "    lineElem.scrollIntoView(true);",
+	\ "  }",
+	\ "  return true;",
+	\ "}",
+	\ "if ('onhashchange' in window) {",
+	\ "  window.onhashchange = JumpToLine;",
+	\ "}"
 	\ ])
 endif
-call extend(s:lines, [
-      \ "  /* Always jump to new location even if the line was hidden inside a fold, or",
-      \ "   * we corrected the raw number to a line ID.",
-      \ "   */",
-      \ "  if (lineElem) {",
-      \ "    lineElem.scrollIntoView(true);",
-      \ "  }",
-      \ "  return true;",
-      \ "}",
-      \ "if ('onhashchange' in window) {",
-      \ "  window.onhashchange = JumpToLine;",
-      \ "}"
-      \ ])
 
 " Small text columns like the foldcolumn and line number column need a weird
 " hack to work around Webkit's and (in versions prior to 9) IE's lack of support
@@ -914,9 +928,9 @@ if !empty(s:settings.prevent_copy)
 	\ '  var emWidth = document.getElementById("oneEmWidth").clientWidth;',
 	\ '  if (inputWidth > goodWidth) {',
 	\ '    while (ratio < 100*goodWidth/emWidth && ratio < 100) {',
-	\ '    ratio += 5;',
-	\ '  }',
-	\ '  document.getElementById("vimCodeElement").className = "em"+ratio;',
+	\ '      ratio += 5;',
+	\ '    }',
+	\ '    document.getElementById("vimCodeElement'.s:settings.id_suffix.'").className = "em"+ratio;',
 	\ '  }',
 	\ '}'
 	\ ])
@@ -932,22 +946,22 @@ call extend(s:lines, [
 call extend(s:lines, ["</head>"])
 if !empty(s:settings.prevent_copy)
   call extend(s:lines,
-	\ ["<body onload='FixCharWidth(); JumpToLine();'>",
+	\ ["<body onload='FixCharWidth();".(s:settings.line_ids ? " JumpToLine();" : "")."'>",
 	\ "<!-- hidden divs used by javascript to get the width of a char -->",
 	\ "<div id='oneCharWidth'>0</div>",
 	\ "<div id='oneInputWidth'><input size='1' value='0'".s:tag_close."</div>",
 	\ "<div id='oneEmWidth' style='width: 1em;'></div>"
 	\ ])
 else
-  call extend(s:lines, ["<body onload='JumpToLine();'>"])
+  call extend(s:lines, ["<body".(s:settings.line_ids ? " onload='JumpToLine();'" : "").">"])
 endif
 if s:settings.no_pre
   " if we're not using CSS we use a font tag which can't have a div inside
   if s:settings.use_css
-    call extend(s:lines, ["<div id='vimCodeElement'>"])
+    call extend(s:lines, ["<div id='vimCodeElement".s:settings.id_suffix."'>"])
   endif
 else
-  call extend(s:lines, ["<pre id='vimCodeElement'>"])
+  call extend(s:lines, ["<pre id='vimCodeElement".s:settings.id_suffix."'>"])
 endif
 
 exe s:orgwin . "wincmd w"
@@ -1364,7 +1378,7 @@ while s:lnum <= s:end
 	let s:foldId = s:foldId + 1
 	let s:new .= "<span id='"
 	let s:new .= (exists('g:html_diff_win_num') ? "win".g:html_diff_win_num : "")
-	let s:new .= "fold".s:foldId."' class='".s:allfolds[0].type."'>"
+	let s:new .= "fold".s:foldId.s:settings.id_suffix."' class='".s:allfolds[0].type."'>"
 
 
 	" Unless disabled, add a fold column for the opening line of a fold.
@@ -1376,19 +1390,19 @@ while s:lnum <= s:end
 	  " add fold column that can open the new fold
 	  if s:allfolds[0].level > 1 && s:firstfold
 	    let s:new = s:new . s:FoldColumn_build('|', s:allfolds[0].level - 1, 0, "",
-		  \ 'toggle-open FoldColumn','javascript:toggleFold("fold'.s:foldstack[0].id.'");')
+		  \ 'toggle-open FoldColumn','javascript:toggleFold("fold'.s:foldstack[0].id.s:settings.id_suffix.'");')
 	  endif
 	  " add the filler spaces separately from the '+' char so that it can be
 	  " shown/hidden separately during a hover unfold
 	  let s:new = s:new . s:FoldColumn_build("+", 1, 0, "",
-		\ 'toggle-open FoldColumn', 'javascript:toggleFold("fold'.s:foldId.'");')
+		\ 'toggle-open FoldColumn', 'javascript:toggleFold("fold'.s:foldId.s:settings.id_suffix.'");')
 	  " If this is not the last fold we're opening on this line, we need
 	  " to keep the filler spaces hidden if the fold is opened by mouse
 	  " hover. If it is the last fold to open in the line, we shouldn't hide
 	  " them, so don't apply the toggle-filler class.
 	  let s:new = s:new . s:FoldColumn_build(" ", 1, s:foldcolumn - s:allfolds[0].level - 1, "",
 		\ 'toggle-open FoldColumn'. (get(s:allfolds, 1, {'firstline': 0}).firstline == s:lnum ?" toggle-filler" :""),
-		\ 'javascript:toggleFold("fold'.s:foldId.'");')
+		\ 'javascript:toggleFold("fold'.s:foldId.s:settings.id_suffix.'");')
 
 	  " add fold column that can close the new fold
 	  " only add extra blank space if we aren't opening another fold on the
@@ -1402,11 +1416,11 @@ while s:lnum <= s:end
 	    " the first fold in a line has '|' characters from folds opened in
 	    " previous lines, before the '-' for this fold
 	    let s:new .= s:FoldColumn_build('|', s:allfolds[0].level - 1, s:extra_space, '-',
-		  \ 'toggle-closed FoldColumn', 'javascript:toggleFold("fold'.s:foldId.'");')
+		  \ 'toggle-closed FoldColumn', 'javascript:toggleFold("fold'.s:foldId.s:settings.id_suffix.'");')
 	  else
 	    " any subsequent folds in the line only add a single '-'
 	    let s:new = s:new . s:FoldColumn_build("-", 1, s:extra_space, "",
-		  \ 'toggle-closed FoldColumn', 'javascript:toggleFold("fold'.s:foldId.'");')
+		  \ 'toggle-closed FoldColumn', 'javascript:toggleFold("fold'.s:foldId.s:settings.id_suffix.'");')
 	  endif
 	  let s:firstfold = 0
 	endif
@@ -1440,7 +1454,7 @@ while s:lnum <= s:end
 	  " add the fold column for folds not on the opening line
 	  if get(s:foldstack, 0).firstline < s:lnum
 	    let s:new = s:new . s:FoldColumn_build('|', s:foldstack[0].level, s:foldcolumn - s:foldstack[0].level, "",
-		  \ 'FoldColumn', 'javascript:toggleFold("fold'.s:foldstack[0].id.'");')
+		  \ 'FoldColumn', 'javascript:toggleFold("fold'.s:foldstack[0].id.s:settings.id_suffix.'");')
 	  endif
 	endif
       endif
@@ -1449,7 +1463,7 @@ while s:lnum <= s:end
     " Now continue with the unfolded line text
     if s:settings.number_lines
       let s:new = s:new . s:HtmlFormat_n(s:numcol, s:LINENR_ID, 0, s:lnum)
-    else
+    elseif s:settings.line_ids
       let s:new = s:new . s:HtmlFormat_n("", s:LINENR_ID, 0, s:lnum)
     endif
 

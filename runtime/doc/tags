@@ -5894,8 +5894,10 @@ g:html_encoding_override	syntax.txt	/*g:html_encoding_override*
 g:html_end_line	syntax.txt	/*g:html_end_line*
 g:html_expand_tabs	syntax.txt	/*g:html_expand_tabs*
 g:html_hover_unfold	syntax.txt	/*g:html_hover_unfold*
+g:html_id_expr	syntax.txt	/*g:html_id_expr*
 g:html_ignore_conceal	syntax.txt	/*g:html_ignore_conceal*
 g:html_ignore_folding	syntax.txt	/*g:html_ignore_folding*
+g:html_line_ids	syntax.txt	/*g:html_line_ids*
 g:html_no_foldcolumn	syntax.txt	/*g:html_no_foldcolumn*
 g:html_no_invalid	syntax.txt	/*g:html_no_invalid*
 g:html_no_pre	syntax.txt	/*g:html_no_pre*
