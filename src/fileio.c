@@ -9572,6 +9572,12 @@ unblock_autocmds()
 # endif
 }
 
+    int
+is_autocmd_blocked()
+{
+    return autocmd_blocked != 0;
+}
+
 /*
  * Find next autocommand pattern that matches.
  */

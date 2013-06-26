@@ -3993,6 +3993,26 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Can be overruled by using "\c" or "\C" in the pattern, see
 	|/ignorecase|.
 
+						*'imactivatefunc'* *'imaf'*
+'imactivatefunc' 'imaf'	string (default "")
+			global
+			{not in Vi}
+			{only available when compiled with |+xim| and
+			|+GUI_GTK|}
+	This option specifies a function that will be called to
+	activate/inactivate Input Method.
+
+	Example: >
+		function ImActivateFunc(active)
+		  if a:active
+		    ... do something
+		  else
+		    ... do something
+		  endif
+		  " return value is not used
+		endfunction
+		set imactivatefunc=ImActivateFunc
+<
 						*'imactivatekey'* *'imak'*
 'imactivatekey' 'imak'	string (default "")
 			global
@@ -4088,6 +4108,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 	option to a valid keymap name.
 	The value 0 may not work correctly with Athena and Motif with some XIM
 	methods.  Use 'imdisable' to disable XIM then.
+
+						*'imstatusfunc'* *'imsf'*
+'imstatusfunc' 'imsf'	string (default "")
+			global
+			{not in Vi}
+			{only available when compiled with |+xim| and
+			|+GUI_GTK|}
+	This option specifies a function that is called to obtain the status
+	of Input Method.  It must return a positive number when IME is active.
+
+	Example: >
+		function ImStatusFunc()
+		  let is_active = ...do something
+		  return is_active ? 1 : 0
+		endfunction
+		set imstatusfunc=ImStatusFunc
+<
+	NOTE: This function is invoked very often.  Keep it fast.
 
 						*'include'* *'inc'*
 'include' 'inc'		string	(default "^\s*#\s*include")

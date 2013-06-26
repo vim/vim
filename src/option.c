@@ -1425,6 +1425,15 @@ static struct vimoption
     {"ignorecase",  "ic",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_ic, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
+    {"imactivatefunc","imaf",P_STRING|P_VI_DEF|P_SECURE,
+# if defined(FEAT_EVAL) && defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
+			    (char_u *)&p_imaf, PV_NONE,
+			    {(char_u *)"", (char_u *)NULL}
+# else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+# endif
+			    SCRIPTID_INIT},
     {"imactivatekey","imak",P_STRING|P_VI_DEF,
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 			    (char_u *)&p_imak, PV_NONE,
@@ -1466,6 +1475,15 @@ static struct vimoption
 #else
 			    {(char_u *)B_IMODE_NONE, (char_u *)0L}
 #endif
+			    SCRIPTID_INIT},
+    {"imstatusfunc","imse",P_STRING|P_VI_DEF|P_SECURE,
+# if defined(FEAT_EVAL) && defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
+			    (char_u *)&p_imsf, PV_NONE,
+			    {(char_u *)"", (char_u *)NULL}
+# else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+# endif
 			    SCRIPTID_INIT},
     {"include",	    "inc",  P_STRING|P_ALLOCED|P_VI_DEF,
 #ifdef FEAT_FIND_ID

@@ -558,6 +558,8 @@ EXTERN char_u	*p_iconstring;	/* 'iconstring' */
 EXTERN int	p_ic;		/* 'ignorecase' */
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 EXTERN char_u	*p_imak;	/* 'imactivatekey' */
+EXTERN char_u	*p_imaf;	/* 'imactivatefunc' */
+EXTERN char_u	*p_imsf;	/* 'imstatusfunc' */
 #endif
 #ifdef USE_IM_CONTROL
 EXTERN int	p_imcmdline;	/* 'imcmdline' */
