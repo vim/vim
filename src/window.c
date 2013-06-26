@@ -66,6 +66,11 @@ static void clear_snapshot_rec __ARGS((frame_T *fr));
 static int check_snapshot_rec __ARGS((frame_T *sn, frame_T *fr));
 static win_T *restore_snapshot_rec __ARGS((frame_T *sn, frame_T *fr));
 
+static int frame_check_height __ARGS((frame_T *topfrp, int height));
+#ifdef FEAT_VERTSPLIT
+static int frame_check_width __ARGS((frame_T *topfrp, int width));
+#endif
+
 #endif /* FEAT_WINDOWS */
 
 static win_T *win_alloc __ARGS((win_T *after, int hidden));
@@ -4749,7 +4754,7 @@ shell_new_rows()
     /* First try setting the heights of windows with 'winfixheight'.  If
      * that doesn't result in the right height, forget about that option. */
     frame_new_height(topframe, h, FALSE, TRUE);
-    if (topframe->fr_height != h)
+    if (!frame_check_height(topframe, h))
 	frame_new_height(topframe, h, FALSE, FALSE);
 
     (void)win_comp_pos();		/* recompute w_winrow and w_wincol */
@@ -4783,7 +4788,7 @@ shell_new_columns()
     /* First try setting the widths of windows with 'winfixwidth'.  If that
      * doesn't result in the right width, forget about that option. */
     frame_new_width(topframe, (int)Columns, FALSE, TRUE);
-    if (topframe->fr_width != Columns)
+    if (!frame_check_width(topframe, Columns))
 	frame_new_width(topframe, (int)Columns, FALSE, FALSE);
 
     (void)win_comp_pos();		/* recompute w_winrow and w_wincol */
@@ -6922,3 +6927,48 @@ get_tab_number(tabpage_T *tp UNUSED)
 	return i;
 }
 #endif
+
+/*
+ * Return TRUE if "topfrp" and its children are at the right height.
+ */
+    static int
+frame_check_height(topfrp, height)
+    frame_T *topfrp;
+    int	    height;
+{
+    frame_T *frp;
+
+    if (topfrp->fr_height != height)
+	return FALSE;
+
+    if (topfrp->fr_layout == FR_ROW)
+	for (frp = topfrp->fr_child; frp != NULL; frp = frp->fr_next)
+	    if (frp->fr_height != height)
+		return FALSE;
+
+    return TRUE;
+}
+
+#ifdef FEAT_VERTSPLIT
+/*
+ * Return TRUE if "topfrp" and its children are at the right width.
+ */
+    static int
+frame_check_width(topfrp, width)
+    frame_T *topfrp;
+    int	    width;
+{
+    frame_T *frp;
+
+    if (topfrp->fr_width != width)
+	return FALSE;
+
+    if (topfrp->fr_layout == FR_COL)
+	for (frp = topfrp->fr_child; frp != NULL; frp = frp->fr_next)
+	    if (frp->fr_width != width)
+		return FALSE;
+
+    return TRUE;
+}
+#endif
+
