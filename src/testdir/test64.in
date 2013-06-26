@@ -338,6 +338,7 @@ STARTTEST
 :call add(tl, [2, '^\%(.*bar\)\@!.*\zsfoo', ' bar foo '])
 :call add(tl, [2, '^\%(.*bar\)\@!.*\zsfoo', ' foo bar '])
 :call add(tl, [2, '^\%(.*bar\)\@!.*\zsfoo', ' foo xxx ', 'foo'])
+:call add(tl, [2, '[ ]\@!\p\%([ ]\@!\p\)*:', 'implicit mappings:', 'mappings:'])
 :"
 :"""" Combining different tests and features
 :call add(tl, [2, '[[:alpha:]]\{-2,6}', '787abcdiuhsasiuhb4', 'ab'])

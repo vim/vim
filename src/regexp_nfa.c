@@ -3642,14 +3642,14 @@ sub_equal(sub1, sub2)
 	    if (i < sub1->in_use)
 		s1 = sub1->list.multi[i].start.lnum;
 	    else
-		s1 = 0;
+		s1 = -1;
 	    if (i < sub2->in_use)
 		s2 = sub2->list.multi[i].start.lnum;
 	    else
-		s2 = 0;
+		s2 = -1;
 	    if (s1 != s2)
 		return FALSE;
-	    if (s1 != 0 && sub1->list.multi[i].start.col
+	    if (s1 != -1 && sub1->list.multi[i].start.col
 					     != sub2->list.multi[i].start.col)
 		return FALSE;
 	}
@@ -3931,8 +3931,9 @@ addstate(l, state, subs, pim, off)
 	    if (state->lastlist[nfa_ll_index] == l->id)
 	    {
 		/* This state is already in the list, don't add it again,
-		 * unless it is an MOPEN that is used for a backreference. */
-		if (!nfa_has_backref)
+		 * unless it is an MOPEN that is used for a backreference or
+		 * when there is a PIM. */
+		if (!nfa_has_backref && pim == NULL)
 		{
 skip_add:
 #ifdef ENABLE_LOG
@@ -3949,9 +3950,9 @@ skip_add:
 		    goto skip_add;
 	    }
 
-	    /* When there are backreferences the number of states may be (a
-	     * lot) bigger than anticipated. */
-	    if (nfa_has_backref && l->n == l->len)
+	    /* When there are backreferences or PIMs the number of states may
+	     * be (a lot) bigger than anticipated. */
+	    if (l->n == l->len)
 	    {
 		int newlen = l->len * 3 / 2 + 50;
 
