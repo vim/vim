@@ -3216,7 +3216,7 @@ gui_mch_dialog(
 	    if (l == 1 && vim_iswhite(*pend)
 					&& textWidth > maxDialogWidth * 3 / 4)
 		last_white = pend;
-	    textWidth += GetTextWidth(hdc, pend, l);
+	    textWidth += GetTextWidthEnc(hdc, pend, l);
 	    if (textWidth >= maxDialogWidth)
 	    {
 		/* Line will wrap. */
