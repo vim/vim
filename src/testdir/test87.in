@@ -1188,9 +1188,9 @@ cb.append(after.dir)
 import topmodule as tm
 import topmodule.submodule as tms
 import topmodule.submodule.subsubmodule.subsubsubmodule as tmsss
-cb.append(tm.__file__[-len('modulex/topmodule/__init__.py'):])
-cb.append(tms.__file__[-len('modulex/topmodule/submodule/__init__.py'):])
-cb.append(tmsss.__file__[-len('modulex/topmodule/submodule/subsubmodule/subsubsubmodule.py'):])
+cb.append(tm.__file__.replace(os.path.sep, '/')[-len('modulex/topmodule/__init__.py'):])
+cb.append(tms.__file__.replace(os.path.sep, '/')[-len('modulex/topmodule/submodule/__init__.py'):])
+cb.append(tmsss.__file__.replace(os.path.sep, '/')[-len('modulex/topmodule/submodule/subsubmodule/subsubsubmodule.py'):])
 del before
 del after
 del d

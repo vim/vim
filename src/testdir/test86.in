@@ -1221,12 +1221,12 @@ sys.path.append(os.path.join(os.getcwd(), 'python_after'))
 vim.options['rtp'] = os.getcwd().replace(',', '\\,').replace('\\', '\\\\')
 l = []
 def callback(path):
-    l.append(path[-len('/testdir'):])
+    l.append(path[-len('/testdir'):].replace(os.path.sep, '/'))
 vim.foreach_rtp(callback)
 cb.append(repr(l))
 del l
 def callback(path):
-    return path[-len('/testdir'):]
+    return path[-len('/testdir'):].replace(os.path.sep, '/')
 cb.append(repr(vim.foreach_rtp(callback)))
 del callback
 from module import dir as d
@@ -1239,9 +1239,9 @@ cb.append(after.dir)
 import topmodule as tm
 import topmodule.submodule as tms
 import topmodule.submodule.subsubmodule.subsubsubmodule as tmsss
-cb.append(tm.__file__.replace('.pyc', '.py')[-len('modulex/topmodule/__init__.py'):])
-cb.append(tms.__file__.replace('.pyc', '.py')[-len('modulex/topmodule/submodule/__init__.py'):])
-cb.append(tmsss.__file__.replace('.pyc', '.py')[-len('modulex/topmodule/submodule/subsubmodule/subsubsubmodule.py'):])
+cb.append(tm.__file__.replace('.pyc', '.py').replace(os.path.sep, '/')[-len('modulex/topmodule/__init__.py'):])
+cb.append(tms.__file__.replace('.pyc', '.py').replace(os.path.sep, '/')[-len('modulex/topmodule/submodule/__init__.py'):])
+cb.append(tmsss.__file__.replace('.pyc', '.py').replace(os.path.sep, '/')[-len('modulex/topmodule/submodule/subsubmodule/subsubsubmodule.py'):])
 del before
 del after
 del d
