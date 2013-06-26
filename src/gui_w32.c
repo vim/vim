@@ -3282,7 +3282,7 @@ gui_mch_dialog(
 	    pend = vim_strchr(pstart, DLG_BUTTON_SEP);
 	    if (pend == NULL)
 		pend = pstart + STRLEN(pstart);	// Last button name.
-	    textWidth = GetTextWidth(hdc, pstart, (int)(pend - pstart));
+	    textWidth = GetTextWidthEnc(hdc, pstart, (int)(pend - pstart));
 	    if (textWidth < minButtonWidth)
 		textWidth = minButtonWidth;
 	    textWidth += dlgPaddingX;	    /* Padding within button */
@@ -3307,7 +3307,7 @@ gui_mch_dialog(
 	    pend = vim_strchr(pstart, DLG_BUTTON_SEP);
 	    if (pend == NULL)
 		pend = pstart + STRLEN(pstart);	// Last button name.
-	    textWidth = GetTextWidth(hdc, pstart, (int)(pend - pstart));
+	    textWidth = GetTextWidthEnc(hdc, pstart, (int)(pend - pstart));
 	    textWidth += dlgPaddingX;		/* Padding within button */
 	    textWidth += DLG_VERT_PADDING_X * 2; /* Padding around button */
 	    if (textWidth > dlgwidth)
