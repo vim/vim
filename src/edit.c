@@ -8134,15 +8134,17 @@ ins_reg()
 # ifdef USE_IM_CONTROL
 	int	im_on = im_get_status();
 # endif
+	/* Sync undo, so the effect of e.g., setline() can be undone. */
+	u_sync(TRUE);
+	ins_need_undo = TRUE;
+
 	regname = get_expr_register();
 # ifdef USE_IM_CONTROL
 	/* Restore the Input Method. */
 	if (im_on)
 	    im_set_active(TRUE);
 # endif
-	if (regname == '=')
-	    /* sync undo, so the effect of e.g., setline() can be undone */
-	    u_sync(TRUE);
+	Insstart = curwin->w_cursor;
     }
     if (regname == NUL || !valid_yank_reg(regname, FALSE))
     {
