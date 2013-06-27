@@ -4163,9 +4163,11 @@ get_toolbar_bitmap(vimmenu_T *menu)
 	 * didn't exist or wasn't specified, try the menu name
 	 */
 	if (hbitmap == NULL
-		&& (gui_find_bitmap(menu->en_dname != NULL
-					? menu->en_dname
-					: menu->dname, fname, "bmp") == OK))
+		&& (gui_find_bitmap(
+#ifdef FEAT_MULTI_LANG
+			    menu->en_dname != NULL ? menu->en_dname :
+#endif
+					menu->dname, fname, "bmp") == OK))
 	    hbitmap = LoadImage(
 		    NULL,
 		    fname,
