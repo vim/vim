@@ -2591,7 +2591,7 @@ SFcreateWidgets(toplevel, prompt, ok, cancel)
 		(XtCallbackProc)SFvFloatSliderMovedCallback,
 		(XtPointer)(long_u)n);
 	XtAddCallback(selFileVScrolls[n], XtNscrollProc,
-		(XtCallbackProc)SFvAreaSelectedCallback, (XtPointer)n);
+		(XtCallbackProc)SFvAreaSelectedCallback, (XtPointer)(long_u)n);
 
 	selFileHScrolls[n] = XtVaCreateManagedWidget("selFileHScroll",
 #ifdef FEAT_GUI_NEXTAW
@@ -2616,7 +2616,7 @@ SFcreateWidgets(toplevel, prompt, ok, cancel)
 		(XtCallbackProc)SFhSliderMovedCallback,
 		(XtPointer)(long_u)n);
 	XtAddCallback(selFileHScrolls[n], XtNscrollProc,
-		(XtCallbackProc)SFhAreaSelectedCallback, (XtPointer)n);
+		(XtCallbackProc)SFhAreaSelectedCallback, (XtPointer)(long_u)n);
     }
 
     selFileOK = XtVaCreateManagedWidget("selFileOK",
