@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.3.  Last change: 2011 May 25
+*spell.txt*	For Vim version 7.3.  Last change: 2013 Jun 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -928,9 +928,13 @@ When the encoding is UTF-8 no word characters need to be specified.
 Vim allows you to use spell checking for several languages in the same file.
 You can list them in the 'spelllang' option.  As a consequence all spell files
 for the same encoding must use the same word characters, otherwise they can't
-be combined without errors.  If you get a warning that the word tables differ
-you may need to generate the .spl file again with |:mkspell|.  Check the FOL,
-LOW and UPP lines in the used .aff file.
+be combined without errors.
+
+If you get an E763 warning that the word tables differ you need to update your
+".spl" spell files.  If you downloaded the files, get the latest version of
+all spell files you use.  Otherwise generate the .spl file again with
+|:mkspell|.  If you still get errors check the FOL, LOW and UPP lines in the
+used .aff files.
 
 The XX.ascii.spl spell file generated with the "-ascii" argument will not
 contain the table with characters, so that it can be combine with spell files

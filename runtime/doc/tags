@@ -341,7 +341,9 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'iconstring'	options.txt	/*'iconstring'*
 'ignorecase'	options.txt	/*'ignorecase'*
 'im'	options.txt	/*'im'*
+'imactivatefunc'	options.txt	/*'imactivatefunc'*
 'imactivatekey'	options.txt	/*'imactivatekey'*
+'imaf'	options.txt	/*'imaf'*
 'imak'	options.txt	/*'imak'*
 'imc'	options.txt	/*'imc'*
 'imcmdline'	options.txt	/*'imcmdline'*
@@ -351,6 +353,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'iminsert'	options.txt	/*'iminsert'*
 'ims'	options.txt	/*'ims'*
 'imsearch'	options.txt	/*'imsearch'*
+'imsf'	options.txt	/*'imsf'*
+'imstatusfunc'	options.txt	/*'imstatusfunc'*
 'inc'	options.txt	/*'inc'*
 'include'	options.txt	/*'include'*
 'includeexpr'	options.txt	/*'includeexpr'*
@@ -6004,10 +6008,8 @@ g:tar_writeoptions	pi_tar.txt	/*g:tar_writeoptions*
 g:tex_comment_nospell	syntax.txt	/*g:tex_comment_nospell*
 g:tex_conceal	syntax.txt	/*g:tex_conceal*
 g:tex_fast	syntax.txt	/*g:tex_fast*
-g:tex_fast	syntax.txt	/*g:tex_fast*
 g:tex_flavor	filetype.txt	/*g:tex_flavor*
 g:tex_fold_enabled	syntax.txt	/*g:tex_fold_enabled*
-g:tex_isk	syntax.txt	/*g:tex_isk*
 g:tex_isk	syntax.txt	/*g:tex_isk*
 g:tex_no_error	syntax.txt	/*g:tex_no_error*
 g:tex_nospell	syntax.txt	/*g:tex_nospell*

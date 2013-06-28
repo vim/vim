@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2013 Jun 12
+*options.txt*	For Vim version 7.3.  Last change: 2013 Jun 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -480,41 +480,41 @@ to set options automatically for one or more files:
 
 					*modeline* *vim:* *vi:* *ex:* *E520*
 There are two forms of modelines.  The first form:
-	[text]{white}{vi:|vim:|ex:}[white]{options}
+	[text]{white}{vi:|vim:|Vim:|ex:}[white]{options}
 
-[text]		any text or empty
-{white}		at least one blank character (<Space> or <Tab>)
-{vi:|vim:|ex:}	the string "vi:", "vim:" or "ex:"
-[white]		optional white space
-{options}	a list of option settings, separated with white space or ':',
-		where each part between ':' is the argument for a ":set"
-		command (can be empty)
+[text]			any text or empty
+{white}			at least one blank character (<Space> or <Tab>)
+{vi:|vim:|Vim:|ex:}	the string "vi:", "vim:", "Vim:" or "ex:"
+[white]			optional white space
+{options}		a list of option settings, separated with white space
+			or ':', where each part between ':' is the argument
+			for a ":set" command (can be empty)
 
 Example:
    vi:noai:sw=3 ts=6 ~
 
 The second form (this is compatible with some versions of Vi):
 
-	[text]{white}{vi:|vim:|ex:}[white]se[t] {options}:[text]
+	[text]{white}{vi:|vim:|Vim:|ex:}[white]se[t] {options}:[text]
 
-[text]		any text or empty
-{white}		at least one blank character (<Space> or <Tab>)
-{vi:|vim:|ex:}	the string "vi:", "vim:" or "ex:"
-[white]		optional white space
-se[t]		the string "set " or "se " (note the space)
-{options}	a list of options, separated with white space, which is the
-		argument for a ":set" command
-:		a colon
-[text]		any text or empty
+[text]			any text or empty
+{white}			at least one blank character (<Space> or <Tab>)
+{vi:|vim:|Vim:|ex:}	the string "vi:", "vim:", "Vim:" or "ex:"
+[white]			optional white space
+se[t]			the string "set " or "se " (note the space)
+{options}		a list of options, separated with white space, which
+			is the argument for a ":set" command
+:			a colon
+[text]			any text or empty
 
 Example:
    /* vim: set ai tw=75: */ ~
 
-The white space before {vi:|vim:|ex:} is required.  This minimizes the chance
-that a normal word like "lex:" is caught.  There is one exception: "vi:" and
-"vim:" can also be at the start of the line (for compatibility with version
-3.0).  Using "ex:" at the start of the line will be ignored (this could be
-short for "example:").
+The white space before {vi:|vim:|Vim:|ex:} is required.  This minimizes the
+chance that a normal word like "lex:" is caught.  There is one exception:
+"vi:" and "vim:" can also be at the start of the line (for compatibility with
+version 3.0).  Using "ex:" at the start of the line will be ignored (this
+could be short for "example:").
 
 							*modeline-local*
 The options are set like with ":setlocal": The new value only applies to the
@@ -530,7 +530,7 @@ in another window.  But window-local options will be set.
 
 							*modeline-version*
 If the modeline is only to be used for some versions of Vim, the version
-number can be specified where "vim:" is used:
+number can be specified where "vim:" or "Vim:" is used:
 	vim{vers}:	version {vers} or later
 	vim<{vers}:	version before {vers}
 	vim={vers}:	version {vers}

@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	Vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 Mar 21
+" Last Change:	2013 Jun 26
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -20,10 +20,6 @@ let b:undo_ftplugin = "setl fo< isk< com< tw< commentstring<"
 " Set 'formatoptions' to break comment lines but not other lines,
 " and insert the comment leader when hitting <CR> or using "o".
 setlocal fo-=t fo+=croql
-
-" To make syntax highlighting of 'vimVar's work correctly we need the colon to
-" be part of keywords. This needs to be done prior to the 'isk+=#' below.
-setlocal isk+=:
 
 " To allow tag lookup via CTRL-] for autoload functions, '#' must be a
 " keyword character.  E.g., for netrw#Nread().

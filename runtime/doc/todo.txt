@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Jun 26
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Jun 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,11 +34,7 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
---- Python interface
-
-Test 86 fails on MS-Windows, using backslashes instead of forward slashes.
-(Taro Muraoka, 2013 Jun 24)
-Can we fix this in code instead of in the test?
+--- Python interface ---
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
@@ -49,28 +45,7 @@ Python: Be able to define a Python function that can be called directly from
 Vim script.  Requires converting the arguments and return value, like with
 vim.bindeval().
 
-Python SystemExit exception is not handled properly.  Patch to catch the
-exception and give an error. (Yasuhiro Matsumoto)
-Does not work, tests fail.
-
---- bug fixes
-
-Problem with winfixheight and resizing. (Yukihiro Nakadaira, 2011 Sep 17)
-Patch Sep 18.
-
-Patch for IME problems. Remove hacking code for old IM. (Yukihiro Nakadaira,
-2012 Jul 20)
-
-Modeline is not triggered when using Vim: instead of vim:. It's very hard to
-see why it doesn't work.
-
-Patch to fix finding toolbar bitmaps.  Issue 129.
-
-Patch 7.3.1200 doesn't fix the problem in all cases. (Hirohito Higashi, 2013
-Jun 24)
-
-Patch to avoid clang warnings when building with Athena.
-(Dominique Pelle, 2013 Jun 22)
+--- bug fixes ---
 
 Suggestion to remove __QNXNTO__ in gui.c. (Sean Boudreau, 2013 Jun 7)
 
@@ -186,10 +161,6 @@ Patch to add getlocstack() / setlocstack(). (Christian Brabandt, 2013 May 14)
 Second one. Update May 22.
 
 Patch to make fold updates much faster. (Christian Brabandt, 2012 Dec)
-
-Patch for IME handling, adds 'imactivatefunc' and 'imstatusfunc' option.
-(Yukihiro Nakadaira, 2012 Aug 16)
-Patch to improve IME handling. (Yasuhiro Matsumoto, 2012 Jul 18)
 
 Issue 54: document behavior of -complete, also expands arg.
 

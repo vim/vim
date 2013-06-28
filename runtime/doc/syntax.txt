@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2013 Jun 26
+*syntax.txt*	For Vim version 7.3.  Last change: 2013 Jun 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2999,38 +2999,6 @@ if any, is the text at the top of the screen supposed to be in?).
 Another cause of slow highlighting is due to syntax-driven folding; see
 |tex-folding| for a way around this.
 
-								*g:tex_fast*
-
-Finally, if syntax highlighting is still too slow, you may set >
-
-	:let g:tex_fast= ""
-
-in your .vimrc.  Used this way, the g:tex_fast variable causes the syntax
-highlighting script to avoid defining any regions and associated
-synchronization.  The result will be much faster syntax highlighting; the
-price: you will no longer have as much highlighting or any syntax-based
-folding, and you will be missing syntax-based error checking.
-
-You may decide that some syntax is acceptable; you may use the following table
-selectively to enable just some syntax highlighting: >
-
-    b : allow bold and italic syntax
-    c : allow texComment syntax
-    m : allow texMatcher syntax (ie. {...} and [...])
-    M : allow texMath syntax
-    p : allow parts, chapter, section, etc syntax
-    r : allow texRefZone syntax (nocite, bibliography, label, pageref, eqref)
-    s : allow superscript/subscript regions
-    S : allow texStyle syntax
-    v : allow verbatim syntax
-    V : allow texNewEnv and texNewCmd syntax
-<
-As an example, let g:tex_fast= "M" will allow math-associated highlighting
-but suppress all the other region-based syntax highlighting.
-
-Another cause of slow highlighting is due to syntax-driven folding; see
-|tex-folding| for a way around this.
-
 					*g:tex_fast*
 
 Finally, if syntax highlighting is still too slow, you may set >
@@ -3141,28 +3109,6 @@ for the following sets of characters: >
 By leaving one or more of these out, the associated conceal-character
 substitution will not be made.
 
-						*g:tex_isk*
- Tex: Controlling What's In A Keyword~
-
-(La)Tex keywords normally use the characters 0-9,a-z,A-Z,192-255 only
-but the "_" is the only one that causes problems.  So, by default,
-syntax/tex.vim overrides the usual |'iskeyword'| setting (using |:setlocal|)
-with one that works for LaTeX.
-
-However, one may override this iskeyword re-setting by setting the
-variable, g:tex_isk, in one's .vimrc to whatever one wishes and
-it will be used instead.
-
-
-TF						*tf.vim* *ft-tf-syntax*
-
-There is one option for the tf syntax highlighting.
-
-For syncing, minlines defaults to 100.	If you prefer another value, you can
-set "tf_minlines" to the value you desire.  Example: >
-
-	:let tf_minlines = your choice
-
 						*g:tex_isk* *g:tex_stylish*
  Tex: Controlling iskeyword~
 
@@ -3183,7 +3129,15 @@ syntax highlighting script handles this with the following logic:
 	* Else the local 'iskeyword' will be set to 48-57,a-z,A-Z,192-255
 
 
+TF						*tf.vim* *ft-tf-syntax*
 
+There is one option for the tf syntax highlighting.
+
+For syncing, minlines defaults to 100.	If you prefer another value, you can
+set "tf_minlines" to the value you desire.  Example: >
+
+	:let tf_minlines = your choice
+<
 VIM			*vim.vim*		*ft-vim-syntax*
 			*g:vimsyn_minlines*	*g:vimsyn_maxlines*
 There is a trade-off between more accurate syntax highlighting versus screen
