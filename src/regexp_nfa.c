@@ -5198,6 +5198,8 @@ nfa_regmatch(prog, start, submatch, m)
 			 || t->state->c == NFA_START_INVISIBLE_BEFORE_FIRST
 			 || t->state->c == NFA_START_INVISIBLE_BEFORE_NEG_FIRST)
 		    {
+			int in_use = m->norm.in_use;
+
 			/* Copy submatch info for the recursive call, so that
 			 * \1 can be matched. */
 			copy_sub_off(&m->norm, &t->subs.norm);
@@ -5231,6 +5233,7 @@ nfa_regmatch(prog, start, submatch, m)
 			    add_here = TRUE;
 			    add_state = t->state->out1->out;
 			}
+			m->norm.in_use = in_use;
 		    }
 		    else
 		    {
