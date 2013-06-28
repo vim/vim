@@ -4261,6 +4261,9 @@ ex_language(eap)
 		if (what == LC_ALL)
 		{
 		    vim_setenv((char_u *)"LANG", name);
+
+		    /* Clear $LANGUAGE because GNU gettext uses it. */
+		    vim_setenv((char_u *)"LANGUAGE", (char_u *)"");
 # ifdef WIN32
 		    /* Apparently MS-Windows printf() may cause a crash when
 		     * we give it 8-bit text while it's expecting text in the
