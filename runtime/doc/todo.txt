@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Jun 27
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Jun 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,57 +36,40 @@ not be repeated below, unless there is extra information.
 
 --- Python interface ---
 
+    Breaks the tests
+Problem:    Python SystemExit exception is not handled properly.
+Solution:   Catch the exception and give an error. (Yasuhiro Matsumoto)
+Files:	    runtime/doc/if_pyth.txt, src/if_py_both.h, src/if_python.c,
+	    src/if_python3.c
+
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
-
-Win32: The Python interface only works with one version of Python, selected at
-compile time.  Can this be made to work with version 2.1 and 2.2 dynamically?
-
-Python: Be able to define a Python function that can be called directly from
-Vim script.  Requires converting the arguments and return value, like with
-vim.bindeval().
 
 --- bug fixes ---
 
-Suggestion to remove __QNXNTO__ in gui.c. (Sean Boudreau, 2013 Jun 7)
+9. Patch to fix "gn" on single character matches. (Christian Brabandt, 2013
+Jun 2)
 
-Combining characters are not used when executing a register with :@w.
-(William Fugh, 2013 Apr 5, more info from Ben Fritz)
-Patch by Christian Brabandt, 2013 Apr 6.  Second one.
+8. Patch for cscope connection (Narendran, 2013 Jun 10)
 
-MS-Windows ACL support doesn't work well.  Patch from Ken Takata, 2012 Aug 29.
-Update Aug 31.
-Another patch for MingW, 2012 Dec 29.
-
-Bug in completion menu. (Olivier Teuliere, 2013 Feb 15)
-Patch by Christian Brabandt, Feb 16.
-
-Issue 134: pasting in visual selection in empty buffer.
-Patch by Christian Brabandt, 2013 May 22.
-
-Patch to fix "gn" on single character matches. (Christian Brabandt, 2013 Jun
-2)
-
-Patch for cscope connection (Narendran, 2013 Jun 10)
-
-'cursorline' is drawn incorrectly in diff mode. Patch by Christian Brabandt,
+7. 'cursorline' is drawn incorrectly in diff mode. Patch by Christian Brabandt,
 2012 Apr 2.
 
-When someone does a silly thing such as setting rows and columns to 65535,
+6. When someone does a silly thing such as setting rows and columns to 65535,
 handle the out-of-memory and set them to sane values? (jimmywang, 2013 May 17)
 
-InsertEnter doesn't prevent the cursor from moving when it goes to another
+5. InsertEnter doesn't prevent the cursor from moving when it goes to another
 line.
 
-":diffoff" does not restore options from before starting diff mode.
+4. ":diffoff" does not restore options from before starting diff mode.
 Patch by Christian Brabandt, 2013 May 26.
 
-Can't use multi-byte fill character in custom status line.
+3. Can't use multi-byte fill character in custom status line.
 Patch by Christian Wellenbrock, 2013 Jun 2.  Update Jun 3 (second one).
 
-Patch to fix glob() and globpath() with escaped special characters.
+2. Patch to fix glob() and globpath() with escaped special characters.
 (Adnan Zafar, 2013 Jun 2, tests Jun 3)
 
-Bug in findfile() directory matching. (Markus Braun Ben Fritz, 2013 Jun 20)
+1. Bug in findfile() directory matching. (Markus Braun Ben Fritz, 2013 Jun 20)
 Patch by Christian Brabandt (2013 Jun 22)
 
 ---- Fixes to be included before 7.4 above, less important stuff below ----
@@ -215,6 +198,13 @@ Problem with refresh:always in completion. (Tyler Wade, 2013 Mar 17)
 
 b:undo_ftplugin cannot call a script-local function. (Boris Danilov, 2013 Jan
 7)
+
+Win32: The Python interface only works with one version of Python, selected at
+compile time.  Can this be made to work with version 2.1 and 2.2 dynamically?
+
+Python: Be able to define a Python function that can be called directly from
+Vim script.  Requires converting the arguments and return value, like with
+vim.bindeval().
 
 Patch for :tabcloseleft, after closing a tab go to left tab. (William Bowers,
 2012 Aug 4)

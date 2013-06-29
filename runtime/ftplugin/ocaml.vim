@@ -13,6 +13,11 @@
 "              (Pierre Vittet)
 "              2010 Jul 10 - Bugfix, thanks to Pat Rondon
 "              2008 Jul 17 - Bugfix related to fnameescape (VA)
+"              2013 Jul - moving errorformat into compiler/ocaml.vim Marc Weber
+"
+" Marc Weber's comment: This file may contain a lot of (very custom) stuff
+" which eventually should be moved somewhere else ..
+"
 
 if exists("b:did_ftplugin")
   finish
@@ -33,19 +38,6 @@ endif
 " Error handling -- helps moving where the compiler wants you to go
 let s:cposet=&cpoptions
 set cpo&vim
-setlocal efm=
-      \%EFile\ \"%f\"\\,\ line\ %l\\,\ characters\ %c-%*\\d:,
-      \%EFile\ \"%f\"\\,\ line\ %l\\,\ character\ %c:%m,
-      \%+EReference\ to\ unbound\ regexp\ name\ %m,
-      \%Eocamlyacc:\ e\ -\ line\ %l\ of\ \"%f\"\\,\ %m,
-      \%Wocamlyacc:\ w\ -\ %m,
-      \%-Zmake%.%#,
-      \%C%m,
-      \%D%*\\a[%*\\d]:\ Entering\ directory\ `%f',
-      \%X%*\\a[%*\\d]:\ Leaving\ directory\ `%f',
-      \%D%*\\a:\ Entering\ directory\ `%f',
-      \%X%*\\a:\ Leaving\ directory\ `%f',
-      \%DMaking\ %*\\a\ in\ %f
 
 " Add mappings, unless the user didn't want this.
 if !exists("no_plugin_maps") && !exists("no_ocaml_maps")

@@ -2420,6 +2420,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :map!	map.txt	/*:map!*
 :map-<buffer>	map.txt	/*:map-<buffer>*
 :map-<expr>	map.txt	/*:map-<expr>*
+:map-<nowait>	map.txt	/*:map-<nowait>*
 :map-<script>	map.txt	/*:map-<script>*
 :map-<silent>	map.txt	/*:map-<silent>*
 :map-<special>	map.txt	/*:map-<special>*
@@ -2430,6 +2431,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :map-expression	map.txt	/*:map-expression*
 :map-local	map.txt	/*:map-local*
 :map-modes	map.txt	/*:map-modes*
+:map-nowait	map.txt	/*:map-nowait*
 :map-operator	map.txt	/*:map-operator*
 :map-script	map.txt	/*:map-script*
 :map-silent	map.txt	/*:map-silent*

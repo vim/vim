@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2013 May 20
+" Last Change:	2013 Jun 29
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -1198,6 +1198,10 @@ call <SID>OptionL("ims")
 if has("xim")
   call append("$", "imcmdline\twhen set always use IM when starting to edit a command line")
   call <SID>BinOptionG("imc", &imc)
+  call append("$", "imstatusfunc\tfunction to obtain IME status")
+  call <SID>OptionG("imsf", &imsf)
+  call append("$", "imactivatefunc\tfunction to enable/disable IME")
+  call <SID>OptionG("imaf", &imaf)
 endif
 
 

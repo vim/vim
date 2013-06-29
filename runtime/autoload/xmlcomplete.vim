@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Aug 15
+" Last Change:	2013 Jun 29
 " Version: 1.9
 "
 " Changelog:
@@ -475,12 +475,12 @@ function! s:InCommentAt(line, col)
 endfunction
 
 function! s:SetKeywords()
-	let g:IsKeywordBak=&iskeyword
-	let &iskeyword='33-255'
+	let s:IsKeywordBak=&l:iskeyword
+	let &l:iskeyword='33-255'
 endfunction
 
 function! s:RestoreKeywords()
-	let &iskeyword=g:IsKeywordBak
+	let &l:iskeyword=s:IsKeywordBak
 endfunction
 
 function! s:Push(el, sname)

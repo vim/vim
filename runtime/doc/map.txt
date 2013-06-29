@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.3.  Last change: 2013 Jun 12
+*map.txt*       For Vim version 7.3.  Last change: 2013 Jun 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -669,13 +669,12 @@ might want to set the 'ttimeout' option.
 Buffer-local mappings (defined using |:map-<buffer>|) take precedence over
 global mappings.  When a buffer-local mapping is the same as a global mapping,
 Vim will use the buffer-local mapping.  In addition, Vim will use a complete
-buffer-local mapping immediately, even if a longer global mapping has the
-buffer-local mapping as a prefix.  For example, given the following two
-mappings: >
-    :map <buffer> \a   :echo "Local \a"<CR>
-    :map          \abc :echo "Global \abc"<CR>
-The buffer-local mapping \a will be used immediately.  Vim will not wait for
-more characters to see if the user might be typing \abc.
+mapping immediately if it was defined with <nowait>, even if a longer mapping
+has the same prefix.  For example, given the following two mappings: >
+    :map <buffer> <nowait> \a   :echo "Local \a"<CR>
+    :map                   \abc :echo "Global \abc"<CR>
+When typing \a the buffer-local mapping will be used immediately.  Vim will
+not wait for more characters to see if the user might be typing \abc.
 
 							*map-keys-fails*
 There are situations where key codes might not be recognized:

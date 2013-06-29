@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.3.  Last change: 2013 May 20
+*quickref.txt*  For Vim version 7.3.  Last change: 2013 Jun 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -738,10 +738,12 @@ Short explanation of each option:		*option-list*
 'iconstring'		    string to use for the Vim icon text
 'ignorecase'	  'ic'	    ignore case in search patterns
 'imactivatekey'   'imak'    key that activates the X input method
+'imactivatefunc'  'imaf'    function to enable/disable the X input method
 'imcmdline'	  'imc'     use IM when starting to edit a command line
 'imdisable'	  'imd'     do not use the IM in any mode
 'iminsert'	  'imi'     use :lmap or IM in Insert mode
 'imsearch'	  'ims'     use :lmap or IM when typing a search pattern
+'imstatusfunc'    'imsf'    function to obtain X input method status
 'include'	  'inc'     pattern to be used to find an include file
 'includeexpr'	  'inex'    expression used to process an include line
 'incsearch'	  'is'	    highlight match while typing search pattern
