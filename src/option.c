@@ -1476,7 +1476,7 @@ static struct vimoption
 			    {(char_u *)B_IMODE_NONE, (char_u *)0L}
 #endif
 			    SCRIPTID_INIT},
-    {"imstatusfunc","imse",P_STRING|P_VI_DEF|P_SECURE,
+    {"imstatusfunc","imsf",P_STRING|P_VI_DEF|P_SECURE,
 # if defined(FEAT_EVAL) && defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 			    (char_u *)&p_imsf, PV_NONE,
 			    {(char_u *)"", (char_u *)NULL}
