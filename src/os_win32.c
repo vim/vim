@@ -481,26 +481,76 @@ DWORD g_PlatformId;
 # ifndef PROTO
 #  include <aclapi.h>
 # endif
+# ifndef PROTECTED_DACL_SECURITY_INFORMATION
+#  define PROTECTED_DACL_SECURITY_INFORMATION	0x80000000L
+# endif
 
 /*
  * These are needed to dynamically load the ADVAPI DLL, which is not
  * implemented under Windows 95 (and causes VIM to crash)
  */
-typedef DWORD (WINAPI *PSNSECINFO) (LPTSTR, enum SE_OBJECT_TYPE,
+typedef DWORD (WINAPI *PSNSECINFO) (LPSTR, enum SE_OBJECT_TYPE,
 	SECURITY_INFORMATION, PSID, PSID, PACL, PACL);
 typedef DWORD (WINAPI *PGNSECINFO) (LPSTR, enum SE_OBJECT_TYPE,
 	SECURITY_INFORMATION, PSID *, PSID *, PACL *, PACL *,
 	PSECURITY_DESCRIPTOR *);
+# ifdef FEAT_MBYTE
+typedef DWORD (WINAPI *PSNSECINFOW) (LPWSTR, enum SE_OBJECT_TYPE,
+	SECURITY_INFORMATION, PSID, PSID, PACL, PACL);
+typedef DWORD (WINAPI *PGNSECINFOW) (LPWSTR, enum SE_OBJECT_TYPE,
+	SECURITY_INFORMATION, PSID *, PSID *, PACL *, PACL *,
+	PSECURITY_DESCRIPTOR *);
+# endif
 
 static HANDLE advapi_lib = NULL;	/* Handle for ADVAPI library */
 static PSNSECINFO pSetNamedSecurityInfo;
 static PGNSECINFO pGetNamedSecurityInfo;
+# ifdef FEAT_MBYTE
+static PSNSECINFOW pSetNamedSecurityInfoW;
+static PGNSECINFOW pGetNamedSecurityInfoW;
+# endif
 #endif
 
 typedef BOOL (WINAPI *PSETHANDLEINFORMATION)(HANDLE, DWORD, DWORD);
 
 static BOOL allowPiping = FALSE;
 static PSETHANDLEINFORMATION pSetHandleInformation;
+
+#ifdef HAVE_ACL
+/*
+ * Enables or disables the specified privilege.
+ */
+    static BOOL
+win32_enable_privilege(LPTSTR lpszPrivilege, BOOL bEnable)
+{
+    BOOL             bResult;
+    LUID             luid;
+    HANDLE           hToken;
+    TOKEN_PRIVILEGES tokenPrivileges;
+
+    if (!OpenProcessToken(GetCurrentProcess(),
+		TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+	return FALSE;
+
+    if (!LookupPrivilegeValue(NULL, lpszPrivilege, &luid))
+    {
+	CloseHandle(hToken);
+	return FALSE;
+    }
+
+    tokenPrivileges.PrivilegeCount           = 1;
+    tokenPrivileges.Privileges[0].Luid       = luid;
+    tokenPrivileges.Privileges[0].Attributes = bEnable ?
+						    SE_PRIVILEGE_ENABLED : 0;
+
+    bResult = AdjustTokenPrivileges(hToken, FALSE, &tokenPrivileges,
+	    sizeof(TOKEN_PRIVILEGES), NULL, NULL);
+
+    CloseHandle(hToken);
+
+    return bResult && GetLastError() == ERROR_SUCCESS;
+}
+#endif
 
 /*
  * Set g_PlatformId to VER_PLATFORM_WIN32_NT (NT) or
@@ -541,14 +591,27 @@ PlatformId(void)
 						      "SetNamedSecurityInfoA");
 		pGetNamedSecurityInfo = (PGNSECINFO)GetProcAddress(advapi_lib,
 						      "GetNamedSecurityInfoA");
+# ifdef FEAT_MBYTE
+		pSetNamedSecurityInfoW = (PSNSECINFOW)GetProcAddress(advapi_lib,
+						      "SetNamedSecurityInfoW");
+		pGetNamedSecurityInfoW = (PGNSECINFOW)GetProcAddress(advapi_lib,
+						      "GetNamedSecurityInfoW");
+# endif
 		if (pSetNamedSecurityInfo == NULL
-			|| pGetNamedSecurityInfo == NULL)
+			|| pGetNamedSecurityInfo == NULL
+# ifdef FEAT_MBYTE
+			|| pSetNamedSecurityInfoW == NULL
+			|| pGetNamedSecurityInfoW == NULL
+# endif
+			)
 		{
 		    /* If we can't get the function addresses, set advapi_lib
 		     * to NULL so that we don't use them. */
 		    FreeLibrary(advapi_lib);
 		    advapi_lib = NULL;
 		}
+		/* Enable privilege for getting or setting SACLs. */
+		win32_enable_privilege(SE_SECURITY_NAME, TRUE);
 	    }
 	}
 #endif
@@ -3091,6 +3154,7 @@ mch_get_acl(char_u *fname)
     return (vim_acl_T)NULL;
 #else
     struct my_acl   *p = NULL;
+    DWORD   err;
 
     /* This only works on Windows NT and 2000. */
     if (g_PlatformId == VER_PLATFORM_WIN32_NT && advapi_lib != NULL)
@@ -3098,23 +3162,82 @@ mch_get_acl(char_u *fname)
 	p = (struct my_acl *)alloc_clear((unsigned)sizeof(struct my_acl));
 	if (p != NULL)
 	{
-	    if (pGetNamedSecurityInfo(
-			(LPTSTR)fname,		// Abstract filename
-			SE_FILE_OBJECT,		// File Object
-			// Retrieve the entire security descriptor.
-			OWNER_SECURITY_INFORMATION |
-			GROUP_SECURITY_INFORMATION |
-			DACL_SECURITY_INFORMATION |
-			SACL_SECURITY_INFORMATION,
-			&p->pSidOwner,		// Ownership information.
-			&p->pSidGroup,		// Group membership.
-			&p->pDacl,		// Discretionary information.
-			&p->pSacl,		// For auditing purposes.
-			&p->pSecurityDescriptor
-				    ) != ERROR_SUCCESS)
+# ifdef FEAT_MBYTE
+	    WCHAR	*wn = NULL;
+
+	    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+		wn = enc_to_utf16(fname, NULL);
+	    if (wn != NULL)
 	    {
-		mch_free_acl((vim_acl_T)p);
-		p = NULL;
+		/* Try to retrieve the entire security descriptor. */
+		err = pGetNamedSecurityInfoW(
+			    wn,			// Abstract filename
+			    SE_FILE_OBJECT,	// File Object
+			    OWNER_SECURITY_INFORMATION |
+			    GROUP_SECURITY_INFORMATION |
+			    DACL_SECURITY_INFORMATION |
+			    SACL_SECURITY_INFORMATION,
+			    &p->pSidOwner,	// Ownership information.
+			    &p->pSidGroup,	// Group membership.
+			    &p->pDacl,		// Discretionary information.
+			    &p->pSacl,		// For auditing purposes.
+			    &p->pSecurityDescriptor);
+		if (err == ERROR_ACCESS_DENIED ||
+			err == ERROR_PRIVILEGE_NOT_HELD)
+		{
+		    /* Retrieve only DACL. */
+		    (void)pGetNamedSecurityInfoW(
+			    wn,
+			    SE_FILE_OBJECT,
+			    DACL_SECURITY_INFORMATION,
+			    NULL,
+			    NULL,
+			    &p->pDacl,
+			    NULL,
+			    &p->pSecurityDescriptor);
+		}
+		if (p->pSecurityDescriptor == NULL)
+		{
+		    mch_free_acl((vim_acl_T)p);
+		    p = NULL;
+		}
+		vim_free(wn);
+	    }
+	    else
+# endif
+	    {
+		/* Try to retrieve the entire security descriptor. */
+		err = pGetNamedSecurityInfo(
+			    (LPSTR)fname,	// Abstract filename
+			    SE_FILE_OBJECT,	// File Object
+			    OWNER_SECURITY_INFORMATION |
+			    GROUP_SECURITY_INFORMATION |
+			    DACL_SECURITY_INFORMATION |
+			    SACL_SECURITY_INFORMATION,
+			    &p->pSidOwner,	// Ownership information.
+			    &p->pSidGroup,	// Group membership.
+			    &p->pDacl,		// Discretionary information.
+			    &p->pSacl,		// For auditing purposes.
+			    &p->pSecurityDescriptor);
+		if (err == ERROR_ACCESS_DENIED ||
+			err == ERROR_PRIVILEGE_NOT_HELD)
+		{
+		    /* Retrieve only DACL. */
+		    (void)pGetNamedSecurityInfo(
+			    (LPSTR)fname,
+			    SE_FILE_OBJECT,
+			    DACL_SECURITY_INFORMATION,
+			    NULL,
+			    NULL,
+			    &p->pDacl,
+			    NULL,
+			    &p->pSecurityDescriptor);
+		}
+		if (p->pSecurityDescriptor == NULL)
+		{
+		    mch_free_acl((vim_acl_T)p);
+		    p = NULL;
+		}
 	    }
 	}
     }
@@ -3122,6 +3245,29 @@ mch_get_acl(char_u *fname)
     return (vim_acl_T)p;
 #endif
 }
+
+#ifdef HAVE_ACL
+/*
+ * Check if "acl" contains inherited ACE.
+ */
+    static BOOL
+is_acl_inherited(PACL acl)
+{
+    DWORD   i;
+    ACL_SIZE_INFORMATION    acl_info;
+    PACCESS_ALLOWED_ACE	    ace;
+
+    acl_info.AceCount = 0;
+    GetAclInformation(acl, &acl_info, sizeof(acl_info), AclSizeInformation);
+    for (i = 0; i < acl_info.AceCount; i++)
+    {
+	GetAce(acl, i, (LPVOID *)&ace);
+	if (ace->Header.AceFlags & INHERITED_ACE)
+	    return TRUE;
+    }
+    return FALSE;
+}
+#endif
 
 /*
  * Set the ACL of file "fname" to "acl" (unless it's NULL).
@@ -3133,21 +3279,61 @@ mch_set_acl(char_u *fname, vim_acl_T acl)
 {
 #ifdef HAVE_ACL
     struct my_acl   *p = (struct my_acl *)acl;
+    SECURITY_INFORMATION    sec_info = 0;
 
     if (p != NULL && advapi_lib != NULL)
-	(void)pSetNamedSecurityInfo(
-		    (LPTSTR)fname,		// Abstract filename
-		    SE_FILE_OBJECT,		// File Object
-		    // Retrieve the entire security descriptor.
-		    OWNER_SECURITY_INFORMATION |
-			GROUP_SECURITY_INFORMATION |
-			DACL_SECURITY_INFORMATION |
-			SACL_SECURITY_INFORMATION,
-		    p->pSidOwner,		// Ownership information.
-		    p->pSidGroup,		// Group membership.
-		    p->pDacl,			// Discretionary information.
-		    p->pSacl			// For auditing purposes.
-		    );
+    {
+# ifdef FEAT_MBYTE
+	WCHAR	*wn = NULL;
+# endif
+
+	/* Set security flags */
+	if (p->pSidOwner)
+	    sec_info |= OWNER_SECURITY_INFORMATION;
+	if (p->pSidGroup)
+	    sec_info |= GROUP_SECURITY_INFORMATION;
+	if (p->pDacl)
+	{
+	    sec_info |= DACL_SECURITY_INFORMATION;
+	    /* Do not inherit its parent's DACL.
+	     * If the DACL is inherited, Cygwin permissions would be changed.
+	     */
+	    if (!is_acl_inherited(p->pDacl))
+		sec_info |= PROTECTED_DACL_SECURITY_INFORMATION;
+	}
+	if (p->pSacl)
+	    sec_info |= SACL_SECURITY_INFORMATION;
+
+# ifdef FEAT_MBYTE
+	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+	    wn = enc_to_utf16(fname, NULL);
+	if (wn != NULL)
+	{
+	    (void)pSetNamedSecurityInfoW(
+			wn,			// Abstract filename
+			SE_FILE_OBJECT,		// File Object
+			sec_info,
+			p->pSidOwner,		// Ownership information.
+			p->pSidGroup,		// Group membership.
+			p->pDacl,		// Discretionary information.
+			p->pSacl		// For auditing purposes.
+			);
+	    vim_free(wn);
+	}
+	else
+# endif
+	{
+	    (void)pSetNamedSecurityInfo(
+			(LPSTR)fname,		// Abstract filename
+			SE_FILE_OBJECT,		// File Object
+			sec_info,
+			p->pSidOwner,		// Ownership information.
+			p->pSidGroup,		// Group membership.
+			p->pDacl,		// Discretionary information.
+			p->pSacl		// For auditing purposes.
+			);
+	}
+    }
 #endif
 }
 
