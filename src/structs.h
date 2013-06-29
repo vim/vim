@@ -493,6 +493,8 @@ typedef struct expand
     int		xp_numfiles;		/* number of files found by
 						    file name completion */
     char_u	**xp_files;		/* list of files */
+    char_u	*xp_line;		/* text being completed */
+    int		xp_col;			/* cursor position in line */
 } expand_T;
 
 /* values for xp_backslash */

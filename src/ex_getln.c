@@ -3729,6 +3729,7 @@ ExpandInit(xp)
 #if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
     xp->xp_arg = NULL;
 #endif
+    xp->xp_line = NULL;
 }
 
 /*
@@ -4378,6 +4379,11 @@ set_cmd_context(xp, str, len, col)
     int		old_char = NUL;
     char_u	*nextcomm;
 
+    /* Store the string here so that call_user_expand_func() can get to them
+     * easily. */
+    xp->xp_line = str;
+    xp->xp_col = col;
+
     /*
      * Avoid a UMR warning from Purify, only save the character if it has been
      * written before.
@@ -4952,27 +4958,20 @@ call_user_expand_func(user_expand_func, xp, num_file, file)
     void	*ret;
     struct cmdline_info	    save_ccline;
 
-    if (xp->xp_arg == NULL || xp->xp_arg[0] == '\0')
+    if (xp->xp_arg == NULL || xp->xp_arg[0] == '\0' || xp->xp_line == NULL)
 	return NULL;
     *num_file = 0;
     *file = NULL;
 
-    if (ccline.cmdbuff == NULL)
+    if (ccline.cmdbuff != NULL)
     {
-	/* Completion from Insert mode, pass fake arguments. */
-	keep = 0;
-	sprintf((char *)num, "%d", (int)STRLEN(xp->xp_pattern));
-	args[1] = xp->xp_pattern;
-    }
-    else
-    {
-	/* Completion on the command line, pass real arguments. */
 	keep = ccline.cmdbuff[ccline.cmdlen];
 	ccline.cmdbuff[ccline.cmdlen] = 0;
-	sprintf((char *)num, "%d", ccline.cmdpos);
-	args[1] = ccline.cmdbuff;
     }
+
     args[0] = vim_strnsave(xp->xp_pattern, xp->xp_pattern_len);
+    args[1] = xp->xp_line;
+    sprintf((char *)num, "%d", xp->xp_col);
     args[2] = num;
 
     /* Save the cmdline, we don't know what the function may do. */
