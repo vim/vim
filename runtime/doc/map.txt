@@ -159,9 +159,9 @@ type "a", then "bar" will get inserted.
 
 1.2 SPECIAL ARGUMENTS					*:map-arguments*
 
-"<buffer>", "<silent>", "<special>", "<script>", "<expr>" and "<unique>" can
-be used in any order.  They must appear right after the command, before any
-other arguments.
+"<buffer>", "<nowait>", "<silent>", "<special>", "<script>", "<expr>" and
+"<unique>" can be used in any order.  They must appear right after the
+command, before any other arguments.
 
 				*:map-local* *:map-<buffer>* *E224* *E225*
 If the first argument to one of these commands is "<buffer>" the mapping will
@@ -169,13 +169,23 @@ be effective in the current buffer only.  Example: >
 	:map <buffer>  ,w  /[.,;]<CR>
 Then you can map ",w" to something else in another buffer: >
 	:map <buffer>  ,w  /[#&!]<CR>
-The local buffer mappings are used before the global ones.
+The local buffer mappings are used before the global ones.  See <nowait> below
+to make a short local mapping not taking effect when a longer global one
+exists.
 The "<buffer>" argument can also be used to clear mappings: >
 	:unmap <buffer> ,w
 	:mapclear <buffer>
 Local mappings are also cleared when a buffer is deleted, but not when it is
 unloaded.  Just like local option values.
 Also see |map-precedence|.
+
+						*:map-<nowait>* *:map-nowait*
+When defining a buffer-local mapping for "," there may be a global mapping
+that starts with ",".  Then you need to type another character for Vim to know
+whether to use the "," mapping or the longer one.  To avoid this add the
+<nowait> argument.  Then the mapping will be used when it matches, Vim does
+not wait for more characters to be typed.  However, if the characters were
+already type they are used.
 
 						*:map-<silent>* *:map-silent*
 To define a mapping which will not be echoed on the command line, add

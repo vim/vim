@@ -1924,7 +1924,6 @@ vgetorpeek(advance)
     mapblock_T	*mp;
 #ifdef FEAT_LOCALMAP
     mapblock_T	*mp2;
-    int		expecting_global_mappings;
 #endif
     mapblock_T	*mp_match;
     int		mp_match_len = 0;
@@ -2106,9 +2105,9 @@ vgetorpeek(advance)
 			/* First try buffer-local mappings. */
 			mp = curbuf->b_maphash[MAP_HASH(local_State, c1)];
 			mp2 = maphash[MAP_HASH(local_State, c1)];
-			expecting_global_mappings = (mp && mp2);
 			if (mp == NULL)
 			{
+			    /* There are no buffer-local mappings. */
 			    mp = mp2;
 			    mp2 = NULL;
 			}
@@ -2130,16 +2129,6 @@ vgetorpeek(advance)
 #endif
 				(mp = mp->m_next))
 			{
-#ifdef FEAT_LOCALMAP
-			    if (expecting_global_mappings && mp2 == NULL)
-			    {
-				/* This is the first global mapping. If we've
-				 * got a complete buffer-local match, use it. */
-				if (mp_match)
-				    break;
-				expecting_global_mappings = FALSE;
-			    }
-#endif
 			    /*
 			     * Only consider an entry if the first character
 			     * matches and it is for the current state.
@@ -2215,7 +2204,8 @@ vgetorpeek(advance)
 
 				    if (keylen > typebuf.tb_len)
 				    {
-					if (!timedout)
+					if (!timedout && !(mp_match != NULL
+						       && mp_match->m_nowait))
 					{
 					    /* break at a partly match */
 					    keylen = KEYLEN_PART_MAP;
@@ -3207,6 +3197,7 @@ do_map(maptype, arg, mode, abbrev)
     mapblock_T	**abbr_table;
     mapblock_T	**map_table;
     int		unique = FALSE;
+    int		nowait = FALSE;
     int		silent = FALSE;
     int		special = FALSE;
 #ifdef FEAT_EVAL
@@ -3225,7 +3216,8 @@ do_map(maptype, arg, mode, abbrev)
     else
 	noremap = REMAP_YES;
 
-    /* Accept <buffer>, <silent>, <expr> <script> and <unique> in any order. */
+    /* Accept <buffer>, <nowait>, <silent>, <expr> <script> and <unique> in
+     * any order. */
     for (;;)
     {
 #ifdef FEAT_LOCALMAP
@@ -3240,6 +3232,16 @@ do_map(maptype, arg, mode, abbrev)
 	    continue;
 	}
 #endif
+
+	/*
+	 * Check for "<nowait>": don't wait for more characters.
+	 */
+	if (STRNCMP(keys, "<nowait>", 8) == 0)
+	{
+	    keys = skipwhite(keys + 8);
+	    nowait = TRUE;
+	    continue;
+	}
 
 	/*
 	 * Check for "<silent>": don't echo commands.
@@ -3607,6 +3609,7 @@ do_map(maptype, arg, mode, abbrev)
 				vim_free(mp->m_orig_str);
 				mp->m_orig_str = vim_strsave(orig_rhs);
 				mp->m_noremap = noremap;
+				mp->m_nowait = nowait;
 				mp->m_silent = silent;
 				mp->m_mode = mode;
 #ifdef FEAT_EVAL
@@ -3695,6 +3698,7 @@ do_map(maptype, arg, mode, abbrev)
     }
     mp->m_keylen = (int)STRLEN(mp->m_keys);
     mp->m_noremap = noremap;
+    mp->m_nowait = nowait;
     mp->m_silent = silent;
     mp->m_mode = mode;
 #ifdef FEAT_EVAL
@@ -4173,6 +4177,11 @@ set_context_in_map_cmd(xp, cmd, arg, forceit, isabbrev, isunmap, cmdidx)
 		arg = skipwhite(arg + 8);
 		continue;
 	    }
+	    if (STRNCMP(arg, "<nowait>", 8) == 0)
+	    {
+		arg = skipwhite(arg + 8);
+		continue;
+	    }
 	    if (STRNCMP(arg, "<silent>", 8) == 0)
 	    {
 		arg = skipwhite(arg + 8);
@@ -4229,7 +4238,7 @@ ExpandMappings(regmatch, num_file, file)
     {
 	count = 0;
 
-	for (i = 0; i < 5; ++i)
+	for (i = 0; i < 6; ++i)
 	{
 	    if (i == 0)
 		p = (char_u *)"<silent>";
@@ -4245,6 +4254,8 @@ ExpandMappings(regmatch, num_file, file)
 	    else if (i == 4 && !expand_buffer)
 		p = (char_u *)"<buffer>";
 #endif
+	    else if (i == 5)
+		p = (char_u *)"<nowait>";
 	    else
 		continue;
 
@@ -4856,6 +4867,8 @@ makemap(fd, buf)
 		    if (fputs(cmd, fd) < 0)
 			return FAIL;
 		    if (buf != NULL && fputs(" <buffer>", fd) < 0)
+			return FAIL;
+		    if (mp->m_nowait && fputs(" <nowait>", fd) < 0)
 			return FAIL;
 		    if (mp->m_silent && fputs(" <silent>", fd) < 0)
 			return FAIL;

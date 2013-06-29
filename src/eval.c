@@ -13735,6 +13735,7 @@ get_maparg(argvars, rettv, exact)
 	dict_add_nr_str(dict, "silent",  mp->m_silent  ? 1L : 0L, NULL);
 	dict_add_nr_str(dict, "sid",     (long)mp->m_script_ID, NULL);
 	dict_add_nr_str(dict, "buffer",  (long)buffer_local, NULL);
+	dict_add_nr_str(dict, "nowait",  mp->m_nowait  ? 1L : 0L, NULL);
 	dict_add_nr_str(dict, "mode",    0L, mapmode);
 
 	vim_free(lhs);
