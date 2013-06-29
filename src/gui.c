@@ -206,12 +206,6 @@ gui_attempt_start()
     static void
 gui_do_fork()
 {
-#ifdef __QNXNTO__
-    procmgr_daemon(0, PROCMGR_DAEMON_KEEPUMASK | PROCMGR_DAEMON_NOCHDIR |
-	    PROCMGR_DAEMON_NOCLOSE | PROCMGR_DAEMON_NODEVNULL);
-    gui_attempt_start();
-    return;
-#else
     int		pipefd[2];	/* pipe between parent and child */
     int		pipe_error;
     int		status;
@@ -316,7 +310,6 @@ gui_do_fork()
     /* If we failed to start the GUI, exit now. */
     if (!gui.in_use)
 	exit(1);
-#endif
 }
 
 /*
