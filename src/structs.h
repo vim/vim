@@ -1004,12 +1004,13 @@ struct mapblock
 {
     mapblock_T	*m_next;	/* next mapblock in list */
     char_u	*m_keys;	/* mapped from, lhs */
-    int		m_keylen;	/* strlen(m_keys) */
     char_u	*m_str;		/* mapped to, rhs */
     char_u	*m_orig_str;	/* rhs as entered by the user */
+    int		m_keylen;	/* strlen(m_keys) */
     int		m_mode;		/* valid mode */
     int		m_noremap;	/* if non-zero no re-mapping for m_str */
     char	m_silent;	/* <silent> used, don't echo commands */
+    char	m_nowait;	/* <nowait> used */
 #ifdef FEAT_EVAL
     char	m_expr;		/* <expr> used, m_str is an expression */
     scid_T	m_script_ID;	/* ID of script where map was defined */
