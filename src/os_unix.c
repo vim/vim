@@ -1559,7 +1559,7 @@ x_IOerror_check(dpy)
 {
     /* This function should not return, it causes exit().  Longjump instead. */
     LONGJMP(lc_jump_env, 1);
-#  ifdef VMS
+#  if defined(VMS) || defined(__CYGWIN__) || defined(__CYGWIN32__)
     return 0;  /* avoid the compiler complains about missing return value */
 #  endif
 }
@@ -1581,7 +1581,7 @@ x_IOerror_handler(dpy)
 
     /* This function should not return, it causes exit().  Longjump instead. */
     LONGJMP(x_jump_env, 1);
-# ifdef VMS
+# if defined(VMS) || defined(__CYGWIN__) || defined(__CYGWIN32__)
     return 0;  /* avoid the compiler complains about missing return value */
 # endif
 }
@@ -5929,7 +5929,7 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 # if defined(__CYGWIN__) || defined(__CYGWIN32__)
     /* Translate <CR><NL> into <NL>.  Caution, buffer may contain NUL. */
     p = buffer;
-    for (i = 0; i < len; ++i)
+    for (i = 0; i < (int)len; ++i)
 	if (!(buffer[i] == CAR && buffer[i + 1] == NL))
 	    *p++ = buffer[i];
     len = p - buffer;

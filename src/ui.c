@@ -2366,14 +2366,20 @@ clip_x11_convert_selection_cb(w, sel_atom, target, type, value, length, format)
     {
 	XTextProperty	text_prop;
 	char		*string_nt = (char *)alloc((unsigned)*length + 1);
+	int		conv_result;
 
 	/* create NUL terminated string which XmbTextListToTextProperty wants */
 	mch_memmove(string_nt, string, (size_t)*length);
 	string_nt[*length] = NUL;
-	XmbTextListToTextProperty(X_DISPLAY, (char **)&string_nt, 1,
-					      XCompoundTextStyle, &text_prop);
+	conv_result = XmbTextListToTextProperty(X_DISPLAY, (char **)&string_nt,
+					   1, XCompoundTextStyle, &text_prop);
 	vim_free(string_nt);
 	XtFree(*value);			/* replace with COMPOUND text */
+	if (conv_result != Success)
+	{
+	    vim_free(string);
+	    return False;
+	}
 	*value = (XtPointer)(text_prop.value);	/*    from plain text */
 	*length = text_prop.nitems;
 	*type = compound_text_atom;
