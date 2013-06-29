@@ -5105,6 +5105,8 @@ chk_modeline(lnum, flags)
 		    e = s + 3;
 		vers = getdigits(&e);
 		if (*e == ':'
+			&& (s[0] != 'V'
+				  || STRNCMP(skipwhite(e + 1), "set", 3) == 0)
 			&& (s[3] == ':'
 			    || (VIM_VERSION_100 >= vers && isdigit(s[3]))
 			    || (VIM_VERSION_100 < vers && s[3] == '<')
