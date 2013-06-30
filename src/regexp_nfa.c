@@ -4228,14 +4228,39 @@ addstate_here(l, state, subs, pim, ip)
     }
     else if (count > 1)
     {
-	/* make space for new states, then move them from the
-	 * end to the current position */
-	mch_memmove(&(l->t[listidx + count]),
-		&(l->t[listidx + 1]),
-		sizeof(nfa_thread_T) * (l->n - listidx - 1));
-	mch_memmove(&(l->t[listidx]),
-		&(l->t[l->n - 1]),
-		sizeof(nfa_thread_T) * count);
+	if (l->n + count - 1 >= l->len)
+	{
+	    /* not enough space to move the new states, reallocate the list
+	     * and move the states to the right position */
+	    nfa_thread_T *newl;
+
+	    l->len = l->len * 3 / 2 + 50;
+	    newl = (nfa_thread_T *)alloc(l->len * sizeof(nfa_thread_T));
+	    if (newl == NULL)
+		return;
+	    mch_memmove(&(newl[0]),
+		    &(l->t[0]),
+		    sizeof(nfa_thread_T) * listidx);
+	    mch_memmove(&(newl[listidx]),
+		    &(l->t[l->n - count]),
+		    sizeof(nfa_thread_T) * count);
+	    mch_memmove(&(newl[listidx + count]),
+		    &(l->t[listidx + 1]),
+		    sizeof(nfa_thread_T) * (l->n - count - listidx - 1));
+	    vim_free(l->t);
+	    l->t = newl;
+	}
+	else
+	{
+	    /* make space for new states, then move them from the
+	     * end to the current position */
+	    mch_memmove(&(l->t[listidx + count]),
+		    &(l->t[listidx + 1]),
+		    sizeof(nfa_thread_T) * (l->n - listidx - 1));
+	    mch_memmove(&(l->t[listidx]),
+		    &(l->t[l->n - 1]),
+		    sizeof(nfa_thread_T) * count);
+	}
     }
     --l->n;
     *ip = listidx - 1;
