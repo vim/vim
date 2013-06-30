@@ -26,6 +26,7 @@ void term_settitle __ARGS((char_u *title));
 void ttest __ARGS((int pairs));
 void add_long_to_buf __ARGS((long_u val, char_u *dst));
 void check_shellsize __ARGS((void));
+void limit_screen_size __ARGS((void));
 void win_new_shellsize __ARGS((void));
 void shell_resized __ARGS((void));
 void shell_resized_check __ARGS((void));

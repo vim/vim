@@ -3698,6 +3698,7 @@ gui_mch_open(void)
 		p_window = h - 1;
 	    Rows = h;
 	}
+	limit_screen_size();
 
 	pixel_width = (guint)(gui_get_base_width() + Columns * gui.char_width);
 	pixel_height = (guint)(gui_get_base_height() + Rows * gui.char_height);

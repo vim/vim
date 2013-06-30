@@ -2962,15 +2962,29 @@ get_bytes_from_buf(buf, bytes, num_bytes)
 #endif
 
 /*
- * Check if the new shell size is valid, correct it if it's too small.
+ * Check if the new shell size is valid, correct it if it's too small or way
+ * too big.
  */
     void
 check_shellsize()
 {
-    if (Columns < MIN_COLUMNS)
-	Columns = MIN_COLUMNS;
     if (Rows < min_rows())	/* need room for one window and command line */
 	Rows = min_rows();
+    limit_screen_size();
+}
+
+/*
+ * Limit Rows and Columns to avoid an overflow in Rows * Columns.
+ */
+    void
+limit_screen_size()
+{
+    if (Columns < MIN_COLUMNS)
+	Columns = MIN_COLUMNS;
+    else if (Columns > 10000)
+	Columns = 10000;
+    if (Rows > 1000)
+	Rows = 1000;
 }
 
 /*

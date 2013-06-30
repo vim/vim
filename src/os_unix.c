@@ -3777,6 +3777,7 @@ mch_get_shellsize()
 
     Rows = rows;
     Columns = columns;
+    limit_screen_size();
     return OK;
 }
 
