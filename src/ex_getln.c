@@ -4951,7 +4951,7 @@ call_user_expand_func(user_expand_func, xp, num_file, file)
     int		*num_file;
     char_u	***file;
 {
-    char_u	keep;
+    int		keep = 0;
     char_u	num[50];
     char_u	*args[3];
     int		save_current_SID = current_SID;
