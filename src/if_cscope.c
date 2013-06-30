@@ -997,6 +997,15 @@ err_closing:
 	vim_free(ppath);
 
 #if defined(UNIX)
+# if defined(HAVE_SETSID) || defined(HAVE_SETPGID)
+	/* Change our process group to avoid cscope receiving SIGWINCH. */
+#  if defined(HAVE_SETSID)
+	(void)setsid();
+#  else
+	if (setpgid(0, 0) == -1)
+	    PERROR(_("cs_create_connection setpgid failed"));
+#  endif
+# endif
 	if (execl("/bin/sh", "sh", "-c", cmd, (char *)NULL) == -1)
 	    PERROR(_("cs_create_connection exec failed"));
 
