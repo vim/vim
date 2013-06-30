@@ -3366,9 +3366,11 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #endif
 
 #ifdef FEAT_SYN_HL
-    /* Cursor line highlighting for 'cursorline'.  Not when Visual mode is
-     * active, because it's not clear what is selected then. */
-    if (wp->w_p_cul && lnum == wp->w_cursor.lnum && !VIsual_active)
+    /* Cursor line highlighting for 'cursorline' in the current window.  Not
+     * when Visual mode is active, because it's not clear what is selected
+     * then. */
+    if (wp->w_p_cul && wp == curwin && lnum == wp->w_cursor.lnum
+							    && !VIsual_active)
     {
 	line_attr = hl_attr(HLF_CUL);
 	area_highlighting = TRUE;
@@ -3541,7 +3543,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		     * the current line differently.
 		     * TODO: Can we use CursorLine instead of CursorLineNr
 		     * when CursorLineNr isn't set? */
-		    if ((wp->w_p_cul || wp->w_p_rnu)
+		    if (((wp->w_p_cul && wp == curwin) || wp->w_p_rnu)
 						 && lnum == wp->w_cursor.lnum)
 			char_attr = hl_attr(HLF_CLN);
 #endif
@@ -3582,6 +3584,12 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		     * required when 'linebreak' is also set. */
 		    if (tocol == vcol)
 			tocol += n_extra;
+#ifdef FEAT_SYN_HL
+		    /* combine 'showbreak' with 'cursorline' */
+		    if (wp->w_p_cul && wp == curwin
+						 && lnum == wp->w_cursor.lnum)
+			char_attr = hl_combine_attr(char_attr, HLF_CLN);
+#endif
 		}
 # endif
 	    }
