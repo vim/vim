@@ -3538,7 +3538,7 @@ static int sub_equal __ARGS((regsub_T *sub1, regsub_T *sub2));
 static int match_backref __ARGS((regsub_T *sub, int subidx, int *bytelen));
 static int has_state_with_pos __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs));
 static int state_in_list __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs));
-static void addstate __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs, nfa_pim_T *pim, int off));
+static regsubs_T *addstate __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs_arg, nfa_pim_T *pim, int off));
 static void addstate_here __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs, nfa_pim_T *pim, int *ip));
 
 /*
@@ -3832,13 +3832,18 @@ state_in_list(l, state, subs)
     return FALSE;
 }
 
-    static void
-addstate(l, state, subs, pim, off)
-    nfa_list_T		*l;	/* runtime state list */
-    nfa_state_T		*state;	/* state to update */
-    regsubs_T		*subs;	/* pointers to subexpressions */
-    nfa_pim_T		*pim;   /* postponed look-behind match */
-    int			off;	/* byte offset, when -1 go to next line */
+/*
+ * Add "state" and possibly what follows to state list ".".
+ * Returns "subs_arg", possibly copied into temp_subs.
+ */
+
+    static regsubs_T *
+addstate(l, state, subs_arg, pim, off)
+    nfa_list_T		*l;	    /* runtime state list */
+    nfa_state_T		*state;	    /* state to update */
+    regsubs_T		*subs_arg;  /* pointers to subexpressions */
+    nfa_pim_T		*pim;	    /* postponed look-behind match */
+    int			off;	    /* byte offset, when -1 go to next line */
 {
     int			subidx;
     nfa_thread_T	*thread;
@@ -3847,6 +3852,8 @@ addstate(l, state, subs, pim, off)
     char_u		*save_ptr;
     int			i;
     regsub_T		*sub;
+    regsubs_T		*subs = subs_arg;
+    static regsubs_T	temp_subs;
 #ifdef ENABLE_LOG
     int			did_print = FALSE;
 #endif
@@ -3941,7 +3948,7 @@ skip_add:
 		    fprintf(log_fd, "> Not adding state %d to list %d. char %d: %s\n",
 			    abs(state->id), l->id, state->c, code);
 #endif
-		    return;
+		    return subs;
 		}
 
 		/* Do not add the state again when it exists with the same
@@ -3955,6 +3962,18 @@ skip_add:
 	    if (l->n == l->len)
 	    {
 		int newlen = l->len * 3 / 2 + 50;
+
+		if (subs != &temp_subs)
+		{
+		    /* "subs" may point into the current array, need to make a
+		     * copy before it becomes invalid. */
+		    copy_sub(&temp_subs.norm, &subs->norm);
+#ifdef FEAT_SYN_HL
+		    if (nfa_has_zsubexpr)
+			copy_sub(&temp_subs.synt, &subs->synt);
+#endif
+		    subs = &temp_subs;
+		}
 
 		l->t = vim_realloc(l->t, newlen * sizeof(nfa_thread_T));
 		l->len = newlen;
@@ -3991,14 +4010,14 @@ skip_add:
 
 	case NFA_SPLIT:
 	    /* order matters here */
-	    addstate(l, state->out, subs, pim, off);
-	    addstate(l, state->out1, subs, pim, off);
+	    subs = addstate(l, state->out, subs, pim, off);
+	    subs = addstate(l, state->out1, subs, pim, off);
 	    break;
 
 	case NFA_SKIP_CHAR:
 	case NFA_NOPEN:
 	case NFA_NCLOSE:
-	    addstate(l, state->out, subs, pim, off);
+	    subs = addstate(l, state->out, subs, pim, off);
 	    break;
 
 	case NFA_MOPEN:
@@ -4094,7 +4113,7 @@ skip_add:
 		sub->list.line[subidx].start = reginput + off;
 	    }
 
-	    addstate(l, state->out, subs, pim, off);
+	    subs = addstate(l, state->out, subs, pim, off);
 
 	    if (save_in_use == -1)
 	    {
@@ -4112,7 +4131,7 @@ skip_add:
 	    {
 		/* Do not overwrite the position set by \ze. If no \ze
 		 * encountered end will be set in nfa_regtry(). */
-		addstate(l, state->out, subs, pim, off);
+		subs = addstate(l, state->out, subs, pim, off);
 		break;
 	    }
 	case NFA_MCLOSE1:
@@ -4181,7 +4200,7 @@ skip_add:
 		sub->list.line[subidx].end = reginput + off;
 	    }
 
-	    addstate(l, state->out, subs, pim, off);
+	    subs = addstate(l, state->out, subs, pim, off);
 
 	    if (REG_MULTI)
 		sub->list.multi[subidx].end = save_lpos;
@@ -4190,6 +4209,7 @@ skip_add:
 	    sub->in_use = save_in_use;
 	    break;
     }
+    return subs;
 }
 
 /*
