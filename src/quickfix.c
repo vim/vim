@@ -1180,7 +1180,10 @@ copy_loclist(from, to)
 	/* When no valid entries are present in the list, qf_ptr points to
 	 * the first item in the list */
 	if (to_qfl->qf_nonevalid)
+	{
 	    to_qfl->qf_ptr = to_qfl->qf_start;
+	    to_qfl->qf_index = 1;
+	}
     }
 
     to->w_llist->qf_curlist = qi->qf_curlist;	/* current list */
