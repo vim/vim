@@ -4489,7 +4489,7 @@ current_quote(oap, count, include, quotechar)
 #endif /* FEAT_TEXTOBJ */
 
 #if defined(FEAT_VISUAL) || defined(PROTO)
-static int is_zerowidth __ARGS((char_u *pattern));
+static int is_one_char __ARGS((char_u *pattern));
 
 /*
  * Find next search match under cursor, cursor at end.
@@ -4510,7 +4510,7 @@ current_search(count, forward)
     char_u	old_p_ws = p_ws;
     int		flags = 0;
     pos_T	save_VIsual;
-    int		zerowidth = FALSE;
+    int		one_char;
 
     /* wrapping should not occur */
     p_ws = FALSE;
@@ -4540,9 +4540,9 @@ current_search(count, forward)
 	orig_pos = pos = start_pos = curwin->w_cursor;
 
     /* Is the pattern is zero-width? */
-    zerowidth = is_zerowidth(spats[last_idx].pat);
-    if (zerowidth == -1)
-	return FAIL;
+    one_char = is_one_char(spats[last_idx].pat);
+    if (one_char == -1)
+	return FAIL;  /* invalid pattern */
 
     /*
      * The trick is to first search backwards and then search forward again,
@@ -4557,7 +4557,7 @@ current_search(count, forward)
 	    dir = !i;
 
 	flags = 0;
-	if (!dir && !zerowidth)
+	if (!dir && !one_char)
 	    flags = SEARCH_END;
 
 	result = searchit(curwin, curbuf, &pos, (dir ? FORWARD : BACKWARD),
@@ -4598,7 +4598,7 @@ current_search(count, forward)
 
     /* move to match, except for zero-width matches, in which case, we are
      * already on the next match */
-    if (!zerowidth)
+    if (!one_char)
 	result = searchit(curwin, curbuf, &pos, (forward ? FORWARD : BACKWARD),
 	    spats[last_idx].pat, 0L, flags | SEARCH_KEEP, RE_SEARCH, 0, NULL);
 
@@ -4645,11 +4645,11 @@ current_search(count, forward)
 }
 
 /*
- * Check if the pattern is zero-width.
+ * Check if the pattern is one character or zero-width.
  * Returns TRUE, FALSE or -1 for failure.
  */
     static int
-is_zerowidth(pattern)
+is_one_char(pattern)
     char_u	*pattern;
 {
     regmmatch_T	regmatch;
@@ -4677,6 +4677,9 @@ is_zerowidth(pattern)
 	    result = (nmatched != 0
 		&& regmatch.startpos[0].lnum == regmatch.endpos[0].lnum
 		&& regmatch.startpos[0].col == regmatch.endpos[0].col);
+
+	if (!result && incl(&pos) == 0 && pos.col == regmatch.endpos[0].col)
+	    result  = TRUE;
     }
 
     called_emsg |= save_called_emsg;
