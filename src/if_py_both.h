@@ -13,6 +13,8 @@
  * Common code for if_python.c and if_python3.c.
  */
 
+static char_u e_py_systemexit[]	= "E880: Can't handle SystemExit of %s exception in vim";
+
 #if PY_VERSION_HEX < 0x02050000
 typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
 #endif
@@ -275,7 +277,7 @@ ObjectDir(PyObject *self, char **attributes)
 
     if (self)
 	for (method = self->ob_type->tp_methods ; method->ml_name != NULL ; ++method)
-	    if (add_string(ret, (char *) method->ml_name))
+	    if (add_string(ret, (char *)method->ml_name))
 	    {
 		Py_DECREF(ret);
 		return NULL;
@@ -549,8 +551,9 @@ VimTryStart(void)
 VimTryEnd(void)
 {
     --trylevel;
-    /* Without this it stops processing all subsequent VimL commands and 
-     * generates strange error messages if I e.g. try calling Test() in a cycle */
+    /* Without this it stops processing all subsequent VimL commands and
+     * generates strange error messages if I e.g. try calling Test() in a
+     * cycle */
     did_emsg = FALSE;
     /* Keyboard interrupt should be preferred over anything else */
     if (got_int)
@@ -570,7 +573,7 @@ VimTryEnd(void)
     /* Finally transform VimL exception to python one */
     else
     {
-	PyErr_SetVim((char *) current_exception->value);
+	PyErr_SetVim((char *)current_exception->value);
 	discard_current_exception();
 	return -1;
     }
@@ -667,7 +670,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 
 	/* For backwards compatibility numbers are stored as strings. */
 	sprintf(buf, "%ld", (long)our_tv->vval.v_number);
-	ret = PyString_FromString((char *) buf);
+	ret = PyString_FromString((char *)buf);
     }
 # ifdef FEAT_FLOAT
     else if (our_tv->v_type == VAR_FLOAT)
@@ -675,7 +678,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	char buf[NUMBUFLEN];
 
 	sprintf(buf, "%f", our_tv->vval.v_float);
-	ret = PyString_FromString((char *) buf);
+	ret = PyString_FromString((char *)buf);
     }
 # endif
     else if (our_tv->v_type == VAR_LIST)
@@ -955,7 +958,7 @@ map_rtp_callback(char_u *path, void *_data)
     PyObject	*pathObject;
     map_rtp_data	*mr_data = *((map_rtp_data **) data);
 
-    if (!(pathObject = PyString_FromString((char *) path)))
+    if (!(pathObject = PyString_FromString((char *)path)))
     {
 	*data = NULL;
 	return;
@@ -1124,7 +1127,7 @@ find_module(char *fullname, char *tail, PyObject *new_path)
     PyObject	*module;
     char	*dot;
 
-    if ((dot = (char *) vim_strchr((char_u *) tail, '.')))
+    if ((dot = (char *)vim_strchr((char_u *) tail, '.')))
     {
 	/*
 	 * There is a dot in the name: call find_module recursively without the
@@ -1658,7 +1661,7 @@ DictionaryIterNext(dictiterinfo_T **dii)
 
     --((*dii)->todo);
 
-    if (!(ret = PyBytes_FromString((char *) (*dii)->hi->hi_key)))
+    if (!(ret = PyBytes_FromString((char *)(*dii)->hi->hi_key)))
 	return NULL;
 
     return ret;
@@ -2680,12 +2683,12 @@ FunctionCall(FunctionObject *self, PyObject *argsObject, PyObject *kwargs)
 FunctionRepr(FunctionObject *self)
 {
 #ifdef Py_TRACE_REFS
-    /* For unknown reason self->name may be NULL after calling 
+    /* For unknown reason self->name may be NULL after calling
      * Finalize */
     return PyString_FromFormat("<vim.Function '%s'>",
-	    (self->name == NULL ? "<NULL>" : (char *) self->name));
+	    (self->name == NULL ? "<NULL>" : (char *)self->name));
 #else
-    return PyString_FromFormat("<vim.Function '%s'>", (char *) self->name);
+    return PyString_FromFormat("<vim.Function '%s'>", (char *)self->name);
 #endif
 }
 
@@ -2809,7 +2812,7 @@ OptionsItem(OptionsObject *self, PyObject *keyObject)
     {
 	if (stringval)
 	{
-	    PyObject	*ret = PyBytes_FromString((char *) stringval);
+	    PyObject	*ret = PyBytes_FromString((char *)stringval);
 	    vim_free(stringval);
 	    return ret;
 	}
@@ -4525,7 +4528,7 @@ BufferAttr(BufferObject *self, char *name)
 {
     if (strcmp(name, "name") == 0)
 	return PyString_FromString((self->buf->b_ffname == NULL
-				    ? "" : (char *) self->buf->b_ffname));
+				    ? "" : (char *)self->buf->b_ffname));
     else if (strcmp(name, "number") == 0)
 	return Py_BuildValue(Py_ssize_t_fmt, self->buf->b_fnum);
     else if (strcmp(name, "vars") == 0)
@@ -4961,7 +4964,19 @@ run_cmd(const char *cmd, void *arg UNUSED
 #endif
 	)
 {
-    PyRun_SimpleString((char *) cmd);
+    PyObject	*run_ret;
+    run_ret = PyRun_String((char *)cmd, Py_file_input, globals, globals);
+    if (run_ret != NULL)
+    {
+	Py_DECREF(run_ret);
+    }
+    else if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
+    {
+	EMSG2(_(e_py_systemexit), "python");
+	PyErr_Clear();
+    }
+    else
+	PyErr_PrintEx(1);
 }
 
 static const char	*code_hdr = "def " DOPY_FUNC "(line, linenr):\n ";
@@ -4979,6 +4994,7 @@ run_do(const char *cmd, void *arg UNUSED
     char	*code;
     int		status;
     PyObject	*pyfunc, *pymain;
+    PyObject	*run_ret;
 
     if (u_save((linenr_T)RangeStart - 1, (linenr_T)RangeEnd + 1) != OK)
     {
@@ -4990,7 +5006,23 @@ run_do(const char *cmd, void *arg UNUSED
     code = PyMem_New(char, len + 1);
     memcpy(code, code_hdr, code_hdr_len);
     STRCPY(code + code_hdr_len, cmd);
-    status = PyRun_SimpleString(code);
+    run_ret = PyRun_String(code, Py_file_input, globals, globals);
+    status = -1;
+    if (run_ret != NULL)
+    {
+	status = 0;
+	Py_DECREF(run_ret);
+    }
+    else if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
+    {
+	PyMem_Free(code);
+	EMSG2(_(e_py_systemexit), "python");
+	PyErr_Clear();
+	return;
+    }
+    else
+	PyErr_PrintEx(1);
+
     PyMem_Free(code);
 
     if (status)
@@ -5068,9 +5100,14 @@ run_eval(const char *cmd, typval_T *rettv
 {
     PyObject	*run_ret;
 
-    run_ret = PyRun_String((char *) cmd, Py_eval_input, globals, globals);
+    run_ret = PyRun_String((char *)cmd, Py_eval_input, globals, globals);
     if (run_ret == NULL)
     {
+	if (PyErr_ExceptionMatches(PyExc_SystemExit))
+	{
+	    EMSG2(_(e_py_systemexit), "python");
+	    PyErr_Clear();
+	}
 	if (PyErr_Occurred() && !msg_silent)
 	    PyErr_PrintEx(0);
 	EMSG(_("E858: Eval did not return a valid python object"));

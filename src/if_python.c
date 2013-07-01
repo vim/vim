@@ -444,6 +444,7 @@ static PyObject *imp_PyExc_KeyError;
 static PyObject *imp_PyExc_KeyboardInterrupt;
 static PyObject *imp_PyExc_TypeError;
 static PyObject *imp_PyExc_ValueError;
+static PyObject *imp_PyExc_SystemExit;
 static PyObject *imp_PyExc_RuntimeError;
 static PyObject *imp_PyExc_ImportError;
 static PyObject *imp_PyExc_OverflowError;
@@ -454,6 +455,7 @@ static PyObject *imp_PyExc_OverflowError;
 # define PyExc_KeyboardInterrupt imp_PyExc_KeyboardInterrupt
 # define PyExc_TypeError imp_PyExc_TypeError
 # define PyExc_ValueError imp_PyExc_ValueError
+# define PyExc_SystemExit imp_PyExc_SystemExit
 # define PyExc_RuntimeError imp_PyExc_RuntimeError
 # define PyExc_ImportError imp_PyExc_ImportError
 # define PyExc_OverflowError imp_PyExc_OverflowError
@@ -731,6 +733,7 @@ get_exceptions(void)
     imp_PyExc_KeyboardInterrupt = PyDict_GetItemString(exdict, "KeyboardInterrupt");
     imp_PyExc_TypeError = PyDict_GetItemString(exdict, "TypeError");
     imp_PyExc_ValueError = PyDict_GetItemString(exdict, "ValueError");
+    imp_PyExc_SystemExit = PyDict_GetItemString(exdict, "SystemExit");
     imp_PyExc_RuntimeError = PyDict_GetItemString(exdict, "RuntimeError");
     imp_PyExc_ImportError = PyDict_GetItemString(exdict, "ImportError");
     imp_PyExc_OverflowError = PyDict_GetItemString(exdict, "OverflowError");
@@ -740,6 +743,7 @@ get_exceptions(void)
     Py_XINCREF(imp_PyExc_KeyboardInterrupt);
     Py_XINCREF(imp_PyExc_TypeError);
     Py_XINCREF(imp_PyExc_ValueError);
+    Py_XINCREF(imp_PyExc_SystemExit);
     Py_XINCREF(imp_PyExc_RuntimeError);
     Py_XINCREF(imp_PyExc_ImportError);
     Py_XINCREF(imp_PyExc_OverflowError);
