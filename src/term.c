@@ -2947,8 +2947,10 @@ get_bytes_from_buf(buf, bytes, num_bytes)
 		return -1;
 	    if (buf[len++] == (int)KS_ZERO)
 		c = NUL;
-	    ++len;	/* skip KE_FILLER */
-	    /* else it should be KS_SPECIAL, and c already equals K_SPECIAL */
+	    /* else it should be KS_SPECIAL; when followed by KE_FILLER c is
+	     * K_SPECIAL, or followed by KE_CSI and c must be CSI. */
+	    if (buf[len++] == (int)KE_CSI)
+		c = CSI;
 	}
 	else if (c == CSI && buf[len] == KS_EXTRA
 					       && buf[len + 1] == (int)KE_CSI)
