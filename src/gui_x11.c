@@ -1431,6 +1431,7 @@ gui_mch_init()
 		p_window = h - 1;
 	    Rows = h;
 	}
+	limit_screen_size();
 	/*
 	 * Set the (x,y) position of the main window only if specified in the
 	 * users geometry, so we get good defaults when they don't. This needs
