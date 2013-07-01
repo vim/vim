@@ -1635,7 +1635,10 @@ qf_jump(qi, dir, errornr, forceit)
 	    FOR_ALL_WINDOWS(usable_win_ptr)
 		if (usable_win_ptr->w_llist == ll_ref
 			&& usable_win_ptr->w_buffer->b_p_bt[0] != 'q')
+		{
+		    usable_win = 1;
 		    break;
+		}
 	}
 
 	if (!usable_win)
