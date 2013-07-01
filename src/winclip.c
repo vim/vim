@@ -180,7 +180,7 @@ WideCharToMultiByte_alloc(UINT cp, DWORD flags,
 {
     *outlen = WideCharToMultiByte(cp, flags, in, inlen, NULL, 0, def, useddef);
     /* Add one one byte to avoid a zero-length alloc(). */
-    *out = alloc((unsigned)*outlen + 1);
+    *out = (LPSTR)alloc((unsigned)*outlen + 1);
     if (*out != NULL)
     {
 	WideCharToMultiByte(cp, flags, in, inlen, *out, *outlen, def, useddef);
@@ -557,7 +557,7 @@ clip_mch_set_selection(VimClipboard *cbd)
 		return;		/* out of memory */
 	    }
 	    WideCharToMultiByte(GetACP(), 0, out, len,
-						  str, metadata.txtlen, 0, 0);
+					   (LPSTR)str, metadata.txtlen, 0, 0);
 
 	    /* Allocate memory for the UTF-16 text, add one NUL word to
 	     * terminate the string. */
@@ -584,7 +584,7 @@ clip_mch_set_selection(VimClipboard *cbd)
 
 	if (lpszMem)
 	{
-	    vim_strncpy(lpszMem, str, metadata.txtlen);
+	    vim_strncpy((char_u *)lpszMem, str, metadata.txtlen);
 	    GlobalUnlock(hMem);
 	}
     }
@@ -677,7 +677,8 @@ enc_to_utf16(char_u *str, int *lenp)
     {
 	/* We can do any CP### -> UTF-16 in one pass, and we can do it
 	 * without iconv() (convert_* may need iconv). */
-	MultiByteToWideChar_alloc(enc_codepage, 0, str, *lenp, &ret, &length);
+	MultiByteToWideChar_alloc(enc_codepage, 0, (LPCSTR)str, *lenp,
+							       &ret, &length);
     }
     else
     {
@@ -787,7 +788,8 @@ acp_to_enc(str, str_size, out, outlen)
 {
     LPWSTR	widestr;
 
-    MultiByteToWideChar_alloc(GetACP(), 0, str, str_size, &widestr, outlen);
+    MultiByteToWideChar_alloc(GetACP(), 0, (LPCSTR)str, str_size,
+							    &widestr, outlen);
     if (widestr != NULL)
     {
 	++*outlen;	/* Include the 0 after the string */
