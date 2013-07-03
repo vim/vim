@@ -101,6 +101,9 @@
 # endif
 # ifndef FEAT_CLIPBOARD
 #  define FEAT_CLIPBOARD
+#  if defined(FEAT_SMALL) && !defined(FEAT_MOUSE)
+#   define FEAT_MOUSE
+#  endif
 # endif
 #endif
 #if defined(MACOS_X) || defined(MACOS_CLASSIC)

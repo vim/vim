@@ -3698,6 +3698,13 @@ if test "x$MACOSX" = "xyes"; then
   else
     AC_MSG_RESULT(no)
   fi
+  dnl As mentioned above, tiny build implies os_macosx.m isn't needed.  
+  dnl Exclude it from OS_EXTRA_SRC so that linker won't complain about
+  dnl missing Objective-C symbols.
+  if test "x$features" = "xtiny"; then
+    OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
+    OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
+  fi
 fi
 if test "x$MACARCH" = "xboth" && test "x$GUITYPE" = "xCARBONGUI"; then
   LDFLAGS="$LDFLAGS -isysroot $DEVELOPER_DIR/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc"
