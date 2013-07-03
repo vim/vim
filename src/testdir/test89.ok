@@ -20,3 +20,9 @@ results:
   number
 
   relativenumber
+
+Testing findfile
+
+src/testdir/test19.in
+testdir/test19.in
+testdir/test19.in

@@ -4679,8 +4679,58 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, find_what,
     }
     STRCPY(ff_expand_buffer, search_ctx->ffsc_start_dir);
     add_pathsep(ff_expand_buffer);
-    STRCAT(ff_expand_buffer, search_ctx->ffsc_fix_path);
-    add_pathsep(ff_expand_buffer);
+    {
+	char_u *buf = alloc(STRLEN(ff_expand_buffer)
+					 + STRLEN(search_ctx->ffsc_fix_path));
+
+	STRCPY(buf, ff_expand_buffer);
+	STRCAT(buf, search_ctx->ffsc_fix_path);
+	if (mch_isdir(buf))
+	{
+	    STRCAT(ff_expand_buffer, search_ctx->ffsc_fix_path);
+	    add_pathsep(ff_expand_buffer);
+	}
+#ifdef FEAT_PATH_EXTRA
+	else
+	{
+	    char_u *p =  vim_strrchr(search_ctx->ffsc_fix_path, PATHSEP);
+	    char_u *wc_path = NUL;
+	    char_u *temp = NUL;
+	    int    len = 0;
+
+	    if (p != NULL)
+	    {
+		len = p - search_ctx->ffsc_fix_path;
+		STRNCAT(ff_expand_buffer, search_ctx->ffsc_fix_path, len);
+		add_pathsep(ff_expand_buffer);
+	    }
+	    else
+		len = STRLEN(search_ctx->ffsc_fix_path);
+
+	    if (search_ctx->ffsc_wc_path != NULL)
+	    {
+		wc_path = vim_strsave(search_ctx->ffsc_wc_path);
+		temp = alloc(STRLEN(search_ctx->ffsc_wc_path)
+				 + (STRLEN(search_ctx->ffsc_fix_path) - len));
+	    }
+
+	    if (temp == NULL || wc_path == NULL)
+	    {
+		vim_free(buf);
+		vim_free(temp);
+		vim_free(wc_path);
+		goto error_return;
+	    }
+
+	    STRCPY(temp, search_ctx->ffsc_fix_path + len);
+	    STRCAT(temp, search_ctx->ffsc_wc_path);
+	    vim_free(search_ctx->ffsc_wc_path);
+	    vim_free(wc_path);
+	    search_ctx->ffsc_wc_path = temp;
+	}
+#endif
+	vim_free(buf);
+    }
 
     sptr = ff_create_stack_element(ff_expand_buffer,
 #ifdef FEAT_PATH_EXTRA

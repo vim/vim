@@ -1,6 +1,7 @@
-Some tests for setting 'number' and 'relativenumber'
-This is not all that useful now that the options are no longer reset when
-setting the other.
+- Some tests for setting 'number' and 'relativenumber'
+  This is not all that useful now that the options are no longer reset when
+  setting the other.
+- Some tests for findfile() function
 
 STARTTEST
 :so small.vim
@@ -49,6 +50,17 @@ STARTTEST
 :$put g
 :$put h
 :"
+:let cwd=getcwd()
+:cd ../..
+:$put =''
+:$put ='Testing findfile'
+:$put =''
+:$put =findfile('test19.in','src/test*')
+:exe "cd" cwd
+:cd ..
+:$put =findfile('test19.in','test*')
+:$put =findfile('test19.in','testdir')
+:exe "cd" cwd
 :/^results/,$w! test.out
 :q!
 ENDTEST
