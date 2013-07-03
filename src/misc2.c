@@ -4680,11 +4680,11 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, find_what,
     STRCPY(ff_expand_buffer, search_ctx->ffsc_start_dir);
     add_pathsep(ff_expand_buffer);
     {
-	char_u *buf = alloc(STRLEN(ff_expand_buffer)
-					 + STRLEN(search_ctx->ffsc_fix_path));
+	int    eb_len = STRLEN(ff_expand_buffer);
+	char_u *buf = alloc(eb_len + STRLEN(search_ctx->ffsc_fix_path) + 1);
 
 	STRCPY(buf, ff_expand_buffer);
-	STRCAT(buf, search_ctx->ffsc_fix_path);
+	STRCPY(buf + eb_len, search_ctx->ffsc_fix_path);
 	if (mch_isdir(buf))
 	{
 	    STRCAT(ff_expand_buffer, search_ctx->ffsc_fix_path);
