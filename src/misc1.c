@@ -10457,6 +10457,54 @@ remove_duplicates(gap)
 }
 #endif
 
+static int has_env_var __ARGS((char_u *p));
+
+/*
+ * Return TRUE if "p" contains what looks like an environment variable.
+ * Allowing for escaping.
+ */
+    static int
+has_env_var(p)
+    char_u *p;
+{
+    for ( ; *p; mb_ptr_adv(p))
+    {
+	if (*p == '\\' && p[1] != NUL)
+	    ++p;
+	else if (vim_strchr((char_u *)
+#if defined(MSDOS) || defined(MSWIN) || defined(OS2)
+				    "$%"
+#else
+				    "$"
+#endif
+					, *p) != NULL)
+	    return TRUE;
+    }
+    return FALSE;
+}
+
+#ifdef SPECIAL_WILDCHAR
+static int has_special_wildchar __ARGS((char_u *p));
+
+/*
+ * Return TRUE if "p" contains a special wildcard character.
+ * Allowing for escaping.
+ */
+    static int
+has_special_wildchar(p)
+    char_u  *p;
+{
+    for ( ; *p; mb_ptr_adv(p))
+    {
+	if (*p == '\\' && p[1] != NUL)
+	    ++p;
+	else if (vim_strchr((char_u *)SPECIAL_WILDCHAR, *p) != NULL)
+	    return TRUE;
+    }
+    return FALSE;
+}
+#endif
+
 /*
  * Generic wildcard expansion code.
  *
@@ -10507,7 +10555,7 @@ gen_expand_wildcards(num_pat, pat, num_file, file, flags)
      */
     for (i = 0; i < num_pat; i++)
     {
-	if (vim_strpbrk(pat[i], (char_u *)SPECIAL_WILDCHAR) != NULL
+	if (has_special_wildchar(pat[i])
 # ifdef VIM_BACKTICK
 		&& !(vim_backtick(pat[i]) && pat[i][1] == '=')
 # endif
@@ -10537,7 +10585,7 @@ gen_expand_wildcards(num_pat, pat, num_file, file, flags)
 	    /*
 	     * First expand environment variables, "~/" and "~user/".
 	     */
-	    if (vim_strchr(p, '$') != NULL || *p == '~')
+	    if (has_env_var(p) || *p == '~')
 	    {
 		p = expand_env_save_opt(p, TRUE);
 		if (p == NULL)
@@ -10548,7 +10596,7 @@ gen_expand_wildcards(num_pat, pat, num_file, file, flags)
 		 * variable, use the shell to do that.  Discard previously
 		 * found file names and start all over again.
 		 */
-		else if (vim_strchr(p, '$') != NULL || *p == '~')
+		else if (has_env_var(p) || *p == '~')
 		{
 		    vim_free(p);
 		    ga_clear_strings(&ga);
