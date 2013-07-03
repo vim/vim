@@ -373,6 +373,11 @@ CClink = $(CC)
 #CONF_OPT_DARWIN = --with-mac-arch=ppc
 #CONF_OPT_DARWIN = --with-mac-arch=both
 
+# Uncomment the next line to fail if one of the requested language interfaces
+# cannot be configured.  Without this Vim will be build anyway, without
+# the failing interfaces.
+#CONF_OPT_FAIL = --enable-fail-if-missing
+
 # LUA
 # Uncomment one of these when you want to include the Lua interface.
 # First one is for static linking, second one for dynamic loading.
@@ -388,11 +393,6 @@ CClink = $(CC)
 #CONF_OPT_PLTHOME  = --with-plthome=/usr/local/plt
 #CONF_OPT_PLTHOME  = --with-plthome=/usr/local/drscheme
 #CONF_OPT_PLTHOME  = --with-plthome=/home/me/mz
-
-# Uncomment the next line to fail if one of the requested language interfaces
-# cannot be configured.  Without this Vim will be build anyway, without
-# the failing interfaces.
-#CONF_OPT_FAIL = --enable-fail-if-missing
 
 # PERL
 # Uncomment one of these when you want to include the Perl interface.
@@ -410,6 +410,7 @@ CClink = $(CC)
 
 # PYTHON
 # Uncomment this when you want to include the Python interface.
+# Requires small features or better, fails with tiny features.
 # NOTE: This may cause threading to be enabled, which has side effects (such
 # as using different libraries and debugging becomes more difficult).
 # NOTE: Using this together with Perl may cause a crash in initialization.
@@ -2943,7 +2944,7 @@ objects/option.o: option.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h 
 objects/os_unix.o: os_unix.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
- arabic.h os_unixx.h
+ arabic.h if_mzsch.h os_unixx.h
 objects/pathdef.o: auto/pathdef.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
@@ -2956,10 +2957,10 @@ objects/quickfix.o: quickfix.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
  globals.h farsi.h arabic.h
-objects/regexp.o: regexp.c regexp_nfa.c vim.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
- regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
- globals.h farsi.h arabic.h
+objects/regexp.o: regexp.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
+ ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
+ gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
+ arabic.h regexp_nfa.c
 objects/screen.o: screen.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
@@ -2998,10 +2999,6 @@ objects/version.o: version.c vim.h auto/config.h feature.h os_unix.h auto/osdef.
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
  arabic.h version.h
-objects/winclip.o: winclip.c vimio.h vim.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
- regexp.h gui.h ex_cmds.h proto.h globals.h farsi.h arabic.h \
- proto/winclip.pro
 objects/window.o: window.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
@@ -3101,7 +3098,7 @@ objects/if_lua.o: if_lua.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h 
 objects/if_mzsch.o: if_mzsch.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
- globals.h farsi.h arabic.h if_mzsch.h
+ globals.h farsi.h arabic.h if_mzsch.h mzscheme_base.c
 objects/if_perl.o: auto/if_perl.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \

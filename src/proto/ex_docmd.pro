@@ -40,6 +40,7 @@ void ex_splitview __ARGS((exarg_T *eap));
 void tabpage_new __ARGS((void));
 void do_exedit __ARGS((exarg_T *eap, win_T *old_curwin));
 void free_cd_dir __ARGS((void));
+void post_chdir __ARGS((int local));
 void ex_cd __ARGS((exarg_T *eap));
 void do_sleep __ARGS((long msec));
 int vim_mkdir_emsg __ARGS((char_u *name, int prot));
@@ -53,5 +54,4 @@ int put_eol __ARGS((FILE *fd));
 int put_line __ARGS((FILE *fd, char *s));
 void dialog_msg __ARGS((char_u *buff, char *format, char_u *fname));
 char_u *get_behave_arg __ARGS((expand_T *xp, int idx));
-void post_chdir __ARGS((int local));
 /* vim: set ft=c : */

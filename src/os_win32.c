@@ -142,6 +142,9 @@ typedef int WORD;
 typedef int WCHAR;
 typedef void VOID;
 typedef int BY_HANDLE_FILE_INFORMATION;
+typedef int SE_OBJECT_TYPE;
+typedef int PSNSECINFO;
+typedef int PSNSECINFOW;
 #endif
 
 #ifndef FEAT_GUI_W32

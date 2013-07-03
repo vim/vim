@@ -83,10 +83,14 @@
 #define PY_USE_CAPSULE
 
 #define PyInt Py_ssize_t
-#define PyString_Check(obj) PyUnicode_Check(obj)
+#ifndef PyString_Check
+# define PyString_Check(obj) PyUnicode_Check(obj)
+#endif
 #define PyString_FromString(repr) PyUnicode_FromString(repr)
 #define PyString_FromFormat PyUnicode_FromFormat
-#define PyInt_Check(obj) PyLong_Check(obj)
+#ifndef PyInt_Check
+# define PyInt_Check(obj) PyLong_Check(obj)
+#endif
 #define PyInt_FromLong(i) PyLong_FromLong(i)
 #define PyInt_AsLong(obj) PyLong_AsLong(obj)
 #define Py_ssize_t_fmt "n"
@@ -156,7 +160,9 @@
 # define PyDict_GetItemString py3_PyDict_GetItemString
 # define PyDict_Next py3_PyDict_Next
 # define PyMapping_Check py3_PyMapping_Check
-# define PyMapping_Keys py3_PyMapping_Keys
+# ifndef PyMapping_Keys
+#  define PyMapping_Keys py3_PyMapping_Keys
+# endif
 # define PyIter_Next py3_PyIter_Next
 # define PyObject_GetIter py3_PyObject_GetIter
 # define PyObject_Repr py3_PyObject_Repr
@@ -202,7 +208,9 @@
 # define PyUnicode_AsEncodedString py3_PyUnicode_AsEncodedString
 # undef PyBytes_AsString
 # define PyBytes_AsString py3_PyBytes_AsString
-# define PyBytes_AsStringAndSize py3_PyBytes_AsStringAndSize
+# ifndef PyBytes_AsStringAndSize
+#  define PyBytes_AsStringAndSize py3_PyBytes_AsStringAndSize
+# endif
 # undef PyBytes_FromString
 # define PyBytes_FromString py3_PyBytes_FromString
 # define PyFloat_FromDouble py3_PyFloat_FromDouble
