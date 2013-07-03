@@ -4693,14 +4693,14 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, find_what,
 #ifdef FEAT_PATH_EXTRA
 	else
 	{
-	    char_u *p =  vim_strrchr(search_ctx->ffsc_fix_path, PATHSEP);
+	    char_u *p =  gettail(search_ctx->ffsc_fix_path);
 	    char_u *wc_path = NUL;
 	    char_u *temp = NUL;
 	    int    len = 0;
 
-	    if (p != NULL)
+	    if (p > search_ctx->ffsc_fix_path)
 	    {
-		len = p - search_ctx->ffsc_fix_path;
+		len = p - search_ctx->ffsc_fix_path - 1;
 		STRNCAT(ff_expand_buffer, search_ctx->ffsc_fix_path, len);
 		add_pathsep(ff_expand_buffer);
 	    }

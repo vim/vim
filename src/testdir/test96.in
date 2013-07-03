@@ -72,6 +72,8 @@ STARTTEST
 :wincmd n
 :wincmd K
 :b test.out
+:let fileName = substitute(fileName, '\\', '/', 'g')
+:let locationListFileName = substitute(locationListFileName, '\\', '/', 'g')
 :call append(line('$'), "Test A:")
 :call append(line('$'), "  - file name displayed: " . fileName)
 :call append(line('$'), "  - quickfix claims that the file name displayed is: " . locationListFileName)
@@ -125,6 +127,7 @@ STARTTEST
 :wincmd n
 :wincmd K
 :b test.out
+:let bufferName = substitute(bufferName, '\\', '/', 'g')
 :call append(line('$'), "Test C:")
 :call append(line('$'), "  - 'buftype' of the location list window: " . locationListWindowBufType)
 :call append(line('$'), "  - buffer displayed in the 2nd window: " . bufferName)
