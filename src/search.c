@@ -4825,7 +4825,7 @@ find_pattern_in_path(ptr, dir, len, whole, skip_comments,
 	    if (inc_opt != NULL && strstr((char *)inc_opt, "\\zs") != NULL)
 		/* Use text from '\zs' to '\ze' (or end) of 'include'. */
 		new_fname = find_file_name_in_path(incl_regmatch.startp[0],
-			      (int)(incl_regmatch.endp[0] - incl_regmatch.startp[0]),
+		       (int)(incl_regmatch.endp[0] - incl_regmatch.startp[0]),
 				 FNAME_EXP|FNAME_INCL|FNAME_REL, 1L, p_fname);
 	    else
 		/* Use text after match with 'include'. */
@@ -5352,7 +5352,15 @@ exit_matched:
 		depth_displayed = depth;
 	}
 	if (depth >= 0)		/* we could read the line */
+	{
 	    files[depth].lnum++;
+	    /* Remove any CR and LF from the line. */
+	    i = (int)STRLEN(line);
+	    if (i > 0 && line[i - 1] == '\n')
+		line[--i] = NUL;
+	    if (i > 0 && line[i - 1] == '\r')
+		line[--i] = NUL;
+	}
 	else if (!already)
 	{
 	    if (++lnum > end_lnum)

@@ -30,4 +30,4 @@ Xdir1/dir2/foo.c -->
   Xdir1/dir2/bar.c -->
     Xdir1/dir2/baz.c
     Xdir1/dir2/baz.c -->
-      foo.c^@  (Already listed)
+      foo.c  (Already listed)

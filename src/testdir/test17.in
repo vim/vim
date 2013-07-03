@@ -33,6 +33,7 @@ STARTTEST
 :"  > nmake -f Make_dos.mak test17.out
 :w! test.out
 gf
+:set ff=unix
 :w! test.out
 :brewind
 ENDTEST
@@ -130,9 +131,10 @@ i%inc    FALSE.c foo.c
 :checkpath!
 :redir END
 :brewind
-:" replace "\" to "/" for Windows
+:" change "\" to "/" for Windows and fix 'fileformat'
 :e test.out
 :%s#\\#/#g
+:set ff&
 :w
 :q
 ENDTEST
