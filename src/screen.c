@@ -279,13 +279,13 @@ redraw_asap(type)
     int		rows;
     int		r;
     int		ret = 0;
-    schar_T	*screenline;		/* copy from ScreenLines[] */
-    sattr_T	*screenattr;		/* copy from ScreenAttrs[] */
+    schar_T	*screenline;	/* copy from ScreenLines[] */
+    sattr_T	*screenattr;	/* copy from ScreenAttrs[] */
 #ifdef FEAT_MBYTE
     int		i;
-    u8char_T	*screenlineUC;		/* copy from ScreenLinesUC[] */
+    u8char_T	*screenlineUC = NULL;	/* copy from ScreenLinesUC[] */
     u8char_T	*screenlineC[MAX_MCO];	/* copy from ScreenLinesC[][] */
-    schar_T	*screenline2;		/* copy from ScreenLines2[] */
+    schar_T	*screenline2 = NULL;	/* copy from ScreenLines2[] */
 #endif
 
     redraw_later(type);
