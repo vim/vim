@@ -4077,7 +4077,8 @@ win_find_tabpage(win)
     tabpage_T	*tp;
 
     for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
-	for (wp = tp->tp_firstwin; wp != NULL; wp = wp->w_next)
+	for (wp = (tp == curtab ? firstwin : tp->tp_firstwin);
+						  wp != NULL; wp = wp->w_next)
 	    if (wp == win)
 		return tp;
     return NULL;
