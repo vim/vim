@@ -268,6 +268,147 @@ redraw_buf_later(buf, type)
 }
 
 /*
+ * Redraw as soon as possible.  When the command line is not scrolled redraw
+ * right away and restore what was on the command line.
+ * Return a code indicating what happened.
+ */
+    int
+redraw_asap(type)
+    int		type;
+{
+    int		rows;
+    int		r;
+    int		ret = 0;
+    schar_T	*screenline;		/* copy from ScreenLines[] */
+    sattr_T	*screenattr;		/* copy from ScreenAttrs[] */
+#ifdef FEAT_MBYTE
+    int		i;
+    u8char_T	*screenlineUC;		/* copy from ScreenLinesUC[] */
+    u8char_T	*screenlineC[MAX_MCO];	/* copy from ScreenLinesC[][] */
+    schar_T	*screenline2;		/* copy from ScreenLines2[] */
+#endif
+
+    redraw_later(type);
+    if (msg_scrolled || (State != NORMAL && State != NORMAL_BUSY))
+	return ret;
+
+    /* Allocate space to save the text displayed in the command line area. */
+    rows = Rows - cmdline_row;
+    screenline = (schar_T *)lalloc(
+			   (long_u)(rows * Columns * sizeof(schar_T)), FALSE);
+    screenattr = (sattr_T *)lalloc(
+			   (long_u)(rows * Columns * sizeof(sattr_T)), FALSE);
+    if (screenline == NULL || screenattr == NULL)
+	ret = 2;
+#ifdef FEAT_MBYTE
+    if (enc_utf8)
+    {
+	screenlineUC = (u8char_T *)lalloc(
+			  (long_u)(rows * Columns * sizeof(u8char_T)), FALSE);
+	if (screenlineUC == NULL)
+	    ret = 2;
+	for (i = 0; i < p_mco; ++i)
+	{
+	    screenlineC[i] = (u8char_T *)lalloc(
+			  (long_u)(rows * Columns * sizeof(u8char_T)), FALSE);
+	    if (screenlineC[i] == NULL)
+		ret = 2;
+	}
+    }
+    if (enc_dbcs == DBCS_JPNU)
+    {
+	screenline2 = (schar_T *)lalloc(
+			   (long_u)(rows * Columns * sizeof(schar_T)), FALSE);
+	if (screenline2 == NULL)
+	    ret = 2;
+    }
+#endif
+
+    if (ret != 2)
+    {
+	/* Save the text displayed in the command line area. */
+	for (r = 0; r < rows; ++r)
+	{
+	    mch_memmove(screenline + r * Columns,
+			ScreenLines + LineOffset[cmdline_row + r],
+			(size_t)Columns * sizeof(schar_T));
+	    mch_memmove(screenattr + r * Columns,
+			ScreenAttrs + LineOffset[cmdline_row + r],
+			(size_t)Columns * sizeof(sattr_T));
+#ifdef FEAT_MBYTE
+	    if (enc_utf8)
+	    {
+		mch_memmove(screenlineUC + r * Columns,
+			    ScreenLinesUC + LineOffset[cmdline_row + r],
+			    (size_t)Columns * sizeof(u8char_T));
+		for (i = 0; i < p_mco; ++i)
+		    mch_memmove(screenlineC[i] + r * Columns,
+				ScreenLinesC[r] + LineOffset[cmdline_row + r],
+				(size_t)Columns * sizeof(u8char_T));
+	    }
+	    if (enc_dbcs == DBCS_JPNU)
+		mch_memmove(screenline2 + r * Columns,
+			    ScreenLines2 + LineOffset[cmdline_row + r],
+			    (size_t)Columns * sizeof(schar_T));
+#endif
+	}
+
+	update_screen(0);
+	ret = 3;
+
+	if (must_redraw == 0)
+	{
+	    int	off = (int)(current_ScreenLine - ScreenLines);
+
+	    /* Restore the text displayed in the command line area. */
+	    for (r = 0; r < rows; ++r)
+	    {
+		mch_memmove(current_ScreenLine,
+			    screenline + r * Columns,
+			    (size_t)Columns * sizeof(schar_T));
+		mch_memmove(ScreenAttrs + off,
+			    screenattr + r * Columns,
+			    (size_t)Columns * sizeof(sattr_T));
+#ifdef FEAT_MBYTE
+		if (enc_utf8)
+		{
+		    mch_memmove(ScreenLinesUC + off,
+				screenlineUC + r * Columns,
+				(size_t)Columns * sizeof(u8char_T));
+		    for (i = 0; i < p_mco; ++i)
+			mch_memmove(ScreenLinesC[i] + off,
+				    screenlineC[i] + r * Columns,
+				    (size_t)Columns * sizeof(u8char_T));
+		}
+		if (enc_dbcs == DBCS_JPNU)
+		    mch_memmove(ScreenLines2 + off,
+				screenline2 + r * Columns,
+				(size_t)Columns * sizeof(schar_T));
+#endif
+		SCREEN_LINE(cmdline_row + r, 0, Columns, Columns, FALSE);
+	    }
+	    ret = 4;
+	}
+	setcursor();
+    }
+
+    vim_free(screenline);
+    vim_free(screenattr);
+#ifdef FEAT_MBYTE
+    if (enc_utf8)
+    {
+	vim_free(screenlineUC);
+	for (i = 0; i < p_mco; ++i)
+	    vim_free(screenlineC[i]);
+    }
+    if (enc_dbcs == DBCS_JPNU)
+	vim_free(screenline2);
+#endif
+
+    return ret;
+}
+
+/*
  * Changed something in the current window, at buffer line "lnum", that
  * requires that line and possibly other lines to be redrawn.
  * Used when entering/leaving Insert mode with the cursor on a folded line.

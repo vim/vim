@@ -5,6 +5,7 @@ void redraw_later_clear __ARGS((void));
 void redraw_all_later __ARGS((int type));
 void redraw_curbuf_later __ARGS((int type));
 void redraw_buf_later __ARGS((buf_T *buf, int type));
+int redraw_asap __ARGS((int type));
 void redrawWinline __ARGS((linenr_T lnum, int invalid));
 void update_curbuf __ARGS((int type));
 void update_screen __ARGS((int type));
