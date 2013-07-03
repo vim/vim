@@ -326,13 +326,7 @@ ui_set_shellsize(mustset)
 {
 #ifdef FEAT_GUI
     if (gui.in_use)
-	gui_set_shellsize(mustset,
-# ifdef WIN3264
-		TRUE
-# else
-		FALSE
-# endif
-		, RESIZE_BOTH);
+	gui_set_shellsize(mustset, TRUE, RESIZE_BOTH);
     else
 #endif
 	mch_set_shellsize();
