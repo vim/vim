@@ -141,14 +141,22 @@ typedef struct
 #ifdef FEAT_FOLDING
     long	wo_fdc;
 # define w_p_fdc w_onebuf_opt.wo_fdc	/* 'foldcolumn' */
+    int		wo_fdc_save;
+# define w_p_fdc_save w_onebuf_opt.wo_fdc_save	/* 'foldenable' saved for diff mode */
     int		wo_fen;
 # define w_p_fen w_onebuf_opt.wo_fen	/* 'foldenable' */
+    int		wo_fen_save;
+# define w_p_fen_save w_onebuf_opt.wo_fen_save	/* 'foldenable' saved for diff mode */
     char_u	*wo_fdi;
 # define w_p_fdi w_onebuf_opt.wo_fdi	/* 'foldignore' */
     long	wo_fdl;
 # define w_p_fdl w_onebuf_opt.wo_fdl	/* 'foldlevel' */
+    int		wo_fdl_save;
+# define w_p_fdl_save w_onebuf_opt.wo_fdl_save	/* 'foldlevel' state saved for diff mode */
     char_u	*wo_fdm;
 # define w_p_fdm w_onebuf_opt.wo_fdm	/* 'foldmethod' */
+    char_u	*wo_fdm_save;
+# define w_p_fdm_save w_onebuf_opt.wo_fdm_save	/* 'fdm' saved for diff mode */
     long	wo_fml;
 # define w_p_fml w_onebuf_opt.wo_fml	/* 'foldminlines' */
     long	wo_fdn;
@@ -213,9 +221,17 @@ typedef struct
 #ifdef FEAT_SCROLLBIND
     int		wo_scb;
 # define w_p_scb w_onebuf_opt.wo_scb	/* 'scrollbind' */
+    int		wo_diff_saved; /* options were saved for starting diff mode */
+# define w_p_diff_saved w_onebuf_opt.wo_diff_saved
+    int		wo_scb_save;	/* 'scrollbind' saved for diff mode*/
+# define w_p_scb_save w_onebuf_opt.wo_scb_save
 #endif
     int		wo_wrap;
 #define w_p_wrap w_onebuf_opt.wo_wrap	/* 'wrap' */
+#ifdef FEAT_DIFF
+    int		wo_wrap_save;	/* 'wrap' state saved for diff mode*/
+# define w_p_wrap_save w_onebuf_opt.wo_wrap_save
+#endif
 #ifdef FEAT_CONCEAL
     char_u	*wo_cocu;		/* 'concealcursor' */
 # define w_p_cocu w_onebuf_opt.wo_cocu
@@ -225,6 +241,8 @@ typedef struct
 #ifdef FEAT_CURSORBIND
     int		wo_crb;
 # define w_p_crb w_onebuf_opt.wo_crb	/* 'cursorbind' */
+    int		wo_crb_save;	/* 'cursorbind' state saved for diff mode*/
+# define w_p_crb_save w_onebuf_opt.wo_crb_save
 #endif
 
 #ifdef FEAT_EVAL
