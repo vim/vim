@@ -3499,7 +3499,7 @@ do_put(regname, dir, count, flags)
 	    ++lnum;
 	/* In an empty buffer the empty line is going to be replaced, include
 	 * it in the saved lines. */
-	if ((bufempty() ? u_save(0, 1) : u_save(lnum - 1, lnum)) == FAIL)
+	if ((bufempty() ? u_save(0, 2) : u_save(lnum - 1, lnum)) == FAIL)
 	    goto end;
 #ifdef FEAT_FOLDING
 	if (dir == FORWARD)
