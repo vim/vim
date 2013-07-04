@@ -128,36 +128,20 @@ DOSBIN_S =  dosbin_s
 # PC:
 # - Run make on Unix to update the ".mo" files.
 # - "make dossrc" and "make dosrt".  Unpack the archives on a PC.
-# 16 bit DOS version: (OBSOLETE, 16 bit version doesn't build)
-# - Set environment for compiling with Borland C++ 3.1.
-# - "bmake -f Make_bc3.mak BOR=E:\borlandc" (compiling xxd might fail, in that
-#   case set environment for compiling with Borland C++ 4.0 and do
-#   "make -f make_bc3.mak BOR=E:\BC4 xxd/xxd.exe").
-#   NOTE: this currently fails because Vim is too big.
-# - "make test" and check the output.
-# - Rename the executables to "vimd16.exe", "xxdd16.exe", "installd16.exe" and
-#   "uninstald16.exe".
-# 32 bit DOS version:
-# - Set environment for compiling with DJGPP; "gmake -f Make_djg.mak".
-# - "rm testdir/*.out", "gmake -f Make_djg.mak test" and check the output for
-#   "ALL DONE".
-# - Rename the executables to "vimd32.exe", "xxdd32.exe", "installd32.exe" and
-#   "uninstald32.exe".
 # Win32 console version:
-# - Set environment for Visual C++ 2008, e.g.:
-#   "E:\Microsoft Visual Studio 9.0\VC\bin\vcvars32.bat".  Or, when using the
-#   Visual C++ Toolkit 2003: "msvcsetup.bat" (adjust the paths when necessary).
-#   For Windows 98/ME the 2003 version is required, but then it won't work on
-#   Windows 7 and 64 bit.
-# - "nmake -f Make_mvc.mak"
+# - Set environment for Visual C++ 2008, e.g.: "msvc2008.bat"  Or:
+#   "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin\vcvars32.bat".
+#   Or, when using the Visual C++ Toolkit 2003: "msvcsetup.bat" (adjust the
+#   paths when necessary).
+#   For Windows 98/ME the 2003 version is required, but then the executable
+#   won't work on Windows 7 and 64 bit.
+# - "nmake -f Make_mvc.mak"  (use the same path as for vcvars32.bat)
 # - "rm testdir/*.out", "nmake -f Make_mvc.mak test" and check the output.
-# - Rename the executables to "vimw32.exe", "xxdw32.exe".
+# - Rename vim.exe to vimw32.exe, xxd/xxd.exe to xxdw32.exe.
 # - Rename vim.pdb to vimw32.pdb.
-# - When building the Win32s version later, delete vimrun.exe, install.exe and
-#   uninstal.exe.  Otherwise rename executables to installw32.exe and
-#   uninstalw32.exe.
+# - Rename install.exe to installw32.exe and uninstal.exe to uninstalw32.exe.
 # Win32 GUI version:
-# - "nmake -f Make_mvc.mak GUI=yes.
+# - "nmake -f Make_mvc.mak GUI=yes"
 # - move "gvim.exe" to here (otherwise the OLE version will overwrite it).
 # - Move gvim.pdb to here.
 # - Delete vimrun.exe, install.exe and uninstal.exe.
@@ -167,23 +151,13 @@ DOSBIN_S =  dosbin_s
 # - Rename "gvim.exe" to "gvim_ole.exe".
 # - Rename gvim.pdb to "gvim_ole.pdb".
 # - Delete install.exe and uninstal.exe.
-# - If building the Win32s version delete vimrun.exe.
-# Win32s GUI version:
-# - Set environment for Visual C++ 4.1 (requires a new console window):
-#   "vcvars32.bat" (use the path for VC 4.1 e:\msdev\bin)
-# - "nmake -f Make_mvc.mak GUI=yes INTL=no clean" (use the path for VC 4.1)
-# - "nmake -f Make_mvc.mak GUI=yes INTL=no" (use the path for VC 4.1)
-# - Rename "gvim.exe" to "gvim_w32s.exe".
-# - Rename "install.exe" to "installw32.exe"
-# - Rename "uninstal.exe" to "uninstalw32.exe"
-# - The produced uninstalw32.exe and vimrun.exe are used.
 # Create the archives:
 # - Copy all the "*.exe" files to where this Makefile is.
 # - Copy all the "*.pdb" files to where this Makefile is.
 # - "make dosbin".
 # NSIS self installing exe:
 # - To get NSIS see http://nsis.sourceforge.net
-# - Make sure gvim_ole.exe, vimd32.exe, vimw32.exe, installw32.exe,
+# - Make sure gvim_ole.exe, vimw32.exe, installw32.exe,
 #   uninstalw32.exe and xxdw32.exe have been build as mentioned above.
 # - copy these files (get them from a binary archive or build them):
 #	gvimext.dll in src/GvimExt
@@ -196,7 +170,44 @@ DOSBIN_S =  dosbin_s
 # - go to ../nsis and do "makensis gvim.nsi" (takes a few minutes).
 # - Copy gvim##.exe to the dist directory.
 #
-# OS/2: (OBSOLETE, OS/2 version is no longer distributed)
+# 64 bit builds (these are not in the normal distribution, the 32 bit build
+# works just fine on 64 bit systems).
+# Like the console and GUI version, but first run vcvars64.bat or
+#   "..\VC\vcvarsall.bat x86_amd64".
+# - "nmake -f Make_mvc.mak"
+# - "nmake -f Make_mvc.mak GUI=yes"
+# Or run src/bigvim64.bat for an OLE version.
+#
+# OBSOLETE systems: You can build this if you have an appropriate system.
+#
+# 16 bit DOS version: (doesn't build anywhere)
+# - Set environment for compiling with Borland C++ 3.1.
+# - "bmake -f Make_bc3.mak BOR=E:\borlandc" (compiling xxd might fail, in that
+#   case set environment for compiling with Borland C++ 4.0 and do
+#   "make -f make_bc3.mak BOR=E:\BC4 xxd/xxd.exe").
+#   NOTE: this currently fails because Vim is too big.
+# - "make test" and check the output.
+# - Rename the executables to "vimd16.exe", "xxdd16.exe", "installd16.exe" and
+#   "uninstald16.exe".
+#
+# 32 bit DOS version: (requires Windows XP or earlier)
+# - Set environment for compiling with DJGPP; "gmake -f Make_djg.mak".
+# - "rm testdir/*.out", "gmake -f Make_djg.mak test" and check the output for
+#   "ALL DONE".
+# - Rename the executables to "vimd32.exe", "xxdd32.exe", "installd32.exe" and
+#   "uninstald32.exe".
+#
+# Win32s GUI version: (requires very old compiler)
+# - Set environment for Visual C++ 4.1 (requires a new console window):
+#   "vcvars32.bat" (use the path for VC 4.1 e:\msdev\bin)
+# - "nmake -f Make_mvc.mak GUI=yes INTL=no clean" (use the path for VC 4.1)
+# - "nmake -f Make_mvc.mak GUI=yes INTL=no" (use the path for VC 4.1)
+# - Rename "gvim.exe" to "gvim_w32s.exe".
+# - Rename "install.exe" to "installw32.exe"
+# - Rename "uninstal.exe" to "uninstalw32.exe"
+# - The produced uninstalw32.exe and vimrun.exe are used.
+#
+# OS/2: (requires an OS/2 system)
 # - Unpack the Unix archive.
 # - "make -f Make_os2.mak".
 # - Rename the executables to vimos2.exe, xxdos2.exe and teeos2.exe and copy
@@ -295,6 +306,8 @@ unixall: dist prepare
 		$(LANG_SRC) \
 		| (cd dist/$(VIMRTDIR); tar xf -)
 # Need to use a "distclean" config.mk file
+# Note: this file is not included in the repository to avoid problems, but it's
+# OK to put it in the archive.
 	cp -f src/config.mk.dist dist/$(VIMRTDIR)/src/auto/config.mk
 # Create an empty config.h file, make dependencies require it
 	touch dist/$(VIMRTDIR)/src/auto/config.h

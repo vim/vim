@@ -5,7 +5,7 @@
 # WARNING: if you make changes to this script, look out for $0 to be valid,
 # because uninstall deletes most files in $0.
 
-# Location of gvim_ole.exe, vimd32.exe, GvimExt/*, etc.
+# Location of gvim_ole.exe, vimw32.exe, GvimExt/*, etc.
 !define VIMSRC "..\src"
 
 # Location of runtime files
@@ -247,11 +247,10 @@ Section "Vim console program (vim.exe)"
 	ReadRegStr $R0 HKLM \
 	   "SOFTWARE\Microsoft\Windows NT\CurrentVersion" CurrentVersion
 	IfErrors 0 lbl_winnt
-	    # Windows 95/98/ME
-	    File /oname=vim.exe ${VIMSRC}\vimd32.exe
+	    # Windows 95/98/ME: not supported
 	    Goto lbl_done
 	lbl_winnt:
-	    # Windows NT/2000/XT
+	    # Windows NT/2000/XT and later
 	    File /oname=vim.exe ${VIMSRC}\vimw32.exe
 	lbl_done:
 	StrCpy $2 "$2 vim view vimdiff"
