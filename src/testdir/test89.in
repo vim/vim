@@ -55,6 +55,7 @@ STARTTEST
 :$put =''
 :$put ='Testing findfile'
 :$put =''
+:set ssl
 :$put =findfile('test19.in','src/test*')
 :exe "cd" cwd
 :cd ..
