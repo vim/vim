@@ -4,4 +4,4 @@ rem   aka Microsoft Visual Studio 9.0.
 rem See INSTALLpc.txt for information.
 @echo on
 
-call "%VS90COMNTOOLS%%vsvars32.bat"
+call "%VS90COMNTOOLS%vsvars32.bat"

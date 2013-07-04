@@ -1,10 +1,10 @@
 " zip.vim: Handles browsing zipfiles
 "            AUTOLOAD PORTION
-" Date:		Apr 17, 2013
-" Version:	26
+" Date:		Jul 02, 2013
+" Version:	27
 " Maintainer:	Charles E Campbell <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:	Vim License  (see vim's :help license)
-" Copyright:    Copyright (C) 2005-2012 Charles E. Campbell {{{1
+" Copyright:    Copyright (C) 2005-2013 Charles E. Campbell {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
@@ -13,13 +13,14 @@
 "               this plugin, you agree that in no event will the copyright
 "               holder be liable for any damages resulting from the use
 "               of this software.
+"redraw!|call DechoSep()|call inputsave()|call input("Press <cr> to continue")|call inputrestore()
 
 " ---------------------------------------------------------------------
 " Load Once: {{{1
 if &cp || exists("g:loaded_zip")
  finish
 endif
-let g:loaded_zip= "v26"
+let g:loaded_zip= "v27"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** this version of zip needs vim 7.2"
@@ -28,6 +29,7 @@ if v:version < 702
 endif
 let s:keepcpo= &cpo
 set cpo&vim
+"DechoTabOn
 
 let s:zipfile_escape = ' ?&;\'
 let s:ERROR          = 2
@@ -60,6 +62,16 @@ endif
 " zip#Browse: {{{2
 fun! zip#Browse(zipfile)
 "  call Dfunc("zip#Browse(zipfile<".a:zipfile.">)")
+  " sanity check: insure that the zipfile has "PK" as its first two letters
+  "               (zipped files have a leading PK as a "magic cookie")
+  if !filereadable(a:zipfile) || readfile(a:zipfile, "", 1)[0] !~ '^PK'
+   exe "noautocmd e ".fnameescape(a:zipfile)
+"   call Dret("zip#Browse : not a zipfile<".a:zipfile.">")
+   return
+"  else        " Decho
+"   call Decho("zip#Browse: a:zipfile<".a:zipfile."> passed PK test - its a zip file")
+  endif
+
   let repkeep= &report
   set report=10
 
@@ -197,6 +209,7 @@ fun! zip#Read(fname,mode)
   "   exe "keepj sil! r! ".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fnameescape(fname),1)
   " but allows zipfile:... entries in quickfix lists
   let temp = tempname()
+"  call Decho("using temp file<".temp.">")
   let fn   = expand('%:p')
   exe "sil! !".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fnameescape(fname),1).' > '.temp
 "  call Decho("exe sil! !".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fnameescape(fname),1).' > '.temp)
@@ -208,7 +221,7 @@ fun! zip#Read(fname,mode)
   filetype detect
 
   " cleanup
-  keepj 0d
+  "  keepj 0d   " used to be needed for the ...r! ... method
   set nomod
 
   let &report= repkeep

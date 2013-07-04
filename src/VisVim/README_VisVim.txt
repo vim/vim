@@ -282,7 +282,7 @@ No new features, just some fine tuning:
   occasionally still seems to happen, but it's more stable now).
   (Vince Negri)
 - Added support for the new CTRL-\ CTRL-N command of Vim 5.4a.
-  This prevents Vim from beeping when a VisVim command is executed an Vim is
+  This prevents Vim from beeping when a VisVim command is executed and Vim is
   not in insert mode.
 
 

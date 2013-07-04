@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Jun 29
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Jul 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,45 +34,7 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
---- Python interface ---
-
-    Breaks the tests
-Problem:    Python SystemExit exception is not handled properly.
-Solution:   Catch the exception and give an error. (Yasuhiro Matsumoto)
-Files:	    runtime/doc/if_pyth.txt, src/if_py_both.h, src/if_python.c,
-	    src/if_python3.c
-
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
-
---- bug fixes ---
-
-9. Patch to fix "gn" on single character matches. (Christian Brabandt, 2013
-Jun 2)
-
-8. Patch for cscope connection (Narendran, 2013 Jun 10)
-
-7. 'cursorline' is drawn incorrectly in diff mode. Patch by Christian Brabandt,
-2012 Apr 2.
-
-6. When someone does a silly thing such as setting rows and columns to 65535,
-handle the out-of-memory and set them to sane values? (jimmywang, 2013 May 17)
-
-5. InsertEnter doesn't prevent the cursor from moving when it goes to another
-line.
-
-4. ":diffoff" does not restore options from before starting diff mode.
-Patch by Christian Brabandt, 2013 May 26.
-
-3. Can't use multi-byte fill character in custom status line.
-Patch by Christian Wellenbrock, 2013 Jun 2.  Update Jun 3 (second one).
-
-2. Patch to fix glob() and globpath() with escaped special characters.
-(Adnan Zafar, 2013 Jun 2, tests Jun 3)
-
-1. Bug in findfile() directory matching. (Markus Braun Ben Fritz, 2013 Jun 20)
-Patch by Christian Brabandt (2013 Jun 22)
-
----- Fixes to be included before 7.4 above, less important stuff below ----
 
 Patch to make has() check for Vim version and patch at the same time.
 (Marc Weber, 2013 Jun 7)
@@ -266,8 +228,6 @@ URXVT:
 - will get stuck if byte sequence does not contain the expected semicolon.
 - Use urxvt mouse support also in xterm.  Explanations:
   http://www.midnight-commander.org/ticket/2662
-
-MS-Windows: test 17 fails.  Analysis by Michael Soyka, 2012 Nov 5.
 
 Patch to add tests for if_xcmdsrv.c., Jul 8, need some more work. (Brian Burns)
 New tests Jul 13.   Update Jul 17.  Discussion Jul 18.

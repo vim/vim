@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.3.  Last change: 2013 Apr 12
+*insert.txt*    For Vim version 7.3.  Last change: 2013 Jul 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -136,6 +136,8 @@ CTRL-R {0-9a-z"%#*+:.-=}					*i_CTRL-R*
 				too.
 				When the result is a Float it's automatically
 				converted to a String.
+				When append() or setline() is invoked the undo
+				sequence will be broken.
 		See |registers| about registers.  {not in Vi}
 
 CTRL-R CTRL-R {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-R*
