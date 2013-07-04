@@ -389,7 +389,6 @@ redraw_asap(type)
 	    }
 	    ret = 4;
 	}
-	setcursor();
     }
 
     vim_free(screenline);
@@ -404,6 +403,11 @@ redraw_asap(type)
     if (enc_dbcs == DBCS_JPNU)
 	vim_free(screenline2);
 #endif
+
+    /* Show the intro message when appropriate. */
+    maybe_intro_message();
+
+    setcursor();
 
     return ret;
 }
@@ -715,13 +719,8 @@ update_screen(type)
 	showmode();
 
     /* May put up an introductory message when not editing a file */
-    if (!did_intro && bufempty()
-	    && curbuf->b_fname == NULL
-#ifdef FEAT_WINDOWS
-	    && firstwin->w_next == NULL
-#endif
-	    && vim_strchr(p_shm, SHM_INTRO) == NULL)
-	intro_message(FALSE);
+    if (!did_intro)
+	maybe_intro_message();
     did_intro = TRUE;
 
 #ifdef FEAT_GUI

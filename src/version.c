@@ -729,6 +729,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    1306,
+/**/
     1305,
 /**/
     1304,
@@ -3775,6 +3777,21 @@ version_msg(s)
 }
 
 static void do_intro_line __ARGS((int row, char_u *mesg, int add_version, int attr));
+
+/*
+ * Show the intro message when not editing a file.
+ */
+    void
+maybe_intro_message()
+{
+    if (bufempty()
+	    && curbuf->b_fname == NULL
+#ifdef FEAT_WINDOWS
+	    && firstwin->w_next == NULL
+#endif
+	    && vim_strchr(p_shm, SHM_INTRO) == NULL)
+	intro_message(FALSE);
+}
 
 /*
  * Give an introductory message about Vim.
