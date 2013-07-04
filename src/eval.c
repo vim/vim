@@ -8742,6 +8742,14 @@ f_append(argvars, rettv)
     typval_T	*tv;
     long	added = 0;
 
+    /* When coming here from Insert mode, sync undo, so that this can be
+     * undone separately from what was previously inserted. */
+    if (u_sync_once == 2)
+    {
+	u_sync_once = 1; /* notify that u_sync() was called */
+	u_sync(TRUE);
+    }
+
     lnum = get_tv_lnum(argvars);
     if (lnum >= 0
 	    && lnum <= curbuf->b_ml.ml_line_count
@@ -16408,6 +16416,15 @@ f_setline(argvars, rettv)
 	rettv->vval.v_number = 1;	/* FAIL */
 	if (line == NULL || lnum < 1 || lnum > curbuf->b_ml.ml_line_count + 1)
 	    break;
+
+	/* When coming here from Insert mode, sync undo, so that this can be
+	 * undone separately from what was previously inserted. */
+	if (u_sync_once == 2)
+	{
+	    u_sync_once = 1; /* notify that u_sync() was called */
+	    u_sync(TRUE);
+	}
+
 	if (lnum <= curbuf->b_ml.ml_line_count)
 	{
 	    /* existing line, replace it */

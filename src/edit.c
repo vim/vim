@@ -8135,9 +8135,9 @@ ins_reg()
 # ifdef USE_IM_CONTROL
 	int	im_on = im_get_status();
 # endif
-	/* Sync undo, so the effect of e.g., setline() can be undone. */
-	u_sync(TRUE);
-	ins_need_undo = TRUE;
+	/* Sync undo when evaluating the expression calls setline() or
+	 * append(), so that it can be undone separately. */
+	u_sync_once = 2;
 
 	regname = get_expr_register();
 # ifdef USE_IM_CONTROL
@@ -8178,6 +8178,9 @@ ins_reg()
 #ifdef FEAT_EVAL
     }
     --no_u_sync;
+    if (u_sync_once == 1)
+	ins_need_undo = TRUE;
+    u_sync_once = 0;
 #endif
 #ifdef FEAT_CMDL_INFO
     clear_showcmd();

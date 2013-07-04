@@ -93,7 +93,17 @@ ob
 :set ul=100
 o1a2=setline('.','1234')
 
-uu:%w >>test.out
+uu:"
+oc
+:set ul=100
+o1a2=setline('.','1234')
+
+u:"
+od
+:set ul=100
+o1a2=string(123)
+u:"
+:%w >>test.out
 :qa!
 ENDTEST
 
