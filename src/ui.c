@@ -18,6 +18,12 @@
 
 #include "vim.h"
 
+#ifdef FEAT_CYGWIN_WIN32_CLIPBOARD
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+# include "winclip.pro"
+#endif
+
     void
 ui_write(s, len)
     char_u  *s;

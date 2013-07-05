@@ -4108,7 +4108,7 @@ encname2codepage(name)
 	p += 6;
 
     if (p[0] == 'c' && p[1] == 'p')
-	cp = atoi(p + 2);
+	cp = atoi((char *)p + 2);
     else if ((idx = enc_canon_search(p)) >= 0)
 	cp = enc_canon_table[idx].codepage;
     else
