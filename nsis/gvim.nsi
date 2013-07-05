@@ -40,7 +40,7 @@ RequestExecutionLevel highest
 ComponentText "This will install Vim ${VER_MAJOR}.${VER_MINOR} on your computer."
 DirText "Choose a directory to install Vim (must end in 'vim')"
 Icon icons\vim_16c.ico
-# NSIS2 uses a different strategy with six diferent images in a strip...
+# NSIS2 uses a different strategy with six different images in a strip...
 #EnabledBitmap icons\enabled.bmp
 #DisabledBitmap icons\disabled.bmp
 UninstallText "This will uninstall Vim ${VER_MAJOR}.${VER_MINOR} from your system."
@@ -55,6 +55,9 @@ LicenseData ${VIMRT}\doc\uganda.nsis.txt
 !ifdef HAVE_UPX
   !packhdr temp.dat "upx --best --compress-icons=1 temp.dat"
 !endif
+
+SetCompressor /SOLID lzma
+XPStyle on
 
 # This adds '\vim' to the user choice automagically.  The actual value is
 # obtained below with ReadINIStr.
@@ -250,7 +253,7 @@ Section "Vim console program (vim.exe)"
 	    # Windows 95/98/ME: not supported
 	    Goto lbl_done
 	lbl_winnt:
-	    # Windows NT/2000/XT and later
+	    # Windows NT/2000/XP and later
 	    File /oname=vim.exe ${VIMSRC}\vimw32.exe
 	lbl_done:
 	StrCpy $2 "$2 vim view vimdiff"
