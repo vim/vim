@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3.  Last change: 2013 Jun 28
+*syntax.txt*	For Vim version 7.3.  Last change: 2013 Jul 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4384,7 +4384,7 @@ in their own color.
 			feature it will output "unknown".
 
 :colo[rscheme] {name}	Load color scheme {name}.  This searches 'runtimepath'
-			for the file "colors/{name}.vim.  The first one that
+			for the file "colors/{name}.vim".  The first one that
 			is found is loaded.
 			To see the name of the currently active color scheme: >
 				:colo

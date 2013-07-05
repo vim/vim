@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Jul 04
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Jul 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -325,9 +325,11 @@ Jan 19)
 Win32: default for 'backupcopy' is wrong for a symbolic link. (mklink one
 two). (Benjamin Fritz, 2012 Mar 15)
 
-Need to escape $HOME on Windows?  (ZyX, 2011 Jul 21)
+Need to escape $HOME on Windows?  (ZyX, 2011 Jul 21, discussion 2013 Jul 4)
+Can't simply use a backslash, \$HOME has a different meaning already.
+Would be possible to use $$HOME where $HOME is to be used.
 
-"2" in 'formatopions' not working in comments. (Christian Corneliussen, 2011
+"2" in 'formatoptions' not working in comments. (Christian Corneliussen, 2011
 Oct 26)
 
 Bug in repeating Visual "u". (Lawrence Kesteloot, 2010 Dec 20)

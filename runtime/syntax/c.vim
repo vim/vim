@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2013 Jun 06
+" Last Change:	2013 Jul 05
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -10,6 +10,8 @@ endif
 
 let s:cpo_save = &cpo
 set cpo&vim
+
+let s:ft = matchstr(&ft, '^\([^.]\)\+')
 
 " A bunch of useful C keywords
 syn keyword	cStatement	goto break return continue asm
@@ -110,7 +112,7 @@ endif
 " But avoid matching <::.
 syn cluster	cParenGroup	contains=cParenError,cIncluded,cSpecial,cCommentSkip,cCommentString,cComment2String,@cCommentGroup,cCommentStartError,cUserLabel,cBitField,cOctalZero,@cCppOutInGroup,cFormat,cNumber,cFloat,cOctal,cOctalError,cNumbersCom
 if exists("c_no_curly_error")
-  if &filetype ==# 'cpp' && !exists("cpp_no_cpp11")
+  if s:ft ==# 'cpp' && !exists("cpp_no_cpp11")
     syn region	cParen		transparent start='(' end=')' contains=ALLBUT,@cParenGroup,cCppParen,cCppString,@Spell
     " cCppParen: same as cParen but ends at end-of-line; used in cDefine
     syn region	cCppParen	transparent start='(' skip='\\$' excludenl end=')' end='$' contained contains=ALLBUT,@cParenGroup,cParen,cString,@Spell
@@ -124,7 +126,7 @@ if exists("c_no_curly_error")
     syn match	cErrInParen	display contained "^[{}]\|^<%\|^%>"
   endif
 elseif exists("c_no_bracket_error")
-  if &filetype ==# 'cpp' && !exists("cpp_no_cpp11")
+  if s:ft ==# 'cpp' && !exists("cpp_no_cpp11")
     syn region	cParen		transparent start='(' end=')' contains=ALLBUT,@cParenGroup,cCppParen,cCppString,@Spell
     " cCppParen: same as cParen but ends at end-of-line; used in cDefine
     syn region	cCppParen	transparent start='(' skip='\\$' excludenl end=')' end='$' contained contains=ALLBUT,@cParenGroup,cParen,cString,@Spell
@@ -138,7 +140,7 @@ elseif exists("c_no_bracket_error")
     syn match	cErrInParen	display contained "[{}]\|<%\|%>"
   endif
 else
-  if &filetype ==# 'cpp' && !exists("cpp_no_cpp11")
+  if s:ft ==# 'cpp' && !exists("cpp_no_cpp11")
     syn region	cParen		transparent start='(' end=')' contains=ALLBUT,@cParenGroup,cCppParen,cErrInBracket,cCppBracket,cCppString,@Spell
     " cCppParen: same as cParen but ends at end-of-line; used in cDefine
     syn region	cCppParen	transparent start='(' skip='\\$' excludenl end=')' end='$' contained contains=ALLBUT,@cParenGroup,cErrInBracket,cParen,cBracket,cString,@Spell
@@ -158,7 +160,7 @@ else
   syn match	cErrInBracket	display contained "[);{}]\|<%\|%>"
 endif
 
-if &filetype ==# 'c' || exists("cpp_no_cpp11")
+if s:ft ==# 'c' || exists("cpp_no_cpp11")
   syn region	cBadBlock	keepend start="{" end="}" contained containedin=cParen,cBracket,cBadBlock transparent fold
 endif
 
@@ -370,7 +372,7 @@ syn region	cPreProc	start="^\s*\(%:\|#\)\s*\(pragma\>\|line\>\|warning\>\|warn\>
 
 " Highlight User Labels
 syn cluster	cMultiGroup	contains=cIncluded,cSpecial,cCommentSkip,cCommentString,cComment2String,@cCommentGroup,cCommentStartError,cUserCont,cUserLabel,cBitField,cOctalZero,cCppOutWrapper,cCppInWrapper,@cCppOutInGroup,cFormat,cNumber,cFloat,cOctal,cOctalError,cNumbersCom,cCppParen,cCppBracket,cCppString
-if &filetype ==# 'c' || exists("cpp_no_cpp11")
+if s:ft ==# 'c' || exists("cpp_no_cpp11")
   syn region	cMulti		transparent start='?' skip='::' end=':' contains=ALLBUT,@cMultiGroup,@Spell
 endif
 " Avoid matching foo::bar() in C++ by requiring that the next char is not ':'
@@ -456,6 +458,8 @@ hi def link cCppOut2		cCppOut  " Old syntax group for #if of #if 0
 hi def link cCppOut		Comment
 
 let b:current_syntax = "c"
+
+unlet s:ft
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

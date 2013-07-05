@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Charles E. Campbell <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Mar 11, 2013
-" Version:	78
+" Last Change:	Jun 24, 2013
+" Version:	79
 " URL:		http://www.drchip.org/astronaut/vim/index.html#SYNTAX_TEX
 "
 " Notes: {{{1
@@ -74,7 +74,7 @@ endif
 " let user determine which classes of concealment will be supported
 "   a=accents/ligatures d=delimiters m=math symbols  g=Greek  s=superscripts/subscripts
 if !exists("g:tex_conceal")
- let s:tex_conceal= 'abdmgs'
+ let s:tex_conceal= 'abdmgsS'
 else
  let s:tex_conceal= g:tex_conceal
 endif
@@ -529,6 +529,13 @@ if !exists("tex_no_math")
  syn match texOnlyMath		"[_^]"
 endif
 syn match texSpecialChar	"\^\^[0-9a-f]\{2}\|\^\^\S"
+if s:tex_conceal !~ 'S'
+ syn match texSpecialChar	'\\glq\>'	contained conceal cchar=‚
+ syn match texSpecialChar	'\\grq\>'	contained conceal cchar=‘
+ syn match texSpecialChar	'\\glqq\>'	contained conceal cchar=„
+ syn match texSpecialChar	'\\grqq\>'	contained conceal cchar=“
+ syn match texSpecialChar	'\\hyp\>'	contained conceal cchar=-
+endif
 
 " Comments: {{{1
 "    Normal TeX LaTeX     :   %....

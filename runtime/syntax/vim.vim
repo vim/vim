@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Vim 7.3 script
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	May 29, 2013
-" Version:	7.3-25
+" Last Change:	Jul 05, 2013
+" Version:	7.3-26
 " Automatically generated keyword lists: {{{1
 
 " Quit when a syntax file was already loaded {{{2
@@ -104,9 +104,9 @@ syn match vimNumber	"#\x\{6}"
 " All vimCommands are contained by vimIsCommands. {{{2
 syn match vimCmdSep	"[:|]\+"	skipwhite nextgroup=vimAddress,vimAutoCmd,vimCommand,vimExtCmd,vimFilter,vimLet,vimMap,vimMark,vimSet,vimSyntax,vimUserCmd
 syn match vimIsCommand	"\<\h\w*\>"	contains=vimCommand
-syn match vimVar        contained	"\<\h\w*\>"
-syn match vimVar		"\<[bwglsav]:\h\w*\>"
-syn match vimFBVar      contained   "\<[bwglsav]:\h\w*\>"
+syn match vimVar        contained	"\<\h[a-zA-Z0-9#_]*\>"
+syn match vimVar		"\<[bwglsav]:\h[a-zA-Z0-9#_]*\>"
+syn match vimFBVar      contained   "\<[bwglsav]:\h[a-zA-Z0-9#_]*\>"
 syn keyword vimCommand  contained	in
 
 " Insertions And Appends: insert append {{{2
@@ -205,7 +205,7 @@ syn case ignore
 syn keyword	vimUserAttrbKey   contained	bar	ban[g]	cou[nt]	ra[nge] com[plete]	n[args]	re[gister]
 syn keyword	vimUserAttrbCmplt contained	augroup buffer color command compiler cscope dir environment event expression file file_in_path filetype function help highlight locale mapping menu option shellcmd sign syntax tag tag_listfiles var
 syn keyword	vimUserAttrbCmplt contained	custom customlist nextgroup=vimUserAttrbCmpltFunc,vimUserCmdError
-syn match	vimUserAttrbCmpltFunc contained	",\%([sS]:\|<[sS][iI][dD]>\)\=\%(\h\w*\%(#\u\w*\)\+\|\u\w*\)"hs=s+1 nextgroup=vimUserCmdError
+syn match	vimUserAttrbCmpltFunc contained	",\%([sS]:\|<[sS][iI][dD]>\)\=\%(\h\w*\%(#\h\w*\)\+\|\h\w*\)"hs=s+1 nextgroup=vimUserCmdError
 
 syn case match
 syn match	vimUserAttrbCmplt contained	"custom,\u\w*"
