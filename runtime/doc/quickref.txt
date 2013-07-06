@@ -170,18 +170,18 @@ N is used to indicate an optional count that can be given before the command.
 ------------------------------------------------------------------------------
 *Q_ma*		Marks and motions
 
-|m|	   m{a-zA-Z}	mark current position with mark {a-zA-Z}
-|`a|	   `{a-z}	go to mark {a-z} within current file
-|`A|	   `{A-Z}	go to mark {A-Z} in any file
-|`0|	   `{0-9}	go to the position where Vim was previously exited
-|``|	   ``		go to the position before the last jump
+|m|        m{a-zA-Z}	mark current position with mark {a-zA-Z}
+|`a|       `{a-z}	go to mark {a-z} within current file
+|`A|       `{A-Z}	go to mark {A-Z} in any file
+|`0|       `{0-9}	go to the position where Vim was previously exited
+|``|       ``		go to the position before the last jump
 |`quote|   `"		go to the position when last editing this file
-|`[|	   `[		go to the start of the previously operated or put text
-|`]|	   `]		go to the end of the previously operated or put text
-|`<|	   `<		go to the start of the (previous) Visual area
-|`>|	   `>		go to the end of the (previous) Visual area
-|`.|	   `.		go to the position of the last change in this file
-|'|	   '{a-zA-Z0-9[]'"<>.}
+|`[|       `[		go to the start of the previously operated or put text
+|`]|       `]		go to the end of the previously operated or put text
+|`<|       `<		go to the start of the (previous) Visual area
+|`>|       `>		go to the end of the (previous) Visual area
+|`.|       `.		go to the position of the last change in this file
+|'|        '{a-zA-Z0-9[]'"<>.}
 			same as `, but on the first non-blank in the line
 |:marks|  :marks	print the active marks
 |CTRL-O|  N  CTRL-O	go to Nth older position in jump list
@@ -648,7 +648,7 @@ Short explanation of each option:		*option-list*
 'completefunc'	  'cfu'     function to be used for Insert mode completion
 'completeopt'	  'cot'     options for Insert mode completion
 'concealcursor'	  'cocu'    whether concealable text is hidden in cursor line
-'conceallevel'	  'cole'    whether concealable text is shown or hidden 
+'conceallevel'	  'cole'    whether concealable text is shown or hidden
 'confirm'	  'cf'	    ask what to do about unsaved/read-only files
 'conskey'	  'consk'   get keys directly from console (MS-DOS only)
 'copyindent'	  'ci'	    make 'autoindent' use existing indent structure
@@ -1328,14 +1328,14 @@ Context-sensitive completion on the command-line:
 |:bdelete|	:bdelete[!] [N]		unload buffer [N] and delete it from
 					   the buffer list
 
-	      in current window   in new window	~
-|:buffer|     :[N]buffer [N]	  :[N]sbuffer [N]     to arg/buf N
-|:bnext|      :[N]bnext [N]	  :[N]sbnext [N]      to Nth next arg/buf
-|:bNext|      :[N]bNext [N]	  :[N]sbNext [N]      to Nth previous arg/buf
-|:bprevious|  :[N]bprevious [N]   :[N]sbprevious [N]  to Nth previous arg/buf
-|:bfirst|     :bfirst		  :sbfirst	      to first arg/buf
-|:blast|      :blast		  :sblast	      to last arg/buf
-|:bmodified|  :[N]bmod [N]	  :[N]sbmod [N]	      to Nth modified buf
+		in current window  in new window       ~
+|:buffer|	:[N]buffer [N]     :[N]sbuffer [N]     to arg/buf N
+|:bnext|	:[N]bnext [N]      :[N]sbnext [N]      to Nth next arg/buf
+|:bNext|	:[N]bNext [N]      :[N]sbNext [N]      to Nth previous arg/buf
+|:bprevious|	:[N]bprevious [N]  :[N]sbprevious [N]  to Nth previous arg/buf
+|:bfirst|	:bfirst	           :sbfirst            to first arg/buf
+|:blast|	:blast	           :sblast             to last arg/buf
+|:bmodified|	:[N]bmod [N]       :[N]sbmod [N]       to Nth modified buf
 ------------------------------------------------------------------------------
 *Q_sy*		Syntax Highlighting
 

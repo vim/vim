@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3.  Last change: 2013 Jul 05
+*todo.txt*      For Vim version 7.3.  Last change: 2013 Jul 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -107,6 +107,9 @@ Second one. Update May 22.
 
 Patch to make fold updates much faster. (Christian Brabandt, 2012 Dec)
 
+MS-Windows: Patch to make tests copy files to avoid changing the fileformat of
+the files under version control. (Taro Muraoka, 2013 Jul 5)
+
 Issue 54: document behavior of -complete, also expands arg.
 
 -   Add regex for 'paragraphs' and 'sections': 'parare' and 'sectre'.  Combine
@@ -189,6 +192,9 @@ Crash in autocmd that unloads buffers in a BufUnload event. (Andrew Pimlott,
 
 Patch to add ":ldo" and ":cdo", execute commands over quickfix list and
 location list. (Yegappan Lakshmanan, 2013 Jun 2)
+
+8   "stl" and "stlnc" in 'fillchars' don't work for multi-byte characters.
+    Patch by Christian Wellenbrock, 2013 Jul 5.
 
 MS-Windows resizing problems:
 - Windows window on screen positioning: Patch by Yukihiro Nakadaira, 2012 Jun
@@ -2289,7 +2295,6 @@ Macintosh:
     UnxUtils.zip archive.
     Alternate one: http://www.pramodx.20m.com/tee_for_win32.htm, but Walter
     Briscoe says it's not as good.
-8   "stl" and "stlnc" in 'fillchars' don't work for multi-byte characters.
 8   When doing Insert mode completion a mapping cannot recursively call
     edit(), because the completion information is global.  Put everything in
     an allocated structure?

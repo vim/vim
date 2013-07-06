@@ -3,9 +3,9 @@
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
 #
-# Last Change: 2013 May 19
+# Last Change: 2013 Jul 06
 #
-# Copyright (C) 2001-12 MURAOKA Taro <koron.kaoriya@gmail.com>
+# Copyright (C) 2001-13 MURAOKA Taro <koron.kaoriya@gmail.com>
 # THIS FILE IS DISTRIBUTED UNDER THE VIM LICENSE.
 #
 # Generated from ja.po, DO NOT EDIT.
@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim 7.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-19 12:20+0900\n"
-"PO-Revision-Date: 2013-05-19 12:30+0900\n"
+"POT-Creation-Date: 2013-07-06 13:50+0900\n"
+"PO-Revision-Date: 2013-07-06 15:00+0900\n"
 "Last-Translator: MURAOKA Taro <koron.kaoriya@gmail.com>\n"
 "Language-Team: MURAOKA Taro <koron.kaoriya@gmail.com>\n"
 "Language: Japanese\n"
@@ -140,6 +140,9 @@ msgstr "[新ファイル]"
 
 msgid "[Read errors]"
 msgstr "[読込エラー]"
+
+msgid "[RO]"
+msgstr "[読専]"
 
 msgid "[readonly]"
 msgstr "[読込専用]"
@@ -424,6 +427,9 @@ msgstr "E130: 未知の関数です: %s"
 msgid "E461: Illegal variable name: %s"
 msgstr "E461: 不正な変数名です: %s"
 
+msgid "E806: using Float as a String"
+msgstr "E806: 浮動小数点数を文字列として扱っています"
+
 msgid "E687: Less targets than List items"
 msgstr "E687: ターゲットがリスト型内の要素よりも少ないです"
 
@@ -584,12 +590,12 @@ msgstr "E785: complete() は挿入モードでしか利用できません"
 msgid "&Ok"
 msgstr "&Ok"
 
-msgid "extend() argument"
-msgstr "extend() の引数"
-
 #, c-format
 msgid "E737: Key already exists: %s"
 msgstr "E737: キーは既に存在します: %s"
+
+msgid "extend() argument"
+msgstr "extend() の引数"
 
 msgid "map() argument"
 msgstr "map() の引数"
@@ -688,9 +694,6 @@ msgstr "E730: リスト型を文字列として扱っています"
 
 msgid "E731: using Dictionary as a String"
 msgstr "E731: 辞書型を文字列として扱っています"
-
-msgid "E806: using Float as a String"
-msgstr "E806: 浮動小数点数を文字列として扱っています"
 
 #, c-format
 msgid "E706: Variable type mismatch for: %s"
@@ -1647,9 +1650,6 @@ msgstr "[ソケット]"
 msgid "[character special]"
 msgstr "[キャラクタ・デバイス]"
 
-msgid "[RO]"
-msgstr "[読専]"
-
 msgid "[CR missing]"
 msgstr "[CR無]"
 
@@ -2246,32 +2246,28 @@ msgid "Font '%s' is not fixed-width"
 msgstr "フォント '%s' は固定幅ではありません"
 
 #, c-format
-msgid "E253: Fontset name: %s\n"
-msgstr "E253: フォントセット名: %s\n"
+msgid "E253: Fontset name: %s"
+msgstr "E253: フォントセット名: %s"
 
 #, c-format
-msgid "Font0: %s\n"
-msgstr "フォント0: %s\n"
+msgid "Font0: %s"
+msgstr "フォント0: %s"
 
 #, c-format
-msgid "Font1: %s\n"
-msgstr "フォント1: %s\n"
+msgid "Font1: %s"
+msgstr "フォント1: %s"
 
 #, c-format
-msgid "Font%ld width is not twice that of font0\n"
-msgstr "フォント%ld の幅がフォント0の2倍ではありません\n"
+msgid "Font%ld width is not twice that of font0"
+msgstr "フォント%ld の幅がフォント0の2倍ではありません"
 
 #, c-format
-msgid "Font0 width: %ld\n"
-msgstr "フォント0の幅: %ld\n"
+msgid "Font0 width: %ld"
+msgstr "フォント0の幅: %ld"
 
 #, c-format
-msgid ""
-"Font1 width: %ld\n"
-"\n"
-msgstr ""
-"フォント1の幅: %ld\n"
-"\n"
+msgid "Font1 width: %ld"
+msgstr "フォント1の幅: %ld"
 
 msgid "Invalid font specification"
 msgstr "無効なフォント指定です"
@@ -2460,6 +2456,9 @@ msgstr "E566: cscopeパイプを作成できませんでした"
 msgid "E622: Could not fork for cscope"
 msgstr "E622: cscopeの起動準備(fork)に失敗しました"
 
+msgid "cs_create_connection setpgid failed"
+msgstr "cs_create_connection への setpgid に失敗しました"
+
 msgid "cs_create_connection exec failed"
 msgstr "cs_create_connection の実行に失敗しました"
 
@@ -2638,9 +2637,6 @@ msgstr ""
 msgid "E836: This Vim cannot execute :python after using :py3"
 msgstr "E836: このVimでは :py3 を使った後に :python を使えません"
 
-msgid "only string keys are allowed"
-msgstr "文字列のキーのみが許可されています"
-
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
 "loaded."
@@ -2652,29 +2648,8 @@ msgstr ""
 msgid "E659: Cannot invoke Python recursively"
 msgstr "E659: Python を再帰的に実行することはできません"
 
-msgid "E858: Eval did not return a valid python object"
-msgstr "E858: 式評価は有効なpythonオブジェクトを返しませんでした"
-
-msgid "E859: Failed to convert returned python object to vim value"
-msgstr "E859: 返されたpythonオブジェクトをvimの値に変換できませんでした"
-
-msgid "failed to run the code"
-msgstr "コードの実行に失敗しました"
-
-msgid "E863: return value must be an instance of str"
-msgstr "E863: 戻り値は文字列のインスタンスでなければなりません"
-
 msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: このVimでは :python を使った後に :py3 を使えません"
-
-msgid "E860: Eval did not return a valid python 3 object"
-msgstr "E860: 式評価は有効なpython 3オブジェクトを返しませんでした"
-
-msgid "E861: Failed to convert returned python 3 object to vim value"
-msgstr "E861: 返されたpython 3オブジェクトをvimの値に変換できませんでした"
-
-msgid "index must be int or slice"
-msgstr "インデックスは整数かスライスでなければなりません"
 
 msgid "E265: $_ must be an instance of String"
 msgstr "E265: $_ は文字列のインスタンスでなければなりません"
@@ -4731,18 +4706,10 @@ msgstr "E777: 文字列かリストが必要です"
 msgid "E369: invalid item in %s%%[]"
 msgstr "E369: 無効な項目です: %s%%[]"
 
-msgid "E339: Pattern too long"
-msgstr "E339: パターンが長過ぎます"
-
-msgid "E50: Too many \\z("
-msgstr "E50: \\z( が多過ぎます"
-
+#
 #, c-format
-msgid "E51: Too many %s("
-msgstr "E51: %s( が多過ぎます"
-
-msgid "E52: Unmatched \\z("
-msgstr "E52: \\z( が釣り合っていません"
+msgid "E769: Missing ] after %s["
+msgstr "E769: %s[ の後に ] がありません"
 
 #, c-format
 msgid "E53: Unmatched %s%%("
@@ -4755,6 +4722,36 @@ msgstr "E54: %s( が釣り合っていません"
 #, c-format
 msgid "E55: Unmatched %s)"
 msgstr "E55: %s) が釣り合っていません"
+
+#
+msgid "E66: \\z( not allowed here"
+msgstr "E66: \\z( はココでは許可されていません"
+
+#
+msgid "E67: \\z1 et al. not allowed here"
+msgstr "E67: \\z1 その他はココでは許可されていません"
+
+#
+#, c-format
+msgid "E69: Missing ] after %s%%["
+msgstr "E69: %s%%[ の後に ] がありません"
+
+#, c-format
+msgid "E70: Empty %s%%[]"
+msgstr "E70: %s%%[] が空です"
+
+msgid "E339: Pattern too long"
+msgstr "E339: パターンが長過ぎます"
+
+msgid "E50: Too many \\z("
+msgstr "E50: \\z( が多過ぎます"
+
+#, c-format
+msgid "E51: Too many %s("
+msgstr "E51: %s( が多過ぎます"
+
+msgid "E52: Unmatched \\z("
+msgstr "E52: \\z( が釣り合っていません"
 
 #, c-format
 msgid "E59: invalid character after %s@"
@@ -4785,25 +4782,8 @@ msgid "E65: Illegal back reference"
 msgstr "E65: 不正な後方参照です"
 
 #
-msgid "E66: \\z( not allowed here"
-msgstr "E66: \\z( はココでは許可されていません"
-
-#
-msgid "E67: \\z1 et al. not allowed here"
-msgstr "E67: \\z1 その他はココでは許可されていません"
-
-#
 msgid "E68: Invalid character after \\z"
 msgstr "E68: \\z の後に不正な文字がありました"
-
-#
-#, c-format
-msgid "E69: Missing ] after %s%%["
-msgstr "E69: %s%%[ の後に ] がありません"
-
-#, c-format
-msgid "E70: Empty %s%%[]"
-msgstr "E70: %s%%[] が空です"
 
 #
 #, c-format
@@ -4815,17 +4795,87 @@ msgstr "E678: %s%%[dxouU] の後に不正な文字がありました"
 msgid "E71: Invalid character after %s%%"
 msgstr "E71: %s%% の後に不正な文字がありました"
 
-#
-#, c-format
-msgid "E769: Missing ] after %s["
-msgstr "E769: %s[ の後に ] がありません"
-
 #, c-format
 msgid "E554: Syntax error in %s{...}"
 msgstr "E554: %s{...} 内に文法エラーがあります"
 
 msgid "External submatches:\n"
 msgstr "外部の部分該当:\n"
+
+msgid ""
+"E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be "
+"used "
+msgstr ""
+"E864: \\%#= には 0, 1 もしくは 2 のみが続けられます。"
+"正規表現エンジンは自動選択されます。"
+
+#, c-format
+msgid "E866: (NFA regexp) Misplaced %c"
+msgstr "E866: (NFA 正規表現) 位置が誤っています: %c"
+
+msgid "E865: (NFA) Regexp end encountered prematurely"
+msgstr "E865: (NFA) 期待より早く正規表現の終端に到達しました"
+
+#, c-format
+msgid "E867: (NFA) Unknown operator '\\z%c'"
+msgstr "E867: (NFA) 未知のオペレータです: '\\z%c'"
+
+#, c-format
+msgid "E867: (NFA) Unknown operator '\\%%%c'"
+msgstr "E867: (NFA) 未知のオペレータです: '\\%%%c'"
+
+#. should never happen
+msgid "E868: Error building NFA with equivalence class!"
+msgstr "E868: 等価クラスを含むNFA構築に失敗しました!"
+
+#, c-format
+msgid "E869: (NFA) Unknown operator '\\@%c'"
+msgstr "E869: (NFA) 未知のオペレータです: '\\@%c'"
+
+msgid "E870: (NFA regexp) Error reading repetition limits"
+msgstr "E870: (NFA 正規表現) 繰り返しの制限回数を読込中にエラー"
+
+#. Can't have a multi follow a multi.
+msgid "E871: (NFA regexp) Can't have a multi follow a multi !"
+msgstr "E871: (NFA 正規表現) 繰り返し の後に 繰り返し はできません!"
+
+#. Too many `('
+msgid "E872: (NFA regexp) Too many '('"
+msgstr "E872: (NFA 正規表現) '(' が多過ぎます"
+
+msgid "E879: (NFA regexp) Too many \\z("
+msgstr "E879: (NFA 正規表現) \\z( が多過ぎます"
+
+msgid "E873: (NFA regexp) proper termination error"
+msgstr "E873: (NFA 正規表現) 終端記号がありません"
+
+msgid "E874: (NFA) Could not pop the stack !"
+msgstr "E874: (NFA) スタックをポップできません!"
+
+msgid ""
+"E875: (NFA regexp) (While converting from postfix to NFA), too many states "
+"left on stack"
+msgstr ""
+"E875: (NFA 正規表現) (後置文字列をNFAに変換中に) "
+"スタックに残されたステートが多過ぎます"
+
+msgid "E876: (NFA regexp) Not enough space to store the whole NFA "
+msgstr "E876: (NFA 正規表現) NFA全体を保存するには空きスペースが足りません"
+
+msgid "E878: (NFA) Could not allocate memory for branch traversal!"
+msgstr "E878: (NFA) 現在横断中のブランチに十分なメモリを割り当てられません!"
+
+msgid ""
+"Could not open temporary log file for writing, displaying on stderr ... "
+msgstr "NFA正規表現エンジン用のログファイルを書込用として開けません。"
+"ログは標準出力に出力します。"
+
+#, c-format
+msgid "(NFA) COULD NOT OPEN %s !"
+msgstr "(NFA) ログファイル %s を開けません!"
+
+msgid "Could not open temporary log file for writing "
+msgstr "NFA正規表現エンジン用のログファイルを書込用として開けません。"
 
 msgid " VREPLACE"
 msgstr " 仮想置換"
@@ -5326,6 +5376,9 @@ msgstr "E782: .sug ファイルの読込中にエラーが発生しました: %s"
 msgid "E783: duplicate char in MAP entry"
 msgstr "E783: MAP エントリに重複文字が存在します"
 
+msgid "No Syntax items defined for this buffer"
+msgstr "このバッファに定義された構文要素はありません"
+
 #, c-format
 msgid "E390: Illegal argument: %s"
 msgstr "E390: 不正な引数です: %s"
@@ -5333,9 +5386,6 @@ msgstr "E390: 不正な引数です: %s"
 #, c-format
 msgid "E391: No such syntax cluster: %s"
 msgstr "E391: そのような構文クラスタはありません: %s"
-
-msgid "No Syntax items defined for this buffer"
-msgstr "このバッファに定義された構文要素はありません"
 
 msgid "syncing on C-style comments"
 msgstr "C言語風コメントから同期中"
@@ -5461,6 +5511,11 @@ msgstr "E409: 未知のグループ名: %s"
 #, c-format
 msgid "E410: Invalid :syntax subcommand: %s"
 msgstr "E410: 無効な :syntax のサブコマンド: %s"
+
+msgid ""
+"  TOTAL      COUNT  MATCH   SLOWEST     AVERAGE   NAME               PATTERN"
+msgstr ""
+"  TOTAL      COUNT  MATCH   SLOWEST     AVERAGE   NAME               PATTERN"
 
 msgid "E679: recursive loop loading syncolor.vim"
 msgstr "E679: syncolor.vim の再帰呼び出しを検出しました"
@@ -6513,107 +6568,154 @@ msgstr "下まで検索したので上に戻ります"
 msgid "Need encryption key for \"%s\""
 msgstr "暗号キーが必要です: \"%s\""
 
-msgid "can't delete OutputObject attributes"
-msgstr "OutputObject属性を消せません"
-
-msgid "softspace must be an integer"
-msgstr "softspace は integer でなければなりません"
-
-msgid "invalid attribute"
-msgstr "無効な属性です"
-
-msgid "writelines() requires list of strings"
-msgstr "writelines() には文字列のリストが必要です"
-
-msgid "E264: Python: Error initialising I/O objects"
-msgstr "E264: Python: I/Oオブジェクトの初期化エラー"
-
 msgid "empty keys are not allowed"
 msgstr "空のキーは許可されていません"
 
-msgid "Cannot delete DictionaryObject attributes"
-msgstr "DictionaryObject属性を消せません"
-
-msgid "Cannot modify fixed dictionary"
-msgstr "固定された辞書は変更できません"
-
-msgid "Cannot set this attribute"
-msgstr "この属性は設定できません"
-
-msgid "dict is locked"
+msgid "dictionary is locked"
 msgstr "辞書はロックされています"
-
-msgid "failed to add key to dictionary"
-msgstr "辞書へのキーの追加に失敗しました"
-
-msgid "list index out of range"
-msgstr "リスト範囲外のインデックスです"
-
-msgid "internal error: failed to get vim list item"
-msgstr "内部エラー: vimのリスト要素の取得に失敗しました"
 
 msgid "list is locked"
 msgstr "リストはロックされています"
 
-msgid "Failed to add item to list"
+#, c-format
+msgid "failed to add key '%s' to dictionary"
+msgstr "辞書にキー '%s' を追加するのに失敗しました"
+
+#, c-format
+msgid "index must be int or slice, not %s"
+msgstr "インデックスは %s ではなく整数かスライスにしてください"
+
+#, c-format
+msgid "expected str() or unicode() instance, but got %s"
+msgstr "str() もしくは unicode() のインスタンスが期待されているのに %s でした"
+
+#, c-format
+msgid "expected bytes() or str() instance, but got %s"
+msgstr "bytes() もしくは str() のインスタンスが期待されているのに %s でした"
+
+#, c-format
+msgid ""
+"expected int(), long() or something supporting coercing to long(), but got %s"
+msgstr "long() かそれへ変換可能なものが期待されているのに %s でした"
+
+#, c-format
+msgid "expected int() or something supporting coercing to int(), but got %s"
+msgstr "int() かそれへ変換可能なものが期待されているのに %s でした"
+
+msgid "value is too large to fit into C int type"
+msgstr "C言語の int 型としては値が大き過ぎます"
+
+msgid "value is too small to fit into C int type"
+msgstr "C言語の int 型としては値が小さ過ぎます"
+
+msgid "number must be greater then zero"
+msgstr "数値は 0 より大きくなければなりません"
+
+msgid "number must be greater or equal to zero"
+msgstr "数値は 0 かそれ以上でなければなりません"
+
+msgid "can't delete OutputObject attributes"
+msgstr "OutputObject属性を消せません"
+
+#, c-format
+msgid "invalid attribute: %s"
+msgstr "無効な属性です: %s"
+
+msgid "E264: Python: Error initialising I/O objects"
+msgstr "E264: Python: I/Oオブジェクトの初期化エラー"
+
+msgid "failed to change directory"
+msgstr "辞書の変更に失敗しました"
+
+#, c-format
+msgid "expected 3-tuple as imp.find_module() result, but got %s"
+msgstr "imp.find_module() が %s を返しました (期待値: 2 要素のタプル)"
+
+#, c-format
+msgid "expected 3-tuple as imp.find_module() result, but got tuple of size %d"
+msgstr "impl.find_module() が %d 要素のタプルを返しました (期待値: 2)"
+
+msgid "internal error: imp.find_module returned tuple with NULL"
+msgstr "内部エラー: imp.find_module が NULL を含むタプルを返しました"
+
+msgid "cannot delete vim.Dictionary attributes"
+msgstr "vim.Dictionary属性は消せません"
+
+msgid "cannot modify fixed dictionary"
+msgstr "固定された辞書は変更できません"
+
+#, c-format
+msgid "cannot set attribute %s"
+msgstr "属性 %s は設定できません"
+
+msgid "hashtab changed during iteration"
+msgstr "イテレーション中に hashtab が変更されました"
+
+#, c-format
+msgid "expected sequence element of size 2, but got sequence of size %d"
+msgstr "シーケンスの要素数には 2 が期待されていましたが %d でした"
+
+msgid "list constructor does not accept keyword arguments"
+msgstr "リストのコンストラクタはキーワード引数を受け付けません"
+
+msgid "list index out of range"
+msgstr "リスト範囲外のインデックスです"
+
+#. No more suitable format specifications in python-2.3
+#, c-format
+msgid "internal error: failed to get vim list item %d"
+msgstr "内部エラー: vimのリスト要素 %d の取得に失敗しました"
+
+msgid "failed to add item to list"
 msgstr "リストへの要素追加に失敗しました"
 
-msgid "internal error: no vim list item"
-msgstr "内部エラー: vimのリスト要素がありません"
-
-msgid "can only assign lists to slice"
-msgstr "スライスにはリストだけが代入できます"
+#, c-format
+msgid "internal error: no vim list item %d"
+msgstr "内部エラー: vimのリスト要素 %d はありません"
 
 msgid "internal error: failed to add item to list"
 msgstr "内部エラー: リストへの要素追加に失敗しました"
 
-msgid "can only concatenate with lists"
-msgstr "リストとのみ接続できます"
-
-msgid "cannot delete vim.dictionary attributes"
-msgstr "vim.dictionary属性は消せません"
+msgid "cannot delete vim.List attributes"
+msgstr "vim.List 属性は消せません"
 
 msgid "cannot modify fixed list"
 msgstr "固定されたリストは変更できません"
 
-msgid "cannot set this attribute"
-msgstr "この属性は設定できません"
+#, c-format
+msgid "unnamed function %s does not exist"
+msgstr "無名関数 %s は存在しません"
 
-msgid "'self' argument must be a dictionary"
-msgstr "'self' 引数は辞書型の値でなければなりません"
+#, c-format
+msgid "function %s does not exist"
+msgstr "関数 %s がありません"
 
-msgid "failed to run function"
-msgstr "関数の実行に失敗しました"
+msgid "function constructor does not accept keyword arguments"
+msgstr "関数のコンストラクタはキーワード引数を受け付けません"
+
+#, c-format
+msgid "failed to run function %s"
+msgstr "関数 %s の実行に失敗しました"
 
 msgid "unable to get option value"
 msgstr "オプションの値は取得できません"
 
-msgid "unable to unset global option"
-msgstr "グローバルオプションの設定解除はできません"
+msgid "internal error: unknown option type"
+msgstr "内部エラー: 未知のオプション型です"
 
-msgid "unable to unset option without global value"
-msgstr "グローバル変数を使わずにオプションの設定解除はできません"
+msgid "problem while switching windows"
+msgstr "ウィンドウを切換中に問題が発生しました"
 
-msgid "object must be integer"
-msgstr "オブジェクトは整数でなければなりません"
+#, c-format
+msgid "unable to unset global option %s"
+msgstr "グローバルオプション %s の設定解除はできません"
 
-msgid "object must be string"
-msgstr "オブジェクトは文字列でなければなりません"
+#, c-format
+msgid "unable to unset option %s which does not have global value"
+msgstr "グローバルな値の無いオプション %s の設定解除はできません"
 
 msgid "attempt to refer to deleted tab page"
 msgstr "削除されたタブを参照しようとしました"
-
-#, c-format
-msgid "<tabpage object (deleted) at %p>"
-msgstr "<タブページオブジェクト (消去済み) %p>"
-
-#, c-format
-msgid "<tabpage object (unknown) at %p>"
-msgstr "<タブページオブジェクト (不明) %p>"
-
-#, c-format
-msgid "<tabpage %d>"
-msgstr "<タブページ %d>"
 
 msgid "no such tab page"
 msgstr "そのようなタブページはありません"
@@ -6621,23 +6723,11 @@ msgstr "そのようなタブページはありません"
 msgid "attempt to refer to deleted window"
 msgstr "削除されたウィンドウを参照しようとしました"
 
-msgid "readonly attribute"
-msgstr "読込専用属性"
+msgid "readonly attribute: buffer"
+msgstr "読込専用属性: バッファー"
 
 msgid "cursor position outside buffer"
 msgstr "カーソル位置がバッファの外側です"
-
-#, c-format
-msgid "<window object (deleted) at %p>"
-msgstr "<ウィンドウオブジェクト (消去済み) %p>"
-
-#, c-format
-msgid "<window object (unknown) at %p>"
-msgstr "<ウィンドウオブジェクト (不明) %p>"
-
-#, c-format
-msgid "<window %d>"
-msgstr "<ウィンドウ %d>"
 
 msgid "no such window"
 msgstr "そのようなウィンドウはありません"
@@ -6645,21 +6735,23 @@ msgstr "そのようなウィンドウはありません"
 msgid "attempt to refer to deleted buffer"
 msgstr "削除されたバッファを参照しようとしました"
 
+msgid "failed to rename buffer"
+msgstr "バッファ名の変更に失敗しました"
+
+msgid "mark name must be a single character"
+msgstr "マーク名は1文字のアルファベットでなければなりません"
+
 #, c-format
-msgid "<buffer object (deleted) at %p>"
-msgstr "<バッファオブジェクト (消去済み) %p>"
+msgid "expected vim.Buffer object, but got %s"
+msgstr "vim.Bufferオブジェクトが期待されているのに %s でした"
 
-msgid "key must be integer"
-msgstr "キーは整数値でなければなりません"
+#, c-format
+msgid "failed to switch to buffer %d"
+msgstr "指定されたバッファ %d への切り替えに失敗しました"
 
-msgid "expected vim.buffer object"
-msgstr "vim.bufferオブジェクトを期待しています"
-
-msgid "failed to switch to given buffer"
-msgstr "指定されたバッファへの切り替えに失敗しました"
-
-msgid "expected vim.window object"
-msgstr "vim.windowオブジェクトを期待しています"
+#, c-format
+msgid "expected vim.Window object, but got %s"
+msgstr "vim.Windowオブジェクトが期待されているのに %s でした"
 
 msgid "failed to find window in the current tab page"
 msgstr "現在のタブには指定されたウィンドウがありませんでした"
@@ -6667,17 +6759,50 @@ msgstr "現在のタブには指定されたウィンドウがありませんでした"
 msgid "did not switch to the specified window"
 msgstr "指定されたウィンドウに切り替えませんでした"
 
-msgid "expected vim.tabpage object"
-msgstr "vim.tabpageオブジェクトを期待しています"
+#, c-format
+msgid "expected vim.TabPage object, but got %s"
+msgstr "vim.TabPageオブジェクトが期待されているのに %s でした"
 
 msgid "did not switch to the specified tab page"
 msgstr "指定されたタブページに切り替えませんでした"
 
-msgid "unable to convert to vim structure"
-msgstr "vimの構造体に変換できません"
+msgid "failed to run the code"
+msgstr "コードの実行に失敗しました"
 
-msgid "NULL reference passed"
-msgstr "NULL参照が渡されました"
+msgid "E858: Eval did not return a valid python object"
+msgstr "E858: 式評価は有効なpythonオブジェクトを返しませんでした"
+
+msgid "E859: Failed to convert returned python object to vim value"
+msgstr "E859: 返されたpythonオブジェクトをvimの値に変換できませんでした"
+
+#, c-format
+msgid "unable to convert %s to vim dictionary"
+msgstr "%s vimの辞書型に変換できません"
+
+#, c-format
+msgid "unable to convert %s to vim structure"
+msgstr "%s をvimの構造体に変換できません"
+
+msgid "internal error: NULL reference passed"
+msgstr "内部エラー: NULL参照が渡されました"
 
 msgid "internal error: invalid value type"
 msgstr "内部エラー: 無効な値型です"
+
+msgid ""
+"Failed to set path hook: sys.path_hooks is not a list\n"
+"You should now do the following:\n"
+"- append vim.path_hook to sys.path_hooks\n"
+"- append vim.VIM_SPECIAL_PATH to sys.path\n"
+msgstr ""
+"パスフックの設定に失敗しました: sys.path_hooks がリストではありません\n"
+"すぐに下記を実施してください:\n"
+"- vim.path_hooks を sys.path_hooks へ追加\n"
+"- vim.VIM_SPECIAL_PATH を sys.path へ追加\n"
+
+msgid ""
+"Failed to set path: sys.path is not a list\n"
+"You should now append vim.VIM_SPECIAL_PATH to sys.path"
+msgstr ""
+"パスの設定に失敗しました: sys.path がリストではありません\n"
+"すぐに vim.VIM_SPECIAL_PATH を sys.path に追加してください"
