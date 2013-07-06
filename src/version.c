@@ -731,8 +731,6 @@ static int included_patches[] =
 /**/
     1,
 /**/
-    1,
-/**/
     0
 };
 
