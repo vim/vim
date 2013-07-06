@@ -118,6 +118,9 @@ endif
 
 DEFINES = -DWIN32 -DHAVE_PATHDEF -DFEAT_$(FEATURES) \
 	  -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER)
+ifeq ($(ARCH),x86-64)
+DEFINES+=-DMS_WIN64
+endif
 INCLUDES = -march=$(ARCH) -Iproto
 
 #>>>>> name of the compiler and linker, name of lib directory
