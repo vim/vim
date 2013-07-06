@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2010 Aug 04
+" Last Change:	2013 Jul 06
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -139,6 +139,7 @@ SynMenu C.Config.Configure\.in:config
 SynMenu C.Config.Generic\ Config\ file:conf
 SynMenu C.CRM114:crm
 SynMenu C.Crontab:crontab
+SynMenu C.CSDL:csdl
 SynMenu C.CSP:csp
 SynMenu C.Ctrl-H:ctrlh
 SynMenu C.Cucumber:cucumber
@@ -262,6 +263,11 @@ SynMenu HIJK.Informix\ 4GL:fgl
 SynMenu HIJK.Initng:initng
 SynMenu HIJK.Inittab:inittab
 SynMenu HIJK.Inno\ setup:iss
+SynMenu HIJK.Innovation\ Data\ Processing.Upstream\ dat:upstreamdat
+SynMenu HIJK.Innovation\ Data\ Processing.Upstream\ log:upstreamlog
+SynMenu HIJK.Innovation\ Data\ Processing.Upstream\ Install\ log:upstreaminstalllog
+SynMenu HIJK.Innovation\ Data\ Processing.Usserver\ log:usserverlog
+SynMenu HIJK.Innovation\ Data\ Processing.USW2KAgt\ log:usw2kagtlog
 SynMenu HIJK.InstallShield\ script:ishd
 SynMenu HIJK.Interactive\ Data\ Lang:idlang
 SynMenu HIJK.IPfilter:ipfilter

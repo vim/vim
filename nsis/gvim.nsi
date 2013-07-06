@@ -22,7 +22,7 @@
 !define HAVE_NLS
 
 !define VER_MAJOR 7
-!define VER_MINOR 3
+!define VER_MINOR 4a
 
 # ----------- No configurable settings below this line -----------
 

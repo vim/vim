@@ -1,4 +1,4 @@
-*uganda.txt*    For Vim version 7.3.  Last change: 2012 Dec 02
+*uganda.txt*    For Vim version 7.4a.  Last change: 2013 Jul 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -278,7 +278,6 @@ Others:		Transfer to one of these accounts if possible:
 		amounts for foreign check, sorry)
 
 Address to send checks to:
-			stichting ICCF Holland
 			Bram Moolenaar
 			Finsterruetihof 1
 			8134 Adliswil

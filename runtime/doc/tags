@@ -4397,6 +4397,7 @@ N	pattern.txt	/*N*
 N%	motion.txt	/*N%*
 N:	cmdline.txt	/*N:*
 N<Del>	various.txt	/*N<Del>*
+NFA	pattern.txt	/*NFA*
 NL-used-for-Nul	pattern.txt	/*NL-used-for-Nul*
 NetBSD-backspace	options.txt	/*NetBSD-backspace*
 NetUserPass()	pi_netrw.txt	/*NetUserPass()*
@@ -4732,6 +4733,7 @@ added-6.4	version6.txt	/*added-6.4*
 added-7.1	version7.txt	/*added-7.1*
 added-7.2	version7.txt	/*added-7.2*
 added-7.3	version7.txt	/*added-7.3*
+added-7.4	version7.txt	/*added-7.4*
 added-BeOS	version5.txt	/*added-BeOS*
 added-Mac	version5.txt	/*added-Mac*
 added-VMS	version5.txt	/*added-VMS*
@@ -5010,6 +5012,7 @@ changed-6.4	version6.txt	/*changed-6.4*
 changed-7.1	version7.txt	/*changed-7.1*
 changed-7.2	version7.txt	/*changed-7.2*
 changed-7.3	version7.txt	/*changed-7.3*
+changed-7.4	version7.txt	/*changed-7.4*
 changelist	motion.txt	/*changelist*
 changelog.vim	syntax.txt	/*changelog.vim*
 changenr()	eval.txt	/*changenr()*
@@ -5618,6 +5621,7 @@ fixed-6.4	version6.txt	/*fixed-6.4*
 fixed-7.1	version7.txt	/*fixed-7.1*
 fixed-7.2	version7.txt	/*fixed-7.2*
 fixed-7.3	version7.txt	/*fixed-7.3*
+fixed-7.4	version7.txt	/*fixed-7.4*
 flexwiki.vim	syntax.txt	/*flexwiki.vim*
 float-e	eval.txt	/*float-e*
 float-functions	usr_41.txt	/*float-functions*
@@ -7155,6 +7159,7 @@ new-posix	version7.txt	/*new-posix*
 new-print-multi-byte	version7.txt	/*new-print-multi-byte*
 new-printing	version6.txt	/*new-printing*
 new-python3	version7.txt	/*new-python3*
+new-regexp-engine	version7.txt	/*new-regexp-engine*
 new-runtime-dir	version5.txt	/*new-runtime-dir*
 new-script	version5.txt	/*new-script*
 new-script-5.4	version5.txt	/*new-script-5.4*
@@ -8517,6 +8522,7 @@ version-7.0	version7.txt	/*version-7.0*
 version-7.1	version7.txt	/*version-7.1*
 version-7.2	version7.txt	/*version-7.2*
 version-7.3	version7.txt	/*version-7.3*
+version-7.4	version7.txt	/*version-7.4*
 version-variable	eval.txt	/*version-variable*
 version4.txt	version4.txt	/*version4.txt*
 version5.txt	version5.txt	/*version5.txt*
@@ -8525,6 +8531,7 @@ version7.0	version7.txt	/*version7.0*
 version7.1	version7.txt	/*version7.1*
 version7.2	version7.txt	/*version7.2*
 version7.3	version7.txt	/*version7.3*
+version7.4	version7.txt	/*version7.4*
 version7.txt	version7.txt	/*version7.txt*
 vi	intro.txt	/*vi*
 vi-differences	vi_diff.txt	/*vi-differences*

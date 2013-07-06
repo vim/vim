@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.3.  Last change: 2013 May 18
+*pi_netrw.txt*  For Vim version 7.4a.  Last change: 2013 May 18
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell

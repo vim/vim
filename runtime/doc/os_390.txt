@@ -1,4 +1,4 @@
-*os_390.txt*    For Vim version 7.3.  Last change: 2010 May 30
+*os_390.txt*    For Vim version 7.4a.  Last change: 2010 May 30
 
 
 		  VIM REFERENCE MANUAL	  by Ralf Schandl

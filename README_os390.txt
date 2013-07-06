@@ -1,4 +1,4 @@
-README_zOS.txt for version 7.3 of Vim: Vi IMproved.
+README_zOS.txt for version 7.4a of Vim: Vi IMproved.
 
 This readme explains how to build Vim on z/OS.  Formerly called OS/390.
 See "README.txt" for general information about Vim.
@@ -29,7 +29,7 @@ console version).
 Compiling:
 ==========
 
-Vim can be compiled with or without GUI support. For 7.3 only the compilation
+Vim can be compiled with or without GUI support. For 7.4 only the compilation
 without GUI was tested. Below is a section about compiling with X11 but this
 is from an earlier version of Vim.
 
@@ -78,7 +78,7 @@ Change to the vim directory and do:
 With X11:
 ---------
 
-WARNING: This instruction was not tested with Vim 7.3.
+WARNING: This instruction was not tested with Vim 7.4.
 
 There are two ways for building VIM with X11 support. The first way is simple
 and results in a big executable (~13 Mb), the second needs a few additional
