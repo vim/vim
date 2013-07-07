@@ -4712,7 +4712,8 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, find_what,
 	    {
 		wc_path = vim_strsave(search_ctx->ffsc_wc_path);
 		temp = alloc((int)(STRLEN(search_ctx->ffsc_wc_path)
-				 + (STRLEN(search_ctx->ffsc_fix_path)) - len));
+				 + STRLEN(search_ctx->ffsc_fix_path + len)
+				 + 1));
 	    }
 
 	    if (temp == NULL || wc_path == NULL)
