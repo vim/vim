@@ -1850,7 +1850,7 @@ types.vim: $(TAGS_SRC) $(TAGS_INCL)
 #
 test check:
 	$(MAKE) -f Makefile $(VIMTARGET)
-	-if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
+	if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
 		cd $(PODIR); $(MAKE) -f Makefile check VIM=../$(VIMTARGET); \
 	fi
 	-if test $(VIMTARGET) != vim -a ! -r vim; then \
