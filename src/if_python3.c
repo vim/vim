@@ -86,7 +86,8 @@
 #ifndef PyString_Check
 # define PyString_Check(obj) PyUnicode_Check(obj)
 #endif
-#define PyString_FromString(repr) PyUnicode_FromString(repr)
+#define PyString_FromString(repr) \
+    PyUnicode_Decode(repr, STRLEN(repr), ENC_OPT, NULL)
 #define PyString_FromFormat PyUnicode_FromFormat
 #ifndef PyInt_Check
 # define PyInt_Check(obj) PyLong_Check(obj)
