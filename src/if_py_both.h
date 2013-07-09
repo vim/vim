@@ -2100,7 +2100,7 @@ ListNew(PyTypeObject *subtype, list_T *list)
 }
 
     static list_T *
-py_list_alloc()
+py_list_alloc(void)
 {
     list_T	*ret;
 
@@ -5857,7 +5857,7 @@ init_structs(void)
 	return -1;
 
     static int
-init_types()
+init_types(void)
 {
     PYTYPE_READY(IterType);
     PYTYPE_READY(BufferType);

@@ -35,8 +35,6 @@ static char	*mediumVersion = VIM_VERSION_MEDIUM;
 char	longVersion[sizeof(VIM_VERSION_LONG_DATE) + sizeof(__DATE__)
 						      + sizeof(__TIME__) + 3];
 
-static void list_features __ARGS((void));
-
     void
 make_version()
 {
@@ -57,6 +55,7 @@ char	*longVersion = VIM_VERSION_LONG_DATE __DATE__ " " __TIME__ ")";
 char	*longVersion = VIM_VERSION_LONG;
 #endif
 
+static void list_features __ARGS((void));
 static void version_msg __ARGS((char *s));
 
 static char *(features[]) =
@@ -728,6 +727,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    9,
 /**/
     8,
 /**/

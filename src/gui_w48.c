@@ -3102,7 +3102,7 @@ logfont2name(LOGFONT lf)
  * 'guifont'
  */
     static void
-update_im_font()
+update_im_font(void)
 {
     LOGFONT	lf_wide;
 
