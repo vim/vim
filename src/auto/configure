@@ -5991,6 +5991,38 @@ elif test "$python_ok" = yes && test "$enable_pythoninterp" = "dynamic"; then
   PYTHON_OBJ="objects/if_python.o"
   PYTHON_CFLAGS="$PYTHON_CFLAGS -DDYNAMIC_PYTHON_DLL=\\\"${python_INSTSONAME}\\\""
   PYTHON_LIBS=
+elif test "$python_ok" = yes; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking if -fPIE can be added for Python" >&5
+$as_echo_n "checking if -fPIE can be added for Python... " >&6; }
+  cflags_save=$CFLAGS
+  libs_save=$LIBS
+  CFLAGS="$CFLAGS $PYTHON_CFLAGS -fPIE"
+  LIBS="$LIBS $PYTHON_LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }; fpie_ok=yes
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }; fpie_ok=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  CFLAGS=$cflags_save
+  LIBS=$libs_save
+  if test $fpie_ok = yes; then
+    PYTHON_CFLAGS="$PYTHON_CFLAGS -fPIE"
+  fi
 elif test "$python3_ok" = yes && test "$enable_python3interp" = "dynamic"; then
   $as_echo "#define DYNAMIC_PYTHON3 1" >>confdefs.h
 
@@ -5998,6 +6030,38 @@ elif test "$python3_ok" = yes && test "$enable_python3interp" = "dynamic"; then
   PYTHON3_OBJ="objects/if_python3.o"
   PYTHON3_CFLAGS="$PYTHON3_CFLAGS -DDYNAMIC_PYTHON3_DLL=\\\"${python3_INSTSONAME}\\\""
   PYTHON3_LIBS=
+elif test "$python3_ok" = yes; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking if -fPIE can be added for Python3" >&5
+$as_echo_n "checking if -fPIE can be added for Python3... " >&6; }
+  cflags_save=$CFLAGS
+  libs_save=$LIBS
+  CFLAGS="$CFLAGS $PYTHON3_CFLAGS -fPIE"
+  LIBS="$LIBS $PYTHON3_LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }; fpie_ok=yes
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }; fpie_ok=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  CFLAGS=$cflags_save
+  LIBS=$libs_save
+  if test $fpie_ok = yes; then
+    PYTHON3_CFLAGS="$PYTHON3_CFLAGS -fPIE"
+  fi
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-tclinterp argument" >&5

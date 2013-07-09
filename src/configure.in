@@ -1353,12 +1353,44 @@ elif test "$python_ok" = yes && test "$enable_pythoninterp" = "dynamic"; then
   PYTHON_OBJ="objects/if_python.o"
   PYTHON_CFLAGS="$PYTHON_CFLAGS -DDYNAMIC_PYTHON_DLL=\\\"${python_INSTSONAME}\\\""
   PYTHON_LIBS=
+elif test "$python_ok" = yes; then
+  dnl Check that adding -fPIE works.  It may be needed when using a static
+  dnl Python library.
+  AC_MSG_CHECKING([if -fPIE can be added for Python])
+  cflags_save=$CFLAGS
+  libs_save=$LIBS
+  CFLAGS="$CFLAGS $PYTHON_CFLAGS -fPIE"
+  LIBS="$LIBS $PYTHON_LIBS"
+  AC_TRY_LINK(,[ ],
+	 AC_MSG_RESULT(yes); fpie_ok=yes,
+	 AC_MSG_RESULT(no); fpie_ok=no)
+  CFLAGS=$cflags_save
+  LIBS=$libs_save
+  if test $fpie_ok = yes; then
+    PYTHON_CFLAGS="$PYTHON_CFLAGS -fPIE"
+  fi
 elif test "$python3_ok" = yes && test "$enable_python3interp" = "dynamic"; then
   AC_DEFINE(DYNAMIC_PYTHON3)
   PYTHON3_SRC="if_python3.c"
   PYTHON3_OBJ="objects/if_python3.o"
   PYTHON3_CFLAGS="$PYTHON3_CFLAGS -DDYNAMIC_PYTHON3_DLL=\\\"${python3_INSTSONAME}\\\""
   PYTHON3_LIBS=
+elif test "$python3_ok" = yes; then
+  dnl Check that adding -fPIE works.  It may be needed when using a static
+  dnl Python library.
+  AC_MSG_CHECKING([if -fPIE can be added for Python3])
+  cflags_save=$CFLAGS
+  libs_save=$LIBS
+  CFLAGS="$CFLAGS $PYTHON3_CFLAGS -fPIE"
+  LIBS="$LIBS $PYTHON3_LIBS"
+  AC_TRY_LINK(,[ ],
+	 AC_MSG_RESULT(yes); fpie_ok=yes,
+	 AC_MSG_RESULT(no); fpie_ok=no)
+  CFLAGS=$cflags_save
+  LIBS=$libs_save
+  if test $fpie_ok = yes; then
+    PYTHON3_CFLAGS="$PYTHON3_CFLAGS -fPIE"
+  fi
 fi
 
 AC_MSG_CHECKING(--enable-tclinterp argument)
