@@ -8220,6 +8220,11 @@ nv_g_cmd(cap)
 			i += ((curwin->w_virtcol - width1) / width2 + 1)
 								     * width2;
 		    coladvance((colnr_T)i);
+
+		    /* Make sure we stick in this column. */
+		    validate_virtcol();
+		    curwin->w_curswant = curwin->w_virtcol;
+		    curwin->w_set_curswant = FALSE;
 #if defined(FEAT_LINEBREAK) || defined(FEAT_MBYTE)
 		    if (curwin->w_cursor.col > 0 && curwin->w_p_wrap)
 		    {
@@ -8228,7 +8233,6 @@ nv_g_cmd(cap)
 			 * the end of the line.  We do not want to advance to
 			 * the next screen line.
 			 */
-			validate_virtcol();
 			if (curwin->w_virtcol > (colnr_T)i)
 			    --curwin->w_cursor.col;
 		    }
