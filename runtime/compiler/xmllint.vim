@@ -1,7 +1,7 @@
 " Vim compiler file
 " Compiler:	xmllint
 " Maintainer:	Doug Kearns <dougkearns@gmail.com>
-" Last Change:	2013 Jun 1
+" Last Change:	2013 Jul 8
 
 if exists("current_compiler")
   finish
@@ -15,7 +15,7 @@ endif
 let s:cpo_save = &cpo
 set cpo-=C
 
-CompilerSet makeprg=xmllint\ --valid\ --noout\ 
+CompilerSet makeprg=xmllint\ --valid\ --noout
 
 CompilerSet errorformat=%+E%f:%l:\ %.%#\ error\ :\ %m,
 		    \%+W%f:%l:\ %.%#\ warning\ :\ %m,

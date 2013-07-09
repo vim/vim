@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4a.  Last change: 2013 Jul 06
+*todo.txt*      For Vim version 7.4a.  Last change: 2013 Jul 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,6 +35,8 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
+
+Patch to add "acl" and "xpm" as a feature. (Ken Takata, 2013 Jul 8)
 
 Patch to make has() check for Vim version and patch at the same time.
 (Marc Weber, 2013 Jun 7)

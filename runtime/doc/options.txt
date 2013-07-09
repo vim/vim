@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4a.  Last change: 2013 Jun 29
+*options.txt*	For Vim version 7.4a.  Last change: 2013 Jul 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4646,7 +4646,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The cursor is displayed at the start of the space a Tab character
 	occupies, not at the end as usual in Normal mode.  To get this cursor
 	position while displaying Tabs with spaces, use: >
-		:set list lcs=tab\ \ 
+		:set list lcs=tab:\ \ 
 <
 	Note that list mode will also affect formatting (set with 'textwidth'
 	or 'wrapmargin') when 'cpoptions' includes 'L'.  See 'listchars' for

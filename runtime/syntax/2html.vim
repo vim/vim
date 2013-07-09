@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2013 Jun 19
+" Last Change: 2013 Jul 08
 "
 " Additional contributors:
 "
@@ -1604,7 +1604,7 @@ unlet s:lines
 " this file in the future; need to do this after generating all the text in case
 " the modeline text has different highlight groups which all turn out to be
 " stripped from the final output.
-%s!\v(%(^|\s+)%(vim?|ex)):!\1\&#0058;!ge
+%s!\v(%(^|\s+)%([Vv]i%(m%([<=>]?\d+)?)?|ex)):!\1\&#0058;!ge
 
 " The generated HTML is admittedly ugly and takes a LONG time to fold.
 " Make sure the user doesn't do syntax folding when loading a generated file,

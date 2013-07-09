@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.4a.  Last change: 2012 Sep 05
+*diff.txt*      For Vim version 7.4a.  Last change: 2013 Jul 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -128,9 +128,9 @@ file for a moment and come back to the same file and be in diff mode again.
 :diffo[ff]!	Switch off diff mode for the current window and in all windows
 		in the current tab page where 'diff' is set.
 
-The ":diffoff" command resets the relevant options to their default value.
-This may be different from what the values were before diff mode was started,
-the old values are not remembered.
+The ":diffoff" command resets the relevant options to the values they had when
+using |:diffsplit|, |:diffpatch| , |:diffthis|. or starting Vim in diff mode.
+Otherwise they are set to their default value:
 
 	'diff'		off
 	'scrollbind'	off

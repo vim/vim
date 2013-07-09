@@ -1,8 +1,7 @@
 " Vim compiler file
 " Compiler:	Checkstyle
-" Maintainer:	Doug Kearns <djkea2@gus.gscit.monash.edu.au>
-" URL:		http://gus.gscit.monash.edu.au/~djkea2/vim/compiler/checkstyle.vim
-" Last Change:	2004 Nov 27
+" Maintainer:	Doug Kearns <dougkearns@gmail.com>
+" Last Change:	2013 Jun 26
 
 if exists("current_compiler")
   finish
@@ -17,4 +16,4 @@ CompilerSet makeprg=java\ com.puppycrawl.tools.checkstyle.Main\ -f\ plain
 
 " sample error: WebTable.java:282: '+=' is not preceeded with whitespace.
 "		WebTable.java:201:1: '{' should be on the previous line.
-CompilerSet errorformat=%f:%l:\ %m,%f:%l:%v:\ %m,%-G%.%#
+CompilerSet errorformat=%f:%l:%v:\ %m,%f:%l:\ %m,%-G%.%#

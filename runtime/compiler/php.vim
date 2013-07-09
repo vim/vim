@@ -1,8 +1,7 @@
 " Vim compiler file
-" Compiler:	PHP
-" Maintainer:	Doug Kearns <djkea2@gus.gscit.monash.edu.au>
-" URL:		http://gus.gscit.monash.edu.au/~djkea2/vim/compiler/php.vim
-" Last Change:	2004 Nov 27
+" Compiler:	PHP CLI
+" Maintainer:	Doug Kearns <dougkearns@gmail.com>
+" Last Change:	2013 Jun 25
 
 if exists("current_compiler")
   finish
@@ -17,12 +16,11 @@ let s:cpo_save = &cpo
 set cpo-=C
 
 CompilerSet makeprg=php\ -lq
-
-CompilerSet errorformat=%E<b>Parse\ error</b>:\ %m\ in\ <b>%f</b>\ on\ line\ <b>%l</b><br\ />,
-		       \%W<b>Notice</b>:\ %m\ in\ <b>%f</b>\ on\ line\ <b>%l</b><br\ />,
-		       \%EParse\ error:\ %m\ in\ %f\ on\ line\ %l,
-		       \%WNotice:\ %m\ in\ %f</b>\ on\ line\ %l,
-		       \%-G%.%#
+CompilerSet errorformat=%E<b>%.%#Parse\ error</b>:\ %m\ in\ <b>%f</b>\ on\ line\ <b>%l</b><br\ />,
+		    \%W<b>%.%#Notice</b>:\ %m\ in\ <b>%f</b>\ on\ line\ <b>%l</b><br\ />,
+		    \%E%.%#Parse\ error:\ %m\ in\ %f\ on\ line\ %l,
+		    \%W%.%#Notice:\ %m\ in\ %f\ on\ line\ %l,
+		    \%-G%.%#
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

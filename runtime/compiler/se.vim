@@ -1,8 +1,7 @@
 " Vim compiler file
-" Compiler:	se (SmartEiffel Compiler)
-" Maintainer:	Doug Kearns <djkea2@gus.gscit.monash.edu.au>
-" URL:		http://gus.gscit.monash.edu.au/~djkea2/vim/compiler/se.vim
-" Last Change:	2004 Nov 27
+" Compiler:	se (Liberty Eiffel Compiler)
+" Maintainer:	Doug Kearns <dougkearns@gmail.com>
+" Last Change:	2013 Jun 29
 
 if exists("current_compiler")
   finish
@@ -16,12 +15,15 @@ endif
 let s:cpo_save = &cpo
 set cpo-=C
 
-CompilerSet makeprg=compile\ %
+CompilerSet makeprg=se\ c
 
 CompilerSet errorformat=%W******\ Warning:\ %m,
 		    \%E******\ Fatal\ Error:\ %m,
 		    \%E******\ Error:\ %m,
-		    \%CLine\ %l\ column\ %c\ in\ %\\w%\\+\ (%f)\ :,
+		    \%ZLine\ %l\ column\ %c\ in\ %.%#\ (%f)\ %\\=:,
+		    \%ZLine\ %l\ columns\ %c\\,\ %\\d%\\+\ %.%#\ (%f)\ %\\=:,
+		    \%+C%*[^\ ]%.%#,
+		    \%-GThe\ source\ lines\ involved,
 		    \%-G%.%#
 
 let &cpo = s:cpo_save
