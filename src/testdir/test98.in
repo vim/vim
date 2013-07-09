@@ -1,0 +1,21 @@
+Test for 'scrollbind' causing an unexpected scroll of one of the windows.
+STARTTEST
+:so small.vim
+:source test98a.in
+:let topLineLeft = line('w0')
+:wincmd p
+:let topLineRight = line('w0')
+:setl noscrollbind
+:wincmd p
+:setl noscrollbind
+:q!
+:%del _
+:call setline(1, 'Difference between the top lines (left - right): ' . string(topLineLeft - topLineRight))
+:w! test.out
+:brewind
+ENDTEST
+
+STARTTEST
+:qa!
+ENDTEST
+
