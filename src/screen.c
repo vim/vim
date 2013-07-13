@@ -2997,6 +2997,14 @@ win_line(wp, lnum, startrow, endrow, nochange)
     int		vcol_off	= 0;	/* offset for concealed characters */
     int		did_wcol	= FALSE;
 # define VCOL_HLC (vcol - vcol_off)
+# define FIX_FOR_BOGUSCOLS \
+    { \
+	n_extra += vcol_off; \
+	vcol -= vcol_off; \
+	vcol_off = 0; \
+	col -= boguscols; \
+	boguscols = 0; \
+    }
 #else
 # define VCOL_HLC (vcol)
 #endif
@@ -4404,7 +4412,14 @@ win_line(wp, lnum, startrow, endrow, nochange)
 				1), (colnr_T)vcol, NULL) - 1;
 		    c_extra = ' ';
 		    if (vim_iswhite(c))
+		    {
+#ifdef FEAT_CONCEAL
+			if (c == TAB)
+			    /* See "Tab alignment" below. */
+			    FIX_FOR_BOGUSCOLS;
+#endif
 			c = ' ';
+		    }
 		}
 #endif
 
@@ -4453,11 +4468,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		     * and boguscols accumulated so far in the line. Note that
 		     * the tab can be longer than 'tabstop' when there
 		     * are concealed characters. */
-		    n_extra += vcol_off;
-		    vcol -= vcol_off;
-		    vcol_off = 0;
-		    col -= boguscols;
-		    boguscols = 0;
+		    FIX_FOR_BOGUSCOLS;
 #endif
 #ifdef FEAT_MBYTE
 		    mb_utf8 = FALSE;	/* don't draw as UTF-8 */

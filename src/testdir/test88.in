@@ -68,6 +68,9 @@ GGk
 GGk
 :normal $
 GGk
+:set lbr
+:normal $
+GGk
 :" Display result.
 :call append('$', 'end:')
 :call append('$', positions)
