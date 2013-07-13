@@ -51,7 +51,10 @@ STARTTEST
 :$put h
 :"
 :let cwd=getcwd()
-:cd ../..
+:cd ..
+:" Tests may be run from a shadow directory, so an extra cd needs to be done to
+:" get above src/
+:if fnamemodify(getcwd(), ':t') != 'src' | cd ../.. | else | cd .. | endif
 :$put =''
 :$put ='Testing findfile'
 :$put =''
