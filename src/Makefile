@@ -420,9 +420,9 @@ CClink = $(CC)
 # dlopen(), dlsym(), dlclose(), i.e. pythonX.Y.so must be available
 # However, this may still cause problems, such as "import termios" failing.
 # Build two separate versions of Vim in that case.
-CONF_OPT_PYTHON = --enable-pythoninterp
+#CONF_OPT_PYTHON = --enable-pythoninterp
 #CONF_OPT_PYTHON = --enable-pythoninterp=dynamic
-CONF_OPT_PYTHON3 = --enable-python3interp
+#CONF_OPT_PYTHON3 = --enable-python3interp
 #CONF_OPT_PYTHON3 = --enable-python3interp=dynamic
 
 # RUBY
@@ -499,7 +499,7 @@ CONF_OPT_PYTHON3 = --enable-python3interp
 #CONF_OPT_FEAT = --with-features=small
 #CONF_OPT_FEAT = --with-features=normal
 #CONF_OPT_FEAT = --with-features=big
-CONF_OPT_FEAT = --with-features=huge
+#CONF_OPT_FEAT = --with-features=huge
 
 # COMPILED BY - For including a specific e-mail address for ":version".
 #CONF_OPT_COMPBY = "--with-compiledby=John Doe <JohnDoe@yahoo.com>"
@@ -567,7 +567,7 @@ CONF_OPT_FEAT = --with-features=huge
 #CFLAGS = -g -O2 '-DSTARTUPTIME="vimstartup"' -fno-strength-reduce -Wall -Wmissing-prototypes
 
 # Use this with GCC to check for mistakes, unused arguments, etc.
-CFLAGS = -g -Wall -Wextra -Wmissing-prototypes -Wunreachable-code -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+#CFLAGS = -g -Wall -Wextra -Wmissing-prototypes -Wunreachable-code -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
 #CFLAGS = -g -O2 -Wall -Wextra -Wmissing-prototypes -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1 -DU_DEBUG
 #PYTHON_CFLAGS_EXTRA = -Wno-missing-field-initializers
 #MZSCHEME_CFLAGS_EXTRA = -Wno-unreachable-code -Wno-unused-parameter
@@ -613,7 +613,7 @@ LINT_OPTIONS = -beprxzF
 # Configuration is in the .ccmalloc or ~/.ccmalloc file.
 # Doesn't work very well, since memory linked to from global variables
 # (in libraries) is also marked as leaked memory.
-LEAK_CFLAGS = -DEXITFREE
+#LEAK_CFLAGS = -DEXITFREE
 #LEAK_LIBS = -lccmalloc
 
 #####################################################
