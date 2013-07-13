@@ -3739,7 +3739,7 @@ match_follows(startstate, depth)
     if (depth > 10)
 	return FALSE;
 
-    for (;;)
+    while (state != NULL)
     {
 	switch (state->c)
 	{
@@ -3765,7 +3765,7 @@ match_follows(startstate, depth)
 	    case NFA_COMPOSING:
 		/* skip ahead to next state */
 		state = state->out1->out;
-		break;
+		continue;
 
 	    case NFA_ANY:
 	    case NFA_IDENT:

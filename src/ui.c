@@ -1467,8 +1467,9 @@ clip_gen_owner_exists(cbd)
     else
 # endif
 	return clip_x11_owner_exists(cbd);
-#endif
+#else
     return TRUE;
+#endif
 }
 
 #endif /* FEAT_CLIPBOARD */
