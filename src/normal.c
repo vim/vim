@@ -4545,7 +4545,7 @@ nv_screengo(oap, dir, dist)
     int		width2;		/* test width for wrapped screen line */
 
     oap->motion_type = MCHAR;
-    oap->inclusive = FALSE;
+    oap->inclusive = (curwin->w_curswant == MAXCOL);
 
     col_off1 = curwin_col_off();
     col_off2 = col_off1 - curwin_col_off2();
