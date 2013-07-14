@@ -1516,7 +1516,6 @@ collection:
 		    EMIT('-');
 		    EMIT(NFA_CONCAT);
 		}
-		mb_ptr_adv(regparse);
 
 		/* skip the trailing ] */
 		regparse = endp;
@@ -4582,7 +4581,7 @@ recursive_regmatch(state, pim, prog, submatch, m, listids)
 
 	/* Go back the specified number of bytes, or as far as the
 	 * start of the previous line, to try matching "\@<=" or
-	 * not matching "\@<!". This is very ineffecient, limit the number of
+	 * not matching "\@<!". This is very inefficient, limit the number of
 	 * bytes if possible. */
 	if (state->val <= 0)
 	{
