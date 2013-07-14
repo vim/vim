@@ -1503,14 +1503,13 @@ gui_mch_init()
     if (XGetIconSizes(XtDisplay(vimShell), root_window,
 						   &size, &number_sizes) != 0)
     {
-
 	if (number_sizes > 0)
 	{
-	    if (size->max_height >= 48 && size->max_height >= 48)
+	    if (size->max_height >= 48 && size->max_width >= 48)
 		magick = vim48x48;
-	    else if (size->max_height >= 32 && size->max_height >= 32)
+	    else if (size->max_height >= 32 && size->max_width >= 32)
 		magick = vim32x32;
-	    else if (size->max_height >= 16 && size->max_height >= 16)
+	    else if (size->max_height >= 16 && size->max_width >= 16)
 		magick = vim16x16;
 	}
     }
