@@ -24,4 +24,5 @@ setl scb
 
 wincmd p
 
-call feedkeys(":setl scb\n\<C-w>\<C-w>", 't')
+setl scb
+wincmd w
