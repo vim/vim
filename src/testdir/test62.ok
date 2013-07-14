@@ -31,8 +31,8 @@ TabEnter
 BufLeave
 BufEnter
 a b c
-=== call map(range(1, tabpagenr('$')), 'settabvar(v:val, ===
-a b c
+=== call map(range(1, tabpagenr('$')), 'settabvar(v:val, ''a'', v:val*2)') ===
+2 4 6
 === vsplit ===
 WinLeave
 WinEnter
@@ -44,8 +44,8 @@ WinEnter
 TabEnter
 BufEnter
 a a
-=== call map(copy(winr), 'settabwinvar('.tabn.', v:val, ===
-a a
+=== call map(copy(winr), 'settabwinvar('.tabn.', v:val, ''a'', v:val*2)') ===
+2 4
 === tabnext 3 ===
 BufLeave
 WinLeave
