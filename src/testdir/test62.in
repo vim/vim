@@ -36,7 +36,7 @@ STARTTEST
 :call settabvar(2, 'val_list', ['red', 'blue', 'green'])
 :"
 :let test_status = 'gettabvar: fail'
-:if gettabvar(2, 'val_num') == 100 && gettabvar(2, 'val_str') == 'SetTabVar test') && gettabvar(2, 'val_list') == ['red', 'blue', 'green']
+:if gettabvar(2, 'val_num') == 100 && gettabvar(2, 'val_str') == 'SetTabVar test' && gettabvar(2, 'val_list') == ['red', 'blue', 'green']
 :    let test_status = 'gettabvar: pass'
 :endif
 :call append(line('$'), test_status)
