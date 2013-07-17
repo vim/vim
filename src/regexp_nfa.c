@@ -4060,9 +4060,13 @@ skip_add:
 		sub = &subs->norm;
 	    }
 
+	    /* avoid compiler warnings */
+	    save_ptr = NULL;
+	    save_lpos.lnum = 0;
+	    save_lpos.col = 0;
+
 	    /* Set the position (with "off" added) in the subexpression.  Save
 	     * and restore it when it was in use.  Otherwise fill any gap. */
-	    save_ptr = NULL;
 	    if (REG_MULTI)
 	    {
 		if (subidx < sub->in_use)
@@ -4192,11 +4196,16 @@ skip_add:
 		    sub->list.multi[subidx].end.col =
 					  (colnr_T)(reginput - regline + off);
 		}
+		/* avoid compiler warnings */
+		save_ptr = NULL;
 	    }
 	    else
 	    {
 		save_ptr = sub->list.line[subidx].end;
 		sub->list.line[subidx].end = reginput + off;
+		/* avoid compiler warnings */
+		save_lpos.lnum = 0;
+		save_lpos.col = 0;
 	    }
 
 	    subs = addstate(l, state->out, subs, pim, off);

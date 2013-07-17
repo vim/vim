@@ -4509,7 +4509,7 @@ current_search(count, forward)
     int		result;		/* result of various function calls */
     char_u	old_p_ws = p_ws;
     int		flags = 0;
-    pos_T	save_VIsual;
+    pos_T	save_VIsual = VIsual;
     int		one_char;
 
     /* wrapping should not occur */
@@ -4522,7 +4522,6 @@ current_search(count, forward)
     if (VIsual_active)
     {
 	orig_pos = curwin->w_cursor;
-	save_VIsual = VIsual;
 
 	pos = curwin->w_cursor;
 	start_pos = VIsual;
