@@ -7,6 +7,10 @@ STARTTEST
 :set enc=latin1
 :e!
 :"
+:" Check using z= in new buffer (crash fixed by patch 7.4a.028).
+:set maxmem=512 spell
+iasdz=:"
+:"
 :" Function to test .aff/.dic with list of good and bad words.
 :func TestOne(aff, dic)
   set spellfile=
