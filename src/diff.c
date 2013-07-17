@@ -1235,10 +1235,19 @@ ex_diffoff(eap)
 	    curbuf = curwin->w_buffer;
 	    if (wp->w_p_fdc == diff_foldcolumn)
 		wp->w_p_fdc = wp->w_p_diff_saved ? wp->w_p_fdc_save : 0;
-	    if (wp->w_p_fen)
-		wp->w_p_fen = wp->w_p_diff_saved ? wp->w_p_fen_save : FALSE;
 	    if (wp->w_p_fdl == 0 && wp->w_p_diff_saved)
 		wp->w_p_fdl = wp->w_p_fdl_save;
+
+	    if (wp->w_p_fen)
+	    {
+		/* Only restore 'foldenable' when 'foldmethod' is not
+		 * "manual", otherwise we continue to show the diff folds. */
+		if (foldmethodIsManual(wp) || !wp->w_p_diff_saved)
+		    wp->w_p_fen = FALSE;
+		else
+		    wp->w_p_fen = wp->w_p_fen_save;
+	    }
+
 	    foldUpdateAll(wp);
 	    /* make sure topline is not halfway a fold */
 	    changed_window_setting_win(wp);
