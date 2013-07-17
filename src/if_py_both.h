@@ -3997,30 +3997,43 @@ SetBufferLineList(
     static int
 InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 {
+    buf_T	*save_curbuf = NULL;
+    win_T	*wp;
+    win_T	*save_curwin = NULL;
+    tabpage_T	*tp;
+    tabpage_T	*save_curtab = NULL;
+
     /* First of all, we check the type of the supplied Python object.
      * It must be a string or a list, or the call is in error.
      */
     if (PyBytes_Check(lines) || PyUnicode_Check(lines))
     {
-	char	*str = StringToLine(lines);
-	buf_T	*savebuf;
+	char		*str = StringToLine(lines);
 
 	if (str == NULL)
 	    return FAIL;
 
 	PyErr_Clear();
 	VimTryStart();
-	switch_buffer(&savebuf, buf);
+	if (find_win_for_buf(buf, &wp, &tp) == FAIL
+		|| switch_win(&save_curwin, &save_curtab, wp, tp, TRUE)
+								      == FAIL)
+	    switch_buffer(&save_curbuf, buf);
 
-	if (u_save((linenr_T)n, (linenr_T)(n+1)) == FAIL)
+	if (u_save((linenr_T)n, (linenr_T)(n + 1)) == FAIL)
 	    RAISE_UNDO_FAIL;
 	else if (ml_append((linenr_T)n, (char_u *)str, 0, FALSE) == FAIL)
 	    RAISE_INSERT_LINE_FAIL;
-	else
+	else if (save_curbuf == NULL)
+	    /* Only adjust marks if we managed to switch to a window that
+	     * holds the buffer, otherwise line numbers will be invalid. */
 	    appended_lines_mark((linenr_T)n, 1L);
 
 	vim_free(str);
-	restore_buffer(savebuf);
+	if (save_curbuf == NULL)
+	    restore_win(save_curwin, save_curtab, TRUE);
+	else
+	    restore_buffer(save_curbuf);
 	update_screen(VALID);
 
 	if (VimTryEnd())
@@ -4036,7 +4049,6 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	PyInt	i;
 	PyInt	size = PyList_Size(lines);
 	char	**array;
-	buf_T	*savebuf;
 
 	array = PyMem_New(char *, size);
 	if (array == NULL)
@@ -4061,7 +4073,10 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 
 	PyErr_Clear();
 	VimTryStart();
-	switch_buffer(&savebuf, buf);
+	if (find_win_for_buf(buf, &wp, &tp) == FAIL
+		|| switch_win(&save_curwin, &save_curtab, wp, tp, TRUE)
+								      == FAIL)
+	    switch_buffer(&save_curbuf, buf);
 
 	if (u_save((linenr_T)n, (linenr_T)(n + 1)) == FAIL)
 	    RAISE_UNDO_FAIL;
@@ -4087,11 +4102,13 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	}
 
 	/* Free the array of lines. All of its contents have now
-	 * been freed.
-	 */
+	 * been freed. */
 	PyMem_Free(array);
 
-	restore_buffer(savebuf);
+	if (save_curbuf == NULL)
+	    restore_win(save_curwin, save_curtab, TRUE);
+	else
+	    restore_buffer(save_curbuf);
 	update_screen(VALID);
 
 	if (VimTryEnd())
