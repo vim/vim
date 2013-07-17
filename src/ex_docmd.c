@@ -8981,6 +8981,9 @@ ex_redraw(eap)
     msg_didout = FALSE;
     msg_col = 0;
 
+    /* No need to wait after an intentional redraw. */
+    need_wait_return = FALSE;
+
     out_flush();
 }
 
