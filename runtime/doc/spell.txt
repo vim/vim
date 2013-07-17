@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.4a.  Last change: 2013 Jun 26
+*spell.txt*	For Vim version 7.4a.  Last change: 2013 Jul 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1133,7 +1133,7 @@ WORDS WITH A SLASH					*spell-SLASH*
 
 The slash is used in the .dic file to separate the basic word from the affix
 letters and other flags.  Unfortunately, this means you cannot use a slash in
-a word.  Thus "TCP/IP" is not a word but "TCP with the flags "IP".  To include
+a word.  Thus "TCP/IP" is not a word but "TCP" with the flags "IP".  To include
 a slash in the word put a backslash before it: "TCP\/IP".  In the rare case
 you want to use a backslash inside a word you need to use two backslashes.
 Any other use of the backslash is reserved for future expansion.
@@ -1382,7 +1382,7 @@ Only case-folded letters need to be included.
 
 Another way to restrict compounding was mentioned above: Adding the
 |spell-COMPOUNDFORBIDFLAG| flag to an affix causes all words that are made
-with that affix not be be used for compounding.
+with that affix to not be used for compounding.
 
 
 UNLIMITED COMPOUNDING					*spell-NOBREAK*

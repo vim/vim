@@ -2124,6 +2124,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :doautoa	autocmd.txt	/*:doautoa*
 :doautoall	autocmd.txt	/*:doautoall*
 :doautocmd	autocmd.txt	/*:doautocmd*
+:dp	change.txt	/*:dp*
 :dr	windows.txt	/*:dr*
 :drop	windows.txt	/*:drop*
 :ds	tagsrch.txt	/*:ds*
@@ -4850,6 +4851,7 @@ beos-timeout	os_beos.txt	/*beos-timeout*
 beos-unicode	os_beos.txt	/*beos-unicode*
 beos-utf8	os_beos.txt	/*beos-utf8*
 beos-vimdir	os_beos.txt	/*beos-vimdir*
+better-python-interface	version7.txt	/*better-python-interface*
 beval_bufnr-variable	eval.txt	/*beval_bufnr-variable*
 beval_col-variable	eval.txt	/*beval_col-variable*
 beval_lnum-variable	eval.txt	/*beval_lnum-variable*
@@ -7382,6 +7384,7 @@ py3eval()	eval.txt	/*py3eval()*
 pyeval()	eval.txt	/*pyeval()*
 python	if_pyth.txt	/*python*
 python-.locked	if_pyth.txt	/*python-.locked*
+python-2-and-3	if_pyth.txt	/*python-2-and-3*
 python-Dictionary	if_pyth.txt	/*python-Dictionary*
 python-Function	if_pyth.txt	/*python-Function*
 python-List	if_pyth.txt	/*python-List*

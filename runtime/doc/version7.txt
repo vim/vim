@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.4a.  Last change: 2013 Jul 07
+*version7.txt*  For Vim version 7.4a.  Last change: 2013 Jul 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -70,6 +70,7 @@ Fixed					|fixed-7.3|
 
 VERSION 7.4			|version-7.4|
 New regexp engine			|new-regexp-engine|
+Better Python interface			|better-python-interface|
 Changed					|changed-7.4|
 Added					|added-7.4|
 Fixed					|fixed-7.4|
@@ -10163,6 +10164,9 @@ This section is about improvements made between version 7.3 and 7.4.
 This release has hundreds of bug fixes and there are a few new features.  The
 most notable new features are:
 
+- New regexp engine			|new-regexp-engine|
+- A more pythonic Python interface	|better-python-interface|
+
 
 New regexp engine					*new-regexp-engine*
 -----------------
@@ -10183,14 +10187,168 @@ is now working fine.  Previously Vim could get stuck.
 More information here: |two-engines|
 
 
+Better Python interface				*better-python-interface*
+-----------------------
+
+Added |python-bindeval| function. Unlike |python-eval| this one returns 
+|python-Dictionary|, |python-List| and |python-Function| objects for 
+dictionaries lists and functions respectively in place of their python 
+built-in equivalents (or None if we are talking about function references).
+   For simple types this function returns python built-in types and not only 
+python `str()` like |python-eval| does. On python 3 it will return `bytes()` 
+objects in place of `str()` ones avoiding possibility of UnicodeDecodeError.
+   Interface of new objects mimics standard python `dict()` and `list()`
+interfaces to some extent. Extent will be improved in the future.
+
+Added special |python-vars| objects also available for |python-buffer| and 
+|python-window|. They ease access to VimL variables from python.
+
+Now you no longer need to alter `sys.path` to import your module: special 
+hooks are responsible for importing from {rtp}/python2, {rtp}/python3 and 
+{rtp}/pythonx directories (for python 2, python 3 and both respectively). 
+See |python-special-path|.
+
+Added possibility to work with |tabpage|s through |python-tabpage| object.
+
+Added automatic conversion of vim errors and exceptions to python 
+exceptions.
+
+Changed the behavior of |python-buffers| object: it now uses buffer numbers 
+as keys in place of the index of the buffer in the internal buffer list. 
+This should not break anything as the only way to get this index was 
+iterating over |python-buffers|.
+
+Added |:pydo| and |:py3do| commands.
+
+Added |pyeval()| and |py3eval()| functions.
+
+Now in all places which previously accepted `str()` objects in both python 
+version both `str()` and `unicode()` (python 2) or `bytes()` and `str()` 
+(python 3) are accepted.
+
+|python-window| has gained `.col` and `.row` attributes that are currently 
+the only way to get internal window positions.
+
+Added or fixed support for `dir()` in vim python objects.
+
+Old python versions (≤2.2) are no longer supported. Building with them did 
+not work anyway.
+
+
 Changed							*changed-7.4*
 -------
 
-Todo.
+Functions:
+	Added ability to use |Dictionary-function|s for |sort()|ing, via 
+	optional third argument. (Nikolay Pavlov)
 
+	Added special |expand()| argument that expands to the current line 
+	number.
+
+	Made it possible to force |char2nr()| always give unicode codepoints 
+	regardless of current encoding. (Yasuhiro Matsumoto)
+
+	Made it possible for functions generating file list generate |List| 
+	and not NL-separated string. (e.g. |glob()|, |expand()|) (Christian 
+	Brabandt)
+
+	Functions that obtain variables from the specific window, tabpage or 
+	buffer scope dictionary can now return specified default value in 
+	place of empty string in case variable is not found. (|gettabvar()|, 
+	|getwinvar()|, |getbufvar()|) (Shougo Matsushita, Hirohito Higashi)
+
+Options:
+	Added ability to automatically save selection into the system 
+	clipboard when using non-GUI version of vim (autoselectplus in 
+	'clipboard'). Also added ability to use system clipboard as default 
+	register (previously only primary selection could be used). (Ivan 
+	Krasilnikov, Christian Brabandt, Bram Moolenaar)
+
+	Added special 'shiftwidth' value that makes 'sw' follow 'tabstop'. As 
+	indenting via 'indentexpr' became tricky |shiftwidth()| function was 
+	added. Also added equivalent special value to 'softtabstop' option. 
+	(Christian Brabandt, so8res)
+
+	Added ability to delete comment leader when using |J| by `j` flag in 
+	'formatoptions' (|fo-table|). (Lech Lorens)
+
+	Added ability to control indentation inside namespaces: |cino-N|. 
+	(Konstantin Lepa)
+
+	Added ability to control alignment inside `if` condition separately 
+	from alignment inside function arguments: |cino-k|. (Lech Lorens)
+
+	Added ability to show absolute number in number column when 
+	'relativenumber' option is on. (Christian Brabandt)
+
+Comands:
+	Made it possible to remove all signs from the current buffer using 
+	|:sign-unplace|. (Christian Brabandt)
+
+	Added |:language| autocompletion. (Dominique Pelle)
+
+	|:diffoff| now saves the local values of some settings and restores 
+	them in place of blindly resetting them to the defaults. (Christian 
+	Brabandt)
+
+	Added |:map-nowait| creating mapping which when having lhs that is the 
+	prefix of another mapping’s lhs will not allow vim to wait for user to 
+	type more characters to resolve ambiguity, forcing vim to take the 
+	shorter alternative: one with <nowait>.
+
+	Added more |:command-complete| completion types: |:behave| suboptions, 
+	color schemes, compilers, |:cscope| suboptions, files from 'path', 
+	|:history| suboptions, locale names, |:syntime| suboptions, user 
+	names. (Dominique Pelle)
+
+Other:
+	Improved support for cmd.exe. (Ben Fritz, Bram Moolenaar)
+
+	Added |v:windowid| variable containing current window number in GUI 
+	vim. (Christian J. Robinson, Lech Lorens)
+
+	Lua interface now also uses userdata binded to vim structures. (Taro 
+	Muraoka, Luis Carvalho)
+
+	Added rxvt-unicode and >xterm-277 mouse support. (Yiding Jia, Hayaki 
+	Saito)
 
 Added							*added-7.4*
 -----
+
+Added support for |Lists| and |Dictionaries| in |viminfo|. (Christian 
+Brabandt)
+
+Functions:
+	Bitwise functions: |and()|, |or()|, |invert()|, |xor()|.
+
+	Added |luaeval()| function. (Taro Muraoka, Luis Carvalho)
+
+	Added |sha256()| function. (Tyru, Hirohito Higashi)
+
+	Added |wildmenumode()| function. (Christian Brabandt)
+
+	Debugging functions: |screenattr()|, |screenchar()|, |screencol()|, 
+	|screenrow()|. (Simon Ruderich, Bram Moolenaar)
+
+Autocommands:
+	Added |InsertCharPre| event launched before inserting character. 
+	(Jakson A. Aquino)
+
+	Added |CompleteDone| event launched after finishing completion in 
+	insert mode. (idea by Florian Klein)
+
+	Added |QuitPre| event launched when commands that can either close vim 
+	or only some window(s) are launched.
+
+	Added |TextChanged| and |TextChangedI| events launched when text is 
+	changed.
+
+Commands:
+	|:syntime| command useful for debugging.
+
+Options:
+	Made it possible to ignore case when completing: 'wildignorecase'.
 
 Various syntax, indent and other plugins were added.
 
@@ -11730,7 +11888,7 @@ Solution:   Don't trigger CursorHold when there is typeahead.
 Files:	    src/fileio.c
 
 Patch 7.3.261
-Problem:    G++ error message errornously recognized as error.
+Problem:    G++ error message erroneously recognized as error.
 Solution:   Ignore "In file included from" line also when it ends in a colon.
 	    (Fernando Castillo)
 Files:	    src/option.h
@@ -13682,7 +13840,7 @@ Files:	    src/buffer.c, src/eval.c, src/proto/eval.pro, src/structs.h,
 Patch 7.3.604
 Problem:    inputdialog() doesn't use the cancel argument in the console.
 	    (David Fishburn)
-Solution:   Use the third argument. (Christian Brabant)
+Solution:   Use the third argument. (Christian Brabandt)
 Files:	    src/eval.c
 
 Patch 7.3.605 (after 7.3.577)
@@ -15523,7 +15681,7 @@ Patch 7.3.926
 Problem:    Autocommands are triggered by setwinvar() et al. Missing BufEnter
 	    on :tabclose. Duplicate WinEnter on :tabclose. Wrong order of
 	    events for :tablose and :tabnew.
-Solution:   Fix these autocommand events. (Zyx)
+Solution:   Fix these autocommand events. (ZyX)
 Files:	    runtime/doc/eval.txt, src/buffer.c, src/eval.c, src/ex_cmds2.c,
 	    src/fileio.c, src/proto/window.pro, src/testdir/test62.in,
 	    src/testdir/test62.ok, src/window.c

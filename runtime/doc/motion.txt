@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.4a.  Last change: 2013 Mar 07
+*motion.txt*    For Vim version 7.4a.  Last change: 2013 Jul 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -236,6 +236,8 @@ g$ or g<End>		When lines wrap ('wrap' on): To the last character of
 			the line is not on the screen or when a count is used.
 			Additionally, vertical movements keep the column,
 			instead of going to the end of the line.
+			When 'virtualedit' is enabled moves to the end of the
+			screen line.
 			{not in Vi}
 
 							*bar*
@@ -1083,7 +1085,8 @@ only once.
 
 When the |:keepjumps| command modifier is used, jumps are not stored in the
 jumplist.  Jumps are also not stored in other cases, e.g., in a |:global|
-command.  You can explicitly add a jump by setting the ' mark.
+command.  You can explicitly add a jump by setting the ' mark with "m'".  Note
+that calling setpos() does not do this.
 
 After the CTRL-O command that got you into line 1154 you could give another
 jump command (e.g., "G").  The jump list would then become:

@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.4a.  Last change: 2013 Jul 04
+*insert.txt*    For Vim version 7.4a.  Last change: 2013 Jul 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1359,7 +1359,7 @@ Complete:
 
 Completion works in separate JavaScript files (&ft==javascript), inside of
 <script> tag of (X)HTML and in values of event attributes (including scanning
-of external files.
+of external files).
 
 DOM compatibility
 
@@ -1515,8 +1515,7 @@ The basic form of this variable is: >
     let g:omni_syntax_group_include_{filetype} = 'regex,comma,separated'
 
 The PHP language has an enormous number of items which it knows how to syntax
-highlight.  These these items will be available within the omni completion
-list.  
+highlight.  These items will be available within the omni completion list.
 
 Some people may find this list unwieldy or are only interested in certain
 items.  There are two ways to prune this list (if necessary).  If you find

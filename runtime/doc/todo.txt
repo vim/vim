@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4a.  Last change: 2013 Jul 08
+*todo.txt*      For Vim version 7.4a.  Last change: 2013 Jul 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -33,6 +33,18 @@ not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Edit changed-7.4 text.
+
+Patch for this bug: (Ken Takata, 2013 Jul 17)
+8   Win32: When mouse is hidden and in the toolbar, moving it won't make it
+    appear. (Sami Salonen)
+
+This results in 'fileformat' set to "dos" instead of "unix". (Ingo Karkat,
+2013 Jul 16)
+    :set fileformats=dos,unix
+    :new ++ff=unix
+Also for ++bin and ++enc.
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
@@ -102,6 +114,9 @@ May 28: with options
 Patch to support 'u' in interactive substitute. (Christian Brabandt, 2012 Sep
 28)  With tests: Oct 9.
 
+Patch from Christian Brabandt to make the "buffer" argument for ":sign place"
+optional. (2013 Jul 12)
+
 Patch to allow setting w:quickfix_title via setqflist() and setloclist()
 functions. (Christian Brabandt, 2013 May 8, update May 21)
 Patch to add getlocstack() / setlocstack(). (Christian Brabandt, 2013 May 14)
@@ -118,9 +133,7 @@ Issue 54: document behavior of -complete, also expands arg.
     the two into a regex for searching. (Ned Konz)
 Patch by Christian Brabandt, 2013 Apr 20, unfinished.
 
-Bug: findfile("any", "http://;") returns http://any. (Andrew Pimlott, 2013 May
-7)  Not sure if that can be fixed, but when using "file://" it should be
-possible to check if the file exists.
+Bug: findfile("any", "file:///tmp;") does not work.
 
 v:register is not directly reset to " after a delete command that specifies a
 register.  It is reset after the next command. (Steve Vermeulen, 2013 Mar 16)
@@ -129,8 +142,6 @@ register.  It is reset after the next command. (Steve Vermeulen, 2013 Mar 16)
 
 Patch to set antialiasing style on Windows. (Ondrej Balaz, 2013 Mar 14)
 Needs a different check for CLEARTYPE_QUALITY.
-
-Issue 72: 'autochdir' causes problems for :vimgrep.
 
 In the ATTENTION message about an existing swap file, mention the name of the
 process that is running.  It might actually be some other program, e.g. after
@@ -169,9 +180,13 @@ b:undo_ftplugin cannot call a script-local function. (Boris Danilov, 2013 Jan
 Win32: The Python interface only works with one version of Python, selected at
 compile time.  Can this be made to work with version 2.1 and 2.2 dynamically?
 
+Python: Extended funcrefs: use func_T* structure in place of char_u* function
+names. (ZyX, 2013 Jul 15 and later)
+
 Python: Be able to define a Python function that can be called directly from
 Vim script.  Requires converting the arguments and return value, like with
 vim.bindeval().
+
 
 Patch for :tabcloseleft, after closing a tab go to left tab. (William Bowers,
 2012 Aug 4)
@@ -191,6 +206,17 @@ Szamotulski, 2012 Nov 8)
 
 Crash in autocmd that unloads buffers in a BufUnload event. (Andrew Pimlott,
 2012 Aug 11)  Disallow :new when BufUnload is being handled?
+
+Issue 72: 'autochdir' causes problems for :vimgrep.
+
+'autochdir' causes problems for setbufvar(). (Ben Fritz, 2013 Jul 16)
+
+Session file creation: 'autochdir' causes trouble.  Keep it off until after
+loading all files.
+
+Win32: When 'autochdir' is on and 'encoding' is changed, files on the command
+line are opened again, but from the wrong directory.  Apply 'autochdir' only
+after starting up?
 
 Patch to add ":ldo" and ":cdo", execute commands over quickfix list and
 location list. (Yegappan Lakshmanan, 2013 Jun 2)
@@ -217,6 +243,7 @@ Also question if examples are correct.
 
 It should be possible to make globpath() return a list instead of a string,
 like with glob(). (Greg Novack, 2012 Nov 2)
+Patch by Adnan Zafar, 2013 Jul 15.
 
 The input map for CTRL-O in mswin.vim causes problems after CTRL-X CTRL-O.
 Suggestion for another map. (Philip Mat, 2012 Jun 18)
@@ -271,8 +298,6 @@ Should use has("browsefilter") in ftplugins.  Requires patch 7.3.593.
 
 Update for vim2html.pl. (Tyru, 2013 Feb 22)
 
-Issue 48: foldopen error can't be caught by try/catch
-
 Patch to sort functions starting with '<' after others.  Omit dict functions,
 they can't be called. (Yasuhiro Matsumoto, 2011 Oct 11)
 
@@ -280,6 +305,9 @@ Patch to pass list to or(), and() and xor(). (Yasuhiro Matsumoto, 2012 Feb 8)
 
 Patch to improve "it" and "at" text object matching. (Christian Brabandt, 2011
 Nov 20)
+
+Windows 7 confirm() dialog can be taller than the screen. (David Fishburn,
+2013 Jul 9)  Does not count the height of the buttons?
 
 Patch to improve GUI find/replace dialog. (Christian Brabandt, 2012 May 26)
 Update Jun 2.
@@ -330,9 +358,6 @@ Sep 17)  Asked for feedback from others.
 Win32: Cannot cd into a directory that starts with a space. (Andy Wokula, 2012
 Jan 19)
 
-Win32: default for 'backupcopy' is wrong for a symbolic link. (mklink one
-two). (Benjamin Fritz, 2012 Mar 15)
-
 Need to escape $HOME on Windows?  (ZyX, 2011 Jul 21, discussion 2013 Jul 4)
 Can't simply use a backslash, \$HOME has a different meaning already.
 Would be possible to use $$HOME where $HOME is to be used.
@@ -342,26 +367,8 @@ Oct 26)
 
 Bug in repeating Visual "u". (Lawrence Kesteloot, 2010 Dec 20)
 
-Using "p" in Visual mode while specifying the small delete register "-
-overwrites the register before it is put. (Marcin Szamotulski, 2012 Nov 23)
-
 With "unamedplus" in 'clipboard' pasting in Visual mode causes error for empty
 register. (Michael Seiwald, 2011 Jun 28)  I can't reproduce it.
-
-In GTK Gvim, setting 'lines' and 'columns' to 99999 causes a crash (Tony
-Mechelynck, 2011 Apr 25).  Can reproduce the crash sometimes:
-   gvim -N -u NONE --cmd 'set lines=99999 columns=99999'
-(gvim:25968): Gdk-WARNING **: Native Windows wider or taller than 65535 pixels are not supported
-The program 'gvim' received an X Window System error.
-This probably reflects a bug in the program.
-The error was 'RenderBadPicture (invalid Picture parameter)'.
-  (Details: serial 313 error_code 161 request_code 149 minor_code 8)
-  (Note to programmers: normally, X errors are reported asynchronously;
-   that is, you will receive the error a while after causing it.
-   To debug your program, run it with the --sync command line
-   option to change this behavior. You can then get a meaningful
-   backtrace from your debugger if you break on the gdk_x_error() function.)
-Check that number of pixels doesn't go above 65535?
 
 Windows keys not set properly on Windows 7?  (cncyber, 2010 Aug 26)
 
@@ -409,6 +416,9 @@ Make 'formatprg' global-local. (Sung Pae)
 
 When doing "redir => s:foo" in a script and then "redir END" somewhere else
 (e.g. in a function) it can't find s:foo.
+When a script contains "redir => s:foo" but doesn't end redirection, a
+following "redir" command gives an error for not being able to access s:foo.
+(ZyX, 2011 Mar 27)
 
 When setqflist() uses a filename that triggers a BufReadCmd autocommand Vim
 doesn't jump to the correct line with :cfirst. (ZyX,  2011 Sep 18)
@@ -441,10 +451,6 @@ May 24)  Update May 26.
 
 Patch for :tabrecently. (Hirokazu Yoshida, 2012 Jan 30)
 
-When a script contains "redir => s:foo" but doesn't end redirection, a
-following "redir" command gives an error for not being able to access s:foo.
-(ZyX, 2011 Mar 27)
-
 Problem with "syn sync gouphere". (Gustavo Niemeyer, 2011 Jan 27)
 
 Loading autoload script even when usage is inside "if 0". (Christian Brabandt,
@@ -470,9 +476,6 @@ Update by Ben Fritz, with fix for TOhtml. (2011 Jul 30)
 9   Add %F to 'errorformat': file name without spaces.  Useful on Unix to
     avoid matching something up to a time 11:22:33.
 Patch by Christian Brabandt, 2011 Jul 27.
-
-Patch to fix \%V item in regexp. (Christian Brabandt, 2010 Nov 8)
-Update Nov 19.  James Vega: still not right.  Christian: it's difficult.
 
 Patch to add up to 99 match groups. (Christian Brabandt, 2010 Dec 22)
 Also add named groups: \%{name}(re)  and \%{name}g
@@ -506,14 +509,6 @@ New esperanto spell file can't be processed. (Dominique Pelle, 2011 Jan 30)
 "L'Italie" noted as a spell error at start of the sentence. (Dominique Pelle,
 2011 Feb 27)
 
-Copy/paste between Vim and Google chrome doesn't work well for multi-byte
-characters. (Ben Haskell, 2010 Sep 17)
-When putting text in the cut buffer (when exiting) and conversion doesn't work
-properly, Prepend "ENC==={value of 'enc'}:" to the text and don't convert?
-Then it should at least work from Vim to Vim and in other applications it's
-clear why it doesn't work.
-Experimental patch by Christian Brabandt, 2012 Apr 19.
-
 Editing a file with a ^M with 'ff' set to "mac", opening a help file, then the
 ^M is displayed as ^J sometimes.  Getting 'ff' value from wrong window/buffer?
 
@@ -529,6 +524,9 @@ the command line. (Ingo Karkat, 2011 Jan 25)
 
 Since patch 7.2.46 Yankring plugin has become very slow, eventually make Vim
 crash? (Raiwil, 2010 Nov 17)
+
+Patch to add FoldedLineNr highlighting: different highlighting for the line
+number of a closed fold. (eXerigumo Clanjor, 2013 Jul 15)
 
 Does not work with NFA regexp engine:
 - \%u, \%x, \%o, \%d followed by a composing character
@@ -593,10 +591,6 @@ Messages in message.txt are highlighted as examples.
 When using cp850 the NBSP (0xff) is not drawn correctly. (Brett Stahlman, 2010
 Oct 22)  'isprint' is set to "@,161-255".
 
-Test 73 fails on MS-Windows when compiled with DJGPP and run twice.  How to
-delete the Xfind directory?  Add an rmdir() function, just like we have
-mkdir().
-
 ":echo "\x85" =~# '[\u0085]'" returns 1 instead of 0. (ZyX, 2010 Oct 3)
 
 'cindent' not correct when 'list' is set. (Zdravi Korusef, 2010 Apr 15)
@@ -618,10 +612,6 @@ accented character. (Tony Mechelynck, 2010 Apr 15)
 
 Don't call check_restricted() for histadd(), setbufvar(), settabvar(),
 setwinvar().
-
-Echo starts in the wrong column:
-    while 1 | let s = input('A') | echo 'R' | endw
-(Boyko Bantchev, 2010 Aug 9)
 
 Patch for GVimExt to show an icon. (Dominik Riebeling, 2010 Nov 7)
 
@@ -821,9 +811,6 @@ Add "no_hlsearch" to winsaveview().
 Cursorline highlighting combines with Search ('hlsearch') but not with
 SpellBad. (Jim Karsten, 2009 Mar 18)
 
-When 'foldmethod' is "indent", using >> on a line just above a fold makes the
-cursor line folded. (Evan Laforge, 2009 Oct 17)
-
 When 'foldmethod' is "indent", adding an empty line below a fold and then
 indented text, creates a new fold instead of joining it with the previous one.
 (Evan Laforge, 2009 Oct 17)
@@ -851,8 +838,6 @@ Diff mode out of sync. (Gary Johnson, 2010 Aug 4)
 Support a 'systemencoding' option (for Unix).  It specifies the encoding of
 file names. (Kikuchan, 2010 Oct 5).  Useful on a latin1 or double-byte Asian
 system when 'encoding' is "utf-8".
-
-Win32 GUI: Changing manifest helps for dpi changes (Joe Castro, 2009 Mar 27)
 
 Win32 GUI: last message from startup doesn't show up when there is an echoerr
 command. (Cyril Slobin, 2009 Mar 13)
@@ -993,9 +978,6 @@ argument is processed for <f-args>. (Ivan Tishchenko, 2008 Aug 19)
 
 Win32: associating a type with Vim doesn't take care of space after a
 backslash? (Robert Vibrant, 2008 Jun 5)
-
-Win32: bold font doesn't work when 'guifontwide' has been set. (Yue Wu, 2010
-Aug 23)
 
 When 'rightleft' is set, cursorcolumn isn't highlighted after the end of a
 line.  It's also wrong in folds. (Dominique Pelle, 2010 Aug 21)
@@ -1293,10 +1275,6 @@ patches by Mathias, see mail Feb 22)
 Win32: compiling with normal features and OLE fails.  Patch by Mathias
 Michaelis, 2006 Jun 4.
 
-Win32: echo doesn't work for gvim.exe.mnf.  Use inline file.  Patch by Mathias
-Michaelis.  http://groups.yahoo.com/group/vimdev/message/43765
-Patch that includes this and does more by George Reilly, 2007 Feb 12
-
 Win16: include patches to make Win16 version work. (Vince Negri, 2006 May 22)
 
 Win32: after "[I" showing matches, scroll wheel messes up screen. (Tsakiridis,
@@ -1445,13 +1423,6 @@ that char is single width when it's set (compare with 'listchars').
 
 The generated vim.bat can avoid the loop for NT. (Carl Zmola, 2006 Sep 3)
 
-Session file creation: 'autochdir' causes trouble.  Keep it off until after
-loading all files.
-
-Win32: When 'autochdir' is on and 'encoding' is changed, files on the command
-line are opened again, but from the wrong directory.  Apply 'autochdir' only
-after starting up?
-
 When showing a diff between a non-existent file and an existing one, with the
 cursor in the empty buffer, the other buffer only shows the last line.  Change
 the "insert" into a change from one line to many? (Yakov Lerner, 2008 May 27)
@@ -1544,8 +1515,6 @@ After starting Vim, using '0 to jump somewhere in a file, ":sp" doesn't center
 the cursor line.  It works OK after some other commands.
 
 Win32: Is it possible to have both postscript and Win32 printing?
-Does multi-byte printing with ":hardcopy" work?  Add remark in documentation
-about this.
 
 Check: Running Vim in a console and still having connect to the X server for
 copy/paste: is stopping the X server handled gracefully?  Should catch the X
@@ -1932,8 +1901,6 @@ Win32 GUI known bugs:
     console, go back to Vim and click "reload" in the dialog for the changed
     file: Window moves with the cursor!
     Put focus event in input buffer and let generic Vim code handle it?
-8   Win32: When mouse is hidden and in the toolbar, moving it won't make it
-    appear. (Sami Salonen)
 8   Win32 GUI: With maximized window, ":set go-=r" doesn't use the space that
     comes available. (Poucet)  It works OK on Win 98 but doesn't work on Win
     NT 4.0.  Leaves a grey area where the scrollbar was.  ":set go+=r" also
@@ -3920,7 +3887,6 @@ Command line editing:
 
 
 Command line completion:
-8   Completing ":r ~br" should find matching user names.
 8   Change expand_interactively into a flag that is passed as an argument.
 8   With command line completion after '%' and '#', expand current/alternate
     file name, so it can be edited.  Also with modifiers, such as "%:h".

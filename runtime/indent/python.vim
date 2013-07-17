@@ -2,7 +2,7 @@
 " Language:		Python
 " Maintainer:		Bram Moolenaar <Bram@vim.org>
 " Original Author:	David Bustos <bustos@caltech.edu>
-" Last Change:		2013 Jun 21
+" Last Change:		2013 Jul 9
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -61,7 +61,7 @@ function GetPythonIndent(lnum)
   let parlnum = searchpair('(\|{\|\[', '', ')\|}\|\]', 'nbW',
 	  \ "line('.') < " . (plnum - s:maxoff) . " ? dummy :"
 	  \ . " synIDattr(synID(line('.'), col('.'), 1), 'name')"
-	  \ . " =~ '\\(Comment\\|String\\)$'")
+	  \ . " =~ '\\(Comment\\|Todo\\|String\\)$'")
   if parlnum > 0
     let plindent = indent(parlnum)
     let plnumstart = parlnum
@@ -80,14 +80,14 @@ function GetPythonIndent(lnum)
   let p = searchpair('(\|{\|\[', '', ')\|}\|\]', 'bW',
 	  \ "line('.') < " . (a:lnum - s:maxoff) . " ? dummy :"
 	  \ . " synIDattr(synID(line('.'), col('.'), 1), 'name')"
-	  \ . " =~ '\\(Comment\\|String\\)$'")
+	  \ . " =~ '\\(Comment\\|Todo\\|String\\)$'")
   if p > 0
     if p == plnum
       " When the start is inside parenthesis, only indent one 'shiftwidth'.
       let pp = searchpair('(\|{\|\[', '', ')\|}\|\]', 'bW',
 	  \ "line('.') < " . (a:lnum - s:maxoff) . " ? dummy :"
 	  \ . " synIDattr(synID(line('.'), col('.'), 1), 'name')"
-	  \ . " =~ '\\(Comment\\|String\\)$'")
+	  \ . " =~ '\\(Comment\\|Todo\\|String\\)$'")
       if pp > 0
 	return indent(plnum) + (exists("g:pyindent_nested_paren") ? eval(g:pyindent_nested_paren) : shiftwidth())
       endif
@@ -108,12 +108,12 @@ function GetPythonIndent(lnum)
     " If the last character in the line is a comment, do a binary search for
     " the start of the comment.  synID() is slow, a linear search would take
     " too long on a long line.
-    if synIDattr(synID(plnum, pline_len, 1), "name") =~ "Comment$"
+    if synIDattr(synID(plnum, pline_len, 1), "name") =~ "\\(Comment\\|Todo\\)$"
       let min = 1
       let max = pline_len
       while min < max
 	let col = (min + max) / 2
-	if synIDattr(synID(plnum, col, 1), "name") =~ "Comment$"
+	if synIDattr(synID(plnum, col, 1), "name") =~ "\\(Comment\\|Todo\\)$"
 	  let max = col
 	else
 	  let min = col + 1

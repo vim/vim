@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.4a.  Last change: 2013 Jun 28
+*if_pyth.txt*   For Vim version 7.4a.  Last change: 2013 Jul 10
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -23,6 +23,7 @@ The Python 2.x interface is available only when Vim was compiled with the
 |+python| feature.
 The Python 3 interface is available only when Vim was compiled with the
 |+python3| feature.
+Both can be available at the same time, but read |python-2-and-3|.
 
 ==============================================================================
 1. Commands						*python-commands*
@@ -711,7 +712,7 @@ Vim can be built in four ways (:version output):
 3. Python 3 support only    (-python, +python3 or +python3/dyn)
 4. Python 2 and 3 support   (+python/dyn, +python3/dyn)
 
-Some more details on the special case 4:
+Some more details on the special case 4:  *python-2-and-3*
 
 When Python 2 and Python 3 are both supported they must be loaded dynamically.
 
