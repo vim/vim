@@ -5014,13 +5014,90 @@ $as_echo "needed" >&6; }
 $as_echo "not needed" >&6; }
     fi
 
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ffi_type_void in -lffi" >&5
+$as_echo_n "checking for ffi_type_void in -lffi... " >&6; }
+if test "${ac_cv_lib_ffi_ffi_type_void+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lffi  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char ffi_type_void ();
+int
+main ()
+{
+return ffi_type_void ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_ffi_ffi_type_void=yes
+else
+  ac_cv_lib_ffi_ffi_type_void=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ffi_ffi_type_void" >&5
+$as_echo "$ac_cv_lib_ffi_ffi_type_void" >&6; }
+if test "x$ac_cv_lib_ffi_ffi_type_void" = x""yes; then :
+  MZSCHEME_LIBS="$MZSCHEME_LIBS -lffi"
+fi
+
+
     MZSCHEME_CFLAGS="${MZSCHEME_CFLAGS} -I${SCHEME_INC} \
       -DMZSCHEME_COLLECTS='\"${SCHEME_COLLECTS}collects\"'"
-    MZSCHEME_SRC="if_mzsch.c"
-    MZSCHEME_OBJ="objects/if_mzsch.o"
-    MZSCHEME_PRO="if_mzsch.pro"
-    $as_echo "#define FEAT_MZSCHEME 1" >>confdefs.h
 
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking if compile and link flags for MzScheme are sane" >&5
+$as_echo_n "checking if compile and link flags for MzScheme are sane... " >&6; }
+    cflags_save=$CFLAGS
+    libs_save=$LIBS
+    CFLAGS="$CFLAGS $MZSCHEME_CFLAGS"
+    LIBS="$LIBS $MZSCHEME_LIBS"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }; mzs_ok=yes
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no: MZSCHEME DISABLED" >&5
+$as_echo "no: MZSCHEME DISABLED" >&6; }; mzs_ok=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+    CFLAGS=$cflags_save
+    LIBS=$libs_save
+    if test $mzs_ok = yes; then
+      MZSCHEME_SRC="if_mzsch.c"
+      MZSCHEME_OBJ="objects/if_mzsch.o"
+      MZSCHEME_PRO="if_mzsch.pro"
+      $as_echo "#define FEAT_MZSCHEME 1" >>confdefs.h
+
+    else
+      MZSCHEME_CFLAGS=
+      MZSCHEME_LIBS=
+      MZSCHEME_EXTRA=
+      MZSCHEME_MZC=
+    fi
   fi
 
 

@@ -702,12 +702,34 @@ if test "$enable_mzschemeinterp" = "yes"; then
       AC_MSG_RESULT(not needed)
     fi
 
+    dnl On Ubuntu this fixes "undefined reference to symbol 'ffi_type_void'".
+    AC_CHECK_LIB(ffi, ffi_type_void, [MZSCHEME_LIBS="$MZSCHEME_LIBS -lffi"])
+
     MZSCHEME_CFLAGS="${MZSCHEME_CFLAGS} -I${SCHEME_INC} \
       -DMZSCHEME_COLLECTS='\"${SCHEME_COLLECTS}collects\"'"
-    MZSCHEME_SRC="if_mzsch.c"
-    MZSCHEME_OBJ="objects/if_mzsch.o"
-    MZSCHEME_PRO="if_mzsch.pro"
-    AC_DEFINE(FEAT_MZSCHEME)
+
+    dnl Test that we can compile a simple program with these CFLAGS and LIBS.
+    AC_MSG_CHECKING([if compile and link flags for MzScheme are sane])
+    cflags_save=$CFLAGS
+    libs_save=$LIBS
+    CFLAGS="$CFLAGS $MZSCHEME_CFLAGS"
+    LIBS="$LIBS $MZSCHEME_LIBS"
+    AC_TRY_LINK(,[ ],
+	   AC_MSG_RESULT(yes); mzs_ok=yes,
+	   AC_MSG_RESULT(no: MZSCHEME DISABLED); mzs_ok=no)
+    CFLAGS=$cflags_save
+    LIBS=$libs_save
+    if test $mzs_ok = yes; then
+      MZSCHEME_SRC="if_mzsch.c"
+      MZSCHEME_OBJ="objects/if_mzsch.o"
+      MZSCHEME_PRO="if_mzsch.pro"
+      AC_DEFINE(FEAT_MZSCHEME)
+    else
+      MZSCHEME_CFLAGS=
+      MZSCHEME_LIBS=
+      MZSCHEME_EXTRA=
+      MZSCHEME_MZC=
+    fi
   fi
   AC_SUBST(MZSCHEME_SRC)
   AC_SUBST(MZSCHEME_OBJ)
