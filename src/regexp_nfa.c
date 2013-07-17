@@ -3535,7 +3535,8 @@ static void copy_sub __ARGS((regsub_T *to, regsub_T *from));
 static void copy_sub_off __ARGS((regsub_T *to, regsub_T *from));
 static int sub_equal __ARGS((regsub_T *sub1, regsub_T *sub2));
 static int match_backref __ARGS((regsub_T *sub, int subidx, int *bytelen));
-static int has_state_with_pos __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs));
+static int has_state_with_pos __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs, nfa_pim_T *pim));
+static int pim_equal __ARGS((nfa_pim_T *one, nfa_pim_T *two));
 static int state_in_list __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs));
 static regsubs_T *addstate __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs_arg, nfa_pim_T *pim, int off));
 static void addstate_here __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs, nfa_pim_T *pim, int *ip));
@@ -3701,10 +3702,11 @@ report_state(char *action,
  * positions as "subs".
  */
     static int
-has_state_with_pos(l, state, subs)
+has_state_with_pos(l, state, subs, pim)
     nfa_list_T		*l;	/* runtime state list */
     nfa_state_T		*state;	/* state to update */
     regsubs_T		*subs;	/* pointers to subexpressions */
+    nfa_pim_T		*pim;	/* postponed match or NULL */
 {
     nfa_thread_T	*thread;
     int			i;
@@ -3718,10 +3720,35 @@ has_state_with_pos(l, state, subs)
 		&& (!nfa_has_zsubexpr
 				|| sub_equal(&thread->subs.synt, &subs->synt))
 #endif
-			      )
+		&& pim_equal(&thread->pim, pim))
 	    return TRUE;
     }
     return FALSE;
+}
+
+/*
+ * Return TRUE if "one" and "two" are equal.  That includes when both are not
+ * set.
+ */
+    static int
+pim_equal(one, two)
+    nfa_pim_T *one;
+    nfa_pim_T *two;
+{
+    int one_unused = (one == NULL || one->result == NFA_PIM_UNUSED);
+    int two_unused = (two == NULL || two->result == NFA_PIM_UNUSED);
+
+    if (one_unused)
+	/* one is unused: equal when two is also unused */
+	return two_unused;
+    if (two_unused)
+	/* one is used and two is not: not equal */
+	return FALSE;
+    /* compare the position */
+    if (REG_MULTI)
+	return one->end.pos.lnum == two->end.pos.lnum
+	    && one->end.pos.col == two->end.pos.col;
+    return one->end.ptr == two->end.ptr;
 }
 
 /*
@@ -3825,7 +3852,7 @@ state_in_list(l, state, subs)
 {
     if (state->lastlist[nfa_ll_index] == l->id)
     {
-	if (!nfa_has_backref || has_state_with_pos(l, state, subs))
+	if (!nfa_has_backref || has_state_with_pos(l, state, subs, NULL))
 	    return TRUE;
     }
     return FALSE;
@@ -3952,7 +3979,7 @@ skip_add:
 
 		/* Do not add the state again when it exists with the same
 		 * positions. */
-		if (has_state_with_pos(l, state, subs))
+		if (has_state_with_pos(l, state, subs, pim))
 		    goto skip_add;
 	    }
 
