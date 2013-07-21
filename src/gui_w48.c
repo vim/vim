@@ -177,10 +177,12 @@ static HBRUSH	s_brush = NULL;
 
 #ifdef FEAT_TOOLBAR
 static HWND		s_toolbarhwnd = NULL;
+static WNDPROC		s_toolbar_wndproc = NULL;
 #endif
 
 #ifdef FEAT_GUI_TABLINE
 static HWND		s_tabhwnd = NULL;
+static WNDPROC		s_tabline_wndproc = NULL;
 static int		showing_tabline = 0;
 #endif
 

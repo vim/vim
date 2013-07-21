@@ -344,11 +344,13 @@ static UINT msh_msgmousewheel = 0;
 static int	s_usenewlook;	    /* emulate W95/NT4 non-bold dialogs */
 #ifdef FEAT_TOOLBAR
 static void initialise_toolbar(void);
+static LRESULT CALLBACK toolbar_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 static int get_toolbar_bitmap(vimmenu_T *menu);
 #endif
 
 #ifdef FEAT_GUI_TABLINE
 static void initialise_tabline(void);
+static LRESULT CALLBACK tabline_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 #endif
 
 #ifdef FEAT_MBYTE_IME
@@ -4127,8 +4129,20 @@ initialise_toolbar(void)
 		    TOOLBAR_BUTTON_HEIGHT,
 		    sizeof(TBBUTTON)
 		    );
+    s_toolbar_wndproc = SubclassWindow(s_toolbarhwnd, toolbar_wndproc);
 
     gui_mch_show_toolbar(vim_strchr(p_go, GO_TOOLBAR) != NULL);
+}
+
+    static LRESULT CALLBACK
+toolbar_wndproc(
+    HWND hwnd,
+    UINT uMsg,
+    WPARAM wParam,
+    LPARAM lParam)
+{
+    HandleMouseHide(uMsg, lParam);
+    return CallWindowProc(s_toolbar_wndproc, hwnd, uMsg, wParam, lParam);
 }
 
     static int
@@ -4207,12 +4221,24 @@ initialise_tabline(void)
 	    WS_CHILD|TCS_FOCUSNEVER|TCS_TOOLTIPS,
 	    CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 	    CW_USEDEFAULT, s_hwnd, NULL, s_hinst, NULL);
+    s_tabline_wndproc = SubclassWindow(s_tabhwnd, tabline_wndproc);
 
     gui.tabline_height = TABLINE_HEIGHT;
 
 # ifdef USE_SYSMENU_FONT
     set_tabline_font();
 # endif
+}
+
+    static LRESULT CALLBACK
+tabline_wndproc(
+    HWND hwnd,
+    UINT uMsg,
+    WPARAM wParam,
+    LPARAM lParam)
+{
+    HandleMouseHide(uMsg, lParam);
+    return CallWindowProc(s_tabline_wndproc, hwnd, uMsg, wParam, lParam);
 }
 #endif
 
