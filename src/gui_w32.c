@@ -1694,8 +1694,10 @@ gui_mch_set_shellsize(int width, int height,
     }
 
     /* compute the size of the outside of the window */
-    win_width = width + GetSystemMetrics(SM_CXFRAME) * 2;
-    win_height = height + GetSystemMetrics(SM_CYFRAME) * 2
+    win_width = width + (GetSystemMetrics(SM_CXFRAME) +
+                         GetSystemMetrics(SM_CXPADDEDBORDER)) * 2;
+    win_height = height + (GetSystemMetrics(SM_CYFRAME) +
+                           GetSystemMetrics(SM_CXPADDEDBORDER)) * 2
 			+ GetSystemMetrics(SM_CYCAPTION)
 #ifdef FEAT_MENU
 			+ gui_mswin_get_menu_height(FALSE)
@@ -2546,13 +2548,15 @@ gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
     get_work_area(&workarea_rect);
 
     *screen_w = workarea_rect.right - workarea_rect.left
-		- GetSystemMetrics(SM_CXFRAME) * 2;
+		- (GetSystemMetrics(SM_CXFRAME) +
+                   GetSystemMetrics(SM_CXPADDEDBORDER)) * 2;
 
     /* FIXME: dirty trick: Because the gui_get_base_height() doesn't include
      * the menubar for MSwin, we subtract it from the screen height, so that
      * the window size can be made to fit on the screen. */
     *screen_h = workarea_rect.bottom - workarea_rect.top
-		- GetSystemMetrics(SM_CYFRAME) * 2
+		- (GetSystemMetrics(SM_CYFRAME) +
+                   GetSystemMetrics(SM_CXPADDEDBORDER)) * 2
 		- GetSystemMetrics(SM_CYCAPTION)
 #ifdef FEAT_MENU
 		- gui_mswin_get_menu_height(FALSE)
@@ -3182,12 +3186,14 @@ gui_mch_dialog(
 	/* Use our own window for the size, unless it's very small. */
 	GetWindowRect(s_hwnd, &rect);
 	maxDialogWidth = rect.right - rect.left
-					   - GetSystemMetrics(SM_CXFRAME) * 2;
+				   - (GetSystemMetrics(SM_CXFRAME) +
+                                      GetSystemMetrics(SM_CXPADDEDBORDER)) * 2;
 	if (maxDialogWidth < DLG_MIN_MAX_WIDTH)
 	    maxDialogWidth = DLG_MIN_MAX_WIDTH;
 
 	maxDialogHeight = rect.bottom - rect.top
-					   - GetSystemMetrics(SM_CXFRAME) * 2;
+				   - (GetSystemMetrics(SM_CXFRAME) +
+                                      GetSystemMetrics(SM_CXPADDEDBORDER)) * 2;
 	if (maxDialogHeight < DLG_MIN_MAX_HEIGHT)
 	    maxDialogHeight = DLG_MIN_MAX_HEIGHT;
     }
