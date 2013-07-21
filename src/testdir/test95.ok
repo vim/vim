@@ -17,6 +17,9 @@ OK 2 - [ม[:alpha:][=a=]]\+
 OK 0 - \p\+
 OK 1 - \p\+
 OK 2 - \p\+
+OK 0 - \p*
+OK 1 - \p*
+OK 2 - \p*
 OK 0 - \i\+
 OK 1 - \i\+
 OK 2 - \i\+
@@ -113,3 +116,7 @@ OK 2 - \Zֹ\+
 OK 0 - [^[=a=]]\+
 OK 1 - [^[=a=]]\+
 OK 2 - [^[=a=]]\+
+eng 1 ambi single: 0
+eng 1 ambi double: 0
+eng 2 ambi single: 0
+eng 2 ambi double: 0

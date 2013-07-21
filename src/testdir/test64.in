@@ -228,6 +228,7 @@ STARTTEST
 :call add(tl, [2, '\v((ab)|c*)+', 'abcccaba', 'abcccab', '', 'ab'])
 :call add(tl, [2, '\v(a(c*)+b)+', 'acbababaaa', 'acbabab', 'ab', ''])
 :call add(tl, [2, '\v(a|b*)+', 'aaaa', 'aaaa', ''])
+:call add(tl, [2, '\p*', 'aá 	', 'aá '])
 :"
 :" Test greedy-ness and lazy-ness
 :call add(tl, [2, 'a\{-2,7}','aaaaaaaaaaaaa', 'aa'])

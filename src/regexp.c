@@ -4563,14 +4563,14 @@ regmatch(scan)
 	    break;
 
 	  case PRINT:
-	    if (ptr2cells(reginput) != 1)
+	    if (!vim_isprintc(PTR2CHAR(reginput)))
 		status = RA_NOMATCH;
 	    else
 		ADVANCE_REGINPUT();
 	    break;
 
 	  case SPRINT:
-	    if (VIM_ISDIGIT(*reginput) || ptr2cells(reginput) != 1)
+	    if (VIM_ISDIGIT(*reginput) || !vim_isprintc(PTR2CHAR(reginput)))
 		status = RA_NOMATCH;
 	    else
 		ADVANCE_REGINPUT();
@@ -5944,7 +5944,8 @@ regrepeat(p, maxcount)
 		if (got_int)
 		    break;
 	    }
-	    else if (ptr2cells(scan) == 1 && (testval || !VIM_ISDIGIT(*scan)))
+	    else if (vim_isprintc(PTR2CHAR(scan)) == 1
+					  && (testval || !VIM_ISDIGIT(*scan)))
 	    {
 		mb_ptr_adv(scan);
 	    }

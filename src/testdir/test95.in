@@ -29,6 +29,7 @@ STARTTEST
 
 :" this is not a normal "i" but 0xec
 :call add(tl, [2, '\p\+', 'ìa', 'ìa'])
+:call add(tl, [2, '\p*', 'aあ', 'aあ'])
 
 :"""" Test recognition of some character classes
 :call add(tl, [2, '\i\+', '&*¨xx ', 'xx'])
@@ -117,6 +118,16 @@ STARTTEST
 :  endfor
 :endfor
 :unlet t tl e l
+
+:" check that 'ambiwidth' does not change the meaning of \p
+:set regexpengine=1 ambiwidth=single
+:$put ='eng 1 ambi single: ' . match(\"\u00EC\", '\p')
+:set regexpengine=1 ambiwidth=double
+:$put ='eng 1 ambi double: ' . match(\"\u00EC\", '\p')
+:set regexpengine=2 ambiwidth=single
+:$put ='eng 2 ambi single: ' . match(\"\u00EC\", '\p')
+:set regexpengine=2 ambiwidth=double
+:$put ='eng 2 ambi double: ' . match(\"\u00EC\", '\p')
 
 :/\%#=1^Results/,$wq! test.out
 ENDTEST

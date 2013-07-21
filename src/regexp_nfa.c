@@ -5749,12 +5749,12 @@ nfa_regmatch(prog, start, submatch, m)
 		break;
 
 	    case NFA_PRINT:	/*  \p	*/
-		result = ptr2cells(reginput) == 1;
+		result = vim_isprintc(PTR2CHAR(reginput));
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_SPRINT:	/*  \P	*/
-		result = !VIM_ISDIGIT(curc) && ptr2cells(reginput) == 1;
+		result = !VIM_ISDIGIT(curc) && vim_isprintc(PTR2CHAR(reginput));
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 
