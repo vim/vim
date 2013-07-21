@@ -3464,6 +3464,7 @@ typedef struct
     int		    n;		/* nr of states currently in "t" */
     int		    len;	/* max nr of states in "t" */
     int		    id;		/* ID of the list */
+    int		    has_pim;	/* TRUE when any state has a PIM */
 } nfa_list_T;
 
 #ifdef ENABLE_LOG
@@ -3966,7 +3967,7 @@ addstate(l, state, subs_arg, pim, off)
 		/* This state is already in the list, don't add it again,
 		 * unless it is an MOPEN that is used for a backreference or
 		 * when there is a PIM. */
-		if (!nfa_has_backref && pim == NULL)
+		if (!nfa_has_backref && pim == NULL && !l->has_pim)
 		{
 skip_add:
 #ifdef ENABLE_LOG
@@ -4012,7 +4013,10 @@ skip_add:
 	    if (pim == NULL)
 		thread->pim.result = NFA_PIM_UNUSED;
 	    else
+	    {
 		copy_pim(&thread->pim, pim);
+		l->has_pim = TRUE;
+	    }
 	    copy_sub(&thread->subs.norm, &subs->norm);
 #ifdef FEAT_SYN_HL
 	    if (nfa_has_zsubexpr)
@@ -5060,8 +5064,10 @@ nfa_regmatch(prog, start, submatch, m)
 
     thislist = &list[0];
     thislist->n = 0;
+    thislist->has_pim = FALSE;
     nextlist = &list[1];
     nextlist->n = 0;
+    nextlist->has_pim = FALSE;
 #ifdef ENABLE_LOG
     fprintf(log_fd, "(---) STARTSTATE first\n");
 #endif
@@ -5120,6 +5126,7 @@ nfa_regmatch(prog, start, submatch, m)
 	thislist = &list[flag];
 	nextlist = &list[flag ^= 1];
 	nextlist->n = 0;	    /* clear nextlist */
+	nextlist->has_pim = FALSE;
 	++nfa_listid;
 	thislist->id = nfa_listid;
 	nextlist->id = nfa_listid + 1;
