@@ -3695,6 +3695,39 @@ py_fix_cursor(linenr_T lo, linenr_T hi, linenr_T extra)
 }
 
 /*
+ * Find a window that contains "buf" and switch to it.
+ * If there is no such window, use the current window and change "curbuf".
+ * Caller must initialize save_curbuf to NULL.
+ * restore_win_for_buf() MUST be called later!
+ */
+    static void
+switch_to_win_for_buf(
+    buf_T	*buf,
+    win_T	**save_curwinp,
+    tabpage_T	**save_curtabp,
+    buf_T	**save_curbufp)
+{
+    win_T	*wp;
+    tabpage_T	*tp;
+
+    if (find_win_for_buf(buf, &wp, &tp) == FAIL
+	    || switch_win(save_curwinp, save_curtabp, wp, tp, TRUE) == FAIL)
+	switch_buffer(save_curbufp, buf);
+}
+
+    static void
+restore_win_for_buf(
+    win_T	*save_curwin,
+    tabpage_T	*save_curtab,
+    buf_T	*save_curbuf)
+{
+    if (save_curbuf == NULL)
+	restore_win(save_curwin, save_curtab, TRUE);
+    else
+	restore_buffer(save_curbuf);
+}
+
+/*
  * Replace a line in the specified buffer. The line number is
  * in Vim format (1-based). The replacement line is given as
  * a Python string object. The object is checked for validity
@@ -3706,6 +3739,10 @@ py_fix_cursor(linenr_T lo, linenr_T hi, linenr_T extra)
     static int
 SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 {
+    buf_T	*save_curbuf = NULL;
+    win_T	*save_curwin = NULL;
+    tabpage_T	*save_curtab = NULL;
+
     /* First of all, we check the type of the supplied Python object.
      * There are three cases:
      *	  1. NULL, or None - this is a deletion.
@@ -3714,10 +3751,8 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
      */
     if (line == Py_None || line == NULL)
     {
-	buf_T	*savebuf;
-
 	PyErr_Clear();
-	switch_buffer(&savebuf, buf);
+	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
 
 	VimTryStart();
 
@@ -3727,12 +3762,15 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	    RAISE_DELETE_LINE_FAIL;
 	else
 	{
-	    if (buf == savebuf)
+	    if (buf == curbuf)
 		py_fix_cursor((linenr_T)n, (linenr_T)n + 1, (linenr_T)-1);
-	    deleted_lines_mark((linenr_T)n, 1L);
+	    if (save_curbuf == NULL)
+		/* Only adjust marks if we managed to switch to a window that
+		 * holds the buffer, otherwise line numbers will be invalid. */
+		deleted_lines_mark((linenr_T)n, 1L);
 	}
 
-	restore_buffer(savebuf);
+	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -3745,7 +3783,6 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
     else if (PyBytes_Check(line) || PyUnicode_Check(line))
     {
 	char	*save = StringToLine(line);
-	buf_T	*savebuf;
 
 	if (save == NULL)
 	    return FAIL;
@@ -3754,7 +3791,7 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 
 	/* We do not need to free "save" if ml_replace() consumes it. */
 	PyErr_Clear();
-	switch_buffer(&savebuf, buf);
+	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
 
 	if (u_savesub((linenr_T)n) == FAIL)
 	{
@@ -3769,10 +3806,10 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	else
 	    changed_bytes((linenr_T)n, 0);
 
-	restore_buffer(savebuf);
+	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
 
 	/* Check that the cursor is not beyond the end of the line now. */
-	if (buf == savebuf)
+	if (buf == curbuf)
 	    check_cursor_col();
 
 	if (VimTryEnd())
@@ -3806,6 +3843,10 @@ SetBufferLineList(
 	PyObject *list,
 	PyInt *len_change)
 {
+    buf_T	*save_curbuf = NULL;
+    win_T	*save_curwin = NULL;
+    tabpage_T	*save_curtab = NULL;
+
     /* First of all, we check the type of the supplied Python object.
      * There are three cases:
      *	  1. NULL, or None - this is a deletion.
@@ -3816,11 +3857,10 @@ SetBufferLineList(
     {
 	PyInt	i;
 	PyInt	n = (int)(hi - lo);
-	buf_T	*savebuf;
 
 	PyErr_Clear();
 	VimTryStart();
-	switch_buffer(&savebuf, buf);
+	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
 
 	if (u_savedel((linenr_T)lo, (long)n) == FAIL)
 	    RAISE_UNDO_FAIL;
@@ -3834,12 +3874,15 @@ SetBufferLineList(
 		    break;
 		}
 	    }
-	    if (buf == savebuf)
+	    if (buf == curbuf)
 		py_fix_cursor((linenr_T)lo, (linenr_T)hi, (linenr_T)-n);
-	    deleted_lines_mark((linenr_T)lo, (long)i);
+	    if (save_curbuf == NULL)
+		/* Only adjust marks if we managed to switch to a window that
+		 * holds the buffer, otherwise line numbers will be invalid. */
+		deleted_lines_mark((linenr_T)lo, (long)i);
 	}
 
-	restore_buffer(savebuf);
+	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -3856,7 +3899,6 @@ SetBufferLineList(
 	PyInt	old_len = hi - lo;
 	PyInt	extra = 0;	/* lines added to text, can be negative */
 	char	**array;
-	buf_T	*savebuf;
 
 	if (new_len == 0)	/* avoid allocating zero bytes */
 	    array = NULL;
@@ -3888,7 +3930,7 @@ SetBufferLineList(
 	PyErr_Clear();
 
 	/* START of region without "return".  Must call restore_buffer()! */
-	switch_buffer(&savebuf, buf);
+	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
 
 	if (u_save((linenr_T)(lo-1), (linenr_T)hi) == FAIL)
 	    RAISE_UNDO_FAIL;
@@ -3960,16 +4002,18 @@ SetBufferLineList(
 
 	/* Adjust marks. Invalidate any which lie in the
 	 * changed range, and move any in the remainder of the buffer.
-	 */
-	mark_adjust((linenr_T)lo, (linenr_T)(hi - 1),
+	 * Only adjust marks if we managed to switch to a window that holds
+	 * the buffer, otherwise line numbers will be invalid. */
+	if (save_curbuf == NULL)
+	    mark_adjust((linenr_T)lo, (linenr_T)(hi - 1),
 						  (long)MAXLNUM, (long)extra);
 	changed_lines((linenr_T)lo, 0, (linenr_T)hi, (long)extra);
 
-	if (buf == savebuf)
+	if (buf == curbuf)
 	    py_fix_cursor((linenr_T)lo, (linenr_T)hi, (linenr_T)extra);
 
 	/* END of region without "return". */
-	restore_buffer(savebuf);
+	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -3998,9 +4042,7 @@ SetBufferLineList(
 InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 {
     buf_T	*save_curbuf = NULL;
-    win_T	*wp;
     win_T	*save_curwin = NULL;
-    tabpage_T	*tp;
     tabpage_T	*save_curtab = NULL;
 
     /* First of all, we check the type of the supplied Python object.
@@ -4015,10 +4057,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 
 	PyErr_Clear();
 	VimTryStart();
-	if (find_win_for_buf(buf, &wp, &tp) == FAIL
-		|| switch_win(&save_curwin, &save_curtab, wp, tp, TRUE)
-								      == FAIL)
-	    switch_buffer(&save_curbuf, buf);
+	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
 
 	if (u_save((linenr_T)n, (linenr_T)(n + 1)) == FAIL)
 	    RAISE_UNDO_FAIL;
@@ -4030,10 +4069,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	    appended_lines_mark((linenr_T)n, 1L);
 
 	vim_free(str);
-	if (save_curbuf == NULL)
-	    restore_win(save_curwin, save_curtab, TRUE);
-	else
-	    restore_buffer(save_curbuf);
+	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
 	update_screen(VALID);
 
 	if (VimTryEnd())
@@ -4073,10 +4109,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 
 	PyErr_Clear();
 	VimTryStart();
-	if (find_win_for_buf(buf, &wp, &tp) == FAIL
-		|| switch_win(&save_curwin, &save_curtab, wp, tp, TRUE)
-								      == FAIL)
-	    switch_buffer(&save_curbuf, buf);
+	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
 
 	if (u_save((linenr_T)n, (linenr_T)(n + 1)) == FAIL)
 	    RAISE_UNDO_FAIL;
@@ -4097,18 +4130,17 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 		}
 		vim_free(array[i]);
 	    }
-	    if (i > 0)
+	    if (i > 0 && save_curbuf == NULL)
+		/* Only adjust marks if we managed to switch to a window that
+		 * holds the buffer, otherwise line numbers will be invalid. */
 		appended_lines_mark((linenr_T)n, (long)i);
 	}
 
 	/* Free the array of lines. All of its contents have now
 	 * been freed. */
 	PyMem_Free(array);
+	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
 
-	if (save_curbuf == NULL)
-	    restore_win(save_curwin, save_curtab, TRUE);
-	else
-	    restore_buffer(save_curbuf);
 	update_screen(VALID);
 
 	if (VimTryEnd())
