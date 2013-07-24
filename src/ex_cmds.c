@@ -3448,9 +3448,13 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 		    curwin->w_buffer = buf;
 		    curbuf = buf;
 		    ++curbuf->b_nwindows;
-		    /* set 'fileformat' */
-		    if (*p_ffs && !oldbuf)
-			set_fileformat(default_fileformat(), OPT_LOCAL);
+
+		    /* Set 'fileformat', 'binary' and 'fenc' when forced. */
+		    if (!oldbuf && eap != NULL)
+		    {
+			set_file_options(TRUE, eap);
+			set_forced_fenc(eap);
+		    }
 		}
 
 		/* May get the window options from the last time this buffer

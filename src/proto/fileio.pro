@@ -2,6 +2,8 @@
 void filemess __ARGS((buf_T *buf, char_u *name, char_u *s, int attr));
 int readfile __ARGS((char_u *fname, char_u *sfname, linenr_T from, linenr_T lines_to_skip, linenr_T lines_to_read, exarg_T *eap, int flags));
 int prep_exarg __ARGS((exarg_T *eap, buf_T *buf));
+void set_file_options __ARGS((int set_options, exarg_T *eap));
+void set_forced_fenc __ARGS((exarg_T *eap));
 int prepare_crypt_read __ARGS((FILE *fp));
 char_u *prepare_crypt_write __ARGS((buf_T *buf, int *lenp));
 int check_file_readonly __ARGS((char_u *fname, int perm));

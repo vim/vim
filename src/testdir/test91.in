@@ -3,6 +3,7 @@ vim: set ft=vim :
 
 STARTTEST
 :so small.vim
+:so mbyte.vim
 :"
 :" Test for getbufvar()
 :" Use strings to test for memory leaks.
@@ -22,6 +23,17 @@ STARTTEST
 :$put =string(getbufvar(1, '&autoindent'))
 :$put =string(getbufvar(1, '&autoindent', 1))
 :"
+:" Open new window with forced option values
+:set fileformats=unix,dos
+:new ++ff=dos ++bin ++enc=iso-8859-2
+:let otherff = getbufvar(bufnr('%'), '&fileformat')
+:let otherbin = getbufvar(bufnr('%'), '&bin')
+:let otherfenc = getbufvar(bufnr('%'), '&fenc')
+:close
+:$put =otherff
+:$put =string(otherbin)
+:$put =otherfenc
+:unlet otherff otherbin otherfenc
 :" test for getwinvar()
 :let w:var_str = "Dance"
 :let def_str = "Chance"

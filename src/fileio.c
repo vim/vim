@@ -474,23 +474,8 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
     }
 #endif
 
-    /* set default 'fileformat' */
-    if (set_options)
-    {
-	if (eap != NULL && eap->force_ff != 0)
-	    set_fileformat(get_fileformat_force(curbuf, eap), OPT_LOCAL);
-	else if (*p_ffs != NUL)
-	    set_fileformat(default_fileformat(), OPT_LOCAL);
-    }
-
-    /* set or reset 'binary' */
-    if (eap != NULL && eap->force_bin != 0)
-    {
-	int	oldval = curbuf->b_p_bin;
-
-	curbuf->b_p_bin = (eap->force_bin == FORCE_BIN);
-	set_options_bin(oldval, curbuf->b_p_bin, OPT_LOCAL);
-    }
+    /* Set default or forced 'fileformat' and 'binary'. */
+    set_file_options(set_options, eap);
 
     /*
      * When opening a new file we take the readonly flag from the file.
@@ -647,15 +632,9 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 		    check_marks_read();
 #endif
 #ifdef FEAT_MBYTE
-		    if (eap != NULL && eap->force_enc != 0)
-		    {
-			/* set forced 'fileencoding' */
-			fenc = enc_canonize(eap->cmd + eap->force_enc);
-			if (fenc != NULL)
-			    set_string_option_direct((char_u *)"fenc", -1,
-						 fenc, OPT_FREE|OPT_LOCAL, 0);
-			vim_free(fenc);
-		    }
+		    /* Set forced 'fileencoding'.  */
+		    if (eap != NULL)
+			set_forced_fenc(eap);
 #endif
 #ifdef FEAT_AUTOCMD
 		    apply_autocmds_exarg(EVENT_BUFNEWFILE, sfname, sfname,
@@ -2738,7 +2717,52 @@ prep_exarg(eap, buf)
     return OK;
 }
 
-#ifdef FEAT_MBYTE
+/*
+ * Set default or forced 'fileformat' and 'binary'.
+ */
+    void
+set_file_options(set_options, eap)
+    int set_options;
+    exarg_T *eap;
+{
+    /* set default 'fileformat' */
+    if (set_options)
+    {
+	if (eap != NULL && eap->force_ff != 0)
+	    set_fileformat(get_fileformat_force(curbuf, eap), OPT_LOCAL);
+	else if (*p_ffs != NUL)
+	    set_fileformat(default_fileformat(), OPT_LOCAL);
+    }
+
+    /* set or reset 'binary' */
+    if (eap != NULL && eap->force_bin != 0)
+    {
+	int	oldval = curbuf->b_p_bin;
+
+	curbuf->b_p_bin = (eap->force_bin == FORCE_BIN);
+	set_options_bin(oldval, curbuf->b_p_bin, OPT_LOCAL);
+    }
+}
+
+#if defined(FEAT_MBYTE) || defined(PROTO)
+/*
+ * Set forced 'fileencoding'.
+ */
+    void
+set_forced_fenc(eap)
+    exarg_T *eap;
+{
+    if (eap->force_enc != 0)
+    {
+	char_u *fenc = enc_canonize(eap->cmd + eap->force_enc);
+
+	if (fenc != NULL)
+	    set_string_option_direct((char_u *)"fenc", -1,
+				 fenc, OPT_FREE|OPT_LOCAL, 0);
+	vim_free(fenc);
+    }
+}
+
 /*
  * Find next fileencoding to use from 'fileencodings'.
  * "pp" points to fenc_next.  It's advanced to the next item.
