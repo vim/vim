@@ -4518,7 +4518,7 @@ win_alloc(after, hidden)
 #if defined(FEAT_WINDOWS) || defined(PROTO)
 
 /*
- * remove window 'wp' from the window list and free the structure
+ * Remove window 'wp' from the window list and free the structure.
  */
     static void
 win_free(wp, tp)
@@ -4526,6 +4526,8 @@ win_free(wp, tp)
     tabpage_T	*tp;		/* tab page "win" is in, NULL for current */
 {
     int		i;
+    buf_T	*buf;
+    wininfo_T	*wip;
 
 #ifdef FEAT_FOLDING
     clearFolding(wp);
@@ -4585,6 +4587,13 @@ win_free(wp, tp)
 	vim_free(wp->w_tagstack[i].tagname);
 
     vim_free(wp->w_localdir);
+
+    /* Remove the window from the b_wininfo lists, it may happen that the
+     * freed memory is re-used for another window. */
+    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	for (wip = buf->b_wininfo; wip != NULL; wip = wip->wi_next)
+	    if (wip->wi_win == wp)
+		wip->wi_win = NULL;
 
 #ifdef FEAT_SEARCH_EXTRA
     clear_matches(wp);
