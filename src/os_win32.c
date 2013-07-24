@@ -2717,21 +2717,19 @@ mch_getperm(char_u *name)
 
 
 /*
- * set file permission for `name' to `perm'
+ * Set file permission for "name" to "perm".
  *
- * return FAIL for failure, OK otherwise
+ * Return FAIL for failure, OK otherwise.
  */
     int
-mch_setperm(
-    char_u  *name,
-    long    perm)
+mch_setperm(char_u *name, long perm)
 {
-    long	n;
+    long	n = -1;
+
 #ifdef FEAT_MBYTE
-    WCHAR *p;
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
-	p = enc_to_utf16(name, NULL);
+	WCHAR *p = enc_to_utf16(name, NULL);
 
 	if (p != NULL)
 	{
@@ -2742,7 +2740,7 @@ mch_setperm(
 	    /* Retry with non-wide function (for Windows 98). */
 	}
     }
-    if (p == NULL)
+    if (n == -1)
 #endif
 	n = _chmod(name, perm);
     if (n == -1)
