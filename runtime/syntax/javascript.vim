@@ -22,6 +22,8 @@ if !exists("main_syntax")
     finish
   endif
   let main_syntax = 'javascript'
+elseif exists("b:current_syntax") && b:current_syntax == "javascript"
+  finish
 endif
 
 let s:cpo_save = &cpo

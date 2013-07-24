@@ -6,7 +6,7 @@
 "               Nikolai Weibull (Add CSS2 support)
 " Maintainer:   Jules Wang      <w.jq0722@gmail.com>
 " URL:          https://github.com/JulesWang/css.vim
-" Last Change:  2012 Dec 15
+" Last Change:  2013 Jul 23
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -14,9 +14,11 @@ if !exists("main_syntax")
   if version < 600
     syntax clear
   elseif exists("b:current_syntax")
-  finish
-endif
+    finish
+  endif
   let main_syntax = 'css'
+elseif exists("b:current_syntax") && b:current_syntax == "css"
+  finish
 endif
 
 let s:cpo_save = &cpo

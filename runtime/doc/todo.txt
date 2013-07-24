@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4a.  Last change: 2013 Jul 17
+*todo.txt*      For Vim version 7.4a.  Last change: 2013 Jul 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,18 +34,6 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Edit changed-7.4 text.
-
-Patch for this bug: (Ken Takata, 2013 Jul 17)
-8   Win32: When mouse is hidden and in the toolbar, moving it won't make it
-    appear. (Sami Salonen)
-
-This results in 'fileformat' set to "dos" instead of "unix". (Ingo Karkat,
-2013 Jul 16)
-    :set fileformats=dos,unix
-    :new ++ff=unix
-Also for ++bin and ++enc.
-
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
 Patch to add "acl" and "xpm" as a feature. (Ken Takata, 2013 Jul 8)
@@ -69,6 +57,10 @@ GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
 
 Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
+
+The BufUnload event is triggered when re-using the empty buffer.
+(Pokey Rule, 2013 Jul 22)
+Patch by Marcin Szamotulski, 2013 Jul 22.
 
 The CompleteDone autocommand needs some info passed to it:
 - The word that was selected (empty if abandoned complete)
@@ -186,7 +178,6 @@ names. (ZyX, 2013 Jul 15 and later)
 Python: Be able to define a Python function that can be called directly from
 Vim script.  Requires converting the arguments and return value, like with
 vim.bindeval().
-
 
 Patch for :tabcloseleft, after closing a tab go to left tab. (William Bowers,
 2012 Aug 4)
@@ -451,7 +442,7 @@ May 24)  Update May 26.
 
 Patch for :tabrecently. (Hirokazu Yoshida, 2012 Jan 30)
 
-Problem with "syn sync gouphere". (Gustavo Niemeyer, 2011 Jan 27)
+Problem with "syn sync grouphere". (Gustavo Niemeyer, 2011 Jan 27)
 
 Loading autoload script even when usage is inside "if 0". (Christian Brabandt,
 2010 Dec 18)

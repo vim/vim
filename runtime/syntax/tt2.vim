@@ -3,7 +3,7 @@
 " Author:        Moriki, Atsushi <4woods+vim@gmail.com>
 " Homepage:      http://github.com/vim-perl/vim-perl
 " Bugs/requests: http://github.com/vim-perl/vim-perl/issues
-" Last Change:   2013-05-12
+" Last Change:   2013 Jul 24
 "
 " Instration:
 "   put tt2.vim and tt2html.vim in to your syntax diretory.

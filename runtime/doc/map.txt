@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.4a.  Last change: 2013 Jun 29
+*map.txt*       For Vim version 7.4a.  Last change: 2013 Jul 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -597,7 +597,7 @@ this (see |<>|).  Example: >
 To avoid mapping of the characters you type in insert or Command-line mode,
 type a CTRL-V first.  The mapping in Insert mode is disabled if the 'paste'
 option is on.
-
+							*map-error*
 Note that when an error is encountered (that causes an error message or beep)
 the rest of the mapping is not executed.  This is Vi-compatible.
 

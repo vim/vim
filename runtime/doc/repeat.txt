@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.4a.  Last change: 2012 Mar 23
+*repeat.txt*    For Vim version 7.4a.  Last change: 2013 Jul 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -54,7 +54,7 @@ selection, the same SIZE of area is used, see |visual-repeat|.
 			Same as :g!.
 
 Instead of the '/' which surrounds the {pattern}, you can use any other
-single byte character, but not an alphanumeric character, '\', '"' or '|'.
+single byte character, but not an alphabetic character, '\', '"' or '|'.
 This is useful if you want to include a '/' in the search pattern or
 replacement string.
 

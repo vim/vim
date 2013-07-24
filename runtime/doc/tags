@@ -6734,6 +6734,7 @@ map-<SID>	map.txt	/*map-<SID>*
 map-ambiguous	map.txt	/*map-ambiguous*
 map-backtick	tips.txt	/*map-backtick*
 map-comments	map.txt	/*map-comments*
+map-error	map.txt	/*map-error*
 map-examples	map.txt	/*map-examples*
 map-keys-fails	map.txt	/*map-keys-fails*
 map-listing	map.txt	/*map-listing*

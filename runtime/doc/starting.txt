@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.4a.  Last change: 2013 Jun 12
+*starting.txt*  For Vim version 7.4a.  Last change: 2013 Jul 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -774,7 +774,8 @@ accordingly.  Vim proceeds in this order:
 	easy to copy it to another system.
 
 	If Vim was started with "-u filename", the file "filename" is used.
-	All following initializations until 4. are skipped.
+	All following initializations until 4. are skipped. $MYVIMRC is not
+	set.
 	"vim -u NORC" can be used to skip these initializations without
 	reading a file.  "vim -u NONE" also skips loading plugins.  |-u|
 

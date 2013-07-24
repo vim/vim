@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.4a.  Last change: 2013 Jul 13
+*version7.txt*  For Vim version 7.4a.  Last change: 2013 Jul 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -9150,7 +9150,7 @@ Files:	    src/ops.c
 
 Patch 7.2.293
 Problem:    When setting 'comments' option it may be used in a wrong way. 
-Solution:   Don't increment after skipping over digets. (Yukihiro Nakadaira)
+Solution:   Don't increment after skipping over digits. (Yukihiro Nakadaira)
 Files:	    src/misc1.c
 
 Patch 7.2.294
@@ -10192,53 +10192,96 @@ Better Python interface				*better-python-interface*
 
 Added |python-bindeval| function. Unlike |python-eval| this one returns 
 |python-Dictionary|, |python-List| and |python-Function| objects for 
-dictionaries lists and functions respectively in place of their python 
+dictionaries lists and functions respectively in place of their Python 
 built-in equivalents (or None if we are talking about function references).
-   For simple types this function returns python built-in types and not only 
-python `str()` like |python-eval| does. On python 3 it will return `bytes()` 
+   For simple types this function returns Python built-in types and not only 
+Python `str()` like |python-eval| does. On Python 3 it will return `bytes()` 
 objects in place of `str()` ones avoiding possibility of UnicodeDecodeError.
-   Interface of new objects mimics standard python `dict()` and `list()`
+   Interface of new objects mimics standard Python `dict()` and `list()`
 interfaces to some extent. Extent will be improved in the future.
 
 Added special |python-vars| objects also available for |python-buffer| and 
-|python-window|. They ease access to VimL variables from python.
+|python-window|. They ease access to VimL variables from Python.
 
 Now you no longer need to alter `sys.path` to import your module: special 
 hooks are responsible for importing from {rtp}/python2, {rtp}/python3 and 
-{rtp}/pythonx directories (for python 2, python 3 and both respectively). 
+{rtp}/pythonx directories (for Python 2, Python 3 and both respectively). 
 See |python-special-path|.
 
 Added possibility to work with |tabpage|s through |python-tabpage| object.
 
-Added automatic conversion of vim errors and exceptions to python 
+Added automatic conversion of Vim errors and exceptions to Python 
 exceptions.
 
-Changed the behavior of |python-buffers| object: it now uses buffer numbers 
+Changed the behavior of the |python-buffers| object: it now uses buffer numbers 
 as keys in place of the index of the buffer in the internal buffer list. 
 This should not break anything as the only way to get this index was 
 iterating over |python-buffers|.
 
 Added |:pydo| and |:py3do| commands.
 
-Added |pyeval()| and |py3eval()| functions.
+Added the |pyeval()| and |py3eval()| functions.
 
-Now in all places which previously accepted `str()` objects in both python 
-version both `str()` and `unicode()` (python 2) or `bytes()` and `str()` 
-(python 3) are accepted.
+Now in all places which previously accepted `str()` objects, `str()` and
+`unicode()` (Python 2) or `bytes()` and `str()` (Python 3) are accepted.
 
 |python-window| has gained `.col` and `.row` attributes that are currently 
 the only way to get internal window positions.
 
-Added or fixed support for `dir()` in vim python objects.
-
-Old python versions (≤2.2) are no longer supported. Building with them did 
-not work anyway.
+Added or fixed support for `dir()` in Vim Python objects.
 
 
 Changed							*changed-7.4*
 -------
 
+Old Python versions (≤2.2) are no longer supported. Building with them did 
+not work anyway.
+
+Options:
+	Added ability to automatically save the selection into the system 
+	clipboard when using non-GUI version of Vim (autoselectplus in 
+	'clipboard'). Also added ability to use the system clipboard as
+	default register (previously only primary selection could be used).
+	(Ivan Krasilnikov, Christian Brabandt, Bram Moolenaar)
+
+	Added a special 'shiftwidth' value that makes 'sw' follow 'tabstop'.
+	As indenting via 'indentexpr' became tricky |shiftwidth()| function
+	was added. Also added equivalent special value to 'softtabstop'
+	option.  (Christian Brabandt, so8res)
+
+	Show absolute number in number column when 'relativenumber' option is
+	on.  Now there are four combinations with 'number' and
+	'relativenumber'.  (Christian Brabandt)
+
+Commands:
+	|:diffoff| now saves the local values of some settings and restores 
+	them in place of blindly resetting them to the defaults. (Christian 
+	Brabandt)
+
+Other:
+	Lua interface now also uses userdata binded to Vim structures. (Taro 
+	Muraoka, Luis Carvalho)
+
+Added							*added-7.4*
+-----
+
+Various syntax, indent and other plugins were added.
+
+Added support for |Lists| and |Dictionaries| in |viminfo|. (Christian
+Brabandt)
+
 Functions:
+	Bitwise functions: |and()|, |or()|, |invert()|, |xor()|.
+
+	Added |luaeval()| function. (Taro Muraoka, Luis Carvalho)
+
+	Added |sha256()| function. (Tyru, Hirohito Higashi)
+
+	Added |wildmenumode()| function. (Christian Brabandt)
+
+	Debugging functions: |screenattr()|, |screenchar()|, |screencol()|, 
+	|screenrow()|. (Simon Ruderich, Bram Moolenaar)
+
 	Added ability to use |Dictionary-function|s for |sort()|ing, via 
 	optional third argument. (Nikolay Pavlov)
 
@@ -10257,17 +10300,39 @@ Functions:
 	place of empty string in case variable is not found. (|gettabvar()|, 
 	|getwinvar()|, |getbufvar()|) (Shougo Matsushita, Hirohito Higashi)
 
-Options:
-	Added ability to automatically save selection into the system 
-	clipboard when using non-GUI version of vim (autoselectplus in 
-	'clipboard'). Also added ability to use system clipboard as default 
-	register (previously only primary selection could be used). (Ivan 
-	Krasilnikov, Christian Brabandt, Bram Moolenaar)
+Autocommands:
+	Added |InsertCharPre| event launched before inserting character. 
+	(Jakson A. Aquino)
 
-	Added special 'shiftwidth' value that makes 'sw' follow 'tabstop'. As 
-	indenting via 'indentexpr' became tricky |shiftwidth()| function was 
-	added. Also added equivalent special value to 'softtabstop' option. 
-	(Christian Brabandt, so8res)
+	Added |CompleteDone| event launched after finishing completion in 
+	insert mode. (idea by Florian Klein)
+
+	Added |QuitPre| event launched when commands that can either close Vim 
+	or only some window(s) are launched.
+
+	Added |TextChanged| and |TextChangedI| events launched when text is 
+	changed.
+
+Commands:
+	|:syntime| command useful for debugging.
+
+	Made it possible to remove all signs from the current buffer using 
+	|:sign-unplace|. (Christian Brabandt)
+
+	Added |:language| autocompletion. (Dominique Pelle)
+
+	Added more |:command-complete| completion types: |:behave| suboptions, 
+	color schemes, compilers, |:cscope| suboptions, files from 'path', 
+	|:history| suboptions, locale names, |:syntime| suboptions, user 
+	names. (Dominique Pelle)
+
+	Added |:map-nowait| creating mapping which when having lhs that is the 
+	prefix of another mapping’s lhs will not allow Vim to wait for user to 
+	type more characters to resolve ambiguity, forcing Vim to take the 
+	shorter alternative: one with <nowait>.
+
+Options:
+	Made it possible to ignore case when completing: 'wildignorecase'.
 
 	Added ability to delete comment leader when using |J| by `j` flag in 
 	'formatoptions' (|fo-table|). (Lech Lorens)
@@ -10278,83 +10343,18 @@ Options:
 	Added ability to control alignment inside `if` condition separately 
 	from alignment inside function arguments: |cino-k|. (Lech Lorens)
 
-	Added ability to show absolute number in number column when 
-	'relativenumber' option is on. (Christian Brabandt)
-
-Comands:
-	Made it possible to remove all signs from the current buffer using 
-	|:sign-unplace|. (Christian Brabandt)
-
-	Added |:language| autocompletion. (Dominique Pelle)
-
-	|:diffoff| now saves the local values of some settings and restores 
-	them in place of blindly resetting them to the defaults. (Christian 
-	Brabandt)
-
-	Added |:map-nowait| creating mapping which when having lhs that is the 
-	prefix of another mapping’s lhs will not allow vim to wait for user to 
-	type more characters to resolve ambiguity, forcing vim to take the 
-	shorter alternative: one with <nowait>.
-
-	Added more |:command-complete| completion types: |:behave| suboptions, 
-	color schemes, compilers, |:cscope| suboptions, files from 'path', 
-	|:history| suboptions, locale names, |:syntime| suboptions, user 
-	names. (Dominique Pelle)
-
 Other:
 	Improved support for cmd.exe. (Ben Fritz, Bram Moolenaar)
 
 	Added |v:windowid| variable containing current window number in GUI 
-	vim. (Christian J. Robinson, Lech Lorens)
-
-	Lua interface now also uses userdata binded to vim structures. (Taro 
-	Muraoka, Luis Carvalho)
+	Vim. (Christian J. Robinson, Lech Lorens)
 
 	Added rxvt-unicode and >xterm-277 mouse support. (Yiding Jia, Hayaki 
 	Saito)
 
-Added							*added-7.4*
------
 
-Added support for |Lists| and |Dictionaries| in |viminfo|. (Christian 
-Brabandt)
-
-Functions:
-	Bitwise functions: |and()|, |or()|, |invert()|, |xor()|.
-
-	Added |luaeval()| function. (Taro Muraoka, Luis Carvalho)
-
-	Added |sha256()| function. (Tyru, Hirohito Higashi)
-
-	Added |wildmenumode()| function. (Christian Brabandt)
-
-	Debugging functions: |screenattr()|, |screenchar()|, |screencol()|, 
-	|screenrow()|. (Simon Ruderich, Bram Moolenaar)
-
-Autocommands:
-	Added |InsertCharPre| event launched before inserting character. 
-	(Jakson A. Aquino)
-
-	Added |CompleteDone| event launched after finishing completion in 
-	insert mode. (idea by Florian Klein)
-
-	Added |QuitPre| event launched when commands that can either close vim 
-	or only some window(s) are launched.
-
-	Added |TextChanged| and |TextChangedI| events launched when text is 
-	changed.
-
-Commands:
-	|:syntime| command useful for debugging.
-
-Options:
-	Made it possible to ignore case when completing: 'wildignorecase'.
-
-Various syntax, indent and other plugins were added.
-
-
-Fixed							*fixed-7.4*
------
+All changes in 7.4						*fixed-7.4*
+------------------
 
 Patch 7.3.001
 Problem:    When editing "src/main.c" and 'path' set to "./proto",
@@ -12181,7 +12181,7 @@ Problem:    Can't compile with tiny features.
 Solution:   Add #ifdef around win_valid().
 Files:	    src/buffer.c
 
-Patch 7.3.313 after 7.3.307)
+Patch 7.3.313 (after 7.3.307)
 Problem:    One more warning when compiling with dynamic Python 3.
 Solution:   Change PySliceObject to PyObject.
 Files:	    src/if_python3.c

@@ -3,7 +3,7 @@
 " Maintainer:    vim-perl <vim-perl@googlegroups.com>
 " Homepage:      http://github.com/vim-perl/vim-perl/tree/master
 " Bugs/requests: http://github.com/vim-perl/vim-perl/issues
-" Last Change:   2013-05-11
+" Last Change:   2013 Jul 24
 " Contributors:  Andy Lester <andy@petdance.com>
 "                Hinrik Örn Sigurðsson <hinrik.sig@gmail.com>
 "                Lukas Mai <l.mai.web.de>
@@ -27,7 +27,7 @@
 " let perl_sync_dist = 100
 " unlet perl_fold
 " unlet perl_fold_blocks
-" let perl_nofold_packages = 1
+" unlet perl_nofold_packages
 " let perl_nofold_subs = 1
 " unlet perl_fold_anonymous_subs
 
@@ -67,7 +67,6 @@ endif
 
 
 syn cluster perlTop		contains=TOP
-syn region  perlGenericBlock	matchgroup=perlGenericBlock start="{" end="}" contained transparent
 
 
 " All keywords
@@ -95,20 +94,20 @@ syn match perlStatementVector		"\<vec\>"
 syn match perlStatementFiles		"\<\%(ch\%(dir\|mod\|own\|root\)\|glob\|link\|mkdir\|readlink\|rename\|rmdir\|symlink\|umask\|unlink\|utime\)\>"
 syn match perlStatementFiles		"-[rwxoRWXOezsfdlpSbctugkTBMAC]\>"
 syn match perlStatementFlow		"\<\%(caller\|die\|dump\|eval\|exit\|wantarray\)\>"
-syn match perlStatementInclude		"\<require\>"
+syn match perlStatementInclude		"\<\%(require\|import\)\>"
 syn match perlStatementInclude		"\<\%(use\|no\)\s\+\%(\%(attributes\|attrs\|autouse\|parent\|base\|big\%(int\|num\|rat\)\|blib\|bytes\|charnames\|constant\|diagnostics\|encoding\%(::warnings\)\=\|feature\|fields\|filetest\|if\|integer\|less\|lib\|locale\|mro\|open\|ops\|overload\|re\|sigtrap\|sort\|strict\|subs\|threads\%(::shared\)\=\|utf8\|vars\|version\|vmsish\|warnings\%(::register\)\=\)\>\)\="
 syn match perlStatementProc		"\<\%(alarm\|exec\|fork\|get\%(pgrp\|ppid\|priority\)\|kill\|pipe\|set\%(pgrp\|priority\)\|sleep\|system\|times\|wait\%(pid\)\=\)\>"
-syn match perlStatementSocket		"\<\%(acept\|bind\|connect\|get\%(peername\|sock\%(name\|opt\)\)\|listen\|recv\|send\|setsockopt\|shutdown\|socket\%(pair\)\=\)\>"
+syn match perlStatementSocket		"\<\%(accept\|bind\|connect\|get\%(peername\|sock\%(name\|opt\)\)\|listen\|recv\|send\|setsockopt\|shutdown\|socket\%(pair\)\=\)\>"
 syn match perlStatementIPC		"\<\%(msg\%(ctl\|get\|rcv\|snd\)\|sem\%(ctl\|get\|op\)\|shm\%(ctl\|get\|read\|write\)\)\>"
 syn match perlStatementNetwork		"\<\%(\%(end\|[gs]et\)\%(host\|net\|proto\|serv\)ent\|get\%(\%(host\|net\)by\%(addr\|name\)\|protoby\%(name\|number\)\|servby\%(name\|port\)\)\)\>"
 syn match perlStatementPword		"\<\%(get\%(pw\%(uid\|nam\)\|gr\%(gid\|nam\)\|login\)\)\|\%(end\|[gs]et\)\%(pw\|gr\)ent\>"
 syn match perlStatementTime		"\<\%(gmtime\|localtime\|time\)\>"
 
-syn match perlStatementMisc		"\<\%(warn\|formline\|reset\|scalar\|prototype\|lock\|tied\=\|untie\)\>"
+syn match perlStatementMisc		"\<\%(warn\|format\|formline\|reset\|scalar\|prototype\|lock\|tied\=\|untie\)\>"
 
 syn keyword perlTodo			TODO TODO: TBD TBD: FIXME FIXME: XXX XXX: NOTE NOTE: contained
 
-syn region perlStatementIndirObjWrap   matchgroup=perlStatementIndirObj start="\<\%(map\|grep\|sort\|printf\=\|say\|system\|exec\)\>\s*{" end="}" contains=@perlTop,perlGenericBlock extend
+syn region perlStatementIndirObjWrap   matchgroup=perlStatementIndirObj start="\<\%(map\|grep\|sort\|printf\=\|say\|system\|exec\)\>\s*{" end="}" contains=@perlTop,perlBraces extend
 
 syn match perlLabel      "^\s*\h\w*\s*::\@!\%(\<v\d\+\s*:\)\@<!"
 
@@ -153,7 +152,7 @@ else
 endif
 
 if !exists("perl_no_extended_vars")
-  syn cluster perlExpr		contains=perlStatementIndirObjWrap,perlStatementScalar,perlStatementRegexp,perlStatementNumeric,perlStatementList,perlStatementHash,perlStatementFiles,perlStatementTime,perlStatementMisc,perlVarPlain,perlVarPlain2,perlVarNotInMatches,perlVarSlash,perlVarBlock,perlVarBlock2,perlShellCommand,perlFloat,perlNumber,perlStringUnexpanded,perlString,perlQQ,perlArrow,perlGenericBlock
+  syn cluster perlExpr		contains=perlStatementIndirObjWrap,perlStatementScalar,perlStatementRegexp,perlStatementNumeric,perlStatementList,perlStatementHash,perlStatementFiles,perlStatementTime,perlStatementMisc,perlVarPlain,perlVarPlain2,perlVarNotInMatches,perlVarSlash,perlVarBlock,perlVarBlock2,perlShellCommand,perlFloat,perlNumber,perlStringUnexpanded,perlString,perlQQ,perlArrow,perlBraces
   syn region perlArrow		matchgroup=perlArrow start="->\s*(" end=")" contains=@perlExpr nextgroup=perlVarMember,perlVarSimpleMember,perlMethod contained
   syn region perlArrow		matchgroup=perlArrow start="->\s*\[" end="\]" contains=@perlExpr nextgroup=perlVarMember,perlVarSimpleMember,perlMethod contained
   syn region perlArrow		matchgroup=perlArrow start="->\s*{" end="}" contains=@perlExpr nextgroup=perlVarMember,perlVarSimpleMember,perlMethod contained
@@ -161,8 +160,8 @@ if !exists("perl_no_extended_vars")
   syn region perlArrow		matchgroup=perlArrow start="->\s*\$*\I\i*\s*(" end=")" contains=@perlExpr nextgroup=perlVarMember,perlVarSimpleMember,perlMethod contained
   syn region perlVarBlock	matchgroup=perlVarPlain start="\%($#\|[$@]\)\$*{" skip="\\}" end=+}\|\%(\%(<<\%('\|"\)\?\)\@=\)+ contains=@perlExpr nextgroup=perlVarMember,perlVarSimpleMember,perlMethod extend
   syn region perlVarBlock2	matchgroup=perlVarPlain start="[%&*]\$*{" skip="\\}" end=+}\|\%(\%(<<\%('\|"\)\?\)\@=\)+ contains=@perlExpr nextgroup=perlVarMember,perlVarSimpleMember,perlMethod extend
-  syn match  perlVarPlain2	"[%&*]\$*{\I\i*}" nextgroup=perlVarMember,perlVarSimpleMember,perlMethod
-  syn match  perlVarPlain	"\%(\$#\|[@$]\)\$*{\I\i*}" nextgroup=perlVarMember,perlVarSimpleMember,perlMethod
+  syn match  perlVarPlain2	"[%&*]\$*{\I\i*}" nextgroup=perlVarMember,perlVarSimpleMember,perlMethod extend
+  syn match  perlVarPlain	"\%(\$#\|[@$]\)\$*{\I\i*}" nextgroup=perlVarMember,perlVarSimpleMember,perlMethod extend
   syn region perlVarMember	matchgroup=perlVarPlain start="\%(->\)\={" skip="\\}" end="}" contained contains=@perlExpr nextgroup=perlVarMember,perlVarSimpleMember,perlMethod extend
   syn match  perlVarSimpleMember	"\%(->\)\={\s*\I\i*\s*}" nextgroup=perlVarMember,perlVarSimpleMember,perlMethod contains=perlVarSimpleMemberName contained extend
   syn match  perlVarSimpleMemberName	"\I\i*" contained
@@ -223,7 +222,7 @@ syn region  perlShellCommand	matchgroup=perlMatchStartEnd start="`" end="`" cont
 syn match  perlNumber	"\<\%(0\%(x\x[[:xdigit:]_]*\|b[01][01_]*\|\o[0-7_]*\|\)\|[1-9][[:digit:]_]*\)\>"
 syn match  perlFloat	"\<\d[[:digit:]_]*[eE][\-+]\=\d\+"
 syn match  perlFloat	"\<\d[[:digit:]_]*\.[[:digit:]_]*\%([eE][\-+]\=\d\+\)\="
-syn match  perlFloat	"\.[[:digit:]_]\+\%([eE][\-+]\=\d\+\)\="
+syn match  perlFloat    "\.[[:digit:]][[:digit:]_]*\%([eE][\-+]\=\d\+\)\="
 
 syn match  perlString	"\<\%(v\d\+\%(\.\d\+\)*\|\d\+\%(\.\d\+\)\{2,}\)\>" contains=perlVStringV
 syn match  perlVStringV	"\<v" contained
@@ -241,38 +240,38 @@ syn region perlAnglesDQ		start=+<+ end=+>+ extend contained contains=perlAnglesD
 
 
 " Simple version of searches and matches
-syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!m\>\s*\z([^[:space:]'([{<#]\)+ end=+\z1[msixpodualgc]*+ contains=@perlInterpMatch keepend
-syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!m#+ end=+#[msixpodualgc]*+ contains=@perlInterpMatch keepend
-syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!m\s*'+ end=+'[msixpodualgc]*+ contains=@perlInterpSQ keepend
-syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!m\s*/+ end=+/[msixpodualgc]*+ contains=@perlInterpSlash keepend
-syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!m\s*(+ end=+)[msixpodualgc]*+ contains=@perlInterpMatch,perlParensDQ keepend
+syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!m\>\s*\z([^[:space:]'([{<#]\)+ end=+\z1[msixpodualgc]*+ contains=@perlInterpMatch keepend extend
+syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!m#+ end=+#[msixpodualgc]*+ contains=@perlInterpMatch keepend extend
+syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!m\s*'+ end=+'[msixpodualgc]*+ contains=@perlInterpSQ keepend extend
+syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!m\s*/+ end=+/[msixpodualgc]*+ contains=@perlInterpSlash keepend extend
+syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!m\s*(+ end=+)[msixpodualgc]*+ contains=@perlInterpMatch,perlParensDQ keepend extend
 
 " A special case for m{}, m<> and m[] which allows for comments and extra whitespace in the pattern
-syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!m\s*{+ end=+}[msixpodualgc]*+ contains=@perlInterpMatch,perlComment,perlBracesDQ
-syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!m\s*<+ end=+>[msixpodualgc]*+ contains=@perlInterpMatch,perlAnglesDQ keepend
-syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!m\s*\[+ end=+\][msixpodualgc]*+ contains=@perlInterpMatch,perlComment,perlBracketsDQ keepend
+syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!m\s*{+ end=+}[msixpodualgc]*+ contains=@perlInterpMatch,perlComment,perlBracesDQ extend
+syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!m\s*<+ end=+>[msixpodualgc]*+ contains=@perlInterpMatch,perlAnglesDQ keepend extend
+syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!m\s*\[+ end=+\][msixpodualgc]*+ contains=@perlInterpMatch,perlComment,perlBracketsDQ keepend extend
 
 " Below some hacks to recognise the // variant. This is virtually impossible to catch in all
 " cases as the / is used in so many other ways, but these should be the most obvious ones.
-syn region perlMatch	matchgroup=perlMatchStartEnd start="\%([$@%&*]\@<!\%(\<split\|\<while\|\<if\|\<unless\|\.\.\|[-+*!~(\[{=]\)\s*\)\@<=/\%(/=\)\@!" start=+^/\%(/=\)\@!+ start=+\s\@<=/\%(/=\)\@![^[:space:][:digit:]$@%=]\@=\%(/\_s*\%([([{$@%&*[:digit:]"'`]\|\_s\w\|[[:upper:]_abd-fhjklnqrt-wyz]\)\)\@!+ skip=+\\/+ end=+/[msixpodualgc]*+ contains=@perlInterpSlash
+syn region perlMatch	matchgroup=perlMatchStartEnd start="\%([$@%&*]\@<!\%(\<split\|\<while\|\<if\|\<unless\|\.\.\|[-+*!~(\[{=]\)\s*\)\@<=/\%(/=\)\@!" start=+^/\%(/=\)\@!+ start=+\s\@<=/\%(/=\)\@![^[:space:][:digit:]$@%=]\@=\%(/\_s*\%([([{$@%&*[:digit:]"'`]\|\_s\w\|[[:upper:]_abd-fhjklnqrt-wyz]\)\)\@!+ skip=+\\/+ end=+/[msixpodualgc]*+ contains=@perlInterpSlash extend
 
 
 " Substitutions
 " perlMatch is the first part, perlSubstitution* is the substitution part
-syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!s\>\s*\z([^[:space:]'([{<#]\)+ end=+\z1+me=e-1 contains=@perlInterpMatch nextgroup=perlSubstitutionGQQ keepend
-syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!s\s*'+  end=+'+me=e-1 contains=@perlInterpSQ nextgroup=perlSubstitutionSQ keepend
-syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!s\s*/+  end=+/+me=e-1 contains=@perlInterpSlash nextgroup=perlSubstitutionGQQ keepend
-syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!s#+  end=+#+me=e-1 contains=@perlInterpMatch nextgroup=perlSubstitutionGQQ keepend
-syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!s\s*(+ end=+)+ contains=@perlInterpMatch,perlParensDQ nextgroup=perlSubstitutionGQQ skipwhite skipempty skipnl keepend
-syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!s\s*<+ end=+>+ contains=@perlInterpMatch,perlAnglesDQ nextgroup=perlSubstitutionGQQ skipwhite skipempty skipnl keepend
-syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!s\s*\[+ end=+\]+ contains=@perlInterpMatch,perlBracketsDQ nextgroup=perlSubstitutionGQQ skipwhite skipempty skipnl keepend
+syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!s\>\s*\z([^[:space:]'([{<#]\)+ end=+\z1+me=e-1 contains=@perlInterpMatch nextgroup=perlSubstitutionGQQ keepend extend
+syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!s\s*'+  end=+'+me=e-1 contains=@perlInterpSQ nextgroup=perlSubstitutionSQ keepend extend
+syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!s\s*/+  end=+/+me=e-1 contains=@perlInterpSlash nextgroup=perlSubstitutionGQQ keepend extend
+syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!s#+  end=+#+me=e-1 contains=@perlInterpMatch nextgroup=perlSubstitutionGQQ keepend extend
+syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!s\s*(+ end=+)+ contains=@perlInterpMatch,perlParensDQ nextgroup=perlSubstitutionGQQ skipwhite skipempty skipnl keepend extend
+syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!s\s*<+ end=+>+ contains=@perlInterpMatch,perlAnglesDQ nextgroup=perlSubstitutionGQQ skipwhite skipempty skipnl keepend extend
+syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!s\s*\[+ end=+\]+ contains=@perlInterpMatch,perlBracketsDQ nextgroup=perlSubstitutionGQQ skipwhite skipempty skipnl keepend extend
 syn region perlMatch	matchgroup=perlMatchStartEnd start=+\<\%(::\|'\|->\)\@<!s\s*{+ end=+}+ contains=@perlInterpMatch,perlBracesDQ nextgroup=perlSubstitutionGQQ skipwhite skipempty skipnl keepend extend
-syn region perlSubstitutionGQQ		matchgroup=perlMatchStartEnd start=+\z([^[:space:]'([{<]\)+ end=+\z1[msixpodualgcer]*+ keepend contained contains=@perlInterpDQ
-syn region perlSubstitutionGQQ		matchgroup=perlMatchStartEnd start=+(+ end=+)[msixpodualgcer]*+ contained contains=@perlInterpDQ,perlParensDQ keepend
-syn region perlSubstitutionGQQ		matchgroup=perlMatchStartEnd start=+\[+ end=+\][msixpodualgcer]*+ contained contains=@perlInterpDQ,perlBracketsDQ keepend
-syn region perlSubstitutionGQQ		matchgroup=perlMatchStartEnd start=+{+ end=+}[msixpodualgcer]*+ contained contains=@perlInterpDQ,perlBracesDQ keepend extend
-syn region perlSubstitutionGQQ		matchgroup=perlMatchStartEnd start=+<+ end=+>[msixpodualgcer]*+ contained contains=@perlInterpDQ,perlAnglesDQ keepend
-syn region perlSubstitutionSQ		matchgroup=perlMatchStartEnd start=+'+  end=+'[msixpodualgcer]*+ contained contains=@perlInterpSQ keepend
+syn region perlSubstitutionGQQ		matchgroup=perlMatchStartEnd start=+\z([^[:space:]'([{<]\)+ end=+\z1[msixpodualgcer]*+ keepend contained contains=@perlInterpDQ extend
+syn region perlSubstitutionGQQ		matchgroup=perlMatchStartEnd start=+(+ end=+)[msixpodualgcer]*+ contained contains=@perlInterpDQ,perlParensDQ keepend extend
+syn region perlSubstitutionGQQ		matchgroup=perlMatchStartEnd start=+\[+ end=+\][msixpodualgcer]*+ contained contains=@perlInterpDQ,perlBracketsDQ keepend extend
+syn region perlSubstitutionGQQ		matchgroup=perlMatchStartEnd start=+{+ end=+}[msixpodualgcer]*+ contained contains=@perlInterpDQ,perlBracesDQ keepend extend extend
+syn region perlSubstitutionGQQ		matchgroup=perlMatchStartEnd start=+<+ end=+>[msixpodualgcer]*+ contained contains=@perlInterpDQ,perlAnglesDQ keepend extend
+syn region perlSubstitutionSQ		matchgroup=perlMatchStartEnd start=+'+  end=+'[msixpodualgcer]*+ contained contains=@perlInterpSQ keepend extend
 
 " Translations
 " perlMatch is the first part, perlTranslation* is the second, translator part.

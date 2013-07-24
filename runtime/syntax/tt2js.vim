@@ -3,7 +3,7 @@
 " Author:        Yates, Peter <pd.yates@gmail.com>
 " Homepage:      http://github.com/vim-perl/vim-perl
 " Bugs/requests: http://github.com/vim-perl/vim-perl/issues
-" Last Change:   2013-04-10
+" Last Change:   2013 Jul 24
 
 if exists("b:current_syntax")
     finish
