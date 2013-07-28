@@ -2891,7 +2891,7 @@ free_yank_all()
  * register and then concatenate the old and the new one (so we keep the old
  * one in case of out-of-memory).
  *
- * return FAIL for failure, OK otherwise
+ * Return FAIL for failure, OK otherwise.
  */
     int
 op_yank(oap, deleting, mess)

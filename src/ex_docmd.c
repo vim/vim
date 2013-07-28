@@ -6992,7 +6992,7 @@ ex_exit(eap)
 # ifdef FEAT_GUI
 	need_mouse_correct = TRUE;
 # endif
-	/* quit current window, may free buffer */
+	/* Quit current window, may free the buffer. */
 	win_close(curwin, !P_HID(curwin->w_buffer));
 #endif
     }
