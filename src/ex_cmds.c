@@ -3453,7 +3453,9 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 		    if (!oldbuf && eap != NULL)
 		    {
 			set_file_options(TRUE, eap);
+#ifdef FEAT_MBYTE
 			set_forced_fenc(eap);
+#endif
 		    }
 		}
 
