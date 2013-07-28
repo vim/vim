@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.4a.  Last change: 2013 Jul 20
+*repeat.txt*    For Vim version 7.4a.  Last change: 2013 Jul 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -581,6 +581,9 @@ It is only included when Vim was compiled with "huge" features.
 
 You can also use the |reltime()| function to measure time.  This only requires
 the |+reltime| feature, which is present more often.
+
+For profiling syntax highlighting see |:syntime|.
+
 
 :prof[ile] start {fname}			*:prof* *:profile* *E750*
 		Start profiling, write the output in {fname} upon exit.

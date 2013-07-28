@@ -7,22 +7,20 @@
 "              Vincent Aravantinos <firstname.name@imag.fr>
 " URL:         http://www.ocaml.info/vim/ftplugin/ocaml.vim
 " Last Change:
-"              2012 Jan 15 - Bugfix :reloading .annot file does not close
-"              splitted view (Pierre Vittet)
-"              2011 Nov 28 - Bugfix + support of multiple ml annotation file
-"              (Pierre Vittet)
-"              2010 Jul 10 - Bugfix, thanks to Pat Rondon
-"              2008 Jul 17 - Bugfix related to fnameescape (VA)
-"              2013 Jul - moving errorformat into compiler/ocaml.vim Marc Weber
-"
-" Marc Weber's comment: This file may contain a lot of (very custom) stuff
-" which eventually should be moved somewhere else ..
-"
+"              2013 Jul 26 - load default compiler settings (MM)
+"              2013 Jul 24 - removed superfluous efm-setting (MM)
+"              2013 Jul 22 - applied fixes supplied by Hirotaka Hamada (MM)
+"              2013 Mar 15 - Improved error format (MM)
 
 if exists("b:did_ftplugin")
   finish
 endif
 let b:did_ftplugin=1
+
+" Use standard compiler settings unless user wants otherwise
+if !exists("current_compiler")
+  :compiler ocaml
+endif
 
 " some macro
 if exists('*fnameescape')
@@ -44,19 +42,21 @@ if !exists("no_plugin_maps") && !exists("no_ocaml_maps")
   " (un)commenting
   if !hasmapto('<Plug>Comment')
     nmap <buffer> <LocalLeader>c <Plug>LUncomOn
-    vmap <buffer> <LocalLeader>c <Plug>BUncomOn
+    xmap <buffer> <LocalLeader>c <Plug>BUncomOn
     nmap <buffer> <LocalLeader>C <Plug>LUncomOff
-    vmap <buffer> <LocalLeader>C <Plug>BUncomOff
+    xmap <buffer> <LocalLeader>C <Plug>BUncomOff
   endif
 
-  nnoremap <buffer> <Plug>LUncomOn mz0i(* <ESC>$A *)<ESC>`z
+  nnoremap <buffer> <Plug>LUncomOn gI(* <End> *)<ESC>
   nnoremap <buffer> <Plug>LUncomOff :s/^(\* \(.*\) \*)/\1/<CR>:noh<CR>
-  vnoremap <buffer> <Plug>BUncomOn <ESC>:'<,'><CR>`<O<ESC>0i(*<ESC>`>o<ESC>0i*)<ESC>`<
-  vnoremap <buffer> <Plug>BUncomOff <ESC>:'<,'><CR>`<dd`>dd`<
+  xnoremap <buffer> <Plug>BUncomOn <ESC>:'<,'><CR>`<O<ESC>0i(*<ESC>`>o<ESC>0i*)<ESC>`<
+  xnoremap <buffer> <Plug>BUncomOff <ESC>:'<,'><CR>`<dd`>dd`<
 
-  if !hasmapto('<Plug>Abbrev')
-    iabbrev <buffer> ASS (assert (0=1) (* XXX *))
-  endif
+  nmap <buffer> <LocalLeader>s <Plug>OCamlSwitchEdit
+  nmap <buffer> <LocalLeader>S <Plug>OCamlSwitchNewWin
+
+  nmap <buffer> <LocalLeader>t <Plug>OCamlPrintType
+  xmap <buffer> <LocalLeader>t <Plug>OCamlPrintType
 endif
 
 " Let % jump between structure elements (due to Issac Trotts)
@@ -73,8 +73,8 @@ let b:match_ignorecase=0
 " switching between interfaces (.mli) and implementations (.ml)
 if !exists("g:did_ocaml_switch")
   let g:did_ocaml_switch = 1
-  map <LocalLeader>s :call OCaml_switch(0)<CR>
-  map <LocalLeader>S :call OCaml_switch(1)<CR>
+  nnoremap <Plug>OCamlSwitchEdit :<C-u>call OCaml_switch(0)<CR>
+  nnoremap <Plug>OCamlSwitchNewWin :<C-u>call OCaml_switch(1)<CR>
   fun OCaml_switch(newwin)
     if (match(bufname(""), "\\.mli$") >= 0)
       let fname = s:Fnameescape(substitute(bufname(""), "\\.mli$", ".ml", ""))
@@ -130,6 +130,10 @@ if exists("g:ocaml_folding")
   setlocal foldmethod=expr
   setlocal foldexpr=OMLetFoldLevel(v:lnum)
 endif
+
+let b:undo_ftplugin = "setlocal efm< foldmethod< foldexpr<"
+	\ . "| unlet! b:mw b:match_words b:match_ignorecase"
+
 
 " - Only definitions below, executed once -------------------------------------
 
@@ -546,6 +550,19 @@ endfunction
       return s:Extract_type_data(s:Block_pattern(lin1,lin2,col1,col2), a:annot_file_name)
     endfun
 
+      "In: A string destined to be printed in the 'echo buffer'. It has line
+      "break and 2 space at each line beginning.
+      "Out: A string destined to be yanked, without space and double space.
+    function s:unformat_ocaml_type(res)
+      "Remove end of line.
+      let res = substitute (a:res, "\n", "", "g" )
+      "remove double space
+      let res =substitute(res , "  ", " ", "g")
+      "remove space at begining of string.
+      let res = substitute(res, "^ *", "", "g")
+      return res
+    endfunction
+
   "d. main
       "In:         the current mode (eg. "visual", "normal", etc.)
       "After call: the type information is displayed
@@ -554,7 +571,10 @@ endfunction
         let annot_file_name = s:Fnameescape(expand('%:t:r')).'.annot'
         call s:Locate_annotation()
         call s:Load_annotation(annot_file_name)
-        return s:Get_type(a:mode, annot_file_name)
+        let res = s:Get_type(a:mode, annot_file_name)
+        " Copy result in the unnamed buffer
+        let @" = s:unformat_ocaml_type(res)
+        return res
       endfun
     endif
 
@@ -562,7 +582,8 @@ endfunction
       function Ocaml_get_type_or_not(mode)
         let t=reltime()
         try
-          return Ocaml_get_type(a:mode)
+          let res = Ocaml_get_type(a:mode)
+          return res
         catch
           return ""
         endtry
@@ -590,8 +611,8 @@ endfunction
     endif
 
 " Maps
-  map  <silent> <LocalLeader>t :call Ocaml_print_type("normal")<CR>
-  vmap <silent> <LocalLeader>t :<C-U>call Ocaml_print_type("visual")<CR>`<
+  nnoremap <silent> <Plug>OCamlPrintType :<C-U>call Ocaml_print_type("normal")<CR>
+  xnoremap <silent> <Plug>OCamlPrintType :<C-U>call Ocaml_print_type("visual")<CR>`<
 
 let &cpoptions=s:cposet
 unlet s:cposet

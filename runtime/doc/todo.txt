@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4a.  Last change: 2013 Jul 24
+*todo.txt*      For Vim version 7.4a.  Last change: 2013 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -97,6 +97,9 @@ carried over when using :global. (Christian Brabandt, 2013 Jun 19)
 
 Bug with 'cursorline' in diff mode.  Line being scrolled into view gets
 highlighted as the cursor line.  (Alessandro Ivaldi, 2013 Jun 4)
+
+Bug when setting Visual area manually and 'selection' is exclusive, includes
+one character too much. (Ingo Karkat, 2013 Jul 26)
 
 Patch to add the bufferlist() function. (Yegappan Lakshmanan, 2013 May 5)
 May 17: with winlist() and tabpagelist().

@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 7.4a.  Last change: 2008 Aug 06
+*version6.txt*  For Vim version 7.4a.  Last change: 2013 Jul 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10959,7 +10959,7 @@ Solution:   Save and restore the KeyTyped variable when evaluating 'foldexpr'.
 Files:	    src/fold.c
 
 Patch 6.2.160
-Problem:    When 'virtualedit' is "all" and 'selection is "exclusive",
+Problem:    When 'virtualedit' is "all" and 'selection' is "exclusive",
 	    selecting a double-width character below a single-width character
 	    may cause a crash.
 Solution:   Avoid overflow on unsigned integer decrement. (Taro Muraoka)
@@ -11619,7 +11619,7 @@ Files:	    src/gui_gtk.c
 
 Patch 6.2.256
 Problem:    Mac: "macroman" encoding isn't recognized, need to use
-	    "8bit-macroman.
+	    "8bit-macroman".
 Solution:   Recognize "macroman" with an alias "mac". (Eckehard Berns)
 Files:	    src/mbyte.c
 

@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 7.4a.  Last change: 2013 Jul 17
+*tagsrch.txt*   For Vim version 7.4a.  Last change: 2013 Jul 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -357,7 +357,7 @@ slower then.  The former can be avoided by case-fold sorting the tags file.
 See 'tagbsearch' for details.
 
 							*tag-regexp*
-The ":tag" and "tselect" commands accept a regular expression argument.  See
+The ":tag" and ":tselect" commands accept a regular expression argument.  See
 |pattern| for the special characters that can be used.
 When the argument starts with '/', it is used as a pattern.  If the argument
 does not start with '/', it is taken literally, as a full tag name.
