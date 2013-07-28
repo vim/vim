@@ -1,4 +1,4 @@
-README_vms.txt for version 7.4a of Vim: Vi IMproved.
+README_vms.txt for version 7.4b of Vim: Vi IMproved.
 
 This file explains the installation of Vim on VMS systems.
 See "README.txt" in the runtime archive for information about Vim.

@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2013 Jul 06
+" Last Change:	2013 Jul 28
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -66,9 +66,11 @@ SynMenu AB.ANTLR:antlr
 SynMenu AB.Apache\ config:apache
 SynMenu AB.Apache-style\ config:apachestyle
 SynMenu AB.Applix\ ELF:elf
+SynMenu AB.APT\ config:aptconf
 SynMenu AB.Arc\ Macro\ Language:aml
 SynMenu AB.Arch\ inventory:arch
 SynMenu AB.ART:art
+SynMenu AB.Ascii\ Doc:asciidoc
 SynMenu AB.ASP\ with\ VBScript:aspvbs
 SynMenu AB.ASP\ with\ Perl:aspperl
 SynMenu AB.Assembly.680x0:asm68k
@@ -128,6 +130,7 @@ SynMenu C.ChordPro:chordpro
 SynMenu C.Clean:clean
 SynMenu C.Clever:cl
 SynMenu C.Clipper:clipper
+SynMenu C.Clojure:clojure
 SynMenu C.Cmake:cmake
 SynMenu C.Cmusrc:cmusrc
 SynMenu C.Cobol:cobol
@@ -165,6 +168,7 @@ SynMenu DE.Digital\ Command\ Lang:dcl
 SynMenu DE.Dircolors:dircolors
 SynMenu DE.Django\ template:django
 SynMenu DE.DNS/BIND\ zone:bindzone
+SynMenu DE.Dnsmasq\ config:dnsmasq
 SynMenu DE.DocBook.auto-detect:docbk
 SynMenu DE.DocBook.SGML:docbksgml
 SynMenu DE.DocBook.XML:docbkxml
@@ -178,6 +182,7 @@ SynMenu DE.DSSSL:dsl
 SynMenu DE.DTD:dtd
 SynMenu DE.DTML\ (Zope):dtml
 SynMenu DE.DTrace:dtrace
+SynMenu DE.Dts/dtsi:dts
 SynMenu DE.Dylan.Dylan:dylan
 SynMenu DE.Dylan.Dylan\ interface:dylanintr
 SynMenu DE.Dylan.Dylan\ lid:dylanlid
@@ -198,6 +203,7 @@ SynMenu DE.Exim\ conf:exim
 SynMenu DE.Expect:expect
 SynMenu DE.Exports:exports
 
+SynMenu FG.Falcon:falcon
 SynMenu FG.Fantom:fan
 SynMenu FG.Fetchmail:fetchmail
 SynMenu FG.FlexWiki:flexwiki
@@ -221,9 +227,12 @@ SynMenu FG.Git.Commit:gitcommit
 SynMenu FG.Git.Config:gitconfig
 SynMenu FG.Git.Rebase:gitrebase
 SynMenu FG.Git.Send\ Email:gitsendemail
+SynMenu FG.Gitolite:gitolite
 SynMenu FG.Gkrellmrc:gkrellmrc
+SynMenu FG.Gnash:gnash
 SynMenu FG.GP:gp
 SynMenu FG.GPG:gpg
+SynMenu FG.Grof:gprof
 SynMenu FG.Group\ file:group
 SynMenu FG.Grub:grub
 SynMenu FG.GNU\ Server\ Pages:gsp
@@ -244,6 +253,7 @@ SynMenu HIJK.HASTE\ preproc:hastepreproc
 SynMenu HIJK.Hercules:hercules
 SynMenu HIJK.Hex\ dump.XXD:xxd
 SynMenu HIJK.Hex\ dump.Intel\ MCS51:hex
+SynMenu HIJK.Hg\ commit:hgcommit
 SynMenu HIJK.HTML.HTML:html
 SynMenu HIJK.HTML.HTML\ with\ M4:htmlm4
 SynMenu HIJK.HTML.HTML\ with\ Ruby\ (eRuby):eruby
@@ -252,6 +262,7 @@ SynMenu HIJK.HTML.Django\ HTML\ template:htmldjango
 SynMenu HIJK.HTML.HTML/OS:htmlos
 SynMenu HIJK.HTML.XHTML:xhtml
 SynMenu HIJK.Host\.conf:hostconf
+SynMenu HIJK.Hosts\ access:hostsaccess
 SynMenu HIJK.Hyper\ Builder:hb
 SynMenu HIJK.Icewm\ menu:icemenu
 SynMenu HIJK.Icon:icon
@@ -281,6 +292,7 @@ SynMenu HIJK.Java.Java\ Properties:jproperties
 SynMenu HIJK.JavaScript:javascript
 SynMenu HIJK.Jess:jess
 SynMenu HIJK.Jgraph:jgraph
+SynMenu HIJK.Jovial:jovial
 SynMenu HIJK.Kconfig:kconfig
 SynMenu HIJK.KDE\ script:kscript
 SynMenu HIJK.Kimwitu++:kwt
@@ -320,6 +332,7 @@ SynMenu M.MaGic\ Point:mgp
 SynMenu M.Mail:mail
 SynMenu M.Mail\ aliases:mailaliases
 SynMenu M.Mailcap:mailcap
+SynMenu M.Mallard:mallard
 SynMenu M.Makefile:make
 SynMenu M.MakeIndex:ist
 SynMenu M.Man\ page:man
@@ -361,6 +374,7 @@ SynMenu NO.Nanorc:nanorc
 SynMenu NO.Nastran\ input/DMAP:nastran
 SynMenu NO.Natural:natural
 SynMenu NO.Netrc:netrc
+SynMenu NO.Ninja:ninja
 SynMenu NO.Novell\ NCF\ batch:ncf
 SynMenu NO.Not\ Quite\ C\ (LEGO):nqc
 SynMenu NO.Nroff:nroff
@@ -387,6 +401,9 @@ SynMenu PQ.Perl.Perl:perl
 SynMenu PQ.Perl.Perl\ 6:perl6
 SynMenu PQ.Perl.Perl\ POD:pod
 SynMenu PQ.Perl.Perl\ XS:xs
+SynMenu PQ.Perl.Template\ toolkit:tt2
+SynMenu PQ.Perl.Template\ toolkit\ Html:tt2html
+SynMenu PQ.Perl.Template\ toolkit\ JS:tt2js
 SynMenu PQ.PHP.PHP\ 3-4:php
 SynMenu PQ.PHP.Phtml\ (PHP\ 2):phtml
 SynMenu PQ.Pike:pike
@@ -394,6 +411,7 @@ SynMenu PQ.Pine\ RC:pine
 SynMenu PQ.Pinfo\ RC:pinfo
 SynMenu PQ.PL/M:plm
 SynMenu PQ.PL/SQL:plsql
+SynMenu PQ.Pli:pli
 SynMenu PQ.PLP:plp
 SynMenu PQ.PO\ (GNU\ gettext):po
 SynMenu PQ.Postfix\ main\ config:pfmain
@@ -410,6 +428,7 @@ SynMenu PQ.Product\ Spec\ File:psf
 SynMenu PQ.Progress:progress
 SynMenu PQ.Prolog:prolog
 SynMenu PQ.ProMeLa:promela
+SynMenu PQ.Proto:proto
 SynMenu PQ.Protocols:protocols
 SynMenu PQ.Purify\ log:purifylog
 SynMenu PQ.Pyrex:pyrex
@@ -427,6 +446,8 @@ SynMenu R.RCS.RCS\ log\ output:rcslog
 SynMenu R.RCS.RCS\ file:rcs
 SynMenu R.Readline\ config:readline
 SynMenu R.Rebol:rebol
+SynMenu R.ReDIF:redif
+SynMenu R.Relax\ NG:rng
 SynMenu R.Remind:remind
 SynMenu R.Relax\ NG\ compact:rnc
 SynMenu R.Renderman.Renderman\ Shader\ Lang:sl
@@ -500,6 +521,7 @@ SynMenu Sn-Sy.Spyce:spyce
 SynMenu Sn-Sy.Speedup:spup
 SynMenu Sn-Sy.Splint:splint
 SynMenu Sn-Sy.Squid\ config:squid
+SynMenu Sn-Sy.SQL.SAP\ HANA:sqlhana
 SynMenu Sn-Sy.SQL.ESQL-C:esqlc
 SynMenu Sn-Sy.SQL.MySQL:mysql
 SynMenu Sn-Sy.SQL.PL/SQL:plsql
@@ -529,6 +551,7 @@ SynMenu T.Tags:tags
 SynMenu T.TAK.TAK\ compare:takcmp
 SynMenu T.TAK.TAK\ input:tak
 SynMenu T.TAK.TAK\ output:takout
+SynMenu T.Tar\ listing:tar
 SynMenu T.Task\ data:taskdata
 SynMenu T.Task\ 42\ edit:taskedit
 SynMenu T.Tcl/Tk:tcl
@@ -538,6 +561,7 @@ SynMenu T.Termcap/Printcap:ptcap
 SynMenu T.Terminfo:terminfo
 SynMenu T.TeX.TeX/LaTeX:tex
 SynMenu T.TeX.plain\ TeX:plaintex
+SynMenu T.TeX.Initex:initex
 SynMenu T.TeX.ConTeXt:context
 SynMenu T.TeX.TeX\ configuration:texmf
 SynMenu T.TeX.Texinfo:texinfo
@@ -546,6 +570,7 @@ SynMenu T.Tidy\ configuration:tidy
 SynMenu T.Tilde:tilde
 SynMenu T.TPP:tpp
 SynMenu T.Trasys\ input:trasys
+SynMenu T.Treetop:treetop
 SynMenu T.Trustees:trustees
 SynMenu T.TSS.Command\ Line:tsscl
 SynMenu T.TSS.Geometry:tssgm
@@ -557,6 +582,7 @@ SynMenu UV.Udev\ rules:udevrules
 SynMenu UV.UIT/UIL:uil
 SynMenu UV.UnrealScript:uc
 SynMenu UV.Updatedb\.conf:updatedb
+SynMenu UV.Upstart:upstart
 SynMenu UV.Valgrind:valgrind
 SynMenu UV.Vera:vera
 SynMenu UV.Verilog-AMS\ HDL:verilogams
@@ -600,6 +626,7 @@ SynMenu WXYZ.Xslt:xslt
 SynMenu WXYZ.XFree86\ Config:xf86conf
 SynMenu WXYZ.YAML:yaml
 SynMenu WXYZ.Yacc:yacc
+SynMenu WXYZ.Zimbu:zimbu
 
 call append(s:lnum, "")
 

@@ -74,7 +74,7 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 7
-MINOR = 4a
+MINOR = 4b
 
 # Uncomment this line if the Win32s version is to be included.
 # DOSBIN_S =  dosbin_s
@@ -137,7 +137,7 @@ MINOR = 4a
 #   Or, when using the Visual C++ Toolkit 2003: "msvcsetup.bat" (adjust the
 #   paths when necessary).
 #   For Windows 98/ME the 2003 version is required, but then the executable
-#   won't work on Windows 7 and 64 bit.
+#   won't work on Windows 7 and 64 bit systems.
 # - "nmake -f Make_mvc.mak"  (use the same path as for vcvars32.bat)
 # - "rm testdir/*.out", "nmake -f Make_mvc.mak test" and check the output.
 # - Rename vim.exe to vimw32.exe, xxd/xxd.exe to xxdw32.exe.

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4a.  Last change: 2013 Jul 28
+*todo.txt*      For Vim version 7.4b.  Last change: 2013 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,6 +34,8 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Syntax file updates. (Doug Kearns, Jul 28)
+
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
 Patch to add "acl" and "xpm" as a feature. (Ken Takata, 2013 Jul 8)
@@ -45,6 +47,12 @@ Several syntax file match "^\s*" which may get underlined if that's in the
 highlight group.  Add a "\zs" after it?
 
 Go through more coverity reports.
+
+Bug: ":he \^x" gives strange E63 error when 'regexpengine' is set to 1.
+With 'regexpengine' set to 0 results in an INTERNAL errror.
+(glts, 2013 Jul 28)
+
+/[b-a] gives error E16, should probably be E769.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 

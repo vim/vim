@@ -1,4 +1,4 @@
-README_extra.txt for version 7.4a of Vim: Vi IMproved.
+README_extra.txt for version 7.4b of Vim: Vi IMproved.
 
 These extra files of Vim are for special purposes.  This README explains what
 the files are for.  For general information about Vim, see the "README.txt"

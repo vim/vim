@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.4a.  Last change: 2013 Jul 24
+*version7.txt*  For Vim version 7.4b.  Last change: 2013 Jul 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -17915,8 +17915,274 @@ Problem:    Test 87 fails with Python 3.3.
 Solution:   Filter the error messages. (Taro Muraoka)
 Files:	    src/testdir/test87.in
 
+Patch 7.4a.001
+Problem:    Script to update syntax menu is outdated.
+Solution:   Add the missing items.
+Files:	    runtime/makemenu.vim
 
+Patch 7.4a.002
+Problem:    Valgrind errors in test 89. (Simon Ruderich)
+Solution:   Allocate one more byte. (Dominique Pelle)
+Files:	    src/misc2.c
 
-Vim:set sts=4 sw=4 tw=78 fo+=t:
+Patch 7.4a.003
+Problem:    Copyright year is outdated.
+Solution:   Only use the first year.
+Files:	    src/vim.rc, src/vim16.rc
+
+Patch 7.4a.004
+Problem:    MSVC 2012 Update 3 is not recognized.
+Solution:   Add the version number. (Raymond Ko)
+Files:	    src/Make_mvc.mak
+
+Patch 7.4a.005
+Problem:    Scroll binding causes unexpected scroll.
+Solution:   Store the topline after updating scroll binding.  Add a test.
+	    (Lech Lorens)
+Files:	    src/testdir/test98.in, src/testdir/test98a.in,
+	    src/testdir/test98.ok, src/option.c, src/testdir/Make_amiga.mak,
+	    src/testdir/Make_dos.mak, src/testdir/Make_ming.mak,
+	    src/testdir/Make_os2.mak, src/testdir/Make_vms.mms,
+	    src/testdir/Makefile
+
+Patch 7.4a.006
+Problem:    Failure in po file check goes unnoticed.
+Solution:   Fail "make test" if the po file check fails.
+Files:	    src/Makefile
+
+Patch 7.4a.007
+Problem:    After "g$" with 'virtualedit' set, "k" moves to a different
+	    column.  (Dimitar Dimitrov)
+Solution:   Set w_curswant. (Christian Brabandt)
+Files:	    src/normal.c
+
+Patch 7.4a.008
+Problem:    Python 3 doesn't handle multibyte characters properly when
+	    'encoding' is not utf-8.
+Solution:   Use PyUnicode_Decode() instead of PyUnicode_FromString(). (Ken
+	    Takata)
+Files:	    src/if_python3.c
+
+Patch 7.4a.009
+Problem:    Compiler warnings for function prototypes.
+Solution:   Add "void".  Move list_features() prototype. (Ken Takata)
+Files:	    src/gui_w48.c, src/if_py_both.h, src/version.c
+
+Patch 7.4a.010
+Problem:    Test 86 and 87 fail when building with Python or Python 3 and
+	    using a static library.
+Solution:   Add configure check to add -fPIE compiler flag.
+Files:	    src/configure.in, src/auto/configure
+
+Patch 7.4a.011
+Problem:    Configure check for Python 3 config name isn't right.
+Solution:   Always include vi_cv_var_python3_version. (Tim Harder)
+Files:	    src/configure.in, src/auto/configure
+
+Patch 7.4a.012
+Problem:    "make test" fails when using a shadow directory.
+Solution:   Create links for files in src/po. (James McCoy)
+Files:	    src/Makefile
+
+Patch 7.4a.013
+Problem:    Setting/resetting 'lbr' in the main help file changes alignment
+	    after a Tab. (Dimitar Dimitrov)
+Solution:   Also use the code for conceal mode where n_extra is computed for
+	    'lbr'.
+Files:	    src/screen.c, src/testdir/test88.in, src/testdir/test88.ok
+
+Patch 7.4a.014
+Problem:    Test 86 and 89 have a problem with using a shadow dir.
+Solution:   Adjust for the different directory structure. (James McCoy)
+Files:	    src/testdir/test89.in, src/testdir/test86.in, src/Makefile
+
+Patch 7.4a.015
+Problem:    No Japanese man pages.
+Solution:   Add Japanese translations of man pages. (Ken Takata, Yukihiro
+	    Nakadaira, et al.)
+Files:	    Filelist, src/Makefile, runtime/doc/evim-ja.UTF-8.1,
+	    runtime/doc/vim-ja.UTF-8.1, runtime/doc/vimdiff-ja.UTF-8.1,
+	    runtime/doc/vimtutor-ja.UTF-8.1, runtime/doc/xxd-ja.UTF-8.1
+
+Patch 7.4a.016 (after 7.4a.014)
+Problem:    Features enabled in Makefile.
+Solution:   Undo accidental changes.
+Files:	    src/Makefile
+
+Patch 7.4a.017
+Problem:    When 'foldmethod' is "indent", using ">>" on a line just above a
+	    fold makes the cursor line folded. (Evan Laforge)
+Solution:   Call foldOpenCursor(). (Christian Brabandt)
+Files:	    src/ops.c
+
+Patch 7.4a.018
+Problem:    Compiler warning for code unreachable. (Charles Campbell)
+Solution:   Use "while" instead of endless loop.  Change break to continue.
+Files:	    src/regexp_nfa.c, src/ui.c
+
+Patch 7.4a.019
+Problem:    Invalid closing parenthesis in test 62. Command truncated at
+	    double quote.
+Solution:   Remove the parenthesis. Change double quote to ''. (ZyX)
+Files:	    src/testdir/test62.in, src/testdir/test62.ok
+
+Patch 7.4a.020
+Problem:    Superfluous mb_ptr_adv().
+Solution:   Remove the call. (Dominique Pelle)
+Files:	    src/regexp_nfa.c
+
+Patch 7.4a.021
+Problem:    Using feedkeys() doesn't always work.
+Solution:   Omit feedkeys(). (Ken Takata)
+Files:	    src/testdir/test98a.in
+
+Patch 7.4a.022
+Problem:    Using "d2g$" does not delete the last character. (ZyX)
+Solution:   Set the "inclusive" flag properly.
+Files:	    src/normal.c
+
+Patch 7.4a.023 (after 7.4a.019)
+Problem:    Still another superfluous parenthesis. (ZyX)
+Solution:   Remove it.
+Files:	    src/testdir/test62.in
+
+Patch 7.4a.024
+Problem:    X11 GUI: Checking icon height twice.
+Solution:   Check height and width. (Dominique Pelle)
+Files:	    src/gui_x11.c
+
+Patch 7.4a.025
+Problem:    Get the press-Enter prompt even after using :redraw.
+Solution:   Clear need_wait_return when executing :redraw.
+Files:	    src/ex_docmd.c
+
+Patch 7.4a.026
+Problem:    ":diffoff" does not remove folds. (Ramel)
+Solution:   Do not restore 'foldenable' when 'foldmethod' is "manual".
+Files:	    src/diff.c
+
+Patch 7.4a.027
+Problem:    When Python adds lines to another buffer the cursor position is
+	    wrong, it might be below the last line causing ml_get errors.
+	    (Vlad Irnov)
+Solution:   Temporarily change the current window, so that marks are corrected
+	    properly.
+Files:	    src/if_py_both.h, src/window.c, src/proto/buffer.pro
+
+Patch 7.4a.028
+Problem:    Crash when spell checking in new buffer.
+Solution:   Set the b_p_key field.  (Mike Williams)
+Files:	    src/spell.c, src/testdir/test58.in
+
+Patch 7.4a.029
+Problem:    Can't build with MzScheme on Ubuntu 13.04.
+Solution:   Add configure check for the "ffi" library.
+Files:	    src/configure.in, src/auto/configure
+
+Patch 7.4a.030 (after 7.4.027)
+Problem:    Missing find_win_for_buf(). (toothpik)
+Solution:   Add missing changes.
+Files:	    src/buffer.c
+
+Patch 7.4a.031
+Problem:    Compiler warnings. (Charles Campbell)
+Solution:   Initialize variables even when not needed.
+Files:	    src/regexp_nfa.c, src/search.c
+
+Patch 7.4a.032
+Problem:    New regexp engine: Does not match shorter alternative. (Ingo
+	    Karkat)
+Solution:   Do not drop a new state when the PIM info is different.
+Files:	    src/regexp_nfa.c
+
+Patch 7.4a.033
+Problem:    Test 98 always passes.
+Solution:   Include test98a.in in test98.in, execute the crucial command in
+	    one line. (Yukihiro Nakadaira)
+Files:	    src/testdir/test98.in, src/testdir/test98a.in
+
+Patch 7.4a.034
+Problem:    The tabline may flicker when opening a new tab after 7.3.759 on
+	    Win32.
+Solution:   Move call to TabCtrl_SetCurSel(). (Ken Takata)
+Files:	    src/gui_w48.c
+
+Patch 7.4a.035
+Problem:    Fix in patch 7.4a.032 is not tested.
+Solution:   Add test.
+Files:	    src/testdir/test64.in, src/testdir/test64.ok
+
+Patch 7.4a.036
+Problem:    "\p" in a regexp does not match double-width characters.
+	    (Yukihiro Nakadaira)
+Solution:   Don't count display cells, use vim_isprintc().
+Files:	    src/regexp.c, src/regexp_nfa.c, src/testdir/test64.in,
+	    src/testdir/test64.ok, src/testdir/test95.in,
+	    src/testdir/test95.ok
+
+Patch 7.4a.037
+Problem:    Win32: When mouse is hidden and in the toolbar, moving it won't
+	    make it appear. (Sami Salonen)
+Solution:   Add tabline_wndproc() and toolbar_wndproc(). (Ken Takata)
+Files:	    src/gui_w32.c, src/gui_w48.c
+
+Patch 7.4a.038
+Problem:    When using MSVC 2012 there are various issues, including GUI size
+	    computations.
+Solution:   Use SM_CXPADDEDBORDER. (Mike Williams)
+Files:	    src/gui_w32.c, src/gui_w48.c, src/os_win32.h
+
+Patch 7.4a.039
+Problem:    New regexp engine doesn't match pattern. (Ingo Karkat)
+Solution:   When adding a state also check for different PIM if the list of
+	    states has any state with a PIM.
+Files:	    src/regexp_nfa.c, src/testdir/test64.in, src/testdir/test64.ok
+
+Patch 7.4a.040
+Problem:    Win32: using uninitialized variable.
+Solution:   (Yukihiro Nakadaira)
+Files:	    src/os_win32.c
+
+Patch 7.4a.041
+Problem:    When using ":new ++ff=unix" and "dos" is first in 'fileformats'
+	    then 'ff' is set to "dos" instead of "unix". (Ingo Karkat)
+Solution:   Create set_file_options() and invoke it from do_ecmd().
+Files:	    src/fileio.c, src/proto/fileio.pro, src/ex_cmds.c,
+	    src/testdir/test91.in, src/testdir/test91.ok
+
+Patch 7.4a.042
+Problem:    Crash when BufUnload autocommands close all buffers. (Andrew
+	    Pimlott)
+Solution:   Set curwin->w_buffer to curbuf to avoid NULL.
+Files:	    src/window.c, src/testdir/test8.in, src/testdir/test8.ok
+
+Patch 7.4a.043
+Problem:    More ml_get errors when adding or deleting lines from Python.
+	    (Vlad Irnov)
+Solution:   Switch to a window with the buffer when possible.
+Files:	    src/if_py_both.h
+
+Patch 7.4a.044
+Problem:    Test 96 sometimes fails.
+Solution:   Clear window from b_wininfo in win_free().  (Suggestion by
+	    Yukihiro Nakadaira)
+Files:	    src/window.c
+
+Patch 7.4a.045
+Problem:    Configure does not always find the right library for Lua.  Missing
+	    support for LuaJit. 
+Solution:   Improve the configure detection of Lua. (Hiroshi Shirosaki)
+Files:	    src/Makefile, src/configure.in, src/auto/configure
+
+Patch 7.4a.046
+Problem:    Can't build without mbyte feature.
+Solution:   Add #ifdefs.
+Files:	    src/ex_cmds.c
+
+Patch 7.4a.047
+Problem:    Some comments are not so nice.
+Solution:   Change the comments.
+Files:	    src/ex_docmd.c, src/message.c, src/ops.c, src/option.c
+
 
  vim:tw=78:ts=8:ft=help:norl:
