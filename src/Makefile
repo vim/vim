@@ -381,8 +381,12 @@ CClink = $(CC)
 # LUA
 # Uncomment one of these when you want to include the Lua interface.
 # First one is for static linking, second one for dynamic loading.
+# Use --with-luajit if you want to use LuaJIT instead of Lua.
+# Set PATH environment variable to find lua or luajit executable.
 #CONF_OPT_LUA = --enable-luainterp
 #CONF_OPT_LUA = --enable-luainterp=dynamic
+#CONF_OPT_LUA = --enable-luainterp --with-luajit
+#CONF_OPT_LUA = --enable-luainterp=dynamic --with-luajit
 # Lua installation dir (when not set uses $LUA_PREFIX or defaults to /usr)
 #CONF_OPT_LUA_PREFIX = --with-lua-prefix=/usr/local
 

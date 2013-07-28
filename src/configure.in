@@ -453,74 +453,160 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
     fi
   fi
 
+  AC_MSG_CHECKING(--with-luajit)
+  AC_ARG_WITH(luajit,
+	[  --with-luajit           Link with LuaJIT instead of Lua.],
+	[vi_cv_with_luajit="$withval"],
+	[vi_cv_with_luajit="no"])
+  AC_MSG_RESULT($vi_cv_with_luajit)
+
   LUA_INC=
   if test "X$vi_cv_path_lua_pfx" != "X"; then
-    dnl -- try to find Lua executable
-    AC_PATH_PROG(vi_cv_path_lua, lua)
-    if test "X$vi_cv_path_lua" != "X"; then
-      dnl -- find Lua version
-      AC_CACHE_CHECK(Lua version, vi_cv_version_lua,
-      [ vi_cv_version_lua=`${vi_cv_path_lua} -e "print(_VERSION)" | sed 's/.* //'` ])
-    fi
-    AC_MSG_CHECKING(if lua.h can be found in $vi_cv_path_lua_pfx/include)
-    if test -f $vi_cv_path_lua_pfx/include/lua.h; then
-      AC_MSG_RESULT(yes)
+    if test "x$vi_cv_with_luajit" != "xno"; then
+      dnl -- try to find LuaJIT executable
+      AC_PATH_PROG(vi_cv_path_luajit, luajit)
+      if test "X$vi_cv_path_luajit" != "X"; then
+	dnl -- find LuaJIT version
+	AC_CACHE_CHECK(LuaJIT version, vi_cv_version_luajit,
+	[ vi_cv_version_luajit=`${vi_cv_path_luajit} -v | sed 's/LuaJIT \([[0-9.]]*\)\.[[0-9]] .*/\1/'` ])
+	AC_CACHE_CHECK(Lua version of LuaJIT, vi_cv_version_lua_luajit,
+	[ vi_cv_version_lua_luajit=`${vi_cv_path_luajit} -e "print(_VERSION)" | sed 's/.* //'` ])
+	vi_cv_path_lua="$vi_cv_path_luajit"
+	vi_cv_version_lua="$vi_cv_version_lua_luajit"
+      fi
     else
-      AC_MSG_RESULT(no)
-      AC_MSG_CHECKING(if lua.h can be found in $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua)
-      if test -f $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua/lua.h; then
-        AC_MSG_RESULT(yes)
-        LUA_INC=/lua$vi_cv_version_lua
+      dnl -- try to find Lua executable
+      AC_PATH_PROG(vi_cv_path_plain_lua, lua)
+      if test "X$vi_cv_path_plain_lua" != "X"; then
+	dnl -- find Lua version
+	AC_CACHE_CHECK(Lua version, vi_cv_version_plain_lua,
+	[ vi_cv_version_plain_lua=`${vi_cv_path_plain_lua} -e "print(_VERSION)" | sed 's/.* //'` ])
+      fi
+      vi_cv_path_lua="$vi_cv_path_plain_lua"
+      vi_cv_version_lua="$vi_cv_version_plain_lua"
+    fi
+    if test "x$vi_cv_with_luajit" != "xno" && test "X$vi_cv_version_luajit" != "X"; then
+      AC_MSG_CHECKING(if lua.h can be found in $vi_cv_path_lua_pfx/include/luajit-$vi_cv_version_luajit)
+      if test -f $vi_cv_path_lua_pfx/include/luajit-$vi_cv_version_luajit/lua.h; then
+	AC_MSG_RESULT(yes)
+	LUA_INC=/luajit-$vi_cv_version_luajit
+      fi
+    fi
+    if test "X$LUA_INC" = "X"; then
+      AC_MSG_CHECKING(if lua.h can be found in $vi_cv_path_lua_pfx/include)
+      if test -f $vi_cv_path_lua_pfx/include/lua.h; then
+	AC_MSG_RESULT(yes)
       else
-        AC_MSG_RESULT(no)
-        vi_cv_path_lua_pfx=
+	AC_MSG_RESULT(no)
+	AC_MSG_CHECKING(if lua.h can be found in $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua)
+	if test -f $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua/lua.h; then
+	  AC_MSG_RESULT(yes)
+	  LUA_INC=/lua$vi_cv_version_lua
+	else
+	  AC_MSG_RESULT(no)
+	  vi_cv_path_lua_pfx=
+	fi
       fi
     fi
   fi
 
   if test "X$vi_cv_path_lua_pfx" != "X"; then
-    if test "X$LUA_INC" != "X"; then
-      dnl Test alternate location using version
-      LUA_LIBS="-L${vi_cv_path_lua_pfx}/lib -llua$vi_cv_version_lua"
+    if test "x$vi_cv_with_luajit" != "xno"; then
+      multiarch=`dpkg-architecture -qDEB_HOST_MULTIARCH 2> /dev/null`
+      if test "X$multiarch" != "X"; then
+	lib_multiarch="lib/${multiarch}"
+      else
+	lib_multiarch="lib"
+      fi
+      if test "X$vi_cv_version_lua" = "X"; then
+	LUA_LIBS="-L${vi_cv_path_lua_pfx}/${lib_multiarch} -lluajit"
+      else
+	LUA_LIBS="-L${vi_cv_path_lua_pfx}/${lib_multiarch} -lluajit-$vi_cv_version_lua"
+      fi
     else
-      LUA_LIBS="-L${vi_cv_path_lua_pfx}/lib -llua"
+      if test "X$LUA_INC" != "X"; then
+	dnl Test alternate location using version
+	LUA_LIBS="-L${vi_cv_path_lua_pfx}/lib -llua$vi_cv_version_lua"
+      else
+	LUA_LIBS="-L${vi_cv_path_lua_pfx}/lib -llua"
+      fi
     fi
-    LUA_CFLAGS="-I${vi_cv_path_lua_pfx}/include${LUA_INC}"
-    LUA_SRC="if_lua.c"
-    LUA_OBJ="objects/if_lua.o"
-    LUA_PRO="if_lua.pro"
-    AC_DEFINE(FEAT_LUA)
     if test "$enable_luainterp" = "dynamic"; then
+      lua_ok="yes"
+    else
+      AC_MSG_CHECKING([if link with ${LUA_LIBS} is sane])
+      libs_save=$LIBS
+      LIBS="$LIBS $LUA_LIBS"
+      AC_TRY_LINK(,[ ],
+	AC_MSG_RESULT(yes); lua_ok="yes",
+	AC_MSG_RESULT(no); lua_ok="no"; LUA_LIBS="")
+      LIBS=$libs_save
+    fi
+    if test "x$lua_ok" = "xyes"; then
+      LUA_CFLAGS="-I${vi_cv_path_lua_pfx}/include${LUA_INC}"
+      LUA_SRC="if_lua.c"
+      LUA_OBJ="objects/if_lua.o"
+      LUA_PRO="if_lua.pro"
+      AC_DEFINE(FEAT_LUA)
+    fi
+    if test "$enable_luainterp" = "dynamic"; then
+      if test "x$vi_cv_with_luajit" != "xno"; then
+	luajit="jit"
+      fi
       if test -f "${vi_cv_path_lua_pfx}/bin/cyglua-${vi_cv_version_lua}.dll"; then
 	vi_cv_dll_name_lua="cyglua-${vi_cv_version_lua}.dll"
       else
-	multiarch=`dpkg-architecture -qDEB_HOST_MULTIARCH 2> /dev/null`
-	if test "X$multiarch" != "X"; then
-	  lib_multiarch="lib/${multiarch}"
+	if test "x$MACOSX" = "xyes"; then
+	  ext="dylib"
+	  indexes=""
+	else
+	  ext="so"
+	  indexes=".0 .1 .2 .3 .4 .5 .6 .7 .8 .9"
+	  multiarch=`dpkg-architecture -qDEB_HOST_MULTIARCH 2> /dev/null`
+	  if test "X$multiarch" != "X"; then
+	    lib_multiarch="lib/${multiarch}"
+	  fi
 	fi
 	dnl Determine the sover for the current version, but fallback to
 	dnl liblua${vi_cv_version_lua}.so if no sover-versioned file is found.
+	AC_MSG_CHECKING(if liblua${luajit}*.${ext}* can be found in $vi_cv_path_lua_pfx)
 	for subdir in "${lib_multiarch}" lib64 lib; do
 	  if test -z "$subdir"; then
 	    continue
 	  fi
-	  for sover in "${vi_cv_version_lua}.so" "-${vi_cv_version_lua}.so" ".so.${vi_cv_version_lua}"; do
-	    for i in .0 .1 .2 .3 .4 .5 .6 .7 .8 .9 ""; do
-	      if test -f "${vi_cv_path_lua_pfx}/${subdir}/liblua${sover}$i"; then
+	  for sover in "${vi_cv_version_lua}.${ext}" "-${vi_cv_version_lua}.${ext}" \
+	    ".${vi_cv_version_lua}.${ext}" ".${ext}.${vi_cv_version_lua}"; do
+	    for i in $indexes ""; do
+	      if test -f "${vi_cv_path_lua_pfx}/${subdir}/liblua${luajit}${sover}$i"; then
 		sover2="$i"
 		break 3
 	      fi
 	    done
 	  done
+	  sover=""
 	done
-	vi_cv_dll_name_lua="liblua${sover}$sover2"
+	if test "X$sover" = "X"; then
+	  AC_MSG_RESULT(no)
+	  lua_ok="no"
+	  vi_cv_dll_name_lua="liblua${luajit}.${ext}"
+	else
+	  AC_MSG_RESULT(yes)
+	  lua_ok="yes"
+	  vi_cv_dll_name_lua="liblua${luajit}${sover}$sover2"
+	fi
       fi
       AC_DEFINE(DYNAMIC_LUA)
       LUA_LIBS=""
       LUA_CFLAGS="-DDYNAMIC_LUA_DLL=\\\"${vi_cv_dll_name_lua}\\\" $LUA_CFLAGS"
     fi
+    if test "X$LUA_CFLAGS$LUA_LIBS" != "X" && \
+       test "x$MACOSX" = "xyes" && test "x$vi_cv_with_luajit" != "xno" && \
+       test "`(uname -m) 2>/dev/null`" = "x86_64"; then
+      dnl OSX/x64 requires these flags. See http://luajit.org/install.html
+      LUA_LIBS="-pagezero_size 10000 -image_base 100000000 $LUA_LIBS"
+    fi
   fi
-  if test "$fail_if_missing" = "yes" -a -z "$LUA_SRC"; then
+  if test "$fail_if_missing" = "yes" -a "$lua_ok" != "yes"; then
     AC_MSG_ERROR([could not configure lua])
   fi
   AC_SUBST(LUA_SRC)
