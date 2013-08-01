@@ -3910,15 +3910,27 @@ addstate(l, state, subs_arg, pim, off)
 	case NFA_ZCLOSE8:
 	case NFA_ZCLOSE9:
 #endif
+	case NFA_MOPEN:
 	case NFA_ZEND:
 	case NFA_SPLIT:
-	case NFA_NOPEN:
 	case NFA_SKIP_CHAR:
 	    /* These nodes are not added themselves but their "out" and/or
 	     * "out1" may be added below.  */
 	    break;
 
-	case NFA_MOPEN:
+	case NFA_BOL:
+	case NFA_BOF:
+	    /* "^" won't match past end-of-line, don't bother trying.
+	     * Except when at the end of the line, or when we are going to the
+	     * next line for a look-behind match. */
+	    if (reginput > regline
+		    && *reginput != NUL
+		    && (nfa_endp == NULL
+			|| !REG_MULTI
+			|| reglnum == nfa_endp->se_u.pos.lnum))
+		goto skip_add;
+	    /* FALLTHROUGH */
+
 	case NFA_MOPEN1:
 	case NFA_MOPEN2:
 	case NFA_MOPEN3:
@@ -3940,26 +3952,11 @@ addstate(l, state, subs_arg, pim, off)
 	case NFA_ZOPEN8:
 	case NFA_ZOPEN9:
 #endif
+	case NFA_NOPEN:
 	case NFA_ZSTART:
-	    /* These nodes do not need to be added, but we need to bail out
-	     * when it was tried to be added to this list before. */
-	    if (state->lastlist[nfa_ll_index] == l->id)
-		goto skip_add;
-	    state->lastlist[nfa_ll_index] = l->id;
-	    break;
-
-	case NFA_BOL:
-	case NFA_BOF:
-	    /* "^" won't match past end-of-line, don't bother trying.
-	     * Except when at the end of the line, or when we are going to the
-	     * next line for a look-behind match. */
-	    if (reginput > regline
-		    && *reginput != NUL
-		    && (nfa_endp == NULL
-			|| !REG_MULTI
-			|| reglnum == nfa_endp->se_u.pos.lnum))
-		goto skip_add;
-	    /* FALLTHROUGH */
+	    /* These nodes need to be added so that we can bail out when it
+	     * was added to this list before at the same position to avoid an
+	     * endless loop for "\(\)*" */
 
 	default:
 	    if (state->lastlist[nfa_ll_index] == l->id)
@@ -6025,13 +6022,41 @@ nfa_regmatch(prog, start, submatch, m)
 #endif
 		break;
 
+	    case NFA_MOPEN1:
+	    case NFA_MOPEN2:
+	    case NFA_MOPEN3:
+	    case NFA_MOPEN4:
+	    case NFA_MOPEN5:
+	    case NFA_MOPEN6:
+	    case NFA_MOPEN7:
+	    case NFA_MOPEN8:
+	    case NFA_MOPEN9:
+#ifdef FEAT_SYN_HL
+	    case NFA_ZOPEN:
+	    case NFA_ZOPEN1:
+	    case NFA_ZOPEN2:
+	    case NFA_ZOPEN3:
+	    case NFA_ZOPEN4:
+	    case NFA_ZOPEN5:
+	    case NFA_ZOPEN6:
+	    case NFA_ZOPEN7:
+	    case NFA_ZOPEN8:
+	    case NFA_ZOPEN9:
+#endif
+	    case NFA_NOPEN:
+	    case NFA_ZSTART:
+		/* These states are only added to be able to bail out when
+		 * they are added again, nothing is to be done. */
+		break;
+
 	    default:	/* regular character */
 	      {
 		int c = t->state->c;
 
-		/* TODO: put this in #ifdef later */
+#ifdef DEBUG
 		if (c < 0)
 		    EMSGN("INTERNAL: Negative state char: %ld", c);
+#endif
 		result = (c == curc);
 
 		if (!result && ireg_ic)
