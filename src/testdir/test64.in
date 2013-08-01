@@ -373,6 +373,7 @@ STARTTEST
 :call add(tl, [2, '\%[bar]x', 'xxx', 'x'])
 :call add(tl, [2, 'b\%[[ao]r]', 'bar bor', 'bar'])
 :call add(tl, [2, 'b\%[[]]r]', 'b]r bor', 'b]r'])
+:call add(tl, [2, '@\%[\w\-]*', '<http://john.net/pandoc/>[@pandoc]', '@pandoc'])
 :"
 :"""" Alternatives, must use first longest match
 :call add(tl, [2, 'goo\|go', 'google', 'goo'])

@@ -857,6 +857,9 @@ OK 2 - b\%[[ao]r]
 OK 0 - b\%[[]]r]
 OK 1 - b\%[[]]r]
 OK 2 - b\%[[]]r]
+OK 0 - @\%[\w\-]*
+OK 1 - @\%[\w\-]*
+OK 2 - @\%[\w\-]*
 OK 0 - goo\|go
 OK 1 - goo\|go
 OK 2 - goo\|go

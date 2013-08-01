@@ -1166,6 +1166,15 @@ nfa_regatom()
 						      reg_magic == MAGIC_ALL);
 			EMIT(NFA_OPT_CHARS);
 			EMIT(n);
+
+			/* Emit as "\%(\%[abc]\)" to be able to handle
+			 * "\%[abc]*" which would cause the empty string to be
+			 * matched an unlimited number of times. NFA_NOPEN is
+			 * added only once at a position, while NFA_SPLIT is
+			 * added multiple times.  This is more efficient than
+			 * not allowsing NFA_SPLIT multiple times, it is used
+			 * a lot. */
+			EMIT(NFA_NOPEN);
 			break;
 		    }
 
@@ -1641,7 +1650,7 @@ nfa_regpiece()
 	     * engine interprets the plus as "try matching one more time", and
 	     * a* matches a second time at the end of the input, the empty
 	     * string.
-	     * The submatch will the empty string.
+	     * The submatch will be the empty string.
 	     *
 	     * In order to be consistent with the old engine, we replace
 	     * <atom>+ with <atom><atom>*
@@ -2242,13 +2251,13 @@ nfa_postfix_dump(expr, retval)
 	else if (retval == OK)
 	    fprintf(f, ">>> NFA engine succeeded !\n");
 	fprintf(f, "Regexp: \"%s\"\nPostfix notation (char): \"", expr);
-	for (p = post_start; *p && p < post_end; p++)
+	for (p = post_start; *p && p < post_ptr; p++)
 	{
 	    nfa_set_code(*p);
 	    fprintf(f, "%s, ", code);
 	}
 	fprintf(f, "\"\nPostfix notation (int): ");
-	for (p = post_start; *p && p < post_end; p++)
+	for (p = post_start; *p && p < post_ptr; p++)
 		fprintf(f, "%d ", *p);
 	fprintf(f, "\n\n");
 	fclose(f);
@@ -3005,7 +3014,18 @@ post2nfa(postfix, end, nfa_calc_size)
 	  {
 	    int    n;
 
-	    /* \%[abc] */
+	    /* \%[abc] implemented as:
+	     *    NFA_SPLIT
+	     *    +-CHAR(a)
+	     *    | +-NFA_SPLIT
+	     *    |   +-CHAR(b)
+	     *    |   | +-NFA_SPLIT
+	     *    |   |   +-CHAR(c)
+	     *    |   |   | +-next
+	     *    |   |   +- next
+	     *    |   +- next
+	     *    +- next
+	     */
 	    n = *++p; /* get number of characters */
 	    if (nfa_calc_size == TRUE)
 	    {
