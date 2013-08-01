@@ -3179,12 +3179,14 @@ gui_mch_dialog(
 	maxDialogWidth = workarea_rect.right - workarea_rect.left - 100;
 	if (maxDialogWidth > 600)
 	    maxDialogWidth = 600;
-	maxDialogHeight = workarea_rect.bottom - workarea_rect.top - 100;
+	/* Leave some room for the taskbar. */
+	maxDialogHeight = workarea_rect.bottom - workarea_rect.top - 150;
     }
     else
     {
-	/* Use our own window for the size, unless it's very small. */
-	GetWindowRect(s_hwnd, &rect);
+	/* Use our own window's client area for the size, unless it's very
+	 * small. */
+	GetClientRect(s_hwnd, &rect);
 	maxDialogWidth = rect.right - rect.left
 				   - (GetSystemMetrics(SM_CXFRAME) +
                                       GetSystemMetrics(SM_CXPADDEDBORDER)) * 2;
@@ -3192,8 +3194,8 @@ gui_mch_dialog(
 	    maxDialogWidth = DLG_MIN_MAX_WIDTH;
 
 	maxDialogHeight = rect.bottom - rect.top
-				   - (GetSystemMetrics(SM_CXFRAME) +
-                                      GetSystemMetrics(SM_CXPADDEDBORDER)) * 2;
+				   - (GetSystemMetrics(SM_CYFRAME) +
+                                      GetSystemMetrics(SM_CXPADDEDBORDER)) * 4;
 	if (maxDialogHeight < DLG_MIN_MAX_HEIGHT)
 	    maxDialogHeight = DLG_MIN_MAX_HEIGHT;
     }
