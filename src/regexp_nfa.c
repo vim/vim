@@ -744,8 +744,8 @@ nfa_emit_equi_class(c)
 	{
 	    case 'A': case 0300: case 0301: case 0302:
 	    case 0303: case 0304: case 0305:
-		    EMIT2('A');	    EMIT2(0300);  EMIT2(0301);
-		    EMIT2(0302);  EMIT2(0303);  EMIT2(0304);
+		    EMIT2('A');	    EMIT2(0300);    EMIT2(0301);
+		    EMIT2(0302);    EMIT2(0303);    EMIT2(0304);
 		    EMIT2(0305);
 		    return OK;
 
@@ -754,13 +754,13 @@ nfa_emit_equi_class(c)
 		    return OK;
 
 	    case 'E': case 0310: case 0311: case 0312: case 0313:
-		    EMIT2('E');	    EMIT2(0310);  EMIT2(0311);
-		    EMIT2(0312);  EMIT2(0313);
+		    EMIT2('E');	    EMIT2(0310);    EMIT2(0311);
+		    EMIT2(0312);    EMIT2(0313);
 		    return OK;
 
 	    case 'I': case 0314: case 0315: case 0316: case 0317:
-		    EMIT2('I');	    EMIT2(0314);  EMIT2(0315);
-		    EMIT2(0316);  EMIT2(0317);
+		    EMIT2('I');	    EMIT2(0314);    EMIT2(0315);
+		    EMIT2(0316);    EMIT2(0317);
 		    return OK;
 
 	    case 'N': case 0321:
@@ -769,13 +769,13 @@ nfa_emit_equi_class(c)
 
 	    case 'O': case 0322: case 0323: case 0324: case 0325:
 	    case 0326:
-		    EMIT2('O');	    EMIT2(0322);  EMIT2(0323);
-		    EMIT2(0324);  EMIT2(0325);  EMIT2(0326);
+		    EMIT2('O');	    EMIT2(0322);    EMIT2(0323);
+		    EMIT2(0324);    EMIT2(0325);    EMIT2(0326);
 		    return OK;
 
 	    case 'U': case 0331: case 0332: case 0333: case 0334:
-		    EMIT2('U');	    EMIT2(0331);  EMIT2(0332);
-		    EMIT2(0333);  EMIT2(0334);
+		    EMIT2('U');	    EMIT2(0331);    EMIT2(0332);
+		    EMIT2(0333);    EMIT2(0334);
 		    return OK;
 
 	    case 'Y': case 0335:
@@ -784,8 +784,8 @@ nfa_emit_equi_class(c)
 
 	    case 'a': case 0340: case 0341: case 0342:
 	    case 0343: case 0344: case 0345:
-		    EMIT2('a');	    EMIT2(0340);  EMIT2(0341);
-		    EMIT2(0342);  EMIT2(0343);  EMIT2(0344);
+		    EMIT2('a');	    EMIT2(0340);    EMIT2(0341);
+		    EMIT2(0342);    EMIT2(0343);    EMIT2(0344);
 		    EMIT2(0345);
 		    return OK;
 
@@ -794,13 +794,13 @@ nfa_emit_equi_class(c)
 		    return OK;
 
 	    case 'e': case 0350: case 0351: case 0352: case 0353:
-		    EMIT2('e');	    EMIT2(0350);  EMIT2(0351);
-		    EMIT2(0352);  EMIT2(0353);
+		    EMIT2('e');	    EMIT2(0350);    EMIT2(0351);
+		    EMIT2(0352);    EMIT2(0353);
 		    return OK;
 
 	    case 'i': case 0354: case 0355: case 0356: case 0357:
-		    EMIT2('i');	    EMIT2(0354);  EMIT2(0355);
-		    EMIT2(0356);  EMIT2(0357);
+		    EMIT2('i');	    EMIT2(0354);    EMIT2(0355);
+		    EMIT2(0356);    EMIT2(0357);
 		    return OK;
 
 	    case 'n': case 0361:
@@ -809,17 +809,17 @@ nfa_emit_equi_class(c)
 
 	    case 'o': case 0362: case 0363: case 0364: case 0365:
 	    case 0366:
-		    EMIT2('o');	    EMIT2(0362);  EMIT2(0363);
-		    EMIT2(0364);  EMIT2(0365);  EMIT2(0366);
+		    EMIT2('o');	    EMIT2(0362);    EMIT2(0363);
+		    EMIT2(0364);    EMIT2(0365);    EMIT2(0366);
 		    return OK;
 
 	    case 'u': case 0371: case 0372: case 0373: case 0374:
-		    EMIT2('u');	    EMIT2(0371);  EMIT2(0372);
-		    EMIT2(0373);  EMIT2(0374);
+		    EMIT2('u');	    EMIT2(0371);    EMIT2(0372);
+		    EMIT2(0373);    EMIT2(0374);
 		    return OK;
 
 	    case 'y': case 0375: case 0377:
-		    EMIT2('y');	    EMIT2(0375);  EMIT2(0377);
+		    EMIT2('y');	    EMIT2(0375);    EMIT2(0377);
 		    return OK;
 
 	    default:
