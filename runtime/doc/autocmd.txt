@@ -961,6 +961,9 @@ The pattern is interpreted like mostly used in file names:
 	\,	matches a ','
 	{ }	like \( \) in a |pattern|
 	,	inside { }: like \| in a |pattern|
+	\}	literal }
+	\{	literal {
+	\\\{n,m\}  like \{n,m} in a |pattern|
 	\	special meaning like in a |pattern|
 	[ch]	matches 'c' or 'h'
 	[^ch]   match any character but 'c' and 'h'

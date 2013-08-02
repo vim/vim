@@ -10327,7 +10327,7 @@ file_pat_to_reg_pat(pat, pat_end, allow_dirs, no_bslash)
 		 * Don't unescape \, * and others that are also special in a
 		 * regexp.
 		 * An escaped { must be unescaped since we use magic not
-		 * verymagic.
+		 * verymagic.  Use "\\\{n,m\}"" to get "\{n,m}".
 		 */
 		if (*++p == '?'
 #ifdef BACKSLASH_IN_FILENAME
@@ -10337,8 +10337,14 @@ file_pat_to_reg_pat(pat, pat_end, allow_dirs, no_bslash)
 		    reg_pat[i++] = '?';
 		else
 		    if (*p == ',' || *p == '%' || *p == '#'
-						    || *p == ' ' || *p == '{')
+				       || *p == ' ' || *p == '{' || *p == '}')
 			reg_pat[i++] = *p;
+		    else if (*p == '\\' && p[1] == '\\' && p[2] == '{')
+		    {
+			reg_pat[i++] = '\\';
+			reg_pat[i++] = '{';
+			p += 2;
+		    }
 		    else
 		    {
 			if (allow_dirs != NULL && vim_ispathsep(*p)
