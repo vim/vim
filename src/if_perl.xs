@@ -495,7 +495,7 @@ static struct {
 /*
  * Make all runtime-links of perl.
  *
- * 1. Get module handle using LoadLibraryEx.
+ * 1. Get module handle using dlopen() or vimLoadLib().
  * 2. Get pointer to perl function by GetProcAddress.
  * 3. Repeat 2, until get all functions will be used.
  *

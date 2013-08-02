@@ -195,7 +195,7 @@ tcl_runtime_link_init(char *libname, int verbose)
 
     if (hTclLib)
 	return OK;
-    if (!(hTclLib = LoadLibraryEx(libname, NULL, 0)))
+    if (!(hTclLib = vimLoadLib(libname)))
     {
 	if (verbose)
 	    EMSG2(_(e_loadlib), libname);
