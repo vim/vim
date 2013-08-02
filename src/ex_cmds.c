@@ -1622,10 +1622,14 @@ append_redir(buf, buflen, opt, fname)
     char_u	*end;
 
     end = buf + STRLEN(buf);
-    /* find "%s", skipping "%%" */
+    /* find "%s" */
     for (p = opt; (p = vim_strchr(p, '%')) != NULL; ++p)
-	if (p[1] == 's')
+    {
+	if (p[1] == 's') /* found %s */
 	    break;
+	if (p[1] == '%') /* skip %% */
+	    ++p;
+    }
     if (p != NULL)
     {
 	*end = ' '; /* not really needed? Not with sh, ksh or bash */
