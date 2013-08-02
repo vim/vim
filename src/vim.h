@@ -2180,10 +2180,6 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
   /* Borland has the structure stati64 but not _stati64 */
 #  define _stati64 stati64
 # endif
-
-# include <EXTERN.h>
-# include <perl.h>
-# include <XSUB.h>
 #endif
 
 /* values for vim_handle_signal() that are not a signal */

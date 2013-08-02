@@ -13,7 +13,21 @@
 #define _memory_h	/* avoid memset redeclaration */
 #define IN_PERL_FILE	/* don't include if_perl.pro from proto.h */
 
+/*
+ * Currently 32-bit version of ActivePerl is built with VC6.
+ * (http://community.activestate.com/faq/windows-compilers-perl-modules)
+ * It means that time_t should be 32-bit. However the default size of
+ * time_t is 64-bit since VC8. So we have to define _USE_32BIT_TIME_T.
+ */
+#if defined(WIN32) && !defined(_WIN64)
+# define _USE_32BIT_TIME_T
+#endif
+
 #include "vim.h"
+
+#include <EXTERN.h>
+#include <perl.h>
+#include <XSUB.h>
 
 
 /*
