@@ -99,14 +99,15 @@ setmark_pos(c, pos, fnum)
     }
 
 #ifdef FEAT_VISUAL
-    if (c == '<')
+    if (c == '<' || c == '>')
     {
-	curbuf->b_visual.vi_start = *pos;
-	return OK;
-    }
-    if (c == '>')
-    {
-	curbuf->b_visual.vi_end = *pos;
+	if (c == '<')
+	    curbuf->b_visual.vi_start = *pos;
+	else
+	    curbuf->b_visual.vi_end = *pos;
+	if (curbuf->b_visual.vi_mode == NUL)
+	    /* Visual_mode has not yet been set, use a sane default. */
+	    curbuf->b_visual.vi_mode = 'v';
 	return OK;
     }
 #endif
