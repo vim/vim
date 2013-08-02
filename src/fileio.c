@@ -8861,6 +8861,7 @@ aucmd_prepbuf(aco, buf)
 #ifdef FEAT_WINDOWS
     int		save_ea;
 #endif
+    int		save_acd;
 
     /* Find a window that is for the new buffer */
     if (buf == curbuf)		/* be quick when buf is curbuf */
@@ -8909,11 +8910,10 @@ aucmd_prepbuf(aco, buf)
 	aucmd_win->w_s = &buf->b_s;
 	++buf->b_nwindows;
 	win_init_empty(aucmd_win); /* set cursor and topline to safe values */
-	vim_free(aucmd_win->w_localdir);
-	aucmd_win->w_localdir = NULL;
 
 	/* Make sure w_localdir and globaldir are NULL to avoid a chdir() in
 	 * win_enter_ext(). */
+	vim_free(aucmd_win->w_localdir);
 	aucmd_win->w_localdir = NULL;
 	aco->globaldir = globaldir;
 	globaldir = NULL;
@@ -8926,9 +8926,15 @@ aucmd_prepbuf(aco, buf)
 	make_snapshot(SNAP_AUCMD_IDX);
 	save_ea = p_ea;
 	p_ea = FALSE;
+
+	/* Prevent chdir() call in win_enter_ext(), through do_autochdir(). */
+	save_acd = p_acd;
+	p_acd = FALSE;
+
 	(void)win_split_ins(0, WSP_TOP, aucmd_win, 0);
 	(void)win_comp_pos();   /* recompute window positions */
 	p_ea = save_ea;
+	p_acd = save_acd;
 	unblock_autocmds();
 #endif
 	curwin = aucmd_win;
