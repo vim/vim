@@ -10887,7 +10887,14 @@ get_cmd_output(cmd, infile, flags)
 	buffer = NULL;
     }
     else
+    {
+	/* Change NUL into SOH, otherwise the string is truncated. */
+	for (i = 0; i < len; ++i)
+	    if (buffer[len] == NUL)
+		buffer[len] = 1;
+
 	buffer[len] = NUL;	/* make sure the buffer is terminated */
+    }
 
 done:
     vim_free(tempname);
