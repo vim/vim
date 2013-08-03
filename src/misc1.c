@@ -10890,8 +10890,8 @@ get_cmd_output(cmd, infile, flags)
     {
 	/* Change NUL into SOH, otherwise the string is truncated. */
 	for (i = 0; i < len; ++i)
-	    if (buffer[len] == NUL)
-		buffer[len] = 1;
+	    if (buffer[i] == NUL)
+		buffer[i] = 1;
 
 	buffer[len] = NUL;	/* make sure the buffer is terminated */
     }
