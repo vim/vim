@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.4b.  Last change: 2013 Jun 15
+*autocmd.txt*   For Vim version 7.4b.  Last change: 2013 Aug 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -952,7 +952,8 @@ the autocommand is executed.  This is different from the command!
 
 							*file-pattern*
 The pattern is interpreted like mostly used in file names:
-	*	matches any sequence of characters
+	*	matches any sequence of characters; Unusal: includes path
+		separators
 	?	matches any single character
 	\?	matches a '?'
 	.	matches a '.'

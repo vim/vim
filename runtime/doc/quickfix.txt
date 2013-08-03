@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.4b.  Last change: 2013 Mar 07
+*quickfix.txt*  For Vim version 7.4b.  Last change: 2013 Aug 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -899,6 +899,8 @@ invalid.
 Special characters in 'errorformat' are comma and backslash.  See
 |efm-entries| for how to deal with them.  Note that a literal "%" is matched
 by "%%", thus it is not escaped with a backslash.
+Keep in mind that in the `:make` and `:grep` output all NUL characters are
+replaced with SOH (0x01).
 
 Note: By default the difference between upper and lowercase is ignored.  If
 you want to match case, add "\C" to the pattern |/\C|.

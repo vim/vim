@@ -4,7 +4,7 @@
 " Previously:    Scott Bigham <dsb@killerbunnies.org>
 " Homepage:      http://github.com/vim-perl/vim-perl
 " Bugs/requests: http://github.com/vim-perl/vim-perl/issues
-" Last Change:   2013 Jul 24
+" Last Change:   2013-07-21
 
 " To add embedded POD documentation highlighting to your syntax file, add
 " the commands:

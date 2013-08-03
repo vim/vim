@@ -3,7 +3,7 @@
 " Maintainer:    vim-perl <vim-perl@googlegroups.com>
 " Homepage:      http://github.com/vim-perl/vim-perl
 " Bugs/requests: http://github.com/vim-perl/vim-perl/issues
-" Last Change:   2013 Jul 24
+" Last Change:   2013-07-21
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")

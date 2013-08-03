@@ -3,7 +3,7 @@
 " Maintainer:    vim-perl <vim-perl@googlegroups.com>
 " Homepage:      http://github.com/vim-perl/vim-perl/tree/master
 " Bugs/requests: http://github.com/vim-perl/vim-perl/issues
-" Last Change:   2013 Jul 24
+" Last Change:   2013-07-21
 
 " Contributors:  Luke Palmer <fibonaci@babylonia.flatirons.org>
 "                Moritz Lenz <moritz@faui2k3.org>

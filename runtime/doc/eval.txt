@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4b.  Last change: 2013 Jun 11
+*eval.txt*	For Vim version 7.4b.  Last change: 2013 Aug 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5884,6 +5884,9 @@ system({expr} [, {input}])				*system()* *E677*
 <		To make the result more system-independent, the shell output
 		is filtered to replace <CR> with <NL> for Macintosh, and
 		<CR><NL> with <NL> for DOS-like systems.
+		To avoid the string being truncated at a NUL, all NUL
+		characters are replaced with SOH (0x01).
+
 		The command executed is constructed using several options:
 	'shell' 'shellcmdflag' 'shellxquote' {expr} 'shellredir' {tmp} 'shellxquote'
 		({tmp} is an automatically generated file name).

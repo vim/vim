@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4b.  Last change: 2013 Jul 28
+*todo.txt*      For Vim version 7.4b.  Last change: 2013 Aug 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,7 +34,7 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Syntax file updates. (Doug Kearns, Jul 28)
+PHP indent script. (John Wellesz, Aug 2)
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
@@ -105,9 +105,6 @@ carried over when using :global. (Christian Brabandt, 2013 Jun 19)
 
 Bug with 'cursorline' in diff mode.  Line being scrolled into view gets
 highlighted as the cursor line.  (Alessandro Ivaldi, 2013 Jun 4)
-
-Bug when setting Visual area manually and 'selection' is exclusive, includes
-one character too much. (Ingo Karkat, 2013 Jul 26)
 
 Patch to add the bufferlist() function. (Yegappan Lakshmanan, 2013 May 5)
 May 17: with winlist() and tabpagelist().
@@ -211,8 +208,6 @@ Crash in autocmd that unloads buffers in a BufUnload event. (Andrew Pimlott,
 
 Issue 72: 'autochdir' causes problems for :vimgrep.
 
-'autochdir' causes problems for setbufvar(). (Ben Fritz, 2013 Jul 16)
-
 Session file creation: 'autochdir' causes trouble.  Keep it off until after
 loading all files.
 
@@ -307,9 +302,6 @@ Patch to pass list to or(), and() and xor(). (Yasuhiro Matsumoto, 2012 Feb 8)
 
 Patch to improve "it" and "at" text object matching. (Christian Brabandt, 2011
 Nov 20)
-
-Windows 7 confirm() dialog can be taller than the screen. (David Fishburn,
-2013 Jul 9)  Does not count the height of the buttons?
 
 Patch to improve GUI find/replace dialog. (Christian Brabandt, 2012 May 26)
 Update Jun 2.
@@ -932,6 +924,9 @@ probably causes this.
 
 'scrollbind' is not respected when deleting lines or undo. (Milan Vancura,
 2009 Jan 16)
+
+Patch to support strikethrough next to bold and italic. (Christian Brabandt,
+2013 Jul 30)
 
 Document that default font in Athena can be set with resources:
    XtDefaultFont: "9x15"

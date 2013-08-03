@@ -5378,6 +5378,7 @@ dip	motion.txt	/*dip*
 dircolors.vim	syntax.txt	/*dircolors.vim*
 dis	motion.txt	/*dis*
 disable-menus	gui.txt	/*disable-menus*
+discard	editing.txt	/*discard*
 distribute-script	usr_41.txt	/*distribute-script*
 distribution	intro.txt	/*distribution*
 diw	motion.txt	/*diw*
@@ -7508,6 +7509,7 @@ register-faq	sponsor.txt	/*register-faq*
 register-variable	eval.txt	/*register-variable*
 registers	change.txt	/*registers*
 regular-expression	pattern.txt	/*regular-expression*
+reload	editing.txt	/*reload*
 reltime()	eval.txt	/*reltime()*
 reltimestr()	eval.txt	/*reltimestr()*
 remote.txt	remote.txt	/*remote.txt*

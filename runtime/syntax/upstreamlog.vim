@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:             Innovation Data Processing upstream.log file
 " Maintainer:           Rob Owens <rowens@fdrinnovation.com>
-" Latest Revision:      2013-06-17
+" Latest Revision:      2013-07-26
 
 " Quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -18,17 +18,28 @@ syn match upstreamlog_MsgW /Msg #\(Agt\|PC\|Srv\)\d\{4,5}W/ nextgroup=upstreamlo
 " Processes:
 syn region upstreamlog_Process start="(" end=")" contained
 " IP Address:
-syn match upstreamlog_IPaddr / \d\{1,3}\.\d\{1,3}\.\d\{1,3}\.\d\{1,3}/
+syn match upstreamlog_IPaddr /\( \|(\)\zs\d\{1,3}\.\d\{1,3}\.\d\{1,3}\.\d\{1,3}/
 " Profile:
-syn region upstreamlog_Profile start="Profile name \zs" end="\"\S\{1,8}\""
-syn region upstreamlog_Profile start=" Profile: \zs" end="\S\{1,8}"
-syn region upstreamlog_Profile start="  Profile: \zs" end="\ze, "
-syn region upstreamlog_Profile start="Backup Profile: \zs" end="\ze Version date"
-syn region upstreamlog_Profile start="Full of \zs" end="\ze$"
-syn region upstreamlog_Profile start="Incr. of \zs" end="\ze$"
+syn match upstreamlog_Profile /Using default configuration for profile \zs\S\{1,8}\ze/
+syn match upstreamlog_Profile /Now running profile \zs\S\{1,8}\ze/
+syn match upstreamlog_Profile /in profile set \zs\S\{1,8}\ze/
+syn match upstreamlog_Profile /Migrate disk backup from profile \zs\S\{1,8}\ze/
+syn match upstreamlog_Profile /Profileset=\zs\S\{1,8}\ze,/
+syn match upstreamlog_Profile /Vault \(disk\|tape\) backup to vault \d\{1,4} from profile \zs\S\{1,8}\ze/
+syn match upstreamlog_Profile /Profile name \zs\"\S\{1,8}\"/
+syn match upstreamlog_Profile / Profile: \zs\S\{1,8}/
+syn match upstreamlog_Profile /  Profile: \zs\S\{1,8}\ze, /
+syn match upstreamlog_Profile /, profile: \zs\S\{1,8}\ze,/
+syn match upstreamlog_Profile /found Profile: \zs\S\{1,8}\ze,/
+syn match upstreamlog_Profile /Backup Profile: \zs\ze Version date/
+syn match upstreamlog_Profile /Full of \zs\S\{1,8}\ze$/
+syn match upstreamlog_Profile /Incr. of \zs\S\{1,8}\ze$/
+syn match upstreamlog_Profile /Profile=\zs\S\{1,8}\ze,/
 " Target:
 syn region upstreamlog_Target start="Computer: \zs" end="\ze[\]\)]" 
 syn region upstreamlog_Target start="Computer name \zs" end="\ze," 
+syn region upstreamlog_Target start="request to registered name \zs" end=" "
+
 
 hi def link upstreamlog_Date	Underlined
 hi def link upstreamlog_MsgD	Type

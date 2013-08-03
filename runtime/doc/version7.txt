@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.4b.  Last change: 2013 Jul 28
+*version7.txt*  For Vim version 7.4b.  Last change: 2013 Aug 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10262,6 +10262,11 @@ Other:
 	Lua interface now also uses userdata binded to Vim structures. (Taro 
 	Muraoka, Luis Carvalho)
 
+	glob() and autocommand patterns used to work with the undocumented
+	"\{n,m\}" item from a regexp.  "\{" is now used for a literal "{", as
+	this is normal in shell file patterns.  Now used "\\\{n,m\}" to get
+	"\{n,m}" in the regexp pattern.
+
 Added							*added-7.4*
 -----
 
@@ -10349,8 +10354,7 @@ Other:
 	Added |v:windowid| variable containing current window number in GUI 
 	Vim. (Christian J. Robinson, Lech Lorens)
 
-	Added rxvt-unicode and >xterm-277 mouse support. (Yiding Jia, Hayaki 
-	Saito)
+	Added rxvt-unicode and SGR mouse support. (Yiding Jia, Hayaki Saito)
 
 
 All changes in 7.4						*fixed-7.4*

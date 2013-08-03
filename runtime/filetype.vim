@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2013 Jul 21
+" Last Change:	2013 Aug 03
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -755,15 +755,15 @@ au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 au BufNewFile,BufRead *.git/COMMIT_EDITMSG	setf gitcommit
 au BufNewFile,BufRead *.git/MERGE_MSG		setf gitcommit
 au BufNewFile,BufRead *.git/config,.gitconfig,.gitmodules setf gitconfig
-au BufNewFile,BufRead *.git/modules/**/COMMIT_EDITMSG setf gitcommit
-au BufNewFile,BufRead *.git/modules/**/config	setf gitconfig
+au BufNewFile,BufRead *.git/modules/*/COMMIT_EDITMSG setf gitcommit
+au BufNewFile,BufRead *.git/modules/*/config	setf gitconfig
 au BufNewFile,BufRead */.config/git/config	setf gitconfig
 au BufNewFile,BufRead git-rebase-todo		setf gitrebase
 au BufNewFile,BufRead .msg.[0-9]*
       \ if getline(1) =~ '^From.*# This line is ignored.$' |
       \   setf gitsendemail |
       \ endif
-au BufNewFile,BufRead *.git/**
+au BufNewFile,BufRead *.git/*
       \ if getline(1) =~ '^\x\{40\}\>\|^ref: ' |
       \   setf git |
       \ endif
@@ -777,7 +777,7 @@ au BufNewFile,BufRead *.gp,.gprc		setf gp
 " GPG
 au BufNewFile,BufRead */.gnupg/options		setf gpg
 au BufNewFile,BufRead */.gnupg/gpg.conf		setf gpg
-au BufNewFile,BufRead */usr/**/gnupg/options.skel setf gpg
+au BufNewFile,BufRead */usr/*/gnupg/options.skel setf gpg
 
 " gnash(1) configuration files
 au BufNewFile,BufRead gnashrc,.gnashrc,gnashpluginrc,.gnashpluginrc setf gnash
@@ -928,24 +928,14 @@ au BufNewFile,BufRead indentrc			setf indent
 au BufNewFile,BufRead *.inf,*.INF		setf inform
 
 " Initng
-au BufNewFile,BufRead */etc/initng/**/*.i,*.ii	setf initng
+au BufNewFile,BufRead */etc/initng/*/*.i,*.ii	setf initng
 
 " Innovation Data Processing
-au BufRead,BufNewFile UPSTREAM.DAT,upstream.dat 	setf upstreamdat
-au BufRead,BufNewFile UPSTREAM.*.DAT,upstream.*.dat 	setf upstreamdat
-au BufRead,BufNewFile *.UPSTREAM.DAT,*.upstream.dat 	setf upstreamdat
-au BufRead,BufNewFile UPSTREAM.LOG,upstream.log 	setf upstreamlog
-au BufRead,BufNewFile UPSTREAM.*.LOG,upstream.*.log 	setf upstreamlog
-au BufRead,BufNewFile *.UPSTREAM.LOG,*.upstream.log 	setf upstreamlog
-au BufRead,BufNewFile UPSTREAMInstall.log,upstreaminstall.log setf upstreaminstalllog
-au BufRead,BufNewFile UPSTREAMInstall.*.log,upstreaminstall.*.log setf upstreaminstalllog
-au BufRead,BufNewFile *.UPSTREAMInstall.log,*.upstreaminstall.log setf upstreaminstalllog
-au BufRead,BufNewFile USSERVER.LOG,usserver.log 	setf usserverlog
-au BufRead,BufNewFile USSERVER.*.LOG,usserver.*.log 	setf usserverlog
-au BufRead,BufNewFile *.USSERVER.LOG,*.usserver.log 	setf usserverlog
-au BufRead,BufNewFile USW2KAgt.log,usw2kagt.log 	setf usw2kagtlog
-au BufRead,BufNewFile USW2KAgt.*.log,usw2kagt.*.log 	setf usw2kagtlog
-au BufRead,BufNewFile *.USW2KAgt.log,*.usw2kagt.log 	setf usw2kagtlog
+au BufRead,BufNewFile upstream.dat\c,upstream.*.dat\c,*.upstream.dat\c 	setf upstreamdat
+au BufRead,BufNewFile upstream.log\c,upstream.*.log\c,*.upstream.log\c 	setf upstreamlog
+au BufRead,BufNewFile upstreaminstall.log\c,upstreaminstall.*.log\c,*.upstreaminstall.log\c setf upstreaminstalllog
+au BufRead,BufNewFile usserver.log\c,usserver.*.log\c,*.usserver.log\c 	setf usserverlog
+au BufRead,BufNewFile usw2kagt.log\c,usw2kagt.*.log\c,*.usw2kagt.log\c 	setf usw2kagtlog
 
 " Ipfilter
 au BufNewFile,BufRead ipf.conf,ipf6.conf,ipf.rules	setf ipfilter
@@ -1092,7 +1082,7 @@ au BufNewFile,BufRead *.m4
 au BufNewFile,BufRead *.mgp			setf mgp
 
 " Mail (for Elm, trn, mutt, muttng, rn, slrn)
-au BufNewFile,BufRead snd.\d\+,.letter,.letter.\d\+,.followup,.article,.article.\d\+,pico.\d\+,mutt{ng,}-*-\w\+,mutt[[:alnum:]_-]\{6\},ae\d\+.txt,/tmp/SLRN[0-9A-Z.]\+,*.eml setf mail
+au BufNewFile,BufRead snd.\d\+,.letter,.letter.\d\+,.followup,.article,.article.\d\+,pico.\d\+,mutt{ng,}-*-\w\+,mutt[[:alnum:]_-]\\\{6\},ae\d\+.txt,/tmp/SLRN[0-9A-Z.]\+,*.eml setf mail
 
 " Mail aliases
 au BufNewFile,BufRead */etc/mail/aliases,*/etc/aliases	setf mailaliases
@@ -2561,7 +2551,7 @@ au BufNewFile,BufRead [mM]akefile*		call s:StarSetf('make')
 au BufNewFile,BufRead [rR]akefile*		call s:StarSetf('ruby')
 
 " Mail (also matches muttrc.vim, so this is below the other checks)
-au BufNewFile,BufRead mutt[[:alnum:]._-]\{6\}	setf mail
+au BufNewFile,BufRead mutt[[:alnum:]._-]\\\{6\}	setf mail
 
 " Modconf
 au BufNewFile,BufRead */etc/modutils/*

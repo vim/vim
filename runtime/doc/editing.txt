@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.4b.  Last change: 2013 Feb 07
+*editing.txt*   For Vim version 7.4b.  Last change: 2013 Aug 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -185,12 +185,13 @@ If you want to automatically save the changes without asking, switch on the
 that does not work for all commands.
 
 If you want to keep the changed buffer without saving it, switch on the
-'hidden' option.  See |hidden-buffer|.
+'hidden' option.  See |hidden-buffer|.  Some commands work like this even when
+'hidden' is not set, check the help for the command.
 
 ==============================================================================
 2. Editing a file					*edit-a-file*
 
-							*:e* *:edit*
+							*:e* *:edit* *reload*
 :e[dit] [++opt] [+cmd]	Edit the current file.  This is useful to re-edit the
 			current file, when it has been changed outside of Vim.
 			This fails when changes have been made to the current
@@ -199,7 +200,7 @@ If you want to keep the changed buffer without saving it, switch on the
 			Also see |++opt| and |+cmd|.
 			{Vi: no ++opt}
 
-							*:edit!*
+							*:edit!* *discard*
 :e[dit]! [++opt] [+cmd]
 			Edit the current file always.  Discard any changes to
 			the current buffer.  This is useful if you want to

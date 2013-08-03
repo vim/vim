@@ -4,7 +4,7 @@
 " Contributors: Edwin Fine <efine145_nospam01 at usa dot net>
 "               Pawel 'kTT' Salata <rockplayer.pl@gmail.com>
 "               Ricardo Catalinas Jiménez <jimenezrick@gmail.com>
-" Last Update:  2013-Jun-01
+" Last Update:  2013-Jul-21
 " License:      Vim license
 " URL:          https://github.com/hcs42/vim-erlang
 
@@ -85,7 +85,7 @@ function! s:CalcVCol(line, first_index, last_index, vcol, tabstop)
 
   while 0 <= i && i <= last_index
 
-    if line[i] == "\t"
+    if line[i] ==# "\t"
       " Example (when tabstop == 4):
       "
       " vcol + tab -> next_vcol
@@ -132,7 +132,7 @@ function! s:GetTokensFromLine(line, string_continuation, atom_continuation,
 
   if a:string_continuation
     let i = matchend(a:line, '^\%([^"\\]\|\\.\)*"', 0)
-    if i == -1
+    if i ==# -1
       call s:Log('    Whole line is string continuation -> ignore')
       return []
     else
@@ -141,7 +141,7 @@ function! s:GetTokensFromLine(line, string_continuation, atom_continuation,
     endif
   elseif a:atom_continuation
     let i = matchend(a:line, "^\\%([^'\\\\]\\|\\\\.\\)*'", 0)
-    if i == -1
+    if i ==# -1
       call s:Log('    Whole line is quoted atom continuation -> ignore')
       return []
     else
@@ -155,24 +155,24 @@ function! s:GetTokensFromLine(line, string_continuation, atom_continuation,
     let next_vcol = ''
 
     " Spaces
-    if a:line[i] == ' '
+    if a:line[i] ==# ' '
       let next_i = matchend(a:line, ' *', i + 1)
 
     " Tabs
-    elseif a:line[i] == "\t"
+    elseif a:line[i] ==# "\t"
       let next_i = matchend(a:line, '\t*', i + 1)
 
       " See example in s:CalcVCol
       let next_vcol = (vcol / a:tabstop + (next_i - i)) * a:tabstop
 
     " Comment
-    elseif a:line[i] == '%'
+    elseif a:line[i] ==# '%'
       let next_i = linelen
 
     " String token: "..."
-    elseif a:line[i] == '"'
+    elseif a:line[i] ==# '"'
       let next_i = matchend(a:line, '\%([^"\\]\|\\.\)*"', i + 1)
-      if next_i == -1
+      if next_i ==# -1
         call add(indtokens, ['<string_start>', vcol, i])
       else
         let next_vcol = s:CalcVCol(a:line, i, next_i - 1, vcol, a:tabstop)
@@ -180,9 +180,9 @@ function! s:GetTokensFromLine(line, string_continuation, atom_continuation,
       endif
 
     " Quoted atom token: '...'
-    elseif a:line[i] == "'"
+    elseif a:line[i] ==# "'"
       let next_i = matchend(a:line, "\\%([^'\\\\]\\|\\\\.\\)*'", i + 1)
-      if next_i == -1
+      if next_i ==# -1
         call add(indtokens, ['<quoted_atom_start>', vcol, i])
       else
         let next_vcol = s:CalcVCol(a:line, i, next_i - 1, vcol, a:tabstop)
@@ -197,16 +197,16 @@ function! s:GetTokensFromLine(line, string_continuation, atom_continuation,
       call add(indtokens, [a:line[(i):(next_i - 1)], vcol, i])
 
     " Character token: $<char> (as in: $a)
-    elseif a:line[i] == '$'
+    elseif a:line[i] ==# '$'
       call add(indtokens, ['$.', vcol, i])
       let next_i = i + 2
 
     " Dot token: .
-    elseif a:line[i] == '.'
+    elseif a:line[i] ==# '.'
 
       let next_i = i + 1
 
-      if i + 1 == linelen || a:line[i + 1] =~# '[[:blank:]%]'
+      if i + 1 ==# linelen || a:line[i + 1] =~# '[[:blank:]%]'
         " End of clause token: . (as in: f() -> ok.)
         call add(indtokens, ['<end_of_clause>', vcol, i])
 
@@ -218,7 +218,7 @@ function! s:GetTokensFromLine(line, string_continuation, atom_continuation,
       endif
 
     " Equal sign
-    elseif a:line[i] == '='
+    elseif a:line[i] ==# '='
       " This is handled separately so that "=<<" will be parsed as
       " ['=', '<<'] instead of ['=<', '<']. Although Erlang parses it
       " currently in the latter way, that may be fixed some day.
@@ -246,7 +246,7 @@ function! s:GetTokensFromLine(line, string_continuation, atom_continuation,
 
     endif
 
-    if next_vcol == ''
+    if next_vcol ==# ''
       let vcol += next_i - i
     else
       let vcol = next_vcol
@@ -264,7 +264,7 @@ endfunction
 function! s:GetIndtokenAtCol(indtokens, col)
   let i = 0
   while i < len(a:indtokens)
-    if a:indtokens[i][2] == a:col
+    if a:indtokens[i][2] ==# a:col
       return [1, i]
     elseif a:indtokens[i][2] > a:col
       return [0, s:IndentError('No token at col ' . a:col . ', ' .
@@ -343,14 +343,14 @@ endfunction
 function! s:TokenizeLine(lnum, direction)
 
   call s:Log('Tokenizing starts from line ' . a:lnum)
-  if a:direction == 'up'
+  if a:direction ==# 'up'
     let lnum = prevnonblank(a:lnum)
-  else " a:direction == 'down'
+  else " a:direction ==# 'down'
     let lnum = nextnonblank(a:lnum)
   endif
 
   " We hit the beginning or end of the file
-  if lnum == 0
+  if lnum ==# 0
     let indtokens = []
     call s:Log('  We hit the beginning or end of the file.')
 
@@ -392,13 +392,13 @@ endfunction
 function! s:FindIndToken(lnum, dir)
   let lnum = a:lnum
   while 1
-    let lnum += (a:dir == 'up' ? -1 : 1)
+    let lnum += (a:dir ==# 'up' ? -1 : 1)
     let [lnum, indtokens] = s:TokenizeLine(lnum, a:dir)
-    if lnum == 0
+    if lnum ==# 0
       " We hit the beginning or end of the file
       return []
     elseif !empty(indtokens)
-      return indtokens[a:dir == 'up' ? -1 : 0]
+      return indtokens[a:dir ==# 'up' ? -1 : 0]
     endif
   endwhile
 endfunction
@@ -593,7 +593,7 @@ endfunction
 "   indent -- integer
 function! s:BeginElementFoundIfEmpty(stack, token, curr_vcol, stored_vcol, sw)
   if empty(a:stack)
-    if a:stored_vcol == -1
+    if a:stored_vcol ==# -1
       call s:Log('    "' . a:token . '" directly preceeds LTI -> return')
       return [1, a:curr_vcol + a:sw]
     else
@@ -630,10 +630,10 @@ function! s:BeginElementFound(stack, token, curr_vcol, stored_vcol, end_token, s
                                              \a:stored_vcol, a:sw)
   if ret | return [ret, res] | endif
 
-  if a:stack[0] == a:end_token
+  if a:stack[0] ==# a:end_token
     call s:Log('    "' . a:token . '" pops "' . a:end_token . '"')
     call s:Pop(a:stack)
-    if !empty(a:stack) && a:stack[0] == 'align_to_begin_element'
+    if !empty(a:stack) && a:stack[0] ==# 'align_to_begin_element'
       call s:Pop(a:stack)
       if empty(a:stack)
         return [1, a:curr_vcol]
@@ -664,7 +664,7 @@ endfunction
 "   should_return: bool -- if true, the caller should return `indent` to Vim
 "   indent -- integer
 function! s:BeginningOfClauseFound(stack, token, stored_vcol)
-  if !empty(a:stack) && a:stack[0] == 'when'
+  if !empty(a:stack) && a:stack[0] ==# 'when'
     call s:Log('    BeginningOfClauseFound: "when" found in stack')
     call s:Pop(a:stack)
     if empty(a:stack)
@@ -673,13 +673,13 @@ function! s:BeginningOfClauseFound(stack, token, stored_vcol)
     else
       return [1, s:UnexpectedToken(a:token, a:stack)]
     endif
-  elseif !empty(a:stack) && a:stack[0] == '->'
+  elseif !empty(a:stack) && a:stack[0] ==# '->'
     call s:Log('    BeginningOfClauseFound: "->" found in stack')
     call s:Pop(a:stack)
     if empty(a:stack)
       call s:Log('    Stack is ["->"], so LTI is in function body -> return')
       return [1, a:stored_vcol + &sw]
-    elseif a:stack[0] == ';'
+    elseif a:stack[0] ==# ';'
       call s:Pop(a:stack)
       if empty(a:stack)
         call s:Log('    Stack is ["->", ";"], so LTI is in a function head ' .
@@ -713,7 +713,7 @@ endfunction
 function! s:SearchEndPair(lnum, curr_col)
   return s:SearchPair(
          \ a:lnum, a:curr_col,
-         \ '\<\%(case\|try\|begin\|receive\|if\)\>\|' .
+         \ '\C\<\%(case\|try\|begin\|receive\|if\)\>\|' .
          \ '\<fun\>\%(\s\|\n\|%.*$\)*(',
          \ '',
          \ '\<end\>')
@@ -754,7 +754,7 @@ function! s:ErlangCalcIndent2(lnum, stack)
     let [lnum, indtokens] = s:TokenizeLine(lnum, 'up')
 
     " Hit the start of the file
-    if lnum == 0
+    if lnum ==# 0
       let [ret, res] = s:BeginningOfClauseFound(stack, 'beginning_of_file',
                                                \stored_vcol)
       if ret | return res | endif
@@ -774,11 +774,11 @@ function! s:ErlangCalcIndent2(lnum, stack)
         return s:IndentError('Stack too long', token, stack)
       endif
 
-      if token == '<end_of_clause>'
+      if token ==# '<end_of_clause>'
         let [ret, res] = s:BeginningOfClauseFound(stack, token, stored_vcol)
         if ret | return res | endif
 
-        if stored_vcol == -1
+        if stored_vcol ==# -1
           call s:Log('    End of clause directly preceeds LTI -> return')
           return 0
         else
@@ -788,14 +788,14 @@ function! s:ErlangCalcIndent2(lnum, stack)
 
       elseif stack == ['prev_term_plus']
         if token =~# '[a-zA-Z_@]' ||
-         \ token == '<string>' || token == '<string_start>' ||
-         \ token == '<quoted_atom>' || token == '<quoted_atom_start>'
+         \ token ==# '<string>' || token ==# '<string_start>' ||
+         \ token ==# '<quoted_atom>' || token ==# '<quoted_atom_start>'
           call s:Log('    previous token found: curr_vcol + plus = ' .
                     \curr_vcol . " + " . plus)
           return curr_vcol + plus
         endif
 
-      elseif token == 'begin'
+      elseif token ==# 'begin'
         let [ret, res] = s:BeginElementFound(stack, token, curr_vcol,
                                             \stored_vcol, 'end', &sw)
         if ret | return res | endif
@@ -812,10 +812,10 @@ function! s:ErlangCalcIndent2(lnum, stack)
 
       " This branch is not Emacs-compatible
       elseif (index(['of', 'receive', 'after', 'if'], token) != -1 ||
-           \  (token == 'catch' && !s:IsCatchStandalone(lnum, i))) &&
+           \  (token ==# 'catch' && !s:IsCatchStandalone(lnum, i))) &&
            \ !last_token_of_line &&
-           \ (empty(stack) || stack == ['when'] || stack == ['->'] ||
-           \  stack == ['->', ';'])
+           \ (empty(stack) || stack ==# ['when'] || stack ==# ['->'] ||
+           \  stack ==# ['->', ';'])
 
         " If we are after of/receive, but these are not the last
         " tokens of the line, we want to indent like this:
@@ -865,12 +865,12 @@ function! s:ErlangCalcIndent2(lnum, stack)
         " stack = ['when']  =>  LTI is in a guard
         if empty(stack)
           " pass
-        elseif (token == 'case' && stack[0] == 'of') ||
-             \ (token == 'if') ||
-             \ (token == 'try' && (stack[0] == 'of' ||
-             \                     stack[0] == 'catch' ||
-             \                     stack[0] == 'after')) ||
-             \ (token == 'receive')
+        elseif (token ==# 'case' && stack[0] ==# 'of') ||
+             \ (token ==# 'if') ||
+             \ (token ==# 'try' && (stack[0] ==# 'of' ||
+             \                     stack[0] ==# 'catch' ||
+             \                     stack[0] ==# 'after')) ||
+             \ (token ==# 'receive')
 
           " From the indentation point of view, the keyword
           " (of/catch/after/end) before the LTI is what counts, so
@@ -880,8 +880,8 @@ function! s:ErlangCalcIndent2(lnum, stack)
           " This way when we reach case/try/receive (i.e. now),
           " there is at most one of/catch/after/end token in the
           " stack.
-          if token == 'case' || token == 'try' ||
-           \ (token == 'receive' && stack[0] == 'after')
+          if token ==# 'case' || token ==# 'try' ||
+           \ (token ==# 'receive' && stack[0] ==# 'after')
             call s:Pop(stack)
           endif
 
@@ -889,21 +889,21 @@ function! s:ErlangCalcIndent2(lnum, stack)
             call s:Log('    LTI is in a condition; matching ' .
                       \'"case/if/try/receive" found')
             let stored_vcol = curr_vcol + &sw
-          elseif stack[0] == 'align_to_begin_element'
+          elseif stack[0] ==# 'align_to_begin_element'
             call s:Pop(stack)
             let stored_vcol = curr_vcol
-          elseif len(stack) > 1 && stack[0] == '->' && stack[1] == ';'
+          elseif len(stack) > 1 && stack[0] ==# '->' && stack[1] ==# ';'
             call s:Log('    LTI is in a condition; matching ' .
                       \'"case/if/try/receive" found')
             call s:Pop(stack)
             call s:Pop(stack)
             let stored_vcol = curr_vcol + &sw
-          elseif stack[0] == '->'
+          elseif stack[0] ==# '->'
             call s:Log('    LTI is in a branch; matching ' .
                       \'"case/if/try/receive" found')
             call s:Pop(stack)
             let stored_vcol = curr_vcol + 2 * &sw
-          elseif stack[0] == 'when'
+          elseif stack[0] ==# 'when'
             call s:Log('    LTI is in a guard; matching ' .
                       \'"case/if/try/receive" found')
             call s:Pop(stack)
@@ -916,11 +916,11 @@ function! s:ErlangCalcIndent2(lnum, stack)
                                             \stored_vcol, 'end', &sw)
         if ret | return res | endif
 
-      elseif token == 'fun'
+      elseif token ==# 'fun'
         let next_indtoken = s:NextIndToken(lnum, i)
         call s:Log('    Next indtoken = ' . string(next_indtoken))
 
-        if !empty(next_indtoken) && next_indtoken[0] == '('
+        if !empty(next_indtoken) && next_indtoken[0] ==# '('
           " We have an anonymous function definition
           " (e.g. "fun () -> ok end")
 
@@ -931,15 +931,15 @@ function! s:ErlangCalcIndent2(lnum, stack)
           if empty(stack)
             call s:Log('    LTI is in a condition; matching "fun" found')
             let stored_vcol = curr_vcol + &sw
-          elseif len(stack) > 1 && stack[0] == '->' && stack[1] == ';'
+          elseif len(stack) > 1 && stack[0] ==# '->' && stack[1] ==# ';'
             call s:Log('    LTI is in a condition; matching "fun" found')
             call s:Pop(stack)
             call s:Pop(stack)
-          elseif stack[0] == '->'
+          elseif stack[0] ==# '->'
             call s:Log('    LTI is in a branch; matching "fun" found')
             call s:Pop(stack)
             let stored_vcol = curr_vcol + 2 * &sw
-          elseif stack[0] == 'when'
+          elseif stack[0] ==# 'when'
             call s:Log('    LTI is in a guard; matching "fun" found')
             call s:Pop(stack)
             let stored_vcol = curr_vcol + 2 * &sw + 2
@@ -952,31 +952,31 @@ function! s:ErlangCalcIndent2(lnum, stack)
           " Pass: we have a function reference (e.g. "fun f/0")
         endif
 
-      elseif token == '['
+      elseif token ==# '['
         " Emacs compatibility
         let [ret, res] = s:BeginElementFound(stack, token, curr_vcol,
                                             \stored_vcol, ']', 1)
         if ret | return res | endif
 
-      elseif token == '<<'
+      elseif token ==# '<<'
         " Emacs compatibility
         let [ret, res] = s:BeginElementFound(stack, token, curr_vcol,
                                             \stored_vcol, '>>', 2)
         if ret | return res | endif
 
-      elseif token == '(' || token == '{'
+      elseif token ==# '(' || token ==# '{'
 
-        let end_token = (token == '(' ? ')' :
-                        \token == '{' ? '}' : 'error')
+        let end_token = (token ==# '(' ? ')' :
+                        \token ==# '{' ? '}' : 'error')
 
         if empty(stack)
           " We found the opening paren whose block contains the LTI.
           let mode = 'inside'
-        elseif stack[0] == end_token
+        elseif stack[0] ==# end_token
           call s:Log('    "' . token . '" pops "' . end_token . '"')
           call s:Pop(stack)
 
-          if !empty(stack) && stack[0] == 'align_to_begin_element'
+          if !empty(stack) && stack[0] ==# 'align_to_begin_element'
             " We found the opening paren whose closing paren
             " starts LTI
             let mode = 'align_to_begin_element'
@@ -989,7 +989,7 @@ function! s:ErlangCalcIndent2(lnum, stack)
           return s:UnexpectedToken(token, stack)
         endif
 
-        if mode == 'inside' || mode == 'align_to_begin_element'
+        if mode ==# 'inside' || mode ==# 'align_to_begin_element'
 
           if last_token_of_line && i != 0
             " Examples: {{{
@@ -1013,10 +1013,10 @@ function! s:ErlangCalcIndent2(lnum, stack)
             "       } % LTI
             " }}}
             let stack = ['prev_term_plus']
-            let plus = (mode == 'inside' ? 2 : 1)
+            let plus = (mode ==# 'inside' ? 2 : 1)
             call s:Log('    "' . token .
                       \'" token found at end of line -> find previous token')
-          elseif mode == 'align_to_begin_element'
+          elseif mode ==# 'align_to_begin_element'
             " Examples: {{{
             "
             " mode == 'align_to_begin_element' && !last_token_of_line
@@ -1040,7 +1040,7 @@ function! s:ErlangCalcIndent2(lnum, stack)
             call s:Log('    "' . token . '" token (whose closing token ' .
                       \'starts LTI) found -> return')
             return curr_vcol
-          elseif stored_vcol == -1
+          elseif stored_vcol ==# -1
             " Examples: {{{
             "
             " mode == 'inside' && stored_vcol == -1 && !last_token_of_line
@@ -1097,13 +1097,13 @@ function! s:ErlangCalcIndent2(lnum, stack)
           call s:Push(stack, token)
 
         " We don't have searchpair optimization for '>>'
-        elseif token == '>>'
+        elseif token ==# '>>'
           call s:Push(stack, token)
 
-        elseif token == 'end'
+        elseif token ==# 'end'
           let [lnum_new, col_new] = s:SearchEndPair(lnum, curr_col)
 
-          if lnum_new == 0
+          if lnum_new ==# 0
             return s:IndentError('Matching token for "end" not found',
                                 \token, stack)
           else
@@ -1126,14 +1126,14 @@ function! s:ErlangCalcIndent2(lnum, stack)
 
           " We have to escape '[', because this string will be interpreted as a
           " regexp
-          let open_paren = (token == ')' ? '(' :
-                           \token == ']' ? '\[' :
+          let open_paren = (token ==# ')' ? '(' :
+                           \token ==# ']' ? '\[' :
                            \               '{')
 
           let [lnum_new, col_new] = s:SearchPair(lnum, curr_col,
                                                 \open_paren, '', token)
 
-          if lnum_new == 0
+          if lnum_new ==# 0
             return s:IndentError('Matching token not found',
                                 \token, stack)
           else
@@ -1154,7 +1154,7 @@ function! s:ErlangCalcIndent2(lnum, stack)
           endif
         endif
 
-      elseif token == ';'
+      elseif token ==# ';'
 
         if empty(stack)
           call s:Push(stack, ';')
@@ -1177,12 +1177,12 @@ function! s:ErlangCalcIndent2(lnum, stack)
           return s:UnexpectedToken(token, stack)
         endif
 
-      elseif token == '->'
+      elseif token ==# '->'
 
         if empty(stack) && !last_token_of_line
           call s:Log('    LTI is in expression after arrow -> return')
           return stored_vcol
-        elseif empty(stack) || stack[0] == ';' || stack[0] == 'end'
+        elseif empty(stack) || stack[0] ==# ';' || stack[0] ==# 'end'
           " stack = [';']  -> LTI is either a branch or in a guard
           " stack = ['->']  ->  LTI is a condition
           " stack = ['->', ';']  -> LTI is a branch
@@ -1204,10 +1204,10 @@ function! s:ErlangCalcIndent2(lnum, stack)
           return s:UnexpectedToken(token, stack)
         endif
 
-      elseif token == 'when'
+      elseif token ==# 'when'
 
         " Pop all ';' from the top of the stack
-        while !empty(stack) && stack[0] == ';'
+        while !empty(stack) && stack[0] ==# ';'
           call s:Pop(stack)
         endwhile
 
@@ -1245,10 +1245,10 @@ function! s:ErlangCalcIndent2(lnum, stack)
           return s:UnexpectedToken(token, stack)
         endif
 
-      elseif token == 'of' || token == 'after' ||
-           \ (token == 'catch' && !s:IsCatchStandalone(lnum, i))
+      elseif token ==# 'of' || token ==# 'after' ||
+           \ (token ==# 'catch' && !s:IsCatchStandalone(lnum, i))
 
-        if token == 'after'
+        if token ==# 'after'
           " If LTI is between an 'after' and the corresponding
           " 'end', then let's return
           let [ret, res] = s:BeginElementFoundIfEmpty(stack, token, curr_vcol,
@@ -1256,9 +1256,9 @@ function! s:ErlangCalcIndent2(lnum, stack)
           if ret | return res | endif
         endif
 
-        if empty(stack) || stack[0] == '->' || stack[0] == 'when'
+        if empty(stack) || stack[0] ==# '->' || stack[0] ==# 'when'
           call s:Push(stack, token)
-        elseif stack[0] == 'catch' || stack[0] == 'after' || stack[0] == 'end'
+        elseif stack[0] ==# 'catch' || stack[0] ==# 'after' || stack[0] ==# 'end'
           " Pass: From the indentation point of view, the keyword
           " (of/catch/after/end) before the LTI is what counts, so
           " if the stack already has a catch/after/end, we don't
@@ -1269,7 +1269,7 @@ function! s:ErlangCalcIndent2(lnum, stack)
           return s:UnexpectedToken(token, stack)
         endif
 
-      elseif token == '||' && empty(stack) && !last_token_of_line
+      elseif token ==# '||' && empty(stack) && !last_token_of_line
 
         call s:Log('    LTI is in expression after "||" -> return')
         return stored_vcol
@@ -1279,12 +1279,12 @@ function! s:ErlangCalcIndent2(lnum, stack)
 
       endif
 
-      if empty(stack) || stack[0] == '->' || stack[0] == 'when'
+      if empty(stack) || stack[0] ==# '->' || stack[0] ==# 'when'
         let stored_vcol = curr_vcol
         let semicolon_abscol = ''
         call s:Log('    Misc token when the stack is empty or has "->" ' .
                   \'-> setting stored_vcol to ' . stored_vcol)
-      elseif stack[0] == ';'
+      elseif stack[0] ==# ';'
         let semicolon_abscol = curr_vcol
         call s:Log('    Setting semicolon-stored_vcol to ' . stored_vcol)
       endif
@@ -1331,17 +1331,17 @@ function! ErlangIndent()
                     \'^\(\s*\)\(\%(end\|of\|catch\|after\)\>\|[)\]}]\|>>\)')
 
   " If the line has a special beginning, but not a standalone catch
-  if !empty(ml) && !(ml[2] == 'catch' && s:IsCatchStandalone(v:lnum, 0))
+  if !empty(ml) && !(ml[2] ==# 'catch' && s:IsCatchStandalone(v:lnum, 0))
 
     let curr_col = len(ml[1])
 
     " If we can be sure that there is synchronization in the Erlang
     " syntax, we use searchpair to make the script quicker.
-    if ml[2] == 'end' && exists('b:erlang_syntax_synced')
+    if ml[2] ==# 'end' && exists('b:erlang_syntax_synced')
 
       let [lnum, col] = s:SearchEndPair(v:lnum, curr_col)
 
-      if lnum == 0
+      if lnum ==# 0
         return s:IndentError('Matching token for "end" not found',
                             \'end', [])
       else
