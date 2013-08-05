@@ -8861,7 +8861,9 @@ aucmd_prepbuf(aco, buf)
 #ifdef FEAT_WINDOWS
     int		save_ea;
 #endif
+#ifdef FEAT_AUTOCHDIR
     int		save_acd;
+#endif
 
     /* Find a window that is for the new buffer */
     if (buf == curbuf)		/* be quick when buf is curbuf */
@@ -8927,14 +8929,18 @@ aucmd_prepbuf(aco, buf)
 	save_ea = p_ea;
 	p_ea = FALSE;
 
+# ifdef FEAT_AUTOCHDIR
 	/* Prevent chdir() call in win_enter_ext(), through do_autochdir(). */
 	save_acd = p_acd;
 	p_acd = FALSE;
+# endif
 
 	(void)win_split_ins(0, WSP_TOP, aucmd_win, 0);
 	(void)win_comp_pos();   /* recompute window positions */
 	p_ea = save_ea;
+# ifdef FEAT_AUTOCHDIR
 	p_acd = save_acd;
+# endif
 	unblock_autocmds();
 #endif
 	curwin = aucmd_win;
