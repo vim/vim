@@ -3184,9 +3184,8 @@ gui_mch_dialog(
     }
     else
     {
-	/* Use our own window's client area for the size, unless it's very
-	 * small. */
-	GetClientRect(s_hwnd, &rect);
+	/* Use our own window for the size, unless it's very small. */
+	GetWindowRect(s_hwnd, &rect);
 	maxDialogWidth = rect.right - rect.left
 				   - (GetSystemMetrics(SM_CXFRAME) +
                                       GetSystemMetrics(SM_CXPADDEDBORDER)) * 2;
@@ -3195,7 +3194,8 @@ gui_mch_dialog(
 
 	maxDialogHeight = rect.bottom - rect.top
 				   - (GetSystemMetrics(SM_CYFRAME) +
-                                      GetSystemMetrics(SM_CXPADDEDBORDER)) * 4;
+                                      GetSystemMetrics(SM_CXPADDEDBORDER)) * 4
+				   - GetSystemMetrics(SM_CYCAPTION);
 	if (maxDialogHeight < DLG_MIN_MAX_HEIGHT)
 	    maxDialogHeight = DLG_MIN_MAX_HEIGHT;
     }
@@ -3262,16 +3262,9 @@ gui_mch_dialog(
 
     messageWidth += 10;		/* roundoff space */
 
-    /* Restrict the size to a maximum.  Causes a scrollbar to show up. */
-    if (msgheight > maxDialogHeight)
-    {
-	msgheight = maxDialogHeight;
-	scroll_flag = WS_VSCROLL;
-	messageWidth += GetSystemMetrics(SM_CXVSCROLL);
-    }
-
     /* Add width of icon to dlgwidth, and some space */
-    dlgwidth = messageWidth + DLG_ICON_WIDTH + 3 * dlgPaddingX;
+    dlgwidth = messageWidth + DLG_ICON_WIDTH + 3 * dlgPaddingX
+					     + GetSystemMetrics(SM_CXVSCROLL);
 
     if (msgheight < DLG_ICON_HEIGHT)
 	msgheight = DLG_ICON_HEIGHT;
@@ -3345,8 +3338,8 @@ gui_mch_dialog(
 
     // Dialog height.
     if (vertical)
-	dlgheight = msgheight + 2 * dlgPaddingY +
-			      DLG_VERT_PADDING_Y + 2 * fontHeight * numButtons;
+	dlgheight = msgheight + 2 * dlgPaddingY
+			   + DLG_VERT_PADDING_Y + 2 * fontHeight * numButtons;
     else
 	dlgheight = msgheight + 3 * dlgPaddingY + 2 * fontHeight;
 
@@ -3354,6 +3347,16 @@ gui_mch_dialog(
     editboxheight = fontHeight + dlgPaddingY + 4 * DLG_VERT_PADDING_Y;
     if (textfield != NULL)
 	dlgheight += editboxheight;
+
+    /* Restrict the size to a maximum.  Causes a scrollbar to show up. */
+    if (dlgheight > maxDialogHeight)
+    {
+        msgheight = msgheight - (dlgheight - maxDialogHeight);
+        dlgheight = maxDialogHeight;
+        scroll_flag = WS_VSCROLL;
+        /* Make sure scrollbar doesn't appear in the middle of the dialog */
+        messageWidth = dlgwidth - DLG_ICON_WIDTH - 3 * dlgPaddingX;
+    }
 
     add_word(PixelToDialogY(dlgheight));
 
