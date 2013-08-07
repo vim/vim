@@ -6019,8 +6019,8 @@ find_help_tags(arg, num_matches, matches, keep_lang)
 	    if (*s < ' ' || (*s == '^' && s[1] && (ASCII_ISALPHA(s[1])
 			   || vim_strchr((char_u *)"?@[\\]^", s[1]) != NULL)))
 	    {
-		if (d > IObuff && d[-1] != '_')
-		    *d++ = '_';		/* prepend a '_' */
+		if (d > IObuff && d[-1] != '_' && d[-1] != '\\')
+		    *d++ = '_';		/* prepend a '_' to make x_CTRL-x */
 		STRCPY(d, "CTRL-");
 		d += 5;
 		if (*s < ' ')
