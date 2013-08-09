@@ -1004,7 +1004,7 @@ wait_return(redraw)
 			quit_more = FALSE;
 			got_int = FALSE;
 		    }
-		    else
+		    else if (c != K_IGNORE)
 		    {
 			c = K_IGNORE;
 			hit_return_msg();
