@@ -1,4 +1,4 @@
-*if_tcl.txt*    For Vim version 7.4b.  Last change: 2012 Aug 02
+*if_tcl.txt*    For Vim version 7.4.  Last change: 2012 Aug 02
 
 
 		  VIM REFERENCE MANUAL    by Ingo Wilken

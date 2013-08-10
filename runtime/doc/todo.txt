@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4b.  Last change: 2013 Aug 03
+*todo.txt*      For Vim version 7.4.  Last change: 2013 Aug 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,8 +34,6 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-PHP indent script. (John Wellesz, Aug 2)
-
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
 Patch to add "acl" and "xpm" as a feature. (Ken Takata, 2013 Jul 8)
@@ -48,13 +46,17 @@ highlight group.  Add a "\zs" after it?
 
 Go through more coverity reports.
 
-Bug: ":he \^x" gives strange E63 error when 'regexpengine' is set to 1.
-With 'regexpengine' set to 0 results in an INTERNAL errror.
-(glts, 2013 Jul 28)
+"gUgn" cannot be repeated, while "dgn" can.
+
+Several Win32 functions are not using Unicode.
+Patches to fix this. (Ken Takata, 2013 Aug 9)
 
 /[b-a] gives error E16, should probably be E769.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
+
+Patch to make external commands work with multi-byte characters on Win32 when
+'encoding' differs from the active codepage. (Yasuhiro Matsumoto, 2013 Aug 5)
 
 Checking runtime scripts: Thilo Six, 2012 Jun 6.
 
@@ -4113,6 +4115,8 @@ Select mode:
 
 
 Visual mode:
+8   Support using "." in Visual mode. Use the operator applied to the Visual
+    selection, if possible.
 -   When dragging the Visual selection with the mouse and 'scrolloff' is zero,
     behave like 'scrolloff' is one, so that the text scrolls when the pointer
     is in the top line.

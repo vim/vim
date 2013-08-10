@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.4b.  Last change: 2013 Aug 02
+*version7.txt*  For Vim version 7.4.  Last change: 2013 Aug 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -18187,6 +18187,124 @@ Patch 7.4a.047
 Problem:    Some comments are not so nice.
 Solution:   Change the comments.
 Files:	    src/ex_docmd.c, src/message.c, src/ops.c, src/option.c
+
+Patch 7.4b.001
+Problem:    Win32: dialog may extend off-screen.
+Solution:   Reduce the size, use correct borders. (Andrei Olsen)
+Files:	    src/gui_w32.c
+
+Patch 7.4b.002
+Problem:    Crash searching for \%(\%(\|\d\|-\|\.\)*\|\*\). (Marcin
+	    Szamotulski)  Also for \(\)*.
+Solution:   Do add a state for opening parenthesis, so that we can check if it
+	    was added before at the same position.
+Files:	    src/regexp_nfa.c, src/testdir/test64.in, src/testdir/test64.ok
+
+Patch 7.4b.003
+Problem:    Regexp code is not nicely aligned.
+Solution:   Adjust white space. (Ken Takata)
+Files:	    src/regexp_nfa.c
+
+Patch 7.4b.004
+Problem:    Regexp crash on pattern "@\%[\w\-]*". (Axel Kielhorn)
+Solution:   Add \%(\) around \%[] internally.
+Files:	    src/regexp_nfa.c, src/testdir/test64.in, src/testdir/test64.ok
+
+Patch 7.4b.005
+Problem:    Finding %s in shellpipe and shellredir does not ignore %%s.
+Solution:   Skip over %%. (lcd 47)
+Files:	    src/ex_cmds.c
+
+Patch 7.4b.006 (after 7.3.1295)
+Problem:    Using \{n,m} in an autocommand pattern no longer works.
+	    Specifically, mutt temp files are not recognized. (Gary Johnson)
+Solution:   Make \\\{n,m\} work.
+Files:	    runtime/doc/autocmd.txt, src/fileio.c
+
+Patch 7.4b.007
+Problem:    On 32 bit MS-Windows :perldo does not work.
+Solution:   Make sure time_t uses 32 bits. (Ken Takata)
+Files:	    src/if_perl.xs, src/vim.h
+
+Patch 7.4b.008
+Problem:    'autochdir' causes setbufvar() to change the current directory.
+	    (Ben Fritz)
+Solution:   When disabling autocommands also reset 'acd' temporarily.
+	    (Christian Brabandt)
+Files:	    src/fileio.c
+
+Patch 7.4b.009
+Problem:    When setting the Visual area manually and 'selection' is
+	    exclusive, a yank includes one character too much. (Ingo Karkat)
+Solution:   Default the Visual operation to "v". (Christian Brabandt)
+Files:	    src/mark.c
+
+Patch 7.4b.010
+Problem:    Win32: Tcl library load does not use standard mechanism.
+Solution:   Call vimLoadLib() instead of LoadLibraryEx(). (Ken Takata)
+Files:	    src/if_perl.xs, src/if_tcl.c
+
+Patch 7.4b.011
+Problem:    ":he \%(\)" does not work. (ZyX)
+Solution:   Add an exception to the list.
+Files:	    src/ex_cmds.c
+
+Patch 7.4b.012
+Problem:    Output from a shell command is truncated at a NUL. (lcd 47)
+Solution:   Change every NUL into an SOH.
+Files:	    src/misc1.c
+
+Patch 7.4b.013
+Problem:    Install dir for JP man pages is wrong.
+Solution:   Remove ".UTF-8" from the directory name. (Ken Takata)
+Files:	    src/Makefile
+
+Patch 7.4b.014 (after 7.4b.012)
+Problem:    Stupid mistake.
+Solution:   Changle "len" to "i".
+Files:	    src/misc1.c
+
+Patch 7.4b.015 (after 7.4b.008)
+Problem:    Can't compile without the 'acd' feature.
+Solution:   Add #ifdefs. (Kazunobu Kuriyama)
+Files:	    src/fileio.c
+
+Patch 7.4b.016
+Problem:    Ruby detection fails on Fedora 19.
+Solution:   Use one way to get the Ruby version. (Michael Henry)
+Files:	    src/configure.in, src/auto/configure
+
+Patch 7.4b.017
+Problem:    ":he \^x" gives a strange error message. (glts)
+Solution:   Do not translate \^x to \_CTRL-x.
+Files:	    src/ex_cmds.c
+
+Patch 7.4b.018 (after 7.4b.001)
+Problem:    Win32: Dialog can still be too big.
+Solution:   Move the check for height further down. (Andrei Olsen)
+Files:	    src/gui_w32.c
+
+Patch 7.4b.019 (after 7.4a.034)
+Problem:    Tabline is not updated properly when closing a tab on Win32.
+Solution:   Only reduce flickering when adding a tab. (Ken Takata)
+Files:	    src/gui_w48.c
+
+Patch 7.4b.020
+Problem:    "g~ap" changes first character of next paragraph. (Manuel Ortega)
+Solution:   Avoid subtracting (0 - 1) from todo.  (Mike Williams)
+Files:	    src/ops.c, src/testdir/test82.in, src/testdir/test82.ok
+
+Patch 7.4b.021
+Problem:    Pressing "u" after an external command results in multiple
+	    press-enter messages. (glts)
+Solution:   Don't call hit_return_msg() when we have K_IGNORE. (Christian
+	    Brabandt)
+Files:	    src/message.c
+
+Patch 7.4b.022
+Problem:    Not waiting for a character when the tick count overflows.
+Solution:   Subtract the unsigned numbers and cast to int. (Ken Takata)
+Files:	    src/os_win32.c
 
 
  vim:tw=78:ts=8:ft=help:norl:

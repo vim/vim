@@ -1,4 +1,4 @@
-*usr_40.txt*	For Vim version 7.4b.  Last change: 2006 Jun 21
+*usr_40.txt*	For Vim version 7.4.  Last change: 2013 Aug 05
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -440,16 +440,16 @@ written.  First you define a function: >
 	:  read !date
 	:endfunction
 
-You want this function to be called each time, just before a file is written.
-This will make that happen: >
+You want this function to be called each time, just before a buffer is written
+to a file.  This will make that happen: >
 
-	:autocmd FileWritePre *  call DateInsert()
+	:autocmd BufWritePre *  call DateInsert()
 
-"FileWritePre" is the event for which this autocommand is triggered: Just
-before (pre) writing a file.  The "*" is a pattern to match with the file
-name.  In this case it matches all files.
+"BufWritePre" is the event for which this autocommand is triggered: Just
+before (pre) writing a buffer to a file.  The "*" is a pattern to match with
+the file name.  In this case it matches all files.
    With this command enabled, when you do a ":write", Vim checks for any
-matching FileWritePre autocommands and executes them, and then it
+matching BufWritePre autocommands and executes them, and then it
 performs the ":write".
    The general form of the :autocmd command is as follows: >
 

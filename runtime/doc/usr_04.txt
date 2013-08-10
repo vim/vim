@@ -1,4 +1,4 @@
-*usr_04.txt*	For Vim version 7.4b.  Last change: 2008 Sep 06
+*usr_04.txt*	For Vim version 7.4.  Last change: 2008 Sep 06
 
 		     VIM USER MANUAL - by Bram Moolenaar
 

@@ -3,8 +3,8 @@
 " Author:	John Wellesz <John.wellesz (AT) teaser (DOT) fr>
 " URL:		http://www.2072productions.com/vim/indent/php.vim
 " Home:		https://github.com/2072/PHP-Indenting-for-VIm
-" Last Change:	2013 August 2nd
-" Version:	1.38
+" Last Change:	2013 August 7th
+" Version:	1.39
 "
 "
 "	Type :help php-indent for available options
@@ -303,7 +303,7 @@ function! FindTheSwitchIndent (lnum) " {{{
 
 endfunction "}}}
 
-let s:SynPHPMatchGroups = {'phpParent':1, 'Delimiter':1, 'Define':1, 'Storageclass':1, 'Structure':1, 'Exception':1}
+let s:SynPHPMatchGroups = {'phpParent':1, 'Delimiter':1, 'Define':1, 'Storageclass':1, 'StorageClass':1, 'Structure':1, 'Exception':1}
 function! IslinePHP (lnum, tofind) " {{{
     let cline = getline(a:lnum)
 

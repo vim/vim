@@ -1,4 +1,4 @@
-*os_os2.txt*    For Vim version 7.4b.  Last change: 2007 Apr 22
+*os_os2.txt*    For Vim version 7.4.  Last change: 2007 Apr 22
 
 
 		  VIM REFERENCE MANUAL    by Paul Slootman

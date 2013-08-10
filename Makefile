@@ -74,7 +74,7 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 7
-MINOR = 4b
+MINOR = 4
 
 # Uncomment this line if the Win32s version is to be included.
 # DOSBIN_S =  dosbin_s
@@ -92,8 +92,6 @@ MINOR = 4b
 #   runtime/doc/*.txt and nsis/gvim.nsi. Other things in README_os2.txt.  For a
 #   minor/major version: src/GvimExt/GvimExt.reg, src/vim.def, src/vim16.def,
 #   src/gvim.exe.mnf.
-# - Adjust the date and other info in src/version.h.
-# - Correct included_patches[] in src/version.c.
 # - Compile Vim with GTK, Perl, Python, Python3, TCL, Ruby, MZscheme, Lua (if
 #   you can make it all work), Cscope and "huge" features.  Exclude workshop
 #   and SNiFF.
@@ -102,8 +100,14 @@ MINOR = 4b
 # - With these features: "make depend" (works best with gcc).
 # - If you have a lint program: "make lint" and check the output (ignore GTK
 #   warnings).
-# - Enable the efence library in "src/Makefile" and run "make test".  Disable
-#   Python and Ruby to avoid trouble with threads (efence is not threadsafe).
+# - If you have valgrind, enable it in src/testdir/Makefile and run "make
+#   test".  Enable EXITFREE, disable GUI, scheme and tcl to avoid false alarms.
+#   Check the valgrind output.
+# - If you have the efence library, enable it in "src/Makefile" and run "make
+#   test".  Disable Python and Ruby to avoid trouble with threads (efence is
+#   not threadsafe).
+# - Adjust the date and other info in src/version.h.
+# - Correct included_patches[] in src/version.c.
 # - Check for missing entries in runtime/makemenu.vim (with checkmenu script).
 # - Check for missing options in runtime/optwin.vim et al. (with check.vim).
 # - Do "make menu" to update the runtime/synmenu.vim file.
@@ -111,8 +115,8 @@ MINOR = 4b
 # - Check that runtime/doc/help.txt doesn't contain entries in "LOCAL
 #   ADDITIONS".
 # - In runtime/doc run "make" and "make html" to check for errors.
-# - Check if src/Makefile and src/feature.h don't contain any personal
-#   preferences or the GTK, Perl, etc. mentioned above.
+# - Check if src/Makefile, src/testdir/Makefile and src/feature.h don't contain
+#   any personal preferences or the changes mentioned above.
 # - Check file protections to be "644" for text and "755" for executables (run
 #   the "check" script).
 # - Check compiling on Amiga, MS-DOS and MS-Windows.

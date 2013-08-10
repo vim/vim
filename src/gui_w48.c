@@ -129,6 +129,7 @@ typedef void *HDC;
 typedef void VOID;
 typedef int LPNMHDR;
 typedef int LONG;
+typedef int WNDPROC;
 #endif
 
 #ifndef GET_X_LPARAM

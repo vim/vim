@@ -1,4 +1,4 @@
-*digraph.txt*   For Vim version 7.4b.  Last change: 2011 Jan 15
+*digraph.txt*   For Vim version 7.4.  Last change: 2011 Jan 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
