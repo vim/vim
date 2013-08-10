@@ -1357,9 +1357,10 @@ WaitForChar(long msec)
 
 	if (msec > 0)
 	{
-	    /* If the specified wait time has passed, return. */
+	    /* If the specified wait time has passed, return.  Beware that
+	     * GetTickCount() may wrap around (overflow). */
 	    dwNow = GetTickCount();
-	    if (dwNow >= dwEndTime)
+	    if ((int)(dwNow - dwEndTime) >= 0)
 		break;
 	}
 	if (msec != 0)
