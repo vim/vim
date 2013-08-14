@@ -4120,7 +4120,7 @@ skip_add:
 		sub = &subs->norm;
 	    }
 #ifdef FEAT_SYN_HL
-	    else if (state->c >= NFA_ZOPEN)
+	    else if (state->c >= NFA_ZOPEN && state->c <= NFA_ZOPEN9)
 	    {
 		subidx = state->c - NFA_ZOPEN;
 		sub = &subs->synt;
@@ -4189,6 +4189,13 @@ skip_add:
 	    }
 
 	    subs = addstate(l, state->out, subs, pim, off);
+	    /* "subs" may have changed, need to set "sub" again */
+#ifdef FEAT_SYN_HL
+	    if (state->c >= NFA_ZOPEN && state->c <= NFA_ZOPEN9)
+		sub = &subs->synt;
+	    else
+#endif
+		sub = &subs->norm;
 
 	    if (save_in_use == -1)
 	    {
@@ -4237,7 +4244,7 @@ skip_add:
 		sub = &subs->norm;
 	    }
 #ifdef FEAT_SYN_HL
-	    else if (state->c >= NFA_ZCLOSE)
+	    else if (state->c >= NFA_ZCLOSE && state->c <= NFA_ZCLOSE9)
 	    {
 		subidx = state->c - NFA_ZCLOSE;
 		sub = &subs->synt;
@@ -4281,6 +4288,13 @@ skip_add:
 	    }
 
 	    subs = addstate(l, state->out, subs, pim, off);
+	    /* "subs" may have changed, need to set "sub" again */
+#ifdef FEAT_SYN_HL
+	    if (state->c >= NFA_ZCLOSE && state->c <= NFA_ZCLOSE9)
+		sub = &subs->synt;
+	    else
+#endif
+		sub = &subs->norm;
 
 	    if (REG_MULTI)
 		sub->list.multi[subidx].end = save_lpos;
