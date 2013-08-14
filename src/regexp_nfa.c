@@ -29,6 +29,9 @@
 # define NFA_REGEXP_DEBUG_LOG	"nfa_regexp_debug.log"
 #endif
 
+/* Added to NFA_ANY - NFA_NUPPER_IC to include a NL. */
+#define NFA_ADD_NL		31
+
 enum
 {
     NFA_SPLIT = -1024,
@@ -183,6 +186,13 @@ enum
     NFA_NLOWER,		/*	Match non-lowercase char */
     NFA_UPPER,		/*	Match uppercase char */
     NFA_NUPPER,		/*	Match non-uppercase char */
+    NFA_LOWER_IC,	/*	Match [a-z] */
+    NFA_NLOWER_IC,	/*	Match [^a-z] */
+    NFA_UPPER_IC,	/*	Match [A-Z] */
+    NFA_NUPPER_IC,	/*	Match [^A-Z] */
+
+    NFA_FIRST_NL = NFA_ANY + NFA_ADD_NL,
+    NFA_LAST_NL = NFA_NUPPER_IC + NFA_ADD_NL,
 
     NFA_CURSOR,		/*	Match cursor pos */
     NFA_LNUM,		/*	Match line number */
@@ -198,9 +208,6 @@ enum
     NFA_MARK_GT,	/*	Match > mark */
     NFA_MARK_LT,	/*	Match < mark */
     NFA_VISUAL,		/*	Match Visual area */
-
-    NFA_FIRST_NL = NFA_ANY + ADD_NL,
-    NFA_LAST_NL = NFA_NUPPER + ADD_NL,
 
     /* Character classes [:alnum:] etc */
     NFA_CLASS_ALNUM,
@@ -578,6 +585,8 @@ realloc_post_list()
  * On failure, return 0 (=FAIL)
  * Start points to the first char of the range, while end should point
  * to the closing brace.
+ * Keep in mind that 'ignorecase' applies at execution time, thus [a-z] may
+ * need to be interpreted as [a-zA-Z].
  */
     static int
 nfa_recognize_char_class(start, end, extra_newl)
@@ -681,7 +690,7 @@ nfa_recognize_char_class(start, end, extra_newl)
 	return FAIL;
 
     if (newl == TRUE)
-	extra_newl = ADD_NL;
+	extra_newl = NFA_ADD_NL;
 
     switch (config)
     {
@@ -710,13 +719,13 @@ nfa_recognize_char_class(start, end, extra_newl)
 	case CLASS_not | CLASS_az | CLASS_AZ:
 	    return extra_newl + NFA_NALPHA;
 	case CLASS_az:
-	   return extra_newl + NFA_LOWER;
+	   return extra_newl + NFA_LOWER_IC;
 	case CLASS_not | CLASS_az:
-	    return extra_newl + NFA_NLOWER;
+	    return extra_newl + NFA_NLOWER_IC;
 	case CLASS_AZ:
-	    return extra_newl + NFA_UPPER;
+	    return extra_newl + NFA_UPPER_IC;
 	case CLASS_not | CLASS_AZ:
-	    return extra_newl + NFA_NUPPER;
+	    return extra_newl + NFA_NUPPER_IC;
     }
     return FAIL;
 }
@@ -914,7 +923,7 @@ nfa_regatom()
 		break;
 	    }
 
-	    extra = ADD_NL;
+	    extra = NFA_ADD_NL;
 
 	    /* "\_[" is collection plus newline */
 	    if (c == '[')
@@ -970,7 +979,7 @@ nfa_regatom()
 	    }
 #endif
 	    EMIT(nfa_classcodes[p - classchars]);
-	    if (extra == ADD_NL)
+	    if (extra == NFA_ADD_NL)
 	    {
 		EMIT(NFA_NEWL);
 		EMIT(NFA_OR);
@@ -1240,21 +1249,21 @@ collection:
 	    {
 		/*
 		 * Try to reverse engineer character classes. For example,
-		 * recognize that [0-9] stands for  \d and [A-Za-z_] with \h,
+		 * recognize that [0-9] stands for \d and [A-Za-z_] for \h,
 		 * and perform the necessary substitutions in the NFA.
 		 */
 		result = nfa_recognize_char_class(regparse, endp,
-							    extra == ADD_NL);
+							 extra == NFA_ADD_NL);
 		if (result != FAIL)
 		{
-		    if (result >= NFA_DIGIT && result <= NFA_NUPPER)
-			EMIT(result);
-		    else	/* must be char class + newline */
+		    if (result >= NFA_FIRST_NL && result <= NFA_LAST_NL)
 		    {
-			EMIT(result - ADD_NL);
+			EMIT(result - NFA_ADD_NL);
 			EMIT(NFA_NEWL);
 			EMIT(NFA_OR);
 		    }
+		    else
+			EMIT(result);
 		    regparse = endp;
 		    mb_ptr_adv(regparse);
 		    return OK;
@@ -1504,7 +1513,7 @@ collection:
 			     * collection, add an OR below. But not for negated
 			     * range. */
 			    if (!negated)
-				extra = ADD_NL;
+				extra = NFA_ADD_NL;
 			}
 			else
 			{
@@ -1537,7 +1546,7 @@ collection:
 		    EMIT(NFA_END_COLL);
 
 		/* \_[] also matches \n but it's not negated */
-		if (extra == ADD_NL)
+		if (extra == NFA_ADD_NL)
 		{
 		    EMIT(reg_string ? NL : NFA_NEWL);
 		    EMIT(NFA_OR);
@@ -2011,7 +2020,7 @@ nfa_set_code(c)
     if (c >= NFA_FIRST_NL && c <= NFA_LAST_NL)
     {
 	addnl = TRUE;
-	c -= ADD_NL;
+	c -= NFA_ADD_NL;
     }
 
     STRCPY(code, "");
@@ -2217,6 +2226,10 @@ nfa_set_code(c)
 	case NFA_NLOWER:STRCPY(code, "NFA_NLOWER"); break;
 	case NFA_UPPER:	STRCPY(code, "NFA_UPPER"); break;
 	case NFA_NUPPER:STRCPY(code, "NFA_NUPPER"); break;
+	case NFA_LOWER_IC:  STRCPY(code, "NFA_LOWER_IC"); break;
+	case NFA_NLOWER_IC: STRCPY(code, "NFA_NLOWER_IC"); break;
+	case NFA_UPPER_IC:  STRCPY(code, "NFA_UPPER_IC"); break;
+	case NFA_NUPPER_IC: STRCPY(code, "NFA_NUPPER_IC"); break;
 
 	default:
 	    STRCPY(code, "CHAR(x)");
@@ -2687,6 +2700,10 @@ nfa_max_width(startstate, depth)
 	    case NFA_NLOWER:
 	    case NFA_UPPER:
 	    case NFA_NUPPER:
+	    case NFA_LOWER_IC:
+	    case NFA_NLOWER_IC:
+	    case NFA_UPPER_IC:
+	    case NFA_NUPPER_IC:
 		/* possibly non-ascii */
 #ifdef FEAT_MBYTE
 		if (has_mbyte)
@@ -3841,6 +3858,10 @@ match_follows(startstate, depth)
 	    case NFA_NLOWER:
 	    case NFA_UPPER:
 	    case NFA_NUPPER:
+	    case NFA_LOWER_IC:
+	    case NFA_NLOWER_IC:
+	    case NFA_UPPER_IC:
+	    case NFA_NUPPER_IC:
 	    case NFA_START_COLL:
 	    case NFA_START_NEG_COLL:
 	    case NFA_NEWL:
@@ -5869,6 +5890,28 @@ nfa_regmatch(prog, start, submatch, m)
 
 	    case NFA_NUPPER:	/* \U	*/
 		result = curc != NUL && !ri_upper(curc);
+		ADD_STATE_IF_MATCH(t->state);
+		break;
+
+	    case NFA_LOWER_IC:	/* [a-z] */
+		result = ri_lower(curc) || (ireg_ic && ri_upper(curc));
+		ADD_STATE_IF_MATCH(t->state);
+		break;
+
+	    case NFA_NLOWER_IC:	/* [^a-z] */
+		result = curc != NUL
+			  && !(ri_lower(curc) || (ireg_ic && ri_upper(curc)));
+		ADD_STATE_IF_MATCH(t->state);
+		break;
+
+	    case NFA_UPPER_IC:	/* [A-Z] */
+		result = ri_upper(curc) || (ireg_ic && ri_lower(curc));
+		ADD_STATE_IF_MATCH(t->state);
+		break;
+
+	    case NFA_NUPPER_IC:	/* ^[A-Z] */
+		result = curc != NUL
+			  && !(ri_upper(curc) || (ireg_ic && ri_lower(curc)));
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 
