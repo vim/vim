@@ -3782,6 +3782,9 @@ pim_equal(one, two)
     if (two_unused)
 	/* one is used and two is not: not equal */
 	return FALSE;
+    /* compare the state id */
+    if (one->state->id != two->state->id)
+	return FALSE;
     /* compare the position */
     if (REG_MULTI)
 	return one->end.pos.lnum == two->end.pos.lnum

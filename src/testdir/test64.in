@@ -421,6 +421,9 @@ STARTTEST
 :call add(tl, [2, '\(foo\)\@<=\>', 'barfoo', '', 'foo'])
 :call add(tl, [2, '\(foo\)\@<=.*', 'foobar', 'bar', 'foo'])
 :"
+:" complicated look-behind match
+:call add(tl, [2, '\(r\@<=\|\w\@<!\)\/', 'x = /word/;', '/'])
+:"
 :""""" \@>
 :call add(tl, [2, '\(a*\)\@>a', 'aaaa'])
 :call add(tl, [2, '\(a*\)\@>b', 'aaab', 'aaab', 'aaa'])
