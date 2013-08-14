@@ -9,7 +9,7 @@ void win_move_after __ARGS((win_T *win1, win_T *win2));
 void win_equal __ARGS((win_T *next_curwin, int current, int dir));
 void close_windows __ARGS((buf_T *buf, int keep_curwin));
 int one_window __ARGS((void));
-void win_close __ARGS((win_T *win, int free_buf));
+int win_close __ARGS((win_T *win, int free_buf));
 void win_close_othertab __ARGS((win_T *win, int free_buf, tabpage_T *tp));
 void win_free_all __ARGS((void));
 win_T *winframe_remove __ARGS((win_T *win, int *dirp, tabpage_T *tp));

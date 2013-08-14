@@ -1186,7 +1186,10 @@ do_buffer(action, start, dir, count, forceit)
 		   && !(curwin->w_closing || curwin->w_buffer->b_closing)
 # endif
 		   && (firstwin != lastwin || first_tabpage->tp_next != NULL))
-	    win_close(curwin, FALSE);
+	{
+	    if (win_close(curwin, FALSE) == FAIL)
+		break;
+	}
 #endif
 
 	/*

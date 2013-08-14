@@ -2172,8 +2172,9 @@ close_last_window_tabpage(win, free_buf, prev_curtab)
  * If "free_buf" is TRUE related buffer may be unloaded.
  *
  * Called by :quit, :close, :xit, :wq and findtag().
+ * Returns FAIL when the window was not closed.
  */
-    void
+    int
 win_close(win, free_buf)
     win_T	*win;
     int		free_buf;
@@ -2190,21 +2191,21 @@ win_close(win, free_buf)
     if (last_window())
     {
 	EMSG(_("E444: Cannot close last window"));
-	return;
+	return FAIL;
     }
 
 #ifdef FEAT_AUTOCMD
     if (win->w_closing || (win->w_buffer != NULL && win->w_buffer->b_closing))
-	return; /* window is already being closed */
+	return FAIL; /* window is already being closed */
     if (win == aucmd_win)
     {
 	EMSG(_("E813: Cannot close autocmd window"));
-	return;
+	return FAIL;
     }
     if ((firstwin == aucmd_win || lastwin == aucmd_win) && one_window())
     {
 	EMSG(_("E814: Cannot close window, only autocmd window would remain"));
-	return;
+	return FAIL;
     }
 #endif
 
@@ -2212,7 +2213,7 @@ win_close(win, free_buf)
      * and then close the window and the tab page to avoid that curwin and
      * curtab are invalid while we are freeing memory. */
     if (close_last_window_tabpage(win, free_buf, prev_curtab))
-      return;
+      return FAIL;
 
     /* When closing the help window, try restoring a snapshot after closing
      * the window.  Otherwise clear the snapshot, it's now invalid. */
@@ -2240,22 +2241,22 @@ win_close(win, free_buf)
 	    win->w_closing = TRUE;
 	    apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf);
 	    if (!win_valid(win))
-		return;
+		return FAIL;
 	    win->w_closing = FALSE;
 	    if (last_window())
-		return;
+		return FAIL;
 	}
 	win->w_closing = TRUE;
 	apply_autocmds(EVENT_WINLEAVE, NULL, NULL, FALSE, curbuf);
 	if (!win_valid(win))
-	    return;
+	    return FAIL;
 	win->w_closing = FALSE;
 	if (last_window())
-	    return;
+	    return FAIL;
 # ifdef FEAT_EVAL
 	/* autocmds may abort script processing */
 	if (aborting())
-	    return;
+	    return FAIL;
 # endif
     }
 #endif
@@ -2303,7 +2304,7 @@ win_close(win, free_buf)
      * other window or moved to another tab page. */
     else if (!win_valid(win) || last_window() || curtab != prev_curtab
 	    || close_last_window_tabpage(win, free_buf, prev_curtab))
-	return;
+	return FAIL;
 
     /* Free the memory used for the window and get the window that received
      * the screen space. */
@@ -2383,6 +2384,7 @@ win_close(win, free_buf)
 #endif
 
     redraw_all_later(NOT_VALID);
+    return OK;
 }
 
 /*
