@@ -2727,6 +2727,7 @@ edit_buffers(parmp)
     int		arg_idx;		/* index in argument list */
     int		i;
     int		advance = TRUE;
+    win_T	*win;
 
 # ifdef FEAT_AUTOCMD
     /*
@@ -2816,24 +2817,22 @@ edit_buffers(parmp)
 # ifdef FEAT_AUTOCMD
     --autocmd_no_enter;
 # endif
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
-    /*
-     * Avoid making a preview window the current window.
-     */
-    if (firstwin->w_p_pvw)
-    {
-       win_T   *win;
 
-       for (win = firstwin; win != NULL; win = win->w_next)
-           if (!win->w_p_pvw)
-           {
-               firstwin = win;
-               break;
-           }
+    /* make the first window the current window */
+    win = firstwin;
+#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+    /* Avoid making a preview window the current window. */
+    while (win->w_p_pvw)
+    {
+	win = win->w_next;
+	if (win == NULL)
+	{
+	    win = firstwin;
+	    break;
+	}
     }
 #endif
-    /* make the first window the current window */
-    win_enter(firstwin, FALSE);
+    win_enter(win, FALSE);
 
 # ifdef FEAT_AUTOCMD
     --autocmd_no_leave;
