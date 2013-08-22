@@ -14292,6 +14292,10 @@ f_mkdir(argvars, rettv)
 	return;
 
     dir = get_tv_string_buf(&argvars[0], buf);
+    if (*gettail(dir) == NUL)
+	/* remove trailing slashes */
+	*gettail_sep(dir) = NUL;
+
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	if (argvars[2].v_type != VAR_UNKNOWN)
@@ -14299,7 +14303,7 @@ f_mkdir(argvars, rettv)
 	if (prot != -1 && STRCMP(get_tv_string(&argvars[1]), "p") == 0)
 	    mkdir_recurse(dir, prot);
     }
-    rettv->vval.v_number = prot != -1 ? vim_mkdir_emsg(dir, prot) : 0;
+    rettv->vval.v_number = prot == -1 ? FAIL : vim_mkdir_emsg(dir, prot);
 }
 #endif
 
