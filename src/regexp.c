@@ -4311,8 +4311,8 @@ regmatch(scan)
    */
   for (;;)
   {
-    /* Some patterns may cause a long time to match, even though they are not
-     * illegal.  E.g., "\([a-z]\+\)\+Q".  Allow breaking them with CTRL-C. */
+    /* Some patterns may take a long time to match, e.g., "\([a-z]\+\)\+Q".
+     * Allow interrupting them with CTRL-C. */
     fast_breakcheck();
 
 #ifdef DEBUG

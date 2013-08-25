@@ -5089,6 +5089,12 @@ nfa_regmatch(prog, start, submatch, m)
 	return FALSE;
     }
 #endif
+    /* Some patterns may take a long time to match, especially when using
+     * recursive_regmatch(). Allow interrupting them with CTRL-C. */
+    fast_breakcheck();
+    if (got_int)
+	return FALSE;
+
     nfa_match = FALSE;
 
     /* Allocate memory for the lists of nodes. */
