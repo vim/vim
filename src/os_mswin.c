@@ -456,7 +456,14 @@ mch_FullName(
     int
 mch_isFullName(char_u *fname)
 {
+#ifdef FEAT_MBYTE
+    /* WinNT and later can use _MAX_PATH wide characters for a pathname, which
+     * means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
+     * UTF-8. */
+    char szName[_MAX_PATH * 3 + 1];
+#else
     char szName[_MAX_PATH + 1];
+#endif
 
     /* A name like "d:/foo" and "//server/share" is absolute */
     if ((fname[0] && fname[1] == ':' && (fname[2] == '/' || fname[2] == '\\'))
@@ -464,7 +471,7 @@ mch_isFullName(char_u *fname)
 	return TRUE;
 
     /* A name that can't be made absolute probably isn't absolute. */
-    if (mch_FullName(fname, szName, _MAX_PATH, FALSE) == FAIL)
+    if (mch_FullName(fname, szName, sizeof(szName) - 1, FALSE) == FAIL)
 	return FALSE;
 
     return pathcmp(fname, szName, -1) == 0;
@@ -498,10 +505,17 @@ slash_adjust(p)
     int
 vim_stat(const char *name, struct stat *stp)
 {
+#ifdef FEAT_MBYTE
+    /* WinNT and later can use _MAX_PATH wide characters for a pathname, which
+     * means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
+     * UTF-8. */
+    char	buf[_MAX_PATH * 3 + 1];
+#else
     char	buf[_MAX_PATH + 1];
+#endif
     char	*p;
 
-    vim_strncpy((char_u *)buf, (char_u *)name, _MAX_PATH);
+    vim_strncpy((char_u *)buf, (char_u *)name, sizeof(buf) - 1);
     p = buf + strlen(buf);
     if (p > buf)
 	mb_ptr_back(buf, p);
