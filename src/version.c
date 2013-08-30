@@ -60,6 +60,11 @@ static void version_msg __ARGS((char *s));
 
 static char *(features[]) =
 {
+#ifdef HAVE_ACL
+	"+acl",
+#else
+	"-acl",
+#endif
 #ifdef AMIGA		/* only for Amiga systems */
 # ifdef FEAT_ARP
 	"+ARP",
@@ -721,12 +726,20 @@ static char *(features[]) =
 # else
 	"-xpm_w32",
 # endif
+#else
+# ifdef HAVE_XPM
+	"+xpm",
+# else
+	"-xpm",
+# endif
 #endif
 	NULL
 };
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    11,
 /**/
     10,
 /**/

@@ -12135,6 +12135,9 @@ f_has(argvars, rettv)
 #ifndef CASE_INSENSITIVE_FILENAME
 	"fname_case",
 #endif
+#ifdef HAVE_ACL
+	"acl",
+#endif
 #ifdef FEAT_ARABIC
 	"arabic",
 #endif
@@ -12538,7 +12541,12 @@ f_has(argvars, rettv)
 	"xfontset",
 #endif
 #ifdef FEAT_XPM_W32
-	"xpm_w32",
+	"xpm",
+	"xpm_w32",	/* for backward compatibility */
+#else
+# if defined(HAVE_XPM)
+	"xpm",
+# endif
 #endif
 #ifdef USE_XSMP
 	"xsmp",
