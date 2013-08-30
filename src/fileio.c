@@ -428,13 +428,13 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 	}
     }
 
-#ifdef UNIX
-    /*
-     * On Unix it is possible to read a directory, so we have to
-     * check for it before the mch_open().
-     */
     if (!read_stdin && !read_buffer)
     {
+#ifdef UNIX
+	/*
+	 * On Unix it is possible to read a directory, so we have to
+	 * check for it before the mch_open().
+	 */
 	perm = mch_getperm(fname);
 	if (perm >= 0 && !S_ISREG(perm)		    /* not a regular file ... */
 # ifdef S_ISFIFO
@@ -457,8 +457,8 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 	    msg_scroll = msg_save;
 	    return FAIL;
 	}
-
-# if defined(MSDOS) || defined(MSWIN) || defined(OS2)
+#endif
+#if defined(MSDOS) || defined(MSWIN) || defined(OS2)
 	/*
 	 * MS-Windows allows opening a device, but we will probably get stuck
 	 * trying to read it.
@@ -470,9 +470,8 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 	    msg_scroll = msg_save;
 	    return FAIL;
 	}
-# endif
-    }
 #endif
+    }
 
     /* Set default or forced 'fileformat' and 'binary'. */
     set_file_options(set_options, eap);
