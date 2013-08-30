@@ -1761,9 +1761,13 @@ mch_resolve_shortcut(char_u *fname)
     IPersistFile	*ppf = NULL;
     OLECHAR		wsz[MAX_PATH];
     WIN32_FIND_DATA	ffd; // we get those free of charge
-    TCHAR		buf[MAX_PATH]; // could have simply reused 'wsz'...
+    CHAR		buf[MAX_PATH]; // could have simply reused 'wsz'...
     char_u		*rfname = NULL;
     int			len;
+# ifdef FEAT_MBYTE
+    IShellLinkW		*pslw = NULL;
+    WIN32_FIND_DATAW	ffdw; // we get those free of charge
+# endif
 
     /* Check if the file name ends in ".lnk". Avoid calling
      * CoCreateInstance(), it's quite slow. */
@@ -1775,18 +1779,62 @@ mch_resolve_shortcut(char_u *fname)
 
     CoInitialize(NULL);
 
+# ifdef FEAT_MBYTE
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	// create a link manager object and request its interface
+	hr = CoCreateInstance(
+		&CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
+		&IID_IShellLinkW, (void**)&pslw);
+	if (hr == S_OK)
+	{
+	    WCHAR	*p = enc_to_utf16(fname, NULL);
+
+	    if (p != NULL)
+	    {
+		// Get a pointer to the IPersistFile interface.
+		hr = pslw->lpVtbl->QueryInterface(
+			pslw, &IID_IPersistFile, (void**)&ppf);
+		if (hr != S_OK)
+		    goto shortcut_errorw;
+
+		// "load" the name and resolve the link
+		hr = ppf->lpVtbl->Load(ppf, p, STGM_READ);
+		if (hr != S_OK)
+		    goto shortcut_errorw;
+#  if 0  // This makes Vim wait a long time if the target does not exist.
+		hr = pslw->lpVtbl->Resolve(pslw, NULL, SLR_NO_UI);
+		if (hr != S_OK)
+		    goto shortcut_errorw;
+#  endif
+
+		// Get the path to the link target.
+		ZeroMemory(wsz, MAX_PATH * sizeof(WCHAR));
+		hr = pslw->lpVtbl->GetPath(pslw, wsz, MAX_PATH, &ffdw, 0);
+		if (hr == S_OK && wsz[0] != NUL)
+		    rfname = utf16_to_enc(wsz, NULL);
+
+shortcut_errorw:
+		vim_free(p);
+		if (hr == S_OK)
+		    goto shortcut_end;
+	    }
+	}
+	/* Retry with non-wide function (for Windows 98). */
+    }
+# endif
     // create a link manager object and request its interface
     hr = CoCreateInstance(
 	    &CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
 	    &IID_IShellLink, (void**)&psl);
     if (hr != S_OK)
-	goto shortcut_error;
+	goto shortcut_end;
 
     // Get a pointer to the IPersistFile interface.
     hr = psl->lpVtbl->QueryInterface(
 	    psl, &IID_IPersistFile, (void**)&ppf);
     if (hr != S_OK)
-	goto shortcut_error;
+	goto shortcut_end;
 
     // full path string must be in Unicode.
     MultiByteToWideChar(CP_ACP, 0, fname, -1, wsz, MAX_PATH);
@@ -1794,12 +1842,12 @@ mch_resolve_shortcut(char_u *fname)
     // "load" the name and resolve the link
     hr = ppf->lpVtbl->Load(ppf, wsz, STGM_READ);
     if (hr != S_OK)
-	goto shortcut_error;
-#if 0  // This makes Vim wait a long time if the target doesn't exist.
+	goto shortcut_end;
+# if 0  // This makes Vim wait a long time if the target doesn't exist.
     hr = psl->lpVtbl->Resolve(psl, NULL, SLR_NO_UI);
     if (hr != S_OK)
-	goto shortcut_error;
-#endif
+	goto shortcut_end;
+# endif
 
     // Get the path to the link target.
     ZeroMemory(buf, MAX_PATH);
@@ -1807,12 +1855,16 @@ mch_resolve_shortcut(char_u *fname)
     if (hr == S_OK && buf[0] != NUL)
 	rfname = vim_strsave(buf);
 
-shortcut_error:
+shortcut_end:
     // Release all interface pointers (both belong to the same object)
     if (ppf != NULL)
 	ppf->lpVtbl->Release(ppf);
     if (psl != NULL)
 	psl->lpVtbl->Release(psl);
+# ifdef FEAT_MBYTE
+    if (pslw != NULL)
+	pslw->lpVtbl->Release(pslw);
+# endif
 
     CoUninitialize();
     return rfname;
