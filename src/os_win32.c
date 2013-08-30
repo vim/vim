@@ -2500,9 +2500,125 @@ mch_check_win(
 }
 
 
+#ifdef FEAT_MBYTE
+/*
+ * fname_casew(): Wide version of fname_case().  Set the case of the file name,
+ * if it already exists.  When "len" is > 0, also expand short to long
+ * filenames.
+ * Return FAIL if wide functions are not available, OK otherwise.
+ * NOTE: much of this is identical to fname_case(), keep in sync!
+ */
+    static int
+fname_casew(
+    WCHAR	*name,
+    int		len)
+{
+    WCHAR		szTrueName[_MAX_PATH + 2];
+    WCHAR		szTrueNameTemp[_MAX_PATH + 2];
+    WCHAR		*ptrue, *ptruePrev;
+    WCHAR		*porig, *porigPrev;
+    int			flen;
+    WIN32_FIND_DATAW	fb;
+    HANDLE		hFind;
+    int			c;
+    int			slen;
+
+    flen = (int)wcslen(name);
+    if (flen > _MAX_PATH)
+	return OK;
+
+    /* slash_adjust(name) not needed, already adjusted by fname_case(). */
+
+    /* Build the new name in szTrueName[] one component at a time. */
+    porig = name;
+    ptrue = szTrueName;
+
+    if (iswalpha(porig[0]) && porig[1] == L':')
+    {
+	/* copy leading drive letter */
+	*ptrue++ = *porig++;
+	*ptrue++ = *porig++;
+	*ptrue = NUL;	    /* in case nothing follows */
+    }
+
+    while (*porig != NUL)
+    {
+	/* copy \ characters */
+	while (*porig == psepc)
+	    *ptrue++ = *porig++;
+
+	ptruePrev = ptrue;
+	porigPrev = porig;
+	while (*porig != NUL && *porig != psepc)
+	{
+	    *ptrue++ = *porig++;
+	}
+	*ptrue = NUL;
+
+	/* To avoid a slow failure append "\*" when searching a directory,
+	 * server or network share. */
+	wcscpy(szTrueNameTemp, szTrueName);
+	slen = (int)wcslen(szTrueNameTemp);
+	if (*porig == psepc && slen + 2 < _MAX_PATH)
+	    wcscpy(szTrueNameTemp + slen, L"\\*");
+
+	/* Skip "", "." and "..". */
+	if (ptrue > ptruePrev
+		&& (ptruePrev[0] != L'.'
+		    || (ptruePrev[1] != NUL
+			&& (ptruePrev[1] != L'.' || ptruePrev[2] != NUL)))
+		&& (hFind = FindFirstFileW(szTrueNameTemp, &fb))
+						      != INVALID_HANDLE_VALUE)
+	{
+	    c = *porig;
+	    *porig = NUL;
+
+	    /* Only use the match when it's the same name (ignoring case) or
+	     * expansion is allowed and there is a match with the short name
+	     * and there is enough room. */
+	    if (_wcsicoll(porigPrev, fb.cFileName) == 0
+		    || (len > 0
+			&& (_wcsicoll(porigPrev, fb.cAlternateFileName) == 0
+			    && (int)(ptruePrev - szTrueName)
+					   + (int)wcslen(fb.cFileName) < len)))
+	    {
+		wcscpy(ptruePrev, fb.cFileName);
+
+		/* Look for exact match and prefer it if found.  Must be a
+		 * long name, otherwise there would be only one match. */
+		while (FindNextFileW(hFind, &fb))
+		{
+		    if (*fb.cAlternateFileName != NUL
+			    && (wcscoll(porigPrev, fb.cFileName) == 0
+				|| (len > 0
+				    && (_wcsicoll(porigPrev,
+						   fb.cAlternateFileName) == 0
+				    && (int)(ptruePrev - szTrueName)
+					 + (int)wcslen(fb.cFileName) < len))))
+		    {
+			wcscpy(ptruePrev, fb.cFileName);
+			break;
+		    }
+		}
+	    }
+	    FindClose(hFind);
+	    *porig = c;
+	    ptrue = ptruePrev + wcslen(ptruePrev);
+	}
+	else if (hFind == INVALID_HANDLE_VALUE
+		&& GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
+	    return FAIL;
+    }
+
+    wcscpy(name, szTrueName);
+    return OK;
+}
+#endif
+
 /*
  * fname_case(): Set the case of the file name, if it already exists.
  * When "len" is > 0, also expand short to long filenames.
+ * NOTE: much of this is identical to fname_casew(), keep in sync!
  */
     void
 fname_case(
@@ -2520,10 +2636,43 @@ fname_case(
     int			slen;
 
     flen = (int)STRLEN(name);
-    if (flen == 0 || flen > _MAX_PATH)
+    if (flen == 0)
 	return;
 
     slash_adjust(name);
+
+#ifdef FEAT_MBYTE
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	WCHAR	*p = enc_to_utf16(name, NULL);
+
+	if (p != NULL)
+	{
+	    char_u	*q;
+	    WCHAR	buf[_MAX_PATH + 2];
+
+	    wcscpy(buf, p);
+	    vim_free(p);
+
+	    if (fname_casew(buf, (len > 0) ? _MAX_PATH : 0) == OK)
+	    {
+		q = utf16_to_enc(buf, NULL);
+		if (q != NULL)
+		{
+		    vim_strncpy(name, q, (len > 0) ? len - 1 : flen);
+		    vim_free(q);
+		    return;
+		}
+	    }
+	}
+	/* Retry with non-wide function (for Windows 98). */
+    }
+#endif
+
+    /* If 'enc' is utf-8, flen can be larger than _MAX_PATH.
+     * So we should check this after calling wide function. */
+    if (flen > _MAX_PATH)
+	return;
 
     /* Build the new name in szTrueName[] one component at a time. */
     porig = name;
