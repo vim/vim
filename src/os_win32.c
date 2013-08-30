@@ -3107,6 +3107,9 @@ mch_nodetype(char_u *name)
 {
     HANDLE	hFile;
     int		type;
+#ifdef FEAT_MBYTE
+    WCHAR	*wn = NULL;
+#endif
 
     /* We can't open a file with a name "\\.\con" or "\\.\prn" and trying to
      * read from it later will cause Vim to hang.  Thus return NODE_WRITABLE
@@ -3114,14 +3117,41 @@ mch_nodetype(char_u *name)
     if (STRNCMP(name, "\\\\.\\", 4) == 0)
 	return NODE_WRITABLE;
 
-    hFile = CreateFile(name,		/* file name */
-		GENERIC_WRITE,		/* access mode */
-		0,			/* share mode */
-		NULL,			/* security descriptor */
-		OPEN_EXISTING,		/* creation disposition */
-		0,			/* file attributes */
-		NULL);			/* handle to template file */
+#ifdef FEAT_MBYTE
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	wn = enc_to_utf16(name, NULL);
+	if (wn != NULL)
+	{
+	    hFile = CreateFileW(wn,	/* file name */
+			GENERIC_WRITE,	/* access mode */
+			0,		/* share mode */
+			NULL,		/* security descriptor */
+			OPEN_EXISTING,	/* creation disposition */
+			0,		/* file attributes */
+			NULL);		/* handle to template file */
+	    if (hFile == INVALID_HANDLE_VALUE
+			      && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
+	    {
+		/* Retry with non-wide function (for Windows 98). */
+		vim_free(wn);
+		wn = NULL;
+	    }
+	}
+    }
+    if (wn == NULL)
+#endif
+	hFile = CreateFile(name,	/* file name */
+		    GENERIC_WRITE,	/* access mode */
+		    0,			/* share mode */
+		    NULL,		/* security descriptor */
+		    OPEN_EXISTING,	/* creation disposition */
+		    0,			/* file attributes */
+		    NULL);		/* handle to template file */
 
+#ifdef FEAT_MBYTE
+    vim_free(wn);
+#endif
     if (hFile == INVALID_HANDLE_VALUE)
 	return NODE_NORMAL;
 
