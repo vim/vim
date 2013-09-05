@@ -3467,7 +3467,6 @@ ins_compl_new_leader()
     }
 
     compl_enter_selects = !compl_used_match;
-    compl_shown_match = compl_curr_match = compl_first_match;
 
     /* Show the popup menu with a different set of matches. */
     ins_compl_show_pum();
