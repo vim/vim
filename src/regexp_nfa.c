@@ -4209,10 +4209,11 @@ skip_add:
 	    break;
 
 	case NFA_MCLOSE:
-	    if (nfa_has_zend)
+	    if (nfa_has_zend && (REG_MULTI
+			? subs->norm.list.multi[0].end.lnum >= 0
+			: subs->norm.list.line[0].end != NULL))
 	    {
-		/* Do not overwrite the position set by \ze. If no \ze
-		 * encountered end will be set in nfa_regtry(). */
+		/* Do not overwrite the position set by \ze. */
 		subs = addstate(l, state->out, subs, pim, off);
 		break;
 	    }

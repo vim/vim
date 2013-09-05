@@ -752,6 +752,9 @@ OK 2 - \v(a \zsif .*){2}
 OK 0 - \>\zs.
 OK 1 - \>\zs.
 OK 2 - \>\zs.
+OK 0 - \s\+\ze\[/\|\s\zs\s\+
+OK 1 - \s\+\ze\[/\|\s\zs\s\+
+OK 2 - \s\+\ze\[/\|\s\zs\s\+
 OK 0 - abc\@=
 OK 1 - abc\@=
 OK 2 - abc\@=

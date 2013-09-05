@@ -328,6 +328,7 @@ STARTTEST
 :call add(tl, [2, 'abc \zsmatch\ze abc', 'abc abc abc match abc abc', 'match'])
 :call add(tl, [2, '\v(a \zsif .*){2}', 'a if then a if last', 'if last', 'a if last'])
 :call add(tl, [2, '\>\zs.', 'aword. ', '.'])
+:call add(tl, [2, '\s\+\ze\[/\|\s\zs\s\+', 'is   [a t', '  '])
 :"
 :"""" Tests for \@= and \& features
 :call add(tl, [2, 'abc\@=', 'abc', 'ab'])
