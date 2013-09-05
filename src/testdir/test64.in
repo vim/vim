@@ -427,6 +427,7 @@ STARTTEST
 :""""" \@>
 :call add(tl, [2, '\(a*\)\@>a', 'aaaa'])
 :call add(tl, [2, '\(a*\)\@>b', 'aaab', 'aaab', 'aaa'])
+:call add(tl, [2, '^\(.\{-}b\)\@>.', '  abcbd', '  abc', '  ab'])
 :" TODO: BT engine does not restore submatch after failure
 :call add(tl, [1, '\(a*\)\@>a\|a\+', 'aaaa', 'aaaa'])
 :"

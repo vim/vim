@@ -5322,7 +5322,10 @@ nfa_regmatch(prog, start, submatch, m)
 		log_subsexpr(m);
 #endif
 		nfa_match = TRUE;
-		break;
+		/* See comment above at "goto nextchar". */
+		if (nextlist->n == 0)
+		    clen = 0;
+		goto nextchar;
 
 	    case NFA_START_INVISIBLE:
 	    case NFA_START_INVISIBLE_FIRST:
