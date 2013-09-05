@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim_7.4_ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-07-08 00:47+0400\n"
-"PO-Revision-Date: 2013-07-08 00:47+0400\n"
+"POT-Creation-Date: 2013-08-31 16:42+0400\n"
+"PO-Revision-Date: 2013-08-31 21:11+0400\n"
 "Last-Translator: Sergey Alyoshin <alyoshin.s@gmail.com>\n"
 "Language-Team: \n"
 "Language: Russian\n"
@@ -568,8 +568,9 @@ msgstr "E725: Вызов функции dict без словаря: %s"
 msgid "E808: Number or Float required"
 msgstr "E808: Требуется целое число или с плавающей точкой"
 
+#. Используется для получения "значение параметра p()" в E741 и E742
 msgid "add() argument"
-msgstr "параметр add()"
+msgstr "параметра add()"
 
 msgid "E699: Too many arguments"
 msgstr "E699: Слишком много параметров"
@@ -589,14 +590,17 @@ msgstr "&Ok"
 msgid "E737: Key already exists: %s"
 msgstr "E737: Ключ уже существует: %s"
 
+#. Используется для получения "значение параметра p()" в E741 и E742
 msgid "extend() argument"
-msgstr "параметр extend()"
+msgstr "параметра extend()"
 
+#. Используется для получения "значение параметра p()" в E741 и E742
 msgid "map() argument"
-msgstr "параметр map()"
+msgstr "параметра map()"
 
+#. Используется для получения "значение параметра p()" в E741 и E742
 msgid "filter() argument"
-msgstr "параметр filter()"
+msgstr "параметра filter()"
 
 #, c-format
 msgid "+-%s%3ld lines: "
@@ -616,8 +620,9 @@ msgstr ""
 msgid "called inputrestore() more often than inputsave()"
 msgstr "Функция inputrestore() вызывается чаще, чем функция inputsave()"
 
+#. Используется для получения "значение параметра p()" в E741 и E742
 msgid "insert() argument"
-msgstr "параметр insert()"
+msgstr "параметра insert()"
 
 msgid "E786: Range not allowed"
 msgstr "E786: Диапазон не допускается"
@@ -644,20 +649,23 @@ msgstr "E241: Не могу отправить сообщение для %s"
 msgid "E277: Unable to read a server reply"
 msgstr "E277: Сервер не отвечает"
 
+#. Используется для получения "значение параметра p()" в E741 и E742
 msgid "remove() argument"
-msgstr "параметр remove()"
+msgstr "параметра remove()"
 
 msgid "E655: Too many symbolic links (cycle?)"
 msgstr "E655: Слишком много символических ссылок (цикл?)"
 
+#. Используется для получения "значение параметра p()" в E741 и E742
 msgid "reverse() argument"
-msgstr "параметр reverse()"
+msgstr "параметра reverse()"
 
 msgid "E258: Unable to send to client"
 msgstr "E258: Не могу ответить клиенту"
 
+#. Используется для получения "значение параметра p()" в E741 и E742
 msgid "sort() argument"
-msgstr "параметр sort()"
+msgstr "параметра sort()"
 
 msgid "E702: Sort compare function failed"
 msgstr "E702: Неудачное завершение функции сравнения при сортировке"
@@ -707,13 +715,15 @@ msgstr ""
 msgid "E705: Variable name conflicts with existing function: %s"
 msgstr "E705: Имя переменной конфликтует с существующей функцией: %s"
 
+#. Используется с %s = "параметера p"
 #, c-format
 msgid "E741: Value is locked: %s"
-msgstr "E741: Значение заблокировано: %s"
+msgstr "E741: Значение %s заблокировано"
 
 msgid "Unknown"
 msgstr "Неизвестно"
 
+#. Используется с %s = "параметера p()"
 #, c-format
 msgid "E742: Cannot change value of %s"
 msgstr "E742: Невозможно изменить значение %s"

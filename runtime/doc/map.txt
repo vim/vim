@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.4.  Last change: 2013 Aug 03
+*map.txt*       For Vim version 7.4.  Last change: 2013 Aug 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -380,7 +380,7 @@ it's just used here for this situation.
    The simplest way to load a set of related language mappings is by using the
 'keymap' option.  See |45.5|.
    In Insert mode and in Command-line mode the mappings can be disabled with
-the CTRL-^ command |i_CTRL-^| |c_CTRL-^| These commands change the value of
+the CTRL-^ command |i_CTRL-^| |c_CTRL-^|. These commands change the value of
 the 'iminsert' option.  When starting to enter a normal command line (not a
 search pattern) the mappings are disabled until a CTRL-^ is typed.  The state
 last used is remembered for Insert mode and Search patterns separately.  The
@@ -1359,6 +1359,8 @@ There are some special cases as well:
 In the cases of the -count and -register attributes, if the optional argument
 is supplied, it is removed from the argument list and is available to the
 replacement text separately.
+Note that these arguments can be abbreviated, but that is a deprecated
+feature.  Use the full name for new scripts.
 
 Replacement text
 

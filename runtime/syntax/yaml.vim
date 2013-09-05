@@ -108,9 +108,10 @@ execute 'syn match yamlFlowMappingKey /'.s:ns_plain_in.'\ze\s*:/ contained '.
 syn match yamlFlowMappingMerge /<<\ze\s*:/ contained nextgroup=yamlKeyValueDelimiter
 
 syn match yamlBlockCollectionItemStart '^\s*\zs-\%(\s\+-\)*\s' nextgroup=yamlBlockMappingKey,yamlBlockMappingMerge
-execute 'syn match yamlBlockMappingKey /^\s*\zs'.s:ns_plain_out.'\ze\s*:\%(\s\|$\)/ '.
+" Use the old regexp engine, the NFA engine doesn't like all the \@ items.
+execute 'syn match yamlBlockMappingKey /\%#=1^\s*\zs'.s:ns_plain_out.'\ze\s*:\%(\s\|$\)/ '.
             \'nextgroup=yamlKeyValueDelimiter'
-execute 'syn match yamlBlockMappingKey /\s*\zs'.s:ns_plain_out.'\ze\s*:\%(\s\|$\)/ contained '.
+execute 'syn match yamlBlockMappingKey /\%#=1\s*\zs'.s:ns_plain_out.'\ze\s*:\%(\s\|$\)/ contained '.
             \'nextgroup=yamlKeyValueDelimiter'
 syn match yamlBlockMappingMerge /^\s*\zs<<\ze:\%(\s\|$\)/ nextgroup=yamlKeyValueDelimiter
 syn match yamlBlockMappingMerge /<<\ze\s*:\%(\s\|$\)/ nextgroup=yamlKeyValueDelimiter contained

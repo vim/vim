@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2013 Jul 09
+*options.txt*	For Vim version 7.4.  Last change: 2013 Aug 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1884,8 +1884,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 	A sequence of single character flags.  When a character is present
-	this indicates vi-compatible behavior.  This is used for things where
-	not being vi-compatible is mostly or sometimes preferred.
+	this indicates Vi-compatible behavior.  This is used for things where
+	not being Vi-compatible is mostly or sometimes preferred.
 	'cpoptions' stands for "compatible-options".
 	Commas can be added for readability.
 	To avoid problems with flags that are added in the future, use the

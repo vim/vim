@@ -1140,6 +1140,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 +GUI_Photon	various.txt	/*+GUI_Photon*
 +GUI_neXtaw	various.txt	/*+GUI_neXtaw*
 +X11	various.txt	/*+X11*
++acl	various.txt	/*+acl*
 +arabic	various.txt	/*+arabic*
 +autocmd	various.txt	/*+autocmd*
 +balloon_eval	various.txt	/*+balloon_eval*
@@ -1262,6 +1263,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 +writebackup	various.txt	/*+writebackup*
 +xfontset	various.txt	/*+xfontset*
 +xim	various.txt	/*+xim*
++xpm	various.txt	/*+xpm*
 +xpm_w32	various.txt	/*+xpm_w32*
 +xsmp	various.txt	/*+xsmp*
 +xsmp_interact	various.txt	/*+xsmp_interact*

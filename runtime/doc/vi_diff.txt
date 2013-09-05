@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 7.4.  Last change: 2012 Aug 08
+*vi_diff.txt*   For Vim version 7.4.  Last change: 2013 Aug 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -150,7 +150,7 @@ Support for different systems.
 Multi level undo.					|undo|
 	'u' goes backward in time, 'CTRL-R' goes forward again.  Set option
 	'undolevels' to the number of changes to be remembered (default 1000).
-	Set 'undolevels' to 0 for a vi-compatible one level undo.  Set it to
+	Set 'undolevels' to 0 for a Vi-compatible one level undo.  Set it to
 	-1 for no undo at all.
 	When all changes in a buffer have been undone, the buffer is not
 	considered changed anymore.  You can exit it with :q, without <!>.

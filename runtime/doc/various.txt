@@ -291,6 +291,7 @@ g8			Print the hex values of the bytes used in the
 			in the normal, big and huge versions of Vim.
 
 							*+feature-list*
+   *+acl*		|ACL| support included
    *+ARP*		Amiga only: ARP support included
 B  *+arabic*		|Arabic| language support
 N  *+autocmd*		|:autocmd|, automatic commands
@@ -426,6 +427,7 @@ S  *+windows*		more than one window
 m  *+writebackup*	|'writebackup'| is default on
 m  *+xim*		X input method |xim|
    *+xfontset*		X fontset support |xfontset|
+   *+xpm*		pixmap support
 m  *+xpm_w32*		Win32 GUI only: pixmap support |w32-xpm-support|
    *+xsmp*		XSMP (X session management) support
    *+xsmp_interact*	interactive XSMP (X session management) support

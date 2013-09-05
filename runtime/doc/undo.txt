@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 7.4.  Last change: 2012 Mar 04
+*undo.txt*      For Vim version 7.4.  Last change: 2013 Aug 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -57,7 +57,7 @@ Use "u" to undo changes until the buffer becomes unchanged.
 2. Two ways of undo					*undo-two-ways*
 
 How undo and redo commands work depends on the 'u' flag in 'cpoptions'.
-There is the Vim way ('u' excluded) and the vi-compatible way ('u' included).
+There is the Vim way ('u' excluded) and the Vi-compatible way ('u' included).
 In the Vim way, "uu" undoes two changes.  In the Vi-compatible way, "uu" does
 nothing (undoes an undo).
 

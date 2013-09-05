@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2013 Aug 03
+*eval.txt*	For Vim version 7.4.  Last change: 2013 Aug 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -123,6 +123,7 @@ around the arguments, to invoke the function it refers to.  Example: >
 	:echo Fn()
 <							*E704* *E705* *E707*
 A Funcref variable must start with a capital, "s:", "w:", "t:" or "b:".  You
+can use "g:" but the following name must still start with a capital.  You
 cannot have both a Funcref variable and a function with the same name.
 
 A special case is defining a function and directly assigning its Funcref to a
@@ -6337,6 +6338,7 @@ There are three types of features:
 <   Note that it's possible for patch 147 to be omitted even though 148 is
     included.
 
+acl			Compiled with |ACL| support.
 all_builtin_terms	Compiled with all builtin terminals enabled.
 amiga			Amiga version of Vim.
 arabic			Compiled with Arabic support |Arabic|.
@@ -6503,7 +6505,9 @@ windows			Compiled with support for more than one window.
 writebackup		Compiled with 'writebackup' default on.
 xfontset		Compiled with X fontset support |xfontset|.
 xim			Compiled with X input method support |xim|.
-xpm_w32			Compiled with pixmap support for Win32.
+xpm			Compiled with pixmap support.
+xpm_w32			Compiled with pixmap support for Win32. (Only for
+			backward compatibility. Use "xpm" instead.)
 xsmp			Compiled with X session management support.
 xsmp_interact		Compiled with interactive X session management support.
 xterm_clipboard		Compiled with support for xterm clipboard.

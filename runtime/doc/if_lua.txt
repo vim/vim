@@ -1,4 +1,4 @@
-*if_lua.txt*    For Vim version 7.4.  Last change: 2012 Jun 29
+*if_lua.txt*    For Vim version 7.4.  Last change: 2013 Sep 04
 
 
 		  VIM REFERENCE MANUAL    by Luis Carvalho
@@ -135,7 +135,7 @@ Vim evaluation and command execution, and others.
 <
 	vim.funcref({name})	Returns a Funcref to function {name} (see
 				|Funcref|). It is equivalent to Vim's
-				"function".
+				"function". NOT IMPLEMENTED YET
 
 	vim.buffer([arg])	If "arg" is a number, returns buffer with
 				number "arg" in the buffer list or, if "arg"

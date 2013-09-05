@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2013 Aug 10
+*todo.txt*      For Vim version 7.4.  Last change: 2013 Sep 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,9 +34,48 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+NFA engine mismatch, with example. (ZyX, 2013 Aug 29)
+
+php syntax file update. (Jason Woofenden, Aug 30)
+
+Problem positioning the cursor after auto-formatting without a comment. (Tor
+Perkins, 2013 Sep 1)
+
+Popup menu: first item is not selected when typing more than one character?
+
+Patch to add async functionality. (Geoff Greer, 2013 Sep 1)
+
+Patch to avoid mouse cursor flickering. (Ken Takata,, 2013 Sep 2)
+
+Should win_redr_custom() not be allowed to use recursively?
+(Yasuhiro Matsumoto, 2013 Aug 15)
+
+NFA engine combining character mismatch. (glts, 2013 Aug 27)
+Remark Dominique, Aug 27
+
+Issue 164: freeze on regexp search.
+
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
-Patch to add "acl" and "xpm" as a feature. (Ken Takata, 2013 Jul 8)
+Patch to fix substitute prompt with line number. (Benoit Pierre, 2013 Aug 27,
+third message)
+
+Patch to avoid problem with colon in file name. (Yasuhiro Matsumoto, 2013 Sep
+5) Only copy file name when needed.
+
+Include systemverilog file?  Two votes yes.
+
+Wrapping around end of file does not work for "." after "cgn".  (Dimitar
+Dimitrov)
+Patch by Christian Brabandt, 2013 Aug 22
+
+Problem with 'spellsuggest' file, only works for some words.
+(Cesar Romani, 2013 Aug 20)  Depends on file name? (Aug 24)
+Additional remark by glts: the suggested words are marked bad?
+
+Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
+
+Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 
 Patch to make has() check for Vim version and patch at the same time.
 (Marc Weber, 2013 Jun 7)
@@ -46,12 +85,21 @@ highlight group.  Add a "\zs" after it?
 
 Go through more coverity reports.
 
-"gUgn" cannot be repeated, while "dgn" can.
+With "$" in 'cpoptions' the popup menu isn't fully drawn. (Matti Niemenmaa,
+2013 Sep 5)
+
+"gUgn" cannot be repeated, while "dgn" can. (Dimitar Dimitrov)
+Patch by Christian Brabandt (2013 Aug 12)
 
 Several Win32 functions are not using Unicode.
 Patches to fix this. (Ken Takata, 2013 Aug 9)
 
 /[b-a] gives error E16, should probably be E769.
+
+:help gives example for z?, but it does not work.  m? and t? do work.
+
+Patch to add funcref to Lua.  (Luis Carvalho, 2013 Sep 4)
+Missing tests.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
@@ -85,7 +133,7 @@ Not 100% sure this is the right solution.
 
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
-Stocker, 2012 Jan 5)
+Stocker, 2012 Jan 5; 2013 Aug 20)
 
 Patch to support expression argument to sort() instead of a function name.
 Yasuhiro Matsumoto, 2013 May 31.
@@ -93,6 +141,10 @@ Or should we add a more general mechanism, like lambda functions?
 
 Problem caused by patch 7.3.638: window->open does not update window
 correctly. Issue 91.
+
+8   'backupdir' and 'directory' should use $TMPDIR, $TMP and/or $TEMP when
+    defined.
+Issue 28.
 
 Patch to fix that 'cedit' is recognized after :normal. (Christian Brabandt,
 2013 Mar 19, later message)
@@ -108,6 +160,8 @@ carried over when using :global. (Christian Brabandt, 2013 Jun 19)
 Bug with 'cursorline' in diff mode.  Line being scrolled into view gets
 highlighted as the cursor line.  (Alessandro Ivaldi, 2013 Jun 4)
 
+Two highlighting bugs. (Zyx, 2013 Aug 18)
+
 Patch to add the bufferlist() function. (Yegappan Lakshmanan, 2013 May 5)
 May 17: with winlist() and tabpagelist().
 May 19: with local variables.
@@ -119,12 +173,17 @@ Patch to support 'u' in interactive substitute. (Christian Brabandt, 2012 Sep
 Patch from Christian Brabandt to make the "buffer" argument for ":sign place"
 optional. (2013 Jul 12)
 
+Dialog is too big on Linux too. (David Fishburn, 2013 Sep 2)
+
 Patch to allow setting w:quickfix_title via setqflist() and setloclist()
 functions. (Christian Brabandt, 2013 May 8, update May 21)
 Patch to add getlocstack() / setlocstack(). (Christian Brabandt, 2013 May 14)
 Second one. Update May 22.
 
 Patch to make fold updates much faster. (Christian Brabandt, 2012 Dec)
+
+TCL: With MSVC 2010 doesn't find Tcl_FindExecutable. (tux)
+Patch to define it. (Ken Takata, 2013 Aug 12)  Is this right?
 
 MS-Windows: Patch to make tests copy files to avoid changing the fileformat of
 the files under version control. (Taro Muraoka, 2013 Jul 5)
@@ -167,8 +226,17 @@ Patch to make confirm() display colors. (Christian Brabandt, 2012 Nov 9)
 
 Patch to add functions for signs. (Christian Brabandt, 2013 Jan 27)
 
+Do we need some way (option) to show the sign column even when there are no
+signs?  Patch by Christian Brabandt, 2013 Aug 22.
+
+Patch to remove flicker from popup menu. (Yasuhiro Matsumoto, 2013 Aug 15)
+
 Patch to use directX to draw text on Windows.  Adds the 'renderoptions'
 option.  (Taro Muraoka, 2013 Jan 25, update 2013 Apr 3, May 14)
+Fixes this problem:
+8   Win32: Multi-byte characters are not displayed, even though the same font
+    in Notepad can display them. (Srinath Avadhanula)  Try with the
+    UTF-8-demo.txt page with Andale Mono.
 
 Patch to add 'completeselect' option.  Specifies how to select a candidate in
 insert completion. (Shougo, 2013 May 29)
@@ -271,6 +339,9 @@ for a user action without a prompt. (Maarten Billemont, 2012 Feb 3)
 Do give the prompt? Quit with an error?
 
 Patch to list user digraphs. (Christian Brabandt, 2012 Apr 14)
+
+Patch to add digraph() function. (Christian Brabandt, 2013 Aug 22, update Aug
+24)
 
 Patch for input method status. (Hirohito Higashi, 2012 Apr 18)
 
@@ -396,7 +467,7 @@ cleared.  See test64.
 Changes to manpage plugin. (Elias Toivanen, 2011 Jul 25)
 
 Patch to make "z=" work when 'spell' is off.  Does this have nasty side
-effects?  (Christian Brabandt, 2012 Aug 5)
+effects?  (Christian Brabandt, 2012 Aug 5, Update 2013 Aug 12)
 Would also need to do this for spellbadword() and spellsuggest().
 
 Patch for variable tabstops.
@@ -455,6 +526,9 @@ Loading autoload script even when usage is inside "if 0". (Christian Brabandt,
 With a filler line in diff mode, it isn't displayed in the column with line
 number, but it is in the sign column.  Doesn't look right. (ZyX 2011 Jun 5)
 Patch by Christian Brabandt, 2011 Jun 5.  Introduces new problems.
+
+Add jump() function. (Marcin Szamotulski, 2013 Aug 29)
+Is this needed?  CTRL-O and CTRL-I do the same, just more difficult to use.
 
 8   Add a command to jump to the next character highlighted with "Error".
 Patch by Christian Brabandt, uses ]e [e ]t and [t. 2011 Aug 9.
@@ -573,8 +647,7 @@ setpos() does not restore cursor position after :normal. (Tyru, 2010 Aug 11)
 
 getpos()/setpos() don't include curswant.  getpos() could return a fifth
 element.  setpos() could accept an optional fifth element.
-Patch by Christian Brabandt, 2010 Sep 6.  Check that new argument is optional
-and that it's documented.
+Patch by Christian Brabandt, 2010 Sep 6.  Again 2013 Aug 22.
 
 With "tw=55 fo+=a" typing space before ) doesn't work well. (Scott Mcdermott,
 2010 Oct 24)
@@ -759,6 +832,7 @@ Setting 'tags' to "tagsdir/*" does not find "tagsdir/tags". (Steven K. Wong,
 
 Patch to add farsi handling to arabic.c (Ali Gholami Rudi, 2009 May 2)
 Added test, updates, June 23.
+Updated for 7.4: http://litcave.rudi.ir/farsi_vim.diff
 
 Patch to add "focusonly" to 'scrollopt', so that scrollbind also applies in
 window that doesn't have focus. (Jonathon Mah, 2009 Jan 12)
@@ -1685,7 +1759,7 @@ More patches:
 -   testdir/Make_dos_sh.mak for running tests with MingW. (Bill Mccarthy, 2008
     Sep 13)
 -   Patch for adding "space" item in 'listchars'. (Jérémie Roquet, 2009 Oct 29,
-    Docs patch Oct 30)
+    Docs patch Oct 30, update David Burgin (glts) 2013 Aug 24)
 -   Replace ccomplete.vim by cppcomplete.vim from www.vim.org?  script 1520 by
     Vissale Neang.  (Martin Stubenschrott) Asked Vissale to make the scripts
     more friendly for the Vim distribution.
@@ -1887,9 +1961,6 @@ Win32 GUI known bugs:
 8   Use another default for 'termencoding': the active codepage.  Means that
     when 'encoding' is changed typing characters still works properly.
     Alternative: use the Unicode functions to obtain typed characters.
-8   Win32: Multi-byte characters are not displayed, even though the same font
-    in Notepad can display them. (Srinath Avadhanula)  Try with the
-    UTF-8-demo.txt page with Andale Mono.
 7   The cursor color indicating IME mode doesn't work properly. (Shizhu Pan,
     2004 May 9)
 8   Win32: When clicking on the gvim title bar, which gives it focus, produces
@@ -2272,8 +2343,6 @@ Macintosh:
     character. (Yasuhiro Matsumoto)  It should return 1 when used on a tail
     byte, like for utf-8.  Store second byte of double-byte in ScreenLines2[]
     (like for DBCS_JPNU) and put a zero in the second byte (like for UTF-8).
-8   'backupdir' and 'directory' should use $TMPDIR, $TMP and/or $TEMP when
-    defined.
 7   Inside a function with "perl <<EOF" a line with "$i++" is recognized as an
     ":insert" command, causing the following "endfunction" not to be found.
     Add skipping this perl construction inside function definitions.

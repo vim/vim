@@ -121,7 +121,7 @@ NOTA: A medida que vaya avanzando en este tutor no intente memorizar,
 	 h (izquierda)	   j (abajo)	  k (arriba)	  l (derecha)
 
   2. Para acceder a Vim (desde el símbolo del sistema %) escriba:
-     vin FILENAME <INTRO>
+     vim FILENAME <INTRO>
 
   3. Para salir de Vim escriba: <ESC> :q! <INTRO> para eliminar todos
      los cambios.

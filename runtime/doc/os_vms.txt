@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 7.4.  Last change: 2011 Aug 14
+*os_vms.txt*    For Vim version 7.4.  Last change: 2013 Aug 22
 
 
 		  VIM REFERENCE MANUAL
@@ -24,7 +24,7 @@ prompt.
 
 1. Getting started					*vms-started*
 
-Vim (Vi IMproved) is a vi-compatible text editor that runs on nearly every
+Vim (Vi IMproved) is a Vi-compatible text editor that runs on nearly every
 operating system known to humanity.  Now use Vim on OpenVMS too, in character
 or X/Motif environment.  It is fully featured and absolutely compatible with
 Vim on other operating systems.

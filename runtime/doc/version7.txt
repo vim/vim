@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.4.  Last change: 2013 Aug 10
+*version7.txt*  For Vim version 7.4.  Last change: 2013 Sep 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10293,7 +10293,7 @@ Functions:
 	Added special |expand()| argument that expands to the current line 
 	number.
 
-	Made it possible to force |char2nr()| always give unicode codepoints 
+	Made it possible to force |char2nr()| to always give unicode codepoints 
 	regardless of current encoding. (Yasuhiro Matsumoto)
 
 	Made it possible for functions generating file list generate |List| 

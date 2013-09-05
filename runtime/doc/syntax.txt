@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.4.  Last change: 2013 Jul 05
+*syntax.txt*	For Vim version 7.4.  Last change: 2013 Aug 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3156,18 +3156,16 @@ The g:vimsyn_embed option allows users to select what, if any, types of
 embedded script highlighting they wish to have. >
 
    g:vimsyn_embed == 0   : don't embed any scripts
-   g:vimsyn_embed =~ 'm' : embed mzscheme (but only if vim supports it)
-   g:vimsyn_embed =~ 'p' : embed perl     (but only if vim supports it)
-   g:vimsyn_embed =~ 'P' : embed python   (but only if vim supports it)
-   g:vimsyn_embed =~ 'r' : embed ruby     (but only if vim supports it)
-   g:vimsyn_embed =~ 't' : embed tcl      (but only if vim supports it)
+   g:vimsyn_embed =~ 'm' : support embedded mzscheme
+   g:vimsyn_embed =~ 'p' : support embedded perl
+   g:vimsyn_embed =~ 'P' : support embedded python
+   g:vimsyn_embed =~ 'r' : support embedded ruby
+   g:vimsyn_embed =~ 't' : support embedded tcl
 <
-By default, g:vimsyn_embed is "mpPr"; ie. syntax/vim.vim will support
-highlighting mzscheme, perl, python, and ruby by default.  Vim's has("tcl")
-test appears to hang vim when tcl is not truly available.  Thus, by default,
-tcl is not supported for embedding (but those of you who like tcl embedded in
-their vim syntax highlighting can simply include it in the g:vimembedscript
-option).
+By default, g:vimsyn_embed is a string supporting interpreters that your vim
+itself supports.  Concatenate multiple characters to support multiple types
+of embedded interpreters; ie. g:vimsyn_embed= "mp" supports embedded mzscheme
+and embedded perl.
 						*g:vimsyn_folding*
 
 Some folding is now supported with syntax/vim.vim: >

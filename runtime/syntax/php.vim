@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language: php PHP 3/4/5
 " Maintainer: Jason Woofenden <jason@jasonwoof.com>
-" Last Change: Dec 11, 2012
+" Last Change: Aug 28, 2013
 " URL: https://gitorious.org/jasonwoof/vim-syntax/blobs/master/php.vim
 " Former Maintainers: Peter Hodge <toomuchphp-vim@yahoo.com>
 "         Debian VIM Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
@@ -616,6 +616,11 @@ else
   exec "syn sync fromstart"
 endif
 
+syntax match  phpDocCustomTags  "@[a-zA-Z]*\(\s\+\|\n\|\r\)" containedin=phpComment
+syntax region phpDocTags  start="{@\(example\|id\|internal\|inheritdoc\|link\|source\|toc\|tutorial\)" end="}" containedin=phpComment
+syntax match  phpDocTags  "@\(abstract\|access\|author\|category\|copyright\|deprecated\|example\|final\|global\|ignore\|internal\|license\|link\|method\|name\|package\|param\|property\|return\|see\|since\|static\|staticvar\|subpackage\|tutorial\|uses\|var\|version\|contributor\|modified\|filename\|description\|filesource\|throws\)\(\s\+\)\?" containedin=phpComment
+syntax match  phpDocTodo  "@\(todo\|fixme\|xxx\)\(\s\+\)\?" containedin=phpComment
+
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
 " For version 5.8 and later: only when an item doesn't have highlighting yet
@@ -630,6 +635,8 @@ if version >= 508 || !exists("did_php_syn_inits")
   HiLink   phpConstant  Constant
   HiLink   phpCoreConstant  Constant
   HiLink   phpComment Comment
+  HiLink   phpDocTags PreProc
+  HiLink   phpDocCustomTags Type
   HiLink   phpException Exception
   HiLink   phpBoolean Boolean
   HiLink   phpStorageClass  StorageClass
@@ -668,6 +675,7 @@ if version >= 508 || !exists("did_php_syn_inits")
   HiLink   phpInterpSimpleCurly Delimiter
   HiLink   phpInterpVarname Identifier
   HiLink   phpTodo  Todo
+  HiLink   phpDocTodo Todo
   HiLink   phpMemberSelector  Structure
   if exists("php_oldStyle")
   hi  phpIntVar guifg=Red ctermfg=DarkRed

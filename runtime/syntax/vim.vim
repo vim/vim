@@ -1,8 +1,8 @@
 " Vim syntax file
-" Language:	Vim 7.3 script
-" Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Jul 05, 2013
-" Version:	7.3-26
+" Language:	Vim 7.4 script
+" Maintainer:	Charles E. Campbell <NdrOchipS@PcampbellAfamily.Mbiz>
+" Last Change:	Aug 16, 2013
+" Version:	7.4-1
 " Automatically generated keyword lists: {{{1
 
 " Quit when a syntax file was already loaded {{{2
@@ -550,15 +550,31 @@ syn region	vimGlobal	matchgroup=Statement start='\<v\%[global]!\=/' skip='\\.' e
 " Allows users to specify the type of embedded script highlighting
 " they want:  (perl/python/ruby/tcl support)
 "   g:vimsyn_embed == 0   : don't embed any scripts
-"   g:vimsyn_embed ~= 'l' : embed lua      (but only if vim supports it)
-"   g:vimsyn_embed ~= 'm' : embed mzscheme (but only if vim supports it)
-"   g:vimsyn_embed ~= 'p' : embed perl     (but only if vim supports it)
-"   g:vimsyn_embed ~= 'P' : embed python   (but only if vim supports it)
-"   g:vimsyn_embed ~= 'r' : embed ruby     (but only if vim supports it)
-"   g:vimsyn_embed ~= 't' : embed tcl      (but only if vim supports it)
-if !exists("g:vimsyn_embed")
- let g:vimsyn_embed= "lmpPr"
+"   g:vimsyn_embed ~= 'l' : embed lua
+"   g:vimsyn_embed ~= 'm' : embed mzscheme
+"   g:vimsyn_embed ~= 'p' : embed perl
+"   g:vimsyn_embed ~= 'P' : embed python
+"   g:vimsyn_embed ~= 'r' : embed ruby
+"   g:vimsyn_embed ~= 't' : embed tcl
+if has("win32") || has("win95") || has("win64") || has("win16")
+ " apparently has("tcl") has been hanging vim on some windows systems with cygwin
+ let s:trytcl= (&shell !~ '\<\%(bash\>\|4[nN][tT]\|\<zsh\)\>\%(\.exe\)\=$')
+else
+ let s:trytcl= 1
 endif
+if !exists("g:vimsyn_embed")
+ let g:vimsyn_embed= ""
+ if has("lua")        |let g:vimsyn_embed= g:vimsyn_embed."l"|endif
+ if has("mzscheme")   |let g:vimsyn_embed= g:vimsyn_embed."m"|endif
+ if has("perl")       |let g:vimsyn_embed= g:vimsyn_embed."p"|endif
+ if     has("python") |let g:vimsyn_embed= g:vimsyn_embed."P"
+ elseif has("python3")|let g:vimsyn_embed= g:vimsyn_embed."P"|endif
+ if has("ruby")       |let g:vimsyn_embed= g:vimsyn_embed."r"|endif
+ if s:trytcl         
+  if has("tcl")       |let g:vimsyn_embed= g:vimsyn_embed."t"|endif
+ endif
+endif
+unlet s:trytcl
 
 " [-- lua --] {{{3
 let s:luapath= fnameescape(expand("<sfile>:p:h")."/lua.vim")
@@ -570,7 +586,7 @@ if !filereadable(s:luapath)
   endif
  endfor
 endif
-if (g:vimsyn_embed =~ 'l' && has("lua")) && filereadable(s:luapath)
+if (g:vimsyn_embed =~ 'l') && filereadable(s:luapath)
  unlet! b:current_syntax
  exe "syn include @vimLuaScript ".s:luapath
  if exists("g:vimsyn_folding") && g:vimsyn_folding =~ 'l'
@@ -597,7 +613,7 @@ if !filereadable(s:perlpath)
   endif
  endfor
 endif
-if (g:vimsyn_embed =~ 'p' && has("perl")) && filereadable(s:perlpath)
+if (g:vimsyn_embed =~ 'p') && filereadable(s:perlpath)
  unlet! b:current_syntax
  exe "syn include @vimPerlScript ".s:perlpath
  if exists("g:vimsyn_folding") && g:vimsyn_folding =~ 'p'
@@ -624,7 +640,7 @@ if !filereadable(s:rubypath)
   endif
  endfor
 endif
-if (g:vimsyn_embed =~ 'r' && has("ruby")) && filereadable(s:rubypath)
+if (g:vimsyn_embed =~ 'r') && filereadable(s:rubypath)
  unlet! b:current_syntax
  exe "syn include @vimRubyScript ".s:rubypath
  if exists("g:vimsyn_folding") && g:vimsyn_folding =~ 'r'
@@ -650,7 +666,7 @@ if !filereadable(s:pythonpath)
   endif
  endfor
 endif
-if g:vimsyn_embed =~ 'P' && (has("python") || has("python3")) && filereadable(s:pythonpath)
+if g:vimsyn_embed =~ 'P' && filereadable(s:pythonpath)
  unlet! b:current_syntax
  exe "syn include @vimPythonScript ".s:pythonpath
  if exists("g:vimsyn_folding") && g:vimsyn_folding =~ 'P'
@@ -668,43 +684,31 @@ endif
 unlet s:pythonpath
 
 " [-- tcl --] {{{3
-if has("win32") || has("win95") || has("win64") || has("win16")
- " apparently has("tcl") has been hanging vim on some windows systems with cygwin
- let s:trytcl= (&shell !~ '\<\%(bash\>\|4[nN][tT]\|\<zsh\)\>\%(\.exe\)\=$')
-else
- let s:trytcl= 1
-endif
-if s:trytcl
- let s:tclpath= fnameescape(expand("<sfile>:p:h")."/tcl.vim")
- if !filereadable(s:tclpath)
-  for s:tclpath in split(globpath(&rtp,"syntax/tcl.vim"),"\n")
-   if filereadable(fnameescape(s:tclpath))
-    let s:tclpath= fnameescape(s:tclpath)
-    break
-   endif
-  endfor
- endif
- if (g:vimsyn_embed =~ 't' && has("tcl")) && filereadable(s:tclpath)
-  unlet! b:current_syntax
-  exe "syn include @vimTclScript ".s:tclpath
-  if exists("g:vimsyn_folding") && g:vimsyn_folding =~ 't'
-   syn region vimTclRegion fold matchgroup=vimScriptDelim start=+tc[l]\=\s*<<\s*\z(.*\)$+ end=+^\z1$+	contains=@vimTclScript
-   syn region vimTclRegion fold matchgroup=vimScriptDelim start=+tc[l]\=\s*<<\s*$+ end=+\.$+	contains=@vimTclScript
-  else
-   syn region vimTclRegion matchgroup=vimScriptDelim start=+tc[l]\=\s*<<\s*\z(.*\)$+ end=+^\z1$+	contains=@vimTclScript
-   syn region vimTclRegion matchgroup=vimScriptDelim start=+tc[l]\=\s*<<\s*$+ end=+\.$+		contains=@vimTclScript
+let s:tclpath= fnameescape(expand("<sfile>:p:h")."/tcl.vim")
+if !filereadable(s:tclpath)
+ for s:tclpath in split(globpath(&rtp,"syntax/tcl.vim"),"\n")
+  if filereadable(fnameescape(s:tclpath))
+   let s:tclpath= fnameescape(s:tclpath)
+   break
   endif
-  syn cluster vimFuncBodyList	add=vimTclScript
+ endfor
+endif
+if (g:vimsyn_embed =~ 't') && filereadable(s:tclpath)
+ unlet! b:current_syntax
+ exe "syn include @vimTclScript ".s:tclpath
+ if exists("g:vimsyn_folding") && g:vimsyn_folding =~ 't'
+  syn region vimTclRegion fold matchgroup=vimScriptDelim start=+tc[l]\=\s*<<\s*\z(.*\)$+ end=+^\z1$+	contains=@vimTclScript
+  syn region vimTclRegion fold matchgroup=vimScriptDelim start=+tc[l]\=\s*<<\s*$+ end=+\.$+	contains=@vimTclScript
  else
-  syn region vimEmbedError start=+tc[l]\=\s*<<\s*\z(.*\)$+ end=+^\z1$+
-  syn region vimEmbedError start=+tc[l]\=\s*<<\s*$+ end=+\.$+
+  syn region vimTclRegion matchgroup=vimScriptDelim start=+tc[l]\=\s*<<\s*\z(.*\)$+ end=+^\z1$+	contains=@vimTclScript
+  syn region vimTclRegion matchgroup=vimScriptDelim start=+tc[l]\=\s*<<\s*$+ end=+\.$+		contains=@vimTclScript
  endif
- unlet s:tclpath
+ syn cluster vimFuncBodyList	add=vimTclScript
 else
  syn region vimEmbedError start=+tc[l]\=\s*<<\s*\z(.*\)$+ end=+^\z1$+
  syn region vimEmbedError start=+tc[l]\=\s*<<\s*$+ end=+\.$+
 endif
-unlet s:trytcl
+unlet s:tclpath
 
 " [-- mzscheme --] {{{3
 let s:mzschemepath= fnameescape(expand("<sfile>:p:h")."/scheme.vim")

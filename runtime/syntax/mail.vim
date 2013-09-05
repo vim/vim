@@ -2,7 +2,7 @@
 " Language:		Mail file
 " Previous Maintainer:	Felix von Leitner <leitner@math.fu-berlin.de>
 " Maintainer:		GI <a@b.c>, where a='gi1242+vim', b='gmail', c='com'
-" Last Change:		Thu 02 Feb 2012 08:47:04 PM EST
+" Last Change:		Wed 14 Aug 2013 08:24:52 AM PDT
 
 " Quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -55,7 +55,7 @@ syn region	mailSignature	keepend contains=@mailLinks,@mailQuoteExps,@NoSpell sta
 
 " Treat verbatim Text special.
 syn region	mailVerbatim	contains=@NoSpell keepend start="^#v+$" end="^#v-$" fold 
-syn region	mailVerbatim	contains=@mailQuoteExps,@NoSpell start="^\z(\(> \?\)\+\)#v+$" end="\z1#v-$" fold 
+syn region	mailVerbatim	contains=@mailQuoteExps,@NoSpell keepend start="^\z(\(> \?\)\+\)#v+$" end="\z1#v-$" fold 
 
 " URLs start with a known protocol or www,web,w3.
 syn match mailURL contains=@NoSpell `\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^' 	<>"]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^' 	<>"]+)[a-z0-9/]`
