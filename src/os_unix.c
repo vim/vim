@@ -957,8 +957,10 @@ mch_didjmp()
 
 /*
  * This function handles deadly signals.
- * It tries to preserve any swap file and exit properly.
+ * It tries to preserve any swap files and exit properly.
  * (partly from Elvis).
+ * NOTE: Avoid unsafe functions, such as allocating memory, they can result in
+ * a deadlock.
  */
     static RETSIGTYPE
 deathtrap SIGDEFARG(sigarg)
@@ -1090,18 +1092,23 @@ deathtrap SIGDEFARG(sigarg)
     }
     if (entered == 2)
     {
-	OUT_STR(_("Vim: Double signal, exiting\n"));
+	/* No translation, it may call malloc(). */
+	OUT_STR("Vim: Double signal, exiting\n");
 	out_flush();
 	getout(1);
     }
 
+    /* No translation, it may call malloc(). */
 #ifdef SIGHASARG
-    sprintf((char *)IObuff, _("Vim: Caught deadly signal %s\n"),
+    sprintf((char *)IObuff, "Vim: Caught deadly signal %s\n",
 							 signal_info[i].name);
 #else
-    sprintf((char *)IObuff, _("Vim: Caught deadly signal\n"));
+    sprintf((char *)IObuff, "Vim: Caught deadly signal\n");
 #endif
-    preserve_exit();		    /* preserve files and exit */
+
+    /* Preserve files and exit.  This sets the really_exiting flag to prevent
+     * calling free(). */
+    preserve_exit();
 
 #ifdef NBDEBUG
     reset_signals();
