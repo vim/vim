@@ -5183,8 +5183,14 @@ ins_complete(c)
 	}
 	else if (ctrl_x_mode == CTRL_X_FILES)
 	{
-	    while (--startcol >= 0 && vim_isfilec(line[startcol]))
-		;
+	    char_u	*p = line + startcol;
+
+	    /* Go back to just before the first filename character. */
+	    mb_ptr_back(line, p);
+	    while (vim_isfilec(PTR2CHAR(p)) && p >= line)
+		mb_ptr_back(line, p);
+	    startcol = p - line;
+
 	    compl_col += ++startcol;
 	    compl_length = (int)curs_col - startcol;
 	    compl_pattern = addstar(line + compl_col, compl_length,
