@@ -5189,7 +5189,7 @@ ins_complete(c)
 	    mb_ptr_back(line, p);
 	    while (vim_isfilec(PTR2CHAR(p)) && p >= line)
 		mb_ptr_back(line, p);
-	    startcol = p - line;
+	    startcol = (int)(p - line);
 
 	    compl_col += ++startcol;
 	    compl_length = (int)curs_col - startcol;
