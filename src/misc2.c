@@ -6496,13 +6496,15 @@ get3c(fd)
 get4c(fd)
     FILE	*fd;
 {
-    int		n;
+    /* Use unsigned rather than int otherwise result is undefined
+     * when left-shift sets the MSB. */
+    unsigned	n;
 
-    n = getc(fd);
-    n = (n << 8) + getc(fd);
-    n = (n << 8) + getc(fd);
-    n = (n << 8) + getc(fd);
-    return n;
+    n = (unsigned)getc(fd);
+    n = (n << 8) + (unsigned)getc(fd);
+    n = (n << 8) + (unsigned)getc(fd);
+    n = (n << 8) + (unsigned)getc(fd);
+    return (int)n;
 }
 
 /*
