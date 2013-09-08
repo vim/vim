@@ -5187,11 +5187,13 @@ ins_complete(c)
 
 	    /* Go back to just before the first filename character. */
 	    mb_ptr_back(line, p);
-	    while (vim_isfilec(PTR2CHAR(p)) && p >= line)
+	    while (p > line && vim_isfilec(PTR2CHAR(p)))
 		mb_ptr_back(line, p);
-	    startcol = (int)(p - line);
+	    startcol = (int)(p - line) + 1;
+	    if (p == line && vim_isfilec(PTR2CHAR(p)))
+		startcol = 0;
 
-	    compl_col += ++startcol;
+	    compl_col += startcol;
 	    compl_length = (int)curs_col - startcol;
 	    compl_pattern = addstar(line + compl_col, compl_length,
 								EXPAND_FILES);
