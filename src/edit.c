@@ -5183,15 +5183,19 @@ ins_complete(c)
 	}
 	else if (ctrl_x_mode == CTRL_X_FILES)
 	{
-	    char_u	*p = line + startcol;
-
 	    /* Go back to just before the first filename character. */
-	    mb_ptr_back(line, p);
-	    while (p > line && vim_isfilec(PTR2CHAR(p)))
+	    if (startcol > 0)
+	    {
+		char_u	*p = line + startcol;
+
 		mb_ptr_back(line, p);
-	    startcol = (int)(p - line) + 1;
-	    if (p == line && vim_isfilec(PTR2CHAR(p)))
-		startcol = 0;
+		while (p > line && vim_isfilec(PTR2CHAR(p)))
+		    mb_ptr_back(line, p);
+		if (p == line && vim_isfilec(PTR2CHAR(p)))
+		    startcol = 0;
+		else
+		    startcol = (int)(p - line) + 1;
+	    }
 
 	    compl_col += startcol;
 	    compl_length = (int)curs_col - startcol;

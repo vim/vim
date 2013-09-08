@@ -36,6 +36,9 @@ kOM
 :w Xtest11.one
 :w Xtest11.two
 OIXA
+:" use CTRL-X CTRL-F to complete Xtest11.one, remove it and then use
+:" CTRL-X CTRL-F again to verify this doesn't cause trouble.
+OXddk
 :se cpt=w
 OST
 :se cpt=u nohid
