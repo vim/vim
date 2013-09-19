@@ -1,6 +1,6 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2013 Apr 22
+# Last updated by Dan Sharp.  Last Change: 2013 Sep 19
 #
 # Also read INSTALLpc.txt!
 #
@@ -439,8 +439,6 @@ endif
 ##############################
 ifeq (yes, $(USEDLL))
 DEFINES += -D_MAX_PATH=256 -D__CYGWIN__
-else
-INCLUDES += -mno-cygwin
 endif
 
 ##############################

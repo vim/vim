@@ -31,12 +31,12 @@ endif
 ifeq ($(CROSS),yes)
 DEL = rm
 ifeq ($(MINGWOLD),yes)
-CXXFLAGS := -O2 -mno-cygwin -fvtable-thunks
+CXXFLAGS := -O2 -fvtable-thunks
 else
-CXXFLAGS := -O2 -mno-cygwin
+CXXFLAGS := -O2
 endif
 else
-CXXFLAGS := -O2 -mno-cygwin
+CXXFLAGS := -O2
 ifneq (sh.exe, $(SHELL))
 DEL = rm
 else

@@ -8,7 +8,7 @@ ifeq (yes, $(USEDLL))
 DEFINES =
 LIBS    = -lc
 else
-DEFINES = -mno-cygwin
+DEFINES =
 LIBS    =
 endif
 
