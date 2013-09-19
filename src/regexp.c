@@ -8016,12 +8016,11 @@ vim_regcomp(expr_arg, re_flags)
 	}
 #endif
 	/*
-	 * If NFA engine failed, then revert to the backtracking engine.
-	 * Except when there was a syntax error, which was properly handled by
-	 * NFA engine.
-	 */
+	 * If the NFA engine failed, the backtracking engine won't work either.
+	 *
 	if (regexp_engine == AUTOMATIC_ENGINE)
 	    prog = bt_regengine.regcomp(expr, re_flags);
+	 */
     }
 
     return prog;
