@@ -1,9 +1,11 @@
 Tests for regexp with multi-byte encoding and various magic settings.
 Test matchstr() with a count and multi-byte chars.
+See test99 for exactly the same test with re=2.
 
 STARTTEST
 :so mbyte.vim
 :set nocompatible encoding=utf-8 termencoding=latin1 viminfo+=nviminfo
+:set re=1
 /^1
 /a*b\{2}c\+/e
 x/\Md\*e\{2}f\+/e
