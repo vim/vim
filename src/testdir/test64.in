@@ -373,6 +373,7 @@ STARTTEST
 :call add(tl, [2, '\%x20', 'yes no', ' '])
 :call add(tl, [2, '\%u0020', 'yes no', ' '])
 :call add(tl, [2, '\%U00000020', 'yes no', ' '])
+:call add(tl, [2, '\%d0', "yes\x0ano", "\x0a"])
 :"
 :""""" \%[abc]
 :call add(tl, [2, 'foo\%[bar]', 'fobar'])

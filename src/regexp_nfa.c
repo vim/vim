@@ -1383,8 +1383,9 @@ nfa_regatom()
 			    EMSG2_RET_FAIL(
 			       _("E678: Invalid character after %s%%[dxouU]"),
 				    reg_magic == MAGIC_ALL);
+			/* A NUL is stored in the text as NL */
 			/* TODO: what if a composing character follows? */
-			EMIT(nr);
+			EMIT(nr == 0 ? 0x0a : nr);
 		    }
 		    break;
 
