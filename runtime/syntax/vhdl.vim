@@ -1,12 +1,12 @@
 " Vim syntax file
 " Language:	VHDL
-" Maintainer:	Czo <Olivier.Sirol@lip6.fr>
+" Maintainer:	Daniel Kho <daniel.kho@tauhop.com>
+" Previous Maintainer:	Czo <Olivier.Sirol@lip6.fr>
 " Credits:	Stephan Hegel <stephan.hegel@snc.siemens.com.cn>
-" Last Change:	2012 Jun 01
-" 		(Dominique Pelle added @Spell)
+" Last Changed:	2012 Feb 03 by Thilo Six
+" $Id: vhdl.vim,v 1.1 2004/06/13 15:34:56 vimboss Exp $
 
-" VHSIC Hardware Description Language
-" Very High Scale Integrated Circuit
+" VHSIC (Very High Speed Integrated Circuit) Hardware Description Language
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -22,8 +22,8 @@ set cpo&vim
 " This is not VHDL. I use the C-Preprocessor cpp to generate different binaries
 " from one VHDL source file. Unfortunately there is no preprocessor for VHDL
 " available. If you don't like this, please remove the following lines.
-syn match cDefine "^#ifdef[ ]\+[A-Za-z_]\+"
-syn match cDefine "^#endif"
+"syn match cDefine "^#ifdef[ ]\+[A-Za-z_]\+"
+"syn match cDefine "^#endif"
 
 " case is not significant
 syn case ignore
@@ -31,11 +31,14 @@ syn case ignore
 " VHDL keywords
 syn keyword vhdlStatement access after alias all assert
 syn keyword vhdlStatement architecture array attribute
+syn keyword vhdlStatement assume assume_guarantee
 syn keyword vhdlStatement begin block body buffer bus
 syn keyword vhdlStatement case component configuration constant
-syn keyword vhdlStatement disconnect downto
+syn keyword vhdlStatement context cover
+syn keyword vhdlStatement default disconnect downto
 syn keyword vhdlStatement elsif end entity exit
 syn keyword vhdlStatement file for function
+syn keyword vhdlStatement fairness force
 syn keyword vhdlStatement generate generic group guarded
 syn keyword vhdlStatement impure in inertial inout is
 syn keyword vhdlStatement label library linkage literal loop
@@ -43,12 +46,17 @@ syn keyword vhdlStatement map
 syn keyword vhdlStatement new next null
 syn keyword vhdlStatement of on open others out
 syn keyword vhdlStatement package port postponed procedure process pure
+syn keyword vhdlStatement parameter property protected
 syn keyword vhdlStatement range record register reject report return
+syn keyword vhdlStatement release restrict restrict_guarantee
 syn keyword vhdlStatement select severity signal shared
 syn keyword vhdlStatement subtype
+syn keyword vhdlStatement sequence strong
 syn keyword vhdlStatement then to transport type
 syn keyword vhdlStatement unaffected units until use
-syn keyword vhdlStatement variable wait when while with
+syn keyword vhdlStatement variable
+syn keyword vhdlStatement vmode vprop vunit
+syn keyword vhdlStatement wait when while with
 syn keyword vhdlStatement note warning error failure
 
 " Special match for "if" and "else" since "else if" shouldn't be highlighted.
@@ -60,6 +68,7 @@ syn match   vhdlNone      "\<else\s\+if\>\s"
 " Predefined VHDL types
 syn keyword vhdlType bit bit_vector
 syn keyword vhdlType character boolean integer real time
+syn keyword vhdlType boolean_vector integer_vector real_vector time_vector
 syn keyword vhdlType string severity_level
 " Predefined standard ieee VHDL types
 syn keyword vhdlType positive natural signed unsigned
@@ -67,11 +76,11 @@ syn keyword vhdlType line text
 syn keyword vhdlType std_logic std_logic_vector
 syn keyword vhdlType std_ulogic std_ulogic_vector
 " Predefined non standard VHDL types for Mentor Graphics Sys1076/QuickHDL
-syn keyword vhdlType qsim_state qsim_state_vector
-syn keyword vhdlType qsim_12state qsim_12state_vector
-syn keyword vhdlType qsim_strength
+"syn keyword vhdlType qsim_state qsim_state_vector
+"syn keyword vhdlType qsim_12state qsim_12state_vector
+"syn keyword vhdlType qsim_strength
 " Predefined non standard VHDL types for Alliance VLSI CAD
-syn keyword vhdlType mux_bit mux_vector reg_bit reg_vector wor_bit wor_vector
+"syn keyword vhdlType mux_bit mux_vector reg_bit reg_vector wor_bit wor_vector
 
 " array attributes
 syn match vhdlAttribute "\'high"
@@ -122,14 +131,14 @@ syn case match
 " Values for standard VHDL types
 syn match vhdlVector "\'[0L1HXWZU\-\?]\'"
 " Values for non standard VHDL types qsim_12state for Mentor Graphics Sys1076/QuickHDL
-syn keyword vhdlVector S0S S1S SXS S0R S1R SXR S0Z S1Z SXZ S0I S1I SXI
+"syn keyword vhdlVector S0S S1S SXS S0R S1R SXR S0Z S1Z SXZ S0I S1I SXI
 syn case ignore
 
 syn match  vhdlVector "B\"[01_]\+\""
 syn match  vhdlVector "O\"[0-7_]\+\""
 syn match  vhdlVector "X\"[0-9a-f_]\+\""
 syn match  vhdlCharacter "'.'"
-syn region vhdlString start=+"+  end=+"+ contains=@Spell
+syn region vhdlString start=+"+  end=+"+
 
 " floating numbers
 syn match vhdlNumber "-\=\<\d\+\.\d\+\(E[+\-]\=\d\+\)\>"
@@ -151,8 +160,14 @@ syn match   vhdlSpecial  "[().,;]"
 syn match vhdlTime "\<\d\+\s\+\(\([fpnum]s\)\|\(sec\)\|\(min\)\|\(hr\)\)\>"
 syn match vhdlTime "\<\d\+\.\d\+\s\+\(\([fpnum]s\)\|\(sec\)\|\(min\)\|\(hr\)\)\>"
 
-syn match vhdlComment "--.*$" contains=@Spell
+syn keyword vhdlTodo contained TODO FIXME
+
+syn region vhdlComment start="/\*" end="\*/" contains=vhdlTodo,@Spell
+syn match vhdlComment "--.*" contains=vhdlTodo,@Spell
 " syn match vhdlGlobal "[\'$#~!%@?\^\[\]{}\\]"
+
+"Modify the following as needed.  The trade-off is performance versus functionality.
+syn sync minlines=200
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
@@ -165,19 +180,20 @@ if version >= 508 || !exists("did_vhdl_syntax_inits")
     command -nargs=+ HiLink hi def link <args>
   endif
 
-  HiLink cDefine       PreProc
+"  HiLink cDefine       PreProc
   HiLink vhdlSpecial   Special
   HiLink vhdlStatement Statement
-  HiLink vhdlCharacter String
+  HiLink vhdlCharacter Character
   HiLink vhdlString    String
-  HiLink vhdlVector    String
-  HiLink vhdlBoolean   String
+  HiLink vhdlVector    Number
+  HiLink vhdlBoolean   Number
+  HiLink vhdlTodo      Todo
   HiLink vhdlComment   Comment
-  HiLink vhdlNumber    String
-  HiLink vhdlTime      String
+  HiLink vhdlNumber    Number
+  HiLink vhdlTime      Number
   HiLink vhdlType      Type
-  HiLink vhdlOperator  Type
-  HiLink vhdlGlobal    Error
+  HiLink vhdlOperator  Special
+"  HiLink vhdlGlobal    Error
   HiLink vhdlAttribute Type
 
   delcommand HiLink

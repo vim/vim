@@ -188,7 +188,7 @@ WINDOWS							*vimball-windows*
 			  * Changed silent! to sil! (shorter)
 			  * Safed |'swf'| setting (during vimball extraction,
 			    its now turned off)
-	32 : May 19, 2010 * (Christian Brabrandt) :so someplugin.vba and
+	32 : May 19, 2010 * (Christian Brabandt) :so someplugin.vba and
 			    :so someplugin.vba.gz (and the other supported
 			    compression types) now works
 			  * (Jan Steffens) added support for xz compression

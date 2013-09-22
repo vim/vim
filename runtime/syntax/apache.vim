@@ -1,11 +1,9 @@
 " Vim syntax file
-" This is a GENERATED FILE. Please always refer to source file at the URI below.
 " Language: Apache configuration (httpd.conf, srm.conf, access.conf, .htaccess)
-" Maintainer: David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>
+" Maintainer: David Necas (Yeti) <yeti@physics.muni.cz>
 " License: This file can be redistribued and/or modified under the same terms
 "		as Vim itself.
-" Last Change: 2006-12-13
-" URL: http://trific.ath.cx/Ftp/vim/syntax/apache.vim
+" Last Change: 2013-09-16
 " Notes: Last synced with apache-2.2.3, version 1.x is no longer supported
 " TODO: see particular FIXME's scattered through the file
 "		make it really linewise?
@@ -30,7 +28,10 @@ syn keyword apacheFixme FIXME TODO XXX NOT
 syn case ignore
 syn match apacheAnything "\s[^>]*" contained
 syn match apacheError "\w\+" contained
-syn region apacheString start=+"+ end=+"+ skip=+\\\\\|\\\"+
+syn region apacheString start=+"+ end=+"+ skip=+\\\\\|\\\"+ oneline
+
+" Following is to prevent escaped quotes from being parsed as strings.
+syn match apacheSkipQuote +\\"+
 
 " Core and mpm
 syn keyword apacheDeclaration AccessFileName AddDefaultCharset AllowOverride AuthName AuthType ContentDigest DefaultType DocumentRoot ErrorDocument ErrorLog HostNameLookups IdentityCheck Include KeepAlive KeepAliveTimeout LimitRequestBody LimitRequestFields LimitRequestFieldsize LimitRequestLine LogLevel MaxKeepAliveRequests NameVirtualHost Options Require RLimitCPU RLimitMEM RLimitNPROC Satisfy ScriptInterpreterSource ServerAdmin ServerAlias ServerName ServerPath ServerRoot ServerSignature ServerTokens TimeOut UseCanonicalName

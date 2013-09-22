@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2013 Sep 05
+*todo.txt*      For Vim version 7.4.  Last change: 2013 Sep 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,10 +36,22 @@ not be repeated below, unless there is extra information.
 
 NFA engine mismatch, with example. (ZyX, 2013 Aug 29)
 
-php syntax file update. (Jason Woofenden, Aug 30)
+NFA engine difference, with test case. (Axel Bender, 2013 Sep 17)
+Comments from Vlad Irnov Sep 18.
 
 Problem positioning the cursor after auto-formatting without a comment. (Tor
 Perkins, 2013 Sep 1)
+
+Patch to fix test 92 and 93 failing in a bad way. (Hirohito Higashi, 2013 Sep
+11)
+
+Patch to fix using "p" in Visual block mode. (Christian Brabandt, 2013 Sep 19)
+
+Using \1 in pattern goes one line too far. (Bohr Shaw, 2013 Sep 5)
+Column is OK.  "/\v(^.+\n)\1/e" (John Little, Sep 5)
+Also, matches start of 2nd line, not the whole line.
+
+Error for incomplete help argument. (John Beckett, 2013 Sep 12)
 
 Popup menu: first item is not selected when typing more than one character?
 
@@ -47,11 +59,23 @@ Patch to add async functionality. (Geoff Greer, 2013 Sep 1)
 
 Patch to avoid mouse cursor flickering. (Ken Takata,, 2013 Sep 2)
 
+Patch to make zg and zb work better. (Christian Brabandt, 2013 Sep 8)
+
+Patch to fix that VC10 does not stat() a symlink to a directory.
+(Ken Takata,, 2013 Sep 20)  Update Sep 21
+
 Should win_redr_custom() not be allowed to use recursively?
 (Yasuhiro Matsumoto, 2013 Aug 15)
 
 NFA engine combining character mismatch. (glts, 2013 Aug 27)
 Remark Dominique, Aug 27
+
+Patch to make Tcl 8.6 work. (Issue 167)
+
+Patch to make input() work while inside :normal. (Yasuhiro Matsumoto, 2013 Sep
+19)
+
+Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
 Issue 164: freeze on regexp search.
 
@@ -61,13 +85,17 @@ Patch to fix substitute prompt with line number. (Benoit Pierre, 2013 Aug 27,
 third message)
 
 Patch to avoid problem with colon in file name. (Yasuhiro Matsumoto, 2013 Sep
-5) Only copy file name when needed.
+5) Only copy file name when needed: Sep 9.
 
 Include systemverilog file?  Two votes yes.
 
 Wrapping around end of file does not work for "." after "cgn".  (Dimitar
 Dimitrov)
 Patch by Christian Brabandt, 2013 Aug 22
+
+Clang error for integer overflow. (Dominique Pelle, 2013 Sep 21)
+
+Patch to add v:hlsearch. (ZyX, 2013 Sep 22)
 
 Problem with 'spellsuggest' file, only works for some words.
 (Cesar Romani, 2013 Aug 20)  Depends on file name? (Aug 24)
@@ -82,6 +110,11 @@ Patch to make has() check for Vim version and patch at the same time.
 
 Several syntax file match "^\s*" which may get underlined if that's in the
 highlight group.  Add a "\zs" after it?
+
+Win32: When a directory name contains an exclamation mark, completion doesn't
+complete the contents of the directory.  No escaping for the "!"? (Jan
+Stocker, 2012 Jan 5; 2013 Aug 20)
+Patch 2013 Sept 10, test: Sept 11.
 
 Go through more coverity reports.
 
@@ -99,7 +132,7 @@ Patches to fix this. (Ken Takata, 2013 Aug 9)
 :help gives example for z?, but it does not work.  m? and t? do work.
 
 Patch to add funcref to Lua.  (Luis Carvalho, 2013 Sep 4)
-Missing tests.
+With tests: Sep 5.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
@@ -130,10 +163,6 @@ Works OK for echo, just not for  ":call" and ":call call()". (Ted, 2011 Mar
 17)
 Patch by Christian Brabandt, 2013 Mar 23.
 Not 100% sure this is the right solution.
-
-Win32: When a directory name contains an exclamation mark, completion doesn't
-complete the contents of the directory.  No escaping for the "!"? (Jan
-Stocker, 2012 Jan 5; 2013 Aug 20)
 
 Patch to support expression argument to sort() instead of a function name.
 Yasuhiro Matsumoto, 2013 May 31.
@@ -184,6 +213,7 @@ Patch to make fold updates much faster. (Christian Brabandt, 2012 Dec)
 
 TCL: With MSVC 2010 doesn't find Tcl_FindExecutable. (tux)
 Patch to define it. (Ken Takata, 2013 Aug 12)  Is this right?
+Probably not: http://code.google.com/p/vim/issues/detail?id=167
 
 MS-Windows: Patch to make tests copy files to avoid changing the fileformat of
 the files under version control. (Taro Muraoka, 2013 Jul 5)
@@ -991,8 +1021,6 @@ Also: swap files are in ~/tmp/  One has relative file name ".mozilla/...".
 
 Add v:motion_force. (Kana Natsuno, 2008 Dec 6)
 Maybe call it v:motiontype.
-
-Runtime files for Clojure. (Toralf Wittner, 2008 Jun 25)
 
 MS-Windows: editing the first, empty buffer, 'ffs' set to "unix,dos", ":enew"
 doesn't set 'ff' to "unix".  (Ben Fritz, 2008 Dec 5) Reusing the old buffer

@@ -2395,7 +2395,7 @@ with special attributes were redrawn.  Now only do this for characters that
 actually are bold.  Speeds up displaying considerably.
 
 When only highlighting changes and the text is scrolled at the same time
-everything is redraw instead of using a scroll and updating the changed text.
+everything is redrawn instead of using a scroll and updating the changed text.
 E.g., when using ":match" to highlight a paren that the cursor landed on.
 Added SOME_VALID: Redraw the whole window but also try to scroll to minimize
 redrawing.

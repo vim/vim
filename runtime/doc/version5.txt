@@ -2020,7 +2020,7 @@ File browser added					*file-browser-5.2*
 
 The Win32, Athena and Motif GUI bring up a file requester if the user asks to
 ":browse" for the ":e", ":w", ":r", ":so", ":redirect" and
-":mkexrc/vimrc/vsess" commands.  ::browse e /foo/bar" opens the requester in
+":mkexrc/vimrc/vsess" commands.  ":browse e /foo/bar" opens the requester in
 the /foo/bar directory, so you can have nice mapping rhs's like ":browse so
 $vim/macros".  If no initial dir specified for ":browse e", can be compiled to
 either begin in the current directory, or that of the current buffer. (Negri

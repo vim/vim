@@ -581,8 +581,8 @@ CLOJURE					*ft-clojure-indent* *clojure-indent*
 
 Clojure indentation differs somewhat from traditional Lisps, due in part to
 the use of square and curly brackets, and otherwise by community convention.
-These conventions are not always universally followed, so the Clojure indent
-script offers a few configurable options, listed below.
+These conventions are not universally followed, so the Clojure indent script
+offers a few configurable options, listed below.
 
 If the current vim does not include searchpairpos(), the indent script falls
 back to normal 'lisp' indenting, and the following options are ignored.

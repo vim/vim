@@ -328,8 +328,8 @@ actually use Vim to convert a file.  Example: >
 *45.5*	Entering language text
 
 Computer keyboards don't have much more than a hundred keys.  Some languages
-have thousands of characters, Unicode has ten thousands.  So how do you type
-these characters?
+have thousands of characters, Unicode has over hundred thousand.  So how do
+you type these characters?
    First of all, when you don't use too many of the special characters, you
 can use digraphs.  This was already explained in |24.9|.
    When you use a language that uses many more characters than keys on your

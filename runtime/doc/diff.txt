@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.4.  Last change: 2013 Jul 07
+*diff.txt*      For Vim version 7.4.  Last change: 2013 Sep 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -123,10 +123,14 @@ Since the option values are remembered with the buffer, you can edit another
 file for a moment and come back to the same file and be in diff mode again.
 
 							*:diffo* *:diffoff*
-:diffo[ff]	Switch off diff mode for the current window.
+:diffo[ff]	Switch off diff mode for the current window.  Resets related
+		options also when 'diff' was not set.
 
 :diffo[ff]!	Switch off diff mode for the current window and in all windows
-		in the current tab page where 'diff' is set.
+		in the current tab page where 'diff' is set.  Resetting
+		related options only happens in a window that has 'diff' set,
+		if the current window does not have 'diff' set then no options
+		in it are changed.
 
 The ":diffoff" command resets the relevant options to the values they had when
 using |:diffsplit|, |:diffpatch| , |:diffthis|. or starting Vim in diff mode.

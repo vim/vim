@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2013 Aug 03
+" Last Change:	2013 Sep 22
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -129,7 +129,7 @@ au BufNewFile,BufRead .asoundrc,*/usr/share/alsa/alsa.conf,*/etc/asound.conf set
 au BufNewFile,BufRead *.aml			setf aml
 
 " APT config file
-au BufNewFile,BufRead apt.conf                 setf aptconf
+au BufNewFile,BufRead apt.conf		       setf aptconf
 au BufNewFile,BufRead */.aptitude/config       setf aptconf
 au BufNewFile,BufRead */etc/apt/apt.conf.d/{[-_[:alnum:]]\+,[-_.[:alnum:]]\+.conf} setf aptconf
 
@@ -951,6 +951,9 @@ au BufNewFile,BufRead inittab			setf inittab
 
 " Inno Setup
 au BufNewFile,BufRead *.iss			setf iss
+
+" J
+au BufNewFile,BufRead *.ijs			setf j
 
 " JAL
 au BufNewFile,BufRead *.jal,*.JAL		setf jal
@@ -2092,7 +2095,7 @@ au BufNewFile,BufRead *.tak			setf tak
 
 " Task
 au BufRead,BufNewFile {pending,completed,undo}.data  setf taskdata
-au BufRead,BufNewFile *.task                    setf taskedit
+au BufRead,BufNewFile *.task			setf taskedit
 
 " Tcl (JACL too)
 au BufNewFile,BufRead *.tcl,*.tk,*.itcl,*.itk,*.jacl	setf tcl
@@ -2217,12 +2220,12 @@ au BufNewFile,BufRead *.uc			setf uc
 au BufNewFile,BufRead */etc/updatedb.conf	setf updatedb
 
 " Upstart (init(8)) config files
-au BufNewFile,BufRead */usr/share/upstart/*.conf               setf upstart
-au BufNewFile,BufRead */usr/share/upstart/*.override           setf upstart
+au BufNewFile,BufRead */usr/share/upstart/*.conf	       setf upstart
+au BufNewFile,BufRead */usr/share/upstart/*.override	       setf upstart
 au BufNewFile,BufRead */etc/init/*.conf,*/etc/init/*.override  setf upstart
 au BufNewFile,BufRead */.init/*.conf,*/.init/*.override        setf upstart
-au BufNewFile,BufRead */.config/upstart/*.conf                 setf upstart
-au BufNewFile,BufRead */.config/upstart/*.override             setf upstart
+au BufNewFile,BufRead */.config/upstart/*.conf		       setf upstart
+au BufNewFile,BufRead */.config/upstart/*.override	       setf upstart
 
 " Vera
 au BufNewFile,BufRead *.vr,*.vri,*.vrh		setf vera
