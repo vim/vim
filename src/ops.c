@@ -3776,25 +3776,42 @@ do_put(regname, dir, count, flags)
 	 */
 	if (y_type == MCHAR && y_size == 1)
 	{
-	    totlen = count * yanklen;
-	    if (totlen)
-	    {
-		oldp = ml_get(lnum);
-		newp = alloc_check((unsigned)(STRLEN(oldp) + totlen + 1));
-		if (newp == NULL)
-		    goto end;		/* alloc() will give error message */
-		mch_memmove(newp, oldp, (size_t)col);
-		ptr = newp + col;
-		for (i = 0; i < count; ++i)
+	    do {
+		totlen = count * yanklen;
+		if (totlen > 0)
 		{
-		    mch_memmove(ptr, y_array[0], (size_t)yanklen);
-		    ptr += yanklen;
+		    oldp = ml_get(lnum);
+		    newp = alloc_check((unsigned)(STRLEN(oldp) + totlen + 1));
+		    if (newp == NULL)
+			goto end;	/* alloc() gave an error message */
+		    mch_memmove(newp, oldp, (size_t)col);
+		    ptr = newp + col;
+		    for (i = 0; i < count; ++i)
+		    {
+			mch_memmove(ptr, y_array[0], (size_t)yanklen);
+			ptr += yanklen;
+		    }
+		    STRMOVE(ptr, oldp + col);
+		    ml_replace(lnum, newp, FALSE);
+		    /* Place cursor on last putted char. */
+		    if (lnum == curwin->w_cursor.lnum)
+			curwin->w_cursor.col += (colnr_T)(totlen - 1);
 		}
-		STRMOVE(ptr, oldp + col);
-		ml_replace(lnum, newp, FALSE);
-		/* Put cursor on last putted char. */
-		curwin->w_cursor.col += (colnr_T)(totlen - 1);
-	    }
+#ifdef FEAT_VISUAL
+		if (VIsual_active)
+		    lnum++;
+#endif
+	    } while (
+#ifdef FEAT_VISUAL
+		    VIsual_active && lnum <= curbuf->b_visual.vi_end.lnum
+#else
+		    FALSE /* stop after 1 paste */
+#endif
+		    );
+#ifdef FEAT_VISUAL
+	    VIsual_active = FALSE;
+#endif
+
 	    curbuf->b_op_end = curwin->w_cursor;
 	    /* For "CTRL-O p" in Insert mode, put cursor after last char */
 	    if (totlen && (restart_edit != 0 || (flags & PUT_CURSEND)))

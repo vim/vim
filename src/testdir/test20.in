@@ -9,10 +9,16 @@ G0"ay$k@au
 @auY:quit!
 GP
 /start here$
-jjlld
-:/here$/,$-1w! test.out
+"by$jjlld
+/456$
+jj"bP
+:/56$/,$-1w! test.out
 :qa!
 ENDTEST
+
+123456
+234567
+345678
 
 test text test tex start here
 		some text

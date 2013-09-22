@@ -9518,6 +9518,8 @@ nv_put(cap)
 		/* cursor is at the end of the line or end of file, put
 		 * forward. */
 		dir = FORWARD;
+	    /* May have been reset in do_put(). */
+	    VIsual_active = TRUE;
 	}
 #endif
 	do_put(cap->oap->regname, dir, cap->count1, flags);

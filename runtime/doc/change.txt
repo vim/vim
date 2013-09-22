@@ -1069,6 +1069,11 @@ another register.  E.g., yank the text to copy, Visually select the text to
 replace and use "0p .  You can repeat this as many times as you like, the
 unnamed register will be changed each time.
 
+When you use a blockwise Visual mode command and yank only a single line into
+a register, a paste on a visual selected area will paste that single line on
+each of the selected lines (thus replacing the blockwise selected region by a
+block of the pasted line).
+
 							*blockwise-register*
 If you use a blockwise Visual mode command to get the text into the register,
 the block of text will be inserted before ("P") or after ("p") the cursor
