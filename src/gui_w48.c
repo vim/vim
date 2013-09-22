@@ -1008,7 +1008,7 @@ HandleMouseHide(UINT uMsg, LPARAM lParam)
     static LPARAM last_lParam = 0L;
 
     /* We sometimes get a mousemove when the mouse didn't move... */
-    if (uMsg == WM_MOUSEMOVE)
+    if (uMsg == WM_MOUSEMOVE || uMsg == WM_NCMOUSEMOVE)
     {
 	if (lParam == last_lParam)
 	    return;
