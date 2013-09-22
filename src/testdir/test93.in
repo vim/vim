@@ -33,7 +33,7 @@ j016|3zl:split
 :mksession! test.out
 :new test.out
 :v/\(^ *normal! 0\|^ *exe 'normal!\)/d
-:w
+:w! test.out
 :qa!
 ENDTEST
 

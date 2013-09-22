@@ -18,6 +18,10 @@ Similar logic is applied to the +mzscheme feature, using mzscheme.vim.
 Similar logic is applied to the +lua feature, using lua.vim.
 
 STARTTEST
+:" If columns or lines are too small, create wrongtermsize.
+:" (Some tests will fail. When columns and/or lines are small)
+:if &lines < 24 || &columns < 80 | sp another | w! wrongtermsize | qa! | endif
+:"
 :" Write a single line to test.out to check if testing works at all.
 :%d
 athis is a test:w! test.out

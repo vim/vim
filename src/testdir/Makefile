@@ -58,9 +58,13 @@ clean:
 	-rm -rf *.out *.failed *.rej *.orig test.log $(RM_ON_RUN) $(RM_ON_START) valgrind.*
 
 test1.out: test1.in
-	-rm -rf $*.failed $(RM_ON_RUN) $(RM_ON_START)
+	-rm -rf $*.failed $(RM_ON_RUN) $(RM_ON_START) wrongtermsize
 	$(RUN_VIM) $*.in
-	@/bin/sh -c "if diff test.out $*.ok; \
+	@/bin/sh -c "if test -e wrongtermsize; \
+		then echo; \
+		echo test1 FAILED - terminal size must be 80x24 or larger; \
+		echo; exit 1; \
+		elif diff test.out $*.ok; \
 		then mv -f test.out $*.out; \
 		else echo; \
 		echo test1 FAILED - Something basic is wrong; \
