@@ -6,7 +6,7 @@
 "               Nikolai Weibull (Add CSS2 support)
 " Maintainer:   Jules Wang      <w.jq0722@gmail.com>
 " URL:          https://github.com/JulesWang/css.vim
-" Last Change:  2013 Aug 28
+" Last Change:  2013 Sep 24
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -20,9 +20,6 @@ if !exists("main_syntax")
 elseif exists("b:current_syntax") && b:current_syntax == "css"
   finish
 endif
-
-" Required for cssHacks
-setlocal iskeyword-=_
 
 let s:cpo_save = &cpo
 set cpo&vim
@@ -77,23 +74,20 @@ syn match cssValueAngle contained "[-+]\=\d\+\(\.\d*\)\=\(deg\|grad\|rad\)" cont
 syn match cssValueTime contained "+\=\d\+\(\.\d*\)\=\(ms\|s\)" contains=cssUnitDecorators
 syn match cssValueFrequency contained "+\=\d\+\(\.\d*\)\=\(Hz\|kHz\)" contains=cssUnitDecorators
 
-
 " @media
-syn match cssMedia "@media\>"  nextgroup=cssMediaType,cssMediaFeature,cssMediaBlock,cssMediaComma,cssMediaKeyword2 skipwhite skipnl
-syn keyword cssMediaType contained screen print aural braille embossed handheld projection tty tv all contained skipwhite skipnl nextgroup=cssMediaFeature,cssMediaBlock
-syn match cssMediaFeature /\(and\)\=\s*(.\{-})/ contained skipwhite skipnl contains=cssMediaProp,cssValueLength,cssMediaKeyword,cssValueInteger,cssMediaAttr,cssVendor nextgroup=cssMediaFeature,cssMediaBlock,cssMediaComma
-syn keyword cssMediaKeyword and contained
-syn keyword cssMediaKeyword2 only not contained nextgroup=cssMediaType skipwhite skipnl
-
+syn match cssMedia "@media\>"  nextgroup=cssMediaQuery,cssMediaBlock skipwhite skipnl
+syn match cssMediaQuery /\(only\|not\)\=\s*[a-z]*\(\s\|,\)\@=\(\(\s\+and\)\=\s\+(.\{-})\)*/ contained skipwhite skipnl contains=cssMediaProp,cssValueLength,cssMediaKeyword,cssValueInteger,cssMediaAttr,cssVendor,cssMediaType nextgroup=cssMediaBlock,cssMediaComma
+syn keyword cssMediaType contained screen print aural braille embossed handheld projection tty tv speech all contained skipwhite skipnl
+syn keyword cssMediaKeyword only not and contained
 syn region cssMediaBlock transparent matchgroup=cssBraces start='{' end='}' contains=css.*Attr,css.*Prop,cssComment,cssValue.*,cssColor,cssURL,cssImportant,cssError,cssStringQ,cssStringQQ,cssFunction,cssUnicodeEscape,cssVendor,cssDefinition,cssTagName,cssClassName,cssIdentifier,cssPseudoClass,cssSelectorOp,cssSelectorOp2,cssAttributeSelector fold
-syn match cssMediaComma "," nextgroup=cssMediaType,cssMediaKeyword2 skipwhite skipnl contained
+syn match cssMediaComma "," nextgroup=cssMediaQuery skipwhite skipnl contained
 
 " Reference: http://www.w3.org/TR/css3-mediaqueries/
-syn keyword cssMediaProp contained width height orientation monochrome scan grid
+syn keyword cssMediaProp contained width height orientation scan grid
 syn match cssMediaProp contained /\(\(device\)-\)\=aspect-ratio/
 syn match cssMediaProp contained /\(\(max\|min\)-\)\=device-pixel-ratio/
 syn match cssMediaProp contained /\(\(max\|min\)-\)\=device-\(height\|width\)/
-syn match cssMediaProp contained /\(\(max\|min\)-\)\=\(height\|width\|resolution\|color\(-index\)\=\)/
+syn match cssMediaProp contained /\(\(max\|min\)-\)\=\(height\|width\|resolution\|monochrome\|color\(-index\)\=\)/
 syn keyword cssMediaAttr contained portrait landscape progressive interlace
 
 " @page
@@ -103,14 +97,15 @@ syn match cssPageHeaderProp /@\(\(top\|left\|right\|bottom\)-\(left\|center\|rig
 syn keyword cssPageProp content size contained
 
 " @keyframe
-syn match cssKeyFrame "@\(-.*-\)\=keyframes\>\(\s*\<\S*\>\)\="  nextgroup=cssKeyFrameBlock contains=cssVendor skipwhite skipnl
+syn match cssKeyFrame "@\(-[a-z]*-\)\=keyframes\>\(\s*\<\S*\>\)\="  nextgroup=cssKeyFrameBlock contains=cssVendor skipwhite skipnl
 syn region cssKeyFrameBlock contained transparent matchgroup=cssBraces start="{" end="}" contains=cssKeyFrameSelector,cssDefinition
 syn match cssKeyFrameSelector /\(\d*%\|from\|to\)\=/  contained skipwhite skipnl
 
 " @import
-syn region cssInclude start=/@import\>/ end=/\ze;/ contains=cssComment,cssURL,cssUnicodeEscape,cssMediaType,cssStringQ,cssStringQQ
-syn region cssInclude start=/@charset\>/ end=/\ze;/ contains=cssStringQ,cssStringQQ,cssUnicodeEscape,cssComment
-syn region cssInclude start=/@namespace\>/ end=/\ze;/ contains=cssStringQ,cssStringQQ,cssUnicodeEscape,cssComment
+syn region cssInclude start=/@import\>/ end=/\ze;/ contains=cssComment,cssURL,cssUnicodeEscape,cssMediaQuery,cssStringQ,cssStringQQ,cssIncludeKeyword
+syn region cssInclude start=/@charset\>/ end=/\ze;/ contains=cssStringQ,cssStringQQ,cssUnicodeEscape,cssComment,cssIncludeKeyword
+syn region cssInclude start=/@namespace\>/ end=/\ze;/ contains=cssStringQ,cssStringQQ,cssUnicodeEscape,cssComment,cssIncludeKeyword
+syn match cssIncludeKeyword /\(@import\|@charset\|@namespace\)/ contained
 
 " @font-face
 " http://www.w3.org/TR/css3-fonts/#at-font-face-rule
@@ -458,7 +453,7 @@ syn match cssPseudoClassId contained  "\<\(input-\)\=placeholder\>"
 
 
 " Comment
-syn region cssComment start="/\*" end="\*/" contains=@Spell
+syn region cssComment start="/\*" end="\*/" contains=@Spell fold
 
 syn match cssUnicodeEscape "\\\x\{1,6}\s\?"
 syn match cssSpecialCharQQ +\\"+ contained
@@ -593,6 +588,7 @@ if version >= 508 || !exists("did_css_syn_inits")
   HiLink cssColor Constant
   HiLink cssIdentifier Function
   HiLink cssInclude Include
+  HiLink cssIncludeKeyword atKeyword
   HiLink cssImportant Special
   HiLink cssBraces Function
   HiLink cssBraceError Error
@@ -602,19 +598,17 @@ if version >= 508 || !exists("did_css_syn_inits")
   HiLink cssStringQQ String
   HiLink cssStringQ String
   HiLink cssAttributeSelector String
-  HiLink cssMedia Special
+  HiLink cssMedia atKeyword
   HiLink cssMediaType Special
   HiLink cssMediaComma Normal
-  HiLink cssMediaFeature Normal
   HiLink cssMediaKeyword Statement
-  HiLink cssMediaKeyword2 Statement
   HiLink cssMediaProp cssProp
   HiLink cssMediaAttr cssAttr
-  HiLink cssPage Special
+  HiLink cssPage atKeyword
   HiLink cssPagePseudo PreProc
   HiLink cssPageHeaderProp PreProc
   HiLink cssPageProp cssProp
-  HiLink cssKeyFrame Special
+  HiLink cssKeyFrame atKeyword
   HiLink cssKeyFrameSelector Constant
   HiLink cssFontDescriptor Special
   HiLink cssFontDescriptorFunction Constant
@@ -626,6 +620,7 @@ if version >= 508 || !exists("did_css_syn_inits")
   HiLink cssAttr Constant
   HiLink cssUnitDecorators Number
   HiLink cssNoise Noise
+  HiLink atKeyword Comment
   delcommand HiLink
 endif
 
