@@ -3808,9 +3808,6 @@ do_put(regname, dir, count, flags)
 		    FALSE /* stop after 1 paste */
 #endif
 		    );
-#ifdef FEAT_VISUAL
-	    VIsual_active = FALSE;
-#endif
 
 	    curbuf->b_op_end = curwin->w_cursor;
 	    /* For "CTRL-O p" in Insert mode, put cursor after last char */
@@ -3971,6 +3968,10 @@ end:
 	vim_free(insert_string);
     if (regname == '=')
 	vim_free(y_array);
+
+#ifdef FEAT_VISUAL
+    VIsual_active = FALSE;
+#endif
 
     /* If the cursor is past the end of the line put it at the end. */
     adjust_cursor_eol();
