@@ -9479,7 +9479,8 @@ spell_add_word(word, len, bad, idx, undo)
 			if (undo)
 			{
 			    home_replace(NULL, fname, NameBuff, MAXPATHL, TRUE);
-			    smsg((char_u *)_("Word removed from %s"), NameBuff);
+			    smsg((char_u *)_("Word '%.*s' removed from %s"),
+							 len, word, NameBuff);
 			}
 		    }
 		    fseek(fd, fpos_next, SEEK_SET);
@@ -9525,7 +9526,7 @@ spell_add_word(word, len, bad, idx, undo)
 	    fclose(fd);
 
 	    home_replace(NULL, fname, NameBuff, MAXPATHL, TRUE);
-	    smsg((char_u *)_("Word added to %s"), NameBuff);
+	    smsg((char_u *)_("Word '%.*s' added to %s"), len, word, NameBuff);
 	}
     }
 
@@ -10135,7 +10136,7 @@ spell_check_sps()
 }
 
 /*
- * "z?": Find badly spelled word under or after the cursor.
+ * "z=": Find badly spelled word under or after the cursor.
  * Give suggestions for the properly spelled word.
  * In Visual mode use the highlighted word as the bad word.
  * When "count" is non-zero use that suggestion.
