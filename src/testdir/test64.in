@@ -425,6 +425,7 @@ STARTTEST
 :"
 :" complicated look-behind match
 :call add(tl, [2, '\(r\@<=\|\w\@<!\)\/', 'x = /word/;', '/'])
+:call add(tl, [2, '^[a-z]\+\ze \&\(asdf\)\@<!', 'foo bar', 'foo'])
 :"
 :""""" \@>
 :call add(tl, [2, '\(a*\)\@>a', 'aaaa'])

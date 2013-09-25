@@ -3822,6 +3822,7 @@ static void copy_pim __ARGS((nfa_pim_T *to, nfa_pim_T *from));
 static void clear_sub __ARGS((regsub_T *sub));
 static void copy_sub __ARGS((regsub_T *to, regsub_T *from));
 static void copy_sub_off __ARGS((regsub_T *to, regsub_T *from));
+static void copy_ze_off __ARGS((regsub_T *to, regsub_T *from));
 static int sub_equal __ARGS((regsub_T *sub1, regsub_T *sub2));
 static int match_backref __ARGS((regsub_T *sub, int subidx, int *bytelen));
 static int has_state_with_pos __ARGS((nfa_list_T *l, nfa_state_T *state, regsubs_T *subs, nfa_pim_T *pim));
@@ -3905,6 +3906,29 @@ copy_sub_off(to, from)
 	    mch_memmove(&to->list.line[1],
 			&from->list.line[1],
 			sizeof(struct linepos) * (from->in_use - 1));
+    }
+}
+
+/*
+ * Like copy_sub() but only do the end of the main match if \ze is present.
+ */
+    static void
+copy_ze_off(to, from)
+    regsub_T	*to;
+    regsub_T	*from;
+{
+    if (nfa_has_zend)
+    {
+	if (REG_MULTI)
+	{
+	    if (from->list.multi[0].end.lnum >= 0)
+		to->list.multi[0].end = from->list.multi[0].end;
+	}
+	else
+	{
+	    if (from->list.line[0].end != NULL)
+		to->list.line[0].end = from->list.line[0].end;
+	}
     }
 }
 
@@ -5308,6 +5332,7 @@ find_match_text(startcol, regstart, match_text)
  * When "nfa_endp" is not NULL it is a required end-of-match position.
  *
  * Return TRUE if there is a match, FALSE otherwise.
+ * When there is a match "submatch" contains the positions.
  * Note: Caller must ensure that: start != NULL.
  */
     static int
@@ -5633,6 +5658,9 @@ nfa_regmatch(prog, start, submatch, m)
 			    if (nfa_has_zsubexpr)
 				copy_sub_off(&t->subs.synt, &m->synt);
 #endif
+			    /* If the pattern has \ze and it matched in the
+			     * sub pattern, use it. */
+			    copy_ze_off(&t->subs.norm, &m->norm);
 
 			    /* t->state->out1 is the corresponding
 			     * END_INVISIBLE node; Add its out to the current
