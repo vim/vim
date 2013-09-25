@@ -498,6 +498,98 @@ slash_adjust(p)
     }
 }
 
+    static int
+stat_symlink_aware(const char *name, struct stat *stp)
+{
+#if defined(_MSC_VER) && _MSC_VER < 1700
+    /* Work around for VC10 or earlier. stat() can't handle symlinks properly.
+     * VC9 or earlier: stat() doesn't support a symlink at all. It retrieves
+     * status of a symlink itself.
+     * VC10: stat() supports a symlink to a normal file, but it doesn't support
+     * a symlink to a directory (always returns an error). */
+    WIN32_FIND_DATA	findData;
+    HANDLE		hFind, h;
+    DWORD		attr = 0;
+    BOOL		is_symlink = FALSE;
+
+    hFind = FindFirstFile(name, &findData);
+    if (hFind != INVALID_HANDLE_VALUE)
+    {
+	attr = findData.dwFileAttributes;
+	if ((attr & FILE_ATTRIBUTE_REPARSE_POINT)
+		&& (findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK))
+	    is_symlink = TRUE;
+	FindClose(hFind);
+    }
+    if (is_symlink)
+    {
+	h = CreateFile(name, FILE_READ_ATTRIBUTES,
+		FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+		OPEN_EXISTING,
+		(attr & FILE_ATTRIBUTE_DIRECTORY)
+					    ? FILE_FLAG_BACKUP_SEMANTICS : 0,
+		NULL);
+	if (h != INVALID_HANDLE_VALUE)
+	{
+	    int	    fd, n;
+
+	    fd = _open_osfhandle((intptr_t)h, _O_RDONLY);
+	    n = _fstat(fd, (struct _stat*)stp);
+	    _close(fd);
+	    return n;
+	}
+    }
+#endif
+    return stat(name, stp);
+}
+
+#ifdef FEAT_MBYTE
+    static int
+wstat_symlink_aware(const WCHAR *name, struct _stat *stp)
+{
+# if defined(_MSC_VER) && _MSC_VER < 1700
+    /* Work around for VC10 or earlier. _wstat() can't handle symlinks properly.
+     * VC9 or earlier: _wstat() doesn't support a symlink at all. It retrieves
+     * status of a symlink itself.
+     * VC10: _wstat() supports a symlink to a normal file, but it doesn't
+     * support a symlink to a directory (always returns an error). */
+    int			n;
+    BOOL		is_symlink = FALSE;
+    HANDLE		hFind, h;
+    DWORD		attr = 0;
+    WIN32_FIND_DATAW	findDataW;
+
+    hFind = FindFirstFileW(name, &findDataW);
+    if (hFind != INVALID_HANDLE_VALUE)
+    {
+	attr = findDataW.dwFileAttributes;
+	if ((attr & FILE_ATTRIBUTE_REPARSE_POINT)
+		&& (findDataW.dwReserved0 == IO_REPARSE_TAG_SYMLINK))
+	    is_symlink = TRUE;
+	FindClose(hFind);
+    }
+    if (is_symlink)
+    {
+	h = CreateFileW(name, FILE_READ_ATTRIBUTES,
+		FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+		OPEN_EXISTING,
+		(attr & FILE_ATTRIBUTE_DIRECTORY)
+					    ? FILE_FLAG_BACKUP_SEMANTICS : 0,
+		NULL);
+	if (h != INVALID_HANDLE_VALUE)
+	{
+	    int	    fd;
+
+	    fd = _open_osfhandle((intptr_t)h, _O_RDONLY);
+	    n = _fstat(fd, stp);
+	    _close(fd);
+	    return n;
+	}
+    }
+# endif
+    return _wstat(name, stp);
+}
+#endif
 
 /*
  * stat() can't handle a trailing '/' or '\', remove it first.
@@ -534,7 +626,7 @@ vim_stat(const char *name, struct stat *stp)
 
 	if (wp != NULL)
 	{
-	    n = _wstat(wp, (struct _stat *)stp);
+	    n = wstat_symlink_aware(wp, (struct _stat *)stp);
 	    vim_free(wp);
 	    if (n >= 0)
 		return n;
@@ -544,7 +636,7 @@ vim_stat(const char *name, struct stat *stp)
 	}
     }
 #endif
-    return stat(buf, stp);
+    return stat_symlink_aware(buf, stp);
 }
 
 #if defined(FEAT_GUI_MSWIN) || defined(PROTO)

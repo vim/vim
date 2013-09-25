@@ -130,6 +130,19 @@
 # define DFLT_MAXMEMTOT	(5*1024)    /* use up to 5 Mbyte for Vim */
 #endif
 
+/*
+ * Reparse Point
+ */
+#ifndef FILE_ATTRIBUTE_REPARSE_POINT
+# define FILE_ATTRIBUTE_REPARSE_POINT	0x00000400
+#endif
+#ifndef IO_REPARSE_TAG_MOUNT_POINT
+# define IO_REPARSE_TAG_MOUNT_POINT	0xA0000003
+#endif
+#ifndef IO_REPARSE_TAG_SYMLINK
+# define IO_REPARSE_TAG_SYMLINK		0xA000000C
+#endif
+
 #if defined(_MSC_VER) || defined(__BORLANDC__)
     /* Support for __try / __except.  All versions of MSVC and Borland C are
      * expected to have this.  Any other compilers that support it? */

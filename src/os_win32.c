@@ -78,16 +78,6 @@
 # endif
 #endif
 
-/*
- * Reparse Point
- */
-#ifndef FILE_ATTRIBUTE_REPARSE_POINT
-# define FILE_ATTRIBUTE_REPARSE_POINT	0x00000400
-#endif
-#ifndef IO_REPARSE_TAG_SYMLINK
-# define IO_REPARSE_TAG_SYMLINK		0xA000000C
-#endif
-
 /* Record all output and all keyboard & mouse input */
 /* #define MCH_WRITE_DUMP */
 
