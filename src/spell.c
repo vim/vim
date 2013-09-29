@@ -15569,11 +15569,21 @@ ex_spellinfo(eap)
 ex_spelldump(eap)
     exarg_T *eap;
 {
+    char_u  *spl;
+    long    dummy;
+
     if (no_spell_checking(curwin))
 	return;
+    get_option_value((char_u*)"spl", &dummy, &spl, OPT_LOCAL);
 
-    /* Create a new empty buffer by splitting the window. */
+    /* Create a new empty buffer in a new window. */
     do_cmdline_cmd((char_u *)"new");
+
+    /* enable spelling locally in the new window */
+    set_option_value((char_u*)"spell", TRUE, (char_u*)"", OPT_LOCAL);
+    set_option_value((char_u*)"spl",  dummy,         spl, OPT_LOCAL);
+    vim_free(spl);
+
     if (!bufempty() || !buf_valid(curbuf))
 	return;
 
