@@ -142,6 +142,8 @@ STARTTEST
 :$put =\"\n\nTEST_7:\"
 :$put =substitute('AA', 'A.', '\=submatch(0)', '')
 :$put =substitute(\"B\nB\", 'B.', '\=submatch(0)', '')
+:$put =substitute('-bb', '\zeb', 'a', 'g')
+:$put =substitute('-bb', '\ze', 'c', 'g')
 /^TEST_8
 ENDTEST
 

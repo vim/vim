@@ -24301,6 +24301,7 @@ do_string_sub(str, pat, sub, flags)
     garray_T	ga;
     char_u	*ret;
     char_u	*save_cpo;
+    int		zero_width;
 
     /* Make 'cpoptions' empty, so that the 'l' flag doesn't work here */
     save_cpo = p_cpo;
@@ -24339,19 +24340,16 @@ do_string_sub(str, pat, sub, flags)
 	    (void)vim_regsub(&regmatch, sub, (char_u *)ga.ga_data
 					  + ga.ga_len + i, TRUE, TRUE, FALSE);
 	    ga.ga_len += i + sublen - 1;
-	    /* avoid getting stuck on a match with an empty string */
-	    if (tail == regmatch.endp[0])
+	    zero_width = (tail == regmatch.endp[0]
+				    || regmatch.startp[0] == regmatch.endp[0]);
+	    tail = regmatch.endp[0];
+	    if (*tail == NUL)
+		break;
+	    if (zero_width)
 	    {
-		if (*tail == NUL)
-		    break;
+		/* avoid getting stuck on a match with an empty string */
 		*((char_u *)ga.ga_data + ga.ga_len) = *tail++;
 		++ga.ga_len;
-	    }
-	    else
-	    {
-		tail = regmatch.endp[0];
-		if (*tail == NUL)
-		    break;
 	    }
 	    if (!do_all)
 		break;
