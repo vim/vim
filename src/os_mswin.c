@@ -498,6 +498,12 @@ slash_adjust(p)
     }
 }
 
+#if (_MSC_VER >= 1300)
+# define OPEN_OH_ARGTYPE intptr_t
+#else
+# define OPEN_OH_ARGTYPE long
+#endif
+
     static int
 stat_symlink_aware(const char *name, struct stat *stp)
 {
@@ -533,7 +539,7 @@ stat_symlink_aware(const char *name, struct stat *stp)
 	{
 	    int	    fd, n;
 
-	    fd = _open_osfhandle((intptr_t)h, _O_RDONLY);
+	    fd = _open_osfhandle((OPEN_OH_ARGTYPE)h, _O_RDONLY);
 	    n = _fstat(fd, (struct _stat*)stp);
 	    _close(fd);
 	    return n;
@@ -580,7 +586,7 @@ wstat_symlink_aware(const WCHAR *name, struct _stat *stp)
 	{
 	    int	    fd;
 
-	    fd = _open_osfhandle((intptr_t)h, _O_RDONLY);
+	    fd = _open_osfhandle((OPEN_OH_ARGTYPE)h, _O_RDONLY);
 	    n = _fstat(fd, stp);
 	    _close(fd);
 	    return n;
