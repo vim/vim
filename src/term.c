@@ -3356,7 +3356,7 @@ may_req_termresponse()
  * it must be called immediately after entering termcap mode.
  */
     void
-may_req_ambiguous_character_width()
+may_req_ambiguous_char_width()
 {
     if (u7_status == U7_GET
 	    && cur_tmode == TMODE_RAW
