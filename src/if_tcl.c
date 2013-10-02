@@ -165,6 +165,7 @@ typedef int HANDLE;
  */
 static HANDLE hTclLib = NULL;
 Tcl_Interp* (*dll_Tcl_CreateInterp)();
+void (*dll_Tcl_FindExecutable)(const void *);
 
 /*
  * Table of name to function pointer of tcl.
@@ -175,6 +176,7 @@ static struct {
     TCL_PROC* ptr;
 } tcl_funcname_table[] = {
     {"Tcl_CreateInterp", (TCL_PROC*)&dll_Tcl_CreateInterp},
+    {"Tcl_FindExecutable", (TCL_PROC*)&dll_Tcl_FindExecutable},
     {NULL, NULL},
 };
 
@@ -248,11 +250,12 @@ tcl_enabled(verbose)
     {
 	Tcl_Interp *interp;
 
+	dll_Tcl_FindExecutable(find_executable_arg);
+
 	if (interp = dll_Tcl_CreateInterp())
 	{
 	    if (Tcl_InitStubs(interp, DYNAMIC_TCL_VER, 0))
 	    {
-		Tcl_FindExecutable(find_executable_arg);
 		Tcl_DeleteInterp(interp);
 		stubs_initialized = TRUE;
 	    }
