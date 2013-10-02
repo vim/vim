@@ -62,6 +62,29 @@ if test "$GCC" = yes; then
   fi
 fi
 
+dnl clang-500.2.75 or around has abandoned -f[no-]strength-reduce and issues a
+dnl warning when that flag is passed to.  Accordingly, adjust CFLAGS based on
+dnl the version number of the clang in use.
+dnl Note that this does not work to get the version of clang 3.1 or 3.2.
+AC_MSG_CHECKING(for recent clang version)
+CLANG_VERSION_STRING=`"$CC" --version 2>/dev/null | sed  -n -e 's/^.*clang.*\([[0-9]][[0-9]]*\.[[0-9]][[0-9]]*\.[[0-9]][[0-9]]*\).*$/\1/p'`
+if test x"$CLANG_VERSION_STRING" != x"" ; then
+  CLANG_MAJOR=`echo "$CLANG_VERSION_STRING" | sed -n -e 's/\([[0-9]][[0-9]]*\)\.[[0-9]][[0-9]]*\.[[0-9]][[0-9]]*/\1/p'`
+  CLANG_MINOR=`echo "$CLANG_VERSION_STRING" | sed -n -e 's/[[0-9]][[0-9]]*\.\([[0-9]][[0-9]]*\)\.[[0-9]][[0-9]]*/\1/p'`
+  CLANG_REVISION=`echo "$CLANG_VERSION_STRING" | sed -n -e 's/[[0-9]][[0-9]]*\.[[0-9]][[0-9]]*\.\([[0-9]][[0-9]]*\)/\1/p'`
+  CLANG_VERSION=`expr $CLANG_MAJOR '*' 1000000 '+' $CLANG_MINOR '*' 1000 '+' $CLANG_REVISION`
+  AC_MSG_RESULT($CLANG_VERSION)
+  dnl If you find the same issue with versions earlier than 500.2.75,
+  dnl change the constant 500002075 below appropriately.  To get the
+  dnl integer corresponding to a version number, refer to the
+  dnl definition of CLANG_VERSION above.
+  if test "$CLANG_VERSION" -ge 500002075 ; then
+    CFLAGS=`echo "$CFLAGS" | sed -n -e 's/-fno-strength-reduce/ /p'`
+  fi
+else
+  AC_MSG_RESULT(no)
+fi
+
 dnl If configure thinks we are cross compiling, there might be something
 dnl wrong with the CC or CFLAGS settings, give a useful warning message
 if test "$cross_compiling" = yes; then
