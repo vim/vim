@@ -4740,11 +4740,17 @@ do_sub(eap)
 			    char_u	*resp;
 			    colnr_T	sc, ec;
 
-			    print_line_no_prefix(lnum, FALSE, FALSE);
+			    print_line_no_prefix(lnum, do_number, do_list);
 
 			    getvcol(curwin, &curwin->w_cursor, &sc, NULL, NULL);
 			    curwin->w_cursor.col = regmatch.endpos[0].col - 1;
 			    getvcol(curwin, &curwin->w_cursor, NULL, NULL, &ec);
+			    if (do_number || curwin->w_p_nu)
+			    {
+				int numw = number_width(curwin) + 1;
+				sc += numw;
+				ec += numw;
+			    }
 			    msg_start();
 			    for (i = 0; i < (long)sc; ++i)
 				msg_putchar(' ');
