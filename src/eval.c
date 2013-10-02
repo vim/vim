@@ -13054,9 +13054,18 @@ get_user_input(argvars, rettv, inputdialog)
 	}
 
 	if (defstr != NULL)
+	{
+# ifdef FEAT_EX_EXTRA
+	    int save_ex_normal_busy = ex_normal_busy;
+	    ex_normal_busy = 0;
+# endif
 	    rettv->vval.v_string =
 		getcmdline_prompt(inputsecret_flag ? NUL : '@', p, echo_attr,
 				  xp_type, xp_arg);
+# ifdef FEAT_EX_EXTRA
+	    ex_normal_busy = save_ex_normal_busy;
+# endif
+	}
 	if (inputdialog && rettv->vval.v_string == NULL
 		&& argvars[1].v_type != VAR_UNKNOWN
 		&& argvars[2].v_type != VAR_UNKNOWN)
