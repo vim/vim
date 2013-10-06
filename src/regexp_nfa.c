@@ -6458,6 +6458,7 @@ nfa_regmatch(prog, start, submatch, m)
 	    if (add_state != NULL)
 	    {
 		nfa_pim_T *pim;
+		nfa_pim_T pim_copy;
 
 		if (t->pim.result == NFA_PIM_UNUSED)
 		    pim = NULL;
@@ -6529,6 +6530,15 @@ nfa_regmatch(prog, start, submatch, m)
 		    /* Postponed invisible match was handled, don't add it to
 		     * following states. */
 		    pim = NULL;
+		}
+
+		/* If "pim" points into l->t it will become invalid when
+		 * adding the state causes the list to be reallocated.  Make a
+		 * local copy to avoid that. */
+		if (pim == &t->pim)
+		{
+		    copy_pim(&pim_copy, pim);
+		    pim = &pim_copy;
 		}
 
 		if (add_here)
