@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2013 Sep 22
+*todo.txt*      For Vim version 7.4.  Last change: 2013 Oct 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,18 +34,8 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-NFA engine mismatch, with example. (ZyX, 2013 Aug 29)
-
-NFA engine difference, with test case. (Axel Bender, 2013 Sep 17)
-Comments from Vlad Irnov Sep 18.
-
 Problem positioning the cursor after auto-formatting without a comment. (Tor
 Perkins, 2013 Sep 1)
-
-Patch to fix test 92 and 93 failing in a bad way. (Hirohito Higashi, 2013 Sep
-11)
-
-Patch to fix using "p" in Visual block mode. (Christian Brabandt, 2013 Sep 19)
 
 Using \1 in pattern goes one line too far. (Bohr Shaw, 2013 Sep 5)
 Column is OK.  "/\v(^.+\n)\1/e" (John Little, Sep 5)
@@ -55,37 +45,29 @@ Error for incomplete help argument. (John Beckett, 2013 Sep 12)
 
 Popup menu: first item is not selected when typing more than one character?
 
-Patch to add async functionality. (Geoff Greer, 2013 Sep 1)
-
-Patch to avoid mouse cursor flickering. (Ken Takata,, 2013 Sep 2)
-
-Patch to make zg and zb work better. (Christian Brabandt, 2013 Sep 8)
-
-Patch to fix that VC10 does not stat() a symlink to a directory.
-(Ken Takata,, 2013 Sep 20)  Update Sep 21
-
 Should win_redr_custom() not be allowed to use recursively?
 (Yasuhiro Matsumoto, 2013 Aug 15)
 
 NFA engine combining character mismatch. (glts, 2013 Aug 27)
 Remark Dominique, Aug 27
 
-Patch to make Tcl 8.6 work. (Issue 167)
-
-Patch to make input() work while inside :normal. (Yasuhiro Matsumoto, 2013 Sep
-19)
+Problem that a previous silent ":throw" causes a following try/catch not to
+work. (ZyX, 2013 Sep 28)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
 Issue 164: freeze on regexp search.
 
-Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
+Update for Clojure ftplugin. (Sung Pae).  Await discussion about formatting in
+ftplugins.
 
-Patch to fix substitute prompt with line number. (Benoit Pierre, 2013 Aug 27,
-third message)
+Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
 Patch to avoid problem with colon in file name. (Yasuhiro Matsumoto, 2013 Sep
 5) Only copy file name when needed: Sep 9.
+
+Patch to make #N in 'cino' stop not indenting #lines. (Christian Brabandt,
+2013 Sep 25)
 
 Include systemverilog file?  Two votes yes.
 
@@ -108,6 +90,12 @@ Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 Patch to make has() check for Vim version and patch at the same time.
 (Marc Weber, 2013 Jun 7)
 
+Patch to fix Visual-block insert using cursor keys. (Christian Brabandt, 2013
+Sep 28)  With test Sept 29.
+
+VMS: Select() doesn't work properly, typing ESC may hang Vim.  Use sys$qiow
+instead. (Samuel Ferencik, 2013 Sep 28)
+
 Several syntax file match "^\s*" which may get underlined if that's in the
 highlight group.  Add a "\zs" after it?
 
@@ -117,6 +105,14 @@ Stocker, 2012 Jan 5; 2013 Aug 20)
 Patch 2013 Sept 10, test: Sept 11.
 
 Go through more coverity reports.
+
+Bug: Does not skip over expression with dict member properly. (ZyX, 2013 Sep
+29)
+
+Patch to make ColorScheme autocommand match with the colorscheme name instead
+of the buffer name. (Christian Brabandt, 2013 Sep 25)
+
+Patch to right-align signs. (James Kolb (email james), 2013 Sep 23)
 
 With "$" in 'cpoptions' the popup menu isn't fully drawn. (Matti Niemenmaa,
 2013 Sep 5)
@@ -130,6 +126,9 @@ Patches to fix this. (Ken Takata, 2013 Aug 9)
 /[b-a] gives error E16, should probably be E769.
 
 :help gives example for z?, but it does not work.  m? and t? do work.
+
+Python: Extended funcrefs: use func_T* structure in place of char_u* function
+names. (ZyX, 2013 Jul 15, update Sep 22, 24, 28)
 
 Patch to add funcref to Lua.  (Luis Carvalho, 2013 Sep 4)
 With tests: Sep 5.
@@ -280,9 +279,6 @@ b:undo_ftplugin cannot call a script-local function. (Boris Danilov, 2013 Jan
 Win32: The Python interface only works with one version of Python, selected at
 compile time.  Can this be made to work with version 2.1 and 2.2 dynamically?
 
-Python: Extended funcrefs: use func_T* structure in place of char_u* function
-names. (ZyX, 2013 Jul 15 and later)
-
 Python: Be able to define a Python function that can be called directly from
 Vim script.  Requires converting the arguments and return value, like with
 vim.bindeval().
@@ -387,6 +383,7 @@ And one for gui_x11.txt.
     More recent version: https://retracile.net/wiki/VimBreakIndent
     Posted to vim-dev by Taylor Hedberg, 2011 Nov 25
     Update by Taylor Hedberg, 2013 May 30.
+    Updated for Vim 7.4 by Ken Takata, 2013 Oct 5.
 
 ":cd" doesn't work when current directory path contains "**".
 finddir() has the same problem.  (Yukihiro Nakadaira, 2012 Jan 10)
@@ -989,7 +986,7 @@ correct.  Don't use it in the swap file.
 Completion for ":buf" doesn't work properly on Win32 when 'shellslash' is off.
 (Henrik Ohman, 2009, Jan 29)
 
-shellescape() depends on 'shellshash' for quoting.  That doesn't work when
+shellescape() depends on 'shellslash' for quoting.  That doesn't work when
 'shellslash' is set but using cmd.exe. (Ben Fritz)
 Use a different option or let it depend on whether 'shell' looks like a
 unix-like shell?
@@ -1403,7 +1400,7 @@ Ebersbach, 2008 Feb 1)
 
 Menu item that does "xxd -r" doesn't work when 'fileencoding' is utf-16.
 Check for this and use iconv?  (Edward L. Fox, 2007 Sep 12)
-Does the conversion in the other direction work when 'filenecodings' is set
+Does the conversion in the other direction work when 'fileencodings' is set
 properly?
 
 Cursor displayed in the wrong position when using 'numberwidth'. (James Vega,
@@ -1817,7 +1814,7 @@ Awaiting updated patches:
     How does this work?  Missing comments.
 8   Add a few more command names to the menus.  Patch from Jiri Brezina
     (28 feb 2002).  Will mess the translations...
-7   ATTENTION dialog choices are more logical when "Delete it' appears
+7   ATTENTION dialog choices are more logical when "Delete it" appears
     before "Quit".  Patch by Robert Webb, 2004 May 3.
 -   Include flipcase patch: ~/vim/patches/wall.flipcase2 ?  Make it work
     for multi-byte characters.
@@ -3250,6 +3247,7 @@ Syntax highlighting:
 Built-in script language:
 8   Make the filename and line number available to script functions, so that
     they can give useful debugging info.  The whole call stack would be ideal.
+    At least use this for error messages.
 7   Execute a function with standard option values.  No need to save and
     restore option values.  Especially useful for new options.  Problem: how
     to avoid a performance penalty (esp. for string options)?
@@ -4752,7 +4750,7 @@ Marks:
 
 Digraphs:
 7   Make "ga" show the keymap for a character, if it exists.
-    Also show the code of the character after conversion to 'filenecoding'.
+    Also show the code of the character after conversion to 'fileencoding'.
 -   Use digraph table to tell Vim about the collating sequence of special
     characters?
 8   Add command to remove one or more (all) digraphs. (Brown)

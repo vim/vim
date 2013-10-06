@@ -93,7 +93,7 @@ the default value of 'term' from the environment variable "TERM".
 $PATH							*win32-PATH*
 
 The directory of the Vim executable is appended to $PATH.  This is mostly to
-make "!xxd' work, as it is in the Tools menu.  And it also means that when
+make "!xxd" work, as it is in the Tools menu.  And it also means that when
 executable() returns 1 the executable can actually be executed.
 
 ==============================================================================

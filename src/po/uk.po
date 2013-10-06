@@ -12,9 +12,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: vim 7.3\n"
+"Project-Id-Version: vim 7.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-01-17 10:06+0200\n"
+"POT-Creation-Date: 2013-09-29 09:05+0300\n"
 "PO-Revision-Date: 2010-06-18 21:53+0300\n"
 "Last-Translator: Анатолій Сахнік <sakhnik@gmail.com>\n"
 "Language-Team: Bohdan Vlasyuk <bohdan@vstu.edu.ua>\n"
@@ -140,6 +140,9 @@ msgstr "[Новий файл]"
 
 msgid "[Read errors]"
 msgstr "[Помилки читання]"
+
+msgid "[RO]"
+msgstr "[RO]"
 
 msgid "[readonly]"
 msgstr "[лише читати]"
@@ -428,6 +431,10 @@ msgstr "E130: Невідома функція: %s"
 msgid "E461: Illegal variable name: %s"
 msgstr "E461: Неприпустима назва змінної: %s"
 
+# msgstr "E373: "
+msgid "E806: using Float as a String"
+msgstr "E806: Float вжито як String"
+
 msgid "E687: Less targets than List items"
 msgstr "E687: Цілей менше, ніж елементів списку"
 
@@ -594,14 +601,14 @@ msgstr "E785: complete() можна вживати тільки в режимі 
 msgid "&Ok"
 msgstr "&O:Гаразд"
 
-# msgstr "E14: "
-msgid "extend() argument"
-msgstr "аргумент extend()"
-
 # msgstr "E226: "
 #, c-format
 msgid "E737: Key already exists: %s"
 msgstr "E737: Ключ вже існує: %s"
+
+# msgstr "E14: "
+msgid "extend() argument"
+msgstr "аргумент extend()"
 
 # msgstr "E14: "
 msgid "map() argument"
@@ -710,10 +717,6 @@ msgstr "E730: List вжито як String"
 msgid "E731: using Dictionary as a String"
 msgstr "E731: Dictionary вжито як String"
 
-# msgstr "E373: "
-msgid "E806: using Float as a String"
-msgstr "E806: Float вжито як String"
-
 #, c-format
 msgid "E706: Variable type mismatch for: %s"
 msgstr "E706: Неправильний тип змінної: %s"
@@ -751,6 +754,9 @@ msgstr "E123: Невизначена функція: %s"
 #, c-format
 msgid "E124: Missing '(': %s"
 msgstr "E124: Бракує '(': %s"
+
+msgid "E862: Cannot use g: here"
+msgstr "E862: Тут не можна використати g:"
 
 #, c-format
 msgid "E125: Illegal argument: %s"
@@ -1152,6 +1158,10 @@ msgstr "E148: У global бракує зразка"
 msgid "Pattern found in every line: %s"
 msgstr "Зразок знайдено у кожному рядку: %s"
 
+#, c-format
+msgid "Pattern not found: %s"
+msgstr "Зразок не знайдено: %s"
+
 msgid ""
 "\n"
 "# Last Substitute String:\n"
@@ -1332,7 +1342,8 @@ msgid "E183: User defined commands must start with an uppercase letter"
 msgstr "E183: Команди користувача повинні починатися з великої літери"
 
 msgid "E841: Reserved name, cannot be used for user defined command"
-msgstr "E841: Зарезервована назва, не можна використати для користувацької команди"
+msgstr ""
+"E841: Зарезервована назва, не можна використати для користувацької команди"
 
 # msgstr "E183: "
 #, c-format
@@ -1686,9 +1697,6 @@ msgstr "[сокет]"
 msgid "[character special]"
 msgstr "[спец. символьний]"
 
-msgid "[RO]"
-msgstr "[RO]"
-
 msgid "[CR missing]"
 msgstr "[Бракує CR]"
 
@@ -1940,8 +1948,7 @@ msgstr "Див. «:help W11» для уточнення."
 
 #, c-format
 msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
-msgstr ""
-"W16: Застереження: Режим файлу «%s» змінився після початку редагування"
+msgstr "W16: Застереження: Режим файлу «%s» змінився після початку редагування"
 
 msgid "See \":help W16\" for more info."
 msgstr "Див. «:help W16» для уточнення."
@@ -2308,32 +2315,28 @@ msgid "Font '%s' is not fixed-width"
 msgstr "Шрифт '%s' не є моноширинним"
 
 #, c-format
-msgid "E253: Fontset name: %s\n"
-msgstr "E253: Назва набору шрифтів: %s\n"
+msgid "E253: Fontset name: %s"
+msgstr "E253: Назва набору шрифтів: %s"
 
 #, c-format
-msgid "Font0: %s\n"
-msgstr "Шрифт0: %s\n"
+msgid "Font0: %s"
+msgstr "Шрифт0: %s"
 
 #, c-format
-msgid "Font1: %s\n"
-msgstr "Шрифт1: %s\n"
+msgid "Font1: %s"
+msgstr "Шрифт1: %s"
 
 #, c-format
-msgid "Font%ld width is not twice that of font0\n"
-msgstr "Ширина шрифту%ld має бути удвічі більшою за ширину шрифту0\n"
+msgid "Font%ld width is not twice that of font0"
+msgstr "Ширина шрифту%ld не більша удвічі за ширину шрифту0"
 
 #, c-format
-msgid "Font0 width: %ld\n"
-msgstr "Ширина шрифту0: %ld\n"
+msgid "Font0 width: %ld"
+msgstr "Ширина шрифту0: %ld"
 
 #, c-format
-msgid ""
-"Font1 width: %ld\n"
-"\n"
-msgstr ""
-"Ширина шрифту1: %ld\n"
-"\n"
+msgid "Font1 width: %ld"
+msgstr "Ширина шрифту1: %ld"
 
 msgid "Invalid font specification"
 msgstr "Некоректна специфікація шрифту"
@@ -2526,6 +2529,9 @@ msgstr "E566: Не вдалося створити канали до cscope"
 msgid "E622: Could not fork for cscope"
 msgstr "E622: Не вдалося розділити процес для cscope"
 
+msgid "cs_create_connection setpgid failed"
+msgstr "cs_create_connection: помилка setpgid"
+
 msgid "cs_create_connection exec failed"
 msgstr "cs_create_connection: помилка під час виконання"
 
@@ -2672,6 +2678,9 @@ msgstr "не вдалося вставити рядок"
 msgid "string cannot contain newlines"
 msgstr "більше ніж один рядок"
 
+msgid "error converting Scheme values to Vim"
+msgstr "не вдалося перетворити значення Scheme у Vim"
+
 msgid "Vim error: ~a"
 msgstr "Помилка Vim: ~a"
 
@@ -2693,9 +2702,6 @@ msgstr "не дозволено у пісочниці Vim"
 msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: Python: Не можна використати :py і :py3 в одному сеансі"
 
-msgid "only string keys are allowed"
-msgstr "Дозволено тільки текстові ключі"
-
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
 "loaded."
@@ -2703,27 +2709,11 @@ msgstr ""
 "E263: Вибачте, ця команда вимкнена, бібліотека Python не може бути "
 "завантажена."
 
-msgid "E860: Eval did not return a valid python 3 object"
-msgstr "E860: Eval не повернув дійсний об’єкт python 3"
-
-msgid "E861: Failed to convert returned python 3 object to vim value"
-msgstr "E861: Не вдалося перетворити об’єкт python 3 у значення vim"
-
-#, c-format
-msgid "<buffer object (deleted) at %p>"
-msgstr "<об'єкт буфера (знищено) за адресою %p>"
-
 msgid "E836: This Vim cannot execute :python after using :py3"
 msgstr "E836: Python: Не можна використати :py і :py3 в одному сеансі"
 
 msgid "E659: Cannot invoke Python recursively"
 msgstr "E659: Не можна рекурсивно викликати Python"
-
-msgid "E858: Eval did not return a valid python object"
-msgstr "E858: Eval не повернув дійсний об’єкт python"
-
-msgid "E859: Failed to convert returned python object to vim value"
-msgstr "E859: Не вдалося перетворити об’єкт python у значення vim"
 
 msgid "E265: $_ must be an instance of String"
 msgstr "E265: $_ має бути екземпляром String"
@@ -2942,8 +2932,7 @@ msgid "Garbage after option argument"
 msgstr "Сміття після аргументу опції"
 
 msgid "Too many \"+command\", \"-c command\" or \"--cmd command\" arguments"
-msgstr ""
-"Забагато аргументів у «+команда», «-c команда» або «--cmd команда»"
+msgstr "Забагато аргументів у «+команда», «-c команда» або «--cmd команда»"
 
 # msgstr "E14: "
 msgid "Invalid argument for"
@@ -3483,8 +3472,7 @@ msgstr "E302: Не вдалося перейменувати файлу обмі
 # msgstr "E302: "
 #, c-format
 msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
-msgstr ""
-"E303: Не вдалося прочитати файл обміну для «%s», відновлення неможливе"
+msgstr "E303: Не вдалося прочитати файл обміну для «%s», відновлення неможливе"
 
 msgid "E304: ml_upd_block0(): Didn't get block 0??"
 msgstr "E304: ml_upd_block0(): Немає блоку 0??"
@@ -4092,13 +4080,6 @@ msgstr " (Перервано)"
 msgid "Beep!"
 msgstr "Дзень!"
 
-msgid "Vim: preserving files...\n"
-msgstr "Vim: Заготовлюються файли...\n"
-
-#. close all memfiles, without deleting
-msgid "Vim: Finished.\n"
-msgstr "Vim: Завершено.\n"
-
 msgid "ERROR: "
 msgstr "ПОМИЛКА: "
 
@@ -4628,17 +4609,6 @@ msgstr "E244: Некоректна назва набору символів «%s
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Помилковий символ %c в назві шрифту «%s»"
 
-msgid "Vim: Double signal, exiting\n"
-msgstr "Vim: Двічі отримано сигнал, вихід\n"
-
-#, c-format
-msgid "Vim: Caught deadly signal %s\n"
-msgstr "Vim: Отримано фатальний сигнал (%s)\n"
-
-#, c-format
-msgid "Vim: Caught deadly signal\n"
-msgstr "Vim: Отримано фатальний сигнал\n"
-
 #, c-format
 msgid "Opening the X display took %ld msec"
 msgstr "На відкриття дисплею X пішло %ld мілісекунд"
@@ -4861,6 +4831,38 @@ msgstr "E777: Очікується String чи List"
 msgid "E369: invalid item in %s%%[]"
 msgstr "E369: Некоректний елемент у %s%%[]"
 
+#, c-format
+msgid "E769: Missing ] after %s["
+msgstr "E769: Бракує ] після %s["
+
+#, c-format
+msgid "E53: Unmatched %s%%("
+msgstr "E53: Немає пари %s%%("
+
+#, c-format
+msgid "E54: Unmatched %s("
+msgstr "E54: Немає пари %s("
+
+#, c-format
+msgid "E55: Unmatched %s)"
+msgstr "E55: Немає пари %s)"
+
+# msgstr "E406: "
+msgid "E66: \\z( not allowed here"
+msgstr "E66: \\z( тут не дозволено"
+
+# msgstr "E406: "
+msgid "E67: \\z1 et al. not allowed here"
+msgstr "E67: \\z1 та ін. тут не дозволено"
+
+#, c-format
+msgid "E69: Missing ] after %s%%["
+msgstr "E69: Пропущено ] після %s%%["
+
+#, c-format
+msgid "E70: Empty %s%%[]"
+msgstr "E70: %s%%[] порожній"
+
 # msgstr "E382: "
 msgid "E339: Pattern too long"
 msgstr "E339: Зразок занадто довгий"
@@ -4874,18 +4876,6 @@ msgstr "E51: Забагато %s("
 
 msgid "E52: Unmatched \\z("
 msgstr "E52: Немає пари \\z("
-
-#, c-format
-msgid "E53: Unmatched %s%%("
-msgstr "E53: Немає пари %s%%("
-
-#, c-format
-msgid "E54: Unmatched %s("
-msgstr "E54: Немає пари %s("
-
-#, c-format
-msgid "E55: Unmatched %s)"
-msgstr "E55: Немає пари %s)"
 
 #, c-format
 msgid "E59: invalid character after %s@"
@@ -4916,24 +4906,8 @@ msgstr "E64: Після %s%c нічого немає"
 msgid "E65: Illegal back reference"
 msgstr "E65: Некоректне зворотнє посилання"
 
-# msgstr "E406: "
-msgid "E66: \\z( not allowed here"
-msgstr "E66: \\z( тут не дозволено"
-
-# msgstr "E406: "
-msgid "E67: \\z1 et al. not allowed here"
-msgstr "E67: \\z1 та ін. тут не дозволено"
-
 msgid "E68: Invalid character after \\z"
 msgstr "E68: Неправильний символ після \\z"
-
-#, c-format
-msgid "E69: Missing ] after %s%%["
-msgstr "E69: Пропущено ] після %s%%["
-
-#, c-format
-msgid "E70: Empty %s%%[]"
-msgstr "E70: %s%%[] порожній"
 
 #, c-format
 msgid "E678: Invalid character after %s%%[dxouU]"
@@ -4943,10 +4917,6 @@ msgstr "E678: Недозволений символ після %s%%[dxouU]"
 msgid "E71: Invalid character after %s%%"
 msgstr "E71: Недозволений символ після %s%%"
 
-#, c-format
-msgid "E769: Missing ] after %s["
-msgstr "E769: Бракує ] після %s["
-
 # msgstr "E64: "
 #, c-format
 msgid "E554: Syntax error in %s{...}"
@@ -4954,6 +4924,80 @@ msgstr "E554: Синтаксична помилка в %s{...}"
 
 msgid "External submatches:\n"
 msgstr "Зовнішні під-збіги:\n"
+
+msgid ""
+"E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be "
+"used "
+msgstr ""
+"E864: після \\%#= може бути тільки 0, 1, or 2. Буде використано автоматичний механізм "
+
+#, c-format
+msgid "E866: (NFA regexp) Misplaced %c"
+msgstr "E866: (NFA regexp) Не на місці %c"
+
+msgid "E865: (NFA) Regexp end encountered prematurely"
+msgstr "E865: (NFA) Зарано трапився кінець регулярного виразу"
+
+#, c-format
+msgid "E867: (NFA) Unknown operator '\\z%c'"
+msgstr "E867: (NFA) Невідомий оператор '\\z%c'"
+
+#, c-format
+msgid "E867: (NFA) Unknown operator '\\%%%c'"
+msgstr "E867: (NFA) Невідомий оператор '\\%%%c'"
+
+#. should never happen
+msgid "E868: Error building NFA with equivalence class!"
+msgstr "E868: Не вдалося побудувати NFA з класом еквівалентності!"
+
+#, c-format
+msgid "E869: (NFA) Unknown operator '\\@%c'"
+msgstr "E869: (NFA) Невідомий оператор '\\@%c'"
+
+msgid "E870: (NFA regexp) Error reading repetition limits"
+msgstr "E870: (NFA regexp) Не вдалося прочитати межі повторення"
+
+#. Can't have a multi follow a multi.
+msgid "E871: (NFA regexp) Can't have a multi follow a multi !"
+msgstr "E871: (NFA regexp) Мульти не може бути за мульти!"
+
+#. Too many `('
+msgid "E872: (NFA regexp) Too many '('"
+msgstr "E872: (NFA regexp) Забагато '('"
+
+msgid "E879: (NFA regexp) Too many \\z("
+msgstr "E879: (NFA regexp) Забагато \\z("
+
+msgid "E873: (NFA regexp) proper termination error"
+msgstr "E873: (NFA regexp) помилка належного припинення"
+
+msgid "E874: (NFA) Could not pop the stack !"
+msgstr "E874: (NFA) Стек порожній!"
+
+msgid ""
+"E875: (NFA regexp) (While converting from postfix to NFA), too many states "
+"left on stack"
+msgstr ""
+"E875: (NFA regexp) (Під час перетворення з постфікс у NFA) залишилося "
+"забагато станів у стеку"
+
+msgid "E876: (NFA regexp) Not enough space to store the whole NFA "
+msgstr "E876: (NFA regexp) Недостатньо пам’яті, щоб зберегти весь NFA "
+
+msgid "E878: (NFA) Could not allocate memory for branch traversal!"
+msgstr "E878: (NFA) Не вдалося отримати пам’ять для обходу гілок!"
+
+msgid ""
+"Could not open temporary log file for writing, displaying on stderr ... "
+msgstr ""
+"Не вдалося відкрити тимчасовий файл журналу для запису, показується на stderr ... "
+
+#, c-format
+msgid "(NFA) COULD NOT OPEN %s !"
+msgstr "(NFA) НЕ ВДАЛОСЯ ВІДКРИТИ %s!"
+
+msgid "Could not open temporary log file for writing "
+msgstr "Не вдалося відкрити тимчасовий файл журналу для запису "
 
 msgid " VREPLACE"
 msgstr " ВІРТ ЗАМІНА"
@@ -5110,7 +5154,8 @@ msgstr "E756: Перевірка орфографії не дозволена"
 
 #, c-format
 msgid "Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""
-msgstr "Застереження: Не вдалося знайти список слів «%s_%s.spl» чи «%s_ascii.spl»"
+msgstr ""
+"Застереження: Не вдалося знайти список слів «%s_%s.spl» чи «%s_ascii.spl»"
 
 #, c-format
 msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
@@ -5396,12 +5441,12 @@ msgid "E765: 'spellfile' does not have %ld entries"
 msgstr "E765: 'spellfile' не містить %ld елементів"
 
 #, c-format
-msgid "Word removed from %s"
-msgstr "Слово знищено з %s"
+msgid "Word '%.*s' removed from %s"
+msgstr "Слово '%.*s' знищено з %s"
 
 #, c-format
-msgid "Word added to %s"
-msgstr "Слово додано до %s"
+msgid "Word '%.*s' added to %s"
+msgstr "Слово '%.*s' додано до %s"
 
 msgid "E763: Word characters differ between spell files"
 msgstr "E763: Символи у слові відрізняються у файлах орфографії"
@@ -5457,6 +5502,10 @@ msgstr "E782: Помилка читання файлу .sug: %s"
 msgid "E783: duplicate char in MAP entry"
 msgstr "E783: Повторено символ у елементі MAP"
 
+# msgstr "E391: "
+msgid "No Syntax items defined for this buffer"
+msgstr "Для буфера не визначено елементів синтаксису"
+
 #, c-format
 msgid "E390: Illegal argument: %s"
 msgstr "E390: Неправильний аргумент: %s"
@@ -5464,10 +5513,6 @@ msgstr "E390: Неправильний аргумент: %s"
 #, c-format
 msgid "E391: No such syntax cluster: %s"
 msgstr "E391: Немає такого синтаксичного кластера: %s"
-
-# msgstr "E391: "
-msgid "No Syntax items defined for this buffer"
-msgstr "Для буфера не визначено елементів синтаксису"
 
 msgid "syncing on C-style comments"
 msgstr "синхронізується по коментарях стилю С"
@@ -5602,6 +5647,11 @@ msgstr "E409: Невідома назва групи: %s"
 #, c-format
 msgid "E410: Invalid :syntax subcommand: %s"
 msgstr "E410: Неправильна підкоманда :syntax: %s"
+
+msgid ""
+"  TOTAL      COUNT  MATCH   SLOWEST     AVERAGE   NAME               PATTERN"
+msgstr ""
+"  ВСЬОГО     К-ТЬ   СПІВП.  НАЙПОВІЛ.   СЕРЕДН.   НАЗВА              ШАБЛОН"
 
 msgid "E679: recursive loop loading syncolor.vim"
 msgstr "E679: Рекурсивний цикл читання syncolor.vim"
@@ -6734,100 +6784,171 @@ msgstr "Пошук дійшов до КІНЦЯ, продовжується з �
 msgid "Need encryption key for \"%s\""
 msgstr "Для «%s» потрібен ключ: "
 
-msgid "can't delete OutputObject attributes"
-msgstr "не вдалося знищити атрибути OutputObject"
-
-msgid "softspace must be an integer"
-msgstr "softspace має бути цілим"
-
-# msgstr "E180: "
-msgid "invalid attribute"
-msgstr "неправильний атрибут"
-
-msgid "writelines() requires list of strings"
-msgstr "для writelines() потрібен список рядків"
-
-msgid "E264: Python: Error initialising I/O objects"
-msgstr "E264: Python: Помилка ініціалізації об'єктів вводу/виводу"
-
-msgid "no such buffer"
-msgstr "такого буфера немає"
-
 # msgstr "E406: "
 msgid "empty keys are not allowed"
 msgstr "порожні ключі не дозволені"
 
-msgid "failed to add key to dictionary"
-msgstr "не вдалося додати ключ до словника"
-
-msgid "Cannot delete DictionaryObject attributes"
-msgstr "не вдалося знищити атрибути DictionaryObject"
-
-msgid "Cannot modify fixed dictionary"
-msgstr "Не можна змінити фіксований словник"
-
-msgid "Only boolean objects are allowed"
-msgstr "Дозволено тільки логічні об’єкти"
-
-msgid "Cannot set this attribute"
-msgstr "Не можна встановити цей атрибут"
-
-msgid "no such key in dictionary"
-msgstr "немає такого ключа в словнику"
-
-msgid "dict is locked"
+msgid "dictionary is locked"
 msgstr "словник заблоковано"
-
-msgid "internal error: failed to get vim list item"
-msgstr "внутрішня помилка: не вдалося отримати елемент списку vim"
 
 msgid "list is locked"
 msgstr "список заблоковано"
 
-msgid "Failed to add item to list"
-msgstr "Не вдалося додати елемент до списку"
+#, c-format
+msgid "failed to add key '%s' to dictionary"
+msgstr "не вдалося додати ключ '%s' до словника"
 
-msgid "internal error: no vim list item"
-msgstr "внутрішня помилка: немає елемента списку vim"
+#, c-format
+msgid "index must be int or slice, not %s"
+msgstr "індекс має бути цілий чи зріз, не %s"
 
-msgid "can only assign lists to slice"
-msgstr "можна присвоювати списки тільки зрізам"
+#, c-format
+msgid "expected str() or unicode() instance, but got %s"
+msgstr "очікувався екземпляр str() чи unicode(), але отримано %s"
+
+#, c-format
+msgid "expected bytes() or str() instance, but got %s"
+msgstr "очікувався екземпляр bytes() чи str(), але отримано %s"
+
+#, c-format
+msgid ""
+"expected int(), long() or something supporting coercing to long(), but got %s"
+msgstr ""
+"очікувався int(), long() чи щось, що може бути вміщене long(), але отримано %s"
+
+#, c-format
+msgid "expected int() or something supporting coercing to int(), but got %s"
+msgstr "очікувався int() чи щось, що може бути вміщене int(), але отримано %s"
+
+msgid "value is too large to fit into C int type"
+msgstr "значення завелике, щоб вміститися у тип C int"
+
+msgid "value is too small to fit into C int type"
+msgstr "значення замале, щоб вміститися у тип C int"
+
+msgid "number must be greater then zero"
+msgstr "число має бути більше, ніж нуль"
+
+msgid "number must be greater or equal to zero"
+msgstr "число має бути не менше, ніж нуль"
+
+msgid "can't delete OutputObject attributes"
+msgstr "не вдалося знищити атрибути OutputObject"
+
+# msgstr "E180: "
+#, c-format
+msgid "invalid attribute: %s"
+msgstr "неправильний атрибут: %s"
+
+msgid "E264: Python: Error initialising I/O objects"
+msgstr "E264: Python: Помилка ініціалізації об'єктів вводу/виводу"
+
+msgid "failed to change directory"
+msgstr "не вдалося змінити директорію"
+
+#, c-format
+msgid "expected 3-tuple as imp.find_module() result, but got %s"
+msgstr "очікувався 3-кортеж як результат imp.find_module(), але отримано %s"
+
+#, c-format
+msgid "expected 3-tuple as imp.find_module() result, but got tuple of size %d"
+msgstr "очікувався 3-кортеж як результат imp.find_module(), але отримано %d"
+
+msgid "internal error: imp.find_module returned tuple with NULL"
+msgstr "внутрішня помилка: imp.find_module повернула кортеж з NULL"
+
+msgid "cannot delete vim.Dictionary attributes"
+msgstr "не вдалося знищити атрибути vim.Dictionary"
+
+msgid "cannot modify fixed dictionary"
+msgstr "не можна змінити фіксований словник"
+
+#, c-format
+msgid "cannot set attribute %s"
+msgstr "не можна встановити атрибут %s"
+
+msgid "hashtab changed during iteration"
+msgstr "хеш-таблиця змінилася під час перебирання"
+
+#, c-format
+msgid "expected sequence element of size 2, but got sequence of size %d"
+msgstr "очікувалась послідовність розміром 2, але отримано послідовність розміру %d"
+
+msgid "list constructor does not accept keyword arguments"
+msgstr "списковий конструктор не приймає іменовані аргументи"
+
+msgid "list index out of range"
+msgstr "індекс списку за межами"
+
+#. No more suitable format specifications in python-2.3
+#, c-format
+msgid "internal error: failed to get vim list item %d"
+msgstr "внутрішня помилка: не вдалося отримати елемент списку vim %d"
+
+msgid "failed to add item to list"
+msgstr "не вдалося додати елемент до списку"
+
+#, c-format
+msgid "internal error: no vim list item %d"
+msgstr "внутрішня помилка: немає елемента списку vim %d"
 
 msgid "internal error: failed to add item to list"
 msgstr "внутрішня помилка: не вдалося додати елемент до списку"
 
-msgid "can only concatenate with lists"
-msgstr "можна з’єднувати тільки зі списками"
+msgid "cannot delete vim.List attributes"
+msgstr "не вдалося знищити атрибути vim.List"
 
-msgid "Cannot modify fixed list"
-msgstr "Не можна змінити фіксований список"
+msgid "cannot modify fixed list"
+msgstr "не можна змінити фіксований список"
 
-msgid "'self' argument must be a dictionary"
-msgstr "Аргумент «self» має бути словником"
+# msgstr "E428: "
+#, c-format
+msgid "unnamed function %s does not exist"
+msgstr "безіменної функції %s не існує"
 
-msgid "failed to run function"
-msgstr "Не вдалося виконати функцію"
+# msgstr "E428: "
+#, c-format
+msgid "function %s does not exist"
+msgstr "функції %s не існує"
+
+msgid "function constructor does not accept keyword arguments"
+msgstr "конструктор функції не приймає іменовані аргументи"
+
+#, c-format
+msgid "failed to run function %s"
+msgstr "не вдалося виконати функцію %s"
+
+msgid "unable to get option value"
+msgstr "не вдалося отримати значення опції"
+
+msgid "internal error: unknown option type"
+msgstr "внутрішня помилка: невідомий тип опції"
+
+msgid "problem while switching windows"
+msgstr "не вдалося перемкнути вікна"
+
+#, c-format
+msgid "unable to unset global option %s"
+msgstr "не вдалося скинути глобальну опцію %s"
+
+#, c-format
+msgid "unable to unset option %s which does not have global value"
+msgstr "не вдалося скинути опцію %s, яка не має глобального значення"
+
+msgid "attempt to refer to deleted tab page"
+msgstr "спроба звернення до знищеної вкладки"
+
+msgid "no such tab page"
+msgstr "такої вкладки немає"
 
 msgid "attempt to refer to deleted window"
 msgstr "спроба звернутися до знищеного вікна"
 
-msgid "readonly attribute"
-msgstr "лише для читання"
+msgid "readonly attribute: buffer"
+msgstr "атрибут лише для читання: буфер"
 
 msgid "cursor position outside buffer"
 msgstr "курсор за межами буфера"
-
-#, c-format
-msgid "<window object (deleted) at %p>"
-msgstr "<об'єкт вікна (знищено) за адресою %p>"
-
-#, c-format
-msgid "<window object (unknown) at %p>"
-msgstr "<об'єкт вікна (невідомий) за адресою %p>"
-
-#, c-format
-msgid "<window %d>"
-msgstr "<вікно %d>"
 
 msgid "no such window"
 msgstr "такого вікна немає"
@@ -6835,11 +6956,74 @@ msgstr "такого вікна немає"
 msgid "attempt to refer to deleted buffer"
 msgstr "спроба звернення до знищеного буфера"
 
-msgid "unable to convert to vim structure"
-msgstr "не вдалося перетворити до структури vim"
+msgid "failed to rename buffer"
+msgstr "не вдалося перейменувати буфер"
 
-msgid "NULL reference passed"
-msgstr "передано посилання NULL"
+msgid "mark name must be a single character"
+msgstr "назвою мітки має бути один символ"
+
+#, c-format
+msgid "expected vim.Buffer object, but got %s"
+msgstr "очікувався об’єкт vim.Buffer, але отримано %s"
+
+#, c-format
+msgid "failed to switch to buffer %d"
+msgstr "не вдалося перемкнутися до буфера %d"
+
+#, c-format
+msgid "expected vim.Window object, but got %s"
+msgstr "очікувався об’єкт vim.Window, але отримано %s"
+
+msgid "failed to find window in the current tab page"
+msgstr "не вдалося знайти вікно у поточній вкладці"
+
+msgid "did not switch to the specified window"
+msgstr "не перемкнувся до вказаного вікна"
+
+#, c-format
+msgid "expected vim.TabPage object, but got %s"
+msgstr "очікувався об’єкт vim.TabPage, але отримано %s"
+
+msgid "did not switch to the specified tab page"
+msgstr "не перемкнувся до вказаної вкладки"
+
+msgid "failed to run the code"
+msgstr "не вдалося виконати код"
+
+msgid "E858: Eval did not return a valid python object"
+msgstr "E858: Eval не повернув дійсний об’єкт python"
+
+msgid "E859: Failed to convert returned python object to vim value"
+msgstr "E859: Не вдалося перетворити об’єкт python у значення vim"
+
+#, c-format
+msgid "unable to convert %s to vim dictionary"
+msgstr "не вдалося перетворити %s у словник vim"
+
+#, c-format
+msgid "unable to convert %s to vim structure"
+msgstr "не вдалося перетворити %s у структуру vim"
+
+msgid "internal error: NULL reference passed"
+msgstr "внутрішня помилка: передано посилання NULL"
 
 msgid "internal error: invalid value type"
 msgstr "внутрішня помилка: неправильний тип значення"
+
+msgid ""
+"Failed to set path hook: sys.path_hooks is not a list\n"
+"You should now do the following:\n"
+"- append vim.path_hook to sys.path_hooks\n"
+"- append vim.VIM_SPECIAL_PATH to sys.path\n"
+msgstr ""
+"Не вдалося встановити обробник шляху: sys.path_hooks не список\n"
+"Вам слід вчинити так:\n"
+"- додайте vim.path_hook до sys.path_hooks\n"
+"- додайте vim.VIM_SPECIAL_PATH до sys.path\n"
+
+msgid ""
+"Failed to set path: sys.path is not a list\n"
+"You should now append vim.VIM_SPECIAL_PATH to sys.path"
+msgstr ""
+"Не вдалося встановити шлях: sys.path не список\n"
+"Вас слід додати vim.VIM_SPECIAL_PATH до sys.path"

@@ -1,7 +1,8 @@
 " Vim filetype plugin file
 " Language:	python
 " Maintainer:	Johannes Zellner <johannes@zellner.org>
-" Last Change:	Wed, 21 Apr 2004 13:13:08 CEST
+" Last Change:	2013 Sep 25
+" Last Change By Johannes: Wed, 21 Apr 2004 13:13:08 CEST
 
 if exists("b:did_ftplugin") | finish | endif
 let b:did_ftplugin = 1
@@ -42,6 +43,22 @@ endfun
 if has("gui_win32") && !exists("b:browsefilter")
     let b:browsefilter = "Python Files (*.py)\t*.py\n" .
 		       \ "All Files (*.*)\t*.*\n"
+endif
+
+" As suggested by PEP8.
+setlocal expandtab shiftwidth=4 softtabstop=4 tabstop=8
+
+" First time: try finding "pydoc".
+if !exists('g:pydoc_executable')
+    if executable('pydoc')
+        let g:pydoc_executable = 1
+    else
+        let g:pydoc_executable = 0
+    endif
+endif
+" If "pydoc" was found use it for keywordprg.
+if g:pydoc_executable
+    setlocal keywordprg=pydoc
 endif
 
 let &cpo = s:keepcpo

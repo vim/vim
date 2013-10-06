@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.4.  Last change: 2013 Jul 17
+*index.txt*     For Vim version 7.4.  Last change: 2013 Oct 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1191,12 +1191,12 @@ tag	      command	      action ~
 |:digraphs|	:dig[raphs]	show or enter digraphs
 |:display|	:di[splay]	display registers
 |:djump|	:dj[ump]	jump to #define
-|:dl|		:dl		short for |:delete|
-|:dl|		:del[ete]l	short for |:delete|
+|:dl|		:dl		short for |:delete| with the 'l' flag
+|:dl|		:del[ete]l	short for |:delete| with the 'l' flag
 |:dlist|	:dli[st]	list #defines
 |:doautocmd|	:do[autocmd]	apply autocommands to current buffer
 |:doautoall|	:doautoa[ll]	apply autocommands for all loaded buffers
-|:dp|		:d[elete]p	short for |:delete|
+|:dp|		:d[elete]p	short for |:delete| with the 'p' flag
 |:drop|		:dr[op]		jump to window editing file or edit file in
 				current window
 |:dsearch|	:ds[earch]	list one #define

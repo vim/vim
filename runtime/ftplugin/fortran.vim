@@ -1,12 +1,12 @@
 " Vim settings file
 " Language:	Fortran 2008 (and older: Fortran 2003, 95, 90, 77, 66)
-" Version:	0.48
-" Last Change:	2012 Apr. 18
-" Maintainer:	Ajit J. Thakkar <ajit@unb.ca>; <http://www.unb.ca/chem/ajit/>
+" Version:	0.49
+" Last Change:	2013 Oct. 01
+" Maintainer:	Ajit J. Thakkar <ajit@unb.ca>; <http://www2.unb.ca/~ajit/>
 " Usage:	Do :help fortran-plugin from Vim
 " Credits:
-" Useful suggestions were made by Stefano Zacchiroli, Hendrik Merx, and Ben
-" Fritz.
+" Useful suggestions were made by Stefano Zacchiroli, Hendrik Merx, Ben
+" Fritz, and David Barnett.
 
 " Only do these settings when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -64,8 +64,8 @@ if (b:fortran_fixed_source == 1)
   " setlocal tw=73
 else
   setlocal comments=:!
-  " Free format allows a textwidth of 132 for code but 80 is more usual
-  setlocal tw=80
+  " Free format allows a textwidth of 132
+  setlocal tw=132
 endif
 
 " Set commentstring for foldmethod=marker
@@ -76,8 +76,8 @@ if !exists("fortran_have_tabs")
   setlocal expandtab
 endif
 
-" Set 'formatoptions' to break comment and text lines but allow long lines
-setlocal fo+=tcql
+" Set 'formatoptions' to break text lines
+setlocal fo+=t
 
 setlocal include=^\\c#\\=\\s*include\\s\\+
 setlocal suffixesadd+=.f08,.f03,.f95,.f90,.for,.f,.F,.f77,.ftn,.fpp
@@ -114,7 +114,7 @@ if has("gui_win32") && !exists("b:browsefilter")
     \ "All Files (*.*)\t*.*\n"
 endif
 
-let b:undo_ftplugin = "setl fo< com< tw< cms< et< inc<"
+let b:undo_ftplugin = "setl fo< com< tw< cms< et< inc< sua<"
 	\ . "| unlet! b:match_ignorecase b:match_words b:browsefilter"
 
 let &cpoptions=s:cposet

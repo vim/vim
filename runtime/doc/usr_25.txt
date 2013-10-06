@@ -86,7 +86,7 @@ line, type: >
 
 	v4jgq
 
-"v" to start Visual mode, "4j' to move to the end of the paragraph and then
+"v" to start Visual mode, "4j" to move to the end of the paragraph and then
 the "gq" operator.  The result is:
 
 		 1	   2	     3
