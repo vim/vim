@@ -62,6 +62,20 @@ ENDTEST
 }
 
 STARTTEST
+/^{/+3
+:set tw=5 fo=t2a si
+i  A_
+ENDTEST
+
+{
+
+  x a
+  b
+ c
+
+}
+
+STARTTEST
 /^{/+1
 :set tw=5 fo=qn comments=:#
 gwap

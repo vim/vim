@@ -4989,7 +4989,7 @@ format_lines(line_count, avoid_fex)
 
 	    /*
 	     * When still in same paragraph, join the lines together.  But
-	     * first delete the comment leader from the second line.
+	     * first delete the leader from the second line.
 	     */
 	    if (!is_end_par)
 	    {
@@ -4999,11 +4999,25 @@ format_lines(line_count, avoid_fex)
 		if (line_count < 0 && u_save_cursor() == FAIL)
 		    break;
 #ifdef FEAT_COMMENTS
-		(void)del_bytes((long)next_leader_len, FALSE, FALSE);
 		if (next_leader_len > 0)
+		{
+		    (void)del_bytes((long)next_leader_len, FALSE, FALSE);
 		    mark_col_adjust(curwin->w_cursor.lnum, (colnr_T)0, 0L,
 						      (long)-next_leader_len);
+		} else
 #endif
+		    if (second_indent > 0)  /* the "leader" for FO_Q_SECOND */
+		{
+		    char_u *p = ml_get_curline();
+		    int indent = skipwhite(p) - p;
+
+		    if (indent > 0)
+		    {
+			(void)del_bytes(indent, FALSE, FALSE);
+			mark_col_adjust(curwin->w_cursor.lnum,
+					       (colnr_T)0, 0L, (long)-indent);
+		      }
+		}
 		curwin->w_cursor.lnum--;
 		if (do_join(2, TRUE, FALSE, FALSE) == FAIL)
 		{
