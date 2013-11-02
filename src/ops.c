@@ -5009,14 +5009,14 @@ format_lines(line_count, avoid_fex)
 		    if (second_indent > 0)  /* the "leader" for FO_Q_SECOND */
 		{
 		    char_u *p = ml_get_curline();
-		    int indent = skipwhite(p) - p;
+		    int indent = (int)(skipwhite(p) - p);
 
 		    if (indent > 0)
 		    {
 			(void)del_bytes(indent, FALSE, FALSE);
 			mark_col_adjust(curwin->w_cursor.lnum,
 					       (colnr_T)0, 0L, (long)-indent);
-		      }
+		    }
 		}
 		curwin->w_cursor.lnum--;
 		if (do_join(2, TRUE, FALSE, FALSE) == FAIL)
