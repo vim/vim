@@ -359,7 +359,7 @@ static int(*dll_PyRun_SimpleString)(char *);
 static PyObject *(*dll_PyRun_String)(char *, int, PyObject *, PyObject *);
 static PyObject* (*dll_PyObject_GetAttrString)(PyObject *, const char *);
 static int (*dll_PyObject_HasAttrString)(PyObject *, const char *);
-static PyObject* (*dll_PyObject_SetAttrString)(PyObject *, const char *, PyObject *);
+static int (*dll_PyObject_SetAttrString)(PyObject *, const char *, PyObject *);
 static PyObject* (*dll_PyObject_CallFunctionObjArgs)(PyObject *, ...);
 static PyObject* (*dll_PyObject_CallFunction)(PyObject *, char *, ...);
 static PyObject* (*dll_PyObject_Call)(PyObject *, PyObject *, PyObject *);
