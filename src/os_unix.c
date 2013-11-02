@@ -804,6 +804,12 @@ mch_stackcheck(p)
  * completely full.
  */
 
+#if defined(HAVE_AVAILABILITYMACROS_H) \
+    && defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) \
+    && (__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1090)
+# include <AvailabilityMacros.h>
+#endif
+
 #ifndef SIGSTKSZ
 # define SIGSTKSZ 8000    /* just a guess of how much stack is needed... */
 #endif
