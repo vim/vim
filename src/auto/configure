@@ -4223,7 +4223,7 @@ rm -f core conftest.err conftest.$ac_objext \
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
         CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -no-cpp-precomp"
 
-                # On IRIX 5.3, sys/types and inttypes.h are conflicting.
+            # On IRIX 5.3, sys/types and inttypes.h are conflicting.
 for ac_header in sys/types.h sys/stat.h stdlib.h string.h memory.h strings.h \
 		  inttypes.h stdint.h unistd.h
 do :
@@ -4241,7 +4241,16 @@ fi
 done
 
 
-ac_fn_c_check_header_mongrel "$LINENO" "Carbon/Carbon.h" "ac_cv_header_Carbon_Carbon_h" "$ac_includes_default"
+ac_fn_c_check_header_mongrel "$LINENO" "AvailabilityMacros.h" "ac_cv_header_AvailabilityMacros_h" "$ac_includes_default"
+if test "x$ac_cv_header_AvailabilityMacros_h" = x""yes; then :
+
+$as_echo "#define HAVE_AVAILABILITYMACROS_H 1" >>confdefs.h
+
+fi
+
+
+
+                ac_fn_c_check_header_mongrel "$LINENO" "Carbon/Carbon.h" "ac_cv_header_Carbon_Carbon_h" "$ac_includes_default"
 if test "x$ac_cv_header_Carbon_Carbon_h" = x""yes; then :
   CARBON=yes
 fi

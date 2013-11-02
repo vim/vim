@@ -442,3 +442,6 @@
 
 /* Define if you want Cygwin to use the WIN32 clipboard, not compatible with X11*/
 #undef FEAT_CYGWIN_WIN32_CLIPBOARD
+
+/* Define if we have AvailabilityMacros.h on Mac OS X */
+#undef HAVE_AVAILABILITYMACROS_H
