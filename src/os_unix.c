@@ -804,9 +804,7 @@ mch_stackcheck(p)
  * completely full.
  */
 
-#if defined(HAVE_AVAILABILITYMACROS_H) \
-    && defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) \
-    && (__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1090)
+#if defined(HAVE_AVAILABILITYMACROS_H)
 # include <AvailabilityMacros.h>
 #endif
 

@@ -206,10 +206,6 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
     dnl TODO: use -arch i386 on Intel machines
     CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -no-cpp-precomp"
 
-    dnl Mac OS X 10.9+ no longer include AvailabilityMacros.h in Carbon
-    dnl so we need to include it to have access to version macros.
-    AC_CHECK_HEADER(AvailabilityMacros.h, [AC_DEFINE(HAVE_AVAILABILITYMACROS_H, 1, [ Define if we have AvailabilityMacros.h on Mac OS X ])])
-
     dnl If Carbon is found, assume we don't want X11
     dnl unless it was specifically asked for (--with-x)
     dnl or Motif, Athena or GTK GUI is used.
@@ -231,6 +227,10 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
 else
   AC_MSG_RESULT(no)
 fi
+
+dnl Mac OS X 10.9+ no longer include AvailabilityMacros.h in Carbon
+dnl so we need to include it to have access to version macros.
+AC_CHECK_HEADER(AvailabilityMacros.h, HAVE_AVAILABILITYMACROS_H=1)
 
 AC_SUBST(OS_EXTRA_SRC)
 AC_SUBST(OS_EXTRA_OBJ)
