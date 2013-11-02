@@ -474,7 +474,9 @@ static void f_bufname __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_bufnr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_bufwinnr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_byte2line __ARGS((typval_T *argvars, typval_T *rettv));
+static void byteidx __ARGS((typval_T *argvars, typval_T *rettv, int comp));
 static void f_byteidx __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_byteidxcomp __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_call __ARGS((typval_T *argvars, typval_T *rettv));
 #ifdef FEAT_FLOAT
 static void f_ceil __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7861,6 +7863,7 @@ static struct fst
     {"bufwinnr",	1, 1, f_bufwinnr},
     {"byte2line",	1, 1, f_byte2line},
     {"byteidx",		2, 2, f_byteidx},
+    {"byteidxcomp",	2, 2, f_byteidxcomp},
     {"call",		2, 3, f_call},
 #ifdef FEAT_FLOAT
     {"ceil",		1, 1, f_ceil},
@@ -9177,13 +9180,11 @@ f_byte2line(argvars, rettv)
 #endif
 }
 
-/*
- * "byteidx()" function
- */
     static void
-f_byteidx(argvars, rettv)
+byteidx(argvars, rettv, comp)
     typval_T	*argvars;
     typval_T	*rettv;
+    int		comp;
 {
 #ifdef FEAT_MBYTE
     char_u	*t;
@@ -9203,13 +9204,38 @@ f_byteidx(argvars, rettv)
     {
 	if (*t == NUL)		/* EOL reached */
 	    return;
-	t += (*mb_ptr2len)(t);
+	if (enc_utf8 && comp)
+	    t += utf_ptr2len(t);
+	else
+	    t += (*mb_ptr2len)(t);
     }
     rettv->vval.v_number = (varnumber_T)(t - str);
 #else
     if ((size_t)idx <= STRLEN(str))
 	rettv->vval.v_number = idx;
 #endif
+}
+
+/*
+ * "byteidx()" function
+ */
+    static void
+f_byteidx(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    byteidx(argvars, rettv, FALSE);
+}
+
+/*
+ * "byteidxcomp()" function
+ */
+    static void
+f_byteidxcomp(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    byteidx(argvars, rettv, TRUE);
 }
 
     int

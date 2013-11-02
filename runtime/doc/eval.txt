@@ -1713,6 +1713,7 @@ bufnr( {expr})			Number	Number of the buffer {expr}
 bufwinnr( {expr})		Number	window number of buffer {expr}
 byte2line( {byte})		Number	line number at byte count {byte}
 byteidx( {expr}, {nr})		Number	byte index of {nr}'th char in {expr}
+byteidxcomp( {expr}, {nr})	Number	byte index of {nr}'th char in {expr}
 call( {func}, {arglist} [, {dict}])
 				any	call {func} with arguments {arglist}
 ceil( {expr})			Float	round {expr} up
@@ -2261,7 +2262,10 @@ byteidx({expr}, {nr})					*byteidx()*
 		{expr}.  Use zero for the first character, it returns zero.
 		This function is only useful when there are multibyte
 		characters, otherwise the returned value is equal to {nr}.
-		Composing characters are counted as a separate character.
+		Composing characters are not counted separately, their byte
+		length is added to the preceding base character.  See
+		|byteidxcomp()| below for counting composing characters
+		separately.
 		Example : >
 			echo matchstr(str, ".", byteidx(str, 3))
 <		will display the fourth character.  Another way to do the
@@ -2270,7 +2274,20 @@ byteidx({expr}, {nr})					*byteidx()*
 			echo strpart(s, 0, byteidx(s, 1))
 <		If there are less than {nr} characters -1 is returned.
 		If there are exactly {nr} characters the length of the string
-		is returned.
+		in bytes is returned.
+
+byteidxcomp({expr}, {nr})					*byteidxcomp()*
+		Like byteidx(), except that a composing character is counted
+		as a separate character.  Example: >
+			let s = 'e' . nr2char(0x301)
+			echo byteidx(s, 1)
+			echo byteidxcomp(s, 1)
+			echo byteidxcomp(s, 2)
+<		The first and third echo result in 3 ('e' plus composing
+		character is 3 bytes), the second echo results in 1 ('e' is
+		one byte).
+		Only works different from byteidx() when 'encoding' is set to
+		a Unicode encoding.
 
 call({func}, {arglist} [, {dict}])			*call()* *E699*
 		Call function {func} with the items in |List| {arglist} as
