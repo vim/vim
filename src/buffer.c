@@ -4062,7 +4062,8 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar,
 		item[curitem].minwid = -syn_namen2id(t, (int)(s - t));
 		curitem++;
 	    }
-	    ++s;
+	    if (*s != NUL)
+		++s;
 	    continue;
 	}
 
