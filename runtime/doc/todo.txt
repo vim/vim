@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2013 Oct 05
+*todo.txt*      For Vim version 7.4.  Last change: 2013 Nov 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,16 +34,16 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Problem positioning the cursor after auto-formatting without a comment. (Tor
-Perkins, 2013 Sep 1)
+Revert patch 7.4.056?  Do it differently?
 
 Using \1 in pattern goes one line too far. (Bohr Shaw, 2013 Sep 5)
 Column is OK.  "/\v(^.+\n)\1/e" (John Little, Sep 5)
 Also, matches start of 2nd line, not the whole line.
 
-Error for incomplete help argument. (John Beckett, 2013 Sep 12)
+NFA regexp doesn't handle backreference correctly. (Ryuichi Hayashida, 2013
+Oct 10)
 
-Popup menu: first item is not selected when typing more than one character?
+Error for incomplete help argument. (John Beckett, 2013 Sep 12)
 
 Should win_redr_custom() not be allowed to use recursively?
 (Yasuhiro Matsumoto, 2013 Aug 15)
@@ -58,6 +58,16 @@ Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
 Issue 164: freeze on regexp search.
 
+Patch to Fix Python: DictionaryContains return -1 on error. (ZyX, 2013 Nov 1)
+
+Patch to fix that inserting CR when replacing a Visual block doesn't cause a
+line break. (Christian Brabandt, 2013 Oct 19)
+Check: does CTRL-V CR insert a literal CR?  New patch Oct 21
+With test Oct 22.
+
+When recording the character typed at the hit-enter prompt is recorded twice.
+(Urtica Dioica)  Patch by Christian Brabandt, 2013 Oct 8.
+
 Update for Clojure ftplugin. (Sung Pae).  Await discussion about formatting in
 ftplugins.
 
@@ -66,8 +76,28 @@ Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 Patch to avoid problem with colon in file name. (Yasuhiro Matsumoto, 2013 Sep
 5) Only copy file name when needed: Sep 9.
 
+After inserting comment leader, CTRL-\ CTRL-O does move the cursor.
+(Wiktor Ruben, 2013 Oct 7)
+Patch by Christian Brabandt.
+
+Patch to support slices in Python vim.List. (ZyX, 2013 Oct 20)
+
+Patch to support iterator on Python vim.options. (ZyX, 2013 Nov 2)
+
+Patch to avoid "-no-cpp-precomp" on Mac. (Misty De Meo, demeo, 2013 Oct 19)
+
+Patch to make Dictionary.update() work without arguments.
+(ZyX, 2013 Oct 19)
+
 Patch to make #N in 'cino' stop not indenting #lines. (Christian Brabandt,
 2013 Sep 25)
+
+Patch for Cobol ftplugin. (ZyX, 2013 Oct 20)
+Await response from maintainer.
+
+Can 'undolevels' be a buffer-local option?  Helps for making big changes in
+one file only, set 'ul' to -1 only for that buffer.
+Patch by Christian Brabandt, 2010 Dec 17.  Needs test.
 
 Include systemverilog file?  Two votes yes.
 
@@ -79,6 +109,11 @@ Clang error for integer overflow. (Dominique Pelle, 2013 Sep 21)
 
 Patch to add v:hlsearch. (ZyX, 2013 Sep 22)
 
+Patch to fix E315 error. (Lech Lorens, 2013 Oct 26)
+
+Patch to add :keeppatterns, don't put used search patterns in history.
+(Christian Brabandt, 2013 Oct 18)
+
 Problem with 'spellsuggest' file, only works for some words.
 (Cesar Romani, 2013 Aug 20)  Depends on file name? (Aug 24)
 Additional remark by glts: the suggested words are marked bad?
@@ -86,6 +121,11 @@ Additional remark by glts: the suggested words are marked bad?
 Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
 
 Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
+
+Issue 174: Detect Mason files.
+
+Patch for Python: Fix interrupt not being properly discarded in VimTryEnd.
+With tests.  (ZyX, 2013 Oct 19)  Reported by Yggdroot Chen.
 
 Patch to make has() check for Vim version and patch at the same time.
 (Marc Weber, 2013 Jun 7)
@@ -96,8 +136,27 @@ Sep 28)  With test Sept 29.
 VMS: Select() doesn't work properly, typing ESC may hang Vim.  Use sys$qiow
 instead. (Samuel Ferencik, 2013 Sep 28)
 
+Series of patches for NL vs NUL handling. (ZyX, 2013 Nov 3)
+
+Perl: support for Activestate perl 5.18: Issue 170.
+
+Bug: Does not skip over expression with dict member properly. (ZyX, 2013 Sep
+29)
+Patch to fix expr7() when skipping. (2013 Oct 15) Oct 23 with test.
+
 Several syntax file match "^\s*" which may get underlined if that's in the
 highlight group.  Add a "\zs" after it?
+
+-   Have an option for spell checking to not mark any Chinese, Japanese or
+    other double-width characters (or CJK characters) as error.
+    Helps a lot for mixed Asian and latin text.
+    More general: Have some way not to give spelling errors for a range of
+    characters.
+Patch to add "cjk" to 'spelllang'. (Ken Takata, 2013 Oct 8, second one)
+
+Patch to add mch_copy_sec() to vim_rename().
+bug report on redhat.  (Peter Backes, 2013 oct 8)
+Patch to vim-dev, 2013 Oct 9.
 
 Win32: When a directory name contains an exclamation mark, completion doesn't
 complete the contents of the directory.  No escaping for the "!"? (Jan
@@ -106,8 +165,9 @@ Patch 2013 Sept 10, test: Sept 11.
 
 Go through more coverity reports.
 
-Bug: Does not skip over expression with dict member properly. (ZyX, 2013 Sep
-29)
+Include Haiku port? (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
+
+Updated spec ftplugin. (Matěj Cepl, 2013 Oct 16)
 
 Patch to make ColorScheme autocommand match with the colorscheme name instead
 of the buffer name. (Christian Brabandt, 2013 Sep 25)
@@ -122,6 +182,12 @@ Patch by Christian Brabandt (2013 Aug 12)
 
 Several Win32 functions are not using Unicode.
 Patches to fix this. (Ken Takata, 2013 Aug 9)
+
+Patch to add item in 'listchars' to repeat first character. (Nathaniel Braun,
+pragm, 2013 Oct 13)
+
+Undo message is not always properly displayed.  Patch by Ken Takata, 2013 oct
+3.  Doesn't work properly according to Yukihiro Nakadaira.
 
 /[b-a] gives error E16, should probably be E769.
 
@@ -209,10 +275,6 @@ Patch to add getlocstack() / setlocstack(). (Christian Brabandt, 2013 May 14)
 Second one. Update May 22.
 
 Patch to make fold updates much faster. (Christian Brabandt, 2012 Dec)
-
-TCL: With MSVC 2010 doesn't find Tcl_FindExecutable. (tux)
-Patch to define it. (Ken Takata, 2013 Aug 12)  Is this right?
-Probably not: http://code.google.com/p/vim/issues/detail?id=167
 
 MS-Windows: Patch to make tests copy files to avoid changing the fileformat of
 the files under version control. (Taro Muraoka, 2013 Jul 5)
@@ -344,10 +406,6 @@ But use "gi" instead of "a".  Or use CTRL-\ CTRL-O.
 
 Patch to support user name completion on MS-Windows. (Yasuhiro Matsumoto, 2012
 Aug 16)
-
-Have an option for spell checking to not mark any Chinese, Japanese or other
-double-width characters as error.  Or perhaps all characters above 256.
-(Bill Sun)  Helps a lot for mixed Asian and latin text.
 
 When there are no command line arguments ":next" and ":argu" give E163, which
 is confusing.  Should say "the argument list is empty".
@@ -729,10 +787,6 @@ Requires a map mode for Insert mode started from blockwise Visual mode.
 Writing nested List and Dict in viminfo gives error message and can't be read
 back. (Yukihiro Nakadaira, 2010 Nov 13)
 
-Can 'undolevels' be a buffer-local option?  Helps for making big changes in
-one file only, set 'ul' to -1 only for that buffer.
-Patch by Christian Brabandt, 2010 Dec 17.  Needs test.
-
 Problem with cursor in the wrong column. (SungHyun Nam, 2010 Mar 11)
 Additional info by Dominique Pelle. (also on 2010 Apr 10)
 
@@ -1027,7 +1081,7 @@ probably causes this.
 2009 Jan 16)
 
 Patch to support strikethrough next to bold and italic. (Christian Brabandt,
-2013 Jul 30)
+2013 Jul 30)  Update from Ken Takata, 2013 Oct 12.
 
 Document that default font in Athena can be set with resources:
    XtDefaultFont: "9x15"
@@ -2830,10 +2884,6 @@ Tab pages:
 
 
 Spell checking:
--   have some way not to give spelling errors for a range of characters.
-    E.g. for Chinese and other languages with specific characters for which we
-    don't have a spell file.  Useful when there is also text in other
-    languages in the file.
 -   Support more regions? Caolan McNamara argues it's needed for es_XX.
     https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=219777    
 -   Unicode defines another quote character: 0x2019.  Use it as an equivalent
@@ -4947,6 +4997,7 @@ Various improvements:
 6   Add ":timer" command, to set a command to be executed at a certain
     interval, or once after some time has elapsed. (Aaron)
     Perhaps an autocommand event like CursorHold is better?
+    Patch to add async functionality. (Geoff Greer, 2013 Sep 1 and later)
 8   Add ":confirm" handling in open_exfile(), for when file already exists.
 8   When quitting with changed files, make the dialog list the changed file
     and allow "write all", "discard all", "write some".  The last one would

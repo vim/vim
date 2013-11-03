@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 7.4.  Last change: 2012 Aug 15
+*visual.txt*    For Vim version 7.4.  Last change: 2013 Nov 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -75,7 +75,11 @@ position.
 
 						*V* *linewise-visual*
 [count]V		Start Visual mode linewise.
-			With [count] select that many lines.
+			With [count] select the same number of lines as used
+			for the last Visual operation, but at the current
+			cursor position, multiplied by [count].  When there
+			was no previous Visual operation [count] lines are
+			selected.
 
 						*CTRL-V* *blockwise-visual*
 [count]CTRL-V		Start Visual mode blockwise.  Note: Under Windows

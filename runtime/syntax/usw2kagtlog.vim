@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:             Innovation Data Processing USW2KAgt.log file
 " Maintainer:           Rob Owens <rowens@fdrinnovation.com>
-" Latest Revision:      2013-07-26
+" Latest Revision:      2013-09-19
 
 " Quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -26,13 +26,14 @@ syn match usw2kagtlog_IPaddr / \d\{1,3}\.\d\{1,3}\.\d\{1,3}\.\d\{1,3}/
 syn match usw2kagtlog_Profile /Profile name \zs\"\S\{1,8}\"/
 syn match usw2kagtlog_Profile / Profile: \zs\S\{1,8}/
 syn match usw2kagtlog_Profile /  Profile: \zs\S\{1,8}\ze, /
-syn match usw2kagtlog_Profile /Backup Profile: \zs\ze Version date/
+syn match upstreamlog_Profile /Backup Profile: \zs\S\{1,8}\ze Version date/
+syn match upstreamlog_Profile /Backup profile: \zs\S\{1,8}\ze  Version date/
 syn match usw2kagtlog_Profile /Full of \zs\S\{1,8}\ze$/
 syn match usw2kagtlog_Profile /Incr. of \zs\S\{1,8}\ze$/
 syn match usw2kagtlog_Profile /profile name "\zs\S\{1,8}\ze"/
 " Target:
 syn region usw2kagtlog_Target start="Computer: \zs" end="\ze[\]\)]" 
-syn region usw2kagtlog_Target start="Computer name \zs" end="\ze," 
+syn region usw2kagtlog_Target start="Computer name \zs\"" end="\"\ze" 
 " Agent Keywords:
 syn keyword usw2kagtlog_Agentword opened closed
 

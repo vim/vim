@@ -1,18 +1,12 @@
 " Vim syntax file
 " Maintainer:	Thilo Six
-" Contact:	<vim-dev at vim dot org>
-"		http://www.vim.org/maillist.php#vim-dev
-"
+" Contact:	vim-foo@xk2c-foo.de
+"		:3s+-foo++g
 " Description:	highlight dnsmasq configuration files
 " File:		runtime/syntax/dnsmasq.vim
-" Version:	2.61-1
-" Last Change:	2012 May 19
+" Version:	2.67
+" Last Change:	2013 Nov 03
 " Modeline:	vim: ts=8:sw=2:sts=2:
-"
-" Credits:	Igor N. Prischepoff
-"		Doug Kearns
-"		David Ne\v{c}as
-"		Christian Brabandt
 "
 " License:	VIM License
 "		Vim is Charityware, see ":help Uganda"
@@ -20,7 +14,6 @@
 " Options:	You might want to add this to your vimrc:
 "
 "		if &background == "dark"
-"		  " dnsmasq.vim
 "		    let dnsmasq_backrgound_light = 0
 "		else
 "		    let dnsmasq_backrgound_light = 1
@@ -28,8 +21,7 @@
 "
 
 " For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
-if version < 600
+if v:version < 600
     syntax clear
 elseif exists("b:current_syntax") || &compatible
     finish
@@ -39,11 +31,11 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 if !exists("b:dnsmasq_backrgound_light")
-	if exists("dnsmasq_backrgound_light")
-		let b:dnsmasq_backrgound_light = dnsmasq_backrgound_light
-	else
-		let b:dnsmasq_backrgound_light = 0
-	endif
+    if exists("dnsmasq_backrgound_light")
+	let b:dnsmasq_backrgound_light = dnsmasq_backrgound_light
+    else
+	let b:dnsmasq_backrgound_light = 0
+    endif
 endif
 
 
@@ -89,10 +81,13 @@ syn match DnsmasqKeywordSpecial    ",\<ignore\>"hs=s+1	  contains=DnsmasqSpecial
 syn match DnsmasqKeywordSpecial    "\<id\>:"me=e-1
 
 syn match DnsmasqKeyword    "^\s*add-mac\>"
+syn match DnsmasqKeyword    "^\s*add-subnet\>"
 syn match DnsmasqKeyword    "^\s*addn-hosts\>"
 syn match DnsmasqKeyword    "^\s*address\>"
 syn match DnsmasqKeyword    "^\s*alias\>"
 syn match DnsmasqKeyword    "^\s*all-servers\>"
+syn match DnsmasqKeyword    "^\s*auth-zone\>"
+syn match DnsmasqKeyword    "^\s*bind-dynamic\>"
 syn match DnsmasqKeyword    "^\s*bind-interfaces\>"
 syn match DnsmasqKeyword    "^\s*bogus-nxdomain\>"
 syn match DnsmasqKeyword    "^\s*bogus-priv\>"
@@ -128,6 +123,7 @@ syn match DnsmasqKeyword    "^\s*dhcp-option-force\>"
 syn match DnsmasqKeyword    "^\s*dhcp-optsfile\>"
 syn match DnsmasqKeyword    "^\s*dhcp-proxy\>"
 syn match DnsmasqKeyword    "^\s*dhcp-range\>"
+syn match DnsmasqKeyword    "^\s*dhcp-relay\>"
 syn match DnsmasqKeyword    "^\s*dhcp-remoteid\>"
 syn match DnsmasqKeyword    "^\s*dhcp-script\>"
 syn match DnsmasqKeyword    "^\s*dhcp-scriptuser\>"
@@ -135,6 +131,7 @@ syn match DnsmasqKeyword    "^\s*dhcp-sequential-ip\>"
 syn match DnsmasqKeyword    "^\s*dhcp-subscrid\>"
 syn match DnsmasqKeyword    "^\s*dhcp-userclass\>"
 syn match DnsmasqKeyword    "^\s*dhcp-vendorclass\>"
+syn match DnsmasqKeyword    "^\s*dns-rr\>"
 syn match DnsmasqKeyword    "^\s*dns-forward-max\>"
 syn match DnsmasqKeyword    "^\s*domain\>"
 syn match DnsmasqKeyword    "^\s*domain-needed\>"
@@ -149,6 +146,7 @@ syn match DnsmasqKeyword    "^\s*group\>"
 syn match DnsmasqKeyword    "^\s*host-record\>"
 syn match DnsmasqKeyword    "^\s*interface\>"
 syn match DnsmasqKeyword    "^\s*interface-name\>"
+syn match DnsmasqKeyword    "^\s*ipset\>"
 syn match DnsmasqKeyword    "^\s*keep-in-foreground\>"
 syn match DnsmasqKeyword    "^\s*leasefile-ro\>"
 syn match DnsmasqKeyword    "^\s*listen-address\>"
@@ -161,6 +159,7 @@ syn match DnsmasqKeyword    "^\s*log-dhcp\>"
 syn match DnsmasqKeyword    "^\s*log-facility\>"
 syn match DnsmasqKeyword    "^\s*log-queries\>"
 syn match DnsmasqKeyword    "^\s*max-ttl\>"
+syn match DnsmasqKeyword    "^\s*max-cache-ttl\>"
 syn match DnsmasqKeyword    "^\s*min-port\>"
 syn match DnsmasqKeyword    "^\s*mx-host\>"
 syn match DnsmasqKeyword    "^\s*mx-target\>"
@@ -180,6 +179,10 @@ syn match DnsmasqKeyword    "^\s*ptr-record\>"
 syn match DnsmasqKeyword    "^\s*pxe-prompt\>"
 syn match DnsmasqKeyword    "^\s*pxe-service\>"
 syn match DnsmasqKeyword    "^\s*query-port\>"
+syn match DnsmasqKeyword    "^\s*quiet-ra\>"
+syn match DnsmasqKeyword    "^\s*quiet-dhcp\>"
+syn match DnsmasqKeyword    "^\s*quiet-dhcp6\>"
+syn match DnsmasqKeyword    "^\s*ra-param\>"
 syn match DnsmasqKeyword    "^\s*read-ethers\>"
 syn match DnsmasqKeyword    "^\s*rebind-domain-ok\>"
 syn match DnsmasqKeyword    "^\s*rebind-localhost-ok\>"
@@ -189,6 +192,7 @@ syn match DnsmasqKeyword    "^\s*server\>"
 syn match DnsmasqKeyword    "^\s*srv-host\>"
 syn match DnsmasqKeyword    "^\s*stop-dns-rebind\>"
 syn match DnsmasqKeyword    "^\s*strict-order\>"
+syn match DnsmasqKeyword    "^\s*synth-domain\>"
 syn match DnsmasqKeyword    "^\s*tag-if\>"
 syn match DnsmasqKeyword    "^\s*test\>"
 syn match DnsmasqKeyword    "^\s*tftp-max\>"

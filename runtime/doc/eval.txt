@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2013 Aug 24
+*eval.txt*	For Vim version 7.4.  Last change: 2013 Nov 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar

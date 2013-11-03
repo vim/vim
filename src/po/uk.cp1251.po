@@ -2,13 +2,11 @@
 # Ukrainian Vim translation [uk]
 #
 # Copyright (C) 2001 Bohdan Vlasyuk <bohdan@vstu.edu.ua>
+# Bohdan donated this work to be distributed with Vim under the Vim license.
 #
 # Thanks to:
 #   Dmytro Kovalov <dmytro.kovalov@nssmb.com> for useful suggestions
 #   Dmytro O. Redchuk <dor@kiev-online.net> for viminfo bug
-#
-# Please, see readme at htpp://www.vstu.edu.ua/~bohdan/vim before any
-# complains, and even if you won't complain, read it anyway.
 #
 msgid ""
 msgstr ""

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:             Innovation Data Processing upstream.log file
 " Maintainer:           Rob Owens <rowens@fdrinnovation.com>
-" Latest Revision:      2013-07-26
+" Latest Revision:      2013-09-19
 
 " Quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -31,13 +31,14 @@ syn match upstreamlog_Profile / Profile: \zs\S\{1,8}/
 syn match upstreamlog_Profile /  Profile: \zs\S\{1,8}\ze, /
 syn match upstreamlog_Profile /, profile: \zs\S\{1,8}\ze,/
 syn match upstreamlog_Profile /found Profile: \zs\S\{1,8}\ze,/
-syn match upstreamlog_Profile /Backup Profile: \zs\ze Version date/
+syn match upstreamlog_Profile /Backup Profile: \zs\S\{1,8}\ze Version date/
+syn match upstreamlog_Profile /Backup profile: \zs\S\{1,8}\ze  Version date/
 syn match upstreamlog_Profile /Full of \zs\S\{1,8}\ze$/
 syn match upstreamlog_Profile /Incr. of \zs\S\{1,8}\ze$/
 syn match upstreamlog_Profile /Profile=\zs\S\{1,8}\ze,/
 " Target:
 syn region upstreamlog_Target start="Computer: \zs" end="\ze[\]\)]" 
-syn region upstreamlog_Target start="Computer name \zs" end="\ze," 
+syn region upstreamlog_Target start="Computer name \zs\"" end="\"\ze" 
 syn region upstreamlog_Target start="request to registered name \zs" end=" "
 
 

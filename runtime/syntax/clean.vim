@@ -2,7 +2,7 @@
 " Language:		Clean
 " Author:		Pieter van Engelen <pietere@sci.kun.nl>
 " Co-Author:	Arthur van Leeuwen <arthurvl@sci.kun.nl>
-" Last Change:	2013 Jun 19 by Jurriën Stutterheim
+" Last Change:	2013 Oct 15 by Jurriën Stutterheim
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -31,11 +31,10 @@ syn keyword cleanIncludeKeyword contained from import as qualified
 
 " To do some Denotation Highlighting
 syn keyword cleanBoolDenot True False
-syn region  cleanStringDenot start=+"+ end=+"+
-syn match cleanCharDenot "'.'"
-syn match cleanCharsDenot "'[^'\\]*\(\\.[^'\\]\)*'" contained
-syn match cleanIntegerDenot "[+-~]\=\<\(\d\+\|0[0-7]\+\|0x[0-9A-Fa-f]\+\)\>"
-syn match cleanRealDenot "[+-~]\=\<\d\+\.\d+\(E[+-~]\=\d+\)\="
+syn region cleanStringDenot start=+"+ skip=+\(\(\\\\\)\+\|\\"\)+ end=+"+ display
+syn match cleanCharDenot "'\(\\\\\|\\'\|[^'\\]\)\+'" display
+syn match cleanIntegerDenot "[\~+-]\?\<\(\d\+\|0[0-7]\+\|0x[0-9A-Fa-f]\+\)\>" display
+syn match cleanRealDenot "[\~+-]\?\d\+\.\d\+\(E[\~+-]\?\d\+\)\?" display
 
 " To highlight the use of lists, tuples and arrays
 syn region cleanList start="\[" end="\]" contains=ALL
@@ -44,11 +43,13 @@ syn region cleanArray start="{:" end=":}" contains=ALL
 syn match cleanTuple "([^=]*,[^=]*)" contains=ALL
 
 " To do some Comment Highlighting
-syn region cleanComment start="/\*"  end="\*/" contains=cleanComment
-syn match cleanComment "//.*"
+syn region cleanComment start="/\*"  end="\*/" contains=cleanComment,cleanTodo fold
+syn region cleanComment start="//.*" end="$" display contains=cleanTodo
+syn keyword cleanTodo TODO FIXME XXX contained
 
-" Now for some useful typedefinitionrecognition
-syn match cleanFuncTypeDef "\([a-zA-Z].*\|(\=[-~@#$%^?!+*<>\/|&=:]\+)\=\)[ \t]*\(infix[lr]\=\)\=[ \t]*\d\=[ \t]*::.*->.*" contains=cleanSpecial
+" Now for some useful type definition recognition
+syn match cleanFuncTypeDef "\([a-zA-Z].*\|(\=[-~@#$%^?!+*<>\/|&=:]\+)\=\)\s*\(infix[lr]\=\)\=\s*\d\=\s*::.*->.*" contains=cleanSpecial,cleanBasicType,cleanSpecialType,cleanKeyword
+
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
@@ -64,7 +65,6 @@ if version >= 508 || !exists("did_clean_syntax_init")
    " Comments
    HiLink cleanComment      Comment
    " Constants and denotations
-   HiLink cleanCharsDenot   String
    HiLink cleanStringDenot  String
    HiLink cleanCharDenot    Character
    HiLink cleanIntegerDenot Number
@@ -91,6 +91,7 @@ if version >= 508 || !exists("did_clean_syntax_init")
    HiLink cleanTuple		Special
    " Error
    " Todo
+   HiLink cleanTodo         Todo
 
   delcommand HiLink
 endif
