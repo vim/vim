@@ -516,6 +516,9 @@ d.get("\0"):TypeError:('expected string without null bytes',)
 <<< Finished
 d.pop("a"):KeyError:('a',)
 dl.pop("a"):error:('dictionary is locked',)
+>> DictionaryContains
+"" in d:ValueError:('empty keys are not allowed',)
+0 in d:TypeError:('expected str() or unicode() instance, but got int',)
 >> DictionaryIterNext
 for i in ned: ned["a"] = 1:RuntimeError:('hashtab changed during iteration',)
 >> DictionaryAssItem

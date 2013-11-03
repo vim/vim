@@ -505,6 +505,9 @@ d.get("\0"):(<class 'TypeError'>, TypeError('expected bytes with no null',))
 <<< Finished
 d.pop("a"):(<class 'KeyError'>, KeyError('a',))
 dl.pop("a"):(<class 'vim.error'>, error('dictionary is locked',))
+>> DictionaryContains
+"" in d:(<class 'ValueError'>, ValueError('empty keys are not allowed',))
+0 in d:(<class 'TypeError'>, TypeError('expected bytes() or str() instance, but got int',))
 >> DictionaryIterNext
 for i in ned: ned["a"] = 1:(<class 'RuntimeError'>, RuntimeError('hashtab changed during iteration',))
 >> DictionaryAssItem

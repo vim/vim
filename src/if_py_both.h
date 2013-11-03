@@ -1624,6 +1624,9 @@ DictionaryContains(DictionaryObject *self, PyObject *keyObject)
     PyObject	*rObj = _DictionaryItem(self, keyObject, DICT_FLAG_RETURN_BOOL);
     int		ret;
 
+    if (rObj == NULL)
+	return -1;
+
     ret = (rObj == Py_True);
 
     Py_DECREF(rObj);
