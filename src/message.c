@@ -887,6 +887,8 @@ wait_return(redraw)
     int		oldState;
     int		tmpState;
     int		had_got_int;
+    int		save_Recording;
+    FILE	*save_scriptout;
 
     if (redraw == TRUE)
 	must_redraw = CLEAR;
@@ -957,11 +959,21 @@ wait_return(redraw)
 	     * typeahead buffer. */
 	    ++no_mapping;
 	    ++allow_keys;
+
+	    /* Temporarily disable Recording. If Recording is active, the
+	     * character will be recorded later, since it will be added to the
+	     * typebuf after the loop */
+	    save_Recording = Recording;
+	    save_scriptout = scriptout;
+	    Recording = FALSE;
+	    scriptout = NULL;
 	    c = safe_vgetc();
 	    if (had_got_int && !global_busy)
 		got_int = FALSE;
 	    --no_mapping;
 	    --allow_keys;
+	    Recording = save_Recording;
+	    scriptout = save_scriptout;
 
 #ifdef FEAT_CLIPBOARD
 	    /* Strange way to allow copying (yanking) a modeless selection at
