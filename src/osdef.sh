@@ -47,11 +47,7 @@ cat << EOF > osdef0.c
 #endif
 EOF
 
-# Mac uses precompiled headers, but we need real headers here.
-case `uname` in
-    Darwin)	$CC -I. -I$srcdir -E -no-cpp-precomp osdef0.c >osdef0.cc;;
-    *)		$CC -I. -I$srcdir -E osdef0.c >osdef0.cc;;
-esac
+$CC -I. -I$srcdir -E osdef0.c >osdef0.cc
 
 # insert a space in front of each line, so that a function name at the
 # start of the line is matched with "[)*, 	]\1[ 	(]"

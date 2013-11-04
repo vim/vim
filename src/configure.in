@@ -204,7 +204,8 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
     OS_EXTRA_SRC="os_macosx.m os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
     dnl TODO: use -arch i386 on Intel machines
-    CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -no-cpp-precomp"
+    dnl Removed -no-cpp-precomp, only for very old compilers.
+    CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX"
 
     dnl If Carbon is found, assume we don't want X11
     dnl unless it was specifically asked for (--with-x)
@@ -262,8 +263,8 @@ if test "$cross_compiling" = no; then
   ])
   if test "$GCC" = yes -a "$local_dir" != no; then
     echo 'void f(){}' > conftest.c
-    dnl -no-cpp-precomp is needed for OS X 10.2 (Ben Fowler)
-    have_local_include=`${CC-cc} -no-cpp-precomp -c -v conftest.c 2>&1 | grep "${local_dir}/include"`
+    dnl Removed -no-cpp-precomp, only needed for OS X 10.2 (Ben Fowler)
+    have_local_include=`${CC-cc} -c -v conftest.c 2>&1 | grep "${local_dir}/include"`
     have_local_lib=`${CC-cc} -c -v conftest.c 2>&1 | grep "${local_dir}/lib"`
     rm -f conftest.c conftest.o
   fi
