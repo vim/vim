@@ -69,6 +69,7 @@ char_u *gettail_sep __ARGS((char_u *fname));
 char_u *getnextcomp __ARGS((char_u *fname));
 char_u *get_past_head __ARGS((char_u *path));
 int vim_ispathsep __ARGS((int c));
+int vim_ispathsep_nocolon __ARGS((int c));
 int vim_ispathlistsep __ARGS((int c));
 void shorten_dir __ARGS((char_u *str));
 int dir_of_file_exists __ARGS((char_u *fname));

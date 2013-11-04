@@ -4808,9 +4808,9 @@ gettail(fname)
 
     if (fname == NULL)
 	return (char_u *)"";
-    for (p1 = p2 = fname; *p2; )	/* find last part of path */
+    for (p1 = p2 = get_past_head(fname); *p2; )	/* find last part of path */
     {
-	if (vim_ispathsep(*p2))
+	if (vim_ispathsep_nocolon(*p2))
 	    p1 = p2 + 1;
 	mb_ptr_adv(p2);
     }
@@ -4929,7 +4929,8 @@ get_past_head(path)
 }
 
 /*
- * return TRUE if 'c' is a path separator.
+ * Return TRUE if 'c' is a path separator.
+ * Note that for MS-Windows this includes the colon.
  */
     int
 vim_ispathsep(c)
@@ -4950,6 +4951,20 @@ vim_ispathsep(c)
 #  endif /* VMS */
 # endif
 #endif
+}
+
+/*
+ * Like vim_ispathsep(c), but exclude the colon for MS-Windows.
+ */
+    int
+vim_ispathsep_nocolon(c)
+    int c;
+{
+    return vim_ispathsep(c)
+#ifdef BACKSLASH_IN_FILENAME
+	&& c != ':'
+#endif
+	;
 }
 
 #if defined(FEAT_SEARCHPATH) || defined(PROTO)
