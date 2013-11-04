@@ -32,6 +32,10 @@ Oblah di
 doh dutVkUj
 :" Uppercase part of two lines
 ddppi333k0i222fyllvjfuUk
+:" visual replace using Enter or NL
+G3o1234567892k05l2jrG3o987652k02l2jr
+G3o1234567892k05l2jr
+G3o987652k02l2jr
 :/^the/,$w >> test.out
 :qa!
 ENDTEST

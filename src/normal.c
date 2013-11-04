@@ -7036,6 +7036,13 @@ nv_replace(cap)
     {
 	if (got_int)
 	    reset_VIsual();
+	if (had_ctrl_v)
+	{
+	    if (cap->nchar == '\r')
+		cap->nchar = -1;
+	    else if (cap->nchar == '\n')
+		cap->nchar = -2;
+	}
 	nv_operator(cap);
 	return;
     }

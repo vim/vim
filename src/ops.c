@@ -2074,9 +2074,14 @@ op_replace(oap, c)
     char_u		*newp, *oldp;
     size_t		oldlen;
     struct block_def	bd;
+    char_u		*after_p = NULL;
+    int			had_ctrl_v_cr = (c == -1 || c == -2);
 
     if ((curbuf->b_ml.ml_flags & ML_EMPTY ) || oap->empty)
 	return OK;	    /* nothing to do */
+
+    if (had_ctrl_v_cr)
+	c = (c == -1 ? '\r' : '\n');
 
 #ifdef FEAT_MBYTE
     if (has_mbyte)
@@ -2164,25 +2169,43 @@ op_replace(oap, c)
 	    /* insert pre-spaces */
 	    copy_spaces(newp + bd.textcol, (size_t)bd.startspaces);
 	    /* insert replacement chars CHECK FOR ALLOCATED SPACE */
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
+	    /* -1/-2 is used for entering CR literally. */
+	    if (had_ctrl_v_cr || (c != '\r' && c != '\n'))
 	    {
-		n = (int)STRLEN(newp);
-		while (--num_chars >= 0)
-		    n += (*mb_char2bytes)(c, newp + n);
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		{
+		    n = (int)STRLEN(newp);
+		    while (--num_chars >= 0)
+			n += (*mb_char2bytes)(c, newp + n);
+		}
+		else
+#endif
+		    copy_chars(newp + STRLEN(newp), (size_t)numc, c);
+		if (!bd.is_short)
+		{
+		    /* insert post-spaces */
+		    copy_spaces(newp + STRLEN(newp), (size_t)bd.endspaces);
+		    /* copy the part after the changed part */
+		    STRMOVE(newp + STRLEN(newp), oldp);
+		}
 	    }
 	    else
-#endif
-		copy_chars(newp + STRLEN(newp), (size_t)numc, c);
-	    if (!bd.is_short)
 	    {
-		/* insert post-spaces */
-		copy_spaces(newp + STRLEN(newp), (size_t)bd.endspaces);
-		/* copy the part after the changed part */
-		STRMOVE(newp + STRLEN(newp), oldp);
+		/* Replacing with \r or \n means splitting the line. */
+		after_p = alloc_check((unsigned)oldlen + 1 + n - STRLEN(newp));
+		if (after_p != NULL)
+		    STRMOVE(after_p, oldp);
 	    }
 	    /* replace the line */
 	    ml_replace(curwin->w_cursor.lnum, newp, FALSE);
+	    if (after_p != NULL)
+	    {
+		ml_append(curwin->w_cursor.lnum++, after_p, 0, FALSE);
+		appended_lines_mark(curwin->w_cursor.lnum, 1L);
+		oap->end.lnum++;
+		vim_free(after_p);
+	    }
 	}
     }
     else
