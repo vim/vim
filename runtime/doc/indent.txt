@@ -545,10 +545,12 @@ The examples below assume a 'shiftwidth' of 4.
 	      (default 70 lines).
 
 								*cino-#*
-	#N    When N is non-zero recognize shell/Perl comments, starting with
-	      '#'.  Default N is zero: don't recognize '#' comments.  Note
-	      that lines starting with # will still be seen as preprocessor
-	      lines.
+	#N    When N is non-zero recognize shell/Perl comments starting with
+	      '#', do not recognize preprocessor lines; allow right-shifting
+	      lines that start with "#".
+	      When N is zero (default): don't recognize '#' comments, do
+	      recognize preprocessor lines; right-shifting lines that start
+	      with "#" does not work.
 
 
 The defaults, spelled out in full, are:
@@ -556,7 +558,7 @@ The defaults, spelled out in full, are:
 			c3,C0,/0,(2s,us,U0,w0,W0,k0,m0,j0,J0,)20,*70,#0
 
 Vim puts a line in column 1 if:
-- It starts with '#' (preprocessor directives), if 'cinkeys' contains '#'.
+- It starts with '#' (preprocessor directives), if 'cinkeys' contains '#0'.
 - It starts with a label (a keyword followed by ':', other than "case" and
   "default") and 'cinoptions' does not contain an 'L' entry with a positive
   value.

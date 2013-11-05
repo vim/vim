@@ -5372,6 +5372,7 @@ check_buf_options(buf)
 #ifdef FEAT_CINDENT
     check_string_option(&buf->b_p_cink);
     check_string_option(&buf->b_p_cino);
+    parse_cino(buf);
 #endif
 #ifdef FEAT_AUTOCMD
     check_string_option(&buf->b_p_ft);
@@ -6990,6 +6991,15 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     }
 #endif
 
+#ifdef FEAT_CINDENT
+    /* 'cinoptions' */
+    else if (gvarp == &p_cino)
+    {
+	/* TODO: recognize errors */
+	parse_cino(curbuf);
+    }
+#endif
+
     /* Options that are a list of flags. */
     else
     {
@@ -8338,14 +8348,24 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 	    curwin->w_p_fdc = 12;
 	}
     }
+#endif /* FEAT_FOLDING */
 
+#if defined(FEAT_FOLDING) || defined(FEAT_CINDENT)
     /* 'shiftwidth' or 'tabstop' */
     else if (pp == &curbuf->b_p_sw || pp == &curbuf->b_p_ts)
     {
+# ifdef FEAT_FOLDING
 	if (foldmethodIsIndent(curwin))
 	    foldUpdateAll(curwin);
+# endif
+# ifdef FEAT_CINDENT
+	/* When 'shiftwidth' changes, or it's zero and 'tabstop' changes:
+	 * parse 'cinoptions'. */
+	if (pp == &curbuf->b_p_sw || curbuf->b_p_sw == 0)
+	    parse_cino(curbuf);
+# endif
     }
-#endif /* FEAT_FOLDING */
+#endif
 
 #ifdef FEAT_MBYTE
     /* 'maxcombine' */
@@ -11729,9 +11749,10 @@ check_ff_value(p)
  * 'tabstop' value when 'shiftwidth' is zero.
  */
     long
-get_sw_value()
+get_sw_value(buf)
+    buf_T *buf;
 {
-    return curbuf->b_p_sw ? curbuf->b_p_sw : curbuf->b_p_ts;
+    return buf->b_p_sw ? buf->b_p_sw : buf->b_p_ts;
 }
 
 /*
@@ -11741,7 +11762,7 @@ get_sw_value()
     long
 get_sts_value()
 {
-    return curbuf->b_p_sts < 0 ? get_sw_value() : curbuf->b_p_sts;
+    return curbuf->b_p_sts < 0 ? get_sw_value(curbuf) : curbuf->b_p_sts;
 }
 
 /*

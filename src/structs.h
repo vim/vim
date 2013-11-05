@@ -1633,6 +1633,45 @@ struct file_buffer
 
     /* end of buffer options */
 
+#ifdef FEAT_CINDENT
+    /* values set from b_p_cino */
+    int		b_ind_level;
+    int		b_ind_open_imag;
+    int		b_ind_no_brace;
+    int		b_ind_first_open;
+    int		b_ind_open_extra;
+    int		b_ind_close_extra;
+    int		b_ind_open_left_imag;
+    int		b_ind_jump_label;
+    int		b_ind_case;
+    int		b_ind_case_code;
+    int		b_ind_case_break;
+    int		b_ind_param;
+    int		b_ind_func_type;
+    int		b_ind_comment;
+    int		b_ind_in_comment;
+    int		b_ind_in_comment2;
+    int		b_ind_cpp_baseclass;
+    int		b_ind_continuation;
+    int		b_ind_unclosed;
+    int		b_ind_unclosed2;
+    int		b_ind_unclosed_noignore;
+    int		b_ind_unclosed_wrapped;
+    int		b_ind_unclosed_whiteok;
+    int		b_ind_matching_paren;
+    int		b_ind_paren_prev;
+    int		b_ind_maxparen;
+    int		b_ind_maxcomment;
+    int		b_ind_scopedecl;
+    int		b_ind_scopedecl_code;
+    int		b_ind_java;
+    int		b_ind_js;
+    int		b_ind_keep_case_label;
+    int		b_ind_hash_comment;
+    int		b_ind_cpp_namespace;
+    int		b_ind_if_for_while;
+#endif
+
     linenr_T	b_no_eol_lnum;	/* non-zero lnum when last line of next binary
 				 * write should not have an end-of-line */
 

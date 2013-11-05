@@ -84,6 +84,7 @@ void do_c_expr_indent __ARGS((void));
 int cin_islabel __ARGS((int ind_maxcomment));
 int cin_iscase __ARGS((char_u *s, int strict));
 int cin_isscopedecl __ARGS((char_u *s));
+void parse_cino __ARGS((buf_T *buf));
 int get_c_indent __ARGS((void));
 int get_expr_indent __ARGS((void));
 int get_lisp_indent __ARGS((void));

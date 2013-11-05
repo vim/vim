@@ -2280,7 +2280,7 @@ getexmodeline(promptc, cookie, indent)
 
 	    if (c1 == Ctrl_T)
 	    {
-		long        sw = get_sw_value();
+		long        sw = get_sw_value(curbuf);
 
 		p = (char_u *)line_ga.ga_data;
 		p[line_ga.ga_len] = NUL;
@@ -2337,7 +2337,7 @@ redraw:
 		    p[line_ga.ga_len] = NUL;
 		    indent = get_indent_str(p, 8);
 		    --indent;
-		    indent -= indent % get_sw_value();
+		    indent -= indent % get_sw_value(curbuf);
 		}
 		while (get_indent_str(p, 8) > indent)
 		{
@@ -4178,7 +4178,7 @@ expand_showtail(xp)
 /*
  * Prepare a string for expansion.
  * When expanding file names: The string will be used with expand_wildcards().
- * Copy the file name into allocated memory and add a '*' at the end.
+ * Copy "fname[len]" into allocated memory and add a '*' at the end.
  * When expanding other names: The string will be used with regcomp().  Copy
  * the name into allocated memory and prepend "^".
  */

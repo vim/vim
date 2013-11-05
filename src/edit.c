@@ -8958,7 +8958,7 @@ ins_bs(c, mode, inserted_space_p)
 
 	    *inserted_space_p = FALSE;
 	    if (p_sta && in_indent)
-		ts = (int)get_sw_value();
+		ts = (int)get_sw_value(curbuf);
 	    else
 		ts = (int)get_sts_value();
 	    /* Compute the virtual column where we want to be.  Since
@@ -9647,7 +9647,7 @@ ins_tab()
      * When nothing special, insert TAB like a normal character
      */
     if (!curbuf->b_p_et
-	    && !(p_sta && ind && curbuf->b_p_ts != get_sw_value())
+	    && !(p_sta && ind && curbuf->b_p_ts != get_sw_value(curbuf))
 	    && get_sts_value() == 0)
 	return TRUE;
 
@@ -9663,7 +9663,7 @@ ins_tab()
     AppendToRedobuff((char_u *)"\t");
 
     if (p_sta && ind)		/* insert tab in indent, use 'shiftwidth' */
-	temp = (int)get_sw_value();
+	temp = (int)get_sw_value(curbuf);
     else if (curbuf->b_p_sts != 0) /* use 'softtabstop' when set */
 	temp = (int)get_sts_value();
     else			/* otherwise use 'tabstop' */

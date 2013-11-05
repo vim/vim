@@ -336,7 +336,7 @@ shift_line(left, round, amount, call_changed_bytes)
 {
     int		count;
     int		i, j;
-    int		p_sw = (int)get_sw_value();
+    int		p_sw = (int)get_sw_value(curbuf);
 
     count = get_indent();	/* get current indent */
 
@@ -392,7 +392,7 @@ shift_block(oap, amount)
     int			total;
     char_u		*newp, *oldp;
     int			oldcol = curwin->w_cursor.col;
-    int			p_sw = (int)get_sw_value();
+    int			p_sw = (int)get_sw_value(curbuf);
     int			p_ts = (int)curbuf->b_p_ts;
     struct block_def	bd;
     int			incr;
@@ -4046,7 +4046,8 @@ preprocs_left()
 #  endif
 # endif
 # ifdef FEAT_CINDENT
-	(curbuf->b_p_cin && in_cinkeys('#', ' ', TRUE))
+	(curbuf->b_p_cin && in_cinkeys('#', ' ', TRUE)
+					   && curbuf->b_ind_hash_comment == 0)
 # endif
 	;
 }

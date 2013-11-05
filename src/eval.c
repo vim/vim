@@ -16934,7 +16934,7 @@ f_shiftwidth(argvars, rettv)
     typval_T	*argvars UNUSED;
     typval_T	*rettv;
 {
-    rettv->vval.v_number = get_sw_value();
+    rettv->vval.v_number = get_sw_value(curbuf);
 }
 
 /*
