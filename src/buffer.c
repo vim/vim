@@ -213,7 +213,9 @@ open_buffer(read_stdin, eap, flags)
     if (curbuf->b_flags & BF_NEVERLOADED)
     {
 	(void)buf_init_chartab(curbuf, FALSE);
+#ifdef FEAT_CINDENT
 	parse_cino(curbuf);
+#endif
     }
 
     /*
