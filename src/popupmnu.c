@@ -282,6 +282,10 @@ pum_redraw()
     int		round;
     int		n;
 
+    /* Never display more than we have */
+    if (pum_first > pum_size - pum_height)
+	pum_first = pum_size - pum_height;
+
     if (pum_scrollbar)
     {
 	thumb_heigth = pum_height * pum_height / pum_size;
@@ -671,10 +675,6 @@ pum_set_selected(n, repeat)
 	}
 #endif
     }
-
-    /* Never display more than we have */
-    if (pum_first > pum_size - pum_height)
-	pum_first = pum_size - pum_height;
 
     if (!resized)
 	pum_redraw();
