@@ -81,7 +81,7 @@ void add_pathsep __ARGS((char_u *p));
 char_u *FullName_save __ARGS((char_u *fname, int force));
 pos_T *find_start_comment __ARGS((int ind_maxcomment));
 void do_c_expr_indent __ARGS((void));
-int cin_islabel __ARGS((int ind_maxcomment));
+int cin_islabel __ARGS((void));
 int cin_iscase __ARGS((char_u *s, int strict));
 int cin_isscopedecl __ARGS((char_u *s));
 void parse_cino __ARGS((buf_T *buf));

@@ -7857,8 +7857,7 @@ in_cinkeys(keytyped, when, line_is_empty)
 	    if (try_match && keytyped == ':')
 	    {
 		p = ml_get_curline();
-		if (cin_iscase(p, FALSE) || cin_isscopedecl(p)
-							   || cin_islabel(30))
+		if (cin_iscase(p, FALSE) || cin_isscopedecl(p) || cin_islabel())
 		    return TRUE;
 		/* Need to get the line again after cin_islabel(). */
 		p = ml_get_curline();
@@ -7868,7 +7867,7 @@ in_cinkeys(keytyped, when, line_is_empty)
 		{
 		    p[curwin->w_cursor.col - 1] = ' ';
 		    i = (cin_iscase(p, FALSE) || cin_isscopedecl(p)
-							  || cin_islabel(30));
+							    || cin_islabel());
 		    p = ml_get_curline();
 		    p[curwin->w_cursor.col - 1] = ':';
 		    if (i)
