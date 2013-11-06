@@ -7594,7 +7594,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'undolevels'* *'ul'*
 'undolevels' 'ul'	number	(default 100, 1000 for Unix, VMS,
 						Win32 and OS/2)
-			global
+			global or local to buffer |global-local|
 			{not in Vi}
 	Maximum number of changes that can be undone.  Since undo information
 	is kept in memory, higher numbers will cause more memory to be used
@@ -7605,8 +7605,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	But you can also get Vi compatibility by including the 'u' flag in
 	'cpoptions', and still be able to use CTRL-R to repeat undo.
 	Also see |undo-two-ways|.
-	Set to a negative number for no undo at all: >
-		set ul=-1
+	Set to -1 for no undo at all.  You might want to do this only for the
+	current buffer: >
+		setlocal ul=-1
 <	This helps when you run out of memory for a single change.
 	Also see |clear-undo|.
 

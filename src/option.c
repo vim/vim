@@ -234,6 +234,7 @@
 #ifdef FEAT_STL_OPT
 # define PV_STL		OPT_BOTH(OPT_WIN(WV_STL))
 #endif
+#define PV_UL		OPT_BOTH(OPT_BUF(BV_UL))
 #ifdef FEAT_WINDOWS
 # define PV_WFH		OPT_WIN(WV_WFH)
 #endif
@@ -2683,7 +2684,7 @@ static struct vimoption
 #endif
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
     {"undolevels",  "ul",   P_NUM|P_VI_DEF,
-			    (char_u *)&p_ul, PV_NONE,
+			    (char_u *)&p_ul, PV_UL,
 			    {
 #if defined(UNIX) || defined(WIN3264) || defined(OS2) || defined(VMS)
 			    (char_u *)1000L,
@@ -3313,6 +3314,7 @@ set_init_1()
 
     curbuf->b_p_initialized = TRUE;
     curbuf->b_p_ar = -1;	/* no local 'autoread' value */
+    curbuf->b_p_ul = NO_LOCAL_UNDOLEVEL;
     check_buf_options(curbuf);
     check_win_options(curwin);
     check_options();
@@ -4512,8 +4514,16 @@ do_set(arg, opt_flags)
 						((flags & P_VI_DEF) || cp_val)
 						 ?  VI_DEFAULT : VIM_DEFAULT];
 			else if (nextchar == '<')
-			    value = *(long *)get_varp_scope(&(options[opt_idx]),
-								  OPT_GLOBAL);
+			{
+			    /* For 'undolevels' NO_LOCAL_UNDOLEVEL means to
+			     * use the global value. */
+			    if ((long *)varp == &curbuf->b_p_ul
+						    && opt_flags == OPT_LOCAL)
+				value = NO_LOCAL_UNDOLEVEL;
+			    else
+				value = *(long *)get_varp_scope(
+					     &(options[opt_idx]), OPT_GLOBAL);
+			}
 			else if (((long *)varp == &p_wc
 				    || (long *)varp == &p_wcm)
 				&& (*arg == '<'
@@ -8487,6 +8497,13 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 	u_sync(TRUE);
 	p_ul = value;
     }
+    else if (pp == &curbuf->b_p_ul)
+    {
+	/* use the old value, otherwise u_sync() may not work properly */
+	curbuf->b_p_ul = old_value;
+	u_sync(TRUE);
+	curbuf->b_p_ul = value;
+    }
 
 #ifdef FEAT_LINEBREAK
     /* 'numberwidth' must be positive */
@@ -9720,7 +9737,6 @@ comp_col()
 /*
  * Unset local option value, similar to ":set opt<".
  */
-
     void
 unset_global_local_option(name, from)
     char_u	*name;
@@ -9793,6 +9809,9 @@ unset_global_local_option(name, from)
 	    clear_string_option(&((win_T *)from)->w_p_stl);
 	    break;
 #endif
+	case PV_UL:
+	    buf->b_p_ul = NO_LOCAL_UNDOLEVEL;
+	    break;
     }
 }
 
@@ -9841,6 +9860,7 @@ get_varp_scope(p, opt_flags)
 #ifdef FEAT_STL_OPT
 	    case PV_STL:  return (char_u *)&(curwin->w_p_stl);
 #endif
+	    case PV_UL:   return (char_u *)&(curbuf->b_p_ul);
 	}
 	return NULL; /* "cannot happen" */
     }
@@ -9905,6 +9925,8 @@ get_varp(p)
 	case PV_STL:	return *curwin->w_p_stl != NUL
 				    ? (char_u *)&(curwin->w_p_stl) : p->var;
 #endif
+	case PV_UL:	return curbuf->b_p_ul != NO_LOCAL_UNDOLEVEL
+				    ? (char_u *)&(curbuf->b_p_ul) : p->var;
 
 #ifdef FEAT_ARABIC
 	case PV_ARAB:	return (char_u *)&(curwin->w_p_arab);
@@ -10445,6 +10467,7 @@ buf_copy_options(buf, flags)
 	    /* options that are normally global but also have a local value
 	     * are not copied, start using the global value */
 	    buf->b_p_ar = -1;
+	    buf->b_p_ul = NO_LOCAL_UNDOLEVEL;
 #ifdef FEAT_QUICKFIX
 	    buf->b_p_gp = empty_option;
 	    buf->b_p_mp = empty_option;

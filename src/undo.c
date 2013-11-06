@@ -83,6 +83,7 @@
 
 #include "vim.h"
 
+static long get_undolevel __ARGS((void));
 static void u_unch_branch __ARGS((u_header_T *uhp));
 static u_entry_T *u_get_headentry __ARGS((void));
 static void u_getbot __ARGS((void));
@@ -336,6 +337,17 @@ undo_allowed()
 }
 
 /*
+ * Get the undolevle value for the current buffer.
+ */
+    static long
+get_undolevel()
+{
+    if (curbuf->b_p_ul == NO_LOCAL_UNDOLEVEL)
+	return p_ul;
+    return curbuf->b_p_ul;
+}
+
+/*
  * Common code for various ways to save text before a change.
  * "top" is the line above the first changed line.
  * "bot" is the line below the last changed line.
@@ -419,7 +431,7 @@ u_savecommon(top, bot, newbot, reload)
 	curbuf->b_new_change = TRUE;
 #endif
 
-	if (p_ul >= 0)
+	if (get_undolevel() >= 0)
 	{
 	    /*
 	     * Make a new header entry.  Do this first so that we don't mess
@@ -449,7 +461,8 @@ u_savecommon(top, bot, newbot, reload)
 	/*
 	 * free headers to keep the size right
 	 */
-	while (curbuf->b_u_numhead > p_ul && curbuf->b_u_oldhead != NULL)
+	while (curbuf->b_u_numhead > get_undolevel()
+					       && curbuf->b_u_oldhead != NULL)
 	{
 	    u_header_T	    *uhfree = curbuf->b_u_oldhead;
 
@@ -530,7 +543,7 @@ u_savecommon(top, bot, newbot, reload)
     }
     else
     {
-	if (p_ul < 0)		/* no undo at all */
+	if (get_undolevel() < 0)	/* no undo at all */
 	    return OK;
 
 	/*
@@ -1972,7 +1985,7 @@ u_doit(startcount)
 	{
 	    if (curbuf->b_u_curhead == NULL)		/* first undo */
 		curbuf->b_u_curhead = curbuf->b_u_newhead;
-	    else if (p_ul > 0)				/* multi level undo */
+	    else if (get_undolevel() > 0)		/* multi level undo */
 		/* get next undo */
 		curbuf->b_u_curhead = curbuf->b_u_curhead->uh_next.ptr;
 	    /* nothing to undo */
@@ -1993,7 +2006,7 @@ u_doit(startcount)
 	}
 	else
 	{
-	    if (curbuf->b_u_curhead == NULL || p_ul <= 0)
+	    if (curbuf->b_u_curhead == NULL || get_undolevel() <= 0)
 	    {
 		beep_flush();	/* nothing to redo */
 		if (count == startcount - 1)
@@ -2751,7 +2764,7 @@ u_sync(force)
     if (im_is_preediting())
 	return;		    /* XIM is busy, don't break an undo sequence */
 #endif
-    if (p_ul < 0)
+    if (get_undolevel() < 0)
 	curbuf->b_u_synced = TRUE;  /* no entries, nothing to do */
     else
     {
@@ -2911,7 +2924,7 @@ ex_undojoin(eap)
     }
     if (!curbuf->b_u_synced)
 	return;		    /* already unsynced */
-    if (p_ul < 0)
+    if (get_undolevel() < 0)
 	return;		    /* no entries, nothing to do */
     else
     {

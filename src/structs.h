@@ -1627,6 +1627,7 @@ struct file_buffer
     char_u	*b_p_dict;	/* 'dictionary' local value */
     char_u	*b_p_tsr;	/* 'thesaurus' local value */
 #endif
+    long	b_p_ul;		/* 'undolevels' local value */
 #ifdef FEAT_PERSISTENT_UNDO
     int		b_p_udf;	/* 'undofile' */
 #endif

@@ -1949,6 +1949,7 @@ free_buf_options(buf, free_p_ff)
     clear_string_option(&buf->b_p_qe);
 #endif
     buf->b_p_ar = -1;
+    buf->b_p_ul = NO_LOCAL_UNDOLEVEL;
 }
 
 /*
