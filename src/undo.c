@@ -3121,7 +3121,8 @@ u_freebranch(buf, uhp, uhpp)
      * all the pointers. */
     if (uhp == buf->b_u_oldhead)
     {
-	u_freeheader(buf, uhp, uhpp);
+	while (buf->b_u_oldhead != NULL)
+	    u_freeheader(buf, buf->b_u_oldhead, uhpp);
 	return;
     }
 
