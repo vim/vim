@@ -1773,9 +1773,11 @@ build_shortcut(
 
 /*
  * We used to use "homedir" as the working directory, but that is a bad choice
- * on multi-user systems.  Not specifying a directory appears to work best.
+ * on multi-user systems.  However, not specifying a directory results in the
+ * current directory to be c:\Windows\system32 on Windows 7. Use environment
+ * variables instead.
  */
-#define WORKDIR ""
+#define WORKDIR "%HOMEDRIVE%%HOMEPATH%"
 
 /*
  * Create shortcut(s) in the Start Menu\Programs\Vim folder.
