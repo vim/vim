@@ -4592,7 +4592,7 @@ current_search(count, forward)
 				ml_get(curwin->w_buffer->b_ml.ml_line_count));
 	    }
 	}
-
+	p_ws = old_p_ws;
     }
 
     start_pos = pos;
@@ -4607,7 +4607,6 @@ current_search(count, forward)
     if (!VIsual_active)
 	VIsual = start_pos;
 
-    p_ws = old_p_ws;
     curwin->w_cursor = pos;
     VIsual_active = TRUE;
     VIsual_mode = 'v';
