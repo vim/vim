@@ -7447,7 +7447,7 @@ next_search_hl(win, shl, lnum, mincol)
 	    {
 		/* don't free regprog in the match list, it's a copy */
 		vim_regfree(shl->rm.regprog);
-		no_hlsearch = TRUE;
+		SET_NO_HLSEARCH(TRUE);
 	    }
 	    shl->rm.regprog = NULL;
 	    shl->lnum = 0;

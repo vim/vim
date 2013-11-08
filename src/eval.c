@@ -356,6 +356,7 @@ static struct vimvar
     {VV_NAME("mouse_col",	 VAR_NUMBER), 0},
     {VV_NAME("operator",	 VAR_STRING), VV_RO},
     {VV_NAME("searchforward",	 VAR_NUMBER), 0},
+    {VV_NAME("hlsearch",	 VAR_NUMBER), 0},
     {VV_NAME("oldfiles",	 VAR_LIST), 0},
     {VV_NAME("windowid",	 VAR_NUMBER), VV_RO},
 };
@@ -871,6 +872,7 @@ eval_init()
 	    hash_add(&compat_hashtab, p->vv_di.di_key);
     }
     set_vim_var_nr(VV_SEARCHFORWARD, 1L);
+    set_vim_var_nr(VV_HLSEARCH, 1L);
     set_reg_var(0);  /* default for v:register is not 0 but '"' */
 
 #ifdef EBCDIC
@@ -20613,6 +20615,13 @@ set_var(name, tv, copy)
 		v->di_tv.vval.v_number = get_tv_number(tv);
 		if (STRCMP(varname, "searchforward") == 0)
 		    set_search_direction(v->di_tv.vval.v_number ? '/' : '?');
+#ifdef FEAT_SEARCH_EXTRA
+		else if (STRCMP(varname, "hlsearch") == 0)
+		{
+		    no_hlsearch = !v->di_tv.vval.v_number;
+		    redraw_all_later(SOME_VALID);
+		}
+#endif
 	    }
 	    return;
 	}

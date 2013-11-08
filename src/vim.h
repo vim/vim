@@ -1864,9 +1864,10 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 #define VV_MOUSE_COL	51
 #define VV_OP		52
 #define VV_SEARCHFORWARD 53
-#define VV_OLDFILES	54
-#define VV_WINDOWID	55
-#define VV_LEN		56	/* number of v: vars */
+#define VV_HLSEARCH	54
+#define VV_OLDFILES	55
+#define VV_WINDOWID	56
+#define VV_LEN		57	/* number of v: vars */
 
 #ifdef FEAT_CLIPBOARD
 
@@ -2245,5 +2246,11 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 
 /* Character used as separated in autoload function/variable names. */
 #define AUTOLOAD_CHAR '#'
+
+#ifdef FEAT_EVAL
+# define SET_NO_HLSEARCH(flag) no_hlsearch = (flag); set_vim_var_nr(VV_HLSEARCH, !no_hlsearch)
+#else
+# define SET_NO_HLSEARCH(flag) no_hlsearch = (flag)
+#endif
 
 #endif /* VIM__H */

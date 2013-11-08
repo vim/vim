@@ -11389,7 +11389,7 @@ ex_set(eap)
 ex_nohlsearch(eap)
     exarg_T	*eap UNUSED;
 {
-    no_hlsearch = TRUE;
+    SET_NO_HLSEARCH(TRUE);
     redraw_all_later(SOME_VALID);
 }
 

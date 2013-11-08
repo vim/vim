@@ -289,7 +289,7 @@ save_re_pat(idx, pat, magic)
 	/* If 'hlsearch' set and search pat changed: need redraw. */
 	if (p_hls)
 	    redraw_all_later(SOME_VALID);
-	no_hlsearch = FALSE;
+	SET_NO_HLSEARCH(FALSE);
 #endif
     }
 }
@@ -333,7 +333,7 @@ restore_search_patterns()
 	spats[1] = saved_spats[1];
 	last_idx = saved_last_idx;
 # ifdef FEAT_SEARCH_EXTRA
-	no_hlsearch = saved_no_hlsearch;
+	SET_NO_HLSEARCH(saved_no_hlsearch);
 # endif
     }
 }
@@ -1148,7 +1148,7 @@ do_search(oap, dirc, pat, count, options, tm)
     if (no_hlsearch && !(options & SEARCH_KEEP))
     {
 	redraw_all_later(SOME_VALID);
-	no_hlsearch = FALSE;
+	SET_NO_HLSEARCH(FALSE);
     }
 #endif
 
@@ -5561,7 +5561,9 @@ read_viminfo_search_pattern(virp, force)
 		spats[idx].off.off = off;
 #ifdef FEAT_SEARCH_EXTRA
 		if (setlast)
-		    no_hlsearch = !hlsearch_on;
+		{
+		    SET_NO_HLSEARCH(!hlsearch_on);
+		}
 #endif
 	    }
 	}
