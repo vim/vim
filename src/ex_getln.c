@@ -5498,6 +5498,9 @@ add_to_history(histype, new_entry, in_map, sep)
     if (hislen == 0)		/* no history */
 	return;
 
+    if (cmdmod.keeppatterns && histype == HIST_SEARCH)
+	return;
+
     /*
      * Searches inside the same mapping overwrite each other, so that only
      * the last line is kept.  Be careful not to remove a line that was moved

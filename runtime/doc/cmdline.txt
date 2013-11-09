@@ -356,6 +356,10 @@ terminals)
 		List the recent five entries from all histories: >
 			:history all -5,
 
+:keepp[atterns] {command}			*:keepp* *:keeppatterns*
+		Execute {command}, without adding anything to the search
+		history
+
 ==============================================================================
 2. Command-line completion				*cmdline-completion*
 

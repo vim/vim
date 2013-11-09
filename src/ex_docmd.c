@@ -1843,6 +1843,11 @@ do_one_cmd(cmdlinep, sourcing,
 			    cmdmod.keepalt = TRUE;
 			    continue;
 			}
+			if (checkforcmd(&ea.cmd, "keeppatterns", 5))
+			{
+			    cmdmod.keeppatterns = TRUE;
+			    continue;
+			}
 			if (!checkforcmd(&ea.cmd, "keepjumps", 5))
 			    break;
 			cmdmod.keepjumps = TRUE;
@@ -2584,6 +2589,7 @@ do_one_cmd(cmdlinep, sourcing,
 	    case CMD_keepalt:
 	    case CMD_keepjumps:
 	    case CMD_keepmarks:
+	    case CMD_keeppatterns:
 	    case CMD_leftabove:
 	    case CMD_let:
 	    case CMD_lockmarks:
@@ -3089,6 +3095,7 @@ static struct cmdmod
     {"keepalt", 5, FALSE},
     {"keepjumps", 5, FALSE},
     {"keepmarks", 3, FALSE},
+    {"keeppatterns", 5, FALSE},
     {"leftabove", 5, FALSE},
     {"lockmarks", 3, FALSE},
     {"noautocmd", 3, FALSE},
@@ -3597,6 +3604,7 @@ set_one_cmd_context(xp, buff)
 	case CMD_keepalt:
 	case CMD_keepjumps:
 	case CMD_keepmarks:
+	case CMD_keeppatterns:
 	case CMD_leftabove:
 	case CMD_lockmarks:
 	case CMD_rightbelow:
