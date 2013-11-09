@@ -1436,20 +1436,20 @@ autowrite_all()
 }
 
 /*
- * return TRUE if buffer was changed and cannot be abandoned.
+ * Return TRUE if buffer was changed and cannot be abandoned.
+ * For flags use the CCGD_ values.
  */
     int
-check_changed(buf, checkaw, mult_win, forceit, allbuf)
+check_changed(buf, flags)
     buf_T	*buf;
-    int		checkaw;	/* do autowrite if buffer was changed */
-    int		mult_win;	/* check also when several wins for the buf */
-    int		forceit;
-    int		allbuf UNUSED;	/* may write all buffers */
+    int		flags;
 {
+    int forceit = (flags & CCGD_FORCEIT);
+
     if (       !forceit
 	    && bufIsChanged(buf)
-	    && (mult_win || buf->b_nwindows <= 1)
-	    && (!checkaw || autowrite(buf, forceit) == FAIL))
+	    && ((flags & CCGD_MULTWIN) || buf->b_nwindows <= 1)
+	    && (!(flags & CCGD_AW) || autowrite(buf, forceit) == FAIL))
     {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	if ((p_confirm || cmdmod.confirm) && p_write)
@@ -1457,7 +1457,7 @@ check_changed(buf, checkaw, mult_win, forceit, allbuf)
 	    buf_T	*buf2;
 	    int		count = 0;
 
-	    if (allbuf)
+	    if (flags & CCGD_ALLBUF)
 		for (buf2 = firstbuf; buf2 != NULL; buf2 = buf2->b_next)
 		    if (bufIsChanged(buf2)
 				     && (buf2->b_ffname != NULL
@@ -1480,7 +1480,10 @@ check_changed(buf, checkaw, mult_win, forceit, allbuf)
 	    return bufIsChanged(buf);
 	}
 #endif
-	EMSG(_(e_nowrtmsg));
+	if (flags & CCGD_EXCMD)
+	    EMSG(_(e_nowrtmsg));
+	else
+	    EMSG(_(e_nowrtmsg_nobang));
 	return TRUE;
     }
     return FALSE;
@@ -1690,7 +1693,9 @@ check_changed_any(hidden)
 	{
 	    /* Try auto-writing the buffer.  If this fails but the buffer no
 	    * longer exists it's not changed, that's OK. */
-	    if (check_changed(buf, p_awa, TRUE, FALSE, TRUE) && buf_valid(buf))
+	    if (check_changed(buf, (p_awa ? CCGD_AW : 0)
+				 | CCGD_MULTWIN
+				 | CCGD_ALLBUF) && buf_valid(buf))
 		break;	    /* didn't save - still changes */
 	}
     }
@@ -2274,7 +2279,10 @@ do_argfile(eap, argn)
 		vim_free(p);
 	    }
 	    if ((!P_HID(curbuf) || !other)
-		  && check_changed(curbuf, TRUE, !other, eap->forceit, FALSE))
+		  && check_changed(curbuf, CCGD_AW
+					 | (other ? 0 : CCGD_MULTWIN)
+					 | (eap->forceit ? CCGD_FORCEIT : 0)
+					 | CCGD_EXCMD))
 		return;
 	}
 
@@ -2315,7 +2323,9 @@ ex_next(eap)
      */
     if (       P_HID(curbuf)
 	    || eap->cmdidx == CMD_snext
-	    || !check_changed(curbuf, TRUE, FALSE, eap->forceit, FALSE))
+	    || !check_changed(curbuf, CCGD_AW
+				    | (eap->forceit ? CCGD_FORCEIT : 0)
+				    | CCGD_EXCMD))
     {
 	if (*eap->arg != NUL)		    /* redefine file list */
 	{
@@ -2458,7 +2468,9 @@ ex_listdo(eap)
     if (eap->cmdidx == CMD_windo
 	    || eap->cmdidx == CMD_tabdo
 	    || P_HID(curbuf)
-	    || !check_changed(curbuf, TRUE, FALSE, eap->forceit, FALSE))
+	    || !check_changed(curbuf, CCGD_AW
+				    | (eap->forceit ? CCGD_FORCEIT : 0)
+				    | CCGD_EXCMD))
     {
 	/* start at the first argument/window/buffer */
 	i = 0;

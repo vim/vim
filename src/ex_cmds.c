@@ -3253,8 +3253,10 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
     if (  ((!other_file && !(flags & ECMD_OLDBUF))
 	    || (curbuf->b_nwindows == 1
 		&& !(flags & (ECMD_HIDE | ECMD_ADDBUF))))
-	&& check_changed(curbuf, p_awa, !other_file,
-					(flags & ECMD_FORCEIT), FALSE))
+	&& check_changed(curbuf, (p_awa ? CCGD_AW : 0)
+			       | (other_file ? 0 : CCGD_MULTWIN)
+			       | ((flags & ECMD_FORCEIT) ? CCGD_FORCEIT : 0)
+			       | (eap == NULL ? 0 : CCGD_EXCMD)))
     {
 	if (fnum == 0 && other_file && ffname != NULL)
 	    (void)setaltfname(ffname, sfname, newlnum < 0 ? 0 : newlnum);
@@ -7664,7 +7666,7 @@ ex_drop(eap)
 # ifdef FEAT_WINDOWS
 	    ++emsg_off;
 # endif
-	    split = check_changed(curbuf, TRUE, FALSE, FALSE, FALSE);
+	    split = check_changed(curbuf, CCGD_AW | CCGD_EXCMD);
 # ifdef FEAT_WINDOWS
 	    --emsg_off;
 # else

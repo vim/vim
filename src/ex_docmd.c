@@ -6565,7 +6565,9 @@ ex_quit(eap)
     if (check_more(FALSE, eap->forceit) == OK && only_one_window())
 	exiting = TRUE;
     if ((!P_HID(curbuf)
-		&& check_changed(curbuf, p_awa, FALSE, eap->forceit, FALSE))
+		&& check_changed(curbuf, (p_awa ? CCGD_AW : 0)
+				       | (eap->forceit ? CCGD_FORCEIT : 0)
+				       | CCGD_EXCMD))
 	    || check_more(TRUE, eap->forceit) == FAIL
 	    || (only_one_window() && check_changed_any(eap->forceit)))
     {
@@ -7099,7 +7101,7 @@ handle_drop(filec, filev, split)
     if (!P_HID(curbuf) && !split)
     {
 	++emsg_off;
-	split = check_changed(curbuf, TRUE, FALSE, FALSE, FALSE);
+	split = check_changed(curbuf, CCGD_AW);
 	--emsg_off;
     }
     if (split)
@@ -7361,7 +7363,11 @@ ex_recover(eap)
 {
     /* Set recoverymode right away to avoid the ATTENTION prompt. */
     recoverymode = TRUE;
-    if (!check_changed(curbuf, p_awa, TRUE, eap->forceit, FALSE)
+    if (!check_changed(curbuf, (p_awa ? CCGD_AW : 0)
+			     | CCGD_MULTWIN
+			     | (eap->forceit ? CCGD_FORCEIT : 0)
+			     | CCGD_EXCMD)
+
 	    && (*eap->arg == NUL
 			     || setfname(curbuf, eap->arg, NULL, TRUE) == OK))
 	ml_recover();
