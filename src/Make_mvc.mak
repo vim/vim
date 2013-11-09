@@ -488,7 +488,7 @@ CFLAGS=$(CFLAGS) $(WP64CHECK)
 !endif
 
 # Static code analysis generally available starting with VS2012
-!if ("$(ANALYZE)" == "yes") && ("$(MSVCVER)" == "11.0") && ("$(MSVCVER)" == "12.0")
+!if ("$(ANALYZE)" == "yes") && (("$(MSVCVER)" == "10.0") || ("$(MSVCVER)" == "11.0") || ("$(MSVCVER)" == "12.0"))
 CFLAGS=$(CFLAGS) /analyze
 !endif
 
