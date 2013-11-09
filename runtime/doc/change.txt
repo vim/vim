@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.4.  Last change: 2013 Aug 25
+*change.txt*    For Vim version 7.4.  Last change: 2013 Nov 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -475,8 +475,8 @@ If the 'shiftround' option is on, the indent is rounded to a multiple of
 'shiftwidth'.
 
 If the 'smartindent' option is on, or 'cindent' is on and 'cinkeys' contains
-'#', shift right does not affect lines starting with '#' (these are supposed
-to be C preprocessor lines that must stay in column 1).
+'#' with a zero value, shift right does not affect lines starting with '#'
+(these are supposed to be C preprocessor lines that must stay in column 1).
 
 When the 'expandtab' option is off (this is the default) Vim uses <Tab>s as
 much as possible to make the indent.  You can use ">><<" to replace an indent

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2013 Nov 03
+*todo.txt*      For Vim version 7.4.  Last change: 2013 Nov 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,7 +34,12 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Revert patch 7.4.056?  Do it differently?
+Patch From Lech Lorens doesn't quite work:
+Problem:    When using ":'<,'>del" errors may be given for the visual line
+	    numbers being out of range.
+Solution:   Reset Visual mode in ":del". (Lech Lorens)
+Files:	    src/ex_docmd.c
+
 
 Using \1 in pattern goes one line too far. (Bohr Shaw, 2013 Sep 5)
 Column is OK.  "/\v(^.+\n)\1/e" (John Little, Sep 5)
@@ -58,58 +63,22 @@ Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
 Issue 164: freeze on regexp search.
 
-Patch to Fix Python: DictionaryContains return -1 on error. (ZyX, 2013 Nov 1)
-
-Patch to fix that inserting CR when replacing a Visual block doesn't cause a
-line break. (Christian Brabandt, 2013 Oct 19)
-Check: does CTRL-V CR insert a literal CR?  New patch Oct 21
-With test Oct 22.
-
-When recording the character typed at the hit-enter prompt is recorded twice.
-(Urtica Dioica)  Patch by Christian Brabandt, 2013 Oct 8.
-
 Update for Clojure ftplugin. (Sung Pae).  Await discussion about formatting in
 ftplugins.
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
-Patch to avoid problem with colon in file name. (Yasuhiro Matsumoto, 2013 Sep
-5) Only copy file name when needed: Sep 9.
-
-After inserting comment leader, CTRL-\ CTRL-O does move the cursor.
-(Wiktor Ruben, 2013 Oct 7)
-Patch by Christian Brabandt.
-
 Patch to support slices in Python vim.List. (ZyX, 2013 Oct 20)
 
 Patch to support iterator on Python vim.options. (ZyX, 2013 Nov 2)
 
-Patch to avoid "-no-cpp-precomp" on Mac. (Misty De Meo, demeo, 2013 Oct 19)
-
 Patch to make Dictionary.update() work without arguments.
 (ZyX, 2013 Oct 19)
-
-Patch to make #N in 'cino' stop not indenting #lines. (Christian Brabandt,
-2013 Sep 25)
 
 Patch for Cobol ftplugin. (ZyX, 2013 Oct 20)
 Await response from maintainer.
 
-Can 'undolevels' be a buffer-local option?  Helps for making big changes in
-one file only, set 'ul' to -1 only for that buffer.
-Patch by Christian Brabandt, 2010 Dec 17.  Needs test.
-
 Include systemverilog file?  Two votes yes.
-
-Wrapping around end of file does not work for "." after "cgn".  (Dimitar
-Dimitrov)
-Patch by Christian Brabandt, 2013 Aug 22
-
-Clang error for integer overflow. (Dominique Pelle, 2013 Sep 21)
-
-Patch to add v:hlsearch. (ZyX, 2013 Sep 22)
-
-Patch to fix E315 error. (Lech Lorens, 2013 Oct 26)
 
 Patch to add :keeppatterns, don't put used search patterns in history.
 (Christian Brabandt, 2013 Oct 18)
