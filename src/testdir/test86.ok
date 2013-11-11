@@ -1198,3 +1198,7 @@ vim.eval("Exe('throw ''ghi''')"):error:('ghi',)
 vim.eval("Exe('echoerr ''jkl''')"):error:('Vim(echoerr):jkl',)
 vim.eval("Exe('xxx_non_existent_command_xxx')"):error:('Vim:E492: Not an editor command: xxx_non_existent_command_xxx',)
 vim.bindeval("Exe('xxx_non_existent_command_xxx')"):error:('Vim:E492: Not an editor command: xxx_non_existent_command_xxx',)
+Caught KeyboardInterrupt
+Running :put
+No exception
+

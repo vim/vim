@@ -1281,6 +1281,37 @@ del Exe
 EOF
 :delfunction Exe
 :"
+:" Regression: interrupting vim.command propagates to next vim.command
+py << EOF
+def test_keyboard_interrupt():
+    try:
+        vim.command('while 1 | endwhile')
+    except KeyboardInterrupt:
+        cb.append('Caught KeyboardInterrupt')
+    except Exception:
+        cb.append('!!!!!!!! Caught exception: ' + repr(sys.exc_info))
+    else:
+        cb.append('!!!!!!!! No exception')
+    try:
+        vim.command('$ put =\'Running :put\'')
+    except KeyboardInterrupt:
+        cb.append('!!!!!!!! Caught KeyboardInterrupt')
+    except Exception:
+        cb.append('!!!!!!!! Caught exception: ' + repr(sys.exc_info))
+    else:
+        cb.append('No exception')
+EOF
+:debuggreedy
+:call inputsave()
+:call feedkeys("s\ns\ns\ns\nq\n")
+:redir => output
+:debug silent! py test_keyboard_interrupt()
+:redir END
+:0 debuggreedy
+:silent $put =output
+:unlet output
+:py del test_keyboard_interrupt
+:"
 :" Cleanup
 py << EOF
 del cb
