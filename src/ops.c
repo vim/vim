@@ -2193,7 +2193,8 @@ op_replace(oap, c)
 	    else
 	    {
 		/* Replacing with \r or \n means splitting the line. */
-		after_p = alloc_check((unsigned)oldlen + 1 + n - STRLEN(newp));
+		after_p = alloc_check(
+				   (unsigned)(oldlen + 1 + n - STRLEN(newp)));
 		if (after_p != NULL)
 		    STRMOVE(after_p, oldp);
 	    }
