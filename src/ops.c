@@ -2640,6 +2640,31 @@ op_insert(oap, count1)
     {
 	struct block_def	bd2;
 
+	/* The user may have moved the cursor before inserting something, try
+	 * to adjust the block for that. */
+	if (oap->start.lnum == curbuf->b_op_start.lnum)
+	{
+	    if (oap->op_type == OP_INSERT
+		    && oap->start.col != curbuf->b_op_start.col)
+	    {
+		oap->start.col = curbuf->b_op_start.col;
+		pre_textlen -= getviscol2(oap->start.col, oap->start.coladd)
+							    - oap->start_vcol;
+		oap->start_vcol = getviscol2(oap->start.col, oap->start.coladd);
+	    }
+	    else if (oap->op_type == OP_APPEND
+		    && oap->end.col >= curbuf->b_op_start.col)
+	    {
+		oap->start.col = curbuf->b_op_start.col;
+		/* reset pre_textlen to the value of OP_INSERT */
+		pre_textlen += bd.textlen;
+		pre_textlen -= getviscol2(oap->start.col, oap->start.coladd)
+							    - oap->start_vcol;
+		oap->start_vcol = getviscol2(oap->start.col, oap->start.coladd);
+		oap->op_type = OP_INSERT;
+	    }
+	}
+
 	/*
 	 * Spaces and tabs in the indent may have changed to other spaces and
 	 * tabs.  Get the starting column again and correct the length.

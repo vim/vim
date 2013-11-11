@@ -19,6 +19,10 @@ Gllllkkklllrq
 :" Test block-change
 G$khhhhhkkcmno
 :$-4,$w! test.out
+:" Test block-insert using cursor keys for movement
+/^aaaa/
+:exe ":norm! l\<C-V>jjjlllI\<Right>\<Right>  \<Esc>"
+:/^aa/,/^$/w >> test.out
 :" gUe must uppercase a whole word, also when ß changes to SS
 Gothe youtußeuu endYpk0wgUe
 :" gUfx must uppercase until x, inclusive.
@@ -39,6 +43,11 @@ G3o987652k02l2jr
 :/^the/,$w >> test.out
 :qa!
 ENDTEST
+
+aaaaaa
+bbbbbb
+cccccc
+dddddd
 
 abcdefghijklm
 abcdefghijklm
