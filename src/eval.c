@@ -19845,24 +19845,30 @@ handle_subscript(arg, rettv, evaluate, verbose)
     while (ret == OK
 	    && (**arg == '['
 		|| (**arg == '.' && rettv->v_type == VAR_DICT)
-		|| (**arg == '(' && rettv->v_type == VAR_FUNC))
+		|| (**arg == '(' && (!evaluate || rettv->v_type == VAR_FUNC)))
 	    && !vim_iswhite(*(*arg - 1)))
     {
 	if (**arg == '(')
 	{
 	    /* need to copy the funcref so that we can clear rettv */
-	    functv = *rettv;
-	    rettv->v_type = VAR_UNKNOWN;
+	    if (evaluate)
+	    {
+		functv = *rettv;
+		rettv->v_type = VAR_UNKNOWN;
 
-	    /* Invoke the function.  Recursive! */
-	    s = functv.vval.v_string;
+		/* Invoke the function.  Recursive! */
+		s = functv.vval.v_string;
+	    }
+	    else
+		s = (char_u *)"";
 	    ret = get_func_tv(s, (int)STRLEN(s), rettv, arg,
 			curwin->w_cursor.lnum, curwin->w_cursor.lnum,
 			&len, evaluate, selfdict);
 
 	    /* Clear the funcref afterwards, so that deleting it while
 	     * evaluating the arguments is possible (see test55). */
-	    clear_tv(&functv);
+	    if (evaluate)
+		clear_tv(&functv);
 
 	    /* Stop the expression evaluation when immediately aborting on
 	     * error, or when an interrupt occurred or an exception was thrown
