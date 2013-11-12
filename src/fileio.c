@@ -6708,7 +6708,7 @@ vim_rename(from, to)
     mch_free_acl(acl);
 #endif
 #ifdef HAVE_SELINUX
-    mch_copy_sec(from, to)
+    mch_copy_sec(from, to);
 #endif
     if (errmsg != NULL)
     {
