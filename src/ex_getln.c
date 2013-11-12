@@ -3852,9 +3852,9 @@ vim_strsave_fnameescape(fname, shell)
     char_u	buf[20];
     int		j = 0;
 
-    /* Don't escape '[' and '{' if they are in 'isfname'. */
+    /* Don't escape '[', '{' and '!' if they are in 'isfname'. */
     for (p = PATH_ESC_CHARS; *p != NUL; ++p)
-	if ((*p != '[' && *p != '{') || !vim_isfilec(*p))
+	if ((*p != '[' && *p != '{' && *p != '!') || !vim_isfilec(*p))
 	    buf[j++] = *p;
     buf[j] = NUL;
     p = vim_strsave_escaped(fname, buf);
