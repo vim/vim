@@ -754,9 +754,9 @@ static int	    did_set_spelltab;
 static void clear_spell_chartab __ARGS((spelltab_T *sp));
 static int set_spell_finish __ARGS((spelltab_T	*new_st));
 static int spell_iswordp __ARGS((char_u *p, win_T *wp));
-static int spell_iswordp_nmw __ARGS((char_u *p));
+static int spell_iswordp_nmw __ARGS((char_u *p, win_T *wp));
 #ifdef FEAT_MBYTE
-static int spell_mb_isword_class __ARGS((int cl));
+static int spell_mb_isword_class __ARGS((int cl, win_T *wp));
 static int spell_iswordp_w __ARGS((int *p, win_T *wp));
 #endif
 static int write_spell_prefcond __ARGS((FILE *fd, garray_T *gap));
@@ -1149,7 +1149,7 @@ spell_check(wp, ptr, attrp, capcol, docount)
 
 	/* When we are at a non-word character there is no error, just
 	 * skip over the character (try looking for a word after it). */
-	else if (!spell_iswordp_nmw(ptr))
+	else if (!spell_iswordp_nmw(ptr, wp))
 	{
 	    if (capcol != NULL && wp->w_s->b_cap_prog != NULL)
 	    {
@@ -1561,7 +1561,7 @@ find_word(mip, mode)
 			 * accept a no-caps word, even when the dictionary
 			 * word specifies ONECAP. */
 			mb_ptr_back(mip->mi_word, p);
-			if (spell_iswordp_nmw(p)
+			if (spell_iswordp_nmw(p, mip->mi_win)
 				? capflags == WF_ONECAP
 				: (flags & WF_ONECAP) != 0
 						     && capflags != WF_ONECAP)
@@ -4234,13 +4234,21 @@ did_set_spelllang(wp)
     if (spl_copy == NULL)
 	goto theend;
 
-    /* loop over comma separated language names. */
+    wp->w_s->b_cjk = 0;
+
+    /* Loop over comma separated language names. */
     for (splp = spl_copy; *splp != NUL; )
     {
 	/* Get one language name. */
 	copy_option_part(&splp, lang, MAXWLEN, ",");
 	region = NULL;
 	len = (int)STRLEN(lang);
+
+	if (STRCMP(lang, "cjk") == 0)
+	{
+	    wp->w_s->b_cjk = 1;
+	    continue;
+	}
 
 	/* If the name ends in ".spl" use it as the name of the spell file.
 	 * If there is a region name let "region" point to it and remove it
@@ -4601,7 +4609,7 @@ captype(word, end)
     int		past_second = FALSE;	/* past second word char */
 
     /* find first letter */
-    for (p = word; !spell_iswordp_nmw(p); mb_ptr_adv(p))
+    for (p = word; !spell_iswordp_nmw(p, curwin); mb_ptr_adv(p))
 	if (end == NULL ? *p == NUL : p >= end)
 	    return 0;	    /* only non-word characters, illegal word */
 #ifdef FEAT_MBYTE
@@ -4617,7 +4625,7 @@ captype(word, end)
      * But a word with an upper char only at start is a ONECAP.
      */
     for ( ; end == NULL ? *p != NUL : p < end; mb_ptr_adv(p))
-	if (spell_iswordp_nmw(p))
+	if (spell_iswordp_nmw(p, curwin))
 	{
 	    c = PTR2CHAR(p);
 	    if (!SPELL_ISUPPER(c))
@@ -9907,7 +9915,7 @@ spell_iswordp(p, wp)
 
 	c = mb_ptr2char(s);
 	if (c > 255)
-	    return spell_mb_isword_class(mb_get_class(s));
+	    return spell_mb_isword_class(mb_get_class(s), wp);
 	return spelltab.st_isw[c];
     }
 #endif
@@ -9920,8 +9928,9 @@ spell_iswordp(p, wp)
  * Unlike spell_iswordp() this doesn't check for "midword" characters.
  */
     static int
-spell_iswordp_nmw(p)
+spell_iswordp_nmw(p, wp)
     char_u	*p;
+    win_T	*wp;
 {
 #ifdef FEAT_MBYTE
     int		c;
@@ -9930,7 +9939,7 @@ spell_iswordp_nmw(p)
     {
 	c = mb_ptr2char(p);
 	if (c > 255)
-	    return spell_mb_isword_class(mb_get_class(p));
+	    return spell_mb_isword_class(mb_get_class(p), wp);
 	return spelltab.st_isw[c];
     }
 #endif
@@ -9942,11 +9951,16 @@ spell_iswordp_nmw(p)
  * Return TRUE if word class indicates a word character.
  * Only for characters above 255.
  * Unicode subscript and superscript are not considered word characters.
+ * See also dbcs_class() and utf_class() in mbyte.c.
  */
     static int
-spell_mb_isword_class(cl)
-    int cl;
+spell_mb_isword_class(cl, wp)
+    int		cl;
+    win_T	*wp;
 {
+    if (wp->w_s->b_cjk)
+	/* East Asian characters are not considered word characters. */
+	return cl == 2 || cl == 0x2800;
     return cl >= 2 && cl != 0x2070 && cl != 0x2080;
 }
 
@@ -9971,9 +9985,10 @@ spell_iswordp_w(p, wp)
     if (*s > 255)
     {
 	if (enc_utf8)
-	    return spell_mb_isword_class(utf_class(*s));
+	    return spell_mb_isword_class(utf_class(*s), wp);
 	if (enc_dbcs)
-	    return dbcs_class((unsigned)*s >> 8, *s & 0xff) >= 2;
+	    return spell_mb_isword_class(
+				dbcs_class((unsigned)*s >> 8, *s & 0xff), wp);
 	return 0;
     }
     return spelltab.st_isw[*s];
@@ -10193,13 +10208,13 @@ spell_suggest(count)
 	line = ml_get_curline();
 	p = line + curwin->w_cursor.col;
 	/* Backup to before start of word. */
-	while (p > line && spell_iswordp_nmw(p))
+	while (p > line && spell_iswordp_nmw(p, curwin))
 	    mb_ptr_back(line, p);
 	/* Forward to start of word. */
-	while (*p != NUL && !spell_iswordp_nmw(p))
+	while (*p != NUL && !spell_iswordp_nmw(p, curwin))
 	    mb_ptr_adv(p);
 
-	if (!spell_iswordp_nmw(p))		/* No word found. */
+	if (!spell_iswordp_nmw(p, curwin))		/* No word found. */
 	{
 	    beep_flush();
 	    return;
@@ -10436,7 +10451,7 @@ check_need_cap(lnum, col)
 	for (;;)
 	{
 	    mb_ptr_back(line, p);
-	    if (p == line || spell_iswordp_nmw(p))
+	    if (p == line || spell_iswordp_nmw(p, curwin))
 		break;
 	    if (vim_regexec(&regmatch, p, 0)
 					 && regmatch.endp[0] == line + endcol)
@@ -11645,7 +11660,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 
 		/* When appending a compound word after a word character don't
 		 * use Onecap. */
-		if (p != NULL && spell_iswordp_nmw(p))
+		if (p != NULL && spell_iswordp_nmw(p, curwin))
 		    c &= ~WF_ONECAP;
 		make_case_word(tword + sp->ts_splitoff,
 					      preword + sp->ts_prewordlen, c);
@@ -11895,7 +11910,8 @@ suggest_trie_walk(su, lp, fword, soundfold)
 			 * character when the word ends.  But only when the
 			 * good word can end. */
 			if (((!try_compound && !spell_iswordp_nmw(fword
-							       + sp->ts_fidx))
+							       + sp->ts_fidx,
+							       curwin))
 				    || fword_ends)
 				&& fword[sp->ts_fidx] != NUL
 				&& goodword_ends)
@@ -14226,7 +14242,7 @@ spell_soundfold_sal(slang, inword, res)
 	    }
 	    else
 	    {
-		if (spell_iswordp_nmw(s))
+		if (spell_iswordp_nmw(s, curwin))
 		    *t++ = *s;
 		++s;
 	    }
@@ -14521,7 +14537,7 @@ spell_soundfold_wsal(slang, inword, res)
 	    else
 	    {
 		did_white = FALSE;
-		if (!spell_iswordp_nmw(t))
+		if (!spell_iswordp_nmw(t, curwin))
 		    continue;
 	    }
 	}
@@ -16045,7 +16061,7 @@ spell_word_start(startcol)
     for (p = line + startcol; p > line; )
     {
 	mb_ptr_back(line, p);
-	if (spell_iswordp_nmw(p))
+	if (spell_iswordp_nmw(p, curwin))
 	    break;
     }
 

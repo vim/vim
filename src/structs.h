@@ -1310,6 +1310,9 @@ typedef struct {
     regprog_T	*b_cap_prog;	/* program for 'spellcapcheck' */
     char_u	*b_p_spf;	/* 'spellfile' */
     char_u	*b_p_spl;	/* 'spelllang' */
+# ifdef FEAT_MBYTE
+    int		b_cjk;		/* all CJK letters as OK */
+# endif
 #endif
 #if !defined(FEAT_SYN_HL) && !defined(FEAT_SPELL)
     int		dummy;

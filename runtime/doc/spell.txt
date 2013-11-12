@@ -269,6 +269,13 @@ In a table:
 	latin1		yi		transliterated Yiddish
 	utf-8		yi-tr		transliterated Yiddish
 
+							*spell-cjk*
+Chinese, Japanese and other East Asian characters are normally marked as
+errors, because spell checking of these characters is not supported. If
+'spelllang' includes "cjk", these characters are not marked as errors.  This
+is useful when editing text with spell checking while some Asian words are
+present.
+
 
 SPELL FILES						*spell-load*
 

@@ -6555,6 +6555,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	region by listing them: "en_us,en_ca" supports both US and Canadian
 	English, but not words specific for Australia, New Zealand or Great
 	Britain.
+	If the name "cjk" is included East Asian characters are excluded from
+	spell checking.  This is useful when editing text that also has Asian
+	words.
 							*E757*
 	As a special case the name of a .spl file can be given as-is.  The
 	first "_xx" in the name is removed and used as the region name

@@ -7122,6 +7122,11 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	if (varp == &(curwin->w_s->b_p_spl))
 	{
 	    char_u	fname[200];
+	    char_u	*q = curwin->w_s->b_p_spl;
+
+	    /* Skip the first name if it is "cjk". */
+	    if (STRNCMP(q, "cjk,", 4) == 0)
+		q += 4;
 
 	    /*
 	     * Source the spell/LANG.vim in 'runtimepath'.
@@ -7129,11 +7134,10 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	     * Use the first name in 'spelllang' up to '_region' or
 	     * '.encoding'.
 	     */
-	    for (p = curwin->w_s->b_p_spl; *p != NUL; ++p)
+	    for (p = q; *p != NUL; ++p)
 		if (vim_strchr((char_u *)"_.,", *p) != NULL)
 		    break;
-	    vim_snprintf((char *)fname, 200, "spell/%.*s.vim",
-				 (int)(p - curwin->w_s->b_p_spl), curwin->w_s->b_p_spl);
+	    vim_snprintf((char *)fname, 200, "spell/%.*s.vim", (int)(p - q), q);
 	    source_runtime(fname, TRUE);
 	}
 #endif

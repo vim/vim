@@ -947,8 +947,8 @@ dbcs_class(lead, trail)
 		{
 		    case 0x2121: /* ZENKAKU space */
 			return 0;
-		    case 0x2122: /* KU-TEN (Japanese comma) */
-		    case 0x2123: /* TOU-TEN (Japanese period) */
+		    case 0x2122: /* TOU-TEN (Japanese comma) */
+		    case 0x2123: /* KU-TEN (Japanese period) */
 		    case 0x2124: /* ZENKAKU comma */
 		    case 0x2125: /* ZENKAKU period */
 			return 1;
@@ -2477,9 +2477,9 @@ utf_class(c)
     /* sorted list of non-overlapping intervals */
     static struct clinterval
     {
-	unsigned short first;
-	unsigned short last;
-	unsigned short class;
+	unsigned int first;
+	unsigned int last;
+	unsigned int class;
     } classes[] =
     {
 	{0x037e, 0x037e, 1},		/* Greek question mark */
@@ -2544,6 +2544,10 @@ utf_class(c)
 	{0xff1a, 0xff20, 1},		/* half/fullwidth ASCII */
 	{0xff3b, 0xff40, 1},		/* half/fullwidth ASCII */
 	{0xff5b, 0xff65, 1},		/* half/fullwidth ASCII */
+	{0x20000, 0x2a6df, 0x4e00},	/* CJK Ideographs */
+	{0x2a700, 0x2b73f, 0x4e00},	/* CJK Ideographs */
+	{0x2b740, 0x2b81f, 0x4e00},	/* CJK Ideographs */
+	{0x2f800, 0x2fa1f, 0x4e00},	/* CJK Ideographs */
     };
     int bot = 0;
     int top = sizeof(classes) / sizeof(struct clinterval) - 1;
@@ -2563,9 +2567,9 @@ utf_class(c)
     while (top >= bot)
     {
 	mid = (bot + top) / 2;
-	if (classes[mid].last < c)
+	if (classes[mid].last < (unsigned int)c)
 	    bot = mid + 1;
-	else if (classes[mid].first > c)
+	else if (classes[mid].first > (unsigned int)c)
 	    top = mid - 1;
 	else
 	    return (int)classes[mid].class;
