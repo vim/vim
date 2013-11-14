@@ -638,7 +638,7 @@ NOTA:  Tutti i comandi  :  devono essere terminati premendo <INVIO>
 NOTA: Se esci da Vim e riesegui Vim battendo  vim TEST , il file aperto
       sarà una copia esatta di "tutor.it" al momento del salvataggio.
 
-  5. Ora cancella il file battendo (MR-DOS):   :!del TEST
+  5. Ora cancella il file battendo (MS-DOS):   :!del TEST
 				 o (Unix):     :!rm TEST
 
 

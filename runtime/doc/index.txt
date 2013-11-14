@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.4.  Last change: 2013 Oct 01
+*index.txt*     For Vim version 7.4.  Last change: 2013 Nov 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1275,6 +1275,7 @@ tag	      command	      action ~
 |:keepalt|	:keepa[lt]	following command keeps the alternate file
 |:keepmarks|	:kee[pmarks]	following command keeps marks where they are
 |:keepjumps|	:keepj[umps]	following command keeps jumplist and marks
+|:keeppatterns|	:keepp[atterns]	following command keeps search pattern history
 |:lNext|	:lN[ext]	go to previous entry in location list
 |:lNfile|	:lNf[ile]	go to last entry in previous file
 |:list|		:l[ist]		print lines

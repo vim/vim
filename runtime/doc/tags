@@ -2300,6 +2300,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :keepj	motion.txt	/*:keepj*
 :keepjumps	motion.txt	/*:keepjumps*
 :keepmarks	motion.txt	/*:keepmarks*
+:keepp	cmdline.txt	/*:keepp*
+:keeppatterns	cmdline.txt	/*:keeppatterns*
 :l	various.txt	/*:l*
 :lN	quickfix.txt	/*:lN*
 :lNext	quickfix.txt	/*:lNext*
@@ -7791,6 +7793,7 @@ spell-affix-flags	spell.txt	/*spell-affix-flags*
 spell-affix-mbyte	spell.txt	/*spell-affix-mbyte*
 spell-affix-not-supported	spell.txt	/*spell-affix-not-supported*
 spell-affix-vim	spell.txt	/*spell-affix-vim*
+spell-cjk	spell.txt	/*spell-cjk*
 spell-compound	spell.txt	/*spell-compound*
 spell-dic-format	spell.txt	/*spell-dic-format*
 spell-double-scoring	spell.txt	/*spell-double-scoring*

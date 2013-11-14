@@ -2,14 +2,11 @@
 " Language:	Microsoft Macro Assembler (80x86)
 " Orig Author:	Rob Brady <robb@datatone.com>
 " Maintainer:	Wu Yongwei <wuyongwei@gmail.com>
-" Last Change:	$Date: 2012/02/04 12:45:39 $
-" $Revision: 1.46 $
+" Last Change:	$Date: 2013/11/13 11:49:24 $
+" $Revision: 1.48 $
 
-" For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+" Quit when a syntax file was already loaded
+if exists("b:current_syntax")
   finish
 endif
 
@@ -194,6 +191,10 @@ syn keyword masmRegister	R8D R9D R10D R11D R12D R13D R14D R15D
 syn keyword masmRegister	R8W R9W R10W R11W R12W R13W R14W R15W
 syn keyword masmRegister	R8B R9B R10B R11B R12B R13B R14B R15B
 
+" SSE/AVX registers
+syn match   masmRegister	"\(X\|Y\)MM[0-9]\>"
+syn match   masmRegister	"\(X\|Y\)MM1[0-5]\>"
+
 " Instruction prefixes
 syn keyword masmOpcode		LOCK REP REPE REPNE REPNZ REPZ
 
@@ -302,50 +303,69 @@ syn keyword masmOpcode		FISTTP LDDQU ADDSUBPS ADDSUBPD
 syn keyword masmOpcode		HADDPS HSUBPS HADDPD HSUBPD
 syn keyword masmOpcode		MOVSHDUP MOVSLDUP MOVDDUP MONITOR MWAIT
 
+" SSSE3 opcodes (Core and later)
+syn keyword masmOpcode		PSIGNB PSIGNW PSIGND PABSB PABSW PABSD
+syn keyword masmOpcode		PALIGNR PSHUFB PMULHRSW PMADDUBSW
+syn keyword masmOpcode		PHSUBW PHSUBD PHSUBSW PHADDW PHADDD PHADDSW
+
+" SSE 4.1 opcodes (Penryn and later)
+syn keyword masmOpcode		MPSADBW PHMINPOSUW PMULDQ PMULLD DPPS DPPD
+syn keyword masmOpcode		BLENDPS BLENDPD BLENDVPS BLENDVPD
+syn keyword masmOpcode		PBLENDVB PBLENDW
+syn keyword masmOpcode		PMINSB PMAXSB PMINSD PMAXSD
+syn keyword masmOpcode		PMINUW PMAXUW PMINUD PMAXUD
+syn keyword masmOpcode		ROUNDPS ROUNDSS ROUNDPD ROUNDSD
+syn keyword masmOpcode		INSERTPS PINSRB PINSRD PINSRQ
+syn keyword masmOpcode		EXTRACTPS PEXTRB PEXTRD PEXTRQ
+syn keyword masmOpcode		PMOVSXBW PMOVZXBW PMOVSXBD PMOVZXBD
+syn keyword masmOpcode		PMOVSXBQ PMOVZXBQ PMOVSXWD PMOVZXWD
+syn keyword masmOpcode		PMOVSXWQ PMOVZXWQ PMOVSXDQ PMOVZXDQ
+syn keyword masmOpcode		PTEST PCMPEQQ PACKUSDW MOVNTDQA
+
+" SSE 4.2 opcodes (Nehalem and later)
+syn keyword masmOpcode		PCMPESTRI PCMPESTRM PCMPISTRI PCMPISTRM PCMPGTQ
+syn keyword masmOpcode		CRC32 POPCNT LZCNT
+
+" AES-NI (Westmere (2010) and later)
+syn keyword masmOpcode		AESENC AESENCLAST AESDEC AESDECLAST
+syn keyword masmOpcode		AESKEYGENASSIST AESIMC PCLMULQDQ
+
+" AVX (Sandy Bridge (2011) and later)
+syn keyword masmOpcode		VBROADCASTSS VBROADCASTSD VBROADCASTF128
+syn keyword masmOpcode		VINSERTF128 VEXTRACTF128 VMASKMOVPS VMASKMOVPD
+syn keyword masmOpcode		VPERMILPS VPERMILPD VPERM2F128
+syn keyword masmOpcode		VZEROALL VZEROUPPER
+
 " Other opcodes in Pentium and later processors
 syn keyword masmOpcode		CMPXCHG8B CPUID UD2
 syn keyword masmOpcode		RSM RDMSR WRMSR RDPMC RDTSC SYSENTER SYSEXIT
 syn match   masmOpcode	   "CMOV\(P[EO]\|\(N\?\([ABGL]E\?\|[CEOPSZ]\)\)\)\>"
 
 
-" Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_masm_syntax_inits")
-  if version < 508
-    let did_masm_syntax_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
+" The default highlighting
+hi def link masmLabel		PreProc
+hi def link masmComment		Comment
+hi def link masmDirective	Statement
+hi def link masmType		Type
+hi def link masmOperator	Type
+hi def link masmOption		Special
+hi def link masmRegister	Special
+hi def link masmString		String
+hi def link masmText		String
+hi def link masmTitle		Title
+hi def link masmOpcode		Statement
+hi def link masmOpFloat		Statement
 
-  " The default methods for highlighting.  Can be overridden later
-  HiLink masmLabel	PreProc
-  HiLink masmComment	Comment
-  HiLink masmDirective	Statement
-  HiLink masmType	Type
-  HiLink masmOperator	Type
-  HiLink masmOption	Special
-  HiLink masmRegister	Special
-  HiLink masmString	String
-  HiLink masmText	String
-  HiLink masmTitle	Title
-  HiLink masmOpcode	Statement
-  HiLink masmOpFloat	Statement
+hi def link masmHexadecimal	Number
+hi def link masmDecimal		Number
+hi def link masmOctal		Number
+hi def link masmBinary		Number
+hi def link masmFloatRaw	Number
+hi def link masmFloat		Number
 
-  HiLink masmHexadecimal Number
-  HiLink masmDecimal	Number
-  HiLink masmOctal	Number
-  HiLink masmBinary	Number
-  HiLink masmFloatRaw	Number
-  HiLink masmFloat	Number
+hi def link masmIdentifier	Identifier
 
-  HiLink masmIdentifier Identifier
-
-  syntax sync minlines=50
-
-  delcommand HiLink
-endif
+syntax sync minlines=50
 
 let b:current_syntax = "masm"
 

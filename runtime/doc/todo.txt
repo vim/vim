@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2013 Nov 09
+*todo.txt*      For Vim version 7.4.  Last change: 2013 Nov 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -80,9 +80,6 @@ Await response from maintainer.
 
 Include systemverilog file?  Two votes yes.
 
-Patch to add :keeppatterns, don't put used search patterns in history.
-(Christian Brabandt, 2013 Oct 18)
-
 Problem with 'spellsuggest' file, only works for some words.
 (Cesar Romani, 2013 Aug 20)  Depends on file name? (Aug 24)
 Additional remark by glts: the suggested words are marked bad?
@@ -93,44 +90,18 @@ Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 
 Issue 174: Detect Mason files.
 
-Patch for Python: Fix interrupt not being properly discarded in VimTryEnd.
-With tests.  (ZyX, 2013 Oct 19)  Reported by Yggdroot Chen.
-
 Patch to make has() check for Vim version and patch at the same time.
 (Marc Weber, 2013 Jun 7)
-
-Patch to fix Visual-block insert using cursor keys. (Christian Brabandt, 2013
-Sep 28)  With test Sept 29.
 
 VMS: Select() doesn't work properly, typing ESC may hang Vim.  Use sys$qiow
 instead. (Samuel Ferencik, 2013 Sep 28)
 
-Series of patches for NL vs NUL handling. (ZyX, 2013 Nov 3)
+Series of patches for NL vs NUL handling. (ZyX, 2013 Nov 3, Nov 9)
 
 Perl: support for Activestate perl 5.18: Issue 170.
 
-Bug: Does not skip over expression with dict member properly. (ZyX, 2013 Sep
-29)
-Patch to fix expr7() when skipping. (2013 Oct 15) Oct 23 with test.
-
 Several syntax file match "^\s*" which may get underlined if that's in the
 highlight group.  Add a "\zs" after it?
-
--   Have an option for spell checking to not mark any Chinese, Japanese or
-    other double-width characters (or CJK characters) as error.
-    Helps a lot for mixed Asian and latin text.
-    More general: Have some way not to give spelling errors for a range of
-    characters.
-Patch to add "cjk" to 'spelllang'. (Ken Takata, 2013 Oct 8, second one)
-
-Patch to add mch_copy_sec() to vim_rename().
-bug report on redhat.  (Peter Backes, 2013 oct 8)
-Patch to vim-dev, 2013 Oct 9.
-
-Win32: When a directory name contains an exclamation mark, completion doesn't
-complete the contents of the directory.  No escaping for the "!"? (Jan
-Stocker, 2012 Jan 5; 2013 Aug 20)
-Patch 2013 Sept 10, test: Sept 11.
 
 Go through more coverity reports.
 
@@ -148,6 +119,7 @@ With "$" in 'cpoptions' the popup menu isn't fully drawn. (Matti Niemenmaa,
 
 "gUgn" cannot be repeated, while "dgn" can. (Dimitar Dimitrov)
 Patch by Christian Brabandt (2013 Aug 12)
+Also notes by Christian Wellenbrock, Nov 13.
 
 Several Win32 functions are not using Unicode.
 Patches to fix this. (Ken Takata, 2013 Aug 9)
@@ -223,7 +195,7 @@ carried over when using :global. (Christian Brabandt, 2013 Jun 19)
 Bug with 'cursorline' in diff mode.  Line being scrolled into view gets
 highlighted as the cursor line.  (Alessandro Ivaldi, 2013 Jun 4)
 
-Two highlighting bugs. (Zyx, 2013 Aug 18)
+Two highlighting bugs. (ZyX, 2013 Aug 18)
 
 Patch to add the bufferlist() function. (Yegappan Lakshmanan, 2013 May 5)
 May 17: with winlist() and tabpagelist().
@@ -980,7 +952,7 @@ Session file generates error upon loading, cause by --remote-silent-tab.
 Using ~ works OK on 'a' with composing char, but not on 0x0418  with composing
 char 0x0301. (Tony Mechelynck, 2009 Mar 4)
 
-A function on a dictionary is not profiled. (Zyx, 2010 Dec 25)
+A function on a dictionary is not profiled. (ZyX, 2010 Dec 25)
 
 Inconsistent: starting with $LANG set to es_ES.utf-8 gives Spanish
 messages, even though locale is not supported.  But ":lang messages
@@ -1425,6 +1397,8 @@ Menu item that does "xxd -r" doesn't work when 'fileencoding' is utf-16.
 Check for this and use iconv?  (Edward L. Fox, 2007 Sep 12)
 Does the conversion in the other direction work when 'fileencodings' is set
 properly?
+
+Add a few features to xxd. (Vadim Vygonets, 2013 Nov 11)
 
 Cursor displayed in the wrong position when using 'numberwidth'. (James Vega,
 2007 Jun 21)
