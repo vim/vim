@@ -4234,7 +4234,9 @@ did_set_spelllang(wp)
     if (spl_copy == NULL)
 	goto theend;
 
+#ifdef FEAT_MBYTE
     wp->w_s->b_cjk = 0;
+#endif
 
     /* Loop over comma separated language names. */
     for (splp = spl_copy; *splp != NUL; )
@@ -4246,7 +4248,9 @@ did_set_spelllang(wp)
 
 	if (STRCMP(lang, "cjk") == 0)
 	{
+#ifdef FEAT_MBYTE
 	    wp->w_s->b_cjk = 1;
+#endif
 	    continue;
 	}
 
