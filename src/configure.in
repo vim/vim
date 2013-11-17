@@ -3725,6 +3725,9 @@ if test "$MANDEF" = "man -s"; then
 fi
 
 dnl Check if gettext() is working and if it needs -lintl
+dnl We take care to base this on an empty LIBS: on some systems libelf would be
+dnl in LIBS and implicitly take along libintl. The final LIBS would then not
+dnl contain libintl, and the link step would fail due to -Wl,--as-needed.
 AC_MSG_CHECKING(--disable-nls argument)
 AC_ARG_ENABLE(nls,
 	[  --disable-nls           Don't support NLS (gettext()).], ,
@@ -3743,16 +3746,18 @@ if test "$enable_nls" = "yes"; then
   if test -f po/Makefile; then
     have_gettext="no"
     if test -n "$MSGFMT"; then
+      olibs=$LIBS
+      LIBS=""
       AC_TRY_LINK(
 	[#include <libintl.h>],
 	[gettext("Test");],
-	AC_MSG_RESULT([gettext() works]); have_gettext="yes",
-	  olibs=$LIBS
-	  LIBS="$LIBS -lintl"
+	AC_MSG_RESULT([gettext() works]); have_gettext="yes"; LIBS=$olibs,
+	  LIBS="-lintl"
 	  AC_TRY_LINK(
 	      [#include <libintl.h>],
 	      [gettext("Test");],
-	      AC_MSG_RESULT([gettext() works with -lintl]); have_gettext="yes",
+	      AC_MSG_RESULT([gettext() works with -lintl]); have_gettext="yes";
+	      LIBS="$olibs -lintl",
 	      AC_MSG_RESULT([gettext() doesn't work]);
 	      LIBS=$olibs))
     else

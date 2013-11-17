@@ -12690,6 +12690,8 @@ $as_echo_n "checking for NLS... " >&6; }
   if test -f po/Makefile; then
     have_gettext="no"
     if test -n "$MSGFMT"; then
+      olibs=$LIBS
+      LIBS=""
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <libintl.h>
@@ -12703,10 +12705,9 @@ gettext("Test");
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: gettext() works" >&5
-$as_echo "gettext() works" >&6; }; have_gettext="yes"
+$as_echo "gettext() works" >&6; }; have_gettext="yes"; LIBS=$olibs
 else
-  olibs=$LIBS
-	  LIBS="$LIBS -lintl"
+  LIBS="-lintl"
 	  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <libintl.h>
@@ -12720,7 +12721,8 @@ gettext("Test");
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: gettext() works with -lintl" >&5
-$as_echo "gettext() works with -lintl" >&6; }; have_gettext="yes"
+$as_echo "gettext() works with -lintl" >&6; }; have_gettext="yes";
+	      LIBS="$olibs -lintl"
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: gettext() doesn't work" >&5
 $as_echo "gettext() doesn't work" >&6; };
