@@ -3844,7 +3844,11 @@ do_put(regname, dir, count, flags)
 		    ml_replace(lnum, newp, FALSE);
 		    /* Place cursor on last putted char. */
 		    if (lnum == curwin->w_cursor.lnum)
+		    {
+			/* make sure curwin->w_virtcol is updated */
+			changed_cline_bef_curs();
 			curwin->w_cursor.col += (colnr_T)(totlen - 1);
+		    }
 		}
 #ifdef FEAT_VISUAL
 		if (VIsual_active)
