@@ -1192,23 +1192,29 @@ install_vimrc(int idx)
 	fprintf(fd, "  if arg3 =~ ' ' | let arg3 = '\"' . arg3 . '\"' | endif\n");
 
 	/* If the path has a space:  When using cmd.exe (Win NT/2000/XP) put
-	 * quotes around the whole command and around the diff command.
+	 * quotes around the diff command and rely on the default value of
+         * shellxquote to solve the quoting problem for the whole command.
+         *
 	 * Otherwise put a double quote just before the space and at the
 	 * end of the command.  Putting quotes around the whole thing
 	 * doesn't work on Win 95/98/ME.  This is mostly guessed! */
-	fprintf(fd, "  let eq = ''\n");
 	fprintf(fd, "  if $VIMRUNTIME =~ ' '\n");
 	fprintf(fd, "    if &sh =~ '\\<cmd'\n");
-	fprintf(fd, "      let cmd = '\"\"' . $VIMRUNTIME . '\\diff\"'\n");
-	fprintf(fd, "      let eq = '\"'\n");
+	fprintf(fd, "      if empty(&shellxquote)\n");
+	fprintf(fd, "        let l:shxq_sav = ''\n");
+	fprintf(fd, "        set shellxquote&\n");
+	fprintf(fd, "      endif\n");
+	fprintf(fd, "      let cmd = '\"' . $VIMRUNTIME . '\\diff\"'\n");
 	fprintf(fd, "    else\n");
 	fprintf(fd, "      let cmd = substitute($VIMRUNTIME, ' ', '\" ', '') . '\\diff\"'\n");
 	fprintf(fd, "    endif\n");
 	fprintf(fd, "  else\n");
 	fprintf(fd, "    let cmd = $VIMRUNTIME . '\\diff'\n");
 	fprintf(fd, "  endif\n");
-	fprintf(fd, "  silent execute '!' . cmd . ' ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3 . eq\n");
-
+	fprintf(fd, "  silent execute '!' . cmd . ' ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3\n");
+	fprintf(fd, "  if exists('l:shxq_sav')\n");
+	fprintf(fd, "    let &shellxquote=l:shxq_sav\n");
+	fprintf(fd, "  endif\n");
 	fprintf(fd, "endfunction\n");
 	fprintf(fd, "\n");
     }
