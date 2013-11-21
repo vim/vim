@@ -4278,7 +4278,7 @@ addstate(l, state, subs_arg, pim, off)
 	     * endless loop for "\(\)*" */
 
 	default:
-	    if (state->lastlist[nfa_ll_index] == l->id)
+	    if (state->lastlist[nfa_ll_index] == l->id && state->c != NFA_SKIP)
 	    {
 		/* This state is already in the list, don't add it again,
 		 * unless it is an MOPEN that is used for a backreference or
