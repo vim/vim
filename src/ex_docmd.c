@@ -8570,6 +8570,11 @@ ex_operators(eap)
 	beginline(BL_SOL | BL_FIX);
     }
 
+#if defined(FEAT_VISUAL)
+    if (VIsual_active)
+	end_visual_mode();
+#endif
+
     switch (eap->cmdidx)
     {
 	case CMD_delete:
