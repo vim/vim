@@ -2643,7 +2643,7 @@ op_insert(oap, count1)
 
 	/* The user may have moved the cursor before inserting something, try
 	 * to adjust the block for that. */
-	if (oap->start.lnum == curbuf->b_op_start.lnum)
+	if (oap->start.lnum == curbuf->b_op_start.lnum && !bd.is_MAX)
 	{
 	    if (oap->op_type == OP_INSERT
 		    && oap->start.col != curbuf->b_op_start.col)

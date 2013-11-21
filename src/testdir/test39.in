@@ -23,6 +23,18 @@ G$khhhhhkkcmno
 /^aaaa/
 :exe ":norm! l\<C-V>jjjlllI\<Right>\<Right>  \<Esc>"
 :/^aa/,/^$/w >> test.out
+:" Test for Visual block was created with the last <C-v>$
+/^A23$/
+:exe ":norm! l\<C-V>j$Aab\<Esc>"
+:.,/^$/w >> test.out
+:" Test for Visual block was created with the middle <C-v>$ (1)
+/^B23$/
+:exe ":norm! l\<C-V>j$hAab\<Esc>"
+:.,/^$/w >> test.out
+:" Test for Visual block was created with the middle <C-v>$ (2)
+/^C23$/
+:exe ":norm! l\<C-V>j$hhAab\<Esc>"
+:.,/^$/w >> test.out
 :" gUe must uppercase a whole word, also when ﬂ changes to SS
 Gothe youtuﬂeuu endYpk0wgUe
 :" gUfx must uppercase until x, inclusive.
@@ -48,6 +60,15 @@ aaaaaa
 bbbbbb
 cccccc
 dddddd
+
+A23
+4567
+
+B23
+4567
+
+C23
+4567
 
 abcdefghijklm
 abcdefghijklm
