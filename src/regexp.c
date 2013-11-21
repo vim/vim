@@ -6455,7 +6455,8 @@ re_num_cmp(val, scan)
 /*
  * Check whether a backreference matches.
  * Returns RA_FAIL, RA_NOMATCH or RA_MATCH.
- * If "bytelen" is not NULL, it is set to the bytelength of the whole match.
+ * If "bytelen" is not NULL, it is set to the byte length of the match in the
+ * last line.
  */
     static int
 match_with_backref(start_lnum, start_col, end_lnum, end_col, bytelen)
@@ -6511,6 +6512,8 @@ match_with_backref(start_lnum, start_col, end_lnum, end_col, bytelen)
 
 	/* Advance to next line. */
 	reg_nextline();
+	if (bytelen != NULL)
+	    *bytelen = 0;
 	++clnum;
 	ccol = 0;
 	if (got_int)

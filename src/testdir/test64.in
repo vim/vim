@@ -507,6 +507,8 @@ STARTTEST
 :" Check a pattern with a line break and ^ and $
 :call add(tl, [2, 'a\n^b$\n^c', ['a', 'b', 'c'], ['XX']])
 :"
+:call add(tl, [2, '\(^.\+\n\)\1', [' dog', ' dog', 'asdf'], ['XXasdf']])
+:"
 :"""" Run the multi-line tests
 :"
 :$put ='multi-line tests'
