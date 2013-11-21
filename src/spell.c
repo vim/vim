@@ -13398,9 +13398,8 @@ add_sound_suggest(su, goodword, score, lp)
 
 	/* Lookup the word "orgnr" one of the two tries. */
 	n = 0;
-	wlen = 0;
 	wordcount = 0;
-	for (;;)
+	for (wlen = 0; wlen < MAXWLEN - 3; ++wlen)
 	{
 	    i = 1;
 	    if (wordcount == orgnr && byts[n + 1] == NUL)
@@ -13414,6 +13413,7 @@ add_sound_suggest(su, goodword, score, lp)
 		if (i > byts[n])	/* safety check */
 		{
 		    STRCPY(theword + wlen, "BAD");
+		    wlen += 3;
 		    goto badword;
 		}
 
@@ -13426,7 +13426,7 @@ add_sound_suggest(su, goodword, score, lp)
 		wordcount += wc;
 	    }
 
-	    theword[wlen++] = byts[n + i];
+	    theword[wlen] = byts[n + i];
 	    n = idxs[n + i];
 	}
 badword:
