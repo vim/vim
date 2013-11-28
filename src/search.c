@@ -4544,7 +4544,10 @@ current_search(count, forward)
     /* Is the pattern is zero-width? */
     one_char = is_one_char(spats[last_idx].pat);
     if (one_char == -1)
-	return FAIL;  /* invalid pattern */
+    {
+	p_ws = old_p_ws;
+	return FAIL;  /* pattern not found */
+    }
 
     /*
      * The trick is to first search backwards and then search forward again,

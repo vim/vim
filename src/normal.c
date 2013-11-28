@@ -962,11 +962,8 @@ getcount:
 #ifdef FEAT_CMDL_INFO
 	    need_flushbuf |= add_to_showcmd(ca.nchar);
 #endif
-	    /* For "gn" from redo, need to get one more char to determine the
-	     * operator */
 	    if (ca.nchar == 'r' || ca.nchar == '\'' || ca.nchar == '`'
-						       || ca.nchar == Ctrl_BSL
-		  || ((ca.nchar == 'n' || ca.nchar == 'N') && !stuff_empty()))
+						       || ca.nchar == Ctrl_BSL)
 	    {
 		cp = &ca.extra_char;	/* need to get a third character */
 		if (ca.nchar != 'r')
@@ -1797,10 +1794,9 @@ do_pending_operator(cap, old_col, gui_yank)
 		 * otherwise it might be the second char of the operator. */
 		if (cap->cmdchar == 'g' && (cap->nchar == 'n'
 							|| cap->nchar == 'N'))
-		    /* "gn" and "gN" are a bit different */
-		    prep_redo(oap->regname, 0L, NUL, cap->cmdchar, cap->nchar,
-					get_op_char(oap->op_type),
-					get_extra_op_char(oap->op_type));
+		    prep_redo(oap->regname, cap->count0,
+			    get_op_char(oap->op_type), get_extra_op_char(oap->op_type),
+			    oap->motion_force, cap->cmdchar, cap->nchar);
 		else if (cap->cmdchar != ':')
 		    prep_redo(oap->regname, 0L, NUL, 'v',
 					get_op_char(oap->op_type),
