@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         reStructuredText documentation format
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2013-06-03
+" Latest Revision:  2013-11-26
 
 if exists("b:current_syntax")
   finish
@@ -152,7 +152,7 @@ for code in g:rst_syntax_code_list
     exe 'syn region rstDirective'.code.' matchgroup=rstDirective fold '
                 \.'start=#\%(sourcecode\|code\%(-block\)\=\)::\s\+'.code.'\s*$# '
                 \.'skip=#^$# '
-                \.'end=#^\s\@!# contains=@NoSpell,@rst'.code
+                \.'end=#^\s\@!# contains=@NoSpell,@rst'.code.' keepend'
     exe 'syn cluster rstDirectives add=rstDirective'.code
 endfor
 

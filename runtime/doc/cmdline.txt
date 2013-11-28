@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.4.  Last change: 2013 Mar 16
+*cmdline.txt*   For Vim version 7.4.  Last change: 2013 Nov 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -758,6 +758,7 @@ characters have a special meaning.  These can also be used in the expression
 function expand() |expand()|.
 	%	Is replaced with the current file name.		  *:_%* *c_%*
 	#	Is replaced with the alternate file name.	  *:_#* *c_#*
+		This is remembered for every window.
 	#n	(where n is a number) is replaced with		  *:_#0* *:_#n*
 		the file name of buffer n.  "#0" is the same as "#".     *c_#n*
 	##	Is replaced with all names in the argument list	  *:_##* *c_##*

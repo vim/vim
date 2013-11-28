@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Vim help file
 " Maintainer:	Bram Moolenaar (Bram@vim.org)
-" Last Change:	2013 Sep 05
+" Last Change:	2013 Nov 17
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -153,7 +153,7 @@ syn sync minlines=40
 " Define the default highlighting.
 " Only used when an item doesn't have highlighting yet
 hi def link helpIgnore		Ignore
-hi def link helpHyperTextJump	Subtitle
+hi def link helpHyperTextJump	Identifier
 hi def link helpBar		Ignore
 hi def link helpBacktick	Ignore
 hi def link helpStar		Ignore
@@ -168,7 +168,6 @@ hi def link helpOption		Type
 hi def link helpNotVi		Special
 hi def link helpSpecial		Special
 hi def link helpNote		Todo
-hi def link Subtitle		Identifier
 
 hi def link helpComment		Comment
 hi def link helpConstant	Constant

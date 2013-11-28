@@ -2742,6 +2742,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :sign-jump	sign.txt	/*:sign-jump*
 :sign-list	sign.txt	/*:sign-list*
 :sign-place	sign.txt	/*:sign-place*
+:sign-place-list	sign.txt	/*:sign-place-list*
 :sign-undefine	sign.txt	/*:sign-undefine*
 :sign-unplace	sign.txt	/*:sign-unplace*
 :sil	various.txt	/*:sil*

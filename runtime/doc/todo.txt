@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2013 Nov 14
+*todo.txt*      For Vim version 7.4.  Last change: 2013 Nov 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,27 +34,27 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch From Lech Lorens doesn't quite work:
-Problem:    When using ":'<,'>del" errors may be given for the visual line
-	    numbers being out of range.
-Solution:   Reset Visual mode in ":del". (Lech Lorens)
-Files:	    src/ex_docmd.c
+NFA regexp doesn't count tab matches correctly. (Urtica Dioica / gaultheria
+Shallon, 2013 Nov 18)
 
-
-Using \1 in pattern goes one line too far. (Bohr Shaw, 2013 Sep 5)
-Column is OK.  "/\v(^.+\n)\1/e" (John Little, Sep 5)
-Also, matches start of 2nd line, not the whole line.
-
-NFA regexp doesn't handle backreference correctly. (Ryuichi Hayashida, 2013
-Oct 10)
+After patch 7.4.100 there is still a difference between NFA and old engine.
+25 a's with pattern \v^(aa+)\1+$  (Urtica Dioica, 2013 Nov 21)
+Also: 9 a's with pattern  \v^(a{-2,})\1+$ (Nov 23)
 
 Error for incomplete help argument. (John Beckett, 2013 Sep 12)
+
+Tutor: adjust text to start the tutor. (Jakson Alves de Aquino, 2013 Nov 19)
 
 Should win_redr_custom() not be allowed to use recursively?
 (Yasuhiro Matsumoto, 2013 Aug 15)
 
 NFA engine combining character mismatch. (glts, 2013 Aug 27)
 Remark Dominique, Aug 27
+
+Patch to fix building with Ruby on Cygwin. (Steve Hall, 2013 Nov 21)
+
+Patch to fix that in Python vim.eval errors are not caught by try/catch.
+(ZyX, 2013 Nov 26)
 
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
@@ -72,8 +72,12 @@ Patch to support slices in Python vim.List. (ZyX, 2013 Oct 20)
 
 Patch to support iterator on Python vim.options. (ZyX, 2013 Nov 2)
 
+Patch to fix that "zG" leaves temp files around. (Ken Takata, 2013 Nov 22)
+
 Patch to make Dictionary.update() work without arguments.
 (ZyX, 2013 Oct 19)
+
+Bug caused by patch 7.3.1288?  Issue 183.
 
 Patch for Cobol ftplugin. (ZyX, 2013 Oct 20)
 Await response from maintainer.
@@ -92,6 +96,8 @@ Issue 174: Detect Mason files.
 
 Patch to make has() check for Vim version and patch at the same time.
 (Marc Weber, 2013 Jun 7)
+
+Regression on pach 7.4.034. (Ingo Karkat, 2013 Nov 20)
 
 VMS: Select() doesn't work properly, typing ESC may hang Vim.  Use sys$qiow
 instead. (Samuel Ferencik, 2013 Sep 28)
@@ -119,7 +125,7 @@ With "$" in 'cpoptions' the popup menu isn't fully drawn. (Matti Niemenmaa,
 
 "gUgn" cannot be repeated, while "dgn" can. (Dimitar Dimitrov)
 Patch by Christian Brabandt (2013 Aug 12)
-Also notes by Christian Wellenbrock, Nov 13.
+Also notes by Christian Wellenbrock, Nov 13, response from Christian Nov 14.
 
 Several Win32 functions are not using Unicode.
 Patches to fix this. (Ken Takata, 2013 Aug 9)
@@ -132,6 +138,11 @@ Undo message is not always properly displayed.  Patch by Ken Takata, 2013 oct
 
 /[b-a] gives error E16, should probably be E769.
 
+7   Windows XP: When using "ClearType" for text smoothing, a column of yellow
+    pixels remains when typing spaces in front of a "D" ('guifont' set to
+    "lucida_console:h8").
+Patch by Thomas Tuegel, also for GTK, 2013 Nov 24
+
 :help gives example for z?, but it does not work.  m? and t? do work.
 
 Python: Extended funcrefs: use func_T* structure in place of char_u* function
@@ -139,6 +150,9 @@ names. (ZyX, 2013 Jul 15, update Sep 22, 24, 28)
 
 Patch to add funcref to Lua.  (Luis Carvalho, 2013 Sep 4)
 With tests: Sep 5.
+
+Patch to fix that on suckless Terminal mousewheel up does not work.
+(Ralph Eastwood, 2013 Nov 25)
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
@@ -150,8 +164,17 @@ Checking runtime scripts: Thilo Six, 2012 Jun 6.
 Fold can't be opened after ":move". (Ein Brown)
 Patch from Christian Brabandt doesn't fix it completely.
 
+Patch for drag&drop reordering of GUI tab pages reordering.
+(Ken Takata, 2013 Nov 22, second one, also by Masamichi Abe)
+
+":sign-jump" uses first window in buffer instead of current window.
+Patch by James McCoy, 2013 Nov 22.
+
 GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
+
+Patch to add option that tells whether small deletes go into the numbered
+registers. (Aryeh Leib Taurog, 2013 Nov 18)
 
 Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
 
@@ -176,6 +199,9 @@ Or should we add a more general mechanism, like lambda functions?
 
 Problem caused by patch 7.3.638: window->open does not update window
 correctly. Issue 91.
+
+Exception caused by argument of return is not caught by try/catch.
+(David Barnett, 2013 Nov 19)
 
 8   'backupdir' and 'directory' should use $TMPDIR, $TMP and/or $TEMP when
     defined.
@@ -242,6 +268,12 @@ a reboot.
 
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
+
+Patch to have text objects defined by arbitrary single characters. (Daniel
+Thau, 2013 Nov 20)
+
+Patch to select the next or previous text object if there isn't one under the
+cursor. (Daniel Thau, 2013 Nov 20)
 
 patch to add "combine" flag to  syntax commands. (so8res, 2012 Dec 6)
 
@@ -515,6 +547,8 @@ following "redir" command gives an error for not being able to access s:foo.
 
 When setqflist() uses a filename that triggers a BufReadCmd autocommand Vim
 doesn't jump to the correct line with :cfirst. (ZyX,  2011 Sep 18)
+
+Behavior of i" and a" text objects isn't logical. (Ben Fritz, 2013 Nov 19)
 
 7   Make "ga" show the digraph for a character, if it exists.
 Patch from Christian Brabandt, 2011 Aug 19.
@@ -1399,6 +1433,10 @@ Does the conversion in the other direction work when 'fileencodings' is set
 properly?
 
 Add a few features to xxd. (Vadim Vygonets, 2013 Nov 11)
+Patches: 2013 Nov 19
+1: Add -e: little endian hexdump
+2: Add -o: add offset to displayed position
+3: Change displayed file position width to 8 chars
 
 Cursor displayed in the wrong position when using 'numberwidth'. (James Vega,
 2007 Jun 21)
@@ -1969,9 +2007,6 @@ Win32 GUI known bugs:
     Tutorial: http://win32assembly.online.fr/tut32.html
 8   In eval.c, io.h is included when MSWIN32 is defined.  Shouldn't this be
     WIN32?  Or can including io.h be moved to vim.h? (Dan Sharp)
-7   Windows XP: When using "ClearType" for text smoothing, a column of yellow
-    pixels remains when typing spaces in front of a "D" ('guifont' set to
-    "lucida_console:h8").
 6   Win32 GUI: With "-u NONE -U NONE" and doing "CTRL-W v" "CTRL-W o", the ":"
     of ":only" is highlighted like the cursor.  (Lipelis)
 8   When 'encoding' is "utf-8", should use 'guifont' for both normal and wide

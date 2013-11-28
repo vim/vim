@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.4.  Last change: 2013 Aug 03
+*editing.txt*   For Vim version 7.4.  Last change: 2013 Nov 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -38,6 +38,7 @@ If there already was a current file name, then that one becomes the alternate
 file name.  It can be used with "#" on the command line |:_#| and you can use
 the |CTRL-^| command to toggle between the current and the alternate file.
 However, the alternate file name is not changed when |:keepalt| is used.
+An alternate file name is remembered for each window.
 
 							*:keepalt* *:keepa*
 :keepalt {cmd}		Execute {cmd} while keeping the current alternate file

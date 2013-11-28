@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.4.  Last change: 2013 Sep 03
+*version7.txt*  For Vim version 7.4.  Last change: 2013 Nov 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -7188,7 +7188,7 @@ More encryption					*new-more-encryption*
 ---------------
 
 Support for Blowfish encryption.  Added the 'cryptmethod' option.
-Mostly by Moshin Ahmed.
+Mostly by Mohsin Ahmed.
 
 Also encrypt the text in the swap file and the undo file.
 
