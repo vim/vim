@@ -1,6 +1,6 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2013 Sep 19
+# Last updated by Dan Sharp.  Last Change: 2013 Nov 28
 #
 # Also read INSTALLpc.txt!
 #
@@ -272,7 +272,7 @@ ifeq (yes, $(DYNAMIC_RUBY))
 DEFINES += -DDYNAMIC_RUBY -DDYNAMIC_RUBY_DLL=\"$(RUBY_INSTALL_NAME).dll\"
 DEFINES += -DDYNAMIC_RUBY_VER=$(RUBY_VER)
 else
-EXTRA_LIBS += $(RUBY)/lib/$(RUBY_INSTALL_NAME).lib
+EXTRA_LIBS += $(RUBY)/lib/$(RUBY_INSTALL_NAME)
 endif
 endif
 
