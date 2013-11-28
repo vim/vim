@@ -172,6 +172,36 @@ EOF
 :unlockvar! l
 :"
 :" Function calls
+py3 << EOF
+import sys
+import re
+
+py33_type_error_pattern = re.compile('^__call__\(\) takes (\d+) positional argument but (\d+) were given$')
+
+def ee(expr, g=globals(), l=locals()):
+    cb = vim.current.buffer
+    try:
+        try:
+            exec(expr, g, l)
+        except Exception as e:
+            if sys.version_info >= (3, 3) and e.__class__ is AttributeError and str(e).find('has no attribute')>=0 and not str(e).startswith("'vim."):
+                cb.append(expr + ':' + repr((e.__class__, AttributeError(str(e)[str(e).rfind(" '") + 2:-1]))))
+            elif sys.version_info >= (3, 3) and e.__class__ is ImportError and str(e).find('No module named \'') >= 0:
+                cb.append(expr + ':' + repr((e.__class__, ImportError(str(e).replace("'", '')))))
+            elif sys.version_info >= (3, 3) and e.__class__ is TypeError:
+                m = py33_type_error_pattern.search(str(e))
+                if m:
+                    msg = '__call__() takes exactly {0} positional argument ({1} given)'.format(m.group(1), m.group(2))
+                    cb.append(expr + ':' + repr((e.__class__, TypeError(msg))))
+                else:
+                    cb.append(expr + ':' + repr((e.__class__, e)))
+            else:
+                cb.append(expr + ':' + repr((e.__class__, e)))
+        else:
+            cb.append(expr + ':NOT FAILED')
+    except Exception as e:
+        cb.append(expr + '::' + repr((e.__class__, e)))
+EOF
 :fun New(...)
 :   return ['NewStart']+a:000+['NewEnd']
 :endfun
@@ -186,18 +216,10 @@ EOF
 :$put =string(l)
 :py3 l+=[l[0].name]
 :$put =string(l)
-:try
-:   py3 l[1](1, 2, 3)
-:catch
-:   $put =v:exception[:13]
-:endtry
+:py3 ee('l[1](1, 2, 3)')
 :py3 f=l[0]
 :delfunction New
-:try
-:   py3 f(1, 2, 3)
-:catch
-:   $put =v:exception[:13]
-:endtry
+:py3 ee('f(1, 2, 3)')
 :if has('float')
 :   let l=[0.0]
 :   py3 l=vim.bindeval('l')
@@ -315,6 +337,7 @@ EOF
 :py3 l[0] = t.t > 8  # check if the background thread is working
 :py3 del time
 :py3 del threading
+:py3 del t
 :$put =string(l)
 :"
 :" settrace
@@ -829,33 +852,6 @@ EOF
 :fun D()
 :endfun
 py3 << EOF
-import re
-
-py33_type_error_pattern = re.compile('^__call__\(\) takes (\d+) positional argument but (\d+) were given$')
-
-def ee(expr, g=globals(), l=locals()):
-    try:
-        try:
-            exec(expr, g, l)
-        except Exception as e:
-            if sys.version_info >= (3, 3) and e.__class__ is AttributeError and str(e).find('has no attribute')>=0 and not str(e).startswith("'vim."):
-                cb.append(expr + ':' + repr((e.__class__, AttributeError(str(e)[str(e).rfind(" '") + 2:-1]))))
-            elif sys.version_info >= (3, 3) and e.__class__ is ImportError and str(e).find('No module named \'') >= 0:
-                cb.append(expr + ':' + repr((e.__class__, ImportError(str(e).replace("'", '')))))
-            elif sys.version_info >= (3, 3) and e.__class__ is TypeError:
-                m = py33_type_error_pattern.search(str(e))
-                if m:
-                    msg = '__call__() takes exactly {0} positional argument ({1} given)'.format(m.group(1), m.group(2))
-                    cb.append(expr + ':' + repr((e.__class__, TypeError(msg))))
-                else:
-                    cb.append(expr + ':' + repr((e.__class__, e)))
-            else:
-                cb.append(expr + ':' + repr((e.__class__, e)))
-        else:
-            cb.append(expr + ':NOT FAILED')
-    except Exception as e:
-        cb.append(expr + '::' + repr((e.__class__, e)))
-
 d = vim.Dictionary()
 ned = vim.Dictionary(foo='bar', baz='abcD')
 dl = vim.Dictionary(a=1)
@@ -1227,6 +1223,7 @@ ee('Exe("throw \'def\'")')
 ee('vim.eval("Exe(\'throw \'\'ghi\'\'\')")')
 ee('vim.eval("Exe(\'echoerr \'\'jkl\'\'\')")')
 ee('vim.eval("Exe(\'xxx_non_existent_command_xxx\')")')
+ee('vim.eval("xxx_unknown_function_xxx()")')
 ee('vim.bindeval("Exe(\'xxx_non_existent_command_xxx\')")')
 del Exe
 EOF

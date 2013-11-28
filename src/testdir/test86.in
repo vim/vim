@@ -179,6 +179,32 @@ EOF
 :unlockvar! l
 :"
 :" Function calls
+py << EOF
+import sys
+def ee(expr, g=globals(), l=locals()):
+    try:
+        exec(expr, g, l)
+    except:
+        ei = sys.exc_info()
+        msg = sys.exc_info()[0].__name__ + ':' + repr(sys.exc_info()[1].args)
+        msg = msg.replace('TypeError:(\'argument 1 ', 'TypeError:(\'')
+        if expr.find('None') > -1:
+            msg = msg.replace('TypeError:(\'iteration over non-sequence\',)',
+                              'TypeError:("\'NoneType\' object is not iterable",)')
+        if expr.find('FailingNumber') > -1:
+            msg = msg.replace(', not \'FailingNumber\'', '').replace('"', '\'')
+            msg = msg.replace('TypeError:(\'iteration over non-sequence\',)',
+                              'TypeError:("\'FailingNumber\' object is not iterable",)')
+        if msg.find('(\'\'') > -1 or msg.find('(\'can\'t') > -1:
+            msg = msg.replace('(\'', '("').replace('\',)', '",)')
+        if expr == 'fd(self=[])':
+            # HACK: PyMapping_Check changed meaning
+            msg = msg.replace('AttributeError:(\'keys\',)',
+                              'TypeError:(\'unable to convert list to vim dictionary\',)')
+        vim.current.buffer.append(expr + ':' + msg)
+    else:
+        vim.current.buffer.append(expr + ':NOT FAILED')
+EOF
 :fun New(...)
 :   return ['NewStart']+a:000+['NewEnd']
 :endfun
@@ -193,18 +219,10 @@ EOF
 :$put =string(l)
 :py l.extend([l[0].name])
 :$put =string(l)
-:try
-:   py l[1](1, 2, 3)
-:catch
-:   $put =v:exception[:16]
-:endtry
+:py ee('l[1](1, 2, 3)')
 :py f=l[0]
 :delfunction New
-:try
-:   py f(1, 2, 3)
-:catch
-:   $put =v:exception[:16]
-:endtry
+:py ee('f(1, 2, 3)')
 :if has('float')
 :   let l=[0.0]
 :   py l=vim.bindeval('l')
@@ -216,7 +234,6 @@ EOF
 :let messages=[]
 :delfunction DictNew
 py <<EOF
-import sys
 d=vim.bindeval('{}')
 m=vim.bindeval('messages')
 def em(expr, g=globals(), l=locals()):
@@ -323,6 +340,7 @@ EOF
 :py l[0] = t.t > 8  # check if the background thread is working
 :py del time
 :py del threading
+:py del t
 :$put =string(l)
 :"
 :" settrace
@@ -882,29 +900,6 @@ EOF
 :fun D()
 :endfun
 py << EOF
-def ee(expr, g=globals(), l=locals()):
-    try:
-        exec(expr, g, l)
-    except:
-        ei = sys.exc_info()
-        msg = sys.exc_info()[0].__name__ + ':' + repr(sys.exc_info()[1].args)
-        msg = msg.replace('TypeError:(\'argument 1 ', 'TypeError:(\'')
-        if expr.find('None') > -1:
-            msg = msg.replace('TypeError:(\'iteration over non-sequence\',)',
-                              'TypeError:("\'NoneType\' object is not iterable",)')
-        if expr.find('FailingNumber') > -1:
-            msg = msg.replace(', not \'FailingNumber\'', '').replace('"', '\'')
-            msg = msg.replace('TypeError:(\'iteration over non-sequence\',)',
-                              'TypeError:("\'FailingNumber\' object is not iterable",)')
-        if msg.find('(\'\'') > -1 or msg.find('(\'can\'t') > -1:
-            msg = msg.replace('(\'', '("').replace('\',)', '",)')
-        if expr == 'fd(self=[])':
-            # HACK: PyMapping_Check changed meaning
-            msg = msg.replace('AttributeError:(\'keys\',)',
-                              'TypeError:(\'unable to convert list to vim dictionary\',)')
-        cb.append(expr + ':' + msg)
-    else:
-        cb.append(expr + ':NOT FAILED')
 d = vim.Dictionary()
 ned = vim.Dictionary(foo='bar', baz='abcD')
 dl = vim.Dictionary(a=1)
@@ -1276,6 +1271,7 @@ ee('Exe("throw \'def\'")')
 ee('vim.eval("Exe(\'throw \'\'ghi\'\'\')")')
 ee('vim.eval("Exe(\'echoerr \'\'jkl\'\'\')")')
 ee('vim.eval("Exe(\'xxx_non_existent_command_xxx\')")')
+ee('vim.eval("xxx_unknown_function_xxx()")')
 ee('vim.bindeval("Exe(\'xxx_non_existent_command_xxx\')")')
 del Exe
 EOF

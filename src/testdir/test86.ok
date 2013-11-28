@@ -53,8 +53,8 @@ None
 [function('New'), function('DictNew'), 'NewStart', 1, 2, 3, 'NewEnd']
 [function('New'), function('DictNew'), 'NewStart', 1, 2, 3, 'NewEnd', 'DictNewStart', 1, 2, 3, 'DictNewEnd', {'a': 'b'}]
 [function('New'), function('DictNew'), 'NewStart', 1, 2, 3, 'NewEnd', 'DictNewStart', 1, 2, 3, 'DictNewEnd', {'a': 'b'}, 'New']
-Vim(python):E725:
-Vim(python):E117:
+l[1](1, 2, 3):error:('Vim:E725: Calling dict function without Dictionary: DictNew',)
+f(1, 2, 3):error:('Vim:E117: Unknown function: New',)
 [0.0, 0.0]
 KeyError
 TypeError
@@ -1197,6 +1197,7 @@ Exe("throw 'def'"):error:('def',)
 vim.eval("Exe('throw ''ghi''')"):error:('ghi',)
 vim.eval("Exe('echoerr ''jkl''')"):error:('Vim(echoerr):jkl',)
 vim.eval("Exe('xxx_non_existent_command_xxx')"):error:('Vim:E492: Not an editor command: xxx_non_existent_command_xxx',)
+vim.eval("xxx_unknown_function_xxx()"):error:('Vim:E117: Unknown function: xxx_unknown_function_xxx',)
 vim.bindeval("Exe('xxx_non_existent_command_xxx')"):error:('Vim:E492: Not an editor command: xxx_non_existent_command_xxx',)
 Caught KeyboardInterrupt
 Running :put

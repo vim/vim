@@ -321,6 +321,17 @@ free_msglist(l)
 }
 
 /*
+ * Free global "*msg_list" and the messages it contains, then set "*msg_list"
+ * to NULL.
+ */
+    void
+free_global_msglist()
+{
+    free_msglist(*msg_list);
+    *msg_list = NULL;
+}
+
+/*
  * Throw the message specified in the call to cause_errthrow() above as an
  * error exception.  If cstack is NULL, postpone the throw until do_cmdline()
  * has returned (see do_one_cmd()).
@@ -410,66 +421,41 @@ do_intthrow(cstack)
     return TRUE;
 }
 
-
 /*
- * Throw a new exception.  Return FAIL when out of memory or it was tried to
- * throw an illegal user exception.  "value" is the exception string for a user
- * or interrupt exception, or points to a message list in case of an error
- * exception.
+ * Get an exception message that is to be stored in current_exception->value.
  */
-    static int
-throw_exception(value, type, cmdname)
+    char_u *
+get_exception_string(value, type, cmdname, should_free)
     void	*value;
     int		type;
     char_u	*cmdname;
+    int		*should_free;
 {
-    except_T	*excp;
-    char_u	*p, *mesg, *val;
+    char_u	*ret, *mesg;
     int		cmdlen;
-
-    /*
-     * Disallow faking Interrupt or error exceptions as user exceptions.  They
-     * would be treated differently from real interrupt or error exceptions when
-     * no active try block is found, see do_cmdline().
-     */
-    if (type == ET_USER)
-    {
-	if (STRNCMP((char_u *)value, "Vim", 3) == 0 &&
-		(((char_u *)value)[3] == NUL || ((char_u *)value)[3] == ':' ||
-		 ((char_u *)value)[3] == '('))
-	{
-	    EMSG(_("E608: Cannot :throw exceptions with 'Vim' prefix"));
-	    goto fail;
-	}
-    }
-
-    excp = (except_T *)alloc((unsigned)sizeof(except_T));
-    if (excp == NULL)
-	goto nomem;
+    char_u	*p, *val;
 
     if (type == ET_ERROR)
     {
-	/* Store the original message and prefix the exception value with
-	 * "Vim:" or, if a command name is given, "Vim(cmdname):". */
-	excp->messages = (struct msglist *)value;
-	mesg = excp->messages->throw_msg;
+	*should_free = FALSE;
+	mesg = ((struct msglist *)value)->throw_msg;
 	if (cmdname != NULL && *cmdname != NUL)
 	{
 	    cmdlen = (int)STRLEN(cmdname);
-	    excp->value = vim_strnsave((char_u *)"Vim(",
+	    ret = vim_strnsave((char_u *)"Vim(",
 					   4 + cmdlen + 2 + (int)STRLEN(mesg));
-	    if (excp->value == NULL)
-		goto nomem;
-	    STRCPY(&excp->value[4], cmdname);
-	    STRCPY(&excp->value[4 + cmdlen], "):");
-	    val = excp->value + 4 + cmdlen + 2;
+	    if (ret == NULL)
+		return ret;
+	    STRCPY(&ret[4], cmdname);
+	    STRCPY(&ret[4 + cmdlen], "):");
+	    val = ret + 4 + cmdlen + 2;
 	}
 	else
 	{
-	    excp->value = vim_strnsave((char_u *)"Vim:", 4 + (int)STRLEN(mesg));
-	    if (excp->value == NULL)
-		goto nomem;
-	    val = excp->value + 4;
+	    ret = vim_strnsave((char_u *)"Vim:", 4 + (int)STRLEN(mesg));
+	    if (ret == NULL)
+		return ret;
+	    val = ret + 4;
 	}
 
 	/* msg_add_fname may have been used to prefix the message with a file
@@ -506,14 +492,65 @@ throw_exception(value, type, cmdname)
 	}
     }
     else
-	excp->value = value;
+    {
+	*should_free = FALSE;
+	ret = (char_u *) value;
+    }
+
+    return ret;
+}
+
+
+/*
+ * Throw a new exception.  Return FAIL when out of memory or it was tried to
+ * throw an illegal user exception.  "value" is the exception string for a
+ * user or interrupt exception, or points to a message list in case of an
+ * error exception.
+ */
+    static int
+throw_exception(value, type, cmdname)
+    void	*value;
+    int		type;
+    char_u	*cmdname;
+{
+    except_T	*excp;
+    int		should_free;
+
+    /*
+     * Disallow faking Interrupt or error exceptions as user exceptions.  They
+     * would be treated differently from real interrupt or error exceptions
+     * when no active try block is found, see do_cmdline().
+     */
+    if (type == ET_USER)
+    {
+	if (STRNCMP((char_u *)value, "Vim", 3) == 0
+		&& (((char_u *)value)[3] == NUL || ((char_u *)value)[3] == ':'
+		    || ((char_u *)value)[3] == '('))
+	{
+	    EMSG(_("E608: Cannot :throw exceptions with 'Vim' prefix"));
+	    goto fail;
+	}
+    }
+
+    excp = (except_T *)alloc((unsigned)sizeof(except_T));
+    if (excp == NULL)
+	goto nomem;
+
+    if (type == ET_ERROR)
+	/* Store the original message and prefix the exception value with
+	 * "Vim:" or, if a command name is given, "Vim(cmdname):". */
+	excp->messages = (struct msglist *)value;
+
+    excp->value = get_exception_string(value, type, cmdname, &should_free);
+    if (excp->value == NULL && should_free)
+	goto nomem;
 
     excp->type = type;
     excp->throw_name = vim_strsave(sourcing_name == NULL
 					      ? (char_u *)"" : sourcing_name);
     if (excp->throw_name == NULL)
     {
-	if (type == ET_ERROR)
+	if (should_free)
 	    vim_free(excp->value);
 	goto nomem;
     }
@@ -2033,10 +2070,7 @@ leave_cleanup(csp)
 	/* If an error was about to be converted to an exception when
 	 * enter_cleanup() was called, free the message list. */
 	if (msg_list != NULL)
-	{
-	    free_msglist(*msg_list);
-	    *msg_list = NULL;
-	}
+	    free_global_msglist();
     }
 
     /*

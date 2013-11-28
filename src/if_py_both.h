@@ -566,6 +566,28 @@ VimTryEnd(void)
 	PyErr_SetNone(PyExc_KeyboardInterrupt);
 	return -1;
     }
+    else if (msg_list != NULL && *msg_list != NULL)
+    {
+	int	should_free;
+	char_u	*msg;
+
+	msg = get_exception_string(*msg_list, ET_ERROR, NULL, &should_free);
+
+	if (msg == NULL)
+	{
+	    PyErr_NoMemory();
+	    return -1;
+	}
+
+	PyErr_SetVim((char *) msg);
+
+	free_global_msglist();
+
+	if (should_free)
+	    vim_free(msg);
+
+	return -1;
+    }
     else if (!did_throw)
 	return (PyErr_Occurred() ? -1 : 0);
     /* Python exception is preferred over vim one; unlikely to occur though */
