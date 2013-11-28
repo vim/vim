@@ -2180,9 +2180,9 @@ spell_move_to(wp, dir, allwords, curline, attrp)
     char_u	*endp;
     hlf_T	attr;
     int		len;
-# ifdef FEAT_SYN_HL
+#ifdef FEAT_SYN_HL
     int		has_syntax = syntax_present(wp);
-# endif
+#endif
     int		col;
     int		can_spell;
     char_u	*buf = NULL;
@@ -2280,7 +2280,7 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 						     : p - buf)
 						  > wp->w_cursor.col)))
 		    {
-# ifdef FEAT_SYN_HL
+#ifdef FEAT_SYN_HL
 			if (has_syntax)
 			{
 			    col = (int)(p - buf);
@@ -4701,7 +4701,25 @@ badword_captype(word, end)
     return flags;
 }
 
-# if defined(FEAT_MBYTE) || defined(EXITFREE) || defined(PROTO)
+/*
+ * Delete the internal wordlist and its .spl file.
+ */
+    void
+spell_delete_wordlist()
+{
+    char_u	fname[MAXPATHL];
+
+    if (int_wordlist != NULL)
+    {
+	mch_remove(int_wordlist);
+	int_wordlist_spl(fname);
+	mch_remove(fname);
+	vim_free(int_wordlist);
+	int_wordlist = NULL;
+    }
+}
+
+#if defined(FEAT_MBYTE) || defined(EXITFREE) || defined(PROTO)
 /*
  * Free all languages.
  */
@@ -4710,7 +4728,6 @@ spell_free_all()
 {
     slang_T	*slang;
     buf_T	*buf;
-    char_u	fname[MAXPATHL];
 
     /* Go through all buffers and handle 'spelllang'. <VN> */
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
@@ -4723,24 +4740,16 @@ spell_free_all()
 	slang_free(slang);
     }
 
-    if (int_wordlist != NULL)
-    {
-	/* Delete the internal wordlist and its .spl file */
-	mch_remove(int_wordlist);
-	int_wordlist_spl(fname);
-	mch_remove(fname);
-	vim_free(int_wordlist);
-	int_wordlist = NULL;
-    }
+    spell_delete_wordlist();
 
     vim_free(repl_to);
     repl_to = NULL;
     vim_free(repl_from);
     repl_from = NULL;
 }
-# endif
+#endif
 
-# if defined(FEAT_MBYTE) || defined(PROTO)
+#if defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * Clear all spelling tables and reload them.
  * Used after 'encoding' is set and when ":mkspell" was used.
@@ -4773,7 +4782,7 @@ spell_reload()
 	}
     }
 }
-# endif
+#endif
 
 /*
  * Reload the spell file "fname" if it's loaded.

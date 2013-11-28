@@ -841,8 +841,11 @@ ml_close_all(del_file)
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
 	ml_close(buf, del_file && ((buf->b_flags & BF_PRESERVED) == 0
 				 || vim_strchr(p_cpo, CPO_PRESERVE) == NULL));
+#ifdef FEAT_SPELL
+    spell_delete_wordlist();	/* delete the internal wordlist */
+#endif
 #ifdef TEMPDIRNAMES
-    vim_deltempdir();	    /* delete created temp directory */
+    vim_deltempdir();		/* delete created temp directory */
 #endif
 }
 
