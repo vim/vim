@@ -480,6 +480,12 @@ CmdwinLeave			Before leaving the command-line window.
 				|cmdwin-char|
 							*ColorScheme*
 ColorScheme			After loading a color scheme. |:colorscheme|
+				The pattern is matched against the
+				colorscheme name. <afile> can be used for the
+				name of the actual file where this option was
+				set, and <amatch> for the new colorscheme
+				name.
+
 
 							*CompleteDone*
 CompleteDone			After Insert mode completion is done.  Either

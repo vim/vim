@@ -9330,7 +9330,9 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
      */
     if (fname_io == NULL)
     {
-	if (fname != NULL && *fname != NUL)
+	if (event == EVENT_COLORSCHEME)
+	    autocmd_fname = NULL;
+	else if (fname != NULL && *fname != NUL)
 	    autocmd_fname = fname;
 	else if (buf != NULL)
 	    autocmd_fname = buf->b_ffname;
@@ -9383,14 +9385,15 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     else
     {
 	sfname = vim_strsave(fname);
-	/* Don't try expanding FileType, Syntax, FuncUndefined, WindowID or
-	 * QuickFixCmd* */
+	/* Don't try expanding FileType, Syntax, FuncUndefined, WindowID,
+	 * ColorScheme or QuickFixCmd* */
 	if (event == EVENT_FILETYPE
 		|| event == EVENT_SYNTAX
 		|| event == EVENT_FUNCUNDEFINED
 		|| event == EVENT_REMOTEREPLY
 		|| event == EVENT_SPELLFILEMISSING
 		|| event == EVENT_QUICKFIXCMDPRE
+		|| event == EVENT_COLORSCHEME
 		|| event == EVENT_QUICKFIXCMDPOST)
 	    fname = vim_strsave(fname);
 	else

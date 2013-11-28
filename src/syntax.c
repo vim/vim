@@ -7071,7 +7071,7 @@ load_colors(name)
 	retval = source_runtime(buf, FALSE);
 	vim_free(buf);
 #ifdef FEAT_AUTOCMD
-	apply_autocmds(EVENT_COLORSCHEME, NULL, NULL, FALSE, curbuf);
+	apply_autocmds(EVENT_COLORSCHEME, name, curbuf->b_fname, FALSE, curbuf);
 #endif
     }
     recursive = FALSE;
