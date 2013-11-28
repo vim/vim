@@ -239,7 +239,9 @@ static int nfa_classcodes[] = {
     NFA_UPPER, NFA_NUPPER
 };
 
+static char_u e_nul_found[] = N_("E865: (NFA) Regexp end encountered prematurely");
 static char_u e_misplaced[] = N_("E866: (NFA regexp) Misplaced %c");
+static char_u e_ill_char_class[] = N_("E877: (NFA regexp) Invalid character class: %ld");
 
 /* NFA regexp \ze operator encountered. */
 static int nfa_has_zend;
@@ -1137,7 +1139,7 @@ nfa_regatom()
     switch (c)
     {
 	case NUL:
-	    EMSG_RET_FAIL(_("E865: (NFA) Regexp end encountered prematurely"));
+	    EMSG_RET_FAIL(_(e_nul_found));
 
 	case Magic('^'):
 	    EMIT(NFA_BOL);
@@ -1160,6 +1162,9 @@ nfa_regatom()
 
 	case Magic('_'):
 	    c = no_Magic(getchr());
+	    if (c == NUL)
+		EMSG_RET_FAIL(_(e_nul_found));
+
 	    if (c == '^')	/* "\_^" is start-of-line */
 	    {
 		EMIT(NFA_BOL);
@@ -1216,6 +1221,12 @@ nfa_regatom()
 	    p = vim_strchr(classchars, no_Magic(c));
 	    if (p == NULL)
 	    {
+		if (extra == NFA_ADD_NL)
+		{
+		    EMSGN(_(e_ill_char_class), c);
+		    rc_did_emsg = TRUE;
+		    return FAIL;
+		}
 		EMSGN("INTERNAL: Unknown character class char: %ld", c);
 		return FAIL;
 	    }
@@ -4733,7 +4744,7 @@ check_char_class(class, c)
 
 	default:
 	    /* should not be here :P */
-	    EMSGN("E877: (NFA regexp) Invalid character class: %ld", class);
+	    EMSGN(_(e_ill_char_class), class);
 	    return FAIL;
     }
     return FAIL;
