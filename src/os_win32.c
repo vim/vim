@@ -2509,7 +2509,7 @@ fname_casew(
     WCHAR		*porig, *porigPrev;
     int			flen;
     WIN32_FIND_DATAW	fb;
-    HANDLE		hFind;
+    HANDLE		hFind = INVALID_HANDLE_VALUE;
     int			c;
     int			slen;
 
@@ -2528,8 +2528,8 @@ fname_casew(
 	/* copy leading drive letter */
 	*ptrue++ = *porig++;
 	*ptrue++ = *porig++;
-	*ptrue = NUL;	    /* in case nothing follows */
     }
+    *ptrue = NUL;	    /* in case nothing follows */
 
     while (*porig != NUL)
     {
@@ -2673,8 +2673,8 @@ fname_case(
 	/* copy leading drive letter */
 	*ptrue++ = *porig++;
 	*ptrue++ = *porig++;
-	*ptrue = NUL;	    /* in case nothing follows */
     }
+    *ptrue = NUL;	    /* in case nothing follows */
 
     while (*porig != NUL)
     {
@@ -6272,6 +6272,7 @@ get_cmd_argsW(char ***argvp)
 		    while (i > 0)
 			free(argv[--i]);
 		    free(argv);
+		    argv = NULL;
 		    argc = 0;
 		}
 	    }
