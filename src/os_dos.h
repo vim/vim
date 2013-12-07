@@ -109,7 +109,7 @@
 #endif
 
 #ifndef DFLT_BDIR
-# define DFLT_BDIR	".,c:\\tmp,c:\\temp"	/* default for 'backupdir' */
+# define DFLT_BDIR	".,$TEMP,c:\\tmp,c:\\temp" /* default for 'backupdir' */
 #endif
 
 #ifndef DFLT_VDIR
@@ -117,7 +117,7 @@
 #endif
 
 #ifndef DFLT_DIR
-# define DFLT_DIR	".,c:\\tmp,c:\\temp"	/* default for 'directory' */
+# define DFLT_DIR	".,$TEMP,c:\\tmp,c:\\temp" /* default for 'directory' */
 #endif
 
 #define DFLT_ERRORFILE		"errors.err"
