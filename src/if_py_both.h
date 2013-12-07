@@ -3005,11 +3005,14 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
     else
     {
 	char_u		*val;
-	PyObject	*todecref;
+	PyObject	*todecref2;
 
-	if ((val = StringToChars(valObject, &todecref)))
+	if ((val = StringToChars(valObject, &todecref2)))
+	{
 	    ret = set_option_value_for(key, 0, val, opt_flags,
 				    self->opt_type, self->from);
+	    Py_XDECREF(todecref2);
+	}
 	else
 	    ret = -1;
     }
