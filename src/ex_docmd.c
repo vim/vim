@@ -3261,7 +3261,11 @@ set_one_cmd_context(xp, buff)
 	    ++p;
 	/* for python 3.x: ":py3*" commands completion */
 	if (cmd[0] == 'p' && cmd[1] == 'y' && p == cmd + 2 && *p == '3')
+	{
 	    ++p;
+	    while (ASCII_ISALPHA(*p) || *p == '*')
+		++p;
+	}
 	len = (int)(p - cmd);
 
 	if (len == 0)
