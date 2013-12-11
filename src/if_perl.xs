@@ -27,7 +27,9 @@
 /* Work around for perl-5.18.
  * Don't include "perl\lib\CORE\inline.h" for now,
  * include it after Perl_sv_free2 is defined. */
-#define PERL_NO_INLINE_FUNCTIONS
+#ifdef DYNAMIC_PERL
+# define PERL_NO_INLINE_FUNCTIONS
+#endif
 
 /*
  * Prevent including winsock.h.  perl.h tries to detect whether winsock.h is
