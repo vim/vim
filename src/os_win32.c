@@ -2768,6 +2768,26 @@ mch_get_user_name(
     char szUserName[256 + 1];	/* UNLEN is 256 */
     DWORD cch = sizeof szUserName;
 
+#ifdef FEAT_MBYTE
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	WCHAR wszUserName[256 + 1];	/* UNLEN is 256 */
+	DWORD wcch = sizeof(wszUserName) / sizeof(WCHAR);
+
+	if (GetUserNameW(wszUserName, &wcch))
+	{
+	    char_u  *p = utf16_to_enc(wszUserName, NULL);
+
+	    if (p != NULL)
+	    {
+		vim_strncpy(s, p, len - 1);
+		vim_free(p);
+		return OK;
+	    }
+	}
+	/* Retry with non-wide function (for Windows 98). */
+    }
+#endif
     if (GetUserName(szUserName, &cch))
     {
 	vim_strncpy(s, szUserName, len - 1);
