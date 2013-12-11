@@ -5990,7 +5990,7 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 	{
 	    /* If there is a NUL, set did_find_nul, else set check_spaces */
 	    buffer[len] = NUL;
-	    if (len && (int)STRLEN(buffer) < (int)len - 1)
+	    if (len && (int)STRLEN(buffer) < (int)len)
 		did_find_nul = TRUE;
 	    else
 		check_spaces = TRUE;
