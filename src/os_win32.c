@@ -4282,10 +4282,10 @@ mch_system_piped(char *cmd, int options)
     {
 	MSG	msg;
 
-	if (PeekMessage(&msg, (HWND)NULL, 0, 0, PM_REMOVE))
+	if (pPeekMessage(&msg, (HWND)NULL, 0, 0, PM_REMOVE))
 	{
 	    TranslateMessage(&msg);
-	    DispatchMessage(&msg);
+	    pDispatchMessage(&msg);
 	}
 
 	/* write pipe information in the window */
