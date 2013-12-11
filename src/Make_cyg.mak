@@ -1,6 +1,6 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2013 Nov 28
+# Last updated by Dan Sharp.  Last Change: 2013 Dec 11
 #
 # Also read INSTALLpc.txt!
 #
@@ -155,7 +155,7 @@ endif
 ifeq (yes, $(DYNAMIC_PERL))
 DEFINES += -DDYNAMIC_PERL -DDYNAMIC_PERL_DLL=\"perl$(PERL_VER).dll\"
 else
-EXTRA_LIBS += $(PERL)/lib/CORE/perl$(PERL_VER).lib
+EXTRA_LIBS += -L$(PERL)/lib/CORE -lperl$(PERL_VER)
 endif
 endif
 

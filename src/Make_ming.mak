@@ -359,6 +359,7 @@ WINDRES_CC = $(CC)
 
 CFLAGS = -Iproto $(DEFINES) -pipe -w -march=$(ARCH) -Wall
 WINDRES_FLAGS = --preprocessor="$(WINDRES_CC) -E -xc" -DRC_INVOKED
+EXTRA_LIBS =
 
 ifdef GETTEXT
 DEFINES += -DHAVE_GETTEXT -DHAVE_LOCALE_H
@@ -377,9 +378,10 @@ endif
 endif
 
 ifdef PERL
-CFLAGS += -I$(PERLLIBS) -DFEAT_PERL -L$(PERLLIBS)
+CFLAGS += -I$(PERLLIBS) -DFEAT_PERL
 ifeq (yes, $(DYNAMIC_PERL))
 CFLAGS += -DDYNAMIC_PERL -DDYNAMIC_PERL_DLL=\"perl$(PERL_VER).dll\"
+EXTRA_LIBS += -L$(PERLLIBS) -lperl$(PERL_VER)
 endif
 endif
 
@@ -632,7 +634,7 @@ endif
 
 ifdef PERL
 ifeq (no, $(DYNAMIC_PERL))
-LIB += -lperl$(PERL_VER)
+LIB += -L$(PERLLIBS) -lperl$(PERL_VER)
 endif
 endif
 
