@@ -4021,6 +4021,8 @@ add_to_showcmd(c)
 #endif
 
     p = transchar(c);
+    if (*p == ' ')
+	STRCPY(p, "<20>");
     old_len = (int)STRLEN(showcmd_buf);
     extra_len = (int)STRLEN(p);
     overflow = old_len + extra_len - SHOWCMD_COLS;
