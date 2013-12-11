@@ -2808,6 +2808,26 @@ mch_get_host_name(
 {
     DWORD cch = len;
 
+#ifdef FEAT_MBYTE
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	WCHAR wszHostName[256 + 1];
+	DWORD wcch = sizeof(wszHostName) / sizeof(WCHAR);
+
+	if (GetComputerNameW(wszHostName, &wcch))
+	{
+	    char_u  *p = utf16_to_enc(wszHostName, NULL);
+
+	    if (p != NULL)
+	    {
+		vim_strncpy(s, p, len - 1);
+		vim_free(p);
+		return;
+	    }
+	}
+	/* Retry with non-wide function (for Windows 98). */
+    }
+#endif
     if (!GetComputerName(s, &cch))
 	vim_strncpy(s, "PC (Win32 Vim)", len - 1);
 }
