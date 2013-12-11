@@ -36,6 +36,14 @@ Some attributes (e.g., bold) might be set in the defaults that you want
 removed in your color scheme.  Use something like "gui=NONE" to remove the
 attributes.
 
+In case you want to set 'background' depending on the colorscheme selected,
+this autocmd might be useful:
+     autocmd SourcePre */colors/blue_sky.vim set background=dark
+Replace "blue_sky" with the name of the colorscheme.
+
+In case you want to tweak a colorscheme after it was loaded, check out that
+ColorScheme autocmd event.
+
 To see which highlight group is used where, find the help for
 "highlight-groups" and "group-name".
 

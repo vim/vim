@@ -1,7 +1,8 @@
 " Vim indent file
 " Language:         Shell Script
-" Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2010-01-06
+" Maintainer:       Peter Aronoff <telemachus@arpinum.org>
+" Original Author:  Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2013-11-28
 
 if exists("b:did_indent")
   finish
@@ -76,6 +77,8 @@ function! GetShIndent()
   let pine = line
   let line = getline(v:lnum)
   if line =~ '^\s*\%(then\|do\|else\|elif\|fi\|done\)\>' || line =~ '^\s*}'
+    let ind -= s:indent_value('default')
+  elseif line =~ '^\s*esac\>' && s:is_case_empty(getline(v:lnum - 1))
     let ind -= s:indent_value('default')
   elseif line =~ '^\s*esac\>'
     let ind -= (s:is_case_label(pine, lnum) && s:is_case_ended(pine) ?
@@ -152,6 +155,14 @@ endfunction
 
 function! s:is_case_ended(line)
   return s:is_case_break(a:line) || a:line =~ ';[;&]\s*\%(#.*\)\=$'
+endfunction
+
+function! s:is_case_empty(line)
+  if a:line =~ '^\s*$' || a:line =~ '^\s*#'
+    return s:is_case_empty(getline(v:lnum - 1))
+  else
+    return a:line =~ '^\s*case\>'
+  endif
 endfunction
 
 let &cpo = s:cpo_save

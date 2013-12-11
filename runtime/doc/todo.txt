@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2013 Nov 26
+*todo.txt*      For Vim version 7.4.  Last change: 2013 Dec 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,34 +34,21 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-NFA regexp doesn't count tab matches correctly. (Urtica Dioica / gaultheria
-Shallon, 2013 Nov 18)
-
-After patch 7.4.100 there is still a difference between NFA and old engine.
-25 a's with pattern \v^(aa+)\1+$  (Urtica Dioica, 2013 Nov 21)
-Also: 9 a's with pattern  \v^(a{-2,})\1+$ (Nov 23)
-
-Error for incomplete help argument. (John Beckett, 2013 Sep 12)
-
-Tutor: adjust text to start the tutor. (Jakson Alves de Aquino, 2013 Nov 19)
-
-Should win_redr_custom() not be allowed to use recursively?
-(Yasuhiro Matsumoto, 2013 Aug 15)
-
-NFA engine combining character mismatch. (glts, 2013 Aug 27)
-Remark Dominique, Aug 27
-
-Patch to fix building with Ruby on Cygwin. (Steve Hall, 2013 Nov 21)
-
-Patch to fix that in Python vim.eval errors are not caught by try/catch.
-(ZyX, 2013 Nov 26)
+Regexp problems:
+- NFA regexp doesn't count tab matches correctly. (Urtica Dioica / gaultheria
+  Shallon, 2013 Nov 18)
+- After patch 7.4.100 there is still a difference between NFA and old engine.
+  25 a's with pattern \v^(aa+)\1+$  (Urtica Dioica, 2013 Nov 21) Also: 9 a's
+  with pattern  \v^(a{-2,})\1+$ (Nov 23)
+- NFA engine combining character mismatch. (glts, 2013 Aug 27)
+  Remark from Dominique, Aug 27
+- Issue 164: freeze on regexp search.
+- NFA problem with non-greedy match and branches. (Ingo Karkat, 2013 Nov 29)
 
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
-
-Issue 164: freeze on regexp search.
 
 Update for Clojure ftplugin. (Sung Pae).  Await discussion about formatting in
 ftplugins.
@@ -72,17 +59,16 @@ Patch to support slices in Python vim.List. (ZyX, 2013 Oct 20)
 
 Patch to support iterator on Python vim.options. (ZyX, 2013 Nov 2)
 
-Patch to fix that "zG" leaves temp files around. (Ken Takata, 2013 Nov 22)
-
 Patch to make Dictionary.update() work without arguments.
 (ZyX, 2013 Oct 19)
-
-Bug caused by patch 7.3.1288?  Issue 183.
 
 Patch for Cobol ftplugin. (ZyX, 2013 Oct 20)
 Await response from maintainer.
 
 Include systemverilog file?  Two votes yes.
+
+Patch to add :S modifier for excaping the current file name.
+(ZyX, 2013 Nov 30)  Update Dec 5.
 
 Problem with 'spellsuggest' file, only works for some words.
 (Cesar Romani, 2013 Aug 20)  Depends on file name? (Aug 24)
@@ -104,10 +90,15 @@ instead. (Samuel Ferencik, 2013 Sep 28)
 
 Series of patches for NL vs NUL handling. (ZyX, 2013 Nov 3, Nov 9)
 
+Patch to add v:completed_item. (Shougo Matsu, 2013 Nov 29).
+
 Perl: support for Activestate perl 5.18: Issue 170.
 
 Several syntax file match "^\s*" which may get underlined if that's in the
 highlight group.  Add a "\zs" after it?
+
+Patch to fix temp directories for Windows, so that it works without tweaking.
+Issue 28.
 
 Go through more coverity reports.
 
@@ -115,20 +106,10 @@ Include Haiku port? (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
 
 Updated spec ftplugin. (Matěj Cepl, 2013 Oct 16)
 
-Patch to make ColorScheme autocommand match with the colorscheme name instead
-of the buffer name. (Christian Brabandt, 2013 Sep 25)
-
 Patch to right-align signs. (James Kolb (email james), 2013 Sep 23)
 
 With "$" in 'cpoptions' the popup menu isn't fully drawn. (Matti Niemenmaa,
 2013 Sep 5)
-
-"gUgn" cannot be repeated, while "dgn" can. (Dimitar Dimitrov)
-Patch by Christian Brabandt (2013 Aug 12)
-Also notes by Christian Wellenbrock, Nov 13, response from Christian Nov 14.
-
-Several Win32 functions are not using Unicode.
-Patches to fix this. (Ken Takata, 2013 Aug 9)
 
 Patch to add item in 'listchars' to repeat first character. (Nathaniel Braun,
 pragm, 2013 Oct 13)
@@ -147,6 +128,7 @@ Patch by Thomas Tuegel, also for GTK, 2013 Nov 24
 
 Python: Extended funcrefs: use func_T* structure in place of char_u* function
 names. (ZyX, 2013 Jul 15, update Sep 22, 24, 28)
+Also fixes Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
 Patch to add funcref to Lua.  (Luis Carvalho, 2013 Sep 4)
 With tests: Sep 5.
@@ -156,13 +138,13 @@ Patch to fix that on suckless Terminal mousewheel up does not work.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
-Patch to make external commands work with multi-byte characters on Win32 when
-'encoding' differs from the active codepage. (Yasuhiro Matsumoto, 2013 Aug 5)
-
 Checking runtime scripts: Thilo Six, 2012 Jun 6.
 
 Fold can't be opened after ":move". (Ein Brown)
 Patch from Christian Brabandt doesn't fix it completely.
+
+Patch from Christian Brabandt to preserve upper case marks when wiping out a
+buffer. (2013 Dec 9)
 
 Patch for drag&drop reordering of GUI tab pages reordering.
 (Ken Takata, 2013 Nov 22, second one, also by Masamichi Abe)
@@ -199,6 +181,12 @@ Or should we add a more general mechanism, like lambda functions?
 
 Problem caused by patch 7.3.638: window->open does not update window
 correctly. Issue 91.
+
+Patch to add {lhs} to :mapclear: clear all maps starting with {lhs}.
+(Christian Brabandt, 2013 Dec 9)
+
+The garbage collector may use too much stack.  Make set_ref_in_item()
+iterative instead of recursive.   Test program by Marc Weber (2013 Dec 10)
 
 Exception caused by argument of return is not caught by try/catch.
 (David Barnett, 2013 Nov 19)
@@ -276,6 +264,9 @@ Patch to select the next or previous text object if there isn't one under the
 cursor. (Daniel Thau, 2013 Nov 20)
 
 patch to add "combine" flag to  syntax commands. (so8res, 2012 Dec 6)
+
+Bug caused by patch 7.3.1288?  Issue 183.
+I can't reproduce it.
 
 Syntax update problem in one buffer opened in two windows, bottom window is
 not correctly updated. (Paul Harris, 2012 Feb 27)
@@ -402,6 +393,8 @@ Patch to add digraph() function. (Christian Brabandt, 2013 Aug 22, update Aug
 
 Patch for input method status. (Hirohito Higashi, 2012 Apr 18)
 
+Update Vim app icon (for Gnome). (Jakub Steiner, 2013 Dec 6)
+
 Patch to use .png icons for the toolbar on MS-Windows. (Martin Gieseking, 2013
 Apr 18)
 
@@ -419,8 +412,6 @@ And one for gui_x11.txt.
 ":cd" doesn't work when current directory path contains "**".
 finddir() has the same problem.  (Yukihiro Nakadaira, 2012 Jan 10)
 Requires a rewrite of the file_file_in_path code.
-
-Problem with l: dictionary being locked in a function. (ZyX, 2011 Jul 21)
 
 Should use has("browsefilter") in ftplugins.  Requires patch 7.3.593.
 
@@ -502,8 +493,6 @@ When using a Vim server, a # in the path causes an error message.
 
 Setting $HOME on MS-Windows is not very well documented.  Suggestion by Ben
 Fritz (2011 Oct 27).
-
-Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
 Bug: Windows 7 64 bit system freezes  when 'clipboard' set to "unnamed" and
 doing ":g/test/d".  Putting every delete on the clipboard? (Robert Chan, 2011

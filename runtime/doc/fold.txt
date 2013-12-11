@@ -1,4 +1,4 @@
-*fold.txt*      For Vim version 7.4.  Last change: 2010 May 13
+*fold.txt*      For Vim version 7.4.  Last change: 2013 Dec 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -285,9 +285,10 @@ zF		Create a fold for [count] lines.  Works like "zf".
 							*zd* *E351*
 zd		Delete one fold at the cursor.  When the cursor is on a folded
 		line, that fold is deleted.  Nested folds are moved one level
-		up.  In Visual mode all folds (partially) in the selected area
-		are deleted.  Careful: This easily deletes more folds than you
-		expect and there is no undo.
+		up.  In Visual mode one level of all folds (partially) in the
+		selected area are deleted.
+		Careful: This easily deletes more folds than you expect and
+		there is no undo for manual folding.
 		This only works when 'foldmethod' is "manual" or "marker".
 		Also see |fold-delete-marker|.
 

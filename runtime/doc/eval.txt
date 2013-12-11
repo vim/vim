@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2013 Nov 08
+*eval.txt*	For Vim version 7.4.  Last change: 2013 Dec 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3200,7 +3200,7 @@ getchar([expr])						*getchar()*
 		If [expr] is 1, only check if a character is available, it is
 			not consumed.  Return zero if no character available.
 
-		Without {expr} and when {expr} is 0 a whole character or
+		Without [expr] and when [expr] is 0 a whole character or
 		special key is returned.  If it is an 8-bit character, the
 		result is a number.  Use nr2char() to convert it to a String.
 		Otherwise a String is returned with the encoded character.
@@ -3210,7 +3210,7 @@ getchar([expr])						*getchar()*
 		String when a modifier (shift, control, alt) was used that is
 		not included in the character.
 
-		When {expr} is 1 only the first byte is returned.  For a
+		When [expr] is 1 only the first byte is returned.  For a
 		one-byte character it is the character itself as a number.
 		Use nr2char() to convert it to a String.
 
@@ -4134,6 +4134,8 @@ maparg({name}[, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 				     (|mapmode-ic|)
 		  "sid"	     The script local ID, used for <sid> mappings
 			     (|<SID>|).
+		  "nowait"   Do not wait for other, longer mappings.
+			     (|:map-<nowait>|).
 
 		The mappings local to the current buffer are checked first,
 		then the global mappings.
@@ -4447,6 +4449,9 @@ getpos({expr})	Get the position for {expr}.  For possible values of {expr}
 		it is the offset in screen columns from the start of the
 		character.  E.g., a position within a <Tab> or after the last
 		character.
+		Note that for '< and '> Visual mode matters: when it is "V"
+		(visual line mode) the column of '< is zero and the column of
+		'> is a large number.
 		This can be used to save and restore the cursor position: >
 			let save_cursor = getpos(".")
 			MoveTheCursorAround
@@ -5269,6 +5274,10 @@ setpos({expr}, {list})
 		it is the offset in screen columns from the start of the
 		character.  E.g., a position within a <Tab> or after the last
 		character.
+
+		Note that for '< and '> changing the line number may result in
+		the marks to be effectively be swapped, so that '< is always
+		before '>.
 
 		Returns 0 when the position could be set, -1 otherwise.
 		An error message is given if {expr} is invalid.

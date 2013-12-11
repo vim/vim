@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2013 Nov 12
+*options.txt*	For Vim version 7.4.  Last change: 2013 Dec 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -987,7 +987,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'backupdir'* *'bdir'*
 'backupdir' 'bdir'	string	(default for Amiga: ".,t:",
-				 for MS-DOS and Win32: ".,c:/tmp,c:/temp"
+				 for MS-DOS and Win32: ".,$TEMP,c:/tmp,c:/temp"
 				 for Unix: ".,~/tmp,~/")
 			global
 			{not in Vi}
@@ -2477,7 +2477,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'directory'* *'dir'*
 'directory' 'dir'	string	(default for Amiga: ".,t:",
-				 for MS-DOS and Win32: ".,c:\tmp,c:\temp"
+				 for MS-DOS and Win32: ".,$TEMP,c:\tmp,c:\temp"
 				 for Unix: ".,~/tmp,/var/tmp,/tmp")
 			global
 	List of directory names for the swap file, separated with commas.

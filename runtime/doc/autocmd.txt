@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.4.  Last change: 2013 Aug 04
+*autocmd.txt*   For Vim version 7.4.  Last change: 2013 Dec 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -303,6 +303,9 @@ Name			triggered by ~
 |InsertLeave|		when leaving Insert mode
 |InsertCharPre|		when a character was typed in Insert mode, before
 			inserting it
+
+|TextChanged|		after a change was made to the text in Normal mode
+|TextChangedI|		after a change was made to the text in Insert mode
 
 |ColorScheme|		after loading a color scheme
 
