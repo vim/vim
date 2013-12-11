@@ -11,6 +11,23 @@
 
 #include	"vim.h"
 
+/* define _generic_64 for use in time functions */
+#ifndef VAX
+#   include <gen64def.h>
+#else
+/* based on Alpha's gen64def.h; the file is absent on VAX */
+typedef struct _generic_64 {
+#   pragma __nomember_alignment
+    __union  {                          /* You can treat me as...  */
+	/* long long is not available on VAXen */
+	/* unsigned __int64 gen64$q_quadword; ...a single 64-bit value, or */
+
+	unsigned int gen64$l_longword [2]; /* ...two 32-bit values, or */
+	unsigned short int gen64$w_word [4]; /* ...four 16-bit values */
+    } gen64$r_quad_overlay;
+} GENERIC_64;
+#endif
+
 typedef struct
 {
     char	class;
@@ -668,4 +685,93 @@ vms_remove_version(void * fname)
 		*cp = '\0';
     }
     return ;
+}
+
+struct typeahead_st {
+    unsigned short numchars;
+    unsigned char  firstchar;
+    unsigned char  reserved0;
+    unsigned long  reserved1;
+} typeahead;
+
+/*
+ * Wait "msec" msec until a character is available from file descriptor "fd".
+ * "msec" == 0 will check for characters once.
+ * "msec" == -1 will block until a character is available.
+ */
+    int
+RealWaitForChar(fd, msec, check_for_gpm)
+    int		fd UNUSED; /* always read from iochan */
+    long	msec;
+    int		*check_for_gpm UNUSED;
+{
+    int status;
+    struct _generic_64 time_curr;
+    struct _generic_64 time_diff;
+    struct _generic_64 time_out;
+    unsigned int convert_operation = LIB$K_DELTA_SECONDS_F;
+    float sec = (float) msec / 1000;
+
+    /* make sure the iochan is set */
+    if (!iochan)
+	get_tty();
+
+    if (msec > 0) {
+        /* time-out specified; convert it to absolute time */
+
+        /* get current time (number of 100ns ticks since the VMS Epoch) */
+        status = sys$gettim(&time_curr);
+        if (status != SS$_NORMAL)
+            return 0; /* error */
+
+        /* construct the delta time */
+        status = lib$cvtf_to_internal_time(
+                &convert_operation, &sec, &time_diff);
+        if (status != LIB$_NORMAL)
+            return 0; /* error */
+
+        /* add them up */
+        status = lib$add_times(
+                &time_curr,
+                &time_diff,
+                &time_out);
+        if (status != LIB$_NORMAL)
+            return 0; /* error */
+    }
+
+    while (TRUE) {
+        /* select() */
+        status = sys$qiow(0, iochan, IO$_SENSEMODE | IO$M_TYPEAHDCNT, iosb,
+                0, 0, &typeahead, 8, 0, 0, 0, 0);
+	if (status != SS$_NORMAL || (iosb[0] & 0xFFFF) != SS$_NORMAL)
+            return 0; /* error */
+
+        if (typeahead.numchars)
+            return 1; /* ready to read */
+
+        /* there's nothing to read; what now? */
+        if (msec == 0) {
+            /* immediate time-out; return impatiently */
+            return 0;
+        }
+        else if (msec < 0) {
+            /* no time-out; wait on indefinitely */
+            continue;
+        }
+        else {
+            /* time-out needs to be checked */
+            status = sys$gettim(&time_curr);
+            if (status != SS$_NORMAL)
+                return 0; /* error */
+
+            status = lib$sub_times(
+                    &time_out,
+                    &time_curr,
+                    &time_diff);
+            if (status != LIB$_NORMAL)
+                return 0; /* error, incl. time_diff < 0 (i.e. time-out) */
+
+            /* otherwise wait some more */
+        }
+    }
 }

@@ -225,6 +225,8 @@
 # include <starlet.h>
 # include <socket.h>
 # include <lib$routines.h>
+# include <libdef.h>
+# include <libdtdef.h>
 
 # ifdef FEAT_GUI_GTK
 #  include "gui_gtk_vms.h"
