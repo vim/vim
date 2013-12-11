@@ -3788,6 +3788,50 @@ mch_set_winsize_now(void)
 }
 #endif /* FEAT_GUI_W32 */
 
+    static BOOL
+vim_create_process(
+    const char		*cmd,
+    DWORD		flags,
+    BOOL		inherit_handles,
+    STARTUPINFO		*si,
+    PROCESS_INFORMATION *pi)
+{
+#  ifdef FEAT_MBYTE
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	WCHAR	*wcmd = enc_to_utf16(cmd, NULL);
+
+	if (wcmd != NULL)
+	{
+	    BOOL ret;
+	    ret = CreateProcessW(
+		NULL,			/* Executable name */
+		wcmd,			/* Command to execute */
+		NULL,			/* Process security attributes */
+		NULL,			/* Thread security attributes */
+		inherit_handles,	/* Inherit handles */
+		flags,			/* Creation flags */
+		NULL,			/* Environment */
+		NULL,			/* Current directory */
+		si,			/* Startup information */
+		pi);			/* Process information */
+	    vim_free(wcmd);
+	    return ret;
+	}
+    }
+#endif
+    return CreateProcess(
+	NULL,			/* Executable name */
+	cmd,			/* Command to execute */
+	NULL,			/* Process security attributes */
+	NULL,			/* Thread security attributes */
+	inherit_handles,	/* Inherit handles */
+	flags,			/* Creation flags */
+	NULL,			/* Environment */
+	NULL,			/* Current directory */
+	si,			/* Startup information */
+	pi);			/* Process information */
+}
 
 
 #if defined(FEAT_GUI_W32) || defined(PROTO)
@@ -3834,18 +3878,8 @@ mch_system_classic(char *cmd, int options)
 	cmd += 3;
 
     /* Now, run the command */
-    CreateProcess(NULL,			/* Executable name */
-		  cmd,			/* Command to execute */
-		  NULL,			/* Process security attributes */
-		  NULL,			/* Thread security attributes */
-		  FALSE,		/* Inherit handles */
-		  CREATE_DEFAULT_ERROR_MODE |	/* Creation flags */
-			CREATE_NEW_CONSOLE,
-		  NULL,			/* Environment */
-		  NULL,			/* Current directory */
-		  &si,			/* Startup information */
-		  &pi);			/* Process information */
-
+    vim_create_process(cmd, FALSE,
+	    CREATE_DEFAULT_ERROR_MODE |	CREATE_NEW_CONSOLE, &si, &pi);
 
     /* Wait for the command to terminate before continuing */
     if (g_PlatformId != VER_PLATFORM_WIN32s)
@@ -4177,22 +4211,11 @@ mch_system_piped(char *cmd, int options)
 	    p = cmd;
     }
 
-    /* Now, run the command */
-    CreateProcess(NULL,			/* Executable name */
-		  p,			/* Command to execute */
-		  NULL,			/* Process security attributes */
-		  NULL,			/* Thread security attributes */
-
-		  // this command can be litigious, handle inheritance was
-		  // deactivated for pending temp file, but, if we deactivate
-		  // it, the pipes don't work for some reason.
-		  TRUE,			/* Inherit handles, first deactivated,
-					 * but needed */
-		  CREATE_DEFAULT_ERROR_MODE, /* Creation flags */
-		  NULL,			/* Environment */
-		  NULL,			/* Current directory */
-		  &si,			/* Startup information */
-		  &pi);			/* Process information */
+    /* Now, run the command.
+     * About "Inherit handles" being TRUE: this command can be litigious,
+     * handle inheritance was deactivated for pending temp file, but, if we
+     * deactivate it, the pipes don't work for some reason. */
+     vim_create_process(p, TRUE, CREATE_DEFAULT_ERROR_MODE, &si, &pi);
 
     if (p != cmd)
 	vim_free(p);
@@ -4410,7 +4433,25 @@ mch_system(char *cmd, int options)
 }
 #else
 
-# define mch_system(c, o) system(c)
+# ifdef FEAT_MBYTE
+    static int
+mch_system(char *cmd, int options)
+{
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	WCHAR	*wcmd = enc_to_utf16(cmd, NULL);
+	if (wcmd != NULL)
+	{
+	    int ret = _wsystem(wcmd);
+	    vim_free(wcmd);
+	    return ret;
+	}
+    }
+    return system(cmd);
+}
+# else
+#  define mch_system(c, o) system(c)
+# endif
 
 #endif
 
@@ -4578,16 +4619,7 @@ mch_call_shell(
 	     * inherit our handles which causes unpleasant dangling swap
 	     * files if we exit before the spawned process
 	     */
-	    if (CreateProcess(NULL,		// Executable name
-		    newcmd,			// Command to execute
-		    NULL,			// Process security attributes
-		    NULL,			// Thread security attributes
-		    FALSE,			// Inherit handles
-		    flags,			// Creation flags
-		    NULL,			// Environment
-		    NULL,			// Current directory
-		    &si,			// Startup information
-		    &pi))			// Process information
+	    if (vim_create_process(newcmd, FALSE, flags, &si, &pi))
 		x = 0;
 	    else
 	    {
