@@ -3830,7 +3830,7 @@ mch_set_winsize_now(void)
 
     static BOOL
 vim_create_process(
-    const char		*cmd,
+    char		*cmd,
     DWORD		flags,
     BOOL		inherit_handles,
     STARTUPINFO		*si,
@@ -3853,7 +3853,7 @@ vim_create_process(
 		flags,			/* Creation flags */
 		NULL,			/* Environment */
 		NULL,			/* Current directory */
-		si,			/* Startup information */
+		(LPSTARTUPINFOW)si,	/* Startup information */
 		pi);			/* Process information */
 	    vim_free(wcmd);
 	    return ret;
