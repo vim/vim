@@ -24,13 +24,6 @@
 # define _USE_32BIT_TIME_T
 #endif
 
-/* Work around for perl-5.18.
- * Don't include "perl\lib\CORE\inline.h" for now,
- * include it after Perl_sv_free2 is defined. */
-#ifdef DYNAMIC_PERL
-# define PERL_NO_INLINE_FUNCTIONS
-#endif
-
 /*
  * Prevent including winsock.h.  perl.h tries to detect whether winsock.h is
  * already included before including winsock2.h, because winsock2.h isn't
@@ -43,6 +36,13 @@
 #endif
 
 #include "vim.h"
+
+/* Work around for perl-5.18.
+ * Don't include "perl\lib\CORE\inline.h" for now,
+ * include it after Perl_sv_free2 is defined. */
+#ifdef DYNAMIC_PERL
+# define PERL_NO_INLINE_FUNCTIONS
+#endif
 
 #include <EXTERN.h>
 #include <perl.h>
