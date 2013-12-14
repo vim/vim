@@ -487,7 +487,7 @@ get_cursor_rel_lnum(wp, lnum)
 	{
 	    while (lnum > cursor)
 	    {
-		(void)hasFolding(lnum, &lnum, NULL);
+		(void)hasFoldingWin(wp, lnum, &lnum, NULL, TRUE, NULL);
 		/* if lnum and cursor are in the same fold,
 		 * now lnum <= cursor */
 		if (lnum > cursor)
@@ -499,7 +499,7 @@ get_cursor_rel_lnum(wp, lnum)
 	{
 	    while (lnum < cursor)
 	    {
-		(void)hasFolding(lnum, NULL, &lnum);
+		(void)hasFoldingWin(wp, lnum, NULL, &lnum, TRUE, NULL);
 		/* if lnum and cursor are in the same fold,
 		 * now lnum >= cursor */
 		if (lnum < cursor)
