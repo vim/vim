@@ -8054,6 +8054,8 @@ ex_syncbind(eap)
 {
 #ifdef FEAT_SCROLLBIND
     win_T	*wp;
+    win_T	*save_curwin = curwin;
+    buf_T	*save_curbuf = curbuf;
     long	topline;
     long	y;
     linenr_T	old_linenr = curwin->w_cursor.lnum;
@@ -8085,13 +8087,13 @@ ex_syncbind(eap)
 
 
     /*
-     * set all scrollbind windows to the same topline
+     * Set all scrollbind windows to the same topline.
      */
-    wp = curwin;
     for (curwin = firstwin; curwin; curwin = curwin->w_next)
     {
 	if (curwin->w_p_scb)
 	{
+	    curbuf = curwin->w_buffer;
 	    y = topline - curwin->w_topline;
 	    if (y > 0)
 		scrollup(y, TRUE);
@@ -8105,7 +8107,8 @@ ex_syncbind(eap)
 #endif
 	}
     }
-    curwin = wp;
+    curwin = save_curwin;
+    curbuf = save_curbuf;
     if (curwin->w_p_scb)
     {
 	did_syncbind = TRUE;
