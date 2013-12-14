@@ -44,6 +44,11 @@
 # define PERL_NO_INLINE_FUNCTIONS
 #endif
 
+/* Work around for using MSVC and ActivePerl 5.18. */
+#ifdef _MSC_VER
+# define __inline__ __inline
+#endif
+
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>

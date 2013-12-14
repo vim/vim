@@ -825,7 +825,12 @@ PERL_INCDIR = $(PERL)\Lib$(PERL_ARCH)\Core
 PERL_LIB = $(PERL_INCDIR)\perl.lib
 !else
 PERL_DLL = perl$(PERL_VER).dll
+!if exist($(PERL_INCDIR)\perl$(PERL_VER).lib)
 PERL_LIB = $(PERL_INCDIR)\perl$(PERL_VER).lib
+!else
+# For ActivePerl 5.18 and later
+PERL_LIB = $(PERL_INCDIR)\libperl$(PERL_VER).a
+!endif
 !endif
 
 CFLAGS = $(CFLAGS) -DFEAT_PERL
