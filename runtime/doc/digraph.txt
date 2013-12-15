@@ -1,4 +1,4 @@
-*digraph.txt*   For Vim version 7.4.  Last change: 2011 Jan 15
+*digraph.txt*   For Vim version 7.4.  Last change: 2013 Dec 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -147,7 +147,7 @@ a standard meaning:
 	Two			2	Hook
 	Nine			9	Horn
 
-	Equals			=	Cyrillic
+	Equals			=	Cyrillic (= used as second char) 
 	Asterisk		*	Greek
 	Percent sign		%	Greek/Cyrillic special
 	Plus			+	smalls: Arabic, capitals: Hebrew

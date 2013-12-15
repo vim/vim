@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2013 Dec 11
+*todo.txt*      For Vim version 7.4.  Last change: 2013 Dec 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,6 +34,10 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Article for Vim website. (Pritesh Ugrankar, 2013 Dec 13)
+
+Patch for Perl 5.18. (2013 Dec 13, Ken Takata)
+
 Regexp problems:
 - NFA regexp doesn't count tab matches correctly. (Urtica Dioica / gaultheria
   Shallon, 2013 Nov 18)
@@ -44,9 +48,13 @@ Regexp problems:
   Remark from Dominique, Aug 27
 - Issue 164: freeze on regexp search.
 - NFA problem with non-greedy match and branches. (Ingo Karkat, 2013 Nov 29)
+- Ignorecase not handled properly for multi-byte characters. (Axel Bender,
+  2013 Dec 11)
 
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
+
+Patch for problems with Borland compiler. (Ken Takata, 2013 Dec 14)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
@@ -67,6 +75,9 @@ Await response from maintainer.
 
 Include systemverilog file?  Two votes yes.
 
+Patch to make "J" set '[ and '] marks. (Christian Brabandt, 2013 Dec 11)
+Any compatibility problems?
+
 Patch to add :S modifier for excaping the current file name.
 (ZyX, 2013 Nov 30)  Update Dec 5.
 
@@ -77,6 +88,8 @@ Additional remark by glts: the suggested words are marked bad?
 Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
 
 Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
+
+Add digraph for Rouble: =P.  What's the Unicode?
 
 Issue 174: Detect Mason files.
 
@@ -91,6 +104,10 @@ instead. (Samuel Ferencik, 2013 Sep 28)
 Series of patches for NL vs NUL handling. (ZyX, 2013 Nov 3, Nov 9)
 
 Patch to add v:completed_item. (Shougo Matsu, 2013 Nov 29).
+
+Patch to make test 100 work on MS-Windows. (Taro Muraoka, 2013 Dec 12)
+
+Patch to define macros for hardcoded values. (Elias Diem, 2013 Dec 14)
 
 Perl: support for Activestate perl 5.18: Issue 170.
 
@@ -107,6 +124,8 @@ Include Haiku port? (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
 Updated spec ftplugin. (Matěj Cepl, 2013 Oct 16)
 
 Patch to right-align signs. (James Kolb (email james), 2013 Sep 23)
+
+Patch to handle integer overflow. (Aaron Burrow, 2013 Dec 12)
 
 With "$" in 'cpoptions' the popup menu isn't fully drawn. (Matti Niemenmaa,
 2013 Sep 5)
@@ -139,6 +158,12 @@ Patch to fix that on suckless Terminal mousewheel up does not work.
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
 Checking runtime scripts: Thilo Six, 2012 Jun 6.
+
+When evaluating expression in backticks, autoload doesn't work.
+(Andy Wokula, 2013 Dec 14)
+
+Using <nr>ifoobar<esc> can slow down Vim.  Patch by Christian Brabandt, 2013
+Dec 13.
 
 Fold can't be opened after ":move". (Ein Brown)
 Patch from Christian Brabandt doesn't fix it completely.
@@ -679,7 +704,7 @@ Assume the system converts between the actual encoding of the filesystem to
 the system encoding (usually utf-8).
 
 Patch to add GUI colors to the terminal, when it supports it. (ZyX, 2013 Jan
-26)
+26, update 2013 Dec 14)
 
 Problem producing tags file when hebrew.frx is present.  It has a BOM.
 Results in E670. (Tony Mechelynck, 2010 May 2)

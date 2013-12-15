@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:         generic Changelog file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2012-08-23
+" Latest Revision:  2013-12-15
 " Variables:
 "   g:changelog_timeformat (deprecated: use g:changelog_dateformat instead) -
 "       description: the timeformat used in ChangeLog entries.
@@ -122,12 +122,12 @@ if &filetype == 'changelog'
 
   " Format used for new date entries.
   if !exists('g:changelog_new_date_format')
-    let g:changelog_new_date_format = "%d  %u\n\n\t* %c\n\n"
+    let g:changelog_new_date_format = "%d  %u\n\n\t* %p%c\n\n"
   endif
 
   " Format used for new entries to current date entry.
   if !exists('g:changelog_new_entry_format')
-    let g:changelog_new_entry_format = "\t* %c"
+    let g:changelog_new_entry_format = "\t* %p%c"
   endif
 
   " Regular expression used to find a given date entry.
@@ -143,9 +143,9 @@ if &filetype == 'changelog'
 
   " Substitutes specific items in new date-entry formats and search strings.
   " Can be done with substitute of course, but unclean, and need \@! then.
-  function! s:substitute_items(str, date, user)
+  function! s:substitute_items(str, date, user, prefix)
     let str = a:str
-    let middles = {'%': '%', 'd': a:date, 'u': a:user, 'c': '{cursor}'}
+    let middles = {'%': '%', 'd': a:date, 'u': a:user, 'p': a:prefix, 'c': '{cursor}'}
     let i = stridx(str, '%')
     while i != -1
       let inc = 0
@@ -171,7 +171,7 @@ if &filetype == 'changelog'
   endfunction
 
   " Internal function to create a new entry in the ChangeLog.
-  function! s:new_changelog_entry()
+  function! s:new_changelog_entry(prefix)
     " Deal with 'paste' option.
     let save_paste = &paste
     let &paste = 1
@@ -179,7 +179,7 @@ if &filetype == 'changelog'
     " Look for an entry for today by our user.
     let date = strftime(g:changelog_dateformat)
     let search = s:substitute_items(g:changelog_date_entry_search, date,
-                                  \ s:username())
+                                  \ s:username(), a:prefix)
     if search(search) > 0
       " Ok, now we look for the end of the date entry, and add an entry.
       call cursor(nextnonblank(line('.') + 1), 1)
@@ -188,7 +188,7 @@ if &filetype == 'changelog'
       else
         let p = line('.')
       endif
-      let ls = split(s:substitute_items(g:changelog_new_entry_format, '', ''),
+      let ls = split(s:substitute_items(g:changelog_new_entry_format, '', '', a:prefix),
                    \ '\n')
       call append(p, ls)
       call cursor(p + 1, 1)
@@ -198,7 +198,7 @@ if &filetype == 'changelog'
 
       " No entry today, so create a date-user header and insert an entry.
       let todays_entry = s:substitute_items(g:changelog_new_date_format,
-                                          \ date, s:username())
+                                          \ date, s:username(), a:prefix)
       " Make sure we have a cursor positioning.
       if stridx(todays_entry, '{cursor}') == -1
         let todays_entry = todays_entry . '{cursor}'
@@ -206,7 +206,7 @@ if &filetype == 'changelog'
 
       " Now do the work.
       call append(0, split(todays_entry, '\n'))
-      
+
       " Remove empty lines at end of file.
       if remove_empty
         $-/^\s*$/-1,$delete
@@ -223,8 +223,8 @@ if &filetype == 'changelog'
   endfunction
 
   if exists(":NewChangelogEntry") != 2
-    noremap <buffer> <silent> <Leader>o <Esc>:call <SID>new_changelog_entry()<CR>
-    command! -nargs=0 NewChangelogEntry call s:new_changelog_entry()
+    noremap <buffer> <silent> <Leader>o <Esc>:call <SID>new_changelog_entry('')<CR>
+    command! -nargs=0 NewChangelogEntry call s:new_changelog_entry('')
   endif
 
   let b:undo_ftplugin = "setl com< fo< et< ai<"
@@ -277,10 +277,7 @@ else
     if exists('b:changelog_entry_prefix')
       let prefix = call(b:changelog_entry_prefix, [])
     else
-      let prefix = substitute(strpart(expand('%:p'), strlen(path)), '^/\+', "", "") . ':'
-    endif
-    if !empty(prefix)
-      let prefix = ' ' . prefix
+      let prefix = substitute(strpart(expand('%:p'), strlen(path)), '^/\+', "", "")
     endif
 
     let buf = bufnr(changelog)
