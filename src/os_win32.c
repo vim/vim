@@ -3831,8 +3831,8 @@ mch_set_winsize_now(void)
     static BOOL
 vim_create_process(
     char		*cmd,
-    DWORD		flags,
     BOOL		inherit_handles,
+    DWORD		flags,
     STARTUPINFO		*si,
     PROCESS_INFORMATION *pi)
 {
