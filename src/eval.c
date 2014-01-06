@@ -14141,8 +14141,8 @@ f_matcharg(argvars, rettv)
 	    }
 	    else
 	    {
-		list_append_string(rettv->vval.v_list, NUL, -1);
-		list_append_string(rettv->vval.v_list, NUL, -1);
+		list_append_string(rettv->vval.v_list, NULL, -1);
+		list_append_string(rettv->vval.v_list, NULL, -1);
 	    }
 	}
 #endif

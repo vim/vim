@@ -4695,8 +4695,8 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, find_what,
 	else
 	{
 	    char_u *p =  gettail(search_ctx->ffsc_fix_path);
-	    char_u *wc_path = NUL;
-	    char_u *temp = NUL;
+	    char_u *wc_path = NULL;
+	    char_u *temp = NULL;
 	    int    len = 0;
 
 	    if (p > search_ctx->ffsc_fix_path)
