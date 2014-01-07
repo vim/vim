@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2013 Dec 15
+*todo.txt*      For Vim version 7.4.  Last change: 2014 Jan 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,7 +38,16 @@ Article for Vim website. (Pritesh Ugrankar, 2013 Dec 13)
 
 Patch for Perl 5.18. (2013 Dec 13, Ken Takata)
 
+Patch 7.4.114 breaks "Entering directory" message parsing.
+patch by Lech Lorens, 2013 Dec 30.
+
+Patch to possibly fix crash usng w_localdir. (Dominique Pelle, 2013 Dec 27)
+
+Patch to fix crash when using :bwipeout in autocmd. (Hirohito Higashi, 2014 Jan 6)
+
 Regexp problems:
+- After patch 7.4.045 pattern with \zs isn't handled correctly. (Yukihiro
+  Nakadaira, 2013 Dec 23)
 - NFA regexp doesn't count tab matches correctly. (Urtica Dioica / gaultheria
   Shallon, 2013 Nov 18)
 - After patch 7.4.100 there is still a difference between NFA and old engine.
@@ -50,11 +59,33 @@ Regexp problems:
 - NFA problem with non-greedy match and branches. (Ingo Karkat, 2013 Nov 29)
 - Ignorecase not handled properly for multi-byte characters. (Axel Bender,
   2013 Dec 11)
+- Using \@> and \?. (Brett Stahlman, 2013 Dec 21) Remark from Marcin Szamotulski
 
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
+":cd C:\Windows\System32\drivers\etc*" does not work, even though the
+directory exists. (Sergio Gallelli, 2013 Dec 29)
+
 Patch for problems with Borland compiler. (Ken Takata, 2013 Dec 14)
+
+Patch to make getregtype() work as documented. (Yukihiro Nakadaira, 2013 Dec
+26)
+
+Patch to initialize v:oldfiles. (Yasuhiro Matsumoto, 2013 Dec 15)
+
+Patch to fix cursor movement. (Hirohito Higashi, 2013 Dec 21)
+
+Patch to add more help tags. (glts, 2014 Jan 4)
+
+Patch to avoid E685 internal error. (Yukihiro Nakadaira, 2014 Jan 1)
+Restore no_autoload?
+Alternative: Avoid no_autoload. (ZyX, 2014 Jan 6)
+
+Patch to avoid that :keeppatterns s/foo/bar sets @/. (Yasuhiro Matsumoto, 2013
+Dec 17)
+
+Patch for typo in makefile. ZyX, (2013 Dec 15)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
@@ -70,6 +101,8 @@ Patch to support iterator on Python vim.options. (ZyX, 2013 Nov 2)
 Patch to make Dictionary.update() work without arguments.
 (ZyX, 2013 Oct 19)
 
+Patch to allow more types in remote_expr(). (Lech Lorens, 2014 Jan 5)
+
 Patch for Cobol ftplugin. (ZyX, 2013 Oct 20)
 Await response from maintainer.
 
@@ -84,6 +117,10 @@ Patch to add :S modifier for excaping the current file name.
 Problem with 'spellsuggest' file, only works for some words.
 (Cesar Romani, 2013 Aug 20)  Depends on file name? (Aug 24)
 Additional remark by glts: the suggested words are marked bad?
+
+8   non-ASCII font names don't work.  Need to convert from 'encoding' and use
+    the wide functions. Patch by Ken Takata, 2013 Dec 22.
+    Update 2014 Jan 6.
 
 Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
 
@@ -102,6 +139,9 @@ VMS: Select() doesn't work properly, typing ESC may hang Vim.  Use sys$qiow
 instead. (Samuel Ferencik, 2013 Sep 28)
 
 Series of patches for NL vs NUL handling. (ZyX, 2013 Nov 3, Nov 9)
+
+Patch to add flag to shortmess to avoid giving completion messages.
+(Shougo Matsu, 2014 Jan 6)
 
 Patch to add v:completed_item. (Shougo Matsu, 2013 Nov 29).
 
@@ -146,7 +186,8 @@ Patch by Thomas Tuegel, also for GTK, 2013 Nov 24
 :help gives example for z?, but it does not work.  m? and t? do work.
 
 Python: Extended funcrefs: use func_T* structure in place of char_u* function
-names. (ZyX, 2013 Jul 15, update Sep 22, 24, 28)
+names.
+(ZyX, 2013 Jul 15, update Sep 22, 24, 28; Update 2013 Dec 15, 2014 Jan 6)
 Also fixes Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
 Patch to add funcref to Lua.  (Luis Carvalho, 2013 Sep 4)
@@ -2012,8 +2053,6 @@ GTK+ GUI known bugs:
 Win32 GUI known bugs:
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
     the screen.
-8   non-ASCII font names don't work.  Need to convert from 'encoding' and use
-    the wide functions.
 8   On Windows 98 the unicows library is needed to support functions with UCS2
     file names.  Can we load unicows.dll dynamically?
 8   The -P argument doesn't work very well with many MDI applications.

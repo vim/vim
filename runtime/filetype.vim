@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2013 Nov 13
+" Last Change:	2014 Jan 06
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -105,6 +105,9 @@ au BufNewFile,BufRead *.run			setf ampl
 
 " Ant
 au BufNewFile,BufRead build.xml			setf ant
+
+" Arduino
+au BufNewFile,BufRead *.ino,*.pde		setf arduino
 
 " Apache style config file
 au BufNewFile,BufRead proftpd.conf*		call s:StarSetf('apachestyle')

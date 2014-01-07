@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	xa 6502 cross assembler
-" Maintainer:	Clemens Kirchgatterer <clemens@thf.ath.cx>
-" Last Change:	2003 May 03
+" Maintainer:	Clemens Kirchgatterer <clemens@1541.org>
+" Last Change:	2014 Jan 05
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

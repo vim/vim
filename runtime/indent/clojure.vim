@@ -6,7 +6,7 @@
 " Maintainer:	Sung Pae <self@sungpae.com>
 " URL:		https://github.com/guns/vim-clojure-static
 " License:	Same as Vim
-" Last Change:	08 September 2013
+" Last Change:	16 December 2013
 
 " TODO: Indenting after multibyte characters is broken:
 "       (let [Δ (if foo
@@ -51,6 +51,10 @@ if exists("*searchpairpos")
 
 	if !exists('g:clojure_align_multiline_strings')
 		let g:clojure_align_multiline_strings = 0
+	endif
+
+	if !exists('g:clojure_align_subforms')
+		let g:clojure_align_subforms = 0
 	endif
 
 	function! s:SynIdName()
@@ -284,7 +288,7 @@ if exists("*searchpairpos")
 		call search('\v\_s', 'cW')
 		call search('\v\S', 'W')
 		if paren[0] < line(".")
-			return paren[1] + &shiftwidth - 1
+			return paren[1] + (g:clojure_align_subforms ? 0 : &shiftwidth - 1)
 		endif
 
 		call search('\v\S', 'bW')

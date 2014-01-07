@@ -9,13 +9,13 @@
 " Maintainer:	Sung Pae <self@sungpae.com>
 " URL:		https://github.com/guns/vim-clojure-static
 " License:	Same as Vim
-" Last Change:	08 September 2013
+" Last Change:	16 December 2013
 
 if exists("b:current_syntax")
 	finish
 endif
 
-" Generated from https://github.com/guns/vim-clojure-static/blob/vim-release-005/clj/src/vim_clojure_static/generate.clj
+" Generated from https://github.com/guns/vim-clojure-static/blob/vim-release-007/clj/src/vim_clojure_static/generate.clj
 " Clojure version 1.5.1
 syntax keyword clojureConstant nil
 syntax keyword clojureBoolean false true
@@ -38,7 +38,7 @@ syntax match clojureKeyword "\v<:{1,2}%([^ \n\r\t()\[\]{}";@^`~\\%/]+/)*[^ \n\r\
 
 syntax match clojureStringEscape "\v\\%([\\btnfr"]|u\x{4}|[0-3]\o{2}|\o{1,2})" contained
 
-syntax region clojureString start=/"/ skip=/\\\\\|\\"/ end=/"/ contains=clojureStringEscape
+syntax region clojureString start=/"/ skip=/\\\\\|\\"/ end=/"/ contains=clojureStringEscape,@Spell
 
 syntax match clojureCharacter "\\."
 syntax match clojureCharacter "\\o\%([0-3]\o\{2\}\|\o\{1,2\}\)"
@@ -75,12 +75,12 @@ syntax match clojureDispatch "\v#[\^'=<_]?"
 " Clojure permits no more than 20 params.
 syntax match clojureAnonArg "%\(20\|1\d\|[1-9]\|&\)\?"
 
-syntax match  clojureRegexpEscape "\v\\%([\\tnrfae()\[\]{}^$*?+]|c\u|0[0-3]?\o{1,2}|x%(\x{2}|\{\x{1,6}\})|u\x{4})" contained display
+syntax match  clojureRegexpEscape "\v\\%([\\tnrfae.()\[\]{}^$*?+]|c\u|0[0-3]?\o{1,2}|x%(\x{2}|\{\x{1,6}\})|u\x{4})" contained display
 syntax region clojureRegexpQuoted start=/\\Q/ms=e+1 skip=/\\\\\|\\"/ end=/\\E/me=s-1 end=/"/me=s-1 contained
 syntax region clojureRegexpQuote  start=/\\Q/       skip=/\\\\\|\\"/ end=/\\E/       end=/"/me=s-1 contains=clojureRegexpQuoted keepend contained
 
 " Character property classes
-" Generated from https://github.com/guns/vim-clojure-static/blob/vim-release-005/clj/src/vim_clojure_static/generate.clj
+" Generated from https://github.com/guns/vim-clojure-static/blob/vim-release-007/clj/src/vim_clojure_static/generate.clj
 " Java version 1.7.0_40
 syntax match clojureRegexpPosixCharClass "\v\\[pP]\{%(Blank|P%(unct|rint)|Digit|Graph|A%(l%(pha|num)|SCII)|XDigit|Space|Upper|Lower|Cntrl)\}" contained display
 syntax match clojureRegexpJavaCharClass "\v\\[pP]\{java%(U%(pperCase|nicodeIdentifier%(Start|Part))|Mirrored|Alphabetic|SpaceChar|D%(efined|igit)|Whitespace|L%(etter%(OrDigit)?|owerCase)|TitleCase|I%(de%(ographic|ntifierIgnorable)|SOControl)|JavaIdentifier%(Start|Part))\}" contained display
@@ -91,23 +91,23 @@ syntax match clojureRegexpUnicodeCharClass "\v\\[pP]\{%(Is|gc\=|general_category
 syntax match clojureRegexpUnicodeCharClass "\v\\[pP]\{\c%(Is|sc\=|script\=)%(h%(ira%(gana)?|an%([io]|g%(ul)?|unoo)?|ebr%(ew)?)|yi%(ii)?|java%(nese)?|c%(prt|y%(r%(illic|l)|priot)|h%(er%(okee)?|am)|uneiform|o%(mmon|pt%(ic)?)|a%(n%(adian_aboriginal|s)|ri%(an)?))|i%(mperial_aramaic|tal|n%(herited|scriptional_pa%(rthian|hlavi)))|a%(r%(ab%(ic)?|m%([in]|enian))|v%(st|estan))|g%(oth%(ic)?|u%(j%(arati|r)|r%(mukhi|u))|lag%(olitic)?|eor%(gian)?|re%(k|ek))|b%(u%(gi%(nese)?|h%(d|id))|ra%(i%(lle)?|h%(mi)?)|a%(mum?|t%(k|ak)|li%(nese)?)|opo%(mofo)?|eng%(ali)?)|s%(ha%(w|vian)|und%(anese)?|y%(r%(iac|c)|lo%(ti_nagri)?)|inh%(ala)?|a%(ur%(ashtra)?|rb|m%(r|aritan)))|d%(srt|e%(va%(nagari)?|seret))|l%(a%(na|oo?|t%(n|in))|epc%(ha)?|i%(n%(ear_b|b)|mbu?|su)|y%([dc]i%(an)?))|p%(h%(oenician|nx|li|ag%(s_pa)?)|rti)|e%(gyp%(tian_hieroglyphs)?|thi%(opic)?)|r%(jng|un%(ic|r)|ejang)|u%(nknown|gar%(itic)?)|vaii?|n%(koo?|ew_tai_lue)|m%(y%(mr|anmar)|tei|a%(nd%(aic)?|layalam)|ong%(olian)?|eetei_mayek|lym)|z%(inh|yyy|zzz)|t%(glg|fng|i%(finagh|b%(t|etan))|ha%(i|a%(na)?)|elu%(gu)?|a%(i_%(viet|le|tham)|l[eu]|g%(alog|b%(anwa)?)|vt|m%(l|il)))|x%(sux|peo)|o%(r%(iya|kh|ya)|sma%(nya)?|g%(am|ham)|l%(ck|d_%(south_arabian|turkic|italic|persian)|_chiki))|k%(a%(takana|yah_li|n%(nada|a)|li|ithi)|h%(m%(r|er)|ar%(oshthi)?)|thi|nda))\}" contained display
 syntax match clojureRegexpUnicodeCharClass "\v\\[pP]\{\c%(In|blk\=|block\=)%(s%(a%(maritan|urashtra)|mall%(_form_variants| form variants|formvariants)|inhala|y%(loti%(nagri|[_ ]nagri)|riac)|havian|p%(ecials|acing%(modifierletters|_modifier_letters| modifier letters))|u%(p%(erscripts%(andsubscripts|_and_subscripts| and subscripts)|plementa%(ry%( private use area-[ab]|_private_use_area_[ab]|privateusearea-[ab])|l%( %(arrows-[ab]|punctuation|mathematical operators)|arrows-[ab]|_%(punctuation|mathematical_operators|arrows_[ab])|punctuation|mathematicaloperators)))|ndanese|rrogates_area))|l%(a%(o|tin%(_%(extended_%(a%(dditional)?|[dcb])|1_supplement)| extended%(-[dacb]| additional)|-1%( supplement|supplement)|extended%(additional|-[dacb])))|e%(pcha|tterlike%(symbols|[_ ]symbols))|y[cd]ian|i%(su|mbu|near%(b%(ideograms|syllabary)|_b_%(ideograms|syllabary)| b %(ideograms|syllabary)))|ow%([_ ]surrogates|surrogates))|b%(a%(sic%(latin|[_ ]latin)|tak|linese|mum%([_ ]supplement|supplement)?)|yzantine%(_musical_symbols| musical symbols|musicalsymbols)|engali|u%(ginese|hid)|lock%(elements|[_ ]elements)|ra%(hmi|ille%([ _]patterns|patterns))|o%(x%(drawing|[_ ]drawing)|pomofo%([ _]extended|extended)?))|t%(a%(g%(s|alog|banwa)|mil|i%( %(viet|xuan jing symbols|le|tham)|viet|le|_%(xuan_jing_symbols|viet|le|tham)|tham|xuanjingsymbols))|ha%(i|ana)|elugu|i%(finagh|betan)|ransport%(_and_map_symbols| and map symbols|andmapsymbols))|n%(ew%(_tai_lue| tai lue|tailue)|umber%([ _]forms|forms)|ko)|m%(iscellaneous%(_%(mathematical_symbols_[ab]|symbols%(_and_%(arrows|pictographs))?|technical)|mathematicalsymbols-[ab]|technical| %(symbols%( and %(arrows|pictographs))?|mathematical symbols-[ab]|technical)|symbols%(and%(arrows|pictographs))?)|eetei%(mayek|[_ ]mayek)|a%(ndaic|thematical%(alphanumericsymbols|operators|_%(alphanumeric_symbols|operators)| %(operators|alphanumeric symbols))|hjong%(tiles|[_ ]tiles)|layalam)|yanmar%(_extended_a|extended-a| extended-a)?|o%(difier%( tone letters|toneletters|_tone_letters)|ngolian)|usical%(symbols|[_ ]symbols))|p%(h%(a%(gs[-_]pa|istos%(disc|[_ ]disc))|o%(netic%(_extensions%(_supplement)?| extensions%( supplement)?|extensions%(supplement)?)|enician))|rivate%(usearea|_use_area| use area)|laying%(cards|[_ ]cards))|javanese|u%(garitic|nified%(_canadian_aboriginal_syllabics%(_extended)?| canadian aboriginal syllabics%( extended)?|canadianaboriginalsyllabics%(extended)?))|o%(riya|gham|l%([ _]chiki|d%(turkic|_%(south_arabian|turkic|italic|persian)|italic|persian| %(south arabian|turkic|italic|persian)|southarabian)|chiki)|smanya|ptical%(_character_recognition| character recognition|characterrecognition))|v%(e%(dic%(extensions|[_ ]extensions)|rtical%([ _]forms|forms))|a%(i|riation%(_selectors%(_supplement)?| selectors%( supplement)?|selectors%(supplement)?)))|a%(vestan|l%(phabetic%(_presentation_forms| presentation forms|presentationforms)|chemical%(symbols|[_ ]symbols))|ncient%( %(symbols|greek %(musical notation|numbers))|symbols|greek%(musicalnotation|numbers)|_%(symbols|greek_%(musical_notation|numbers)))|egean%([ _]numbers|numbers)|r%(menian|rows|abic%( %(presentation forms-[ab]|supplement)|_%(presentation_forms_[ab]|supplement)|presentationforms-[ab]|supplement)?))|i%(nscriptional%(pa%(rthian|hlavi)|%([_ ]pa%(rthian|hlavi)))|deographic%( description characters|descriptioncharacters|_description_characters)|pa%(extensions|[_ ]extensions)|mperial%(aramaic|[_ ]aramaic))|yi%(%([_ ]%(radicals|syllables))|radicals|syllables|jing%(hexagramsymbols|_hexagram_symbols| hexagram symbols))|k%(a%(yah%(li|[_ ]li)|n%(nada|bun|a%([_ ]supplement|supplement)|gxi%(radicals|[_ ]radicals))|ithi|takana%(phoneticextensions|_phonetic_extensions| phonetic extensions)?)|h%(aroshthi|mer%(symbols|[_ ]symbols)?))|d%(e%(vanagari%([ _]extended|extended)?|seret)|omino%(tiles|[_ ]tiles)|ingbats)|g%(lagolitic|othic|reek%(andcoptic| %(and coptic|extended)|extended|_extended)?|u%(rmukhi|jarati)|e%(o%(metric%([_ ]shapes|shapes)|rgian%([_ ]supplement|supplement)?)|neral%(punctuation|[_ ]punctuation)))|e%(nclosed%( %(ideographic supplement|cjk letters and months|alphanumeric%( supplement|s))|cjklettersandmonths|_%(ideographic_supplement|alphanumeric%(_supplement|s)|cjk_letters_and_months)|alphanumerics%(upplement)?|ideographicsupplement)|moticons|thiopic%(extended%(-a)?| %(extended%(-a)?|supplement)|_%(extended%(_a)?|supplement)|supplement)?|gyptian%(hieroglyphs|[_ ]hieroglyphs))|r%(ejang|u%(nic|mi%(numeralsymbols|_numeral_symbols| numeral symbols)))|c%(jk%(_%(compatibility%(_%(ideographs%(_supplement)?|forms))?|radicals_supplement|unified_ideographs%(_extension_[dacb])?|s%(trokes|ymbols_and_punctuation))|compatibility%(ideographs%(supplement)?|forms)?|unifiedideographs%(extension[dacb])?|radicalssupplement|s%(ymbolsandpunctuation|trokes)| %(unified ideographs%( extension [dacb])?|s%(trokes|ymbols and punctuation)|radicals supplement|compatibility%( %(forms|ideographs%( supplement)?))?))|h%(am|erokee)|u%(neiform%(_numbers_and_punctuation| numbers and punctuation|numbersandpunctuation)?|rrency%(symbols|[_ ]symbols))|y%(rillic%(_%(extended_[ab]|supplementary)| %(extended-[ab]|supplement%(ary)?)|extended-[ab]|supplement%(ary)?)?|priot%([_ ]syllabary|syllabary))|o%(ntrol%(pictures|[_ ]pictures)|unting%(rodnumerals|_rod_numerals| rod numerals)|m%(bining%(halfmarks|diacriticalmarks%(forsymbols|supplement)?| %(marks for symbols|half marks|diacritical marks%( %(for symbols|supplement))?)|marksforsymbols|_%(marks_for_symbols|half_marks|diacritical_marks%(_supplement)?))|mon%( indic number forms|indicnumberforms|_indic_number_forms))|ptic)|arian)|h%(i%(ragana|gh%(_%(private_use_surrogates|surrogates)| %(private use surrogates|surrogates)|surrogates|privateusesurrogates))|ebrew|a%(n%(unoo|gul%(jamo%(extended-[ab])?| %(jamo%( extended-[ab])?|syllables|compatibility jamo)|_%(syllables|jamo%(_extended_[ab])?|compatibility_jamo)|syllables|compatibilityjamo))|lfwidth%( and fullwidth forms|andfullwidthforms|_and_fullwidth_forms))))\}" contained display
 
-syntax match   clojureRegexpPredefinedCharClass "\v%(\\[dDsSwW]|\.)" contained display
-syntax cluster clojureRegexpCharPropertyClasses contains=clojureRegexpPosixCharClass,clojureRegexpJavaCharClass,clojureRegexpUnicodeCharClass
-syntax cluster clojureRegexpCharClasses         contains=clojureRegexpPredefinedCharClass,clojureRegexpCharClass,@clojureRegexpCharPropertyClasses
-syntax region  clojureRegexpCharClass           start="\[" skip=/\\\\\|\\]/ end="]" contained contains=clojureRegexpPredefinedCharClass,@clojureRegexpCharPropertyClasses
-syntax match   clojureRegexpBoundary            "\\[bBAGZz]"                     contained display
-syntax match   clojureRegexpBoundary            "[$^]"                           contained display
-syntax match   clojureRegexpQuantifier          "[?*+][?+]\="                    contained display
-syntax match   clojureRegexpQuantifier          "\v\{\d+%(,|,\d+)?}\??"          contained display
-syntax match   clojureRegexpOr                  "|"                              contained display
-syntax match   clojureRegexpBackRef             "\v\\%([1-9]\d*|k\<[a-zA-z]+\>)" contained display
+syntax match   clojureRegexpPredefinedCharClass	"\v%(\\[dDsSwW]|\.)" contained display
+syntax cluster clojureRegexpCharPropertyClasses	contains=clojureRegexpPosixCharClass,clojureRegexpJavaCharClass,clojureRegexpUnicodeCharClass
+syntax cluster clojureRegexpCharClasses		contains=clojureRegexpPredefinedCharClass,clojureRegexpCharClass,@clojureRegexpCharPropertyClasses
+syntax region  clojureRegexpCharClass		start="\[" skip=/\\\\\|\\]/ end="]" contained contains=clojureRegexpPredefinedCharClass,@clojureRegexpCharPropertyClasses
+syntax match   clojureRegexpBoundary		"\\[bBAGZz]" contained display
+syntax match   clojureRegexpBoundary		"[$^]" contained display
+syntax match   clojureRegexpQuantifier		"[?*+][?+]\=" contained display
+syntax match   clojureRegexpQuantifier		"\v\{\d+%(,|,\d+)?}\??" contained display
+syntax match   clojureRegexpOr			"|" contained display
+syntax match   clojureRegexpBackRef		"\v\\%([1-9]\d*|k\<[a-zA-z]+\>)" contained display
 
 " Mode modifiers, mode-modified spans, lookaround, regular and atomic
 " grouping, and named-capturing.
-syntax match clojureRegexpMod "\v\(@<=\?:"                        contained display
+syntax match clojureRegexpMod "\v\(@<=\?:" contained display
 syntax match clojureRegexpMod "\v\(@<=\?[xdsmiuU]*-?[xdsmiuU]+:?" contained display
-syntax match clojureRegexpMod "\v\(@<=\?%(\<?[=!]|\>)"            contained display
-syntax match clojureRegexpMod "\v\(@<=\?\<[a-zA-Z]+\>"            contained display
+syntax match clojureRegexpMod "\v\(@<=\?%(\<?[=!]|\>)" contained display
+syntax match clojureRegexpMod "\v\(@<=\?\<[a-zA-Z]+\>" contained display
 
 syntax region clojureRegexpGroup start="(" skip=/\\\\\|\\)/ end=")" matchgroup=clojureRegexpGroup contained contains=clojureRegexpMod,clojureRegexpQuantifier,clojureRegexpBoundary,clojureRegexpEscape,@clojureRegexpCharClasses
 syntax region clojureRegexp start=/\#"/ skip=/\\\\\|\\"/ end=/"/ contains=@clojureRegexpCharClasses,clojureRegexpEscape,clojureRegexpQuote,clojureRegexpBoundary,clojureRegexpQuantifier,clojureRegexpOr,clojureRegexpBackRef,clojureRegexpGroup keepend
@@ -126,13 +126,13 @@ syntax match clojureError "]\|}\|)"
 
 syntax sync fromstart
 
-highlight default link clojureConstant		Constant
-highlight default link clojureBoolean		Boolean
-highlight default link clojureCharacter		Character
-highlight default link clojureKeyword		Keyword
-highlight default link clojureNumber		Number
-highlight default link clojureString		String
-highlight default link clojureStringEscape	Character
+highlight default link clojureConstant			Constant
+highlight default link clojureBoolean			Boolean
+highlight default link clojureCharacter			Character
+highlight default link clojureKeyword			Keyword
+highlight default link clojureNumber			Number
+highlight default link clojureString			String
+highlight default link clojureStringEscape		Character
 
 highlight default link clojureRegexp			Constant
 highlight default link clojureRegexpEscape		Character
@@ -150,29 +150,29 @@ highlight default link clojureRegexpGroup		clojureRegexp
 highlight default link clojureRegexpQuoted		clojureString
 highlight default link clojureRegexpQuote		clojureRegexpBoundary
 
-highlight default link clojureVariable	Identifier
-highlight default link clojureCond	Conditional
-highlight default link clojureDefine	Define
-highlight default link clojureException	Exception
-highlight default link clojureFunc	Function
-highlight default link clojureMacro	Macro
-highlight default link clojureRepeat	Repeat
+highlight default link clojureVariable			Identifier
+highlight default link clojureCond			Conditional
+highlight default link clojureDefine			Define
+highlight default link clojureException			Exception
+highlight default link clojureFunc			Function
+highlight default link clojureMacro			Macro
+highlight default link clojureRepeat			Repeat
 
-highlight default link clojureSpecial	Special
-highlight default link clojureVarArg	Special
-highlight default link clojureQuote	SpecialChar
-highlight default link clojureUnquote	SpecialChar
-highlight default link clojureMeta	SpecialChar
-highlight default link clojureDeref	SpecialChar
-highlight default link clojureAnonArg	SpecialChar
-highlight default link clojureDispatch	SpecialChar
+highlight default link clojureSpecial			Special
+highlight default link clojureVarArg			Special
+highlight default link clojureQuote			SpecialChar
+highlight default link clojureUnquote			SpecialChar
+highlight default link clojureMeta			SpecialChar
+highlight default link clojureDeref			SpecialChar
+highlight default link clojureAnonArg			SpecialChar
+highlight default link clojureDispatch			SpecialChar
 
-highlight default link clojureComment		Comment
-highlight default link clojureCommentTodo	Todo
+highlight default link clojureComment			Comment
+highlight default link clojureCommentTodo		Todo
 
-highlight default link clojureError	Error
+highlight default link clojureError			Error
 
-highlight default link clojureParen	Delimiter
+highlight default link clojureParen			Delimiter
 
 let b:current_syntax = "clojure"
 

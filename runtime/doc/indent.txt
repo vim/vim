@@ -598,7 +598,6 @@ without limits.
 	" Default
 	let g:clojure_maxlines = 100
 <
-
 						*g:clojure_fuzzy_indent*
 					*g:clojure_fuzzy_indent_patterns*
 					*g:clojure_fuzzy_indent_blacklist*
@@ -652,7 +651,6 @@ default list below.
 	let g:clojure_special_indent_words =
 	   \ 'deftype,defrecord,reify,proxy,extend-type,extend-protocol,letfn'
 <
-
 					*g:clojure_align_multiline_strings*
 
 Align subsequent lines in multiline strings to the column after the opening
@@ -676,6 +674,28 @@ This option is off by default.
 >
 	" Default
 	let g:clojure_align_multiline_strings = 0
+<
+						*g:clojure_align_subforms*
+
+By default, parenthesized compound forms that look like function calls and
+whose head subform is on its own line have subsequent subforms indented by
+two spaces relative to the opening paren:
+>
+	(foo
+	  bar
+	  baz)
+<
+Setting this option changes this behavior so that all subforms are aligned to
+the same column:
+>
+	(foo
+	 bar
+	 baz)
+<
+This option is off by default.
+>
+	" Default
+	let g:clojure_align_subforms = 0
 <
 
 
