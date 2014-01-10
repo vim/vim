@@ -232,6 +232,75 @@ static int suppress_winsize = 1;	/* don't fiddle with console */
 
 static char_u *exe_path = NULL;
 
+/*
+ * Version of ReadConsoleInput() that works with IME.
+ */
+    static BOOL
+read_console_input(
+    HANDLE hConsoleInput,
+    PINPUT_RECORD lpBuffer,
+    DWORD nLength,
+    LPDWORD lpNumberOfEventsRead)
+{
+    enum
+    {
+	IRSIZE = 10, /* rough value */
+    };
+    static INPUT_RECORD irCache[IRSIZE];
+    static DWORD s_dwIndex = 0;
+    static DWORD s_dwMax = 0;
+
+    if (hConsoleInput == NULL || lpBuffer == NULL)
+	return ReadConsoleInput(hConsoleInput, lpBuffer, nLength,
+							lpNumberOfEventsRead);
+
+    if (nLength == -1)
+    {
+	if (s_dwMax == 0)
+	{
+	    PeekConsoleInput(hConsoleInput, lpBuffer, 1, lpNumberOfEventsRead);
+	    if (*lpNumberOfEventsRead == 0)
+		return FALSE;
+	    ReadConsoleInput(hConsoleInput, irCache, IRSIZE, &s_dwMax);
+	    s_dwIndex = 0;
+	}
+	((PINPUT_RECORD)lpBuffer)[0] = irCache[s_dwIndex];
+	*lpNumberOfEventsRead = 1;
+	return TRUE;
+    }
+
+    if (s_dwMax == 0)
+    {
+	ReadConsoleInput(hConsoleInput, irCache, IRSIZE, &s_dwMax);
+	s_dwIndex = 0;
+	if (s_dwMax == 0)
+	{
+	    *lpNumberOfEventsRead = 0;
+	    return FALSE;
+	}
+    }
+
+    ((PINPUT_RECORD)lpBuffer)[0] = irCache[s_dwIndex];
+    if (++s_dwIndex == s_dwMax)
+	s_dwMax = 0;
+    *lpNumberOfEventsRead = 1;
+    return TRUE;
+}
+
+/*
+ * Version of PeekConsoleInput() that works with IME.
+ */
+    static BOOL
+peek_console_input(
+    HANDLE hConsoleInput,
+    PINPUT_RECORD lpBuffer,
+    DWORD nLength,
+    LPDWORD lpNumberOfEventsRead)
+{
+    return read_console_input(hConsoleInput, lpBuffer, -1,
+							lpNumberOfEventsRead);
+}
+
     static void
 get_exe_name(void)
 {
@@ -1117,7 +1186,7 @@ decode_mouse_event(
 			INPUT_RECORD ir;
 			MOUSE_EVENT_RECORD* pmer2 = &ir.Event.MouseEvent;
 
-			PeekConsoleInput(g_hConIn, &ir, 1, &cRecords);
+			peek_console_input(g_hConIn, &ir, 1, &cRecords);
 
 			if (cRecords == 0 || ir.EventType != MOUSE_EVENT
 				|| !(pmer2->dwButtonState & LEFT_RIGHT))
@@ -1126,7 +1195,7 @@ decode_mouse_event(
 			{
 			    if (pmer2->dwEventFlags != MOUSE_MOVED)
 			    {
-				ReadConsoleInput(g_hConIn, &ir, 1, &cRecords);
+				read_console_input(g_hConIn, &ir, 1, &cRecords);
 
 				return decode_mouse_event(pmer2);
 			    }
@@ -1134,10 +1203,10 @@ decode_mouse_event(
 				     s_yOldMouse == pmer2->dwMousePosition.Y)
 			    {
 				/* throw away spurious mouse move */
-				ReadConsoleInput(g_hConIn, &ir, 1, &cRecords);
+				read_console_input(g_hConIn, &ir, 1, &cRecords);
 
 				/* are there any more mouse events in queue? */
-				PeekConsoleInput(g_hConIn, &ir, 1, &cRecords);
+				peek_console_input(g_hConIn, &ir, 1, &cRecords);
 
 				if (cRecords==0 || ir.EventType != MOUSE_EVENT)
 				    break;
@@ -1374,7 +1443,7 @@ WaitForChar(long msec)
 	}
 
 	cRecords = 0;
-	PeekConsoleInput(g_hConIn, &ir, 1, &cRecords);
+	peek_console_input(g_hConIn, &ir, 1, &cRecords);
 
 #ifdef FEAT_MBYTE_IME
 	if (State & CMDLINE && msg_row == Rows - 1)
@@ -1405,7 +1474,7 @@ WaitForChar(long msec)
 		if (ir.Event.KeyEvent.uChar.UnicodeChar == 0
 			&& ir.Event.KeyEvent.wVirtualKeyCode == 13)
 		{
-		    ReadConsoleInput(g_hConIn, &ir, 1, &cRecords);
+		    read_console_input(g_hConIn, &ir, 1, &cRecords);
 		    continue;
 		}
 #endif
@@ -1414,7 +1483,7 @@ WaitForChar(long msec)
 		    return TRUE;
 	    }
 
-	    ReadConsoleInput(g_hConIn, &ir, 1, &cRecords);
+	    read_console_input(g_hConIn, &ir, 1, &cRecords);
 
 	    if (ir.EventType == FOCUS_EVENT)
 		handle_focus_event(ir);
@@ -1484,7 +1553,7 @@ tgetch(int *pmodifiers, char_u *pch2)
 	    return 0;
 # endif
 #endif
-	if (ReadConsoleInput(g_hConIn, &ir, 1, &cRecords) == 0)
+	if (read_console_input(g_hConIn, &ir, 1, &cRecords) == 0)
 	{
 	    if (did_create_conin)
 		read_error_exit();
