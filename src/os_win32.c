@@ -2890,9 +2890,6 @@ mch_getperm(char_u *name)
     struct stat st;
     int		n;
 
-    if (name[0] == '\\' && name[1] == '\\')
-	/* UNC path */
-	return (long)win32_getattrs(name);
     n = mch_stat(name, &st);
     return n == 0 ? (long)st.st_mode : -1L;
 }

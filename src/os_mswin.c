@@ -617,8 +617,22 @@ vim_stat(const char *name, struct stat *stp)
     p = buf + strlen(buf);
     if (p > buf)
 	mb_ptr_back(buf, p);
+
+    /* Remove trailing '\\' except root path. */
     if (p > buf && (*p == '\\' || *p == '/') && p[-1] != ':')
 	*p = NUL;
+
+    if ((buf[0] == '\\' && buf[1] == '\\') || (buf[0] == '/' && buf[1] == '/'))
+    {
+	/* UNC root path must be followed by '\\'. */
+	p = vim_strpbrk(buf + 2, "\\/");
+	if (p != NULL)
+	{
+	    p = vim_strpbrk(p + 1, "\\/");
+	    if (p == NULL)
+		STRCAT(buf, "\\");
+	}
+    }
 #ifdef FEAT_MBYTE
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage
 # ifdef __BORLANDC__
