@@ -419,7 +419,7 @@ CPUARG = -$(CPUNR)
 ALIGNARG = -a$(ALIGN)
 #
 !if ("$(DEBUG)"=="yes")
-DEFINES=$(DEFINES) -DDEBUG
+DEFINES=$(DEFINES) -DDEBUG -D_DEBUG
 !endif
 #
 !if ("$(OLE)"=="yes")

@@ -36,6 +36,15 @@ src/Obj*/pathdef.c
 gvimext.dll
 gvimext.lib
 
+# Borland C++
+bcc.cfg
+*.ilc
+*.ild
+*.ilf
+*.ils
+*.map
+*.tds
+
 # Mac OSX
 src/xxd/xxd.dSYM
 

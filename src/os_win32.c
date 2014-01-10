@@ -2960,7 +2960,7 @@ mch_getperm(char_u *name)
     int		n;
 
     n = mch_stat(name, &st);
-    return n == 0 ? (long)st.st_mode : -1L;
+    return n == 0 ? (long)(unsigned short)st.st_mode : -1L;
 }
 
 
