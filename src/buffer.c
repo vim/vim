@@ -994,6 +994,50 @@ do_bufdel(command, arg, addr_count, start_bnr, end_bnr, forceit)
 #if defined(FEAT_LISTCMDS) || defined(FEAT_PYTHON) \
 	|| defined(FEAT_PYTHON3) || defined(PROTO)
 
+static int	empty_curbuf __ARGS((int close_others, int forceit, int action));
+
+/*
+ * Make the current buffer empty.
+ * Used when it is wiped out and it's the last buffer.
+ */
+    static int
+empty_curbuf(close_others, forceit, action)
+    int close_others;
+    int forceit;
+    int action;
+{
+    int	    retval;
+    buf_T   *buf = curbuf;
+
+    if (action == DOBUF_UNLOAD)
+    {
+	EMSG(_("E90: Cannot unload last buffer"));
+	return FAIL;
+    }
+
+    if (close_others)
+    {
+	/* Close any other windows on this buffer, then make it empty. */
+#ifdef FEAT_WINDOWS
+	close_windows(buf, TRUE);
+#endif
+    }
+
+    setpcmark();
+    retval = do_ecmd(0, NULL, NULL, NULL, ECMD_ONE,
+					  forceit ? ECMD_FORCEIT : 0, curwin);
+
+    /*
+     * do_ecmd() may create a new buffer, then we have to delete
+     * the old one.  But do_ecmd() may have done that already, check
+     * if the buffer still exists.
+     */
+    if (buf != curbuf && buf_valid(buf) && buf->b_nwindows == 0)
+	close_buffer(NULL, buf, action, FALSE);
+    if (!close_others)
+	need_fileinfo = FALSE;
+    return retval;
+}
 /*
  * Implementation of the commands for the buffer list.
  *
@@ -1114,7 +1158,6 @@ do_buffer(action, start, dir, count, forceit)
     if (unload)
     {
 	int	forward;
-	int	retval;
 
 	/* When unloading or deleting a buffer that's already unloaded and
 	 * unlisted: fail silently. */
@@ -1155,30 +1198,7 @@ do_buffer(action, start, dir, count, forceit)
 	    if (bp->b_p_bl && bp != buf)
 		break;
 	if (bp == NULL && buf == curbuf)
-	{
-	    if (action == DOBUF_UNLOAD)
-	    {
-		EMSG(_("E90: Cannot unload last buffer"));
-		return FAIL;
-	    }
-
-	    /* Close any other windows on this buffer, then make it empty. */
-#ifdef FEAT_WINDOWS
-	    close_windows(buf, TRUE);
-#endif
-	    setpcmark();
-	    retval = do_ecmd(0, NULL, NULL, NULL, ECMD_ONE,
-					  forceit ? ECMD_FORCEIT : 0, curwin);
-
-	    /*
-	     * do_ecmd() may create a new buffer, then we have to delete
-	     * the old one.  But do_ecmd() may have done that already, check
-	     * if the buffer still exists.
-	     */
-	    if (buf != curbuf && buf_valid(buf) && buf->b_nwindows == 0)
-		close_buffer(NULL, buf, action, FALSE);
-	    return retval;
-	}
+	    return empty_curbuf(TRUE, forceit, action);
 
 #ifdef FEAT_WINDOWS
 	/*
@@ -1212,7 +1232,8 @@ do_buffer(action, start, dir, count, forceit)
 
 	/*
 	 * Deleting the current buffer: Need to find another buffer to go to.
-	 * There must be another, otherwise it would have been handled above.
+	 * There should be another, otherwise it would have been handled
+	 * above.  However, autocommands may have deleted all buffers.
 	 * First use au_new_curbuf, if it is valid.
 	 * Then prefer the buffer we most recently visited.
 	 * Else try to find one that is loaded, after the current buffer,
@@ -1309,6 +1330,13 @@ do_buffer(action, start, dir, count, forceit)
 	    else
 		buf = curbuf->b_prev;
 	}
+    }
+
+    if (buf == NULL)
+    {
+	/* Autocommands must have wiped out all other buffers.  Only option
+	 * now is to make the current buffer empty. */
+	return empty_curbuf(FALSE, forceit, action);
     }
 
     /*
