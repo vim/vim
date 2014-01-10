@@ -8228,6 +8228,7 @@ post_chdir(local)
     int		local;
 {
     vim_free(curwin->w_localdir);
+    curwin->w_localdir = NULL;
     if (local)
     {
 	/* If still in global directory, need to remember current
@@ -8244,7 +8245,6 @@ post_chdir(local)
 	 * name. */
 	vim_free(globaldir);
 	globaldir = NULL;
-	curwin->w_localdir = NULL;
     }
 
     shorten_fnames(TRUE);

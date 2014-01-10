@@ -1216,8 +1216,8 @@ win_init(newp, oldp, flags)
     else
 	copy_loclist(oldp, newp);
 #endif
-    if (oldp->w_localdir != NULL)
-	newp->w_localdir = vim_strsave(oldp->w_localdir);
+    newp->w_localdir = (oldp->w_localdir == NULL)
+				    ? NULL : vim_strsave(oldp->w_localdir);
 
     /* copy tagstack and folds */
     for (i = 0; i < oldp->w_tagstacklen; i++)
