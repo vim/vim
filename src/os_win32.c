@@ -234,56 +234,42 @@ static char_u *exe_path = NULL;
 
 /*
  * Version of ReadConsoleInput() that works with IME.
+ * Works around problems on Windows 8.
  */
     static BOOL
 read_console_input(
-    HANDLE hConsoleInput,
-    PINPUT_RECORD lpBuffer,
-    DWORD nLength,
-    LPDWORD lpNumberOfEventsRead)
+    HANDLE	    hInput,
+    INPUT_RECORD    *lpBuffer,
+    DWORD	    nLength,
+    LPDWORD	    lpEvents)
 {
     enum
     {
-	IRSIZE = 10, /* rough value */
+	IRSIZE = 10
     };
-    static INPUT_RECORD irCache[IRSIZE];
+    static INPUT_RECORD s_irCache[IRSIZE];
     static DWORD s_dwIndex = 0;
     static DWORD s_dwMax = 0;
-
-    if (hConsoleInput == NULL || lpBuffer == NULL)
-	return ReadConsoleInput(hConsoleInput, lpBuffer, nLength,
-							lpNumberOfEventsRead);
-
-    if (nLength == -1)
-    {
-	if (s_dwMax == 0)
-	{
-	    PeekConsoleInput(hConsoleInput, lpBuffer, 1, lpNumberOfEventsRead);
-	    if (*lpNumberOfEventsRead == 0)
-		return FALSE;
-	    ReadConsoleInput(hConsoleInput, irCache, IRSIZE, &s_dwMax);
-	    s_dwIndex = 0;
-	}
-	((PINPUT_RECORD)lpBuffer)[0] = irCache[s_dwIndex];
-	*lpNumberOfEventsRead = 1;
-	return TRUE;
-    }
+    DWORD dwEvents;
 
     if (s_dwMax == 0)
     {
-	ReadConsoleInput(hConsoleInput, irCache, IRSIZE, &s_dwMax);
-	s_dwIndex = 0;
-	if (s_dwMax == 0)
-	{
-	    *lpNumberOfEventsRead = 0;
+	if (nLength == -1)
+	    return PeekConsoleInput(hInput, lpBuffer, 1, lpEvents);
+	if (!ReadConsoleInput(hInput, s_irCache, IRSIZE, &dwEvents))
 	    return FALSE;
+	s_dwIndex = 0;
+	s_dwMax = dwEvents;
+	if (dwEvents == 0)
+	{
+	    *lpEvents = 0;
+	    return TRUE;
 	}
     }
-
-    ((PINPUT_RECORD)lpBuffer)[0] = irCache[s_dwIndex];
-    if (++s_dwIndex == s_dwMax)
+    *lpBuffer = s_irCache[s_dwIndex];
+    if (nLength != -1 && ++s_dwIndex >= s_dwMax)
 	s_dwMax = 0;
-    *lpNumberOfEventsRead = 1;
+    *lpEvents = 1;
     return TRUE;
 }
 
@@ -292,13 +278,12 @@ read_console_input(
  */
     static BOOL
 peek_console_input(
-    HANDLE hConsoleInput,
-    PINPUT_RECORD lpBuffer,
-    DWORD nLength,
-    LPDWORD lpNumberOfEventsRead)
+    HANDLE	    hInput,
+    INPUT_RECORD    *lpBuffer,
+    DWORD	    nLength,
+    LPDWORD	    lpEvents)
 {
-    return read_console_input(hConsoleInput, lpBuffer, -1,
-							lpNumberOfEventsRead);
+    return read_console_input(hInput, lpBuffer, -1, lpEvents);
 }
 
     static void
@@ -585,10 +570,10 @@ static PSETHANDLEINFORMATION pSetHandleInformation;
     static BOOL
 win32_enable_privilege(LPTSTR lpszPrivilege, BOOL bEnable)
 {
-    BOOL             bResult;
-    LUID             luid;
-    HANDLE           hToken;
-    TOKEN_PRIVILEGES tokenPrivileges;
+    BOOL		bResult;
+    LUID		luid;
+    HANDLE		hToken;
+    TOKEN_PRIVILEGES	tokenPrivileges;
 
     if (!OpenProcessToken(GetCurrentProcess(),
 		TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
