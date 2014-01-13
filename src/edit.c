@@ -2506,10 +2506,12 @@ internal_format(
     int		c) /* character to be inserted (can be NUL) */
 {
     int		cc;
+    int		skip_pos;
     int		save_char = NUL;
     int		haveto_redraw = FALSE;
     int		fo_ins_blank = has_format_option(FO_INS_BLANK);
     int		fo_multibyte = has_format_option(FO_MBYTE_BREAK);
+    int		fo_rigor_tw  = has_format_option(FO_RIGOROUS_TW);
     int		fo_white_par = has_format_option(FO_WHITE_PAR);
     int		first_line = TRUE;
     colnr_T	leader_len;
@@ -2590,6 +2592,7 @@ internal_format(
 
 	curwin->w_cursor.col = startcol;
 	foundcol = 0;
+	skip_pos = 0;
 
 	/*
 	 * Find position to break at.
@@ -2658,6 +2661,9 @@ internal_format(
 	    }
 	    else if (cc >= 0x100 && fo_multibyte)
 	    {
+		int ncc;
+		int allow_break;
+
 		/* Break after or before a multi-byte character. */
 		if (curwin->w_cursor.col != startcol)
 		{
@@ -2666,8 +2672,14 @@ internal_format(
 			break;
 		    col = curwin->w_cursor.col;
 		    inc_cursor();
-		    /* Don't change end_foundcol if already set. */
-		    if (foundcol != curwin->w_cursor.col)
+		    ncc = gchar_cursor();
+
+		    allow_break =
+			enc_utf8 && utf_allow_break(cc, ncc)
+			|| enc_dbcs && dbcs_allow_break(cc, ncc);
+
+		    /* If we have already checked this position, skip! */
+		    if (curwin->w_cursor.col != skip_pos && allow_break)
 		    {
 			foundcol = curwin->w_cursor.col;
 			end_foundcol = foundcol;
@@ -2680,6 +2692,7 @@ internal_format(
 		if (curwin->w_cursor.col == 0)
 		    break;
 
+		ncc = cc;
 		col = curwin->w_cursor.col;
 
 		dec_cursor();
@@ -2692,11 +2705,64 @@ internal_format(
 		    break;
 
 		curwin->w_cursor.col = col;
+		skip_pos = curwin->w_cursor.col;
 
-		foundcol = curwin->w_cursor.col;
-		end_foundcol = foundcol;
-		if (curwin->w_cursor.col <= (colnr_T)wantcol)
-		    break;
+		allow_break =
+		    enc_utf8 && utf_allow_break(cc, ncc)
+		    || enc_dbcs && dbcs_allow_break(cc, ncc);
+
+		/* must handle this to respect line break prohibition */
+		if (allow_break)
+		{
+		    foundcol = curwin->w_cursor.col;
+		    end_foundcol = foundcol;
+		}
+		if (curwin->w_cursor.col <= (colnr_T)wantcol) {
+		    int ncc_allow_break =
+			enc_utf8 && utf_allow_break_before(ncc)
+			|| enc_dbcs && dbcs_allow_break_before(ncc);
+
+		    if (allow_break)
+			break;
+		    else if (!ncc_allow_break && !fo_rigor_tw)
+		    {
+			/* enable at most 1 punct hang outside of textwidth. */
+
+			if (curwin->w_cursor.col == startcol)
+			{
+			    /* we are inserting a non-breakable char, postpone
+			     * line break check to next insert */
+			    end_foundcol = foundcol = 0;
+			    break;
+			}
+			else
+			{
+			    /* neither cc nor ncc is NUL if we are here, so it's
+			     * safe to inc_cursor. */
+			    col = curwin->w_cursor.col;
+
+			    inc_cursor();
+			    cc  = ncc;
+			    ncc = gchar_cursor();
+			    /* handle insert */
+			    ncc = (ncc != NUL)? ncc : c;
+
+			    allow_break =
+				enc_utf8 && utf_allow_break(cc, ncc)
+				|| enc_dbcs && dbcs_allow_break(cc, ncc);
+
+			    if (allow_break)
+			    {
+				/* Break only when we are not at end of line */
+				end_foundcol = foundcol =
+				    ncc == NUL? 0 : curwin->w_cursor.col;
+				break;
+			    }
+			    else
+				curwin->w_cursor.col = col;
+			}
+		    }
+		}
 	    }
 	    if (curwin->w_cursor.col == 0)
 		break;
