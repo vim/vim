@@ -3460,7 +3460,7 @@ getregtype([{regname}])					*getregtype()*
 		    "v"			for |characterwise| text
 		    "V"			for |linewise| text
 		    "<CTRL-V>{width}"	for |blockwise-visual| text
-		    0			for an empty or unknown register
+		    ""			for an empty or unknown register
 		<CTRL-V> is one character with value 0x16.
 		If {regname} is not specified, |v:register| is used.
 
