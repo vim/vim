@@ -112,7 +112,11 @@ bac
 def
 bar
 jkl
+wopts iters equal: 1
+bopts iters equal: 1
 >>> paste
+  g/w/b:1/0/0
+  g/w/b (in):1/0/0
   p/gopts1: False
   p/wopts1! KeyError
   inv: 2! KeyError
@@ -133,6 +137,8 @@ jkl
   W: 1:1 2:1 3:1 4:1
   B: 1:1 2:1 3:1 4:1
 >>> previewheight
+  g/w/b:1/0/0
+  g/w/b (in):1/0/0
   p/gopts1: 12
   inv: 'a'! TypeError
   p/wopts1! KeyError
@@ -154,6 +160,8 @@ jkl
   W: 1:5 2:5 3:5 4:5
   B: 1:5 2:5 3:5 4:5
 >>> operatorfunc
+  g/w/b:1/0/0
+  g/w/b (in):1/0/0
   p/gopts1: b''
   inv: 2! TypeError
   p/wopts1! KeyError
@@ -175,6 +183,8 @@ jkl
   W: 1:'A' 2:'A' 3:'A' 4:'A'
   B: 1:'A' 2:'A' 3:'A' 4:'A'
 >>> number
+  g/w/b:0/1/0
+  g/w/b (in):0/1/0
   p/gopts1! KeyError
   inv: 0! KeyError
   gopts1! KeyError
@@ -193,6 +203,8 @@ jkl
   W: 1:1 2:1 3:0 4:0
   B: 1:1 2:1 3:0 4:0
 >>> numberwidth
+  g/w/b:0/1/0
+  g/w/b (in):0/1/0
   p/gopts1! KeyError
   inv: -100! KeyError
   gopts1! KeyError
@@ -212,6 +224,8 @@ jkl
   W: 1:3 2:5 3:2 4:8
   B: 1:3 2:5 3:2 4:8
 >>> colorcolumn
+  g/w/b:0/1/0
+  g/w/b (in):0/1/0
   p/gopts1! KeyError
   inv: 'abc4'! KeyError
   gopts1! KeyError
@@ -231,6 +245,8 @@ jkl
   W: 1:'+2' 2:'+3' 3:'+1' 4:''
   B: 1:'+2' 2:'+3' 3:'+1' 4:''
 >>> statusline
+  g/w/b:1/1/0
+  g/w/b (in):1/1/0
   p/gopts1: b''
   inv: 0! TypeError
   p/wopts1: None
@@ -248,6 +264,8 @@ jkl
   W: 1:'2' 2:'1' 3:'1' 4:'1'
   B: 1:'2' 2:'1' 3:'1' 4:'1'
 >>> autoindent
+  g/w/b:0/0/1
+  g/w/b (in):0/0/1
   p/gopts1! KeyError
   inv: 2! KeyError
   gopts1! KeyError
@@ -266,6 +284,8 @@ jkl
   W: 1:0 2:1 3:0 4:1
   B: 1:0 2:1 3:0 4:1
 >>> shiftwidth
+  g/w/b:0/0/1
+  g/w/b (in):0/0/1
   p/gopts1! KeyError
   inv: 3! KeyError
   gopts1! KeyError
@@ -284,6 +304,8 @@ jkl
   W: 1:0 2:2 3:8 4:1
   B: 1:0 2:2 3:8 4:1
 >>> omnifunc
+  g/w/b:0/0/1
+  g/w/b (in):0/0/1
   p/gopts1! KeyError
   inv: 1! KeyError
   gopts1! KeyError
@@ -303,6 +325,8 @@ jkl
   W: 1:'A' 2:'B' 3:'' 4:'C'
   B: 1:'A' 2:'B' 3:'' 4:'C'
 >>> preserveindent
+  g/w/b:0/0/1
+  g/w/b (in):0/0/1
   p/gopts1! KeyError
   inv: 2! KeyError
   gopts1! KeyError
@@ -321,6 +345,8 @@ jkl
   W: 1:0 2:1 3:0 4:1
   B: 1:0 2:1 3:0 4:1
 >>> path
+  g/w/b:1/0/1
+  g/w/b (in):1/0/1
   p/gopts1: b'.,..,,'
   inv: 0! TypeError
   p/wopts1! KeyError
@@ -509,6 +535,21 @@ vim.foreach_rtp(int, 2):(<class 'TypeError'>, TypeError('foreach_rtp() takes exa
 import xxx_no_such_module_xxx:(<class 'ImportError'>, ImportError('No module named xxx_no_such_module_xxx',))
 import failing_import:(<class 'ImportError'>, ImportError('No module named failing_import',))
 import failing:(<class 'NotImplementedError'>, NotImplementedError())
+> Options
+>> OptionsItem
+vim.options["abcQ"]:(<class 'KeyError'>, KeyError('abcQ',))
+vim.options[""]:(<class 'ValueError'>, ValueError('empty keys are not allowed',))
+>>> Testing StringToChars using vim.options[%s]
+vim.options[1]:(<class 'TypeError'>, TypeError('expected bytes() or str() instance, but got int',))
+vim.options[b"\0"]:(<class 'TypeError'>, TypeError('expected bytes with no null',))
+vim.options["\0"]:(<class 'TypeError'>, TypeError('expected bytes with no null',))
+<<< Finished
+>> OptionsContains
+>>> Testing StringToChars using %s in vim.options
+1 in vim.options:(<class 'TypeError'>, TypeError('expected bytes() or str() instance, but got int',))
+b"\0" in vim.options:(<class 'TypeError'>, TypeError('expected bytes with no null',))
+"\0" in vim.options:(<class 'TypeError'>, TypeError('expected bytes with no null',))
+<<< Finished
 > Dictionary
 >> DictionaryConstructor
 vim.Dictionary("abcI"):(<class 'ValueError'>, ValueError('expected sequence element of size 2, but got sequence of size 1',))

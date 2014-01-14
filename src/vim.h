@@ -2249,6 +2249,7 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 #define SOPT_BUF	0x20	/* Option has buffer-local value */
 #define SOPT_UNSET	0x40	/* Option does not have local value set */
 
+/* Option types for various functions in option.c */
 #define SREQ_GLOBAL	0	/* Request global option */
 #define SREQ_WIN	1	/* Request window-local option */
 #define SREQ_BUF	2	/* Request buffer-local option */
