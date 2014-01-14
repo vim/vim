@@ -4644,7 +4644,10 @@ nv_screengo(oap, dir, dist)
     }
 #endif
 
-    coladvance(curwin->w_curswant);
+    if (virtual_active() && atend)
+	coladvance(MAXCOL);
+    else
+	coladvance(curwin->w_curswant);
 
 #if defined(FEAT_LINEBREAK) || defined(FEAT_MBYTE)
     if (curwin->w_cursor.col > 0 && curwin->w_p_wrap)

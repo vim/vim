@@ -52,6 +52,12 @@ ddppi333k0i222fyllvjfuUk
 G3o1234567892k05l2jrG3o987652k02l2jr
 G3o1234567892k05l2jr
 G3o987652k02l2jr
+:"
+:" Test cursor position. When ve=block and Visual block mode and $gj
+:set ve=block
+:exe ":norm! 2k\<C-V>$gj\<Esc>"
+:let cpos=getpos("'>")
+:$put ='col:'.cpos[2].' off:'.cpos[3]
 :/^the/,$w >> test.out
 :qa!
 ENDTEST
