@@ -201,7 +201,7 @@ search_regcomp(pat, pat_save, pat_use, options, regmatch)
      * Save the currently used pattern in the appropriate place,
      * unless the pattern should not be remembered.
      */
-    if (!(options & SEARCH_KEEP))
+    if (!(options & SEARCH_KEEP) && !cmdmod.keeppatterns)
     {
 	/* search or global command */
 	if (pat_save == RE_SEARCH || pat_save == RE_BOTH)
