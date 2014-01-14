@@ -343,7 +343,7 @@ static PyObject*(*dll_PySequence_Fast)(PyObject *, const char *);
 static PyInt(*dll_PyTuple_Size)(PyObject *);
 static PyObject*(*dll_PyTuple_GetItem)(PyObject *, PyInt);
 static PyTypeObject* dll_PyTuple_Type;
-static int (*dll_PySlice_GetIndicesEx)(PyObject *r, PyInt length,
+static int (*dll_PySlice_GetIndicesEx)(PySliceObject *r, PyInt length,
 		     PyInt *start, PyInt *stop, PyInt *step,
 		     PyInt *slicelen);
 static PyObject*(*dll_PyImport_ImportModule)(const char *);
