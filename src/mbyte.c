@@ -83,10 +83,18 @@
 # ifndef WIN32_LEAN_AND_MEAN
 #  define WIN32_LEAN_AND_MEAN
 # endif
-# include <windows.h>
+# if defined(FEAT_GUI) || defined(FEAT_XCLIPBOARD)
+#  include <X11/Xwindows.h>
+#  define WINBYTE wBYTE
+# else
+#  include <windows.h>
+#  define WINBYTE BYTE
+# endif
 # ifdef WIN32
 #  undef WIN32	    /* Some windows.h define WIN32, we don't want that here. */
 # endif
+#else
+# define WINBYTE BYTE
 #endif
 
 #if (defined(WIN3264) || defined(WIN32UNIX)) && !defined(__MINGW32__)
@@ -698,7 +706,7 @@ codepage_invalid:
 	    /* enc_dbcs is set by setting 'fileencoding'.  It becomes a Windows
 	     * CodePage identifier, which we can pass directly in to Windows
 	     * API */
-	    n = IsDBCSLeadByteEx(enc_dbcs, (BYTE)i) ? 2 : 1;
+	    n = IsDBCSLeadByteEx(enc_dbcs, (WINBYTE)i) ? 2 : 1;
 #else
 # if defined(MACOS) || defined(__amigaos4__)
 	    /*
