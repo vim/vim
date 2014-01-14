@@ -447,7 +447,7 @@ static int string2float __ARGS((char_u *text, float_T *value));
 #endif
 static int get_env_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int find_internal_func __ARGS((char_u *name));
-static char_u *deref_func_name __ARGS((char_u *name, int *lenp));
+static char_u *deref_func_name __ARGS((char_u *name, int *lenp, int no_autoload));
 static int get_func_tv __ARGS((char_u *name, int len, typval_T *rettv, char_u **arg, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict));
 static int call_func __ARGS((char_u *funcname, int len, typval_T *rettv, int argcount, typval_T *argvars, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict));
 static void emsg_funcname __ARGS((char *ermsg, char_u *name));
@@ -3432,7 +3432,7 @@ ex_call(eap)
 
     /* If it is the name of a variable of type VAR_FUNC use its contents. */
     len = (int)STRLEN(tofree);
-    name = deref_func_name(tofree, &len);
+    name = deref_func_name(tofree, &len, FALSE);
 
     /* Skip white space to allow ":call func ()".  Not good, but required for
      * backward compatibility. */
@@ -5159,7 +5159,7 @@ eval7(arg, rettv, evaluate, want_string)
 	    {
 		/* If "s" is the name of a variable of type VAR_FUNC
 		 * use its contents. */
-		s = deref_func_name(s, &len);
+		s = deref_func_name(s, &len, FALSE);
 
 		/* Invoke the function. */
 		ret = get_func_tv(s, len, rettv, arg,
@@ -8291,16 +8291,17 @@ find_internal_func(name)
  * name it contains, otherwise return "name".
  */
     static char_u *
-deref_func_name(name, lenp)
+deref_func_name(name, lenp, no_autoload)
     char_u	*name;
     int		*lenp;
+    int		no_autoload;
 {
     dictitem_T	*v;
     int		cc;
 
     cc = name[*lenp];
     name[*lenp] = NUL;
-    v = find_var(name, NULL, FALSE);
+    v = find_var(name, NULL, no_autoload);
     name[*lenp] = cc;
     if (v != NULL && v->di_tv.v_type == VAR_FUNC)
     {
@@ -21947,14 +21948,14 @@ trans_function_name(pp, skip, flags, fdp)
     if (lv.ll_exp_name != NULL)
     {
 	len = (int)STRLEN(lv.ll_exp_name);
-	name = deref_func_name(lv.ll_exp_name, &len);
+	name = deref_func_name(lv.ll_exp_name, &len, flags & TFN_NO_AUTOLOAD);
 	if (name == lv.ll_exp_name)
 	    name = NULL;
     }
     else
     {
 	len = (int)(end - *pp);
-	name = deref_func_name(*pp, &len);
+	name = deref_func_name(*pp, &len, flags & TFN_NO_AUTOLOAD);
 	if (name == *pp)
 	    name = NULL;
     }
