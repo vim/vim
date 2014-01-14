@@ -1556,87 +1556,89 @@ ins_redraw(ready)
     int		conceal_update_lines = FALSE;
 #endif
 
-    if (!char_avail())
-    {
+    if (char_avail())
+	return;
+
 #if defined(FEAT_AUTOCMD) || defined(FEAT_CONCEAL)
-	/* Trigger CursorMoved if the cursor moved.  Not when the popup menu is
-	 * visible, the command might delete it. */
-	if (ready && (
+    /* Trigger CursorMoved if the cursor moved.  Not when the popup menu is
+     * visible, the command might delete it. */
+    if (ready && (
 # ifdef FEAT_AUTOCMD
-		    has_cursormovedI()
+		has_cursormovedI()
 # endif
 # if defined(FEAT_AUTOCMD) && defined(FEAT_CONCEAL)
-		    ||
+		||
 # endif
 # ifdef FEAT_CONCEAL
-		    curwin->w_p_cole > 0
+		curwin->w_p_cole > 0
 # endif
-		    )
-	    && !equalpos(last_cursormoved, curwin->w_cursor)
+		)
+	&& !equalpos(last_cursormoved, curwin->w_cursor)
+# ifdef FEAT_INS_EXPAND
+	&& !pum_visible()
+# endif
+       )
+    {
+# ifdef FEAT_SYN_HL
+	/* Need to update the screen first, to make sure syntax
+	 * highlighting is correct after making a change (e.g., inserting
+	 * a "(".  The autocommand may also require a redraw, so it's done
+	 * again below, unfortunately. */
+	if (syntax_present(curwin) && must_redraw)
+	    update_screen(0);
+# endif
+# ifdef FEAT_AUTOCMD
+	if (has_cursormovedI())
+	    apply_autocmds(EVENT_CURSORMOVEDI, NULL, NULL, FALSE, curbuf);
+# endif
+# ifdef FEAT_CONCEAL
+	if (curwin->w_p_cole > 0)
+	{
+	    conceal_old_cursor_line = last_cursormoved.lnum;
+	    conceal_new_cursor_line = curwin->w_cursor.lnum;
+	    conceal_update_lines = TRUE;
+	}
+# endif
+	last_cursormoved = curwin->w_cursor;
+    }
+#endif
+
+#ifdef FEAT_AUTOCMD
+    /* Trigger TextChangedI if b_changedtick differs. */
+    if (ready && has_textchangedI()
+	    && last_changedtick != curbuf->b_changedtick
 # ifdef FEAT_INS_EXPAND
 	    && !pum_visible()
 # endif
-	   )
-	{
-# ifdef FEAT_SYN_HL
-	    /* Need to update the screen first, to make sure syntax
-	     * highlighting is correct after making a change (e.g., inserting
-	     * a "(".  The autocommand may also require a redraw, so it's done
-	     * again below, unfortunately. */
-	    if (syntax_present(curwin) && must_redraw)
-		update_screen(0);
-# endif
-# ifdef FEAT_AUTOCMD
-	    if (has_cursormovedI())
-		apply_autocmds(EVENT_CURSORMOVEDI, NULL, NULL, FALSE, curbuf);
-# endif
-# ifdef FEAT_CONCEAL
-	    if (curwin->w_p_cole > 0)
-	    {
-		conceal_old_cursor_line = last_cursormoved.lnum;
-		conceal_new_cursor_line = curwin->w_cursor.lnum;
-		conceal_update_lines = TRUE;
-	    }
-# endif
-	    last_cursormoved = curwin->w_cursor;
-	}
-#endif
-#ifdef FEAT_AUTOCMD
-	/* Trigger TextChangedI if b_changedtick differs. */
-	if (!ready && has_textchangedI()
-		&& last_changedtick != curbuf->b_changedtick
-# ifdef FEAT_INS_EXPAND
-		&& !pum_visible()
-# endif
-		)
-	{
-	    if (last_changedtick_buf == curbuf)
-		apply_autocmds(EVENT_TEXTCHANGEDI, NULL, NULL, FALSE, curbuf);
-	    last_changedtick_buf = curbuf;
-	    last_changedtick = curbuf->b_changedtick;
-	}
-#endif
-	if (must_redraw)
-	    update_screen(0);
-	else if (clear_cmdline || redraw_cmdline)
-	    showmode();		/* clear cmdline and show mode */
-# if defined(FEAT_CONCEAL)
-	if ((conceal_update_lines
-		&& (conceal_old_cursor_line != conceal_new_cursor_line
-		    || conceal_cursor_line(curwin)))
-		|| need_cursor_line_redraw)
-	{
-	    if (conceal_old_cursor_line != conceal_new_cursor_line)
-		update_single_line(curwin, conceal_old_cursor_line);
-	    update_single_line(curwin, conceal_new_cursor_line == 0
-			   ? curwin->w_cursor.lnum : conceal_new_cursor_line);
-	    curwin->w_valid &= ~VALID_CROW;
-	}
-# endif
-	showruler(FALSE);
-	setcursor();
-	emsg_on_display = FALSE;	/* may remove error message now */
+	    )
+    {
+	if (last_changedtick_buf == curbuf)
+	    apply_autocmds(EVENT_TEXTCHANGEDI, NULL, NULL, FALSE, curbuf);
+	last_changedtick_buf = curbuf;
+	last_changedtick = curbuf->b_changedtick;
     }
+#endif
+
+    if (must_redraw)
+	update_screen(0);
+    else if (clear_cmdline || redraw_cmdline)
+	showmode();		/* clear cmdline and show mode */
+# if defined(FEAT_CONCEAL)
+    if ((conceal_update_lines
+	    && (conceal_old_cursor_line != conceal_new_cursor_line
+		|| conceal_cursor_line(curwin)))
+	    || need_cursor_line_redraw)
+    {
+	if (conceal_old_cursor_line != conceal_new_cursor_line)
+	    update_single_line(curwin, conceal_old_cursor_line);
+	update_single_line(curwin, conceal_new_cursor_line == 0
+		       ? curwin->w_cursor.lnum : conceal_new_cursor_line);
+	curwin->w_valid &= ~VALID_CROW;
+    }
+# endif
+    showruler(FALSE);
+    setcursor();
+    emsg_on_display = FALSE;	/* may remove error message now */
 }
 
 /*
