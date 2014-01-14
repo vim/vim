@@ -125,9 +125,6 @@ static dictitem_T	globvars_var;		/* variable used for g: */
  */
 static hashtab_T	compat_hashtab;
 
-/* When using exists() don't auto-load a script. */
-static int		no_autoload = FALSE;
-
 /*
  * When recursively copying lists and dicts we need to remember which ones we
  * have done to avoid endless recursiveness.  This unique ID is used for that.
@@ -156,6 +153,11 @@ static int echo_attr = 0;   /* attributes used for ":echo" */
 /* Values for trans_function_name() argument: */
 #define TFN_INT		1	/* internal function name OK */
 #define TFN_QUIET	2	/* no error messages */
+#define TFN_NO_AUTOLOAD	4	/* do not use script autoloading */
+
+/* Values for get_lval() flags argument: */
+#define GLV_QUIET	TFN_QUIET	/* no error messages */
+#define GLV_NO_AUTOLOAD	TFN_NO_AUTOLOAD	/* do not use script autoloading */
 
 /*
  * Structure to hold info for a user function.
@@ -390,7 +392,7 @@ static void list_func_vars __ARGS((int *first));
 static char_u *list_arg_vars __ARGS((exarg_T *eap, char_u *arg, int *first));
 static char_u *ex_let_one __ARGS((char_u *arg, typval_T *tv, int copy, char_u *endchars, char_u *op));
 static int check_changedtick __ARGS((char_u *arg));
-static char_u *get_lval __ARGS((char_u *name, typval_T *rettv, lval_T *lp, int unlet, int skip, int quiet, int fne_flags));
+static char_u *get_lval __ARGS((char_u *name, typval_T *rettv, lval_T *lp, int unlet, int skip, int flags, int fne_flags));
 static void clear_lval __ARGS((lval_T *lp));
 static void set_var_lval __ARGS((lval_T *lp, char_u *endp, typval_T *rettv, int copy, char_u *op));
 static int tv_op __ARGS((typval_T *tv1, typval_T *tv2, char_u  *op));
@@ -770,7 +772,7 @@ static char_u *find_name_end __ARGS((char_u *arg, char_u **expr_start, char_u **
 static char_u * make_expanded_name __ARGS((char_u *in_start, char_u *expr_start, char_u *expr_end, char_u *in_end));
 static int eval_isnamec __ARGS((int c));
 static int eval_isnamec1 __ARGS((int c));
-static int get_var_tv __ARGS((char_u *name, int len, typval_T *rettv, int verbose));
+static int get_var_tv __ARGS((char_u *name, int len, typval_T *rettv, int verbose, int no_autoload));
 static int handle_subscript __ARGS((char_u **arg, typval_T *rettv, int evaluate, int verbose));
 static typval_T *alloc_tv __ARGS((void));
 static typval_T *alloc_string_tv __ARGS((char_u *string));
@@ -781,8 +783,8 @@ static linenr_T get_tv_lnum_buf __ARGS((typval_T *argvars, buf_T *buf));
 static char_u *get_tv_string __ARGS((typval_T *varp));
 static char_u *get_tv_string_buf __ARGS((typval_T *varp, char_u *buf));
 static char_u *get_tv_string_buf_chk __ARGS((typval_T *varp, char_u *buf));
-static dictitem_T *find_var __ARGS((char_u *name, hashtab_T **htp));
-static dictitem_T *find_var_in_ht __ARGS((hashtab_T *ht, int htname, char_u *varname, int writing));
+static dictitem_T *find_var __ARGS((char_u *name, hashtab_T **htp, int no_autoload));
+static dictitem_T *find_var_in_ht __ARGS((hashtab_T *ht, int htname, char_u *varname, int no_autoload));
 static hashtab_T *find_var_ht __ARGS((char_u *name, char_u **varname));
 static void vars_clear_ext __ARGS((hashtab_T *ht, int free_val));
 static void delete_var __ARGS((hashtab_T *ht, hashitem_T *hi));
@@ -1059,7 +1061,7 @@ var_redir_start(name, append)
     ga_init2(&redir_ga, (int)sizeof(char), 500);
 
     /* Parse the variable name (can be a dict or list entry). */
-    redir_endp = get_lval(redir_varname, NULL, redir_lval, FALSE, FALSE, FALSE,
+    redir_endp = get_lval(redir_varname, NULL, redir_lval, FALSE, FALSE, 0,
 							     FNE_CHECK_START);
     if (redir_endp == NULL || redir_lval->ll_name == NULL || *redir_endp != NUL)
     {
@@ -1150,7 +1152,7 @@ var_redir_stop()
 	    /* Call get_lval() again, if it's inside a Dict or List it may
 	     * have changed. */
 	    redir_endp = get_lval(redir_varname, NULL, redir_lval,
-					FALSE, FALSE, FALSE, FNE_CHECK_START);
+					FALSE, FALSE, 0, FNE_CHECK_START);
 	    if (redir_endp != NULL && redir_lval->ll_name != NULL)
 		set_var_lval(redir_lval, redir_endp, &tv, FALSE, (char_u *)".");
 	    clear_lval(redir_lval);
@@ -2239,7 +2241,7 @@ list_arg_vars(eap, arg, first)
 	    {
 		if (tofree != NULL)
 		    name = tofree;
-		if (get_var_tv(name, len, &tv, TRUE) == FAIL)
+		if (get_var_tv(name, len, &tv, TRUE, FALSE) == FAIL)
 		    error = TRUE;
 		else
 		{
@@ -2474,7 +2476,7 @@ ex_let_one(arg, tv, copy, endchars, op)
     {
 	lval_T	lv;
 
-	p = get_lval(arg, tv, &lv, FALSE, FALSE, FALSE, FNE_CHECK_START);
+	p = get_lval(arg, tv, &lv, FALSE, FALSE, 0, FNE_CHECK_START);
 	if (p != NULL && lv.ll_name != NULL)
 	{
 	    if (endchars != NULL && vim_strchr(endchars, *skipwhite(p)) == NULL)
@@ -2519,18 +2521,22 @@ check_changedtick(arg)
  * "unlet" is TRUE for ":unlet": slightly different behavior when something is
  * wrong; must end in space or cmd separator.
  *
+ * flags:
+ *  GLV_QUIET:       do not give error messages
+ *  GLV_NO_AUTOLOAD: do not use script autoloading
+ *
  * Returns a pointer to just after the name, including indexes.
  * When an evaluation error occurs "lp->ll_name" is NULL;
  * Returns NULL for a parsing error.  Still need to free items in "lp"!
  */
     static char_u *
-get_lval(name, rettv, lp, unlet, skip, quiet, fne_flags)
+get_lval(name, rettv, lp, unlet, skip, flags, fne_flags)
     char_u	*name;
     typval_T	*rettv;
     lval_T	*lp;
     int		unlet;
     int		skip;
-    int		quiet;	    /* don't give error messages */
+    int		flags;	    /* GLV_ values */
     int		fne_flags;  /* flags for find_name_end() */
 {
     char_u	*p;
@@ -2544,6 +2550,7 @@ get_lval(name, rettv, lp, unlet, skip, quiet, fne_flags)
     char_u	*key = NULL;
     int		len;
     hashtab_T	*ht;
+    int		quiet = flags & GLV_QUIET;
 
     /* Clear everything in "lp". */
     vim_memset(lp, 0, sizeof(lval_T));
@@ -2591,7 +2598,7 @@ get_lval(name, rettv, lp, unlet, skip, quiet, fne_flags)
 
     cc = *p;
     *p = NUL;
-    v = find_var(lp->ll_name, &ht);
+    v = find_var(lp->ll_name, &ht, flags & GLV_NO_AUTOLOAD);
     if (v == NULL && !quiet)
 	EMSG2(_(e_undefvar), lp->ll_name);
     *p = cc;
@@ -2904,7 +2911,7 @@ set_var_lval(lp, endp, rettv, copy, op)
 
 		/* handle +=, -= and .= */
 		if (get_var_tv(lp->ll_name, (int)STRLEN(lp->ll_name),
-							     &tv, TRUE) == OK)
+						      &tv, TRUE, FALSE) == OK)
 		{
 		    if (tv_op(&tv, rettv, op) == OK)
 			set_var(lp->ll_name, &tv, FALSE);
@@ -3556,7 +3563,7 @@ ex_unletlock(eap, argstart, deep)
     do
     {
 	/* Parse the name and find the end. */
-	name_end = get_lval(arg, NULL, &lv, TRUE, eap->skip || error, FALSE,
+	name_end = get_lval(arg, NULL, &lv, TRUE, eap->skip || error, 0,
 							     FNE_CHECK_START);
 	if (lv.ll_name == NULL)
 	    error = TRUE;	    /* error but continue parsing */
@@ -3709,7 +3716,7 @@ do_lock_var(lp, name_end, deep, lock)
 	    ret = FAIL;
 	else
 	{
-	    di = find_var(lp->ll_name, NULL);
+	    di = find_var(lp->ll_name, NULL, TRUE);
 	    if (di == NULL)
 		ret = FAIL;
 	    else
@@ -5179,7 +5186,7 @@ eval7(arg, rettv, evaluate, want_string)
 		}
 	    }
 	    else if (evaluate)
-		ret = get_var_tv(s, len, rettv, TRUE);
+		ret = get_var_tv(s, len, rettv, TRUE, FALSE);
 	    else
 		ret = OK;
 	}
@@ -8284,7 +8291,7 @@ deref_func_name(name, lenp)
 
     cc = name[*lenp];
     name[*lenp] = NUL;
-    v = find_var(name, NULL);
+    v = find_var(name, NULL, FALSE);
     name[*lenp] = cc;
     if (v != NULL && v->di_tv.v_type == VAR_FUNC)
     {
@@ -10039,8 +10046,6 @@ f_exists(argvars, rettv)
     int		n = FALSE;
     int		len = 0;
 
-    no_autoload = TRUE;
-
     p = get_tv_string(&argvars[0]);
     if (*p == '$')			/* environment variable */
     {
@@ -10091,7 +10096,7 @@ f_exists(argvars, rettv)
 	{
 	    if (tofree != NULL)
 		name = tofree;
-	    n = (get_var_tv(name, len, &tv, FALSE) == OK);
+	    n = (get_var_tv(name, len, &tv, FALSE, TRUE) == OK);
 	    if (n)
 	    {
 		/* handle d.key, l[idx], f(expr) */
@@ -10107,8 +10112,6 @@ f_exists(argvars, rettv)
     }
 
     rettv->vval.v_number = n;
-
-    no_autoload = FALSE;
 }
 
 #ifdef FEAT_FLOAT
@@ -13344,8 +13347,8 @@ f_islocked(argvars, rettv)
     dictitem_T	*di;
 
     rettv->vval.v_number = -1;
-    end = get_lval(get_tv_string(&argvars[0]), NULL, &lv, FALSE, FALSE, FALSE,
-							     FNE_CHECK_START);
+    end = get_lval(get_tv_string(&argvars[0]), NULL, &lv, FALSE, FALSE,
+					GLV_NO_AUTOLOAD, FNE_CHECK_START);
     if (end != NULL && lv.ll_name != NULL)
     {
 	if (*end != NUL)
@@ -13358,7 +13361,7 @@ f_islocked(argvars, rettv)
 		    rettv->vval.v_number = 1;	    /* always locked */
 		else
 		{
-		    di = find_var(lv.ll_name, NULL);
+		    di = find_var(lv.ll_name, NULL, TRUE);
 		    if (di != NULL)
 		    {
 			/* Consider a variable locked when:
@@ -19774,11 +19777,12 @@ set_cmdarg(eap, oldarg)
  * Return OK or FAIL.
  */
     static int
-get_var_tv(name, len, rettv, verbose)
+get_var_tv(name, len, rettv, verbose, no_autoload)
     char_u	*name;
     int		len;		/* length of "name" */
     typval_T	*rettv;		/* NULL when only checking existence */
     int		verbose;	/* may give error message */
+    int		no_autoload;	/* do not use script autoloading */
 {
     int		ret = OK;
     typval_T	*tv = NULL;
@@ -19805,7 +19809,7 @@ get_var_tv(name, len, rettv, verbose)
      */
     else
     {
-	v = find_var(name, NULL);
+	v = find_var(name, NULL, no_autoload);
 	if (v != NULL)
 	    tv = &v->di_tv;
     }
@@ -20207,9 +20211,10 @@ get_tv_string_buf_chk(varp, buf)
  * hashtab_T used.
  */
     static dictitem_T *
-find_var(name, htp)
+find_var(name, htp, no_autoload)
     char_u	*name;
     hashtab_T	**htp;
+    int		no_autoload;
 {
     char_u	*varname;
     hashtab_T	*ht;
@@ -20219,7 +20224,7 @@ find_var(name, htp)
 	*htp = ht;
     if (ht == NULL)
 	return NULL;
-    return find_var_in_ht(ht, *name, varname, htp != NULL);
+    return find_var_in_ht(ht, *name, varname, no_autoload || htp != NULL);
 }
 
 /*
@@ -20227,11 +20232,11 @@ find_var(name, htp)
  * Returns NULL if not found.
  */
     static dictitem_T *
-find_var_in_ht(ht, htname, varname, writing)
+find_var_in_ht(ht, htname, varname, no_autoload)
     hashtab_T	*ht;
     int		htname;
     char_u	*varname;
-    int		writing;
+    int		no_autoload;
 {
     hashitem_T	*hi;
 
@@ -20263,7 +20268,7 @@ find_var_in_ht(ht, htname, varname, writing)
 	 * worked find the variable again.  Don't auto-load a script if it was
 	 * loaded already, otherwise it would be loaded every time when
 	 * checking if a function name is a Funcref variable. */
-	if (ht == &globvarht && !writing)
+	if (ht == &globvarht && !no_autoload)
 	{
 	    /* Note: script_autoload() may make "hi" invalid. It must either
 	     * be obtained again or not used. */
@@ -20343,7 +20348,7 @@ get_var_value(name)
 {
     dictitem_T	*v;
 
-    v = find_var(name, NULL);
+    v = find_var(name, NULL, FALSE);
     if (v == NULL)
 	return NULL;
     return get_tv_string(&v->di_tv);
@@ -21672,7 +21677,7 @@ ex_function(eap)
      */
     if (fudi.fd_dict == NULL)
     {
-	v = find_var(name, &ht);
+	v = find_var(name, &ht, FALSE);
 	if (v != NULL && v->di_tv.v_type == VAR_FUNC)
 	{
 	    emsg_funcname(N_("E707: Function name conflicts with variable: %s"),
@@ -21830,8 +21835,9 @@ ret_free:
  * Also handles a Funcref in a List or Dictionary.
  * Returns the function name in allocated memory, or NULL for failure.
  * flags:
- * TFN_INT:   internal function name OK
- * TFN_QUIET: be quiet
+ * TFN_INT:         internal function name OK
+ * TFN_QUIET:       be quiet
+ * TFN_NO_AUTOLOAD: do not use script autoloading
  * Advances "pp" to just after the function name (if no error).
  */
     static char_u *
@@ -21869,7 +21875,8 @@ trans_function_name(pp, skip, flags, fdp)
     if (lead > 2)
 	start += lead;
 
-    end = get_lval(start, NULL, &lv, FALSE, skip, flags & TFN_QUIET,
+    /* Note that TFN_ flags use the same values as GLV_ flags. */
+    end = get_lval(start, NULL, &lv, FALSE, skip, flags,
 					      lead > 2 ? 0 : FNE_CHECK_START);
     if (end == start)
     {
@@ -22146,7 +22153,8 @@ function_exists(name)
     char_u  *p;
     int	    n = FALSE;
 
-    p = trans_function_name(&nm, FALSE, TFN_INT|TFN_QUIET, NULL);
+    p = trans_function_name(&nm, FALSE, TFN_INT|TFN_QUIET|TFN_NO_AUTOLOAD,
+			    NULL);
     nm = skipwhite(nm);
 
     /* Only accept "funcname", "funcname ", "funcname (..." and
@@ -22392,10 +22400,6 @@ script_autoload(name, reload)
     char_u	*scriptname, *tofree;
     int		ret = FALSE;
     int		i;
-
-    /* Return quickly when autoload disabled. */
-    if (no_autoload)
-	return FALSE;
 
     /* If there is no '#' after name[0] there is no package name. */
     p = vim_strchr(name, AUTOLOAD_CHAR);

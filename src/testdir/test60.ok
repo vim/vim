@@ -71,6 +71,10 @@ OK
 OK
 *MyxyzFunc: 0
 OK
+*UndefFun: 0
+OK
+*footest#F: 0
+OK
 :edit: 2
 OK
 :edit/a: 0
@@ -94,6 +98,8 @@ OK
 local_var%n: 0
 OK
 local_var: 0
+OK
+footest#x: 0
 OK
 local_list: 1
 OK
@@ -195,3 +201,6 @@ a:1: 1
 OK
 a:2: 0
 OK
+ g:footest#x = 1
+   footest#F() 0
+UndefFun() 0

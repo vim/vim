@@ -282,6 +282,13 @@ let l = [0, 1, 2, 3]
 :    $put =ps
 :  endfor
 :endfor
+:" :lockvar/islocked() triggering script autoloading
+:set rtp+=./sautest
+:lockvar g:footest#x
+:unlockvar g:footest#x
+:$put ='locked g:footest#x:'.islocked('g:footest#x')
+:$put ='exists g:footest#x:'.exists('g:footest#x')
+:$put ='g:footest#x: '.g:footest#x
 :"
 :" a:000 function argument
 :" first the tests that should fail

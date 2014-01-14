@@ -1,4 +1,4 @@
-Tests for the exists() function.  vim: set ft=vim :
+Tests for the exists() function.  vim: set ft=vim ts=8 :
 
 STARTTEST
 :so small.vim
@@ -11,8 +11,10 @@ STARTTEST
 endfunction
 :function! TestExists()
     augroup myagroup
-	autocmd! BufEnter *.my echo 'myfile edited'
+	autocmd! BufEnter       *.my     echo "myfile edited"
+	autocmd! FuncUndefined  UndefFun exec "fu UndefFun()\nendfu"
     augroup END
+    set rtp+=./sautest
 
     let test_cases = []
 
@@ -95,10 +97,15 @@ endfunction
     " Non-existing user defined function
     let test_cases += [['*MyxyzFunc', 0]]
 
+    " Function that may be created by FuncUndefined event
+    let test_cases += [['*UndefFun', 0]]
+    " Function that may be created by script autoloading
+    let test_cases += [['*footest#F', 0]]
+
     redir! > test.out
 
     for [test_case, result] in test_cases
-      	echo test_case . ": " . result
+        echo test_case . ": " . result
         call RunTest(test_case, result)
     endfor
 
@@ -202,6 +209,14 @@ endfunction
     unlet local_var
     echo 'local_var: 0'
     if !exists('local_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing autoload variable that may be autoloaded
+    echo 'footest#x: 0'
+    if !exists('footest#x')
 	echo "OK"
     else
 	echo "FAILED"
@@ -566,6 +581,10 @@ endfunction
 
     call TestFuncArg("arg1", "arg2")
 
+    echo ' g:footest#x =' g:footest#x
+    echo '   footest#F()' footest#F()
+    echo 'UndefFun()' UndefFun()
+
     redir END
 endfunction
 :call TestExists()
@@ -576,5 +595,6 @@ endfunction
 :set ff=unix
 :w
 :qa!
+:while getchar(1) | call getchar() | endwhile
 ENDTEST
 

@@ -86,6 +86,9 @@ FFFFFFF
 FFpFFpp
 0000-000
 ppppppp
+locked g:footest#x:-1
+exists g:footest#x:0
+g:footest#x: 1
 caught a:000
 caught a:000[0]
 caught a:000[2]
