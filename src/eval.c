@@ -6425,6 +6425,16 @@ list_insert_tv(l, tv, item)
     if (ni == NULL)
 	return FAIL;
     copy_tv(tv, &ni->li_tv);
+    list_insert(l, ni, item);
+    return OK;
+}
+
+    void
+list_insert(l, ni, item)
+    list_T	*l;
+    listitem_T	*ni;
+    listitem_T	*item;
+{
     if (item == NULL)
 	/* Append new item at end of list. */
 	list_append(l, ni);
@@ -6446,7 +6456,6 @@ list_insert_tv(l, tv, item)
 	item->li_prev = ni;
 	++l->lv_len;
     }
-    return OK;
 }
 
 /*

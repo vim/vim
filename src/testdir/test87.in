@@ -128,6 +128,18 @@ EOF
 :py3 l=vim.bindeval('l')
 :py3 del l[-6:2]
 :$put =string(l)
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:py3 del l[::2]
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:py3 del l[3:0:-2]
+:$put =string(l)
+:let l = [0, 1, 2, 3]
+:py3 l=vim.bindeval('l')
+:py3 del l[2:4:-2]
+:$put =string(l)
 :"
 :" Slice assignment to a list
 :let l = [0, 1, 2, 3]
@@ -161,6 +173,26 @@ EOF
 :let l = []
 :py3 l=vim.bindeval('l')
 :py3 l[0:0]=['h']
+:$put =string(l)
+:let l = range(8)
+:py3 l=vim.bindeval('l')
+:py3 l[2:6:2] = [10, 20]
+:$put =string(l)
+:let l = range(8)
+:py3 l=vim.bindeval('l')
+:py3 l[6:2:-2] = [10, 20]
+:$put =string(l)
+:let l = range(8)
+:py3 l=vim.bindeval('l')
+:py3 l[6:2] = ()
+:$put =string(l)
+:let l = range(8)
+:py3 l=vim.bindeval('l')
+:py3 l[6:2:1] = ()
+:$put =string(l)
+:let l = range(8)
+:py3 l=vim.bindeval('l')
+:py3 l[2:2:1] = ()
 :$put =string(l)
 :"
 :" Locked variables
@@ -362,6 +394,38 @@ EOF
 :py3 del traceit
 :py3 del trace_main
 :$put =string(l)
+:"
+:" Slice
+:py3 ll = vim.bindeval('[0, 1, 2, 3, 4, 5]')
+:py3 l = ll[:4]
+:$put =string(py3eval('l'))
+:py3 l = ll[2:]
+:$put =string(py3eval('l'))
+:py3 l = ll[:-4]
+:$put =string(py3eval('l'))
+:py3 l = ll[-2:]
+:$put =string(py3eval('l'))
+:py3 l = ll[2:4]
+:$put =string(py3eval('l'))
+:py3 l = ll[4:2]
+:$put =string(py3eval('l'))
+:py3 l = ll[-4:-2]
+:$put =string(py3eval('l'))
+:py3 l = ll[-2:-4]
+:$put =string(py3eval('l'))
+:py3 l = ll[:]
+:$put =string(py3eval('l'))
+:py3 l = ll[0:6]
+:$put =string(py3eval('l'))
+:py3 l = ll[-10:10]
+:$put =string(py3eval('l'))
+:py3 l = ll[4:2:-1]
+:$put =string(py3eval('l'))
+:py3 l = ll[::2]
+:$put =string(py3eval('l'))
+:py3 l = ll[4:2:1]
+:$put =string(py3eval('l'))
+:py3 del l
 :"
 :" Vars
 :let g:foo = 'bac'
@@ -859,6 +923,7 @@ dl.locked = True
 l = vim.List()
 ll = vim.List('abcE')
 ll.locked = True
+nel = vim.List('abcO')
 f = vim.Function('string')
 fd = vim.Function('F')
 fdel = vim.Function('D')
@@ -945,6 +1010,20 @@ class FailingIterNext(object):
 
     def __next__(self):
         raise NotImplementedError('next')
+
+class FailingIterNextN(object):
+    def __init__(self, n):
+        self.n = n
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.n:
+            self.n -= 1
+            return 1
+        else:
+            raise NotImplementedError('next N')
 
 class FailingMappingKey(object):
     def __getitem__(self, item):
@@ -1050,6 +1129,7 @@ cb.append(">>> kwargs")
 cb.append(">>> iter")
 ee('d.update(FailingMapping())')
 ee('d.update([FailingIterNext()])')
+ee('d.update([FailingIterNextN(1)])')
 iter_test('d.update(%s)')
 convertfrompyobject_test('d.update(%s)')
 stringtochars_test('d.update(((%s, 0),))')
@@ -1072,6 +1152,14 @@ ee('l[1000] = 3')
 cb.append(">> ListAssSlice")
 ee('ll[1:100] = "abcJ"')
 iter_test('l[:] = %s')
+ee('nel[1:10:2]  = "abcK"')
+cb.append(repr(tuple(nel)))
+ee('nel[1:10:2]  = "a"')
+cb.append(repr(tuple(nel)))
+ee('nel[1:1:-1]  = "a"')
+cb.append(repr(tuple(nel)))
+ee('nel[:] = FailingIterNextN(2)')
+cb.append(repr(tuple(nel)))
 convertfrompyobject_test('l[:] = [%s]')
 cb.append(">> ListConcatInPlace")
 iter_test('l.extend(%s)')
@@ -1153,6 +1241,7 @@ del ned
 del dl
 del l
 del ll
+del nel
 del f
 del fd
 del fdel
@@ -1166,6 +1255,7 @@ del number_test
 del FailingTrue
 del FailingIter
 del FailingIterNext
+del FailingIterNextN
 del FailingMapping
 del FailingMappingKey
 del FailingList

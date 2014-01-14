@@ -41,6 +41,9 @@ None
 [2, 3]
 [2, 3]
 [2, 3]
+[1, 3]
+[0, 2]
+[0, 1, 2, 3]
 ['a', 0, 1, 2, 3]
 [0, 'b', 2, 3]
 [0, 1, 'c']
@@ -49,6 +52,11 @@ None
 ['f', 2, 3]
 [0, 1, 'g', 2, 3]
 ['h']
+[0, 1, 10, 3, 20, 5, 6, 7]
+[0, 1, 2, 3, 20, 5, 10, 7]
+[0, 1, 2, 3, 4, 5, 6, 7]
+[0, 1, 2, 3, 4, 5, 6, 7]
+[0, 1, 2, 3, 4, 5, 6, 7]
 [0, 1, 2, 3]
 [function('New'), function('DictNew'), 'NewStart', 1, 2, 3, 'NewEnd']
 [function('New'), function('DictNew'), 'NewStart', 1, 2, 3, 'NewEnd', 'DictNewStart', 1, 2, 3, 'DictNewEnd', {'a': 'b'}]
@@ -96,6 +104,9 @@ vim:	Vim(let):E859:
 [0, 1, 2, 3, 4, 5]
 [0, 1, 2, 3, 4, 5]
 [0, 1, 2, 3, 4, 5]
+[4, 3]
+[0, 2, 4]
+[]
 Abc
 bac
 def
@@ -599,6 +610,7 @@ d["a"] = FailingNumber():TypeError:('long() argument must be a string or a numbe
 >>> iter
 d.update(FailingMapping()):NotImplementedError:('keys',)
 d.update([FailingIterNext()]):NotImplementedError:('next',)
+d.update([FailingIterNextN(1)]):NotImplementedError:('next N',)
 >>> Testing *Iter* using d.update(%s)
 d.update(FailingIter()):NotImplementedError:('iter',)
 d.update(FailingIterNext()):NotImplementedError:('next',)
@@ -829,6 +841,14 @@ ll[1:100] = "abcJ":error:('list is locked',)
 l[:] = FailingIter():NotImplementedError:('iter',)
 l[:] = FailingIterNext():NotImplementedError:('next',)
 <<< Finished
+nel[1:10:2]  = "abcK":ValueError:('attempt to assign sequence of size greater then 2 to extended slice',)
+('a', 'b', 'c', 'O')
+nel[1:10:2]  = "a":ValueError:('attempt to assign sequence of size 1 to extended slice of size 2',)
+('a', 'b', 'c', 'O')
+nel[1:1:-1]  = "a":ValueError:('attempt to assign sequence of size greater then 0 to extended slice',)
+('a', 'b', 'c', 'O')
+nel[:] = FailingIterNextN(2):NotImplementedError:('next N',)
+('a', 'b', 'c', 'O')
 >>> Testing StringToChars using l[:] = [{%s : 1}]
 l[:] = [{1 : 1}]:TypeError:('expected str() or unicode() instance, but got int',)
 l[:] = [{u"\0" : 1}]:TypeError:('expected string without null bytes',)

@@ -196,6 +196,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyTuple_Size dll_PyTuple_Size
 # define PyTuple_GetItem dll_PyTuple_GetItem
 # define PyTuple_Type (*dll_PyTuple_Type)
+# define PySlice_GetIndicesEx dll_PySlice_GetIndicesEx
 # define PyImport_ImportModule dll_PyImport_ImportModule
 # define PyDict_New dll_PyDict_New
 # define PyDict_GetItemString dll_PyDict_GetItemString
@@ -241,6 +242,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PySys_GetObject dll_PySys_GetObject
 # define PySys_SetArgv dll_PySys_SetArgv
 # define PyType_Type (*dll_PyType_Type)
+# define PySlice_Type (*dll_PySlice_Type)
 # define PyType_Ready (*dll_PyType_Ready)
 # define PyType_GenericAlloc dll_PyType_GenericAlloc
 # define Py_BuildValue dll_Py_BuildValue
@@ -341,6 +343,9 @@ static PyObject*(*dll_PySequence_Fast)(PyObject *, const char *);
 static PyInt(*dll_PyTuple_Size)(PyObject *);
 static PyObject*(*dll_PyTuple_GetItem)(PyObject *, PyInt);
 static PyTypeObject* dll_PyTuple_Type;
+static int (*dll_PySlice_GetIndicesEx)(PyObject *r, PyInt length,
+		     PyInt *start, PyInt *stop, PyInt *step,
+		     PyInt *slicelen);
 static PyObject*(*dll_PyImport_ImportModule)(const char *);
 static PyObject*(*dll_PyDict_New)(void);
 static PyObject*(*dll_PyDict_GetItemString)(PyObject *, const char *);
@@ -382,6 +387,7 @@ static int(*dll_PySys_SetObject)(char *, PyObject *);
 static PyObject *(*dll_PySys_GetObject)(char *);
 static int(*dll_PySys_SetArgv)(int, char **);
 static PyTypeObject* dll_PyType_Type;
+static PyTypeObject* dll_PySlice_Type;
 static int (*dll_PyType_Ready)(PyTypeObject *type);
 static PyObject* (*dll_PyType_GenericAlloc)(PyTypeObject *type, PyInt nitems);
 static PyObject*(*dll_Py_BuildValue)(char *, ...);
@@ -521,6 +527,7 @@ static struct
     {"PyTuple_GetItem", (PYTHON_PROC*)&dll_PyTuple_GetItem},
     {"PyTuple_Size", (PYTHON_PROC*)&dll_PyTuple_Size},
     {"PyTuple_Type", (PYTHON_PROC*)&dll_PyTuple_Type},
+    {"PySlice_GetIndicesEx", (PYTHON_PROC*)&dll_PySlice_GetIndicesEx},
     {"PyImport_ImportModule", (PYTHON_PROC*)&dll_PyImport_ImportModule},
     {"PyDict_GetItemString", (PYTHON_PROC*)&dll_PyDict_GetItemString},
     {"PyDict_Next", (PYTHON_PROC*)&dll_PyDict_Next},
@@ -562,6 +569,7 @@ static struct
     {"PySys_GetObject", (PYTHON_PROC*)&dll_PySys_GetObject},
     {"PySys_SetArgv", (PYTHON_PROC*)&dll_PySys_SetArgv},
     {"PyType_Type", (PYTHON_PROC*)&dll_PyType_Type},
+    {"PySlice_Type", (PYTHON_PROC*)&dll_PySlice_Type},
     {"PyType_Ready", (PYTHON_PROC*)&dll_PyType_Ready},
     {"PyType_GenericAlloc", (PYTHON_PROC*)&dll_PyType_GenericAlloc},
     {"Py_FindMethod", (PYTHON_PROC*)&dll_Py_FindMethod},
@@ -1471,21 +1479,6 @@ DictionaryGetattr(PyObject *self, char *name)
 
     return Py_FindMethod(DictionaryMethods, self, name);
 }
-
-static PySequenceMethods ListAsSeq = {
-    (PyInquiry)			ListLength,
-    (binaryfunc)		0,
-    (PyIntArgFunc)		0,
-    (PyIntArgFunc)		ListItem,
-    (PyIntIntArgFunc)		ListSlice,
-    (PyIntObjArgProc)		ListAssItem,
-    (PyIntIntObjArgProc)	ListAssSlice,
-    (objobjproc)		0,
-#if PY_MAJOR_VERSION >= 2
-    (binaryfunc)		ListConcatInPlace,
-    0,
-#endif
-};
 
     static PyObject *
 ListGetattr(PyObject *self, char *name)
