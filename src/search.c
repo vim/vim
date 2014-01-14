@@ -1437,7 +1437,7 @@ do_search(oap, dirc, pat, count, options, tm)
     curwin->w_set_curswant = TRUE;
 
 end_do_search:
-    if (options & SEARCH_KEEP)
+    if ((options & SEARCH_KEEP) || cmdmod.keeppatterns)
 	spats[0].off = old_off;
     vim_free(strcopy);
 

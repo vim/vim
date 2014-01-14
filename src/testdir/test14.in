@@ -56,7 +56,10 @@ j:call search('^$', 'c')
 :$put =@/
 /^substitute
 Y:$put =@0
-:/^search()/,$w >>test.out
+/bar /e
+:$put =@0
+-:keeppatterns /xyz
+0dn:/^search()/,$w >>test.out
 :qa!
 ENDTEST
 
