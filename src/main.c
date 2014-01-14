@@ -702,6 +702,11 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
 	TIME_MSG("reading viminfo");
     }
 #endif
+#ifdef FEAT_EVAL
+    /* It's better to make v:oldfiles an empty list than NULL. */
+    if (get_vim_var_list(VV_OLDFILES) == NULL)
+	set_vim_var_list(VV_OLDFILES, list_alloc());
+#endif
 
 #ifdef FEAT_QUICKFIX
     /*
@@ -1048,7 +1053,7 @@ main_loop(cmdwin, noexmode)
     /* Setup to catch a terminating error from the X server.  Just ignore
      * it, restore the state and continue.  This might not always work
      * properly, but at least we don't exit unexpectedly when the X server
-     * exists while Vim is running in a console. */
+     * exits while Vim is running in a console. */
     if (!cmdwin && !noexmode && SETJMP(x_jump_env))
     {
 	State = NORMAL;
