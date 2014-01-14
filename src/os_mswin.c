@@ -498,7 +498,7 @@ slash_adjust(p)
     }
 }
 
-#if (_MSC_VER >= 1300)
+#if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
 # define OPEN_OH_ARGTYPE intptr_t
 #else
 # define OPEN_OH_ARGTYPE long
