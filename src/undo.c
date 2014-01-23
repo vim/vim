@@ -409,7 +409,7 @@ u_savecommon(top, bot, newbot, reload)
 	{
 	    /* This happens when the FileChangedRO autocommand changes the
 	     * file in a way it becomes shorter. */
-	    EMSG(_("E834: Line count changed unexpectedly"));
+	    EMSG(_("E881: Line count changed unexpectedly"));
 	    return FAIL;
 	}
 #endif
