@@ -3,7 +3,7 @@
 " Author:	John Wellesz <John.wellesz (AT) teaser (DOT) fr>
 " URL:		http://www.2072productions.com/vim/indent/php.vim
 " Home:		https://github.com/2072/PHP-Indenting-for-VIm
-" Last Change:	2013 August 7th
+" Last Change:	2014 Jan 21
 " Version:	1.39
 "
 "
@@ -642,7 +642,7 @@ function! GetPhpIndent()
 	    if previous_line =~ '^\s*}\|;\s*}'.endline " XXX
 
 		call cursor(last_line_num, 1)
-		call search('}\|;\s*}'.endline, 'W')
+		call search('}\|;\s*}'.endline, 'cW')
 		let oldLastLine = last_line_num
 		let last_line_num = searchpair('{', '', '}', 'bW', 'Skippmatch()')
 

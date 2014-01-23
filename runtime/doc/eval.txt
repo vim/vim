@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2013 Dec 08
+*eval.txt*	For Vim version 7.4.  Last change: 2014 Jan 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1519,6 +1519,7 @@ v:oldfiles	List of file names that is loaded from the |viminfo| file on
 		startup.  These are the files that Vim remembers marks for.
 		The length of the List is limited by the ' argument of the
 		'viminfo' option (default is 100).
+		When the |viminfo| file is not used the List is empty.
 		Also see |:oldfiles| and |c_#<|.
 		The List can be modified, but this has no effect on what is
 		stored in the |viminfo| file later.  If you use values other
@@ -6639,7 +6640,7 @@ See |:verbose-cmd| for more information.
 
 			For the {arguments} see |function-argument|.
 
-						*a:firstline* *a:lastline*
+					*:func-range* *a:firstline* *a:lastline*
 			When the [range] argument is added, the function is
 			expected to take care of a range itself.  The range is
 			passed as "a:firstline" and "a:lastline".  If [range]
@@ -6648,10 +6649,10 @@ See |:verbose-cmd| for more information.
 			of each line.  See |function-range-example|.
 			The cursor is still moved to the first line of the
 			range, as is the case with all Ex commands.
-
+								*:func-abort*
 			When the [abort] argument is added, the function will
 			abort as soon as an error is detected.
-
+								*:func-dict*
 			When the [dict] argument is added, the function must
 			be invoked through an entry in a |Dictionary|.	The
 			local variable "self" will then be set to the

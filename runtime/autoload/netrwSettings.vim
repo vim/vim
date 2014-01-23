@@ -1,7 +1,7 @@
 " netrwSettings.vim: makes netrw settings simpler
-" Date:		May 03, 2013
+" Date:		Aug 27, 2013
 " Maintainer:	Charles E Campbell <drchipNOSPAM at campbellfamily dot biz>
-" Version:	14a	ASTRO-ONLY
+" Version:	14
 " Copyright:    Copyright (C) 1999-2007 Charles E. Campbell {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
@@ -19,7 +19,7 @@
 if exists("g:loaded_netrwSettings") || &cp
   finish
 endif
-let g:loaded_netrwSettings = "v14a"
+let g:loaded_netrwSettings = "v14"
 if v:version < 700
  echohl WarningMsg
  echo "***warning*** this version of netrwSettings needs vim 7.0"
@@ -98,6 +98,11 @@ fun! netrwSettings#NetrwSettings()
 
   put = ''
   put ='+ Netrw Browser Control'
+  if exists("g:netrw_altfile")
+   put = 'let g:netrw_altfile   = '.g:netrw_altfile
+  else
+   put = 'let g:netrw_altfile   = 0'
+  endif
   put = 'let g:netrw_alto              = '.g:netrw_alto
   put = 'let g:netrw_altv              = '.g:netrw_altv
   put = 'let g:netrw_banner            = '.g:netrw_banner

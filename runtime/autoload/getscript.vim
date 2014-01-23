@@ -1,8 +1,8 @@
 " ---------------------------------------------------------------------
 " getscript.vim
 "  Author:	Charles E. Campbell
-"  Date:	Apr 17, 2013
-"  Version:	35
+"  Date:	Jan 21, 2014
+"  Version:	36
 "  Installing:	:help glvs-install
 "  Usage:	:help glvs
 "
@@ -15,7 +15,7 @@
 if exists("g:loaded_getscript")
  finish
 endif
-let g:loaded_getscript= "v35"
+let g:loaded_getscript= "v36"
 if &cp
  echoerr "GetLatestVimScripts is not vi-compatible; not loaded (you need to set nocp)"
  finish
@@ -208,8 +208,8 @@ fun! getscript#GetLatestVimScripts()
   let lastline    = line("$")
 "  call Decho("lastline#".lastline)
   let firstdir    = substitute(&rtp,',.*$','','')
-  let plugins     = split(globpath(firstdir,"plugin/*.vim"),'\n')
-  let plugins     = plugins + split(globpath(firstdir,"AsNeeded/*.vim"),'\n')
+  let plugins     = split(globpath(firstdir,"plugin/**/*.vim"),'\n')
+  let plugins     = plugins + split(globpath(firstdir,"AsNeeded/**/*.vim"),'\n')
   let foundscript = 0
 
   " this loop updates the GetLatestVimScripts.dat file

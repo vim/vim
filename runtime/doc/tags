@@ -1827,6 +1827,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :GnatPretty	ft_ada.txt	/*:GnatPretty*
 :GnatTags	ft_ada.txt	/*:GnatTags*
 :Hexplore	pi_netrw.txt	/*:Hexplore*
+:Lexplore	pi_netrw.txt	/*:Lexplore*
 :Man	filetype.txt	/*:Man*
 :MkVimball	pi_vimball.txt	/*:MkVimball*
 :N	editing.txt	/*:N*
@@ -1838,6 +1839,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :Nread	pi_netrw.txt	/*:Nread*
 :Ns	pi_netrw.txt	/*:Ns*
 :Nsource	pi_netrw.txt	/*:Nsource*
+:Ntree	pi_netrw.txt	/*:Ntree*
 :Nw	pi_netrw.txt	/*:Nw*
 :Nwrite	pi_netrw.txt	/*:Nwrite*
 :P	various.txt	/*:P*
@@ -2214,6 +2216,9 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :foldopen	fold.txt	/*:foldopen*
 :for	eval.txt	/*:for*
 :fu	eval.txt	/*:fu*
+:func-abort	eval.txt	/*:func-abort*
+:func-dict	eval.txt	/*:func-dict*
+:func-range	eval.txt	/*:func-range*
 :function	eval.txt	/*:function*
 :function-verbose	eval.txt	/*:function-verbose*
 :g	repeat.txt	/*:g*
@@ -2668,6 +2673,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :rviminfo	starting.txt	/*:rviminfo*
 :s	change.txt	/*:s*
 :s%	change.txt	/*:s%*
+:s/\=	change.txt	/*:s\/\\=*
 :sN	windows.txt	/*:sN*
 :sNext	windows.txt	/*:sNext*
 :s\=	change.txt	/*:s\\=*
@@ -5882,6 +5888,7 @@ g:ada_standard_types	ft_ada.txt	/*g:ada_standard_types*
 g:ada_with_gnat_project_files	ft_ada.txt	/*g:ada_with_gnat_project_files*
 g:ada_withuse_ordinary	ft_ada.txt	/*g:ada_withuse_ordinary*
 g:clojure_align_multiline_strings	indent.txt	/*g:clojure_align_multiline_strings*
+g:clojure_align_subforms	indent.txt	/*g:clojure_align_subforms*
 g:clojure_fuzzy_indent	indent.txt	/*g:clojure_fuzzy_indent*
 g:clojure_fuzzy_indent_blacklist	indent.txt	/*g:clojure_fuzzy_indent_blacklist*
 g:clojure_fuzzy_indent_patterns	indent.txt	/*g:clojure_fuzzy_indent_patterns*
@@ -5930,6 +5937,7 @@ g:html_use_css	syntax.txt	/*g:html_use_css*
 g:html_use_encoding	syntax.txt	/*g:html_use_encoding*
 g:html_use_xhtml	syntax.txt	/*g:html_use_xhtml*
 g:html_whole_filler	syntax.txt	/*g:html_whole_filler*
+g:netrw_altfile	pi_netrw.txt	/*g:netrw_altfile*
 g:netrw_alto	pi_netrw.txt	/*g:netrw_alto*
 g:netrw_altv	pi_netrw.txt	/*g:netrw_altv*
 g:netrw_banner	pi_netrw.txt	/*g:netrw_banner*
@@ -5964,6 +5972,7 @@ g:netrw_glob_escape	pi_netrw.txt	/*g:netrw_glob_escape*
 g:netrw_hide	pi_netrw.txt	/*g:netrw_hide*
 g:netrw_home	pi_netrw.txt	/*g:netrw_home*
 g:netrw_http_cmd	pi_netrw.txt	/*g:netrw_http_cmd*
+g:netrw_http_put_cmd	pi_netrw.txt	/*g:netrw_http_put_cmd*
 g:netrw_http_xcmd	pi_netrw.txt	/*g:netrw_http_xcmd*
 g:netrw_ignorenetrc	pi_netrw.txt	/*g:netrw_ignorenetrc*
 g:netrw_keepdir	pi_netrw.txt	/*g:netrw_keepdir*
@@ -6985,6 +6994,7 @@ netrw-gd	pi_netrw.txt	/*netrw-gd*
 netrw-getftype	pi_netrw.txt	/*netrw-getftype*
 netrw-gf	pi_netrw.txt	/*netrw-gf*
 netrw-gh	pi_netrw.txt	/*netrw-gh*
+netrw-gitignore	pi_netrw.txt	/*netrw-gitignore*
 netrw-gp	pi_netrw.txt	/*netrw-gp*
 netrw-gx	pi_netrw.txt	/*netrw-gx*
 netrw-handler	pi_netrw.txt	/*netrw-handler*
@@ -6999,6 +7009,7 @@ netrw-incompatible	pi_netrw.txt	/*netrw-incompatible*
 netrw-internal-variables	pi_netrw.txt	/*netrw-internal-variables*
 netrw-intro-browse	pi_netrw.txt	/*netrw-intro-browse*
 netrw-leftmouse	pi_netrw.txt	/*netrw-leftmouse*
+netrw-lexplore	pi_netrw.txt	/*netrw-lexplore*
 netrw-list	pi_netrw.txt	/*netrw-list*
 netrw-listbookmark	pi_netrw.txt	/*netrw-listbookmark*
 netrw-listhack	pi_netrw.txt	/*netrw-listhack*
@@ -7029,6 +7040,7 @@ netrw-netrc	pi_netrw.txt	/*netrw-netrc*
 netrw-nexplore	pi_netrw.txt	/*netrw-nexplore*
 netrw-noload	pi_netrw.txt	/*netrw-noload*
 netrw-nread	pi_netrw.txt	/*netrw-nread*
+netrw-ntree	pi_netrw.txt	/*netrw-ntree*
 netrw-nwrite	pi_netrw.txt	/*netrw-nwrite*
 netrw-o	pi_netrw.txt	/*netrw-o*
 netrw-options	pi_netrw.txt	/*netrw-options*

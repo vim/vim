@@ -1,7 +1,7 @@
 " ---------------------------------------------------------------------
 " getscriptPlugin.vim
 "  Author:	Charles E. Campbell
-"  Date:	Jan 07, 2008
+"  Date:	Nov 29, 2013
 "  Installing:	:help glvs-install
 "  Usage:	:help glvs
 "
@@ -13,13 +13,16 @@
 " Initialization:	{{{1
 " if you're sourcing this file, surely you can't be
 " expecting vim to be in its vi-compatible mode
-if &cp || exists("g:loaded_getscriptPlugin")
+if exists("g:loaded_getscriptPlugin")
+ finish
+endif
+if &cp
  if &verbose
   echo "GetLatestVimScripts is not vi-compatible; not loaded (you need to set nocp)"
  endif
  finish
 endif
-let g:loaded_getscriptPlugin = "v35"
+let g:loaded_getscriptPlugin = "v36"
 let s:keepcpo                = &cpo
 set cpo&vim
 

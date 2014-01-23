@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:         generic Changelog file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2013-12-15
+" Latest Revision:  2014-01-10
 " Variables:
 "   g:changelog_timeformat (deprecated: use g:changelog_dateformat instead) -
 "       description: the timeformat used in ChangeLog entries.
@@ -152,7 +152,7 @@ if &filetype == 'changelog'
       if has_key(middles, str[i + 1])
         let mid = middles[str[i + 1]]
         let str = strpart(str, 0, i) . mid . strpart(str, i + 2)
-        let inc = strlen(mid)
+        let inc = strlen(mid) - 1
       endif
       let i = stridx(str, '%', i + 1 + inc)
     endwhile

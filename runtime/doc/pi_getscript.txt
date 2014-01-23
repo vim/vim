@@ -1,4 +1,4 @@
-*pi_getscript.txt*  For Vim version 7.4.  Last change: 2012 Apr 07
+*pi_getscript.txt*  For Vim version 7.0.  Last change: 2013 Nov 29
 >
 		GETSCRIPT REFERENCE MANUAL  by Charles E. Campbell
 <
@@ -385,6 +385,10 @@ The AutoInstall process will:
 ==============================================================================
 9. GetLatestVimScripts History		*getscript-history* *glvs-hist* {{{1
 
+v36 Apr 22, 2013 : * (glts) suggested use of plugin/**/*.vim instead of
+		     plugin/*.vim in globpath() call.
+		   * (Andy Wokula) got warning message when setting
+		     g:loaded_getscriptPlugin
 v35 Apr 07, 2012 : * (MengHuan Yu) pointed out that the script url has
 		     changed (somewhat).  However, it doesn't work, and
 		     the original one does (under Linux). I'll make it

@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.4.  Last change: 2013 Nov 05
+*change.txt*    For Vim version 7.4.  Last change: 2014 Jan 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -824,7 +824,7 @@ either the first or second pattern in parentheses did not match, so either
 <
 
 Substitute with an expression			*sub-replace-expression*
-						*sub-replace-\=*
+						*sub-replace-\=* *:s/\=*
 When the substitute string starts with "\=" the remainder is interpreted as an
 expression.  This does not work recursively: a |substitute()| function inside
 the expression cannot use "\=" for the substitute string.

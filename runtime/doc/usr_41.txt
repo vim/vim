@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.4.  Last change: 2013 Feb 20
+*usr_41.txt*	For Vim version 7.4.  Last change: 2014 Jan 10
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -595,13 +595,17 @@ String manipulation:					*string-functions*
 	matchlist()		like matchstr() and also return submatches
 	stridx()		first index of a short string in a long string
 	strridx()		last index of a short string in a long string
-	strlen()		length of a string
+	strlen()		length of a string in bytes
+	strchars()		length of a string in characters
+	strwidth()		size of string when displayed
+	strdisplaywidth()	size of string when displayed, deals with tabs
 	substitute()		substitute a pattern match with a string
 	submatch()		get a specific match in ":s" and substitute()
 	strpart()		get part of a string
 	expand()		expand special keywords
 	iconv()			convert text from one encoding to another
 	byteidx()		byte index of a character in a string
+	byteidxcomp()		like byteidx() but count composing characters
 	repeat()		repeat a string multiple times
 	eval()			evaluate a string expression
 
@@ -656,6 +660,9 @@ Floating point computation:				*float-functions*
 	ceil()			round up
 	floor()			round down
 	trunc()			remove value after decimal point
+	fmod()			remainder of division
+	exp()			exponential
+	log()			natural logarithm (logarithm to base e)
 	log10()			logarithm to base 10
 	pow()			value of x to the exponent y
 	sqrt()			square root
@@ -675,6 +682,7 @@ Other computation:					*bitwise-function*
 	invert()		bitwise invert
 	or()			bitwise OR
 	xor()			bitwise XOR
+	sha256()		SHA-256 hash
 
 Variables:						*var-functions*
 	type()			type of a variable
@@ -697,11 +705,15 @@ Cursor and mark position:		*cursor-functions* *mark-functions*
 	wincol()		window column number of the cursor
 	winline()		window line number of the cursor
 	cursor()		position the cursor at a line/column
+	screencol()		get screen column of the cursor
+	screenrow()		get screen row of the cursor
 	getpos()		get position of cursor, mark, etc.
 	setpos()		set position of cursor, mark, etc.
 	byte2line()		get line number at a specific byte count
 	line2byte()		byte count at a specific line
 	diff_filler()		get the number of filler lines above a line
+	screenattr()		get attribute at a screen line/row
+	screenchar()		get character code at a screen line/row
 
 Working with text in the current buffer:		*text-functions*
 	getline()		get a line or list of lines from the buffer
@@ -883,14 +895,22 @@ Various:					*various-functions*
 	libcall()		call a function in an external library
 	libcallnr()		idem, returning a number
 
+	undofile()		get the name of the undo file
+	undotree()		return the state of the undo tree
+
 	getreg()		get contents of a register
 	getregtype()		get type of a register
 	setreg()		set contents and type of a register
 
+	shiftwidth()		effective value of 'shiftwidth'
+
 	taglist()		get list of matching tags
 	tagfiles()		get a list of tags files
 
+	luaeval()		evaluate Lua expression
 	mzeval()		evaluate |MzScheme| expression
+	py3eval()		evaluate Python expression (|+python3|)
+	pyeval()		evaluate Python expression (|+python|)
 
 ==============================================================================
 *41.7*	Defining a function
