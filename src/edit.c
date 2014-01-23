@@ -4180,6 +4180,7 @@ ins_compl_get_exp(ini)
     char_u	*dict = NULL;
     int		dict_f = 0;
     compl_T	*old_match;
+    int		set_match_pos;
 
     if (!compl_started)
     {
@@ -4198,6 +4199,7 @@ ins_compl_get_exp(ini)
     for (;;)
     {
 	found_new_match = FAIL;
+	set_match_pos = FALSE;
 
 	/* For ^N/^P pick a new entry from e_cpt if compl_started is off,
 	 * or if found_all says this entry is done.  For ^X^L only use the
@@ -4217,6 +4219,10 @@ ins_compl_get_exp(ini)
 		    dec(&first_match_pos);
 		last_match_pos = first_match_pos;
 		type = 0;
+
+		/* Remember the first match so that the loop stops when we
+		 * wrap and come back there a second time. */
+		set_match_pos = TRUE;
 	    }
 	    else if (vim_strchr((char_u *)"buwU", *e_cpt) != NULL
 		 && (ins_buf = ins_compl_next_buf(ins_buf, *e_cpt)) != curbuf)
@@ -4381,7 +4387,7 @@ ins_compl_get_exp(ini)
 	    if (ins_buf->b_p_inf)
 		p_scs = FALSE;
 
-	    /*	buffers other than curbuf are scanned from the beginning or the
+	    /*	Buffers other than curbuf are scanned from the beginning or the
 	     *	end but never from the middle, thus setting nowrapscan in this
 	     *	buffers is a good idea, on the other hand, we always set
 	     *	wrapscan for curbuf to avoid missing matches -- Acevedo,Webb */
@@ -4408,12 +4414,13 @@ ins_compl_get_exp(ini)
 				 compl_pattern, 1L, SEARCH_KEEP + SEARCH_NFMSG,
 						  RE_LAST, (linenr_T)0, NULL);
 		--msg_silent;
-		if (!compl_started)
+		if (!compl_started || set_match_pos)
 		{
 		    /* set "compl_started" even on fail */
 		    compl_started = TRUE;
 		    first_match_pos = *pos;
 		    last_match_pos = *pos;
+		    set_match_pos = FALSE;
 		}
 		else if (first_match_pos.lnum == last_match_pos.lnum
 				 && first_match_pos.col == last_match_pos.col)
