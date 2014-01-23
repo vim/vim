@@ -176,6 +176,23 @@ ENDTEST
 TEST_10:
 
 STARTTEST
+:set magic&
+:set cpo&
+:$put =\"\n\nTEST_10:\"
+:let y = substitute('123', '\zs', 'a', 'g')             | $put =y
+:let y = substitute('123', '\zs.', 'a', 'g')            | $put =y
+:let y = substitute('123', '.\zs', 'a', 'g')            | $put =y
+:let y = substitute('123', '\ze', 'a', 'g')             | $put =y
+:let y = substitute('123', '\ze.', 'a', 'g')            | $put =y
+:let y = substitute('123', '.\ze', 'a', 'g')            | $put =y
+:let y = substitute('123', '1\|\ze', 'a', 'g')          | $put =y
+:let y = substitute('123', '1\zs\|[23]', 'a', 'g')      | $put =y
+/^TEST_11
+ENDTEST
+
+TEST_11:
+
+STARTTEST
 :/^Results/,$wq! test.out
 ENDTEST
 
