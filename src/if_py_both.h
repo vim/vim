@@ -564,10 +564,8 @@ VimTryEnd(void)
     /* Keyboard interrupt should be preferred over anything else */
     if (got_int)
     {
-	if (current_exception != NULL)
+	if (did_throw)
 	    discard_current_exception();
-	else
-	    need_rethrow = did_throw = FALSE;
 	got_int = FALSE;
 	PyErr_SetNone(PyExc_KeyboardInterrupt);
 	return -1;
@@ -599,10 +597,7 @@ VimTryEnd(void)
     /* Python exception is preferred over vim one; unlikely to occur though */
     else if (PyErr_Occurred())
     {
-	if (current_exception != NULL)
-	    discard_current_exception();
-	else
-	    need_rethrow = did_throw = FALSE;
+	discard_current_exception();
 	return -1;
     }
     /* Finally transform VimL exception to python one */
