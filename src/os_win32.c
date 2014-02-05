@@ -253,6 +253,9 @@ read_console_input(
     static DWORD s_dwIndex = 0;
     static DWORD s_dwMax = 0;
     DWORD dwEvents;
+    int head;
+    int tail;
+    int i;
 
     if (!win8_or_later)
     {
@@ -274,7 +277,29 @@ read_console_input(
 	    *lpEvents = 0;
 	    return TRUE;
 	}
+
+	if (s_dwMax > 1)
+	{
+	    head = 0;
+	    tail = s_dwMax - 1;
+	    while (head != tail)
+	    {
+		if (s_irCache[head].EventType == WINDOW_BUFFER_SIZE_EVENT
+			&& s_irCache[head + 1].EventType
+						  == WINDOW_BUFFER_SIZE_EVENT)
+		{
+		    /* Remove duplicate event to avoid flicker. */
+		    for (i = head; i < tail; ++i)
+			s_irCache[i] = s_irCache[i + 1];
+		    --tail;
+		    continue;
+		}
+		head++;
+	    }
+	    s_dwMax = tail + 1;
+	}
     }
+
     *lpBuffer = s_irCache[s_dwIndex];
     if (nLength != -1 && ++s_dwIndex >= s_dwMax)
 	s_dwMax = 0;
