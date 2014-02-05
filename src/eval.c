@@ -5159,7 +5159,7 @@ eval7(arg, rettv, evaluate, want_string)
 	    {
 		/* If "s" is the name of a variable of type VAR_FUNC
 		 * use its contents. */
-		s = deref_func_name(s, &len, FALSE);
+		s = deref_func_name(s, &len, !evaluate);
 
 		/* Invoke the function. */
 		ret = get_func_tv(s, len, rettv, arg,
