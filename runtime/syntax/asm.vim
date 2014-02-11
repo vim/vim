@@ -3,7 +3,7 @@
 " Maintainer:	Erik Wognsen <erik.wognsen@gmail.com>
 "		Previous maintainer:
 "		Kevin Dahlhausen <kdahlhaus@yahoo.com>
-" Last Change:	2012 Apr 09
+" Last Change:	2014 Feb 04
 
 " Thanks to Ori Avtalion for feedback on the comment markers!
 
@@ -93,7 +93,11 @@ syn match asmCond		"\.endif"
 syn match asmMacro		"\.macro"
 syn match asmMacro		"\.endm"
 
-syn match asmDirective		"\.[a-z][a-z]\+"
+" Assembler directives start with a '.' and may contain upper case (e.g.,
+" .ABORT), numbers (e.g., .p2align), dash (e.g., .app-file) and underscore in
+" CFI directives (e.g., .cfi_startproc). This will also match labels starting
+" with '.', including the GCC auto-generated '.L' labels.
+syn match asmDirective		"\.[A-Za-z][0-9A-Za-z-_]*"
 
 
 syn case match

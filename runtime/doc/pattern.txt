@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.4.  Last change: 2013 Nov 09
+*pattern.txt*   For Vim version 7.4.  Last change: 2014 Feb 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -192,10 +192,10 @@ affected.
 An example of how to search for matches with a pattern and change the match
 with another word: >
 	/foo<CR>	find "foo"
-	c//e		change until end of match
+	c//e<CR>	change until end of match
 	bar<Esc>	type replacement
 	//<CR>		go to start of next match
-	c//e		change until end of match
+	c//e<CR>	change until end of match
 	beep<Esc>	type another replacement
 			etc.
 <

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2014 Jan 23
+*todo.txt*      For Vim version 7.4.  Last change: 2014 Feb 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,9 +34,12 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+When 'paste' is changed with 'pastetoggle', the ruler doesn't reflect this
+right away. (Samuel Ferencik, 2010 Dec 7)
+Patch to fix that status line isn't redrawn when 'pastetoggle' is set.
+(Nobuhiro Takasaki, 2014 Feb 11)
+
 Regexp problems:
-- After patch 7.4.045 pattern with \zs isn't handled correctly. (Yukihiro
-  Nakadaira, 2013 Dec 23)  Patch 2014 Jan 15, update Jan 16.
 - NFA regexp doesn't count tab matches correctly. (Urtica Dioica / gaultheria
   Shallon, 2013 Nov 18)
 - After patch 7.4.100 there is still a difference between NFA and old engine.
@@ -50,26 +53,14 @@ Regexp problems:
   2013 Dec 11)
 - Using \@> and \?. (Brett Stahlman, 2013 Dec 21) Remark from Marcin Szamotulski
   Remark from Brett 2014 Jan 6 and 7.
-
-Patch to fix endless loop in completion. (Christian Brabandt, 2014 Jan 15)
-
-Patch after 7.4.154: no autoload when not evaluating. (Yasuhiro Matsumoto,
-2014 Jan 14)
-
-Test for patch 7.4.149. (Yukihiro Nakadaira, 2014 Jan 15)
+- Bug with back references. (Lech Lorens, 2014 Feb 3)
+- Bug when using \>. (Ramel, 2014 Feb 2)
 
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
-
-Blowfish is actually using CFB instead of OFB.  Adjust names in blowfish.c.
-
-More compiler warnings for Python. (Tony Mechelynck, 2014 Jan 14)
-
-Patch to fix that when wide functions fail the non-wide function may do
-something wrong. (Ken Takata, 2014 Jan 18)
 
 Patch 7.4.085 breaks Visual insert in some situations. (Issue 193)
 Patch by Christian Brabandt, 2014 Jan 16.
@@ -81,16 +72,14 @@ ftplugins.
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
-Patch to make Dictionary.update() work without arguments.
-(ZyX, 2013 Oct 19)
-
-Include systemverilog file?  Two votes yes.
-
 Patch to make "J" set '[ and '] marks. (Christian Brabandt, 2013 Dec 11)
 Any compatibility problems?
 
 Patch to add :S modifier for excaping the current file name.
 (ZyX, 2013 Nov 30)  Update Dec 5.
+
+Issu 197: ]P doesn't paste over Visual selection.  With patch from Christian
+Brabandt, Feb 6.
 
 Problem with 'spellsuggest' file, only works for some words.
 (Cesar Romani, 2013 Aug 20)  Depends on file name? (Aug 24)
@@ -102,12 +91,15 @@ Additional remark by glts: the suggested words are marked bad?
 
 Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
 
-Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
+Patch for mksession. (Nobuhiro Takasaki, 2014 Jan 31)
+Also fixes another problem (following email)
 
-Error number E834 is used twice. (Yukihiro Nakadaira. 2014 Jan 18)
+Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 
 Crash with ":%s/\n//g" on long file. (Aidan Marlin, 2014 Jan 15)
 Christian Brabandt: patch to run this into a join. (2014 Jan 18)
+Suggestion to not save replaced line for undo: Yukihiro Nakadaira, 2014 Jan
+25.
 
 Add digraph for Rouble: =P.  What's the Unicode?
 
@@ -116,6 +108,12 @@ Issue 174: Detect Mason files.
 Phpcomplete.vim update. (Complex, 2014 Jan 15)
 
 PHP syntax is extremely slow. (Anhad Jai Singh, 2014 Jan 19)
+
+Can we make ":unlet $VAR" use unsetenv() to delete the env var?
+What for systems that don't have unsetenv()?
+
+spec ftplugin: patch from Igor Gnatenko, 2014 Jan 26.
+Include if maintainers don't respond.
 
 Patch to make has() check for Vim version and patch at the same time.
 (Marc Weber, 2013 Jun 7)
@@ -325,7 +323,8 @@ MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
 
 Patch to have text objects defined by arbitrary single characters. (Daniel
-Thau, 2013 Nov 20)
+Thau, 2013 Nov 20, 2014 Jan 29, 2014 Jan 31)
+Ben Fritz: problem with 'selection' set to "exclusive".
 
 Patch to select the next or previous text object if there isn't one under the
 cursor. (Daniel Thau, 2013 Nov 20)
@@ -783,9 +782,6 @@ Oct 22)  'isprint' is set to "@,161-255".
 C-indenting: A matching { in a comment is ignored, but intermediate { are not
 checked to be in a comment.  Implement FM_SKIPCOMM flag of findmatchlimit().
 Issue 46.
-
-When 'paste' is changed with 'pastetoggle', the ruler doesn't reflect this
-right away. (Samuel Ferencik, 2010 Dec 7)
 
 Mac with X11: clipboard doesn't work properly. (Raf, 2010 Aug 16)
 

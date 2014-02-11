@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.4.  Last change: 2013 Dec 04
+*autocmd.txt*   For Vim version 7.4.  Last change: 2014 Jan 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -562,6 +562,9 @@ FileChangedRO			Before making the first change to a read-only
 				It is not allowed to change to another buffer
 				here.  You can reload the buffer but not edit
 				another one.
+							*E881*
+				If the number of lines changes saving for undo
+				may fail and the change will be aborted.
 							*FileChangedShell*
 FileChangedShell		When Vim notices that the modification time of
 				a file has changed since editing started.
@@ -740,7 +743,7 @@ QuickFixCmdPost			Like QuickFixCmdPre, but after a quickfix
 				command is run, before jumping to the first
 				location. For |:cfile| and |:lfile| commands
 				it is run after error file is read and before
-				moving to the first error. 
+				moving to the first error.
 				See |QuickFixCmdPost-example|.
 							*QuitPre*
 QuitPre				When using `:quit`, `:wq` or `:qall`, before

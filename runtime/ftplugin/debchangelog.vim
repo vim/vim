@@ -3,7 +3,7 @@
 " Maintainer:   Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
 " Former Maintainers:   Michael Piefel <piefel@informatik.hu-berlin.de>
 "                       Stefano Zacchiroli <zack@debian.org>
-" Last Change:  2012-01-31
+" Last Change:  2014-01-31
 " License:      Vim License
 " URL:          http://hg.debian.org/hg/pkg-vim/vim/file/unstable/runtime/ftplugin/debchangelog.vim
 
@@ -152,7 +152,7 @@ function CloseBug()
 endfunction
 
 function Distribution(dist)
-    call setline(1, substitute(getline(1), ") [[:lower:] ]*;", ") " . a:dist . ";", ""))
+    call setline(1, substitute(getline(1), ')  *\%(UNRELEASED\|\l\+\);', ") " . a:dist . ";", ""))
 endfunction
 
 function Urgency(urg)

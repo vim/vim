@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.4.  Last change: 2013 Jul 25
+*repeat.txt*    For Vim version 7.4.  Last change: 2014 Feb 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -26,10 +26,14 @@ Chapter 26 of the user manual introduces repeating |usr_26.txt|.
 
 Simple changes can be repeated with the "." command.  Without a count, the
 count of the last change is used.  If you enter a count, it will replace the
-last one.  If the last change included a specification of a numbered register,
-the register number will be incremented.  See |redo-register| for an example
-how to use this.  Note that when repeating a command that used a Visual
-selection, the same SIZE of area is used, see |visual-repeat|.
+last one.  |v:count| and |v:count1| will be set.
+
+If the last change included a specification of a numbered register, the
+register number will be incremented.  See |redo-register| for an example how
+to use this.
+
+Note that when repeating a command that used a Visual selection, the same SIZE
+of area is used, see |visual-repeat|.
 
 							*@:*
 @:			Repeat last command-line [count] times.

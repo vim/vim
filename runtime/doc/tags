@@ -2673,7 +2673,6 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :rviminfo	starting.txt	/*:rviminfo*
 :s	change.txt	/*:s*
 :s%	change.txt	/*:s%*
-:s/\=	change.txt	/*:s\/\\=*
 :sN	windows.txt	/*:sN*
 :sNext	windows.txt	/*:sNext*
 :s\=	change.txt	/*:s\\=*
@@ -4305,6 +4304,7 @@ E878	pattern.txt	/*E878*
 E879	syntax.txt	/*E879*
 E88	windows.txt	/*E88*
 E880	if_pyth.txt	/*E880*
+E881	autocmd.txt	/*E881*
 E89	message.txt	/*E89*
 E90	message.txt	/*E90*
 E91	options.txt	/*E91*
@@ -7596,6 +7596,7 @@ s/\2	change.txt	/*s\/\\2*
 s/\3	change.txt	/*s\/\\3*
 s/\9	change.txt	/*s\/\\9*
 s/\<CR>	change.txt	/*s\/\\<CR>*
+s/\=	change.txt	/*s\/\\=*
 s/\E	change.txt	/*s\/\\E*
 s/\L	change.txt	/*s\/\\L*
 s/\U	change.txt	/*s\/\\U*

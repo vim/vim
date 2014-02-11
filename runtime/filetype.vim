@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2014 Jan 06
+" Last Change:	2014 Feb 11
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -2242,6 +2242,9 @@ au BufNewFile,BufRead *.v			setf verilog
 
 " Verilog-AMS HDL
 au BufNewFile,BufRead *.va,*.vams		setf verilogams
+
+" SystemVerilog
+au BufNewFile,BufRead *.sv			setf systemverilog
 
 " VHDL
 au BufNewFile,BufRead *.hdl,*.vhd,*.vhdl,*.vbe,*.vst  setf vhdl

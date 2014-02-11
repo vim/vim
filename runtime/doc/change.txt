@@ -824,7 +824,7 @@ either the first or second pattern in parentheses did not match, so either
 <
 
 Substitute with an expression			*sub-replace-expression*
-						*sub-replace-\=* *:s/\=*
+						*sub-replace-\=* *s/\=*
 When the substitute string starts with "\=" the remainder is interpreted as an
 expression.  This does not work recursively: a |substitute()| function inside
 the expression cannot use "\=" for the substitute string.
