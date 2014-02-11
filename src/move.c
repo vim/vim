@@ -2101,6 +2101,7 @@ scroll_cursor_halfway(atend)
     int		used;
     lineoff_T	loff;
     lineoff_T	boff;
+    linenr_T	old_topline = curwin->w_topline;
 
     loff.lnum = boff.lnum = curwin->w_cursor.lnum;
 #ifdef FEAT_FOLDING
@@ -2156,6 +2157,8 @@ scroll_cursor_halfway(atend)
 	curwin->w_topline = topline;
 #ifdef FEAT_DIFF
     curwin->w_topfill = topfill;
+    if (old_topline > curwin->w_topline + curwin->w_height)
+	curwin->w_botfill = FALSE;
     check_topfill(curwin, FALSE);
 #endif
     curwin->w_valid &= ~(VALID_WROW|VALID_CROW|VALID_BOTLINE|VALID_BOTLINE_AP);
