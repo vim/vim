@@ -2101,7 +2101,9 @@ scroll_cursor_halfway(atend)
     int		used;
     lineoff_T	loff;
     lineoff_T	boff;
+#ifdef FEAT_DIFF
     linenr_T	old_topline = curwin->w_topline;
+#endif
 
     loff.lnum = boff.lnum = curwin->w_cursor.lnum;
 #ifdef FEAT_FOLDING
