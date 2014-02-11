@@ -1918,10 +1918,16 @@ DictionaryUpdate(DictionaryObject *self, PyObject *args, PyObject *kwargs)
     }
     else
     {
-	PyObject	*obj;
+	PyObject	*obj = NULL;
 
-	if (!PyArg_ParseTuple(args, "O", &obj))
+	if (!PyArg_ParseTuple(args, "|O", &obj))
 	    return NULL;
+
+	if (obj == NULL)
+	{
+	    Py_INCREF(Py_None);
+	    return Py_None;
+	}
 
 	if (PyObject_HasAttrString(obj, "keys"))
 	    return DictionaryUpdate(self, NULL, obj);

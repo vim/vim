@@ -33,6 +33,7 @@ STARTTEST
 py3 << EOF
 d=vim.bindeval('d')
 d['1']='asd'
+d.update()  # Must not do anything, including throwing errors
 d.update(b=[1, 2, f])
 d.update((('-1', {'a': 1}),))
 d.update({'0': -1})
