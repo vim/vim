@@ -2877,6 +2877,8 @@ mch_get_user_name(
 		return OK;
 	    }
 	}
+	else if (GetLastError() != ERROR_CALL_NOT_IMPLEMENTED)
+	    return FAIL;
 	/* Retry with non-wide function (for Windows 98). */
     }
 #endif
@@ -2917,6 +2919,8 @@ mch_get_host_name(
 		return;
 	    }
 	}
+	else if (GetLastError() != ERROR_CALL_NOT_IMPLEMENTED)
+	    return;
 	/* Retry with non-wide function (for Windows 98). */
     }
 #endif
@@ -2966,6 +2970,8 @@ mch_dirname(
 		return OK;
 	    }
 	}
+	else if (GetLastError() != ERROR_CALL_NOT_IMPLEMENTED)
+	    return FAIL;
 	/* Retry with non-wide function (for Windows 98). */
     }
 #endif
@@ -3006,7 +3012,7 @@ mch_setperm(char_u *name, long perm)
 	{
 	    n = _wchmod(p, perm);
 	    vim_free(p);
-	    if (n == -1 && GetLastError() != ERROR_CALL_NOT_IMPLEMENTED)
+	    if (n == -1 && g_PlatformId == VER_PLATFORM_WIN32_NT)
 		return FAIL;
 	    /* Retry with non-wide function (for Windows 98). */
 	}
@@ -6048,7 +6054,7 @@ mch_open(char *name, int flags, int mode)
 	{
 	    f = _wopen(wn, flags, mode);
 	    vim_free(wn);
-	    if (f >= 0)
+	    if (f >= 0 || g_PlatformId == VER_PLATFORM_WIN32_NT)
 		return f;
 	    /* Retry with non-wide function (for Windows 98). Can't use
 	     * GetLastError() here and it's unclear what errno gets set to if
@@ -6099,7 +6105,7 @@ mch_fopen(char *name, char *mode)
 	_set_fmode(oldMode);
 # endif
 
-	if (f != NULL)
+	if (f != NULL || g_PlatformId == VER_PLATFORM_WIN32_NT)
 	    return f;
 	/* Retry with non-wide function (for Windows 98). Can't use
 	 * GetLastError() here and it's unclear what errno gets set to if

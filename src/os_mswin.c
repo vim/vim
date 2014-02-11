@@ -648,7 +648,7 @@ vim_stat(const char *name, struct stat *stp)
 	{
 	    n = wstat_symlink_aware(wp, (struct _stat *)stp);
 	    vim_free(wp);
-	    if (n >= 0)
+	    if (n >= 0 || g_PlatformId == VER_PLATFORM_WIN32_NT)
 		return n;
 	    /* Retry with non-wide function (for Windows 98). Can't use
 	     * GetLastError() here and it's unclear what errno gets set to if
@@ -815,8 +815,8 @@ mch_chdir(char *path)
 	{
 	    n = _wchdir(p);
 	    vim_free(p);
-	    if (n == 0)
-		return 0;
+	    if (n == 0 || g_PlatformId == VER_PLATFORM_WIN32_NT)
+		return n;
 	    /* Retry with non-wide function (for Windows 98). */
 	}
     }
@@ -1942,8 +1942,7 @@ mch_resolve_shortcut(char_u *fname)
 
 shortcut_errorw:
 		vim_free(p);
-		if (hr == S_OK)
-		    goto shortcut_end;
+		goto shortcut_end;
 	    }
 	}
 	/* Retry with non-wide function (for Windows 98). */
