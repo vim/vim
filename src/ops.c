@@ -4452,6 +4452,12 @@ do_join(count, insert_space, save_undo, use_formatoptions)
     for (t = 0; t < count; ++t)
     {
 	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t));
+	if (t == 0)
+	{
+	    /* Set the '[ mark. */
+	    curwin->w_buffer->b_op_start.lnum = curwin->w_cursor.lnum;
+	    curwin->w_buffer->b_op_start.col  = (colnr_T)STRLEN(curr);
+	}
 #if defined(FEAT_COMMENTS) || defined(PROTO)
 	if (remove_comments)
 	{
@@ -4567,6 +4573,10 @@ do_join(count, insert_space, save_undo, use_formatoptions)
 	currsize = (int)STRLEN(curr);
     }
     ml_replace(curwin->w_cursor.lnum, newp, FALSE);
+
+    /* Set the '] mark. */
+    curwin->w_buffer->b_op_end.lnum = curwin->w_cursor.lnum;
+    curwin->w_buffer->b_op_end.col  = (colnr_T)STRLEN(newp);
 
     /* Only report the change in the first line here, del_lines() will report
      * the deleted line. */
