@@ -6,7 +6,7 @@
  * Do ":help credits" in Vim to see a list of people who contributed.
  * See README.txt for an overview of the Vim source code.
  *
- * Blowfish encryption for Vim; in Blowfish output feedback mode.
+ * Blowfish encryption for Vim; in Blowfish cipher feedback mode.
  * Contributed by Mohsin Ahmed, http://www.cs.albany.edu/~mosh
  * Based on http://www.schneier.com/blowfish.html by Bruce Schneier.
  */
@@ -19,7 +19,7 @@
 
 #define BF_BLOCK    8
 #define BF_BLOCK_MASK 7
-#define BF_OFB_LEN  (8*(BF_BLOCK))
+#define BF_CFB_LEN  (8*(BF_BLOCK))
 
 typedef union {
     UINT32_T ul[2];
@@ -554,42 +554,42 @@ bf_self_test()
     return err > 0 ? FAIL : OK;
 }
 
-/* Output feedback mode. */
+/* Cipher feedback mode. */
 static int randbyte_offset = 0;
 static int update_offset = 0;
-static char_u ofb_buffer[BF_OFB_LEN]; /* 64 bytes */
+static char_u cfb_buffer[BF_CFB_LEN]; /* 64 bytes */
 
 /*
  * Initialize with seed "iv[iv_len]".
  */
     void
-bf_ofb_init(iv, iv_len)
+bf_cfb_init(iv, iv_len)
     char_u *iv;
     int    iv_len;
 {
     int i, mi;
 
     randbyte_offset = update_offset = 0;
-    vim_memset(ofb_buffer, 0, BF_OFB_LEN);
+    vim_memset(cfb_buffer, 0, BF_CFB_LEN);
     if (iv_len > 0)
     {
-	mi = iv_len > BF_OFB_LEN ? iv_len : BF_OFB_LEN;
+	mi = iv_len > BF_CFB_LEN ? iv_len : BF_CFB_LEN;
 	for (i = 0; i < mi; i++)
-	    ofb_buffer[i % BF_OFB_LEN] ^= iv[i % iv_len];
+	    cfb_buffer[i % BF_CFB_LEN] ^= iv[i % iv_len];
     }
 }
 
-#define BF_OFB_UPDATE(c) { \
-    ofb_buffer[update_offset] ^= (char_u)c; \
-    if (++update_offset == BF_OFB_LEN) \
+#define BF_CFB_UPDATE(c) { \
+    cfb_buffer[update_offset] ^= (char_u)c; \
+    if (++update_offset == BF_CFB_LEN) \
 	update_offset = 0; \
 }
 
 #define BF_RANBYTE(t) { \
     if ((randbyte_offset & BF_BLOCK_MASK) == 0) \
-	bf_e_cblock(&ofb_buffer[randbyte_offset]); \
-    t = ofb_buffer[randbyte_offset]; \
-    if (++randbyte_offset == BF_OFB_LEN) \
+	bf_e_cblock(&cfb_buffer[randbyte_offset]); \
+    t = cfb_buffer[randbyte_offset]; \
+    if (++randbyte_offset == BF_CFB_LEN) \
 	randbyte_offset = 0; \
 }
 
@@ -610,7 +610,7 @@ bf_crypt_encode(from, len, to)
     {
 	ztemp = from[i];
 	BF_RANBYTE(t);
-	BF_OFB_UPDATE(ztemp);
+	BF_CFB_UPDATE(ztemp);
 	to[i] = t ^ ztemp;
     }
 }
@@ -630,7 +630,7 @@ bf_crypt_decode(ptr, len)
     {
 	BF_RANBYTE(t);
 	*p ^= t;
-	BF_OFB_UPDATE(*p);
+	BF_CFB_UPDATE(*p);
     }
 }
 
@@ -646,13 +646,13 @@ bf_crypt_init_keys(passwd)
 
     for (p = passwd; *p != NUL; ++p)
     {
-	BF_OFB_UPDATE(*p);
+	BF_CFB_UPDATE(*p);
     }
 }
 
 static int save_randbyte_offset;
 static int save_update_offset;
-static char_u save_ofb_buffer[BF_OFB_LEN];
+static char_u save_cfb_buffer[BF_CFB_LEN];
 static UINT32_T save_pax[18];
 static UINT32_T save_sbx[4][256];
 
@@ -665,7 +665,7 @@ bf_crypt_save()
 {
     save_randbyte_offset = randbyte_offset;
     save_update_offset = update_offset;
-    mch_memmove(save_ofb_buffer, ofb_buffer, BF_OFB_LEN);
+    mch_memmove(save_cfb_buffer, cfb_buffer, BF_CFB_LEN);
     mch_memmove(save_pax, pax, 4 * 18);
     mch_memmove(save_sbx, sbx, 4 * 4 * 256);
 }
@@ -679,7 +679,7 @@ bf_crypt_restore()
 {
     randbyte_offset = save_randbyte_offset;
     update_offset = save_update_offset;
-    mch_memmove(ofb_buffer, save_ofb_buffer, BF_OFB_LEN);
+    mch_memmove(cfb_buffer, save_cfb_buffer, BF_CFB_LEN);
     mch_memmove(pax, save_pax, 4 * 18);
     mch_memmove(sbx, save_sbx, 4 * 4 * 256);
 }

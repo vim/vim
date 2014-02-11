@@ -2973,7 +2973,7 @@ check_for_cryptkey(cryptkey, ptr, sizep, filesizep, newfile, fname, did_ask)
 	    else
 	    {
 		bf_key_init(cryptkey, ptr + CRYPT_MAGIC_LEN, salt_len);
-		bf_ofb_init(ptr + CRYPT_MAGIC_LEN + salt_len, seed_len);
+		bf_cfb_init(ptr + CRYPT_MAGIC_LEN + salt_len, seed_len);
 	    }
 
 	    /* Remove magic number from the text */
@@ -3025,7 +3025,7 @@ prepare_crypt_read(fp)
 	if (fread(buffer, salt_len + seed_len, 1, fp) != 1)
 	    return FAIL;
 	bf_key_init(curbuf->b_p_key, buffer, salt_len);
-	bf_ofb_init(buffer + salt_len, seed_len);
+	bf_cfb_init(buffer + salt_len, seed_len);
     }
     return OK;
 }
@@ -3064,7 +3064,7 @@ prepare_crypt_write(buf, lenp)
 	    seed = salt + salt_len;
 	    sha2_seed(salt, salt_len, seed, seed_len);
 	    bf_key_init(buf->b_p_key, salt, salt_len);
-	    bf_ofb_init(seed, seed_len);
+	    bf_cfb_init(seed, seed_len);
 	}
     }
     *lenp = CRYPT_MAGIC_LEN + salt_len + seed_len;
