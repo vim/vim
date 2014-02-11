@@ -655,8 +655,8 @@ normal_cmd(oap, toplevel)
 #ifdef FEAT_EVAL
     /* Set v:count here, when called from main() and not a stuffed
      * command, so that v:count can be used in an expression mapping
-     * when there is no count. */
-    if (toplevel && stuff_empty())
+     * when there is no count. Do set it for redo. */
+    if (toplevel && readbuf1_empty())
 	set_vcount_ca(&ca, &set_prevcount);
 #endif
 
@@ -736,8 +736,8 @@ getcount:
 #ifdef FEAT_EVAL
 	    /* Set v:count here, when called from main() and not a stuffed
 	     * command, so that v:count can be used in an expression mapping
-	     * right after the count. */
-	    if (toplevel && stuff_empty())
+	     * right after the count. Do set it for redo. */
+	    if (toplevel && readbuf1_empty())
 		set_vcount_ca(&ca, &set_prevcount);
 #endif
 	    if (ctrl_w)
@@ -819,8 +819,9 @@ getcount:
 #ifdef FEAT_EVAL
     /*
      * Only set v:count when called from main() and not a stuffed command.
+     * Do set it for redo.
      */
-    if (toplevel && stuff_empty())
+    if (toplevel && readbuf1_empty())
 	set_vcount(ca.count0, ca.count1, set_prevcount);
 #endif
 

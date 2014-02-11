@@ -1,8 +1,9 @@
 /* getchar.c */
-void free_buff __ARGS((struct buffheader *buf));
+void free_buff __ARGS((buffheader_T *buf));
 char_u *get_recorded __ARGS((void));
 char_u *get_inserted __ARGS((void));
 int stuff_empty __ARGS((void));
+int readbuf1_empty __ARGS((void));
 void typeahead_noflush __ARGS((int c));
 void flush_buffers __ARGS((int flush_typeahead));
 void ResetRedobuff __ARGS((void));
