@@ -1617,8 +1617,9 @@ _DictionaryItem(DictionaryObject *self, PyObject *args, int flags)
     }
     else if (flags & DICT_FLAG_RETURN_BOOL)
     {
-	Py_INCREF(Py_True);
-	return Py_True;
+	ret = Py_True;
+	Py_INCREF(ret);
+	return ret;
     }
 
     di = dict_lookup(hi);
