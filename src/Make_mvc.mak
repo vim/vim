@@ -424,6 +424,9 @@ MSVCVER = 11.0
 !if "$(_NMAKE_VER)" == "11.00.60610.1"
 MSVCVER = 11.0
 !endif
+!if "$(_NMAKE_VER)" == "11.00.61030.0"
+MSVCVER = 11.0
+!endif
 !if "$(_NMAKE_VER)" == "12.00.21005.1"
 MSVCVER = 12.0
 !endif
