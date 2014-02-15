@@ -802,9 +802,19 @@ if test "$enable_mzschemeinterp" = "yes"; then
     AC_MSG_CHECKING(for mzscheme_base.c)
     if test -f "${SCHEME_COLLECTS}collects/scheme/base.ss" ; then
       MZSCHEME_EXTRA="mzscheme_base.c"
+      MZSCHEME_MZC="${vi_cv_path_mzscheme_pfx}/bin/mzc"
+      MZSCHEME_MOD="++lib scheme/base"
     else
       if test -f "${SCHEME_COLLECTS}collects/scheme/base.rkt" ; then
 	MZSCHEME_EXTRA="mzscheme_base.c"
+	MZSCHEME_MZC="${vi_cv_path_mzscheme_pfx}/bin/mzc"
+	MZSCHEME_MOD="++lib scheme/base"
+      else
+	if test -f "${SCHEME_COLLECTS}collects/racket/base.rkt" ; then
+	  MZSCHEME_EXTRA="mzscheme_base.c"
+	  MZSCHEME_MZC="${vi_cv_path_mzscheme_pfx}/bin/raco ctool"
+	  MZSCHEME_MOD=""
+	fi
       fi
     fi
     if test "X$MZSCHEME_EXTRA" != "X" ; then
