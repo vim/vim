@@ -2510,8 +2510,8 @@ ListAssSlice(ListObject *self, Py_ssize_t first,
 	{
 	    Py_DECREF(iterator);
 	    PyErr_FORMAT(PyExc_ValueError,
-		    N_("attempt to assign sequence of size greater then %ld "
-			"to extended slice"), (long)slicelen);
+		    N_("attempt to assign sequence of size greater then %d "
+			"to extended slice"), (int) slicelen);
 	    list_restore(numadded, numreplaced, slicelen, l, lis, lastaddedli);
 	    PyMem_Free(lis);
 	    return -1;
@@ -2523,8 +2523,8 @@ ListAssSlice(ListObject *self, Py_ssize_t first,
     if (step != 1 && i != slicelen)
     {
 	PyErr_FORMAT2(PyExc_ValueError,
-		N_("attempt to assign sequence of size %ld to extended slice "
-		    "of size %ld"), (long)i, (long)slicelen);
+		N_("attempt to assign sequence of size %d to extended slice "
+		    "of size %d"), (int) i, (int) slicelen);
 	list_restore(numadded, numreplaced, slicelen, l, lis, lastaddedli);
 	PyMem_Free(lis);
 	return -1;
