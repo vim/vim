@@ -264,6 +264,7 @@ static char_u *do_insert_char_pre __ARGS((int c));
 
 static colnr_T	Insstart_textlen;	/* length of line when insert started */
 static colnr_T	Insstart_blank_vcol;	/* vcol for first inserted blank */
+static int	update_Insstart_orig = TRUE; /* set Insstart_orig to Insstart */
 
 static char_u	*last_insert = NULL;	/* the text of the previous insert,
 					   K_SPECIAL and CSI are escaped */
@@ -339,6 +340,9 @@ edit(cmdchar, startln, count)
     /* sleep before redrawing, needed for "CTRL-O :" that results in an
      * error message */
     check_for_delay(TRUE);
+
+    /* set Insstart_orig to Insstart */
+    update_Insstart_orig = TRUE;
 
 #ifdef HAVE_SANDBOX
     /* Don't allow inserting in the sandbox. */
@@ -630,6 +634,9 @@ edit(cmdchar, startln, count)
 #endif
 	if (arrow_used)	    /* don't repeat insert when arrow key used */
 	    count = 0;
+
+	if (update_Insstart_orig)
+	    Insstart_orig = Insstart;
 
 	if (stop_insert_mode)
 	{
@@ -6923,6 +6930,7 @@ stop_insert(end_insert_pos, esc, nomove)
     if (end_insert_pos != NULL)
     {
 	curbuf->b_op_start = Insstart;
+	curbuf->b_op_start_orig = Insstart_orig;
 	curbuf->b_op_end = *end_insert_pos;
     }
 }
@@ -8257,6 +8265,7 @@ ins_ctrl_g()
 
 		  /* Need to reset Insstart, esp. because a BS that joins
 		   * a line to the previous one must save for undo. */
+		  update_Insstart_orig = FALSE;
 		  Insstart = curwin->w_cursor;
 		  break;
 

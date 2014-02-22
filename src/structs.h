@@ -1449,6 +1449,7 @@ struct file_buffer
      * start and end of an operator, also used for '[ and ']
      */
     pos_T	b_op_start;
+    pos_T	b_op_start_orig;  /* used for Insstart_orig */
     pos_T	b_op_end;
 
 #ifdef FEAT_VIMINFO
