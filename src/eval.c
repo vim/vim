@@ -9203,7 +9203,7 @@ f_byte2line(argvars, rettv)
 byteidx(argvars, rettv, comp)
     typval_T	*argvars;
     typval_T	*rettv;
-    int		comp;
+    int		comp UNUSED;
 {
 #ifdef FEAT_MBYTE
     char_u	*t;
