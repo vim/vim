@@ -4376,7 +4376,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 		    {
 			/* Don't put the #if inside memchr(), it can be a
 			 * macro. */
-#if SIZEOF_INT <= 2
+#if VIM_SIZEOF_INT <= 2
 			char *q = memchr(str_arg, '\0', precision);
 #else
 			/* memchr on HP does not like n > 2^31  !!! */

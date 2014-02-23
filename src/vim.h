@@ -43,7 +43,7 @@
  * it becomes zero.  This is likely a problem of not being able to run the
  * test program.  Other items from configure may also be wrong then!
  */
-# if (SIZEOF_INT == 0)
+# if (VIM_SIZEOF_INT == 0)
     Error: configure did not run properly.  Check auto/config.log.
 # endif
 
@@ -148,22 +148,22 @@
 #endif
 
 /*
- * SIZEOF_INT is used in feature.h, and the system-specific included files
- * need items from feature.h.  Therefore define SIZEOF_INT here.
+ * VIM_SIZEOF_INT is used in feature.h, and the system-specific included files
+ * need items from feature.h.  Therefore define VIM_SIZEOF_INT here.
  */
 #ifdef WIN3264
-# define SIZEOF_INT 4
+# define VIM_SIZEOF_INT 4
 #endif
 #ifdef MSDOS
 # ifdef DJGPP
 #  ifndef FEAT_GUI_GTK		/* avoid problems when generating prototypes */
-#   define SIZEOF_INT 4		/* 32 bit ints */
+#   define VIM_SIZEOF_INT 4	/* 32 bit ints */
 #  endif
 #  define DOS32
 #  define FEAT_CLIPBOARD
 # else
 #  ifndef FEAT_GUI_GTK		/* avoid problems when generating prototypes */
-#   define SIZEOF_INT 2		/* 16 bit ints */
+#   define VIM_SIZEOF_INT 2	/* 16 bit ints */
 #  endif
 #  define SMALL_MALLOC		/* 16 bit storage allocation */
 #  define DOS16
@@ -174,18 +174,18 @@
   /* Be conservative about sizeof(int). It could be 4 too. */
 # ifndef FEAT_GUI_GTK	/* avoid problems when generating prototypes */
 #  ifdef __GNUC__
-#   define SIZEOF_INT	4
+#   define VIM_SIZEOF_INT	4
 #  else
-#   define SIZEOF_INT	2
+#   define VIM_SIZEOF_INT	2
 #  endif
 # endif
 #endif
 #ifdef MACOS
 # if defined(__POWERPC__) || defined(MACOS_X) || defined(__fourbyteints__) \
   || defined(__MRC__) || defined(__SC__) || defined(__APPLE_CC__)/* MPW Compilers */
-#  define SIZEOF_INT 4
+#  define VIM_SIZEOF_INT 4
 # else
-#  define SIZEOF_INT 2
+#  define VIM_SIZEOF_INT 2
 # endif
 #endif
 
@@ -417,12 +417,12 @@ typedef		 long __w64     long_i;
 #define PRINTF_DECIMAL_LONG_U SCANF_DECIMAL_LONG_U
 
 /*
- * Only systems which use configure will have SIZEOF_OFF_T and SIZEOF_LONG
+ * Only systems which use configure will have SIZEOF_OFF_T and VIM_SIZEOF_LONG
  * defined, which is ok since those are the same systems which can have
  * varying sizes for off_t.  The other systems will continue to use "%ld" to
  * print off_t since off_t is simply a typedef to long for them.
  */
-#if defined(SIZEOF_OFF_T) && (SIZEOF_OFF_T > SIZEOF_LONG)
+#if defined(SIZEOF_OFF_T) && (SIZEOF_OFF_T > VIM_SIZEOF_LONG)
 # define LONG_LONG_OFF_T
 #endif
 
@@ -448,7 +448,7 @@ typedef unsigned char sattr_T;
 # ifdef UNICODE16
 typedef unsigned short u8char_T;    /* short should be 16 bits */
 # else
-#  if SIZEOF_INT >= 4
+#  if VIM_SIZEOF_INT >= 4
 typedef unsigned int u8char_T;	    /* int is 32 bits */
 #  else
 typedef unsigned long u8char_T;	    /* long should be 32 bits or more */
@@ -1608,7 +1608,7 @@ typedef unsigned short disptick_T;	/* display tick type */
  * With this we restrict the maximum line length to 1073741823. I guess this is
  * not a real problem. BTW:  Longer lines are split.
  */
-#if SIZEOF_INT >= 4
+#if VIM_SIZEOF_INT >= 4
 # ifdef __MVS__
 #  define MAXCOL (0x3fffffffL)		/* maximum column number, 30 bits */
 # else

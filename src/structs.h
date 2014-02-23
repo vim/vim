@@ -364,7 +364,7 @@ struct u_header
 /*
  * structures used in undo.c
  */
-#if SIZEOF_INT > 2
+#if VIM_SIZEOF_INT > 2
 # define ALIGN_LONG	/* longword alignment and use filler byte */
 # define ALIGN_SIZE (sizeof(long))
 #else
@@ -1094,7 +1094,7 @@ typedef struct hashtable_S
 typedef long_u hash_T;		/* Type for hi_hash */
 
 
-#if SIZEOF_INT <= 3		/* use long if int is smaller than 32 bits */
+#if VIM_SIZEOF_INT <= 3		/* use long if int is smaller than 32 bits */
 typedef long	varnumber_T;
 #else
 typedef int	varnumber_T;

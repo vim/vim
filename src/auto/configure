@@ -5199,9 +5199,19 @@ $as_echo "not found" >&6; }
 $as_echo_n "checking for mzscheme_base.c... " >&6; }
     if test -f "${SCHEME_COLLECTS}collects/scheme/base.ss" ; then
       MZSCHEME_EXTRA="mzscheme_base.c"
+      MZSCHEME_MZC="${vi_cv_path_mzscheme_pfx}/bin/mzc"
+      MZSCHEME_MOD="++lib scheme/base"
     else
       if test -f "${SCHEME_COLLECTS}collects/scheme/base.rkt" ; then
 	MZSCHEME_EXTRA="mzscheme_base.c"
+	MZSCHEME_MZC="${vi_cv_path_mzscheme_pfx}/bin/mzc"
+	MZSCHEME_MOD="++lib scheme/base"
+      else
+	if test -f "${SCHEME_COLLECTS}collects/racket/base.rkt" ; then
+	  MZSCHEME_EXTRA="mzscheme_base.c"
+	  MZSCHEME_MZC="${vi_cv_path_mzscheme_pfx}/bin/raco ctool"
+	  MZSCHEME_MOD=""
+	fi
       fi
     fi
     if test "X$MZSCHEME_EXTRA" != "X" ; then
@@ -12321,6 +12331,15 @@ cat >>confdefs.h <<_ACEOF
 #define SIZEOF_OFF_T $ac_cv_sizeof_off_t
 _ACEOF
 
+
+
+cat >>confdefs.h <<_ACEOF
+#define VIM_SIZEOF_INT $ac_cv_sizeof_int
+_ACEOF
+
+cat >>confdefs.h <<_ACEOF
+#define VIM_SIZEOF_LONG $ac_cv_sizeof_long
+_ACEOF
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking uint32_t is 32 bits" >&5

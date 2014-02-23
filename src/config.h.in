@@ -37,10 +37,10 @@
 #undef UNIX
 
 /* Defined to the size of an int */
-#undef SIZEOF_INT
+#undef VIM_SIZEOF_INT
 
 /* Defined to the size of a long */
-#undef SIZEOF_LONG
+#undef VIM_SIZEOF_LONG
 
 /* Defined to the size of off_t */
 #undef SIZEOF_OFF_T

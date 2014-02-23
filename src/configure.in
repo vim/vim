@@ -3581,6 +3581,10 @@ AC_CHECK_SIZEOF([long])
 AC_CHECK_SIZEOF([time_t])
 AC_CHECK_SIZEOF([off_t])
 
+dnl Use different names to avoid clashing with other header files.
+AC_DEFINE_UNQUOTED(VIM_SIZEOF_INT, [$ac_cv_sizeof_int])
+AC_DEFINE_UNQUOTED(VIM_SIZEOF_LONG, [$ac_cv_sizeof_long])
+
 dnl Make sure that uint32_t is really 32 bits unsigned.
 AC_MSG_CHECKING([uint32_t is 32 bits])
 AC_TRY_RUN([

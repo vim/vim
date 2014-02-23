@@ -47,7 +47,7 @@
 #undef UNIX	/* define always by current configure script */
 
 /* Defined to the size of an int */
-#define SIZEOF_INT 4
+#define VIM_SIZEOF_INT 4
 
 /*
  * If we cannot trust one of the following from the libraries, we use our

@@ -1185,7 +1185,7 @@ retry:
 	 * The amount is limited by the fact that read() only can read
 	 * upto max_unsigned characters (and other things).
 	 */
-#if SIZEOF_INT <= 2
+#if VIM_SIZEOF_INT <= 2
 	if (linerest >= 0x7ff0)
 	{
 	    ++split;
@@ -1197,7 +1197,7 @@ retry:
 	{
 	    if (!skip_read)
 	    {
-#if SIZEOF_INT > 2
+#if VIM_SIZEOF_INT > 2
 # if defined(SSIZE_MAX) && (SSIZE_MAX < 0x10000L)
 		size = SSIZE_MAX;		    /* use max I/O size, 52K */
 # else

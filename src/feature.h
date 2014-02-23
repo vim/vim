@@ -328,7 +328,7 @@
  *
  * Disabled for EBCDIC as it requires multibyte.
  */
-#if defined(FEAT_BIG) && !defined(WIN16) && SIZEOF_INT >= 4 && !defined(EBCDIC)
+#if defined(FEAT_BIG) && !defined(WIN16) && VIM_SIZEOF_INT >= 4 && !defined(EBCDIC)
 # define FEAT_ARABIC
 #endif
 #ifdef FEAT_ARABIC
@@ -640,7 +640,7 @@
  */
 #if (defined(FEAT_NORMAL) || defined(FEAT_GUI_GTK) || defined(FEAT_ARABIC)) \
 	&& !defined(FEAT_MBYTE) && !defined(WIN16) \
-	&& SIZEOF_INT >= 4 && !defined(EBCDIC)
+	&& VIM_SIZEOF_INT >= 4 && !defined(EBCDIC)
 # define FEAT_MBYTE
 #endif
 
@@ -661,7 +661,7 @@
 # define FEAT_MBYTE
 #endif
 
-#if defined(FEAT_MBYTE) && SIZEOF_INT < 4 && !defined(PROTO)
+#if defined(FEAT_MBYTE) && VIM_SIZEOF_INT < 4 && !defined(PROTO)
 	Error: Can only handle multi-byte feature with 32 bit int or larger
 #endif
 

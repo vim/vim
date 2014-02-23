@@ -89,9 +89,9 @@
 #endif
 
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20 \
-	&& SIZEOF_INT < SIZEOF_LONG
+	&& VIM_SIZEOF_INT < VIM_SIZEOF_LONG
 /* Ruby 2.0 defines a number of static functions which use rb_fix2int and
- * rb_num2int if SIZEOF_INT < SIZEOF_LONG (64bit) */
+ * rb_num2int if VIM_SIZEOF_INT < VIM_SIZEOF_LONG (64bit) */
 # define rb_fix2int rb_fix2int_stub
 # define rb_num2int rb_num2int_stub
 #endif
@@ -202,7 +202,7 @@ static void ruby_vim_init(void);
 # define rb_hash_new			dll_rb_hash_new
 # define rb_inspect			dll_rb_inspect
 # define rb_int2inum			dll_rb_int2inum
-# if SIZEOF_INT < SIZEOF_LONG /* 64 bits only */
+# if VIM_SIZEOF_INT < VIM_SIZEOF_LONG /* 64 bits only */
 #  define rb_fix2int			dll_rb_fix2int
 #  define rb_num2int			dll_rb_num2int
 #  define rb_num2uint			dll_rb_num2uint
@@ -310,7 +310,7 @@ static VALUE (*dll_rb_hash_aset) (VALUE, VALUE, VALUE);
 static VALUE (*dll_rb_hash_new) (void);
 static VALUE (*dll_rb_inspect) (VALUE);
 static VALUE (*dll_rb_int2inum) (long);
-# if SIZEOF_INT < SIZEOF_LONG /* 64 bits only */
+# if VIM_SIZEOF_INT < VIM_SIZEOF_LONG /* 64 bits only */
 static long (*dll_rb_fix2int) (VALUE);
 static long (*dll_rb_num2int) (VALUE);
 static unsigned long (*dll_rb_num2uint) (VALUE);
@@ -393,7 +393,7 @@ VALUE rb_int2big_stub(SIGNED_VALUE x)
     return dll_rb_int2big(x);
 }
 #  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20 \
-	&& SIZEOF_INT < SIZEOF_LONG
+	&& VIM_SIZEOF_INT < VIM_SIZEOF_LONG
 long rb_fix2int_stub(VALUE x)
 {
     return dll_rb_fix2int(x);
@@ -466,7 +466,7 @@ static struct
     {"rb_hash_new", (RUBY_PROC*)&dll_rb_hash_new},
     {"rb_inspect", (RUBY_PROC*)&dll_rb_inspect},
     {"rb_int2inum", (RUBY_PROC*)&dll_rb_int2inum},
-# if SIZEOF_INT < SIZEOF_LONG /* 64 bits only */
+# if VIM_SIZEOF_INT < VIM_SIZEOF_LONG /* 64 bits only */
     {"rb_fix2int", (RUBY_PROC*)&dll_rb_fix2int},
     {"rb_num2int", (RUBY_PROC*)&dll_rb_num2int},
     {"rb_num2uint", (RUBY_PROC*)&dll_rb_num2uint},
