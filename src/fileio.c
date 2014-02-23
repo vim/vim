@@ -5294,7 +5294,7 @@ msg_add_lines(insert_space, lnum, nchars)
     if (shortmess(SHM_LINES))
 	sprintf((char *)p,
 #ifdef LONG_LONG_OFF_T
-		"%ldL, %lldC", lnum, nchars
+		"%ldL, %lldC", lnum, (long long)nchars
 #else
 		/* Explicit typecast avoids warning on Mac OS X 10.6 */
 		"%ldL, %ldC", lnum, (long)nchars
@@ -5312,7 +5312,7 @@ msg_add_lines(insert_space, lnum, nchars)
 	else
 	    sprintf((char *)p,
 #ifdef LONG_LONG_OFF_T
-		    _("%lld characters"), nchars
+		    _("%lld characters"), (long long)nchars
 #else
 		    /* Explicit typecast avoids warning on Mac OS X 10.6 */
 		    _("%ld characters"), (long)nchars
