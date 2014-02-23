@@ -5790,7 +5790,7 @@ nv_ident(cap)
     {
 	/* Escape the argument properly for a shell command */
 	ptr = vim_strnsave(ptr, n);
-	p = vim_strsave_shellescape(ptr, TRUE);
+	p = vim_strsave_shellescape(ptr, TRUE, TRUE);
 	vim_free(ptr);
 	if (p == NULL)
 	{

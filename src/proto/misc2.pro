@@ -32,7 +32,7 @@ char_u *vim_strnsave __ARGS((char_u *string, int len));
 char_u *vim_strsave_escaped __ARGS((char_u *string, char_u *esc_chars));
 char_u *vim_strsave_escaped_ext __ARGS((char_u *string, char_u *esc_chars, int cc, int bsl));
 int csh_like_shell __ARGS((void));
-char_u *vim_strsave_shellescape __ARGS((char_u *string, int do_special));
+char_u *vim_strsave_shellescape __ARGS((char_u *string, int do_special, int do_newline));
 char_u *vim_strsave_up __ARGS((char_u *string));
 char_u *vim_strnsave_up __ARGS((char_u *string, int len));
 void vim_strup __ARGS((char_u *p));

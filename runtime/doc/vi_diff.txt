@@ -540,7 +540,7 @@ character (and shows it immediately).
 Added :wnext command.  Same as ":write" followed by ":next".
 
 The ":w!" command always writes, also when the file is write protected.  In Vi
-you would have to do ":!chmod +w %" and ":set noro".
+you would have to do ":!chmod +w %:S" and ":set noro".
 
 When 'tildeop' has been set, "~" is an operator (must be followed by a
 movement command).

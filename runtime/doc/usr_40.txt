@@ -209,7 +209,7 @@ The ":map" command can be followed by another command.  A | character
 separates the two commands.  This also means that a | character can't be used
 inside a map command.  To include one, use <Bar> (five characters).  Example:
 >
-	:map <F8> :write <Bar> !checkin %<CR>
+	:map <F8> :write <Bar> !checkin %:S<CR>
 
 The same problem applies to the ":unmap" command, with the addition that you
 have to watch out for trailing white space.  These two commands are different:

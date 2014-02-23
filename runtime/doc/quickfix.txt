@@ -838,7 +838,7 @@ Unfortunately, there is no standard way to run the tests.
 The alltests.py script seems to be used quite often, that's all.
 Useful values for the 'makeprg' options therefore are:
  setlocal makeprg=./alltests.py " Run a testsuite
- setlocal makeprg=python %      " Run a single testcase
+ setlocal makeprg=python\ %:S   " Run a single testcase
 
 Also see http://vim.sourceforge.net/tip_view.php?tip_id=280.
 
@@ -1332,7 +1332,7 @@ or: >
 Here is an alternative from Michael F. Lamb for Unix that filters the errors
 first: >
   :setl errorformat=%Z%f:%l:\ %m,%A%p^,%-G%*[^sl]%.%#
-  :setl makeprg=javac\ %\ 2>&1\ \\\|\ vim-javac-filter
+  :setl makeprg=javac\ %:S\ 2>&1\ \\\|\ vim-javac-filter
 
 You need to put the following in "vim-javac-filter" somewhere in your path
 (e.g., in ~/bin) and make it executable: >

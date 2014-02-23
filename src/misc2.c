@@ -1369,12 +1369,14 @@ csh_like_shell()
  * Escape a newline, depending on the 'shell' option.
  * When "do_special" is TRUE also replace "!", "%", "#" and things starting
  * with "<" like "<cfile>".
+ * When "do_newline" is FALSE do not escape newline unless it is csh shell.
  * Returns the result in allocated memory, NULL if we have run out.
  */
     char_u *
-vim_strsave_shellescape(string, do_special)
+vim_strsave_shellescape(string, do_special, do_newline)
     char_u	*string;
     int		do_special;
+    int		do_newline;
 {
     unsigned	length;
     char_u	*p;
@@ -1403,7 +1405,8 @@ vim_strsave_shellescape(string, do_special)
 # endif
 	if (*p == '\'')
 	    length += 3;		/* ' => '\'' */
-	if (*p == '\n' || (*p == '!' && (csh_like || do_special)))
+	if ((*p == '\n' && (csh_like || do_newline))
+		|| (*p == '!' && (csh_like || do_special)))
 	{
 	    ++length;			/* insert backslash */
 	    if (csh_like && do_special)
@@ -1454,7 +1457,8 @@ vim_strsave_shellescape(string, do_special)
 		++p;
 		continue;
 	    }
-	    if (*p == '\n' || (*p == '!' && (csh_like || do_special)))
+	    if ((*p == '\n' && (csh_like || do_newline))
+		    || (*p == '!' && (csh_like || do_special)))
 	    {
 		*d++ = '\\';
 		if (csh_like && do_special)

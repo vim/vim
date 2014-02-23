@@ -128,7 +128,7 @@ be escaped with a backslash.  Example: >
 You can include special Vim keywords in the command specification.  The %
 character expands to the name of the current file.  So if you execute the
 command: >
-	:set makeprg=make\ %
+	:set makeprg=make\ %:S
 
 When you are editing main.c, then ":make" executes the following command: >
 
@@ -137,7 +137,7 @@ When you are editing main.c, then ":make" executes the following command: >
 This is not too useful, so you will refine the command a little and use the :r
 (root) modifier: >
 
-	:set makeprg=make\ %:r.o
+	:set makeprg=make\ %:r:S.o
 
 Now the command executed is as follows: >
 

@@ -4757,8 +4757,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global or local to buffer |global-local|
 			{not in Vi}
 	Program to use for the ":make" command.  See |:make_makeprg|.
-	This option may contain '%' and '#' characters, which are expanded to
-	the current and alternate file name. |:_%| |:_#|
+	This option may contain '%' and '#' characters (see  |:_%| and |:_#|), 
+	which are expanded to the current and alternate file name.  Use |::S| 
+	to escape file names in case they contain special characters.
 	Environment variables are expanded |:set_env|.  See |option-backslash|
 	about including spaces and backslashes.
 	Note that a '|' must be escaped twice: once for ":set" and once for
