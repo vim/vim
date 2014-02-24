@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.4.  Last change: 2013 Nov 25
+*cmdline.txt*   For Vim version 7.4.  Last change: 2014 Feb 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -824,8 +824,8 @@ Note: these are typed literally, they are not special keys!
 		   the start of the function.
 
 							 *filename-modifiers*
-	 *:_%:* *::8* *::p* *::.* *::~* *::h* *::t* *::r* *::e* *::s* *::gs*
-	        *%:8* *%:p* *%:.* *%:~* *%:h* *%:t* *%:r* *%:e* *%:s* *%:gs*
+*:_%:* *::8* *::p* *::.* *::~* *::h* *::t* *::r* *::e* *::s* *::gs* *::S*
+     *%:8* *%:p* *%:.* *%:~* *%:h* *%:t* *%:r* *%:e* *%:s* *%:gs* *%:S*
 The file name modifiers can be used after "%", "#", "#n", "<cfile>", "<sfile>",
 "<afile>" or "<abuf>".  They are also used with the |fnamemodify()| function.
 These are not available when Vim has been compiled without the |+modify_fname|
@@ -880,6 +880,10 @@ These modifiers can be given, in this order:
 	:gs?pat?sub?
 		Substitute all occurrences of "pat" with "sub".  Otherwise
 		this works like ":s".
+	:S	Escape special characters for use with a shell command (see 
+		|shellescape()|). Must be the last one. Examples: >
+		    :!dir <cfile>:S
+		    :call system('chmod +w -- ' . expand('%:S'))
 
 Examples, when the file name is "src/version.c", current dir
 "/home/mool/vim": >

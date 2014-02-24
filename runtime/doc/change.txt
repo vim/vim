@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.4.  Last change: 2014 Jan 23
+*change.txt*    For Vim version 7.4.  Last change: 2014 Feb 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -155,6 +155,9 @@ the 'joinspaces' option is on, these commands insert two spaces after a '.',
 only after a '.').
 The 'B' and 'M' flags in 'formatoptions' change the behavior for inserting
 spaces before and after a multi-byte character |fo-table|.
+
+The '[ mark is set at the end of the first line that was joined, '] at the end
+of the resulting line.
 
 
 ==============================================================================

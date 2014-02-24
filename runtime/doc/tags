@@ -12,6 +12,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 %	motion.txt	/*%*
 %:.	cmdline.txt	/*%:.*
 %:8	cmdline.txt	/*%:8*
+%:S	cmdline.txt	/*%:S*
 %:e	cmdline.txt	/*%:e*
 %:gs	cmdline.txt	/*%:gs*
 %:h	cmdline.txt	/*%:h*
@@ -1788,6 +1789,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :3match	pattern.txt	/*:3match*
 ::.	cmdline.txt	/*::.*
 ::8	cmdline.txt	/*::8*
+::S	cmdline.txt	/*::S*
 ::e	cmdline.txt	/*::e*
 ::gs	cmdline.txt	/*::gs*
 ::h	cmdline.txt	/*::h*

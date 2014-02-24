@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2014 Feb 11
+*todo.txt*      For Vim version 7.4.  Last change: 2014 Feb 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,11 +34,6 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-When 'paste' is changed with 'pastetoggle', the ruler doesn't reflect this
-right away. (Samuel Ferencik, 2010 Dec 7)
-Patch to fix that status line isn't redrawn when 'pastetoggle' is set.
-(Nobuhiro Takasaki, 2014 Feb 11)
-
 Regexp problems:
 - NFA regexp doesn't count tab matches correctly. (Urtica Dioica / gaultheria
   Shallon, 2013 Nov 18)
@@ -54,16 +49,13 @@ Regexp problems:
 - Using \@> and \?. (Brett Stahlman, 2013 Dec 21) Remark from Marcin Szamotulski
   Remark from Brett 2014 Jan 6 and 7.
 - Bug with back references. (Lech Lorens, 2014 Feb 3)
-- Bug when using \>. (Ramel, 2014 Feb 2)
+- Bug when using \>. (Ramel, 2014 Feb 2) (Aaron Bohannon, 2014 Feb 13)
 
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
-
-Patch 7.4.085 breaks Visual insert in some situations. (Issue 193)
-Patch by Christian Brabandt, 2014 Jan 16.
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
@@ -72,14 +64,15 @@ ftplugins.
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
-Patch to make "J" set '[ and '] marks. (Christian Brabandt, 2013 Dec 11)
-Any compatibility problems?
+Using autoconf 2.69 gives a lot of warnings.
 
-Patch to add :S modifier for excaping the current file name.
-(ZyX, 2013 Nov 30)  Update Dec 5.
+Patch to allow for negative index in string. (LCD, 2014 Feb 13)
+Feb 14 with test. Or does this intentionally not work?
 
-Issu 197: ]P doesn't paste over Visual selection.  With patch from Christian
-Brabandt, Feb 6.
+Issue 197: ]P doesn't paste over Visual selection.  With patch from Christian
+Brabandt, Feb 6.  Issue 197.
+
+Make 'lispwords' global-local. (Sung Pae, 2014 Feb 16)
 
 Problem with 'spellsuggest' file, only works for some words.
 (Cesar Romani, 2013 Aug 20)  Depends on file name? (Aug 24)
@@ -90,6 +83,11 @@ Additional remark by glts: the suggested words are marked bad?
     Update 2014 Jan 6.
 
 Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
+
+Problem with 'errorformat'.  Patch by Lcd, 2014 Feb 21. With test.
+
+Patch for the problem that a mapping where the second byte is 0x80 isn't
+handled correcly. (Nobuhiro Takasaki, 2014 Feb 11)
 
 Patch for mksession. (Nobuhiro Takasaki, 2014 Jan 31)
 Also fixes another problem (following email)
@@ -153,6 +151,9 @@ Go through more coverity reports.
 Include Haiku port? (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
 
 Updated spec ftplugin. (Matěj Cepl, 2013 Oct 16)
+
+Some quickfix messages appear twice. (Gary Johnson, 2014 Feb 16)
+Patch by Christian Brabandt, 2014 Feb 17.
 
 Patch to right-align signs. (James Kolb (email james), 2013 Sep 23)
 
@@ -1473,9 +1474,6 @@ Win32: patch for fullscreen mode. (Liushaolin, 2008 April 17)
 Win32: When 'shell' is bash shellescape() doesn't always do the right thing.
 Depends on 'shellslash', 'shellquote' and 'shellxquote', but shellescape()
 only takes 'shellslash' into account.
-
-Pressing the 'pastetoggle' key doesn't update the statusline. (Jan Christoph
-Ebersbach, 2008 Feb 1)
 
 Menu item that does "xxd -r" doesn't work when 'fileencoding' is utf-16.
 Check for this and use iconv?  (Edward L. Fox, 2007 Sep 12)

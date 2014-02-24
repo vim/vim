@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2014 Feb 11
+" Last Change:	2014 Feb 23
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -538,6 +538,20 @@ au BufNewFile,BufRead *enlightenment/*.cfg	setf c
 
 " Eterm
 au BufNewFile,BufRead *Eterm/*.cfg		setf eterm
+
+" Euphoria 3 or 4
+au BufNewFile,BufRead *.eu,*.ew,*.ex,*.exu,*.exw  call s:EuphoriaCheck()
+if has("fname_case")
+   au BufNewFile,BufRead *.EU,*.EW,*.EX,*.EXU,*.EXW  call s:EuphoriaCheck()
+endif
+
+func! s:EuphoriaCheck()
+  if exists('g:filetype_euphoria')
+    exe 'setf ' . g:filetype_euphoria
+  else
+    setf euphoria3
+  endif
+endfunc
 
 " Lynx config files
 au BufNewFile,BufRead lynx.cfg			setf lynx
@@ -2244,7 +2258,7 @@ au BufNewFile,BufRead *.v			setf verilog
 au BufNewFile,BufRead *.va,*.vams		setf verilogams
 
 " SystemVerilog
-au BufNewFile,BufRead *.sv			setf systemverilog
+au BufNewFile,BufRead *.sv,*.svh		setf systemverilog
 
 " VHDL
 au BufNewFile,BufRead *.hdl,*.vhd,*.vhdl,*.vbe,*.vst  setf vhdl

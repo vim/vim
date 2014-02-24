@@ -7460,7 +7460,7 @@ This does NOT work: >
 			for Vim commands, |shellescape()| for |:!| commands.
 			Examples: >
 		:execute "e " . fnameescape(filename)
-		:execute "!ls " . shellescape(expand('%:h'), 1)
+		:execute "!ls " . shellescape(filename, 1)
 <
 			Note: The executed string may be any command-line, but
 			you cannot start or end a "while", "for" or "if"
