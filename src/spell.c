@@ -12037,7 +12037,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 		/* Normal byte, go one level deeper.  If it's not equal to the
 		 * byte in the bad word adjust the score.  But don't even try
 		 * when the byte was already changed.  And don't try when we
-		 * just deleted this byte, accepting it is always cheaper then
+		 * just deleted this byte, accepting it is always cheaper than
 		 * delete + substitute. */
 		if (c == fword[sp->ts_fidx]
 #ifdef FEAT_MBYTE

@@ -236,7 +236,7 @@ NumberToLong(PyObject *obj, long *result, int flags)
 	if (*result <= 0)
 	{
 	    PyErr_SET_STRING(PyExc_ValueError,
-		    N_("number must be greater then zero"));
+		    N_("number must be greater than zero"));
 	    return -1;
 	}
     }
@@ -2405,7 +2405,7 @@ ListAssSlice(ListObject *self, Py_ssize_t first,
 	if ((item = PyIter_Next(iterator)))
 	{
 	    PyErr_FORMAT(PyExc_ValueError,
-		    N_("attempt to assign sequence of size greater then %d "
+		    N_("attempt to assign sequence of size greater than %d "
 			"to extended slice"), 0);
 	    Py_DECREF(item);
 	    ret = -1;
@@ -2510,7 +2510,7 @@ ListAssSlice(ListObject *self, Py_ssize_t first,
 	{
 	    Py_DECREF(iterator);
 	    PyErr_FORMAT(PyExc_ValueError,
-		    N_("attempt to assign sequence of size greater then %d "
+		    N_("attempt to assign sequence of size greater than %d "
 			"to extended slice"), (int) slicelen);
 	    list_restore(numadded, numreplaced, slicelen, l, lis, lastaddedli);
 	    PyMem_Free(lis);
