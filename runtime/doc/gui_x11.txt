@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 7.4.  Last change: 2011 Sep 14
+*gui_x11.txt*   For Vim version 7.4.  Last change: 2014 Mar 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -442,7 +442,7 @@ command line argument).
 							*gui-x11-kde*
 There is no KDE version of Vim.  There has been some work on a port using the
 Qt toolkit, but it never worked properly and it has been abandoned.  Work
-continues on Yzis: www.yzis.org.
+continues on Yzis: https://github.com/chrizel/Yzis.
 
 ==============================================================================
 8. Compiling						*gui-x11-compiling*

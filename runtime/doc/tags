@@ -5472,6 +5472,8 @@ errors	message.txt	/*errors*
 escape	intro.txt	/*escape*
 escape()	eval.txt	/*escape()*
 escape-bar	version4.txt	/*escape-bar*
+euphoria3.vim	syntax.txt	/*euphoria3.vim*
+euphoria4.vim	syntax.txt	/*euphoria4.vim*
 eval	eval.txt	/*eval*
 eval()	eval.txt	/*eval()*
 eval-examples	eval.txt	/*eval-examples*
@@ -5738,6 +5740,7 @@ ft-dosbatch-syntax	syntax.txt	/*ft-dosbatch-syntax*
 ft-dtd-syntax	syntax.txt	/*ft-dtd-syntax*
 ft-eiffel-syntax	syntax.txt	/*ft-eiffel-syntax*
 ft-erlang-syntax	syntax.txt	/*ft-erlang-syntax*
+ft-euphoria-syntax	syntax.txt	/*ft-euphoria-syntax*
 ft-flexwiki-syntax	syntax.txt	/*ft-flexwiki-syntax*
 ft-form-syntax	syntax.txt	/*ft-form-syntax*
 ft-fortran-indent	indent.txt	/*ft-fortran-indent*

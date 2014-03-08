@@ -1,11 +1,9 @@
 " Vim syntax file
-" Language:	Euphoria 4.0.5 (http://www.RapidEuphoria.com)
+" Language:	Euphoria 4.0.5 (http://www.openeuphoria.org/)
 " Maintainer:	Shian Lee  
-" Last Change:	2014 Feb 23 (for Vim 7.4)
-" Remark:       Using 'euphoria3.vim' if "$EUDIR\BIN\EX.EXE" or "$EUDIR/bin/exu" 
-"               file exist; else, using 'euphoria4.vim' for Euphoria 4.x.x.
-" Filetype:     *.e, *.eu, *.ew, *.ex, *.exu, *.exw (also in UPPER case).
-"               note: *.e|*.E are used by Eiffel; for solution see :help filetype. 
+" Last Change:	2014 Feb 24 (for Vim 7.4)
+" Remark:       Euphoria has two syntax files, euphoria3.vim and euphoria4.vim; 
+"               For details see :help ft-euphoria-syntax
 
 " Quit if a (custom) syntax file was already loaded (compatible with Vim 5.8): 
 if version < 600
@@ -13,6 +11,10 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+" Reset compatible-options to Vim default value, just in case: 
+let s:save_cpo = &cpo
+set cpo&vim
 
 " Should suffice for very long strings and expressions:
 syn sync lines=40
@@ -237,4 +239,8 @@ hi def link euphoria4Delimit	Delimiter
 hi def link euphoria4PreProc	PreProc	
 	
 let b:current_syntax = "euphoria4"
+
+" Restore current compatible-options: 
+let &cpo = s:save_cpo
+unlet s:save_cpo
 

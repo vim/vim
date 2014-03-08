@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2014 Feb 23
+*todo.txt*      For Vim version 7.4.  Last change: 2014 Mar 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -54,13 +54,23 @@ Regexp problems:
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
+Patch for VMS. (Zoltan Arpadffy, 2014 Mar 6)
+
+Euphoria syntax, Shian Lee, Feb 27
+
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
+Can't build Vim with Perl when -Dusethreads is not specified for building
+perl, and building with --enable-perlinterp=dynamic.
+Patch by Yasuhiro Matsumoto, 2014 Feb 24.
+
 Update for Clojure ftplugin. (Sung Pae).  Await discussion about formatting in
 ftplugins.
+
+Update for phpcomplete.vim. (Complex, 2014 Mar 1)
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
@@ -88,11 +98,22 @@ Problem with 'errorformat'.  Patch by Lcd, 2014 Feb 21. With test.
 
 Patch for the problem that a mapping where the second byte is 0x80 isn't
 handled correcly. (Nobuhiro Takasaki, 2014 Feb 11)
+Update 2014 Mar 8.
 
 Patch for mksession. (Nobuhiro Takasaki, 2014 Jan 31)
 Also fixes another problem (following email)
 
+Patch to use rubyarchhdrdir for Ruby 2.x. (James McCoy, 2014 Feb 24)
+
+Dynamic Ruby linking issues.  Patch by Danek Duvall (2014 Feb 26)
+and by Yukihiro Nakadaira (2014 Feb 27)
+
+Patch: Detect grep options for Solaris. (Danek Duvall, 2014 Feb 26)
+
 Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
+
+Syntax file for gnuplot.  Existing one is very old. (Andrew Rasmussen, 2014
+Feb 24)
 
 Crash with ":%s/\n//g" on long file. (Aidan Marlin, 2014 Jan 15)
 Christian Brabandt: patch to run this into a join. (2014 Jan 18)
@@ -100,6 +121,10 @@ Suggestion to not save replaced line for undo: Yukihiro Nakadaira, 2014 Jan
 25.
 
 Add digraph for Rouble: =P.  What's the Unicode?
+
+Bug: "!ls %" expands parenthesis in %, but not spaces.  So this doesn't work
+either: ':!ls "%"'.
+Patch by Gary Johnson, 2014 Mar 6.
 
 Issue 174: Detect Mason files.
 
@@ -128,6 +153,8 @@ VMS: Select() doesn't work properly, typing ESC may hang Vim.  Use sys$qiow
 instead. (Samuel Ferencik, 2013 Sep 28)
 
 Series of patches for NL vs NUL handling. (ZyX, 2013 Nov 3, Nov 9)
+
+Patch for XDG base directory support. (Jean François Bignolles, 2014 Mar 4)
 
 Patch to add flag to shortmess to avoid giving completion messages.
 (Shougo Matsu, 2014 Jan 6, update Jan 11)
@@ -162,8 +189,8 @@ Patch to handle integer overflow. (Aaron Burrow, 2013 Dec 12)
 With "$" in 'cpoptions' the popup menu isn't fully drawn. (Matti Niemenmaa,
 2013 Sep 5)
 
-Patch to add item in 'listchars' to repeat first character. (Nathaniel Braun,
-pragm, 2013 Oct 13)
+Patch to add "ntab" item in 'listchars' to repeat first character. (Nathaniel
+Braun, pragm, 2013 Oct 13)  Again 2014 Mar 5.
 
 Undo message is not always properly displayed.  Patch by Ken Takata, 2013 oct
 3.  Doesn't work properly according to Yukihiro Nakadaira.

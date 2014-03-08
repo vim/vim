@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.4.  Last change: 2013 Aug 22
+*syntax.txt*	For Vim version 7.4.  Last change: 2014 Feb 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1279,6 +1279,32 @@ Finally, some vendors support hexadecimal constants.  To handle them, add >
 	:let eiffel_hex_constants=1
 
 to your startup file.
+
+
+EUPHORIA	    *euphoria3.vim* *euphoria4.vim* *ft-euphoria-syntax*
+
+Two syntax highlighting files exists for Euphoria. One for Euphoria 
+version 3.1.1, which is the default syntax highlighting file, and one for 
+Euphoria version 4.0.5 or later.
+
+Euphoria version 3.1.1 (http://www.rapideuphoria.com/) is still necessary 
+for developing applications for the DOS platform, which Euphoria version 4 
+(http://www.openeuphoria.org/) does not support.
+
+The following file extensions are auto-detected as Euphoria file type: 
+    
+	*.e, *.eu, *.ew, *.ex, *.exu, *.exw
+	*.E, *.EU, *.EW, *.EX, *.EXU, *.EXW
+
+To select syntax highlighting file for Euphoria, as well as for 
+auto-detecting the *.e and *.E file extensions as Euphoria file type,
+add the following line to your startup file: >
+
+	:let filetype_euphoria="euphoria3"
+
+	or 
+
+	:let filetype_euphoria="euphoria4"
 
 
 ERLANG						*erlang.vim* *ft-erlang-syntax*

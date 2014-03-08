@@ -58,11 +58,11 @@ NOTA: As teclas de cursor devem funcionar também. Mas usando hjkl, tão logo
      Isso sai do editor SEM salvar qualquer mudança que tenha sido feita.
      Se quiser salvar as alterações e sair, digite     :wq <ENTER>
 
-  3. Quando vir o prompt do shell digite o comando que lhe trouxe a este
-     tutorial, na maioria dos casos:      vimtutor <ENTER>.
+  3. Repita o procedimento que lhe trouxe a este tutorial. O procedimento pode
+     ter sido a digitação de:  vimtutor <ENTER>.
 
   4. Se você memorizou estes passos e está confiante, execute os passos de
-     1 a 3 para sair e re-entrar no editor.
+     1 a 3 para sair e reentrar no editor.
 
 NOTA:  :q! <ENTER>  descarta qualquer mudança. Em uma próxima lição será
        ensinado como salvar as mudanças feitas em um arquivo.
@@ -560,7 +560,7 @@ Nota: Isso é muito útil para corrigir um programa com parênteses não-casados!
 
   1. Mova o cursor para a linha abaixo marcada com --->.
 
-  2. Digite  :/s/aa/a <ENTER> . Note que este comando somente muda a 
+  2. Digite  :s/aa/a <ENTER> . Note que este comando somente muda a 
      primeira ocorrência na linha.
 
   3. Agora digite  :s/aa/a/g   significando substituir globalmente na linha.

@@ -3,7 +3,7 @@
 " Maintainer: David Necas (Yeti) <yeti@physics.muni.cz>
 " License: This file can be redistribued and/or modified under the same terms
 "		as Vim itself.
-" Last Change: 2013-09-16
+" Last Change: 2014-03-04
 " Notes: Last synced with apache-2.2.3, version 1.x is no longer supported
 " TODO: see particular FIXME's scattered through the file
 "		make it really linewise?
@@ -157,7 +157,7 @@ syn keyword apacheDeclaration PerlRestartHandler PerlDispatchHandler
 syn keyword apacheDeclaration PerlFreshRestart PerlSendHeader
 syn keyword apacheDeclaration php_value php_flag php_admin_value php_admin_flag
 syn match apacheSection "<\/\=\(Proxy\|ProxyMatch\)[^>]*>" contains=apacheAnything
-syn keyword apacheDeclaration AllowCONNECT NoProxy ProxyBadHeader ProxyBlock ProxyDomain ProxyErrorOverride ProxyIOBufferSize ProxyMaxForwards ProxyPass ProxyPassReverse ProxyPassReverseCookieDomain ProxyPassReverseCookiePath ProxyPreserveHost ProxyReceiveBufferSize ProxyRemote ProxyRemoteMatch ProxyRequests ProxyTimeout ProxyVia
+syn keyword apacheDeclaration AllowCONNECT NoProxy ProxyBadHeader ProxyBlock ProxyDomain ProxyErrorOverride ProxyIOBufferSize ProxyMaxForwards ProxyPass ProxyPassMatch ProxyPassReverse ProxyPassReverseCookieDomain ProxyPassReverseCookiePath ProxyPreserveHost ProxyReceiveBufferSize ProxyRemote ProxyRemoteMatch ProxyRequests ProxyTimeout ProxyVia
 syn keyword apacheDeclaration RewriteBase RewriteCond RewriteEngine RewriteLock RewriteLog RewriteLogLevel RewriteMap RewriteOptions RewriteRule
 syn keyword apacheOption inherit
 syn keyword apacheDeclaration BrowserMatch BrowserMatchNoCase SetEnvIf SetEnvIfNoCase
