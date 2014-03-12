@@ -211,18 +211,12 @@
 #endif
 
 /*
- * +visual		Visual mode.
+ * +visual		Visual mode - now always included.
  * +visualextra		Extra features for Visual mode (mostly block operators).
  */
-#ifdef FEAT_SMALL
-# define FEAT_VISUAL
-# ifdef FEAT_NORMAL
-#  define FEAT_VISUALEXTRA
-# endif
-#else
-# ifdef FEAT_CLIPBOARD
-#  undef FEAT_CLIPBOARD	/* can't use clipboard without Visual mode */
-# endif
+#define FEAT_VISUAL
+#ifdef FEAT_NORMAL
+# define FEAT_VISUALEXTRA
 #endif
 
 /*
