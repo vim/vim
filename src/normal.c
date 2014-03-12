@@ -6751,10 +6751,58 @@ nv_brackets(cap)
     {
 	if (!checkclearop(cap->oap))
 	{
+	    int	    dir = (cap->cmdchar == ']' && cap->nchar == 'p')
+							 ? FORWARD : BACKWARD;
+	    int	    regname = cap->oap->regname;
+#ifdef FEAT_VISUAL
+	    int	    was_visual = VIsual_active;
+	    int	    line_count = curbuf->b_ml.ml_line_count;
+	    pos_T   start, end;
+
+	    if (VIsual_active)
+	    {
+		start = ltoreq(VIsual, curwin->w_cursor)
+						  ? VIsual : curwin->w_cursor;
+		end =  equalpos(start,VIsual) ? curwin->w_cursor : VIsual;
+		curwin->w_cursor = (dir == BACKWARD ? start : end);
+	    }
+#endif
+# ifdef FEAT_CLIPBOARD
+	    adjust_clip_reg(&regname);
+# endif
 	    prep_redo_cmd(cap);
-	    do_put(cap->oap->regname,
-	      (cap->cmdchar == ']' && cap->nchar == 'p') ? FORWARD : BACKWARD,
-						  cap->count1, PUT_FIXINDENT);
+
+	    do_put(regname, dir, cap->count1, PUT_FIXINDENT);
+#ifdef FEAT_VISUAL
+	    if (was_visual)
+	    {
+		VIsual = start;
+		curwin->w_cursor = end;
+		if (dir == BACKWARD)
+		{
+		    /* adjust lines */
+		    VIsual.lnum += curbuf->b_ml.ml_line_count - line_count;
+		    curwin->w_cursor.lnum +=
+				      curbuf->b_ml.ml_line_count - line_count;
+		}
+
+		VIsual_active = TRUE;
+		if (VIsual_mode == 'V')
+		{
+		    /* delete visually selected lines */
+		    cap->cmdchar = 'd';
+		    cap->nchar = NUL;
+		    cap->oap->regname = regname;
+		    nv_operator(cap);
+		    do_pending_operator(cap, 0, FALSE);
+		}
+		if (VIsual_active)
+		{
+		    end_visual_mode();
+		    redraw_later(SOME_VALID);
+		}
+	    }
+#endif
 	}
     }
 
