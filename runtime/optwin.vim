@@ -855,7 +855,7 @@ if has("lispindent")
   call append("$", "\t(local to buffer)")
   call <SID>BinOptionL("lisp")
   call append("$", "lispwords\twords that change how lisp indenting works")
-  call <SID>OptionG("lw", &lw)
+  call <SID>OptionL("lw", &lw)
 endif
 
 

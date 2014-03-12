@@ -4629,7 +4629,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'lispwords'* *'lw'*
 'lispwords' 'lw'	string	(default is very long)
-			global
+			global or local to buffer |global-local|
 			{not in Vi}
 			{not available when compiled without the |+lispindent|
 			feature}

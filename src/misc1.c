@@ -8879,7 +8879,7 @@ lisp_match(p)
 {
     char_u	buf[LSIZE];
     int		len;
-    char_u	*word = p_lispwords;
+    char_u	*word = *curbuf->b_p_lw != NUL ? curbuf->b_p_lw : p_lispwords;
 
     while (*word != NUL)
     {
