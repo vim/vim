@@ -751,7 +751,10 @@ restofline:
 		fmt_start = fmt_ptr;
 
 	    if (vim_strchr((char_u *)"AEWI", idx) != NULL)
+	    {
 		multiline = TRUE;	/* start of a multi-line message */
+		multiignore = FALSE;	/* reset continuation */
+	    }
 	    else if (vim_strchr((char_u *)"CZ", idx) != NULL)
 	    {				/* continuation of multi-line msg */
 		if (qfprev == NULL)
