@@ -3069,15 +3069,26 @@ logfont2name(LOGFONT lf)
     char	*p;
     char	*res;
     char	*charset_name;
+    char	*font_name = lf.lfFaceName;
 
     charset_name = charset_id2name((int)lf.lfCharSet);
-    res = alloc((unsigned)(strlen(lf.lfFaceName) + 20
+#ifdef FEAT_MBYTE
+    /* Convert a font name from the current codepage to 'encoding'.
+     * TODO: Use Wide APIs (including LOGFONTW) instead of ANSI APIs. */
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	int	len;
+	acp_to_enc(lf.lfFaceName, strlen(lf.lfFaceName),
+						(char_u **)&font_name, &len);
+    }
+#endif
+    res = alloc((unsigned)(strlen(font_name) + 20
 		    + (charset_name == NULL ? 0 : strlen(charset_name) + 2)));
     if (res != NULL)
     {
 	p = res;
 	/* make a normal font string out of the lf thing:*/
-	sprintf((char *)p, "%s:h%d", lf.lfFaceName, pixels_to_points(
+	sprintf((char *)p, "%s:h%d", font_name, pixels_to_points(
 			 lf.lfHeight < 0 ? -lf.lfHeight : lf.lfHeight, TRUE));
 	while (*p)
 	{
@@ -3102,6 +3113,10 @@ logfont2name(LOGFONT lf)
 	}
     }
 
+#ifdef FEAT_MBYTE
+    if (font_name != lf.lfFaceName)
+	vim_free(font_name);
+#endif
     return res;
 }
 

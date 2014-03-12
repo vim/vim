@@ -11,4 +11,5 @@ void clip_mch_set_selection __ARGS((VimClipboard *cbd));
 short_u *enc_to_utf16 __ARGS((char_u *str, int *lenp));
 char_u *utf16_to_enc __ARGS((short_u *str, int *lenp));
 void acp_to_enc __ARGS((char_u *str, int str_size, char_u **out, int *outlen));
+void enc_to_acp __ARGS((char_u *str, int str_size, char_u **out, int *outlen));
 /* vim: set ft=c : */

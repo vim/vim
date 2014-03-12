@@ -2867,12 +2867,27 @@ get_logfont(
 {
     char_u	*p;
     int		i;
+    int		ret = FAIL;
     static LOGFONT *lastlf = NULL;
+#ifdef FEAT_MBYTE
+    char_u	*acpname = NULL;
+#endif
 
     *lf = s_lfDefault;
     if (name == NULL)
 	return OK;
 
+#ifdef FEAT_MBYTE
+    /* Convert 'name' from 'encoding' to the current codepage, because
+     * lf->lfFaceName uses the current codepage.
+     * TODO: Use Wide APIs instead of ANSI APIs. */
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	int	len;
+	enc_to_acp(name, strlen(name), &acpname, &len);
+	name = acpname;
+    }
+#endif
     if (STRCMP(name, "*") == 0)
     {
 #if defined(FEAT_GUI_W32)
@@ -2887,10 +2902,9 @@ get_logfont(
 	cf.lpLogFont = lf;
 	cf.nFontType = 0 ; //REGULAR_FONTTYPE;
 	if (ChooseFont(&cf))
-	    goto theend;
-#else
-	return FAIL;
+	    ret = OK;
 #endif
+	goto theend;
     }
 
     /*
@@ -2899,7 +2913,7 @@ get_logfont(
     for (p = name; *p && *p != ':'; p++)
     {
 	if (p - name + 1 > LF_FACESIZE)
-	    return FAIL;			/* Name too long */
+	    goto theend;			/* Name too long */
 	lf->lfFaceName[p - name] = *p;
     }
     if (p != name)
@@ -2927,7 +2941,7 @@ get_logfont(
 		did_replace = TRUE;
 	    }
 	if (!did_replace || init_logfont(lf) == FAIL)
-	    return FAIL;
+	    goto theend;
     }
 
     while (*p == ':')
@@ -2988,25 +3002,27 @@ get_logfont(
 			    p[-1], name);
 		    EMSG(IObuff);
 		}
-		return FAIL;
+		goto theend;
 	}
 	while (*p == ':')
 	    p++;
     }
+    ret = OK;
 
-#if defined(FEAT_GUI_W32)
 theend:
-#endif
     /* ron: init lastlf */
-    if (printer_dc == NULL)
+    if (ret == OK && printer_dc == NULL)
     {
 	vim_free(lastlf);
 	lastlf = (LOGFONT *)alloc(sizeof(LOGFONT));
 	if (lastlf != NULL)
 	    mch_memmove(lastlf, lf, sizeof(LOGFONT));
     }
+#ifdef FEAT_MBYTE
+    vim_free(acpname);
+#endif
 
-    return OK;
+    return ret;
 }
 
 #endif /* defined(FEAT_GUI) || defined(FEAT_PRINTER) */
