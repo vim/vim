@@ -882,11 +882,11 @@ ll[1:100] = "abcJ":(<class 'vim.error'>, error('list is locked',))
 l[:] = FailingIter():(<class 'NotImplementedError'>, NotImplementedError('iter',))
 l[:] = FailingIterNext():(<class 'NotImplementedError'>, NotImplementedError('next',))
 <<< Finished
-nel[1:10:2]  = "abcK":(<class 'ValueError'>, ValueError('attempt to assign sequence of size greater then 2 to extended slice',))
+nel[1:10:2]  = "abcK":(<class 'ValueError'>, ValueError('attempt to assign sequence of size greater than 2 to extended slice',))
 (b'a', b'b', b'c', b'O')
 nel[1:10:2]  = "a":(<class 'ValueError'>, ValueError('attempt to assign sequence of size 1 to extended slice of size 2',))
 (b'a', b'b', b'c', b'O')
-nel[1:1:-1]  = "a":(<class 'ValueError'>, ValueError('attempt to assign sequence of size greater then 0 to extended slice',))
+nel[1:1:-1]  = "a":(<class 'ValueError'>, ValueError('attempt to assign sequence of size greater than 0 to extended slice',))
 (b'a', b'b', b'c', b'O')
 nel[:] = FailingIterNextN(2):(<class 'NotImplementedError'>, NotImplementedError('next N',))
 (b'a', b'b', b'c', b'O')
@@ -1233,8 +1233,8 @@ vim.buffers[100000000]:(<class 'KeyError'>, KeyError(100000000,))
 >>> Testing NumberToLong using vim.buffers[%s]
 vim.buffers[[]]:(<class 'TypeError'>, TypeError('expected int() or something supporting coercing to int(), but got list',))
 vim.buffers[None]:(<class 'TypeError'>, TypeError('expected int() or something supporting coercing to int(), but got NoneType',))
-vim.buffers[-1]:(<class 'ValueError'>, ValueError('number must be greater then zero',))
-vim.buffers[0]:(<class 'ValueError'>, ValueError('number must be greater then zero',))
+vim.buffers[-1]:(<class 'ValueError'>, ValueError('number must be greater than zero',))
+vim.buffers[0]:(<class 'ValueError'>, ValueError('number must be greater than zero',))
 <<< Finished
 > Current
 >> CurrentGetattr

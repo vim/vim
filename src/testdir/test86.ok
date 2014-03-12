@@ -882,11 +882,11 @@ ll[1:100] = "abcJ":error:('list is locked',)
 l[:] = FailingIter():NotImplementedError:('iter',)
 l[:] = FailingIterNext():NotImplementedError:('next',)
 <<< Finished
-nel[1:10:2]  = "abcK":ValueError:('attempt to assign sequence of size greater then 2 to extended slice',)
+nel[1:10:2]  = "abcK":ValueError:('attempt to assign sequence of size greater than 2 to extended slice',)
 ('a', 'b', 'c', 'O')
 nel[1:10:2]  = "a":ValueError:('attempt to assign sequence of size 1 to extended slice of size 2',)
 ('a', 'b', 'c', 'O')
-nel[1:1:-1]  = "a":ValueError:('attempt to assign sequence of size greater then 0 to extended slice',)
+nel[1:1:-1]  = "a":ValueError:('attempt to assign sequence of size greater than 0 to extended slice',)
 ('a', 'b', 'c', 'O')
 nel[:] = FailingIterNextN(2):NotImplementedError:('next N',)
 ('a', 'b', 'c', 'O')
@@ -1233,8 +1233,8 @@ vim.buffers[100000000]:KeyError:(100000000,)
 >>> Testing NumberToLong using vim.buffers[%s]
 vim.buffers[[]]:TypeError:('expected int(), long() or something supporting coercing to long(), but got list',)
 vim.buffers[None]:TypeError:('expected int(), long() or something supporting coercing to long(), but got NoneType',)
-vim.buffers[-1]:ValueError:('number must be greater then zero',)
-vim.buffers[0]:ValueError:('number must be greater then zero',)
+vim.buffers[-1]:ValueError:('number must be greater than zero',)
+vim.buffers[0]:ValueError:('number must be greater than zero',)
 <<< Finished
 > Current
 >> CurrentGetattr

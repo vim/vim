@@ -675,7 +675,7 @@ except ImportError:
 # Check GCing iterator that was not fully exhausted
 i = iter(vim.buffers)
 cb.append('i:' + str(next(i)))
-# and also check creating more then one iterator at a time
+# and also check creating more than one iterator at a time
 i2 = iter(vim.buffers)
 cb.append('i2:' + str(next(i2)))
 cb.append('i:' + str(next(i)))
