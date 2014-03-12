@@ -7559,7 +7559,7 @@ vim_tempname(extra_char)
     p = (char_u *)tempnam("tmp:", (char *)itmp);
     if (p != NULL)
     {
-	/* VMS will use '.LOG' if we don't explicitly specify an extension,
+	/* VMS will use '.LIS' if we don't explicitly specify an extension,
 	 * and VIM will then be unable to find the file later */
 	STRCPY(itmp, p);
 	STRCAT(itmp, ".txt");

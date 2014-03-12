@@ -296,6 +296,18 @@ vms_sys(char *cmd, char *out, char *inp)
 }
 
 /*
+ * Convert string to lowercase - most often filename
+ */
+    char *
+vms_tolower( char *name )
+{
+    int i,nlen = strlen(name);
+    for (i = 0; i < nlen; i++)
+	name[i] = TOLOWER_ASC(name[i]);
+    return name;
+}
+
+/*
  * Convert VMS system() or lib$spawn() return code to Unix-like exit value.
  */
     int
@@ -361,13 +373,12 @@ vms_read(char *inbuf, size_t nbytes)
 vms_wproc(char *name, int val)
 {
     int i;
-    int nlen;
     static int vms_match_alloced = 0;
 
-    if (val != DECC$K_FILE) /* Directories and foreign non VMS files are not
-			       counting  */
+    if (val == DECC$K_FOREIGN ) /* foreign non VMS files are not counting */
 	return 1;
 
+    /* accept all DECC$K_FILE and DECC$K_DIRECTORY */
     if (vms_match_num == 0) {
 	/* first time through, setup some things */
 	if (NULL == vms_fmatch) {
@@ -383,12 +394,9 @@ vms_wproc(char *name, int val)
 	}
     }
 
+    /* make matches look uniform */
     vms_remove_version(name);
-
-    /* convert filename to lowercase */
-    nlen = strlen(name);
-    for (i = 0; i < nlen; i++)
-	name[i] = TOLOWER_ASC(name[i]);
+    name=vms_tolower(name);
 
     /* if name already exists, don't add it */
     for (i = 0; i<vms_match_num; i++) {
@@ -428,6 +436,7 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
 {
     int		i, cnt = 0;
     char_u	buf[MAXPATHL];
+    char       *result;
     int		dir;
     int files_alloced, files_free;
 
@@ -449,8 +458,13 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
 	    STRCPY(buf,pat[i]);
 
 	vms_match_num = 0; /* reset collection counter */
-	cnt = decc$to_vms(decc$translate_vms(vms_fixfilename(buf)), vms_wproc, 1, 0);
-						      /* allow wild, no dir */
+	result = decc$translate_vms(vms_fixfilename(buf));
+	if ( (int) result == 0 || (int) result == -1  ) {
+	    cnt = 0;
+	}
+        else {
+	    cnt = decc$to_vms(result, vms_wproc, 1 /*allow wild*/ , (flags & EW_DIR ? 0:1 ) /*allow directory*/) ;
+	}
 	if (cnt > 0)
 	    cnt = vms_match_num;
 
@@ -497,10 +511,18 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
 mch_expandpath(garray_T *gap, char_u *path, int flags)
 {
     int		i,cnt = 0;
-    vms_match_num = 0;
+    char       *result;
 
-    cnt = decc$to_vms(decc$translate_vms(vms_fixfilename(path)), vms_wproc, 1, 0);
-						      /* allow wild, no dir */
+    vms_match_num = 0;
+    /* the result from the decc$translate_vms needs to be handled */
+    /* otherwise it might create ACCVIO error in decc$to_vms      */
+    result = decc$translate_vms(vms_fixfilename(path));
+    if ( (int) result == 0 || (int) result == -1  ) {
+        cnt = 0;
+    }
+    else {
+        cnt = decc$to_vms(result, vms_wproc, 1 /*allow_wild*/, (flags & EW_DIR ? 0:1 ) /*allow directory*/);
+    }
     if (cnt > 0)
 	cnt = vms_match_num;
     for (i = 0; i < cnt; i++)
@@ -521,6 +543,7 @@ vms_unix_mixed_filespec(char *in, char *out)
     char *end_of_dir;
     char ch;
     int len;
+    char *out_str=out;
 
     /* copy vms filename portion up to last colon
      * (node and/or disk)
@@ -601,7 +624,6 @@ vms_unix_mixed_filespec(char *in, char *out)
     if (end_of_dir != NULL) /* Terminate directory portion */
 	*end_of_dir = ']';
 }
-
 
 /*
  * for decc$to_vms in vms_fixfilename
@@ -710,26 +732,33 @@ RealWaitForChar(fd, msec, check_for_gpm)
     struct _generic_64 time_diff;
     struct _generic_64 time_out;
     unsigned int convert_operation = LIB$K_DELTA_SECONDS_F;
-    float sec = (float) msec / 1000;
+    float sec =(float) msec/1000;
 
     /* make sure the iochan is set */
     if (!iochan)
 	get_tty();
 
-    if (msec > 0) {
+    if (sec > 0) {
         /* time-out specified; convert it to absolute time */
+	/* sec>0 requirement of lib$cvtf_to_internal_time()*/
 
         /* get current time (number of 100ns ticks since the VMS Epoch) */
         status = sys$gettim(&time_curr);
         if (status != SS$_NORMAL)
             return 0; /* error */
-
         /* construct the delta time */
-        status = lib$cvtf_to_internal_time(
+#if __G_FLOAT==0
+# ifndef VAX
+	/* IEEE is default on IA64, but can be used on Alpha too - but not on VAX */
+        status = lib$cvts_to_internal_time(
                 &convert_operation, &sec, &time_diff);
+# endif
+#else   /* default on Alpha and VAX  */
+        status = lib$cvtf_to_internal_time(
+		&convert_operation, &sec, &time_diff);
+#endif
         if (status != LIB$_NORMAL)
             return 0; /* error */
-
         /* add them up */
         status = lib$add_times(
                 &time_curr,

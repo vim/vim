@@ -2965,7 +2965,26 @@ executable_file(name)
 
     if (stat((char *)name, &st))
 	return 0;
+#ifdef VMS
+    /* Like on Unix system file can have executable rights but not necessarily
+     * be an executable, but on Unix is not a default for an ordianry file to
+     * have an executable flag - on VMS it is in most cases.
+     * Therefore, this check does not have any sense - let keep us to the
+     * conventions instead:
+     * *.COM and *.EXE files are the executables - the rest are not. This is
+     * not ideal but better then it was.
+     */
+    int vms_executable = 0;
+    if (S_ISREG(st.st_mode) && mch_access((char *)name, X_OK) == 0)
+    {
+	if (strstr(vms_tolower((char*)name),".exe") != NULL
+		|| strstr(vms_tolower((char*)name),".com")!= NULL)
+	    vms_executable = 1;
+    }
+    return vms_executable;
+#else
     return S_ISREG(st.st_mode) && mch_access((char *)name, X_OK) == 0;
+#endif
 }
 
 /*
@@ -2983,7 +3002,9 @@ mch_can_exe(name)
     /* If it's an absolute or relative path don't need to use $PATH. */
     if (mch_isFullName(name) || (name[0] == '.' && (name[1] == '/'
 				      || (name[1] == '.' && name[2] == '/'))))
+    {
 	return executable_file(name);
+    }
 
     p = (char_u *)getenv("PATH");
     if (p == NULL || *p == NUL)

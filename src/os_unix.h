@@ -302,7 +302,7 @@ typedef struct dsc$descriptor   DESC;
 #  define USR_VIMRC_FILE2	"$HOME/vimfiles/vimrc"
 # else
 #  ifdef VMS
-#   define USR_VIMRC_FILE2	"sys$login:vimfiles:vimrc"
+#   define USR_VIMRC_FILE2	"sys$login:vimfiles/vimrc"
 #  else
 #    define USR_VIMRC_FILE2	"~/.vim/vimrc"
 #  endif
@@ -329,7 +329,7 @@ typedef struct dsc$descriptor   DESC;
 #  define USR_GVIMRC_FILE2	"$HOME/vimfiles/gvimrc"
 # else
 #  ifdef VMS
-#   define USR_GVIMRC_FILE2	"sys$login:vimfiles:gvimrc"
+#   define USR_GVIMRC_FILE2	"sys$login:vimfiles/gvimrc"
 #  else
 #   define USR_GVIMRC_FILE2	"~/.vim/gvimrc"
 #  endif

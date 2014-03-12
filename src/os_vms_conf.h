@@ -166,8 +166,6 @@
 #undef  HAVE_SYS_TIME_H
 #undef  HAVE_LOCALE_H
 #define BROKEN_LOCALE
-#undef  HAVE_ICONV_H
-#undef  HAVE_ICONV
 #undef  DYNAMIC_ICONV
 #undef	HAVE_STRFTIME
 #else
@@ -177,10 +175,16 @@
 #define HAVE_SYS_TIME_H
 #define HAVE_LOCALE_H
 #define BROKEN_LOCALE
-#undef  HAVE_ICONV_H
-#undef  HAVE_ICONV
 #undef  DYNAMIC_ICONV
 #define	HAVE_STRFTIME
+#endif
+
+#if defined(USE_ICONV)
+#define HAVE_ICONV_H
+#define HAVE_ICONV
+#else
+#undef HAVE_ICONV_H
+#undef HAVE_ICONV
 #endif
 
 /* GUI support defines */

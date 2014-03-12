@@ -790,9 +790,20 @@ u_get_undo_file_name(buf_ffname, reading)
 	    if (undo_file_name == NULL)
 		break;
 	    p = gettail(undo_file_name);
+#ifdef VMS
+	    /* VMS can not handle more than one dot in the filenames
+	     * use "dir/name" -> "dir/_un_name" - add _un_
+	     * at the beginning to keep the extension */
+	    mch_memmove(p + 4,  p, STRLEN(p) + 1);
+	    mch_memmove(p, "_un_", 4);
+
+#else
+	    /* Use same directory as the ffname,
+	     * "dir/name" -> "dir/.name.un~" */
 	    mch_memmove(p + 1, p, STRLEN(p) + 1);
 	    *p = '.';
 	    STRCAT(p, ".un~");
+#endif
 	}
 	else
 	{

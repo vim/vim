@@ -764,6 +764,22 @@ GNU_TOOLS.ZIP package downloadable from http://www.polarhome.com/vim/
 
 9. VMS related changes					*vms-changes*
 
+Version 7.4 
+- Undo: VMS can not handle more than one dot in the filenames use "dir/name" -> "dir/_un_name" 
+  add _un_ at the beginning to keep the extension
+- correct swap file name wildcard handling
+- handle iconv usage correctly
+- do not optimize on vax - otherwise it hangs compiling crypto files
+- fileio.c fix the comment
+- correct RealWaitForChar 
+- after 7.4-119 use different functions lib$cvtf_to_internal_time because Alpha and VAX have
+  G_FLOAT but IA64 uses IEEE float otherwise Vim crashes
+- guard agains crashes that are caused by mixed filenames
+- [TESTDIR]make_vms.mms changed to see the output files
+- Improve tests, update known issues
+- minor compiler warnings fixed
+- CTAGS 5.8 +regex included
+
 Version 7.3
 - CTAGS 5.8 included
 - VMS compile warnings fixed - floating-point overflow warning corrected on VAX

@@ -105,7 +105,11 @@ u:.w >>test.out
 u:.w >>test.out
 :"
 :" Rename the undo file so that it gets cleaned up.
-:call rename(".Xtestfile.un~", "Xtestundo")
+:if has("vms")
+: call rename("_un_Xtestfile", "Xtestundo")
+:else
+: call rename(".Xtestfile.un~", "Xtestundo")
+:endif
 :qa!
 ENDTEST
 
