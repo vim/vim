@@ -10381,7 +10381,7 @@ makeopens(fd, dirnow)
     }
 
     /* the global argument list */
-    if (ses_arglist(fd, "args", &global_alist.al_ga,
+    if (ses_arglist(fd, "argglobal", &global_alist.al_ga,
 			    !(ssop_flags & SSOP_CURDIR), &ssop_flags) == FAIL)
 	return FAIL;
 
@@ -10955,9 +10955,9 @@ ses_arglist(fd, cmd, gap, fullname, flagp)
     char_u	*buf = NULL;
     char_u	*s;
 
-    if (gap->ga_len == 0)
-	return put_line(fd, "silent! argdel *");
-    if (fputs(cmd, fd) < 0)
+    if (fputs(cmd, fd) < 0 || put_eol(fd) == FAIL)
+	return FAIL;
+    if (put_line(fd, "silent! argdel *") == FAIL)
 	return FAIL;
     for (i = 0; i < gap->ga_len; ++i)
     {
@@ -10974,7 +10974,9 @@ ses_arglist(fd, cmd, gap, fullname, flagp)
 		    s = buf;
 		}
 	    }
-	    if (fputs(" ", fd) < 0 || ses_put_fname(fd, s, flagp) == FAIL)
+	    if (fputs("argadd ", fd) < 0
+		    || ses_put_fname(fd, s, flagp) == FAIL
+		    || put_eol(fd) == FAIL)
 	    {
 		vim_free(buf);
 		return FAIL;
@@ -10982,7 +10984,7 @@ ses_arglist(fd, cmd, gap, fullname, flagp)
 	    vim_free(buf);
 	}
     }
-    return put_eol(fd);
+    return OK;
 }
 
 /*
