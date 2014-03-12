@@ -61,7 +61,7 @@ clean:
 test1.out: test1.in
 	-rm -rf $*.failed $(RM_ON_RUN) $(RM_ON_START) wrongtermsize
 	$(RUN_VIM) $*.in
-	@/bin/sh -c "if test -e wrongtermsize; \
+	@/bin/sh -c "if test -f wrongtermsize; \
 		then echo; \
 		echo test1 FAILED - terminal size must be 80x24 or larger; \
 		echo; exit 1; \
