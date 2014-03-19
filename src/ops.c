@@ -2646,7 +2646,15 @@ op_insert(oap, count1)
 	if (oap->start.lnum == curbuf->b_op_start_orig.lnum && !bd.is_MAX)
 	{
 	    if (oap->op_type == OP_INSERT
-		    && oap->start.col != curbuf->b_op_start_orig.col)
+		    && oap->start.col
+#ifdef FEAT_VIRTUALEDIT
+			    + oap->start.coladd
+#endif
+			!= curbuf->b_op_start_orig.col
+#ifdef FEAT_VIRTUALEDIT
+			    + curbuf->b_op_start_orig.coladd
+#endif
+			)
 	    {
 		oap->start.col = curbuf->b_op_start_orig.col;
 		pre_textlen -= getviscol2(oap->start.col, oap->start.coladd)
@@ -2654,7 +2662,15 @@ op_insert(oap, count1)
 		oap->start_vcol = getviscol2(oap->start.col, oap->start.coladd);
 	    }
 	    else if (oap->op_type == OP_APPEND
-		    && oap->end.col >= curbuf->b_op_start_orig.col)
+		      && oap->end.col
+#ifdef FEAT_VIRTUALEDIT
+			    + oap->end.coladd
+#endif
+			>= curbuf->b_op_start_orig.col
+#ifdef FEAT_VIRTUALEDIT
+			    + curbuf->b_op_start_orig.coladd
+#endif
+			)
 	    {
 		oap->start.col = curbuf->b_op_start_orig.col;
 		/* reset pre_textlen to the value of OP_INSERT */
