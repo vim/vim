@@ -3078,7 +3078,7 @@ logfont2name(LOGFONT lf)
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
 	int	len;
-	acp_to_enc(lf.lfFaceName, strlen(lf.lfFaceName),
+	acp_to_enc(lf.lfFaceName, (int)strlen(lf.lfFaceName),
 						(char_u **)&font_name, &len);
     }
 #endif

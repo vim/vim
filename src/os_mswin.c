@@ -2884,7 +2884,7 @@ get_logfont(
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
 	int	len;
-	enc_to_acp(name, strlen(name), &acpname, &len);
+	enc_to_acp(name, (int)strlen(name), &acpname, &len);
 	name = acpname;
     }
 #endif
