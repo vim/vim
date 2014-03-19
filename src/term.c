@@ -3379,7 +3379,8 @@ may_req_ambiguous_char_width()
 	 out_str(buf);
 	 out_str(T_U7);
 	 u7_status = U7_SENT;
-	 term_windgoto(0, 0);
+	 out_flush();
+	 term_windgoto(1, 0);
 	 out_str((char_u *)"  ");
 	 term_windgoto(0, 0);
 	 /* check for the characters now, otherwise they might be eaten by
@@ -4185,24 +4186,38 @@ check_termcode(max_offset, buf, bufsize, buflen)
 			    || (tp[0] == CSI && len >= 2))
 			&& (VIM_ISDIGIT(*p) || *p == '>' || *p == '?'))
 	    {
+#ifdef FEAT_MBYTE
+		int col;
+		int row_char;
+#endif
 		j = 0;
 		extra = 0;
 		for (i = 2 + (tp[0] != CSI); i < len
 				&& !(tp[i] >= '{' && tp[i] <= '~')
 				&& !ASCII_ISALPHA(tp[i]); ++i)
 		    if (tp[i] == ';' && ++j == 1)
+		    {
 			extra = i + 1;
+#ifdef FEAT_MBYTE
+			row_char = tp[i - 1];
+#endif
+		    }
 		if (i == len)
 		{
 		    LOG_TR("Not enough characters for CRV");
 		    return -1;
 		}
-
 #ifdef FEAT_MBYTE
-		/* Eat it when it has 2 arguments and ends in 'R'. Ignore it
-		 * when u7_status is not "sent", <S-F3> sends something
-		 * similar. */
-		if (j == 1 && tp[i] == 'R' && u7_status == U7_SENT)
+		if (extra > 0)
+		    col = atoi((char *)tp + extra);
+		else
+		    col = 0;
+
+		/* Eat it when it has 2 arguments and ends in 'R'. Also when
+		 * u7_status is not "sent", it may be from a previous Vim that
+		 * just exited.  But not for <S-F3>, it sends something
+		 * similar, check for row and column to make sense. */
+		if (j == 1 && tp[i] == 'R' && row_char == '2' && col >= 2)
 		{
 		    char *aw = NULL;
 
@@ -4211,18 +4226,16 @@ check_termcode(max_offset, buf, bufsize, buflen)
 # ifdef FEAT_AUTOCMD
 		    did_cursorhold = TRUE;
 # endif
-		    if (extra > 0)
-			extra = atoi((char *)tp + extra);
-		    if (extra == 2)
+		    if (col == 2)
 			aw = "single";
-		    else if (extra == 3)
+		    else if (col == 3)
 			aw = "double";
 		    if (aw != NULL && STRCMP(aw, p_ambw) != 0)
 		    {
 			/* Setting the option causes a screen redraw. Do that
 			 * right away if possible, keeping any messages. */
 			set_option_value((char_u *)"ambw", 0L, (char_u *)aw, 0);
-#ifdef DEBUG_TERMRESPONSE
+# ifdef DEBUG_TERMRESPONSE
 			{
 			    char buf[100];
 			    int  r = redraw_asap(CLEAR);
@@ -4231,9 +4244,9 @@ check_termcode(max_offset, buf, bufsize, buflen)
 									   r);
 			    log_tr(buf);
 			}
-#else
+# else
 			redraw_asap(CLEAR);
-#endif
+# endif
 		    }
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
