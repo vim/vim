@@ -1012,7 +1012,18 @@ do_bang(addr_count, eap, forceit, do_in, do_out)
 
     if (bangredo)	    /* put cmd in redo buffer for ! command */
     {
-	AppendToRedobuffLit(prevcmd, -1);
+	/* If % or # appears in the command, it must have been escaped.
+	 * Reescape them, so that redoing them does not substitute them by the
+	 * buffername. */
+	char_u *cmd = vim_strsave_escaped(prevcmd, (char_u *)"%#");
+
+	if (cmd != NULL)
+	{
+	    AppendToRedobuffLit(cmd, -1);
+	    vim_free(cmd);
+	}
+	else
+	    AppendToRedobuffLit(prevcmd, -1);
 	AppendToRedobuff((char_u *)"\n");
 	bangredo = FALSE;
     }
