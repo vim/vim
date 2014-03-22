@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Euphoria 4.0.5 (http://www.openeuphoria.org/)
 " Maintainer:	Shian Lee  
-" Last Change:	2014 Feb 24 (for Vim 7.4)
+" Last Change:	2014 Feb 26 (for Vim 7.4)
 " Remark:       Euphoria has two syntax files, euphoria3.vim and euphoria4.vim; 
 "               For details see :help ft-euphoria-syntax
 
@@ -73,7 +73,7 @@ syn keyword euphoria4Library 	bytes_to_int calc_hash calc_primes call_back
 syn keyword euphoria4Library 	canon2win canonical canonical_path ceil
 syn keyword euphoria4Library 	central_moment chance char_test chdir
 syn keyword euphoria4Library 	check_all_blocks check_break check_free_list
-syn keyword euphoria4Library 	checksum clear clear_directory close cmd_parse
+syn keyword euphoria4Library 	checksum clear clear_directory cmd_parse
 syn keyword euphoria4Library 	colors_to_attr columnize combine connect
 syn keyword euphoria4Library 	console_colors copy copy_file cosh count crash
 syn keyword euphoria4Library 	crash_file crash_message crash_routine create
@@ -174,7 +174,7 @@ syn keyword euphoria4Library 	writef writefln years_day
 
 " Library Identifiers (Type) - grep from $EUDIR/include/*:
 syn keyword euphoria4Type	ascii_string boolean bordered_address byte_range
-syn keyword euphoria4Type	case_flagset_type color cstring datetime
+syn keyword euphoria4Type	case_flagset_type color cstring 
 syn keyword euphoria4Type	file_number file_position graphics_point
 syn keyword euphoria4Type	integer_array lcid lock_type machine_addr map 
 syn keyword euphoria4Type	mixture number_array option_spec
@@ -201,8 +201,9 @@ syn match   euphoria4Operator	"[{}]"
 " Character constant:
 syn region  euphoria4Char	start=/'/ skip=/\\'\|\\\\/ end=/'/ oneline
 
-" Single and multiline string constant: 
-syn region  euphoria4String	start=/"\|b"\|x"/ skip=/\\"\|\\\\/ end=/"/ oneline
+" String constant (""" must be *after* "): 
+syn region  euphoria4String	start=/"/ skip=/\\"\|\\\\/ end=/"/ oneline 
+syn region  euphoria4String	start=/b"\|x"/ end=/"/ 
 syn region  euphoria4String	start=/`/ end=/`/
 syn region  euphoria4String	start=/"""/ end=/"""/
 

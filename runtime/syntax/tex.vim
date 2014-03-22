@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Charles E. Campbell <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Jun 24, 2013
-" Version:	79
+" Last Change:	Mar 20, 2014
+" Version:	81
 " URL:		http://www.drchip.org/astronaut/vim/index.html#SYNTAX_TEX
 "
 " Notes: {{{1
@@ -28,6 +28,16 @@
 "    lexical error-checking will be done.
 "
 "    ie. let g:tex_no_error=1
+"
+" 6. Please see  :help latex-syntax  for information on
+"      syntax folding           :help tex-folding
+"      spell checking           :help tex-nospell
+"      commands and mathzones   :help tex-runon
+"      new command highlighting :help tex-morecommands
+"      error highlighting       :help tex-error
+"      new math groups          :help tex-math
+"      new styles               :help tex-style
+"      using conceal mode       :help tex-conceal
 
 " Version Clears: {{{1
 " For version 5.x: Clear all syntax items
@@ -139,7 +149,7 @@ else
  syn cluster texMatchGroup	contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcher,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,texInputFile,texOption
  syn cluster texStyleGroup	contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,texInputFile,texOption,texStyleStatement,texStyleMatcher
 endif
-syn cluster texPreambleMatchGroup	contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcher,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,texInputFile,texOption
+syn cluster texPreambleMatchGroup	contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcher,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,texInputFile,texOption,texMathZoneZ
 syn cluster texRefGroup		contains=texMatcher,texComment,texDelimiter
 if !exists("tex_no_math")
  syn cluster texMathZones	contains=texMathZoneV,texMathZoneW,texMathZoneX,texMathZoneY,texMathZoneZ
@@ -1144,7 +1154,7 @@ if has("conceal") && &enc == 'utf-8'
   else
    fun! s:Accents(chr,...)
      let i= 1
-     for accent in ["`","\\'","^",'"','\~','\.',"c","H","k","r","u","v"]
+     for accent in ["`","\\'","^",'"','\~','\.','=',"c","H","k","r","u","v"]
       if i > a:0
        break
       endif
@@ -1160,46 +1170,46 @@ if has("conceal") && &enc == 'utf-8'
       let i= i + 1
      endfor
    endfun
-   "                  \`  \'  \^  \"  \~  \.  \c  \H  \k  \r  \u  \v
-   call s:Accents('a','à','á','â','ä','ã','ȧ',' ',' ','ą','å','ă','ă')
-   call s:Accents('A','À','Á','Â','Ä','Ã','Ȧ',' ',' ','Ą','Å','Ă','Ă')
-   call s:Accents('c',' ','ć','ĉ',' ',' ','ċ','ç',' ',' ',' ',' ','č')
-   call s:Accents('C',' ','Ć','Ĉ',' ',' ','Ċ','Ç',' ',' ',' ',' ','Č')
-   call s:Accents('d',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','ď')
-   call s:Accents('D',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','Ď')
-   call s:Accents('e','è','é','ê','ë','ẽ','ė','ȩ',' ','ę',' ','ĕ','ě')
-   call s:Accents('E','È','É','Ê','Ë','Ẽ','Ė','Ȩ',' ','Ę',' ','Ĕ','Ě')
-   call s:Accents('g',' ','ǵ','ĝ',' ',' ','ġ','ģ',' ',' ',' ','ğ',' ')
-   call s:Accents('G',' ','Ǵ','Ĝ',' ',' ','Ġ','Ģ',' ',' ',' ','Ğ',' ')
-   call s:Accents('h',' ',' ','ĥ',' ',' ',' ',' ',' ',' ',' ',' ','ȟ')
-   call s:Accents('H',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','Ȟ')
-   call s:Accents('i','ì','í','î','ï','ĩ','į',' ',' ',' ',' ','ĭ',' ')
-   call s:Accents('I','Ì','Í','Î','Ï','Ĩ','İ',' ',' ',' ',' ','Ĭ',' ')
-   call s:Accents('J',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','ǰ')
-   call s:Accents('k',' ',' ',' ',' ',' ',' ','ķ',' ',' ',' ',' ',' ')
-   call s:Accents('K',' ',' ',' ',' ',' ',' ','Ķ',' ',' ',' ',' ',' ')
-   call s:Accents('l',' ','ĺ','ľ',' ',' ',' ','ļ',' ',' ',' ',' ','ľ')
-   call s:Accents('L',' ','Ĺ','Ľ',' ',' ',' ','Ļ',' ',' ',' ',' ','Ľ')
-   call s:Accents('n',' ','ń',' ',' ','ñ',' ','ņ',' ',' ',' ',' ','ň')
-   call s:Accents('N',' ','Ń',' ',' ','Ñ',' ','Ņ',' ',' ',' ',' ','Ň')
-   call s:Accents('o','ò','ó','ô','ö','õ','ȯ',' ','ő','ǫ',' ','ŏ',' ')
-   call s:Accents('O','Ò','Ó','Ô','Ö','Õ','Ȯ',' ','Ő','Ǫ',' ','Ŏ',' ')
-   call s:Accents('r',' ','ŕ',' ',' ',' ',' ','ŗ',' ',' ',' ',' ','ř')
-   call s:Accents('R',' ','Ŕ',' ',' ',' ',' ','Ŗ',' ',' ',' ',' ','Ř')
-   call s:Accents('s',' ','ś','ŝ',' ',' ',' ','ş',' ','ȿ',' ',' ','š')
-   call s:Accents('S',' ','Ś','Ŝ',' ',' ',' ','Ş',' ',' ',' ',' ','Š')
-   call s:Accents('t',' ',' ',' ',' ',' ',' ','ţ',' ',' ',' ',' ','ť')
-   call s:Accents('T',' ',' ',' ',' ',' ',' ','Ţ',' ',' ',' ',' ','Ť')
-   call s:Accents('u','ù','ú','û','ü','ũ',' ',' ','ű','ų','ů','ŭ','ǔ')
-   call s:Accents('U','Ù','Ú','Û','Ü','Ũ',' ',' ','Ű','Ų','Ů','Ŭ','Ǔ')
-   call s:Accents('w',' ',' ','ŵ',' ',' ',' ',' ',' ',' ',' ',' ',' ')
-   call s:Accents('W',' ',' ','Ŵ',' ',' ',' ',' ',' ',' ',' ',' ',' ')
-   call s:Accents('y','ỳ','ý','ŷ','ÿ','ỹ',' ',' ',' ',' ',' ',' ',' ')
-   call s:Accents('Y','Ỳ','Ý','Ŷ','Ÿ','Ỹ',' ',' ',' ',' ',' ',' ',' ')
-   call s:Accents('z',' ','ź',' ',' ',' ','ż',' ',' ',' ',' ',' ','ž')
-   call s:Accents('Z',' ','Ź',' ',' ',' ','Ż',' ',' ',' ',' ',' ','Ž')
-   call s:Accents('\\i','ì','í','î','ï','ĩ','į',' ',' ',' ',' ','ĭ',' ')
-   "                  \`  \'  \^  \"  \~  \.  \c  \H  \k  \r  \u  \v
+   "                    \`  \'  \^  \"  \~  \.  \=  \c  \H  \k  \r  \u  \v
+   call   s:Accents('a','à','á','â','ä','ã','ȧ','ā',' ',' ','ą','å','ă','ǎ')
+   call   s:Accents('A','À','Á','Â','Ä','Ã','Ȧ','Ā',' ',' ','Ą','Å','Ă','Ǎ')
+   call   s:Accents('c',' ','ć','ĉ',' ',' ','ċ',' ','ç',' ',' ',' ',' ','č')
+   call   s:Accents('C',' ','Ć','Ĉ',' ',' ','Ċ',' ','Ç',' ',' ',' ',' ','Č')
+   call   s:Accents('d',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','ď')
+   call   s:Accents('D',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','Ď')
+   call   s:Accents('e','è','é','ê','ë','ẽ','ė','ē','ȩ',' ','ę',' ','ĕ','ě')
+   call   s:Accents('E','È','É','Ê','Ë','Ẽ','Ė','Ē','Ȩ',' ','Ę',' ','Ĕ','Ě')
+   call   s:Accents('g',' ','ǵ','ĝ',' ',' ','ġ',' ','ģ',' ',' ',' ','ğ','ǧ')
+   call   s:Accents('G',' ','Ǵ','Ĝ',' ',' ','Ġ',' ','Ģ',' ',' ',' ','Ğ','Ǧ')
+   call   s:Accents('h',' ',' ','ĥ',' ',' ',' ',' ',' ',' ',' ',' ',' ','ȟ')
+   call   s:Accents('H',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','Ȟ')
+   call   s:Accents('i','ì','í','î','ï','ĩ','į','ī',' ',' ','į',' ','ĭ','ǐ')
+   call   s:Accents('I','Ì','Í','Î','Ï','Ĩ','İ','Ī',' ',' ','Į',' ','Ĭ','Ǐ')
+   call   s:Accents('J',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','ǰ')
+   call   s:Accents('k',' ',' ',' ',' ',' ',' ',' ','ķ',' ',' ',' ',' ','ǩ')
+   call   s:Accents('K',' ',' ',' ',' ',' ',' ',' ','Ķ',' ',' ',' ',' ','Ǩ')
+   call   s:Accents('l',' ','ĺ','ľ',' ',' ',' ',' ','ļ',' ',' ',' ',' ','ľ')
+   call   s:Accents('L',' ','Ĺ','Ľ',' ',' ',' ',' ','Ļ',' ',' ',' ',' ','Ľ')
+   call   s:Accents('n',' ','ń',' ',' ','ñ',' ',' ','ņ',' ',' ',' ',' ','ň')
+   call   s:Accents('N',' ','Ń',' ',' ','Ñ',' ',' ','Ņ',' ',' ',' ',' ','Ň')
+   call   s:Accents('o','ò','ó','ô','ö','õ','ȯ','ō',' ','ő','ǫ',' ','ŏ','ǒ')
+   call   s:Accents('O','Ò','Ó','Ô','Ö','Õ','Ȯ','Ō',' ','Ő','Ǫ',' ','Ŏ','Ǒ')
+   call   s:Accents('r',' ','ŕ',' ',' ',' ',' ',' ','ŗ',' ',' ',' ',' ','ř')
+   call   s:Accents('R',' ','Ŕ',' ',' ',' ',' ',' ','Ŗ',' ',' ',' ',' ','Ř')
+   call   s:Accents('s',' ','ś','ŝ',' ',' ',' ',' ','ş',' ','ȿ',' ',' ','š')
+   call   s:Accents('S',' ','Ś','Ŝ',' ',' ',' ',' ','Ş',' ',' ',' ',' ','Š')
+   call   s:Accents('t',' ',' ',' ',' ',' ',' ',' ','ţ',' ',' ',' ',' ','ť')
+   call   s:Accents('T',' ',' ',' ',' ',' ',' ',' ','Ţ',' ',' ',' ',' ','Ť')
+   call   s:Accents('u','ù','ú','û','ü','ũ',' ','ū',' ','ű','ų','ů','ŭ','ǔ')
+   call   s:Accents('U','Ù','Ú','Û','Ü','Ũ',' ','Ū',' ','Ű','Ų','Ů','Ŭ','Ǔ')
+   call   s:Accents('w',' ',' ','ŵ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ')
+   call   s:Accents('W',' ',' ','Ŵ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ')
+   call   s:Accents('y','ỳ','ý','ŷ','ÿ','ỹ',' ',' ',' ',' ',' ',' ',' ',' ')
+   call   s:Accents('Y','Ỳ','Ý','Ŷ','Ÿ','Ỹ',' ',' ',' ',' ',' ',' ',' ',' ')
+   call   s:Accents('z',' ','ź',' ',' ',' ','ż',' ',' ',' ',' ',' ',' ','ž')
+   call   s:Accents('Z',' ','Ź',' ',' ',' ','Ż',' ',' ',' ',' ',' ',' ','Ž')
+   call s:Accents('\\i','ì','í','î','ï','ĩ','į',' ',' ',' ',' ',' ','ĭ',' ')
+   "                    \`  \'  \^  \"  \~  \.  \=  \c  \H  \k  \r  \u  \v
    delfun s:Accents
    syn match texAccent   '\\aa\>'	conceal cchar=å
    syn match texAccent   '\\AA\>'	conceal cchar=Å

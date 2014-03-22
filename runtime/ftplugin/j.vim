@@ -1,9 +1,10 @@
 " Vim filetype plugin
 " Language:	J
 " Maintainer:	David Bürgin <676c7473@gmail.com>
-" Last Change:	2013-10-06
+" URL:		https://github.com/glts/vim-j
+" Last Change:	2014-03-17
 
-if exists("b:did_ftplugin")
+if exists('b:did_ftplugin')
   finish
 endif
 let b:did_ftplugin = 1
@@ -15,4 +16,4 @@ setlocal formatoptions-=t
 setlocal shiftwidth=2 softtabstop=2 expandtab
 setlocal matchpairs=(:)
 
-let b:undo_ftplugin = "setl mps< et< sts< sw< fo< cms< com< isk<"
+let b:undo_ftplugin = 'setlocal matchpairs< expandtab< softtabstop< shiftwidth< formatoptions< commentstring< comments< iskeyword<'

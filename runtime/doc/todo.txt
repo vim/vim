@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2014 Mar 08
+*todo.txt*      For Vim version 7.4.  Last change: 2014 Mar 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -54,54 +54,37 @@ Regexp problems:
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
-Patch for VMS. (Zoltan Arpadffy, 2014 Mar 6)
-
-Euphoria syntax, Shian Lee, Feb 27
-
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
 
-Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
+It is possible to define a function with a colon in the name.
+"g:" is not recognized as it should.  (zyx, 2014 Mar 16)
+Do some plugins use names with a colon?  Disallow it, but ignore the error
+when an option is set?
 
-Can't build Vim with Perl when -Dusethreads is not specified for building
-perl, and building with --enable-perlinterp=dynamic.
-Patch by Yasuhiro Matsumoto, 2014 Feb 24.
+":lunmap" cannot be abbrevated to ":lu". (ZyX)
+
+Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
 Update for Clojure ftplugin. (Sung Pae).  Await discussion about formatting in
 ftplugins.
 
-Update for phpcomplete.vim. (Complex, 2014 Mar 1)
-
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
+Patch to add :noswapfile modifier. (Christian Brabandt, 2014 Mar 13)
+
+Patch to make ":sp {current-buffer-name}" not reload the buffer.
+(Christian Brabandt, 2013 Mar 13)
+
+Patch for quickfix window resizing.  Issue 199.  (Christian Brabandt)
+
 Using autoconf 2.69 gives a lot of warnings.
-
-Patch to allow for negative index in string. (LCD, 2014 Feb 13)
-Feb 14 with test. Or does this intentionally not work?
-
-Issue 197: ]P doesn't paste over Visual selection.  With patch from Christian
-Brabandt, Feb 6.  Issue 197.
-
-Make 'lispwords' global-local. (Sung Pae, 2014 Feb 16)
 
 Problem with 'spellsuggest' file, only works for some words.
 (Cesar Romani, 2013 Aug 20)  Depends on file name? (Aug 24)
 Additional remark by glts: the suggested words are marked bad?
 
-8   non-ASCII font names don't work.  Need to convert from 'encoding' and use
-    the wide functions. Patch by Ken Takata, 2013 Dec 22.
-    Update 2014 Jan 6.
-
 Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
-
-Problem with 'errorformat'.  Patch by Lcd, 2014 Feb 21. With test.
-
-Patch for the problem that a mapping where the second byte is 0x80 isn't
-handled correcly. (Nobuhiro Takasaki, 2014 Feb 11)
-Update 2014 Mar 8.
-
-Patch for mksession. (Nobuhiro Takasaki, 2014 Jan 31)
-Also fixes another problem (following email)
 
 Patch to use rubyarchhdrdir for Ruby 2.x. (James McCoy, 2014 Feb 24)
 
@@ -128,12 +111,21 @@ Patch by Gary Johnson, 2014 Mar 6.
 
 Issue 174: Detect Mason files.
 
+No error for missing endwhile. (ZyX, 2014 Mar 20)
+
+Patch to add v:progpath. (Viktor Kojouharov, 2014 Mar 15)
+
 Phpcomplete.vim update. (Complex, 2014 Jan 15)
 
 PHP syntax is extremely slow. (Anhad Jai Singh, 2014 Jan 19)
 
 Can we make ":unlet $VAR" use unsetenv() to delete the env var?
 What for systems that don't have unsetenv()?
+
+This does not give an error: (Andre Sihera, 2014 Mar 21)
+    vim -u NONE 1 2 3 -c 'bufdo if 1 | echo 1'
+This neither: (ZyX)
+    vim -u NONE 1 2 3 -c 'bufdo while 1 | echo 1'
 
 spec ftplugin: patch from Igor Gnatenko, 2014 Jan 26.
 Include if maintainers don't respond.
@@ -165,6 +157,9 @@ Patch to make test 100 work on MS-Windows. (Taro Muraoka, 2013 Dec 12)
 
 Patch to define macros for hardcoded values. (Elias Diem, 2013 Dec 14)
 
+Patch to add sortuniq(). (Cade Forester, 2014 Mar 19)
+Or add uniq() instead?
+
 Perl: support for Activestate perl 5.18: Issue 170.
 
 Several syntax file match "^\s*" which may get underlined if that's in the
@@ -174,6 +169,9 @@ Patch to fix temp directories for Windows, so that it works without tweaking.
 Issue 28.
 
 Go through more coverity reports.
+
+Patch to add ":undorecover", get as much text out of the undo file as
+possible. (Christian Brabandt, 2014 Mar 12)
 
 Include Haiku port? (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
 
@@ -190,7 +188,7 @@ With "$" in 'cpoptions' the popup menu isn't fully drawn. (Matti Niemenmaa,
 2013 Sep 5)
 
 Patch to add "ntab" item in 'listchars' to repeat first character. (Nathaniel
-Braun, pragm, 2013 Oct 13)  Again 2014 Mar 5.
+Braun, pragm, 2013 Oct 13)  A better solution 2014 Mar 5.
 
 Undo message is not always properly displayed.  Patch by Ken Takata, 2013 oct
 3.  Doesn't work properly according to Yukihiro Nakadaira.
@@ -2768,8 +2766,6 @@ Problems that will (probably) not be solved:
     input method called from GDK code.  Without Perl it doesn't crash.
 -   VMS: Vimdiff doesn't work with the VMS diff, because the output looks
     different.  This makes test 47 fail.  Install a Unix-compatible diff.
--   VMS v7.1 and older: Tests 21 and 32 fail.  From VMS v7.1-2 and newer Vim
-    does not have this behavior. (Zoltan Arpadffy)
 -   Win32 GUI: mouse wheel always scrolls rightmost window.  The events arrive
     in Vim as if the rightmost scrollbar was used.
 -   GTK with Gnome: Produces an error message when starting up:
@@ -4234,8 +4230,7 @@ Insert mode:
 7   Use Tabs for the indent of starting lines, pad with spaces for
     continuation lines.  Allows changing 'tabstop' without messing up the
     indents.
-    'keeptabs': when set don't change the tabs and spaces used for indent,
-    when the indent remains the same or increases.
+    Patch by Lech Lorens, 2010 Mar.  Update by James McCoy, 2014 Mar 15.
 
 
 Java:

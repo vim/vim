@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2014 Feb 11
+*eval.txt*	For Vim version 7.4.  Last change: 2014 Mar 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2815,7 +2815,7 @@ expand({expr} [, {nosuf} [, {list}]])				*expand()*
 			<afile>		autocmd file name
 			<abuf>		autocmd buffer number (as a String!)
 			<amatch>	autocmd matched name
-			<sfile>		sourced script file name
+			<sfile>		sourced script file or function name
 			<slnum>		sourced script file line number
 			<cword>		word under the cursor
 			<cWORD>		WORD under the cursor
@@ -6624,7 +6624,8 @@ See |:verbose-cmd| for more information.
 :fu[nction][!] {name}([arguments]) [range] [abort] [dict]
 			Define a new function by the name {name}.  The name
 			must be made of alphanumeric characters and '_', and
-			must start with a capital or "s:" (see above).
+			must start with a capital or "s:" (see above).  When
+			using a capital "g:" be prepended.
 
 			{name} can also be a |Dictionary| entry that is a
 			|Funcref|: >
@@ -7463,10 +7464,11 @@ This does NOT work: >
 		:execute "!ls " . shellescape(filename, 1)
 <
 			Note: The executed string may be any command-line, but
-			you cannot start or end a "while", "for" or "if"
-			command.  Thus this is illegal: >
+			you cannot start or end a "while" or "for" command.
+			Thus this is illegal: >
 		:execute 'while i > 5'
 		:execute 'echo "test" | break'
+		:endwhile
 <
 			It is allowed to have a "while" or "if" command
 			completely in the executed string: >

@@ -1,6 +1,6 @@
 " netrwPlugin.vim: Handles file transfer and remote directory listing across a network
 "            PLUGIN SECTION
-" Date:		Dec 31, 2013
+" Date:		Jan 22, 2014
 " Maintainer:	Charles E Campbell <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2013 Charles E. Campbell {{{1
@@ -20,7 +20,7 @@
 if &cp || exists("g:loaded_netrwPlugin")
  finish
 endif
-let g:loaded_netrwPlugin = "v150"
+let g:loaded_netrwPlugin = "v151"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** you need vim version 7.2 for this version of netrw"
@@ -43,6 +43,7 @@ set cpo&vim
 " Local Browsing Autocmds: {{{2
 augroup FileExplorer
  au!
+ au BufLeave *  if &ft != "netrw"|let w:netrw_prvfile= expand("%:p")|endif
  au BufEnter *	sil call s:LocalBrowse(expand("<amatch>"))
  au VimEnter *	sil call s:VimEnter(expand("<amatch>"))
  if has("win32") || has("win95") || has("win64") || has("win16")
@@ -66,11 +67,11 @@ augroup Network
 augroup END
 
 " Commands: :Nread, :Nwrite, :NetUserPass {{{2
-com! -count=1 -nargs=*	Nread		call netrw#NetrwSavePosn()<bar>call netrw#NetRead(<count>,<f-args>)<bar>call netrw#NetrwRestorePosn()
-com! -range=% -nargs=*	Nwrite		call netrw#NetrwSavePosn()<bar><line1>,<line2>call netrw#NetWrite(<f-args>)<bar>call netrw#NetrwRestorePosn()
+com! -count=1 -nargs=*	Nread		call netrw#SavePosn()<bar>call netrw#NetRead(<count>,<f-args>)<bar>call netrw#RestorePosn()
+com! -range=% -nargs=*	Nwrite		call netrw#SavePosn()<bar><line1>,<line2>call netrw#NetWrite(<f-args>)<bar>call netrw#RestorePosn()
 com! -nargs=*		NetUserPass	call NetUserPass(<f-args>)
-com! -nargs=*	        Nsource		call netrw#NetrwSavePosn()<bar>call netrw#NetSource(<f-args>)<bar>call netrw#NetrwRestorePosn()
-com! -nargs=?		Ntree		call netrw#NetrwSetTreetop(<q-args>)
+com! -nargs=*	        Nsource		call netrw#SavePosn()<bar>call netrw#NetSource(<f-args>)<bar>call netrw#RestorePosn()
+com! -nargs=?		Ntree		call netrw#SetTreetop(<q-args>)
 
 " Commands: :Explore, :Sexplore, Hexplore, Vexplore, Lexplore {{{2
 com! -nargs=* -bar -bang -count=0 -complete=dir	Explore		call netrw#Explore(<count>,0,0+<bang>0,<q-args>)
@@ -84,7 +85,7 @@ com! -nargs=* -bar       	  -complete=dir Lexplore	call netrw#Lexplore(<q-args>)
 
 " Commands: NetrwSettings {{{2
 com! -nargs=0	NetrwSettings	call netrwSettings#NetrwSettings()
-com! -bang	NetrwClean	call netrw#NetrwClean(<bang>0)
+com! -bang	NetrwClean	call netrw#Clean(<bang>0)
 
 " Maps:
 if !exists("g:netrw_nogx") && maparg('gx','n') == ""
@@ -118,11 +119,18 @@ fun! s:LocalBrowse(dirname)
 "   call Decho("(LocalBrowse) dirname<".a:dirname.">  (isdirectory, amiga)")
    if a:dirname != '' && isdirectory(a:dirname)
     sil! call netrw#LocalBrowseCheck(a:dirname)
+    if exists("w:netrw_bannercnt")
+     exe w:netrw_bannercnt
+    endif
    endif
 
   elseif isdirectory(a:dirname)
-"   call Decho("(LocalBrowse) dirname<".a:dirname.">  (isdirectory, not amiga)")
+"   call Decho("(LocalBrowse) dirname<".a:dirname."> ft=".&ft."  (isdirectory, not amiga)")
+"   call Dredir("LocalBrowse ft last set: ","verbose set ft")
    sil! call netrw#LocalBrowseCheck(a:dirname)
+   if exists("w:netrw_bannercnt")
+    exe w:netrw_bannercnt
+   endif
 
   else
    " not a directory, ignore it

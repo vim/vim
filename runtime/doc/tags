@@ -1973,8 +1973,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :cabc	map.txt	/*:cabc*
 :cabclear	map.txt	/*:cabclear*
 :cad	quickfix.txt	/*:cad*
-:caddb	quickfix.txt	/*:caddb*
 :caddbuffer	quickfix.txt	/*:caddbuffer*
+:cadde	quickfix.txt	/*:cadde*
 :caddexpr	quickfix.txt	/*:caddexpr*
 :caddf	quickfix.txt	/*:caddf*
 :caddfile	quickfix.txt	/*:caddfile*
@@ -2500,6 +2500,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :nbkey	netbeans.txt	/*:nbkey*
 :nbstart	netbeans.txt	/*:nbstart*
 :ne	editing.txt	/*:ne*
+:netrw-s-cr	pi_netrw.txt	/*:netrw-s-cr*
 :new	windows.txt	/*:new*
 :next	editing.txt	/*:next*
 :next_f	editing.txt	/*:next_f*
@@ -6942,6 +6943,15 @@ netreadfixup	pi_netrw.txt	/*netreadfixup*
 netrw	pi_netrw.txt	/*netrw*
 netrw-%	pi_netrw.txt	/*netrw-%*
 netrw--	pi_netrw.txt	/*netrw--*
+netrw-:Explore	pi_netrw.txt	/*netrw-:Explore*
+netrw-:Hexplore	pi_netrw.txt	/*netrw-:Hexplore*
+netrw-:Lexplore	pi_netrw.txt	/*netrw-:Lexplore*
+netrw-:MF	pi_netrw.txt	/*netrw-:MF*
+netrw-:MT	pi_netrw.txt	/*netrw-:MT*
+netrw-:Rexplore	pi_netrw.txt	/*netrw-:Rexplore*
+netrw-:Sexplore	pi_netrw.txt	/*netrw-:Sexplore*
+netrw-:Texplore	pi_netrw.txt	/*netrw-:Texplore*
+netrw-:Vexplore	pi_netrw.txt	/*netrw-:Vexplore*
 netrw-C	pi_netrw.txt	/*netrw-C*
 netrw-D	pi_netrw.txt	/*netrw-D*
 netrw-O	pi_netrw.txt	/*netrw-O*

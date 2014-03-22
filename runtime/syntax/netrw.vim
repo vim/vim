@@ -1,7 +1,7 @@
 " Language   : Netrw Remote-Directory Listing Syntax
 " Maintainer : Charles E. Campbell, Jr.
-" Last change: Dec 18, 2012
-" Version    : 17
+" Last change: Mar 07, 2014
+" Version    : 18
 " ---------------------------------------------------------------------
 
 " Syntax Clearing: {{{1
@@ -42,8 +42,9 @@ syn match  netrwSortSeq		"Sort sequence:"		contained transparent skipwhite			 	n
 syn match  netrwCopyTgt		"Copy/Move Tgt:"		contained transparent skipwhite				nextgroup=netrwList
 syn match  netrwList		".*$"				contained		contains=netrwComma,@NoSpell
 syn match  netrwComma		","				contained
-syn region netrwQuickHelp	matchgroup=Comment start="Quick Help:\s\+" end="$"	contains=netrwHelpCmd,@NoSpell	keepend contained
-syn match  netrwHelpCmd		"\S\ze:"			contained skipwhite	contains=@NoSpell		nextgroup=netrwCmdSep
+syn region netrwQuickHelp	matchgroup=Comment start="Quick Help:\s\+" end="$"	contains=netrwHelpCmd,netrwQHTopic,@NoSpell	keepend contained
+syn match  netrwHelpCmd		"\S\+\ze:"			contained skipwhite	contains=@NoSpell		nextgroup=netrwCmdSep
+syn match  netrwQHTopic		"-\a\+-"			contained skipwhite
 syn match  netrwCmdSep		":"				contained nextgroup=netrwCmdNote
 syn match  netrwCmdNote		".\{-}\ze  "			contained		contains=@NoSpell
 syn match  netrwVersion		"(netrw.*)"			contained		contains=@NoSpell
@@ -80,6 +81,7 @@ if !exists("did_drchip_netrwlist_syntax")
  hi default link netrwComment	Comment
  hi default link netrwDir	Directory
  hi default link netrwHelpCmd	Function
+ hi default link netrwQHTopic	Number
  hi default link netrwHidePat	Statement
  hi default link netrwHideSep	netrwComment
  hi default link netrwList	Statement

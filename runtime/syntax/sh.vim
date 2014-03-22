@@ -2,10 +2,10 @@
 " Language:		shell (sh) Korn shell (ksh) bash (sh)
 " Maintainer:		Charles E. Campbell  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		Jul 02, 2013
-" Version:		131
+" Last Change:		Mar 20, 2014
+" Version:		132
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
-" For options and settings, please use:      :help ft-sh-syntax
+" For options and settings, please use:	:help ft-sh-syntax
 " This file includes many ideas from ?ric Brunet (eric.brunet@ens.fr)
 
 " For version 5.x: Clear all syntax items {{{1
@@ -151,18 +151,18 @@ endif
 " Error Codes: {{{1
 " ============
 if !exists("g:sh_no_error")
- syn match   shDoError "\<done\>"
- syn match   shIfError "\<fi\>"
- syn match   shInError "\<in\>"
- syn match   shCaseError ";;"
- syn match   shEsacError "\<esac\>"
- syn match   shCurlyError "}"
- syn match   shParenError ")"
- syn match   shOK	'\.\(done\|fi\|in\|esac\)'
+ syn match	shDoError	"\<done\>"
+ syn match	shIfError	"\<fi\>"
+ syn match	shInError	"\<in\>"
+ syn match	shCaseError	";;"
+ syn match	shEsacError	"\<esac\>"
+ syn match	shCurlyError	"}"
+ syn match	shParenError	")"
+ syn match	shOK	'\.\(done\|fi\|in\|esac\)'
  if exists("b:is_kornshell")
-  syn match     shDTestError "]]"
+   syn match	shDTestError	"]]"
  endif
- syn match     shTestError "]"
+ syn match	shTestError	"]"
 endif
 
 " Options: {{{1
@@ -321,12 +321,12 @@ elseif !exists("g:sh_no_error")
 endif
 syn region  shSingleQuote	matchgroup=shQuote start=+'+ end=+'+		contains=@Spell
 syn region  shDoubleQuote	matchgroup=shQuote start=+\%(\%(\\\\\)*\\\)\@<!"+ skip=+\\"+ end=+"+	contains=@shDblQuoteList,shStringSpecial,@Spell
-"syn region  shDoubleQuote	matchgroup=shQuote start=+"+ skip=+\\"+ end=+"+	contains=@shDblQuoteList,shStringSpecial,@Spell
 syn match   shStringSpecial	"[^[:print:] \t]"	contained
 syn match   shStringSpecial	"\%(\\\\\)*\\[\\"'`$()#]"
-syn match   shSpecial	"[^\\]\zs\%(\\\\\)*\\[\\"'`$()#]" nextgroup=shMoreSpecial,shComment
-syn match   shSpecial	"^\%(\\\\\)*\\[\\"'`$()#]"	nextgroup=shComment
-syn match   shMoreSpecial	"\%(\\\\\)*\\[\\"'`$()#]" nextgroup=shMoreSpecial contained
+"syn match   shSpecial	"[^\\]\zs\%(\\\\\)*\\[\\"'`$()#]"	nextgroup=shMoreSpecial,shComment
+syn match   shSpecial	"[^\\]\zs\%(\\\\\)*\\[\\"'`$()#]"	nextgroup=shMoreSpecial
+syn match   shSpecial	"^\%(\\\\\)*\\[\\"'`$()#]"		nextgroup=shComment
+syn match   shMoreSpecial	"\%(\\\\\)*\\[\\"'`$()#]" 	contained	nextgroup=shMoreSpecial
 
 " Comments: {{{1
 "==========
@@ -363,9 +363,9 @@ elseif s:sh_fold_heredoc
  syn region shHereDoc matchgroup=shRedir19 fold start="<<\\\z([^ \t|]*\)"		matchgroup=shRedir19 end="^\z1\s*$"
 
 else
- syn region shHereDoc matchgroup=shRedir20 start="<<\s*\\\=\z([^ \t|]*\)"		matchgroup=shRedir20 end="^\z1\s*$"    contains=@shDblQuoteList
+ syn region shHereDoc matchgroup=shRedir20 start="<<\s*\\\=\z([^ \t|]*\)"		matchgroup=shRedir20 end="^\z1\s*$"	contains=@shDblQuoteList
  syn region shHereDoc matchgroup=shRedir21 start="<<\s*\"\z([^ \t|]*\)\""		matchgroup=shRedir21 end="^\z1\s*$"
- syn region shHereDoc matchgroup=shRedir22 start="<<-\s*\z([^ \t|]*\)"		matchgroup=shRedir22 end="^\s*\z1\s*$" contains=@shDblQuoteList
+ syn region shHereDoc matchgroup=shRedir22 start="<<-\s*\z([^ \t|]*\)"		matchgroup=shRedir22 end="^\s*\z1\s*$"	contains=@shDblQuoteList
  syn region shHereDoc matchgroup=shRedir23 start="<<-\s*'\z([^ \t|]*\)'"		matchgroup=shRedir23 end="^\s*\z1\s*$"
  syn region shHereDoc matchgroup=shRedir24 start="<<\s*'\z([^ \t|]*\)'"		matchgroup=shRedir24 end="^\z1\s*$"
  syn region shHereDoc matchgroup=shRedir25 start="<<-\s*\"\z([^ \t|]*\)\""		matchgroup=shRedir25 end="^\s*\z1\s*$"
@@ -450,21 +450,21 @@ syn match  shDerefSpecial	contained	"\({[#!]\)\@<=[[:alnum:]*@_]\+"	nextgroup=@s
 syn match  shDerefVar	contained	"{\@<=\k\+"		nextgroup=@shDerefVarList
 
 " sh ksh bash : ${var[... ]...}  array reference: {{{1
-syn region  shDerefVarArray   contained	matchgroup=shDeref start="\[" end="]"	contains=@shCommandSubList nextgroup=shDerefOp,shDerefOpError
+syn region  shDerefVarArray	contained	matchgroup=shDeref start="\[" end="]"	contains=@shCommandSubList nextgroup=shDerefOp,shDerefOpError
 
 " Special ${parameter OPERATOR word} handling: {{{1
-" sh ksh bash : ${parameter:-word}    word is default value
-" sh ksh bash : ${parameter:=word}    assign word as default value
-" sh ksh bash : ${parameter:?word}    display word if parameter is null
-" sh ksh bash : ${parameter:+word}    use word if parameter is not null, otherwise nothing
-"    ksh bash : ${parameter#pattern}  remove small left  pattern
-"    ksh bash : ${parameter##pattern} remove large left  pattern
-"    ksh bash : ${parameter%pattern}  remove small right pattern
-"    ksh bash : ${parameter%%pattern} remove large right pattern
-"        bash : ${parameter^pattern}  Case modification
-"        bash : ${parameter^^pattern} Case modification
-"        bash : ${parameter,pattern}  Case modification
-"        bash : ${parameter,,pattern} Case modification
+" sh ksh bash : ${parameter:-word}	word is default value
+" sh ksh bash : ${parameter:=word}	assign word as default value
+" sh ksh bash : ${parameter:?word}	display word if parameter is null
+" sh ksh bash : ${parameter:+word}	use word if parameter is not null, otherwise nothing
+"    ksh bash : ${parameter#pattern}	remove small left  pattern
+"    ksh bash : ${parameter##pattern}	remove large left  pattern
+"    ksh bash : ${parameter%pattern}	remove small right pattern
+"    ksh bash : ${parameter%%pattern}	remove large right pattern
+"        bash : ${parameter^pattern}	Case modification
+"        bash : ${parameter^^pattern}	Case modification
+"        bash : ${parameter,pattern}	Case modification
+"        bash : ${parameter,,pattern}	Case modification
 syn cluster shDerefPatternList	contains=shDerefPattern,shDerefString
 if !exists("g:sh_no_error")
  syn match shDerefOpError	contained	":[[:punct:]]"
@@ -598,6 +598,7 @@ hi def link shSetOption	shOption
 hi def link shSingleQuote	shString
 hi def link shSource	shOperator
 hi def link shStringSpecial	shSpecial
+hi def link shStringSpecial	Unique
 hi def link shSubShRegion	shOperator
 hi def link shTestOpr	shConditional
 hi def link shTestPattern	shString
