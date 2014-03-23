@@ -1874,18 +1874,23 @@ do_one_cmd(cmdlinep, sourcing,
 #endif
 			continue;
 
-	    case 'n':	if (!checkforcmd(&ea.cmd, "noautocmd", 3))
-			    break;
-#ifdef FEAT_AUTOCMD
-			if (cmdmod.save_ei == NULL)
+	    case 'n':	if (checkforcmd(&ea.cmd, "noautocmd", 3))
 			{
-			    /* Set 'eventignore' to "all". Restore the
-			     * existing option value later. */
-			    cmdmod.save_ei = vim_strsave(p_ei);
-			    set_string_option_direct((char_u *)"ei", -1,
+#ifdef FEAT_AUTOCMD
+			    if (cmdmod.save_ei == NULL)
+			    {
+				/* Set 'eventignore' to "all". Restore the
+				 * existing option value later. */
+				cmdmod.save_ei = vim_strsave(p_ei);
+				set_string_option_direct((char_u *)"ei", -1,
 					 (char_u *)"all", OPT_FREE, SID_NONE);
-			}
+			    }
 #endif
+			    continue;
+			}
+			if (!checkforcmd(&ea.cmd, "noswapfile", 6))
+			    break;
+			cmdmod.noswapfile = TRUE;
 			continue;
 
 	    case 'r':	if (!checkforcmd(&ea.cmd, "rightbelow", 6))
@@ -2596,6 +2601,8 @@ do_one_cmd(cmdlinep, sourcing,
 	    case CMD_lua:
 	    case CMD_match:
 	    case CMD_mzscheme:
+	    case CMD_noautocmd:
+	    case CMD_noswapfile:
 	    case CMD_perl:
 	    case CMD_psearch:
 	    case CMD_python:
@@ -3099,6 +3106,7 @@ static struct cmdmod
     {"leftabove", 5, FALSE},
     {"lockmarks", 3, FALSE},
     {"noautocmd", 3, FALSE},
+    {"noswapfile", 3, FALSE},
     {"rightbelow", 6, FALSE},
     {"sandbox", 3, FALSE},
     {"silent", 3, FALSE},
@@ -3611,6 +3619,8 @@ set_one_cmd_context(xp, buff)
 	case CMD_keeppatterns:
 	case CMD_leftabove:
 	case CMD_lockmarks:
+	case CMD_noautocmd:
+	case CMD_noswapfile:
 	case CMD_rightbelow:
 	case CMD_sandbox:
 	case CMD_silent:

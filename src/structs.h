@@ -545,6 +545,7 @@ typedef struct
     int		keepjumps;		/* TRUE when ":keepjumps" was used */
     int		lockmarks;		/* TRUE when ":lockmarks" was used */
     int		keeppatterns;		/* TRUE when ":keeppatterns" was used */
+    int		noswapfile;		/* TRUE when ":noswapfile" was used */
 # ifdef FEAT_AUTOCMD
     char_u	*save_ei;		/* saved value of 'eventignore' */
 # endif

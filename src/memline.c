@@ -289,6 +289,9 @@ ml_open(buf)
     buf->b_ml.ml_chunksize = NULL;
 #endif
 
+    if (cmdmod.noswapfile)
+	buf->b_p_swf = FALSE;
+
     /*
      * When 'updatecount' is non-zero swap file may be opened later.
      */
@@ -606,7 +609,7 @@ ml_setname(buf)
 	 * When 'updatecount' is 0 and 'noswapfile' there is no swap file.
 	 * For help files we will make a swap file now.
 	 */
-	if (p_uc != 0)
+	if (p_uc != 0 && !cmdmod.noswapfile)
 	    ml_open_file(buf);	    /* create a swap file */
 	return;
     }
@@ -719,7 +722,7 @@ ml_open_file(buf)
     char_u	*dirp;
 
     mfp = buf->b_ml.ml_mfp;
-    if (mfp == NULL || mfp->mf_fd >= 0 || !buf->b_p_swf)
+    if (mfp == NULL || mfp->mf_fd >= 0 || !buf->b_p_swf || cmdmod.noswapfile)
 	return;		/* nothing to do */
 
 #ifdef FEAT_SPELL
