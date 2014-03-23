@@ -3708,9 +3708,7 @@ _OnDropFiles(
     DragQueryPoint(hDrop, &pt);
     MapWindowPoints(s_hwnd, s_textArea, &pt, 1);
 
-# ifdef FEAT_VISUAL
     reset_VIsual();
-# endif
 
     fnames = (char_u **)alloc(cFiles * sizeof(char_u *));
 

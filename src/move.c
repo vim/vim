@@ -2857,17 +2857,13 @@ do_check_cursorbind()
     win_T	*old_curwin = curwin;
     buf_T	*old_curbuf = curbuf;
     int		restart_edit_save;
-# ifdef FEAT_VISUAL
     int		old_VIsual_select = VIsual_select;
     int		old_VIsual_active = VIsual_active;
-# endif
 
     /*
      * loop through the cursorbound windows
      */
-# ifdef FEAT_VISUAL
     VIsual_select = VIsual_active = 0;
-# endif
     for (curwin = firstwin; curwin; curwin = curwin->w_next)
     {
 	curbuf = curwin->w_buffer;
@@ -2916,10 +2912,8 @@ do_check_cursorbind()
     /*
      * reset current-window
      */
-# ifdef FEAT_VISUAL
     VIsual_select = old_VIsual_select;
     VIsual_active = old_VIsual_active;
-# endif
     curwin = old_curwin;
     curbuf = old_curbuf;
 }

@@ -6403,14 +6403,12 @@ nfa_regmatch(prog, start, submatch, m)
 		break;
 
 	    case NFA_VISUAL:
-#ifdef FEAT_VISUAL
 		result = reg_match_visual();
 		if (result)
 		{
 		    add_here = TRUE;
 		    add_state = t->state->out;
 		}
-#endif
 		break;
 
 	    case NFA_MOPEN1:

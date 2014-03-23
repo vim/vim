@@ -1068,11 +1068,7 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
     }
  */
 
-
-#ifdef FEAT_VISUAL
     reset_VIsual();
-#endif
-
     fnames = new_fnames_from_AEDesc(&theList, &numFiles, &error);
 
     if (error)
@@ -1142,7 +1138,7 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
 
     /* Update the screen display */
     update_screen(NOT_VALID);
-#ifdef FEAT_VISUAL
+
     /* Select the text if possible */
     if (gotPosition)
     {
@@ -1160,7 +1156,7 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
 	    VIsual.col = 0;
 	}
     }
-#endif
+
     setcursor();
     out_flush();
 

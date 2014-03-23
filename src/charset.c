@@ -1380,10 +1380,7 @@ getvcol(wp, pos, start, cursor, end)
 		&& (State & NORMAL)
 		&& !wp->w_p_list
 		&& !virtual_active()
-#ifdef FEAT_VISUAL
-		&& !(VIsual_active
-				   && (*p_sel == 'e' || ltoreq(*pos, VIsual)))
-#endif
+		&& !(VIsual_active && (*p_sel == 'e' || ltoreq(*pos, VIsual)))
 		)
 	    *cursor = vcol + incr - 1;	    /* cursor at end */
 	else
@@ -1463,7 +1460,6 @@ getvvcol(wp, pos, start, cursor, end)
 }
 #endif
 
-#if defined(FEAT_VISUAL) || defined(PROTO)
 /*
  * Get the leftmost and rightmost virtual column of pos1 and pos2.
  * Used for Visual block mode.
@@ -1500,7 +1496,6 @@ getvcols(wp, pos1, pos2, left, right)
     else
 	*right = to1;
 }
-#endif
 
 /*
  * skipwhite: skip over ' ' and '\t'.

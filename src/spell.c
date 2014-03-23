@@ -10191,7 +10191,6 @@ spell_suggest(count)
     if (no_spell_checking(curwin))
 	return;
 
-#ifdef FEAT_VISUAL
     if (VIsual_active)
     {
 	/* Use the Visually selected text as the bad word.  But reject
@@ -10209,10 +10208,8 @@ spell_suggest(count)
 	++badlen;
 	end_visual_mode();
     }
-    else
-#endif
-	/* Find the start of the badly spelled word. */
-	if (spell_move_to(curwin, FORWARD, TRUE, TRUE, NULL) == 0
+    /* Find the start of the badly spelled word. */
+    else if (spell_move_to(curwin, FORWARD, TRUE, TRUE, NULL) == 0
 	    || curwin->w_cursor.col > prev_cursor.col)
     {
 	/* No bad word or it starts after the cursor: use the word under the

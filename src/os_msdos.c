@@ -2270,9 +2270,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 		default:
 		case 'L':	type = MLINE;	break;
 		case 'C':	type = MCHAR;	break;
-#ifdef FEAT_VISUAL
 		case 'B':	type = MBLOCK;	break;
-#endif
 	    }
 	}
 
@@ -2799,9 +2797,7 @@ Win16SetClipboardData(
 	    default:
 	    case MLINE:	    clip_sel_type = "L";	break;
 	    case MCHAR:	    clip_sel_type = "C";	break;
-#ifdef FEAT_VISUAL
 	    case MBLOCK:    clip_sel_type = "B";	break;
-#endif
 	}
 
 	movedata(

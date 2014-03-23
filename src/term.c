@@ -3456,12 +3456,9 @@ setmouse()
 	return;
     }
 
-#  ifdef FEAT_VISUAL
     if (VIsual_active)
 	checkfor = MOUSE_VISUAL;
-    else
-#  endif
-	if (State == HITRETURN || State == ASKMORE || State == SETWSIZE)
+    else if (State == HITRETURN || State == ASKMORE || State == SETWSIZE)
 	checkfor = MOUSE_RETURN;
     else if (State & INSERT)
 	checkfor = MOUSE_INSERT;

@@ -1432,10 +1432,8 @@ set_curbuf(buf, action)
 	curwin->w_alt_fnum = curbuf->b_fnum; /* remember alternate file */
     buflist_altfpos(curwin);			 /* remember curpos */
 
-#ifdef FEAT_VISUAL
     /* Don't restart Select mode after switching to another buffer. */
     VIsual_reselect = FALSE;
-#endif
 
     /* close_windows() or apply_autocmds() may change curbuf */
     prevbuf = curbuf;

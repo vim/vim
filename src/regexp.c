@@ -4179,9 +4179,8 @@ reg_prev_class()
 			    - (*mb_head_off)(regline, reginput - 1), reg_buf);
     return -1;
 }
-
 #endif
-#ifdef FEAT_VISUAL
+
 static int reg_match_visual __ARGS((void));
 
 /*
@@ -4258,7 +4257,6 @@ reg_match_visual()
     }
     return TRUE;
 }
-#endif
 
 #define ADVANCE_REGINPUT() mb_ptr_adv(reginput)
 
@@ -4440,9 +4438,7 @@ regmatch(scan)
 	    break;
 
 	  case RE_VISUAL:
-#ifdef FEAT_VISUAL
 	    if (!reg_match_visual())
-#endif
 		status = RA_NOMATCH;
 	    break;
 

@@ -430,11 +430,9 @@ opFoldRange(first, last, opening, recurse, had_visual)
     }
     if (done == DONE_NOTHING)
 	EMSG(_(e_nofold));
-#ifdef FEAT_VISUAL
     /* Force a redraw to remove the Visual highlighting. */
     if (had_visual)
 	redraw_curbuf_later(INVERTED);
-#endif
 }
 
 /* openFold() {{{2 */
@@ -807,11 +805,9 @@ deleteFold(start, end, recursive, had_visual)
     if (!did_one)
     {
 	EMSG(_(e_nofold));
-#ifdef FEAT_VISUAL
 	/* Force a redraw to remove the Visual highlighting. */
 	if (had_visual)
 	    redraw_curbuf_later(INVERTED);
-#endif
     }
     else
 	/* Deleting markers may make cursor column invalid. */
@@ -1065,7 +1061,6 @@ find_wl_entry(win, lnum)
 }
 
 /* foldAdjustVisual() {{{2 */
-#ifdef FEAT_VISUAL
 /*
  * Adjust the Visual area to include any fold at the start or end completely.
  */
@@ -1103,7 +1098,6 @@ foldAdjustVisual()
 #endif
     }
 }
-#endif
 
 /* cursor_foldstart() {{{2 */
 /*

@@ -446,8 +446,6 @@ redrawWinline(lnum, invalid)
 #endif
 }
 
-#if defined(FEAT_RUBY) || defined(FEAT_PERL) || defined(FEAT_VISUAL) || \
-    (defined(FEAT_CLIPBOARD) && defined(FEAT_X11)) || defined(PROTO)
 /*
  * update all windows that are editing the current buffer
  */
@@ -458,7 +456,6 @@ update_curbuf(type)
     redraw_curbuf_later(type);
     update_screen(type);
 }
-#endif
 
 /*
  * update_screen()
@@ -596,14 +593,12 @@ update_screen(type)
 		    && curwin->w_botfill == curwin->w_old_botfill
 #endif
 		    && curwin->w_topline == curwin->w_lines[0].wl_lnum)
-#ifdef FEAT_VISUAL
 		|| (type == INVERTED
 		    && VIsual_active
 		    && curwin->w_old_cursor_lnum == curwin->w_cursor.lnum
 		    && curwin->w_old_visual_mode == VIsual_mode
 		    && (curwin->w_valid & VALID_VIRTCOL)
 		    && curwin->w_old_curswant == curwin->w_curswant)
-#endif
 		))
 	curwin->w_redr_type = type;
 
@@ -1030,10 +1025,8 @@ win_update(wp)
 				   updating.  0 when no mid area updating. */
     int		bot_start = 999;/* first row of the bot area that needs
 				   updating.  999 when no bot area updating */
-#ifdef FEAT_VISUAL
     int		scrolled_down = FALSE;	/* TRUE when scrolled down when
 					   w_topline got smaller a bit */
-#endif
 #ifdef FEAT_SEARCH_EXTRA
     matchitem_T *cur;		/* points to the match list */
     int		top_to_mod = FALSE;    /* redraw above mod_top */
@@ -1354,9 +1347,7 @@ win_update(wp)
 			    /* Need to update rows that are new, stop at the
 			     * first one that scrolled down. */
 			    top_end = i;
-#ifdef FEAT_VISUAL
 			    scrolled_down = TRUE;
-#endif
 
 			    /* Move the entries that were scrolled, disable
 			     * the entries for the lines to be redrawn. */
@@ -1513,7 +1504,6 @@ win_update(wp)
 	type = NOT_VALID;
     }
 
-#ifdef FEAT_VISUAL
     /* check if we are updating or removing the inverted part */
     if ((VIsual_active && buf == curwin->w_buffer)
 	    || (wp->w_old_cursor_lnum != 0 && type != NOT_VALID))
@@ -1708,7 +1698,6 @@ win_update(wp)
 	wp->w_old_visual_lnum = 0;
 	wp->w_old_visual_col = 0;
     }
-#endif /* FEAT_VISUAL */
 
 #if defined(FEAT_SYN_HL) || defined(FEAT_SEARCH_EXTRA)
     /* reset got_int, otherwise regexp won't work */
@@ -2670,7 +2659,6 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
      * 6. set highlighting for the Visual area an other text.
      * If all folded lines are in the Visual area, highlight the line.
      */
-#ifdef FEAT_VISUAL
     if (VIsual_active && wp->w_buffer == curwin->w_buffer)
     {
 	if (ltoreq(curwin->w_cursor, VIsual))
@@ -2718,7 +2706,6 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 	    }
 	}
     }
-#endif
 
 #ifdef FEAT_SYN_HL
     /* Show 'cursorcolumn' in the fold line. */
@@ -2876,10 +2863,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
     int		fromcol, tocol;		/* start/end of inverting */
     int		fromcol_prev = -2;	/* start of inverting after cursor */
     int		noinvcur = FALSE;	/* don't invert the cursor */
-#ifdef FEAT_VISUAL
     pos_T	*top, *bot;
     int		lnum_in_visual_area = FALSE;
-#endif
     pos_T	pos;
     long	v;
 
@@ -3090,7 +3075,6 @@ win_line(wp, lnum, startrow, endrow, nochange)
      */
     fromcol = -10;
     tocol = MAXCOL;
-#ifdef FEAT_VISUAL
     if (VIsual_active && wp->w_buffer == curwin->w_buffer)
     {
 					/* Visual is after curwin->w_cursor */
@@ -3183,9 +3167,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
     /*
      * handle 'incsearch' and ":s///c" highlighting
      */
-    else
-#endif /* FEAT_VISUAL */
-	if (highlight_match
+    else if (highlight_match
 	    && wp == curwin
 	    && lnum >= curwin->w_cursor.lnum
 	    && lnum <= curwin->w_cursor.lnum + search_match_lines)
@@ -3324,7 +3306,6 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    mb_ptr_adv(ptr);
 	}
 
-#if defined(FEAT_SYN_HL) || defined(FEAT_VIRTUALEDIT) || defined(FEAT_VISUAL)
 	/* When:
 	 * - 'cuc' is set, or
 	 * - 'colorcolumn' is set, or
@@ -3333,27 +3314,16 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	 * the end of the line may be before the start of the displayed part.
 	 */
 	if (vcol < v && (
-# ifdef FEAT_SYN_HL
-	     wp->w_p_cuc
-	     || draw_color_col
-#  if defined(FEAT_VIRTUALEDIT) || defined(FEAT_VISUAL)
-	     ||
-#  endif
-# endif
-# ifdef FEAT_VIRTUALEDIT
-	     virtual_active()
-#  ifdef FEAT_VISUAL
-	     ||
-#  endif
-# endif
-# ifdef FEAT_VISUAL
-	     (VIsual_active && wp->w_buffer == curwin->w_buffer)
-# endif
-	     ))
+#ifdef FEAT_SYN_HL
+	     wp->w_p_cuc || draw_color_col ||
+#endif
+#ifdef FEAT_VIRTUALEDIT
+	     virtual_active() ||
+#endif
+	     (VIsual_active && wp->w_buffer == curwin->w_buffer)))
 	{
 	    vcol = v;
 	}
-#endif
 
 	/* Handle a character that's not completely on the screen: Put ptr at
 	 * that character but skip the first few screen characters. */
@@ -4500,9 +4470,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			&& ((wp->w_p_list && lcs_eol > 0)
 			    || ((fromcol >= 0 || fromcol_prev >= 0)
 				&& tocol > vcol
-#ifdef FEAT_VISUAL
 				&& VIsual_mode != Ctrl_V
-#endif
 				&& (
 # ifdef FEAT_RIGHTLEFT
 				    wp->w_p_rl ? (col >= 0) :
@@ -4854,11 +4822,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #endif
 	    if (lcs_eol == lcs_eol_one
 		    && ((area_attr != 0 && vcol == fromcol
-#ifdef FEAT_VISUAL
 			    && (VIsual_mode != Ctrl_V
 				|| lnum == VIsual.lnum
 				|| lnum == curwin->w_cursor.lnum)
-#endif
 			    && c == NUL)
 #ifdef FEAT_SEARCH_EXTRA
 			/* highlight 'hlsearch' match at end of line */
@@ -9659,10 +9625,7 @@ showmode()
     do_mode = ((p_smd && msg_silent == 0)
 	    && ((State & INSERT)
 		|| restart_edit
-#ifdef FEAT_VISUAL
-		|| VIsual_active
-#endif
-		));
+		|| VIsual_active));
     if (do_mode || Recording)
     {
 	/*
@@ -9790,7 +9753,6 @@ showmode()
 		if ((State & INSERT) && p_paste)
 		    MSG_PUTS_ATTR(_(" (paste)"), attr);
 
-#ifdef FEAT_VISUAL
 		if (VIsual_active)
 		{
 		    char *p;
@@ -9810,7 +9772,6 @@ showmode()
 		    }
 		    MSG_PUTS_ATTR(_(p), attr);
 		}
-#endif
 		MSG_PUTS_ATTR(" --", attr);
 	    }
 
@@ -9839,11 +9800,9 @@ showmode()
 	msg_clr_cmdline();
 
 #ifdef FEAT_CMDL_INFO
-# ifdef FEAT_VISUAL
     /* In Visual mode the size of the selected area must be redrawn. */
     if (VIsual_active)
 	clear_showcmd();
-# endif
 
     /* If the last window has no status line, the ruler is after the mode
      * message and must be redrawn */

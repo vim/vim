@@ -220,9 +220,7 @@ static int  ins_esc __ARGS((long *count, int cmdchar, int nomove));
 #ifdef FEAT_RIGHTLEFT
 static void ins_ctrl_ __ARGS((void));
 #endif
-#ifdef FEAT_VISUAL
 static int ins_start_select __ARGS((int c));
-#endif
 static void ins_insert __ARGS((int replaceState));
 static void ins_ctrl_o __ARGS((void));
 static void ins_shift __ARGS((int c, int lastc));
@@ -932,7 +930,6 @@ edit(cmdchar, startln, count)
 	    }
 #endif
 
-#ifdef FEAT_VISUAL
 	/*
 	 * If 'keymodel' contains "startsel", may start selection.  If it
 	 * does, a CTRL-O and c will be stuffed, we need to get these
@@ -940,7 +937,6 @@ edit(cmdchar, startln, count)
 	 */
 	if (ins_start_select(c))
 	    continue;
-#endif
 
 	/*
 	 * The big switch to handle a character in insert mode.
@@ -6900,7 +6896,6 @@ stop_insert(end_insert_pos, esc, nomove)
 	    else if (cc != NUL)
 		++curwin->w_cursor.col;	/* put cursor back on the NUL */
 
-#ifdef FEAT_VISUAL
 	    /* <C-S-Right> may have started Visual mode, adjust the position for
 	     * deleted characters. */
 	    if (VIsual_active && VIsual.lnum == curwin->w_cursor.lnum)
@@ -6910,12 +6905,11 @@ stop_insert(end_insert_pos, esc, nomove)
 		if (VIsual.col > len)
 		{
 		    VIsual.col = len;
-# ifdef FEAT_VIRTUALEDIT
+#ifdef FEAT_VIRTUALEDIT
 		    VIsual.coladd = 0;
-# endif
+#endif
 		}
 	    }
-#endif
 	}
     }
     did_ai = FALSE;
@@ -8112,9 +8106,7 @@ ins_reg()
     int		need_redraw = FALSE;
     int		regname;
     int		literally = 0;
-#ifdef FEAT_VISUAL
     int		vis_active = VIsual_active;
-#endif
 
     /*
      * If we are going to wait for a character, show a '"'.
@@ -8218,11 +8210,9 @@ ins_reg()
     if (need_redraw || stuff_empty())
 	edit_unputchar();
 
-#ifdef FEAT_VISUAL
     /* Disallow starting Visual mode here, would get a weird mode. */
     if (!vis_active && VIsual_active)
 	end_visual_mode();
-#endif
 }
 
 /*
@@ -8419,11 +8409,7 @@ ins_esc(count, cmdchar, nomove)
 #endif
 	       )
 	    && (restart_edit == NUL
-		   || (gchar_cursor() == NUL
-#ifdef FEAT_VISUAL
-		       && !VIsual_active
-#endif
-		      ))
+		   || (gchar_cursor() == NUL && !VIsual_active))
 #ifdef FEAT_RIGHTLEFT
 	    && !revins_on
 #endif
@@ -8525,7 +8511,6 @@ ins_ctrl_()
 }
 #endif
 
-#ifdef FEAT_VISUAL
 /*
  * If 'keymodel' contains "startsel", may start selection.
  * Returns TRUE when a CTRL-O and other keys stuffed.
@@ -8581,7 +8566,6 @@ ins_start_select(c)
 	}
     return FALSE;
 }
-#endif
 
 /*
  * <Insert> key in Insert mode: toggle insert/replace mode.

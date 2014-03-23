@@ -1057,9 +1057,7 @@ main_loop(cmdwin, noexmode)
     if (!cmdwin && !noexmode && SETJMP(x_jump_env))
     {
 	State = NORMAL;
-# ifdef FEAT_VISUAL
 	VIsual_active = FALSE;
-# endif
 	got_int = TRUE;
 	need_wait_return = FALSE;
 	global_busy = FALSE;
@@ -1096,11 +1094,7 @@ main_loop(cmdwin, noexmode)
 		check_timestamps(FALSE);
 	    if (need_wait_return)	/* if wait_return still needed ... */
 		wait_return(FALSE);	/* ... call it now */
-	    if (need_start_insertmode && goto_im()
-#ifdef FEAT_VISUAL
-		    && !VIsual_active
-#endif
-		    )
+	    if (need_start_insertmode && goto_im() && !VIsual_active)
 	    {
 		need_start_insertmode = FALSE;
 		stuffReadbuff((char_u *)"i");	/* start insert mode next */
@@ -1202,7 +1196,7 @@ main_loop(cmdwin, noexmode)
 		diff_need_scrollbind = FALSE;
 	    }
 #endif
-#if defined(FEAT_FOLDING) && defined(FEAT_VISUAL)
+#if defined(FEAT_FOLDING)
 	    /* Include a closed fold completely in the Visual area. */
 	    foldAdjustVisual();
 #endif
@@ -1228,12 +1222,9 @@ main_loop(cmdwin, noexmode)
 	    update_topline();
 	    validate_cursor();
 
-#ifdef FEAT_VISUAL
 	    if (VIsual_active)
 		update_curbuf(INVERTED);/* update inverted part */
-	    else
-#endif
-		if (must_redraw)
+	    else if (must_redraw)
 		update_screen(0);
 	    else if (redraw_cmdline || clear_cmdline)
 		showmode();

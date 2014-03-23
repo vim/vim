@@ -3132,11 +3132,9 @@ button_set:
      */
     if (!mouse_has(checkfor) || checkfor == MOUSE_COMMAND)
     {
-#ifdef FEAT_VISUAL
 	/* Don't do modeless selection in Visual mode. */
 	if (checkfor != MOUSE_NONEF && VIsual_active && (State & NORMAL))
 	    return;
-#endif
 
 	/*
 	 * When 'mousemodel' is "popup", shift-left is translated to right.

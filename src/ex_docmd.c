@@ -8577,10 +8577,8 @@ ex_operators(eap)
 	beginline(BL_SOL | BL_FIX);
     }
 
-#if defined(FEAT_VISUAL)
     if (VIsual_active)
 	end_visual_mode();
-#endif
 
     switch (eap->cmdidx)
     {
@@ -8991,11 +8989,7 @@ ex_redraw(eap)
     RedrawingDisabled = 0;
     p_lz = FALSE;
     update_topline();
-    update_screen(eap->forceit ? CLEAR :
-#ifdef FEAT_VISUAL
-	    VIsual_active ? INVERTED :
-#endif
-	    0);
+    update_screen(eap->forceit ? CLEAR : VIsual_active ? INVERTED : 0);
 #ifdef FEAT_TITLE
     if (need_maketitle)
 	maketitle();
@@ -9030,11 +9024,7 @@ ex_redrawstatus(eap)
 	status_redraw_all();
     else
 	status_redraw_curbuf();
-    update_screen(
-# ifdef FEAT_VISUAL
-	    VIsual_active ? INVERTED :
-# endif
-	    0);
+    update_screen(VIsual_active ? INVERTED : 0);
     RedrawingDisabled = r;
     p_lz = p;
     out_flush();

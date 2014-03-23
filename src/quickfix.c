@@ -2347,9 +2347,7 @@ ex_copen(eap)
     else
 	height = QF_WINHEIGHT;
 
-#ifdef FEAT_VISUAL
     reset_VIsual_and_resel();			/* stop Visual mode */
-#endif
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
 #endif

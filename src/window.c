@@ -130,9 +130,7 @@ do_window(nchar, Prenum, xchar)
     case Ctrl_S:
     case 's':
 		CHECK_CMDWIN
-#ifdef FEAT_VISUAL
 		reset_VIsual_and_resel();	/* stop Visual mode */
-#endif
 #ifdef FEAT_QUICKFIX
 		/* When splitting the quickfix window open a new buffer in it,
 		 * don't replicate the quickfix buffer. */
@@ -150,9 +148,7 @@ do_window(nchar, Prenum, xchar)
     case Ctrl_V:
     case 'v':
 		CHECK_CMDWIN
-# ifdef FEAT_VISUAL
 		reset_VIsual_and_resel();	/* stop Visual mode */
-# endif
 # ifdef FEAT_QUICKFIX
 		/* When splitting the quickfix window open a new buffer in it,
 		 * don't replicate the quickfix buffer. */
@@ -170,9 +166,7 @@ do_window(nchar, Prenum, xchar)
     case Ctrl_HAT:
     case '^':
 		CHECK_CMDWIN
-#ifdef FEAT_VISUAL
 		reset_VIsual_and_resel();	/* stop Visual mode */
-#endif
 		STRCPY(cbuf, "split #");
 		if (Prenum)
 		    vim_snprintf((char *)cbuf + 7, sizeof(cbuf) - 7,
@@ -184,9 +178,7 @@ do_window(nchar, Prenum, xchar)
     case Ctrl_N:
     case 'n':
 		CHECK_CMDWIN
-#ifdef FEAT_VISUAL
 		reset_VIsual_and_resel();	/* stop Visual mode */
-#endif
 #ifdef FEAT_QUICKFIX
 newwindow:
 #endif
@@ -206,18 +198,14 @@ newwindow:
 /* quit current window */
     case Ctrl_Q:
     case 'q':
-#ifdef FEAT_VISUAL
 		reset_VIsual_and_resel();	/* stop Visual mode */
-#endif
 		do_cmdline_cmd((char_u *)"quit");
 		break;
 
 /* close current window */
     case Ctrl_C:
     case 'c':
-#ifdef FEAT_VISUAL
 		reset_VIsual_and_resel();	/* stop Visual mode */
-#endif
 		do_cmdline_cmd((char_u *)"close");
 		break;
 
@@ -226,9 +214,7 @@ newwindow:
     case Ctrl_Z:
     case 'z':
 		CHECK_CMDWIN
-#ifdef FEAT_VISUAL
 		reset_VIsual_and_resel();	/* stop Visual mode */
-#endif
 		do_cmdline_cmd((char_u *)"pclose");
 		break;
 
@@ -248,9 +234,7 @@ newwindow:
     case Ctrl_O:
     case 'o':
 		CHECK_CMDWIN
-#ifdef FEAT_VISUAL
 		reset_VIsual_and_resel();	/* stop Visual mode */
-#endif
 		do_cmdline_cmd((char_u *)"only");
 		break;
 
@@ -399,18 +383,14 @@ newwindow:
     case Ctrl_R:
     case 'r':
 		CHECK_CMDWIN
-#ifdef FEAT_VISUAL
 		reset_VIsual_and_resel();	/* stop Visual mode */
-#endif
 		win_rotate(FALSE, (int)Prenum1);    /* downwards */
 		break;
 
 /* rotate windows upwards */
     case 'R':
 		CHECK_CMDWIN
-#ifdef FEAT_VISUAL
 		reset_VIsual_and_resel();	/* stop Visual mode */
-#endif
 		win_rotate(TRUE, (int)Prenum1);	    /* upwards */
 		break;
 
@@ -499,9 +479,7 @@ newwindow:
     case ']':
     case Ctrl_RSB:
 		CHECK_CMDWIN
-#ifdef FEAT_VISUAL
 		reset_VIsual_and_resel();	/* stop Visual mode */
-#endif
 		if (Prenum)
 		    postponed_split = Prenum;
 		else
@@ -612,9 +590,7 @@ wingotofile:
 #endif
 		    case ']':
 		    case Ctrl_RSB:
-#ifdef FEAT_VISUAL
 			reset_VIsual_and_resel();	/* stop Visual mode */
-#endif
 			if (Prenum)
 			    postponed_split = Prenum;
 			else
@@ -3726,9 +3702,7 @@ leave_tabpage(new_curbuf, trigger_leave_autocmds)
 {
     tabpage_T	*tp = curtab;
 
-#ifdef FEAT_VISUAL
     reset_VIsual_and_resel();	/* stop Visual mode */
-#endif
 #ifdef FEAT_AUTOCMD
     if (trigger_leave_autocmds)
     {
@@ -4029,12 +4003,10 @@ win_goto(wp)
 	return;
 #endif
 
-#ifdef FEAT_VISUAL
     if (wp->w_buffer != curbuf)
 	reset_VIsual_and_resel();
     else if (VIsual_active)
 	wp->w_cursor = curwin->w_cursor;
-#endif
 
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
@@ -6037,7 +6009,6 @@ grab_file_name(count, file_lnum)
     long	count;
     linenr_T	*file_lnum;
 {
-# ifdef FEAT_VISUAL
     if (VIsual_active)
     {
 	int	len;
@@ -6048,7 +6019,6 @@ grab_file_name(count, file_lnum)
 	return find_file_name_in_path(ptr, len,
 		     FNAME_MESS|FNAME_EXP|FNAME_REL, count, curbuf->b_ffname);
     }
-# endif
     return file_name_at_cursor(FNAME_MESS|FNAME_HYP|FNAME_EXP|FNAME_REL, count,
 			       file_lnum);
 

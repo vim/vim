@@ -2610,13 +2610,11 @@ retnomove:
 	if (on_sep_line)
 	    return IN_SEP_LINE;
 #endif
-#ifdef FEAT_VISUAL
 	if (flags & MOUSE_MAY_STOP_VIS)
 	{
 	    end_visual_mode();
 	    redraw_curbuf_later(INVERTED);	/* delete the inversion */
 	}
-#endif
 #if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
 	/* Continue a modeless selection in another window. */
 	if (cmdwin_type != 0 && row < W_WINROW(curwin))
@@ -2686,32 +2684,30 @@ retnomove:
 	}
 #endif
 
-#ifdef FEAT_VISUAL
 	/* Before jumping to another buffer, or moving the cursor for a left
 	 * click, stop Visual mode. */
 	if (VIsual_active
 		&& (wp->w_buffer != curwin->w_buffer
 		    || (!on_status_line
-# ifdef FEAT_VERTSPLIT
+#ifdef FEAT_VERTSPLIT
 			&& !on_sep_line
-# endif
-# ifdef FEAT_FOLDING
+#endif
+#ifdef FEAT_FOLDING
 			&& (
-#  ifdef FEAT_RIGHTLEFT
+# ifdef FEAT_RIGHTLEFT
 			    wp->w_p_rl ? col < W_WIDTH(wp) - wp->w_p_fdc :
-#  endif
-			    col >= wp->w_p_fdc
-#  ifdef FEAT_CMDWIN
-				  + (cmdwin_type == 0 && wp == curwin ? 0 : 1)
-#  endif
-			    )
 # endif
+			    col >= wp->w_p_fdc
+# ifdef FEAT_CMDWIN
+				  + (cmdwin_type == 0 && wp == curwin ? 0 : 1)
+# endif
+			    )
+#endif
 			&& (flags & MOUSE_MAY_STOP_VIS))))
 	{
 	    end_visual_mode();
 	    redraw_curbuf_later(INVERTED);	/* delete the inversion */
 	}
-#endif
 #ifdef FEAT_CMDWIN
 	if (cmdwin_type != 0 && wp != curwin)
 	{
@@ -2801,14 +2797,12 @@ retnomove:
 #endif
     else /* keep_window_focus must be TRUE */
     {
-#ifdef FEAT_VISUAL
 	/* before moving the cursor for a left click, stop Visual mode */
 	if (flags & MOUSE_MAY_STOP_VIS)
 	{
 	    end_visual_mode();
 	    redraw_curbuf_later(INVERTED);	/* delete the inversion */
 	}
-#endif
 
 #if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
 	/* Continue a modeless selection in another window. */
@@ -2933,7 +2927,6 @@ retnomove:
     if (mouse_comp_pos(curwin, &row, &col, &curwin->w_cursor.lnum))
 	mouse_past_bottom = TRUE;
 
-#ifdef FEAT_VISUAL
     /* Start Visual mode before coladvance(), for when 'sel' != "old" */
     if ((flags & MOUSE_MAY_VIS) && !VIsual_active)
     {
@@ -2947,7 +2940,6 @@ retnomove:
 	if (p_smd && msg_silent == 0)
 	    redraw_cmdline = TRUE;	/* show visual mode later */
     }
-#endif
 
     curwin->w_curswant = col;
     curwin->w_set_curswant = FALSE;	/* May still have been TRUE */

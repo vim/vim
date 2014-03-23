@@ -214,7 +214,6 @@
  * +visual		Visual mode - now always included.
  * +visualextra		Extra features for Visual mode (mostly block operators).
  */
-#define FEAT_VISUAL
 #ifdef FEAT_NORMAL
 # define FEAT_VISUALEXTRA
 #endif
@@ -1138,13 +1137,10 @@
 #ifdef FEAT_GUI
 # ifndef FEAT_CLIPBOARD
 #  define FEAT_CLIPBOARD
-#  ifndef FEAT_VISUAL
-#   define FEAT_VISUAL
-#  endif
 # endif
 #endif
 
-#if defined(FEAT_NORMAL) && defined(FEAT_VISUAL) \
+#if defined(FEAT_NORMAL) \
 	&& (defined(UNIX) || defined(VMS)) \
 	&& defined(WANT_X11) && defined(HAVE_X11)
 # define FEAT_XCLIPBOARD

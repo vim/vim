@@ -2232,11 +2232,9 @@ nb_do_cmd(
 
 	    nb_set_curbuf(buf->bufp);
 
-#ifdef FEAT_VISUAL
 	    /* Don't want Visual mode now. */
 	    if (VIsual_active)
 		end_visual_mode();
-#endif
 #ifdef NBDEBUG
 	    s = args;
 #endif

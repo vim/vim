@@ -3274,13 +3274,11 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 	goto theend;
     }
 
-#ifdef FEAT_VISUAL
     /*
      * End Visual mode before switching to another buffer, so the text can be
      * copied into the GUI selection buffer.
      */
     reset_VIsual();
-#endif
 
 #ifdef FEAT_AUTOCMD
     if ((command != NULL || newlnum > (linenr_T)0)

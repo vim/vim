@@ -572,9 +572,7 @@ EXTERN char_u	*p_isi;		/* 'isident' */
 EXTERN char_u	*p_isp;		/* 'isprint' */
 EXTERN int	p_js;		/* 'joinspaces' */
 EXTERN char_u	*p_kp;		/* 'keywordprg' */
-#ifdef FEAT_VISUAL
 EXTERN char_u	*p_km;		/* 'keymodel' */
-#endif
 #ifdef FEAT_LANGMAP
 EXTERN char_u	*p_langmap;	/* 'langmap'*/
 #endif
@@ -681,10 +679,8 @@ EXTERN char_u	*p_sbo;		/* 'scrollopt' */
 #endif
 EXTERN char_u	*p_sections;	/* 'sections' */
 EXTERN int	p_secure;	/* 'secure' */
-#ifdef FEAT_VISUAL
 EXTERN char_u	*p_sel;		/* 'selection' */
 EXTERN char_u	*p_slm;		/* 'selectmode' */
-#endif
 #ifdef FEAT_SESSION
 EXTERN char_u	*p_ssop;	/* 'sessionoptions' */
 EXTERN unsigned	ssop_flags;

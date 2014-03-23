@@ -6837,10 +6837,8 @@ static char *(highlight_init_light[]) =
 	CENT("SignColumn term=standout ctermbg=Grey ctermfg=DarkBlue",
 	     "SignColumn term=standout ctermbg=Grey ctermfg=DarkBlue guibg=Grey guifg=DarkBlue"),
 #endif
-#ifdef FEAT_VISUAL
 	CENT("Visual term=reverse",
 	     "Visual term=reverse guibg=LightGrey"),
-#endif
 #ifdef FEAT_DIFF
 	CENT("DiffAdd term=bold ctermbg=LightBlue",
 	     "DiffAdd term=bold ctermbg=LightBlue guibg=LightBlue"),
@@ -6927,10 +6925,8 @@ static char *(highlight_init_dark[]) =
 	CENT("SignColumn term=standout ctermbg=DarkGrey ctermfg=Cyan",
 	     "SignColumn term=standout ctermbg=DarkGrey ctermfg=Cyan guibg=Grey guifg=Cyan"),
 #endif
-#ifdef FEAT_VISUAL
 	CENT("Visual term=reverse",
 	     "Visual term=reverse guibg=DarkGrey"),
-#endif
 #ifdef FEAT_DIFF
 	CENT("DiffAdd term=bold ctermbg=DarkBlue",
 	     "DiffAdd term=bold ctermbg=DarkBlue guibg=DarkBlue"),

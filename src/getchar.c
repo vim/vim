@@ -870,7 +870,6 @@ start_redo(count, old_redo)
 	c = read_redo(FALSE, old_redo);
     }
 
-#ifdef FEAT_VISUAL
     if (c == 'v')   /* redo Visual */
     {
 	VIsual = curwin->w_cursor;
@@ -880,7 +879,6 @@ start_redo(count, old_redo)
 	redo_VIsual_busy = TRUE;
 	c = read_redo(FALSE, old_redo);
     }
-#endif
 
     /* try to enter the count (in place of a previous count) */
     if (count)
@@ -1162,7 +1160,6 @@ typebuf_typed()
     return typebuf.tb_maplen == 0;
 }
 
-#if defined(FEAT_VISUAL) || defined(PROTO)
 /*
  * Return the number of characters that are mapped (or not typed).
  */
@@ -1171,7 +1168,6 @@ typebuf_maplen()
 {
     return typebuf.tb_maplen;
 }
-#endif
 
 /*
  * remove "len" characters from typebuf.tb_buf[typebuf.tb_off + offset]
@@ -2443,7 +2439,6 @@ vgetorpeek(advance)
 				idx = get_menu_index(current_menu, local_State);
 				if (idx != MENU_INDEX_INVALID)
 				{
-# ifdef FEAT_VISUAL
 				    /*
 				     * In Select mode and a Visual mode menu
 				     * is used:  Switch to Visual mode
@@ -2457,7 +2452,6 @@ vgetorpeek(advance)
 					(void)ins_typebuf(K_SELECT_STRING,
 						  REMAP_NONE, 0, TRUE, FALSE);
 				    }
-# endif
 				    ins_typebuf(current_menu->strings[idx],
 						current_menu->noremap[idx],
 						0, TRUE,
@@ -2516,7 +2510,6 @@ vgetorpeek(advance)
 			    break;
 			}
 
-#ifdef FEAT_VISUAL
 			/*
 			 * In Select mode and a Visual mode mapping is used:
 			 * Switch to Visual mode temporarily.  Append K_SELECT
@@ -2529,7 +2522,6 @@ vgetorpeek(advance)
 			    (void)ins_typebuf(K_SELECT_STRING, REMAP_NONE,
 							      0, TRUE, FALSE);
 			}
-#endif
 
 #ifdef FEAT_EVAL
 			/* Copy the values from *mp that are used, because

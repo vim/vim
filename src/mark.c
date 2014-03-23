@@ -98,7 +98,6 @@ setmark_pos(c, pos, fnum)
 	return OK;
     }
 
-#ifdef FEAT_VISUAL
     if (c == '<' || c == '>')
     {
 	if (c == '<')
@@ -110,7 +109,6 @@ setmark_pos(c, pos, fnum)
 	    curbuf->b_visual.vi_mode = 'v';
 	return OK;
     }
-#endif
 
 #ifndef EBCDIC
     if (c > 'z')	    /* some islower() and isupper() cannot handle
@@ -340,9 +338,7 @@ getmark_buf_fnum(buf, c, changefile, fnum)
     int		*fnum;
 {
     pos_T		*posp;
-#ifdef FEAT_VISUAL
     pos_T		*startp, *endp;
-#endif
     static pos_T	pos_copy;
 
     posp = NULL;
@@ -403,7 +399,6 @@ getmark_buf_fnum(buf, c, changefile, fnum)
 	curwin->w_cursor = pos;
 	listcmd_busy = slcb;
     }
-#ifdef FEAT_VISUAL
     else if (c == '<' || c == '>')	/* start/end of visual area */
     {
 	startp = &buf->b_visual.vi_start;
@@ -428,7 +423,6 @@ getmark_buf_fnum(buf, c, changefile, fnum)
 #endif
 	}
     }
-#endif
     else if (ASCII_ISLOWER(c))		/* normal named mark */
     {
 	posp = &(buf->b_namedm[c - 'a']);
@@ -757,10 +751,8 @@ do_marks(eap)
     show_one_mark(']', arg, &curbuf->b_op_end, NULL, TRUE);
     show_one_mark('^', arg, &curbuf->b_last_insert, NULL, TRUE);
     show_one_mark('.', arg, &curbuf->b_last_change, NULL, TRUE);
-#ifdef FEAT_VISUAL
     show_one_mark('<', arg, &curbuf->b_visual.vi_start, NULL, TRUE);
     show_one_mark('>', arg, &curbuf->b_visual.vi_end, NULL, TRUE);
-#endif
     show_one_mark(-1, arg, NULL, NULL, FALSE);
 }
 
@@ -892,10 +884,8 @@ ex_delmarks(eap)
 		    case '.': curbuf->b_last_change.lnum = 0; break;
 		    case '[': curbuf->b_op_start.lnum    = 0; break;
 		    case ']': curbuf->b_op_end.lnum      = 0; break;
-#ifdef FEAT_VISUAL
 		    case '<': curbuf->b_visual.vi_start.lnum = 0; break;
 		    case '>': curbuf->b_visual.vi_end.lnum   = 0; break;
-#endif
 		    case ' ': break;
 		    default:  EMSG2(_(e_invarg2), p);
 			      return;
@@ -1085,11 +1075,9 @@ mark_adjust(line1, line2, amount, amount_after)
 	    one_adjust_nodel(&(curbuf->b_changelist[i].lnum));
 #endif
 
-#ifdef FEAT_VISUAL
 	/* Visual area */
 	one_adjust_nodel(&(curbuf->b_visual.vi_start.lnum));
 	one_adjust_nodel(&(curbuf->b_visual.vi_end.lnum));
-#endif
 
 #ifdef FEAT_QUICKFIX
 	/* quickfix marks */
@@ -1136,14 +1124,12 @@ mark_adjust(line1, line2, amount, amount_after)
 		    if (win->w_tagstack[i].fmark.fnum == fnum)
 			one_adjust_nodel(&(win->w_tagstack[i].fmark.mark.lnum));
 
-#ifdef FEAT_VISUAL
 	    /* the displayed Visual area */
 	    if (win->w_old_cursor_lnum != 0)
 	    {
 		one_adjust_nodel(&(win->w_old_cursor_lnum));
 		one_adjust_nodel(&(win->w_old_visual_lnum));
 	    }
-#endif
 
 	    /* topline and cursor position for windows with the same buffer
 	     * other than the current window */
@@ -1260,11 +1246,9 @@ mark_col_adjust(lnum, mincol, lnum_amount, col_amount)
 	col_adjust(&(curbuf->b_changelist[i]));
 #endif
 
-#ifdef FEAT_VISUAL
     /* Visual area */
     col_adjust(&(curbuf->b_visual.vi_start));
     col_adjust(&(curbuf->b_visual.vi_end));
-#endif
 
     /* previous context mark */
     col_adjust(&(curwin->w_pcmark));

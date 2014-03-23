@@ -11833,12 +11833,10 @@ f_getregtype(argvars, rettv)
     {
 	case MLINE: buf[0] = 'V'; break;
 	case MCHAR: buf[0] = 'v'; break;
-#ifdef FEAT_VISUAL
 	case MBLOCK:
 		buf[0] = Ctrl_V;
 		sprintf((char *)buf + 1, "%ld", reglen + 1);
 		break;
-#endif
     }
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = vim_strsave(buf);
@@ -12552,9 +12550,7 @@ f_has(argvars, rettv)
 #ifdef FEAT_VIRTUALEDIT
 	"virtualedit",
 #endif
-#ifdef FEAT_VISUAL
 	"visual",
-#endif
 #ifdef FEAT_VISUALEXTRA
 	"visualextra",
 #endif
@@ -14397,7 +14393,6 @@ f_mode(argvars, rettv)
     buf[1] = NUL;
     buf[2] = NUL;
 
-#ifdef FEAT_VISUAL
     if (VIsual_active)
     {
 	if (VIsual_select)
@@ -14405,9 +14400,7 @@ f_mode(argvars, rettv)
 	else
 	    buf[0] = VIsual_mode;
     }
-    else
-#endif
-	if (State == HITRETURN || State == ASKMORE || State == SETWSIZE
+    else if (State == HITRETURN || State == ASKMORE || State == SETWSIZE
 		|| State == CONFIRM)
     {
 	buf[0] = 'r';
@@ -16756,7 +16749,6 @@ f_setreg(argvars, rettv)
 		case 'V': case 'l':	/* line-wise selection */
 		    yank_type = MLINE;
 		    break;
-#ifdef FEAT_VISUAL
 		case 'b': case Ctrl_V:	/* block-wise selection */
 		    yank_type = MBLOCK;
 		    if (VIM_ISDIGIT(stropt[1]))
@@ -16766,7 +16758,6 @@ f_setreg(argvars, rettv)
 			--stropt;
 		    }
 		    break;
-#endif
 	    }
     }
 
@@ -18769,7 +18760,6 @@ f_visualmode(argvars, rettv)
     typval_T	*argvars UNUSED;
     typval_T	*rettv UNUSED;
 {
-#ifdef FEAT_VISUAL
     char_u	str[2];
 
     rettv->v_type = VAR_STRING;
@@ -18780,7 +18770,6 @@ f_visualmode(argvars, rettv)
     /* A non-zero number or non-empty string argument: reset mode. */
     if (non_zero_arg(&argvars[0]))
 	curbuf->b_visual_mode_eval = NUL;
-#endif
 }
 
 /*
@@ -19154,14 +19143,12 @@ var2fpos(varp, dollar_lnum, fnum)
 	return NULL;
     if (name[0] == '.')				/* cursor */
 	return &curwin->w_cursor;
-#ifdef FEAT_VISUAL
     if (name[0] == 'v' && name[1] == NUL)	/* Visual start */
     {
 	if (VIsual_active)
 	    return &VIsual;
 	return &curwin->w_cursor;
     }
-#endif
     if (name[0] == '\'')			/* mark */
     {
 	pp = getmark_buf_fnum(curbuf, name[1], FALSE, fnum);

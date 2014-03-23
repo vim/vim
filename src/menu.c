@@ -1640,7 +1640,6 @@ get_menu_index(menu, state)
 	idx = MENU_INDEX_INSERT;
     else if (state & CMDLINE)
 	idx = MENU_INDEX_CMDLINE;
-#ifdef FEAT_VISUAL
     else if (VIsual_active)
     {
 	if (VIsual_select)
@@ -1648,7 +1647,6 @@ get_menu_index(menu, state)
 	else
 	    idx = MENU_INDEX_VISUAL;
     }
-#endif
     else if (state == HITRETURN || state == ASKMORE)
 	idx = MENU_INDEX_CMDLINE;
     else if (finish_op)
@@ -1811,14 +1809,12 @@ menu_is_tearoff(name)
     static int
 get_menu_mode()
 {
-#ifdef FEAT_VISUAL
     if (VIsual_active)
     {
 	if (VIsual_select)
 	    return MENU_INDEX_SELECT;
 	return MENU_INDEX_VISUAL;
     }
-#endif
     if (State & INSERT)
 	return MENU_INDEX_INSERT;
     if ((State & CMDLINE) || State == ASKMORE || State == HITRETURN)
