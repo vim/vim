@@ -77,6 +77,10 @@
 # endif
 # include <floss.h>
 # define ROOT_UID 65535
+# define OLDXAW
+# if (_TANDEM_ARCH_ == 2 && __H_Series_RVU >= 621)
+#  define SA_ONSTACK_COMPATIBILITY
+# endif
 #else
 # define ROOT_UID 0
 #endif
