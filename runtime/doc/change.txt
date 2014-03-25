@@ -1650,7 +1650,7 @@ And a few warnings:
 7. Sorting text						*sorting*
 
 Vim has a sorting function and a sorting command.  The sorting function can be
-found here: |sort()|.
+found here: |sort()|, |uniq()|.
 
 							*:sor* *:sort*
 :[range]sor[t][!] [i][u][r][n][x][o] [/{pattern}/]

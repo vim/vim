@@ -942,6 +942,7 @@ New and extended functions: ~
 |tagfiles()|		List with tags file names
 |taglist()|		get list of matching tags (Yegappan Lakshmanan)
 |tr()|			translate characters (Ron Aaron)
+|uniq()|		remove copies of repeated adjacent list items
 |values()|		get List of Dictionary values
 |winnr()|		takes an argument: what window to use
 |winrestview()|		restore the view of the current window

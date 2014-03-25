@@ -327,6 +327,7 @@ examples: >
 Changing the order of items in a list: >
 	:call sort(list)		" sort a list alphabetically
 	:call reverse(list)		" reverse the order of items
+	:call uniq(sort(list))		" sort and remove duplicates
 
 
 For loop ~
@@ -2005,6 +2006,8 @@ trunc( {expr})			Float	truncate Float {expr}
 type( {name})			Number	type of variable {name}
 undofile( {name})		String	undo file name for {name}
 undotree()			List	undo file tree
+uniq( {list} [, {func} [, {dict}]])
+				List	remove adjacent duplicates from a list
 values( {dict})			List	values in {dict}
 virtcol( {expr})		Number	screen column of cursor or mark
 visualmode( [expr])		String	last visual mode used
@@ -5488,20 +5491,26 @@ sinh({expr})						*sinh()*
 
 
 sort({list} [, {func} [, {dict}]])			*sort()* *E702*
-		Sort the items in {list} in-place.  Returns {list}.  If you
-		want a list to remain unmodified make a copy first: >
+		Sort the items in {list} in-place.  Returns {list}.
+		
+		If you want a list to remain unmodified make a copy first: >
 			:let sortedlist = sort(copy(mylist))
 <		Uses the string representation of each item to sort on.
 		Numbers sort after Strings, |Lists| after Numbers.
 		For sorting text in the current buffer use |:sort|.
+
 		When {func} is given and it is one then case is ignored.
-		{dict} is for functions with the "dict" attribute.  It will be
-		used to set the local variable "self". |Dictionary-function|
 		When {func} is a |Funcref| or a function name, this function
 		is called to compare items.  The function is invoked with two
 		items as argument and must return zero if they are equal, 1 or
 		bigger if the first one sorts after the second one, -1 or
 		smaller if the first one sorts before the second one.
+
+		{dict} is for functions with the "dict" attribute.  It will be
+		used to set the local variable "self". |Dictionary-function|
+
+		Also see |uniq()|.
+
 		Example: >
 			func MyCompare(i1, i2)
 			   return a:i1 == a:i2 ? 0 : a:i1 > a:i2 ? 1 : -1
@@ -6168,6 +6177,14 @@ undotree()						*undotree()*
 		  "alt"		Alternate entry.  This is again a List of undo
 				blocks.  Each item may again have an "alt"
 				item.
+
+uniq({list} [, {func} [, {dict}]])			*uniq()* *E882*
+		Remove second and succeeding copies of repeated adjacent
+		{list} items in-place.  Returns {list}.  If you want a list
+		to remain unmodified make a copy first: >
+			:let newlist = uniq(copy(mylist))
+<		The default compare function uses the string representation of
+		each item.  For the use of {func} and {dict} see |sort()|.
 
 values({dict})						*values()*
 		Return a |List| with all the values of {dict}.	The |List| is
