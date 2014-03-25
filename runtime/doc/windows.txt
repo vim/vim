@@ -132,13 +132,20 @@ that have termcap codes for italics.
 CTRL-W s						*CTRL-W_s*
 CTRL-W S						*CTRL-W_S*
 CTRL-W CTRL-S						*CTRL-W_CTRL-S*
-:[N]sp[lit] [++opt] [+cmd]				*:sp* *:split*
+:[N]sp[lit] [++opt] [+cmd] [file]			*:sp* *:split*
 		Split current window in two.  The result is two viewports on
-		the same file.  Make new window N high (default is to use half
-		the height of the current window).  Reduces the current window
-		height to create room (and others, if the 'equalalways' option
-		is set, 'eadirection' isn't "hor", and one of them is higher
-		than the current or the new window).
+		the same file.
+		
+		Make the new window N high (default is to use half the height
+		of the current window).  Reduces the current window height to
+		create room (and others, if the 'equalalways' option is set,
+		'eadirection' isn't "hor", and one of them is higher than the
+		current or the new window).
+
+		If [file] is given it will be edited in the new window.  If it
+		is not loaded in any buffer, it will be read.  Else the new
+		window will use the already loaded buffer.
+
 		Note: CTRL-S does not work on all terminals and might block
 		further input, use CTRL-Q to get going again.
 		Also see |++opt| and |+cmd|.

@@ -7938,6 +7938,8 @@ do_exedit(eap, old_curwin)
 					       ? ECMD_ONE : eap->do_ecmd_lnum,
 		    (P_HID(curbuf) ? ECMD_HIDE : 0)
 		    + (eap->forceit ? ECMD_FORCEIT : 0)
+		      /* after a split we can use an existing buffer */
+		    + (old_curwin != NULL ? ECMD_OLDBUF : 0)
 #ifdef FEAT_LISTCMDS
 		    + (eap->cmdidx == CMD_badd ? ECMD_ADDBUF : 0 )
 #endif
