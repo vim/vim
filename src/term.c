@@ -4185,7 +4185,7 @@ check_termcode(max_offset, buf, bufsize, buflen)
 	    {
 #ifdef FEAT_MBYTE
 		int col;
-		int row_char;
+		int row_char = NUL;
 #endif
 		j = 0;
 		extra = 0;

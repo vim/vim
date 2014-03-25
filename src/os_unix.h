@@ -565,7 +565,9 @@ int mch_rename __ARGS((const char *src, const char *dest));
 # endif
 #endif
 
-#define HAVE_DUP		/* have dup() */
+#ifndef HAVE_DUP
+# define HAVE_DUP		/* have dup() */
+#endif
 #define HAVE_ST_MODE		/* have stat.st_mode */
 
 /* We have three kinds of ACL support. */
