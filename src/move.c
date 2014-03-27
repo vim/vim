@@ -772,6 +772,20 @@ curs_rows(wp, do_botline)
 	}
     }
 
+    /* Redraw when w_cline_row changes and 'relativenumber' or 'cursorline' is
+     * set. */
+    if ((curwin->w_p_rnu
+#ifdef FEAT_SYN_HL
+		|| curwin->w_p_cul
+#endif
+		)
+	    && (curwin->w_valid & VALID_CROW) == 0
+# ifdef FEAT_INS_EXPAND
+	    && !pum_visible()
+# endif
+	    )
+	redraw_later(SOME_VALID);
+
     wp->w_valid |= VALID_CROW|VALID_CHEIGHT;
 
     /* validate botline too, if update_screen doesn't do it */
@@ -1172,22 +1186,15 @@ curs_columns(may_scroll)
     if (prev_skipcol != curwin->w_skipcol)
 	redraw_later(NOT_VALID);
 
-    /* Redraw when w_row changes and 'relativenumber' is set */
-    if (((curwin->w_valid & VALID_WROW) == 0 && (curwin->w_p_rnu
 #ifdef FEAT_SYN_HL
-	/* or when w_row changes and 'cursorline' is set. */
-						|| curwin->w_p_cul
-#endif
-	))
-#ifdef FEAT_SYN_HL
-	/* or when w_virtcol changes and 'cursorcolumn' is set */
-	|| (curwin->w_p_cuc && (curwin->w_valid & VALID_VIRTCOL) == 0)
-#endif
-	)
+    /* Redraw when w_virtcol changes and 'cursorcolumn' is set */
+    if (curwin->w_p_cuc && (curwin->w_valid & VALID_VIRTCOL) == 0
 # ifdef FEAT_INS_EXPAND
-	    if (!pum_visible())
+	    && !pum_visible()
 # endif
-		redraw_later(SOME_VALID);
+	)
+	redraw_later(SOME_VALID);
+#endif
 
     curwin->w_valid |= VALID_WCOL|VALID_WROW|VALID_VIRTCOL;
 }
