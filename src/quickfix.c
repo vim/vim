@@ -2358,7 +2358,22 @@ ex_copen(eap)
     win = qf_find_win(qi);
 
     if (win != NULL && cmdmod.tab == 0)
+    {
 	win_goto(win);
+	if (eap->addr_count != 0)
+	{
+#ifdef FEAT_VERTSPLIT
+	    if (cmdmod.split & WSP_VERT)
+	    {
+		if (height != W_WIDTH(win))
+		    win_setwidth(height);
+	    }
+	    else
+#endif
+	    if (height != win->w_height)
+		win_setheight(height);
+	}
+    }
     else
     {
 	qf_buf = qf_find_buf(qi);
