@@ -88,8 +88,7 @@
 # define rb_int2big rb_int2big_stub
 #endif
 
-#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20 \
-	&& VIM_SIZEOF_INT < VIM_SIZEOF_LONG
+#if defined(DYNAMIC_RUBY_VER) && VIM_SIZEOF_INT < VIM_SIZEOF_LONG
 /* Ruby 2.0 defines a number of static functions which use rb_fix2int and
  * rb_num2int if VIM_SIZEOF_INT < VIM_SIZEOF_LONG (64bit) */
 # define rb_fix2int rb_fix2int_stub
@@ -203,8 +202,6 @@ static void ruby_vim_init(void);
 # define rb_inspect			dll_rb_inspect
 # define rb_int2inum			dll_rb_int2inum
 # if VIM_SIZEOF_INT < VIM_SIZEOF_LONG /* 64 bits only */
-#  define rb_fix2int			dll_rb_fix2int
-#  define rb_num2int			dll_rb_num2int
 #  define rb_num2uint			dll_rb_num2uint
 # endif
 # define rb_lastline_get			dll_rb_lastline_get
@@ -392,8 +389,7 @@ VALUE rb_int2big_stub(SIGNED_VALUE x)
 {
     return dll_rb_int2big(x);
 }
-#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20 \
-	&& VIM_SIZEOF_INT < VIM_SIZEOF_LONG
+#  if defined(DYNAMIC_RUBY_VER) && VIM_SIZEOF_INT < VIM_SIZEOF_LONG
 long rb_fix2int_stub(VALUE x)
 {
     return dll_rb_fix2int(x);
