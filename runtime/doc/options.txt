@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2013 Dec 04
+*options.txt*	For Vim version 7.4.  Last change: 2014 Mar 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6882,6 +6882,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	immediately deleted.  When 'swapfile' is set, and 'updatecount' is
 	non-zero, a swap file is immediately created.
 	Also see |swap-file| and |'swapsync'|.
+	If you want to open a new buffer without creating a swap file for it,
+	use the |:noswapfile| modifier.
 
 	This option is used together with 'bufhidden' and 'buftype' to
 	specify special kinds of buffers.   See |special-buffers|.

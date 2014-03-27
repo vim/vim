@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 7.4.  Last change: 2013 Apr 27
+*develop.txt*   For Vim version 7.4.  Last change: 2014 Mar 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -19,7 +19,6 @@ code.
 
 Vim is open source software.  Everybody is encouraged to contribute to help
 improving Vim.  For sending patches a context diff "diff -c" is preferred.
-Also see http://www.vim.org/tips/tip.php?tip_id=618.
 Also see http://vim.wikia.com/wiki/How_to_make_and_submit_a_patch.
 
 ==============================================================================

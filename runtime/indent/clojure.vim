@@ -6,7 +6,7 @@
 " Maintainer:	Sung Pae <self@sungpae.com>
 " URL:		https://github.com/guns/vim-clojure-static
 " License:	Same as Vim
-" Last Change:	16 February 2014
+" Last Change:	27 March 2014
 
 " TODO: Indenting after multibyte characters is broken:
 "       (let [Δ (if foo
@@ -70,7 +70,7 @@ if exists("*searchpairpos")
 	endfunction
 
 	function! s:IsParen()
-		return s:CurrentChar() =~ '\v[\(\)\[\]\{\}]' &&
+		return s:CurrentChar() =~# '\v[\(\)\[\]\{\}]' &&
 		     \ s:SynIdName() !~? '\vstring|regex|comment|character'
 	endfunction
 
@@ -82,7 +82,7 @@ if exists("*searchpairpos")
 			   \ ? a:patterns
 			   \ : map(split(a:patterns, ','), '"^" . v:val . "$"')
 		for pat in list
-			if a:string =~ pat | return 1 | endif
+			if a:string =~# pat | return 1 | endif
 		endfor
 	endfunction
 
@@ -148,6 +148,10 @@ if exists("*searchpairpos")
 		return val
 	endfunction
 
+	function! s:StripNamespaceAndMacroChars(word)
+		return substitute(a:word, "\\v%(.*/|[#'`~@^,]*)(.*)", '\1', '')
+	endfunction
+
 	function! s:ClojureIsMethodSpecialCaseWorker(position)
 		" Find the next enclosing form.
 		call search('\S', 'Wb')
@@ -167,7 +171,8 @@ if exists("*searchpairpos")
 		call cursor(nextParen)
 
 		call search('\S', 'W')
-		if g:clojure_special_indent_words =~ '\<' . s:CurrentWord() . '\>'
+		let w = s:StripNamespaceAndMacroChars(s:CurrentWord())
+		if g:clojure_special_indent_words =~# '\V\<' . w . '\>'
 			return 1
 		endif
 
@@ -273,9 +278,9 @@ if exists("*searchpairpos")
 		" metacharacters.
 		"
 		" e.g. clojure.core/defn and #'defn should both indent like defn.
-		let ww = substitute(w, "\\v%(.*/|[#'`~@^,]*)(.*)", '\1', '')
+		let ww = s:StripNamespaceAndMacroChars(w)
 
-		if &lispwords =~ '\V\<' . ww . '\>'
+		if &lispwords =~# '\V\<' . ww . '\>'
 			return paren[1] + &shiftwidth - 1
 		endif
 

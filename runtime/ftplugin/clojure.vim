@@ -5,7 +5,7 @@
 " Maintainer:	Sung Pae <self@sungpae.com>
 " URL:		https://github.com/guns/vim-clojure-static
 " License:	Same as Vim
-" Last Change:	16 February 2014
+" Last Change:	27 March 2014
 
 if exists("b:did_ftplugin")
 	finish
@@ -23,9 +23,8 @@ setlocal iskeyword+=?,-,*,!,+,/,=,<,>,.,:,$
 " of user-defined def* definitions.
 setlocal define=\\v[(/]def(ault)@!\\S*
 
-" Remove 't' from 'formatoptions' to avoid auto-wrapping code. The '+=croql'
-" is standard ftplugin boilerplate, although it is arguably intrusive.
-setlocal formatoptions-=t formatoptions+=croql
+" Remove 't' from 'formatoptions' to avoid auto-wrapping code.
+setlocal formatoptions-=t
 
 " Lisp comments are routinely nested (e.g. ;;; SECTION HEADING)
 setlocal comments=n:;
@@ -43,8 +42,9 @@ setlocal commentstring=;\ %s
 " Functions that accept a flat list of forms do not treat the first argument
 " specially and hence are not indented specially.
 "
-" Generated from https://github.com/guns/vim-clojure-static/blob/vim-release-009/clj/src/vim_clojure_static/generate.clj
-setlocal lispwords=as->,binding,bound-fn,case,catch,cond->,cond->>,condp,def,definline,definterface,defmacro,defmethod,defmulti,defn,defn-,defonce,defprotocol,defrecord,defstruct,deftest,deftest-,deftype,doall,dorun,doseq,dotimes,doto,extend,extend-protocol,extend-type,fn,for,if,if-let,if-not,let,letfn,locking,loop,ns,proxy,reify,set-test,testing,when,when-first,when-let,when-not,while,with-bindings,with-in-str,with-local-vars,with-open,with-precision,with-redefs,with-redefs-fn,with-test
+" -*- LISPWORDS -*-
+" Generated from https://github.com/guns/vim-clojure-static/blob/vim-release-010/clj/src/vim_clojure_static/generate.clj
+setlocal lispwords=as->,binding,bound-fn,case,catch,cond->,cond->>,condp,def,definline,definterface,defmacro,defmethod,defmulti,defn,defn-,defonce,defprotocol,defrecord,defstruct,deftest,deftest-,deftype,doseq,dotimes,doto,extend,extend-protocol,extend-type,fn,for,if,if-let,if-not,if-some,let,letfn,locking,loop,ns,proxy,reify,set-test,testing,when,when-first,when-let,when-not,when-some,while,with-bindings,with-in-str,with-local-vars,with-open,with-precision,with-redefs,with-redefs-fn,with-test
 
 " Provide insert mode completions for special forms and clojure.core. As
 " 'omnifunc' is set by popular Clojure REPL client plugins, we also set

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2014 Mar 22
+*todo.txt*      For Vim version 7.4.  Last change: 2014 Mar 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -66,17 +66,7 @@ when an option is set?
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
-Update for Clojure ftplugin. (Sung Pae).  Await discussion about formatting in
-ftplugins.
-
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
-
-Patch to add :noswapfile modifier. (Christian Brabandt, 2014 Mar 13)
-
-Patch to make ":sp {current-buffer-name}" not reload the buffer.
-(Christian Brabandt, 2013 Mar 13)
-
-Patch for quickfix window resizing.  Issue 199.  (Christian Brabandt)
 
 Using autoconf 2.69 gives a lot of warnings.
 
@@ -85,13 +75,6 @@ Problem with 'spellsuggest' file, only works for some words.
 Additional remark by glts: the suggested words are marked bad?
 
 Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
-
-Patch to use rubyarchhdrdir for Ruby 2.x. (James McCoy, 2014 Feb 24)
-
-Dynamic Ruby linking issues.  Patch by Danek Duvall (2014 Feb 26)
-and by Yukihiro Nakadaira (2014 Feb 27)
-
-Patch: Detect grep options for Solaris. (Danek Duvall, 2014 Feb 26)
 
 Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 
@@ -135,6 +118,40 @@ Patch to make has() check for Vim version and patch at the same time.
 
 Regression on pach 7.4.034. (Ingo Karkat, 2013 Nov 20)
 
+Include a plugin manager with Vim? Neobundle seems to be the best currently.
+Long message about this from ZyX, 2014 Mar 23.  And following replies.
+Also see http://vim-wiki.mawercer.de/wiki/topic/vim%20plugin%20managment.html
+User view:
+- Support multiple sources, basically any http:// URL.  Be able to look into
+  the files before deciding to install.
+- Be able to try out a plugin and remove it again with (almost) no traces.
+- Each plugin needs a "manifest" file that has the version, dependencies
+  (including Vim version and features), conflicts, list of files, etc.
+  Updater uses that to decide what/how to update.
+  Dependencies can use a URL for specific versions, or short name for scripts
+  on vim.org.
+- Once a plugin is installed it remembers where it came from, updater checks
+  there.  Can manually update when really needed.
+- Must be possible to install for one user.  Also system wide?
+- Can edit plugin config with Vim. Can temporarily disable a plugin.
+- Run the update manually, find latest version and install.
+- Be able to download without special tools, must work for 95% of users.
+Implementation:
+- Avoid the 'runtimepath' getting long.  Need some other way to keep each
+  plugin separate.
+- When installing or updating, first figure out what needs to be done. This
+  may involve recursively fetching manifest files for dependencies.  Then show
+  the user what's going to change and ask for OK.
+- Scripts on Vim.org must be able to consist of several files.  Is zip format
+  sufficient?  Upload the manifest?  Or refer to a site that has the manifest?
+- Best is to fetch individual files or use a Vimball. Reduces dependency on
+  tools that might be missing and allows inspection of the files before
+  installing.
+Out of scope:
+- Overview of plugins, ratings, comments, etc.  That's another world.
+- Development work on plugins (although diff with distributed version would be
+  useful).
+
 Patch to include smack support (Linux security library). (Jose Bollo, 2014 Jan
 14) Update Jan 15.
 
@@ -158,7 +175,7 @@ Patch to make test 100 work on MS-Windows. (Taro Muraoka, 2013 Dec 12)
 Patch to define macros for hardcoded values. (Elias Diem, 2013 Dec 14)
 
 Patch to add sortuniq(). (Cade Forester, 2014 Mar 19)
-Or add uniq() instead?
+Or add uniq() instead?  Patch by lcd47, but it has problems.
 
 Perl: support for Activestate perl 5.18: Issue 170.
 
@@ -351,6 +368,7 @@ MS-Windows: Crash opening very long file name starting with "\\".
 Patch to have text objects defined by arbitrary single characters. (Daniel
 Thau, 2013 Nov 20, 2014 Jan 29, 2014 Jan 31)
 Ben Fritz: problem with 'selection' set to "exclusive".
+Updated to current Vim, not quite right yet. (Ben Fritz, 2014 Mar 27)
 
 Patch to select the next or previous text object if there isn't one under the
 cursor. (Daniel Thau, 2013 Nov 20)

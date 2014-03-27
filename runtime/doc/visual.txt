@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 7.4.  Last change: 2013 Nov 02
+*visual.txt*    For Vim version 7.4.  Last change: 2014 Mar 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -22,7 +22,7 @@ This is introduced in section |04.4| of the user manual.
 
 {Vi has no Visual mode, the name "visual" is used for Normal mode, to
 distinguish it from Ex mode}
-{not available when the |+visual| feature was disabled when compiling}
+{Since Vim 7.4.200 the |+visual| feature is always included}
 
 ==============================================================================
 1. Using Visual mode					*visual-use*

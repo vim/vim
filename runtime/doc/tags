@@ -2530,6 +2530,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :norm	various.txt	/*:norm*
 :normal	various.txt	/*:normal*
 :normal-range	various.txt	/*:normal-range*
+:nos	recover.txt	/*:nos*
+:noswapfile	recover.txt	/*:noswapfile*
 :nu	various.txt	/*:nu*
 :number	various.txt	/*:number*
 :nun	map.txt	/*:nun*
@@ -4308,6 +4310,7 @@ E879	syntax.txt	/*E879*
 E88	windows.txt	/*E88*
 E880	if_pyth.txt	/*E880*
 E881	autocmd.txt	/*E881*
+E882	eval.txt	/*E882*
 E89	message.txt	/*E89*
 E90	message.txt	/*E90*
 E91	options.txt	/*E91*
@@ -5725,6 +5728,7 @@ ft-changelog-plugin	filetype.txt	/*ft-changelog-plugin*
 ft-changelog-syntax	syntax.txt	/*ft-changelog-syntax*
 ft-chill-syntax	syntax.txt	/*ft-chill-syntax*
 ft-clojure-indent	indent.txt	/*ft-clojure-indent*
+ft-clojure-syntax	syntax.txt	/*ft-clojure-syntax*
 ft-cobol-syntax	syntax.txt	/*ft-cobol-syntax*
 ft-coldfusion-syntax	syntax.txt	/*ft-coldfusion-syntax*
 ft-cpp-syntax	syntax.txt	/*ft-cpp-syntax*
@@ -5895,6 +5899,7 @@ g:ada_with_gnat_project_files	ft_ada.txt	/*g:ada_with_gnat_project_files*
 g:ada_withuse_ordinary	ft_ada.txt	/*g:ada_withuse_ordinary*
 g:clojure_align_multiline_strings	indent.txt	/*g:clojure_align_multiline_strings*
 g:clojure_align_subforms	indent.txt	/*g:clojure_align_subforms*
+g:clojure_fold	syntax.txt	/*g:clojure_fold*
 g:clojure_fuzzy_indent	indent.txt	/*g:clojure_fuzzy_indent*
 g:clojure_fuzzy_indent_blacklist	indent.txt	/*g:clojure_fuzzy_indent_blacklist*
 g:clojure_fuzzy_indent_patterns	indent.txt	/*g:clojure_fuzzy_indent_patterns*
@@ -8316,6 +8321,7 @@ undo_ftplugin	usr_41.txt	/*undo_ftplugin*
 undofile()	eval.txt	/*undofile()*
 undotree()	eval.txt	/*undotree()*
 unicode	mbyte.txt	/*unicode*
+uniq()	eval.txt	/*uniq()*
 unix	os_unix.txt	/*unix*
 unlisted-buffer	windows.txt	/*unlisted-buffer*
 up-down-motions	motion.txt	/*up-down-motions*

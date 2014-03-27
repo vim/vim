@@ -2,7 +2,7 @@
 " Language:	BibTeX (bibliographic database format for (La)TeX)
 " Maintainer:	Bernd Feige <Bernd.Feige@gmx.net>
 " Filenames:	*.bib
-" Last Change:	2011 Dec 25
+" Last Change:	2014 Mar 26
 
 " Thanks to those who pointed out problems with this file or supplied fixes!
 
@@ -28,7 +28,7 @@ syn keyword bibType contained	article book booklet conference inbook
 syn keyword bibType contained	incollection inproceedings manual
 syn keyword bibType contained	mastersthesis misc phdthesis
 syn keyword bibType contained	proceedings techreport unpublished
-syn keyword bibType contained	string
+syn keyword bibType contained	string preamble
 
 syn keyword bibEntryKw contained	address annote author booktitle chapter
 syn keyword bibEntryKw contained	crossref edition editor howpublished

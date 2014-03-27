@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.4.  Last change: 2014 Mar 22
+*index.txt*     For Vim version 7.4.  Last change: 2014 Mar 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1361,13 +1361,14 @@ tag	      command	      action ~
 |:nmenu|	:nme[nu]	add menu for Normal mode
 |:nnoremap|	:nn[oremap]	like ":noremap" but for Normal mode
 |:nnoremenu|	:nnoreme[nu]	like ":noremenu" but for Normal mode
-|:noautocmd|	:noa[utocmd]	following command don't trigger autocommands
+|:noautocmd|	:noa[utocmd]	following commands don't trigger autocommands
 |:noremap|	:no[remap]	enter a mapping that will not be remapped
 |:nohlsearch|	:noh[lsearch]	suspend 'hlsearch' highlighting
 |:noreabbrev|	:norea[bbrev]	enter an abbreviation that will not be
 				remapped
 |:noremenu|	:noreme[nu]	enter a menu that will not be remapped
 |:normal|	:norm[al]	execute Normal mode commands
+|:noswapfile|	:nos[wapfile]	following commands don't create a swap file
 |:number|	:nu[mber]	print lines with line number
 |:nunmap|	:nun[map]	like ":unmap" but for Normal mode
 |:nunmenu|	:nunme[nu]	remove menu for Normal mode

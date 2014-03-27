@@ -686,7 +686,7 @@ two spaces relative to the opening paren:
 	  baz)
 <
 Setting this option changes this behavior so that all subforms are aligned to
-the same column:
+the same column, emulating the default behavior of clojure-mode.el:
 >
 	(foo
 	 bar
@@ -697,7 +697,6 @@ This option is off by default.
 	" Default
 	let g:clojure_align_subforms = 0
 <
-
 
 FORTRAN							*ft-fortran-indent*
 

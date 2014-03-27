@@ -3,14 +3,14 @@
 # Об условиях использования читайте в редакторе Vim ":help uganda"
 #
 # vassily "vr" ragosin <vrr@users.sourceforge.net>, 2004
-# Sergey Alyoshin <alyoshin.s@gmail.com>, 2013
+# Sergey Alyoshin <alyoshin.s@gmail.com>, 2013-2014
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: vim_7.4_ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-31 16:42+0400\n"
-"PO-Revision-Date: 2013-08-31 21:11+0400\n"
+"POT-Creation-Date: 2014-03-24 12:18+0400\n"
+"PO-Revision-Date: 2014-03-24 12:18 +0400\n"
 "Last-Translator: Sergey Alyoshin <alyoshin.s@gmail.com>\n"
 "Language-Team: \n"
 "Language: Russian\n"
@@ -79,6 +79,9 @@ msgstr "Один буфер очищен"
 msgid "%d buffers wiped out"
 msgstr "Всего очищено буферов: %d"
 
+msgid "E90: Cannot unload last buffer"
+msgstr "E90: Невозможно выгрузить из памяти последний буфер"
+
 msgid "E84: No modified buffer found"
 msgstr "E84: Изменённых буферов не обнаружено"
 
@@ -100,9 +103,6 @@ msgstr "E88: Это первый буфер"
 msgid "E89: No write since last change for buffer %ld (add ! to override)"
 msgstr ""
 "E89: Изменения в буфере %ld не сохранены (добавьте !, чтобы обойти проверку)"
-
-msgid "E90: Cannot unload last buffer"
-msgstr "E90: Невозможно выгрузить из памяти последний буфер"
 
 msgid "W14: Warning: List of file names overflow"
 msgstr "W14: Предупреждение: переполнение списка имён файлов"
@@ -568,7 +568,6 @@ msgstr "E725: Вызов функции dict без словаря: %s"
 msgid "E808: Number or Float required"
 msgstr "E808: Требуется целое число или с плавающей точкой"
 
-#. Используется для получения "значение параметра p()" в E741 и E742
 msgid "add() argument"
 msgstr "параметра add()"
 
@@ -590,15 +589,12 @@ msgstr "&Ok"
 msgid "E737: Key already exists: %s"
 msgstr "E737: Ключ уже существует: %s"
 
-#. Используется для получения "значение параметра p()" в E741 и E742
 msgid "extend() argument"
 msgstr "параметра extend()"
 
-#. Используется для получения "значение параметра p()" в E741 и E742
 msgid "map() argument"
 msgstr "параметра map()"
 
-#. Используется для получения "значение параметра p()" в E741 и E742
 msgid "filter() argument"
 msgstr "параметра filter()"
 
@@ -620,7 +616,6 @@ msgstr ""
 msgid "called inputrestore() more often than inputsave()"
 msgstr "Функция inputrestore() вызывается чаще, чем функция inputsave()"
 
-#. Используется для получения "значение параметра p()" в E741 и E742
 msgid "insert() argument"
 msgstr "параметра insert()"
 
@@ -649,21 +644,18 @@ msgstr "E241: Не могу отправить сообщение для %s"
 msgid "E277: Unable to read a server reply"
 msgstr "E277: Сервер не отвечает"
 
-#. Используется для получения "значение параметра p()" в E741 и E742
 msgid "remove() argument"
 msgstr "параметра remove()"
 
 msgid "E655: Too many symbolic links (cycle?)"
 msgstr "E655: Слишком много символических ссылок (цикл?)"
 
-#. Используется для получения "значение параметра p()" в E741 и E742
 msgid "reverse() argument"
 msgstr "параметра reverse()"
 
 msgid "E258: Unable to send to client"
 msgstr "E258: Не могу ответить клиенту"
 
-#. Используется для получения "значение параметра p()" в E741 и E742
 msgid "sort() argument"
 msgstr "параметра sort()"
 
@@ -715,7 +707,6 @@ msgstr ""
 msgid "E705: Variable name conflicts with existing function: %s"
 msgstr "E705: Имя переменной конфликтует с существующей функцией: %s"
 
-#. Используется с %s = "параметера p"
 #, c-format
 msgid "E741: Value is locked: %s"
 msgstr "E741: Значение %s заблокировано"
@@ -723,7 +714,6 @@ msgstr "E741: Значение %s заблокировано"
 msgid "Unknown"
 msgstr "Неизвестно"
 
-#. Используется с %s = "параметера p()"
 #, c-format
 msgid "E742: Cannot change value of %s"
 msgstr "E742: Невозможно изменить значение %s"
@@ -1550,7 +1540,7 @@ msgstr "E603: :catch без :try"
 #. Give up for a ":catch" after ":finally" and ignore it.
 #. * Just parse.
 msgid "E604: :catch after :finally"
-msgstr "E604: :catch без :finally"
+msgstr "E604: :catch после :finally"
 
 msgid "E606: :finally without :try"
 msgstr "E606: :finally без :try"
@@ -4029,13 +4019,6 @@ msgstr " (Прервано)"
 msgid "Beep!"
 msgstr "Би-би!"
 
-msgid "Vim: preserving files...\n"
-msgstr "Vim: сохранение файлов...\n"
-
-#. close all memfiles, without deleting
-msgid "Vim: Finished.\n"
-msgstr "Vim: Готово.\n"
-
 msgid "ERROR: "
 msgstr "ОШИБКА: "
 
@@ -4551,17 +4534,6 @@ msgstr "E244: Недопустимое имя кодировки \"%s\" в им�
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Недопустимый символ '%c' в имени шрифта \"%s\""
 
-msgid "Vim: Double signal, exiting\n"
-msgstr "Vim: Двойной сигнал, завершение работы\n"
-
-#, c-format
-msgid "Vim: Caught deadly signal %s\n"
-msgstr "Vim: Получен убийственный сигнал %s\n"
-
-#, c-format
-msgid "Vim: Caught deadly signal\n"
-msgstr "Vim: Получен убийственный сигнал\n"
-
 #, c-format
 msgid "Opening the X display took %ld msec"
 msgstr "Открытие дисплея X заняло %ld msec"
@@ -4869,12 +4841,16 @@ msgstr ""
 "E864: после \\%#= может быть только 0, 1 или 2. Будет использоваться "
 "автоматическая машина"
 
+msgid "E865: (NFA) Regexp end encountered prematurely"
+msgstr "E865: (НКА) неожиданный конец регулярного выражения"
+
 #, c-format
 msgid "E866: (NFA regexp) Misplaced %c"
 msgstr "E866: (рег. выражение НКА) неожиданный %c"
 
-msgid "E865: (NFA) Regexp end encountered prematurely"
-msgstr "E865: (НКА) неожиданный конец регулярного выражения"
+#, c-format
+msgid "E877: (NFA regexp) Invalid character class: %ld"
+msgstr "E877: (рег. выражение НКА) неправильный класс символов: %ld"
 
 #, c-format
 msgid "E867: (NFA) Unknown operator '\\z%c'"
@@ -5378,12 +5354,12 @@ msgid "E765: 'spellfile' does not have %ld entries"
 msgstr "E765: 'spellfile' не содержит %ld элементов"
 
 #, c-format
-msgid "Word removed from %s"
-msgstr "Слово удалено из %s"
+msgid "Word '%.*s' removed from %s"
+msgstr "Слово '%.*s' удалено из %s"
 
 #, c-format
-msgid "Word added to %s"
-msgstr "Слово добавлено в %s"
+msgid "Word '%.*s' added to %s"
+msgstr "Слово '%.*s' добавлено в %s"
 
 msgid "E763: Word characters differ between spell files"
 msgstr "E763: Символы слов отличаются в файлах правописания"
@@ -5773,8 +5749,8 @@ msgstr "Вместо пустого выделения используется 
 
 #. This happens when the FileChangedRO autocommand changes the
 #. * file in a way it becomes shorter.
-msgid "E834: Line count changed unexpectedly"
-msgstr "E834: Неожиданно изменился счётчик строк"
+msgid "E881: Line count changed unexpectedly"
+msgstr "E881: Неожиданно изменился счётчик строк"
 
 #. must display the prompt
 msgid "No undo possible; continue anyway"
@@ -6489,6 +6465,9 @@ msgstr "E485: Невозможно прочитать файл %s"
 msgid "E37: No write since last change (add ! to override)"
 msgstr "E37: Изменения не сохранены (добавьте !, чтобы обойти проверку)"
 
+msgid "E37: No write since last change"
+msgstr "E37: Изменения не сохранены"
+
 msgid "E38: Null argument"
 msgstr "E38: Нулевой параметр"
 
@@ -6688,7 +6667,7 @@ msgstr "Значение слишком велико для целочислен
 msgid "value is too small to fit into C int type"
 msgstr "Значение слишком мало для целочисленного типа C"
 
-msgid "number must be greater then zero"
+msgid "number must be greater than zero"
 msgstr "Номер должен быть больше нуля"
 
 msgid "number must be greater or equal to zero"
@@ -6750,15 +6729,33 @@ msgstr "Индекс списка за пределами диапазона"
 msgid "internal error: failed to get vim list item %d"
 msgstr "Внутренняя ошибка: не удалось получить элемент VIM-списка %d"
 
-msgid "failed to add item to list"
-msgstr "Невозможно добавить элемент в список"
+msgid "slice step cannot be zero"
+msgstr "Шаг выборки не может быть нулевым"
+
+#, c-format
+msgid "attempt to assign sequence of size greater than %d to extended slice"
+msgstr ""
+"Попытка присвоить последовательность размером больше чем %d к расширенной "
+"выборке"
 
 #, c-format
 msgid "internal error: no vim list item %d"
 msgstr "Внутренняя ошибка: нет элемента VIM-списка %d"
 
+msgid "internal error: not enough list items"
+msgstr "Внутренняя ошибка: недостаточно элемнтов списка"
+
 msgid "internal error: failed to add item to list"
 msgstr "Внутренняя ошибка: не удалось добавить элемент в список"
+
+#, c-format
+msgid "attempt to assign sequence of size %d to extended slice of size %d"
+msgstr ""
+"Попытка присвоить последовательность размером %d к расширенной выборке "
+"размером %d"
+
+msgid "failed to add item to list"
+msgstr "Невозможно добавить элемент в список"
 
 msgid "cannot delete vim.List attributes"
 msgstr "Невозможно удалить атрибуты vim.List"

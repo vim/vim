@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.4.  Last change: 2014 Feb 11
+*repeat.txt*    For Vim version 7.4.  Last change: 2014 Mar 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -588,6 +588,12 @@ the |+reltime| feature, which is present more often.
 
 For profiling syntax highlighting see |:syntime|.
 
+For example, to profile the one_script.vim script file: >
+	:profile start /tmp/one_script_profile
+	:profile file one_script.vim
+	:source one_script.vim
+	:exit
+
 
 :prof[ile] start {fname}			*:prof* *:profile* *E750*
 		Start profiling, write the output in {fname} upon exit.
@@ -612,8 +618,10 @@ For profiling syntax highlighting see |:syntime|.
 		This only profiles the script itself, not the functions
 		defined in it.
 		When the [!] is added then all functions defined in the script
-		will also be profiled.  But only if the script is loaded after
-		this command.
+		will also be profiled.
+		Note that profiling only starts when the script is loaded
+		after this command.  A :profile command in the script itself
+		won't work.
 
 
 :profd[el] ...						*:profd* *:profdel*

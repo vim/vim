@@ -1,4 +1,4 @@
-*recover.txt*   For Vim version 7.4.  Last change: 2010 Jul 20
+*recover.txt*   For Vim version 7.4.  Last change: 2014 Mar 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -84,7 +84,7 @@ created anyway.
 The 'swapfile' option can be reset to avoid creating a swapfile.  And the
 |:noswapfile| modifier can be used to not create a swapfile for a new buffer.
 
-:noswap[file]   {command}			*:noswap* *:noswapfile*
+:noswap[file]   {command}			*:nos* *:noswapfile*
 		Execute {command}. If it contains a command that loads a new
 		buffer, it will be loaded without creating a swapfile and the
 		'swapfile' option will be reset.  If a buffer already had a

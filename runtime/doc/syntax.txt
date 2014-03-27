@@ -1022,6 +1022,21 @@ Or to avoid the highlighting: >
 This works immediately.
 
 
+CLOJURE							*ft-clojure-syntax*
+
+Setting *g:clojure_fold* enables folding Clojure code via the syntax engine.
+Any list, vector, or map that extends over more than one line can be folded
+using the standard Vim |fold-commands|.
+
+Please note that this option does not work with scripts that redefine the
+bracket syntax regions, such as rainbow-parentheses plugins.
+
+This option is off by default.
+>
+	" Default
+	let g:clojure_fold = 0
+<
+
 COBOL						*cobol.vim* *ft-cobol-syntax*
 
 COBOL highlighting has different needs for legacy code than it does for fresh

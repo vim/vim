@@ -23,8 +23,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Esperanto)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-27 04:50+0200\n"
-"PO-Revision-Date: 2013-05-27 04:55+0200\n"
+"POT-Creation-Date: 2014-03-21 23:15+0100\n"
+"PO-Revision-Date: 2014-03-21 23:16+0100\n"
 "Last-Translator: Dominique PELLÉ <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "Language: eo\n"
@@ -93,6 +93,9 @@ msgstr "1 bufro detruita"
 msgid "%d buffers wiped out"
 msgstr "%d bufroj detruitaj"
 
+msgid "E90: Cannot unload last buffer"
+msgstr "E90: Ne eblas malŝargi la lastan bufron"
+
 msgid "E84: No modified buffer found"
 msgstr "E84: Neniu modifita bufro trovita"
 
@@ -115,9 +118,6 @@ msgid "E89: No write since last change for buffer %ld (add ! to override)"
 msgstr ""
 "E89: Neniu skribo de post la lasta ŝanĝo de la bufro %ld (aldonu ! por "
 "transpasi)"
-
-msgid "E90: Cannot unload last buffer"
-msgstr "E90: Ne eblas malŝargi la lastan bufron"
 
 msgid "W14: Warning: List of file names overflow"
 msgstr "W14: Averto: Listo de dosiernomoj troas"
@@ -152,6 +152,9 @@ msgstr "[Nova dosiero]"
 
 msgid "[Read errors]"
 msgstr "[Eraroj de legado]"
+
+msgid "[RO]"
+msgstr "[Nurlegebla]"
 
 msgid "[readonly]"
 msgstr "[nurlegebla]"
@@ -437,6 +440,9 @@ msgstr "E130: Nekonata funkcio: %s"
 msgid "E461: Illegal variable name: %s"
 msgstr "E461: Nevalida nomo de variablo: %s"
 
+msgid "E806: using Float as a String"
+msgstr "E806: uzo de Glitpunktnombro kiel Ĉeno"
+
 msgid "E687: Less targets than List items"
 msgstr "E687: Malpli da celoj ol Listeroj"
 
@@ -596,12 +602,12 @@ msgstr "E785: complete() uzeblas nur en Enmeta reĝimo"
 msgid "&Ok"
 msgstr "&Bone"
 
-msgid "extend() argument"
-msgstr "argumento de extend()"
-
 #, c-format
 msgid "E737: Key already exists: %s"
 msgstr "E737: Ŝlosilo jam ekzistas: %s"
+
+msgid "extend() argument"
+msgstr "argumento de extend()"
 
 msgid "map() argument"
 msgstr "argumento de map()"
@@ -699,9 +705,6 @@ msgstr "E730: uzo de Listo kiel Ĉeno"
 
 msgid "E731: using Dictionary as a String"
 msgstr "E731: uzo de Vortaro kiel Ĉeno"
-
-msgid "E806: using Float as a String"
-msgstr "E806: uzo de Glitpunktnombro kiel Ĉeno"
 
 #, c-format
 msgid "E706: Variable type mismatch for: %s"
@@ -1664,9 +1667,6 @@ msgstr "[kontaktoskatolo]"
 msgid "[character special]"
 msgstr "[speciala signo]"
 
-msgid "[RO]"
-msgstr "[Nurlegebla]"
-
 msgid "[CR missing]"
 msgstr "[CR mankas]"
 
@@ -2268,32 +2268,28 @@ msgid "Font '%s' is not fixed-width"
 msgstr "Tiparo '%s' ne estas egallarĝa"
 
 #, c-format
-msgid "E253: Fontset name: %s\n"
-msgstr "E253: Nomo de tiparo: %s\n"
+msgid "E253: Fontset name: %s"
+msgstr "E253: Nomo de tiparo: %s"
 
 #, c-format
-msgid "Font0: %s\n"
-msgstr "Font0: %s\n"
+msgid "Font0: %s"
+msgstr "Font0: %s"
 
 #, c-format
-msgid "Font1: %s\n"
-msgstr "Font1: %s\n"
+msgid "Font1: %s"
+msgstr "Font1: %s"
 
 #, c-format
-msgid "Font%ld width is not twice that of font0\n"
-msgstr "Font%ld ne estas duoble pli larĝa ol font0\n"
+msgid "Font%ld width is not twice that of font0"
+msgstr "Font%ld ne estas duoble pli larĝa ol font0"
 
 #, c-format
-msgid "Font0 width: %ld\n"
-msgstr "Larĝo de font0: %ld\n"
+msgid "Font0 width: %ld"
+msgstr "Larĝo de font0: %ld"
 
 #, c-format
-msgid ""
-"Font1 width: %ld\n"
-"\n"
-msgstr ""
-"Larĝo de Font1: %ld\n"
-"\n"
+msgid "Font1 width: %ld"
+msgstr "Larĝo de Font1: %ld"
 
 msgid "Invalid font specification"
 msgstr "Nevalida tiparo specifita"
@@ -2482,6 +2478,9 @@ msgstr "E566: Ne eblis krei duktojn de cscope"
 msgid "E622: Could not fork for cscope"
 msgstr "E622: Ne eblis forki cscope"
 
+msgid "cs_create_connection setpgid failed"
+msgstr "plenumo de cs_create_connection-setgpid fiaskis"
+
 msgid "cs_create_connection exec failed"
 msgstr "plenumo de cs_create_connection fiaskis"
 
@@ -2649,9 +2648,6 @@ msgstr "nepermesebla en sabloludejo de Vim"
 msgid "E836: This Vim cannot execute :python after using :py3"
 msgstr "E836: Vim ne povas plenumi :python post uzo de :py3"
 
-msgid "only string keys are allowed"
-msgstr "nur ĉenaj ŝlosiloj estas permeseblaj"
-
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
 "loaded."
@@ -2664,9 +2660,6 @@ msgstr "E659: Ne eblas alvoki Pitonon rekursie"
 
 msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: Vim ne povas plenumi :py3  post uzo de :python"
-
-msgid "index must be int or slice"
-msgstr "indekso devas esti 'int' aŭ 'slice'"
 
 msgid "E265: $_ must be an instance of String"
 msgstr "E265: $_ devas esti apero de Ĉeno"
@@ -4009,13 +4002,6 @@ msgstr " (Interrompita)"
 msgid "Beep!"
 msgstr "Bip!"
 
-msgid "Vim: preserving files...\n"
-msgstr "Vim: konservo de dosieroj...\n"
-
-#. close all memfiles, without deleting
-msgid "Vim: Finished.\n"
-msgstr "Vim: Finita.\n"
-
 msgid "ERROR: "
 msgstr "ERARO: "
 
@@ -4529,17 +4515,6 @@ msgstr "E244: Nevalida nomo de signaro \"%s\" en nomo de tiparo \"%s\""
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Nevalida signo '%c' en nomo de tiparo \"%s\""
 
-msgid "Vim: Double signal, exiting\n"
-msgstr "Vim: Duobla signalo, eliranta\n"
-
-#, c-format
-msgid "Vim: Caught deadly signal %s\n"
-msgstr "Vim: Kaptis mortigantan signalon %s\n"
-
-#, c-format
-msgid "Vim: Caught deadly signal\n"
-msgstr "Vim: Kaptis mortigantan signalon\n"
-
 #, c-format
 msgid "Opening the X display took %ld msec"
 msgstr "Malfermo de vidigo X daŭris %ld msek"
@@ -4769,6 +4744,21 @@ msgstr "E54: Neekvilibra %s("
 msgid "E55: Unmatched %s)"
 msgstr "E55: Neekvilibra %s"
 
+msgid "E66: \\z( not allowed here"
+msgstr "E66: \\z( estas nepermesebla tie"
+
+# DP: vidu http://www.thefreedictionary.com/et+al.
+msgid "E67: \\z1 et al. not allowed here"
+msgstr "E67: \\z1 kaj aliaj estas nepermeseblaj tie"
+
+#, c-format
+msgid "E69: Missing ] after %s%%["
+msgstr "E69: Mankas ] post %s%%["
+
+#, c-format
+msgid "E70: Empty %s%%[]"
+msgstr "E70: Malplena %s%%[]"
+
 msgid "E339: Pattern too long"
 msgstr "E339: Ŝablono tro longa"
 
@@ -4808,23 +4798,8 @@ msgstr "E64: %s%c sekvas nenion"
 msgid "E65: Illegal back reference"
 msgstr "E65: Nevalida retro-referenco"
 
-msgid "E66: \\z( not allowed here"
-msgstr "E66: \\z( estas permesebla tie"
-
-# DP: vidu http://www.thefreedictionary.com/et+al.
-msgid "E67: \\z1 et al. not allowed here"
-msgstr "E67: \\z1 kaj aliaj estas nepermeseblaj tie"
-
 msgid "E68: Invalid character after \\z"
 msgstr "E68: Nevalida signo post \\z"
-
-#, c-format
-msgid "E69: Missing ] after %s%%["
-msgstr "E69: Mankas ] post %s%%["
-
-#, c-format
-msgid "E70: Empty %s%%[]"
-msgstr "E70: Malplena %s%%[]"
 
 #, c-format
 msgid "E678: Invalid character after %s%%[dxouU]"
@@ -4848,16 +4823,24 @@ msgstr ""
 "E864: \\%#= povas nur esti sekvita de 0, 1, aŭ 2. La aŭtomata motoro de "
 "regulesprimo estos uzata "
 
-#, c-format
-msgid "E866: (NFA regexp) Misplaced %c"
-msgstr "E866: (NFA-regulesprimo) Mispoziciigita %c"
-
 msgid "E865: (NFA) Regexp end encountered prematurely"
 msgstr "E865: (NFA) Trovis finon de regulesprimo tro frue"
 
 #, c-format
+msgid "E866: (NFA regexp) Misplaced %c"
+msgstr "E866: (NFA-regulesprimo) Mispoziciigita %c"
+
+#, c-format
+msgid "E877: (NFA regexp) Invalid character class: %ld"
+msgstr "E877: (NFA-regulesprimo) Nevalida klaso de signo: %ld"
+
+#, c-format
 msgid "E867: (NFA) Unknown operator '\\z%c'"
 msgstr "E867: (NFA) Nekonata operatoro '\\z%c'"
+
+#, c-format
+msgid "E867: (NFA) Unknown operator '\\%%%c'"
+msgstr "E867: (NFA) Nekonata operatoro '\\%%%c'"
 
 #. should never happen
 msgid "E868: Error building NFA with equivalence class!"
@@ -4870,13 +4853,18 @@ msgstr "E869: (NFA) Nekonata operatoro '\\@%c'"
 msgid "E870: (NFA regexp) Error reading repetition limits"
 msgstr "E870: (NFS-regulesprimo) Eraro dum legado de limoj de ripeto"
 
+#. Can't have a multi follow a multi.
 msgid "E871: (NFA regexp) Can't have a multi follow a multi !"
 msgstr ""
 "E871: (NFA-regulesprimo) Ne povas havi mult-selekton tuj post alia mult-"
 "selekto!"
 
+#. Too many `('
 msgid "E872: (NFA regexp) Too many '('"
 msgstr "E872: (NFA-regulesprimo) tro da '('"
+
+msgid "E879: (NFA regexp) Too many \\z("
+msgstr "E879: (NFA-regulesprimo) tro da \\z("
 
 msgid "E873: (NFA regexp) proper termination error"
 msgstr "E873: (NFA-regulesprimo) propra end-eraro"
@@ -4894,17 +4882,8 @@ msgstr ""
 msgid "E876: (NFA regexp) Not enough space to store the whole NFA "
 msgstr "E876: (NFA-regulesprimo) ne sufiĉa spaco por enmomorigi la tutan NFA "
 
-msgid "E999: (NFA regexp internal error) Should not process NOT node !"
-msgstr ""
-"E999: (interna eraro de NFA-regulesprimo) Ne devus procezi nodon 'NOT'!"
-
-#. should not be here :P
-msgid "E877: (NFA regexp) Invalid character class "
-msgstr "E877: (NFA-regulesprimo) Nevalida klaso de signo "
-
-#, c-format
-msgid "(NFA) COULD NOT OPEN %s !"
-msgstr "(NFA) NE POVIS MALFERMI %s!"
+msgid "E878: (NFA) Could not allocate memory for branch traversal!"
+msgstr "E878: (NFA) Ne povis asigni memoron por traigi branĉojn!"
 
 msgid ""
 "Could not open temporary log file for writing, displaying on stderr ... "
@@ -4912,8 +4891,9 @@ msgstr ""
 "Ne povis malfermi provizoran protokolan dosieron por skribi, nun montras sur "
 "stderr ..."
 
-msgid "E878: (NFA) Could not allocate memory for branch traversal!"
-msgstr "E878: (NFA) Ne povis asigni memoron por traigi branĉojn!"
+#, c-format
+msgid "(NFA) COULD NOT OPEN %s !"
+msgstr "(NFA) NE POVIS MALFERMI %s!"
 
 msgid "Could not open temporary log file for writing "
 msgstr "Ne povis malfermi la provizoran protokolan dosieron por skribi "
@@ -5354,12 +5334,12 @@ msgid "E765: 'spellfile' does not have %ld entries"
 msgstr "E765: 'spellfile' ne havas %ld rikordojn"
 
 #, c-format
-msgid "Word removed from %s"
-msgstr "Vorto fortirita el %s"
+msgid "Word '%.*s' removed from %s"
+msgstr "Vorto '%.*s' fortirita el %s"
 
 #, c-format
-msgid "Word added to %s"
-msgstr "Vorto aldonita al %s"
+msgid "Word '%.*s' added to %s"
+msgstr "Vorto '%.*s' aldonita al %s"
 
 msgid "E763: Word characters differ between spell files"
 msgstr "E763: Signoj de vorto malsamas tra literumaj dosieroj"
@@ -5413,6 +5393,9 @@ msgstr "E782: eraro dum legado de dosiero .sug: %s"
 msgid "E783: duplicate char in MAP entry"
 msgstr "E783: ripetita signo en rikordo MAP"
 
+msgid "No Syntax items defined for this buffer"
+msgstr "Neniu sintaksa elemento difinita por tiu bufro"
+
 #, c-format
 msgid "E390: Illegal argument: %s"
 msgstr "E390: Nevalida argumento: %s"
@@ -5420,9 +5403,6 @@ msgstr "E390: Nevalida argumento: %s"
 #, c-format
 msgid "E391: No such syntax cluster: %s"
 msgstr "E391: Nenia sintaksa fasko: %s"
-
-msgid "No Syntax items defined for this buffer"
-msgstr "Neniu sintaksa elemento difinita por tiu bufro"
 
 msgid "syncing on C-style comments"
 msgstr "sinkronigo per C-stilaj komentoj"
@@ -5548,6 +5528,11 @@ msgstr "E409: Nekonata nomo de grupo: %s"
 #, c-format
 msgid "E410: Invalid :syntax subcommand: %s"
 msgstr "E410: Nevalida \":syntax\" subkomando: %s"
+
+msgid ""
+"  TOTAL      COUNT  MATCH   SLOWEST     AVERAGE   NAME               PATTERN"
+msgstr ""
+"  TOTALO    NOMBRO  KONGRUO PLEJ MALRAPID  MEZA   NOMO               ŜABLONO"
 
 msgid "E679: recursive loop loading syncolor.vim"
 msgstr "E679: rekursia buklo dum ŝargo de syncolor.vim"
@@ -5744,8 +5729,8 @@ msgstr "Uzis CUT_BUFFER0 anstataŭ malplenan apartigon"
 
 #. This happens when the FileChangedRO autocommand changes the
 #. * file in a way it becomes shorter.
-msgid "E834: Line count changed unexpectedly"
-msgstr "E834: Nombro de linioj ŝanĝiĝis neatendite"
+msgid "E881: Line count changed unexpectedly"
+msgstr "E881: Nombro de linioj ŝanĝiĝis neatendite"
 
 #. must display the prompt
 msgid "No undo possible; continue anyway"
@@ -6474,6 +6459,9 @@ msgstr "E485: Ne eblas legi dosieron %s"
 msgid "E37: No write since last change (add ! to override)"
 msgstr "E37: Neniu skribo de post lasta ŝanĝo (aldonu ! por transpasi)"
 
+msgid "E37: No write since last change"
+msgstr "E37: Neniu skribo de post lasta ŝanĝo"
+
 msgid "E38: Null argument"
 msgstr "E38: Nula argumento"
 
@@ -6631,107 +6619,168 @@ msgstr "serĉo atingis SUBON, daŭrigonte al SUPRO"
 msgid "Need encryption key for \"%s\""
 msgstr "Ŝlosilo de ĉifrado bezonata por \"%s\""
 
-msgid "can't delete OutputObject attributes"
-msgstr "ne eblas forviŝi atributojn de OutputObject"
-
-msgid "softspace must be an integer"
-msgstr "malmolspaceto (softspace) devas esti entjero"
-
-msgid "invalid attribute"
-msgstr "nevalida atributo"
-
-msgid "writelines() requires list of strings"
-msgstr "writelines() bezonas liston de ĉenoj"
-
-msgid "E264: Python: Error initialising I/O objects"
-msgstr "E264: Pitono: Eraro de pravalorizo de eneligaj objektoj"
-
 msgid "empty keys are not allowed"
 msgstr "malplenaj ŝlosiloj nepermeseblaj"
 
-msgid "Cannot delete DictionaryObject attributes"
-msgstr "ne eblas forviŝi atributojn de DictionaryObject"
-
-msgid "Cannot modify fixed dictionary"
-msgstr "Ne eblas ŝanĝi fiksan vortaron"
-
-msgid "Cannot set this attribute"
-msgstr "Ne eblas agordi tiun atributon"
-
-msgid "dict is locked"
+msgid "dictionary is locked"
 msgstr "vortaro estas ŝlosita"
-
-msgid "failed to add key to dictionary"
-msgstr "aldono de ŝlosilo al vortaro fiaskis"
-
-msgid "list index out of range"
-msgstr "indekso de listo ekster limoj"
-
-msgid "internal error: failed to get vim list item"
-msgstr "interna eraro: obteno de vim-a listero fiaskis"
 
 msgid "list is locked"
 msgstr "listo estas ŝlosita"
 
-msgid "Failed to add item to list"
-msgstr "Aldono de listero fiaskis"
+#, c-format
+msgid "failed to add key '%s' to dictionary"
+msgstr "aldono de ŝlosilo '%s' al vortaro fiaskis"
 
-msgid "internal error: no vim list item"
-msgstr "interna eraro: neniu vim-a listero"
+#, c-format
+msgid "index must be int or slice, not %s"
+msgstr "indekso devas esti 'int' aŭ 'slice', ne %s"
 
-msgid "can only assign lists to slice"
-msgstr "nur eblas pravalorizi listojn al segmento"
+#, c-format
+msgid "expected str() or unicode() instance, but got %s"
+msgstr "atendis aperon de str() aŭ unicode(), sed ricevis %s"
+
+#, c-format
+msgid "expected bytes() or str() instance, but got %s"
+msgstr "atendis aperon de bytes() aŭ str(), sed ricevis %s"
+
+#, c-format
+msgid ""
+"expected int(), long() or something supporting coercing to long(), but got %s"
+msgstr "atendis int(), long() aŭ ion konverteblan al long(), sed ricevis %s"
+
+#, c-format
+msgid "expected int() or something supporting coercing to int(), but got %s"
+msgstr "atendis int() aŭ ion konverteblan al int(), sed ricevis %s"
+
+msgid "value is too large to fit into C int type"
+msgstr "valoro estas tro grada por C-tipo 'int'"
+
+msgid "value is too small to fit into C int type"
+msgstr "valoro estas tro malgranda por C-tipo 'int'"
+
+msgid "number must be greater than zero"
+msgstr "nombro devas esti pli granda ol nul"
+
+msgid "number must be greater or equal to zero"
+msgstr "nombro devas esti egala aŭ pli granda ol nul"
+
+msgid "can't delete OutputObject attributes"
+msgstr "ne eblas forviŝi atributojn de OutputObject"
+
+#, c-format
+msgid "invalid attribute: %s"
+msgstr "nevalida atributo: %s"
+
+msgid "E264: Python: Error initialising I/O objects"
+msgstr "E264: Pitono: Eraro de pravalorizo de eneligaj objektoj"
+
+msgid "failed to change directory"
+msgstr "ne povis ŝanĝi dosierujon"
+
+#, c-format
+msgid "expected 3-tuple as imp.find_module() result, but got %s"
+msgstr "atendis 3-opon kiel rezulto de imp.find_module(), sed ricevis %s"
+
+#, c-format
+msgid "expected 3-tuple as imp.find_module() result, but got tuple of size %d"
+msgstr "atendis 3-opon kiel rezulto de imp.find_module(), sed ricevis %d-opon"
+
+msgid "internal error: imp.find_module returned tuple with NULL"
+msgstr "interna eraro: imp.find_module liveris opon kun NULL"
+
+msgid "cannot delete vim.Dictionary attributes"
+msgstr "ne eblas forviŝi atributojn de 'vim.Dictionary'"
+
+msgid "cannot modify fixed dictionary"
+msgstr "ne eblas ŝanĝi fiksan vortaron"
+
+#, c-format
+msgid "cannot set attribute %s"
+msgstr "ne eblas agordi atributon %s"
+
+msgid "hashtab changed during iteration"
+msgstr "hakettabelo ŝanĝiĝis dum iteracio"
+
+#, c-format
+msgid "expected sequence element of size 2, but got sequence of size %d"
+msgstr "atendis 2-longan sekvencon, sed ricevis %d-longan sekvencon"
+
+msgid "list constructor does not accept keyword arguments"
+msgstr "konstruilo de listo ne akceptas ŝlosilvortajn argumentojn"
+
+msgid "list index out of range"
+msgstr "indekso de listo ekster limoj"
+
+#. No more suitable format specifications in python-2.3
+#, c-format
+msgid "internal error: failed to get vim list item %d"
+msgstr "interna eraro: obteno de vim-a listero %d fiaskis"
+
+msgid "slice step cannot be zero"
+msgstr "paŝo de sekco ne povas esti nul"
+
+#, c-format
+msgid "attempt to assign sequence of size greater than %d to extended slice"
+msgstr "provis valorizi sekvencon kun pli ol %d eroj en etendita sekco"
+
+#, c-format
+msgid "internal error: no vim list item %d"
+msgstr "interna eraro: neniu vim-a listero %d"
+
+msgid "internal error: not enough list items"
+msgstr "interna eraro: ne sufiĉaj listeroj"
 
 msgid "internal error: failed to add item to list"
 msgstr "interna eraro: aldono de listero fiaskis"
 
-msgid "can only concatenate with lists"
-msgstr "eblas nur kunmeti kun listoj"
+#, c-format
+msgid "attempt to assign sequence of size %d to extended slice of size %d"
+msgstr "provis valorizi sekvencon kun %d eroj al etendita sekco kun %d eroj"
 
-msgid "cannot delete vim.dictionary attributes"
-msgstr "ne eblas forviŝi atributojn de 'vim.dictionary'"
+msgid "failed to add item to list"
+msgstr "aldono de listero fiaskis"
+
+msgid "cannot delete vim.List attributes"
+msgstr "ne eblas forviŝi atributojn de 'vim.List'"
 
 msgid "cannot modify fixed list"
 msgstr "ne eblas ŝanĝi fiksan liston"
 
-msgid "cannot set this attribute"
-msgstr "ne eblas agordi tiun atributon"
+#, c-format
+msgid "unnamed function %s does not exist"
+msgstr "sennoma funkcio %s ne ekzistas"
 
-msgid "'self' argument must be a dictionary"
-msgstr "argumento 'self' devas esti vortaro"
+#, c-format
+msgid "function %s does not exist"
+msgstr "funkcio %s ne ekzistas"
 
-msgid "failed to run function"
-msgstr "fiaskis ruli funkcion"
+msgid "function constructor does not accept keyword arguments"
+msgstr "konstruilo de funkcio ne akceptas ŝlosilvortajn argumentojn"
+
+#, c-format
+msgid "failed to run function %s"
+msgstr "fiaskis ruli funkcion %s"
 
 msgid "unable to get option value"
 msgstr "fiaskis akiri valoron de opcio"
 
-msgid "unable to unset global option"
-msgstr "ne povis malŝalti mallokan opcion"
+msgid "internal error: unknown option type"
+msgstr "interna eraro: nekonata tipo de opcio"
 
-msgid "unable to unset option without global value"
-msgstr "ne povis malŝalti opcion sen malloka valoro"
+msgid "problem while switching windows"
+msgstr "problemo dum salto al vindozoj"
 
-msgid "object must be integer"
-msgstr "objekto devas esti entjero."
+#, c-format
+msgid "unable to unset global option %s"
+msgstr "ne povis malŝalti mallokan opcion %s"
 
-msgid "object must be string"
-msgstr "objekto devas esti ĉeno"
+#, c-format
+msgid "unable to unset option %s which does not have global value"
+msgstr "ne povis malŝalti opcion %s, kiu ne havas mallokan valoron"
 
 msgid "attempt to refer to deleted tab page"
 msgstr "provo de referenco al forviŝita langeto"
-
-#, c-format
-msgid "<tabpage object (deleted) at %p>"
-msgstr "<langeta objekto (forviŝita) ĉe %p>"
-
-#, c-format
-msgid "<tabpage object (unknown) at %p>"
-msgstr "<langeta objekto (nekonata) ĉe %p>"
-
-#, c-format
-msgid "<tabpage %d>"
-msgstr "<langeto %d>"
 
 msgid "no such tab page"
 msgstr "ne estas tia langeto"
@@ -6739,23 +6788,11 @@ msgstr "ne estas tia langeto"
 msgid "attempt to refer to deleted window"
 msgstr "provo de referenco al forviŝita fenestro"
 
-msgid "readonly attribute"
-msgstr "nurlegebla atributo"
+msgid "readonly attribute: buffer"
+msgstr "nurlegebla atributo: buffer"
 
 msgid "cursor position outside buffer"
 msgstr "kursoro poziciita ekster bufro"
-
-#, c-format
-msgid "<window object (deleted) at %p>"
-msgstr "<fenestra objekto (forviŝita) ĉe %p>"
-
-#, c-format
-msgid "<window object (unknown) at %p>"
-msgstr "<objekta fenestro (nekonata) ĉe %p>"
-
-#, c-format
-msgid "<window %d>"
-msgstr "<fenestro %d>"
 
 msgid "no such window"
 msgstr "ne estas tia fenestro"
@@ -6763,21 +6800,23 @@ msgstr "ne estas tia fenestro"
 msgid "attempt to refer to deleted buffer"
 msgstr "provo de referenco al forviŝita bufro"
 
+msgid "failed to rename buffer"
+msgstr "ne povis renomi bufron"
+
+msgid "mark name must be a single character"
+msgstr "nomo de marko devas esti unuopa signo"
+
 #, c-format
-msgid "<buffer object (deleted) at %p>"
-msgstr "<bufra objekto (forviŝita) ĉe %p>"
+msgid "expected vim.Buffer object, but got %s"
+msgstr "atendis objekton vim.Buffer, sed ricevis %s"
 
-msgid "key must be integer"
-msgstr "ŝlosilo devas esti entjero."
+#, c-format
+msgid "failed to switch to buffer %d"
+msgstr "ne povis salti al la bufro %d"
 
-msgid "expected vim.buffer object"
-msgstr "atendis objekton vim.buffer"
-
-msgid "failed to switch to given buffer"
-msgstr "ne povis salti al la specifita bufro"
-
-msgid "expected vim.window object"
-msgstr "atendis objekton vim.window"
+#, c-format
+msgid "expected vim.Window object, but got %s"
+msgstr "atendis objekton vim.window, sed ricevis %s"
 
 msgid "failed to find window in the current tab page"
 msgstr "ne povis trovi vindozon en la nuna langeto"
@@ -6785,8 +6824,9 @@ msgstr "ne povis trovi vindozon en la nuna langeto"
 msgid "did not switch to the specified window"
 msgstr "ne saltis al la specifita vindozo"
 
-msgid "expected vim.tabpage object"
-msgstr "atendis objekton vim.tabpage"
+#, c-format
+msgid "expected vim.TabPage object, but got %s"
+msgstr "atendis objekton vim.TabPage, sed ricevis %s"
 
 msgid "did not switch to the specified tab page"
 msgstr "ne saltis al la specifita langeto"
@@ -6800,26 +6840,34 @@ msgstr "E858: Eval ne revenis kun valida python-objekto"
 msgid "E859: Failed to convert returned python object to vim value"
 msgstr "E859: Konverto de revena python-objekto al vim-valoro fiaskis"
 
-msgid "unable to convert to vim structure"
-msgstr "ne povis konverti al vim-strukturo"
+#, c-format
+msgid "unable to convert %s to vim dictionary"
+msgstr "ne povis konverti %s al vim-vortaro"
 
-msgid "NULL reference passed"
-msgstr "NULL-referenco argumento"
+#, c-format
+msgid "unable to convert %s to vim structure"
+msgstr "ne povis konverti %s al vim-strukturo"
+
+msgid "internal error: NULL reference passed"
+msgstr "interna eraro: NULL-referenco argumento"
 
 msgid "internal error: invalid value type"
 msgstr "interna eraro: nevalida tipo de valoro"
 
-#~ msgid "E863: return value must be an instance of str"
-#~ msgstr "E863: elira valoro devas esti apero de str"
+msgid ""
+"Failed to set path hook: sys.path_hooks is not a list\n"
+"You should now do the following:\n"
+"- append vim.path_hook to sys.path_hooks\n"
+"- append vim.VIM_SPECIAL_PATH to sys.path\n"
+msgstr ""
+"Fiaskis valorizi sys.path_hooks: sys.path_hooks ne estas listo\n"
+"Vi nun devas fari tion:\n"
+"- postaldoni vim.path_hook al sys.path_hooks\n"
+"- postaldoni vim.VIM_SPECIAL_PATH al sys.path\n"
 
-#~ msgid "E860: Eval did not return a valid python 3 object"
-#~ msgstr "E860: Eval ne revenis kun valida python3-objekto"
-
-#~ msgid "E861: Failed to convert returned python 3 object to vim value"
-#~ msgstr "E861: Konverto de revena python3-objekto al vim-valoro fiaskis"
-
-#~ msgid "Only boolean objects are allowed"
-#~ msgstr "Nur buleaj objektoj estas permeseblaj"
-
-#~ msgid "no such key in dictionary"
-#~ msgstr "tiu ŝlosilo ne ekzistas en vortaro"
+msgid ""
+"Failed to set path: sys.path is not a list\n"
+"You should now append vim.VIM_SPECIAL_PATH to sys.path"
+msgstr ""
+"Ne povis agordi serĉvojon: sys.path ne estas listo\n"
+"Vi nun devas aldoni vim.VIM_SPECIAL_PATH al sys.path"

@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.4.  Last change: 2013 May 18
+*various.txt*   For Vim version 7.4.  Last change: 2014 Mar 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -418,7 +418,7 @@ N  *+user_commands*	User-defined commands. |user-commands|
 N  *+viminfo*		|'viminfo'|
 N  *+vertsplit*		Vertically split windows |:vsplit|
 N  *+virtualedit*	|'virtualedit'|
-S  *+visual*		Visual mode |Visual-mode|
+S  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
 N  *+visualextra*	extra Visual mode commands |blockwise-operators|
 N  *+vreplace*		|gR| and |gr|
 N  *+wildignore*	|'wildignore'|

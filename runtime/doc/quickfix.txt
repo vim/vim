@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.4.  Last change: 2014 Mar 22
+*quickfix.txt*  For Vim version 7.4.  Last change: 2014 Mar 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -203,7 +203,7 @@ command with 'l'.
 			list.
 
 							*:cad* *:caddbuffer*
-:caddb[uffer] [bufnr]	Read the error list from the current buffer and add
+:cad[dbuffer] [bufnr]	Read the error list from the current buffer and add
 			the errors to the current quickfix list.  If a
 			quickfix list is not present, then a new list is
 			created. Otherwise, same as ":cbuffer".
@@ -241,7 +241,7 @@ command with 'l'.
 			current window is used instead of the quickfix list.
 
 							*:cadde* *:caddexpr*
-:cad[dexpr] {expr}	Evaluate {expr} and add the resulting lines to the
+:cadde[xpr] {expr}	Evaluate {expr} and add the resulting lines to the
 			current quickfix list. If a quickfix list is not
 			present, then a new list is created. The current
 			cursor position will not be changed. See |:cexpr| for
@@ -304,18 +304,23 @@ use this code: >
 
 					    *:cope* *:copen* *w:quickfix_title*
 :cope[n] [height]	Open a window to show the current list of errors.
+
 			When [height] is given, the window becomes that high
-			(if there is room).  Otherwise the window is made ten
-			lines high.
-			The window will contain a special buffer, with
-			'buftype' equal to "quickfix".  Don't change this!
+			(if there is room).  When [height] is omitted the
+			window is made ten lines high.
+
 			If there already is a quickfix window, it will be made
 			the current window.  It is not possible to open a
-			second quickfix window. The window will have the
-			w:quickfix_title variable set which will indicate the
-			command that produced the quickfix list. This can be
-			used to compose a custom status line if the value of
-			'statusline' is adjusted properly.
+			second quickfix window.  If [height] is given the
+			existing window will be resized to it.
+
+			The window will contain a special buffer, with
+			'buftype' equal to "quickfix".  Don't change this!
+			The window will have the w:quickfix_title variable set
+			which will indicate the command that produced the
+			quickfix list. This can be used to compose a custom
+			status line if the value of 'statusline' is adjusted
+			properly.
 
 							*:lop* *:lopen*
 :lop[en] [height]	Open a window to show the location list for the
