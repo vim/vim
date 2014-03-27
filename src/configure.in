@@ -1397,7 +1397,7 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
   ldflags_save=$LDFLAGS
   dnl -ldl must go first to make this work on Archlinux (Roland Puntaier)
   LDFLAGS="-ldl $LDFLAGS"
-  AC_RUN_IFELSE([
+  AC_RUN_IFELSE([AC_LANG_SOURCE([
     #include <dlfcn.h>
     /* If this program fails, then RTLD_GLOBAL is needed.
      * RTLD_GLOBAL will be used and then it is not possible to
@@ -1430,7 +1430,7 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
       if (no_rtl_global_needed_for("${python_INSTSONAME}", "${vi_cv_path_python_pfx}"))
             not_needed = 1;
       return !not_needed;
-    }],
+    }])],
     [AC_MSG_RESULT(yes);AC_DEFINE(PY_NO_RTLD_GLOBAL)], [AC_MSG_RESULT(no)])
 
   CFLAGS=$cflags_save
@@ -1442,7 +1442,7 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
   ldflags_save=$LDFLAGS
   dnl -ldl must go first to make this work on Archlinux (Roland Puntaier)
   LDFLAGS="-ldl $LDFLAGS"
-  AC_RUN_IFELSE([
+  AC_RUN_IFELSE([AC_LANG_SOURCE([
     #include <dlfcn.h>
     #include <wchar.h>
     /* If this program fails, then RTLD_GLOBAL is needed.
@@ -1476,7 +1476,7 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
       if (no_rtl_global_needed_for("${python3_INSTSONAME}", L"${vi_cv_path_python3_pfx}"))
             not_needed = 1;
       return !not_needed;
-    }],
+    }])],
     [AC_MSG_RESULT(yes);AC_DEFINE(PY3_NO_RTLD_GLOBAL)], [AC_MSG_RESULT(no)])
 
   CFLAGS=$cflags_save
@@ -2737,7 +2737,7 @@ dnl Checks for libraries and include files.
 
 AC_CACHE_CHECK([whether toupper is broken], [vim_cv_toupper_broken],
   [
-    AC_RUN_IFELSE([[
+    AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include "confdefs.h"
 #include <ctype.h>
 #if STDC_HEADERS
@@ -2745,7 +2745,7 @@ AC_CACHE_CHECK([whether toupper is broken], [vim_cv_toupper_broken],
 # include <stddef.h>
 #endif
 main() { exit(toupper('A') == 'A' && tolower('z') == 'z'); }
-  ]],[
+  ]])],[
     vim_cv_toupper_broken=yes
   ],[
     vim_cv_toupper_broken=no
@@ -2993,7 +2993,7 @@ fi
 
 AC_CACHE_CHECK([whether we talk terminfo], [vim_cv_terminfo],
   [
-    AC_RUN_IFELSE([[
+    AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include "confdefs.h"
 #ifdef HAVE_TERMCAP_H
 # include <termcap.h>
@@ -3007,7 +3007,7 @@ AC_CACHE_CHECK([whether we talk terminfo], [vim_cv_terminfo],
 #endif
 main()
 {char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(!strcmp(s==0 ? "" : s, "1")); }
-    ]],[
+    ]])],[
       vim_cv_terminfo=no
     ],[
       vim_cv_terminfo=yes
@@ -3023,7 +3023,7 @@ fi
 if test "x$olibs" != "x$LIBS"; then
   AC_CACHE_CHECK([what tgetent() returns for an unknown terminal], [vim_cv_tgent],
     [
-      AC_RUN_IFELSE([[
+      AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include "confdefs.h"
 #ifdef HAVE_TERMCAP_H
 # include <termcap.h>
@@ -3034,7 +3034,7 @@ if test "x$olibs" != "x$LIBS"; then
 #endif
 main()
 {char s[10000]; int res = tgetent(s, "thisterminaldoesnotexist"); exit(res != 0); }
-      ]],[
+      ]])],[
 	vim_cv_tgent=zero
       ],[
 	vim_cv_tgent=non-zero
@@ -3158,7 +3158,7 @@ dnl support provided by Luke Mewburn <lm@rmit.edu.au>, 931222
 rm -f conftest_grp
 AC_CACHE_CHECK([default tty permissions/group], [vim_cv_tty_group],
   [
-    AC_RUN_IFELSE([[
+    AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include "confdefs.h"
 #include <sys/types.h>
 #if STDC_HEADERS
@@ -3194,7 +3194,7 @@ main()
   fclose(fp);
   exit(0);
 }
-    ]],[
+    ]])],[
       if test -f conftest_grp; then
 	vim_cv_tty_group=`cat conftest_grp`
 	if test "x$vim_cv_tty_mode" = "x" ; then
@@ -3252,7 +3252,7 @@ dnl tricky stuff: try to find out if getcwd() is implemented with
 dnl system("sh -c pwd")
 AC_CACHE_CHECK([getcwd implementation is broken], [vim_cv_getcwd_broken],
   [
-    AC_RUN_IFELSE([[
+    AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include "confdefs.h"
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -3265,7 +3265,7 @@ main()
   environ = dagger;
   return getcwd(buffer, 500) ? 0 : 1;
 }
-    ]],[
+    ]])],[
       vim_cv_getcwd_broken=no
     ],[
       vim_cv_getcwd_broken=yes
@@ -3308,7 +3308,7 @@ AC_TRY_COMPILE(
 
 AC_CACHE_CHECK([whether stat() ignores a trailing slash], [vim_cv_stat_ignores_slash],
   [
-    AC_RUN_IFELSE([[
+    AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include "confdefs.h"
 #if STDC_HEADERS
 # include <stdlib.h>
@@ -3317,7 +3317,7 @@ AC_CACHE_CHECK([whether stat() ignores a trailing slash], [vim_cv_stat_ignores_s
 #include <sys/types.h>
 #include <sys/stat.h>
 main() {struct stat st;  exit(stat("configure/", &st) != 0); }
-    ]],[
+    ]])],[
       vim_cv_stat_ignores_slash=yes
     ],[
       vim_cv_stat_ignores_slash=no
@@ -3631,7 +3631,7 @@ main() {
 
 AC_CACHE_CHECK([whether memmove handles overlaps],[vim_cv_memmove_handles_overlap],
   [
-    AC_RUN_IFELSE([[#define mch_memmove(s,d,l) memmove(d,s,l) $bcopy_test_prog]],
+    AC_RUN_IFELSE([AC_LANG_SOURCE([[#define mch_memmove(s,d,l) memmove(d,s,l) $bcopy_test_prog]])],
       [
 	vim_cv_memmove_handles_overlap=yes
       ],[
@@ -3646,7 +3646,7 @@ if test "x$vim_cv_memmove_handles_overlap" = "xyes" ; then
 else
   AC_CACHE_CHECK([whether bcopy handles overlaps],[vim_cv_bcopy_handles_overlap],
     [
-      AC_RUN_IFELSE([[#define mch_bcopy(s,d,l) bcopy(d,s,l) $bcopy_test_prog]],
+      AC_RUN_IFELSE([AC_LANG_SOURCE([[#define mch_bcopy(s,d,l) bcopy(d,s,l) $bcopy_test_prog]])],
       [
 	vim_cv_bcopy_handles_overlap=yes
       ],[
@@ -3661,7 +3661,7 @@ else
   else
     AC_CACHE_CHECK([whether memcpy handles overlaps],[vim_cv_memcpy_handles_overlap],
       [
-	AC_RUN_IFELSE([[#define mch_memcpy(s,d,l) memcpy(d,s,l) $bcopy_test_prog]],
+	AC_RUN_IFELSE([AC_LANG_SOURCE([[#define mch_memcpy(s,d,l) memcpy(d,s,l) $bcopy_test_prog]])],
 	  [
 	    vim_cv_memcpy_handles_overlap=yes
 	  ],[
