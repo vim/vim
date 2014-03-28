@@ -20,6 +20,7 @@
 #include "vim.h"
 
 static void comp_botline __ARGS((win_T *wp));
+static void redraw_for_cursorline __ARGS((win_T *wp));
 static int scrolljump_value __ARGS((void));
 static int check_top_offset __ARGS((void));
 static void curs_rows __ARGS((win_T *wp, int do_botline));
@@ -106,6 +107,7 @@ comp_botline(wp)
 #ifdef FEAT_FOLDING
 	    wp->w_cline_folded = folded;
 #endif
+	    redraw_for_cursorline(wp);
 	    wp->w_valid |= (VALID_CROW|VALID_CHEIGHT);
 	}
 	if (done + n > wp->w_height)
@@ -121,6 +123,27 @@ comp_botline(wp)
     wp->w_valid |= VALID_BOTLINE|VALID_BOTLINE_AP;
 
     set_empty_rows(wp, done);
+}
+
+/*
+ * Redraw when w_cline_row changes and 'relativenumber' or 'cursorline' is
+ * set.
+ */
+    static void
+redraw_for_cursorline(wp)
+    win_T *wp;
+{
+    if ((wp->w_p_rnu
+#ifdef FEAT_SYN_HL
+		|| wp->w_p_cul
+#endif
+		)
+	    && (wp->w_valid & VALID_CROW) == 0
+# ifdef FEAT_INS_EXPAND
+	    && !pum_visible()
+# endif
+	    )
+	redraw_win_later(wp, SOME_VALID);
 }
 
 /*
@@ -772,20 +795,7 @@ curs_rows(wp, do_botline)
 	}
     }
 
-    /* Redraw when w_cline_row changes and 'relativenumber' or 'cursorline' is
-     * set. */
-    if ((curwin->w_p_rnu
-#ifdef FEAT_SYN_HL
-		|| curwin->w_p_cul
-#endif
-		)
-	    && (curwin->w_valid & VALID_CROW) == 0
-# ifdef FEAT_INS_EXPAND
-	    && !pum_visible()
-# endif
-	    )
-	redraw_later(SOME_VALID);
-
+    redraw_for_cursorline(curwin);
     wp->w_valid |= VALID_CROW|VALID_CHEIGHT;
 
     /* validate botline too, if update_screen doesn't do it */
@@ -2504,8 +2514,8 @@ onepage(dir, count)
 		    }
 		    comp_botline(curwin);
 		    curwin->w_cursor.lnum = curwin->w_botline - 1;
-		    curwin->w_valid &= ~(VALID_WCOL|VALID_CHEIGHT|
-			    VALID_WROW|VALID_CROW);
+		    curwin->w_valid &=
+			    ~(VALID_WCOL|VALID_CHEIGHT|VALID_WROW|VALID_CROW);
 		}
 		else
 		{
