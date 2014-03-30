@@ -100,6 +100,16 @@
 #define PyIntArgFunc	ssizeargfunc
 #define PyIntObjArgProc	ssizeobjargproc
 
+/*
+ * PySlice_GetIndicesEx(): first argument type changed from PySliceObject
+ * to PyObject in Python 3.2 or later.
+ */
+#if PY_VERSION_HEX >= 0x030200f0
+typedef PyObject PySliceObject_T;
+#else
+typedef PySliceObject PySliceObject_T;
+#endif
+
 #if defined(DYNAMIC_PYTHON3) || defined(PROTO)
 
 # ifndef WIN3264
@@ -294,7 +304,7 @@ static Py_ssize_t (*py3_PyTuple_Size)(PyObject *);
 static PyObject* (*py3_PyTuple_GetItem)(PyObject *, Py_ssize_t);
 static int (*py3_PyMapping_Check)(PyObject *);
 static PyObject* (*py3_PyMapping_Keys)(PyObject *);
-static int (*py3_PySlice_GetIndicesEx)(PySliceObject *r, Py_ssize_t length,
+static int (*py3_PySlice_GetIndicesEx)(PySliceObject_T *r, Py_ssize_t length,
 		     Py_ssize_t *start, Py_ssize_t *stop, Py_ssize_t *step,
 		     Py_ssize_t *slicelen);
 static PyObject* (*py3_PyErr_NoMemory)(void);
@@ -1190,7 +1200,7 @@ BufferSubscript(PyObject *self, PyObject* idx)
 	if (CheckBuffer((BufferObject *) self))
 	    return NULL;
 
-	if (PySlice_GetIndicesEx((PySliceObject *)idx,
+	if (PySlice_GetIndicesEx((PySliceObject_T *)idx,
 	      (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count,
 	      &start, &stop,
 	      &step, &slicelen) < 0)
@@ -1222,7 +1232,7 @@ BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val)
 	if (CheckBuffer((BufferObject *) self))
 	    return -1;
 
-	if (PySlice_GetIndicesEx((PySliceObject *)idx,
+	if (PySlice_GetIndicesEx((PySliceObject_T *)idx,
 	      (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count,
 	      &start, &stop,
 	      &step, &slicelen) < 0)
@@ -1306,7 +1316,7 @@ RangeSubscript(PyObject *self, PyObject* idx)
     {
 	Py_ssize_t start, stop, step, slicelen;
 
-	if (PySlice_GetIndicesEx((PySliceObject *)idx,
+	if (PySlice_GetIndicesEx((PySliceObject_T *)idx,
 		((RangeObject *)(self))->end-((RangeObject *)(self))->start+1,
 		&start, &stop,
 		&step, &slicelen) < 0)
@@ -1333,7 +1343,7 @@ RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val)
     {
 	Py_ssize_t start, stop, step, slicelen;
 
-	if (PySlice_GetIndicesEx((PySliceObject *)idx,
+	if (PySlice_GetIndicesEx((PySliceObject_T *)idx,
 		((RangeObject *)(self))->end-((RangeObject *)(self))->start+1,
 		&start, &stop,
 		&step, &slicelen) < 0)

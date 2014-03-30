@@ -2328,7 +2328,7 @@ ListItem(ListObject *self, PyObject* idx)
     {
 	Py_ssize_t start, stop, step, slicelen;
 
-	if (PySlice_GetIndicesEx((PySliceObject *)idx, ListLength(self),
+	if (PySlice_GetIndicesEx((PySliceObject_T *)idx, ListLength(self),
 				 &start, &stop, &step, &slicelen) < 0)
 	    return NULL;
 	return ListSlice(self, start, step, slicelen);
@@ -2618,7 +2618,7 @@ ListAssItem(ListObject *self, PyObject *idx, PyObject *obj)
     {
 	Py_ssize_t start, stop, step, slicelen;
 
-	if (PySlice_GetIndicesEx((PySliceObject *)idx, ListLength(self),
+	if (PySlice_GetIndicesEx((PySliceObject_T *)idx, ListLength(self),
 				 &start, &stop, &step, &slicelen) < 0)
 	    return -1;
 	return ListAssSlice(self, start, step, slicelen,

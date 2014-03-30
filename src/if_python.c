@@ -803,6 +803,8 @@ py_memsave(void *p, size_t len)
 # define PY_STRSAVE(s) ((char_u *) py_memsave(s, STRLEN(s) + 1))
 #endif
 
+typedef PySliceObject PySliceObject_T;
+
 /*
  * Include the code shared with if_python3.c
  */
