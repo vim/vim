@@ -316,7 +316,6 @@ static void	ex_winpos __ARGS((exarg_T *eap));
 static void	ex_operators __ARGS((exarg_T *eap));
 static void	ex_put __ARGS((exarg_T *eap));
 static void	ex_copymove __ARGS((exarg_T *eap));
-static void	ex_may_print __ARGS((exarg_T *eap));
 static void	ex_submagic __ARGS((exarg_T *eap));
 static void	ex_join __ARGS((exarg_T *eap));
 static void	ex_at __ARGS((exarg_T *eap));
@@ -8683,7 +8682,7 @@ ex_copymove(eap)
 /*
  * Print the current line if flags were given to the Ex command.
  */
-    static void
+    void
 ex_may_print(eap)
     exarg_T	*eap;
 {
