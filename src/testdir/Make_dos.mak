@@ -34,7 +34,8 @@ SCRIPTS =	test3.out test4.out test5.out test6.out test7.out \
 		test89.out test90.out test91.out test92.out test93.out \
 		test94.out test95.out test96.out test98.out test99.out \
 		test100.out test101.out test102.out test103.out test104.out \
-		test105.out test106.out
+		test105.out test106.out \
+		test_options.out
 
 SCRIPTS32 =	test50.out test70.out
 

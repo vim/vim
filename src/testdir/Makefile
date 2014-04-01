@@ -3,6 +3,7 @@
 #
 
 VIMPROG = ../vim
+SCRIPTSOURCE = ../../runtime
 
 # Uncomment this line to use valgrind for memory leaks and extra warnings.
 #   The output goes into a file "valgrind.testN"
@@ -31,7 +32,8 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test89.out test90.out test91.out test92.out test93.out \
 		test94.out test95.out test96.out test97.out test98.out \
 		test99.out test100.out test101.out test102.out test103.out \
-		test104.out test105.out test106.out
+		test104.out test105.out test106.out \
+		test_options.out
 
 SCRIPTS_GUI = test16.out
 
@@ -53,7 +55,7 @@ $(SCRIPTS) $(SCRIPTS_GUI): $(VIMPROG)
 
 RM_ON_RUN = test.out X* viminfo
 RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim lua.vim test.ok
-RUN_VIM = $(VALGRIND) $(VIMPROG) -u unix.vim -U NONE --noplugin -s dotest.in
+RUN_VIM = export VIMRUNTIME=$(SCRIPTSOURCE); $(VALGRIND) $(VIMPROG) -u unix.vim -U NONE --noplugin -s dotest.in
 
 clean:
 	-rm -rf *.out *.failed *.rej *.orig test.log $(RM_ON_RUN) $(RM_ON_START) valgrind.*

@@ -1867,7 +1867,7 @@ test check:
 	-if test $(VIMTARGET) != vim -a ! -r vim; then \
 		ln -s $(VIMTARGET) vim; \
 	fi
-	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET) $(GUI_TESTARG)
+	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 	$(MAKE) -f Makefile unittest
 
 unittesttargets:
@@ -1880,6 +1880,7 @@ unittest unittests: $(UNITTEST_TARGETS)
 
 # Run individual test, assuming that Vim was already compiled.
 test1 test2 test3 test4 test5 test6 test7 test8 test9 \
+	test_options \
 	test10 test11 test12 test13 test14 test15 test16 test17 test18 test19 \
 	test20 test21 test22 test23 test24 test25 test26 test27 test28 test29 \
 	test30 test31 test32 test33 test34 test35 test36 test37 test38 test39 \
@@ -1890,7 +1891,7 @@ test1 test2 test3 test4 test5 test6 test7 test8 test9 \
 	test80 test81 test82 test83 test84 test85 test86 test87 test88 test89 \
 	test90 test91 test92 test93 test94 test95 test96 test97 test98 test99 \
 	test100 test101 test102 test103 test104 test105 test106 test107:
-	cd testdir; rm $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET)
+	cd testdir; rm $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 testclean:
 	cd testdir; $(MAKE) -f Makefile clean
