@@ -10728,7 +10728,7 @@ addfile(gap, f, flags)
 	return;
 
     /* If the file isn't executable, may not add it.  Do accept directories. */
-    if (!isdir && (flags & EW_EXEC) && !mch_can_exe(f))
+    if (!isdir && (flags & EW_EXEC) && !mch_can_exe(f, NULL))
 	return;
 
     /* Make room for another item in the file list. */

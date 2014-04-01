@@ -38,7 +38,7 @@ long mch_getperm __ARGS((char_u *name));
 int mch_setperm __ARGS((char_u *name, long perm));
 void mch_hide __ARGS((char_u *name));
 int mch_isdir __ARGS((char_u *name));
-int mch_can_exe __ARGS((char_u *name));
+int mch_can_exe __ARGS((char_u *name, char_u **path));
 int mch_nodetype __ARGS((char_u *name));
 int mch_dirname __ARGS((char_u *buf, int len));
 int mch_remove __ARGS((char_u *name));

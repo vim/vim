@@ -2992,8 +2992,9 @@ executable_file(name)
  * Return -1 if unknown.
  */
     int
-mch_can_exe(name)
+mch_can_exe(name, path)
     char_u	*name;
+    char_u	**path;
 {
     char_u	*buf;
     char_u	*p, *e;
@@ -3003,7 +3004,18 @@ mch_can_exe(name)
     if (mch_isFullName(name) || (name[0] == '.' && (name[1] == '/'
 				      || (name[1] == '.' && name[2] == '/'))))
     {
-	return executable_file(name);
+	if (executable_file(name))
+	{
+	    if (path != NULL)
+	    {
+		if (name[0] == '.')
+		    *path = FullName_save(name, TRUE);
+		else
+		    *path = vim_strsave(name);
+	    }
+	    return TRUE;
+	}
+	return FALSE;
     }
 
     p = (char_u *)getenv("PATH");
@@ -3032,7 +3044,16 @@ mch_can_exe(name)
 	STRCAT(buf, name);
 	retval = executable_file(buf);
 	if (retval == 1)
+	{
+	    if (path != NULL)
+	    {
+		if (buf[0] == '.')
+		    *path = FullName_save(buf, TRUE);
+		else
+		    *path = vim_strsave(buf);
+	    }
 	    break;
+	}
 
 	if (*e != ':')
 	    break;
@@ -5592,7 +5613,7 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 		    continue;
 
 		/* Skip files that are not executable if we check for that. */
-		if (!dir && (flags & EW_EXEC) && !mch_can_exe(p))
+		if (!dir && (flags & EW_EXEC) && !mch_can_exe(p, NULL))
 		    continue;
 
 		if (--files_free == 0)
@@ -6090,7 +6111,7 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 	    continue;
 
 	/* Skip files that are not executable if we check for that. */
-	if (!dir && (flags & EW_EXEC) && !mch_can_exe((*file)[i]))
+	if (!dir && (flags & EW_EXEC) && !mch_can_exe((*file)[i], NULL))
 	    continue;
 
 	p = alloc((unsigned)(STRLEN((*file)[i]) + 1 + dir));
@@ -6317,7 +6338,7 @@ gpm_close()
 
 /* Reads gpm event and adds special keys to input buf. Returns length of
  * generated key sequence.
- * This function is made after gui_send_mouse_event
+ * This function is styled after gui_send_mouse_event().
  */
     static int
 mch_gpm_process()

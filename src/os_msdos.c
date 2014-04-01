@@ -2945,14 +2945,17 @@ mch_isdir(char_u *name)
  * Return -1 if unknown.
  */
     int
-mch_can_exe(name)
+mch_can_exe(name, path)
     char_u	*name;
+    char_u	**path;
 {
     char	*p;
 
     p = searchpath(name);
     if (p == NULL || mch_isdir(p))
 	return FALSE;
+    if (path != NULL)
+	*path = vim_strsave(p);
     return TRUE;
 }
 

@@ -1562,6 +1562,10 @@ v:progname	Contains the name (with path removed) with which Vim was
 v:progpath	Contains the command with which Vim was invoked, including the
 		path.  Useful if you want to message a Vim server using a
 		|--remote-expr|.
+		To get the full path use: >
+			echo exepath(v:progpath)
+<		NOTE: This does not work when the command is a relative path
+		and the current directory has changed.
 		Read-only.
 
 					*v:register* *register-variable*
@@ -1762,6 +1766,7 @@ escape( {string}, {chars})	String	escape {chars} in {string} with '\'
 eval( {string})			any	evaluate {string} into its value
 eventhandler( )			Number	TRUE if inside an event handler
 executable( {expr})		Number	1 if executable {expr} exists
+exepath( {expr})		String  full path of the command {expr}
 exists( {expr})			Number	TRUE if {expr} exists
 extend( {expr1}, {expr2} [, {expr3}])
 				List/Dict insert items of {expr2} into {expr1}
@@ -2705,6 +2710,15 @@ executable({expr})					*executable()*
 			1	exists
 			0	does not exist
 			-1	not implemented on this system
+
+exepath({expr})						*exepath()*
+		If {expr} is an executable and is either an absolute path, a
+		relative path or found in $PATH, return the full path.
+		Note that the current directory is used when {expr} starts
+		with "./", which may be a problem for Vim: >
+			echo exepath(v:progpath)
+< 		If {expr} cannot be found in $PATH or is not executable then
+		an empty string is returned.
 
 							*exists()*
 exists({expr})	The result is a Number, which is non-zero if {expr} is

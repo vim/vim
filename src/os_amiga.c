@@ -884,8 +884,9 @@ mch_mkdir(name)
  * Return -1 if unknown.
  */
     int
-mch_can_exe(name)
+mch_can_exe(name, path)
     char_u	*name;
+    char_u	**path;
 {
     /* TODO */
     return -1;

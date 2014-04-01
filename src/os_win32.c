@@ -1882,7 +1882,7 @@ theend:
  * TODO: Should somehow check if it's really executable.
  */
     static int
-executable_exists(char *name)
+executable_exists(char *name, char_u **path)
 {
     char	*dum;
     char	fname[_MAX_PATH];
@@ -1905,6 +1905,8 @@ executable_exists(char *name)
 		    return FALSE;
 		if (GetFileAttributesW(fnamew) & FILE_ATTRIBUTE_DIRECTORY)
 		    return FALSE;
+		if (path != NULL)
+		    *path = utf16_to_enc(fnamew, NULL);
 		return TRUE;
 	    }
 	    /* Retry with non-wide function (for Windows 98). */
@@ -1915,6 +1917,8 @@ executable_exists(char *name)
 	return FALSE;
     if (mch_isdir(fname))
 	return FALSE;
+    if (path != NULL)
+	*path = vim_strsave(fname);
     return TRUE;
 }
 
@@ -1996,7 +2000,7 @@ mch_init(void)
 	    vimrun_path = (char *)vim_strsave(vimrun_location);
 	    s_dont_use_vimrun = FALSE;
 	}
-	else if (executable_exists("vimrun.exe"))
+	else if (executable_exists("vimrun.exe", NULL))
 	    s_dont_use_vimrun = FALSE;
 
 	/* Don't give the warning for a missing vimrun.exe right now, but only
@@ -2010,7 +2014,7 @@ mch_init(void)
      * If "finstr.exe" doesn't exist, use "grep -n" for 'grepprg'.
      * Otherwise the default "findstr /n" is used.
      */
-    if (!executable_exists("findstr.exe"))
+    if (!executable_exists("findstr.exe", NULL))
 	set_option_value((char_u *)"grepprg", 0, (char_u *)"grep -n", 0);
 
 #ifdef FEAT_CLIPBOARD
@@ -3330,7 +3334,7 @@ mch_writable(char_u *name)
  * Return -1 if unknown.
  */
     int
-mch_can_exe(char_u *name)
+mch_can_exe(char_u *name, char_u **path)
 {
     char_u	buf[_MAX_PATH];
     int		len = (int)STRLEN(name);
@@ -3343,7 +3347,7 @@ mch_can_exe(char_u *name)
      * this with a Unix-shell like 'shell'. */
     if (vim_strchr(gettail(name), '.') != NULL
 			       || strstr((char *)gettail(p_sh), "sh") != NULL)
-	if (executable_exists((char *)name))
+	if (executable_exists((char *)name, path))
 	    return TRUE;
 
     /*
@@ -3365,7 +3369,7 @@ mch_can_exe(char_u *name)
 	}
 	else
 	    copy_option_part(&p, buf + len, _MAX_PATH - len, ";");
-	if (executable_exists((char *)buf))
+	if (executable_exists((char *)buf, path))
 	    return TRUE;
     }
     return FALSE;

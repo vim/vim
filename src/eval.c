@@ -514,6 +514,7 @@ static void f_escape __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_eval __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_eventhandler __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_executable __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_exepath __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_exists __ARGS((typval_T *argvars, typval_T *rettv));
 #ifdef FEAT_FLOAT
 static void f_exp __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7920,6 +7921,7 @@ static struct fst
     {"eval",		1, 1, f_eval},
     {"eventhandler",	0, 0, f_eventhandler},
     {"executable",	1, 1, f_executable},
+    {"exepath",		1, 1, f_exepath},
     {"exists",		1, 1, f_exists},
 #ifdef FEAT_FLOAT
     {"exp",		1, 1, f_exp},
@@ -10046,7 +10048,22 @@ f_executable(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    rettv->vval.v_number = mch_can_exe(get_tv_string(&argvars[0]));
+    rettv->vval.v_number = mch_can_exe(get_tv_string(&argvars[0]), NULL);
+}
+
+/*
+ * "exepath()" function
+ */
+    static void
+f_exepath(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u *p = NULL;
+
+    (void)mch_can_exe(get_tv_string(&argvars[0]), &p);
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = p;
 }
 
 /*

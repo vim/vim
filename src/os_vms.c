@@ -483,7 +483,7 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
 		continue;
 
 	    /* Skip files that are not executable if we check for that. */
-	    if (!dir && (flags & EW_EXEC) && !mch_can_exe(vms_fmatch[i]))
+	    if (!dir && (flags & EW_EXEC) && !mch_can_exe(vms_fmatch[i], NULL))
 		continue;
 
 	    /* allocate memory for pointers */
