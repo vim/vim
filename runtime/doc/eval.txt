@@ -1558,6 +1558,12 @@ v:progname	Contains the name (with path removed) with which Vim was
 		|evim| etc., or any other name you might symlink to Vim.
 		Read-only.
 
+					*v:progpath* *progpath-variable*
+v:progpath	Contains the command with which Vim was invoked, including the
+		path.  Useful if you want to message a Vim server using a
+		|--remote-expr|.
+		Read-only.
+
 					*v:register* *register-variable*
 v:register	The name of the register in effect for the current normal mode
 		command (regardless of whether that command actually used a

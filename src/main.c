@@ -1602,6 +1602,7 @@ parse_command_name(parmp)
 
 #ifdef FEAT_EVAL
     set_vim_var_string(VV_PROGNAME, initstr, -1);
+    set_vim_var_string(VV_PROGPATH, (char_u *)parmp->argv[0], -1);
 #endif
 
     if (TOLOWER_ASC(initstr[0]) == 'r')

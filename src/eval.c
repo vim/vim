@@ -361,6 +361,7 @@ static struct vimvar
     {VV_NAME("hlsearch",	 VAR_NUMBER), 0},
     {VV_NAME("oldfiles",	 VAR_LIST), 0},
     {VV_NAME("windowid",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("progpath",	 VAR_STRING), VV_RO},
 };
 
 /* shorthand */
