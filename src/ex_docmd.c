@@ -4841,7 +4841,7 @@ getargcmd(argp)
     if (*arg == '+')	    /* +[command] */
     {
 	++arg;
-	if (vim_isspace(*arg))
+	if (vim_isspace(*arg) || *arg == NUL)
 	    command = dollar_command;
 	else
 	{
