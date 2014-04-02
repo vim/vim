@@ -12647,14 +12647,13 @@ f_has(argvars, rettv)
 	    {
 		int major = atoi((char *)name + 6);
 		int minor = atoi((char *)name + 8);
-		int patch = atoi((char *)name + 10);
 
 		/* Expect "patch-9.9.01234". */
 		n = (major < VIM_VERSION_MAJOR
 		     || (major == VIM_VERSION_MAJOR
 			 && (minor < VIM_VERSION_MINOR
 			     || (minor == VIM_VERSION_MINOR
-				 && patch <= highest_patch()))));
+				 && has_patch(atoi((char *)name + 10))))));
 	    }
 	    else
 		n = has_patch(atoi((char *)name + 5));

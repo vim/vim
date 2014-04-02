@@ -1682,7 +1682,7 @@ v:version	Version number of Vim: Major version number times 100 plus
 		is 501.  Read-only.  "version" also works, for backwards
 		compatibility.
 		Use |has()| to check if a certain patch was included, e.g.: >
-			if has("patch123")
+			if has("patch-7.4.123")
 <		Note that patch numbers are specific to the version, thus both
 		version 5.0 and 5.1 may have a patch 123, but these are
 		completely different.
