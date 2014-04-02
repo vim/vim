@@ -16790,8 +16790,6 @@ f_setreg(argvars, rettv)
     regname = *strregname;
     if (regname == 0 || regname == '@')
 	regname = '"';
-    else if (regname == '=')
-	return;
 
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
@@ -16822,10 +16820,44 @@ f_setreg(argvars, rettv)
 	    }
     }
 
-    strval = get_tv_string_chk(&argvars[1]);
-    if (strval != NULL)
+    if (argvars[1].v_type == VAR_LIST)
+    {
+	char_u		**lstval;
+	char_u		**curval;
+	int		len = argvars[1].vval.v_list->lv_len;
+	listitem_T	*li;
+
+	lstval = (char_u **)alloc(sizeof(char_u *) * (len + 1));
+	if (lstval == NULL)
+	    return;
+	curval = lstval;
+
+	for (li = argvars[1].vval.v_list->lv_first; li != NULL;
+							     li = li->li_next)
+	{
+	    /* TODO: this may use a static buffer several times. */
+	    strval = get_tv_string_chk(&li->li_tv);
+	    if (strval == NULL)
+	    {
+		vim_free(lstval);
+		return;
+	    }
+	    *curval++ = strval;
+	}
+	*curval++ = NULL;
+
+	write_reg_contents_lst(regname, lstval, -1,
+						append, yank_type, block_len);
+	vim_free(lstval);
+    }
+    else
+    {
+	strval = get_tv_string_chk(&argvars[1]);
+	if (strval == NULL)
+	    return;
 	write_reg_contents_ex(regname, strval, -1,
 						append, yank_type, block_len);
+    }
     rettv->vval.v_number = 0;
 }
 

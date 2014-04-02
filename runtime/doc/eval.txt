@@ -5368,6 +5368,8 @@ setqflist({list} [, {action}])				*setqflist()*
 							*setreg()*
 setreg({regname}, {value} [,{options}])
 		Set the register {regname} to {value}.
+		{value} may be any value returned by |getreg()|, including 
+		a |List|.
 		If {options} contains "a" or {regname} is upper case,
 		then the value is appended.
 		{options} can also contain a register type specification:
@@ -5380,10 +5382,15 @@ setreg({regname}, {value} [,{options}])
 		in the longest line (counting a <Tab> as 1 character).
 
 		If {options} contains no register settings, then the default
-		is to use character mode unless {value} ends in a <NL>.
-		Setting the '=' register is not possible, but you can use >
-			:let @= = var_expr
-<		Returns zero for success, non-zero for failure.
+		is to use character mode unless {value} ends in a <NL> for 
+		string {value} and linewise mode for list {value}. Blockwise 
+		mode is never selected automatically.
+		Returns zero for success, non-zero for failure.
+
+							*E883*
+		Note: you may not use |List| containing more then one item to 
+		      set search and expression registers. Lists containing no 
+		      items act like empty strings.
 
 		Examples: >
 			:call setreg(v:register, @*)
@@ -5391,8 +5398,11 @@ setreg({regname}, {value} [,{options}])
 			:call setreg('a', "1\n2\n3", 'b5')
 
 <		This example shows using the functions to save and restore a
-		register. >
-			:let var_a = getreg('a', 1)
+		register (note: you may not reliably restore register value 
+		without using the third argument to |getreg()| as without it 
+		newlines are represented as newlines AND Nul bytes are 
+		represented as newlines as well, see |NL-used-for-Nul|). >
+			:let var_a = getreg('a', 1, 1)
 			:let var_amode = getregtype('a')
 			    ....
 			:call setreg('a', var_a, var_amode)
