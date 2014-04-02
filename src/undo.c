@@ -1455,7 +1455,7 @@ u_write_undo(name, forceit, buf, hash)
 # endif
        )
 	mch_setperm(file_name, (perm & 0707) | ((perm & 07) << 3));
-# ifdef HAVE_SELINUX
+# if defined(HAVE_SELINUX) || defined(HAVE_SMACK)
     if (buf->b_ffname != NULL)
 	mch_copy_sec(buf->b_ffname, file_name);
 # endif

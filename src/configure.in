@@ -387,18 +387,39 @@ fi
 AC_SUBST(QUOTESED)
 
 
-dnl Link with -lselinux for SELinux stuff; if not found
-AC_MSG_CHECKING(--disable-selinux argument)
-AC_ARG_ENABLE(selinux,
-	[  --disable-selinux	  Don't check for SELinux support.],
-	, enable_selinux="yes")
-if test "$enable_selinux" = "yes"; then
+dnl Link with -lsmack for Smack stuff; if not found
+AC_MSG_CHECKING(--disable-smack argument)
+AC_ARG_ENABLE(smack,
+	[  --disable-smack	  Do not check for Smack support.],
+	, enable_smack="yes")
+if test "$enable_smack" = "yes"; then
+  AC_CHECK_HEADER([linux/xattr.h], true, enable_smack="no")
+fi
+if test "$enable_smack" = "yes"; then
   AC_MSG_RESULT(no)
-  AC_CHECK_LIB(selinux, is_selinux_enabled,
-	  [LIBS="$LIBS -lselinux"
-	   AC_DEFINE(HAVE_SELINUX)])
+  AC_CHECK_LIB(attr, llistxattr,
+	  [LIBS="$LIBS -lattr"
+	   found_smack="yes"
+	   AC_DEFINE(HAVE_SMACK)])
 else
    AC_MSG_RESULT(yes)
+fi
+
+dnl When smack was found don't search for SELinux
+if test "x$found_smack" = "x"; then
+  dnl Link with -lselinux for SELinux stuff; if not found
+  AC_MSG_CHECKING(--disable-selinux argument)
+  AC_ARG_ENABLE(selinux,
+	  [  --disable-selinux	  Do not check for SELinux support.],
+	  , enable_selinux="yes")
+  if test "$enable_selinux" = "yes"; then
+    AC_MSG_RESULT(no)
+    AC_CHECK_LIB(selinux, is_selinux_enabled,
+	    [LIBS="$LIBS -lselinux"
+	     AC_DEFINE(HAVE_SELINUX)])
+  else
+     AC_MSG_RESULT(yes)
+  fi
 fi
 
 dnl Check user requested features.

@@ -782,6 +782,7 @@ with_ex_name
 with_view_name
 with_global_runtime
 with_modified_by
+enable_smack
 enable_selinux
 with_features
 with_compiledby
@@ -1453,7 +1454,8 @@ Optional Features:
   --enable-fail-if-missing    Fail if dependencies on additional features
      specified on the command line are missing.
   --disable-darwin        Disable Darwin (Mac OS X) support.
-  --disable-selinux	  Don't check for SELinux support.
+  --disable-smack	  Do not check for Smack support.
+  --disable-selinux	  Do not check for SELinux support.
   --disable-xsmp          Disable XSMP session management
   --disable-xsmp-interact Disable XSMP interaction
   --enable-luainterp=OPTS     Include Lua interpreter.  default=no OPTS=no/yes/dynamic
@@ -4588,19 +4590,90 @@ fi
 
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-selinux argument" >&5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-smack argument" >&5
+$as_echo_n "checking --disable-smack argument... " >&6; }
+# Check whether --enable-smack was given.
+if test "${enable_smack+set}" = set; then :
+  enableval=$enable_smack;
+else
+  enable_smack="yes"
+fi
+
+if test "$enable_smack" = "yes"; then
+  ac_fn_c_check_header_mongrel "$LINENO" "linux/xattr.h" "ac_cv_header_linux_xattr_h" "$ac_includes_default"
+if test "x$ac_cv_header_linux_xattr_h" = xyes; then :
+  true
+else
+  enable_smack="no"
+fi
+
+
+fi
+if test "$enable_smack" = "yes"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for llistxattr in -lattr" >&5
+$as_echo_n "checking for llistxattr in -lattr... " >&6; }
+if ${ac_cv_lib_attr_llistxattr+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lattr  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char llistxattr ();
+int
+main ()
+{
+return llistxattr ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_attr_llistxattr=yes
+else
+  ac_cv_lib_attr_llistxattr=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_attr_llistxattr" >&5
+$as_echo "$ac_cv_lib_attr_llistxattr" >&6; }
+if test "x$ac_cv_lib_attr_llistxattr" = xyes; then :
+  LIBS="$LIBS -lattr"
+	   found_smack="yes"
+	   $as_echo "#define HAVE_SMACK 1" >>confdefs.h
+
+fi
+
+else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+if test "x$found_smack" = "x"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-selinux argument" >&5
 $as_echo_n "checking --disable-selinux argument... " >&6; }
-# Check whether --enable-selinux was given.
+  # Check whether --enable-selinux was given.
 if test "${enable_selinux+set}" = set; then :
   enableval=$enable_selinux;
 else
   enable_selinux="yes"
 fi
 
-if test "$enable_selinux" = "yes"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+  if test "$enable_selinux" = "yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for is_selinux_enabled in -lselinux" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for is_selinux_enabled in -lselinux" >&5
 $as_echo_n "checking for is_selinux_enabled in -lselinux... " >&6; }
 if ${ac_cv_lib_selinux_is_selinux_enabled+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -4638,13 +4711,14 @@ fi
 $as_echo "$ac_cv_lib_selinux_is_selinux_enabled" >&6; }
 if test "x$ac_cv_lib_selinux_is_selinux_enabled" = xyes; then :
   LIBS="$LIBS -lselinux"
-	   $as_echo "#define HAVE_SELINUX 1" >>confdefs.h
+	     $as_echo "#define HAVE_SELINUX 1" >>confdefs.h
 
 fi
 
-else
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+  else
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
+  fi
 fi
 
 

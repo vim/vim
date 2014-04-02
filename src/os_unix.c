@@ -46,6 +46,14 @@
 static int selinux_enabled = -1;
 #endif
 
+#ifdef HAVE_SMACK
+# include <attr/xattr.h>
+# include <linux/xattr.h>
+# ifndef SMACK_LABEL_LEN
+#  define SMACK_LABEL_LEN 1024
+# endif
+#endif
+
 /*
  * Use this prototype for select, some include files have a wrong prototype
  */
@@ -2797,6 +2805,90 @@ mch_copy_sec(from_file, to_file)
     }
 }
 #endif /* HAVE_SELINUX */
+
+#if defined(HAVE_SMACK) && !defined(PROTO)
+/*
+ * Copy security info from "from_file" to "to_file".
+ */
+    void
+mch_copy_sec(from_file, to_file)
+    char_u	*from_file;
+    char_u	*to_file;
+{
+    static const char const *smack_copied_attributes[] =
+	{
+	    XATTR_NAME_SMACK,
+	    XATTR_NAME_SMACKEXEC,
+	    XATTR_NAME_SMACKMMAP
+	};
+
+    char	buffer[SMACK_LABEL_LEN];
+    const char	*name;
+    int		index;
+    int		ret;
+    ssize_t	size;
+
+    if (from_file == NULL)
+	return;
+
+    for (index = 0 ; index < (int)(sizeof(smack_copied_attributes)
+			      / sizeof(smack_copied_attributes)[0]) ; index++)
+    {
+	/* get the name of the attribute to copy */
+	name = smack_copied_attributes[index];
+
+	/* get the value of the attribute in buffer */
+	size = getxattr((char*)from_file, name, buffer, sizeof(buffer));
+	if (size >= 0)
+	{
+	    /* copy the attribute value of buffer */
+	    ret = setxattr((char*)to_file, name, buffer, (size_t)size, 0);
+	    if (ret < 0)
+	    {
+		MSG_PUTS(_("Could not set security context "));
+		MSG_PUTS(name);
+		MSG_PUTS(_(" for "));
+		msg_outtrans(to_file);
+		msg_putchar('\n');
+	    }
+	}
+	else
+	{
+	    /* what reason of not having the attribute value? */
+	    switch (errno)
+	    {
+		case ENOTSUP:
+		    /* extended attributes aren't supported or enabled */
+		    /* should a message be echoed? not sure... */
+		    return; /* leave because it isn't usefull to continue */
+
+		case ERANGE:
+		default:
+		    /* no enough size OR unexpected error */
+		    MSG_PUTS(_("Could not get security context "));
+		    MSG_PUTS(name);
+		    MSG_PUTS(_(" for "));
+		    msg_outtrans(from_file);
+		    MSG_PUTS(_(". Removing it!\n"));
+		    /* FALLTHROUGH to remove the attribute */
+
+		case ENODATA:
+		    /* no attribute of this name */
+		    ret = removexattr((char*)to_file, name);
+		    if (ret < 0 && errno != ENODATA)
+		    {
+			MSG_PUTS(_("Could not remove security context "));
+			MSG_PUTS(name);
+			MSG_PUTS(_(" for "));
+			msg_outtrans(to_file);
+			msg_putchar('\n');
+		    }
+		    break;
+	    }
+	}
+    }
+}
+#endif /* HAVE_SMACK */
 
 /*
  * Return a pointer to the ACL of file "fname" in allocated memory.

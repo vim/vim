@@ -1358,7 +1358,7 @@ mf_do_open(mfp, fname, flags)
 	if (fdflags >= 0 && (fdflags & FD_CLOEXEC) == 0)
 	    fcntl(mfp->mf_fd, F_SETFD, fdflags | FD_CLOEXEC);
 #endif
-#ifdef HAVE_SELINUX
+#if defined(HAVE_SELINUX) || defined(HAVE_SMACK)
 	mch_copy_sec(fname, mfp->mf_fname);
 #endif
 	mch_hide(mfp->mf_fname);    /* try setting the 'hidden' flag */
