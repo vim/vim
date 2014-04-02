@@ -2875,14 +2875,8 @@ mch_copy_sec(from_file, to_file)
 		case ENODATA:
 		    /* no attribute of this name */
 		    ret = removexattr((char*)to_file, name);
-		    if (ret < 0 && errno != ENODATA)
-		    {
-			MSG_PUTS(_("Could not remove security context "));
-			MSG_PUTS(name);
-			MSG_PUTS(_(" for "));
-			msg_outtrans(to_file);
-			msg_putchar('\n');
-		    }
+		    /* Silently ignore errors, apparently this happens when
+		     * smack is not actually being used. */
 		    break;
 	    }
 	}
