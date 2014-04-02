@@ -2259,6 +2259,11 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 #define SREQ_WIN	1	/* Request window-local option */
 #define SREQ_BUF	2	/* Request buffer-local option */
 
+/* Flags for get_reg_contents */
+#define GREG_NO_EXPR	1	/* Do not allow expression register */
+#define GREG_EXPR_SRC	2	/* Return expression itself for "=" register */
+#define GREG_LIST	4	/* Return list */
+
 /* Character used as separated in autoload function/variable names. */
 #define AUTOLOAD_CHAR '#'
 

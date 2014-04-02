@@ -1819,7 +1819,8 @@ getmatches()			List	list of current matches
 getpid()			Number	process ID of Vim
 getpos( {expr})			List	position of cursor, mark, etc.
 getqflist()			List	list of quickfix items
-getreg( [{regname} [, 1]])	String	contents of register
+getreg( [{regname} [, 1 [, {list}]]])
+				String or List   contents of register
 getregtype( [{regname}])	String	type of register
 gettabvar( {nr}, {varname} [, {def}])
 				any	variable {varname} in tab {nr} or {def}
@@ -3467,7 +3468,7 @@ getqflist()						*getqflist()*
 			:endfor
 
 
-getreg([{regname} [, 1]])				*getreg()*
+getreg([{regname} [, 1 [, {list}]]])			*getreg()*
 		The result is a String, which is the contents of register
 		{regname}.  Example: >
 			:let cliptext = getreg('*')
@@ -3476,6 +3477,11 @@ getreg([{regname} [, 1]])				*getreg()*
 		getreg('=', 1) returns the expression itself, so that it can
 		be restored with |setreg()|.  For other registers the extra
 		argument is ignored, thus you can always give it.
+		If {list} is present and non-zero result type is changed to 
+		|List|. Each list item is one text line. Use it if you care
+		about zero bytes possibly present inside register: without
+		third argument both NLs and zero bytes are represented as NLs
+		(see |NL-used-for-Nul|).
 		If {regname} is not specified, |v:register| is used.
 
 

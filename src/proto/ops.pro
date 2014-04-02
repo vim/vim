@@ -53,7 +53,7 @@ void clip_yank_selection __ARGS((int type, char_u *str, long len, VimClipboard *
 int clip_convert_selection __ARGS((char_u **str, long_u *len, VimClipboard *cbd));
 void dnd_yank_drag_data __ARGS((char_u *str, long len));
 char_u get_reg_type __ARGS((int regname, long *reglen));
-char_u *get_reg_contents __ARGS((int regname, int allowexpr, int expr_src));
+char_u *get_reg_contents __ARGS((int regname, int flags));
 void write_reg_contents __ARGS((int name, char_u *str, int maxlen, int must_append));
 void write_reg_contents_ex __ARGS((int name, char_u *str, int maxlen, int must_append, int yank_type, long block_len));
 void clear_oparg __ARGS((oparg_T *oap));

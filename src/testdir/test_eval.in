@@ -1,0 +1,21 @@
+Test for various eval features.
+
+STARTTEST
+:so small.vim
+:"
+:" test getreg()
+/^one
+"ay3j:$put =string(getreg('a'))
+:$put =string(getreg('a', 1, 1))
+:"
+:/^result/,$w! test.out
+:qa!
+ENDTEST
+
+one
+two
+three
+four
+five
+
+result
