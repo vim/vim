@@ -8129,7 +8129,7 @@ static struct fst
     {"strridx",		2, 3, f_strridx},
     {"strtrans",	1, 1, f_strtrans},
     {"strwidth",	1, 1, f_strwidth},
-    {"submatch",	1, 1, f_submatch},
+    {"submatch",	1, 2, f_submatch},
     {"substitute",	4, 4, f_substitute},
     {"synID",		3, 3, f_synID},
     {"synIDattr",	2, 3, f_synIDattr},
@@ -17890,9 +17890,32 @@ f_submatch(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string =
-		    reg_submatch((int)get_tv_number_chk(&argvars[0], NULL));
+    int		error = FALSE;
+    char_u	**match;
+    char_u	**s;
+    listitem_T	*li;
+    int		no;
+    int		retList = 0;
+
+    no = (int)get_tv_number_chk(&argvars[0], &error);
+    if (error)
+	return;
+    error = FALSE;
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	retList = get_tv_number_chk(&argvars[1], &error);
+    if (error)
+	return;
+
+    if (retList == 0)
+    {
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = reg_submatch(no);
+    }
+    else
+    {
+	rettv->v_type = VAR_LIST;
+	rettv->vval.v_list = reg_submatch_list(no);
+    }
 }
 
 /*

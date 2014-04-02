@@ -7897,6 +7897,85 @@ reg_submatch(no)
 
     return retval;
 }
+
+/*
+ * Used for the submatch() function with the optional non-zero argument: get
+ * the list of strings from the n'th submatch in allocated memory with NULs
+ * represented in NLs.
+ * Returns a list of allocated strings.  Returns NULL when not in a ":s"
+ * command, for a non-existing submatch and for any error.
+ */
+    list_T *
+reg_submatch_list(no)
+    int		no;
+{
+    char_u	*s;
+    linenr_T	slnum;
+    linenr_T	elnum;
+    colnr_T	scol;
+    colnr_T	ecol;
+    int		i;
+    list_T	*list;
+    int		error = FALSE;
+
+    if (!can_f_submatch || no < 0)
+	return NULL;
+
+    if (submatch_match == NULL)
+    {
+	slnum = submatch_mmatch->startpos[no].lnum;
+	elnum = submatch_mmatch->endpos[no].lnum;
+	if (slnum < 0 || elnum < 0)
+	    return NULL;
+
+	scol = submatch_mmatch->startpos[no].col;
+	ecol = submatch_mmatch->endpos[no].col;
+
+	list = list_alloc();
+	if (list == NULL)
+	    return NULL;
+
+	s = reg_getline_submatch(slnum) + scol;
+	if (slnum == elnum)
+	{
+	    if (list_append_string(list, s, ecol - scol) == FAIL)
+		error = TRUE;
+	}
+	else
+	{
+	    if (list_append_string(list, s, -1) == FAIL)
+		error = TRUE;
+	    for (i = 1; i < elnum - slnum; i++)
+	    {
+		s = reg_getline_submatch(slnum + i);
+		if (list_append_string(list, s, -1) == FAIL)
+		    error = TRUE;
+	    }
+	    s = reg_getline_submatch(elnum);
+	    if (list_append_string(list, s, ecol) == FAIL)
+		error = TRUE;
+	}
+    }
+    else
+    {
+	s = submatch_match->startp[no];
+	if (s == NULL || submatch_match->endp[no] == NULL)
+	    return NULL;
+	list = list_alloc();
+	if (list == NULL)
+	    return NULL;
+	if (list_append_string(list, s,
+				 (int)(submatch_match->endp[no] - s)) == FAIL)
+	    error = TRUE;
+    }
+
+    if (error)
+    {
+	list_free(list, TRUE);
+	return NULL;
+    }
+    return list;
+}
 #endif
 
 static regengine_T bt_regengine =

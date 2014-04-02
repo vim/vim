@@ -1990,7 +1990,8 @@ strridx( {haystack}, {needle} [, {start}])
 				Number	last index of {needle} in {haystack}
 strtrans( {expr})		String	translate string to make it printable
 strwidth( {expr})		Number	display cell length of the String {expr}
-submatch( {nr})			String	specific match in ":s" or substitute()
+submatch( {nr}[, {list}])	String or List
+					specific match in ":s" or substitute()
 substitute( {expr}, {pat}, {sub}, {flags})
 				String	all {pat} in {expr} replaced with {sub}
 synID( {lnum}, {col}, {trans})	Number	syntax ID at {lnum} and {col}
@@ -5797,12 +5798,23 @@ strwidth({expr})					*strwidth()*
 		Ambiguous, this function's return value depends on 'ambiwidth'.
 		Also see |strlen()|, |strdisplaywidth()| and |strchars()|.
 
-submatch({nr})						*submatch()*
+submatch({nr}[, {list}])				*submatch()*
 		Only for an expression in a |:substitute| command or
 		substitute() function.
 		Returns the {nr}'th submatch of the matched text.  When {nr}
 		is 0 the whole matched text is returned.
+		Note that a NL in the string can stand for a line break of a
+		multi-line match or a NUL character in the text.
 		Also see |sub-replace-expression|.
+
+		If {list} is present and non-zero then submatch() returns 
+		a list of strings, similar to |getline()| with two arguments. 
+		NL characters in the text represent NUL characters in the
+		text.
+		Only returns more than one item for |:substitute|, inside
+		|substitute()| this list will always contain one or zero
+		items, since there are no real line breaks.
+
 		Example: >
 			:s/\d\+/\=submatch(0) + 1/
 <		This finds the first number in the line and adds one to it.
