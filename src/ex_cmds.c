@@ -4425,7 +4425,7 @@ do_sub(eap)
      * TODO: find a generic solution to make line-joining operations more
      * efficient, avoid allocating a string that grows in size.
      */
-    if (STRCMP(pat, "\\n") == 0 && STRLEN(pat) == 2
+    if (pat != NULL && STRCMP(pat, "\\n") == 0
 	    && *sub == NUL
 	    && (*cmd == NUL || (cmd[1] == NUL && (*cmd == 'g' || *cmd == 'l'
 					     || *cmd == 'p' || *cmd == '#'))))
