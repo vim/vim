@@ -4600,6 +4600,8 @@ else
 fi
 
 if test "$enable_smack" = "yes"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
   ac_fn_c_check_header_mongrel "$LINENO" "linux/xattr.h" "ac_cv_header_linux_xattr_h" "$ac_includes_default"
 if test "x$ac_cv_header_linux_xattr_h" = xyes; then :
   true
@@ -4608,10 +4610,11 @@ else
 fi
 
 
+else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
 fi
 if test "$enable_smack" = "yes"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for llistxattr in -lattr" >&5
 $as_echo_n "checking for llistxattr in -lattr... " >&6; }
 if ${ac_cv_lib_attr_llistxattr+:} false; then :
@@ -4655,9 +4658,6 @@ if test "x$ac_cv_lib_attr_llistxattr" = xyes; then :
 
 fi
 
-else
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
 fi
 
 if test "x$found_smack" = "x"; then
