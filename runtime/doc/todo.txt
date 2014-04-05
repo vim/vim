@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2014 Mar 27
+*todo.txt*      For Vim version 7.4.  Last change: 2014 Apr 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,6 +35,8 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 Regexp problems:
+- Crash when using cpp syntax file with raw string. (Havard Garnes)
+  Edit "~/tmp/test.cc" and source "~/tmp/cpp.vim".
 - NFA regexp doesn't count tab matches correctly. (Urtica Dioica / gaultheria
   Shallon, 2013 Nov 18)
 - After patch 7.4.100 there is still a difference between NFA and old engine.
@@ -70,6 +72,10 @@ Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
 Using autoconf 2.69 gives a lot of warnings.
 
+Spell files use a latin single quote.  Unicode also has another single quote.
+Adjust spell file scripts to duplicate words to support both quotes.
+(Ron Aaron, 2014 Apr 4)
+
 Problem with 'spellsuggest' file, only works for some words.
 (Cesar Romani, 2013 Aug 20)  Depends on file name? (Aug 24)
 Additional remark by glts: the suggested words are marked bad?
@@ -81,26 +87,19 @@ Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 Syntax file for gnuplot.  Existing one is very old. (Andrew Rasmussen, 2014
 Feb 24)
 
-Crash with ":%s/\n//g" on long file. (Aidan Marlin, 2014 Jan 15)
-Christian Brabandt: patch to run this into a join. (2014 Jan 18)
-Suggestion to not save replaced line for undo: Yukihiro Nakadaira, 2014 Jan
-25.
-
 Add digraph for Rouble: =P.  What's the Unicode?
-
-Bug: "!ls %" expands parenthesis in %, but not spaces.  So this doesn't work
-either: ':!ls "%"'.
-Patch by Gary Johnson, 2014 Mar 6.
 
 Issue 174: Detect Mason files.
 
 No error for missing endwhile. (ZyX, 2014 Mar 20)
 
-Patch to add v:progpath. (Viktor Kojouharov, 2014 Mar 15)
-
 Phpcomplete.vim update. (Complex, 2014 Jan 15)
 
 PHP syntax is extremely slow. (Anhad Jai Singh, 2014 Jan 19)
+
+Win32: use different args for SearchPath()? (Yasuhiro Matsumoto, 2009 Jan 30)
+Also fixes wrong result from executable().
+Update from Ken Takata, 2014 Jan 10. Newer 2014 Apr 3.
 
 Can we make ":unlet $VAR" use unsetenv() to delete the env var?
 What for systems that don't have unsetenv()?
@@ -110,13 +109,9 @@ This does not give an error: (Andre Sihera, 2014 Mar 21)
 This neither: (ZyX)
     vim -u NONE 1 2 3 -c 'bufdo while 1 | echo 1'
 
-spec ftplugin: patch from Igor Gnatenko, 2014 Jan 26.
-Include if maintainers don't respond.
-
-Patch to make has() check for Vim version and patch at the same time.
-(Marc Weber, 2013 Jun 7)
-
-Regression on pach 7.4.034. (Ingo Karkat, 2013 Nov 20)
+'viewdir' default on MS-Windows is not a good choice, it's a system directory.
+Change 'viewdir' to "$HOME/vimfiles/view" and use 'viewdiralt' to also read
+from?
 
 Include a plugin manager with Vim? Neobundle seems to be the best currently.
 Long message about this from ZyX, 2014 Mar 23.  And following replies.
@@ -152,16 +147,17 @@ Out of scope:
 - Development work on plugins (although diff with distributed version would be
   useful).
 
-Patch to include smack support (Linux security library). (Jose Bollo, 2014 Jan
-14) Update Jan 15.
+Setting the spell file in a session only reads the local additions, not the
+normal spell file. (Enno Nagel, 2014 Mar 29)
 
-Tag list, as used for :tjump, does not unescape regexp. (Gary Johnson, 2014 Jan
-6) With patch in another message.
+Editing an ascii file as ucs-2 or ucs-4 causes display errors.
+(ZyX, 2014 Mar 30)
+
+":Next 1 some-arg" does not complain about trailing argument.  Also for
+various other commands.  (ZyX, 2014 Mar 30)
 
 VMS: Select() doesn't work properly, typing ESC may hang Vim.  Use sys$qiow
 instead. (Samuel Ferencik, 2013 Sep 28)
-
-Series of patches for NL vs NUL handling. (ZyX, 2013 Nov 3, Nov 9)
 
 Patch for XDG base directory support. (Jean François Bignolles, 2014 Mar 4)
 
@@ -257,10 +253,6 @@ GTK: problem with 'L' in 'guioptions' changing the window width.
 
 Patch to add option that tells whether small deletes go into the numbered
 registers. (Aryeh Leib Taurog, 2013 Nov 18)
-
-Win32: use different args for SearchPath()? (Yasuhiro Matsumoto, 2009 Jan 30)
-Also fixes wrong result from executable().
-Update from Ken Takata, 2014 Jan 10.
 
 Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
 

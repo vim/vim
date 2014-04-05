@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.4.  Last change: 2014 Feb 25
+*syntax.txt*	For Vim version 7.4.  Last change: 2014 Apr 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1959,7 +1959,7 @@ If you don't want to set the variable, use the modeline in EVERY LPC file.
 There are several implementations for LPC, we intend to support most widely
 used ones.  Here the default LPC syntax is for MudOS series, for MudOS v22
 and before, you should turn off the sensible modifiers, and this will also
-asserts the new efuns after v22 to be invalid, don't set this variable when
+assert the new efuns after v22 to be invalid, don't set this variable when
 you are using the latest version of MudOS: >
 
 	:let lpc_pre_v22 = 1

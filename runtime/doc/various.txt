@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.4.  Last change: 2014 Mar 23
+*various.txt*   For Vim version 7.4.  Last change: 2014 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -234,25 +234,41 @@ g8			Print the hex values of the bytes used in the
 							*:!cmd* *:!* *E34*
 :!{cmd}			Execute {cmd} with the shell.  See also the 'shell'
 			and 'shelltype' option.
+
 			Any '!' in {cmd} is replaced with the previous
 			external command (see also 'cpoptions').  But not when
 			there is a backslash before the '!', then that
 			backslash is removed.  Example: ":!ls" followed by
 			":!echo ! \! \\!" executes "echo ls ! \!".
-			After the command has been executed, the timestamp of
-			the current file is checked |timestamp|.
+
 			A '|' in {cmd} is passed to the shell, you cannot use
 			it to append a Vim command.  See |:bar|.
+
+			If {cmd} contains "%" it is expanded to the current
+			file name.  Special characters are not escaped, use
+			quotes to avoid their special meaning: >
+				:!ls "%"
+<			If the file name contains a "$" single quotes might
+			work better (but a single quote causes trouble): >
+				:!ls '%'
+<			This should always work, but it's more typing: >
+				:exe "!ls " . shellescape(expand("%"))
+<
 			A newline character ends {cmd}, what follows is
 			interpreted as a following ":" command.  However, if
 			there is a backslash before the newline it is removed
 			and {cmd} continues.  It doesn't matter how many
 			backslashes are before the newline, only one is
 			removed.
+
 			On Unix the command normally runs in a non-interactive
 			shell.  If you want an interactive shell to be used
 			(to use aliases) set 'shellcmdflag' to "-ic".
 			For Win32 also see |:!start|.
+
+			After the command has been executed, the timestamp of
+			the current file is checked |timestamp|.
+
 			Vim redraws the screen after the command is finished,
 			because it may have printed any text.  This requires a
 			hit-enter prompt, so that you can read any messages.

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2014 Mar 27
+*eval.txt*	For Vim version 7.4.  Last change: 2014 Apr 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -148,7 +148,7 @@ arguments: >
 
 
 1.3 Lists ~
-							*List* *Lists* *E686*
+						*list* *List* *Lists* *E686*
 A List is an ordered sequence of items.  An item can be of any type.  Items
 can be accessed by their index number.	Items can be added and removed at any
 position in the sequence.
@@ -394,7 +394,7 @@ example, to add up all the numbers in a list: >
 
 
 1.4 Dictionaries ~
-						*Dictionaries* *Dictionary*
+					*dict* *Dictionaries* *Dictionary*
 A Dictionary is an associative array: Each entry has a key and a value.  The
 entry can be located with the key.  The entries are stored without a specific
 ordering.
@@ -1005,7 +1005,7 @@ function.  Example: >
 
 
 
-string							*expr-string* *E114*
+string						*string* *expr-string* *E114*
 ------
 "string"		string constant		*expr-quote*
 
@@ -1144,7 +1144,7 @@ specified by what is prepended:
 |local-variable|     l:	  Local to a function.
 |script-variable|    s:	  Local to a |:source|'ed Vim script.
 |function-argument|  a:	  Function argument (only inside a function).
-|vim-variable|	     v:	  Global, predefined by Vim.
+|vim-variable|	   v:	  Global, predefined by Vim.
 
 The scope name by itself can be used as a |Dictionary|.  For example, to
 delete all script-local variables: >
@@ -2720,7 +2720,7 @@ exepath({expr})						*exepath()*
 		Note that the current directory is used when {expr} starts
 		with "./", which may be a problem for Vim: >
 			echo exepath(v:progpath)
-< 		If {expr} cannot be found in $PATH or is not executable then
+<		If {expr} cannot be found in $PATH or is not executable then
 		an empty string is returned.
 
 							*exists()*
@@ -6455,11 +6455,20 @@ There are three types of features:
     Example: >
 	:if has("gui_running")
 <							*has-patch*
-3.  Included patches.  First check |v:version| for the version of Vim.
-    Then the "patch123" feature means that patch 123 has been included for
-    this version.  Example (checking version 6.2.148 or later): >
+3.  Included patches.  The "patch123" feature means that patch 123 has been
+    included.  Note that this form does not check the version of Vim, you need
+    to inspect |v:version| for that.
+    Example (checking version 6.2.148 or later): >
 	:if v:version > 602 || v:version == 602 && has("patch148")
-<   Note that it's possible for patch 147 to be omitted even though 148 is
+<    Note that it's possible for patch 147 to be omitted even though 148 is
+    included.
+
+4.  Beyond a certain version or at a certain version and including a specific
+    patch.  The "patch-7.4.123" feature means that the Vim version is 7.5 or
+    later, or it is version 7.4 and patch 123 was included.
+    The example above can be simplified to: >
+	:if has("patch-6.2.148")
+<    Note that it's possible for patch 147 to be omitted even though 148 is
     included.
 
 acl			Compiled with |ACL| support.
@@ -7402,6 +7411,8 @@ This does NOT work: >
 			{pattern}, so long as it does not have a special
 			meaning (e.g., '|' or '"') and doesn't occur inside
 			{pattern}.
+			Information about the exception is available in
+			|v:exception|.  Also see |throw-variables|.
 			NOTE: It is not reliable to ":catch" the TEXT of
 			an error message because it may vary in different
 			locales.

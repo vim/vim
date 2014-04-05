@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.4.  Last change: 2014 Jan 10
+*usr_41.txt*	For Vim version 7.4.  Last change: 2014 Apr 05
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -742,6 +742,7 @@ System functions and manipulation of files:
 	pathshorten()		shorten directory names in a path
 	simplify()		simplify a path without changing its meaning
 	executable()		check if an executable program exists
+	exepath()		full path of an executable program
 	filereadable()		check if a file can be read
 	filewritable()		check if a file can be written to
 	getfperm()		get the permissions of a file
@@ -754,7 +755,8 @@ System functions and manipulation of files:
 	mkdir()			create a new directory
 	delete()		delete a file
 	rename()		rename a file
-	system()		get the result of a shell command
+	system()		get the result of a shell command as a string
+	systemlist()		get the result of a shell command as a list
 	hostname()		name of the system
 	readfile()		read a file into a List of lines
 	writefile()		write a List of lines into a file
