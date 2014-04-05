@@ -836,6 +836,7 @@ static void getwinvar __ARGS((typval_T *argvars, typval_T *rettv, int off));
 static int searchpair_cmn __ARGS((typval_T *argvars, pos_T *match_pos));
 static int search_cmn __ARGS((typval_T *argvars, pos_T *match_pos, int *flagsp));
 static void setwinvar __ARGS((typval_T *argvars, typval_T *rettv, int off));
+static int write_list __ARGS((FILE *fd, list_T *list, int binary));
 
 
 #ifdef EBCDIC
@@ -18267,14 +18268,22 @@ f_system(argvars, rettv)
 	    EMSG2(_(e_notopen), infile);
 	    goto done;
 	}
-	p = get_tv_string_buf_chk(&argvars[1], buf);
-	if (p == NULL)
+	if (argvars[1].v_type == VAR_LIST)
 	{
-	    fclose(fd);
-	    goto done;		/* type error; errmsg already given */
+	    if (write_list(fd, argvars[1].vval.v_list, TRUE) == FAIL)
+		err = TRUE;
 	}
-	if (fwrite(p, STRLEN(p), 1, fd) != 1)
-	    err = TRUE;
+	else
+	{
+	    p = get_tv_string_buf_chk(&argvars[1], buf);
+	    if (p == NULL)
+	    {
+		fclose(fd);
+		goto done;		/* type error; errmsg already given */
+	    }
+	    if (fwrite(p, STRLEN(p), 1, fd) != 1)
+		err = TRUE;
+	}
 	if (fclose(fd) != 0)
 	    err = TRUE;
 	if (err)
@@ -19173,6 +19182,49 @@ f_winwidth(argvars, rettv)
 }
 
 /*
+ * Write list of strings to file
+ */
+    static int
+write_list(fd, list, binary)
+    FILE	*fd;
+    list_T	*list;
+    int		binary;
+{
+    listitem_T	*li;
+    int		c;
+    int		ret = OK;
+    char_u	*s;
+
+    for (li = list->lv_first; li != NULL; li = li->li_next)
+    {
+	for (s = get_tv_string(&li->li_tv); *s != NUL; ++s)
+	{
+	    if (*s == '\n')
+		c = putc(NUL, fd);
+	    else
+		c = putc(*s, fd);
+	    if (c == EOF)
+	    {
+		ret = FAIL;
+		break;
+	    }
+	}
+	if (!binary || li->li_next != NULL)
+	    if (putc('\n', fd) == EOF)
+	    {
+		ret = FAIL;
+		break;
+	    }
+	if (ret == FAIL)
+	{
+	    EMSG(_(e_write));
+	    break;
+	}
+    }
+    return ret;
+}
+
+/*
  * "writefile()" function
  */
     static void
@@ -19183,10 +19235,7 @@ f_writefile(argvars, rettv)
     int		binary = FALSE;
     char_u	*fname;
     FILE	*fd;
-    listitem_T	*li;
-    char_u	*s;
     int		ret = 0;
-    int		c;
 
     if (check_restricted() || check_secure())
 	return;
@@ -19213,33 +19262,8 @@ f_writefile(argvars, rettv)
     }
     else
     {
-	for (li = argvars[0].vval.v_list->lv_first; li != NULL;
-							     li = li->li_next)
-	{
-	    for (s = get_tv_string(&li->li_tv); *s != NUL; ++s)
-	    {
-		if (*s == '\n')
-		    c = putc(NUL, fd);
-		else
-		    c = putc(*s, fd);
-		if (c == EOF)
-		{
-		    ret = -1;
-		    break;
-		}
-	    }
-	    if (!binary || li->li_next != NULL)
-		if (putc('\n', fd) == EOF)
-		{
-		    ret = -1;
-		    break;
-		}
-	    if (ret < 0)
-	    {
-		EMSG(_(e_write));
-		break;
-	    }
-	}
+	if (write_list(fd, argvars[0].vval.v_list, binary) == FAIL)
+	    ret = -1;
 	fclose(fd);
     }
 
