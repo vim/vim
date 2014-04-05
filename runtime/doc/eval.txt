@@ -2002,6 +2002,7 @@ synIDtrans( {synID})		Number	translated syntax ID of {synID}
 synconcealed( {lnum}, {col})	List    info about concealing
 synstack( {lnum}, {col})	List	stack of syntax IDs at {lnum} and {col}
 system( {expr} [, {input}])	String	output of shell command/filter {expr}
+systemlist( {expr} [, {input}])	List	output of shell command/filter {expr}
 tabpagebuflist( [{arg}])	List	list of buffer numbers in tab page
 tabpagenr( [{arg}])		Number	number of current or last tab page
 tabpagewinnr( {tabarg}[, {arg}])
@@ -5963,7 +5964,8 @@ synstack({lnum}, {col})					*synstack()*
 		valid positions.
 
 system({expr} [, {input}])				*system()* *E677*
-		Get the output of the shell command {expr}.
+		Get the output of the shell command {expr} as a string.  See
+		|systemlist()| to get the output as a List.
 
 		When {input} is given and is a string this string is written 
 		to a file and passed as stdin to the command.  The string is 
@@ -6009,6 +6011,16 @@ system({expr} [, {input}])				*system()* *E677*
 		when using a security agent application.
 		Unlike ":!cmd" there is no automatic check for changed files.
 		Use |:checktime| to force a check.
+
+
+systemlist({expr} [, {input}])				*systemlist()*
+		Same as |system()|, but returns a |List| with lines (parts of 
+		output separated by NL) with NULs transformed into NLs. Output 
+		is the same as |readfile()| will output with {binary} argument 
+		set to "b".
+
+		Returns an empty string on error, so be careful not to run 
+		into |E706|.
 
 
 tabpagebuflist([{arg}])					*tabpagebuflist()*

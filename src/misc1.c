@@ -10665,7 +10665,7 @@ expand_backtick(gap, pat, flags)
     else
 #endif
 	buffer = get_cmd_output(cmd, NULL,
-				      (flags & EW_SILENT) ? SHELL_SILENT : 0);
+				(flags & EW_SILENT) ? SHELL_SILENT : 0, NULL);
     vim_free(cmd);
     if (buffer == NULL)
 	return 0;
@@ -10765,13 +10765,16 @@ addfile(gap, f, flags)
 
 /*
  * Get the stdout of an external command.
+ * If "ret_len" is NULL replace NUL characters with NL.  When "ret_len" is not
+ * NULL store the length there.
  * Returns an allocated string, or NULL for error.
  */
     char_u *
-get_cmd_output(cmd, infile, flags)
+get_cmd_output(cmd, infile, flags, ret_len)
     char_u	*cmd;
     char_u	*infile;	/* optional input file name */
     int		flags;		/* can be SHELL_SILENT */
+    int		*ret_len;
 {
     char_u	*tempname;
     char_u	*command;
@@ -10841,7 +10844,7 @@ get_cmd_output(cmd, infile, flags)
 	vim_free(buffer);
 	buffer = NULL;
     }
-    else
+    else if (ret_len == NULL)
     {
 	/* Change NUL into SOH, otherwise the string is truncated. */
 	for (i = 0; i < len; ++i)
@@ -10850,6 +10853,8 @@ get_cmd_output(cmd, infile, flags)
 
 	buffer[len] = NUL;	/* make sure the buffer is terminated */
     }
+    else
+	*ret_len = len;
 
 done:
     vim_free(tempname);

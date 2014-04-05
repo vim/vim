@@ -100,7 +100,7 @@ int unix_expandpath __ARGS((garray_T *gap, char_u *path, int wildoff, int flags,
 void remove_duplicates __ARGS((garray_T *gap));
 int gen_expand_wildcards __ARGS((int num_pat, char_u **pat, int *num_file, char_u ***file, int flags));
 void addfile __ARGS((garray_T *gap, char_u *f, int flags));
-char_u *get_cmd_output __ARGS((char_u *cmd, char_u *infile, int flags));
+char_u *get_cmd_output __ARGS((char_u *cmd, char_u *infile, int flags, int *ret_len));
 void FreeWild __ARGS((int count, char_u **files));
 int goto_im __ARGS((void));
 /* vim: set ft=c : */
