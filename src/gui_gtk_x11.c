@@ -732,7 +732,10 @@ blink_cb(gpointer data UNUSED)
 gui_mch_start_blink(void)
 {
     if (blink_timer)
+    {
 	gtk_timeout_remove(blink_timer);
+	blink_timer = 0;
+    }
     /* Only switch blinking on if none of the times is zero */
     if (blink_waittime && blink_ontime && blink_offtime && gui.in_focus)
     {
