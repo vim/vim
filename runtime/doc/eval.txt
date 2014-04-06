@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2014 Apr 05
+*eval.txt*	For Vim version 7.4.  Last change: 2014 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1144,7 +1144,7 @@ specified by what is prepended:
 |local-variable|     l:	  Local to a function.
 |script-variable|    s:	  Local to a |:source|'ed Vim script.
 |function-argument|  a:	  Function argument (only inside a function).
-|vim-variable|	   v:	  Global, predefined by Vim.
+|vim-variable|       v:	  Global, predefined by Vim.
 
 The scope name by itself can be used as a |Dictionary|.  For example, to
 delete all script-local variables: >

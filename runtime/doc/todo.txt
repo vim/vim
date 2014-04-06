@@ -70,7 +70,13 @@ Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
-Using autoconf 2.69 gives a lot of warnings.
+Crash in setqflist(). (Benoit Mortgat, 2010 Nov 18)
+
+MS-Windows: Crash opening very long file name starting with "\\".
+(Christian Brock, 2012 Jun 29)
+
+Crash in autocmd that unloads buffers in a BufUnload event. (Andrew Pimlott,
+2012 Aug 11)  Disallow :new when BufUnload is being handled?
 
 Spell files use a latin single quote.  Unicode also has another single quote.
 Adjust spell file scripts to duplicate words to support both quotes.
@@ -354,9 +360,6 @@ In the ATTENTION message about an existing swap file, mention the name of the
 process that is running.  It might actually be some other program, e.g. after
 a reboot.
 
-MS-Windows: Crash opening very long file name starting with "\\".
-(Christian Brock, 2012 Jun 29)
-
 Patch to have text objects defined by arbitrary single characters. (Daniel
 Thau, 2013 Nov 20, 2014 Jan 29, 2014 Jan 31)
 Ben Fritz: problem with 'selection' set to "exclusive".
@@ -426,9 +429,6 @@ Saito, 2013 Apr 24)
 Should be possible to enable/disable matchparen per window or buffer.
 Add a check for b:no_match_paren in Highlight_matching_Pair() (Marcin
 Szamotulski, 2012 Nov 8)
-
-Crash in autocmd that unloads buffers in a BufUnload event. (Andrew Pimlott,
-2012 Aug 11)  Disallow :new when BufUnload is being handled?
 
 Issue 72: 'autochdir' causes problems for :vimgrep.
 
@@ -840,8 +840,6 @@ Patch: Let rare word highlighting overrule good word highlighting.
 
 When 'lines' is 25 and 'scrolloff' is 12, "j" scrolls zero or two lines
 instead of one. (Constantin Pan, 2010 Sep 10)
-
-Crash in setqflist(). (Benoit Mortgat, 2010 Nov 18)
 
 Gui menu edit/paste in block mode insert only inserts in one line (Bjorn
 Winckler, 2011 May 11)
