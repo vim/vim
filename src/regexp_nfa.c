@@ -6781,8 +6781,10 @@ nfa_regtry(prog, col)
 	    {
 		struct multipos *mpos = &subs.synt.list.multi[i];
 
-		/* Only accept single line matches. */
-		if (mpos->start.lnum >= 0 && mpos->start.lnum == mpos->end.lnum)
+		/* Only accept single line matches that are valid. */
+		if (mpos->start.lnum >= 0
+			&& mpos->start.lnum == mpos->end.lnum
+			&& mpos->end.col >= mpos->start.col)
 		    re_extmatch_out->matches[i] =
 			vim_strnsave(reg_getline(mpos->start.lnum)
 							    + mpos->start.col,

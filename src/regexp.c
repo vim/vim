@@ -4146,7 +4146,8 @@ regtry(prog, col)
 	    {
 		/* Only accept single line matches. */
 		if (reg_startzpos[i].lnum >= 0
-			&& reg_endzpos[i].lnum == reg_startzpos[i].lnum)
+			&& reg_endzpos[i].lnum == reg_startzpos[i].lnum
+			&& reg_endzpos[i].col >= reg_startzpos[i].col)
 		    re_extmatch_out->matches[i] =
 			vim_strnsave(reg_getline(reg_startzpos[i].lnum)
 						       + reg_startzpos[i].col,
