@@ -3343,6 +3343,12 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 #endif
 	    buf = buflist_new(ffname, sfname, 0L,
 		    BLN_CURBUF | ((flags & ECMD_SET_HELP) ? 0 : BLN_LISTED));
+#ifdef FEAT_AUTOCMD
+	    /* autocommands may change curwin and curbuf */
+	    if (oldwin != NULL)
+		oldwin = curwin;
+	    old_curbuf = curbuf;
+#endif
 	}
 	if (buf == NULL)
 	    goto theend;

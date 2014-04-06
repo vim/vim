@@ -9548,13 +9548,19 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
 
     /*
      * When stopping to execute autocommands, restore the search patterns and
-     * the redo buffer.
+     * the redo buffer.  Free buffers in the au_pending_free_buf list.
      */
     if (!autocmd_busy)
     {
 	restore_search_patterns();
 	restoreRedobuff();
 	did_filetype = FALSE;
+	while (au_pending_free_buf != NULL)
+	{
+	    buf_T *b = au_pending_free_buf->b_next;
+	    vim_free(au_pending_free_buf);
+	    au_pending_free_buf = b;
+	}
     }
 
     /*

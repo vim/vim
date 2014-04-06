@@ -676,8 +676,16 @@ free_buffer(buf)
 #endif
 #ifdef FEAT_AUTOCMD
     aubuflocal_remove(buf);
+    if (autocmd_busy)
+    {
+	/* Do not free the buffer structure while autocommands are executing,
+	 * it's still needed. Free it when autocmd_busy is reset. */
+	buf->b_next = au_pending_free_buf;
+	au_pending_free_buf = buf;
+    }
+    else
 #endif
-    vim_free(buf);
+	vim_free(buf);
 }
 
 /*
@@ -1681,7 +1689,11 @@ buflist_new(ffname, sfname, lnum, flags)
 	    buf->b_p_bl = TRUE;
 #ifdef FEAT_AUTOCMD
 	    if (!(flags & BLN_DUMMY))
+	    {
 		apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, buf);
+		if (!buf_valid(buf))
+		    return NULL;
+	    }
 #endif
 	}
 	return buf;
@@ -1857,8 +1869,14 @@ buflist_new(ffname, sfname, lnum, flags)
     if (!(flags & BLN_DUMMY))
     {
 	apply_autocmds(EVENT_BUFNEW, NULL, NULL, FALSE, buf);
+	if (!buf_valid(buf))
+	    return NULL;
 	if (flags & BLN_LISTED)
+	{
 	    apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, buf);
+	    if (!buf_valid(buf))
+		return NULL;
+	}
 # ifdef FEAT_EVAL
 	if (aborting())		/* autocmds may abort script processing */
 	    return NULL;
