@@ -396,10 +396,19 @@ if test "$enable_smack" = "yes"; then
   AC_MSG_RESULT(no)
   AC_CHECK_HEADER([linux/xattr.h], true, enable_smack="no")
 else
-   AC_MSG_RESULT(yes)
+  AC_MSG_RESULT(yes)
 fi
 if test "$enable_smack" = "yes"; then
-  AC_CHECK_LIB(attr, llistxattr,
+  AC_CHECK_HEADER([attr/xattr.h], true, enable_smack="no")
+fi
+if test "$enable_smack" = "yes"; then
+  AC_MSG_CHECKING(for XATTR_NAME_SMACKEXEC in linux/xattr.h)
+  AC_EGREP_CPP(XATTR_NAME_SMACKEXEC, [#include <linux/xattr.h>],
+	       AC_MSG_RESULT(yes),
+	       AC_MSG_RESULT(no); enable_smack = "no")
+fi
+if test "$enable_smack" = "yes"; then
+  AC_CHECK_LIB(attr, setxattr,
 	  [LIBS="$LIBS -lattr"
 	   found_smack="yes"
 	   AC_DEFINE(HAVE_SMACK)])

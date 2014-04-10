@@ -4611,13 +4611,41 @@ fi
 
 
 else
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 fi
 if test "$enable_smack" = "yes"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for llistxattr in -lattr" >&5
-$as_echo_n "checking for llistxattr in -lattr... " >&6; }
-if ${ac_cv_lib_attr_llistxattr+:} false; then :
+  ac_fn_c_check_header_mongrel "$LINENO" "attr/xattr.h" "ac_cv_header_attr_xattr_h" "$ac_includes_default"
+if test "x$ac_cv_header_attr_xattr_h" = xyes; then :
+  true
+else
+  enable_smack="no"
+fi
+
+
+fi
+if test "$enable_smack" = "yes"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XATTR_NAME_SMACKEXEC in linux/xattr.h" >&5
+$as_echo_n "checking for XATTR_NAME_SMACKEXEC in linux/xattr.h... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <linux/xattr.h>
+_ACEOF
+if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+  $EGREP "XATTR_NAME_SMACKEXEC" >/dev/null 2>&1; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }; enable_smack = "no"
+fi
+rm -f conftest*
+
+fi
+if test "$enable_smack" = "yes"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for setxattr in -lattr" >&5
+$as_echo_n "checking for setxattr in -lattr... " >&6; }
+if ${ac_cv_lib_attr_setxattr+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -4631,27 +4659,27 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char llistxattr ();
+char setxattr ();
 int
 main ()
 {
-return llistxattr ();
+return setxattr ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_attr_llistxattr=yes
+  ac_cv_lib_attr_setxattr=yes
 else
-  ac_cv_lib_attr_llistxattr=no
+  ac_cv_lib_attr_setxattr=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_attr_llistxattr" >&5
-$as_echo "$ac_cv_lib_attr_llistxattr" >&6; }
-if test "x$ac_cv_lib_attr_llistxattr" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_attr_setxattr" >&5
+$as_echo "$ac_cv_lib_attr_setxattr" >&6; }
+if test "x$ac_cv_lib_attr_setxattr" = xyes; then :
   LIBS="$LIBS -lattr"
 	   found_smack="yes"
 	   $as_echo "#define HAVE_SMACK 1" >>confdefs.h
