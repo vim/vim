@@ -405,7 +405,7 @@ if test "$enable_smack" = "yes"; then
   AC_MSG_CHECKING(for XATTR_NAME_SMACKEXEC in linux/xattr.h)
   AC_EGREP_CPP(XATTR_NAME_SMACKEXEC, [#include <linux/xattr.h>],
 	       AC_MSG_RESULT(yes),
-	       AC_MSG_RESULT(no); enable_smack = "no")
+	       AC_MSG_RESULT(no); enable_smack="no")
 fi
 if test "$enable_smack" = "yes"; then
   AC_CHECK_LIB(attr, setxattr,
@@ -2643,7 +2643,7 @@ if test -z "$SKIP_ATHENA" -o -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF" -o -z "$SKIP_
     AC_MSG_CHECKING(for XIMText in X11/Xlib.h)
     AC_EGREP_CPP(XIMText, [#include <X11/Xlib.h>],
 		  AC_MSG_RESULT(yes),
-		  AC_MSG_RESULT(no; xim has been disabled); enable_xim = "no")
+		  AC_MSG_RESULT(no; xim has been disabled); enable_xim="no")
   fi
   CPPFLAGS=$cppflags_save
 
