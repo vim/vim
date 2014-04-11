@@ -18334,16 +18334,17 @@ get_cmd_output_as_rettv(argvars, rettv, retlist)
 	for (i = 0; i < len; ++i)
 	{
 	    start = res + i;
-	    for (end = start; i < len && *end != NL; ++end)
+	    while (i < len && res[i] != NL)
 		++i;
+	    end = res + i;
 
-	    s = vim_strnsave(start, (int)(end - start));
+	    s = alloc((unsigned)(end - start + 1));
 	    if (s == NULL)
 		goto errret;
 
-	    for (p = s, end = s + (end - start); p < end; ++p)
-		if (*p == NUL)
-		    *p = NL;
+	    for (p = s; start < end; ++p, ++start)
+		*p = *start == NUL ? NL : *start;
+	    *p = NUL;
 
 	    li = listitem_alloc();
 	    if (li == NULL)
@@ -18356,6 +18357,7 @@ get_cmd_output_as_rettv(argvars, rettv, retlist)
 	    list_append(list, li);
 	}
 
+	++list->lv_refcount;
 	rettv->v_type = VAR_LIST;
 	rettv->vval.v_list = list;
 	list = NULL;
