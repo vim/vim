@@ -4074,9 +4074,9 @@ if test -z "$CFLAGS"; then
   test "$GCC" = yes && CFLAGS="-O2 -fno-strength-reduce -Wall"
 fi
 if test "$GCC" = yes; then
-    gccversion=`"$CC" -dumpversion`
+    gccversion=`$CC -dumpversion`
   if test "x$gccversion" = "x"; then
-        gccversion=`"$CC" --version | sed -e '2,$d' -e 's/darwin.//' -e 's/^[^0-9]*\([0-9]\.[0-9.]*\).*$/\1/g'`
+        gccversion=`$CC --version | sed -e '2,$d' -e 's/darwin.//' -e 's/^[^0-9]*\([0-9]\.[0-9.]*\).*$/\1/g'`
   fi
     if test "$gccversion" = "3.0.1" -o "$gccversion" = "3.0.2" -o "$gccversion" = "4.0.1"; then
     echo 'GCC [34].0.[12] has a bug in the optimizer, disabling "-O#"'
@@ -4091,7 +4091,7 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for recent clang version" >&5
 $as_echo_n "checking for recent clang version... " >&6; }
-CLANG_VERSION_STRING=`"$CC" --version 2>/dev/null | sed  -n -e 's/^.*clang.*\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*$/\1/p'`
+CLANG_VERSION_STRING=`$CC --version 2>/dev/null | sed  -n -e 's/^.*clang.*\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*$/\1/p'`
 if test x"$CLANG_VERSION_STRING" != x"" ; then
   CLANG_MAJOR=`echo "$CLANG_VERSION_STRING" | sed -n -e 's/\([0-9][0-9]*\)\.[0-9][0-9]*\.[0-9][0-9]*/\1/p'`
   CLANG_MINOR=`echo "$CLANG_VERSION_STRING" | sed -n -e 's/[0-9][0-9]*\.\([0-9][0-9]*\)\.[0-9][0-9]*/\1/p'`
