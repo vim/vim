@@ -113,7 +113,7 @@ static char_u	*skip_comment __ARGS((char_u *line, int process, int include_space
 #endif
 static void	block_prep __ARGS((oparg_T *oap, struct block_def *, linenr_T, int));
 #if defined(FEAT_CLIPBOARD) || defined(FEAT_EVAL)
-static void	str_to_reg __ARGS((struct yankreg *y_ptr, int type, char_u *str, long len, long blocklen, int str_list));
+static void	str_to_reg __ARGS((struct yankreg *y_ptr, int yank_type, char_u *str, long len, long blocklen, int str_list));
 #endif
 static int	ends_in_white __ARGS((linenr_T lnum));
 #ifdef FEAT_COMMENTS
