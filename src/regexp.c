@@ -7381,6 +7381,7 @@ vim_regsub(rmp, source, dest, copy, magic, backslash)
     reg_mmatch = NULL;
     reg_maxline = 0;
     reg_buf = curbuf;
+    reg_line_lbr = TRUE;
     return vim_regsub_both(source, dest, copy, magic, backslash);
 }
 #endif
@@ -7400,6 +7401,7 @@ vim_regsub_multi(rmp, lnum, source, dest, copy, magic, backslash)
     reg_buf = curbuf;		/* always works on the current buffer! */
     reg_firstlnum = lnum;
     reg_maxline = curbuf->b_ml.ml_line_count - lnum;
+    reg_line_lbr = FALSE;
     return vim_regsub_both(source, dest, copy, magic, backslash);
 }
 
