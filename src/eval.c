@@ -21583,7 +21583,6 @@ ex_function(eap)
      * Get the function name.  There are these situations:
      * func	    normal function name
      *		    "name" == func, "fudi.fd_dict" == NULL
-     * s:func	    script-local function name
      * dict.func    new dictionary entry
      *		    "name" == NULL, "fudi.fd_dict" set,
      *		    "fudi.fd_di" == NULL, "fudi.fd_newkey" == func
@@ -21593,6 +21592,8 @@ ex_function(eap)
      * dict.func    existing dict entry that's not a Funcref
      *		    "name" == NULL, "fudi.fd_dict" set,
      *		    "fudi.fd_di" set, "fudi.fd_newkey" == NULL
+     * s:func	    script-local function name
+     * g:func	    global function name, same as "func"
      */
     p = eap->arg;
     name = trans_function_name(&p, eap->skip, 0, &fudi);
@@ -22286,7 +22287,8 @@ trans_function_name(pp, skip, flags, fdp)
     }
     else
     {
-	if (lead == 2)	/* skip over "s:" */
+	/* skip over "s:" and "g:" */
+	if (lead == 2 || (lv.ll_name[0] == 'g' && lv.ll_name[1] == ':'))
 	    lv.ll_name += 2;
 	len = (int)(end - lv.ll_name);
     }
@@ -22317,17 +22319,16 @@ trans_function_name(pp, skip, flags, fdp)
     else if (!(flags & TFN_INT) && builtin_function(lv.ll_name, len))
     {
 	EMSG2(_("E128: Function name must start with a capital or \"s:\": %s"),
-								  lv.ll_name);
+								       start);
 	goto theend;
     }
-    if (!skip)
+    if (!skip && !(flags & TFN_QUIET))
     {
 	char_u *cp = vim_strchr(lv.ll_name, ':');
 
 	if (cp != NULL && cp < end)
 	{
-	    EMSG2(_("E884: Function name cannot contain a colon: %s"),
-								  lv.ll_name);
+	    EMSG2(_("E884: Function name cannot contain a colon: %s"), start);
 	    goto theend;
 	}
     }
