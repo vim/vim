@@ -18319,7 +18319,6 @@ get_cmd_output_as_rettv(argvars, rettv, retlist)
 	char_u		*s = NULL;
 	char_u		*start;
 	char_u		*end;
-	char_u		*p;
 	int		i;
 
 	res = get_cmd_output(get_tv_string(&argvars[0]), infile,
