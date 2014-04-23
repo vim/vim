@@ -144,6 +144,24 @@ endfun
 :delcommand AR
 :call garbagecollect(1)
 :"
+:" function name includes a colon
+:try
+:func! g:test()
+:echo "test"
+:endfunc
+:catch
+:$put =v:exception
+:endtry
+:"
+:" function name folowed by #
+:try
+:func! test2() "#
+:echo "test2"
+:endfunc
+:catch
+:$put =v:exception
+:endtry
+:"
 :/^start:/+1,$wq! test.out
 :" vim: et ts=4 isk-=\: fmr=???,???
 :call getchar()

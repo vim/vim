@@ -808,7 +808,7 @@ static int eval_fname_sid __ARGS((char_u *p));
 static void list_func_head __ARGS((ufunc_T *fp, int indent));
 static ufunc_T *find_func __ARGS((char_u *name));
 static int function_exists __ARGS((char_u *name));
-static int builtin_function __ARGS((char_u *name));
+static int builtin_function __ARGS((char_u *name, int len));
 #ifdef FEAT_PROFILE
 static void func_do_profile __ARGS((ufunc_T *fp));
 static void prof_sort_list __ARGS((FILE *fd, ufunc_T **sorttab, int st_len, char *title, int prefer_self));
@@ -8489,7 +8489,7 @@ call_func(funcname, len, rettv, argcount, argvars, firstline, lastline,
 	rettv->vval.v_number = 0;
 	error = ERROR_UNKNOWN;
 
-	if (!builtin_function(fname))
+	if (!builtin_function(fname, -1))
 	{
 	    /*
 	     * User defined function.
@@ -21584,6 +21584,7 @@ ex_function(eap)
      * Get the function name.  There are these situations:
      * func	    normal function name
      *		    "name" == func, "fudi.fd_dict" == NULL
+     * s:func	    script-local function name
      * dict.func    new dictionary entry
      *		    "name" == NULL, "fudi.fd_dict" set,
      *		    "fudi.fd_di" == NULL, "fudi.fd_newkey" == func
@@ -22314,11 +22315,24 @@ trans_function_name(pp, skip, flags, fdp)
 	    lead += (int)STRLEN(sid_buf);
 	}
     }
-    else if (!(flags & TFN_INT) && builtin_function(lv.ll_name))
+    else if (!(flags & TFN_INT) && builtin_function(lv.ll_name, len))
     {
-	EMSG2(_("E128: Function name must start with a capital or contain a colon: %s"), lv.ll_name);
+	EMSG2(_("E128: Function name must start with a capital or \"s:\": %s"),
+								  lv.ll_name);
 	goto theend;
     }
+    if (!skip)
+    {
+	char_u *cp = vim_strchr(lv.ll_name, ':');
+
+	if (cp != NULL && cp < end)
+	{
+	    EMSG2(_("E884: Function name cannot contain a colon: %s"),
+								  lv.ll_name);
+	    goto theend;
+	}
+    }
+
     name = alloc((unsigned)(len + lead + 1));
     if (name != NULL)
     {
@@ -22331,7 +22345,7 @@ trans_function_name(pp, skip, flags, fdp)
 		STRCPY(name + 3, sid_buf);
 	}
 	mch_memmove(name + lead, lv.ll_name, (size_t)len);
-	name[len + lead] = NUL;
+	name[lead + len] = NUL;
     }
     *pp = end;
 
@@ -22452,7 +22466,7 @@ free_all_functions()
 translated_function_exists(name)
     char_u	*name;
 {
-    if (builtin_function(name))
+    if (builtin_function(name, -1))
 	return find_internal_func(name) >= 0;
     return find_func(name) != NULL;
 }
@@ -22500,14 +22514,20 @@ get_expanded_name(name, check)
 
 /*
  * Return TRUE if "name" looks like a builtin function name: starts with a
- * lower case letter and doesn't contain a ':' or AUTOLOAD_CHAR.
+ * lower case letter and doesn't contain AUTOLOAD_CHAR.
+ * "len" is the length of "name", or -1 for NUL terminated.
  */
     static int
-builtin_function(name)
+builtin_function(name, len)
     char_u *name;
+    int len;
 {
-    return ASCII_ISLOWER(name[0]) && vim_strchr(name, ':') == NULL
-				   && vim_strchr(name, AUTOLOAD_CHAR) == NULL;
+    char_u *p;
+
+    if (!ASCII_ISLOWER(name[0]))
+	return FALSE;
+    p = vim_strchr(name, AUTOLOAD_CHAR);
+    return p == NULL || (len > 0 && p > name + len);
 }
 
 #if defined(FEAT_PROFILE) || defined(PROTO)
