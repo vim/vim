@@ -2815,7 +2815,7 @@ mch_copy_sec(from_file, to_file)
     char_u	*from_file;
     char_u	*to_file;
 {
-    static const char const *smack_copied_attributes[] =
+    static const char * const smack_copied_attributes[] =
 	{
 	    XATTR_NAME_SMACK,
 	    XATTR_NAME_SMACKEXEC,
