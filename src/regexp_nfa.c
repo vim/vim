@@ -311,7 +311,7 @@ static long nfa_regtry __ARGS((nfa_regprog_T *prog, colnr_T col));
 static long nfa_regexec_both __ARGS((char_u *line, colnr_T col));
 static regprog_T *nfa_regcomp __ARGS((char_u *expr, int re_flags));
 static void nfa_regfree __ARGS((regprog_T *prog));
-static int nfa_regexec __ARGS((regmatch_T *rmp, char_u *line, colnr_T col));
+static int  nfa_regexec_nl __ARGS((regmatch_T *rmp, char_u *line, colnr_T col, int line_lbr));
 static long nfa_regexec_multi __ARGS((regmmatch_T *rmp, win_T *win, buf_T *buf, linenr_T lnum, colnr_T col, proftime_T *tm));
 static int match_follows __ARGS((nfa_state_T *startstate, int depth));
 static int failure_chance __ARGS((nfa_state_T *state, int depth));
@@ -7060,19 +7060,21 @@ nfa_regfree(prog)
  * Match a regexp against a string.
  * "rmp->regprog" is a compiled regexp as returned by nfa_regcomp().
  * Uses curbuf for line count and 'iskeyword'.
+ * If "line_lbr" is TRUE consider a "\n" in "line" to be a line break.
  *
  * Return TRUE if there is a match, FALSE if not.
  */
     static int
-nfa_regexec(rmp, line, col)
+nfa_regexec_nl(rmp, line, col, line_lbr)
     regmatch_T	*rmp;
     char_u	*line;	/* string to match against */
     colnr_T	col;	/* column to start looking for match */
+    int		line_lbr;
 {
     reg_match = rmp;
     reg_mmatch = NULL;
     reg_maxline = 0;
-    reg_line_lbr = FALSE;
+    reg_line_lbr = line_lbr;
     reg_buf = curbuf;
     reg_win = NULL;
     ireg_ic = rmp->rm_ic;
@@ -7082,35 +7084,6 @@ nfa_regexec(rmp, line, col)
     ireg_maxcol = 0;
     return (nfa_regexec_both(line, col) != 0);
 }
-
-#if defined(FEAT_MODIFY_FNAME) || defined(FEAT_EVAL) \
-	|| defined(FIND_REPLACE_DIALOG) || defined(PROTO)
-
-static int  nfa_regexec_nl __ARGS((regmatch_T *rmp, char_u *line, colnr_T col));
-
-/*
- * Like nfa_regexec(), but consider a "\n" in "line" to be a line break.
- */
-    static int
-nfa_regexec_nl(rmp, line, col)
-    regmatch_T	*rmp;
-    char_u	*line;	/* string to match against */
-    colnr_T	col;	/* column to start looking for match */
-{
-    reg_match = rmp;
-    reg_mmatch = NULL;
-    reg_maxline = 0;
-    reg_line_lbr = TRUE;
-    reg_buf = curbuf;
-    reg_win = NULL;
-    ireg_ic = rmp->rm_ic;
-#ifdef FEAT_MBYTE
-    ireg_icombine = FALSE;
-#endif
-    ireg_maxcol = 0;
-    return (nfa_regexec_both(line, col) != 0);
-}
-#endif
 
 
 /*
