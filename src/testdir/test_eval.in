@@ -172,11 +172,13 @@ endfun
 :endtry
 :"
 :" function name starting with/without "g:", buffer-local funcref.
-:function! g:Foo()
-:  $put ='called Foo()'
+:function! g:Foo(n)
+:  $put ='called Foo(' . a:n . ')'
 :endfunction
 :let b:my_func = function('Foo')
-:call b:my_func()
+:call b:my_func(1)
+:echo g:Foo(2)
+:echo Foo(3)
 :"
 :/^start:/+1,$wq! test.out
 :" vim: et ts=4 isk-=\: fmr=???,???
