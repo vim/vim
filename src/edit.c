@@ -8760,8 +8760,8 @@ ins_bs(c, mode, inserted_space_p)
 		((curwin->w_cursor.lnum == 1 && curwin->w_cursor.col == 0)
 		    || (!can_bs(BS_START)
 			&& (arrow_used
-			    || (curwin->w_cursor.lnum == Insstart.lnum
-				&& curwin->w_cursor.col <= Insstart.col)))
+			    || (curwin->w_cursor.lnum == Insstart_orig.lnum
+				&& curwin->w_cursor.col <= Insstart_orig.col)))
 		    || (!can_bs(BS_INDENT) && !arrow_used && ai_col > 0
 					 && curwin->w_cursor.col <= ai_col)
 		    || (!can_bs(BS_EOL) && curwin->w_cursor.col == 0))))
@@ -8812,8 +8812,8 @@ ins_bs(c, mode, inserted_space_p)
      */
     if (curwin->w_cursor.col == 0)
     {
-	lnum = Insstart.lnum;
-	if (curwin->w_cursor.lnum == Insstart.lnum
+	lnum = Insstart_orig.lnum;
+	if (curwin->w_cursor.lnum == lnum
 #ifdef FEAT_RIGHTLEFT
 			|| revins_on
 #endif
@@ -8822,8 +8822,8 @@ ins_bs(c, mode, inserted_space_p)
 	    if (u_save((linenr_T)(curwin->w_cursor.lnum - 2),
 			       (linenr_T)(curwin->w_cursor.lnum + 1)) == FAIL)
 		return FALSE;
-	    --Insstart.lnum;
-	    Insstart.col = MAXCOL;
+	    --Insstart_orig.lnum;
+	    Insstart_orig.col = MAXCOL;
 	}
 	/*
 	 * In replace mode:
@@ -8981,9 +8981,9 @@ ins_bs(c, mode, inserted_space_p)
 	    while (vcol < want_vcol)
 	    {
 		/* Remember the first char we inserted */
-		if (curwin->w_cursor.lnum == Insstart.lnum
-				   && curwin->w_cursor.col < Insstart.col)
-		    Insstart.col = curwin->w_cursor.col;
+		if (curwin->w_cursor.lnum == Insstart_orig.lnum
+				   && curwin->w_cursor.col < Insstart_orig.col)
+		    Insstart_orig.col = curwin->w_cursor.col;
 
 #ifdef FEAT_VREPLACE
 		if (State & VREPLACE_FLAG)
@@ -9071,8 +9071,8 @@ ins_bs(c, mode, inserted_space_p)
 		revins_on ||
 #endif
 		(curwin->w_cursor.col > mincol
-		 && (curwin->w_cursor.lnum != Insstart.lnum
-		     || curwin->w_cursor.col != Insstart.col)));
+		 && (curwin->w_cursor.lnum != Insstart_orig.lnum
+		     || curwin->w_cursor.col != Insstart_orig.col)));
 	did_backspace = TRUE;
     }
 #ifdef FEAT_SMARTINDENT
@@ -9090,9 +9090,9 @@ ins_bs(c, mode, inserted_space_p)
     AppendCharToRedobuff(c);
 
     /* If deleted before the insertion point, adjust it */
-    if (curwin->w_cursor.lnum == Insstart.lnum
-				       && curwin->w_cursor.col < Insstart.col)
-	Insstart.col = curwin->w_cursor.col;
+    if (curwin->w_cursor.lnum == Insstart_orig.lnum
+				       && curwin->w_cursor.col < Insstart_orig.col)
+	Insstart_orig.col = curwin->w_cursor.col;
 
     /* vi behaviour: the cursor moves backward but the character that
      *		     was there remains visible
