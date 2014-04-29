@@ -4444,7 +4444,7 @@ do_sub(eap)
 	else if (*cmd == 'p')
 	    eap->flags = EXFLAG_PRINT;
 
-	(void)do_join(eap->line2 - eap->line1 + 1, FALSE, TRUE, FALSE);
+	(void)do_join(eap->line2 - eap->line1 + 1, FALSE, TRUE, FALSE, TRUE);
 	sub_nlines = sub_nsubs = eap->line2 - eap->line1 + 1;
 	(void)do_sub_msg(FALSE);
 	ex_may_print(eap);

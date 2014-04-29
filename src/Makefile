@@ -1880,6 +1880,7 @@ unittest unittests: $(UNITTEST_TARGETS)
 
 # Run individual test, assuming that Vim was already compiled.
 test1 test2 test3 test4 test5 test6 test7 test8 test9 \
+	test_autoformat_join \
 	test_eval \
 	test_options \
 	test10 test11 test12 test13 test14 test15 test16 test17 test18 test19 \

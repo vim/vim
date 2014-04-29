@@ -96,6 +96,7 @@ SCRIPT = test1.out  test2.out  test3.out  test4.out  test5.out  \
 	 test95.out test96.out test98.out test99.out \
 	 test100.out test101.out test103.out test104.out \
 	 test105.out test106.out \
+	 test_autoformat_join.out \
 	 test_eval.out \
 	 test_options.out
 

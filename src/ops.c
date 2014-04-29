@@ -1979,7 +1979,7 @@ op_delete(oap)
 		curwin->w_cursor = curpos;	/* restore curwin->w_cursor */
 	    }
 	    if (curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
-		(void)do_join(2, FALSE, FALSE, FALSE);
+		(void)do_join(2, FALSE, FALSE, FALSE, FALSE);
 	}
     }
 
@@ -4323,17 +4323,20 @@ skip_comment(line, process, include_space, is_comment)
 /*
  * Join 'count' lines (minimal 2) at cursor position.
  * When "save_undo" is TRUE save lines for undo first.
- * Set "use_formatoptions" to FALSE when e.g. processing
- * backspace and comment leaders should not be removed.
+ * Set "use_formatoptions" to FALSE when e.g. processing backspace and comment
+ * leaders should not be removed.
+ * When setmark is TRUE, sets the '[ and '] mark, else, the caller is expected
+ * to set those marks.
  *
  * return FAIL for failure, OK otherwise
  */
     int
-do_join(count, insert_space, save_undo, use_formatoptions)
+do_join(count, insert_space, save_undo, use_formatoptions, setmark)
     long    count;
     int	    insert_space;
     int	    save_undo;
     int	    use_formatoptions UNUSED;
+    int	    setmark;
 {
     char_u	*curr = NULL;
     char_u      *curr_start = NULL;
@@ -4384,7 +4387,7 @@ do_join(count, insert_space, save_undo, use_formatoptions)
     for (t = 0; t < count; ++t)
     {
 	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t));
-	if (t == 0)
+	if (t == 0 && setmark)
 	{
 	    /* Set the '[ mark. */
 	    curwin->w_buffer->b_op_start.lnum = curwin->w_cursor.lnum;
@@ -4506,9 +4509,12 @@ do_join(count, insert_space, save_undo, use_formatoptions)
     }
     ml_replace(curwin->w_cursor.lnum, newp, FALSE);
 
-    /* Set the '] mark. */
-    curwin->w_buffer->b_op_end.lnum = curwin->w_cursor.lnum;
-    curwin->w_buffer->b_op_end.col  = (colnr_T)STRLEN(newp);
+    if (setmark)
+    {
+	/* Set the '] mark. */
+	curwin->w_buffer->b_op_end.lnum = curwin->w_cursor.lnum;
+	curwin->w_buffer->b_op_end.col  = (colnr_T)STRLEN(newp);
+    }
 
     /* Only report the change in the first line here, del_lines() will report
      * the deleted line. */
@@ -5009,7 +5015,7 @@ format_lines(line_count, avoid_fex)
 		    }
 		}
 		curwin->w_cursor.lnum--;
-		if (do_join(2, TRUE, FALSE, FALSE) == FAIL)
+		if (do_join(2, TRUE, FALSE, FALSE, FALSE) == FAIL)
 		{
 		    beep_flush();
 		    break;

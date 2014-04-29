@@ -812,7 +812,7 @@ getcount:
 
     if (text_locked() && (nv_cmds[idx].cmd_flags & NV_NCW))
     {
-	/* This command is not allowed while editing a ccmdline: beep. */
+	/* This command is not allowed while editing a cmdline: beep. */
 	clearopbeep(oap);
 	text_locked_msg();
 	goto normal_end;
@@ -1905,7 +1905,7 @@ do_pending_operator(cap, old_col, gui_yank)
 	    else
 	    {
 		(void)do_join(oap->line_count, oap->op_type == OP_JOIN,
-								  TRUE, TRUE);
+							    TRUE, TRUE, TRUE);
 		auto_format(FALSE, TRUE);
 	    }
 	    break;
@@ -9236,7 +9236,7 @@ nv_join(cap)
 	{
 	    prep_redo(cap->oap->regname, cap->count0,
 			 NUL, cap->cmdchar, NUL, NUL, cap->nchar);
-	    (void)do_join(cap->count0, cap->nchar == NUL, TRUE, TRUE);
+	    (void)do_join(cap->count0, cap->nchar == NUL, TRUE, TRUE, TRUE);
 	}
     }
 }

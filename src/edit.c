@@ -8685,7 +8685,7 @@ ins_del()
     {
 	temp = curwin->w_cursor.col;
 	if (!can_bs(BS_EOL)		/* only if "eol" included */
-		|| do_join(2, FALSE, TRUE, FALSE) == FAIL)
+		|| do_join(2, FALSE, TRUE, FALSE, FALSE) == FAIL)
 	    vim_beep();
 	else
 	    curwin->w_cursor.col = temp;
@@ -8866,7 +8866,7 @@ ins_bs(c, mode, inserted_space_p)
 			ptr[len - 1] = NUL;
 		}
 
-		(void)do_join(2, FALSE, FALSE, FALSE);
+		(void)do_join(2, FALSE, FALSE, FALSE, FALSE);
 		if (temp == NUL && gchar_cursor() != NUL)
 		    inc_cursor();
 	    }
