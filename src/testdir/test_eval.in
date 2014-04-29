@@ -180,6 +180,9 @@ endfun
 :echo g:Foo(2)
 :echo Foo(3)
 :"
+:" script-local function used in Funcref must exist.
+:so test_eval_func.vim
+:"
 :/^start:/+1,$wq! test.out
 :" vim: et ts=4 isk-=\: fmr=???,???
 :call getchar()
