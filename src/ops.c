@@ -6559,7 +6559,7 @@ str_to_reg(y_ptr, yank_type, str, len, blocklen, str_list)
     {
 	for (ss = (char_u **) str; *ss != NULL; ++ss, ++lnum)
 	{
-	    i = STRLEN(*ss);
+	    i = (long)STRLEN(*ss);
 	    pp[lnum] = vim_strnsave(*ss, i);
 	    if (i > maxlen)
 		maxlen = i;
