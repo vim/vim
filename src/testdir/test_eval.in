@@ -183,6 +183,13 @@ endfun
 :" script-local function used in Funcref must exist.
 :so test_eval_func.vim
 :"
+:" Using $ instead of '$' must give an error
+:try
+: call append($, 'foobar')
+:catch
+:$put =v:exception
+:endtry
+:"
 :/^start:/+1,$wq! test.out
 :" vim: et ts=4 isk-=\: fmr=???,???
 :call getchar()
