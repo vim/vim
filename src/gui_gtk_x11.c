@@ -3142,10 +3142,14 @@ gui_mch_init(void)
 	gnome_program_init(VIMPACKAGE, VIM_VERSION_SHORT,
 			   LIBGNOMEUI_MODULE, gui_argc, gui_argv, NULL);
 # if defined(FEAT_FLOAT) && defined(LC_NUMERIC)
-	/* Make sure strtod() uses a decimal point, not a comma. Gnome init
-	 * may change it. */
-	if (setlocale(LC_NUMERIC, NULL) != (char *) "C")
-	   setlocale(LC_NUMERIC, "C");
+	{
+	    char *p = setlocale(LC_NUMERIC, NULL);
+
+	    /* Make sure strtod() uses a decimal point, not a comma. Gnome
+	     * init may change it. */
+	    if (p == NULL || strcmp(p, "C") != 0)
+	       setlocale(LC_NUMERIC, "C");
+	}
 # endif
     }
 #endif
