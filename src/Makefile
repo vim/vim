@@ -1670,7 +1670,10 @@ config auto/config.mk: auto/configure config.mk.in config.h.in
 	    ! grep -x -F 'ac_cv_env_CFLAGS_value=$(CFLAGS)' auto/config.cache > /dev/null; then \
 		rm auto/config.cache; \
 	fi
-	if test "X$(MAKECMDGOALS)" != "Xclean" -a "X$(MAKECMDGOALS)" != "Xdistclean"; then \
+	if test "X$(MAKECMDGOALS)" != "Xclean" \
+		-a "X$(MAKECMDGOALS)" != "Xdistclean" \
+		-a "X$(MAKECMDGOALS)" != "Xautoconf" \
+		-a "X$(MAKECMDGOALS)" != "Xreconfig"; then \
 	    GUI_INC_LOC="$(GUI_INC_LOC)" GUI_LIB_LOC="$(GUI_LIB_LOC)" \
 		CC="$(CC)" CPPFLAGS="$(CPPFLAGS)" CFLAGS="$(CFLAGS)" \
 		LDFLAGS="$(LDFLAGS)" $(CONF_SHELL) srcdir="$(srcdir)" \
