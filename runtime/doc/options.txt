@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2014 Mar 23
+*options.txt*	For Vim version 7.4.  Last change: 2014 Apr 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6619,6 +6619,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			top of the suggestion list with the internal methods.
 			Lines without a slash are ignored, use this for
 			comments.
+			The word in the second column must be correct,
+			otherwise it will not be used.  Add the word to an
+			".add" file if it is currently flagged as a spelling
+			mistake.
 			The file is used for all languages.
 
 	expr:{expr}	Evaluate expression {expr}.  Use a function to avoid

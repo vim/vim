@@ -4312,6 +4312,7 @@ E880	if_pyth.txt	/*E880*
 E881	autocmd.txt	/*E881*
 E882	eval.txt	/*E882*
 E883	eval.txt	/*E883*
+E884	eval.txt	/*E884*
 E89	message.txt	/*E89*
 E90	message.txt	/*E90*
 E91	options.txt	/*E91*
@@ -4441,6 +4442,13 @@ Operator-pending-mode	intro.txt	/*Operator-pending-mode*
 OverTheSpot	mbyte.txt	/*OverTheSpot*
 P	change.txt	/*P*
 PATHEXT	eval.txt	/*PATHEXT*
+PHP_BracesAtCodeLevel	indent.txt	/*PHP_BracesAtCodeLevel*
+PHP_autoformatcomment	indent.txt	/*PHP_autoformatcomment*
+PHP_default_indenting	indent.txt	/*PHP_default_indenting*
+PHP_outdentSLComments	indent.txt	/*PHP_outdentSLComments*
+PHP_outdentphpescape	indent.txt	/*PHP_outdentphpescape*
+PHP_removeCRwhenUnix	indent.txt	/*PHP_removeCRwhenUnix*
+PHP_vintage_case_default_indent	indent.txt	/*PHP_vintage_case_default_indent*
 Pattern	pattern.txt	/*Pattern*
 Perl	if_perl.txt	/*Perl*
 Posix	intro.txt	/*Posix*

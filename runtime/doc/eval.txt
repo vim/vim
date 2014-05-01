@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2014 Apr 06
+*eval.txt*	For Vim version 7.4.  Last change: 2014 Apr 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2735,7 +2735,8 @@ exists({expr})	The result is a Number, which is non-zero if {expr} is
 					string)
 			*funcname	built-in function (see |functions|)
 					or user defined function (see
-					|user-functions|).
+					|user-functions|). Also works for a
+					variable that is a Funcref.
 			varname		internal variable (see
 					|internal-variables|).	Also works
 					for |curly-braces-names|, |Dictionary|
@@ -6464,10 +6465,11 @@ There are three types of features:
     included.
 
 4.  Beyond a certain version or at a certain version and including a specific
-    patch.  The "patch-7.4.123" feature means that the Vim version is 7.5 or
-    later, or it is version 7.4 and patch 123 was included.
-    The example above can be simplified to: >
-	:if has("patch-6.2.148")
+    patch.  The "patch-7.4.237" feature means that the Vim version is 7.5 or
+    later, or it is version 7.4 and patch 237 was included.
+    Note that this only works for patch 7.4.237 and later, before that you
+    need to use the example above that checks v:version.  Example: >
+	:if has("patch-7.4.248")
 <    Note that it's possible for patch 147 to be omitted even though 148 is
     included.
 
@@ -6690,6 +6692,8 @@ can only be called from within the script and from functions, user commands
 and autocommands defined in the script.  It is also possible to call the
 function from a mapping defined in the script, but then |<SID>| must be used
 instead of "s:" when the mapping is expanded outside of the script.
+There are only script-local functions, no buffer-local or window-local
+functions.
 
 					*:fu* *:function* *E128* *E129* *E123*
 :fu[nction]		List all functions and their arguments.
@@ -6713,12 +6717,15 @@ last defined. Example: >
 <
 See |:verbose-cmd| for more information.
 
-							*E124* *E125* *E853*
+						*E124* *E125* *E853* *E884*
 :fu[nction][!] {name}([arguments]) [range] [abort] [dict]
 			Define a new function by the name {name}.  The name
 			must be made of alphanumeric characters and '_', and
-			must start with a capital or "s:" (see above).  When
-			using a capital "g:" be prepended.
+			must start with a capital or "s:" (see above).  Note
+			that using "b:" or "g:" is not allowed. (since patch
+			7.4.260 E884 is given if the function name has a colon
+			in the name, e.g. for "foo:bar()".  Before that patch
+			no error was given).
 
 			{name} can also be a |Dictionary| entry that is a
 			|Funcref|: >

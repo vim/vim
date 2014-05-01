@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2014 Apr 05
+*todo.txt*      For Vim version 7.4.  Last change: 2014 Apr 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,8 +35,6 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 Regexp problems:
-- Crash when using cpp syntax file with raw string. (Havard Garnes)
-  Edit "~/tmp/test.cc" and source "~/tmp/cpp.vim".
 - NFA regexp doesn't count tab matches correctly. (Urtica Dioica / gaultheria
   Shallon, 2013 Nov 18)
 - After patch 7.4.100 there is still a difference between NFA and old engine.
@@ -53,40 +51,31 @@ Regexp problems:
 - Bug with back references. (Lech Lorens, 2014 Feb 3)
 - Bug when using \>. (Ramel, 2014 Feb 2) (Aaron Bohannon, 2014 Feb 13)
 
+Update for documentation of 'ttymouse' option. (Hayaki Saito, 2014 Apr 30)
+Typo: s/support/supports/
+
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
 
-It is possible to define a function with a colon in the name.
-"g:" is not recognized as it should.  (zyx, 2014 Mar 16)
-Do some plugins use names with a colon?  Disallow it, but ignore the error
-when an option is set?
-
-":lunmap" cannot be abbrevated to ":lu". (ZyX)
+Patch to fix positioning in tabs. (Nobuhiro Takasaki, 2014 Apr 25)
+New way to reproduce it: 2014 Apr 29
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
-Crash in setqflist(). (Benoit Mortgat, 2010 Nov 18)
-
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
 
-Crash in autocmd that unloads buffers in a BufUnload event. (Andrew Pimlott,
-2012 Aug 11)  Disallow :new when BufUnload is being handled?
-
-Spell files use a latin single quote.  Unicode also has another single quote.
-Adjust spell file scripts to duplicate words to support both quotes.
-(Ron Aaron, 2014 Apr 4)
-
-Problem with 'spellsuggest' file, only works for some words.
-(Cesar Romani, 2013 Aug 20)  Depends on file name? (Aug 24)
-Additional remark by glts: the suggested words are marked bad?
-
 Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
+
+Inconsistant error messages when comparing dict and when comparing list.
+(ZyX, 2014 Apr 19)
+
+Add #ifdef around struct members not used by GTK. (Cade Forester, 2014 Apr 10)
 
 Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 
@@ -94,6 +83,8 @@ Syntax file for gnuplot.  Existing one is very old. (Andrew Rasmussen, 2014
 Feb 24)
 
 Add digraph for Rouble: =P.  What's the Unicode?
+
+Include .hgignore in the distribution, so that patches for it work.
 
 Issue 174: Detect Mason files.
 
@@ -103,12 +94,23 @@ Phpcomplete.vim update. (Complex, 2014 Jan 15)
 
 PHP syntax is extremely slow. (Anhad Jai Singh, 2014 Jan 19)
 
+After setting 'spellfile' the screen is not redrawn. (issue 221)
+Patch from Christian Brabandt on the issu.
+
+Spell files use a latin single quote. Unicode also has another single quote:
+0x2019.  (Ron Aaron, 2014 Apr 4)
+New OpenOffice spell files support this with ICONV.  But they are not
+compatible with Vim spell files.  The old files can no longer be downloaded.
+
 Win32: use different args for SearchPath()? (Yasuhiro Matsumoto, 2009 Jan 30)
 Also fixes wrong result from executable().
 Update from Ken Takata, 2014 Jan 10. Newer 2014 Apr 3.
 
 Can we make ":unlet $VAR" use unsetenv() to delete the env var?
 What for systems that don't have unsetenv()?
+
+Patch for problem that v:register is set to '_' after deleting into the black
+hole register.
 
 This does not give an error: (Andre Sihera, 2014 Mar 21)
     vim -u NONE 1 2 3 -c 'bufdo if 1 | echo 1'
@@ -118,6 +120,9 @@ This neither: (ZyX)
 'viewdir' default on MS-Windows is not a good choice, it's a system directory.
 Change 'viewdir' to "$HOME/vimfiles/view" and use 'viewdiralt' to also read
 from?
+
+Patch to add arglistid(), get the ID of the currently used argument list.
+(Marcin Szamotulski, 2014 Apr 27)
 
 Include a plugin manager with Vim? Neobundle seems to be the best currently.
 Long message about this from ZyX, 2014 Mar 23.  And following replies.
@@ -155,6 +160,9 @@ Out of scope:
 
 Setting the spell file in a session only reads the local additions, not the
 normal spell file. (Enno Nagel, 2014 Mar 29)
+
+When typing the first character of a command, e.g. "f", then using a menu, the
+menu item doesn't work.  Clear typeahead when using a menu?
 
 Editing an ascii file as ucs-2 or ucs-4 causes display errors.
 (ZyX, 2014 Mar 30)
@@ -1154,6 +1162,7 @@ is executed.
 
 ":pedit %" with a BufReadPre autocommand causes the cursor to move to the
 first line. (Ingo Karkat, 2008 Jul 1)  Ian Kelling is working on this.
+Similar problem with ":e". (Marc Montu, 2014 Apr 22)
 
 Wildmenu not deleted: "gvim -u NONE", ":set nocp wildmenu cmdheight=3
 laststatus=2", CTRL-D CTRL-H CTRL-H CTRL-H. (A.Politz, 2008 April 1)
@@ -1501,6 +1510,7 @@ Engelke, 2007 Dec 20 - 2008 Jan 17)
 
 Win64: Seek error in swap file for a very big file (3 Gbyte).  Check storing
 pointer in long and seek offset in 64 bit var.
+Patches from Ken Takata might help (2014 Apr 17)
 
 Win32: patch for fullscreen mode. (Liushaolin, 2008 April 17)
 

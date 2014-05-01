@@ -4,8 +4,8 @@
 "		:3s+-foo++g
 " Description:	highlight dnsmasq configuration files
 " File:		runtime/syntax/dnsmasq.vim
-" Version:	2.67
-" Last Change:	2013 Nov 03
+" Version:	2.70
+" Last Change:	2014 Apr 30
 " Modeline:	vim: ts=8:sw=2:sts=2:
 "
 " License:	VIM License
@@ -132,6 +132,9 @@ syn match DnsmasqKeyword    "^\s*dhcp-subscrid\>"
 syn match DnsmasqKeyword    "^\s*dhcp-userclass\>"
 syn match DnsmasqKeyword    "^\s*dhcp-vendorclass\>"
 syn match DnsmasqKeyword    "^\s*dns-rr\>"
+syn match DnsmasqKeyword    "^\s*dnssec\>"
+syn match DnsmasqKeyword    "^\s*dnssec-check-unsigned\>"
+syn match DnsmasqKeyword    "^\s*dnssec-no-timecheck\>"
 syn match DnsmasqKeyword    "^\s*dns-forward-max\>"
 syn match DnsmasqKeyword    "^\s*domain\>"
 syn match DnsmasqKeyword    "^\s*domain-needed\>"
@@ -153,6 +156,7 @@ syn match DnsmasqKeyword    "^\s*listen-address\>"
 syn match DnsmasqKeyword    "^\s*local\>"
 syn match DnsmasqKeyword    "^\s*localmx\>"
 syn match DnsmasqKeyword    "^\s*local-ttl\>"
+syn match DnsmasqKeyword    "^\s*local-service\>"
 syn match DnsmasqKeyword    "^\s*localise-queries\>"
 syn match DnsmasqKeyword    "^\s*log-async\>"
 syn match DnsmasqKeyword    "^\s*log-dhcp\>"
@@ -187,8 +191,10 @@ syn match DnsmasqKeyword    "^\s*read-ethers\>"
 syn match DnsmasqKeyword    "^\s*rebind-domain-ok\>"
 syn match DnsmasqKeyword    "^\s*rebind-localhost-ok\>"
 syn match DnsmasqKeyword    "^\s*resolv-file\>"
+syn match DnsmasqKeyword    "^\s*rev-server\>"
 syn match DnsmasqKeyword    "^\s*selfmx\>"
 syn match DnsmasqKeyword    "^\s*server\>"
+syn match DnsmasqKeyword    "^\s*servers-file\>"
 syn match DnsmasqKeyword    "^\s*srv-host\>"
 syn match DnsmasqKeyword    "^\s*stop-dns-rebind\>"
 syn match DnsmasqKeyword    "^\s*strict-order\>"

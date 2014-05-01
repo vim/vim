@@ -1,4 +1,4 @@
-*digraph.txt*   For Vim version 7.4.  Last change: 2013 Dec 12
+*digraph.txt*   For Vim version 7.4.  Last change: 2014 Apr 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1077,7 +1077,7 @@ char  digraph	hex	dec	official name ~
 ⊥	-T	22A5	8869	UP TACK
 ⋅	.P	22C5	8901	DOT OPERATOR
 ⋮	:3	22EE	8942	VERTICAL ELLIPSIS
-⋯       .3      22EF    8943    MIDLINE HORIZONTAL ELLIPSIS
+⋯	.3	22EF	8943	MIDLINE HORIZONTAL ELLIPSIS
 ⌂	Eh	2302	8962	HOUSE
 ⌈	<7	2308	8968	LEFT CEILING
 ⌉	>7	2309	8969	RIGHT CEILING

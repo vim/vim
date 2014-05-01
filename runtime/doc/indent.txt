@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.4.  Last change: 2013 Nov 05
+*indent.txt*    For Vim version 7.4.  Last change: 2014 Apr 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -812,7 +812,7 @@ OPTIONS: ~
 PHP indenting can be altered in several ways by modifying the values of some
 global variables:
 
-								*php-comment*
+					*php-comment* *PHP_autoformatcomment*
 To not enable auto-formating of comments by default (if you want to use your
 own 'formatoptions'): >
     :let g:PHP_autoformatcomment = 0
@@ -821,6 +821,7 @@ Else, 't' will be removed from the 'formatoptions' string and "qrowcb" will be
 added, see |fo-table| for more information.
 -------------
 
+							*PHP_outdentSLComments*
 To add extra indentation to single-line comments: >
     :let g:PHP_outdentSLComments = N
 
@@ -832,6 +833,7 @@ Only single-line comments will be affected such as: >
     /* Comment */
 -------------
 
+							*PHP_default_indenting*
 To add extra indentation to every PHP lines with N being the number of
 'shiftwidth' to add: >
     :let g:PHP_default_indenting = N
@@ -851,14 +853,18 @@ For example, with N = 1, this will give:
 (Notice the extra indentation between the PHP container markers and the code)
 -------------
 
-To indent PHP tags as the surrounding code: >
-    :let g:PHP_outdentphpescape = 0
+							*PHP_outdentphpescape*
+To indent PHP escape tags as the surrounding non-PHP code (only affects the
+PHP escape tags): >
+:let g:PHP_outdentphpescape = 0
 -------------
 
+							*PHP_removeCRwhenUnix*
 To automatically remove '\r' characters when the 'fileformat' is set to Unix: >
     :let g:PHP_removeCRwhenUnix = 1
 -------------
 
+							*PHP_BracesAtCodeLevel*
 To indent braces at the same level than the code they contain: >
     :let g:PHP_BracesAtCodeLevel = 1
     
@@ -877,6 +883,7 @@ NOTE:	Indenting will be a bit slower if this option is used because some
 	optimizations won't be available.
 -------------
 
+							*PHP_vintage_case_default_indent*
 To indent 'case:' and 'default:' statements in switch() blocks: >
     :let g:PHP_vintage_case_default_indent = 1
 
