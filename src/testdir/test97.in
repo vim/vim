@@ -5,12 +5,15 @@ STARTTEST
 :so small.vim
 :set shell=doesnotexist
 :e test.out
-:put =glob('Xxx\{')
-:put =glob('Xxx\$')
+:$put =glob('Xxx\{')
+:$put =glob('Xxx\$')
 :w! Xxx{
 :w! Xxx\$
-:put =glob('Xxx\{')
-:put =glob('Xxx\$')
+:$put =glob('Xxx\{')
+:$put =glob('Xxx\$')
+:"
+:$put =string(globpath('sautest/autoload', '*.vim'))
+:$put =string(globpath('sautest/autoload', '*.vim', 0, 1))
 :w
 :qa!
 ENDTEST

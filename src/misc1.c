@@ -10336,9 +10336,6 @@ expand_in_path(gap, pattern, flags)
 {
     char_u	*curdir;
     garray_T	path_ga;
-    char_u	*files = NULL;
-    char_u	*s;	/* start */
-    char_u	*e;	/* end */
     char_u	*paths = NULL;
 
     if ((curdir = alloc((unsigned)MAXPATHL)) == NULL)
@@ -10351,37 +10348,13 @@ expand_in_path(gap, pattern, flags)
     if (path_ga.ga_len == 0)
 	return 0;
 
-    paths = ga_concat_strings(&path_ga);
+    paths = ga_concat_strings(&path_ga, ",");
     ga_clear_strings(&path_ga);
     if (paths == NULL)
 	return 0;
 
-    files = globpath(paths, pattern, (flags & EW_ICASE) ? WILD_ICASE : 0);
+    globpath(paths, pattern, gap, (flags & EW_ICASE) ? WILD_ICASE : 0);
     vim_free(paths);
-    if (files == NULL)
-	return 0;
-
-    /* Copy each path in files into gap */
-    s = e = files;
-    while (*s != NUL)
-    {
-	while (*e != '\n' && *e != NUL)
-	    e++;
-	if (*e == NUL)
-	{
-	    addfile(gap, s, flags);
-	    break;
-	}
-	else
-	{
-	    /* *e is '\n' */
-	    *e = NUL;
-	    addfile(gap, s, flags);
-	    e++;
-	    s = e;
-	}
-    }
-    vim_free(files);
 
     return gap->ga_len;
 }

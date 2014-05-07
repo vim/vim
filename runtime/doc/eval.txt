@@ -1832,7 +1832,7 @@ getwinvar( {nr}, {varname} [, {def}])
 				any	variable {varname} in window {nr}
 glob( {expr} [, {nosuf} [, {list}]])
 				any	expand file wildcards in {expr}
-globpath( {path}, {expr} [, {flag}])
+globpath( {path}, {expr} [, {nosuf} [, {list}]])
 				String	do glob({expr}) for all dirs in {path}
 has( {feature})			Number	TRUE if feature {feature} supported
 has_key( {dict}, {key})		Number	TRUE if {dict} has entry {key}
@@ -3571,11 +3571,12 @@ glob({expr} [, {nosuf} [, {list}]])				*glob()*
 		See |expand()| for expanding special Vim variables.  See
 		|system()| for getting the raw output of an external command.
 
-globpath({path}, {expr} [, {flag}])			*globpath()*
+globpath({path}, {expr} [, {nosuf} [, {list}]])			*globpath()*
 		Perform glob() on all directories in {path} and concatenate
 		the results.  Example: >
 			:echo globpath(&rtp, "syntax/c.vim")
-<		{path} is a comma-separated list of directory names.  Each
+<
+		{path} is a comma-separated list of directory names.  Each
 		directory name is prepended to {expr} and expanded like with
 		|glob()|.  A path separator is inserted when needed.
 		To add a comma inside a directory name escape it with a
@@ -3583,11 +3584,19 @@ globpath({path}, {expr} [, {flag}])			*globpath()*
 		trailing backslash, remove it if you put a comma after it.
 		If the expansion fails for one of the directories, there is no
 		error message.
-		Unless the optional {flag} argument is given and is non-zero,
+
+		Unless the optional {nosuf} argument is given and is non-zero,
 		the 'suffixes' and 'wildignore' options apply: Names matching
 		one of the patterns in 'wildignore' will be skipped and
 		'suffixes' affect the ordering of matches.
 
+		When {list} is present and it is non-zero the result is a List
+		with all matching files. The advantage of using a List is, you
+		also get filenames containing newlines correctly. Otherwise
+		the result is a String and when there are several matches,
+		they are separated by <NL> characters.  Example: >
+			:echo globpath(&rtp, "syntax/c.vim", 0, 1)
+<
 		The "**" item can be used to search in a directory tree.
 		For example, to find all "README.txt" files in the directories
 		in 'runtimepath' and below: >
