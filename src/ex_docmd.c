@@ -10290,6 +10290,7 @@ makeopens(fd, dirnow)
     char_u	*sname;
     win_T	*edited_win = NULL;
     int		tabnr;
+    int		restore_stal = FALSE;
     win_T	*tab_firstwin;
     frame_T	*tab_topframe;
     int		cur_arg_idx = 0;
@@ -10397,6 +10398,19 @@ makeopens(fd, dirnow)
 	}
     }
 #endif
+
+    /*
+     * When there are two or more tabpages and 'showtabline' is 1 the tabline
+     * will be displayed when creating the next tab.  That resizes the windows
+     * in the first tab, which may cause problems.  Set 'showtabline' to 2
+     * temporarily to avoid that.
+     */
+    if (p_stal == 1 && first_tabpage->tp_next != NULL)
+    {
+	if (put_line(fd, "set stal=2") == FAIL)
+	    return FAIL;
+	restore_stal = TRUE;
+    }
 
     /*
      * May repeat putting Windows for each tab, when "tabpages" is in
@@ -10548,6 +10562,8 @@ makeopens(fd, dirnow)
 		|| put_eol(fd) == FAIL)
 	    return FAIL;
     }
+    if (restore_stal && put_line(fd, "set stal=1") == FAIL)
+	return FAIL;
 
     /*
      * Wipe out an empty unnamed buffer we started in.
