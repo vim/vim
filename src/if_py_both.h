@@ -2494,7 +2494,7 @@ ListAssSlice(ListObject *self, Py_ssize_t first,
 	if (numreplaced < slicelen)
 	{
 	    lis[slicelen + numreplaced] = lis[numreplaced]->li_prev;
-	    list_remove(l, lis[numreplaced], lis[numreplaced]);
+	    vimlist_remove(l, lis[numreplaced], lis[numreplaced]);
 	    numreplaced++;
 	}
 	else
@@ -2570,7 +2570,7 @@ ListAssIndex(ListObject *self, Py_ssize_t index, PyObject *obj)
     if (obj == NULL)
     {
 	li = list_find(l, (long) index);
-	list_remove(l, li, li);
+	vimlist_remove(l, li, li);
 	clear_tv(&li->li_tv);
 	vim_free(li);
 	return 0;

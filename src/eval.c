@@ -5998,7 +5998,7 @@ listitem_remove(l, item)
     list_T  *l;
     listitem_T *item;
 {
-    list_remove(l, item, item);
+    vimlist_remove(l, item, item);
     listitem_free(item);
 }
 
@@ -6577,9 +6577,11 @@ list_copy(orig, deep, copyID)
 /*
  * Remove items "item" to "item2" from list "l".
  * Does not free the listitem or the value!
+ * This used to be called list_remove, but that conflicts with a Sun header
+ * file.
  */
     void
-list_remove(l, item, item2)
+vimlist_remove(l, item, item2)
     list_T	*l;
     listitem_T	*item;
     listitem_T	*item2;
@@ -15435,7 +15437,7 @@ f_remove(argvars, rettv)
 	    if (argvars[2].v_type == VAR_UNKNOWN)
 	    {
 		/* Remove one item, return its value. */
-		list_remove(l, item, item);
+		vimlist_remove(l, item, item);
 		*rettv = item->li_tv;
 		vim_free(item);
 	    }
@@ -15461,7 +15463,7 @@ f_remove(argvars, rettv)
 			EMSG(_(e_invrange));
 		    else
 		    {
-			list_remove(l, item, item2);
+			vimlist_remove(l, item, item2);
 			if (rettv_list_alloc(rettv) == OK)
 			{
 			    l = rettv->vval.v_list;
