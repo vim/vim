@@ -5525,6 +5525,10 @@ buf_addsign(buf, id, lnum, typenr)
     return;
 }
 
+/*
+ * For an existing, placed sign "markId" change the type to "typenr".
+ * Returns the line number of the sign, or zero if the sign is not found.
+ */
     linenr_T
 buf_change_sign_type(buf, markId, typenr)
     buf_T	*buf;		/* buffer to store sign in */
@@ -5693,6 +5697,14 @@ buf_delete_signs(buf)
 {
     signlist_T	*next;
 
+    /* When deleting the last sign need to redraw the windows to remove the
+     * sign column. */
+    if (buf->b_signlist != NULL)
+    {
+	redraw_buf_later(buf, NOT_VALID);
+	changed_cline_bef_curs();
+    }
+
     while (buf->b_signlist != NULL)
     {
 	next = buf->b_signlist->next;
@@ -5711,11 +5723,7 @@ buf_delete_all_signs()
 
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
 	if (buf->b_signlist != NULL)
-	{
-	    /* Need to redraw the windows to remove the sign column. */
-	    redraw_buf_later(buf, NOT_VALID);
 	    buf_delete_signs(buf);
-	}
 }
 
 /*
