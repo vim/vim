@@ -103,4 +103,5 @@ void addfile __ARGS((garray_T *gap, char_u *f, int flags));
 char_u *get_cmd_output __ARGS((char_u *cmd, char_u *infile, int flags, int *ret_len));
 void FreeWild __ARGS((int count, char_u **files));
 int goto_im __ARGS((void));
+char_u *get_isolated_shell_name __ARGS((void));
 /* vim: set ft=c : */

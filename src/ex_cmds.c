@@ -1551,8 +1551,16 @@ make_filter_cmd(cmd, itmp, otmp)
 {
     char_u	*buf;
     long_u	len;
+    int		is_fish_shell;
 
-    len = (long_u)STRLEN(cmd) + 3;			/* "()" + NUL */
+#if (defined(UNIX) && !defined(ARCHIE)) || defined(OS2)
+    /* Account for fish's different syntax for subshells */
+    is_fish_shell = (fnamecmp(get_isolated_shell_name(), "fish") == 0);
+    if (is_fish_shell)
+	len = (long_u)STRLEN(cmd) + 13;		/* "begin; " + "; end" + NUL */
+    else
+#endif
+	len = (long_u)STRLEN(cmd) + 3;			/* "()" + NUL */
     if (itmp != NULL)
 	len += (long_u)STRLEN(itmp) + 9;		/* " { < " + " } " */
     if (otmp != NULL)
@@ -1567,7 +1575,12 @@ make_filter_cmd(cmd, itmp, otmp)
      * redirecting input and/or output.
      */
     if (itmp != NULL || otmp != NULL)
-	vim_snprintf((char *)buf, len, "(%s)", (char *)cmd);
+    {
+	if (is_fish_shell)
+	    vim_snprintf((char *)buf, len, "begin; %s; end", (char *)cmd);
+	else
+	    vim_snprintf((char *)buf, len, "(%s)", (char *)cmd);
+    }
     else
 	STRCPY(buf, cmd);
     if (itmp != NULL)
@@ -1577,7 +1590,7 @@ make_filter_cmd(cmd, itmp, otmp)
     }
 #else
     /*
-     * for shells that don't understand braces around commands, at least allow
+     * For shells that don't understand braces around commands, at least allow
      * the use of commands in a pipe.
      */
     STRCPY(buf, cmd);
@@ -4315,7 +4328,7 @@ do_sub(eap)
     pos_T	old_cursor = curwin->w_cursor;
     int		start_nsubs;
 #ifdef FEAT_EVAL
-    int         save_ma = 0;
+    int		save_ma = 0;
 #endif
 
     cmd = eap->arg;
@@ -5986,7 +5999,7 @@ find_help_tags(arg, num_matches, matches, keep_lang)
 			       "/\\\\?", "/\\\\z(\\\\)", "\\\\=", ":s\\\\=",
 			       "\\[count]", "\\[quotex]", "\\[range]",
 			       "\\[pattern]", "\\\\bar", "/\\\\%\\$",
-                               "s/\\\\\\~", "s/\\\\U", "s/\\\\L",
+			       "s/\\\\\\~", "s/\\\\U", "s/\\\\L",
 			       "s/\\\\1", "s/\\\\2", "s/\\\\3", "s/\\\\9"};
     int flags;
 
@@ -6026,7 +6039,7 @@ find_help_tags(arg, num_matches, matches, keep_lang)
 	  /* Replace:
 	   * "[:...:]" with "\[:...:]"
 	   * "[++...]" with "\[++...]"
-	   * "\{" with "\\{"               -- matching "} \}"
+	   * "\{" with "\\{"		   -- matching "} \}"
 	   */
 	    if ((arg[0] == '[' && (arg[1] == ':'
 			 || (arg[1] == '+' && arg[2] == '+')))

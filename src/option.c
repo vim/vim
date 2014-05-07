@@ -3804,37 +3804,7 @@ set_init_3()
     else
 	do_sp = !(options[idx_sp].flags & P_WAS_SET);
 #endif
-
-    /*
-     * Isolate the name of the shell:
-     * - Skip beyond any path.  E.g., "/usr/bin/csh -f" -> "csh -f".
-     * - Remove any argument.  E.g., "csh -f" -> "csh".
-     * But don't allow a space in the path, so that this works:
-     *   "/usr/bin/csh --rcfile ~/.cshrc"
-     * But don't do that for Windows, it's common to have a space in the path.
-     */
-#ifdef WIN3264
-    p = gettail(p_sh);
-    p = vim_strnsave(p, (int)(skiptowhite(p) - p));
-#else
-    p = skiptowhite(p_sh);
-    if (*p == NUL)
-    {
-	/* No white space, use the tail. */
-	p = vim_strsave(gettail(p_sh));
-    }
-    else
-    {
-	char_u  *p1, *p2;
-
-	/* Find the last path separator before the space. */
-	p1 = p_sh;
-	for (p2 = p_sh; p2 < p; mb_ptr_adv(p2))
-	    if (vim_ispathsep(*p2))
-		p1 = p2 + 1;
-	p = vim_strnsave(p1, (int)(p - p1));
-    }
-#endif
+    p = get_isolated_shell_name();
     if (p != NULL)
     {
 	/*
@@ -3875,6 +3845,7 @@ set_init_3()
 		    || fnamecmp(p, "zsh") == 0
 		    || fnamecmp(p, "zsh-beta") == 0
 		    || fnamecmp(p, "bash") == 0
+		    || fnamecmp(p, "fish") == 0
 #  ifdef WIN3264
 		    || fnamecmp(p, "cmd") == 0
 		    || fnamecmp(p, "sh.exe") == 0
@@ -8858,8 +8829,8 @@ get_option_value(name, numval, stringval, opt_flags)
  * opt_type). Uses
  *
  * Returned flags:
- *       0 hidden or unknown option, also option that does not have requested 
- *         type (see SREQ_* in vim.h)
+ *       0 hidden or unknown option, also option that does not have requested
+ *	   type (see SREQ_* in vim.h)
  *  see SOPT_* in vim.h for other flags
  *
  * Possible opt_type values: see SREQ_* in vim.h

@@ -1405,7 +1405,7 @@ open_line(dir, flags, second_line_indent)
 #ifdef FEAT_SMARTINDENT
 	if (did_si)
 	{
-	    int        sw = (int)get_sw_value(curbuf);
+	    int sw = (int)get_sw_value(curbuf);
 
 	    if (p_sr)
 		newindent -= newindent % sw;
@@ -10895,4 +10895,42 @@ FreeWild(count, files)
 goto_im()
 {
     return (p_im && stuff_empty() && typebuf_typed());
+}
+
+/*
+ * Returns the isolated name of the shell:
+ * - Skip beyond any path.  E.g., "/usr/bin/csh -f" -> "csh -f".
+ * - Remove any argument.  E.g., "csh -f" -> "csh".
+ * But don't allow a space in the path, so that this works:
+ *   "/usr/bin/csh --rcfile ~/.cshrc"
+ * But don't do that for Windows, it's common to have a space in the path.
+ */
+    char_u *
+get_isolated_shell_name()
+{
+    char_u *p;
+
+#ifdef WIN3264
+    p = gettail(p_sh);
+    p = vim_strnsave(p, (int)(skiptowhite(p) - p));
+#else
+    p = skiptowhite(p_sh);
+    if (*p == NUL)
+    {
+	/* No white space, use the tail. */
+	p = vim_strsave(gettail(p_sh));
+    }
+    else
+    {
+	char_u  *p1, *p2;
+
+	/* Find the last path separator before the space. */
+	p1 = p_sh;
+	for (p2 = p_sh; p2 < p; mb_ptr_adv(p2))
+	    if (vim_ispathsep(*p2))
+		p1 = p2 + 1;
+	p = vim_strnsave(p1, (int)(p - p1));
+    }
+#endif
+    return p;
 }
