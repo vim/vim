@@ -1551,9 +1551,10 @@ make_filter_cmd(cmd, itmp, otmp)
 {
     char_u	*buf;
     long_u	len;
-    int		is_fish_shell;
 
 #if (defined(UNIX) && !defined(ARCHIE)) || defined(OS2)
+    int		is_fish_shell;
+
     /* Account for fish's different syntax for subshells */
     is_fish_shell = (fnamecmp(get_isolated_shell_name(), "fish") == 0);
     if (is_fish_shell)
