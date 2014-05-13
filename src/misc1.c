@@ -3125,6 +3125,9 @@ changed_common(lnum, col, lnume, xtra)
 	    if (hasAnyFolding(wp))
 		set_topline(wp, wp->w_topline);
 #endif
+	    /* relative numbering may require updating more */
+	    if (wp->w_p_rnu)
+		redraw_win_later(wp, SOME_VALID);
 	}
     }
 
