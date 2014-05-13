@@ -433,8 +433,8 @@ msgstr "E109: Saknar ':' efter '?'"
 msgid "E691: Can only compare List with List"
 msgstr "E691: Kan bara jämföra Lista med Lista"
 
-msgid "E692: Invalid operation for Lists"
-msgstr "E692: Ogiltig operation för Listor"
+msgid "E692: Invalid operation for List"
+msgstr "E692: Ogiltig operation för Lista"
 
 msgid "E735: Can only compare Dictionary with Dictionary"
 msgstr "E735: Kan bara jämföra Tabell med Tabell"

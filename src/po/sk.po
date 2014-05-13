@@ -414,8 +414,8 @@ msgstr "E109: Po '?' chýba ':'"
 msgid "E691: Can only compare List with List"
 msgstr "E691: Porovnáva» mo¾no iba Zoznam so Zoznamom (List with List)"
 
-msgid "E692: Invalid operation for Lists"
-msgstr "E692: Neplatná operácia pre Zoznamy (Lists)"
+msgid "E692: Invalid operation for List"
+msgstr "E692: Neplatná operácia pre Zoznamy (List)"
 
 msgid "E735: Can only compare Dictionary with Dictionary"
 msgstr "E735: Porovnáva» mo¾no iba Slovník so Slovníkom (Dictionary with Dictionary)"

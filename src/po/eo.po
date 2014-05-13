@@ -491,7 +491,7 @@ msgstr "E109: Mankas ':' post '?'"
 msgid "E691: Can only compare List with List"
 msgstr "E691: Eblas nur kompari Liston kun Listo"
 
-msgid "E692: Invalid operation for Lists"
+msgid "E692: Invalid operation for List"
 msgstr "E692: Nevalida operacio de Listoj"
 
 msgid "E735: Can only compare Dictionary with Dictionary"

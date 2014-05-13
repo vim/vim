@@ -438,8 +438,8 @@ msgstr "E109: ':' faltando depois de '?'"
 msgid "E691: Can only compare List with List"
 msgstr "E691: Uma Lista só pode ser comparada com outra Lista"
 
-msgid "E692: Invalid operation for Lists"
-msgstr "E692: Operação inválida para Listas"
+msgid "E692: Invalid operation for List"
+msgstr "E692: Operação inválida para Lista"
 
 msgid "E735: Can only compare Dictionary with Dictionary"
 msgstr "E735: Um Dicionário só pode ser comparado com outro Dicionário"

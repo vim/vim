@@ -456,8 +456,8 @@ msgstr "E109: Mangler ':' etter '?'"
 msgid "E691: Can only compare List with List"
 msgstr "E691: Kan bare sammenligne liste med liste"
 
-msgid "E692: Invalid operation for Lists"
-msgstr "E692: Ugyldig operasjon for lister"
+msgid "E692: Invalid operation for List"
+msgstr "E692: Ugyldig operasjon for liste"
 
 msgid "E735: Can only compare Dictionary with Dictionary"
 msgstr "E735: Kan bare sammenligne ordliste med ordliste"

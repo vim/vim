@@ -582,8 +582,8 @@ msgid "E691: Can only compare List with List"
 msgstr "E691: Solo se puede comparar una lista con otra lista"
 
 #: eval.c:4298
-msgid "E692: Invalid operation for Lists"
-msgstr "E692: Operación inválida para listas"
+msgid "E692: Invalid operation for List"
+msgstr "E692: Operación inválida para lista"
 
 #: eval.c:4325
 msgid "E735: Can only compare Dictionary with Dictionary"

@@ -3,7 +3,7 @@
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
 #
-# Last Change: 2013 Jul 06
+# Last Change: 2014 May 13
 #
 # Copyright (C) 2001-13 MURAOKA Taro <koron.kaoriya@gmail.com>
 # THIS FILE IS DISTRIBUTED UNDER THE VIM LICENSE.
@@ -479,7 +479,7 @@ msgstr "E109: '?' の後に ':' がありません"
 msgid "E691: Can only compare List with List"
 msgstr "E691: リスト型はリスト型としか比較できません"
 
-msgid "E692: Invalid operation for Lists"
+msgid "E692: Invalid operation for List"
 msgstr "E692: リスト型には無効な操作です"
 
 msgid "E735: Can only compare Dictionary with Dictionary"

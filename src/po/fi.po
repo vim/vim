@@ -471,7 +471,7 @@ msgstr "E109: ?:n jälkeen puuttuu :"
 msgid "E691: Can only compare List with List"
 msgstr "E691: Listaa voi verrata vain listaan"
 
-msgid "E692: Invalid operation for Lists"
+msgid "E692: Invalid operation for List"
 msgstr "E692: Virheellinen toiminto listalle"
 
 msgid "E735: Can only compare Dictionary with Dictionary"

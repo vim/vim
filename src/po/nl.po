@@ -458,8 +458,8 @@ msgstr "E109: ':' ontbreekt na '?'"
 msgid "E691: Can only compare List with List"
 msgstr "E691: List kan alleen met een Lijst worden vergeleken"
 
-msgid "E692: Invalid operation for Lists"
-msgstr "E692: ongeldige bewerking voor Listen"
+msgid "E692: Invalid operation for List"
+msgstr "E692: ongeldige bewerking voor List"
 
 msgid "E735: Can only compare Dictionary with Dictionary"
 msgstr "E735: Dictionary kan alleen met Woordenboek worden vergeleken"

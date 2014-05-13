@@ -462,7 +462,7 @@ msgstr "E109: '?' 뒤에 ':'이 없습니다"
 msgid "E691: Can only compare List with List"
 msgstr "E691: List는 List와만 비교할 수 있습니다"
 
-msgid "E692: Invalid operation for Lists"
+msgid "E692: Invalid operation for List"
 msgstr "E692: List에 대한 잘못된 동작"
 
 msgid "E735: Can only compare Dictionary with Dictionary"
