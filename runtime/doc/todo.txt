@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2014 Apr 30
+*todo.txt*      For Vim version 7.4.  Last change: 2014 May 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,33 +35,23 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 Regexp problems:
-- NFA regexp doesn't count tab matches correctly. (Urtica Dioica / gaultheria
-  Shallon, 2013 Nov 18)
-- After patch 7.4.100 there is still a difference between NFA and old engine.
-  25 a's with pattern \v^(aa+)\1+$  (Urtica Dioica, 2013 Nov 21) Also: 9 a's
-  with pattern  \v^(a{-2,})\1+$ (Nov 23)
-- NFA engine combining character mismatch. (glts, 2013 Aug 27)
-  Remark from Dominique, Aug 27
+- Bug with pattern: '\vblock (\d+)\.\n.*\d+%(\1)@<!\.$'
+  (Lech Lorens, 2014 Feb 3)
 - Issue 164: freeze on regexp search.
-- NFA problem with non-greedy match and branches. (Ingo Karkat, 2013 Nov 29)
 - Ignorecase not handled properly for multi-byte characters. (Axel Bender,
   2013 Dec 11)
 - Using \@> and \?. (Brett Stahlman, 2013 Dec 21) Remark from Marcin Szamotulski
   Remark from Brett 2014 Jan 6 and 7.
-- Bug with back references. (Lech Lorens, 2014 Feb 3)
 - Bug when using \>. (Ramel, 2014 Feb 2) (Aaron Bohannon, 2014 Feb 13)
-
-Update for documentation of 'ttymouse' option. (Hayaki Saito, 2014 Apr 30)
-Typo: s/support/supports/
+- NFA regexp doesn't handle \%<v correctly. (Ingo Karkat, 2014 May 12)
+- Does not work with NFA regexp engine:
+  \%u, \%x, \%o, \%d followed by a composing character
 
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
-
-Patch to fix positioning in tabs. (Nobuhiro Takasaki, 2014 Apr 25)
-New way to reproduce it: 2014 Apr 29
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
@@ -72,19 +62,12 @@ MS-Windows: Crash opening very long file name starting with "\\".
 
 Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
 
-Inconsistant error messages when comparing dict and when comparing list.
-(ZyX, 2014 Apr 19)
-
-Add #ifdef around struct members not used by GTK. (Cade Forester, 2014 Apr 10)
-
 Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 
 Syntax file for gnuplot.  Existing one is very old. (Andrew Rasmussen, 2014
 Feb 24)
 
 Add digraph for Rouble: =P.  What's the Unicode?
-
-Include .hgignore in the distribution, so that patches for it work.
 
 Issue 174: Detect Mason files.
 
@@ -94,9 +77,6 @@ Phpcomplete.vim update. (Complex, 2014 Jan 15)
 
 PHP syntax is extremely slow. (Anhad Jai Singh, 2014 Jan 19)
 
-After setting 'spellfile' the screen is not redrawn. (issue 221)
-Patch from Christian Brabandt on the issu.
-
 Spell files use a latin single quote. Unicode also has another single quote:
 0x2019.  (Ron Aaron, 2014 Apr 4)
 New OpenOffice spell files support this with ICONV.  But they are not
@@ -105,6 +85,9 @@ compatible with Vim spell files.  The old files can no longer be downloaded.
 Win32: use different args for SearchPath()? (Yasuhiro Matsumoto, 2009 Jan 30)
 Also fixes wrong result from executable().
 Update from Ken Takata, 2014 Jan 10. Newer 2014 Apr 3.
+
+Win32: use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
+Needs more tests.
 
 Can we make ":unlet $VAR" use unsetenv() to delete the env var?
 What for systems that don't have unsetenv()?
@@ -160,6 +143,16 @@ Out of scope:
 
 Setting the spell file in a session only reads the local additions, not the
 normal spell file. (Enno Nagel, 2014 Mar 29)
+
+-   Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
+    Smilauer, 2004 Sep 13, fix Oct 31, update 2007 May 30)
+    Version for latest MacVim: Tobia Conforto, 2009 Nov 23
+    More recent version: https://retracile.net/wiki/VimBreakIndent
+    Posted to vim-dev by Taylor Hedberg, 2011 Nov 25
+    Update by Taylor Hedberg, 2013 May 30.
+    Updated for Vim 7.4 by Ken Takata, 2013 Oct 5.
+    Update by Christian Brabandt, 2014 May 9.  Remarks by Ken Takata.
+    Update by Christian 2014 May 12
 
 When typing the first character of a command, e.g. "f", then using a menu, the
 menu item doesn't work.  Clear typeahead when using a menu?
@@ -470,10 +463,6 @@ Patch to add tagfunc().  Cleaned up by Christian Brabandt, 2013 Jun 22.
 Help for 'b:undo_indent'. (Thilo Six, 2012 May 28)
 Also question if examples are correct.
 
-It should be possible to make globpath() return a list instead of a string,
-like with glob(). (Greg Novack, 2012 Nov 2)
-Patch by Adnan Zafar, 2013 Jul 15.
-
 The input map for CTRL-O in mswin.vim causes problems after CTRL-X CTRL-O.
 Suggestion for another map. (Philip Mat, 2012 Jun 18)
 But use "gi" instead of "a".  Or use CTRL-\ CTRL-O.
@@ -510,14 +499,6 @@ Apr 18)
 
 Patch for has('unnamedplus') docs. (Tony Mechelynck, 2011 Sep 27)
 And one for gui_x11.txt.
-
--   Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
-    Smilauer, 2004 Sep 13, fix Oct 31, update 2007 May 30)
-    Version for latest MacVim: Tobia Conforto, 2009 Nov 23
-    More recent version: https://retracile.net/wiki/VimBreakIndent
-    Posted to vim-dev by Taylor Hedberg, 2011 Nov 25
-    Update by Taylor Hedberg, 2013 May 30.
-    Updated for Vim 7.4 by Ken Takata, 2013 Oct 5.
 
 ":cd" doesn't work when current directory path contains "**".
 finddir() has the same problem.  (Yukihiro Nakadaira, 2012 Jan 10)
@@ -756,9 +737,6 @@ crash? (Raiwil, 2010 Nov 17)
 
 Patch to add FoldedLineNr highlighting: different highlighting for the line
 number of a closed fold. (eXerigumo Clanjor, 2013 Jul 15)
-
-Does not work with NFA regexp engine:
-- \%u, \%x, \%o, \%d followed by a composing character
 
 Regexp engine performance:
 - Profiling:
@@ -1078,6 +1056,11 @@ Session file generates error upon loading, cause by --remote-silent-tab.
 Using ~ works OK on 'a' with composing char, but not on 0x0418  with composing
 char 0x0301. (Tony Mechelynck, 2009 Mar 4)
 
+Searching for composing char works, but not when inside []. (ZyX, Benjamin R.
+Haskell, 2010 Aug 24)
+
+This does not work yet: "a\(%C\)" (get composing characters into a submatch).
+
 A function on a dictionary is not profiled. (ZyX, 2010 Dec 25)
 
 Inconsistent: starting with $LANG set to es_ES.utf-8 gives Spanish
@@ -1305,9 +1288,6 @@ Is there a way to list all the files first?
 When 'smartcase' is set and using CTRL-L to add to the search pattern it may
 result in no matches.  Convert chars to lower case? (Erik Wognsen, 2009 Apr
 16)
-
-Searching for composing char works, but not when inside []. (ZyX, Benjamin R.
-Haskell, 2010 Aug 24)
 
 Fail to edit file after failed register access.  Error flag remains set?
 (Lech Lorens, 2010 Aug 30)
@@ -3137,12 +3117,8 @@ Multi-byte characters:
 8   toupper() function doesn't handle byte count changes.
 7   Searching and composing characters:
     When searching, should order of composing characters be ignored?
-    Add special item to match with a composing character, zero-width, so that
-    one can replace a base character and keep the composing characters.
     Add a special item to match with a composing character, so that composing
     characters can be manipulated.
-    Add a modifier to ignore composing characters, only compare base
-    characters.  Useful for Hebrew (Ron Aaron)
 8   Should implement 'delcombine' for command line editing.
 8   Detect overlong UTF-8 sequences and handle them like illegal bytes.
 8   ":s/x/\u\1/" doesn't work, making uppercase isn't done for multi-byte

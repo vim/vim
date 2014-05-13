@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.4.  Last change: 2014 Jan 23
+*autocmd.txt*   For Vim version 7.4.  Last change: 2014 May 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -569,7 +569,8 @@ FileChangedRO			Before making the first change to a read-only
 FileChangedShell		When Vim notices that the modification time of
 				a file has changed since editing started.
 				Also when the file attributes of the file
-				change. |timestamp|
+				change or when the size of the file changes.
+				|timestamp|
 				Mostly triggered after executing a shell
 				command, but also with a |:checktime| command
 				or when Gvim regains input focus.

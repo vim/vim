@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.4.  Last change: 2013 Nov 25
+*editing.txt*   For Vim version 7.4.  Last change: 2014 May 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1469,14 +1469,15 @@ Notes:
 ==============================================================================
 10. Timestamps					*timestamp* *timestamps*
 
-Vim remembers the modification timestamp of a file when you begin editing it.
-This is used to avoid that you have two different versions of the same file
-(without you knowing this).
+Vim remembers the modification timestamp, mode and size of a file when you
+begin editing it.  This is used to avoid that you have two different versions
+of the same file (without you knowing this).
 
-After a shell command is run (|:!cmd| |suspend| |:read!| |K|) timestamps are
-compared for all buffers in a window.   Vim will run any associated
-|FileChangedShell| autocommands or display a warning for any files that have
-changed.  In the GUI this happens when Vim regains input focus.
+After a shell command is run (|:!cmd| |suspend| |:read!| |K|) timestamps,
+file modes and file sizes are compared for all buffers in a window.   Vim will
+run any associated |FileChangedShell| autocommands or display a warning for
+any files that have changed.  In the GUI this happens when Vim regains input
+focus.
 
 							*E321* *E462*
 If you want to automatically reload a file when it has been changed outside of

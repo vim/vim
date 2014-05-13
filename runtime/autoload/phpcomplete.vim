@@ -2,6 +2,8 @@
 " Language:	PHP
 " Maintainer:	Dávid Szabó ( complex857 AT gmail DOT com )
 " Previous Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
+" URL: https://github.com/shawncplus/phpcomplete.vim
+" Last Change:  2014 May 08
 "
 "	OPTIONS:
 "
@@ -16,7 +18,7 @@
 "			The completion list generated this way is only filtered by the completion base
 "			and generally not much more accurate then simple keyword completion.
 "
-"		let	g:phpcomplete_search_tags_for_variables = 1/0 [default 0]
+"		let g:phpcomplete_search_tags_for_variables = 1/0 [default 0]
 "			Enables use of tags when the plugin tries to find variables.
 "			When enabled the plugin will search for the variables in the tag files with kind 'v',
 "			lines like $some_var = new Foo; but these usually yield highly inaccurate results and
@@ -138,7 +140,7 @@ function! phpcomplete#CompletePHP(findstart, base) " {{{
 		unlet! b:compl_context
 		" chop of the "base" from the end of the current instruction
 		if a:base != ""
-			let context = substitute(context, '\s*\$\?\([a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\)*$', '', '')
+			let context = substitute(context, '\s*[$a-zA-Z_0-9\x7f-\xff]*$', '', '')
 		end
 	end
 
@@ -1553,12 +1555,14 @@ function! phpcomplete#GetClassName(start_line, context, current_namespace, impor
 			" do in-file lookup of $var = new Class
 			if line =~# '^\s*'.object.'\s*=\s*new\s\+'.class_name_pattern && !object_is_array
 				let classname_candidate = matchstr(line, object.'\c\s*=\s*new\s*\zs'.class_name_pattern.'\ze')
+				let [classname_candidate, class_candidate_namespace] = phpcomplete#ExpandClassName(classname_candidate, a:current_namespace, a:imports)
 				break
 			endif
 
 			" in-file lookup for Class::getInstance()
 			if line =~# '^\s*'.object.'\s*=&\?\s*'.class_name_pattern.'\s*::\s*getInstance' && !object_is_array
 				let classname_candidate = matchstr(line, object.'\s*=&\?\s*\zs'.class_name_pattern.'\ze\s*::\s*getInstance')
+				let [classname_candidate, class_candidate_namespace] = phpcomplete#ExpandClassName(classname_candidate, a:current_namespace, a:imports)
 				break
 			endif
 
@@ -1822,8 +1826,6 @@ function! phpcomplete#GetFunctionLocation(function_name, namespace) " {{{
 	if no_namespace_candidate != ''
 		return no_namespace_candidate
 	endif
-endif
-
 endfunction
 " }}}
 

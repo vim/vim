@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.4.  Last change: 2013 Aug 22
+*map.txt*       For Vim version 7.4.  Last change: 2014 May 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -306,9 +306,21 @@ is disabled.  This makes it possible to map zero without making it impossible
 to type a count with a zero.
 
 						*map-overview* *map-modes*
-Overview of which map command works in which mode:
+Overview of which map command works in which mode.  More details below.
+     COMMANDS                    MODES ~
+:map   :noremap  :unmap     Normal, Visual, Select, Operator-pending
+:nmap  :nnoremap :nunmap    Normal
+:vmap  :vnoremap :vunmap    Visual and Select
+:smap  :snoremap :sunmap    Select
+:xmap  :xnoremap :xunmap    Visual
+:omap  :onoremap :ounmap    Operator-pending
+:map!  :noremap! :unmap!    Insert and Command-line
+:imap  :inoremap :iunmap    Insert
+:lmap  :lnoremap :lunmap    Insert, Command-line, Lang-Arg
+:cmap  :cnoremap :cunmap    Command-line
 
-    commands:				      modes: ~
+
+    COMMANDS				      MODES ~
 				       Normal  Visual+Select  Operator-pending ~
 :map   :noremap   :unmap   :mapclear	 yes	    yes		   yes
 :nmap  :nnoremap  :nunmap  :nmapclear	 yes	     -		    -
@@ -324,7 +336,7 @@ NOTE: Mapping a printable character in Select mode may confuse the user.  It's
 better to explicitly use :xmap and :smap for printable characters.  Or use
 :sunmap after defining the mapping.
 
-    commands:				      modes: ~
+    COMMANDS				      MODES ~
 					  Visual    Select ~
 :vmap  :vnoremap  :vunmap  :vmapclear	    yes      yes
 :xmap  :xnoremap  :xunmap  :xmapclear	    yes       -
@@ -333,7 +345,7 @@ better to explicitly use :xmap and :smap for printable characters.  Or use
 			*mapmode-ic* *mapmode-i* *mapmode-c* *mapmode-l*
 Some commands work both in Insert mode and Command-line mode, some not:
 
-    commands:				      modes: ~
+    COMMANDS				      MODES ~
 					  Insert  Command-line	Lang-Arg ~
 :map!  :noremap!  :unmap!  :mapclear!	    yes	       yes	   -
 :imap  :inoremap  :iunmap  :imapclear	    yes		-	   -

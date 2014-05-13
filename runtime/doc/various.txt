@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.4.  Last change: 2014 Apr 01
+*various.txt*   For Vim version 7.4.  Last change: 2014 May 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -266,8 +266,8 @@ g8			Print the hex values of the bytes used in the
 			(to use aliases) set 'shellcmdflag' to "-ic".
 			For Win32 also see |:!start|.
 
-			After the command has been executed, the timestamp of
-			the current file is checked |timestamp|.
+			After the command has been executed, the timestamp and
+			size of the current file is checked |timestamp|.
 
 			Vim redraws the screen after the command is finished,
 			because it may have printed any text.  This requires a

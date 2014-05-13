@@ -1,4 +1,4 @@
-*sign.txt*      For Vim version 7.4.  Last change: 2013 Nov 17
+*sign.txt*      For Vim version 7.4.  Last change: 2014 May 07
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -137,6 +137,7 @@ PLACING SIGNS						*:sign-place* *E158*
 :sign place {id} line={lnum} name={name} buffer={nr}
 		Same, but use buffer {nr}.
 
+							*E885*
 :sign place {id} name={name} file={fname}
 		Change the placed sign {id} in file {fname} to use the defined
 		sign {name}.  See remark above about {fname} |:sign-fname|.

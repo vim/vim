@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2014 Apr 29
+*options.txt*	For Vim version 7.4.  Last change: 2014 May 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4492,6 +4492,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	be able to execute Normal mode commands.
 	This is the opposite of the 'keymap' option, where characters are
 	mapped in Insert mode.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 	Example (for Greek, in UTF-8):				*greek*  >
 	    :set langmap=ΑA,ΒB,ΨC,ΔD,ΕE,ΦF,ΓG,ΗH,ΙI,ΞJ,ΚK,ΛL,ΜM,ΝN,ΟO,ΠP,QQ,ΡR,ΣS,ΤT,ΘU,ΩV,WW,ΧX,ΥY,ΖZ,αa,βb,ψc,δd,εe,φf,γg,ηh,ιi,ξj,κk,λl,μm,νn,οo,πp,qq,ρr,σs,τt,θu,ωv,ςw,χx,υy,ζz
@@ -7508,8 +7510,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 				"s"  = button state
 				"c"  = column plus 33
 				"r"  = row plus 33
-			This only works up to 223 columns!  See "dec" for a
-			solution.
+			This only works up to 223 columns!  See "dec",
+			"urxvt", and "sgr" for solutions.
 	   xterm2	Works like "xterm", but with the xterm reporting the
 			mouse position while the mouse is dragged.  This works
 			much faster and more precise.  Your xterm must at
@@ -7531,29 +7533,35 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   pterm	QNX pterm mouse handling.
 							*urxvt-mouse*
 	   urxvt	Mouse handling for the urxvt (rxvt-unicode) terminal.
+			The mouse works only if the terminal supports this
+			encoding style, but it does not have 223 columns limit
+			unlike "xterm" or "xterm2".
 							*sgr-mouse*
 	   sgr		Mouse handling for the terminal that emits SGR-styled
-			mouse reporting. Works with xterm version 277 or
-			later.
+			mouse reporting.  The mouse works even in columns
+			beyond 223.  This option is backward compatible with
+			"xterm2" because it can also decode "xterm2" style
+			mouse codes.
 
 	The mouse handling must be enabled at compile time |+mouse_xterm|
-	|+mouse_dec| |+mouse_netterm|.
+	|+mouse_dec| |+mouse_netterm| |+mouse_jsbterm| |+mouse_urxvt|
+	|+mouse_sgr|.
 	Only "xterm"(2) is really recognized.  NetTerm mouse codes are always
 	recognized, if enabled at compile time.  DEC terminal mouse codes
 	are recognized if enabled at compile time, and 'ttymouse' is not
-	"xterm" (because the xterm and dec mouse codes conflict).
+	"xterm", "xterm2", "urxvt" or "sgr" (because dec mouse codes conflict
+	with them).
 	This option is automatically set to "xterm", when the 'term' option is
-	set to a name that starts with "xterm", and 'ttymouse' is not "xterm"
-	or "xterm2" already.  The main use of this option is to set it to
-	"xterm", when the terminal name doesn't start with "xterm", but it can
-	handle xterm mouse codes.
-	The "sgr" value will be set if the xterm version is 277 or later.
+	set to a name that starts with "xterm", "mlterm", or "screen", and
+	'ttymouse' is not set already.
+	Additionally, if vim is compiled with the |+termresponse| feature and
+	|t_RV| is set to the escape sequence to request the xterm version
+	number, more intelligent detection process runs.
 	The "xterm2" value will be set if the xterm version is reported to be
-	95 or higher.  This only works when compiled with the |+termresponse|
-	feature and if |t_RV| is set to the escape sequence to request the
-	xterm version number.  Otherwise "xterm2" must be set explicitly.
-	If you do not want 'ttymouse' to be set to "xterm2" automatically, set
-	t_RV to an empty string: >
+	from 95 to 276.  The "sgr" value will be set if the xterm version is
+	277 or highter.
+	If you do not want 'ttymouse' to be set to "xterm2" or "sgr"
+	automatically, set t_RV to an empty string: >
 		:set t_RV=
 <
 						*'ttyscroll'* *'tsl'*
