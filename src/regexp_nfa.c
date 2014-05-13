@@ -81,6 +81,7 @@ enum
     NFA_COMPOSING,		    /* Next nodes in NFA are part of the
 				       composing multibyte char */
     NFA_END_COMPOSING,		    /* End of a composing char in the NFA */
+    NFA_ANY_COMPOSING,		    /* \%C: Any composing characters. */
     NFA_OPT_CHARS,		    /* \%[abc] */
 
     /* The following are used only in the postfix form, not in the NFA */
@@ -1418,6 +1419,10 @@ nfa_regatom()
 		    EMIT(NFA_VISUAL);
 		    break;
 
+		case 'C':
+		    EMIT(NFA_ANY_COMPOSING);
+		    break;
+
 		case '[':
 		    {
 			int	    n;
@@ -2429,6 +2434,7 @@ nfa_set_code(c)
 	case NFA_MARK_LT:	STRCPY(code, "NFA_MARK_LT "); break;
 	case NFA_CURSOR:	STRCPY(code, "NFA_CURSOR "); break;
 	case NFA_VISUAL:	STRCPY(code, "NFA_VISUAL "); break;
+	case NFA_ANY_COMPOSING:	STRCPY(code, "NFA_ANY_COMPOSING "); break;
 
 	case NFA_STAR:		STRCPY(code, "NFA_STAR "); break;
 	case NFA_STAR_NONGREEDY: STRCPY(code, "NFA_STAR_NONGREEDY "); break;
@@ -2967,6 +2973,7 @@ nfa_max_width(startstate, depth)
 	    case NFA_NLOWER_IC:
 	    case NFA_UPPER_IC:
 	    case NFA_NUPPER_IC:
+	    case NFA_ANY_COMPOSING:
 		/* possibly non-ascii */
 #ifdef FEAT_MBYTE
 		if (has_mbyte)
@@ -4152,6 +4159,7 @@ match_follows(startstate, depth)
 		continue;
 
 	    case NFA_ANY:
+	    case NFA_ANY_COMPOSING:
 	    case NFA_IDENT:
 	    case NFA_SIDENT:
 	    case NFA_KWORD:
@@ -4395,7 +4403,7 @@ skip_add:
     switch (state->c)
     {
 	case NFA_MATCH:
-	    nfa_match = TRUE;
+//	    nfa_match = TRUE;
 	    break;
 
 	case NFA_SPLIT:
@@ -5151,6 +5159,7 @@ failure_chance(state, depth)
 
 	case NFA_MATCH:
 	case NFA_MCLOSE:
+	case NFA_ANY_COMPOSING:
 	    /* empty match works always */
 	    return 0;
 
@@ -5573,6 +5582,12 @@ nfa_regmatch(prog, start, submatch, m)
 	    {
 	    case NFA_MATCH:
 	      {
+#ifdef FEAT_MBYTE
+		/* If the match ends before a composing characters and
+		 * ireg_icombine is not set, that is not really a match. */
+		if (enc_utf8 && !ireg_icombine && utf_iscomposing(curc))
+		    break;
+#endif
 		nfa_match = TRUE;
 		copy_sub(&submatch->norm, &t->subs.norm);
 #ifdef FEAT_SYN_HL
@@ -6120,6 +6135,23 @@ nfa_regmatch(prog, start, submatch, m)
 		}
 		break;
 
+	    case NFA_ANY_COMPOSING:
+		/* On a composing character skip over it.  Otherwise do
+		 * nothing.  Always matches. */
+#ifdef FEAT_MBYTE
+		if (enc_utf8 && utf_iscomposing(curc))
+		{
+		    add_off = clen;
+		}
+		else
+#endif
+		{
+		    add_here = TRUE;
+		    add_off = 0;
+		}
+		add_state = t->state->out;
+		break;
+
 	    /*
 	     * Character classes like \a for alpha, \d for digit etc.
 	     */
@@ -6484,12 +6516,10 @@ nfa_regmatch(prog, start, submatch, m)
 		if (!result && ireg_ic)
 		    result = MB_TOLOWER(c) == MB_TOLOWER(curc);
 #ifdef FEAT_MBYTE
-		/* If there is a composing character which is not being
-		 * ignored there can be no match. Match with composing
-		 * character uses NFA_COMPOSING above. */
-		if (result && enc_utf8 && !ireg_icombine
-						&& clen != utf_char2len(curc))
-		    result = FALSE;
+		/* If ireg_icombine is not set only skip over the character
+		 * itself.  When it is set skip over composing characters. */
+		if (result && enc_utf8 && !ireg_icombine)
+		    clen = utf_char2len(curc);
 #endif
 		ADD_STATE_IF_MATCH(t->state);
 		break;

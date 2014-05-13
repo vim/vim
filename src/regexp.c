@@ -244,6 +244,7 @@
 
 #define RE_MARK		207	/* mark cmp  Match mark position */
 #define RE_VISUAL	208	/*	Match Visual area */
+#define RE_COMPOSING	209	/* any composing characters */
 
 /*
  * Magic characters have a special meaning, they don't match literally.
@@ -2206,6 +2207,10 @@ regatom(flagp)
 
 		case 'V':
 		    ret = regnode(RE_VISUAL);
+		    break;
+
+		case 'C':
+		    ret = regnode(RE_COMPOSING);
 		    break;
 
 		/* \%[abc]: Emit as a list of branches, all ending at the last
@@ -4710,11 +4715,13 @@ regmatch(scan)
 			    status = RA_NOMATCH;
 		    }
 #ifdef FEAT_MBYTE
-		    /* Check for following composing character. */
+		    /* Check for following composing character, unless %C
+		     * follows (skips over all composing chars). */
 		    if (status != RA_NOMATCH
 			    && enc_utf8
 			    && UTF_COMPOSINGLIKE(reginput, reginput + len)
-			    && !ireg_icombine)
+			    && !ireg_icombine
+			    && OP(next) != RE_COMPOSING)
 		    {
 			/* raaron: This code makes a composing character get
 			 * ignored, which is the correct behavior (sometimes)
@@ -4791,6 +4798,16 @@ regmatch(scan)
 		status = RA_NOMATCH;
 	    break;
 #endif
+	  case RE_COMPOSING:
+#ifdef FEAT_MBYTE
+	    if (enc_utf8)
+	    {
+		/* Skip composing characters. */
+		while (utf_iscomposing(utf_ptr2char(reginput)))
+		    mb_cptr_adv(reginput);
+	    }
+#endif
+	    break;
 
 	  case NOTHING:
 	    break;

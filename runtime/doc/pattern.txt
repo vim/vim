@@ -545,6 +545,7 @@ Character classes {not in Vi}:				*/character-classes*
 |/\%u|	\%u	\%u	match specified multibyte character (eg \%u20ac)
 |/\%U|	\%U	\%U	match specified large multibyte character (eg
 			\%U12345678)
+|/\%C|	\%C	\%C	match any composing characters
 
 Example			matches ~
 \<\I\i*		or
@@ -1207,12 +1208,18 @@ will probably never match.
 8. Composing characters					*patterns-composing*
 
 							*/\Z*
-When "\Z" appears anywhere in the pattern, composing characters are ignored.
-Thus only the base characters need to match, the composing characters may be
-different and the number of composing characters may differ.  Only relevant
-when 'encoding' is "utf-8".
+When "\Z" appears anywhere in the pattern, all composing characters are
+ignored.  Thus only the base characters need to match, the composing
+characters may be different and the number of composing characters may differ.
+Only relevant when 'encoding' is "utf-8".
 Exception: If the pattern starts with one or more composing characters, these
 must match.
+							*/\%C*
+Use "\%C" to skip any composing characters.  For example, the pattern "a" does
+not match in "càt" (where the a has the composing character 0x0300), but
+"a\%C" does.  Note that this does not match "cát" (where the á is character
+0xe1, it does not have a compositing character).  It does match "cat" (where
+the a is just an a).
 
 When a composing character appears at the start of the pattern of after an
 item that doesn't include the composing character, a match is found at any
