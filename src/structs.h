@@ -572,7 +572,7 @@ struct memfile
     unsigned	mf_page_size;		/* number of bytes in a page */
     int		mf_dirty;		/* TRUE if there are dirty blocks */
 #ifdef FEAT_CRYPT
-    buf_T	*mf_buffer;		/* bufer this memfile is for */
+    buf_T	*mf_buffer;		/* buffer this memfile is for */
     char_u	mf_seed[MF_SEED_LEN];	/* seed for encryption */
 
     /* Values for key, method and seed used for reading data blocks when

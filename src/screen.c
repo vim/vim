@@ -2456,8 +2456,8 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 	if (len > 0)
 	{
 	    int	    w = number_width(wp);
-	    long num;
-	    char *fmt = "%*ld ";
+	    long    num;
+	    char    *fmt = "%*ld ";
 
 	    if (len > w + 1)
 		len = w + 1;

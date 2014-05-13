@@ -2054,6 +2054,7 @@ write_session_file(char_u *filename)
 
     ssop_flags = save_ssop_flags;
     g_free(mksession_cmdline);
+
     /*
      * Reopen the file and append a command to restore v:this_session,
      * as if this save never happened.	This is to avoid conflicts with

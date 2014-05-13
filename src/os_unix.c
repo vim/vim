@@ -3783,7 +3783,7 @@ check_mouse_termcode()
 	del_mouse_termcode(KS_URXVT_MOUSE);
 # endif
 # ifdef FEAT_MOUSE_SGR
-    /* same as the dec mouse */
+    /* There is no conflict with xterm mouse */
     if (use_xterm_mouse() == 4
 #  ifdef FEAT_GUI
 	    && !gui.in_use
