@@ -8022,8 +8022,8 @@ vim_regcomp(expr_arg, re_flags)
 	    regexp_engine = expr[4] - '0';
 	    expr += 5;
 #ifdef DEBUG
-	    EMSG3("New regexp mode selected (%d): %s", regexp_engine,
-						    regname[newengine]);
+	    smsg((char_u *)"New regexp mode selected (%d): %s",
+					   regexp_engine, regname[newengine]);
 #endif
 	}
 	else
