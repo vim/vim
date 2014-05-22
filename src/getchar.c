@@ -1883,7 +1883,7 @@ vpeekc_nomap()
 }
 #endif
 
-#if defined(FEAT_INS_EXPAND) || defined(PROTO)
+#if defined(FEAT_INS_EXPAND) || defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Check if any character is available, also half an escape sequence.
  * Trick: when no typeahead found, but there is something in the typeahead
