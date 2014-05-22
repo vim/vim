@@ -3311,7 +3311,8 @@ stoptermcap()
     }
 }
 
-#if defined(UNIX) || defined(PROTO)
+#if defined(FEAT_TERMRESPONSE) || defined(PROTO)
+# if defined(UNIX) || defined(PROTO)
 /*
  * Return TRUE when the xterm version was requested or anything else that
  * would send an ESC sequence back to Vim.
@@ -3327,15 +3328,11 @@ did_request_esc_sequence()
     if (u7_status == U7_GET)
 	u7_status = 0;
     return crv_status == CRV_SENT || u7_status == U7_SENT
-# if defined(FEAT_TERMRESPONSE)
-	|| xt_index_out > xt_index_in
-# endif
-	;
+						|| xt_index_out > xt_index_in;
 }
-#endif
+# endif
 
 
-#if defined(FEAT_TERMRESPONSE) || defined(PROTO)
 /*
  * Request version string (for xterm) when needed.
  * Only do this after switching to raw mode, otherwise the result will be
