@@ -1132,10 +1132,15 @@ eof
 	      vi_cv_path_python_plibs=`echo $vi_cv_path_python_plibs | sed s/-ltermcap//`
 	    fi
 	])
+	AC_CACHE_VAL(vi_cv_dll_name_python,
+	[
+	  if test "X$python_DLLLIBRARY" != "X"; then
+	    vi_cv_dll_name_python="$python_DLLLIBRARY"
+	  else
+	    vi_cv_dll_name_python="$python_INSTSONAME"
+	  fi
+	])
 
-	if test "X$python_DLLLIBRARY" != "X"; then
-	  python_INSTSONAME="$python_DLLLIBRARY"
-	fi
 	PYTHON_LIBS="${vi_cv_path_python_plibs}"
 	if test "${vi_cv_path_python_pfx}" = "${vi_cv_path_python_epfx}"; then
 	  PYTHON_CFLAGS="-I${vi_cv_path_python_pfx}/include/python${vi_cv_var_python_version} -DPYTHON_HOME='\"${vi_cv_path_python_pfx}\"'"
@@ -1323,19 +1328,24 @@ __:
 	@echo "python3_DLLLIBRARY='$(DLLLIBRARY)'"
 	@echo "python3_INSTSONAME='$(INSTSONAME)'"
 eof
-            dnl -- delete the lines from make about Entering/Leaving directory
-            eval "`cd ${PYTHON3_CONFDIR} && make -f "${tmp_mkf}" __ | sed '/ directory /d'`"
-            rm -f -- "${tmp_mkf}"
+	    dnl -- delete the lines from make about Entering/Leaving directory
+	    eval "`cd ${PYTHON3_CONFDIR} && make -f "${tmp_mkf}" __ | sed '/ directory /d'`"
+	    rm -f -- "${tmp_mkf}"
 	    vi_cv_path_python3_plibs="-L${PYTHON3_CONFDIR} -lpython${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
-            vi_cv_path_python3_plibs="${vi_cv_path_python3_plibs} ${python3_BASEMODLIBS} ${python3_LIBS} ${python3_SYSLIBS}"
-            dnl remove -ltermcap, it can conflict with an earlier -lncurses
-            vi_cv_path_python3_plibs=`echo $vi_cv_path_python3_plibs | sed s/-ltermcap//`
-            vi_cv_path_python3_plibs=`echo $vi_cv_path_python3_plibs | sed s/-lffi//`
-        ])
-  
-        if test "X$python3_DLLLIBRARY" != "X"; then
-	  python3_INSTSONAME="$python3_DLLLIBRARY"
-        fi
+	    vi_cv_path_python3_plibs="${vi_cv_path_python3_plibs} ${python3_BASEMODLIBS} ${python3_LIBS} ${python3_SYSLIBS}"
+	    dnl remove -ltermcap, it can conflict with an earlier -lncurses
+	    vi_cv_path_python3_plibs=`echo $vi_cv_path_python3_plibs | sed s/-ltermcap//`
+	    vi_cv_path_python3_plibs=`echo $vi_cv_path_python3_plibs | sed s/-lffi//`
+	])
+	AC_CACHE_VAL(vi_cv_dll_name_python3,
+	[
+	  if test "X$python3_DLLLIBRARY" != "X"; then
+	    vi_cv_dll_name_python3="$python3_DLLLIBRARY"
+	  else
+	    vi_cv_dll_name_python3="$python3_INSTSONAME"
+	  fi
+	])
+
         PYTHON3_LIBS="${vi_cv_path_python3_plibs}"
         if test "${vi_cv_path_python3_pfx}" = "${vi_cv_path_python3_epfx}"; then
           PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -DPYTHON3_HOME='L\"${vi_cv_path_python3_pfx}\"'"
@@ -1458,7 +1468,7 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
     int main(int argc, char** argv)
     {
       int not_needed = 0;
-      if (no_rtl_global_needed_for("${python_INSTSONAME}", "${vi_cv_path_python_pfx}"))
+      if (no_rtl_global_needed_for("${vi_cv_dll_name_python}", "${vi_cv_path_python_pfx}"))
             not_needed = 1;
       return !not_needed;
     }])],
@@ -1504,7 +1514,7 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
     int main(int argc, char** argv)
     {
       int not_needed = 0;
-      if (no_rtl_global_needed_for("${python3_INSTSONAME}", L"${vi_cv_path_python3_pfx}"))
+      if (no_rtl_global_needed_for("${vi_cv_dll_name_python3}", L"${vi_cv_path_python3_pfx}"))
             not_needed = 1;
       return !not_needed;
     }])],
@@ -1515,17 +1525,17 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
 
   PYTHON_SRC="if_python.c"
   PYTHON_OBJ="objects/if_python.o"
-  PYTHON_CFLAGS="$PYTHON_CFLAGS -DDYNAMIC_PYTHON_DLL=\\\"${python_INSTSONAME}\\\""
+  PYTHON_CFLAGS="$PYTHON_CFLAGS -DDYNAMIC_PYTHON_DLL=\\\"${vi_cv_dll_name_python}\\\""
   PYTHON_LIBS=
   PYTHON3_SRC="if_python3.c"
   PYTHON3_OBJ="objects/if_python3.o"
-  PYTHON3_CFLAGS="$PYTHON3_CFLAGS -DDYNAMIC_PYTHON3_DLL=\\\"${python3_INSTSONAME}\\\""
+  PYTHON3_CFLAGS="$PYTHON3_CFLAGS -DDYNAMIC_PYTHON3_DLL=\\\"${vi_cv_dll_name_python3}\\\""
   PYTHON3_LIBS=
 elif test "$python_ok" = yes && test "$enable_pythoninterp" = "dynamic"; then
   AC_DEFINE(DYNAMIC_PYTHON)
   PYTHON_SRC="if_python.c"
   PYTHON_OBJ="objects/if_python.o"
-  PYTHON_CFLAGS="$PYTHON_CFLAGS -DDYNAMIC_PYTHON_DLL=\\\"${python_INSTSONAME}\\\""
+  PYTHON_CFLAGS="$PYTHON_CFLAGS -DDYNAMIC_PYTHON_DLL=\\\"${vi_cv_dll_name_python}\\\""
   PYTHON_LIBS=
 elif test "$python_ok" = yes; then
   dnl Check that adding -fPIE works.  It may be needed when using a static
@@ -1547,7 +1557,7 @@ elif test "$python3_ok" = yes && test "$enable_python3interp" = "dynamic"; then
   AC_DEFINE(DYNAMIC_PYTHON3)
   PYTHON3_SRC="if_python3.c"
   PYTHON3_OBJ="objects/if_python3.o"
-  PYTHON3_CFLAGS="$PYTHON3_CFLAGS -DDYNAMIC_PYTHON3_DLL=\\\"${python3_INSTSONAME}\\\""
+  PYTHON3_CFLAGS="$PYTHON3_CFLAGS -DDYNAMIC_PYTHON3_DLL=\\\"${vi_cv_dll_name_python3}\\\""
   PYTHON3_LIBS=
 elif test "$python3_ok" = yes; then
   dnl Check that adding -fPIE works.  It may be needed when using a static
