@@ -1664,12 +1664,11 @@ tools: $(TOOLS)
 # auto/config.h isn't updated.  The dependency on auto/config.mk should make
 # sure configure is run when it's needed.
 #
+# Remove the config.cache every time, once in a while it causes problems that
+# are very hard to figure out.
+#
 config auto/config.mk: auto/configure config.mk.in config.h.in
-	if test -f auto/config.cache && \
-	    grep '^ac_cv_env_CFLAGS_value=' auto/config.cache > /dev/null && \
-	    ! grep -x -F 'ac_cv_env_CFLAGS_value=$(CFLAGS)' auto/config.cache > /dev/null; then \
-		rm auto/config.cache; \
-	fi
+	-rm -f auto/config.cache
 	if test "X$(MAKECMDGOALS)" != "Xclean" \
 		-a "X$(MAKECMDGOALS)" != "Xdistclean" \
 		-a "X$(MAKECMDGOALS)" != "Xautoconf" \
