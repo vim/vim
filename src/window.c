@@ -5748,7 +5748,7 @@ win_new_height(wp, height)
 		lnum++;
 		wp->w_wrow -= line_size + sline;
 	    }
-	    else if (sline > 0)
+	    else if (sline >= 0)
 	    {
 		/* First line of file reached, use that as topline. */
 		lnum = 1;
