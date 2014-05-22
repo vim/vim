@@ -6916,15 +6916,16 @@ screen_puts(text, row, col, attr)
  * a NUL.
  */
     void
-screen_puts_len(text, len, row, col, attr)
+screen_puts_len(text, textlen, row, col, attr)
     char_u	*text;
-    int		len;
+    int		textlen;
     int		row;
     int		col;
     int		attr;
 {
     unsigned	off;
     char_u	*ptr = text;
+    int		len = textlen;
     int		c;
 #ifdef FEAT_MBYTE
     unsigned	max_off;
@@ -7169,7 +7170,11 @@ screen_puts_len(text, len, row, col, attr)
 	    col += mbyte_cells;
 	    ptr += mbyte_blen;
 	    if (clear_next_cell)
+	    {
+		/* This only happens at the end, display one space next. */
 		ptr = (char_u *)" ";
+		len = -1;
+	    }
 	}
 	else
 #endif
