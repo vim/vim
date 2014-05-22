@@ -3553,11 +3553,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		draw_state = WL_SIGN;
 		/* Show the sign column when there are any signs in this
 		 * buffer or when using Netbeans. */
-		if (draw_signcolumn(wp)
-# ifdef FEAT_DIFF
-			&& filler_todo <= 0
-# endif
-		   )
+		if (draw_signcolumn(wp))
 		{
 		    int	text_sign;
 # ifdef FEAT_SIGN_ICONS
@@ -3569,7 +3565,11 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    char_attr = hl_attr(HLF_SC);
 		    n_extra = 2;
 
-		    if (row == startrow)
+		    if (row == startrow
+#ifdef FEAT_DIFF
+			    + filler_lines && filler_todo <= 0
+#endif
+			    )
 		    {
 			text_sign = buf_getsigntype(wp->w_buffer, lnum,
 								   SIGN_TEXT);
