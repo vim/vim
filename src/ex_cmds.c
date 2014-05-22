@@ -1554,9 +1554,11 @@ make_filter_cmd(cmd, itmp, otmp)
 
 #if (defined(UNIX) && !defined(ARCHIE)) || defined(OS2)
     int		is_fish_shell;
+    char_u	*shell_name = get_isolated_shell_name();
 
     /* Account for fish's different syntax for subshells */
-    is_fish_shell = (fnamecmp(get_isolated_shell_name(), "fish") == 0);
+    is_fish_shell = (fnamecmp(shell_name, "fish") == 0);
+    vim_free(shell_name);
     if (is_fish_shell)
 	len = (long_u)STRLEN(cmd) + 13;		/* "begin; " + "; end" + NUL */
     else
