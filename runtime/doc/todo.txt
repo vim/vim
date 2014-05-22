@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2014 May 13
+*todo.txt*      For Vim version 7.4.  Last change: 2014 May 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -55,6 +55,9 @@ directory exists. (Sergio Gallelli, 2013 Dec 29)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
+Setting 'ttymouse' empty causes Dec mouse to be detected. (Elijah Griffin,
+2014 May 13)
+
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
 MS-Windows: Crash opening very long file name starting with "\\".
@@ -87,10 +90,16 @@ Also fixes wrong result from executable().
 Update from Ken Takata, 2014 Jan 10. Newer 2014 Apr 3.
 
 Win32: use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
-Needs more tests.
+More tests May 14.
+
+Idea: For a window in the middle (has window above and below it), use
+right-mouse-drag on the status line to move a window up/down without changing
+it's height?  It's like dragging the status bar above it at the same time.
 
 Can we make ":unlet $VAR" use unsetenv() to delete the env var?
 What for systems that don't have unsetenv()?
+
+Patch to make getchar() work for typing Esc. (Yasuhiro Matsumoto, 2014 May 13)
 
 Patch for problem that v:register is set to '_' after deleting into the black
 hole register.
@@ -152,7 +161,7 @@ normal spell file. (Enno Nagel, 2014 Mar 29)
     Update by Taylor Hedberg, 2013 May 30.
     Updated for Vim 7.4 by Ken Takata, 2013 Oct 5.
     Update by Christian Brabandt, 2014 May 9.  Remarks by Ken Takata.
-    Update by Christian 2014 May 12
+    Update by Christian 2014 May 12, github link on May 15
 
 When typing the first character of a command, e.g. "f", then using a menu, the
 menu item doesn't work.  Clear typeahead when using a menu?
@@ -608,7 +617,7 @@ Patch to make "z=" work when 'spell' is off.  Does this have nasty side
 effects?  (Christian Brabandt, 2012 Aug 5, Update 2013 Aug 12)
 Would also need to do this for spellbadword() and spellsuggest().
 
-Patch for variable tabstops.
+Patch for variable tabstops.  On github (Christian Brabandt, 2014 May 15)
 
 On 64 bit MS-Windows "long" is only 32 bits, but we sometimes need to store a
 64 bits value.  Change all number options to use nropt_T and define it to the

@@ -1201,6 +1201,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 +mouse	various.txt	/*+mouse*
 +mouse_dec	various.txt	/*+mouse_dec*
 +mouse_gpm	various.txt	/*+mouse_gpm*
++mouse_jsbterm	various.txt	/*+mouse_jsbterm*
 +mouse_netterm	various.txt	/*+mouse_netterm*
 +mouse_pterm	various.txt	/*+mouse_pterm*
 +mouse_sgr	various.txt	/*+mouse_sgr*
@@ -1415,6 +1416,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 /\%>c	pattern.txt	/*\/\\%>c*
 /\%>l	pattern.txt	/*\/\\%>l*
 /\%>v	pattern.txt	/*\/\\%>v*
+/\%C	pattern.txt	/*\/\\%C*
 /\%U	pattern.txt	/*\/\\%U*
 /\%V	pattern.txt	/*\/\\%V*
 /\%[]	pattern.txt	/*\/\\%[]*
@@ -4313,6 +4315,7 @@ E881	autocmd.txt	/*E881*
 E882	eval.txt	/*E882*
 E883	eval.txt	/*E883*
 E884	eval.txt	/*E884*
+E885	sign.txt	/*E885*
 E89	message.txt	/*E89*
 E90	message.txt	/*E90*
 E91	options.txt	/*E91*
@@ -5980,6 +5983,7 @@ g:netrw_dynamic_maxfilenamelen	pi_netrw.txt	/*g:netrw_dynamic_maxfilenamelen*
 g:netrw_errorlvl	pi_netrw.txt	/*g:netrw_errorlvl*
 g:netrw_fastbrowse	pi_netrw.txt	/*g:netrw_fastbrowse*
 g:netrw_fetch_cmd	pi_netrw.txt	/*g:netrw_fetch_cmd*
+g:netrw_ffkeep	pi_netrw.txt	/*g:netrw_ffkeep*
 g:netrw_fname_escape	pi_netrw.txt	/*g:netrw_fname_escape*
 g:netrw_ftp	pi_netrw.txt	/*g:netrw_ftp*
 g:netrw_ftp_browse_reject	pi_netrw.txt	/*g:netrw_ftp_browse_reject*
@@ -7084,6 +7088,7 @@ netrw-p12	pi_netrw.txt	/*netrw-p12*
 netrw-p13	pi_netrw.txt	/*netrw-p13*
 netrw-p14	pi_netrw.txt	/*netrw-p14*
 netrw-p15	pi_netrw.txt	/*netrw-p15*
+netrw-p16	pi_netrw.txt	/*netrw-p16*
 netrw-p2	pi_netrw.txt	/*netrw-p2*
 netrw-p3	pi_netrw.txt	/*netrw-p3*
 netrw-p4	pi_netrw.txt	/*netrw-p4*

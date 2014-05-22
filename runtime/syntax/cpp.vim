@@ -2,7 +2,7 @@
 " Language:	C++
 " Current Maintainer:	vim-jp (https://github.com/vim-jp/cpp-vim)
 " Previous Maintainer:	Ken Shan <ccshan@post.harvard.edu>
-" Last Change:	2012 Jun 14
+" Last Change:	2014 May 14
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -39,6 +39,7 @@ if !exists("cpp_no_cpp11")
   syn keyword cppExceptions	noexcept
   syn keyword cppStorageClass	constexpr decltype
   syn keyword cppConstant	nullptr
+  syn region cppRawString       matchgroup=cppRawDelimiter start=+\%(u8\|[uLU]\)\=R"\z([[:alnum:]_{}[\]#<>%:;.?*\+\-/\^&|~!=,"']\{,16}\)(+ end=+)\z1"+ contains=@Spell
 endif
 
 " The minimum and maximum operators in GNU C++
@@ -62,6 +63,8 @@ if version >= 508 || !exists("did_cpp_syntax_inits")
   HiLink cppStructure		Structure
   HiLink cppBoolean		Boolean
   HiLink cppConstant		Constant
+  HiLink cppRawDelimiter	Delimiter
+  HiLink cppRawString		String
   delcommand HiLink
 endif
 

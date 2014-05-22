@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 Mar 20
+*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 May 13
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -173,7 +173,7 @@ There are more protocols supported by netrw than just scp and ftp, too: see the
 next section, |netrw-externapp|, on how to use these external applications with
 netrw and vim.
 
-PREVENTING LOADING						*netrw-noload*
+PREVENTING LOADING					*netrw-noload*
 
 If you want to use plugins, but for some reason don't wish to use netrw, then
 you need to avoid loading both the plugin and the autoload portions of netrw.
@@ -184,7 +184,7 @@ You may do so by placing the following two lines in your <.vimrc>: >
 <
 
 ==============================================================================
-3. Netrw Reference						*netrw-ref* {{{1
+3. Netrw Reference					*netrw-ref* {{{1
 
    Netrw supports several protocols in addition to scp and ftp as mentioned
    in |netrw-start|.  These include dav, fetch, http,... well, just look
@@ -291,7 +291,7 @@ SOURCING					*netrw-source* {{{2
 	:Nsource "scp://[user@]machine[[:#]port]/path"	uses scp
 	:Nsource "sftp://[user@]machine/path"		uses sftp
 
-DIRECTORY LISTING			*netrw-trailingslash* *netrw-dirlist* {{{2
+DIRECTORY LISTING		*netrw-trailingslash* *netrw-dirlist* {{{2
 
 	One may browse a directory to get a listing by simply attempting to
 	edit the directory: >
@@ -348,9 +348,9 @@ settings are described below, in |netrw-browser-options|, and in
  *g:netrw_bufsettings*	the settings that netrw buffers have
  			(default) noma nomod nonu nowrap ro nobl
 
- *g:netrw_chgwin*	specifies a window number where file edits will take
-			place.  (also see |netrw-C|)
-			(default) not defined
+ *g:netrw_chgwin*	specifies a window number where subsequent file edits
+			will take place.  (also see |netrw-C|)
+			(default) -1
 
  *g:Netrw_funcref*	specifies a function (or functions) to be called when
 			netrw edits a file.  The file is first edited, and
@@ -371,9 +371,9 @@ settings are described below, in |netrw-browser-options|, and in
 			   value of this variable to see if the alternate ftp
 			   method works for your setup.
 
- *g:netrw_ftp_options*     Chosen by default, these options are supposed to turn
-			 interactive prompting off and to restrain ftp from
-			 attempting auto-login upon initial connection.
+ *g:netrw_ftp_options*     Chosen by default, these options are supposed to
+			 turn interactive prompting off and to restrain ftp
+			 from attempting auto-login upon initial connection.
 			 However, it appears that not all ftp implementations
 			 support this (ex. ncftp).
 		        ="-i -n"
@@ -404,8 +404,8 @@ settings are described below, in |netrw-browser-options|, and in
  *g:netrw_preview*	=0 (default) preview window shown in a horizontally
 			   split window
 			=1 preview window shown in a vertically split window.
-			   Also affects the "previous window" (see |netrw-P|) in
-			   the same way.
+			   Also affects the "previous window" (see |netrw-P|)
+			   in the same way.
 
  *g:netrw_scpport*	= "-P" : option to use to set port for scp
  *g:netrw_sshport*	= "-p" : option to use to set port for ssh
@@ -543,15 +543,17 @@ which contains ftp commands which will be automatically run whenever ftp
 starts.  You may use this feature to enter a user and password for one site: >
 	userid
 	password
-<					*netrw-windows-netrc*  *netrw-windows-s*
-If |g:netrw_ftp_cmd| contains -s:[path/]MACHINE, then (on Windows machines only)
-netrw will substitute the current machine name requested for ftp connections
-for MACHINE.  Hence one can have multiple machine.ftp files containing login
-and password for ftp.  Example: >
+<				*netrw-windows-netrc*  *netrw-windows-s*
+If |g:netrw_ftp_cmd| contains -s:[path/]MACHINE, then (on Windows machines
+only) netrw will substitute the current machine name requested for ftp
+connections for MACHINE.  Hence one can have multiple machine.ftp files
+containing login and password for ftp.  Example: >
 
     let g:netrw_ftp_cmd= 'c:\Windows\System32\ftp -s:C:\Users\Myself\MACHINE'
     vim ftp://myhost.somewhere.net/
+
 will use a file >
+
 	C:\Users\Myself\myhost.ftp
 <
 Often, ftp will need to query the user for the userid and password.
@@ -681,7 +683,7 @@ your <.vimrc> customization file: >
 <
 
 ==============================================================================
-6. Transparent Remote File Editing			*netrw-transparent* {{{1
+6. Transparent Remote File Editing		*netrw-transparent* {{{1
 
 Transparent file transfers occur whenever a regular file read or write
 (invoked via an |:autocmd| for |BufReadCmd|, |BufWriteCmd|, or |SourceCmd|
@@ -755,7 +757,7 @@ below, a {netfile} is an url to a remote file.
 
 
 ==============================================================================
-8. Variables and Options			*netrw-var* *netrw-settings* {{{1
+8. Variables and Options		*netrw-var* *netrw-settings* {{{1
 
 (also see: |netrw-options| |netrw-variables| |netrw-protocol|
            |netrw-browser-settings| |netrw-browser-options| )
@@ -795,7 +797,7 @@ set in the user's <.vimrc> file: (see also |netrw-settings| |netrw-protocol|)
                                 =1 use default method to do ftp >
 	-----------------------------------------------------------------------
 <
-							*netrw-internal-variables*
+						*netrw-internal-variables*
 The script will also make use of the following variables internally, albeit
 temporarily.
 >
@@ -1042,8 +1044,8 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 	 <del>	Netrw will attempt to remove the file/directory      |netrw-del|
 	   -	Makes Netrw go up one directory                      |netrw--|
 	   a	Toggles between normal display,                      |netrw-a|
-		hiding (suppress display of files matching g:netrw_list_hide)
-		showing (display only files which match g:netrw_list_hide)
+	    	hiding (suppress display of files matching g:netrw_list_hide)
+	    	showing (display only files which match g:netrw_list_hide)
 	   c	Make browsing directory the current directory        |netrw-c|
 	   C	Setting the editing window                           |netrw-C|
 	   d	Make a directory                                     |netrw-d|
@@ -1068,7 +1070,7 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 	   mx	Apply arbitrary shell command to marked files        |netrw-mx|
 	   mz	Compress/decompress marked files                     |netrw-mz|
 	   o	Enter the file/directory under the cursor in a new   |netrw-o|
-		browser window.  A horizontal split is used.
+	    	browser window.  A horizontal split is used.
 	   O	Obtain a file specified by cursor                    |netrw-O|
 	   p	Preview the file                                     |netrw-p|
 	   P	Browse in the previously used window                 |netrw-P|
@@ -1082,7 +1084,7 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 	   u	Change to recently-visited directory                 |netrw-u|
 	   U	Change to subsequently-visited directory             |netrw-U|
 	   v	Enter the file/directory under the cursor in a new   |netrw-v|
-		browser window.  A vertical split is used.
+	    	browser window.  A vertical split is used.
 	   x	View file with an associated program                 |netrw-x|
 	   X	Execute filename under cursor via |system()|           |netrw-X|
 
@@ -1096,9 +1098,9 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 	<rightmouse>	(gvim only) delete file/directory using word under
 			mouse
 	<2-leftmouse>	(gvim only) when:
-	                 * in a netrw-selected file, AND
-		         * |g:netrw_retmap| == 1     AND
-		         * the user doesn't already have a <2-leftmouse>
+			 * in a netrw-selected file, AND
+			 * |g:netrw_retmap| == 1     AND
+			 * the user doesn't already have a <2-leftmouse>
 			   mapping defined before netrw is autoloaded,
 			then a double clicked leftmouse button will return
 			to the netrw browser window.  See |g:netrw_retmap|.
@@ -1234,9 +1236,7 @@ cursor at the left.
 There is only one tree listing buffer; using "v" on a displayed subdirectory
 will split the screen, but the same buffer will be shown twice.
 
-Associated setting variable: |g:netrw_altv| |g:netrw_winsize|
-
-Related Actions |netrw-cr| |netrw-o| |netrw-t| |netrw-v|
+Related Actions: |netrw-cr| |netrw-o| |netrw-t| |netrw-v|
 Associated setting variables:
    |g:netrw_altv|    control right/left splitting
    |g:netrw_winsize| control initial sizing
@@ -1258,11 +1258,12 @@ The wide listing format uses two or more contiguous spaces to delineate
 filenames; when using that format, netrw won't be able to recognize or use
 filenames which have two or more contiguous spaces embedded in the name or any
 trailing spaces.  The thin listing format will, however, work with such files.
-This listing format is the most compact.
+The wide listing format is the most compact.
 
 The tree listing format has a top directory followed by files and directories
-preceded by a "|".  One may open and close directories by pressing the <cr>
-key while atop the directory name.
+preceded by one or more "|"s, which indicate the directory depth.  One may
+open and close directories by pressing the <cr> key while atop the directory
+name.
 
 One may make a preferred listing style your default; see |g:netrw_liststyle|.
 As an example, by putting the following line in your .vimrc, >
@@ -1462,8 +1463,16 @@ If files have been marked with |netrw-mf|:   (local marked file list)
     Marked files (and empty directories) will be deleted; again, you'll be
     asked to confirm the deletion before it actually takes place.
 
+A further approach is to delete files which match a pattern.
+
+    * use  :MF pattern  (see |netrw-:MF|); then press "D".
+
+    * use mr (see |netrw-mr|) which will prompt you for pattern.
+      This will cause the matching files to be marked.  Then,
+      press "D".
+
 The |g:netrw_rm_cmd|, |g:netrw_rmf_cmd|, and |g:netrw_rmdir_cmd| variables are
-used to control the attempts to remove files and directories.  The
+used to control the attempts to remove remote files and directories.  The
 g:netrw_rm_cmd is used with files, and its default value is:
 
 	g:netrw_rm_cmd: ssh HOSTNAME rm
@@ -1471,12 +1480,12 @@ g:netrw_rm_cmd is used with files, and its default value is:
 The g:netrw_rmdir_cmd variable is used to support the removal of directories.
 Its default value is:
 
-	g:netrw_rmdir_cmd: ssh HOSTNAME rmdir
+	|g:netrw_rmdir_cmd|: ssh HOSTNAME rmdir
 
 If removing a directory fails with g:netrw_rmdir_cmd, netrw then will attempt
 to remove it again using the g:netrw_rmf_cmd variable.  Its default value is:
 
-	g:netrw_rmf_cmd: ssh HOSTNAME rm -f
+	|g:netrw_rmf_cmd|: ssh HOSTNAME rm -f
 
 Related topics: |netrw-d|
 Associated setting variable: |g:netrw_localrmdir| |g:netrw_rm_cmd|
@@ -1548,11 +1557,12 @@ windows should have.
 	   Return to Explorer~
 	   When one edits a file, for example by pressing <cr> when the
 	   cursor is atop a file in a netrw browser window, :Rexplore will
-	   return the display to that of the last netrw browser window.
+	   return the display to that of the last netrw browser display
+	   in that window.
 
 	   Return from Explorer~
 	   Conversely, when one is editing a directory, issuing a :Rexplore
-	   will return to editing the last file being edited in that
+	   will return to editing the file that was last edited in that
 	   window.
 
 	   The <2-leftmouse> map (which is only available under gvim and
@@ -1919,19 +1929,21 @@ MARKING FILES					*netrw-:MF*	*netrw-mf* {{{2
 Netrw has several ways of marking files:
 
 	* One may mark files with the cursor atop a filename and
-	then pressing "mf".
+	  then pressing "mf".
 
 	* With gvim, in addition one may mark files with
-	<s-leftmouse>.
+	  <s-leftmouse>. (see |netrw-mouse|)
 
 	* One may use the :MF command, which takes a list of
-	files (for local directories, the list may include
-	wildcards -- see |glob()|) >
+	  files (for local directories, the list may include
+	  wildcards -- see |glob()|) >
 
 		:MF *.c
 <
 	* Note that :MF uses |<f-args>| to break the line
-	at spaces.
+	  at spaces.
+
+	* Mark files based upon the quickfix list (|netrw-qF|)
 
 The following netrw maps make use of marked files:
 
@@ -1948,7 +1960,6 @@ The following netrw maps make use of marked files:
     |netrw-mT|	Generate tags using marked files
     |netrw-mx|	Apply shell command to marked files
     |netrw-mz|	Compress/Decompress marked files
-    |netrw-qF|	Mark files using quickfix list
     |netrw-O|	Obtain marked files
     |netrw-R|	Rename marked files
 
@@ -2350,7 +2361,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				    2: errors
 
   *g:netrw_fastbrowse*		=0: slow speed directory browsing;
-				    never re-uses directory listings,
+				    never re-uses directory listings;
 				    always obtains directory listings.
 				=1: medium speed directory browsing;
 				    re-use directory listings only
@@ -2372,6 +2383,11 @@ your browsing preferences.  (see also: |netrw-settings|)
 				This option gives the user the choice of
 				trading off accuracy (ie. up-to-date listing)
 				versus speed.
+
+  *g:netrw_ffkeep*		(default: doesn't exist)
+  				If this variable exists and is zero, then
+				netrw will not do a save and restore for
+				|'fileformat'|.
 
   *g:netrw_fname_escape*	=' ?&;%'
 				Used on filenames before remote reading/writing
@@ -2518,13 +2534,13 @@ your browsing preferences.  (see also: |netrw-settings|)
 
 				  default: =0
 
-  *g:netrw_rm_cmd*		command for removing files
+  *g:netrw_rm_cmd*		command for removing remote files
 				 default: "ssh USEPORT HOSTNAME rm"
 
-  *g:netrw_rmdir_cmd*		command for removing directories
+  *g:netrw_rmdir_cmd*		command for removing remote directories
 				 default: "ssh USEPORT HOSTNAME rmdir"
 
-  *g:netrw_rmf_cmd*		command for removing softlinks
+  *g:netrw_rmf_cmd*		command for removing remote softlinks
 				 default: "ssh USEPORT HOSTNAME rm -f"
 
   *g:netrw_sort_by*		sort by "name", "time", or "size"
@@ -2634,6 +2650,9 @@ your browsing preferences.  (see also: |netrw-settings|)
 				 If g:netrw_winsize is less than zero, then
 				the absolute value of g:netrw_winsize lines
 				or columns will be used for the new window.
+				 If g:netrw_winsize is zero, then a normal
+				split will be made (ie. |'equalalways'| will
+				take effect, for example).
 				 default: 50  (for 50%)
 
   *g:netrw_xstrlen*		Controls how netrw computes string lengths,
@@ -2829,6 +2848,15 @@ SETTING EDITING WINDOW					*netrw-C* {{{2
 One may select a netrw window for editing with the "C" mapping, or by setting
 g:netrw_chgwin to the selected window number.  Subsequent selection of a file
 to edit (|netrw-cr|) will use that window.
+
+	* C  by itself, will select the current window for editing via
+	  |netrw-cr|
+
+	* [count]C the count will be used as the window number to be used
+	  for editing via |netrw-cr|.
+Using >
+	let g:netrw_chgwin= -1
+will restore the default editing behavior (ie. use the current window).
 
 Related topics:			|netrw-cr| |g:netrw_browse_split|
 Associated setting variables:	|g:netrw_chgwin|
@@ -3118,6 +3146,15 @@ Associated setting variables:	|g:netrw_chgwin|
 	     all netrw's mouse mappings, not just the <leftmouse> one.
 	     (see |g:netrw_mousemaps|)
 
+								*netrw-p16*
+	P16. When editing remote files (ex. :e ftp://hostname/path/file),
+	     under Windows I get an |E303| message complaining that its unable
+	     to open a swap file.
+
+	     (romainl) It looks like you are starting Vim from a protected
+	     directory.  Start if from your $HOME or another writable
+	     directory.
+
 ==============================================================================
 11. Debugging Netrw Itself				*netrw-debug* {{{1
 
@@ -3177,6 +3214,32 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 12. History						*netrw-history* {{{1
 
+	v152:	Apr 08, 2014   	* uses the |'noswapfile'| option (requires
+				  vim 7.4 with patch 213)
+				* (Enno Nagel) turn |'rnu'| off in netrw
+				  buffers.
+				* (Quinn Strahl) suggested that netrw
+				  allow regular window splitting to occur,
+				  thereby allowing |'equalalways'| to take
+				  effect.
+				* (qingtian zhao) normally, netrw will
+				  save and restore the |'fileformat'|;
+				  however, sometimes that isn't wanted
+		Apr 14, 2014	* whenever netrw marks a buffer as ro,
+				  it will also mark it as nomod.
+		Apr 16, 2014	* sftp protocol now supported by
+				  netrw#Obtain(); this means that one
+				  may use "mc" to copy a remote file
+				  to a local file using sftp, and that
+				  the |netrw-O| command can obtain remote
+				  files via sftp.
+				* added [count]C support (see |netrw-C|)
+		Apr 18, 2014	* when |g:netrw_chgwin| is one more than
+				  the last window, then vertically split
+				  the last window and use it as the
+				  chgwin window.
+		May 09, 2014	* SavePosn was "saving filename under cursor"
+				  from a non-netrw window when using :Rex.
 	v151:	Jan 22, 2014	* extended :Rexplore to return to buffer
 				  prior to Explore or editing a directory
 				* (Ken Takata) netrw gave error when

@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.4.  Last change: 2013 Sep 20
+*diff.txt*      For Vim version 7.4.  Last change: 2014 May 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -95,7 +95,7 @@ While already in Vim you can start diff mode in three ways.
 :difft[his]	Make the current window part of the diff windows.  This sets
 		the options like for "vimdiff".
 
-:diffp[atch] {patchfile}				 *E816* *:diffp* *:diffpatch*
+:diffp[atch] {patchfile}			 *E816* *:diffp* *:diffpatch*
 		Use the current buffer, patch it with the diff found in
 		{patchfile} and open a buffer on the result.  The options are
 		set as for "vimdiff".
