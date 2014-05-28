@@ -6410,6 +6410,16 @@ winrestcmd()	Returns a sequence of |:resize| commands that should restore
 winrestview({dict})
 		Uses the |Dictionary| returned by |winsaveview()| to restore
 		the view of the current window.
+		Note: The {dict} does not have to contain all values, that are
+		returned by |winsaveview()|. If values are missing, those
+		settings won't be restored. So you can use: >
+		    :call winrestview({'curswant': 4})
+<
+		This will only set the curswant value (the column the cursor
+		wants to move on vertical movements) of the cursor to column 5
+		(yes, that is 5), while all other settings will remain the
+		same. This is useful, if you set the cursor position manually.
+
 		If you have changed the values the result is unpredictable.
 		If the window size changed the result won't be the same.
 
@@ -6424,7 +6434,9 @@ winsaveview()	Returns a |Dictionary| that contains information to restore
 		not opened when moving around.
 		The return value includes:
 			lnum		cursor line number
-			col		cursor column
+			col		cursor column (Note: the first column
+					zero, as opposed to what getpos()
+					returns)
 			coladd		cursor column offset for 'virtualedit'
 			curswant	column for vertical movement
 			topline		first line in the window
