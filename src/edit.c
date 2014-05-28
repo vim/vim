@@ -3854,7 +3854,8 @@ ins_compl_prep(c)
 	    ins_compl_free();
 	    compl_started = FALSE;
 	    compl_matches = 0;
-	    msg_clr_cmdline();		/* necessary for "noshowmode" */
+	    if (!shortmess(SHM_COMPLETIONMENU))
+		msg_clr_cmdline();	/* necessary for "noshowmode" */
 	    ctrl_x_mode = 0;
 	    compl_enter_selects = FALSE;
 	    if (edit_submode != NULL)
@@ -5285,7 +5286,8 @@ ins_complete(c)
 	    {
 		ctrl_x_mode = 0;
 		edit_submode = NULL;
-		msg_clr_cmdline();
+		if (!shortmess(SHM_COMPLETIONMENU))
+		    msg_clr_cmdline();
 		return FAIL;
 	    }
 
@@ -5544,15 +5546,18 @@ ins_complete(c)
 
     /* Show a message about what (completion) mode we're in. */
     showmode();
-    if (edit_submode_extra != NULL)
+    if (!shortmess(SHM_COMPLETIONMENU))
     {
-	if (!p_smd)
-	    msg_attr(edit_submode_extra,
-		    edit_submode_highl < HLF_COUNT
-		    ? hl_attr(edit_submode_highl) : 0);
+	if (edit_submode_extra != NULL)
+	{
+	    if (!p_smd)
+		msg_attr(edit_submode_extra,
+			edit_submode_highl < HLF_COUNT
+			? hl_attr(edit_submode_highl) : 0);
+	}
+	else
+	    msg_clr_cmdline();	/* necessary for "noshowmode" */
     }
-    else
-	msg_clr_cmdline();	/* necessary for "noshowmode" */
 
     /* Show the popup menu, unless we got interrupted. */
     if (!compl_interrupted)

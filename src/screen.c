@@ -42,7 +42,7 @@
  *
  * The part of the buffer that is displayed in a window is set with:
  * - w_topline (first buffer line in window)
- * - w_topfill (filler line above the first line)
+ * - w_topfill (filler lines above the first line)
  * - w_leftcol (leftmost window cell in window),
  * - w_skipcol (skipped window cells of first line)
  *
@@ -9683,7 +9683,8 @@ showmode()
 	    }
 #endif
 #ifdef FEAT_INS_EXPAND
-	    if (edit_submode != NULL)		/* CTRL-X in Insert mode */
+	    /* CTRL-X in Insert mode */
+	    if (edit_submode != NULL && !shortmess(SHM_COMPLETIONMENU))
 	    {
 		/* These messages can get long, avoid a wrap in a narrow
 		 * window.  Prefer showing edit_submode_extra. */
