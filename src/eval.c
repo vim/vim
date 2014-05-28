@@ -560,6 +560,7 @@ static void f_getftype __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getline __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getmatches __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getpid __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_getcurpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getqflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getreg __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7967,6 +7968,7 @@ static struct fst
     {"getcmdline",	0, 0, f_getcmdline},
     {"getcmdpos",	0, 0, f_getcmdpos},
     {"getcmdtype",	0, 0, f_getcmdtype},
+    {"getcurpos",	0, 0, f_getcurpos},
     {"getcwd",		0, 0, f_getcwd},
     {"getfontname",	0, 1, f_getfontname},
     {"getfperm",	1, 1, f_getfperm},
@@ -11780,6 +11782,19 @@ f_getpid(argvars, rettv)
     rettv->vval.v_number = mch_get_pid();
 }
 
+static void getpos_both __ARGS((typval_T *argvars, typval_T *rettv, int getcurpos));
+
+/*
+ * "getcurpos()" function
+ */
+    static void
+f_getcurpos(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    getpos_both(argvars, rettv, TRUE);
+}
+
 /*
  * "getpos(string)" function
  */
@@ -11788,6 +11803,15 @@ f_getpos(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
+    getpos_both(argvars, rettv, FALSE);
+}
+
+    static void
+getpos_both(argvars, rettv, getcurpos)
+    typval_T	*argvars;
+    typval_T	*rettv;
+    int		getcurpos;
+{
     pos_T	*fp;
     list_T	*l;
     int		fnum = -1;
@@ -11795,7 +11819,10 @@ f_getpos(argvars, rettv)
     if (rettv_list_alloc(rettv) == OK)
     {
 	l = rettv->vval.v_list;
-	fp = var2fpos(&argvars[0], TRUE, &fnum);
+	if (getcurpos)
+	    fp = &curwin->w_cursor;
+	else
+	    fp = var2fpos(&argvars[0], TRUE, &fnum);
 	if (fnum != -1)
 	    list_append_number(l, (varnumber_T)fnum);
 	else
@@ -11810,7 +11837,7 @@ f_getpos(argvars, rettv)
 				(fp != NULL) ? (varnumber_T)fp->coladd :
 #endif
 							      (varnumber_T)0);
-	if (fp == &curwin->w_cursor)
+	if (getcurpos)
 	    list_append_number(l, (varnumber_T)curwin->w_curswant + 1);
     }
     else
