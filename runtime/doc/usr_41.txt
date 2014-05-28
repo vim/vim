@@ -772,6 +772,7 @@ Date and Time:				*date-functions* *time-functions*
 Buffers, windows and the argument list:
 	argc()			number of entries in the argument list
 	argidx()		current position in the argument list
+	arglistid()		get id of the argument list
 	argv()			get one entry from the argument list
 	bufexists()		check if a buffer exists
 	buflisted()		check if a buffer exists and is listed

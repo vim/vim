@@ -675,6 +675,7 @@ typedef struct arglist
 {
     garray_T	al_ga;		/* growarray with the array of file names */
     int		al_refcount;	/* number of windows using this arglist */
+    int		id;		/* id of this arglist */
 } alist_T;
 
 /*

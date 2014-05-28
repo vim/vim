@@ -1716,6 +1716,8 @@ append( {lnum}, {string})	Number	append {string} below line {lnum}
 append( {lnum}, {list})		Number	append lines {list} below line {lnum}
 argc()				Number	number of files in the argument list
 argidx()			Number	current index in the argument list
+arglistid( [{winnr}, [ {tabnr}]])
+				Number	argument list id
 argv( {nr})			String	{nr} entry of the argument list
 argv( )				List	the argument list
 asin( {expr})			Float	arc sine of {expr}
@@ -2102,6 +2104,18 @@ argc()		The result is the number of files in the argument list of the
 							*argidx()*
 argidx()	The result is the current index in the argument list.  0 is
 		the first file.  argc() - 1 is the last one.  See |arglist|.
+
+							*arglistid()*
+arglistid([{winnr}, [ {tabnr} ]])
+		Return the argument list ID.  This is a number which
+		identifies the argument list being used.  Zero is used for the
+		global argument list.
+		Return zero if the arguments are invalid.
+
+		Without arguments use the current window.
+		With {winnr} only use this window in the current tab page.
+		With {winnr} and {tabnr} use the window in the specified tab
+		page.
 
 							*argv()*
 argv([{nr}])	The result is the {nr}th file in the argument list of the

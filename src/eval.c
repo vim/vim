@@ -463,6 +463,7 @@ static void f_and __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_append __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_argc __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_argidx __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_arglistid __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_argv __ARGS((typval_T *argvars, typval_T *rettv));
 #ifdef FEAT_FLOAT
 static void f_asin __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7875,6 +7876,7 @@ static struct fst
     {"append",		2, 2, f_append},
     {"argc",		0, 0, f_argc},
     {"argidx",		0, 0, f_argidx},
+    {"arglistid",	0, 2, f_arglistid},
     {"argv",		0, 1, f_argv},
 #ifdef FEAT_FLOAT
     {"asin",		1, 1, f_asin},	/* WJMc */
@@ -8856,6 +8858,41 @@ f_argidx(argvars, rettv)
     typval_T	*rettv;
 {
     rettv->vval.v_number = curwin->w_arg_idx;
+}
+
+/*
+ * "arglistid()" function
+ */
+    static void
+f_arglistid(argvars, rettv)
+    typval_T	*argvars UNUSED;
+    typval_T	*rettv;
+{
+    win_T	*wp;
+    tabpage_T	*tp = NULL;
+    long	n;
+
+    rettv->vval.v_number = -1;
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	if (argvars[1].v_type != VAR_UNKNOWN)
+	{
+	    n = get_tv_number(&argvars[1]);
+	    if (n >= 0)
+		tp = find_tabpage(n);
+	}
+	else
+	    tp = curtab;
+
+	if (tp != NULL)
+	{
+	    wp = find_win_by_nr(&argvars[0], tp);
+	    if (wp != NULL)
+		rettv->vval.v_number = wp->w_alist->id;
+	}
+    }
+    else
+	rettv->vval.v_number = curwin->w_alist->id;
 }
 
 /*
