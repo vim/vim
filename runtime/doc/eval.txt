@@ -2587,9 +2587,14 @@ cursor({lnum}, {col} [, {off}])				*cursor()*
 cursor({list})
 		Positions the cursor at the column (byte count) {col} in the
 		line {lnum}.  The first column is one.
+
 		When there is one argument {list} this is used as a |List|
-		with two or three items {lnum}, {col} and {off}.  This is like
-		the return value of |getpos()|, but without the first item.
+		with two, three or four item:
+			[{lnum}, {col}, {off}]
+			[{lnum}, {col}, {off}, {curswant}]
+		This is like the return value of |getpos()|, but without the
+		first item.
+
 		Does not change the jumplist.
 		If {lnum} is greater than the number of lines in the buffer,
 		the cursor will be positioned at the last line in the buffer.
@@ -4481,8 +4486,9 @@ getpid()	Return a Number which is the process ID of the Vim process.
 							*getpos()*
 getpos({expr})	Get the position for {expr}.  For possible values of {expr}
 		see |line()|.
-		The result is a |List| with four numbers:
+		The result is a |List| with four or five numbers:
 		    [bufnum, lnum, col, off]
+		    [bufnum, lnum, col, off, curswant]
 		"bufnum" is zero, unless a mark like '0 or 'A is used, then it
 		is the buffer number of the mark.
 		"lnum" and "col" are the position in the buffer.  The first
@@ -4491,6 +4497,8 @@ getpos({expr})	Get the position for {expr}.  For possible values of {expr}
 		it is the offset in screen columns from the start of the
 		character.  E.g., a position within a <Tab> or after the last
 		character.
+		The "curswant" number is only added for getpos('.'), it is the
+		preferred column when moving the cursor vertically.
 		Note that for '< and '> Visual mode matters: when it is "V"
 		(visual line mode) the column of '< is zero and the column of
 		'> is a large number.
@@ -5298,8 +5306,9 @@ setpos({expr}, {list})
 			.	the cursor
 			'x	mark x
 
-		{list} must be a |List| with four numbers:
+		{list} must be a |List| with four or five numbers:
 		    [bufnum, lnum, col, off]
+		    [bufnum, lnum, col, off, curswant]
 
 		"bufnum" is the buffer number.	Zero can be used for the
 		current buffer.  Setting the cursor is only possible for
@@ -5317,6 +5326,12 @@ setpos({expr}, {list})
 		character.  E.g., a position within a <Tab> or after the last
 		character.
 
+		The "curswant" number is only used when setting the cursor
+		position.  It sets the preferred column for when moving the
+		cursor vertically.  When the "curswant" number is missing the
+		preferred column is not set.  When it is present and setting a
+		mark position it is not used.
+
 		Note that for '< and '> changing the line number may result in
 		the marks to be effectively be swapped, so that '< is always
 		before '>.
@@ -5327,7 +5342,10 @@ setpos({expr}, {list})
 		Also see |getpos()|
 
 		This does not restore the preferred column for moving
-		vertically.  See |winrestview()| for that.
+		vertically; if you set the cursor position with this, |j| and
+		|k| motions will jump to previous columns!  Use |cursor()| to
+		also set the preferred column.  Also see the "curswant" key in
+		|winrestview()|.
 
 
 setqflist({list} [, {action}])				*setqflist()*
