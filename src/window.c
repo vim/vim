@@ -5710,8 +5710,9 @@ win_new_height(wp, height)
 		    --wp->w_wrow;
 		}
 	    }
+            set_topline(wp, lnum);
 	}
-	else
+	else if (sline > 0)
 	{
 	    while (sline > 0 && lnum > 1)
 	    {
@@ -5748,14 +5749,15 @@ win_new_height(wp, height)
 		lnum++;
 		wp->w_wrow -= line_size + sline;
 	    }
-	    else if (sline >= 0)
+	    else if (sline > 0)
 	    {
 		/* First line of file reached, use that as topline. */
 		lnum = 1;
 		wp->w_wrow -= sline;
 	    }
+
+            set_topline(wp, lnum);
 	}
-	set_topline(wp, lnum);
     }
 
     if (wp == curwin)
