@@ -5202,7 +5202,7 @@ globpath(path, file, ga, expand_options)
 		    for (i = 0; i < num_p; ++i)
 		    {
 			((char_u **)ga->ga_data)[ga->ga_len] =
-					    vim_strnsave(p[i], STRLEN(p[i]));
+					vim_strnsave(p[i], (int)STRLEN(p[i]));
 			++ga->ga_len;
 		    }
 		}
