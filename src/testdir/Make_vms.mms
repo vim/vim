@@ -4,7 +4,7 @@
 # Authors:	Zoltan Arpadffy, <arpadffy@polarhome.com>
 #		Sandor Kopanyi,  <sandor.kopanyi@mailbox.hu>
 #
-# Last change:  2014 Mar 12
+# Last change:  2014 May 28
 #
 # This has been tested on VMS 6.2 to 8.3 on DEC Alpha, VAX and IA64.
 # Edit the lines in the Configuration section below to select.
@@ -95,7 +95,7 @@ SCRIPT = test1.out  test2.out  test3.out  test4.out  test5.out  \
 	 test90.out test91.out test92.out test93.out test94.out \
 	 test95.out test96.out test98.out test99.out \
 	 test100.out test101.out test103.out test104.out \
-	 test105.out test106.out \
+	 test105.out test106.out test107.out \
 	 test_autoformat_join.out \
 	 test_eval.out \
 	 test_options.out
