@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2014 May 22
+*todo.txt*      For Vim version 7.4.  Last change: 2014 Jun 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -50,6 +50,8 @@ Regexp problems:
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
+Completion for :buf does not use 'wildignorecase'. (Akshay H, 2014 May 31)
+
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
 
@@ -60,12 +62,27 @@ Setting 'ttymouse' empty causes Dec mouse to be detected. (Elijah Griffin,
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
+Value returned by virtcol() changes depending on how lines wrap.  This is
+inconsistant with the documentation.
+
+Serbian translation of the vimtutor. (Ivan Nejgebauer, 2014 Jun 2)
+
+Patch to add matchaddpos(), match using a position instead of a pattern.
+To be used for matchparen. (Alexey Radkov, 2014 Jun 1)
+Waiting for tests.  Some on Jun 2.
+
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
 
 Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
 
+Patch to translate 0xce in K_NUL 3. (Yasuhiro Matsumoto, 2014 June 6)
+Doesn't work yet.
+
 Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
+
+"hi link" does not respect groups with GUI settings only. (Mark Lodato, 2014
+Jun 8)
 
 Syntax file for gnuplot.  Existing one is very old. (Andrew Rasmussen, 2014
 Feb 24)
@@ -90,7 +107,7 @@ Also fixes wrong result from executable().
 Update from Ken Takata, 2014 Jan 10. Newer 2014 Apr 3.
 
 Win32: use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
-More tests May 14.
+More tests May 14. Update May 29.
 
 Idea: For a window in the middle (has window above and below it), use
 right-mouse-drag on the status line to move a window up/down without changing
@@ -99,22 +116,23 @@ it's height?  It's like dragging the status bar above it at the same time.
 Can we make ":unlet $VAR" use unsetenv() to delete the env var?
 What for systems that don't have unsetenv()?
 
-Patch to make getchar() work for typing Esc. (Yasuhiro Matsumoto, 2014 May 13)
-
-Patch for problem that v:register is set to '_' after deleting into the black
-hole register.
-
 This does not give an error: (Andre Sihera, 2014 Mar 21)
     vim -u NONE 1 2 3 -c 'bufdo if 1 | echo 1'
 This neither: (ZyX)
     vim -u NONE 1 2 3 -c 'bufdo while 1 | echo 1'
 
+Patch for signs in GTK. (Christian Brabandt, 2014 Jun 10)
+Asked about it.
+
 'viewdir' default on MS-Windows is not a good choice, it's a system directory.
 Change 'viewdir' to "$HOME/vimfiles/view" and use 'viewdiralt' to also read
 from?
 
-Patch to add arglistid(), get the ID of the currently used argument list.
-(Marcin Szamotulski, 2014 Apr 27)
+Problem with upwards search on Windows (works OK on Linux). (Brett Stahlman,
+2014 Jun 8)
+
+When 'clipboard' is "unnamed", :g/pat/d is very slow.  Only set the clipboard
+after the last delete? (Praful, 2014 May 28)
 
 Include a plugin manager with Vim? Neobundle seems to be the best currently.
 Long message about this from ZyX, 2014 Mar 23.  And following replies.
@@ -153,16 +171,6 @@ Out of scope:
 Setting the spell file in a session only reads the local additions, not the
 normal spell file. (Enno Nagel, 2014 Mar 29)
 
--   Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
-    Smilauer, 2004 Sep 13, fix Oct 31, update 2007 May 30)
-    Version for latest MacVim: Tobia Conforto, 2009 Nov 23
-    More recent version: https://retracile.net/wiki/VimBreakIndent
-    Posted to vim-dev by Taylor Hedberg, 2011 Nov 25
-    Update by Taylor Hedberg, 2013 May 30.
-    Updated for Vim 7.4 by Ken Takata, 2013 Oct 5.
-    Update by Christian Brabandt, 2014 May 9.  Remarks by Ken Takata.
-    Update by Christian 2014 May 12, github link on May 15
-
 When typing the first character of a command, e.g. "f", then using a menu, the
 menu item doesn't work.  Clear typeahead when using a menu?
 
@@ -176,9 +184,10 @@ VMS: Select() doesn't work properly, typing ESC may hang Vim.  Use sys$qiow
 instead. (Samuel Ferencik, 2013 Sep 28)
 
 Patch for XDG base directory support. (Jean François Bignolles, 2014 Mar 4)
+Remark on the docs.  Should not be a compile time feature.  But then what?
 
-Patch to add flag to shortmess to avoid giving completion messages.
-(Shougo Matsu, 2014 Jan 6, update Jan 11)
+Completion of ":e" is ":earlier", whould be ":edit".  Complete to the matching
+command instead of doing this alphabetically. (Mikel Jorgensen)
 
 Patch to add v:completed_item. (Shougo Matsu, 2013 Nov 29).
 
@@ -314,6 +323,17 @@ Issue 28.
 Patch to fix that 'cedit' is recognized after :normal. (Christian Brabandt,
 2013 Mar 19, later message)
 
+-   Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
+    Smilauer, 2004 Sep 13, fix Oct 31, update 2007 May 30)
+    Version for latest MacVim: Tobia Conforto, 2009 Nov 23
+    More recent version: https://retracile.net/wiki/VimBreakIndent
+    Posted to vim-dev by Taylor Hedberg, 2011 Nov 25
+    Update by Taylor Hedberg, 2013 May 30.
+    Updated for Vim 7.4 by Ken Takata, 2013 Oct 5.
+    Update by Christian Brabandt, 2014 May 9.  Remarks by Ken Takata.
+    Update by Christian 2014 May 12, github link on May 15
+    2014 May 28: remarks from Bram
+
 Patch to view coverage of the tests. (Nazri Ramliy, 2013 Feb 15)
 
 Patch to invert characters differently in GTK. (Yukihiro Nakadaira, 2013 May
@@ -357,9 +377,6 @@ Issue 54: document behavior of -complete, also expands arg.
 Patch by Christian Brabandt, 2013 Apr 20, unfinished.
 
 Bug: findfile("any", "file:///tmp;") does not work.
-
-v:register is not directly reset to " after a delete command that specifies a
-register.  It is reset after the next command. (Steve Vermeulen, 2013 Mar 16)
 
 'ff' is wrong for one-line file without EOL. (Issue 77)
 
@@ -790,10 +807,6 @@ setpos() does not restore cursor position after :normal. (Tyru, 2010 Aug 11)
 7   The 'directory' option supports changing path separators to "%" to make
     file names unique, also support this for 'backupdir'. (Mikolaj Machowski)
     Patch by Christian Brabandt, 2010 Oct 21.
-
-getpos()/setpos() don't include curswant.  getpos() could return a fifth
-element.  setpos() could accept an optional fifth element.
-Patch by Christian Brabandt, 2010 Sep 6.  Again 2013 Aug 22.
 
 With "tw=55 fo+=a" typing space before ) doesn't work well. (Scott Mcdermott,
 2010 Oct 24)

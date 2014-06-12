@@ -2,7 +2,7 @@
 " Language:	J
 " Maintainer:	David Bürgin <676c7473@gmail.com>
 " URL:		https://github.com/glts/vim-j
-" Last Change:	2014-04-05
+" Last Change:	2014-05-25
 
 if exists('b:current_syntax')
   finish
@@ -46,7 +46,7 @@ syntax match jStdlibVerb /\<\%(assert\|break\|do\)\>\.\@!/
 " All in all, a compromise between correctness and practicality had to be
 " made. See http://www.jsoftware.com/help/dictionary/dcons.htm for reference.
 syntax match jNumber /\<_\=\d\+\%(\.\d*\)\=\%([eE]_\=\d\+\)\=\%(\%(r_\=\d\+\%(\.\d*\)\=\%([eE]_\=\d\+\)\=\%([px]_\=\d\+\%(\.\d*\)\=\%([eE]_\=\d\+\)\=\%(r_\=\d\+\%(\.\d*\)\=\%([eE]_\=\d\+\)\=\)\=\)\=\)\|\%(\%(j\|a[dr]\)_\=\d\+\%(\.\d*\)\=\%([eE]_\=\d\+\)\=\%([px]_\=\d\+\%(\.\d*\)\=\%([eE]_\=\d\+\)\=\%(\%(j\|a[dr]\)_\=\d\+\%(\.\d*\)\=\%([eE]_\=\d\+\)\=\)\=\)\=\)\|\%([px]_\=\d\+\%(\.\d*\)\=\%([eE]_\=\d\+\)\=\%(\%(j\|a[dr]\|r\)_\=\d\+\%(\.\d*\)\=\%([eE]_\=\d\+\)\=\)\=\)\)\=/
-syntax match jNumber /\<_\=\d\+\%([eE]\d\+\)\=b_\=[0-9a-z]\+/
+syntax match jNumber /\<_\=\d\+\%([eE]\d\+\)\=b_\=[0-9a-z]\+\%(\.[0-9a-z]\+\)\=/
 syntax match jNumber /\<__\=\>/
 syntax match jNumber /\<_\./
 syntax match jNumber /\<_\=\d\+x\>/
@@ -64,15 +64,20 @@ syntax match jVerb /[=!\]]\|[\^?]\.\=\|[;[]:\=\|{\.\|[_/\\]:\|[<>+*\-%$|,#][.:]\
 syntax match jCopula /=[.:]/
 syntax match jConjunction /;\.\|\^:\|![.:]/
 
-" Explicit noun definition. The difficulty is that the define expression
-" "0 : 0" can occur in the middle of a line but the jNounDefine region must
-" only start on the next line. The trick is to split the problem into two
-" regions and link them with "nextgroup=".
+" Explicit noun definition. The difficulty is that the define expression can
+" occur in the middle of a line but the jNounDefine region must only start on
+" the next line. The trick is to split the problem into two regions and link
+" them with "nextgroup=". The fold wrapper provides syntax folding.
+syntax region jNounDefineFold
+    \ matchgroup=NONE start=/\<\%(\%(0\|noun\)\s\+\%(\:\s*0\|def\s\+0\|define\)\>\)\@=/
+    \ keepend matchgroup=NONE end=/^\s*)\s*$/
+    \ contains=jNounDefineStart
+    \ fold
 syntax region jNounDefineStart
     \ matchgroup=jDefineExpression start=/\<\%(0\|noun\)\s\+\%(\:\s*0\|def\s\+0\|define\)\>/
     \ keepend matchgroup=NONE end=/$/
     \ contains=@jStdlibItems,@jPrimitiveItems,jNumber,jString,jParenGroup,jParen,jComment
-    \ oneline skipempty nextgroup=jDefineEnd,jNounDefine
+    \ contained oneline skipempty nextgroup=jDefineEnd,jNounDefine
 " These two items must have "contained", which allows them to match only after
 " jNounDefineStart thanks to the "nextgroup=" above.
 syntax region jNounDefine
@@ -87,6 +92,7 @@ syntax region jDefine
     \ matchgroup=jDefineExpression start=/\<\%([1-4]\|13\|adverb\|conjunction\|verb\|monad\|dyad\)\s\+\%(:\s*0\|def\s\+0\|define\)\>/
     \ matchgroup=jDefineEnd end=/^\s*)\s*$/
     \ contains=jControl,@jStdlibItems,@jPrimitiveItems,jNumber,jString,jArgument,jParenGroup,jParen,jComment,jDefineMonadDyad
+    \ fold
 syntax match jDefineMonadDyad contained /^\s*:\s*$/
 
 " Paired parentheses. When a jDefineExpression such as "3 : 0" is

@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 7.4.  Last change: 2013 Sep 08
+*undo.txt*      For Vim version 7.4.  Last change: 2014 May 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -97,9 +97,9 @@ change but joins in with the previous change use this command:
 			or redo.
 			{not in Vi}
 
-This is most useful when you need to prompt the user halfway a change.  For
-example in a function that calls |getchar()|.  Do make sure that there was a
-related change before this that you must join with.
+This is most useful when you need to prompt the user halfway through a change.
+For example in a function that calls |getchar()|.  Do make sure that there was
+a related change before this that you must join with.
 
 This doesn't work by itself, because the next key press will start a new
 change again.  But you can do something like this: >

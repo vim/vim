@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.4.  Last change: 2014 May 13
+*pattern.txt*   For Vim version 7.4.  Last change: 2014 May 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1332,7 +1332,7 @@ Finally, these constructs are unique to Perl:
 		patterns defined by both |matchadd()| and |:match|.
 
 		Highlighting matches using |:match| are limited to three
-		matches (aside from |:match|, |:2match| and |:3match|are
+		matches (aside from |:match|, |:2match| and |:3match| are
 		available). |matchadd()| does not have this limitation and in
 		addition makes it possible to prioritize matches.
 

@@ -2523,6 +2523,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :noautocmd	autocmd.txt	/*:noautocmd*
 :noh	pattern.txt	/*:noh*
 :nohlsearch	pattern.txt	/*:nohlsearch*
+:nor	map.txt	/*:nor*
 :norea	map.txt	/*:norea*
 :noreabbrev	map.txt	/*:noreabbrev*
 :noremap	map.txt	/*:noremap*
@@ -4795,6 +4796,7 @@ argidx()	eval.txt	/*argidx()*
 arglist	editing.txt	/*arglist*
 arglist-position	editing.txt	/*arglist-position*
 arglist-quit	usr_07.txt	/*arglist-quit*
+arglistid()	eval.txt	/*arglistid()*
 argument-list	editing.txt	/*argument-list*
 argv()	eval.txt	/*argv()*
 as	motion.txt	/*as*
@@ -6128,6 +6130,7 @@ getcharmod()	eval.txt	/*getcharmod()*
 getcmdline()	eval.txt	/*getcmdline()*
 getcmdpos()	eval.txt	/*getcmdpos()*
 getcmdtype()	eval.txt	/*getcmdtype()*
+getcurpos()	eval.txt	/*getcurpos()*
 getcwd()	eval.txt	/*getcwd()*
 getfontname()	eval.txt	/*getfontname()*
 getfperm()	eval.txt	/*getfperm()*

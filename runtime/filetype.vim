@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2014 Feb 26
+" Last Change:	2014 Jun 12
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1012,6 +1012,9 @@ au BufNewFile,BufRead *.kix			setf kix
 
 " Kimwitu[++]
 au BufNewFile,BufRead *.k			setf kwt
+
+" Kivy
+au BufNewFile,BufRead *.kv			setf kivy
 
 " KDE script
 au BufNewFile,BufRead *.ks			setf kscript

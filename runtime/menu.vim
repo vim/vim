@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2013 May 17
+" Last Change:	2014 May 22
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -477,6 +477,7 @@ if has("folding")
   an 40.340.110 &Tools.&Folding.&Enable/Disable\ folds<Tab>zi		zi
   an 40.340.120 &Tools.&Folding.&View\ Cursor\ Line<Tab>zv		zv
   an 40.340.120 &Tools.&Folding.Vie&w\ Cursor\ Line\ only<Tab>zMzx	zMzx
+  inoremenu 40.340.120 &Tools.&Folding.Vie&w\ Cursor\ Line\ only<Tab>zMzx  <C-O>zM<C-O>zx
   an 40.340.130 &Tools.&Folding.C&lose\ more\ folds<Tab>zm		zm
   an 40.340.140 &Tools.&Folding.&Close\ all\ folds<Tab>zM		zM
   an 40.340.150 &Tools.&Folding.O&pen\ more\ folds<Tab>zr		zr

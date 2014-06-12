@@ -1,10 +1,10 @@
 " ninja build file syntax.
 " Language: ninja build file as described at
 "           http://martine.github.com/ninja/manual.html
-" Version: 1.3
-" Last Change: 2013/04/16
+" Version: 1.4
+" Last Change: 2014/05/13
 " Maintainer: Nicolas Weber <nicolasweber@gmx.de>
-" Version 1.3 of this script is in the upstream vim repository and will be
+" Version 1.4 of this script is in the upstream vim repository and will be
 " included in the next vim release. If you change this, please send your change
 " upstream.
 
@@ -55,6 +55,7 @@ syn keyword ninjaPoolCommand contained depth
 " $simple_varname -> variable
 " ${varname} -> variable
 
+syn match   ninjaDollar "\$\$"
 syn match   ninjaWrapLineOperator "\$$"
 syn match   ninjaSimpleVar "\$[a-zA-Z0-9_-]\+"
 syn match   ninjaVar       "\${[a-zA-Z0-9_.-]\+}"
@@ -70,6 +71,7 @@ hi def link ninjaComment Comment
 hi def link ninjaKeyword Keyword
 hi def link ninjaRuleCommand Statement
 hi def link ninjaPoolCommand Statement
+hi def link ninjaDollar ninjaOperator
 hi def link ninjaWrapLineOperator ninjaOperator
 hi def link ninjaOperator Operator
 hi def link ninjaSimpleVar ninjaVar

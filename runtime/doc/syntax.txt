@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.4.  Last change: 2014 Apr 05
+*syntax.txt*	For Vim version 7.4.  Last change: 2014 Jun 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2279,7 +2279,7 @@ files, you may set the 'perl_include_pod' option to 0: >
 
 	:let perl_include_pod = 0
 
-The reduce the complexity of parsing (and increase performance) you can switch
+To reduce the complexity of parsing (and increase performance) you can switch
 off two elements in the parsing of variable names and contents. >
 
 To handle package references in variable and function names not differently

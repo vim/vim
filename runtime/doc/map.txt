@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.4.  Last change: 2014 May 10
+*map.txt*       For Vim version 7.4.  Last change: 2014 Jun 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -60,17 +60,17 @@ modes.
 			{rhs}, is then further scanned for mappings.  This
 			allows for nested and recursive use of mappings.
 
-
-:no[remap]  {lhs} {rhs}		|mapmode-nvo|		*:no*  *:noremap*
-:nn[oremap] {lhs} {rhs}		|mapmode-n|		*:nn*  *:nnoremap*
-:vn[oremap] {lhs} {rhs}		|mapmode-v|		*:vn*  *:vnoremap*
-:xn[oremap] {lhs} {rhs}		|mapmode-x|		*:xn*  *:xnoremap*
-:snor[emap] {lhs} {rhs}		|mapmode-s|		*:snor* *:snoremap*
-:ono[remap] {lhs} {rhs}		|mapmode-o|		*:ono* *:onoremap*
-:no[remap]! {lhs} {rhs}		|mapmode-ic|		*:no!* *:noremap!*
-:ino[remap] {lhs} {rhs}		|mapmode-i|		*:ino* *:inoremap*
-:ln[oremap] {lhs} {rhs}		|mapmode-l|		*:ln*  *:lnoremap*
-:cno[remap] {lhs} {rhs}		|mapmode-c|		*:cno* *:cnoremap*
+						*:nore* *:norem*
+:no[remap]  {lhs} {rhs}		|mapmode-nvo|	*:no*  *:noremap* *:nor*
+:nn[oremap] {lhs} {rhs}		|mapmode-n|	*:nn*  *:nnoremap*
+:vn[oremap] {lhs} {rhs}		|mapmode-v|	*:vn*  *:vnoremap*
+:xn[oremap] {lhs} {rhs}		|mapmode-x|	*:xn*  *:xnoremap*
+:snor[emap] {lhs} {rhs}		|mapmode-s|	*:snor* *:snoremap*
+:ono[remap] {lhs} {rhs}		|mapmode-o|	*:ono* *:onoremap*
+:no[remap]! {lhs} {rhs}		|mapmode-ic|	*:no!* *:noremap!*
+:ino[remap] {lhs} {rhs}		|mapmode-i|	*:ino* *:inoremap*
+:ln[oremap] {lhs} {rhs}		|mapmode-l|	*:ln*  *:lnoremap*
+:cno[remap] {lhs} {rhs}		|mapmode-c|	*:cno* *:cnoremap*
 			Map the key sequence {lhs} to {rhs} for the modes
 			where the map command applies.  Disallow mapping of
 			{rhs}, to avoid nested and recursive mappings.  Often
@@ -828,12 +828,10 @@ Here is an example that counts the number of spaces with <F4>: >
 	  let &selection = "inclusive"
 	  let reg_save = @@
 
-	  if a:0  " Invoked from Visual mode, use '< and '> marks.
-	    silent exe "normal! `<" . a:type . "`>y"
+	  if a:0  " Invoked from Visual mode, use gv command.
+	    silent exe "normal! gvy"
 	  elseif a:type == 'line'
 	    silent exe "normal! '[V']y"
-	  elseif a:type == 'block'
-	    silent exe "normal! `[\<C-V>`]y"
 	  else
 	    silent exe "normal! `[v`]y"
 	  endif
