@@ -371,7 +371,11 @@ close_buffer(win, buf, action, abort_if_last)
 	unload_buf = TRUE;
 #endif
 
-    if (win != NULL)
+    if (win != NULL
+#ifdef FEAT_WINDOWS
+	&& win_valid(win)	/* in case autocommands closed the window */
+#endif
+	    )
     {
 	/* Set b_last_cursor when closing the last window for the buffer.
 	 * Remember the last cursor position and window options of the buffer.

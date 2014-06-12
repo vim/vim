@@ -4597,7 +4597,13 @@ win_free(wp, tp)
     if (wp != aucmd_win)
 #endif
 	win_remove(wp, tp);
-    vim_free(wp);
+    if (autocmd_busy)
+    {
+	wp->w_next = au_pending_free_win;
+	au_pending_free_win = wp;
+    }
+    else
+	vim_free(wp);
 
 #ifdef FEAT_AUTOCMD
     unblock_autocmds();
