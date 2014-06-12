@@ -8043,8 +8043,14 @@ hl_has_settings(idx, check_link)
 {
     return (   HL_TABLE()[idx].sg_term_attr != 0
 	    || HL_TABLE()[idx].sg_cterm_attr != 0
+	    || HL_TABLE()[idx].sg_cterm_fg != 0
+	    || HL_TABLE()[idx].sg_cterm_bg != 0
 #ifdef FEAT_GUI
 	    || HL_TABLE()[idx].sg_gui_attr != 0
+	    || HL_TABLE()[idx].sg_gui_fg_name != NULL
+	    || HL_TABLE()[idx].sg_gui_bg_name != NULL
+	    || HL_TABLE()[idx].sg_gui_sp_name != NULL
+	    || HL_TABLE()[idx].sg_font_name != NUL
 #endif
 	    || (check_link && (HL_TABLE()[idx].sg_set & SG_LINK)));
 }
