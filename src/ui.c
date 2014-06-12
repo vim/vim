@@ -2324,7 +2324,7 @@ clip_x11_convert_selection_cb(w, sel_atom, target, type, value, length, format)
     if (       *target != XA_STRING
 #ifdef FEAT_MBYTE
 	    && *target != vimenc_atom
-	    && *target != utf8_atom
+	    && (*target != utf8_atom || !enc_utf8)
 #endif
 	    && *target != vim_atom
 	    && *target != text_atom
