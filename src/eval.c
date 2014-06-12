@@ -24848,8 +24848,11 @@ do_string_sub(str, pat, sub, flags)
 		if (zero_width == regmatch.startp[0])
 		{
 		    /* avoid getting stuck on a match with an empty string */
-		    *((char_u *)ga.ga_data + ga.ga_len) = *tail++;
-		    ++ga.ga_len;
+		    i = MB_PTR2LEN(tail);
+		    mch_memmove((char_u *)ga.ga_data + ga.ga_len, tail,
+								   (size_t)i);
+		    ga.ga_len += i;
+		    tail += i;
 		    continue;
 		}
 		zero_width = regmatch.startp[0];
