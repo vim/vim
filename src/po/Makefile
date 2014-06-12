@@ -1,5 +1,8 @@
 # Makefile for the Vim message translations.
 
+# Include stuff found by configure.
+include ../auto/config.mk
+
 # TODO make this configurable
 # Note: ja.sjis, *.cp1250 and zh_CN.cp936 are only for MS-Windows, they are
 # not installed on Unix
@@ -133,7 +136,7 @@ VIM = ../vim
 # tools 0.10.37, which use a slightly different .po file format that is not
 # compatible with Solaris (and old gettext implementations) unless these are
 # set.  gettext 0.10.36 will not work!
-MSGFMT = OLD_PO_FILE_INPUT=yes msgfmt -v
+MSGFMTCMD = OLD_PO_FILE_INPUT=yes $(MSGFMT) -v
 XGETTEXT = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes xgettext
 MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
 
@@ -142,7 +145,7 @@ MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
 .PHONY: all install uninstall prefixcheck converted check clean checkclean distclean update-po $(LANGUAGES) $(CONVERTED)
 
 .po.mo:
-	$(MSGFMT) -o $@ $<
+	$(MSGFMTCMD) -o $@ $<
 
 .po.ck:
 	$(VIM) -u NONE -e -X -S check.vim -c "if error == 0 | q | endif" -c cq $<
