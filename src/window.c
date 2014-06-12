@@ -4721,8 +4721,12 @@ win_alloc_lines(wp)
 win_free_lsize(wp)
     win_T	*wp;
 {
-    vim_free(wp->w_lines);
-    wp->w_lines = NULL;
+    /* TODO: why would wp be NULL here? */
+    if (wp != NULL)
+    {
+	vim_free(wp->w_lines);
+	wp->w_lines = NULL;
+    }
 }
 
 /*
