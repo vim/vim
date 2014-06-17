@@ -5965,27 +5965,48 @@ gui_mch_drawsign(int row, int col, int typenr)
 	 * Decide whether we need to scale.  Allow one pixel of border
 	 * width to be cut off, in order to avoid excessive scaling for
 	 * tiny differences in font size.
+	 * Do scale to fit the height to avoid gaps because of linespacing.
 	 */
 	need_scale = (width > SIGN_WIDTH + 2
-		      || height > SIGN_HEIGHT + 2
+		      || height != SIGN_HEIGHT
 		      || (width < 3 * SIGN_WIDTH / 4
 			  && height < 3 * SIGN_HEIGHT / 4));
 	if (need_scale)
 	{
-	    double aspect;
+	    double  aspect;
+	    int	    w = width;
+	    int	    h = height;
 
 	    /* Keep the original aspect ratio */
 	    aspect = (double)height / (double)width;
 	    width  = (double)SIGN_WIDTH * SIGN_ASPECT / aspect;
 	    width  = MIN(width, SIGN_WIDTH);
-	    height = (double)width * aspect;
+	    if (((double)(MAX(height, SIGN_HEIGHT)) /
+		 (double)(MIN(height, SIGN_HEIGHT))) < 1.15)
+	    {
+		/* Change the aspect ratio by at most 15% to fill the
+		 * available space completly. */
+		height = (double)SIGN_HEIGHT * SIGN_ASPECT / aspect;
+		height = MIN(height, SIGN_HEIGHT);
+	    }
+	    else
+		height = (double)width * aspect;
 
-	    /* This doesn't seem to be worth caching, and doing so
-	     * would complicate the code quite a bit. */
-	    sign = gdk_pixbuf_scale_simple(sign, width, height,
-					   GDK_INTERP_BILINEAR);
-	    if (sign == NULL)
-		return; /* out of memory */
+	    if (w == width && h == height)
+	    {
+		/* no change in dimensions; don't decrease reference counter
+		 * (below) */
+		need_scale = FALSE;
+	    }
+	    else
+	    {
+		/* This doesn't seem to be worth caching, and doing so would
+		 * complicate the code quite a bit. */
+		sign = gdk_pixbuf_scale_simple(sign, width, height,
+							 GDK_INTERP_BILINEAR);
+		if (sign == NULL)
+		    return; /* out of memory */
+	    }
 	}
 
 	/* The origin is the upper-left corner of the pixmap.  Therefore
