@@ -139,7 +139,7 @@ static void draw_vsep_win __ARGS((win_T *wp, int row));
 static void redraw_custom_statusline __ARGS((win_T *wp));
 #endif
 #ifdef FEAT_SEARCH_EXTRA
-#define SEARCH_HL_PRIORITY 0
+# define SEARCH_HL_PRIORITY 0
 static void start_search_hl __ARGS((void));
 static void end_search_hl __ARGS((void));
 static void init_search_hl __ARGS((win_T *wp));
@@ -7476,7 +7476,6 @@ next_search_hl(win, shl, lnum, mincol, cur)
 	}
     }
 }
-#endif
 
     static int
 next_search_hl_pos(shl, lnum, posmatch, mincol)
@@ -7533,6 +7532,7 @@ next_search_hl_pos(shl, lnum, posmatch, mincol)
     }
     return FALSE;
 }
+#endif
 
       static void
 screen_start_highlight(attr)
