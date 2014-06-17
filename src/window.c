@@ -4250,6 +4250,11 @@ win_enter_ext(wp, undo_sync, curwin_invalid, trigger_enter_autocmds, trigger_lea
     /* sync undo before leaving the current buffer */
     if (undo_sync && curbuf != wp->w_buffer)
 	u_sync(FALSE);
+
+    /* Might need to scroll the old window before switching, e.g., when the
+     * cursor was moved. */
+    update_topline();
+
     /* may have to copy the buffer options when 'cpo' contains 'S' */
     if (wp->w_buffer != curbuf)
 	buf_copy_options(wp->w_buffer, BCO_ENTER | BCO_NOHELP);
