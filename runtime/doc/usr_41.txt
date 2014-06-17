@@ -827,6 +827,7 @@ Syntax and highlighting:	  *syntax-functions* *highlighting-functions*
 	synconcealed()		get info about concealing
 	diff_hlID()		get highlight ID for diff mode at a position
 	matchadd()		define a pattern to highlight (a "match")
+	matchaddpos()		define a list of positions to highlight
 	matcharg()		get info about |:match| arguments
 	matchdelete()		delete a match defined by |matchadd()| or a
 				|:match| command

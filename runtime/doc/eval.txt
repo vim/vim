@@ -1887,6 +1887,8 @@ match( {expr}, {pat}[, {start}[, {count}]])
 				Number	position where {pat} matches in {expr}
 matchadd( {group}, {pattern}[, {priority}[, {id}]])
 				Number	highlight {pattern} with {group}
+matchaddpos( {group}, {list}[, {priority}[, {id}]])
+				Number	highlight positions with {group}
 matcharg( {nr})			List	arguments of |:match|
 matchdelete( {id})		Number	delete match identified by {id}
 matchend( {expr}, {pat}[, {start}[, {count}]])
@@ -4379,6 +4381,41 @@ matchadd({group}, {pattern}[, {priority}[, {id}]])
 <		A list of matches defined by |matchadd()| and |:match| are
 		available from |getmatches()|.	All matches can be deleted in
 		one operation by |clearmatches()|.
+
+matchaddpos({group}, {pos}[, {priority}[, {id}]])		*matchaddpos()*
+		Same as |matchadd()|, but requires a list of positions {pos}
+		instead of a pattern. This command is faster than |matchadd()|
+		because it does not require to handle regular expressions and
+		sets buffer line boundaries to redraw screen. It is supposed
+		to be used when fast match additions and deletions are
+		required, for example to highlight matching parentheses.
+
+		The list {pos} can contain one of these items:
+		- A number.  This while line will be highlighted.  The first
+		  line has number 1.
+		- A list with one number, e.g., [23]. The whole line with this
+		  number will be highlighted.
+		- A list with two numbers, e.g., [23, 11]. The first number is
+		  the line number, the second one the column number (first
+		  column is 1).  The character at this position will be
+		  highlighted.
+		- A list with three numbers, e.g., [23, 11, 3]. As above, but
+		  the third number gives the length of the highlight in screen
+		  cells.
+		
+		The maximum number of positions is 8.
+
+		Example: >
+			:highlight MyGroup ctermbg=green guibg=green
+			:let m = matchaddpos("MyGroup", [[23, 24], 34])
+<		Deletion of the pattern: >
+			:call matchdelete(m)
+
+<		Matches added by |matchaddpos()| are returned by
+		|getmatches()| with an entry "pos1", "pos2", etc., with the
+		value a list like the {pos} item.
+		These matches cannot be set via |setmatches()|, however they
+		can still be deleted by |clearmatches()|.
 
 matcharg({nr})							*matcharg()*
 		Selects the {nr} match item, as set with a |:match|,

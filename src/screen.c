@@ -144,7 +144,8 @@ static void start_search_hl __ARGS((void));
 static void end_search_hl __ARGS((void));
 static void init_search_hl __ARGS((win_T *wp));
 static void prepare_search_hl __ARGS((win_T *wp, linenr_T lnum));
-static void next_search_hl __ARGS((win_T *win, match_T *shl, linenr_T lnum, colnr_T mincol));
+static void next_search_hl __ARGS((win_T *win, match_T *shl, linenr_T lnum, colnr_T mincol, matchitem_T *cur));
+static int next_search_hl_pos __ARGS((match_T *shl, linenr_T lnum, posmatch_T *pos, colnr_T mincol));
 #endif
 static void screen_start_highlight __ARGS((int attr));
 static void screen_char __ARGS((unsigned off, int row, int col));
@@ -2929,6 +2930,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
     match_T	*shl;			/* points to search_hl or a match */
     int		shl_flag;		/* flag to indicate whether search_hl
 					   has been processed or not */
+    int		pos_inprogress;		/* marks that position match search is
+					   in progress */
     int		prevcol_hl_flag;	/* flag to indicate whether prevcol
 					   equals startcol of search_hl or one
 					   of the matches */
@@ -3439,44 +3442,43 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	shl->startcol = MAXCOL;
 	shl->endcol = MAXCOL;
 	shl->attr_cur = 0;
-	if (shl->rm.regprog != NULL)
+	v = (long)(ptr - line);
+	if (cur != NULL)
+	    cur->pos.cur = 0;
+	next_search_hl(wp, shl, lnum, (colnr_T)v, cur);
+
+	/* Need to get the line again, a multi-line regexp may have made it
+	 * invalid. */
+	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+	ptr = line + v;
+
+	if (shl->lnum != 0 && shl->lnum <= lnum)
 	{
-	    v = (long)(ptr - line);
-	    next_search_hl(wp, shl, lnum, (colnr_T)v);
-
-	    /* Need to get the line again, a multi-line regexp may have made it
-	     * invalid. */
-	    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
-	    ptr = line + v;
-
-	    if (shl->lnum != 0 && shl->lnum <= lnum)
+	    if (shl->lnum == lnum)
+		shl->startcol = shl->rm.startpos[0].col;
+	    else
+		shl->startcol = 0;
+	    if (lnum == shl->lnum + shl->rm.endpos[0].lnum
+						- shl->rm.startpos[0].lnum)
+		shl->endcol = shl->rm.endpos[0].col;
+	    else
+		shl->endcol = MAXCOL;
+	    /* Highlight one character for an empty match. */
+	    if (shl->startcol == shl->endcol)
 	    {
-		if (shl->lnum == lnum)
-		    shl->startcol = shl->rm.startpos[0].col;
-		else
-		    shl->startcol = 0;
-		if (lnum == shl->lnum + shl->rm.endpos[0].lnum
-						  - shl->rm.startpos[0].lnum)
-		    shl->endcol = shl->rm.endpos[0].col;
-		else
-		    shl->endcol = MAXCOL;
-		/* Highlight one character for an empty match. */
-		if (shl->startcol == shl->endcol)
-		{
 #ifdef FEAT_MBYTE
-		    if (has_mbyte && line[shl->endcol] != NUL)
-			shl->endcol += (*mb_ptr2len)(line + shl->endcol);
-		    else
+		if (has_mbyte && line[shl->endcol] != NUL)
+		    shl->endcol += (*mb_ptr2len)(line + shl->endcol);
+		else
 #endif
-			++shl->endcol;
-		}
-		if ((long)shl->startcol < v)  /* match at leftcol */
-		{
-		    shl->attr_cur = shl->attr;
-		    search_attr = shl->attr;
-		}
-		area_highlighting = TRUE;
+		    ++shl->endcol;
 	    }
+	    if ((long)shl->startcol < v)  /* match at leftcol */
+	    {
+		shl->attr_cur = shl->attr;
+		search_attr = shl->attr;
+	    }
+	    area_highlighting = TRUE;
 	}
 	if (shl != &search_hl && cur != NULL)
 	    cur = cur->next;
@@ -3488,7 +3490,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
      * when Visual mode is active, because it's not clear what is selected
      * then. */
     if (wp->w_p_cul && lnum == wp->w_cursor.lnum
-					 && !(wp == curwin  && VIsual_active))
+					 && !(wp == curwin && VIsual_active))
     {
 	line_attr = hl_attr(HLF_CUL);
 	area_highlighting = TRUE;
@@ -3792,7 +3794,11 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    }
 		    else
 			shl = &cur->hl;
-		    while (shl->rm.regprog != NULL)
+		    if (cur != NULL)
+			cur->pos.cur = 0;
+		    pos_inprogress = TRUE;
+		    while (shl->rm.regprog != NULL
+					   || (cur != NULL && pos_inprogress))
 		    {
 			if (shl->startcol != MAXCOL
 				&& v >= (long)shl->startcol
@@ -3803,8 +3809,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			else if (v == (long)shl->endcol)
 			{
 			    shl->attr_cur = 0;
-
-			    next_search_hl(wp, shl, lnum, (colnr_T)v);
+			    next_search_hl(wp, shl, lnum, (colnr_T)v, cur);
+			    pos_inprogress = cur == NULL || cur->pos.cur == 0
+							      ? FALSE : TRUE;
 
 			    /* Need to get the line again, a multi-line regexp
 			     * may have made it invalid. */
@@ -7277,6 +7284,8 @@ prepare_search_hl(wp, lnum)
     match_T	*shl;		/* points to search_hl or a match */
     int		shl_flag;	/* flag to indicate whether search_hl
 				   has been processed or not */
+    int		pos_inprogress;	/* marks that position match search is
+				   in progress */
     int		n;
 
     /*
@@ -7311,10 +7320,16 @@ prepare_search_hl(wp, lnum)
 		shl->first_lnum = wp->w_topline;
 # endif
 	    }
+	    if (cur != NULL)
+		cur->pos.cur = 0;
+	    pos_inprogress = TRUE;
 	    n = 0;
-	    while (shl->first_lnum < lnum && shl->rm.regprog != NULL)
+	    while (shl->first_lnum < lnum && (shl->rm.regprog != NULL
+					  || (cur != NULL && pos_inprogress)))
 	    {
-		next_search_hl(wp, shl, shl->first_lnum, (colnr_T)n);
+		next_search_hl(wp, shl, shl->first_lnum, (colnr_T)n, cur);
+		pos_inprogress = cur == NULL || cur->pos.cur == 0
+							      ? FALSE : TRUE;
 		if (shl->lnum != 0)
 		{
 		    shl->first_lnum = shl->lnum
@@ -7343,11 +7358,12 @@ prepare_search_hl(wp, lnum)
  * Careful: Any pointers for buffer lines will become invalid.
  */
     static void
-next_search_hl(win, shl, lnum, mincol)
-    win_T	*win;
-    match_T	*shl;		/* points to search_hl or a match */
-    linenr_T	lnum;
-    colnr_T	mincol;		/* minimal column for a match */
+next_search_hl(win, shl, lnum, mincol, cur)
+    win_T	    *win;
+    match_T	    *shl;	/* points to search_hl or a match */
+    linenr_T	    lnum;
+    colnr_T	    mincol;	/* minimal column for a match */
+    matchitem_T	    *cur;	/* to retrieve match postions if any */
 {
     linenr_T	l;
     colnr_T	matchcol;
@@ -7415,26 +7431,35 @@ next_search_hl(win, shl, lnum, mincol)
 	    matchcol = shl->rm.endpos[0].col;
 
 	shl->lnum = lnum;
-	nmatched = vim_regexec_multi(&shl->rm, win, shl->buf, lnum, matchcol,
-#ifdef FEAT_RELTIME
-		&(shl->tm)
-#else
-		NULL
-#endif
-		);
-	if (called_emsg || got_int)
+	if (shl->rm.regprog != NULL)
 	{
-	    /* Error while handling regexp: stop using this regexp. */
-	    if (shl == &search_hl)
+	    nmatched = vim_regexec_multi(&shl->rm, win, shl->buf, lnum,
+		    matchcol,
+#ifdef FEAT_RELTIME
+		    &(shl->tm)
+#else
+		    NULL
+#endif
+		    );
+	    if (called_emsg || got_int)
 	    {
-		/* don't free regprog in the match list, it's a copy */
-		vim_regfree(shl->rm.regprog);
-		SET_NO_HLSEARCH(TRUE);
+		/* Error while handling regexp: stop using this regexp. */
+		if (shl == &search_hl)
+		{
+		    /* don't free regprog in the match list, it's a copy */
+		    vim_regfree(shl->rm.regprog);
+		    SET_NO_HLSEARCH(TRUE);
+		}
+		shl->rm.regprog = NULL;
+		shl->lnum = 0;
+		got_int = FALSE;  /* avoid the "Type :quit to exit Vim"
+				     message */
+		break;
 	    }
-	    shl->rm.regprog = NULL;
-	    shl->lnum = 0;
-	    got_int = FALSE;  /* avoid the "Type :quit to exit Vim" message */
-	    break;
+	}
+	else if (cur != NULL)
+	{
+	    nmatched = next_search_hl_pos(shl, lnum, &(cur->pos), matchcol);
 	}
 	if (nmatched == 0)
 	{
@@ -7452,6 +7477,62 @@ next_search_hl(win, shl, lnum, mincol)
     }
 }
 #endif
+
+    static int
+next_search_hl_pos(shl, lnum, posmatch, mincol)
+    match_T	    *shl;	/* points to a match */
+    linenr_T	    lnum;
+    posmatch_T	    *posmatch;	/* match positions */
+    colnr_T	    mincol;	/* minimal column for a match */
+{
+    int	    i;
+    int     bot = -1;
+
+    shl->lnum = 0;
+    for (i = posmatch->cur; i < MAXPOSMATCH; i++)
+    {
+	if (posmatch->pos[i].lnum == 0)
+	    break;
+	if (posmatch->pos[i].col < mincol)
+	    continue;
+	if (posmatch->pos[i].lnum == lnum)
+	{
+	    if (shl->lnum == lnum)
+	    {
+		/* partially sort positions by column numbers
+		 * on the same line */
+		if (posmatch->pos[i].col < posmatch->pos[bot].col)
+		{
+		    llpos_T	tmp = posmatch->pos[i];
+
+		    posmatch->pos[i] = posmatch->pos[bot];
+		    posmatch->pos[bot] = tmp;
+		}
+	    }
+	    else
+	    {
+		bot = i;
+		shl->lnum = lnum;
+	    }
+	}
+    }
+    posmatch->cur = 0;
+    if (shl->lnum == lnum)
+    {
+	colnr_T	start = posmatch->pos[bot].col == 0
+					     ? 0 : posmatch->pos[bot].col - 1;
+	colnr_T	end = posmatch->pos[bot].col == 0
+				    ? MAXCOL : start + posmatch->pos[bot].len;
+
+	shl->rm.startpos[0].lnum = 0;
+	shl->rm.startpos[0].col = start;
+	shl->rm.endpos[0].lnum = 0;
+	shl->rm.endpos[0].col = end;
+	posmatch->cur = bot + 1;
+	return TRUE;
+    }
+    return FALSE;
+}
 
       static void
 screen_start_highlight(attr)

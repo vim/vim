@@ -1927,6 +1927,32 @@ typedef struct
 #endif
 } match_T;
 
+/* number of positions supported by matchaddpos() */
+#define MAXPOSMATCH 8
+
+/*
+ * Same as lpos_T, but with additional field len.
+ */
+typedef struct
+{
+    linenr_T	lnum;	/* line number */
+    colnr_T	col;	/* column number */
+    int		len;	/* length: 0 - to the end of line */
+} llpos_T;
+
+/*
+ * posmatch_T provides an array for storing match items for matchaddpos()
+ * function.
+ */
+typedef struct posmatch posmatch_T;
+struct posmatch
+{
+    llpos_T	pos[MAXPOSMATCH];	/* array of positions */
+    int		cur;			/* internal position counter */
+    linenr_T	toplnum;		/* top buffer line */
+    linenr_T	botlnum;		/* bottom buffer line */
+};
+
 /*
  * matchitem_T provides a linked list for storing match items for ":match" and
  * the match functions.
@@ -1940,6 +1966,7 @@ struct matchitem
     char_u	*pattern;   /* pattern to highlight */
     int		hlg_id;	    /* highlight group ID */
     regmmatch_T	match;	    /* regexp program for pattern */
+    posmatch_T	pos;	    /* position matches */
     match_T	hl;	    /* struct for doing the actual highlighting */
 };
 

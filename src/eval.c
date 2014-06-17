@@ -622,6 +622,7 @@ static void f_maparg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_mapcheck __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_match __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_matchadd __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_matchaddpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_matcharg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_matchdelete __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_matchend __ARGS((typval_T *argvars, typval_T *rettv));
@@ -8054,6 +8055,7 @@ static struct fst
     {"mapcheck",	1, 3, f_mapcheck},
     {"match",		2, 4, f_match},
     {"matchadd",	2, 4, f_matchadd},
+    {"matchaddpos",	2, 4, f_matchaddpos},
     {"matcharg",	1, 1, f_matcharg},
     {"matchdelete",	1, 1, f_matchdelete},
     {"matchend",	2, 4, f_matchend},
@@ -11767,6 +11769,7 @@ f_getmatches(argvars, rettv)
 #ifdef FEAT_SEARCH_EXTRA
     dict_T	*dict;
     matchitem_T	*cur = curwin->w_match_head;
+    int		i;
 
     if (rettv_list_alloc(rettv) == OK)
     {
@@ -11775,8 +11778,36 @@ f_getmatches(argvars, rettv)
 	    dict = dict_alloc();
 	    if (dict == NULL)
 		return;
+	    if (cur->match.regprog == NULL)
+	    {
+		/* match added with matchaddpos() */
+		for (i = 0; i < MAXPOSMATCH; ++i)
+		{
+		    llpos_T	*llpos;
+		    char	buf[6];
+		    list_T	*l;
+
+		    llpos = &cur->pos.pos[i];
+		    if (llpos->lnum == 0)
+			break;
+		    l = list_alloc();
+		    if (l == NULL)
+			break;
+		    list_append_number(l, (varnumber_T)llpos->lnum);
+		    if (llpos->col > 0)
+		    {
+			list_append_number(l, (varnumber_T)llpos->col);
+			list_append_number(l, (varnumber_T)llpos->len);
+		    }
+		    sprintf(buf, "pos%d", i + 1);
+		    dict_add_list(dict, buf, l);
+		}
+	    }
+	    else
+	    {
+		dict_add_nr_str(dict, "pattern", 0L, cur->pattern);
+	    }
 	    dict_add_nr_str(dict, "group", 0L, syn_id2name(cur->hlg_id));
-	    dict_add_nr_str(dict, "pattern", 0L, cur->pattern);
 	    dict_add_nr_str(dict, "priority", (long)cur->priority, NULL);
 	    dict_add_nr_str(dict, "id", (long)cur->id, NULL);
 	    list_append_dict(rettv->vval.v_list, dict);
@@ -14313,7 +14344,58 @@ f_matchadd(argvars, rettv)
 	return;
     }
 
-    rettv->vval.v_number = match_add(curwin, grp, pat, prio, id);
+    rettv->vval.v_number = match_add(curwin, grp, pat, prio, id, NULL);
+#endif
+}
+
+/*
+ * "matchaddpos()" function
+ */
+    static void
+f_matchaddpos(argvars, rettv)
+    typval_T	*argvars UNUSED;
+    typval_T	*rettv UNUSED;
+{
+#ifdef FEAT_SEARCH_EXTRA
+    char_u	buf[NUMBUFLEN];
+    char_u	*group;
+    int		prio = 10;
+    int		id = -1;
+    int		error = FALSE;
+    list_T	*l;
+
+    rettv->vval.v_number = -1;
+
+    group = get_tv_string_buf_chk(&argvars[0], buf);
+    if (group == NULL)
+	return;
+
+    if (argvars[1].v_type != VAR_LIST)
+    {
+	EMSG2(_(e_listarg), "matchaddpos()");
+	return;
+    }
+    l = argvars[1].vval.v_list;
+    if (l == NULL)
+	return;
+
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+	prio = get_tv_number_chk(&argvars[2], &error);
+	if (argvars[3].v_type != VAR_UNKNOWN)
+	    id = get_tv_number_chk(&argvars[3], &error);
+    }
+    if (error == TRUE)
+	return;
+
+    /* id == 3 is ok because matchaddpos() is supposed to substitute :3match */
+    if (id == 1 || id == 2)
+    {
+	EMSGN("E798: ID is reserved for \":match\": %ld", id);
+	return;
+    }
+
+    rettv->vval.v_number = match_add(curwin, group, NULL, prio, id, l);
 #endif
 }
 
@@ -16816,7 +16898,7 @@ f_setmatches(argvars, rettv)
 	    match_add(curwin, get_dict_string(d, (char_u *)"group", FALSE),
 		    get_dict_string(d, (char_u *)"pattern", FALSE),
 		    (int)get_dict_number(d, (char_u *)"priority"),
-		    (int)get_dict_number(d, (char_u *)"id"));
+		    (int)get_dict_number(d, (char_u *)"id"), NULL);
 	    li = li->li_next;
 	}
 	rettv->vval.v_number = 0;
