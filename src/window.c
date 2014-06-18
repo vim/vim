@@ -6809,7 +6809,7 @@ match_add(wp, grp, pat, prio, id, pos_list)
     }
 
     /* Build new match. */
-    m = (matchitem_T *)alloc(sizeof(matchitem_T));
+    m = (matchitem_T *)alloc_clear(sizeof(matchitem_T));
     m->id = id;
     m->priority = prio;
     m->pattern = pat == NULL ? NULL : vim_strsave(pat);
@@ -6835,7 +6835,7 @@ match_add(wp, grp, pat, prio, id, pos_list)
 	    int		len = 1;
 	    list_T	*subl;
 	    listitem_T	*subli;
-	    int		error;
+	    int		error = FALSE;
 
 	    if (li == NULL)
 	    {

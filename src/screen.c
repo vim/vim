@@ -7363,7 +7363,7 @@ next_search_hl(win, shl, lnum, mincol, cur)
     match_T	    *shl;	/* points to search_hl or a match */
     linenr_T	    lnum;
     colnr_T	    mincol;	/* minimal column for a match */
-    matchitem_T	    *cur;	/* to retrieve match postions if any */
+    matchitem_T	    *cur;	/* to retrieve match positions if any */
 {
     linenr_T	l;
     colnr_T	matchcol;
@@ -7458,9 +7458,9 @@ next_search_hl(win, shl, lnum, mincol, cur)
 	    }
 	}
 	else if (cur != NULL)
-	{
 	    nmatched = next_search_hl_pos(shl, lnum, &(cur->pos), matchcol);
-	}
+	else
+	    nmatched = 0;
 	if (nmatched == 0)
 	{
 	    shl->lnum = 0;		/* no match found */
