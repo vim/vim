@@ -43,10 +43,13 @@ if test $what = "install" -o $what = "xxd"; then
    fi
 fi
 
+# Note: setting LC_ALL to C is required to avoid illegal byte errors from sed
+# on some systems.
+
 if test $what = "install"; then
    # vim.1
    echo installing $destdir/$exename.1
-   sed -e s+/usr/local/lib/vim+$vimloc+ \
+   LC_ALL=C sed -e s+/usr/local/lib/vim+$vimloc+ \
 	   -e s+$vimloc/doc+$helpsubloc+ \
 	   -e s+$vimloc/print+$printsubloc+ \
 	   -e s+$vimloc/syntax+$synsubloc+ \
@@ -64,7 +67,7 @@ if test $what = "install"; then
 
    # vimtutor.1
    echo installing $destdir/$exename""tutor.1
-   sed -e s+/usr/local/lib/vim+$vimloc+ \
+   LC_ALL=C sed -e s+/usr/local/lib/vim+$vimloc+ \
 	   -e s+$vimloc/tutor+$tutorsubloc+ \
 	   $helpsource/vimtutor$langadd.1 > $destdir/$exename""tutor.1
    chmod $manmod $destdir/$exename""tutor.1
@@ -76,7 +79,7 @@ if test $what = "install"; then
 
    # evim.1
    echo installing $destdir/$evimname.1
-   sed -e s+/usr/local/lib/vim+$vimloc+ \
+   LC_ALL=C sed -e s+/usr/local/lib/vim+$vimloc+ \
 	   -e s+$vimloc/evim.vim+$scriptloc/evim.vim+ \
 	   $helpsource/evim$langadd.1 > $destdir/$evimname.1
    chmod $manmod $destdir/$evimname.1
