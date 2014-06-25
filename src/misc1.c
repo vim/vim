@@ -32,7 +32,7 @@ static garray_T	ga_users;
     int
 get_indent()
 {
-    return get_indent_str(ml_get_curline(), (int)curbuf->b_p_ts);
+    return get_indent_str(ml_get_curline(), (int)curbuf->b_p_ts, FALSE);
 }
 
 /*
@@ -42,7 +42,7 @@ get_indent()
 get_indent_lnum(lnum)
     linenr_T	lnum;
 {
-    return get_indent_str(ml_get(lnum), (int)curbuf->b_p_ts);
+    return get_indent_str(ml_get(lnum), (int)curbuf->b_p_ts, FALSE);
 }
 
 #if defined(FEAT_FOLDING) || defined(PROTO)
@@ -55,7 +55,7 @@ get_indent_buf(buf, lnum)
     buf_T	*buf;
     linenr_T	lnum;
 {
-    return get_indent_str(ml_get_buf(buf, lnum, FALSE), (int)buf->b_p_ts);
+    return get_indent_str(ml_get_buf(buf, lnum, FALSE), (int)buf->b_p_ts, FALSE);
 }
 #endif
 
@@ -64,16 +64,23 @@ get_indent_buf(buf, lnum)
  * 'tabstop' at "ts"
  */
     int
-get_indent_str(ptr, ts)
+get_indent_str(ptr, ts, list)
     char_u	*ptr;
     int		ts;
+    int		list; /* if TRUE, count only screen size for tabs */
 {
     int		count = 0;
 
     for ( ; *ptr; ++ptr)
     {
-	if (*ptr == TAB)    /* count a tab for what it is worth */
-	    count += ts - (count % ts);
+	if (*ptr == TAB)
+	{
+	    if (!list || lcs_tab1)    /* count a tab for what it is worth */
+		count += ts - (count % ts);
+	    else
+	/* in list mode, when tab is not set, count screen char width for Tab: ^I */
+		count += ptr2cells(ptr);
+	}
 	else if (*ptr == ' ')
 	    ++count;		/* count a space for one */
 	else
@@ -476,6 +483,58 @@ get_number_indent(lnum)
     return (int)col;
 }
 
+#if defined(FEAT_LINEBREAK) || defined(PROTO)
+/*
+ * Return appropriate space number for breakindent, taking influencing
+ * parameters into account. Window must be specified, since it is not
+ * necessarily always the current one.
+ */
+    int
+get_breakindent_win(wp, line)
+    win_T	*wp;
+    char_u	*line; /* start of the line */
+{
+    static int	    prev_indent = 0;  /* cached indent value */
+    static long	    prev_ts     = 0L; /* cached tabstop value */
+    static char_u   *prev_line = NULL; /* cached pointer to line */
+    int		    bri = 0;
+    /* window width minus window margin space, i.e. what rests for text */
+    const int	    eff_wwidth = W_WIDTH(wp)
+			    - ((wp->w_p_nu || wp->w_p_rnu)
+				&& (vim_strchr(p_cpo, CPO_NUMCOL) == NULL)
+						? number_width(wp) + 1 : 0);
+
+    /* used cached indent, unless pointer or 'tabstop' changed */
+    if (prev_line != line || prev_ts != wp->w_buffer->b_p_ts)
+    {
+	prev_line = line;
+	prev_ts = wp->w_buffer->b_p_ts;
+	prev_indent = get_indent_str(line,
+		  (int)wp->w_buffer->b_p_ts, wp->w_p_list) + wp->w_p_brishift;
+    }
+
+    /* indent minus the length of the showbreak string */
+    bri = prev_indent;
+    if (wp->w_p_brisbr)
+	bri -= vim_strsize(p_sbr);
+
+    /* Add offset for number column, if 'n' is in 'cpoptions' */
+    bri += win_col_off2(wp);
+
+    /* never indent past left window margin */
+    if (bri < 0)
+	bri = 0;
+    /* always leave at least bri_min characters on the left,
+     * if text width is sufficient */
+    else if (bri > eff_wwidth - wp->w_p_brimin)
+	bri = (eff_wwidth - wp->w_p_brimin < 0)
+			    ? 0 : eff_wwidth - wp->w_p_brimin;
+
+    return bri;
+}
+#endif
+
+
 #if defined(FEAT_CINDENT) || defined(FEAT_SMARTINDENT)
 
 static int cin_is_cinword __ARGS((char_u *line));
@@ -678,7 +737,7 @@ open_line(dir, flags, second_line_indent)
 	/*
 	 * count white space on current line
 	 */
-	newindent = get_indent_str(saved_line, (int)curbuf->b_p_ts);
+	newindent = get_indent_str(saved_line, (int)curbuf->b_p_ts, FALSE);
 	if (newindent == 0 && !(flags & OPENLINE_COM_LIST))
 	    newindent = second_line_indent; /* for ^^D command in insert mode */
 
@@ -1201,7 +1260,7 @@ open_line(dir, flags, second_line_indent)
 					|| do_si
 #endif
 							   )
-			newindent = get_indent_str(leader, (int)curbuf->b_p_ts);
+			newindent = get_indent_str(leader, (int)curbuf->b_p_ts, FALSE);
 
 		    /* Add the indent offset */
 		    if (newindent + off < 0)
@@ -1994,6 +2053,7 @@ plines_win_col(wp, lnum, column)
     char_u	*s;
     int		lines = 0;
     int		width;
+    char_u	*line;
 
 #ifdef FEAT_DIFF
     /* Check for filler lines above this buffer line.  When folded the result
@@ -2009,12 +2069,12 @@ plines_win_col(wp, lnum, column)
 	return lines + 1;
 #endif
 
-    s = ml_get_buf(wp->w_buffer, lnum, FALSE);
+    line = s = ml_get_buf(wp->w_buffer, lnum, FALSE);
 
     col = 0;
     while (*s != NUL && --column >= 0)
     {
-	col += win_lbr_chartabsize(wp, s, (colnr_T)col, NULL);
+	col += win_lbr_chartabsize(wp, line, s, (colnr_T)col, NULL);
 	mb_ptr_adv(s);
     }
 
@@ -2026,7 +2086,7 @@ plines_win_col(wp, lnum, column)
      * 'ts') -- webb.
      */
     if (*s == TAB && (State & NORMAL) && (!wp->w_p_list || lcs_tab1))
-	col += win_lbr_chartabsize(wp, s, (colnr_T)col, NULL) - 1;
+	col += win_lbr_chartabsize(wp, line, s, (colnr_T)col, NULL) - 1;
 
     /*
      * Add column offset for 'number', 'relativenumber', 'foldcolumn', etc.
@@ -9002,10 +9062,12 @@ get_lisp_indent()
 		amount = 2;
 	    else
 	    {
+		char_u *line = that;
+
 		amount = 0;
 		while (*that && col)
 		{
-		    amount += lbr_chartabsize_adv(&that, (colnr_T)amount);
+		    amount += lbr_chartabsize_adv(line, &that, (colnr_T)amount);
 		    col--;
 		}
 
@@ -9028,7 +9090,7 @@ get_lisp_indent()
 
 		    while (vim_iswhite(*that))
 		    {
-			amount += lbr_chartabsize(that, (colnr_T)amount);
+			amount += lbr_chartabsize(line, that, (colnr_T)amount);
 			++that;
 		    }
 
@@ -9066,15 +9128,16 @@ get_lisp_indent()
 							       && !quotecount)
 				    --parencount;
 				if (*that == '\\' && *(that+1) != NUL)
-				    amount += lbr_chartabsize_adv(&that,
-							     (colnr_T)amount);
-				amount += lbr_chartabsize_adv(&that,
-							     (colnr_T)amount);
+				    amount += lbr_chartabsize_adv(
+						line, &that, (colnr_T)amount);
+				amount += lbr_chartabsize_adv(
+						line, &that, (colnr_T)amount);
 			    }
 			}
 			while (vim_iswhite(*that))
 			{
-			    amount += lbr_chartabsize(that, (colnr_T)amount);
+			    amount += lbr_chartabsize(
+						 line, that, (colnr_T)amount);
 			    that++;
 			}
 			if (!*that || *that == ';')

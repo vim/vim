@@ -420,7 +420,9 @@ shift_block(oap, amount)
 	}
 	for ( ; vim_iswhite(*bd.textstart); )
 	{
-	    incr = lbr_chartabsize_adv(&bd.textstart, (colnr_T)(bd.start_vcol));
+	    /* TODO: is passing bd.textstart for start of the line OK? */
+	    incr = lbr_chartabsize_adv(bd.textstart, &bd.textstart,
+						    (colnr_T)(bd.start_vcol));
 	    total += incr;
 	    bd.start_vcol += incr;
 	}
@@ -480,7 +482,7 @@ shift_block(oap, amount)
 
 	while (vim_iswhite(*non_white))
 	{
-	    incr = lbr_chartabsize_adv(&non_white, non_white_col);
+	    incr = lbr_chartabsize_adv(bd.textstart, &non_white, non_white_col);
 	    non_white_col += incr;
 	}
 
@@ -505,7 +507,11 @@ shift_block(oap, amount)
 	    verbatim_copy_width -= bd.start_char_vcols;
 	while (verbatim_copy_width < destination_col)
 	{
-	    incr = lbr_chartabsize(verbatim_copy_end, verbatim_copy_width);
+	    char_u *line = verbatim_copy_end;
+
+	    /* TODO: is passing verbatim_copy_end for start of the line OK? */
+	    incr = lbr_chartabsize(line, verbatim_copy_end,
+							 verbatim_copy_width);
 	    if (verbatim_copy_width + incr > destination_col)
 		break;
 	    verbatim_copy_width += incr;
@@ -3617,7 +3623,7 @@ do_put(regname, dir, count, flags)
 	    for (ptr = oldp; vcol < col && *ptr; )
 	    {
 		/* Count a tab for what it's worth (if list mode not on) */
-		incr = lbr_chartabsize_adv(&ptr, (colnr_T)vcol);
+		incr = lbr_chartabsize_adv(oldp, &ptr, (colnr_T)vcol);
 		vcol += incr;
 	    }
 	    bd.textcol = (colnr_T)(ptr - oldp);
@@ -3651,7 +3657,7 @@ do_put(regname, dir, count, flags)
 	    /* calculate number of spaces required to fill right side of block*/
 	    spaces = y_width + 1;
 	    for (j = 0; j < yanklen; j++)
-		spaces -= lbr_chartabsize(&y_array[i][j], 0);
+		spaces -= lbr_chartabsize(NULL, &y_array[i][j], 0);
 	    if (spaces < 0)
 		spaces = 0;
 
@@ -5203,7 +5209,7 @@ block_prep(oap, bdp, lnum, is_del)
     while (bdp->start_vcol < oap->start_vcol && *pstart)
     {
 	/* Count a tab for what it's worth (if list mode not on) */
-	incr = lbr_chartabsize(pstart, (colnr_T)bdp->start_vcol);
+	incr = lbr_chartabsize(line, pstart, (colnr_T)bdp->start_vcol);
 	bdp->start_vcol += incr;
 #ifdef FEAT_VISUALEXTRA
 	if (vim_iswhite(*pstart))
@@ -5272,7 +5278,10 @@ block_prep(oap, bdp, lnum, is_del)
 	    {
 		/* Count a tab for what it's worth (if list mode not on) */
 		prev_pend = pend;
-		incr = lbr_chartabsize_adv(&pend, (colnr_T)bdp->end_vcol);
+		/* TODO: is passing prev_pend for start of the line OK?
+		 * perhaps it should be "line". */
+		incr = lbr_chartabsize_adv(prev_pend, &pend,
+						      (colnr_T)bdp->end_vcol);
 		bdp->end_vcol += incr;
 	    }
 	    if (bdp->end_vcol <= oap->end_vcol
@@ -6882,7 +6891,8 @@ cursor_pos_info()
 	    validate_virtcol();
 	    col_print(buf1, sizeof(buf1), (int)curwin->w_cursor.col + 1,
 		    (int)curwin->w_virtcol + 1);
-	    col_print(buf2, sizeof(buf2), (int)STRLEN(p), linetabsize(p));
+	    col_print(buf2, sizeof(buf2), (int)STRLEN(p),
+				linetabsize(p));
 
 	    if (char_count_cursor == byte_count_cursor
 		    && char_count == byte_count)

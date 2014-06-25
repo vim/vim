@@ -201,10 +201,10 @@ coladvance2(pos, addspaces, finetune, wcol)
 	{
 	    /* Count a tab for what it's worth (if list mode not on) */
 #ifdef FEAT_LINEBREAK
-	    csize = win_lbr_chartabsize(curwin, ptr, col, &head);
+	    csize = win_lbr_chartabsize(curwin, line, ptr, col, &head);
 	    mb_ptr_adv(ptr);
 #else
-	    csize = lbr_chartabsize_adv(&ptr, col);
+	    csize = lbr_chartabsize_adv(line, &ptr, col);
 #endif
 	    col += csize;
 	}
@@ -2156,7 +2156,8 @@ ga_append(gap, c)
     }
 }
 
-#if (defined(UNIX) && !defined(USE_SYSTEM)) || defined(WIN3264)
+#if (defined(UNIX) && !defined(USE_SYSTEM)) || defined(WIN3264) \
+	|| defined(PROTO)
 /*
  * Append the text in "gap" below the cursor line and clear "gap".
  */

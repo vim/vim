@@ -134,6 +134,12 @@ typedef struct
     int		wo_arab;
 # define w_p_arab w_onebuf_opt.wo_arab	/* 'arabic' */
 #endif
+#ifdef FEAT_LINEBREAK
+    int		wo_bri;
+# define w_p_bri w_onebuf_opt.wo_bri	/* 'breakindent' */
+    char_u		*wo_briopt;
+# define w_p_briopt w_onebuf_opt.wo_briopt /* 'breakindentopt' */
+#endif
 #ifdef FEAT_DIFF
     int		wo_diff;
 # define w_p_diff w_onebuf_opt.wo_diff	/* 'diff' */
@@ -2188,6 +2194,11 @@ struct window_S
 #endif
 #ifdef FEAT_SYN_HL
     int		*w_p_cc_cols;	    /* array of columns to highlight or NULL */
+#endif
+#ifdef FEAT_LINEBREAK
+    int		w_p_brimin;	    /* minimum width for breakindent */
+    int		w_p_brishift;	    /* additional shift for breakindent */
+    int		w_p_brisbr;	    /* sbr in 'briopt' */
 #endif
 
     /* transform a pointer to a "onebuf" option into a "allbuf" option */

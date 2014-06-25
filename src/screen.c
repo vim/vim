@@ -2962,10 +2962,15 @@ win_line(wp, lnum, startrow, endrow, nochange)
 # define WL_SIGN	WL_FOLD		/* column for signs */
 #endif
 #define WL_NR		WL_SIGN + 1	/* line number */
-#if defined(FEAT_LINEBREAK) || defined(FEAT_DIFF)
-# define WL_SBR		WL_NR + 1	/* 'showbreak' or 'diff' */
+#ifdef FEAT_LINEBREAK
+# define WL_BRI		WL_NR + 1	/* 'breakindent' */
 #else
-# define WL_SBR		WL_NR
+# define WL_BRI		WL_NR
+#endif
+#if defined(FEAT_LINEBREAK) || defined(FEAT_DIFF)
+# define WL_SBR		WL_BRI + 1	/* 'showbreak' or 'diff' */
+#else
+# define WL_SBR		WL_BRI
 #endif
 #define WL_LINE		WL_SBR + 1	/* text in the line */
     int		draw_state = WL_START;	/* what to draw next */
@@ -3301,7 +3306,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #endif
 	while (vcol < v && *ptr != NUL)
 	{
-	    c = win_lbr_chartabsize(wp, ptr, (colnr_T)vcol, NULL);
+	    c = win_lbr_chartabsize(wp, line, ptr, (colnr_T)vcol, NULL);
 	    vcol += c;
 #ifdef FEAT_MBYTE
 	    prev_ptr = ptr;
@@ -3669,6 +3674,44 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #endif
 		}
 	    }
+
+#ifdef FEAT_LINEBREAK
+	    if (wp->w_p_brisbr && draw_state == WL_BRI - 1
+					     && n_extra == 0 && *p_sbr != NUL)
+		/* draw indent after showbreak value */
+		draw_state = WL_BRI;
+	    else if (wp->w_p_brisbr && draw_state == WL_SBR && n_extra == 0)
+		/* After the showbreak, draw the breakindent */
+		draw_state = WL_BRI - 1;
+
+	    /* draw 'breakindent': indent wrapped text accordingly */
+	    if (draw_state == WL_BRI - 1 && n_extra == 0)
+	    {
+		draw_state = WL_BRI;
+# ifdef FEAT_DIFF
+# endif
+		if (wp->w_p_bri && n_extra == 0 && row != startrow
+#ifdef FEAT_DIFF
+			&& filler_lines == 0
+#endif
+		   )
+		{
+		    char_attr = 0; /* was: hl_attr(HLF_AT); */
+#ifdef FEAT_DIFF
+		    if (diff_hlf != (hlf_T)0)
+			char_attr = hl_attr(diff_hlf);
+#endif
+		    p_extra = NUL;
+		    c_extra = ' ';
+		    n_extra = get_breakindent_win(wp,
+				       ml_get_buf(wp->w_buffer, lnum, FALSE));
+		    /* Correct end of highlighted area for 'breakindent',
+		     * required when 'linebreak' is also set. */
+		    if (tocol == vcol)
+			tocol += n_extra;
+		}
+	    }
+#endif
 
 #if defined(FEAT_LINEBREAK) || defined(FEAT_DIFF)
 	    if (draw_state == WL_SBR - 1 && n_extra == 0)
@@ -4382,11 +4425,14 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		if (wp->w_p_lbr && vim_isbreak(c) && !vim_isbreak(*ptr)
 							     && !wp->w_p_list)
 		{
-		    n_extra = win_lbr_chartabsize(wp, ptr - (
+		    char_u *p = ptr - (
 # ifdef FEAT_MBYTE
 				has_mbyte ? mb_l :
 # endif
-				1), (colnr_T)vcol, NULL) - 1;
+				1);
+		    /* TODO: is passing p for start of the line OK? */
+		    n_extra = win_lbr_chartabsize(wp, p, p, (colnr_T)vcol,
+								    NULL) - 1;
 		    c_extra = ' ';
 		    if (vim_iswhite(c))
 		    {
@@ -8916,8 +8962,8 @@ windgoto(row, col)
 	{
 	    if (noinvcurs)
 		screen_stop_highlight();
-	    if (row == screen_cur_row && (col > screen_cur_col) &&
-								*T_CRI != NUL)
+	    if (row == screen_cur_row && (col > screen_cur_col)
+							     && *T_CRI != NUL)
 		term_cursor_right(col - screen_cur_col);
 	    else
 		term_windgoto(row, col);

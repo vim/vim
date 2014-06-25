@@ -1956,7 +1956,7 @@ change_indent(type, amount, round, replaced, call_changed_bytes)
 	    else
 #endif
 		++new_cursor_col;
-	    vcol += lbr_chartabsize(ptr + new_cursor_col, (colnr_T)vcol);
+	    vcol += lbr_chartabsize(ptr, ptr + new_cursor_col, (colnr_T)vcol);
 	}
 	vcol = last_vcol;
 
@@ -7126,9 +7126,10 @@ oneleft()
 	for (;;)
 	{
 	    coladvance(v - width);
-	    /* getviscol() is slow, skip it when 'showbreak' is empty and
-	     * there are no multi-byte characters */
-	    if ((*p_sbr == NUL
+	    /* getviscol() is slow, skip it when 'showbreak' is empty,
+	     * 'breakindent' is not set and there are no multi-byte
+	     * characters */
+	    if ((*p_sbr == NUL && !curwin->w_p_bri
 #  ifdef FEAT_MBYTE
 			&& !has_mbyte
 #  endif
@@ -9758,11 +9759,11 @@ ins_tab()
 	getvcol(curwin, &fpos, &vcol, NULL, NULL);
 	getvcol(curwin, cursor, &want_vcol, NULL, NULL);
 
-	/* Use as many TABs as possible.  Beware of 'showbreak' and
-	 * 'linebreak' adding extra virtual columns. */
+	/* Use as many TABs as possible.  Beware of 'breakindent', 'showbreak'
+	 * and 'linebreak' adding extra virtual columns. */
 	while (vim_iswhite(*ptr))
 	{
-	    i = lbr_chartabsize((char_u *)"\t", vcol);
+	    i = lbr_chartabsize(NULL, (char_u *)"\t", vcol);
 	    if (vcol + i > want_vcol)
 		break;
 	    if (*ptr != TAB)
@@ -9784,11 +9785,12 @@ ins_tab()
 	if (change_col >= 0)
 	{
 	    int repl_off = 0;
+	    char_u *line = ptr;
 
 	    /* Skip over the spaces we need. */
 	    while (vcol < want_vcol && *ptr == ' ')
 	    {
-		vcol += lbr_chartabsize(ptr, vcol);
+		vcol += lbr_chartabsize(line, ptr, vcol);
 		++ptr;
 		++repl_off;
 	    }
@@ -10029,6 +10031,7 @@ ins_copychar(lnum)
     int	    c;
     int	    temp;
     char_u  *ptr, *prev_ptr;
+    char_u  *line;
 
     if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)
     {
@@ -10038,13 +10041,13 @@ ins_copychar(lnum)
 
     /* try to advance to the cursor column */
     temp = 0;
-    ptr = ml_get(lnum);
+    line = ptr = ml_get(lnum);
     prev_ptr = ptr;
     validate_virtcol();
     while ((colnr_T)temp < curwin->w_virtcol && *ptr != NUL)
     {
 	prev_ptr = ptr;
-	temp += lbr_chartabsize_adv(&ptr, (colnr_T)temp);
+	temp += lbr_chartabsize_adv(line, &ptr, (colnr_T)temp);
     }
     if ((colnr_T)temp > curwin->w_virtcol)
 	ptr = prev_ptr;

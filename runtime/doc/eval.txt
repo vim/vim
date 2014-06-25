@@ -6651,8 +6651,8 @@ jumplist		Compiled with |jumplist| support.
 keymap			Compiled with 'keymap' support.
 langmap			Compiled with 'langmap' support.
 libcall			Compiled with |libcall()| support.
-linebreak		Compiled with 'linebreak', 'breakat' and 'showbreak'
-			support.
+linebreak		Compiled with 'linebreak', 'breakat', 'showbreak' and
+			'breakindent' support.
 lispindent		Compiled with support for lisp indenting.
 listcmds		Compiled with commands for the buffer list |:files|
 			and the argument list |arglist|.
