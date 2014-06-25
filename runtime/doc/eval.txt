@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2014 Jun 12
+*eval.txt*	For Vim version 7.4.  Last change: 2014 Jun 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2609,7 +2609,7 @@ cursor({list})
 		with two, three or four item:
 			[{lnum}, {col}, {off}]
 			[{lnum}, {col}, {off}, {curswant}]
-		This is like the return value of |getpos()| or |getcurpos|,
+		This is like the return value of |getpos()| or |getcurpos()|,
 		but without the first item.
 
 		Does not change the jumplist.
@@ -5629,11 +5629,19 @@ sort({list} [, {func} [, {dict}]])			*sort()* *E702*
 		If you want a list to remain unmodified make a copy first: >
 			:let sortedlist = sort(copy(mylist))
 
-<		Uses the string representation of each item to sort on.
-		Numbers sort after Strings, |Lists| after Numbers.
-		For sorting text in the current buffer use |:sort|.
+<		When {func} is omitted, is empty or zero, then sort() uses the
+		string representation of each item to sort on.  Numbers sort
+		after Strings, |Lists| after Numbers.  For sorting text in the
+		current buffer use |:sort|.
 
-		When {func} is given and it is one then case is ignored.
+		When {func} is given and it is is '1' or 'i' then case is
+		ignored.
+		
+		When {func} is given and it is 'n' then all items will be
+		sorted numerical (Implementation detail: This uses the
+		strtod() function to parse numbers, Strings, Lists, Dicts and
+		Funcrefs will be considered as being 0).
+
 		When {func} is a |Funcref| or a function name, this function
 		is called to compare items.  The function is invoked with two
 		items as argument and must return zero if they are equal, 1 or
@@ -6555,7 +6563,7 @@ xor({expr}, {expr})					*xor()*
 
 
 							*feature-list*
-There are three types of features:
+There are four types of features:
 1.  Features that are only supported when they have been enabled when Vim
     was compiled |+feature-list|.  Example: >
 	:if has("cindent")

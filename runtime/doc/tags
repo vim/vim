@@ -91,6 +91,10 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'bl'	options.txt	/*'bl'*
 'bomb'	options.txt	/*'bomb'*
 'breakat'	options.txt	/*'breakat'*
+'breakindent'	options.txt	/*'breakindent'*
+'breakindentopt'	options.txt	/*'breakindentopt'*
+'bri'	options.txt	/*'bri'*
+'briopt'	options.txt	/*'briopt'*
 'brk'	options.txt	/*'brk'*
 'browsedir'	options.txt	/*'browsedir'*
 'bs'	options.txt	/*'bs'*
@@ -2524,8 +2528,10 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :noh	pattern.txt	/*:noh*
 :nohlsearch	pattern.txt	/*:nohlsearch*
 :nor	map.txt	/*:nor*
+:nore	map.txt	/*:nore*
 :norea	map.txt	/*:norea*
 :noreabbrev	map.txt	/*:noreabbrev*
+:norem	map.txt	/*:norem*
 :noremap	map.txt	/*:noremap*
 :noremap!	map.txt	/*:noremap!*
 :noreme	gui.txt	/*:noreme*
@@ -6826,6 +6832,7 @@ match()	eval.txt	/*match()*
 match-highlight	pattern.txt	/*match-highlight*
 match-parens	tips.txt	/*match-parens*
 matchadd()	eval.txt	/*matchadd()*
+matchaddpos()	eval.txt	/*matchaddpos()*
 matcharg()	eval.txt	/*matcharg()*
 matchdelete()	eval.txt	/*matchdelete()*
 matchend()	eval.txt	/*matchend()*

@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.4.  Last change: 2013 Jun 29
+*quickref.txt*  For Vim version 7.4.  Last change: 2014 Jun 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -624,6 +624,8 @@ Short explanation of each option:		*option-list*
 'bioskey'	  'biosk'   MS-DOS: use bios calls for input characters
 'bomb'			    prepend a Byte Order Mark to the file
 'breakat'	  'brk'     characters that may cause a line break
+'breakindent'	  'bri'     wrapped line repeats indent 
+'breakindentopt'  'briopt'  settings for 'breakindent'
 'browsedir'	  'bsdir'   which directory to start browsing in
 'bufhidden'	  'bh'	    what to do when buffer is no longer in window
 'buflisted'	  'bl'	    whether the buffer shows up in the buffer list

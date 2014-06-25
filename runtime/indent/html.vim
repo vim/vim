@@ -2,7 +2,7 @@
 " General: "{{{
 " File:		html.vim (Vimscript #2075)
 " Author:	Andy Wokula <anwoku@yahoo.de>
-" Last Change:	2013 Jun 12
+" Last Change:	2014 Jun 19
 " Rev Days:     13
 " Version:	0.9
 " Vim Version:	Vim7
@@ -29,6 +29,9 @@ let b:did_indent = 1
 
 setlocal indentexpr=HtmlIndent()
 setlocal indentkeys=o,O,<Return>,<>>,{,},!^F
+
+" Needed for % to work when finding start of a tag.
+setlocal matchpairs+=<:>
 
 let b:indent = {"lnum": -1}
 let b:undo_indent = "set inde< indk<| unlet b:indent"
@@ -72,7 +75,7 @@ func! HtmlIndent_CheckUserSettings() "{{{
 endfunc "}}}
 
 " Init Script Vars  "{{{
-let s:usestate = 1
+let s:lasttick = 0
 let s:css1indent = 0
 let s:js1indent = 0
 " not to be changed:
@@ -150,7 +153,7 @@ func! s:CountITags(...) "{{{
 
     if a:0==0
 	let s:block = s:newstate.block
-	let tmpline = substitute(s:curline, '<\zs\/\=\w\+\>\|<!--\|-->', '\=s:CheckTag(submatch(0))', 'g')
+	let tmpline = substitute(s:curline, '<\zs/\=\w\+\>\|<!--\|-->', '\=s:CheckTag(submatch(0))', 'g')
 	if s:block == 3
 	    let s:newstate.scripttype = s:GetScriptType(matchstr(tmpline, '\C.*<SCRIPT\>\zs[^>]*'))
 	endif
@@ -158,7 +161,7 @@ func! s:CountITags(...) "{{{
     else
 	let s:block = 0		" assume starting outside of a block
 	let s:countonly = 1	" don't change state
-	let tmpline = substitute(s:altline, '<\zs\/\=\w\+\>\|<!--\|-->', '\=s:CheckTag(submatch(0))', 'g')
+	let tmpline = substitute(s:altline, '<\zs/\=\w\+\>\|<!--\|-->', '\=s:CheckTag(submatch(0))', 'g')
 	let s:countonly = 0
     endif
 endfunc "}}}
@@ -321,6 +324,7 @@ func! s:FreshState(lnum) "{{{
 
     " else within usual html
     let s:altline = tolower(getline(state.lnum))
+
     " check a:lnum-1 for closing comment (we need indent from the opening line)
     let comcol = stridx(s:altline, '-->')
     if comcol >= 0
@@ -337,11 +341,28 @@ func! s:FreshState(lnum) "{{{
 	" TODO check tags that follow "-->"
     endif
 
+    " Check if the previous line starts with end tag.
+    let swendtag = match(s:altline, '^\s*</') >= 0
+
+    " If previous line ended in a closing tag, line up with the opening tag.
+    " Avoids aligning with continuation lines.
+    " TODO: this assumes the start tag is at the start of a line.
+    if !swendtag && s:altline =~ '</\w\+\s*>\s*$'
+	call cursor(state.lnum, 99999)
+        normal F<h
+        " TODO: doesn't work for nested <br> and the like
+        let slnum = searchpair('<\w\+', '', '</\w', 'bW')
+        if slnum > 0
+          let state.baseindent = indent(slnum)
+          return state
+        endif
+    endif
+
     " else no comments
+    let state.lnum = s:FindTagStart(state.lnum)
+    let s:altline = tolower(getline(state.lnum))
     call s:CountITags(1)
     let state.baseindent = indent(state.lnum) + s:nextrel * s:ShiftWidth()
-    " line starts with end tag
-    let swendtag = match(s:altline, '^\s*</') >= 0
     if !swendtag
 	let state.baseindent += s:curind * s:ShiftWidth()
     endif
@@ -380,6 +401,7 @@ func! s:CSSIndent() "{{{
     endif
     let minline = b:indent.blocklnr
     let pnum = s:css_prevnoncomment(v:lnum - 1, minline)
+    let pnum = s:FindTagStart(pnum)
     if pnum <= minline
 	" < is to catch errors
 	" indent for first content line after comments
@@ -431,6 +453,19 @@ func! s:Alien5() "{{{
     return -1
 endfunc "}}}
 
+" When the "lnum" line ends in ">" find the line containing the
+" matching "<".  Avoids using the indent of a continuation line.
+" Moves the cursor.
+" Return the matching line number or "lnum".
+func! s:FindTagStart(lnum) "{{{
+  if getline(a:lnum) =~ '>\s*$'
+    call cursor(a:lnum, 99999)
+    normal! %
+    return line('.')
+  endif
+  return a:lnum
+endfunc "}}}
+
 func! HtmlIndent() "{{{
     let s:curline = tolower(getline(v:lnum))
     let indentunit = s:ShiftWidth()
@@ -441,7 +476,7 @@ func! HtmlIndent() "{{{
     " does the line start with a closing tag?
     let swendtag = match(s:curline, '^\s*</') >= 0
 
-    if prevnonblank(v:lnum-1) == b:indent.lnum && s:usestate
+    if prevnonblank(v:lnum-1) == b:indent.lnum && s:lasttick == b:changedtick - 1
 	" use state (continue from previous line)
     else
 	" start over (know nothing)
@@ -465,14 +500,10 @@ func! HtmlIndent() "{{{
 		let indent = s:Alien{b:indent.block}()
 		let s:newstate.baseindent = b:indent.blocktagind + s:nextrel * indentunit
 	    endif
-	    call extend(b:indent, s:newstate, "force")
-	    return indent
 	else
 	    " block continues
 	    " indent this line with alien method
 	    let indent = s:Alien{b:indent.block}()
-	    call extend(b:indent, s:newstate, "force")
-	    return indent
 	endif
     else
 	" not within a block - within usual html
@@ -486,9 +517,10 @@ func! HtmlIndent() "{{{
 	    let indent = b:indent.baseindent
 	    let s:newstate.baseindent = indent + (s:curind + s:nextrel) * indentunit
 	endif
-	call extend(b:indent, s:newstate, "force")
-	return indent
     endif
+    let s:lasttick = b:changedtick
+    call extend(b:indent, s:newstate, "force")
+    return indent
 
 endfunc "}}}
 

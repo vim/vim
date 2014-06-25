@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2014 Jun 12
+*todo.txt*      For Vim version 7.4.  Last change: 2014 Jun 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -57,19 +57,10 @@ directory exists. (Sergio Gallelli, 2013 Dec 29)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
-Setting 'ttymouse' empty causes Dec mouse to be detected. (Elijah Griffin,
-2014 May 13)
-
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistant with the documentation.
-
-Serbian translation of the vimtutor. (Ivan Nejgebauer, 2014 Jun 2)
-
-Patch to add matchaddpos(), match using a position instead of a pattern.
-To be used for matchparen. (Alexey Radkov, 2014 Jun 1)
-Waiting for tests.  Some on Jun 2.
 
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
@@ -77,7 +68,7 @@ MS-Windows: Crash opening very long file name starting with "\\".
 Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
 
 Patch to translate 0xce in K_NUL 3. (Yasuhiro Matsumoto, 2014 June 6)
-Doesn't work yet.
+Update by Nobuhiro Takasaki, Jun 19.
 
 Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 
@@ -86,8 +77,6 @@ Jun 8)
 
 Syntax file for gnuplot.  Existing one is very old. (Andrew Rasmussen, 2014
 Feb 24)
-
-Add digraph for Rouble: =P.  What's the Unicode?
 
 Issue 174: Detect Mason files.
 
@@ -109,6 +98,10 @@ Update from Ken Takata, 2014 Jan 10. Newer 2014 Apr 3.
 Win32: use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
 More tests May 14. Update May 29.
 
+The garbage collector may use too much stack.  Make set_ref_in_item()
+iterative instead of recursive.   Test program by Marc Weber (2013 Dec 10)
+Patch by Ben Fritz, 2014 Jun 22.
+
 Idea: For a window in the middle (has window above and below it), use
 right-mouse-drag on the status line to move a window up/down without changing
 it's height?  It's like dragging the status bar above it at the same time.
@@ -121,9 +114,6 @@ This does not give an error: (Andre Sihera, 2014 Mar 21)
 This neither: (ZyX)
     vim -u NONE 1 2 3 -c 'bufdo while 1 | echo 1'
 
-Patch for signs in GTK. (Christian Brabandt, 2014 Jun 10)
-Asked about it.
-
 'viewdir' default on MS-Windows is not a good choice, it's a system directory.
 Change 'viewdir' to "$HOME/vimfiles/view" and use 'viewdiralt' to also read
 from?
@@ -133,6 +123,7 @@ Problem with upwards search on Windows (works OK on Linux). (Brett Stahlman,
 
 When 'clipboard' is "unnamed", :g/pat/d is very slow.  Only set the clipboard
 after the last delete? (Praful, 2014 May 28)
+Patch by Christian Brabandt, 2014 Jun 18.
 
 Include a plugin manager with Vim? Neobundle seems to be the best currently.
 Long message about this from ZyX, 2014 Mar 23.  And following replies.
@@ -180,6 +171,16 @@ Editing an ascii file as ucs-2 or ucs-4 causes display errors.
 ":Next 1 some-arg" does not complain about trailing argument.  Also for
 various other commands.  (ZyX, 2014 Mar 30)
 
+Patch to add sortuniq(). (Cade Forester, 2014 Mar 19)
+Or add uniq() instead?  Patch by lcd47, but it has problems.
+
+Patch to support sorting on floating point number.  (Alex Jakushev, 2010 Oct
+30)
+
+Patch to support expression argument to sort() instead of a function name.
+Yasuhiro Matsumoto, 2013 May 31.
+Or should we add a more general mechanism, like lambda functions?
+
 VMS: Select() doesn't work properly, typing ESC may hang Vim.  Use sys$qiow
 instead. (Samuel Ferencik, 2013 Sep 28)
 
@@ -194,9 +195,6 @@ Patch to add v:completed_item. (Shougo Matsu, 2013 Nov 29).
 Patch to make test 100 work on MS-Windows. (Taro Muraoka, 2013 Dec 12)
 
 Patch to define macros for hardcoded values. (Elias Diem, 2013 Dec 14)
-
-Patch to add sortuniq(). (Cade Forester, 2014 Mar 19)
-Or add uniq() instead?  Patch by lcd47, but it has problems.
 
 Perl: support for Activestate perl 5.18: Issue 170.
 
@@ -300,18 +298,11 @@ Works OK for echo, just not for  ":call" and ":call call()". (Ted, 2011 Mar
 Patch by Christian Brabandt, 2013 Mar 23.
 Not 100% sure this is the right solution.
 
-Patch to support expression argument to sort() instead of a function name.
-Yasuhiro Matsumoto, 2013 May 31.
-Or should we add a more general mechanism, like lambda functions?
-
 Problem caused by patch 7.3.638: window->open does not update window
 correctly. Issue 91.
 
 Patch to add {lhs} to :mapclear: clear all maps starting with {lhs}.
 (Christian Brabandt, 2013 Dec 9)
-
-The garbage collector may use too much stack.  Make set_ref_in_item()
-iterative instead of recursive.   Test program by Marc Weber (2013 Dec 10)
 
 Exception caused by argument of return is not caught by try/catch.
 (David Barnett, 2013 Nov 19)
@@ -322,17 +313,6 @@ Issue 28.
 
 Patch to fix that 'cedit' is recognized after :normal. (Christian Brabandt,
 2013 Mar 19, later message)
-
--   Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
-    Smilauer, 2004 Sep 13, fix Oct 31, update 2007 May 30)
-    Version for latest MacVim: Tobia Conforto, 2009 Nov 23
-    More recent version: https://retracile.net/wiki/VimBreakIndent
-    Posted to vim-dev by Taylor Hedberg, 2011 Nov 25
-    Update by Taylor Hedberg, 2013 May 30.
-    Updated for Vim 7.4 by Ken Takata, 2013 Oct 5.
-    Update by Christian Brabandt, 2014 May 9.  Remarks by Ken Takata.
-    Update by Christian 2014 May 12, github link on May 15
-    2014 May 28: remarks from Bram
 
 Patch to view coverage of the tests. (Nazri Ramliy, 2013 Feb 15)
 
@@ -675,9 +655,6 @@ Also for another example (ZyX, 2011 Jan 24)
 Build problem with small features on Mac OS X 10.6. (Rainer, 2011 Jan 24)
 
 "0g@$" puts '] on last byte of multi-byte. (ZyX, 2011 Jan 22)
-
-Patch to support sorting on floating point number.  (Alex Jakushev, 2010 Oct
-30)
 
 Patch to addd TextDeletePost and TextYankPost events. (Philippe Vaucher, 2011
 May 24)  Update May 26.

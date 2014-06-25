@@ -1,4 +1,4 @@
-*digraph.txt*   For Vim version 7.4.  Last change: 2014 Apr 17
+*digraph.txt*   For Vim version 7.4.  Last change: 2014 Jun 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -169,6 +169,11 @@ added for this.  Note the difference between latin1, where the digraph Cu is
 used for the currency sign, and latin9 (iso-8859-15), where the digraph =e is
 used for the euro sign, while both of them are the character 164, 0xa4.  For
 compatibility with zsh Eu can also be used for the euro sign.
+
+ROUBLE
+
+The rouble sign was added in 2014 as 0x20bd.  Vim supports the digraphs =R and
+=P for this.  Note that R= and P= are other characters.
 
 							*digraph-table*
 char  digraph	hex	dec	official name ~
@@ -966,6 +971,8 @@ char  digraph	hex	dec	official name ~
 ₧	Pt	20A7	8359	PESETA SIGN
 ₩	W=	20A9	8361	WON SIGN
 €	Eu	20AC	8364	EURO SIGN
+₽	=R	20BD	8381	ROUBLE SIGN
+₽	=P	20BD	8381	ROUBLE SIGN
 ℃	oC	2103	8451	DEGREE CELSIUS
 ℅	co	2105	8453	CARE OF
 ℉	oF	2109	8457	DEGREE FAHRENHEIT

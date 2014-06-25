@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.4.  Last change: 2014 Mar 29
+*starting.txt*  For Vim version 7.4.  Last change: 2014 Jun 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -167,7 +167,10 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 							*-+/*
 +/{pat}		The cursor will be positioned on the first line containing
 		"pat" in the first file being edited (see |pattern| for the
-		available search patterns).
+		available search patterns).  The search starts at the cursor
+		position, which can be the first line or the cursor position
+		last used from |viminfo|. To force a search from the first
+		line use "+1 +/pat".
 
 +{command}						*-+c* *-c*
 -c {command}	{command} will be executed after the first file has been

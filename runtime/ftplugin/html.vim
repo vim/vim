@@ -20,49 +20,9 @@ if exists("g:ft_html_autocomment") && (g:ft_html_autocomment == 1)
     setlocal formatoptions-=t formatoptions+=croql
 endif
 
-
 if exists('&omnifunc')
-    " Distinguish between HTML versions
-    " To use with other HTML versions add another
-    " elseif condition to match proper DOCTYPE
-    setlocal omnifunc=htmlcomplete#CompleteTags
-
-    if &filetype == 'xhtml'
-            let b:html_omni_flavor = 'xhtml10s'
-    else
-            let b:html_omni_flavor = 'html401t'
-    endif
-    let i = 1
-    let line = ""
-    while i < 10 && i < line("$")
-        let line = getline(i)
-        if line =~ '<!DOCTYPE.*\<DTD '
-            break
-        endif
-        let i += 1
-    endwhile
-    if line =~ '<!DOCTYPE.*\<DTD '  " doctype line found above
-        if line =~ ' HTML 3\.2'
-            let b:html_omni_flavor = 'html32'
-        elseif line =~ ' XHTML 1\.1'
-            let b:html_omni_flavor = 'xhtml11'
-        else    " two-step detection with strict/frameset/transitional
-            if line =~ ' XHTML 1\.0'
-                let b:html_omni_flavor = 'xhtml10'
-            elseif line =~ ' HTML 4\.01'
-                let b:html_omni_flavor = 'html401'
-            elseif line =~ ' HTML 4.0\>'
-                let b:html_omni_flavor = 'html40'
-            endif
-            if line =~ '\<Transitional\>'
-                let b:html_omni_flavor .= 't'
-            elseif line =~ '\<Frameset\>'
-                let b:html_omni_flavor .= 'f'
-            else
-                let b:html_omni_flavor .= 's'
-            endif
-        endif
-    endif
+  setlocal omnifunc=htmlcomplete#CompleteTags
+  call htmlcomplete#DetectOmniFlavor()
 endif
 
 " HTML:  thanks to Johannes Zellner and Benji Fisher.
