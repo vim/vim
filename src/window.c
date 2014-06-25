@@ -6891,8 +6891,8 @@ match_add(wp, grp, pat, prio, id, pos_list)
 	    }
 	    if (toplnum == 0 || lnum < toplnum)
 		toplnum = lnum;
-	    if (botlnum == 0 || lnum > botlnum)
-		botlnum = lnum;
+	    if (botlnum == 0 || lnum >= botlnum)
+		botlnum = lnum + 1;
 	}
 
 	/* Calculate top and bottom lines for redrawing area */
