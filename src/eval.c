@@ -17330,6 +17330,7 @@ static int
 	item_compare2 __ARGS((const void *s1, const void *s2));
 
 static int	item_compare_ic;
+static int	item_compare_numeric;
 static char_u	*item_compare_func;
 static dict_T	*item_compare_selfdict;
 static int	item_compare_func_err;
@@ -17359,10 +17360,20 @@ item_compare(s1, s2)
 	p1 = (char_u *)"";
     if (p2 == NULL)
 	p2 = (char_u *)"";
-    if (item_compare_ic)
-	res = STRICMP(p1, p2);
+    if (!item_compare_numeric)
+    {
+	if (item_compare_ic)
+	    res = STRICMP(p1, p2);
+	else
+	    res = STRCMP(p1, p2);
+    }
     else
-	res = STRCMP(p1, p2);
+    {
+	double n1, n2;
+	n1 = strtod((char *)p1, (char **)&p1);
+	n2 = strtod((char *)p2, (char **)&p2);
+	res = n1 == n2 ? 0 : n1 > n2 ? 1 : -1;
+    }
     vim_free(tofree1);
     vim_free(tofree2);
     return res;
@@ -17439,6 +17450,7 @@ do_sort_uniq(argvars, rettv, sort)
 	    return;	/* short list sorts pretty quickly */
 
 	item_compare_ic = FALSE;
+	item_compare_numeric = FALSE;
 	item_compare_func = NULL;
 	item_compare_selfdict = NULL;
 	if (argvars[1].v_type != VAR_UNKNOWN)
@@ -17457,6 +17469,19 @@ do_sort_uniq(argvars, rettv, sort)
 		    item_compare_ic = TRUE;
 		else
 		    item_compare_func = get_tv_string(&argvars[1]);
+		if (item_compare_func != NULL)
+		{
+		    if (STRCMP(item_compare_func, "n") == 0)
+		    {
+			item_compare_func = NULL;
+			item_compare_numeric = TRUE;
+		    }
+		    else if (STRCMP(item_compare_func, "i") == 0)
+		    {
+			item_compare_func = NULL;
+			item_compare_ic = TRUE;
+		    }
+		}
 	    }
 
 	    if (argvars[2].v_type != VAR_UNKNOWN)
