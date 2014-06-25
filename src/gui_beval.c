@@ -1193,11 +1193,13 @@ drawBalloon(beval)
 	    XmFontList fl;
 
 	    fl = gui_motif_fontset2fontlist(&gui.tooltip_fontset);
-	    if (fl != NULL)
+	    if (fl == NULL)
 	    {
-		XmStringExtent(fl, s, &w, &h);
-		XmFontListFree(fl);
+		XmStringFree(s);
+		return;
 	    }
+	    XmStringExtent(fl, s, &w, &h);
+	    XmFontListFree(fl);
 	}
 	w += gui.border_offset << 1;
 	h += gui.border_offset << 1;
