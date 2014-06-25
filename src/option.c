@@ -1392,7 +1392,7 @@ static struct vimoption
 			    SCRIPTID_INIT},
     {"history",	    "hi",   P_NUM|P_VIM,
 			    (char_u *)&p_hi, PV_NONE,
-			    {(char_u *)0L, (char_u *)20L} SCRIPTID_INIT},
+			    {(char_u *)0L, (char_u *)50L} SCRIPTID_INIT},
     {"hkmap",	    "hk",   P_BOOL|P_VI_DEF|P_VIM,
 #ifdef FEAT_RIGHTLEFT
 			    (char_u *)&p_hkmap, PV_NONE,
@@ -8594,6 +8594,11 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
     {
 	errmsg = e_positive;
 	p_hi = 0;
+    }
+    else if (p_hi > 10000)
+    {
+	errmsg = e_invarg;
+	p_hi = 10000;
     }
     if (p_re < 0 || p_re > 2)
     {

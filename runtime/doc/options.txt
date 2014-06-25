@@ -3920,12 +3920,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'history'* *'hi'*
-'history' 'hi'		number	(Vim default: 20, Vi default: 0)
+'history' 'hi'		number	(Vim default: 50, Vi default: 0)
 			global
 			{not in Vi}
 	A history of ":" commands, and a history of previous search patterns
-	are remembered.  This option decides how many entries may be stored in
+	is remembered.  This option decides how many entries may be stored in
 	each of these histories (see |cmdline-editing|).
+	The maximum value is 10000.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 
