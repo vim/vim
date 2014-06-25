@@ -7531,7 +7531,7 @@ next_search_hl_pos(shl, lnum, posmatch, mincol)
     colnr_T	    mincol;	/* minimal column for a match */
 {
     int	    i;
-    int     bot = -1;
+    int	    bot = -1;
 
     shl->lnum = 0;
     for (i = posmatch->cur; i < MAXPOSMATCH; i++)

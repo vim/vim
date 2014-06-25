@@ -4391,17 +4391,17 @@ matchaddpos({group}, {pos}[, {priority}[, {id}]])		*matchaddpos()*
 		required, for example to highlight matching parentheses.
 
 		The list {pos} can contain one of these items:
-		- A number.  This while line will be highlighted.  The first
+		- A number.  This whole line will be highlighted.  The first
 		  line has number 1.
 		- A list with one number, e.g., [23]. The whole line with this
 		  number will be highlighted.
 		- A list with two numbers, e.g., [23, 11]. The first number is
-		  the line number, the second one the column number (first
-		  column is 1).  The character at this position will be
-		  highlighted.
+		  the line number, the second one is the column number (first
+		  column is 1, the value must correspond to the byte index as
+		  |col()| would return).  The character at this position will
+		  be highlighted.
 		- A list with three numbers, e.g., [23, 11, 3]. As above, but
-		  the third number gives the length of the highlight in screen
-		  cells.
+		  the third number gives the length of the highlight in bytes.
 		
 		The maximum number of positions is 8.
 

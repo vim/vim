@@ -6813,7 +6813,6 @@ match_add(wp, grp, pat, prio, id, pos_list)
     m->id = id;
     m->priority = prio;
     m->pattern = pat == NULL ? NULL : vim_strsave(pat);
-    m->pos.cur = 0;
     m->hlg_id = hlg_id;
     m->match.regprog = regprog;
     m->match.rmm_ic = FALSE;
@@ -6827,7 +6826,7 @@ match_add(wp, grp, pat, prio, id, pos_list)
 	listitem_T	*li;
 	int		i;
 
-	for (i = 0, li = pos_list->lv_first; i < MAXPOSMATCH;
+	for (i = 0, li = pos_list->lv_first; li != NULL && i < MAXPOSMATCH;
 							i++, li = li->li_next)
 	{
 	    linenr_T	lnum = 0;
@@ -6837,11 +6836,6 @@ match_add(wp, grp, pat, prio, id, pos_list)
 	    listitem_T	*subli;
 	    int		error = FALSE;
 
-	    if (li == NULL)
-	    {
-		m->pos.pos[i].lnum = 0;
-		break;
-	    }
 	    if (li->li_tv.v_type == VAR_LIST)
 	    {
 		subl = li->li_tv.vval.v_list;
@@ -6853,12 +6847,12 @@ match_add(wp, grp, pat, prio, id, pos_list)
 		lnum = get_tv_number_chk(&subli->li_tv, &error);
 		if (error == TRUE)
 		    goto fail;
-		m->pos.pos[i].lnum = lnum;
 		if (lnum == 0)
 		{
 		    --i;
 		    continue;
 		}
+		m->pos.pos[i].lnum = lnum;
 		subli = subli->li_next;
 		if (subli != NULL)
 		{
@@ -6879,7 +6873,10 @@ match_add(wp, grp, pat, prio, id, pos_list)
 	    else if (li->li_tv.v_type == VAR_NUMBER)
 	    {
 		if (li->li_tv.vval.v_number == 0)
+		{
+		    --i;
 		    continue;
+		}
 		m->pos.pos[i].lnum = li->li_tv.vval.v_number;
 		m->pos.pos[i].col = 0;
 		m->pos.pos[i].len = 0;
