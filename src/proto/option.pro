@@ -40,7 +40,6 @@ char_u *get_equalprg __ARGS((void));
 void win_copy_options __ARGS((win_T *wp_from, win_T *wp_to));
 void copy_winopt __ARGS((winopt_T *from, winopt_T *to));
 void check_win_options __ARGS((win_T *win));
-void check_winopt __ARGS((winopt_T *wop));
 void clear_winopt __ARGS((winopt_T *wop));
 void buf_copy_options __ARGS((buf_T *buf, int flags));
 void reset_modifiable __ARGS((void));

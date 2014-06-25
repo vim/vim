@@ -3074,6 +3074,7 @@ static int  istermoption __ARGS((struct vimoption *));
 static char_u *get_varp_scope __ARGS((struct vimoption *p, int opt_flags));
 static char_u *get_varp __ARGS((struct vimoption *));
 static void option_value2string __ARGS((struct vimoption *, int opt_flags));
+static void check_winopt __ARGS((winopt_T *wop));
 static int wc_use_keyname __ARGS((char_u *varp, long *wcp));
 #ifdef FEAT_LANGMAP
 static void langmap_init __ARGS((void));
@@ -10305,7 +10306,7 @@ check_win_options(win)
 /*
  * Check for NULL pointers in a winopt_T and replace them with empty_option.
  */
-    void
+    static void
 check_winopt(wop)
     winopt_T	*wop UNUSED;
 {
