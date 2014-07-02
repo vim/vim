@@ -1769,8 +1769,10 @@ win_update(wp)
 					syntax_check_changed(lnum)))
 #endif
 #ifdef FEAT_SEARCH_EXTRA
-				/* match in fixed position might need redraw */
-				||  wp->w_match_head != NULL
+				/* match in fixed position might need redraw
+				 * if lines were inserted or deleted */
+				|| (wp->w_match_head != NULL
+						    && buf->b_mod_xlines != 0)
 #endif
 				)))))
 	{

@@ -6904,12 +6904,13 @@ match_add(wp, grp, pat, prio, id, pos_list)
 	    }
 	    else
 	    {
+		wp->w_buffer->b_mod_set = TRUE;
 		wp->w_buffer->b_mod_top = toplnum;
 		wp->w_buffer->b_mod_bot = botlnum;
+		wp->w_buffer->b_mod_xlines = 0;
 	    }
 	    m->pos.toplnum = toplnum;
 	    m->pos.botlnum = botlnum;
-	    wp->w_buffer->b_mod_set = TRUE;
 	    rtype = VALID;
 	}
     }
@@ -6986,10 +6987,11 @@ match_delete(wp, id, perr)
 	}
 	else
 	{
+	    wp->w_buffer->b_mod_set = TRUE;
 	    wp->w_buffer->b_mod_top = cur->pos.toplnum;
 	    wp->w_buffer->b_mod_bot = cur->pos.botlnum;
+	    wp->w_buffer->b_mod_xlines = 0;
 	}
-	wp->w_buffer->b_mod_set = TRUE;
 	rtype = VALID;
     }
     vim_free(cur);
