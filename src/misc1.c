@@ -7497,9 +7497,11 @@ get_c_indent()
 	     *			ldfd) {
 	     *		    }
 	     */
-	    if (curbuf->b_ind_js || (curbuf->b_ind_keep_case_label
-			   && cin_iscase(skipwhite(ml_get_curline()), FALSE)))
+	    if ((curbuf->b_ind_js || curbuf->b_ind_keep_case_label)
+			   && cin_iscase(skipwhite(ml_get_curline()), FALSE))
 		amount = get_indent();
+	    else if (curbuf->b_ind_js)
+		amount = get_indent_lnum(lnum);
 	    else
 		amount = skip_label(lnum, &l);
 
