@@ -6614,7 +6614,7 @@ find_start_brace()	    /* XXX */
 }
 
 /*
- * Find the matching '(', failing if it is in a comment.
+ * Find the matching '(', ignoring it if it is in a comment.
  * Return NULL if no match found.
  */
     static pos_T *
@@ -6641,6 +6641,32 @@ find_match_paren(ind_maxparen)	    /* XXX */
 	}
     }
     curwin->w_cursor = cursor_save;
+    return trypos;
+}
+
+/*
+ * Find the matching '(', ignoring it if it is in a comment or before an
+ * unmatched {.
+ * Return NULL if no match found.
+ */
+    static pos_T *
+find_match_paren_after_brace(ind_maxparen)	    /* XXX */
+    int		ind_maxparen;
+{
+    pos_T	*trypos = find_match_paren(ind_maxparen);
+
+    if (trypos != NULL)
+    {
+	pos_T	*tryposBrace = find_start_brace();
+
+	/* If both an unmatched '(' and '{' is found.  Ignore the '('
+	 * position if the '{' is further down. */
+	if (tryposBrace != NULL
+		&& (trypos->lnum != tryposBrace->lnum
+		    ? trypos->lnum < tryposBrace->lnum
+		    : trypos->col < tryposBrace->col))
+	    trypos = NULL;
+    }
     return trypos;
 }
 
@@ -7419,7 +7445,8 @@ get_c_indent()
 		{
 		    curwin->w_cursor.lnum = our_paren_pos.lnum;
 		    curwin->w_cursor.col = col;
-		    if (find_match_paren(curbuf->b_ind_maxparen) != NULL)
+		    if (find_match_paren_after_brace(curbuf->b_ind_maxparen)
+								      != NULL)
 			amount += curbuf->b_ind_unclosed2;
 		    else
 		    {
