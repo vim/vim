@@ -1078,6 +1078,7 @@ win_lbr_chartabsize(wp, line, s, col, headp)
     int		c;
     int		size;
     colnr_T	col2;
+    colnr_T	col_adj = 0; /* col + screen size of tab */
     colnr_T	colmax;
     int		added;
 # ifdef FEAT_MBYTE
@@ -1109,6 +1110,8 @@ win_lbr_chartabsize(wp, line, s, col, headp)
      */
     size = win_chartabsize(wp, s, col);
     c = *s;
+    if (tab_corr)
+	col_adj = size - 1;
 
     /*
      * If 'linebreak' set check at a blank before a non-blank if the line
@@ -1130,12 +1133,13 @@ win_lbr_chartabsize(wp, line, s, col, headp)
 	 */
 	numberextra = win_col_off(wp);
 	col2 = col;
-	colmax = (colnr_T)(W_WIDTH(wp) - numberextra);
+	colmax = (colnr_T)(W_WIDTH(wp) - numberextra - col_adj);
 	if (col >= colmax)
 	{
-	    n = colmax + win_col_off2(wp);
+	    colmax += col_adj;
+	    n = colmax +  win_col_off2(wp);
 	    if (n > 0)
-		colmax += (((col - colmax) / n) + 1) * n;
+		colmax += (((col - colmax) / n) + 1) * n - col_adj;
 	}
 
 	for (;;)
@@ -1152,7 +1156,7 @@ win_lbr_chartabsize(wp, line, s, col, headp)
 	    col2 += win_chartabsize(wp, s, col2);
 	    if (col2 >= colmax)		/* doesn't fit */
 	    {
-		size = colmax - col;
+		size = colmax - col + col_adj;
 		tab_corr = FALSE;
 		break;
 	    }
