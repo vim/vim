@@ -1217,15 +1217,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+linebreak|
 			feature}
 	Settings for 'breakindent'. It can consist of the following optional
-	items and must be seperated by a comma:
+	items and must be separated by a comma:
 		min:{n}	    Minimum text width that will be kept after
 			    applying 'breakindent', even if the resulting
 			    text should normally be narrower. This prevents
 			    text indented almost to the right window border
 			    occupying lot of vertical space when broken.
-		shift:{n}   After applying 'breakindent', wrapped line
-			    beginning will be shift by given number of
-			    characters. It permits dynamic French paragraph
+		shift:{n}   After applying 'breakindent', the wrapped line's
+			    beginning will be shifted by the given number of
+			    characters.  It permits dynamic French paragraph
 			    indentation (negative) or emphasizing the line
 			    continuation (positive).
 		sbr	    Display the 'showbreak' value before applying the 
@@ -4613,7 +4613,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	it only affects the way the file is displayed, not its contents.
 	If 'breakindent' is set, line is visually indented. Then, the value
 	of 'showbreak' is used to put in front of wrapped lines. This option
-	is not used when the 'wrap' option is off or 'list' is on.
+	is not used when the 'wrap' option is off.
 	Note that <Tab> characters after an <EOL> are mostly not displayed
 	with the right amount of white space.
 

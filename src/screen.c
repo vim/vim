@@ -2843,6 +2843,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
     char_u	extra[18];		/* "%ld" and 'fdc' must fit in here */
     int		n_extra = 0;		/* number of extra chars */
     char_u	*p_extra = NULL;	/* string of extra chars, plus NUL */
+    char_u	*p_extra_free = NULL;   /* p_extra needs to be freed */
     int		c_extra = NUL;		/* extra chars, all the same */
     int		extra_attr = 0;		/* attributes when n_extra != 0 */
     static char_u *at_end_str = (char_u *)""; /* used for p_extra when
@@ -4053,6 +4054,11 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	}
 	else
 	{
+	    if (p_extra_free != NULL)
+	    {
+		vim_free(p_extra_free);
+		p_extra_free = NULL;
+	    }
 	    /*
 	     * Get a character from the line itself.
 	     */
@@ -4424,8 +4430,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		/*
 		 * Found last space before word: check for line break.
 		 */
-		if (wp->w_p_lbr && vim_isbreak(c) && !vim_isbreak(*ptr)
-							     && !wp->w_p_list)
+		if (wp->w_p_lbr && vim_isbreak(c) && !vim_isbreak(*ptr))
 		{
 		    char_u *p = ptr - (
 # ifdef FEAT_MBYTE
@@ -4433,7 +4438,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 # endif
 				1);
 		    /* TODO: is passing p for start of the line OK? */
-		    n_extra = win_lbr_chartabsize(wp, p, p, (colnr_T)vcol,
+		    n_extra = win_lbr_chartabsize(wp, line, p, (colnr_T)vcol,
 								    NULL) - 1;
 		    c_extra = ' ';
 		    if (vim_iswhite(c))
@@ -4443,7 +4448,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			    /* See "Tab alignment" below. */
 			    FIX_FOR_BOGUSCOLS;
 #endif
-			c = ' ';
+			if (!wp->w_p_list)
+			    c = ' ';
 		    }
 		}
 #endif
@@ -4483,9 +4489,50 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		 */
 		if (c == TAB && (!wp->w_p_list || lcs_tab1))
 		{
+		    int tab_len = 0;
 		    /* tab amount depends on current column */
-		    n_extra = (int)wp->w_buffer->b_p_ts
+		    tab_len = (int)wp->w_buffer->b_p_ts
 					- vcol % (int)wp->w_buffer->b_p_ts - 1;
+#ifdef FEAT_LINEBREAK
+		    if (!wp->w_p_lbr)
+#endif
+		    /* tab amount depends on current column */
+			n_extra = tab_len;
+#ifdef FEAT_LINEBREAK
+		    else
+		    {
+			char_u *p;
+			int	len = n_extra;
+			int	i;
+			int	saved_nextra = n_extra;
+
+			/* if n_extra > 0, it gives the number of chars, to
+			 * use for a tab, else we need to calculate the width
+			 * for a tab */
+#ifdef FEAT_MBYTE
+			len = (tab_len * mb_char2len(lcs_tab2));
+			if (n_extra > 0)
+			    len += n_extra - tab_len;
+#endif
+			c = lcs_tab1;
+			p = alloc((unsigned)(len + 1));
+			vim_memset(p, ' ', len);
+			p[len] = NUL;
+			p_extra_free = p;
+			for (i = 0; i < tab_len; i++)
+			{
+#ifdef FEAT_MBYTE
+			    mb_char2bytes(lcs_tab2, p);
+			    p += mb_char2len(lcs_tab2);
+			    n_extra += mb_char2len(lcs_tab2)
+						 - (saved_nextra > 0 ? 1 : 0);
+#else
+			    p[i] = lcs_tab2;
+#endif
+			}
+			p_extra = p_extra_free;
+		    }
+#endif
 #ifdef FEAT_CONCEAL
 		    /* Tab alignment should be identical regardless of
 		     * 'conceallevel' value. So tab compensates of all
@@ -4501,8 +4548,13 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    if (wp->w_p_list)
 		    {
 			c = lcs_tab1;
-			c_extra = lcs_tab2;
-			n_attr = n_extra + 1;
+#ifdef FEAT_LINEBREAK
+			if (wp->w_p_lbr)
+			    c_extra = NUL; /* using p_extra from above */
+			else
+#endif
+			    c_extra = lcs_tab2;
+			n_attr = tab_len + 1;
 			extra_attr = hl_attr(HLF_8);
 			saved_attr2 = char_attr; /* save current attr */
 #ifdef FEAT_MBYTE
@@ -4598,9 +4650,25 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    if ((dy_flags & DY_UHEX) && wp->w_p_rl)
 			rl_mirror(p_extra);	/* reverse "<12>" */
 #endif
-		    n_extra = byte2cells(c) - 1;
 		    c_extra = NUL;
-		    c = *p_extra++;
+#ifdef FEAT_LINEBREAK
+		    if (wp->w_p_lbr)
+		    {
+			char_u *p;
+
+			c = *p_extra;
+			p = alloc((unsigned)n_extra + 1);
+			vim_memset(p, ' ', n_extra);
+			STRNCPY(p, p_extra + 1, STRLEN(p_extra) - 1);
+			p[n_extra] = NUL;
+			p_extra_free = p_extra = p;
+		    }
+		    else
+#endif
+		    {
+			n_extra = byte2cells(c) - 1;
+			c = *p_extra++;
+		    }
 		    if (!attr_pri)
 		    {
 			n_attr = n_extra + 1;

@@ -1120,7 +1120,6 @@ win_lbr_chartabsize(wp, line, s, col, headp)
     if (wp->w_p_lbr
 	    && vim_isbreak(c)
 	    && !vim_isbreak(s[1])
-	    && !wp->w_p_list
 	    && wp->w_p_wrap
 # ifdef FEAT_VERTSPLIT
 	    && wp->w_width != 0
