@@ -3704,7 +3704,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    if (diff_hlf != (hlf_T)0)
 			char_attr = hl_attr(diff_hlf);
 #endif
-		    p_extra = NUL;
+		    p_extra = NULL;
 		    c_extra = ' ';
 		    n_extra = get_breakindent_win(wp,
 				       ml_get_buf(wp->w_buffer, lnum, FALSE));
