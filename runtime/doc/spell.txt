@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.4.  Last change: 2013 Nov 12
+*spell.txt*	For Vim version 7.4.  Last change: 2014 Jul 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -939,9 +939,10 @@ be combined without errors.
 
 If you get an E763 warning that the word tables differ you need to update your
 ".spl" spell files.  If you downloaded the files, get the latest version of
-all spell files you use.  Otherwise generate the .spl file again with
-|:mkspell|.  If you still get errors check the FOL, LOW and UPP lines in the
-used .aff files.
+all spell files you use.  If you are only using one, e.g., German, then also
+download the recent English spell files.  Otherwise generate the .spl file
+again with |:mkspell|.  If you still get errors check the FOL, LOW and UPP
+lines in the used .aff files.
 
 The XX.ascii.spl spell file generated with the "-ascii" argument will not
 contain the table with characters, so that it can be combine with spell files

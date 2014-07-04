@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2014 Jun 25
+*options.txt*	For Vim version 7.4.  Last change: 2014 Jun 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar

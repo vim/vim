@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.4.  Last change: 2014 Feb 11
+*change.txt*    For Vim version 7.4.  Last change: 2014 Jun 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1717,8 +1717,8 @@ Note that using `:sort` with `:global` doesn't sort the matching lines, it's
 quite useless.
 
 The details about sorting depend on the library function used.  There is no
-guarantee that sorting is "stable" or obeys the current locale.  You will have
-to try it out.
+guarantee that sorting obeys the current locale.  You will have to try it out.
+Vim does do a "stable" sort.
 
 The sorting can be interrupted, but if you interrupt it too late in the
 process you may end up with duplicated lines.  This also depends on the system
