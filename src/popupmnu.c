@@ -567,7 +567,9 @@ pum_set_selected(n, repeat)
 	    g_do_tagpreview = 3;
 	    if (p_pvh > 0 && p_pvh < g_do_tagpreview)
 		g_do_tagpreview = p_pvh;
+	    ++RedrawingDisabled;
 	    resized = prepare_tagpreview(FALSE);
+	    --RedrawingDisabled;
 	    g_do_tagpreview = 0;
 
 	    if (curwin->w_p_pvw)
