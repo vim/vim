@@ -3109,15 +3109,25 @@ peekchr()
 	    if (reg_magic >= MAGIC_OFF)
 	    {
 		char_u *p = regparse + 1;
+		int is_magic_all = (reg_magic == MAGIC_ALL);
 
-		/* ignore \c \C \m and \M after '$' */
+		/* ignore \c \C \m \M \v \V and \Z after '$' */
 		while (p[0] == '\\' && (p[1] == 'c' || p[1] == 'C'
-				|| p[1] == 'm' || p[1] == 'M' || p[1] == 'Z'))
+				|| p[1] == 'm' || p[1] == 'M'
+				|| p[1] == 'v' || p[1] == 'V' || p[1] == 'Z'))
+		{
+		    if (p[1] == 'v')
+			is_magic_all = TRUE;
+		    else if (p[1] == 'm' || p[1] == 'M' || p[1] == 'V')
+			is_magic_all = FALSE;
 		    p += 2;
+		}
 		if (p[0] == NUL
 			|| (p[0] == '\\'
 			    && (p[1] == '|' || p[1] == '&' || p[1] == ')'
 				|| p[1] == 'n'))
+			|| (is_magic_all
+			       && (p[0] == '|' || p[0] == '&' || p[0] == ')'))
 			|| reg_magic == MAGIC_ALL)
 		    curchr = Magic('$');
 	    }
