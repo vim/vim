@@ -3854,8 +3854,7 @@ ins_compl_prep(c)
 	    ins_compl_free();
 	    compl_started = FALSE;
 	    compl_matches = 0;
-	    if (!shortmess(SHM_COMPLETIONMENU))
-		msg_clr_cmdline();	/* necessary for "noshowmode" */
+	    msg_clr_cmdline();	/* necessary for "noshowmode" */
 	    ctrl_x_mode = 0;
 	    compl_enter_selects = FALSE;
 	    if (edit_submode != NULL)
