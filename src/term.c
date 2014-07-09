@@ -3724,7 +3724,11 @@ add_termcode(name, string, flags)
 	return;
     }
 
+#if defined(WIN3264) && !defined(FEAT_GUI)
+    s = vim_strnsave(string, (int)STRLEN(string) + 1);
+#else
     s = vim_strsave(string);
+#endif
     if (s == NULL)
 	return;
 
@@ -3734,6 +3738,15 @@ add_termcode(name, string, flags)
 	STRMOVE(s, s + 1);
 	s[0] = term_7to8bit(string);
     }
+
+#if defined(WIN3264) && !defined(FEAT_GUI)
+    if (s[0] == K_NUL)
+    {
+        STRMOVE(s + 1, s);
+        s[1] = 3;
+    }
+#endif
+
     len = (int)STRLEN(s);
 
     need_gather = TRUE;		/* need to fill termleader[] */
