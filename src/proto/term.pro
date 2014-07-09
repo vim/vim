@@ -35,6 +35,7 @@ void settmode __ARGS((int tmode));
 void starttermcap __ARGS((void));
 void stoptermcap __ARGS((void));
 int did_request_esc_sequence __ARGS((void));
+void resume_get_esc_sequence __ARGS((void));
 void may_req_termresponse __ARGS((void));
 void may_req_ambiguous_char_width __ARGS((void));
 int swapping_screen __ARGS((void));
