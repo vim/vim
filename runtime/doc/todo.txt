@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2014 Jul 04
+*todo.txt*      For Vim version 7.4.  Last change: 2014 Jul 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,13 +34,7 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Sort is still not stable, add an index in the array.
-See patch from Takimoto.
-
-Another follow-up patch for breakindent. (Christian, 2014 Jun 28)
-
-After patch 7.4.305 the termresponse isn't requested at all?
-(Tomas Janousek, 2014 Jul 1, Jul 2)
+Forfeit test_listlbr when encoding is not utf8? (Danek Duvall)
 
 Regexp problems:
 - Bug with pattern: '\vblock (\d+)\.\n.*\d+%(\1)@<!\.$'
@@ -55,25 +49,16 @@ Regexp problems:
 - Does not work with NFA regexp engine:
   \%u, \%x, \%o, \%d followed by a composing character
 
+Patch to set y_width when getting the register from the clipboard.
+(Yukihiro Nakadaira, 2014 Jul 10)
+
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
 Completion for :buf does not use 'wildignorecase'. (Akshay H, 2014 May 31)
 
-Patch to avoid inconsistency of using \v and \V after $ in regexp.
-(Ozaki Kiichi, 2014 Jul 2)
-
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
-
-Make matchparen faster by not using winsaveview()/winrestview().
-(Alexey Radkov, 2014 Jun 28)
-
-Patch to avoid flicker when filling the preview window.
-(Hirohito Higashi, 2014 Jul 2)
-
-matchaddpos() doesn't handle wrong byte length well, e.g. using 1 on a
-multi-byte charcter. (lcd47, 2014 Jun 29)
 
 The entries added by matchaddpos() are returned by getmatches() but can't be
 set with setmatches(). (lcd47, 2014 Jun 29)
@@ -91,9 +76,6 @@ MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
 
 Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
-
-Patch to translate 0xce in K_NUL 3. (Yasuhiro Matsumoto, 2014 June 6)
-Update by Nobuhiro Takasaki, Jun 19.
 
 Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 
@@ -375,6 +357,7 @@ Patch to allow setting w:quickfix_title via setqflist() and setloclist()
 functions. (Christian Brabandt, 2013 May 8, update May 21)
 Patch to add getlocstack() / setlocstack(). (Christian Brabandt, 2013 May 14)
 Second one. Update May 22.
+Update by Daniel Hahler, 2014 Jul 4.
 
 Patch to make fold updates much faster. (Christian Brabandt, 2012 Dec)
 

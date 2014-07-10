@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2014 Jun 17
+" Last Change: 2014 Jul 09
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -54,14 +54,15 @@ function! s:Highlight_Matching_Pair()
   let c_col = col('.')
   let before = 0
 
-  let c = getline(c_lnum)[c_col - 1]
+  let text = getline(c_lnum)
+  let c = text[c_col - 1]
   let plist = split(&matchpairs, '.\zs[:,]')
   let i = index(plist, c)
   if i < 0
     " not found, in Insert mode try character before the cursor
     if c_col > 1 && (mode() == 'i' || mode() == 'R')
       let before = 1
-      let c = getline(c_lnum)[c_col - 2]
+      let c = text[c_col - 2]
       let i = index(plist, c)
     endif
     if i < 0
@@ -87,7 +88,7 @@ function! s:Highlight_Matching_Pair()
   " Find the match.  When it was just before the cursor move it there for a
   " moment.
   if before > 0
-    let save_cursor = winsaveview()
+    let save_cursor = getcurpos()
     call cursor(c_lnum, c_col - before)
   endif
 
@@ -147,7 +148,7 @@ function! s:Highlight_Matching_Pair()
   endtry
 
   if before > 0
-    call winrestview(save_cursor)
+    call setpos('.', save_cursor)
   endif
 
   " If a match is found setup match highlighting.

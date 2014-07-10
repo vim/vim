@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2014 Jun 12
+" Last Change:	2014 Jul 09
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -864,7 +864,7 @@ func! s:FThtml()
       setf xhtml
       return
     endif
-    if getline(n) =~ '{%\s*\(extends\|block\)\>'
+    if getline(n) =~ '{%\s*\(extends\|block\|load\)\>'
       setf htmldjango
       return
     endif
@@ -1647,6 +1647,20 @@ if has("fname_case")
   au BufNewFile,BufRead *.Rnw,*.rnw,*.Snw,*.snw		setf rnoweb
 else
   au BufNewFile,BufRead *.rnw,*.snw			setf rnoweb
+endif
+
+" R Markdown file
+if has("fname_case")
+  au BufNewFile,BufRead *.Rmd,*.rmd,*.Smd,*.smd		setf rmd
+else
+  au BufNewFile,BufRead *.rmd,*.smd			setf rmd
+endif
+
+" R reStructuredText file
+if has("fname_case")
+  au BufNewFile,BufRead *.Rrst,*.rrst,*.Srst,*.srst	setf rrst
+else
+  au BufNewFile,BufRead *.rrst,*.srst			setf rrst
 endif
 
 " Rexx, Rebol or R
@@ -2664,7 +2678,7 @@ au BufNewFile,BufRead zsh*,zlog*		call s:StarSetf('zsh')
 
 " Plain text files, needs to be far down to not override others.  This avoids
 " the "conf" type being used if there is a line starting with '#'.
-au BufNewFile,BufRead *.txt,*.text		setf text
+au BufNewFile,BufRead *.txt,*.text,README	setf text
 
 
 " Use the filetype detect plugins.  They may overrule any of the previously

@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.4.  Last change: 2014 Jun 14
+*starting.txt*  For Vim version 7.4.  Last change: 2014 Jul 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1506,7 +1506,7 @@ most of the information will be restored).
 			already set (registers, marks, |v:oldfiles|, etc.)
 			will be overwritten   {not in Vi}
 
-					*:wv* *:wviminfo* *E137* *E138* *E574*
+				*:wv* *:wviminfo* *E137* *E138* *E574* *E886*
 :wv[iminfo][!] [file]	Write to viminfo file [file] (default: see above).
 			The information in the file is first read in to make
 			a merge between old and new info.  When [!] is used,

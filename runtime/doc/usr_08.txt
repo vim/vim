@@ -1,4 +1,4 @@
-*usr_08.txt*	For Vim version 7.4.  Last change: 2006 Jul 18
+*usr_08.txt*	For Vim version 7.4.  Last change: 2014 Jul 06
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -532,7 +532,7 @@ window.  And you will notice a bar at the top with the two file names:
 
 You now have two tab pages.  The first one has a window for "thisfile" and the
 second one a window for "thatfile".  It's like two pages that are on top of
-eachother, with a tab sticking out of each page showing the file name.
+each other, with a tab sticking out of each page showing the file name.
 
 Now use the mouse to click on "thisfile" in the top line.  The result is
 
