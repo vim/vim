@@ -5702,8 +5702,8 @@ buf_delete_signs(buf)
     signlist_T	*next;
 
     /* When deleting the last sign need to redraw the windows to remove the
-     * sign column. */
-    if (buf->b_signlist != NULL)
+     * sign column. Not when curwin is NULL (this means we're exiting). */
+    if (buf->b_signlist != NULL && curwin != NULL)
     {
 	redraw_buf_later(buf, NOT_VALID);
 	changed_cline_bef_curs();
