@@ -3854,7 +3854,8 @@ ins_compl_prep(c)
 	    ins_compl_free();
 	    compl_started = FALSE;
 	    compl_matches = 0;
-	    msg_clr_cmdline();	/* necessary for "noshowmode" */
+	    if (!shortmess(SHM_COMPLETIONMENU))
+		msg_clr_cmdline();	/* necessary for "noshowmode" */
 	    ctrl_x_mode = 0;
 	    compl_enter_selects = FALSE;
 	    if (edit_submode != NULL)
@@ -4591,7 +4592,10 @@ ins_compl_delete()
      */
     i = compl_col + (compl_cont_status & CONT_ADDING ? compl_length : 0);
     backspace_until_column(i);
+
+    /* Not sure what is still valid, better redraw everything. */
     changed_cline_bef_curs();
+    redraw_curbuf_later(NOT_VALID);
 }
 
 /* Insert the new text being completed. */
