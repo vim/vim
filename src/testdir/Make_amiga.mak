@@ -39,6 +39,7 @@ SCRIPTS = test1.out test3.out test4.out test5.out test6.out \
 		test_autoformat_join.out \
 		test_breakindent.out \
 		test_listlbr.out \
+		test_listlbr_utf8.out \
 		test_eval.out \
 		test_options.out
 
@@ -167,5 +168,6 @@ test107.out: test107.in
 test_autoformat_join.out: test_autoformat_join.in
 test_breakindent.out: test_breakindent.in
 test_listlbr.out: test_listlbr.in
+test_listlbr_utf8.out: test_listlbr_utf8.in
 test_eval.out: test_eval.in
 test_options.out: test_options.in
