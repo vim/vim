@@ -1024,7 +1024,7 @@ vim_isprintc_strict(c)
  */
     int
 lbr_chartabsize(line, s, col)
-    char_u		*line; /* start of the line */
+    char_u		*line UNUSED; /* start of the line */
     unsigned char	*s;
     colnr_T		col;
 {
@@ -1069,7 +1069,7 @@ lbr_chartabsize_adv(line, s, col)
     int
 win_lbr_chartabsize(wp, line, s, col, headp)
     win_T	*wp;
-    char_u	*line; /* start of the line */
+    char_u	*line UNUSED; /* start of the line */
     char_u	*s;
     colnr_T	col;
     int		*headp UNUSED;

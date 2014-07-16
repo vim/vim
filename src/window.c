@@ -686,9 +686,7 @@ win_split_ins(size, flags, new_wp, dir)
     int		layout;
     frame_T	*frp, *curfrp;
     int		before;
-    int		minwidth;
     int		minheight;
-    int		wmw1;
     int		wmh1;
 
     if (flags & WSP_TOP)
@@ -718,6 +716,9 @@ win_split_ins(size, flags, new_wp, dir)
 #ifdef FEAT_VERTSPLIT
     if (flags & WSP_VERT)
     {
+	int	wmw1;
+	int	minwidth;
+
 	layout = FR_ROW;
 
 	/*
