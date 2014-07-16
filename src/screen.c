@@ -4646,6 +4646,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		else if (c != NUL)
 		{
 		    p_extra = transchar(c);
+		    if (n_extra == 0)
+			n_extra = byte2cells(c) - 1;
 #ifdef FEAT_RIGHTLEFT
 		    if ((dy_flags & DY_UHEX) && wp->w_p_rl)
 			rl_mirror(p_extra);	/* reverse "<12>" */
