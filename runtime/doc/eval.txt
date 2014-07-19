@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2014 Jul 06
+*eval.txt*	For Vim version 7.4.  Last change: 2014 Jul 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6512,7 +6512,7 @@ winsaveview()	Returns a |Dictionary| that contains information to restore
 		buffer and you want to go back to the original view.
 		This does not save fold information.  Use the 'foldenable'
 		option to temporarily switch off folding, so that folds are
-		not opened when moving around.
+		not opened when moving around. This may have side effects.
 		The return value includes:
 			lnum		cursor line number
 			col		cursor column (Note: the first column

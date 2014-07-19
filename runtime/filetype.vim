@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2014 Jul 09
+" Last Change:	2014 Jul 16
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -989,7 +989,7 @@ au BufNewFile,BufRead *.java,*.jav		setf java
 au BufNewFile,BufRead *.jj,*.jjt		setf javacc
 
 " JavaScript, ECMAScript
-au BufNewFile,BufRead *.js,*.javascript,*.es,*.jsx,*.json   setf javascript
+au BufNewFile,BufRead *.js,*.javascript,*.es,*.jsx   setf javascript
 
 " Java Server Pages
 au BufNewFile,BufRead *.jsp			setf jsp
@@ -1006,6 +1006,9 @@ au BufNewFile,BufRead *.jgr			setf jgraph
 
 " Jovial
 au BufNewFile,BufRead *.jov,*.j73,*.jovial	setf jovial
+
+" JSON
+au BufNewFile,BufRead *.json			setf json
 
 " Kixtart
 au BufNewFile,BufRead *.kix			setf kix

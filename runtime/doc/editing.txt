@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.4.  Last change: 2014 May 02
+*editing.txt*   For Vim version 7.4.  Last change: 2014 Jul 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1362,6 +1362,11 @@ cannot be read without the right key.
 {only available when compiled with the |+cryptv| feature}  *E833*
 
 The text in the swap file and the undo file is also encrypted.  *E843*
+However, this is done block-by-block and may reduce the time needed to crack a
+password.  You can disable the swap file, but then a crash will cause you to
+lose your work.  The undo file can be disabled without much disadvantage. >
+	:set noundofile
+	:noswapfile edit secrets
 
 Note: The text in memory is not encrypted.  A system administrator may be able
 to see your text while you are editing it.  When filtering text with

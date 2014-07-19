@@ -3,7 +3,7 @@
 " Maintainer:  Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
 " Former Maintainers: Gerfried Fuchs <alfie@ist.org>
 "                     Wichert Akkerman <wakkerma@debian.org>
-" Last Change: 2013 Oct 28
+" Last Change: 2014 May 01
 " URL: http://anonscm.debian.org/hg/pkg-vim/vim/raw-file/unstable/runtime/syntax/debcontrol.vim
 
 " Standard syntax initialization
@@ -12,6 +12,9 @@ if version < 600
 elseif exists("b:current_syntax")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Should match case except for the keys of each field
 syn case match
@@ -23,8 +26,17 @@ syn match debcontrolElse "^.*$"
 syn match debControlComma ", *"
 syn match debControlSpace " "
 
+let s:kernels = '\%(linux\|hurd\|kfreebsd\|knetbsd\|kopensolaris\|netbsd\)'
+let s:archs = '\%(alpha\|amd64\|armeb\|armel\|armhf\|arm64\|avr32\|hppa\|i386'
+      \ . '\|ia64\|lpia\|m32r\|m68k\|mipsel\|mips\|powerpcspe\|powerpc\|ppc64el'
+      \ . '\|ppc64\|s390x\|s390\|sh3eb\|sh3\|sh4eb\|sh4\|sh\|sparc64\|sparc\|x32\)'
+let s:pairs = 'hurd-i386\|kfreebsd-i386\|kfreebsd-amd64\|knetbsd-i386\|kopensolaris-i386\|netbsd-alpha\|netbsd-i386'
+
 " Define some common expressions we can use later on
-syn match debcontrolArchitecture contained "\%(all\|linux-any\|\%(any-\)\=\%(alpha\|amd64\|arm\%(e[bl]\|hf\|64\)\=\|avr32\|hppa\|i386\|ia64\|lpia\|m32r\|m68k\|mips\%(el\)\=\|powerpc\%(spe\)\=\|ppc64\|s390x\=\|sh[34]\(eb\)\=\|sh\|sparc\%(64\)\=\)\|x32\|hurd-\%(i386\|any\)\|kfreebsd-\%(i386\|amd64\|any\)\|knetbsd-\%(i386\|any\)\|kopensolaris-\%(i386\|any\)\|netbsd-\%(alpha\|i386\|any\)\|any\)"
+exe 'syn match debcontrolArchitecture contained "\%(all\|'. s:kernels .'-any\|\%(any-\)\='. s:archs .'\|'. s:pairs .'\|any\)"'
+
+unlet s:kernels s:archs s:pairs
+
 syn match debcontrolMultiArch contained "\%(no\|foreign\|allowed\|same\)"
 syn match debcontrolName contained "[a-z0-9][a-z0-9+.-]\+"
 syn match debcontrolPriority contained "\(extra\|important\|optional\|required\|standard\)"
@@ -107,5 +119,8 @@ if version >= 508 || !exists("did_debcontrol_syn_inits")
 endif
 
 let b:current_syntax = "debcontrol"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: ts=8 sw=2
