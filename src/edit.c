@@ -8833,6 +8833,7 @@ ins_bs(c, mode, inserted_space_p)
 		return FALSE;
 	    --Insstart_orig.lnum;
 	    Insstart_orig.col = MAXCOL;
+	    Insstart = Insstart_orig;
 	}
 	/*
 	 * In replace mode:
