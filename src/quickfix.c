@@ -2173,6 +2173,7 @@ qf_free(qi, idx)
     }
     vim_free(qi->qf_lists[idx].qf_title);
     qi->qf_lists[idx].qf_title = NULL;
+    qi->qf_lists[idx].qf_index = 0;
 }
 
 /*
