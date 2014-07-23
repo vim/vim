@@ -643,6 +643,12 @@ pum_set_selected(n, repeat)
 
 		    if (curwin != curwin_save && win_valid(curwin_save))
 		    {
+			/* When the first completion is done and the preview
+			 * window is not resized, skip the preview window's
+			 * status line redrawing. */
+			if (ins_compl_active() && !resized)
+			    curwin->w_redr_status = FALSE;
+
 			/* Return cursor to where we were */
 			validate_cursor();
 			redraw_later(SOME_VALID);
