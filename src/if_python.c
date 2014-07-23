@@ -295,6 +295,9 @@ struct PyMethodDef { Py_ssize_t a; };
 #  define PyCObject_FromVoidPtr dll_PyCObject_FromVoidPtr
 #  define PyCObject_AsVoidPtr dll_PyCObject_AsVoidPtr
 # endif
+# if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
+#  define Py_NoSiteFlag (*dll_Py_NoSiteFlag)
+# endif
 
 /*
  * Pointers for dynamic link
@@ -439,6 +442,9 @@ static void* (*dll_PyCapsule_GetPointer)(PyObject *, char *);
 # else
 static PyObject* (*dll_PyCObject_FromVoidPtr)(void *cobj, void (*destr)(void *));
 static void* (*dll_PyCObject_AsVoidPtr)(PyObject *);
+# endif
+# if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
+static int* dll_Py_NoSiteFlag;
 # endif
 
 static HINSTANCE hinstPython = 0; /* Instance of python.dll */
@@ -632,6 +638,9 @@ static struct
 # else
     {"PyCObject_FromVoidPtr", (PYTHON_PROC*)&dll_PyCObject_FromVoidPtr},
     {"PyCObject_AsVoidPtr", (PYTHON_PROC*)&dll_PyCObject_AsVoidPtr},
+# endif
+# if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
+    {"Py_NoSiteFlag", (PYTHON_PROC*)&dll_Py_NoSiteFlag},
 # endif
     {"", NULL},
 };
@@ -901,6 +910,10 @@ Python_Init(void)
 {
     if (!initialised)
     {
+#if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
+	PyObject *site;
+#endif
+
 #ifdef DYNAMIC_PYTHON
 	if (!python_enabled(TRUE))
 	{
@@ -915,11 +928,29 @@ Python_Init(void)
 
 	init_structs();
 
+#if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
+	/* Disable implicit 'import site', because it may cause Vim to exit
+	 * when it can't be found. */
+	Py_NoSiteFlag++;
+#endif
+
 #if !defined(MACOS) || defined(MACOS_X_UNIX)
 	Py_Initialize();
 #else
 	PyMac_Initialize();
 #endif
+
+#if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
+	/* 'import site' explicitly. */
+	site = PyImport_ImportModule("site");
+	if (site == NULL)
+	{
+	    EMSG(_("E887: Sorry, this command is disabled, the Python's site module could not be loaded."));
+	    goto fail;
+	}
+	Py_DECREF(site);
+#endif
+
 	/* Initialise threads, and below save the state using
 	 * PyEval_SaveThread.  Without the call to PyEval_SaveThread, thread
 	 * specific state (such as the system trace hook), will be lost
