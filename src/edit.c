@@ -4593,9 +4593,9 @@ ins_compl_delete()
     i = compl_col + (compl_cont_status & CONT_ADDING ? compl_length : 0);
     backspace_until_column(i);
 
-    /* Not sure what is still valid, better redraw everything. */
+    /* TODO: is this sufficient for redrawing?  Redrawing everything causes
+     * flicker, thus we can't do that. */
     changed_cline_bef_curs();
-    redraw_curbuf_later(NOT_VALID);
 }
 
 /* Insert the new text being completed. */
