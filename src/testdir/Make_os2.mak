@@ -40,8 +40,9 @@ SCRIPTS = test1.out test3.out test4.out test5.out test6.out \
 		test_autoformat_join.out \
 		test_eval.out \
 		test_breakindent.out \
-		test_listlbr_utf8.out \
 		test_listlbr.out \
+		test_listlbr_utf8.out \
+		test_qf_title.out \
 		test_options.out
 
 .SUFFIXES: .in .out
