@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2014 Jul 19
+*todo.txt*      For Vim version 7.4.  Last change: 2014 Jul 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,8 +34,6 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Completion menu: remove redraw (Hirohito Higashi)
-
 Regexp problems:
 - Bug with pattern: '\vblock (\d+)\.\n.*\d+%(\1)@<!\.$'
   (Lech Lorens, 2014 Feb 3)
@@ -48,28 +46,13 @@ Regexp problems:
 - NFA regexp doesn't handle \%<v correctly. (Ingo Karkat, 2014 May 12)
 - Does not work with NFA regexp engine:
   \%u, \%x, \%o, \%d followed by a composing character
+- Bug relating to back references. (Ingo Karkat, 2014 Jul 24)
 
-Crash when splitting the window when the size is tiny.
-(Yukihiro Nakadaira, 2014 Jul 15-16)
+Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 
-Another problem with splitting window. (Yukihiro Nakadaira, 2014 Jul 17)
-Patch Jul 17.
-
-Using freed memory when jumping from a quickfix list. (lcd47, 2014 Jul 17)
-
-Patch to fix valgrind error. (Dominique Pelle, 2014 Jul 9)
-
-Vroom filetype support. (David Barnett, 2014 Jul 10)
-
-u_undo error.  Reproduce with description from Ayberk Ozgur, 2014 Jul 17.
-
-Updated Django files. (Dave Hodder, 2014 Jul 13)
-
-Title of quickfist list is not kept for setqflist(list 'r').
-(Lcd, 2014 Jul 17)  With test Jul 18.
-
-Patch to fix noremap flags not cleared after typing Esc. (Jacob Niehus, 2014
-Jul 9)
+Patch to make getregtype() return the right size for non-linux systems.
+(Yasuhiro Matsumoto, 2014 Jul 8)
+Breaks test_eval.  Inefficient, can we only compute y_width when needed?
 
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)

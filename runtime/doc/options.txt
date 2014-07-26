@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2014 Jun 26
+*options.txt*	For Vim version 7.4.  Last change: 2014 Jul 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5369,7 +5369,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Expression which is evaluated to apply a patch to a file and generate
 	the resulting new version of the file.  See |diff-patchexpr|.
 
-						*'patchmode'* *'pm'* *E206*
+					*'patchmode'* *'pm'* *E205* *E206*
 'patchmode' 'pm'	string	(default "")
 			global
 			{not in Vi}

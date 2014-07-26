@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Django template
 " Maintainer:	Dave Hodder <dmh@dmh.org.uk>
-" Last Change:	2012 Apr 09
+" Last Change:	2014 Jul 13
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -64,7 +64,7 @@ syn region djangoTagBlock start="{%" end="%}" contains=djangoStatement,djangoFil
 syn region djangoVarBlock start="{{" end="}}" contains=djangoFilter,djangoArgument,djangoVarError display
 
 " Django template 'comment' tag and comment block
-syn region djangoComment start="{%\s*comment\s*%}" end="{%\s*endcomment\s*%}" contains=djangoTodo
+syn region djangoComment start="{%\s*comment\(\s\+.\{-}\)\?%}" end="{%\s*endcomment\s*%}" contains=djangoTodo
 syn region djangoComBlock start="{#" end="#}" contains=djangoTodo
 
 " Define the default highlighting.
