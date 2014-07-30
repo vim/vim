@@ -678,6 +678,17 @@ stuffReadbuff(s)
     add_buff(&readbuf1, s, -1L);
 }
 
+/*
+ * Append string "s" to the redo stuff buffer.
+ * CSI and K_SPECIAL must already have been escaped.
+ */
+    void
+stuffRedoReadbuff(s)
+    char_u	*s;
+{
+    add_buff(&readbuf2, s, -1L);
+}
+
     void
 stuffReadbuffLen(s, len)
     char_u	*s;

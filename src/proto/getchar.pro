@@ -15,6 +15,7 @@ void AppendToRedobuffLit __ARGS((char_u *str, int len));
 void AppendCharToRedobuff __ARGS((int c));
 void AppendNumberToRedobuff __ARGS((long n));
 void stuffReadbuff __ARGS((char_u *s));
+void stuffRedoReadbuff __ARGS((char_u *s));
 void stuffReadbuffLen __ARGS((char_u *s, long len));
 void stuffReadbuffSpec __ARGS((char_u *s));
 void stuffcharReadbuff __ARGS((int c));

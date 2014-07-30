@@ -8389,7 +8389,7 @@ ins_esc(count, cmdchar, nomove)
 
 	    (void)start_redo_ins();
 	    if (cmdchar == 'r' || cmdchar == 'v')
-		stuffReadbuff(ESC_STR);	/* no ESC in redo buffer */
+		stuffRedoReadbuff(ESC_STR);	/* no ESC in redo buffer */
 	    ++RedrawingDisabled;
 	    disabled_redraw = TRUE;
 	    return FALSE;	/* repeat the insert */
