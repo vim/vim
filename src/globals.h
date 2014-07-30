@@ -1336,9 +1336,6 @@ EXTERN HWND	clientWindow INIT(= 0);
 #if defined(UNIX) || defined(VMS)
 EXTERN int	term_is_xterm INIT(= FALSE);	/* xterm-like 'term' */
 #endif
-#if defined(UNIX)
-EXTERN int	xterm_conflict_mouse INIT(= FALSE);
-#endif
 
 #ifdef BACKSLASH_IN_FILENAME
 EXTERN char	psepc INIT(= '\\');	/* normal path separator character */

@@ -3667,8 +3667,6 @@ mch_setmouse(on)
     void
 check_mouse_termcode()
 {
-    xterm_conflict_mouse = FALSE;
-
 # ifdef FEAT_MOUSE_XTERM
     if (use_xterm_mouse()
 # ifdef FEAT_MOUSE_URXVT
@@ -3713,7 +3711,7 @@ check_mouse_termcode()
 # endif
 
 # ifdef FEAT_MOUSE_JSB
-    /* There is no conflict, but it was disabled for xterm before. */
+    /* Conflicts with xterm mouse: "\033[" and "\033[M" ??? */
     if (!use_xterm_mouse()
 #  ifdef FEAT_GUI
 	    && !gui.in_use
@@ -3740,45 +3738,31 @@ check_mouse_termcode()
 # endif
 
 # ifdef FEAT_MOUSE_DEC
-    /* Conflicts with xterm mouse: "\033[" and "\033[M".
-     * Also conflicts with the xterm termresponse, skip this if it was
-     * requested already. */
+    /* Conflicts with xterm mouse: "\033[" and "\033[M" */
     if (!use_xterm_mouse()
-#  ifdef FEAT_TERMRESPONSE
-	    && !did_request_esc_sequence()
-#  endif
 #  ifdef FEAT_GUI
 	    && !gui.in_use
 #  endif
 	    )
-    {
 	set_mouse_termcode(KS_DEC_MOUSE, (char_u *)(term_is_8bit(T_NAME)
 		     ? IF_EB("\233", CSI_STR) : IF_EB("\033[", ESC_STR "[")));
-	xterm_conflict_mouse = TRUE;
-    }
     else
 	del_mouse_termcode(KS_DEC_MOUSE);
 # endif
 # ifdef FEAT_MOUSE_PTERM
-    /* same as the dec mouse */
+    /* same conflict as the dec mouse */
     if (!use_xterm_mouse()
-#  ifdef FEAT_TERMRESPONSE
-	    && !did_request_esc_sequence()
-#  endif
 #  ifdef FEAT_GUI
 	    && !gui.in_use
 #  endif
 	    )
-    {
 	set_mouse_termcode(KS_PTERM_MOUSE,
 				      (char_u *) IF_EB("\033[", ESC_STR "["));
-	xterm_conflict_mouse = TRUE;
-    }
     else
 	del_mouse_termcode(KS_PTERM_MOUSE);
 # endif
 # ifdef FEAT_MOUSE_URXVT
-    /* same as the dec mouse */
+    /* same conflict as the dec mouse */
     if (use_xterm_mouse() == 3
 #  ifdef FEAT_GUI
 	    && !gui.in_use
@@ -3794,8 +3778,6 @@ check_mouse_termcode()
 	    mch_setmouse(FALSE);
 	    setmouse();
 	}
-	/* It's OK to request the xterm version for uxterm. */
-	resume_get_esc_sequence();
     }
     else
 	del_mouse_termcode(KS_URXVT_MOUSE);
