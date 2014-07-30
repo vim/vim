@@ -4494,7 +4494,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    tab_len = (int)wp->w_buffer->b_p_ts
 					- vcol % (int)wp->w_buffer->b_p_ts - 1;
 #ifdef FEAT_LINEBREAK
-		    if (!wp->w_p_lbr)
+		    if (!wp->w_p_lbr || !wp->w_p_list)
 #endif
 		    /* tab amount depends on current column */
 			n_extra = tab_len;
