@@ -3818,7 +3818,7 @@ if test "$enable_nls" = "yes"; then
     else
       AC_MSG_RESULT([msgfmt not found - disabled]);
     fi
-    if test $have_gettext = "yes"; then
+    if test $have_gettext = "yes" -a "x$features" != "xtiny" -a "x$features" != "xsmall"; then
       AC_DEFINE(HAVE_GETTEXT)
       MAKEMO=yes
       AC_SUBST(MAKEMO)
