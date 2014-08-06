@@ -5514,7 +5514,15 @@ ex_global(eap)
 	    smsg((char_u *)_("Pattern not found: %s"), pat);
     }
     else
+    {
+#ifdef FEAT_CLIPBOARD
+	start_global_changes();
+#endif
 	global_exe(cmd);
+#ifdef FEAT_CLIPBOARD
+	end_global_changes();
+#endif
+    }
 
     ml_clearmarked();	   /* clear rest of the marks */
     vim_regfree(regmatch.regprog);

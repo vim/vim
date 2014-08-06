@@ -11534,6 +11534,10 @@ ex_folddo(eap)
 {
     linenr_T	lnum;
 
+#ifdef FEAT_CLIPBOARD
+    start_global_changes();
+#endif
+
     /* First set the marks for all lines closed/open. */
     for (lnum = eap->line1; lnum <= eap->line2; ++lnum)
 	if (hasFolding(lnum, NULL, NULL) == (eap->cmdidx == CMD_folddoclosed))
@@ -11542,5 +11546,8 @@ ex_folddo(eap)
     /* Execute the command on the marked lines. */
     global_exe(eap->arg);
     ml_clearmarked();	   /* clear rest of the marks */
+#ifdef FEAT_CLIPBOARD
+    end_global_changes();
+#endif
 }
 #endif

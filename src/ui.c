@@ -558,6 +558,51 @@ clip_copy_selection(clip)
 }
 
 /*
+ * Save and restore clip_unnamed before doing possibly many changes. This
+ * prevents accessing the clipboard very often which might slow down Vim
+ * considerably.
+ */
+
+/*
+ * Save clip_unnamed and reset it.
+ */
+    void
+start_global_changes()
+{
+    clip_unnamed_saved = clip_unnamed;
+
+    if (clip_did_set_selection)
+    {
+	clip_unnamed = FALSE;
+	clip_did_set_selection = FALSE;
+    }
+}
+
+/*
+ * Restore clip_unnamed and set the selection when needed.
+ */
+    void
+end_global_changes()
+{
+    if (!clip_did_set_selection)
+    {
+	clip_did_set_selection = TRUE;
+	clip_unnamed = clip_unnamed_saved;
+	if (clip_unnamed & CLIP_UNNAMED)
+	{
+	    clip_own_selection(&clip_star);
+	    clip_gen_set_selection(&clip_star);
+	}
+	if (clip_unnamed & CLIP_UNNAMED_PLUS)
+	{
+	    clip_own_selection(&clip_plus);
+	    clip_gen_set_selection(&clip_plus);
+	}
+    }
+    clip_unnamed_saved = FALSE;
+}
+
+/*
  * Called when Visual mode is ended: update the selection.
  */
     void
@@ -1428,6 +1473,15 @@ clip_gen_lose_selection(cbd)
 clip_gen_set_selection(cbd)
     VimClipboard	*cbd;
 {
+    if (!clip_did_set_selection)
+    {
+	/* Updating postponed, so that accessing the system clipboard won't
+	 * hang Vim when accessing it many times (e.g. on a :g comand). */
+	if (cbd == &clip_plus && (clip_unnamed_saved & CLIP_UNNAMED_PLUS))
+	    return;
+	else if (cbd == &clip_star && (clip_unnamed_saved & CLIP_UNNAMED))
+	    return;
+    }
 #ifdef FEAT_XCLIPBOARD
 # ifdef FEAT_GUI
     if (gui.in_use)

@@ -1597,9 +1597,15 @@ adjust_clip_reg(rp)
 {
     /* If no reg. specified, and "unnamed" or "unnamedplus" is in 'clipboard',
      * use '*' or '+' reg, respectively. "unnamedplus" prevails. */
-    if (*rp == 0 && clip_unnamed != 0)
-	*rp = ((clip_unnamed & CLIP_UNNAMED_PLUS) && clip_plus.available)
+    if (*rp == 0 && (clip_unnamed != 0 || clip_unnamed_saved != 0))
+    {
+	if (clip_unnamed != 0)
+	    *rp = ((clip_unnamed & CLIP_UNNAMED_PLUS) && clip_plus.available)
 								  ? '+' : '*';
+	else
+	    *rp = ((clip_unnamed_saved & CLIP_UNNAMED_PLUS) && clip_plus.available)
+								  ? '+' : '*';
+    }
     if (!clip_star.available && *rp == '*')
 	*rp = 0;
     if (!clip_plus.available && *rp == '+')
@@ -3203,7 +3209,7 @@ op_yank(oap, deleting, mess)
     if (clip_star.available
 	    && (curr == &(y_regs[STAR_REGISTER])
 		|| (!deleting && oap->regname == 0
-					   && (clip_unnamed & CLIP_UNNAMED))))
+		   && ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED))))
     {
 	if (curr != &(y_regs[STAR_REGISTER]))
 	    /* Copy the text from register 0 to the clipboard register. */
@@ -3224,7 +3230,8 @@ op_yank(oap, deleting, mess)
     if (clip_plus.available
 	    && (curr == &(y_regs[PLUS_REGISTER])
 		|| (!deleting && oap->regname == 0
-				      && (clip_unnamed & CLIP_UNNAMED_PLUS))))
+		  && ((clip_unnamed | clip_unnamed_saved) &
+		      CLIP_UNNAMED_PLUS))))
     {
 	if (curr != &(y_regs[PLUS_REGISTER]))
 	    /* Copy the text from register 0 to the clipboard register. */

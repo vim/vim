@@ -14,6 +14,8 @@ void clip_init __ARGS((int can_use));
 void clip_update_selection __ARGS((VimClipboard *clip));
 void clip_own_selection __ARGS((VimClipboard *cbd));
 void clip_lose_selection __ARGS((VimClipboard *cbd));
+void start_global_changes __ARGS((void));
+void end_global_changes __ARGS((void));
 void clip_auto_select __ARGS((void));
 int clip_isautosel_star __ARGS((void));
 int clip_isautosel_plus __ARGS((void));
