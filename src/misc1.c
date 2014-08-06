@@ -5503,7 +5503,7 @@ cin_has_js_key(text)
     char_u *text;
 {
     char_u *s = skipwhite(text);
-    int	    quote = 0;
+    int	    quote = -1;
 
     if (*s == '\'' || *s == '"')
     {
