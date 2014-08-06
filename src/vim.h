@@ -134,6 +134,13 @@
 # endif
 #endif
 
+/* Check support for rendering options */
+#ifdef FEAT_GUI
+# if defined(FEAT_DIRECTX)
+#  define FEAT_RENDER_OPTIONS
+# endif
+#endif
+
 /* Visual Studio 2005 has 'deprecated' many of the standard CRT functions */
 #if _MSC_VER >= 1400
 # define _CRT_SECURE_NO_DEPRECATE

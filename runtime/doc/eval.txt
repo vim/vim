@@ -6622,6 +6622,7 @@ dialog_con		Compiled with console dialog support.
 dialog_gui		Compiled with GUI dialog support.
 diff			Compiled with |vimdiff| and 'diff' support.
 digraphs		Compiled with support for digraphs.
+directx			Compiled with support for Direct-X and 'renderoptions'.
 dnd			Compiled with support for the "~ register |quote_~|.
 dos16			16 bits DOS version of Vim.
 dos32			32 bits DOS (DJGPP) version of Vim.

@@ -12464,6 +12464,9 @@ f_has(argvars, rettv)
 #ifdef FEAT_DIGRAPHS
 	"digraphs",
 #endif
+#ifdef FEAT_DIRECTX
+	"directx",
+#endif
 #ifdef FEAT_DND
 	"dnd",
 #endif

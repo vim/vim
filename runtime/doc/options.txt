@@ -5650,6 +5650,77 @@ A jump table for the options with a short description can be found at |Q_op|.
 	this option at the default "on".  Only switch it off when working with
 	old Vi scripts.
 
+                                               *'renderoptions'* *'rop'*
+'renderoptions' 'rop'	string  (default: empty)
+			global
+			{not in Vi}
+			{only available when compiled with GUI and DIRECTX on
+			MS-Windows}
+	Select a text renderer and set its options.  The options depend on the
+	renderer.
+
+	Syntax: >
+		set rop=type:{renderer}(,{name}:{value})*
+<
+	Currently, only one optional renderer is available.
+
+	render	behavior    ~
+	directx	Vim will draw text using DirectX (DirectWrite).  It makes
+		drawn glyphs more beautiful than default GDI.
+		It requires 'encoding' is "utf-8", and only works on
+		MS-Windows Vista or newer version.
+
+		Options:
+		  name	    meaning		type	value       ~
+		  gamma	    gamma		float	1.0 - 2.2 (maybe)
+		  contrast  enhancedContrast	float	(unknown)
+		  level	    clearTypeLevel	float	(unknown)
+		  geom	    pixelGeometry	int	0 - 2 (see below)
+		  renmode   renderingMode	int	0 - 6 (see below)
+		  taamode   textAntialiasMode	int	0 - 3 (see below)
+
+		See this URL for detail:
+		  http://msdn.microsoft.com/en-us/library/dd368190.aspx
+
+		For geom: structure of a device pixel.
+		  0 - DWRITE_PIXEL_GEOMETRY_FLAT
+		  1 - DWRITE_PIXEL_GEOMETRY_RGB
+		  2 - DWRITE_PIXEL_GEOMETRY_BGR
+
+		See this URL for detail:
+		  http://msdn.microsoft.com/en-us/library/dd368114.aspx
+
+		For renmode: method of rendering glyphs.
+		  0 - DWRITE_RENDERING_MODE_DEFAULT
+		  1 - DWRITE_RENDERING_MODE_ALIASED
+		  2 - DWRITE_RENDERING_MODE_GDI_CLASSIC
+		  3 - DWRITE_RENDERING_MODE_GDI_NATURAL
+		  4 - DWRITE_RENDERING_MODE_NATURAL
+		  5 - DWRITE_RENDERING_MODE_NATURAL_SYMMETRIC
+		  6 - DWRITE_RENDERING_MODE_OUTLINE
+
+		See this URL for detail:
+		  http://msdn.microsoft.com/en-us/library/dd368118.aspx
+
+		For taamode: antialiasing mode used for drawing text.
+		  0 - D2D1_TEXT_ANTIALIAS_MODE_DEFAULT
+		  1 - D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE
+		  2 - D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE
+		  3 - D2D1_TEXT_ANTIALIAS_MODE_ALIASED
+
+		See this URL for detail:
+		  http://msdn.microsoft.com/en-us/library/dd368170.aspx
+
+		Example: >
+		  set encoding=utf-8
+		  set gfn=Ricty_Diminished:h12:cSHIFTJIS
+		  set rop=type:directx
+<
+		If select a raster font (Courier, Terminal or FixedSys) to
+		'guifont', it fallbacks to be drawn by GDI automatically.
+
+	Other render types are currently not supported.
+
 						*'report'*
 'report'		number	(default 2)
 			global

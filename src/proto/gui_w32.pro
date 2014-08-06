@@ -1,4 +1,6 @@
 /* gui_w32.c */
+int directx_enabled __ARGS((void));
+int gui_mch_set_rendering_options __ARGS((char_u *s));
 void gui_mch_set_blinking __ARGS((long wait, long on, long off));
 void gui_mch_stop_blink __ARGS((void));
 void gui_mch_start_blink __ARGS((void));
