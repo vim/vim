@@ -2590,8 +2590,9 @@ gui_mch_draw_string(
 #if defined(FEAT_DIRECTX)
 	if (IS_ENABLE_DIRECTX() && font_is_ttf_or_vector)
 	{
+	    /* Add one to "cells" for italics. */
 	    DWriteContext_DrawText(s_dwc, s_hdc, unicodebuf, wlen,
-		    TEXT_X(col), TEXT_Y(row), FILL_X(cells), FILL_Y(1),
+		    TEXT_X(col), TEXT_Y(row), FILL_X(cells + 1), FILL_Y(1),
 		    gui.char_width, gui.currFgColor);
 	}
 	else
