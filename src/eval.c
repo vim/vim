@@ -554,6 +554,7 @@ static void f_getcharmod __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getcmdline __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getcmdpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getcmdtype __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_getcmdwintype __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getcwd __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getfontname __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getfperm __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7984,6 +7985,7 @@ static struct fst
     {"getcmdline",	0, 0, f_getcmdline},
     {"getcmdpos",	0, 0, f_getcmdpos},
     {"getcmdtype",	0, 0, f_getcmdtype},
+    {"getcmdwintype",	0, 0, f_getcmdwintype},
     {"getcurpos",	0, 0, f_getcurpos},
     {"getcwd",		0, 0, f_getcwd},
     {"getfontname",	0, 1, f_getfontname},
@@ -11500,6 +11502,26 @@ f_getcmdtype(argvars, rettv)
 	rettv->vval.v_string[0] = get_cmdline_type();
 	rettv->vval.v_string[1] = NUL;
     }
+}
+
+/*
+ * "getcmdwintype()" function
+ */
+    static void
+f_getcmdwintype(argvars, rettv)
+    typval_T	*argvars UNUSED;
+    typval_T	*rettv;
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+#ifdef FEAT_CMDWIN
+    rettv->vval.v_string = alloc(2);
+    if (rettv->vval.v_string != NULL)
+    {
+	rettv->vval.v_string[0] = cmdwin_type;
+	rettv->vval.v_string[1] = NUL;
+    }
+#endif
 }
 
 /*
