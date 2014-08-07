@@ -377,7 +377,7 @@ public:
     }
 
 private:
-    unsigned long cRefCount_;
+    long cRefCount_;
     IDWriteBitmapRenderTarget* pRenderTarget_;
     IDWriteRenderingParams* pRenderingParams_;
 };
