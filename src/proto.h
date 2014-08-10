@@ -70,6 +70,8 @@ extern int _stricoll __ARGS((char *a, char *b));
 
 # ifdef FEAT_CRYPT
 #  include "blowfish.pro"
+#  include "crypt.pro"
+#  include "crypt_zip.pro"
 # endif
 # include "buffer.pro"
 # include "charset.pro"

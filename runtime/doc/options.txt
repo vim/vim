@@ -2229,10 +2229,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   zip		PkZip compatible method.  A weak kind of encryption.
 			Backwards compatible with Vim 7.2 and older.
 							*blowfish*
-	   blowfish	Blowfish method.  Strong encryption.  Requires Vim 7.3
-			or later, files can NOT be read by Vim 7.2 and older.
-			This adds a "seed" to the file, every time you write
-			the file the encrypted bytes will be different.
+	   blowfish	Blowfish method.  Medium strong encryption but it has
+			an implementation flaw.  Requires Vim 7.3 or later,
+			files can NOT be read by Vim 7.2 and older.  This adds
+			a "seed" to the file, every time you write the file
+			the encrypted bytes will be different.
+							*blowfish2*
+	   blowfish2	Blowfish method.  Medium strong encryption.  Requires
+			Vim 7.4.399 or later, files can NOT be read by Vim 7.3
+			and older.  This adds a "seed" to the file, every time
+			you write the file the encrypted bytes will be
+			different.  The whole undo file is encrypted, not just
+			the pieces of text.
 
 	When reading an encrypted file 'cryptmethod' will be set automatically
 	to the detected method of the file being read.  Thus if you write it

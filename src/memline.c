@@ -63,6 +63,15 @@ typedef struct pointer_entry	PTR_EN;	    /* block/line-count pair */
 #define BLOCK0_ID1     '0'		    /* block 0 id 1 */
 #define BLOCK0_ID1_C0  'c'		    /* block 0 id 1 'cm' 0 */
 #define BLOCK0_ID1_C1  'C'		    /* block 0 id 1 'cm' 1 */
+#define BLOCK0_ID1_C2  'd'		    /* block 0 id 1 'cm' 2 */
+
+#if defined(FEAT_CRYPT)
+static int id1_codes[] = {
+    BLOCK0_ID1_C0,  /* CRYPT_M_ZIP */
+    BLOCK0_ID1_C1,  /* CRYPT_M_BF */
+    BLOCK0_ID1_C2,  /* CRYPT_M_BF2 */
+};
+#endif
 
 /*
  * pointer to a block, used in a pointer block
@@ -151,7 +160,7 @@ struct data_block
 struct block0
 {
     char_u	b0_id[2];	/* id for block 0: BLOCK0_ID0 and BLOCK0_ID1,
-				 * BLOCK0_ID1_C0, BLOCK0_ID1_C1 */
+				 * BLOCK0_ID1_C0, BLOCK0_ID1_C1, etc. */
     char_u	b0_version[10];	/* Vim version string */
     char_u	b0_page_size[4];/* number of bytes per page */
     char_u	b0_mtime[4];	/* last modification time of file */
@@ -256,7 +265,7 @@ static long char_to_long __ARGS((char_u *));
 static char_u *make_percent_swname __ARGS((char_u *dir, char_u *name));
 #endif
 #ifdef FEAT_CRYPT
-static void ml_crypt_prepare __ARGS((memfile_T *mfp, off_t offset, int reading));
+static cryptstate_T *ml_crypt_prepare __ARGS((memfile_T *mfp, off_t offset, int reading));
 #endif
 #ifdef FEAT_BYTEOFF
 static void ml_updatechunk __ARGS((buf_T *buf, long line, long len, int updtype));
@@ -359,8 +368,7 @@ ml_open(buf)
 	b0p->b0_hname[B0_HNAME_SIZE - 1] = NUL;
 	long_to_char(mch_get_pid(), b0p->b0_pid);
 #ifdef FEAT_CRYPT
-	if (*buf->b_p_key != NUL)
-	    ml_set_b0_crypt(buf, b0p);
+	ml_set_b0_crypt(buf, b0p);
 #endif
     }
 
@@ -436,11 +444,11 @@ ml_set_b0_crypt(buf, b0p)
 	b0p->b0_id[1] = BLOCK0_ID1;
     else
     {
-	if (get_crypt_method(buf) == 0)
-	    b0p->b0_id[1] = BLOCK0_ID1_C0;
-	else
+	int method_nr = crypt_get_method_nr(buf);
+
+	b0p->b0_id[1] = id1_codes[method_nr];
+	if (method_nr > CRYPT_M_ZIP)
 	{
-	    b0p->b0_id[1] = BLOCK0_ID1_C1;
 	    /* Generate a seed and store it in block 0 and in the memfile. */
 	    sha2_seed(&b0p->b0_seed, MF_SEED_LEN, NULL, 0);
 	    mch_memmove(buf->b_ml.ml_mfp->mf_seed, &b0p->b0_seed, MF_SEED_LEN);
@@ -887,7 +895,8 @@ ml_check_b0_id(b0p)
     if (b0p->b0_id[0] != BLOCK0_ID0
 	    || (b0p->b0_id[1] != BLOCK0_ID1
 		&& b0p->b0_id[1] != BLOCK0_ID1_C0
-		&& b0p->b0_id[1] != BLOCK0_ID1_C1)
+		&& b0p->b0_id[1] != BLOCK0_ID1_C1
+		&& b0p->b0_id[1] != BLOCK0_ID1_C2)
 	    )
 	return FAIL;
     return OK;
@@ -1255,14 +1264,12 @@ ml_recover()
     }
 
 #ifdef FEAT_CRYPT
-    if (b0p->b0_id[1] == BLOCK0_ID1_C0)
-	b0_cm = 0;
-    else if (b0p->b0_id[1] == BLOCK0_ID1_C1)
-    {
-	b0_cm = 1;
+    for (i = 0; i < (int)(sizeof(id1_codes) / sizeof(int)); ++i)
+	if (id1_codes[i] == b0p->b0_id[1])
+	    b0_cm = i;
+    if (b0_cm > 0)
 	mch_memmove(mfp->mf_seed, &b0p->b0_seed, MF_SEED_LEN);
-    }
-    set_crypt_method(buf, b0_cm);
+    crypt_set_cm_option(buf, b0_cm < 0 ? 0 : b0_cm);
 #else
     if (b0p->b0_id[1] != BLOCK0_ID1)
     {
@@ -1389,7 +1396,7 @@ ml_recover()
 	}
 	else
 	    smsg((char_u *)_(need_key_msg), fname_used);
-	buf->b_p_key = get_crypt_key(FALSE, FALSE);
+	buf->b_p_key = crypt_get_key(FALSE, FALSE);
 	if (buf->b_p_key == NULL)
 	    buf->b_p_key = curbuf->b_p_key;
 	else if (*buf->b_p_key == NUL)
@@ -4816,6 +4823,7 @@ ml_encrypt_data(mfp, data, offset, size)
     char_u	*text_start;
     char_u	*new_data;
     int		text_len;
+    cryptstate_T *state;
 
     if (dp->db_id != DATA_ID)
 	return data;
@@ -4831,10 +4839,9 @@ ml_encrypt_data(mfp, data, offset, size)
     mch_memmove(new_data, dp, head_end - (char_u *)dp);
 
     /* Encrypt the text. */
-    crypt_push_state();
-    ml_crypt_prepare(mfp, offset, FALSE);
-    crypt_encode(text_start, text_len, new_data + dp->db_txt_start);
-    crypt_pop_state();
+    state = ml_crypt_prepare(mfp, offset, FALSE);
+    crypt_encode(state, text_start, text_len, new_data + dp->db_txt_start);
+    crypt_free_state(state);
 
     /* Clear the gap. */
     if (head_end < text_start)
@@ -4857,6 +4864,7 @@ ml_decrypt_data(mfp, data, offset, size)
     char_u	*head_end;
     char_u	*text_start;
     int		text_len;
+    cryptstate_T *state;
 
     if (dp->db_id == DATA_ID)
     {
@@ -4869,17 +4877,17 @@ ml_decrypt_data(mfp, data, offset, size)
 	    return;  /* data was messed up */
 
 	/* Decrypt the text in place. */
-	crypt_push_state();
-	ml_crypt_prepare(mfp, offset, TRUE);
-	crypt_decode(text_start, text_len);
-	crypt_pop_state();
+	state = ml_crypt_prepare(mfp, offset, TRUE);
+	crypt_decode_inplace(state, text_start, text_len);
+	crypt_free_state(state);
     }
 }
 
 /*
  * Prepare for encryption/decryption, using the key, seed and offset.
+ * Return an allocated cryptstate_T *.
  */
-    static void
+    static cryptstate_T *
 ml_crypt_prepare(mfp, offset, reading)
     memfile_T	*mfp;
     off_t	offset;
@@ -4887,38 +4895,37 @@ ml_crypt_prepare(mfp, offset, reading)
 {
     buf_T	*buf = mfp->mf_buffer;
     char_u	salt[50];
-    int		method;
+    int		method_nr;
     char_u	*key;
     char_u	*seed;
 
     if (reading && mfp->mf_old_key != NULL)
     {
 	/* Reading back blocks with the previous key/method/seed. */
-	method = mfp->mf_old_cm;
+	method_nr = mfp->mf_old_cm;
 	key = mfp->mf_old_key;
 	seed = mfp->mf_old_seed;
     }
     else
     {
-	method = get_crypt_method(buf);
+	method_nr = crypt_get_method_nr(buf);
 	key = buf->b_p_key;
 	seed = mfp->mf_seed;
     }
 
-    use_crypt_method = method;  /* select pkzip or blowfish */
-    if (method == 0)
+    if (method_nr == CRYPT_M_ZIP)
     {
+	/* For PKzip: Append the offset to the key, so that we use a different
+	 * key for every block. */
 	vim_snprintf((char *)salt, sizeof(salt), "%s%ld", key, (long)offset);
-	crypt_init_keys(salt);
+	return crypt_create(method_nr, salt, NULL, 0, NULL, 0);
     }
-    else
-    {
-	/* Using blowfish, add salt and seed. We use the byte offset of the
-	 * block for the salt. */
-	vim_snprintf((char *)salt, sizeof(salt), "%ld", (long)offset);
-	bf_key_init(key, salt, (int)STRLEN(salt));
-	bf_cfb_init(seed, MF_SEED_LEN);
-    }
+
+    /* Using blowfish or better: add salt and seed. We use the byte offset
+     * of the block for the salt. */
+    vim_snprintf((char *)salt, sizeof(salt), "%ld", (long)offset);
+    return crypt_create(method_nr, key, salt, (int)STRLEN(salt),
+							   seed, MF_SEED_LEN);
 }
 
 #endif

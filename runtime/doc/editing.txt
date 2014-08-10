@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.4.  Last change: 2014 Jul 19
+*editing.txt*   For Vim version 7.4.  Last change: 2014 Aug 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1370,8 +1370,13 @@ lose your work.  The undo file can be disabled without much disadvantage. >
 
 Note: The text in memory is not encrypted.  A system administrator may be able
 to see your text while you are editing it.  When filtering text with
-":!filter" or using ":w !command" the text is not encrypted, this may reveal
-it to others.  The 'viminfo' file is not encrypted.
+":!filter" or using ":w !command" the text is also not encrypted, this may
+reveal it to others.  The 'viminfo' file is not encrypted.
+
+You could do this to edit very secret text: >
+	:set noundofile viminfo=
+	:noswapfile edit secrets.txt
+Keep in mind that without a swap file you risk loosing your work in a crash.
 
 WARNING: If you make a typo when entering the key and then write the file and
 exit, the text will be lost!
@@ -1398,18 +1403,25 @@ To disable the encryption, reset the 'key' option to an empty value: >
 	:set key=
 
 You can use the 'cryptmethod' option to select the type of encryption, use one
-of these two: >
-	:setlocal cm=zip       " weak method, backwards compatible
-	:setlocal cm=blowfish  " strong method
+of these: >
+	:setlocal cm=zip        " weak method, backwards compatible
+	:setlocal cm=blowfish   " method with flaws
+	:setlocal cm=blowfish2  " medium strong method
+
 Do this before writing the file.  When reading an encrypted file it will be
 set automatically to the method used when that file was written.  You can
 change 'cryptmethod' before writing that file to change the method.
+
 To set the default method, used for new files, use one of these in your
 |vimrc| file: >
 	set cm=zip
-	set cm=blowfish
+	set cm=blowfish2
+Use the first one if you need to be compatible with Vim 7.2 and older.  Using
+"blowfish2" is highly recommended if you can use a Vim version that supports
+it.
+
 The message given for reading and writing a file will show "[crypted]" when
-using zip, "[blowfish]" when using blowfish.
+using zip, "[blowfish]" when using blowfish, etc.
 
 When writing an undo file, the same key and method will be used for the text
 in the undo file. |persistent-undo|.
@@ -1444,7 +1456,7 @@ lines to "/etc/magic", "/usr/share/misc/magic" or wherever your system has the
      0	string	VimCrypt~	Vim encrypted file
      >9	string	01	- "zip" cryptmethod
      >9	string	02	- "blowfish" cryptmethod
-
+     >9	string	03	- "blowfish2" cryptmethod
 
 Notes:
 - Encryption is not possible when doing conversion with 'charconvert'.
@@ -1468,6 +1480,10 @@ Notes:
 - Pkzip uses the same encryption as 'cryptmethod' "zip", and US Govt has no
   objection to its export.  Pkzip's public file APPNOTE.TXT describes this
   algorithm in detail.
+- The implmentation of 'cryptmethod' "blowfish" has a flaw.  It is possible to
+  crack the first 64 bytes of a file and in some circumstances more of the
+  file. Use of it is not recommended, but it's still the strongest method
+  supported by Vim 7.3 and 7.4.  The "zip" method is even weaker.
 - Vim originates from the Netherlands.  That is where the sources come from.
   Thus the encryption code is not exported from the USA.
 

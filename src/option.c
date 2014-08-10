@@ -2989,7 +2989,7 @@ static char *(p_bg_values[]) = {"light", "dark", NULL};
 static char *(p_nf_values[]) = {"octal", "hex", "alpha", NULL};
 static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
 #ifdef FEAT_CRYPT
-static char *(p_cm_values[]) = {"zip", "blowfish", NULL};
+static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2", NULL};
 #endif
 #ifdef FEAT_CMDL_COMPL
 static char *(p_wop_values[]) = {"tagfile", NULL};
@@ -6140,7 +6140,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 # endif
 	if (STRCMP(curbuf->b_p_key, oldval) != 0)
 	    /* Need to update the swapfile. */
-	    ml_set_crypt_key(curbuf, oldval, get_crypt_method(curbuf));
+	    ml_set_crypt_key(curbuf, oldval, crypt_get_method_nr(curbuf));
     }
 
     else if (gvarp == &p_cm)
@@ -6151,7 +6151,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	    p = p_cm;
 	if (check_opt_strings(p, p_cm_values, TRUE) != OK)
 	    errmsg = e_invarg;
-	else if (get_crypt_method(curbuf) > 0 && blowfish_self_test() == FAIL)
+	else if (crypt_self_test() == FAIL)
 	    errmsg = e_invarg;
 	else
 	{
@@ -6177,7 +6177,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 		p = curbuf->b_p_cm;
 	    if (STRCMP(s, p) != 0)
 		ml_set_crypt_key(curbuf, curbuf->b_p_key,
-						 crypt_method_from_string(s));
+						crypt_method_nr_from_name(s));
 
 	    /* If the global value changes need to update the swapfile for all
 	     * buffers using that value. */
@@ -6188,7 +6188,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 		for (buf = firstbuf; buf != NULL; buf = buf->b_next)
 		    if (buf != curbuf && *buf->b_p_cm == NUL)
 			ml_set_crypt_key(buf, buf->b_p_key,
-					    crypt_method_from_string(oldval));
+					   crypt_method_nr_from_name(oldval));
 	    }
 	}
     }

@@ -105,10 +105,6 @@ EXTERN int	exec_from_reg INIT(= FALSE);	/* executing register */
 
 EXTERN int	screen_cleared INIT(= FALSE);	/* screen has been cleared */
 
-#ifdef FEAT_CRYPT
-EXTERN int      use_crypt_method INIT(= 0);
-#endif
-
 /*
  * When '$' is included in 'cpoptions' option set:
  * When a change command is given that deletes only part of a line, a dollar

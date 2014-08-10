@@ -13,6 +13,8 @@ STARTTEST
 :let cm0_bytes = getline('.', '.')
 :/^start of cm=blowfish bytes/+1
 :let cm1_bytes = getline('.', '.')
+:/^start of cm=blowfish2 bytes/+1
+:let cm2_bytes = getline('.', '.')
 :bwipe!
 :call append(0, text_lines)
 :$d
@@ -36,6 +38,18 @@ barfoo
 :e Xtestfile
 barfoo
 :let cm1_read_back = getline('.', '$')
+:set key=
+:set cryptmethod=blowfish2
+:" If the blowfish test fails 'cryptmethod' will be 'zip' now.
+:%s/^/\=&cryptmethod == 'blowfish2' ? "OK " : "blowfish test failed "/
+:X
+bar2foo
+bar2foo
+:w! Xtestfile
+:bwipe!
+:e Xtestfile
+bar2foo
+:let cm2_read_back = getline('.', '$')
 :bwipe!
 :set bin noeol key=
 :call append(0, cm0_bytes)
@@ -57,7 +71,20 @@ foofoo
 :set nobin
 :e Xtestfile
 barbar
+:let cm1_read_bin = getline('.', '$')
+:bwipe!
+:set bin noeol key=
+:call append(0, cm2_bytes)
+:$d
+:set fenc=latin1
+:w! Xtestfile
+:bwipe!
+:set nobin
+:e Xtestfile
+barburp
+:call append(0, cm1_read_bin)
 :call append(0, cm0_read_bin)
+:call append(0, cm2_read_back)
 :call append(0, cm1_read_back)
 :call append(0, cm0_read_back)
 :set key= fenc=latin1
