@@ -22,6 +22,8 @@ OBJ = \
 	obj/blowfish.o \
 	obj/buffer.o \
 	obj/charset.o \
+	obj/crypt.o \
+	obj/crypt_zip.o \
 	obj/diff.o \
 	obj/digraph.o \
 	obj/edit.o \

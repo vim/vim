@@ -42,6 +42,8 @@ OBJ = \
 	blowfish.o \
 	buffer.o \
 	charset.o \
+	crypt.o \
+	crypt_zip.o \
 	diff.o \
 	digraph.o \
 	edit.o \
@@ -117,6 +119,8 @@ os_unix.o:	os_unix.c  $(INCL)
 blowfish.o:	blowfish.c  $(INCL)
 buffer.o:	buffer.c  $(INCL)
 charset.o:	charset.c  $(INCL)
+crypt.o:	crypt.c  $(INCL)
+crypt_zip.o:	crypt_zip.c  $(INCL)
 diff.o:		diff.c  $(INCL)
 digraph.o:	digraph.c  $(INCL)
 edit.o:		edit.c  $(INCL)

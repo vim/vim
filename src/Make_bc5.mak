@@ -580,6 +580,8 @@ vimobj =  \
 	$(OBJDIR)\blowfish.obj \
 	$(OBJDIR)\buffer.obj \
 	$(OBJDIR)\charset.obj \
+	$(OBJDIR)\crypt.obj \
+	$(OBJDIR)\crypt_zip.obj \
 	$(OBJDIR)\diff.obj \
 	$(OBJDIR)\digraph.obj \
 	$(OBJDIR)\edit.obj \

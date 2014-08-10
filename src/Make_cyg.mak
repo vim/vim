@@ -1,6 +1,7 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2013 Dec 11
+# Updated by Dan Sharp.
+# Last Change: 2014 Aug 10
 #
 # Also read INSTALLpc.txt!
 #
@@ -546,6 +547,8 @@ OBJ = \
 	$(OUTDIR)/blowfish.o \
 	$(OUTDIR)/buffer.o \
 	$(OUTDIR)/charset.o \
+	$(OUTDIR)/crypt.o \
+	$(OUTDIR)/crypt_zip.o \
 	$(OUTDIR)/diff.o \
 	$(OUTDIR)/digraph.o \
 	$(OUTDIR)/edit.o \

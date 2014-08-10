@@ -517,6 +517,8 @@ OBJ = \
 	$(OUTDIR)/blowfish.o \
 	$(OUTDIR)/buffer.o \
 	$(OUTDIR)/charset.o \
+	$(OUTDIR)/crypt.o \
+	$(OUTDIR)/crypt_zip.o \
 	$(OUTDIR)/diff.o \
 	$(OUTDIR)/digraph.o \
 	$(OUTDIR)/edit.o \

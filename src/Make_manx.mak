@@ -37,6 +37,8 @@ DEL = $(SHELL) -c rm -f
 SRC =	blowfish.c \
 	buffer.c \
 	charset.c \
+	crypt.c \
+	crypt_zip.c \
 	diff.c \
 	digraph.c \
 	edit.c \
@@ -85,6 +87,8 @@ INCL = vim.h feature.h keymap.h macros.h ascii.h term.h structs.h os_amiga.h
 OBJ =	obj/blowfish.o \
 	obj/buffer.o \
 	obj/charset.o \
+	obj/crypt.o \
+	obj/crypt_zip.o \
 	obj/diff.o \
 	obj/digraph.o \
 	obj/edit.o \
@@ -131,6 +135,8 @@ OBJ =	obj/blowfish.o \
 PRO =	proto/blowfish.pro \
 	proto/buffer.pro \
 	proto/charset.pro \
+	proto/crypt.pro \
+	proto/crypt_zip.pro \
 	proto/diff.pro \
 	proto/digraph.pro \
 	proto/edit.pro \
@@ -226,6 +232,12 @@ obj/buffer.o:	buffer.c
 
 obj/charset.o:	charset.c
 	$(CCSYM) $@ charset.c
+
+obj/crypt.o:	crypt.c
+	$(CCSYM) $@ crypt.c
+
+obj/crypt_zip.o: crypt_zip.c
+	$(CCSYM) $@ crypt_zip.c
 
 obj/diff.o:	diff.c
 	$(CCSYM) $@ diff.c

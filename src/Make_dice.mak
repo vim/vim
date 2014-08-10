@@ -29,6 +29,8 @@ SRC = \
 	blowfish.c \
 	buffer.c \
 	charset.c \
+	crypt.c \
+	crypt_zip.c \
 	diff.c \
 	digraph.c \
 	edit.c \
@@ -75,6 +77,8 @@ SRC = \
 OBJ =	o/blowfish.o \
 	o/buffer.o \
 	o/charset.o \
+	o/crypt.o \
+	o/crypt_zip.o \
 	o/diff.o \
 	o/digraph.o \
 	o/edit.o \
@@ -142,6 +146,10 @@ o/blowfish.o:	blowfish.c  $(SYMS)
 o/buffer.o:	buffer.c  $(SYMS)
 
 o/charset.o:	charset.c  $(SYMS)
+
+o/crypt.o:	crypt.c  $(SYMS)
+
+o/crypt_zip.o:	crypt_zip.c  $(SYMS)
 
 o/diff.o:	diff.c	$(SYMS)
 
