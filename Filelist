@@ -11,6 +11,8 @@ SRC_ALL =	\
 		src/blowfish.c \
 		src/buffer.c \
 		src/charset.c \
+		src/crypt.c \
+		src/crypt_zip.c \
 		src/diff.c \
 		src/digraph.c \
 		src/edit.c \
@@ -103,6 +105,8 @@ SRC_ALL =	\
 		src/proto/blowfish.pro \
 		src/proto/buffer.pro \
 		src/proto/charset.pro \
+		src/proto/crypt.pro \
+		src/proto/crypt_zip.pro \
 		src/proto/diff.pro \
 		src/proto/digraph.pro \
 		src/proto/edit.pro \
@@ -289,6 +293,8 @@ SRC_DOS =	\
 		src/dosinst.h \
 		src/glbl_ime.cpp \
 		src/glbl_ime.h \
+		src/gui_dwrite.cpp \
+		src/gui_dwrite.h \
 		src/gui_w16.c \
 		src/gui_w32.c \
 		src/gui_w48.c \
