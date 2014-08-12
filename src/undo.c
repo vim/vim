@@ -929,7 +929,7 @@ undo_write(bi, ptr, len)
 undo_flush(bi)
     bufinfo_T	*bi;
 {
-    if (bi->bi_used > 0)
+    if (bi->bi_buffer != NULL && bi->bi_used > 0)
     {
 	crypt_encode_inplace(bi->bi_state, bi->bi_buffer, bi->bi_used);
 	if (fwrite(bi->bi_buffer, bi->bi_used, (size_t)1, bi->bi_fp) != 1)
@@ -1573,10 +1573,7 @@ u_write_undo(name, forceit, buf, hash)
 #endif
     bufinfo_T	bi;
 
-#ifdef FEAT_CRYPT
-    bi.bi_state = NULL;
-    bi.bi_buffer = NULL;
-#endif
+    vim_memset(&bi, 0, sizeof(bi));
 
     if (name == NULL)
     {
@@ -1861,6 +1858,7 @@ u_read_undo(name, hash, orig_name)
 #endif
     bufinfo_T	bi;
 
+    vim_memset(&bi, 0, sizeof(bi));
     if (name == NULL)
     {
 	file_name = u_get_undo_file_name(curbuf->b_ffname, TRUE);
@@ -1905,10 +1903,6 @@ u_read_undo(name, hash, orig_name)
     }
     bi.bi_buf = curbuf;
     bi.bi_fp = fp;
-#ifdef FEAT_CRYPT
-    bi.bi_state = NULL;
-    bi.bi_buffer = NULL;
-#endif
 
     /*
      * Read the undo file header.
