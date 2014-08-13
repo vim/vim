@@ -992,7 +992,7 @@ undo_write_bytes(bi, nr, len)
     int	    bufi = 0;
 
     for (i = len - 1; i >= 0; --i)
-	buf[bufi++] = nr >> (i * 8);
+	buf[bufi++] = (char_u)(nr >> (i * 8));
     return undo_write(bi, buf, (size_t)len);
 }
 
@@ -1093,7 +1093,7 @@ undo_read(bi, buffer, size)
 #ifdef FEAT_CRYPT
     if (bi->bi_buffer != NULL)
     {
-	int	size_todo = size;
+	int	size_todo = (int)size;
 	char_u	*p = buffer;
 
 	while (size_todo > 0)
@@ -1119,7 +1119,7 @@ undo_read(bi, buffer, size)
 		n = bi->bi_avail - bi->bi_used;
 	    mch_memmove(p, bi->bi_buffer + bi->bi_used, n);
 	    bi->bi_used += n;
-	    size_todo -= n;
+	    size_todo -= (int)n;
 	    p += n;
 	}
 	return OK;

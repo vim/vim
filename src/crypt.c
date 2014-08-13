@@ -397,13 +397,13 @@ crypt_encode_alloc(state, from, len, newptr)
 	return method->encode_buffer_fn(state, from, len, newptr);
     if (len == 0)
 	/* Not buffering, just return EOF. */
-	return len;
+	return (long)len;
 
-    *newptr = alloc(len);
+    *newptr = alloc((long)len);
     if (*newptr == NULL)
 	return -1;
     method->encode_fn(state, from, len, *newptr);
-    return len;
+    return (long)len;
 }
 
 /*
