@@ -235,6 +235,7 @@ typedef enum {
 } upd_block0_T;
 
 #ifdef FEAT_CRYPT
+static void ml_set_mfp_crypt __ARGS((buf_T *buf));
 static void ml_set_b0_crypt __ARGS((buf_T *buf, ZERO_BL *b0p));
 #endif
 static int ml_check_b0_id __ARGS((ZERO_BL *b0p));
@@ -432,6 +433,25 @@ error:
 }
 
 #if defined(FEAT_CRYPT) || defined(PROTO)
+/*
+ * Prepare encryption for "buf" for the current key and method.
+ */
+    static void
+ml_set_mfp_crypt(buf)
+    buf_T	*buf;
+{
+    if (*buf->b_p_key != NUL)
+    {
+	int method_nr = crypt_get_method_nr(buf);
+
+	if (method_nr > CRYPT_M_ZIP)
+	{
+	    /* Generate a seed and store it in the memfile. */
+	    sha2_seed(buf->b_ml.ml_mfp->mf_seed, MF_SEED_LEN, NULL, 0);
+	}
+    }
+}
+
 /*
  * Prepare encryption for "buf" with block 0 "b0p".
  */
@@ -915,8 +935,19 @@ ml_upd_block0(buf, what)
     ZERO_BL	*b0p;
 
     mfp = buf->b_ml.ml_mfp;
-    if (mfp == NULL || (hp = mf_get(mfp, (blocknr_T)0, 1)) == NULL)
+    if (mfp == NULL)
 	return;
+    hp = mf_get(mfp, (blocknr_T)0, 1);
+    if (hp == NULL)
+    {
+#ifdef FEAT_CRYPT
+	/* Possibly update the seed in the memfile before there is a block0. */
+	if (what == UB_CRYPT)
+	    ml_set_mfp_crypt(buf);
+#endif
+	return;
+    }
+
     b0p = (ZERO_BL *)(hp->bh_data);
     if (ml_check_b0_id(b0p) == FAIL)
 	EMSG(_("E304: ml_upd_block0(): Didn't get block 0??"));

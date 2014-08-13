@@ -2944,6 +2944,7 @@ check_for_cryptkey(cryptkey, ptr, sizep, filesizep, newfile, fname, did_ask)
 	 * Avoids accidentally overwriting the file with garbage. */
 	curbuf->b_p_ro = TRUE;
 
+	/* Set the cryptmethod local to the buffer. */
 	crypt_set_cm_option(curbuf, method);
 	if (cryptkey == NULL && !*did_ask)
 	{

@@ -6163,6 +6163,14 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 		p_cm = vim_strsave((char_u *)"zip");
 		new_value_alloced = TRUE;
 	    }
+	    /* When using ":set cm=name" the local value is going to be empty.
+	     * Do that here, otherwise the crypt functions will still use the
+	     * local value. */
+	    if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
+	    {
+		free_string_option(curbuf->b_p_cm);
+		curbuf->b_p_cm = empty_option;
+	    }
 
 	    /* Need to update the swapfile when the effective method changed.
 	     * Set "s" to the effective old value, "p" to the effective new
