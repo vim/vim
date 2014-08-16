@@ -609,6 +609,26 @@ block_insert(oap, s, b_insert, bdp)
 	    }
 	}
 
+#ifdef FEAT_MBYTE
+	if (has_mbyte && spaces > 0)
+	{
+	    /* Avoid starting halfway a multi-byte character. */
+	    if (b_insert)
+	    {
+		int off = (*mb_head_off)(oldp, oldp + offset + spaces);
+		spaces -= off;
+		count -= off;
+	    }
+	    else
+	    {
+		int off = (*mb_off_next)(oldp, oldp + offset);
+		offset += off;
+		spaces = 0;
+		count = 0;
+	    }
+	}
+#endif
+
 	newp = alloc_check((unsigned)(STRLEN(oldp)) + s_len + count + 1);
 	if (newp == NULL)
 	    continue;

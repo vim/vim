@@ -38,13 +38,14 @@ SCRIPTS = test1.out test3.out test4.out test5.out test6.out \
 		test104.out test105.out test106.out test107.out \
 		test_autoformat_join.out \
 		test_breakindent.out \
-		test_listlbr.out \
-		test_listlbr_utf8.out \
-		test_qf_title.out \
 		test_changelist.out \
 		test_eval.out \
 		test_insertcount.out \
-		test_options.out
+		test_listlbr.out \
+		test_listlbr_utf8.out \
+		test_options.out \
+		test_qf_title.out \
+		test_utf8.out
 
 .SUFFIXES: .in .out
 
@@ -170,10 +171,11 @@ test106.out: test106.in
 test107.out: test107.in
 test_autoformat_join.out: test_autoformat_join.in
 test_breakindent.out: test_breakindent.in
-test_listlbr.out: test_listlbr.in
-test_listlbr_utf8.out: test_listlbr_utf8.in
-test_qf_title.out: test_qf_title.in
 test_changelist.out: test_changelist.in
 test_eval.out: test_eval.in
 test_insertcount.out: test_insertcount.in
+test_listlbr.out: test_listlbr.in
+test_listlbr_utf8.out: test_listlbr_utf8.in
 test_options.out: test_options.in
+test_qf_title.out: test_qf_title.in
+test_utf8.out: test_utf8.in

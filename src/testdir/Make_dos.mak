@@ -37,13 +37,14 @@ SCRIPTS =	test3.out test4.out test5.out test6.out test7.out \
 		test105.out test106.out  test107.out\
 		test_autoformat_join.out \
 		test_breakindent.out \
-		test_listlbr.out \
-		test_listlbr_utf8.out \
-		test_qf_title.out \
 		test_changelist.out \
 		test_eval.out \
 		test_insertcount.out \
-		test_options.out
+		test_listlbr.out \
+		test_listlbr_utf8.out \
+		test_options.out \
+		test_qf_title.out \
+		test_utf8.out
 
 SCRIPTS32 =	test50.out test70.out
 
