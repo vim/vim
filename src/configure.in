@@ -933,6 +933,14 @@ if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
       fi
       vi_cv_perllib=`$vi_cv_path_perl -MConfig -e 'print $Config{privlibexp}'`
       AC_SUBST(vi_cv_perllib)
+      vi_cv_perl_extutils=unknown_perl_extutils_path
+      for extutils_rel_path in ExtUtils vendor_perl/ExtUtils; do
+	xsubpp_path="$vi_cv_perllib/$extutils_rel_path/xsubpp"
+	if test -f "$xsubpp_path"; then
+	  vi_cv_perl_xsubpp="$xsubpp_path"
+	fi
+      done
+      AC_SUBST(vi_cv_perl_xsubpp)
       dnl Remove "-fno-something", it breaks using cproto.
       perlcppflags=`$vi_cv_path_perl -Mlib=$srcdir -MExtUtils::Embed \
 	      -e 'ccflags;perl_inc;print"\n"' | sed -e 's/-fno[[^ ]]*//'`

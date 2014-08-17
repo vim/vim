@@ -2477,7 +2477,7 @@ lintinstall:
 
 auto/if_perl.c: if_perl.xs
 	$(PERL) -e 'unless ( $$] >= 5.005 ) { for (qw(na defgv errgv)) { print "#define PL_$$_ $$_\n" }}' > $@
-	$(PERL) $(PERLLIB)/ExtUtils/xsubpp -prototypes -typemap \
+	$(PERL) $(PERL_XSUBPP) -prototypes -typemap \
 	    $(PERLLIB)/ExtUtils/typemap if_perl.xs >> $@
 
 auto/osdef.h: auto/config.h osdef.sh osdef1.h.in osdef2.h.in
