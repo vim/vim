@@ -47,6 +47,8 @@ int has_cursormovedI __ARGS((void));
 int has_textchanged __ARGS((void));
 int has_textchangedI __ARGS((void));
 int has_insertcharpre __ARGS((void));
+int has_cmdundefined __ARGS((void));
+int has_funcundefined __ARGS((void));
 void block_autocmds __ARGS((void));
 void unblock_autocmds __ARGS((void));
 int is_autocmd_blocked __ARGS((void));

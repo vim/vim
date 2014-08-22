@@ -7641,6 +7641,7 @@ static struct event_name
     {"BufWriteCmd",	EVENT_BUFWRITECMD},
     {"CmdwinEnter",	EVENT_CMDWINENTER},
     {"CmdwinLeave",	EVENT_CMDWINLEAVE},
+    {"CmdUndefined",	EVENT_CMDUNDEFINED},
     {"ColorScheme",	EVENT_COLORSCHEME},
     {"CompleteDone",	EVENT_COMPLETEDONE},
     {"CursorHold",	EVENT_CURSORHOLD},
@@ -9157,6 +9158,24 @@ has_textchangedI()
 has_insertcharpre()
 {
     return (first_autopat[(int)EVENT_INSERTCHARPRE] != NULL);
+}
+
+/*
+ * Return TRUE when there is an CmdUndefined autocommand defined.
+ */
+    int
+has_cmdundefined()
+{
+    return (first_autopat[(int)EVENT_CMDUNDEFINED] != NULL);
+}
+
+/*
+ * Return TRUE when there is an FuncUndefined autocommand defined.
+ */
+    int
+has_funcundefined()
+{
+    return (first_autopat[(int)EVENT_FUNCUNDEFINED] != NULL);
 }
 
     static int

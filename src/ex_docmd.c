@@ -2143,6 +2143,26 @@ do_one_cmd(cmdlinep, sourcing,
     /* Find the command and let "p" point to after it. */
     p = find_command(&ea, NULL);
 
+#ifdef FEAT_AUTOCMD
+    /* If this looks like an undefined user command and there are CmdUndefined
+     * autocommands defined, trigger the matching autocommands. */
+    if (p != NULL && ea.cmdidx == CMD_SIZE && !ea.skip
+	    && ASCII_ISUPPER(*ea.cmd)
+	    && has_cmdundefined())
+    {
+	char_u *p = ea.cmd;
+	int ret;
+
+	while (ASCII_ISALNUM(*p))
+	    ++p;
+	p = vim_strnsave(ea.cmd, p - ea.cmd);
+	ret = apply_autocmds(EVENT_CMDUNDEFINED, p, p, TRUE, NULL);
+	vim_free(p);
+	if (ret && !aborting())
+	    p = find_command(&ea, NULL);
+    }
+#endif
+
 #ifdef FEAT_USR_CMDS
     if (p == NULL)
     {
