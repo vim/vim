@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2014 Apr 01
+" Last Change:	2014 Aug 06
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -605,6 +605,10 @@ if has("gui")
     endif
     call append("$", "guiheadroom\troom (in pixels) left above/below the window")
     call append("$", " \tset ghr=" . &ghr)
+  endif
+  if has("directx")
+    call append("$", "renderoptions\toptions for text rendering")
+    call <SID>OptionG("rop", &rop)
   endif
   call append("$", "guipty\tuse a pseudo-tty for I/O to external commands")
   call <SID>BinOptionG("guipty", &guipty)

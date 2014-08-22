@@ -55,8 +55,8 @@ NOTE: The cursor keys should also work.  But using hjkl you will be able to
   2. Type:	:q! <ENTER>.
      This exits the editor, DISCARDING any changes you have made.
 
-  3. When you see the shell prompt, type the command that got you into this
-     tutor.  That would be:	vimtutor <ENTER>
+  3. Get back here by executing the command that got you into this tutor. That
+     might be:  vimtutor <ENTER>
 
   4. If you have these steps memorized and are confident, execute steps
      1 through 3 to exit and re-enter the editor.

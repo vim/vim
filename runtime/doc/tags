@@ -756,6 +756,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'regexpengine'	options.txt	/*'regexpengine'*
 'relativenumber'	options.txt	/*'relativenumber'*
 'remap'	options.txt	/*'remap'*
+'renderoptions'	options.txt	/*'renderoptions'*
 'report'	options.txt	/*'report'*
 'restorescreen'	options.txt	/*'restorescreen'*
 'revins'	options.txt	/*'revins'*
@@ -766,6 +767,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'rlc'	options.txt	/*'rlc'*
 'rnu'	options.txt	/*'rnu'*
 'ro'	options.txt	/*'ro'*
+'rop'	options.txt	/*'rop'*
 'rs'	options.txt	/*'rs'*
 'rtp'	options.txt	/*'rtp'*
 'ru'	options.txt	/*'ru'*
@@ -1171,6 +1173,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 +dialog_gui	various.txt	/*+dialog_gui*
 +diff	various.txt	/*+diff*
 +digraphs	various.txt	/*+digraphs*
++directx	various.txt	/*+directx*
 +dnd	various.txt	/*+dnd*
 +emacs_tags	various.txt	/*+emacs_tags*
 +eval	various.txt	/*+eval*
@@ -4902,6 +4905,7 @@ blockwise-operators	visual.txt	/*blockwise-operators*
 blockwise-register	change.txt	/*blockwise-register*
 blockwise-visual	visual.txt	/*blockwise-visual*
 blowfish	options.txt	/*blowfish*
+blowfish2	options.txt	/*blowfish2*
 bold	syntax.txt	/*bold*
 bom-bytes	mbyte.txt	/*bom-bytes*
 book	intro.txt	/*book*
@@ -6138,6 +6142,7 @@ getcharmod()	eval.txt	/*getcharmod()*
 getcmdline()	eval.txt	/*getcmdline()*
 getcmdpos()	eval.txt	/*getcmdpos()*
 getcmdtype()	eval.txt	/*getcmdtype()*
+getcmdwintype()	eval.txt	/*getcmdwintype()*
 getcurpos()	eval.txt	/*getcurpos()*
 getcwd()	eval.txt	/*getcwd()*
 getfontname()	eval.txt	/*getfontname()*

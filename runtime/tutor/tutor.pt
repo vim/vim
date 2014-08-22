@@ -572,7 +572,7 @@ Nota: Isso é muito útil para corrigir um programa com parênteses não-casados!
      digite  :#,#s/velho/novo/g   onde #,# são os números das duas linhas.
      Digite  :%s/velho/novo/g     para mudar todas as ocorrências no arquivo
                                   inteiro.
-     Digite  :%/velho/novo/gc     para mudar todas as ocorrência no arquivo
+     Digite  :%s/velho/novo/gc    para mudar todas as ocorrência no arquivo
                                   inteiro, com a opção de confirmar cada
 				  substituição.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -971,7 +971,7 @@ NOTA:  A completação funciona com muitos comandos. Basta pressionar CTRL-D e
   Colorado School of Mines, usando idéias fornecidas por Charles Smith,
   Colorado State University.  E-mail: bware@mines.colorado.edu.
 
-  Modificado para o Vim por Bram Moolenar.
+  Modificado para o Vim por Bram Moolenaar.
 
   Versão 1.4 traduzida para o português por Marcelo Drudi Miranda, Escola
   Politécnica da Universidade de São Paulo.
