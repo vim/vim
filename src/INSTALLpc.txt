@@ -192,6 +192,30 @@ To set the environment execute the msvc2010.bat script.  You can then build
 Vim with Make_mvc.mak.
 
 
+Targeting Windows XP with new MSVC      *new-msvc-windows-xp*
+----------------------------------
+
+Beginning with Visual C++ 2010, Microsoft changed the behavior of LINK.EXE
+so that it targets Windows 6.0 (Vista) by default.  In order to override
+this, the target Windows version number needs to be passed to LINK like
+follows:
+    LINK ... /subsystem:console,5.01
+
+Make_mvc.mak now supports a macro SUBSYSTEM_VER to pass the Windows version.
+Use lines like follows to target Windows XP (assuming using Visual C++ 2012
+under 64-bit Windows):
+    set WinSdk71=%ProgramFiles(x86)%\Microsoft SDKs\Windows\v7.1A
+    set SDK_INCLUDE_DIR=%WinSdk71%\Include
+    set INCLUDE=%WinSdk71%\Include;%INCLUDE%
+    set LIB=%WinSdk71%\Lib;%LIB%
+    set PATH=%WinSdk71%\Bin;%PATH%
+    set CL=/D_USING_V110_SDK71_
+    nmake -f Make_mvc.mak ... WINVER=0x0501 SUBSYSTEM_VER=5.01
+
+The following Visual C++ team blog can serve as a reference page:
+    http://blogs.msdn.com/b/vcblog/archive/2012/10/08/windows-xp-targeting-with-c-in-visual-studio-2012.aspx
+
+
 2. MinGW
 ========
 

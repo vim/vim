@@ -657,6 +657,10 @@ GUI_LIB = \
 SUBSYSTEM = console
 !endif
 
+!if "$(SUBSYSTEM_VER)" != ""
+SUBSYSTEM = $(SUBSYSTEM),$(SUBSYSTEM_VER)
+!endif
+
 !if "$(GUI)" == "yes" && "$(DIRECTX)" == "yes"
 CFLAGS = $(CFLAGS) $(DIRECTX_DEFS)
 GUI_INCL = $(GUI_INCL) $(DIRECTX_INCL)
