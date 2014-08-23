@@ -2150,9 +2150,9 @@ do_one_cmd(cmdlinep, sourcing,
 	    && ASCII_ISUPPER(*ea.cmd)
 	    && has_cmdundefined())
     {
-	char_u *p = ea.cmd;
 	int ret;
 
+	p = ea.cmd;
 	while (ASCII_ISALNUM(*p))
 	    ++p;
 	p = vim_strnsave(ea.cmd, p - ea.cmd);
