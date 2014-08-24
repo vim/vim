@@ -62,5 +62,4 @@ int check_ff_value __ARGS((char_u *p));
 long get_sw_value __ARGS((buf_T *buf));
 long get_sts_value __ARGS((void));
 void find_mps_values __ARGS((int *initc, int *findc, int *backwards, int switchit));
-int briopt_check __ARGS((void));
 /* vim: set ft=c : */
