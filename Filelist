@@ -82,6 +82,7 @@ SRC_ALL =	\
 		src/xxd/xxd.c \
 		src/main.aap \
 		src/testdir/main.aap \
+		src/testdir/README.txt \
 		src/testdir/*.in \
 		src/testdir/sautest/autoload/*.vim \
 		src/testdir/test[0-9]*.ok \
