@@ -4514,6 +4514,11 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			int	i;
 			int	saved_nextra = n_extra;
 
+#ifdef FEAT_CONCEAL
+			if (is_concealing && vcol_off > 0)
+			    /* there are characters to conceal */
+			    tab_len += vcol_off;
+#endif
 			/* if n_extra > 0, it gives the number of chars, to
 			 * use for a tab, else we need to calculate the width
 			 * for a tab */
@@ -4539,6 +4544,12 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #endif
 			}
 			p_extra = p_extra_free;
+#ifdef FEAT_CONCEAL
+			/* n_extra will be increased by FIX_FOX_BOGUSCOLS
+			 * macro below, so need to adjust for that here */
+			if (is_concealing && vcol_off > 0)
+			    n_extra -= vcol_off;
+#endif
 		    }
 #endif
 #ifdef FEAT_CONCEAL
