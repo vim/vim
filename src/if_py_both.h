@@ -4196,7 +4196,9 @@ SetBufferLineList(
 		    break;
 		}
 	    }
-	    if (buf == curbuf)
+	    if (buf == curbuf && (save_curwin != NULL || save_curbuf == NULL))
+		/* Using an existing window for the buffer, adjust the cursor
+		 * position. */
 		py_fix_cursor((linenr_T)lo, (linenr_T)hi, (linenr_T)-n);
 	    if (save_curbuf == NULL)
 		/* Only adjust marks if we managed to switch to a window that
