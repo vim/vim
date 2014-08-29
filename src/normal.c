@@ -4509,13 +4509,19 @@ nv_screengo(oap, dir, dist)
 #if defined(FEAT_LINEBREAK) || defined(FEAT_MBYTE)
     if (curwin->w_cursor.col > 0 && curwin->w_p_wrap)
     {
+	colnr_T virtcol;
+
 	/*
 	 * Check for landing on a character that got split at the end of the
 	 * last line.  We want to advance a screenline, not end up in the same
 	 * screenline or move two screenlines.
 	 */
 	validate_virtcol();
-	if (curwin->w_virtcol > curwin->w_curswant
+	virtcol = curwin->w_virtcol;
+	if (virtcol > (colnr_T)width1 && *p_sbr != NUL)
+	    virtcol -= vim_strsize(p_sbr);
+
+	if (virtcol > curwin->w_curswant
 		&& (curwin->w_curswant < (colnr_T)width1
 		    ? (curwin->w_curswant > (colnr_T)width1 / 2)
 		    : ((curwin->w_curswant - width1) % width2
