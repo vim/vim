@@ -4011,11 +4011,19 @@ ex_append(eap)
 	    eap->nextcmd = p;
 	}
 	else
+	{
+	    int save_State = State;
+
+	    /* Set State to avoid the cursor shape to be set to INSERT mode
+	     * when getline() returns. */
+	    State = CMDLINE;
 	    theline = eap->getline(
 #ifdef FEAT_EVAL
 		    eap->cstack->cs_looplevel > 0 ? -1 :
 #endif
 		    NUL, eap->cookie, indent);
+	    State = save_State;
+	}
 	lines_left = Rows - 1;
 	if (theline == NULL)
 	    break;
