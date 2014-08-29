@@ -291,6 +291,7 @@ static int nfa_regpiece __ARGS((void));
 static int nfa_regconcat __ARGS((void));
 static int nfa_regbranch __ARGS((void));
 static int nfa_reg __ARGS((int paren));
+static int re_mult_next __ARGS((char *what));
 #ifdef DEBUG
 static void nfa_set_code __ARGS((int c));
 static void nfa_postfix_dump __ARGS((char_u *expr, int retval));
@@ -1323,10 +1324,14 @@ nfa_regatom()
 	    {
 		case 's':
 		    EMIT(NFA_ZSTART);
+		    if (re_mult_next("\\zs") == FAIL)
+			return FAIL;
 		    break;
 		case 'e':
 		    EMIT(NFA_ZEND);
 		    nfa_has_zend = TRUE;
+		    if (re_mult_next("\\ze") == FAIL)
+			return FAIL;
 		    break;
 #ifdef FEAT_SYN_HL
 		case '1':
@@ -2273,6 +2278,18 @@ nfa_reg(paren)
 	EMIT(NFA_ZOPEN + parno);
 #endif
 
+    return OK;
+}
+
+/*
+ * Used in a place where no * or \+ can follow.
+ */
+    static int
+re_mult_next(what)
+    char *what;
+{
+    if (re_multi_type(peekchr()) == MULTI_MULT)
+	EMSG2_RET_FAIL(_("E888: (NFA regexp) cannot repeat %s"), what);
     return OK;
 }
 
