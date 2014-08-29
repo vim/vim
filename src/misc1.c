@@ -78,7 +78,8 @@ get_indent_str(ptr, ts, list)
 	    if (!list || lcs_tab1)    /* count a tab for what it is worth */
 		count += ts - (count % ts);
 	    else
-	/* in list mode, when tab is not set, count screen char width for Tab: ^I */
+		/* In list mode, when tab is not set, count screen char width
+		 * for Tab, displays: ^I */
 		count += ptr2cells(ptr);
 	}
 	else if (*ptr == ' ')
@@ -10767,7 +10768,7 @@ gen_expand_wildcards(num_pat, pat, num_file, file, flags)
 		    vim_free(p);
 		    ga_clear_strings(&ga);
 		    i = mch_expand_wildcards(num_pat, pat, num_file, file,
-								       flags);
+							 flags|EW_KEEPDOLLAR);
 		    recursive = FALSE;
 		    return i;
 		}
