@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 7.4.  Last change: 2014 Feb 24
+*os_vms.txt*    For Vim version 7.4.  Last change: 2014 Aug 29
 
 
 		  VIM REFERENCE MANUAL
@@ -774,7 +774,7 @@ Version 7.4
 - correct RealWaitForChar 
 - after 7.4-119 use different functions lib$cvtf_to_internal_time because Alpha and VAX have
   G_FLOAT but IA64 uses IEEE float otherwise Vim crashes
-- guard agains crashes that are caused by mixed filenames
+- guard against crashes that are caused by mixed filenames
 - [TESTDIR]make_vms.mms changed to see the output files
 - Improve tests, update known issues
 - minor compiler warnings fixed

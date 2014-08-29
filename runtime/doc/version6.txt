@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 7.4.  Last change: 2013 Jul 28
+*version6.txt*  For Vim version 7.4.  Last change: 2014 Aug 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -7816,7 +7816,7 @@ Files:	    src/buffer.c, src/eval.c, src/ex_docmd.c, src/fileio.c,
 Patch 6.1.212
 Problem:    When Vim was started with "-R" ":new" creates a buffer
 	    'noreadonly' while ":enew" has 'readonly' set. (Preben Guldberg)
-Solution:   Don't set 'readonly in a new empty buffer for ":enew".
+Solution:   Don't set 'readonly' in a new empty buffer for ":enew".
 Files:	    src/ex_docmd.c
 
 Patch 6.1.213

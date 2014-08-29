@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.4.  Last change: 2013 Nov 18
+*version7.txt*  For Vim version 7.4.  Last change: 2014 Aug 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1626,10 +1626,10 @@ and merge it back in.
 When running the tests and one of them fails to produce "test.out" the
 following tests are still executed.  This helps when running out of memory.
 
-When compiling with EXITFREE defined and the ccmalloc library it is possible
-to detect memory leaks.  Some memory will always reported as leaked, such as
-allocated by X11 library functions and the memory allocated in alloc_cmdbuff()
-to store the ":quit" command.
+When compiling with EXITFREE defined and the ccmalloc library, it is possible
+to detect memory leaks.  Some memory will always be reported as leaked, such
+as allocated by X11 library functions and the memory allocated in
+alloc_cmdbuff() to store the ":quit" command.
 
 Moved the code for printing to src/hardcopy.c.
 
@@ -2038,8 +2038,8 @@ Removed the "COUNT" flag from ":argadd", to avoid ":argadd 1*" to be used like
 
 Avoid that $LANG is used for the menus when LC_MESSAGES is "en_US".
 
-Added backslashes before dashes in the vim.1 manual page to make the appear as
-real dashes. (Pierr Habouzit)
+Added backslashes before dashes in the vim.1 manual page to make them appear
+as real dashes. (Pierr Habouzit)
 
 Where "gq" left the cursor depended on the value of 'formatprg'.  Now "gq"
 always leaves the cursor at the last line of the formatted text.
@@ -2049,7 +2049,7 @@ detection may try to check the contents of the file while it's still
 compressed.  Skip setting 'filetype' for compressed files until they have been
 decompressed.  Required for patterns that end in a "*".
 
-Starting with an argument "+cmd" or "-S script" causes the cursor the be moved
+Starting with an argument "+cmd" or "-S script" causes the cursor to be moved
 to the first line.  That breaks a BufReadPost autocommand that uses g`".
 Don't move the cursor if it's somewhere past the first line.
 
@@ -6485,7 +6485,7 @@ Patch 7.1.282 (extra)
 Problem:    Win64: Edit with Vim context menu isn't installed correctly.
 	    Compiler warnings and a few other things.
 Solution:   Add [ and ] to entry of class name.  Use UINT_PTR instead of UINT.
-	    And a fixes for the other things. (George V.  Reilly)
+	    And fixes for other things. (George V.  Reilly)
 Files:	    src/GvimExt/Makefile, src/dosinst.c, src/if_ole.cpp, src/if_ole.h,
 	    src/if_ole.idl, src/INSTALLpc.txt,  src/Make_mvc.mak,
 	    src/os_win32.c,
@@ -15783,7 +15783,7 @@ Files:	    src/if_py_both.h, src/if_python3.c, src/testdir/test86.in,
 	    src/testdir/test87.ok
 
 Patch 7.3.944
-Problem:    External program receives the termrespone.
+Problem:    External program receives the termresponse.
 Solution:   Insert a delay and discard input. (Hayaki Saito)
 Files:	    src/term.c
 
