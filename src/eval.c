@@ -18594,6 +18594,7 @@ get_cmd_output_as_rettv(argvars, rettv, retlist)
     int		err = FALSE;
     FILE	*fd;
     list_T	*list = NULL;
+    int		flags = SHELL_SILENT;
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
@@ -18643,6 +18644,11 @@ get_cmd_output_as_rettv(argvars, rettv, retlist)
 	}
     }
 
+    /* Omit SHELL_COOKED when invoked with ":silent".  Avoids that the shell
+     * echoes typeahead, that messes up the display. */
+    if (!msg_silent)
+	flags += SHELL_COOKED;
+
     if (retlist)
     {
 	int		len;
@@ -18652,8 +18658,7 @@ get_cmd_output_as_rettv(argvars, rettv, retlist)
 	char_u		*end;
 	int		i;
 
-	res = get_cmd_output(get_tv_string(&argvars[0]), infile,
-					   SHELL_SILENT | SHELL_COOKED, &len);
+	res = get_cmd_output(get_tv_string(&argvars[0]), infile, flags, &len);
 	if (res == NULL)
 	    goto errret;
 
@@ -18694,8 +18699,7 @@ get_cmd_output_as_rettv(argvars, rettv, retlist)
     }
     else
     {
-	res = get_cmd_output(get_tv_string(&argvars[0]), infile,
-					   SHELL_SILENT | SHELL_COOKED, NULL);
+	res = get_cmd_output(get_tv_string(&argvars[0]), infile, flags, NULL);
 #ifdef USE_CR
 	/* translate <CR> into <NL> */
 	if (res != NULL)

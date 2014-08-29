@@ -6093,6 +6093,12 @@ system({expr} [, {input}])				*system()* *E677*
 		list items converted to NULs).  
 		Pipes are not used.
 
+		When prepended by |:silent| the shell will not be set to
+		cooked mode.  This is meant to be used for commands that do
+		not need the user to type.  It avoids stray characters showing
+		up on the screen which require |CTRL-L| to remove. >
+			:silent let f = system('ls *.vim')
+<
 		Note: Use |shellescape()| or |::S| with |expand()| or 
 		|fnamemodify()| to escape special characters in a command 
 		argument.  Newlines in {expr} may cause the command to fail.  
