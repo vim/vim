@@ -4518,8 +4518,10 @@ nv_screengo(oap, dir, dist)
 	 */
 	validate_virtcol();
 	virtcol = curwin->w_virtcol;
+# if defined(FEAT_LINEBREAK)
 	if (virtcol > (colnr_T)width1 && *p_sbr != NUL)
 	    virtcol -= vim_strsize(p_sbr);
+# endif
 
 	if (virtcol > curwin->w_curswant
 		&& (curwin->w_curswant < (colnr_T)width1
