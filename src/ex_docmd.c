@@ -2155,7 +2155,7 @@ do_one_cmd(cmdlinep, sourcing,
 	p = ea.cmd;
 	while (ASCII_ISALNUM(*p))
 	    ++p;
-	p = vim_strnsave(ea.cmd, p - ea.cmd);
+	p = vim_strnsave(ea.cmd, (int)(p - ea.cmd));
 	ret = apply_autocmds(EVENT_CMDUNDEFINED, p, p, TRUE, NULL);
 	vim_free(p);
 	if (ret && !aborting())
