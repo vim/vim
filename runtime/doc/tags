@@ -4330,7 +4330,6 @@ E885	sign.txt	/*E885*
 E886	starting.txt	/*E886*
 E887	if_pyth.txt	/*E887*
 E888	pattern.txt	/*E888*
-E888	pattern.txt	/*E888*
 E89	message.txt	/*E89*
 E90	message.txt	/*E90*
 E91	options.txt	/*E91*
@@ -6082,6 +6081,8 @@ g:tex_isk	syntax.txt	/*g:tex_isk*
 g:tex_no_error	syntax.txt	/*g:tex_no_error*
 g:tex_nospell	syntax.txt	/*g:tex_nospell*
 g:tex_stylish	syntax.txt	/*g:tex_stylish*
+g:tex_subscripts	syntax.txt	/*g:tex_subscripts*
+g:tex_superscripts	syntax.txt	/*g:tex_superscripts*
 g:tex_verbspell	syntax.txt	/*g:tex_verbspell*
 g:var	eval.txt	/*g:var*
 g:vimball_home	pi_vimball.txt	/*g:vimball_home*
@@ -8301,6 +8302,7 @@ tex-runon	syntax.txt	/*tex-runon*
 tex-slow	syntax.txt	/*tex-slow*
 tex-stopzone	syntax.txt	/*tex-stopzone*
 tex-style	syntax.txt	/*tex-style*
+tex-supersub	syntax.txt	/*tex-supersub*
 tex-sync	syntax.txt	/*tex-sync*
 tex-verb	syntax.txt	/*tex-verb*
 tex.vim	syntax.txt	/*tex.vim*
