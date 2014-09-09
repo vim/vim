@@ -3645,6 +3645,9 @@ set_options_default(opt_flags)
 #else
 	win_comp_scroll(curwin);
 #endif
+#ifdef FEAT_CINDENT
+    parse_cino(curbuf);
+#endif
 }
 
 /*
