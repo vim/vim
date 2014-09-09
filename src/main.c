@@ -178,6 +178,14 @@ main
      */
     mch_early_init();
 
+#if defined(WIN32) && defined(FEAT_MBYTE)
+    /*
+     * MingW expands command line arguments, which confuses our code to
+     * convert when 'encoding' changes.  Get the unexpanded arguments.
+     */
+    argc = get_cmd_argsW(&argv);
+#endif
+
     /* Many variables are in "params" so that we can pass them to invoked
      * functions without a lot of arguments.  "argc" and "argv" are also
      * copied, so that they can be changed. */
@@ -1495,6 +1503,9 @@ getout(exitval)
 #ifdef FEAT_EVAL
     if (garbage_collect_at_exit)
 	garbage_collect();
+#endif
+#if defined(WIN32) && defined(FEAT_MBYTE)
+    free_cmd_argsW();
 #endif
 
     mch_exit(exitval);

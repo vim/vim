@@ -6461,6 +6461,7 @@ get_cmd_argsW(char ***argvp)
     int		argc = 0;
     int		i;
 
+    free_cmd_argsW();
     ArglistW = CommandLineToArgvW(GetCommandLineW(), &nArgsW);
     if (ArglistW != NULL)
     {
@@ -6493,7 +6494,11 @@ get_cmd_argsW(char ***argvp)
     global_argc = argc;
     global_argv = argv;
     if (argc > 0)
+    {
+	if (used_file_indexes != NULL)
+	    free(used_file_indexes);
 	used_file_indexes = malloc(argc * sizeof(int));
+    }
 
     if (argvp != NULL)
 	*argvp = argv;

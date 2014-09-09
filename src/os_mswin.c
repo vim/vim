@@ -277,10 +277,6 @@ mch_early_init(void)
     AnsiUpperBuff(toupper_tab, 256);
     AnsiLowerBuff(tolower_tab, 256);
 #endif
-
-#if defined(FEAT_MBYTE) && !defined(FEAT_GUI)
-    (void)get_cmd_argsW(NULL);
-#endif
 }
 
 
