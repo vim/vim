@@ -4035,7 +4035,7 @@ expand_by_function(type, base)
 	goto theend;
     }
     curwin->w_cursor = pos;	/* restore the cursor position */
-    check_cursor();
+    validate_cursor();
     if (!equalpos(curwin->w_cursor, pos))
     {
 	EMSG(_(e_compldel));
@@ -5273,7 +5273,7 @@ ins_complete(c)
 		return FAIL;
 	    }
 	    curwin->w_cursor = pos;	/* restore the cursor position */
-	    check_cursor();
+	    validate_cursor();
 	    if (!equalpos(curwin->w_cursor, pos))
 	    {
 		EMSG(_(e_compldel));
