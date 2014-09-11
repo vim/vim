@@ -1019,7 +1019,7 @@ undo_read_4c(bi)
 	int	n;
 
 	undo_read(bi, buf, (size_t)4);
-	n = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
+	n = ((unsigned)buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
 	return n;
     }
 #endif
