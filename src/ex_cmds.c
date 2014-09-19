@@ -5906,6 +5906,7 @@ erret:
 ex_helpclose(eap)
     exarg_T	*eap UNUSED;
 {
+#if defined(FEAT_WINDOWS)
     win_T *win;
 
     FOR_ALL_WINDOWS(win)
@@ -5916,6 +5917,7 @@ ex_helpclose(eap)
 	    return;
 	}
     }
+#endif
 }
 
 #if defined(FEAT_MULTI_LANG) || defined(PROTO)
