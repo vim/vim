@@ -958,8 +958,17 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
     if (p_im)
 	need_start_insertmode = TRUE;
 
+#ifdef FEAT_CLIPBOARD
+    if (clip_unnamed)
+       /* do not overwrite system clipboard while starting up */
+       clip_did_set_selection = -1;
+#endif
 #ifdef FEAT_AUTOCMD
     apply_autocmds(EVENT_VIMENTER, NULL, NULL, FALSE, curbuf);
+# ifdef FEAT_CLIPBOARD
+    if (clip_did_set_selection < 0)
+       clip_did_set_selection = TRUE;
+# endif
     TIME_MSG("VimEnter autocommands");
 #endif
 
