@@ -5899,6 +5899,24 @@ erret:
     vim_free(tag);
 }
 
+/*
+ * ":helpclose": Close the help window
+ */
+    void
+ex_helpclose(eap)
+    exarg_T	*eap UNUSED;
+{
+    win_T *win;
+
+    FOR_ALL_WINDOWS(win)
+    {
+	if (win->w_buffer->b_help)
+	{
+	    win_close(win, FALSE);
+	    break;
+	}
+    }
+}
 
 #if defined(FEAT_MULTI_LANG) || defined(PROTO)
 /*
