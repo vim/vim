@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.4.  Last change: 2014 Aug 09
+*editing.txt*   For Vim version 7.4.  Last change: 2014 Sep 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -609,7 +609,10 @@ list of the current window.
 			{not in Vi}
 
 :[count]arga[dd] {name} ..			*:arga* *:argadd* *E479*
-			Add the {name}s to the argument list.
+:[count]arga[dd]
+			Add the {name}s to the argument list.  When {name} is
+			omitted at the current buffer name to the argument
+			list.
 			If [count] is omitted, the {name}s are added just
 			after the current entry in the argument list.
 			Otherwise they are added after the [count]'th file.

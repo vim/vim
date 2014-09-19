@@ -2248,6 +2248,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :ha	print.txt	/*:ha*
 :hardcopy	print.txt	/*:hardcopy*
 :help	helphelp.txt	/*:help*
+:helpc	helphelp.txt	/*:helpc*
+:helpclose	helphelp.txt	/*:helpclose*
 :helpf	helphelp.txt	/*:helpf*
 :helpfind	helphelp.txt	/*:helpfind*
 :helpg	helphelp.txt	/*:helpg*
@@ -7825,6 +7827,7 @@ spell-FLAG	spell.txt	/*spell-FLAG*
 spell-FOL	spell.txt	/*spell-FOL*
 spell-FORBIDDENWORD	spell.txt	/*spell-FORBIDDENWORD*
 spell-HOME	spell.txt	/*spell-HOME*
+spell-IGNOREEXTRA	spell.txt	/*spell-IGNOREEXTRA*
 spell-KEEPCASE	spell.txt	/*spell-KEEPCASE*
 spell-KEY	spell.txt	/*spell-KEY*
 spell-LANG	spell.txt	/*spell-LANG*
