@@ -5900,7 +5900,7 @@ erret:
 }
 
 /*
- * ":helpclose": Close the help window
+ * ":helpclose": Close one help window
  */
     void
 ex_helpclose(eap)
@@ -5913,7 +5913,7 @@ ex_helpclose(eap)
 	if (win->w_buffer->b_help)
 	{
 	    win_close(win, FALSE);
-	    break;
+	    return;
 	}
     }
 }
