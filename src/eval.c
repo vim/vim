@@ -18638,13 +18638,16 @@ get_cmd_output_as_rettv(argvars, rettv, retlist)
 	}
 	else
 	{
+	    size_t len;
+
 	    p = get_tv_string_buf_chk(&argvars[1], buf);
 	    if (p == NULL)
 	    {
 		fclose(fd);
 		goto errret;		/* type error; errmsg already given */
 	    }
-	    if (fwrite(p, STRLEN(p), 1, fd) != 1)
+	    len = STRLEN(p);
+	    if (len > 0 && fwrite(p, len, 1, fd) != 1)
 		err = TRUE;
 	}
 	if (fclose(fd) != 0)
