@@ -4841,6 +4841,7 @@ typedef struct afffile_S
     unsigned	af_nosuggest;	/* NOSUGGEST ID */
     int		af_pfxpostpone;	/* postpone prefixes without chop string and
 				   without flags */
+    int		af_ignoreextra;	/* IGNOREEXTRA present */
     hashtab_T	af_pref;	/* hashtable for prefixes, affheader_T */
     hashtab_T	af_suff;	/* hashtable for suffixes, affheader_T */
     hashtab_T	af_comp;	/* hashtable for compound flags, compitem_T */
@@ -5605,6 +5606,10 @@ spell_read_aff(spin, fname)
 	    {
 		aff->af_pfxpostpone = TRUE;
 	    }
+	    else if (is_aff_rule(items, itemcnt, "IGNOREEXTRA", 1))
+	    {
+		aff->af_ignoreextra = TRUE;
+	    }
 	    else if ((STRCMP(items[0], "PFX") == 0
 					      || STRCMP(items[0], "SFX") == 0)
 		    && aff_todo == 0
@@ -5712,9 +5717,11 @@ spell_read_aff(spin, fname)
 		int		lasti = 5;
 
 		/* Myspell allows extra text after the item, but that might
-		 * mean mistakes go unnoticed.  Require a comment-starter.
-		 * Hunspell uses a "-" item. */
-		if (itemcnt > lasti && *items[lasti] != '#'
+		 * mean mistakes go unnoticed.  Require a comment-starter,
+		 * unless IGNOREEXTRA is used.  Hunspell uses a "-" item. */
+		if (itemcnt > lasti
+			&& !aff->af_ignoreextra
+			&& *items[lasti] != '#'
 			&& (STRCMP(items[lasti], "-") != 0
 						     || itemcnt != lasti + 1))
 		    smsg((char_u *)_(e_afftrailing), fname, lnum, items[lasti]);
