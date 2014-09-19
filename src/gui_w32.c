@@ -535,10 +535,6 @@ static void dyn_imm_load(void);
 # define pImmSetConversionStatus  ImmSetConversionStatus
 #endif
 
-#ifndef ETO_IGNORELANGUAGE
-# define ETO_IGNORELANGUAGE  0x1000
-#endif
-
 /* multi monitor support */
 typedef struct _MONITORINFOstruct
 {
@@ -2500,12 +2496,6 @@ gui_mch_draw_string(
 		padding[i] = gui.char_width;
     }
 
-    /* On NT, tell the font renderer not to "help" us with Hebrew and Arabic
-     * text.  This doesn't work in 9x, so we have to deal with it manually on
-     * those systems. */
-    if (os_version.dwPlatformId == VER_PLATFORM_WIN32_NT)
-	foptions |= ETO_IGNORELANGUAGE;
-
     /*
      * We have to provide the padding argument because italic and bold versions
      * of fixed-width fonts are often one pixel or so wider than their normal
@@ -2641,10 +2631,9 @@ gui_mch_draw_string(
 #endif
     {
 #ifdef FEAT_RIGHTLEFT
-	/* If we can't use ETO_IGNORELANGUAGE, we can't tell Windows not to
-	 * mess up RL text, so we have to draw it character-by-character.
-	 * Only do this if RL is on, since it's slow. */
-	if (curwin->w_p_rl && !(foptions & ETO_IGNORELANGUAGE))
+	/* Windows will mess up RL text, so we have to draw it character by
+	 * character.  Only do this if RL is on, since it's slow. */
+	if (curwin->w_p_rl)
 	    RevOut(s_hdc, TEXT_X(col), TEXT_Y(row),
 			 foptions, pcliprect, (char *)text, len, padding);
 	else
