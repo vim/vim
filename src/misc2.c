@@ -1040,7 +1040,8 @@ free_all_mem()
     entered = TRUE;
 
 # ifdef FEAT_AUTOCMD
-    block_autocmds();	    /* don't want to trigger autocommands here */
+    /* Don't want to trigger autocommands from here on. */
+    block_autocmds();
 # endif
 
 # ifdef FEAT_WINDOWS

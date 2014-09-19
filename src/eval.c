@@ -12086,15 +12086,17 @@ f_gettabvar(argvars, rettv)
     {
 	/* Set tp to be our tabpage, temporarily.  Also set the window to the
 	 * first window in the tabpage, otherwise the window is not valid. */
-	switch_win(&oldcurwin, &oldtabpage, tp->tp_firstwin, tp, TRUE);
-
-	/* look up the variable */
-	/* Let gettabvar({nr}, "") return the "t:" dictionary. */
-	v = find_var_in_ht(&tp->tp_vars->dv_hashtab, 't', varname, FALSE);
-	if (v != NULL)
+	if (switch_win(&oldcurwin, &oldtabpage, tp->tp_firstwin, tp, TRUE)
+									== OK)
 	{
-	    copy_tv(&v->di_tv, rettv);
-	    done = TRUE;
+	    /* look up the variable */
+	    /* Let gettabvar({nr}, "") return the "t:" dictionary. */
+	    v = find_var_in_ht(&tp->tp_vars->dv_hashtab, 't', varname, FALSE);
+	    if (v != NULL)
+	    {
+		copy_tv(&v->di_tv, rettv);
+		done = TRUE;
+	    }
 	}
 
 	/* restore previous notion of curwin */
@@ -12233,22 +12235,24 @@ getwinvar(argvars, rettv, off)
     {
 	/* Set curwin to be our win, temporarily.  Also set the tabpage,
 	 * otherwise the window is not valid. */
-	switch_win(&oldcurwin, &oldtabpage, win, tp, TRUE);
-
-	if (*varname == '&')	/* window-local-option */
+	if (switch_win(&oldcurwin, &oldtabpage, win, tp, TRUE) == OK)
 	{
-	    if (get_option_tv(&varname, rettv, 1) == OK)
-		done = TRUE;
-	}
-	else
-	{
-	    /* Look up the variable. */
-	    /* Let getwinvar({nr}, "") return the "w:" dictionary. */
-	    v = find_var_in_ht(&win->w_vars->dv_hashtab, 'w', varname, FALSE);
-	    if (v != NULL)
+	    if (*varname == '&')	/* window-local-option */
 	    {
-		copy_tv(&v->di_tv, rettv);
-		done = TRUE;
+		if (get_option_tv(&varname, rettv, 1) == OK)
+		    done = TRUE;
+	    }
+	    else
+	    {
+		/* Look up the variable. */
+		/* Let getwinvar({nr}, "") return the "w:" dictionary. */
+		v = find_var_in_ht(&win->w_vars->dv_hashtab, 'w',
+							      varname, FALSE);
+		if (v != NULL)
+		{
+		    copy_tv(&v->di_tv, rettv);
+		    done = TRUE;
+		}
 	    }
 	}
 
@@ -17252,34 +17256,33 @@ setwinvar(argvars, rettv, off)
     if (win != NULL && varname != NULL && varp != NULL)
     {
 #ifdef FEAT_WINDOWS
-	if (switch_win(&save_curwin, &save_curtab, win, tp, TRUE) == FAIL)
-	    return;
+	if (switch_win(&save_curwin, &save_curtab, win, tp, TRUE) == OK)
 #endif
-
-	if (*varname == '&')
 	{
-	    long	numval;
-	    char_u	*strval;
-	    int		error = FALSE;
-
-	    ++varname;
-	    numval = get_tv_number_chk(varp, &error);
-	    strval = get_tv_string_buf_chk(varp, nbuf);
-	    if (!error && strval != NULL)
-		set_option_value(varname, numval, strval, OPT_LOCAL);
-	}
-	else
-	{
-	    winvarname = alloc((unsigned)STRLEN(varname) + 3);
-	    if (winvarname != NULL)
+	    if (*varname == '&')
 	    {
-		STRCPY(winvarname, "w:");
-		STRCPY(winvarname + 2, varname);
-		set_var(winvarname, varp, TRUE);
-		vim_free(winvarname);
+		long	numval;
+		char_u	*strval;
+		int		error = FALSE;
+
+		++varname;
+		numval = get_tv_number_chk(varp, &error);
+		strval = get_tv_string_buf_chk(varp, nbuf);
+		if (!error && strval != NULL)
+		    set_option_value(varname, numval, strval, OPT_LOCAL);
+	    }
+	    else
+	    {
+		winvarname = alloc((unsigned)STRLEN(varname) + 3);
+		if (winvarname != NULL)
+		{
+		    STRCPY(winvarname, "w:");
+		    STRCPY(winvarname + 2, varname);
+		    set_var(winvarname, varp, TRUE);
+		    vim_free(winvarname);
+		}
 	    }
 	}
-
 #ifdef FEAT_WINDOWS
 	restore_win(save_curwin, save_curtab, TRUE);
 #endif
