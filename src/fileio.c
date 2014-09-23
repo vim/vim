@@ -3149,6 +3149,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
     int		    write_undo_file = FALSE;
     context_sha256_T sha_ctx;
 #endif
+    unsigned int    bkc = get_bkc_value(buf);
 
     if (fname == NULL || *fname == NUL)	/* safety check */
 	return FAIL;
@@ -3647,10 +3648,10 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	struct stat st;
 #endif
 
-	if ((bkc_flags & BKC_YES) || append)	/* "yes" */
+	if ((bkc & BKC_YES) || append)	/* "yes" */
 	    backup_copy = TRUE;
 #if defined(UNIX) || defined(WIN32)
-	else if ((bkc_flags & BKC_AUTO))	/* "auto" */
+	else if ((bkc & BKC_AUTO))	/* "auto" */
 	{
 	    int		i;
 
@@ -3738,7 +3739,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	/*
 	 * Break symlinks and/or hardlinks if we've been asked to.
 	 */
-	if ((bkc_flags & BKC_BREAKSYMLINK) || (bkc_flags & BKC_BREAKHARDLINK))
+	if ((bkc & BKC_BREAKSYMLINK) || (bkc & BKC_BREAKHARDLINK))
 	{
 # ifdef UNIX
 	    int	lstat_res;
@@ -3746,24 +3747,24 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	    lstat_res = mch_lstat((char *)fname, &st);
 
 	    /* Symlinks. */
-	    if ((bkc_flags & BKC_BREAKSYMLINK)
+	    if ((bkc & BKC_BREAKSYMLINK)
 		    && lstat_res == 0
 		    && st.st_ino != st_old.st_ino)
 		backup_copy = FALSE;
 
 	    /* Hardlinks. */
-	    if ((bkc_flags & BKC_BREAKHARDLINK)
+	    if ((bkc & BKC_BREAKHARDLINK)
 		    && st_old.st_nlink > 1
 		    && (lstat_res != 0 || st.st_ino == st_old.st_ino))
 		backup_copy = FALSE;
 # else
 #  if defined(WIN32)
 	    /* Symlinks. */
-	    if ((bkc_flags & BKC_BREAKSYMLINK) && mch_is_symbolic_link(fname))
+	    if ((bkc & BKC_BREAKSYMLINK) && mch_is_symbolic_link(fname))
 		backup_copy = FALSE;
 
 	    /* Hardlinks. */
-	    if ((bkc_flags & BKC_BREAKHARDLINK) && mch_is_hard_link(fname))
+	    if ((bkc & BKC_BREAKHARDLINK) && mch_is_hard_link(fname))
 		backup_copy = FALSE;
 #  endif
 # endif

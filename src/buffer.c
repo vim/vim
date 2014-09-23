@@ -2001,6 +2001,7 @@ free_buf_options(buf, free_p_ff)
 #ifdef FEAT_LISP
     clear_string_option(&buf->b_p_lw);
 #endif
+    clear_string_option(&buf->b_p_bkc);
 }
 
 /*

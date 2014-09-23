@@ -137,7 +137,7 @@ typedef struct
 #ifdef FEAT_LINEBREAK
     int		wo_bri;
 # define w_p_bri w_onebuf_opt.wo_bri	/* 'breakindent' */
-    char_u		*wo_briopt;
+    char_u	*wo_briopt;
 # define w_p_briopt w_onebuf_opt.wo_briopt /* 'breakindentopt' */
 #endif
 #ifdef FEAT_DIFF
@@ -1537,6 +1537,8 @@ struct file_buffer
 
     int		b_p_ai;		/* 'autoindent' */
     int		b_p_ai_nopaste;	/* b_p_ai saved for paste mode */
+    char_u	*b_p_bkc;	/* 'backupcopy' */
+    unsigned	b_bkc_flags;    /* flags for 'backupcopy' */
     int		b_p_ci;		/* 'copyindent' */
     int		b_p_bin;	/* 'binary' */
 #ifdef FEAT_MBYTE
