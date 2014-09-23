@@ -183,6 +183,18 @@ update_topline()
     if (!screen_valid(TRUE))
 	return;
 
+    /* If the window height is zero just use the cursor line. */
+    if (curwin->w_height == 0)
+    {
+	curwin->w_topline = curwin->w_cursor.lnum;
+	curwin->w_botline = curwin->w_topline;
+	curwin->w_valid |= VALID_BOTLINE|VALID_BOTLINE_AP;
+#ifdef FEAT_SCROLLBIND
+	curwin->w_scbind_pos = 1;
+#endif
+	return;
+    }
+
     check_cursor_moved(curwin);
     if (curwin->w_valid & VALID_TOPLINE)
 	return;
