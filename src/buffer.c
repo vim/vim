@@ -28,9 +28,9 @@
 #include "vim.h"
 
 #if defined(FEAT_CMDL_COMPL) || defined(FEAT_LISTCMDS) || defined(FEAT_EVAL) || defined(FEAT_PERL)
-static char_u	*buflist_match __ARGS((regprog_T *prog, buf_T *buf));
+static char_u	*buflist_match __ARGS((regprog_T *prog, buf_T *buf, int ignore_case));
 # define HAVE_BUFLIST_MATCH
-static char_u	*fname_match __ARGS((regprog_T *prog, char_u *name));
+static char_u	*fname_match __ARGS((regprog_T *prog, char_u *name, int ignore_case));
 #endif
 static void	buflist_setfpos __ARGS((buf_T *buf, win_T *win, linenr_T lnum, colnr_T col, int copy_options));
 static wininfo_T *find_wininfo __ARGS((buf_T *buf, int skip_diff_buffer));
@@ -2282,7 +2282,7 @@ buflist_findpat(pattern, pattern_end, unlisted, diffmode, curtab_only)
 #ifdef FEAT_DIFF
 			    && (!diffmode || diff_mode_buf(buf))
 #endif
-			    && buflist_match(prog, buf) != NULL)
+			    && buflist_match(prog, buf, FALSE) != NULL)
 		    {
 			if (curtab_only)
 			{
@@ -2396,7 +2396,7 @@ ExpandBufnames(pat, num_file, file, options)
 	    {
 		if (!buf->b_p_bl)	/* skip unlisted buffers */
 		    continue;
-		p = buflist_match(prog, buf);
+		p = buflist_match(prog, buf, p_wic);
 		if (p != NULL)
 		{
 		    if (round == 1)
@@ -2444,16 +2444,17 @@ ExpandBufnames(pat, num_file, file, options)
  * Check for a match on the file name for buffer "buf" with regprog "prog".
  */
     static char_u *
-buflist_match(prog, buf)
+buflist_match(prog, buf, ignore_case)
     regprog_T	*prog;
     buf_T	*buf;
+    int		ignore_case;  /* when TRUE ignore case, when FALSE use 'fic' */
 {
     char_u	*match;
 
     /* First try the short file name, then the long file name. */
-    match = fname_match(prog, buf->b_sfname);
+    match = fname_match(prog, buf->b_sfname, ignore_case);
     if (match == NULL)
-	match = fname_match(prog, buf->b_ffname);
+	match = fname_match(prog, buf->b_ffname, ignore_case);
 
     return match;
 }
@@ -2463,9 +2464,10 @@ buflist_match(prog, buf)
  * Return "name" when there is a match, NULL when not.
  */
     static char_u *
-fname_match(prog, name)
+fname_match(prog, name, ignore_case)
     regprog_T	*prog;
     char_u	*name;
+    int		ignore_case;  /* when TRUE ignore case, when FALSE use 'fic' */
 {
     char_u	*match = NULL;
     char_u	*p;
@@ -2474,7 +2476,8 @@ fname_match(prog, name)
     if (name != NULL)
     {
 	regmatch.regprog = prog;
-	regmatch.rm_ic = p_fic;	/* ignore case when 'fileignorecase' is set */
+	/* Ignore case when 'fileignorecase' or the argument is set. */
+	regmatch.rm_ic = p_fic || ignore_case;
 	if (vim_regexec(&regmatch, name, (colnr_T)0))
 	    match = name;
 	else
