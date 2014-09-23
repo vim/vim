@@ -21,6 +21,7 @@ int mch_has_wildcard __ARGS((char_u *p));
 int mch_chdir __ARGS((char *path));
 int can_end_termcap_mode __ARGS((int give_msg));
 int mch_screenmode __ARGS((char_u *arg));
+int mch_icon_load __ARGS((HANDLE *iconp));
 int mch_libcall __ARGS((char_u *libname, char_u *funcname, char_u *argstring, int argint, char_u **string_result, int *number_result));
 void DumpPutS __ARGS((const char *psz));
 int mch_get_winpos __ARGS((int *x, int *y));

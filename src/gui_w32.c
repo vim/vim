@@ -1662,6 +1662,14 @@ gui_mch_init(void)
     if (s_textArea == NULL)
 	return FAIL;
 
+    /* Try loading an icon from $RUNTIMEPATH/bitmaps/vim.ico. */
+    {
+	HANDLE	hIcon = NULL;
+
+	if (mch_icon_load(&hIcon) == OK && hIcon != NULL)
+	    SendMessage(s_hwnd, WM_SETICON, ICON_SMALL, hIcon);
+    }
+
 #ifdef FEAT_MENU
     s_menuBar = CreateMenu();
 #endif

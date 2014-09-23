@@ -928,6 +928,33 @@ check_str_len(char_u *str)
 }
 # endif
 
+/*
+ * Passed to do_in_runtimepath() to load a vim.ico file.
+ */
+    static void
+mch_icon_load_cb(char_u *fname, void *cookie)
+{
+    HANDLE *h = (HANDLE *)cookie;
+
+    *h = LoadImage(NULL,
+		   fname,
+		   IMAGE_ICON,
+		   64,
+		   64,
+		   LR_LOADFROMFILE | LR_LOADMAP3DCOLORS);
+}
+
+/*
+ * Try loading an icon file from 'runtimepath'.
+ */
+    int
+mch_icon_load(iconp)
+    HANDLE *iconp;
+{
+    return do_in_runtimepath((char_u *)"bitmaps/vim.ico",
+					      FALSE, mch_icon_load_cb, iconp);
+}
+
     int
 mch_libcall(
     char_u	*libname,
