@@ -1673,16 +1673,22 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
      */
     psettings->chars_per_line = prt_get_cpl();
     psettings->lines_per_page = prt_get_lpp();
-    psettings->n_collated_copies = (prt_dlg.Flags & PD_COLLATE)
-							? prt_dlg.nCopies : 1;
-    psettings->n_uncollated_copies = (prt_dlg.Flags & PD_COLLATE)
-							? 1 : prt_dlg.nCopies;
+    if (prt_dlg.Flags & PD_USEDEVMODECOPIESANDCOLLATE)
+    {
+	psettings->n_collated_copies = (prt_dlg.Flags & PD_COLLATE)
+						    ? prt_dlg.nCopies : 1;
+	psettings->n_uncollated_copies = (prt_dlg.Flags & PD_COLLATE)
+						    ? 1 : prt_dlg.nCopies;
 
-    if (psettings->n_collated_copies == 0)
+	if (psettings->n_collated_copies == 0)
+	    psettings->n_collated_copies = 1;
+
+	if (psettings->n_uncollated_copies == 0)
+	    psettings->n_uncollated_copies = 1;
+    } else {
 	psettings->n_collated_copies = 1;
-
-    if (psettings->n_uncollated_copies == 0)
 	psettings->n_uncollated_copies = 1;
+    }
 
     psettings->jobname = jobname;
 
