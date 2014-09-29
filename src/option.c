@@ -5742,15 +5742,21 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	    flags = &curbuf->b_bkc_flags;
 	}
 
-	if (opt_strings_flags(bkc, p_bkc_values, flags, TRUE) != OK)
-	    errmsg = e_invarg;
-	if ((((int)*flags & BKC_AUTO) != 0)
-		+ (((int)*flags & BKC_YES) != 0)
-		+ (((int)*flags & BKC_NO) != 0) != 1)
+	if ((opt_flags & OPT_LOCAL) && *bkc == NUL)
+	    /* make the local value empty: use the global value */
+	    *flags = 0;
+	else
 	{
-	    /* Must have exactly one of "auto", "yes"  and "no". */
-	    (void)opt_strings_flags(oldval, p_bkc_values, flags, TRUE);
-	    errmsg = e_invarg;
+	    if (opt_strings_flags(bkc, p_bkc_values, flags, TRUE) != OK)
+		errmsg = e_invarg;
+	    if ((((int)*flags & BKC_AUTO) != 0)
+		    + (((int)*flags & BKC_YES) != 0)
+		    + (((int)*flags & BKC_NO) != 0) != 1)
+	    {
+		/* Must have exactly one of "auto", "yes"  and "no". */
+		(void)opt_strings_flags(oldval, p_bkc_values, flags, TRUE);
+		errmsg = e_invarg;
+	    }
 	}
     }
 
