@@ -1483,8 +1483,8 @@ Notes:
 - Pkzip uses the same encryption as 'cryptmethod' "zip", and US Govt has no
   objection to its export.  Pkzip's public file APPNOTE.TXT describes this
   algorithm in detail.
-- The implmentation of 'cryptmethod' "blowfish" has a flaw.  It is possible to
-  crack the first 64 bytes of a file and in some circumstances more of the
+- The implementation of 'cryptmethod' "blowfish" has a flaw.  It is possible
+  to crack the first 64 bytes of a file and in some circumstances more of the
   file. Use of it is not recommended, but it's still the strongest method
   supported by Vim 7.3 and 7.4.  The "zip" method is even weaker.
 - Vim originates from the Netherlands.  That is where the sources come from.

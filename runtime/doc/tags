@@ -3134,6 +3134,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 <CSI>	intro.txt	/*<CSI>*
 <Char->	map.txt	/*<Char->*
 <Char>	map.txt	/*<Char>*
+<CursorHold>	autocmd.txt	/*<CursorHold>*
 <D-	intro.txt	/*<D-*
 <Del>	change.txt	/*<Del>*
 <Down>	motion.txt	/*<Down>*
@@ -8781,6 +8782,7 @@ window-variable	eval.txt	/*window-variable*
 windowid-variable	eval.txt	/*windowid-variable*
 windows	windows.txt	/*windows*
 windows-3.1	os_win32.txt	/*windows-3.1*
+windows-icon	os_win32.txt	/*windows-icon*
 windows-intro	windows.txt	/*windows-intro*
 windows-starting	windows.txt	/*windows-starting*
 windows.txt	windows.txt	/*windows.txt*

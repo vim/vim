@@ -2039,7 +2039,7 @@ Removed the "COUNT" flag from ":argadd", to avoid ":argadd 1*" to be used like
 Avoid that $LANG is used for the menus when LC_MESSAGES is "en_US".
 
 Added backslashes before dashes in the vim.1 manual page to make them appear
-as real dashes. (Pierr Habouzit)
+as real dashes. (Pierre Habouzit)
 
 Where "gq" left the cursor depended on the value of 'formatprg'.  Now "gq"
 always leaves the cursor at the last line of the formatted text.

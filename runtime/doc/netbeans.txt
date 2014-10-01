@@ -470,7 +470,7 @@ raise		Bring the editor to the foreground.
 		New in version 2.1.
 
 removeAnno serNum
-		Remove a previously place annotation for this buffer.
+		Remove a previously placed annotation for this buffer.
 		"serNum" is the same number used in addAnno.
 
 save		Save the buffer when it was modified.  The other side of the
