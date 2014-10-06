@@ -1667,7 +1667,7 @@ gui_mch_init(void)
 	HANDLE	hIcon = NULL;
 
 	if (mch_icon_load(&hIcon) == OK && hIcon != NULL)
-	    SendMessage(s_hwnd, WM_SETICON, ICON_SMALL, hIcon);
+	    SendMessage(s_hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
     }
 
 #ifdef FEAT_MENU
