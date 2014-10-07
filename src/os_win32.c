@@ -2775,9 +2775,10 @@ fname_case(
 	if (p != NULL)
 	{
 	    char_u	*q;
-	    WCHAR	buf[_MAX_PATH + 2];
+	    WCHAR	buf[_MAX_PATH + 1];
 
-	    wcscpy(buf, p);
+	    wcsncpy(buf, p, _MAX_PATH);
+	    buf[_MAX_PATH] = L'\0';
 	    vim_free(p);
 
 	    if (fname_casew(buf, (len > 0) ? _MAX_PATH : 0) == OK)
