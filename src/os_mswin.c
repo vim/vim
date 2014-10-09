@@ -1635,11 +1635,33 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 	char_u	*printer_name = (char_u *)devname + devname->wDeviceOffset;
 	char_u	*port_name = (char_u *)devname +devname->wOutputOffset;
 	char_u	*text = _("to %s on %s");
+#ifdef FEAT_MBYTE
+	char_u  *printer_name_orig = printer_name;
+	char_u	*port_name_orig = port_name;
 
+	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+	{
+	    char_u  *to_free = NULL;
+	    int     maxlen;
+
+	    acp_to_enc(printer_name, STRLEN(printer_name), &to_free, &maxlen);
+	    if (to_free != NULL)
+		printer_name = to_free;
+	    acp_to_enc(port_name, STRLEN(port_name), &to_free, &maxlen);
+	    if (to_free != NULL)
+		port_name = to_free;
+	}
+#endif
 	prt_name = alloc((unsigned)(STRLEN(printer_name) + STRLEN(port_name)
 							     + STRLEN(text)));
 	if (prt_name != NULL)
 	    wsprintf(prt_name, text, printer_name, port_name);
+#ifdef FEAT_MBYTE
+	if (printer_name != printer_name_orig)
+	    vim_free(printer_name);
+	if (port_name != port_name_orig)
+	    vim_free(port_name);
+#endif
     }
     GlobalUnlock(prt_dlg.hDevNames);
 
