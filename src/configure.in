@@ -3730,21 +3730,24 @@ fi
 dnl Check for multibyte locale functions
 dnl Find out if _Xsetlocale() is supported by libX11.
 dnl Check if X_LOCALE should be defined.
-
-if test "$enable_multibyte" = "yes"; then
+if test "x$with_x" = "xyes"; then
   cflags_save=$CFLAGS
-  ldflags_save=$LDFLAGS
-  if test "x$x_includes" != "xNONE" ; then
-    CFLAGS="$CFLAGS -I$x_includes"
-    LDFLAGS="$X_LIBS $LDFLAGS -lX11"
-    AC_MSG_CHECKING(whether X_LOCALE needed)
-    AC_TRY_COMPILE([#include <X11/Xlocale.h>],,
-	AC_TRY_LINK_FUNC([_Xsetlocale], [AC_MSG_RESULT(yes)
-		AC_DEFINE(X_LOCALE)], AC_MSG_RESULT(no)),
-	AC_MSG_RESULT(no))
-  fi
+  libs_save=$LIBS
+  LIBS="$LIBS $X_LIBS $GUI_LIB_LOC $GUI_X_LIBS $X_PRE_LIBS $X_LIB $X_EXTRA_LIBS"
+  CFLAGS="$CFLAGS $X_CFLAGS"
+
+  AC_MSG_CHECKING(whether X_LOCALE needed)
+  AC_TRY_COMPILE([#include <X11/Xlocale.h>],,
+      AC_TRY_LINK_FUNC([_Xsetlocale], [AC_MSG_RESULT(yes)
+	      AC_DEFINE(X_LOCALE)], AC_MSG_RESULT(no)),
+      AC_MSG_RESULT(no))
+
+  AC_MSG_CHECKING(whether Xutf8SetWMProperties() can be used)
+  AC_TRY_LINK_FUNC([Xutf8SetWMProperties], [AC_MSG_RESULT(yes)
+	      AC_DEFINE(HAVE_XUTF8SETWMPROPERTIES)], AC_MSG_RESULT(no))
+
   CFLAGS=$cflags_save
-  LDFLAGS=$ldflags_save
+  LIBS=$libs_save
 fi
 
 dnl Link with xpg4, it is said to make Korean locale working

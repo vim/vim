@@ -446,3 +446,6 @@
 
 /* Define if we have AvailabilityMacros.h on Mac OS X */
 #undef HAVE_AVAILABILITYMACROS_H
+
+/* Define if Xutf8SetWMProperties() is in an X library. */
+#undef HAVE_XUTF8SETWMPROPERTIES

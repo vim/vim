@@ -12732,16 +12732,15 @@ $as_echo "$vim_cv_memcpy_handles_overlap" >&6; }
 fi
 
 
-
-if test "$enable_multibyte" = "yes"; then
+if test "x$with_x" = "xyes"; then
   cflags_save=$CFLAGS
-  ldflags_save=$LDFLAGS
-  if test "x$x_includes" != "xNONE" ; then
-    CFLAGS="$CFLAGS -I$x_includes"
-    LDFLAGS="$X_LIBS $LDFLAGS -lX11"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether X_LOCALE needed" >&5
+  libs_save=$LIBS
+  LIBS="$LIBS $X_LIBS $GUI_LIB_LOC $GUI_X_LIBS $X_PRE_LIBS $X_LIB $X_EXTRA_LIBS"
+  CFLAGS="$CFLAGS $X_CFLAGS"
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether X_LOCALE needed" >&5
 $as_echo_n "checking whether X_LOCALE needed... " >&6; }
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <X11/Xlocale.h>
 int
@@ -12774,7 +12773,7 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-		$as_echo "#define X_LOCALE 1" >>confdefs.h
+	      $as_echo "#define X_LOCALE 1" >>confdefs.h
 
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
@@ -12787,9 +12786,41 @@ else
 $as_echo "no" >&6; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-  fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether Xutf8SetWMProperties() can be used" >&5
+$as_echo_n "checking whether Xutf8SetWMProperties() can be used... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char Xutf8SetWMProperties ();
+int
+main ()
+{
+return Xutf8SetWMProperties ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	      $as_echo "#define HAVE_XUTF8SETWMPROPERTIES 1" >>confdefs.h
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
   CFLAGS=$cflags_save
-  LDFLAGS=$ldflags_save
+  LIBS=$libs_save
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for _xpg4_setrunelocale in -lxpg4" >&5
