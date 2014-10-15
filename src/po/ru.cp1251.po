@@ -7,10 +7,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: vim_7.4_ru\n"
+"Project-Id-Version: vim_ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-24 12:18+0400\n"
-"PO-Revision-Date: 2014-03-24 12:18 +0400\n"
+"POT-Creation-Date: 2014-10-10 11:52+0400\n"
+"PO-Revision-Date: 2014-10-10 12:00+0400\n"
 "Last-Translator: Sergey Alyoshin <alyoshin.s@gmail.com>\n"
 "Language-Team: \n"
 "Language: Russian\n"
@@ -202,6 +202,21 @@ msgstr "Значки для %s:"
 #, c-format
 msgid "    line=%ld  id=%d  name=%s"
 msgstr "    строка=%ld  id=%d  имя=%s"
+
+msgid "E821: File is encrypted with unknown method"
+msgstr "E821: Файл зашифрован неизвестным методом"
+
+msgid "Enter encryption key: "
+msgstr "Введите пароль для шифрования: "
+
+msgid "Enter same key again: "
+msgstr "Повторите ввод пароля: "
+
+msgid "Keys don't match!"
+msgstr "Введённые пароли не совпадают!"
+
+msgid "[crypted]"
+msgstr "[зашифровано]"
 
 #, c-format
 msgid "E96: Can not diff more than %ld buffers"
@@ -659,8 +674,15 @@ msgstr "E258: Не могу ответить клиенту"
 msgid "sort() argument"
 msgstr "параметра sort()"
 
+msgid "uniq() argument"
+msgstr "параметра uniq()"
+
 msgid "E702: Sort compare function failed"
 msgstr "E702: Неудачное завершение функции сравнения при сортировке"
+
+msgid "E882: Uniq compare function failed"
+msgstr ""
+"E882: Неудачное завершение функции сравнения при проверке единственности"
 
 msgid "(Invalid)"
 msgstr "(Неправильно)"
@@ -759,10 +781,12 @@ msgid "E129: Function name required"
 msgstr "E129: Требуется имя функции"
 
 #, c-format
-msgid "E128: Function name must start with a capital or contain a colon: %s"
-msgstr ""
-"E128: Имя функции должно начинаться с заглавной буквы или содержать "
-"двоеточие: %s"
+msgid "E128: Function name must start with a capital or \"s:\": %s"
+msgstr "E128: Имя функции должно начинаться с заглавной буквы или \"s:\": %s"
+
+#, c-format
+msgid "E884: Function name cannot contain a colon: %s"
+msgstr "E884: Имя функции не может содержать двоеточие: %s"
 
 #, c-format
 msgid "E131: Cannot delete function %s: It is in use"
@@ -879,6 +903,10 @@ msgstr "E138: Невозможно записать файл viminfo %s!"
 #, c-format
 msgid "Writing viminfo file \"%s\""
 msgstr "Запись файла viminfo \"%s\""
+
+#, c-format
+msgid "E886: Can't rename viminfo file to %s!"
+msgstr "E886: Невозможно переименовать файл viminfo в %s!"
 
 #. Write the info:
 #, c-format
@@ -1079,6 +1107,10 @@ msgstr "E158: Неправильное имя буфера: %s"
 #, c-format
 msgid "E157: Invalid sign ID: %ld"
 msgstr "E157: Неправильный ID значка: %ld"
+
+#, c-format
+msgid "E885: Not possible to change sign %s"
+msgstr "E885: Невозможно изменить значок %s"
 
 msgid " (NOT FOUND)"
 msgstr " (НЕ НАЙДЕНО)"
@@ -1663,12 +1695,6 @@ msgstr "[БЕЗ преобразований]"
 msgid "[converted]"
 msgstr "[перекодировано]"
 
-msgid "[blowfish]"
-msgstr "[blowfish]"
-
-msgid "[crypted]"
-msgstr "[зашифровано]"
-
 #, c-format
 msgid "[CONVERSION ERROR in line %ld]"
 msgstr "[ОШИБКА ПРЕОБРАЗОВАНИЯ в строке %ld]"
@@ -1688,9 +1714,6 @@ msgstr "Преобразование с помощью 'charconvert' не выполнено"
 
 msgid "can't read output of 'charconvert'"
 msgstr "невозможно прочитать вывод 'charconvert'"
-
-msgid "E821: File is encrypted with unknown method"
-msgstr "E821: Файл зашифрован неизвестным методом"
 
 msgid "E676: No matching autocommands for acwrite buffer"
 msgstr "E676: Нет подходящих автокоманд для буфера acwrite"
@@ -2653,6 +2676,13 @@ msgid ""
 msgstr ""
 "E263: К сожалению эта команда не работает, поскольку не загружена библиотека "
 "Python"
+
+msgid ""
+"E887: Sorry, this command is disabled, the Python's site module could not be "
+"loaded."
+msgstr ""
+"E887: К сожалению эта команда не работает, поскольку не загружен модуль "
+"Python site."
 
 msgid "E659: Cannot invoke Python recursively"
 msgstr "E659: Невозможно выполнить рекурсивный вызов Python"
@@ -4068,15 +4098,6 @@ msgstr "E548: Требуется ввести цифру"
 msgid "E549: Illegal percentage"
 msgstr "E549: Недопустимое значение процентов"
 
-msgid "Enter encryption key: "
-msgstr "Введите пароль для шифрования: "
-
-msgid "Enter same key again: "
-msgstr "Повторите ввод пароля: "
-
-msgid "Keys don't match!"
-msgstr "Введённые пароли не совпадают!"
-
 msgid "E854: path too long for completion"
 msgstr "E854: слишком большой путь для автодополнения"
 
@@ -4247,6 +4268,13 @@ msgstr ""
 #, c-format
 msgid "E574: Unknown register type %d"
 msgstr "E574: Неизвестный тип регистра %d"
+
+msgid ""
+"E883: search pattern and expression register may not contain two or more "
+"lines"
+msgstr ""
+"E883: шаблон поиска и регистр выражения не могут содержать двух или более "
+"строк"
 
 #, c-format
 msgid "%ld Cols; "
@@ -4565,6 +4593,19 @@ msgstr ""
 "\n"
 "Невозможно установить контекст безопасности для "
 
+msgid "Could not set security context "
+msgstr "Невозможно установить контекст безопасности "
+
+msgid " for "
+msgstr " для "
+
+#. no enough size OR unexpected error
+msgid "Could not get security context "
+msgstr "Невозможно получить контекст безопасности "
+
+msgid ". Removing it!\n"
+msgstr ". Будет удалён!\n"
+
 msgid ""
 "\n"
 "Cannot execute shell "
@@ -4833,6 +4874,10 @@ msgstr "E554: Синтаксическая ошибка в %s{...}"
 
 msgid "External submatches:\n"
 msgstr "Внешние подсоответствия:\n"
+
+#, c-format
+msgid "E888: (NFA regexp) cannot repeat %s"
+msgstr "E888: (рег. выражение НКА) невозможно повторить %s"
 
 msgid ""
 "E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be "
@@ -6232,6 +6277,9 @@ msgstr "E446: Нет имени файла в позиции курсора"
 msgid "E447: Can't find file \"%s\" in path"
 msgstr "E447: Файл \"%s\" не найден по известным путям"
 
+msgid "List or number required"
+msgstr "Требуется список или число"
+
 #, c-format
 msgid "E370: Could not load library %s"
 msgstr "E370: Невозможно загрузить библиотеку %s"
@@ -6888,3 +6936,4 @@ msgid ""
 msgstr ""
 "Ошибка при установке пути: sys.path не является списком\n"
 "Следует добавить vim.VIM_SPECIAL_PATH в sys.path"
+

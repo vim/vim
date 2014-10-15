@@ -1,6 +1,7 @@
-" Menu Translations:	Simplified Chinese <i18n-translation@lists.linux.net.cn>
-" Translated By:	Yuheng Xie <elephant@linux.net.cn>
-" Last Change:		Tue Apr 18 22:00:00 2006
+" Menu Translations:    Simplified Chinese
+" Maintainer:           Shun Bai <baishunde@gmail.com>
+" Previous Maintainer:  Yuheng Xie <elephant@linux.net.cn>
+" Last Change:          2014 Oct 15
 
 " vim: ts=8 sw=8 noet
 
@@ -90,13 +91,14 @@ menutrans Toggle\ &Right\ Scrollbar		开/关右端滚动条(&R)
 menutrans F&ile\ Settings			文件设定(&I)
 
 " Boolean options
-menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	开/关显示行号(&N)<Tab>:set\ nu!
-menutrans Toggle\ &List\ Mode<Tab>:set\ list!		开/关\ list\ 模式(&L)<Tab>:set\ list!
-menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!		开/关折行(&W)<Tab>:set\ wrap!
-menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!	开/关整词折行(&R)<Tab>:set\ lbr!
-menutrans Toggle\ &expand-tab<Tab>:set\ et!		开/关扩展\ tab(&E)<Tab>:set\ et!
-menutrans Toggle\ &auto-indent<Tab>:set\ ai!		开/关自动缩进(&A)<Tab>:set\ ai!
-menutrans Toggle\ &C-indenting<Tab>:set\ cin!		开/关\ C\ 缩进(&C)<Tab>:set\ cin!
+menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!		开/关显示行号(&N)<Tab>:set\ nu!
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	开/关相对行号(&V)<Tab>:set\ rnu!
+menutrans Toggle\ &List\ Mode<Tab>:set\ list!			开/关\ list\ 模式(&L)<Tab>:set\ list!
+menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!			开/关折行(&W)<Tab>:set\ wrap!
+menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!		开/关整词折行(&R)<Tab>:set\ lbr!
+menutrans Toggle\ &expand-tab<Tab>:set\ et!			开/关扩展\ tab(&E)<Tab>:set\ et!
+menutrans Toggle\ &auto-indent<Tab>:set\ ai!			开/关自动缩进(&A)<Tab>:set\ ai!
+menutrans Toggle\ &C-indenting<Tab>:set\ cin!			开/关\ C\ 缩进(&C)<Tab>:set\ cin!
 
 " other options
 menutrans &Shiftwidth			缩进宽度(&S)
