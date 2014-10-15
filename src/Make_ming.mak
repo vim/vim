@@ -22,7 +22,7 @@
 #     http://www.matcode.com/mpress.htm
 #
 # Maintained by Ron Aaron <ronaharon@yahoo.com> et al.
-# Updated 2012 Sep 5.
+# Updated 2014 Oct 13.
 
 #>>>>> choose options:
 # set to yes for a debug build
@@ -613,7 +613,7 @@ LIB += -ld2d1 -ldwrite
 USE_STDCPLUS = yes
 endif
 endif
-ifdef XPM
+ifneq ($(XPM),no)
 # Only allow XPM for a GUI build.
 ifeq (yes, $(GUI))
 OBJ += $(OUTDIR)/xpm_w32.o

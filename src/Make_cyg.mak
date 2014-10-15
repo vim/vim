@@ -485,7 +485,7 @@ USE_STDCPLUS = yes
 endif
 
 ##############################
-ifdef XPM
+ifneq ($(XPM),no)
 # Only allow XPM for a GUI build.
 DEFINES += -DFEAT_XPM_W32
 INCLUDES += -I$(XPM)/include
