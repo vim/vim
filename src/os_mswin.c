@@ -344,7 +344,7 @@ mch_restore_title(
     int which)
 {
 #ifndef FEAT_GUI_MSWIN
-    mch_settitle((which & 1) ? g_szOrigTitle : NULL, NULL);
+    SetConsoleTitle(g_szOrigTitle);
 #endif
 }
 
