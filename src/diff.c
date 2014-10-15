@@ -2325,7 +2325,7 @@ ex_diffgetput(eap)
 		    end_skip = 0;
 	    }
 
-	    buf_empty = FALSE;
+	    buf_empty = bufempty();
 	    added = 0;
 	    for (i = 0; i < count; ++i)
 	    {
