@@ -1644,10 +1644,11 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 	    char_u  *to_free = NULL;
 	    int     maxlen;
 
-	    acp_to_enc(printer_name, STRLEN(printer_name), &to_free, &maxlen);
+	    acp_to_enc(printer_name, (int)STRLEN(printer_name), &to_free,
+								    &maxlen);
 	    if (to_free != NULL)
 		printer_name = to_free;
-	    acp_to_enc(port_name, STRLEN(port_name), &to_free, &maxlen);
+	    acp_to_enc(port_name, (int)STRLEN(port_name), &to_free, &maxlen);
 	    if (to_free != NULL)
 		port_name = to_free;
 	}
