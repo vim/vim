@@ -4443,6 +4443,7 @@ check_abbr(c, ptr, col, mincol)
 #endif
     int		is_id = TRUE;
     int		vim_abbr;
+    int		qlen;		/* length of q, CSI/K_SPECIAL unescaped */
 
     if (typebuf.tb_no_abbr_cnt)	/* abbrev. are not recursive */
 	return FALSE;
@@ -4520,6 +4521,19 @@ check_abbr(c, ptr, col, mincol)
 #else
 	mp = first_abbr;
 #endif
+	qlen = mp->m_keylen;
+	if (vim_strbyte(mp->m_keys, K_SPECIAL) != NULL)
+	{
+	    char_u	*q = vim_strsave(mp->m_keys);
+
+	    /* might have CSI escaped mp->m_keys */
+	    if (q != NULL)
+	    {
+		vim_unescape_csi(q);
+		qlen = STRLEN(q);
+		vim_free(q);
+	    }
+	}
 	for ( ; mp;
 #ifdef FEAT_LOCALMAP
 		mp->m_next == NULL ? (mp = mp2, mp2 = NULL) :
@@ -4528,7 +4542,7 @@ check_abbr(c, ptr, col, mincol)
 	{
 	    /* find entries with right mode and keys */
 	    if (       (mp->m_mode & State)
-		    && mp->m_keylen == len
+		    && qlen == len
 		    && !STRNCMP(mp->m_keys, ptr, (size_t)len))
 		break;
 	}
