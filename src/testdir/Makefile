@@ -43,6 +43,7 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test_mapping.out \
 		test_options.out \
 		test_qf_title.out \
+		test_signs.out \
 		test_utf8.out
 
 SCRIPTS_GUI = test16.out

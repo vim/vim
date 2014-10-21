@@ -46,6 +46,7 @@ SCRIPTS = test1.out test3.out test4.out test5.out test6.out \
 		test_mapping.out \
 		test_options.out \
 		test_qf_title.out \
+		test_signs.out \
 		test_utf8.out
 
 .SUFFIXES: .in .out
@@ -179,4 +180,5 @@ test_listlbr.out: test_listlbr.in
 test_listlbr_utf8.out: test_listlbr_utf8.in
 test_options.out: test_options.in
 test_qf_title.out: test_qf_title.in
+test_signs.out: test_signs.in
 test_utf8.out: test_utf8.in

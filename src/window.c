@@ -4407,20 +4407,19 @@ win_enter_ext(wp, undo_sync, curwin_invalid, trigger_enter_autocmds, trigger_lea
 buf_jump_open_win(buf)
     buf_T	*buf;
 {
-# ifdef FEAT_WINDOWS
-    win_T	*wp;
+    win_T	*wp = NULL;
 
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
-	if (wp->w_buffer == buf)
-	    break;
+    if (curwin->w_buffer == buf)
+	wp = curwin;
+# ifdef FEAT_WINDOWS
+    else
+	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	    if (wp->w_buffer == buf)
+		break;
     if (wp != NULL)
 	win_enter(wp, FALSE);
-    return wp;
-# else
-    if (curwin->w_buffer == buf)
-	return curwin;
-    return NULL;
 # endif
+    return wp;
 }
 
 /*
@@ -4432,12 +4431,10 @@ buf_jump_open_win(buf)
 buf_jump_open_tab(buf)
     buf_T	*buf;
 {
+    win_T	*wp = buf_jump_open_win(buf);
 # ifdef FEAT_WINDOWS
-    win_T	*wp;
     tabpage_T	*tp;
 
-    /* First try the current tab page. */
-    wp = buf_jump_open_win(buf);
     if (wp != NULL)
 	return wp;
 
@@ -4455,13 +4452,8 @@ buf_jump_open_tab(buf)
 		break;
 	    }
 	}
-
-    return wp;
-# else
-    if (curwin->w_buffer == buf)
-	return curwin;
-    return NULL;
 # endif
+    return wp;
 }
 #endif
 
