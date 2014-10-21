@@ -49,10 +49,15 @@ static void ex_delcommand __ARGS((exarg_T *eap));
 static char_u *get_user_command_name __ARGS((int idx));
 # endif
 
+/* Wether a command index indicates a user command. */
+# define IS_USER_CMDIDX(idx) ((int)(idx) < 0)
+
 #else
 # define ex_command	ex_ni
 # define ex_comclear	ex_ni
 # define ex_delcommand	ex_ni
+/* Wether a command index indicates a user command. */
+# define IS_USER_CMDIDX(idx) (FALSE)
 #endif
 
 #ifdef FEAT_EVAL
@@ -2190,11 +2195,8 @@ do_one_cmd(cmdlinep, sourcing,
 	goto doend;
     }
 
-    ni = (
-#ifdef FEAT_USR_CMDS
-	    !USER_CMDIDX(ea.cmdidx) &&
-#endif
-	    (cmdnames[ea.cmdidx].cmd_func == ex_ni
+    ni = (!IS_USER_CMDIDX(ea.cmdidx)
+	    && (cmdnames[ea.cmdidx].cmd_func == ex_ni
 #ifdef HAVE_EX_SCRIPT_NI
 	     || cmdnames[ea.cmdidx].cmd_func == ex_script_ni
 #endif
@@ -2229,9 +2231,7 @@ do_one_cmd(cmdlinep, sourcing,
 /*
  * 5. parse arguments
  */
-#ifdef FEAT_USR_CMDS
-    if (!USER_CMDIDX(ea.cmdidx))
-#endif
+    if (!IS_USER_CMDIDX(ea.cmdidx))
 	ea.argt = (long)cmdnames[(int)ea.cmdidx].cmd_argt;
 
     if (!ea.skip)
@@ -2252,10 +2252,7 @@ do_one_cmd(cmdlinep, sourcing,
 	}
 
 	if (text_locked() && !(ea.argt & CMDWIN)
-# ifdef FEAT_USR_CMDS
-		&& !USER_CMDIDX(ea.cmdidx)
-# endif
-	   )
+		&& !IS_USER_CMDIDX(ea.cmdidx))
 	{
 	    /* Command not allowed when editing the command line. */
 #ifdef FEAT_CMDWIN
@@ -2273,9 +2270,7 @@ do_one_cmd(cmdlinep, sourcing,
 	if (!(ea.argt & CMDWIN)
 		&& ea.cmdidx != CMD_edit
 		&& ea.cmdidx != CMD_checktime
-# ifdef FEAT_USR_CMDS
-		&& !USER_CMDIDX(ea.cmdidx)
-# endif
+		&& !IS_USER_CMDIDX(ea.cmdidx)
 		&& curbuf_locked())
 	    goto doend;
 #endif
@@ -2468,10 +2463,8 @@ do_one_cmd(cmdlinep, sourcing,
     /* accept numbered register only when no count allowed (:put) */
     if (       (ea.argt & REGSTR)
 	    && *ea.arg != NUL
-#ifdef FEAT_USR_CMDS
-	    /* Do not allow register = for user commands */
-	    && (!USER_CMDIDX(ea.cmdidx) || *ea.arg != '=')
-#endif
+	       /* Do not allow register = for user commands */
+	    && (!IS_USER_CMDIDX(ea.cmdidx) || *ea.arg != '=')
 	    && !((ea.argt & COUNT) && VIM_ISDIGIT(*ea.arg)))
     {
 #ifndef FEAT_CLIPBOARD
@@ -2482,14 +2475,8 @@ do_one_cmd(cmdlinep, sourcing,
 	    goto doend;
 	}
 #endif
-	if (
-#ifdef FEAT_USR_CMDS
-	    valid_yank_reg(*ea.arg, (ea.cmdidx != CMD_put
-						   && USER_CMDIDX(ea.cmdidx)))
-#else
-	    valid_yank_reg(*ea.arg, ea.cmdidx != CMD_put)
-#endif
-	   )
+	if (valid_yank_reg(*ea.arg, (ea.cmdidx != CMD_put
+					      && !IS_USER_CMDIDX(ea.cmdidx))))
 	{
 	    ea.regname = *ea.arg++;
 #ifdef FEAT_EVAL
@@ -2663,10 +2650,7 @@ do_one_cmd(cmdlinep, sourcing,
      * number.  Don't do this for a user command.
      */
     if ((ea.argt & BUFNAME) && *ea.arg != NUL && ea.addr_count == 0
-# ifdef FEAT_USR_CMDS
-	    && !USER_CMDIDX(ea.cmdidx)
-# endif
-	    )
+	    && !IS_USER_CMDIDX(ea.cmdidx))
     {
 	/*
 	 * :bdelete, :bwipeout and :bunload take several arguments, separated
@@ -2704,7 +2688,7 @@ do_one_cmd(cmdlinep, sourcing,
 #endif
 
 #ifdef FEAT_USR_CMDS
-    if (USER_CMDIDX(ea.cmdidx))
+    if (IS_USER_CMDIDX(ea.cmdidx))
     {
 	/*
 	 * Execute a user-defined command.
@@ -2763,11 +2747,8 @@ doend:
     }
 #ifdef FEAT_EVAL
     do_errthrow(cstack,
-	    (ea.cmdidx != CMD_SIZE
-# ifdef FEAT_USR_CMDS
-	     && !USER_CMDIDX(ea.cmdidx)
-# endif
-	    ) ? cmdnames[(int)ea.cmdidx].cmd_name : (char_u *)NULL);
+	    (ea.cmdidx != CMD_SIZE && !IS_USER_CMDIDX(ea.cmdidx))
+			? cmdnames[(int)ea.cmdidx].cmd_name : (char_u *)NULL);
 #endif
 
     if (verbose_save >= 0)
@@ -3361,9 +3342,7 @@ set_one_cmd_context(xp, buff)
 /*
  * 5. parse arguments
  */
-#ifdef FEAT_USR_CMDS
-    if (!USER_CMDIDX(ea.cmdidx))
-#endif
+    if (!IS_USER_CMDIDX(ea.cmdidx))
 	ea.argt = (long)cmdnames[(int)ea.cmdidx].cmd_argt;
 
     arg = skipwhite(p);

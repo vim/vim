@@ -1153,8 +1153,6 @@ EX(CMD_tilde,		"~",		do_sub,
 #endif
 };
 
-#define USER_CMDIDX(idx) ((int)(idx) < 0)
-
 #ifndef DO_DECLARE_EXCMD
 typedef enum CMD_index cmdidx_T;
 
