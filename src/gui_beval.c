@@ -30,6 +30,7 @@ general_beval_cb(beval, state)
     long	winnr = 0;
     char_u	*bexpr;
     buf_T	*save_curbuf;
+    size_t	len;
 # ifdef FEAT_WINDOWS
     win_T	*cw;
 # endif
@@ -82,6 +83,16 @@ general_beval_cb(beval, state)
 
 	    vim_free(result);
 	    result = eval_to_string(bexpr, NULL, TRUE);
+
+	    /* Remove one trailing newline, it is added when the result was a
+	     * list and it's hardly every useful.  If the user really wants a
+	     * trailing newline he can add two and one remains. */
+	    if (result != NULL)
+	    {
+		len = STRLEN(result);
+		if (len > 0 && result[len - 1] == NL)
+		    result[len - 1] = NUL;
+	    }
 
 	    if (use_sandbox)
 		--sandbox;
