@@ -4530,7 +4530,7 @@ check_abbr(c, ptr, col, mincol)
 	    if (q != NULL)
 	    {
 		vim_unescape_csi(q);
-		qlen = STRLEN(q);
+		qlen = (int)STRLEN(q);
 		vim_free(q);
 	    }
 	}
