@@ -3,6 +3,7 @@ Test for mappings and abbreviations
 STARTTEST
 :so small.vim
 :so mbyte.vim
+:set encoding=utf-8
 : " abbreviations with р (0x80) should work
 :inoreab чкпр   vim
 GAчкпр 
