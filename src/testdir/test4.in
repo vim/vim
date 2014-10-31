@@ -17,6 +17,9 @@ othis should be auto-indented
 G?this is a
 othis should be in column 1:wq " append text without autoindent to Xxx
 G:r Xxx             " include Xxx in the current file
+:set fo+=r          " issue #57 do not move cursor on <c-o> when autoindent is set
+Go# abcdef2hi
+d0o# abcdef2hid0
 :?startstart?,$w! test.out
 :qa!
 ENDTEST
