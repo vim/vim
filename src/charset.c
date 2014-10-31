@@ -1184,6 +1184,8 @@ win_lbr_chartabsize(wp, line, s, col, headp)
 	{
 	    col -= W_WIDTH(wp);
 	    numberextra = W_WIDTH(wp) - (numberextra - win_col_off2(wp));
+	    if (numberextra > 0)
+		col %= numberextra;
 	    if (*p_sbr != NUL)
 	    {
 		colnr_T sbrlen = (colnr_T)MB_CHARLEN(p_sbr);
