@@ -2107,12 +2107,20 @@ diff_infold(wp, lnum)
  * "dp" and "do" commands.
  */
     void
-nv_diffgetput(put)
+nv_diffgetput(put, count)
     int		put;
+    long	count;
 {
     exarg_T	ea;
+    char_u	buf[30];
 
-    ea.arg = (char_u *)"";
+    if (count == 0)
+	ea.arg = (char_u *)"";
+    else
+    {
+	vim_snprintf((char *)buf, 30, "%ld", count);
+	ea.arg = buf;
+    }
     if (put)
 	ea.cmdidx = CMD_diffput;
     else

@@ -9284,7 +9284,7 @@ nv_put(cap)
 	if (cap->oap->op_type == OP_DELETE && cap->cmdchar == 'p')
 	{
 	    clearop(cap->oap);
-	    nv_diffgetput(TRUE);
+	    nv_diffgetput(TRUE, cap->opcount);
 	}
 	else
 #endif
@@ -9407,7 +9407,7 @@ nv_open(cap)
     if (cap->oap->op_type == OP_DELETE && cap->cmdchar == 'o')
     {
 	clearop(cap->oap);
-	nv_diffgetput(FALSE);
+	nv_diffgetput(FALSE, cap->opcount);
     }
     else
 #endif

@@ -18,7 +18,7 @@ int diffopt_changed __ARGS((void));
 int diffopt_horizontal __ARGS((void));
 int diff_find_change __ARGS((win_T *wp, linenr_T lnum, int *startp, int *endp));
 int diff_infold __ARGS((win_T *wp, linenr_T lnum));
-void nv_diffgetput __ARGS((int put));
+void nv_diffgetput __ARGS((int put, long count));
 void ex_diffgetput __ARGS((exarg_T *eap));
 int diff_mode_buf __ARGS((buf_T *buf));
 int diff_move_to __ARGS((int dir, long count));
