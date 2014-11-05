@@ -19689,6 +19689,7 @@ f_writefile(argvars, rettv)
     typval_T	*rettv;
 {
     int		binary = FALSE;
+    int		append = FALSE;
     char_u	*fname;
     FILE	*fd;
     int		ret = 0;
@@ -19704,14 +19705,19 @@ f_writefile(argvars, rettv)
     if (argvars[0].vval.v_list == NULL)
 	return;
 
-    if (argvars[2].v_type != VAR_UNKNOWN
-			      && STRCMP(get_tv_string(&argvars[2]), "b") == 0)
-	binary = TRUE;
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+	if (vim_strchr(get_tv_string(&argvars[2]), 'b') != NULL)
+	    binary = TRUE;
+	if (vim_strchr(get_tv_string(&argvars[2]), 'a') != NULL)
+	    append = TRUE;
+    }
 
     /* Always open the file in binary mode, library functions have a mind of
      * their own about CR-LF conversion. */
     fname = get_tv_string(&argvars[1]);
-    if (*fname == NUL || (fd = mch_fopen((char *)fname, WRITEBIN)) == NULL)
+    if (*fname == NUL || (fd = mch_fopen((char *)fname,
+				      append ? APPENDBIN : WRITEBIN)) == NULL)
     {
 	EMSG2(_(e_notcreate), *fname == NUL ? (char_u *)_("<empty>") : fname);
 	ret = -1;
