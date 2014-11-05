@@ -411,7 +411,7 @@ mch_FullName(
 	     * - convert the result from UCS2 to 'encoding'.
 	     */
 	    wname = enc_to_utf16(fname, NULL);
-	    if (wname != NULL && _wfullpath(wbuf, wname, MAX_PATH - 1) != NULL)
+	    if (wname != NULL && _wfullpath(wbuf, wname, MAX_PATH) != NULL)
 	    {
 		cname = utf16_to_enc((short_u *)wbuf, NULL);
 		if (cname != NULL)
