@@ -485,12 +485,31 @@ USE_STDCPLUS = yes
 endif
 
 ##############################
+ifndef XPM
+ifeq ($(ARCH),i386)
+XPM = xpm/x86
+endif
+ifeq ($(ARCH),i486)
+XPM = xpm/x86
+endif
+ifeq ($(ARCH),i586)
+XPM = xpm/x86
+endif
+ifeq ($(ARCH),i686)
+XPM = xpm/x86
+endif
+ifeq ($(ARCH),x86-64)
+XPM = xpm/x64
+endif
+endif
+ifdef XPM
 ifneq ($(XPM),no)
 # Only allow XPM for a GUI build.
 DEFINES += -DFEAT_XPM_W32
-INCLUDES += -I$(XPM)/include
+INCLUDES += -I$(XPM)/include -I$(XPM)/../include
 EXTRA_OBJS += $(OUTDIR)/xpm_w32.o
 EXTRA_LIBS += -L$(XPM)/lib -lXpm
+endif
 endif
 
 ##############################
