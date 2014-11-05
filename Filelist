@@ -277,6 +277,7 @@ SRC_DOS =	\
 		src/Make_bc3.mak \
 		src/Make_bc5.mak \
 		src/Make_cyg.mak \
+		src/Make_cyg_ming.mak \
 		src/Make_djg.mak \
 		src/Make_ivc.mak \
 		src/Make_dvc.mak \

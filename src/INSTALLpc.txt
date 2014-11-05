@@ -228,11 +228,15 @@ at:
 
     http://www.mingw.org/
 
+or you can use 'MinGW-w64' compiler.
+
+    http://mingw-w64.sourceforge.net/
+
 Once you have downloaded the compiler binaries, unpack them on your hard disk
 somewhere, and put them on your PATH.  If you are on Win95/98 you can edit
 your AUTOEXEC.BAT file with a line like:
 
-    set PATH=C:\GCC-2.95.2\BIN;%PATH%
+    set PATH=C:\MinGW\bin;%PATH%
 
 or on NT/2000/XP, go to the Control Panel, (Performance and Maintenance),
 System, Advanced, and edit the environment from there.
@@ -240,10 +244,10 @@ System, Advanced, and edit the environment from there.
 Test if gcc is on your path.  From a CMD (or COMMAND on '95/98) window:
 
     C:\> gcc --version
-    2.95.2
+    gcc (GCC) 4.8.1
 
-    C:\> make --version
-    GNU Make version 3.77 (...etc...)
+    C:\> mingw32-make --version
+    GNU Make 3.82.90 (...etc...)
 
 Now you are ready to rock 'n' roll.  Unpack the vim sources (look on
 www.vim.org for exactly which version of the vim files you need).
@@ -255,7 +259,7 @@ Change directory to 'vim\src':
 
 and you type:
 
-    make -f Make_ming.mak gvim.exe
+    mingw32-make -f Make_ming.mak gvim.exe
 
 After churning for a while, you will end up with 'gvim.exe' in the 'vim\src'
 directory.
@@ -264,7 +268,7 @@ You should not need to do *any* editing of any files to get vim compiled this
 way.  If, for some reason, you want the console-mode-only version of vim (this
 is NOT recommended on Win32, especially on '95/'98!!!), you can use:
 
-    make -f Make_ming.mak GUI=no vim.exe
+    mingw32-make -f Make_ming.mak GUI=no vim.exe
 
 If you are dismayed by how big the EXE is, I strongly recommend you get 'UPX'
 (also free!) and compress the file (typical compression is 50%). UPX can be
@@ -291,8 +295,7 @@ You need to uncomment lines in Make_ming.mak to have NLS defined.
 Use Make_cyg.mak with Cygwin's GCC. See
     http://users.skynet.be/antoine.mechelynck/vim/compile.htm
 
-The Cygnus one many not fully work yet.
-With Cygnus gcc you can use the Unix Makefile instead (you need to get the
+With Cygnus gcc you should use the Unix Makefile instead (you need to get the
 Unix archive then).  Then you get a Cygwin application (feels like Vim is
 running on Unix), while with Make_cyg.mak you get a Windows application (like
 with the other makefiles).
@@ -316,9 +319,9 @@ your Linux (or other unix) box.  To do this, you need to follow a few steps:
 	http://www.mingw.org/wiki/LinuxCrossMinGW
 	http://www.libsdl.org/extras/win32/cross/README.txt
     2) Get and unpack both the Unix sources and the extra archive
-    3) in 'Make_ming.mak', set 'CROSS' to 'yes' instead of 'no'.
-       Make further changes to 'Make_ming.mak' as you wish.
-       If your cross-compiler prefix differs from the predefined value,
+    3) in 'Make_cyg_ming.mak', set 'CROSS' to 'yes' instead of 'no'.
+       Make further changes to 'Make_cyg_ming.mak' and 'Make_ming.mak' as you
+       wish.  If your cross-compiler prefix differs from the predefined value,
        set 'CROSS_COMPILE' corresponding.
     4) make -f Make_ming.mak gvim.exe
 

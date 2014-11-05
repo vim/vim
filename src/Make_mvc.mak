@@ -50,13 +50,14 @@
 #	Perl interface:
 #	  PERL=[Path to Perl directory]
 #	  DYNAMIC_PERL=yes (to load the Perl DLL dynamically)
-#	  PERL_VER=[Perl version, in the form 55 (5.005), 56 (5.6.x), etc]
+#	  PERL_VER=[Perl version, in the form 55 (5.005), 56 (5.6.x),
+#		    510 (5.10.x), etc]
 #	  (default is 56)
 #
 #	Python interface:
 #	  PYTHON=[Path to Python directory]
 #	  DYNAMIC_PYTHON=yes (to load the Python DLL dynamically)
-#	  PYTHON_VER=[Python version, eg 15, 20]  (default is 22)
+#	  PYTHON_VER=[Python version, eg 22, 23, ..., 27]  (default is 22)
 #
 #	Python3 interface:
 #	  PYTHON3=[Path to Python3 directory]
@@ -66,11 +67,13 @@
 #	Ruby interface:
 #	  RUBY=[Path to Ruby directory]
 #	  DYNAMIC_RUBY=yes (to load the Ruby DLL dynamically)
-#	  RUBY_VER=[Ruby version, eg 16, 17] (default is 18)
-#	  RUBY_VER_LONG=[Ruby version, eg 1.6, 1.7] (default is 1.8)
+#	  RUBY_VER=[Ruby version, eg 18, 19, 20] (default is 18)
+#	  RUBY_VER_LONG=[Ruby version, eg 1.8, 1.9.1, 2.0.0] (default is 1.8)
 #	    You must set RUBY_VER_LONG when change RUBY_VER.
-#	    You must set RUBY_API_VER to RUBY_VER_LONG.
-#	    Don't set ruby API version to RUBY_VER like 191.
+#	    RUBY_API_VER is derived from RUBY_VER_LONG.
+#	    Note: If you use Ruby 1.9.3, set as follows:
+#	      RUBY_VER=19
+#	      RUBY_VER_LONG=1.9.1 (not 1.9.3, because the API version is 1.9.1.)
 #
 #	Tcl interface:
 #	  TCL=[Path to Tcl directory]
