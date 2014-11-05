@@ -9526,8 +9526,15 @@ ex_normal(eap)
     msg_didout |= save_msg_didout;	/* don't reset msg_didout now */
 
     /* Restore the state (needed when called from a function executed for
-     * 'indentexpr'). */
+     * 'indentexpr'). Update the mouse and cursor, they may have changed. */
     State = save_State;
+#ifdef FEAT_MOUSE
+    setmouse();
+#endif
+#ifdef CURSOR_SHAPE
+    ui_cursor_shape();		/* may show different cursor shape */
+#endif
+
 #ifdef FEAT_MBYTE
     vim_free(arg);
 #endif
