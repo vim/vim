@@ -12,11 +12,13 @@ ifneq (sh.exe, $(SHELL))
 DEL = rm -f
 MV = mv
 CP = cp
+CAT = cat
 DIRSLASH = /
 else
 DEL = del
 MV = rename
 CP = copy
+CAT = type
 DIRSLASH = \\
 endif
 
@@ -72,6 +74,8 @@ SCRIPTS32 =	test50.out test70.out
 
 SCRIPTS_GUI = test16.out
 
+SCRIPTS_BENCH = bench_re_freeze.out
+
 .SUFFIXES: .in .out
 
 vimall:	fixff $(SCRIPTS16) $(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS32)
@@ -79,6 +83,8 @@ vimall:	fixff $(SCRIPTS16) $(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS32)
 
 nongui:	fixff $(SCRIPTS16) $(SCRIPTS)
 	echo ALL DONE
+
+benchmark: $(SCRIPTS_BENCH)
 
 small:
 	echo ALL DONE
@@ -114,3 +120,8 @@ clean:
 	-$(DEL) X*
 	-$(DEL) test.ok
 	-$(DEL) viminfo
+
+bench_re_freeze.out: bench_re_freeze.vim
+	-$(DEL) benchmark.out
+	$(VIMPROG) -u dos.vim -U NONE --noplugin $*.in
+	$(CAT) benchmark.out

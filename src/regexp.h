@@ -27,6 +27,18 @@
  */
 #define NFA_MAX_BRACES 20
 
+/*
+ * In the NFA engine: how many states are allowed
+ */
+#define NFA_MAX_STATES 100000
+#define NFA_TOO_EXPENSIVE -1
+
+/* Which regexp engine to use? Needed for vim_regcomp().
+ * Must match with 'regexpengine'. */
+#define	    AUTOMATIC_ENGINE	0
+#define	    BACKTRACKING_ENGINE	1
+#define	    NFA_ENGINE		2
+
 typedef struct regengine regengine_T;
 
 /*
@@ -38,6 +50,8 @@ typedef struct regprog
 {
     regengine_T		*engine;
     unsigned		regflags;
+    unsigned		re_engine;   /* automatic, backtracking or nfa engine */
+    unsigned		re_flags;    /* second argument for vim_regcomp() */
 } regprog_T;
 
 /*
@@ -47,9 +61,11 @@ typedef struct regprog
  */
 typedef struct
 {
-    /* These two members implement regprog_T */
+    /* These four members implement regprog_T */
     regengine_T		*engine;
     unsigned		regflags;
+    unsigned		re_engine;
+    unsigned		re_flags;    /* second argument for vim_regcomp() */
 
     int			regstart;
     char_u		reganch;
@@ -81,9 +97,11 @@ struct nfa_state
  */
 typedef struct
 {
-    /* These two members implement regprog_T */
+    /* These three members implement regprog_T */
     regengine_T		*engine;
     unsigned		regflags;
+    unsigned		re_engine;
+    unsigned		re_flags;    /* second argument for vim_regcomp() */
 
     nfa_state_T		*start;		/* points into state[] */
 
@@ -96,9 +114,7 @@ typedef struct
 #ifdef FEAT_SYN_HL
     int			reghasz;
 #endif
-#ifdef DEBUG
     char_u		*pattern;
-#endif
     int			nsubexp;	/* number of () */
     int			nstate;
     nfa_state_T		state[1];	/* actually longer.. */
@@ -151,9 +167,7 @@ struct regengine
     void	(*regfree)(regprog_T *);
     int		(*regexec_nl)(regmatch_T*, char_u*, colnr_T, int);
     long	(*regexec_multi)(regmmatch_T*, win_T*, buf_T*, linenr_T, colnr_T, proftime_T*);
-#ifdef DEBUG
     char_u	*expr;
-#endif
 };
 
 #endif	/* _REGEXP_H */

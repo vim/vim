@@ -87,6 +87,7 @@ clean:
 	-if exist Xfind rd /s /q Xfind
 	-if exist viminfo del viminfo
 	-del test.log
+	-if exists benchmark.out del benchmark.out
 
 .in.out:
 	-if exist $*.failed del $*.failed
@@ -103,3 +104,11 @@ clean:
 
 nolog:
 	-del test.log
+
+benchmark:
+	bench_re_freeze.out
+
+bench_re_freeze.out: bench_re_freeze.vim
+	-if exist benchmark.out del benchmark.out
+	$(VIMPROG) -u dos.vim -U NONE --noplugin $*.in
+	@IF EXIST benchmark.out ( type benchmark.out )

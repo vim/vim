@@ -1879,6 +1879,9 @@ test check:
 	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 	$(MAKE) -f Makefile unittest
 
+benchmark:
+	cd testdir; $(MAKE) -f Makefile benchmark VIMPROG=../$(VIMTARGET) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+
 unittesttargets:
 	$(MAKE) -f Makefile $(UNITTEST_TARGETS)
 
