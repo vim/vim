@@ -87,7 +87,7 @@ clean:
 	-if exist Xfind rd /s /q Xfind
 	-if exist viminfo del viminfo
 	-del test.log
-	-if exists benchmark.out del benchmark.out
+	-if exist benchmark.out del benchmark.out
 
 .in.out:
 	-if exist $*.failed del $*.failed
