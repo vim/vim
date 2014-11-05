@@ -5473,6 +5473,7 @@ edit-dialogs	editing.txt	/*edit-dialogs*
 edit-files	editing.txt	/*edit-files*
 edit-intro	editing.txt	/*edit-intro*
 edit-no-break	usr_25.txt	/*edit-no-break*
+edit-paragraph-join	usr_25.txt	/*edit-paragraph-join*
 editing.txt	editing.txt	/*editing.txt*
 efm-%>	quickfix.txt	/*efm-%>*
 efm-entries	quickfix.txt	/*efm-entries*
