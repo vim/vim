@@ -104,7 +104,7 @@ SRC_ALL =	\
 		src/testdir/python_before/*.py \
 		src/testdir/bench*.in \
 		src/testdir/bench*.vim \
-		src/testdir/samples.*.txt \
+		src/testdir/samples/*.txt \
 		src/proto.h \
 		src/proto/blowfish.pro \
 		src/proto/buffer.pro \
