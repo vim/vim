@@ -1,6 +1,6 @@
 # NSIS file to create a self-installing exe for Vim.
 # It requires NSIS version 2.0 or later.
-# Last Change:	2010 Jul 30
+# Last Change:	2014 Nov 5
 
 # WARNING: if you make changes to this script, look out for $0 to be valid,
 # because uninstall deletes most files in $0.
@@ -38,7 +38,7 @@ SetDatablockOptimize on
 RequestExecutionLevel highest
 
 ComponentText "This will install Vim ${VER_MAJOR}.${VER_MINOR} on your computer."
-DirText "Choose a directory to install Vim (must end in 'vim')"
+DirText "Choose a directory to install Vim (should contain 'vim')"
 Icon icons\vim_16c.ico
 # NSIS2 uses a different strategy with six different images in a strip...
 #EnabledBitmap icons\enabled.bmp
@@ -135,11 +135,6 @@ FunctionEnd
 # We only accept the directory if it ends in "vim".  Using .onVerifyInstDir has
 # the disadvantage that the browse dialog is difficult to use.
 Function CheckInstallDir
-  StrCpy $0 $INSTDIR 3 -3
-  StrCmp $0 "vim" PathGood
-    MessageBox MB_OK "The path must end in 'vim'."
-    Abort
-  PathGood:
 FunctionEnd
 
 Function .onInstSuccess
