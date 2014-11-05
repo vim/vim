@@ -8,7 +8,6 @@ STARTTEST
 :" Test 'undofile': first a simple one-line change.
 :set nocompatible viminfo+=nviminfo visualbell
 :set ul=100 undofile nomore
-:set ff=unix
 :e! Xtestfile
 ggdGithis is one line:set ul=100
 :s/one/ONE/
@@ -83,7 +82,7 @@ uu:w >>test.out
 :" With encryption, cryptmethod=blowfish
 :e! Xtestfile
 rubbish
-:set undofile cm=blowfish
+:set undofile cm=blowfish ff&
 ggdGijan
 feb
 mar
@@ -109,7 +108,7 @@ u:.w >>test.out
 :" With encryption, cryptmethod=blowfish2
 :e! Xtestfile
 rubbish
-:set undofile cm=blowfish2
+:set undofile cm=blowfish2 ff&
 ggdGijan
 feb
 mar
