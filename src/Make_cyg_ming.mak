@@ -132,7 +132,7 @@ XSUBPPTRY=$(PERLLIB)/ExtUtils/xsubpp
 endif
 XSUBPP_EXISTS=$(shell $(PERLEXE) -e "print 1 unless -e '$(XSUBPPTRY)'")
 ifeq "$(XSUBPP_EXISTS)" ""
-XSUBPP=$(PERLEXE) "$(XSUBPPTRY)"
+XSUBPP=$(PERLEXE) $(XSUBPPTRY)
 else
 XSUBPP=xsubpp
 endif
@@ -809,7 +809,7 @@ endif
 
 if_perl.c: if_perl.xs typemap
 	$(XSUBPP) -prototypes -typemap \
-	     "$(PERLTYPEMAP)" if_perl.xs > $@
+	     $(PERLTYPEMAP) if_perl.xs > $@
 
 $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)
 	$(CC) -c $(CFLAGS) netbeans.c -o $(OUTDIR)/netbeans.o
