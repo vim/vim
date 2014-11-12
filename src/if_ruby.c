@@ -418,7 +418,8 @@ VALUE rb_num2ulong(VALUE x)
 #  endif
 # endif
 
-# if defined(USE_RGENGC) && USE_RGENGC
+   /* Do not generate a prototype here, VALUE isn't always defined. */
+# if defined(USE_RGENGC) && USE_RGENGC && !defined(PROTO)
 void rb_gc_writebarrier_unprotect_promoted_stub(VALUE obj)
 {
     return dll_rb_gc_writebarrier_unprotect_promoted(obj);
