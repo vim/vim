@@ -6918,6 +6918,8 @@ stop_insert(end_insert_pos, esc, nomove)
 		curwin->w_cursor = tpos;
 	    else
 	    {
+		/* reset tpos, could have been invalidated in the loop above */
+		tpos = curwin->w_cursor;
 		tpos.col++;
 		if (cc != NUL && gchar_pos(&tpos) == NUL)
 		    ++curwin->w_cursor.col;	/* put cursor back on the NUL */
