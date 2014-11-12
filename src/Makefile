@@ -1779,13 +1779,12 @@ update-po:
 proto: $(PRO_AUTO) $(PRO_MANUAL)
 
 # Filter out arguments that cproto doesn't support.
-# Don't pass "-pthread" to cproto, it sees it as a list of individual flags.
-# Don't pass "-fstack-protector" to cproto, for the same reason.
-# Don't pass "-g" to cproto.
+# Don't pass "-pthread", "-fwrapv" and similar arguments to cproto, it sees
+# them as a list of individual flags.
 # The -E"gcc -E" argument must be separate to avoid problems with shell
 # quoting.
 CPROTO = cproto $(PROTO_FLAGS) -DPROTO \
-	 `echo '$(LINT_CFLAGS)' | sed -e 's/-pthread//g' -e 's/-fstack-protector//g' -e 's/\ -g\ / /g'`
+	 `echo '$(LINT_CFLAGS)' | sed -e 's/ -[a-z-]\+//g'`
 
 ### Would be nice if this would work for "normal" make.
 ### Currently it only works for (Free)BSD make.
