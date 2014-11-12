@@ -29,12 +29,14 @@
 # include "gui_dwrite.h"
 #endif
 
-#if defined(FEAT_DIRECTX) || defined(PROTO)
+#if defined(FEAT_DIRECTX)
 static DWriteContext *s_dwc = NULL;
 static int s_directx_enabled = 0;
 static int s_directx_load_attempted = 0;
 # define IS_ENABLE_DIRECTX() (s_directx_enabled && s_dwc != NULL)
+#endif
 
+#if defined(FEAT_DIRECTX) || defined(PROTO)
     int
 directx_enabled(void)
 {

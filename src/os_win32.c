@@ -135,6 +135,8 @@ typedef int BY_HANDLE_FILE_INFORMATION;
 typedef int SE_OBJECT_TYPE;
 typedef int PSNSECINFO;
 typedef int PSNSECINFOW;
+typedef int STARTUPINFO;
+typedef int PROCESS_INFORMATION;
 #endif
 
 #ifndef FEAT_GUI_W32

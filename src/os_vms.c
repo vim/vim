@@ -12,7 +12,7 @@
 #include	"vim.h"
 
 /* define _generic_64 for use in time functions */
-#ifndef VAX
+#if !defined(VAX) && !defined(PROTO)
 #   include <gen64def.h>
 #else
 /* based on Alpha's gen64def.h; the file is absent on VAX */
