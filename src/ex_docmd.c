@@ -11524,6 +11524,7 @@ ex_match(eap)
 ex_X(eap)
     exarg_T	*eap UNUSED;
 {
+    crypt_check_current_method();
     (void)crypt_get_key(TRUE, TRUE);
 }
 #endif

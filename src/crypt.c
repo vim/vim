@@ -504,6 +504,26 @@ crypt_free_key(key)
 }
 
 /*
+ * Check the crypt method and give a warning if it's outdated.
+ */
+    void
+crypt_check_method(method)
+    int method;
+{
+    if (method < CRYPT_M_BF2)
+    {
+	msg_scroll = TRUE;
+	MSG(_("Warning: Using a weak encryption method; see :help 'cm'"));
+    }
+}
+
+    void
+crypt_check_current_method()
+{
+    crypt_check_method(crypt_get_method_nr(curbuf));
+}
+
+/*
  * Ask the user for a crypt key.
  * When "store" is TRUE, the new key is stored in the 'key' option, and the
  * 'key' option value is returned: Don't free it.

@@ -19,6 +19,8 @@ void crypt_decode __ARGS((cryptstate_T *state, char_u *from, size_t len, char_u 
 void crypt_encode_inplace __ARGS((cryptstate_T *state, char_u *buf, size_t len));
 void crypt_decode_inplace __ARGS((cryptstate_T *state, char_u *buf, size_t len));
 void crypt_free_key __ARGS((char_u *key));
+void crypt_check_method __ARGS((int method));
+void crypt_check_current_method __ARGS((void));
 char_u *crypt_get_key __ARGS((int store, int twice));
 void crypt_append_msg __ARGS((buf_T *buf));
 /* vim: set ft=c : */

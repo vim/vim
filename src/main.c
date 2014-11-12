@@ -854,6 +854,7 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
 #ifdef FEAT_CRYPT
     if (params.ask_for_key)
     {
+	crypt_check_current_method();
 	(void)crypt_get_key(TRUE, TRUE);
 	TIME_MSG("getting crypt key");
     }
