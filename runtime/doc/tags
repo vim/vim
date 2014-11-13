@@ -392,6 +392,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'kp'	options.txt	/*'kp'*
 'langmap'	options.txt	/*'langmap'*
 'langmenu'	options.txt	/*'langmenu'*
+'langnoremap'	options.txt	/*'langnoremap'*
 'laststatus'	options.txt	/*'laststatus'*
 'lazyredraw'	options.txt	/*'lazyredraw'*
 'lbr'	options.txt	/*'lbr'*
@@ -405,6 +406,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'listchars'	options.txt	/*'listchars'*
 'lm'	options.txt	/*'lm'*
 'lmap'	options.txt	/*'lmap'*
+'lnr'	options.txt	/*'lnr'*
 'loadplugins'	options.txt	/*'loadplugins'*
 'lpl'	options.txt	/*'lpl'*
 'ls'	options.txt	/*'ls'*

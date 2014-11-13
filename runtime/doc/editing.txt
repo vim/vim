@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.4.  Last change: 2014 Sep 19
+*editing.txt*   For Vim version 7.4.  Last change: 2014 Nov 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1415,13 +1415,11 @@ Do this before writing the file.  When reading an encrypted file it will be
 set automatically to the method used when that file was written.  You can
 change 'cryptmethod' before writing that file to change the method.
 
-To set the default method, used for new files, use one of these in your
-|vimrc| file: >
-	set cm=zip
+To set the default method, used for new files, use this in your |vimrc| 
+file: >
 	set cm=blowfish2
-Use the first one if you need to be compatible with Vim 7.2 and older.  Using
-"blowfish2" is highly recommended if you can use a Vim version that supports
-it.
+Using "blowfish2" is highly recommended.  Only use another method if you
+must use an older Vim version that does not support it.
 
 The message given for reading and writing a file will show "[crypted]" when
 using zip, "[blowfish]" when using blowfish, etc.
