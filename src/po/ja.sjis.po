@@ -8,7 +8,7 @@
 # Copyright (C) 2001-13 MURAOKA Taro <koron.kaoriya@gmail.com>
 # THIS FILE IS DISTRIBUTED UNDER THE VIM LICENSE.
 #
-# Original translations.
+# generated from ja.po, DO NOT EDIT
 #
 msgid ""
 msgstr ""

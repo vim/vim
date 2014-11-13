@@ -6,7 +6,7 @@
 #  FIRST AUTHOR  DindinX         <David.Odin@bigfoot.com>     2000.
 # SECOND AUTHOR  Adrien Beau     <version.francaise@free.fr>  2002, 2003.
 #  THIRD AUTHOR  David Blanchet  <david.blanchet@free.fr>     2006, 2008.
-# FOURTH AUTHOR  Dominique Pellé <dominique.pelle@gmail.com>  2008, 2013.
+# FOURTH AUTHOR  Dominique Pellé <dominique.pelle@gmail.com>  2008, 2014.
 #
 # Latest translation available at:
 #   http://dominique.pelle.free.fr/vim-fr.php
@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Français)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-27 04:55+0200\n"
-"PO-Revision-Date: 2013-05-27 10:22+0200\n"
+"POT-Creation-Date: 2014-11-05 21:12+0100\n"
+"PO-Revision-Date: 2014-11-05 21:23+0100\n"
 "Last-Translator: Dominique Pellé <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -90,6 +90,9 @@ msgstr "1 tampon a été détruit"
 msgid "%d buffers wiped out"
 msgstr "%d tampons ont été détruits"
 
+msgid "E90: Cannot unload last buffer"
+msgstr "E90: Impossible de décharger le dernier tampon"
+
 # AB - La version française est meilleure que la version anglaise.
 msgid "E84: No modified buffer found"
 msgstr "E84: Aucun tampon n'est modifié"
@@ -114,9 +117,6 @@ msgstr "E88: Impossible d'aller avant le premier tampon"
 msgid "E89: No write since last change for buffer %ld (add ! to override)"
 msgstr ""
 "E89: Le tampon %ld n'a pas été enregistré (ajoutez ! pour passer outre)"
-
-msgid "E90: Cannot unload last buffer"
-msgstr "E90: Impossible de décharger le dernier tampon"
 
 msgid "W14: Warning: List of file names overflow"
 msgstr "W14: Alerte : La liste des noms de fichier déborde"
@@ -155,6 +155,9 @@ msgstr "[Nouveau fichier]"
 
 msgid "[Read errors]"
 msgstr "[Erreurs de lecture]"
+
+msgid "[RO]"
+msgstr "[RO]"
 
 # AB - La version courte, "[RO]", devrait-elle être traduite par "[LS]" ?
 #      Il faudrait faire un sondage auprès des utilisateurs francophones.
@@ -229,6 +232,21 @@ msgstr "Symboles dans %s :"
 #, c-format
 msgid "    line=%ld  id=%d  name=%s"
 msgstr "    ligne=%ld  id=%d  nom=%s"
+
+msgid "E821: File is encrypted with unknown method"
+msgstr "E821: Le fichier est chiffré avec une méthode inconnue"
+
+msgid "Enter encryption key: "
+msgstr "Tapez la clé de chiffrement : "
+
+msgid "Enter same key again: "
+msgstr "Tapez la clé à nouveau : "
+
+msgid "Keys don't match!"
+msgstr "Les clés ne correspondent pas !"
+
+msgid "[crypted]"
+msgstr "[chiffré]"
 
 # AB - Je n'ai pas trouvé de traduction satisfaisante au verbe "diff". Comme
 #      Vim fait en pratique appel au programme "diff" pour evaluer les
@@ -491,6 +509,9 @@ msgstr "E130: Fonction inconnue : %s"
 msgid "E461: Illegal variable name: %s"
 msgstr "E461: Nom de variable invalide : %s"
 
+msgid "E806: using Float as a String"
+msgstr "E806: Utilisation d'un Flottant comme une Chaîne"
+
 # DB - todo : trouver mieux que "destinations".
 msgid "E687: Less targets than List items"
 msgstr "E687: Moins de destinations que d'éléments dans la Liste"
@@ -662,12 +683,12 @@ msgstr "E785: complete() n'est utilisable que dans le mode Insertion"
 msgid "&Ok"
 msgstr "&Ok"
 
-msgid "extend() argument"
-msgstr "argument de extend()"
-
 #, c-format
 msgid "E737: Key already exists: %s"
 msgstr "E737: un mappage existe déjà pour %s"
+
+msgid "extend() argument"
+msgstr "argument de extend()"
 
 msgid "map() argument"
 msgstr "argument de map()"
@@ -742,8 +763,14 @@ msgstr "E258: La réponse n'a pas pu être envoyée au client"
 msgid "sort() argument"
 msgstr "argument de sort()"
 
+msgid "uniq() argument"
+msgstr "argument de uniq()"
+
 msgid "E702: Sort compare function failed"
 msgstr "E702: La fonction de comparaison de sort() a échoué"
+
+msgid "E882: Uniq compare function failed"
+msgstr "E882: La fonction de comparaison de uniq() a échoué"
 
 msgid "(Invalid)"
 msgstr "(Invalide)"
@@ -771,9 +798,6 @@ msgstr "E730: Utilisation d'une Liste comme une Chaîne"
 
 msgid "E731: using Dictionary as a String"
 msgstr "E731: Utilisation d'un Dictionnaire comme une Chaîne"
-
-msgid "E806: using Float as a String"
-msgstr "E806: Utilisation d'un Flottant comme une Chaîne"
 
 # DB : On doit pouvoir trouver nettement mieux que ça.
 #, c-format
@@ -848,8 +872,15 @@ msgid "E129: Function name required"
 msgstr "E129: Nom de fonction requis"
 
 #, c-format
-msgid "E128: Function name must start with a capital or contain a colon: %s"
-msgstr "E128: La fonction %s ne commence pas par une majuscule ou contient ':'"
+msgid "E128: Function name must start with a capital or \"s:\": %s"
+msgstr ""
+"E128: Le nom de la fonction doit commencer par une majuscule ou \"s:\": %s"
+
+#, c-format
+msgid "E884: Function name cannot contain a colon: %s"
+msgstr ""
+"E884: Le nom de la fonction ne peut pas contenir le caractère deux-points : "
+"%s"
 
 # AB - Il est difficile de créer une version française qui fasse moins de 80
 #      caractères de long, nom de la fonction compris : "It is in use" est une
@@ -1012,6 +1043,10 @@ msgstr "E138: Impossible d'écrire le fichier %s"
 #, c-format
 msgid "Writing viminfo file \"%s\""
 msgstr "Écriture du fichier viminfo \"%s\""
+
+#, c-format
+msgid "E886: Can't rename viminfo file to %s!"
+msgstr "E886: Impossible de renommer viminfo en %s"
 
 #. Write the info:
 #, c-format
@@ -1266,6 +1301,10 @@ msgstr "E158: Le tampon %s est introuvable"
 #, c-format
 msgid "E157: Invalid sign ID: %ld"
 msgstr "E157: Le symbole %ld est introuvable"
+
+#, c-format
+msgid "E885: Not possible to change sign %s"
+msgstr "E885: Impossible de changer le symbole %s"
 
 msgid " (NOT FOUND)"
 msgstr "  (INTROUVABLE)"
@@ -1856,9 +1895,6 @@ msgstr "[socket]"
 msgid "[character special]"
 msgstr "[caractère spécial]"
 
-msgid "[RO]"
-msgstr "[RO]"
-
 msgid "[CR missing]"
 msgstr "[CR manquant]"
 
@@ -1870,12 +1906,6 @@ msgstr "[NON converti]"
 
 msgid "[converted]"
 msgstr "[converti]"
-
-msgid "[blowfish]"
-msgstr "[blowfish]"
-
-msgid "[crypted]"
-msgstr "[chiffré]"
 
 #, c-format
 msgid "[CONVERSION ERROR in line %ld]"
@@ -1897,9 +1927,6 @@ msgstr "La conversion avec 'charconvert' a échoué"
 # DB : Pas de majuscule ?
 msgid "can't read output of 'charconvert'"
 msgstr "Impossible de lire la sortie de 'charconvert'"
-
-msgid "E821: File is encrypted with unknown method"
-msgstr "E821: Le fichier est chiffré avec une méthode inconnue"
 
 msgid "E676: No matching autocommands for acwrite buffer"
 msgstr "E676: Pas d'autocommande correspondante pour le tampon acwrite"
@@ -2490,32 +2517,28 @@ msgid "Font '%s' is not fixed-width"
 msgstr "La police '%s' n'a pas une largeur fixe"
 
 #, c-format
-msgid "E253: Fontset name: %s\n"
-msgstr "E253: Nom du jeu de polices : %s\n"
+msgid "E253: Fontset name: %s"
+msgstr "E253: Nom du jeu de polices : %s"
 
 #, c-format
-msgid "Font0: %s\n"
-msgstr "Font0: %s\n"
+msgid "Font0: %s"
+msgstr "Font0: %s"
 
 #, c-format
-msgid "Font1: %s\n"
-msgstr "Font1: %s\n"
+msgid "Font1: %s"
+msgstr "Font1: %s"
 
 #, c-format
-msgid "Font%ld width is not twice that of font0\n"
-msgstr "La largeur de Font%ld n'est pas le double de celle de Font0\n"
+msgid "Font%ld width is not twice that of font0"
+msgstr "La largeur de Font%ld n'est pas le double de celle de Font0"
 
 #, c-format
-msgid "Font0 width: %ld\n"
-msgstr "Largeur de Font0 : %ld\n"
+msgid "Font0 width: %ld"
+msgstr "Largeur de Font0 : %ld"
 
 #, c-format
-msgid ""
-"Font1 width: %ld\n"
-"\n"
-msgstr ""
-"Largeur de Font1 : %ld\n"
-"\n"
+msgid "Font1 width: %ld"
+msgstr "Largeur de Font1 : %ld"
 
 # DB - todo : Pas certain de mon coup, ici...
 msgid "Invalid font specification"
@@ -2709,6 +2732,9 @@ msgstr "E566: Impossible de créer les tuyaux (pipes) cscope"
 msgid "E622: Could not fork for cscope"
 msgstr "E622: Impossible de forker pour cscope"
 
+msgid "cs_create_connection setpgid failed"
+msgstr "cs_create_connection setpgid a échoué"
+
 msgid "cs_create_connection exec failed"
 msgstr "exec de cs_create_connection a échoué"
 
@@ -2879,9 +2905,6 @@ msgstr "non autorisé dans le bac à sable"
 msgid "E836: This Vim cannot execute :python after using :py3"
 msgstr "E836: Vim ne peut pas exécuter :python après avoir utilisé :py3"
 
-msgid "only string keys are allowed"
-msgstr "seule une chaine est autorisée comme clé"
-
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
 "loaded."
@@ -2889,14 +2912,18 @@ msgstr ""
 "E263: Désolé, commande désactivée : la bibliothèque Python n'a pas pu être "
 "chargée."
 
+msgid ""
+"E887: Sorry, this command is disabled, the Python's site module could not be "
+"loaded."
+msgstr ""
+"E887: Désolé, commande désactivée : la bibliothèque Python n'a pas pu être "
+"chargée."
+
 msgid "E659: Cannot invoke Python recursively"
 msgstr "E659: Impossible d'invoquer Python récursivement"
 
 msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: Vim ne peut pas exécuter :py3 après avoir utilisé :python"
-
-msgid "index must be int or slice"
-msgstr "index doit être int ou slice"
 
 msgid "E265: $_ must be an instance of String"
 msgstr "E265: $_ doit être une instance de chaîne (String)"
@@ -4249,13 +4276,6 @@ msgstr " (Interrompu)"
 msgid "Beep!"
 msgstr "Bip !"
 
-msgid "Vim: preserving files...\n"
-msgstr "Vim : préservation des fichiers...\n"
-
-#. close all memfiles, without deleting
-msgid "Vim: Finished.\n"
-msgstr "Vim : Fini.\n"
-
 msgid "ERROR: "
 msgstr "ERREUR : "
 
@@ -4304,15 +4324,6 @@ msgstr "E548: chiffre attendu"
 
 msgid "E549: Illegal percentage"
 msgstr "E549: Pourcentage non autorisé"
-
-msgid "Enter encryption key: "
-msgstr "Tapez la clé de chiffrement : "
-
-msgid "Enter same key again: "
-msgstr "Tapez la clé à nouveau : "
-
-msgid "Keys don't match!"
-msgstr "Les clés ne correspondent pas !"
 
 msgid "E854: path too long for completion"
 msgstr "E854: chemin trop long pour complètement"
@@ -4487,6 +4498,13 @@ msgstr ""
 #, c-format
 msgid "E574: Unknown register type %d"
 msgstr "E574: Type de registre %d inconnu"
+
+msgid ""
+"E883: search pattern and expression register may not contain two or more "
+"lines"
+msgstr ""
+"E883: le motif de recherche et le registre d'expression ne peuvent pas "
+"contenir deux lignes ou plus"
 
 #, c-format
 msgid "%ld Cols; "
@@ -4777,17 +4795,6 @@ msgstr "E244: Jeu de caractères \"%s\" invalide dans le nom de fonte \"%s\""
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Caractère '%c' invalide dans le nom de fonte \"%s\""
 
-msgid "Vim: Double signal, exiting\n"
-msgstr "Vim : Double signal, sortie\n"
-
-#, c-format
-msgid "Vim: Caught deadly signal %s\n"
-msgstr "Vim : Signal mortel %s intercepté\n"
-
-#, c-format
-msgid "Vim: Caught deadly signal\n"
-msgstr "Vim : Signal mortel intercepté\n"
-
 #, c-format
 msgid "Opening the X display took %ld msec"
 msgstr "L'ouverture du display X a pris %ld ms"
@@ -4818,6 +4825,19 @@ msgid ""
 msgstr ""
 "\n"
 "Impossible de modifier le contexte de sécurité pour "
+
+msgid "Could not set security context "
+msgstr "Impossible d'initialiser le contexte de sécurité "
+
+msgid " for "
+msgstr " pour "
+
+#. no enough size OR unexpected error
+msgid "Could not get security context "
+msgstr "Impossible d'obtenir le contexte de sécurité "
+
+msgid ". Removing it!\n"
+msgstr ". Suppression !\n"
 
 msgid ""
 "\n"
@@ -5017,6 +5037,20 @@ msgstr "E54: %s( ouvrante non fermée"
 msgid "E55: Unmatched %s)"
 msgstr "E55: %s) fermante non ouverte"
 
+msgid "E66: \\z( not allowed here"
+msgstr "E66: \\z( n'est pas autorisé ici"
+
+msgid "E67: \\z1 et al. not allowed here"
+msgstr "E67: \\z1 et co. ne sont pas autorisés ici"
+
+#, c-format
+msgid "E69: Missing ] after %s%%["
+msgstr "E69: ']' manquant après %s%%["
+
+#, c-format
+msgid "E70: Empty %s%%[]"
+msgstr "E70: %s%%[] vide"
+
 msgid "E339: Pattern too long"
 msgstr "E339: Motif trop long"
 
@@ -5056,22 +5090,8 @@ msgstr "E64: %s%c ne suit aucun atome"
 msgid "E65: Illegal back reference"
 msgstr "E65: post-référence invalide"
 
-msgid "E66: \\z( not allowed here"
-msgstr "E66: \\z( n'est pas autorisé ici"
-
-msgid "E67: \\z1 et al. not allowed here"
-msgstr "E67: \\z1 et co. ne sont pas autorisés ici"
-
 msgid "E68: Invalid character after \\z"
 msgstr "E68: Caractère invalide après \\z"
-
-#, c-format
-msgid "E69: Missing ] after %s%%["
-msgstr "E69: ']' manquant après %s%%["
-
-#, c-format
-msgid "E70: Empty %s%%[]"
-msgstr "E70: %s%%[] vide"
 
 #, c-format
 msgid "E678: Invalid character after %s%%[dxouU]"
@@ -5088,6 +5108,10 @@ msgstr "E554: Erreur de syntaxe dans %s{...}"
 msgid "External submatches:\n"
 msgstr "Sous-correspondances externes :\n"
 
+#, c-format
+msgid "E888: (NFA regexp) cannot repeat %s"
+msgstr "E888: (regexp NFA) %s ne peut pas être répété"
+
 msgid ""
 "E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be "
 "used "
@@ -5095,16 +5119,27 @@ msgstr ""
 "E864: \\%#= peut être suivi uniquement de 0, 1 ou 2. Le moteur automatique "
 "sera utilisé "
 
-#, c-format
-msgid "E866: (NFA regexp) Misplaced %c"
-msgstr "E866: (regexp NFA) %c au mauvais endroit"
+msgid "Switching to backtracking RE engine for pattern: "
+msgstr "Moteur RE avec backtracking utilisé pour le motif : " 
 
 msgid "E865: (NFA) Regexp end encountered prematurely"
 msgstr "E865: (NFA) Fin de regexp rencontrée prématurément"
 
 #, c-format
+msgid "E866: (NFA regexp) Misplaced %c"
+msgstr "E866: (regexp NFA) %c au mauvais endroit"
+
+#, c-format
+msgid "E877: (NFA regexp) Invalid character class: %ld"
+msgstr "E877: (regexp NFA) Classe de caractère invalide : %ld"
+
+#, c-format
 msgid "E867: (NFA) Unknown operator '\\z%c'"
 msgstr "E867: (NFA) Opérateur inconnu '\\z%c'"
+
+#, c-format
+msgid "E867: (NFA) Unknown operator '\\%%%c'"
+msgstr "E867: (NFA) Opérateur inconnu '\\%%%c'"
 
 #. should never happen
 msgid "E868: Error building NFA with equivalence class!"
@@ -5117,11 +5152,16 @@ msgstr "E869: (NFA) Opérateur inconnu '\\@%c'"
 msgid "E870: (NFA regexp) Error reading repetition limits"
 msgstr "E870: (regexp NFA) Erreur à la lecture des limites de répétition"
 
+#. Can't have a multi follow a multi.
 msgid "E871: (NFA regexp) Can't have a multi follow a multi !"
 msgstr "E871: (regexp NFA) Un multi ne peut pas suivre un multi !"
 
+#. Too many `('
 msgid "E872: (NFA regexp) Too many '('"
 msgstr "E872: (regexp NFA) Trop de '('"
+
+msgid "E879: (NFA regexp) Too many \\z("
+msgstr "E879: (regexp NFA) Trop de \\z("
 
 msgid "E873: (NFA regexp) proper termination error"
 msgstr "E873: (NFA regexp) erreur de terminaison"
@@ -5139,18 +5179,9 @@ msgstr ""
 msgid "E876: (NFA regexp) Not enough space to store the whole NFA "
 msgstr "E876: (regexp NFA) Pas assez de mémoire pour stocker le NFA"
 
-msgid "E999: (NFA regexp internal error) Should not process NOT node !"
+msgid "E878: (NFA) Could not allocate memory for branch traversal!"
 msgstr ""
-"E999: (erreur interne du regexp NFA) Un noeud 'NOT' ne devrait pas être "
-"traité !"
-
-#. should not be here :P
-msgid "E877: (NFA regexp) Invalid character class "
-msgstr "E877: (regexp NFA) Classe de caractère invalide "
-
-#, c-format
-msgid "(NFA) COULD NOT OPEN %s !"
-msgstr "(NFA) IMPOSSIBLE D'OUVRIR %s !"
+"E878: (NFA) Impossible d'allouer la mémoire pour parcourir les branches !"
 
 msgid ""
 "Could not open temporary log file for writing, displaying on stderr ... "
@@ -5158,9 +5189,9 @@ msgstr ""
 "Impossible d'ouvrir le fichier de log temporaire en écriture, affichage sur "
 "stderr ... "
 
-msgid "E878: (NFA) Could not allocate memory for branch traversal!"
-msgstr ""
-"E878: (NFA) Impossible d'allouer la mémoire pour parcourir les branches!"
+#, c-format
+msgid "(NFA) COULD NOT OPEN %s !"
+msgstr "(NFA) IMPOSSIBLE D'OUVRIR %s !"
 
 msgid "Could not open temporary log file for writing "
 msgstr "Impossible d'ouvrir le fichier de log en écriture"
@@ -5607,12 +5638,12 @@ msgid "E765: 'spellfile' does not have %ld entries"
 msgstr "E765: 'spellfile' n'a pas %ld entrées"
 
 #, c-format
-msgid "Word removed from %s"
-msgstr "Mot retiré de %s"
+msgid "Word '%.*s' removed from %s"
+msgstr "Mot '%.*s' retiré de %s"
 
 #, c-format
-msgid "Word added to %s"
-msgstr "Mot ajouté dans %s"
+msgid "Word '%.*s' added to %s"
+msgstr "Mot '%.*s' ajouté dans %s"
 
 msgid "E763: Word characters differ between spell files"
 msgstr ""
@@ -5668,6 +5699,9 @@ msgstr "E782: Erreur lors de la lecture de fichier de suggestions : %s"
 msgid "E783: duplicate char in MAP entry"
 msgstr "E783: caractères dupliqué dans l'entrée MAP"
 
+msgid "No Syntax items defined for this buffer"
+msgstr "Aucun élément de syntaxe défini pour ce tampon"
+
 #, c-format
 msgid "E390: Illegal argument: %s"
 msgstr "E390: Argument invalide : %s"
@@ -5675,9 +5709,6 @@ msgstr "E390: Argument invalide : %s"
 #, c-format
 msgid "E391: No such syntax cluster: %s"
 msgstr "E391: Aucune grappe de syntaxe %s"
-
-msgid "No Syntax items defined for this buffer"
-msgstr "Aucun élément de syntaxe défini pour ce tampon"
 
 msgid "syncing on C-style comments"
 msgstr "synchronisation sur les commentaires de type C"
@@ -5807,6 +5838,11 @@ msgstr "E409: Nom de groupe inconnu : %s"
 #, c-format
 msgid "E410: Invalid :syntax subcommand: %s"
 msgstr "E410: Sous-commande de :syntax invalide : %s"
+
+msgid ""
+"  TOTAL      COUNT  MATCH   SLOWEST     AVERAGE   NAME               PATTERN"
+msgstr ""
+"  TOTAL      NOMBRE MATCH   PLUS LENT   MOYEN     NOM                MOTIF"
 
 msgid "E679: recursive loop loading syncolor.vim"
 msgstr "E679: boucle récursive lors du chargement de syncolor.vim"
@@ -6005,8 +6041,8 @@ msgstr "CUT_BUFFER0 utilisé plutôt qu'une sélection vide"
 
 #. This happens when the FileChangedRO autocommand changes the
 #. * file in a way it becomes shorter.
-msgid "E834: Line count changed unexpectedly"
-msgstr "E834: Le nombre de lignes a été changé inopinément"
+msgid "E881: Line count changed unexpectedly"
+msgstr "E881: Le nombre de lignes a été changé inopinément"
 
 # DB - Question O/N.
 #. must display the prompt
@@ -6501,6 +6537,9 @@ msgstr "E446: Aucun nom de fichier sous le curseur"
 msgid "E447: Can't find file \"%s\" in path"
 msgstr "E447: Le fichier \"%s\" est introuvable dans 'path'"
 
+msgid "List or number required"
+msgstr "Liste ou nombre requis"
+
 #, c-format
 msgid "E370: Could not load library %s"
 msgstr "E370: Impossible de charger la bibliothèque %s"
@@ -6737,6 +6776,9 @@ msgstr "E485: Impossible de lire le fichier %s"
 msgid "E37: No write since last change (add ! to override)"
 msgstr "E37: Modifications non enregistrées (ajoutez ! pour passer outre)"
 
+msgid "E37: No write since last change"
+msgstr "E37: Modifications non enregistrées"
+
 msgid "E38: Null argument"
 msgstr "E38: Argument null"
 
@@ -6897,107 +6939,180 @@ msgstr "La recherche a atteint le BAS, et continue en HAUT"
 msgid "Need encryption key for \"%s\""
 msgstr "Besoin de la clé de chiffrement pour \"%s\""
 
-msgid "can't delete OutputObject attributes"
-msgstr "impossible d'effacer les attributs d'OutputObject"
-
-msgid "softspace must be an integer"
-msgstr "softspace doit être un nombre entier"
-
-msgid "invalid attribute"
-msgstr "attribut invalide"
-
-msgid "writelines() requires list of strings"
-msgstr "writelines() requiert une liste de chaînes"
-
-msgid "E264: Python: Error initialising I/O objects"
-msgstr "E264: Python : Erreur d'initialisation des objets d'E/S"
-
 msgid "empty keys are not allowed"
 msgstr "les clés vides ne sont pas autorisées"
 
-msgid "Cannot delete DictionaryObject attributes"
-msgstr "Impossible d'effacer les attributs de DictionaryObject"
-
-msgid "Cannot modify fixed dictionary"
-msgstr "Impossible de modifier un dictionnaire fixe"
-
-msgid "Cannot set this attribute"
-msgstr "Impossible d'initialiser cet attribut"
-
-msgid "dict is locked"
+msgid "dictionary is locked"
 msgstr "dictionnaire est verrouillé"
-
-msgid "failed to add key to dictionary"
-msgstr "l'ajout de clé au dictionnaire a échoué"
-
-msgid "list index out of range"
-msgstr "index de liste hors limites"
-
-msgid "internal error: failed to get vim list item"
-msgstr "erreur interne : accès à un élément de liste a échoué"
 
 msgid "list is locked"
 msgstr "liste verrouillée"
 
-msgid "Failed to add item to list"
-msgstr "Ajout à la liste a échoué"
+#, c-format
+msgid "failed to add key '%s' to dictionary"
+msgstr "l'ajout de clé '%s' au dictionnaire a échoué"
 
-msgid "internal error: no vim list item"
-msgstr "erreur interne : pas d'élément de liste vim"
+#, c-format
+msgid "index must be int or slice, not %s"
+msgstr "index doit être int ou slice, et non %s"
 
-msgid "can only assign lists to slice"
-msgstr "seules des tranches peuvent être assignées aux listes"
+#, c-format
+msgid "expected str() or unicode() instance, but got %s"
+msgstr "attendu instance de str() ou unicode(), mais reçu %s"
+
+#, c-format
+msgid "expected bytes() or str() instance, but got %s"
+msgstr "attendu instance de bytes() ou str(), mais reçu %s"
+
+#, c-format
+msgid ""
+"expected int(), long() or something supporting coercing to long(), but got %s"
+msgstr ""
+"attendu int(), long() ou quelque chose qui peut être transformé en long(), "
+"mais reçu %s"
+
+#, c-format
+msgid "expected int() or something supporting coercing to int(), but got %s"
+msgstr ""
+"attendu int() ou quelque chose qui peut être transformé en int(), mais reçu "
+"%s"
+
+msgid "value is too large to fit into C int type"
+msgstr "valeur trop grande pour être stockée dans le type C int"
+
+msgid "value is too small to fit into C int type"
+msgstr "valeur trop petite pour être stockée dans le type C int"
+
+msgid "number must be greater than zero"
+msgstr "le nombre doit être plus grand que zéro"
+
+msgid "number must be greater or equal to zero"
+msgstr "le nombre doit être plus grand ou égal à zéro"
+
+msgid "can't delete OutputObject attributes"
+msgstr "impossible d'effacer les attributs d'OutputObject"
+
+#, c-format
+msgid "invalid attribute: %s"
+msgstr "attribut invalide : %s"
+
+msgid "E264: Python: Error initialising I/O objects"
+msgstr "E264: Python : Erreur d'initialisation des objets d'E/S"
+
+msgid "failed to change directory"
+msgstr "changement de répertoire a échoué"
+
+#, c-format
+msgid "expected 3-tuple as imp.find_module() result, but got %s"
+msgstr "attendu un 3-tuple comme résultat de imp.find_module(), mais reçu %s"
+
+#, c-format
+msgid "expected 3-tuple as imp.find_module() result, but got tuple of size %d"
+msgstr ""
+"attendu un 3-tuple comme résultat de imp.find_module(), mais reçu un tuple "
+"de taille %d"
+
+msgid "internal error: imp.find_module returned tuple with NULL"
+msgstr "erreur interne : imp.find_module a retourné un tuple contenant NULL"
+
+msgid "cannot delete vim.Dictionary attributes"
+msgstr "impossible d'effacer les attributs de vim.Dictionary"
+
+msgid "cannot modify fixed dictionary"
+msgstr "impossible de modifier un dictionnaire fixe"
+
+#, c-format
+msgid "cannot set attribute %s"
+msgstr "impossible d'initialiser l'attribut %s"
+
+msgid "hashtab changed during iteration"
+msgstr "la table de hachage a été changée pendant une itération"
+
+#, c-format
+msgid "expected sequence element of size 2, but got sequence of size %d"
+msgstr ""
+"attendu une séquence d'éléments de taille 2, mais reçu une séquence de "
+"taille %d"
+
+msgid "list constructor does not accept keyword arguments"
+msgstr "le constructeur de liste n'accepte pas les arguments nommés"
+
+msgid "list index out of range"
+msgstr "index de liste hors limites"
+
+#. No more suitable format specifications in python-2.3
+#, c-format
+msgid "internal error: failed to get vim list item %d"
+msgstr "erreur interne : accès à un élément %d de liste a échoué"
+
+msgid "slice step cannot be zero"
+msgstr "le pas du découpage en tranche ne peut pas être zéro"
+
+#, c-format
+msgid "attempt to assign sequence of size greater than %d to extended slice"
+msgstr ""
+"tentative d'assigner une séquence de taille plus grande que %d à un "
+"découpage en tranche étendu "
+
+#, c-format
+msgid "internal error: no vim list item %d"
+msgstr "erreur interne : pas d'élément %d de liste vim"
+
+msgid "internal error: not enough list items"
+msgstr "erreur interne : pas assez d'éléments de liste"
 
 msgid "internal error: failed to add item to list"
 msgstr "erreur interne : ajout d'élément à la liste a échoué"
 
-msgid "can only concatenate with lists"
-msgstr "on ne peut que concaténer avec des listes"
+#, c-format
+msgid "attempt to assign sequence of size %d to extended slice of size %d"
+msgstr ""
+"tentative d'assigner une séquence de taille %d à un découpage en tranche "
+"étendu de taille %d"
 
-msgid "cannot delete vim.dictionary attributes"
-msgstr "impossible d'effacer les attributs de vim.dictionary"
+msgid "failed to add item to list"
+msgstr "ajout à la liste a échoué"
+
+msgid "cannot delete vim.List attributes"
+msgstr "impossible d'effacer les attributs de vim.List"
 
 msgid "cannot modify fixed list"
 msgstr "impossible de modifier une liste fixe"
 
-msgid "cannot set this attribute"
-msgstr "impossible d'initialiser cet attribut"
+#, c-format
+msgid "unnamed function %s does not exist"
+msgstr "la fonction sans nom %s n'existe pas"
 
-msgid "'self' argument must be a dictionary"
-msgstr "l'argument 'self' doit être un dictionnaire"
+#, c-format
+msgid "function %s does not exist"
+msgstr "la fonction %s n'existe pas"
 
-msgid "failed to run function"
-msgstr "exécution de la fonction a échoué"
+msgid "function constructor does not accept keyword arguments"
+msgstr "le constructeur de fonction n'accepte pas les arguments nommés"
+
+#, c-format
+msgid "failed to run function %s"
+msgstr "exécution de la fonction %s a échoué"
 
 msgid "unable to get option value"
 msgstr "impossible d'obtenir la valeur d'une option"
 
-msgid "unable to unset global option"
-msgstr "impossible de désactiver une option globale"
+msgid "internal error: unknown option type"
+msgstr "erreur interne : type d'option inconnu"
 
-msgid "unable to unset option without global value"
-msgstr "impossible de désactiver une option sans une valeur globale"
+msgid "problem while switching windows"
+msgstr "problème lors du changement de fenêtres"
 
-msgid "object must be integer"
-msgstr "objet doit être un nombre entier"
+#, c-format
+msgid "unable to unset global option %s"
+msgstr "impossible de désactiver une option globale %s"
 
-msgid "object must be string"
-msgstr "objet doit être de type string"
+#, c-format
+msgid "unable to unset option %s which does not have global value"
+msgstr "impossible de désactiver l'option %s qui n'a pas de valeur globale"
 
 msgid "attempt to refer to deleted tab page"
 msgstr "tentative de référencer un onglet effacé"
-
-#, c-format
-msgid "<tabpage object (deleted) at %p>"
-msgstr "<objet onglet (effacé) à %p>"
-
-#, c-format
-msgid "<tabpage object (unknown) at %p>"
-msgstr "<objet onglet (inconnu) à %p>"
-
-#, c-format
-msgid "<tabpage %d>"
-msgstr "<onglet %d>"
 
 msgid "no such tab page"
 msgstr "cet onglet n'existe pas"
@@ -7005,23 +7120,11 @@ msgstr "cet onglet n'existe pas"
 msgid "attempt to refer to deleted window"
 msgstr "tentative de référencer une fenêtre effacée"
 
-msgid "readonly attribute"
-msgstr "attribut en lecture seule"
+msgid "readonly attribute: buffer"
+msgstr "attribut en lecture seule : tampon"
 
 msgid "cursor position outside buffer"
 msgstr "curseur positionné en dehors du tampon"
-
-#, c-format
-msgid "<window object (deleted) at %p>"
-msgstr "<objet fenêtre (effacé) à %p>"
-
-#, c-format
-msgid "<window object (unknown) at %p>"
-msgstr "<objet fenêtre (inconnu) à %p>"
-
-#, c-format
-msgid "<window %d>"
-msgstr "<fenêtre %d>"
 
 msgid "no such window"
 msgstr "Cette fenêtre n'existe pas"
@@ -7029,21 +7132,23 @@ msgstr "Cette fenêtre n'existe pas"
 msgid "attempt to refer to deleted buffer"
 msgstr "tentative de référencer un tampon effacé"
 
+msgid "failed to rename buffer"
+msgstr "impossible de renommer le tampon"
+
+msgid "mark name must be a single character"
+msgstr "le nom de marque doit être un seul caractère"
+
 #, c-format
-msgid "<buffer object (deleted) at %p>"
-msgstr "<objet tampon (effacé) à %p>"
+msgid "expected vim.Buffer object, but got %s"
+msgstr "attendu un objet objet vim.Buffer, mais reçu %s"
 
-msgid "key must be integer"
-msgstr "la clé doit être un nombre entier"
+#, c-format
+msgid "failed to switch to buffer %d"
+msgstr "impossible de se déplacer au tampon %d"
 
-msgid "expected vim.buffer object"
-msgstr "objet vim.buffer attendu"
-
-msgid "failed to switch to given buffer"
-msgstr "impossible de se déplacer au tampon donné"
-
-msgid "expected vim.window object"
-msgstr "objet vim.window attendu"
+#, c-format
+msgid "expected vim.Window object, but got %s"
+msgstr "attendu un objet vim.Window, mais reçu %s"
 
 msgid "failed to find window in the current tab page"
 msgstr "impossible de trouver une fenêtre dans l'onglet courant"
@@ -7051,8 +7156,9 @@ msgstr "impossible de trouver une fenêtre dans l'onglet courant"
 msgid "did not switch to the specified window"
 msgstr "ne s'est pas déplacé à la fenêtre spécifiée"
 
-msgid "expected vim.tabpage object"
-msgstr "objet vim.tabpage attendu"
+#, c-format
+msgid "expected vim.TabPage object, but got %s"
+msgstr "attendu un objet vim.TabPage, mais reçu %s"
 
 msgid "did not switch to the specified tab page"
 msgstr "impossible de se déplacer à l'onglet spécifié"
@@ -7066,14 +7172,114 @@ msgstr "E858: Eval n'a pas retourné un objet python valide"
 msgid "E859: Failed to convert returned python object to vim value"
 msgstr "E859: Conversion d'objet python à une valeur de vim a échoué"
 
-msgid "unable to convert to vim structure"
-msgstr "conversion à une structure vim impossible"
+#, c-format
+msgid "unable to convert %s to vim dictionary"
+msgstr "impossible de convertir %s à un dictionnaire vim"
 
-msgid "NULL reference passed"
-msgstr "référence NULL passée"
+#, c-format
+msgid "unable to convert %s to vim structure"
+msgstr "impossible de convertir %s à une structure de vim"
+
+msgid "internal error: NULL reference passed"
+msgstr "erreur interne : référence NULL passée"
 
 msgid "internal error: invalid value type"
 msgstr "erreur interne : type de valeur invalide"
+
+msgid ""
+"Failed to set path hook: sys.path_hooks is not a list\n"
+"You should now do the following:\n"
+"- append vim.path_hook to sys.path_hooks\n"
+"- append vim.VIM_SPECIAL_PATH to sys.path\n"
+msgstr ""
+"Impossible d'initialiser sys.path_hook qui n'est pas un liste\n"
+"Vous devez maintenant :\n"
+"- ajouter vim.path_hook à sys.path_hooks\n"
+"- ajouter vim.VIM_SPECIAL_PATH à sys.path\n"
+
+msgid ""
+"Failed to set path: sys.path is not a list\n"
+"You should now append vim.VIM_SPECIAL_PATH to sys.path"
+msgstr ""
+"Impossible d'initialiser le chemin : sys.math n'est pas une liste\n"
+"Vous devez maintenant ajouter vim.VIM_SPECIAL_PATH à sys.path"
+
+#~ msgid "[blowfish]"
+#~ msgstr "[blowfish]"
+
+#~ msgid "only string keys are allowed"
+#~ msgstr "seule une chaine est autorisée comme clé"
+
+#~ msgid "Vim: preserving files...\n"
+#~ msgstr "Vim : préservation des fichiers...\n"
+
+#~ msgid "Vim: Finished.\n"
+#~ msgstr "Vim : Fini.\n"
+
+#~ msgid "Vim: Double signal, exiting\n"
+#~ msgstr "Vim : Double signal, sortie\n"
+
+#~ msgid "Vim: Caught deadly signal %s\n"
+#~ msgstr "Vim : Signal mortel %s intercepté\n"
+
+#~ msgid "Vim: Caught deadly signal\n"
+#~ msgstr "Vim : Signal mortel intercepté\n"
+
+#~ msgid "E999: (NFA regexp internal error) Should not process NOT node !"
+#~ msgstr ""
+#~ "E999: (erreur interne du regexp NFA) Un noeud 'NOT' ne devrait pas être "
+#~ "traité !"
+
+#~ msgid "softspace must be an integer"
+#~ msgstr "softspace doit être un nombre entier"
+
+#~ msgid "writelines() requires list of strings"
+#~ msgstr "writelines() requiert une liste de chaînes"
+
+#~ msgid "Cannot delete DictionaryObject attributes"
+#~ msgstr "Impossible d'effacer les attributs de DictionaryObject"
+
+#~ msgid "Cannot set this attribute"
+#~ msgstr "Impossible d'initialiser cet attribut"
+
+#~ msgid "can only assign lists to slice"
+#~ msgstr "seules des tranches peuvent être assignées aux listes"
+
+#~ msgid "can only concatenate with lists"
+#~ msgstr "on ne peut que concaténer avec des listes"
+
+#~ msgid "'self' argument must be a dictionary"
+#~ msgstr "l'argument 'self' doit être un dictionnaire"
+
+#~ msgid "object must be integer"
+#~ msgstr "objet doit être un nombre entier"
+
+#~ msgid "object must be string"
+#~ msgstr "objet doit être de type string"
+
+#~ msgid "<tabpage object (deleted) at %p>"
+#~ msgstr "<objet onglet (effacé) à %p>"
+
+#~ msgid "<tabpage object (unknown) at %p>"
+#~ msgstr "<objet onglet (inconnu) à %p>"
+
+#~ msgid "<tabpage %d>"
+#~ msgstr "<onglet %d>"
+
+#~ msgid "<window object (deleted) at %p>"
+#~ msgstr "<objet fenêtre (effacé) à %p>"
+
+#~ msgid "<window object (unknown) at %p>"
+#~ msgstr "<objet fenêtre (inconnu) à %p>"
+
+#~ msgid "<window %d>"
+#~ msgstr "<fenêtre %d>"
+
+#~ msgid "<buffer object (deleted) at %p>"
+#~ msgstr "<objet tampon (effacé) à %p>"
+
+#~ msgid "key must be integer"
+#~ msgstr "la clé doit être un nombre entier"
 
 #~ msgid "E860: Eval did not return a valid python 3 object"
 #~ msgstr "E860: Eval n'a pas retourné un object python 3 valid"
