@@ -1586,12 +1586,15 @@ x_IOerror_check(dpy)
  * An X IO Error handler, used to catch terminal errors.
  */
 static int x_IOerror_handler __ARGS((Display *dpy));
+static void may_restore_clipboard __ARGS((void));
+static int xterm_dpy_was_reset = FALSE;
 
     static int
 x_IOerror_handler(dpy)
     Display *dpy UNUSED;
 {
     xterm_dpy = NULL;
+    xterm_dpy_was_reset = TRUE;
     x11_window = 0;
     x11_display = NULL;
     xterm_Shell = (Widget)0;
@@ -1601,6 +1604,22 @@ x_IOerror_handler(dpy)
 # if defined(VMS) || defined(__CYGWIN__) || defined(__CYGWIN32__)
     return 0;  /* avoid the compiler complains about missing return value */
 # endif
+}
+
+/*
+ * If the X11 connection was lost try to restore it.
+ * Helps when the X11 server was stopped and restarted while Vim was inactive
+ * (e.g. though tmux).
+ */
+    static void
+may_restore_clipboard()
+{
+    if (xterm_dpy_was_reset)
+    {
+	xterm_dpy_was_reset = FALSE;
+	setup_term_clip();
+	get_x11_title(FALSE);
+    }
 }
 #endif
 
@@ -5274,6 +5293,7 @@ RealWaitForChar(fd, msec, check_for_gpm)
 	}
 # endif
 # ifdef FEAT_XCLIPBOARD
+	may_restore_clipboard();
 	if (xterm_Shell != (Widget)0)
 	{
 	    xterm_idx = nfd;
@@ -5426,6 +5446,7 @@ select_eintr:
 	}
 # endif
 # ifdef FEAT_XCLIPBOARD
+	may_restore_clipboard();
 	if (xterm_Shell != (Widget)0)
 	{
 	    FD_SET(ConnectionNumber(xterm_dpy), &rfds);
