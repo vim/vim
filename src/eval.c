@@ -24762,7 +24762,7 @@ repeat:
 	    p = alloc(_MAX_PATH + 1);
 	    if (p != NULL)
 	    {
-		if (GetLongPathName(*fnamep, p, MAXPATHL))
+		if (GetLongPathName(*fnamep, p, _MAX_PATH))
 		{
 		    vim_free(*bufp);
 		    *bufp = *fnamep = p;
