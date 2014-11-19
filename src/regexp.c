@@ -8163,6 +8163,7 @@ static int vim_regexec_both __ARGS((regmatch_T *rmp, char_u *line, colnr_T col, 
 /*
  * Match a regexp against a string.
  * "rmp->regprog" is a compiled regexp as returned by vim_regcomp().
+ * Note: "rmp->regprog" may be freed and changed.
  * Uses curbuf for line count and 'iskeyword'.
  * When "nl" is TRUE consider a "\n" in "line" to be a line break.
  *
@@ -8203,6 +8204,29 @@ vim_regexec_both(rmp, line, col, nl)
     return result;
 }
 
+/*
+ * Note: "*prog" may be freed and changed.
+ */
+    int
+vim_regexec_prog(prog, ignore_case, line, col)
+    regprog_T	**prog;
+    int		ignore_case;
+    char_u	*line;
+    colnr_T	col;
+{
+    int r;
+    regmatch_T regmatch;
+
+    regmatch.regprog = *prog;
+    regmatch.rm_ic = ignore_case;
+    r = vim_regexec_both(&regmatch, line, col, FALSE);
+    *prog = regmatch.regprog;
+    return r;
+}
+
+/*
+ * Note: "rmp->regprog" may be freed and changed.
+ */
     int
 vim_regexec(rmp, line, col)
     regmatch_T	*rmp;
@@ -8216,6 +8240,7 @@ vim_regexec(rmp, line, col)
 	|| defined(FIND_REPLACE_DIALOG) || defined(PROTO)
 /*
  * Like vim_regexec(), but consider a "\n" in "line" to be a line break.
+ * Note: "rmp->regprog" may be freed and changed.
  */
     int
 vim_regexec_nl(rmp, line, col)
@@ -8230,6 +8255,7 @@ vim_regexec_nl(rmp, line, col)
 /*
  * Match a regexp against multiple lines.
  * "rmp->regprog" is a compiled regexp as returned by vim_regcomp().
+ * Note: "rmp->regprog" may be freed and changed.
  * Uses curbuf for line count and 'iskeyword'.
  *
  * Return zero if there is no match.  Return number of lines contained in the

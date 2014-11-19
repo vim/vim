@@ -13,6 +13,7 @@ char_u *reg_submatch __ARGS((int no));
 list_T *reg_submatch_list __ARGS((int no));
 regprog_T *vim_regcomp __ARGS((char_u *expr_arg, int re_flags));
 void vim_regfree __ARGS((regprog_T *prog));
+int vim_regexec_prog __ARGS((regprog_T **prog, int ignore_case, char_u *line, colnr_T col));
 int vim_regexec __ARGS((regmatch_T *rmp, char_u *line, colnr_T col));
 int vim_regexec_nl __ARGS((regmatch_T *rmp, char_u *line, colnr_T col));
 long vim_regexec_multi __ARGS((regmmatch_T *rmp, win_T *win, buf_T *buf, linenr_T lnum, colnr_T col, proftime_T *tm));

@@ -1610,8 +1610,6 @@ x_IOerror_handler(dpy)
     static int
 x_connect_to_server()
 {
-    regmatch_T	regmatch;
-
 #if defined(FEAT_CLIENTSERVER)
     if (x_force_connect)
 	return TRUE;
@@ -1622,9 +1620,7 @@ x_connect_to_server()
     /* Check for a match with "exclude:" from 'clipboard'. */
     if (clip_exclude_prog != NULL)
     {
-	regmatch.rm_ic = FALSE;		/* Don't ignore case */
-	regmatch.regprog = clip_exclude_prog;
-	if (vim_regexec(&regmatch, T_NAME, (colnr_T)0))
+	if (vim_regexec_prog(&clip_exclude_prog, FALSE, T_NAME, (colnr_T)0))
 	    return FALSE;
     }
     return TRUE;
