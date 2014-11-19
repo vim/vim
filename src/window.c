@@ -796,7 +796,7 @@ win_split_ins(size, flags, new_wp, dir)
 		if (frp->fr_win != oldwin && frp->fr_win != NULL
 			&& (frp->fr_win->w_width > new_size
 			    || frp->fr_win->w_width > oldwin->w_width
-						   - new_size - STATUS_HEIGHT))
+							      - new_size - 1))
 		{
 		    do_equal = TRUE;
 		    break;
