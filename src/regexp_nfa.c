@@ -6767,7 +6767,7 @@ theend:
 
 /*
  * Try match of "prog" with at regline["col"].
- * Returns 0 for failure, number of lines contained in the match otherwise.
+ * Returns <= 0 for failure, number of lines contained in the match otherwise.
  */
     static long
 nfa_regtry(prog, col)
@@ -6897,7 +6897,7 @@ nfa_regtry(prog, col)
  * Match a regexp against a string ("line" points to the string) or multiple
  * lines ("line" is NULL, use reg_getline()).
  *
- * Returns 0 for failure, number of lines contained in the match otherwise.
+ * Returns <= 0 for failure, number of lines contained in the match otherwise.
  */
     static long
 nfa_regexec_both(line, startcol)
@@ -7137,7 +7137,7 @@ nfa_regfree(prog)
  * Uses curbuf for line count and 'iskeyword'.
  * If "line_lbr" is TRUE consider a "\n" in "line" to be a line break.
  *
- * Return TRUE if there is a match, FALSE if not.
+ * Returns <= 0 for failure, number of lines contained in the match otherwise.
  */
     static int
 nfa_regexec_nl(rmp, line, col, line_lbr)
@@ -7157,7 +7157,7 @@ nfa_regexec_nl(rmp, line, col, line_lbr)
     ireg_icombine = FALSE;
 #endif
     ireg_maxcol = 0;
-    return (nfa_regexec_both(line, col) != 0);
+    return nfa_regexec_both(line, col);
 }
 
 
@@ -7166,7 +7166,7 @@ nfa_regexec_nl(rmp, line, col, line_lbr)
  * "rmp->regprog" is a compiled regexp as returned by vim_regcomp().
  * Uses curbuf for line count and 'iskeyword'.
  *
- * Return zero if there is no match.  Return number of lines contained in the
+ * Return <= 0 if there is no match.  Return number of lines contained in the
  * match otherwise.
  *
  * Note: the body is the same as bt_regexec() except for nfa_regexec_both()
