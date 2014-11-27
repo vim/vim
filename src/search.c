@@ -552,6 +552,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
     int		match_ok;
     long	nmatched;
     int		submatch = 0;
+    int		first_match = TRUE;
     int		save_called_emsg = called_emsg;
 #ifdef FEAT_SEARCH_EXTRA
     int		break_loop = FALSE;
@@ -565,33 +566,33 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
 	return FAIL;
     }
 
-    /* When not accepting a match at the start position set "extra_col" to a
-     * non-zero value.  Don't do that when starting at MAXCOL, since MAXCOL +
-     * 1 is zero. */
-    if ((options & SEARCH_START) || pos->col == MAXCOL)
-	extra_col = 0;
-#ifdef FEAT_MBYTE
-    /* Watch out for the "col" being MAXCOL - 2, used in a closed fold. */
-    else if (dir != BACKWARD && has_mbyte
-		    && pos->lnum >= 1 && pos->lnum <= buf->b_ml.ml_line_count
-						     && pos->col < MAXCOL - 2)
-    {
-	ptr = ml_get_buf(buf, pos->lnum, FALSE) + pos->col;
-	if (*ptr == NUL)
-	    extra_col = 1;
-	else
-	    extra_col = (*mb_ptr2len)(ptr);
-    }
-#endif
-    else
-	extra_col = 1;
-
     /*
      * find the string
      */
     called_emsg = FALSE;
     do	/* loop for count */
     {
+	/* When not accepting a match at the start position set "extra_col" to
+	 * a non-zero value.  Don't do that when starting at MAXCOL, since
+	 * MAXCOL + 1 is zero. */
+	if ((options & SEARCH_START) || pos->col == MAXCOL)
+	    extra_col = 0;
+#ifdef FEAT_MBYTE
+	/* Watch out for the "col" being MAXCOL - 2, used in a closed fold. */
+	else if (dir != BACKWARD && has_mbyte
+		     && pos->lnum >= 1 && pos->lnum <= buf->b_ml.ml_line_count
+						     && pos->col < MAXCOL - 2)
+	{
+	    ptr = ml_get_buf(buf, pos->lnum, FALSE) + pos->col;
+	    if (*ptr == NUL)
+		extra_col = 1;
+	    else
+		extra_col = (*mb_ptr2len)(ptr);
+	}
+#endif
+	else
+	    extra_col = 1;
+
 	start_pos = *pos;	/* remember start pos for detecting no match */
 	found = 0;		/* default: not found */
 	at_first_line = TRUE;	/* default: start in first line */
@@ -677,7 +678,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
 			 * otherwise "/$" will get stuck on end of line.
 			 */
 			while (matchpos.lnum == 0
-				&& ((options & SEARCH_END)
+				&& ((options & SEARCH_END) && first_match
 				    ?  (nmatched == 1
 					&& (int)endpos.col - 1
 					     < (int)start_pos.col + extra_col)
@@ -908,6 +909,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
 		    pos->coladd = 0;
 #endif
 		    found = 1;
+		    first_match = FALSE;
 
 		    /* Set variables used for 'incsearch' highlighting. */
 		    search_match_lines = endpos.lnum - matchpos.lnum;
