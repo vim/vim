@@ -1,6 +1,7 @@
 Tests for :[count]argument! and :[count]argdelete     vim: set ft=vim :
 
 STARTTEST
+:so small.vim
 :%argd
 :argadd a b c d
 :set hidden

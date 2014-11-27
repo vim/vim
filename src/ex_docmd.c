@@ -1713,6 +1713,53 @@ compute_buffer_local_count(addr_type, lnum, offset)
     return buf->b_fnum;
 }
 
+#ifdef FEAT_WINDOWS
+static int current_win_nr __ARGS((win_T *win));
+static int current_tab_nr __ARGS((tabpage_T *tab));
+
+    static int
+current_win_nr(win)
+    win_T	*win;
+{
+    win_T	*wp;
+    int		nr = 0;
+
+    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+    {
+	++nr;
+	if (wp == win)
+	    break;
+    }
+    return nr;
+}
+
+    static int
+current_tab_nr(tab)
+    tabpage_T   *tab;
+{
+    tabpage_T	*tp;
+    int		nr = 0;
+
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    {
+	++nr;
+	if (tp == tab)
+	    break;
+    }
+    return nr;
+}
+
+# define CURRENT_WIN_NR current_win_nr(curwin)
+# define LAST_WIN_NR current_win_nr(NULL)
+# define CURRENT_TAB_NR current_tab_nr(curtab)
+# define LAST_TAB_NR current_tab_nr(NULL)
+#else
+# define CURRENT_WIN_NR 1
+# define LAST_WIN_NR 1
+# define CURRENT_TAB_NR 1
+# define LAST_TAB_NR 1
+#endif
+
 
 /*
  * Execute one Ex command.
@@ -1765,8 +1812,6 @@ do_one_cmd(cmdlinep, sourcing,
 #endif
     cmdmod_T		save_cmdmod;
     int			ni;			/* set when Not Implemented */
-    win_T		*wp;
-    tabpage_T		*tp;
     char_u		*cmd;
 
     vim_memset(&ea, 0, sizeof(ea));
@@ -2085,13 +2130,7 @@ do_one_cmd(cmdlinep, sourcing,
 		ea.line2 = curwin->w_cursor.lnum;
 		break;
 	    case ADDR_WINDOWS:
-		lnum = 0;
-		for (wp = firstwin; wp != NULL; wp = wp->w_next)
-		{
-		    lnum++;
-		    if (wp == curwin)
-			break;
-		}
+		lnum = CURRENT_WIN_NR;
 		ea.line2 = lnum;
 		break;
 	    case ADDR_ARGUMENTS:
@@ -2102,13 +2141,7 @@ do_one_cmd(cmdlinep, sourcing,
 		ea.line2 = curbuf->b_fnum;
 		break;
 	    case ADDR_TABS:
-		lnum = 0;
-		for(tp = first_tabpage; tp != NULL; tp = tp->tp_next)
-		{
-		    lnum++;
-		    if (tp == curtab)
-			break;
-		}
+		lnum = CURRENT_TAB_NR;
 		ea.line2 = lnum;
 		break;
 	}
@@ -4198,8 +4231,6 @@ get_address(ptr, addr_type, skip, to_other_file)
     pos_T	pos;
     pos_T	*fp;
     linenr_T	lnum;
-    win_T	*wp;
-    tabpage_T	*tp;
 
     cmd = skipwhite(*ptr);
     lnum = MAXLNUM;
@@ -4215,13 +4246,7 @@ get_address(ptr, addr_type, skip, to_other_file)
 			lnum = curwin->w_cursor.lnum;
 			break;
 		    case ADDR_WINDOWS:
-			lnum = 0;
-			for (wp = firstwin; wp != NULL; wp = wp->w_next)
-			{
-			    lnum++;
-			    if (wp == curwin)
-				break;
-			}
+			lnum = CURRENT_WIN_NR;
 			break;
 		    case ADDR_ARGUMENTS:
 			lnum = curwin->w_arg_idx + 1;
@@ -4231,13 +4256,7 @@ get_address(ptr, addr_type, skip, to_other_file)
 			lnum = curbuf->b_fnum;
 			break;
 		    case ADDR_TABS:
-			lnum = 0;
-			for(tp = first_tabpage; tp != NULL; tp = tp->tp_next)
-			{
-			    lnum++;
-			    if (tp == curtab)
-				break;
-			}
+			lnum = CURRENT_TAB_NR;
 			break;
 		}
 		break;
@@ -4250,9 +4269,7 @@ get_address(ptr, addr_type, skip, to_other_file)
 			lnum = curbuf->b_ml.ml_line_count;
 			break;
 		    case ADDR_WINDOWS:
-			lnum = 0;
-			for (wp = firstwin; wp != NULL; wp = wp->w_next)
-			    lnum++;
+			lnum = LAST_WIN_NR;
 			break;
 		    case ADDR_ARGUMENTS:
 			lnum = ARGCOUNT;
@@ -4262,9 +4279,7 @@ get_address(ptr, addr_type, skip, to_other_file)
 			lnum = lastbuf->b_fnum;
 			break;
 		    case ADDR_TABS:
-			lnum = 0;
-			for(tp = first_tabpage; tp != NULL; tp = tp->tp_next)
-			    lnum++;
+			lnum = LAST_TAB_NR;
 			break;
 		}
 		break;
@@ -4419,16 +4434,11 @@ get_address(ptr, addr_type, skip, to_other_file)
 		switch (addr_type)
 		{
 		    case ADDR_LINES:
-			lnum = curwin->w_cursor.lnum;	/* "+1" is same as ".+1" */
+			/* "+1" is same as ".+1" */
+			lnum = curwin->w_cursor.lnum;
 			break;
 		    case ADDR_WINDOWS:
-			lnum = 0;
-			for (wp = firstwin; wp != NULL; wp = wp->w_next)
-			{
-			    lnum++;
-			    if (wp == curwin)
-				break;
-			}
+			lnum = CURRENT_WIN_NR;
 			break;
 		    case ADDR_ARGUMENTS:
 			lnum = curwin->w_arg_idx + 1;
@@ -4438,13 +4448,7 @@ get_address(ptr, addr_type, skip, to_other_file)
 			lnum = curbuf->b_fnum;
 			break;
 		    case ADDR_TABS:
-			lnum = 0;
-			for(tp = first_tabpage; tp != NULL; tp = tp->tp_next)
-			{
-			    lnum++;
-			    if (tp == curtab)
-				break;
-			}
+			lnum = CURRENT_TAB_NR;
 			break;
 		}
 	    }
@@ -4481,9 +4485,7 @@ get_address(ptr, addr_type, skip, to_other_file)
 			lnum = 0;
 			break;
 		    }
-		    c = 0;
-		    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
-			c++;
+		    c = LAST_TAB_NR;
 		    if (lnum >= c)
 			lnum = c;
 		    break;
@@ -4493,9 +4495,7 @@ get_address(ptr, addr_type, skip, to_other_file)
 			lnum = 0;
 			break;
 		    }
-		    c = 0;
-		    for (wp = firstwin; wp != NULL; wp = wp->w_next)
-			c++;
+		    c = LAST_WIN_NR;
 		    if (lnum > c)
 			lnum = c;
 		    break;
@@ -6805,15 +6805,15 @@ not_exiting()
 }
 
 /*
- * ":quit": quit current window, quit Vim if closed the last window.
+ * ":quit": quit current window, quit Vim if the last window is closed.
  */
     static void
 ex_quit(eap)
     exarg_T	*eap;
 {
+#if defined(FEAT_WINDOWS) || defined(FEAT_AUTOCMD)
     win_T	*wp;
-    buf_T	*buf;
-    int		wnr;
+#endif
 
 #ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
@@ -6828,28 +6828,27 @@ ex_quit(eap)
 	text_locked_msg();
 	return;
     }
+#ifdef FEAT_WINDOWS
     if (eap->addr_count > 0)
     {
-	wnr = eap->line2;
-	for (wp = firstwin; --wnr > 0; )
-	{
-	    if (wp->w_next == NULL)
+	int	wnr = eap->line2;
+
+	for (wp = firstwin; wp->w_next != NULL; wp = wp->w_next)
+	    if (--wnr <= 0)
 		break;
-	    else
-		wp = wp->w_next;
-	}
-	buf = wp->w_buffer;
     }
     else
-    {
+#endif
+#if defined(FEAT_WINDOWS) || defined(FEAT_AUTOCMD)
 	wp = curwin;
-	buf = curbuf;
-    }
+#endif
+
 #ifdef FEAT_AUTOCMD
     apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, curbuf);
     /* Refuse to quit when locked or when the buffer in the last window is
      * being closed (can only happen in autocommands). */
-    if (curbuf_locked() || (buf->b_nwindows == 1 && buf->b_closing))
+    if (curbuf_locked() || (wp->w_buffer->b_nwindows == 1
+						  && wp->w_buffer->b_closing))
 	return;
 #endif
 
@@ -7214,9 +7213,6 @@ ex_all(eap)
 ex_hide(eap)
     exarg_T	*eap;
 {
-    win_T	*win;
-    int		winnr = 0;
-
     if (*eap->arg != NUL && check_nextcmd(eap->arg) == NULL)
 	eap->errmsg = e_invarg;
     else
@@ -7231,7 +7227,11 @@ ex_hide(eap)
 # endif
 	    if (eap->addr_count == 0)
 		win_close(curwin, FALSE);	/* don't free buffer */
-	    else {
+	    else
+	    {
+		int	winnr = 0;
+		win_T	*win;
+
 		for (win = firstwin; win != NULL; win = win->w_next)
 		{
 		    winnr++;
