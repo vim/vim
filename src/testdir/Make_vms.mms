@@ -4,7 +4,7 @@
 # Authors:	Zoltan Arpadffy, <arpadffy@polarhome.com>
 #		Sandor Kopanyi,  <sandor.kopanyi@mailbox.hu>
 #
-# Last change:  2014 Aug 16
+# Last change:  2014 Nov 27
 #
 # This has been tested on VMS 6.2 to 8.3 on DEC Alpha, VAX and IA64.
 # Edit the lines in the Configuration section below to select.
@@ -45,7 +45,7 @@
 # It fails because VMS does not support this feature yet.
 # WANT_MZSCH = YES
 
-# Comment out if you have ODS-5 file system                                                                                                                 
+# Comment out if you have ODS-5 file system
 # HAVE_ODS5 = YES
 
 # Comment out if you have gzip on your system
@@ -54,10 +54,10 @@
 # Comment out if you have GNU compatible diff on your system
 # HAVE_GDIFF = YES
 
-# Comment out if you have GNU compatible cksum on your system                                                                                                  
+# Comment out if you have GNU compatible cksum on your system
 # HAVE_CKSUM = YES
 
-# Comment out if you have ICONV support                                                                                                  
+# Comment out if you have ICONV support
 # HAVE_ICONV = YES
 
 # Comment out if you have LUA support
@@ -96,9 +96,11 @@ SCRIPT = test1.out  test2.out  test3.out  test4.out  test5.out  \
 	 test95.out test96.out test98.out test99.out \
 	 test100.out test101.out test103.out test104.out \
 	 test105.out test106.out test107.out \
+	 test_argument_count.out \
 	 test_autoformat_join.out \
 	 test_breakindent.out \
 	 test_changelist.out \
+	 test_close_count.out \
 	 test_eval.out \
 	 test_insertcount.out \
 	 test_listlbr.out \
