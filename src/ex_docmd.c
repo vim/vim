@@ -1721,8 +1721,9 @@ compute_buffer_local_count(addr_type, lnum, offset)
  *
  * 1. skip comment lines and leading space
  * 2. handle command modifiers
- * 3. parse command
+ * 3. find the command
  * 4. parse range
+ * 5. Parse the command.
  * 6. parse arguments
  * 7. switch on command name
  *
@@ -2335,7 +2336,7 @@ do_one_cmd(cmdlinep, sourcing,
 	ea.forceit = FALSE;
 
 /*
- * 5. Parse arguments.
+ * 6. Parse arguments.
  */
     if (!IS_USER_CMDIDX(ea.cmdidx))
 	ea.argt = (long)cmdnames[(int)ea.cmdidx].cmd_argt;
@@ -2782,7 +2783,7 @@ do_one_cmd(cmdlinep, sourcing,
 #endif
 
 /*
- * 6. Switch on command name.
+ * 7. Switch on command name.
  *
  * The "ea" structure holds the arguments that can be used.
  */
@@ -3319,7 +3320,7 @@ set_one_cmd_context(xp, buff)
     ea.argt = 0;
 
 /*
- * 2. skip comment lines and leading space, colons or bars
+ * 1. skip comment lines and leading space, colons or bars
  */
     for (cmd = buff; vim_strchr((char_u *)" \t:|", *cmd) != NULL; cmd++)
 	;
@@ -3334,13 +3335,9 @@ set_one_cmd_context(xp, buff)
     }
 
 /*
- * 3. parse a range specifier of the form: addr [,addr] [;addr] ..
+ * 3. Skip over the range to find the command.
  */
     cmd = skip_range(cmd, &xp->xp_context);
-
-/*
- * 4. parse command
- */
     xp->xp_pattern = cmd;
     if (*cmd == NUL)
 	return NULL;
@@ -3446,7 +3443,7 @@ set_one_cmd_context(xp, buff)
     }
 
 /*
- * 5. parse arguments
+ * 6. parse arguments
  */
     if (!IS_USER_CMDIDX(ea.cmdidx))
 	ea.argt = (long)cmdnames[(int)ea.cmdidx].cmd_argt;
@@ -3682,7 +3679,7 @@ set_one_cmd_context(xp, buff)
     }
 
 /*
- * 6. switch on command name
+ * 6. Switch on command name.
  */
     switch (ea.cmdidx)
     {
