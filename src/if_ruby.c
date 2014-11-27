@@ -96,11 +96,11 @@
 # define rb_num2int rb_num2int_stub
 #endif
 
-# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 21
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 21
 /* Ruby 2.1 adds new GC called RGenGC and RARRAY_PTR uses
  * rb_gc_writebarrier_unprotect_promoted if USE_RGENGC  */
-#  define rb_gc_writebarrier_unprotect_promoted rb_gc_writebarrier_unprotect_promoted_stub
-# endif
+# define rb_gc_writebarrier_unprotect_promoted rb_gc_writebarrier_unprotect_promoted_stub
+#endif
 
 #include <ruby.h>
 #ifdef RUBY19_OR_LATER
@@ -422,7 +422,7 @@ VALUE rb_num2ulong(VALUE x)
 # if defined(USE_RGENGC) && USE_RGENGC && !defined(PROTO)
 void rb_gc_writebarrier_unprotect_promoted_stub(VALUE obj)
 {
-    return dll_rb_gc_writebarrier_unprotect_promoted(obj);
+    dll_rb_gc_writebarrier_unprotect_promoted(obj);
 }
 # endif
 
@@ -763,7 +763,8 @@ static int ensure_ruby_initialized(void)
 	    /* suggested by Ariya Mizutani */
 	    int argc = 1;
 	    char *argv[] = {"gvim.exe"};
-	    NtInitialize(&argc, &argv);
+	    char **argvp = argv;
+	    NtInitialize(&argc, &argvp);
 #endif
 	    {
 #if defined(RUBY19_OR_LATER) || defined(RUBY_INIT_STACK)
