@@ -25,6 +25,9 @@ n:AddR
 :AddR
 /
 :AddR
+:set nohls
+/
+:AddR
 :let r1=r[0][0]
 :" I guess it is not guaranteed that screenattr outputs always the same character
 :call map(r, 'v:val[1].":".(v:val[0]==r1?"highlighted":"not highlighted")')
