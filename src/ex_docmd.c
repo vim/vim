@@ -2129,7 +2129,11 @@ do_one_cmd(cmdlinep, sourcing,
  * is equal to the lower.
  */
 
-    if (ea.cmdidx != CMD_USER && ea.cmdidx != CMD_SIZE)
+    if (ea.cmdidx != CMD_SIZE
+#ifdef FEAT_USR_CMDS
+	&& ea.cmdidx != CMD_USER
+#endif
+       )
 	ea.addr_type = cmdnames[(int)ea.cmdidx].cmd_addr_type;
     else
 	ea.addr_type = ADDR_LINES;
