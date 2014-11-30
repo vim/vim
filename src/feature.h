@@ -385,13 +385,6 @@
 #endif
 
 /*
- * +python and +python3 require FEAT_EVAL.
- */
-#if !defined(FEAT_EVAL) && (defined(FEAT_PYTHON3) || defined(FEAT_PYTHON))
-# define FEAT_EVAL
-#endif
-
-/*
  * +profile		Profiling for functions and scripts.
  */
 #if defined(FEAT_HUGE) \

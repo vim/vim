@@ -5575,6 +5575,7 @@ set_string_option_direct(name, opt_idx, val, opt_flags, set_sid)
 	if (idx < 0)	/* not found (should not happen) */
 	{
 	    EMSG2(_(e_intern2), "set_string_option_direct()");
+	    EMSG2(_("For option %s"), name);
 	    return;
 	}
     }

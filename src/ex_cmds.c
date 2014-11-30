@@ -6200,9 +6200,11 @@ prepare_help_buffer()
 	(void)buf_init_chartab(curbuf, FALSE);
     }
 
+#ifdef FEAT_FOLDING
     /* Don't use the global foldmethod.*/
     set_string_option_direct((char_u *)"fdm", -1, (char_u *)"manual",
 						       OPT_FREE|OPT_LOCAL, 0);
+#endif
 
     curbuf->b_p_ts = 8;		/* 'tabstop' is 8 */
     curwin->w_p_list = FALSE;	/* no list mode */
