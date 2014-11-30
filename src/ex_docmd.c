@@ -1694,6 +1694,7 @@ compute_buffer_local_count(addr_type, lnum, offset)
     int	    offset;
 {
     buf_T   *buf;
+    buf_T   *nextbuf;
     int     count = offset;
 
     buf = firstbuf;
@@ -1701,15 +1702,30 @@ compute_buffer_local_count(addr_type, lnum, offset)
 	buf = buf->b_next;
     while (count != 0)
     {
-	count += (count < 0) ? 1 : -1;
-	if (buf->b_prev == NULL)
+	count += (offset < 0) ? 1 : -1;
+	nextbuf = (offset < 0) ? buf->b_prev : buf->b_next;
+	if (nextbuf == NULL)
 	    break;
-	buf = (count < 0) ? buf->b_prev : buf->b_next;
+	buf = nextbuf;
 	if (addr_type == ADDR_LOADED_BUFFERS)
 	    /* skip over unloaded buffers */
-	    while (buf->b_prev != NULL && buf->b_ml.ml_mfp == NULL)
-		buf = (count < 0) ? buf->b_prev : buf->b_next;
+	    while (buf->b_ml.ml_mfp == NULL)
+	    {
+		nextbuf = (offset < 0) ? buf->b_prev : buf->b_next;
+		if (nextbuf == NULL)
+		    break;
+		buf = nextbuf;
+	    }
     }
+    /* we might have gone too far, last buffer is not loadedd */
+    if (addr_type == ADDR_LOADED_BUFFERS)
+	while (buf->b_ml.ml_mfp == NULL)
+	{
+	    nextbuf = (offset >= 0) ? buf->b_prev : buf->b_next;
+	    if (nextbuf == NULL)
+		break;
+	    buf = nextbuf;
+	}
     return buf->b_fnum;
 }
 
@@ -2113,7 +2129,7 @@ do_one_cmd(cmdlinep, sourcing,
  * is equal to the lower.
  */
 
-    if (ea.cmdidx != CMD_SIZE)
+    if (ea.cmdidx != CMD_USER && ea.cmdidx != CMD_SIZE)
 	ea.addr_type = cmdnames[(int)ea.cmdidx].cmd_addr_type;
     else
 	ea.addr_type = ADDR_LINES;
@@ -2153,6 +2169,7 @@ do_one_cmd(cmdlinep, sourcing,
 	{
 	    if (*ea.cmd == '%')		    /* '%' - all lines */
 	    {
+		buf_T	*buf;
 		++ea.cmd;
 		switch (ea.addr_type)
 		{
@@ -2160,9 +2177,21 @@ do_one_cmd(cmdlinep, sourcing,
 			ea.line1 = 1;
 			ea.line2 = curbuf->b_ml.ml_line_count;
 			break;
-		    case ADDR_WINDOWS:
 		    case ADDR_LOADED_BUFFERS:
+			buf = firstbuf;
+			while (buf->b_next != NULL && buf->b_ml.ml_mfp == NULL)
+			    buf = buf->b_next;
+			ea.line1 = buf->b_fnum;
+			buf = lastbuf;
+			while (buf->b_prev != NULL && buf->b_ml.ml_mfp == NULL)
+			    buf = buf->b_prev;
+			ea.line2 = buf->b_fnum;
+			break;
 		    case ADDR_UNLOADED_BUFFERS:
+			ea.line1 = firstbuf->b_fnum;
+			ea.line2 = lastbuf->b_fnum;
+			break;
+		    case ADDR_WINDOWS:
 		    case ADDR_TABS:
 			errormsg = (char_u *)_(e_invrange);
 			goto doend;
@@ -4463,7 +4492,7 @@ get_address(ptr, addr_type, skip, to_other_file)
 		n = getdigits(&cmd);
 	    if (addr_type == ADDR_LOADED_BUFFERS
 		    || addr_type == ADDR_UNLOADED_BUFFERS)
-		lnum = compute_buffer_local_count(addr_type, lnum, n);
+		lnum = compute_buffer_local_count(addr_type, lnum, (i == '-') ? -1 * n : n);
 	    else if (i == '-')
 		lnum -= n;
 	    else
@@ -4485,9 +4514,8 @@ get_address(ptr, addr_type, skip, to_other_file)
 			lnum = 0;
 			break;
 		    }
-		    c = LAST_TAB_NR;
-		    if (lnum >= c)
-			lnum = c;
+		    if (lnum >= LAST_TAB_NR)
+			lnum = LAST_TAB_NR;
 		    break;
 		case ADDR_WINDOWS:
 		    if (lnum < 0)
@@ -4495,9 +4523,8 @@ get_address(ptr, addr_type, skip, to_other_file)
 			lnum = 0;
 			break;
 		    }
-		    c = LAST_WIN_NR;
-		    if (lnum > c)
-			lnum = c;
+		    if (lnum >= LAST_WIN_NR)
+			lnum = LAST_WIN_NR;
 		    break;
 		case ADDR_LOADED_BUFFERS:
 		case ADDR_UNLOADED_BUFFERS:
