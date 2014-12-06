@@ -2951,7 +2951,7 @@ set_var_lval(lp, endp, rettv, copy, op)
 	/*
 	 * Check whether any of the list items is locked
 	 */
-	for (ri = rettv->vval.v_list->lv_first; ri != NULL; )
+	for (ri = rettv->vval.v_list->lv_first; ri != NULL && ll_li != NULL; )
 	{
 	    if (tv_check_lock(ll_li->li_tv.v_lock, lp->ll_name))
 		return;
