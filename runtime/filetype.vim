@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2014 Nov 05
+" Last Change:	2014 Dec 06
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1856,7 +1856,7 @@ au BufNewFile,BufRead sgml.catalog*		call s:StarSetf('catalog')
 
 " Shell scripts (sh, ksh, bash, bash2, csh); Allow .profile_foo etc.
 " Gentoo ebuilds are actually bash scripts
-au BufNewFile,BufRead .bashrc*,bashrc,bash.bashrc,.bash_profile*,.bash_logout*,*.bash,*.ebuild call SetFileTypeSH("bash")
+au BufNewFile,BufRead .bashrc*,bashrc,bash.bashrc,.bash_profile*,.bash_logout*,.bash_aliases*,*.bash,*.ebuild call SetFileTypeSH("bash")
 au BufNewFile,BufRead .kshrc*,*.ksh call SetFileTypeSH("ksh")
 au BufNewFile,BufRead */etc/profile,.profile*,*.sh,*.env call SetFileTypeSH(getline(1))
 
@@ -2502,6 +2502,8 @@ au BufNewFile,BufRead */etc/yum.conf		setf dosini
 
 " Zimbu
 au BufNewFile,BufRead *.zu			setf zimbu
+" Zimbu Templates
+au BufNewFile,BufRead *.zut			setf zimbutempl
 
 " Zope
 "   dtml (zope dynamic template markup language), pt (zope page template),
