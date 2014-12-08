@@ -63,7 +63,7 @@
 #define ADDR_WINDOWS		1
 #define ADDR_ARGUMENTS		2
 #define ADDR_LOADED_BUFFERS	3
-#define ADDR_UNLOADED_BUFFERS	4
+#define ADDR_BUFFERS	4
 #define ADDR_TABS		5
 
 #ifndef DO_DECLARE_EXCMD
@@ -161,7 +161,7 @@ EX(CMD_aunmenu,		"aunmenu",	ex_menu,
 			ADDR_LINES),
 EX(CMD_buffer,		"buffer",	ex_buffer,
 			BANG|RANGE|NOTADR|BUFNAME|BUFUNL|COUNT|EXTRA|EDITCMD|TRLBAR,
-			ADDR_UNLOADED_BUFFERS),
+			ADDR_BUFFERS),
 EX(CMD_bNext,		"bNext",	ex_bprevious,
 			BANG|RANGE|NOTADR|COUNT|EDITCMD|TRLBAR,
 			ADDR_LINES),
@@ -227,7 +227,7 @@ EX(CMD_bunload,		"bunload",	ex_bunload,
 			ADDR_LOADED_BUFFERS),
 EX(CMD_bwipeout,	"bwipeout",	ex_bunload,
 			BANG|RANGE|NOTADR|BUFNAME|BUFUNL|COUNT|EXTRA|TRLBAR,
-			ADDR_UNLOADED_BUFFERS),
+			ADDR_BUFFERS),
 EX(CMD_change,		"change",	ex_change,
 			BANG|WHOLEFOLD|RANGE|COUNT|TRLBAR|CMDWIN|MODIFY,
 			ADDR_LINES),
@@ -1184,7 +1184,7 @@ EX(CMD_saveas,		"saveas",	ex_write,
 			ADDR_LINES),
 EX(CMD_sbuffer,		"sbuffer",	ex_buffer,
 			BANG|RANGE|NOTADR|BUFNAME|BUFUNL|COUNT|EXTRA|EDITCMD|TRLBAR,
-			ADDR_UNLOADED_BUFFERS),
+			ADDR_BUFFERS),
 EX(CMD_sbNext,		"sbNext",	ex_bprevious,
 			RANGE|NOTADR|COUNT|EDITCMD|TRLBAR,
 			ADDR_LINES),

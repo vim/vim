@@ -4697,6 +4697,7 @@ ExpandFromContext(xp, pat, num_file, file, options)
 #endif
 #ifdef FEAT_USR_CMDS
 	    {EXPAND_USER_COMMANDS, get_user_commands, FALSE, TRUE},
+	    {EXPAND_USER_ADDR_TYPE, get_user_cmd_addr_type, FALSE, TRUE},
 	    {EXPAND_USER_CMD_FLAGS, get_user_cmd_flags, FALSE, TRUE},
 	    {EXPAND_USER_NARGS, get_user_cmd_nargs, FALSE, TRUE},
 	    {EXPAND_USER_COMPLETE, get_user_cmd_complete, FALSE, TRUE},

@@ -41,6 +41,7 @@ SCRIPTS = test1.out test3.out test4.out test5.out test6.out \
 		test_breakindent.out \
 		test_changelist.out \
 		test_close_count.out \
+		test_command_count.out \
 		test_eval.out \
 		test_insertcount.out \
 		test_listlbr.out \
@@ -178,6 +179,7 @@ test_autoformat_join.out: test_autoformat_join.in
 test_breakindent.out: test_breakindent.in
 test_changelist.out: test_changelist.in
 test_close_count.out: test_close_count.in
+test_command_count.out: test_command_count.in
 test_eval.out: test_eval.in
 test_insertcount.out: test_insertcount.in
 test_listlbr.out: test_listlbr.in

@@ -1896,6 +1896,7 @@ test1 \
 	test_breakindent \
 	test_changelist \
 	test_close_count \
+	test_command_count \
 	test_eval \
 	test_insertcount \
 	test_listlbr \
