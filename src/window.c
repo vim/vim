@@ -11,6 +11,7 @@
 
 static int path_is_url __ARGS((char_u *p));
 #if defined(FEAT_WINDOWS) || defined(PROTO)
+static void cmd_with_count __ARGS((char *cmd, char_u *bufp, size_t bufsize, long Prenum));
 static void win_init __ARGS((win_T *newp, win_T *oldp, int flags));
 static void win_init_some __ARGS((win_T *newp, win_T *oldp));
 static void frame_comp_pos __ARGS((frame_T *topfrp, int *row, int *col));
@@ -167,10 +168,7 @@ do_window(nchar, Prenum, xchar)
     case '^':
 		CHECK_CMDWIN
 		reset_VIsual_and_resel();	/* stop Visual mode */
-		STRCPY(cbuf, "split #");
-		if (Prenum)
-		    vim_snprintf((char *)cbuf + 7, sizeof(cbuf) - 7,
-							       "%ld", Prenum);
+		cmd_with_count("split #", cbuf, sizeof(cbuf), Prenum);
 		do_cmdline_cmd(cbuf);
 		break;
 
@@ -199,10 +197,7 @@ newwindow:
     case Ctrl_Q:
     case 'q':
 		reset_VIsual_and_resel();	/* stop Visual mode */
-		STRCPY(cbuf, "quit");
-		if (Prenum)
-		    vim_snprintf((char *)cbuf + 4, sizeof(cbuf) - 5,
-							    "%ld", Prenum);
+		cmd_with_count("quit", cbuf, sizeof(cbuf), Prenum);
 		do_cmdline_cmd(cbuf);
 		break;
 
@@ -210,10 +205,7 @@ newwindow:
     case Ctrl_C:
     case 'c':
 		reset_VIsual_and_resel();	/* stop Visual mode */
-		STRCPY(cbuf, "close");
-		if (Prenum)
-		    vim_snprintf((char *)cbuf + 5, sizeof(cbuf) - 5,
-							       "%ld", Prenum);
+		cmd_with_count("close", cbuf, sizeof(cbuf), Prenum);
 		do_cmdline_cmd(cbuf);
 		break;
 
@@ -243,10 +235,7 @@ newwindow:
     case 'o':
 		CHECK_CMDWIN
 		reset_VIsual_and_resel();	/* stop Visual mode */
-		STRCPY(cbuf, "only");
-		if (Prenum > 0)
-		    vim_snprintf((char *)cbuf + 4, sizeof(cbuf) - 4,
-								"%ld", Prenum);
+		cmd_with_count("only", cbuf, sizeof(cbuf), Prenum);
 		do_cmdline_cmd(cbuf);
 		break;
 
@@ -633,6 +622,20 @@ wingotofile:
     default:	beep_flush();
 		break;
     }
+}
+
+    static void
+cmd_with_count(cmd, bufp, bufsize, Prenum)
+    char	*cmd;
+    char_u	*bufp;
+    size_t	bufsize;
+    long	Prenum;
+{
+    size_t	len = STRLEN(cmd);
+
+    STRCPY(bufp, cmd);
+    if (Prenum > 0)
+	vim_snprintf((char *)bufp + len, bufsize - len, "%ld", Prenum);
 }
 
 /*
