@@ -12,7 +12,6 @@
 
 #include "vim.h"
 
-static void save_re_pat __ARGS((int idx, char_u *pat, int magic));
 #ifdef FEAT_EVAL
 static void set_vv_searchforward __ARGS((void));
 static int first_submatch __ARGS((regmmatch_T *rp));
@@ -272,7 +271,7 @@ reverse_text(s)
 }
 #endif
 
-    static void
+    void
 save_re_pat(idx, pat, magic)
     int		idx;
     char_u	*pat;

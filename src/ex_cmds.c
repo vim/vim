@@ -4408,6 +4408,8 @@ do_sub(eap)
 	    && (*cmd == NUL || (cmd[1] == NUL && (*cmd == 'g' || *cmd == 'l'
 					     || *cmd == 'p' || *cmd == '#'))))
     {
+	linenr_T    joined_lines_count;
+
 	curwin->w_cursor.lnum = eap->line1;
 	if (*cmd == 'l')
 	    eap->flags = EXFLAG_LIST;
@@ -4416,10 +4418,27 @@ do_sub(eap)
 	else if (*cmd == 'p')
 	    eap->flags = EXFLAG_PRINT;
 
-	(void)do_join(eap->line2 - eap->line1 + 1, FALSE, TRUE, FALSE, TRUE);
-	sub_nlines = sub_nsubs = eap->line2 - eap->line1 + 1;
-	(void)do_sub_msg(FALSE);
-	ex_may_print(eap);
+	/* The number of lines joined is the number of lines in the range plus
+	 * one.  One less when the last line is included. */
+	joined_lines_count = eap->line2 - eap->line1 + 1;
+	if (eap->line2 < curbuf->b_ml.ml_line_count)
+	    ++joined_lines_count;
+	if (joined_lines_count > 1)
+	{
+	    (void)do_join(joined_lines_count, FALSE, TRUE, FALSE, TRUE);
+	    sub_nsubs = joined_lines_count - 1;
+	    sub_nlines = 1;
+	    (void)do_sub_msg(FALSE);
+	    ex_may_print(eap);
+	}
+
+	if (!cmdmod.keeppatterns)
+	    save_re_pat(RE_SUBST, pat, p_magic);
+#ifdef FEAT_CMDHIST
+	/* put pattern in history */
+	add_to_history(HIST_SEARCH, pat, TRUE, NUL);
+#endif
+
 	return;
     }
 
