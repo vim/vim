@@ -8,6 +8,15 @@ STARTTEST
 :inoreab чкпр   vim
 GAчкпр 
 
+
+: " langmap should not get remapped in insert mode
+:inoremap { FAIL_ilangmap
+:set langmap=+{ langnoremap
+o+
+: " expr mapping with langmap
+:inoremap <expr> { "FAIL_iexplangmap"
+o+
+
 :/^test/,$w! test.out
 :qa!
 ENDTEST

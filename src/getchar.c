@@ -2145,7 +2145,7 @@ vgetorpeek(advance)
 			    nolmaplen = 2;
 			else
 			{
-			    LANGMAP_ADJUST(c1, TRUE);
+			    LANGMAP_ADJUST(c1, (State & INSERT) == 0);
 			    nolmaplen = 0;
 			}
 #endif
