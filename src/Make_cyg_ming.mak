@@ -366,7 +366,11 @@ endif
 endif
 CC := $(CROSS_COMPILE)gcc
 CXX := $(CROSS_COMPILE)g++
+ifeq ($(UNDER_CYGWIN),yes)
 WINDRES := $(CROSS_COMPILE)windres
+else
+WINDRES := windres
+endif
 WINDRES_CC = $(CC)
 
 #>>>>> end of choices
