@@ -22283,14 +22283,11 @@ ex_function(eap)
 		if (*p == '!')
 		    p = skipwhite(p + 1);
 		p += eval_fname_script(p);
-		if (ASCII_ISALPHA(*p))
+		vim_free(trans_function_name(&p, TRUE, 0, NULL));
+		if (*skipwhite(p) == '(')
 		{
-		    vim_free(trans_function_name(&p, TRUE, 0, NULL));
-		    if (*skipwhite(p) == '(')
-		    {
-			++nesting;
-			indent += 2;
-		    }
+		    ++nesting;
+		    indent += 2;
 		}
 	    }
 
