@@ -23,8 +23,7 @@ static void comp_botline __ARGS((win_T *wp));
 static void redraw_for_cursorline __ARGS((win_T *wp));
 static int scrolljump_value __ARGS((void));
 static int check_top_offset __ARGS((void));
-static void curs_rows __ARGS((win_T *wp, int do_botline));
-static void validate_botline_win __ARGS((win_T *wp));
+static void curs_rows __ARGS((win_T *wp));
 static void validate_cheight __ARGS((void));
 
 typedef struct
@@ -609,17 +608,6 @@ validate_botline()
 }
 
 /*
- * Make sure the value of wp->w_botline is valid.
- */
-    static void
-validate_botline_win(wp)
-    win_T	*wp;
-{
-    if (!(wp->w_valid & VALID_BOTLINE))
-	comp_botline(wp);
-}
-
-/*
  * Mark curwin->w_botline as invalid (because of some change in the buffer).
  */
     void
@@ -678,20 +666,17 @@ validate_cline_row()
     update_topline();
     check_cursor_moved(curwin);
     if (!(curwin->w_valid & VALID_CROW))
-	curs_rows(curwin, FALSE);
+	curs_rows(curwin);
 }
 #endif
 
 /*
  * Compute wp->w_cline_row and wp->w_cline_height, based on the current value
  * of wp->w_topline.
- *
- * Returns OK when cursor is in the window, FAIL when it isn't.
  */
     static void
-curs_rows(wp, do_botline)
+curs_rows(wp)
     win_T	*wp;
-    int		do_botline;		/* also compute w_botline */
 {
     linenr_T	lnum;
     int		i;
@@ -810,9 +795,6 @@ curs_rows(wp, do_botline)
     redraw_for_cursorline(curwin);
     wp->w_valid |= VALID_CROW|VALID_CHEIGHT;
 
-    /* validate botline too, if update_screen doesn't do it */
-    if (do_botline && all_invalid)
-	validate_botline_win(wp);
 }
 
 /*
@@ -986,7 +968,7 @@ curs_columns(may_scroll)
      * Next make sure that w_cline_row is valid.
      */
     if (!(curwin->w_valid & VALID_CROW))
-	curs_rows(curwin, FALSE);
+	curs_rows(curwin);
 
     /*
      * Compute the number of virtual columns.
