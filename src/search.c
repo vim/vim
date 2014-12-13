@@ -4441,12 +4441,11 @@ current_quote(oap, count, include, quotechar)
 
 #endif /* FEAT_TEXTOBJ */
 
-static int is_one_char __ARGS((char_u *pattern));
+static int is_one_char __ARGS((char_u *pattern, int move));
 
 /*
  * Find next search match under cursor, cursor at end.
  * Used while an operator is pending, and in Visual mode.
- * TODO: redo only works when used in operator pending mode
  */
     int
 current_search(count, forward)
@@ -4491,7 +4490,7 @@ current_search(count, forward)
 	orig_pos = pos = start_pos = curwin->w_cursor;
 
     /* Is the pattern is zero-width? */
-    one_char = is_one_char(spats[last_idx].pat);
+    one_char = is_one_char(spats[last_idx].pat, TRUE);
     if (one_char == -1)
     {
 	p_ws = old_p_ws;
@@ -4550,6 +4549,10 @@ current_search(count, forward)
     start_pos = pos;
     flags = forward ? SEARCH_END : 0;
 
+    /* Check again from the current cursor position,
+     * since the next match might actually by only one char wide */
+    one_char = is_one_char(spats[last_idx].pat, FALSE);
+
     /* move to match, except for zero-width matches, in which case, we are
      * already on the next match */
     if (!one_char)
@@ -4599,26 +4602,38 @@ current_search(count, forward)
 
 /*
  * Check if the pattern is one character or zero-width.
+ * If move is TRUE, check from the beginning of the buffer, else from the
+ * current cursor position.
  * Returns TRUE, FALSE or -1 for failure.
  */
     static int
-is_one_char(pattern)
+is_one_char(pattern, move)
     char_u	*pattern;
+    int		move;
 {
     regmmatch_T	regmatch;
     int		nmatched = 0;
     int		result = -1;
     pos_T	pos;
     int		save_called_emsg = called_emsg;
+    int		flag = 0;
 
     if (search_regcomp(pattern, RE_SEARCH, RE_SEARCH,
 					      SEARCH_KEEP, &regmatch) == FAIL)
 	return -1;
 
     /* move to match */
-    clearpos(&pos);
+    if (move)
+	clearpos(&pos)
+    else
+    {
+	pos = curwin->w_cursor;
+	/* accept a match at the cursor position */
+	flag = SEARCH_START;
+    }
+
     if (searchit(curwin, curbuf, &pos, FORWARD, spats[last_idx].pat, 1,
-				     SEARCH_KEEP, RE_SEARCH, 0, NULL) != FAIL)
+			      SEARCH_KEEP + flag, RE_SEARCH, 0, NULL) != FAIL)
     {
 	/* Zero-width pattern should match somewhere, then we can check if
 	 * start and end are in the same position. */
