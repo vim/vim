@@ -3932,7 +3932,7 @@ again:
 	if (lt(end_pos, start_pos))
 	    curwin->w_cursor = start_pos;
 	else if (*p_sel == 'e')
-	    ++curwin->w_cursor.col;
+	    inc_cursor();
 	VIsual = start_pos;
 	VIsual_mode = 'v';
 	redraw_curbuf_later(INVERTED);	/* update the inversion */
