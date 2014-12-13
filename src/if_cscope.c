@@ -1131,8 +1131,8 @@ cs_find_common(opt, pat, forceit, verbose, use_ll, cmdline)
     char *pat;
     int forceit;
     int verbose;
-    int	use_ll;
-    char_u *cmdline;
+    int	use_ll UNUSED;
+    char_u *cmdline UNUSED;
 {
     int i;
     char *cmd;
