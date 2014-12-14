@@ -2057,6 +2057,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :comc	map.txt	/*:comc*
 :comclear	map.txt	/*:comclear*
 :command	map.txt	/*:command*
+:command-addr	map.txt	/*:command-addr*
 :command-bang	map.txt	/*:command-bang*
 :command-bar	map.txt	/*:command-bar*
 :command-buffer	map.txt	/*:command-buffer*
@@ -4335,6 +4336,7 @@ E885	sign.txt	/*E885*
 E886	starting.txt	/*E886*
 E887	if_pyth.txt	/*E887*
 E888	pattern.txt	/*E888*
+E889	map.txt	/*E889*
 E89	message.txt	/*E89*
 E90	message.txt	/*E90*
 E91	options.txt	/*E91*
