@@ -612,20 +612,20 @@ block_insert(oap, s, b_insert, bdp)
 #ifdef FEAT_MBYTE
 	if (has_mbyte && spaces > 0)
 	{
+	    int off;
+
 	    /* Avoid starting halfway a multi-byte character. */
 	    if (b_insert)
 	    {
-		int off = (*mb_head_off)(oldp, oldp + offset + spaces);
-		spaces -= off;
-		count -= off;
+		off = (*mb_head_off)(oldp, oldp + offset + spaces);
 	    }
 	    else
 	    {
-		int off = (*mb_off_next)(oldp, oldp + offset);
+		off = (*mb_off_next)(oldp, oldp + offset);
 		offset += off;
-		spaces = 0;
-		count = 0;
 	    }
+	    spaces -= off;
+	    count -= off;
 	}
 #endif
 
