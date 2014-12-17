@@ -592,6 +592,8 @@ qf_init_ext(qi, efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast,
 restofline:
 	for ( ; fmt_ptr != NULL; fmt_ptr = fmt_ptr->next)
 	{
+	    int r;
+
 	    idx = fmt_ptr->prefix;
 	    if (multiscan && vim_strchr((char_u *)"OPQ", idx) == NULL)
 		continue;
@@ -607,7 +609,9 @@ restofline:
 	    tail = NULL;
 
 	    regmatch.regprog = fmt_ptr->prog;
-	    if (vim_regexec(&regmatch, IObuff, (colnr_T)0))
+	    r = vim_regexec(&regmatch, IObuff, (colnr_T)0);
+	    fmt_ptr->prog = regmatch.regprog;
+	    if (r)
 	    {
 		if ((idx == 'C' || idx == 'Z') && !multiline)
 		    continue;
