@@ -3172,6 +3172,7 @@ set_option_value_for(
 	    if (switch_win(&save_curwin, &save_curtab, (win_T *)from,
 			      win_find_tabpage((win_T *)from), FALSE) == FAIL)
 	    {
+		restore_win(save_curwin, save_curtab, TRUE);
 		if (VimTryEnd())
 		    return -1;
 		PyErr_SET_VIM(N_("problem while switching windows"));
@@ -4032,9 +4033,13 @@ switch_to_win_for_buf(
     win_T	*wp;
     tabpage_T	*tp;
 
-    if (find_win_for_buf(buf, &wp, &tp) == FAIL
-	    || switch_win(save_curwinp, save_curtabp, wp, tp, TRUE) == FAIL)
+    if (find_win_for_buf(buf, &wp, &tp) == FAIL)
 	switch_buffer(save_curbufp, buf);
+    else if (switch_win(save_curwinp, save_curtabp, wp, tp, TRUE) == FAIL)
+    {
+	restore_win(*save_curwinp, *save_curtabp, TRUE);
+	switch_buffer(save_curbufp, buf);
+    }
 }
 
     static void
