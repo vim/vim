@@ -55,8 +55,8 @@ void dnd_yank_drag_data __ARGS((char_u *str, long len));
 char_u get_reg_type __ARGS((int regname, long *reglen));
 char_u *get_reg_contents __ARGS((int regname, int flags));
 void write_reg_contents __ARGS((int name, char_u *str, int maxlen, int must_append));
-void write_reg_contents_ex __ARGS((int name, char_u *str, int maxlen, int must_append, int yank_type, long block_len));
 void write_reg_contents_lst __ARGS((int name, char_u **strings, int maxlen, int must_append, int yank_type, long block_len));
+void write_reg_contents_ex __ARGS((int name, char_u *str, int maxlen, int must_append, int yank_type, long block_len));
 void clear_oparg __ARGS((oparg_T *oap));
 void cursor_pos_info __ARGS((void));
 /* vim: set ft=c : */

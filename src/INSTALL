@@ -316,7 +316,7 @@ directory where you want the object files and executables to go and run
 the `configure' script.  `configure' automatically checks for the
 source code in the directory that `configure' is in and in `..'.
 
-   If you have to use a `make' that does not supports the `VPATH'
+   If you have to use a `make' that does not support the `VPATH'
 variable, you have to compile the package for one architecture at a time
 in the source code directory.  After you have installed the package for
 one architecture, use `make distclean' before reconfiguring for another

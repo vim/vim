@@ -41,7 +41,7 @@
 # include <Events.h>
 # include <Menus.h>
 # if !(defined (TARGET_API_MAC_CARBON) && (TARGET_API_MAC_CARBON))
-#   include <Windows.h>
+#  include <Windows.h>
 # endif
 # include <Controls.h>
 /*# include <TextEdit.h>*/

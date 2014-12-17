@@ -1609,7 +1609,7 @@ x_IOerror_handler(dpy)
 /*
  * If the X11 connection was lost try to restore it.
  * Helps when the X11 server was stopped and restarted while Vim was inactive
- * (e.g. though tmux).
+ * (e.g. through tmux).
  */
     static void
 may_restore_clipboard()

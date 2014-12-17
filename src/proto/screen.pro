@@ -26,7 +26,7 @@ int get_keymap_str __ARGS((win_T *wp, char_u *buf, int len));
 void screen_putchar __ARGS((int c, int row, int col, int attr));
 void screen_getbytes __ARGS((int row, int col, char_u *bytes, int *attrp));
 void screen_puts __ARGS((char_u *text, int row, int col, int attr));
-void screen_puts_len __ARGS((char_u *text, int len, int row, int col, int attr));
+void screen_puts_len __ARGS((char_u *text, int textlen, int row, int col, int attr));
 void screen_stop_highlight __ARGS((void));
 void reset_cterm_colors __ARGS((void));
 void screen_draw_rectangle __ARGS((int row, int col, int height, int width, int invert));

@@ -63,7 +63,7 @@
 #define ADDR_WINDOWS		1
 #define ADDR_ARGUMENTS		2
 #define ADDR_LOADED_BUFFERS	3
-#define ADDR_BUFFERS	4
+#define ADDR_BUFFERS		4
 #define ADDR_TABS		5
 
 #ifndef DO_DECLARE_EXCMD
