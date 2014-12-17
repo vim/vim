@@ -75,7 +75,7 @@ void restore_win __ARGS((win_T *save_curwin, tabpage_T *save_curtab, int no_disp
 void switch_buffer __ARGS((buf_T **save_curbuf, buf_T *buf));
 void restore_buffer __ARGS((buf_T *save_curbuf));
 int win_hasvertsplit __ARGS((void));
-int match_add __ARGS((win_T *wp, char_u *grp, char_u *pat, int prio, int id, list_T *pos));
+int match_add __ARGS((win_T *wp, char_u *grp, char_u *pat, int prio, int id, list_T *pos_list));
 int match_delete __ARGS((win_T *wp, int id, int perr));
 void clear_matches __ARGS((win_T *wp));
 matchitem_T *get_match __ARGS((win_T *wp, int id));
