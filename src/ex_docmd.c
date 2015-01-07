@@ -2133,12 +2133,13 @@ do_one_cmd(cmdlinep, sourcing,
     if (ea.cmdidx != CMD_SIZE
 #ifdef FEAT_USR_CMDS
 	&& ea.cmdidx != CMD_USER
+	&& ea.cmdidx != CMD_USER_BUF
 #endif
        )
 	ea.addr_type = cmdnames[(int)ea.cmdidx].cmd_addr_type;
     else
 #ifdef FEAT_USR_CMDS
-	if (ea.cmdidx != CMD_USER)
+	if (ea.cmdidx != CMD_USER && ea.cmdidx != CMD_USER_BUF)
 #endif
 	ea.addr_type = ADDR_LINES;
     /* ea.addr_type for user commands is set by find_ucmd */
