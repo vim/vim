@@ -10588,7 +10588,8 @@ win_redr_ruler(wp, always)
 	    this_ru_col = (WITH_WIDTH(width) + 1) / 2;
 	if (this_ru_col + o < WITH_WIDTH(width))
 	{
-	    while (this_ru_col + o < WITH_WIDTH(width))
+	    /* need at least 3 chars left for get_rel_pos() + NUL */
+	    while (this_ru_col + o < WITH_WIDTH(width) && RULER_BUF_LEN > i + 4)
 	    {
 #ifdef FEAT_MBYTE
 		if (has_mbyte)
