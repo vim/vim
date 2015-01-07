@@ -1398,6 +1398,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 .dic	spell.txt	/*.dic*
 .exrc	starting.txt	/*.exrc*
 .gvimrc	gui.txt	/*.gvimrc*
+.netrwbook	pi_netrw.txt	/*.netrwbook*
+.netrwhist	pi_netrw.txt	/*.netrwhist*
 .vimrc	starting.txt	/*.vimrc*
 /	pattern.txt	/*\/*
 /$	pattern.txt	/*\/$*
@@ -2726,7 +2728,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :sbr	windows.txt	/*:sbr*
 :sbrewind	windows.txt	/*:sbrewind*
 :sbuffer	windows.txt	/*:sbuffer*
-:scrip	repeat.txt	/*:scrip*
+:scr	repeat.txt	/*:scr*
 :scripte	repeat.txt	/*:scripte*
 :scriptencoding	repeat.txt	/*:scriptencoding*
 :scriptnames	repeat.txt	/*:scriptnames*
@@ -2761,7 +2763,6 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :sfirst	windows.txt	/*:sfirst*
 :sh	various.txt	/*:sh*
 :shell	various.txt	/*:shell*
-:si	gui_w32.txt	/*:si*
 :sig	sign.txt	/*:sig*
 :sign	sign.txt	/*:sign*
 :sign-define	sign.txt	/*:sign-define*
@@ -2774,6 +2775,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :sign-unplace	sign.txt	/*:sign-unplace*
 :sil	various.txt	/*:sil*
 :silent	various.txt	/*:silent*
+:sim	gui_w32.txt	/*:sim*
 :simalt	gui_w32.txt	/*:simalt*
 :sl	various.txt	/*:sl*
 :sla	windows.txt	/*:sla*
@@ -5415,6 +5417,7 @@ diff-options	diff.txt	/*diff-options*
 diff-original-file	diff.txt	/*diff-original-file*
 diff-patchexpr	diff.txt	/*diff-patchexpr*
 diff.txt	diff.txt	/*diff.txt*
+diff.vim	syntax.txt	/*diff.vim*
 diff_filler()	eval.txt	/*diff_filler()*
 diff_hlID()	eval.txt	/*diff_hlID()*
 digraph	digraph.txt	/*digraph*
@@ -6008,6 +6011,7 @@ g:netrw_errorlvl	pi_netrw.txt	/*g:netrw_errorlvl*
 g:netrw_fastbrowse	pi_netrw.txt	/*g:netrw_fastbrowse*
 g:netrw_fetch_cmd	pi_netrw.txt	/*g:netrw_fetch_cmd*
 g:netrw_ffkeep	pi_netrw.txt	/*g:netrw_ffkeep*
+g:netrw_file_cmd	pi_netrw.txt	/*g:netrw_file_cmd*
 g:netrw_fname_escape	pi_netrw.txt	/*g:netrw_fname_escape*
 g:netrw_ftp	pi_netrw.txt	/*g:netrw_ftp*
 g:netrw_ftp_browse_reject	pi_netrw.txt	/*g:netrw_ftp_browse_reject*
@@ -6019,6 +6023,7 @@ g:netrw_ftp_timelist_cmd	pi_netrw.txt	/*g:netrw_ftp_timelist_cmd*
 g:netrw_ftpextracmd	pi_netrw.txt	/*g:netrw_ftpextracmd*
 g:netrw_ftpmode	pi_netrw.txt	/*g:netrw_ftpmode*
 g:netrw_glob_escape	pi_netrw.txt	/*g:netrw_glob_escape*
+g:netrw_gx	pi_netrw.txt	/*g:netrw_gx*
 g:netrw_hide	pi_netrw.txt	/*g:netrw_hide*
 g:netrw_home	pi_netrw.txt	/*g:netrw_home*
 g:netrw_http_cmd	pi_netrw.txt	/*g:netrw_http_cmd*
@@ -6026,10 +6031,13 @@ g:netrw_http_put_cmd	pi_netrw.txt	/*g:netrw_http_put_cmd*
 g:netrw_http_xcmd	pi_netrw.txt	/*g:netrw_http_xcmd*
 g:netrw_ignorenetrc	pi_netrw.txt	/*g:netrw_ignorenetrc*
 g:netrw_keepdir	pi_netrw.txt	/*g:netrw_keepdir*
+g:netrw_keepj	pi_netrw.txt	/*g:netrw_keepj*
 g:netrw_list_cmd	pi_netrw.txt	/*g:netrw_list_cmd*
+g:netrw_list_cmd_options	pi_netrw.txt	/*g:netrw_list_cmd_options*
 g:netrw_list_hide	pi_netrw.txt	/*g:netrw_list_hide*
 g:netrw_liststyle	pi_netrw.txt	/*g:netrw_liststyle*
 g:netrw_localcopycmd	pi_netrw.txt	/*g:netrw_localcopycmd*
+g:netrw_localcopydircmd	pi_netrw.txt	/*g:netrw_localcopydircmd*
 g:netrw_localmkdir	pi_netrw.txt	/*g:netrw_localmkdir*
 g:netrw_localmovecmd	pi_netrw.txt	/*g:netrw_localmovecmd*
 g:netrw_localrmdir	pi_netrw.txt	/*g:netrw_localrmdir*
@@ -6050,6 +6058,7 @@ g:netrw_rsync_cmd	pi_netrw.txt	/*g:netrw_rsync_cmd*
 g:netrw_scp_cmd	pi_netrw.txt	/*g:netrw_scp_cmd*
 g:netrw_scpport	pi_netrw.txt	/*g:netrw_scpport*
 g:netrw_sepchr	pi_netrw.txt	/*g:netrw_sepchr*
+g:netrw_servername	pi_netrw.txt	/*g:netrw_servername*
 g:netrw_sftp_cmd	pi_netrw.txt	/*g:netrw_sftp_cmd*
 g:netrw_silent	pi_netrw.txt	/*g:netrw_silent*
 g:netrw_sort_by	pi_netrw.txt	/*g:netrw_sort_by*
@@ -6998,6 +7007,8 @@ netrw-:Hexplore	pi_netrw.txt	/*netrw-:Hexplore*
 netrw-:Lexplore	pi_netrw.txt	/*netrw-:Lexplore*
 netrw-:MF	pi_netrw.txt	/*netrw-:MF*
 netrw-:MT	pi_netrw.txt	/*netrw-:MT*
+netrw-:NetrwC	pi_netrw.txt	/*netrw-:NetrwC*
+netrw-:NetrwMB	pi_netrw.txt	/*netrw-:NetrwMB*
 netrw-:Rexplore	pi_netrw.txt	/*netrw-:Rexplore*
 netrw-:Sexplore	pi_netrw.txt	/*netrw-:Sexplore*
 netrw-:Texplore	pi_netrw.txt	/*netrw-:Texplore*
@@ -7006,6 +7017,7 @@ netrw-C	pi_netrw.txt	/*netrw-C*
 netrw-D	pi_netrw.txt	/*netrw-D*
 netrw-O	pi_netrw.txt	/*netrw-O*
 netrw-P	pi_netrw.txt	/*netrw-P*
+netrw-P18	pi_netrw.txt	/*netrw-P18*
 netrw-R	pi_netrw.txt	/*netrw-R*
 netrw-S	pi_netrw.txt	/*netrw-S*
 netrw-Tb	pi_netrw.txt	/*netrw-Tb*
@@ -7035,6 +7047,7 @@ netrw-createfile	pi_netrw.txt	/*netrw-createfile*
 netrw-credits	pi_netrw.txt	/*netrw-credits*
 netrw-ctrl-h	pi_netrw.txt	/*netrw-ctrl-h*
 netrw-ctrl-l	pi_netrw.txt	/*netrw-ctrl-l*
+netrw-ctrl-r	pi_netrw.txt	/*netrw-ctrl-r*
 netrw-ctrl_l	pi_netrw.txt	/*netrw-ctrl_l*
 netrw-curdir	pi_netrw.txt	/*netrw-curdir*
 netrw-d	pi_netrw.txt	/*netrw-d*
@@ -7061,6 +7074,7 @@ netrw-gf	pi_netrw.txt	/*netrw-gf*
 netrw-gh	pi_netrw.txt	/*netrw-gh*
 netrw-gitignore	pi_netrw.txt	/*netrw-gitignore*
 netrw-gp	pi_netrw.txt	/*netrw-gp*
+netrw-grep	pi_netrw.txt	/*netrw-grep*
 netrw-gx	pi_netrw.txt	/*netrw-gx*
 netrw-handler	pi_netrw.txt	/*netrw-handler*
 netrw-help	pi_netrw.txt	/*netrw-help*
@@ -7082,6 +7096,7 @@ netrw-login	pi_netrw.txt	/*netrw-login*
 netrw-mB	pi_netrw.txt	/*netrw-mB*
 netrw-mF	pi_netrw.txt	/*netrw-mF*
 netrw-mT	pi_netrw.txt	/*netrw-mT*
+netrw-mX	pi_netrw.txt	/*netrw-mX*
 netrw-mb	pi_netrw.txt	/*netrw-mb*
 netrw-mc	pi_netrw.txt	/*netrw-mc*
 netrw-md	pi_netrw.txt	/*netrw-md*
@@ -7099,6 +7114,7 @@ netrw-mr	pi_netrw.txt	/*netrw-mr*
 netrw-ms	pi_netrw.txt	/*netrw-ms*
 netrw-mt	pi_netrw.txt	/*netrw-mt*
 netrw-mu	pi_netrw.txt	/*netrw-mu*
+netrw-mv	pi_netrw.txt	/*netrw-mv*
 netrw-mx	pi_netrw.txt	/*netrw-mx*
 netrw-mz	pi_netrw.txt	/*netrw-mz*
 netrw-netrc	pi_netrw.txt	/*netrw-netrc*
@@ -7118,6 +7134,7 @@ netrw-p13	pi_netrw.txt	/*netrw-p13*
 netrw-p14	pi_netrw.txt	/*netrw-p14*
 netrw-p15	pi_netrw.txt	/*netrw-p15*
 netrw-p16	pi_netrw.txt	/*netrw-p16*
+netrw-p17	pi_netrw.txt	/*netrw-p17*
 netrw-p2	pi_netrw.txt	/*netrw-p2*
 netrw-p3	pi_netrw.txt	/*netrw-p3*
 netrw-p4	pi_netrw.txt	/*netrw-p4*

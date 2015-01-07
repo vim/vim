@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.4.  Last change: 2014 Oct 29
+*repeat.txt*    For Vim version 7.4.  Last change: 2015 Jan 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -235,8 +235,8 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			command is ignored.
 			{not in Vi}
 
-						*:scrip* *:scriptnames*
-:scrip[tnames]		List all sourced script names, in the order they were
+						*:scr* *:scriptnames*
+:scr[iptnames]		List all sourced script names, in the order they were
 			first sourced.  The number is used for the script ID
 			|<SID>|.
 			{not in Vi} {not available when compiled without the

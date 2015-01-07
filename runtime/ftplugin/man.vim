@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	man
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change:	2014 Nov 12
+" Last Change:	2014 Dec 29
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -159,10 +159,10 @@ func <SID>GetPage(...)
   silent exec "r!/usr/bin/man ".s:GetCmdArg(sect, page)." | col -b"
   " Remove blank lines from top and bottom.
   while getline(1) =~ '^\s*$'
-    silent norm ggdd
+    silent keepj norm ggdd
   endwhile
   while getline('$') =~ '^\s*$'
-    silent norm Gdd
+    silent keepj norm Gdd
   endwhile
   1
   setl ft=man nomod

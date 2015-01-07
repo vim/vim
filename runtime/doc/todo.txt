@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2014 Dec 14
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Jan 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -54,6 +54,7 @@ Regexp problems:
 - Using back reference before the capturing group sometimes works with the old
   engine, can we do this with the new engine?  E.g. with
   "/\%(<\1>\)\@<=.*\%(<\/\(\w\+\)>\)\@=" matching text inside HTML tags.
+- Diff highlighting can be very slow. (Issue 309)
 
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
@@ -65,40 +66,23 @@ Breaks test_eval.  Inefficient, can we only compute y_width when needed?
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
+Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
+
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
 
 Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
 
-Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
-
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
-
-When window number in Ex range is too high, should give an error:
-    :3close  " fails if there are only 2 windows.
-Patch from Marcin Szamotulski, 2014 Dec 13.
-
-Patch to recover from X server restart: hint on Issue 203 (2014 Nov 21 18:44)
-
-Insert a block with virtualedit set does not work correctly.
-Patch by James McCoy, 2014 Dec 10.
 
 MS-Windows: When editing a file with a leading space, writing it uses the
 wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
 
-Add LessCss support. (Jenoma / Alessandro Vioni, 2014 Nov 24)
-Now with updated license, Nov 24.
-
-Memory leak using :wviminfo. Issue 296.  With Patch by Christian.
-
-patch to remove FEAT_OSFILETYPE from fileio.c. (Christian, 2014 Nov 12)
+Patch to fix unnecessary redraw of vertical separators.
+(Thiago Padilha, 2015 Jan 5, second version)
 
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
-
-Patch to also support range for :argdo, :bufdo, etc.
-(Marcin Szamotulski, 2014 Dec 7)
-Asked for tests.
 
 Ukrainian vimtutor. (Issue 288)
 
@@ -108,18 +92,29 @@ Diff from ZyX, 2014 Dec 6.
 Patch to fix relative numbers. (Christian Brabandt, 2014 Nov 17)
 Update Nov 26.
 
+Patch to improve config.vim syntax.  Issue 305.  Maintainer last update was in
+2008.
+
 Patch to fix that getcurpos() returns a negative number, instead of MAXCOL.
 (Hirohito Higashi, 2014 Dec 8)
+
+Better greek spell checking.  Issue 299.
 
 Patch to fix wrong formatting if 'linebreak' is set. (Christian Brabandt, 2014
 Nov 12)
 
 Patch to avoid recognizing polkit as hog files. (Issue 292)
 
+":0argedit foo" puts new argument in second place instead of first.
+Patch from Ingo Karkat, 2014 Dec 19.
+
 Patch 7.4.468 changed how CTRL-C is handled.  It does not take care of mapping
 CTRL-C in different modes. (Ingo Karkat, 2014 Dec 12)
 Patch from Christian Brabandt, 2014 Dec 13.
 Needs to be improved.
+
+Patch for greek characters on MS-Windows console. (Yasuhiro Matsumoto, 2014
+Dec 17)
 
 Patch to support hex values for setting option value.
 (Zyx, 2015 Nov 6)
@@ -130,6 +125,16 @@ Update Nov 5.
 
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
+
+Patch for this from Marcin Szamotulski, 2014 Dec 28:
+8   Make the # register writable, so that it can be restored after jumping
+    around in windows.
+
+Using CTRL-L while popup menu is visible behaves like CTRL-P, which is wrong.
+Patch by Yasuhiro Matsumoto, 2015 Jan 5.
+Is this right?  Comment from Amadeus Demarzi.
+Another patch from Christian, Jan 6.
+Comment from Hirohito Higashi, Jan 6.
 
 Cursorline background color not mixed with character highlight.
 Patch by Yasuhiro Matsumoto, 2014 Dec 3.
@@ -143,8 +148,18 @@ ml_updatechunk() is slow when retrying for another encoding. (John Little,
 Patch to add a different escape sequence for replace mode.
 (Omar Sandoval, 2014 Nov 30)
 
+Calling setreg() with an empty list doesn't work.
+Patch by Yasuhiro Matsumoto, 2014 Dec 14.
+
+Extended file attributes lost on write (backupcopy=no).  Issue 306.
+
+Window height computed incorrectly when Vim is minimized.
+Patch to fix this. (Ingo Karkat, 2014 Dec 19)
+
 Patch to allow values greater than 255 for ctermfg/ctermbg on Windows.
 (Yasuhiro Matsumoto, 2014 Dec 5)
+
+Mixup of highlighting when there is a match and SpellBad. (ZyX, 2015 Jan 1)
 
 When 'balloonexpr' returns a list the result has a trailing newline.
 Just remove one trailing newline. (lcd, 2014 Oct 17)
@@ -190,6 +205,10 @@ was already defined.
 
 Patch to make closed folds line up. (Charles Campbell, 2014 Sep 12)
 Remark from Roland Eggner: does it cause crashes? (2014 Dec 12)
+Updated patch by Roland Eggner, Dec 16
+Updated patch from Charles, Dec 29.
+
+Patch to open folds for 'incsearch'. (Christian Brabandt, 2015 Jan 6)
 
 Patch for building a 32bit Vim with 64bit MingW compiler.
 (Michael Soyka, 2014 Oct 15)
@@ -199,6 +218,8 @@ Delete old code in os_msdos.c, mch_FullName().
 Redo only remembers the last change.  Could use "{count}g." to redo an older
 change.  How does the user know which change?  At least have a way to list
 them: ":repeats".
+
+Patch for glob(), adding slash to normal files. (Ingo Karkat, 2014 Dec 22)
 
 Using "." to repeat an Ex command puts that command in history.  Probably
 should not happen.  If the command is the result of a mapping it's not put in
@@ -232,6 +253,9 @@ Spell files use a latin single quote. Unicode also has another single quote:
 0x2019.  (Ron Aaron, 2014 Apr 4)
 New OpenOffice spell files support this with ICONV.  But they are not
 compatible with Vim spell files.  The old files can no longer be downloaded.
+
+Patch to make FocusGained and FocusLost work in modern terminals. (Hayaki
+Saito, 2013 Apr 24)
 
 Win32: patch to use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
 More tests May 14. Update May 29.  Update Aug 10.
@@ -566,9 +590,6 @@ Patch to improve equivalence classes in regexp patterns.
 
 Patch with suggestions for starting.txt. (Tony Mechelynck, 2012 Oct 24)
 But use Gnome instead of GTK?
-
-Patch to make FocusGained and FocusLost work in modern terminals. (Hayaki
-Saito, 2013 Apr 24)
 
 Should be possible to enable/disable matchparen per window or buffer.
 Add a check for b:no_match_paren in Highlight_matching_Pair() (Marcin
@@ -5076,8 +5097,6 @@ Argument list:
 
 Registers:
 8   Don't display empty registers with ":display". (Etienne)
-8   Make the # register writable, so that it can be restored after jumping
-    around in windows.
 8   Add put command that overwrites existing text.  Should also work for
     blocks.  Useful to move text around in a table.  Works like using "R ^R r"
     for every line.
