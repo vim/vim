@@ -10049,57 +10049,12 @@ match_file_pat(pattern, prog, fname, sfname, tail, allow_dirs)
 {
     regmatch_T	regmatch;
     int		result = FALSE;
-#ifdef FEAT_OSFILETYPE
-    int		no_pattern = FALSE; /* TRUE if check is filetype only */
-    char_u	*type_start;
-    char_u	c;
-    int		match = FALSE;
-#endif
 
     regmatch.rm_ic = p_fic; /* ignore case if 'fileignorecase' is set */
-#ifdef FEAT_OSFILETYPE
-    if (*pattern == '<')
-    {
-	/* There is a filetype condition specified with this pattern.
-	 * Check the filetype matches first. If not, don't bother with the
-	 * pattern (set regprog to NULL).
-	 * Always use magic for the regexp.
-	 */
-
-	for (type_start = pattern + 1; (c = *pattern); pattern++)
-	{
-	    if ((c == ';' || c == '>') && match == FALSE)
-	    {
-		*pattern = NUL;	    /* Terminate the string */
-		/* TODO: match with 'filetype' of buffer that "fname" comes
-		 * from. */
-		match = mch_check_filetype(fname, type_start);
-		*pattern = c;	    /* Restore the terminator */
-		type_start = pattern + 1;
-	    }
-	    if (c == '>')
-		break;
-	}
-
-	/* (c should never be NUL, but check anyway) */
-	if (match == FALSE || c == NUL)
-	    regmatch.regprog = NULL;	/* Doesn't match - don't check pat. */
-	else if (*pattern == NUL)
-	{
-	    regmatch.regprog = NULL;	/* Vim will try to free regprog later */
-	    no_pattern = TRUE;	/* Always matches - don't check pat. */
-	}
-	else
-	    regmatch.regprog = vim_regcomp(pattern + 1, RE_MAGIC);
-    }
+    if (prog != NULL)
+	regmatch.regprog = *prog;
     else
-#endif
-    {
-	if (prog != NULL)
-	    regmatch.regprog = *prog;
-	else
-	    regmatch.regprog = vim_regcomp(pattern, RE_MAGIC);
-    }
+	regmatch.regprog = vim_regcomp(pattern, RE_MAGIC);
 
     /*
      * Try for a match with the pattern with:
@@ -10107,19 +10062,12 @@ match_file_pat(pattern, prog, fname, sfname, tail, allow_dirs)
      * 2. the short file name, when the pattern has a '/'.
      * 3. the tail of the file name, when the pattern has no '/'.
      */
-    if (
-#ifdef FEAT_OSFILETYPE
-	    /* If the check is for a filetype only and we don't care
-	     * about the path then skip all the regexp stuff.
-	     */
-	    no_pattern ||
-#endif
-	    (regmatch.regprog != NULL
+    if (regmatch.regprog != NULL
 	     && ((allow_dirs
 		     && (vim_regexec(&regmatch, fname, (colnr_T)0)
 			 || (sfname != NULL
 			     && vim_regexec(&regmatch, sfname, (colnr_T)0))))
-		 || (!allow_dirs && vim_regexec(&regmatch, tail, (colnr_T)0)))))
+		 || (!allow_dirs && vim_regexec(&regmatch, tail, (colnr_T)0))))
 	result = TRUE;
 
     if (prog != NULL)
@@ -10176,9 +10124,6 @@ match_file_list(list, sfname, ffname)
  * allow_dirs, otherwise FALSE is put there -- webb.
  * Handle backslashes before special characters, like "\*" and "\ ".
  *
- * If FEAT_OSFILETYPE defined then pass initial <type> through unchanged. Eg:
- * '<html>myfile' becomes '<html>^myfile$' -- leonard.
- *
  * Returns NULL when out of memory.
  */
     char_u *
@@ -10188,53 +10133,18 @@ file_pat_to_reg_pat(pat, pat_end, allow_dirs, no_bslash)
     char	*allow_dirs;	/* Result passed back out in here */
     int		no_bslash UNUSED; /* Don't use a backward slash as pathsep */
 {
-    int		size;
+    int		size = 2; /* '^' at start, '$' at end */
     char_u	*endp;
     char_u	*reg_pat;
     char_u	*p;
     int		i;
     int		nested = 0;
     int		add_dollar = TRUE;
-#ifdef FEAT_OSFILETYPE
-    int		check_length = 0;
-#endif
 
     if (allow_dirs != NULL)
 	*allow_dirs = FALSE;
     if (pat_end == NULL)
 	pat_end = pat + STRLEN(pat);
-
-#ifdef FEAT_OSFILETYPE
-    /* Find out how much of the string is the filetype check */
-    if (*pat == '<')
-    {
-	/* Count chars until the next '>' */
-	for (p = pat + 1; p < pat_end && *p != '>'; p++)
-	    ;
-	if (p < pat_end)
-	{
-	    /* Pattern is of the form <.*>.*  */
-	    check_length = p - pat + 1;
-	    if (p + 1 >= pat_end)
-	    {
-		/* The 'pattern' is a filetype check ONLY */
-		reg_pat = (char_u *)alloc(check_length + 1);
-		if (reg_pat != NULL)
-		{
-		    mch_memmove(reg_pat, pat, (size_t)check_length);
-		    reg_pat[check_length] = NUL;
-		}
-		return reg_pat;
-	    }
-	}
-	/* else: there was no closing '>' - assume it was a normal pattern */
-
-    }
-    pat += check_length;
-    size = 2 + check_length;
-#else
-    size = 2;		/* '^' at start, '$' at end */
-#endif
 
     for (p = pat; p < pat_end; p++)
     {
@@ -10270,14 +10180,7 @@ file_pat_to_reg_pat(pat, pat_end, allow_dirs, no_bslash)
     if (reg_pat == NULL)
 	return NULL;
 
-#ifdef FEAT_OSFILETYPE
-    /* Copy the type check in to the start. */
-    if (check_length)
-	mch_memmove(reg_pat, pat - check_length, (size_t)check_length);
-    i = check_length;
-#else
     i = 0;
-#endif
 
     if (pat[0] == '*')
 	while (pat[0] == '*' && pat < pat_end - 1)
