@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.4.  Last change: 2014 Dec 05
+*editing.txt*   For Vim version 7.4.  Last change: 2015 Jan 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -832,8 +832,9 @@ current window.  The two windows then share this list, until one of them uses
 USING THE ARGUMENT LIST
 
 						*:argdo*
-:argdo[!] {cmd}		Execute {cmd} for each file in the argument list.
-			It works like doing this: >
+:[range]argdo[!] {cmd}	Execute {cmd} for each file in the argument list or
+			if [range] is specified only for arguments in that
+			range.  It works like doing this: >
 				:rewind
 				:{cmd}
 				:next
@@ -1391,7 +1392,7 @@ reveal it to others.  The 'viminfo' file is not encrypted.
 You could do this to edit very secret text: >
 	:set noundofile viminfo=
 	:noswapfile edit secrets.txt
-Keep in mind that without a swap file you risk loosing your work in a crash.
+Keep in mind that without a swap file you risk losing your work in a crash.
 
 WARNING: If you make a typo when entering the key and then write the file and
 exit, the text will be lost!

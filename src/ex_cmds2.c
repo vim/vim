@@ -2472,15 +2472,36 @@ ex_listdo(eap)
 				    | (eap->forceit ? CCGD_FORCEIT : 0)
 				    | CCGD_EXCMD))
     {
-	/* start at the first argument/window/buffer */
 	i = 0;
+	/* start at the eap->line1 argument/window/buffer */
 #ifdef FEAT_WINDOWS
 	wp = firstwin;
 	tp = first_tabpage;
 #endif
+	switch (eap->cmdidx)
+	{
+#ifdef FEAT_WINDOWS
+	    case CMD_windo:
+		for ( ; wp != NULL && i + 1 < eap->line1; wp = wp->w_next)
+		    i++;
+		break;
+	    case CMD_tabdo:
+		for( ; tp != NULL && i + 1 < eap->line1; tp = tp->tp_next)
+		    i++;
+		break;
+#endif
+	    case CMD_argdo:
+		i = eap->line1 - 1;
+		break;
+	    case CMD_bufdo:
+		i = eap->line1;
+		break;
+	    default:
+		break;
+	}
 	/* set pcmark now */
 	if (eap->cmdidx == CMD_bufdo)
-	    goto_buffer(eap, DOBUF_FIRST, FORWARD, 0);
+	    goto_buffer(eap, DOBUF_FIRST, FORWARD, i);
 	else
 	    setpcmark();
 	listcmd_busy = TRUE;	    /* avoids setting pcmark below */
@@ -2506,7 +2527,6 @@ ex_listdo(eap)
 		}
 		if (curwin->w_arg_idx != i)
 		    break;
-		++i;
 	    }
 #ifdef FEAT_WINDOWS
 	    else if (eap->cmdidx == CMD_windo)
@@ -2541,6 +2561,8 @@ ex_listdo(eap)
 		    }
 	    }
 
+	    ++i;
+
 	    /* execute the command */
 	    do_cmdline(eap->arg, eap->getline, eap->cookie,
 						DOCMD_VERBOSE + DOCMD_NOWAIT);
@@ -2548,7 +2570,7 @@ ex_listdo(eap)
 	    if (eap->cmdidx == CMD_bufdo)
 	    {
 		/* Done? */
-		if (next_fnum < 0)
+		if (next_fnum < 0 || next_fnum > eap->line2)
 		    break;
 		/* Check if the buffer still exists. */
 		for (buf = firstbuf; buf != NULL; buf = buf->b_next)
@@ -2579,6 +2601,14 @@ ex_listdo(eap)
 		    do_check_scrollbind(TRUE);
 #endif
 	    }
+
+#ifdef FEAT_WINDOWS
+	    if (eap->cmdidx == CMD_windo || eap->cmdidx == CMD_tabdo)
+		if (i+1 > eap->line2)
+		    break;
+#endif
+	    if (eap->cmdidx == CMD_argdo && i >= eap->line2)
+		break;
 	}
 	listcmd_busy = FALSE;
     }
