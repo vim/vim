@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Yacc
 " Maintainer:	Charles E. Campbell <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Mar 20, 2014
+" Last Change:	Nov 14, 2012
 " Version:	11
 " URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
@@ -42,7 +42,7 @@ exe "syn include @yaccCode ".s:Cpath
 " ---------------------------------------------------------------------
 "  Yacc Clusters: {{{1
 syn cluster yaccInitCluster	contains=yaccKey,yaccKeyActn,yaccBrkt,yaccType,yaccString,yaccUnionStart,yaccHeader2,yaccComment,yaccDefines,yaccParseParam,yaccParseOption
-syn cluster yaccRulesCluster	contains=yaccNonterminal,yaccString,yaccComment
+syn cluster yaccRulesCluster	contains=yaccNonterminal,yaccString
 
 " ---------------------------------------------------------------------
 "  Yacc Sections: {{{1

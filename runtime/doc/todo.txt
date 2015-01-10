@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Jan 07
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Jan 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -56,6 +56,9 @@ Regexp problems:
   "/\%(<\1>\)\@<=.*\%(<\/\(\w\+\)>\)\@=" matching text inside HTML tags.
 - Diff highlighting can be very slow. (Issue 309)
 
+The range for :wincmd is not always a window number, can also be a column
+count.  Remove the range check.  What to use for ":$wincmd"?
+
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
 
@@ -68,6 +71,10 @@ work. (ZyX, 2013 Sep 28)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
+Patch on Issue 292, recognizing polkit filetype.
+
+Issue 133: patch for config.vim, maintainer not responding.
+
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
 
@@ -77,9 +84,6 @@ Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
 MS-Windows: When editing a file with a leading space, writing it uses the
 wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
-
-Patch to fix unnecessary redraw of vertical separators.
-(Thiago Padilha, 2015 Jan 5, second version)
 
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
@@ -94,6 +98,8 @@ Update Nov 26.
 
 Patch to improve config.vim syntax.  Issue 305.  Maintainer last update was in
 2008.
+
+Patch on issue 310, matchadd() seems to hang.
 
 Patch to fix that getcurpos() returns a negative number, instead of MAXCOL.
 (Hirohito Higashi, 2014 Dec 8)
@@ -118,6 +124,9 @@ Dec 17)
 
 Patch to support hex values for setting option value.
 (Zyx, 2015 Nov 6)
+
+Patch to fix problems with small screen sizes. (Christian Brabandt, 2015 Jan
+8)
 
 On MS-Windows running tests with Mercurial has problems when the fileformat of
 the input files are changed. (Ken Takata, Taro Muraoka, 2014 Sep 25)
@@ -148,6 +157,8 @@ ml_updatechunk() is slow when retrying for another encoding. (John Little,
 Patch to add a different escape sequence for replace mode.
 (Omar Sandoval, 2014 Nov 30)
 
+Patch on Issue 166, popup drawing with '$' in 'cpo'.
+
 Calling setreg() with an empty list doesn't work.
 Patch by Yasuhiro Matsumoto, 2014 Dec 14.
 
@@ -160,6 +171,13 @@ Patch to allow values greater than 255 for ctermfg/ctermbg on Windows.
 (Yasuhiro Matsumoto, 2014 Dec 5)
 
 Mixup of highlighting when there is a match and SpellBad. (ZyX, 2015 Jan 1)
+
+Problem caused by patch 7.3.638: window->open does not update window
+correctly. Issue 91.  With patch.
+
+'ff' is wrong for one-line file without EOL. (Patch on Issue 77)
+
+Patch on Issue 72: 'autochdir' causes problems for :vimgrep.
 
 When 'balloonexpr' returns a list the result has a trailing newline.
 Just remove one trailing newline. (lcd, 2014 Oct 17)
@@ -255,7 +273,8 @@ New OpenOffice spell files support this with ICONV.  But they are not
 compatible with Vim spell files.  The old files can no longer be downloaded.
 
 Patch to make FocusGained and FocusLost work in modern terminals. (Hayaki
-Saito, 2013 Apr 24)
+Saito, 2013 Apr 24)  Has a problem (email 2015 Jan 7).
+Update 2015 Jan 10.
 
 Win32: patch to use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
 More tests May 14. Update May 29.  Update Aug 10.
@@ -465,9 +484,6 @@ Works OK for echo, just not for  ":call" and ":call call()". (Ted, 2011 Mar
 Patch by Christian Brabandt, 2013 Mar 23.
 Not 100% sure this is the right solution.
 
-Problem caused by patch 7.3.638: window->open does not update window
-correctly. Issue 91.
-
 Patch to add {lhs} to :mapclear: clear all maps starting with {lhs}.
 (Christian Brabandt, 2013 Dec 9)
 
@@ -525,8 +541,6 @@ Issue 54: document behavior of -complete, also expands arg.
 Patch by Christian Brabandt, 2013 Apr 20, unfinished.
 
 Bug: findfile("any", "file:///tmp;") does not work.
-
-'ff' is wrong for one-line file without EOL. (Issue 77)
 
 Patch to set antialiasing style on Windows. (Ondrej Balaz, 2013 Mar 14)
 Needs a different check for CLEARTYPE_QUALITY.
@@ -594,8 +608,6 @@ But use Gnome instead of GTK?
 Should be possible to enable/disable matchparen per window or buffer.
 Add a check for b:no_match_paren in Highlight_matching_Pair() (Marcin
 Szamotulski, 2012 Nov 8)
-
-Issue 72: 'autochdir' causes problems for :vimgrep.
 
 Session file creation: 'autochdir' causes trouble.  Keep it off until after
 loading all files.
