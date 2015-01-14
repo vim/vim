@@ -6438,14 +6438,24 @@ nfa_regmatch(prog, start, submatch, m)
 	    case NFA_VCOL:
 	    case NFA_VCOL_GT:
 	    case NFA_VCOL_LT:
-		result = nfa_re_num_cmp(t->state->val, t->state->c - NFA_VCOL,
-		    (long_u)win_linetabsize(
-			    reg_win == NULL ? curwin : reg_win,
-			    regline, (colnr_T)(reginput - regline)) + 1);
-		if (result)
 		{
-		    add_here = TRUE;
-		    add_state = t->state->out;
+		    int     op = t->state->c - NFA_VCOL;
+		    colnr_T col = (colnr_T)(reginput - regline);
+
+		    /* Bail out quickly when there can't be a match, avoid the
+		     * overhead of win_linetabsize() on long lines. */
+		    if ((col > t->state->val && op != 1)
+			    || (col - 1 > t->state->val && op == 1))
+			break;
+		    result = nfa_re_num_cmp(t->state->val, op,
+			(long_u)win_linetabsize(
+				reg_win == NULL ? curwin : reg_win,
+							   regline, col) + 1);
+		    if (result)
+		    {
+			add_here = TRUE;
+			add_state = t->state->out;
+		    }
 		}
 		break;
 
@@ -6743,6 +6753,11 @@ nextchar:
 					&& reglnum < nfa_endp->se_u.pos.lnum))
 	    reg_nextline();
 	else
+	    break;
+
+	/* Allow interrupting with CTRL-C. */
+	fast_breakcheck();
+	if (got_int)
 	    break;
     }
 
