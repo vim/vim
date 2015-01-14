@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Jan 10
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Jan 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,6 +34,8 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Crash report from Stephen Martin, 2015 Jan 12.
+
 Regexp problems:
 - The NFA engine does not implement the time limit passed to
   nfa_regexec_multi()
@@ -55,6 +57,10 @@ Regexp problems:
   engine, can we do this with the new engine?  E.g. with
   "/\%(<\1>\)\@<=.*\%(<\/\(\w\+\)>\)\@=" matching text inside HTML tags.
 - Diff highlighting can be very slow. (Issue 309)
+
+Patch to make Dynamic Ruby work with Ruby 2.2.0. (Ken Takata 2015 Jan 10)
+
+Update J runtime files. (glts, 2015 Jan 11)
 
 The range for :wincmd is not always a window number, can also be a column
 count.  Remove the range check.  What to use for ":$wincmd"?
@@ -90,6 +96,9 @@ inconsistent with the documentation.
 
 Ukrainian vimtutor. (Issue 288)
 
+Patch to fix that eval('$') does not give an error.  Yasuhiro Matsumoto, 2015
+Jan 12.
+
 Regenerate the Unicode tables in mbyte.c.
 Diff from ZyX, 2014 Dec 6.
 
@@ -106,18 +115,23 @@ Patch to fix that getcurpos() returns a negative number, instead of MAXCOL.
 
 Better greek spell checking.  Issue 299.
 
+Patch for wrong cursor positioning when 'linebreak' is set. (Christian
+Brabandt, 2015 Jan 11)
+
 Patch to fix wrong formatting if 'linebreak' is set. (Christian Brabandt, 2014
 Nov 12)
+
+Patch for fixing a problem of the combination of conceal and linebreak.
+(Christian Brabandt, 2014 Dec 11)
+
+Any more changes from 
+https://github.com/chrisbra/vim-mq-patches/blob/master/linebreak_bug
+?
 
 Patch to avoid recognizing polkit as hog files. (Issue 292)
 
 ":0argedit foo" puts new argument in second place instead of first.
 Patch from Ingo Karkat, 2014 Dec 19.
-
-Patch 7.4.468 changed how CTRL-C is handled.  It does not take care of mapping
-CTRL-C in different modes. (Ingo Karkat, 2014 Dec 12)
-Patch from Christian Brabandt, 2014 Dec 13.
-Needs to be improved.
 
 Patch for greek characters on MS-Windows console. (Yasuhiro Matsumoto, 2014
 Dec 17)
@@ -197,9 +211,6 @@ Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
 
 Patch to add the EndOfBuffer highlight group, used instead of NonText for "~"
 lines. (Marco Hinz, 2014 Nov 2)
-
-Patch for fixing a problem of the combination of conceal and linebreak.
-(Christian Brabandt, 2014 Dec 11)
 
 Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 

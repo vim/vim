@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Vim 7.4 script
 " Maintainer:	Charles E. Campbell <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Nov 28, 2014
-" Version:	7.4-19
+" Last Change:	Jan 13, 2015
+" Version:	7.4-28
 " Automatically generated keyword lists: {{{1
 
 " Quit when a syntax file was already loaded {{{2
@@ -97,8 +97,8 @@ endif
 
 " Numbers {{{2
 " =======
-syn match vimNumber	"\<\d\+\([lL]\|\.\d\+\)\="
-syn match vimNumber	"-\d\+\([lL]\|\.\d\+\)\="
+syn match vimNumber	"\<\d\+\%(\.\d\+\%([eE][+-]\=\d\+\)\=\)\=" skipwhite nextgroup=vimGlobal,vimSubst,vimCommand
+syn match vimNumber	"-\d\+\%(\.\d\+\%([eE][+-]\=\d\+\)\=\)\="  skipwhite nextgroup=vimGlobal,vimSubst,vimCommand
 syn match vimNumber	"\<0[xX]\x\+"
 syn match vimNumber	"\%(^\|[^a-zA-Z]\)\zs#\x\{6}"
 
@@ -149,7 +149,7 @@ endif
 
 " Operators: {{{2
 " =========
-syn cluster	vimOperGroup	contains=vimFunc,vimFuncVar,vimOper,vimOperParen,vimNumber,vimString,vimRegister,vimContinue
+syn cluster	vimOperGroup	contains=vimEnvvar,vimFunc,vimFuncVar,vimOper,vimOperParen,vimNumber,vimString,vimRegister,vimContinue
 syn match	vimOper	"\(==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\|=\)[?#]\{0,2}"	skipwhite nextgroup=vimString,vimSpecFile
 syn match	vimOper	"||\|&&\|[-+.]"	skipwhite nextgroup=vimString,vimSpecFile
 syn region	vimOperParen 	oneline matchgroup=vimParenSep	start="(" end=")" contains=@vimOperGroup
@@ -161,7 +161,7 @@ endif
 " Functions : Tag is provided for those who wish to highlight tagged functions {{{2
 " =========
 syn cluster	vimFuncList	contains=vimCommand,vimFunctionError,vimFuncKey,Tag,vimFuncSID
-syn cluster	vimFuncBodyList	contains=vimAbb,vimAddress,vimAugroupKey,vimAutoCmd,vimCmplxRepeat,vimComment,vimComment,vimContinue,vimCtrlChar,vimEcho,vimEchoHL,vimExecute,vimIf,vimIsCommand,vimFBVar,vimFunc,vimFunction,vimFuncVar,vimGlobal,vimHighlight,vimIsCommand,vimLet,vimLineComment,vimMap,vimMark,vimNorm,vimNotation,vimNotFunc,vimNumber,vimOper,vimOperParen,vimRegion,vimRegister,vimSet,vimSpecFile,vimString,vimSubst,vimSynLine,vimUserCommand
+syn cluster	vimFuncBodyList	contains=vimAbb,vimAddress,vimAugroupKey,vimAutoCmd,vimCmplxRepeat,vimComment,vimComment,vimContinue,vimCtrlChar,vimEcho,vimEchoHL,vimExecute,vimIf,vimIsCommand,vimFBVar,vimFunc,vimFunction,vimFuncVar,vimGlobal,vimHighlight,vimIsCommand,vimLet,vimLineComment,vimMap,vimMark,vimNorm,vimNotation,vimNotFunc,vimNumber,vimOper,vimOperParen,vimRegion,vimRegister,vimSet,vimSpecFile,vimString,vimSubst,vimSynLine,vimUnmap,vimUserCommand
 syn match	vimFunction	"\<fu\%[nction]!\=\s\+\%(<[sS][iI][dD]>\|[sSgGbBwWtTlL]:\)\=\%(\i\|[#.]\|{.\{-1,}}\)*\ze\s*("	contains=@vimFuncList nextgroup=vimFuncBody
 
 if exists("g:vimsyn_folding") && g:vimsyn_folding =~ 'f'
@@ -203,9 +203,9 @@ if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_nousercmderror")
 endif
 syn case ignore
 syn keyword	vimUserAttrbKey   contained	bar	ban[g]	cou[nt]	ra[nge] com[plete]	n[args]	re[gister]
-syn keyword	vimUserAttrbCmplt contained	augroup buffer command dir environment event expression file function help highlight mapping menu option shellcmd something tag tag_listfiles var
+syn keyword	vimUserAttrbCmplt contained	augroup buffer color command compiler cscope dir environment event expression file file_in_path filetype function help highlight locale mapping menu option shellcmd sign syntax tag tag_listfiles var
 syn keyword	vimUserAttrbCmplt contained	custom customlist nextgroup=vimUserAttrbCmpltFunc,vimUserCmdError
-syn match	vimUserAttrbCmpltFunc contained	",\%([sS]:\|<[sS][iI][dD]>\)\=\%(\h\w*\%(#\u\w*\)\+\|\u\w*\)"hs=s+1 nextgroup=vimUserCmdError
+syn match	vimUserAttrbCmpltFunc contained	",\%([sS]:\|<[sS][iI][dD]>\)\=\%(\h\w*\%(#\h\w*\)\+\|\h\w*\)"hs=s+1 nextgroup=vimUserCmdError
 
 syn case match
 syn match	vimUserAttrbCmplt contained	"custom,\u\w*"
@@ -232,8 +232,8 @@ syn region	vimPatSepZone	oneline   contained   matchgroup=vimPatSepZ start="\\%\
 syn region	vimPatRegion	contained transparent matchgroup=vimPatSepR start="\\[z%]\=(" end="\\)"	contains=@vimSubstList oneline
 syn match	vimNotPatSep	contained	"\\\\"
 syn cluster	vimStringGroup	contains=vimEscapeBrace,vimPatSep,vimNotPatSep,vimPatSepErr,vimPatSepZone,@Spell
-syn region	vimString	oneline keepend	start=+[^a-zA-Z>!\\@]"+lc=1 skip=+\\\\\|\\"+ end=+"+	contains=@vimStringGroup
-syn region	vimString	oneline keepend	start=+[^a-zA-Z>!\\@]'+lc=1 end=+'+
+syn region	vimString	oneline keepend	start=+[^:a-zA-Z>!\\@]"+lc=1 skip=+\\\\\|\\"+ end=+"+	contains=@vimStringGroup
+syn region	vimString	oneline keepend	start=+[^:a-zA-Z>!\\@]'+lc=1 end=+'+
 syn region	vimString	oneline	start=+=!+lc=1	skip=+\\\\\|\\!+ end=+!+	contains=@vimStringGroup
 syn region	vimString	oneline	start="=+"lc=1	skip="\\\\\|\\+" end="+"	contains=@vimStringGroup
 syn region	vimString	oneline	start="\s/\s*\A"lc=1 skip="\\\\\|\\+" end="/"	contains=@vimStringGroup
@@ -245,7 +245,7 @@ syn match	vimStringCont	contained	+\(\\\\\|.\)\{-}[^\\]"+
 syn cluster	vimSubstList	contains=vimPatSep,vimPatRegion,vimPatSepErr,vimSubstTwoBS,vimSubstRange,vimNotation
 syn cluster	vimSubstRepList	contains=vimSubstSubstr,vimSubstTwoBS,vimNotation
 syn cluster	vimSubstList	add=vimCollection
-syn match	vimSubst	"\(:\+\s*\|^\s*\||\s*\)\<s\%[ubstitute][:[:alpha:]]\@!" nextgroup=vimSubstPat
+syn match	vimSubst	"\(:\+\s*\|^\s*\||\s*\)\<\%(s\%[ubstitute]\|sm\%[agic]\|sno\%[magic]\)[:[:alpha:]]\@!" nextgroup=vimSubstPat
 syn match	vimSubst	"s\%[ubstitute][:#[:alpha:]]\@!"	nextgroup=vimSubstPat contained
 syn match	vimSubst	"/\zss\%[ubstitute]\ze/"	nextgroup=vimSubstPat
 syn match	vimSubst1       contained	"s\%[ubstitute]\>"	nextgroup=vimSubstPat
@@ -289,7 +289,7 @@ syn match	vimCmplxRepeat	'@[0-9a-z".=@:]\ze\($\|[^a-zA-Z]\>\)'
 
 " Set command and associated set-options (vimOptions) with comment {{{2
 syn region	vimSet		matchgroup=vimCommand start="\<\%(setl\%[ocal]\|setg\%[lobal]\|se\%[t]\)\>" skip="\%(\\\\\)*\\." end="$" matchgroup=vimNotation end="<[cC][rR]>" keepend oneline contains=vimSetEqual,vimOption,vimErrSetting,vimComment,vimSetString,vimSetMod
-syn region	vimSetEqual	contained	start="[=:]\|[-+^]=" skip="\%(\\\\\)*\\." end="[| \t]\|$"me=e-1 contains=vimCtrlChar,vimSetSep,vimNotation oneline
+syn region	vimSetEqual	contained	start="[=:]\|[-+^]=" skip="\\\\\|\\\s" end="[| \t]\|$"me=e-1 contains=vimCtrlChar,vimSetSep,vimNotation,vimEnvvar oneline
 syn region	vimSetString	contained	start=+="+hs=s+1	skip=+\\\\\|\\"+  end=+"+	contains=vimCtrlChar
 syn match	vimSetSep	contained	"[,:]"
 syn match	vimSetMod	contained	"&vim\=\|[!&?<]\|all&"
@@ -539,8 +539,8 @@ syn match	vimCommentTitleLeader	'"\s\+'ms=s+1	contained
 " ====================
 syn match	vimSearch	'^\s*[/?].*'		contains=vimSearchDelim
 syn match	vimSearchDelim	'^\s*\zs[/?]\|[/?]$'	contained
-syn region	vimGlobal	matchgroup=Statement start='\<g\%[lobal]!\=/' skip='\\.' end='/'
-syn region	vimGlobal	matchgroup=Statement start='\<v\%[global]!\=/' skip='\\.' end='/'
+syn region	vimGlobal	matchgroup=Statement start='\<g\%[lobal]!\=/'  skip='\\.' end='/'	skipwhite nextgroup=vimSubst
+syn region	vimGlobal	matchgroup=Statement start='\<v\%[global]!\=/' skip='\\.' end='/'	skipwhite nextgroup=vimSubst
 
 " Scripts  : perl,ruby : Benoit Cerrina {{{2
 " =======    python,tcl: Johannes Zellner
@@ -562,7 +562,12 @@ endif
 " [-- lua --] {{{3
 let s:luapath= fnameescape(expand("<sfile>:p:h")."/lua.vim")
 if !filereadable(s:luapath)
- let s:luapath= fnameescape(globpath(&rtp,"syntax/lua.vim"))
+ for s:luapath in split(globpath(&rtp,"syntax/lua.vim"),"\n")
+  if filereadable(fnameescape(s:luapath))
+   let s:luapath= fnameescape(s:luapath)
+   break
+  endif
+ endfor
 endif
 if (g:vimsyn_embed =~ 'l' && has("lua")) && filereadable(s:luapath)
  unlet! b:current_syntax
@@ -584,7 +589,12 @@ unlet s:luapath
 " [-- perl --] {{{3
 let s:perlpath= fnameescape(expand("<sfile>:p:h")."/perl.vim")
 if !filereadable(s:perlpath)
- let s:perlpath= fnameescape(globpath(&rtp,"syntax/perl.vim"))
+ for s:perlpath in split(globpath(&rtp,"syntax/perl.vim"),"\n")
+  if filereadable(fnameescape(s:perlpath))
+   let s:perlpath= fnameescape(s:perlpath)
+   break
+  endif
+ endfor
 endif
 if (g:vimsyn_embed =~ 'p' && has("perl")) && filereadable(s:perlpath)
  unlet! b:current_syntax
@@ -606,7 +616,12 @@ unlet s:perlpath
 " [-- ruby --] {{{3
 let s:rubypath= fnameescape(expand("<sfile>:p:h")."/ruby.vim")
 if !filereadable(s:rubypath)
- let s:rubypath= fnameescape(globpath(&rtp,"syntax/ruby.vim"))
+ for s:rubypath in split(globpath(&rtp,"syntax/ruby.vim"),"\n")
+  if filereadable(fnameescape(s:rubypath))
+   let s:rubypath= fnameescape(s:rubypath)
+   break
+  endif
+ endfor
 endif
 if (g:vimsyn_embed =~ 'r' && has("ruby")) && filereadable(s:rubypath)
  unlet! b:current_syntax
@@ -627,9 +642,14 @@ unlet s:rubypath
 " [-- python --] {{{3
 let s:pythonpath= fnameescape(expand("<sfile>:p:h")."/python.vim")
 if !filereadable(s:pythonpath)
- let s:pythonpath= fnameescape(globpath(&rtp,"syntax/python.vim"))
+ for s:pythonpath in split(globpath(&rtp,"syntax/python.vim"),"\n")
+  if filereadable(fnameescape(s:pythonpath))
+   let s:pythonpath= fnameescape(s:pythonpath)
+   break
+  endif
+ endfor
 endif
-if (g:vimsyn_embed =~ 'P' && has("python")) && filereadable(s:pythonpath)
+if g:vimsyn_embed =~ 'P' && (has("python") || has("python3")) && filereadable(s:pythonpath)
  unlet! b:current_syntax
  exe "syn include @vimPythonScript ".s:pythonpath
  if exists("g:vimsyn_folding") && g:vimsyn_folding =~ 'P'
@@ -662,7 +682,12 @@ endif
 if s:trytcl
  let s:tclpath= fnameescape(expand("<sfile>:p:h")."/tcl.vim")
  if !filereadable(s:tclpath)
-  let s:tclpath= fnameescape(globpath(&rtp,"syntax/tcl.vim"))
+  for s:tclpath in split(globpath(&rtp,"syntax/tcl.vim"),"\n")
+   if filereadable(fnameescape(s:tclpath))
+    let s:tclpath= fnameescape(s:tclpath)
+    break
+   endif
+  endfor
  endif
  if (g:vimsyn_embed =~ 't' && has("tcl")) && filereadable(s:tclpath)
   unlet! b:current_syntax
@@ -689,7 +714,12 @@ unlet s:trytcl
 " [-- mzscheme --] {{{3
 let s:mzschemepath= fnameescape(expand("<sfile>:p:h")."/scheme.vim")
 if !filereadable(s:mzschemepath)
- let s:mzschemepath= fnameescape(globpath(&rtp,"syntax/scheme.vim"))
+ for s:mzschemepath in split(globpath(&rtp,"syntax/mzscheme.vim"),"\n")
+  if filereadable(fnameescape(s:mzschemepath))
+   let s:mzschemepath= fnameescape(s:mzschemepath)
+   break
+  endif
+ endfor
 endif
 if (g:vimsyn_embed =~ 'm' && has("mzscheme")) && filereadable(s:mzschemepath)
  unlet! b:current_syntax
@@ -727,7 +757,6 @@ syn sync match vimAugroupSyncA	groupthere NONE	"\<aug\%[roup]\>\s\+[eE][nN][dD]"
 " Highlighting Settings {{{2
 " ====================
 
-hi def link vimAuHighlight	vimHighlight
 hi def link vimSubst1	vimSubst
 hi def link vimBehaveModel	vimBehave
 
