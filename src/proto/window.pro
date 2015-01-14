@@ -1,5 +1,6 @@
 /* window.c */
 void do_window __ARGS((int nchar, long Prenum, int xchar));
+void get_wincmd_addr_type __ARGS((char_u *arg, exarg_T *eap));
 int win_split __ARGS((int size, int flags));
 int win_split_ins __ARGS((int size, int flags, win_T *new_wp, int dir));
 int win_valid __ARGS((win_T *win));

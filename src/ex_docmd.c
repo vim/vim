@@ -2130,22 +2130,23 @@ do_one_cmd(cmdlinep, sourcing,
  * is equal to the lower.
  */
 
-    if (ea.cmdidx != CMD_SIZE
-#ifdef FEAT_USR_CMDS
-	&& ea.cmdidx != CMD_USER
-	&& ea.cmdidx != CMD_USER_BUF
-#endif
-       )
-	ea.addr_type = cmdnames[(int)ea.cmdidx].cmd_addr_type;
-    else
-#ifdef FEAT_USR_CMDS
-	if (ea.cmdidx != CMD_USER && ea.cmdidx != CMD_USER_BUF)
-#endif
-	ea.addr_type = ADDR_LINES;
     /* ea.addr_type for user commands is set by find_ucmd */
-    ea.cmd = cmd;
+    if (!IS_USER_CMDIDX(ea.cmdidx))
+    {
+	if (ea.cmdidx != CMD_SIZE)
+	    ea.addr_type = cmdnames[(int)ea.cmdidx].cmd_addr_type;
+	else
+	    ea.addr_type = ADDR_LINES;
+
+#ifdef FEAT_WINDOWS
+	/* :wincmd range depends on the argument. */
+	if (ea.cmdidx == CMD_wincmd)
+	    get_wincmd_addr_type(p, &ea);
+#endif
+    }
 
     /* repeat for all ',' or ';' separated addresses */
+    ea.cmd = cmd;
     for (;;)
     {
 	ea.line1 = ea.line2;
@@ -2181,7 +2182,6 @@ do_one_cmd(cmdlinep, sourcing,
 	{
 	    if (*ea.cmd == '%')		    /* '%' - all lines */
 	    {
-		buf_T	*buf;
 		++ea.cmd;
 		switch (ea.addr_type)
 		{
@@ -2190,15 +2190,20 @@ do_one_cmd(cmdlinep, sourcing,
 			ea.line2 = curbuf->b_ml.ml_line_count;
 			break;
 		    case ADDR_LOADED_BUFFERS:
-			buf = firstbuf;
-			while (buf->b_next != NULL && buf->b_ml.ml_mfp == NULL)
-			    buf = buf->b_next;
-			ea.line1 = buf->b_fnum;
-			buf = lastbuf;
-			while (buf->b_prev != NULL && buf->b_ml.ml_mfp == NULL)
-			    buf = buf->b_prev;
-			ea.line2 = buf->b_fnum;
-			break;
+			{
+			    buf_T	*buf = firstbuf;
+
+			    while (buf->b_next != NULL
+						  && buf->b_ml.ml_mfp == NULL)
+				buf = buf->b_next;
+			    ea.line1 = buf->b_fnum;
+			    buf = lastbuf;
+			    while (buf->b_prev != NULL
+						  && buf->b_ml.ml_mfp == NULL)
+				buf = buf->b_prev;
+			    ea.line2 = buf->b_fnum;
+			    break;
+			}
 		    case ADDR_BUFFERS:
 			ea.line1 = firstbuf->b_fnum;
 			ea.line2 = lastbuf->b_fnum;
