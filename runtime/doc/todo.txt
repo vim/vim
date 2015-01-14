@@ -34,8 +34,6 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Crash report from Stephen Martin, 2015 Jan 12.
-
 Regexp problems:
 - The NFA engine does not implement the time limit passed to
   nfa_regexec_multi()
@@ -58,13 +56,6 @@ Regexp problems:
   "/\%(<\1>\)\@<=.*\%(<\/\(\w\+\)>\)\@=" matching text inside HTML tags.
 - Diff highlighting can be very slow. (Issue 309)
 
-Patch to make Dynamic Ruby work with Ruby 2.2.0. (Ken Takata 2015 Jan 10)
-
-Update J runtime files. (glts, 2015 Jan 11)
-
-The range for :wincmd is not always a window number, can also be a column
-count.  Remove the range check.  What to use for ":$wincmd"?
-
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
 
@@ -76,10 +67,6 @@ Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
-
-Patch on Issue 292, recognizing polkit filetype.
-
-Issue 133: patch for config.vim, maintainer not responding.
 
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
@@ -94,29 +81,7 @@ wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
-Ukrainian vimtutor. (Issue 288)
-
-Patch to fix that eval('$') does not give an error.  Yasuhiro Matsumoto, 2015
-Jan 12.
-
-Regenerate the Unicode tables in mbyte.c.
-Diff from ZyX, 2014 Dec 6.
-
-Patch to fix relative numbers. (Christian Brabandt, 2014 Nov 17)
-Update Nov 26.
-
-Patch to improve config.vim syntax.  Issue 305.  Maintainer last update was in
-2008.
-
-Patch on issue 310, matchadd() seems to hang.
-
-Patch to fix that getcurpos() returns a negative number, instead of MAXCOL.
-(Hirohito Higashi, 2014 Dec 8)
-
 Better greek spell checking.  Issue 299.
-
-Patch for wrong cursor positioning when 'linebreak' is set. (Christian
-Brabandt, 2015 Jan 11)
 
 Patch to fix wrong formatting if 'linebreak' is set. (Christian Brabandt, 2014
 Nov 12)
