@@ -7867,7 +7867,7 @@ get_env_tv(arg, rettv, evaluate)
     if (evaluate)
     {
 	if (len == 0)
-           return FAIL; /* can't be an environment variable */
+	    return FAIL; /* invalid empty name */
 
 	cc = name[len];
 	name[len] = NUL;
@@ -10117,14 +10117,18 @@ f_eval(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    char_u	*s;
+    char_u	*s, *p;
 
     s = get_tv_string_chk(&argvars[0]);
     if (s != NULL)
 	s = skipwhite(s);
 
+    p = s;
     if (s == NULL || eval1(&s, rettv, TRUE) == FAIL)
     {
+	if (p != NULL && !aborting())
+	    EMSG2(_(e_invexpr2), p);
+	need_clr_eos = FALSE;
 	rettv->v_type = VAR_NUMBER;
 	rettv->vval.v_number = 0;
     }
