@@ -96,10 +96,14 @@
 # define rb_num2int rb_num2int_stub
 #endif
 
-#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 21
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER == 21
 /* Ruby 2.1 adds new GC called RGenGC and RARRAY_PTR uses
  * rb_gc_writebarrier_unprotect_promoted if USE_RGENGC  */
 # define rb_gc_writebarrier_unprotect_promoted rb_gc_writebarrier_unprotect_promoted_stub
+#endif
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 22
+# define rb_gc_writebarrier_unprotect rb_gc_writebarrier_unprotect_stub
+# define rb_check_type rb_check_type_stub
 #endif
 
 #include <ruby.h>
@@ -180,7 +184,9 @@ static void ruby_vim_init(void);
  */
 # define rb_assoc_new			dll_rb_assoc_new
 # define rb_cObject			(*dll_rb_cObject)
-# define rb_check_type			dll_rb_check_type
+# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER < 22
+#  define rb_check_type			dll_rb_check_type
+# endif
 # define rb_class_path			dll_rb_class_path
 # define rb_data_object_alloc		dll_rb_data_object_alloc
 # define rb_define_class_under		dll_rb_define_class_under
@@ -382,7 +388,11 @@ static void* (*ruby_process_options)(int, char**);
 # endif
 
 # if defined(USE_RGENGC) && USE_RGENGC
+#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER == 21
 static void (*dll_rb_gc_writebarrier_unprotect_promoted)(VALUE);
+#  else
+static void (*dll_rb_gc_writebarrier_unprotect)(VALUE obj);
+#  endif
 # endif
 
 # if defined(RUBY19_OR_LATER) && !defined(PROTO)
@@ -420,9 +430,23 @@ VALUE rb_num2ulong(VALUE x)
 
    /* Do not generate a prototype here, VALUE isn't always defined. */
 # if defined(USE_RGENGC) && USE_RGENGC && !defined(PROTO)
+#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER == 21
 void rb_gc_writebarrier_unprotect_promoted_stub(VALUE obj)
 {
     dll_rb_gc_writebarrier_unprotect_promoted(obj);
+}
+#  else
+void rb_gc_writebarrier_unprotect_stub(VALUE obj)
+{
+    dll_rb_gc_writebarrier_unprotect(obj);
+}
+#  endif
+# endif
+
+# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 22
+void rb_check_type_stub(VALUE v, int i)
+{
+    dll_rb_check_type(v, i);
 }
 # endif
 
@@ -542,7 +566,11 @@ static struct
     {"ruby_init_stack", (RUBY_PROC*)&dll_ruby_init_stack},
 # endif
 # if defined(USE_RGENGC) && USE_RGENGC
+#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER == 21
     {"rb_gc_writebarrier_unprotect_promoted", (RUBY_PROC*)&dll_rb_gc_writebarrier_unprotect_promoted},
+#  else
+    {"rb_gc_writebarrier_unprotect", (RUBY_PROC*)&dll_rb_gc_writebarrier_unprotect},
+#  endif
 # endif
     {"", NULL},
 };
