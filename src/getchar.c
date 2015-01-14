@@ -3708,8 +3708,13 @@ do_map(maptype, arg, mode, abbrev)
 	if (!did_it)
 	    retval = 2;			    /* no match */
 	else if (*keys == Ctrl_C)
+	{
 	    /* If CTRL-C has been unmapped, reuse it for Interrupting. */
-	    mapped_ctrl_c = FALSE;
+	    if (map_table == curbuf->b_maphash)
+		curbuf->b_mapped_ctrl_c &= ~mode;
+	    else
+		mapped_ctrl_c &= ~mode;
+	}
 	goto theend;
     }
 
@@ -3744,7 +3749,12 @@ do_map(maptype, arg, mode, abbrev)
 
     /* If CTRL-C has been mapped, don't always use it for Interrupting. */
     if (*keys == Ctrl_C)
-	mapped_ctrl_c = TRUE;
+    {
+	if (map_table == curbuf->b_maphash)
+	    curbuf->b_mapped_ctrl_c |= mode;
+	else
+	    mapped_ctrl_c |= mode;
+    }
 
     mp->m_keys = vim_strsave(keys);
     mp->m_str = vim_strsave(rhs);

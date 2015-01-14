@@ -1802,6 +1802,7 @@ struct file_buffer
     cryptstate_T *b_cryptstate;	/* Encryption state while reading or writing
 				 * the file. NULL when not using encryption. */
 #endif
+    int		b_mapped_ctrl_c; /* modes where CTRL-C is mapped */
 
 }; /* file_buffer */
 

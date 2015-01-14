@@ -180,7 +180,7 @@ ui_inchar(buf, maxlen, wtime, tb_change_cnt)
 
 	/* ... there is no need for CTRL-C to interrupt something, don't let
 	 * it set got_int when it was mapped. */
-	if (mapped_ctrl_c)
+	if ((mapped_ctrl_c | curbuf->b_mapped_ctrl_c) & State)
 	    ctrl_c_interrupts = FALSE;
     }
 
