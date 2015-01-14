@@ -2,5 +2,6 @@ test starts here:
 vim
 TEST2: CTRL-C |<ctrl-c>A|
 
+vmap works
 +
 +
