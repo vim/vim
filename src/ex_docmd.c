@@ -4686,8 +4686,7 @@ invalid_range(eap)
 		    return (char_u *)_(e_invrange);
 		break;
 	    case ADDR_WINDOWS:
-		if (eap->line1 < 1
-			|| eap->line2 > LAST_WIN_NR)
+		if (eap->line2 > LAST_WIN_NR)
 		    return (char_u *)_(e_invrange);
 		break;
 	    case ADDR_TABS:
