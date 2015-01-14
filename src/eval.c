@@ -11941,7 +11941,8 @@ getpos_both(argvars, rettv, getcurpos)
 #endif
 							      (varnumber_T)0);
 	if (getcurpos)
-	    list_append_number(l, (varnumber_T)curwin->w_curswant + 1);
+	    list_append_number(l, curwin->w_curswant == MAXCOL ?
+		    (varnumber_T)MAXCOL : (varnumber_T)curwin->w_curswant + 1);
     }
     else
 	rettv->vval.v_number = FALSE;
