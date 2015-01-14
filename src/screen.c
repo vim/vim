@@ -2842,6 +2842,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
     unsigned	off;			/* offset in ScreenLines/ScreenAttrs */
     int		c = 0;			/* init for GCC */
     long	vcol = 0;		/* virtual column (for tabs) */
+#ifdef FEAT_LINEBREAK
+    long	vcol_sbr = -1;		/* virtual column after showbreak */
+#endif
     long	vcol_prev = -1;		/* "vcol" of previous character */
     char_u	*line;			/* current line */
     char_u	*ptr;			/* current position in "line" */
@@ -3759,6 +3762,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    n_extra = (int)STRLEN(p_sbr);
 		    char_attr = hl_attr(HLF_AT);
 		    need_showbreak = FALSE;
+		    vcol_sbr = vcol + MB_CHARLEN(p_sbr);
 		    /* Correct end of highlighted area for 'showbreak',
 		     * required when 'linebreak' is also set. */
 		    if (tocol == vcol)
@@ -4516,9 +4520,17 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		if (c == TAB && (!wp->w_p_list || lcs_tab1))
 		{
 		    int tab_len = 0;
+		    long vcol_adjusted = vcol; /* removed showbreak length */
+#ifdef FEAT_LINEBREAK
+		    /* only adjust the tab_len, when at the first column
+		     * after the showbreak value was drawn */
+		    if (*p_sbr != NUL && vcol == vcol_sbr && wp->w_p_wrap)
+			vcol_adjusted = vcol - MB_CHARLEN(p_sbr);
+#endif
 		    /* tab amount depends on current column */
 		    tab_len = (int)wp->w_buffer->b_p_ts
-					- vcol % (int)wp->w_buffer->b_p_ts - 1;
+					- vcol_adjusted % (int)wp->w_buffer->b_p_ts - 1;
+
 #ifdef FEAT_LINEBREAK
 		    if (!wp->w_p_lbr || !wp->w_p_list)
 #endif

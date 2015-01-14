@@ -1178,28 +1178,50 @@ win_lbr_chartabsize(wp, line, s, col, headp)
     added = 0;
     if ((*p_sbr != NUL || wp->w_p_bri) && wp->w_p_wrap && col != 0)
     {
-	numberextra = win_col_off(wp);
+	colnr_T sbrlen = 0;
+	int	numberwidth = win_col_off(wp);
+
+	numberextra = numberwidth;
 	col += numberextra + mb_added;
 	if (col >= (colnr_T)W_WIDTH(wp))
 	{
 	    col -= W_WIDTH(wp);
 	    numberextra = W_WIDTH(wp) - (numberextra - win_col_off2(wp));
-	    if (numberextra > 0)
+	    if (col >= numberextra && numberextra > 0)
 		col %= numberextra;
 	    if (*p_sbr != NUL)
 	    {
-		colnr_T sbrlen = (colnr_T)MB_CHARLEN(p_sbr);
+		sbrlen = (colnr_T)MB_CHARLEN(p_sbr);
 		if (col >= sbrlen)
 		    col -= sbrlen;
 	    }
-	    if (numberextra > 0)
+	    if (col >= numberextra && numberextra > 0)
 		col = col % numberextra;
+	    else if (col > 0 && numberextra > 0)
+		col += numberwidth - win_col_off2(wp);
+
+	    numberwidth -= win_col_off2(wp);
 	}
-	if (col == 0 || col + size > (colnr_T)W_WIDTH(wp))
+	if (col == 0 || col + size + sbrlen > (colnr_T)W_WIDTH(wp))
 	{
 	    added = 0;
 	    if (*p_sbr != NUL)
-		added += vim_strsize(p_sbr);
+	    {
+		if (size + sbrlen + numberwidth > (colnr_T)W_WIDTH(wp))
+		{
+		    /* calculate effective window width */
+		    int width = (colnr_T)W_WIDTH(wp) - sbrlen - numberwidth;
+		    int prev_width = col ? ((colnr_T)W_WIDTH(wp) - (sbrlen + col)) : 0;
+		    if (width == 0)
+			width = (colnr_T)W_WIDTH(wp);
+		    added += ((size - prev_width) / width) * vim_strsize(p_sbr);
+		    if ((size - prev_width) % width)
+			/* wrapped, add another length of 'sbr' */
+			added += vim_strsize(p_sbr);
+		}
+		else
+		    added += vim_strsize(p_sbr);
+	    }
 	    if (wp->w_p_bri)
 		added += get_breakindent_win(wp, line);
 
