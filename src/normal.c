@@ -1393,10 +1393,6 @@ do_pending_operator(cap, old_col, gui_yank)
     int		    include_line_break = FALSE;
 #endif
 
-#ifdef FEAT_LINEBREAK
-    curwin->w_p_lbr = FALSE;	/* Avoid a problem with unwanted linebreaks in
-				 * block mode. */
-#endif
 #if defined(FEAT_CLIPBOARD)
     /*
      * Yank the visual area into the GUI selection register before we operate
@@ -1420,6 +1416,10 @@ do_pending_operator(cap, old_col, gui_yank)
      */
     if ((finish_op || VIsual_active) && oap->op_type != OP_NOP)
     {
+#ifdef FEAT_LINEBREAK
+	/* Avoid a problem with unwanted linebreaks in block mode. */
+	curwin->w_p_lbr = FALSE;
+#endif
 	oap->is_VIsual = VIsual_active;
 	if (oap->motion_force == 'V')
 	    oap->motion_type = MLINE;
@@ -1819,7 +1819,13 @@ do_pending_operator(cap, old_col, gui_yank)
 			    || oap->op_type == OP_FUNCTION
 			    || oap->op_type == OP_FILTER)
 			&& oap->motion_force == NUL)
+		{
+#ifdef FEAT_LINEBREAK
+		    /* make sure redrawing is correct */
+		    curwin->w_p_lbr = lbr_saved;
+#endif
 		    redraw_curbuf_later(INVERTED);
+		}
 	    }
 	}
 
@@ -1863,7 +1869,12 @@ do_pending_operator(cap, old_col, gui_yank)
 		    || oap->op_type == OP_FOLD
 #endif
 		    ))
+	{
+#ifdef FEAT_LINEBREAK
+	    curwin->w_p_lbr = lbr_saved;
+#endif
 	    redraw_curbuf_later(INVERTED);
+	}
 
 	/*
 	 * If the end of an operator is in column one while oap->motion_type
@@ -1947,7 +1958,12 @@ do_pending_operator(cap, old_col, gui_yank)
 		}
 	    }
 	    else
+	    {
+#ifdef FEAT_LINEBREAK
+		curwin->w_p_lbr = lbr_saved;
+#endif
 		(void)op_yank(oap, FALSE, !gui_yank);
+	    }
 	    check_cursor_col();
 	    break;
 
@@ -1969,6 +1985,11 @@ do_pending_operator(cap, old_col, gui_yank)
 		else
 		    restart_edit_save = 0;
 		restart_edit = 0;
+#ifdef FEAT_LINEBREAK
+		/* Restore linebreak, so that when the user edits it looks as
+		 * before. */
+		curwin->w_p_lbr = lbr_saved;
+#endif
 		/* Reset finish_op now, don't want it set inside edit(). */
 		finish_op = FALSE;
 		if (op_change(oap))	/* will call edit() */
@@ -2064,8 +2085,16 @@ do_pending_operator(cap, old_col, gui_yank)
 		 * Visual mode.  But do this only once. */
 		restart_edit_save = restart_edit;
 		restart_edit = 0;
-
+#ifdef FEAT_LINEBREAK
+		/* Restore linebreak, so that when the user edits it looks as
+		 * before. */
+		curwin->w_p_lbr = lbr_saved;
+#endif
 		op_insert(oap, cap->count1);
+#ifdef FEAT_LINEBREAK
+		/* Reset linebreak, so that formatting works correctly. */
+		curwin->w_p_lbr = FALSE;
+#endif
 
 		/* TODO: when inserting in several lines, should format all
 		 * the lines. */
@@ -2090,7 +2119,14 @@ do_pending_operator(cap, old_col, gui_yank)
 	    }
 #ifdef FEAT_VISUALEXTRA
 	    else
+	    {
+#ifdef FEAT_LINEBREAK
+		/* Restore linebreak, so that when the user edits it looks as
+		 * before. */
+		curwin->w_p_lbr = lbr_saved;
+#endif
 		op_replace(oap, cap->nchar);
+	    }
 #endif
 	    break;
 
@@ -2134,7 +2170,12 @@ do_pending_operator(cap, old_col, gui_yank)
 	    if (!p_sol && oap->motion_type == MLINE && !oap->end_adjusted
 		    && (oap->op_type == OP_LSHIFT || oap->op_type == OP_RSHIFT
 						|| oap->op_type == OP_DELETE))
+	    {
+#ifdef FEAT_LINEBREAK
+		curwin->w_p_lbr = FALSE;
+#endif
 		coladvance(curwin->w_curswant = old_col);
+	    }
 	}
 	else
 	{
