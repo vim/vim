@@ -6441,16 +6441,26 @@ nfa_regmatch(prog, start, submatch, m)
 		{
 		    int     op = t->state->c - NFA_VCOL;
 		    colnr_T col = (colnr_T)(reginput - regline);
+		    win_T   *wp = reg_win == NULL ? curwin : reg_win;
 
 		    /* Bail out quickly when there can't be a match, avoid the
 		     * overhead of win_linetabsize() on long lines. */
-		    if ((col > t->state->val && op != 1)
-			    || (col - 1 > t->state->val && op == 1))
+		    if (op != 1 && col > t->state->val)
 			break;
-		    result = nfa_re_num_cmp(t->state->val, op,
-			(long_u)win_linetabsize(
-				reg_win == NULL ? curwin : reg_win,
-							   regline, col) + 1);
+		    result = FALSE;
+		    if (op == 1 && col - 1 > t->state->val && col > 100)
+		    {
+			int ts = wp->w_buffer->b_p_ts;
+
+			/* Guess that a character won't use more columns than
+			 * 'tabstop', with a minimum of 4. */
+			if (ts < 4)
+			    ts = 4;
+			result = col > t->state->val * ts;
+		    }
+		    if (!result)
+			result = nfa_re_num_cmp(t->state->val, op,
+				(long_u)win_linetabsize(wp, regline, col) + 1);
 		    if (result)
 		    {
 			add_here = TRUE;
