@@ -5663,8 +5663,8 @@ read_viminfo_register(virp, force)
     int		set_prev = FALSE;
     char_u	*str;
     char_u	**array = NULL;
-    int		new_type;
-    colnr_T	new_width;
+    int		new_type = MCHAR; /* init to shut up compiler */
+    colnr_T	new_width = 0; /* init to shut up compiler */
 
     /* We only get here (hopefully) if line[0] == '"' */
     str = virp->vir_line + 1;
@@ -5747,6 +5747,7 @@ read_viminfo_register(virp, force)
 		do_it = FALSE;
 	}
     }
+
     if (do_it)
     {
 	/* free y_array[] */
