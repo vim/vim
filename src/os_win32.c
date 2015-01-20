@@ -1814,18 +1814,22 @@ mch_inchar(
 		if (conv)
 		{
 		    char_u *p = typeahead + typeaheadlen;
-		    char_u *e = typeahead + TYPEAHEADLEN;
 
-		    while (*p && p < e)
+		    if (*p != K_NUL)
 		    {
-			if (*p == K_NUL)
+			char_u *e = typeahead + TYPEAHEADLEN;
+
+			while (*p && p < e)
 			{
+			    if (*p == K_NUL)
+			    {
+				++p;
+				mch_memmove(p + 1, p, ((size_t)(e - p)) - 1);
+				*p = 3;
+				++n;
+			    }
 			    ++p;
-			    mch_memmove(p + 1, p, ((size_t)(e - p)) - 1);
-			    *p = 3;
-			    ++n;
 			}
-			++p;
 		    }
 		}
 
