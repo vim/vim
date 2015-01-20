@@ -229,7 +229,6 @@ HTMLS = \
 	starting.html \
 	syntax.html \
 	tabpage.html \
-	tags.html \
 	tagsrch.html \
 	term.html \
 	tips.html \
