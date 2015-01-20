@@ -36,6 +36,7 @@ SCRIPTS = test1.out test3.out test4.out test5.out test6.out \
 		test94.out test95.out test96.out test97.out test98.out \
 		test99.out test100.out test101.out test102.out test103.out \
 		test104.out test105.out test106.out test107.out \
+		test_argument_0count.out \
 		test_argument_count.out \
 		test_autoformat_join.out \
 		test_breakindent.out \
@@ -175,6 +176,7 @@ test104.out: test104.in
 test105.out: test105.in
 test106.out: test106.in
 test107.out: test107.in
+test_argument_0count.out: test_argument_0count.in
 test_argument_count.out: test_argument_count.in
 test_autoformat_join.out: test_autoformat_join.in
 test_breakindent.out: test_breakindent.in
