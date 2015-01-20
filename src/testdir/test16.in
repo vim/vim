@@ -2,6 +2,7 @@ Tests for resetting "secure" flag after GUI has started.
 For KDE set a font, empty 'guifont' may cause a hang.
 
 STARTTEST
+:so small.vim
 :if $DISPLAY == "" | e! test.ok | wq! test.out | endif
 :set exrc secure
 :if has("gui_kde")
