@@ -3394,7 +3394,7 @@ ins_compl_bs()
      * allow the word to be deleted, we won't match everything. */
     if ((int)(p - line) - (int)compl_col < 0
 	    || ((int)(p - line) - (int)compl_col == 0
-		&& (ctrl_x_mode & CTRL_X_OMNI) == 0))
+		&& ctrl_x_mode != CTRL_X_OMNI))
 	return K_BS;
 
     /* Deleted more than what was used to find matches or didn't finish
