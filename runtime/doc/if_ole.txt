@@ -197,7 +197,7 @@ files in it.
 --remote-silent "+call cursor(10, 27)"
 	      - Places the cursor on line 10 column 27
 In Vim >
-   :h --remote-silent for mor details
+   :h --remote-silent for more details
 
 [.Net remarks provided by Dave Fishburn and Brian Sturk]
 
