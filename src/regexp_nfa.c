@@ -5408,7 +5408,7 @@ nfa_regmatch(prog, start, submatch, m)
     regsubs_T		*m;
 {
     int		result;
-    int		size = 0;
+    size_t	size = 0;
     int		flag = 0;
     int		go_to_nextline = FALSE;
     nfa_thread_T *t;
