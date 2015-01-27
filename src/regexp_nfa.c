@@ -1456,7 +1456,7 @@ nfa_regatom()
 			 * matched an unlimited number of times. NFA_NOPEN is
 			 * added only once at a position, while NFA_SPLIT is
 			 * added multiple times.  This is more efficient than
-			 * not allowsing NFA_SPLIT multiple times, it is used
+			 * not allowing NFA_SPLIT multiple times, it is used
 			 * a lot. */
 			EMIT(NFA_NOPEN);
 			break;
@@ -3726,8 +3726,10 @@ typedef struct
     {
 	struct multipos
 	{
-	    lpos_T	start;
-	    lpos_T	end;
+	    linenr_T	start_lnum;
+	    linenr_T	end_lnum;
+	    colnr_T	start_col;
+	    colnr_T	end_col;
 	} multi[NSUBEXP];
 	struct linepos
 	{
@@ -3812,10 +3814,10 @@ log_subexpr(sub)
 	if (REG_MULTI)
 	    fprintf(log_fd, "*** group %d, start: c=%d, l=%d, end: c=%d, l=%d\n",
 		    j,
-		    sub->list.multi[j].start.col,
-		    (int)sub->list.multi[j].start.lnum,
-		    sub->list.multi[j].end.col,
-		    (int)sub->list.multi[j].end.lnum);
+		    sub->list.multi[j].start_col,
+		    (int)sub->list.multi[j].start_lnum,
+		    sub->list.multi[j].end_col,
+		    (int)sub->list.multi[j].end_lnum);
 	else
 	{
 	    char *s = (char *)sub->list.line[j].start;
@@ -3952,8 +3954,11 @@ copy_ze_off(to, from)
     {
 	if (REG_MULTI)
 	{
-	    if (from->list.multi[0].end.lnum >= 0)
-		to->list.multi[0].end = from->list.multi[0].end;
+	    if (from->list.multi[0].end_lnum >= 0)
+            {
+		to->list.multi[0].end_lnum = from->list.multi[0].end_lnum;
+		to->list.multi[0].end_col = from->list.multi[0].end_col;
+            }
 	}
 	else
 	{
@@ -3985,33 +3990,33 @@ sub_equal(sub1, sub2)
 	for (i = 0; i < todo; ++i)
 	{
 	    if (i < sub1->in_use)
-		s1 = sub1->list.multi[i].start.lnum;
+		s1 = sub1->list.multi[i].start_lnum;
 	    else
 		s1 = -1;
 	    if (i < sub2->in_use)
-		s2 = sub2->list.multi[i].start.lnum;
+		s2 = sub2->list.multi[i].start_lnum;
 	    else
 		s2 = -1;
 	    if (s1 != s2)
 		return FALSE;
-	    if (s1 != -1 && sub1->list.multi[i].start.col
-					     != sub2->list.multi[i].start.col)
+	    if (s1 != -1 && sub1->list.multi[i].start_col
+					     != sub2->list.multi[i].start_col)
 		return FALSE;
 
 	    if (nfa_has_backref)
 	    {
 		if (i < sub1->in_use)
-		    s1 = sub1->list.multi[i].end.lnum;
+		    s1 = sub1->list.multi[i].end_lnum;
 		else
 		    s1 = -1;
 		if (i < sub2->in_use)
-		    s2 = sub2->list.multi[i].end.lnum;
+		    s2 = sub2->list.multi[i].end_lnum;
 		else
 		    s2 = -1;
 		if (s1 != s2)
 		    return FALSE;
-		if (s1 != -1 && sub1->list.multi[i].end.col
-					       != sub2->list.multi[i].end.col)
+		if (s1 != -1 && sub1->list.multi[i].end_col
+					       != sub2->list.multi[i].end_col)
 		return FALSE;
 	    }
 	}
@@ -4062,7 +4067,7 @@ report_state(char *action,
     if (sub->in_use <= 0)
 	col = -1;
     else if (REG_MULTI)
-	col = sub->list.multi[0].start.col;
+	col = sub->list.multi[0].start_col;
     else
 	col = (int)(sub->list.line[0].start - regline);
     nfa_set_code(state->c);
@@ -4482,7 +4487,8 @@ skip_add:
 	    {
 		if (subidx < sub->in_use)
 		{
-		    save_lpos = sub->list.multi[subidx].start;
+		    save_lpos.lnum = sub->list.multi[subidx].start_lnum;
+		    save_lpos.col = sub->list.multi[subidx].start_col;
 		    save_in_use = -1;
 		}
 		else
@@ -4490,20 +4496,20 @@ skip_add:
 		    save_in_use = sub->in_use;
 		    for (i = sub->in_use; i < subidx; ++i)
 		    {
-			sub->list.multi[i].start.lnum = -1;
-			sub->list.multi[i].end.lnum = -1;
+			sub->list.multi[i].start_lnum = -1;
+			sub->list.multi[i].end_lnum = -1;
 		    }
 		    sub->in_use = subidx + 1;
 		}
 		if (off == -1)
 		{
-		    sub->list.multi[subidx].start.lnum = reglnum + 1;
-		    sub->list.multi[subidx].start.col = 0;
+		    sub->list.multi[subidx].start_lnum = reglnum + 1;
+		    sub->list.multi[subidx].start_col = 0;
 		}
 		else
 		{
-		    sub->list.multi[subidx].start.lnum = reglnum;
-		    sub->list.multi[subidx].start.col =
+		    sub->list.multi[subidx].start_lnum = reglnum;
+		    sub->list.multi[subidx].start_col =
 					  (colnr_T)(reginput - regline + off);
 		}
 	    }
@@ -4539,7 +4545,10 @@ skip_add:
 	    if (save_in_use == -1)
 	    {
 		if (REG_MULTI)
-		    sub->list.multi[subidx].start = save_lpos;
+                {
+		    sub->list.multi[subidx].start_lnum = save_lpos.lnum;
+		    sub->list.multi[subidx].start_col = save_lpos.col;
+                }
 		else
 		    sub->list.line[subidx].start = save_ptr;
 	    }
@@ -4549,7 +4558,7 @@ skip_add:
 
 	case NFA_MCLOSE:
 	    if (nfa_has_zend && (REG_MULTI
-			? subs->norm.list.multi[0].end.lnum >= 0
+			? subs->norm.list.multi[0].end_lnum >= 0
 			: subs->norm.list.line[0].end != NULL))
 	    {
 		/* Do not overwrite the position set by \ze. */
@@ -4603,16 +4612,17 @@ skip_add:
 		sub->in_use = subidx + 1;
 	    if (REG_MULTI)
 	    {
-		save_lpos = sub->list.multi[subidx].end;
+		save_lpos.lnum = sub->list.multi[subidx].end_lnum;
+		save_lpos.col = sub->list.multi[subidx].end_col;
 		if (off == -1)
 		{
-		    sub->list.multi[subidx].end.lnum = reglnum + 1;
-		    sub->list.multi[subidx].end.col = 0;
+		    sub->list.multi[subidx].end_lnum = reglnum + 1;
+		    sub->list.multi[subidx].end_col = 0;
 		}
 		else
 		{
-		    sub->list.multi[subidx].end.lnum = reglnum;
-		    sub->list.multi[subidx].end.col =
+		    sub->list.multi[subidx].end_lnum = reglnum;
+		    sub->list.multi[subidx].end_col =
 					  (colnr_T)(reginput - regline + off);
 		}
 		/* avoid compiler warnings */
@@ -4637,7 +4647,10 @@ skip_add:
 		sub = &subs->norm;
 
 	    if (REG_MULTI)
-		sub->list.multi[subidx].end = save_lpos;
+            {
+		sub->list.multi[subidx].end_lnum = save_lpos.lnum;
+		sub->list.multi[subidx].end_col = save_lpos.col;
+            }
 	    else
 		sub->list.line[subidx].end = save_ptr;
 	    sub->in_use = save_in_use;
@@ -4825,15 +4838,15 @@ retempty:
 
     if (REG_MULTI)
     {
-	if (sub->list.multi[subidx].start.lnum < 0
-				       || sub->list.multi[subidx].end.lnum < 0)
+	if (sub->list.multi[subidx].start_lnum < 0
+				       || sub->list.multi[subidx].end_lnum < 0)
 	    goto retempty;
-	if (sub->list.multi[subidx].start.lnum == reglnum
-			       && sub->list.multi[subidx].end.lnum == reglnum)
+	if (sub->list.multi[subidx].start_lnum == reglnum
+			       && sub->list.multi[subidx].end_lnum == reglnum)
 	{
-	    len = sub->list.multi[subidx].end.col
-					  - sub->list.multi[subidx].start.col;
-	    if (cstrncmp(regline + sub->list.multi[subidx].start.col,
+	    len = sub->list.multi[subidx].end_col
+					  - sub->list.multi[subidx].start_col;
+	    if (cstrncmp(regline + sub->list.multi[subidx].start_col,
 							 reginput, &len) == 0)
 	    {
 		*bytelen = len;
@@ -4843,10 +4856,10 @@ retempty:
 	else
 	{
 	    if (match_with_backref(
-			sub->list.multi[subidx].start.lnum,
-			sub->list.multi[subidx].start.col,
-			sub->list.multi[subidx].end.lnum,
-			sub->list.multi[subidx].end.col,
+			sub->list.multi[subidx].start_lnum,
+			sub->list.multi[subidx].start_col,
+			sub->list.multi[subidx].end_lnum,
+			sub->list.multi[subidx].end_col,
 			bytelen) == RA_MATCH)
 		return TRUE;
 	}
@@ -5441,6 +5454,7 @@ nfa_regmatch(prog, start, submatch, m)
 
     /* Allocate memory for the lists of nodes. */
     size = (nstate + 1) * sizeof(nfa_thread_T);
+
     list[0].t = (nfa_thread_T *)lalloc(size, TRUE);
     list[0].len = nstate + 1;
     list[1].t = (nfa_thread_T *)lalloc(size, TRUE);
@@ -5482,8 +5496,8 @@ nfa_regmatch(prog, start, submatch, m)
     {
 	if (REG_MULTI)
 	{
-	    m->norm.list.multi[0].start.lnum = reglnum;
-	    m->norm.list.multi[0].start.col = (colnr_T)(reginput - regline);
+	    m->norm.list.multi[0].start_lnum = reglnum;
+	    m->norm.list.multi[0].start_col = (colnr_T)(reginput - regline);
 	}
 	else
 	    m->norm.list.line[0].start = reginput;
@@ -5580,7 +5594,7 @@ nfa_regmatch(prog, start, submatch, m)
 		if (t->subs.norm.in_use <= 0)
 		    col = -1;
 		else if (REG_MULTI)
-		    col = t->subs.norm.list.multi[0].start.col;
+		    col = t->subs.norm.list.multi[0].start_col;
 		else
 		    col = (int)(t->subs.norm.list.line[0].start - regline);
 		nfa_set_code(t->state->c);
@@ -5861,7 +5875,7 @@ nfa_regmatch(prog, start, submatch, m)
 		     * continue with what follows. */
 		    if (REG_MULTI)
 			/* TODO: multi-line match */
-			bytelen = m->norm.list.multi[0].end.col
+			bytelen = m->norm.list.multi[0].end_col
 						  - (int)(reginput - regline);
 		    else
 			bytelen = (int)(m->norm.list.line[0].end - reginput);
@@ -6741,7 +6755,7 @@ nfa_regmatch(prog, start, submatch, m)
 		if (add)
 		{
 		    if (REG_MULTI)
-			m->norm.list.multi[0].start.col =
+			m->norm.list.multi[0].start_col =
 					 (colnr_T)(reginput - regline) + clen;
 		    else
 			m->norm.list.line[0].start = reginput + clen;
@@ -6854,8 +6868,11 @@ nfa_regtry(prog, col)
     {
 	for (i = 0; i < subs.norm.in_use; i++)
 	{
-	    reg_startpos[i] = subs.norm.list.multi[i].start;
-	    reg_endpos[i] = subs.norm.list.multi[i].end;
+	    reg_startpos[i].lnum = subs.norm.list.multi[i].start_lnum;
+	    reg_startpos[i].col = subs.norm.list.multi[i].start_col;
+
+	    reg_endpos[i].lnum = subs.norm.list.multi[i].end_lnum;
+	    reg_endpos[i].col = subs.norm.list.multi[i].end_col;
 	}
 
 	if (reg_startpos[0].lnum < 0)
@@ -6903,13 +6920,13 @@ nfa_regtry(prog, col)
 		struct multipos *mpos = &subs.synt.list.multi[i];
 
 		/* Only accept single line matches that are valid. */
-		if (mpos->start.lnum >= 0
-			&& mpos->start.lnum == mpos->end.lnum
-			&& mpos->end.col >= mpos->start.col)
+		if (mpos->start_lnum >= 0
+			&& mpos->start_lnum == mpos->end_lnum
+			&& mpos->end_col >= mpos->start_col)
 		    re_extmatch_out->matches[i] =
-			vim_strnsave(reg_getline(mpos->start.lnum)
-							    + mpos->start.col,
-					     mpos->end.col - mpos->start.col);
+			vim_strnsave(reg_getline(mpos->start_lnum)
+							    + mpos->start_col,
+					     mpos->end_col - mpos->start_col);
 	    }
 	    else
 	    {
