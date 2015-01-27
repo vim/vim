@@ -73,8 +73,6 @@ ui_write(s, len)
 static char_u *ta_str = NULL;
 static int ta_off;	/* offset for next char to use when ta_str != NULL */
 static int ta_len;	/* length of ta_str when it's not NULL*/
-static int clipboard_needs_update; /* clipboard needs to be updated */
-static int global_change_count = 0; /* if set, inside a start_global_changes */
 
     void
 ui_inchar_undo(s, len)
@@ -564,6 +562,8 @@ clip_copy_selection(clip)
  * prevents accessing the clipboard very often which might slow down Vim
  * considerably.
  */
+static int global_change_count = 0; /* if set, inside a start_global_changes */
+static int clipboard_needs_update; /* clipboard needs to be updated */
 
 /*
  * Save clip_unnamed and reset it.
