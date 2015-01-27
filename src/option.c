@@ -4540,21 +4540,11 @@ do_set(arg, opt_flags)
 				goto skip;
 			    }
 			}
-				/* allow negative numbers (for 'undolevels') */
 			else if (*arg == '-' || VIM_ISDIGIT(*arg))
 			{
-			    i = 0;
-			    if (*arg == '-')
-				i = 1;
-#ifdef HAVE_STRTOL
-			    value = strtol((char *)arg, NULL, 0);
-			    if (arg[i] == '0' && TOLOWER_ASC(arg[i + 1]) == 'x')
-				i += 2;
-#else
-			    value = atol((char *)arg);
-#endif
-			    while (VIM_ISDIGIT(arg[i]))
-				++i;
+			    /* Allow negative (for 'undolevels'), octal and
+			     * hex numbers. */
+			    vim_str2nr(arg, NULL, &i, TRUE, TRUE, &value, NULL);
 			    if (arg[i] != NUL && !vim_iswhite(arg[i]))
 			    {
 				errmsg = e_invarg;
