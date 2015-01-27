@@ -244,6 +244,9 @@ static char_u e_nul_found[] = N_("E865: (NFA) Regexp end encountered prematurely
 static char_u e_misplaced[] = N_("E866: (NFA regexp) Misplaced %c");
 static char_u e_ill_char_class[] = N_("E877: (NFA regexp) Invalid character class: %ld");
 
+/* re_flags passed to nfa_regcomp() */
+static int nfa_re_flags;
+
 /* NFA regexp \ze operator encountered. */
 static int nfa_has_zend;
 
@@ -2011,10 +2014,10 @@ nfa_regpiece()
 	     *  <atom>*  */
 	    if (minval == 0 && maxval == MAX_LIMIT)
 	    {
-		if (greedy)
+		if (greedy)		/* { { (match the braces) */
 		    /* \{}, \{0,} */
 		    EMIT(NFA_STAR);
-		else
+		else			/* { { (match the braces) */
 		    /* \{-}, \{-0,} */
 		    EMIT(NFA_STAR_NONGREEDY);
 		break;
@@ -2029,6 +2032,12 @@ nfa_regpiece()
 		EMIT(NFA_EMPTY);
 		return OK;
 	    }
+
+	    /* The engine is very inefficient (uses too many states) when the
+	     * maximum is much larger than the minimum.  Bail out if we can
+	     * use the other engine. */
+	    if ((nfa_re_flags & RE_AUTO) && maxval > minval + 200)
+		return FAIL;
 
 	    /* Ignore previous call to nfa_regatom() */
 	    post_ptr = post_start + my_post_start;
@@ -7046,6 +7055,7 @@ nfa_regcomp(expr, re_flags)
 	return NULL;
 
     nfa_regengine.expr = expr;
+    nfa_re_flags = re_flags;
 
     init_class_tab();
 

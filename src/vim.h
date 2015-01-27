@@ -1020,6 +1020,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define RE_MAGIC	1	/* 'magic' option */
 #define RE_STRING	2	/* match in string instead of buffer text */
 #define RE_STRICT	4	/* don't allow [abc] without ] */
+#define RE_AUTO		8	/* automatic engine selection */
 
 #ifdef FEAT_SYN_HL
 /* values for reg_do_extmatch */
