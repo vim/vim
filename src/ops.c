@@ -5308,10 +5308,7 @@ block_prep(oap, bdp, lnum, is_del)
 	    {
 		/* Count a tab for what it's worth (if list mode not on) */
 		prev_pend = pend;
-		/* TODO: is passing prev_pend for start of the line OK?
-		 * perhaps it should be "line". */
-		incr = lbr_chartabsize_adv(prev_pend, &pend,
-						      (colnr_T)bdp->end_vcol);
+		incr = lbr_chartabsize_adv(line, &pend, (colnr_T)bdp->end_vcol);
 		bdp->end_vcol += incr;
 	    }
 	    if (bdp->end_vcol <= oap->end_vcol
