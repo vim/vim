@@ -3529,6 +3529,13 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 #endif
 		check_fname() == FAIL)
 	    goto theend;
+
+	/* ":e foobar" when already editing "foobar" will reload the file.
+	 * But when 'buftype' is "nofile" there is no file to load, so don't
+	 * do anything. */
+	if (curbuf->b_p_bt[0] == 'n' && curbuf->b_p_bt[2] == 'f')
+	    goto theend;
+
 	oldbuf = (flags & ECMD_OLDBUF);
     }
 
