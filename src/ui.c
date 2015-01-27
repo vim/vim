@@ -73,6 +73,8 @@ ui_write(s, len)
 static char_u *ta_str = NULL;
 static int ta_off;	/* offset for next char to use when ta_str != NULL */
 static int ta_len;	/* length of ta_str when it's not NULL*/
+static int clipboard_needs_update; /* clipboard needs to be updated */
+static int global_change_count = 0; /* if set, inside a start_global_changes */
 
     void
 ui_inchar_undo(s, len)
@@ -569,9 +571,12 @@ clip_copy_selection(clip)
     void
 start_global_changes()
 {
+    if (++global_change_count > 1)
+	return;
     clip_unnamed_saved = clip_unnamed;
+    clipboard_needs_update = FALSE;
 
-    if (clip_did_set_selection > 0)
+    if (clip_did_set_selection)
     {
 	clip_unnamed = FALSE;
 	clip_did_set_selection = FALSE;
@@ -584,22 +589,30 @@ start_global_changes()
     void
 end_global_changes()
 {
-    if (clip_did_set_selection == FALSE)  /* not when -1 */
+    if (--global_change_count > 0)
+	/* recursive */
+	return;
+    if (!clip_did_set_selection)
     {
 	clip_did_set_selection = TRUE;
 	clip_unnamed = clip_unnamed_saved;
-	if (clip_unnamed & CLIP_UNNAMED)
+	clip_unnamed_saved = FALSE;
+	if (clipboard_needs_update)
 	{
-	    clip_own_selection(&clip_star);
-	    clip_gen_set_selection(&clip_star);
-	}
-	if (clip_unnamed & CLIP_UNNAMED_PLUS)
-	{
-	    clip_own_selection(&clip_plus);
-	    clip_gen_set_selection(&clip_plus);
+	    /* only store something in the clipboard,
+	     * if we have yanked anything to it */
+	    if (clip_unnamed & CLIP_UNNAMED)
+	    {
+		clip_own_selection(&clip_star);
+		clip_gen_set_selection(&clip_star);
+	    }
+	    if (clip_unnamed & CLIP_UNNAMED_PLUS)
+	    {
+		clip_own_selection(&clip_plus);
+		clip_gen_set_selection(&clip_plus);
+	    }
 	}
     }
-    clip_unnamed_saved = FALSE;
 }
 
 /*
@@ -1477,10 +1490,12 @@ clip_gen_set_selection(cbd)
     {
 	/* Updating postponed, so that accessing the system clipboard won't
 	 * hang Vim when accessing it many times (e.g. on a :g comand). */
-	if (cbd == &clip_plus && (clip_unnamed_saved & CLIP_UNNAMED_PLUS))
+	if ((cbd == &clip_plus && (clip_unnamed_saved & CLIP_UNNAMED_PLUS))
+		|| (cbd == &clip_star && (clip_unnamed_saved & CLIP_UNNAMED)))
+	{
+	    clipboard_needs_update = TRUE;
 	    return;
-	else if (cbd == &clip_star && (clip_unnamed_saved & CLIP_UNNAMED))
-	    return;
+	}
     }
 #ifdef FEAT_XCLIPBOARD
 # ifdef FEAT_GUI
