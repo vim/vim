@@ -109,6 +109,7 @@ static match_T search_hl;	/* used for 'hlsearch' highlight matching */
 
 #ifdef FEAT_FOLDING
 static foldinfo_T win_foldinfo;	/* info for 'foldcolumn' */
+static int compute_foldcolumn __ARGS((win_T *wp, int col));
 #endif
 
 /*
@@ -1202,7 +1203,7 @@ win_update(wp)
 			lnumb = wp->w_lines[i].wl_lnum;
 			/* When there is a fold column it might need updating
 			 * in the next line ("J" just above an open fold). */
-			if (wp->w_p_fdc > 0)
+			if (compute_foldcolumn(wp, 0) > 0)
 			    ++lnumb;
 		    }
 		}
@@ -2238,13 +2239,16 @@ win_draw_end(wp, c1, c2, row, endrow, hl)
 #else
 # define FDC_OFF 0
 #endif
+#ifdef FEAT_FOLDING
+    int		fdc = compute_foldcolumn(wp, 0);
+#endif
 
 #ifdef FEAT_RIGHTLEFT
     if (wp->w_p_rl)
     {
 	/* No check for cmdline window: should never be right-left. */
 # ifdef FEAT_FOLDING
-	n = wp->w_p_fdc;
+	n = fdc;
 
 	if (n > 0)
 	{
@@ -2293,9 +2297,9 @@ win_draw_end(wp, c1, c2, row, endrow, hl)
 	}
 #endif
 #ifdef FEAT_FOLDING
-	if (wp->w_p_fdc > 0)
+	if (fdc > 0)
 	{
-	    int	    nn = n + wp->w_p_fdc;
+	    int	    nn = n + fdc;
 
 	    /* draw the fold column at the left */
 	    if (nn > W_WIDTH(wp))
@@ -2345,6 +2349,24 @@ advance_color_col(vcol, color_cols)
 #endif
 
 #ifdef FEAT_FOLDING
+/*
+ * Compute the width of the foldcolumn.  Based on 'foldcolumn' and how much
+ * space is available for window "wp", minus "col".
+ */
+    static int
+compute_foldcolumn(wp, col)
+    win_T *wp;
+    int   col;
+{
+    int fdc = wp->w_p_fdc;
+    int wmw = wp == curwin && p_wmw == 0 ? 1 : p_wmw;
+    int wwidth = W_WIDTH(wp);
+
+    if (fdc > wwidth - (col + wmw))
+	fdc = wwidth - (col + wmw);
+    return fdc;
+}
+
 /*
  * Display one folded line.
  */
@@ -2396,10 +2418,9 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 
     /*
      * 2. Add the 'foldcolumn'
+     *    Reduce the width when there is not enough space.
      */
-    fdc = wp->w_p_fdc;
-    if (fdc > W_WIDTH(wp) - col)
-	fdc = W_WIDTH(wp) - col;
+    fdc = compute_foldcolumn(wp, col);
     if (fdc > 0)
     {
 	fill_foldcolumn(buf, wp, TRUE, lnum);
@@ -2787,23 +2808,24 @@ fill_foldcolumn(p, wp, closed, lnum)
     int		level;
     int		first_level;
     int		empty;
+    int		fdc = compute_foldcolumn(wp, 0);
 
     /* Init to all spaces. */
-    copy_spaces(p, (size_t)wp->w_p_fdc);
+    copy_spaces(p, (size_t)fdc);
 
     level = win_foldinfo.fi_level;
     if (level > 0)
     {
 	/* If there is only one column put more info in it. */
-	empty = (wp->w_p_fdc == 1) ? 0 : 1;
+	empty = (fdc == 1) ? 0 : 1;
 
 	/* If the column is too narrow, we start at the lowest level that
 	 * fits and use numbers to indicated the depth. */
-	first_level = level - wp->w_p_fdc - closed + 1 + empty;
+	first_level = level - fdc - closed + 1 + empty;
 	if (first_level < 1)
 	    first_level = 1;
 
-	for (i = 0; i + empty < wp->w_p_fdc; ++i)
+	for (i = 0; i + empty < fdc; ++i)
 	{
 	    if (win_foldinfo.fi_lnum == lnum
 			      && first_level + i >= win_foldinfo.fi_low_level)
@@ -2819,7 +2841,7 @@ fill_foldcolumn(p, wp, closed, lnum)
 	}
     }
     if (closed)
-	p[i >= wp->w_p_fdc ? i - 1 : i] = '+';
+	p[i >= fdc ? i - 1 : i] = '+';
 }
 #endif /* FEAT_FOLDING */
 
@@ -3556,12 +3578,14 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #ifdef FEAT_FOLDING
 	    if (draw_state == WL_FOLD - 1 && n_extra == 0)
 	    {
+		int fdc = compute_foldcolumn(wp, 0);
+
 		draw_state = WL_FOLD;
-		if (wp->w_p_fdc > 0)
+		if (fdc > 0)
 		{
 		    /* Draw the 'foldcolumn'. */
 		    fill_foldcolumn(extra, wp, FALSE, lnum);
-		    n_extra = wp->w_p_fdc;
+		    n_extra = fdc;
 		    p_extra = extra;
 		    p_extra[n_extra] = NUL;
 		    c_extra = NUL;
