@@ -4457,6 +4457,8 @@ nv_screengo(oap, dir, dist)
     col_off2 = col_off1 - curwin_col_off2();
     width1 = W_WIDTH(curwin) - col_off1;
     width2 = W_WIDTH(curwin) - col_off2;
+    if (width2 == 0)
+	width2 = 1; /* avoid divide by zero */
 
 #ifdef FEAT_VERTSPLIT
     if (curwin->w_width != 0)
