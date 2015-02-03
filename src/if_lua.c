@@ -1547,6 +1547,7 @@ luaV_setref (lua_State *L)
 	abort = set_ref_in_item(&tv, copyID, NULL, NULL);
     }
     lua_pushinteger(L, abort);
+    return 0;
 }
 
     static int
