@@ -5416,10 +5416,12 @@ diff-mode	diff.txt	/*diff-mode*
 diff-options	diff.txt	/*diff-options*
 diff-original-file	diff.txt	/*diff-original-file*
 diff-patchexpr	diff.txt	/*diff-patchexpr*
+diff-slow	diff.txt	/*diff-slow*
 diff.txt	diff.txt	/*diff.txt*
 diff.vim	syntax.txt	/*diff.vim*
 diff_filler()	eval.txt	/*diff_filler()*
 diff_hlID()	eval.txt	/*diff_hlID()*
+diff_translations	diff.txt	/*diff_translations*
 digraph	digraph.txt	/*digraph*
 digraph-arg	change.txt	/*digraph-arg*
 digraph-encoding	digraph.txt	/*digraph-encoding*
@@ -7461,6 +7463,7 @@ printf()	eval.txt	/*printf()*
 printf-%	eval.txt	/*printf-%*
 printf-E	eval.txt	/*printf-E*
 printf-G	eval.txt	/*printf-G*
+printf-S	eval.txt	/*printf-S*
 printf-X	eval.txt	/*printf-X*
 printf-c	eval.txt	/*printf-c*
 printf-d	eval.txt	/*printf-d*

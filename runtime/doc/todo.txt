@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Jan 23
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Feb 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,8 +35,6 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 Regexp problems:
-- The NFA engine does not implement the time limit passed to
-  nfa_regexec_multi()
 - Using win_linetabsize() can still be slow. Cache the result, store col and
   vcol. Reset them when moving to another line.
 - Very slow with a long line and Ruby highlighting. (John Whitley, 2014 Dec 4)
@@ -57,15 +55,19 @@ Regexp problems:
   engine, can we do this with the new engine?  E.g. with
   "/\%(<\1>\)\@<=.*\%(<\/\(\w\+\)>\)\@=" matching text inside HTML tags.
 - Diff highlighting can be very slow. (Issue 309)
-- Using "{1,1000}" is much slower than it was with the old engine.
-  (Dominique Pelle, 2015 Jan 22) 
 - Using %> for a virtual column has a check based on 'tabsize'.  Better would
   be to cache the result of win_linetabsize(col), storing both col and vcol,
   and use them to decide whether win_linetabsize() needs to be called.  Reset
   col and vcol when moving to another line.
+- this doesn't work: "syntax match ErrorMsg /.\%9l\%>20c\&\%<28c/".  Leaving
+  out the \& works.  Seems any column check after \& fails.
 
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
+
+Docs: "= register is writable. (Christian Brabandt, 2015 Jan 28)
+
+New syntax file for pfmain. (Anton Shestakov, 2015 Feb 2)
 
 Patch to make getregtype() return the right size for non-linux systems.
 (Yasuhiro Matsumoto, 2014 Jul 8)
@@ -91,21 +93,6 @@ inconsistent with the documentation.
 
 Better greek spell checking.  Issue 299.
 
-Patch to fix slow valgrind highlighting. (Dominique, 2015 Jan 15)
-Does maintainer respond?
-
-Patch on issue 212: feedkeys() with dot doesn't work as expected.
-
-Patch to support hex values for setting option value.
-(Zyx, 2014 Nov 6)
-
-Patch to fix problems with small screen sizes. (Christian Brabandt, 2015 Jan
-8)
-
-":tabdo windo echo 'hi'" causes "* register not to be changed.
-(Salman Halim, 2015 Jan 17)
-Patch by Christian, 2015 Jan 20.  There is another problem, wait a bit.
-
 On MS-Windows running tests with Mercurial has problems when the fileformat of
 the input files are changed. (Ken Takata, Taro Muraoka, 2014 Sep 25)
 Update Nov 5.
@@ -113,9 +100,19 @@ Update Nov 5.
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
 
-Patch for this from Marcin Szamotulski, 2014 Dec 28:
-8   Make the # register writable, so that it can be restored after jumping
-    around in windows.
+Patch to add "tn" termcap feature, whether Vim can write in the last screen
+cell. (Hayaki Saito, 2015 Jan 28)
+
+Patch to fix getting buffer number for autocommand. (Lech Lorens, 2015 Jan 27)
+
+Add a few features to xxd. (Vadim Vygonets, 2013 Nov 11)
+Patches: 2013 Nov 19
+1: Add -e: little endian hexdump
+2: Add -o: add offset to displayed position
+3: Change displayed file position width to 8 chars
+
+Undo messes up text.  Issue 324.
+Patch from Christian on the issue.
 
 Using CTRL-L while popup menu is visible behaves like CTRL-P, which is wrong.
 Patch by Yasuhiro Matsumoto, 2015 Jan 5.
@@ -132,6 +129,8 @@ patch from Ken Takata (2014 Nov 6)
 ml_updatechunk() is slow when retrying for another encoding. (John Little,
 2014 Sep 11)
 
+Patch to add counts to zr and zm. (Marcin Szamotulski, 2015 Jan 28)
+
 Patch to add a different escape sequence for replace mode.
 (Omar Sandoval, 2014 Nov 30)
 
@@ -142,8 +141,18 @@ Patch by Yasuhiro Matsumoto, 2014 Dec 14.
 
 Extended file attributes lost on write (backupcopy=no).  Issue 306.
 
+Patch to add an argument to ":ls" for specific kinds of buffers.
+(Marcin Szamotulski, 2015 Jan 31)
+
+Crash when using R syntax. (Jakson Alves de Aquino, 2015 Jan 30)
+Memory freed by ":syn clear" but still referenced, syntax items referenced
+from two windows?
+
 Window height computed incorrectly when Vim is minimized.
 Patch to fix this. (Ingo Karkat, 2014 Dec 19)
+
+Patch to fix CTRL-W handling in Insert mode for multi-byte characters.
+(Yasuhiro Matsumoto, 2015 Jan 29, update with test)
 
 Patch to allow values greater than 255 for ctermfg/ctermbg on Windows.
 (Yasuhiro Matsumoto, 2014 Dec 5)
@@ -152,6 +161,8 @@ Mixup of highlighting when there is a match and SpellBad. (ZyX, 2015 Jan 1)
 
 Problem caused by patch 7.3.638: window->open does not update window
 correctly. Issue 91.  With patch.
+
+Patch to add 'belloff' option. (Christian Brabandt, 2015 Jan 31)
 
 Patch for drag&drop reordering of GUI tab pages reordering.
 (Ken Takata, 2013 Nov 22, second one, also by Masamichi Abe)
@@ -257,12 +268,6 @@ Update 2015 Jan 10.
 Win32: patch to use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
 More tests May 14. Update May 29.  Update Aug 10.
 
-The garbage collector may use too much stack.  Make set_ref_in_item()
-iterative instead of recursive.   Test program by Marc Weber (2013 Dec 10)
-Patch by Ben Fritz, 2014 Jun 22.  Update 2015 Jan 21.
-Related: Vim hangs when freeing a lot of objects.  Patch by Yasuhiro
-Matsumoto, 2014 Aug 26.
-
 Idea: For a window in the middle (has window above and below it), use
 right-mouse-drag on the status line to move a window up/down without changing
 its height?  It's like dragging the status bar above it at the same time.
@@ -271,6 +276,9 @@ Can we make ":unlet $VAR" use unsetenv() to delete the env var?
 What for systems that don't have unsetenv()?
 
 Patch to add a :domodeline command. (Christian Brabandt, 2014 Oct 21)
+
+Patch to add TabNew, TabNewEntered and TabClosed autocommand events.
+(Felipe Morales, 2015 Feb 1)
 
 This does not give an error: (Andre Sihera, 2014 Mar 21)
     vim -u NONE 1 2 3 -c 'bufdo if 1 | echo 1'
@@ -1655,12 +1663,6 @@ Menu item that does "xxd -r" doesn't work when 'fileencoding' is utf-16.
 Check for this and use iconv?  (Edward L. Fox, 2007 Sep 12)
 Does the conversion in the other direction work when 'fileencodings' is set
 properly?
-
-Add a few features to xxd. (Vadim Vygonets, 2013 Nov 11)
-Patches: 2013 Nov 19
-1: Add -e: little endian hexdump
-2: Add -o: add offset to displayed position
-3: Change displayed file position width to 8 chars
 
 Cursor displayed in the wrong position when using 'numberwidth'. (James Vega,
 2007 Jun 21)
