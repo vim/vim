@@ -5974,7 +5974,7 @@ list_unref(l)
 }
 
 /*
- * Free a list, including all items it points to.
+ * Free a list, including all non-container items it points to.
  * Ignores the reference count.
  */
     void
@@ -6941,14 +6941,16 @@ garbage_collect()
 free_unref_items(copyID)
     int copyID;
 {
-    dict_T	*dd;
-    list_T	*ll;
+    dict_T	*dd, *dd_next;
+    list_T	*ll, *ll_next;
     int		did_free = FALSE;
 
     /*
      * Go through the list of dicts and free items without the copyID.
      */
     for (dd = first_dict; dd != NULL; )
+    {
+	dd_next = dd->dv_used_next;
 	if ((dd->dv_copyID & COPYID_MASK) != (copyID & COPYID_MASK))
 	{
 	    /* Free the Dictionary and ordinary items it contains, but don't
@@ -6956,12 +6958,9 @@ free_unref_items(copyID)
 	     * of dicts or list of lists. */
 	    dict_free(dd, FALSE);
 	    did_free = TRUE;
-
-	    /* restart, next dict may also have been freed */
-	    dd = first_dict;
 	}
-	else
-	    dd = dd->dv_used_next;
+	dd = dd_next;
+    }
 
     /*
      * Go through the list of lists and free items without the copyID.
@@ -6969,6 +6968,8 @@ free_unref_items(copyID)
      * are not referenced anywhere.
      */
     for (ll = first_list; ll != NULL; )
+    {
+	ll_next = ll->lv_used_next;
 	if ((ll->lv_copyID & COPYID_MASK) != (copyID & COPYID_MASK)
 						      && ll->lv_watch == NULL)
 	{
@@ -6977,13 +6978,9 @@ free_unref_items(copyID)
 	     * or list of lists. */
 	    list_free(ll, FALSE);
 	    did_free = TRUE;
-
-	    /* restart, next list may also have been freed */
-	    ll = first_list;
 	}
-	else
-	    ll = ll->lv_used_next;
-
+	ll = ll_next;
+    }
     return did_free;
 }
 
@@ -7213,7 +7210,7 @@ dict_unref(d)
 }
 
 /*
- * Free a Dictionary, including all items it contains.
+ * Free a Dictionary, including all non-container items it contains.
  * Ignores the reference count.
  */
     void
