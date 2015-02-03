@@ -11212,7 +11212,7 @@ wc_use_keyname(varp, wcp)
     return FALSE;
 }
 
-#ifdef FEAT_LANGMAP
+#if defined(FEAT_LANGMAP) || defined(PROTO)
 /*
  * Any character has an equivalent 'langmap' character.  This is used for
  * keyboards that have a special language mode that sends characters above
@@ -11226,7 +11226,7 @@ wc_use_keyname(varp, wcp)
  * langmap_entry_T.  This does the same as langmap_mapchar[] for characters >=
  * 256.
  */
-# ifdef FEAT_MBYTE
+# if defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * With multi-byte support use growarray for 'langmap' chars >= 256
  */
