@@ -9,5 +9,5 @@ void python_buffer_free __ARGS((buf_T *buf));
 void python_window_free __ARGS((win_T *win));
 void python_tabpage_free __ARGS((tabpage_T *tab));
 void do_pyeval __ARGS((char_u *str, typval_T *rettv));
-void set_ref_in_python __ARGS((int copyID));
+int set_ref_in_python __ARGS((int copyID));
 /* vim: set ft=c : */

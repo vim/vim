@@ -5502,34 +5502,41 @@ run_eval(const char *cmd, typval_T *rettv
     PyErr_Clear();
 }
 
-    static void
+    static int
 set_ref_in_py(const int copyID)
 {
     pylinkedlist_T	*cur;
     dict_T	*dd;
     list_T	*ll;
+    int		abort = FALSE;
 
     if (lastdict != NULL)
-	for(cur = lastdict ; cur != NULL ; cur = cur->pll_prev)
+    {
+	for(cur = lastdict ; !abort && cur != NULL ; cur = cur->pll_prev)
 	{
 	    dd = ((DictionaryObject *) (cur->pll_obj))->dict;
 	    if (dd->dv_copyID != copyID)
 	    {
 		dd->dv_copyID = copyID;
-		set_ref_in_ht(&dd->dv_hashtab, copyID);
+		abort = abort || set_ref_in_ht(&dd->dv_hashtab, copyID, NULL);
 	    }
 	}
+    }
 
     if (lastlist != NULL)
-	for(cur = lastlist ; cur != NULL ; cur = cur->pll_prev)
+    {
+	for(cur = lastlist ; !abort && cur != NULL ; cur = cur->pll_prev)
 	{
 	    ll = ((ListObject *) (cur->pll_obj))->list;
 	    if (ll->lv_copyID != copyID)
 	    {
 		ll->lv_copyID = copyID;
-		set_ref_in_list(ll, copyID);
+		abort = abort || set_ref_in_list(ll, copyID, NULL);
 	    }
 	}
+    }
+
+    return abort;
 }
 
     static int

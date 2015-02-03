@@ -1649,8 +1649,8 @@ do_py3eval (char_u *str, typval_T *rettv)
     }
 }
 
-    void
+    int
 set_ref_in_python3 (int copyID)
 {
-    set_ref_in_py(copyID);
+    int set_ref_in_py(copyID);
 }

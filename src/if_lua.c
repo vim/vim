@@ -1523,12 +1523,14 @@ luaV_luaeval (lua_State *L)
     static int
 luaV_setref (lua_State *L)
 {
-    int copyID = lua_tointeger(L, 1);
-    typval_T tv;
+    int		copyID = lua_tointeger(L, 1);
+    int		abort = FALSE;
+    typval_T	tv;
+
     luaV_getfield(L, LUAVIM_LIST);
     luaV_getfield(L, LUAVIM_DICT);
     lua_pushnil(L);
-    while (lua_next(L, lua_upvalueindex(1)) != 0) /* traverse cache table */
+    while (!abort && lua_next(L, lua_upvalueindex(1)) != 0) /* traverse cache table */
     {
 	lua_getmetatable(L, -1);
 	if (lua_rawequal(L, -1, 2)) /* list? */
@@ -1542,9 +1544,9 @@ luaV_setref (lua_State *L)
 	    tv.vval.v_dict = (dict_T *) lua_touserdata(L, 4); /* key */
 	}
 	lua_pop(L, 2); /* metatable and value */
-	set_ref_in_item(&tv, copyID);
+	abort = set_ref_in_item(&tv, copyID, NULL, NULL);
     }
-    return 0;
+    lua_pushinteger(L, abort);
 }
 
     static int
@@ -1770,13 +1772,23 @@ do_luaeval (char_u *str, typval_T *arg, typval_T *rettv)
     lua_call(L, 3, 0);
 }
 
-    void
+    int
 set_ref_in_lua (int copyID)
 {
-    if (!lua_isopen()) return;
-    luaV_getfield(L, LUAVIM_SETREF);
-    lua_pushinteger(L, copyID);
-    lua_call(L, 1, 0);
+    int aborted = 0;
+
+    if (lua_isopen())
+    {
+	luaV_getfield(L, LUAVIM_SETREF);
+	/* call the function with 1 arg, getting 1 result back */
+	lua_pushinteger(L, copyID);
+	lua_call(L, 1, 1);
+	/* get the result */
+	aborted = lua_tointeger(L, -1);
+	/* pop result off the stack */
+	lua_pop(L, 1);
+    }
+    return aborted;
 }
 
 #endif
