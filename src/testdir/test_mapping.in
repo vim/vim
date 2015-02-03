@@ -31,10 +31,18 @@ o+
 : " expr mapping with langmap
 :inoremap <expr> { "FAIL_iexplangmap"
 o+
+:" issue #212 (feedkeys insert mapping at current position)
+:nnoremap . :call feedkeys(".", "in")<cr>
+:/^a b
+0qqdw.ifooqj0@q:unmap .
+
 
 :/^test/,$w! test.out
 :qa!
 ENDTEST
 
 test starts here:
+
+a b c d
+a b c d
 
