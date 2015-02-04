@@ -1517,7 +1517,7 @@ luaV_luaeval (lua_State *L)
 	return 0;
     }
     luaV_totypval(L, -1, rettv);
-    return 0;
+    return 1;
 }
 
     static int
@@ -1530,7 +1530,8 @@ luaV_setref (lua_State *L)
     luaV_getfield(L, LUAVIM_LIST);
     luaV_getfield(L, LUAVIM_DICT);
     lua_pushnil(L);
-    while (!abort && lua_next(L, lua_upvalueindex(1)) != 0) /* traverse cache table */
+    /* traverse cache table */
+    while (!abort && lua_next(L, lua_upvalueindex(1)) != 0)
     {
 	lua_getmetatable(L, -1);
 	if (lua_rawequal(L, -1, 2)) /* list? */
