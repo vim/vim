@@ -6815,7 +6815,7 @@ garbage_collect()
     win_T	*wp;
     int		i;
     funccall_T	*fc, **pfc;
-    int		did_free;
+    int		did_free = FALSE;
     int		did_free_funccal = FALSE;
 #ifdef FEAT_WINDOWS
     tabpage_T	*tp;
