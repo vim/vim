@@ -1517,7 +1517,7 @@ luaV_luaeval (lua_State *L)
 	return 0;
     }
     luaV_totypval(L, -1, rettv);
-    return 1;
+    return 0;
 }
 
     static int
@@ -1548,7 +1548,7 @@ luaV_setref (lua_State *L)
 	abort = set_ref_in_item(&tv, copyID, NULL, NULL);
     }
     lua_pushinteger(L, abort);
-    return 0;
+    return 1;
 }
 
     static int
