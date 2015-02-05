@@ -6838,7 +6838,7 @@ theend:
 nfa_regtry(prog, col, tm)
     nfa_regprog_T   *prog;
     colnr_T	    col;
-    proftime_T	    *tm;	/* timeout limit or NULL */
+    proftime_T	    *tm UNUSED;	/* timeout limit or NULL */
 {
     int		i;
     regsubs_T	subs, m;
