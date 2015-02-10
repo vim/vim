@@ -2978,6 +2978,7 @@ static struct vimoption
     p_term("t_WS", T_CWS)
     p_term("t_SI", T_CSI)
     p_term("t_EI", T_CEI)
+    p_term("t_xn", T_XN)
     p_term("t_xs", T_XS)
     p_term("t_ZH", T_CZH)
     p_term("t_ZR", T_CZR)

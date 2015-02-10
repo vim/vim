@@ -66,6 +66,7 @@ enum SpecialKey
     KS_CSF,	/* set foreground color */
     KS_CSB,	/* set background color */
     KS_XS,	/* standout not erased by overwriting (hpterm) */
+    KS_XN,	/* newline glitch */
     KS_MB,	/* blink mode */
     KS_CAF,	/* set foreground color (ANSI) */
     KS_CAB,	/* set background color (ANSI) */
@@ -144,6 +145,7 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_CSF	(term_str(KS_CSF))	/* set foreground color */
 #define T_CSB	(term_str(KS_CSB))	/* set background color */
 #define T_XS	(term_str(KS_XS))	/* standout not erased by overwriting */
+#define T_XN	(term_str(KS_XN))	/* newline glitch */
 #define T_MB	(term_str(KS_MB))	/* blink mode */
 #define T_CAF	(term_str(KS_CAF))	/* set foreground color (ANSI) */
 #define T_CAB	(term_str(KS_CAB))	/* set background color (ANSI) */

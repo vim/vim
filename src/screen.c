@@ -7968,9 +7968,11 @@ screen_char(off, row, col)
     if (row >= screen_Rows || col >= screen_Columns)
 	return;
 
-    /* Outputting the last character on the screen may scrollup the screen.
-     * Don't to it!  Mark the character invalid (update it when scrolled up) */
-    if (row == screen_Rows - 1 && col == screen_Columns - 1
+    /* Outputting a character in the last cell on the screen may scroll the
+     * screen up.  Only do it when the "xn" termcap property is set, otherwise
+     * mark the character invalid (update it when scrolled up). */
+    if (*T_XN == NUL
+	    && row == screen_Rows - 1 && col == screen_Columns - 1
 #ifdef FEAT_RIGHTLEFT
 	    /* account for first command-line character in rightleft mode */
 	    && !cmdmsg_rl

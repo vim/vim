@@ -200,6 +200,7 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_VB,	IF_EB("\033|f", ESC_STR "|f")},
     {(int)KS_MS,	"y"},
     {(int)KS_UT,	"y"},
+    {(int)KS_XN,	"y"},
     {(int)KS_LE,	"\b"},		/* cursor-left = BS */
     {(int)KS_ND,	"\014"},	/* cursor-right = CTRL-L */
 # ifdef TERMINFO
@@ -658,6 +659,7 @@ static struct builtin_term builtin_termcaps[] =
 
     {(int)KS_MS,	"y"},		/* save to move cur in reverse mode */
     {(int)KS_UT,	"y"},
+    {(int)KS_XN,	"y"},
     {(int)KS_LE,	"\b"},
 #  ifdef TERMINFO
     {(int)KS_CM,	"\033|%i%p1%d;%p2%dH"},/* cursor motion */
@@ -772,6 +774,7 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CSF,	IF_EB("\033[101;%dm", ESC_STR "[101;%dm")},	/* set screen foreground color */
     {(int)KS_MS,	"y"},
     {(int)KS_UT,	"y"},
+    {(int)KS_XN,	"y"},
     {(int)KS_LE,	"\b"},
 #  ifdef TERMINFO
     {(int)KS_CM,	IF_EB("\033[%i%p1%d;%p2%dH",
@@ -1207,6 +1210,7 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_UCS,	"[UCS]"},
     {(int)KS_MS,	"[MS]"},
     {(int)KS_UT,	"[UT]"},
+    {(int)KS_XN,	"[XN]"},
 #  ifdef TERMINFO
     {(int)KS_CM,	"[%p1%dCM%p2%d]"},
 #  else
@@ -1645,6 +1649,9 @@ set_termname(term)
 		if ((T_XS == NULL || T_XS == empty_option)
 							&& tgetflag("xs") > 0)
 		    T_XS = (char_u *)"y";
+		if ((T_XN == NULL || T_XN == empty_option)
+							&& tgetflag("xn") > 0)
+		    T_XN = (char_u *)"y";
 		if ((T_DB == NULL || T_DB == empty_option)
 							&& tgetflag("db") > 0)
 		    T_DB = (char_u *)"y";

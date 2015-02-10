@@ -224,10 +224,11 @@ The options are listed below.  The associated termcap code is always equal to
 the last two characters of the option name.  Only one termcap code is
 required: Cursor motion, 't_cm'.
 
-The options 't_da', 't_db', 't_ms', 't_xs' represent flags in the termcap.
-When the termcap flag is present, the option will be set to "y".  But any
-non-empty string means that the flag is set.  An empty string means that the
-flag is not set.  't_CS' works like this too, but it isn't a termcap flag.
+The options 't_da', 't_db', 't_ms', 't_xs', 't_xn' represent flags in the
+termcap.  When the termcap flag is present, the option will be set to "y".
+But any non-empty string means that the flag is set.  An empty string means
+that the flag is not set.  't_CS' works like this too, but it isn't a termcap
+flag.
 
 OUTPUT CODES
 	option	meaning	~
@@ -281,6 +282,9 @@ OUTPUT CODES
 	t_vs	cursor very visible				*t_vs* *'t_vs'*
 								*t_xs* *'t_xs'*
 	t_xs	if non-empty, standout not erased by overwriting (hpterm)
+								*t_xn* *'t_xn'*
+	t_xn	if non-empty, character writing at the last cell of screen
+		didn't causes scrolling
 	t_ZH	italics mode					*t_ZH* *'t_ZH'*
 	t_ZR	italics end					*t_ZR* *'t_ZR'*
 
