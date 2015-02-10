@@ -747,12 +747,14 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
     else if (our_tv->v_type == VAR_DICT)
     {
 
-	hashtab_T	*ht = &our_tv->vval.v_dict->dv_hashtab;
-	long_u	todo = ht->ht_used;
+	hashtab_T	*ht;
+	long_u		todo;
 	hashitem_T	*hi;
 	dictitem_T	*di;
+
 	if (our_tv->vval.v_dict == NULL)
 	    return NULL;
+	ht = &our_tv->vval.v_dict->dv_hashtab;
 
 	if (!(ret = PyDict_New()))
 	    return NULL;
@@ -763,6 +765,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	    return NULL;
 	}
 
+	todo = ht->ht_used;
 	for (hi = ht->ht_array; todo > 0; ++hi)
 	{
 	    if (!HASHITEM_EMPTY(hi))
