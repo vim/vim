@@ -3431,10 +3431,14 @@ get_keystroke()
 	    buf = alloc(buflen);
 	else if (maxlen < 10)
 	{
+	    char_u  *t_buf = buf;
+
 	    /* Need some more space. This might happen when receiving a long
 	     * escape sequence. */
 	    buflen += 100;
 	    buf = vim_realloc(buf, buflen);
+	    if (buf == NULL)
+		vim_free(t_buf);
 	    maxlen = (buflen - 6 - len) / 3;
 	}
 	if (buf == NULL)

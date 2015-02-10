@@ -5057,6 +5057,8 @@ ml_updatechunk(buf, line, len, updtype)
 	/* May resize here so we don't have to do it in both cases below */
 	if (buf->b_ml.ml_usedchunks + 1 >= buf->b_ml.ml_numchunks)
 	{
+	    chunksize_T *t_chunksize = buf->b_ml.ml_chunksize;
+
 	    buf->b_ml.ml_numchunks = buf->b_ml.ml_numchunks * 3 / 2;
 	    buf->b_ml.ml_chunksize = (chunksize_T *)
 		vim_realloc(buf->b_ml.ml_chunksize,
@@ -5064,6 +5066,7 @@ ml_updatechunk(buf, line, len, updtype)
 	    if (buf->b_ml.ml_chunksize == NULL)
 	    {
 		/* Hmmmm, Give up on offset for this buffer */
+		vim_free(t_chunksize);
 		buf->b_ml.ml_usedchunks = -1;
 		return;
 	    }

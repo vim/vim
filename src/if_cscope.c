@@ -1507,9 +1507,16 @@ cs_insert_filelist(fname, ppath, flags, sb)
 	}
 	else
 	{
+	    csinfo_T *t_csinfo = csinfo;
+
 	    /* Reallocate space for more connections. */
 	    csinfo_size *= 2;
 	    csinfo = vim_realloc(csinfo, sizeof(csinfo_T)*csinfo_size);
+	    if (csinfo == NULL)
+	    {
+		vim_free(t_csinfo);
+		csinfo_size = 0;
+	    }
 	}
 	if (csinfo == NULL)
 	    return -1;
@@ -2059,6 +2066,7 @@ cs_print_tags_priv(matches, cntxts, num_matches)
     int num_matches;
 {
     char	*buf = NULL;
+    char	*t_buf;
     int		bufsize = 0; /* Track available bufsize */
     int		newsize = 0;
     char	*ptag;
@@ -2120,9 +2128,13 @@ cs_print_tags_priv(matches, cntxts, num_matches)
 	newsize = (int)(strlen(csfmt_str) + 16 + strlen(lno));
 	if (bufsize < newsize)
 	{
+	    t_buf = buf;
 	    buf = (char *)vim_realloc(buf, newsize);
 	    if (buf == NULL)
+	    {
 		bufsize = 0;
+		vim_free(t_buf);
+	    }
 	    else
 		bufsize = newsize;
 	}
@@ -2143,9 +2155,13 @@ cs_print_tags_priv(matches, cntxts, num_matches)
 
 	if (bufsize < newsize)
 	{
+	    t_buf = buf;
 	    buf = (char *)vim_realloc(buf, newsize);
 	    if (buf == NULL)
+	    {
 		bufsize = 0;
+		vim_free(t_buf);
+	    }
 	    else
 		bufsize = newsize;
 	}
