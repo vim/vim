@@ -2044,6 +2044,20 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 #ifdef _MSC_VER
 /* Avoid useless warning "conversion from X to Y of greater size". */
  #pragma warning(disable : 4312)
+/* Avoid warning for old style function declarators */
+ #pragma warning(disable : 4131)
+/* Avoid warning for conversion to type with smaller range */
+ #pragma warning(disable : 4244)
+/* Avoid warning for conversion to larger size */
+ #pragma warning(disable : 4306)
+/* Avoid warning for unreferenced formal parameter */
+ #pragma warning(disable : 4100)
+/* Avoid warning for differs in indirection to slightly different base type */
+ #pragma warning(disable : 4057)
+/* Avoid warning for constant conditional expression */
+ #pragma warning(disable : 4127)
+/* Avoid warning for assignment within conditional */
+ #pragma warning(disable : 4706)
 #endif
 
 /* Note: a NULL argument for vim_realloc() is not portable, don't use it. */
