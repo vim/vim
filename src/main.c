@@ -1051,7 +1051,7 @@ main_loop(cmdwin, noexmode)
     int		noexmode;   /* TRUE when return on entering Ex mode */
 {
     oparg_T	oa;				/* operator arguments */
-    int		previous_got_int = FALSE;	/* "got_int" was TRUE */
+    volatile int previous_got_int = FALSE;	/* "got_int" was TRUE */
 #ifdef FEAT_CONCEAL
     linenr_T	conceal_old_cursor_line = 0;
     linenr_T	conceal_new_cursor_line = 0;
