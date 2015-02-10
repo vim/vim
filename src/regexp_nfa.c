@@ -2034,9 +2034,10 @@ nfa_regpiece()
 	    }
 
 	    /* The engine is very inefficient (uses too many states) when the
-	     * maximum is much larger than the minimum.  Bail out if we can
-	     * use the other engine. */
-	    if ((nfa_re_flags & RE_AUTO) && maxval > minval + 200)
+	     * maximum is much larger than the minimum and when the maximum is
+	     * large.  Bail out if we can use the other engine. */
+	    if ((nfa_re_flags & RE_AUTO)
+				   && (maxval > minval + 200 || maxval > 500))
 		return FAIL;
 
 	    /* Ignore previous call to nfa_regatom() */
@@ -4254,7 +4255,6 @@ state_in_list(l, state, subs)
  * Add "state" and possibly what follows to state list ".".
  * Returns "subs_arg", possibly copied into temp_subs.
  */
-
     static regsubs_T *
 addstate(l, state, subs_arg, pim, off)
     nfa_list_T		*l;	    /* runtime state list */
@@ -4392,6 +4392,7 @@ skip_add:
 		    subs = &temp_subs;
 		}
 
+		/* TODO: check for vim_realloc() returning NULL. */
 		l->t = vim_realloc(l->t, newlen * sizeof(nfa_thread_T));
 		l->len = newlen;
 	    }
