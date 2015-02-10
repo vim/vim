@@ -311,9 +311,10 @@
 # include <time.h>	/* for time_t */
 #endif
 
-#define MAXWLEN 250		/* Assume max. word len is this many bytes.
+#define MAXWLEN 254		/* Assume max. word len is this many bytes.
 				   Some places assume a word length fits in a
-				   byte, thus it can't be above 255. */
+				   byte, thus it can't be above 255.
+				   Must be >= PFD_NOTSPECIAL. */
 
 /* Type used for indexes in the word tree need to be at least 4 bytes.  If int
  * is 8 bytes we could use something smaller, but what? */
