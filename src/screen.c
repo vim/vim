@@ -4571,7 +4571,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			int	saved_nextra = n_extra;
 
 #ifdef FEAT_CONCEAL
-			if ((is_concealing || boguscols > 0) && vcol_off > 0)
+			if (vcol_off > 0)
 			    /* there are characters to conceal */
 			    tab_len += vcol_off;
 			/* boguscols before FIX_FOR_BOGUSCOLS macro from above
@@ -4609,25 +4609,30 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #ifdef FEAT_CONCEAL
 			/* n_extra will be increased by FIX_FOX_BOGUSCOLS
 			 * macro below, so need to adjust for that here */
-			if ((is_concealing || boguscols > 0) && vcol_off > 0)
+			if (vcol_off > 0)
 			    n_extra -= vcol_off;
 #endif
 		    }
 #endif
 #ifdef FEAT_CONCEAL
-		    /* Tab alignment should be identical regardless of
-		     * 'conceallevel' value. So tab compensates of all
-		     * previous concealed characters, and thus resets vcol_off
-		     * and boguscols accumulated so far in the line. Note that
-		     * the tab can be longer than 'tabstop' when there
-		     * are concealed characters. */
-		    FIX_FOR_BOGUSCOLS;
-		    /* Make sure, the highlighting for the tab char will be
-		     * correctly set further below (effectively reverts the
-		     * FIX_FOR_BOGSUCOLS macro */
-		    if (old_boguscols > 0 && n_extra > tab_len && wp->w_p_list
+		    {
+			int vc_saved = vcol_off;
+
+			/* Tab alignment should be identical regardless of
+			 * 'conceallevel' value. So tab compensates of all
+			 * previous concealed characters, and thus resets
+			 * vcol_off and boguscols accumulated so far in the
+			 * line. Note that the tab can be longer than
+			 * 'tabstop' when there are concealed characters. */
+			FIX_FOR_BOGUSCOLS;
+
+			/* Make sure, the highlighting for the tab char will be
+			 * correctly set further below (effectively reverts the
+			 * FIX_FOR_BOGSUCOLS macro */
+			if (n_extra == tab_len + vc_saved && wp->w_p_list
 								  && lcs_tab1)
-			tab_len += n_extra - tab_len;
+			    tab_len += vc_saved;
+		    }
 #endif
 #ifdef FEAT_MBYTE
 		    mb_utf8 = FALSE;	/* don't draw as UTF-8 */

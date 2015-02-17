@@ -36,3 +36,11 @@ Test 4: set linebreak list listchars and concealing
 #define >_FILE>--------->--->---1       
 #define >_CONSOLE>---------->---2       
 #define >_FILE_AND_CONSOLE>---------3   
+bbeeeeee		;	some text
+
+Test 5: set linebreak list listchars and concealing part2
+eeeeee>--->-;>some text                 
+Test 6: Screenattributes for comment
+ /*		 and some more */
+ScreenAttributes for test6:
+Attribut 0 and 1 and 3 and 5 are different!
