@@ -8693,13 +8693,19 @@ call_func(funcname, len, rettv, argcount, argvars, firstline, lastline,
 		    error = ERROR_DICT;
 		else
 		{
+		    int did_save_redo = FALSE;
+
 		    /*
 		     * Call the user function.
 		     * Save and restore search patterns, script variables and
 		     * redo buffer.
 		     */
 		    save_search_patterns();
-		    saveRedobuff();
+		    if (!ins_compl_active())
+		    {
+			saveRedobuff();
+			did_save_redo = TRUE;
+		    }
 		    ++fp->uf_calls;
 		    call_user_func(fp, argcount, argvars, rettv,
 					       firstline, lastline,
@@ -8709,7 +8715,8 @@ call_func(funcname, len, rettv, argcount, argvars, firstline, lastline,
 			/* Function was unreferenced while being used, free it
 			 * now. */
 			func_free(fp);
-		    restoreRedobuff();
+		    if (did_save_redo)
+			restoreRedobuff();
 		    restore_search_patterns();
 		    error = ERROR_NONE;
 		}
