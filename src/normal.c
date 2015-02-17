@@ -100,7 +100,7 @@ static void	nv_end __ARGS((cmdarg_T *cap));
 static void	nv_dollar __ARGS((cmdarg_T *cap));
 static void	nv_search __ARGS((cmdarg_T *cap));
 static void	nv_next __ARGS((cmdarg_T *cap));
-static void	normal_search __ARGS((cmdarg_T *cap, int dir, char_u *pat, int opt));
+static int	normal_search __ARGS((cmdarg_T *cap, int dir, char_u *pat, int opt));
 static void	nv_csearch __ARGS((cmdarg_T *cap));
 static void	nv_brackets __ARGS((cmdarg_T *cap));
 static void	nv_percent __ARGS((cmdarg_T *cap));
@@ -5765,7 +5765,7 @@ nv_ident(cap)
 	init_history();
 	add_to_history(HIST_SEARCH, buf, TRUE, NUL);
 #endif
-	normal_search(cap, cmdchar == '*' ? '/' : '?', buf, 0);
+	(void)normal_search(cap, cmdchar == '*' ? '/' : '?', buf, 0);
     }
     else
 	do_cmdline_cmd(buf);
@@ -6301,7 +6301,7 @@ nv_search(cap)
 	return;
     }
 
-    normal_search(cap, cap->cmdchar, cap->searchbuf,
+    (void)normal_search(cap, cap->cmdchar, cap->searchbuf,
 						(cap->arg ? 0 : SEARCH_MARK));
 }
 
@@ -6313,14 +6313,26 @@ nv_search(cap)
 nv_next(cap)
     cmdarg_T	*cap;
 {
-    normal_search(cap, 0, NULL, SEARCH_MARK | cap->arg);
+    pos_T old = curwin->w_cursor;
+    int   i = normal_search(cap, 0, NULL, SEARCH_MARK | cap->arg);
+
+    if (i == 1 && equalpos(old, curwin->w_cursor))
+    {
+	/* Avoid getting stuck on the current cursor position, which can
+	 * happen when an offset is given and the cursor is on the last char
+	 * in the buffer: Repeat with count + 1. */
+	cap->count1 += 1;
+	(void)normal_search(cap, 0, NULL, SEARCH_MARK | cap->arg);
+	cap->count1 -= 1;
+    }
 }
 
 /*
  * Search for "pat" in direction "dir" ('/' or '?', 0 for repeat).
  * Uses only cap->count1 and cap->oap from "cap".
+ * Return 0 for failure, 1 for found, 2 for found and line offset added.
  */
-    static void
+    static int
 normal_search(cap, dir, pat, opt)
     cmdarg_T	*cap;
     int		dir;
@@ -6354,6 +6366,7 @@ normal_search(cap, dir, pat, opt)
     /* "/$" will put the cursor after the end of the line, may need to
      * correct that here */
     check_cursor();
+    return i;
 }
 
 /*
