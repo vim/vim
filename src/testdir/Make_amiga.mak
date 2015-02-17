@@ -48,6 +48,7 @@ SCRIPTS = test1.out test3.out test4.out test5.out test6.out \
 		test_listlbr.out \
 		test_listlbr_utf8.out \
 		test_mapping.out \
+		test_marks.out \
 		test_nested_function.out \
 		test_options.out \
 		test_qf_title.out \
@@ -188,6 +189,7 @@ test_insertcount.out: test_insertcount.in
 test_listlbr.out: test_listlbr.in
 test_listlbr_utf8.out: test_listlbr_utf8.in
 test_mapping.out: test_mapping.in
+test_marks.out: test_marks.in
 test_nested_function.out: test_nested_function.in
 test_options.out: test_options.in
 test_qf_title.out: test_qf_title.in
