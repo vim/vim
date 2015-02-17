@@ -1167,7 +1167,7 @@ EXTERN int	lcs_tab1 INIT(= NUL);
 EXTERN int	lcs_tab2 INIT(= NUL);
 EXTERN int	lcs_trail INIT(= NUL);
 #ifdef FEAT_CONCEAL
-EXTERN int	lcs_conceal INIT(= '-');
+EXTERN int	lcs_conceal INIT(= ' ');
 #endif
 
 #if defined(FEAT_WINDOWS) || defined(FEAT_WILDMENU) || defined(FEAT_STL_OPT) \
