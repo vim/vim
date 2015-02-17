@@ -9230,6 +9230,7 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
 #ifdef FEAT_PROFILE
     proftime_T	wait_time;
 #endif
+    int		did_save_redobuff = FALSE;
 
     /*
      * Quickly return if there are no autocommands for this event or
@@ -9430,7 +9431,11 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     if (!autocmd_busy)
     {
 	save_search_patterns();
-	saveRedobuff();
+	if (!ins_compl_active())
+	{
+	    saveRedobuff();
+	    did_save_redobuff = TRUE;
+	}
 	did_filetype = keep_filetype;
     }
 
@@ -9530,7 +9535,8 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     if (!autocmd_busy)
     {
 	restore_search_patterns();
-	restoreRedobuff();
+	if (did_save_redobuff)
+	    restoreRedobuff();
 	did_filetype = FALSE;
 	while (au_pending_free_buf != NULL)
 	{
