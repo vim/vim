@@ -8842,7 +8842,7 @@ ins_bs(c, mode, inserted_space_p)
      */
     if (curwin->w_cursor.col == 0)
     {
-	lnum = Insstart_orig.lnum;
+	lnum = Insstart.lnum;
 	if (curwin->w_cursor.lnum == lnum
 #ifdef FEAT_RIGHTLEFT
 			|| revins_on
@@ -8852,9 +8852,8 @@ ins_bs(c, mode, inserted_space_p)
 	    if (u_save((linenr_T)(curwin->w_cursor.lnum - 2),
 			       (linenr_T)(curwin->w_cursor.lnum + 1)) == FAIL)
 		return FALSE;
-	    --Insstart_orig.lnum;
-	    Insstart_orig.col = MAXCOL;
-	    Insstart = Insstart_orig;
+	    --Insstart.lnum;
+	    Insstart.col = MAXCOL;
 	}
 	/*
 	 * In replace mode:
