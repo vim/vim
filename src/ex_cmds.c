@@ -3375,7 +3375,6 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 	if (buf->b_ml.ml_mfp == NULL)		/* no memfile yet */
 	{
 	    oldbuf = FALSE;
-	    buf->b_nwindows = 0;
 	}
 	else					/* existing memfile */
 	{
@@ -3408,7 +3407,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 	 * Make the (new) buffer the one used by the current window.
 	 * If the old buffer becomes unused, free it if ECMD_HIDE is FALSE.
 	 * If the current buffer was empty and has no file name, curbuf
-	 * is returned by buflist_new().
+	 * is returned by buflist_new(), nothing to do here.
 	 */
 	if (buf != curbuf)
 	{
@@ -3515,8 +3514,6 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 	    au_new_curbuf = NULL;
 #endif
 	}
-	else
-	    ++curbuf->b_nwindows;
 
 	curwin->w_pcmark.lnum = 1;
 	curwin->w_pcmark.col = 0;

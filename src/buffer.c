@@ -1794,7 +1794,6 @@ buflist_new(ffname, sfname, lnum, flags)
 	if (aborting())		/* autocmds may abort script processing */
 	    return NULL;
 #endif
-	/* buf->b_nwindows = 0; why was this here? */
 	free_buffer_stuff(buf, FALSE);	/* delete local variables et al. */
 
 	/* Init the options. */
@@ -1872,6 +1871,9 @@ buflist_new(ffname, sfname, lnum, flags)
 #ifdef FEAT_AUTOCMD
     if (!(flags & BLN_DUMMY))
     {
+	/* Tricky: these autocommands may change the buffer list.  They could
+	 * also split the window with re-using the one empty buffer. This may
+	 * result in unexpectedly losing the empty buffer. */
 	apply_autocmds(EVENT_BUFNEW, NULL, NULL, FALSE, buf);
 	if (!buf_valid(buf))
 	    return NULL;
