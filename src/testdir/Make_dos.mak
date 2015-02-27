@@ -84,7 +84,6 @@ $(DOSTMP_INFILES): $(*B).in
 $(TEST_OUTFILES): $(DOSTMP)\$(*B).in
 	-@if exist test.out DEL test.out
 	move $(*B).in $(*B).in.bak
-	copy $*.in $(*B).in
 	copy $(DOSTMP)\$(*B).in $(*B).in
 	copy $(*B).ok test.ok
 	$(VIMPROG) -u dos.vim -U NONE --noplugin -s dotest.in $(*B).in
