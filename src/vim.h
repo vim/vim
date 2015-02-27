@@ -939,6 +939,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define FNAME_INCL	8	/* apply 'includeexpr' */
 #define FNAME_REL	16	/* ".." and "./" are relative to the (current)
 				   file instead of the current directory */
+#define FNAME_UNESC	32	/* remove backslashes used for escaping */
 
 /* Values for buflist_getfile() */
 #define GETF_SETMARK	0x01	/* set pcmark before jumping */

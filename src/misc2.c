@@ -5474,6 +5474,7 @@ free_findfile()
  *
  * options:
  * FNAME_MESS	    give error message when not found
+ * FNAME_UNESC	    unescape backslashes.
  *
  * Uses NameBuff[]!
  *
@@ -5491,7 +5492,8 @@ find_directory_in_path(ptr, len, options, rel_fname)
 }
 
     char_u *
-find_file_in_path_option(ptr, len, options, first, path_option, find_what, rel_fname, suffixes)
+find_file_in_path_option(ptr, len, options, first, path_option,
+			 find_what, rel_fname, suffixes)
     char_u	*ptr;		/* file name */
     int		len;		/* length of file name */
     int		options;
@@ -5529,6 +5531,13 @@ find_file_in_path_option(ptr, len, options, first, path_option, find_what, rel_f
 	{
 	    file_name = NULL;
 	    goto theend;
+	}
+	if (options & FNAME_UNESC)
+	{
+	    /* Change all "\ " to " ". */
+	    for (ptr = ff_file_to_find; *ptr != NUL; ++ptr)
+		if (ptr[0] == '\\' && ptr[1] == ' ')
+		    mch_memmove(ptr, ptr + 1, STRLEN(ptr));
 	}
     }
 
