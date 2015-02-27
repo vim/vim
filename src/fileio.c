@@ -2099,12 +2099,12 @@ rewind_retry:
 		/* First try finding a NL, for Dos and Unix */
 		if (try_dos || try_unix)
 		{
+		    /* Reset the carriage return counter. */
+		    if (try_mac)
+			try_mac = 1;
+
 		    for (p = ptr; p < ptr + size; ++p)
 		    {
-			/* Reset the carriage return counter. */
-			if (try_mac)
-			    try_mac = 1;
-
 			if (*p == NL)
 			{
 			    if (!try_unix
