@@ -2440,7 +2440,7 @@ ex_listdo(eap)
     win_T	*wp;
     tabpage_T	*tp;
 #endif
-    buf_T	*buf;
+    buf_T	*buf = curbuf;
     int		next_fnum = 0;
 #if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
     char_u	*save_ei = NULL;
@@ -2493,20 +2493,28 @@ ex_listdo(eap)
 	    case CMD_argdo:
 		i = eap->line1 - 1;
 		break;
-	    case CMD_bufdo:
-		i = eap->line1;
-		break;
 	    default:
 		break;
 	}
 	/* set pcmark now */
 	if (eap->cmdidx == CMD_bufdo)
-	    goto_buffer(eap, DOBUF_FIRST, FORWARD, i);
+        {
+	    /* Advance to the first listed buffer after "eap->line1". */
+            for (buf = firstbuf; buf != NULL && (buf->b_fnum < eap->line1
+					  || !buf->b_p_bl); buf = buf->b_next)
+		if (buf->b_fnum > eap->line2)
+		{
+		    buf = NULL;
+		    break;
+		}
+            if (buf != NULL)
+		goto_buffer(eap, DOBUF_FIRST, FORWARD, buf->b_fnum);
+        }
 	else
 	    setpcmark();
 	listcmd_busy = TRUE;	    /* avoids setting pcmark below */
 
-	while (!got_int)
+	while (!got_int && buf != NULL)
 	{
 	    if (eap->cmdidx == CMD_argdo)
 	    {
