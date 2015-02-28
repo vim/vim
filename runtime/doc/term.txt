@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.4.  Last change: 2014 May 13
+*term.txt*      For Vim version 7.4.  Last change: 2015 Feb 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -283,8 +283,8 @@ OUTPUT CODES
 								*t_xs* *'t_xs'*
 	t_xs	if non-empty, standout not erased by overwriting (hpterm)
 								*t_xn* *'t_xn'*
-	t_xn	if non-empty, character writing at the last cell of screen
-		didn't causes scrolling
+	t_xn	if non-empty, writing a character at the last screen cell
+		does not cause scrolling
 	t_ZH	italics mode					*t_ZH* *'t_ZH'*
 	t_ZR	italics end					*t_ZR* *'t_ZR'*
 

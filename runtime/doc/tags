@@ -995,6 +995,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 't_ve'	term.txt	/*'t_ve'*
 't_vi'	term.txt	/*'t_vi'*
 't_vs'	term.txt	/*'t_vs'*
+'t_xn'	term.txt	/*'t_xn'*
 't_xs'	term.txt	/*'t_xs'*
 'ta'	options.txt	/*'ta'*
 'tabline'	options.txt	/*'tabline'*
@@ -8203,6 +8204,7 @@ t_vb	term.txt	/*t_vb*
 t_ve	term.txt	/*t_ve*
 t_vi	term.txt	/*t_vi*
 t_vs	term.txt	/*t_vs*
+t_xn	term.txt	/*t_xn*
 t_xs	term.txt	/*t_xs*
 tab	intro.txt	/*tab*
 tab-page	tabpage.txt	/*tab-page*

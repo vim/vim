@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Feb 03
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Feb 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,6 +35,8 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 Regexp problems:
+- The old engine does not find a match for "/\%#=1\(\)\{80}", the new engine
+  matches everywhere.
 - Using win_linetabsize() can still be slow. Cache the result, store col and
   vcol. Reset them when moving to another line.
 - Very slow with a long line and Ruby highlighting. (John Whitley, 2014 Dec 4)
@@ -51,9 +53,13 @@ Regexp problems:
 - Does not work with NFA regexp engine:
   \%u, \%x, \%o, \%d followed by a composing character
 - Bug relating to back references. (Ingo Karkat, 2014 Jul 24)
+- New RE does not give an error for empty group: "\(\)\{2}" (Dominique Pelle,
+  2015 Feb 7)
 - Using back reference before the capturing group sometimes works with the old
   engine, can we do this with the new engine?  E.g. with
   "/\%(<\1>\)\@<=.*\%(<\/\(\w\+\)>\)\@=" matching text inside HTML tags.
+- Strange matching with "\(Hello\n\)\@<=A". (Anas Syed, 2015 Feb 12)
+- Problem with \v(A)@<=b+\1c. (Issue 334)
 - Diff highlighting can be very slow. (Issue 309)
 - Using %> for a virtual column has a check based on 'tabsize'.  Better would
   be to cache the result of win_linetabsize(col), storing both col and vcol,
@@ -62,12 +68,18 @@ Regexp problems:
 - this doesn't work: "syntax match ErrorMsg /.\%9l\%>20c\&\%<28c/".  Leaving
   out the \& works.  Seems any column check after \& fails.
 
+Check out neovim bug reports that apply to Vim:
+https://github.com/neovim/neovim/issues?q=label%3Abug-vim
+Specifically:
+https://github.com/neovim/neovim/commit/cf8e175cf54281bcad5e704308e92ebb3e6381d3
+https://github.com/neovim/neovim/commit/d7038127ca6b356ad33fdec08aa3b23ac6a817af
+https://github.com/neovim/neovim/commit/77ace65bdce379f2d9b13ee81ab3fc01951f92dc
+
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
 
-Docs: "= register is writable. (Christian Brabandt, 2015 Jan 28)
-
-New syntax file for pfmain. (Anton Shestakov, 2015 Feb 2)
+Better .ico file for Windows. (Pat Suwalski, 2015 Feb 13)
+Waiting for response on remark from Edward Fox.
 
 Patch to make getregtype() return the right size for non-linux systems.
 (Yasuhiro Matsumoto, 2014 Jul 8)
@@ -88,22 +100,24 @@ Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 MS-Windows: When editing a file with a leading space, writing it uses the
 wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
 
+Can't recognize the $ProgramFiles(x86) environment variable.  Recognize it
+specifically?  First try with the parens, then without.
+
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
 Better greek spell checking.  Issue 299.
 
-On MS-Windows running tests with Mercurial has problems when the fileformat of
-the input files are changed. (Ken Takata, Taro Muraoka, 2014 Sep 25)
-Update Nov 5.
+When complete() first argument is before where insert started and 'backspace'
+is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
+
+Weird encryption problems on Windows. (Ben Fritz, 2015 Feb 13)
+Goes away when disabling the swap file. (might1, Feb 16)
 
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
 
-Patch to add "tn" termcap feature, whether Vim can write in the last screen
-cell. (Hayaki Saito, 2015 Jan 28)
-
-Patch to fix getting buffer number for autocommand. (Lech Lorens, 2015 Jan 27)
+Syntax files for Innovation Data processing. (Rob Owens, 2015 Feb 4)
 
 Add a few features to xxd. (Vadim Vygonets, 2013 Nov 11)
 Patches: 2013 Nov 19
@@ -111,20 +125,33 @@ Patches: 2013 Nov 19
 2: Add -o: add offset to displayed position
 3: Change displayed file position width to 8 chars
 
-Undo messes up text.  Issue 324.
-Patch from Christian on the issue.
-
 Using CTRL-L while popup menu is visible behaves like CTRL-P, which is wrong.
 Patch by Yasuhiro Matsumoto, 2015 Jan 5.
 Is this right?  Comment from Amadeus Demarzi.
 Another patch from Christian, Jan 6.
-Comment from Hirohito Higashi, Jan 6.
+Comment from Hirohito Higashi, Jan 6, update Feb 8, update Feb 17.
+
+HTML indenting: adjustments for html5. (Michaelpg, 2015 Feb 23)
+
+glob() omits symbolic links to non-existing files.
+(Charles Campbell, 2015 Feb 19)
+Patch by James McCoy, 2015 Feb 20.
+Docs change suggestion by Roland Eggner, 2015 Feb 21.
+Probably "to a not existing file" should be "to a non-existing file".
 
 Cursorline background color not mixed with character highlight.
 Patch by Yasuhiro Matsumoto, 2014 Dec 3.
 
+Patch to fix temp directories for Windows, so that it works without tweaking.
+Issue 28.
+Also see http://superuser.com/questions/364879/how-to-open-a-new-file-in-gvim-e303-unable-to-open-swap-file
+
 Problem using diff syntax with cp932 encoding.  Idea from Yasuhiro Matsumoto,
 patch from Ken Takata (2014 Nov 6)
+
+text deleted by "dit" depends on indent of closing tag.
+(Jan Parthey, 2015 Feb 8)
+Patch by Christian, Feb 9.  Update Feb 13.
 
 ml_updatechunk() is slow when retrying for another encoding. (John Little,
 2014 Sep 11)
@@ -146,7 +173,7 @@ Patch to add an argument to ":ls" for specific kinds of buffers.
 
 Crash when using R syntax. (Jakson Alves de Aquino, 2015 Jan 30)
 Memory freed by ":syn clear" but still referenced, syntax items referenced
-from two windows?
+from two windows?  Stopped happening (Feb 5).
 
 Window height computed incorrectly when Vim is minimized.
 Patch to fix this. (Ingo Karkat, 2014 Dec 19)
@@ -157,17 +184,19 @@ Patch to fix CTRL-W handling in Insert mode for multi-byte characters.
 Patch to allow values greater than 255 for ctermfg/ctermbg on Windows.
 (Yasuhiro Matsumoto, 2014 Dec 5)
 
+Patch for an extra argument to matchadd() for conceal. (Christian Brabandt,
+2015 Feb 17, update Feb 19)
+
 Mixup of highlighting when there is a match and SpellBad. (ZyX, 2015 Jan 1)
 
 Problem caused by patch 7.3.638: window->open does not update window
 correctly. Issue 91.  With patch.
 
 Patch to add 'belloff' option. (Christian Brabandt, 2015 Jan 31)
+Update Feb 6.
 
 Patch for drag&drop reordering of GUI tab pages reordering.
 (Ken Takata, 2013 Nov 22, second one, also by Masamichi Abe)
-
-'ff' is wrong for one-line file without EOL. (Patch on Issue 77)
 
 Patch on Issue 72: 'autochdir' causes problems for :vimgrep.
 
@@ -191,6 +220,9 @@ Patch to add the EndOfBuffer highlight group, used instead of NonText for "~"
 lines. (Marco Hinz, 2014 Nov 2)
 
 Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
+
+Should be easy to highlight all matches with 'incsearch'.  Idea by Itchyny,
+2015 Feb 6.
 
 Plugins need to make a lot of effort, lots of mappings, to know what happened
 before pressing the key that triggers a plugin action.  How about keeping the
@@ -378,9 +410,6 @@ Patch to define macros for hardcoded values. (Elias Diem, 2013 Dec 14)
 
 Several syntax file match "^\s*" which may get underlined if that's in the
 highlight group.  Add a "\zs" after it?
-
-Patch to fix temp directories for Windows, so that it works without tweaking.
-Issue 28.
 
 Go through more coverity reports.
 
@@ -2108,8 +2137,6 @@ Awaiting updated patches:
 			Search in 'runtimepath'?
 			More docs needed about how to use this.
 			How to get the messages into the .po files?
-    strchars()		Like strlen() and strwidth() but counting characters
-			instead of bytes.
     confirm()		add "flags" argument, with 'v' for vertical
 			    layout and 'c' for console dialog. (Haegg)
 			    Flemming Madsen has a patch for the 'c' flag
@@ -4659,7 +4686,6 @@ Searching:
     should be ignored (like "*/" or "#endif" inside /* */).
     Also: use "%" to jump from start to end of syntax region and back.
     Alternative: use matchit.vim
-8   "/:/e+1" gets stuck on a match at the end of the line.  Do we care?
 8   A pattern like "\([^a]\+\)\+" takes an awful long time.  Recognize that
     the recursive "\+" is meaningless and optimize for it.
     This one is also very slow on "/* some comment */": "^\/\*\(.*[^/]\)*$".

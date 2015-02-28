@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 7.4.  Last change: 2012 Aug 02
+*if_ruby.txt*   For Vim version 7.4.  Last change: 2015 Feb 22
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda
@@ -120,9 +120,13 @@ VIM::command({cmd})
 							*ruby-evaluate*
 VIM::evaluate({expr})
 	Evaluates {expr} using the vim internal expression evaluator (see
-	|expression|).  Returns the expression result as a string.
-	A |List| is turned into a string by joining the items and inserting
-	line breaks.
+	|expression|).  Returns the expression result as:
+	- a Integer if the Vim expression evaluates to a number
+	- a Float if the Vim expression evaluates to a float
+	- a String if the Vim expression evaluates to a string
+	- a Array if the Vim expression evaluates to a Vim list
+	- a Hash if the Vim expression evaluates to a Vim dictionary
+	Dictionaries and lists are recursively expanded.
 
 ==============================================================================
 3. VIM::Buffer objects					*ruby-buffer*
