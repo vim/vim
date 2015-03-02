@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Feb 27
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Mar 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -78,8 +78,13 @@ https://github.com/neovim/neovim/commit/77ace65bdce379f2d9b13ee81ab3fc01951f92dc
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
 
+Patch for c.vim and cpp.vim. (Yasuhiro Matsumoto, 2015 Feb 28)
+
 Better .ico file for Windows. (Pat Suwalski, 2015 Feb 13)
 Waiting for response on remark from Edward Fox.
+
+Patch to put -ldl in LIBs rather than LDFLAGS, so that python2 and python3 can
+both be used. (Oazki Kiichi, 2015 Feb 28)
 
 Patch to make getregtype() return the right size for non-linux systems.
 (Yasuhiro Matsumoto, 2014 Jul 8)
@@ -92,6 +97,10 @@ Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
+
+Patch to make 7.4.582 work for multi-byte. (Yasuhiro Matsumoto, 2015 Mar 1)
+
+C indent: should recognize C11 raw strings. (Mark Lodato, 2015 Mar 1)
 
 Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
 
@@ -138,6 +147,7 @@ glob() omits symbolic links to non-existing files.
 Patch by James McCoy, 2015 Feb 20.
 Docs change suggestion by Roland Eggner, 2015 Feb 21.
 Probably "to a not existing file" should be "to a non-existing file".
+Also fix globpath().
 
 Cursorline background color not mixed with character highlight.
 Patch by Yasuhiro Matsumoto, 2014 Dec 3.
