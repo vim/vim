@@ -10168,11 +10168,15 @@ unix_expandpath(gap, path, wildoff, flags, didstar)
 		}
 		else
 		{
+		    struct stat sb;
+
 		    /* no more wildcards, check if there is a match */
 		    /* remove backslashes for the remaining components only */
 		    if (*path_end != NUL)
 			backslash_halve(buf + len + 1);
-		    if (mch_getperm(buf) >= 0)	/* add existing file */
+		    /* add existing file or symbolic link */
+		    if ((flags & EW_ALLLINKS) ? mch_lstat(buf, &sb) >= 0
+						      : mch_getperm(buf) >= 0)
 		    {
 #ifdef MACOS_CONVERT
 			size_t precomp_len = STRLEN(buf)+1;
@@ -10919,6 +10923,7 @@ expand_backtick(gap, pat, flags)
  * EW_EXEC	add executable files
  * EW_NOTFOUND	add even when it doesn't exist
  * EW_ADDSLASH	add slash after directory name
+ * EW_ALLLINKS	add symlink also when the referred file does not exist
  */
     void
 addfile(gap, f, flags)
@@ -10928,9 +10933,11 @@ addfile(gap, f, flags)
 {
     char_u	*p;
     int		isdir;
+    struct stat sb;
 
-    /* if the file/dir doesn't exist, may not add it */
-    if (!(flags & EW_NOTFOUND) && mch_getperm(f) < 0)
+    /* if the file/dir/link doesn't exist, may not add it */
+    if (!(flags & EW_NOTFOUND) && ((flags & EW_ALLLINKS)
+				? mch_lstat(f, &sb) < 0 : mch_getperm(f) < 0))
 	return;
 
 #ifdef FNAME_ILLEGAL
