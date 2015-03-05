@@ -9198,6 +9198,14 @@ nv_object(cap)
 		flag = current_block(cap->oap, cap->count1, include, '<', '>');
 		break;
 	case 't': /* "at" = a tag block (xml and html) */
+		/* Do not adjust oap->end in do_pending_operator()
+		 * otherwise there are different results for 'dit'
+		 * (note leading whitespace in last line):
+		 * 1) <b>      2) <b>
+		 *    foobar      foobar
+		 *    </b>            </b>
+		 */
+		cap->retval |= CA_NO_ADJ_OP_END;
 		flag = current_tagblock(cap->oap, cap->count1, include);
 		break;
 	case 'p': /* "ap" = a paragraph */
