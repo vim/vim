@@ -6477,7 +6477,11 @@ nfa_regmatch(prog, start, submatch, m)
 
 		    /* Bail out quickly when there can't be a match, avoid the
 		     * overhead of win_linetabsize() on long lines. */
-		    if (op != 1 && col > t->state->val)
+		    if (op != 1 && col > t->state->val
+#ifdef FEAT_MBYTE
+			    * (has_mbyte ? MB_MAXBYTES : 1)
+#endif
+			    )
 			break;
 		    result = FALSE;
 		    if (op == 1 && col - 1 > t->state->val && col > 100)
