@@ -6286,7 +6286,7 @@ put_time(fd, the_time)
     char_u	buf[8];
 
     time_to_bytes(the_time, buf);
-    fwrite(buf, (size_t)8, (size_t)1, fd);
+    (void)fwrite(buf, (size_t)8, (size_t)1, fd);
 }
 
 /*
