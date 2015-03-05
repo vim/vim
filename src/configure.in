@@ -1451,9 +1451,9 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
   AC_MSG_CHECKING(whether we can do without RTLD_GLOBAL for Python)
   cflags_save=$CFLAGS
   CFLAGS="$CFLAGS $PYTHON_CFLAGS"
-  ldflags_save=$LDFLAGS
+  libs_save=$LIBS
   dnl -ldl must go first to make this work on Archlinux (Roland Puntaier)
-  LDFLAGS="-ldl $LDFLAGS"
+  LIBS="-ldl $LIBS"
   AC_RUN_IFELSE([AC_LANG_SOURCE([
     #include <dlfcn.h>
     /* If this program fails, then RTLD_GLOBAL is needed.
@@ -1491,14 +1491,14 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
     [AC_MSG_RESULT(yes);AC_DEFINE(PY_NO_RTLD_GLOBAL)], [AC_MSG_RESULT(no)])
 
   CFLAGS=$cflags_save
-  LDFLAGS=$ldflags_save
+  LIBS=$libs_save
 
   AC_MSG_CHECKING(whether we can do without RTLD_GLOBAL for Python3)
   cflags_save=$CFLAGS
   CFLAGS="$CFLAGS $PYTHON3_CFLAGS"
-  ldflags_save=$LDFLAGS
+  libs_save=$LIBS
   dnl -ldl must go first to make this work on Archlinux (Roland Puntaier)
-  LDFLAGS="-ldl $LDFLAGS"
+  LIBS="-ldl $LIBS"
   AC_RUN_IFELSE([AC_LANG_SOURCE([
     #include <dlfcn.h>
     #include <wchar.h>
@@ -1537,7 +1537,7 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
     [AC_MSG_RESULT(yes);AC_DEFINE(PY3_NO_RTLD_GLOBAL)], [AC_MSG_RESULT(no)])
 
   CFLAGS=$cflags_save
-  LDFLAGS=$ldflags_save
+  LIBS=$libs_save
 
   PYTHON_SRC="if_python.c"
   PYTHON_OBJ="objects/if_python.o"

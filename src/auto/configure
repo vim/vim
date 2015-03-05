@@ -6367,8 +6367,8 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
 $as_echo_n "checking whether we can do without RTLD_GLOBAL for Python... " >&6; }
   cflags_save=$CFLAGS
   CFLAGS="$CFLAGS $PYTHON_CFLAGS"
-  ldflags_save=$LDFLAGS
-    LDFLAGS="-ldl $LDFLAGS"
+  libs_save=$LIBS
+    LIBS="-ldl $LIBS"
   if test "$cross_compiling" = yes; then :
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
@@ -6426,14 +6426,14 @@ fi
 
 
   CFLAGS=$cflags_save
-  LDFLAGS=$ldflags_save
+  LIBS=$libs_save
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we can do without RTLD_GLOBAL for Python3" >&5
 $as_echo_n "checking whether we can do without RTLD_GLOBAL for Python3... " >&6; }
   cflags_save=$CFLAGS
   CFLAGS="$CFLAGS $PYTHON3_CFLAGS"
-  ldflags_save=$LDFLAGS
-    LDFLAGS="-ldl $LDFLAGS"
+  libs_save=$LIBS
+    LIBS="-ldl $LIBS"
   if test "$cross_compiling" = yes; then :
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
@@ -6492,7 +6492,7 @@ fi
 
 
   CFLAGS=$cflags_save
-  LDFLAGS=$ldflags_save
+  LIBS=$libs_save
 
   PYTHON_SRC="if_python.c"
   PYTHON_OBJ="objects/if_python.o"
