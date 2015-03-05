@@ -76,6 +76,16 @@ Change the character encoding in the righthand column from ASCII to EBCDIC.
 This does not change the hexadecimal representation. The option is
 meaningless in combinations with \-r, \-p or \-i.
 .TP
+.IR \-e
+Switch to little-endian hexdump.
+This option treats byte groups as words in little-endian byte order.
+The default grouping of 4 bytes may be changed using
+.RI "" \-g .
+This option only applies to hexdump, leaving the ASCII (or EBCDIC)
+representation unchanged.
+The command line switches
+\-r, \-p, \-i do not work with this mode.
+.TP
 .IR "\-g bytes " | " \-groupsize bytes"
 separate the output of every
 .RI < bytes >
@@ -84,7 +94,7 @@ Specify
 .I \-g 0
 to suppress grouping.
 .RI < Bytes "> defaults to " 2
-in normal mode and \fI1\fP in bits mode.
+in normal mode, \fI4\fP in little-endian mode and \fI1\fP in bits mode.
 Grouping does not apply to postscript or include style.
 .TP
 .IR \-h " | " \-help
@@ -98,6 +108,11 @@ output in C include file style. A complete static array definition is written
 stop after writing
 .RI  < len >
 octets.
+.TP
+.I \-o offset
+add
+.RI < offset >
+to the displayed file position.
 .TP
 .IR \-p " | " \-ps " | " \-postscript " | " \-plain
 output in postscript continuous hexdump style. Also known as plain hexdump

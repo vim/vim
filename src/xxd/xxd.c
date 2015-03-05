@@ -51,6 +51,7 @@
  * 16.05.00 Improved MMS file and merge for VMS by Zoltan Arpadffy
  * 2011 March  Better error handling by Florian Zumbiehl.
  * 2011 April  Formatting by Bram Moolenaar
+ * 08.06.2013  Little-endian hexdump (-e) and offset (-o) by Vadim Vygonets.
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@informatik.uni-erlangen.de)
  *
@@ -216,7 +217,7 @@ static void xxdline __P((FILE *, char *, int));
 
 #define TRY_SEEK	/* attempt to use lseek, or skip forward by reading */
 #define COLS 256	/* change here, if you ever need more columns */
-#define LLEN (11 + (9*COLS-1)/1 + COLS + 2)
+#define LLEN (12 + (9*COLS-1) + COLS + 2)
 
 char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 
@@ -225,6 +226,7 @@ char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 #define HEX_POSTSCRIPT 1
 #define HEX_CINCLUDE 2
 #define HEX_BITS 3		/* not hex a dump, but bits: 01111001 */
+#define HEX_LITTLEENDIAN 4
 
 static char *pname;
 
@@ -238,10 +240,12 @@ exit_with_usage()
   fprintf(stderr, "    -b          binary digit dump (incompatible with -ps,-i,-r). Default hex.\n");
   fprintf(stderr, "    -c cols     format <cols> octets per line. Default 16 (-i: 12, -ps: 30).\n");
   fprintf(stderr, "    -E          show characters in EBCDIC. Default ASCII.\n");
-  fprintf(stderr, "    -g          number of octets per group in normal output. Default 2.\n");
+  fprintf(stderr, "    -e          little-endian dump (incompatible with -ps,-i,-r).\n");
+  fprintf(stderr, "    -g          number of octets per group in normal output. Default 2 (-e: 4).\n");
   fprintf(stderr, "    -h          print this summary.\n");
   fprintf(stderr, "    -i          output in C include file style.\n");
   fprintf(stderr, "    -l len      stop after <len> octets.\n");
+  fprintf(stderr, "    -o off      add <off> to the displayed file position.\n");
   fprintf(stderr, "    -ps         output in postscript plain hexdump style.\n");
   fprintf(stderr, "    -r          reverse operation: convert (or patch) hexdump into binary.\n");
   fprintf(stderr, "    -r -s off   revert with <off> added to file positions found in hexdump.\n");
@@ -475,7 +479,7 @@ main(argc, argv)
   int ebcdic = 0;
   int octspergrp = -1;	/* number of octets grouped in output */
   int grplen;		/* total chars per octet group */
-  long length = -1, n = 0, seekoff = 0;
+  long length = -1, n = 0, seekoff = 0, displayoff = 0;
   static char l[LLEN+1];  /* static because it may be too big for stack */
   char *pp;
 
@@ -503,6 +507,7 @@ main(argc, argv)
       pp = argv[1] + (!STRNCMP(argv[1], "--", 2) && argv[1][2]);
 	   if (!STRNCMP(pp, "-a", 2)) autoskip = 1 - autoskip;
       else if (!STRNCMP(pp, "-b", 2)) hextype = HEX_BITS;
+      else if (!STRNCMP(pp, "-e", 2)) hextype = HEX_LITTLEENDIAN;
       else if (!STRNCMP(pp, "-u", 2)) hexx = hexxa + 16;
       else if (!STRNCMP(pp, "-p", 2)) hextype = HEX_POSTSCRIPT;
       else if (!STRNCMP(pp, "-i", 2)) hextype = HEX_CINCLUDE;
@@ -535,6 +540,19 @@ main(argc, argv)
 	      if (!argv[2])
 		exit_with_usage();
 	      octspergrp = (int)strtol(argv[2], NULL, 0);
+	      argv++;
+	      argc--;
+	    }
+	}
+      else if (!STRNCMP(pp, "-o", 2))
+	{
+	  if (pp[2] && STRNCMP("ffset", pp + 2, 5))
+	    displayoff = (int)strtol(pp + 2, NULL, 0);
+	  else
+	    {
+	      if (!argv[2])
+		exit_with_usage();
+	      displayoff = (int)strtol(argv[2], NULL, 0);
 	      argv++;
 	      argc--;
 	    }
@@ -603,6 +621,7 @@ main(argc, argv)
       case HEX_CINCLUDE:	cols = 12; break;
       case HEX_BITS:		cols = 6; break;
       case HEX_NORMAL:
+      case HEX_LITTLEENDIAN:
       default:			cols = 16; break;
       }
 
@@ -611,20 +630,28 @@ main(argc, argv)
       {
       case HEX_BITS:		octspergrp = 1; break;
       case HEX_NORMAL:		octspergrp = 2; break;
+      case HEX_LITTLEENDIAN:	octspergrp = 4; break;
       case HEX_POSTSCRIPT:
       case HEX_CINCLUDE:
       default:			octspergrp = 0; break;
       }
 
-  if (cols < 1 || ((hextype == HEX_NORMAL || hextype == HEX_BITS)
+  if (cols < 1 || ((hextype == HEX_NORMAL || hextype == HEX_BITS || hextype == HEX_LITTLEENDIAN)
 							    && (cols > COLS)))
     {
       fprintf(stderr, "%s: invalid number of columns (max. %d).\n", pname, COLS);
       exit(1);
     }
 
-  if (octspergrp < 1)
+  if (octspergrp < 1 || octspergrp > cols)
     octspergrp = cols;
+  else if (hextype == HEX_LITTLEENDIAN && (octspergrp & (octspergrp-1)))
+    {
+      fprintf(stderr,
+	      "%s: number of octets per group must be a power of 2 with -e.\n",
+	      pname);
+      exit(1);
+    }
 
   if (argc > 3)
     exit_with_usage();
@@ -781,9 +808,9 @@ main(argc, argv)
       return 0;
     }
 
-  /* hextype: HEX_NORMAL or HEX_BITS */
+  /* hextype: HEX_NORMAL or HEX_BITS or HEX_LITTLEENDIAN */
 
-  if (hextype == HEX_NORMAL)
+  if (hextype != HEX_BITS)
     grplen = octspergrp + octspergrp + 1;	/* chars per octet group */
   else	/* hextype == HEX_BITS */
     grplen = 8 * octspergrp + 1;
@@ -793,26 +820,33 @@ main(argc, argv)
     {
       if (p == 0)
 	{
-	  sprintf(l, "%07lx: ", n + seekoff);
+	  sprintf(l, "%08lx:",
+	    ((unsigned long)(n + seekoff + displayoff)) & 0xffffffff);
 	  for (c = 9; c < LLEN; l[c++] = ' ');
 	}
       if (hextype == HEX_NORMAL)
 	{
-	  l[c = (9 + (grplen * p) / octspergrp)] = hexx[(e >> 4) & 0xf];
-	  l[++c]			       = hexx[ e       & 0xf];
+	  l[c = (10 + (grplen * p) / octspergrp)] = hexx[(e >> 4) & 0xf];
+	  l[++c]				  = hexx[ e       & 0xf];
+	}
+      else if (hextype == HEX_LITTLEENDIAN)
+	{
+	  int x = p ^ (octspergrp-1);
+	  l[c = (10 + (grplen * x) / octspergrp)] = hexx[(e >> 4) & 0xf];
+	  l[++c]				  = hexx[ e       & 0xf];
 	}
       else /* hextype == HEX_BITS */
 	{
 	  int i;
 
-	  c = (9 + (grplen * p) / octspergrp) - 1;
+	  c = (10 + (grplen * p) / octspergrp) - 1;
 	  for (i = 7; i >= 0; i--)
 	    l[++c] = (e & (1 << i)) ? '1' : '0';
 	}
       if (ebcdic)
 	e = (e < 64) ? '.' : etoa64[e-64];
       /* When changing this update definition of LLEN above. */
-      l[11 + (grplen * cols - 1)/octspergrp + p] =
+      l[12 + (grplen * cols - 1)/octspergrp + p] =
 #ifdef __MVS__
 	  (e >= 64)
 #else
@@ -824,7 +858,7 @@ main(argc, argv)
       n++;
       if (++p == cols)
 	{
-	  l[c = (11 + (grplen * cols - 1)/octspergrp + p)] = '\n'; l[++c] = '\0';
+	  l[c = (12 + (grplen * cols - 1)/octspergrp + p)] = '\n'; l[++c] = '\0';
 	  xxdline(fpo, l, autoskip ? nonzero : 1);
 	  nonzero = 0;
 	  p = 0;
@@ -834,7 +868,7 @@ main(argc, argv)
     die(2);
   if (p)
     {
-      l[c = (11 + (grplen * cols - 1)/octspergrp + p)] = '\n'; l[++c] = '\0';
+      l[c = (12 + (grplen * cols - 1)/octspergrp + p)] = '\n'; l[++c] = '\0';
       xxdline(fpo, l, 1);
     }
   else if (autoskip)
