@@ -8141,8 +8141,8 @@ static struct fst
     {"getwinposx",	0, 0, f_getwinposx},
     {"getwinposy",	0, 0, f_getwinposy},
     {"getwinvar",	2, 3, f_getwinvar},
-    {"glob",		1, 3, f_glob},
-    {"globpath",	2, 4, f_globpath},
+    {"glob",		1, 4, f_glob},
+    {"globpath",	2, 5, f_globpath},
     {"has",		1, 1, f_has},
     {"has_key",		2, 2, f_has_key},
     {"haslocaldir",	0, 0, f_haslocaldir},
@@ -12412,11 +12412,16 @@ f_glob(argvars, rettv)
     {
 	if (get_tv_number_chk(&argvars[1], &error))
 	    options |= WILD_KEEP_ALL;
-	if (argvars[2].v_type != VAR_UNKNOWN
-				    && get_tv_number_chk(&argvars[2], &error))
+	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
-	    rettv->v_type = VAR_LIST;
-	    rettv->vval.v_list = NULL;
+	    if (get_tv_number_chk(&argvars[2], &error))
+	    {
+		rettv->v_type = VAR_LIST;
+		rettv->vval.v_list = NULL;
+	    }
+	    if (argvars[3].v_type != VAR_UNKNOWN
+				    && get_tv_number_chk(&argvars[3], &error))
+		options |= WILD_ALLLINKS;
 	}
     }
     if (!error)
@@ -12466,11 +12471,16 @@ f_globpath(argvars, rettv)
     {
 	if (get_tv_number_chk(&argvars[2], &error))
 	    flags |= WILD_KEEP_ALL;
-	if (argvars[3].v_type != VAR_UNKNOWN
-				    && get_tv_number_chk(&argvars[3], &error))
+	if (argvars[3].v_type != VAR_UNKNOWN)
 	{
-	    rettv->v_type = VAR_LIST;
-	    rettv->vval.v_list = NULL;
+	    if (get_tv_number_chk(&argvars[3], &error))
+	    {
+		rettv->v_type = VAR_LIST;
+		rettv->vval.v_list = NULL;
+	    }
+	    if (argvars[4].v_type != VAR_UNKNOWN
+				    && get_tv_number_chk(&argvars[4], &error))
+		flags |= WILD_ALLLINKS;
 	}
     }
     if (file != NULL && !error)
