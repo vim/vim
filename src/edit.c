@@ -34,8 +34,10 @@
 #define CTRL_X_OMNI		13
 #define CTRL_X_SPELL		14
 #define CTRL_X_LOCAL_MSG	15	/* only used in "ctrl_x_msgs" */
+#define CTRL_X_EVAL		16	/* for builtin function complete() */
 
 #define CTRL_X_MSG(i) ctrl_x_msgs[(i) & ~CTRL_X_WANT_IDENT]
+#define CTRL_X_MODE_LINE_OR_EVAL(m) (m == CTRL_X_WHOLE_LINE || m == CTRL_X_EVAL)
 
 static char *ctrl_x_msgs[] =
 {
@@ -55,6 +57,7 @@ static char *ctrl_x_msgs[] =
     N_(" Omni completion (^O^N^P)"),
     N_(" Spelling suggestion (s^N^P)"),
     N_(" Keyword Local completion (^N^P)"),
+    NULL,   /* CTRL_X_EVAL doesn't use msg. */
 };
 
 static char e_hitend[] = N_("Hit end of paragraph");
@@ -802,7 +805,7 @@ edit(cmdchar, startln, count)
 		 * "compl_leader".  Except when at the original match and
 		 * there is nothing to add, CTRL-L works like CTRL-P then. */
 		if (c == Ctrl_L
-			&& (ctrl_x_mode != CTRL_X_WHOLE_LINE
+			&& (!CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode)
 			    || (int)STRLEN(compl_shown_match->cp_str)
 					  > curwin->w_cursor.col - compl_col))
 		{
@@ -2267,6 +2270,8 @@ vim_is_ctrl_x_key(c)
 #endif
 	case CTRL_X_SPELL:
 	    return (c == Ctrl_S || c == Ctrl_P || c == Ctrl_N);
+	case CTRL_X_EVAL:
+	    return (c == Ctrl_P || c == Ctrl_N);
     }
     EMSG(_(e_internal));
     return FALSE;
@@ -2773,8 +2778,7 @@ set_completion(startcol, list)
 			-1, p_ic, NULL, NULL, 0, ORIGINAL_TEXT, FALSE) != OK)
 	return;
 
-    /* Handle like dictionary completion. */
-    ctrl_x_mode = CTRL_X_WHOLE_LINE;
+    ctrl_x_mode = CTRL_X_EVAL;
 
     ins_compl_add_list(list);
     compl_matches = ins_compl_make_cyclic();
@@ -3060,7 +3064,7 @@ ins_compl_dictionaries(dict_start, pat, flags, thesaurus)
     /* When invoked to match whole lines for CTRL-X CTRL-L adjust the pattern
      * to only match at the start of a line.  Otherwise just match the
      * pattern. Also need to double backslashes. */
-    if (ctrl_x_mode == CTRL_X_WHOLE_LINE)
+    if (CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode))
     {
 	char_u *pat_esc = vim_strsave_escaped(pat, (char_u *)"\\");
 	size_t len;
@@ -3181,7 +3185,7 @@ ins_compl_files(count, files, thesaurus, flags, regmatch, buf, dir)
 		while (vim_regexec(regmatch, buf, (colnr_T)(ptr - buf)))
 		{
 		    ptr = regmatch->startp[0];
-		    if (ctrl_x_mode == CTRL_X_WHOLE_LINE)
+		    if (CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode))
 			ptr = find_line_end(ptr);
 		    else
 			ptr = find_word_end(ptr);
@@ -3394,7 +3398,7 @@ ins_compl_bs()
      * allow the word to be deleted, we won't match everything. */
     if ((int)(p - line) - (int)compl_col < 0
 	    || ((int)(p - line) - (int)compl_col == 0
-		&& ctrl_x_mode != CTRL_X_OMNI))
+		&& ctrl_x_mode != CTRL_X_OMNI) || ctrl_x_mode == CTRL_X_EVAL)
 	return K_BS;
 
     /* Deleted more than what was used to find matches or didn't finish
@@ -4208,7 +4212,7 @@ ins_compl_get_exp(ini)
 	/* For ^N/^P pick a new entry from e_cpt if compl_started is off,
 	 * or if found_all says this entry is done.  For ^X^L only use the
 	 * entries from 'complete' that look in loaded buffers. */
-	if ((ctrl_x_mode == 0 || ctrl_x_mode == CTRL_X_WHOLE_LINE)
+	if ((ctrl_x_mode == 0 || CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode))
 					&& (!compl_started || found_all))
 	{
 	    found_all = FALSE;
@@ -4261,7 +4265,7 @@ ins_compl_get_exp(ini)
 		break;
 	    else
 	    {
-		if (ctrl_x_mode == CTRL_X_WHOLE_LINE)
+		if (CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode))
 		    type = -1;
 		else if (*e_cpt == 'k' || *e_cpt == 's')
 		{
@@ -4406,9 +4410,10 @@ ins_compl_get_exp(ini)
 
 		++msg_silent;  /* Don't want messages for wrapscan. */
 
-		/* ctrl_x_mode == CTRL_X_WHOLE_LINE || word-wise search that
+		/* CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode)
+		 * || word-wise search that
 		 * has added a word that was at the beginning of the line */
-		if (	ctrl_x_mode == CTRL_X_WHOLE_LINE
+		if (CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode)
 			|| (compl_cont_status & CONT_SOL))
 		    found_new_match = search_for_exact_line(ins_buf, pos,
 					      compl_direction, compl_pattern);
@@ -4442,7 +4447,7 @@ ins_compl_get_exp(ini)
 			&& ini->col  == pos->col)
 		    continue;
 		ptr = ml_get_buf(ins_buf, pos->lnum, FALSE) + pos->col;
-		if (ctrl_x_mode == CTRL_X_WHOLE_LINE)
+		if (CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode))
 		{
 		    if (compl_cont_status & CONT_ADDING)
 		    {
@@ -4536,7 +4541,7 @@ ins_compl_get_exp(ini)
 
 	/* break the loop for specialized modes (use 'complete' just for the
 	 * generic ctrl_x_mode == 0) or when we've found a new match */
-	if ((ctrl_x_mode != 0 && ctrl_x_mode != CTRL_X_WHOLE_LINE)
+	if ((ctrl_x_mode != 0 && !CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode))
 						   || found_new_match != FAIL)
 	{
 	    if (got_int)
@@ -4545,7 +4550,7 @@ ins_compl_get_exp(ini)
 	    if (type != -1)
 		ins_compl_check_keys(0);
 
-	    if ((ctrl_x_mode != 0 && ctrl_x_mode != CTRL_X_WHOLE_LINE)
+	    if ((ctrl_x_mode != 0 && !CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode))
 							 || compl_interrupted)
 		break;
 	    compl_started = TRUE;
@@ -4561,13 +4566,13 @@ ins_compl_get_exp(ini)
     }
     compl_started = TRUE;
 
-    if ((ctrl_x_mode == 0 || ctrl_x_mode == CTRL_X_WHOLE_LINE)
+    if ((ctrl_x_mode == 0 || CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode))
 	    && *e_cpt == NUL)		/* Got to end of 'complete' */
 	found_new_match = FAIL;
 
     i = -1;		/* total of matches, unknown */
     if (found_new_match == FAIL
-	    || (ctrl_x_mode != 0 && ctrl_x_mode != CTRL_X_WHOLE_LINE))
+	    || (ctrl_x_mode != 0 && !CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode)))
 	i = ins_compl_make_cyclic();
 
     /* If several matches were added (FORWARD) or the search failed and has
@@ -5052,7 +5057,7 @@ ins_complete(c)
 		if (compl_length < 1)
 		    compl_cont_status &= CONT_LOCAL;
 	    }
-	    else if (ctrl_x_mode == CTRL_X_WHOLE_LINE)
+	    else if (CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode))
 		compl_cont_status = CONT_ADDING | CONT_N_ADDS;
 	    else
 		compl_cont_status = 0;
@@ -5183,7 +5188,7 @@ ins_complete(c)
 		}
 	    }
 	}
-	else if (ctrl_x_mode == CTRL_X_WHOLE_LINE)
+	else if (CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode))
 	{
 	    compl_col = (colnr_T)(skipwhite(line) - line);
 	    compl_length = (int)curs_col - (int)compl_col;
@@ -5348,7 +5353,7 @@ ins_complete(c)
 	if (compl_cont_status & CONT_ADDING)
 	{
 	    edit_submode_pre = (char_u *)_(" Adding");
-	    if (ctrl_x_mode == CTRL_X_WHOLE_LINE)
+	    if (CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode))
 	    {
 		/* Insert a new line, keep indentation but ignore 'comments' */
 #ifdef FEAT_COMMENTS
