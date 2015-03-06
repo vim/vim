@@ -10175,7 +10175,7 @@ unix_expandpath(gap, path, wildoff, flags, didstar)
 		    if (*path_end != NUL)
 			backslash_halve(buf + len + 1);
 		    /* add existing file or symbolic link */
-		    if ((flags & EW_ALLLINKS) ? mch_lstat(buf, &sb) >= 0
+		    if ((flags & EW_ALLLINKS) ? mch_lstat((char *)buf, &sb) >= 0
 						      : mch_getperm(buf) >= 0)
 		    {
 #ifdef MACOS_CONVERT
@@ -10937,7 +10937,7 @@ addfile(gap, f, flags)
 
     /* if the file/dir/link doesn't exist, may not add it */
     if (!(flags & EW_NOTFOUND) && ((flags & EW_ALLLINKS)
-				? mch_lstat(f, &sb) < 0 : mch_getperm(f) < 0))
+			? mch_lstat((char *)f, &sb) < 0 : mch_getperm(f) < 0))
 	return;
 
 #ifdef FNAME_ILLEGAL
