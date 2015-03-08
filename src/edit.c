@@ -5879,8 +5879,9 @@ insertchar(c, flags, second_indent)
     char_u	*p;
 #endif
     int		fo_ins_blank;
+    int		force_format = flags & INSCHAR_FORMAT;
 
-    textwidth = comp_textwidth(flags & INSCHAR_FORMAT);
+    textwidth = comp_textwidth(force_format);
     fo_ins_blank = has_format_option(FO_INS_BLANK);
 
     /*
@@ -5899,7 +5900,7 @@ insertchar(c, flags, second_indent)
      *	      before 'textwidth'
      */
     if (textwidth > 0
-	    && ((flags & INSCHAR_FORMAT)
+	    && (force_format
 		|| (!vim_iswhite(c)
 		    && !((State & REPLACE_FLAG)
 #ifdef FEAT_VREPLACE
@@ -5916,9 +5917,12 @@ insertchar(c, flags, second_indent)
 	/* Format with 'formatexpr' when it's set.  Use internal formatting
 	 * when 'formatexpr' isn't set or it returns non-zero. */
 #if defined(FEAT_EVAL)
-	int do_internal = TRUE;
+	int     do_internal = TRUE;
+	colnr_T virtcol = get_nolist_virtcol()
+				  + char2cells(c != NUL ? c : gchar_cursor());
 
-	if (*curbuf->b_p_fex != NUL && (flags & INSCHAR_NO_FEX) == 0)
+	if (*curbuf->b_p_fex != NUL && (flags & INSCHAR_NO_FEX) == 0
+		&& (force_format || virtcol > (colnr_T)textwidth))
 	{
 	    do_internal = (fex_format(curwin->w_cursor.lnum, 1L, c) != 0);
 	    /* It may be required to save for undo again, e.g. when setline()
