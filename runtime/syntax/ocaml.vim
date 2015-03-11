@@ -191,7 +191,7 @@ syn match    ocamlCharacter    "'\\x\x\x'"
 syn match    ocamlCharErr      "'\\\d\d'\|'\\\d'"
 syn match    ocamlCharErr      "'\\[^\'ntbr]'"
 syn region   ocamlString       start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=@Spell
-syn match    ocamlString       "{\(\w*\)|\(.\|\n\)*|\1}" contains=@Spell
+syn match    ocamlString       "{\(\w*\)|\(.\|\n\)\{-}|\1}" contains=@Spell
 
 syn match    ocamlFunDef       "->"
 syn match    ocamlRefAssign    ":="
