@@ -760,7 +760,8 @@ edit(cmdchar, startln, count)
 	/*
 	 * Get a character for Insert mode.  Ignore K_IGNORE.
 	 */
-	lastc = c;			/* remember previous char for CTRL-D */
+	if (c != K_CURSORHOLD)
+	    lastc = c;		/* remember the previous char for CTRL-D */
 	do
 	{
 	    c = safe_vgetc();
