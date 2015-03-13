@@ -4,7 +4,7 @@
 # Authors:	Zoltan Arpadffy, <arpadffy@polarhome.com>
 #		Sandor Kopanyi,  <sandor.kopanyi@mailbox.hu>
 #
-# Last change:  2014 Dec 13
+# Last change:  2015 Mar 13
 #
 # This has been tested on VMS 6.2 to 8.3 on DEC Alpha, VAX and IA64.
 # Edit the lines in the Configuration section below to select.
@@ -113,6 +113,7 @@ SCRIPT = test1.out  test2.out  test3.out  test4.out  test5.out  \
 	 test_options.out \
 	 test_qf_title.out \
 	 test_signs.out \
+	 test_textobjects.out \
 	 test_utf8.out
 
 # Known problems:

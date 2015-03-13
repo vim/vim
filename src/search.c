@@ -3583,10 +3583,11 @@ current_block(oap, count, include, what, other)
     /*
      * Search backwards for unclosed '(', '{', etc..
      * Put this position in start_pos.
-     * Ignore quotes here.
+     * Ignore quotes here.  Keep the "M" flag in 'cpo', as that is what the
+     * user wants.
      */
     save_cpo = p_cpo;
-    p_cpo = (char_u *)"%";
+    p_cpo = (char_u *)(vim_strchr(p_cpo, CPO_MATCHBSL) != NULL ? "%M" : "%");
     while (count-- > 0)
     {
 	if ((pos = findmatch(NULL, what)) == NULL)

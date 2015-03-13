@@ -53,6 +53,7 @@ SCRIPTS = test1.out test3.out test4.out test5.out test6.out \
 		test_options.out \
 		test_qf_title.out \
 		test_signs.out \
+		test_textobjects.out \
 		test_utf8.out
 
 .SUFFIXES: .in .out
@@ -194,4 +195,5 @@ test_nested_function.out: test_nested_function.in
 test_options.out: test_options.in
 test_qf_title.out: test_qf_title.in
 test_signs.out: test_signs.in
+test_textobjects.out: test_textobjects.in
 test_utf8.out: test_utf8.in
