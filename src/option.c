@@ -7193,7 +7193,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 #endif
 
     if (curwin->w_curswant != MAXCOL
-		     && (options[opt_idx].flags & (P_CURSWANT | P_RCLR)) != 0)
+		     && (options[opt_idx].flags & (P_CURSWANT | P_RALL)) != 0)
 	curwin->w_set_curswant = TRUE;
 
 #ifdef FEAT_GUI
@@ -8203,7 +8203,7 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 
     comp_col();			    /* in case 'ruler' or 'showcmd' changed */
     if (curwin->w_curswant != MAXCOL
-		     && (options[opt_idx].flags & (P_CURSWANT | P_RCLR)) != 0)
+		     && (options[opt_idx].flags & (P_CURSWANT | P_RALL)) != 0)
 	curwin->w_set_curswant = TRUE;
     check_redraw(options[opt_idx].flags);
 
@@ -8738,7 +8738,7 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 
     comp_col();			    /* in case 'columns' or 'ls' changed */
     if (curwin->w_curswant != MAXCOL
-		     && (options[opt_idx].flags & (P_CURSWANT | P_RCLR)) != 0)
+		     && (options[opt_idx].flags & (P_CURSWANT | P_RALL)) != 0)
 	curwin->w_set_curswant = TRUE;
     check_redraw(options[opt_idx].flags);
 
