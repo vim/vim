@@ -6988,8 +6988,22 @@ init_highlight(both, reset)
      * and 'background' or 't_Co' is changed.
      */
     p = get_var_value((char_u *)"g:colors_name");
-    if (p != NULL && load_colors(p) == OK)
-	return;
+    if (p != NULL)
+    {
+       /* The value of g:colors_name could be freed when sourcing the script,
+	* making "p" invalid, so copy it. */
+       char_u *copy_p = vim_strsave(p);
+       int    r;
+
+       if (copy_p != NULL)
+       {
+	   r = load_colors(copy_p);
+	   vim_free(copy_p);
+	   if (r == OK)
+	       return;
+       }
+    }
+
 #endif
 
     /*
