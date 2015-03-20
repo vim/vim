@@ -2740,6 +2740,28 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
     }
 
 #ifdef FEAT_SYN_HL
+    /* Show colorcolumn in the fold line, but let cursorcolumn override it. */
+    if (wp->w_p_cc_cols)
+    {
+	int i = 0;
+	int j = wp->w_p_cc_cols[i];
+	int old_txtcol = txtcol;
+
+	while (j > -1)
+	{
+	    txtcol += j;
+	    if (wp->w_p_wrap)
+		txtcol -= wp->w_skipcol;
+	    else
+		txtcol -= wp->w_leftcol;
+	    if (txtcol >= 0 && txtcol < W_WIDTH(wp))
+		ScreenAttrs[off + txtcol] = hl_combine_attr(
+				    ScreenAttrs[off + txtcol], hl_attr(HLF_MC));
+	    txtcol = old_txtcol;
+	    j = wp->w_p_cc_cols[++i];
+	}
+    }
+
     /* Show 'cursorcolumn' in the fold line. */
     if (wp->w_p_cuc)
     {
