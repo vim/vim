@@ -144,6 +144,11 @@ static int inAtomic = 0;
     static void
 nb_close_socket(void)
 {
+    buf_T	*buf;
+
+    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	buf->b_has_sign_column = FALSE;
+
 #ifdef FEAT_GUI_X11
     if (inputHandler != (XtInputId)NULL)
     {

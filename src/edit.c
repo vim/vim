@@ -6687,7 +6687,7 @@ comp_textwidth(ff)
 #ifdef FEAT_SIGNS
 	if (curwin->w_buffer->b_signlist != NULL
 # ifdef FEAT_NETBEANS_INTG
-			    || netbeans_active()
+			  || curwin->w_buffer->b_has_sign_column
 # endif
 		    )
 	    textwidth -= 1;

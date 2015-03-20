@@ -905,7 +905,7 @@ win_col_off(wp)
 	    + (
 # ifdef FEAT_NETBEANS_INTG
 		/* show glyph gutter in netbeans */
-		netbeans_active() ||
+		wp->w_buffer->b_has_sign_column ||
 # endif
 		wp->w_buffer->b_signlist != NULL ? 2 : 0)
 #endif

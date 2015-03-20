@@ -2214,7 +2214,7 @@ draw_signcolumn(wp)
 {
     return (wp->w_buffer->b_signlist != NULL
 # ifdef FEAT_NETBEANS_INTG
-			    || netbeans_active()
+				|| wp->w_buffer->b_has_sign_column
 # endif
 		    );
 }
