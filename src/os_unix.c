@@ -7096,19 +7096,33 @@ xterm_update()
 {
     XEvent event;
 
-    while (XtAppPending(app_context) && !vim_is_input_buf_full())
+    for (;;)
     {
-	XtAppNextEvent(app_context, &event);
-#ifdef FEAT_CLIENTSERVER
-	{
-	    XPropertyEvent *e = (XPropertyEvent *)&event;
+        XtInputMask mask = XtAppPending(app_context);
 
-	    if (e->type == PropertyNotify && e->window == commWindow
+        if (mask == 0 || vim_is_input_buf_full())
+	    break;
+
+        if (mask & XtIMXEvent)
+	{
+	    /* There is an event to process. */
+            XtAppNextEvent(app_context, &event);
+#ifdef FEAT_CLIENTSERVER
+	    {
+		XPropertyEvent *e = (XPropertyEvent *)&event;
+
+		if (e->type == PropertyNotify && e->window == commWindow
 		   && e->atom == commProperty && e->state == PropertyNewValue)
-		serverEventProc(xterm_dpy, &event);
-	}
+                serverEventProc(xterm_dpy, &event);
+	    }
 #endif
-	XtDispatchEvent(&event);
+            XtDispatchEvent(&event);
+        }
+	else
+	{
+	    /* There is something else than an event to process. */
+            XtAppProcessEvent(app_context, mask);
+        }
     }
 }
 
