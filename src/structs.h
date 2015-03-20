@@ -2306,6 +2306,7 @@ struct window_S
 #ifdef FEAT_LINEBREAK
     linenr_T	w_nrwidth_line_count;	/* line count when ml_nrwidth_width
 					 * was computed. */
+    long	w_nuw_cached;		/* 'numberwidth' option cached */
     int		w_nrwidth_width;	/* nr of chars to print line count. */
 #endif
 
