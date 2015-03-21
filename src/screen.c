@@ -4507,11 +4507,11 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		if (wp->w_p_lbr && vim_isbreak(c) && !vim_isbreak(*ptr))
 		{
 # ifdef FEAT_MBYTE
-		    int off = has_mbyte ? (*mb_head_off)(line, ptr - 1) : 0;
+		    int mb_off = has_mbyte ? (*mb_head_off)(line, ptr - 1) : 0;
 # endif
 		    char_u *p = ptr - (
 # ifdef FEAT_MBYTE
-				off +
+				mb_off +
 # endif
 				1);
 
@@ -4523,7 +4523,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 				       - vcol % (int)wp->w_buffer->b_p_ts - 1;
 
 # ifdef FEAT_MBYTE
-		    c_extra = off > 0 ? MB_FILLER_CHAR : ' ';
+		    c_extra = mb_off > 0 ? MB_FILLER_CHAR : ' ';
 # else
 		    c_extra = ' ';
 # endif
