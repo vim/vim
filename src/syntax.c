@@ -311,7 +311,7 @@ typedef struct state_item
 				       but contained groups */
 
 #ifdef FEAT_CONCEAL
-static int next_seqnr = 0;		/* value to use for si_seqnr */
+static int next_seqnr = 1;		/* value to use for si_seqnr */
 #endif
 
 /*
