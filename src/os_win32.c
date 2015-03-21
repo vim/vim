@@ -3378,10 +3378,11 @@ mch_writable(char_u *name)
 
 /*
  * Return 1 if "name" can be executed, 0 if not.
+ * If "use_path" is FALSE only check if "name" is executable.
  * Return -1 if unknown.
  */
     int
-mch_can_exe(char_u *name, char_u **path)
+mch_can_exe(char_u *name, char_u **path, int use_path)
 {
     char_u	buf[_MAX_PATH];
     int		len = (int)STRLEN(name);
@@ -3389,6 +3390,11 @@ mch_can_exe(char_u *name, char_u **path)
 
     if (len >= _MAX_PATH)	/* safety check */
 	return FALSE;
+    if (!use_path)
+    {
+	/* TODO: check if file is really executable. */
+	return mch_getperm(name) != -1 && !mch_isdir(name);
+    }
 
     /* If there already is an extension try using the name directly.  Also do
      * this with a Unix-shell like 'shell'. */
