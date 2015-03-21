@@ -2942,15 +2942,24 @@ mch_isdir(char_u *name)
 
 /*
  * Return 1 if "name" can be executed, 0 if not.
+ * If "use_path" is FALSE only check if "name" is executable.
  * Return -1 if unknown.
  */
     int
-mch_can_exe(name, path)
+mch_can_exe(name, path, use_path)
     char_u	*name;
     char_u	**path;
+    int		use_path;
 {
     char	*p;
+    int		mode;
 
+    if (!use_path)
+    {
+	/* TODO: proper check if file is executable. */
+	mode = vim_chmod(name);
+	return mode != -1 && (mode & FA_DIREC) == 0;
+    }
     p = searchpath(name);
     if (p == NULL || mch_isdir(p))
 	return FALSE;

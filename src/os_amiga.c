@@ -881,12 +881,14 @@ mch_mkdir(name)
 
 /*
  * Return 1 if "name" can be executed, 0 if not.
+ * If "use_path" is FALSE only check if "name" is executable.
  * Return -1 if unknown.
  */
     int
-mch_can_exe(name, path)
+mch_can_exe(name, path, use_path)
     char_u	*name;
     char_u	**path;
+    int		use_path;
 {
     /* TODO */
     return -1;

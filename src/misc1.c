@@ -10987,8 +10987,10 @@ addfile(gap, f, flags)
     if ((isdir && !(flags & EW_DIR)) || (!isdir && !(flags & EW_FILE)))
 	return;
 
-    /* If the file isn't executable, may not add it.  Do accept directories. */
-    if (!isdir && (flags & EW_EXEC) && !mch_can_exe(f, NULL))
+    /* If the file isn't executable, may not add it.  Do accept directories.
+     * When invoked from expand_shellcmd() do not use $PATH. */
+    if (!isdir && (flags & EW_EXEC)
+			     && !mch_can_exe(f, NULL, !(flags & EW_SHELLCMD)))
 	return;
 
     /* Make room for another item in the file list. */

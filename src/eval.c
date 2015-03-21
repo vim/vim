@@ -10271,7 +10271,11 @@ f_executable(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    rettv->vval.v_number = mch_can_exe(get_tv_string(&argvars[0]), NULL);
+    char_u *name = get_tv_string(&argvars[0]);
+
+    /* Check in $PATH and also check directly if there is a directory name. */
+    rettv->vval.v_number = mch_can_exe(name, NULL, TRUE)
+		 || (gettail(name) != name && mch_can_exe(name, NULL, FALSE));
 }
 
 /*
@@ -10284,7 +10288,7 @@ f_exepath(argvars, rettv)
 {
     char_u *p = NULL;
 
-    (void)mch_can_exe(get_tv_string(&argvars[0]), &p);
+    (void)mch_can_exe(get_tv_string(&argvars[0]), &p, TRUE);
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = p;
 }

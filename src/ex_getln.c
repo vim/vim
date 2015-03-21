@@ -4885,6 +4885,7 @@ expand_shellcmd(filepat, num_file, file, flagsarg)
     char_u	*s, *e;
     int		flags = flagsarg;
     int		ret;
+    int		did_curdir = FALSE;
 
     if (buf == NULL)
 	return FAIL;
@@ -4896,7 +4897,7 @@ expand_shellcmd(filepat, num_file, file, flagsarg)
 	if (pat[i] == '\\' && pat[i + 1] == ' ')
 	    STRMOVE(pat + i, pat + i + 1);
 
-    flags |= EW_FILE | EW_EXEC;
+    flags |= EW_FILE | EW_EXEC | EW_SHELLCMD;
 
     /* For an absolute name we don't use $PATH. */
     if (mch_isFullName(pat))
@@ -4913,11 +4914,22 @@ expand_shellcmd(filepat, num_file, file, flagsarg)
 
     /*
      * Go over all directories in $PATH.  Expand matches in that directory and
-     * collect them in "ga".
+     * collect them in "ga".  When "." is not in $PATH also expand for the
+     * current directory, to find "subdir/cmd".
      */
     ga_init2(&ga, (int)sizeof(char *), 10);
-    for (s = path; *s != NUL; s = e)
+    for (s = path; ; s = e)
     {
+	if (*s == NUL)
+	{
+	    if (did_curdir)
+		break;
+	    /* Find directories in the current directory, path is empty. */
+	    did_curdir = TRUE;
+	}
+	else if (*s == '.')
+	    did_curdir = TRUE;
+
 	if (*s == ' ')
 	    ++s;	/* Skip space used for absolute path name. */
 

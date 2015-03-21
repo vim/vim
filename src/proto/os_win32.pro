@@ -26,7 +26,7 @@ int mch_is_symbolic_link __ARGS((char_u *fname));
 int mch_is_linked __ARGS((char_u *fname));
 int win32_fileinfo __ARGS((char_u *fname, BY_HANDLE_FILE_INFORMATION *info));
 int mch_writable __ARGS((char_u *name));
-int mch_can_exe __ARGS((char_u *name, char_u **path));
+int mch_can_exe __ARGS((char_u *name, char_u **path, int use_path));
 int mch_nodetype __ARGS((char_u *name));
 vim_acl_T mch_get_acl __ARGS((char_u *fname));
 void mch_set_acl __ARGS((char_u *fname, vim_acl_T acl));
