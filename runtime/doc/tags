@@ -6202,6 +6202,7 @@ gi	insert.txt	/*gi*
 gj	motion.txt	/*gj*
 gk	motion.txt	/*gk*
 glob()	eval.txt	/*glob()*
+glob2regpat()	eval.txt	/*glob2regpat()*
 global-ime	mbyte.txt	/*global-ime*
 global-local	options.txt	/*global-local*
 global-variable	eval.txt	/*global-variable*

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Mar 05
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Mar 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -74,9 +74,13 @@ Specifically:
 https://github.com/neovim/neovim/commit/cf8e175cf54281bcad5e704308e92ebb3e6381d3
 https://github.com/neovim/neovim/commit/d7038127ca6b356ad33fdec08aa3b23ac6a817af
 https://github.com/neovim/neovim/commit/77ace65bdce379f2d9b13ee81ab3fc01951f92dc
+And also:
+https://github.com/neovim/neovim/pull/2157/commits
 
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
+
+Updated Irish translation. (Kevin Scannell, 2015 Mar 13)
 
 Better .ico file for Windows. (Pat Suwalski, 2015 Feb 13)
 Waiting for response on remark from Edward Fox.
@@ -94,8 +98,17 @@ Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 directory exists. (Sergio Gallelli, 2013 Dec 29)
 
 C indent: should recognize C11 raw strings. (Mark Lodato, 2015 Mar 1)
+Need to recognize R"string".
 
-Intel Hex syntax file update, Markus Heidelberg 2015 Mar 2
+Suggested patch to MingW makefiles. (Michael Soyka, 2015 Mar 11)
+Feedback from others?
+
+Patch for :tabmove not working as documented. (Hirohito Higashi, 2015 Mar 10)
+https://gist.github.com/h-east/ffabb0cdd589a5f9acd2
+Updated patch emailed. (Mar 17)  Awaiting comments.
+
+Crash when changing the 'tags' option from a remote command.
+(Benjamin Fritz, 2015 Mar 18)
 
 Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
 
@@ -117,6 +130,9 @@ is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
 
 Weird encryption problems on Windows. (Ben Fritz, 2015 Feb 13)
 Goes away when disabling the swap file. (might1, Feb 16)
+
+Problem caused by patch 7.3.638: window->open does not update window
+correctly. Issue 91.  With patch.
 
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
@@ -141,6 +157,10 @@ Patch to add a different escape sequence for replace mode.
 (Omar Sandoval, 2014 Nov 30)
 
 Patch on Issue 166, popup drawing with '$' in 'cpo'.
+
+When a session file is created and there are "nofile" buffers, these are not
+filled.  Need to trigger BufReadCmd autocommands.  Also handle deleting the
+initial empty buffer better. (ZyX, 2015 March 8)
 
 Calling setreg() with an empty list doesn't work.
 Patch by Yasuhiro Matsumoto, 2014 Dec 14.
@@ -167,9 +187,6 @@ Patch for an extra argument to matchadd() for conceal. (Christian Brabandt,
 2015 Feb 17, update Feb 19)
 
 Mixup of highlighting when there is a match and SpellBad. (ZyX, 2015 Jan 1)
-
-Problem caused by patch 7.3.638: window->open does not update window
-correctly. Issue 91.  With patch.
 
 Patch to add 'belloff' option. (Christian Brabandt, 2015 Jan 31)
 Update Feb 6.

@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 7.4.  Last change: 2012 Jan 26
+*netbeans.txt*  For Vim version 7.4.  Last change: 2015 Mar 14
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -306,7 +306,12 @@ bufID		Buffer number.  A message may be either for a specific buffer
 		or generic.  Generic messages use a bufID of zero.  NOTE: this
 		buffer ID is assigned by the IDE, it is not Vim's buffer
 		number.  The bufID must be a sequentially rising number,
-		starting at one.
+		starting at one.  When the 'switchbuf' option is set to
+		"usetab" and the "bufID" buffer is not found in the current
+		tab page, the netbeans commands and functions that set this
+		buffer as the current buffer will jump to the first open
+		window that contains this buffer in other tab pages instead of
+		replacing the buffer in the current window.
 
 seqno		The IDE uses a sequence number for Commands and Functions.  A
 		Reply must use the sequence number of the Function that it is
