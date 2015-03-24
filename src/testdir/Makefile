@@ -40,6 +40,7 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test_changelist.out \
 		test_close_count.out \
 		test_command_count.out \
+		test_erasebackword.out \
 		test_eval.out \
 		test_insertcount.out \
 		test_listlbr.out \
