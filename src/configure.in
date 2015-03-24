@@ -1148,7 +1148,7 @@ eof
 	      dnl -- Check if the path contained in python_LINKFORSHARED is
 	      dnl    usable for vim build. If not, make and try other
 	      dnl    candidates.
-	      if test -n "${python_LINKFORSHARED}"; then
+	      if test -n "${python_LINKFORSHARED}" && test -n "${python_PYTHONFRAMEWORKPREFIX}"; then
 	        python_link_symbol=`echo ${python_LINKFORSHARED} | sed 's/\([[^ \t]][[^ \t]]*[[ \t]][[ \t]]*[[^ \t]][[^ \t]]*\)[[ \t]].*/\1/'`
 		python_link_path=`echo ${python_LINKFORSHARED} |   sed 's/\([[^ \t]][[^ \t]]*[[ \t]][[ \t]]*[[^ \t]][[^ \t]]*\)[[ \t]][[ \t]]*\(.*\)/\2/'`
 	        if test -n "${python_link_path}" && ! test -x "${python_link_path}"; then
