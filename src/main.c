@@ -3914,6 +3914,7 @@ build_drop_cmd(filec, filev, tabs, sendReply)
     int		i;
     char_u	*inicmd = NULL;
     char_u	*p;
+    char_u	*cdp;
     char_u	*cwd;
 
     if (filec > 0 && filev[0][0] == '+')
@@ -3935,7 +3936,7 @@ build_drop_cmd(filec, filev, tabs, sendReply)
 	vim_free(cwd);
 	return NULL;
     }
-    p = vim_strsave_escaped_ext(cwd,
+    cdp = vim_strsave_escaped_ext(cwd,
 #ifdef BACKSLASH_IN_FILENAME
 		    "",  /* rem_backslash() will tell what chars to escape */
 #else
@@ -3943,12 +3944,11 @@ build_drop_cmd(filec, filev, tabs, sendReply)
 #endif
 		    '\\', TRUE);
     vim_free(cwd);
-    if (p == NULL)
+    if (cdp == NULL)
 	return NULL;
     ga_init2(&ga, 1, 100);
     ga_concat(&ga, (char_u *)"<C-\\><C-N>:cd ");
-    ga_concat(&ga, p);
-    vim_free(p);
+    ga_concat(&ga, cdp);
 
     /* Call inputsave() so that a prompt for an encryption key works. */
     ga_concat(&ga, (char_u *)"<CR>:if exists('*inputsave')|call inputsave()|endif|");
@@ -3984,8 +3984,21 @@ build_drop_cmd(filec, filev, tabs, sendReply)
 
     /* Switch back to the correct current directory (prior to temporary path
      * switch) unless 'autochdir' is set, in which case it will already be
-     * correct after the :drop command. */
-    ga_concat(&ga, (char_u *)":if !exists('+acd')||!&acd|cd -|endif<CR>");
+     * correct after the :drop command. With line breaks and spaces:
+     *  if !exists('+acd') || !&acd
+     *    if haslocaldir()
+     *	    cd -
+     *      lcd -
+     *    elseif getcwd() ==# "current path"
+     *      cd -
+     *    endif
+     *  endif
+     */
+    ga_concat(&ga, (char_u *)":if !exists('+acd')||!&acd|if haslocaldir()|");
+    ga_concat(&ga, (char_u *)"cd -|lcd -|elseif getcwd() ==# \"");
+    ga_concat(&ga, cdp);
+    ga_concat(&ga, (char_u *)"\"|cd -|endif|endif<CR>");
+    vim_free(cdp);
 
     if (sendReply)
 	ga_concat(&ga, (char_u *)":call SetupRemoteReplies()<CR>");
