@@ -598,6 +598,14 @@ gui_mswin_get_menu_height(
 
     if (num == 0)
 	menu_height = 0;
+    else if (IsMinimized(s_hwnd))
+    {
+	/* The height of the menu cannot be determined while the window is
+	 * minimized.  Take the previous height if the menu is changed in that
+	 * state, to avoid that Vim's vertical window size accidentally
+	 * increases due to the unaccounted-for menu height. */
+	menu_height = old_menu_height == -1 ? 0 : old_menu_height;
+    }
     else
     {
 	if (is_winnt_3())	/* for NT 3.xx */
@@ -644,9 +652,9 @@ gui_mswin_get_menu_height(
 
     if (fix_window && menu_height != old_menu_height)
     {
-	old_menu_height = menu_height;
 	gui_set_shellsize(FALSE, FALSE, RESIZE_VERT);
     }
+    old_menu_height = menu_height;
 
     return menu_height;
 }
