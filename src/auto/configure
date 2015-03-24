@@ -5888,17 +5888,34 @@ __:
 	@echo "python_LINKFORSHARED='$(LINKFORSHARED)'"
 	@echo "python_DLLLIBRARY='$(DLLLIBRARY)'"
 	@echo "python_INSTSONAME='$(INSTSONAME)'"
+	@echo "python_PYTHONFRAMEWORK='$(PYTHONFRAMEWORK)'"
+	@echo "python_PYTHONFRAMEWORKPREFIX='$(PYTHONFRAMEWORKPREFIX)'"
+	@echo "python_PYTHONFRAMEWORKINSTALLDIR='$(PYTHONFRAMEWORKINSTALLDIR)'"
 eof
 	    	    eval "`cd ${PYTHON_CONFDIR} && make -f "${tmp_mkf}" __ | sed '/ directory /d'`"
 	    rm -f -- "${tmp_mkf}"
 	    if test "x$MACOSX" = "xyes" && ${vi_cv_path_python} -c \
 		"import sys; sys.exit(${vi_cv_var_python_version} < 2.3)"; then
 	      vi_cv_path_python_plibs="-framework Python"
+	      if test "x${vi_cv_path_python}" != "x/usr/bin/python" && test -n "${python_PYTHONFRAMEWORKPREFIX}"; then
+		  vi_cv_path_python_plibs="-F${python_PYTHONFRAMEWORKPREFIX} -framework Python"
+	      fi
 	    else
 	      if test "${vi_cv_var_python_version}" = "1.4"; then
 		  vi_cv_path_python_plibs="${PYTHON_CONFDIR}/libModules.a ${PYTHON_CONFDIR}/libPython.a ${PYTHON_CONFDIR}/libObjects.a ${PYTHON_CONFDIR}/libParser.a"
 	      else
 		  vi_cv_path_python_plibs="-L${PYTHON_CONFDIR} -lpython${vi_cv_var_python_version}"
+	      fi
+	      	      	      	      if test -n "${python_LINKFORSHARED}"; then
+	        python_link_symbol=`echo ${python_LINKFORSHARED} | sed 's/\([^ \t][^ \t]*[ \t][ \t]*[^ \t][^ \t]*\)[ \t].*/\1/'`
+		python_link_path=`echo ${python_LINKFORSHARED} |   sed 's/\([^ \t][^ \t]*[ \t][ \t]*[^ \t][^ \t]*\)[ \t][ \t]*\(.*\)/\2/'`
+	        if test -n "${python_link_path}" && ! test -x "${python_link_path}"; then
+	          		  	          python_link_path="${python_PYTHONFRAMEWORKPREFIX}/${python_link_path}"
+		  if test -n "${python_link_path}" && ! test -x "${python_link_path}"; then
+		    		    python_link_path="${python_PYTHONFRAMEWORKINSTALLDIR}/Versions/${vi_cv_var_python_version}/${python_PYTHONFRAMEWORK}"
+	            	            		  fi
+	          python_LINKFORSHARED="${python_link_symbol} ${python_link_path}"
+	        fi
 	      fi
 	      vi_cv_path_python_plibs="${vi_cv_path_python_plibs} ${python_BASEMODLIBS} ${python_LIBS} ${python_SYSLIBS} ${python_LINKFORSHARED}"
 	      	      vi_cv_path_python_plibs=`echo $vi_cv_path_python_plibs | sed s/-ltermcap//`
