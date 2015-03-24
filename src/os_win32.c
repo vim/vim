@@ -5262,7 +5262,7 @@ gotoxy(
     static void
 textattr(WORD wAttr)
 {
-    g_attrCurrent = wAttr;
+    g_attrCurrent = wAttr & 0xff;
 
     SetConsoleTextAttribute(g_hConOut, wAttr);
 }
@@ -5271,7 +5271,7 @@ textattr(WORD wAttr)
     static void
 textcolor(WORD wAttr)
 {
-    g_attrCurrent = (g_attrCurrent & 0xf0) + wAttr;
+    g_attrCurrent = (g_attrCurrent & 0xf0) + (wAttr & 0x0f);
 
     SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
 }
@@ -5280,7 +5280,7 @@ textcolor(WORD wAttr)
     static void
 textbackground(WORD wAttr)
 {
-    g_attrCurrent = (g_attrCurrent & 0x0f) + (wAttr << 4);
+    g_attrCurrent = (g_attrCurrent & 0x0f) + ((wAttr & 0x0f) << 4);
 
     SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
 }
