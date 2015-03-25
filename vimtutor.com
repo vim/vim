@@ -6,9 +6,9 @@ $ !
 $ !	Author: Tom Wyant <Thomas.R.Wyant-III@usa.dupont.com>
 $ !
 $ !	This DCL command procedure executes the vimtutor command
-$ !	(suprise, suprise!) which gives you a brief tutorial on the VIM
-$ !	editor. Languages other than the default are supported in the
-$ !	usual way, as are at least some of the command qualifiers,
+$ !	(surprise, surprise!) which gives you a brief tutorial on the
+$ !	VIM editor. Languages other than the default are supported in
+$ !	the usual way, as are at least some of the command qualifiers,
 $ !	though you'll need to play some fairly serious games with DCL
 $ !	to specify ones that need quoting.
 $ !
