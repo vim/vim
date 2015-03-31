@@ -688,9 +688,9 @@ ex_diffupdate(eap)
 	return;
 
     /* We need three temp file names. */
-    tmp_orig = vim_tempname('o');
-    tmp_new = vim_tempname('n');
-    tmp_diff = vim_tempname('d');
+    tmp_orig = vim_tempname('o', TRUE);
+    tmp_new = vim_tempname('n', TRUE);
+    tmp_diff = vim_tempname('d', TRUE);
     if (tmp_orig == NULL || tmp_new == NULL || tmp_diff == NULL)
 	goto theend;
 
@@ -920,8 +920,8 @@ ex_diffpatch(eap)
 #endif
 
     /* We need two temp file names. */
-    tmp_orig = vim_tempname('o');
-    tmp_new = vim_tempname('n');
+    tmp_orig = vim_tempname('o', FALSE);
+    tmp_new = vim_tempname('n', FALSE);
     if (tmp_orig == NULL || tmp_new == NULL)
 	goto theend;
 

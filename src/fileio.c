@@ -2872,7 +2872,7 @@ readfile_charconvert(fname, fenc, fdp)
     char_u	*tmpname;
     char_u	*errmsg = NULL;
 
-    tmpname = vim_tempname('r');
+    tmpname = vim_tempname('r', FALSE);
     if (tmpname == NULL)
 	errmsg = (char_u *)_("Can't find temp file for conversion");
     else
@@ -4288,7 +4288,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	     */
 	    if (*p_ccv != NUL)
 	    {
-		wfname = vim_tempname('w');
+		wfname = vim_tempname('w', FALSE);
 		if (wfname == NULL)	/* Can't write without a tempfile! */
 		{
 		    errmsg = (char_u *)_("E214: Can't find temp file for writing");
@@ -7344,14 +7344,16 @@ vim_settempdir(tempdir)
 /*
  * vim_tempname(): Return a unique name that can be used for a temp file.
  *
- * The temp file is NOT created.
+ * The temp file is NOT garanteed to be created.  If "keep" is FALSE it is
+ * garanteed to NOT be created.
  *
  * The returned pointer is to allocated memory.
  * The returned pointer is NULL if no valid name was found.
  */
     char_u  *
-vim_tempname(extra_char)
+vim_tempname(extra_char, keep)
     int	    extra_char UNUSED;  /* char to use in the name instead of '?' */
+    int	    keep UNUSED;
 {
 #ifdef USE_TMPNAM
     char_u	itmp[L_tmpnam];	/* use tmpnam() */
@@ -7487,8 +7489,9 @@ vim_tempname(extra_char)
     buf4[2] = extra_char;   /* make it "VIa", "VIb", etc. */
     if (GetTempFileName(szTempFile, buf4, 0, itmp) == 0)
 	return NULL;
-    /* GetTempFileName() will create the file, we don't want that */
-    (void)DeleteFile(itmp);
+    if (!keep)
+	/* GetTempFileName() will create the file, we don't want that */
+	(void)DeleteFile(itmp);
 
     /* Backslashes in a temp file name cause problems when filtering with
      * "sh".  NOTE: This also checks 'shellcmdflag' to help those people who

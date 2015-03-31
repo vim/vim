@@ -18775,7 +18775,7 @@ get_cmd_output_as_rettv(argvars, rettv, retlist)
 	 * Write the string to a temp file, to be used for input of the shell
 	 * command.
 	 */
-	if ((infile = vim_tempname('i')) == NULL)
+	if ((infile = vim_tempname('i', TRUE)) == NULL)
 	{
 	    EMSG(_(e_notmp));
 	    goto errret;
@@ -19134,7 +19134,7 @@ f_tempname(argvars, rettv)
     static int	x = 'A';
 
     rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = vim_tempname(x);
+    rettv->vval.v_string = vim_tempname(x, FALSE);
 
     /* Advance 'x' to use A-Z and 0-9, so that there are at least 34 different
      * names.  Skip 'I' and 'O', they are used for shell redirection. */

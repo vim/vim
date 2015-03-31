@@ -2945,7 +2945,7 @@ get_mef_name()
 
     if (*p_mef == NUL)
     {
-	name = vim_tempname('e');
+	name = vim_tempname('e', FALSE);
 	if (name == NULL)
 	    EMSG(_(e_notmp));
 	return name;

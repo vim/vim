@@ -1158,8 +1158,8 @@ do_filter(line1, line2, eap, cmd, do_in, do_out)
     }
     else
 #endif
-	if ((do_in && (itmp = vim_tempname('i')) == NULL)
-		|| (do_out && (otmp = vim_tempname('o')) == NULL))
+	if ((do_in && (itmp = vim_tempname('i', FALSE)) == NULL)
+		|| (do_out && (otmp = vim_tempname('o', FALSE)) == NULL))
 	{
 	    EMSG(_(e_notmp));
 	    goto filterend;
@@ -1963,7 +1963,7 @@ write_viminfo(file, forceit)
 	    if (fp_out == NULL)
 	    {
 		vim_free(tempname);
-		if ((tempname = vim_tempname('o')) != NULL)
+		if ((tempname = vim_tempname('o', TRUE)) != NULL)
 		    fp_out = mch_fopen((char *)tempname, WRITEBIN);
 	    }
 

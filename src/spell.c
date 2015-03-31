@@ -9426,7 +9426,7 @@ spell_add_word(word, len, bad, idx, undo)
     {
 	if (int_wordlist == NULL)
 	{
-	    int_wordlist = vim_tempname('s');
+	    int_wordlist = vim_tempname('s', FALSE);
 	    if (int_wordlist == NULL)
 		return;
 	}

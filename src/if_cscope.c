@@ -1269,7 +1269,7 @@ cs_find_common(opt, pat, forceit, verbose, use_ll, cmdline)
     {
 	/* fill error list */
 	FILE	    *f;
-	char_u	    *tmp = vim_tempname('c');
+	char_u	    *tmp = vim_tempname('c', TRUE);
 	qf_info_T   *qi = NULL;
 	win_T	    *wp = NULL;
 

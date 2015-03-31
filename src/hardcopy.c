@@ -2751,7 +2751,7 @@ mch_print_init(psettings, jobname, forceit)
     /* If the user didn't specify a file name, use a temp file. */
     if (psettings->outfile == NULL)
     {
-	prt_ps_file_name = vim_tempname('p');
+	prt_ps_file_name = vim_tempname('p', TRUE);
 	if (prt_ps_file_name == NULL)
 	{
 	    EMSG(_(e_notmp));
