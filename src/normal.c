@@ -5098,7 +5098,11 @@ dozet:
 
 		/* "zm": fold more */
     case 'm':	if (curwin->w_p_fdl > 0)
-		    --curwin->w_p_fdl;
+		{
+		    curwin->w_p_fdl -= cap->count1;
+		    if (curwin->w_p_fdl < 0)
+			curwin->w_p_fdl = 0;
+		}
 		old_fdl = -1;		/* force an update */
 		curwin->w_p_fen = TRUE;
 		break;
@@ -5110,7 +5114,13 @@ dozet:
 		break;
 
 		/* "zr": reduce folding */
-    case 'r':	++curwin->w_p_fdl;
+    case 'r':	curwin->w_p_fdl += cap->count1;
+		{
+		    int d = getDeepestNesting();
+
+		    if (curwin->w_p_fdl >= d)
+			curwin->w_p_fdl = d;
+		}
 		break;
 
 		/* "zR": open all folds */
