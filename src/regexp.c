@@ -4782,7 +4782,8 @@ regmatch(scan)
 		    /* When only a composing char is given match at any
 		     * position where that composing char appears. */
 		    status = RA_NOMATCH;
-		    for (i = 0; reginput[i] != NUL; i += utf_char2len(inpc))
+		    for (i = 0; reginput[i] != NUL;
+						i += utf_ptr2len(reginput + i))
 		    {
 			inpc = mb_ptr2char(reginput + i);
 			if (!utf_iscomposing(inpc))
