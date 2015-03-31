@@ -3008,6 +3008,10 @@ ins_compl_show_pum()
 
     if (compl_match_array != NULL)
     {
+	/* In Replace mode when a $ is displayed at the end of the line only
+	 * part of the screen would be updated.  We do need to redraw here. */
+	dollar_vcol = -1;
+
 	/* Compute the screen column of the start of the completed text.
 	 * Use the cursor to get all wrapping and other settings right. */
 	col = curwin->w_cursor.col;
