@@ -3567,27 +3567,46 @@ cursor_off()
 
 #if defined(CURSOR_SHAPE) || defined(PROTO)
 /*
- * Set cursor shape to match Insert mode.
+ * Set cursor shape to match Insert or Replace mode.
  */
     void
 term_cursor_shape()
 {
-    static int showing_insert_mode = MAYBE;
+    static int showing_mode = NORMAL;
+    char_u *p;
 
-    if (!full_screen || *T_CSI == NUL || *T_CEI == NUL)
+    /* Only do something when redrawing the screen and we can restore the
+     * mode. */
+    if (!full_screen || *T_CEI == NUL)
 	return;
 
-    if (State & INSERT)
+    if ((State & REPLACE) == REPLACE)
     {
-	if (showing_insert_mode != TRUE)
-	    out_str(T_CSI);	    /* Insert mode cursor */
-	showing_insert_mode = TRUE;
+	if (showing_mode != REPLACE)
+	{
+	    if (*T_CSR != NUL)
+		p = T_CSR;	/* Replace mode cursor */
+	    else
+		p = T_CSI;	/* fall back to Insert mode cursor */
+	    if (*p != NUL)
+	    {
+		out_str(p);
+		showing_mode = REPLACE;
+	    }
+	}
     }
-    else
+    else if (State & INSERT)
     {
-	if (showing_insert_mode != FALSE)
-	    out_str(T_CEI);	    /* non-Insert mode cursor */
-	showing_insert_mode = FALSE;
+	if (showing_mode != INSERT && *T_CSI != NUL)
+	{
+	    out_str(T_CSI);	    /* Insert mode cursor */
+	    showing_mode = INSERT;
+	}
+    }
+    else if (showing_mode != NORMAL)
+    {
+	out_str(T_CEI);		    /* non-Insert mode cursor */
+	showing_mode = NORMAL;
     }
 }
 #endif

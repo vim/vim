@@ -2978,6 +2978,7 @@ static struct vimoption
     p_term("t_WS", T_CWS)
     p_term("t_SI", T_CSI)
     p_term("t_EI", T_CEI)
+    p_term("t_SR", T_CSR)
     p_term("t_xn", T_XN)
     p_term("t_xs", T_XS)
     p_term("t_ZH", T_CZH)
@@ -8560,7 +8561,7 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 	    errmsg = e_invarg;
 	    curwin->w_p_nuw = 10;
 	}
-	curwin->w_nrwidth_line_count = 0;
+	curwin->w_nrwidth_line_count = 0; /* trigger a redraw */
     }
 #endif
 

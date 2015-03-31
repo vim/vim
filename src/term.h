@@ -81,6 +81,7 @@ enum SpecialKey
     KS_CRV,	/* request version string */
     KS_CSI,	/* start insert mode (bar cursor) */
     KS_CEI,	/* end insert mode (block cursor) */
+    KS_CSR,	/* start replace mode (underline cursor) */
 #ifdef FEAT_VERTSPLIT
     KS_CSV,	/* scroll region vertical */
 #endif
@@ -159,6 +160,7 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_CWS	(term_str(KS_CWS))	/* window size */
 #define T_CSI	(term_str(KS_CSI))	/* start insert mode */
 #define T_CEI	(term_str(KS_CEI))	/* end insert mode */
+#define T_CSR	(term_str(KS_CSR))	/* start replace mode */
 #define T_CRV	(term_str(KS_CRV))	/* request version string */
 #define T_OP	(term_str(KS_OP))	/* original color pair */
 #define T_U7	(term_str(KS_U7))	/* request cursor position */
