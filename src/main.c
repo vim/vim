@@ -147,6 +147,8 @@ static char *(main_errors[]) =
 #define ME_INVALID_ARG		5
 };
 
+static char_u *start_dir = NULL;	/* current working dir on startup */
+
 #ifndef PROTO		/* don't want a prototype for main() */
 #ifndef NO_VIM_MAIN	/* skip this for unittests */
     int
@@ -168,7 +170,6 @@ main
     char_u	*fname = NULL;		/* file name from command line */
     mparm_T	params;			/* various parameters passed between
 					 * main() and other functions. */
-    char_u	*cwd = NULL;		/* current workding dir on startup */
 #ifdef STARTUPTIME
     int		i;
 #endif
@@ -405,17 +406,17 @@ main
 	 */
 	if (!params.literal)
 	{
-	    cwd = alloc(MAXPATHL);
-	    if (cwd != NULL)
-		mch_dirname(cwd, MAXPATHL);
+	    start_dir = alloc(MAXPATHL);
+	    if (start_dir != NULL)
+		mch_dirname(start_dir, MAXPATHL);
 	    /* Temporarily add '(' and ')' to 'isfname'.  These are valid
 	     * filename characters but are excluded from 'isfname' to make
 	     * "gf" work on a file name in parenthesis (e.g.: see vim.h). */
 	    do_cmdline_cmd((char_u *)":set isf+=(,)");
 	    alist_expand(NULL, 0);
 	    do_cmdline_cmd((char_u *)":set isf&");
-	    if (cwd != NULL)
-		mch_chdir((char *)cwd);
+	    if (start_dir != NULL)
+		mch_chdir((char *)start_dir);
 	}
 #endif
 	fname = alist_name(&GARGLIST[0]);
@@ -441,8 +442,8 @@ main
 	 * If the cd fails, it doesn't matter.
 	 */
 	(void)vim_chdirfile(fname);
-	if (cwd != NULL)
-	    mch_dirnamem(cwd, MAXPATHL);
+	if (start_dir != NULL)
+	    mch_dirname(start_dir, MAXPATHL);
     }
 #endif
     TIME_MSG("expanding arguments");
@@ -496,8 +497,8 @@ main
 		expand_env((char_u *)"$HOME", NameBuff, MAXPATHL);
 		vim_chdir(NameBuff);
 	    }
-	    if (cwd != NULL)
-		mch_dirname(cwd, MAXPATHL);
+	    if (start_dir != NULL)
+		mch_dirname(start_dir, MAXPATHL);
 	}
     }
 #endif
@@ -910,9 +911,9 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
      * If opened more than one window, start editing files in the other
      * windows.
      */
-    edit_buffers(&params, cwd);
+    edit_buffers(&params, start_dir);
 #endif
-    vim_free(cwd);
+    vim_free(start_dir);
 
 #ifdef FEAT_DIFF
     if (params.diff_mode)
