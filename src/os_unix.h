@@ -65,13 +65,6 @@
 #endif
 
 /*
- * Sun defines FILE on SunOS 4.x.x, Solaris has a typedef for FILE
- */
-#if defined(sun) && !defined(FILE)
-# define SOLARIS
-#endif
-
-/*
  * Using getcwd() is preferred, because it checks for a buffer overflow.
  * Don't use getcwd() on systems do use system("sh -c pwd").  There is an
  * autoconf check for this.
