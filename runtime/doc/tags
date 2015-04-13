@@ -932,6 +932,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 't_RI'	term.txt	/*'t_RI'*
 't_RV'	term.txt	/*'t_RV'*
 't_SI'	term.txt	/*'t_SI'*
+'t_SR'	term.txt	/*'t_SR'*
 't_Sb'	term.txt	/*'t_Sb'*
 't_Sf'	term.txt	/*'t_Sf'*
 't_WP'	term.txt	/*'t_WP'*
@@ -8103,6 +8104,7 @@ t_KL	term.txt	/*t_KL*
 t_RI	term.txt	/*t_RI*
 t_RV	term.txt	/*t_RV*
 t_SI	term.txt	/*t_SI*
+t_SR	term.txt	/*t_SR*
 t_Sb	term.txt	/*t_Sb*
 t_Sf	term.txt	/*t_Sf*
 t_WP	term.txt	/*t_WP*

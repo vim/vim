@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Mar 20
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Apr 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -68,19 +68,28 @@ Regexp problems:
 - this doesn't work: "syntax match ErrorMsg /.\%9l\%>20c\&\%<28c/".  Leaving
   out the \& works.  Seems any column check after \& fails.
 
+PHP complete update, (complex, 2015 Apr 2)
+
+PHP syntax file update. (Jason Woofenden, 2015 Mar 24)
+
+Updated syntax files. (Charles Campbell, Apr 2)
+Two messages.
+
 Check out neovim bug reports that apply to Vim:
 https://github.com/neovim/neovim/issues?q=label%3Abug-vim
 Specifically:
 https://github.com/neovim/neovim/commit/cf8e175cf54281bcad5e704308e92ebb3e6381d3
 https://github.com/neovim/neovim/commit/d7038127ca6b356ad33fdec08aa3b23ac6a817af
 https://github.com/neovim/neovim/commit/77ace65bdce379f2d9b13ee81ab3fc01951f92dc
+https://patch-diff.githubusercontent.com/raw/neovim/neovim/pull/2390.patch
 And also:
 https://github.com/neovim/neovim/pull/2157/commits
 
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
 
-Updated Irish translation. (Kevin Scannell, 2015 Mar 13)
+Patch to fix issues with locked and fixed variables.
+(Ola Dabrunz, 2015 Apr 11, update Apr 12)
 
 Better .ico file for Windows. (Pat Suwalski, 2015 Feb 13)
 Waiting for response on remark from Edward Fox.
@@ -89,19 +98,35 @@ Patch to make getregtype() return the right size for non-linux systems.
 (Yasuhiro Matsumoto, 2014 Jul 8)
 Breaks test_eval.  Inefficient, can we only compute y_width when needed?
 
+Show Vim icon in Windows context menu. Issue 249.  (Mario Weber, 2015 Apr 11)
+
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
+R indent files update. (Jakson Alves de Aquino, Mar 31)
+
+Updated Python syntax file. (Dmitry Vasiliev, Mar 30)
+
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
 
+Using ":windo" to set options in all windows has the side effect that it
+changes the window layout and the current window.  Make a variant that saves
+and restores.  Use in the matchparen plugin.
+Perhaps we can use ":silent window"?
+
+Patch to make Ruby 2.2 work. (Andrei Olsen)
+
+Window drawn wrong with 'laststatus' zero and a command-line window.
+(Yclept Nemo, 2015 Apr 7)
+Patch by Christian, Apr 8.
+
+Patch to make undo files not executable. (Mikael Berthe, 2015 Apr 5)
+
 C indent: should recognize C11 raw strings. (Mark Lodato, 2015 Mar 1)
 Need to recognize R"string".
-
-Suggested patch to MingW makefiles. (Michael Soyka, 2015 Mar 11)
-Feedback from others?
 
 Patch for :tabmove not working as documented. (Hirohito Higashi, 2015 Mar 10)
 https://gist.github.com/h-east/ffabb0cdd589a5f9acd2
@@ -131,32 +156,20 @@ is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
 Weird encryption problems on Windows. (Ben Fritz, 2015 Feb 13)
 Goes away when disabling the swap file. (might1, Feb 16)
 
-Problem caused by patch 7.3.638: window->open does not update window
-correctly. Issue 91.  With patch.
-
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
-
-Patch to handle directories better for --remote. (xaizek, 2015 Mar 1)
-
-Cursorline background color not mixed with character highlight.
-Patch by Yasuhiro Matsumoto, 2014 Dec 3.
 
 The argument for "-S" is not taken literally, the ":so" command expands
 wildcards.  Add a ":nowild" command modifier?  (ZyX, 2015 March 4)
 
-Problem using diff syntax with cp932 encoding.  Idea from Yasuhiro Matsumoto,
-patch from Ken Takata (2014 Nov 6)
+Build with Python on Mac does not always use the right library.
+(Kazunobu Kuriyama, 2015 Mar 28)
 
 ml_updatechunk() is slow when retrying for another encoding. (John Little,
 2014 Sep 11)
 
-Patch to add counts to zr and zm. (Marcin Szamotulski, 2015 Jan 28)
-
-Patch to add a different escape sequence for replace mode.
-(Omar Sandoval, 2014 Nov 30)
-
-Patch on Issue 166, popup drawing with '$' in 'cpo'.
+Patch to add 'space' argument to 'listchars'. (Issue 350)
+Author: David Bürgin
 
 When a session file is created and there are "nofile" buffers, these are not
 filled.  Need to trigger BufReadCmd autocommands.  Also handle deleting the
@@ -173,15 +186,6 @@ Patch to add an argument to ":ls" for specific kinds of buffers.
 Crash when using R syntax. (Jakson Alves de Aquino, 2015 Jan 30)
 Memory freed by ":syn clear" but still referenced, syntax items referenced
 from two windows?  Stopped happening (Feb 5).
-
-Window height computed incorrectly when Vim is minimized.
-Patch to fix this. (Ingo Karkat, 2014 Dec 19)
-
-Patch to fix CTRL-W handling in Insert mode for multi-byte characters.
-(Yasuhiro Matsumoto, 2015 Jan 29, update with test)
-
-Patch to allow values greater than 255 for ctermfg/ctermbg on Windows.
-(Yasuhiro Matsumoto, 2014 Dec 5)
 
 Patch for an extra argument to matchadd() for conceal. (Christian Brabandt,
 2015 Feb 17, update Feb 19)
@@ -409,6 +413,9 @@ highlight group.  Add a "\zs" after it?
 
 Go through more coverity reports.
 
+The undo file name can get too long. (Issue 346)
+For the path use a hash instead of dir%dir%dir%name  hash%name.
+
 Patch to add ":undorecover", get as much text out of the undo file as
 possible. (Christian Brabandt, 2014 Mar 12, update Aug 22)
 
@@ -625,7 +632,7 @@ line are opened again, but from the wrong directory.  Apply 'autochdir' only
 after starting up?
 
 Patch to add ":ldo" and ":cdo", execute commands over quickfix list and
-location list. (Yegappan Lakshmanan, 2013 Jun 2)
+location list. (Yegappan Lakshmanan, 2013 Jun 2, update 2015 Mar 21)
 
 8   "stl" and "stlnc" in 'fillchars' don't work for multi-byte characters.
     Patch by Christian Wellenbrock, 2013 Jul 5.
@@ -1429,6 +1436,7 @@ Kondakoff, 2009 May 13)
 
 Problem with 'langmap' being used on the rhs of a mapping. (Nikolai Weibull,
 2008 May 14)
+Possibly related problem: Alexey Muranov, 2015 Apr 2
 
 Problem with CTRL-F. (Charles Campbell, 2008 March 21)
 Only happens with "gvim -geometry "160x26+4+27" -u NONE -U NONE prop.c".

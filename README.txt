@@ -110,6 +110,3 @@ MAIN AUTHOR
 Send any other comments, patches, flowers and suggestions to:
 
 	Bram Moolenaar		E-mail:	Bram@vim.org
-	Finsterruetihof 1
-	8134 Adliswil
-	Switzerland

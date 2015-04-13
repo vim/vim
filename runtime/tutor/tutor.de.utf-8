@@ -1,11 +1,11 @@
 ===============================================================================
-=      W i l l k o m m e n   im   V I M   T u t o r    -    Version 1.7D      =
+=      W i l l k o m m e n   im   V I M   T u t o r    -    Version 1.7.de.1  =
 ===============================================================================
 
    Vim ist ein sehr mächtiger Editor, der viele Befehle bereitstellt; zu viele,
    um alle in einem Tutor wie diesem zu erklären.  Dieser Tutor ist so
    gestaltet, um genug Befehle vorzustellen, dass Du die Fähigkeit erlangst,
-   Vim mit Leichtigkeit als einen Allzweck-Editor zu benutzen.
+   Vim mit Leichtigkeit als einen Allzweck-Editor zu verwenden.
    Die Zeit für das Durcharbeiten dieses Tutors beträgt ca. 25-30 Minuten,
    abhängig davon, wie viel Zeit Du mit Experimentieren verbringst.
 
@@ -15,11 +15,11 @@
    aufgerufen hast, ist dies bereits eine Kopie).
 
    Es ist wichtig, sich zu vergegenwärtigen, dass dieser Tutor für das Anwenden
-   konzipiert ist. Das bedeutet, dass Du die Befehle ausführen musst, um sie
+   konzipiert ist. Das bedeutet, dass Du die Befehle anwenden musst, um sie
    richtig zu lernen. Wenn Du nur den Text liest, vergisst Du die Befehle!
 
-   Jetzt stelle sicher, dass Deine Umstelltaste NICHT gedrückt ist und betätige
-   die   j   Taste genügend Male, um den Cursor nach unten zu bewegen, so dass
+   Jetzt stelle sicher, dass deine Umstelltaste NICHT gedrückt ist und betätige
+   die   j   Taste genügend Mal, um den Cursor nach unten zu bewegen, so dass
    Lektion 1.1 den Bildschirm vollkommen ausfüllt.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			Lektion 1.1: BEWEGEN DES CURSORS
@@ -37,18 +37,18 @@
 
   3. Benutze die Nach-Unten-Taste, um Dich zu Lektion 1.2 zu bewegen.
 
-Bemerkung: Immer, wenn Du Dir unsicher bist über das, was Du getippt hast,
+Anmerkung: Immer, wenn Du Dir unsicher bist über das, was Du getippt hast,
 	   drücke <ESC> , um Dich in den Normalmodus zu begeben.
 	   Dann gib das gewünschte Kommando noch einmal ein.
 
-Bemerkung: Die Cursor-Tasten sollten ebenfalls funktionieren.  Aber wenn Du
+Anmerkung: Die Cursor-Tasten sollten ebenfalls funktionieren.  Aber wenn Du
 	   hjkl benutzt, wirst Du in der Lage sein, Dich sehr viel schneller
 	   umherzubewegen, wenn Du Dich einmal daran gewöhnt hast. Wirklich!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			    Lektion 1.2: VIM BEENDEN
 
 
-  !! ACHTUNG: Bevor Du einen der unten aufgeführten Schritte ausführst, lies
+  !! Hinweis: Bevor Du einen der unten aufgeführten Schritte ausführst, lies
      diese gesamte Lektion!!
 
   1. Drücke die <ESC> Taste (um sicherzustellen, dass Du im Normalmodus bist).
@@ -63,28 +63,28 @@ Bemerkung: Die Cursor-Tasten sollten ebenfalls funktionieren.  Aber wenn Du
      führe Schritte 1 bis 3 aus, um den Editor zu verlassen und wieder
      hineinzugelangen.
 
-Bemerkung:  :q! <ENTER>  verwirft alle Änderungen, die Du gemacht hast. In
-     einigen Lektionen lernst Du , die Änderungen in einer Datei zu speichern.
+Anmerkung:  :q! <ENTER>  verwirft alle Änderungen, die Du gemacht hast. Einige
+     Lektionen später lernst Du, die Änderungen in einer Datei zu speichern.
 
   5. Bewege den Cursor abwärts zu Lektion 1.3.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		     Lektion 1.3: TEXT EDITIEREN - LÖSCHEN
 
 
-	 ** Drücke  x  um das Zeichen unter dem Cursor zu löschen. **
+	 ** Drücke  x  , um das Zeichen unter dem Cursor zu löschen. **
 
   1. Bewege den Cursor zu der mit ---> markierten Zeile unten.
 
-  2. Um die Fehler zu beheben, bewege den Cursor, bis er auf dem Zeichen steht,
+  2. Um die Fehler zu beheben, bewege den Cursor, bis er über dem Zeichen steht,
      das gelöscht werden soll.
 
-  3. Drücke die  x  Taste, um das überflüssige Zeichen zu löschen.
+  3. Drücke die  x  Taste, um das unerwünschte Zeichen zu löschen.
 
   4. Wiederhole die Schritte 2 bis 4, bis der Satz korrekt ist.
 
----> Die Kkuh sprangg übber deen Moond.
+---> Die Kkuh sprangg übberr deen Moond.
 
-  5. Wenn nun die Zeile korrekt ist, gehe weiter zur Lektion 1.4.
+  5. Nun, da die Zeile korrekt ist, gehe weiter zur Lektion 1.4.
 
 Anmerkung: Während Du durch diesen Tutor gehst, versuche nicht, auswendig zu
     lernen, lerne vielmehr durch Anwenden.
@@ -99,13 +99,13 @@ Anmerkung: Während Du durch diesen Tutor gehst, versuche nicht, auswendig zu
   1. Bewege den Cursor zur ersten unten stehenden mit ---> markierten Zeile.
 
   2. Um die erste Zeile mit der zweiten gleichzumachen, bewege den Cursor auf
-     das erste Zeichen NACH der Stelle, wo der Text eingefügt werden soll.
+     das erste Zeichen NACH der Stelle, an der Text eingefügt werden soll.
 
-  3. Drücke  i  und gib die notwendigen Ergänzungen ein.
+  3. Drücke  i  und gib die nötigen Ergänzungen ein.
 
   4. Wenn jeweils ein Fehler beseitigt ist, drücke <ESC> , um zum Normalmodus
      zurückzukehren.
-     Wiederhole die Schritte 2 bis 4, um den Satz zu korrigieren.
+		 Wiederhole Schritte 2 bis 4, um den Satz zu korrigieren.
 
 ---> In dieser ft etwas .
 ---> In dieser Zeile fehlt etwas Text.
@@ -120,15 +120,15 @@ Anmerkung: Während Du durch diesen Tutor gehst, versuche nicht, auswendig zu
 		     ** Drücke  A  , um Text anzufügen. **
 
   1. Bewege den Cursor zur ersten unten stehenden mit ---> markierten Zeile.
-     Es ist gleichgültig, auf welchem Zeichen der Zeile der Cursor steht.
+     Dabei ist gleichgültig, auf welchem Zeichen der Zeile der Cursor steht.
 
-  2. Drücke  A  und gib die nötigen Ergänzungen ein.
+  2. Drücke  A  und gib die erforderlichen Ergänzungen ein.
 
   3. Wenn das Anfügen abgeschlossen ist, drücke <ESC>, um in den Normalmodus
      zurückzukehren.
 
   4. Bewege den Cursor zur zweiten mit ---> markierten Zeile und wiederhole
-     die Schritte 2 und 3, um den Satz zu korrigieren.
+     die Schritte 2 und 3, um den Satz zu auszubessern.
 
 ---> In dieser Zeile feh
      In dieser Zeile fehlt etwas Text.
@@ -139,26 +139,28 @@ Anmerkung: Während Du durch diesen Tutor gehst, versuche nicht, auswendig zu
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		       Lektion 1.6: EINE DATEI EDITIEREN
 
+		 ** Benutze  :wq  , um eine Datei zu speichern und Vim zu verlassen. **
 
-     ** Benutze  :wq  , um eine Datei zu speichern und Vim zu verlassen. **
-
-  !! ACHTUNG: Bevor Du einen der unten aufgeführten Schritte ausführst, lies
+  !! Hinweis: Bevor Du einen der unten aufgeführten Schritte ausführst, lies
      diese gesamte Lektion!!
 
-  1. Verlasse den Editor so wie in Lektion 1.2:  :q!
+  1. Verlasse den Editor so wie in Lektion 1.2:  :q!       
+	   Oder, falls du Zugriff zu einem anderen Terminal hast, führe das 
+		 Folgende dort aus.
 
   2. Gib dieses Kommando in die Eingabeaufforderung ein:  vim tutor <ENTER>
      'vim' ist der Aufruf des Editors, 'tutor' ist die zu editierende Datei.
-     Benutze eine Datei, die geändert werden kann.
+     Benutze eine Datei, die geändert werden darf.
 
-  3. Füge Text ein oder lösche ihn, wie Du in den vorigen Lektionen gelernt
-     hast.
+  3. Füge Text ein oder lösche ihn, wie Du in den vorangehenden Lektionen 
+     gelernt hast.
 
-  4. Speichere die geänderte Datei und verlasse Vim mit:  :wq <ENTER>
+  4. Speichere die geänderte Datei und verlasse Vim mit:  :wq  <ENTER>
 
-  5. Starte den vimtutor neu und bewege Dich zu der folgenden Zusammenfassung.
+  5. Falls Du in Schritt 1 den vimtutor beendet hast, starte vimtutor neu und
+	   bewege dich abwärts bis zur folgenden Zusammenfassung.
 
-  6. Nachdem Du obige Schritte gelesen und verstanden hast, führe sie durch.
+  6. Nachdem Du obige Schritte gelesen und verstanden hast: führe sie durch.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 ZUSAMMENFASSUNG VON LEKTION 1
 
@@ -166,19 +168,18 @@ Anmerkung: Während Du durch diesen Tutor gehst, versuche nicht, auswendig zu
   1. Der Cursor wird mit den Pfeiltasten oder den Tasten hjkl bewegt.
 	 h (links)     j (unten)     k (aufwärts)    l (rechts)
 
-  2. Um Vim von der Eingabeaufforderung auszuführen, tippe: vim DATEI <ENTER>
+  2. Um Vim aus der Eingabeaufforderung zu starten, tippe: vim DATEI <ENTER>
 
   3. Um Vim zu verlassen und alle Änderungen zu verwerfen, tippe:
 		<ESC>  :q!  <ENTER> .
-	ODER tippe:	<ESC>  :wq  <ENTER> , um die Änderungen zu speichern.
 
   4. Um das Zeichen unter dem Cursor zu löschen, tippe:  x
 
   5. Um Text einzufügen oder anzufügen, tippe:
 	 i   Einzufügenden Text eingeben   <ESC>    Einfügen vor dem Cursor
-	 A   Anzufügenden Text eingeben    <ESC>    Anfügen nach dem Zeilendene
+	 A   Anzufügenden Text eingeben    <ESC>    Anfügen nach dem Zeilenende
 
-Bemerkung: Drücken von <ESC> bringt Dich in den Normalmodus oder bricht ein
+Anmerkung: Drücken von <ESC> bringt Dich in den Normalmodus oder bricht ein
      ungewolltes, erst teilweise eingegebenes Kommando ab.
 
      Nun fahre mit Lektion 2 fort.
@@ -188,7 +189,7 @@ Bemerkung: Drücken von <ESC> bringt Dich in den Normalmodus oder bricht ein
 
 		   ** Tippe  dw  , um ein Wort zu löschen. **
 
-  1. Drücke  <ESC>  um sicherzustellen, dass Du im Normalmodus bist.
+  1. Drücke  <ESC>  , um sicherzustellen, dass Du im Normalmodus bist.
 
   2. Bewege den Cursor zu der mit ---> markierten Zeile unten.
 
@@ -196,15 +197,15 @@ Bemerkung: Drücken von <ESC> bringt Dich in den Normalmodus oder bricht ein
 
   4. Tippe  dw  , um das Wort zu entfernen.
 
-  Bemerkung: Der Buchstabe  d  erscheint auf der letzten Zeile des Bildschirms,
-        wenn Du ihn eingibst. Vim wartet darauf, daß Du  w  eingibst. Wenn Du
-        ein anderes Zeichen als  d  siehst, hast Du etwas falsches getippt;
-        drücke <ESC> und beginne neu.
+  Anmerkung: Der Buchstabe  d  erscheint auf der untersten Zeile des Schirms,
+        wenn Du ihn eingibst. Vim wartet darauf, dass Du  w  eingibst. Falls Du
+        ein anderes Zeichen als  d  siehst, hast Du etwas Falsches getippt;
+        drücke <ESC> und beginne noch einmal.
 
 ---> Einige Wörter lustig gehören nicht Papier in diesen Satz.
 
   5. Wiederhole die Schritte 3 und 4, bis der Satz korrekt ist und gehe
-     danach zur Lektion 2.2.
+     zur Lektion 2.2.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		      Lektion 2.2: WEITERE LÖSCHKOMMANDOS
 
@@ -217,12 +218,12 @@ Bemerkung: Drücken von <ESC> bringt Dich in den Normalmodus oder bricht ein
 
   3. Bewege den Cursor zum Ende der korrekten Zeile (NACH dem ersten . ).
 
-  4. Tippe    d$    , um bis zum Ende der Zeile zu löschen.
+  4. Tippe    d$    , um bis zum Zeilenende zu löschen.
 
 ---> Jemand hat das Ende der Zeile doppelt eingegeben. doppelt eingegeben.
 
 
-  5. Gehe weiter zur Lektion 2.3 , um zu verstehen, was hierbei passiert.
+  5. Gehe weiter zur Lektion 2.3 , um zu verstehen, was hierbei vorgeht.
 
 
 
@@ -240,16 +241,16 @@ Bemerkung: Drücken von <ESC> bringt Dich in den Normalmodus oder bricht ein
 
   wobei:
     d        - der Löschoperator
-    Bewegung - worauf der Löschoperator angewandt wird (unten aufgelistet).
+    Bewegung - worauf der Löschoperator angewandt wird (unten aufgeführt).
 
   Eine kleine Auflistung von Bewegungen:
     w - bis zum Beginn des nächsten Wortes OHNE dessen erstes Zeichen.
     e - zum Ende des aktuellen Wortes MIT dessen letztem Zeichen.
-    $ - zum Ende der Zeile MIT dem letzen Zeichen.
+    $ - zum Ende der Zeile MIT dem letzten Zeichen.
 
   Dementsprechend löscht die Eingabe von  de  vom Cursor an bis zum Wortende.
 
-Bemerkung:  Die Eingabe lediglich des Bewegungsteils im Normalmodus bewegt den
+Anmerkung:  Die Eingabe lediglich des Bewegungsteils im Normalmodus bewegt den
   Cursor entsprechend.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Lektion 2.4: ANWENDUNG EINES ZÄHLERS FÜR EINEN BEWEGUNGSSCHRITT
@@ -265,9 +266,9 @@ Bemerkung:  Die Eingabe lediglich des Bewegungsteils im Normalmodus bewegt den
 
   4. Tippe  0  (Null) , um zum Anfang der Zeile zu gelangen.
 
-  5. Wiederhole Schritte 2 und 3 mit verschiedenen Zählern.
+  5. Wiederhole Schritte 2 und 3 mit verschiedenen Nummern.
 
-  ---> Dies ist nur eine Zeile aus Wörten um sich darin herumzubewegen.
+  ---> Dies ist nur eine Zeile aus Wörtern, um sich darin herumzubewegen.
 
   6. Gehe weiter zu Lektion 2.5.
 
@@ -280,8 +281,8 @@ Bemerkung:  Die Eingabe lediglich des Bewegungsteils im Normalmodus bewegt den
 
    ** Die Eingabe einer Zahl mit einem Operator wiederholt diesen mehrfach. **
 
-  Für die Kombination des Löschoperators und einem Bewegungsschritt (siehe
-  oben) stellt man dem Bewegungsschritt einen Zähler voran, um mehr zu löschen:
+  In der Kombination aus Löschoperator und Bewegungsschritt (siehe oben) 
+  stellt man, um mehr zu löschen dem Schritt einen Zähler voran:
 	 d  Nummer  Bewegungsschritt
 
   1. Bewege den Cursor zum ersten Wort in GROSSBUCHSTABEN in der mit --->
@@ -289,9 +290,8 @@ Bemerkung:  Die Eingabe lediglich des Bewegungsteils im Normalmodus bewegt den
 
   2. Tippe  d2w  , um die zwei Wörter in GROSSBUCHSTABEN zu löschen.
 
-  3. Wiederhole Schritte 1 und  2 mit einem anderen Zähler, um die
-     darauffolgenden Wörter in GROSSBUCHSTABEN mit einem einzigen Kommando
-     zu löschen.
+  3. Wiederhole Schritte 1 und  2 mit einem anderen Zähler, um die darauffol-
+     genden Wörter in GROSSBUCHSTABEN mit einem einzigen Kommando zu löschen.
 
 --->  Diese ABC DE Zeile FGHI JK LMN OP mit Wörtern ist Q RS TUV bereinigt.
 
@@ -325,12 +325,12 @@ Bemerkung:  Die Eingabe lediglich des Bewegungsteils im Normalmodus bewegt den
 
 
 	 ** Tippe u , um die letzten Kommandos rückgängig zu machen **
-	      ** oder U um eine ganze Zeile wiederherzustellen. **
+	      ** oder U , um eine ganze Zeile wiederherzustellen. **
 
   1. Bewege den Cursor zu der mit ---> markierten Zeile unten
      und setze ihn auf den ersten Fehler.
   2. Tippe  x  , um das erste unerwünschte Zeichen zu löschen.
-  3. Nun tippe  u  um das soeben ausgeführte Kommando rückgängig zu machen.
+  3. Nun tippe  u  , um das soeben ausgeführte Kommando rückgängig zu machen.
   4. Jetzt behebe alle Fehler auf der Zeile mit Hilfe des x  Kommandos.
   5. Nun tippe ein großes  U , um die Zeile in ihren Ursprungszustand
      wiederherzustellen.
@@ -341,8 +341,8 @@ Bemerkung:  Die Eingabe lediglich des Bewegungsteils im Normalmodus bewegt den
 
 ---> Beehebe die Fehller diesser Zeile und sttelle sie mitt 'undo' wieder her.
 
-  8. Dies sind sehr nützliche Kommandos.
-     Nun gehe weiter zur Zusammenfassung von Lektion 2.
+  8. Dies sind sehr nützliche Kommandos.  Nun gehe weiter zur Zusammenfassung 
+     von Lektion 2.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 ZUSAMMENFASSUNG VON LEKTION 2
 
@@ -357,7 +357,7 @@ Bemerkung:  Die Eingabe lediglich des Bewegungsteils im Normalmodus bewegt den
      wobei:
        Operator - gibt an, was getan werden soll, zum Beispiel  d  für delete
        [Anzahl] - ein optionaler Zähler, um den Bewegungsschritt zu wiederholen
-       Bewegungsschritt - Bewegung über den zu ändernden Text, so wie
+       Bewegungsschritt - Bewegung über den zu ändernden Text, wie
 		  w (Wort), $ (zum Ende der Zeile), etc.
 
   6. Um Dich zum Anfang der Zeile zu begeben, benutze die Null:  0
@@ -387,7 +387,7 @@ Bemerkung:  Die Eingabe lediglich des Bewegungsteils im Normalmodus bewegt den
 
 ---> d) Kannst Du das auch?
 ---> b) Veilchen sind blau,
----> c) Intelligenz ist erlernbar,
+---> c) Intelligenz ist lernbar,
 ---> a) Rosen sind rot,
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			Lektion 3.2: ERSETZEN (REPLACE)
@@ -403,13 +403,13 @@ Bemerkung:  Die Eingabe lediglich des Bewegungsteils im Normalmodus bewegt den
 
   4. Wiederhole Schritte 2 und 3, bis die erste Zeile gleich der zweiten ist.
 
---->  Als diese Zeite eingegoben wurde, wurden einike falsche Tasten gelippt!
+--->  Alf diese Zeite eingegoben wurde, wurden einike falsche Tasten gelippt!
 --->  Als diese Zeile eingegeben wurde, wurden einige falsche Tasten getippt!
 
   5. Nun fahre fort mit Lektion 3.2.
 
-Bemerkung: Erinnere Dich, dass Du durch Anwenden lernen solltest, nicht durch
-     Auswendiglernen.
+Anmerkung: Erinnere Dich daran, dass Du durch Anwenden lernen solltest, nicht 
+     durch Auswendiglernen.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -431,7 +431,7 @@ Bemerkung: Erinnere Dich, dass Du durch Anwenden lernen solltest, nicht durch
 ---> Einige Wstwr dieser Zlaww lasdjlaf mit dem Ändern-Operator gaaauu werden.
 ---> Einige Wörter dieser Zeile sollen mit dem Ändern-Operator geändert werden.
 
-Bemerke, dass  ce  das Wort löscht und Dich in den Eingabemodus versetzt.
+Beachte, dass  ce  das Wort löscht und Dich in den Eingabemodus versetzt.
 
 
 
@@ -457,7 +457,7 @@ Bemerke, dass  ce  das Wort löscht und Dich in den Eingabemodus versetzt.
 ---> Das Ende dieser Zeile soll an die zweite Zeile angeglichen werden.
 ---> Das Ende dieser Zeile soll mit dem  c$  Kommando korrigiert werden.
 
-Bemerkung: Du kannst die Rücktaste benutzen, um Tippfehler zu korrigieren.
+Anmerkung: Du kannst die Rücktaste benutzen, um Tippfehler zu korrigieren.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 ZUSAMMENFASSUNG VON LEKTION 3
 
@@ -466,8 +466,8 @@ Bemerkung: Du kannst die Rücktaste benutzen, um Tippfehler zu korrigieren.
      gelöschten Text NACH dem Cursor an (wenn eine ganze Zeile gelöscht wurde,
      wird diese in die Zeile unter dem Cursor eingefügt).
 
-  2. Um das Zeichen unter dem Cursor zu ersetzen, tippe   r   und das an dieser
-     Stelle gewünschte Zeichen.
+  2. Um das Zeichen unter dem Cursor zu ersetzen, tippe   r   und danach das 
+     an dieser Stelle gewollte Zeichen.
 
   3. Der Änderungs- (change) Operator erlaubt, vom Cursor bis zum Ende des
      Bewegungsschrittes zu ändern. Tippe  ce  , um eine Änderung vom Cursor bis
@@ -484,17 +484,18 @@ Bemerkung: Du kannst die Rücktaste benutzen, um Tippfehler zu korrigieren.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		  Lektion 4.1: CURSORPOSITION UND DATEISTATUS
 
- ** Tippe CTRL-G , um Deine Dateiposition sowie den Dateistatus anzuzeigen. **
+ ** Tippe CTRL-G , um deine Dateiposition sowie den Dateistatus anzuzeigen. **
      ** Tippe G , um Dich zu einer Zeile in der Datei zu begeben. **
 
-Bemerkung: Lies diese gesamte Lektion, bevor Du irgendeinen Schritt ausführst!!
+Anmerkung: Lies diese gesamte Lektion, bevor Du irgendeinen Schritt ausführst!!
 
-  1. Halte die Ctrl Taste unten und drücke  g . Dies nennen wir wir CTRL-G.
+  1. Halte die Ctrl Taste unten und drücke  g . Dies nennen wir CTRL-G.
      Eine Statusmeldung am Fuß der Seite erscheint mit dem Dateinamen und der
      Position innerhalb der Datei. Merke Dir die Zeilennummer für Schritt 3.
 
-Bemerkung: Möglicherweise siehst Du die Cursorposition in der unteren rechten
-      Bildschirmecke. Dies ist Folge der 'ruler' Option (siehe :help 'ruler')
+Anmerkung: Möglicherweise siehst Du die Cursorposition in der unteren rechten
+      Bildschirmecke. Dies ist Auswirkung der 'ruler' Option 
+	  (siehe :help 'ruler')
 
   2. Drücke  G  , um Dich zum Ende der Datei zu begeben.
      Tippe  gg  , um Dich zum Anfang der Datei zu begeben.
@@ -510,7 +511,7 @@ Bemerkung: Möglicherweise siehst Du die Cursorposition in der unteren rechten
 
   ** Tippe  /  gefolgt von einem Ausdruck, um nach dem Ausdruck zu suchen. **
 
-  1. Im Normalmodus, tippe das  /  Zeichen.  Bemerke, dass das  / und der
+  1. Im Normalmodus, tippe das  /  Zeichen.  Beachte, dass das  / und der
      Cursor am Fuß des Schirms erscheinen, so wie beim :	Kommando.
 
   2. Nun tippe 'Fehhler' <ENTER>. Dies ist das Wort, nach dem Du suchen willst.
@@ -521,32 +522,32 @@ Bemerkung: Möglicherweise siehst Du die Cursorposition in der unteren rechten
   4. Um nach einem Ausdruck rückwärts zu suchen , benutze  ?  statt  / .
 
   5. Um dahin zurückzukehren, von wo Du gekommen bist, drücke CTRL-O (Halte
-     Ctrl unten und drücke den Buchstaben o). Wiederhole dies, um weiter
-     zurückzugehen.  CTRL-I bringt dich vorwärts.
+     Ctrl unten und drücke den Buchstaben o). Wiederhole dies, um noch weiter
+     zurückzugehen.  CTRL-I geht vorwärts.
 
 --->  Fehler schreibt sich nicht "Fehhler"; Fehhler ist ein Fehler
-Bemerkung: Wenn die Suche das Dateiende erreicht hat, wird sie am Anfang
+Anmerkung: Wenn die Suche das Dateiende erreicht hat, wird sie am Anfang
         fortgesetzt, es sei denn, die 'wrapscan' Option wurde abgeschaltet.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		     Lektion 4.3: PASSENDE KLAMMERN FINDEN
 
 
-   ** Tippe  % , um eine korrespondierende Klammer ),], oder } zu finden. **
+   ** Tippe  % , um eine gegenüberliegenden Klammer ),], oder } zu finden. **
 
-  1. Platziere den Cursor auf irgendeines der Zeichen (, [, oder { in der unten
+  1. Platziere den Cursor auf irgendeinem der Zeichen (, [, oder { in der unten
      stehenden Zeile, die mit ---> markiert ist.
 
   2. Nun tippe das  %  Zeichen.
 
   3. Der Cursor bewegt sich zur passenden gegenüberliegenden Klammer.
 
-  4. Tippe  % , um den Cursor zur anderen passenden Klammer zu bewegen.
+  4. Tippe  % , um den Cursor zur passenden anderen Klammer zu bewegen.
 
   5. Setze den Cursor auf ein anderes (,),[,],{ oder } und probiere  %  aus.
 
 ---> Dies ( ist eine Testzeile ( mit [ verschiedenen ] { Klammern }  darin. ))
 
-Bemerkung: Diese Funktionalität ist sehr nützlich bei der Fehlersuche in einem
+Anmerkung: Diese Funktionalität ist sehr nützlich bei der Fehlersuche in einem
      Programmtext, in dem passende Klammern fehlen!
 
 
@@ -558,18 +559,18 @@ Bemerkung: Diese Funktionalität ist sehr nützlich bei der Fehlersuche in einem
 
   1. Bewege den Cursor zu der unten stehenden mit ---> markierten Zeile.
 
-  2. Tippe  :s/diee/die <ENTER> .  Bemerke, dass der Befehl nur das erste
+  2. Tippe  :s/diee/die <ENTER> .  Beachte, dass der Befehl nur das erste
      Vorkommen von "diee" ersetzt.
 
   3. Nun tippe   :s/diee/die/g . Das Zufügen des Flags  g   bedeutet, eine
-     globale Ersetzung über die Zeile durchzuführen, was alle Vorkommen von
-     "diee" auf der Zeile ersetzt.
+     globale Ersetzung über die Zeile durchzuführen, dies ersetzt alle 
+	 Vorkommen von "diee" auf der Zeile.
 
 ---> diee schönste Zeit, um diee Blumen anzuschauen, ist diee Frühlingszeit.
 
   4. Um alle Vorkommen einer Zeichenkette innerhalb zweier Zeilen zu ändern,
-     tippe  :#,#s/alt/neu/g   wobei #,# die Zeilennummern des Zeilenbereiches
-                         sind, in dem die Ersetzung durchgeführt werden soll.
+     tippe  :#,#s/alt/neu/g  wobei #,# die Zeilennummern des Bereiches sind,
+                             in dem die Ersetzung durchgeführt werden soll.
      Tippe  :%s/alt/neu/g    um alle Vorkommen in der gesamten Datei zu ändern.
      Tippe  :%s/alt/neu/gc   um alle Vorkommen in der gesamten Datei zu finden
                      mit einem Fragedialog, ob ersetzt werden soll oder nicht.
@@ -593,9 +594,9 @@ Bemerkung: Diese Funktionalität ist sehr nützlich bei der Fehlersuche in einem
   4. Um das erste Vorkommen von "alt" in einer Zeile durch "neu" zu ersetzen,
              tippe       :s/alt/neu
      Um alle Vorkommen von "alt" in der Zeile ersetzen, tippe  :s/alt/neu/g
-     Um Ausdrücke innerhalb zweier Zeilennummern zu ersetzen,  :#,#s/alt/neu/g
+     Um Ausdrücke innerhalb zweier Zeilen # zu ersetzen        :#,#s/alt/neu/g
      Um alle Vorkommen in der ganzen Datei zu ersetzen, tippe  :%s/alt/neu/g
-     Für eine jedmalige Bestätigung, addiere  'c'  (confirm)   :%s/alt/neu/gc
+     Für eine jedesmalige Bestätigung, addiere 'c' (confirm)   :%s/alt/neu/gc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		Lektion 5.1: AUSFÜHREN EINES EXTERNEN KOMMANDOS
 
@@ -608,14 +609,14 @@ Bemerkung: Diese Funktionalität ist sehr nützlich bei der Fehlersuche in einem
   2. Nun tippe ein  !  (Ausrufezeichen).  Dies ermöglicht Dir, ein beliebiges,
      externes Shellkommando auszuführen.
 
-  3. Als Beispiel tippe   ls   nach dem  !  und drücke <ENTER>. Dies zeigt
-     eine Auflistung Deines Verzeichnisses; genauso, als wenn Du auf der
+  3. Als Beispiel tippe   ls   nach dem  !  und drücke <ENTER>. Dies liefert
+     eine Auflistung deines Verzeichnisses; genauso, als wenn Du in der
      Eingabeaufforderung wärst.  Oder verwende  :!dir  , falls ls nicht geht.
 
-Bemerkung:  Mit dieser Methode kann jedes beliebige externe Kommando
+Anmerkung:  Mit dieser Methode kann jedes beliebige externe Kommando
      ausgeführt werden, auch mit Argumenten.
 
-Bemerkung:  Alle  :  Kommandos müssen durch Eingabe von <ENTER>
+Anmerkung:  Alle  :  Kommandos müssen durch Eingabe von <ENTER>
      abgeschlossen werden. Von jetzt an erwähnen wir dies nicht jedesmal.
 
 
@@ -625,7 +626,7 @@ Bemerkung:  Alle  :  Kommandos müssen durch Eingabe von <ENTER>
 
 ** Um am Text durchgeführte Änderungen zu speichern, tippe :w DATEINAME. **
 
-  1. Tippe  :!dir  oder  :!ls  , um eine Auflistung Deines Verzeichnisses zu
+  1. Tippe  :!dir  oder  :!ls  , um eine Auflistung deines Verzeichnisses zu
      erhalten.  Du weißt nun bereits, dass Du danach <ENTER> eingeben musst.
 
   2. Wähle einen Dateinamen, der noch nicht existiert, z.B. TEST.
@@ -633,15 +634,15 @@ Bemerkung:  Alle  :  Kommandos müssen durch Eingabe von <ENTER>
   3. Nun tippe:  :w TEST   (wobei TEST der gewählte Dateiname ist).
 
   4. Dies speichert die ganze Datei (den Vim Tutor) unter dem Namen TEST.
-     Um dies zu überprüfen, tippe nochmals  :!ls  bzw.  !dir, um Deinen
+     Um dies zu überprüfen, tippe nochmals  :!ls  bzw.  !dir, um deinen
      Verzeichnisinhalt zu sehen.
 
-Bemerkung: Würdest Du Vim jetzt beenden und danach wieder mit vim TEST
+Anmerkung: Würdest Du Vim jetzt beenden und danach wieder mit vim TEST
     starten, dann wäre diese Datei eine exakte Kopie des Tutors zu dem
     Zeitpunkt, als Du ihn gespeichert hast.
 
   5. Nun entferne die Datei durch Eingabe von (MS-DOS):    :!del TEST
-				oder (Unix):	:!rm TEST
+                      oder (Unix):                         :!rm TEST
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		 Lektion 5.3: AUSWÄHLEN VON TEXT ZUM SCHREIBEN
 
@@ -650,41 +651,42 @@ Bemerkung: Würdest Du Vim jetzt beenden und danach wieder mit vim TEST
   1. Bewege den Cursor zu dieser Zeile.
 
   2. Tippe  v  und bewege den Cursor zum fünften Auflistungspunkt unten.
-     Bemerke, daß der Text hervorgehoben wird.
+     Beachte, dass der Text hervorgehoben wird.
 
   3. Drücke das Zeichen  : . Am Fuß des Schirms erscheint  :'<,'> .
 
   4. Tippe  w TEST  , wobei TEST ein noch nicht vorhandener Dateiname ist.
-     Vergewissere Dich, daß Du  :'<,'>w TEST  siehst, bevor Du Enter drückst.
+     Vergewissere Dich, dass Du  :'<,'>w TEST  siehst, bevor Du <ENTER> drückst.
 
   5. Vim schreibt die ausgewählten Zeilen in die Datei TEST. Benutze  :!dir
      oder  :!ls , um sie zu sehen. Lösche sie noch nicht! Wir werden sie in
      der nächsten Lektion benutzen.
 
-Bemerkung: Drücken von  v  startet die Visuelle Auswahl. Du kannst den Cursor
-   umherbewegen, um die Auswahl größer oder kleiner zu machen. Anschließend
-   kann man einen Operator anwenden, um mit dem Text etwas zu tun. Zum
-   Beispiel löscht  d  den Text.
+Hinweis: Drücken von  v  startet die Visuelle Auswahl. Du kannst den Cursor
+   umherbewegen, um die Auswahl zu vergrößern oder zu verkleinern. Anschließend
+   lässt sich ein Operator anwenden, um mit dem Text etwas zu tun. Zum Beispiel
+   löscht  d  den Text.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	      Lektion 5.4: EINLESEN UND ZUSAMMENFÜHREN VON DATEIEN
 
 
        ** Um den Inhalt einer Datei einzulesen, tippe  :r DATEINAME  **
 
-  1. Platziere den Cursor überhalb dieser Zeile.
+  1. Platziere den Cursor direkt über dieser Zeile.
 
 BEACHTE:  Nachdem Du Schritt 2 ausgeführt hast, wirst Du Text aus Lektion 5.3
-       sehen. Dann bewege Dich wieder ABWÄRTS, um diese Lektion wiederzusehen.
+       sehen. Dann bewege Dich wieder ABWÄRTS, Lektion 5.4 wiederzusehen.
 
-  2. Nun lies Deine Datei TEST ein indem Du das Kommando  :r TEST  ausführst,
+  2. Nun lies deine Datei TEST ein indem Du das Kommando  :r TEST  ausführst,
      wobei TEST der von Dir verwendete Dateiname ist.
      Die eingelesene Datei wird unterhalb der Cursorzeile eingefügt.
 
-  3. Um zu überprüfen, dass die Datei eingelesen wurde, gehe zurück und siehe,
-     dass es jetzt zwei Kopien von Lektion 5.3 gibt, das Original und die
-     eingefügte Dateiversion.
+  3. Um zu überprüfen, dass die Datei eingelesen wurde, gehe zurück und 
+     beachte, dass es jetzt zwei Kopien von Lektion 5.3 gibt, das Original und 
+	 die eingefügte Dateiversion.
 
-Bemerkung: Du kannst auch die Ausgabe eines externen Kommandos einlesen. Zum
+Anmerkung: Du kannst auch die Ausgabe eines externen Kommandos einlesen. Zum
      Beispiel liest  :r !ls  die Ausgabe des Kommandos ls ein und platziert
      sie unterhalb des Cursors.
 
@@ -720,14 +722,14 @@ Bemerkung: Du kannst auch die Ausgabe eines externen Kommandos einlesen. Zum
 
   1. Bewege den Cursor zu der ersten mit ---> markierten Zeile unten.
 
-  2. Tippe o (klein geschrieben), um eine Zeile UNTERHALB des Cursos zu öffnen
+  2. Tippe o (klein geschrieben), um eine Zeile UNTERHALB des Cursors zu öffnen
      und Dich in den Einfügemodus zu begeben.
 
   3. Nun tippe etwas Text und drücke <ESC> , um den Einfügemodus zu verlassen.
 
 ---> Mit  o  wird der Cursor auf der offenen Zeile im Einfügemodus platziert.
 
-  4. Um eine Zeile ÜBERHALB des Cursos aufzumachen, gib einfach ein großes  O
+  4. Um eine Zeile ÜBERHALB des Cursors aufzumachen, gib einfach ein großes  O
      statt einem kleinen  o  ein. Versuche dies auf der unten stehenden Zeile.
 
 ---> Öffne eine Zeile über dieser mit O , wenn der Cursor auf dieser Zeile ist.
@@ -755,7 +757,7 @@ Bemerkung: Du kannst auch die Ausgabe eines externen Kommandos einlesen. Zum
 ---> Diese Zei bietet Gelegen , Text in einer Zeile anzufü.
 ---> Diese Zeile bietet Gelegenheit, Text in einer Zeile anzufügen.
 
-Bemerkung:  a, i und A gehen alle gleichermaßen in den Einfügemodus; der
+Anmerkung:  a, i und A gehen alle gleichermaßen in den Einfügemodus; der
             einzige Unterschied ist, wo die Zeichen eingefügt werden.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	      Lektion 6.3: EINE ANDERE ART DES ERSETZENS (REPLACE)
@@ -767,9 +769,9 @@ Bemerkung:  a, i und A gehen alle gleichermaßen in den Einfügemodus; der
      Bewege den Cursor zum Anfang des ersten  xxx .
 
   2. Nun drücke  R  und tippe die Nummer, die darunter in der zweiten Zeile
-     steht, so das diese das xxx ersetzt.
+     steht, so dass diese das xxx ersetzt.
 
-  3. Drücke <ESC> , um den Ersetzungsmodus zu verlassen. Bemerke, daß der Rest
+  3. Drücke <ESC> , um den Ersetzungsmodus zu verlassen. Beachte, dass der Rest
      der Zeile unverändert bleibt.
 
   4. Wiederhole die Schritte, um das verbliebene xxx zu ersetzen.
@@ -777,7 +779,7 @@ Bemerkung:  a, i und A gehen alle gleichermaßen in den Einfügemodus; der
 ---> Das Addieren von 123 zu xxx ergibt xxx.
 ---> Das Addieren von 123 zu 456 ergibt 579.
 
-Bemerkung: Der Ersetzungsmodus ist wie der Einfügemodus, aber jedes eingetippte
+Anmerkung: Der Ersetzungsmodus ist wie der Einfügemodus, aber jedes eingetippte
            Zeichen löscht ein vorhandenes Zeichen.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -785,7 +787,7 @@ Bemerkung: Der Ersetzungsmodus ist wie der Einfügemodus, aber jedes eingetippte
 
  ** Benutze den  y  Operator, um Text zu kopieren;  p  , um ihn einzufügen **
 
-  1. Gehe zu der mit ---> markierten Zeile unten, setze den Cursor hinter "a)".
+  1. Gehe zu der mit ---> markierten Zeile unten; setze den Cursor hinter "a)".
 
   2. Starte den Visuellen Modus mit  v  , bewege den Cursor genau vor "erste".
 
@@ -802,11 +804,11 @@ Bemerkung: Der Ersetzungsmodus ist wie der Einfügemodus, aber jedes eingetippte
 --->  a) dies ist der erste Eintrag.
       b)
 
-Bemerkung: Du kannst  y  auch als Operator verwenden;  yw  kopiert ein Wort.
+Anmerkung: Du kannst  y  auch als Operator verwenden;  yw  kopiert ein Wort.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			  Lektion 6.5: OPTIONEN SETZEN
 
-      ** Setze eine Option so, dass eine Suche oder eine Ersetzung Groß- **
+      ** Setze eine Option so, dass eine Suche oder Ersetzung Groß- **
 		      ** und Kleinschreibung ignoriert **
 
   1. Suche nach 'ignoriere', indem Du    /ignoriere   eingibst.
@@ -815,7 +817,7 @@ Bemerkung: Du kannst  y  auch als Operator verwenden;  yw  kopiert ein Wort.
   2. Setze die 'ic' (Ignore case) - Option, indem Du   :set ic   eingibst.
 
   3. Nun suche wieder nach 'ignoriere', indem Du  n  tippst.
-     Bemerke, daß jetzt Ignoriere und auch IGNORIERE gefunden wird.
+     Beachte, dass jetzt Ignoriere und auch IGNORIERE gefunden wird.
 
   4. Setze die 'hlsearch' und 'incsearch' - Optionen:     :set hls is
 
@@ -823,14 +825,14 @@ Bemerkung: Du kannst  y  auch als Operator verwenden;  yw  kopiert ein Wort.
 
   6. Um das Ignorieren von Groß/Kleinschreibung abzuschalten, tippe:  :set noic
 
-Bemerkung: Um die Hervorhebung der Treffer zu enfernen, gib ein:  :nohlsearch
-Bemerkung: Um die Schreibweise für eine einzige Suche zu ignorieren, benutze
-           \c im Suchausdruck:  /ignoriere\c  <ENTER>
+Anmerkung: Um die Hervorhebung der Treffer zu entfernen, gib ein:  :nohlsearch
+Anmerkung: Um die Schreibweise für eine einzige Suche zu ignorieren, benutze \c
+           im Suchausdruck:  /ignoriere\c  <ENTER>
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 ZUSAMMENFASSUNG VON LEKTION 6
 
  1. Tippe  o  , um eine Zeile UNTER dem Cursor zu öffnen und den Einfügemodus
-                zu starten.
+                zu starten
     Tippe  O  , um eine Zeile ÜBER dem Cursor zu öffnen.
 
  2. Tippe  a  , um Text NACH dem Cursor anzufügen.
@@ -876,13 +878,13 @@ Bemerkung: Um die Schreibweise für eine einzige Suche zu ignorieren, benutze
 		     Lektion 7.2: ERSTELLE EIN START-SKRIPT
 
 
-	   **  Aktiviere die eingebauten Funktionalitäten von Vim **
+	          **  Aktiviere die Features von Vim **
 
   Vim besitzt viele Funktionalitäten, die über Vi hinausgehen, aber die meisten
   von ihnen sind standardmäßig deaktiviert. Um mehr Funktionalitäten zu nutzen,
   musst Du eine "vimrc" - Datei erstellen.
 
-  1. Starte das Editieren der "vimrc"-Datei, abhängig von Deinem System:
+  1. Starte das Editieren der "vimrc"-Datei, abhängig von deinem System:
 	:e ~/.vimrc		für Unix
 	:e $VIM/_vimrc		für MS-Windows
 
@@ -893,33 +895,33 @@ Bemerkung: Um die Schreibweise für eine einzige Suche zu ignorieren, benutze
 	:w
 
   Beim nächsten Start von Vim wird die Syntaxhervorhebung aktiviert sein.
-  Du kannst all Deine bevorzugten Optionen zu dieser "vimrc"-Datei zufügen.
+  Du kannst all deine bevorzugten Optionen zu dieser "vimrc"-Datei zufügen.
   Für mehr Informationen tippe  :help vimrc-intro
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 Lektion 7.3: VERVOLLSTÄNDIGEN
 
 
-	   ** Kommandozeilenvervollständigung mit CTRL-D and <TAB> **
+	   ** Kommandozeilenvervollständigung mit CTRL-D und <TAB> **
 
-  1. Stelle sicher, daß Vim nicht im vi-Kompatibilitätsmodus ist:  :set nocp
+  1. Stelle sicher, dass Vim nicht im Vi-Kompatibilitätsmodus ist:  :set nocp
 
   2. Siehe nach, welche Dateien im Verzeichnis existieren:  :!ls  oder  :dir
 
-  3. Tippe den Beginn eines Komandos:  :e
+  3. Tippe den Beginn eines Kommandos:  :e
 
   4. Drücke  CTRL-D  und Vim zeigt eine Liste mit "e" beginnender Kommandos.
 
   5. Drücke  <TAB>  und Vim vervollständigt den Kommandonamen zu ":edit".
 
-  6. Nun füge ein Leerzeichen und den Beginn einer existierenden Datei an:
+  6. Nun füge ein Leerzeichen und den Anfang einer existierenden Datei an:
      :edit DAT
 
   7. Drücke <TAB>. Vim vervollständigt den Namen (falls er eindeutig ist).
 
-Bemerkung: Vervollständigung funktioniert für viele Kommandos. Versuche
+Anmerkung: Vervollständigung funktioniert für viele Kommandos. Probiere
      einfach CTRL-D und <TAB>.  Dies ist insbesondere nützlich für  :help .
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			 ZUSAMMENFASSUNG VON LEKTION 7
+				     ZUSAMMENFASSUNG VON LEKTION 7
 
 
   1. Tippe  :help  oder drücke <F1> oder <Help>, um ein Hilfefenster zu öffnen.
@@ -930,11 +932,11 @@ Bemerkung: Vervollständigung funktioniert für viele Kommandos. Versuche
 
   4. Tippe  :q  , um das Hilfefenster zu schließen.
 
-  5. Erstelle ein vimrc - Startskript zur Sicherung bevorzugter Einstellungen.
+  5. Erstelle ein vimrc - Startskript mit deinen bevorzugter Einstellungen.
 
-  6. Drücke CTRL-D nach dem Tippen eines Kommandos  :  , um mögliche
-     Vervollständigungen zu sehen.
-     Drücke <TAB> für eine einzige Vervollständigung.
+  6. Drücke CTRL-D nach dem Tippen eines  :  Kommandos, um mögliche
+     Vervollständigungen anzusehen.
+     Drücke <TAB> , um eine Vervollständigung zu anzuwenden.
 
 
 
@@ -943,13 +945,13 @@ Bemerkung: Vervollständigung funktioniert für viele Kommandos. Versuche
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Damit ist der Vim Tutor beendet.  Die Intention war, einen kurzen und
-  bündigen Überblick über den Vim Editor zu liefern; gerade genug, um relativ
+  Damit ist der Vim Tutor beendet.  Seine Intention war, einen kurzen und
+  bündigen Überblick über den Vim Editor zu geben; gerade genug, um relativ
   leicht mit ihm umgehen zu können.  Der Vim Tutor hat nicht den geringsten
   Anspruch auf Vollständigkeit; Vim hat noch weitaus mehr Kommandos. Lies als
   nächstes das User Manual: ":help user-manual".
 
-  Für weiteres Lesen und Lernen ist folgendes Buch empfohlen :
+  Für weiteres Lesen und Lernen ist folgendes Buch empfehlenswert :
 	Vim - Vi Improved - von Steve Oualline
 	Verlag: New Riders
   Das erste Buch, welches durchgängig Vim gewidmet ist.  Besonders nützlich
@@ -957,7 +959,7 @@ Bemerkung: Vervollständigung funktioniert für viele Kommandos. Versuche
   Siehe http://iccf-holland.org/click5.html
 
   Folgendes Buch ist älter und mehr über Vi als Vim, aber auch empfehlenswert:
-	Textbearbeitung mit dem vi-Editor  -  von Linda Lamb und Arnold Robbins
+	Textbearbeitung mit dem Vi-Editor  -  von Linda Lamb und Arnold Robbins
 	Verlag O'Reilly - ISBN: 3897211262
   In diesem Buch kann man fast alles finden, was man mit Vi tun möchte.
   Die sechste Ausgabe enthält auch Informationen über Vim.
@@ -970,11 +972,11 @@ Bemerkung: Vervollständigung funktioniert für viele Kommandos. Versuche
   für Einsteiger empfehlenswert.  Probekapitel und die Beispielskripte sind
   online erhältlich.  Siehe http://iccf-holland.org/click5.html
 
-  Dieses Tutorial wurde geschrieben von Michael C. Pierce and Robert K. Ware,
+  Dieses Tutorial wurde geschrieben von Michael C. Pierce und Robert K. Ware,
   Colorado School of Mines. Es benutzt Ideen, die Charles Smith, Colorado State
-  University, zur Verfügung stellte.  E-mail: bware@mines.colorado.edu.
+  University, zur Verfügung stellte.  E-Mail: bware@mines.colorado.edu.
 
   Bearbeitet für Vim von Bram Moolenaar.
-  Deutsche Übersetzung von Joachim Hofmann 2007.  E-mail: Joachim.Hof@gmx.de
+  Deutsche Übersetzung von Joachim Hofmann 2015.  E-Mail: Joachim.Hof@gmx.de
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
