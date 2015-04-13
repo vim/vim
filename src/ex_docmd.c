@@ -10845,7 +10845,6 @@ makeopens(fd, dirnow)
     buf_T	*buf;
     int		only_save_windows = TRUE;
     int		nr;
-    int		cnr = 1;
     int		restore_size = TRUE;
     win_T	*wp;
     char_u	*sname;
@@ -10983,7 +10982,8 @@ makeopens(fd, dirnow)
     tab_topframe = topframe;
     for (tabnr = 1; ; ++tabnr)
     {
-	int  need_tabnew = FALSE;
+	int	need_tabnew = FALSE;
+	int	cnr = 1;
 
 	if ((ssop_flags & SSOP_TABPAGES))
 	{
