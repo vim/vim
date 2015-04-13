@@ -3658,7 +3658,10 @@ do_unlet_var(lp, name_end, forceit)
 	    ret = FAIL;
 	*name_end = cc;
     }
-    else if (tv_check_lock(lp->ll_tv->v_lock, lp->ll_name))
+    else if ((lp->ll_list != NULL
+			  && tv_check_lock(lp->ll_list->lv_lock, lp->ll_name))
+	    || (lp->ll_dict != NULL
+			 && tv_check_lock(lp->ll_dict->dv_lock, lp->ll_name)))
 	return FAIL;
     else if (lp->ll_range)
     {
@@ -3709,17 +3712,29 @@ do_unlet(name, forceit)
     hashtab_T	*ht;
     hashitem_T	*hi;
     char_u	*varname;
+    dict_T	*d;
     dictitem_T	*di;
 
     ht = find_var_ht(name, &varname);
     if (ht != NULL && *varname != NUL)
     {
+	if (ht == &globvarht)
+	    d = &globvardict;
+	else if (current_funccal != NULL
+				 && ht == &current_funccal->l_vars.dv_hashtab)
+	    d = &current_funccal->l_vars;
+	else
+	{
+	    di = find_var_in_ht(ht, *name, (char_u *)"", FALSE);
+	    d = di->di_tv.vval.v_dict;
+	}
 	hi = hash_find(ht, varname);
 	if (!HASHITEM_EMPTY(hi))
 	{
 	    di = HI2DI(hi);
 	    if (var_check_fixed(di->di_flags, name)
-		    || var_check_ro(di->di_flags, name))
+		    || var_check_ro(di->di_flags, name)
+		    || tv_check_lock(d->dv_lock, name))
 		return FAIL;
 	    delete_var(ht, hi);
 	    return OK;
@@ -7269,7 +7284,7 @@ dictitem_alloc(key)
     if (di != NULL)
     {
 	STRCPY(di->di_key, key);
-	di->di_flags = 0;
+	di->di_flags = DI_FLAGS_ALLOC;
     }
     return di;
 }
@@ -7288,7 +7303,7 @@ dictitem_copy(org)
     if (di != NULL)
     {
 	STRCPY(di->di_key, org->di_key);
-	di->di_flags = 0;
+	di->di_flags = DI_FLAGS_ALLOC;
 	copy_tv(&org->di_tv, &di->di_tv);
     }
     return di;
@@ -7320,7 +7335,8 @@ dictitem_free(item)
     dictitem_T *item;
 {
     clear_tv(&item->di_tv);
-    vim_free(item);
+    if (item->di_flags & DI_FLAGS_ALLOC)
+	vim_free(item);
 }
 
 /*
@@ -10481,6 +10497,7 @@ dict_extend(d1, d2, action)
     dictitem_T	*di1;
     hashitem_T	*hi2;
     int		todo;
+    char	*arg_errmsg = N_("extend() argument");
 
     todo = (int)d2->dv_hashtab.ht_used;
     for (hi2 = d2->dv_hashtab.ht_array; todo > 0; ++hi2)
@@ -10515,6 +10532,9 @@ dict_extend(d1, d2, action)
 	    }
 	    else if (*action == 'f' && HI2DI(hi2) != di1)
 	    {
+		if (tv_check_lock(di1->di_tv.v_lock, (char_u *)_(arg_errmsg))
+		      || var_check_ro(di1->di_flags, (char_u *)_(arg_errmsg)))
+		    break;
 		clear_tv(&di1->di_tv);
 		copy_tv(&HI2DI(hi2)->di_tv, &di1->di_tv);
 	    }
@@ -10805,13 +10825,13 @@ filter_map(argvars, rettv, map)
     if (argvars[0].v_type == VAR_LIST)
     {
 	if ((l = argvars[0].vval.v_list) == NULL
-		|| tv_check_lock(l->lv_lock, (char_u *)_(arg_errmsg)))
+	      || (!map && tv_check_lock(l->lv_lock, (char_u *)_(arg_errmsg))))
 	    return;
     }
     else if (argvars[0].v_type == VAR_DICT)
     {
 	if ((d = argvars[0].vval.v_dict) == NULL
-		|| tv_check_lock(d->dv_lock, (char_u *)_(arg_errmsg)))
+	      || (!map && tv_check_lock(d->dv_lock, (char_u *)_(arg_errmsg))))
 	    return;
     }
     else
@@ -10850,8 +10870,11 @@ filter_map(argvars, rettv, map)
 
 		    --todo;
 		    di = HI2DI(hi);
-		    if (tv_check_lock(di->di_tv.v_lock,
-						     (char_u *)_(arg_errmsg)))
+		    if (map &&
+			    (tv_check_lock(di->di_tv.v_lock,
+						     (char_u *)_(arg_errmsg))
+			    || var_check_ro(di->di_flags,
+						     (char_u *)_(arg_errmsg))))
 			break;
 		    vimvars[VV_KEY].vv_str = vim_strsave(di->di_key);
 		    r = filter_map_one(&di->di_tv, expr, map, &rem);
@@ -10859,7 +10882,14 @@ filter_map(argvars, rettv, map)
 		    if (r == FAIL || did_emsg)
 			break;
 		    if (!map && rem)
+		    {
+			if (var_check_fixed(di->di_flags,
+						     (char_u *)_(arg_errmsg))
+			    || var_check_ro(di->di_flags,
+						     (char_u *)_(arg_errmsg)))
+			    break;
 			dictitem_remove(d, di);
+		    }
 		}
 	    }
 	    hash_unlock(ht);
@@ -10870,7 +10900,8 @@ filter_map(argvars, rettv, map)
 
 	    for (li = l->lv_first; li != NULL; li = nli)
 	    {
-		if (tv_check_lock(li->li_tv.v_lock, (char_u *)_(arg_errmsg)))
+		if (map && tv_check_lock(li->li_tv.v_lock,
+						     (char_u *)_(arg_errmsg)))
 		    break;
 		nli = li->li_next;
 		vimvars[VV_KEY].vv_nr = idx;
@@ -15819,7 +15850,9 @@ f_remove(argvars, rettv)
 		di = dict_find(d, key, -1);
 		if (di == NULL)
 		    EMSG2(_(e_dictkey), key);
-		else
+		else if (!var_check_fixed(di->di_flags, (char_u *)_(arg_errmsg))
+			    && !var_check_ro(di->di_flags,
+						     (char_u *)_(arg_errmsg)))
 		{
 		    *rettv = di->di_tv;
 		    init_tv(&di->di_tv);
@@ -21303,7 +21336,7 @@ vars_clear_ext(ht, free_val)
 	    v = HI2DI(hi);
 	    if (free_val)
 		clear_tv(&v->di_tv);
-	    if ((v->di_flags & DI_FLAGS_FIX) == 0)
+	    if (v->di_flags & DI_FLAGS_ALLOC)
 		vim_free(v);
 	}
     }
@@ -21502,7 +21535,7 @@ set_var(name, tv, copy)
 	    vim_free(v);
 	    return;
 	}
-	v->di_flags = 0;
+	v->di_flags = DI_FLAGS_ALLOC;
     }
 
     if (copy || tv->v_type == VAR_NUMBER || tv->v_type == VAR_FLOAT)
@@ -23656,7 +23689,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 							     + STRLEN(name)));
 	    if (v == NULL)
 		break;
-	    v->di_flags = DI_FLAGS_RO;
+	    v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX | DI_FLAGS_ALLOC;
 	}
 	STRCPY(v->di_key, name);
 	hash_add(&fc->l_avars.dv_hashtab, DI2HIKEY(v));
