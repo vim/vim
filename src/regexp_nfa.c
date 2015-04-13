@@ -3156,6 +3156,7 @@ post2nfa(postfix, end, nfa_calc_size)
 		    if (stackp < stack)			\
 		    {					\
 			st_error(postfix, end, p);	\
+			vim_free(stack);		\
 			return NULL;			\
 		    }
 
@@ -3632,10 +3633,16 @@ post2nfa(postfix, end, nfa_calc_size)
 
     e = POP();
     if (stackp != stack)
+    {
+	vim_free(stack);
 	EMSG_RET_NULL(_("E875: (NFA regexp) (While converting from postfix to NFA), too many states left on stack"));
+    }
 
     if (istate >= nstate)
+    {
+	vim_free(stack);
 	EMSG_RET_NULL(_("E876: (NFA regexp) Not enough space to store the whole NFA "));
+    }
 
     matchstate = &state_ptr[istate++]; /* the match state */
     matchstate->c = NFA_MATCH;
