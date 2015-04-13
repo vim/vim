@@ -4875,6 +4875,7 @@ b:current_syntax-variable	syntax.txt	/*b:current_syntax-variable*
 b:netrw_lastfile	pi_netrw.txt	/*b:netrw_lastfile*
 b:tex_stylish	syntax.txt	/*b:tex_stylish*
 b:var	eval.txt	/*b:var*
+b:yaml_schema	syntax.txt	/*b:yaml_schema*
 baan-folding	syntax.txt	/*baan-folding*
 baan-syntax	syntax.txt	/*baan-syntax*
 baan.vim	syntax.txt	/*baan.vim*
@@ -5884,6 +5885,7 @@ ft-xhtml-omni	insert.txt	/*ft-xhtml-omni*
 ft-xml-omni	insert.txt	/*ft-xml-omni*
 ft-xml-syntax	syntax.txt	/*ft-xml-syntax*
 ft-xpm-syntax	syntax.txt	/*ft-xpm-syntax*
+ft-yaml-syntax	syntax.txt	/*ft-yaml-syntax*
 ft_ada.txt	ft_ada.txt	/*ft_ada.txt*
 ft_sql.txt	ft_sql.txt	/*ft_sql.txt*
 ftdetect	filetype.txt	/*ftdetect*
@@ -6113,6 +6115,7 @@ g:vimsyn_folding	syntax.txt	/*g:vimsyn_folding*
 g:vimsyn_maxlines	syntax.txt	/*g:vimsyn_maxlines*
 g:vimsyn_minlines	syntax.txt	/*g:vimsyn_minlines*
 g:vimsyn_noerror	syntax.txt	/*g:vimsyn_noerror*
+g:yaml_schema	syntax.txt	/*g:yaml_schema*
 g:zip_nomax	pi_zip.txt	/*g:zip_nomax*
 g:zip_shq	pi_zip.txt	/*g:zip_shq*
 g:zip_unzipcmd	pi_zip.txt	/*g:zip_unzipcmd*
@@ -8889,6 +8892,7 @@ xterm-screens	tips.txt	/*xterm-screens*
 xterm-scroll-region	term.txt	/*xterm-scroll-region*
 xterm-shifted-keys	term.txt	/*xterm-shifted-keys*
 y	change.txt	/*y*
+yaml.vim	syntax.txt	/*yaml.vim*
 yank	change.txt	/*yank*
 ye-option-gone	version4.txt	/*ye-option-gone*
 year-2000	intro.txt	/*year-2000*

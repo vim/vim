@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Apr 12
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Apr 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -67,13 +67,6 @@ Regexp problems:
   col and vcol when moving to another line.
 - this doesn't work: "syntax match ErrorMsg /.\%9l\%>20c\&\%<28c/".  Leaving
   out the \& works.  Seems any column check after \& fails.
-
-PHP complete update, (complex, 2015 Apr 2)
-
-PHP syntax file update. (Jason Woofenden, 2015 Mar 24)
-
-Updated syntax files. (Charles Campbell, Apr 2)
-Two messages.
 
 Check out neovim bug reports that apply to Vim:
 https://github.com/neovim/neovim/issues?q=label%3Abug-vim
