@@ -234,6 +234,8 @@ hasFoldingWin(win, lnum, firstp, lastp, cache, infop)
 	return FALSE;
     }
 
+    if (last > win->w_buffer->b_ml.ml_line_count)
+	last = win->w_buffer->b_ml.ml_line_count;
     if (lastp != NULL)
 	*lastp = last;
     if (firstp != NULL)
