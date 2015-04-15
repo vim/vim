@@ -741,6 +741,16 @@ do_move(line1, line2, dest)
     linenr_T	extra;	    /* Num lines added before line1 */
     linenr_T	num_lines;  /* Num lines moved */
     linenr_T	last_line;  /* Last line in file after adding new text */
+#ifdef FEAT_FOLDING
+    int		isFolded;
+
+    /* Moving lines seems to corrupt the folds, delete folding info now
+     * and recreate it when finished.  Don't do this for manual folding, it
+     * would delete all folds. */
+    isFolded = hasAnyFolding(curwin) && !foldmethodIsManual(curwin);
+    if (isFolded)
+	deleteFoldRecurse(&curwin->w_folds);
+#endif
 
     if (dest >= line1 && dest < line2)
     {
@@ -838,6 +848,12 @@ do_move(line1, line2, dest)
     }
     else
 	changed_lines(dest + 1, 0, line1 + num_lines, 0L);
+
+#ifdef FEAT_FOLDING
+	/* recreate folds */
+	if (isFolded)
+	    foldUpdateAll(curwin);
+#endif
 
     return OK;
 }
