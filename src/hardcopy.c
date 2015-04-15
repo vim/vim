@@ -2513,7 +2513,7 @@ mch_print_init(psettings, jobname, forceit)
     props = enc_canon_props(p_encoding);
     if (!(props & ENC_8BIT) && ((*p_pmcs != NUL) || !(props & ENC_UNICODE)))
     {
-	int cmap_first;
+	int cmap_first = 0;
 
 	p_mbenc_first = NULL;
 	for (cmap = 0; cmap < (int)NUM_ELEMENTS(prt_ps_mbfonts); cmap++)
