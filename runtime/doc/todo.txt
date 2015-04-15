@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Apr 13
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Apr 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -68,21 +68,8 @@ Regexp problems:
 - this doesn't work: "syntax match ErrorMsg /.\%9l\%>20c\&\%<28c/".  Leaving
   out the \& works.  Seems any column check after \& fails.
 
-Check out neovim bug reports that apply to Vim:
-https://github.com/neovim/neovim/issues?q=label%3Abug-vim
-Specifically:
-https://github.com/neovim/neovim/commit/cf8e175cf54281bcad5e704308e92ebb3e6381d3
-https://github.com/neovim/neovim/commit/d7038127ca6b356ad33fdec08aa3b23ac6a817af
-https://github.com/neovim/neovim/commit/77ace65bdce379f2d9b13ee81ab3fc01951f92dc
-https://patch-diff.githubusercontent.com/raw/neovim/neovim/pull/2390.patch
-And also:
-https://github.com/neovim/neovim/pull/2157/commits
-
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
-
-Patch to fix issues with locked and fixed variables.
-(Ola Dabrunz, 2015 Apr 11, update Apr 12)
 
 Better .ico file for Windows. (Pat Suwalski, 2015 Feb 13)
 Waiting for response on remark from Edward Fox.
@@ -368,7 +355,7 @@ Editing an ascii file as ucs-2 or ucs-4 causes display errors.
 ":Next 1 some-arg" does not complain about trailing argument.  Also for
 various other commands.  (ZyX, 2014 Mar 30)
 
-patch to skip sort if no line matches the expression.
+Patch to skip sort if no line matches the expression.
 (Christian Brabandt, 2014 Jun 25)
 
 Patch to add sortuniq(). (Cade Forester, 2014 Mar 19)
@@ -458,9 +445,6 @@ When evaluating expression in backticks, autoload doesn't work.
 
 Using <nr>ifoobar<esc> can slow down Vim.  Patch by Christian Brabandt, 2013
 Dec 13.
-
-Fold can't be opened after ":move". (Ein Brown)
-Patch from Christian Brabandt doesn't fix it completely.
 
 Patch from Christian Brabandt to preserve upper case marks when wiping out a
 buffer. (2013 Dec 9)
