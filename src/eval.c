@@ -6780,6 +6780,8 @@ list_join(gap, l, sep, echo_style, copyID)
     join_T	*p;
     int		i;
 
+    if (l->lv_len < 1)
+	return OK; /* nothing to do */
     ga_init2(&join_ga, (int)sizeof(join_T), l->lv_len);
     retval = list_join_inner(gap, l, sep, echo_style, copyID, &join_ga);
 
