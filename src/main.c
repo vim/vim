@@ -147,10 +147,11 @@ static char *(main_errors[]) =
 #define ME_INVALID_ARG		5
 };
 
-static char_u *start_dir = NULL;	/* current working dir on startup */
-
 #ifndef PROTO		/* don't want a prototype for main() */
 #ifndef NO_VIM_MAIN	/* skip this for unittests */
+
+static char_u *start_dir = NULL;	/* current working dir on startup */
+
     int
 # ifdef VIMDLL
 _export
