@@ -1885,9 +1885,12 @@ vim_strchr(string, c)
     {
 	while (*p != NUL)
 	{
-	    if (utf_ptr2char(p) == c)
+	    int l = (*mb_ptr2len)(p);
+
+	    /* Avoid matching an illegal byte here. */
+	    if (utf_ptr2char(p) == c && l > 1)
 		return p;
-	    p += (*mb_ptr2len)(p);
+	    p += l;
 	}
 	return NULL;
     }
