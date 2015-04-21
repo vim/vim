@@ -1236,7 +1236,8 @@ win_split_ins(size, flags, new_wp, dir)
 	{
 	    wp->w_winrow = oldwin->w_winrow + oldwin->w_height + STATUS_HEIGHT;
 	    wp->w_status_height = oldwin->w_status_height;
-	    oldwin->w_status_height = STATUS_HEIGHT;
+	    /* Don't set the status_height for oldwin yet, this might break
+	     * frame_fix_height(oldwin), therefore will be set below. */
 	}
 #ifdef FEAT_VERTSPLIT
 	if (flags & WSP_BOT)
@@ -1244,6 +1245,11 @@ win_split_ins(size, flags, new_wp, dir)
 #endif
 	frame_fix_height(wp);
 	frame_fix_height(oldwin);
+
+	if (!before)
+	    /* new window above current one, set the status_height after
+	     * frame_fix_height(oldwin) */
+	    oldwin->w_status_height = STATUS_HEIGHT;
     }
 
     if (flags & (WSP_TOP | WSP_BOT))
