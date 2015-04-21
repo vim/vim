@@ -1614,8 +1614,8 @@ u_write_undo(name, forceit, buf, hash)
 #endif
     }
 
-    /* strip any s-bit */
-    perm = perm & 0777;
+    /* strip any s-bit and executable bit */
+    perm = perm & 0666;
 
     /* If the undo file already exists, verify that it actually is an undo
      * file, and delete it. */
