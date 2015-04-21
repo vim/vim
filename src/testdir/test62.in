@@ -96,30 +96,44 @@ STARTTEST
 :"
 :for i in range(9) | tabnew | endfor
 1gt
-Go=tabpagenr()
+:$put =tabpagenr()
 :tabmove 5
-i=tabpagenr()
+:$put =tabpagenr()
+:.tabmove
+:$put =tabpagenr()
+:tabmove -
+:$put =tabpagenr()
+:tabmove +
+:$put =tabpagenr()
 :tabmove -2
-i=tabpagenr()
+:$put =tabpagenr()
 :tabmove +4
-i=tabpagenr()
+:$put =tabpagenr()
 :tabmove
-i=tabpagenr()
+:$put =tabpagenr()
 :tabmove -20
-i=tabpagenr()
+:$put =tabpagenr()
 :tabmove +20
-i=tabpagenr()
+:$put =tabpagenr()
+:0tabmove
+:$put =tabpagenr()
+:$tabmove
+:$put =tabpagenr()
+:tabmove 0
+:$put =tabpagenr()
+:tabmove $
+:$put =tabpagenr()
 :3tabmove
-i=tabpagenr()
+:$put =tabpagenr()
 :7tabmove 5
-i=tabpagenr()
+:$put =tabpagenr()
 :let a='No error caught.'
 :try
 :tabmove foo
 :catch E474
 :let a='E474 caught.'
 :endtry
-i=a
+:$put =a
 :"
 :" Test autocommands
 :tabonly!

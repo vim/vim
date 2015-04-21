@@ -9,14 +9,21 @@ tab drop 1: pass
 tab drop 2: pass
 tab drop 3: pass
 1
-6
+5
+5
 4
-8
+5
+3
+7
+10
+1
+10
+1
 10
 1
 10
 4
-6
+5
 E474 caught.
 === tab split ===
 WinLeave
