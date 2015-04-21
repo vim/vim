@@ -396,7 +396,11 @@ static void (*dll_rb_gc_writebarrier_unprotect)(VALUE obj);
 # endif
 
 # if defined(RUBY19_OR_LATER) && !defined(PROTO)
+#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 22
+long rb_num2long_stub(VALUE x)
+#  else
 SIGNED_VALUE rb_num2long_stub(VALUE x)
+#  endif
 {
     return dll_rb_num2long(x);
 }
@@ -421,7 +425,11 @@ rb_float_new_in_heap(double d)
 {
     return dll_rb_float_new(d);
 }
+#   if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 22
+unsigned long rb_num2ulong(VALUE x)
+#   else
 VALUE rb_num2ulong(VALUE x)
+#   endif
 {
     return (long)RSHIFT((SIGNED_VALUE)(x),1);
 }
