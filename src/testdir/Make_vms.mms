@@ -4,7 +4,7 @@
 # Authors:	Zoltan Arpadffy, <arpadffy@polarhome.com>
 #		Sandor Kopanyi,  <sandor.kopanyi@mailbox.hu>
 #
-# Last change:  2015 Mar 24
+# Last change:  2015 Apr 21
 #
 # This has been tested on VMS 6.2 to 8.3 on DEC Alpha, VAX and IA64.
 # Edit the lines in the Configuration section below to select.
@@ -106,6 +106,7 @@ SCRIPT = test1.out  test2.out  test3.out  test4.out  test5.out  \
 	 test_erasebackword.out \
 	 test_eval.out \
 	 test_insertcount.out \
+	 test_listchars.out \
 	 test_listlbr.out \
 	 test_listlbr_utf8.out \
 	 test_mapping.out \

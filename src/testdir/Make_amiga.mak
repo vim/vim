@@ -46,6 +46,7 @@ SCRIPTS = test1.out test3.out test4.out test5.out test6.out \
 		test_erasebackword.out \
 		test_eval.out \
 		test_insertcount.out \
+		test_listchars.out \
 		test_listlbr.out \
 		test_listlbr_utf8.out \
 		test_mapping.out \
@@ -189,6 +190,7 @@ test_command_count.out: test_command_count.in
 test_erasebackword.out: test_erasebackword.in
 test_eval.out: test_eval.in
 test_insertcount.out: test_insertcount.in
+test_listchars.out: test_listchars.in
 test_listlbr.out: test_listlbr.in
 test_listlbr_utf8.out: test_listlbr_utf8.in
 test_mapping.out: test_mapping.in

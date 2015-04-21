@@ -4334,14 +4334,16 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #endif
 	    ++ptr;
 
-	    /* 'list' : change char 160 to lcs_nbsp. */
-	    if (wp->w_p_list && (c == 160
+	    /* 'list': change char 160 to lcs_nbsp and space to lcs_space. */
+	    if (wp->w_p_list
+		    && (((c == 160
 #ifdef FEAT_MBYTE
-			|| (mb_utf8 && mb_c == 160)
+			  || (mb_utf8 && mb_c == 160)
 #endif
-			) && lcs_nbsp)
+			 ) && lcs_nbsp)
+			|| (c == ' ' && lcs_space && ptr <= line + trailcol)))
 	    {
-		c = lcs_nbsp;
+		c = (c == ' ') ? lcs_space : lcs_nbsp;
 		if (area_attr == 0 && search_attr == 0)
 		{
 		    n_attr = 1;

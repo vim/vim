@@ -67,6 +67,7 @@ SCRIPTS =	test3.out test4.out test5.out test6.out test7.out \
 		test_erasebackword.out \
 		test_eval.out \
 		test_insertcount.out \
+		test_listchars.out \
 		test_listlbr.out \
 		test_listlbr_utf8.out \
 		test_mapping.out \

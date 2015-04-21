@@ -1,0 +1,53 @@
+Tests for 'listchars' display with 'list' and :list
+
+STARTTEST
+:so small.vim
+:let g:lines = []
+:function GetScreenCharsForLine(lnum)
+:  return join(map(range(1, virtcol('$')), 'nr2char(screenchar(a:lnum, v:val))'), '')
+:endfunction
+:nnoremap <expr> GG ":call add(g:lines, GetScreenCharsForLine(".screenrow()."))\<CR>"
+:set listchars+=tab:>-,space:.,trail:<
+:set list
+:
+/^start:/
+:normal! jzt
+GG
+GG
+GG
+GG
+GGH:
+:set listchars-=trail:<
+GG
+GG
+GG
+GG
+GG:
+:put =g:lines
+:'[,']w! test.out
+ENDTEST
+
+start:
+	aa	
+  bb	  
+   cccc	 
+dd        ee  	
+ 
+
+
+STARTTEST
+:set listchars+=trail:<
+:set nolist
+:
+/^start:/
+:redir! >> test.out
+:+1,$list
+:redir END
+:q!
+ENDTEST
+
+start:
+  fff	  
+	gg	
+     h	
+iii    	  
