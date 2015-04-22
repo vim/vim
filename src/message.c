@@ -1761,6 +1761,11 @@ msg_prt_line(s, list)
 		c = lcs_trail;
 		attr = hl_attr(HLF_8);
 	    }
+	    else if (c == ' ' && list && lcs_space != NUL)
+	    {
+		c = lcs_space;
+		attr = hl_attr(HLF_8);
+	    }
 	}
 
 	if (c == NUL)
