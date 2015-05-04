@@ -5376,6 +5376,12 @@ do_c_expr_indent()
 	fixthisline(get_c_indent);
 }
 
+/* Find result cache for cpp_baseclass */
+typedef struct {
+    int	    found;
+    lpos_T  lpos;
+} cpp_baseclass_cache_T;
+
 /*
  * Functions for C-indenting.
  * Most of this originally comes from Eric Fischer.
@@ -5409,7 +5415,7 @@ static int	cin_iswhileofdo __ARGS((char_u *, linenr_T));
 static int	cin_is_if_for_while_before_offset __ARGS((char_u *line, int *poffset));
 static int	cin_iswhileofdo_end __ARGS((int terminated));
 static int	cin_isbreak __ARGS((char_u *));
-static int	cin_is_cpp_baseclass __ARGS((colnr_T *col));
+static int	cin_is_cpp_baseclass __ARGS((cpp_baseclass_cache_T *cached));
 static int	get_baseclass_amount __ARGS((int col));
 static int	cin_ends_in __ARGS((char_u *, char_u *, char_u *));
 static int	cin_starts_with __ARGS((char_u *s, char *word));
@@ -6372,15 +6378,19 @@ cin_isbreak(p)
  * This is a lot of guessing.  Watch out for "cond ? func() : foo".
  */
     static int
-cin_is_cpp_baseclass(col)
-    colnr_T	*col;	    /* return: column to align with */
+cin_is_cpp_baseclass(cached)
+    cpp_baseclass_cache_T *cached; /* input and output */
 {
+    lpos_T	*pos = &cached->lpos;	    /* find position */
     char_u	*s;
     int		class_or_struct, lookfor_ctor_init, cpp_base_class;
     linenr_T	lnum = curwin->w_cursor.lnum;
     char_u	*line = ml_get_curline();
 
-    *col = 0;
+    if (pos->lnum <= lnum)
+	return cached->found;	/* Use the cached result */
+
+    pos->col = 0;
 
     s = skipwhite(line);
     if (*s == '#')		/* skip #define FOO x ? (x) : x */
@@ -6424,6 +6434,7 @@ cin_is_cpp_baseclass(col)
 	--lnum;
     }
 
+    pos->lnum = lnum;
     line = ml_get(lnum);
     s = cin_skipcomment(line);
     for (;;)
@@ -6456,7 +6467,7 @@ cin_is_cpp_baseclass(col)
 		 * cpp-base-class-declaration or constructor-initialization */
 		cpp_base_class = TRUE;
 		lookfor_ctor_init = class_or_struct = FALSE;
-		*col = 0;
+		pos->col = 0;
 		s = cin_skipcomment(s + 1);
 	    }
 	    else
@@ -6497,24 +6508,27 @@ cin_is_cpp_baseclass(col)
 		class_or_struct = FALSE;
 		lookfor_ctor_init = FALSE;
 	    }
-	    else if (*col == 0)
+	    else if (pos->col == 0)
 	    {
 		/* it can't be a constructor-initialization any more */
 		lookfor_ctor_init = FALSE;
 
 		/* the first statement starts here: lineup with this one... */
 		if (cpp_base_class)
-		    *col = (colnr_T)(s - line);
+		    pos->col = (colnr_T)(s - line);
 	    }
 
 	    /* When the line ends in a comma don't align with it. */
 	    if (lnum == curwin->w_cursor.lnum && *s == ',' && cin_nocode(s + 1))
-		*col = 0;
+		pos->col = 0;
 
 	    s = cin_skipcomment(s + 1);
 	}
     }
 
+    cached->found = cpp_base_class;
+    if (cpp_base_class)
+	pos->lnum = lnum;
     return cpp_base_class;
 }
 
@@ -7047,7 +7061,7 @@ get_c_indent()
 #define LOOKFOR_CPP_BASECLASS	9
 #define LOOKFOR_ENUM_OR_INIT	10
 #define LOOKFOR_JS_KEY		11
-#define LOOKFOR_COMMA	12
+#define LOOKFOR_COMMA		12
 
     int		whilelevel;
     linenr_T	lnum;
@@ -7059,6 +7073,7 @@ get_c_indent()
     int		original_line_islabel;
     int		added_to_amount = 0;
     int		js_cur_has_key = 0;
+    cpp_baseclass_cache_T cache_cpp_baseclass = { FALSE, { MAXLNUM, 0 } };
 
     /* make a copy, value is changed below */
     int		ind_continuation = curbuf->b_ind_continuation;
@@ -8089,7 +8104,7 @@ get_c_indent()
 		n = FALSE;
 		if (lookfor != LOOKFOR_TERM && curbuf->b_ind_cpp_baseclass > 0)
 		{
-		    n = cin_is_cpp_baseclass(&col);
+		    n = cin_is_cpp_baseclass(&cache_cpp_baseclass);
 		    l = ml_get_curline();
 		}
 		if (n)
@@ -8110,7 +8125,8 @@ get_c_indent()
 		    }
 		    else
 								     /* XXX */
-			amount = get_baseclass_amount(col);
+			amount = get_baseclass_amount(
+						cache_cpp_baseclass.lpos.col);
 		    break;
 		}
 		else if (lookfor == LOOKFOR_CPP_BASECLASS)
@@ -8780,13 +8796,13 @@ term_again:
 		n = FALSE;
 		if (curbuf->b_ind_cpp_baseclass != 0 && theline[0] != '{')
 		{
-		    n = cin_is_cpp_baseclass(&col);
+		    n = cin_is_cpp_baseclass(&cache_cpp_baseclass);
 		    l = ml_get_curline();
 		}
 		if (n)
 		{
 								     /* XXX */
-		    amount = get_baseclass_amount(col);
+		    amount = get_baseclass_amount(cache_cpp_baseclass.lpos.col);
 		    break;
 		}
 
