@@ -783,7 +783,7 @@ static char_u *find_name_end __ARGS((char_u *arg, char_u **expr_start, char_u **
 static char_u * make_expanded_name __ARGS((char_u *in_start, char_u *expr_start, char_u *expr_end, char_u *in_end));
 static int eval_isnamec __ARGS((int c));
 static int eval_isnamec1 __ARGS((int c));
-static int get_var_tv __ARGS((char_u *name, int len, typval_T *rettv, int verbose, int no_autoload));
+static int get_var_tv __ARGS((char_u *name, int len, typval_T *rettv, dictitem_T **dip, int verbose, int no_autoload));
 static int handle_subscript __ARGS((char_u **arg, typval_T *rettv, int evaluate, int verbose));
 static typval_T *alloc_tv __ARGS((void));
 static typval_T *alloc_string_tv __ARGS((char_u *string));
@@ -2257,7 +2257,7 @@ list_arg_vars(eap, arg, first)
 	    {
 		if (tofree != NULL)
 		    name = tofree;
-		if (get_var_tv(name, len, &tv, TRUE, FALSE) == FAIL)
+		if (get_var_tv(name, len, &tv, NULL, TRUE, FALSE) == FAIL)
 		    error = TRUE;
 		else
 		{
@@ -2926,10 +2926,15 @@ set_var_lval(lp, endp, rettv, copy, op)
 		typval_T tv;
 
 		/* handle +=, -= and .= */
+		di = NULL;
 		if (get_var_tv(lp->ll_name, (int)STRLEN(lp->ll_name),
-						      &tv, TRUE, FALSE) == OK)
+						 &tv, &di, TRUE, FALSE) == OK)
 		{
-		    if (tv_op(&tv, rettv, op) == OK)
+		    if ((di == NULL
+			   || (!var_check_ro(di->di_flags, lp->ll_name, FALSE)
+			      && !tv_check_lock(di->di_tv.v_lock, lp->ll_name,
+								      FALSE)))
+			    && tv_op(&tv, rettv, op) == OK)
 			set_var(lp->ll_name, &tv, FALSE);
 		    clear_tv(&tv);
 		}
@@ -5246,7 +5251,7 @@ eval7(arg, rettv, evaluate, want_string)
 		}
 	    }
 	    else if (evaluate)
-		ret = get_var_tv(s, len, rettv, TRUE, FALSE);
+		ret = get_var_tv(s, len, rettv, NULL, TRUE, FALSE);
 	    else
 		ret = OK;
 	}
@@ -10375,7 +10380,7 @@ f_exists(argvars, rettv)
 	{
 	    if (tofree != NULL)
 		name = tofree;
-	    n = (get_var_tv(name, len, &tv, FALSE, TRUE) == OK);
+	    n = (get_var_tv(name, len, &tv, NULL, FALSE, TRUE) == OK);
 	    if (n)
 	    {
 		/* handle d.key, l[idx], f(expr) */
@@ -20646,10 +20651,11 @@ set_cmdarg(eap, oldarg)
  * Return OK or FAIL.
  */
     static int
-get_var_tv(name, len, rettv, verbose, no_autoload)
+get_var_tv(name, len, rettv, dip, verbose, no_autoload)
     char_u	*name;
     int		len;		/* length of "name" */
     typval_T	*rettv;		/* NULL when only checking existence */
+    dictitem_T	**dip;		/* non-NULL when typval's dict item is needed */
     int		verbose;	/* may give error message */
     int		no_autoload;	/* do not use script autoloading */
 {
@@ -20680,7 +20686,11 @@ get_var_tv(name, len, rettv, verbose, no_autoload)
     {
 	v = find_var(name, NULL, no_autoload);
 	if (v != NULL)
+	{
 	    tv = &v->di_tv;
+	    if (dip != NULL)
+		*dip = v;
+	}
     }
 
     if (tv == NULL)
@@ -21474,8 +21484,8 @@ set_var(name, tv, copy)
 	}
 
 	/*
-	 * Handle setting internal v: variables separately: we don't change
-	 * the type.
+	 * Handle setting internal v: variables separately where needed to
+	 * prevent changing the type.
 	 */
 	if (ht == &vimvarht)
 	{
@@ -21490,10 +21500,9 @@ set_var(name, tv, copy)
 		    v->di_tv.vval.v_string = tv->vval.v_string;
 		    tv->vval.v_string = NULL;
 		}
+		return;
 	    }
-	    else if (v->di_tv.v_type != VAR_NUMBER)
-		EMSG2(_(e_intern2), "set_var()");
-	    else
+	    else if (v->di_tv.v_type == VAR_NUMBER)
 	    {
 		v->di_tv.vval.v_number = get_tv_number(tv);
 		if (STRCMP(varname, "searchforward") == 0)
@@ -21505,8 +21514,10 @@ set_var(name, tv, copy)
 		    redraw_all_later(SOME_VALID);
 		}
 #endif
+		return;
 	    }
-	    return;
+	    else if (v->di_tv.v_type != tv->v_type)
+		EMSG2(_(e_intern2), "set_var()");
 	}
 
 	clear_tv(&v->di_tv);
