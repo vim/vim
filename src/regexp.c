@@ -6113,7 +6113,7 @@ do_class:
 	    {
 		if (ireg_ic && enc_utf8)
 		    cf = utf_fold(utf_ptr2char(opnd));
-		while (count < maxcount)
+		while (count < maxcount && (*mb_ptr2len)(scan) >= len)
 		{
 		    for (i = 0; i < len; ++i)
 			if (opnd[i] != scan[i])
