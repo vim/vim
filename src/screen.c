@@ -4341,7 +4341,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			  || (mb_utf8 && mb_c == 160)
 #endif
 			 ) && lcs_nbsp)
-			|| (c == ' ' && lcs_space && ptr <= line + trailcol)))
+			|| (c == ' ' && lcs_space && ptr - line <= trailcol)))
 	    {
 		c = (c == ' ') ? lcs_space : lcs_nbsp;
 		if (area_attr == 0 && search_attr == 0)
