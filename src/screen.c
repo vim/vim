@@ -4338,7 +4338,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    if (wp->w_p_list
 		    && (((c == 160
 #ifdef FEAT_MBYTE
-			  || (mb_utf8 && mb_c == 160)
+			  || (mb_utf8 && (mb_c == 160 || mb_c == 0x202f))
 #endif
 			 ) && lcs_nbsp)
 			|| (c == ' ' && lcs_space && ptr - line <= trailcol)))

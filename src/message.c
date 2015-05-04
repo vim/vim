@@ -1697,7 +1697,9 @@ msg_prt_line(s, list)
 	else if (has_mbyte && (l = (*mb_ptr2len)(s)) > 1)
 	{
 	    col += (*mb_ptr2cells)(s);
-	    if (lcs_nbsp != NUL && list && mb_ptr2char(s) == 160)
+	    if (lcs_nbsp != NUL && list
+		    && (mb_ptr2char(s) == 160
+			|| mb_ptr2char(s) == 0x202f))
 	    {
 		mb_char2bytes(lcs_nbsp, buf);
 		buf[(*mb_ptr2len)(buf)] = NUL;
