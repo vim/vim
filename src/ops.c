@@ -6642,6 +6642,14 @@ str_to_reg(y_ptr, yank_type, str, len, blocklen, str_list)
 	}
     }
 
+    /* Without any lines make the register empty. */
+    if (y_ptr->y_size + newlines == 0)
+    {
+	vim_free(y_ptr->y_array);
+	y_ptr->y_array = NULL;
+	return;
+    }
+
     /*
      * Allocate an array to hold the pointers to the new register lines.
      * If the register was not empty, move the existing lines to the new array.
