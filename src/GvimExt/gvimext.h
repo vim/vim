@@ -110,10 +110,14 @@ typedef CShellExtClassFactory *LPCSHELLEXTCLASSFACTORY;
 class CShellExt : public IContextMenu,
 			 IShellExtInit
 {
+private:
+    BOOL LoadMenuIcon();
+
 protected:
     ULONG	 m_cRef;
     LPDATAOBJECT m_pDataObj;
     UINT	 m_edit_existing_off;
+    HBITMAP	 m_hVimIconBitmap;
 
     // For some reason, this callback must be static
     static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam);
