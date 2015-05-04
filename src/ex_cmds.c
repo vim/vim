@@ -4279,6 +4279,8 @@ do_sub(eap)
     static int	do_list = FALSE;	/* list last line with subs. */
     static int	do_number = FALSE;	/* list last line with line nr*/
     static int	do_ic = 0;		/* ignore case flag */
+    int		save_do_all;		/* remember user specified 'g' flag */
+    int		save_do_ask;		/* remember user specified 'c' flag */
     char_u	*pat = NULL, *sub = NULL;	/* init for GCC */
     int		delimiter;
     int		sublen;
@@ -4513,6 +4515,9 @@ do_sub(eap)
     }
     if (do_count)
 	do_ask = FALSE;
+
+    save_do_all = do_all;
+    save_do_ask = do_ask;
 
     /*
      * check for a trailing count
@@ -5327,6 +5332,10 @@ outofmem:
 #endif
 
     vim_regfree(regmatch.regprog);
+
+    /* Restore the flag values, they can be used for ":&&". */
+    do_all = save_do_all;
+    do_ask = save_do_ask;
 }
 
 /*
