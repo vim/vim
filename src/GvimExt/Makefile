@@ -4,7 +4,9 @@
 #
 
 TARGETOS=BOTH
-APPVER=4.0
+!ifndef APPVER
+APPVER=5.0
+!endif
 
 !if "$(DEBUG)" != "yes"
 NODEBUG = 1
