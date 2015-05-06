@@ -47,7 +47,7 @@ CXX := $(CROSS_COMPILE)g++
 WINDRES := $(CROSS_COMPILE)windres
 WINDRES_CXX = $(CXX)
 WINDRES_FLAGS = --preprocessor="$(WINDRES_CXX) -E -xc" -DRC_INVOKED
-LIBS :=  -luuid
+LIBS :=  -luuid -lgdi32
 RES  := gvimext.res
 DEFFILE = gvimext_ming.def
 OBJ  := gvimext.o
