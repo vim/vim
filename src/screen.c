@@ -4715,7 +4715,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 				&& !(noinvcur
 				    && lnum == wp->w_cursor.lnum
 				    && (colnr_T)vcol == wp->w_virtcol)))
-			&& lcs_eol_one >= 0)
+			&& lcs_eol_one > 0)
 		{
 		    /* Display a '$' after the line or highlight an extra
 		     * character if the line break is included. */
