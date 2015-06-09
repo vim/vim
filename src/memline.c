@@ -488,7 +488,7 @@ ml_set_b0_crypt(buf, b0p)
 ml_set_crypt_key(buf, old_key, old_cm)
     buf_T	*buf;
     char_u	*old_key;
-    int		old_cm;
+    char_u	*old_cm;
 {
     memfile_T	*mfp = buf->b_ml.ml_mfp;
     bhdr_T	*hp;
@@ -500,15 +500,30 @@ ml_set_crypt_key(buf, old_key, old_cm)
     DATA_BL	*dp;
     blocknr_T	bnum;
     int		top;
+    int		old_method;
 
     if (mfp == NULL)
 	return;  /* no memfile yet, nothing to do */
+    old_method = crypt_method_nr_from_name(old_cm);
+
+    /* First make sure the swapfile is in a consistent state, using the old
+     * key and method. */
+    {
+	char_u *new_key = buf->b_p_key;
+	char_u *new_buf_cm = buf->b_p_cm;
+
+	buf->b_p_key = old_key;
+	buf->b_p_cm = old_cm;
+	ml_preserve(buf, FALSE);
+	buf->b_p_key = new_key;
+	buf->b_p_cm = new_buf_cm;
+    }
 
     /* Set the key, method and seed to be used for reading, these must be the
      * old values. */
     mfp->mf_old_key = old_key;
-    mfp->mf_old_cm = old_cm;
-    if (old_cm > 0)
+    mfp->mf_old_cm = old_method;
+    if (old_method > 0 && *old_key != NUL)
 	mch_memmove(mfp->mf_old_seed, mfp->mf_seed, MF_SEED_LEN);
 
     /* Update block 0 with the crypt flag and may set a new seed. */
@@ -561,8 +576,10 @@ ml_set_crypt_key(buf, old_key, old_cm)
 		    {
 			if (pp->pb_pointer[idx].pe_bnum < 0)
 			{
-			    /* Skip data block with negative block number. */
-			    ++idx;    /* get same block again for next index */
+			    /* Skip data block with negative block number.
+			     * Should not happen, because of the ml_preserve()
+			     * above. Get same block again for next index. */
+			    ++idx; 
 			    continue;
 			}
 
@@ -579,6 +596,7 @@ ml_set_crypt_key(buf, old_key, old_cm)
 
 			bnum = pp->pb_pointer[idx].pe_bnum;
 			page_count = pp->pb_pointer[idx].pe_page_count;
+			idx = 0;
 			continue;
 		    }
 		}
@@ -605,6 +623,8 @@ ml_set_crypt_key(buf, old_key, old_cm)
 	    idx = ip->ip_index + 1;	    /* go to next index */
 	    page_count = 1;
 	}
+	if (hp != NULL)
+	    mf_put(mfp, hp, FALSE, FALSE);  /* release previous block */
 
 	if (error > 0)
 	    EMSG(_("E843: Error while updating swap file crypt"));
@@ -4859,6 +4879,10 @@ ml_encrypt_data(mfp, data, offset, size)
     if (dp->db_id != DATA_ID)
 	return data;
 
+    state = ml_crypt_prepare(mfp, offset, FALSE);
+    if (state == NULL)
+	return data;
+
     new_data = (char_u *)alloc(size);
     if (new_data == NULL)
 	return NULL;
@@ -4870,7 +4894,6 @@ ml_encrypt_data(mfp, data, offset, size)
     mch_memmove(new_data, dp, head_end - (char_u *)dp);
 
     /* Encrypt the text. */
-    state = ml_crypt_prepare(mfp, offset, FALSE);
     crypt_encode(state, text_start, text_len, new_data + dp->db_txt_start);
     crypt_free_state(state);
 
@@ -4882,7 +4905,7 @@ ml_encrypt_data(mfp, data, offset, size)
 }
 
 /*
- * Decrypt the text in "data" if it points to a data block.
+ * Decrypt the text in "data" if it points to an encrypted data block.
  */
     void
 ml_decrypt_data(mfp, data, offset, size)
@@ -4907,10 +4930,13 @@ ml_decrypt_data(mfp, data, offset, size)
 						     || dp->db_txt_end > size)
 	    return;  /* data was messed up */
 
-	/* Decrypt the text in place. */
 	state = ml_crypt_prepare(mfp, offset, TRUE);
-	crypt_decode_inplace(state, text_start, text_len);
-	crypt_free_state(state);
+	if (state != NULL)
+	{
+	    /* Decrypt the text in place. */
+	    crypt_decode_inplace(state, text_start, text_len);
+	    crypt_free_state(state);
+	}
     }
 }
 
@@ -4943,6 +4969,8 @@ ml_crypt_prepare(mfp, offset, reading)
 	key = buf->b_p_key;
 	seed = mfp->mf_seed;
     }
+    if (*key == NUL)
+	return NULL;
 
     if (method_nr == CRYPT_M_ZIP)
     {

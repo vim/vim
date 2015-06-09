@@ -811,6 +811,8 @@ mf_rem_used(mfp, hp)
  *
  * Return the block header to the caller, including the memory block, so
  * it can be re-used. Make sure the page_count is right.
+ *
+ * Returns NULL if no block is released.
  */
     static bhdr_T *
 mf_release(mfp, page_count)
@@ -1219,7 +1221,7 @@ mf_trans_add(mfp, hp)
 }
 
 /*
- * Lookup a translation from the trans lists and delete the entry
+ * Lookup a translation from the trans lists and delete the entry.
  *
  * Return the positive new number when found, the old number when not found
  */

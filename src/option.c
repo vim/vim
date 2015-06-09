@@ -6163,7 +6163,8 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 # endif
 	if (STRCMP(curbuf->b_p_key, oldval) != 0)
 	    /* Need to update the swapfile. */
-	    ml_set_crypt_key(curbuf, oldval, crypt_get_method_nr(curbuf));
+	    ml_set_crypt_key(curbuf, oldval,
+			      *curbuf->b_p_cm == NUL ? p_cm : curbuf->b_p_cm);
     }
 
     else if (gvarp == &p_cm)
@@ -6207,8 +6208,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	    else
 		p = curbuf->b_p_cm;
 	    if (STRCMP(s, p) != 0)
-		ml_set_crypt_key(curbuf, curbuf->b_p_key,
-						crypt_method_nr_from_name(s));
+		ml_set_crypt_key(curbuf, curbuf->b_p_key, s);
 
 	    /* If the global value changes need to update the swapfile for all
 	     * buffers using that value. */
@@ -6218,8 +6218,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 
 		for (buf = firstbuf; buf != NULL; buf = buf->b_next)
 		    if (buf != curbuf && *buf->b_p_cm == NUL)
-			ml_set_crypt_key(buf, buf->b_p_key,
-					   crypt_method_nr_from_name(oldval));
+			ml_set_crypt_key(buf, buf->b_p_key, oldval);
 	    }
 	}
     }
