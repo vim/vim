@@ -8493,6 +8493,9 @@ n_opencmd(cap)
 	    /* When '#' is in 'cpoptions' ignore the count. */
 	    if (vim_strchr(p_cpo, CPO_HASH) != NULL)
 		cap->count1 = 1;
+	    if (curwin->w_p_cul)
+		/* force redraw of cursorline */
+		curwin->w_valid &= ~VALID_CROW;
 	    invoke_edit(cap, FALSE, cap->cmdchar, TRUE);
 	}
     }
