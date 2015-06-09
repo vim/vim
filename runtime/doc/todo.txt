@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Apr 15
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Jun 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -78,44 +78,93 @@ Patch to make getregtype() return the right size for non-linux systems.
 (Yasuhiro Matsumoto, 2014 Jul 8)
 Breaks test_eval.  Inefficient, can we only compute y_width when needed?
 
-Show Vim icon in Windows context menu. Issue 249.  (Mario Weber, 2015 Apr 11)
+Patch to fix test (Christian, 2015 May 5)
+
+Patch to fix ml_get error. (Yukihiro Nakadaira, 2015 May 22)
+
+Patch for neovim. (Christian, 2015 May 5)
 
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
+Regression for v_b_A. (Ingo Karkat, 2015 May 18)
+
+Patch for memory access problem. (Dominique Pelle, 2015 May 5)
+
 R indent files update. (Jakson Alves de Aquino, Mar 31)
 
 Updated Python syntax file. (Dmitry Vasiliev, Mar 30)
+Discucussion about what version to use, Petkovic, 2015 May 19.
+Patch for existing syntax file, Zvezdan Petkovic, 2015 May 17)
 
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
+
+Patch on issue 361 by James McCoy.
+
+Patch on issue 365.
+
+Patch to add "vsplit" to 'switchbuf'. (Brook Hong, 2015 Jun 4)
+
+patch to fix that "p" in Visual mode does not break line in expected place.
+(Yukihiro Nakadaira, 2015 May 23)
+
+Patch to fix that wide characters do not work properly after exiting.
+(Yasuhiro Matsumoto, 2015 May 24) Better patch to come.
+
+Patch to add grepfile(). (Scott Prager, 2015 May 26)
+
+keymap for Russian typewriter layout. (Danwerspb, 2015 May 15)
+
+Patch for man.vim. (SungHyun Nam, 2015 May 20)
+Doesn't work completely (Dominique Orban)
+
+Invalid memory access in regexp.c. (Dominique Pelle, 2015 May 23)
 
 Using ":windo" to set options in all windows has the side effect that it
 changes the window layout and the current window.  Make a variant that saves
 and restores.  Use in the matchparen plugin.
 Perhaps we can use ":silent window"?
 
-Patch to make Ruby 2.2 work. (Andrei Olsen)
+Patch for :[count]tag" not always working. (Hirohito Higashi, 2015 May 19)
 
-Window drawn wrong with 'laststatus' zero and a command-line window.
-(Yclept Nemo, 2015 Apr 7)
-Patch by Christian, Apr 8.
+Include the LogiPat plugin in the distribution?
 
-Patch to make undo files not executable. (Mikael Berthe, 2015 Apr 5)
+Patch to fix that ":cnext" jumps to the wrong column. (Hirohito Higashi, 2015
+May 17, second patch)
+
+Pull request for jcukenwintype.vim. (Denis Proskurin, 2015 May 15)
+
+Patch for appending in Visual mode with 'linebreak' set.
+(Christian Brabandt, 2015 Jun 1)
+
+Patch to make CTRL-A in Visual mode increment all Visually selected numbers.
+Same for decrement with CTRL-X. (Christian Brabandt, 2015 Jun 8)
 
 C indent: should recognize C11 raw strings. (Mark Lodato, 2015 Mar 1)
-Need to recognize R"string".
+Need to recognize R"string" for 'cindent'.
 
-Patch for :tabmove not working as documented. (Hirohito Higashi, 2015 Mar 10)
-https://gist.github.com/h-east/ffabb0cdd589a5f9acd2
-Updated patch emailed. (Mar 17)  Awaiting comments.
+Updated phpcomplete. (Mikolaj Machowski, 2015 May 6)
+
+Patch to detect background terminal color in xterm. (Lubomir Rintel, 2015 Jun
+1)
+
+Patch to fix that in command-line window first character is erased
+when conceallevel is set. (Hirohito Higashi, 2015 May 12)
 
 Crash when changing the 'tags' option from a remote command.
-(Benjamin Fritz, 2015 Mar 18)
+(Benjamin Fritz, 2015 Mar 18, stack trace Mar 20)
+
+Patch on issue 361.
+
+Patch on issue 362.
 
 Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
+
+Can src/GvimExt/Make_cyg.mak be removed?
+Same for src/xxd/Make_cyg.mak
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
@@ -125,13 +174,21 @@ wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
 Can't recognize the $ProgramFiles(x86) environment variable.  Recognize it
 specifically?  First try with the parens, then without.
 
+Patch to force redraw after ":syn spell" command. (Christian, 2015 May 8)
+
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
 Better greek spell checking.  Issue 299.
 
+Patch to add 'completeselect' option.  Specifies how to select a candidate in
+insert completion. (Shougo, 2013 May 29)
+Update to add to existing 'completeopt'. 2013 May 30
+
 When complete() first argument is before where insert started and 'backspace'
 is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
+
+Patch to fix equivalence classes in regexp. (Dominique Pelle, 2015 Jun 2)
 
 Weird encryption problems on Windows. (Ben Fritz, 2015 Feb 13)
 Goes away when disabling the swap file. (might1, Feb 16)
@@ -148,15 +205,12 @@ Build with Python on Mac does not always use the right library.
 ml_updatechunk() is slow when retrying for another encoding. (John Little,
 2014 Sep 11)
 
-Patch to add 'space' argument to 'listchars'. (Issue 350)
-Author: David Bürgin
+Patch to use different terminal mode settings for system(). (Hayaki Saito)
+Does this work for everybody?
 
 When a session file is created and there are "nofile" buffers, these are not
 filled.  Need to trigger BufReadCmd autocommands.  Also handle deleting the
 initial empty buffer better. (ZyX, 2015 March 8)
-
-Calling setreg() with an empty list doesn't work.
-Patch by Yasuhiro Matsumoto, 2014 Dec 14.
 
 Extended file attributes lost on write (backupcopy=no).  Issue 306.
 
@@ -170,7 +224,15 @@ from two windows?  Stopped happening (Feb 5).
 Patch for an extra argument to matchadd() for conceal. (Christian Brabandt,
 2015 Feb 17, update Feb 19)
 
+Patch to add v:completed_item. (Shougo Matsu, 2013 Nov 29).
+Update 2015 May 30.
+
+Patch to add :lockjumps. (Carlo Baldassi, 2015 May 25)
+OK to not block marks?
+
 Mixup of highlighting when there is a match and SpellBad. (ZyX, 2015 Jan 1)
+
+Patch on issue 79: use 'path' option for filename completion.
 
 Patch to add 'belloff' option. (Christian Brabandt, 2015 Jan 31)
 Update Feb 6.
@@ -217,10 +279,23 @@ With test, Nov 23.
 Wrong scrolling when using incsearch.  Patch by Christian Brabandt, 2014 Dec 4.
 Is this a good solution?
 
+Patch to allow setting w:quickfix_title via setqflist() and setloclist()
+functions. (Christian Brabandt, 2013 May 8, update May 21)
+Patch to add getlocstack() / setlocstack(). (Christian Brabandt, 2013 May 14)
+Second one. Update May 22.
+Update by Daniel Hahler, 2014 Jul 4, Aug 14, Oct 14, Oct 15.
+
+Patch: Let rare word highlighting overrule good word highlighting.
+(Jakson A. Aquino, 2010 Jul 30, again 2011 Jul 2)
+
+Patch to add digits argument to round(). (Yasuhiro Matsumoto, 2015 Apr 26)
+
 Can assign to s:type when a function s:type has been defined.
 Also the other way around: define a function while a variable with that name
 was already defined.
 (Yasuhiro Matsumoto, 2014 Nov 3)
+
+Patch for ordered dict. (Ozaki Kiichi, 2015 May 7)
 
 Patch to make closed folds line up. (Charles Campbell, 2014 Sep 12)
 Remark from Roland Eggner: does it cause crashes? (2014 Dec 12)
@@ -263,6 +338,11 @@ No error for missing endwhile. (ZyX, 2014 Mar 20)
 
 The entries added by matchaddpos() are returned by getmatches() but can't be
 set with setmatches(). (lcd47, 2014 Jun 29)
+
+Patch to make extend() fail early when it might fail at some point.
+(Olaf Dabrunz, 2015 May 2)  Makes extend() slower, do we still want it?
+Perhaps only the checks that can be done without looping over the dict or
+arguments.
 
 Patch to add :arglocal and :arglists. (Marcin Szamotulski, 2014 Aug 6)
 
@@ -381,8 +461,6 @@ Remark on the docs.  Should not be a compile time feature.  But then what?
 
 Completion of ":e" is ":earlier", should be ":edit".  Complete to the matching
 command instead of doing this alphabetically. (Mikel Jorgensen)
-
-Patch to add v:completed_item. (Shougo Matsu, 2013 Nov 29).
 
 Patch to get MSVC version in a nicer way. (Ken Takata, 2014 Jul 24)
 
@@ -518,12 +596,6 @@ Dialog is too big on Linux too. (David Fishburn, 2013 Sep 2)
 Patch to check whether a buffer is quickfix or a location list.
 (Yasuhiro Matsumoto, 2014 Dec 9)
 
-Patch to allow setting w:quickfix_title via setqflist() and setloclist()
-functions. (Christian Brabandt, 2013 May 8, update May 21)
-Patch to add getlocstack() / setlocstack(). (Christian Brabandt, 2013 May 14)
-Second one. Update May 22.
-Update by Daniel Hahler, 2014 Jul 4, Aug 14, Oct 14, Oct 15.
-
 Patch to make fold updates much faster. (Christian Brabandt, 2012 Dec)
 
 Issue 54: document behavior of -complete, also expands arg.
@@ -571,10 +643,6 @@ Do we need some way (option) to show the sign column even when there are no
 signs?  Patch by Christian Brabandt, 2013 Aug 22.
 
 Patch to remove flicker from popup menu. (Yasuhiro Matsumoto, 2013 Aug 15)
-
-Patch to add 'completeselect' option.  Specifies how to select a candidate in
-insert completion. (Shougo, 2013 May 29)
-Update to add to existing 'completeopt'. 2013 May 30
 
 Problem with refresh:always in completion. (Tyler Wade, 2013 Mar 17)
 
@@ -1001,9 +1069,6 @@ Patch for GVimExt to show an icon. (Dominik Riebeling, 2010 Nov 7)
 
 When writing a file > 2Gbyte, the reported number of bytes is negative.
 (Antonio Colombo, 2010 Dec 18)
-
-Patch: Let rare word highlighting overrule good word highlighting.
-(Jakson A. Aquino, 2010 Jul 30, again 2011 Jul 2)
 
 When 'lines' is 25 and 'scrolloff' is 12, "j" scrolls zero or two lines
 instead of one. (Constantin Pan, 2010 Sep 10)
