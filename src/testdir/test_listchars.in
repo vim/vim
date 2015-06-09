@@ -2,6 +2,7 @@ Tests for 'listchars' display with 'list' and :list
 
 STARTTEST
 :so small.vim
+:set ff=unix
 :let g:lines = []
 :function GetScreenCharsForLine(lnum)
 :  return join(map(range(1, virtcol('$')), 'nr2char(screenchar(a:lnum, v:val))'), '')
