@@ -23164,7 +23164,7 @@ func_dump_profile(fd)
     if (todo == 0)
 	return;     /* nothing to dump */
 
-    sorttab = (ufunc_T **)alloc((unsigned)(sizeof(ufunc_T) * todo));
+    sorttab = (ufunc_T **)alloc((unsigned)(sizeof(ufunc_T *) * todo));
 
     for (hi = func_hashtab.ht_array; todo > 0; ++hi)
     {
