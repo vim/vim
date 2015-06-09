@@ -2389,7 +2389,9 @@ show_tabline_popup_menu(void)
     if (tab_pmenu == NULL)
 	return;
 
-    add_tabline_popup_menu_entry(tab_pmenu, TABLINE_MENU_CLOSE, _("Close tab"));
+    if (first_tabpage->tp_next != NULL)
+        add_tabline_popup_menu_entry(tab_pmenu,
+					  TABLINE_MENU_CLOSE, _("Close tab"));
     add_tabline_popup_menu_entry(tab_pmenu, TABLINE_MENU_NEW, _("New tab"));
     add_tabline_popup_menu_entry(tab_pmenu, TABLINE_MENU_OPEN,
 				 _("Open tab..."));

@@ -6819,7 +6819,8 @@ initialise_tabline(void)
 
     // create tabline popup menu required by vim docs (see :he tabline-menu)
     CreateNewMenu(kTabContextMenuId, 0, &contextMenu);
-    AppendMenuItemTextWithCFString(contextMenu, CFSTR("Close"), 0,
+    if (first_tabpage->tp_next != NULL)
+	AppendMenuItemTextWithCFString(contextMenu, CFSTR("Close Tab"), 0,
 						    TABLINE_MENU_CLOSE, NULL);
     AppendMenuItemTextWithCFString(contextMenu, CFSTR("New Tab"), 0,
 						      TABLINE_MENU_NEW, NULL);
