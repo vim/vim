@@ -64,6 +64,116 @@ dV:dv::set noma | let v:errmsg = ''
 d::set ma | put = v:errmsg =~# '^E21' ? 'ok' : 'failed'
 dv:dV::set noma | let v:errmsg = ''
 d::set ma | put = v:errmsg =~# '^E21' ? 'failed' : 'ok'
+:
+:$put =''
+:$put ='characterwise visual mode: replace last line'
+:$put ='a'
+:let @" = 'x'
+:let v:errmsg = ''
+v$p
+:$put ='---'
+:$put ='v:errmsg='.v:errmsg
+:
+:$put =''
+:$put ='characterwise visual mode: delete middle line'
+:$put ='a'
+:$put ='b'
+:$put ='c'
+kkv$d
+:$put ='---'
+:
+:$put =''
+:$put ='characterwise visual mode: delete middle two line'
+:$put ='a'
+:$put ='b'
+:$put ='c'
+kkvj$d
+:$put ='---'
+:
+:$put =''
+:$put ='characterwise visual mode: delete last line'
+:$put ='a'
+:$put ='b'
+:$put ='c'
+v$d
+:$put ='---'
+:
+:$put =''
+:$put ='characterwise visual mode: delete last two line'
+:$put ='a'
+:$put ='b'
+:$put ='c'
+kvj$d
+:$put ='---'
+:
+:" Select mode maps
+:snoremap <lt>End> <End>
+:snoremap <lt>Down> <Down>
+:snoremap <lt>Del> <Del>
+:
+:$put =''
+:$put ='characterwise select mode: delete middle line'
+:$put ='a'
+:$put ='b'
+:$put ='c'
+kkgh<End><Del>
+:$put ='---'
+:
+:$put =''
+:$put ='characterwise select mode: delete middle two line'
+:$put ='a'
+:$put ='b'
+:$put ='c'
+kkgh<Down><End><Del>
+:$put ='---'
+:
+:$put =''
+:$put ='characterwise select mode: delete last line'
+:$put ='a'
+:$put ='b'
+:$put ='c'
+gh<End><Del>
+:$put ='---'
+:
+:$put =''
+:$put ='characterwise select mode: delete last two line'
+:$put ='a'
+:$put ='b'
+:$put ='c'
+kgh<Down><End><Del>
+:$put ='---'
+:
+:$put =''
+:$put ='linewise select mode: delete middle line'
+:$put ='a'
+:$put ='b'
+:$put ='c'
+kkgH<Del>
+:$put ='---'
+:
+:$put =''
+:$put ='linewise select mode: delete middle two line'
+:$put ='a'
+:$put ='b'
+:$put ='c'
+kkgH<Down><Del>
+:$put ='---'
+:
+:$put =''
+:$put ='linewise select mode: delete last line'
+:$put ='a'
+:$put ='b'
+:$put ='c'
+gH<Del>
+:$put ='---'
+:
+:$put =''
+:$put ='linewise select mode: delete last two line'
+:$put ='a'
+:$put ='b'
+:$put ='c'
+kgH<Down><Del>
+:$put ='---'
 :/^start:/+2,$w! test.out
 :q!
 ENDTEST

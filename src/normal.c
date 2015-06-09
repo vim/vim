@@ -1547,8 +1547,10 @@ do_pending_operator(cap, old_col, gui_yank)
 	    }
 
 	    /* In Select mode, a linewise selection is operated upon like a
-	     * characterwise selection. */
-	    if (VIsual_select && VIsual_mode == 'V')
+	     * characterwise selection.
+	     * Special case: gH<Del> deletes the last line. */
+	    if (VIsual_select && VIsual_mode == 'V'
+					    && cap->oap->op_type != OP_DELETE)
 	    {
 		if (lt(VIsual, curwin->w_cursor))
 		{
@@ -1770,24 +1772,16 @@ do_pending_operator(cap, old_col, gui_yank)
 		    oap->inclusive = FALSE;
 		    /* Try to include the newline, unless it's an operator
 		     * that works on lines only. */
-		    if (*p_sel != 'o' && !op_on_lines(oap->op_type))
+		    if (*p_sel != 'o'
+			    && !op_on_lines(oap->op_type)
+			    && oap->end.lnum < curbuf->b_ml.ml_line_count)
 		    {
-			if (oap->end.lnum < curbuf->b_ml.ml_line_count)
-			{
-			    ++oap->end.lnum;
-			    oap->end.col = 0;
+			++oap->end.lnum;
+			oap->end.col = 0;
 #ifdef FEAT_VIRTUALEDIT
-			    oap->end.coladd = 0;
+			oap->end.coladd = 0;
 #endif
-			    ++oap->line_count;
-			}
-			else
-			{
-			    /* Cannot move below the last line, make the op
-			     * inclusive to tell the operation to include the
-			     * line break. */
-			    oap->inclusive = TRUE;
-			}
+			++oap->line_count;
 		    }
 		}
 	    }

@@ -18,3 +18,66 @@ LemonNewNewZ
 zzz
 ok
 ok
+
+characterwise visual mode: replace last line
+x
+---
+v:errmsg=
+
+characterwise visual mode: delete middle line
+b
+c
+---
+
+characterwise visual mode: delete middle two line
+c
+---
+
+characterwise visual mode: delete last line
+a
+b
+
+---
+
+characterwise visual mode: delete last two line
+a
+
+---
+
+characterwise select mode: delete middle line
+b
+c
+---
+
+characterwise select mode: delete middle two line
+c
+---
+
+characterwise select mode: delete last line
+a
+b
+
+---
+
+characterwise select mode: delete last two line
+a
+
+---
+
+linewise select mode: delete middle line
+b
+c
+---
+
+linewise select mode: delete middle two line
+c
+---
+
+linewise select mode: delete last line
+a
+b
+---
+
+linewise select mode: delete last two line
+a
+---
