@@ -3750,24 +3750,24 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    if (draw_state == WL_BRI - 1 && n_extra == 0)
 	    {
 		draw_state = WL_BRI;
-# ifdef FEAT_DIFF
-# endif
 		if (wp->w_p_bri && n_extra == 0 && row != startrow
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 			&& filler_lines == 0
-#endif
+# endif
 		   )
 		{
 		    char_attr = 0; /* was: hl_attr(HLF_AT); */
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 		    if (diff_hlf != (hlf_T)0)
 		    {
 			char_attr = hl_attr(diff_hlf);
+#  ifdef FEAT_SYN_HL
 			if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
 			    char_attr = hl_combine_attr(char_attr,
 							    hl_attr(HLF_CUL));
+#  endif
 		    }
-#endif
+# endif
 		    p_extra = NULL;
 		    c_extra = ' ';
 		    n_extra = get_breakindent_win(wp,
