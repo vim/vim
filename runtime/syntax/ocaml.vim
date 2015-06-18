@@ -154,7 +154,7 @@ syn keyword  ocamlKeyword  exception external fun
 
 syn keyword  ocamlKeyword  in inherit initializer
 syn keyword  ocamlKeyword  land lazy let match
-syn keyword  ocamlKeyword  method mutable new of
+syn keyword  ocamlKeyword  method mutable new nonrec of
 syn keyword  ocamlKeyword  parser private raise rec
 syn keyword  ocamlKeyword  try type
 syn keyword  ocamlKeyword  virtual when while with
