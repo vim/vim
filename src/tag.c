@@ -508,14 +508,7 @@ do_tag(tag, type, count, forceit, verbose)
 		tagmatchname = vim_strsave(name);
 	    }
 
-	    /*
-	     * If a count is supplied to the ":tag <name>" command, then
-	     * jump to count'th matching tag.
-	     */
-	    if (type == DT_TAG && *tag != NUL && count > 0)
-		cur_match = count - 1;
-
-	    if (type == DT_SELECT || type == DT_JUMP
+	    if (type == DT_TAG || type == DT_SELECT || type == DT_JUMP
 #if defined(FEAT_QUICKFIX)
 		|| type == DT_LTAG
 #endif
@@ -594,7 +587,13 @@ do_tag(tag, type, count, forceit, verbose)
 	    }
 	    else
 #endif
-	    if (type == DT_SELECT || (type == DT_JUMP && num_matches > 1))
+	    if (type == DT_TAG)
+		/*
+		 * If a count is supplied to the ":tag <name>" command, then
+		 * jump to count'th matching tag.
+		 */
+		cur_match = count > 0 ? count - 1 : 0;
+	    else if (type == DT_SELECT || (type == DT_JUMP && num_matches > 1))
 	    {
 		/*
 		 * List all the matching tags.
@@ -990,7 +989,7 @@ do_tag(tag, type, count, forceit, verbose)
 
 
 	    ic = (matches[cur_match][0] & MT_IC_OFF);
-	    if (type != DT_SELECT && type != DT_JUMP
+	    if (type != DT_TAG && type != DT_SELECT && type != DT_JUMP
 #ifdef FEAT_CSCOPE
 		&& type != DT_CSCOPE
 #endif
