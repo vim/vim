@@ -54,6 +54,7 @@ SCRIPTS = test1.out test3.out test4.out test5.out test6.out \
 		test_nested_function.out \
 		test_options.out \
 		test_qf_title.out \
+		test_set.out \
 		test_signs.out \
 		test_textobjects.out \
 		test_utf8.out
@@ -198,6 +199,7 @@ test_marks.out: test_marks.in
 test_nested_function.out: test_nested_function.in
 test_options.out: test_options.in
 test_qf_title.out: test_qf_title.in
+test_set.out: test_set.in
 test_signs.out: test_signs.in
 test_textobjects.out: test_textobjects.in
 test_utf8.out: test_utf8.in

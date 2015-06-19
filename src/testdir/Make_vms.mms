@@ -4,7 +4,7 @@
 # Authors:	Zoltan Arpadffy, <arpadffy@polarhome.com>
 #		Sandor Kopanyi,  <sandor.kopanyi@mailbox.hu>
 #
-# Last change:  2015 Apr 21
+# Last change:  2015 Jun 19
 #
 # This has been tested on VMS 6.2 to 8.3 on DEC Alpha, VAX and IA64.
 # Edit the lines in the Configuration section below to select.
@@ -114,6 +114,7 @@ SCRIPT = test1.out  test2.out  test3.out  test4.out  test5.out  \
 	 test_nested_function.out \
 	 test_options.out \
 	 test_qf_title.out \
+	 test_set.out \
 	 test_signs.out \
 	 test_textobjects.out \
 	 test_utf8.out
