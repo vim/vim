@@ -1841,6 +1841,9 @@ win_found:
 	    if (qf_ptr->qf_col > 0)
 	    {
 		curwin->w_cursor.col = qf_ptr->qf_col - 1;
+#ifdef FEAT_VIRTUALEDIT
+		curwin->w_cursor.coladd = 0;
+#endif
 		if (qf_ptr->qf_viscol == TRUE)
 		{
 		    /*
