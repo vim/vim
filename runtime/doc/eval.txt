@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2015 Apr 30
+*eval.txt*	For Vim version 7.4.  Last change: 2015 Jun 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1021,7 +1021,7 @@ A string constant accepts these special characters:
 \X.	same as \x.
 \u....	character specified with up to 4 hex numbers, stored according to the
 	current value of 'encoding' (e.g., "\u02a4")
-\U....	same as \u....
+\U....	same as \u but allows up to 8 hex numbers.
 \b	backspace <BS>
 \e	escape <Esc>
 \f	formfeed <FF>

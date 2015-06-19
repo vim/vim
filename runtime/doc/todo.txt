@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Jun 09
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Jun 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -78,12 +78,6 @@ Patch to make getregtype() return the right size for non-linux systems.
 (Yasuhiro Matsumoto, 2014 Jul 8)
 Breaks test_eval.  Inefficient, can we only compute y_width when needed?
 
-Patch to fix test (Christian, 2015 May 5)
-
-Patch to fix ml_get error. (Yukihiro Nakadaira, 2015 May 22)
-
-Patch for neovim. (Christian, 2015 May 5)
-
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
@@ -91,18 +85,8 @@ Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
 Regression for v_b_A. (Ingo Karkat, 2015 May 18)
 
-Patch for memory access problem. (Dominique Pelle, 2015 May 5)
-
-R indent files update. (Jakson Alves de Aquino, Mar 31)
-
-Updated Python syntax file. (Dmitry Vasiliev, Mar 30)
-Discucussion about what version to use, Petkovic, 2015 May 19.
-Patch for existing syntax file, Zvezdan Petkovic, 2015 May 17)
-
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
-
-Patch on issue 361 by James McCoy.
 
 Patch on issue 365.
 
@@ -120,6 +104,10 @@ keymap for Russian typewriter layout. (Danwerspb, 2015 May 15)
 
 Patch for man.vim. (SungHyun Nam, 2015 May 20)
 Doesn't work completely (Dominique Orban)
+
+The entries added by matchaddpos() are returned by getmatches() but can't be
+set with setmatches(). (lcd47, 2014 Jun 29)
+Patch by Christian, 2015 Jun 16.
 
 Invalid memory access in regexp.c. (Dominique Pelle, 2015 May 23)
 
@@ -142,6 +130,7 @@ Patch for appending in Visual mode with 'linebreak' set.
 
 Patch to make CTRL-A in Visual mode increment all Visually selected numbers.
 Same for decrement with CTRL-X. (Christian Brabandt, 2015 Jun 8)
+Update Jun 9.
 
 C indent: should recognize C11 raw strings. (Mark Lodato, 2015 Mar 1)
 Need to recognize R"string" for 'cindent'.
@@ -153,6 +142,11 @@ Patch to detect background terminal color in xterm. (Lubomir Rintel, 2015 Jun
 
 Patch to fix that in command-line window first character is erased
 when conceallevel is set. (Hirohito Higashi, 2015 May 12)
+
+Patch to make Lua 5.3 and later work. (Felix Schnizlein, 2015 Jun 11)
+
+Patch to make \U in a string accept up to 8 characters. (Christian Brabandt,
+2015 Jun 12)  Does this break existing scripts?
 
 Crash when changing the 'tags' option from a remote command.
 (Benjamin Fritz, 2015 Mar 18, stack trace Mar 20)
@@ -176,6 +170,13 @@ specifically?  First try with the parens, then without.
 
 Patch to force redraw after ":syn spell" command. (Christian, 2015 May 8)
 
+Patch for multi-byte characters in langmap and applying a mapping on them.
+(Christian Brabandt, 2015 Jun 12)
+Is this the right solution?
+
+Patch for langmap not working properly with mapping in Command-line mode.
+Issue 376.
+
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
@@ -184,6 +185,7 @@ Better greek spell checking.  Issue 299.
 Patch to add 'completeselect' option.  Specifies how to select a candidate in
 insert completion. (Shougo, 2013 May 29)
 Update to add to existing 'completeopt'. 2013 May 30
+Updated update: Shougo 2015 Jun 12
 
 When complete() first argument is before where insert started and 'backspace'
 is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
@@ -335,9 +337,6 @@ Update Dec 6.
 Patch to add argument to :cquit. (Thinca, 2014 Oct 12)
 
 No error for missing endwhile. (ZyX, 2014 Mar 20)
-
-The entries added by matchaddpos() are returned by getmatches() but can't be
-set with setmatches(). (lcd47, 2014 Jun 29)
 
 Patch to make extend() fail early when it might fail at some point.
 (Olaf Dabrunz, 2015 May 2)  Makes extend() slower, do we still want it?
