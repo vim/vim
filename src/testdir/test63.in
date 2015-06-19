@@ -187,7 +187,12 @@ STARTTEST
 :else
 :  let @r .= "FAILED: " . v4 . "/" . v5 . "/" . v6 . "/" . v7 . "/" . v8 . "/" . v9 . "/" . v10 . "\n"
 :endif
+:" Check, that setmatches() can correctly restore the matches from matchaddpos()
+:call matchadd('MyGroup1', '\%2lmatchadd')
+:let m=getmatches()
 :call clearmatches()
+:call setmatches(m)
+:let @r .= string(getmatches())."\n"
 G"rp
 :/^Results/,$wq! test.out
 ENDTEST
