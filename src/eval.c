@@ -5745,8 +5745,10 @@ get_string_tv(arg, rettv, evaluate)
 
 			      if (c == 'X')
 				  n = 2;
-			      else
+			      else if (*p == 'u')
 				  n = 4;
+			      else
+				  n = 8;
 			      nr = 0;
 			      while (--n >= 0 && vim_isxdigit(p[1]))
 			      {
