@@ -1837,6 +1837,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :CompilerSet	usr_41.txt	/*:CompilerSet*
 :DiffOrig	diff.txt	/*:DiffOrig*
 :DoMatchParen	pi_paren.txt	/*:DoMatchParen*
+:ELP	pi_logipat.txt	/*:ELP*
 :Explore	pi_netrw.txt	/*:Explore*
 :GLVS	pi_getscript.txt	/*:GLVS*
 :GetLatestVimScripts_dat	pi_getscript.txt	/*:GetLatestVimScripts_dat*
@@ -1844,7 +1845,10 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :GnatPretty	ft_ada.txt	/*:GnatPretty*
 :GnatTags	ft_ada.txt	/*:GnatTags*
 :Hexplore	pi_netrw.txt	/*:Hexplore*
+:LP	pi_logipat.txt	/*:LP*
+:LPF	pi_logipat.txt	/*:LPF*
 :Lexplore	pi_netrw.txt	/*:Lexplore*
+:LogiPat	pi_logipat.txt	/*:LogiPat*
 :Man	filetype.txt	/*:Man*
 :MkVimball	pi_vimball.txt	/*:MkVimball*
 :N	editing.txt	/*:N*
@@ -4421,6 +4425,8 @@ L	motion.txt	/*L*
 Linux-backspace	options.txt	/*Linux-backspace*
 List	eval.txt	/*List*
 Lists	eval.txt	/*Lists*
+LogiPat()	pi_logipat.txt	/*LogiPat()*
+LogiPat-flags	pi_logipat.txt	/*LogiPat-flags*
 Lua	if_lua.txt	/*Lua*
 M	motion.txt	/*M*
 MDI	starting.txt	/*MDI*
@@ -6733,6 +6739,7 @@ lcs-eol	options.txt	/*lcs-eol*
 lcs-extends	options.txt	/*lcs-extends*
 lcs-nbsp	options.txt	/*lcs-nbsp*
 lcs-precedes	options.txt	/*lcs-precedes*
+lcs-space	options.txt	/*lcs-space*
 lcs-tab	options.txt	/*lcs-tab*
 lcs-trail	options.txt	/*lcs-trail*
 left-right-motions	motion.txt	/*left-right-motions*
@@ -6780,6 +6787,18 @@ location-list	quickfix.txt	/*location-list*
 location-list-window	quickfix.txt	/*location-list-window*
 log()	eval.txt	/*log()*
 log10()	eval.txt	/*log10()*
+logipat	pi_logipat.txt	/*logipat*
+logipat-arg	pi_logipat.txt	/*logipat-arg*
+logipat-caveat	pi_logipat.txt	/*logipat-caveat*
+logipat-contents	pi_logipat.txt	/*logipat-contents*
+logipat-copyright	pi_logipat.txt	/*logipat-copyright*
+logipat-examples	pi_logipat.txt	/*logipat-examples*
+logipat-history	pi_logipat.txt	/*logipat-history*
+logipat-input	pi_logipat.txt	/*logipat-input*
+logipat-man	pi_logipat.txt	/*logipat-man*
+logipat-manual	pi_logipat.txt	/*logipat-manual*
+logipat-operators	pi_logipat.txt	/*logipat-operators*
+logipat-pattern	pi_logipat.txt	/*logipat-pattern*
 long-lines	version5.txt	/*long-lines*
 love	intro.txt	/*love*
 lowercase	change.txt	/*lowercase*
@@ -7423,6 +7442,7 @@ php3.vim	syntax.txt	/*php3.vim*
 phtml.vim	syntax.txt	/*phtml.vim*
 pi_getscript.txt	pi_getscript.txt	/*pi_getscript.txt*
 pi_gzip.txt	pi_gzip.txt	/*pi_gzip.txt*
+pi_logipat.txt	pi_logipat.txt	/*pi_logipat.txt*
 pi_netrw.txt	pi_netrw.txt	/*pi_netrw.txt*
 pi_paren.txt	pi_paren.txt	/*pi_paren.txt*
 pi_spec.txt	pi_spec.txt	/*pi_spec.txt*

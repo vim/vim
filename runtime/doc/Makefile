@@ -75,6 +75,7 @@ DOCS = \
 	pattern.txt \
 	pi_getscript.txt \
 	pi_gzip.txt \
+	pi_logipat.txt \
 	pi_netrw.txt \
 	pi_paren.txt \
 	pi_spec.txt \
@@ -207,6 +208,7 @@ HTMLS = \
 	pattern.html \
 	pi_getscript.html \
 	pi_gzip.html \
+	pi_logipat.html \
 	pi_netrw.html \
 	pi_paren.html \
 	pi_spec.html \

@@ -74,10 +74,6 @@ More info Jul 24.  Not clear why.
 Better .ico file for Windows. (Pat Suwalski, 2015 Feb 13)
 Waiting for response on remark from Edward Fox.
 
-Patch to make getregtype() return the right size for non-linux systems.
-(Yasuhiro Matsumoto, 2014 Jul 8)
-Breaks test_eval.  Inefficient, can we only compute y_width when needed?
-
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
@@ -88,42 +84,12 @@ Regression for v_b_A. (Ingo Karkat, 2015 May 18)
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
 
-Patch on issue 365.
-
-Patch to add "vsplit" to 'switchbuf'. (Brook Hong, 2015 Jun 4)
-
-patch to fix that "p" in Visual mode does not break line in expected place.
-(Yukihiro Nakadaira, 2015 May 23)
-
-Patch to fix that wide characters do not work properly after exiting.
-(Yasuhiro Matsumoto, 2015 May 24) Better patch to come.
-
-Patch to add grepfile(). (Scott Prager, 2015 May 26)
-
-keymap for Russian typewriter layout. (Danwerspb, 2015 May 15)
-
-Patch for man.vim. (SungHyun Nam, 2015 May 20)
-Doesn't work completely (Dominique Orban)
-
-The entries added by matchaddpos() are returned by getmatches() but can't be
-set with setmatches(). (lcd47, 2014 Jun 29)
-Patch by Christian, 2015 Jun 16.
-
 Invalid memory access in regexp.c. (Dominique Pelle, 2015 May 23)
 
 Using ":windo" to set options in all windows has the side effect that it
 changes the window layout and the current window.  Make a variant that saves
 and restores.  Use in the matchparen plugin.
 Perhaps we can use ":silent window"?
-
-Patch for :[count]tag" not always working. (Hirohito Higashi, 2015 May 19)
-
-Include the LogiPat plugin in the distribution?
-
-Patch to fix that ":cnext" jumps to the wrong column. (Hirohito Higashi, 2015
-May 17, second patch)
-
-Pull request for jcukenwintype.vim. (Denis Proskurin, 2015 May 15)
 
 Patch for appending in Visual mode with 'linebreak' set.
 (Christian Brabandt, 2015 Jun 1)
@@ -177,6 +143,13 @@ Is this the right solution?
 Patch for langmap not working properly with mapping in Command-line mode.
 Issue 376.
 
+Patch to add grepfile(). (Scott Prager, 2015 May 26)
+Work in progress.
+
+Patch to make getregtype() return the right size for non-linux systems.
+(Yasuhiro Matsumoto, 2014 Jul 8)
+Breaks test_eval.  Inefficient, can we only compute y_width when needed?
+
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
@@ -209,6 +182,12 @@ ml_updatechunk() is slow when retrying for another encoding. (John Little,
 
 Patch to use different terminal mode settings for system(). (Hayaki Saito)
 Does this work for everybody?
+
+Patch to fix that wide characters do not work properly after exiting.
+(Yasuhiro Matsumoto, 2015 May 24) Better patch to come.
+
+Patch for man.vim. (SungHyun Nam, 2015 May 20)
+Doesn't work completely (Dominique Orban)
 
 When a session file is created and there are "nofile" buffers, these are not
 filled.  Need to trigger BufReadCmd autocommands.  Also handle deleting the
