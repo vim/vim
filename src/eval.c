@@ -17157,7 +17157,7 @@ f_setmatches(argvars, rettv)
 	while (li != NULL)
 	{
 	    int		i = 0;
-	    char_u	buf[4];
+	    char_u	buf[5];
 	    dictitem_T  *di;
 
 	    d = li->li_tv.vval.v_dict;
