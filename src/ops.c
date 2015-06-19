@@ -3459,17 +3459,26 @@ do_put(regname, dir, count, flags)
     {
 	if (flags & PUT_LINE_SPLIT)
 	{
+	    char_u *p;
+
 	    /* "p" or "P" in Visual mode: split the lines to put the text in
 	     * between. */
 	    if (u_save_cursor() == FAIL)
 		goto end;
-	    ptr = vim_strsave(ml_get_cursor());
+	    p = ml_get_cursor();
+	    if (dir == FORWARD && *p != NUL)
+		mb_ptr_adv(p);
+	    ptr = vim_strsave(p);
 	    if (ptr == NULL)
 		goto end;
 	    ml_append(curwin->w_cursor.lnum, ptr, (colnr_T)0, FALSE);
 	    vim_free(ptr);
 
-	    ptr = vim_strnsave(ml_get_curline(), curwin->w_cursor.col);
+	    oldp = ml_get_curline();
+	    p = oldp + curwin->w_cursor.col;
+	    if (dir == FORWARD && *p != NUL)
+		mb_ptr_adv(p);
+	    ptr = vim_strnsave(oldp, p - oldp);
 	    if (ptr == NULL)
 		goto end;
 	    ml_replace(curwin->w_cursor.lnum, ptr, FALSE);

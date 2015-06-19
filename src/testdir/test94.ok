@@ -81,3 +81,34 @@ b
 linewise select mode: delete last two line
 a
 ---
+
+v_p: replace last character with line register at middle line
+aaa
+bb
+aaa
+
+ccc
+---
+
+v_p: replace last character with line register at middle line selecting newline
+aaa
+bb
+aaa
+ccc
+---
+
+v_p: replace last character with line register at last line
+aaa
+bbb
+cc
+aaa
+
+---
+
+v_p: replace last character with line register at last line selecting newline
+aaa
+bbb
+cc
+aaa
+
+---
