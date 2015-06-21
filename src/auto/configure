@@ -5613,8 +5613,9 @@ $as_echo "OK" >&6; }
 	fi
       done
 
-            perlcppflags=`$vi_cv_path_perl -Mlib=$srcdir -MExtUtils::Embed \
-	      -e 'ccflags;perl_inc;print"\n"' | sed -e 's/-fno[^ ]*//'`
+                  perlcppflags=`$vi_cv_path_perl -Mlib=$srcdir -MExtUtils::Embed \
+	      -e 'ccflags;perl_inc;print"\n"' | sed -e 's/-fno[^ ]*//' \
+			-e 's/-fdebug-prefix-map[^ ]*//g'`
             perllibs=`cd $srcdir; $vi_cv_path_perl -MExtUtils::Embed -e 'ldopts' | \
 		sed -e '/Warning/d' -e '/Note (probably harmless)/d' \
 			-e 's/-bE:perl.exp//' -e 's/-lc //'`
