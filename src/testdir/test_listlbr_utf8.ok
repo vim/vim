@@ -44,3 +44,5 @@ Test 6: Screenattributes for comment
  /*		 and some more */
 ScreenAttributes for test6:
 Attribut 0 and 1 and 3 and 5 are different!
+Test 8: set linebreak with visual block mode and v_b_A and selection=exclusive and multibyte char
+long line: foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar TARGETÃx' at end

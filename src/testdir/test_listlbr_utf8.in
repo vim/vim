@@ -91,6 +91,11 @@ GGlGGlGGlGGlGGlGGlGGlGGlGGlGGl
 :else
 :   call append('$', "Not all attributes are different")
 :endif
+:set cpo&vim linebreak selection=exclusive
+:let g:test ="Test 8: set linebreak with visual block mode and v_b_A and selection=exclusive and multibyte char"
+:$put =g:test
+Golong line: 40afoobar aTARGETÃ' at end
+:exe "norm! $3B\<C-v>eAx\<Esc>"
 :%w! test.out
 :qa!
 ENDTEST

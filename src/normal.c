@@ -174,6 +174,7 @@ static void	nv_drop __ARGS((cmdarg_T *cap));
 #ifdef FEAT_AUTOCMD
 static void	nv_cursorhold __ARGS((cmdarg_T *cap));
 #endif
+static void	get_op_vcol __ARGS((oparg_T *oap, colnr_T col, int initial));
 
 static char *e_noident = N_("E349: No identifier under cursor");
 
@@ -1418,6 +1419,8 @@ do_pending_operator(cap, old_col, gui_yank)
     {
 #ifdef FEAT_LINEBREAK
 	/* Avoid a problem with unwanted linebreaks in block mode. */
+	if (curwin->w_p_lbr)
+	    curwin->w_valid &= ~VALID_VIRTCOL;
 	curwin->w_p_lbr = FALSE;
 #endif
 	oap->is_VIsual = VIsual_active;
@@ -1631,61 +1634,7 @@ do_pending_operator(cap, old_col, gui_yank)
 
 	if (VIsual_active || redo_VIsual_busy)
 	{
-	    if (VIsual_mode == Ctrl_V)	/* block mode */
-	    {
-		colnr_T	    start, end;
-
-		oap->block_mode = TRUE;
-
-		getvvcol(curwin, &(oap->start),
-				      &oap->start_vcol, NULL, &oap->end_vcol);
-		if (!redo_VIsual_busy)
-		{
-		    getvvcol(curwin, &(oap->end), &start, NULL, &end);
-
-		    if (start < oap->start_vcol)
-			oap->start_vcol = start;
-		    if (end > oap->end_vcol)
-		    {
-			if (*p_sel == 'e' && start >= 1
-						&& start - 1 >= oap->end_vcol)
-			    oap->end_vcol = start - 1;
-			else
-			    oap->end_vcol = end;
-		    }
-		}
-
-		/* if '$' was used, get oap->end_vcol from longest line */
-		if (curwin->w_curswant == MAXCOL)
-		{
-		    curwin->w_cursor.col = MAXCOL;
-		    oap->end_vcol = 0;
-		    for (curwin->w_cursor.lnum = oap->start.lnum;
-			    curwin->w_cursor.lnum <= oap->end.lnum;
-						      ++curwin->w_cursor.lnum)
-		    {
-			getvvcol(curwin, &curwin->w_cursor, NULL, NULL, &end);
-			if (end > oap->end_vcol)
-			    oap->end_vcol = end;
-		    }
-		}
-		else if (redo_VIsual_busy)
-		    oap->end_vcol = oap->start_vcol + redo_VIsual_vcol - 1;
-		/*
-		 * Correct oap->end.col and oap->start.col to be the
-		 * upper-left and lower-right corner of the block area.
-		 *
-		 * (Actually, this does convert column positions into character
-		 * positions)
-		 */
-		curwin->w_cursor.lnum = oap->end.lnum;
-		coladvance(oap->end_vcol);
-		oap->end = curwin->w_cursor;
-
-		curwin->w_cursor = oap->start;
-		coladvance(oap->start_vcol);
-		oap->start = curwin->w_cursor;
-	    }
+	    get_op_vcol(oap, redo_VIsual_vcol, TRUE);
 
 	    if (!redo_VIsual_busy && !gui_yank)
 	    {
@@ -1982,7 +1931,11 @@ do_pending_operator(cap, old_col, gui_yank)
 #ifdef FEAT_LINEBREAK
 		/* Restore linebreak, so that when the user edits it looks as
 		 * before. */
-		curwin->w_p_lbr = lbr_saved;
+		if (curwin->w_p_lbr != lbr_saved)
+		{
+		    curwin->w_p_lbr = lbr_saved;
+		    get_op_vcol(oap, redo_VIsual_mode, FALSE);
+		}
 #endif
 		/* Reset finish_op now, don't want it set inside edit(). */
 		finish_op = FALSE;
@@ -2082,7 +2035,11 @@ do_pending_operator(cap, old_col, gui_yank)
 #ifdef FEAT_LINEBREAK
 		/* Restore linebreak, so that when the user edits it looks as
 		 * before. */
-		curwin->w_p_lbr = lbr_saved;
+		if (curwin->w_p_lbr != lbr_saved)
+		{
+		    curwin->w_p_lbr = lbr_saved;
+		    get_op_vcol(oap, redo_VIsual_mode, FALSE);
+		}
 #endif
 		op_insert(oap, cap->count1);
 #ifdef FEAT_LINEBREAK
@@ -2114,11 +2071,15 @@ do_pending_operator(cap, old_col, gui_yank)
 #ifdef FEAT_VISUALEXTRA
 	    else
 	    {
-#ifdef FEAT_LINEBREAK
+# ifdef FEAT_LINEBREAK
 		/* Restore linebreak, so that when the user edits it looks as
 		 * before. */
-		curwin->w_p_lbr = lbr_saved;
-#endif
+		if (curwin->w_p_lbr != lbr_saved)
+		{
+		    curwin->w_p_lbr = lbr_saved;
+		    get_op_vcol(oap, redo_VIsual_mode, FALSE);
+		}
+# endif
 		op_replace(oap, cap->nchar);
 	    }
 #endif
@@ -9542,3 +9503,70 @@ nv_cursorhold(cap)
     cap->retval |= CA_COMMAND_BUSY;	/* don't call edit() now */
 }
 #endif
+
+/*
+ * calculate start/end virtual columns for operating in block mode
+ */
+    static void
+get_op_vcol(oap, redo_VIsual_vcol, initial)
+    oparg_T	*oap;
+    colnr_T	redo_VIsual_vcol;
+    int		initial;            /* when true: adjust position for 'selectmode' */
+{
+    colnr_T	    start, end;
+
+    if (VIsual_mode != Ctrl_V)
+	return;
+
+    oap->block_mode = TRUE;
+
+#ifdef FEAT_MBYTE
+    /* prevent from moving onto a trail byte */
+    if (has_mbyte)
+	mb_adjustpos(curwin->w_buffer, &oap->end);
+#endif
+
+    getvvcol(curwin, &(oap->start), &oap->start_vcol, NULL, &oap->end_vcol);
+    getvvcol(curwin, &(oap->end), &start, NULL, &end);
+
+    if (start < oap->start_vcol)
+	oap->start_vcol = start;
+    if (end > oap->end_vcol)
+    {
+	if (initial && *p_sel == 'e' && start >= 1
+			&& start - 1 >= oap->end_vcol)
+	    oap->end_vcol = start - 1;
+	else
+	    oap->end_vcol = end;
+    }
+    /* if '$' was used, get oap->end_vcol from longest line */
+    if (curwin->w_curswant == MAXCOL)
+    {
+	curwin->w_cursor.col = MAXCOL;
+	oap->end_vcol = 0;
+	for (curwin->w_cursor.lnum = oap->start.lnum;
+		curwin->w_cursor.lnum <= oap->end.lnum;
+					++curwin->w_cursor.lnum)
+	{
+	    getvvcol(curwin, &curwin->w_cursor, NULL, NULL, &end);
+	    if (end > oap->end_vcol)
+		oap->end_vcol = end;
+	}
+    }
+    else if (redo_VIsual_busy)
+	oap->end_vcol = oap->start_vcol + redo_VIsual_vcol - 1;
+    /*
+    * Correct oap->end.col and oap->start.col to be the
+    * upper-left and lower-right corner of the block area.
+    *
+    * (Actually, this does convert column positions into character
+    * positions)
+    */
+    curwin->w_cursor.lnum = oap->end.lnum;
+    coladvance(oap->end_vcol);
+    oap->end = curwin->w_cursor;
+
+    curwin->w_cursor = oap->start;
+    coladvance(oap->start_vcol);
+    oap->start = curwin->w_cursor;
+}
