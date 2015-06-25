@@ -197,10 +197,12 @@ typedef int perl_key;
 # define Perl_stack_grow dll_Perl_stack_grow
 # define Perl_set_context dll_Perl_set_context
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 14)
-# define Perl_sv_2bool_flags dll_Perl_sv_2bool_flags
-# define Perl_xs_apiversion_bootcheck dll_Perl_xs_apiversion_bootcheck
+#  define Perl_sv_2bool_flags dll_Perl_sv_2bool_flags
+#  if (PERL_REVISION == 5) && (PERL_VERSION < 22)
+#   define Perl_xs_apiversion_bootcheck dll_Perl_xs_apiversion_bootcheck
+#  endif
 # else
-# define Perl_sv_2bool dll_Perl_sv_2bool
+#  define Perl_sv_2bool dll_Perl_sv_2bool
 # endif
 # define Perl_sv_2iv dll_Perl_sv_2iv
 # define Perl_sv_2mortal dll_Perl_sv_2mortal
@@ -268,6 +270,10 @@ typedef int perl_key;
 # define Perl_call_list dll_Perl_call_list
 # define Perl_Iscopestack_ix_ptr dll_Perl_Iscopestack_ix_ptr
 # define Perl_Iunitcheckav_ptr dll_Perl_Iunitcheckav_ptr
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 22)
+#  define Perl_xs_handshake dll_Perl_xs_handshake
+#  define Perl_xs_boot_epilog dll_Perl_xs_boot_epilog
+# endif
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 14)
 #  ifdef USE_ITHREADS
 #   define PL_thr_key *dll_PL_thr_key
@@ -299,7 +305,11 @@ static void (*Perl_croak_nocontext)(const char*, ...);
 static I32 (*Perl_dowantarray)(pTHX);
 static void (*Perl_free_tmps)(pTHX);
 static HV* (*Perl_gv_stashpv)(pTHX_ const char*, I32);
+#if (PERL_REVISION == 5) && (PERL_VERSION >= 22)
+static I32* (*Perl_markstack_grow)(pTHX);
+#else
 static void (*Perl_markstack_grow)(pTHX);
+#endif
 static MAGIC* (*Perl_mg_find)(pTHX_ SV*, int);
 static CV* (*Perl_newXS)(pTHX_ char*, XSUBADDR_t, char*);
 static SV* (*Perl_newSV)(pTHX_ STRLEN);
@@ -321,7 +331,9 @@ static SV** (*Perl_stack_grow)(pTHX_ SV**, SV**p, int);
 static SV** (*Perl_set_context)(void*);
 #if (PERL_REVISION == 5) && (PERL_VERSION >= 14)
 static bool (*Perl_sv_2bool_flags)(pTHX_ SV*, I32);
+# if (PERL_REVISION == 5) && (PERL_VERSION < 22)
 static void (*Perl_xs_apiversion_bootcheck)(pTHX_ SV *module, const char *api_p, STRLEN api_len);
+# endif
 #else
 static bool (*Perl_sv_2bool)(pTHX_ SV*);
 #endif
@@ -394,6 +406,10 @@ static I32* (*Perl_Iscopestack_ix_ptr)(register PerlInterpreter*);
 static AV** (*Perl_Iunitcheckav_ptr)(register PerlInterpreter*);
 # endif
 #endif
+#if (PERL_REVISION == 5) && (PERL_VERSION >= 22)
+static I32 (*Perl_xs_handshake)(const U32, void *, const char *, ...);
+static void (*Perl_xs_boot_epilog)(pTHX_ const U32);
+#endif
 
 #if (PERL_REVISION == 5) && (PERL_VERSION >= 14)
 # ifdef USE_ITHREADS
@@ -453,7 +469,9 @@ static struct {
     {"Perl_set_context", (PERL_PROC*)&Perl_set_context},
 #if (PERL_REVISION == 5) && (PERL_VERSION >= 14)
     {"Perl_sv_2bool_flags", (PERL_PROC*)&Perl_sv_2bool_flags},
+# if (PERL_REVISION == 5) && (PERL_VERSION < 22)
     {"Perl_xs_apiversion_bootcheck",(PERL_PROC*)&Perl_xs_apiversion_bootcheck},
+# endif
 #else
     {"Perl_sv_2bool", (PERL_PROC*)&Perl_sv_2bool},
 #endif
@@ -520,6 +538,10 @@ static struct {
     {"Perl_Iscopestack_ix_ptr", (PERL_PROC*)&Perl_Iscopestack_ix_ptr},
     {"Perl_Iunitcheckav_ptr", (PERL_PROC*)&Perl_Iunitcheckav_ptr},
 # endif
+#endif
+#if (PERL_REVISION == 5) && (PERL_VERSION >= 22)
+    {"Perl_xs_handshake", (PERL_PROC*)&Perl_xs_handshake},
+    {"Perl_xs_boot_epilog", (PERL_PROC*)&Perl_xs_boot_epilog},
 #endif
 #if (PERL_REVISION == 5) && (PERL_VERSION >= 14)
 #  ifdef USE_ITHREADS

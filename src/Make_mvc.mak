@@ -874,7 +874,7 @@ PERL_LIB = $(PERL_INCDIR)\libperl$(PERL_VER).a
 !endif
 !endif
 
-CFLAGS = $(CFLAGS) -DFEAT_PERL
+CFLAGS = $(CFLAGS) -DFEAT_PERL -DPERL_IMPLICIT_CONTEXT -DPERL_IMPLICIT_SYS
 
 # Do we want to load Perl dynamically?
 !if "$(DYNAMIC_PERL)" == "yes"
