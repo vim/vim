@@ -837,8 +837,11 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
 
     starttermcap();	    /* start termcap if not done by wait_return() */
     TIME_MSG("start termcap");
-#if defined(FEAT_TERMRESPONSE) && defined(FEAT_MBYTE)
+#if defined(FEAT_TERMRESPONSE)
+# if defined(FEAT_MBYTE)
     may_req_ambiguous_char_width();
+# endif
+    may_req_bg_color();
 #endif
 
 #ifdef FEAT_MOUSE

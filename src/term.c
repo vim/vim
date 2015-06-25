@@ -124,6 +124,11 @@ static int crv_status = CRV_GET;
 #  define U7_SENT	2	/* did send T_U7, waiting for answer */
 #  define U7_GOT	3	/* received T_U7 response */
 static int u7_status = U7_GET;
+/* Request background color report: */
+#  define RBG_GET	1	/* send T_RBG when switched to RAW mode */
+#  define RBG_SENT	2	/* did send T_RBG, waiting for answer */
+#  define RBG_GOT	3	/* received T_RBG response */
+static int rbg_status = RBG_GET;
 # endif
 
 /*
@@ -949,6 +954,7 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CWP,	IF_EB("\033[3;%d;%dt", ESC_STR "[3;%d;%dt")},
 #  endif
     {(int)KS_CRV,	IF_EB("\033[>c", ESC_STR "[>c")},
+    {(int)KS_RBG,	IF_EB("\033]11;?\007", ESC_STR "]11;?\007")},
     {(int)KS_U7,	IF_EB("\033[6n", ESC_STR "[6n")},
 
     {K_UP,		IF_EB("\033O*A", ESC_STR "O*A")},
@@ -1240,6 +1246,7 @@ static struct builtin_term builtin_termcaps[] =
 #  endif
     {(int)KS_CRV,	"[CRV]"},
     {(int)KS_U7,	"[U7]"},
+    {(int)KS_RBG,	"[RBG]"},
     {K_UP,		"[KU]"},
     {K_DOWN,		"[KD]"},
     {K_LEFT,		"[KL]"},
@@ -3224,7 +3231,8 @@ settmode(tmode)
 		 * doesn't work in Cooked mode, an external program may get
 		 * them. */
 		if (tmode != TMODE_RAW && (crv_status == CRV_SENT
-					 || u7_status == U7_SENT))
+					 || u7_status == U7_SENT
+					 || rbg_status == RBG_SENT))
 		    (void)vpeekc_nomap();
 		check_for_codes_from_term();
 	    }
@@ -3285,8 +3293,9 @@ stoptermcap()
 	if (!gui.in_use && !gui.starting)
 # endif
 	{
-	    /* May need to discard T_CRV or T_U7 response. */
-	    if (crv_status == CRV_SENT || u7_status == U7_SENT)
+	    /* May need to discard T_CRV, T_U7 or T_RBG response. */
+	    if (crv_status == CRV_SENT || u7_status == U7_SENT
+						     || rbg_status == RBG_SENT)
 	    {
 # ifdef UNIX
 		/* Give the terminal a chance to respond. */
@@ -3394,6 +3403,41 @@ may_req_ambiguous_char_width()
 	  * get_keystroke() */
 	 out_flush();
 	 (void)vpeekc_nomap();
+    }
+}
+# endif
+
+#if defined(FEAT_TERMRESPONSE) || defined(PROTO)
+/*
+ * Check how the terminal treats ambiguous character width (UAX #11).
+ * First, we move the cursor to (1, 0) and print a test ambiguous character
+ * \u25bd (WHITE DOWN-POINTING TRIANGLE) and query current cursor position.
+ * If the terminal treats \u25bd as single width, the position is (1, 1),
+ * or if it is treated as double width, that will be (1, 2).
+ * This function has the side effect that changes cursor position, so
+ * it must be called immediately after entering termcap mode.
+ */
+    void
+may_req_bg_color()
+{
+    if (rbg_status == RBG_GET
+	    && cur_tmode == TMODE_RAW
+	    && termcap_active
+	    && p_ek
+#  ifdef UNIX
+	    && isatty(1)
+	    && isatty(read_cmd_fd)
+#  endif
+	    && *T_RBG != NUL
+	    && !option_was_set((char_u *)"bg"))
+    {
+	LOG_TR("Sending BG request");
+	out_str(T_RBG);
+	rbg_status = RBG_SENT;
+	/* check for the characters now, otherwise they might be eaten by
+	 * get_keystroke() */
+	out_flush();
+	(void)vpeekc_nomap();
     }
 }
 # endif
@@ -4222,12 +4266,18 @@ check_termcode(max_offset, buf, bufsize, buflen)
 	     * - Cursor position report: <Esc>[{row};{col}R
 	     *   The final byte must be 'R'. It is used for checking the
 	     *   ambiguous-width character state.
+	     *
+	     * - Background color response:
+	     *       <Esc>]11;rgb:{rrrr}/{gggg}/{bbbb}\007
+	     *   The final byte must be '\007'.
 	     */
-	    p = tp[0] == CSI ? tp + 1 : tp + 2;
-	    if ((*T_CRV != NUL || *T_U7 != NUL)
+	    char_u *argp = tp[0] == CSI ? tp + 1 : tp + 2;
+
+	    if ((*T_CRV != NUL || *T_U7 != NUL || *T_RBG != NUL)
 			&& ((tp[0] == ESC && tp[1] == '[' && len >= 3)
+			    || (tp[0] == ESC && tp[1] == ']' && len >= 24)
 			    || (tp[0] == CSI && len >= 2))
-			&& (VIM_ISDIGIT(*p) || *p == '>' || *p == '?'))
+			&& (VIM_ISDIGIT(*argp) || *argp == '>' || *argp == '?'))
 	    {
 #ifdef FEAT_MBYTE
 		int col;
@@ -4362,6 +4412,27 @@ check_termcode(max_offset, buf, bufsize, buflen)
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
 		    slen = i + 1;
+		}
+		else if (*T_RBG != NUL && len >= 24 - (tp[0] == CSI)
+			&& argp[0] == '1' && argp[1] == '1'
+			&& argp[2] == ';' && argp[3] == 'r' && argp[4] == 'g'
+			&& argp[5] == 'b' && argp[6] == ':'
+			&& argp[11] == '/' && argp[16] == '/'
+			&& argp[21] == '\007')
+		{
+		    LOG_TR("Received RBG");
+		    rbg_status = RBG_GOT;
+		    if (!option_was_set((char_u *)"bg"))
+		    {
+			set_option_value((char_u *)"bg", 0L, (char_u *)(
+				    (3 * '6' < argp[7] + argp[12] + argp[17])
+						      ? "light" : "dark"), 0);
+			reset_option_was_set((char_u *)"bg");
+			redraw_asap(CLEAR);
+		    }
+		    key_name[0] = (int)KS_EXTRA;
+		    key_name[1] = (int)KE_IGNORE;
+		    slen = 24;
 		}
 	    }
 

@@ -36,6 +36,7 @@ void starttermcap __ARGS((void));
 void stoptermcap __ARGS((void));
 void may_req_termresponse __ARGS((void));
 void may_req_ambiguous_char_width __ARGS((void));
+void may_req_bg_color __ARGS((void));
 int swapping_screen __ARGS((void));
 void setmouse __ARGS((void));
 int mouse_has __ARGS((int c));
