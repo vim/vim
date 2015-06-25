@@ -4201,9 +4201,17 @@ nv_help(cap)
 nv_addsub(cap)
     cmdarg_T	*cap;
 {
-    if (!checkclearopq(cap->oap)
-	    && do_addsub((int)cap->cmdchar, cap->count1) == OK)
+    int visual = VIsual_active;
+    if (cap->oap->op_type == OP_NOP
+	    && do_addsub((int)cap->cmdchar, cap->count1, cap->arg) == OK)
 	prep_redo_cmd(cap);
+    else
+	clearopbeep(cap->oap);
+    if (visual)
+    {
+	VIsual_active = FALSE;
+	redraw_later(CLEAR);
+    }
 }
 
 /*
@@ -7841,14 +7849,28 @@ nv_g_cmd(cap)
 
     switch (cap->nchar)
     {
+    case Ctrl_A:
+    case Ctrl_X:
 #ifdef MEM_PROFILE
     /*
      * "g^A": dump log of used memory.
      */
-    case Ctrl_A:
-	vim_mem_profile_dump();
-	break;
+	if (!VIsual_active && cap->nchar == Ctrl_A)
+	    vim_mem_profile_dump();
+	else
 #endif
+    /*
+     * "g^A/g^X": sequentially increment visually selected region
+     */
+	     if (VIsual_active)
+	{
+	    cap->arg = TRUE;
+	    cap->cmdchar = cap->nchar;
+	    nv_addsub(cap);
+	}
+	else
+	    clearopbeep(oap);
+	break;
 
 #ifdef FEAT_VREPLACE
     /*

@@ -5375,9 +5375,10 @@ reverse_line(s)
  * return FAIL for failure, OK otherwise
  */
     int
-do_addsub(command, Prenum1)
+do_addsub(command, Prenum1, g_cmd)
     int		command;
     linenr_T	Prenum1;
+    int		g_cmd;		    /* was g<c-a>/g<c-x> */
 {
     int		col;
     char_u	*buf1;
@@ -5385,6 +5386,7 @@ do_addsub(command, Prenum1)
     int		hex;		/* 'X' or 'x': hex; '0': octal */
     static int	hexupper = FALSE;	/* 0xABC */
     unsigned long n;
+    long	offset = 0;		/* line offset for Ctrl_V mode */
     long_u	oldn;
     char_u	*ptr;
     int		c;
@@ -5394,247 +5396,302 @@ do_addsub(command, Prenum1)
     int		dooct;
     int		doalp;
     int		firstdigit;
-    int		negative;
     int		subtract;
+    int		negative = FALSE;
+    int		visual = VIsual_active;
+    int		i;
+    int		lnum = curwin->w_cursor.lnum;
+    int		lnume = curwin->w_cursor.lnum;
 
     dohex = (vim_strchr(curbuf->b_p_nf, 'x') != NULL);	/* "heX" */
     dooct = (vim_strchr(curbuf->b_p_nf, 'o') != NULL);	/* "Octal" */
     doalp = (vim_strchr(curbuf->b_p_nf, 'p') != NULL);	/* "alPha" */
 
-    ptr = ml_get_curline();
-    RLADDSUBFIX(ptr);
-
     /*
      * First check if we are on a hexadecimal number, after the "0x".
      */
     col = curwin->w_cursor.col;
-    if (dohex)
-	while (col > 0 && vim_isxdigit(ptr[col]))
-	    --col;
-    if (       dohex
-	    && col > 0
-	    && (ptr[col] == 'X'
-		|| ptr[col] == 'x')
-	    && ptr[col - 1] == '0'
-	    && vim_isxdigit(ptr[col + 1]))
+    if (VIsual_active)
     {
-	/*
-	 * Found hexadecimal number, move to its start.
-	 */
-	--col;
-    }
-    else
-    {
-	/*
-	 * Search forward and then backward to find the start of number.
-	 */
-	col = curwin->w_cursor.col;
-
-	while (ptr[col] != NUL
-		&& !vim_isdigit(ptr[col])
-		&& !(doalp && ASCII_ISALPHA(ptr[col])))
-	    ++col;
-
-	while (col > 0
-		&& vim_isdigit(ptr[col - 1])
-		&& !(doalp && ASCII_ISALPHA(ptr[col])))
-	    --col;
-    }
-
-    /*
-     * If a number was found, and saving for undo works, replace the number.
-     */
-    firstdigit = ptr[col];
-    RLADDSUBFIX(ptr);
-    if ((!VIM_ISDIGIT(firstdigit) && !(doalp && ASCII_ISALPHA(firstdigit)))
-	    || u_save_cursor() != OK)
-    {
-	beep_flush();
-	return FAIL;
-    }
-
-    /* get ptr again, because u_save() may have changed it */
-    ptr = ml_get_curline();
-    RLADDSUBFIX(ptr);
-
-    if (doalp && ASCII_ISALPHA(firstdigit))
-    {
-	/* decrement or increment alphabetic character */
-	if (command == Ctrl_X)
+	if (lt(curwin->w_cursor, VIsual))
 	{
-	    if (CharOrd(firstdigit) < Prenum1)
-	    {
-		if (isupper(firstdigit))
-		    firstdigit = 'A';
-		else
-		    firstdigit = 'a';
-	    }
-	    else
-#ifdef EBCDIC
-		firstdigit = EBCDIC_CHAR_ADD(firstdigit, -Prenum1);
-#else
-		firstdigit -= Prenum1;
-#endif
+	    pos_T t;
+	    t = curwin->w_cursor;
+	    curwin->w_cursor = VIsual;
+	    VIsual = t;
 	}
-	else
+	if (VIsual_mode == 'V')
+	    VIsual.col = 0;
+
+	ptr = ml_get(VIsual.lnum);
+	RLADDSUBFIX(ptr);
+
+	/* store visual area for 'gv' */
+	curbuf->b_visual.vi_start = VIsual;
+	curbuf->b_visual.vi_end = curwin->w_cursor;
+	curbuf->b_visual.vi_mode = VIsual_mode;
+
+	col = VIsual.col;
+	lnum = VIsual.lnum;
+	lnume = curwin->w_cursor.lnum;
+	if (ptr[col] == '-')
 	{
-	    if (26 - CharOrd(firstdigit) - 1 < Prenum1)
-	    {
-		if (isupper(firstdigit))
-		    firstdigit = 'Z';
-		else
-		    firstdigit = 'z';
-	    }
-	    else
-#ifdef EBCDIC
-		firstdigit = EBCDIC_CHAR_ADD(firstdigit, Prenum1);
-#else
-		firstdigit += Prenum1;
-#endif
-	}
-	curwin->w_cursor.col = col;
-	(void)del_char(FALSE);
-	ins_char(firstdigit);
-    }
-    else
-    {
-	negative = FALSE;
-	if (col > 0 && ptr[col - 1] == '-')	    /* negative number */
-	{
-	    --col;
 	    negative = TRUE;
+	    col++;
 	}
-
-	/* get the number value (unsigned) */
-	vim_str2nr(ptr + col, &hex, &length, dooct, dohex, NULL, &n);
-
-	/* ignore leading '-' for hex and octal numbers */
-	if (hex && negative)
-	{
-	    ++col;
-	    --length;
-	    negative = FALSE;
-	}
-
-	/* add or subtract */
-	subtract = FALSE;
-	if (command == Ctrl_X)
-	    subtract ^= TRUE;
-	if (negative)
-	    subtract ^= TRUE;
-
-	oldn = n;
-	if (subtract)
-	    n -= (unsigned long)Prenum1;
-	else
-	    n += (unsigned long)Prenum1;
-
-	/* handle wraparound for decimal numbers */
-	if (!hex)
-	{
-	    if (subtract)
-	    {
-		if (n > oldn)
-		{
-		    n = 1 + (n ^ (unsigned long)-1);
-		    negative ^= TRUE;
-		}
-	    }
-	    else /* add */
-	    {
-		if (n < oldn)
-		{
-		    n = (n ^ (unsigned long)-1);
-		    negative ^= TRUE;
-		}
-	    }
-	    if (n == 0)
-		negative = FALSE;
-	}
-
-	/*
-	 * Delete the old number.
-	 */
-	curwin->w_cursor.col = col;
-	todel = length;
-	c = gchar_cursor();
-	/*
-	 * Don't include the '-' in the length, only the length of the part
-	 * after it is kept the same.
-	 */
-	if (c == '-')
-	    --length;
-	while (todel-- > 0)
-	{
-	    if (c < 0x100 && isalpha(c))
-	    {
-		if (isupper(c))
-		    hexupper = TRUE;
-		else
-		    hexupper = FALSE;
-	    }
-	    /* del_char() will mark line needing displaying */
-	    (void)del_char(FALSE);
-	    c = gchar_cursor();
-	}
-
-	/*
-	 * Prepare the leading characters in buf1[].
-	 * When there are many leading zeros it could be very long.  Allocate
-	 * a bit too much.
-	 */
-	buf1 = alloc((unsigned)length + NUMBUFLEN);
-	if (buf1 == NULL)
-	    return FAIL;
-	ptr = buf1;
-	if (negative)
-	{
-	    *ptr++ = '-';
-	}
-	if (hex)
-	{
-	    *ptr++ = '0';
-	    --length;
-	}
-	if (hex == 'x' || hex == 'X')
-	{
-	    *ptr++ = hex;
-	    --length;
-	}
-
-	/*
-	 * Put the number characters in buf2[].
-	 */
-	if (hex == 0)
-	    sprintf((char *)buf2, "%lu", n);
-	else if (hex == '0')
-	    sprintf((char *)buf2, "%lo", n);
-	else if (hex && hexupper)
-	    sprintf((char *)buf2, "%lX", n);
-	else
-	    sprintf((char *)buf2, "%lx", n);
-	length -= (int)STRLEN(buf2);
-
-	/*
-	 * Adjust number of zeros to the new number of digits, so the
-	 * total length of the number remains the same.
-	 * Don't do this when
-	 * the result may look like an octal number.
-	 */
-	if (firstdigit == '0' && !(dooct && hex == 0))
-	    while (length-- > 0)
-		*ptr++ = '0';
-	*ptr = NUL;
-	STRCAT(buf1, buf2);
-	ins_str(buf1);		/* insert the new number */
-	vim_free(buf1);
     }
-    --curwin->w_cursor.col;
-    curwin->w_set_curswant = TRUE;
-#ifdef FEAT_RIGHTLEFT
-    ptr = ml_get_buf(curbuf, curwin->w_cursor.lnum, TRUE);
-    RLADDSUBFIX(ptr);
+    else
+    {
+	ptr = ml_get_curline();
+	RLADDSUBFIX(ptr);
+
+	if (dohex)
+	    while (col > 0 && vim_isxdigit(ptr[col]))
+		--col;
+	if (       dohex
+		&& col > 0
+		&& (ptr[col] == 'X'
+		    || ptr[col] == 'x')
+		&& ptr[col - 1] == '0'
+		&& vim_isxdigit(ptr[col + 1]))
+	{
+	    /* Found hexadecimal number, move to its start. */
+	    --col;
+	}
+	else
+	{
+	    /*
+	     * Search forward and then backward to find the start of number.
+	     */
+	    col = curwin->w_cursor.col;
+
+	    while (ptr[col] != NUL
+		    && !vim_isdigit(ptr[col])
+		    && !(doalp && ASCII_ISALPHA(ptr[col])))
+		++col;
+
+	    while (col > 0
+		    && vim_isdigit(ptr[col - 1])
+		    && !(doalp && ASCII_ISALPHA(ptr[col])))
+		--col;
+	}
+    }
+
+    for (i = lnum; i <= lnume; i++)
+    {
+	curwin->w_cursor.lnum = i;
+	ptr = ml_get_curline();
+	RLADDSUBFIX(ptr);
+	if ((int)STRLEN(ptr) <= col)
+	    col = 0;
+	/*
+	 * If a number was found, and saving for undo works, replace the number.
+	 */
+	firstdigit = ptr[col];
+	RLADDSUBFIX(ptr);
+	if ((!VIM_ISDIGIT(firstdigit) && !(doalp && ASCII_ISALPHA(firstdigit)))
+		|| u_save_cursor() != OK)
+	{
+	    if (lnum < lnume)
+		/* Try again on next line */
+		continue;
+	    beep_flush();
+	    return FAIL;
+	}
+
+	ptr = ml_get_curline();
+	RLADDSUBFIX(ptr);
+
+	if (doalp && ASCII_ISALPHA(firstdigit))
+	{
+	    /* decrement or increment alphabetic character */
+	    if (command == Ctrl_X)
+	    {
+		if (CharOrd(firstdigit) < Prenum1)
+		{
+		    if (isupper(firstdigit))
+			firstdigit = 'A';
+		    else
+			firstdigit = 'a';
+		}
+		else
+#ifdef EBCDIC
+		    firstdigit = EBCDIC_CHAR_ADD(firstdigit, -Prenum1);
+#else
+		    firstdigit -= Prenum1;
 #endif
+	    }
+	    else
+	    {
+		if (26 - CharOrd(firstdigit) - 1 < Prenum1)
+		{
+		    if (isupper(firstdigit))
+			firstdigit = 'Z';
+		    else
+			firstdigit = 'z';
+		}
+		else
+#ifdef EBCDIC
+		    firstdigit = EBCDIC_CHAR_ADD(firstdigit, Prenum1);
+#else
+		    firstdigit += Prenum1;
+#endif
+	    }
+	    curwin->w_cursor.col = col;
+	    (void)del_char(FALSE);
+	    ins_char(firstdigit);
+	}
+	else
+	{
+	    if (col > 0 && ptr[col - 1] == '-' && !visual)
+	    {
+		/* negative number */
+		--col;
+		negative = TRUE;
+	    }
+
+	    /* get the number value (unsigned) */
+	    vim_str2nr(ptr + col, &hex, &length, dooct, dohex, NULL, &n);
+
+	    /* ignore leading '-' for hex and octal numbers */
+	    if (hex && negative)
+	    {
+		++col;
+		--length;
+		negative = FALSE;
+	    }
+
+	    /* add or subtract */
+	    subtract = FALSE;
+	    if (command == Ctrl_X)
+		subtract ^= TRUE;
+	    if (negative)
+		subtract ^= TRUE;
+
+	    oldn = n;
+	    if (subtract)
+		n -= (unsigned long)Prenum1;
+	    else
+		n += (unsigned long)Prenum1;
+
+	    /* handle wraparound for decimal numbers */
+	    if (!hex)
+	    {
+		if (subtract)
+		{
+		    if (n > oldn)
+		    {
+			n = 1 + (n ^ (unsigned long)-1);
+			negative ^= TRUE;
+		    }
+		}
+		else
+		{
+		    /* add */
+		    if (n < oldn)
+		    {
+			n = (n ^ (unsigned long)-1);
+			negative ^= TRUE;
+		    }
+		}
+		if (n == 0)
+		    negative = FALSE;
+	    }
+
+	    /*
+	     * Delete the old number.
+	     */
+	    curwin->w_cursor.col = col;
+	    todel = length;
+	    c = gchar_cursor();
+
+	    /*
+	     * Don't include the '-' in the length, only the length of the
+	     * part after it is kept the same.
+	     */
+	    if (c == '-')
+		--length;
+	    while (todel-- > 0)
+	    {
+		if (c < 0x100 && isalpha(c))
+		{
+		    if (isupper(c))
+			hexupper = TRUE;
+		    else
+			hexupper = FALSE;
+		}
+		/* del_char() will mark line needing displaying */
+		(void)del_char(FALSE);
+		c = gchar_cursor();
+	    }
+
+	    /*
+	     * Prepare the leading characters in buf1[].
+	     * When there are many leading zeros it could be very long.
+	     * Allocate a bit too much.
+	     */
+	    buf1 = alloc((unsigned)length + NUMBUFLEN);
+	    if (buf1 == NULL)
+		return FAIL;
+	    ptr = buf1;
+	    /* do not add leading '-' for visual mode */
+	    if (negative && !visual)
+	    {
+		*ptr++ = '-';
+	    }
+	    if (hex)
+	    {
+		*ptr++ = '0';
+		--length;
+	    }
+	    if (hex == 'x' || hex == 'X')
+	    {
+		*ptr++ = hex;
+		--length;
+	    }
+
+	    /*
+	     * Put the number characters in buf2[].
+	     */
+	    if (hex == 0)
+		sprintf((char *)buf2, "%lu", n + offset);
+	    else if (hex == '0')
+		sprintf((char *)buf2, "%lo", n + offset);
+	    else if (hex && hexupper)
+		sprintf((char *)buf2, "%lX", n + offset);
+	    else
+		sprintf((char *)buf2, "%lx", n + offset);
+	    length -= (int)STRLEN(buf2);
+
+	    if (g_cmd)
+	    {
+		if (subtract)
+		    offset -= (unsigned long)Prenum1;
+		else
+		    offset += (unsigned long)Prenum1;
+	    }
+
+	    /*
+	     * Adjust number of zeros to the new number of digits, so the
+	     * total length of the number remains the same.
+	     * Don't do this when
+	     * the result may look like an octal number.
+	     */
+	    if (firstdigit == '0' && !(dooct && hex == 0))
+		while (length-- > 0)
+		    *ptr++ = '0';
+	    *ptr = NUL;
+	    STRCAT(buf1, buf2);
+	    ins_str(buf1);		/* insert the new number */
+	    vim_free(buf1);
+	}
+	--curwin->w_cursor.col;
+	curwin->w_set_curswant = TRUE;
+#ifdef FEAT_RIGHTLEFT
+	ptr = ml_get_buf(curbuf, curwin->w_cursor.lnum, TRUE);
+	RLADDSUBFIX(ptr);
+#endif
+    }
     return OK;
 }
 

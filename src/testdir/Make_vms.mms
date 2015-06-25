@@ -105,6 +105,7 @@ SCRIPT = test1.out  test2.out  test3.out  test4.out  test5.out  \
 	 test_command_count.out \
 	 test_erasebackword.out \
 	 test_eval.out \
+	 test_increment.out \
 	 test_insertcount.out \
 	 test_listchars.out \
 	 test_listlbr.out \
