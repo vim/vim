@@ -3469,7 +3469,13 @@ syn_cmd_spell(eap, syncing)
     else if (STRNICMP(arg, "default", 7) == 0 && next - arg == 7)
 	curwin->w_s->b_syn_spell = SYNSPL_DEFAULT;
     else
+    {
 	EMSG2(_("E390: Illegal argument: %s"), arg);
+	return;
+    }
+
+    /* assume spell checking changed, force a redraw */
+    redraw_win_later(curwin, NOT_VALID);
 }
 
 /*
