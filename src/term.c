@@ -1622,7 +1622,7 @@ set_termname(term)
 				{KS_TS, "ts"}, {KS_FS, "fs"},
 				{KS_CWP, "WP"}, {KS_CWS, "WS"},
 				{KS_CSI, "SI"}, {KS_CEI, "EI"},
-				{KS_U7, "u7"},
+				{KS_U7, "u7"}, {KS_RBG, "RB"},
 				{(enum SpecialKey)0, NULL}
 			    };
 
