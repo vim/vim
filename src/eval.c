@@ -3810,7 +3810,7 @@ do_lock_var(lp, name_end, deep, lock)
 	/* (un)lock a List item. */
 	item_lock(&lp->ll_li->li_tv, deep, lock);
     else
-	/* un(lock) a Dictionary item. */
+	/* (un)lock a Dictionary item. */
 	item_lock(&lp->ll_di->di_tv, deep, lock);
 
     return ret;
@@ -8309,7 +8309,7 @@ static struct fst
     {"str2float",	1, 1, f_str2float},
 #endif
     {"str2nr",		1, 2, f_str2nr},
-    {"strchars",	1, 1, f_strchars},
+    {"strchars",	1, 2, f_strchars},
     {"strdisplaywidth",	1, 2, f_strdisplaywidth},
 #ifdef HAVE_STRFTIME
     {"strftime",	1, 2, f_strftime},
@@ -18372,18 +18372,30 @@ f_strchars(argvars, rettv)
     typval_T	*rettv;
 {
     char_u		*s = get_tv_string(&argvars[0]);
+    int			skipcc = 0;
 #ifdef FEAT_MBYTE
     varnumber_T		len = 0;
-
-    while (*s != NUL)
-    {
-	mb_cptr2char_adv(&s);
-	++len;
-    }
-    rettv->vval.v_number = len;
-#else
-    rettv->vval.v_number = (varnumber_T)(STRLEN(s));
+    int			(*func_mb_ptr2char_adv)(char_u **pp);
 #endif
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	skipcc = get_tv_number_chk(&argvars[1], NULL);
+    if (skipcc < 0 || skipcc > 1)
+	EMSG(_(e_invarg));
+    else
+    {
+#ifdef FEAT_MBYTE
+	func_mb_ptr2char_adv = skipcc ? mb_ptr2char_adv : mb_cptr2char_adv;
+	while (*s != NUL)
+	{
+	    func_mb_ptr2char_adv(&s);
+	    ++len;
+	}
+	rettv->vval.v_number = len;
+#else
+	rettv->vval.v_number = (varnumber_T)(STRLEN(s));
+#endif
+    }
 }
 
 /*

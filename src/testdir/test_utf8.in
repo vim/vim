@@ -11,6 +11,12 @@ STARTTEST
 :
 :bwipeout!
 :$put=r
+:" Test for built-in function strchars()
+:for str in ["a", "あいa", "A\u20dd", "A\u20dd\u20dd", "\u20dd"]
+:	$put=strchars(str)
+:	$put=strchars(str, 0)
+:	$put=strchars(str, 1)
+:endfor
 :call garbagecollect(1)
 :/^start:/,$wq! test.out
 ENDTEST
