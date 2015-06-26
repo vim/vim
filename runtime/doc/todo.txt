@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Jun 19
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Jun 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -58,6 +58,8 @@ Regexp problems:
 - Using back reference before the capturing group sometimes works with the old
   engine, can we do this with the new engine?  E.g. with
   "/\%(<\1>\)\@<=.*\%(<\/\(\w\+\)>\)\@=" matching text inside HTML tags.
+  This problem is probably the same: "\%(^\1.*$\n\)\@<=\(\d\+\).*$".
+  (guotuofeng, 2015 Jun 22)
 - Strange matching with "\(Hello\n\)\@<=A". (Anas Syed, 2015 Feb 12)
 - Problem with \v(A)@<=b+\1c. (Issue 334)
 - Diff highlighting can be very slow. (Issue 309)
@@ -91,35 +93,16 @@ changes the window layout and the current window.  Make a variant that saves
 and restores.  Use in the matchparen plugin.
 Perhaps we can use ":silent window"?
 
-Patch for appending in Visual mode with 'linebreak' set.
-(Christian Brabandt, 2015 Jun 1)
-
-Patch to make CTRL-A in Visual mode increment all Visually selected numbers.
-Same for decrement with CTRL-X. (Christian Brabandt, 2015 Jun 8)
-Update Jun 9.
-
 C indent: should recognize C11 raw strings. (Mark Lodato, 2015 Mar 1)
 Need to recognize R"string" for 'cindent'.
 
 Updated phpcomplete. (Mikolaj Machowski, 2015 May 6)
 
-Patch to detect background terminal color in xterm. (Lubomir Rintel, 2015 Jun
-1)
-
-Patch to fix that in command-line window first character is erased
-when conceallevel is set. (Hirohito Higashi, 2015 May 12)
-
-Patch to make Lua 5.3 and later work. (Felix Schnizlein, 2015 Jun 11)
-
-Patch to make \U in a string accept up to 8 characters. (Christian Brabandt,
-2015 Jun 12)  Does this break existing scripts?
+Patch to make ":difoff" not reset the saved values, so that it can be used
+twice. (Olaf Dabrunz, 2015 Jun 21)
 
 Crash when changing the 'tags' option from a remote command.
 (Benjamin Fritz, 2015 Mar 18, stack trace Mar 20)
-
-Patch on issue 361.
-
-Patch on issue 362.
 
 Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
 
@@ -133,8 +116,6 @@ wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
 
 Can't recognize the $ProgramFiles(x86) environment variable.  Recognize it
 specifically?  First try with the parens, then without.
-
-Patch to force redraw after ":syn spell" command. (Christian, 2015 May 8)
 
 Patch for multi-byte characters in langmap and applying a mapping on them.
 (Christian Brabandt, 2015 Jun 12)
@@ -154,6 +135,8 @@ Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
 Better greek spell checking.  Issue 299.
+
+Patch to make :diffoff work twice. (Olaf Dabrunz, 2015 Jun 23)
 
 Patch to add 'completeselect' option.  Specifies how to select a candidate in
 insert completion. (Shougo, 2013 May 29)
@@ -206,7 +189,7 @@ Patch for an extra argument to matchadd() for conceal. (Christian Brabandt,
 2015 Feb 17, update Feb 19)
 
 Patch to add v:completed_item. (Shougo Matsu, 2013 Nov 29).
-Update 2015 May 30.
+Update 2015 Jun 20.
 
 Patch to add :lockjumps. (Carlo Baldassi, 2015 May 25)
 OK to not block marks?

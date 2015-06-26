@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.4.  Last change: 2015 Feb 23
+*term.txt*      For Vim version 7.4.  Last change: 2015 Jun 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -300,6 +300,8 @@ Added by Vim (there are no standard codes for these):
 	t_RV	request terminal version string (for xterm)	*t_RV* *'t_RV'*
 		|xterm-8bit| |v:termresponse| |'ttymouse'| |xterm-codes|
 	t_u7	request cursor position (for xterm)		*t_u7* *'t_u7'*
+		see |'ambiwidth'|
+	t_RB	request terminal background color		*t_RB* *'t_RB'*
 		see |'ambiwidth'|
 
 KEY CODES

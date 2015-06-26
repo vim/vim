@@ -929,6 +929,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 't_KJ'	term.txt	/*'t_KJ'*
 't_KK'	term.txt	/*'t_KK'*
 't_KL'	term.txt	/*'t_KL'*
+'t_RB'	term.txt	/*'t_RB'*
 't_RI'	term.txt	/*'t_RI'*
 't_RV'	term.txt	/*'t_RV'*
 't_SI'	term.txt	/*'t_SI'*
@@ -4562,6 +4563,7 @@ SourcePre	autocmd.txt	/*SourcePre*
 SpellFileMissing	autocmd.txt	/*SpellFileMissing*
 StdinReadPost	autocmd.txt	/*StdinReadPost*
 StdinReadPre	autocmd.txt	/*StdinReadPre*
+String	eval.txt	/*String*
 SwapExists	autocmd.txt	/*SwapExists*
 Syntax	autocmd.txt	/*Syntax*
 T	motion.txt	/*T*
@@ -8124,6 +8126,7 @@ t_KI	term.txt	/*t_KI*
 t_KJ	term.txt	/*t_KJ*
 t_KK	term.txt	/*t_KK*
 t_KL	term.txt	/*t_KL*
+t_RB	term.txt	/*t_RB*
 t_RI	term.txt	/*t_RI*
 t_RV	term.txt	/*t_RV*
 t_SI	term.txt	/*t_SI*
@@ -8547,11 +8550,13 @@ v_<Esc>	visual.txt	/*v_<Esc>*
 v_=	change.txt	/*v_=*
 v_>	change.txt	/*v_>*
 v_C	change.txt	/*v_C*
+v_CTRL-A	change.txt	/*v_CTRL-A*
 v_CTRL-C	visual.txt	/*v_CTRL-C*
 v_CTRL-G	visual.txt	/*v_CTRL-G*
 v_CTRL-H	change.txt	/*v_CTRL-H*
 v_CTRL-O	visual.txt	/*v_CTRL-O*
 v_CTRL-V	visual.txt	/*v_CTRL-V*
+v_CTRL-X	change.txt	/*v_CTRL-X*
 v_CTRL-Z	starting.txt	/*v_CTRL-Z*
 v_CTRL-\_CTRL-G	intro.txt	/*v_CTRL-\\_CTRL-G*
 v_CTRL-\_CTRL-N	intro.txt	/*v_CTRL-\\_CTRL-N*
@@ -8607,7 +8612,9 @@ v_gJ	change.txt	/*v_gJ*
 v_gN	visual.txt	/*v_gN*
 v_gV	visual.txt	/*v_gV*
 v_g]	tagsrch.txt	/*v_g]*
+v_g_CTRL-A	change.txt	/*v_g_CTRL-A*
 v_g_CTRL-G	editing.txt	/*v_g_CTRL-G*
+v_g_CTRL-X	change.txt	/*v_g_CTRL-X*
 v_g_CTRL-]	tagsrch.txt	/*v_g_CTRL-]*
 v_gf	editing.txt	/*v_gf*
 v_gn	visual.txt	/*v_gn*

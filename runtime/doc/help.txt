@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 7.4.  Last change: 2015 Apr 15
+*help.txt*	For Vim version 7.4.  Last change: 2015 Jun 21
 
 			VIM - main help file
 									 k
@@ -197,6 +197,7 @@ Remarks about specific systems ~
 Standard plugins ~
 |pi_getscript.txt| Downloading latest version of Vim scripts
 |pi_gzip.txt|      Reading and writing compressed files
+|pi_logipat.txt|   Logical operators on patterns
 |pi_netrw.txt|     Reading and writing files over a network
 |pi_paren.txt|     Highlight matching parens
 |pi_tar.txt|       Tar file explorer
