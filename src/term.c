@@ -3409,13 +3409,8 @@ may_req_ambiguous_char_width()
 
 #if defined(FEAT_TERMRESPONSE) || defined(PROTO)
 /*
- * Check how the terminal treats ambiguous character width (UAX #11).
- * First, we move the cursor to (1, 0) and print a test ambiguous character
- * \u25bd (WHITE DOWN-POINTING TRIANGLE) and query current cursor position.
- * If the terminal treats \u25bd as single width, the position is (1, 1),
- * or if it is treated as double width, that will be (1, 2).
- * This function has the side effect that changes cursor position, so
- * it must be called immediately after entering termcap mode.
+ * Similar to requesting the version string: Request the terminal background
+ * color when it is the right moment.
  */
     void
 may_req_bg_color()
