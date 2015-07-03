@@ -5386,7 +5386,7 @@ do_addsub(command, Prenum1, g_cmd)
     int		hex;		/* 'X' or 'x': hex; '0': octal */
     static int	hexupper = FALSE;	/* 0xABC */
     unsigned long n;
-    long	offset = 0;		/* line offset for Ctrl_V mode */
+    unsigned long offset = 0;		/* line offset for Ctrl_V mode */
     long_u	oldn;
     char_u	*ptr;
     int		c;
@@ -5398,10 +5398,12 @@ do_addsub(command, Prenum1, g_cmd)
     int		firstdigit;
     int		subtract;
     int		negative = FALSE;
+    int		was_positive = TRUE;
     int		visual = VIsual_active;
     int		i;
     int		lnum = curwin->w_cursor.lnum;
     int		lnume = curwin->w_cursor.lnum;
+    int		startcol;
 
     dohex = (vim_strchr(curbuf->b_p_nf, 'x') != NULL);	/* "heX" */
     dooct = (vim_strchr(curbuf->b_p_nf, 'o') != NULL);	/* "Octal" */
@@ -5431,14 +5433,14 @@ do_addsub(command, Prenum1, g_cmd)
 	curbuf->b_visual.vi_end = curwin->w_cursor;
 	curbuf->b_visual.vi_mode = VIsual_mode;
 
-	col = VIsual.col;
+	if (VIsual_mode != 'v')
+	    startcol = VIsual.col < curwin->w_cursor.col ? VIsual.col
+						       : curwin->w_cursor.col;
+	else
+	    startcol = VIsual.col;
+	col = startcol;
 	lnum = VIsual.lnum;
 	lnume = curwin->w_cursor.lnum;
-	if (ptr[col] == '-')
-	{
-	    negative = TRUE;
-	    col++;
-	}
     }
     else
     {
@@ -5481,9 +5483,16 @@ do_addsub(command, Prenum1, g_cmd)
     {
 	curwin->w_cursor.lnum = i;
 	ptr = ml_get_curline();
-	RLADDSUBFIX(ptr);
 	if ((int)STRLEN(ptr) <= col)
-	    col = 0;
+	    /* try again on next line */
+	    continue;
+	if (visual && ptr[col] == '-')
+	{
+	    negative = TRUE;
+	    was_positive = FALSE;
+	    col++;
+	}
+	RLADDSUBFIX(ptr);
 	/*
 	 * If a number was found, and saving for undo works, replace the number.
 	 */
@@ -5598,6 +5607,14 @@ do_addsub(command, Prenum1, g_cmd)
 		    negative = FALSE;
 	    }
 
+	    if (visual && !was_positive && !negative)
+	    {
+		/* need to remove the '-' */
+		col--;
+		length++;
+	    }
+
+
 	    /*
 	     * Delete the old number.
 	     */
@@ -5634,8 +5651,7 @@ do_addsub(command, Prenum1, g_cmd)
 	    if (buf1 == NULL)
 		return FAIL;
 	    ptr = buf1;
-	    /* do not add leading '-' for visual mode */
-	    if (negative && !visual)
+	    if (negative && (!visual || (visual && was_positive)))
 	    {
 		*ptr++ = '-';
 	    }
@@ -5654,22 +5670,14 @@ do_addsub(command, Prenum1, g_cmd)
 	     * Put the number characters in buf2[].
 	     */
 	    if (hex == 0)
-		sprintf((char *)buf2, "%lu", n + offset);
+		sprintf((char *)buf2, "%lu", n);
 	    else if (hex == '0')
-		sprintf((char *)buf2, "%lo", n + offset);
+		sprintf((char *)buf2, "%lo", n);
 	    else if (hex && hexupper)
-		sprintf((char *)buf2, "%lX", n + offset);
+		sprintf((char *)buf2, "%lX", n);
 	    else
-		sprintf((char *)buf2, "%lx", n + offset);
+		sprintf((char *)buf2, "%lx", n);
 	    length -= (int)STRLEN(buf2);
-
-	    if (g_cmd)
-	    {
-		if (subtract)
-		    offset -= (unsigned long)Prenum1;
-		else
-		    offset += (unsigned long)Prenum1;
-	    }
 
 	    /*
 	     * Adjust number of zeros to the new number of digits, so the
@@ -5685,13 +5693,27 @@ do_addsub(command, Prenum1, g_cmd)
 	    ins_str(buf1);		/* insert the new number */
 	    vim_free(buf1);
 	}
-	--curwin->w_cursor.col;
+
+	if (g_cmd)
+	{
+	    offset = (unsigned long)Prenum1;
+	    g_cmd = 0;
+	}
+	/* reset */
+	subtract = FALSE;
+	negative = FALSE;
+	if (visual && VIsual_mode != Ctrl_V)
+	    col = 0;
+	else
+	    col = startcol;
+	Prenum1 += offset;
 	curwin->w_set_curswant = TRUE;
 #ifdef FEAT_RIGHTLEFT
 	ptr = ml_get_buf(curbuf, curwin->w_cursor.lnum, TRUE);
 	RLADDSUBFIX(ptr);
 #endif
     }
+    --curwin->w_cursor.col;
     return OK;
 }
 
