@@ -4008,15 +4008,15 @@ build_drop_cmd(filec, filev, tabs, sendReply)
      *    if haslocaldir()
      *	    cd -
      *      lcd -
-     *    elseif getcwd() ==# "current path"
+     *    elseif getcwd() ==# 'current path'
      *      cd -
      *    endif
      *  endif
      */
     ga_concat(&ga, (char_u *)":if !exists('+acd')||!&acd|if haslocaldir()|");
-    ga_concat(&ga, (char_u *)"cd -|lcd -|elseif getcwd() ==# \"");
+    ga_concat(&ga, (char_u *)"cd -|lcd -|elseif getcwd() ==# '");
     ga_concat(&ga, cdp);
-    ga_concat(&ga, (char_u *)"\"|cd -|endif|endif<CR>");
+    ga_concat(&ga, (char_u *)"'|cd -|endif|endif<CR>");
     vim_free(cdp);
 
     if (sendReply)
