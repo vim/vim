@@ -4264,7 +4264,9 @@ check_termcode(max_offset, buf, bufsize, buflen)
 	     *
 	     * - Background color response:
 	     *       <Esc>]11;rgb:{rrrr}/{gggg}/{bbbb}\007
-	     *   The final byte must be '\007'.
+	     *   Or
+	     *       <Esc>]11;rgb:{rrrr}/{gggg}/{bbbb}ST
+	     *   The final byte must be '\007' or ST(0x9c or ESC\).
 	     */
 	    char_u *argp = tp[0] == CSI ? tp + 1 : tp + 2;
 
@@ -4408,12 +4410,15 @@ check_termcode(max_offset, buf, bufsize, buflen)
 		    key_name[1] = (int)KE_IGNORE;
 		    slen = i + 1;
 		}
-		else if (*T_RBG != NUL && len >= 24 - (tp[0] == CSI)
+		else if (*T_RBG != NUL
+			&& len >= 24 - (tp[0] == CSI)
+			&& len >= 24 - (tp[0] == CSI) + (argp[21] == ESC)
 			&& argp[0] == '1' && argp[1] == '1'
 			&& argp[2] == ';' && argp[3] == 'r' && argp[4] == 'g'
 			&& argp[5] == 'b' && argp[6] == ':'
 			&& argp[11] == '/' && argp[16] == '/'
-			&& argp[21] == '\007')
+			&& (argp[21] == '\007' || argp[21] == STERM
+			    || (argp[21] == ESC && argp[22] == '\\')))
 		{
 		    LOG_TR("Received RBG");
 		    rbg_status = RBG_GOT;
@@ -4427,7 +4432,7 @@ check_termcode(max_offset, buf, bufsize, buflen)
 		    }
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
-		    slen = 24;
+		    slen = 24 - (tp[0] == CSI) + (argp[21] == ESC);
 		}
 	    }
 
