@@ -364,6 +364,7 @@ static struct vimvar
     {VV_NAME("oldfiles",	 VAR_LIST), 0},
     {VV_NAME("windowid",	 VAR_NUMBER), VV_RO},
     {VV_NAME("progpath",	 VAR_STRING), VV_RO},
+    {VV_NAME("completed_item",	 VAR_DICT), VV_RO},
 };
 
 /* shorthand */
@@ -372,6 +373,7 @@ static struct vimvar
 #define vv_float	vv_di.di_tv.vval.v_float
 #define vv_str		vv_di.di_tv.vval.v_string
 #define vv_list		vv_di.di_tv.vval.v_list
+#define vv_dict		vv_di.di_tv.vval.v_dict
 #define vv_tv		vv_di.di_tv
 
 static dictitem_T	vimvars_var;		/* variable used for v: */
@@ -888,6 +890,7 @@ eval_init()
     }
     set_vim_var_nr(VV_SEARCHFORWARD, 1L);
     set_vim_var_nr(VV_HLSEARCH, 1L);
+    set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc());
     set_reg_var(0);  /* default for v:register is not 0 but '"' */
 
 #ifdef EBCDIC
@@ -20574,6 +20577,35 @@ set_vim_var_list(idx, val)
     vimvars[idx].vv_list = val;
     if (val != NULL)
 	++val->lv_refcount;
+}
+
+/*
+ * Set Dictionary v: variable to "val".
+ */
+    void
+set_vim_var_dict(idx, val)
+    int		idx;
+    dict_T	*val;
+{
+    int		todo;
+    hashitem_T	*hi;
+
+    dict_unref(vimvars[idx].vv_dict);
+    vimvars[idx].vv_dict = val;
+    if (val != NULL)
+    {
+	++val->dv_refcount;
+
+	/* Set readonly */
+	todo = (int)val->dv_hashtab.ht_used;
+	for (hi = val->dv_hashtab.ht_array; todo > 0 ; ++hi)
+	{
+	    if (HASHITEM_EMPTY(hi))
+		continue;
+	    --todo;
+	    HI2DI(hi)->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
+	}
+    }
 }
 
 /*

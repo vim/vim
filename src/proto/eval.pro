@@ -91,6 +91,7 @@ void set_vim_var_char __ARGS((int c));
 void set_vcount __ARGS((long count, long count1, int set_prevcount));
 void set_vim_var_string __ARGS((int idx, char_u *val, int len));
 void set_vim_var_list __ARGS((int idx, list_T *val));
+void set_vim_var_dict __ARGS((int idx, dict_T *val));
 void set_reg_var __ARGS((int c));
 char_u *v_exception __ARGS((char_u *oldval));
 char_u *v_throwpoint __ARGS((char_u *oldval));
