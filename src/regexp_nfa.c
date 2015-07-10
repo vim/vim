@@ -542,7 +542,6 @@ nfa_get_match_text(start)
     ret = alloc(len);
     if (ret != NULL)
     {
-	len = 0;
 	p = start->out->out; /* skip first char, it goes into regstart */
 	s = ret;
 	while (p->c > 0)
@@ -946,10 +945,10 @@ nfa_emit_equi_class(c)
 		    EMITMBC(0x10b) EMITMBC(0x10d)
 		    return OK;
 
-	    case 'd': CASEMBC(0x10f) CASEMBC(0x111) CASEMBC(0x1d0b)
-	    CASEMBC(0x1e11)
-		    EMIT2('d'); EMITMBC(0x10f) EMITMBC(0x111) EMITMBC(0x1e0b)
-		    EMITMBC(0x01e0f) EMITMBC(0x1e11)
+	    case 'd': CASEMBC(0x10f) CASEMBC(0x111) CASEMBC(0x1e0b)
+	    CASEMBC(0x1e0f) CASEMBC(0x1e11)
+		    EMIT2('d'); EMITMBC(0x10f) EMITMBC(0x111)
+		    EMITMBC(0x1e0b) EMITMBC(0x1e0f) EMITMBC(0x1e11)
 		    return OK;
 
 	    case 'e': case 0350: case 0351: case 0352: case 0353:

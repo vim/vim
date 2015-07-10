@@ -1011,10 +1011,10 @@ reg_equi_class(c)
 		      REGMBC(0x107) REGMBC(0x109) REGMBC(0x10b)
 		      REGMBC(0x10d)
 		      return;
-	    case 'd': CASEMBC(0x10f) CASEMBC(0x111) CASEMBC(0x1d0b)
-	    CASEMBC(0x1e11)
+	    case 'd': CASEMBC(0x10f) CASEMBC(0x111) CASEMBC(0x1e0b)
+	    CASEMBC(0x1e0f) CASEMBC(0x1e11)
 		      regmbc('d'); REGMBC(0x10f) REGMBC(0x111)
-		      REGMBC(0x1e0b) REGMBC(0x01e0f) REGMBC(0x1e11)
+		      REGMBC(0x1e0b) REGMBC(0x1e0f) REGMBC(0x1e11)
 		      return;
 	    case 'e': case 0xe8: case 0xe9: case 0xea: case 0xeb:
 	    CASEMBC(0x113) CASEMBC(0x115) CASEMBC(0x117) CASEMBC(0x119)
