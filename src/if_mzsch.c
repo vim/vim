@@ -851,7 +851,13 @@ mzscheme_end(void)
 #endif
 }
 
-#if MZSCHEME_VERSION_MAJOR >= 500 && defined(WIN32) && defined(USE_THREAD_LOCAL)
+/*
+ * scheme_register_tls_space is only available on 32-bit Windows.
+ * See http://docs.racket-lang.org/inside/im_memoryalloc.html?q=scheme_register_tls_space
+ */
+#if MZSCHEME_VERSION_MAJOR >= 500 && defined(WIN32) \
+	&& defined(USE_THREAD_LOCAL) && !defined(_WIN64)
+# define HAVE_TLS_SPACE 1
 static __declspec(thread) void *tls_space;
 #endif
 
@@ -870,7 +876,7 @@ static __declspec(thread) void *tls_space;
     int
 mzscheme_main(int argc, char** argv)
 {
-#if MZSCHEME_VERSION_MAJOR >= 500 && defined(WIN32) && defined(USE_THREAD_LOCAL)
+#ifdef HAVE_TLS_SPACE
     scheme_register_tls_space(&tls_space, 0);
 #endif
 #ifdef TRAMPOLINED_MZVIM_STARTUP
