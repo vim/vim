@@ -28,9 +28,18 @@ GV
 :inoremap { FAIL_ilangmap
 :set langmap=+{ langnoremap
 o+
-: " expr mapping with langmap
+:" Insert-mode expr mapping with langmap
 :inoremap <expr> { "FAIL_iexplangmap"
 o+
+:" langmap should not get remapped in Command-line mode
+:cnoremap { FAIL_clangmap
+:call append(line('$'), '+')
+:cunmap {
+:" Command-line mode expr mapping with langmap
+:cnoremap <expr> { "FAIL_cexplangmap"
+:call append(line('$'), '+')
+:cunmap {
+:"
 :" issue #212 (feedkeys insert mapping at current position)
 :nnoremap . :call feedkeys(".", "in")<cr>
 :/^a b
