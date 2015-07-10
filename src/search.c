@@ -548,6 +548,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
     pos_T	start_pos;
     int		at_first_line;
     int		extra_col;
+    int		start_char_len;
     int		match_ok;
     long	nmatched;
     int		submatch = 0;
@@ -574,23 +575,37 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
 	/* When not accepting a match at the start position set "extra_col" to
 	 * a non-zero value.  Don't do that when starting at MAXCOL, since
 	 * MAXCOL + 1 is zero. */
-	if ((options & SEARCH_START) || pos->col == MAXCOL)
-	    extra_col = 0;
+	if (pos->col == MAXCOL)
+	    start_char_len = 0;
 #ifdef FEAT_MBYTE
 	/* Watch out for the "col" being MAXCOL - 2, used in a closed fold. */
-	else if (dir != BACKWARD && has_mbyte
-		     && pos->lnum >= 1 && pos->lnum <= buf->b_ml.ml_line_count
-						     && pos->col < MAXCOL - 2)
+	else if (has_mbyte
+		    && pos->lnum >= 1 && pos->lnum <= buf->b_ml.ml_line_count
+						    && pos->col < MAXCOL - 2)
 	{
 	    ptr = ml_get_buf(buf, pos->lnum, FALSE) + pos->col;
 	    if (*ptr == NUL)
-		extra_col = 1;
+		start_char_len = 1;
 	    else
-		extra_col = (*mb_ptr2len)(ptr);
+		start_char_len = (*mb_ptr2len)(ptr);
 	}
 #endif
 	else
-	    extra_col = 1;
+	    start_char_len = 1;
+	if (dir == FORWARD)
+	{
+	    if (options & SEARCH_START)
+		extra_col = 0;
+	    else
+		extra_col = start_char_len;
+	}
+	else
+	{
+	    if (options & SEARCH_START)
+		extra_col = start_char_len;
+	    else
+		extra_col = 0;
+	}
 
 	start_pos = *pos;	/* remember start pos for detecting no match */
 	found = 0;		/* default: not found */
@@ -779,15 +794,15 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
 					|| (lnum + regmatch.endpos[0].lnum
 							     == start_pos.lnum
 					     && (int)regmatch.endpos[0].col - 1
-								   + extra_col
-							<= (int)start_pos.col))
+							< (int)start_pos.col
+								+ extra_col))
 				    : (lnum + regmatch.startpos[0].lnum
 							      < start_pos.lnum
 					|| (lnum + regmatch.startpos[0].lnum
 							     == start_pos.lnum
 					     && (int)regmatch.startpos[0].col
-								   + extra_col
-						      <= (int)start_pos.col))))
+						      < (int)start_pos.col
+							      + extra_col))))
 			    {
 				match_ok = TRUE;
 				matchpos = regmatch.startpos[0];

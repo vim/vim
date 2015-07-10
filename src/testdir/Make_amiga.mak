@@ -57,6 +57,7 @@ SCRIPTS = test1.out test3.out test4.out test5.out test6.out \
 		test_perl.out \
 		test_qf_title.out \
 		test_ruby.out \
+		test_search_mbyte.out \
 		test_set.out \
 		test_signs.out \
 		test_textobjects.out \
@@ -205,6 +206,7 @@ test_options.out: test_options.in
 test_perl.out: test_perl.in
 test_qf_title.out: test_qf_title.in
 test_ruby.out: test_ruby.in
+test_search_mbyte.out: test_search_mbyte.in
 test_set.out: test_set.in
 test_signs.out: test_signs.in
 test_textobjects.out: test_textobjects.in
