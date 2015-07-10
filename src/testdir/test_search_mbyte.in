@@ -1,0 +1,15 @@
+Test for search('multi-byte char', 'bce')
+
+STARTTEST
+:source small.vim
+:source mbyte.vim
+:set encoding=utf-8
+:/^Test bce:/+1
+:$put =search('Ａ', 'bce', line('.'))
+:1;/^Results:/,$wq! test.out
+ENDTEST
+
+Results:
+
+Test bce:
+Ａ
