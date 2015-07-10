@@ -2364,7 +2364,7 @@ term_7to8bit(p)
 	if (p[1] == '[')
 	    return CSI;
 	if (p[1] == ']')
-	    return 0x9d;
+	    return OSC;
 	if (p[1] == 'O')
 	    return 0x8f;
     }
@@ -4261,18 +4261,11 @@ check_termcode(max_offset, buf, bufsize, buflen)
 	     * - Cursor position report: <Esc>[{row};{col}R
 	     *   The final byte must be 'R'. It is used for checking the
 	     *   ambiguous-width character state.
-	     *
-	     * - Background color response:
-	     *       <Esc>]11;rgb:{rrrr}/{gggg}/{bbbb}\007
-	     *   Or
-	     *       <Esc>]11;rgb:{rrrr}/{gggg}/{bbbb}ST
-	     *   The final byte must be '\007' or ST(0x9c or ESC\).
 	     */
-	    char_u *argp = tp[0] == CSI ? tp + 1 : tp + 2;
+	    char_u *argp = tp[0] == ESC ? tp + 2 : tp + 1;
 
-	    if ((*T_CRV != NUL || *T_U7 != NUL || *T_RBG != NUL)
-			&& ((tp[0] == ESC && tp[1] == '[' && len >= 3)
-			    || (tp[0] == ESC && tp[1] == ']' && len >= 24)
+	    if ((*T_CRV != NUL || *T_U7 != NUL)
+			&& ((tp[0] == ESC && len >= 3 && tp[1] == '[')
 			    || (tp[0] == CSI && len >= 2))
 			&& (VIM_ISDIGIT(*argp) || *argp == '>' || *argp == '?'))
 	    {
@@ -4410,44 +4403,80 @@ check_termcode(max_offset, buf, bufsize, buflen)
 		    key_name[1] = (int)KE_IGNORE;
 		    slen = i + 1;
 		}
-		else if (*T_RBG != NUL
-			&& len >= 24 - (tp[0] == CSI)
-			&& len >= 24 - (tp[0] == CSI) + (argp[21] == ESC)
-			&& argp[0] == '1' && argp[1] == '1'
-			&& argp[2] == ';' && argp[3] == 'r' && argp[4] == 'g'
-			&& argp[5] == 'b' && argp[6] == ':'
-			&& argp[11] == '/' && argp[16] == '/'
-			&& (argp[21] == '\007' || argp[21] == STERM
-			    || (argp[21] == ESC && argp[22] == '\\')))
-		{
-		    LOG_TR("Received RBG");
-		    rbg_status = RBG_GOT;
-		    if (!option_was_set((char_u *)"bg"))
+	    }
+
+	    /* Check for background color response from the terminal:
+	     *
+	     *       {lead}11;rgb:{rrrr}/{gggg}/{bbbb}{tail}
+	     *
+	     * {lead} can be <Esc>] or OSC
+	     * {tail} can be '\007', <Esc>\ or STERM.
+	     *
+	     * Consume any code that starts with "{lead}11;", it's also
+	     * possible that "rgba" is following.
+	     */
+	    else if (*T_RBG != NUL
+			&& ((tp[0] == ESC && len >= 2 && tp[1] == ']')
+			    || tp[0] == OSC))
+	    {
+		j = 1 + (tp[0] == ESC);
+		if (len >= j + 3 && (argp[0] != '1'
+					 || argp[1] != '1' || argp[2] != ';'))
+		  i = 0; /* no match */
+		else
+		  for (i = j; i < len; ++i)
+		    if (tp[i] == '\007' || (tp[0] == OSC ? tp[i] == STERM
+			: (tp[i] == ESC && i + 1 < len && tp[i + 1] == '\\')))
 		    {
-			set_option_value((char_u *)"bg", 0L, (char_u *)(
-				    (3 * '6' < argp[7] + argp[12] + argp[17])
-						      ? "light" : "dark"), 0);
-			reset_option_was_set((char_u *)"bg");
-			redraw_asap(CLEAR);
+			if (i - j >= 21 && STRNCMP(tp + j + 3, "rgb:", 4) == 0
+			    && tp[j + 11] == '/' && tp[j + 16] == '/'
+			    && !option_was_set((char_u *)"bg"))
+			{/* TODO: don't set option when already the right value */
+			    LOG_TR("Received RBG");
+			    rbg_status = RBG_GOT;
+			    set_option_value((char_u *)"bg", 0L, (char_u *)(
+				    (3 * '6' < tp[j+7] + tp[j+12] + tp[j+17])
+				    ? "light" : "dark"), 0);
+			    reset_option_was_set((char_u *)"bg");
+			    redraw_asap(CLEAR);
+			}
+
+			/* got finished code: consume it */
+			key_name[0] = (int)KS_EXTRA;
+			key_name[1] = (int)KE_IGNORE;
+			slen = i + 1 + (tp[i] == ESC);
+			break;
 		    }
-		    key_name[0] = (int)KS_EXTRA;
-		    key_name[1] = (int)KE_IGNORE;
-		    slen = 24 - (tp[0] == CSI) + (argp[21] == ESC);
+		if (i == len)
+		{
+		    LOG_TR("not enough characters for RB");
+		    return -1;
 		}
 	    }
 
-	    /* Check for '<Esc>P1+r<hex bytes><Esc>\'.  A "0" instead of the
-	     * "1" means an invalid request. */
+	    /* Check for key code response from xterm:
+	     *
+	     * {lead}{flag}+r<hex bytes><{tail}
+	     *
+	     * {lead} can be <Esc>P or DCS
+	     * {flag} can be '0' or '1'
+	     * {tail} can be Esc>\ or STERM
+	     *
+	     * Consume any code that starts with "{lead}.+r".
+	     */
 	    else if (check_for_codes
-		    && ((tp[0] == ESC && tp[1] == 'P' && len >= 2)
+		    && ((tp[0] == ESC && len >= 2 && tp[1] == 'P')
 			|| tp[0] == DCS))
 	    {
-		j = 1 + (tp[0] != DCS);
-		for (i = j; i < len; ++i)
-		    if ((tp[i] == ESC && tp[i + 1] == '\\' && i + 1 < len)
+		j = 1 + (tp[0] == ESC);
+		if (len >= j + 3 && (argp[1] != '+' || argp[2] != 'r'))
+		  i = 0; /* no match */
+		else
+		  for (i = j; i < len; ++i)
+		    if ((tp[i] == ESC && i + 1 < len && tp[i + 1] == '\\')
 			    || tp[i] == STERM)
 		    {
-			if (i - j >= 3 && tp[j + 1] == '+' && tp[j + 2] == 'r')
+			if (i - j >= 3)
 			    got_code_from_term(tp + j, i);
 			key_name[0] = (int)KS_EXTRA;
 			key_name[1] = (int)KE_IGNORE;
@@ -4457,8 +4486,10 @@ check_termcode(max_offset, buf, bufsize, buflen)
 
 		if (i == len)
 		{
+		    /* These codes arrive many together, each code can be
+		     * truncated at any point. */
 		    LOG_TR("not enough characters for XT");
-		    return -1;		/* not enough characters */
+		    return -1;
 		}
 	    }
 	}

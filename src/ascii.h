@@ -34,10 +34,6 @@
 #define ESC_STR_nc	"\033"
 #define DEL		0x7f
 #define DEL_STR		(char_u *)"\177"
-#define CSI		0x9b	/* Control Sequence Introducer */
-#define CSI_STR		"\233"
-#define DCS		0x90	/* Device Control String */
-#define STERM		0x9c	/* String Terminator */
 
 #define POUND		0xA3
 
@@ -117,11 +113,6 @@
 #define ESC_STR_nc	"\x27"
 #define DEL		0x07
 #define DEL_STR		(char_u *)"\007"
-/* TODO: EBCDIC Code page dependent (here 1047) */
-#define CSI		0x9b	/* Control Sequence Introducer */
-#define CSI_STR		"\233"
-#define DCS		0x90	/* Device Control String */
-#define STERM		0x9c	/* String Terminator */
 
 #define POUND		0xB1
 
@@ -172,6 +163,13 @@ extern char CtrlCharTable[];
 extern char MetaCharTable[];
 
 #endif /* defined EBCDIC */
+
+/* TODO: EBCDIC Code page dependent (here 1047) */
+#define CSI		0x9b	/* Control Sequence Introducer */
+#define CSI_STR		"\233"
+#define DCS		0x90	/* Device Control String */
+#define OSC		0x9d	/* Operating System Command */
+#define STERM		0x9c	/* String Terminator */
 
 /*
  * Character that separates dir names in a path.
