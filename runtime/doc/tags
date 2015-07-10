@@ -5210,6 +5210,7 @@ complete_CTRL-E	insert.txt	/*complete_CTRL-E*
 complete_CTRL-Y	insert.txt	/*complete_CTRL-Y*
 complete_add()	eval.txt	/*complete_add()*
 complete_check()	eval.txt	/*complete_check()*
+completed_item-variable	eval.txt	/*completed_item-variable*
 completion-functions	usr_41.txt	/*completion-functions*
 complex-change	change.txt	/*complex-change*
 complex-repeat	repeat.txt	/*complex-repeat*
@@ -8492,6 +8493,7 @@ v:charconvert_from	eval.txt	/*v:charconvert_from*
 v:charconvert_to	eval.txt	/*v:charconvert_to*
 v:cmdarg	eval.txt	/*v:cmdarg*
 v:cmdbang	eval.txt	/*v:cmdbang*
+v:completed_item	eval.txt	/*v:completed_item*
 v:count	eval.txt	/*v:count*
 v:count1	eval.txt	/*v:count1*
 v:ctype	eval.txt	/*v:ctype*

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Jun 25
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Jul 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -76,6 +76,12 @@ More info Jul 24.  Not clear why.
 Better .ico file for Windows. (Pat Suwalski, 2015 Feb 13)
 Waiting for response on remark from Edward Fox.
 
+Add Tera Term language plugins. (Ken Takata, 2015 Jul 3)
+
+RXVT sends a different background color response. (Higashi, 2015 Jul 5)
+
+More tests for :diffoff. Olaf Dabrunz, (2015 Jul 4)
+
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
@@ -95,11 +101,6 @@ Perhaps we can use ":silent window"?
 
 C indent: should recognize C11 raw strings. (Mark Lodato, 2015 Mar 1)
 Need to recognize R"string" for 'cindent'.
-
-Updated phpcomplete. (Mikolaj Machowski, 2015 May 6)
-
-Patch to make ":difoff" not reset the saved values, so that it can be used
-twice. (Olaf Dabrunz, 2015 Jun 21)
 
 Crash when changing the 'tags' option from a remote command.
 (Benjamin Fritz, 2015 Mar 18, stack trace Mar 20)
@@ -121,9 +122,6 @@ Patch for multi-byte characters in langmap and applying a mapping on them.
 (Christian Brabandt, 2015 Jun 12)
 Is this the right solution?
 
-Patch for langmap not working properly with mapping in Command-line mode.
-Issue 376.
-
 Patch to add grepfile(). (Scott Prager, 2015 May 26)
 Work in progress.
 
@@ -136,20 +134,21 @@ inconsistent with the documentation.
 
 Better greek spell checking.  Issue 299.
 
-Patch to make :diffoff work twice. (Olaf Dabrunz, 2015 Jun 23)
-
-Patch to add 'completeselect' option.  Specifies how to select a candidate in
-insert completion. (Shougo, 2013 May 29)
-Update to add to existing 'completeopt'. 2013 May 30
-Updated update: Shougo 2015 Jun 12
+Add 'fixeol' option, default on, so that people who have problems with fixing
+the missing EOL can switch it off?
 
 When complete() first argument is before where insert started and 'backspace'
 is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
 
 Patch to fix equivalence classes in regexp. (Dominique Pelle, 2015 Jun 2)
 
+Test 44 fails when [[=A=]] is changed to [[=À=]].  Caused by getcmdline() not
+handling the 0x80 as a second byte correctly?  (Dominique Pelle, 2015 Jun 10)
+
 Weird encryption problems on Windows. (Ben Fritz, 2015 Feb 13)
 Goes away when disabling the swap file. (might1, Feb 16)
+
+Patch to add an OptionSet autocommand event. (Christian Brabandt, 2015 Jun 25)
 
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
@@ -187,9 +186,6 @@ from two windows?  Stopped happening (Feb 5).
 
 Patch for an extra argument to matchadd() for conceal. (Christian Brabandt,
 2015 Feb 17, update Feb 19)
-
-Patch to add v:completed_item. (Shougo Matsu, 2013 Nov 29).
-Update 2015 Jun 20.
 
 Patch to add :lockjumps. (Carlo Baldassi, 2015 May 25)
 OK to not block marks?
@@ -430,8 +426,6 @@ Patch to define macros for hardcoded values. (Elias Diem, 2013 Dec 14)
 Several syntax file match "^\s*" which may get underlined if that's in the
 highlight group.  Add a "\zs" after it?
 
-Go through more coverity reports.
-
 The undo file name can get too long. (Issue 346)
 For the path use a hash instead of dir%dir%dir%name  hash%name.
 
@@ -639,6 +633,8 @@ after starting up?
 
 Patch to add ":ldo" and ":cdo", execute commands over quickfix list and
 location list. (Yegappan Lakshmanan, 2013 Jun 2, update 2015 Mar 21)
+Update by Florian Walch, 2015 Jul 1.
+Yegappan will send an update in July.
 
 8   "stl" and "stlnc" in 'fillchars' don't work for multi-byte characters.
     Patch by Christian Wellenbrock, 2013 Jul 5.
@@ -1088,8 +1084,8 @@ Dominique can't reproduce it.
 ":function f(x) keepjumps" creates a function where every command is executed
 like it has ":keepjumps" before it.
 
-Coverity: ask someone to create new user: Dominique.
-Check if there are new reported defects: http://scan.coverity.com/rung2.html
+Coverity: Check if there are new reported defects:
+https://scan.coverity.com/projects/241
 
 Patch to support :undo absolute jump to file save number. (Christian Brabandt,
 2010 Nov 5)
@@ -1125,7 +1121,7 @@ string value.
 
 Invalid read error in Farsi mode. (Dominique Pelle, 2009 Aug 2)
 
-For running gvim on an USB stick: avoid the OLE registration.  Use a command
+For running gvim on a USB stick: avoid the OLE registration.  Use a command
 line argument -noregister.
 
 When using an expression in 'statusline' leading white space sometimes goes
