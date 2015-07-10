@@ -5702,10 +5702,10 @@ do_addsub(command, Prenum1, g_cmd)
 	/* reset */
 	subtract = FALSE;
 	negative = FALSE;
-	if (visual && VIsual_mode != Ctrl_V)
-	    col = 0;
-	else
+	if (visual && VIsual_mode == Ctrl_V)
 	    col = startcol;
+	else
+	    col = 0;
 	Prenum1 += offset;
 	curwin->w_set_curswant = TRUE;
 #ifdef FEAT_RIGHTLEFT
