@@ -1069,9 +1069,10 @@ main_loop(cmdwin, noexmode)
     oparg_T	oa;				/* operator arguments */
     volatile int previous_got_int = FALSE;	/* "got_int" was TRUE */
 #ifdef FEAT_CONCEAL
-    linenr_T	conceal_old_cursor_line = 0;
-    linenr_T	conceal_new_cursor_line = 0;
-    int		conceal_update_lines = FALSE;
+    /* these are static to avoid a compiler warning */
+    static linenr_T	conceal_old_cursor_line = 0;
+    static linenr_T	conceal_new_cursor_line = 0;
+    static int		conceal_update_lines = FALSE;
 #endif
 
 #if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)

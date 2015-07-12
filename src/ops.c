@@ -5403,7 +5403,7 @@ do_addsub(command, Prenum1, g_cmd)
     int		i;
     int		lnum = curwin->w_cursor.lnum;
     int		lnume = curwin->w_cursor.lnum;
-    int		startcol;
+    int		startcol = 0;
     int		did_change = FALSE;
 
     dohex = (vim_strchr(curbuf->b_p_nf, 'x') != NULL);	/* "heX" */
