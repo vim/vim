@@ -365,6 +365,9 @@ static struct vimvar
     {VV_NAME("windowid",	 VAR_NUMBER), VV_RO},
     {VV_NAME("progpath",	 VAR_STRING), VV_RO},
     {VV_NAME("completed_item",	 VAR_DICT), VV_RO},
+    {VV_NAME("option_new",	 VAR_STRING), VV_RO},
+    {VV_NAME("option_old",	 VAR_STRING), VV_RO},
+    {VV_NAME("option_type",	 VAR_STRING), VV_RO},
 };
 
 /* shorthand */
@@ -24719,6 +24722,16 @@ ex_oldfiles(eap)
 #endif
     }
 }
+
+/* reset v:option_new, v:option_old and v:option_type */
+    void
+reset_v_option_vars()
+{
+    set_vim_var_string(VV_OPTION_NEW,  NULL, -1);
+    set_vim_var_string(VV_OPTION_OLD,  NULL, -1);
+    set_vim_var_string(VV_OPTION_TYPE, NULL, -1);
+}
+
 
 #endif /* FEAT_EVAL */
 

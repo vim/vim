@@ -7699,6 +7699,7 @@ static struct event_name
     {"InsertLeave",	EVENT_INSERTLEAVE},
     {"InsertCharPre",	EVENT_INSERTCHARPRE},
     {"MenuPopup",	EVENT_MENUPOPUP},
+    {"OptionSet",	EVENT_OPTIONSET},
     {"QuickFixCmdPost",	EVENT_QUICKFIXCMDPOST},
     {"QuickFixCmdPre",	EVENT_QUICKFIXCMDPRE},
     {"QuitPre",		EVENT_QUITPRE},
@@ -7736,7 +7737,7 @@ static AutoPat *first_autopat[NUM_EVENTS] =
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 };
 
 /*
@@ -9321,7 +9322,7 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
      */
     if (fname_io == NULL)
     {
-	if (event == EVENT_COLORSCHEME)
+	if (event == EVENT_COLORSCHEME || event == EVENT_OPTIONSET)
 	    autocmd_fname = NULL;
 	else if (fname != NULL && *fname != NUL)
 	    autocmd_fname = fname;
@@ -9385,6 +9386,7 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
 		|| event == EVENT_SPELLFILEMISSING
 		|| event == EVENT_QUICKFIXCMDPRE
 		|| event == EVENT_COLORSCHEME
+		|| event == EVENT_OPTIONSET
 		|| event == EVENT_QUICKFIXCMDPOST)
 	    fname = vim_strsave(fname);
 	else
