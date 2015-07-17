@@ -2794,16 +2794,11 @@ set_completion(startcol, list)
 
     compl_curr_match = compl_first_match;
     if (compl_no_insert)
-    {
-	if (!compl_no_select)
-	    ins_complete(K_DOWN);
-    }
+	ins_complete(K_DOWN);
     else
-    {
 	ins_complete(Ctrl_N);
-	if (compl_no_select)
-	    ins_complete(Ctrl_P);
-    }
+    if (compl_no_select)
+	ins_complete(Ctrl_P);
     out_flush();
 }
 
