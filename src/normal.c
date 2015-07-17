@@ -40,6 +40,7 @@ static void	find_start_of_word __ARGS((pos_T *));
 static void	find_end_of_word __ARGS((pos_T *));
 static int	get_mouse_class __ARGS((char_u *p));
 #endif
+static void	prep_redo_visual __ARGS((cmdarg_T *cap));
 static void	prep_redo_cmd __ARGS((cmdarg_T *cap));
 static void	prep_redo __ARGS((int regname, long, int, int, int, int, int));
 static int	checkclearop __ARGS((oparg_T *oap));
@@ -3613,6 +3614,43 @@ find_ident_at_pos(wp, lnum, startcol, string, find_type)
 }
 
 /*
+ * Add commands to reselect Visual mode into the redo buffer.
+ */
+    static void
+prep_redo_visual(cap)
+    cmdarg_T *cap;
+{
+    ResetRedobuff();
+    AppendCharToRedobuff(VIsual_mode);
+    if (VIsual_mode == 'V' && curbuf->b_visual.vi_end.lnum
+					    != curbuf->b_visual.vi_start.lnum)
+    {
+	AppendNumberToRedobuff(curbuf->b_visual.vi_end.lnum
+					    - curbuf->b_visual.vi_start.lnum);
+	AppendCharToRedobuff('j');
+    }
+    else if (VIsual_mode == 'v' || VIsual_mode == Ctrl_V)
+    {
+	/* block visual mode or char visual mmode*/
+	if (curbuf->b_visual.vi_end.lnum != curbuf->b_visual.vi_start.lnum)
+	{
+	    AppendNumberToRedobuff(curbuf->b_visual.vi_end.lnum -
+		    curbuf->b_visual.vi_start.lnum);
+	    AppendCharToRedobuff('j');
+	}
+	if (curbuf->b_visual.vi_curswant == MAXCOL)
+	    AppendCharToRedobuff('$');
+	else if (curbuf->b_visual.vi_end.col > curbuf->b_visual.vi_start.col)
+	{
+	    AppendNumberToRedobuff(curbuf->b_visual.vi_end.col
+					 - curbuf->b_visual.vi_start.col - 1);
+	    AppendCharToRedobuff(' ');
+	}
+    }
+    AppendNumberToRedobuff(cap->count1);
+}
+
+/*
  * Prepare for redo of a normal command.
  */
     static void
@@ -4207,16 +4245,9 @@ nv_addsub(cap)
     {
 	if (visual)
 	{
-	    ResetRedobuff();
-	    AppendCharToRedobuff(VIsual_mode);
-	    if (VIsual_mode == 'V')
-	    {
-		AppendNumberToRedobuff(cap->oap->line_count);
-		AppendCharToRedobuff('j');
-	    }
-	    AppendNumberToRedobuff(cap->count1);
-	    if (cap->nchar != NUL)
-		AppendCharToRedobuff(cap->nchar);
+	    prep_redo_visual(cap);
+	    if (cap->arg)
+		AppendCharToRedobuff('g');
 	    AppendCharToRedobuff(cap->cmdchar);
 	}
 	else
@@ -4227,7 +4258,8 @@ nv_addsub(cap)
     if (visual)
     {
 	VIsual_active = FALSE;
-	redraw_later(CLEAR);
+	redo_VIsual_busy = FALSE;
+	redraw_later(INVERTED);
     }
 }
 

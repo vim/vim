@@ -4561,7 +4561,7 @@ do_set(arg, opt_flags)
 			{
 			    /* Allow negative (for 'undolevels'), octal and
 			     * hex numbers. */
-			    vim_str2nr(arg, NULL, &i, TRUE, TRUE, &value, NULL);
+			    vim_str2nr(arg, NULL, &i, TRUE, TRUE, &value, NULL, 0);
 			    if (arg[i] != NUL && !vim_iswhite(arg[i]))
 			    {
 				errmsg = e_invarg;

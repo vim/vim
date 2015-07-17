@@ -1835,9 +1835,10 @@ vim_isblankline(lbuf)
  * octal number.
  * If "dohex" is non-zero recognize hex numbers, when > 1 always assume
  * hex number.
+ * If maxlen > 0, check at a maximum maxlen chars
  */
     void
-vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
+vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr, maxlen)
     char_u		*start;
     int			*hexp;	    /* return: type of number 0 = decimal, 'x'
 				       or 'X' is hex, '0' = octal */
@@ -1846,6 +1847,7 @@ vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
     int			dohex;	    /* recognize hex number */
     long		*nptr;	    /* return: signed result */
     unsigned long	*unptr;	    /* return: unsigned result */
+    int			maxlen;     /* max length of string to check */
 {
     char_u	    *ptr = start;
     int		    hex = 0;		/* default is decimal */
@@ -1860,10 +1862,12 @@ vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
     }
 
     /* Recognize hex and octal. */
-    if (ptr[0] == '0' && ptr[1] != '8' && ptr[1] != '9')
+    if (ptr[0] == '0' && ptr[1] != '8' && ptr[1] != '9'
+					       && (maxlen == 0 || maxlen > 1))
     {
 	hex = ptr[1];
-	if (dohex && (hex == 'X' || hex == 'x') && vim_isxdigit(ptr[2]))
+	if (dohex && (hex == 'X' || hex == 'x') && vim_isxdigit(ptr[2])
+					       && (maxlen == 0 || maxlen > 2))
 	    ptr += 2;			/* hexadecimal */
 	else
 	{
@@ -1880,6 +1884,8 @@ vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
 		    }
 		    if (ptr[n] >= '0')
 			hex = '0';	/* assume octal */
+		    if (n == maxlen)
+			break;
 		}
 	    }
 	}
@@ -1888,6 +1894,7 @@ vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
     /*
      * Do the string-to-numeric conversion "manually" to avoid sscanf quirks.
      */
+    n = 1;
     if (hex == '0' || dooct > 1)
     {
 	/* octal */
@@ -1895,6 +1902,8 @@ vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
 	{
 	    un = 8 * un + (unsigned long)(*ptr - '0');
 	    ++ptr;
+	    if (n++ == maxlen)
+		break;
 	}
     }
     else if (hex != 0 || dohex > 1)
@@ -1904,6 +1913,8 @@ vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
 	{
 	    un = 16 * un + (unsigned long)hex2nr(*ptr);
 	    ++ptr;
+	    if (n++ == maxlen)
+		break;
 	}
     }
     else
@@ -1913,6 +1924,8 @@ vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
 	{
 	    un = 10 * un + (unsigned long)(*ptr - '0');
 	    ++ptr;
+	    if (n++ == maxlen)
+		break;
 	}
     }
 

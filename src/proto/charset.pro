@@ -49,7 +49,7 @@ char_u *skiptowhite __ARGS((char_u *p));
 char_u *skiptowhite_esc __ARGS((char_u *p));
 long getdigits __ARGS((char_u **pp));
 int vim_isblankline __ARGS((char_u *lbuf));
-void vim_str2nr __ARGS((char_u *start, int *hexp, int *len, int dooct, int dohex, long *nptr, unsigned long *unptr));
+void vim_str2nr __ARGS((char_u *start, int *hexp, int *len, int dooct, int dohex, long *nptr, unsigned long *unptr, int strlen));
 int hex2nr __ARGS((int c));
 int hexhex2nr __ARGS((char_u *p));
 int rem_backslash __ARGS((char_u *str));

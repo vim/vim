@@ -5405,6 +5405,8 @@ do_addsub(command, Prenum1, g_cmd)
     int		lnume = curwin->w_cursor.lnum;
     int		startcol = 0;
     int		did_change = FALSE;
+    pos_T	t = curwin->w_cursor;
+    int		maxlen = 0;
 
     dohex = (vim_strchr(curbuf->b_p_nf, 'x') != NULL);	/* "heX" */
     dooct = (vim_strchr(curbuf->b_p_nf, 'o') != NULL);	/* "Octal" */
@@ -5418,21 +5420,30 @@ do_addsub(command, Prenum1, g_cmd)
     {
 	if (lt(curwin->w_cursor, VIsual))
 	{
-	    pos_T t;
-	    t = curwin->w_cursor;
 	    curwin->w_cursor = VIsual;
 	    VIsual = t;
 	}
-	if (VIsual_mode == 'V')
-	    VIsual.col = 0;
 
 	ptr = ml_get(VIsual.lnum);
 	RLADDSUBFIX(ptr);
+	if (VIsual_mode == 'V')
+	{
+	    VIsual.col = 0;
+	    curwin->w_cursor.col = STRLEN(ptr);
+	}
+	else if (VIsual_mode == Ctrl_V &&
+		VIsual.col > curwin->w_cursor.col)
+	{
+	    t = VIsual;
+	    VIsual.col = curwin->w_cursor.col;
+	    curwin->w_cursor.col = t.col;
+	}
 
 	/* store visual area for 'gv' */
 	curbuf->b_visual.vi_start = VIsual;
 	curbuf->b_visual.vi_end = curwin->w_cursor;
 	curbuf->b_visual.vi_mode = VIsual_mode;
+	curbuf->b_visual.vi_curswant = curwin->w_curswant;
 
 	if (VIsual_mode != 'v')
 	    startcol = VIsual.col < curwin->w_cursor.col ? VIsual.col
@@ -5482,35 +5493,59 @@ do_addsub(command, Prenum1, g_cmd)
 
     for (i = lnum; i <= lnume; i++)
     {
+	t = curwin->w_cursor;
 	curwin->w_cursor.lnum = i;
 	ptr = ml_get_curline();
+	RLADDSUBFIX(ptr);
 	if ((int)STRLEN(ptr) <= col)
 	    /* try again on next line */
 	    continue;
+	if (visual)
+	{
+	    if (doalp) /* search for ascii chars */
+	    {
+		while (!ASCII_ISALPHA(ptr[col]) && ptr[col])
+		    col++;
+	    }
+	    /* skip to first digit, but allow for leading '-' */
+	    else if (dohex)
+	    {
+		while (!(vim_isxdigit(ptr[col]) || (ptr[col] == '-'
+				    && vim_isxdigit(ptr[col+1]))) && ptr[col])
+		    col++;
+	    }
+	    else /* decimal */
+	    {
+		while (!(vim_isdigit(ptr[col]) || (ptr[col] == '-'
+				     && vim_isdigit(ptr[col+1]))) && ptr[col])
+		    col++;
+	    }
+	}
 	if (visual && ptr[col] == '-')
 	{
 	    negative = TRUE;
 	    was_positive = FALSE;
 	    col++;
 	}
-	RLADDSUBFIX(ptr);
 	/*
 	 * If a number was found, and saving for undo works, replace the number.
 	 */
 	firstdigit = ptr[col];
-	RLADDSUBFIX(ptr);
 	if ((!VIM_ISDIGIT(firstdigit) && !(doalp && ASCII_ISALPHA(firstdigit)))
 		|| u_save_cursor() != OK)
 	{
 	    if (lnum < lnume)
+	    {
+		if (visual && VIsual_mode != Ctrl_V)
+		    col = 0;
+		else
+		    col = startcol;
 		/* Try again on next line */
 		continue;
+	    }
 	    beep_flush();
 	    return FAIL;
 	}
-
-	ptr = ml_get_curline();
-	RLADDSUBFIX(ptr);
 
 	if (doalp && ASCII_ISALPHA(firstdigit))
 	{
@@ -5560,9 +5595,27 @@ do_addsub(command, Prenum1, g_cmd)
 		--col;
 		negative = TRUE;
 	    }
-
 	    /* get the number value (unsigned) */
-	    vim_str2nr(ptr + col, &hex, &length, dooct, dohex, NULL, &n);
+	    if (visual && VIsual_mode != 'V')
+	    {
+		if (VIsual_mode == 'v')
+		{
+		    if (i == lnum)
+			maxlen = (lnum == lnume
+					    ? curwin->w_cursor.col - col + 1
+					    : (int)STRLEN(ptr) - col);
+		    else
+			maxlen = (i == lnume ? curwin->w_cursor.col - col  + 1
+					     : (int)STRLEN(ptr) - col);
+		}
+		else if (VIsual_mode == Ctrl_V)
+		    maxlen = (curbuf->b_visual.vi_curswant == MAXCOL
+					?  (int)STRLEN(ptr) - col
+					: curwin->w_cursor.col - col + 1);
+	    }
+
+	    vim_str2nr(ptr + col, &hex, &length, dooct, dohex, NULL, &n,
+								      maxlen);
 
 	    /* ignore leading '-' for hex and octal numbers */
 	    if (hex && negative)
@@ -5609,7 +5662,7 @@ do_addsub(command, Prenum1, g_cmd)
 		    negative = FALSE;
 	    }
 
-	    if (visual && !was_positive && !negative)
+	    if (visual && !was_positive && !negative && col > 0)
 	    {
 		/* need to remove the '-' */
 		col--;
@@ -5695,6 +5748,10 @@ do_addsub(command, Prenum1, g_cmd)
 	    STRCAT(buf1, buf2);
 	    ins_str(buf1);		/* insert the new number */
 	    vim_free(buf1);
+	    if (lnum < lnume)
+		curwin->w_cursor.col = t.col;
+	    else if (did_change && curwin->w_cursor.col)
+		--curwin->w_cursor.col;
 	}
 
 	if (g_cmd)
@@ -5705,6 +5762,7 @@ do_addsub(command, Prenum1, g_cmd)
 	/* reset */
 	subtract = FALSE;
 	negative = FALSE;
+	was_positive = TRUE;
 	if (visual && VIsual_mode == Ctrl_V)
 	    col = startcol;
 	else
@@ -5716,8 +5774,9 @@ do_addsub(command, Prenum1, g_cmd)
 	RLADDSUBFIX(ptr);
 #endif
     }
-    if (did_change && curwin->w_cursor.col > 0)
-	--curwin->w_cursor.col;
+    if (visual)
+	/* cursor at the top of the selection */
+	curwin->w_cursor = VIsual;
     return OK;
 }
 

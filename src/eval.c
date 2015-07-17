@@ -1615,7 +1615,7 @@ call_vim_function(func, argc, argv, safe, str_arg_only, rettv)
 	    len = 0;
 	else
 	    /* Recognize a number argument, the others must be strings. */
-	    vim_str2nr(argv[i], NULL, &len, TRUE, TRUE, &n, NULL);
+	    vim_str2nr(argv[i], NULL, &len, TRUE, TRUE, &n, NULL, 0);
 	if (len != 0 && len == (int)STRLEN(argv[i]))
 	{
 	    argvars[i].v_type = VAR_NUMBER;
@@ -5128,7 +5128,7 @@ eval7(arg, rettv, evaluate, want_string)
 		else
 #endif
 		{
-		    vim_str2nr(*arg, NULL, &len, TRUE, TRUE, &n, NULL);
+		    vim_str2nr(*arg, NULL, &len, TRUE, TRUE, &n, NULL, 0);
 		    *arg += len;
 		    if (evaluate)
 		    {
@@ -18233,7 +18233,7 @@ f_str2nr(argvars, rettv)
     p = skipwhite(get_tv_string(&argvars[0]));
     if (*p == '+')
 	p = skipwhite(p + 1);
-    vim_str2nr(p, NULL, NULL, base == 8 ? 2 : 0, base == 16 ? 2 : 0, &n, NULL);
+    vim_str2nr(p, NULL, NULL, base == 8 ? 2 : 0, base == 16 ? 2 : 0, &n, NULL, 0);
     rettv->vval.v_number = n;
 }
 
@@ -21039,7 +21039,7 @@ get_tv_number_chk(varp, denote)
 	case VAR_STRING:
 	    if (varp->vval.v_string != NULL)
 		vim_str2nr(varp->vval.v_string, NULL, NULL,
-							TRUE, TRUE, &n, NULL);
+						    TRUE, TRUE, &n, NULL, 0);
 	    return n;
 	case VAR_LIST:
 	    EMSG(_("E745: Using a List as a Number"));
