@@ -4918,7 +4918,10 @@ do_set(arg, opt_flags)
 			*(char_u **)(varp) = newval;
 
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
-			if (!starting && options[opt_idx].indir != PV_KEY
+			if (!starting
+# ifdef FEAT_CRYPT
+				&& options[opt_idx].indir != PV_KEY
+# endif
 							   && origval != NULL)
 			    /* origval may be freed by
 			     * did_set_string_option(), make a copy. */
@@ -5717,7 +5720,11 @@ set_string_option(opt_idx, value, opt_flags)
 	*varp = s;
 
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
-	if (!starting && options[opt_idx].indir != PV_KEY)
+	if (!starting
+# ifdef FEAT_CRYPT
+		&& options[opt_idx].indir != PV_KEY
+# endif
+		)
 	    saved_oldval = vim_strsave(oldval);
 #endif
 	if ((r = did_set_string_option(opt_idx, varp, TRUE, oldval, NULL,
