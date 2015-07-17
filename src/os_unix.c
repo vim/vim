@@ -4624,7 +4624,8 @@ mch_call_shell(cmd, options)
 				/* Finished a line, add a NL, unless this line
 				 * should not have one. */
 				if (lnum != curbuf->b_op_end.lnum
-					|| !curbuf->b_p_bin
+					|| (!curbuf->b_p_bin
+					    && curbuf->b_p_fixeol)
 					|| (lnum != curbuf->b_no_eol_lnum
 					    && (lnum !=
 						    curbuf->b_ml.ml_line_count

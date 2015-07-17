@@ -98,6 +98,7 @@
 # define PV_INC		OPT_BOTH(OPT_BUF(BV_INC))
 #endif
 #define PV_EOL		OPT_BUF(BV_EOL)
+#define PV_FIXEOL	OPT_BUF(BV_FIXEOL)
 #define PV_EP		OPT_BOTH(OPT_BUF(BV_EP))
 #define PV_ET		OPT_BUF(BV_ET)
 #ifdef FEAT_MBYTE
@@ -306,6 +307,7 @@ static char_u	*p_cfu;
 static char_u	*p_ofu;
 #endif
 static int	p_eol;
+static int	p_fixeol;
 static int	p_et;
 #ifdef FEAT_MBYTE
 static char_u	*p_fenc;
@@ -1169,6 +1171,9 @@ static struct vimoption
 			    {(char_u *)"", (char_u *)0L}
 #endif
 			    SCRIPTID_INIT},
+    {"fixendofline",  "fixeol", P_BOOL|P_VI_DEF|P_RSTAT,
+			    (char_u *)&p_fixeol, PV_FIXEOL,
+			    {(char_u *)TRUE, (char_u *)0L} SCRIPTID_INIT},
     {"fkmap",	    "fk",   P_BOOL|P_VI_DEF,
 #ifdef FEAT_FKMAP
 			    (char_u *)&p_fkmap, PV_NONE,
@@ -7781,6 +7786,11 @@ set_bool_option(opt_idx, varp, value, opt_flags)
     {
 	redraw_titles();
     }
+    /* when 'fixeol' is changed, redraw the window title */
+    else if ((int *)varp == &curbuf->b_p_fixeol)
+    {
+	redraw_titles();
+    }
 # ifdef FEAT_MBYTE
     /* when 'bomb' is changed, redraw the window title and tab page text */
     else if ((int *)varp == &curbuf->b_p_bomb)
@@ -10176,6 +10186,7 @@ get_varp(p)
 	case PV_OFU:	return (char_u *)&(curbuf->b_p_ofu);
 #endif
 	case PV_EOL:	return (char_u *)&(curbuf->b_p_eol);
+	case PV_FIXEOL:	return (char_u *)&(curbuf->b_p_fixeol);
 	case PV_ET:	return (char_u *)&(curbuf->b_p_et);
 #ifdef FEAT_MBYTE
 	case PV_FENC:	return (char_u *)&(curbuf->b_p_fenc);
@@ -11894,6 +11905,7 @@ save_file_ff(buf)
  * from when editing started (save_file_ff() called).
  * Also when 'endofline' was changed and 'binary' is set, or when 'bomb' was
  * changed and 'binary' is not set.
+ * Also when 'endofline' was changed and 'fixeol' is not set.
  * When "ignore_empty" is true don't consider a new, empty buffer to be
  * changed.
  */
@@ -11912,7 +11924,7 @@ file_ff_differs(buf, ignore_empty)
 	return FALSE;
     if (buf->b_start_ffc != *buf->b_p_ff)
 	return TRUE;
-    if (buf->b_p_bin && buf->b_start_eol != buf->b_p_eol)
+    if ((buf->b_p_bin || !buf->b_p_fixeol) && buf->b_start_eol != buf->b_p_eol)
 	return TRUE;
 #ifdef FEAT_MBYTE
     if (!buf->b_p_bin && buf->b_start_bomb != buf->b_p_bomb)
