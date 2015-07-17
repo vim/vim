@@ -442,8 +442,8 @@ shift_block(oap, amount)
 	    return;
 	vim_memset(newp, NUL, (size_t)(bd.textcol + i + j + len));
 	mch_memmove(newp, oldp, (size_t)bd.textcol);
-	copy_chars(newp + bd.textcol, (size_t)i, TAB);
-	copy_spaces(newp + bd.textcol + i, (size_t)j);
+	vim_memset(newp + bd.textcol, TAB, (size_t)i);
+	vim_memset(newp + bd.textcol + i, ' ', (size_t)j);
 	/* the end */
 	mch_memmove(newp + bd.textcol + i + j, bd.textstart, (size_t)len);
     }
@@ -535,7 +535,7 @@ shift_block(oap, amount)
 	if (newp == NULL)
 	    return;
 	mch_memmove(newp, oldp, (size_t)(verbatim_copy_end - oldp));
-	copy_spaces(newp + (verbatim_copy_end - oldp), (size_t)fill);
+	vim_memset(newp + (verbatim_copy_end - oldp), ' ', (size_t)fill);
 	STRMOVE(newp + (verbatim_copy_end - oldp) + fill, non_white);
     }
     /* replace the line */
@@ -638,7 +638,7 @@ block_insert(oap, s, b_insert, bdp)
 	oldp += offset;
 
 	/* insert pre-padding */
-	copy_spaces(newp + offset, (size_t)spaces);
+	vim_memset(newp + offset, ' ', (size_t)spaces);
 
 	/* copy the new text */
 	mch_memmove(newp + offset + spaces, s, (size_t)s_len);
@@ -647,7 +647,7 @@ block_insert(oap, s, b_insert, bdp)
 	if (spaces && !bdp->is_short)
 	{
 	    /* insert post-padding */
-	    copy_spaces(newp + offset + spaces, (size_t)(p_ts - spaces));
+	    vim_memset(newp + offset + spaces, ' ', (size_t)(p_ts - spaces));
 	    /* We're splitting a TAB, don't copy it. */
 	    oldp++;
 	    /* We allowed for that TAB, remember this now */
@@ -1831,7 +1831,7 @@ op_delete(oap)
 	    /* copy up to deleted part */
 	    mch_memmove(newp, oldp, (size_t)bd.textcol);
 	    /* insert spaces */
-	    copy_spaces(newp + bd.textcol,
+	    vim_memset(newp + bd.textcol, ' ',
 				     (size_t)(bd.startspaces + bd.endspaces));
 	    /* copy the part after the deleted part */
 	    oldp += bd.textcol + bd.textlen;
@@ -2132,7 +2132,7 @@ op_replace(oap, c)
 	    mch_memmove(newp, oldp, (size_t)bd.textcol);
 	    oldp += bd.textcol + bd.textlen;
 	    /* insert pre-spaces */
-	    copy_spaces(newp + bd.textcol, (size_t)bd.startspaces);
+	    vim_memset(newp + bd.textcol, ' ', (size_t)bd.startspaces);
 	    /* insert replacement chars CHECK FOR ALLOCATED SPACE */
 	    /* -1/-2 is used for entering CR literally. */
 	    if (had_ctrl_v_cr || (c != '\r' && c != '\n'))
@@ -2146,11 +2146,11 @@ op_replace(oap, c)
 		}
 		else
 #endif
-		    copy_chars(newp + STRLEN(newp), (size_t)numc, c);
+		    vim_memset(newp + STRLEN(newp), c, (size_t)numc);
 		if (!bd.is_short)
 		{
 		    /* insert post-spaces */
-		    copy_spaces(newp + STRLEN(newp), (size_t)bd.endspaces);
+		    vim_memset(newp + STRLEN(newp), ' ', (size_t)bd.endspaces);
 		    /* copy the part after the changed part */
 		    STRMOVE(newp + STRLEN(newp), oldp);
 		}
@@ -2831,7 +2831,7 @@ op_change(oap)
 			mch_memmove(newp, oldp, (size_t)bd.textcol);
 			offset = bd.textcol;
 # ifdef FEAT_VIRTUALEDIT
-			copy_spaces(newp + offset, (size_t)vpos.coladd);
+			vim_memset(newp + offset, ' ', (size_t)vpos.coladd);
 			offset += vpos.coladd;
 # endif
 			mch_memmove(newp + offset, ins_text, (size_t)ins_len);
@@ -3272,11 +3272,11 @@ yank_copy_line(bd, y_idx)
 								      == NULL)
 	return FAIL;
     y_current->y_array[y_idx] = pnew;
-    copy_spaces(pnew, (size_t)bd->startspaces);
+    vim_memset(pnew, ' ', (size_t)bd->startspaces);
     pnew += bd->startspaces;
     mch_memmove(pnew, bd->textstart, (size_t)bd->textlen);
     pnew += bd->textlen;
-    copy_spaces(pnew, (size_t)bd->endspaces);
+    vim_memset(pnew, ' ', (size_t)bd->endspaces);
     pnew += bd->endspaces;
     *pnew = NUL;
     return OK;
@@ -3690,7 +3690,7 @@ do_put(regname, dir, count, flags)
 	    mch_memmove(ptr, oldp, (size_t)bd.textcol);
 	    ptr += bd.textcol;
 	    /* may insert some spaces before the new text */
-	    copy_spaces(ptr, (size_t)bd.startspaces);
+	    vim_memset(ptr, ' ', (size_t)bd.startspaces);
 	    ptr += bd.startspaces;
 	    /* insert the new text */
 	    for (j = 0; j < count; ++j)
@@ -3701,12 +3701,12 @@ do_put(regname, dir, count, flags)
 		/* insert block's trailing spaces only if there's text behind */
 		if ((j < count - 1 || !shortline) && spaces)
 		{
-		    copy_spaces(ptr, (size_t)spaces);
+		    vim_memset(ptr, ' ', (size_t)spaces);
 		    ptr += spaces;
 		}
 	    }
 	    /* may insert some spaces after the new text */
-	    copy_spaces(ptr, (size_t)bd.endspaces);
+	    vim_memset(ptr, ' ', (size_t)bd.endspaces);
 	    ptr += bd.endspaces;
 	    /* move the text after the cursor to the end of the line. */
 	    mch_memmove(ptr, oldp + bd.textcol + delcount,
@@ -4522,7 +4522,7 @@ do_join(count, insert_space, save_undo, use_formatoptions, setmark)
 	if (spaces[t] > 0)
 	{
 	    cend -= spaces[t];
-	    copy_spaces(cend, (size_t)(spaces[t]));
+	    vim_memset(cend, ' ', (size_t)(spaces[t]));
 	}
 	mark_col_adjust(curwin->w_cursor.lnum + t, (colnr_T)0, (linenr_T)-t,
 			 (long)(cend - newp + spaces[t] - (curr - curr_start)));

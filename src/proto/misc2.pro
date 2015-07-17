@@ -37,8 +37,6 @@ char_u *vim_strsave_up __ARGS((char_u *string));
 char_u *vim_strnsave_up __ARGS((char_u *string, int len));
 void vim_strup __ARGS((char_u *p));
 char_u *strup_save __ARGS((char_u *orig));
-void copy_spaces __ARGS((char_u *ptr, size_t count));
-void copy_chars __ARGS((char_u *ptr, size_t count, int c));
 void del_trailing_spaces __ARGS((char_u *ptr));
 void vim_strncpy __ARGS((char_u *to, char_u *from, size_t len));
 void vim_strcat __ARGS((char_u *to, char_u *from, size_t tosize));

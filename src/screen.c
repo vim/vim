@@ -2833,7 +2833,7 @@ fill_foldcolumn(p, wp, closed, lnum)
     int		fdc = compute_foldcolumn(wp, 0);
 
     /* Init to all spaces. */
-    copy_spaces(p, (size_t)fdc);
+    vim_memset(p, ' ', (size_t)fdc);
 
     level = win_foldinfo.fi_level;
     if (level > 0)
