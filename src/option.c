@@ -4943,7 +4943,8 @@ do_set(arg, opt_flags)
 
 			    sprintf((char *)buf_type, "%s",
 				(opt_flags & OPT_LOCAL) ? "local" : "global");
-			    set_vim_var_string(VV_OPTION_NEW, newval, -1);
+			    set_vim_var_string(VV_OPTION_NEW,
+							*(char_u **)varp, -1);
 			    set_vim_var_string(VV_OPTION_OLD, saved_origval, -1);
 			    set_vim_var_string(VV_OPTION_TYPE, buf_type, -1);
 			    apply_autocmds(EVENT_OPTIONSET,
@@ -5738,8 +5739,8 @@ set_string_option(opt_idx, value, opt_flags)
 	    char_u buf_type[7];
 	    sprintf((char *)buf_type, "%s",
 		(opt_flags & OPT_LOCAL) ? "local" : "global");
-	    set_vim_var_string(VV_OPTION_NEW, s, -1);
-	    set_vim_var_string(VV_OPTION_OLD, oldval, -1);
+	    set_vim_var_string(VV_OPTION_NEW, *varp, -1);
+	    set_vim_var_string(VV_OPTION_OLD, saved_oldval, -1);
 	    set_vim_var_string(VV_OPTION_TYPE, buf_type, -1);
 	    apply_autocmds(EVENT_OPTIONSET, (char_u *)options[opt_idx].fullname, NULL, FALSE, NULL);
 	    reset_v_option_vars();
