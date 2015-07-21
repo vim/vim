@@ -2761,7 +2761,20 @@ buflist_list(eap)
     for (buf = firstbuf; buf != NULL && !got_int; buf = buf->b_next)
     {
 	/* skip unlisted buffers, unless ! was used */
-	if (!buf->b_p_bl && !eap->forceit)
+	if ((!buf->b_p_bl && !eap->forceit && !vim_strchr(eap->arg, 'u'))
+		|| (vim_strchr(eap->arg, 'u') && buf->b_p_bl)
+		|| (vim_strchr(eap->arg, '+')
+			&& ((buf->b_flags & BF_READERR) || !bufIsChanged(buf)))
+		|| (vim_strchr(eap->arg, 'a')
+			 && (buf->b_ml.ml_mfp == NULL || buf->b_nwindows == 0))
+		|| (vim_strchr(eap->arg, 'h')
+			 && (buf->b_ml.ml_mfp == NULL || buf->b_nwindows != 0))
+		|| (vim_strchr(eap->arg, '-') && buf->b_p_ma)
+		|| (vim_strchr(eap->arg, '=') && !buf->b_p_ro)
+		|| (vim_strchr(eap->arg, 'x') && !(buf->b_flags & BF_READERR))
+		|| (vim_strchr(eap->arg, '%') && buf != curbuf)
+		|| (vim_strchr(eap->arg, '#')
+		      && (buf == curbuf || curwin->w_alt_fnum != buf->b_fnum)))
 	    continue;
 	msg_putchar('\n');
 	if (buf_spname(buf) != NULL)
