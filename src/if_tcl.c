@@ -337,7 +337,7 @@ beepcmd(dummy, interp, objc, objv)
 	Tcl_WrongNumArgs(interp, 1, objv, NULL);
 	return TCL_ERROR;
     }
-    vim_beep();
+    vim_beep(BO_LANG);
     return TCL_OK;
 }
 

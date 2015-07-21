@@ -3699,46 +3699,50 @@ beep_flush()
     if (emsg_silent == 0)
     {
 	flush_buffers(FALSE);
-	vim_beep();
+	vim_beep(BO_ERROR);
     }
 }
 
 /*
- * give a warning for an error
+ * Give a warning for an error.
  */
     void
-vim_beep()
+vim_beep(val)
+    unsigned val; /* one of the BO_ values, e.g., BO_OPER */
 {
     if (emsg_silent == 0)
     {
-	if (p_vb
+	if (!((bo_flags & val) || (bo_flags & BO_ALL)))
+	{
+	    if (p_vb
 #ifdef FEAT_GUI
-		/* While the GUI is starting up the termcap is set for the GUI
-		 * but the output still goes to a terminal. */
-		&& !(gui.in_use && gui.starting)
+		    /* While the GUI is starting up the termcap is set for the
+		     * GUI but the output still goes to a terminal. */
+		    && !(gui.in_use && gui.starting)
 #endif
-		)
-	{
-	    out_str(T_VB);
-	}
-	else
-	{
-#ifdef MSDOS
-	    /*
-	     * The number of beeps outputted is reduced to avoid having to wait
-	     * for all the beeps to finish. This is only a problem on systems
-	     * where the beeps don't overlap.
-	     */
-	    if (beep_count == 0 || beep_count == 10)
+		    )
 	    {
-		out_char(BELL);
-		beep_count = 1;
+		out_str(T_VB);
 	    }
 	    else
-		++beep_count;
+	    {
+#ifdef MSDOS
+		/*
+		 * The number of beeps outputted is reduced to avoid having to
+		 * wait for all the beeps to finish. This is only a problem on
+		 * systems where the beeps don't overlap.
+		 */
+		if (beep_count == 0 || beep_count == 10)
+		{
+		    out_char(BELL);
+		    beep_count = 1;
+		}
+		else
+		    ++beep_count;
 #else
-	    out_char(BELL);
+		out_char(BELL);
 #endif
+	    }
 	}
 
 	/* When 'verbose' is set and we are sourcing a script or executing a

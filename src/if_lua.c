@@ -1354,7 +1354,7 @@ luaV_eval(lua_State *L)
     static int
 luaV_beep(lua_State *L UNUSED)
 {
-    vim_beep();
+    vim_beep(BO_LANG);
     return 0;
 }
 

@@ -49,7 +49,7 @@ int get_number __ARGS((int colon, int *mouse_used));
 int prompt_for_number __ARGS((int *mouse_used));
 void msgmore __ARGS((long n));
 void beep_flush __ARGS((void));
-void vim_beep __ARGS((void));
+void vim_beep __ARGS((unsigned val));
 void init_homedir __ARGS((void));
 void free_homedir __ARGS((void));
 void free_users __ARGS((void));

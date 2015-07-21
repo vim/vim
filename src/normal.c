@@ -1880,7 +1880,7 @@ do_pending_operator(cap, old_col, gui_yank)
 	    VIsual_reselect = FALSE;	    /* don't reselect now */
 	    if (empty_region_error)
 	    {
-		vim_beep();
+		vim_beep(BO_OPER);
 		CancelRedo();
 	    }
 	    else
@@ -1897,7 +1897,7 @@ do_pending_operator(cap, old_col, gui_yank)
 	    {
 		if (!gui_yank)
 		{
-		    vim_beep();
+		    vim_beep(BO_OPER);
 		    CancelRedo();
 		}
 	    }
@@ -1915,7 +1915,7 @@ do_pending_operator(cap, old_col, gui_yank)
 	    VIsual_reselect = FALSE;	    /* don't reselect now */
 	    if (empty_region_error)
 	    {
-		vim_beep();
+		vim_beep(BO_OPER);
 		CancelRedo();
 	    }
 	    else
@@ -1989,7 +1989,7 @@ do_pending_operator(cap, old_col, gui_yank)
 	case OP_ROT13:
 	    if (empty_region_error)
 	    {
-		vim_beep();
+		vim_beep(BO_OPER);
 		CancelRedo();
 	    }
 	    else
@@ -2023,7 +2023,7 @@ do_pending_operator(cap, old_col, gui_yank)
 #ifdef FEAT_VISUALEXTRA
 	    if (empty_region_error)
 	    {
-		vim_beep();
+		vim_beep(BO_OPER);
 		CancelRedo();
 	    }
 	    else
@@ -2056,7 +2056,7 @@ do_pending_operator(cap, old_col, gui_yank)
 		    restart_edit = restart_edit_save;
 	    }
 #else
-	    vim_beep();
+	    vim_beep(BO_OPER);
 #endif
 	    break;
 
@@ -2066,7 +2066,7 @@ do_pending_operator(cap, old_col, gui_yank)
 	    if (empty_region_error)
 #endif
 	    {
-		vim_beep();
+		vim_beep(BO_OPER);
 		CancelRedo();
 	    }
 #ifdef FEAT_VISUALEXTRA
@@ -5359,7 +5359,7 @@ nv_exmode(cap)
      * Ignore 'Q' in Visual mode, just give a beep.
      */
     if (VIsual_active)
-	vim_beep();
+	vim_beep(BO_EX);
     else if (!checkclearop(cap->oap))
 	do_exmode(FALSE);
 }
@@ -9055,7 +9055,7 @@ nv_esc(cap)
 	redraw_curbuf_later(INVERTED);
     }
     else if (no_reason)
-	vim_beep();
+	vim_beep(BO_ESC);
     clearop(cap->oap);
 
     /* A CTRL-C is often used at the start of a menu.  When 'insertmode' is

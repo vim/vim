@@ -900,7 +900,7 @@ getcmdline(firstc, count, indent)
 							       firstc != '@');
 		    }
 		    else
-			vim_beep();
+			vim_beep(BO_WILD);
 		}
 #ifdef FEAT_WILDMENU
 		else if (xpc.xp_numfiles == -1)
@@ -3710,7 +3710,7 @@ ExpandOne(xp, str, orig, options, mode)
 	    if (i < xp->xp_numfiles)
 	    {
 		if (!(options & WILD_NO_BEEP))
-		    vim_beep();
+		    vim_beep(BO_WILD);
 		break;
 	    }
 	}

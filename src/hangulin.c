@@ -824,7 +824,7 @@ hangul_input_process(s, len)
     }
     else if (n == AUTOMATA_ERROR)
     {
-	vim_beep();
+	vim_beep(BO_HANGUL);
 	return 0;
     }
     return len;

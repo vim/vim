@@ -1569,7 +1569,7 @@ get_range_end(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
     static Scheme_Object *
 mzscheme_beep(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 {
-    vim_beep();
+    vim_beep(BO_LANG);
     return scheme_void;
 }
 

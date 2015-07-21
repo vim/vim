@@ -10201,7 +10201,7 @@ spell_suggest(count)
 	 * a multi-line selection. */
 	if (curwin->w_cursor.lnum != VIsual.lnum)
 	{
-	    vim_beep();
+	    vim_beep(BO_SPELL);
 	    return;
 	}
 	badlen = (int)curwin->w_cursor.col - (int)VIsual.col;

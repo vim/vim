@@ -982,7 +982,7 @@ do_intr:
 		    got_int = FALSE;
 		}
 		else
-		    vim_beep();
+		    vim_beep(BO_IM);
 		break;
 	    }
 doESCkey:
@@ -2210,7 +2210,7 @@ has_compl_option(dict_opt)
 							      hl_attr(HLF_E));
 	if (emsg_silent == 0)
 	{
-	    vim_beep();
+	    vim_beep(BO_COMPL);
 	    setcursor();
 	    out_flush();
 	    ui_delay(2000L, FALSE);
@@ -8263,7 +8263,7 @@ ins_reg()
     }
     if (regname == NUL || !valid_yank_reg(regname, FALSE))
     {
-	vim_beep();
+	vim_beep(BO_REG);
 	need_redraw = TRUE;	/* remove the '"' */
     }
     else
@@ -8281,7 +8281,7 @@ ins_reg()
 	}
 	else if (insert_reg(regname, literally) == FAIL)
 	{
-	    vim_beep();
+	    vim_beep(BO_REG);
 	    need_redraw = TRUE;	/* remove the '"' */
 	}
 	else if (stop_insert_mode)
@@ -8355,7 +8355,7 @@ ins_ctrl_g()
 		  break;
 
 	/* Unknown CTRL-G command, reserved for future expansion. */
-	default:  vim_beep();
+	default:  vim_beep(BO_CTRLG);
     }
 }
 
@@ -8781,12 +8781,12 @@ ins_del()
 	temp = curwin->w_cursor.col;
 	if (!can_bs(BS_EOL)		/* only if "eol" included */
 		|| do_join(2, FALSE, TRUE, FALSE, FALSE) == FAIL)
-	    vim_beep();
+	    vim_beep(BO_BS);
 	else
 	    curwin->w_cursor.col = temp;
     }
-    else if (del_char(FALSE) == FAIL)	/* delete char under cursor */
-	vim_beep();
+    else if (del_char(FALSE) == FAIL)  /* delete char under cursor */
+	vim_beep(BO_BS);
     did_ai = FALSE;
 #ifdef FEAT_SMARTINDENT
     did_si = FALSE;
@@ -8861,7 +8861,7 @@ ins_bs(c, mode, inserted_space_p)
 					 && curwin->w_cursor.col <= ai_col)
 		    || (!can_bs(BS_EOL) && curwin->w_cursor.col == 0))))
     {
-	vim_beep();
+	vim_beep(BO_BS);
 	return FALSE;
     }
 
@@ -9473,7 +9473,7 @@ ins_left()
 	curwin->w_set_curswant = TRUE;	/* so we stay at the end */
     }
     else
-	vim_beep();
+	vim_beep(BO_CRSR);
 }
 
     static void
@@ -9533,7 +9533,7 @@ ins_s_left()
 	curwin->w_set_curswant = TRUE;
     }
     else
-	vim_beep();
+	vim_beep(BO_CRSR);
 }
 
     static void
@@ -9583,7 +9583,7 @@ ins_right()
 	curwin->w_cursor.col = 0;
     }
     else
-	vim_beep();
+	vim_beep(BO_CRSR);
 }
 
     static void
@@ -9602,7 +9602,7 @@ ins_s_right()
 	curwin->w_set_curswant = TRUE;
     }
     else
-	vim_beep();
+	vim_beep(BO_CRSR);
 }
 
     static void
@@ -9633,7 +9633,7 @@ ins_up(startcol)
 #endif
     }
     else
-	vim_beep();
+	vim_beep(BO_CRSR);
 }
 
     static void
@@ -9665,7 +9665,7 @@ ins_pageup()
 #endif
     }
     else
-	vim_beep();
+	vim_beep(BO_CRSR);
 }
 
     static void
@@ -9696,7 +9696,7 @@ ins_down(startcol)
 #endif
     }
     else
-	vim_beep();
+	vim_beep(BO_CRSR);
 }
 
     static void
@@ -9728,7 +9728,7 @@ ins_pagedown()
 #endif
     }
     else
-	vim_beep();
+	vim_beep(BO_CRSR);
 }
 
 #ifdef FEAT_DND
@@ -10146,7 +10146,7 @@ ins_copychar(lnum)
 
     if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)
     {
-	vim_beep();
+	vim_beep(BO_COPY);
 	return NUL;
     }
 
@@ -10169,7 +10169,7 @@ ins_copychar(lnum)
     c = *ptr;
 #endif
     if (c == NUL)
-	vim_beep();
+	vim_beep(BO_COPY);
     return c;
 }
 

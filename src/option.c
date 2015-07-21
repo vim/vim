@@ -632,6 +632,9 @@ static struct vimoption
     {"beautify",    "bf",   P_BOOL|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
+    {"belloff",      "bo",  P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
+			    (char_u *)&p_bo, PV_NONE,
+			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
     {"binary",	    "bin",  P_BOOL|P_VI_DEF|P_RSTAT,
 			    (char_u *)&p_bin, PV_BIN,
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
@@ -5323,6 +5326,7 @@ didset_options()
     (void)opt_strings_flags(p_cmp, p_cmp_values, &cmp_flags, TRUE);
 #endif
     (void)opt_strings_flags(p_bkc, p_bkc_values, &bkc_flags, TRUE);
+    (void)opt_strings_flags(p_bo, p_bo_values, &bo_flags, TRUE);
 #ifdef FEAT_SESSION
     (void)opt_strings_flags(p_ssop, p_ssop_values, &ssop_flags, TRUE);
     (void)opt_strings_flags(p_vop, p_ssop_values, &vop_flags, TRUE);
@@ -6995,6 +6999,11 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 		errmsg = e_invarg;
 	}
 	else if (check_opt_strings(p_bs, p_bs_values, TRUE) != OK)
+	    errmsg = e_invarg;
+    }
+    else if (varp == &p_bo)
+    {
+	if (opt_strings_flags(p_bo, p_bo_values, &bo_flags, TRUE) != OK)
 	    errmsg = e_invarg;
     }
 

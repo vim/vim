@@ -2469,7 +2469,7 @@ showmatch(c)
     }
 
     if ((lpos = findmatch(NULL, NUL)) == NULL)	    /* no match, so beep */
-	vim_beep();
+	vim_beep(BO_MATCH);
     else if (lpos->lnum >= curwin->w_topline && lpos->lnum < curwin->w_botline)
     {
 	if (!curwin->w_p_wrap)

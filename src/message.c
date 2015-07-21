@@ -2119,8 +2119,8 @@ msg_puts_display(str, maxlen, attr, recurse)
 		msg_screen_putchar(' ', attr);
 	    while (msg_col & 7);
 	}
-	else if (*s == BELL)	    /* beep (from ":sh") */
-	    vim_beep();
+	else if (*s == BELL)		/* beep (from ":sh") */
+	    vim_beep(BO_SH);
 	else
 	{
 #ifdef FEAT_MBYTE
@@ -2363,7 +2363,7 @@ show_sb_text()
      * weird, typing a command without output results in one line. */
     mp = msg_sb_start(last_msgchunk);
     if (mp == NULL || mp->sb_prev == NULL)
-	vim_beep();
+	vim_beep(BO_MESS);
     else
     {
 	do_more_prompt('G');
