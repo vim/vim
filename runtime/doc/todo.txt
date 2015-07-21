@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Jul 10
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Jul 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -73,11 +73,6 @@ Regexp problems:
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
 
-Better .ico file for Windows. (Pat Suwalski, 2015 Feb 13)
-Waiting for response on remark from Edward Fox.
-
-Add Tera Term language plugins. (Ken Takata, 2015 Jul 3)
-
 RXVT sends a different background color response. (Higashi, 2015 Jul 5)
 
 More tests for :diffoff. Olaf Dabrunz, (2015 Jul 4)
@@ -118,37 +113,19 @@ wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
 Can't recognize the $ProgramFiles(x86) environment variable.  Recognize it
 specifically?  First try with the parens, then without.
 
-Patch for multi-byte characters in langmap and applying a mapping on them.
-(Christian Brabandt, 2015 Jun 12)
-Is this the right solution?
-
-Patch to add grepfile(). (Scott Prager, 2015 May 26)
-Work in progress.
-
-Patch to make getregtype() return the right size for non-linux systems.
-(Yasuhiro Matsumoto, 2014 Jul 8)
-Breaks test_eval.  Inefficient, can we only compute y_width when needed?
-
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
 Better greek spell checking.  Issue 299.
 
-Add 'fixeol' option, default on, so that people who have problems with fixing
-the missing EOL can switch it off?
-
 When complete() first argument is before where insert started and 'backspace'
 is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
-
-Patch to fix equivalence classes in regexp. (Dominique Pelle, 2015 Jun 2)
 
 Test 44 fails when [[=A=]] is changed to [[=À=]].  Caused by getcmdline() not
 handling the 0x80 as a second byte correctly?  (Dominique Pelle, 2015 Jun 10)
 
 Weird encryption problems on Windows. (Ben Fritz, 2015 Feb 13)
 Goes away when disabling the swap file. (might1, Feb 16)
-
-Patch to add an OptionSet autocommand event. (Christian Brabandt, 2015 Jun 25)
 
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
@@ -161,6 +138,20 @@ Build with Python on Mac does not always use the right library.
 
 ml_updatechunk() is slow when retrying for another encoding. (John Little,
 2014 Sep 11)
+
+When 'showbreak' is set repeating a Visual operation counts the size of the
+'showbreak' text as part of the operation. (Axel Bender, 2015 Jul 20)
+
+Patch for multi-byte characters in langmap and applying a mapping on them.
+(Christian Brabandt, 2015 Jun 12)
+Is this the right solution?
+
+Patch to add grepfile(). (Scott Prager, 2015 May 26)
+Work in progress.
+
+Patch to make getregtype() return the right size for non-linux systems.
+(Yasuhiro Matsumoto, 2014 Jul 8)
+Breaks test_eval.  Inefficient, can we only compute y_width when needed?
 
 Patch to use different terminal mode settings for system(). (Hayaki Saito)
 Does this work for everybody?
@@ -177,25 +168,10 @@ initial empty buffer better. (ZyX, 2015 March 8)
 
 Extended file attributes lost on write (backupcopy=no).  Issue 306.
 
-Patch to add an argument to ":ls" for specific kinds of buffers.
-(Marcin Szamotulski, 2015 Jan 31)
-
-Crash when using R syntax. (Jakson Alves de Aquino, 2015 Jan 30)
-Memory freed by ":syn clear" but still referenced, syntax items referenced
-from two windows?  Stopped happening (Feb 5).
-
-Patch for an extra argument to matchadd() for conceal. (Christian Brabandt,
-2015 Feb 17, update Feb 19)
-
 Patch to add :lockjumps. (Carlo Baldassi, 2015 May 25)
 OK to not block marks?
 
 Mixup of highlighting when there is a match and SpellBad. (ZyX, 2015 Jan 1)
-
-Patch on issue 79: use 'path' option for filename completion.
-
-Patch to add 'belloff' option. (Christian Brabandt, 2015 Jan 31)
-Update Feb 6.
 
 Patch for drag&drop reordering of GUI tab pages reordering.
 (Ken Takata, 2013 Nov 22, second one, also by Masamichi Abe)
@@ -302,8 +278,6 @@ Perhaps only the checks that can be done without looping over the dict or
 arguments.
 
 Patch to add :arglocal and :arglists. (Marcin Szamotulski, 2014 Aug 6)
-
-PHP syntax is extremely slow. (Anhad Jai Singh, 2014 Jan 19)
 
 Spell files use a latin single quote. Unicode also has another single quote:
 0x2019.  (Ron Aaron, 2014 Apr 4)
@@ -4074,8 +4048,6 @@ Autocommands:
 8   Autocommand for when modified files have been found, when getting input
     focus again (e.g., FileChangedFocus).
     Check when: getting focus, jumping to another buffer, ...
-7   Autocommand for when an option is changed.  Match buffer name or option
-    name?
 8   Autocommands should not change registers.  And marks?  And the jumplist?
     And anything else?  Add a command to save and restore these things.
 8   Add autocommands, user functions and user commands to ":mkvimrc".

@@ -76,6 +76,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'bdir'	options.txt	/*'bdir'*
 'bdlay'	options.txt	/*'bdlay'*
 'beautify'	vi_diff.txt	/*'beautify'*
+'belloff'	options.txt	/*'belloff'*
 'beval'	options.txt	/*'beval'*
 'bex'	options.txt	/*'bex'*
 'bexpr'	options.txt	/*'bexpr'*
@@ -89,6 +90,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'bk'	options.txt	/*'bk'*
 'bkc'	options.txt	/*'bkc'*
 'bl'	options.txt	/*'bl'*
+'bo'	options.txt	/*'bo'*
 'bomb'	options.txt	/*'bomb'*
 'breakat'	options.txt	/*'breakat'*
 'breakindent'	options.txt	/*'breakindent'*
@@ -246,6 +248,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'fileignorecase'	options.txt	/*'fileignorecase'*
 'filetype'	options.txt	/*'filetype'*
 'fillchars'	options.txt	/*'fillchars'*
+'fixendofline'	options.txt	/*'fixendofline'*
+'fixeol'	options.txt	/*'fixeol'*
 'fk'	options.txt	/*'fk'*
 'fkmap'	options.txt	/*'fkmap'*
 'fl'	vi_diff.txt	/*'fl'*
@@ -540,6 +544,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'nofen'	options.txt	/*'nofen'*
 'nofic'	options.txt	/*'nofic'*
 'nofileignorecase'	options.txt	/*'nofileignorecase'*
+'nofixendofline'	options.txt	/*'nofixendofline'*
+'nofixeol'	options.txt	/*'nofixeol'*
 'nofk'	options.txt	/*'nofk'*
 'nofkmap'	options.txt	/*'nofkmap'*
 'nofoldenable'	options.txt	/*'nofoldenable'*
@@ -4474,6 +4480,7 @@ OffTheSpot	mbyte.txt	/*OffTheSpot*
 OnTheSpot	mbyte.txt	/*OnTheSpot*
 Operator-pending	intro.txt	/*Operator-pending*
 Operator-pending-mode	intro.txt	/*Operator-pending-mode*
+OptionSet	autocmd.txt	/*OptionSet*
 OverTheSpot	mbyte.txt	/*OverTheSpot*
 P	change.txt	/*P*
 PATHEXT	eval.txt	/*PATHEXT*
@@ -8521,6 +8528,9 @@ v:mouse_lnum	eval.txt	/*v:mouse_lnum*
 v:mouse_win	eval.txt	/*v:mouse_win*
 v:oldfiles	eval.txt	/*v:oldfiles*
 v:operator	eval.txt	/*v:operator*
+v:option_new	eval.txt	/*v:option_new*
+v:option_old	eval.txt	/*v:option_old*
+v:option_type	eval.txt	/*v:option_type*
 v:prevcount	eval.txt	/*v:prevcount*
 v:profiling	eval.txt	/*v:profiling*
 v:progname	eval.txt	/*v:progname*
