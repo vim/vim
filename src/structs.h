@@ -2021,6 +2021,9 @@ struct matchitem
     regmmatch_T	match;	    /* regexp program for pattern */
     posmatch_T	pos;	    /* position matches */
     match_T	hl;	    /* struct for doing the actual highlighting */
+#ifdef FEAT_CONCEAL
+    int		conceal_char; /* cchar for Conceal highlighting */
+#endif
 };
 
 /*

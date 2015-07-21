@@ -8224,8 +8224,8 @@ static struct fst
     {"maparg",		1, 4, f_maparg},
     {"mapcheck",	1, 3, f_mapcheck},
     {"match",		2, 4, f_match},
-    {"matchadd",	2, 4, f_matchadd},
-    {"matchaddpos",	2, 4, f_matchaddpos},
+    {"matchadd",	2, 5, f_matchadd},
+    {"matchaddpos",	2, 5, f_matchaddpos},
     {"matcharg",	1, 1, f_matcharg},
     {"matchdelete",	1, 1, f_matchdelete},
     {"matchend",	2, 4, f_matchend},
@@ -12031,6 +12031,15 @@ f_getmatches(argvars, rettv)
 	    dict_add_nr_str(dict, "group", 0L, syn_id2name(cur->hlg_id));
 	    dict_add_nr_str(dict, "priority", (long)cur->priority, NULL);
 	    dict_add_nr_str(dict, "id", (long)cur->id, NULL);
+# ifdef FEAT_CONCEAL
+	    if (cur->conceal_char)
+	    {
+		char_u buf[MB_MAXBYTES + 1];
+
+		buf[(*mb_char2bytes)((int)cur->conceal_char, buf)] = NUL;
+		dict_add_nr_str(dict, "conceal", 0L, (char_u *)&buf);
+	    }
+# endif
 	    list_append_dict(rettv->vval.v_list, dict);
 	    cur = cur->next;
 	}
@@ -14589,6 +14598,7 @@ f_matchadd(argvars, rettv)
     int		prio = 10;	/* default priority */
     int		id = -1;
     int		error = FALSE;
+    char_u	*conceal_char = NULL;
 
     rettv->vval.v_number = -1;
 
@@ -14598,7 +14608,21 @@ f_matchadd(argvars, rettv)
     {
 	prio = get_tv_number_chk(&argvars[2], &error);
 	if (argvars[3].v_type != VAR_UNKNOWN)
+	{
 	    id = get_tv_number_chk(&argvars[3], &error);
+	    if (argvars[4].v_type != VAR_UNKNOWN)
+	    {
+		if (argvars[4].v_type != VAR_DICT)
+		{
+		    EMSG(_(e_dictreq));
+		    return;
+		}
+		if (dict_find(argvars[4].vval.v_dict,
+					     (char_u *)"conceal", -1) != NULL)
+		    conceal_char = get_dict_string(argvars[4].vval.v_dict,
+						  (char_u *)"conceal", FALSE);
+	    }
+	}
     }
     if (error == TRUE)
 	return;
@@ -14608,7 +14632,8 @@ f_matchadd(argvars, rettv)
 	return;
     }
 
-    rettv->vval.v_number = match_add(curwin, grp, pat, prio, id, NULL);
+    rettv->vval.v_number = match_add(curwin, grp, pat, prio, id, NULL,
+								conceal_char);
 #endif
 }
 
@@ -14627,6 +14652,7 @@ f_matchaddpos(argvars, rettv)
     int		id = -1;
     int		error = FALSE;
     list_T	*l;
+    char_u	*conceal_char = NULL;
 
     rettv->vval.v_number = -1;
 
@@ -14647,7 +14673,21 @@ f_matchaddpos(argvars, rettv)
     {
 	prio = get_tv_number_chk(&argvars[2], &error);
 	if (argvars[3].v_type != VAR_UNKNOWN)
+	{
 	    id = get_tv_number_chk(&argvars[3], &error);
+	    if (argvars[4].v_type != VAR_UNKNOWN)
+	    {
+		if (argvars[4].v_type != VAR_DICT)
+		{
+		    EMSG(_(e_dictreq));
+		    return;
+		}
+		if (dict_find(argvars[4].vval.v_dict,
+					     (char_u *)"conceal", -1) != NULL)
+		    conceal_char = get_dict_string(argvars[4].vval.v_dict,
+						  (char_u *)"conceal", FALSE);
+	    }
+	}
     }
     if (error == TRUE)
 	return;
@@ -14659,7 +14699,8 @@ f_matchaddpos(argvars, rettv)
 	return;
     }
 
-    rettv->vval.v_number = match_add(curwin, group, NULL, prio, id, l);
+    rettv->vval.v_number = match_add(curwin, group, NULL, prio, id, l,
+								conceal_char);
 #endif
 }
 
@@ -17165,9 +17206,12 @@ f_setmatches(argvars, rettv)
 	    int		i = 0;
 	    char_u	buf[5];
 	    dictitem_T  *di;
+	    char_u	*group;
+	    int		priority;
+	    int		id;
+	    char_u	*conceal;
 
 	    d = li->li_tv.vval.v_dict;
-
 	    if (dict_find(d, (char_u *)"pattern", -1) == NULL)
 	    {
 		if (s == NULL)
@@ -17193,18 +17237,22 @@ f_setmatches(argvars, rettv)
 			break;
 		}
 	    }
+
+	    group = get_dict_string(d, (char_u *)"group", FALSE);
+	    priority = (int)get_dict_number(d, (char_u *)"priority");
+	    id = (int)get_dict_number(d, (char_u *)"id");
+	    conceal = dict_find(d, (char_u *)"conceal", -1) != NULL
+			      ? get_dict_string(d, (char_u *)"conceal", FALSE)
+			      : NULL;
 	    if (i == 0)
 	    {
-		match_add(curwin, get_dict_string(d, (char_u *)"group", FALSE),
+		match_add(curwin, group,
 		    get_dict_string(d, (char_u *)"pattern", FALSE),
-		    (int)get_dict_number(d, (char_u *)"priority"),
-		    (int)get_dict_number(d, (char_u *)"id"), NULL);
+		    priority, id, NULL, conceal);
 	    }
 	    else
 	    {
-		match_add(curwin, get_dict_string(d, (char_u *)"group", FALSE),
-		    NULL, (int)get_dict_number(d, (char_u *)"priority"),
-		    (int)get_dict_number(d, (char_u *)"id"), s);
+		match_add(curwin, group, NULL, priority, id, s, conceal);
 		list_unref(s);
 		s = NULL;
 	    }

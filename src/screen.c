@@ -3047,6 +3047,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 					   wrapping */
     int		vcol_off	= 0;	/* offset for concealed characters */
     int		did_wcol	= FALSE;
+    int		match_conc	= FALSE; /* cchar for match functions */
+    int		has_match_conc  = FALSE; /* match wants to conceal */
     int		old_boguscols   = 0;
 # define VCOL_HLC (vcol - vcol_off)
 # define FIX_FOR_BOGUSCOLS \
@@ -3580,6 +3582,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
      */
     for (;;)
     {
+#ifdef FEAT_CONCEAL
+	has_match_conc = FALSE;
+#endif
 	/* Skip this quickly when working on the text. */
 	if (draw_state != WL_LINE)
 	{
@@ -3923,13 +3928,26 @@ win_line(wp, lnum, startrow, endrow, nochange)
 				shl->endcol = tmp_col;
 #endif
 			    shl->attr_cur = shl->attr;
+#ifdef FEAT_CONCEAL
+			    if (cur != NULL && syn_name2id((char_u *)"Conceal")
+							       == cur->hlg_id)
+			    {
+				has_match_conc = TRUE;
+				match_conc = cur->conceal_char;
+			    }
+			    else
+				has_match_conc = match_conc = FALSE;
+#endif
 			}
 			else if (v == (long)shl->endcol)
 			{
 			    shl->attr_cur = 0;
+#ifdef FEAT_CONCEAL
+			    prev_syntax_id = 0;
+#endif
 			    next_search_hl(wp, shl, lnum, (colnr_T)v, cur);
 			    pos_inprogress = cur == NULL || cur->pos.cur == 0
-							      ? FALSE : TRUE;
+							       ? FALSE : TRUE;
 
 			    /* Need to get the line again, a multi-line regexp
 			     * may have made it invalid. */
@@ -4873,19 +4891,22 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #ifdef FEAT_CONCEAL
 	    if (   wp->w_p_cole > 0
 		&& (wp != curwin || lnum != wp->w_cursor.lnum ||
-						      conceal_cursor_line(wp))
-		&& (syntax_flags & HL_CONCEAL) != 0
+							conceal_cursor_line(wp) )
+		&& ( (syntax_flags & HL_CONCEAL) != 0 || has_match_conc)
 		&& !(lnum_in_visual_area
 				    && vim_strchr(wp->w_p_cocu, 'v') == NULL))
 	    {
 		char_attr = conceal_attr;
 		if (prev_syntax_id != syntax_seqnr
-			&& (syn_get_sub_char() != NUL || wp->w_p_cole == 1)
+			&& (syn_get_sub_char() != NUL || match_conc
+							 || wp->w_p_cole == 1)
 			&& wp->w_p_cole != 3)
 		{
 		    /* First time at this concealed item: display one
 		     * character. */
-		    if (syn_get_sub_char() != NUL)
+		    if (match_conc)
+			c = match_conc;
+		    else if (syn_get_sub_char() != NUL)
 			c = syn_get_sub_char();
 		    else if (lcs_conceal != NUL)
 			c = lcs_conceal;
