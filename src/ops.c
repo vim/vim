@@ -5429,10 +5429,9 @@ do_addsub(command, Prenum1, g_cmd)
 	if (VIsual_mode == 'V')
 	{
 	    VIsual.col = 0;
-	    curwin->w_cursor.col = STRLEN(ptr);
+	    curwin->w_cursor.col = (colnr_T)STRLEN(ptr);
 	}
-	else if (VIsual_mode == Ctrl_V &&
-		VIsual.col > curwin->w_cursor.col)
+	else if (VIsual_mode == Ctrl_V && VIsual.col > curwin->w_cursor.col)
 	{
 	    t = VIsual;
 	    VIsual.col = curwin->w_cursor.col;
