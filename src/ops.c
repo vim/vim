@@ -686,7 +686,7 @@ op_reindent(oap, how)
 {
     long	i;
     char_u	*l;
-    int		count;
+    int		amount;
     linenr_T	first_changed = 0;
     linenr_T	last_changed = 0;
     linenr_T	start_lnum = curwin->w_cursor.lnum;
@@ -719,11 +719,11 @@ op_reindent(oap, how)
 	{
 	    l = skipwhite(ml_get_curline());
 	    if (*l == NUL)		    /* empty or blank line */
-		count = 0;
+		amount = 0;
 	    else
-		count = how();		    /* get the indent for this line */
+		amount = how();		    /* get the indent for this line */
 
-	    if (set_indent(count, SIN_UNDO))
+	    if (amount >= 0 && set_indent(amount, SIN_UNDO))
 	    {
 		/* did change the indent, call changed_lines() later */
 		if (first_changed == 0)

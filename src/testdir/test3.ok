@@ -879,6 +879,25 @@ namespace111111111
 	111111111111111111;
 }
 
+void getstring() {
+	/* Raw strings */
+	const char* s = R"(
+  test {
+    # comment
+    field: 123
+  }
+ )";
+}
+
+void getstring() {
+	const char* s = R"foo(
+  test {
+    # comment
+    field: 123
+  }
+    )foo";
+}
+
 /* end of AUTO */
 
 
