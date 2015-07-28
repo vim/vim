@@ -8514,7 +8514,7 @@ do_autocmd_event(event, pat, nested, cmd, forceit, group)
 	 */
 	brace_level = 0;
 	for (endpat = pat; *endpat && (*endpat != ',' || brace_level
-					     || endpat[-1] == '\\'); ++endpat)
+			   || (endpat > pat && endpat[-1] == '\\')); ++endpat)
 	{
 	    if (*endpat == '{')
 		brace_level++;
