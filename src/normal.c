@@ -9598,18 +9598,23 @@ get_op_vcol(oap, redo_VIsual_vcol, initial)
 #endif
 
     getvvcol(curwin, &(oap->start), &oap->start_vcol, NULL, &oap->end_vcol);
-    getvvcol(curwin, &(oap->end), &start, NULL, &end);
 
-    if (start < oap->start_vcol)
-	oap->start_vcol = start;
-    if (end > oap->end_vcol)
+    if (!redo_VIsual_busy)
     {
-	if (initial && *p_sel == 'e' && start >= 1
-			&& start - 1 >= oap->end_vcol)
-	    oap->end_vcol = start - 1;
-	else
-	    oap->end_vcol = end;
+	getvvcol(curwin, &(oap->end), &start, NULL, &end);
+
+	if (start < oap->start_vcol)
+	    oap->start_vcol = start;
+	if (end > oap->end_vcol)
+	{
+	    if (initial && *p_sel == 'e' && start >= 1
+				    && start - 1 >= oap->end_vcol)
+		oap->end_vcol = start - 1;
+	    else
+		oap->end_vcol = end;
+	}
     }
+
     /* if '$' was used, get oap->end_vcol from longest line */
     if (curwin->w_curswant == MAXCOL)
     {
