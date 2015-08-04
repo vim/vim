@@ -48,6 +48,7 @@ static int	checkclearopq __ARGS((oparg_T *oap));
 static void	clearop __ARGS((oparg_T *oap));
 static void	clearopbeep __ARGS((oparg_T *oap));
 static void	unshift_special __ARGS((cmdarg_T *cap));
+static void	may_clear_cmdline __ARGS((void));
 #ifdef FEAT_CMDL_INFO
 static void	del_from_showcmd __ARGS((int));
 #endif
@@ -1752,12 +1753,7 @@ do_pending_operator(cap, old_col, gui_yank)
 		setmouse();
 		mouse_dragging = 0;
 #endif
-		if (mode_displayed)
-		    clear_cmdline = TRUE;   /* unshow visual mode later */
-#ifdef FEAT_CMDL_INFO
-		else
-		    clear_showcmd();
-#endif
+		may_clear_cmdline();
 		if ((oap->op_type == OP_YANK
 			    || oap->op_type == OP_COLON
 			    || oap->op_type == OP_FUNCTION
@@ -3312,13 +3308,7 @@ end_visual_mode()
     if (!virtual_active())
 	curwin->w_cursor.coladd = 0;
 #endif
-
-    if (mode_displayed)
-	clear_cmdline = TRUE;		/* unshow visual mode later */
-#ifdef FEAT_CMDL_INFO
-    else
-	clear_showcmd();
-#endif
+    may_clear_cmdline();
 
     adjust_cursor_eol();
 }
@@ -3761,6 +3751,21 @@ unshift_special(cap)
 	case K_S_END:	cap->cmdchar = K_END; break;
     }
     cap->cmdchar = simplify_key(cap->cmdchar, &mod_mask);
+}
+
+/*
+ * If the mode is currently displayed clear the command line or update the
+ * command displayed.
+ */
+    static void
+may_clear_cmdline()
+{
+    if (mode_displayed)
+	clear_cmdline = TRUE;   /* unshow visual mode later */
+#ifdef FEAT_CMDL_INFO
+    else
+	clear_showcmd();
+#endif
 }
 
 #if defined(FEAT_CMDL_INFO) || defined(PROTO)
@@ -4240,6 +4245,7 @@ nv_addsub(cap)
     cmdarg_T	*cap;
 {
     int visual = VIsual_active;
+
     if (cap->oap->op_type == OP_NOP
 	    && do_addsub((int)cap->cmdchar, cap->count1, cap->arg) == OK)
     {
@@ -4259,6 +4265,7 @@ nv_addsub(cap)
     {
 	VIsual_active = FALSE;
 	redo_VIsual_busy = FALSE;
+	may_clear_cmdline();
 	redraw_later(INVERTED);
     }
 }
