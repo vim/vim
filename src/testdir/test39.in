@@ -51,12 +51,6 @@ G$khhhhhkkcmno
 :exe ":norm! 012l\<C-v>jjAx\<Esc>"
 :set ve= enc=latin1
 :.,/^$/w >> test.out
-:" Test for single-line Visual block append at wrapped line with :set linebreak
-Golong line: 40afoobar aTARGET at end
-:set linebreak
-:exe ":norm! $3B\<C-v>eAx\<Esc>"
-:set nolinebreak
-:.w >> test.out
 :" gUe must uppercase a whole word, also when ﬂ changes to SS
 Gothe youtuﬂeuu endYpk0wgUe
 :" gUfx must uppercase until x, inclusive.
