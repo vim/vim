@@ -4434,6 +4434,10 @@ get_rel_pos(wp, buf, buflen)
     above = wp->w_topline - 1;
 #ifdef FEAT_DIFF
     above += diff_check_fill(wp, wp->w_topline) - wp->w_topfill;
+    if (wp->w_topline == 1 && wp->w_topfill >= 1)
+	above = 0;  /* All buffer lines are displayed and there is an
+		     * indication of filler lines, that can be considered
+		     * seeing all lines. */
 #endif
     below = wp->w_buffer->b_ml.ml_line_count - wp->w_botline + 1;
     if (below <= 0)
