@@ -5492,6 +5492,8 @@ do_addsub(command, Prenum1, g_cmd)
 
     for (i = lnum; i <= lnume; i++)
     {
+	colnr_T stop = 0;
+
 	t = curwin->w_cursor;
 	curwin->w_cursor.lnum = i;
 	ptr = ml_get_curline();
@@ -5501,30 +5503,27 @@ do_addsub(command, Prenum1, g_cmd)
 	    continue;
 	if (visual)
 	{
-	    if (doalp) /* search for ascii chars */
+	    if (VIsual_mode == 'v'
+		    && i == lnume)
+		stop = curwin->w_cursor.col;
+	    else if (VIsual_mode == Ctrl_V
+		    && curbuf->b_visual.vi_curswant != MAXCOL)
+		stop = curwin->w_cursor.col;
+
+	    while (ptr[col] != NUL
+		    && !vim_isdigit(ptr[col])
+		    && !(doalp && ASCII_ISALPHA(ptr[col])))
 	    {
-		while (!ASCII_ISALPHA(ptr[col]) && ptr[col])
-		    col++;
+		if (col > 0  && col == stop)
+		    break;
+		++col;
 	    }
-	    /* skip to first digit, but allow for leading '-' */
-	    else if (dohex)
+
+	    if (col > startcol && ptr[col - 1] == '-')
 	    {
-		while (!(vim_isxdigit(ptr[col]) || (ptr[col] == '-'
-				    && vim_isxdigit(ptr[col+1]))) && ptr[col])
-		    col++;
+		negative = TRUE;
+		was_positive = FALSE;
 	    }
-	    else /* decimal */
-	    {
-		while (!(vim_isdigit(ptr[col]) || (ptr[col] == '-'
-				     && vim_isdigit(ptr[col+1]))) && ptr[col])
-		    col++;
-	    }
-	}
-	if (visual && ptr[col] == '-')
-	{
-	    negative = TRUE;
-	    was_positive = FALSE;
-	    col++;
 	}
 	/*
 	 * If a number was found, and saving for undo works, replace the number.
