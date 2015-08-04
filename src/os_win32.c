@@ -259,6 +259,9 @@ read_console_input(
     int tail;
     int i;
 
+    if (nLength == -2)
+	return (s_dwMax > 0) ? TRUE : FALSE;
+
     if (!win8_or_later)
     {
 	if (nLength == -1)
@@ -303,7 +306,7 @@ read_console_input(
     }
 
     *lpBuffer = s_irCache[s_dwIndex];
-    if (nLength != -1 && ++s_dwIndex >= s_dwMax)
+    if (!(nLength == -1 || nLength == -2) && ++s_dwIndex >= s_dwMax)
 	s_dwMax = 0;
     *lpEvents = 1;
     return TRUE;
@@ -320,6 +323,30 @@ peek_console_input(
     LPDWORD	    lpEvents)
 {
     return read_console_input(hInput, lpBuffer, -1, lpEvents);
+}
+
+    static DWORD
+msg_wait_for_multiple_objects(
+    DWORD    nCount,
+    LPHANDLE pHandles,
+    BOOL     fWaitAll,
+    DWORD    dwMilliseconds,
+    DWORD    dwWakeMask)
+{
+    if (read_console_input(NULL, NULL, -2, NULL))
+	return WAIT_OBJECT_0;
+    return MsgWaitForMultipleObjects(nCount, pHandles, fWaitAll,
+				     dwMilliseconds, dwWakeMask);
+}
+
+    static DWORD
+wait_for_single_object(
+    HANDLE hHandle,
+    DWORD dwMilliseconds)
+{
+    if (read_console_input(NULL, NULL, -2, NULL))
+	return WAIT_OBJECT_0;
+    return WaitForSingleObject(hHandle, dwMilliseconds);
 }
 
     static void
@@ -1459,10 +1486,10 @@ WaitForChar(long msec)
 #ifdef FEAT_CLIENTSERVER
 	    /* Wait for either an event on the console input or a message in
 	     * the client-server window. */
-	    if (MsgWaitForMultipleObjects(1, &g_hConIn, FALSE,
+	    if (msg_wait_for_multiple_objects(1, &g_hConIn, FALSE,
 				 dwWaitTime, QS_SENDMESSAGE) != WAIT_OBJECT_0)
 #else
-	    if (WaitForSingleObject(g_hConIn, dwWaitTime) != WAIT_OBJECT_0)
+	    if (wait_for_single_object(g_hConIn, dwWaitTime) != WAIT_OBJECT_0)
 #endif
 		    continue;
 	}
