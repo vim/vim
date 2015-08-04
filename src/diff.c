@@ -804,8 +804,8 @@ ex_diffupdate(eap)
     for (idx_new = idx_orig + 1; idx_new < DB_COUNT; ++idx_new)
     {
 	buf = curtab->tp_diffbuf[idx_new];
-	if (buf == NULL)
-	    continue;
+	if (buf == NULL || buf->b_ml.ml_mfp == NULL)
+	    continue; /* skip buffer that isn't loaded */
 	if (diff_write(buf, tmp_new) == FAIL)
 	    continue;
 	diff_file(tmp_orig, tmp_new, tmp_diff);
