@@ -55,6 +55,9 @@
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@informatik.uni-erlangen.de)
  *
+ * I hereby grant permission to distribute and use xxd
+ * under X11-MIT or GPL-2.0 (at the user's choice).
+ *
  * Small changes made afterwards by Bram Moolenaar et al.
  *
  * Distribute freely and credit me,
