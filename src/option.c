@@ -9990,6 +9990,8 @@ unset_global_local_option(name, from)
     buf_T	*buf = (buf_T *)from;
 
     opt_idx = findoption(name);
+    if (opt_idx < 0)
+	return;
     p = &(options[opt_idx]);
 
     switch ((int)p->indir)

@@ -4520,6 +4520,9 @@ get_address(ptr, addr_type, skip, to_other_file)
 			pos.col = MAXCOL;
 		    else
 			pos.col = 0;
+#ifdef FEAT_VIRTUALEDIT
+		    pos.coladd = 0;
+#endif
 		    if (searchit(curwin, curbuf, &pos,
 				*cmd == '?' ? BACKWARD : FORWARD,
 				(char_u *)"", 1L, SEARCH_MSG,

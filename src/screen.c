@@ -7801,7 +7801,7 @@ next_search_hl_pos(shl, lnum, posmatch, mincol)
 	}
     }
     posmatch->cur = 0;
-    if (shl->lnum == lnum)
+    if (shl->lnum == lnum && bot >= 0)
     {
 	colnr_T	start = posmatch->pos[bot].col == 0
 					     ? 0 : posmatch->pos[bot].col - 1;
