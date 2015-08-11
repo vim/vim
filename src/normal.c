@@ -2865,10 +2865,8 @@ do_mouse(oap, c, dir, count, fixindent)
 		end_visual.col = leftcol;
 	    else
 		end_visual.col = rightcol;
-	    if (curwin->w_cursor.lnum <
+	    if (curwin->w_cursor.lnum >=
 				    (start_visual.lnum + end_visual.lnum) / 2)
-		end_visual.lnum = end_visual.lnum;
-	    else
 		end_visual.lnum = start_visual.lnum;
 
 	    /* move VIsual to the right column */
@@ -3807,8 +3805,8 @@ clear_showcmd()
 	}
 # ifdef FEAT_FOLDING
 	/* Include closed folds as a whole. */
-	hasFolding(top, &top, NULL);
-	hasFolding(bot, NULL, &bot);
+	(void)hasFolding(top, &top, NULL);
+	(void)hasFolding(bot, NULL, &bot);
 # endif
 	lines = bot - top + 1;
 
@@ -5954,7 +5952,7 @@ nv_scroll(cap)
 		lnum = curwin->w_topline;
 		while (n-- > 0 && lnum < curwin->w_botline - 1)
 		{
-		    hasFolding(lnum, NULL, &lnum);
+		    (void)hasFolding(lnum, NULL, &lnum);
 		    ++lnum;
 		}
 		n = lnum - curwin->w_topline;
@@ -6254,7 +6252,7 @@ nv_gotofile(cap)
     {
 	/* do autowrite if necessary */
 	if (curbufIsChanged() && curbuf->b_nwindows <= 1 && !P_HID(curbuf))
-	    autowrite(curbuf, FALSE);
+	    (void)autowrite(curbuf, FALSE);
 	setpcmark();
 	(void)do_ecmd(0, ptr, NULL, NULL, ECMD_LAST,
 				       P_HID(curbuf) ? ECMD_HIDE : 0, curwin);

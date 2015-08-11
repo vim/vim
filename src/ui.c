@@ -2903,7 +2903,7 @@ retnomove:
 		    break;
 		first = FALSE;
 #ifdef FEAT_FOLDING
-		hasFolding(curwin->w_topline, &curwin->w_topline, NULL);
+		(void)hasFolding(curwin->w_topline, &curwin->w_topline, NULL);
 #endif
 #ifdef FEAT_DIFF
 		if (curwin->w_topfill < diff_check(curwin, curwin->w_topline))

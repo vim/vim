@@ -7001,7 +7001,7 @@ do_xterm_trace()
 	/* Rely on the same mouse code for the duration of this */
 	mouse_code = find_termcode(mouse_name);
 	prev_row = mouse_row;
-	prev_row = mouse_col;
+	prev_col = mouse_col;
 	xterm_trace = 2;
 
 	/* Find the offset of the chars, there might be a scrollbar on the

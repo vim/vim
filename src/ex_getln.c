@@ -2312,7 +2312,7 @@ getexmodeline(promptc, cookie, indent)
 add_indent:
 		while (get_indent_str(p, 8, FALSE) < indent)
 		{
-		    ga_grow(&line_ga, 2);  /* one more for the NUL */
+		    (void)ga_grow(&line_ga, 2);  /* one more for the NUL */
 		    p = (char_u *)line_ga.ga_data;
 		    s = skipwhite(p);
 		    mch_memmove(s + 1, s, line_ga.ga_len - (s - p) + 1);

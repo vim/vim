@@ -6670,7 +6670,7 @@ syntime_report()
 	spp = &(SYN_ITEMS(curwin->w_s)[idx]);
 	if (spp->sp_time.count > 0)
 	{
-	    ga_grow(&ga, 1);
+	    (void)ga_grow(&ga, 1);
 	    p = ((time_entry_T *)ga.ga_data) + ga.ga_len;
 	    p->total = spp->sp_time.total;
 	    profile_add(&total_total, &spp->sp_time.total);

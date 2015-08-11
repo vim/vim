@@ -1265,12 +1265,12 @@ serverEventProc(dpy, eventPtr)
 			/* Initialize the result property. */
 			ga_init2(&reply, 1, 100);
 #ifdef FEAT_MBYTE
-			ga_grow(&reply, 50 + STRLEN(p_enc));
+			(void)ga_grow(&reply, 50 + STRLEN(p_enc));
 			sprintf(reply.ga_data, "%cr%c-E %s%c-s %s%c-r ",
 						   0, 0, p_enc, 0, serial, 0);
 			reply.ga_len = 14 + STRLEN(p_enc) + STRLEN(serial);
 #else
-			ga_grow(&reply, 50);
+			(void)ga_grow(&reply, 50);
 			sprintf(reply.ga_data, "%cr%c-s %s%c-r ",
 							     0, 0, serial, 0);
 			reply.ga_len = 10 + STRLEN(serial);
@@ -1351,15 +1351,10 @@ serverEventProc(dpy, eventPtr)
 		    continue;
 
 		pcPtr->code = code;
-		if (res != NULL)
-		{
-		    res = serverConvert(enc, res, &tofree);
-		    if (tofree == NULL)
-			res = vim_strsave(res);
-		    pcPtr->result = res;
-		}
-		else
-		    pcPtr->result = vim_strsave((char_u *)"");
+		res = serverConvert(enc, res, &tofree);
+		if (tofree == NULL)
+		    res = vim_strsave(res);
+		pcPtr->result = res;
 		break;
 	    }
 	}

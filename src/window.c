@@ -141,7 +141,7 @@ do_window(nchar, Prenum, xchar)
 #ifdef FEAT_GUI
 		need_mouse_correct = TRUE;
 #endif
-		win_split((int)Prenum, 0);
+		(void)win_split((int)Prenum, 0);
 		break;
 
 #ifdef FEAT_VERTSPLIT
@@ -159,7 +159,7 @@ do_window(nchar, Prenum, xchar)
 # ifdef FEAT_GUI
 		need_mouse_correct = TRUE;
 # endif
-		win_split((int)Prenum, WSP_VERT);
+		(void)win_split((int)Prenum, WSP_VERT);
 		break;
 #endif
 
@@ -2586,7 +2586,7 @@ win_close_othertab(win, free_buf, tp)
 	return;
 
     /* When closing the last window in a tab page remove the tab page. */
-    if (tp == NULL ? firstwin == lastwin : tp->tp_firstwin == tp->tp_lastwin)
+    if (tp->tp_firstwin == tp->tp_lastwin)
     {
 	if (tp == first_tabpage)
 	    first_tabpage = tp->tp_next;

@@ -17,7 +17,7 @@
  * scrollbars, etc.
  *
  * Note: Clipboard stuff, for cutting and pasting text to other windows, is in
- * os_win32.c.	(It can also be done from the terminal version).
+ * winclip.c.	(It can also be done from the terminal version).
  *
  * TODO: Some of the function signatures ought to be updated for Win64;
  * e.g., replace LONG with LONG_PTR, etc.
@@ -76,7 +76,7 @@ gui_mch_set_rendering_options(char_u *s)
 	char_u  name[128];
 	char_u  value[128];
 
-	copy_option_part(&p, item, sizeof(item), ","); 
+	copy_option_part(&p, item, sizeof(item), ",");
 	if (p == NULL)
 	    break;
 	q = &item[0];
@@ -1227,7 +1227,7 @@ _WndProc(
 			return result;
 		}
 #endif
-		gui_mch_get_winpos(&x, &y);
+		(void)gui_mch_get_winpos(&x, &y);
 		xPos -= x;
 
 		if (xPos < 48) /* <VN> TODO should use system metric? */

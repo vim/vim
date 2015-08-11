@@ -3824,14 +3824,14 @@ bt_regexec_both(line, col, tm)
 	/* Use an item size of 1 byte, since we push different things
 	 * onto the regstack. */
 	ga_init2(&regstack, 1, REGSTACK_INITIAL);
-	ga_grow(&regstack, REGSTACK_INITIAL);
+	(void)ga_grow(&regstack, REGSTACK_INITIAL);
 	regstack.ga_growsize = REGSTACK_INITIAL * 8;
     }
 
     if (backpos.ga_data == NULL)
     {
 	ga_init2(&backpos, sizeof(backpos_T), BACKPOS_INITIAL);
-	ga_grow(&backpos, BACKPOS_INITIAL);
+	(void)ga_grow(&backpos, BACKPOS_INITIAL);
 	backpos.ga_growsize = BACKPOS_INITIAL * 8;
     }
 

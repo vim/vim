@@ -6736,7 +6736,7 @@ list_join_inner(gap, l, sep, echo_style, copyID, join_gap)
 	len = (int)STRLEN(s);
 	sumlen += len;
 
-	ga_grow(join_gap, 1);
+	(void)ga_grow(join_gap, 1);
 	p = ((join_T *)join_gap->ga_data) + (join_gap->ga_len++);
 	if (tofree != NULL || s != numbuf)
 	{
@@ -19590,7 +19590,7 @@ error:
 		    goto error;
 	    }
 
-	    ga_grow(&ga, cplen);
+	    (void)ga_grow(&ga, cplen);
 	    mch_memmove((char *)ga.ga_data + ga.ga_len, cpstr, (size_t)cplen);
 	    ga.ga_len += cplen;
 
@@ -19610,7 +19610,7 @@ error:
     }
 
     /* add a terminating NUL */
-    ga_grow(&ga, 1);
+    (void)ga_grow(&ga, 1);
     ga_append(&ga, NUL);
 
     rettv->vval.v_string = ga.ga_data;

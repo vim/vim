@@ -1575,7 +1575,7 @@ gui_set_shellsize(mustset, fit_to_display, direction)
     base_height = gui_get_base_height();
     if (fit_to_display)
 	/* Remember the original window position. */
-	gui_mch_get_winpos(&x, &y);
+	(void)gui_mch_get_winpos(&x, &y);
 
 #ifdef USE_SUN_WORKSHOP
     if (!mustset && usingSunWorkShop
@@ -5366,7 +5366,7 @@ gui_do_findrepl(flags, find_text, repl_text, down)
     {
 	/* Search for the next match. */
 	i = msg_scroll;
-	do_search(NULL, down ? '/' : '?', ga.ga_data, 1L,
+	(void)do_search(NULL, down ? '/' : '?', ga.ga_data, 1L,
 					      SEARCH_MSG + SEARCH_MARK, NULL);
 	msg_scroll = i;	    /* don't let an error message set msg_scroll */
     }

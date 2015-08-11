@@ -282,7 +282,7 @@ _WndProc(
 	    result = MyWindowProc(hwnd, uMsg, wParam, lParam);
 	    if (result == HTCLIENT)
 	    {
-		gui_mch_get_winpos(&x, &y);
+		(void)gui_mch_get_winpos(&x, &y);
 		xPos -= x;
 
 		if (xPos < 48) /*<VN> TODO should use system metric?*/

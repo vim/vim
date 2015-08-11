@@ -2446,7 +2446,7 @@ foldUpdateIEMSRecurse(gap, level, startlnum, flp, getlevel, bot, topflags)
     if (getlevel == foldlevelMarker && flp->start <= flp->lvl - level
 							      && flp->lvl > 0)
     {
-	foldFind(gap, startlnum - 1, &fp);
+	(void)foldFind(gap, startlnum - 1, &fp);
 	if (fp >= ((fold_T *)gap->ga_data) + gap->ga_len
 						   || fp->fd_top >= startlnum)
 	    fp = NULL;
@@ -2508,7 +2508,7 @@ foldUpdateIEMSRecurse(gap, level, startlnum, flp, getlevel, bot, topflags)
 	    }
 	    if (lvl < level + i)
 	    {
-		foldFind(&fp->fd_nested, flp->lnum - fp->fd_top, &fp2);
+		(void)foldFind(&fp->fd_nested, flp->lnum - fp->fd_top, &fp2);
 		if (fp2 != NULL)
 		    bot = fp2->fd_top + fp2->fd_len - 1 + fp->fd_top;
 	    }
