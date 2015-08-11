@@ -5584,6 +5584,7 @@ do_addsub(command, Prenum1, g_cmd)
 	    did_change = TRUE;
 	    (void)del_char(FALSE);
 	    ins_char(firstdigit);
+	    curwin->w_cursor.col = col;
 	}
 	else
 	{
