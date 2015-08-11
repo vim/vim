@@ -23,8 +23,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Esperanto)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-05 21:12+0100\n"
-"PO-Revision-Date: 2014-11-05 21:12+0100\n"
+"POT-Creation-Date: 2015-07-30 17:54+0200\n"
+"PO-Revision-Date: 2015-07-30 18:00+0200\n"
 "Last-Translator: Dominique PELLÉ <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "Language: eo\n"
@@ -102,10 +102,6 @@ msgstr "E84: Neniu modifita bufro trovita"
 #. back where we started, didn't find anything.
 msgid "E85: There is no listed buffer"
 msgstr "E85: Estas neniu listigita bufro"
-
-#, c-format
-msgid "E86: Buffer %ld does not exist"
-msgstr "E86: La bufro %ld ne ekzistas"
 
 msgid "E87: Cannot go beyond last buffer"
 msgstr "E87: Ne eblas iri preter la lastan bufron"
@@ -221,6 +217,9 @@ msgstr "    linio=%ld  id=%d  nomo=%s"
 
 msgid "E821: File is encrypted with unknown method"
 msgstr "E821: Dosiero estas ĉifrata per nekonata metodo"
+
+msgid "Warning: Using a weak encryption method; see :help 'cm'"
+msgstr "Averto: uzo de malfortika ĉifrada metodo; vidu :help 'cm'"
 
 msgid "Enter encryption key: "
 msgstr "Tajpu la ŝlosilon de ĉifrado: "
@@ -554,6 +553,9 @@ msgstr "E696: Mankas komo en Listo: %s"
 msgid "E697: Missing end of List ']': %s"
 msgstr "E697: Mankas fino de Listo ']': %s"
 
+msgid "Not enough memory to set references, garbage collection aborted!"
+msgstr "Ne sufiĉa memory por valorigi referencojn, senrubigado ĉesigita!"
+
 #, c-format
 msgid "E720: Missing colon in Dictionary: %s"
 msgstr "E720: Mankas dupunkto en la vortaro: %s"
@@ -617,12 +619,12 @@ msgstr "E785: complete() uzeblas nur en Enmeta reĝimo"
 msgid "&Ok"
 msgstr "&Bone"
 
+msgid "extend() argument"
+msgstr "argumento de extend()"
+
 #, c-format
 msgid "E737: Key already exists: %s"
 msgstr "E737: Ŝlosilo jam ekzistas: %s"
-
-msgid "extend() argument"
-msgstr "argumento de extend()"
 
 msgid "map() argument"
 msgstr "argumento de map()"
@@ -1319,13 +1321,12 @@ msgstr "E173: %ld pliaj redaktendaj dosieroj"
 msgid "E174: Command already exists: add ! to replace it"
 msgstr "E174: La komando jam ekzistas: aldonu ! por anstataŭigi ĝin"
 
-# DP: malfacilas traduki tion, kaj samtempe honori spacetojn
 msgid ""
 "\n"
-"    Name        Args Range Complete  Definition"
+"    Name        Args       Address   Complete  Definition"
 msgstr ""
 "\n"
-"    Nomo        Arg Interv Kompleto  Difino"
+"    Nomo        Argumentoj Adreso    Kompleto  Difino"
 
 msgid "No user-defined commands found"
 msgstr "Neniu komando difinita de uzanto trovita"
@@ -1345,6 +1346,9 @@ msgstr "E178: Nevalida defaŭlta valoro de kvantoro"
 msgid "E179: argument required for -complete"
 msgstr "E179: argumento bezonata por -complete"
 
+msgid "E179: argument required for -addr"
+msgstr "E179: argumento bezonata por -addr"
+
 #, c-format
 msgid "E181: Invalid attribute: %s"
 msgstr "E181: Nevalida atributo: %s"
@@ -1361,6 +1365,10 @@ msgstr "E841: Rezervita nomo, neuzebla por komando difinita de uzanto"
 #, c-format
 msgid "E184: No such user-defined command: %s"
 msgstr "E184: Neniu komando-difinita-de-uzanto kiel: %s"
+
+#, c-format
+msgid "E180: Invalid address type value: %s"
+msgstr "E180: Nevalida valoro de tipo de adreso: %s"
 
 #, c-format
 msgid "E180: Invalid complete value: %s"
@@ -2196,8 +2204,8 @@ msgstr "Anstataŭigi ĉiujn"
 msgid "Vim: Received \"die\" request from session manager\n"
 msgstr "Vim: Ricevis peton \"die\" (morti) el la seanca administrilo\n"
 
-msgid "Close"
-msgstr "Fermi"
+msgid "Close tab"
+msgstr "Fermi langeton"
 
 msgid "New tab"
 msgstr "Nova langeto"
@@ -2254,9 +2262,6 @@ msgstr "E243: Ne subtenata argumento: \"-%s\"; Uzu la version OLE."
 
 msgid "E672: Unable to open window inside MDI application"
 msgstr "E672: Ne eblas malfermi fenestron interne de aplikaĵo MDI"
-
-msgid "Close tab"
-msgstr "Fermi langeton"
 
 msgid "Open tab..."
 msgstr "Malfermi langeton..."
@@ -4320,6 +4325,10 @@ msgstr "E522: Netrovita en termcap"
 #, c-format
 msgid "E539: Illegal character <%s>"
 msgstr "E539: Nevalida signo <%s>"
+
+#, c-format
+msgid "For option %s"
+msgstr "Por opcio %s"
 
 msgid "E529: Cannot set 'term' to empty string"
 msgstr "E529: Ne eblas agordi 'term' al malplena ĉeno"
@@ -6648,6 +6657,10 @@ msgstr "E363: ŝablono uzas pli da memoro ol 'maxmempattern'"
 msgid "E749: empty buffer"
 msgstr "E749: malplena bufro"
 
+#, c-format
+msgid "E86: Buffer %ld does not exist"
+msgstr "E86: La bufro %ld ne ekzistas"
+
 msgid "E682: Invalid search pattern or delimiter"
 msgstr "E682: Nevalida serĉa ŝablono aŭ disigilo"
 
@@ -6923,6 +6936,3 @@ msgid ""
 msgstr ""
 "Agordo de serĉvojo malsukcesis: sys.path ne estas listo\n"
 "Vi nun devas aldoni vim.VIM_SPECIAL_PATH al sys.path"
-
-#~ msgid "[blowfish]"
-#~ msgstr "[blowfish]"

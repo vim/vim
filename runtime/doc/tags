@@ -6183,6 +6183,7 @@ getbufline()	eval.txt	/*getbufline()*
 getbufvar()	eval.txt	/*getbufvar()*
 getchar()	eval.txt	/*getchar()*
 getcharmod()	eval.txt	/*getcharmod()*
+getcharsearch()	eval.txt	/*getcharsearch()*
 getcmdline()	eval.txt	/*getcmdline()*
 getcmdpos()	eval.txt	/*getcmdpos()*
 getcmdtype()	eval.txt	/*getcmdtype()*
@@ -7793,6 +7794,7 @@ session-file	starting.txt	/*session-file*
 set-option	options.txt	/*set-option*
 set-spc-auto	spell.txt	/*set-spc-auto*
 setbufvar()	eval.txt	/*setbufvar()*
+setcharsearch()	eval.txt	/*setcharsearch()*
 setcmdpos()	eval.txt	/*setcmdpos()*
 setline()	eval.txt	/*setline()*
 setloclist()	eval.txt	/*setloclist()*
