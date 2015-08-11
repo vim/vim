@@ -21371,6 +21371,7 @@ find_var_in_ht(ht, htname, varname, no_autoload)
 
 /*
  * Find the hashtab used for a variable name.
+ * Return NULL if the name is not valid.
  * Set "varname" to the start of name without ':'.
  */
     static hashtab_T *
@@ -21380,6 +21381,8 @@ find_var_ht(name, varname)
 {
     hashitem_T	*hi;
 
+    if (name[0] == NUL)
+	return NULL;
     if (name[1] != ':')
     {
 	/* The name must not start with a colon or #. */
