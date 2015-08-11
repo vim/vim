@@ -9583,20 +9583,21 @@ nv_cursorhold(cap)
 #endif
 
 /*
- * calculate start/end virtual columns for operating in block mode
+ * Calculate start/end virtual columns for operating in block mode.
  */
     static void
 get_op_vcol(oap, redo_VIsual_vcol, initial)
     oparg_T	*oap;
     colnr_T	redo_VIsual_vcol;
-    int		initial;            /* when true: adjust position for 'selectmode' */
+    int		initial;    /* when TRUE adjust position for 'selectmode' */
 {
     colnr_T	    start, end;
 
-    if (VIsual_mode != Ctrl_V)
+    if (VIsual_mode != Ctrl_V
+	    || (!initial && oap->end.col < W_WIDTH(curwin)))
 	return;
 
-    oap->block_mode = TRUE;
+    oap->block_mode = VIsual_active;
 
 #ifdef FEAT_MBYTE
     /* prevent from moving onto a trail byte */
