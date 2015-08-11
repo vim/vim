@@ -22557,6 +22557,8 @@ ex_function(eap)
 	    break;
 	}
     }
+    if (*p != ')')
+	goto erret;
     ++p;	/* skip the ')' */
 
     /* find extra arguments "range", "dict" and "abort" */
