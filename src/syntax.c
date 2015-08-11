@@ -5654,7 +5654,7 @@ get_syn_pattern(arg, ci)
     char_u	*cpo_save;
 
     /* need at least three chars */
-    if (arg == NULL || arg[1] == NUL || arg[2] == NUL)
+    if (arg == NULL || arg[0] == NUL || arg[1] == NUL || arg[2] == NUL)
 	return NULL;
 
     end = skip_regexp(arg + 1, *arg, TRUE, NULL);
