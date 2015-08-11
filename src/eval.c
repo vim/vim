@@ -555,6 +555,7 @@ static void f_getbufline __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getbufvar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getchar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getcharmod __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_getcharsearch __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getcmdline __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getcmdpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getcmdtype __ARGS((typval_T *argvars, typval_T *rettv));
@@ -688,6 +689,7 @@ static void f_searchpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_server2client __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_serverlist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setbufvar __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_setcharsearch __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setcmdpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setline __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setloclist __ARGS((typval_T *argvars, typval_T *rettv));
@@ -8149,6 +8151,7 @@ static struct fst
     {"getbufvar",	2, 3, f_getbufvar},
     {"getchar",		0, 1, f_getchar},
     {"getcharmod",	0, 0, f_getcharmod},
+    {"getcharsearch",	0, 0, f_getcharsearch},
     {"getcmdline",	0, 0, f_getcmdline},
     {"getcmdpos",	0, 0, f_getcmdpos},
     {"getcmdtype",	0, 0, f_getcmdtype},
@@ -8285,6 +8288,7 @@ static struct fst
     {"server2client",	2, 2, f_server2client},
     {"serverlist",	0, 0, f_serverlist},
     {"setbufvar",	3, 3, f_setbufvar},
+    {"setcharsearch",	1, 1, f_setcharsearch},
     {"setcmdpos",	1, 1, f_setcmdpos},
     {"setline",		2, 2, f_setline},
     {"setloclist",	2, 3, f_setloclist},
@@ -11661,6 +11665,24 @@ f_getcharmod(argvars, rettv)
     typval_T	*rettv;
 {
     rettv->vval.v_number = mod_mask;
+}
+
+/*
+ * "getcharsearch()" function
+ */
+    static void
+f_getcharsearch(argvars, rettv)
+    typval_T	*argvars UNUSED;
+    typval_T	*rettv;
+{
+    if (rettv_dict_alloc(rettv) != FAIL)
+    {
+	dict_T *dict = rettv->vval.v_dict;
+
+	dict_add_nr_str(dict, "char", 0L, last_csearch());
+	dict_add_nr_str(dict, "forward", last_csearch_forward(), NULL);
+	dict_add_nr_str(dict, "until", last_csearch_until(), NULL);
+    }
 }
 
 /*
@@ -17001,6 +17023,48 @@ f_setbufvar(argvars, rettv)
 
 	/* reset notion of buffer */
 	aucmd_restbuf(&aco);
+    }
+}
+
+    static void
+f_setcharsearch(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv UNUSED;
+{
+    dict_T	*d;
+    dictitem_T	*di;
+    char_u	*csearch;
+
+    if (argvars[0].v_type != VAR_DICT)
+    {
+	EMSG(_(e_dictreq));
+	return;
+    }
+
+    if ((d = argvars[0].vval.v_dict) != NULL)
+    {
+	csearch = get_dict_string(d, (char_u *)"char", FALSE);
+	if (csearch != NULL)
+	{
+	    if (enc_utf8)
+	    {
+		int pcc[MAX_MCO];
+		int c = utfc_ptr2char(csearch, pcc);
+		set_last_csearch(c, csearch, utfc_ptr2len(csearch));
+	    }
+	    else
+		set_last_csearch(mb_ptr2char(csearch),
+						csearch, mb_ptr2len(csearch));
+	}
+
+	di = dict_find(d, (char_u *)"forward", -1);
+	if (di != NULL)
+	    set_csearch_direction(get_tv_number(&di->di_tv)
+							? FORWARD : BACKWARD);
+
+	di = dict_find(d, (char_u *)"until", -1);
+	if (di != NULL)
+	    set_csearch_until(!!get_tv_number(&di->di_tv));
     }
 }
 

@@ -89,6 +89,14 @@ static struct spat spats[2] =
 
 static int last_idx = 0;	/* index in spats[] for RE_LAST */
 
+static char_u lastc[2] = {NUL, NUL};	/* last character searched for */
+static int lastcdir = FORWARD;		/* last direction of character search */
+static int last_t_cmd = TRUE;		/* last search t_cmd */
+#ifdef FEAT_MBYTE
+static char_u	lastc_bytes[MB_MAXBYTES + 1];
+static int	lastc_bytelen = 1;	/* >1 for multi-byte char */
+#endif
+
 #if defined(FEAT_AUTOCMD) || defined(FEAT_EVAL) || defined(PROTO)
 /* copy of spats[], for keeping the search patterns while executing autocmds */
 static struct spat  saved_spats[2];
@@ -378,7 +386,7 @@ ignorecase(pat)
 }
 
 /*
- * Return TRUE if patter "pat" has an uppercase character.
+ * Return TRUE if pattern "pat" has an uppercase character.
  */
     int
 pat_has_uppercase(pat)
@@ -416,6 +424,58 @@ pat_has_uppercase(pat)
 	    ++p;
     }
     return FALSE;
+}
+
+    char_u *
+last_csearch()
+{
+#ifdef FEAT_MBYTE
+    return lastc_bytes;
+#else
+    return lastc;
+#endif
+}
+
+    int
+last_csearch_forward()
+{
+    return lastcdir == FORWARD;
+}
+
+    int
+last_csearch_until()
+{
+    return last_t_cmd == TRUE;
+}
+
+    void
+set_last_csearch(c, s, len)
+    int		c;
+    char_u	*s;
+    int		len;
+{
+    *lastc = c;
+#ifdef FEAT_MBYTE
+    lastc_bytelen = len;
+    if (len)
+	memcpy(lastc_bytes, s, len);
+    else
+	vim_memset(lastc_bytes, 0, sizeof(lastc_bytes));
+#endif
+}
+
+    void
+set_csearch_direction(cdir)
+    int cdir;
+{
+    lastcdir = cdir;
+}
+
+    void
+set_csearch_until(t_cmd)
+    int t_cmd;
+{
+    last_t_cmd = t_cmd;
 }
 
     char_u *
@@ -1559,47 +1619,42 @@ searchc(cap, t_cmd)
     int			c = cap->nchar;	/* char to search for */
     int			dir = cap->arg;	/* TRUE for searching forward */
     long		count = cap->count1;	/* repeat count */
-    static int		lastc = NUL;	/* last character searched for */
-    static int		lastcdir;	/* last direction of character search */
-    static int		last_t_cmd;	/* last search t_cmd */
     int			col;
     char_u		*p;
     int			len;
     int			stop = TRUE;
-#ifdef FEAT_MBYTE
-    static char_u	bytes[MB_MAXBYTES + 1];
-    static int		bytelen = 1;	/* >1 for multi-byte char */
-#endif
 
     if (c != NUL)	/* normal search: remember args for repeat */
     {
 	if (!KeyStuffed)    /* don't remember when redoing */
 	{
-	    lastc = c;
-	    lastcdir = dir;
-	    last_t_cmd = t_cmd;
+	    *lastc = c;
+	    set_csearch_direction(dir);
+	    set_csearch_until(t_cmd);
 #ifdef FEAT_MBYTE
-	    bytelen = (*mb_char2bytes)(c, bytes);
+	    lastc_bytelen = (*mb_char2bytes)(c, lastc_bytes);
 	    if (cap->ncharC1 != 0)
 	    {
-		bytelen += (*mb_char2bytes)(cap->ncharC1, bytes + bytelen);
+		lastc_bytelen += (*mb_char2bytes)(cap->ncharC1,
+			lastc_bytes + lastc_bytelen);
 		if (cap->ncharC2 != 0)
-		    bytelen += (*mb_char2bytes)(cap->ncharC2, bytes + bytelen);
+		    lastc_bytelen += (*mb_char2bytes)(cap->ncharC2,
+			    lastc_bytes + lastc_bytelen);
 	    }
 #endif
 	}
     }
     else		/* repeat previous search */
     {
-	if (lastc == NUL)
+	if (*lastc == NUL)
 	    return FAIL;
 	if (dir)	/* repeat in opposite direction */
 	    dir = -lastcdir;
 	else
 	    dir = lastcdir;
 	t_cmd = last_t_cmd;
-	c = lastc;
-	/* For multi-byte re-use last bytes[] and bytelen. */
+	c = *lastc;
+	/* For multi-byte re-use last lastc_bytes[] and lastc_bytelen. */
 
 	/* Force a move of at least one char, so ";" and "," will move the
 	 * cursor, even if the cursor is right in front of char we are looking
@@ -1636,14 +1691,14 @@ searchc(cap, t_cmd)
 			return FAIL;
 		    col -= (*mb_head_off)(p, p + col - 1) + 1;
 		}
-		if (bytelen == 1)
+		if (lastc_bytelen == 1)
 		{
 		    if (p[col] == c && stop)
 			break;
 		}
 		else
 		{
-		    if (vim_memcmp(p + col, bytes, bytelen) == 0 && stop)
+		    if (vim_memcmp(p + col, lastc_bytes, lastc_bytelen) == 0 && stop)
 			break;
 		}
 		stop = TRUE;
@@ -1671,8 +1726,8 @@ searchc(cap, t_cmd)
 	if (has_mbyte)
 	{
 	    if (dir < 0)
-		/* Landed on the search char which is bytelen long */
-		col += bytelen - 1;
+		/* Landed on the search char which is lastc_bytelen long */
+		col += lastc_bytelen - 1;
 	    else
 		/* To previous char, which may be multi-byte. */
 		col -= (*mb_head_off)(p, p + col);
