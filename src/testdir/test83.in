@@ -8,16 +8,16 @@ STARTTEST
 : w! test.out
 : qa!
 :endif
-
+:
 :/^text for tags1$/,/^text for tags1$/+1w! Xtags1.txt
 :/^text for tags2$/,/^text for tags2$/+1w! Xtags2.txt
 :/^text for tags3$/,/^text for tags3$/+1w! Xtags3.txt
 :/^tags1$/+1,/^tags1-end$/-1w! Xtags1
-
-ggdG
-
+:
+ggdG:
+:
 :call setline('.', 'Results of test83')
-
+:
 :" case1:
 :new
 :set tags=Xtags1
@@ -30,7 +30,7 @@ ggdG
 : close
 : put ='case1: ok'
 :endif
-
+:
 :" case2:
 :new
 :set tags=test83-tags2
@@ -43,7 +43,7 @@ ggdG
 : close
 : put ='case2: ok'
 :endif
-
+:
 :" case3:
 :new
 :set tags=test83-tags3
@@ -57,7 +57,7 @@ ggdG
 : put ='case3: ok'
 :endif
 :close
-
+:
 :wq! test.out
 ENDTEST
 

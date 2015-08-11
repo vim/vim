@@ -113,12 +113,12 @@ Avim3
 :iunmap <c-u>
 Avim4
 :" Test with backspace set to the compatible setting
-:set bs=
+:set backspace= visualbell
 A vim5A
 A vim6Azweiu
 :inoremap <c-u> <left><c-u>
 A vim7
-:set cp
+:set compatible novisualbell
 ENDTEST
 1 this shouldn't be deleted
 2 this shouldn't be deleted

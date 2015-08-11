@@ -87,19 +87,19 @@ ggO---:w >>test.out
 :so small.vim
 :set nocp viminfo+=nviminfo
 :enew!
-oa
+oa:
 :set ul=100
-ob
+ob:
 :set ul=100
 o1a2=setline('.','1234')
 
 uu:"
-oc
+oc:
 :set ul=100
 o1a2=setline('.','1234')
 
 u:"
-od
+od:
 :set ul=100
 o1a2=string(123)
 u:"

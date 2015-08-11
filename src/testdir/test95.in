@@ -18,7 +18,7 @@ STARTTEST
 :"    etc.
 :"  When there is no match use only the first two items.
 :let tl = []
-
+:
 :"""" Multi-byte character tests. These will fail unless vim is compiled
 :"""" with Multibyte (FEAT_MBYTE) or BIG/HUGE features.
 :call add(tl, [2, '[[:alpha:][=a=]]\+', '879 aiaãâaiuvna ', 'aiaãâaiuvna'])
@@ -26,15 +26,15 @@ STARTTEST
 :call add(tl, [2, '[^ม ]\+', 'มม oijasoifjos ifjoisj f osij j มมมมม abcd', 'oijasoifjos'])
 :call add(tl, [2, ' [^ ]\+', 'start มabcdม ', ' มabcdม'])
 :call add(tl, [2, '[ม[:alpha:][=a=]]\+', '879 aiaãมâมaiuvna ', 'aiaãมâมaiuvna'])
-
+:
 :" this is not a normal "i" but 0xec
 :call add(tl, [2, '\p\+', 'ìa', 'ìa'])
 :call add(tl, [2, '\p*', 'aあ', 'aあ'])
-
+:
 :"""" Test recognition of some character classes
 :call add(tl, [2, '\i\+', '&*¨xx ', 'xx'])
 :call add(tl, [2, '\f\+', '&*fname ', 'fname'])
-
+:
 :"""" Test composing character matching
 :call add(tl, [2, '.ม', 'xม่x yมy', 'yม'])
 :call add(tl, [2, '.ม่', 'xม่x yมy', 'xม่'])
@@ -56,8 +56,8 @@ STARTTEST
 :call add(tl, [2, 'a\%C', "ca\u0300t", "a\u0300"])
 :call add(tl, [2, 'ca\%C', "ca\u0300t", "ca\u0300"])
 :call add(tl, [2, 'ca\%Ct', "ca\u0300t", "ca\u0300t"])
-
-
+:
+:
 :"""" Test \Z
 :call add(tl, [2, 'ú\Z', 'x'])
 :call add(tl, [2, 'יהוה\Z', 'יהוה', 'יהוה'])
@@ -75,12 +75,12 @@ STARTTEST
 :call add(tl, [2, "\\Z\u05b9", "xy\u05b9z", "y\u05b9"])
 :call add(tl, [1, "\u05b9\\+\\Z", "xy\u05b9z\u05b9 ", "y\u05b9z\u05b9"])
 :call add(tl, [1, "\\Z\u05b9\\+", "xy\u05b9z\u05b9 ", "y\u05b9z\u05b9"])
-
+:
 :"""" Combining different tests and features
 :call add(tl, [2, '[^[=a=]]\+', 'ddaãâbcd', 'dd'])
-
+:
 :"""" Run the tests
-
+:
 :"
 :for t in tl
 :  let re = t[0]
@@ -124,7 +124,7 @@ STARTTEST
 :  endfor
 :endfor
 :unlet t tl e l
-
+:
 :" check that 'ambiwidth' does not change the meaning of \p
 :set regexpengine=1 ambiwidth=single
 :$put ='eng 1 ambi single: ' . match(\"\u00EC\", '\p')
@@ -134,7 +134,7 @@ STARTTEST
 :$put ='eng 2 ambi single: ' . match(\"\u00EC\", '\p')
 :set regexpengine=2 ambiwidth=double
 :$put ='eng 2 ambi double: ' . match(\"\u00EC\", '\p')
-
+:
 :/\%#=1^Results/,$wq! test.out
 ENDTEST
 

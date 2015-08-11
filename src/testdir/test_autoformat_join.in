@@ -3,7 +3,7 @@ Tests for setting the '[,'] marks when joining lines.
 STARTTEST
 :so small.vim
 :/^\t\t/
-0gqj
+0gqj:
 :let a=string(getpos("'[")).'/'.string(getpos("']"))
 :/^This line/;'}-join
 :let b=string(getpos("'[")).'/'.string(getpos("']"))

@@ -46,7 +46,7 @@ STARTTEST
 : let res='ng'
 :endif
 :$put =testcase.res
-"
+:"
 :/^start:/,$wq! test.out
 ENDTEST
 

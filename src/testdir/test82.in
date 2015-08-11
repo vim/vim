@@ -9,7 +9,7 @@ STARTTEST
 : qa!
 :endif
 :set enc=utf8
-ggdG
+ggdG:
 :
 :function! Ch(a, op, b, expected)
 :  if eval(printf('"%s" %s "%s"', a:a, a:op, a:b)) != a:expected
