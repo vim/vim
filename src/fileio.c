@@ -10210,7 +10210,7 @@ file_pat_to_reg_pat(pat, pat_end, allow_dirs, no_bslash)
     else
 	reg_pat[i++] = '^';
     endp = pat_end - 1;
-    if (*endp == '*')
+    if (endp >= pat && *endp == '*')
     {
 	while (endp - pat > 0 && *endp == '*')
 	    endp--;
