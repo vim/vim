@@ -17046,13 +17046,16 @@ f_setcharsearch(argvars, rettv)
 	csearch = get_dict_string(d, (char_u *)"char", FALSE);
 	if (csearch != NULL)
 	{
+#ifdef FEAT_MBYTE
 	    if (enc_utf8)
 	    {
 		int pcc[MAX_MCO];
 		int c = utfc_ptr2char(csearch, pcc);
+
 		set_last_csearch(c, csearch, utfc_ptr2len(csearch));
 	    }
 	    else
+#endif
 		set_last_csearch(mb_ptr2char(csearch),
 						csearch, mb_ptr2len(csearch));
 	}
