@@ -4873,11 +4873,16 @@ syn_cmd_keyword(eap, syncing)
 			if (p[1] == NUL)
 			{
 			    EMSG2(_("E789: Missing ']': %s"), kw);
-			    kw = p + 2;		/* skip over the NUL */
-			    break;
+			    goto error;
 			}
 			if (p[1] == ']')
 			{
+			    if (p[2] != NUL)
+			    {
+				EMSG3(_("E890: trailing char after ']': %s]%s"),
+								kw, &p[2]);
+				goto error;
+			    }
 			    kw = p + 1;		/* skip over the "]" */
 			    break;
 			}
@@ -4898,7 +4903,7 @@ syn_cmd_keyword(eap, syncing)
 		    }
 		}
 	    }
-
+error:
 	    vim_free(keyword_copy);
 	    vim_free(syn_opt_arg.cont_in_list);
 	    vim_free(syn_opt_arg.next_list);
