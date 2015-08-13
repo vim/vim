@@ -451,8 +451,8 @@ last_csearch_until()
     void
 set_last_csearch(c, s, len)
     int		c;
-    char_u	*s;
-    int		len;
+    char_u	*s UNUSED;
+    int		len UNUSED;
 {
     *lastc = c;
 #ifdef FEAT_MBYTE
