@@ -1902,24 +1902,30 @@ unittest unittests: $(UNITTEST_TARGETS)
 test1 \
 	test_argument_0count \
 	test_argument_count \
+	test_autocmd_option \
 	test_autoformat_join \
 	test_breakindent \
 	test_changelist \
+	test_charsearch \
 	test_close_count \
 	test_command_count \
 	test_erasebackword \
 	test_eval \
+	test_fixeol \
+	test_increment \
 	test_insertcount \
 	test_listchars \
 	test_listlbr \
 	test_listlbr_utf8 \
 	test_mapping \
 	test_marks \
+	test_match_conceal \
 	test_nested_function \
 	test_options \
 	test_perl \
 	test_qf_title \
 	test_ruby \
+	test_search_mbyte \
 	test_set \
 	test_signs \
 	test_textobjects \
