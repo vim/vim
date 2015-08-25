@@ -5,8 +5,12 @@ STARTTEST
 :so small.vim
 :so mbyte.vim
 :"
-:" Test for getbufvar()
 :" Use strings to test for memory leaks.
+:" First, check that in an empty window, gettabvar() returns the correct value
+:let t:testvar='abcd'
+:$put =string(gettabvar(1,'testvar'))
+:$put =string(gettabvar(1,'testvar'))
+:" Test for getbufvar()
 :let b:var_num = '1234'
 :let def_num = '5678'
 :$put =string(getbufvar(1, 'var_num'))

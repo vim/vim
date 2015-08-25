@@ -12291,7 +12291,8 @@ f_gettabvar(argvars, rettv)
     {
 	/* Set tp to be our tabpage, temporarily.  Also set the window to the
 	 * first window in the tabpage, otherwise the window is not valid. */
-	if (switch_win(&oldcurwin, &oldtabpage, tp->tp_firstwin, tp, TRUE)
+	if (switch_win(&oldcurwin, &oldtabpage,
+		    tp->tp_firstwin == NULL ? firstwin : tp->tp_firstwin, tp, TRUE)
 									== OK)
 	{
 	    /* look up the variable */
