@@ -3969,6 +3969,26 @@ expand_env_esc(srcp, dst, dstlen, esc, one, startstr)
     --dstlen;		    /* leave one char space for "\," */
     while (*src && dstlen > 0)
     {
+#ifdef FEAT_EVAL
+	/* Skip over `=expr`. */
+	if (src[0] == '`' && src[1] == '=')
+	{
+	    size_t len;
+
+	    var = src;
+	    src += 2;
+	    (void)skip_expr(&src);
+	    if (*src == '`')
+		++src;
+	    len = src - var;
+	    if (len > (size_t)dstlen)
+		len = dstlen;
+	    vim_strncpy(dst, var, len);
+	    dst += len;
+	    dstlen -= len;
+	    continue;
+	}
+#endif
 	copy_char = TRUE;
 	if ((*src == '$'
 #ifdef VMS
