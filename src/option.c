@@ -3656,6 +3656,7 @@ set_option_default(opt_idx, opt_flags, compatible)
 
 /*
  * Set all options (except terminal options) to their default value.
+ * When "opt_flags" is non-zero skip 'encoding'.
  */
     static void
 set_options_default(opt_flags)
@@ -3668,7 +3669,8 @@ set_options_default(opt_flags)
 #endif
 
     for (i = 0; !istermoption(&options[i]); i++)
-	if (!(options[i].flags & P_NODEFAULT))
+	if (!(options[i].flags & P_NODEFAULT)
+		&& (opt_flags == 0 || options[i].var != (char_u *)&p_enc))
 	    set_option_default(i, opt_flags, p_cp);
 
 #ifdef FEAT_WINDOWS
@@ -4204,6 +4206,7 @@ do_set(arg, opt_flags)
 		++arg;
 		/* Only for :set command set global value of local options. */
 		set_options_default(OPT_FREE | opt_flags);
+		redraw_all_later(CLEAR);
 	    }
 	    else
 	    {
