@@ -3653,9 +3653,12 @@ set_options_default(opt_flags)
     for (i = 0; !istermoption(&options[i]); i++)
 	if (!(options[i].flags & P_NODEFAULT)
 		&& (opt_flags == 0
+#ifdef FEAT_CRYPT
 		    || (options[i].var != (char_u *)&p_enc
 			&& options[i].var != (char_u *)&p_cm
-			&& options[i].var != (char_u *)&p_key)))
+			&& options[i].var != (char_u *)&p_key)
+#endif
+                    ))
 	    set_option_default(i, opt_flags, p_cp);
 
 #ifdef FEAT_WINDOWS
