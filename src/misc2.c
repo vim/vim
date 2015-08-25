@@ -5058,7 +5058,7 @@ ff_wc_equal(s1, s2)
     char_u	*s1;
     char_u	*s2;
 {
-    int		i;
+    int		i, j;
     int		prev1 = NUL;
     int		prev2 = NUL;
 
@@ -5068,19 +5068,19 @@ ff_wc_equal(s1, s2)
     if (s1 == NULL || s2 == NULL)
 	return FALSE;
 
-    if (STRLEN(s1) != STRLEN(s2))
-	return FAIL;
-
-    for (i = 0; s1[i] != NUL && s2[i] != NUL; i += MB_PTR2LEN(s1 + i))
+    for (i = 0, j = 0; s1[i] != NUL;)
     {
 	int c1 = PTR2CHAR(s1 + i);
-	int c2 = PTR2CHAR(s2 + i);
+	int c2 = PTR2CHAR(s2 + j);
 
 	if ((p_fic ? MB_TOLOWER(c1) != MB_TOLOWER(c2) : c1 != c2)
 		&& (prev1 != '*' || prev2 != '*'))
 	    return FAIL;
 	prev2 = prev1;
 	prev1 = c1;
+
+        i += MB_PTR2LEN(s1 + i);
+        j += MB_PTR2LEN(s2 + j);
     }
     return TRUE;
 }
@@ -5814,14 +5814,14 @@ pathcmp(p, q, maxlen)
     const char *p, *q;
     int maxlen;
 {
-    int		i;
+    int		i, j;
     int		c1, c2;
     const char	*s = NULL;
 
-    for (i = 0; maxlen < 0 || i < maxlen; i += MB_PTR2LEN((char_u *)p + i))
+    for (i = 0, j = 0; maxlen < 0 || (i < maxlen && j < maxlen);)
     {
 	c1 = PTR2CHAR((char_u *)p + i);
-	c2 = PTR2CHAR((char_u *)q + i);
+	c2 = PTR2CHAR((char_u *)q + j);
 
 	/* End of "p": check if "q" also ends or just has a slash. */
 	if (c1 == NUL)
@@ -5829,6 +5829,7 @@ pathcmp(p, q, maxlen)
 	    if (c2 == NUL)  /* full match */
 		return 0;
 	    s = q;
+            i = j;
 	    break;
 	}
 
@@ -5854,8 +5855,11 @@ pathcmp(p, q, maxlen)
 	    return p_fic ? MB_TOUPPER(c1) - MB_TOUPPER(c2)
 		    : c1 - c2;  /* no match */
 	}
+
+	i += MB_PTR2LEN((char_u *)p + i);
+	j += MB_PTR2LEN((char_u *)q + j);
     }
-    if (s == NULL)	/* "i" ran into "maxlen" */
+    if (s == NULL)	/* "i" or "j" ran into "maxlen" */
 	return 0;
 
     c1 = PTR2CHAR((char_u *)s + i);
