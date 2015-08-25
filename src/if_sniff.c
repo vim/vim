@@ -655,7 +655,11 @@ sniff_disconnect(immediately)
     else
     {
 #ifdef WIN32
+# if (defined(_MSC_VER) && _MSC_VER >= 1400)
+        Sleep(2);
+# else
 	_sleep(2);
+# endif
 	if (!sniff_request_processed)
 	    ProcessSniffRequests();
 #else
