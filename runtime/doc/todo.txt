@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Aug 11
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Aug 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,6 +35,9 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 Regexp problems:
+- The regexp engines are not reentrant, causing havoc when interrupted by a
+  remote expression or something else.  Move global variables onto the stack
+  or into an allocated struct.
 - The old engine does not find a match for "/\%#=1\(\)\{80}", the new engine
   matches everywhere.
 - Using win_linetabsize() can still be slow. Cache the result, store col and
@@ -88,13 +91,12 @@ Perhaps we can use ":silent window"?
 
 Illegal memory access, requires ASAN to see. (Dominique Pelle, 2015 Jul 28)
 
-Patch for better documentaiton of cmdline expansion. (Pavol Juhas, 2015 Jul
-24)
-
 Crash when changing the 'tags' option from a remote command.
 (Benjamin Fritz, 2015 Mar 18, stack trace Mar 20)
 
 Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
+
+Updated Breton spell script. (pull request 396, Dominique)
 
 Can src/GvimExt/Make_cyg.mak be removed?
 Same for src/xxd/Make_cyg.mak
@@ -114,6 +116,8 @@ Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
 Better greek spell checking.  Issue 299.
+
+Add bzl filetype support. (David Barnett, 2015 Aug 11)
 
 When complete() first argument is before where insert started and 'backspace'
 is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
@@ -136,16 +140,25 @@ Patch to support Unicode I/O in the MS-Windows console.
 The argument for "-S" is not taken literally, the ":so" command expands
 wildcards.  Add a ":nowild" command modifier?  (ZyX, 2015 March 4)
 
+":set all&" still does not handle all side effects.  Centralize handling side
+effects for when set by the user, on init and when reset to default.
+
 Proposal to make options.txt easier to read. (Arnaud Decara, 2015 Aug 5)
+Update Aug 14.
 
 Build with Python on Mac does not always use the right library.
 (Kazunobu Kuriyama, 2015 Mar 28)
+
+Example in editing.txt uses $HOME with the expectating that it ends in a
+slash.  For me it does, but perhaps not for everybody.  Add a function that
+inserts a slash when needed?  pathconcat(dir, path) (Thilo Six, 2015 Aug 12)
 
 ml_updatechunk() is slow when retrying for another encoding. (John Little,
 2014 Sep 11)
 
 Patch to fix that "zt" in diff mode doesn't always work properly.
-(Christian Brabandt, 2015 Aug 6)  Doesn't fix the problem?
+(Christian Brabandt, 2015 Aug 6)  Need to uncomment a line to not have filler
+lines.
 
 Patch to fix checking global option value when not using it.
 (Arnaud Decara, 2015 Jul 23)
@@ -166,6 +179,9 @@ Work in progress.
 
 Patch for global-local options consistency. (Arnaud Decara, 2015 Jul 22)
 Is this right?
+
+Patch to have CTRL-A and CTRL-X update the '[ and '] marks.
+(Yukihiro Nakadaira, 2015 Aug 23)
 
 Patch to make getregtype() return the right size for non-linux systems.
 (Yasuhiro Matsumoto, 2014 Jul 8)
@@ -221,6 +237,11 @@ Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 
 Should be easy to highlight all matches with 'incsearch'.  Idea by Itchyny,
 2015 Feb 6.
+
+Patch to add ":ldo" and ":cdo", execute commands over quickfix list and
+location list. (Yegappan Lakshmanan, 2013 Jun 2, update 2015 Mar 21)
+Update by Florian Walch, 2015 Jul 1.
+Update by Yegappan, 2015 Jul 24.
 
 Plugins need to make a lot of effort, lots of mappings, to know what happened
 before pressing the key that triggers a plugin action.  How about keeping the
@@ -624,11 +645,6 @@ loading all files.
 Win32: When 'autochdir' is on and 'encoding' is changed, files on the command
 line are opened again, but from the wrong directory.  Apply 'autochdir' only
 after starting up?
-
-Patch to add ":ldo" and ":cdo", execute commands over quickfix list and
-location list. (Yegappan Lakshmanan, 2013 Jun 2, update 2015 Mar 21)
-Update by Florian Walch, 2015 Jul 1.
-Update by Yegappan, 2015 Jul 24.
 
 8   "stl" and "stlnc" in 'fillchars' don't work for multi-byte characters.
     Patch by Christian Wellenbrock, 2013 Jul 5.

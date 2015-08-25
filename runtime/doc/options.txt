@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2015 Jul 17
+*options.txt*	For Vim version 7.4.  Last change: 2015 Aug 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -50,9 +50,19 @@ achieve special effects.  These options come in three forms:
 :se[t] {option}&vi	Reset option to its Vi default value. {not in Vi}
 :se[t] {option}&vim	Reset option to its Vim default value. {not in Vi}
 
-:se[t] all&		Set all options, except terminal options, to their
-			default value.  The values of 'term', 'lines' and
-			'columns' are not changed. {not in Vi}
+:se[t] all&		Set all options to their default value.  The values of 
+			these options are not changed:
+			  all terminal options, starting with t_
+			  'columns'
+			  'cryptmethod'
+			  'encoding'
+			  'key'
+			  'lines'
+			  'term'
+			  'ttymouse'
+			  'ttytype'
+			Warning: This may have a lot of side effects.
+			{not in Vi}
 
 						*:set-args* *E487* *E521*
 :se[t] {option}={value}		or
