@@ -5371,6 +5371,8 @@ eval_index(arg, rettv, evaluate, verbose)
     }
 #endif
 
+    init_tv(&var1);
+    init_tv(&var2);
     if (**arg == '.')
     {
 	/*
