@@ -6314,6 +6314,8 @@ ex_ownsyntax(eap)
     {
 	curwin->w_s = (synblock_T *)alloc(sizeof(synblock_T));
 	memset(curwin->w_s, 0, sizeof(synblock_T));
+	hash_init(&curwin->w_s->b_keywtab);
+	hash_init(&curwin->w_s->b_keywtab_ic);
 #ifdef FEAT_SPELL
 	/* TODO: keep the spell checking as it was. */
 	curwin->w_p_spell = FALSE;	/* No spell checking */
