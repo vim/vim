@@ -641,6 +641,8 @@ _OnSysChar(
     int		modifiers;
     int		ch = cch;   /* special keys are negative */
 
+    dead_key = 0;
+
     /* TRACE("OnSysChar(%d, %c)\n", ch, ch); */
 
     /* OK, we have a character key (given by ch) which was entered with the
@@ -1792,6 +1794,20 @@ process_message(void)
     {
 	vk = (int) msg.wParam;
 
+	/*
+	 * Handle dead keys in special conditions in other cases we let Windows
+	 * handle them and do not interfere.
+	 *
+	 * The dead_key flag is reset on several occasions:
+	 * - in _OnChar() (or _OnSysChar()) as any dead key was necessarily
+	 *   consumed at that point (This is when we let Windows combine the
+	 *   dead character on its own)
+	 *
+	 * - Before doing something special such as regenerating keypresses to
+	 *   expel the dead character as this could trigger an infinite loop if
+	 *   for some reason MyTranslateMessage() do not trigger a call
+	 *   immediately to _OnChar() (or _OnSysChar()).
+	 */
 	if (dead_key)
 	{
 	    /*
@@ -1806,12 +1822,14 @@ process_message(void)
 	     */
 	    if ((vk == VK_SPACE || vk == VK_BACK || vk == VK_ESCAPE))
 	    {
+		dead_key = 0;
 		MyTranslateMessage(&msg);
 		return;
 	    }
 	    /* In modes where we are not typing, dead keys should behave normally */
 	    else if (!(get_real_state() & (INSERT | CMDLINE | SELECTMODE)))
 	    {
+		dead_key = 0;
 		/* generate dead character */
 		deadCharExpel.message = msg.message;
 		deadCharExpel.hwnd    = msg.hwnd;
