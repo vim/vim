@@ -26,11 +26,11 @@ before_install:
   - pip install --user cpp-coveralls
 
 script:
-  - cd vim && ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && make
+  - ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && make
   - ./src/vim --version
   - if [ "$TEST" = "yes" ]; then make test; fi
 
 after_success:
-  - if [ x"$COVERAGE" == "xyes" ] ; then cd vim && ~/.local/bin/coveralls -b src -x .xs -e src/xxd -e src/if_perl.c --encodings utf-8 latin-1 EUC-KR; fi
+  - if [ x"$COVERAGE" = "xyes" ]; then ~/.local/bin/coveralls -b src -x .xs -e src/xxd -e src/if_perl.c --encodings utf-8 latin-1 EUC-KR; fi
 
 # vim:set sts=2 sw=2 tw=0 et:
