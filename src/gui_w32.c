@@ -4836,6 +4836,7 @@ make_tooltip(beval, text, pt)
 delete_tooltip(beval)
     BalloonEval	*beval;
 {
+    PostMessage(beval->balloon, WM_CLOSE, 0, 0);
     PostMessage(beval->balloon, WM_DESTROY, 0, 0);
     PostMessage(beval->balloon, WM_NCDESTROY, 0, 0);
 }
