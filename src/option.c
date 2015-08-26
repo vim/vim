@@ -3652,13 +3652,19 @@ set_options_default(opt_flags)
 
     for (i = 0; !istermoption(&options[i]); i++)
 	if (!(options[i].flags & P_NODEFAULT)
+#if defined(FEAT_MBYTE) || defined(FEAT_CRYPT)
 		&& (opt_flags == 0
-		    || (options[i].var != (char_u *)&p_enc
-#if defined(FEAT_CRYPT)
+		    || (TRUE
+# if defined(FEAT_MBYTE)
+			&& options[i].var != (char_u *)&p_enc
+# endif
+# if defined(FEAT_CRYPT)
 			&& options[i].var != (char_u *)&p_cm
 			&& options[i].var != (char_u *)&p_key
+# endif
+			))
 #endif
-			)))
+			)
 	    set_option_default(i, opt_flags, p_cp);
 
 #ifdef FEAT_WINDOWS
