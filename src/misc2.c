@@ -5059,6 +5059,8 @@ ff_wc_equal(s1, s2)
     char_u	*s2;
 {
     int		i, j;
+    int		c1 = NUL;
+    int		c2 = NUL;
     int		prev1 = NUL;
     int		prev2 = NUL;
 
@@ -5068,21 +5070,21 @@ ff_wc_equal(s1, s2)
     if (s1 == NULL || s2 == NULL)
 	return FALSE;
 
-    for (i = 0, j = 0; s1[i] != NUL;)
+    for (i = 0, j = 0; s1[i] != NUL && s2[j] != NUL;)
     {
-	int c1 = PTR2CHAR(s1 + i);
-	int c2 = PTR2CHAR(s2 + j);
+	c1 = PTR2CHAR(s1 + i);
+	c2 = PTR2CHAR(s2 + j);
 
 	if ((p_fic ? MB_TOLOWER(c1) != MB_TOLOWER(c2) : c1 != c2)
 		&& (prev1 != '*' || prev2 != '*'))
-	    return FAIL;
+	    return FALSE;
 	prev2 = prev1;
 	prev1 = c1;
 
         i += MB_PTR2LEN(s1 + i);
         j += MB_PTR2LEN(s2 + j);
     }
-    return TRUE;
+    return c1 == c2;
 }
 #endif
 
