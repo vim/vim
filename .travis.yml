@@ -26,7 +26,8 @@ before_install:
   - pip install --user cpp-coveralls
 
 script:
-  - ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && make
+  - NPROC=$(getconf _NPROCESSORS_ONLN)
+  - ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && make -j$NPROC
   - ./src/vim --version
   - make test
 
