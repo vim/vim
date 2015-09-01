@@ -1909,6 +1909,8 @@ vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr, maxlen)
     else if (hex != 0 || dohex > 1)
     {
 	/* hex */
+	if (hex != 0)
+	    n += 2;	    /* skip over "0x" */
 	while (vim_isxdigit(*ptr))
 	{
 	    un = 16 * un + (unsigned long)hex2nr(*ptr);
