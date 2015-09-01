@@ -3985,7 +3985,7 @@ expand_env_esc(srcp, dst, dstlen, esc, one, startstr)
 		len = dstlen;
 	    vim_strncpy(dst, var, len);
 	    dst += len;
-	    dstlen -= len;
+	    dstlen -= (int)len;
 	    continue;
 	}
 #endif
