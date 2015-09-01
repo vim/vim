@@ -7396,14 +7396,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	the GUI it only applies to the keyboard ( 'encoding' is used for the
 	display).  Except for the Mac when 'macatsui' is off, then
 	'termencoding' should be "macroman".
-	In the Win32 console version the default value is the console codepage
-	when it differs from the ANSI codepage.
 								*E617*
 	Note: This does not apply to the GTK+ 2 GUI.  After the GUI has been
 	successfully initialized, 'termencoding' is forcibly set to "utf-8".
 	Any attempts to set a different value will be rejected, and an error
 	message is shown.
-	For the Win32 GUI 'termencoding' is not used for typed characters,
+	For the Win32 GUI and console versions 'termencoding' is not used,
 	because the Win32 system always passes Unicode characters.
 	When empty, the same encoding is used as for the 'encoding' option.
 	This is the normal value.

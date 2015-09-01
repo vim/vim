@@ -42,7 +42,7 @@ ui_write(s, len)
     /* Don't output anything in silent mode ("ex -s") unless 'verbose' set */
     if (!(silent_mode && p_verbose == 0))
     {
-#ifdef FEAT_MBYTE
+#if defined(FEAT_MBYTE) && !defined(WIN3264)
 	char_u	*tofree = NULL;
 
 	if (output_conv.vc_type != CONV_NONE)
@@ -56,7 +56,7 @@ ui_write(s, len)
 
 	mch_write(s, len);
 
-#ifdef FEAT_MBYTE
+#if defined(FEAT_MBYTE) && !defined(WIN3264)
 	if (output_conv.vc_type != CONV_NONE)
 	    vim_free(tofree);
 #endif
