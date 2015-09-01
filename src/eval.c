@@ -4431,7 +4431,8 @@ eval4(arg, rettv, evaluate)
 		    {
 			if (p[2] == 'n' && p[3] == 'o' && p[4] == 't')
 			    len = 5;
-			if (!vim_isIDc(p[len]))
+			i = p[len];
+			if (!isalnum(i) && i != '_')
 			{
 			    type = len == 2 ? TYPE_EQUAL : TYPE_NEQUAL;
 			    type_is = TRUE;
