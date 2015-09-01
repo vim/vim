@@ -202,6 +202,8 @@ static void internal_format __ARGS((int textwidth, int second_indent, int flags,
 static void check_auto_format __ARGS((int));
 static void redo_literal __ARGS((int c));
 static void start_arrow __ARGS((pos_T *end_insert_pos));
+static void start_arrow_with_change __ARGS((pos_T *end_insert_pos, int change));
+static void start_arrow_common __ARGS((pos_T *end_insert_pos, int change));
 #ifdef FEAT_SPELL
 static void check_spell_redraw __ARGS((void));
 static void spell_back_to_badword __ARGS((void));
@@ -241,11 +243,11 @@ static void ins_mousescroll __ARGS((int dir));
 #if defined(FEAT_GUI_TABLINE) || defined(PROTO)
 static void ins_tabline __ARGS((int c));
 #endif
-static void ins_left __ARGS((void));
+static void ins_left __ARGS((int end_change));
 static void ins_home __ARGS((int c));
 static void ins_end __ARGS((int c));
 static void ins_s_left __ARGS((void));
-static void ins_right __ARGS((void));
+static void ins_right __ARGS((int end_change));
 static void ins_s_right __ARGS((void));
 static void ins_up __ARGS((int startcol));
 static void ins_pageup __ARGS((void));
@@ -297,6 +299,8 @@ static int	ins_need_undo;		/* call u_save() before inserting a
 
 static int	did_add_space = FALSE;	/* auto_format() added an extra space
 					   under the cursor */
+static int	dont_sync_undo = FALSE;	/* CTRL-G U prevents syncing undo for
+					   the next left/right cursor */
 
 /*
  * edit(): Start inserting text.
@@ -767,6 +771,12 @@ edit(cmdchar, startln, count)
 	 */
 	if (c != K_CURSORHOLD)
 	    lastc = c;		/* remember the previous char for CTRL-D */
+
+	/* After using CTRL-G U the next cursor key will not break undo. */
+	if (dont_sync_undo == MAYBE)
+	    dont_sync_undo = TRUE;
+	else
+	    dont_sync_undo = FALSE;
 	do
 	{
 	    c = safe_vgetc();
@@ -1237,7 +1247,7 @@ doESCkey:
 	    if (mod_mask & (MOD_MASK_SHIFT|MOD_MASK_CTRL))
 		ins_s_left();
 	    else
-		ins_left();
+		ins_left(dont_sync_undo == FALSE);
 	    break;
 
 	case K_S_LEFT:	/* <S-Left> */
@@ -1249,7 +1259,7 @@ doESCkey:
 	    if (mod_mask & (MOD_MASK_SHIFT|MOD_MASK_CTRL))
 		ins_s_right();
 	    else
-		ins_right();
+		ins_right(dont_sync_undo == FALSE);
 	    break;
 
 	case K_S_RIGHT:	/* <S-Right> */
@@ -6787,9 +6797,34 @@ redo_literal(c)
  */
     static void
 start_arrow(end_insert_pos)
-    pos_T    *end_insert_pos;	    /* can be NULL */
+    pos_T    *end_insert_pos;		/* can be NULL */
 {
-    if (!arrow_used)	    /* something has been inserted */
+    start_arrow_common(end_insert_pos, TRUE);
+}
+
+/*
+ * Like start_arrow() but with end_change argument.
+ * Will prepare for redo of CTRL-G U if "end_change" is FALSE.
+ */
+    static void
+start_arrow_with_change(end_insert_pos, end_change)
+    pos_T    *end_insert_pos;		/* can be NULL */
+    int	      end_change;		/* end undoable change */
+{
+    start_arrow_common(end_insert_pos, end_change);
+    if (!end_change)
+    {
+	AppendCharToRedobuff(Ctrl_G);
+	AppendCharToRedobuff('U');
+    }
+}
+
+    static void
+start_arrow_common(end_insert_pos, end_change)
+    pos_T    *end_insert_pos;		/* can be NULL */
+    int	      end_change;		/* end undoable change */
+{
+    if (!arrow_used && end_change)	/* something has been inserted */
     {
 	AppendToRedobuff(ESC_STR);
 	stop_insert(end_insert_pos, FALSE, FALSE);
@@ -8359,6 +8394,13 @@ ins_ctrl_g()
 		  Insstart = curwin->w_cursor;
 		  break;
 
+	/* CTRL-G U: do not break undo with the next char */
+	case 'U':
+		  /* Allow one left/right cursor movement with the next char,
+		   * without breaking undo. */
+		  dont_sync_undo = MAYBE;
+		  break;
+
 	/* Unknown CTRL-G command, reserved for future expansion. */
 	default:  vim_beep(BO_CTRLG);
     }
@@ -9440,7 +9482,8 @@ ins_horscroll()
 #endif
 
     static void
-ins_left()
+ins_left(end_change)
+    int	    end_change; /* end undoable change */
 {
     pos_T	tpos;
 
@@ -9457,7 +9500,11 @@ ins_left()
 	 * break undo.  K_LEFT is inserted in im_correct_cursor(). */
 	if (!im_is_preediting())
 #endif
-	    start_arrow(&tpos);
+	{
+	    start_arrow_with_change(&tpos, end_change);
+	    if (!end_change)
+		AppendCharToRedobuff(K_LEFT);
+	}
 #ifdef FEAT_RIGHTLEFT
 	/* If exit reversed string, position is fixed */
 	if (revins_scol != -1 && (int)curwin->w_cursor.col >= revins_scol)
@@ -9472,6 +9519,7 @@ ins_left()
      */
     else if (vim_strchr(p_ww, '[') != NULL && curwin->w_cursor.lnum > 1)
     {
+	/* always break undo when moving upwards/downwards, else undo may break */
 	start_arrow(&tpos);
 	--(curwin->w_cursor.lnum);
 	coladvance((colnr_T)MAXCOL);
@@ -9479,6 +9527,7 @@ ins_left()
     }
     else
 	vim_beep(BO_CRSR);
+    dont_sync_undo = FALSE;
 }
 
     static void
@@ -9542,7 +9591,8 @@ ins_s_left()
 }
 
     static void
-ins_right()
+ins_right(end_change)
+    int	    end_change; /* end undoable change */
 {
 #ifdef FEAT_FOLDING
     if ((fdo_flags & FDO_HOR) && KeyTyped)
@@ -9555,7 +9605,9 @@ ins_right()
 #endif
 	    )
     {
-	start_arrow(&curwin->w_cursor);
+	start_arrow_with_change(&curwin->w_cursor, end_change);
+	if (!end_change)
+	    AppendCharToRedobuff(K_RIGHT);
 	curwin->w_set_curswant = TRUE;
 #ifdef FEAT_VIRTUALEDIT
 	if (virtual_active())
@@ -9589,6 +9641,7 @@ ins_right()
     }
     else
 	vim_beep(BO_CRSR);
+    dont_sync_undo = FALSE;
 }
 
     static void
