@@ -37,3 +37,18 @@ You can find known issues in the todo file: ":help todo".
 Or open [the todo file] on GitHub to see the latest version.
 
 [the todo file]: https://github.com/vim/vim/blob/master/runtime/doc/todo.txt
+
+
+# Syntax, indent and other runtime files
+
+The latest version of these files can be obtained from the repository.
+They are usually not updated with numbered patches.
+
+If you find a problem with one of these files or have a suggestion for
+improvement, please first try to contact the maintainer directly.
+Look in the header of the file for the name and email address.
+
+The maintainer will take care of issues and send updates to Bram for 
+distribution with Vim.
+
+If the maintainer does not react, contact the vim-dev maillist.
