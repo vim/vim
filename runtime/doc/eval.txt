@@ -5419,7 +5419,7 @@ setbufvar({expr}, {varname}, {val})			*setbufvar()*
 			:call setbufvar("todo", "myvar", "foobar")
 <		This function is not available in the |sandbox|.
 
-setcharsearch()						*setcharsearch()*
+setcharsearch({dict})					*setcharsearch()*
 		Set the current character search information to {dict},
 		which contains one or more of the following entries:
 
