@@ -2,7 +2,7 @@
 " Language: reStructuredText documentation format
 " Maintainer: Marshall Ward <marshall.ward@gmail.com>
 " Previous Maintainer: Nikolai Weibull <now@bitwi.se>
-" Latest Revision: 2014-09-07
+" Latest Revision: 2015-09-07
 
 if exists("b:current_syntax")
   finish
