@@ -369,6 +369,9 @@
 #undef HAVE_SOLARIS_ACL
 #undef HAVE_AIX_ACL
 
+/* Define if pango_shape_full() is available. */
+#undef HAVE_PANGO_SHAPE_FULL
+
 /* Define if you want to add support of GPM (Linux console mouse daemon) */
 #undef HAVE_GPM
 

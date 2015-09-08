@@ -12181,6 +12181,37 @@ else
 $as_echo "yes" >&6; }
 fi
 
+if test "x$GTK_CFLAGS" != "x"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pango_shape_full" >&5
+$as_echo_n "checking for pango_shape_full... " >&6; }
+  ac_save_CFLAGS="$CFLAGS"
+  ac_save_LIBS="$LIBS"
+  CFLAGS="$CFLAGS $GTK_CFLAGS"
+  LIBS="$LIBS $GTK_LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <gtk/gtk.h>
+int
+main ()
+{
+ pango_shape_full(NULL, 0, NULL, 0, NULL, NULL);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }; $as_echo "#define HAVE_PANGO_SHAPE_FULL 1" >>confdefs.h
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS="$ac_save_CFLAGS"
+  LIBS="$ac_save_LIBS"
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-gpm argument" >&5
 $as_echo_n "checking --disable-gpm argument... " >&6; }
 # Check whether --enable-gpm was given.
