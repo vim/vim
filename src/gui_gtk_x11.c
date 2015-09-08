@@ -5063,8 +5063,8 @@ not_ascii:
 	     * done, because drawing the cursor would change the display. */
 	    item->analysis.shape_engine = default_shape_engine;
 
-	    pango_shape((const char *)s + item->offset, item->length,
-			&item->analysis, glyphs);
+	    pango_shape_full((const char *)s + item->offset, item->length,
+		    (const char *)s, len, &item->analysis, glyphs);
 	    /*
 	     * Fixed-width hack: iterate over the array and assign a fixed
 	     * width to each glyph, thus overriding the choice made by the
