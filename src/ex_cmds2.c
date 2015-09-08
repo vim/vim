@@ -2429,7 +2429,7 @@ ex_argdelete(eap)
 }
 
 /*
- * ":argdo", ":windo", ":bufdo", ":tabdo"
+ * ":argdo", ":windo", ":bufdo", ":tabdo", ":cdo", ":ldo", ":cfdo" and ":lfdo"
  */
     void
 ex_listdo(eap)
@@ -2446,6 +2446,10 @@ ex_listdo(eap)
     char_u	*save_ei = NULL;
 #endif
     char_u	*p_shm_save;
+#ifdef FEAT_QUICKFIX
+    int		qf_size;
+    int		qf_idx;
+#endif
 
 #ifndef FEAT_WINDOWS
     if (eap->cmdidx == CMD_windo)
@@ -2498,18 +2502,37 @@ ex_listdo(eap)
 	}
 	/* set pcmark now */
 	if (eap->cmdidx == CMD_bufdo)
-        {
+	{
 	    /* Advance to the first listed buffer after "eap->line1". */
-            for (buf = firstbuf; buf != NULL && (buf->b_fnum < eap->line1
+	    for (buf = firstbuf; buf != NULL && (buf->b_fnum < eap->line1
 					  || !buf->b_p_bl); buf = buf->b_next)
 		if (buf->b_fnum > eap->line2)
 		{
 		    buf = NULL;
 		    break;
 		}
-            if (buf != NULL)
+	    if (buf != NULL)
 		goto_buffer(eap, DOBUF_FIRST, FORWARD, buf->b_fnum);
-        }
+	}
+#ifdef FEAT_QUICKFIX
+	else if (eap->cmdidx == CMD_cdo || eap->cmdidx == CMD_ldo
+		|| eap->cmdidx == CMD_cfdo || eap->cmdidx == CMD_lfdo)
+	{
+	    qf_size = qf_get_size(eap);
+	    if (qf_size <= 0 || eap->line1 > qf_size)
+		buf = NULL;
+	    else
+	    {
+		ex_cc(eap);
+
+		buf = curbuf;
+		i = eap->line1 - 1;
+		if (eap->addr_count <= 0)
+		    /* default is all the quickfix/location list entries */
+		    eap->line2 = qf_size;
+	    }
+	}
+#endif
 	else
 	    setpcmark();
 	listcmd_busy = TRUE;	    /* avoids setting pcmark below */
@@ -2595,10 +2618,27 @@ ex_listdo(eap)
 		set_option_value((char_u *)"shm", 0L, p_shm_save, 0);
 		vim_free(p_shm_save);
 
-		/* If autocommands took us elsewhere, quit here */
+		/* If autocommands took us elsewhere, quit here. */
 		if (curbuf->b_fnum != next_fnum)
 		    break;
 	    }
+
+#ifdef FEAT_QUICKFIX
+	    if (eap->cmdidx == CMD_cdo || eap->cmdidx == CMD_ldo
+		    || eap->cmdidx == CMD_cfdo || eap->cmdidx == CMD_lfdo)
+	    {
+		if (i >= qf_size || i >= eap->line2)
+		    break;
+
+		qf_idx = qf_get_cur_idx(eap);
+
+		ex_cnext(eap);
+
+		/* If jumping to the next quickfix entry fails, quit here */
+		if (qf_get_cur_idx(eap) == qf_idx)
+		    break;
+	    }
+#endif
 
 	    if (eap->cmdidx == CMD_windo)
 	    {

@@ -868,7 +868,8 @@ USING THE ARGUMENT LIST
 			each file.
 			{not in Vi} {not available when compiled without the
 			|+listcmds| feature}
-			Also see |:windo|, |:tabdo| and |:bufdo|.
+			Also see |:windo|, |:tabdo|, |:bufdo|, |:cdo|, |:ldo|,
+			|:cfdo| and |:lfdo|
 
 Example: >
 	:args *.c

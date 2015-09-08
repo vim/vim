@@ -4,7 +4,7 @@
 # Authors:	Zoltan Arpadffy, <arpadffy@polarhome.com>
 #		Sandor Kopanyi,  <sandor.kopanyi@mailbox.hu>
 #
-# Last change:  2015 Sep 01
+# Last change:  2015 Sep 08
 #
 # This has been tested on VMS 6.2 to 8.3 on DEC Alpha, VAX and IA64.
 # Edit the lines in the Configuration section below to select.
@@ -101,6 +101,7 @@ SCRIPT = test1.out  test2.out  test3.out  test4.out  test5.out  \
 	 test_autocmd_option.out \
 	 test_autoformat_join.out \
 	 test_breakindent.out \
+	 test_cdo.out \
 	 test_changelist.out \
 	 test_charsearch.out \
 	 test_close_count.out \
