@@ -1751,12 +1751,10 @@ scroll_cursor_top(min_scroll, always)
     new_topline = top + 1;
 
 #ifdef FEAT_DIFF
-    /* used already contains the number of filler lines above, don't add it
+    /* "used" already contains the number of filler lines above, don't add it
      * again.
-     * TODO: if filler lines above new top are to be considered as context for
-     * the current window, leave next statement commented, else hide filler
-     * lines above cursor line, by adding them to extra */
-    /* extra += diff_check_fill(curwin, curwin->w_cursor.lnum); */
+     * Hide filler lines above cursor line by adding them to "extra". */
+    extra += diff_check_fill(curwin, curwin->w_cursor.lnum);
 #endif
 
     /*
@@ -1771,7 +1769,7 @@ scroll_cursor_top(min_scroll, always)
 	    i = 1;
 	else
 #endif
-	    i = plines(top);
+	    i = plines_nofill(top);
 	used += i;
 	if (extra + i <= off && bot < curbuf->b_ml.ml_line_count)
 	{
