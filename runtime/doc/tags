@@ -2015,11 +2015,13 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :cclose	quickfix.txt	/*:cclose*
 :cd	editing.txt	/*:cd*
 :cd-	editing.txt	/*:cd-*
+:cdo	quickfix.txt	/*:cdo*
 :ce	change.txt	/*:ce*
 :center	change.txt	/*:center*
 :cex	quickfix.txt	/*:cex*
 :cexpr	quickfix.txt	/*:cexpr*
 :cf	quickfix.txt	/*:cf*
+:cfdo	quickfix.txt	/*:cfdo*
 :cfile	quickfix.txt	/*:cfile*
 :cfir	quickfix.txt	/*:cfir*
 :cfirst	quickfix.txt	/*:cfirst*
@@ -2366,6 +2368,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :lclose	quickfix.txt	/*:lclose*
 :lcs	if_cscop.txt	/*:lcs*
 :lcscope	if_cscop.txt	/*:lcscope*
+:ldo	quickfix.txt	/*:ldo*
 :le	change.txt	/*:le*
 :left	change.txt	/*:left*
 :lefta	windows.txt	/*:lefta*
@@ -2384,6 +2387,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :lex	quickfix.txt	/*:lex*
 :lexpr	quickfix.txt	/*:lexpr*
 :lf	quickfix.txt	/*:lf*
+:lfdo	quickfix.txt	/*:lfdo*
 :lfile	quickfix.txt	/*:lfile*
 :lfir	quickfix.txt	/*:lfir*
 :lfirst	quickfix.txt	/*:lfirst*
@@ -5656,6 +5660,7 @@ extensions-improvements	todo.txt	/*extensions-improvements*
 f	motion.txt	/*f*
 faq	intro.txt	/*faq*
 farsi	farsi.txt	/*farsi*
+farsi-fonts	farsi.txt	/*farsi-fonts*
 farsi.txt	farsi.txt	/*farsi.txt*
 fasm.vim	syntax.txt	/*fasm.vim*
 fcs_choice-variable	eval.txt	/*fcs_choice-variable*
@@ -6542,6 +6547,7 @@ i_CTRL-G_<Down>	insert.txt	/*i_CTRL-G_<Down>*
 i_CTRL-G_<Up>	insert.txt	/*i_CTRL-G_<Up>*
 i_CTRL-G_CTRL-J	insert.txt	/*i_CTRL-G_CTRL-J*
 i_CTRL-G_CTRL-K	insert.txt	/*i_CTRL-G_CTRL-K*
+i_CTRL-G_U	insert.txt	/*i_CTRL-G_U*
 i_CTRL-G_j	insert.txt	/*i_CTRL-G_j*
 i_CTRL-G_k	insert.txt	/*i_CTRL-G_k*
 i_CTRL-G_u	insert.txt	/*i_CTRL-G_u*

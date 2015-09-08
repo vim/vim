@@ -1,4 +1,4 @@
-*farsi.txt*     For Vim version 7.4.  Last change: 2010 Aug 07
+*farsi.txt*     For Vim version 7.4.  Last change: 2015 Aug 29
 
 
 		  VIM REFERENCE MANUAL    by Mortaza Ghassab Shiran
@@ -59,7 +59,7 @@ o  Toggling between Farsi ISIR-3342 standard encoding and Vim Farsi via F9
    right-to-left mode, this function is also supported only in right-to-left
    mode.
 
-Farsi Fonts					*farsi fonts*
+Farsi Fonts					*farsi-fonts*
 -----------
 
 The following files are found in the subdirectories of the '$VIM/farsi/fonts'

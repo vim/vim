@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Aug 25
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Sep 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -73,6 +73,8 @@ Regexp problems:
 - this doesn't work: "syntax match ErrorMsg /.\%9l\%>20c\&\%<28c/".  Leaving
   out the \& works.  Seems any column check after \& fails.
 
+A link from the README.md to Contributing.md would be great.
+
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
 
@@ -93,18 +95,17 @@ Illegal memory access, requires ASAN to see. (Dominique Pelle, 2015 Jul 28)
 
 Crash when changing the 'tags' option from a remote command.
 (Benjamin Fritz, 2015 Mar 18, stack trace Mar 20)
+Patch to queue commands for clientserver. (James Kolb, 2015 Sep 1)
 
 Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
 
-Updated Breton spell script. (pull request 396, Dominique)
+Unexpected delay when using CTRL-O u.  It's not timeoutlen.
+(Gary Johnson, 2015 Aug 28)
 
 Can src/GvimExt/Make_cyg.mak be removed?
 Same for src/xxd/Make_cyg.mak
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
-
-Patch to add CTRL-g U to not break undo for the following cursor movement
-command. (Christian Brabandt, 2015 Aug 4)
 
 MS-Windows: When editing a file with a leading space, writing it uses the
 wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
@@ -114,8 +115,6 @@ specifically?  First try with the parens, then without.
 
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
-
-Better greek spell checking.  Issue 299.
 
 Add bzl filetype support. (David Barnett, 2015 Aug 11)
 
@@ -131,12 +130,6 @@ Goes away when disabling the swap file. (might1, Feb 16)
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
 
-Patch to improve IME handling in the MS-Windows console.
-(Ken Takata, 2015 Aug 8)
-
-Patch to support Unicode I/O in the MS-Windows console.
-(Ken Takata, 2015 Aug 8)  Also by Yasuhiro Matsumoto.
-
 The argument for "-S" is not taken literally, the ":so" command expands
 wildcards.  Add a ":nowild" command modifier?  (ZyX, 2015 March 4)
 
@@ -145,6 +138,9 @@ effects for when set by the user, on init and when reset to default.
 
 Proposal to make options.txt easier to read. (Arnaud Decara, 2015 Aug 5)
 Update Aug 14.
+
+Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
+Update Sep 7.
 
 Build with Python on Mac does not always use the right library.
 (Kazunobu Kuriyama, 2015 Mar 28)
@@ -155,10 +151,6 @@ inserts a slash when needed?  pathconcat(dir, path) (Thilo Six, 2015 Aug 12)
 
 ml_updatechunk() is slow when retrying for another encoding. (John Little,
 2014 Sep 11)
-
-Patch to fix that "zt" in diff mode doesn't always work properly.
-(Christian Brabandt, 2015 Aug 6)  Need to uncomment a line to not have filler
-lines.
 
 Patch to fix checking global option value when not using it.
 (Arnaud Decara, 2015 Jul 23)
@@ -222,6 +214,9 @@ Make comments in the test Makefile silent. (Kartik Agaram, 2014 Sep 24)
 Patch to add GUI colors to the terminal, when it supports it. (ZyX, 2013 Jan
 26, update 2013 Dec 14, another 2014 Nov 22)
 
+Patch to improve behavior of dead keys on MS-Windows. (John Wellesz, 2015 Aug
+25)  https://github.com/vim/vim/pull/399.diff
+
 Result of systemlist() does not show whether text ended in line break.
 (Bjorn Linse, 2014 Nov 27)
 
@@ -237,11 +232,6 @@ Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 
 Should be easy to highlight all matches with 'incsearch'.  Idea by Itchyny,
 2015 Feb 6.
-
-Patch to add ":ldo" and ":cdo", execute commands over quickfix list and
-location list. (Yegappan Lakshmanan, 2013 Jun 2, update 2015 Mar 21)
-Update by Florian Walch, 2015 Jul 1.
-Update by Yegappan, 2015 Jul 24.
 
 Plugins need to make a lot of effort, lots of mappings, to know what happened
 before pressing the key that triggers a plugin action.  How about keeping the
