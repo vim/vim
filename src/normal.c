@@ -2561,7 +2561,8 @@ do_mouse(oap, c, dir, count, fixindent)
 	    if (in_tab_line)
 	    {
 		c1 = TabPageIdxs[mouse_col];
-		tabpage_move(c1 <= 0 ? 9999 : c1 - 1);
+		tabpage_move(c1 <= 0 ? 9999 : c1 < tabpage_index(curtab)
+								? c1 - 1 : c1);
 	    }
 	    return FALSE;
 	}
