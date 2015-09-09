@@ -315,3 +315,9 @@
 #  endif
 # endif
 #endif
+
+#ifdef FEAT_DIFF
+# define PLINES_NOFILL(x) plines_nofill(x)
+#else
+# define PLINES_NOFILL(x) plines(x)
+#endif
