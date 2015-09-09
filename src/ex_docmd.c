@@ -2173,9 +2173,11 @@ do_one_cmd(cmdlinep, sourcing,
 		lnum = CURRENT_TAB_NR;
 		ea.line2 = lnum;
 		break;
+#ifdef FEAT_QUICKFIX
 	    case ADDR_QUICKFIX:
 		ea.line2 = qf_get_cur_valid_idx(&ea);
 		break;
+#endif
 	}
 	ea.cmd = skipwhite(ea.cmd);
 	lnum = get_address(&ea, &ea.cmd, ea.addr_type, ea.skip, ea.addr_count == 0);
@@ -2236,12 +2238,14 @@ do_one_cmd(cmdlinep, sourcing,
 			    ea.line2 = ARGCOUNT;
 			}
 			break;
+#ifdef FEAT_QUICKFIX
 		    case ADDR_QUICKFIX:
 			ea.line1 = 1;
 			ea.line2 = qf_get_size(&ea);
 			if (ea.line2 == 0)
 			    ea.line2 = 1;
 			break;
+#endif
 		}
 		++ea.addr_count;
 	    }
@@ -2702,11 +2706,13 @@ do_one_cmd(cmdlinep, sourcing,
 		else
 		    ea.line2 = ARGCOUNT;
 		break;
+#ifdef FEAT_QUICKFIX
 	    case ADDR_QUICKFIX:
 		ea.line2 = qf_get_size(&ea);
 		if (ea.line2 == 0)
 		    ea.line2 = 1;
 		break;
+#endif
 	}
     }
 
@@ -4340,7 +4346,7 @@ skip_range(cmd, ctx)
  */
     static linenr_T
 get_address(eap, ptr, addr_type, skip, to_other_file)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
     char_u	**ptr;
     int		addr_type;  /* flag: one of ADDR_LINES, ... */
     int		skip;	    /* only skip the address, don't use it */
@@ -4381,9 +4387,11 @@ get_address(eap, ptr, addr_type, skip, to_other_file)
 		    case ADDR_TABS:
 			lnum = CURRENT_TAB_NR;
 			break;
+#ifdef FEAT_QUICKFIX
 		    case ADDR_QUICKFIX:
 			lnum = qf_get_cur_valid_idx(eap);
 			break;
+#endif
 		}
 		break;
 
@@ -4416,11 +4424,13 @@ get_address(eap, ptr, addr_type, skip, to_other_file)
 		    case ADDR_TABS:
 			lnum = LAST_TAB_NR;
 			break;
+#ifdef FEAT_QUICKFIX
 		    case ADDR_QUICKFIX:
 			lnum = qf_get_size(eap);
 			if (lnum == 0)
 			    lnum = 1;
 			break;
+#endif
 		}
 		break;
 
@@ -4596,9 +4606,11 @@ get_address(eap, ptr, addr_type, skip, to_other_file)
 		    case ADDR_TABS:
 			lnum = CURRENT_TAB_NR;
 			break;
+#ifdef FEAT_QUICKFIX
 		    case ADDR_QUICKFIX:
 			lnum = qf_get_cur_valid_idx(eap);
 			break;
+#endif
 		}
 	    }
 
@@ -4737,10 +4749,12 @@ invalid_range(eap)
 		if (eap->line2 > LAST_TAB_NR)
 		    return (char_u *)_(e_invrange);
 		break;
+#ifdef FEAT_QUICKFIX
 	    case ADDR_QUICKFIX:
 		if (eap->line2 != 1 && eap->line2 > qf_get_size(eap))
 		    return (char_u *)_(e_invrange);
 		break;
+#endif
 	}
     }
     return NULL;
