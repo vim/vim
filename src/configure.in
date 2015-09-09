@@ -3546,7 +3546,7 @@ if test "x$GTK_CFLAGS" != "x"; then
   ac_save_LIBS="$LIBS"
   CFLAGS="$CFLAGS $GTK_CFLAGS"
   LIBS="$LIBS $GTK_LIBS"
-  AC_TRY_COMPILE(
+  AC_TRY_LINK(
   [#include <gtk/gtk.h>],
   [ pango_shape_full(NULL, 0, NULL, 0, NULL, NULL); ],
 	  AC_MSG_RESULT(yes); AC_DEFINE(HAVE_PANGO_SHAPE_FULL),
