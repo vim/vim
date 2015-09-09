@@ -1769,7 +1769,11 @@ scroll_cursor_top(min_scroll, always)
 	    i = 1;
 	else
 #endif
+#if defined(FEAT_DIFF) || defined(PROTO)
 	    i = plines_nofill(top);
+#else
+	    i = plines(top);
+#endif
 	used += i;
 	if (extra + i <= off && bot < curbuf->b_ml.ml_line_count)
 	{
