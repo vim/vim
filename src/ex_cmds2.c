@@ -2447,7 +2447,7 @@ ex_listdo(eap)
 #endif
     char_u	*p_shm_save;
 #ifdef FEAT_QUICKFIX
-    int		qf_size;
+    int		qf_size = 0;
     int		qf_idx;
 #endif
 
