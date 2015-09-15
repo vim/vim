@@ -7,5 +7,7 @@ Window serverStrToWin __ARGS((char_u *str));
 int serverSendReply __ARGS((char_u *name, char_u *str));
 int serverReadReply __ARGS((Display *dpy, Window win, char_u **str, int localLoop));
 int serverPeekReply __ARGS((Display *dpy, Window win, char_u **str));
-void serverEventProc __ARGS((Display *dpy, XEvent *eventPtr));
+void serverEventProc __ARGS((Display *dpy, XEvent *eventPtr, int immediate));
+void server_parse_messages __ARGS((void));
+int server_waiting __ARGS((void));
 /* vim: set ft=c : */

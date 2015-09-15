@@ -2895,9 +2895,8 @@ gui_mch_wait_for_chars(wtime)
 	    focus = gui.in_focus;
 	}
 
-#if defined(FEAT_NETBEANS_INTG)
-	/* Process any queued netbeans messages. */
-	netbeans_parse_messages();
+#ifdef MESSAGE_QUEUE
+	parse_queued_messages();
 #endif
 
 	/*
@@ -3199,7 +3198,7 @@ gui_x11_send_event_handler(w, client_data, event, dum)
     if (e->type == PropertyNotify && e->window == commWindow
 	    && e->atom == commProperty &&  e->state == PropertyNewValue)
     {
-	serverEventProc(gui.dpy, event);
+	serverEventProc(gui.dpy, event, 0);
     }
 }
 #endif

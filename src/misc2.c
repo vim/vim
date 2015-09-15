@@ -6328,3 +6328,23 @@ has_non_ascii(s)
     return FALSE;
 }
 #endif
+
+#if defined(MESSAGE_QUEUE) || defined(PROTO)
+/*
+ * Process messages that have been queued for netbeans or clientserver.
+ * These functions can call arbitrary vimscript and should only be called when
+ * it is safe to do so.
+ */
+    void
+parse_queued_messages()
+{
+# ifdef FEAT_NETBEANS_INTG
+    /* Process the queued netbeans messages. */
+    netbeans_parse_messages();
+# endif
+# ifdef FEAT_CLIENTSERVER
+    /* Process the queued clientserver messages. */
+    server_parse_messages();
+# endif
+}
+#endif

@@ -388,9 +388,8 @@ mch_inchar(buf, maxlen, wtime, tb_change_cnt)
 {
     int		len;
 
-#ifdef FEAT_NETBEANS_INTG
-    /* Process the queued netbeans messages. */
-    netbeans_parse_messages();
+#ifdef MESSAGE_QUEUE
+    parse_queued_messages();
 #endif
 
     /* Check if window changed size while we were busy, perhaps the ":set
@@ -405,9 +404,8 @@ mch_inchar(buf, maxlen, wtime, tb_change_cnt)
 	    if (!do_resize)	/* return if not interrupted by resize */
 		return 0;
 	    handle_resize();
-#ifdef FEAT_NETBEANS_INTG
-	    /* Process the queued netbeans messages. */
-	    netbeans_parse_messages();
+#ifdef MESSAGE_QUEUE
+	    parse_queued_messages();
 #endif
 	}
     }
@@ -439,9 +437,8 @@ mch_inchar(buf, maxlen, wtime, tb_change_cnt)
 	while (do_resize)    /* window changed size */
 	    handle_resize();
 
-#ifdef FEAT_NETBEANS_INTG
-	/* Process the queued netbeans messages. */
-	netbeans_parse_messages();
+#ifdef MESSAGE_QUEUE
+	parse_queued_messages();
 #endif
 	/*
 	 * We want to be interrupted by the winch signal
@@ -5208,6 +5205,7 @@ WaitForChar(msec)
  * When a GUI is being used, this will not be used for input -- webb
  * Returns also, when a request from Sniff is waiting -- toni.
  * Or when a Linux GPM mouse event is waiting.
+ * Or when a clientserver message is on the queue.
  */
 #if defined(__BEOS__)
     int
@@ -5600,6 +5598,11 @@ select_eintr:
 #ifdef MAY_LOOP
 	if (finished || msec == 0)
 	    break;
+
+# ifdef FEAT_CLIENTSERVER
+	if (server_waiting())
+	    break;
+# endif
 
 	/* We're going to loop around again, find out for how long */
 	if (msec > 0)
@@ -7106,31 +7109,31 @@ xterm_update()
 
     for (;;)
     {
-        XtInputMask mask = XtAppPending(app_context);
+	XtInputMask mask = XtAppPending(app_context);
 
-        if (mask == 0 || vim_is_input_buf_full())
+	if (mask == 0 || vim_is_input_buf_full())
 	    break;
 
-        if (mask & XtIMXEvent)
+	if (mask & XtIMXEvent)
 	{
 	    /* There is an event to process. */
-            XtAppNextEvent(app_context, &event);
+	    XtAppNextEvent(app_context, &event);
 #ifdef FEAT_CLIENTSERVER
 	    {
 		XPropertyEvent *e = (XPropertyEvent *)&event;
 
 		if (e->type == PropertyNotify && e->window == commWindow
 		   && e->atom == commProperty && e->state == PropertyNewValue)
-                serverEventProc(xterm_dpy, &event);
+		    serverEventProc(xterm_dpy, &event, 0);
 	    }
 #endif
-            XtDispatchEvent(&event);
-        }
+	    XtDispatchEvent(&event);
+	}
 	else
 	{
 	    /* There is something else than an event to process. */
-            XtAppProcessEvent(app_context, mask);
-        }
+	    XtAppProcessEvent(app_context, mask);
+	}
     }
 }
 

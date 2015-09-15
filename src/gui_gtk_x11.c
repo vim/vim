@@ -650,7 +650,7 @@ property_event(GtkWidget *widget,
 	xev.xproperty.atom = commProperty;
 	xev.xproperty.window = commWindow;
 	xev.xproperty.state = PropertyNewValue;
-	serverEventProc(GDK_WINDOW_XDISPLAY(widget->window), &xev);
+	serverEventProc(GDK_WINDOW_XDISPLAY(widget->window), &xev, 0);
     }
     return FALSE;
 }
@@ -5476,9 +5476,8 @@ gui_mch_wait_for_chars(long wtime)
 	    focus = gui.in_focus;
 	}
 
-#if defined(FEAT_NETBEANS_INTG)
-	/* Process any queued netbeans messages. */
-	netbeans_parse_messages();
+#ifdef MESSAGE_QUEUE
+	parse_queued_messages();
 #endif
 
 	/*

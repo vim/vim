@@ -2016,9 +2016,8 @@ gui_mch_wait_for_chars(int wtime)
 	    s_need_activate = FALSE;
 	}
 
-#ifdef FEAT_NETBEANS_INTG
-	/* Process the queued netbeans messages. */
-	netbeans_parse_messages();
+#ifdef MESSAGE_QUEUE
+	parse_queued_messages();
 #endif
 
 	/*
