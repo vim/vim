@@ -1,0 +1,37 @@
+language: c
+
+compiler:
+  - clang
+  - gcc
+
+env:
+  - COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge
+    "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp'"
+  - COVERAGE=no FEATURES=small CONFOPT=
+  - COVERAGE=no FEATURES=tiny  CONFOPT=
+
+sudo: false
+
+addons:
+  apt:
+    packages:
+      - lcov
+      - libperl-dev
+      - python-dev
+      - python3-dev
+      - liblua5.1-0-dev
+      - lua5.1
+
+before_install:
+  - pip install --user cpp-coveralls
+
+script:
+  - NPROC=$(getconf _NPROCESSORS_ONLN)
+  - ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && make -j$NPROC
+  - ./src/vim --version
+  - make test
+
+after_success:
+  - if [ x"$COVERAGE" = "xyes" ]; then ~/.local/bin/coveralls -b src -x .xs -e src/xxd -e src/if_perl.c --encodings utf-8 latin-1 EUC-KR; fi
+
+# vim:set sts=2 sw=2 tw=0 et:

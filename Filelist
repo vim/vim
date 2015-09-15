@@ -4,6 +4,8 @@
 # source files for all source archives
 SRC_ALL =	\
 		.hgignore \
+		.travis.yml \
+		appveyor.yml \
 		src/README.txt \
 		src/arabic.c \
 		src/arabic.h \
