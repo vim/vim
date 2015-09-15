@@ -2389,7 +2389,7 @@ show_tabline_popup_menu(void)
 	return;
 
     if (first_tabpage->tp_next != NULL)
-        add_tabline_popup_menu_entry(tab_pmenu,
+	add_tabline_popup_menu_entry(tab_pmenu,
 					  TABLINE_MENU_CLOSE, _("Close tab"));
     add_tabline_popup_menu_entry(tab_pmenu, TABLINE_MENU_NEW, _("New tab"));
     add_tabline_popup_menu_entry(tab_pmenu, TABLINE_MENU_OPEN,
@@ -2931,10 +2931,10 @@ gui_mswin_get_valid_dimensions(
 
     base_width = gui_get_base_width()
 	+ (GetSystemMetrics(SM_CXFRAME) +
-           GetSystemMetrics(SM_CXPADDEDBORDER)) * 2;
+	   GetSystemMetrics(SM_CXPADDEDBORDER)) * 2;
     base_height = gui_get_base_height()
 	+ (GetSystemMetrics(SM_CYFRAME) +
-           GetSystemMetrics(SM_CXPADDEDBORDER)) * 2
+	   GetSystemMetrics(SM_CXPADDEDBORDER)) * 2
 	+ GetSystemMetrics(SM_CYCAPTION)
 #ifdef FEAT_MENU
 	+ gui_mswin_get_menu_height(FALSE)
@@ -2997,6 +2997,20 @@ get_scroll_flags(void)
 }
 
 /*
+ * On some Intel GPUs, the regions drawn just prior to ScrollWindowEx()
+ * may not be scrolled out properly.
+ * For gVim, when _OnScroll() is repeated, the character at the
+ * previous cursor position may be left drawn after scroll.
+ * The problem can be avoided by calling GetPixel() to get a pixel in
+ * the region before ScrollWindowEx().
+ */
+    static void
+intel_gpu_workaround(void)
+{
+    GetPixel(s_hdc, FILL_X(gui.col), FILL_Y(gui.row));
+}
+
+/*
  * Delete the given number of lines from the given row, scrolling up any
  * text further down within the scroll region.
  */
@@ -3006,6 +3020,8 @@ gui_mch_delete_lines(
     int	    num_lines)
 {
     RECT	rc;
+
+    intel_gpu_workaround();
 
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
@@ -3037,6 +3053,8 @@ gui_mch_insert_lines(
     int		num_lines)
 {
     RECT	rc;
+
+    intel_gpu_workaround();
 
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
@@ -3319,10 +3337,10 @@ gui_mch_newfont()
     GetWindowRect(s_hwnd, &rect);
     gui_resize_shell(rect.right - rect.left
 			- (GetSystemMetrics(SM_CXFRAME) +
-                           GetSystemMetrics(SM_CXPADDEDBORDER)) * 2,
+			   GetSystemMetrics(SM_CXPADDEDBORDER)) * 2,
 		     rect.bottom - rect.top
 			- (GetSystemMetrics(SM_CYFRAME) +
-                           GetSystemMetrics(SM_CXPADDEDBORDER)) * 2
+			   GetSystemMetrics(SM_CXPADDEDBORDER)) * 2
 			- GetSystemMetrics(SM_CYCAPTION)
 #ifdef FEAT_MENU
 			- gui_mswin_get_menu_height(FALSE)
