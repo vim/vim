@@ -387,10 +387,11 @@ static long	p_tw_nobin;
 static long	p_wm_nobin;
 
 /* Saved values for when 'paste' is set */
+static int	p_ai_nopaste;
+static int	p_et_nopaste;
+static long	p_sts_nopaste;
 static long	p_tw_nopaste;
 static long	p_wm_nopaste;
-static long	p_sts_nopaste;
-static int	p_ai_nopaste;
 
 struct vimoption
 {
@@ -10702,6 +10703,7 @@ buf_copy_options(buf, flags)
 	    buf->b_p_fixeol = p_fixeol;
 	    buf->b_p_et = p_et;
 	    buf->b_p_et_nobin = p_et_nobin;
+	    buf->b_p_et_nopaste = p_et_nopaste;
 	    buf->b_p_ml = p_ml;
 	    buf->b_p_ml_nobin = p_ml_nobin;
 	    buf->b_p_inf = p_inf;
@@ -11640,6 +11642,7 @@ paste_option_changed()
 {
     static int	old_p_paste = FALSE;
     static int	save_sm = 0;
+    static int	save_sta = 0;
 #ifdef FEAT_CMDL_INFO
     static int	save_ru = 0;
 #endif
@@ -11664,10 +11667,12 @@ paste_option_changed()
 		buf->b_p_wm_nopaste = buf->b_p_wm;
 		buf->b_p_sts_nopaste = buf->b_p_sts;
 		buf->b_p_ai_nopaste = buf->b_p_ai;
+		buf->b_p_et_nopaste = buf->b_p_et;
 	    }
 
 	    /* save global options */
 	    save_sm = p_sm;
+	    save_sta = p_sta;
 #ifdef FEAT_CMDL_INFO
 	    save_ru = p_ru;
 #endif
@@ -11676,10 +11681,11 @@ paste_option_changed()
 	    save_hkmap = p_hkmap;
 #endif
 	    /* save global values for local buffer options */
+	    p_ai_nopaste = p_ai;
+	    p_et_nopaste = p_et;
+	    p_sts_nopaste = p_sts;
 	    p_tw_nopaste = p_tw;
 	    p_wm_nopaste = p_wm;
-	    p_sts_nopaste = p_sts;
-	    p_ai_nopaste = p_ai;
 	}
 
 	/*
@@ -11693,10 +11699,12 @@ paste_option_changed()
 	    buf->b_p_wm = 0;	    /* wrapmargin is 0 */
 	    buf->b_p_sts = 0;	    /* softtabstop is 0 */
 	    buf->b_p_ai = 0;	    /* no auto-indent */
+	    buf->b_p_et = 0;	    /* no expandtab */
 	}
 
 	/* set global options */
 	p_sm = 0;		    /* no showmatch */
+	p_sta = 0;		    /* no smarttab */
 #ifdef FEAT_CMDL_INFO
 # ifdef FEAT_WINDOWS
 	if (p_ru)
@@ -11727,10 +11735,12 @@ paste_option_changed()
 	    buf->b_p_wm = buf->b_p_wm_nopaste;
 	    buf->b_p_sts = buf->b_p_sts_nopaste;
 	    buf->b_p_ai = buf->b_p_ai_nopaste;
+	    buf->b_p_et = buf->b_p_et_nopaste;
 	}
 
 	/* restore global options */
 	p_sm = save_sm;
+	p_sta = save_sta;
 #ifdef FEAT_CMDL_INFO
 # ifdef FEAT_WINDOWS
 	if (p_ru != save_ru)
@@ -11743,10 +11753,11 @@ paste_option_changed()
 	p_hkmap = save_hkmap;
 #endif
 	/* set global values for local buffer options */
+	p_ai = p_ai_nopaste;
+	p_et = p_et_nopaste;
+	p_sts = p_sts_nopaste;
 	p_tw = p_tw_nopaste;
 	p_wm = p_wm_nopaste;
-	p_sts = p_sts_nopaste;
-	p_ai = p_ai_nopaste;
     }
 
     old_p_paste = p_paste;
