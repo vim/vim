@@ -6342,7 +6342,7 @@ parse_queued_messages()
     /* Process the queued netbeans messages. */
     netbeans_parse_messages();
 # endif
-# ifdef FEAT_CLIENTSERVER
+# if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
     /* Process the queued clientserver messages. */
     server_parse_messages();
 # endif
