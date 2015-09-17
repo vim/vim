@@ -172,7 +172,7 @@ typedef int (*EndCond) __ARGS((void *));
 struct x_cmdqueue
 {
     char_u		*propInfo;
-    int			len;
+    long_u		len;
     struct x_cmdqueue	*next;
     struct x_cmdqueue	*prev;
 };
@@ -199,8 +199,8 @@ static struct ServerReply *ServerReplyFind __ARGS((Window w, enum ServerReplyOp 
 static int	AppendPropCarefully __ARGS((Display *display, Window window, Atom property, char_u *value, int length));
 static int	x_error_check __ARGS((Display *dpy, XErrorEvent *error_event));
 static int	IsSerialName __ARGS((char_u *name));
-static void	save_in_queue __ARGS((char_u *buf, int len));
-static void	server_parse_message __ARGS((Display *dpy, char_u *propInfo, int numItems));
+static void	save_in_queue __ARGS((char_u *buf, long_u len));
+static void	server_parse_message __ARGS((Display *dpy, char_u *propInfo, long_u numItems));
 
 /* Private variables for the "server" functionality */
 static Atom	registryProperty = None;
@@ -1198,8 +1198,8 @@ serverEventProc(dpy, eventPtr, immediate)
  */
     static void
 save_in_queue(propInfo, len)
-    char_u  *propInfo;
-    int	    len;
+    char_u	*propInfo;
+    long_u	len;
 {
     x_queue_T *node;
 
@@ -1228,7 +1228,6 @@ save_in_queue(propInfo, len)
     void
 server_parse_messages()
 {
-    char_u	*p;
     x_queue_T	*node;
 
     if (!X_DISPLAY)
@@ -1262,7 +1261,7 @@ server_waiting()
 server_parse_message(dpy, propInfo, numItems)
     Display	*dpy;
     char_u	*propInfo; /* A string containing 0 or more X commands */
-    int		numItems;  /* The size of propInfo in bytes. */
+    long_u	numItems;  /* The size of propInfo in bytes. */
 {
     char_u	*p;
     int		code;
