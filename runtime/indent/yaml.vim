@@ -115,8 +115,13 @@ function GetYAMLIndent(lnum)
                     \                                       s:liststartregex))
     elseif line =~# s:mapkeyregex
         " Same for line containing mapping key
-        return indent(s:FindPrevLEIndentedLineMatchingRegex(a:lnum,
-                    \                                       s:mapkeyregex))
+        let prevmapline = s:FindPrevLEIndentedLineMatchingRegex(a:lnum,
+                    \                                           s:mapkeyregex)
+        if getline(prevmapline) =~# '^\s*- '
+            return indent(prevmapline) + 2
+        else
+            return indent(prevmapline)
+        endif
     elseif prevline =~# '^\s*- '
         " - List with
         "   multiline scalar
