@@ -23954,7 +23954,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     {
 	if (save_sourcing_name != NULL
 			  && STRNCMP(save_sourcing_name, "function ", 9) == 0)
-	    sprintf((char *)sourcing_name, "%s..", save_sourcing_name);
+	    sprintf((char *)sourcing_name, "%s[%d]..", save_sourcing_name, save_sourcing_lnum);
 	else
 	    STRCPY(sourcing_name, "function ");
 	cat_func_name(sourcing_name + STRLEN(sourcing_name), fp);
