@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Sep 08
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Sep 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -73,8 +73,6 @@ Regexp problems:
 - this doesn't work: "syntax match ErrorMsg /.\%9l\%>20c\&\%<28c/".  Leaving
   out the \& works.  Seems any column check after \& fails.
 
-A link from the README.md to Contributing.md would be great.
-
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
 
@@ -93,10 +91,6 @@ Perhaps we can use ":silent window"?
 
 Illegal memory access, requires ASAN to see. (Dominique Pelle, 2015 Jul 28)
 
-Crash when changing the 'tags' option from a remote command.
-(Benjamin Fritz, 2015 Mar 18, stack trace Mar 20)
-Patch to queue commands for clientserver. (James Kolb, 2015 Sep 1)
-
 Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
 
 Unexpected delay when using CTRL-O u.  It's not timeoutlen.
@@ -106,6 +100,8 @@ Can src/GvimExt/Make_cyg.mak be removed?
 Same for src/xxd/Make_cyg.mak
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
+
+2html update. (Ben Fritz, 2015 Sep 9)
 
 MS-Windows: When editing a file with a leading space, writing it uses the
 wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
@@ -130,6 +126,9 @@ Goes away when disabling the swap file. (might1, Feb 16)
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
 
+The OptionSet autocommand event is not always triggered. (Rick Howe, 2015 Sep
+24): setwinvar(), :diffthis, :diffoff.
+
 The argument for "-S" is not taken literally, the ":so" command expands
 wildcards.  Add a ":nowild" command modifier?  (ZyX, 2015 March 4)
 
@@ -139,8 +138,11 @@ effects for when set by the user, on init and when reset to default.
 Proposal to make options.txt easier to read. (Arnaud Decara, 2015 Aug 5)
 Update Aug 14.
 
+Patch for problem with restoring screen on Windows. (Nobuhiro Takasaki, 2015
+Sep 10)
+
 Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
-Update Sep 7.
+Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8.
 
 Build with Python on Mac does not always use the right library.
 (Kazunobu Kuriyama, 2015 Mar 28)
@@ -208,6 +210,9 @@ Patch on Issue 72: 'autochdir' causes problems for :vimgrep.
 
 When 'balloonexpr' returns a list the result has a trailing newline.
 Just remove one trailing newline. (lcd, 2014 Oct 17)
+
+When two SIGWINCH arrive very quickly, the second one may be lost.
+(Josh Triplett, 2015 Sep 17)
 
 Make comments in the test Makefile silent. (Kartik Agaram, 2014 Sep 24)
 
@@ -278,6 +283,9 @@ Delete old code in os_msdos.c, mch_FullName().
 
 Patch: On MS-Windows shellescape() may have to triple double quotes.
 (Ingo Karkat, 2015 Jan 16)
+
+Patch for variable tabstops.  On github (Christian Brabandt, 2014 May 15)
+Update 2015 Jul 25 (email).
 
 Redo only remembers the last change.  Could use "{count}g." to redo an older
 change.  How does the user know which change?  At least have a way to list
@@ -818,9 +826,6 @@ Changes to manpage plugin. (Elias Toivanen, 2011 Jul 25)
 Patch to make "z=" work when 'spell' is off.  Does this have nasty side
 effects?  (Christian Brabandt, 2012 Aug 5, Update 2013 Aug 12)
 Would also need to do this for spellbadword() and spellsuggest().
-
-Patch for variable tabstops.  On github (Christian Brabandt, 2014 May 15)
-Update 2015 Jul 25 (email).
 
 On 64 bit MS-Windows "long" is only 32 bits, but we sometimes need to store a
 64 bits value.  Change all number options to use nropt_T and define it to the
