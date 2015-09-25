@@ -29,6 +29,9 @@ Which one you need depends on the system you want to run it on and whether you
 want or must compile it yourself.  Check http://www.vim.org/download.php for
 an overview of currently available distributions.
 
+[![Build Status](https://travis-ci.org/vim/vim.svg?branch=master)](https://travis-ci.org/vim/vim)
+[![Coverage Status](https://coveralls.io/repos/vim/vim/badge.svg?branch=master&service=github)](https://coveralls.io/github/vim/vim?branch=master)
+
 
 ## Documentation ##
 
