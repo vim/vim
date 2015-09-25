@@ -871,7 +871,7 @@ do_cmdline(cmdline, fgetline, cookie, flags)
     if (flags & DOCMD_EXCRESET)
 	save_dbg_stuff(&debug_saved);
     else
-	vim_memset(&debug_saved, 0, 1);
+	vim_memset(&debug_saved, 0, sizeof(debug_saved));
 
     initial_trylevel = trylevel;
 
