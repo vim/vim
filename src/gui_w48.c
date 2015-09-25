@@ -3335,17 +3335,30 @@ gui_mch_newfont()
     RECT	rect;
 
     GetWindowRect(s_hwnd, &rect);
-    gui_resize_shell(rect.right - rect.left
-			- (GetSystemMetrics(SM_CXFRAME) +
-			   GetSystemMetrics(SM_CXPADDEDBORDER)) * 2,
-		     rect.bottom - rect.top
-			- (GetSystemMetrics(SM_CYFRAME) +
-			   GetSystemMetrics(SM_CXPADDEDBORDER)) * 2
-			- GetSystemMetrics(SM_CYCAPTION)
+    if (win_socket_id == 0)
+    {
+	gui_resize_shell(rect.right - rect.left
+	    - (GetSystemMetrics(SM_CXFRAME) +
+	       GetSystemMetrics(SM_CXPADDEDBORDER)) * 2,
+	    rect.bottom - rect.top
+	    - (GetSystemMetrics(SM_CYFRAME) +
+	       GetSystemMetrics(SM_CXPADDEDBORDER)) * 2
+	    - GetSystemMetrics(SM_CYCAPTION)
+#ifdef FEAT_MENU
+	    - gui_mswin_get_menu_height(FALSE)
+#endif
+	);
+    }
+    else
+    {
+	/* Inside another window, don't use the frame and border. */
+	gui_resize_shell(rect.right - rect.left,
+	    rect.bottom - rect.top
 #ifdef FEAT_MENU
 			- gui_mswin_get_menu_height(FALSE)
 #endif
-	    );
+	);
+    }
 }
 
 /*
