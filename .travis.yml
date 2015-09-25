@@ -12,6 +12,10 @@ env:
 
 sudo: false
 
+branches:
+  except:
+    - /^v[0-9]/
+
 addons:
   apt:
     packages:
