@@ -23817,6 +23817,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     int		ai;
     char_u	numbuf[NUMBUFLEN];
     char_u	*name;
+    size_t	len;
 #ifdef FEAT_PROFILE
     proftime_T	wait_start;
     proftime_T	call_start;
@@ -23948,13 +23949,16 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     save_sourcing_name = sourcing_name;
     save_sourcing_lnum = sourcing_lnum;
     sourcing_lnum = 1;
-    sourcing_name = alloc((unsigned)((save_sourcing_name == NULL ? 0
-		: STRLEN(save_sourcing_name)) + STRLEN(fp->uf_name) + 13));
+    /* need space for function name + ("function " + 3) or "[number]" */
+    len = (save_sourcing_name == NULL ? 0 : STRLEN(save_sourcing_name))
+						   + STRLEN(fp->uf_name) + 20;
+    sourcing_name = alloc((unsigned)len);
     if (sourcing_name != NULL)
     {
 	if (save_sourcing_name != NULL
 			  && STRNCMP(save_sourcing_name, "function ", 9) == 0)
-	    sprintf((char *)sourcing_name, "%s..", save_sourcing_name);
+	    sprintf((char *)sourcing_name, "%s[%d]..",
+				 save_sourcing_name, (int)save_sourcing_lnum);
 	else
 	    STRCPY(sourcing_name, "function ");
 	cat_func_name(sourcing_name + STRLEN(sourcing_name), fp);
