@@ -89,6 +89,11 @@ See one of these files for system-specific instructions:
 There are more `README_*.txt` files, depending on the distribution you used.
 
 
+## Contributing ##
+
+If you would like to help making Vim better, see the `CONTRIBUTING.md` file.
+
+
 ## Information ##
 
 The latest news about Vim can be found on the Vim home page:
