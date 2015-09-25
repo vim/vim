@@ -5084,7 +5084,7 @@ ff_wc_equal(s1, s2)
         i += MB_PTR2LEN(s1 + i);
         j += MB_PTR2LEN(s2 + j);
     }
-    return c1 == c2;
+    return s1[i] == s2[j];
 }
 #endif
 
