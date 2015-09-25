@@ -9596,7 +9596,7 @@ get_op_vcol(oap, redo_VIsual_vcol, initial)
 	    || (!initial && oap->end.col < W_WIDTH(curwin)))
 	return;
 
-    oap->block_mode = VIsual_active;
+    oap->block_mode = TRUE;
 
 #ifdef FEAT_MBYTE
     /* prevent from moving onto a trail byte */
