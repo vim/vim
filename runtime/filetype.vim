@@ -308,6 +308,9 @@ au BufNewFile,BufRead *.bl			setf blank
 " Blkid cache file
 au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
 
+" Bazel (http://bazel.io)
+autocmd BufRead,BufNewFile *.bzl,BUILD,WORKSPACE setfiletype bzl
+
 " C or lpc
 au BufNewFile,BufRead *.c			call s:FTlpc()
 
