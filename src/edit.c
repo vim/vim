@@ -3903,6 +3903,12 @@ ins_compl_prep(c)
 		showmode();
 	    }
 
+#ifdef FEAT_CMDWIN
+	    if (c == Ctrl_C && cmdwin_type != 0)
+		/* Avoid the popup menu remains displayed when leaving the
+		 * command line window. */
+		update_screen(0);
+#endif
 #ifdef FEAT_CINDENT
 	    /*
 	     * Indent now if a key was typed that is in 'cinkeys'.
