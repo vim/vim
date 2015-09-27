@@ -810,6 +810,7 @@ static char_u *get_tv_string_buf_chk __ARGS((typval_T *varp, char_u *buf));
 static dictitem_T *find_var __ARGS((char_u *name, hashtab_T **htp, int no_autoload));
 static dictitem_T *find_var_in_ht __ARGS((hashtab_T *ht, int htname, char_u *varname, int no_autoload));
 static hashtab_T *find_var_ht __ARGS((char_u *name, char_u **varname));
+static funccall_T *get_funccal __ARGS((void));
 static void vars_clear_ext __ARGS((hashtab_T *ht, int free_val));
 static void delete_var __ARGS((hashtab_T *ht, hashitem_T *hi));
 static void list_one_var __ARGS((dictitem_T *v, char_u *prefix, int *first));
@@ -21656,7 +21657,7 @@ find_var_ht(name, varname)
 
 	if (current_funccal == NULL)
 	    return &globvarht;			/* global variable */
-	return &current_funccal->l_vars.dv_hashtab; /* l: variable */
+	return &get_funccal()->l_vars.dv_hashtab; /* l: variable */
     }
     *varname = name + 2;
     if (*name == 'g')				/* global variable */
@@ -21677,13 +21678,40 @@ find_var_ht(name, varname)
     if (*name == 'v')				/* v: variable */
 	return &vimvarht;
     if (*name == 'a' && current_funccal != NULL) /* function argument */
-	return &current_funccal->l_avars.dv_hashtab;
+	return &get_funccal()->l_avars.dv_hashtab;
     if (*name == 'l' && current_funccal != NULL) /* local function variable */
-	return &current_funccal->l_vars.dv_hashtab;
+	return &get_funccal()->l_vars.dv_hashtab;
     if (*name == 's'				/* script variable */
 	    && current_SID > 0 && current_SID <= ga_scripts.ga_len)
 	return &SCRIPT_VARS(current_SID);
     return NULL;
+}
+
+/*
+ * Get function call environment based on bactrace debug level
+ */
+    static funccall_T *
+get_funccal()
+{
+    int i;
+    funccall_T *funccal;
+    funccall_T *temp_funccal;
+
+    funccal = current_funccal;
+    if (debug_backtrace_level > 0)
+    {
+        for (i = 0; i < debug_backtrace_level; i++)
+        {
+            temp_funccal = funccal->caller;
+            if (temp_funccal) {
+                funccal = temp_funccal;
+            } else {
+                //backtrace level overflow. reset to max
+                debug_backtrace_level = i;
+            }
+        }
+    }
+    return funccal;
 }
 
 /*

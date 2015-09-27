@@ -1,5 +1,9 @@
 /* ex_cmds2.c */
 void do_debug __ARGS((char_u *cmd));
+void do_showbacktrace __ARGS((char_u *cmd));
+void do_checkbacktracelevel __ARGS((void));
+int get_maxbacktrace_level __ARGS((void));
+void do_setdebugtracelevel __ARGS((char_u *arg));
 void ex_debug __ARGS((exarg_T *eap));
 void dbg_check_breakpoint __ARGS((exarg_T *eap));
 int dbg_check_skipped __ARGS((exarg_T *eap));
