@@ -56,4 +56,9 @@ Autocmd Option: <backspace>, OldVal: <>, NewVal: <eol,indent,start>, Scope: <glo
 Expected: Name: <backup>, Oldval: <>, NewVal: <1>, Scope: <local>
 Autocmd Option: <backup>, OldVal: <0>, NewVal: <1>, Scope: <local>
 
-14: Setting key option, shouldn't trigger
+14: Setting number option using setwinvar
+Expected: Name: <number>, Oldval: <0>, NewVal: <1>, Scope: <local>
+Autocmd Option: <number>, OldVal: <0>, NewVal: <1>, Scope: <local>
+
+15: Setting key option, shouldn't trigger
+

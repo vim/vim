@@ -59,14 +59,18 @@ STARTTEST
 :call setbufvar(1, '&l:bk', 1)
 : "should trigger, use correct option name
 :call setbufvar(1, '&backup', 1)
+:let g:testcase="14: Setting number option using setwinvar\n"
+:let g:options=[['number', 0, 1, 'local']]
+:call setwinvar(0, '&number', 1)
 :" Write register now, because next test shouldn't output anything.
 :$put r
 :let @r=''
-:let g:testcase="\n14: Setting key option, shouldn't trigger\n"
+:let g:testcase="\n15: Setting key option, shouldn't trigger\n"
 :let g:options=[['key', 'invalid', 'invalid1', 'invalid']]
 :setlocal key=blah
 :setlocal key=
 :$put =g:testcase
+:$put r
 :/^dummy text/,$w! test.out
 :qa!
 ENDTEST
