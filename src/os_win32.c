@@ -4612,20 +4612,34 @@ mch_system1(char *cmd, int options)
 mch_system(char *cmd, int options)
 {
     int ret;
+    HANDLE hTemp = INVALID_HANDLE_VALUE;
 
     /*
-     * Restore non-termcap screen buffer before execute external program, and
-     * revert it after.  Because msys and msys2's programs will cause freeze
-     * or crash conhost.exe (Windows's console window provider) and vim.exe,
-     * if active screen buffer is vim's one on Windows7.
+     * Call DuplicateHandle before executing an external program, because msys
+     * and msys2's programs will call CreateConsoleScreenBuffer and
+     * CloseHandle.  CreateConsoleScreenBuffer returns the same handle which
+     * created by vim.  This causes a crash. This workaround is required on
+     * Windows7.
      */
-    if (is_win7 && g_fTermcapMode)
-	SetConsoleActiveScreenBuffer(g_cbNonTermcap.handle);
+    if (is_win7
+	    && g_fTermcapMode
+	    && DuplicateHandle(
+		    GetCurrentProcess(),
+		    g_hConOut,
+		    GetCurrentProcess(),
+		    &hTemp,
+		    0,
+		    TRUE,
+		    DUPLICATE_SAME_ACCESS))
+	SetConsoleActiveScreenBuffer(hTemp);
 
     ret = mch_system1(cmd, options);
 
-    if (is_win7 && g_fTermcapMode)
-	SetConsoleActiveScreenBuffer(g_cbTermcap.handle);
+    if (hTemp != INVALID_HANDLE_VALUE)
+    {
+	SetConsoleActiveScreenBuffer(g_hConOut);
+	CloseHandle(hTemp);
+    }
 
     return ret;
 }
