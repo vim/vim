@@ -12420,12 +12420,16 @@ getwinvar(argvars, rettv, off)
     typval_T	*rettv;
     int		off;	    /* 1 for gettabwinvar() */
 {
-    win_T	*win, *oldcurwin;
+    win_T	*win;
     char_u	*varname;
     dictitem_T	*v;
     tabpage_T	*tp = NULL;
-    tabpage_T	*oldtabpage;
     int		done = FALSE;
+#ifdef FEAT_WINDOWS
+    win_T	*oldcurwin;
+    tabpage_T	*oldtabpage;
+    int		need_switch_win;
+#endif
 
 #ifdef FEAT_WINDOWS
     if (off == 1)
@@ -12442,9 +12446,14 @@ getwinvar(argvars, rettv, off)
 
     if (win != NULL && varname != NULL)
     {
+#ifdef FEAT_WINDOWS
 	/* Set curwin to be our win, temporarily.  Also set the tabpage,
-	 * otherwise the window is not valid. */
-	if (switch_win(&oldcurwin, &oldtabpage, win, tp, TRUE) == OK)
+	 * otherwise the window is not valid. Only do this when needed,
+	 * autocommands get blocked. */
+	need_switch_win = !(tp == curtab && win == curwin);
+	if (!need_switch_win
+		  || switch_win(&oldcurwin, &oldtabpage, win, tp, TRUE) == OK)
+#endif
 	{
 	    if (*varname == '&')	/* window-local-option */
 	    {
@@ -12465,8 +12474,11 @@ getwinvar(argvars, rettv, off)
 	    }
 	}
 
-	/* restore previous notion of curwin */
-	restore_win(oldcurwin, oldtabpage, TRUE);
+#ifdef FEAT_WINDOWS
+	if (need_switch_win)
+	    /* restore previous notion of curwin */
+	    restore_win(oldcurwin, oldtabpage, TRUE);
+#endif
     }
 
     if (!done && argvars[off + 2].v_type != VAR_UNKNOWN)
@@ -17597,6 +17609,7 @@ setwinvar(argvars, rettv, off)
 #ifdef FEAT_WINDOWS
     win_T	*save_curwin;
     tabpage_T	*save_curtab;
+    int		need_switch_win;
 #endif
     char_u	*varname, *winvarname;
     typval_T	*varp;
@@ -17619,7 +17632,9 @@ setwinvar(argvars, rettv, off)
     if (win != NULL && varname != NULL && varp != NULL)
     {
 #ifdef FEAT_WINDOWS
-	if (switch_win(&save_curwin, &save_curtab, win, tp, TRUE) == OK)
+	need_switch_win = !(tp == curtab && win == curwin);
+	if (!need_switch_win
+	       || switch_win(&save_curwin, &save_curtab, win, tp, TRUE) == OK)
 #endif
 	{
 	    if (*varname == '&')
@@ -17647,7 +17662,8 @@ setwinvar(argvars, rettv, off)
 	    }
 	}
 #ifdef FEAT_WINDOWS
-	restore_win(save_curwin, save_curtab, TRUE);
+	if (need_switch_win)
+	    restore_win(save_curwin, save_curtab, TRUE);
 #endif
     }
 }
