@@ -5345,8 +5345,19 @@ find_start_comment(ind_maxcomment)	    /* XXX */
     static pos_T *
 ind_find_start_CORS()	    /* XXX */
 {
-    pos_T	*comment_pos = find_start_comment(curbuf->b_ind_maxcomment);
-    pos_T	*rs_pos = find_start_rawstring(curbuf->b_ind_maxcomment);
+    static pos_T comment_pos_copy;
+    pos_T	*comment_pos;
+    pos_T	*rs_pos;
+
+    comment_pos = find_start_comment(curbuf->b_ind_maxcomment);
+    if (comment_pos != NULL)
+    {
+	/* Need to make a copy of the static pos in findmatchlimit(),
+	 * calling find_start_rawstring() may change it. */
+	comment_pos_copy = *comment_pos;
+	comment_pos = &comment_pos_copy;
+    }
+    rs_pos = find_start_rawstring(curbuf->b_ind_maxcomment);
 
     /* If comment_pos is before rs_pos the raw string is inside the comment.
      * If rs_pos is before comment_pos the comment is inside the raw string. */
@@ -8334,7 +8345,8 @@ get_c_indent()
 		if (terminated == 0 || (lookfor != LOOKFOR_UNTERM
 							&& terminated == ','))
 		{
-		    if (*skipwhite(l) == '[' || l[STRLEN(l) - 1] == '[')
+		    if (lookfor != LOOKFOR_ENUM_OR_INIT &&
+			    (*skipwhite(l) == '[' || l[STRLEN(l) - 1] == '['))
 			amount += ind_continuation;
 		    /*
 		     * if we're in the middle of a paren thing,
@@ -8576,7 +8588,10 @@ get_c_indent()
 			     */
 			    l = ml_get_curline();
 			    amount = cur_amount;
-			    if (*skipwhite(l) == ']' || l[STRLEN(l) - 1] == ']')
+
+			    n = (int)STRLEN(l);
+			    if (terminated == ',' && (*skipwhite(l) == ']'
+					|| (n >=2 && l[n - 2] == ']')))
 				break;
 
 			    /*
