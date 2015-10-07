@@ -828,7 +828,7 @@ python3_end()
     --recurse;
 }
 
-#if (defined(DYNAMIC_PYTHON) && defined(FEAT_PYTHON)) || defined(PROTO)
+#if (defined(DYNAMIC_PYTHON3) && defined(DYNAMIC_PYTHON) && defined(FEAT_PYTHON) && defined(UNIX)) || defined(PROTO)
     int
 python3_loaded()
 {
