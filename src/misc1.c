@@ -6555,7 +6555,7 @@ cin_is_cpp_baseclass(cached)
 
     pos->lnum = lnum;
     line = ml_get(lnum);
-    s = cin_skipcomment(line);
+    s = line;
     for (;;)
     {
 	if (*s == NUL)
@@ -6564,6 +6564,13 @@ cin_is_cpp_baseclass(cached)
 		break;
 	    /* Continue in the cursor line. */
 	    line = ml_get(++lnum);
+	    s = line;
+	}
+	if (s == line)
+	{
+	    /* don't recognize "case (foo):" as a baseclass */
+	    if (cin_iscase(s, FALSE))
+		break;
 	    s = cin_skipcomment(line);
 	    if (*s == NUL)
 		continue;
