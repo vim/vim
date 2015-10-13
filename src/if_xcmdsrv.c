@@ -1235,9 +1235,9 @@ server_parse_messages()
     while (head.next != NULL && head.next != &head)
     {
 	node = head.next;
-	server_parse_message(X_DISPLAY, node->propInfo, node->len);
 	head.next = node->next;
 	node->next->prev = node->prev;
+	server_parse_message(X_DISPLAY, node->propInfo, node->len);
 	vim_free(node);
     }
 }
