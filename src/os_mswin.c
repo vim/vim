@@ -481,11 +481,14 @@ mch_isFullName(char_u *fname)
  * commands that use a file name should try to avoid the need to type a
  * backslash twice.
  * When 'shellslash' set do it the other way around.
+ * When the path looks like a URL leave it unmodified.
  */
     void
 slash_adjust(p)
     char_u  *p;
 {
+    if (path_with_url(p))
+	return;
     while (*p)
     {
 	if (*p == psepcN)
