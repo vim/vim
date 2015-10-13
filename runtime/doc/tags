@@ -6000,6 +6000,7 @@ g:html_dynamic_folds	syntax.txt	/*g:html_dynamic_folds*
 g:html_encoding_override	syntax.txt	/*g:html_encoding_override*
 g:html_end_line	syntax.txt	/*g:html_end_line*
 g:html_expand_tabs	syntax.txt	/*g:html_expand_tabs*
+g:html_font	syntax.txt	/*g:html_font*
 g:html_hover_unfold	syntax.txt	/*g:html_hover_unfold*
 g:html_id_expr	syntax.txt	/*g:html_id_expr*
 g:html_ignore_conceal	syntax.txt	/*g:html_ignore_conceal*

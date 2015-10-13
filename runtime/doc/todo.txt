@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Sep 25
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Oct 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -72,6 +72,8 @@ Regexp problems:
   col and vcol when moving to another line.
 - this doesn't work: "syntax match ErrorMsg /.\%9l\%>20c\&\%<28c/".  Leaving
   out the \& works.  Seems any column check after \& fails.
+- The pattern "\1" with the old engine gives E65, with the new engine it
+  matches the empty string. (Dominique Pelle, 2015 Oct 2)
 
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
@@ -101,7 +103,8 @@ Same for src/xxd/Make_cyg.mak
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
-2html update. (Ben Fritz, 2015 Sep 9)
+Patch to add debug backtrace. (Alberto Fanjul, 2015 Sep 27)
+Asked for :frame command.
 
 MS-Windows: When editing a file with a leading space, writing it uses the
 wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
@@ -111,8 +114,6 @@ specifically?  First try with the parens, then without.
 
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
-
-Add bzl filetype support. (David Barnett, 2015 Aug 11)
 
 When complete() first argument is before where insert started and 'backspace'
 is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
@@ -126,14 +127,20 @@ Goes away when disabling the swap file. (might1, Feb 16)
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
 
-The OptionSet autocommand event is not always triggered. (Rick Howe, 2015 Sep
-24): setwinvar(), :diffthis, :diffoff.
+If libiconv.dll is not found search for libiconv2.dll. (Yasuhiro Matsumoto,
+2015 Oct 7)
 
-The argument for "-S" is not taken literally, the ":so" command expands
-wildcards.  Add a ":nowild" command modifier?  (ZyX, 2015 March 4)
+The OptionSet autocommand event is not always triggered. (Rick Howe, 2015 Sep
+24): :diffthis, :diffoff.
 
 ":set all&" still does not handle all side effects.  Centralize handling side
 effects for when set by the user, on init and when reset to default.
+
+":tag" does not jump to the right entry of a :tselect. (James Speros, 2015 Oct
+9)
+
+The argument for "-S" is not taken literally, the ":so" command expands
+wildcards.  Add a ":nowild" command modifier?  (ZyX, 2015 March 4)
 
 Proposal to make options.txt easier to read. (Arnaud Decara, 2015 Aug 5)
 Update Aug 14.
