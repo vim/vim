@@ -79,6 +79,8 @@ main(void)
 	}
 	++p;
     }
+    while (*p == ' ')
+        ++p;
 
     /*
      * "-s" argument: don't wait for a key hit.
