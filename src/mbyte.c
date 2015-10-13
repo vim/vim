@@ -4400,7 +4400,9 @@ static HINSTANCE hMsvcrtDLL = 0;
 
 #  ifndef DYNAMIC_ICONV_DLL
 #   define DYNAMIC_ICONV_DLL "iconv.dll"
-#   define DYNAMIC_ICONV_DLL_ALT "libiconv.dll"
+#   define DYNAMIC_ICONV_DLL_ALT1 "libiconv.dll"
+#   define DYNAMIC_ICONV_DLL_ALT2 "libiconv2.dll"
+#   define DYNAMIC_ICONV_DLL_ALT3 "libiconv-2.dll"
 #  endif
 #  ifndef DYNAMIC_MSVCRT_DLL
 #   define DYNAMIC_MSVCRT_DLL "msvcrt.dll"
@@ -4456,9 +4458,16 @@ iconv_enabled(verbose)
 {
     if (hIconvDLL != 0 && hMsvcrtDLL != 0)
 	return TRUE;
+
+    /* The iconv DLL file goes under different names, try them all. */
     hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL);
-    if (hIconvDLL == 0)		/* sometimes it's called libiconv.dll */
-	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT);
+    if (hIconvDLL == 0)
+	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT1);
+    if (hIconvDLL == 0)
+	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT2);
+    if (hIconvDLL == 0)
+	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT3);
+
     if (hIconvDLL != 0)
 	hMsvcrtDLL = vimLoadLib(DYNAMIC_MSVCRT_DLL);
     if (hIconvDLL == 0 || hMsvcrtDLL == 0)
