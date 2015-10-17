@@ -4847,6 +4847,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that using the "-u NONE" and "--noplugin" command line arguments
 	reset this option. |-u| |--noplugin|
 
+						*'luadll'*
+'luadll' 		string	(default empty)
+			global
+			{not in Vi} {only for Unix}
+			{only available when compiled with the |+lua/dyn|
+			feature}
+	Specifies the path of the Lua shared library instead of DYNAMIC_LUA_DLL
+	what was specified at compile time.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
 						*'macatsui'* *'nomacatsui'*
 'macatsui'		boolean	(default on)
 			global
@@ -5550,6 +5561,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	Replace the ';' with a ':' or whatever separator is used.  Note that
 	this doesn't work when $INCL contains a comma or white space.
 
+						*'perldll'*
+'perldll' 		string	(default empty)
+			global
+			{not in Vi} {only for Unix}
+			{only available when compiled with the |+perl/dyn|
+			feature}
+	Specifies the path of the Perl shared library instead of
+	DYNAMIC_PERL_DLL what was specified at compile time.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
 			*'preserveindent'* *'pi'* *'nopreserveindent'* *'nopi'*
 'preserveindent' 'pi'	boolean	(default off)
 			local to buffer
@@ -5676,6 +5698,27 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Insert mode completion.  When zero as much space as available is used.
 	|ins-completion-menu|.
 
+						*'python3dll'*
+'python3dll' 		string	(default empty)
+			global
+			{not in Vi} {only for Unix}
+			{only available when compiled with the |+python3/dyn|
+			feature}
+	Specifies the path of the Python 3 shared library instead of
+	DYNAMIC_PYTHON3_DLL what was specified at compile time.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
+						*'pythondll'*
+'pythondll' 		string	(default empty)
+			global
+			{not in Vi} {only for Unix}
+			{only available when compiled with the |+python/dyn|
+			feature}
+	Specifies the path of the Python 2.x shared library instead of
+	DYNAMIC_PYTHON_DLL what was specified at compile time.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 						*'quoteescape'* *'qe'*
 'quoteescape' 'qe'	string	(default "\")
@@ -5895,6 +5938,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	This is useful for languages such as Hebrew, Arabic and Farsi.
 	The 'rightleft' option must be set for 'rightleftcmd' to take effect.
+
+						*'rubydll'*
+'rubydll' 		string	(default empty)
+			global
+			{not in Vi} {only for Unix}
+			{only available when compiled with the |+ruby/dyn|
+			feature}
+	Specifies the path of the Ruby shared library instead of
+	DYNAMIC_RUBY_DLL what was specified at compile time.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 					 *'ruler'* *'ru'* *'noruler'* *'noru'*
 'ruler' 'ru'		boolean	(default off)
