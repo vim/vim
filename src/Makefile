@@ -2225,7 +2225,8 @@ install-icons:
 		-a ! -f $(ICON16PATH)/gvim.png; then \
 	   $(INSTALL_DATA) $(SCRIPTSOURCE)/vim16x16.png $(ICON16PATH)/gvim.png; \
 	fi
-
+	$(INSTALL_DATA) $(SCRIPTSOURCE)/vim.desktop $(SCRIPTSOURCE)/gvim.desktop \
+		$(DESTDIR)$(DATADIR)/applications
 
 $(HELPSOURCE)/vim.1 $(MACROSOURCE) $(TOOLSSOURCE):
 	@echo Runtime files not found.
