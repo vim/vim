@@ -167,7 +167,7 @@ if &filetype == 'changelog'
       let cursor = stridx(line, '{cursor}')
       call setline(lnum, substitute(line, '{cursor}', '', ''))
     endif
-    startinsert!
+    startinsert
   endfunction
 
   " Internal function to create a new entry in the ChangeLog.
@@ -223,7 +223,7 @@ if &filetype == 'changelog'
   endfunction
 
   if exists(":NewChangelogEntry") != 2
-    noremap <buffer> <silent> <Leader>o <Esc>:call <SID>new_changelog_entry('')<CR>
+    noremap <buffer> <silent> <Leader>o :call <SID>new_changelog_entry('')<CR>
     command! -nargs=0 NewChangelogEntry call s:new_changelog_entry('')
   endif
 
