@@ -19,7 +19,7 @@ if exists("b:current_syntax") && b:current_syntax == "ocaml"
 endif
 
 " ' can be used in OCaml identifiers
-set iskeyword+='
+setlocal iskeyword+='
 
 " OCaml is case sensitive.
 syn case match
