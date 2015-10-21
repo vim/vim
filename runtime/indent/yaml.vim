@@ -14,7 +14,7 @@ set cpo&vim
 let b:did_indent = 1
 
 setlocal indentexpr=GetYAMLIndent(v:lnum)
-setlocal indentkeys=!^F,o,O,0#,0},0],<:>,-
+setlocal indentkeys=!^F,o,O,0#,0},0],<:>,0-
 setlocal nosmartindent
 
 let b:undo_indent = 'setlocal indentexpr< indentkeys< smartindent<'
