@@ -1,5 +1,6 @@
 `README.md` for version 7.4 of Vim: Vi IMproved.
 
+(https://raw.github.com/vim/vim/tree/master/runtime/vim48x48.png)
 
 ## What is VIM ##
 
