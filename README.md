@@ -79,7 +79,7 @@ obtained a source distribution, all the stuff for compiling Vim is in the
 `src` directory.  See `src/INSTALL` for instructions.
 
 
-## Installation with source code ##
+## Installation of compiled code ##
 
 See one of these files for system-specific instructions:
 
