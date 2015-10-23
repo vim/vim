@@ -1,7 +1,11 @@
+# ![VIM Logo](runtime/vim48x48.png) VI Improved #
+
 `README.md` for version 7.4 of Vim: Vi IMproved.
 
+[![Build Status](https://travis-ci.org/vim/vim.svg?branch=master)](https://travis-ci.org/vim/vim)
+[![Coverage Status](https://coveralls.io/repos/vim/vim/badge.svg?branch=master&service=github)](https://coveralls.io/github/vim/vim?branch=master)
 
-## What is VIM ##
+## What is VIM? ##
 
 Vim is an almost compatible version of the UNIX editor Vi.  Many new features
 have been added: multi-level undo, syntax highlighting, command line history,
@@ -29,8 +33,8 @@ Which one you need depends on the system you want to run it on and whether you
 want or must compile it yourself.  Check http://www.vim.org/download.php for
 an overview of currently available distributions.
 
-[![Build Status](https://travis-ci.org/vim/vim.svg?branch=master)](https://travis-ci.org/vim/vim)
-[![Coverage Status](https://coveralls.io/repos/vim/vim/badge.svg?branch=master&service=github)](https://coveralls.io/github/vim/vim?branch=master)
+Many Linux distributions already include vim by default in most installations 
+apart from minimal server installations. 
 
 
 ## Documentation ##
@@ -78,7 +82,7 @@ obtained a source distribution, all the stuff for compiling Vim is in the
 `src` directory.  See `src/INSTALL` for instructions.
 
 
-## Installation ##
+## Installation of compiled code ##
 
 See one of these files for system-specific instructions:
 
