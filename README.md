@@ -1,3 +1,5 @@
+# Vi IMproved #
+
 `README.md` for version 7.4 of Vim: Vi IMproved.
 
 ![VIM Logo](runtime/vim48x48.png)
@@ -79,7 +81,7 @@ obtained a source distribution, all the stuff for compiling Vim is in the
 `src` directory.  See `src/INSTALL` for instructions.
 
 
-## Installation ##
+## Installation of compiled code ##
 
 See one of these files for system-specific instructions:
 
