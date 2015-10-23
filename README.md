@@ -1,8 +1,6 @@
-# Vi IMproved #
+# Vi IMproved ![VIM Logo](runtime/vim48x48.png) #
 
 `README.md` for version 7.4 of Vim: Vi IMproved.
-
-![VIM Logo](runtime/vim48x48.png)
 
 ## What is VIM ##
 
