@@ -1,7 +1,7 @@
 README.txt for version 7.4 of Vim: Vi IMproved.
 
 
-WHAT IS VIM
+WHAT IS VIM?
 
 Vim is an almost compatible version of the UNIX editor Vi.  Many new features
 have been added: multi-level undo, syntax highlighting, command line history,
@@ -76,7 +76,7 @@ obtained a source distribution, all the stuff for compiling Vim is in the
 "src" directory.  See src/INSTALL for instructions.
 
 
-INSTALLATION
+INSTALLATION OF COMPILED CODE 
 
 See one of these files for system-specific instructions:
 README_ami.txt		Amiga
