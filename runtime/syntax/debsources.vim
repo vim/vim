@@ -27,7 +27,7 @@ let s:supported = [
       \ 'oldstable', 'stable', 'testing', 'unstable', 'experimental',
       \ 'squeeze', 'wheezy', 'jessie', 'stretch', 'sid', 'rc-buggy',
       \
-      \ 'precise', 'trusty', 'utopic', 'vivid', 'wily', 'devel'
+      \ 'precise', 'trusty', 'vivid', 'wily', 'xenial', 'devel'
       \ ]
 let s:unsupported = [
       \ 'buzz', 'rex', 'bo', 'hamm', 'slink', 'potato',
@@ -35,7 +35,8 @@ let s:unsupported = [
       \
       \ 'warty', 'hoary', 'breezy', 'dapper', 'edgy', 'feisty',
       \ 'gutsy', 'hardy', 'intrepid', 'jaunty', 'karmic', 'lucid',
-      \ 'maverick', 'natty', 'oneiric', 'quantal', 'raring', 'saucy'
+      \ 'maverick', 'natty', 'oneiric', 'quantal', 'raring', 'saucy',
+      \ 'utopic'
       \ ]
 let &cpo=s:cpo
 
