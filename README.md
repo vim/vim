@@ -1,6 +1,7 @@
 `README.md` for version 7.4 of Vim: Vi IMproved.
 [![Build Status](https://travis-ci.org/vim/vim.svg?branch=master)](https://travis-ci.org/vim/vim)
 [![Coverage Status](https://coveralls.io/repos/vim/vim/badge.svg?branch=master&service=github)](https://coveralls.io/github/vim/vim?branch=master)
+[![Appveyor Build status](https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true)](https://ci.appveyor.com/project/chrisbra/vim)
 
 
 ## What is Vim? ##
@@ -97,7 +98,7 @@ There are more `README_*.txt` files, depending on the distribution you used.
 
 ## Contributing ##
 
-If you would like to help making Vim better, see the `CONTRIBUTING.md` file.
+If you would like to help making Vim better, see the [CONTRIBUTING.md](https://github.com/vim/vim/blob/master/CONTRIBUTING.md) file.
 
 
 ## Information ##
