@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	APT config file
 " Maintainer:	Yann Amar <quidame@poivron.org>
-" Last Change:	2013 Apr 12
+" Last Change:	2015 Oct 25
 
 " For version 5.x: Clear all syntax items
 " For version 6.x and 7.x: Quit when a syntax file was already loaded
@@ -123,9 +123,9 @@ syn keyword	aptconfAptGet contained
 	\ Tar-Only Trivial-Only Upgrade
 
 syn keyword	aptconfAptPeriodic contained
-	\ AutocleanInterval BackupArchiveInterval BackupLevel
-	\ Download-Upgradeable-Packages MaxAge MaxSize MinAge
-	\ Unattended-Upgrade Update-Package-Lists Verbose
+	\ AutocleanInterval BackupArchiveInterval BackupLevel Enable
+	\ Download-Upgradeable-Packages Download-Upgradeable-Packages-Debdelta
+	\ MaxAge MaxSize MinAge Unattended-Upgrade Update-Package-Lists Verbose
 
 syn keyword	aptconfAptUpdate contained
 	\ Pre-Invoke Post-Invoke Post-Invoke-Success
