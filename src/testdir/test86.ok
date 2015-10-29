@@ -447,7 +447,7 @@ range:__dir__,__members__,append,end,start
 dictionary:__dir__,__members__,get,has_key,items,keys,locked,pop,popitem,scope,update,values
 list:__dir__,__members__,extend,locked
 function:__dir__,__members__,softspace
-output:__dir__,__members__,flush,isatty,readable,seekable,softspace,writable,write,writelines
+output:__dir__,__members__,close,flush,isatty,readable,seekable,softspace,writable,write,writelines
 {}
 {'a': 1}
 {'a': 1}
