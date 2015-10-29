@@ -488,7 +488,7 @@ sys.stderr.softspace = []:TypeError:('expected int(), long() or something suppor
 sys.stderr.softspace = None:TypeError:('expected int(), long() or something supporting coercing to long(), but got NoneType',)
 sys.stderr.softspace = -1:ValueError:('number must be greater or equal to zero',)
 <<< Finished
-sys.stdout.isatty()==False:NOT FAILED
+assert sys.stdout.isatty()==False:NOT FAILED
 assert sys.stdout.seekable()==False:NOT FAILED
 sys.stdout.close():NOT FAILED
 sys.stdout.flush():NOT FAILED

@@ -488,6 +488,7 @@ sys.stderr.softspace = []:(<class 'TypeError'>, TypeError('expected int() or som
 sys.stderr.softspace = None:(<class 'TypeError'>, TypeError('expected int() or something supporting coercing to int(), but got NoneType',))
 sys.stderr.softspace = -1:(<class 'ValueError'>, ValueError('number must be greater or equal to zero',))
 <<< Finished
+assert sys.stdout.isatty()==False:NOT FAILED
 assert sys.stdout.seekable()==False:NOT FAILED
 sys.stdout.close():NOT FAILED
 sys.stdout.flush():NOT FAILED
