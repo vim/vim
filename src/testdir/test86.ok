@@ -488,8 +488,20 @@ sys.stderr.softspace = []:TypeError:('expected int(), long() or something suppor
 sys.stderr.softspace = None:TypeError:('expected int(), long() or something supporting coercing to long(), but got NoneType',)
 sys.stderr.softspace = -1:ValueError:('number must be greater or equal to zero',)
 <<< Finished
+sys.stdout.isatty()==False:NOT FAILED
+assert sys.stdout.seekable()==False:NOT FAILED
+sys.stdout.close():NOT FAILED
+sys.stdout.flush():NOT FAILED
+assert sys.stderr.isatty()==False:NOT FAILED
+assert sys.stderr.seekable()==False:NOT FAILED
+sys.stderr.close():NOT FAILED
+sys.stderr.flush():NOT FAILED
 sys.stdout.attr = None:AttributeError:('invalid attribute: attr',)
 >> OutputWrite
+assert sys.stdout.writable()==True:NOT FAILED
+assert sys.stdout.readable()==False:NOT FAILED
+assert sys.stderr.writable()==True:NOT FAILED
+assert sys.stderr.readable()==False:NOT FAILED
 sys.stdout.write(None):TypeError:('coercing to Unicode: need string or buffer, NoneType found',)
 >> OutputWriteLines
 sys.stdout.writelines(None):TypeError:("'NoneType' object is not iterable",)
