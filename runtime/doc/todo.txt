@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Oct 13
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Oct 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -83,17 +83,47 @@ work. (ZyX, 2013 Sep 28)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
+Netrw update. (Charles 2015 Oct 23)
+
+Patch to use local value of 'errorformat' in :cexpr. (Christian Brabandt,
+2015 Oct 16)  Only do this for :lexpr ?
+
+Update Oracle syntax file from:
+https://github.com/chrisbra/vim-sqloracle-syntax/blob/master/syntax/sqloracle.vim
+
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
+
+Updated syntax files. (Charles Campbell, 2015 Oct 19)
+
+Patch to include .desktop files in the distribution.  PR #455.
+
+Better changelog syntax file. (Martin Florian, 2015 Oct 25)
+
+Better readline syntax file. (Raphael Bazaud, 2015 Oct 25)
+
+English spell checking has an error.  Updating doesn't work.
+(Dominique Pelle, 2015 Oct 15)
+Hint for new URL: Christian Brabandt, 2015 Oct 15.
+But that file looks old.
 
 Using ":windo" to set options in all windows has the side effect that it
 changes the window layout and the current window.  Make a variant that saves
 and restores.  Use in the matchparen plugin.
 Perhaps we can use ":silent window"?
 
+Patch for documentation mistakes. (Hirohito Higashi, 2015 Oct 22)
+
 Illegal memory access, requires ASAN to see. (Dominique Pelle, 2015 Jul 28)
 
 Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
+
+Patch for yaml indent, #458.
+
+Patch for Python to add isatty, readable, etc. (PR #464)
+
+Patch to add options for specifying dll names. (Kazuki Sakamoto, 2015 Oct 16)
+PR #452  Check if it's secure (can't set from modeline).
 
 Unexpected delay when using CTRL-O u.  It's not timeoutlen.
 (Gary Johnson, 2015 Aug 28)
@@ -111,6 +141,12 @@ wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
 
 Can't recognize the $ProgramFiles(x86) environment variable.  Recognize it
 specifically?  First try with the parens, then without.
+
+Patch to add 'tagcase' option, whether to ignore case for tags.
+(Gary Johnson, 2015 Oct 17)
+
+Patch to fix "." after CTRL-A in Visual block mode. (Ozaki Kiichi, 2015 Oct
+24)
 
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
@@ -144,6 +180,8 @@ wildcards.  Add a ":nowild" command modifier?  (ZyX, 2015 March 4)
 
 Proposal to make options.txt easier to read. (Arnaud Decara, 2015 Aug 5)
 Update Aug 14.
+
+Crash in :cnext on MS-Windows. (Ben Fritz, 2015 Oct 27)
 
 Patch for problem with restoring screen on Windows. (Nobuhiro Takasaki, 2015
 Sep 10)
@@ -198,6 +236,9 @@ Patch for man.vim. (SungHyun Nam, 2015 May 20)
 Doesn't work completely (Dominique Orban)
 
 Patch to add a "literal" argument to bufnr().  (Olaf Dabrunz, 2015 Aug 4)
+
+Cannot execute the shell when it's in a directory with a space.
+Issue #459.
 
 When a session file is created and there are "nofile" buffers, these are not
 filled.  Need to trigger BufReadCmd autocommands.  Also handle deleting the
@@ -299,6 +340,10 @@ change.  How does the user know which change?  At least have a way to list
 them: ":repeats".
 
 Patch for glob(), adding slash to normal files. (Ingo Karkat, 2014 Dec 22)
+
+When entering and leaving the preview window autocommands are triggered, but
+these may not work well.  Perhaps set a flag to indicate that the preview
+window is involved? (John Otter, 2015 Oct 27)
 
 Using "." to repeat an Ex command puts that command in history.  Probably
 should not happen.  If the command is the result of a mapping it's not put in
