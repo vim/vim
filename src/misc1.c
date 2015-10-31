@@ -9940,8 +9940,9 @@ dos_expandpath(
 	    return 0;
     }
 
-    /* make room for file name */
-    buf = alloc((int)STRLEN(path) + BASENAMELEN + 5);
+    /* Make room for file name.  When doing encoding conversion the actual
+     * length may be quite a bit longer, thus use the maximum possible length. */
+    buf = alloc((int)MAXPATHL);
     if (buf == NULL)
 	return 0;
 
