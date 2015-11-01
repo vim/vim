@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Oct 30
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Oct 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -221,6 +221,9 @@ Is this right?
 
 Patch to have CTRL-A and CTRL-X update the '[ and '] marks.
 (Yukihiro Nakadaira, 2015 Aug 23)
+
+On MS-Windows viminfo file is always given the hidden attribute? (raulnac,
+2015 Oct 30)
 
 Patch to make getregtype() return the right size for non-linux systems.
 (Yasuhiro Matsumoto, 2014 Jul 8)
