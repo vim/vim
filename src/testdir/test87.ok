@@ -447,7 +447,7 @@ range:__dir__,append,end,start
 dictionary:__dir__,get,has_key,items,keys,locked,pop,popitem,scope,update,values
 list:__dir__,extend,locked
 function:__dir__,softspace
-output:__dir__,flush,softspace,write,writelines
+output:__dir__,close,flush,isatty,readable,seekable,softspace,writable,write,writelines
 {}
 {'a': 1}
 {'a': 1}
@@ -488,8 +488,20 @@ sys.stderr.softspace = []:(<class 'TypeError'>, TypeError('expected int() or som
 sys.stderr.softspace = None:(<class 'TypeError'>, TypeError('expected int() or something supporting coercing to int(), but got NoneType',))
 sys.stderr.softspace = -1:(<class 'ValueError'>, ValueError('number must be greater or equal to zero',))
 <<< Finished
+assert sys.stdout.isatty()==False:NOT FAILED
+assert sys.stdout.seekable()==False:NOT FAILED
+sys.stdout.close():NOT FAILED
+sys.stdout.flush():NOT FAILED
+assert sys.stderr.isatty()==False:NOT FAILED
+assert sys.stderr.seekable()==False:NOT FAILED
+sys.stderr.close():NOT FAILED
+sys.stderr.flush():NOT FAILED
 sys.stdout.attr = None:(<class 'AttributeError'>, AttributeError('invalid attribute: attr',))
 >> OutputWrite
+assert sys.stdout.writable()==True:NOT FAILED
+assert sys.stdout.readable()==False:NOT FAILED
+assert sys.stderr.writable()==True:NOT FAILED
+assert sys.stderr.readable()==False:NOT FAILED
 sys.stdout.write(None):(<class 'TypeError'>, TypeError("Can't convert 'NoneType' object to str implicitly",))
 >> OutputWriteLines
 sys.stdout.writelines(None):(<class 'TypeError'>, TypeError("'NoneType' object is not iterable",))
