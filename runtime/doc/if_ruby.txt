@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 7.4.  Last change: 2015 Feb 22
+*if_ruby.txt*   For Vim version 7.4.  Last change: 2015 Oct 16
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda
@@ -199,6 +199,8 @@ This means that Vim will search for the Ruby DLL file or shared library only
 when needed.  When you don't use the Ruby interface you don't need it, thus
 you can use Vim even though this library file is not on your system.
 
+MS-Windows ~
+
 You need to install the right version of Ruby for this to work.  You can find
 the package to download from:
 http://www.garbagecollect.jp/ruby/mswin32/en/download/release.html
@@ -215,6 +217,13 @@ If you want to build Vim with Ruby 1.9.1, you need to edit the config.h file
 and comment-out the check for _MSC_VER.
 You may also need to rename the include directory name to match the version,
 strangely for Ruby 1.9.3 the directory is called 1.9.1.
+
+Unix ~
+
+The 'rubydll' option can be used to specify the Ruby shared library file
+instead of DYNAMIC_RUBY_DLL file what was specified at compile time.  The
+version of the shared library must match the Ruby version Vim was compiled
+with.
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:

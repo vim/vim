@@ -402,7 +402,12 @@ lua_link_init(char *libname, int verbose)
     int
 lua_enabled(int verbose)
 {
-    return lua_link_init(DYNAMIC_LUA_DLL, verbose) == OK;
+#ifdef WIN3264
+    char *dll = DYNAMIC_LUA_DLL;
+#else
+    char *dll = *p_luadll ? (char *)p_luadll : DYNAMIC_LUA_DLL;
+#endif
+    return lua_link_init(dll, verbose) == OK;
 }
 
 #endif /* DYNAMIC_LUA */

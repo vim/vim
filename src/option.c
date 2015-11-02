@@ -1779,6 +1779,11 @@ static struct vimoption
     {"loadplugins", "lpl",  P_BOOL|P_VI_DEF,
 			    (char_u *)&p_lpl, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L} SCRIPTID_INIT},
+#if defined(DYNAMIC_LUA) && !defined(WIN3264)
+    {"luadll",      NULL,   P_STRING|P_VI_DEF|P_SECURE,
+			    (char_u *)&p_luadll, PV_NONE,
+			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+#endif
 #ifdef FEAT_GUI_MAC
     {"macatsui",    NULL,   P_BOOL|P_VI_DEF|P_RCLR,
 			    (char_u *)&p_macatsui, PV_NONE,
@@ -2014,6 +2019,11 @@ static struct vimoption
 # endif
 #endif
 				(char_u *)0L} SCRIPTID_INIT},
+#if defined(DYNAMIC_PERL) && !defined(WIN3264)
+    {"perldll",     NULL,   P_STRING|P_VI_DEF|P_SECURE,
+			    (char_u *)&p_perldll, PV_NONE,
+			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+#endif
     {"preserveindent", "pi", P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_pi, PV_PI,
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
@@ -2119,6 +2129,16 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
+#if defined(DYNAMIC_PYTHON3) && !defined(WIN3264)
+    {"python3dll",  NULL,   P_STRING|P_VI_DEF|P_SECURE,
+			    (char_u *)&p_py3dll, PV_NONE,
+			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+#endif
+#if defined(DYNAMIC_PYTHON) && !defined(WIN3264)
+    {"pythondll",   NULL,   P_STRING|P_VI_DEF|P_SECURE,
+			    (char_u *)&p_pydll, PV_NONE,
+			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+#endif
     {"quoteescape", "qe",   P_STRING|P_ALLOCED|P_VI_DEF,
 #ifdef FEAT_TEXTOBJ
 			    (char_u *)&p_qe, PV_QE,
@@ -2192,6 +2212,11 @@ static struct vimoption
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCRIPTID_INIT},
+#if defined(DYNAMIC_RUBY) && !defined(WIN3264)
+    {"rubydll",     NULL,   P_STRING|P_VI_DEF|P_SECURE,
+			    (char_u *)&p_rubydll, PV_NONE,
+			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+#endif
     {"ruler",	    "ru",   P_BOOL|P_VI_DEF|P_VIM|P_RSTAT,
 #ifdef FEAT_CMDL_INFO
 			    (char_u *)&p_ru, PV_NONE,

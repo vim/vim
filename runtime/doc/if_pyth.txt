@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.4.  Last change: 2014 Jul 23
+*if_pyth.txt*   For Vim version 7.4.  Last change: 2015 Oct 16
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -679,19 +679,25 @@ functions to evaluate Python expressions and pass their values to VimL.
 ==============================================================================
 9. Dynamic loading					*python-dynamic*
 
-On MS-Windows the Python library can be loaded dynamically.  The |:version|
-output then includes |+python/dyn|.
+On MS-Windows and Unix the Python library can be loaded dynamically.  The
+|:version| output then includes |+python/dyn| or |+python3/dyn|.
 
-This means that Vim will search for the Python DLL file only when needed.
-When you don't use the Python interface you don't need it, thus you can use
-Vim without this DLL file.
+This means that Vim will search for the Python DLL or shared library file only
+when needed.  When you don't use the Python interface you don't need it, thus
+you can use Vim without this file.
 
-To use the Python interface the Python DLL must be in your search path.  In a
-console window type "path" to see what directories are used.
+On MS-Windows to use the Python interface the Python DLL must be in your search
+path.  In a console window type "path" to see what directories are used.
 
 The name of the DLL must match the Python version Vim was compiled with.
 Currently the name is "python24.dll".  That is for Python 2.4.  To know for
 sure edit "gvim.exe" and search for "python\d*.dll\c".
+
+On Unix the 'pythondll' or 'python3dll' option can be used to specify the
+Python shared library file instead of DYNAMIC_PYTHON_DLL or
+DYNAMIC_PYTHON3_DLL file what were specified at compile time.  The version of
+the shared library must match the Python 2.x or Python 3 version Vim was
+compiled with.
 
 ==============================================================================
 10. Python 3						*python3*

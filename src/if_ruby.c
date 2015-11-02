@@ -639,7 +639,12 @@ ruby_runtime_link_init(char *libname, int verbose)
 ruby_enabled(verbose)
     int		verbose;
 {
-    return ruby_runtime_link_init(DYNAMIC_RUBY_DLL, verbose) == OK;
+#ifdef WIN3264
+    char *dll = DYNAMIC_RUBY_DLL;
+#else
+    char *dll = *p_rubydll ? (char *)p_rubydll : DYNAMIC_RUBY_DLL;
+#endif
+    return ruby_runtime_link_init(dll, verbose) == OK;
 }
 #endif /* defined(DYNAMIC_RUBY) || defined(PROTO) */
 

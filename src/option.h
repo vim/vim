@@ -626,6 +626,9 @@ EXTERN char_u	*p_lcs;		/* 'listchars' */
 
 EXTERN int	p_lz;		/* 'lazyredraw' */
 EXTERN int	p_lpl;		/* 'loadplugins' */
+#if defined(DYNAMIC_LUA) && !defined(WIN3264)
+EXTERN char_u	*p_luadll;	/* 'luadll' */
+#endif
 #ifdef FEAT_GUI_MAC
 EXTERN int	p_macatsui;	/* 'macatsui' */
 #endif
@@ -682,6 +685,15 @@ EXTERN char_u	*p_path;	/* 'path' */
 #ifdef FEAT_SEARCHPATH
 EXTERN char_u	*p_cdpath;	/* 'cdpath' */
 #endif
+#if defined(DYNAMIC_PERL) && !defined(WIN3264)
+EXTERN char_u	*p_perldll;	/* 'perldll' */
+#endif
+#if defined(DYNAMIC_PYTHON3) && !defined(WIN3264)
+EXTERN char_u	*p_py3dll;	/* 'python3dll' */
+#endif
+#if defined(DYNAMIC_PYTHON) && !defined(WIN3264)
+EXTERN char_u	*p_pydll;	/* 'pythondll' */
+#endif
 #ifdef FEAT_RELTIME
 EXTERN long	p_rdt;		/* 'redrawtime' */
 #endif
@@ -700,6 +712,9 @@ EXTERN int	p_rs;		/* 'restorescreen' */
 #ifdef FEAT_RIGHTLEFT
 EXTERN int	p_ari;		/* 'allowrevins' */
 EXTERN int	p_ri;		/* 'revins' */
+#endif
+#if defined(DYNAMIC_RUBY) && !defined(WIN3264)
+EXTERN char_u	*p_rubydll;	/* 'rubydll' */
 #endif
 #ifdef FEAT_CMDL_INFO
 EXTERN int	p_ru;		/* 'ruler' */
