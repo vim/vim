@@ -584,6 +584,8 @@ RT_UNIX =	\
 		runtime/vim32x32.xpm \
 		runtime/vim48x48.png \
 		runtime/vim48x48.xpm \
+		runtime/gvim.desktop \
+		runtime/vim.desktop \
 
 # Unix and DOS runtime without CR-LF translation
 RT_UNIX_DOS_BIN =	\

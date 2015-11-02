@@ -1905,10 +1905,12 @@ test1 \
 	test_autocmd_option \
 	test_autoformat_join \
 	test_breakindent \
+	test_cdo \
 	test_changelist \
 	test_charsearch \
 	test_close_count \
 	test_command_count \
+	test_comparators \
 	test_erasebackword \
 	test_eval \
 	test_fixeol \
@@ -2225,7 +2227,8 @@ install-icons:
 		-a ! -f $(ICON16PATH)/gvim.png; then \
 	   $(INSTALL_DATA) $(SCRIPTSOURCE)/vim16x16.png $(ICON16PATH)/gvim.png; \
 	fi
-
+	$(INSTALL_DATA) $(SCRIPTSOURCE)/vim.desktop $(SCRIPTSOURCE)/gvim.desktop \
+		$(DESTDIR)$(DATADIR)/applications
 
 $(HELPSOURCE)/vim.1 $(MACROSOURCE) $(TOOLSSOURCE):
 	@echo Runtime files not found.
