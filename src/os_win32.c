@@ -3098,6 +3098,20 @@ mch_hide(char_u *name)
 }
 
 /*
+ * Return TRUE if file "name" exists and is hidden.
+ */
+    int
+mch_ishidden(char_u *name)
+{
+    int f = win32_getattrs(name);
+
+    if (f == -1)
+	return FALSE;		    /* file does not exist at all */
+
+    return (f & FILE_ATTRIBUTE_HIDDEN) != 0;
+}
+
+/*
  * return TRUE if "name" is a directory
  * return FALSE if "name" is not a directory or upon error
  */

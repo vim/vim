@@ -1795,7 +1795,7 @@ write_viminfo(file, forceit)
     struct stat	st_old;		/* mch_stat() of existing viminfo file */
 #endif
 #ifdef WIN3264
-    long	perm = -1;
+    int		hidden = FALSE;
 #endif
 
     if (no_viminfo())
@@ -1858,7 +1858,7 @@ write_viminfo(file, forceit)
 #endif
 #ifdef WIN3264
 	/* Get the file attributes of the existing viminfo file. */
-	perm = mch_getperm(fname);
+	hidden = mch_ishidden(fname);
 #endif
 
 	/*
@@ -2033,7 +2033,7 @@ write_viminfo(file, forceit)
 
 #ifdef WIN3264
 	/* If the viminfo file was hidden then also hide the new file. */
-	if (perm > 0 && (perm & FILE_ATTRIBUTE_HIDDEN))
+	if (hidden)
 	    mch_hide(fname);
 #endif
     }
