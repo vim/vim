@@ -415,6 +415,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'lpl'	options.txt	/*'lpl'*
 'ls'	options.txt	/*'ls'*
 'lsp'	options.txt	/*'lsp'*
+'luadll'	options.txt	/*'luadll'*
 'lw'	options.txt	/*'lw'*
 'lz'	options.txt	/*'lz'*
 'ma'	options.txt	/*'ma'*
@@ -727,6 +728,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'path'	options.txt	/*'path'*
 'pdev'	options.txt	/*'pdev'*
 'penc'	options.txt	/*'penc'*
+'perldll'	options.txt	/*'perldll'*
 'pex'	options.txt	/*'pex'*
 'pexpr'	options.txt	/*'pexpr'*
 'pfn'	options.txt	/*'pfn'*
@@ -753,6 +755,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'pumheight'	options.txt	/*'pumheight'*
 'pvh'	options.txt	/*'pvh'*
 'pvw'	options.txt	/*'pvw'*
+'python3dll'	options.txt	/*'python3dll'*
+'pythondll'	options.txt	/*'pythondll'*
 'qe'	options.txt	/*'qe'*
 'quote	motion.txt	/*'quote*
 'quoteescape'	options.txt	/*'quoteescape'*
@@ -779,6 +783,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'rs'	options.txt	/*'rs'*
 'rtp'	options.txt	/*'rtp'*
 'ru'	options.txt	/*'ru'*
+'rubydll'	options.txt	/*'rubydll'*
 'ruf'	options.txt	/*'ruf'*
 'ruler'	options.txt	/*'ruler'*
 'rulerformat'	options.txt	/*'rulerformat'*
@@ -6867,6 +6872,7 @@ lua	if_lua.txt	/*lua*
 lua-buffer	if_lua.txt	/*lua-buffer*
 lua-commands	if_lua.txt	/*lua-commands*
 lua-dict	if_lua.txt	/*lua-dict*
+lua-dynamic	if_lua.txt	/*lua-dynamic*
 lua-eval	if_lua.txt	/*lua-eval*
 lua-funcref	if_lua.txt	/*lua-funcref*
 lua-list	if_lua.txt	/*lua-list*
