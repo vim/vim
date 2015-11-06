@@ -6,7 +6,7 @@
 " Modified By:	Dominik Fischer
 " Originally:	2009-07-09
 " Last Change:	2015 Dec 3 
-" SSH Version:	5.9
+" SSH Version:	6.1
 "
 
 " Setup
@@ -172,6 +172,7 @@ syn keyword sshdconfigKeyword UseDNS
 syn keyword sshdconfigKeyword UseLogin
 syn keyword sshdconfigKeyword UsePAM
 syn keyword sshdconfigKeyword UsePrivilegeSeparation
+syn keyword sshdconfigKeyword VersionAddendum
 syn keyword sshdconfigKeyword X11DisplayOffset
 syn keyword sshdconfigKeyword X11Forwarding
 syn keyword sshdconfigKeyword X11UseLocalhost
