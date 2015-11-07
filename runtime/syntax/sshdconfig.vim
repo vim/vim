@@ -3,9 +3,10 @@
 " Maintainer:	David Necas (Yeti)
 " Maintainer:   Leonard Ehrenfried <leonard.ehrenfried@web.de>	
 " Modified By:	Thilo Six
+" Modified By:	Dominik Fischer
 " Originally:	2009-07-09
-" Last Change:	2011 Oct 31 
-" SSH Version:	5.9p1
+" Last Change:	2015 Dec 3 
+" SSH Version:	5.9
 "
 
 " Setup
@@ -38,6 +39,8 @@ syn keyword sshdconfigTodo TODO FIXME NOTE contained
 syn keyword sshdconfigYesNo yes no none
 
 syn keyword sshdconfigAddressFamily any inet inet6
+
+syn keyword sshdconfigPrivilegeSeparation sandbox
 
 syn keyword sshdconfigCipher aes128-cbc 3des-cbc blowfish-cbc cast128-cbc
 syn keyword sshdconfigCipher aes192-cbc aes256-cbc aes128-ctr aes192-ctr aes256-ctr
@@ -192,6 +195,7 @@ if version >= 508 || !exists("did_sshdconfig_syntax_inits")
   HiLink sshdconfigConstant       Constant
   HiLink sshdconfigYesNo          sshdconfigEnum
   HiLink sshdconfigAddressFamily  sshdconfigEnum
+  HiLink sshdconfigPrivilegeSeparation  sshdconfigEnum
   HiLink sshdconfigCipher         sshdconfigEnum
   HiLink sshdconfigMAC            sshdconfigEnum
   HiLink sshdconfigRootLogin      sshdconfigEnum
