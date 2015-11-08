@@ -187,30 +187,30 @@ if version >= 508 || !exists("did_sshdconfig_syntax_inits")
     command -nargs=+ HiLink hi def link <args>
   endif
 
-  HiLink sshdconfigComment        Comment
-  HiLink sshdconfigTodo           Todo
-  HiLink sshdconfigHostPort       sshdconfigConstant
-  HiLink sshdconfigTime           sshdconfigConstant
-  HiLink sshdconfigNumber         sshdconfigConstant
-  HiLink sshdconfigConstant       Constant
-  HiLink sshdconfigYesNo          sshdconfigEnum
-  HiLink sshdconfigAddressFamily  sshdconfigEnum
+  HiLink sshdconfigComment              Comment
+  HiLink sshdconfigTodo                 Todo
+  HiLink sshdconfigHostPort             sshdconfigConstant
+  HiLink sshdconfigTime                 sshdconfigConstant
+  HiLink sshdconfigNumber               sshdconfigConstant
+  HiLink sshdconfigConstant             Constant
+  HiLink sshdconfigYesNo                sshdconfigEnum
+  HiLink sshdconfigAddressFamily        sshdconfigEnum
   HiLink sshdconfigPrivilegeSeparation  sshdconfigEnum
-  HiLink sshdconfigCipher         sshdconfigEnum
-  HiLink sshdconfigMAC            sshdconfigEnum
-  HiLink sshdconfigRootLogin      sshdconfigEnum
-  HiLink sshdconfigLogLevel       sshdconfigEnum
-  HiLink sshdconfigSysLogFacility sshdconfigEnum
-  HiLink sshdconfigVar		  sshdconfigEnum
-  HiLink sshdconfigCompression    sshdconfigEnum
-  HiLink sshdconfigIPQoS	  sshdconfigEnum
-  HiLink sshdconfigKexAlgo	  sshdconfigEnum
-  HiLink sshdconfigTunnel	  sshdconfigEnum
-  HiLink sshdconfigSubsystem	  sshdconfigEnum
-  HiLink sshdconfigEnum           Function
-  HiLink sshdconfigSpecial        Special
-  HiLink sshdconfigKeyword        Keyword
-  HiLink sshdconfigMatch          Type
+  HiLink sshdconfigCipher               sshdconfigEnum
+  HiLink sshdconfigMAC                  sshdconfigEnum
+  HiLink sshdconfigRootLogin            sshdconfigEnum
+  HiLink sshdconfigLogLevel             sshdconfigEnum
+  HiLink sshdconfigSysLogFacility       sshdconfigEnum
+  HiLink sshdconfigVar                  sshdconfigEnum
+  HiLink sshdconfigCompression          sshdconfigEnum
+  HiLink sshdconfigIPQoS                sshdconfigEnum
+  HiLink sshdconfigKexAlgo              sshdconfigEnum
+  HiLink sshdconfigTunnel               sshdconfigEnum
+  HiLink sshdconfigSubsystem            sshdconfigEnum
+  HiLink sshdconfigEnum                 Function
+  HiLink sshdconfigSpecial              Special
+  HiLink sshdconfigKeyword              Keyword
+  HiLink sshdconfigMatch                Type
   delcommand HiLink
 endif
 
