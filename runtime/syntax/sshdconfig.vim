@@ -6,7 +6,7 @@
 " Modified By:	Dominik Fischer
 " Originally:	2009-07-09
 " Last Change:	2015 Dec 3 
-" SSH Version:	6.1
+" SSH Version:	6.2
 "
 
 " Setup
@@ -41,6 +41,8 @@ syn keyword sshdconfigYesNo yes no none
 syn keyword sshdconfigAddressFamily any inet inet6
 
 syn keyword sshdconfigPrivilegeSeparation sandbox
+
+syn keyword sshdconfigTcpForwarding local remote
 
 syn keyword sshdconfigCipher aes128-cbc 3des-cbc blowfish-cbc cast128-cbc
 syn keyword sshdconfigCipher aes192-cbc aes256-cbc aes128-ctr aes192-ctr aes256-ctr
@@ -105,6 +107,8 @@ syn keyword sshdconfigKeyword AllowGroups
 syn keyword sshdconfigKeyword AllowTcpForwarding
 syn keyword sshdconfigKeyword AllowUsers
 syn keyword sshdconfigKeyword AuthorizedKeysFile
+syn keyword sshdconfigKeyword AuthorizedKeysCommand
+syn keyword sshdconfigKeyword AuthorizedKeysCommandUser
 syn keyword sshdconfigKeyword AuthorizedPrincipalsFile
 syn keyword sshdconfigKeyword Banner
 syn keyword sshdconfigKeyword ChallengeResponseAuthentication
@@ -197,6 +201,7 @@ if version >= 508 || !exists("did_sshdconfig_syntax_inits")
   HiLink sshdconfigYesNo                sshdconfigEnum
   HiLink sshdconfigAddressFamily        sshdconfigEnum
   HiLink sshdconfigPrivilegeSeparation  sshdconfigEnum
+  HiLink sshdconfigTcpForwarding        sshdconfigEnum
   HiLink sshdconfigCipher               sshdconfigEnum
   HiLink sshdconfigMAC                  sshdconfigEnum
   HiLink sshdconfigRootLogin            sshdconfigEnum
