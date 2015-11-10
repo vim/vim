@@ -437,7 +437,7 @@ endif
 syn match  shDerefSimple	"\$\%(\k\+\|\d\)"
 syn region shDeref	matchgroup=PreProc start="\${" end="}"	contains=@shDerefList,shDerefVarArray
 if !exists("g:sh_no_error")
- syn match  shDerefWordError	"[^}$[]"	contained
+ syn match  shDerefWordError	"[^}$[]_"	contained
 endif
 syn match  shDerefSimple	"\$[-#*@!?]"
 syn match  shDerefSimple	"\$\$"
