@@ -1323,6 +1323,10 @@ if exists("&pythonthreedll")
   call append("$", "pythonthreedll\tname of the Python 3 dynamic library")
   call <SID>OptionG("pythonthreedll", &pythonthreedll)
 endif
+if exists("&rubydll")
+  call append("$", "rubydll\tname of the Ruby dynamic library")
+  call <SID>OptionG("rubydll", &rubydll)
+endif
 
 set cpo&vim
 
