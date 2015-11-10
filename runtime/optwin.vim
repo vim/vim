@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2015 Jul 22
+" Last Change:	2015 Nov 10
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -1306,6 +1306,22 @@ call append("$", " \tset debug=" . &debug)
 if has("mzscheme")
   call append("$", "mzquantum\tinterval in milliseconds between polls for MzScheme threads")
   call append("$", " \tset mzq=" . &mzq)
+endif
+if exists("&luadll")
+  call append("$", "luadll\tname of the Lua dynamic library")
+  call <SID>OptionG("luadll", &luadll)
+endif
+if exists("&perldll")
+  call append("$", "perldll\tname of the Perl dynamic library")
+  call <SID>OptionG("perldll", &perldll)
+endif
+if exists("&pythondll")
+  call append("$", "pythondll\tname of the Python 2 dynamic library")
+  call <SID>OptionG("pythondll", &pythondll)
+endif
+if exists("&pythonthreedll")
+  call append("$", "pythonthreedll\tname of the Python 3 dynamic library")
+  call <SID>OptionG("pythonthreedll", &pythonthreedll)
 endif
 
 set cpo&vim
