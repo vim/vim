@@ -6574,6 +6574,7 @@ ex_helptags(eap)
     if (dirname == NULL || !mch_isdir(dirname))
     {
 	EMSG2(_("E150: Not a directory: %s"), eap->arg);
+	vim_free(dirname);
 	return;
     }
 
