@@ -2276,7 +2276,7 @@ add_termcap_entry(name, force)
  */
     for (i = 0; i < 2; ++i)
     {
-	if (!builtin_first == i)
+	if ((!builtin_first) == i)
 #endif
 	/*
 	 * Search in builtin termcap
