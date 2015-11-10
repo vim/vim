@@ -4883,9 +4883,10 @@ do_set(arg, opt_flags)
 				{
 				    i = (int)STRLEN(origval);
 				    /* strip a trailing comma, would get 2 */
-				    if (comma && (flags & P_ONECOMMA) && i > 1
-					            && origval[i - 1] == ','
-						    && origval[i - 2] != '\\')
+				    if (comma && i > 1
+					  && (flags & P_ONECOMMA) == P_ONECOMMA
+					  && origval[i - 1] == ','
+					  && origval[i - 2] != '\\')
 					i--;
 				    mch_memmove(newval + i + comma, newval,
 							  STRLEN(newval) + 1);
