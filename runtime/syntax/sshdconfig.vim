@@ -6,7 +6,7 @@
 " Modified By:	Dominik Fischer
 " Originally:	2009-07-09
 " Last Change:	2015 Dec 3 
-" SSH Version:	6.2
+" SSH Version:	6.3
 "
 
 " Setup
@@ -163,6 +163,7 @@ syn keyword sshdconfigKeyword PrintMotd
 syn keyword sshdconfigKeyword Protocol
 syn keyword sshdconfigKeyword PubkeyAuthentication
 syn keyword sshdconfigKeyword RSAAuthentication
+syn keyword sshdconfigKeyword RekeyLimit
 syn keyword sshdconfigKeyword RevokedKeys
 syn keyword sshdconfigKeyword RhostsRSAAuthentication
 syn keyword sshdconfigKeyword ServerKeyBits
