@@ -952,9 +952,6 @@ lalloc(size, message)
 
 	clear_sb_text();	      /* free any scrollback text */
 	try_again = mf_release_all(); /* release as many blocks as possible */
-#ifdef FEAT_EVAL
-	try_again |= garbage_collect(); /* cleanup recursive lists/dicts */
-#endif
 
 	releasing = FALSE;
 	if (!try_again)
