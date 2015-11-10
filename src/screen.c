@@ -10047,7 +10047,13 @@ showmode()
 	    if (gui.in_use)
 	    {
 		if (hangul_input_state_get())
-		    MSG_PUTS_ATTR(" \307\321\261\333", attr);   /* HANGUL */
+		{
+		    /* HANGUL */
+		    if (enc_utf8)
+			MSG_PUTS_ATTR(" \355\225\234\352\270\200", attr);
+		    else
+			MSG_PUTS_ATTR(" \307\321\261\333", attr);
+		}
 	    }
 #endif
 #ifdef FEAT_INS_EXPAND

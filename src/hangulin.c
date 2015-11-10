@@ -1619,3 +1619,49 @@ convert_3_to_ks(fv, mv, lv, des)
     *des++ = johab_lcon_to_wan[lv];
     return 8;
 }
+
+    char_u *
+hangul_string_convert(buf, p_len)
+    char_u  *buf;
+    int	    *p_len;
+{
+    char_u *tmpbuf = NULL;
+    vimconv_T vc;
+
+    if (enc_utf8)
+    {
+	vc.vc_type = CONV_NONE;
+	if (convert_setup(&vc, (char_u *)"euc-kr", p_enc) == OK)
+	{
+	    tmpbuf = string_convert(&vc, buf, p_len);
+	    convert_setup(&vc, NULL, NULL);
+	}
+    }
+
+    return tmpbuf;
+}
+
+    char_u *
+hangul_composing_buffer_get(p_len)
+    int	    *p_len;
+{
+    char_u *tmpbuf = NULL;
+
+    if (composing_hangul)
+    {
+	int len = 2;
+
+	tmpbuf = hangul_string_convert(composing_hangul_buffer, &len);
+	if (tmpbuf != NULL)
+	{
+	    *p_len = len;
+	}
+	else
+	{
+	    tmpbuf = vim_strnsave(composing_hangul_buffer, 2);
+	    *p_len = 2;
+	}
+    }
+
+    return tmpbuf;
+}

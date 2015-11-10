@@ -677,9 +677,6 @@
 # define ESC_CHG_TO_ENG_MODE		/* if defined, when ESC pressed,
 					 * turn to english mode
 					 */
-# if !defined(FEAT_XFONTSET) && defined(HAVE_X11) && !defined(FEAT_GUI_GTK)
-#  define FEAT_XFONTSET			/* Hangul input requires xfontset */
-# endif
 # if defined(FEAT_XIM) && !defined(LINT)
 	Error: You should select only ONE of XIM and HANGUL INPUT
 # endif
@@ -687,7 +684,6 @@
 #if defined(FEAT_HANGULIN) || defined(FEAT_XIM)
 /* # define X_LOCALE */			/* for OS with incomplete locale
 					   support, like old linux versions. */
-/* # define SLOW_XSERVER */		/* for extremely slow X server */
 #endif
 
 /*

@@ -1223,8 +1223,19 @@ gui_update_cursor(force, clear_selection)
 	    gui.highlight_mask = (cattr | attr);
 #ifdef FEAT_HANGULIN
 	    if (composing_hangul)
-		(void)gui_outstr_nowrap(composing_hangul_buffer, 2,
-			GUI_MON_IS_CURSOR | GUI_MON_NOCLEAR, cfg, cbg, 0);
+	    {
+		char_u *comp_buf;
+		int comp_len;
+
+		comp_buf = hangul_composing_buffer_get(&comp_len);
+		if (comp_buf)
+		{
+		    (void)gui_outstr_nowrap(comp_buf, comp_len,
+					    GUI_MON_IS_CURSOR | GUI_MON_NOCLEAR,
+					    cfg, cbg, 0);
+		    vim_free(comp_buf);
+		}
+	    }
 	    else
 #endif
 		(void)gui_screenchar(LineOffset[gui.row] + gui.col,
@@ -2572,9 +2583,19 @@ gui_undraw_cursor()
 #ifdef FEAT_HANGULIN
 	if (composing_hangul
 		    && gui.col == gui.cursor_col && gui.row == gui.cursor_row)
-	    (void)gui_outstr_nowrap(composing_hangul_buffer, 2,
-		    GUI_MON_IS_CURSOR | GUI_MON_NOCLEAR,
-		    gui.norm_pixel, gui.back_pixel, 0);
+	{
+	    char_u *comp_buf;
+	    int comp_len;
+
+	    comp_buf = hangul_composing_buffer_get(&comp_len);
+	    if (comp_buf)
+	    {
+		(void)gui_outstr_nowrap(comp_buf, comp_len,
+					GUI_MON_IS_CURSOR | GUI_MON_NOCLEAR,
+					gui.norm_pixel, gui.back_pixel, 0);
+		vim_free(comp_buf);
+	    }
+	}
 	else
 	{
 #endif

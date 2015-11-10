@@ -1723,8 +1723,17 @@ push_raw_key(s, len)
     char_u  *s;
     int	    len;
 {
+    char_u *tmpbuf;
+
+    tmpbuf = hangul_string_convert(s, &len);
+    if (tmpbuf != NULL)
+	s = tmpbuf;
+
     while (len--)
 	inbuf[inbufcount++] = *s++;
+
+    if (tmpbuf != NULL)
+	vim_free(tmpbuf);
 }
 #endif
 
