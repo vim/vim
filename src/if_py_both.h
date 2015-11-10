@@ -476,16 +476,18 @@ AlwaysNone(PyObject *self UNUSED)
 AlwaysFalse(PyObject *self UNUSED)
 {
     /* do nothing */
-    Py_INCREF(Py_False);
-    return Py_False;
+    PyObject	*ret = Py_False;
+    Py_INCREF(ret);
+    return ret;
 }
 
     static PyObject *
 AlwaysTrue(PyObject *self UNUSED)
 {
     /* do nothing */
-    Py_INCREF(Py_True);
-    return Py_True;
+    PyObject	*ret = Py_True;
+    Py_INCREF(ret);
+    return ret;
 }
 
 /***************/
