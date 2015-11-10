@@ -5698,8 +5698,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Insert mode completion.  When zero as much space as available is used.
 	|ins-completion-menu|.
 
-						*'python3dll'*
-'python3dll' 		string	(default empty)
+						*'pythonthreedll'*
+'pythonthreedll'	string	(default empty)
 			global
 			{not in Vi} {only for Unix}
 			{only available when compiled with the |+python3/dyn|

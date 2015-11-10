@@ -2130,7 +2130,7 @@ static struct vimoption
 #endif
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
 #if defined(DYNAMIC_PYTHON3) && !defined(WIN3264)
-    {"python3dll",  NULL,   P_STRING|P_VI_DEF|P_SECURE,
+    {"pythonthreedll",  NULL,   P_STRING|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_py3dll, PV_NONE,
 			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
 #endif

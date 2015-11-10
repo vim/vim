@@ -689,7 +689,7 @@ EXTERN char_u	*p_cdpath;	/* 'cdpath' */
 EXTERN char_u	*p_perldll;	/* 'perldll' */
 #endif
 #if defined(DYNAMIC_PYTHON3) && !defined(WIN3264)
-EXTERN char_u	*p_py3dll;	/* 'python3dll' */
+EXTERN char_u	*p_py3dll;	/* 'pythonthreedll' */
 #endif
 #if defined(DYNAMIC_PYTHON) && !defined(WIN3264)
 EXTERN char_u	*p_pydll;	/* 'pythondll' */
