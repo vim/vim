@@ -1515,7 +1515,7 @@ convert_ks_to_3(src, fp, mp, lp)
     int i;
 
     if ((i = han_index(h, low)) >= 0
-	&& i < sizeof(ks_table1)/sizeof(ks_table1[0]))
+	&& i < (int)(sizeof(ks_table1)/sizeof(ks_table1[0])))
     {
 	*fp = ks_table1[i][0];
 	*mp = ks_table1[i][1];
