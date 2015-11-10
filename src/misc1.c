@@ -6250,6 +6250,19 @@ cin_isfuncdecl(sp, first_lnum, min_lnum)
     {
 	if (cin_iscomment(s))	/* ignore comments */
 	    s = cin_skipcomment(s);
+	else if (*s == ':')
+	{
+	    if (*(s + 1) == ':')
+		s += 2;
+	    else
+		/* To avoid a mistake in the following situation:
+		 * A::A(int a, int b)
+		 *     : a(0)  // <--not a function decl
+		 *     , b(0)
+		 * {...
+		 */
+		return FALSE;
+	}
 	else
 	    ++s;
     }
