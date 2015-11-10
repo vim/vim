@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Oct 31
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Nov 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,6 +35,8 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 Regexp problems:
+- Instructions for reproducing issue #465 (crash in nfa_regtry):
+  https://github.com/mgedmin/vim-bug-465
 - The regexp engines are not reentrant, causing havoc when interrupted by a
   remote expression or something else.  Move global variables onto the stack
   or into an allocated struct.
@@ -75,6 +77,12 @@ Regexp problems:
 - The pattern "\1" with the old engine gives E65, with the new engine it
   matches the empty string. (Dominique Pelle, 2015 Oct 2)
 
+runtime/optwin.vim missing options:
+rubydll
+pythondll
+perldll
+luadll
+
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
 
@@ -82,6 +90,20 @@ Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
+
+When running out of memory, lalloc() invokes the garbage collector.
+May cause freeing used memory.  Just remove that call?
+Or add flag to avoid it when undesired.
+
+Installation of .desktop files does not work everywhere.
+It's now fixed, but the target directory probably isn't right.
+Add configure check?
+Should use /usr/local/share/applications or /usr/share/applications.
+Or use $XDG_DATA_DIRS.
+Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
+
+Access to uninitialized memory in match_backref() regexp_nda.c:4882
+(Dominique Pelle, 2015 Nov 6)
 
 Netrw update. (Charles 2015 Oct 23)
 
@@ -95,8 +117,6 @@ https://github.com/chrisbra/vim-sqloracle-syntax/blob/master/syntax/sqloracle.vi
 directory exists. (Sergio Gallelli, 2013 Dec 29)
 
 Updated syntax files. (Charles Campbell, 2015 Oct 19)
-
-Patch to include .desktop files in the distribution.  PR #455.
 
 Better changelog syntax file. (Martin Florian, 2015 Oct 25)
 
@@ -112,18 +132,9 @@ changes the window layout and the current window.  Make a variant that saves
 and restores.  Use in the matchparen plugin.
 Perhaps we can use ":silent window"?
 
-Patch for documentation mistakes. (Hirohito Higashi, 2015 Oct 22)
-
 Illegal memory access, requires ASAN to see. (Dominique Pelle, 2015 Jul 28)
 
 Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
-
-Patch for yaml indent, #458.
-
-Patch for Python to add isatty, readable, etc. (PR #464)
-
-Patch to add options for specifying dll names. (Kazuki Sakamoto, 2015 Oct 16)
-PR #452  Check if it's secure (can't set from modeline).
 
 Unexpected delay when using CTRL-O u.  It's not timeoutlen.
 (Gary Johnson, 2015 Aug 28)
@@ -133,8 +144,22 @@ Same for src/xxd/Make_cyg.mak
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
+Patch to fix memory leak. (Dominique Pelle, 2015 Nov 4)
+
+Using uninitialized memory. (Dominique Pelle, 2015 Nov 4)
+
+Patch to recognize string slice for variable followed by colon.
+(Hirohito Higashi, 2015 Nov 3)
+
+Patch to support hangul input with utf-8.
+
+Patch to support UTF-8 for Hangul. (Shawn Y.H. Kim, 2011 May 1)
+Needs more work.  Pinged 2012 Jan 4.
+
 Patch to add debug backtrace. (Alberto Fanjul, 2015 Sep 27)
 Asked for :frame command.
+
+vt52 terminal codes are not correct.  Patch from Random, 2015 Nov 5.
 
 MS-Windows: When editing a file with a leading space, writing it uses the
 wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
@@ -143,7 +168,7 @@ Can't recognize the $ProgramFiles(x86) environment variable.  Recognize it
 specifically?  First try with the parens, then without.
 
 Patch to add 'tagcase' option, whether to ignore case for tags.
-(Gary Johnson, 2015 Oct 17)
+(Gary Johnson, 2015 Nov 6)
 
 Patch to fix "." after CTRL-A in Visual block mode. (Ozaki Kiichi, 2015 Oct
 24)
@@ -196,6 +221,8 @@ Example in editing.txt uses $HOME with the expectating that it ends in a
 slash.  For me it does, but perhaps not for everybody.  Add a function that
 inserts a slash when needed?  pathconcat(dir, path) (Thilo Six, 2015 Aug 12)
 
+Patch to load TCL dynamically. (Ken Takata, 2015 Nov 10)
+
 ml_updatechunk() is slow when retrying for another encoding. (John Little,
 2014 Sep 11)
 
@@ -221,9 +248,6 @@ Is this right?
 
 Patch to have CTRL-A and CTRL-X update the '[ and '] marks.
 (Yukihiro Nakadaira, 2015 Aug 23)
-
-On MS-Windows viminfo file is always given the hidden attribute? (raulnac,
-2015 Oct 30)
 
 Patch to make getregtype() return the right size for non-linux systems.
 (Yasuhiro Matsumoto, 2014 Jul 8)
@@ -408,8 +432,6 @@ from?
 
 Problem with upwards search on Windows (works OK on Linux). (Brett Stahlman,
 2014 Jun 8)
-
-Patch to load TCL dynamically. (Ken Takata, 2014 Sep 20)
 
 Include a plugin manager with Vim? Neobundle seems to be the best currently.
 Long message about this from ZyX, 2014 Mar 23.  And following replies.
@@ -802,9 +824,6 @@ Patch for 'transparency' option. (Sergiu Dotenco, 2011 Sep 17)
 Only for MS-Windows.  No documentation.  Do we want this?
 
 Patch to support cursor shape in Cygwin console. (Ben bgold, 2011 Dec 27)
-
-Patch to support UTF-8 for Hangul. (Shawn Y.H. Kim, 2011 May 1)
-Needs more work.  Pinged 2012 Jan 4.
 
 Issue 64: when 'incsearch' is on can't paste LF on command line.
 

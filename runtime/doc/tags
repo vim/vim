@@ -415,6 +415,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'lpl'	options.txt	/*'lpl'*
 'ls'	options.txt	/*'ls'*
 'lsp'	options.txt	/*'lsp'*
+'luadll'	options.txt	/*'luadll'*
 'lw'	options.txt	/*'lw'*
 'lz'	options.txt	/*'lz'*
 'ma'	options.txt	/*'ma'*
@@ -499,6 +500,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'nobk'	options.txt	/*'nobk'*
 'nobl'	options.txt	/*'nobl'*
 'nobomb'	options.txt	/*'nobomb'*
+'nobreakindent'	options.txt	/*'nobreakindent'*
+'nobri'	options.txt	/*'nobri'*
 'nobuflisted'	options.txt	/*'nobuflisted'*
 'nocf'	options.txt	/*'nocf'*
 'noci'	options.txt	/*'noci'*
@@ -549,6 +552,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'nofk'	options.txt	/*'nofk'*
 'nofkmap'	options.txt	/*'nofkmap'*
 'nofoldenable'	options.txt	/*'nofoldenable'*
+'nofs'	options.txt	/*'nofs'*
+'nofsync'	options.txt	/*'nofsync'*
 'nogd'	options.txt	/*'nogd'*
 'nogdefault'	options.txt	/*'nogdefault'*
 'noguipty'	options.txt	/*'noguipty'*
@@ -575,11 +580,13 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'nois'	options.txt	/*'nois'*
 'nojoinspaces'	options.txt	/*'nojoinspaces'*
 'nojs'	options.txt	/*'nojs'*
+'nolangnoremap'	options.txt	/*'nolangnoremap'*
 'nolazyredraw'	options.txt	/*'nolazyredraw'*
 'nolbr'	options.txt	/*'nolbr'*
 'nolinebreak'	options.txt	/*'nolinebreak'*
 'nolisp'	options.txt	/*'nolisp'*
 'nolist'	options.txt	/*'nolist'*
+'nolnr'	options.txt	/*'nolnr'*
 'noloadplugins'	options.txt	/*'noloadplugins'*
 'nolpl'	options.txt	/*'nolpl'*
 'nolz'	options.txt	/*'nolz'*
@@ -727,6 +734,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'path'	options.txt	/*'path'*
 'pdev'	options.txt	/*'pdev'*
 'penc'	options.txt	/*'penc'*
+'perldll'	options.txt	/*'perldll'*
 'pex'	options.txt	/*'pex'*
 'pexpr'	options.txt	/*'pexpr'*
 'pfn'	options.txt	/*'pfn'*
@@ -753,6 +761,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'pumheight'	options.txt	/*'pumheight'*
 'pvh'	options.txt	/*'pvh'*
 'pvw'	options.txt	/*'pvw'*
+'pythondll'	options.txt	/*'pythondll'*
+'pythonthreedll'	options.txt	/*'pythonthreedll'*
 'qe'	options.txt	/*'qe'*
 'quote	motion.txt	/*'quote*
 'quoteescape'	options.txt	/*'quoteescape'*
@@ -779,6 +789,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'rs'	options.txt	/*'rs'*
 'rtp'	options.txt	/*'rtp'*
 'ru'	options.txt	/*'ru'*
+'rubydll'	options.txt	/*'rubydll'*
 'ruf'	options.txt	/*'ruf'*
 'ruler'	options.txt	/*'ruler'*
 'rulerformat'	options.txt	/*'rulerformat'*
@@ -2132,6 +2143,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :delm	motion.txt	/*:delm*
 :delmarks	motion.txt	/*:delmarks*
 :di	change.txt	/*:di*
+:dif	diff.txt	/*:dif*
 :diffg	diff.txt	/*:diffg*
 :diffget	diff.txt	/*:diffget*
 :diffo	diff.txt	/*:diffo*
@@ -2144,7 +2156,6 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :diffsplit	diff.txt	/*:diffsplit*
 :difft	diff.txt	/*:difft*
 :diffthis	diff.txt	/*:diffthis*
-:diffu	diff.txt	/*:diffu*
 :diffupdate	diff.txt	/*:diffupdate*
 :dig	digraph.txt	/*:dig*
 :digraphs	digraph.txt	/*:digraphs*
@@ -6867,6 +6878,7 @@ lua	if_lua.txt	/*lua*
 lua-buffer	if_lua.txt	/*lua-buffer*
 lua-commands	if_lua.txt	/*lua-commands*
 lua-dict	if_lua.txt	/*lua-dict*
+lua-dynamic	if_lua.txt	/*lua-dynamic*
 lua-eval	if_lua.txt	/*lua-eval*
 lua-funcref	if_lua.txt	/*lua-funcref*
 lua-list	if_lua.txt	/*lua-list*

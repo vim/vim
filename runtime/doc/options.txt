@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2015 Nov 01
+*options.txt*	For Vim version 7.4.  Last change: 2015 Nov 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5698,17 +5698,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Insert mode completion.  When zero as much space as available is used.
 	|ins-completion-menu|.
 
-						*'pythonthreedll'*
-'pythonthreedll'	string	(default empty)
-			global
-			{not in Vi} {only for Unix}
-			{only available when compiled with the |+python3/dyn|
-			feature}
-	Specifies the path of the Python 3 shared library instead of
-	DYNAMIC_PYTHON3_DLL what was specified at compile time.
-	This option cannot be set from a |modeline| or in the |sandbox|, for
-	security reasons.
-
 						*'pythondll'*
 'pythondll' 		string	(default empty)
 			global
@@ -5717,6 +5706,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	Specifies the path of the Python 2.x shared library instead of
 	DYNAMIC_PYTHON_DLL what was specified at compile time.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
+						*'pythonthreedll'*
+'pythonthreedll'	string	(default empty)
+			global
+			{not in Vi} {only for Unix}
+			{only available when compiled with the |+python3/dyn|
+			feature}
+	Specifies the path of the Python 3 shared library instead of
+	DYNAMIC_PYTHON3_DLL what was specified at compile time.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
