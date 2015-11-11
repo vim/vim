@@ -2,8 +2,9 @@
 " Language:	OpenSSH client configuration file (ssh_config)
 " Author:	David Necas (Yeti)
 " Maintainer:   Leonard Ehrenfried <leonard.ehrenfried@web.de>	
-" Last Change:	2012 Feb 24 
-" SSH Version:	5.9p1
+" Modified By:	Dominik Fischer
+" Last Change:	2015 Dec 3 
+" SSH Version:	6.5
 "
 
 " Setup
@@ -100,6 +101,8 @@ syn case ignore
 " Keywords
 syn keyword sshconfigHostSect Host
 
+syn keyword sshconfigMatch exec host originalhost user localuser all
+
 syn keyword sshconfigKeyword AddressFamily
 syn keyword sshconfigKeyword BatchMode
 syn keyword sshconfigKeyword BindAddress
@@ -148,6 +151,7 @@ syn keyword sshconfigKeyword LocalCommand
 syn keyword sshconfigKeyword LocalForward
 syn keyword sshconfigKeyword LogLevel
 syn keyword sshconfigKeyword MACs
+syn keyword sshconfigKeyword Match
 syn keyword sshconfigKeyword NoHostAuthenticationForLocalhost
 syn keyword sshconfigKeyword NumberOfPasswordPrompts
 syn keyword sshconfigKeyword PKCS11Provider
@@ -157,6 +161,7 @@ syn keyword sshconfigKeyword Port
 syn keyword sshconfigKeyword PreferredAuthentications
 syn keyword sshconfigKeyword Protocol
 syn keyword sshconfigKeyword ProxyCommand
+syn keyword sshconfigKeyword ProxyUseFDPass
 syn keyword sshconfigKeyword PubkeyAuthentication
 syn keyword sshconfigKeyword RSAAuthentication
 syn keyword sshconfigKeyword RekeyLimit
@@ -211,6 +216,7 @@ if version >= 508 || !exists("did_sshconfig_syntax_inits")
   HiLink sshconfigSpecial        Special
   HiLink sshconfigKeyword        Keyword
   HiLink sshconfigHostSect       Type
+  HiLink sshconfigMatch          Type
   delcommand HiLink
 endif
 
