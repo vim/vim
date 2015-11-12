@@ -6,7 +6,7 @@
 " Modified By:	Dominik Fischer
 " Originally:	2009-07-09
 " Last Change:	2015 Dec 3 
-" SSH Version:	6.5
+" SSH Version:	6.7
 "
 
 " Setup
@@ -157,6 +157,7 @@ syn keyword sshdconfigKeyword PermitRootLogin
 syn keyword sshdconfigKeyword PermitTTY
 syn keyword sshdconfigKeyword PermitTunnel
 syn keyword sshdconfigKeyword PermitUserEnvironment
+syn keyword sshdconfigKeyword PermitUserRC
 syn keyword sshdconfigKeyword PidFile
 syn keyword sshdconfigKeyword Port
 syn keyword sshdconfigKeyword PrintLastLog
