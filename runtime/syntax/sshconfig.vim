@@ -4,7 +4,7 @@
 " Maintainer:   Leonard Ehrenfried <leonard.ehrenfried@web.de>	
 " Modified By:	Dominik Fischer
 " Last Change:	2015 Dec 3 
-" SSH Version:	6.5
+" SSH Version:	6.8
 "
 
 " Setup
@@ -101,7 +101,7 @@ syn case ignore
 " Keywords
 syn keyword sshconfigHostSect Host
 
-syn keyword sshconfigMatch exec host originalhost user localuser all
+syn keyword sshconfigMatch canonical exec host originalhost user localuser all
 
 syn keyword sshconfigKeyword AddressFamily
 syn keyword sshconfigKeyword BatchMode
@@ -141,6 +141,7 @@ syn keyword sshconfigKeyword HostKeyAlgorithms
 syn keyword sshconfigKeyword HostKeyAlias
 syn keyword sshconfigKeyword HostName
 syn keyword sshconfigKeyword HostbasedAuthentication
+syn keyword sshconfigKeyword HostbasedKeyTypes
 syn keyword sshconfigKeyword IPQoS
 syn keyword sshconfigKeyword IdentitiesOnly
 syn keyword sshconfigKeyword IdentityFile

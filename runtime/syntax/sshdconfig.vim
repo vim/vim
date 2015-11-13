@@ -6,7 +6,7 @@
 " Modified By:	Dominik Fischer
 " Originally:	2009-07-09
 " Last Change:	2015 Dec 3 
-" SSH Version:	6.7
+" SSH Version:	6.8
 "
 
 " Setup
@@ -129,6 +129,7 @@ syn keyword sshdconfigKeyword GSSAPIStrictAcceptorCheck
 syn keyword sshdconfigKeyword GatewayPorts
 syn keyword sshdconfigKeyword HostCertificate
 syn keyword sshdconfigKeyword HostKey
+syn keyword sshdconfigKeyword HostbasedAcceptedKeyTypes
 syn keyword sshdconfigKeyword HostbasedAuthentication
 syn keyword sshdconfigKeyword HostbasedUsesNameFromPacketOnly
 syn keyword sshdconfigKeyword IPQoS
@@ -163,6 +164,7 @@ syn keyword sshdconfigKeyword Port
 syn keyword sshdconfigKeyword PrintLastLog
 syn keyword sshdconfigKeyword PrintMotd
 syn keyword sshdconfigKeyword Protocol
+syn keyword sshdconfigKeyword PubkeyAcceptedKeyTypes
 syn keyword sshdconfigKeyword PubkeyAuthentication
 syn keyword sshdconfigKeyword RSAAuthentication
 syn keyword sshdconfigKeyword RekeyLimit
