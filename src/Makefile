@@ -1926,6 +1926,7 @@ test1 \
 	test_options \
 	test_perl \
 	test_qf_title \
+	test_resolve_swap \
 	test_ruby \
 	test_search_mbyte \
 	test_set \
