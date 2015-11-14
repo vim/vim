@@ -44,6 +44,8 @@ syn keyword sshdconfigPrivilegeSeparation sandbox
 
 syn keyword sshdconfigTcpForwarding local remote
 
+syn keyword sshdconfigRootLogin prohibit-password without-password forced-commands-only
+
 syn keyword sshdconfigCipher aes128-cbc 3des-cbc blowfish-cbc cast128-cbc
 syn keyword sshdconfigCipher aes192-cbc aes256-cbc aes128-ctr aes192-ctr aes256-ctr
 syn keyword sshdconfigCipher arcfour arcfour128 arcfour256 cast128-cbc
@@ -207,6 +209,7 @@ if version >= 508 || !exists("did_sshdconfig_syntax_inits")
   HiLink sshdconfigAddressFamily        sshdconfigEnum
   HiLink sshdconfigPrivilegeSeparation  sshdconfigEnum
   HiLink sshdconfigTcpForwarding        sshdconfigEnum
+  HiLink sshdconfigRootLogin            sshdconfigEnum
   HiLink sshdconfigCipher               sshdconfigEnum
   HiLink sshdconfigMAC                  sshdconfigEnum
   HiLink sshdconfigRootLogin            sshdconfigEnum
