@@ -6,7 +6,7 @@
 " Modified By:	Dominik Fischer
 " Originally:	2009-07-09
 " Last Change:	2015 Dec 3 
-" SSH Version:	6.8
+" SSH Version:	7.0
 "
 
 " Setup
@@ -56,7 +56,7 @@ syn keyword sshdconfigMAC hmac-sha2-256 hmac-sha256-96 hmac-sha2-512
 syn keyword sshdconfigMAC hmac-sha2-512-96
 syn match   sshdconfigMAC "\<umac-64@openssh\.com\>"
 
-syn keyword sshdconfigRootLogin without-password forced-commands-only
+syn keyword sshdconfigRootLogin prohibit-password without-password forced-commands-only
 
 syn keyword sshdconfigLogLevel QUIET FATAL ERROR INFO VERBOSE
 syn keyword sshdconfigLogLevel DEBUG DEBUG1 DEBUG2 DEBUG3
@@ -131,6 +131,7 @@ syn keyword sshdconfigKeyword GSSAPIStrictAcceptorCheck
 syn keyword sshdconfigKeyword GatewayPorts
 syn keyword sshdconfigKeyword HostCertificate
 syn keyword sshdconfigKeyword HostKey
+syn keyword sshdconfigKeyword HostKeyAlgorithms
 syn keyword sshdconfigKeyword HostbasedAcceptedKeyTypes
 syn keyword sshdconfigKeyword HostbasedAuthentication
 syn keyword sshdconfigKeyword HostbasedUsesNameFromPacketOnly

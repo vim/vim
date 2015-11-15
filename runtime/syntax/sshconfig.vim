@@ -4,7 +4,7 @@
 " Maintainer:   Leonard Ehrenfried <leonard.ehrenfried@web.de>	
 " Modified By:	Dominik Fischer
 " Last Change:	2015 Dec 3 
-" SSH Version:	6.8
+" SSH Version:	7.0
 "
 
 " Setup
@@ -163,6 +163,7 @@ syn keyword sshconfigKeyword PreferredAuthentications
 syn keyword sshconfigKeyword Protocol
 syn keyword sshconfigKeyword ProxyCommand
 syn keyword sshconfigKeyword ProxyUseFDPass
+syn keyword sshconfigKeyword PubkeyAcceptedKeyTypes
 syn keyword sshconfigKeyword PubkeyAuthentication
 syn keyword sshconfigKeyword RSAAuthentication
 syn keyword sshconfigKeyword RekeyLimit
