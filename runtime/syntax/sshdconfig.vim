@@ -106,6 +106,7 @@ syn keyword sshdconfigKeyword AcceptEnv
 syn keyword sshdconfigKeyword AddressFamily
 syn keyword sshdconfigKeyword AllowAgentForwarding
 syn keyword sshdconfigKeyword AllowGroups
+syn keyword sshdconfigKeyword AllowStreamLocalForwarding
 syn keyword sshdconfigKeyword AllowTcpForwarding
 syn keyword sshdconfigKeyword AllowUsers
 syn keyword sshdconfigKeyword AuthorizedKeysFile
