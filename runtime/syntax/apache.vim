@@ -67,7 +67,8 @@ syn keyword apacheDeclaration Alias AliasMatch Redirect RedirectMatch RedirectTe
 syn keyword apacheOption permanent temp seeother gone
 syn keyword apacheDeclaration AuthAuthoritative AuthGroupFile AuthUserFile
 syn keyword apacheDeclaration AuthBasicAuthoritative AuthBasicProvider
-syn keyword apacheDeclaration AuthDigestAlgorithm AuthDigestDomain AuthDigestNcCheck AuthDigestNonceFormat AuthDigestNonceLifetime AuthDigestProvider AuthDigestQop AuthDigestShmemSize
+syn keyword apacheDeclaration AuthDigestAlgorithm AuthDigestDomain AuthDigestNcCheck AuthDigestNonceFormat AuthDigestNonceLifetime AuthDigestProvider AuthDigestQop AuthDigestShmemSize AuthRadiusActive AuthRadiusCookieValid AuthRadiusAuthoritative
+syn keyword apacheDeclaration AddRadiusCallingStationID
 syn keyword apacheOption none auth auth-int MD5 MD5-sess
 syn match apacheSection "<\/\=\(<AuthnProviderAlias\)[^>]*>" contains=apacheAnything
 syn keyword apacheDeclaration Anonymous Anonymous_Authoritative Anonymous_LogEmail Anonymous_MustGiveEmail Anonymous_NoUserID Anonymous_VerifyEmail
