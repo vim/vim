@@ -35,6 +35,13 @@ src/pathdef.c
 src/Obj*/pathdef.c
 gvimext.dll
 gvimext.lib
+src/dimm.h
+src/dimm.tlb
+src/dimm_i.c
+src/dlldata.c
+src/if_ole.h
+src/iid_ole.c
+src/vim.tlb
 
 # Borland C++
 bcc.cfg
