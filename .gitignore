@@ -42,6 +42,8 @@ src/dlldata.c
 src/if_ole.h
 src/iid_ole.c
 src/vim.tlb
+before_settings.bat
+after_settings.bat
 
 # Borland C++
 bcc.cfg

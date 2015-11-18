@@ -1,9 +1,4 @@
 goto :START
-::
-::  echo:
-::  echo ========== [v.0.0.1.32] [15.11.2015] [cmd.exe] [rych.91@gmail.com] ===========
-::  echo:
-::
 ::============================================================================
 :: To be used on MS-Windows for Visual C++ 5.x-14.0 Express Edition
 :: aka Microsoft Visual Studio 10.0.
@@ -18,13 +13,16 @@ goto :START
 :: if exist "%PROGRAMFILES(X86)%" x64 else x86
 :: http://ss64.com/nt/syntax-64bit.html
 ::============================================================================
-:: For using Visual Studio 6.0 on Windows Versions from 5.x for 10.0x 
-:: http://nuke.vbcorner.net/Tools/VisualStudio6Installer/tabid/93/language/en-US/Default.aspx
-:: Hire you can found MS Visual Studio 5.x and 6.0
+:: For using Visual Studio 6.0 on Windows Versions from 6.x for 10.0x 
+:: http://nuke.vbcorner.net/
+:: Here you can found MS Visual Studio 5.x and 6.0
 :: https://winworldpc.com/product/microsoft-visual-stu/60
 ::============================================================================
-:: Switch 4 mo sensetive.
-:: Required add full support multi build
+:: If autodetect not work modificate or create 'before_settings.bat' file.
+:: You can use Before build [before_settings.bat]
+:: You can use After  build [after_settings.bat]
+::==== TODO ==================================================================
+:: Switch 4 mo sensetive. /depricated
 ::
 :: GOTO CASE_%I%
 ::  :CASE_0
@@ -35,10 +33,6 @@ goto :START
 ::      GOTO END_SWITCH
 ::  :END_SWITCH
 ::
-::============================================================================
-:: If autodetect not work modificate or create 'before_settings.bat' file.
-:: You can use Before build [before_settings.bat]
-:: You can use After  build [after_settings.bat]
 ::============================================================================
 :START
 @cls
@@ -144,14 +138,14 @@ rem  echo Netbeans Debugging Support (should be no, yes doesnt work)  (default i
 rem    set NBDEBUG=yes
 rem  echo Visual C Version: (default derived from nmake if undefined)
 rem set MSVCVER=5.0
- if "%vcver%" geq "12" set "ANALYZE=yes" & echo Static Code Analysis                  (works with VisualStudio 12 or greater) &  echo See Make_mvc.mak Need update for vs14
+:: !!! if "%vcver%" geq "10" set "ANALYZE=yes" & echo Static Code Analysis                  (works with VisualStudio 10 or greater) &  echo See Make_mvc.mak Need update for vs14
 rem  echo See Make_mvc.mak for DEBUG informatin
 rem echo Adding DEBUG
 rem set DEBUG=yes
   echo See Make_mvc.mak or feature.h for a list of optionals.
 echo ==============================================================================
-  set "WINVER=0x0500"
-  echo WINVER=%WINVER% (WINVER=0x0400 or WINVER=0x0500 defoult 0x0500)
+rem  set "WINVER=0x0400"
+  echo WINVER=%WINVER% (WINVER=0x0500 or 0x0400 defoult 0x0400)
 
   echo Get all sorts of useful, standard macros from the Platform SDK.
   echo Default is %ProgramFiles(x86)%\Microsoft SDKs\Windows\v7.1A\include\Win32.mak)
@@ -161,64 +155,58 @@ if /i "%vcmod%" == "x64" set "SUBSYSTEM_VER=5.02" & set CPU=AMD64
 if /i "%vcmod%" == "x86_amd64" set "SUBSYSTEM_VER=5.02" & set CPU=AMD64
 if /i "%vcmod%" == "x86"   set "SUBSYSTEM_VER=5.01"
 
-if /i "%WINVER%" == "0x0400" set "SUBSYSTEM_VER=4.0"
+if /i "%WINVER%" == "0x0400" set "SUBSYSTEM_VER=4.00"
   title "Command Prompt (VC++ %vcver% %vcmod% %buildt%) nmake Vim"
 
-if /i "%buildt%" == "CUI" goto CUI
-:ALL
-:GUI
-  set GUI=yes
-  set OLE=yes
-  set IME=yes
-  set GIME=yes
-  set DIRECTX=yes
 ::  Don't remove remark here while not fixed
   if "%vcver%" geq "12" xpm=no
 
+:: if OLE undefiend OLE=NO
+if /i "%buildt%" == "CUI" goto CUI
+  set GUI=yes
+  set IME=yes
+  set GIME=yes
+  set DIRECTX=yes
+if /i "%buildt%" == "ALL" (
+  call :nmake_mvc
+  set "OLE=yes"
+)
+:GUI
   call :nmake_mvc
 if /i "%buildt%" == "GUI" goto after_build
 :CUI
   set GUI=
-  set OLE=
   set IME=
   set GIME=
-  set DIRECTX=no
+  set DIRECTX=
   call :nmake_mvc
-goto after_build
-goto :eof
-
-:nmake_mvc
-  nmake /C /S /f Make_mvc.mak clean
-  nmake /C /S /f Make_mvc.mak
-goto :eof
-
 :after_build
-set "SVNDST=.\bin\"
-if "%vcmod%" == "x86" if exist "%PROGRAMFILES(X86)%" set SVNDST="%PROGRAMFILES(X86)%\Vim\Vim74"
-if "%vcmod%" == "x86" if not exist "%PROGRAMFILES(X86)%" set SVNDST="%PROGRAMFILES%\Vim\Vim74"
-
-::if /i "%vcmod%" == "x86_amd64" set SVNDST="%PROGRAMFILES%\Vim\Vim74\x64"
-if /i "%vcmod%" == "x64"   set SVNDST="%PROGRAMFILES%\Vim\Vim74"
+set "SVNDST=..\bin\%vcmod%"
 echo ==============================================================================
 echo Copy any new Vim exe + runtime files to current install dir.
 echo from [%SVNSRC%]
 echo to   [%SVNDST%]
 echo ==============================================================================
-pause
-xcopy "%SVNSRC%\..\runtime" %SVNDST% /E /H /I /Y
-xcopy "%SVNSRC%\xxd\xxd.exe" %SVNDST% /Y
-xcopy "%SVNSRC%\GvimExt\gvimext.dll" %SVNDST% /Y
-xcopy "%SVNSRC%\vim.exe" %SVNDST% /Y
-xcopy "%SVNSRC%\gvim.exe" %SVNDST% /Y
-xcopy "%SVNSRC%\vimrun.exe" %SVNDST% /Y
-xcopy "%SVNSRC%\install.exe" %SVNDST% /Y
-xcopy "%SVNSRC%\uninstal.exe" %SVNDST% /Y
-nmake /C /S /f Make_mvc.mak clean
-
-endlocal
+xcopy   "%SVNSRC%\..\runtime"          %SVNDST% /E /H /I /Y
+move /Y "%SVNSRC%\xxd\xxd.exe"         %SVNDST%
+move /Y "%SVNSRC%\GvimExt\gvimext.dll" %SVNDST%
+move /Y "%SVNSRC%\vim.exe"             %SVNDST%
+move /Y "%SVNSRC%\gvim.exe"            %SVNDST%
+move /Y "%SVNSRC%\gvim_noOLE.exe"      %SVNDST%
+move /Y "%SVNSRC%\vimrun.exe"          %SVNDST%
+move /Y "%SVNSRC%\install.exe"         %SVNDST%
+move /Y "%SVNSRC%\uninstal.exe"        %SVNDST%
+popd
+::endlocal
 
 :: After build additional config you can use modificator %modset%.
 if exist "after_settings.bat" echo Found after_settings.bat & call "after_settings.bat"
+goto :eof
+
+:nmake_mvc
+  nmake /C /S /f Make_mvc.mak clean
+  nmake /C /S /f Make_mvc.mak
+  if not defined OLE if exist gvim.exe ren gvim.exe gvim_noOLE.exe & echo rename gvim.exe to gvim_noOLE.exe
 goto :eof
 
 :set_vcvars
@@ -226,14 +214,23 @@ if not defined vcver (
     for %%v in (5 6 7 7.1 8 9 10 11 12 14) do for %%a in (%*) do if /i "vc%%v" == "%%a" set "vcver=%%v"
   )
 if not defined vcmod (
-    for %%i in (32 x32 86x86) do for %%a in (%*) do if /i "%%i" == "%%a" set "vcmod=x86"
-    for %%i in (amd64 64 x64) do for %%a in (%*) do if /i "%%i" == "%%a" set "vcmod=x64"
-    for %%i in (x86_amd64)    do for %%a in (%*) do if /i "%%i" == "%%a" set "vcmod=%%i"
+::80386 or 80486 or i586 or i686 or i786
+    for %%i in (32 x32 86x86)          do for %%a in (%*) do if /i "%%i" == "%%a" set "vcmod=x86"
+::amd64
+    for %%i in (amd64 64 x64)          do for %%a in (%*) do if /i "%%i" == "%%a" set "vcmod=x64"
+::from x86 build amd64
+    for %%i in (x86_amd64)             do for %%a in (%*) do if /i "%%i" == "%%a" set "vcmod=%%i"
+::Itanium not tested!
+    for %%i in (ia64 x86_ia64)         do for %%a in (%*) do if /i "%%i" == "%%a" set "vcmod=%%i"
+::ARM not tested!
+    for %%i in (arm x86_arm amd64_arm) do for %%a in (%*) do if /i "%%i" == "%%a" set "vcmod=%%i"
   )
 if not defined buildt (
-  for %%i in (ALL) do for %%a in (%*) do if /i "%%i" == "%%a" set "buildt=ALL"
-  for %%i in (CUI) do for %%a in (%*) do if /i "%%i" == "%%a" set "buildt=CUI"
-  for %%i in (GUI) do for %%a in (%*) do if /i "%%i" == "%%a" set "buildt=GUI"
+  if "" == "%1" set buildt=ALL
+  for %%i in (ALL)   do for %%a in (%*) do if /i "%%i" == "%%a" set "buildt=ALL"
+  for %%i in (GUI)   do for %%a in (%*) do if /i "%%i" == "%%a" set "buildt=GUI" & set "OLE=yes"
+  for %%i in (CUI)   do for %%a in (%*) do if /i "%%i" == "%%a" set "buildt=CUI"
+  for %%i in (noOLE) do for %%a in (%*) do if /i "%%i" == "%%a" set "buildt=GUI"
   )
 goto :eof
 
@@ -299,9 +296,10 @@ goto :eof
   echo    x86_amd64  vcmod=x86_amd64 (Use if yourse PC have not installed x64 system)
   echo ==============================================================================
   echo               Auto detect build type (ALL)
-  echo    ALL        Full Build (GUI+CUI)
+  echo    ALL        Full Build (GUI+CUI+noOLE)
   echo    CUI        CUI  Build
   echo    GUI        GUI  Build
+  echo    noOLE        GUI  Build without OLE
   echo ==============================================================================
   echo For example:
   echo     msvc.bat vc%vcver% %vcmod% ALL
