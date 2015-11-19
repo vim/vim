@@ -5580,7 +5580,7 @@ win_setminheight()
     }
 }
 
-#ifdef FEAT_MOUSE
+#if defined(FEAT_MOUSE) || defined(PROTO)
 
 /*
  * Status line of dragwin is dragged "offset" lines down (negative is up).
@@ -5713,7 +5713,7 @@ win_drag_status_line(dragwin, offset)
     showmode();
 }
 
-#ifdef FEAT_VERTSPLIT
+# if defined(FEAT_VERTSPLIT) || defined(PROTO)
 /*
  * Separator line of dragwin is dragged "offset" lines right (negative is left).
  */
@@ -5816,7 +5816,7 @@ win_drag_vsep_line(dragwin, offset)
     (void)win_comp_pos();
     redraw_all_later(NOT_VALID);
 }
-#endif /* FEAT_VERTSPLIT */
+# endif /* FEAT_VERTSPLIT */
 #endif /* FEAT_MOUSE */
 
 #endif /* FEAT_WINDOWS */
@@ -7268,7 +7268,7 @@ get_tab_number(tabpage_T *tp UNUSED)
 }
 #endif
 
-#ifdef FEAT_WINDOWS
+#if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * Return TRUE if "topfrp" and its children are at the right height.
  */
@@ -7291,7 +7291,7 @@ frame_check_height(topfrp, height)
 }
 #endif
 
-#ifdef FEAT_VERTSPLIT
+#if defined(FEAT_VERTSPLIT) || defined(PROTO)
 /*
  * Return TRUE if "topfrp" and its children are at the right width.
  */
