@@ -112,3 +112,12 @@ cc
 aaa
 
 ---
+
+gv in exclusive select mode after operation
+zzz 
+xxx 
+---
+
+gv in exclusive select mode without operation
+xxx 
+---

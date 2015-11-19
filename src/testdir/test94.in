@@ -210,6 +210,21 @@ $vp
 :-2yank
 $v$p
 :$put ='---'
+:
+:$put =''
+:$put ='gv in exclusive select mode after operation'
+:$put ='zzz '
+:$put ='Ã¤Ã '
+:set selection=exclusive
+kv3lyjv3lpgvcxxx
+:$put ='---'
+:
+:$put =''
+:$put ='gv in exclusive select mode without operation'
+:$put ='zzz '
+:set selection=exclusive
+0v3lgvcxxx
+:$put ='---'
 :/^start:/+2,$w! test.out
 :q!
 ENDTEST
