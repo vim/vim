@@ -1080,7 +1080,7 @@ do_record(c)
 	    retval = FAIL;
 	else
 	{
-	    Recording = TRUE;
+	    Recording = c;
 	    showmode();
 	    regname = c;
 	    retval = OK;

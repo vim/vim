@@ -163,6 +163,7 @@ static void redraw_block __ARGS((int row, int end, win_T *wp));
 static int win_do_lines __ARGS((win_T *wp, int row, int line_count, int mayclear, int del));
 static void win_rest_invalid __ARGS((win_T *wp));
 static void msg_pos_mode __ARGS((void));
+static void recording_mode __ARGS((int attr));
 #if defined(FEAT_WINDOWS)
 static void draw_tabline __ARGS((void));
 #endif
@@ -10163,7 +10164,7 @@ showmode()
 #endif
 		)
 	{
-	    MSG_PUTS_ATTR(_("recording"), attr);
+	    recording_mode(attr);
 	    need_clear = TRUE;
 	}
 
@@ -10227,8 +10228,21 @@ unshowmode(force)
     {
 	msg_pos_mode();
 	if (Recording)
-	    MSG_PUTS_ATTR(_("recording"), hl_attr(HLF_CM));
+	    recording_mode(hl_attr(HLF_CM));
 	msg_clr_eos();
+    }
+}
+
+    static void
+recording_mode(attr)
+    int attr;
+{
+    MSG_PUTS_ATTR(_("recording"), attr);
+    if (!shortmess(SHM_RECORDING))
+    {
+	char_u s[4];
+	sprintf((char *)s, " @%c", Recording);
+	MSG_PUTS_ATTR(s, attr);
     }
 }
 
