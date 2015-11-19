@@ -155,7 +155,7 @@ if /i "%vcmod%" == "x64" set "SUBSYSTEM_VER=5.02" & set CPU=AMD64
 if /i "%vcmod%" == "x86_amd64" set "SUBSYSTEM_VER=5.02" & set CPU=AMD64
 if /i "%vcmod%" == "x86"   set "SUBSYSTEM_VER=5.01"
 
-if /i "%WINVER%" == "0x0400" set "SUBSYSTEM_VER=4.00"
+if "%WINVER%" == "0x0400" set "SUBSYSTEM_VER=4.00"
   title "Command Prompt (VC++ %vcver% %vcmod% %buildt%) nmake Vim"
 
 ::  Don't remove remark here while not fixed
@@ -240,6 +240,7 @@ if "%vcmod%" == "" if not exist "%PROGRAMFILES(X86)%" set "vcmod=x86"
 if defined V5TOOLS set "VS50COMNTOOLS=%V5TOOLS%"
 if defined V6TOOLS set "VS60COMNTOOLS=%V6TOOLS%"
 
+if not defined vcver (
   if defined VS140COMNTOOLS if exist "%VS140COMNTOOLS%\..\..\vc\vcvarsall.bat"  set "vcver=14"
   if defined VS120COMNTOOLS if exist "%VS120COMNTOOLS%\..\..\vc\vcvarsall.bat"  set "vcver=12"
   if defined VS110COMNTOOLS if exist "%VS110COMNTOOLS%\..\..\vc\vcvarsall.bat"  set "vcver=11"
@@ -251,6 +252,7 @@ if defined V6TOOLS set "VS60COMNTOOLS=%V6TOOLS%"
   if defined VS60COMNTOOLS  if exist "%VS60COMNTOOLS%\VC98\Bin\vcvars32.bat"    set "vcver=6"
   if defined VS60COMNTOOLS  if exist "%VS60COMNTOOLS%\VC97\Bin\vcvars32.bat"    set "vcver=5"
   if defined VS50COMNTOOLS  if exist "%VS50COMNTOOLS%\VC\Bin\vcvars32.bat"      set "vcver=5"
+)
 
   if "%vcver%" == "14"  call "%VS140COMNTOOLS%\..\..\vc\vcvarsall.bat" %vcmod%
   if "%vcver%" == "12"  call "%VS120COMNTOOLS%\..\..\vc\vcvarsall.bat" %vcmod%
