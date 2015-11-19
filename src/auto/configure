@@ -4198,7 +4198,7 @@ if test "${with_developer_dir+set}" = set; then :
   withval=$with_developer_dir; DEVELOPER_DIR="$withval"; { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DEVELOPER_DIR" >&5
 $as_echo "$DEVELOPER_DIR" >&6; }
 else
-  DEVELOPER_DIR=""; { $as_echo "$as_me:${as_lineno-$LINENO}: result: not present" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: not present" >&5
 $as_echo "not present" >&6; }
 fi
 
