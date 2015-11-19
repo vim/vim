@@ -153,7 +153,7 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
   AC_MSG_CHECKING(--with-developer-dir argument)
   AC_ARG_WITH(developer-dir, [  --with-developer-dir=PATH    use PATH as location for Xcode developer tools],
 	DEVELOPER_DIR="$withval"; AC_MSG_RESULT($DEVELOPER_DIR),
-        DEVELOPER_DIR=""; AC_MSG_RESULT(not present))
+        AC_MSG_RESULT(not present))
   
   if test "x$DEVELOPER_DIR" = "x"; then
     AC_PATH_PROG(XCODE_SELECT, xcode-select)
