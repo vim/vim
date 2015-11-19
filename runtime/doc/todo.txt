@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Nov 10
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Nov 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,6 +37,7 @@ not be repeated below, unless there is extra information.
 Regexp problems:
 - Instructions for reproducing issue #465 (crash in nfa_regtry):
   https://github.com/mgedmin/vim-bug-465
+  More info on the issue
 - The regexp engines are not reentrant, causing havoc when interrupted by a
   remote expression or something else.  Move global variables onto the stack
   or into an allocated struct.
@@ -77,12 +78,6 @@ Regexp problems:
 - The pattern "\1" with the old engine gives E65, with the new engine it
   matches the empty string. (Dominique Pelle, 2015 Oct 2)
 
-runtime/optwin.vim missing options:
-rubydll
-pythondll
-perldll
-luadll
-
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
 
@@ -90,10 +85,6 @@ Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
-
-When running out of memory, lalloc() invokes the garbage collector.
-May cause freeing used memory.  Just remove that call?
-Or add flag to avoid it when undesired.
 
 Installation of .desktop files does not work everywhere.
 It's now fixed, but the target directory probably isn't right.
@@ -116,8 +107,6 @@ https://github.com/chrisbra/vim-sqloracle-syntax/blob/master/syntax/sqloracle.vi
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
 
-Updated syntax files. (Charles Campbell, 2015 Oct 19)
-
 Better changelog syntax file. (Martin Florian, 2015 Oct 25)
 
 Better readline syntax file. (Raphael Bazaud, 2015 Oct 25)
@@ -139,6 +128,10 @@ Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
 Unexpected delay when using CTRL-O u.  It's not timeoutlen.
 (Gary Johnson, 2015 Aug 28)
 
+Instead of separately uploading patches to the ftp site, can we get them from
+github?  This URL works:
+   https://github.com/vim/vim/compare/v7.4.920%5E...v7.4.920.diff
+>
 Can src/GvimExt/Make_cyg.mak be removed?
 Same for src/xxd/Make_cyg.mak
 
@@ -176,6 +169,11 @@ Patch to fix "." after CTRL-A in Visual block mode. (Ozaki Kiichi, 2015 Oct
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
+Patch to add window and tab arguments to getcwd(). (Thinca, 2015 Nov 15)
+
+To support Thai (and other languages) word boundaries, include the ICU
+library:  http://userguide.icu-project.org/boundaryanalysis
+
 When complete() first argument is before where insert started and 'backspace'
 is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
 
@@ -187,6 +185,8 @@ Goes away when disabling the swap file. (might1, Feb 16)
 
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
+
+Patch to add ":syn iskeyword". (Christian Brabandt, 2015 Nov 10)
 
 If libiconv.dll is not found search for libiconv2.dll. (Yasuhiro Matsumoto,
 2015 Oct 7)
@@ -221,7 +221,7 @@ Example in editing.txt uses $HOME with the expectating that it ends in a
 slash.  For me it does, but perhaps not for everybody.  Add a function that
 inserts a slash when needed?  pathconcat(dir, path) (Thilo Six, 2015 Aug 12)
 
-Patch to load TCL dynamically. (Ken Takata, 2015 Nov 10)
+Patch to load TCL dynamically. (Ken Takata, 2015 Nov 11)
 
 ml_updatechunk() is slow when retrying for another encoding. (John Little,
 2014 Sep 11)
@@ -258,6 +258,9 @@ Does this work for everybody?
 
 Patch to fix that wide characters do not work properly after exiting.
 (Yasuhiro Matsumoto, 2015 May 24) Better patch to come.
+
+Patch to add wordcount().  Same info as g CTRL-G. (Christian Brabandt, 2015
+Nov 17)
 
 Patch for man.vim. (SungHyun Nam, 2015 May 20)
 Doesn't work completely (Dominique Orban)
@@ -394,6 +397,8 @@ Patch to make extend() fail early when it might fail at some point.
 (Olaf Dabrunz, 2015 May 2)  Makes extend() slower, do we still want it?
 Perhaps only the checks that can be done without looping over the dict or
 arguments.
+
+Problem with transparent and matchgroup.  Issue #475
 
 Patch to add :arglocal and :arglists. (Marcin Szamotulski, 2014 Aug 6)
 

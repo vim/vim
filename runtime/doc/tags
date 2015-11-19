@@ -5994,6 +5994,7 @@ g:NetrwTopLvlMenu	pi_netrw.txt	/*g:NetrwTopLvlMenu*
 g:Netrw_UserMaps	pi_netrw.txt	/*g:Netrw_UserMaps*
 g:Netrw_corehandler	pi_netrw.txt	/*g:Netrw_corehandler*
 g:Netrw_funcref	pi_netrw.txt	/*g:Netrw_funcref*
+g:actual_curbuf	options.txt	/*g:actual_curbuf*
 g:ada#Comment	ft_ada.txt	/*g:ada#Comment*
 g:ada#Ctags_Kinds	ft_ada.txt	/*g:ada#Ctags_Kinds*
 g:ada#DotWordRegex	ft_ada.txt	/*g:ada#DotWordRegex*
