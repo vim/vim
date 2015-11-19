@@ -1661,7 +1661,7 @@ gui_mch_init(void)
 	    return FAIL;
     }
     s_textArea = CreateWindowEx(
-	WS_EX_CLIENTEDGE,
+	0,
 	szTextAreaClass, "Vim text area",
 	WS_CHILD | WS_VISIBLE, 0, 0,
 	100,				/* Any value will do for now */
@@ -1716,9 +1716,9 @@ gui_mch_init(void)
     highlight_gui_started();
 
     /*
-     * Start out by adding the configured border width into the border offset
+     * Start out by adding the configured border width into the border offset.
      */
-    gui.border_offset = gui.border_width + 2;	/*CLIENT EDGE*/
+    gui.border_offset = gui.border_width;
 
     /*
      * Set up for Intellimouse processing
