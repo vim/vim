@@ -280,7 +280,7 @@ static void ruby_vim_init(void);
 #  define rb_enc_str_new			dll_rb_enc_str_new
 #  define rb_sprintf			dll_rb_sprintf
 #  define rb_require			dll_rb_require
-#  define ruby_process_options		dll_ruby_process_options
+#  define ruby_options			dll_ruby_options
 # endif
 
 /*
@@ -384,7 +384,7 @@ static rb_encoding* (*dll_rb_enc_find) (const char*);
 static VALUE (*dll_rb_enc_str_new) (const char*, long, rb_encoding*);
 static VALUE (*dll_rb_sprintf) (const char*, ...);
 static VALUE (*dll_rb_require) (const char*);
-static void* (*ruby_process_options)(int, char**);
+static void* (*ruby_options)(int, char**);
 # endif
 
 # if defined(USE_RGENGC) && USE_RGENGC
@@ -565,7 +565,7 @@ static struct
     {"rb_enc_str_new", (RUBY_PROC*)&dll_rb_enc_str_new},
     {"rb_sprintf", (RUBY_PROC*)&dll_rb_sprintf},
     {"rb_require", (RUBY_PROC*)&dll_rb_require},
-    {"ruby_process_options", (RUBY_PROC*)&dll_ruby_process_options},
+    {"ruby_options", (RUBY_PROC*)&dll_ruby_options},
 # endif
 # if defined(RUBY19_OR_LATER) || defined(RUBY_INIT_STACK)
 #  ifdef __ia64
@@ -817,7 +817,7 @@ static int ensure_ruby_initialized(void)
 	    {
 		int dummy_argc = 2;
 		char *dummy_argv[] = {"vim-ruby", "-e0"};
-		ruby_process_options(dummy_argc, dummy_argv);
+		ruby_options(dummy_argc, dummy_argv);
 	    }
 	    ruby_script("vim-ruby");
 #else
