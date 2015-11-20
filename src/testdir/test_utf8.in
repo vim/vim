@@ -21,19 +21,19 @@ STARTTEST
 :function! CustomComplete1(lead, line, pos)
 :	return ['あ', 'い']
 :endfunction
-:command -nargs=1 -complete=customlist,CustomComplete1 Test1 :
+:command -nargs=1 -complete=customlist,CustomComplete1 Test1
 :call feedkeys(":Test1 \<C-L>'\<C-B>$put='\<CR>", 't')
 :
 :function! CustomComplete2(lead, line, pos)
 :	return ['あたし', 'あたま', 'あたりめ']
 :endfunction
-:command -nargs=1 -complete=customlist,CustomComplete2 Test2 :
+:command -nargs=1 -complete=customlist,CustomComplete2 Test2
 :call feedkeys(":Test2 \<C-L>'\<C-B>$put='\<CR>", 't')
 :
 :function! CustomComplete3(lead, line, pos)
 :	return ['Nこ', 'Nん', 'Nぶ']
 :endfunction
-:command -nargs=1 -complete=customlist,CustomComplete3 Test3 :
+:command -nargs=1 -complete=customlist,CustomComplete3 Test3
 :call feedkeys(":Test3 \<C-L>'\<C-B>$put='\<CR>", 't')
 :
 :call garbagecollect(1)
