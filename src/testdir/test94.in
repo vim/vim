@@ -17,7 +17,7 @@ Test cases:
 
 STARTTEST
 :so small.vim
-:set nocp viminfo+=nviminfo
+:set enc=utf-8 nocp viminfo+=nviminfo
 :
 :" User functions
 :function MoveToCap()
