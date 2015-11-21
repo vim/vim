@@ -3704,7 +3704,7 @@ ExpandOne(xp, str, orig, options, mode)
 	    }
 	    else
 #endif
-		c0 = xp->xp_files[i][len];
+		c0 = xp->xp_files[0][len];
 	    for (i = 1; i < xp->xp_numfiles; ++i)
 	    {
 #ifdef FEAT_MBYTE
