@@ -5785,6 +5785,8 @@ win_drag_vsep_line(dragwin, offset)
 	offset = room;		/* Move as far as we can */
     if (offset <= 0)		/* No room at all, quit. */
 	return;
+    if (fr == NULL)
+	return;			/* Safety check, should not happen. */
 
     /* grow frame fr by offset lines */
     frame_new_width(fr, fr->fr_width + offset, left, FALSE);
