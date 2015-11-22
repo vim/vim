@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.4.  Last change: 2015 Aug 29
+*windows.txt*   For Vim version 7.4.  Last change: 2015 Nov 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1023,7 +1023,7 @@ list of buffers. |unlisted-buffer|
 		     -   buffers with 'modifiable' off
 		     =   readonly buffers
 		     a   active buffers
-		     u   unloaded buffers (overrides the "!")
+		     u   unlisted buffers (overrides the "!")
 		     h   hidden buffers
 		     x   buffers with a read error
 		     %   current buffer
