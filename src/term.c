@@ -5231,6 +5231,13 @@ check_termcode(max_offset, buf, bufsize, buflen)
 	    else
 		key_name[1] = get_pseudo_mouse_code(current_button,
 							   is_click, is_drag);
+
+	    /* Make sure the mouse position is valid.  Some terminals may
+	     * return weird values. */
+	    if (mouse_col >= Columns)
+		mouse_col = Columns - 1;
+	    if (mouse_row >= Rows)
+		mouse_row = Rows - 1;
 	}
 #endif /* FEAT_MOUSE */
 
