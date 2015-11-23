@@ -6947,7 +6947,10 @@ nfa_regtry(prog, col, tm)
     {
 	cleanup_zsubexpr();
 	re_extmatch_out = make_extmatch();
-	for (i = 0; i < subs.synt.in_use; i++)
+        /* Start loop from 1 because there is no \z0.
+         * See https://github.com/vim/vim/issues/465.
+         */
+	for (i = 1; i < subs.synt.in_use; i++)
 	{
 	    if (REG_MULTI)
 	    {
