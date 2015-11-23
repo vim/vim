@@ -144,12 +144,13 @@ rem echo Adding DEBUG
 rem set DEBUG=yes
   echo See Make_mvc.mak or feature.h for a list of optionals.
 echo ==============================================================================
-rem  set "WINVER=0x0400"
-  echo WINVER=%WINVER% (WINVER=0x0500 or 0x0400 defoult 0x0400)
+set WINVER=0x0500
+if %vcver% == 6 set WINVER=0x0400
+  echo WINVER=%WINVER% (WINVER=0x0500 or 0x0400 defoult 0x0500)
 
   echo Get all sorts of useful, standard macros from the Platform SDK.
   echo Default is %ProgramFiles(x86)%\Microsoft SDKs\Windows\v7.1A\include\Win32.mak)
-    if "%vcver%" geq "12" set "SDK_INCLUDE_DIR=%ProgramFiles(x86)%\Microsoft SDKs\Windows\v7.1A\include"
+    if "%vcver%" geq "11" set "SDK_INCLUDE_DIR=%ProgramFiles(x86)%\Microsoft SDKs\Windows\v7.1A\include"
 
 if /i "%vcmod%" == "x64" set "SUBSYSTEM_VER=5.02" & set CPU=AMD64
 if /i "%vcmod%" == "x86_amd64" set "SUBSYSTEM_VER=5.02" & set CPU=AMD64
@@ -159,7 +160,7 @@ if "%WINVER%" == "0x0400" set "SUBSYSTEM_VER=4.00"
   title "Command Prompt (VC++ %vcver% %vcmod% %buildt%) nmake Vim"
 
 ::  Don't remove remark here while not fixed
-  if "%vcver%" geq "12" xpm=no
+  if "%vcver%" geq "12" set xpm=no
 
 :: if OLE undefiend OLE=NO
 if /i "%buildt%" == "CUI" goto CUI
@@ -167,6 +168,7 @@ if /i "%buildt%" == "CUI" goto CUI
   set IME=yes
   set GIME=yes
   set DIRECTX=yes
+if %vcver% == 6 set DIRECTX=
 if /i "%buildt%" == "ALL" (
   call :nmake_mvc
   set "OLE=yes"
@@ -181,12 +183,13 @@ if /i "%buildt%" == "GUI" goto after_build
   set DIRECTX=
   call :nmake_mvc
 :after_build
-set "SVNDST=..\bin\%vcmod%"
+set "SVNDST=..\bin\%vcver%-%vcmod%"
 echo ==============================================================================
 echo Copy any new Vim exe + runtime files to current install dir.
 echo from [%SVNSRC%]
 echo to   [%SVNDST%]
 echo ==============================================================================
+pause
 xcopy   "%SVNSRC%\..\runtime"          %SVNDST% /E /H /I /Y
 move /Y "%SVNSRC%\xxd\xxd.exe"         %SVNDST%
 move /Y "%SVNSRC%\GvimExt\gvimext.dll" %SVNDST%
@@ -215,7 +218,7 @@ if not defined vcver (
   )
 if not defined vcmod (
 ::80386 or 80486 or i586 or i686 or i786
-    for %%i in (32 x32 86x86)          do for %%a in (%*) do if /i "%%i" == "%%a" set "vcmod=x86"
+    for %%i in (32 x32 86 x86)          do for %%a in (%*) do if /i "%%i" == "%%a" set "vcmod=x86"
 ::amd64
     for %%i in (amd64 64 x64)          do for %%a in (%*) do if /i "%%i" == "%%a" set "vcmod=x64"
 ::from x86 build amd64
