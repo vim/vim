@@ -1689,6 +1689,12 @@ button_press_event(GtkWidget *widget,
     case 3:
 	button = MOUSE_RIGHT;
 	break;
+    case 8:
+	button = MOUSE_X1;
+	break;
+    case 9:
+	button = MOUSE_X2;
+	break;
     default:
 	return FALSE;		/* Unknown button */
     }
