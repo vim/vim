@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Nov 19
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Nov 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,9 +35,6 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 Regexp problems:
-- Instructions for reproducing issue #465 (crash in nfa_regtry):
-  https://github.com/mgedmin/vim-bug-465
-  More info on the issue
 - The regexp engines are not reentrant, causing havoc when interrupted by a
   remote expression or something else.  Move global variables onto the stack
   or into an allocated struct.
@@ -96,20 +93,11 @@ Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
 Access to uninitialized memory in match_backref() regexp_nda.c:4882
 (Dominique Pelle, 2015 Nov 6)
 
-Netrw update. (Charles 2015 Oct 23)
-
 Patch to use local value of 'errorformat' in :cexpr. (Christian Brabandt,
 2015 Oct 16)  Only do this for :lexpr ?
 
-Update Oracle syntax file from:
-https://github.com/chrisbra/vim-sqloracle-syntax/blob/master/syntax/sqloracle.vim
-
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
-
-Better changelog syntax file. (Martin Florian, 2015 Oct 25)
-
-Better readline syntax file. (Raphael Bazaud, 2015 Oct 25)
 
 English spell checking has an error.  Updating doesn't work.
 (Dominique Pelle, 2015 Oct 15)
@@ -137,31 +125,22 @@ Same for src/xxd/Make_cyg.mak
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
-Patch to fix memory leak. (Dominique Pelle, 2015 Nov 4)
+Plugin to use Vim in MANPAGER.  Konfekt, PR #491
 
 Using uninitialized memory. (Dominique Pelle, 2015 Nov 4)
 
 Patch to recognize string slice for variable followed by colon.
 (Hirohito Higashi, 2015 Nov 3)
-
-Patch to support hangul input with utf-8.
-
-Patch to support UTF-8 for Hangul. (Shawn Y.H. Kim, 2011 May 1)
-Needs more work.  Pinged 2012 Jan 4.
+Patch to .ok file is missing.
 
 Patch to add debug backtrace. (Alberto Fanjul, 2015 Sep 27)
-Asked for :frame command.
-
-vt52 terminal codes are not correct.  Patch from Random, 2015 Nov 5.
+Needs fixes.
 
 MS-Windows: When editing a file with a leading space, writing it uses the
 wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
 
 Can't recognize the $ProgramFiles(x86) environment variable.  Recognize it
 specifically?  First try with the parens, then without.
-
-Patch to add 'tagcase' option, whether to ignore case for tags.
-(Gary Johnson, 2015 Nov 6)
 
 Patch to fix "." after CTRL-A in Visual block mode. (Ozaki Kiichi, 2015 Oct
 24)
@@ -208,6 +187,9 @@ Update Aug 14.
 
 Crash in :cnext on MS-Windows. (Ben Fritz, 2015 Oct 27)
 
+Patch to add GUI colors to the terminal, when it supports it. (ZyX, 2013 Jan
+26, update 2013 Dec 14, another 2014 Nov 22)
+
 Patch for problem with restoring screen on Windows. (Nobuhiro Takasaki, 2015
 Sep 10)
 
@@ -228,6 +210,9 @@ ml_updatechunk() is slow when retrying for another encoding. (John Little,
 
 Patch to fix checking global option value when not using it.
 (Arnaud Decara, 2015 Jul 23)
+
+Patch to support Python 'None' value in pyeval(). (Damien, 2015 Nov 21)
+Need a Vim equivalent of None and a way to test for it.
 
 When 'showbreak' is set repeating a Visual operation counts the size of the
 'showbreak' text as part of the operation. (Axel Bender, 2015 Jul 20)
@@ -283,6 +268,7 @@ Mixup of highlighting when there is a match and SpellBad. (ZyX, 2015 Jan 1)
 
 Patch for drag&drop reordering of GUI tab pages reordering.
 (Ken Takata, 2013 Nov 22, second one, also by Masamichi Abe)
+Now on Git: https://gist.github.com/nocd5/165286495c782b815b94
 
 Patch on Issue 72: 'autochdir' causes problems for :vimgrep.
 
@@ -293,9 +279,6 @@ When two SIGWINCH arrive very quickly, the second one may be lost.
 (Josh Triplett, 2015 Sep 17)
 
 Make comments in the test Makefile silent. (Kartik Agaram, 2014 Sep 24)
-
-Patch to add GUI colors to the terminal, when it supports it. (ZyX, 2013 Jan
-26, update 2013 Dec 14, another 2014 Nov 22)
 
 Patch to improve behavior of dead keys on MS-Windows. (John Wellesz, 2015 Aug
 25)  https://github.com/vim/vim/pull/399.diff

@@ -1,4 +1,4 @@
-*hangulin.txt*  For Vim version 7.4.  Last change: 2015 Nov 10
+*hangulin.txt*  For Vim version 7.4.  Last change: 2015 Nov 24
 
 
 		  VIM REFERENCE MANUAL    by Chi-Deok Hwang and Sung-Hyun Nam
@@ -34,7 +34,7 @@ If you set LC_ALL variable, it should be set to Korean locale also.
 VIM resource
 ------------
 You may want to set 'encoding' and 'fileencodings'.
-Next are examples:
+Next are examples: >
 
 	:set encoding=euc-kr
 	:set encoding=utf-8
@@ -54,7 +54,7 @@ If both are set, VIM_KEYBOARD has higher priority.
 Hangul Fonts
 ------------
 If you use GTK version of GVIM, you should set 'guifont' and 'guifontwide'.
-For example:
+For example: >
     set guifont=Courier\ 12
     set guifontwide=NanumGothicCoding\ 12
 

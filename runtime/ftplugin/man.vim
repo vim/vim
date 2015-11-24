@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	man
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change:	2014 Dec 29
+" Last Change: 	2015 Nov 24
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -33,6 +33,11 @@ if &filetype == "man"
 
     nnoremap <buffer> <c-]> :call <SID>PreGetPage(v:count)<CR>
     nnoremap <buffer> <c-t> :call <SID>PopPage()<CR>
+    nnoremap <buffer> <silent> q :q<CR>
+  endif
+
+  if exists('g:ft_man_folding_enable') && (g:ft_man_folding_enable == 1)
+    setlocal foldmethod=indent foldnestmax=1 foldenable
   endif
 
   let b:undo_ftplugin = "setlocal iskeyword<"
