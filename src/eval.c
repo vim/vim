@@ -8741,11 +8741,15 @@ call_func(funcname, len, rettv, argcount, argvars, firstline, lastline,
 		     * redo buffer.
 		     */
 		    save_search_patterns();
+#ifdef FEAT_INS_EXPAND
 		    if (!ins_compl_active())
 		    {
+#endif
 			saveRedobuff();
 			did_save_redo = TRUE;
+#ifdef FEAT_INS_EXPAND
 		    }
+#endif
 		    ++fp->uf_calls;
 		    call_user_func(fp, argcount, argvars, rettv,
 					       firstline, lastline,
