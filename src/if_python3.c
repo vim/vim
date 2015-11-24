@@ -858,7 +858,10 @@ Python3_Init(void)
 
 
 #ifdef PYTHON3_HOME
-	Py_SetPythonHome(PYTHON3_HOME);
+# ifdef DYNAMIC_PYTHON3
+	if (mch_getenv((char_u *)"PYTHONHOME") == NULL)
+# endif
+	    Py_SetPythonHome(PYTHON3_HOME);
 #endif
 
 	PyImport_AppendInittab("vim", Py3Init_vim);

@@ -928,7 +928,10 @@ Python_Init(void)
 #endif
 
 #ifdef PYTHON_HOME
-	Py_SetPythonHome(PYTHON_HOME);
+# ifdef DYNAMIC_PYTHON
+	if (mch_getenv((char_u *)"PYTHONHOME") == NULL)
+# endif
+	    Py_SetPythonHome(PYTHON_HOME);
 #endif
 
 	init_structs();
