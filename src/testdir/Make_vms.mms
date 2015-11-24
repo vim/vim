@@ -126,6 +126,7 @@ SCRIPT = test1.out  test2.out  test3.out  test4.out  test5.out  \
 	 test_search_mbyte.out \
 	 test_set.out \
 	 test_signs.out \
+	 test_tagcase.out \
 	 test_textobjects.out \
 	 test_utf8.out
 

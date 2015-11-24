@@ -1385,6 +1385,18 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
     int		use_cscope = (flags & TAG_CSCOPE);
 #endif
     int		verbose = (flags & TAG_VERBOSE);
+    int		save_p_ic = p_ic;
+
+    /*
+     * Change the value of 'ignorecase' according to 'tagcase' for the
+     * duration of this function.
+     */
+    switch (curbuf->b_tc_flags ? curbuf->b_tc_flags : tc_flags)
+    {
+	case TC_FOLLOWIC:               break;
+	case TC_IGNORE:   p_ic = TRUE;  break;
+	case TC_MATCH:    p_ic = FALSE; break;
+    }
 
     help_save = curbuf->b_help;
     orgpat.pat = pat;
@@ -2551,6 +2563,8 @@ findtag_end:
 #ifdef FEAT_MULTI_LANG
     vim_free(saved_pat);
 #endif
+
+    p_ic = save_p_ic;
 
     return retval;
 }

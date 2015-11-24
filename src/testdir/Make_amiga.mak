@@ -66,6 +66,7 @@ SCRIPTS = test1.out test3.out test4.out test5.out test6.out \
 		test_search_mbyte.out \
 		test_set.out \
 		test_signs.out \
+		test_tagcase.out \
 		test_textobjects.out \
 		test_utf8.out
 
@@ -221,5 +222,6 @@ test_ruby.out: test_ruby.in
 test_search_mbyte.out: test_search_mbyte.in
 test_set.out: test_set.in
 test_signs.out: test_signs.in
+test_tagcase.out: test_tagcase.in
 test_textobjects.out: test_textobjects.in
 test_utf8.out: test_utf8.in

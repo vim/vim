@@ -174,6 +174,7 @@
 #define PV_SW		OPT_BUF(BV_SW)
 #define PV_SWF		OPT_BUF(BV_SWF)
 #define PV_TAGS		OPT_BOTH(OPT_BUF(BV_TAGS))
+#define PV_TC		OPT_BOTH(OPT_BUF(BV_TC))
 #define PV_TS		OPT_BUF(BV_TS)
 #define PV_TW		OPT_BUF(BV_TW)
 #define PV_TX		OPT_BUF(BV_TX)
@@ -2602,6 +2603,9 @@ static struct vimoption
 			    {(char_u *)TRUE, (char_u *)0L}
 #endif
 			    SCRIPTID_INIT},
+    {"tagcase",	    "tc",   P_STRING|P_VIM,
+			    (char_u *)&p_tc, PV_TC,
+			    {(char_u *)"followic", (char_u *)"followic"} SCRIPTID_INIT},
     {"taglength",   "tl",   P_NUM|P_VI_DEF,
 			    (char_u *)&p_tl, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
@@ -5363,6 +5367,7 @@ didset_options()
     (void)opt_strings_flags(p_fdo, p_fdo_values, &fdo_flags, TRUE);
 #endif
     (void)opt_strings_flags(p_dy, p_dy_values, &dy_flags, TRUE);
+    (void)opt_strings_flags(p_tc, p_tc_values, &tc_flags, FALSE);
 #ifdef FEAT_VIRTUALEDIT
     (void)opt_strings_flags(p_ve, p_ve_values, &ve_flags, TRUE);
 #endif
@@ -5525,6 +5530,7 @@ check_buf_options(buf)
     check_string_option(&buf->b_p_ep);
     check_string_option(&buf->b_p_path);
     check_string_option(&buf->b_p_tags);
+    check_string_option(&buf->b_p_tc);
 #ifdef FEAT_INS_EXPAND
     check_string_option(&buf->b_p_dict);
     check_string_option(&buf->b_p_tsr);
@@ -7041,6 +7047,30 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     else if (varp == &p_bo)
     {
 	if (opt_strings_flags(p_bo, p_bo_values, &bo_flags, TRUE) != OK)
+	    errmsg = e_invarg;
+    }
+
+    /* 'tagcase' */
+    else if (gvarp == &p_tc)
+    {
+	unsigned int	*flags;
+
+	if (opt_flags & OPT_LOCAL)
+	{
+	    p = curbuf->b_p_tc;
+	    flags = &curbuf->b_tc_flags;
+	}
+	else
+	{
+	    p = p_tc;
+	    flags = &tc_flags;
+	}
+
+	if ((opt_flags & OPT_LOCAL) && *p == NUL)
+	    /* make the local value empty: use the global value */
+	    *flags = 0;
+	else if (*p == NUL
+		|| opt_strings_flags(p, p_tc_values, flags, FALSE) != OK)
 	    errmsg = e_invarg;
     }
 
@@ -10083,6 +10113,10 @@ unset_global_local_option(name, from)
 	case PV_TAGS:
 	    clear_string_option(&buf->b_p_tags);
 	    break;
+	case PV_TC:
+	    clear_string_option(&buf->b_p_tc);
+	    buf->b_tc_flags = 0;
+	    break;
 #ifdef FEAT_FIND_ID
 	case PV_DEF:
 	    clear_string_option(&buf->b_p_def);
@@ -10164,6 +10198,7 @@ get_varp_scope(p, opt_flags)
 	    case PV_PATH: return (char_u *)&(curbuf->b_p_path);
 	    case PV_AR:   return (char_u *)&(curbuf->b_p_ar);
 	    case PV_TAGS: return (char_u *)&(curbuf->b_p_tags);
+	    case PV_TC:   return (char_u *)&(curbuf->b_p_tc);
 #ifdef FEAT_FIND_ID
 	    case PV_DEF:  return (char_u *)&(curbuf->b_p_def);
 	    case PV_INC:  return (char_u *)&(curbuf->b_p_inc);
@@ -10218,6 +10253,8 @@ get_varp(p)
 				    ? (char_u *)&(curbuf->b_p_ar) : p->var;
 	case PV_TAGS:	return *curbuf->b_p_tags != NUL
 				    ? (char_u *)&(curbuf->b_p_tags) : p->var;
+	case PV_TC:	return *curbuf->b_p_tc != NUL
+				    ? (char_u *)&(curbuf->b_p_tc) : p->var;
 	case PV_BKC:	return *curbuf->b_p_bkc != NUL
 				    ? (char_u *)&(curbuf->b_p_bkc) : p->var;
 #ifdef FEAT_FIND_ID
@@ -10826,6 +10863,8 @@ buf_copy_options(buf, flags)
 	    buf->b_p_kp = empty_option;
 	    buf->b_p_path = empty_option;
 	    buf->b_p_tags = empty_option;
+	    buf->b_p_tc = empty_option;
+	    buf->b_tc_flags = 0;
 #ifdef FEAT_FIND_ID
 	    buf->b_p_def = empty_option;
 	    buf->b_p_inc = empty_option;
