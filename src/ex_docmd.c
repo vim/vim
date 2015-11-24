@@ -12117,6 +12117,7 @@ ex_match(eap)
 	if (*p == NUL)
 	{
 	    /* There must be two arguments. */
+	    vim_free(g);
 	    EMSG2(_(e_invarg2), eap->arg);
 	    return;
 	}
@@ -12125,11 +12126,13 @@ ex_match(eap)
 	{
 	    if (*end != NUL && !ends_excmd(*skipwhite(end + 1)))
 	    {
+		vim_free(g);
 		eap->errmsg = e_trailing;
 		return;
 	    }
 	    if (*end != *p)
 	    {
+		vim_free(g);
 		EMSG2(_(e_invarg2), p);
 		return;
 	    }
