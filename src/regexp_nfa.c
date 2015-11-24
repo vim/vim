@@ -6947,7 +6947,8 @@ nfa_regtry(prog, col, tm)
     {
 	cleanup_zsubexpr();
 	re_extmatch_out = make_extmatch();
-	for (i = 0; i < subs.synt.in_use; i++)
+	/* Loop over \z1, \z2, etc.  There is no \z0. */
+	for (i = 1; i < subs.synt.in_use; i++)
 	{
 	    if (REG_MULTI)
 	    {
