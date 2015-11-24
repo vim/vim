@@ -1127,11 +1127,16 @@ gui_x11_mouse_cb(w, dud, event, dum)
 			gui_x11_timer_cb, &timed_out);
 	    switch (event->xbutton.button)
 	    {
+		/* keep in sync with gui_gtk_x11.c */
 		case Button1:	button = MOUSE_LEFT;	break;
 		case Button2:	button = MOUSE_MIDDLE;	break;
 		case Button3:	button = MOUSE_RIGHT;	break;
 		case Button4:	button = MOUSE_4;	break;
 		case Button5:	button = MOUSE_5;	break;
+		case 6:		button = MOUSE_7;	break;
+		case 7:		button = MOUSE_6;	break;
+		case 8:		button = MOUSE_X1;	break;
+		case 9:		button = MOUSE_X2;	break;
 		default:
 		    return;	/* Unknown button */
 	    }
