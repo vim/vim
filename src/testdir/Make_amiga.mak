@@ -68,7 +68,8 @@ SCRIPTS = test1.out test3.out test4.out test5.out test6.out \
 		test_signs.out \
 		test_tagcase.out \
 		test_textobjects.out \
-		test_utf8.out
+		test_utf8.out \
+		test_writefile.out
 
 .SUFFIXES: .in .out
 
@@ -225,3 +226,4 @@ test_signs.out: test_signs.in
 test_tagcase.out: test_tagcase.in
 test_textobjects.out: test_textobjects.in
 test_utf8.out: test_utf8.in
+test_writefile.out: test_writefile.in

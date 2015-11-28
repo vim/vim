@@ -65,7 +65,8 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test_signs.out \
 		test_tagcase.out \
 		test_textobjects.out \
-		test_utf8.out
+		test_utf8.out \
+		test_writefile.out
 
 SCRIPTS_GUI = test16.out
 
