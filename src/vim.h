@@ -1902,7 +1902,8 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 #define VV_OPTION_NEW   59
 #define VV_OPTION_OLD   60
 #define VV_OPTION_TYPE  61
-#define VV_LEN		62	/* number of v: vars */
+#define VV_ERRORS	62
+#define VV_LEN		63	/* number of v: vars */
 
 #ifdef FEAT_CLIPBOARD
 

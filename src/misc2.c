@@ -2092,6 +2092,7 @@ ga_concat_strings(gap, sep)
 
 /*
  * Concatenate a string to a growarray which contains characters.
+ * When "s" is NULL does not do anything.
  * Note: Does NOT copy the NUL at the end!
  */
     void
@@ -2099,8 +2100,11 @@ ga_concat(gap, s)
     garray_T	*gap;
     char_u	*s;
 {
-    int    len = (int)STRLEN(s);
+    int    len;
 
+    if (s == NULL)
+	return;
+    len = (int)STRLEN(s);
     if (ga_grow(gap, len) == OK)
     {
 	mch_memmove((char *)gap->ga_data + gap->ga_len, s, (size_t)len);

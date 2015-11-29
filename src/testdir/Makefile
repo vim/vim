@@ -68,15 +68,17 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test_utf8.out \
 		test_writefile.out
 
+NEW_TESTS = test_assert.res
+
 SCRIPTS_GUI = test16.out
 
 SCRIPTS_BENCH = bench_re_freeze.out
 
-.SUFFIXES: .in .out
+.SUFFIXES: .in .out .res .vim
 
-nongui:	nolog $(SCRIPTS) report
+nongui:	nolog $(SCRIPTS) newtests report
 
-gui:	nolog $(SCRIPTS) $(SCRIPTS_GUI) report
+gui:	nolog $(SCRIPTS) $(SCRIPTS_GUI) newtests report
 
 benchmark: $(SCRIPTS_BENCH)
 
@@ -95,7 +97,7 @@ RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim lua.vim test.ok benchmar
 RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -u unix.vim -U NONE --noplugin -s dotest.in
 
 clean:
-	-rm -rf *.out *.failed *.rej *.orig test.log $(RM_ON_RUN) $(RM_ON_START) valgrind.*
+	-rm -rf *.out *.failed *.res *.rej *.orig test.log $(RM_ON_RUN) $(RM_ON_START) valgrind.*
 
 test1.out: test1.in
 	-rm -rf $*.failed $(RM_ON_RUN) $(RM_ON_START) wrongtermsize
@@ -157,3 +159,14 @@ bench_re_freeze.out: bench_re_freeze.vim
 
 nolog:
 	-rm -f test.log
+
+
+# New style of tests uses Vim script with assert calls.  These are easier
+# to write and a lot easier to read and debug.
+# Limitation: Only works with the +eval feature.
+RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -u unix.vim -U NONE --noplugin
+
+newtests: $(NEW_TESTS)
+
+.vim.res:
+	$(RUN_VIMTEST) -u runtest.vim $*.vim
