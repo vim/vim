@@ -68,7 +68,8 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test_utf8.out \
 		test_writefile.out
 
-NEW_TESTS = test_assert.res
+NEW_TESTS = test_assert.res \
+	    test_undolevels.res
 
 SCRIPTS_GUI = test16.out
 

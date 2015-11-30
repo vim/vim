@@ -87,6 +87,7 @@ SRC_ALL =	\
 		src/testdir/README.txt \
 		src/testdir/*.in \
 		src/testdir/sautest/autoload/*.vim \
+		src/testdir/runtest.vim \
 		src/testdir/test[0-9]*.ok \
 		src/testdir/test[0-9]*a.ok \
 		src/testdir/test_[a-z]*.ok \
