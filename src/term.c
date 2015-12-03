@@ -1880,14 +1880,6 @@ set_termname(term)
 
 	p = (char_u *)"";
 #  ifdef FEAT_MOUSE_XTERM
-#   ifdef FEAT_CLIPBOARD
-#    ifdef FEAT_GUI
-	if (!gui.in_use)
-#    endif
-#    ifndef FEAT_CYGWIN_WIN32_CLIPBOARD
-	    clip_init(FALSE);
-#    endif
-#   endif
 	if (use_xterm_like_mouse(term))
 	{
 	    if (use_xterm_mouse())
