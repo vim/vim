@@ -7388,10 +7388,12 @@ vim_tempname(extra_char, keep)
 	    long	off;
 # endif
 
-	    /* expand $TMP, leave room for "/v1100000/999999999" */
+	    /* Expand $TMP, leave room for "/v1100000/999999999".
+	     * Skip the directory check if the expansion fails. */
 	    expand_env((char_u *)tempdirs[i], itmp, TEMPNAMELEN - 20);
-	    if (mch_isdir(itmp))		/* directory exists */
+	    if (itmp[0] != '$' && mch_isdir(itmp))
 	    {
+		/* directory exists */
 # ifdef __EMX__
 		/* If $TMP contains a forward slash (perhaps using bash or
 		 * tcsh), don't add a backslash, use a forward slash!
