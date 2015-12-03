@@ -9454,9 +9454,12 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
 	if (!ins_compl_active())
 #endif
 	{
+#endif
 	    saveRedobuff();
 	    did_save_redobuff = TRUE;
+#ifdef FEAT_INS_EXPAND
 	}
+#endif
 	did_filetype = keep_filetype;
     }
 
