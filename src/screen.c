@@ -5422,7 +5422,12 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		else
 		    /* DBCS: Put second byte in the second screen char. */
 		    ScreenLines[off] = mb_c & 0xff;
-		++vcol;
+		if (draw_state > WL_NR
+#ifdef FEAT_DIFF
+			&& filler_todo <= 0
+#endif
+			)
+		    ++vcol;
 		/* When "tocol" is halfway a character, set it to the end of
 		 * the character, otherwise highlighting won't stop. */
 		if (tocol == vcol)
