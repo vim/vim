@@ -34,7 +34,7 @@ SCRIPTS = test1.out test3.out test4.out test5.out test6.out \
 		test81.out test82.out test83.out test84.out test88.out \
 		test89.out test90.out test91.out test92.out test93.out \
 		test94.out test95.out test96.out test97.out test98.out \
-		test99.out test100.out test101.out test102.out test103.out \
+		test99.out test101.out test102.out test103.out \
 		test104.out test105.out test106.out test107.out \
 		test_argument_0count.out \
 		test_argument_count.out \
@@ -185,7 +185,6 @@ test96.out: test96.in
 test97.out: test97.in
 test98.out: test98.in
 test99.out: test99.in
-test100.out: test100.in
 test101.out: test101.in
 test102.out: test102.in
 test103.out: test103.in
