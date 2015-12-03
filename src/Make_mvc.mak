@@ -117,8 +117,6 @@
 #	Netbeans Debugging Support: NBDEBUG=[yes or no] (should be no, yes
 #	doesn't work)
 #
-#	Visual C Version: MSVCVER=m.n (default derived from nmake if undefined)
-#
 #	Static Code Analysis: ANALYZE=yes (works with VS2012 only)
 #
 # You can combine any of these interfaces
@@ -379,91 +377,29 @@ DEL_TREE = deltree /y
 INTDIR=$(OBJDIR)
 OUTDIR=$(OBJDIR)
 
-# Derive version of VC being used from nmake if not specified
-!if "$(MSVCVER)" == ""
-!if "$(_NMAKE_VER)" == ""
-MSVCVER = 4.0
-!endif
-!if "$(_NMAKE_VER)" == "162"
-MSVCVER = 5.0
-!endif
-!if "$(_NMAKE_VER)" == "6.00.8168.0"
-MSVCVER = 6.0
-CPU = ix86
-!endif
-!if "$(_NMAKE_VER)" == "6.00.9782.0"
-MSVCVER = 6.0
-CPU = ix86
-!endif
-!if "$(_NMAKE_VER)" == "7.00.9466"
-MSVCVER = 7.0
-!endif
-!if "$(_NMAKE_VER)" == "7.10.3077"
-MSVCVER = 7.1
-!endif
-!if "$(_NMAKE_VER)" == "8.00.50727.42"
-MSVCVER = 8.0
-!endif
-!if "$(_NMAKE_VER)" == "8.00.50727.762"
-MSVCVER = 8.0
-!endif
-!if "$(_NMAKE_VER)" == "9.00.20706.01"
-MSVCVER = 9.0
-!endif
-!if "$(_NMAKE_VER)" == "9.00.21022.08"
-MSVCVER = 9.0
-!endif
-!if "$(_NMAKE_VER)" == "9.00.30729.01"
-MSVCVER = 9.0
-!endif
-!if "$(_NMAKE_VER)" == "10.00.20506.01"
-MSVCVER = 10.0
-!endif
-!if "$(_NMAKE_VER)" == "10.00.30128.01"
-MSVCVER = 10.0
-!endif
-!if "$(_NMAKE_VER)" == "10.00.30319.01"
-MSVCVER = 10.0
-!endif
-!if "$(_NMAKE_VER)" == "10.00.40219.01"
-MSVCVER = 10.0
-!endif
-!if "$(_NMAKE_VER)" == "11.00.50727.1"
-MSVCVER = 11.0
-!endif
-!if "$(_NMAKE_VER)" == "11.00.51106.1"
-MSVCVER = 11.0
-!endif
-!if "$(_NMAKE_VER)" == "11.00.60315.1"
-MSVCVER = 11.0
-!endif
-!if "$(_NMAKE_VER)" == "11.00.60610.1"
-MSVCVER = 11.0
-!endif
-!if "$(_NMAKE_VER)" == "11.00.61030.0"
-MSVCVER = 11.0
-!endif
-!if "$(_NMAKE_VER)" == "12.00.21005.1"
-MSVCVER = 12.0
-!endif
-!if ("$(_NMAKE_VER)" == "14.00.22609.0") || ("$(_NMAKE_VER)" == "14.00.22816.0") || ("$(_NMAKE_VER)" == "14.00.23026.0")
-MSVCVER = 14.0
+!if [echo MSVCVER=_MSC_VER> msvcver.c && $(CC) /EP msvcver.c > msvcver.~ 2> nul]
+!message *** ERROR
+!message Cannot run Visual C to determine its version. Make sure cl.exe is in your PATH.
+!message This can usually be done by running "vcvarsall.bat", located in the bin directory where Visual Studio was installed.
+!error Make aborted.
+!else
+!include msvcver.~
+!if [del msvcver.c msvcver.~]
 !endif
 !endif
 
-# Abort building VIM if version of VC is unrecognised.
-!ifndef MSVCVER
-!message *** ERROR
-!message Cannot determine Visual C version being used.  If you are using the
-!message Windows SDK then you must have the environment variable MSVCVER set to
-!message your version of the VC compiler.  If you are not using the Express
-!message version of Visual C, you can either set MSVCVER or update this makefile
-!message to handle the new value for _NMAKE_VER, "$(_NMAKE_VER)".
-!error Make aborted.
+!if $(MSVCVER) < 1900
+MSVC_MAJOR = ($(MSVCVER) / 100 - 6)
+!else
+MSVC_MAJOR = ($(MSVCVER) / 100 - 5)
+!endif
+
+!if $(MSVC_MAJOR) == 6
+CPU = ix86
 !endif
 
 # Convert processor ID to MVC-compatible number
-!if ("$(MSVCVER)" != "8.0") && ("$(MSVCVER)" != "9.0") && ("$(MSVCVER)" != "10.0") && ("$(MSVCVER)" != "11.0") && ("$(MSVCVER)" != "12.0") && ("$(MSVCVER)" != "14.0")
+!if $(MSVC_MAJOR) < 8
 !if "$(CPUNR)" == "i386"
 CPUARG = /G3
 !elseif "$(CPUNR)" == "i486"
@@ -488,7 +424,7 @@ LIBC =
 DEBUGINFO = /Zi
 
 # Don't use /nodefaultlib on MSVC 14
-!if "$(MSVCVER)" == "14.0"
+!if $(MSVC_MAJOR) >= 14
 NODEFAULTLIB =
 !else
 NODEFAULTLIB = /nodefaultlib
@@ -504,7 +440,7 @@ OPTFLAG = /O2
 OPTFLAG = /Ox
 !endif
 
-!if ("$(MSVCVER)" == "8.0") || ("$(MSVCVER)" == "9.0") || ("$(MSVCVER)" == "10.0") || ("$(MSVCVER)" == "11.0") || ("$(MSVCVER)" == "12.0")
+!if $(MSVC_MAJOR) >= 8
 # Use link time code generation if not worried about size
 !if "$(OPTIMIZE)" != "SPACE"
 OPTFLAG = $(OPTFLAG) /GL
@@ -512,12 +448,13 @@ OPTFLAG = $(OPTFLAG) /GL
 !endif
 
 # (/Wp64 is deprecated in VC9 and generates an obnoxious warning.)
-!if ("$(MSVCVER)" == "7.0") || ("$(MSVCVER)" == "7.1") || ("$(MSVCVER)" == "8.0") 
+!if ($(MSVC_MAJOR) == 7) || ($(MSVC_MAJOR) == 8)
 CFLAGS=$(CFLAGS) $(WP64CHECK)
 !endif
 
-# Static code analysis generally available starting with VS2012
-!if ("$(ANALYZE)" == "yes") && (("$(MSVCVER)" == "10.0") || ("$(MSVCVER)" == "11.0") || ("$(MSVCVER)" == "12.0"))
+# Static code analysis generally available starting with VS2012 (VC11) or
+# Windows SDK 7.1 (VC10)
+!if ("$(ANALYZE)" == "yes") && ($(MSVC_MAJOR) >= 10)
 CFLAGS=$(CFLAGS) /analyze
 !endif
 
@@ -538,7 +475,7 @@ DEBUGINFO = /ZI
 CFLAGS = $(CFLAGS) -D_DEBUG -DDEBUG /Od
 RCFLAGS = $(rcflags) $(rcvars) -D_DEBUG -DDEBUG
 # The /fixed:no is needed for Quantify. Assume not 4.? as unsupported in VC4.0.
-! if "$(MSVCVER)" == "4.0"
+! if $(MSVC_MAJOR) == 4
 LIBC =
 ! else
 LIBC = /fixed:no
@@ -993,7 +930,7 @@ LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) user32.lib 
 
 # Report link time code generation progress if used. 
 !ifdef NODEBUG
-!if ("$(MSVCVER)" == "8.0") || ("$(MSVCVER)" == "9.0") || ("$(MSVCVER)" == "10.0") || ("$(MSVCVER)" == "11.0") || ("$(MSVCVER)" == "12.0")
+!if $(MSVC_MAJOR) >= 8
 !if "$(OPTIMIZE)" != "SPACE"
 LINKARGS1 = $(LINKARGS1) /LTCG:STATUS
 !endif
@@ -1090,7 +1027,7 @@ testclean:
 
 # Create a default rule for transforming .c files to .obj files in $(OUTDIR)
 # Batch compilation is supported by nmake 1.62 (part of VS 5.0) and later)
-!IF "$(MSVCVER)" == "4.0"
+!IF "$(_NMAKE_VER)" == ""
 .c{$(OUTDIR)/}.obj:
 !ELSE
 .c{$(OUTDIR)/}.obj::
@@ -1099,7 +1036,7 @@ testclean:
 
 # Create a default rule for transforming .cpp files to .obj files in $(OUTDIR)
 # Batch compilation is supported by nmake 1.62 (part of VS 5.0) and later)
-!IF "$(MSVCVER)" == "4.0"
+!IF "$(_NMAKE_VER)" == ""
 .cpp{$(OUTDIR)/}.obj:
 !ELSE
 .cpp{$(OUTDIR)/}.obj::
