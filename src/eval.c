@@ -8748,7 +8748,9 @@ call_func(funcname, len, rettv, argcount, argvars, firstline, lastline,
 		     * redo buffer.
 		     */
 		    save_search_patterns();
+#ifdef FEAT_INS_EXPAND
 		    if (!ins_compl_active())
+#endif
 		    {
 			saveRedobuff();
 			did_save_redo = TRUE;

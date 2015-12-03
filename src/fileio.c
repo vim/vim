@@ -9450,7 +9450,9 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     if (!autocmd_busy)
     {
 	save_search_patterns();
+#ifdef FEAT_INS_EXPAND
 	if (!ins_compl_active())
+#endif
 	{
 	    saveRedobuff();
 	    did_save_redobuff = TRUE;
