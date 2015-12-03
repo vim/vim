@@ -1561,14 +1561,15 @@ luaV_setref (lua_State *L)
 	{
 	    tv.v_type = VAR_LIST;
 	    tv.vval.v_list = (list_T *) lua_touserdata(L, 4); /* key */
+	    abort = set_ref_in_item(&tv, copyID, NULL, NULL);
 	}
 	else if (lua_rawequal(L, -1, 3)) /* dict? */
 	{
 	    tv.v_type = VAR_DICT;
 	    tv.vval.v_dict = (dict_T *) lua_touserdata(L, 4); /* key */
+	    abort = set_ref_in_item(&tv, copyID, NULL, NULL);
 	}
 	lua_pop(L, 2); /* metatable and value */
-	abort = set_ref_in_item(&tv, copyID, NULL, NULL);
     }
     lua_pushinteger(L, abort);
     return 1;
