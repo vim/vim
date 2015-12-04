@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	OpenSSH client configuration file (ssh_config)
 " Author:	David Necas (Yeti)
-" Maintainer:   Leonard Ehrenfried <leonard.ehrenfried@web.de>	
-" Modified By:	Dominik Fischer
+" Maintainer:	Dominik Fischer <d dot f dot fischer at web dot de>
+" Contributor:  Leonard Ehrenfried <leonard.ehrenfried@web.de>	
 " Last Change:	2015 Dec 3 
 " SSH Version:	7.0
 "

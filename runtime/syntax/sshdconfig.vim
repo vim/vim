@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:	OpenSSH server configuration file (sshd_config)
-" Maintainer:	David Necas (Yeti)
-" Maintainer:   Leonard Ehrenfried <leonard.ehrenfried@web.de>	
-" Modified By:	Thilo Six
-" Modified By:	Dominik Fischer
+" Author:	David Necas (Yeti)
+" Maintainer:	Dominik Fischer <d dot f dot fischer at web dot de>
+" Contributor:	Thilo Six
+" Contributor:  Leonard Ehrenfried <leonard.ehrenfried@web.de>	
 " Originally:	2009-07-09
 " Last Change:	2015 Dec 3 
 " SSH Version:	7.0
