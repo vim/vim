@@ -2,7 +2,10 @@
 # Makefile to run all tests for Vim
 #
 
+# Use console or GUI.
 VIMPROG = ../vim
+# VIMPROG = ../gvim
+
 SCRIPTSOURCE = ../../runtime
 
 # Uncomment this line to use valgrind for memory leaks and extra warnings.
@@ -91,11 +94,11 @@ report:
 		else echo ALL DONE; \
 		fi"
 
-$(SCRIPTS) $(SCRIPTS_GUI): $(VIMPROG)
+$(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS): $(VIMPROG)
 
 RM_ON_RUN = test.out X* viminfo
 RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim lua.vim test.ok benchmark.out
-RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -u unix.vim -U NONE --noplugin -s dotest.in
+RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f -u unix.vim -U NONE --noplugin -s dotest.in
 
 clean:
 	-rm -rf *.out *.failed *.res *.rej *.orig test.log $(RM_ON_RUN) $(RM_ON_START) valgrind.*
@@ -165,7 +168,7 @@ nolog:
 # New style of tests uses Vim script with assert calls.  These are easier
 # to write and a lot easier to read and debug.
 # Limitation: Only works with the +eval feature.
-RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -u unix.vim -U NONE --noplugin
+RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f -u unix.vim -U NONE --noplugin
 
 newtests: $(NEW_TESTS)
 

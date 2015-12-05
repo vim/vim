@@ -1945,7 +1945,16 @@ test1 \
 	test80 test81 test82 test83 test84 test85 test86 test87 test88 test89 \
 	test90 test91 test92 test93 test94 test95 test96 test97 test98 test99 \
 	test100 test101 test102 test103 test104 test105 test106 test107:
-	cd testdir; rm $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+
+test_assert \
+	test_sort \
+	test_undolevels \
+	test_alot:
+	cd testdir; rm -f $@.res; $(MAKE) -f Makefile $@.res VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+
+newtests:
+	cd testdir; rm -f $@.res; $(MAKE) -f Makefile newtests VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 testclean:
 	cd testdir; $(MAKE) -f Makefile clean
