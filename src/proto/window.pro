@@ -53,6 +53,7 @@ void win_setwidth_win __ARGS((int width, win_T *wp));
 void win_setminheight __ARGS((void));
 void win_drag_status_line __ARGS((win_T *dragwin, int offset));
 void win_drag_vsep_line __ARGS((win_T *dragwin, int offset));
+void set_fraction __ARGS((win_T *wp));
 void win_new_height __ARGS((win_T *wp, int height));
 void win_new_width __ARGS((win_T *wp, int width));
 void win_comp_scroll __ARGS((win_T *wp));

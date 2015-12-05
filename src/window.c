@@ -75,7 +75,6 @@ static int frame_check_width __ARGS((frame_T *topfrp, int width));
 #endif /* FEAT_WINDOWS */
 
 static win_T *win_alloc __ARGS((win_T *after, int hidden));
-static void set_fraction __ARGS((win_T *wp));
 
 #define URL_SLASH	1		/* path_is_url() has found "://" */
 #define URL_BACKSLASH	2		/* path_is_url() has found ":\\" */
@@ -5828,7 +5827,7 @@ win_drag_vsep_line(dragwin, offset)
 /*
  * Set wp->w_fraction for the current w_wrow and w_height.
  */
-    static void
+    void
 set_fraction(wp)
     win_T	*wp;
 {
