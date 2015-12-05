@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Nov 24
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Dec 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -73,7 +73,13 @@ Regexp problems:
 - this doesn't work: "syntax match ErrorMsg /.\%9l\%>20c\&\%<28c/".  Leaving
   out the \& works.  Seems any column check after \& fails.
 - The pattern "\1" with the old engine gives E65, with the new engine it
-  matches the empty string. (Dominique Pelle, 2015 Oct 2)
+  matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
+
+English spell file has an encoding error in the affix file.
+Perhaps use the files from here:
+https://github.com/marcoagpinto/aoo-mozilla-en-dict
+
+Patch to enable clipboard with MSYS2. (Ken Takata, 2015 Nov 26)
 
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
@@ -90,14 +96,32 @@ Should use /usr/local/share/applications or /usr/share/applications.
 Or use $XDG_DATA_DIRS.
 Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
 
+test107 fails when run in the GUI on Linux.
+
 Access to uninitialized memory in match_backref() regexp_nda.c:4882
 (Dominique Pelle, 2015 Nov 6)
+
+Patch to fix test_listchars for MingW. (Christian Brabandt, 2015 Nov 29)
+
+Patch to not set the python home if $PYTHONHOME is set. (Kazuki Sakamoto,
+2015 Nov 24)
 
 Patch to use local value of 'errorformat' in :cexpr. (Christian Brabandt,
 2015 Oct 16)  Only do this for :lexpr ?
 
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
+
+Patch to make fnamemodify() work better with Cygwin. (Wily Wampa, 2015 Nov 28,
+issue 505)
+
+Patch to fix mc_FullName() on root directory. (Milly, 2015 Nov 24, Issue 501)
+
+Patch to make matchparen restore curswant properly. (Christian Brabandt, 2015
+Nov 26)
+
+Test 17 does not clean up the directory it creates. (Michael Soyka, 2015 Nov
+28)
 
 English spell checking has an error.  Updating doesn't work.
 (Dominique Pelle, 2015 Oct 15)
@@ -116,6 +140,12 @@ Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
 Unexpected delay when using CTRL-O u.  It's not timeoutlen.
 (Gary Johnson, 2015 Aug 28)
 
+Patch for tee on Windows. (Yasuhiro Matsumoto, 2015 Nov 30)
+Update Dec 1.
+
+Patch to use 256 color setup for all terminals that have 256 colors or more.
+#504. (rdebath, 2015 Dec 1)
+
 Instead of separately uploading patches to the ftp site, can we get them from
 github?  This URL works:
    https://github.com/vim/vim/compare/v7.4.920%5E...v7.4.920.diff
@@ -123,18 +153,24 @@ github?  This URL works:
 Can src/GvimExt/Make_cyg.mak be removed?
 Same for src/xxd/Make_cyg.mak
 
+Patch to replace deprecated gdk_pixbuf_new_from_inline(). (Kazunobu Kuriyama,
+2015 Nov 30, PR #507)
+
+Updated Fortran files. (Ajit Thakkar, 2015 Nov 30, second one)
+
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
+
+Patch to add wordcount().  (Christian Brabandt, 2015 Nov 27)
 
 Plugin to use Vim in MANPAGER.  Konfekt, PR #491
 
 Using uninitialized memory. (Dominique Pelle, 2015 Nov 4)
 
 Patch to recognize string slice for variable followed by colon.
-(Hirohito Higashi, 2015 Nov 3)
-Patch to .ok file is missing.
+(Hirohito Higashi, 2015 Nov 24)
 
 Patch to add debug backtrace. (Alberto Fanjul, 2015 Sep 27)
-Needs fixes.
+Update Dec 2.
 
 MS-Windows: When editing a file with a leading space, writing it uses the
 wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
@@ -149,6 +185,9 @@ Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
 Patch to add window and tab arguments to getcwd(). (Thinca, 2015 Nov 15)
+
+Patch to build with Python using MSYS2. (Yasuhiro Matsumoto, 2015 Nov 26)
+Updated Nov 29.
 
 To support Thai (and other languages) word boundaries, include the ICU
 library:  http://userguide.icu-project.org/boundaryanalysis
@@ -166,6 +205,9 @@ MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
 
 Patch to add ":syn iskeyword". (Christian Brabandt, 2015 Nov 10)
+
+Patch to use PLATFORM to determine target architecture. (Taro Muraoka, 2015
+Nov 29)
 
 If libiconv.dll is not found search for libiconv2.dll. (Yasuhiro Matsumoto,
 2015 Oct 7)
@@ -496,8 +538,6 @@ Remark on the docs.  Should not be a compile time feature.  But then what?
 
 Completion of ":e" is ":earlier", should be ":edit".  Complete to the matching
 command instead of doing this alphabetically. (Mikel Jorgensen)
-
-Patch to get MSVC version in a nicer way. (Ken Takata, 2014 Jul 24)
 
 Patch to define macros for hardcoded values. (Elias Diem, 2013 Dec 14)
 

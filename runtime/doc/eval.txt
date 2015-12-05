@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2015 Nov 30
+*eval.txt*	For Vim version 7.4.  Last change: 2015 Dec 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5815,11 +5815,6 @@ sort({list} [, {func} [, {dict}]])			*sort()* *E702*
 
 		{dict} is for functions with the "dict" attribute.  It will be
 		used to set the local variable "self". |Dictionary-function|
-
-		The sort is stable, items which compare equal (as number or as
-		string) will keep their relative position. E.g., when sorting
-		on numbers, text strings will sort next to each other, in the
-		same order as they were originally.
 
 		The sort is stable, items which compare equal (as number or as
 		string) will keep their relative position. E.g., when sorting

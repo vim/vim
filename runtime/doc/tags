@@ -4899,6 +4899,9 @@ asin()	eval.txt	/*asin()*
 asm.vim	syntax.txt	/*asm.vim*
 asm68k	syntax.txt	/*asm68k*
 asmh8300.vim	syntax.txt	/*asmh8300.vim*
+assert_equal()	eval.txt	/*assert_equal()*
+assert_false()	eval.txt	/*assert_false()*
+assert_true()	eval.txt	/*assert_true()*
 at	motion.txt	/*at*
 atan()	eval.txt	/*atan()*
 atan2()	eval.txt	/*atan2()*
@@ -5590,6 +5593,7 @@ errorformat-multi-line	quickfix.txt	/*errorformat-multi-line*
 errorformat-separate-filename	quickfix.txt	/*errorformat-separate-filename*
 errorformats	quickfix.txt	/*errorformats*
 errors	message.txt	/*errors*
+errors-variable	eval.txt	/*errors-variable*
 escape	intro.txt	/*escape*
 escape()	eval.txt	/*escape()*
 escape-bar	version4.txt	/*escape-bar*
@@ -6911,6 +6915,7 @@ mail.vim	syntax.txt	/*mail.vim*
 maillist	intro.txt	/*maillist*
 maillist-archive	intro.txt	/*maillist-archive*
 make.vim	syntax.txt	/*make.vim*
+man.vim	filetype.txt	/*man.vim*
 manual-copyright	usr_01.txt	/*manual-copyright*
 map()	eval.txt	/*map()*
 map-<SID>	map.txt	/*map-<SID>*
@@ -8434,6 +8439,7 @@ terminal-info	term.txt	/*terminal-info*
 terminal-options	term.txt	/*terminal-options*
 terminfo	term.txt	/*terminfo*
 termresponse-variable	eval.txt	/*termresponse-variable*
+test-functions	usr_41.txt	/*test-functions*
 tex-cchar	syntax.txt	/*tex-cchar*
 tex-cole	syntax.txt	/*tex-cole*
 tex-conceal	syntax.txt	/*tex-conceal*
@@ -8583,6 +8589,7 @@ v:count1	eval.txt	/*v:count1*
 v:ctype	eval.txt	/*v:ctype*
 v:dying	eval.txt	/*v:dying*
 v:errmsg	eval.txt	/*v:errmsg*
+v:errors	eval.txt	/*v:errors*
 v:exception	eval.txt	/*v:exception*
 v:fcs_choice	eval.txt	/*v:fcs_choice*
 v:fcs_reason	eval.txt	/*v:fcs_reason*
