@@ -4,6 +4,7 @@ STARTTEST
 :so small.vim
 :if !exists("+linebreak") || !has("conceal") || !has("signs") | e! test.ok | w! test.out | qa! | endif
 :so mbyte.vim
+:set encoding=utf8
 :if &enc !=? 'utf-8'|:e! test.ok|:w! test.out|qa!|endif
 :10new|:vsp|:vert resize 20
 :put =\"\tabcdef hijklmn\tpqrstuvwxyz\u00a01060ABCDEFGHIJKLMNOP \"
@@ -109,7 +110,7 @@ Golong line: 40afoobar aTARGETÃ' at end
 :$put ='a b c'
 :$put ='a b c'
 :set list nolinebreak cc=3
-:sign define foo text=ï¼
+:sign define foo text=uff0b
 :sign place 1 name=foo line=50 buffer=2
 :norm! 2kztj
 :let line1=line('.')
@@ -121,8 +122,6 @@ Golong line: 40afoobar aTARGETÃ' at end
 :redraw!
 :let line=ScreenChar(winwidth(0),3)
 :call DoRecordScreen()
-:call append('$', ['ScreenAttributes for test9:'])
-:call append('$', ["Line: ".line1. " ". string(g:attr),"Line: ".line2. " ". string(g:attr2)])
 :" expected: attr[2] is different because of colorcolumn
 :if attr[0] != attr2[0] || attr[1] != attr2[1] || attr[2] != attr2[2]
 :   call append('$', "Screen attributes are different!")
