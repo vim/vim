@@ -51,10 +51,7 @@ a b c
 a b c
 
 Test 9: a multibyte sign and colorcolumn
-  Â¶                                     
-ï¼a b cÂ¶                                
-  a b cÂ¶                                
-ScreenAttributes for test9:
-Line: 50 ['0', '0', '72', '0']
-Line: 51 ['0', '0', '72', '0']
+  ¶                                     
+＋a b c¶                                
+  a b c¶                                
 Screen attributes are the same!
