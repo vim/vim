@@ -27,7 +27,7 @@
 /* Is there any system that doesn't have access()? */
 #define USE_MCH_ACCESS
 
-#if defined(sun) && defined(S_ISCHR)
+#if (defined(sun) || defined(__FreeBSD__)) && defined(S_ISCHR)
 # define OPEN_CHR_FILES
 static int is_dev_fd_file(char_u *fname);
 #endif
