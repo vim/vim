@@ -5017,7 +5017,7 @@ $as_echo "$vi_cv_version_plain_lua" >&6; }
     if test "x$vi_cv_with_luajit" != "xno" && test "X$vi_cv_version_luajit" != "X"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking if lua.h can be found in $vi_cv_path_lua_pfx/include/luajit-$vi_cv_version_luajit" >&5
 $as_echo_n "checking if lua.h can be found in $vi_cv_path_lua_pfx/include/luajit-$vi_cv_version_luajit... " >&6; }
-      if test -f $vi_cv_path_lua_pfx/include/luajit-$vi_cv_version_luajit/lua.h; then
+      if test -f "$vi_cv_path_lua_pfx/include/luajit-$vi_cv_version_luajit/lua.h"; then
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 	LUA_INC=/luajit-$vi_cv_version_luajit
@@ -5026,7 +5026,7 @@ $as_echo "yes" >&6; }
     if test "X$LUA_INC" = "X"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking if lua.h can be found in $vi_cv_path_lua_pfx/include" >&5
 $as_echo_n "checking if lua.h can be found in $vi_cv_path_lua_pfx/include... " >&6; }
-      if test -f $vi_cv_path_lua_pfx/include/lua.h; then
+      if test -f "$vi_cv_path_lua_pfx/include/lua.h"; then
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
       else
@@ -5034,7 +5034,7 @@ $as_echo "yes" >&6; }
 $as_echo "no" >&6; }
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if lua.h can be found in $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua" >&5
 $as_echo_n "checking if lua.h can be found in $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua... " >&6; }
-	if test -f $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua/lua.h; then
+	if test -f "$vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua/lua.h"; then
 	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 	  LUA_INC=/lua$vi_cv_version_lua
@@ -5285,7 +5285,7 @@ $as_echo "$vi_cv_path_mzscheme_pfx" >&6; }
   if test "X$vi_cv_path_mzscheme_pfx" != "X"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include" >&5
 $as_echo_n "checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include... " >&6; }
-    if test -f $vi_cv_path_mzscheme_pfx/include/scheme.h; then
+    if test -f "$vi_cv_path_mzscheme_pfx/include/scheme.h"; then
       SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
@@ -5294,7 +5294,7 @@ $as_echo "yes" >&6; }
 $as_echo "no" >&6; }
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include/plt" >&5
 $as_echo_n "checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include/plt... " >&6; }
-      if test -f $vi_cv_path_mzscheme_pfx/include/plt/scheme.h; then
+      if test -f "$vi_cv_path_mzscheme_pfx/include/plt/scheme.h"; then
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 	SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include/plt
@@ -5303,7 +5303,7 @@ $as_echo "yes" >&6; }
 $as_echo "no" >&6; }
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include/racket" >&5
 $as_echo_n "checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include/racket... " >&6; }
-	if test -f $vi_cv_path_mzscheme_pfx/include/racket/scheme.h; then
+	if test -f "$vi_cv_path_mzscheme_pfx/include/racket/scheme.h"; then
 	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 	  SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include/racket
@@ -5372,16 +5372,16 @@ $as_echo "no" >&6; }
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for racket collects directory" >&5
 $as_echo_n "checking for racket collects directory... " >&6; }
-    if test -d $vi_cv_path_mzscheme_pfx/lib/plt/collects; then
+    if test -d "$vi_cv_path_mzscheme_pfx/lib/plt/collects"; then
       SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/lib/plt/
     else
-      if test -d $vi_cv_path_mzscheme_pfx/lib/racket/collects; then
+      if test -d "$vi_cv_path_mzscheme_pfx/lib/racket/collects"; then
 	SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/lib/racket/
       else
-	if test -d $vi_cv_path_mzscheme_pfx/share/racket/collects; then
+	if test -d "$vi_cv_path_mzscheme_pfx/share/racket/collects"; then
 	  SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/share/racket/
 	else
-	  if test -d $vi_cv_path_mzscheme_pfx/collects; then
+	  if test -d "$vi_cv_path_mzscheme_pfx/collects"; then
 	    SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/
 	  fi
 	fi
@@ -6843,7 +6843,7 @@ fi
   if test "X$vi_cv_path_tcl" != "X"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking Tcl version" >&5
 $as_echo_n "checking Tcl version... " >&6; }
-    if echo 'exit [expr [info tclversion] < 8.0]' | $vi_cv_path_tcl - ; then
+    if echo 'exit [expr [info tclversion] < 8.0]' | "$vi_cv_path_tcl" - ; then
       tclver=`echo 'puts [info tclversion]' | $vi_cv_path_tcl -`
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $tclver - OK" >&5
 $as_echo "$tclver - OK" >&6; };
@@ -6880,10 +6880,10 @@ $as_echo_n "checking for location of tclConfig.sh script... " >&6; }
 	  	  tclcnf="/System/Library/Frameworks/Tcl.framework"
 	fi
 	for try in $tclcnf; do
-	  if test -f $try/tclConfig.sh; then
+	  if test -f "$try/tclConfig.sh"; then
 	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $try/tclConfig.sh" >&5
 $as_echo "$try/tclConfig.sh" >&6; }
-	    . $try/tclConfig.sh
+	    . "$try/tclConfig.sh"
 	    	    TCL_LIBS=`eval echo "$TCL_LIB_SPEC $TCL_LIBS"`
 	    	    	    TCL_DEFS=`echo $TCL_DEFS | sed -e 's/\\\\ /\\\\X/g' | tr ' ' '\012' | sed -e '/^[^-]/d' -e '/^-[^D]/d' -e '/-D[^_]/d' -e 's/-D_/ -D_/' | tr '\012' ' ' | sed -e 's/\\\\X/\\\\ /g'`
 	    break
@@ -6900,10 +6900,10 @@ $as_echo_n "checking for Tcl library by myself... " >&6; }
 	    for ver in "" $tclver ; do
 	      for try in $tcllib ; do
 		trylib=tcl$ver$ext
-		if test -f $try/lib$trylib ; then
+		if test -f "$try/lib$trylib" ; then
 		  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $try/lib$trylib" >&5
 $as_echo "$try/lib$trylib" >&6; }
-		  TCL_LIBS="-L$try -ltcl$ver -ldl -lm"
+		  TCL_LIBS="-L\"$try\" -ltcl$ver -ldl -lm"
 		  if test "`(uname) 2>/dev/null`" = SunOS &&
 					 uname -r | grep '^5' >/dev/null; then
 		    TCL_LIBS="$TCL_LIBS -R $try"
