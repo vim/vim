@@ -211,20 +211,24 @@ OBJDIR = $(OBJDIR)d
 ! ifdef CPU
 ASSEMBLY_ARCHITECTURE=$(CPU)
 # Using I386 for $ASSEMBLY_ARCHITECTURE doesn't work for VC7.
-!  if ("$(ASSEMBLY_ARCHITECTURE)" == "i386") || ("$(ASSEMBLY_ARCHITECTURE)" == "I386")
-ASSEMBLY_ARCHITECTURE = x86
-!  endif
-! else
-CPU = $(PROCESSOR_ARCHITECTURE)
-ASSEMBLY_ARCHITECTURE = $(PROCESSOR_ARCHITECTURE)
-!  if ("$(CPU)" == "x86") || ("$(CPU)" == "X86")
+!  if "$(CPU)" == "I386"
 CPU = i386
 !  endif
+! else  # !CPU
+CPU = i386
+!  ifdef PLATFORM
+!   if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
+CPU = AMD64
+!   elseif ("$(PLATFORM)" != "x86") && ("$(PLATFORM)" != "X86")
+!    error *** ERROR Unknown target platform "$(PLATFORM)". Make aborted.
+!   endif
+!  endif  # !PLATFORM
 ! endif
 !else  # !PROCESSOR_ARCHITECTURE
 # We're on Windows 95
 CPU = i386
 !endif # !PROCESSOR_ARCHITECTURE
+ASSEMBLY_ARCHITECTURE=$(CPU)
 OBJDIR = $(OBJDIR)$(CPU)
 
 # Build a retail version by default
@@ -415,7 +419,7 @@ CPUARG =
 !endif
 !else
 # VC8/9/10 only allows specifying SSE architecture but only for 32bit
-!if "$(ASSEMBLY_ARCHITECTURE)" == "x86" && "$(CPUNR)" == "pentium4"
+!if "$(ASSEMBLY_ARCHITECTURE)" == "i386" && "$(CPUNR)" == "pentium4"
 CPUARG = /arch:SSE2
 !endif
 !endif
