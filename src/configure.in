@@ -546,19 +546,19 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
     fi
     if test "x$vi_cv_with_luajit" != "xno" && test "X$vi_cv_version_luajit" != "X"; then
       AC_MSG_CHECKING(if lua.h can be found in $vi_cv_path_lua_pfx/include/luajit-$vi_cv_version_luajit)
-      if test -f $vi_cv_path_lua_pfx/include/luajit-$vi_cv_version_luajit/lua.h; then
+      if test -f "$vi_cv_path_lua_pfx/include/luajit-$vi_cv_version_luajit/lua.h"; then
 	AC_MSG_RESULT(yes)
 	LUA_INC=/luajit-$vi_cv_version_luajit
       fi
     fi
     if test "X$LUA_INC" = "X"; then
       AC_MSG_CHECKING(if lua.h can be found in $vi_cv_path_lua_pfx/include)
-      if test -f $vi_cv_path_lua_pfx/include/lua.h; then
+      if test -f "$vi_cv_path_lua_pfx/include/lua.h"; then
 	AC_MSG_RESULT(yes)
       else
 	AC_MSG_RESULT(no)
 	AC_MSG_CHECKING(if lua.h can be found in $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua)
-	if test -f $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua/lua.h; then
+	if test -f "$vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua/lua.h"; then
 	  AC_MSG_RESULT(yes)
 	  LUA_INC=/lua$vi_cv_version_lua
 	else
@@ -734,19 +734,19 @@ if test "$enable_mzschemeinterp" = "yes"; then
   SCHEME_INC=
   if test "X$vi_cv_path_mzscheme_pfx" != "X"; then
     AC_MSG_CHECKING(if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include)
-    if test -f $vi_cv_path_mzscheme_pfx/include/scheme.h; then
+    if test -f "$vi_cv_path_mzscheme_pfx/include/scheme.h"; then
       SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include
       AC_MSG_RESULT(yes)
     else
       AC_MSG_RESULT(no)
       AC_MSG_CHECKING(if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include/plt)
-      if test -f $vi_cv_path_mzscheme_pfx/include/plt/scheme.h; then
+      if test -f "$vi_cv_path_mzscheme_pfx/include/plt/scheme.h"; then
 	AC_MSG_RESULT(yes)
 	SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include/plt
       else
 	AC_MSG_RESULT(no)
 	AC_MSG_CHECKING(if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include/racket)
-	if test -f $vi_cv_path_mzscheme_pfx/include/racket/scheme.h; then
+	if test -f "$vi_cv_path_mzscheme_pfx/include/racket/scheme.h"; then
 	  AC_MSG_RESULT(yes)
 	  SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include/racket
 	else
@@ -809,16 +809,16 @@ if test "$enable_mzschemeinterp" = "yes"; then
     fi
 
     AC_MSG_CHECKING(for racket collects directory)
-    if test -d $vi_cv_path_mzscheme_pfx/lib/plt/collects; then
+    if test -d "$vi_cv_path_mzscheme_pfx/lib/plt/collects"; then
       SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/lib/plt/
     else
-      if test -d $vi_cv_path_mzscheme_pfx/lib/racket/collects; then
+      if test -d "$vi_cv_path_mzscheme_pfx/lib/racket/collects"; then
 	SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/lib/racket/
       else
-	if test -d $vi_cv_path_mzscheme_pfx/share/racket/collects; then
+	if test -d "$vi_cv_path_mzscheme_pfx/share/racket/collects"; then
 	  SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/share/racket/
 	else
-	  if test -d $vi_cv_path_mzscheme_pfx/collects; then
+	  if test -d "$vi_cv_path_mzscheme_pfx/collects"; then
 	    SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/
 	  fi
 	fi
@@ -1656,7 +1656,7 @@ if test "$enable_tclinterp" = "yes"; then
   fi
   if test "X$vi_cv_path_tcl" != "X"; then
     AC_MSG_CHECKING(Tcl version)
-    if echo 'exit [[expr [info tclversion] < 8.0]]' | $vi_cv_path_tcl - ; then
+    if echo 'exit [[expr [info tclversion] < 8.0]]' | "$vi_cv_path_tcl" - ; then
       tclver=`echo 'puts [[info tclversion]]' | $vi_cv_path_tcl -`
       AC_MSG_RESULT($tclver - OK);
       tclloc=`echo 'set l [[info library]];set i [[string last lib $l]];incr i -2;puts [[string range $l 0 $i]]' | $vi_cv_path_tcl -`
@@ -1690,9 +1690,9 @@ if test "$enable_tclinterp" = "yes"; then
 	  tclcnf="/System/Library/Frameworks/Tcl.framework"
 	fi
 	for try in $tclcnf; do
-	  if test -f $try/tclConfig.sh; then
+	  if test -f "$try/tclConfig.sh"; then
 	    AC_MSG_RESULT($try/tclConfig.sh)
-	    . $try/tclConfig.sh
+	    . "$try/tclConfig.sh"
 	    dnl use eval, because tcl 8.2 includes ${TCL_DBGX}
 	    TCL_LIBS=`eval echo "$TCL_LIB_SPEC $TCL_LIBS"`
 	    dnl Use $TCL_DEFS for -D_THREAD_SAFE et al.  But only use the
@@ -1710,9 +1710,9 @@ if test "$enable_tclinterp" = "yes"; then
 	    for ver in "" $tclver ; do
 	      for try in $tcllib ; do
 		trylib=tcl$ver$ext
-		if test -f $try/lib$trylib ; then
+		if test -f "$try/lib$trylib" ; then
 		  AC_MSG_RESULT($try/lib$trylib)
-		  TCL_LIBS="-L$try -ltcl$ver -ldl -lm"
+		  TCL_LIBS="-L\"$try\" -ltcl$ver -ldl -lm"
 		  if test "`(uname) 2>/dev/null`" = SunOS &&
 					 uname -r | grep '^5' >/dev/null; then
 		    TCL_LIBS="$TCL_LIBS -R $try"
