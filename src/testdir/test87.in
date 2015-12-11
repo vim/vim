@@ -910,8 +910,19 @@ fnamemodify = vim.Function('fnamemodify')
 cb.append(str(fnamemodify('.', ':p:h:t')))
 cb.append(vim.eval('@%'))
 os.chdir('..')
-cb.append(str(fnamemodify('.', ':p:h:t')))
-cb.append(vim.eval('@%').replace(os.path.sep, '/'))
+path = fnamemodify('.', ':p:h:t')
+if path != b'src':
+  # Running tests from a shadow directory, so move up another level
+  # This will result in @% looking like shadow/testdir/test87.in, hence the
+  # slicing to remove the leading path and path separator
+  os.chdir('..')
+  cb.append(str(fnamemodify('.', ':p:h:t')))
+  cb.append(vim.eval('@%')[len(path)+1:].replace(os.path.sep, '/'))
+  os.chdir(path)
+else:
+  cb.append(str(fnamemodify('.', ':p:h:t')))
+  cb.append(vim.eval('@%').replace(os.path.sep, '/'))
+del path
 os.chdir('testdir')
 cb.append(str(fnamemodify('.', ':p:h:t')))
 cb.append(vim.eval('@%'))
