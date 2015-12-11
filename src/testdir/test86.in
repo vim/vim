@@ -370,7 +370,7 @@ EOF
 :sleep 1
 :py t.running = False
 :py t.join()
-:py l[0] = t.t > 8  # check if the background thread is working
+:py l[0] = t.t > 7  # check if the background thread is working
 :py del time
 :py del threading
 :py del t
