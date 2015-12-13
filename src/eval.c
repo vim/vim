@@ -8073,11 +8073,13 @@ static struct fst
     {"argidx",		0, 0, f_argidx},
     {"arglistid",	0, 2, f_arglistid},
     {"argv",		0, 1, f_argv},
+#ifdef FEAT_FLOAT
+    {"asin",		1, 1, f_asin},	/* WJMc */
+#endif
     {"assert_equal",	2, 3, f_assert_equal},
     {"assert_false",	1, 2, f_assert_false},
     {"assert_true",	1, 2, f_assert_true},
 #ifdef FEAT_FLOAT
-    {"asin",		1, 1, f_asin},	/* WJMc */
     {"atan",		1, 1, f_atan},
     {"atan2",		2, 2, f_atan2},
 #endif
