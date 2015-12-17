@@ -3068,12 +3068,12 @@ restore_cmdline_alloc(p)
 #endif
 
 /*
- * paste a yank register into the command line.
- * used by CTRL-R command in command-line mode
+ * Paste a yank register into the command line.
+ * Used by CTRL-R command in command-line mode.
  * insert_reg() can't be used here, because special characters from the
  * register contents will be interpreted as commands.
  *
- * return FAIL for failure, OK otherwise
+ * Return FAIL for failure, OK otherwise.
  */
     static int
 cmdline_paste(regname, literally, remcr)
