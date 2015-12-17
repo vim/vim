@@ -3345,14 +3345,18 @@ win_line(wp, lnum, startrow, endrow, nochange)
     }
 #endif
 
-    /* find start of trailing whitespace */
-    if (wp->w_p_list && lcs_trail)
+    if (wp->w_p_list)
     {
-	trailcol = (colnr_T)STRLEN(ptr);
-	while (trailcol > (colnr_T)0 && vim_iswhite(ptr[trailcol - 1]))
-	    --trailcol;
-	trailcol += (colnr_T) (ptr - line);
-	extra_check = TRUE;
+	if (lcs_space || lcs_trail)
+	    extra_check = TRUE;
+	/* find start of trailing whitespace */
+	if (lcs_trail)
+	{
+	    trailcol = (colnr_T)STRLEN(ptr);
+	    while (trailcol > (colnr_T)0 && vim_iswhite(ptr[trailcol - 1]))
+		--trailcol;
+	    trailcol += (colnr_T) (ptr - line);
+	}
     }
 
     /*
@@ -4354,35 +4358,6 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #endif
 	    ++ptr;
 
-	    /* 'list': change char 160 to lcs_nbsp and space to lcs_space. */
-	    if (wp->w_p_list
-		    && (((c == 160
-#ifdef FEAT_MBYTE
-			  || (mb_utf8 && (mb_c == 160 || mb_c == 0x202f))
-#endif
-			 ) && lcs_nbsp)
-			|| (c == ' ' && lcs_space && ptr - line <= trailcol)))
-	    {
-		c = (c == ' ') ? lcs_space : lcs_nbsp;
-		if (area_attr == 0 && search_attr == 0)
-		{
-		    n_attr = 1;
-		    extra_attr = hl_attr(HLF_8);
-		    saved_attr2 = char_attr; /* save current attr */
-		}
-#ifdef FEAT_MBYTE
-		mb_c = c;
-		if (enc_utf8 && (*mb_char2len)(c) > 1)
-		{
-		    mb_utf8 = TRUE;
-		    u8cc[0] = 0;
-		    c = 0xc0;
-		}
-		else
-		    mb_utf8 = FALSE;
-#endif
-	    }
-
 	    if (extra_check)
 	    {
 #ifdef FEAT_SPELL
@@ -4566,6 +4541,36 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    }
 		}
 #endif
+
+		/* 'list': change char 160 to lcs_nbsp and space to lcs_space.
+		 */
+		if (wp->w_p_list
+			&& (((c == 160
+#ifdef FEAT_MBYTE
+			      || (mb_utf8 && (mb_c == 160 || mb_c == 0x202f))
+#endif
+			     ) && lcs_nbsp)
+			|| (c == ' ' && lcs_space && ptr - line <= trailcol)))
+		{
+		    c = (c == ' ') ? lcs_space : lcs_nbsp;
+		    if (area_attr == 0 && search_attr == 0)
+		    {
+			n_attr = 1;
+			extra_attr = hl_attr(HLF_8);
+			saved_attr2 = char_attr; /* save current attr */
+		    }
+#ifdef FEAT_MBYTE
+		    mb_c = c;
+		    if (enc_utf8 && (*mb_char2len)(c) > 1)
+		    {
+			mb_utf8 = TRUE;
+			u8cc[0] = 0;
+			c = 0xc0;
+		    }
+		    else
+			mb_utf8 = FALSE;
+#endif
+		}
 
 		if (trailcol != MAXCOL && ptr > line + trailcol && c == ' ')
 		{
