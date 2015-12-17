@@ -9501,10 +9501,10 @@ fi
 
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CYGWIN environment" >&5
-$as_echo_n "checking for CYGWIN environment... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CYGWIN or MSYS environment" >&5
+$as_echo_n "checking for CYGWIN or MSYS environment... " >&6; }
 case `uname` in
-    CYGWIN*)    CYGWIN=yes; { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+    CYGWIN*|MSYS*)    CYGWIN=yes; { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
                 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CYGWIN clipboard support" >&5
 $as_echo_n "checking for CYGWIN clipboard support... " >&6; }

@@ -2792,9 +2792,9 @@ dnl end of GUI-checking
 dnl ---------------------------------------------------------------------------
 
 dnl Check for Cygwin, which needs an extra source file if not using X11
-AC_MSG_CHECKING(for CYGWIN environment)
+AC_MSG_CHECKING(for CYGWIN or MSYS environment)
 case `uname` in
-    CYGWIN*)    CYGWIN=yes; AC_MSG_RESULT(yes)
+    CYGWIN*|MSYS*)    CYGWIN=yes; AC_MSG_RESULT(yes)
                 AC_MSG_CHECKING(for CYGWIN clipboard support)
                 if test "x$with_x" = "xno" ; then
                   OS_EXTRA_SRC=winclip.c; OS_EXTRA_OBJ=objects/winclip.o
