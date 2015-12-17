@@ -1087,6 +1087,7 @@ ex_diffsplit(eap)
     exarg_T	*eap;
 {
     win_T	*old_curwin = curwin;
+    buf_T	*old_curbuf = curbuf;
 
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
@@ -1105,7 +1106,18 @@ ex_diffsplit(eap)
 	{
 	    /* Set 'diff', 'scrollbind' on and 'wrap' off. */
 	    diff_win_options(curwin, TRUE);
-	    diff_win_options(old_curwin, TRUE);
+	    if (win_valid(old_curwin))
+	    {
+		diff_win_options(old_curwin, TRUE);
+
+		if (buf_valid(old_curbuf))
+		    /* Move the cursor position to that of the old window. */
+		    curwin->w_cursor.lnum = diff_get_corresponding_line(
+			    old_curbuf,
+			    old_curwin->w_cursor.lnum,
+			    curbuf,
+			    curwin->w_cursor.lnum);
+	    }
 	}
     }
 }
@@ -2541,7 +2553,6 @@ diff_move_to(dir, count)
     return OK;
 }
 
-#if defined(FEAT_CURSORBIND) || defined(PROTO)
     linenr_T
 diff_get_corresponding_line(buf1, lnum1, buf2, lnum3)
     buf_T	*buf1;
@@ -2610,7 +2621,6 @@ diff_get_corresponding_line(buf1, lnum1, buf2, lnum3)
 
     return lnum2;
 }
-#endif
 
 #if defined(FEAT_FOLDING) || defined(PROTO)
 /*
