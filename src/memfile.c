@@ -1032,8 +1032,9 @@ mf_read(mfp, hp)
     }
 
 #ifdef FEAT_CRYPT
-    /* Decrypt if 'key' is set and this is a data block. */
-    if (*mfp->mf_buffer->b_p_key != NUL)
+    /* Decrypt if 'key' is set and this is a data block. And when changing the
+     * key. */
+    if (*mfp->mf_buffer->b_p_key != NUL || mfp->mf_old_key != NULL)
 	ml_decrypt_data(mfp, hp->bh_data, offset, size);
 #endif
 
