@@ -140,6 +140,31 @@ static const char * const menu_stock_ids[] =
     /* 31 */ GTK_STOCK_QUIT
 };
 
+#ifdef USE_GRESOURCE
+typedef struct IconNames {
+    const char *icon_name;
+    const char *file_name;
+} IconNames;
+
+static IconNames stock_vim_icons[] = {
+    { "vim-build-tags", "stock_vim_build_tags.png" },
+    { "vim-find-help", "stock_vim_find_help.png" },
+    { "vim-save-all", "stock_vim_save_all.png" },
+    { "vim-session-load", "stock_vim_session_load.png" },
+    { "vim-session-new", "stock_vim_session_new.png" },
+    { "vim-session-save", "stock_vim_session_save.png" },
+    { "vim-shell", "stock_vim_shell.png" },
+    { "vim-window-maximize", "stock_vim_window_maximize.png" },
+    { "vim-window-maximize-width", "stock_vim_window_maximize_width.png" },
+    { "vim-window-minimize", "stock_vim_window_minimize.png" },
+    { "vim-window-minimize-width", "stock_vim_window_minimize_width.png" },
+    { "vim-window-split", "stock_vim_window_split.png" },
+    { "vim-window-split-vertical", "stock_vim_window_split_vertical.png" },
+    { NULL, NULL }
+};
+#endif
+
+#ifndef USE_GRESOURCE
     static void
 add_stock_icon(GtkIconFactory	*factory,
 	       const char	*stock_id,
@@ -157,6 +182,7 @@ add_stock_icon(GtkIconFactory	*factory,
     gtk_icon_set_unref(icon_set);
     g_object_unref(pixbuf);
 }
+#endif
 
     static int
 lookup_menu_iconfile(char_u *iconfile, char_u *dest)
@@ -262,6 +288,7 @@ toolbar_button_focus_in_event(GtkWidget *widget UNUSED,
     void
 gui_gtk_register_stock_icons(void)
 {
+#ifndef USE_GRESOURCE
 #   include "../pixmaps/stock_icons.h"
     GtkIconFactory *factory;
 
@@ -283,6 +310,27 @@ gui_gtk_register_stock_icons(void)
     ADD_ICON("vim-window-split-vertical", stock_vim_window_split_vertical);
 
 #   undef ADD_ICON
+#else
+    GtkIconFactory * const factory = gtk_icon_factory_new();
+    const char * const path_prefix = "/org/vim/gui/icon";
+    IconNames *names;
+
+    for (names = stock_vim_icons; names->icon_name != NULL; names++)
+    {
+        char path[MAXPATHL];
+        GdkPixbuf *pixbuf;
+
+        vim_snprintf(path, MAXPATHL, "%s/%s", path_prefix, names->file_name);
+        pixbuf = gdk_pixbuf_new_from_resource(path, NULL);
+        if (pixbuf != NULL)
+        {
+            GtkIconSet *icon_set = gtk_icon_set_new_from_pixbuf(pixbuf);
+            gtk_icon_factory_add(factory, names->icon_name, icon_set);
+            gtk_icon_set_unref(icon_set);
+            g_object_unref(pixbuf);
+        }
+    }
+#endif
     gtk_icon_factory_add_default(factory);
     g_object_unref(factory);
 }
