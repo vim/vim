@@ -1,0 +1,59 @@
+Tests for swap file detection.
+This test failed, if root '/' directory not writable.
+
+STARTTEST
+:so small.vim
+:set nocompatible viminfo+=nviminfo
+:set dir=.
+:fun! TestSwap()
+:  let dir = '/'
+:  let fname = 'Xfile1'
+:  let file = dir.fname
+:  let fileswap = dir.'.'.fname.'.swp'
+:  let link = 'Xlink1'
+:  let linkswap = '.'.link.'.swp'
+:  if !filewritable(dir) || glob(file)
+:    " failed
+:    return
+:  endif
+:  call writefile([], file)
+:  exe '!ln -sfL' file link
+:  exe 'e!' link
+:  call append(0, 'test text swapfile')
+:  preserve
+:  exe '!ls' link '>>test.out'
+:  exe '!ls' linkswap '>>test.out'
+:  exe '!ls' file '>>test.out'
+:  exe '!ls' fileswap '>>test.out'
+:  set bin
+:  exe 'sp' fileswap
+:  w! /Xswap
+:  set nobin
+:  new
+:  only!
+:  exe 'bwipe!' link
+:  exe 'bwipe!' file
+:  exe 'bwipe!' fileswap
+:  call delete(linkswap)
+:  call delete(fileswap)
+:  exe '!echo start not recovered file >>test.out'
+:  exe '!cat' file '>>test.out'
+:  exe '!echo end not recovered file >>test.out'
+:  call rename('/Xswap', fileswap)
+:  exe 'recover' link
+:  w!
+:  exe '!echo start recovered file >>test.out'
+:  exe '!cat' file '>>test.out'
+:  exe '!echo end recovered file >>test.out'
+:  exe 'bwipe!' link
+:  exe 'bwipe!' file
+:  echo delete(fileswap)
+:  echo delete(linkswap)
+:  echo delete(link)
+:  echo delete(file)
+:endfun
+:call writefile([], 'test.out')
+:call TestSwap()
+:qa!
+ENDTEST
+

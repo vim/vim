@@ -2508,7 +2508,8 @@ mch_FullName(fname, buf, len, force)
 #endif
 
     /* expand it if forced or not an absolute path */
-    if (force || !mch_isFullName(fname))
+    if ((force || !mch_isFullName(fname))
+	    && ((p = vim_strrchr(fname, '/')) == NULL || p != fname))
     {
 	/*
 	 * If the file name has a path, change to that directory for a moment,
