@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2015 Sep 15
+*options.txt*	For Vim version 7.4.  Last change: 2015 Nov 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1248,7 +1248,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	break if 'linebreak' is on.  Only works for ASCII and also for 8-bit
 	characters when 'encoding' is an 8-bit encoding.
 
-						*'breakindent'* *'bri'*
+				*'breakindent'* *'bri'* *'nobreakindent'* *'nobri'*
 'breakindent' 'bri'	boolean (default off)
 			local to window
 			{not in Vi}
@@ -3412,7 +3412,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	modeline, see |sandbox-option|.  That stops the option from working,
 	since changing the buffer text is not allowed.
 
-						*'fsync'* *'fs'*
+					*'fsync'* *'fs'* *'nofsync'* *'nofs'*
 'fsync' 'fs'		boolean	(default on)
 			global
 			{not in Vi}
@@ -4109,7 +4109,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	Ignore case in search patterns.  Also used when searching in the tags
 	file.
-	Also see 'smartcase'.
+	Also see 'smartcase' and 'tagcase'.
 	Can be overruled by using "\c" or "\C" in the pattern, see
 	|/ignorecase|.
 
@@ -4666,7 +4666,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:source $VIMRUNTIME/menu.vim
 <	Warning: This deletes all menus that you defined yourself!
 
-					*'langnoremap'* *'lnr'*
+			*'langnoremap'* *'lnr'* *'nolangnoremap'* *'nolnr'*
 'langnoremap' 'lnr'	boolean (default off)
 			global
 			{not in Vi}
@@ -4846,6 +4846,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 	of plugins.
 	Note that using the "-u NONE" and "--noplugin" command line arguments
 	reset this option. |-u| |--noplugin|
+
+						*'luadll'*
+'luadll' 		string	(default empty)
+			global
+			{not in Vi} {only for Unix}
+			{only available when compiled with the |+lua/dyn|
+			feature}
+	Specifies the path of the Lua shared library instead of DYNAMIC_LUA_DLL
+	what was specified at compile time.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 						*'macatsui'* *'nomacatsui'*
 'macatsui'		boolean	(default on)
@@ -5550,6 +5561,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	Replace the ';' with a ':' or whatever separator is used.  Note that
 	this doesn't work when $INCL contains a comma or white space.
 
+						*'perldll'*
+'perldll' 		string	(default empty)
+			global
+			{not in Vi} {only for Unix}
+			{only available when compiled with the |+perl/dyn|
+			feature}
+	Specifies the path of the Perl shared library instead of
+	DYNAMIC_PERL_DLL what was specified at compile time.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
 			*'preserveindent'* *'pi'* *'nopreserveindent'* *'nopi'*
 'preserveindent' 'pi'	boolean	(default off)
 			local to buffer
@@ -5676,6 +5698,27 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Insert mode completion.  When zero as much space as available is used.
 	|ins-completion-menu|.
 
+						*'pythondll'*
+'pythondll' 		string	(default empty)
+			global
+			{not in Vi} {only for Unix}
+			{only available when compiled with the |+python/dyn|
+			feature}
+	Specifies the path of the Python 2.x shared library instead of
+	DYNAMIC_PYTHON_DLL what was specified at compile time.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
+						*'pythonthreedll'*
+'pythonthreedll'	string	(default empty)
+			global
+			{not in Vi} {only for Unix}
+			{only available when compiled with the |+python3/dyn|
+			feature}
+	Specifies the path of the Python 3 shared library instead of
+	DYNAMIC_PYTHON3_DLL what was specified at compile time.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 						*'quoteescape'* *'qe'*
 'quoteescape' 'qe'	string	(default "\")
@@ -5895,6 +5938,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	This is useful for languages such as Hebrew, Arabic and Farsi.
 	The 'rightleft' option must be set for 'rightleftcmd' to take effect.
+
+						*'rubydll'*
+'rubydll' 		string	(default empty)
+			global
+			{not in Vi} {only for Unix}
+			{only available when compiled with the |+ruby/dyn|
+			feature}
+	Specifies the path of the Ruby shared library instead of
+	DYNAMIC_RUBY_DLL what was specified at compile time.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 					 *'ruler'* *'ru'* *'noruler'* *'noru'*
 'ruler' 'ru'		boolean	(default off)
@@ -6474,6 +6528,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  c	don't give |ins-completion-menu| messages.  For example,
 		"-- XXX completion (YYY)", "match 1 of 2", "The only match",
 		"Pattern not found", "Back at original", etc.
+	  q     use "recording" instead of "recording @a"
 
 	This gives you the opportunity to avoid that a change between buffers
 	requires you to hit <Enter>, but still gives as useful a message as
@@ -7027,7 +7082,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	become empty.  This will make a group like the following disappear
 	completely from the statusline when none of the flags are set. >
 		:set statusline=...%(\ [%M%R%H]%)...
-<
+<							*g:actual_curbuf*
 	Beware that an expression is evaluated each and every time the status
 	line is displayed.  The current buffer and current window will be set
 	temporarily to that of the window (and buffer) whose statusline is
@@ -7284,19 +7339,22 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	[The whitespace before and after the '0' must be a single <Tab>]
 
 	When a binary search was done and no match was found in any of the
-	files listed in 'tags', and 'ignorecase' is set or a pattern is used
+	files listed in 'tags', and case is ignored or a pattern is used
 	instead of a normal tag name, a retry is done with a linear search.
 	Tags in unsorted tags files, and matches with different case will only
 	be found in the retry.
 
 	If a tag file indicates that it is case-fold sorted, the second,
-	linear search can be avoided for the 'ignorecase' case.  Use a value
-	of '2' in the "!_TAG_FILE_SORTED" line for this.  A tag file can be
-	case-fold sorted with the -f switch to "sort" in most unices, as in
-	the command: "sort -f -o tags tags".  For "Exuberant ctags" version
-	5.x or higher (at least 5.5) the --sort=foldcase switch can be used
-	for this as well.  Note that case must be folded to uppercase for this
-	to work.
+	linear search can be avoided when case is ignored.  Use a value of '2'
+	in the "!_TAG_FILE_SORTED" line for this.  A tag file can be case-fold
+	sorted with the -f switch to "sort" in most unices, as in the command:
+	"sort -f -o tags tags".  For "Exuberant ctags" version 5.x or higher
+	(at least 5.5) the --sort=foldcase switch can be used for this as
+	well.  Note that case must be folded to uppercase for this to work.
+
+	By default, tag searches are case-sensitive.  Case is ignored when
+	'ignorecase' is set and 'tagcase' is "followic", or when 'tagcase' is
+	"ignore".
 
 	When 'tagbsearch' is off, tags searching is slower when a full match
 	exists, but faster when no full match exists.  Tags in unsorted tags
@@ -7307,6 +7365,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option doesn't affect commands that find all matching tags (e.g.,
 	command-line completion and ":help").
 	{Vi: always uses binary search in some versions}
+
+							*'tagcase'* *'tc'*
+'tagcase' 'tc'		string	(default "followic")
+			global or local to buffer |global-local|
+			{not in Vi}
+	This option specifies how case is handled when searching the tags
+	file:
+	   followic	Follow the 'ignorecase' option
+	   ignore	Ignore case
+	   match	Match case
 
 						*'taglength'* *'tl'*
 'taglength' 'tl'	number	(default 0)
@@ -8007,9 +8075,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	%	When included, save and restore the buffer list.  If Vim is
 		started with a file name argument, the buffer list is not
 		restored.  If Vim is started without a file name argument, the
-		buffer list is restored from the viminfo file.  Buffers
-		without a file name and buffers for help files are not written
-		to the viminfo file.
+		buffer list is restored from the viminfo file.  Quickfix
+		('buftype'), unlisted ('buflisted'), unnamed and buffers on
+		removable media (|viminfo-r|) are not saved.
 		When followed by a number, the number specifies the maximum
 		number of buffers that are stored.  Without a number all
 		buffers are stored.

@@ -75,7 +75,6 @@ static int frame_check_width __ARGS((frame_T *topfrp, int width));
 #endif /* FEAT_WINDOWS */
 
 static win_T *win_alloc __ARGS((win_T *after, int hidden));
-static void set_fraction __ARGS((win_T *wp));
 
 #define URL_SLASH	1		/* path_is_url() has found "://" */
 #define URL_BACKSLASH	2		/* path_is_url() has found ":\\" */
@@ -5580,7 +5579,7 @@ win_setminheight()
     }
 }
 
-#ifdef FEAT_MOUSE
+#if defined(FEAT_MOUSE) || defined(PROTO)
 
 /*
  * Status line of dragwin is dragged "offset" lines down (negative is up).
@@ -5713,7 +5712,7 @@ win_drag_status_line(dragwin, offset)
     showmode();
 }
 
-#ifdef FEAT_VERTSPLIT
+# if defined(FEAT_VERTSPLIT) || defined(PROTO)
 /*
  * Separator line of dragwin is dragged "offset" lines right (negative is left).
  */
@@ -5785,6 +5784,8 @@ win_drag_vsep_line(dragwin, offset)
 	offset = room;		/* Move as far as we can */
     if (offset <= 0)		/* No room at all, quit. */
 	return;
+    if (fr == NULL)
+	return;			/* Safety check, should not happen. */
 
     /* grow frame fr by offset lines */
     frame_new_width(fr, fr->fr_width + offset, left, FALSE);
@@ -5816,7 +5817,7 @@ win_drag_vsep_line(dragwin, offset)
     (void)win_comp_pos();
     redraw_all_later(NOT_VALID);
 }
-#endif /* FEAT_VERTSPLIT */
+# endif /* FEAT_VERTSPLIT */
 #endif /* FEAT_MOUSE */
 
 #endif /* FEAT_WINDOWS */
@@ -5826,7 +5827,7 @@ win_drag_vsep_line(dragwin, offset)
 /*
  * Set wp->w_fraction for the current w_wrow and w_height.
  */
-    static void
+    void
 set_fraction(wp)
     win_T	*wp;
 {
@@ -7268,7 +7269,7 @@ get_tab_number(tabpage_T *tp UNUSED)
 }
 #endif
 
-#ifdef FEAT_WINDOWS
+#if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * Return TRUE if "topfrp" and its children are at the right height.
  */
@@ -7291,7 +7292,7 @@ frame_check_height(topfrp, height)
 }
 #endif
 
-#ifdef FEAT_VERTSPLIT
+#if defined(FEAT_VERTSPLIT) || defined(PROTO)
 /*
  * Return TRUE if "topfrp" and its children are at the right width.
  */

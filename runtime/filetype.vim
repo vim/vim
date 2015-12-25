@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2015 Oct 13
+" Last Change:	2015 Dec 03
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1400,7 +1400,7 @@ else
   au BufNewFile,BufRead *.pl			call s:FTpl()
 endif
 au BufNewFile,BufRead *.plx,*.al		setf perl
-au BufNewFile,BufRead *.p6,*.pm6		setf perl6
+au BufNewFile,BufRead *.p6,*.pm6,*.pl6		setf perl6
 
 func! s:FTpl()
   if exists("g:filetype_pl")
@@ -1429,6 +1429,7 @@ au BufNewFile,BufRead *.pm
 
 " Perl POD
 au BufNewFile,BufRead *.pod			setf pod
+au BufNewFile,BufRead *.pod6			setf pod6
 
 " Php, php3, php4, etc.
 " Also Phtml (was used for PHP 2 in the past)

@@ -568,7 +568,11 @@ pum_set_selected(n, repeat)
 	    if (p_pvh > 0 && p_pvh < g_do_tagpreview)
 		g_do_tagpreview = p_pvh;
 	    ++RedrawingDisabled;
+	    /* Prevent undo sync here, if an autocommand syncs undo weird
+	     * things can happen to the undo tree. */
+	    ++no_u_sync;
 	    resized = prepare_tagpreview(FALSE);
+	    --no_u_sync;
 	    --RedrawingDisabled;
 	    g_do_tagpreview = 0;
 
@@ -659,7 +663,9 @@ pum_set_selected(n, repeat)
 			 * redraw. */
 			if (resized)
 			{
+			    ++no_u_sync;
 			    win_enter(curwin_save, TRUE);
+			    --no_u_sync;
 			    update_topline();
 			}
 
@@ -670,7 +676,11 @@ pum_set_selected(n, repeat)
 			pum_do_redraw = FALSE;
 
 			if (!resized && win_valid(curwin_save))
+			{
+			    ++no_u_sync;
 			    win_enter(curwin_save, TRUE);
+			    --no_u_sync;
+			}
 
 			/* May need to update the screen again when there are
 			 * autocommands involved. */

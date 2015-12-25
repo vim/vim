@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Oct 13
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Dec 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -73,7 +73,13 @@ Regexp problems:
 - this doesn't work: "syntax match ErrorMsg /.\%9l\%>20c\&\%<28c/".  Leaving
   out the \& works.  Seems any column check after \& fails.
 - The pattern "\1" with the old engine gives E65, with the new engine it
-  matches the empty string. (Dominique Pelle, 2015 Oct 2)
+  matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
+
+English spell file has an encoding error in the affix file.
+Perhaps use the files from here:
+https://github.com/marcoagpinto/aoo-mozilla-en-dict
+
+Patch to enable clipboard with MSYS2. (Ken Takata, 2015 Nov 26)
 
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
@@ -83,8 +89,44 @@ work. (ZyX, 2013 Sep 28)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
+Installation of .desktop files does not work everywhere.
+It's now fixed, but the target directory probably isn't right.
+Add configure check?
+Should use /usr/local/share/applications or /usr/share/applications.
+Or use $XDG_DATA_DIRS.
+Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
+
+test107 fails when run in the GUI on Linux.
+
+Access to uninitialized memory in match_backref() regexp_nda.c:4882
+(Dominique Pelle, 2015 Nov 6)
+
+Patch to fix test_listchars for MingW. (Christian Brabandt, 2015 Nov 29)
+
+Patch to not set the python home if $PYTHONHOME is set. (Kazuki Sakamoto,
+2015 Nov 24)
+
+Patch to use local value of 'errorformat' in :cexpr. (Christian Brabandt,
+2015 Oct 16)  Only do this for :lexpr ?
+
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
+
+Patch to make fnamemodify() work better with Cygwin. (Wily Wampa, 2015 Nov 28,
+issue 505)
+
+Patch to fix mc_FullName() on root directory. (Milly, 2015 Nov 24, Issue 501)
+
+Patch to make matchparen restore curswant properly. (Christian Brabandt, 2015
+Nov 26)
+
+Test 17 does not clean up the directory it creates. (Michael Soyka, 2015 Nov
+28)
+
+English spell checking has an error.  Updating doesn't work.
+(Dominique Pelle, 2015 Oct 15)
+Hint for new URL: Christian Brabandt, 2015 Oct 15.
+But that file looks old.
 
 Using ":windo" to set options in all windows has the side effect that it
 changes the window layout and the current window.  Make a variant that saves
@@ -98,13 +140,37 @@ Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
 Unexpected delay when using CTRL-O u.  It's not timeoutlen.
 (Gary Johnson, 2015 Aug 28)
 
+Patch for tee on Windows. (Yasuhiro Matsumoto, 2015 Nov 30)
+Update Dec 1.
+
+Patch to use 256 color setup for all terminals that have 256 colors or more.
+#504. (rdebath, 2015 Dec 1)
+
+Instead of separately uploading patches to the ftp site, can we get them from
+github?  This URL works:
+   https://github.com/vim/vim/compare/v7.4.920%5E...v7.4.920.diff
+>
 Can src/GvimExt/Make_cyg.mak be removed?
 Same for src/xxd/Make_cyg.mak
 
+Patch to replace deprecated gdk_pixbuf_new_from_inline(). (Kazunobu Kuriyama,
+2015 Nov 30, PR #507)
+
+Updated Fortran files. (Ajit Thakkar, 2015 Nov 30, second one)
+
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
+Patch to add wordcount().  (Christian Brabandt, 2015 Nov 27)
+
+Plugin to use Vim in MANPAGER.  Konfekt, PR #491
+
+Using uninitialized memory. (Dominique Pelle, 2015 Nov 4)
+
+Patch to recognize string slice for variable followed by colon.
+(Hirohito Higashi, 2015 Nov 24)
+
 Patch to add debug backtrace. (Alberto Fanjul, 2015 Sep 27)
-Asked for :frame command.
+Update Dec 2.
 
 MS-Windows: When editing a file with a leading space, writing it uses the
 wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
@@ -112,8 +178,19 @@ wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
 Can't recognize the $ProgramFiles(x86) environment variable.  Recognize it
 specifically?  First try with the parens, then without.
 
+Patch to fix "." after CTRL-A in Visual block mode. (Ozaki Kiichi, 2015 Oct
+24)
+
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
+
+Patch to add window and tab arguments to getcwd(). (Thinca, 2015 Nov 15)
+
+Patch to build with Python using MSYS2. (Yasuhiro Matsumoto, 2015 Nov 26)
+Updated Nov 29.
+
+To support Thai (and other languages) word boundaries, include the ICU
+library:  http://userguide.icu-project.org/boundaryanalysis
 
 When complete() first argument is before where insert started and 'backspace'
 is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
@@ -126,6 +203,11 @@ Goes away when disabling the swap file. (might1, Feb 16)
 
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
+
+Patch to add ":syn iskeyword". (Christian Brabandt, 2015 Nov 10)
+
+Patch to use PLATFORM to determine target architecture. (Taro Muraoka, 2015
+Nov 29)
 
 If libiconv.dll is not found search for libiconv2.dll. (Yasuhiro Matsumoto,
 2015 Oct 7)
@@ -145,6 +227,11 @@ wildcards.  Add a ":nowild" command modifier?  (ZyX, 2015 March 4)
 Proposal to make options.txt easier to read. (Arnaud Decara, 2015 Aug 5)
 Update Aug 14.
 
+Crash in :cnext on MS-Windows. (Ben Fritz, 2015 Oct 27)
+
+Patch to add GUI colors to the terminal, when it supports it. (ZyX, 2013 Jan
+26, update 2013 Dec 14, another 2014 Nov 22)
+
 Patch for problem with restoring screen on Windows. (Nobuhiro Takasaki, 2015
 Sep 10)
 
@@ -158,11 +245,16 @@ Example in editing.txt uses $HOME with the expectating that it ends in a
 slash.  For me it does, but perhaps not for everybody.  Add a function that
 inserts a slash when needed?  pathconcat(dir, path) (Thilo Six, 2015 Aug 12)
 
+Patch to load TCL dynamically. (Ken Takata, 2015 Nov 11)
+
 ml_updatechunk() is slow when retrying for another encoding. (John Little,
 2014 Sep 11)
 
 Patch to fix checking global option value when not using it.
 (Arnaud Decara, 2015 Jul 23)
+
+Patch to support Python 'None' value in pyeval(). (Damien, 2015 Nov 21)
+Need a Vim equivalent of None and a way to test for it.
 
 When 'showbreak' is set repeating a Visual operation counts the size of the
 'showbreak' text as part of the operation. (Axel Bender, 2015 Jul 20)
@@ -194,10 +286,16 @@ Does this work for everybody?
 Patch to fix that wide characters do not work properly after exiting.
 (Yasuhiro Matsumoto, 2015 May 24) Better patch to come.
 
+Patch to add wordcount().  Same info as g CTRL-G. (Christian Brabandt, 2015
+Nov 17)
+
 Patch for man.vim. (SungHyun Nam, 2015 May 20)
 Doesn't work completely (Dominique Orban)
 
 Patch to add a "literal" argument to bufnr().  (Olaf Dabrunz, 2015 Aug 4)
+
+Cannot execute the shell when it's in a directory with a space.
+Issue #459.
 
 When a session file is created and there are "nofile" buffers, these are not
 filled.  Need to trigger BufReadCmd autocommands.  Also handle deleting the
@@ -212,6 +310,7 @@ Mixup of highlighting when there is a match and SpellBad. (ZyX, 2015 Jan 1)
 
 Patch for drag&drop reordering of GUI tab pages reordering.
 (Ken Takata, 2013 Nov 22, second one, also by Masamichi Abe)
+Now on Git: https://gist.github.com/nocd5/165286495c782b815b94
 
 Patch on Issue 72: 'autochdir' causes problems for :vimgrep.
 
@@ -222,9 +321,6 @@ When two SIGWINCH arrive very quickly, the second one may be lost.
 (Josh Triplett, 2015 Sep 17)
 
 Make comments in the test Makefile silent. (Kartik Agaram, 2014 Sep 24)
-
-Patch to add GUI colors to the terminal, when it supports it. (ZyX, 2013 Jan
-26, update 2013 Dec 14, another 2014 Nov 22)
 
 Patch to improve behavior of dead keys on MS-Windows. (John Wellesz, 2015 Aug
 25)  https://github.com/vim/vim/pull/399.diff
@@ -300,6 +396,10 @@ them: ":repeats".
 
 Patch for glob(), adding slash to normal files. (Ingo Karkat, 2014 Dec 22)
 
+When entering and leaving the preview window autocommands are triggered, but
+these may not work well.  Perhaps set a flag to indicate that the preview
+window is involved? (John Otter, 2015 Oct 27)
+
 Using "." to repeat an Ex command puts that command in history.  Probably
 should not happen.  If the command is the result of a mapping it's not put in
 history either. (Jacob Niehus, 2014 Nov 2)
@@ -322,6 +422,8 @@ Patch to make extend() fail early when it might fail at some point.
 (Olaf Dabrunz, 2015 May 2)  Makes extend() slower, do we still want it?
 Perhaps only the checks that can be done without looping over the dict or
 arguments.
+
+Problem with transparent and matchgroup.  Issue #475
 
 Patch to add :arglocal and :arglists. (Marcin Szamotulski, 2014 Aug 6)
 
@@ -360,8 +462,6 @@ from?
 
 Problem with upwards search on Windows (works OK on Linux). (Brett Stahlman,
 2014 Jun 8)
-
-Patch to load TCL dynamically. (Ken Takata, 2014 Sep 20)
 
 Include a plugin manager with Vim? Neobundle seems to be the best currently.
 Long message about this from ZyX, 2014 Mar 23.  And following replies.
@@ -438,8 +538,6 @@ Remark on the docs.  Should not be a compile time feature.  But then what?
 
 Completion of ":e" is ":earlier", should be ":edit".  Complete to the matching
 command instead of doing this alphabetically. (Mikel Jorgensen)
-
-Patch to get MSVC version in a nicer way. (Ken Takata, 2014 Jul 24)
 
 Patch to define macros for hardcoded values. (Elias Diem, 2013 Dec 14)
 
@@ -754,9 +852,6 @@ Patch for 'transparency' option. (Sergiu Dotenco, 2011 Sep 17)
 Only for MS-Windows.  No documentation.  Do we want this?
 
 Patch to support cursor shape in Cygwin console. (Ben bgold, 2011 Dec 27)
-
-Patch to support UTF-8 for Hangul. (Shawn Y.H. Kim, 2011 May 1)
-Needs more work.  Pinged 2012 Jan 4.
 
 Issue 64: when 'incsearch' is on can't paste LF on command line.
 

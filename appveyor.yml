@@ -1,5 +1,7 @@
 version: "{build}"
 
+skip_tags: true
+
 before_build:
   - '"C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64 /release'
 

@@ -540,10 +540,11 @@ ex_sort(eap)
 	if (!unique || i == 0
 		|| (sort_ic ? STRICMP(s, sortbuf1) : STRCMP(s, sortbuf1)) != 0)
 	{
-	    if (ml_append(lnum++, s, (colnr_T)0, FALSE) == FAIL)
+	    /* Copy the line into a buffer, it may become invalid in
+	     * ml_append(). And it's needed for "unique". */
+	    STRCPY(sortbuf1, s);
+	    if (ml_append(lnum++, sortbuf1, (colnr_T)0, FALSE) == FAIL)
 		break;
-	    if (unique)
-		STRCPY(sortbuf1, s);
 	}
 	fast_breakcheck();
 	if (got_int)
@@ -1795,7 +1796,7 @@ write_viminfo(file, forceit)
     struct stat	st_old;		/* mch_stat() of existing viminfo file */
 #endif
 #ifdef WIN3264
-    long	perm = -1;
+    int		hidden = FALSE;
 #endif
 
     if (no_viminfo())
@@ -1858,7 +1859,7 @@ write_viminfo(file, forceit)
 #endif
 #ifdef WIN3264
 	/* Get the file attributes of the existing viminfo file. */
-	perm = mch_getperm(fname);
+	hidden = mch_ishidden(fname);
 #endif
 
 	/*
@@ -2033,7 +2034,7 @@ write_viminfo(file, forceit)
 
 #ifdef WIN3264
 	/* If the viminfo file was hidden then also hide the new file. */
-	if (perm > 0 && (perm & FILE_ATTRIBUTE_HIDDEN))
+	if (hidden)
 	    mch_hide(fname);
 #endif
     }
@@ -6574,6 +6575,7 @@ ex_helptags(eap)
     if (dirname == NULL || !mch_isdir(dirname))
     {
 	EMSG2(_("E150: Not a directory: %s"), eap->arg);
+	vim_free(dirname);
 	return;
     }
 

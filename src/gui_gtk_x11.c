@@ -1680,17 +1680,15 @@ button_press_event(GtkWidget *widget,
 
     switch (event->button)
     {
-    case 1:
-	button = MOUSE_LEFT;
-	break;
-    case 2:
-	button = MOUSE_MIDDLE;
-	break;
-    case 3:
-	button = MOUSE_RIGHT;
-	break;
-    default:
-	return FALSE;		/* Unknown button */
+	/* Keep in sync with gui_x11.c.
+	 * Buttons 4-7 are handled in scroll_event() */
+	case 1: button = MOUSE_LEFT; break;
+	case 2: button = MOUSE_MIDDLE; break;
+	case 3: button = MOUSE_RIGHT; break;
+	case 8: button = MOUSE_X1; break;
+	case 9: button = MOUSE_X2; break;
+	default:
+	    return FALSE;		/* Unknown button */
     }
 
 #ifdef FEAT_XIM

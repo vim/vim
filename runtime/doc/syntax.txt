@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.4.  Last change: 2015 Sep 29
+*syntax.txt*	For Vim version 7.4.  Last change: 2015 Nov 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1081,7 +1081,8 @@ CPP						*cpp.vim* *ft-cpp-syntax*
 Most of things are same as |ft-c-syntax|.
 
 Variable		Highlight ~
-cpp_no_c11		don't highlight C++11 standard items
+cpp_no_cpp11		don't highlight C++11 standard items
+cpp_no_cpp14		don't highlight C++14 standard items
 
 
 CSH						*csh.vim* *ft-csh-syntax*
@@ -3248,7 +3249,8 @@ improve screen updating rates (see |:syn-sync| for more on this). >
 The g:vimsyn_embed option allows users to select what, if any, types of
 embedded script highlighting they wish to have. >
 
-   g:vimsyn_embed == 0   : don't embed any scripts
+   g:vimsyn_embed == 0   : don't support any embedded scripts
+   g:vimsyn_embed =~ 'l' : support embedded lua
    g:vimsyn_embed =~ 'm' : support embedded mzscheme
    g:vimsyn_embed =~ 'p' : support embedded perl
    g:vimsyn_embed =~ 'P' : support embedded python
@@ -3266,6 +3268,7 @@ Some folding is now supported with syntax/vim.vim: >
    g:vimsyn_folding == 0 or doesn't exist: no syntax-based folding
    g:vimsyn_folding =~ 'a' : augroups
    g:vimsyn_folding =~ 'f' : fold functions
+   g:vimsyn_folding =~ 'l' : fold lua      script
    g:vimsyn_folding =~ 'm' : fold mzscheme script
    g:vimsyn_folding =~ 'p' : fold perl     script
    g:vimsyn_folding =~ 'P' : fold python   script
@@ -4163,7 +4166,7 @@ example, for instance, can be done like this: >
 
 As can be seen here, the \z actually does double duty.	In the start pattern,
 it marks the "\(\I\i*\)" sub-expression as external; in the end pattern, it
-changes the \1 back-reference into an external reference referring to the
+changes the \z1 back-reference into an external reference referring to the
 first external sub-expression in the start pattern.  External references can
 also be used in skip patterns: >
   :syn region foo start="start \(\I\i*\)" skip="not end \z1" end="end \z1"

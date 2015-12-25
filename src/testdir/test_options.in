@@ -10,6 +10,12 @@ STARTTEST
 :endtry
 :buf 1
 :$put =caught
+:"
+:" Test that changing 'path' keeps two commas.
+:set path=foo,,bar
+:set path-=bar
+:set path+=bar
+:$put =&path
 :/^result/,$w! test.out
 :qa!
 ENDTEST

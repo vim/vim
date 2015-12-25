@@ -4880,6 +4880,7 @@ dozet:
 
     case 't':	scroll_cursor_top(0, TRUE);
 		redraw_later(VALID);
+		set_fraction(curwin);
 		break;
 
 		/* "z." and "zz": put cursor in middle of screen */
@@ -4888,6 +4889,7 @@ dozet:
 
     case 'z':	scroll_cursor_halfway(TRUE);
 		redraw_later(VALID);
+		set_fraction(curwin);
 		break;
 
 		/* "z^", "z-" and "zb": put cursor at bottom of screen */
@@ -4910,6 +4912,7 @@ dozet:
 
     case 'b':	scroll_cursor_bot(0, TRUE);
 		redraw_later(VALID);
+		set_fraction(curwin);
 		break;
 
 		/* "zH" - scroll screen right half-page */
@@ -9496,6 +9499,9 @@ nv_put(cap)
 	{
 	    curbuf->b_visual.vi_start = curbuf->b_op_start;
 	    curbuf->b_visual.vi_end = curbuf->b_op_end;
+	    /* need to adjust cursor position */
+	    if (*p_sel == 'e')
+		inc(&curbuf->b_visual.vi_end);
 	}
 
 	/* When all lines were selected and deleted do_put() leaves an empty

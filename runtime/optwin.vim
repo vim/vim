@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2015 Jul 22
+" Last Change:	2015 Nov 10
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -289,6 +289,10 @@ call append("$", " \tset tl=" . &tl)
 call append("$", "tags\tlist of file names to search for tags")
 call append("$", "\t(global or local to buffer)")
 call <SID>OptionG("tag", &tag)
+call append("$", "tagcase\thow to handle case when searching in tags files:")
+call append("$", "\t\"followic\" to follow 'ignorecase', \"ignore\" or \"match\"")
+call append("$", "\t(global or local to buffer)")
+call <SID>OptionG("tc", &tc)
 call append("$", "tagrelative\tfile names in a tags file are relative to the tags file")
 call <SID>BinOptionG("tr", &tr)
 call append("$", "tagstack\ta :tag command will use the tagstack")
@@ -1306,6 +1310,26 @@ call append("$", " \tset debug=" . &debug)
 if has("mzscheme")
   call append("$", "mzquantum\tinterval in milliseconds between polls for MzScheme threads")
   call append("$", " \tset mzq=" . &mzq)
+endif
+if exists("&luadll")
+  call append("$", "luadll\tname of the Lua dynamic library")
+  call <SID>OptionG("luadll", &luadll)
+endif
+if exists("&perldll")
+  call append("$", "perldll\tname of the Perl dynamic library")
+  call <SID>OptionG("perldll", &perldll)
+endif
+if exists("&pythondll")
+  call append("$", "pythondll\tname of the Python 2 dynamic library")
+  call <SID>OptionG("pythondll", &pythondll)
+endif
+if exists("&pythonthreedll")
+  call append("$", "pythonthreedll\tname of the Python 3 dynamic library")
+  call <SID>OptionG("pythonthreedll", &pythonthreedll)
+endif
+if exists("&rubydll")
+  call append("$", "rubydll\tname of the Ruby dynamic library")
+  call <SID>OptionG("rubydll", &rubydll)
 endif
 
 set cpo&vim

@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.4.  Last change: 2015 Jul 21
+*quickref.txt*  For Vim version 7.4.  Last change: 2015 Nov 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -777,6 +777,7 @@ Short explanation of each option:		*option-list*
 'list'			    show <Tab> and <EOL>
 'listchars'	  'lcs'     characters for displaying in list mode
 'loadplugins'	  'lpl'     load plugin scripts when starting up
+'luadll'		    name of the Lua dynamic library
 'macatsui'		    Mac GUI: use ATSUI text drawing
 'magic'			    changes special characters in search patterns
 'makeef'	  'mef'     name of the errorfile for ":make"
@@ -816,6 +817,7 @@ Short explanation of each option:		*option-list*
 'patchexpr'	  'pex'     expression used to patch a file
 'patchmode'	  'pm'	    keep the oldest version of a file
 'path'		  'pa'	    list of directories searched with "gf" et.al.
+'perldll'		    name of the Perl dynamic library
 'preserveindent'  'pi'	    preserve the indent structure when reindenting
 'previewheight'   'pvh'     height of the preview window
 'previewwindow'   'pvw'     identifies the preview window
@@ -828,6 +830,8 @@ Short explanation of each option:		*option-list*
 'printmbfont'	  'pmbfn'   font names to be used for CJK output of :hardcopy
 'printoptions'	  'popt'    controls the format of :hardcopy output
 'pumheight'	  'ph'	    maximum height of the popup menu
+'pythondll'		    name of the Python 2 dynamic library
+'pythonthreedll'	    name of the Python 3 dynamic library
 'quoteescape'	  'qe'	    escape characters used in a string
 'readonly'	  'ro'	    disallow writing the buffer
 'redrawtime'	  'rdt'     timeout for 'hlsearch' and |:match| highlighting
@@ -840,6 +844,7 @@ Short explanation of each option:		*option-list*
 'revins'	  'ri'	    inserting characters will work backwards
 'rightleft'	  'rl'	    window is right-to-left oriented
 'rightleftcmd'	  'rlc'     commands for which editing works right-to-left
+'rubydll'		    name of the Ruby dynamic library
 'ruler'		  'ru'	    show cursor line and column in the status line
 'rulerformat'	  'ruf'     custom format for the ruler
 'runtimepath'	  'rtp'     list of directories used for runtime files
@@ -899,6 +904,7 @@ Short explanation of each option:		*option-list*
 'tabpagemax'	  'tpm'     maximum number of tab pages for |-p| and "tab all"
 'tabstop'	  'ts'	    number of spaces that <Tab> in file uses
 'tagbsearch'	  'tbs'     use binary searching in tags files
+'tagcase'	  'tc'      how to handle case when searching in tags files
 'taglength'	  'tl'	    number of significant characters for a tag
 'tagrelative'	  'tr'	    file names in tag file are relative
 'tags'		  'tag'     list of file names used by the tag command

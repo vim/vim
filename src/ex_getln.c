@@ -3068,12 +3068,12 @@ restore_cmdline_alloc(p)
 #endif
 
 /*
- * paste a yank register into the command line.
- * used by CTRL-R command in command-line mode
+ * Paste a yank register into the command line.
+ * Used by CTRL-R command in command-line mode.
  * insert_reg() can't be used here, because special characters from the
  * register contents will be interpreted as commands.
  *
- * return FAIL for failure, OK otherwise
+ * Return FAIL for failure, OK otherwise.
  */
     static int
 cmdline_paste(regname, literally, remcr)
@@ -3691,20 +3691,37 @@ ExpandOne(xp, str, orig, options, mode)
     /* Find longest common part */
     if (mode == WILD_LONGEST && xp->xp_numfiles > 0)
     {
-	for (len = 0; xp->xp_files[0][len]; ++len)
+	int mb_len = 1;
+	int c0, ci;
+
+	for (len = 0; xp->xp_files[0][len]; len += mb_len)
 	{
-	    for (i = 0; i < xp->xp_numfiles; ++i)
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
 	    {
+		mb_len = (*mb_ptr2len)(&xp->xp_files[0][len]);
+		c0 =(* mb_ptr2char)(&xp->xp_files[0][len]);
+	    }
+	    else
+#endif
+		c0 = xp->xp_files[0][len];
+	    for (i = 1; i < xp->xp_numfiles; ++i)
+	    {
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		    ci =(* mb_ptr2char)(&xp->xp_files[i][len]);
+		else
+#endif
+		    ci = xp->xp_files[i][len];
 		if (p_fic && (xp->xp_context == EXPAND_DIRECTORIES
 			|| xp->xp_context == EXPAND_FILES
 			|| xp->xp_context == EXPAND_SHELLCMD
 			|| xp->xp_context == EXPAND_BUFFERS))
 		{
-		    if (TOLOWER_LOC(xp->xp_files[i][len]) !=
-					    TOLOWER_LOC(xp->xp_files[0][len]))
+		    if (MB_TOLOWER(c0) != MB_TOLOWER(ci))
 			break;
 		}
-		else if (xp->xp_files[i][len] != xp->xp_files[0][len])
+		else if (c0 != ci)
 		    break;
 	    }
 	    if (i < xp->xp_numfiles)
@@ -3714,6 +3731,7 @@ ExpandOne(xp, str, orig, options, mode)
 		break;
 	    }
 	}
+
 	ss = alloc((unsigned)len + 1);
 	if (ss)
 	    vim_strncpy(ss, xp->xp_files[0], (size_t)len);

@@ -663,6 +663,13 @@ Constructor::Constructor(int a,
 {
 }
 
+A::A(int a, int b)
+: aa(a),
+bb(b),
+cc(c)
+{
+}
+
 class CAbc :
    public BaseClass1,
    protected BaseClass2

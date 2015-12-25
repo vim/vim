@@ -27,7 +27,7 @@
 /* Is there any system that doesn't have access()? */
 #define USE_MCH_ACCESS
 
-#if defined(sun) && defined(S_ISCHR)
+#if (defined(sun) || defined(__FreeBSD__)) && defined(S_ISCHR)
 # define OPEN_CHR_FILES
 static int is_dev_fd_file(char_u *fname);
 #endif
@@ -7388,10 +7388,12 @@ vim_tempname(extra_char, keep)
 	    long	off;
 # endif
 
-	    /* expand $TMP, leave room for "/v1100000/999999999" */
+	    /* Expand $TMP, leave room for "/v1100000/999999999".
+	     * Skip the directory check if the expansion fails. */
 	    expand_env((char_u *)tempdirs[i], itmp, TEMPNAMELEN - 20);
-	    if (mch_isdir(itmp))		/* directory exists */
+	    if (itmp[0] != '$' && mch_isdir(itmp))
 	    {
+		/* directory exists */
 # ifdef __EMX__
 		/* If $TMP contains a forward slash (perhaps using bash or
 		 * tcsh), don't add a backslash, use a forward slash!
@@ -9450,7 +9452,9 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     if (!autocmd_busy)
     {
 	save_search_patterns();
+#ifdef FEAT_INS_EXPAND
 	if (!ins_compl_active())
+#endif
 	{
 	    saveRedobuff();
 	    did_save_redobuff = TRUE;

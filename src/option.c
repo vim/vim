@@ -174,6 +174,7 @@
 #define PV_SW		OPT_BUF(BV_SW)
 #define PV_SWF		OPT_BUF(BV_SWF)
 #define PV_TAGS		OPT_BOTH(OPT_BUF(BV_TAGS))
+#define PV_TC		OPT_BOTH(OPT_BUF(BV_TC))
 #define PV_TS		OPT_BUF(BV_TS)
 #define PV_TW		OPT_BUF(BV_TW)
 #define PV_TX		OPT_BUF(BV_TX)
@@ -1779,6 +1780,11 @@ static struct vimoption
     {"loadplugins", "lpl",  P_BOOL|P_VI_DEF,
 			    (char_u *)&p_lpl, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L} SCRIPTID_INIT},
+#if defined(DYNAMIC_LUA) && !defined(WIN3264)
+    {"luadll",      NULL,   P_STRING|P_VI_DEF|P_SECURE,
+			    (char_u *)&p_luadll, PV_NONE,
+			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+#endif
 #ifdef FEAT_GUI_MAC
     {"macatsui",    NULL,   P_BOOL|P_VI_DEF|P_RCLR,
 			    (char_u *)&p_macatsui, PV_NONE,
@@ -2014,6 +2020,11 @@ static struct vimoption
 # endif
 #endif
 				(char_u *)0L} SCRIPTID_INIT},
+#if defined(DYNAMIC_PERL) && !defined(WIN3264)
+    {"perldll",     NULL,   P_STRING|P_VI_DEF|P_SECURE,
+			    (char_u *)&p_perldll, PV_NONE,
+			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+#endif
     {"preserveindent", "pi", P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_pi, PV_PI,
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
@@ -2119,6 +2130,16 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
+#if defined(DYNAMIC_PYTHON3) && !defined(WIN3264)
+    {"pythonthreedll",  NULL,   P_STRING|P_VI_DEF|P_SECURE,
+			    (char_u *)&p_py3dll, PV_NONE,
+			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+#endif
+#if defined(DYNAMIC_PYTHON) && !defined(WIN3264)
+    {"pythondll",   NULL,   P_STRING|P_VI_DEF|P_SECURE,
+			    (char_u *)&p_pydll, PV_NONE,
+			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+#endif
     {"quoteescape", "qe",   P_STRING|P_ALLOCED|P_VI_DEF,
 #ifdef FEAT_TEXTOBJ
 			    (char_u *)&p_qe, PV_QE,
@@ -2192,6 +2213,11 @@ static struct vimoption
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCRIPTID_INIT},
+#if defined(DYNAMIC_RUBY) && !defined(WIN3264)
+    {"rubydll",     NULL,   P_STRING|P_VI_DEF|P_SECURE,
+			    (char_u *)&p_rubydll, PV_NONE,
+			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+#endif
     {"ruler",	    "ru",   P_BOOL|P_VI_DEF|P_VIM|P_RSTAT,
 #ifdef FEAT_CMDL_INFO
 			    (char_u *)&p_ru, PV_NONE,
@@ -2577,6 +2603,9 @@ static struct vimoption
 			    {(char_u *)TRUE, (char_u *)0L}
 #endif
 			    SCRIPTID_INIT},
+    {"tagcase",	    "tc",   P_STRING|P_VIM,
+			    (char_u *)&p_tc, PV_TC,
+			    {(char_u *)"followic", (char_u *)"followic"} SCRIPTID_INIT},
     {"taglength",   "tl",   P_NUM|P_VI_DEF,
 			    (char_u *)&p_tl, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
@@ -2956,8 +2985,10 @@ static struct vimoption
     p_term("t_ce", T_CE)
     p_term("t_cl", T_CL)
     p_term("t_cm", T_CM)
+    p_term("t_Ce", T_UCE)
     p_term("t_Co", T_CCO)
     p_term("t_CS", T_CCS)
+    p_term("t_Cs", T_UCS)
     p_term("t_cs", T_CS)
 #ifdef FEAT_VERTSPLIT
     p_term("t_CV", T_CSV)
@@ -3256,8 +3287,8 @@ set_init_1()
 	    if (opt_idx >= 0)
 	    {
 #if !defined(HAVE_AVAIL_MEM) && !defined(HAVE_TOTAL_MEM)
-		if ((long)options[opt_idx].def_val[VI_DEFAULT] > (long)n
-			|| (long)options[opt_idx].def_val[VI_DEFAULT] == 0L)
+		if ((long)(long_i)options[opt_idx].def_val[VI_DEFAULT] > (long)n
+		  || (long)(long_i)options[opt_idx].def_val[VI_DEFAULT] == 0L)
 #endif
 		    options[opt_idx].def_val[VI_DEFAULT] = (char_u *)n;
 	    }
@@ -4856,9 +4887,10 @@ do_set(arg, opt_flags)
 				{
 				    i = (int)STRLEN(origval);
 				    /* strip a trailing comma, would get 2 */
-				    if (comma && (flags & P_ONECOMMA) && i > 1
-					            && origval[i - 1] == ','
-						    && origval[i - 2] != '\\')
+				    if (comma && i > 1
+					  && (flags & P_ONECOMMA) == P_ONECOMMA
+					  && origval[i - 1] == ','
+					  && origval[i - 2] != '\\')
 					i--;
 				    mch_memmove(newval + i + comma, newval,
 							  STRLEN(newval) + 1);
@@ -4938,7 +4970,12 @@ do_set(arg, opt_flags)
 
 			/* If error detected, print the error message. */
 			if (errmsg != NULL)
+			{
+#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+			    vim_free(saved_origval);
+#endif
 			    goto skip;
+			}
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 			if (saved_origval != NULL)
 			{
@@ -5335,6 +5372,7 @@ didset_options()
     (void)opt_strings_flags(p_fdo, p_fdo_values, &fdo_flags, TRUE);
 #endif
     (void)opt_strings_flags(p_dy, p_dy_values, &dy_flags, TRUE);
+    (void)opt_strings_flags(p_tc, p_tc_values, &tc_flags, FALSE);
 #ifdef FEAT_VIRTUALEDIT
     (void)opt_strings_flags(p_ve, p_ve_values, &ve_flags, TRUE);
 #endif
@@ -5497,6 +5535,7 @@ check_buf_options(buf)
     check_string_option(&buf->b_p_ep);
     check_string_option(&buf->b_p_path);
     check_string_option(&buf->b_p_tags);
+    check_string_option(&buf->b_p_tc);
 #ifdef FEAT_INS_EXPAND
     check_string_option(&buf->b_p_dict);
     check_string_option(&buf->b_p_tsr);
@@ -7013,6 +7052,30 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     else if (varp == &p_bo)
     {
 	if (opt_strings_flags(p_bo, p_bo_values, &bo_flags, TRUE) != OK)
+	    errmsg = e_invarg;
+    }
+
+    /* 'tagcase' */
+    else if (gvarp == &p_tc)
+    {
+	unsigned int	*flags;
+
+	if (opt_flags & OPT_LOCAL)
+	{
+	    p = curbuf->b_p_tc;
+	    flags = &curbuf->b_tc_flags;
+	}
+	else
+	{
+	    p = p_tc;
+	    flags = &tc_flags;
+	}
+
+	if ((opt_flags & OPT_LOCAL) && *p == NUL)
+	    /* make the local value empty: use the global value */
+	    *flags = 0;
+	else if (*p == NUL
+		|| opt_strings_flags(p, p_tc_values, flags, FALSE) != OK)
 	    errmsg = e_invarg;
     }
 
@@ -10055,6 +10118,10 @@ unset_global_local_option(name, from)
 	case PV_TAGS:
 	    clear_string_option(&buf->b_p_tags);
 	    break;
+	case PV_TC:
+	    clear_string_option(&buf->b_p_tc);
+	    buf->b_tc_flags = 0;
+	    break;
 #ifdef FEAT_FIND_ID
 	case PV_DEF:
 	    clear_string_option(&buf->b_p_def);
@@ -10136,6 +10203,7 @@ get_varp_scope(p, opt_flags)
 	    case PV_PATH: return (char_u *)&(curbuf->b_p_path);
 	    case PV_AR:   return (char_u *)&(curbuf->b_p_ar);
 	    case PV_TAGS: return (char_u *)&(curbuf->b_p_tags);
+	    case PV_TC:   return (char_u *)&(curbuf->b_p_tc);
 #ifdef FEAT_FIND_ID
 	    case PV_DEF:  return (char_u *)&(curbuf->b_p_def);
 	    case PV_INC:  return (char_u *)&(curbuf->b_p_inc);
@@ -10190,6 +10258,8 @@ get_varp(p)
 				    ? (char_u *)&(curbuf->b_p_ar) : p->var;
 	case PV_TAGS:	return *curbuf->b_p_tags != NUL
 				    ? (char_u *)&(curbuf->b_p_tags) : p->var;
+	case PV_TC:	return *curbuf->b_p_tc != NUL
+				    ? (char_u *)&(curbuf->b_p_tc) : p->var;
 	case PV_BKC:	return *curbuf->b_p_bkc != NUL
 				    ? (char_u *)&(curbuf->b_p_bkc) : p->var;
 #ifdef FEAT_FIND_ID
@@ -10798,6 +10868,8 @@ buf_copy_options(buf, flags)
 	    buf->b_p_kp = empty_option;
 	    buf->b_p_path = empty_option;
 	    buf->b_p_tags = empty_option;
+	    buf->b_p_tc = empty_option;
+	    buf->b_tc_flags = 0;
 #ifdef FEAT_FIND_ID
 	    buf->b_p_def = empty_option;
 	    buf->b_p_inc = empty_option;

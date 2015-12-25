@@ -4541,7 +4541,7 @@ init_preedit_start_col(void)
 {
     if (State & CMDLINE)
 	preedit_start_col = cmdline_getvcol_cursor();
-    else if (curwin != NULL)
+    else if (curwin != NULL && curwin->w_buffer != NULL)
 	getvcol(curwin, &curwin->w_cursor, &preedit_start_col, NULL, NULL);
     /* Prevent that preediting marks the buffer as changed. */
     xim_changed_while_preediting = curbuf->b_changed;

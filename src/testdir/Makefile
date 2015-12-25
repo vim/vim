@@ -2,7 +2,10 @@
 # Makefile to run all tests for Vim
 #
 
+# Use console or GUI.
 VIMPROG = ../vim
+# VIMPROG = ../gvim
+
 SCRIPTSOURCE = ../../runtime
 
 # Uncomment this line to use valgrind for memory leaks and extra warnings.
@@ -31,7 +34,7 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test84.out test85.out test86.out test87.out test88.out \
 		test89.out test90.out test91.out test92.out test93.out \
 		test94.out test95.out test96.out test97.out test98.out \
-		test99.out test100.out test101.out test102.out test103.out \
+		test99.out test101.out test102.out test103.out \
 		test104.out test105.out test106.out test107.out \
 		test_argument_0count.out \
 		test_argument_count.out \
@@ -63,18 +66,23 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test_search_mbyte.out \
 		test_set.out \
 		test_signs.out \
+		test_tagcase.out \
 		test_textobjects.out \
-		test_utf8.out
+		test_utf8.out \
+		test_writefile.out
+
+NEW_TESTS = test_assert.res \
+	    test_alot.res
 
 SCRIPTS_GUI = test16.out
 
 SCRIPTS_BENCH = bench_re_freeze.out
 
-.SUFFIXES: .in .out
+.SUFFIXES: .in .out .res .vim
 
-nongui:	nolog $(SCRIPTS) report
+nongui:	nolog $(SCRIPTS) newtests report
 
-gui:	nolog $(SCRIPTS) $(SCRIPTS_GUI) report
+gui:	nolog $(SCRIPTS) $(SCRIPTS_GUI) newtests report
 
 benchmark: $(SCRIPTS_BENCH)
 
@@ -86,14 +94,14 @@ report:
 		else echo ALL DONE; \
 		fi"
 
-$(SCRIPTS) $(SCRIPTS_GUI): $(VIMPROG)
+$(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS): $(VIMPROG)
 
 RM_ON_RUN = test.out X* viminfo
 RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim lua.vim test.ok benchmark.out
-RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -u unix.vim -U NONE --noplugin -s dotest.in
+RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f -u unix.vim -U NONE --noplugin -s dotest.in
 
 clean:
-	-rm -rf *.out *.failed *.rej *.orig test.log $(RM_ON_RUN) $(RM_ON_START) valgrind.*
+	-rm -rf *.out *.failed *.res *.rej *.orig test.log $(RM_ON_RUN) $(RM_ON_START) valgrind.*
 
 test1.out: test1.in
 	-rm -rf $*.failed $(RM_ON_RUN) $(RM_ON_START) wrongtermsize
@@ -155,3 +163,14 @@ bench_re_freeze.out: bench_re_freeze.vim
 
 nolog:
 	-rm -f test.log
+
+
+# New style of tests uses Vim script with assert calls.  These are easier
+# to write and a lot easier to read and debug.
+# Limitation: Only works with the +eval feature.
+RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f -u unix.vim -U NONE --noplugin
+
+newtests: $(NEW_TESTS)
+
+.vim.res:
+	$(RUN_VIMTEST) -u runtest.vim $*.vim

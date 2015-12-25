@@ -6250,6 +6250,19 @@ cin_isfuncdecl(sp, first_lnum, min_lnum)
     {
 	if (cin_iscomment(s))	/* ignore comments */
 	    s = cin_skipcomment(s);
+	else if (*s == ':')
+	{
+	    if (*(s + 1) == ':')
+		s += 2;
+	    else
+		/* To avoid a mistake in the following situation:
+		 * A::A(int a, int b)
+		 *     : a(0)  // <--not a function decl
+		 *     , b(0)
+		 * {...
+		 */
+		return FALSE;
+	}
 	else
 	    ++s;
     }
@@ -9940,8 +9953,9 @@ dos_expandpath(
 	    return 0;
     }
 
-    /* make room for file name */
-    buf = alloc((int)STRLEN(path) + BASENAMELEN + 5);
+    /* Make room for file name.  When doing encoding conversion the actual
+     * length may be quite a bit longer, thus use the maximum possible length. */
+    buf = alloc((int)MAXPATHL);
     if (buf == NULL)
 	return 0;
 

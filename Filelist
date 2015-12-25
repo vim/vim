@@ -87,6 +87,7 @@ SRC_ALL =	\
 		src/testdir/README.txt \
 		src/testdir/*.in \
 		src/testdir/sautest/autoload/*.vim \
+		src/testdir/runtest.vim \
 		src/testdir/test[0-9]*.ok \
 		src/testdir/test[0-9]*a.ok \
 		src/testdir/test_[a-z]*.ok \
@@ -584,6 +585,8 @@ RT_UNIX =	\
 		runtime/vim32x32.xpm \
 		runtime/vim48x48.png \
 		runtime/vim48x48.xpm \
+		runtime/gvim.desktop \
+		runtime/vim.desktop \
 
 # Unix and DOS runtime without CR-LF translation
 RT_UNIX_DOS_BIN =	\

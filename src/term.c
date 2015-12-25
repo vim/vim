@@ -837,28 +837,33 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_NAME,	"vt52"},
     {(int)KS_CE,	IF_EB("\033K", ESC_STR "K")},
     {(int)KS_CD,	IF_EB("\033J", ESC_STR "J")},
+#  ifdef TERMINFO
+    {(int)KS_CM,	IF_EB("\033Y%p1%' '%+%c%p2%' '%+%c",
+			    ESC_STR "Y%p1%' '%+%c%p2%' '%+%c")},
+#  else
     {(int)KS_CM,	IF_EB("\033Y%+ %+ ", ESC_STR "Y%+ %+ ")},
+#  endif
     {(int)KS_LE,	"\b"},
-#  ifdef __MINT__
+    {(int)KS_SR,	IF_EB("\033I", ESC_STR "I")},
     {(int)KS_AL,	IF_EB("\033L", ESC_STR "L")},
     {(int)KS_DL,	IF_EB("\033M", ESC_STR "M")},
-    {(int)KS_CL,	IF_EB("\033E", ESC_STR "E")},
-    {(int)KS_SR,	IF_EB("\033I", ESC_STR "I")},
-    {(int)KS_VE,	IF_EB("\033e", ESC_STR "e")},
-    {(int)KS_VI,	IF_EB("\033f", ESC_STR "f")},
-    {(int)KS_SO,	IF_EB("\033p", ESC_STR "p")},
-    {(int)KS_SE,	IF_EB("\033q", ESC_STR "q")},
     {K_UP,		IF_EB("\033A", ESC_STR "A")},
     {K_DOWN,		IF_EB("\033B", ESC_STR "B")},
     {K_LEFT,		IF_EB("\033D", ESC_STR "D")},
     {K_RIGHT,		IF_EB("\033C", ESC_STR "C")},
+    {K_F1,		IF_EB("\033P", ESC_STR "P")},
+    {K_F2,		IF_EB("\033Q", ESC_STR "Q")},
+    {K_F3,		IF_EB("\033R", ESC_STR "R")},
+#  ifdef __MINT__
+    {(int)KS_CL,	IF_EB("\033E", ESC_STR "E")},
+    {(int)KS_VE,	IF_EB("\033e", ESC_STR "e")},
+    {(int)KS_VI,	IF_EB("\033f", ESC_STR "f")},
+    {(int)KS_SO,	IF_EB("\033p", ESC_STR "p")},
+    {(int)KS_SE,	IF_EB("\033q", ESC_STR "q")},
     {K_S_UP,		IF_EB("\033a", ESC_STR "a")},
     {K_S_DOWN,		IF_EB("\033b", ESC_STR "b")},
     {K_S_LEFT,		IF_EB("\033d", ESC_STR "d")},
     {K_S_RIGHT,		IF_EB("\033c", ESC_STR "c")},
-    {K_F1,		IF_EB("\033P", ESC_STR "P")},
-    {K_F2,		IF_EB("\033Q", ESC_STR "Q")},
-    {K_F3,		IF_EB("\033R", ESC_STR "R")},
     {K_F4,		IF_EB("\033S", ESC_STR "S")},
     {K_F5,		IF_EB("\033T", ESC_STR "T")},
     {K_F6,		IF_EB("\033U", ESC_STR "U")},
@@ -881,11 +886,7 @@ static struct builtin_term builtin_termcaps[] =
     {K_PAGEDOWN,	IF_EB("\033b", ESC_STR "b")},
     {K_PAGEUP,		IF_EB("\033a", ESC_STR "a")},
 #  else
-    {(int)KS_AL,	IF_EB("\033T", ESC_STR "T")},
-    {(int)KS_DL,	IF_EB("\033U", ESC_STR "U")},
     {(int)KS_CL,	IF_EB("\033H\033J", ESC_STR "H" ESC_STR_nc "J")},
-    {(int)KS_ME,	IF_EB("\033SO", ESC_STR "SO")},
-    {(int)KS_MR,	IF_EB("\033S2", ESC_STR "S2")},
     {(int)KS_MS,	"y"},
 #  endif
 # endif
@@ -1879,14 +1880,6 @@ set_termname(term)
 
 	p = (char_u *)"";
 #  ifdef FEAT_MOUSE_XTERM
-#   ifdef FEAT_CLIPBOARD
-#    ifdef FEAT_GUI
-	if (!gui.in_use)
-#    endif
-#    ifndef FEAT_CYGWIN_WIN32_CLIPBOARD
-	    clip_init(FALSE);
-#    endif
-#   endif
 	if (use_xterm_like_mouse(term))
 	{
 	    if (use_xterm_mouse())
@@ -2276,7 +2269,7 @@ add_termcap_entry(name, force)
  */
     for (i = 0; i < 2; ++i)
     {
-	if (!builtin_first == i)
+	if ((!builtin_first) == i)
 #endif
 	/*
 	 * Search in builtin termcap
@@ -5231,6 +5224,13 @@ check_termcode(max_offset, buf, bufsize, buflen)
 	    else
 		key_name[1] = get_pseudo_mouse_code(current_button,
 							   is_click, is_drag);
+
+	    /* Make sure the mouse position is valid.  Some terminals may
+	     * return weird values. */
+	    if (mouse_col >= Columns)
+		mouse_col = Columns - 1;
+	    if (mouse_row >= Rows)
+		mouse_row = Rows - 1;
 	}
 #endif /* FEAT_MOUSE */
 

@@ -401,9 +401,15 @@ mch_inchar(buf, maxlen, wtime, tb_change_cnt)
     {
 	while (WaitForChar(wtime) == 0)		/* no character available */
 	{
-	    if (!do_resize)	/* return if not interrupted by resize */
+	    if (do_resize)
+		handle_resize();
+#ifdef FEAT_CLIENTSERVER
+	    else if (!server_waiting())
+#else
+	    else
+#endif
+		/* return if not interrupted by resize or server */
 		return 0;
-	    handle_resize();
 #ifdef MESSAGE_QUEUE
 	    parse_queued_messages();
 #endif

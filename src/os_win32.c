@@ -234,7 +234,6 @@ static int suppress_winsize = 1;	/* don't fiddle with console */
 
 static char_u *exe_path = NULL;
 
-static BOOL is_win7 = FALSE;
 static BOOL win8_or_later = FALSE;
 
 /*
@@ -680,9 +679,6 @@ PlatformId(void)
 	GetVersionEx(&ovi);
 
 	g_PlatformId = ovi.dwPlatformId;
-
-	if ((ovi.dwMajorVersion == 6 && ovi.dwMinorVersion == 1))
-	    is_win7 = TRUE;
 
 	if ((ovi.dwMajorVersion == 6 && ovi.dwMinorVersion >= 2)
 		|| ovi.dwMajorVersion > 6)
@@ -2173,7 +2169,8 @@ typedef struct ConsoleBufferStruct
 {
     BOOL			IsValid;
     CONSOLE_SCREEN_BUFFER_INFO	Info;
-    HANDLE			handle;
+    PCHAR_INFO			Buffer;
+    COORD			BufferSize;
 } ConsoleBuffer;
 
 /*
@@ -2190,81 +2187,77 @@ typedef struct ConsoleBufferStruct
 SaveConsoleBuffer(
     ConsoleBuffer *cb)
 {
+    DWORD NumCells;
+    COORD BufferCoord;
+    SMALL_RECT ReadRegion;
+    WORD Y, Y_incr;
+
     if (cb == NULL)
 	return FALSE;
 
-    if (!GetConsoleScreenBufferInfo(cb->handle, &cb->Info))
+    if (!GetConsoleScreenBufferInfo(g_hConOut, &cb->Info))
     {
 	cb->IsValid = FALSE;
 	return FALSE;
     }
     cb->IsValid = TRUE;
 
-    return TRUE;
-}
-
-/*
- * CopyOldConsoleBuffer()
- * Description:
- *  Copies the old console buffer contents to the current console buffer.
- *  This is used when 'restorescreen' is off.
- * Returns:
- *  TRUE on success
- */
-    static BOOL
-CopyOldConsoleBuffer(
-    ConsoleBuffer   *cb,
-    HANDLE	    hConOld)
-{
-    COORD		    BufferCoord;
-    COORD		    BufferSize;
-    PCHAR_INFO		    Buffer;
-    DWORD		    NumCells;
-    SMALL_RECT		    ReadRegion;
+    /*
+     * Allocate a buffer large enough to hold the entire console screen
+     * buffer.  If this ConsoleBuffer structure has already been initialized
+     * with a buffer of the correct size, then just use that one.
+     */
+    if (!cb->IsValid || cb->Buffer == NULL ||
+	    cb->BufferSize.X != cb->Info.dwSize.X ||
+	    cb->BufferSize.Y != cb->Info.dwSize.Y)
+    {
+	cb->BufferSize.X = cb->Info.dwSize.X;
+	cb->BufferSize.Y = cb->Info.dwSize.Y;
+	NumCells = cb->BufferSize.X * cb->BufferSize.Y;
+	vim_free(cb->Buffer);
+	cb->Buffer = (PCHAR_INFO)alloc(NumCells * sizeof(CHAR_INFO));
+	if (cb->Buffer == NULL)
+	    return FALSE;
+    }
 
     /*
-     * Before copying the buffer contents, clear the current buffer, and
-     * restore the window information.  Doing this now prevents old buffer
-     * contents from "flashing" onto the screen.
+     * We will now copy the console screen buffer into our buffer.
+     * ReadConsoleOutput() seems to be limited as far as how much you
+     * can read at a time.  Empirically, this number seems to be about
+     * 12000 cells (rows * columns).  Start at position (0, 0) and copy
+     * in chunks until it is all copied.  The chunks will all have the
+     * same horizontal characteristics, so initialize them now.  The
+     * height of each chunk will be (12000 / width).
      */
-    ClearConsoleBuffer(cb->Info.wAttributes);
-
-    /* We only need to copy the window area, not whole buffer. */
-    BufferSize.X = cb->Info.srWindow.Right - cb->Info.srWindow.Left + 1;
-    BufferSize.Y = cb->Info.srWindow.Bottom - cb->Info.srWindow.Top + 1;
-    ReadRegion.Left = 0;
-    ReadRegion.Right = BufferSize.X - 1;
-    ReadRegion.Top = 0;
-    ReadRegion.Bottom = BufferSize.Y - 1;
-
-    NumCells = BufferSize.X * BufferSize.Y;
-    Buffer = (PCHAR_INFO)alloc(NumCells * sizeof(CHAR_INFO));
-    if (Buffer == NULL)
-	return FALSE;
-
     BufferCoord.X = 0;
-    BufferCoord.Y = 0;
-
-    if (!ReadConsoleOutputW(hConOld,	    /* output handle */
-		Buffer,			    /* our buffer */
-		BufferSize,		    /* dimensions of our buffer */
-		BufferCoord,		    /* offset in our buffer */
-		&ReadRegion))		    /* region to save */
+    ReadRegion.Left = 0;
+    ReadRegion.Right = cb->Info.dwSize.X - 1;
+    Y_incr = 12000 / cb->Info.dwSize.X;
+    for (Y = 0; Y < cb->BufferSize.Y; Y += Y_incr)
     {
-	vim_free(Buffer);
-	return FALSE;
+	/*
+	 * Read into position (0, Y) in our buffer.
+	 */
+	BufferCoord.Y = Y;
+	/*
+	 * Read the region whose top left corner is (0, Y) and whose bottom
+	 * right corner is (width - 1, Y + Y_incr - 1).  This should define
+	 * a region of size width by Y_incr.  Don't worry if this region is
+	 * too large for the remaining buffer; it will be cropped.
+	 */
+	ReadRegion.Top = Y;
+	ReadRegion.Bottom = Y + Y_incr - 1;
+	if (!ReadConsoleOutput(g_hConOut,	/* output handle */
+		cb->Buffer,			/* our buffer */
+		cb->BufferSize,			/* dimensions of our buffer */
+		BufferCoord,			/* offset in our buffer */
+		&ReadRegion))			/* region to save */
+	{
+	    vim_free(cb->Buffer);
+	    cb->Buffer = NULL;
+	    return FALSE;
+	}
     }
-    if (!WriteConsoleOutputW(g_hConOut,     /* output handle */
-		Buffer,			    /* our buffer */
-		BufferSize,		    /* dimensions of our buffer */
-		BufferCoord,		    /* offset in our buffer */
-		&ReadRegion))		    /* region to restore */
-    {
-	vim_free(Buffer);
-	return FALSE;
-    }
-    vim_free(Buffer);
-    SetConsoleWindowInfo(g_hConOut, TRUE, &ReadRegion);
 
     return TRUE;
 }
@@ -2283,20 +2276,67 @@ RestoreConsoleBuffer(
     ConsoleBuffer   *cb,
     BOOL	    RestoreScreen)
 {
-    HANDLE hConOld;
+    COORD BufferCoord;
+    SMALL_RECT WriteRegion;
 
     if (cb == NULL || !cb->IsValid)
 	return FALSE;
 
-    hConOld = g_hConOut;
-    g_hConOut = cb->handle;
-    if (!RestoreScreen && exiting)
-	CopyOldConsoleBuffer(cb, hConOld);
-    SetConsoleActiveScreenBuffer(g_hConOut);
+    /*
+     * Before restoring the buffer contents, clear the current buffer, and
+     * restore the cursor position and window information.  Doing this now
+     * prevents old buffer contents from "flashing" onto the screen.
+     */
+    if (RestoreScreen)
+	ClearConsoleBuffer(cb->Info.wAttributes);
+
+    FitConsoleWindow(cb->Info.dwSize, TRUE);
+    if (!SetConsoleScreenBufferSize(g_hConOut, cb->Info.dwSize))
+	return FALSE;
+    if (!SetConsoleTextAttribute(g_hConOut, cb->Info.wAttributes))
+	return FALSE;
+
+    if (!RestoreScreen)
+    {
+	/*
+	 * No need to restore the screen buffer contents, so we're done.
+	 */
+	return TRUE;
+    }
+
+    if (!SetConsoleCursorPosition(g_hConOut, cb->Info.dwCursorPosition))
+	return FALSE;
+    if (!SetConsoleWindowInfo(g_hConOut, TRUE, &cb->Info.srWindow))
+	return FALSE;
+
+    /*
+     * Restore the screen buffer contents.
+     */
+    if (cb->Buffer != NULL)
+    {
+	BufferCoord.X = 0;
+	BufferCoord.Y = 0;
+	WriteRegion.Left = 0;
+	WriteRegion.Top = 0;
+	WriteRegion.Right = cb->Info.dwSize.X - 1;
+	WriteRegion.Bottom = cb->Info.dwSize.Y - 1;
+	if (!WriteConsoleOutput(g_hConOut,	/* output handle */
+		cb->Buffer,			/* our buffer */
+		cb->BufferSize,			/* dimensions of our buffer */
+		BufferCoord,			/* offset in our buffer */
+		&WriteRegion))			/* region to restore */
+	{
+	    return FALSE;
+	}
+    }
 
     return TRUE;
 }
 
+#define FEAT_RESTORE_ORIG_SCREEN
+#ifdef FEAT_RESTORE_ORIG_SCREEN
+static ConsoleBuffer g_cbOrig = { 0 };
+#endif
 static ConsoleBuffer g_cbNonTermcap = { 0 };
 static ConsoleBuffer g_cbTermcap = { 0 };
 
@@ -2435,6 +2475,9 @@ static DWORD g_cmodeout = 0;
     void
 mch_init(void)
 {
+#ifndef FEAT_RESTORE_ORIG_SCREEN
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+#endif
 #ifndef __MINGW32__
     extern int _fmode;
 #endif
@@ -2455,14 +2498,16 @@ mch_init(void)
     else
 	create_conin();
     g_hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    g_cbNonTermcap.handle = g_hConOut;
-    g_cbTermcap.handle = CreateConsoleScreenBuffer(
-	    GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
-	    NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 
+#ifdef FEAT_RESTORE_ORIG_SCREEN
+    /* Save the initial console buffer for later restoration */
+    SaveConsoleBuffer(&g_cbOrig);
+    g_attrCurrent = g_attrDefault = g_cbOrig.Info.wAttributes;
+#else
     /* Get current text attributes */
-    SaveConsoleBuffer(&g_cbNonTermcap);
-    g_attrCurrent = g_attrDefault = g_cbNonTermcap.Info.wAttributes;
+    GetConsoleScreenBufferInfo(g_hConOut, &csbi);
+    g_attrCurrent = g_attrDefault = csbi.wAttributes;
+#endif
     if (cterm_normal_fg_color == 0)
 	cterm_normal_fg_color = (g_attrCurrent & 0xf) + 1;
     if (cterm_normal_bg_color == 0)
@@ -2561,8 +2606,6 @@ mch_exit(int r)
     SetConsoleCursorInfo(g_hConOut, &g_cci);
     SetConsoleMode(g_hConIn,  g_cmodein);
     SetConsoleMode(g_hConOut, g_cmodeout);
-
-    CloseHandle(g_cbTermcap.handle);
 
 #ifdef DYNAMIC_GETTEXT
     dyn_libintl_end();
@@ -3052,6 +3095,20 @@ mch_hide(char_u *name)
 
     attrs |= FILE_ATTRIBUTE_HIDDEN;
     win32_setattrs(name, attrs);
+}
+
+/*
+ * Return TRUE if file "name" exists and is hidden.
+ */
+    int
+mch_ishidden(char_u *name)
+{
+    int f = win32_getattrs(name);
+
+    if (f == -1)
+	return FALSE;		    /* file does not exist at all */
+
+    return (f & FILE_ATTRIBUTE_HIDDEN) != 0;
 }
 
 /*
@@ -4585,12 +4642,11 @@ mch_system(char *cmd, int options)
     else
 	return mch_system_classic(cmd, options);
 }
-
 #else
 
 # ifdef FEAT_MBYTE
     static int
-mch_system1(char *cmd, int options)
+mch_system(char *cmd, int options)
 {
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
@@ -4605,44 +4661,8 @@ mch_system1(char *cmd, int options)
     return system(cmd);
 }
 # else
-#  define mch_system1(c, o) system(c)
+#  define mch_system(c, o) system(c)
 # endif
-
-    static int
-mch_system(char *cmd, int options)
-{
-    int ret;
-    HANDLE hTemp = INVALID_HANDLE_VALUE;
-
-    /*
-     * Call DuplicateHandle before executing an external program, because msys
-     * and msys2's programs will call CreateConsoleScreenBuffer and
-     * CloseHandle.  CreateConsoleScreenBuffer returns the same handle which
-     * created by vim.  This causes a crash. This workaround is required on
-     * Windows7.
-     */
-    if (is_win7
-	    && g_fTermcapMode
-	    && DuplicateHandle(
-		    GetCurrentProcess(),
-		    g_hConOut,
-		    GetCurrentProcess(),
-		    &hTemp,
-		    0,
-		    TRUE,
-		    DUPLICATE_SAME_ACCESS))
-	SetConsoleActiveScreenBuffer(hTemp);
-
-    ret = mch_system1(cmd, options);
-
-    if (hTemp != INVALID_HANDLE_VALUE)
-    {
-	SetConsoleActiveScreenBuffer(g_hConOut);
-	CloseHandle(hTemp);
-    }
-
-    return ret;
-}
 
 #endif
 
@@ -4973,8 +4993,6 @@ termcap_mode_start(void)
 	 * screen buffer, and resize the buffer to match the current window
 	 * size.  We will use this as the size of our editing environment.
 	 */
-	g_hConOut = g_cbTermcap.handle;
-	SetConsoleActiveScreenBuffer(g_hConOut);
 	ClearConsoleBuffer(g_attrCurrent);
 	ResizeConBufAndWindow(g_hConOut, Columns, Rows);
     }
@@ -5018,7 +5036,11 @@ termcap_mode_end(void)
     cmodein &= ~(ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT);
     SetConsoleMode(g_hConIn, cmodein);
 
+#ifdef FEAT_RESTORE_ORIG_SCREEN
+    cb = exiting ? &g_cbOrig : &g_cbNonTermcap;
+#else
     cb = &g_cbNonTermcap;
+#endif
     RestoreConsoleBuffer(cb, p_rs);
     SetConsoleCursorInfo(g_hConOut, &g_cci);
 
