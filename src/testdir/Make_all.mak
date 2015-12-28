@@ -127,7 +127,6 @@ SCRIPTS_ALL = \
 # Tests that run on most systems, but not on Amiga.
 SCRIPTS_MORE1 = \
 	test11.out \
-	test49.out \
 	test52.out \
 	test85.out \
 	test86.out \
@@ -141,6 +140,7 @@ SCRIPTS_MORE2 = \
 	test12.out \
 	test25.out \
 	test27.out \
+	test49.out \
 	test97.out
 
 
@@ -163,7 +163,7 @@ SCRIPTS_MORE4 = \
 
 
 # Tests specifically for MS-Windows.
-SCRIPTS_WIN32 = test50.out test70.out
+SCRIPTS_WIN32 = test50.out
 
 
 # Tests for the GUI.
