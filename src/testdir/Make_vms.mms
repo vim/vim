@@ -74,6 +74,8 @@
 
 VIMPROG = <->vim.exe
 
+default : all
+
 # This probably doesn't work, please fix.
 .INCLUDE Make_all.mak
 

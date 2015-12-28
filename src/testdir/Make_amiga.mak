@@ -5,6 +5,8 @@
 
 VIMPROG = /vim
 
+default: nongui
+
 include Make_all.mak
 
 # These tests don't work (yet):

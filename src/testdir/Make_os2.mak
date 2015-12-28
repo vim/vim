@@ -8,6 +8,8 @@
 
 VIMPROG = ../vim.exe
 
+default: all
+
 include Make_all.mak
 
 # Omitted:

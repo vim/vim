@@ -14,6 +14,7 @@ SCRIPTSOURCE = ../../runtime
 #   This will make testing about 10 times as slow.
 # VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=15 --log-file=valgrind.$*
 
+default: nongui
 
 # The list of tests is common to all systems.
 # This defines NEW_TESTS, SCRIPTS_ALL, SCRIPTS_MORE* and SCRIPTS_GUI.

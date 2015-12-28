@@ -24,6 +24,8 @@ endif
 
 VIMPROG = ..$(DIRSLASH)vim
 
+default: vimall
+
 include Make_all.mak
 
 # Omitted:
