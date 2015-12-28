@@ -16471,6 +16471,7 @@ f_reverse(argvars, rettv)
 #define SP_START	0x10	    /* accept match at start position */
 #define SP_SUBPAT	0x20	    /* return nr of matching sub-pattern */
 #define SP_END		0x40	    /* leave cursor at end of match */
+#define SP_COLUMN	0x80	    /* start at cursor column */
 
 static int get_search_arg __ARGS((typval_T *varp, int *flagsp));
 
@@ -16512,6 +16513,7 @@ get_search_arg(varp, flagsp)
 				 case 'p': mask = SP_SUBPAT; break;
 				 case 'r': mask = SP_REPEAT; break;
 				 case 's': mask = SP_SETPCMARK; break;
+				 case 'z': mask = SP_COLUMN; break;
 			     }
 			  if (mask == 0)
 			  {
@@ -16530,7 +16532,7 @@ get_search_arg(varp, flagsp)
 }
 
 /*
- * Shared by search() and searchpos() functions
+ * Shared by search() and searchpos() functions.
  */
     static int
 search_cmn(argvars, match_pos, flagsp)
@@ -16562,6 +16564,8 @@ search_cmn(argvars, match_pos, flagsp)
 	options |= SEARCH_START;
     if (flags & SP_END)
 	options |= SEARCH_END;
+    if (flags & SP_COLUMN)
+	options |= SEARCH_COL;
 
     /* Optional arguments: line number to stop searching and timeout. */
     if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN)
