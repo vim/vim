@@ -81,6 +81,11 @@
 # define RUBY19_OR_LATER 1
 #endif
 
+#if (defined(RUBY_VERSION) && RUBY_VERSION >= 20) \
+    || (defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20)
+# define RUBY20_OR_LATER 1
+#endif
+
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 19
 /* Ruby 1.9 defines a number of static functions which use rb_num2long and
  * rb_int2big */
@@ -122,11 +127,12 @@
 #endif
 
 /*
- * The TypedData_XXX macro family can be used since Ruby 1.9.2, and
- * the old Data_XXX macro family was deprecated on Ruby 2.2.
+ * The TypedData_XXX macro family can be used since Ruby 1.9.2 but
+ * rb_data_type_t changed in 1.9.3, therefore require at least 2.0.
+ * The old Data_XXX macro family was deprecated on Ruby 2.2.
  * Use TypedData_XXX if available.
  */
-#ifdef TypedData_Wrap_Struct
+#if defined(TypedData_Wrap_Struct) && defined(RUBY20_OR_LATER)
 # define USE_TYPEDDATA	1
 #endif
 
