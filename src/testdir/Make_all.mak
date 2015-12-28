@@ -2,9 +2,12 @@
 # Common Makefile, defines the list of tests to run.
 #
 
+# The first script creates small.vim.
+SCRIPTS_FIRST = \
+	test1.out
+
 # Tests that run on all systems.
 SCRIPTS_ALL = \
-	test1.out \
 	test3.out \
 	test4.out \
 	test5.out \

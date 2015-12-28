@@ -20,9 +20,12 @@ include Make_all.mak
 
 SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE3) $(SCRIPTS_MORE4)
 
+# Must run test1 first to create small.vim.
+$(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS): $(SCRIPTS_FIRST)
+
 .SUFFIXES: .in .out
 
-nongui:	/tmp $(SCRIPTS)
+nongui:	/tmp $(SCRIPTS_FIRST) $(SCRIPTS)
 	csh -c echo ALL DONE
 
 clean:

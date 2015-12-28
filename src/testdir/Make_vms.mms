@@ -170,7 +170,7 @@ SCRIPT_PYTHON = test86.out test87.out
 	-@ if "''F$SEARCH("Xdotest.*")'"  .NES. "" then delete/noconfirm/nolog Xdotest.*.*
 	-@ if "''F$SEARCH("Xtest.*")'"    .NES. "" then delete/noconfirm/nolog Xtest.*.*
 
-all : clean nolog $(START_WITH) $(SCRIPT) $(SCRIPT_GUI) $(SCRIPT_UNIX) $(SCRIPT_WIN) $(SCRIPT_SPELL) $(SCRIPT_ODS5) $(SCRIPT_GZIP) \
+all : clean nolog $(SCRIPTS_FIRST) $(SCRIPT) $(SCRIPT_GUI) $(SCRIPT_UNIX) $(SCRIPT_WIN) $(SCRIPT_SPELL) $(SCRIPT_ODS5) $(SCRIPT_GZIP) \
     $(SCRIPT_GDIFF) $(SCRIPT_MZSCH) $(SCRIPT_CKSUM) $(SCRIPT_ICONV) $(SCRIPT_LUA) $(SCRIPT_PYTHON) nolog 
 	-@ write sys$output " "
 	-@ write sys$output "-----------------------------------------------"

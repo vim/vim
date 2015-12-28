@@ -28,10 +28,13 @@ SCRIPTS_BENCH = bench_re_freeze.out
 
 .SUFFIXES: .in .out
 
-all:	/tmp $(SCRIPTS)
+all:	/tmp $(SCRIPTS_FIRST) $(SCRIPTS)
 	@echo ALL DONE
 
-$(SCRIPTS): $(VIMPROG)
+$(SCRIPTS_FIRST) $(SCRIPTS): $(VIMPROG)
+
+# Must run test1 first to create small.vim.
+$(SCRIPTS): $(SCRIPTS_FIRST)
 
 benchmark: $(SCRIPTS_BENCH)
 

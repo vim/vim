@@ -30,9 +30,9 @@ SCRIPTS_BENCH = bench_re_freeze.out
 
 .SUFFIXES: .in .out .res .vim
 
-nongui:	nolog $(SCRIPTS) newtests report
+nongui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) newtests report
 
-gui:	nolog $(SCRIPTS) $(SCRIPTS_GUI) newtests report
+gui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) newtests report
 
 benchmark: $(SCRIPTS_BENCH)
 
@@ -44,7 +44,10 @@ report:
 		else echo ALL DONE; \
 		fi"
 
-$(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS): $(VIMPROG)
+$(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS): $(VIMPROG)
+
+# Must run test1 first to create small.vim.
+$(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS): $(SCRIPTS_FIRST)
 
 RM_ON_RUN = test.out X* viminfo
 RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim lua.vim test.ok benchmark.out

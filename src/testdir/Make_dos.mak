@@ -17,20 +17,23 @@ VIMPROG = ..\\vim
 
 SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE1) $(SCRIPTS_MORE3) $(SCRIPTS_MORE4)
 
-TEST_OUTFILES = $(SCRIPTS) $(SCRIPTS_WIN32) $(SCRIPTS_GUI)
+TEST_OUTFILES = $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32) $(SCRIPTS_GUI)
 DOSTMP = dostmp
 DOSTMP_OUTFILES = $(TEST_OUTFILES:test=dostmp\test)
 DOSTMP_INFILES = $(DOSTMP_OUTFILES:.out=.in)
 
 .SUFFIXES: .in .out
 
-nongui:	nolog $(SCRIPTS) report
+# Must run test1 first to create small.vim.
+$(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS): $(SCRIPTS_FIRST)
+
+nongui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) report
 
 small:	nolog report
 
-gui:	nolog $(SCRIPTS) $(SCRIPTS_GUI) report
+gui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) report
 
-win32:	nolog $(SCRIPTS) $(SCRIPTS_WIN32) report
+win32:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32) report
 
 # Copy the input files to dostmp, changing the fileformat to dos.
 $(DOSTMP_INFILES): $(*B).in

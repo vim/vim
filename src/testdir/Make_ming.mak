@@ -39,12 +39,15 @@ SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE1) $(SCRIPTS_MORE4) $(SCRIPTS_WIN32)
 
 SCRIPTS_BENCH = bench_re_freeze.out
 
+# Must run test1 first to create small.vim.
+$(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS): $(SCRIPTS_FIRST)
+
 .SUFFIXES: .in .out
 
-vimall:	fixff $(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32)
+vimall:	fixff $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32)
 	echo ALL DONE
 
-nongui:	fixff $(SCRIPTS)
+nongui:	fixff $(SCRIPTS_FIRST) $(SCRIPTS)
 	echo ALL DONE
 
 benchmark: $(SCRIPTS_BENCH)
@@ -52,10 +55,10 @@ benchmark: $(SCRIPTS_BENCH)
 small:
 	echo ALL DONE
 
-gui:	fixff $(SCRIPTS) $(SCRIPTS_GUI)
+gui:	fixff $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI)
 	echo ALL DONE
 
-win32:	fixff $(SCRIPTS) $(SCRIPTS_WIN32)
+win32:	fixff $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32)
 	echo ALL DONE
 
 fixff:
