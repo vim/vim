@@ -41,7 +41,6 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test_autocmd_option.out \
 		test_autoformat_join.out \
 		test_breakindent.out \
-		test_cdo.out \
 		test_changelist.out \
 		test_charsearch.out \
 		test_close_count.out \
@@ -72,6 +71,7 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test_writefile.out
 
 NEW_TESTS = test_assert.res \
+	    test_cdo.res \
 	    test_alot.res
 
 SCRIPTS_GUI = test16.out
@@ -173,4 +173,4 @@ RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPR
 newtests: $(NEW_TESTS)
 
 .vim.res:
-	$(RUN_VIMTEST) -u runtest.vim $*.vim
+	$(RUN_VIMTEST) -S runtest.vim $*.vim
