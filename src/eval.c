@@ -23095,7 +23095,11 @@ ex_function(eap)
 
 	/* insert the new function in the function list */
 	STRCPY(fp->uf_name, name);
-	hash_add(&func_hashtab, UF2HIKEY(fp));
+	if (hash_add(&func_hashtab, UF2HIKEY(fp)) == FAIL)
+	{
+	    vim_free(fp);
+	    goto erret;
+	}
     }
     fp->uf_args = newargs;
     fp->uf_lines = newlines;
