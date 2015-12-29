@@ -5,10 +5,10 @@ compiler:
   - gcc
 
 env:
-  - COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge
+  - COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp'"
-  - COVERAGE=no FEATURES=small CONFOPT=
-  - COVERAGE=no FEATURES=tiny  CONFOPT=
+  - COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src
+  - COVERAGE=no FEATURES=tiny  CONFOPT= SHADOWOPT= SRCDIR=./src
 
 sudo: false
 
@@ -31,11 +31,11 @@ before_install:
 
 script:
   - NPROC=$(getconf _NPROCESSORS_ONLN)
-  - ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && make -j$NPROC
-  - ./src/vim --version
-  - make test
+  - if [ "x$SHADOWOPT" != x ]; then make -C src shadow; fi && (cd ${SRCDIR} && ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && make -j$NPROC)
+  - ${SRCDIR}/vim --version
+  - make $SHADOWOPT test
 
 after_success:
-  - if [ x"$COVERAGE" = "xyes" ]; then ~/.local/bin/coveralls -b src -x .xs -e src/xxd -e src/if_perl.c --encodings utf-8 latin-1 EUC-KR; fi
+  - if [ x"$COVERAGE" = "xyes" ]; then ~/.local/bin/coveralls -b $SRCDIR -x .xs -e ${SRCDIR}/xxd -e ${SRCDIR}/if_perl.c --encodings utf-8 latin-1 EUC-KR; fi
 
 # vim:set sts=2 sw=2 tw=0 et:
