@@ -86,6 +86,9 @@ the same as in the Unix case, only the commands change):
 
     This will create the xx\LC_MESSAGES directory (if it does not exist) and
     will copy vim.po to it.
+    You can also use the following command to install all languages:
+
+	make -f Make_ming.mak install-all
 
 (6) Another extra step ;-)). The command:
 
