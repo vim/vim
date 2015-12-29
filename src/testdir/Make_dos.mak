@@ -25,18 +25,18 @@ DOSTMP = dostmp
 DOSTMP_OUTFILES = $(TEST_OUTFILES:test=dostmp\test)
 DOSTMP_INFILES = $(DOSTMP_OUTFILES:.out=.in)
 
-.SUFFIXES: .in .out
+.SUFFIXES: .in .out .res .vim
 
 # Must run test1 first to create small.vim.
 $(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS): $(SCRIPTS_FIRST)
 
-nongui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) report
+nongui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) newtests report
 
 small:	nolog report
 
-gui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) report
+gui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) newtests report
 
-win32:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32) report
+win32:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32) newtests report
 
 # Copy the input files to dostmp, changing the fileformat to dos.
 $(DOSTMP_INFILES): $(*B).in
@@ -76,6 +76,7 @@ report:
 clean:
 	-del *.out
 	-del *.failed
+	-del *.res
 	-if exist $(DOSTMP) rd /s /q $(DOSTMP)
 	-if exist test.in del test.in
 	-if exist test.ok del test.ok
@@ -89,10 +90,12 @@ clean:
 	-if exist Xfind rd /s /q Xfind
 	-if exist viminfo del viminfo
 	-if exist test.log del test.log
+	-if exist messages del messages
 	-if exist benchmark.out del benchmark.out
 
 nolog:
 	-if exist test.log del test.log
+	-if exist messages del messages
 
 benchmark:
 	bench_re_freeze.out
@@ -101,3 +104,12 @@ bench_re_freeze.out: bench_re_freeze.vim
 	-if exist benchmark.out del benchmark.out
 	$(VIMPROG) -u dos.vim -U NONE --noplugin $*.in
 	@IF EXIST benchmark.out ( type benchmark.out )
+
+# New style of tests uses Vim script with assert calls.  These are easier
+# to write and a lot easier to read and debug.
+# Limitation: Only works with the +eval feature.
+
+newtests: $(NEW_TESTS)
+
+.vim.res:
+	$(VIMPROG) -u NONE -S runtest.vim $*.vim
