@@ -55,7 +55,7 @@ RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim lua.vim test.ok benchmar
 RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f -u unix.vim -U NONE --noplugin -s dotest.in
 
 clean:
-	-rm -rf *.out *.failed *.res *.rej *.orig test.log $(RM_ON_RUN) $(RM_ON_START) valgrind.*
+	-rm -rf *.out *.failed *.res *.rej *.orig test.log messages $(RM_ON_RUN) $(RM_ON_START) valgrind.*
 
 test1.out: test1.in
 	-rm -rf $*.failed $(RM_ON_RUN) $(RM_ON_START) wrongtermsize
@@ -112,7 +112,7 @@ bench_re_freeze.out: bench_re_freeze.vim
 	@/bin/sh -c "if test -f benchmark.out; then cat benchmark.out; fi"
 
 nolog:
-	-rm -f test.log
+	-rm -f test.log messages
 
 
 # New style of tests uses Vim script with assert calls.  These are easier
@@ -123,4 +123,4 @@ RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPR
 newtests: $(NEW_TESTS)
 
 .vim.res:
-	$(RUN_VIMTEST) -S runtest.vim $*.vim
+	$(RUN_VIMTEST) -u NONE -S runtest.vim $*.vim

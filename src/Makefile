@@ -616,6 +616,27 @@ LINT_OPTIONS = -beprxzF
 #PROFILE_LIBS = -pg
 #PROFILE_LIBS = -pg -lc
 
+
+# TEST COVERAGE - Uncomment the two lines below the explanation to get code
+# coverage information. (provided by Yegappan Lakshmanan)
+# 1. make clean, run configure and build Vim as usual.
+# 2. Generate the baseline code coverage information:
+#        $ lcov -c -i -b . -d objects -o objects/coverage_base.info
+# 3. Run "make test" to run the unit tests.  The code coverage information will
+#    be generated in the src/objects directory.
+# 4. Generate the code coverage information from the tests:
+#        $ lcov -c -b . -d objects/ -o objects/coverage_test.info
+# 5. Combine the baseline and test code coverage data:
+#        $ lcov -a objects/coverage_base.info -a objects/coverage_test.info -o objects/coverage_total.info
+# 6. Process the test coverage data and generate a report in html:
+#        $ genhtml objects/coverage_total.info -o objects
+# 7. Open the objects/index.html file in a web browser to view the coverage
+#    information.
+#
+# PROFILE_CFLAGS=-g -O0 -fprofile-arcs -ftest-coverage
+# LDFLAGS=--coverage
+
+
 # Uncomment one of the next two lines to compile Vim with the
 # address sanitizer or with the undefined sanitizer.  Works with gcc and
 # clang.  May make Vim twice as slow.  Errors reported on stderr.
@@ -1905,7 +1926,6 @@ test1 \
 	test_autocmd_option \
 	test_autoformat_join \
 	test_breakindent \
-	test_cdo \
 	test_changelist \
 	test_charsearch \
 	test_close_count \
@@ -1948,13 +1968,17 @@ test1 \
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 test_assert \
+	test_cdo \
+	test_searchpos \
 	test_sort \
 	test_undolevels \
 	test_alot:
-	cd testdir; rm -f $@.res; $(MAKE) -f Makefile $@.res VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+	cd testdir; rm -f $@.res test.log messages; $(MAKE) -f Makefile $@.res VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+	cat testdir/messages
 
 newtests:
-	cd testdir; rm -f $@.res; $(MAKE) -f Makefile newtests VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+	cd testdir; rm -f $@.res test.log messages; $(MAKE) -f Makefile newtests VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+	cat testdir/messages
 
 testclean:
 	cd testdir; $(MAKE) -f Makefile clean
@@ -2674,7 +2698,7 @@ objects/if_lua.o: if_lua.c
 
 objects/if_mzsch.o: if_mzsch.c $(MZSCHEME_EXTRA)
 	$(CCC) -o $@ $(MZSCHEME_CFLAGS_EXTRA) if_mzsch.c
- 
+
 mzscheme_base.c:
 	$(MZSCHEME_MZC) --c-mods mzscheme_base.c ++lib scheme/base
 
