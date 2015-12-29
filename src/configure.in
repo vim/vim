@@ -2500,6 +2500,40 @@ if test -z "$SKIP_GTK2"; then
   fi
 fi
 
+dnl Check the version of Gdk-Pixbuf.  If the version is 2.32 or later and
+dnl glib-compile-resources is found in PATH, use GResource.
+if test "x$GUITYPE" = "xGTK"; then
+  AC_MSG_CHECKING([version of Gdk-Pixbuf])
+  gdk_pixbuf_version=`$PKG_CONFIG --modversion gdk-pixbuf-2.0`
+  if test "x$gdk_pixbuf_version" != x ; then
+    gdk_pixbuf_version_minor=`echo $gdk_pixbuf_version | \
+      sed -e 's/[[0-9]][[0-9]]*\.\([[0-9]][[0-9]]*\)\.[[0-9]][[0-9]]*/\1/'`
+    if test "x$gdk_pixbuf_version_minor" != x -a \
+      $gdk_pixbuf_version_minor -ge 32 ; then
+      AC_MSG_RESULT([OK.])
+      AC_PATH_PROG(GLIB_COMPILE_RESOURCES,[glib-compile-resources],no)
+      AC_MSG_CHECKING([glib-compile-resources])
+      if test "x$GLIB_COMPILE_RESOURCES" = xno ; then
+        AC_MSG_RESULT([cannot be found in PATH.])
+      else
+	AC_MSG_RESULT([usable.])
+        AC_DEFINE(USE_GRESOURCE)
+        GRESOURCE_HDR="auto/gui_gtk_gresources.h"
+        GRESOURCE_SRC="auto/gui_gtk_gresources.c"
+        GRESOURCE_OBJ="objects/gui_gtk_gresources.o"
+      fi
+    else
+      AC_MSG_RESULT([not usable.])
+    fi
+  else
+    AC_MSG_RESULT([cannot obtain from pkg_config.])
+  fi
+fi
+AC_SUBST(GLIB_COMPILE_RESOURCES)
+AC_SUBST(GRESOURCE_HDR)
+AC_SUBST(GRESOURCE_SRC)
+AC_SUBST(GRESOURCE_OBJ)
+
 dnl Check for Motif include files location.
 dnl The LAST one found is used, this makes the highest version to be used,
 dnl e.g. when Motif1.2 and Motif2.0 are both present.
