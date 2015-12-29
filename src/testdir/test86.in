@@ -370,7 +370,9 @@ EOF
 :sleep 1
 :py t.running = False
 :py t.join()
-:py l[0] = t.t > 7  # check if the background thread is working
+:" Check if the background thread is working.  Count should be 10, but on a
+:" busy system (AppVeyor) it can be much lower.
+:py l[0] = t.t > 4
 :py del time
 :py del threading
 :py del t
