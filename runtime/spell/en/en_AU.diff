@@ -1,5 +1,5 @@
-*** en_AU.orig.aff	Fri Apr 15 13:20:36 2005
---- en_AU.aff	Wed Jan 11 11:10:45 2006
+*** en_AU.orig.aff	2010-05-15 13:03:47.000000000 +0200
+--- en_AU.aff	2015-12-30 19:08:16.916527503 +0100
 ***************
 *** 7,9 ****
   SET ISO8859-1
@@ -16,7 +16,7 @@
 ! MIDWORD	'
 ! 
 ! RARE ?
-! BAD !
+! BAD %
 ! 
 ! MAP 9
 ! MAP aאבגדהו
@@ -2382,8 +2382,8 @@
 ! 
 ! # a few more for consistency
 ! COMMON five six seven eight nine ten hundred thousand
-*** en_AU.orig.dic	Fri Apr 15 13:20:36 2005
---- en_AU.dic	Wed Mar  8 13:14:30 2006
+*** en_AU.orig.dic	2010-05-15 13:03:48.000000000 +0200
+--- en_AU.dic	2015-12-30 19:07:42.620898655 +0100
 ***************
 *** 1,2 ****
 ! 45654
@@ -2666,15 +2666,19 @@
 --- 45578,45579 ----
 ***************
 *** 45655 ****
---- 45646,45656 ----
+--- 45646,45660 ----
   zymurgy/S
 + nd
-+ the the/!
-+ and and/!
-+ a a/!
-+ a an/!
-+ an a/!
-+ an an/!
 + PayPal
 + Google
 + TCP\/IP
++ a a/%
++ a an/%
++ a the/%
++ an a/%
++ an an/%
++ an the/%
++ and and/%
++ the a/%
++ the an/%
++ the the/%

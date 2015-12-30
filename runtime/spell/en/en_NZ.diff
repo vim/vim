@@ -1,5 +1,5 @@
-*** en_NZ.orig.aff	Fri Apr 15 13:20:36 2005
---- en_NZ.aff	Wed Jan 11 22:03:30 2006
+*** en_NZ.orig.aff	2010-05-15 13:03:47.000000000 +0200
+--- en_NZ.aff	2015-12-30 19:08:13.884560313 +0100
 ***************
 *** 7,9 ****
   SET ISO8859-1
@@ -16,7 +16,7 @@
 ! MIDWORD	'
 ! 
 ! RARE ?
-! BAD !
+! BAD %
 ! 
 ! MAP 9
 ! MAP aאבגדהו
@@ -2359,8 +2359,8 @@
 ! SFX 3 0 ist's [aeioubp]y
 ! SFX 3 o ist's o
 ! SFX 3 0 ist's [^eoy]
-*** en_NZ.orig.dic	Fri Apr 15 13:20:36 2005
---- en_NZ.dic	Wed Mar  8 13:14:40 2006
+*** en_NZ.orig.dic	2010-05-15 13:03:48.000000000 +0200
+--- en_NZ.dic	2015-12-30 19:08:04.928657238 +0100
 ***************
 *** 4,6 ****
   2ZB
@@ -2680,16 +2680,20 @@
   Burkina
 ! Faso/M
 \ No newline at end of file
---- 47109,47120 ----
+--- 47109,47124 ----
   Burkina
 ! Faso/M
 ! nd
-! the the/!
-! and and/!
-! a a/!
-! a an/!
-! an a/!
-! an an/!
 ! PayPal
 ! Google
 ! TCP\/IP
+! a a/%
+! a an/%
+! a the/%
+! an a/%
+! an an/%
+! an the/%
+! and and/%
+! the a/%
+! the an/%
+! the the/%
