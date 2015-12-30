@@ -7,8 +7,9 @@ compiler:
 env:
   - COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp'"
-  - COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src
-  - COVERAGE=no FEATURES=tiny  CONFOPT= SHADOWOPT= SRCDIR=./src
+    CHECK_AUTOCONF=yes
+  - COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+  - COVERAGE=no FEATURES=tiny  CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
 
 sudo: false
 
@@ -19,6 +20,7 @@ branches:
 addons:
   apt:
     packages:
+      - autoconf
       - lcov
       - libperl-dev
       - python-dev
@@ -31,6 +33,7 @@ before_install:
 
 script:
   - NPROC=$(getconf _NPROCESSORS_ONLN)
+  - if [ "$CHECK_AUTOCONF" = "yes" ]; then make -C src autoconf; fi
   - if [ "x$SHADOWOPT" != x ]; then make -C src shadow; fi && (cd ${SRCDIR} && ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && make -j$NPROC)
   - ${SRCDIR}/vim --version
   - make $SHADOWOPT test
