@@ -27,9 +27,6 @@ DOSTMP_INFILES = $(DOSTMP_OUTFILES:.out=.in)
 
 .SUFFIXES: .in .out .res .vim
 
-# Must run test1 first to create small.vim.
-$(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS): $(SCRIPTS_FIRST)
-
 nongui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) newtests report
 
 small:	nolog report
@@ -66,6 +63,11 @@ $(TEST_OUTFILES): $(DOSTMP)\$(*B).in
 		 & del $(DOSTMP)\$(*B).out \
 		 & echo $* FAILED >> test.log ) \
 		else ( move /y test.out $*.out )
+
+# Must run test1 first to create small.vim.
+# This rule must come after the one that copies the input files to dostmp to
+# allow for running an individual test.
+$(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS): $(SCRIPTS_FIRST)
 
 report:
 	@echo ""
