@@ -452,3 +452,6 @@
 
 /* Define if Xutf8SetWMProperties() is in an X library. */
 #undef HAVE_XUTF8SETWMPROPERTIES
+
+/* Define if GResource is used to load icons */
+#undef USE_GRESOURCE

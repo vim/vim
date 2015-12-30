@@ -5,89 +5,35 @@
 
 VIMPROG = ..\\vim
 
+default: nongui
+
+!include Make_all.mak
+
 # Omitted:
 # test2		"\\tmp" doesn't work.
 # test10	'errorformat' is different
 # test12	can't unlink a swap file
 # test25	uses symbolic link
 # test27	can't edit file with "*" in file name
+# test49	fails in various ways
 # test97	\{ and \$ are not escaped characters.
 
-SCRIPTS16 =	test1.out test19.out test20.out test22.out \
-		test23.out test24.out test28.out test29.out \
-		test35.out test36.out test43.out \
-		test44.out test45.out test46.out test47.out \
-		test48.out test51.out test53.out test54.out \
-		test55.out test56.out test57.out test58.out test59.out \
-		test60.out test61.out test62.out test63.out test64.out
+SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE1) $(SCRIPTS_MORE3) $(SCRIPTS_MORE4)
 
-SCRIPTS =	test3.out test4.out test5.out test6.out test7.out \
-		test8.out test9.out test11.out test13.out test14.out \
-		test15.out test17.out test18.out test21.out test26.out \
-		test30.out test31.out test32.out test33.out test34.out \
-		test37.out test38.out test39.out test40.out test41.out \
-		test42.out test52.out test65.out test66.out test67.out \
-		test68.out test69.out test71.out test72.out test73.out \
-		test74.out test75.out test76.out test77.out test78.out \
-		test79.out test80.out test81.out test82.out test83.out \
-		test84.out test85.out test86.out test87.out test88.out \
-		test89.out test90.out test91.out test92.out test93.out \
-		test94.out test95.out test96.out test98.out test99.out \
-		test101.out test102.out test103.out test104.out \
-		test105.out test106.out  test107.out\
-		test_argument_0count.out \
-		test_argument_count.out \
-		test_autocmd_option.out \
-		test_autoformat_join.out \
-		test_breakindent.out \
-		test_cdo.out \
-		test_changelist.out \
-		test_charsearch.out \
-		test_close_count.out \
-		test_command_count.out \
-		test_comparators.out \
-		test_erasebackword.out \
-		test_eval.out \
-		test_fixeol.out \
-		test_increment.out \
-		test_insertcount.out \
-		test_listchars.out \
-		test_listlbr.out \
-		test_listlbr_utf8.out \
-		test_mapping.out \
-		test_marks.out \
-		test_match_conceal.out \
-		test_nested_function.out \
-		test_options.out \
-		test_perl.out \
-		test_qf_title.out \
-		test_ruby.out \
-		test_search_mbyte.out \
-		test_set.out \
-		test_signs.out \
-		test_tagcase.out \
-		test_textobjects.out \
-		test_utf8.out \
-		test_writefile.out
-
-SCRIPTS32 =	test50.out test70.out
-
-SCRIPTS_GUI =	test16.out
-
-TEST_OUTFILES = $(SCRIPTS16) $(SCRIPTS) $(SCRIPTS32) $(SCRIPTS_GUI)
+TEST_OUTFILES = $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32) $(SCRIPTS_GUI)
 DOSTMP = dostmp
 DOSTMP_OUTFILES = $(TEST_OUTFILES:test=dostmp\test)
 DOSTMP_INFILES = $(DOSTMP_OUTFILES:.out=.in)
 
-.SUFFIXES: .in .out
+.SUFFIXES: .in .out .res .vim
 
-nongui:	nolog $(SCRIPTS16) $(SCRIPTS) report
+nongui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) newtests report
 
 small:	nolog report
 
-gui:	nolog $(SCRIPTS16) $(SCRIPTS) $(SCRIPTS_GUI) report
+gui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) newtests report
 
-win32:	nolog $(SCRIPTS16) $(SCRIPTS) $(SCRIPTS32) report
+win32:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32) newtests report
 
 # Copy the input files to dostmp, changing the fileformat to dos.
 $(DOSTMP_INFILES): $(*B).in
@@ -118,6 +64,11 @@ $(TEST_OUTFILES): $(DOSTMP)\$(*B).in
 		 & echo $* FAILED >> test.log ) \
 		else ( move /y test.out $*.out )
 
+# Must run test1 first to create small.vim.
+# This rule must come after the one that copies the input files to dostmp to
+# allow for running an individual test.
+$(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS): $(SCRIPTS_FIRST)
+
 report:
 	@echo ""
 	@echo Test results:
@@ -127,6 +78,7 @@ report:
 clean:
 	-del *.out
 	-del *.failed
+	-del *.res
 	-if exist $(DOSTMP) rd /s /q $(DOSTMP)
 	-if exist test.in del test.in
 	-if exist test.ok del test.ok
@@ -140,10 +92,12 @@ clean:
 	-if exist Xfind rd /s /q Xfind
 	-if exist viminfo del viminfo
 	-if exist test.log del test.log
+	-if exist messages del messages
 	-if exist benchmark.out del benchmark.out
 
 nolog:
 	-if exist test.log del test.log
+	-if exist messages del messages
 
 benchmark:
 	bench_re_freeze.out
@@ -152,3 +106,12 @@ bench_re_freeze.out: bench_re_freeze.vim
 	-if exist benchmark.out del benchmark.out
 	$(VIMPROG) -u dos.vim -U NONE --noplugin $*.in
 	@IF EXIST benchmark.out ( type benchmark.out )
+
+# New style of tests uses Vim script with assert calls.  These are easier
+# to write and a lot easier to read and debug.
+# Limitation: Only works with the +eval feature.
+
+newtests: $(NEW_TESTS)
+
+.vim.res:
+	$(VIMPROG) -u NONE -S runtest.vim $*.vim

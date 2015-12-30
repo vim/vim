@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Dec 05
+*todo.txt*      For Vim version 7.4.  Last change: 2015 Dec 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -74,18 +74,38 @@ Regexp problems:
   out the \& works.  Seems any column check after \& fails.
 - The pattern "\1" with the old engine gives E65, with the new engine it
   matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
+- Search for \\~ causes error E874.
+
+Poor mans runtime file updater:
+- Generate a content file of all included runtime files:
+    $VIMRUNTIME/CONTENTS
+  With lines:
+        runtime/syntax/ada.vim hexchecksum  hexchecksum-with-CR-LF
+	runtime/syntax/old.vim DELETED
+- Use a command to trigger a script:
+	:RuntimeUpdate
+  Gets the new contents file from
+    https://raw.githubusercontent.com/vim/vim/master/runtime/CONTENTS
+  Goes over each line, compares the checksum and gets the file if it differs.
+- Include a minimal required Vim version?
+- For an installation, use "sudo" after getting all the files, only copy them.
+   need a temp directory tree.
+- For Windows generate a .bat file with "runas" (see StackOverflow).
+- Include a wget.exe or curl.exe in the distribution?
+- Also update vim.exe and gvim.exe this way?
 
 English spell file has an encoding error in the affix file.
+(Dominique Pelle, 2015 Oct 15)
 Perhaps use the files from here:
 https://github.com/marcoagpinto/aoo-mozilla-en-dict
-
-Patch to enable clipboard with MSYS2. (Ken Takata, 2015 Nov 26)
+Hint for new URL: Christian Brabandt, 2015 Oct 15.
+But that file looks old.
 
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
 
 Problem that a previous silent ":throw" causes a following try/catch not to
-work. (ZyX, 2013 Sep 28)
+work. (ZyX, 2013 Sep 28) With examples: (Malcolm Rowe, 2015 Dec 24)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
@@ -96,7 +116,12 @@ Should use /usr/local/share/applications or /usr/share/applications.
 Or use $XDG_DATA_DIRS.
 Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
 
-test107 fails when run in the GUI on Linux.
+Patch to test shadow. James McCoy, 2015 Dec 7, #520
+
+Patch to support strawberry Perl. (Ken Takata, 2015 Dec 21)
+
+Change the travis config to also run autoconf on the huge build.
+(James McCoy, 2015 Dec 4)
 
 Access to uninitialized memory in match_backref() regexp_nda.c:4882
 (Dominique Pelle, 2015 Nov 6)
@@ -106,14 +131,16 @@ Patch to fix test_listchars for MingW. (Christian Brabandt, 2015 Nov 29)
 Patch to not set the python home if $PYTHONHOME is set. (Kazuki Sakamoto,
 2015 Nov 24)
 
+Patch to add tests for what 7.3.192 fixed. (Elias Diem, 2015 Dec 22)
+
 Patch to use local value of 'errorformat' in :cexpr. (Christian Brabandt,
 2015 Oct 16)  Only do this for :lexpr ?
 
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
 
-Patch to make fnamemodify() work better with Cygwin. (Wily Wampa, 2015 Nov 28,
-issue 505)
+Patch to make fnamemodify() work better with Cygwin. (Wily Wampa == Jacob
+Niehus, 2015 Nov 28, issue 505) 
 
 Patch to fix mc_FullName() on root directory. (Milly, 2015 Nov 24, Issue 501)
 
@@ -123,17 +150,26 @@ Nov 26)
 Test 17 does not clean up the directory it creates. (Michael Soyka, 2015 Nov
 28)
 
-English spell checking has an error.  Updating doesn't work.
-(Dominique Pelle, 2015 Oct 15)
-Hint for new URL: Christian Brabandt, 2015 Oct 15.
-But that file looks old.
+Patch to add binary support for nrformat. (Jason Schulz, 2015 Dec 28)
+
+Patch to make assert_false() error message look better. (Watiko, 2015 Dec 14)
 
 Using ":windo" to set options in all windows has the side effect that it
 changes the window layout and the current window.  Make a variant that saves
 and restores.  Use in the matchparen plugin.
-Perhaps we can use ":silent window"?
+Perhaps we can use "window <restore> {cmd}"?
+
+Patch to estimate available memory on MS-Windows. (Mike Williams, 2015 Dec 18)
+Last version that day.
 
 Illegal memory access, requires ASAN to see. (Dominique Pelle, 2015 Jul 28)
+
+Patch for testing 'backspace'.  Also changes behavior of ":set bs=0", do we
+want that? (Hirohito Higashi, 2015 Dec 17)
+New patch Dec 26.
+
+Patch to adjust an Ex range only if it's about line numbers. (Christian
+Brabandt, 2015 Dec 13)
 
 Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
 
@@ -153,8 +189,11 @@ github?  This URL works:
 Can src/GvimExt/Make_cyg.mak be removed?
 Same for src/xxd/Make_cyg.mak
 
-Patch to replace deprecated gdk_pixbuf_new_from_inline(). (Kazunobu Kuriyama,
-2015 Nov 30, PR #507)
+":q!" should reset modified flag for current buffer, if another buffer is
+modified no need to abandon it again.
+Patch from Yasuhiro Matsumoto, 2014 Nov 21.
+Update from Hirohito Higashi, 2014 Nov 21.
+With test, Nov 23.  Update 2015 Dec 15.
 
 Updated Fortran files. (Ajit Thakkar, 2015 Nov 30, second one)
 
@@ -181,13 +220,33 @@ specifically?  First try with the parens, then without.
 Patch to fix "." after CTRL-A in Visual block mode. (Ozaki Kiichi, 2015 Oct
 24)
 
+Half-finished patch to fix the Problem using cgn to change a search hit when
+replacement includes hit. Reported by John Beckett, fix by Christian Brabandt,
+2015 Dec 14, Update Dec 15.
+
+Patch to fix pointer cast warning in VS2015. (Mike Williams, 2015 Dec 13)
+Patch to make building GVimExt with VS2015. (Mike Williams, 2015 Dec 13)
+
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
+Patch to add perleval(). (Damien, 2015 Dec 8)
+
+Can we cache the syntax attributes, so that updates for 'relativenumber' and
+'cursorline'/'cursorcolumn' are a lot faster?
+
 Patch to add window and tab arguments to getcwd(). (Thinca, 2015 Nov 15)
+
+Patch to check PYTHONHOME first. #500
 
 Patch to build with Python using MSYS2. (Yasuhiro Matsumoto, 2015 Nov 26)
 Updated Nov 29.
+
+Build with Python on Mac does not always use the right library.
+(Kazunobu Kuriyama, 2015 Mar 28)
+
+Patch to support Python 'None' value in pyeval(). (Damien, 2015 Nov 21)
+Need a Vim equivalent of None and a way to test for it.
 
 To support Thai (and other languages) word boundaries, include the ICU
 library:  http://userguide.icu-project.org/boundaryanalysis
@@ -224,10 +283,16 @@ effects for when set by the user, on init and when reset to default.
 The argument for "-S" is not taken literally, the ":so" command expands
 wildcards.  Add a ":nowild" command modifier?  (ZyX, 2015 March 4)
 
+Patch to support sorting on floating point number.  (Alex Jakushev, 2010 Oct
+30)
+
 Proposal to make options.txt easier to read. (Arnaud Decara, 2015 Aug 5)
 Update Aug 14.
 
 Crash in :cnext on MS-Windows. (Ben Fritz, 2015 Oct 27)
+
+When using --remote-tab on MS-Windows 'encoding' hasn't been initialized yet,
+the file name ends up encoded wrong. (Raul Coronado, 2015 Dec 21)
 
 Patch to add GUI colors to the terminal, when it supports it. (ZyX, 2013 Jan
 26, update 2013 Dec 14, another 2014 Nov 22)
@@ -237,9 +302,6 @@ Sep 10)
 
 Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
 Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8.
-
-Build with Python on Mac does not always use the right library.
-(Kazunobu Kuriyama, 2015 Mar 28)
 
 Example in editing.txt uses $HOME with the expectating that it ends in a
 slash.  For me it does, but perhaps not for everybody.  Add a function that
@@ -252,9 +314,6 @@ ml_updatechunk() is slow when retrying for another encoding. (John Little,
 
 Patch to fix checking global option value when not using it.
 (Arnaud Decara, 2015 Jul 23)
-
-Patch to support Python 'None' value in pyeval(). (Damien, 2015 Nov 21)
-Need a Vim equivalent of None and a way to test for it.
 
 When 'showbreak' is set repeating a Visual operation counts the size of the
 'showbreak' text as part of the operation. (Axel Bender, 2015 Jul 20)
@@ -344,12 +403,6 @@ Should be easy to highlight all matches with 'incsearch'.  Idea by Itchyny,
 Plugins need to make a lot of effort, lots of mappings, to know what happened
 before pressing the key that triggers a plugin action.  How about keeping the
 last N pressed keys, so that they do not need to be mapped?
-
-":q!" should reset modified flag for current buffer, if another buffer is
-modified no need to abandon it again.
-Patch from Yasuhiro Matsumoto, 2014 Nov 21.
-Update from Hirohito Higashi, 2014 Nov 21.
-With test, Nov 23.
 
 Wrong scrolling when using incsearch.  Patch by Christian Brabandt, 2014 Dec 4.
 Is this a good solution?
@@ -517,9 +570,6 @@ Patch to skip sort if no line matches the expression.
 
 Patch to add sortuniq(). (Cade Forester, 2014 Mar 19)
 Or add uniq() instead?  Patch by lcd47, but it has problems.
-
-Patch to support sorting on floating point number.  (Alex Jakushev, 2010 Oct
-30)
 
 Patch to support expression argument to sort() instead of a function name.
 Yasuhiro Matsumoto, 2013 May 31.
@@ -1539,6 +1589,10 @@ When using remote-silent the -R flag is not passed on. (Axel Bender, 2012 May
 Win32: A --remote command that has a directory name starting with a ( doesn't
 work, the backslash is removed, assuming that it escapes the (. (Valery
 Kondakoff, 2009 May 13)
+
+Win32: Using "gvim --remote-tab-silent elŝuti.txt" doesn't work, the
+multi-byte character isn't passed and edits elsuti.txt.
+(Raúl Núñez de Arenas Coronado, 2015 Dec 18)
 
 Problem with 'langmap' being used on the rhs of a mapping. (Nikolai Weibull,
 2008 May 14)

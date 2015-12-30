@@ -111,6 +111,9 @@ Install your translation with the following command:
 
 This will create the xx\LC_MESSAGES directory in runtime\lang if it does not
 already exist.
+You can also use the following command to install all languages:
+
+	nmake -f make_mvc.mak install-all
 
 
 vim:tw=78:

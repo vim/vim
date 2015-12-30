@@ -143,18 +143,31 @@ MINOR = 4
 #   For Windows 98/ME the 2003 version is required, but then the executable
 #   won't work on Windows 7 and 64 bit systems.
 # - "nmake -f Make_mvc.mak"  (use the same path as for vcvars32.bat)
-# - "rm testdir/*.out", "nmake -f Make_mvc.mak test" and check the output.
+# - Run the tests:
+#   > rm testdir/*.out
+#   > nmake -f Make_mvc.mak test
+#   - check the output.
 # - Rename vim.exe to vimw32.exe, xxd/xxd.exe to xxdw32.exe.
 # - Rename vim.pdb to vimw32.pdb.
 # - Rename install.exe to installw32.exe and uninstal.exe to uninstalw32.exe.
 # Win32 GUI version:
 # - "nmake -f Make_mvc.mak GUI=yes"
+# - Run the tests:
+#   > cd testdir
+#   > rm *.out
+#   > nmake -f Make_dos.mak VIMPROG=..\gvim
+#   - check the output.
 # - move "gvim.exe" to here (otherwise the OLE version will overwrite it).
 # - Move gvim.pdb to here.
 # - Delete vimrun.exe, install.exe and uninstal.exe.
 # - Copy "GvimExt/gvimext.dll" to here.
 # Win32 GUI version with OLE, PERL, TCL, PYTHON and dynamic IME:
 # - Run src/bigvim.bat ("nmake -f Make_mvc.mak GUI=yes OLE=yes IME=yes ...)
+# - Run the tests:
+#   > cd testdir
+#   > rm *.out
+#   > nmake -f Make_dos.mak VIMPROG=..\gvim
+#   - check the output.
 # - Rename "gvim.exe" to "gvim_ole.exe".
 # - Rename gvim.pdb to "gvim_ole.pdb".
 # - Delete install.exe and uninstal.exe.

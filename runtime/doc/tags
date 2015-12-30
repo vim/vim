@@ -5060,6 +5060,7 @@ c_<Home>	cmdline.txt	/*c_<Home>*
 c_<Insert>	cmdline.txt	/*c_<Insert>*
 c_<Left>	cmdline.txt	/*c_<Left>*
 c_<LeftMouse>	cmdline.txt	/*c_<LeftMouse>*
+c_<MiddleMouse>	cmdline.txt	/*c_<MiddleMouse>*
 c_<NL>	cmdline.txt	/*c_<NL>*
 c_<PageDown>	cmdline.txt	/*c_<PageDown>*
 c_<PageUp>	cmdline.txt	/*c_<PageUp>*

@@ -85,6 +85,7 @@ SRC_ALL =	\
 		src/main.aap \
 		src/testdir/main.aap \
 		src/testdir/README.txt \
+		src/testdir/Make_all.mak \
 		src/testdir/*.in \
 		src/testdir/sautest/autoload/*.vim \
 		src/testdir/runtest.vim \
@@ -169,6 +170,7 @@ SRC_UNIX =	\
 		README_src.txt \
 		configure \
 		pixmaps/*.xpm \
+		pixmaps/*.png \
 		pixmaps/gen-inline-pixbufs.sh \
 		pixmaps/stock_icons.h \
 		src/INSTALL \
@@ -189,6 +191,7 @@ SRC_UNIX =	\
 		src/gui_gtk_f.c \
 		src/gui_gtk_f.h \
 		src/gui_gtk_x11.c \
+		src/gui_gtk_gresources.xml \
 		src/gui_motif.c \
 		src/gui_xmdlg.c \
 		src/gui_xmebw.c \
@@ -214,6 +217,7 @@ SRC_UNIX =	\
 		src/proto/gui_athena.pro \
 		src/proto/gui_gtk.pro \
 		src/proto/gui_gtk_x11.pro \
+		src/proto/gui_gtk_gresources.pro \
 		src/proto/gui_motif.pro \
 		src/proto/gui_xmdlg.pro \
 		src/proto/gui_x11.pro \
