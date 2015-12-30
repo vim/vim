@@ -1976,12 +1976,19 @@ test_assert \
 	test_searchpos \
 	test_sort \
 	test_undolevels \
+	test_viml \
 	test_alot:
 	cd testdir; rm -f $@.res test.log messages; $(MAKE) -f Makefile $@.res VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+	@if test -f testdir/test.log; then \
+		cat testdir/test.log; \
+	fi
 	cat testdir/messages
 
 newtests:
 	cd testdir; rm -f $@.res test.log messages; $(MAKE) -f Makefile newtests VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+	@if test -f testdir/test.log; then \
+		cat testdir/test.log; \
+	fi
 	cat testdir/messages
 
 testclean:
