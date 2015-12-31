@@ -2507,8 +2507,10 @@ mch_FullName(fname, buf, len, force)
     fname = posix_fname;
 #endif
 
-    /* expand it if forced or not an absolute path */
-    if (force || !mch_isFullName(fname))
+    /* Expand it if forced or not an absolute path.
+     * Do not do it for "/file", the result is always "/". */
+    if ((force || !mch_isFullName(fname))
+	    && ((p = vim_strrchr(fname, '/')) == NULL || p != fname))
     {
 	/*
 	 * If the file name has a path, change to that directory for a moment,
@@ -2517,11 +2519,11 @@ mch_FullName(fname, buf, len, force)
 	 */
 #ifdef OS2
 	only_drive = 0;
-	if (((p = vim_strrchr(fname, '/')) != NULL)
+	if (p != NULL
 		|| ((p = vim_strrchr(fname, '\\')) != NULL)
 		|| (((p = vim_strchr(fname,  ':')) != NULL) && ++only_drive))
 #else
-	if ((p = vim_strrchr(fname, '/')) != NULL)
+	if (p != NULL)
 #endif
 	{
 #ifdef HAVE_FCHDIR
