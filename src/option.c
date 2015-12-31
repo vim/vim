@@ -2297,11 +2297,7 @@ static struct vimoption
 #   if defined(WIN3264)
 			    (char_u *)"",	/* set in set_init_1() */
 #   else
-#    if defined(ARCHIE)
-			    (char_u *)"gos",
-#    else
 			    (char_u *)"sh",
-#    endif
 #   endif
 #  endif
 # endif
@@ -2321,11 +2317,7 @@ static struct vimoption
 			    (char_u *)&p_sp, PV_NONE,
 			    {
 #if defined(UNIX)
-# ifdef ARCHIE
-			    (char_u *)"2>",
-# else
 			    (char_u *)"| tee",
-# endif
 #else
 			    (char_u *)">",
 #endif

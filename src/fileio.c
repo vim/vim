@@ -3510,7 +3510,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
     /*
      * Get information about original file (if there is one).
      */
-#if defined(UNIX) && !defined(ARCHIE)
+#if defined(UNIX)
     st_old.st_dev = 0;
     st_old.st_ino = 0;
     perm = -1;
@@ -4126,7 +4126,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	}
     }
 
-#if defined(UNIX) && !defined(ARCHIE)
+#if defined(UNIX)
     /* When using ":w!" and the file was read-only: make it writable */
     if (forceit && perm >= 0 && !(perm & 0200) && st_old.st_uid == getuid()
 				     && vim_strchr(p_cpo, CPO_FWRITE) == NULL)

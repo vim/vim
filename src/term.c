@@ -1532,9 +1532,6 @@ static char *(key_names[]) =
     "Co",
 #endif
     "ku", "kd", "kr", "kl",
-# ifdef ARCHIE
-    "su", "sd",		/* Termcap code made up! */
-# endif
     "#2", "#4", "%i", "*7",
     "k1", "k2", "k3", "k4", "k5", "k6",
     "k7", "k8", "k9", "k;", "F1", "F2",

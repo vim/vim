@@ -7835,7 +7835,7 @@ alist_new()
 # endif
 #endif
 
-#if (!defined(UNIX) && !defined(__EMX__)) || defined(ARCHIE) || defined(PROTO)
+#if (!defined(UNIX) && !defined(__EMX__)) || defined(PROTO)
 /*
  * Expand the file names in the global argument list.
  * If "fnum_list" is not NULL, use "fnum_list[fnum_len]" as a list of buffer
