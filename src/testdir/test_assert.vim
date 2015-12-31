@@ -17,3 +17,8 @@ func Test_assert_equal()
   let l = [1, 2, 3]
   call assert_equal([1, 2, 3], l)
 endfunc
+
+func Test_user_is_happy()
+  smile
+  sleep 300m
+endfunc

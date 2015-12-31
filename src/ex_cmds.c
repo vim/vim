@@ -7767,7 +7767,10 @@ ex_smile(eap)
 	    msg_putchar('\n');
 	else
 	    for (n = *p++; n > 0; --n)
-		msg_putchar(*p);
+		if (*p == 'o' || *p == '$')
+		    msg_putchar_attr(*p, hl_attr(HLF_L));
+		else
+		    msg_putchar(*p);
     msg_clr_eos();
 }
 
