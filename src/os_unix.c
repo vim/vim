@@ -2464,7 +2464,10 @@ mch_FullName(fname, buf, len, force)
      * This helps for when "/etc/hosts" is a symlink to "c:/something/hosts".
      */
 # if CYGWIN_VERSION_DLL_MAJOR >= 1007
-    cygwin_conv_path(CCP_WIN_A_TO_POSIX, fname, posix_fname, MAXPATHL);
+    /* Use CCP_RELATIVE to avoid that it sometimes returns a path that ends in
+     * a forward slash. */
+    cygwin_conv_path(CCP_WIN_A_TO_POSIX | CCP_RELATIVE,
+		     fname, posix_fname, MAXPATHL);
 # else
     cygwin_conv_to_posix_path(fname, posix_fname);
 # endif
