@@ -315,6 +315,7 @@ SRC_DOS =	\
 		src/if_ole.cpp \
 		src/if_ole.h \
 		src/if_ole.idl \
+		src/if_perl_msvc/stdbool.h \
 		src/iid_ole.c \
 		src/os_dos.h \
 		src/os_msdos.c \

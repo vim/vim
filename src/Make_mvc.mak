@@ -826,6 +826,11 @@ CFLAGS = $(CFLAGS) -DDYNAMIC_PERL -DDYNAMIC_PERL_DLL=\"$(PERL_DLL)\"
 
 PERL_EXE = $(PERL)\Bin$(PERL_ARCH)\perl
 PERL_INC = /I $(PERL_INCDIR)
+!if $(MSVC_MAJOR) <= 11
+# ActivePerl 5.20+ requires stdbool.h but VC2012 or earlier doesn't have it.
+# Use a stub stdbool.h.
+PERL_INC = $(PERL_INC) /I if_perl_msvc
+!endif
 PERL_OBJ = $(OUTDIR)\if_perl.obj $(OUTDIR)\if_perlsfio.obj
 XSUBPP = $(PERL)\lib\ExtUtils\xsubpp
 !if exist($(XSUBPP))
