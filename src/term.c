@@ -2079,7 +2079,7 @@ set_mouse_termcode(n, s)
 }
 # endif
 
-# if ((defined(UNIX) || defined(VMS) || defined(OS2)) \
+# if ((defined(UNIX) || defined(VMS)) \
 	&& defined(FEAT_MOUSE_TTY)) || defined(PROTO)
     void
 del_mouse_termcode(n)
@@ -2765,7 +2765,8 @@ term_color(s, n)
 	OUT_STR(tgoto((char *)s, 0, n));
 }
 
-#if (defined(FEAT_TITLE) && (defined(UNIX) || defined(OS2) || defined(VMS) || defined(MACOS_X))) || defined(PROTO)
+#if (defined(FEAT_TITLE) && (defined(UNIX) || defined(VMS) \
+	|| defined(MACOS_X))) || defined(PROTO)
 /*
  * Generic function to set window title, using t_ts and t_fs.
  */

@@ -5521,7 +5521,7 @@ find_file_in_path_option(ptr, len, options, first, path_option,
     if (vim_isAbsName(ff_file_to_find)
 	    /* "..", "../path", "." and "./path": don't use the path_option */
 	    || rel_to_curdir
-#if defined(MSWIN) || defined(MSDOS) || defined(OS2)
+#if defined(MSWIN) || defined(MSDOS)
 	    /* handle "\tmp" as absolute path */
 	    || vim_ispathsep(ff_file_to_find[0])
 	    /* handle "c:name" as absolute path */

@@ -1570,7 +1570,7 @@ make_filter_cmd(cmd, itmp, otmp)
     char_u	*buf;
     long_u	len;
 
-#if (defined(UNIX) && !defined(ARCHIE)) || defined(OS2)
+#if defined(UNIX) && !defined(ARCHIE)
     int		is_fish_shell;
     char_u	*shell_name = get_isolated_shell_name();
 
@@ -1590,7 +1590,7 @@ make_filter_cmd(cmd, itmp, otmp)
     if (buf == NULL)
 	return NULL;
 
-#if (defined(UNIX) && !defined(ARCHIE)) || defined(OS2)
+#if defined(UNIX) && !defined(ARCHIE)
     /*
      * Put braces around the command (for concatenated commands) when
      * redirecting input and/or output.

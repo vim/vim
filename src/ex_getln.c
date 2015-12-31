@@ -4955,7 +4955,7 @@ expand_shellcmd(filepat, num_file, file, flagsarg)
 	if (*s == ' ')
 	    ++s;	/* Skip space used for absolute path name. */
 
-#if defined(MSDOS) || defined(MSWIN) || defined(OS2)
+#if defined(MSDOS) || defined(MSWIN)
 	e = vim_strchr(s, ';');
 #else
 	e = vim_strchr(s, ':');

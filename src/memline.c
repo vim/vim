@@ -4211,8 +4211,7 @@ findswapname(buf, dirp, old_fname)
 #endif
     char_u	*buf_fname = buf->b_fname;
 
-#if !defined(SHORT_FNAME) \
-		&& ((!defined(UNIX) && !defined(OS2)) || defined(ARCHIE))
+#if !defined(SHORT_FNAME) && (!defined(UNIX) || defined(ARCHIE))
 # define CREATE_DUMMY_FILE
     FILE	*dummyfd = NULL;
 
@@ -4272,7 +4271,7 @@ findswapname(buf, dirp, old_fname)
 	    fname = NULL;
 	    break;
 	}
-#if (defined(UNIX) || defined(OS2)) && !defined(ARCHIE) && !defined(SHORT_FNAME)
+#if defined(UNIX) && !defined(ARCHIE) && !defined(SHORT_FNAME)
 /*
  * Some systems have a MS-DOS compatible filesystem that use 8.3 character
  * file names. If this is the first try and the swap file name does not fit in
@@ -4323,10 +4322,6 @@ findswapname(buf, dirp, old_fname)
 		    {
 			f1 = mch_open_rw((char *)fname,
 					       O_RDWR|O_CREAT|O_EXCL|O_EXTRA);
-#if defined(OS2)
-			if (f1 < 0 && errno == ENOENT)
-			    same = TRUE;
-#endif
 			created1 = TRUE;
 		    }
 		    if (f1 >= 0)

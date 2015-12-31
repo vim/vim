@@ -12791,9 +12791,6 @@ f_has(argvars, rettv)
 #if defined(MACOS_X_UNIX)
 	"macunix",
 #endif
-#ifdef OS2
-	"os2",
-#endif
 #ifdef __QNX__
 	"qnx",
 #endif
