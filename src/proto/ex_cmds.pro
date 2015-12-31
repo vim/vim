@@ -61,5 +61,6 @@ char_u *sign_typenr2name __ARGS((int typenr));
 void free_signs __ARGS((void));
 char_u *get_sign_name __ARGS((expand_T *xp, int idx));
 void set_context_in_sign_cmd __ARGS((expand_T *xp, char_u *arg));
+void ex_smile __ARGS((exarg_T *eap));
 void ex_drop __ARGS((exarg_T *eap));
 /* vim: set ft=c : */

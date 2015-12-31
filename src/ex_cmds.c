@@ -6938,9 +6938,9 @@ struct sign
     int		sn_typenr;	/* type number of sign */
     char_u	*sn_name;	/* name of sign */
     char_u	*sn_icon;	/* name of pixmap */
-#ifdef FEAT_SIGN_ICONS
+# ifdef FEAT_SIGN_ICONS
     void	*sn_image;	/* icon image */
-#endif
+# endif
     char_u	*sn_text;	/* text used instead of pixmap */
     int		sn_line_hl;	/* highlight ID for line */
     int		sn_text_hl;	/* highlight ID for text */
@@ -6955,19 +6955,19 @@ static void sign_undefine __ARGS((sign_T *sp, sign_T *sp_prev));
 
 static char *cmds[] = {
 			"define",
-#define SIGNCMD_DEFINE	0
+# define SIGNCMD_DEFINE	0
 			"undefine",
-#define SIGNCMD_UNDEFINE 1
+# define SIGNCMD_UNDEFINE 1
 			"list",
-#define SIGNCMD_LIST	2
+# define SIGNCMD_LIST	2
 			"place",
-#define SIGNCMD_PLACE	3
+# define SIGNCMD_PLACE	3
 			"unplace",
-#define SIGNCMD_UNPLACE	4
+# define SIGNCMD_UNPLACE 4
 			"jump",
-#define SIGNCMD_JUMP	5
+# define SIGNCMD_JUMP	5
 			NULL
-#define SIGNCMD_LAST	6
+# define SIGNCMD_LAST	6
 };
 
 /*
@@ -7110,7 +7110,7 @@ ex_sign(eap)
 			vim_free(sp->sn_icon);
 			sp->sn_icon = vim_strnsave(arg, (int)(p - arg));
 			backslash_halve(sp->sn_icon);
-#ifdef FEAT_SIGN_ICONS
+# ifdef FEAT_SIGN_ICONS
 			if (gui.in_use)
 			{
 			    out_flush();
@@ -7118,7 +7118,7 @@ ex_sign(eap)
 				gui_mch_destroy_sign(sp->sn_image);
 			    sp->sn_image = gui_mch_register_sign(sp->sn_icon);
 			}
-#endif
+# endif
 		    }
 		    else if (STRNCMP(arg, "text=", 5) == 0)
 		    {
@@ -7127,7 +7127,7 @@ ex_sign(eap)
 			int	len;
 
 			arg += 5;
-#ifdef FEAT_MBYTE
+# ifdef FEAT_MBYTE
 			/* Count cells and check for non-printable chars */
 			if (has_mbyte)
 			{
@@ -7140,7 +7140,7 @@ ex_sign(eap)
 			    }
 			}
 			else
-#endif
+# endif
 			{
 			    for (s = arg; s < p; ++s)
 				if (!vim_isprintc(*s))
@@ -7343,9 +7343,9 @@ ex_sign(eap)
 		    do_cmdline_cmd(cmd);
 		    vim_free(cmd);
 		}
-#ifdef FEAT_FOLDING
+# ifdef FEAT_FOLDING
 		foldOpenCursor();
-#endif
+# endif
 	    }
 	    else
 		EMSGN(_("E157: Invalid sign ID: %ld"), id);
@@ -7395,7 +7395,7 @@ ex_sign(eap)
     }
 }
 
-#if defined(FEAT_SIGN_ICONS) || defined(PROTO)
+# if defined(FEAT_SIGN_ICONS) || defined(PROTO)
 /*
  * Allocate the icons.  Called when the GUI has started.  Allows defining
  * signs before it starts.
@@ -7409,7 +7409,7 @@ sign_gui_started()
 	if (sp->sn_icon != NULL)
 	    sp->sn_image = gui_mch_register_sign(sp->sn_icon);
 }
-#endif
+# endif
 
 /*
  * List one sign.
@@ -7425,12 +7425,12 @@ sign_list_defined(sp)
     {
 	MSG_PUTS(" icon=");
 	msg_outtrans(sp->sn_icon);
-#ifdef FEAT_SIGN_ICONS
+# ifdef FEAT_SIGN_ICONS
 	if (sp->sn_image == NULL)
 	    MSG_PUTS(_(" (NOT FOUND)"));
-#else
+# else
 	MSG_PUTS(_(" (not supported)"));
-#endif
+# endif
     }
     if (sp->sn_text != NULL)
     {
@@ -7467,13 +7467,13 @@ sign_undefine(sp, sp_prev)
 {
     vim_free(sp->sn_name);
     vim_free(sp->sn_icon);
-#ifdef FEAT_SIGN_ICONS
+# ifdef FEAT_SIGN_ICONS
     if (sp->sn_image != NULL)
     {
 	out_flush();
 	gui_mch_destroy_sign(sp->sn_image);
     }
-#endif
+# endif
     vim_free(sp->sn_text);
     if (sp_prev == NULL)
 	first_sign = sp->sn_next;
@@ -7527,7 +7527,7 @@ sign_get_text(typenr)
     return NULL;
 }
 
-#if defined(FEAT_SIGN_ICONS) || defined(PROTO)
+# if defined(FEAT_SIGN_ICONS) || defined(PROTO)
     void *
 sign_get_image(typenr)
     int		typenr;		/* the attribute which may have a sign */
@@ -7539,7 +7539,7 @@ sign_get_image(typenr)
 	    return sp->sn_image;
     return NULL;
 }
-#endif
+# endif
 
 /*
  * Get the name of a sign by its typenr.
@@ -7556,7 +7556,7 @@ sign_typenr2name(typenr)
     return (char_u *)_("[Deleted]");
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+# if defined(EXITFREE) || defined(PROTO)
 /*
  * Undefine/free all signs.
  */
@@ -7566,9 +7566,9 @@ free_signs()
     while (first_sign != NULL)
 	sign_undefine(first_sign, NULL);
 }
-#endif
+# endif
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
+# if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 static enum
 {
     EXP_SUBCMD,		/* expand :sign sub-commands */
@@ -7746,8 +7746,30 @@ set_context_in_sign_cmd(xp, arg)
 	}
     }
 }
+# endif
 #endif
-#endif
+
+/*
+ * Make the user happy.
+ */
+    void
+ex_smile(eap)
+    exarg_T	*eap UNUSED;
+{
+    static char *code = "\34 \4o\14$\4ox\30 \2o\30$\1ox\25 \2o\36$\1o\11 \1o\1$\3 \2$\1 \1o\1$x\5 \1o\1 \1$\1 \2o\10 \1o\44$\1o\7 \2$\1 \2$\1 \2$\1o\1$x\2 \2o\1 \1$\1 \1$\1 \1\"\1$\6 \1o\11$\4 \15$\4 \11$\1o\7 \3$\1o\2$\1o\1$x\2 \1\"\6$\1o\1$\5 \1o\11$\6 \13$\6 \12$\1o\4 \10$x\4 \7$\4 \13$\6 \13$\6 \27$x\4 \27$\4 \15$\4 \16$\2 \3\"\3$x\5 \1\"\3$\4\"\61$\5 \1\"\3$x\6 \3$\3 \1o\62$\5 \1\"\3$\1ox\5 \1o\2$\1\"\3 \63$\7 \3$\1ox\5 \3$\4 \55$\1\"\1 \1\"\6$\5o\4$\1ox\4 \1o\3$\4o\5$\2 \45$\3 \1o\21$x\4 \10$\1\"\4$\3 \42$\5 \4$\10\"x\3 \4\"\7 \4$\4 \1\"\34$\1\"\6 \1o\3$x\16 \1\"\3$\1o\5 \3\"\22$\1\"\2$\1\"\11 \3$x\20 \3$\1o\12 \1\"\2$\2\"\6$\4\"\13 \1o\3$x\21 \4$\1o\40 \1o\3$\1\"x\22 \1\"\4$\1o\6 \1o\6$\1o\1\"\4$\1o\10 \1o\4$x\24 \1\"\5$\2o\5 \2\"\4$\1o\5$\1o\3 \1o\4$\2\"x\27 \2\"\5$\4o\2 \1\"\3$\1o\11$\3\"x\32 \2\"\7$\2o\1 \12$x\42 \4\"\13$x\46 \14$x\47 \12$\1\"x\50 \1\"\3$\4\"x";
+    char *p;
+    int n;
+
+    msg_start();
+    msg_putchar('\n');
+    for (p = code; *p != NUL; ++p)
+	if (*p == 'x')
+	    msg_putchar('\n');
+	else
+	    for (n = *p++; n > 0; --n)
+		msg_putchar(*p);
+    msg_clr_eos();
+}
 
 #if defined(FEAT_GUI) || defined(FEAT_CLIENTSERVER) || defined(PROTO)
 /*
