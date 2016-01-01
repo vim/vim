@@ -998,7 +998,7 @@ inside of strings can change!  Also see 'softtabstop' option. >
 
 :reg[isters] {arg}	Display the contents of the numbered and named
 			registers that are mentioned in {arg}.  For example: >
-				:dis 1a
+				:reg 1a
 <			to display registers '1' and 'a'.  Spaces are allowed
 			in {arg}.  {not in Vi}
 
