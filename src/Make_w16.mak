@@ -1,6 +1,9 @@
 #
 # Borland C++ 5.0[12] makefile for vim, 16-bit windows gui version
 # By Vince Negri
+#
+# NOTE: THIS IS OLD AND PROBABLY NO LONGER WORKS.
+#
 # *************************************************************
 # * WARNING!
 # * This was originally produced by the IDE, but has since been

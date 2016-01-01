@@ -1,5 +1,7 @@
 # Makefile for Borland C++ 3.1 or 4.0 to compile a 16 bit version of Vim.
 #
+# NOTE: THIS IS OLD AND PROBABLY NO LONGER WORKS.
+#
 # There are compilation options at the end of this file.
 #
 # Command line variables:
