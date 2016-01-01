@@ -1027,6 +1027,11 @@ test:
 	$(MAKE) /NOLOGO -f Make_dos.mak win32
 	cd ..
 
+testgvim:
+	cd testdir
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\gvim win32
+	cd ..
+
 testclean:
 	cd testdir
 	$(MAKE) /NOLOGO -f Make_dos.mak clean
