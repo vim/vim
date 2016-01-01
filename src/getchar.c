@@ -2149,7 +2149,8 @@ vgetorpeek(advance)
 			else
 			{
 			    LANGMAP_ADJUST(c1,
-					   (State & (CMDLINE | INSERT)) == 0);
+					   ((State & (CMDLINE | INSERT)) == 0)
+					   || (State == (CMDLINE | LANGMAP)));/*grep CMDLINELANGMAP*/
 			    nolmaplen = 0;
 			}
 #endif
@@ -2184,10 +2185,15 @@ vgetorpeek(advance)
 			    /*
 			     * Only consider an entry if the first character
 			     * matches and it is for the current state.
+			     *
+			     * Used to skip ":lmap" mappings for mapped keys here, 
+			     *   but @a should allow mapping in insert mode 
+			     *   and mp is only found for INSERT and non-':'-CMDLINE
 			     */
 			    if (mp->m_keys[0] == c1
 				    && (mp->m_mode & local_State)
-                                )
+			       )/*&& ((mp->m_mode & LANGMAP) == 0
+					|| typebuf.tb_maplen == 0))*/
 			    {
 #ifdef FEAT_LANGMAP
 				int	nomap = nolmaplen;
@@ -2431,6 +2437,13 @@ vgetorpeek(advance)
 							      typebuf.tb_off];
 				    del_typebuf(1, 0);
 				}
+#ifdef FEAT_LANGMAP
+				if (c != K_SPECIAL)
+				{
+				    LANGMAP_ADJUST(c,((State & (CMDLINE | INSERT)) == 0)
+						   || (State == (CMDLINE | LANGMAP)));/*grep CMDLINELANGMAP*/
+				}
+#endif
 				break;	    /* got character, break for loop */
 			      }
 			}

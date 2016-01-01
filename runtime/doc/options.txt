@@ -4562,6 +4562,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	setting 'iminsert' to one, so that the keymap becomes effective.
 	'imsearch' is also set to one, unless it was -1
 	Only normal file name characters can be used, "/\*?[|<>" are illegal.
+	keymap is applied in Insert mode and in non-':'-Command-line mode.
 
 					*'keymodel'* *'km'*
 'keymodel' 'km'		string	(default "")
@@ -4603,7 +4604,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	This option allows switching your keyboard into a special language
 	mode.  When you are typing text in Insert mode the characters are
-	inserted directly.  When in command mode the 'langmap' option takes
+	inserted directly.  When in Normal mode the 'langmap' option takes
 	care of translating these special characters to the original meaning
 	of the key.  This means you don't have to change the keyboard mode to
 	be able to execute Normal mode commands.
@@ -4636,7 +4637,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	 o Normal/Visual mode (commands, buffer/register names, user mappings)
 	 o Insert/Replace Mode: Register names after CTRL-R
 	 o Insert/Replace Mode: Mappings
-	Characters entered in Command-line mode will NOT be affected by
+	 o ':'-Command-line Mode
+	Characters entered in non-':'-Command-line mode will NOT be affected by
 	this option.   Note that this option can be changed at any time
 	allowing to switch between mappings for different languages/encodings.
 	Use a mapping to avoid having to type it each time!
