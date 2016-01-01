@@ -7700,7 +7700,7 @@ do_highlight(line, forceit, init)
 			color &= 7;	/* truncate to 8 colors */
 		    }
 		    else if (t_colors == 16 || t_colors == 88
-							   || t_colors == 256)
+							   || t_colors >= 256)
 		    {
 			/*
 			 * Guess: if the termcap entry ends in 'm', it is
@@ -7711,19 +7711,16 @@ do_highlight(line, forceit, init)
 			    p = T_CAF;
 			else
 			    p = T_CSF;
-			if (*p != NUL && *(p + STRLEN(p) - 1) == 'm')
-			    switch (t_colors)
-			    {
-				case 16:
-				    color = color_numbers_8[i];
-				    break;
-				case 88:
-				    color = color_numbers_88[i];
-				    break;
-				case 256:
-				    color = color_numbers_256[i];
-				    break;
-			    }
+			if (*p != NUL && (t_colors > 256 ||
+					*(p + STRLEN(p) - 1) == 'm'))
+			{
+			    if (t_colors == 88)
+				color = color_numbers_88[i];
+			    else if (t_colors >= 256)
+				color = color_numbers_256[i];
+			    else
+				color = color_numbers_8[i];
+			}
 		    }
 		}
 	    }
