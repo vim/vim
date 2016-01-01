@@ -3,5 +3,6 @@
 
 source test_lispwords.vim
 source test_searchpos.vim
+source test_set.vim
 source test_sort.vim
 source test_undolevels.vim

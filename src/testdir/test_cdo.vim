@@ -1,6 +1,5 @@
 " Tests for the :cdo, :cfdo, :ldo and :lfdo commands
 
-lang mess C
 if !has('quickfix')
   finish
 endif

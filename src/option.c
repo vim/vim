@@ -4839,9 +4839,15 @@ do_set(arg, opt_flags)
 						|| s[i] == NUL))
 					break;
 				    /* Count backslashes.  Only a comma with an
-				     * even number of backslashes before it is
-				     * recognized as a separator */
-				    if (s > origval && s[-1] == '\\')
+				     * even number of backslashes or a single
+				     * backslash preceded by a comma before it
+				     * is recognized as a separator */
+				    if ((s > origval + 1
+						&& s[-1] == '\\'
+						&& s[-2] != ',')
+					    || (s == origval + 1
+						&& s[-1] == '\\'))
+
 					++bs;
 				    else
 					bs = 0;

@@ -1958,7 +1958,6 @@ test1 \
 	test_qf_title \
 	test_ruby \
 	test_search_mbyte \
-	test_set \
 	test_signs \
 	test_tagcase \
 	test_textobjects \
@@ -1980,6 +1979,7 @@ test1 \
 test_assert \
 	test_cdo \
 	test_searchpos \
+	test_set \
 	test_sort \
 	test_undolevels \
 	test_viml \
