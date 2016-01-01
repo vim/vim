@@ -74,4 +74,6 @@ src/testdir/test*.out
 src/testdir/test*.failed
 src/testdir/test.log
 src/testdir/dostmp/*
+src/testdir/messages
+src/testdir/viminfo
 src/memfile_test
