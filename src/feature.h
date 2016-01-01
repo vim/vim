@@ -60,7 +60,7 @@
  */
 #if !defined(FEAT_TINY) && !defined(FEAT_SMALL) && !defined(FEAT_NORMAL) \
 	&& !defined(FEAT_BIG) && !defined(FEAT_HUGE)
-# if defined(MSWIN) || defined(DJGPP) || defined(OS2) || defined(VMS) || defined(MACOS) || defined(AMIGA)
+# if defined(MSWIN) || defined(DJGPP) || defined(VMS) || defined(MACOS) || defined(AMIGA)
 #  define FEAT_BIG
 # else
 #  ifdef MSDOS
@@ -1046,7 +1046,7 @@
  * +mouse		Any mouse support (any of the above enabled).
  */
 /* OS/2 and Amiga console have no mouse support */
-#if !defined(AMIGA) && !defined(OS2)
+#if !defined(AMIGA)
 # ifdef FEAT_NORMAL
 #  define FEAT_MOUSE_XTERM
 # endif

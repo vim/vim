@@ -4230,7 +4230,10 @@ ex_cexpr(eap)
 	if ((tv->v_type == VAR_STRING && tv->vval.v_string != NULL)
 		|| (tv->v_type == VAR_LIST && tv->vval.v_list != NULL))
 	{
-	    if (qf_init_ext(qi, NULL, NULL, tv, p_efm,
+	    char_u *efm = *curwin->w_buffer->b_p_efm == NUL ? p_efm
+						  : curwin->w_buffer->b_p_efm;
+
+	    if (qf_init_ext(qi, NULL, NULL, tv, efm,
 			    (eap->cmdidx != CMD_caddexpr
 			     && eap->cmdidx != CMD_laddexpr),
 				 (linenr_T)0, (linenr_T)0, *eap->cmdlinep) > 0

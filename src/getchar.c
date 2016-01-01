@@ -962,8 +962,8 @@ init_typebuf()
 }
 
 /*
- * insert a string in position 'offset' in the typeahead buffer (for "@r"
- * and ":normal" command, vgetorpeek() and check_termcode())
+ * Insert a string in position 'offset' in the typeahead buffer (for "@r"
+ * and ":normal" command, vgetorpeek() and check_termcode()).
  *
  * If noremap is REMAP_YES, new string can be mapped again.
  * If noremap is REMAP_NONE, new string cannot be mapped again.
@@ -5306,7 +5306,7 @@ check_map(keys, mode, exact, ign_mod, abbr, mp_ptr, local_ptr)
 }
 #endif
 
-#if defined(MSDOS) || defined(MSWIN) || defined(OS2) || defined(MACOS)
+#if defined(MSDOS) || defined(MSWIN) || defined(MACOS)
 
 #define VIS_SEL	(VISUAL+SELECTMODE)	/* abbreviation */
 
@@ -5319,7 +5319,7 @@ static struct initmap
     int		mode;
 } initmappings[] =
 {
-#if defined(MSDOS) || defined(MSWIN) || defined(OS2)
+#if defined(MSDOS) || defined(MSWIN)
 	/* Use the Windows (CUA) keybindings. */
 # ifdef FEAT_GUI
 	/* paste, copy and cut */
@@ -5390,7 +5390,7 @@ static struct initmap
     void
 init_mappings()
 {
-#if defined(MSDOS) || defined(MSWIN) || defined(OS2) || defined(MACOS)
+#if defined(MSDOS) || defined(MSWIN) ||defined(MACOS)
     int		i;
 
     for (i = 0; i < sizeof(initmappings) / sizeof(struct initmap); ++i)
@@ -5398,7 +5398,7 @@ init_mappings()
 #endif
 }
 
-#if defined(MSDOS) || defined(MSWIN) || defined(OS2) \
+#if defined(MSDOS) || defined(MSWIN) \
 	|| defined(FEAT_CMDWIN) || defined(MACOS) || defined(PROTO)
 /*
  * Add a mapping "map" for mode "mode".

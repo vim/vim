@@ -39,7 +39,7 @@ static garray_T	user_digraphs = {0, 0, (int)sizeof(digr_T), 10, NULL};
  * compilers cannot handle them (Amiga SAS/C is the most picky one).
  */
 static digr_T digraphdefault[] =
-#if defined(MSDOS) || defined(OS2)
+#if defined(MSDOS)
 	/*
 	 * MSDOS digraphs.
 	 */
@@ -105,7 +105,7 @@ static digr_T digraphdefault[] =
 	{NUL, NUL, NUL}
 	};
 
-#else	/* !MSDOS && !OS2 */
+#else	/* !MSDOS */
 # ifdef __MINT__
 
 	/*
@@ -2007,7 +2007,7 @@ static digr_T digraphdefault[] =
 #   endif /* EBCDIC */
 #  endif    /* !HPUX_DIGRAPHS */
 # endif	/* !__MINT__ */
-#endif	/* !MSDOS && !OS2 */
+#endif	/* !MSDOS */
 
 /*
  * handle digraphs after typing a character

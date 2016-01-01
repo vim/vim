@@ -315,6 +315,7 @@ SRC_DOS =	\
 		src/if_ole.cpp \
 		src/if_ole.h \
 		src/if_ole.idl \
+		src/if_perl_msvc/stdbool.h \
 		src/iid_ole.c \
 		src/os_dos.h \
 		src/os_msdos.c \
@@ -444,15 +445,6 @@ SRC_VMS =	\
 		src/xxd/Make_vms.mms \
 		vimtutor.com \
 
-# source files for OS/2 (in the extra archive)
-SRC_OS2 =	\
-		src/Make_os2.mak \
-		src/os_os2_cfg.h \
-		src/testdir/Make_os2.mak \
-		src/testdir/todos.vim \
-		src/testdir/os2.vim \
-		src/xxd/Make_os2.mak \
-
 # source files for QNX (in the extra archive)
 SRC_QNX =	\
 		src/os_qnx.c \
@@ -469,7 +461,6 @@ SRC_EXTRA =	\
 		$(SRC_DOS) \
 		$(SRC_DOS_BIN) \
 		$(SRC_MAC) \
-		$(SRC_OS2) \
 		$(SRC_QNX) \
 		$(SRC_VMS) \
 		README_os390.txt \

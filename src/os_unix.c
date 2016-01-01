@@ -471,13 +471,6 @@ mch_inchar(buf, maxlen, wtime, tb_change_cnt)
 	len = read_from_input_buf(buf, (long)maxlen);
 	if (len > 0)
 	{
-#ifdef OS2
-	    int i;
-
-	    for (i = 0; i < len; i++)
-		if (buf[i] == 0)
-		    buf[i] = K_NUL;
-#endif
 	    return len;
 	}
     }
@@ -1475,14 +1468,6 @@ mch_check_win(argc, argv)
     int	    argc UNUSED;
     char    **argv UNUSED;
 {
-#ifdef OS2
-    /*
-     * Store argv[0], may be used for $VIM.  Only use it if it is an absolute
-     * name, mostly it's just "vim" and found in the path, which is unusable.
-     */
-    if (mch_isFullName(argv[0]))
-	exe_name = vim_strsave((char_u *)argv[0]);
-#endif
     if (isatty(1))
 	return OK;
     return FAIL;
@@ -2446,24 +2431,6 @@ mch_dirname(buf, len)
 #endif
 }
 
-#if defined(OS2) || defined(PROTO)
-/*
- * Replace all slashes by backslashes.
- * When 'shellslash' set do it the other way around.
- */
-    void
-slash_adjust(p)
-    char_u  *p;
-{
-    while (*p)
-    {
-	if (*p == psepcN)
-	    *p = psepc;
-	mb_ptr_adv(p);
-    }
-}
-#endif
-
 /*
  * Get absolute file name into "buf[len]".
  *
@@ -2476,9 +2443,6 @@ mch_FullName(fname, buf, len, force)
     int		force;		/* also expand when already absolute path */
 {
     int		l;
-#ifdef OS2
-    int		only_drive;	/* file name is only a drive letter */
-#endif
 #ifdef HAVE_FCHDIR
     int		fd = -1;
     static int	dont_fchdir = FALSE;	/* TRUE when fchdir() doesn't work */
@@ -2500,29 +2464,27 @@ mch_FullName(fname, buf, len, force)
      * This helps for when "/etc/hosts" is a symlink to "c:/something/hosts".
      */
 # if CYGWIN_VERSION_DLL_MAJOR >= 1007
-    cygwin_conv_path(CCP_WIN_A_TO_POSIX, fname, posix_fname, MAXPATHL);
+    /* Use CCP_RELATIVE to avoid that it sometimes returns a path that ends in
+     * a forward slash. */
+    cygwin_conv_path(CCP_WIN_A_TO_POSIX | CCP_RELATIVE,
+		     fname, posix_fname, MAXPATHL);
 # else
     cygwin_conv_to_posix_path(fname, posix_fname);
 # endif
     fname = posix_fname;
 #endif
 
-    /* expand it if forced or not an absolute path */
-    if (force || !mch_isFullName(fname))
+    /* Expand it if forced or not an absolute path.
+     * Do not do it for "/file", the result is always "/". */
+    if ((force || !mch_isFullName(fname))
+	    && ((p = vim_strrchr(fname, '/')) == NULL || p != fname))
     {
 	/*
 	 * If the file name has a path, change to that directory for a moment,
 	 * and then do the getwd() (and get back to where we were).
 	 * This will get the correct path name with "../" things.
 	 */
-#ifdef OS2
-	only_drive = 0;
-	if (((p = vim_strrchr(fname, '/')) != NULL)
-		|| ((p = vim_strrchr(fname, '\\')) != NULL)
-		|| (((p = vim_strchr(fname,  ':')) != NULL) && ++only_drive))
-#else
-	if ((p = vim_strrchr(fname, '/')) != NULL)
-#endif
+	if (p != NULL)
 	{
 #ifdef HAVE_FCHDIR
 	    /*
@@ -2556,15 +2518,6 @@ mch_FullName(fname, buf, len, force)
 	    }
 	    else
 	    {
-#ifdef OS2
-		/*
-		 * compensate for case where ':' from "D:" was the only
-		 * path separator detected in the file name; the _next_
-		 * character has to be removed, and then restored later.
-		 */
-		if (only_drive)
-		    p++;
-#endif
 		/* The directory is copied into buf[], to be able to remove
 		 * the file name without changing it (could be a string in
 		 * read-only memory) */
@@ -2579,14 +2532,6 @@ mch_FullName(fname, buf, len, force)
 			fname = p + 1;
 		    *buf = NUL;
 		}
-#ifdef OS2
-		if (only_drive)
-		{
-		    p--;
-		    if (retval != FAIL)
-			fname--;
-		}
-#endif
 	    }
 	}
 	if (mch_dirname(buf, len) == FAIL)
@@ -3203,10 +3148,8 @@ mch_nodetype(name)
 	return NODE_NORMAL;
     if (S_ISREG(st.st_mode) || S_ISDIR(st.st_mode))
 	return NODE_NORMAL;
-#ifndef OS2
     if (S_ISBLK(st.st_mode))	/* block device isn't writable */
 	return NODE_OTHER;
-#endif
     /* Everything else is writable? */
     return NODE_WRITABLE;
 }
@@ -6319,20 +6262,14 @@ mch_has_exp_wildcard(p)
 {
     for ( ; *p; mb_ptr_adv(p))
     {
-#ifndef OS2
 	if (*p == '\\' && p[1] != NUL)
 	    ++p;
 	else
-#endif
 	    if (vim_strchr((char_u *)
 #ifdef VMS
 				    "*?%"
 #else
-# ifdef OS2
-				    "*?"
-# else
 				    "*?[{'"
-# endif
 #endif
 						, *p) != NULL)
 	    return TRUE;
@@ -6350,24 +6287,14 @@ mch_has_wildcard(p)
 {
     for ( ; *p; mb_ptr_adv(p))
     {
-#ifndef OS2
 	if (*p == '\\' && p[1] != NUL)
 	    ++p;
 	else
-#endif
 	    if (vim_strchr((char_u *)
 #ifdef VMS
 				    "*?%$"
 #else
-# ifdef OS2
-#  ifdef VIM_BACKTICK
-				    "*?$`"
-#  else
-				    "*?$"
-#  endif
-# else
 				    "*?[{`'$"
-# endif
 #endif
 						, *p) != NULL
 		|| (*p == '~' && p[1] != NUL))

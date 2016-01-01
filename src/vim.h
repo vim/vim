@@ -1682,7 +1682,7 @@ int vim_memcmp __ARGS((void *, void *, size_t));
 # endif
 #endif
 
-#if defined(UNIX) || defined(FEAT_GUI) || defined(OS2) || defined(VMS) \
+#if defined(UNIX) || defined(FEAT_GUI) || defined(VMS) \
 	|| defined(FEAT_CLIENTSERVER)
 # define USE_INPUT_BUF
 #endif
@@ -2237,7 +2237,7 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 /* values for vim_handle_signal() that are not a signal */
 #define SIGNAL_BLOCK	-1
 #define SIGNAL_UNBLOCK  -2
-#if !defined(UNIX) && !defined(VMS) && !defined(OS2)
+#if !defined(UNIX) && !defined(VMS)
 # define vim_handle_signal(x) 0
 #endif
 

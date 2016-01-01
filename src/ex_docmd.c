@@ -3794,7 +3794,7 @@ set_one_cmd_context(xp, buff)
 
 	/* Check for environment variable */
 	if (*xp->xp_pattern == '$'
-#if defined(MSDOS) || defined(MSWIN) || defined(OS2)
+#if defined(MSDOS) || defined(MSWIN)
 		|| *xp->xp_pattern == '%'
 #endif
 		)
@@ -5073,7 +5073,7 @@ expand_filename(eap, cmdlinep, errormsgp)
 		 * For Unix and OS/2, when wildcards are expanded, this is
 		 * done by ExpandOne() below.
 		 */
-#if defined(UNIX) || defined(OS2)
+#if defined(UNIX)
 		if (!has_wildcards)
 #endif
 		    backslash_halve(eap->arg);
@@ -7835,7 +7835,7 @@ alist_new()
 # endif
 #endif
 
-#if (!defined(UNIX) && !defined(__EMX__)) || defined(ARCHIE) || defined(PROTO)
+#if (!defined(UNIX) && !defined(__EMX__)) || defined(PROTO)
 /*
  * Expand the file names in the global argument list.
  * If "fnum_list" is not NULL, use "fnum_list[fnum_len]" as a list of buffer

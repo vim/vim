@@ -176,46 +176,7 @@ And to not search for locally installed headers and libraries at all, use:
 3. OS/2
 =======
 
-Summary:
-ren Makefile Makefile.unix
-ren makefile.os2 Makefile
-make
-
-This port of Vim to OS/2 is based on the emx environment together
-with GNU C. The main design goal of emx is to simplify porting Unix
-software to OS/2 and DOS. Because of this, almost all the Unix defines
-etc. already existing in the Vim source code could be reused. Only where
-OS/2 specifics came into play were additional changes necessary. Those
-places can be found by searching for "OS2" and "__EMX__" (I've tried to
-keep emx-specific things separate from generic OS/2 stuff).
-
-Note: This OS/2 port works well for me and an additional OS/2 user on
-      the Vim development team (Karsten Sievert); however, since I
-      haven't had any other feedback from other people, that either
-      means no (OS/2-specific) bugs exist, or no one has yet created
-      a situation in which any bugs are apparent.
-      Report any problems or other comments to paul@wau.mis.ah.nl
-      (email valid up to at least September 1996, after that try
-      paul@wurtel.hobby.nl, paul@murphy.nl, or paulS@toecompst.nl).
-      Textmode/notextmode and binary mode both seem to work well.
-
-Prerequisites:
-- To compile, you need the emx environment (at least rev. 0.9b), GCC,
-  some make utility (GNU make works fine). These are generally
-  available as (ask Archie about them):
-    emxrt.zip     emx runtime package
-    emxdev.zip    emx development system (without compiler)
-  GNU programs compiled for emx, patches and patched sources:
-    gnudev1.zip   GNU development tools compiled for emx (part 1)
-    gnudev2.zip   GNU development tools compiled for emx (part 2)
-    gnumake.zip   GNU make
-- Don't set a TERM environment variable; Vim defaults to os2ansi
-  which is available as a builtin termcap entry. Using other values
-  may give problems! (OS/2 ANSI emulation is quite limited.) If you
-  need to set TERM for other programs, you may consider putting
-  set term=os2ansi in the vimrc file.
-
-Check ../runtime/doc/os_os2.txt for additional info on running Vim.
+OS/2 support was removed in patch 7.4.1008
 
 
 4. Atari MiNT

@@ -10183,6 +10183,7 @@ f_cursor(argvars, rettv)
 #ifdef FEAT_VIRTUALEDIT
     long	coladd = 0;
 #endif
+    int		set_curswant = TRUE;
 
     rettv->vval.v_number = -1;
     if (argvars[1].v_type == VAR_UNKNOWN)
@@ -10198,7 +10199,10 @@ f_cursor(argvars, rettv)
 	coladd = pos.coladd;
 #endif
 	if (curswant >= 0)
+	{
 	    curwin->w_curswant = curswant - 1;
+	    set_curswant = FALSE;
+	}
     }
     else
     {
@@ -10231,7 +10235,7 @@ f_cursor(argvars, rettv)
 	mb_adjust_cursor();
 #endif
 
-    curwin->w_set_curswant = TRUE;
+    curwin->w_set_curswant = set_curswant;
     rettv->vval.v_number = 0;
 }
 
@@ -12790,9 +12794,6 @@ f_has(argvars, rettv)
 #endif
 #if defined(MACOS_X_UNIX)
 	"macunix",
-#endif
-#ifdef OS2
-	"os2",
 #endif
 #ifdef __QNX__
 	"qnx",
@@ -17527,7 +17528,10 @@ f_setpos(argvars, rettv)
 		{
 		    curwin->w_cursor = pos;
 		    if (curswant >= 0)
+		    {
 			curwin->w_curswant = curswant - 1;
+			curwin->w_set_curswant = FALSE;
+		    }
 		    check_cursor();
 		    rettv->vval.v_number = 0;
 		}
