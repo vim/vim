@@ -9151,10 +9151,19 @@ prepare_assert_error(gap)
     char buf[NUMBUFLEN];
 
     ga_init2(gap, 1, 100);
-    ga_concat(gap, sourcing_name);
-    sprintf(buf, " line %ld", (long)sourcing_lnum);
-    ga_concat(gap, (char_u *)buf);
-    ga_concat(gap, (char_u *)": ");
+    if (sourcing_name != NULL)
+    {
+	ga_concat(gap, sourcing_name);
+	if (sourcing_lnum > 0)
+	    ga_concat(gap, (char_u *)" ");
+    }
+    if (sourcing_lnum > 0)
+    {
+	sprintf(buf, "line %ld", (long)sourcing_lnum);
+	ga_concat(gap, (char_u *)buf);
+    }
+    if (sourcing_name != NULL || sourcing_lnum > 0)
+	ga_concat(gap, (char_u *)": ");
 }
 
 /*
@@ -9243,7 +9252,7 @@ assert_bool(argvars, isTrue)
     {
 	prepare_assert_error(&ga);
 	fill_assert_error(&ga, &argvars[1],
-		(char_u *)(isTrue ? "True " : "False "),
+		(char_u *)(isTrue ? "True" : "False"),
 		NULL, &argvars[0]);
 	assert_error(&ga);
 	ga_clear(&ga);
