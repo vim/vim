@@ -2543,7 +2543,8 @@ do_one_cmd(cmdlinep, sourcing,
     correct_range(&ea);
 
 #ifdef FEAT_FOLDING
-    if (((ea.argt & WHOLEFOLD) || ea.addr_count >= 2) && !global_busy)
+    if (((ea.argt & WHOLEFOLD) || ea.addr_count >= 2) && !global_busy
+	    && ea.addr_type == ADDR_LINES)
     {
 	/* Put the first line at the start of a closed fold, put the last line
 	 * at the end of a closed fold. */
