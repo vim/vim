@@ -1625,7 +1625,7 @@ call_vim_function(func, argc, argv, safe, str_arg_only, rettv)
 	    len = 0;
 	else
 	    /* Recognize a number argument, the others must be strings. */
-	    vim_str2nr(argv[i], NULL, &len, TRUE, TRUE, &n, NULL, 0);
+	    vim_str2nr(argv[i], NULL, &len, STR2NR_ALL, &n, NULL, 0);
 	if (len != 0 && len == (int)STRLEN(argv[i]))
 	{
 	    argvars[i].v_type = VAR_NUMBER;
@@ -5139,7 +5139,7 @@ eval7(arg, rettv, evaluate, want_string)
 		else
 #endif
 		{
-		    vim_str2nr(*arg, NULL, &len, TRUE, TRUE, &n, NULL, 0);
+		    vim_str2nr(*arg, NULL, &len, STR2NR_ALL, &n, NULL, 0);
 		    *arg += len;
 		    if (evaluate)
 		    {
@@ -18529,11 +18529,12 @@ f_str2nr(argvars, rettv)
     int		base = 10;
     char_u	*p;
     long	n;
+    int		what;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	base = get_tv_number(&argvars[1]);
-	if (base != 8 && base != 10 && base != 16)
+	if (base != 2 && base != 8 && base != 10 && base != 16)
 	{
 	    EMSG(_(e_invarg));
 	    return;
@@ -18543,7 +18544,14 @@ f_str2nr(argvars, rettv)
     p = skipwhite(get_tv_string(&argvars[0]));
     if (*p == '+')
 	p = skipwhite(p + 1);
-    vim_str2nr(p, NULL, NULL, base == 8 ? 2 : 0, base == 16 ? 2 : 0, &n, NULL, 0);
+    switch (base)
+    {
+	case 2: what = STR2NR_BIN + STR2NR_FORCE; break;
+	case 8: what = STR2NR_OCT + STR2NR_FORCE; break;
+	case 16: what = STR2NR_HEX + STR2NR_FORCE; break;
+	default: what = 0;
+    }
+    vim_str2nr(p, NULL, NULL, what, &n, NULL, 0);
     rettv->vval.v_number = n;
 }
 
@@ -21349,7 +21357,7 @@ get_tv_number_chk(varp, denote)
 	case VAR_STRING:
 	    if (varp->vval.v_string != NULL)
 		vim_str2nr(varp->vval.v_string, NULL, NULL,
-						    TRUE, TRUE, &n, NULL, 0);
+						    STR2NR_ALL, &n, NULL, 0);
 	    return n;
 	case VAR_LIST:
 	    EMSG(_("E745: Using a List as a Number"));

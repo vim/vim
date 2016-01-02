@@ -416,9 +416,14 @@ CTRL-X			Subtract [count] from the number or alphabetic
 			additional [count] (so effectively creating a [count]
 			decrementing sequence).  {not in Vi}
 
-The CTRL-A and CTRL-X commands work for (signed) decimal numbers, unsigned
-octal and hexadecimal numbers and alphabetic characters.  This depends on the
-'nrformats' option.
+The CTRL-A and CTRL-X commands can work for:
+- signed and unsigned decimal numbers
+- unsigned binary, octal and hexadecimal numbers
+- alphabetic characters
+
+This depends on the 'nrformats' option:
+- When 'nrformats' includes "bin", Vim assumes numbers starting with '0b' or
+  '0B' are binary.
 - When 'nrformats' includes "octal", Vim considers numbers starting with a '0'
   to be octal, unless the number includes a '8' or '9'.  Other numbers are
   decimal and may have a preceding minus sign.
@@ -446,6 +451,10 @@ octal number.
 
 Note that when 'nrformats' includes "octal", decimal numbers with leading
 zeros cause mistakes, because they can be confused with octal numbers.
+
+Note similarly, when 'nrformats' includes "bin", binary numbers with a leading
+'0x' or '0X' can be interpreted as hexadecimal rather than binary since '0b'
+are valid hexadecimal digits.
 
 The CTRL-A command is very useful in a macro.  Example: Use the following
 steps to make a numbered list.
@@ -1736,7 +1745,7 @@ Vim has a sorting function and a sorting command.  The sorting function can be
 found here: |sort()|, |uniq()|.
 
 							*:sor* *:sort*
-:[range]sor[t][!] [i][u][r][n][x][o] [/{pattern}/]
+:[range]sor[t][!] [i][u][r][n][x][o][b] [/{pattern}/]
 			Sort lines in [range].  When no range is given all
 			lines are sorted.
 
@@ -1754,6 +1763,9 @@ found here: |sort()|, |uniq()|.
 			One leading '-' is included in the number.
 
 			With [o] sorting is done on the first octal number in
+			the line (after or inside a {pattern} match).
+
+			With [b] sorting is done on the first binary number in
 			the line (after or inside a {pattern} match).
 
 			With [u] only keep the first of a sequence of

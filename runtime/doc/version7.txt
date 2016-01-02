@@ -931,7 +931,7 @@ New and extended functions: ~
 |spellbadword()|	get a badly spelled word
 |spellsuggest()|	get suggestions for correct spelling
 |split()|		split a String into a List
-|str2nr()|		convert a string to a number, base 8, 10 or 16
+|str2nr()|		convert a string to a number, base 2, 8, 10 or 16
 |stridx()|		extra argument: start position
 |strridx()|		extra argument: start position
 |string()|		string representation of a List or Dictionary

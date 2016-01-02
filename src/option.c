@@ -1940,7 +1940,7 @@ static struct vimoption
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
     {"nrformats",   "nf",   P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_nf, PV_NF,
-			    {(char_u *)"octal,hex", (char_u *)0L}
+			    {(char_u *)"bin,octal,hex", (char_u *)0L}
 			    SCRIPTID_INIT},
     {"number",	    "nu",   P_BOOL|P_VI_DEF|P_RWIN,
 			    (char_u *)VAR_WIN, PV_NU,
@@ -3031,7 +3031,7 @@ static struct vimoption
 static char *(p_ambw_values[]) = {"single", "double", NULL};
 #endif
 static char *(p_bg_values[]) = {"light", "dark", NULL};
-static char *(p_nf_values[]) = {"octal", "hex", "alpha", NULL};
+static char *(p_nf_values[]) = {"bin", "octal", "hex", "alpha", NULL};
 static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
 #ifdef FEAT_CRYPT
 static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2", NULL};
@@ -4579,7 +4579,8 @@ do_set(arg, opt_flags)
 			{
 			    /* Allow negative (for 'undolevels'), octal and
 			     * hex numbers. */
-			    vim_str2nr(arg, NULL, &i, TRUE, TRUE, &value, NULL, 0);
+			    vim_str2nr(arg, NULL, &i, STR2NR_ALL,
+							     &value, NULL, 0);
 			    if (arg[i] != NUL && !vim_iswhite(arg[i]))
 			    {
 				errmsg = e_invarg;

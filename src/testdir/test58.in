@@ -104,6 +104,8 @@ gg:/^addstart/+1,/^addend/-1w! Xtest.latin1.add
 :"
 :" NOSLITSUGS
 :call TestOne('8', '8')
+:" Numbers
+:call TestOne('9', '9')
 :"
 :" clean up for valgrind
 :delfunc TestOne
@@ -633,6 +635,21 @@ faabar
 
 8good: foo bar faabar
 bad: foobar barfoo
+badend
+
+
+Test Numbers
+
+9affstart
+9affend
+
+9dicstart
+1234
+foo
+bar
+9dicend
+
+9good: 0b1011 0777 1234 0x01ff
 badend
 
 

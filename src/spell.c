@@ -1047,7 +1047,9 @@ spell_check(wp, ptr, attrp, capcol, docount)
      * julifeest". */
     if (*ptr >= '0' && *ptr <= '9')
     {
-	if (*ptr == '0' && (ptr[1] == 'x' || ptr[1] == 'X'))
+	if (*ptr == '0' && (ptr[1] == 'b' || ptr[1] == 'B'))
+	    mi.mi_end = skipbin(ptr + 2);
+	else if (*ptr == '0' && (ptr[1] == 'x' || ptr[1] == 'X'))
 	    mi.mi_end = skiphex(ptr + 2);
 	else
 	    mi.mi_end = skipdigits(ptr);
@@ -15612,7 +15614,7 @@ ex_spelldump(eap)
 
     /* enable spelling locally in the new window */
     set_option_value((char_u*)"spell", TRUE, (char_u*)"", OPT_LOCAL);
-    set_option_value((char_u*)"spl",  dummy,         spl, OPT_LOCAL);
+    set_option_value((char_u*)"spl",  dummy, spl, OPT_LOCAL);
     vim_free(spl);
 
     if (!bufempty() || !buf_valid(curbuf))
