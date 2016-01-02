@@ -69,6 +69,26 @@ A 3:close!
 GA 4:all!
 :1wincmd w
 :w >>test.out
+:"
+:" test ":q!" and hidden buffer.
+:bw! Xtest1 Xtest2 Xtest3 Xtest4
+:sp Xtest1
+:wincmd w
+:bw!
+:set modified
+:bot sp Xtest2
+:set modified
+:bot sp Xtest3
+:set modified
+:wincmd t
+:hide
+:q!
+:w >>test.out
+:q!
+:w >>test.out
+:q!
+:call append(line('$'), "Oh, Not finished yet.")
+:w >>test.out
 :qa!
 ENDTEST
 

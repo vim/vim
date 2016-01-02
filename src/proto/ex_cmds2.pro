@@ -39,7 +39,7 @@ int check_changed __ARGS((buf_T *buf, int flags));
 void browse_save_fname __ARGS((buf_T *buf));
 void dialog_changed __ARGS((buf_T *buf, int checkall));
 int can_abandon __ARGS((buf_T *buf, int forceit));
-int check_changed_any __ARGS((int hidden));
+int check_changed_any __ARGS((int hidden, int unload));
 int check_fname __ARGS((void));
 int buf_write_all __ARGS((buf_T *buf, int forceit));
 int get_arglist __ARGS((garray_T *gap, char_u *str));

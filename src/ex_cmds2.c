@@ -1636,10 +1636,13 @@ add_bufnum(bufnrs, bufnump, nr)
 /*
  * Return TRUE if any buffer was changed and cannot be abandoned.
  * That changed buffer becomes the current buffer.
+ * When "unload" is true the current buffer is unloaded instead of making it
+ * hidden.  This is used for ":q!".
  */
     int
-check_changed_any(hidden)
+check_changed_any(hidden, unload)
     int		hidden;		/* Only check hidden buffers */
+    int		unload;
 {
     int		ret = FALSE;
     buf_T	*buf;
@@ -1750,7 +1753,7 @@ buf_found:
 
     /* Open the changed buffer in the current window. */
     if (buf != curbuf)
-	set_curbuf(buf, DOBUF_GOTO);
+	set_curbuf(buf, unload ? DOBUF_UNLOAD : DOBUF_GOTO);
 
 theend:
     vim_free(bufnrs);

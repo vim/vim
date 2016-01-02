@@ -7143,7 +7143,7 @@ ex_quit(eap)
 				       | (eap->forceit ? CCGD_FORCEIT : 0)
 				       | CCGD_EXCMD))
 	    || check_more(TRUE, eap->forceit) == FAIL
-	    || (only_one_window() && check_changed_any(eap->forceit)))
+	    || (only_one_window() && check_changed_any(eap->forceit, TRUE)))
     {
 	not_exiting();
     }
@@ -7214,7 +7214,7 @@ ex_quit_all(eap)
 #endif
 
     exiting = TRUE;
-    if (eap->forceit || !check_changed_any(FALSE))
+    if (eap->forceit || !check_changed_any(FALSE, FALSE))
 	getout(0);
     not_exiting();
 }
@@ -7609,7 +7609,7 @@ ex_exit(eap)
 		    || curbufIsChanged())
 		&& do_write(eap) == FAIL)
 	    || check_more(TRUE, eap->forceit) == FAIL
-	    || (only_one_window() && check_changed_any(eap->forceit)))
+	    || (only_one_window() && check_changed_any(eap->forceit, FALSE)))
     {
 	not_exiting();
     }
