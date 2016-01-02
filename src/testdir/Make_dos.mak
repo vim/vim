@@ -51,10 +51,10 @@ $(TEST_OUTFILES): $(DOSTMP)\$(*B).in
 	$(VIMPROG) -u dos.vim -U NONE --noplugin -s dotest.in $(*B).in
 	-@if exist test.out MOVE /y test.out $(DOSTMP)\$(*B).out
 	-@if exist $(*B).in.bak move /y $(*B).in.bak $(*B).in
-	-@del X*
 	-@if exist test.ok del test.ok
 	-@if exist Xdir1 rd /s /q Xdir1
 	-@if exist Xfind rd /s /q Xfind
+	-@del X*
 	-@if exist viminfo del viminfo
 	$(VIMPROG) -u dos.vim --noplugin "+set ff=unix|f test.out|wq" \
 		$(DOSTMP)\$(*B).out
@@ -87,9 +87,9 @@ clean:
 	-if exist mbyte.vim del mbyte.vim
 	-if exist mzscheme.vim del mzscheme.vim
 	-if exist lua.vim del lua.vim
-	-del X*
 	-if exist Xdir1 rd /s /q Xdir1
 	-if exist Xfind rd /s /q Xfind
+	-del X*
 	-if exist viminfo del viminfo
 	-if exist test.log del test.log
 	-if exist messages del messages
