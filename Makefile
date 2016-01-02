@@ -417,7 +417,9 @@ no_title.vim: Makefile
 	echo "set notitle noicon nocp nomodeline viminfo=" >no_title.vim
 
 # MS-DOS sources
-dossrc: dist no_title.vim dist/$(COMMENT_SRC) runtime/doc/uganda.nsis.txt
+dossrc: dist no_title.vim dist/$(COMMENT_SRC) \
+	runtime/doc/uganda.nsis.txt \
+	nsis/gvim_version.nsh
 	-rm -rf dist/vim$(VERSION)src.zip
 	-rm -rf dist/vim
 	mkdir dist/vim
@@ -428,6 +430,7 @@ dossrc: dist no_title.vim dist/$(COMMENT_SRC) runtime/doc/uganda.nsis.txt
 		$(SRC_AMI_DOS) \
 		$(SRC_DOS_UNIX) \
 		runtime/doc/uganda.nsis.txt \
+		nsis/gvim_version.nsh \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
 	mv dist/vim/$(VIMRTDIR)/runtime/* dist/vim/$(VIMRTDIR)
 	rmdir dist/vim/$(VIMRTDIR)/runtime
@@ -440,6 +443,14 @@ dossrc: dist no_title.vim dist/$(COMMENT_SRC) runtime/doc/uganda.nsis.txt
 
 runtime/doc/uganda.nsis.txt: runtime/doc/uganda.txt
 	cd runtime/doc && $(MAKE) uganda.nsis.txt
+
+nsis/gvim_version.nsh: Makefile
+	echo "# Generated from Makefile: define the version numbers" > $@
+	echo "!ifndef __GVIM_VER__NSH__"  >> $@
+	echo "!define __GVIM_VER__NSH__"  >> $@
+	echo "!define VER_MAJOR $(MAJOR)" >> $@
+	echo "!define VER_MINOR $(MINOR)" >> $@
+	echo "!endif" >> $@
 
 dosrt: dist dist/$(COMMENT_RT) dosrt_files
 	-rm -rf dist/vim$(VERSION)rt.zip

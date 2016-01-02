@@ -21,8 +21,7 @@
 # comment the next line if you do not want to add Native Language Support
 !define HAVE_NLS
 
-!define VER_MAJOR 7
-!define VER_MINOR 4
+!include gvim_version.nsh	# for version number
 
 # ----------- No configurable settings below this line -----------
 
