@@ -5858,6 +5858,66 @@ mch_breakcheck(void)
 #endif
 }
 
+/* physical RAM to leave for the OS */
+#define WINNT_RESERVE_BYTES     (256*1024*1024)
+#define WIN95_RESERVE_BYTES       (8*1024*1024)
+
+/*
+ * How much main memory in KiB that can be used by VIM.
+ */
+/*ARGSUSED*/
+    long_u
+mch_total_mem(int special)
+{
+    PlatformId();
+#if (defined(_MSC_VER) && (WINVER > 0x0400)) || defined(MEMORYSTATUSEX)
+    if (g_PlatformId == VER_PLATFORM_WIN32_NT)
+    {
+	MEMORYSTATUSEX  ms;
+
+	/* Need to use GlobalMemoryStatusEx() when there is more memory than
+	 * what fits in 32 bits. But it's not always available. */
+	ms.dwLength = sizeof(MEMORYSTATUSEX);
+	GlobalMemoryStatusEx(&ms);
+	if (ms.ullAvailVirtual < ms.ullTotalPhys)
+	{
+	    /* Process address space fits in physical RAM, use all of it. */
+	    return (long_u)(ms.ullAvailVirtual / 1024);
+	}
+	if (ms.ullTotalPhys <= WINNT_RESERVE_BYTES)
+	{
+	    /* Catch old NT box or perverse hardware setup. */
+	    return (long_u)((ms.ullTotalPhys / 2) / 1024);
+	}
+	/* Use physical RAM less reserve for OS + data. */
+	return (long_u)((ms.ullTotalPhys - WINNT_RESERVE_BYTES) / 1024);
+    }
+    else
+#endif
+    {
+	/* Pre-XP or 95 OS handling. */
+	MEMORYSTATUS    ms;
+	long_u		os_reserve_bytes;
+
+	ms.dwLength = sizeof(MEMORYSTATUS);
+	GlobalMemoryStatus(&ms);
+	if (ms.dwAvailVirtual < ms.dwTotalPhys)
+	{
+	    /* Process address space fits in physical RAM, use all of it. */
+	    return (long_u)(ms.dwAvailVirtual / 1024);
+	}
+	os_reserve_bytes = (g_PlatformId == VER_PLATFORM_WIN32_NT)
+	    ? WINNT_RESERVE_BYTES
+	    : WIN95_RESERVE_BYTES;
+	if (ms.dwTotalPhys <= os_reserve_bytes)
+	{
+	    /* Catch old boxes or perverse hardware setup. */
+	    return (long_u)((ms.dwTotalPhys / 2) / 1024);
+	}
+	/* Use physical RAM less reserve for OS + data. */
+	return (long_u)((ms.dwTotalPhys - os_reserve_bytes) / 1024);
+    }
+}
 
 #ifdef FEAT_MBYTE
 /*
