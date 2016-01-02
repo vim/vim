@@ -232,6 +232,10 @@ or you can use 'MinGW-w64' compiler.
 
     http://mingw-w64.sourceforge.net/
 
+Or a compiler provided on msys2:
+
+    https://msys2.github.io/
+
 Once you have downloaded the compiler binaries, unpack them on your hard disk
 somewhere, and put them on your PATH.  If you are on Win95/98 you can edit
 your AUTOEXEC.BAT file with a line like:
@@ -239,7 +243,14 @@ your AUTOEXEC.BAT file with a line like:
     set PATH=C:\MinGW\bin;%PATH%
 
 or on NT/2000/XP, go to the Control Panel, (Performance and Maintenance),
-System, Advanced, and edit the environment from there.
+System, Advanced, and edit the environment from there. If you use msys2
+compilers, set your installed paths:
+
+    C:\msys2\mingw32\bin
+
+for 32bit. And 64bit:
+
+    C:\msys2\mingw64\bin
 
 Test if gcc is on your path.  From a CMD (or COMMAND on '95/98) window:
 
@@ -341,21 +352,32 @@ Building with the mingw32 compiler, and the ActiveState ActivePython:
 
 After installing the ActivePython, you will have to create a 'mingw32'
 'libpython20.a' to link with:
-   cd $PYTHON/libs
-   pexports python20.dll > python20.def
-   dlltool -d python20.def -l libpython20.a
+    cd $PYTHON/libs
+    pexports python20.dll > python20.def
+    dlltool -d python20.def -l libpython20.a
 
 Once that is done, edit the 'Make_ming.mak' so the PYTHON variable points to
 the root of the Python installation (C:\Python20, for example).  If you are
 cross-compiling on Linux with the mingw32 setup, you need to also convert all
 the 'Include' files to *unix* line-endings.  This bash command will do it
 easily:
-   for fil in *.h ; do vim -e -c 'set ff=unix|w|q' $fil
+    for fil in *.h ; do vim -e -c 'set ff=unix|w|q' $fil
 
 Now just do:
-   make -f Make_ming.mak gvim.exe
+    make -f Make_ming.mak gvim.exe
 
-and you will end up with a Python-enabled, Win32 version.  Enjoy!
+And if you use msys2 to build python support (as one line):
+
+    mingw32-make -f Make_ming.mak PYTHON=c:/msys64/mingw64
+        PYTHON_HOME=c:/msys64/mingw64
+        PYTHONINC=-Ic:/msys64/mingw64/include/python2.7
+        DYNAMIC_PYTHON=yes
+        PYTHON_VER=27
+        DYNAMIC_PYTHON_DLL=libpython2.7.dll
+        ARCH=x86-64
+        STATIC_STDCPLUS=yes
+
+You will end up with a Python-enabled, Win32 version. Enjoy!
 
 
 7. Building with MzScheme support
@@ -464,19 +486,19 @@ the file format from "unix" to "dos".
 
 After you've built the Vim binaries as described above, you're ready to
 install Vim on your system.  However, if you've obtained the Vim sources
-using Mercurial or by downloading them as a unix tar file, you must first 
+using Mercurial or by downloading them as a unix tar file, you must first
 create a "vim73" directory.  If you instead downloaded the sources as
 zip files, you can skip this setup as the zip archives already have the
-correct directory structure.  
+correct directory structure.
 
   A.  Create a Vim "runtime" subdirectory named "vim73"
   -----------------------------------------------------
-  If you obtained your Vim sources as zip files, you can skip this step.  
+  If you obtained your Vim sources as zip files, you can skip this step.
   Otherwise, continue reading.
 
   Go to the directory that contains the Vim "src" and "runtime"
-  directories and create a new subdirectory named "vim73".  
-  
+  directories and create a new subdirectory named "vim73".
+
   Copy the "runtime" files into "vim73":
      copy runtime\* vim73
 
@@ -492,9 +514,9 @@ correct directory structure.
   C.  Move the "vim73" directory into the Vim installation subdirectory
   ---------------------------------------------------------------------
   Move the "vim73" subdirectory into the subdirectory where you want Vim
-  to be installed.  Typically, this subdirectory will be named "vim".  
+  to be installed.  Typically, this subdirectory will be named "vim".
   If you already have a "vim73" subdirectory in "vim", delete it first
-  by running its uninstal.exe program.  
+  by running its uninstal.exe program.
 
   D.  Install Vim
   ---------------
@@ -507,7 +529,7 @@ correct directory structure.
     popup menu.
   - You can have it create batch files, so that you can run Vim from the
     console or in a shell.  You can select one of the directories in your
-    PATH or add the directory to PATH using the Windows Control Panel.  
+    PATH or add the directory to PATH using the Windows Control Panel.
   - Create entries for Vim on the desktop and in the Start menu.
 
 Happy Vimming!
