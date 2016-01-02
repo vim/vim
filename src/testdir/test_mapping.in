@@ -40,6 +40,19 @@ o+
 :call append(line('$'), '+')
 :cunmap {
 :"
+:" keymap should apply to insert mode, but not to normal mode
+:set keymap=russian-jcukenwin
+Gqao.q
+:" keymap should apply to non-':'-command mode
+Ggg/.
+:call append(line('$'), "/"=="ю"?"T":"FAIL_keymap")
+:" with keymap @a has same result as direct typing
+G@a
+:" keymap does not apply to ':'-command mode
+:set keymap=
+:" without keymap @a produces the unmapped keys
+G@a
+:"
 :" issue #212 (feedkeys insert mapping at current position)
 :nnoremap . :call feedkeys(".", "in")<cr>
 :/^a b

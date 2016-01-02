@@ -320,13 +320,6 @@ getcmdline(firstc, count, indent)
     else if (p_imcmdline)
 	im_set_active(TRUE);
 #endif
-#ifdef FEAT_LANGMAP
-    //langmap should be inverse of keymap, which does not apply for ':' CMDLINE
-    //LANGMAP normally used only for keymap (lmap)
-    //but here for langmap to activate vgetorpeek()'s LANGMAP_ADJUST for ':' CMDLINE
-    else if (*p_langmap)
-	State |= LANGMAP; ///*grep CMDLINELANGMAP*/
-#endif
 
 #ifdef FEAT_MOUSE
     setmouse();

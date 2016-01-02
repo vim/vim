@@ -2149,8 +2149,7 @@ vgetorpeek(advance)
 			else
 			{
 			    LANGMAP_ADJUST(c1,
-					   ((State & (CMDLINE | INSERT)) == 0)
-					   || (State == (CMDLINE | LANGMAP)));/*grep CMDLINELANGMAP*/
+					   (State & (CMDLINE | INSERT)) == 0);
 			    nolmaplen = 0;
 			}
 #endif
@@ -2437,13 +2436,6 @@ vgetorpeek(advance)
 							      typebuf.tb_off];
 				    del_typebuf(1, 0);
 				}
-#ifdef FEAT_LANGMAP
-				if (c != K_SPECIAL)
-				{
-				    LANGMAP_ADJUST(c,((State & (CMDLINE | INSERT)) == 0)
-						   || (State == (CMDLINE | LANGMAP)));/*grep CMDLINELANGMAP*/
-				}
-#endif
 				break;	    /* got character, break for loop */
 			      }
 			}
