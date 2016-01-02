@@ -31,14 +31,18 @@ o+
 :" Insert-mode expr mapping with langmap
 :inoremap <expr> { "FAIL_iexplangmap"
 o+
-:" langmap should not get remapped in Command-line mode
-:cnoremap { FAIL_clangmap
+:" langmap should not get mapped in non-':'-Command-line mode
+?+
+:call append(line('$'), getline('.')=="/"?"T":"FAIL_clangmap_non_colon")
+:" langmap should get mapped in ':'-Command-line mode
+:cnoremap / FAIL_clangmap_colon
 :call append(line('$'), '+')
 :cunmap {
 :" Command-line mode expr mapping with langmap
-:cnoremap <expr> { "FAIL_cexplangmap"
-:call append(line('$'), '+')
+:cnoremap <expr> + "FAIL_cexplangmap"
+:call append(line('$'), '/')
 :cunmap {
+:set langmap=
 :"
 :" keymap should apply to insert mode, but not to normal mode
 :set keymap=russian-jcukenwin
