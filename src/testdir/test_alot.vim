@@ -3,6 +3,7 @@
 
 source test_backspace_opt.vim
 source test_lispwords.vim
+source test_menu.vim
 source test_searchpos.vim
 source test_set.vim
 source test_sort.vim
