@@ -7205,6 +7205,7 @@ cursor_pos_info(dict)
 	    p_shm = p;
 	}
     }
+#if defined(FEAT_EVAL)
     if (dict != NULL)
     {
 	dict_add_nr_str(dict, "words", (long)word_count, NULL);
@@ -7223,4 +7224,5 @@ cursor_pos_info(dict)
 	    dict_add_nr_str(dict, "cursor_words", (long)word_count_cursor, NULL);
 	}
     }
+#endif
 }
