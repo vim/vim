@@ -703,6 +703,7 @@ EXTRA =		\
 		runtime/vimlogo.xpm \
 		src/swis.s \
 		src/tee/Makefile \
+		src/tee/Make_mvc.mak \
 		src/tee/tee.c \
 		csdpmi4b.zip \
 

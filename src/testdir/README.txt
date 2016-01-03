@@ -5,6 +5,8 @@ want to separate it from other tests in that file using :" (that's an Ex
 command comment).
 
 The numbered tests are older, we have switched to named tests.
+And the newest way of testing is to use assert functions, see test_assert.vim
+for an example.
 
 To add a new test:
 1) Create test_<subject>.in and test_<subject>.ok files.

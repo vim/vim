@@ -10,7 +10,7 @@ ylfep;;p,,p:
 ylfep:let csave = getcharsearch()
 fip:call setcharsearch(csave)
 ;p;p:
-:" check that setcharsearch() changes the settins.
+:" check that setcharsearch() changes the settings.
 /^Z
 ylfep:call setcharsearch({'char': 'k'})
 ;p:call setcharsearch({'forward': 0})
