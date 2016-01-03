@@ -10,7 +10,7 @@ Test for commands that close windows and/or buffers:
 :edit
 
 STARTTEST
-:so tiny.vim
+:so small.vim
 GA 1:$w! Xtest1
 $r2:$w! Xtest2
 $r3:$w! Xtest3
