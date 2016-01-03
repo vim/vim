@@ -120,6 +120,7 @@ SCRIPTS_ALL = \
 	test_tagcase.out \
 	test_textobjects.out \
 	test_utf8.out \
+	test_wordcount.out \
 	test_writefile.out
 
 

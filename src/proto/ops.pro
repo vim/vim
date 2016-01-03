@@ -58,5 +58,5 @@ void write_reg_contents __ARGS((int name, char_u *str, int maxlen, int must_appe
 void write_reg_contents_lst __ARGS((int name, char_u **strings, int maxlen, int must_append, int yank_type, long block_len));
 void write_reg_contents_ex __ARGS((int name, char_u *str, int maxlen, int must_append, int yank_type, long block_len));
 void clear_oparg __ARGS((oparg_T *oap));
-void cursor_pos_info __ARGS((void));
+void cursor_pos_info __ARGS((dict_T *eval));
 /* vim: set ft=c : */

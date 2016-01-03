@@ -780,6 +780,7 @@ static void f_winrestview __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_winsaveview __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_winwidth __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_writefile __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_wordcount __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_xor __ARGS((typval_T *argvars, typval_T *rettv));
 
 static int list2fpos __ARGS((typval_T *arg, pos_T *posp, int *fnump, colnr_T *curswantp));
@@ -8387,6 +8388,7 @@ static struct fst
     {"winrestview",	1, 1, f_winrestview},
     {"winsaveview",	0, 0, f_winsaveview},
     {"winwidth",	1, 1, f_winwidth},
+    {"wordcount",	0, 0, f_wordcount},
     {"writefile",	2, 3, f_writefile},
     {"xor",		2, 2, f_xor},
 };
@@ -20217,6 +20219,19 @@ f_winwidth(argvars, rettv)
 #else
 	rettv->vval.v_number = Columns;
 #endif
+}
+
+/*
+ * "wordcount()" function
+ */
+    static void
+f_wordcount(argvars, rettv)
+    typval_T	*argvars UNUSED;
+    typval_T	*rettv;
+{
+    if (rettv_dict_alloc(rettv) == FAIL)
+	return;
+    cursor_pos_info(rettv->vval.v_dict);
 }
 
 /*

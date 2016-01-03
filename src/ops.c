@@ -6963,15 +6963,18 @@ line_count_info(line, wc, cc, limit, eol_size)
  * Give some info about the position of the cursor (for "g CTRL-G").
  * In Visual mode, give some info about the selected region.  (In this case,
  * the *_count_cursor variables store running totals for the selection.)
+ * When "dict" is not NULL store the info there instead of showing it.
  */
     void
-cursor_pos_info()
+cursor_pos_info(dict)
+    dict_T	*dict;
 {
     char_u	*p;
     char_u	buf1[50];
     char_u	buf2[40];
     linenr_T	lnum;
     long	byte_count = 0;
+    long	bom_count  = 0;
     long	byte_count_cursor = 0;
     long	char_count = 0;
     long	char_count_cursor = 0;
@@ -6989,7 +6992,11 @@ cursor_pos_info()
      */
     if (curbuf->b_ml.ml_flags & ML_EMPTY)
     {
-	MSG(_(no_lines_msg));
+	if (dict == NULL)
+	{
+	    MSG(_(no_lines_msg));
+	    return;
+	}
     }
     else
     {
@@ -7122,74 +7129,98 @@ cursor_pos_info()
 	if (!curbuf->b_p_eol && (curbuf->b_p_bin || !curbuf->b_p_fixeol))
 	    byte_count -= eol_size;
 
-	if (VIsual_active)
+	if (dict == NULL)
 	{
-	    if (VIsual_mode == Ctrl_V && curwin->w_curswant < MAXCOL)
+	    if (VIsual_active)
 	    {
-		getvcols(curwin, &min_pos, &max_pos, &min_pos.col,
-								&max_pos.col);
-		vim_snprintf((char *)buf1, sizeof(buf1), _("%ld Cols; "),
-			(long)(oparg.end_vcol - oparg.start_vcol + 1));
+		if (VIsual_mode == Ctrl_V && curwin->w_curswant < MAXCOL)
+		{
+		    getvcols(curwin, &min_pos, &max_pos, &min_pos.col,
+								    &max_pos.col);
+		    vim_snprintf((char *)buf1, sizeof(buf1), _("%ld Cols; "),
+			    (long)(oparg.end_vcol - oparg.start_vcol + 1));
+		}
+		else
+		    buf1[0] = NUL;
+
+		if (char_count_cursor == byte_count_cursor
+						    && char_count == byte_count)
+		    vim_snprintf((char *)IObuff, IOSIZE,
+			    _("Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"),
+			    buf1, line_count_selected,
+			    (long)curbuf->b_ml.ml_line_count,
+			    word_count_cursor, word_count,
+			    byte_count_cursor, byte_count);
+		else
+		    vim_snprintf((char *)IObuff, IOSIZE,
+			    _("Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld Bytes"),
+			    buf1, line_count_selected,
+			    (long)curbuf->b_ml.ml_line_count,
+			    word_count_cursor, word_count,
+			    char_count_cursor, char_count,
+			    byte_count_cursor, byte_count);
 	    }
 	    else
-		buf1[0] = NUL;
+	    {
+		p = ml_get_curline();
+		validate_virtcol();
+		col_print(buf1, sizeof(buf1), (int)curwin->w_cursor.col + 1,
+			(int)curwin->w_virtcol + 1);
+		col_print(buf2, sizeof(buf2), (int)STRLEN(p),
+				    linetabsize(p));
 
-	    if (char_count_cursor == byte_count_cursor
-						  && char_count == byte_count)
-		vim_snprintf((char *)IObuff, IOSIZE,
-			_("Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"),
-			buf1, line_count_selected,
+		if (char_count_cursor == byte_count_cursor
+			&& char_count == byte_count)
+		    vim_snprintf((char *)IObuff, IOSIZE,
+			_("Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"),
+			(char *)buf1, (char *)buf2,
+			(long)curwin->w_cursor.lnum,
 			(long)curbuf->b_ml.ml_line_count,
 			word_count_cursor, word_count,
 			byte_count_cursor, byte_count);
-	    else
-		vim_snprintf((char *)IObuff, IOSIZE,
-			_("Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld Bytes"),
-			buf1, line_count_selected,
+		else
+		    vim_snprintf((char *)IObuff, IOSIZE,
+			_("Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of %ld"),
+			(char *)buf1, (char *)buf2,
+			(long)curwin->w_cursor.lnum,
 			(long)curbuf->b_ml.ml_line_count,
 			word_count_cursor, word_count,
 			char_count_cursor, char_count,
 			byte_count_cursor, byte_count);
+	    }
+	}
+
+	/* Don't shorten this message, the user asked for it. */
+#ifdef FEAT_MBYTE
+	bom_count = bomb_size();
+	if (bom_count > 0)
+	    sprintf((char *)IObuff + STRLEN(IObuff), _("(+%ld for BOM)"),
+								bom_count);
+#endif
+	if (dict == NULL)
+	{
+	    p = p_shm;
+	    p_shm = (char_u *)"";
+	    msg(IObuff);
+	    p_shm = p;
+	}
+    }
+    if (dict != NULL)
+    {
+	dict_add_nr_str(dict, "words", (long)word_count, NULL);
+	dict_add_nr_str(dict, "chars", (long)char_count, NULL);
+	dict_add_nr_str(dict, "bytes", (long)byte_count + bom_count, NULL);
+	if (VIsual_active)
+	{
+	    dict_add_nr_str(dict, "visual_bytes", (long)byte_count_cursor, NULL);
+	    dict_add_nr_str(dict, "visual_chars", (long)char_count_cursor, NULL);
+	    dict_add_nr_str(dict, "visual_words", (long)word_count_cursor, NULL);
 	}
 	else
 	{
-	    p = ml_get_curline();
-	    validate_virtcol();
-	    col_print(buf1, sizeof(buf1), (int)curwin->w_cursor.col + 1,
-		    (int)curwin->w_virtcol + 1);
-	    col_print(buf2, sizeof(buf2), (int)STRLEN(p),
-				linetabsize(p));
-
-	    if (char_count_cursor == byte_count_cursor
-		    && char_count == byte_count)
-		vim_snprintf((char *)IObuff, IOSIZE,
-		    _("Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"),
-		    (char *)buf1, (char *)buf2,
-		    (long)curwin->w_cursor.lnum,
-		    (long)curbuf->b_ml.ml_line_count,
-		    word_count_cursor, word_count,
-		    byte_count_cursor, byte_count);
-	    else
-		vim_snprintf((char *)IObuff, IOSIZE,
-		    _("Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of %ld"),
-		    (char *)buf1, (char *)buf2,
-		    (long)curwin->w_cursor.lnum,
-		    (long)curbuf->b_ml.ml_line_count,
-		    word_count_cursor, word_count,
-		    char_count_cursor, char_count,
-		    byte_count_cursor, byte_count);
+	    dict_add_nr_str(dict, "cursor_bytes", (long)byte_count_cursor, NULL);
+	    dict_add_nr_str(dict, "cursor_chars", (long)char_count_cursor, NULL);
+	    dict_add_nr_str(dict, "cursor_words", (long)word_count_cursor, NULL);
 	}
-
-#ifdef FEAT_MBYTE
-	byte_count = bomb_size();
-	if (byte_count > 0)
-	    sprintf((char *)IObuff + STRLEN(IObuff), _("(+%ld for BOM)"),
-								  byte_count);
-#endif
-	/* Don't shorten this message, the user asked for it. */
-	p = p_shm;
-	p_shm = (char_u *)"";
-	msg(IObuff);
-	p_shm = p;
     }
 }
