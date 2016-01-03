@@ -946,8 +946,13 @@ LINKARGS1 = $(LINKARGS1) /LTCG:STATUS
 !endif
 !endif
 
-all:	$(VIM).exe vimrun.exe install.exe uninstal.exe xxd/xxd.exe \
-		GvimExt/gvimext.dll
+all:	$(VIM).exe \
+	vimrun.exe \
+	install.exe \
+	uninstal.exe \
+	xxd/xxd.exe \
+	tee/tee.exe \
+	GvimExt/gvimext.dll
 
 $(VIM).exe: $(OUTDIR) $(OBJ) $(GUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
 		$(LUA_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) $(TCL_OBJ) \
@@ -979,6 +984,11 @@ vimrun.exe: vimrun.c
 
 xxd/xxd.exe: xxd/xxd.c
 	cd xxd
+	$(MAKE) /NOLOGO -f Make_mvc.mak
+	cd ..
+
+tee/tee.exe: tee/tee.c
+	cd tee
 	$(MAKE) /NOLOGO -f Make_mvc.mak
 	cd ..
 
