@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.4.  Last change: 2015 Sep 08
+*index.txt*     For Vim version 7.4.  Last change: 2016 Jan 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1495,6 +1495,7 @@ tag	      command	      action ~
 |:smap|		:smap		like ":map" but for Select mode
 |:smapclear|	:smapc[lear]	remove all mappings for Select mode
 |:smenu|	:sme[nu]	add menu for Select mode
+|:smile|        :smi[le]	make the user happy
 |:snext|	:sn[ext]	split window and go to next file in the
 				argument list
 |:sniff|	:sni[ff]	send request to sniff

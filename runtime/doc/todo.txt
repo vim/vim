@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2015 Dec 29
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Jan 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -76,30 +76,10 @@ Regexp problems:
   matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
 - Search for \\~ causes error E874.
 
-Poor mans runtime file updater:
-- Generate a content file of all included runtime files:
-    $VIMRUNTIME/CONTENTS
-  With lines:
-        runtime/syntax/ada.vim hexchecksum  hexchecksum-with-CR-LF
-	runtime/syntax/old.vim DELETED
-- Use a command to trigger a script:
-	:RuntimeUpdate
-  Gets the new contents file from
-    https://raw.githubusercontent.com/vim/vim/master/runtime/CONTENTS
-  Goes over each line, compares the checksum and gets the file if it differs.
-- Include a minimal required Vim version?
-- For an installation, use "sudo" after getting all the files, only copy them.
-   need a temp directory tree.
-- For Windows generate a .bat file with "runas" (see StackOverflow).
-- Include a wget.exe or curl.exe in the distribution?
-- Also update vim.exe and gvim.exe this way?
-
-English spell file has an encoding error in the affix file.
-(Dominique Pelle, 2015 Oct 15)
-Perhaps use the files from here:
-https://github.com/marcoagpinto/aoo-mozilla-en-dict
-Hint for new URL: Christian Brabandt, 2015 Oct 15.
-But that file looks old.
+Need better instructions about how to install all interfaces and how to build
+Vim with them.
+For Ruby: https://github.com/ruby/ruby/tree/trunk/win32
+Or use Ken Takata's hack.
 
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
@@ -116,86 +96,35 @@ Should use /usr/local/share/applications or /usr/share/applications.
 Or use $XDG_DATA_DIRS.
 Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
 
-Patch to test shadow. James McCoy, 2015 Dec 7, #520
-
-Patch to support strawberry Perl. (Ken Takata, 2015 Dec 21)
-
-Change the travis config to also run autoconf on the huge build.
-(James McCoy, 2015 Dec 4)
-
 Access to uninitialized memory in match_backref() regexp_nda.c:4882
 (Dominique Pelle, 2015 Nov 6)
 
-Patch to fix test_listchars for MingW. (Christian Brabandt, 2015 Nov 29)
-
-Patch to not set the python home if $PYTHONHOME is set. (Kazuki Sakamoto,
-2015 Nov 24)
-
-Patch to add tests for what 7.3.192 fixed. (Elias Diem, 2015 Dec 22)
-
-Patch to use local value of 'errorformat' in :cexpr. (Christian Brabandt,
-2015 Oct 16)  Only do this for :lexpr ?
-
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
-
-Patch to make fnamemodify() work better with Cygwin. (Wily Wampa == Jacob
-Niehus, 2015 Nov 28, issue 505) 
-
-Patch to fix mc_FullName() on root directory. (Milly, 2015 Nov 24, Issue 501)
-
-Patch to make matchparen restore curswant properly. (Christian Brabandt, 2015
-Nov 26)
-
-Test 17 does not clean up the directory it creates. (Michael Soyka, 2015 Nov
-28)
-
-Patch to add binary support for nrformat. (Jason Schulz, 2015 Dec 28)
-
-Patch to make assert_false() error message look better. (Watiko, 2015 Dec 14)
 
 Using ":windo" to set options in all windows has the side effect that it
 changes the window layout and the current window.  Make a variant that saves
 and restores.  Use in the matchparen plugin.
 Perhaps we can use "window <restore> {cmd}"?
 
-Patch to estimate available memory on MS-Windows. (Mike Williams, 2015 Dec 18)
-Last version that day.
-
 Illegal memory access, requires ASAN to see. (Dominique Pelle, 2015 Jul 28)
-
-Patch for testing 'backspace'.  Also changes behavior of ":set bs=0", do we
-want that? (Hirohito Higashi, 2015 Dec 17)
-New patch Dec 26.
-
-Patch to adjust an Ex range only if it's about line numbers. (Christian
-Brabandt, 2015 Dec 13)
 
 Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
 
 Unexpected delay when using CTRL-O u.  It's not timeoutlen.
 (Gary Johnson, 2015 Aug 28)
 
-Patch for tee on Windows. (Yasuhiro Matsumoto, 2015 Nov 30)
-Update Dec 1.
-
-Patch to use 256 color setup for all terminals that have 256 colors or more.
-#504. (rdebath, 2015 Dec 1)
-
 Instead of separately uploading patches to the ftp site, can we get them from
 github?  This URL works:
    https://github.com/vim/vim/compare/v7.4.920%5E...v7.4.920.diff
+Diff for version.c contains more context, can't skip a patch.
 >
 Can src/GvimExt/Make_cyg.mak be removed?
 Same for src/xxd/Make_cyg.mak
 
-":q!" should reset modified flag for current buffer, if another buffer is
-modified no need to abandon it again.
-Patch from Yasuhiro Matsumoto, 2014 Nov 21.
-Update from Hirohito Higashi, 2014 Nov 21.
-With test, Nov 23.  Update 2015 Dec 15.
-
-Updated Fortran files. (Ajit Thakkar, 2015 Nov 30, second one)
+When t_Co is changed from termresponse, the OptionSet autocmmand event isn't
+triggered.  Use the code from the end of set_num_option() in
+set_color_count().
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
@@ -209,7 +138,7 @@ Patch to recognize string slice for variable followed by colon.
 (Hirohito Higashi, 2015 Nov 24)
 
 Patch to add debug backtrace. (Alberto Fanjul, 2015 Sep 27)
-Update Dec 2.
+Update 2016 Jan 2.  Issue #433
 
 MS-Windows: When editing a file with a leading space, writing it uses the
 wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
@@ -236,11 +165,6 @@ Can we cache the syntax attributes, so that updates for 'relativenumber' and
 'cursorline'/'cursorcolumn' are a lot faster?
 
 Patch to add window and tab arguments to getcwd(). (Thinca, 2015 Nov 15)
-
-Patch to check PYTHONHOME first. #500
-
-Patch to build with Python using MSYS2. (Yasuhiro Matsumoto, 2015 Nov 26)
-Updated Nov 29.
 
 Build with Python on Mac does not always use the right library.
 (Kazunobu Kuriyama, 2015 Mar 28)
@@ -324,7 +248,14 @@ Patch for matchit plugin related to multibyte chars. (Ken Takata, 2015 Jul 22)
 
 Patch for multi-byte characters in langmap and applying a mapping on them.
 (Christian Brabandt, 2015 Jun 12, update July 25)
-Is this the right solution?
+Is this the right solution?  Need to cleanup langmap behavior:
+- in vgetorpeek() apply langmap to the typeahead buffer and put the result in
+  a copy-buffer, only when langmap is appropriate for the current mode. Then
+  check for mapping and let gotchars() work on the copy-buffer.
+- Remove LANGMAP_ADJUST() in other parts of the code.  Make sure the mode is
+  covered by the above change.
+So that replaying the register doesn't use keymap/langmap and still does the
+same thing.  Remarks on issue 543.
 
 Patch to add grepfile(). (Scott Prager, 2015 May 26)
 Work in progress.
@@ -716,6 +647,18 @@ optional. (2013 Jul 12)
 
 Dialog is too big on Linux too. (David Fishburn, 2013 Sep 2)
 
+Improve the installer for MS-Windows.  There are a few alternatives:
+- Installer from Cream (Steve Hall).
+- Modern UI 2.0 for the Nsis installer. (Guopeng Wen)
+    https://github.com/gpwen/vim-installer-mui2
+-  make it possible to do a silent install, see
+    http://nsis.sourceforge.net/Docs/Chapter4.html#4.12
+    Version from Guopeng Wen does this.
+- MSI installer: https://github.com/petrkle/vim-msi/
+- The one on Issue 279.
+Problem: they all work slightly different (e.g. don't install vimrun.exe).
+How to test that it works well for all Vim users?
+
 Patch to check whether a buffer is quickfix or a location list.
 (Yasuhiro Matsumoto, 2014 Dec 9)
 
@@ -808,14 +751,6 @@ MS-Windows resizing problems:
 - Win32: When the taskbar is at the top of the screen creating the tabbar
   causes the window to move unnecessarily. (William E. Skeith III, 2012 Jan
   12) Patch: 2012 Jan 13  Needs more work (2012 Feb 2)
-
-Patch to use Modern UI 2.0 for the Nsis installer. (Guopeng Wen, 2010 Jul 30)
-Latest version: 2011 May 18 
-8   Windows install with NSIS: make it possible to do a silent install, see
-    http://nsis.sourceforge.net/Docs/Chapter4.html#4.12
-    Version from Guopeng Wen that does this (2010 Dec 27)
-Alternative: MSI installer: https://github.com/petrkle/vim-msi/
-Or the one on Issue 279
 
 'iminsert' global value set when using ":setlocal iminsert"? (Wu, 2012 Jun 23)
 
@@ -936,9 +871,9 @@ Sep 17)  Asked for feedback from others.
 Win32: Cannot cd into a directory that starts with a space. (Andy Wokula, 2012
 Jan 19)
 
-Need to escape $HOME on Windows?  (ZyX, 2011 Jul 21, discussion 2013 Jul 4)
-Can't simply use a backslash, \$HOME has a different meaning already.
-Would be possible to use $$HOME where $HOME is to be used.
+Need to escape $HOME on Windows for fnameescape()?  (ZyX, 2011 Jul 21,
+discussion 2013 Jul 4) Can't simply use a backslash, \$HOME has a different
+meaning already.  Would be possible to use $$HOME where $HOME is to be used.
 
 "2" in 'formatoptions' not working in comments. (Christian Corneliussen, 2011
 Oct 26)

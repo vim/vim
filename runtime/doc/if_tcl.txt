@@ -1,4 +1,4 @@
-*if_tcl.txt*    For Vim version 7.4.  Last change: 2012 Aug 02
+*if_tcl.txt*    For Vim version 7.4.  Last change: 2016 Jan 01
 
 
 		  VIM REFERENCE MANUAL    by Ingo Wilken
@@ -526,7 +526,7 @@ To use the Tcl interface the Tcl DLL must be in your search path.  In a
 console window type "path" to see what directories are used.
 
 The name of the DLL must match the Tcl version Vim was compiled with.
-Currently the name is "tcl83.dll".  That is for Tcl 8.3.  To know for sure
+Currently the name is "tcl86.dll".  That is for Tcl 8.6.  To know for sure
 edit "gvim.exe" and search for "tcl\d*.dll\c".
 
 ==============================================================================
