@@ -37,12 +37,17 @@ o+
 :" langmap should get mapped in ':'-Command-line mode
 :cnoremap / FAIL_clangmap_colon
 :call append(line('$'), '+')
-:cunmap {
+:cunmap /
 :" Command-line mode expr mapping with langmap
 :cnoremap <expr> + "FAIL_cexplangmap"
 :call append(line('$'), '/')
+:cunmap +
+:" langmap should map multi-byte in ':'-Command-line mode
+:set langmap=ф+;a{
+:set lфngmфp=
+:cnoremap { FAIL_clangmap_colon
+:call append(line('$'), '+')
 :cunmap {
-:set langmap=
 :"
 :" keymap should apply to insert mode, but not to normal mode
 :set keymap=russian-jcukenwin

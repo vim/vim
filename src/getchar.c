@@ -2437,13 +2437,6 @@ vgetorpeek(advance)
 							      typebuf.tb_off];
 				    del_typebuf(1, 0);
 				}
-#ifdef FEAT_LANGMAP
-				if (c != K_SPECIAL)
-				{
-				    LANGMAP_ADJUST(c,((State & (CMDLINE | INSERT)) == 0)
-						   || (get_cmdline_type() == ':'));
-				}
-#endif
 				break;	    /* got character, break for loop */
 			      }
 			}
