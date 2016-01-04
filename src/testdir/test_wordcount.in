@@ -4,7 +4,7 @@ STARTTEST
 :so small.vim
 :so mbyte.vim
 :set enc=utf8
-:set selection=inclusive
+:set selection=inclusive fileformat=unix
 :new
 :fu DoRecordWin(...)
 :	wincmd k
