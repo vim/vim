@@ -3737,24 +3737,27 @@ do_unlet(name, forceit)
     ht = find_var_ht(name, &varname);
     if (ht != NULL && *varname != NUL)
     {
-	if (ht == &globvarht)
-	    d = &globvardict;
-	else if (current_funccal != NULL
-				 && ht == &current_funccal->l_vars.dv_hashtab)
-	    d = &current_funccal->l_vars;
-	else
-	{
-	    di = find_var_in_ht(ht, *name, (char_u *)"", FALSE);
-	    d = di->di_tv.vval.v_dict;
-	}
 	hi = hash_find(ht, varname);
 	if (!HASHITEM_EMPTY(hi))
 	{
 	    di = HI2DI(hi);
 	    if (var_check_fixed(di->di_flags, name, FALSE)
-		    || var_check_ro(di->di_flags, name, FALSE)
-		    || tv_check_lock(d->dv_lock, name, FALSE))
+		    || var_check_ro(di->di_flags, name, FALSE))
 		return FAIL;
+
+	    if (ht == &globvarht)
+		d = &globvardict;
+	    else if (current_funccal != NULL
+				 && ht == &current_funccal->l_vars.dv_hashtab)
+		d = &current_funccal->l_vars;
+	    else
+	    {
+		di = find_var_in_ht(ht, *name, (char_u *)"", FALSE);
+		d = di->di_tv.vval.v_dict;
+	    }
+	    if (d == NULL || tv_check_lock(d->dv_lock, name, FALSE))
+		return FAIL;
+
 	    delete_var(ht, hi);
 	    return OK;
 	}
