@@ -4,6 +4,7 @@ STARTTEST
 :so small.vim
 :so mbyte.vim
 :set enc=utf8
+:set selection=inclusive
 :new
 :fu DoRecordWin(...)
 :	wincmd k
