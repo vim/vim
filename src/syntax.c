@@ -5833,6 +5833,11 @@ syn_cmd_sync(eap, syncing)
 	}
 	else if (STRCMP(key, "LINECONT") == 0)
 	{
+	    if (*next_arg == NUL)	   /* missing pattern */
+	    {
+		illegal = TRUE;
+		break;
+	    }
 	    if (curwin->w_s->b_syn_linecont_pat != NULL)
 	    {
 		EMSG(_("E403: syntax sync: line continuations pattern specified twice"));
