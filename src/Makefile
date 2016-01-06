@@ -1962,6 +1962,7 @@ test1 \
 	test_tagcase \
 	test_textobjects \
 	test_utf8 \
+	test_wordcount \
 	test_writefile \
 	test2 test3 test4 test5 test6 test7 test8 test9 \
 	test10 test11 test12 test13 test14 test15 test16 test17 test18 test19 \
@@ -1977,11 +1978,15 @@ test1 \
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 test_assert \
+	test_backspace_opt \
 	test_cdo \
+	test_menu \
+	test_quickfix \
 	test_searchpos \
 	test_set \
 	test_sort \
 	test_undolevels \
+	test_unlet \
 	test_viml \
 	test_alot:
 	cd testdir; rm -f $@.res test.log messages; $(MAKE) -f Makefile $@.res VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
@@ -1991,7 +1996,7 @@ test_assert \
 	cat testdir/messages
 
 newtests:
-	cd testdir; rm -f $@.res test.log messages; $(MAKE) -f Makefile newtests VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+	cd testdir; rm -f $@.res test.log messages; $(MAKE) -f Makefile newtestssilent VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 	@if test -f testdir/test.log; then \
 		cat testdir/test.log; \
 	fi
