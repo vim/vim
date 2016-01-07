@@ -105,7 +105,7 @@ int get4c __ARGS((FILE *fd));
 time_t get8ctime __ARGS((FILE *fd));
 char_u *read_string __ARGS((FILE *fd, int cnt));
 int put_bytes __ARGS((FILE *fd, long_u nr, int len));
-void put_time __ARGS((FILE *fd, time_t the_time));
+int put_time __ARGS((FILE *fd, time_t the_time));
 void time_to_bytes __ARGS((time_t the_time, char_u *buf));
 int has_non_ascii __ARGS((char_u *s));
 void parse_queued_messages __ARGS((void));

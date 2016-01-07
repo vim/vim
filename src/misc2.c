@@ -6300,8 +6300,9 @@ put_bytes(fd, nr, len)
 
 /*
  * Write time_t to file "fd" in 8 bytes.
+ * Returns FAIL when the write failed.
  */
-    void
+    int
 put_time(fd, the_time)
     FILE	*fd;
     time_t	the_time;
@@ -6309,7 +6310,7 @@ put_time(fd, the_time)
     char_u	buf[8];
 
     time_to_bytes(the_time, buf);
-    (void)fwrite(buf, (size_t)8, (size_t)1, fd);
+    return fwrite(buf, (size_t)8, (size_t)1, fd) == 1 ? OK : FAIL;
 }
 
 /*
