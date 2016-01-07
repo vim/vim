@@ -263,12 +263,17 @@ endif
 #	  TCL=[Path to TCL directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_TCL=yes (to load the TCL DLL dynamically)
 #	  TCL_VER=[TCL version, eg 83, 84] (default is 83)
+#	  TCL_VER_LONG=[Tcl version, eg 8.3] (default is 8.3)
+#	    You must set TCL_VER_LONG when you set TCL_VER.
 ifdef TCL
 ifndef DYNAMIC_TCL
 DYNAMIC_TCL=yes
 endif
 ifndef TCL_VER
 TCL_VER = 83
+endif
+ifndef TCL_VER_LONG
+TCL_VER_LONG = 8.3
 endif
 TCLINC += -I$(TCL)/include
 endif
@@ -462,7 +467,7 @@ endif
 ifdef TCL
 CFLAGS += -DFEAT_TCL $(TCLINC)
 ifeq (yes, $(DYNAMIC_TCL))
-CFLAGS += -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"tcl$(TCL_VER).dll\"
+CFLAGS += -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"tcl$(TCL_VER).dll\" -DDYNAMIC_TCL_VER=\"$(TCL_VER_LONG)\"
 endif
 endif
 
