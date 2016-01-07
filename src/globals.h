@@ -1619,6 +1619,15 @@ EXTERN FILE *time_fd INIT(= NULL);  /* where to write startup timing */
 EXTERN int ignored;
 EXTERN char *ignoredp;
 
+#ifdef FEAT_EVAL
+/* set by alloc_fail(): ID */
+EXTERN int  alloc_fail_id INIT(= 0);
+/* set by alloc_fail(), when zero alloc() returns NULL */
+EXTERN int  alloc_fail_countdown INIT(= -1);
+/* set by alloc_fail(), number of times alloc() returns NULL */
+EXTERN int  alloc_fail_repeat INIT(= 0);
+#endif
+
 /*
  * Optional Farsi support.  Include it here, so EXTERN and INIT are defined.
  */

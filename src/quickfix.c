@@ -253,9 +253,9 @@ qf_init_ext(qi, efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast,
 			{'s', ".\\+"}
 		    };
 
-    namebuf = alloc(CMDBUFFSIZE + 1);
-    errmsg = alloc(CMDBUFFSIZE + 1);
-    pattern = alloc(CMDBUFFSIZE + 1);
+    namebuf = alloc_id(CMDBUFFSIZE + 1, 3);
+    errmsg = alloc_id(CMDBUFFSIZE + 1, 4);
+    pattern = alloc_id(CMDBUFFSIZE + 1, 5);
     if (namebuf == NULL || errmsg == NULL || pattern == NULL)
 	goto qf_init_end;
 
@@ -3465,8 +3465,8 @@ ex_vimgrep(eap)
 	goto theend;
     }
 
-    dirname_start = alloc(MAXPATHL);
-    dirname_now = alloc(MAXPATHL);
+    dirname_start = alloc_id(MAXPATHL, 1);
+    dirname_now = alloc_id(MAXPATHL, 2);
     if (dirname_start == NULL || dirname_now == NULL)
 	goto theend;
 

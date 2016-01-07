@@ -273,3 +273,42 @@ function Test_cbuffer()
   call XbufferTests('l')
 endfunction
 
+function Test_nomem()
+  call alloc_fail(1, 0, 0)
+  try
+    vimgrep vim runtest.vim
+  catch
+    call assert_true(v:exception =~ 'E342')
+  endtry
+
+  call alloc_fail(2, 0, 0)
+  try
+    vimgrep vim runtest.vim
+  catch
+    call assert_true(v:exception =~ 'E342')
+  endtry
+
+  call alloc_fail(3, 0, 0)
+  try
+    cfile runtest.vim
+  catch
+    call assert_true(v:exception =~ 'E342')
+  endtry
+
+  call alloc_fail(4, 0, 0)
+  try
+    cfile runtest.vim
+  catch
+    call assert_true(v:exception =~ 'E342')
+  endtry
+
+  call alloc_fail(5, 0, 0)
+  try
+    cfile runtest.vim
+  catch
+    call assert_true(v:exception =~ 'E342')
+  endtry
+
+endfunc
+
+

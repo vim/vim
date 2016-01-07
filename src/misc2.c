@@ -797,6 +797,21 @@ vim_mem_profile_dump()
 
 #endif /* MEM_PROFILE */
 
+#ifdef FEAT_EVAL
+    static int
+alloc_does_fail()
+{
+    if (alloc_fail_countdown == 0)
+    {
+	if (--alloc_fail_repeat <= 0)
+	    alloc_fail_id = 0;
+	return TRUE;
+    }
+    --alloc_fail_countdown;
+    return FALSE;
+}
+#endif
+
 /*
  * Some memory is reserved for error messages and for being able to
  * call mf_release_all(), which needs some memory for mf_trans_add().
@@ -817,6 +832,22 @@ vim_mem_profile_dump()
 alloc(size)
     unsigned	    size;
 {
+    return (lalloc((long_u)size, TRUE));
+}
+
+/*
+ * alloc() with an ID for alloc_fail().
+ * LAST_ID_USED: 5
+ */
+    char_u *
+alloc_id(size, id)
+    unsigned	size;
+    int		id;
+{
+#ifdef FEAT_EVAL
+    if (alloc_fail_id == id && alloc_does_fail())
+	return NULL;
+#endif
     return (lalloc((long_u)size, TRUE));
 }
 
@@ -966,6 +997,23 @@ theend:
     mem_post_alloc((void **)&p, (size_t)size);
 #endif
     return p;
+}
+
+/*
+ * lalloc() with an ID for alloc_fail().
+ * See LAST_ID_USED above.
+ */
+    char_u *
+lalloc_id(size, message, id)
+    long_u	size;
+    int		message;
+    int		id;
+{
+#ifdef FEAT_EVAL
+    if (alloc_fail_id == id && alloc_does_fail())
+	return NULL;
+#endif
+    return (lalloc((long_u)size, message));
 }
 
 #if defined(MEM_PROFILE) || defined(PROTO)

@@ -1739,6 +1739,8 @@ USAGE				RESULT	DESCRIPTION	~
 abs( {expr})			Float or Number  absolute value of {expr}
 acos( {expr})			Float	arc cosine of {expr}
 add( {list}, {item})		List	append {item} to |List| {list}
+alloc_fail( {countdown}, {when}, {repeat})
+				nothing	make memory allocation fail
 and( {expr}, {expr})		Number  bitwise AND
 append( {lnum}, {string})	Number	append {string} below line {lnum}
 append( {lnum}, {list})		Number	append lines {list} below line {lnum}
@@ -2116,6 +2118,13 @@ add({list}, {expr})					*add()*
 <		Note that when {expr} is a |List| it is appended as a single
 		item.  Use |extend()| to concatenate |Lists|.
 		Use |insert()| to add an item at another position.
+
+
+alloc_fail({id}, {countdown}, {repeat})			*alloc_fail()*
+		This is for testing: If the memory allocation with {id} is
+		called, then decrement {countdown}, and when it reaches zero
+		let memory allocation fail {repeat} times.  When {repeat} is
+		smaller than one it fails one time.
 
 
 and({expr}, {expr})					*and()*

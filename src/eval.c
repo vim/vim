@@ -467,6 +467,7 @@ static void f_abs __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_acos __ARGS((typval_T *argvars, typval_T *rettv));
 #endif
 static void f_add __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_alloc_fail __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_and __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_append __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_argc __ARGS((typval_T *argvars, typval_T *rettv));
@@ -8071,6 +8072,7 @@ static struct fst
     {"acos",		1, 1, f_acos},	/* WJMc */
 #endif
     {"add",		2, 2, f_add},
+    {"alloc_fail",	3, 3, f_alloc_fail},
     {"and",		2, 2, f_and},
     {"append",		2, 2, f_append},
     {"argc",		0, 0, f_argc},
@@ -8981,6 +8983,28 @@ f_add(argvars, rettv)
     }
     else
 	EMSG(_(e_listreq));
+}
+
+/*
+ * "alloc_fail(id, countdown, repeat)" function
+ */
+    static void
+f_alloc_fail(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv UNUSED;
+{
+    if (argvars[0].v_type != VAR_NUMBER
+	    || argvars[0].vval.v_number <= 0
+	    || argvars[1].v_type != VAR_NUMBER
+	    || argvars[1].vval.v_number < 0
+	    || argvars[2].v_type != VAR_NUMBER)
+	EMSG(_(e_invarg));
+    else
+    {
+	alloc_fail_id = argvars[0].vval.v_number;
+	alloc_fail_countdown = argvars[1].vval.v_number;
+	alloc_fail_repeat = argvars[2].vval.v_number;
+    }
 }
 
 /*
