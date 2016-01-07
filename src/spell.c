@@ -11279,6 +11279,56 @@ suggest_try_special(su)
 }
 
 /*
+ * Change the 0 to 1 to measure how much time is spent in each state.
+ * Output is dumped in "suggestprof".
+ */
+#if 0
+# define SUGGEST_PROFILE
+proftime_T current;
+proftime_T total;
+proftime_T times[STATE_FINAL + 1];
+long counts[STATE_FINAL + 1];
+
+    static void
+prof_init(void)
+{
+    for (int i = 0; i <= STATE_FINAL; ++i)
+    {
+	profile_zero(&times[i]);
+	counts[i] = 0;
+    }
+    profile_start(&current);
+    profile_start(&total);
+}
+
+/* call before changing state */
+    static void
+prof_store(state_T state)
+{
+    profile_end(&current);
+    profile_add(&times[state], &current);
+    ++counts[state];
+    profile_start(&current);
+}
+# define PROF_STORE(state) prof_store(state);
+
+    static void
+prof_report(char *name)
+{
+    FILE *fd = fopen("suggestprof", "a");
+
+    profile_end(&total);
+    fprintf(fd, "-----------------------\n");
+    fprintf(fd, "%s: %s\n", name, profile_msg(&total));
+    for (int i = 0; i <= STATE_FINAL; ++i)
+	fprintf(fd, "%d: %s (%ld)\n", i, profile_msg(&times[i]), counts[i]);
+    fclose(fd);
+}
+#else
+# define PROF_STORE(state)
+#endif
+
+/*
  * Try finding suggestions by adding/removing/swapping letters.
  */
     static void
@@ -11309,7 +11359,13 @@ suggest_try_change(su)
 	    continue;
 
 	/* Try it for this language.  Will add possible suggestions. */
+#ifdef SUGGEST_PROFILE
+	prof_init();
+#endif
 	suggest_trie_walk(su, lp, fword, FALSE);
+#ifdef SUGGEST_PROFILE
+	prof_report("try_change");
+#endif
     }
 }
 
@@ -11467,6 +11523,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 
 		/* Always past NUL bytes now. */
 		n = (int)sp->ts_state;
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_ENDNUL;
 		sp->ts_save_badflags = su->su_badflags;
 
@@ -11510,6 +11567,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	    if (sp->ts_curi > len || byts[arridx] != 0)
 	    {
 		/* Past bytes in node and/or past NUL bytes. */
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_ENDNUL;
 		sp->ts_save_badflags = su->su_badflags;
 		break;
@@ -11909,6 +11967,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 #endif
 			/* Save things to be restored at STATE_SPLITUNDO. */
 			sp->ts_save_badflags = su->su_badflags;
+			PROF_STORE(sp->ts_state)
 			sp->ts_state = STATE_SPLITUNDO;
 
 			++depth;
@@ -11983,6 +12042,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 			    byts = pbyts;
 			    idxs = pidxs;
 			    sp->ts_prefixdepth = PFD_PREFIXTREE;
+			    PROF_STORE(sp->ts_state)
 			    sp->ts_state = STATE_NOPREFIX;
 			}
 		    }
@@ -11995,6 +12055,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	    su->su_badflags = sp->ts_save_badflags;
 
 	    /* Continue looking for NUL bytes. */
+	    PROF_STORE(sp->ts_state)
 	    sp->ts_state = STATE_START;
 
 	    /* In case we went into the prefix tree. */
@@ -12012,9 +12073,11 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	       )
 	    {
 		/* The badword ends, can't use STATE_PLAIN. */
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_DEL;
 		break;
 	    }
+	    PROF_STORE(sp->ts_state)
 	    sp->ts_state = STATE_PLAIN;
 	    /*FALLTHROUGH*/
 
@@ -12028,6 +12091,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	    {
 		/* Done all bytes at this node, do next state.  When still at
 		 * already changed bytes skip the other tricks. */
+		PROF_STORE(sp->ts_state)
 		if (sp->ts_fidx >= sp->ts_fidxtry)
 		    sp->ts_state = STATE_DEL;
 		else
@@ -12184,6 +12248,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	     * delete/insert/swap a character. */
 	    if (has_mbyte && sp->ts_tcharlen > 0)
 	    {
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_FINAL;
 		break;
 	    }
@@ -12191,6 +12256,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	    /*
 	     * Try skipping one character in the bad word (delete it).
 	     */
+	    PROF_STORE(sp->ts_state)
 	    sp->ts_state = STATE_INS_PREP;
 	    sp->ts_curi = 1;
 	    if (soundfold && sp->ts_fidx == 0 && fword[sp->ts_fidx] == '*')
@@ -12245,6 +12311,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	    {
 		/* If we just deleted a byte then inserting won't make sense,
 		 * a substitute is always cheaper. */
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_SWAP;
 		break;
 	    }
@@ -12256,12 +12323,14 @@ suggest_trie_walk(su, lp, fword, soundfold)
 		if (sp->ts_curi > byts[n])
 		{
 		    /* Only NUL bytes at this node, go to next state. */
+		    PROF_STORE(sp->ts_state)
 		    sp->ts_state = STATE_SWAP;
 		    break;
 		}
 		if (byts[n + sp->ts_curi] != NUL)
 		{
 		    /* Found a byte to insert. */
+		    PROF_STORE(sp->ts_state)
 		    sp->ts_state = STATE_INS;
 		    break;
 		}
@@ -12278,6 +12347,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	    if (sp->ts_curi > byts[n])
 	    {
 		/* Done all bytes at this node, go to next state. */
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_SWAP;
 		break;
 	    }
@@ -12349,6 +12419,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	    if (c == NUL)
 	    {
 		/* End of word, can't swap or replace. */
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_FINAL;
 		break;
 	    }
@@ -12357,6 +12428,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	     * SWAP3 etc. also don't make sense then. */
 	    if (!soundfold && !spell_iswordp(p, curwin))
 	    {
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_REP_INI;
 		break;
 	    }
@@ -12387,6 +12459,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	    /* When the second character is NUL we can't swap. */
 	    if (c2 == NUL)
 	    {
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_REP_INI;
 		break;
 	    }
@@ -12395,6 +12468,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	     * Also get here if the second char is not a word character. */
 	    if (c == c2)
 	    {
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_SWAP3;
 		break;
 	    }
@@ -12406,6 +12480,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 			sp->ts_twordlen, tword, fword + sp->ts_fidx,
 			c, c2);
 #endif
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_UNSWAP;
 		++depth;
 #ifdef FEAT_MBYTE
@@ -12425,8 +12500,11 @@ suggest_trie_walk(su, lp, fword, soundfold)
 		}
 	    }
 	    else
+	    {
 		/* If this swap doesn't work then SWAP3 won't either. */
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_REP_INI;
+	    }
 	    break;
 
 	case STATE_UNSWAP:
@@ -12484,6 +12562,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	     * Second character may any char: "a.b" -> "b.a" */
 	    if (c == c3 || c3 == NUL)
 	    {
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_REP_INI;
 		break;
 	    }
@@ -12495,6 +12574,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 			sp->ts_twordlen, tword, fword + sp->ts_fidx,
 			c, c3);
 #endif
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_UNSWAP3;
 		++depth;
 #ifdef FEAT_MBYTE
@@ -12515,7 +12595,10 @@ suggest_trie_walk(su, lp, fword, soundfold)
 		}
 	    }
 	    else
+	    {
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_REP_INI;
+	    }
 	    break;
 
 	case STATE_UNSWAP3:
@@ -12547,6 +12630,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	    {
 		/* Middle char is not a word char, skip the rotate.  First and
 		 * third char were already checked at swap and swap3. */
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_REP_INI;
 		break;
 	    }
@@ -12562,6 +12646,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 			sp->ts_twordlen, tword, fword + sp->ts_fidx,
 			p[0], p[1], p[2]);
 #endif
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_UNROT3L;
 		++depth;
 		p = fword + sp->ts_fidx;
@@ -12587,7 +12672,10 @@ suggest_trie_walk(su, lp, fword, soundfold)
 		}
 	    }
 	    else
+	    {
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_REP_INI;
+	    }
 	    break;
 
 	case STATE_UNROT3L:
@@ -12623,6 +12711,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 			sp->ts_twordlen, tword, fword + sp->ts_fidx,
 			p[0], p[1], p[2]);
 #endif
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_UNROT3R;
 		++depth;
 		p = fword + sp->ts_fidx;
@@ -12648,7 +12737,10 @@ suggest_trie_walk(su, lp, fword, soundfold)
 		}
 	    }
 	    else
+	    {
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_REP_INI;
+	    }
 	    break;
 
 	case STATE_UNROT3R:
@@ -12684,6 +12776,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 		    || sp->ts_score + SCORE_REP >= su->su_maxscore
 		    || sp->ts_fidx < sp->ts_fidxtry)
 	    {
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_FINAL;
 		break;
 	    }
@@ -12697,10 +12790,12 @@ suggest_trie_walk(su, lp, fword, soundfold)
 
 	    if (sp->ts_curi < 0)
 	    {
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_FINAL;
 		break;
 	    }
 
+	    PROF_STORE(sp->ts_state)
 	    sp->ts_state = STATE_REP;
 	    /*FALLTHROUGH*/
 
@@ -12733,6 +12828,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 			    ftp->ft_from, ftp->ft_to);
 #endif
 		    /* Need to undo this afterwards. */
+		    PROF_STORE(sp->ts_state)
 		    sp->ts_state = STATE_REP_UNDO;
 
 		    /* Change the "from" to the "to" string. */
@@ -12754,8 +12850,11 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	    }
 
 	    if (sp->ts_curi >= gap->ga_len && sp->ts_state == STATE_REP)
+	    {
 		/* No (more) matches. */
+		PROF_STORE(sp->ts_state)
 		sp->ts_state = STATE_FINAL;
+	    }
 
 	    break;
 
@@ -12775,6 +12874,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 		repextra -= tl - fl;
 	    }
 	    mch_memmove(p, ftp->ft_from, fl);
+	    PROF_STORE(sp->ts_state)
 	    sp->ts_state = STATE_REP;
 	    break;
 
@@ -13287,7 +13387,13 @@ suggest_try_soundalike(su)
 	    /* try all kinds of inserts/deletes/swaps/etc. */
 	    /* TODO: also soundfold the next words, so that we can try joining
 	     * and splitting */
+#ifdef SUGGEST_PROFILE
+	prof_init();
+#endif
 	    suggest_trie_walk(su, lp, salword, TRUE);
+#ifdef SUGGEST_PROFILE
+	prof_report("soundalike");
+#endif
 	}
     }
 }
