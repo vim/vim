@@ -394,8 +394,24 @@ OUTDIR=$(OBJDIR)
 
 !if $(MSVCVER) < 1900
 MSVC_MAJOR = ($(MSVCVER) / 100 - 6)
+MSVCRT_VER = ($(MSVCVER) / 10 - 60)
 !else
 MSVC_MAJOR = ($(MSVCVER) / 100 - 5)
+MSVCRT_VER = ($(MSVCVER) / 10 - 50)
+!endif
+
+# Calculate MSVCRT_VER
+!if [(set /a MSVCRT_VER="$(MSVCRT_VER)" > nul) && set MSVCRT_VER > msvcrtver.~] == 0
+!include msvcrtver.~
+!if [del msvcrtver.~]
+!endif
+!endif
+
+# Base name of the msvcrXX.dll
+!if $(MSVCRT_VER) <= 60
+MSVCRT_NAME = msvcrt
+!else
+MSVCRT_NAME = msvcr$(MSVCRT_VER)
 !endif
 
 !if $(MSVC_MAJOR) == 6
@@ -858,19 +874,39 @@ RUBY_API_VER = $(RUBY_VER_LONG:.=)
 !endif
 
 !if $(RUBY_VER) >= 18
+
 !ifndef RUBY_PLATFORM
+!if "$(CPU)" == "i386"
 RUBY_PLATFORM = i386-mswin32
-!endif
+!else # CPU
+RUBY_PLATFORM = x64-mswin64
+!endif # CPU
+!if $(MSVCRT_VER) >= 70
+RUBY_PLATFORM = $(RUBY_PLATFORM)_$(MSVCRT_VER)
+!endif # MSVCRT_VER
+!endif # RUBY_PLATFORM
+
 !ifndef RUBY_INSTALL_NAME
-RUBY_INSTALL_NAME = msvcrt-ruby$(RUBY_API_VER)
-!endif
-!else
+!ifndef RUBY_MSVCRT_NAME
+# Base name of msvcrXX.dll which is used by ruby's dll.
+RUBY_MSVCRT_NAME = $(MSVCRT_NAME)
+!endif # RUBY_MSVCRT_NAME
+!if "$(CPU)" == "i386"
+RUBY_INSTALL_NAME = $(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
+!else # CPU
+RUBY_INSTALL_NAME = x64-$(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
+!endif # CPU
+!endif # RUBY_INSTALL_NAME
+
+!else # $(RUBY_VER) >= 18
+
 !ifndef RUBY_PLATFORM
 RUBY_PLATFORM = i586-mswin32
 !endif
 !ifndef RUBY_INSTALL_NAME
 RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_API_VER)
 !endif
+
 !endif # $(RUBY_VER) >= 18
 
 !message Ruby requested (version $(RUBY_VER)) - root dir is "$(RUBY)"
