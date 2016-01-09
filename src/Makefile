@@ -1946,7 +1946,6 @@ test1 \
 	test_erasebackword \
 	test_eval \
 	test_fixeol \
-	test_increment \
 	test_insertcount \
 	test_listchars \
 	test_listlbr \
@@ -1982,6 +1981,8 @@ test1 \
 test_assert \
 	test_backspace_opt \
 	test_cdo \
+	test_increment \
+	test_lispwords \
 	test_menu \
 	test_quickfix \
 	test_searchpos \

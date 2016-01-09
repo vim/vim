@@ -102,7 +102,6 @@ SCRIPTS_ALL = \
 	test_erasebackword.out \
 	test_eval.out \
 	test_fixeol.out \
-	test_increment.out \
 	test_insertcount.out \
 	test_listchars.out \
 	test_listlbr.out \
@@ -174,6 +173,7 @@ SCRIPTS_GUI = test16.out
 # Keep test_alot.res as the last one, sort the others.
 NEW_TESTS = test_assert.res \
 	    test_cdo.res \
+	    test_increment.res \
 	    test_quickfix.res \
 	    test_viml.res \
 	    test_alot.res
