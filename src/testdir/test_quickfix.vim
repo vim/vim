@@ -72,7 +72,7 @@ endfunction
 
 " Tests for the :colder, :cnewer, :lolder and :lnewer commands
 " Note that this test assumes that a quickfix/location list is
-" already set by previous tests
+" already set by the caller.
 function XageTests(cchar)
   let Xolder = a:cchar . 'older'
   let Xnewer = a:cchar . 'newer'
@@ -116,7 +116,11 @@ function XageTests(cchar)
 endfunction
 
 function Test_cage()
+  let list = [{'bufnr': 1, 'lnum': 1}]
+  call setqflist(list)
   call XageTests('c')
+
+  call setloclist(0, list)
   call XageTests('l')
 endfunction
 
