@@ -1621,7 +1621,7 @@ EXTERN char *ignoredp;
 
 #ifdef FEAT_EVAL
 /* set by alloc_fail(): ID */
-EXTERN int  alloc_fail_id INIT(= 0);
+EXTERN alloc_id_T  alloc_fail_id INIT(= aid_none);
 /* set by alloc_fail(), when zero alloc() returns NULL */
 EXTERN int  alloc_fail_countdown INIT(= -1);
 /* set by alloc_fail(), number of times alloc() returns NULL */

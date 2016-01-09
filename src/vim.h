@@ -1765,6 +1765,8 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 
 #include "structs.h"	    /* file that defines many structures */
 
+#include "alloc.h"
+
 /* Values for "do_profiling". */
 #define PROF_NONE	0	/* profiling not started */
 #define PROF_YES	1	/* profiling busy */

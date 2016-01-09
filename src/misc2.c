@@ -837,12 +837,11 @@ alloc(size)
 
 /*
  * alloc() with an ID for alloc_fail().
- * LAST_ID_USED: 5
  */
     char_u *
 alloc_id(size, id)
     unsigned	size;
-    int		id UNUSED;
+    alloc_id_T	id UNUSED;
 {
 #ifdef FEAT_EVAL
     if (alloc_fail_id == id && alloc_does_fail())
@@ -1001,13 +1000,12 @@ theend:
 
 /*
  * lalloc() with an ID for alloc_fail().
- * See LAST_ID_USED above.
  */
     char_u *
 lalloc_id(size, message, id)
     long_u	size;
     int		message;
-    int		id UNUSED;
+    alloc_id_T	id UNUSED;
 {
 #ifdef FEAT_EVAL
     if (alloc_fail_id == id && alloc_does_fail())

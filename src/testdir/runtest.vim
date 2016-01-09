@@ -43,6 +43,22 @@ set nomore
 " Output all messages in English.
 lang mess C
 
+let s:srcdir = expand('%:p:h:h')
+
+" Support function: get the alloc ID by name.
+function GetAllocId(name)
+  exe 'split ' . s:srcdir . '/alloc.h'
+  /typedef enum/
+  let top = getline('.')
+  let lnum = search('aid_' . a:name . ',')
+  if lnum == 0
+    call add(v:errors, 'Alloc ID ' . a:name . ' not defined')
+  endif
+  close
+  return lnum - top
+endfunc
+
+
 " Source the test script.  First grab the file name, in case the script
 " navigates away.
 let testname = expand('%')
