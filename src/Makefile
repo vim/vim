@@ -2801,7 +2801,7 @@ objects/ops.o: ops.c
 	$(CCC) -o $@ ops.c
 
 objects/option.o: option.c
-	$(CCC) -o $@ option.c
+	$(CCC) $(LUA_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(PYTHON3_CFLAGS) $(RUBY_CFLAGS) -o $@ option.c
 
 objects/os_beos.o: os_beos.c
 	$(CCC) -o $@ os_beos.c
