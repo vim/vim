@@ -842,7 +842,7 @@ alloc(size)
     char_u *
 alloc_id(size, id)
     unsigned	size;
-    int		id;
+    int		id UNUSED;
 {
 #ifdef FEAT_EVAL
     if (alloc_fail_id == id && alloc_does_fail())
@@ -1007,7 +1007,7 @@ theend:
 lalloc_id(size, message, id)
     long_u	size;
     int		message;
-    int		id;
+    int		id UNUSED;
 {
 #ifdef FEAT_EVAL
     if (alloc_fail_id == id && alloc_does_fail())
