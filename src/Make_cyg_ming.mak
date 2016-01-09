@@ -453,14 +453,14 @@ endif
 ifdef PYTHON
 CFLAGS += -DFEAT_PYTHON 
 ifeq (yes, $(DYNAMIC_PYTHON))
-CFLAGS += -DDYNAMIC_PYTHON
+CFLAGS += -DDYNAMIC_PYTHON -DDYNAMIC_PYTHON_DLL=\"$(DYNAMIC_PYTHON_DLL)\"
 endif
 endif
 
 ifdef PYTHON3 
 CFLAGS += -DFEAT_PYTHON3 
 ifeq (yes, $(DYNAMIC_PYTHON3))
-CFLAGS += -DDYNAMIC_PYTHON3 
+CFLAGS += -DDYNAMIC_PYTHON3 -DDYNAMIC_PYTHON3_DLL=\"PYTHON$(PYTHON3_VER).dll\"
 endif
 endif
 
@@ -789,10 +789,10 @@ INCL = vim.h feature.h os_win32.h os_dos.h ascii.h keymap.h term.h macros.h \
 	gui.h
 
 $(OUTDIR)/if_python.o : if_python.c if_py_both.h $(INCL)
-	$(CC) -c $(CFLAGS) $(PYTHONINC) $(PYTHON_HOME_DEF) -DDYNAMIC_PYTHON_DLL=\"$(DYNAMIC_PYTHON_DLL)\" $< -o $@
+	$(CC) -c $(CFLAGS) $(PYTHONINC) $(PYTHON_HOME_DEF) $< -o $@
 
 $(OUTDIR)/if_python3.o : if_python3.c if_py_both.h $(INCL)
-	$(CC) -c $(CFLAGS) $(PYTHON3INC) -DDYNAMIC_PYTHON3_DLL=\"PYTHON$(PYTHON3_VER).dll\" $< -o $@
+	$(CC) -c $(CFLAGS) $(PYTHON3INC) $< -o $@
 
 $(OUTDIR)/%.o : %.c $(INCL)
 	$(CC) -c $(CFLAGS) $< -o $@
