@@ -160,6 +160,20 @@ static struct ref refsdeleted;	/* dummy object for deleted ref list */
 typedef int HANDLE;
 # endif
 
+# ifndef WIN3264
+#  include <dlfcn.h>
+#  define HANDLE void*
+#  define TCL_PROC void*
+#  define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
+#  define symbol_from_dll dlsym
+#  define close_dll dlclose
+# else
+#  define TCL_PROC FARPROC
+#  define load_dll vimLoadLib
+#  define symbol_from_dll GetProcAddress
+#  define close_dll FreeLibrary
+# endif
+
 /*
  * Declare HANDLE for tcl.dll and function pointers.
  */
@@ -170,7 +184,6 @@ void (*dll_Tcl_FindExecutable)(const void *);
 /*
  * Table of name to function pointer of tcl.
  */
-#define TCL_PROC FARPROC
 static struct {
     char* name;
     TCL_PROC* ptr;
@@ -197,7 +210,7 @@ tcl_runtime_link_init(char *libname, int verbose)
 
     if (hTclLib)
 	return OK;
-    if (!(hTclLib = vimLoadLib(libname)))
+    if (!(hTclLib = load_dll(libname)))
     {
 	if (verbose)
 	    EMSG2(_(e_loadlib), libname);
@@ -205,10 +218,10 @@ tcl_runtime_link_init(char *libname, int verbose)
     }
     for (i = 0; tcl_funcname_table[i].ptr; ++i)
     {
-	if (!(*tcl_funcname_table[i].ptr = GetProcAddress(hTclLib,
+	if (!(*tcl_funcname_table[i].ptr = symbol_from_dll(hTclLib,
 			tcl_funcname_table[i].name)))
 	{
-	    FreeLibrary(hTclLib);
+	    close_dll(hTclLib);
 	    hTclLib = NULL;
 	    if (verbose)
 		EMSG2(_(e_loadfunc), tcl_funcname_table[i].name);
@@ -246,13 +259,13 @@ tcl_enabled(verbose)
     int		verbose;
 {
     if (!stubs_initialized && find_executable_arg != NULL
-	    && tcl_runtime_link_init(DYNAMIC_TCL_DLL, verbose) == OK)
+	    && tcl_runtime_link_init((char *)p_tcldll, verbose) == OK)
     {
 	Tcl_Interp *interp;
 
 	dll_Tcl_FindExecutable(find_executable_arg);
 
-	if (interp = dll_Tcl_CreateInterp())
+	if ((interp = dll_Tcl_CreateInterp()) != NULL)
 	{
 	    if (Tcl_InitStubs(interp, DYNAMIC_TCL_VER, 0))
 	    {
@@ -272,7 +285,7 @@ tcl_end()
 #ifdef DYNAMIC_TCL
     if (hTclLib)
     {
-	FreeLibrary(hTclLib);
+	close_dll(hTclLib);
 	hTclLib = NULL;
     }
 #endif
@@ -2038,6 +2051,10 @@ tcldelallrefs(ref)
     struct ref	*next;
     int		err;
     char	*result;
+
+    /* TODO: this code currently crashes Vim on exit */
+    if (exiting)
+	return;
 
     while (ref != NULL)
     {

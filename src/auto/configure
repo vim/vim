@@ -1468,7 +1468,7 @@ Optional Features:
   --enable-perlinterp=OPTS     Include Perl interpreter.  default=no OPTS=no/yes/dynamic
   --enable-pythoninterp=OPTS   Include Python interpreter. default=no OPTS=no/yes/dynamic
   --enable-python3interp=OPTS   Include Python3 interpreter. default=no OPTS=no/yes/dynamic
-  --enable-tclinterp      Include Tcl interpreter.
+  --enable-tclinterp=OPTS      Include Tcl interpreter. default=no OPTS=no/yes/dynamic
   --enable-rubyinterp=OPTS     Include Ruby interpreter.  default=no OPTS=no/yes/dynamic
   --enable-cscope         Include cscope interface.
   --enable-workshop       Include Sun Visual Workshop support.
@@ -6616,7 +6616,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_tclinterp" >&5
 $as_echo "$enable_tclinterp" >&6; }
 
-if test "$enable_tclinterp" = "yes"; then
+if test "$enable_tclinterp" = "yes" -o "$enable_tclinterp" = "dynamic"; then
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking --with-tclsh argument" >&5
 $as_echo_n "checking --with-tclsh argument... " >&6; }
@@ -6852,6 +6852,7 @@ $as_echo_n "checking Tcl version... " >&6; }
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $tclver - OK" >&5
 $as_echo "$tclver - OK" >&6; };
       tclloc=`echo 'set l [info library];set i [string last lib $l];incr i -2;puts [string range $l 0 $i]' | $vi_cv_path_tcl -`
+      tcldll=`echo 'puts libtcl[info tclversion][info sharedlibextension]' | $vi_cv_path_tcl -`
 
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for location of Tcl include" >&5
 $as_echo_n "checking for location of Tcl include... " >&6; }
@@ -6888,7 +6889,11 @@ $as_echo_n "checking for location of tclConfig.sh script... " >&6; }
 	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $try/tclConfig.sh" >&5
 $as_echo "$try/tclConfig.sh" >&6; }
 	    . "$try/tclConfig.sh"
-	    	    TCL_LIBS=`eval echo "$TCL_LIB_SPEC $TCL_LIBS"`
+	    	    if test "$enable_tclinterp" = "dynamic"; then
+	      TCL_LIBS=`eval echo "$TCL_STUB_LIB_SPEC $TCL_LIBS"`
+	    else
+	      TCL_LIBS=`eval echo "$TCL_LIB_SPEC $TCL_LIBS"`
+	    fi
 	    	    	    TCL_DEFS=`echo $TCL_DEFS | sed -e 's/\\\\ /\\\\X/g' | tr ' ' '\012' | sed -e '/^[^-]/d' -e '/^-[^D]/d' -e '/-D[^_]/d' -e 's/-D_/ -D_/' | tr '\012' ' ' | sed -e 's/\\\\X/\\\\ /g'`
 	    break
 	  fi
@@ -6935,6 +6940,13 @@ $as_echo "<not found>" >&6; }
     else
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: too old; need Tcl version 8.0 or later" >&5
 $as_echo "too old; need Tcl version 8.0 or later" >&6; }
+    fi
+  fi
+  if test "$enable_tclinterp" = "dynamic"; then
+    if test "X$TCL_SRC" != "X" -a "X$tcldll" != "X"; then
+      $as_echo "#define DYNAMIC_TCL 1" >>confdefs.h
+
+      TCL_CFLAGS="-DDYNAMIC_TCL_DLL=\\\"$tcldll\\\" -DDYNAMIC_TCL_VER=\\\"$tclver\\\" $TCL_CFLAGS"
     fi
   fi
   if test "$fail_if_missing" = "yes" -a -z "$TCL_SRC"; then

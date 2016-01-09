@@ -1331,6 +1331,10 @@ if exists("&rubydll")
   call append("$", "rubydll\tname of the Ruby dynamic library")
   call <SID>OptionG("rubydll", &rubydll)
 endif
+if exists("&tcldll")
+  call append("$", "tcldll\tname of the Tcl dynamic library")
+  call <SID>OptionG("tcldll", &tcldll)
+endif
 
 set cpo&vim
 

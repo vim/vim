@@ -2609,6 +2609,12 @@ static struct vimoption
     {"tagstack",    "tgst", P_BOOL|P_VI_DEF,
 			    (char_u *)&p_tgst, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L} SCRIPTID_INIT},
+#if defined(DYNAMIC_TCL)
+    {"tcldll",      NULL,   P_STRING|P_VI_DEF|P_SECURE,
+			    (char_u *)&p_tcldll, PV_NONE,
+			    {(char_u *)DYNAMIC_TCL_DLL, (char_u *)0L}
+			    SCRIPTID_INIT},
+#endif
     {"term",	    NULL,   P_STRING|P_EXPAND|P_NODEFAULT|P_NO_MKRC|P_VI_DEF|P_RALL,
 			    (char_u *)&T_NAME, PV_NONE,
 			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},

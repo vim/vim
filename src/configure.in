@@ -1622,11 +1622,11 @@ fi
 
 AC_MSG_CHECKING(--enable-tclinterp argument)
 AC_ARG_ENABLE(tclinterp,
-	[  --enable-tclinterp      Include Tcl interpreter.], ,
+	[  --enable-tclinterp[=OPTS]      Include Tcl interpreter. [default=no] [OPTS=no/yes/dynamic]], ,
 	[enable_tclinterp="no"])
 AC_MSG_RESULT($enable_tclinterp)
 
-if test "$enable_tclinterp" = "yes"; then
+if test "$enable_tclinterp" = "yes" -o "$enable_tclinterp" = "dynamic"; then
 
   dnl on FreeBSD tclsh is a silly script, look for tclsh8.[5420]
   AC_MSG_CHECKING(--with-tclsh argument)
@@ -1660,6 +1660,7 @@ if test "$enable_tclinterp" = "yes"; then
       tclver=`echo 'puts [[info tclversion]]' | $vi_cv_path_tcl -`
       AC_MSG_RESULT($tclver - OK);
       tclloc=`echo 'set l [[info library]];set i [[string last lib $l]];incr i -2;puts [[string range $l 0 $i]]' | $vi_cv_path_tcl -`
+      tcldll=`echo 'puts libtcl[[info tclversion]][[info sharedlibextension]]' | $vi_cv_path_tcl -`
 
       AC_MSG_CHECKING(for location of Tcl include)
       if test "x$MACOSX" != "xyes"; then
@@ -1694,7 +1695,11 @@ if test "$enable_tclinterp" = "yes"; then
 	    AC_MSG_RESULT($try/tclConfig.sh)
 	    . "$try/tclConfig.sh"
 	    dnl use eval, because tcl 8.2 includes ${TCL_DBGX}
-	    TCL_LIBS=`eval echo "$TCL_LIB_SPEC $TCL_LIBS"`
+	    if test "$enable_tclinterp" = "dynamic"; then
+	      TCL_LIBS=`eval echo "$TCL_STUB_LIB_SPEC $TCL_LIBS"`
+	    else
+	      TCL_LIBS=`eval echo "$TCL_LIB_SPEC $TCL_LIBS"`
+	    fi
 	    dnl Use $TCL_DEFS for -D_THREAD_SAFE et al.  But only use the
 	    dnl "-D_ABC" items.  Watch out for -DFOO=long\ long.
 	    TCL_DEFS=`echo $TCL_DEFS | sed -e 's/\\\\ /\\\\X/g' | tr ' ' '\012' | sed -e '/^[[^-]]/d' -e '/^-[[^D]]/d' -e '/-D[[^_]]/d' -e 's/-D_/ -D_/' | tr '\012' ' ' | sed -e 's/\\\\X/\\\\ /g'`
@@ -1737,6 +1742,12 @@ if test "$enable_tclinterp" = "yes"; then
       fi
     else
       AC_MSG_RESULT(too old; need Tcl version 8.0 or later)
+    fi
+  fi
+  if test "$enable_tclinterp" = "dynamic"; then
+    if test "X$TCL_SRC" != "X" -a "X$tcldll" != "X"; then
+      AC_DEFINE(DYNAMIC_TCL)
+      TCL_CFLAGS="-DDYNAMIC_TCL_DLL=\\\"$tcldll\\\" -DDYNAMIC_TCL_VER=\\\"$tclver\\\" $TCL_CFLAGS"
     fi
   fi
   if test "$fail_if_missing" = "yes" -a -z "$TCL_SRC"; then
