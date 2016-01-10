@@ -2052,9 +2052,11 @@ tcldelallrefs(ref)
     int		err;
     char	*result;
 
+#ifdef DYNAMIC_TCL
     /* TODO: this code currently crashes Vim on exit */
     if (exiting)
 	return;
+#endif
 
     while (ref != NULL)
     {
