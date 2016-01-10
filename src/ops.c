@@ -5339,31 +5339,6 @@ block_prep(oap, bdp, lnum, is_del)
     bdp->textstart = pstart;
 }
 
-#ifdef FEAT_RIGHTLEFT
-static void reverse_line __ARGS((char_u *s));
-
-    static void
-reverse_line(s)
-    char_u *s;
-{
-    int	    i, j;
-    char_u  c;
-
-    if ((i = (int)STRLEN(s) - 1) <= 0)
-	return;
-
-    curwin->w_cursor.col = i - curwin->w_cursor.col;
-    for (j = 0; j < i; j++, i--)
-    {
-	c = s[i]; s[i] = s[j]; s[j] = c;
-    }
-}
-
-# define RLADDSUBFIX(ptr) if (curwin->w_p_rl) reverse_line(ptr);
-#else
-# define RLADDSUBFIX(ptr)
-#endif
-
 /*
  * add or subtract 'Prenum1' from a number in a line
  * 'command' is CTRL-A for add, CTRL-X for subtract
@@ -5426,7 +5401,6 @@ do_addsub(command, Prenum1, g_cmd)
 	}
 
 	ptr = ml_get(VIsual.lnum);
-	RLADDSUBFIX(ptr);
 	if (VIsual_mode == 'V')
 	{
 	    VIsual.col = 0;
@@ -5457,7 +5431,6 @@ do_addsub(command, Prenum1, g_cmd)
     else
     {
 	ptr = ml_get_curline();
-	RLADDSUBFIX(ptr);
 
 	if (dobin)
 	    while (col > 0 && vim_isbdigit(ptr[col]))
@@ -5526,7 +5499,6 @@ do_addsub(command, Prenum1, g_cmd)
 	t = curwin->w_cursor;
 	curwin->w_cursor.lnum = i;
 	ptr = ml_get_curline();
-	RLADDSUBFIX(ptr);
 	if ((int)STRLEN(ptr) <= col)
 	    /* try again on next line */
 	    continue;
@@ -5812,10 +5784,6 @@ do_addsub(command, Prenum1, g_cmd)
 	    col = 0;
 	Prenum1 += offset;
 	curwin->w_set_curswant = TRUE;
-#ifdef FEAT_RIGHTLEFT
-	ptr = ml_get_buf(curbuf, curwin->w_cursor.lnum, TRUE);
-	RLADDSUBFIX(ptr);
-#endif
     }
     if (visual)
 	/* cursor at the top of the selection */
