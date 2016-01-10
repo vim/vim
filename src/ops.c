@@ -5382,6 +5382,8 @@ do_addsub(command, Prenum1, g_cmd)
     int		pos = 0;
     int		bit = 0;
     int		bits = sizeof(unsigned long) * 8;
+    pos_T	startpos;
+    pos_T	endpos;
 
     dohex = (vim_strchr(curbuf->b_p_nf, 'x') != NULL);	/* "heX" */
     dooct = (vim_strchr(curbuf->b_p_nf, 'o') != NULL);	/* "Octal" */
@@ -5582,9 +5584,12 @@ do_addsub(command, Prenum1, g_cmd)
 #endif
 	    }
 	    curwin->w_cursor.col = col;
+	    if (!did_change)
+		startpos = curwin->w_cursor;
 	    did_change = TRUE;
 	    (void)del_char(FALSE);
 	    ins_char(firstdigit);
+	    endpos = curwin->w_cursor;
 	    curwin->w_cursor.col = col;
 	}
 	else
@@ -5677,6 +5682,8 @@ do_addsub(command, Prenum1, g_cmd)
 	     * Delete the old number.
 	     */
 	    curwin->w_cursor.col = col;
+	    if (!did_change)
+		startpos = curwin->w_cursor;
 	    did_change = TRUE;
 	    todel = length;
 	    c = gchar_cursor();
@@ -5763,6 +5770,7 @@ do_addsub(command, Prenum1, g_cmd)
 	    STRCAT(buf1, buf2);
 	    ins_str(buf1);		/* insert the new number */
 	    vim_free(buf1);
+	    endpos = curwin->w_cursor;
 	    if (lnum < lnume)
 		curwin->w_cursor.col = t.col;
 	    else if (did_change && curwin->w_cursor.col)
@@ -5788,6 +5796,14 @@ do_addsub(command, Prenum1, g_cmd)
     if (visual)
 	/* cursor at the top of the selection */
 	curwin->w_cursor = VIsual;
+    if (did_change)
+    {
+	/* set the '[ and '] marks */
+	curbuf->b_op_start = startpos;
+	curbuf->b_op_end = endpos;
+	if (curbuf->b_op_end.col > 0)
+	    --curbuf->b_op_end.col;
+    }
     return OK;
 }
 
