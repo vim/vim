@@ -112,6 +112,7 @@ static void	dis_msg __ARGS((char_u *p, int skip_esc));
 static char_u	*skip_comment __ARGS((char_u *line, int process, int include_space, int *is_comment));
 #endif
 static void	block_prep __ARGS((oparg_T *oap, struct block_def *, linenr_T, int));
+static int	do_addsub __ARGS((int op_type, pos_T *pos, int length, linenr_T Prenum1));
 #if defined(FEAT_CLIPBOARD) || defined(FEAT_EVAL)
 static void	str_to_reg __ARGS((struct yankreg *y_ptr, int yank_type, char_u *str, long len, long blocklen, int str_list));
 #endif
@@ -158,6 +159,8 @@ static char opchars[][3] =
     {'z', 'D', TRUE},	/* OP_FOLDDELREC */
     {'g', 'w', TRUE},	/* OP_FORMAT2 */
     {'g', '@', FALSE},	/* OP_FUNCTION */
+    {Ctrl_A, NUL, FALSE},	/* OP_NR_ADD */
+    {Ctrl_X, NUL, FALSE},	/* OP_NR_SUB */
 };
 
 /*
@@ -175,6 +178,10 @@ get_op_type(char1, char2)
 	return OP_REPLACE;
     if (char1 == '~')		/* when tilde is an operator */
 	return OP_TILDE;
+    if (char1 == 'g' && char2 == Ctrl_A)	/* add */
+	return OP_NR_ADD;
+    if (char1 == 'g' && char2 == Ctrl_X)	/* subtract */
+	return OP_NR_SUB;
     for (i = 0; ; ++i)
 	if (opchars[i][0] == char1 && opchars[i][1] == char2)
 	    break;
@@ -5340,16 +5347,131 @@ block_prep(oap, bdp, lnum, is_del)
 }
 
 /*
- * add or subtract 'Prenum1' from a number in a line
- * 'command' is CTRL-A for add, CTRL-X for subtract
- *
- * return FAIL for failure, OK otherwise
+ * Handle the add/subtract operator.
  */
-    int
-do_addsub(command, Prenum1, g_cmd)
-    int		command;
-    linenr_T	Prenum1;
+    void
+op_addsub(oap, Prenum1, g_cmd)
+    oparg_T	*oap;
+    linenr_T	Prenum1;	    /* Amount of add/subtract */
     int		g_cmd;		    /* was g<c-a>/g<c-x> */
+{
+    pos_T		pos;
+    struct block_def	bd;
+    int			change_cnt = 0;
+    linenr_T		amount = Prenum1;
+
+    if (!VIsual_active)
+    {
+	pos = curwin->w_cursor;
+	if (u_save_cursor() == FAIL)
+	    return;
+	change_cnt = do_addsub(oap->op_type, &pos, 0, amount);
+	if (change_cnt)
+	    changed_lines(pos.lnum, 0, pos.lnum + 1, 0L);
+    }
+    else
+    {
+	int one_change;
+	int length;
+	pos_T startpos;
+
+	if (u_save((linenr_T)(oap->start.lnum - 1),
+					(linenr_T)(oap->end.lnum + 1)) == FAIL)
+	    return;
+
+	pos = oap->start;
+	for (; pos.lnum <= oap->end.lnum; ++pos.lnum)
+	{
+	    if (oap->block_mode)		    /* Visual block mode */
+	    {
+		block_prep(oap, &bd, pos.lnum, FALSE);
+		pos.col = bd.textcol;
+		length = bd.textlen;
+	    }
+	    else
+	    {
+		if (oap->motion_type == MLINE)
+		{
+		    curwin->w_cursor.col = 0;
+		    pos.col = 0;
+		    length = (colnr_T)STRLEN(ml_get(pos.lnum));
+		}
+		else if (oap->motion_type == MCHAR)
+		{
+		    if (!oap->inclusive)
+			dec(&(oap->end));
+		    length = (colnr_T)STRLEN(ml_get(pos.lnum));
+		    pos.col = 0;
+		    if (pos.lnum == oap->start.lnum)
+		    {
+			pos.col += oap->start.col;
+			length -= oap->start.col;
+		    }
+		    if (pos.lnum == oap->end.lnum)
+		    {
+			length = (int)STRLEN(ml_get(oap->end.lnum));
+			if (oap->end.col >= length)
+			    oap->end.col = length - 1;
+			length = oap->end.col - pos.col + 1;
+		    }
+		}
+	    }
+	    one_change = do_addsub(oap->op_type, &pos, length, amount);
+	    if (one_change)
+	    {
+		/* Remember the start position of the first change. */
+		if (change_cnt == 0)
+		    startpos = curbuf->b_op_start;
+		++change_cnt;
+	    }
+
+#ifdef FEAT_NETBEANS_INTG
+	    if (netbeans_active() && one_change)
+	    {
+		char_u *ptr = ml_get_buf(curbuf, pos.lnum, FALSE);
+
+		netbeans_removed(curbuf, pos.lnum, pos.col, (long)length);
+		netbeans_inserted(curbuf, pos.lnum, pos.col,
+						&ptr[pos.col], length);
+	    }
+#endif
+	    if (g_cmd && one_change)
+		amount += Prenum1;
+	}
+	if (change_cnt)
+	    changed_lines(oap->start.lnum, 0, oap->end.lnum + 1, 0L);
+
+	if (!change_cnt && oap->is_VIsual)
+	    /* No change: need to remove the Visual selection */
+	    redraw_curbuf_later(INVERTED);
+
+	/* Set '[ mark if something changed. Keep the last end
+	 * position from do_addsub(). */
+	if (change_cnt > 0)
+	    curbuf->b_op_start = startpos;
+
+	if (change_cnt > p_report)
+	{
+	    if (change_cnt == 1)
+		MSG(_("1 line changed"));
+	    else
+		smsg((char_u *)_("%ld lines changed"), change_cnt);
+	}
+    }
+}
+
+/*
+ * Add or subtract 'Prenum1' from a number in a line
+ * op_type is OP_NR_ADD or OP_NR_SUB
+ *
+ * Returns TRUE if some character was changed.
+ */
+    static int
+do_addsub(op_type, pos, length, Prenum1)
+    int		op_type;
+    pos_T	*pos;
+    int		length;
+    linenr_T	Prenum1;
 {
     int		col;
     char_u	*buf1;
@@ -5357,11 +5479,9 @@ do_addsub(command, Prenum1, g_cmd)
     int		pre;		/* 'X'/'x': hex; '0': octal; 'B'/'b': bin */
     static int	hexupper = FALSE;	/* 0xABC */
     unsigned long n;
-    unsigned long offset = 0;		/* line offset for Ctrl_V mode */
     long_u	oldn;
     char_u	*ptr;
     int		c;
-    int		length = 0;		/* character length of the number */
     int		todel;
     int		dohex;
     int		dooct;
@@ -5372,16 +5492,9 @@ do_addsub(command, Prenum1, g_cmd)
     int		negative = FALSE;
     int		was_positive = TRUE;
     int		visual = VIsual_active;
-    int		i;
-    int		lnum = curwin->w_cursor.lnum;
-    int		lnume = curwin->w_cursor.lnum;
-    int		startcol = 0;
     int		did_change = FALSE;
     pos_T	t = curwin->w_cursor;
     int		maxlen = 0;
-    int		pos = 0;
-    int		bit = 0;
-    int		bits = sizeof(unsigned long) * 8;
     pos_T	startpos;
     pos_T	endpos;
 
@@ -5390,50 +5503,18 @@ do_addsub(command, Prenum1, g_cmd)
     dobin = (vim_strchr(curbuf->b_p_nf, 'b') != NULL);	/* "Bin" */
     doalp = (vim_strchr(curbuf->b_p_nf, 'p') != NULL);	/* "alPha" */
 
+    curwin->w_cursor = *pos;
+    ptr = ml_get(pos->lnum);
+    col = pos->col;
+
+    if (*ptr == NUL)
+	goto theend;
+
     /*
      * First check if we are on a hexadecimal number, after the "0x".
      */
-    col = curwin->w_cursor.col;
-    if (VIsual_active)
+    if (!VIsual_active)
     {
-	if (lt(curwin->w_cursor, VIsual))
-	{
-	    curwin->w_cursor = VIsual;
-	    VIsual = t;
-	}
-
-	ptr = ml_get(VIsual.lnum);
-	if (VIsual_mode == 'V')
-	{
-	    VIsual.col = 0;
-	    curwin->w_cursor.col = (colnr_T)STRLEN(ptr);
-	}
-	else if (VIsual_mode == Ctrl_V && VIsual.col > curwin->w_cursor.col)
-	{
-	    t = VIsual;
-	    VIsual.col = curwin->w_cursor.col;
-	    curwin->w_cursor.col = t.col;
-	}
-
-	/* store visual area for 'gv' */
-	curbuf->b_visual.vi_start = VIsual;
-	curbuf->b_visual.vi_end = curwin->w_cursor;
-	curbuf->b_visual.vi_mode = VIsual_mode;
-	curbuf->b_visual.vi_curswant = curwin->w_curswant;
-
-	if (VIsual_mode != 'v')
-	    startcol = VIsual.col < curwin->w_cursor.col ? VIsual.col
-						       : curwin->w_cursor.col;
-	else
-	    startcol = VIsual.col;
-	col = startcol;
-	lnum = VIsual.lnum;
-	lnume = curwin->w_cursor.lnum;
-    }
-    else
-    {
-	ptr = ml_get_curline();
-
 	if (dobin)
 	    while (col > 0 && vim_isbdigit(ptr[col]))
 		--col;
@@ -5453,7 +5534,7 @@ do_addsub(command, Prenum1, g_cmd)
 
 	    /* In case of binary/hexadecimal pattern overlap match, rescan */
 
-	    col = curwin->w_cursor.col;
+	    col = pos->col;
 
 	    while (col > 0 && vim_isdigit(ptr[col]))
 		col--;
@@ -5480,7 +5561,7 @@ do_addsub(command, Prenum1, g_cmd)
 	    /*
 	     * Search forward and then backward to find the start of number.
 	     */
-	    col = curwin->w_cursor.col;
+	    col = pos->col;
 
 	    while (ptr[col] != NUL
 		    && !vim_isdigit(ptr[col])
@@ -5494,308 +5575,253 @@ do_addsub(command, Prenum1, g_cmd)
 	}
     }
 
-    for (i = lnum; i <= lnume; i++)
-    {
-	colnr_T stop = 0;
-
-	t = curwin->w_cursor;
-	curwin->w_cursor.lnum = i;
-	ptr = ml_get_curline();
-	if ((int)STRLEN(ptr) <= col)
-	    /* try again on next line */
-	    continue;
-	if (visual)
-	{
-	    if (VIsual_mode == 'v'
-		    && i == lnume)
-		stop = curwin->w_cursor.col;
-	    else if (VIsual_mode == Ctrl_V
-		    && curbuf->b_visual.vi_curswant != MAXCOL)
-		stop = curwin->w_cursor.col;
-
-	    while (ptr[col] != NUL
-		    && !vim_isdigit(ptr[col])
-		    && !(doalp && ASCII_ISALPHA(ptr[col])))
-	    {
-		if (col > 0  && col == stop)
-		    break;
-		++col;
-	    }
-
-	    if (col > startcol && ptr[col - 1] == '-')
-	    {
-		negative = TRUE;
-		was_positive = FALSE;
-	    }
-	}
-	/*
-	 * If a number was found, and saving for undo works, replace the number.
-	 */
-	firstdigit = ptr[col];
-	if ((!VIM_ISDIGIT(firstdigit) && !(doalp && ASCII_ISALPHA(firstdigit)))
-		|| u_save_cursor() != OK)
-	{
-	    if (lnum < lnume)
-	    {
-		if (visual && VIsual_mode != Ctrl_V)
-		    col = 0;
-		else
-		    col = startcol;
-		/* Try again on next line */
-		continue;
-	    }
-	    beep_flush();
-	    return FAIL;
-	}
-
-	if (doalp && ASCII_ISALPHA(firstdigit))
-	{
-	    /* decrement or increment alphabetic character */
-	    if (command == Ctrl_X)
-	    {
-		if (CharOrd(firstdigit) < Prenum1)
-		{
-		    if (isupper(firstdigit))
-			firstdigit = 'A';
-		    else
-			firstdigit = 'a';
-		}
-		else
-#ifdef EBCDIC
-		    firstdigit = EBCDIC_CHAR_ADD(firstdigit, -Prenum1);
-#else
-		    firstdigit -= Prenum1;
-#endif
-	    }
-	    else
-	    {
-		if (26 - CharOrd(firstdigit) - 1 < Prenum1)
-		{
-		    if (isupper(firstdigit))
-			firstdigit = 'Z';
-		    else
-			firstdigit = 'z';
-		}
-		else
-#ifdef EBCDIC
-		    firstdigit = EBCDIC_CHAR_ADD(firstdigit, Prenum1);
-#else
-		    firstdigit += Prenum1;
-#endif
-	    }
-	    curwin->w_cursor.col = col;
-	    if (!did_change)
-		startpos = curwin->w_cursor;
-	    did_change = TRUE;
-	    (void)del_char(FALSE);
-	    ins_char(firstdigit);
-	    endpos = curwin->w_cursor;
-	    curwin->w_cursor.col = col;
-	}
-	else
-	{
-	    if (col > 0 && ptr[col - 1] == '-' && !visual)
-	    {
-		/* negative number */
-		--col;
-		negative = TRUE;
-	    }
-	    /* get the number value (unsigned) */
-	    if (visual && VIsual_mode != 'V')
-	    {
-		if (VIsual_mode == 'v')
-		{
-		    if (i == lnum)
-			maxlen = (lnum == lnume
-					    ? curwin->w_cursor.col - col + 1
-					    : (int)STRLEN(ptr) - col);
-		    else
-			maxlen = (i == lnume ? curwin->w_cursor.col - col  + 1
-					     : (int)STRLEN(ptr) - col);
-		}
-		else if (VIsual_mode == Ctrl_V)
-		    maxlen = (curbuf->b_visual.vi_curswant == MAXCOL
-					?  (int)STRLEN(ptr) - col
-					: curwin->w_cursor.col - col + 1);
-	    }
-
-	    vim_str2nr(ptr + col, &pre, &length,
-		    0 + (dobin ? STR2NR_BIN : 0)
-		      + (dooct ? STR2NR_OCT : 0)
-		      + (dohex ? STR2NR_HEX : 0),
-		    NULL, &n, maxlen);
-
-	    /* ignore leading '-' for hex and octal and bin numbers */
-	    if (pre && negative)
-	    {
-		++col;
-		--length;
-		negative = FALSE;
-	    }
-
-	    /* add or subtract */
-	    subtract = FALSE;
-	    if (command == Ctrl_X)
-		subtract ^= TRUE;
-	    if (negative)
-		subtract ^= TRUE;
-
-	    oldn = n;
-	    if (subtract)
-		n -= (unsigned long)Prenum1;
-	    else
-		n += (unsigned long)Prenum1;
-
-	    /* handle wraparound for decimal numbers */
-	    if (!pre)
-	    {
-		if (subtract)
-		{
-		    if (n > oldn)
-		    {
-			n = 1 + (n ^ (unsigned long)-1);
-			negative ^= TRUE;
-		    }
-		}
-		else
-		{
-		    /* add */
-		    if (n < oldn)
-		    {
-			n = (n ^ (unsigned long)-1);
-			negative ^= TRUE;
-		    }
-		}
-		if (n == 0)
-		    negative = FALSE;
-	    }
-
-	    if (visual && !was_positive && !negative && col > 0)
-	    {
-		/* need to remove the '-' */
-		col--;
-		length++;
-	    }
-
-
-	    /*
-	     * Delete the old number.
-	     */
-	    curwin->w_cursor.col = col;
-	    if (!did_change)
-		startpos = curwin->w_cursor;
-	    did_change = TRUE;
-	    todel = length;
-	    c = gchar_cursor();
-
-	    /*
-	     * Don't include the '-' in the length, only the length of the
-	     * part after it is kept the same.
-	     */
-	    if (c == '-')
-		--length;
-	    while (todel-- > 0)
-	    {
-		if (c < 0x100 && isalpha(c))
-		{
-		    if (isupper(c))
-			hexupper = TRUE;
-		    else
-			hexupper = FALSE;
-		}
-		/* del_char() will mark line needing displaying */
-		(void)del_char(FALSE);
-		c = gchar_cursor();
-	    }
-
-	    /*
-	     * Prepare the leading characters in buf1[].
-	     * When there are many leading zeros it could be very long.
-	     * Allocate a bit too much.
-	     */
-	    buf1 = alloc((unsigned)length + NUMBUFLEN);
-	    if (buf1 == NULL)
-		return FAIL;
-	    ptr = buf1;
-	    if (negative && (!visual || (visual && was_positive)))
-	    {
-		*ptr++ = '-';
-	    }
-	    if (pre)
-	    {
-		*ptr++ = '0';
-		--length;
-	    }
-	    if (pre == 'b' || pre == 'B' || 
-		pre == 'x' || pre == 'X')
-	    {
-		*ptr++ = pre;
-		--length;
-	    }
-
-	    /*
-	     * Put the number characters in buf2[].
-	     */
-	    if (pre == 'b' || pre == 'B')
-	    {
-		/* leading zeros */
-		for (bit = bits; bit > 0; bit--)
-		    if ((n >> (bit - 1)) & 0x1) break;
-
-		for (pos = 0; bit > 0; bit--)
-		    buf2[pos++] = ((n >> (bit - 1)) & 0x1) ? '1' : '0';
-
-		buf2[pos] = '\0';
-	    }
-	    else if (pre == 0)
-		sprintf((char *)buf2, "%lu", n);
-	    else if (pre == '0')
-		sprintf((char *)buf2, "%lo", n);
-	    else if (pre && hexupper)
-		sprintf((char *)buf2, "%lX", n);
-	    else
-		sprintf((char *)buf2, "%lx", n);
-	    length -= (int)STRLEN(buf2);
-
-	    /*
-	     * Adjust number of zeros to the new number of digits, so the
-	     * total length of the number remains the same.
-	     * Don't do this when
-	     * the result may look like an octal number.
-	     */
-	    if (firstdigit == '0' && !(dooct && pre == 0))
-		while (length-- > 0)
-		    *ptr++ = '0';
-	    *ptr = NUL;
-	    STRCAT(buf1, buf2);
-	    ins_str(buf1);		/* insert the new number */
-	    vim_free(buf1);
-	    endpos = curwin->w_cursor;
-	    if (lnum < lnume)
-		curwin->w_cursor.col = t.col;
-	    else if (did_change && curwin->w_cursor.col)
-		--curwin->w_cursor.col;
-	}
-
-	if (g_cmd)
-	{
-	    offset = (unsigned long)Prenum1;
-	    g_cmd = 0;
-	}
-	/* reset */
-	subtract = FALSE;
-	negative = FALSE;
-	was_positive = TRUE;
-	if (visual && VIsual_mode == Ctrl_V)
-	    col = startcol;
-	else
-	    col = 0;
-	Prenum1 += offset;
-	curwin->w_set_curswant = TRUE;
-    }
     if (visual)
-	/* cursor at the top of the selection */
-	curwin->w_cursor = VIsual;
+    {
+	while (ptr[col] != NUL && length > 0
+		&& !vim_isdigit(ptr[col])
+		&& !(doalp && ASCII_ISALPHA(ptr[col])))
+	{
+	    ++col;
+	    --length;
+	}
+
+	if (length == 0)
+	    goto theend;
+
+	if (col > pos->col && ptr[col - 1] == '-')
+	{
+	    negative = TRUE;
+	    was_positive = FALSE;
+	}
+    }
+
+    /*
+     * If a number was found, and saving for undo works, replace the number.
+     */
+    firstdigit = ptr[col];
+    if (!VIM_ISDIGIT(firstdigit) && !(doalp && ASCII_ISALPHA(firstdigit)))
+    {
+	beep_flush();
+	goto theend;
+    }
+
+    if (doalp && ASCII_ISALPHA(firstdigit))
+    {
+	/* decrement or increment alphabetic character */
+	if (op_type == OP_NR_SUB)
+	{
+	    if (CharOrd(firstdigit) < Prenum1)
+	    {
+		if (isupper(firstdigit))
+		    firstdigit = 'A';
+		else
+		    firstdigit = 'a';
+	    }
+	    else
+#ifdef EBCDIC
+		firstdigit = EBCDIC_CHAR_ADD(firstdigit, -Prenum1);
+#else
+		firstdigit -= Prenum1;
+#endif
+	}
+	else
+	{
+	    if (26 - CharOrd(firstdigit) - 1 < Prenum1)
+	    {
+		if (isupper(firstdigit))
+		    firstdigit = 'Z';
+		else
+		    firstdigit = 'z';
+	    }
+	    else
+#ifdef EBCDIC
+		firstdigit = EBCDIC_CHAR_ADD(firstdigit, Prenum1);
+#else
+		firstdigit += Prenum1;
+#endif
+	}
+	curwin->w_cursor.col = col;
+	if (!did_change)
+	    startpos = curwin->w_cursor;
+	did_change = TRUE;
+	(void)del_char(FALSE);
+	ins_char(firstdigit);
+	endpos = curwin->w_cursor;
+	curwin->w_cursor.col = col;
+    }
+    else
+    {
+	if (col > 0 && ptr[col - 1] == '-' && !visual)
+	{
+	    /* negative number */
+	    --col;
+	    negative = TRUE;
+	}
+	/* get the number value (unsigned) */
+	if (visual && VIsual_mode != 'V')
+	    maxlen = (curbuf->b_visual.vi_curswant == MAXCOL
+		    ? (int)STRLEN(ptr) - col
+		    : length);
+
+	vim_str2nr(ptr + col, &pre, &length,
+		0 + (dobin ? STR2NR_BIN : 0)
+		    + (dooct ? STR2NR_OCT : 0)
+		    + (dohex ? STR2NR_HEX : 0),
+		NULL, &n, maxlen);
+
+	/* ignore leading '-' for hex and octal and bin numbers */
+	if (pre && negative)
+	{
+	    ++col;
+	    --length;
+	    negative = FALSE;
+	}
+	/* add or subtract */
+	subtract = FALSE;
+	if (op_type == OP_NR_SUB)
+	    subtract ^= TRUE;
+	if (negative)
+	    subtract ^= TRUE;
+
+	oldn = n;
+	if (subtract)
+	    n -= (unsigned long)Prenum1;
+	else
+	    n += (unsigned long)Prenum1;
+	/* handle wraparound for decimal numbers */
+	if (!pre)
+	{
+	    if (subtract)
+	    {
+		if (n > oldn)
+		{
+		    n = 1 + (n ^ (unsigned long)-1);
+		    negative ^= TRUE;
+		}
+	    }
+	    else
+	    {
+		/* add */
+		if (n < oldn)
+		{
+		    n = (n ^ (unsigned long)-1);
+		    negative ^= TRUE;
+		}
+	    }
+	    if (n == 0)
+		negative = FALSE;
+	}
+
+	if (visual && !was_positive && !negative && col > 0)
+	{
+	    /* need to remove the '-' */
+	    col--;
+	    length++;
+	}
+
+	/*
+	 * Delete the old number.
+	 */
+	curwin->w_cursor.col = col;
+	if (!did_change)
+	    startpos = curwin->w_cursor;
+	did_change = TRUE;
+	todel = length;
+	c = gchar_cursor();
+	/*
+	 * Don't include the '-' in the length, only the length of the
+	 * part after it is kept the same.
+	 */
+	if (c == '-')
+	    --length;
+	while (todel-- > 0)
+	{
+	    if (c < 0x100 && isalpha(c))
+	    {
+		if (isupper(c))
+		    hexupper = TRUE;
+		else
+		    hexupper = FALSE;
+	    }
+	    /* del_char() will mark line needing displaying */
+	    (void)del_char(FALSE);
+	    c = gchar_cursor();
+	}
+
+	/*
+	 * Prepare the leading characters in buf1[].
+	 * When there are many leading zeros it could be very long.
+	 * Allocate a bit too much.
+	 */
+	buf1 = alloc((unsigned)length + NUMBUFLEN);
+	if (buf1 == NULL)
+	    goto theend;
+	ptr = buf1;
+	if (negative && (!visual || (visual && was_positive)))
+	{
+	    *ptr++ = '-';
+	}
+	if (pre)
+	{
+	    *ptr++ = '0';
+	    --length;
+	}
+	if (pre == 'b' || pre == 'B' ||
+	    pre == 'x' || pre == 'X')
+	{
+	    *ptr++ = pre;
+	    --length;
+	}
+
+	/*
+	 * Put the number characters in buf2[].
+	 */
+	if (pre == 'b' || pre == 'B')
+	{
+	    int i;
+	    int bit = 0;
+	    int bits = sizeof(unsigned long) * 8;
+
+	    /* leading zeros */
+	    for (bit = bits; bit > 0; bit--)
+		if ((n >> (bit - 1)) & 0x1) break;
+
+	    for (i = 0; bit > 0; bit--)
+		buf2[i++] = ((n >> (bit - 1)) & 0x1) ? '1' : '0';
+
+	    buf2[i] = '\0';
+	}
+	else if (pre == 0)
+	    sprintf((char *)buf2, "%lu", n);
+	else if (pre == '0')
+	    sprintf((char *)buf2, "%lo", n);
+	else if (pre && hexupper)
+	    sprintf((char *)buf2, "%lX", n);
+	else
+	    sprintf((char *)buf2, "%lx", n);
+	length -= (int)STRLEN(buf2);
+
+	/*
+	 * Adjust number of zeros to the new number of digits, so the
+	 * total length of the number remains the same.
+	 * Don't do this when
+	 * the result may look like an octal number.
+	 */
+	if (firstdigit == '0' && !(dooct && pre == 0))
+	    while (length-- > 0)
+		*ptr++ = '0';
+	*ptr = NUL;
+	STRCAT(buf1, buf2);
+	ins_str(buf1);		/* insert the new number */
+	vim_free(buf1);
+	endpos = curwin->w_cursor;
+	if (did_change && curwin->w_cursor.col)
+	    --curwin->w_cursor.col;
+    }
+
+theend:
+    if (visual)
+	curwin->w_cursor = t;
     if (did_change)
     {
 	/* set the '[ and '] marks */
@@ -5804,7 +5830,8 @@ do_addsub(command, Prenum1, g_cmd)
 	if (curbuf->b_op_end.col > 0)
 	    --curbuf->b_op_end.col;
     }
-    return OK;
+
+    return did_change;
 }
 
 #ifdef FEAT_VIMINFO
