@@ -3632,7 +3632,7 @@ prep_redo_visual(cap)
 	else if (curbuf->b_visual.vi_end.col > curbuf->b_visual.vi_start.col)
 	{
 	    AppendNumberToRedobuff(curbuf->b_visual.vi_end.col
-					 - curbuf->b_visual.vi_start.col - 1);
+					     - curbuf->b_visual.vi_start.col);
 	    AppendCharToRedobuff(' ');
 	}
     }
