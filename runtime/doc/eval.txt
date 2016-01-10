@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Jan 03
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Jan 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1739,8 +1739,8 @@ USAGE				RESULT	DESCRIPTION	~
 abs( {expr})			Float or Number  absolute value of {expr}
 acos( {expr})			Float	arc cosine of {expr}
 add( {list}, {item})		List	append {item} to |List| {list}
-alloc_fail( {countdown}, {when}, {repeat})
-				nothing	make memory allocation fail
+alloc_fail( {id}, {countdown}, {repeat})
+				none	make memory allocation fail
 and( {expr}, {expr})		Number  bitwise AND
 append( {lnum}, {string})	Number	append {string} below line {lnum}
 append( {lnum}, {list})		Number	append lines {list} below line {lnum}

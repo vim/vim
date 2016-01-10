@@ -1034,6 +1034,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'tbis'	options.txt	/*'tbis'*
 'tbs'	options.txt	/*'tbs'*
 'tc'	options.txt	/*'tc'*
+'tcldll'	options.txt	/*'tcldll'*
 'tenc'	options.txt	/*'tenc'*
 'term'	options.txt	/*'term'*
 'termbidi'	options.txt	/*'termbidi'*
@@ -2849,6 +2850,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :smapclear	map.txt	/*:smapclear*
 :sme	gui.txt	/*:sme*
 :smenu	gui.txt	/*:smenu*
+:smile	index.txt	/*:smile*
 :sn	windows.txt	/*:sn*
 :snext	windows.txt	/*:snext*
 :sni	if_sniff.txt	/*:sni*
@@ -4871,6 +4873,7 @@ added-win32-GUI	version5.txt	/*added-win32-GUI*
 aff-dic-format	spell.txt	/*aff-dic-format*
 after-directory	options.txt	/*after-directory*
 aleph	options.txt	/*aleph*
+alloc_fail()	eval.txt	/*alloc_fail()*
 alt	intro.txt	/*alt*
 alt-input	debugger.txt	/*alt-input*
 alternate-file	editing.txt	/*alternate-file*
@@ -7983,6 +7986,7 @@ spell-NAME	spell.txt	/*spell-NAME*
 spell-NEEDAFFIX	spell.txt	/*spell-NEEDAFFIX*
 spell-NEEDCOMPOUND	spell.txt	/*spell-NEEDCOMPOUND*
 spell-NOBREAK	spell.txt	/*spell-NOBREAK*
+spell-NOCOMPOUNDSUGS	spell.txt	/*spell-NOCOMPOUNDSUGS*
 spell-NOSPLITSUGS	spell.txt	/*spell-NOSPLITSUGS*
 spell-NOSUGFILE	spell.txt	/*spell-NOSUGFILE*
 spell-NOSUGGEST	spell.txt	/*spell-NOSUGGEST*
@@ -8953,6 +8957,7 @@ winwidth()	eval.txt	/*winwidth()*
 word	motion.txt	/*word*
 word-count	editing.txt	/*word-count*
 word-motions	motion.txt	/*word-motions*
+wordcount()	eval.txt	/*wordcount()*
 workbench	starting.txt	/*workbench*
 workshop	workshop.txt	/*workshop*
 workshop-commands	workshop.txt	/*workshop-commands*

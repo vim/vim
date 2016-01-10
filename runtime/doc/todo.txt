@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Jan 03
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Jan 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -33,6 +33,8 @@ not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+/tmp/test_increment_new_style.patch.2
 
 Regexp problems:
 - The regexp engines are not reentrant, causing havoc when interrupted by a
@@ -76,10 +78,13 @@ Regexp problems:
   matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
 - Search for \\~ causes error E874.
 
-Need better instructions about how to install all interfaces and how to build
-Vim with them.
-For Ruby: https://github.com/ruby/ruby/tree/trunk/win32
-Or use Ken Takata's hack.
+Help to build with interfaces. (Ken Takata, 2015 Jan 5)
+
+Need to try out instructions in INSSTALLpc.txt about how to install all
+interfaces and how to build Vim with them.
+Appveyor build with self-installing executable, includes getting most
+interfaces: https://github.com/k-takata/vim/tree/chrisbra-appveyor-build
+result: https://ci.appveyor.com/project/k-takata/vim/history
 
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
@@ -96,6 +101,10 @@ Should use /usr/local/share/applications or /usr/share/applications.
 Or use $XDG_DATA_DIRS.
 Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
 
+Patch to update the help summary. (Christian Brabandt, 2015 Jan 10)
+
+Add has('crypt-blowfish') and has('crypt-blowfish2') (Smu Johnson)
+
 Access to uninitialized memory in match_backref() regexp_nda.c:4882
 (Dominique Pelle, 2015 Nov 6)
 
@@ -105,11 +114,22 @@ directory exists. (Sergio Gallelli, 2013 Dec 29)
 Using ":windo" to set options in all windows has the side effect that it
 changes the window layout and the current window.  Make a variant that saves
 and restores.  Use in the matchparen plugin.
-Perhaps we can use "window <restore> {cmd}"?
+Perhaps we can use ":windo <restore> {cmd}"?
+Patch to add <restore> to :windo, :bufdo, etc. (Christian Brabandt, 2015 Jan
+6, 2nd message)
+Alternative: ":keeppos" command modifier: ":keeppos windo {cmd}".
 
 Illegal memory access, requires ASAN to see. (Dominique Pelle, 2015 Jul 28)
 
 Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
+
+Patch to fix "." after CTRL-A in Visual block mode. (Ozaki Kiichi, 2015 Oct
+24)
+
+Patch to have CTRL-A and CTRL-X update the '[ and '] marks.
+(Yukihiro Nakadaira, 2015 Aug 23)
+
+Patch for GVimExt building with VS2015. (Mike Williams, 2015 Jan 10)
 
 Unexpected delay when using CTRL-O u.  It's not timeoutlen.
 (Gary Johnson, 2015 Aug 28)
@@ -128,11 +148,12 @@ set_color_count().
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
-Patch to add wordcount().  (Christian Brabandt, 2015 Nov 27)
-
 Plugin to use Vim in MANPAGER.  Konfekt, PR #491
 
 Using uninitialized memory. (Dominique Pelle, 2015 Nov 4)
+
+Patch for explaining the help. (Christian Brabandt, 2015 Jan 8)
+Should be in the user manual?
 
 Patch to recognize string slice for variable followed by colon.
 (Hirohito Higashi, 2015 Nov 24)
@@ -140,14 +161,14 @@ Patch to recognize string slice for variable followed by colon.
 Patch to add debug backtrace. (Alberto Fanjul, 2015 Sep 27)
 Update 2016 Jan 2.  Issue #433
 
+Patch to make mzscheme (racket) interface work. (Yukihiro Nakadaira, 2015 Jan
+10)  Doesn't work for me, need to build from source.
+
 MS-Windows: When editing a file with a leading space, writing it uses the
 wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
 
 Can't recognize the $ProgramFiles(x86) environment variable.  Recognize it
 specifically?  First try with the parens, then without.
-
-Patch to fix "." after CTRL-A in Visual block mode. (Ozaki Kiichi, 2015 Oct
-24)
 
 Half-finished patch to fix the Problem using cgn to change a search hit when
 replacement includes hit. Reported by John Beckett, fix by Christian Brabandt,
@@ -159,7 +180,7 @@ Patch to make building GVimExt with VS2015. (Mike Williams, 2015 Dec 13)
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
-Patch to add perleval(). (Damien, 2015 Dec 8)
+Patch to add perleval(). (Damien, 2015 Dec 8, update 2016 Jan 4)
 
 Can we cache the syntax attributes, so that updates for 'relativenumber' and
 'cursorline'/'cursorcolumn' are a lot faster?
@@ -195,6 +216,11 @@ Nov 29)
 If libiconv.dll is not found search for libiconv2.dll. (Yasuhiro Matsumoto,
 2015 Oct 7)
 
+Using an external diff is inefficient.  Not all systems have a good diff
+program available (esp. MS-Windows).  Would be nice to have in internal diff
+implementation.  Can then also use this for displaying changes within a line.
+Olaf Dabrunz is working on this.
+
 The OptionSet autocommand event is not always triggered. (Rick Howe, 2015 Sep
 24): :diffthis, :diffoff.
 
@@ -227,11 +253,15 @@ Sep 10)
 Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
 Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8.
 
+Patch to improve I/O for Perl. (Damine, 2015 Jan 9)
+
+Patch to set antialiasing style on Windows. (Ondrej Balaz, 2013 Mar 14)
+Needs a different check for CLEARTYPE_QUALITY.
+Problem mentioned by Christian Brabandt, 2016 Jan 4.
+
 Example in editing.txt uses $HOME with the expectating that it ends in a
 slash.  For me it does, but perhaps not for everybody.  Add a function that
 inserts a slash when needed?  pathconcat(dir, path) (Thilo Six, 2015 Aug 12)
-
-Patch to load TCL dynamically. (Ken Takata, 2015 Nov 11)
 
 ml_updatechunk() is slow when retrying for another encoding. (John Little,
 2014 Sep 11)
@@ -262,9 +292,6 @@ Work in progress.
 
 Patch for global-local options consistency. (Arnaud Decara, 2015 Jul 22)
 Is this right?
-
-Patch to have CTRL-A and CTRL-X update the '[ and '] marks.
-(Yukihiro Nakadaira, 2015 Aug 23)
 
 Patch to make getregtype() return the right size for non-linux systems.
 (Yasuhiro Matsumoto, 2014 Jul 8)
@@ -359,7 +386,7 @@ Patch for ordered dict. (Ozaki Kiichi, 2015 May 7)
 Patch to make closed folds line up. (Charles Campbell, 2014 Sep 12)
 Remark from Roland Eggner: does it cause crashes? (2014 Dec 12)
 Updated patch by Roland Eggner, Dec 16
-Updated patch from Charles, Dec 29.
+Updated patch from Charles, 2016 Jan 4.
 
 Patch to open folds for 'incsearch'. (Christian Brabandt, 2015 Jan 6)
 
@@ -671,9 +698,6 @@ Issue 54: document behavior of -complete, also expands arg.
 Patch by Christian Brabandt, 2013 Apr 20, unfinished.
 
 Bug: findfile("any", "file:///tmp;") does not work.
-
-Patch to set antialiasing style on Windows. (Ondrej Balaz, 2013 Mar 14)
-Needs a different check for CLEARTYPE_QUALITY.
 
 In the ATTENTION message about an existing swap file, mention the name of the
 process that is running.  It might actually be some other program, e.g. after
@@ -2746,8 +2770,7 @@ Macintosh:
 8   On MS-Windows ":make" doesn't show output while it is working.  Use the
     tee.exe from  http://unxutils.sourceforge.net/ ?  About 16 Kbyte in the
     UnxUtils.zip archive.
-    Alternate one: http://www.pramodx.20m.com/tee_for_win32.htm, but Walter
-    Briscoe says it's not as good.
+    Is it better than what we have in src/tee?
 8   When doing Insert mode completion a mapping cannot recursively call
     edit(), because the completion information is global.  Put everything in
     an allocated structure?
@@ -4632,7 +4655,6 @@ Visual mode:
 6   ":left" and ":right" should work in Visual block mode.
 7   CTRL-I and CTRL-O should work in Visual mode, but only jump to marks in the
     current buffer.
-7   CTRL-A and CTRL-X should increase/decrease all numbers in the Visual area.
 6   In non-Block mode, "I" should insert the same text in front of each line,
     before the first non-blank, "gI" in column 1.
 6   In non-Block mode, "A" should append the same text after each line.

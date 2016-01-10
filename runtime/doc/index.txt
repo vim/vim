@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.4.  Last change: 2016 Jan 03
+*index.txt*     For Vim version 7.4.  Last change: 2016 Jan 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1055,7 +1055,7 @@ tag		command	      action in Command-line editing mode	~
 |c_<Insert>|	<Insert>	toggle insert/overstrike mode
 |c_<LeftMouse>|	<LeftMouse>	cursor at mouse click
 
-You found it, Arthur!				*holy-grail*
+You found it, Arthur!				*holy-grail* *:smile*
 
 ==============================================================================
 5. EX commands					*ex-cmd-index* *:index*
@@ -1176,7 +1176,7 @@ tag	      command	      action ~
 |:cpfile|	:cpf[ile]	go to last error in previous file
 |:cquit|	:cq[uit]	quit Vim with an error code
 |:crewind|	:cr[ewind]	go to the specified error, default first one
-|:cscope|	:cs[cope]       execute cscope command
+|:cscope|	:cs[cope]	execute cscope command
 |:cstag|	:cst[ag]	use cscope to jump to a tag
 |:cunmap|	:cu[nmap]	like ":unmap" but for Command-line mode
 |:cunabbrev|	:cuna[bbrev]	like ":unabbrev" but for Command-line mode
@@ -1297,7 +1297,7 @@ tag	      command	      action ~
 |:lcd|		:lc[d]		change directory locally
 |:lchdir|	:lch[dir]	change directory locally
 |:lclose|	:lcl[ose]	close location window
-|:lcscope|	:lcs[cope]      like ":cscope" but uses location list
+|:lcscope|	:lcs[cope]	like ":cscope" but uses location list
 |:ldo|		:ld[o]		execute command in valid location list entries
 |:lfdo|		:lfd[o]		execute command in each file in location list
 |:left|		:le[ft]		left align lines
@@ -1351,7 +1351,7 @@ tag	      command	      action ~
 |:marks|	:marks		list all marks
 |:match|	:mat[ch]	define a match to highlight
 |:menu|		:me[nu]		enter a new menu item
-|:menutranslate| :menut[ranslate] add a menu translation item
+|:menutranslate|  :menut[ranslate] add a menu translation item
 |:messages|	:mes[sages]	view previously displayed messages
 |:mkexrc|	:mk[exrc]	write current mappings and settings to a file
 |:mksession|	:mks[ession]	write session info to a file
@@ -1495,7 +1495,7 @@ tag	      command	      action ~
 |:smap|		:smap		like ":map" but for Select mode
 |:smapclear|	:smapc[lear]	remove all mappings for Select mode
 |:smenu|	:sme[nu]	add menu for Select mode
-|:smile|        :smi[le]	make the user happy
+|:smile|	:smi[le]	make the user happy
 |:snext|	:sn[ext]	split window and go to next file in the
 				argument list
 |:sniff|	:sni[ff]	send request to sniff
@@ -1518,7 +1518,7 @@ tag	      command	      action ~
 |:stop|		:st[op]		suspend the editor or escape to a shell
 |:stag|		:sta[g]		split window and jump to a tag
 |:startinsert|	:star[tinsert]	start Insert mode
-|:startgreplace| :startg[replace] start Virtual Replace mode
+|:startgreplace|  :startg[replace] start Virtual Replace mode
 |:startreplace|	:startr[eplace]	start Replace mode
 |:stopinsert|	:stopi[nsert]	stop Insert mode
 |:stjump|	:stj[ump]	do ":tjump" and split window
