@@ -6916,6 +6916,7 @@ parse_addr_type_arg(value, vallen, argt, addr_type_arg)
     int		*addr_type_arg;
 {
     int	    i, a, b;
+
     for (i = 0; addr_type_complete[i].expand != -1; ++i)
     {
 	a = (int)STRLEN(addr_type_complete[i].name) == vallen;
@@ -6930,7 +6931,9 @@ parse_addr_type_arg(value, vallen, argt, addr_type_arg)
     if (addr_type_complete[i].expand == -1)
     {
 	char_u	*err = value;
-	for (i=0; err[i] == NUL || !vim_iswhite(err[i]); i++);
+
+	for (i = 0; err[i] != NUL && !vim_iswhite(err[i]); i++)
+	    ;
 	err[i] = NUL;
 	EMSG2(_("E180: Invalid address type value: %s"), err);
 	return FAIL;
