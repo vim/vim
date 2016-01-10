@@ -686,7 +686,7 @@ DWriteContext::DrawText(HDC hdc, const WCHAR* text, int len,
 
 	if (SUCCEEDED(hr))
 	{
-	    DWRITE_TEXT_RANGE textRange = { 0, len };
+	    DWRITE_TEXT_RANGE textRange = { 0, (UINT32)len };
 	    textLayout->SetFontWeight(mFontWeight, textRange);
 	    textLayout->SetFontStyle(mFontStyle, textRange);
 	}
