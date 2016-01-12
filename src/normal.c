@@ -4227,6 +4227,7 @@ nv_addsub(cap)
 {
     if (!VIsual_active && cap->oap->op_type == OP_NOP)
     {
+	prep_redo_cmd(cap);
 	cap->oap->op_type = cap->cmdchar == Ctrl_A ?  OP_NR_ADD : OP_NR_SUB;
 	op_addsub(cap->oap, cap->count1, cap->arg);
 	cap->oap->op_type = OP_NOP;
