@@ -7,7 +7,7 @@
 " Contributor:  Karsten Hopp <karsten@redhat.com>
 " Originally:	2009-07-09
 " Last Change:	2016 Jan 12
-" SSH Version:	7.0
+" SSH Version:	7.1
 "
 
 " Setup
