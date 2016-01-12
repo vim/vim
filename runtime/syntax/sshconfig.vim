@@ -2,7 +2,7 @@
 " Language:	OpenSSH client configuration file (ssh_config)
 " Author:	David Necas (Yeti)
 " Maintainer:	Dominik Fischer <d dot f dot fischer at web dot de>
-" Contributor:  Leonard Ehrenfried <leonard.ehrenfried@web.de>	
+" Contributor:  Leonard Ehrenfried <leonard.ehrenfried@web.de>
 " Contributor:  Karsten Hopp <karsten@redhat.com>
 " Last Change:	2016 Jan 12
 " SSH Version:	7.0
