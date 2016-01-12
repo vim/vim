@@ -45,9 +45,6 @@ if has("browsefilter") && !exists("b:browsefilter")
 		       \ "All Files (*.*)\t*.*\n"
 endif
 
-" As suggested by PEP8.
-setlocal expandtab shiftwidth=4 softtabstop=4 tabstop=8
-
 " First time: try finding "pydoc".
 if !exists('g:pydoc_executable')
     if executable('pydoc')
