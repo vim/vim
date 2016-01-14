@@ -1981,6 +1981,7 @@ test1 \
 test_assert \
 	test_backspace_opt \
 	test_cdo \
+	test_hardcopy \
 	test_increment \
 	test_lispwords \
 	test_menu \
