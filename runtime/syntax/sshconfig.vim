@@ -182,6 +182,7 @@ syn keyword sshconfigKeyword UseBlacklistedKeys
 syn keyword sshconfigKeyword UsePrivilegedPort
 syn keyword sshconfigKeyword User
 syn keyword sshconfigKeyword UserKnownHostsFile
+syn keyword sshconfigKeyword UseRoaming
 syn keyword sshconfigKeyword VerifyHostKeyDNS
 syn keyword sshconfigKeyword VisualHostKey
 syn keyword sshconfigKeyword XAuthLocation
