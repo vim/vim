@@ -255,26 +255,18 @@
  */
 #ifdef AZTEC_C
 # include <functions.h>
-# define __ARGS(x)  x
 #endif
 
 #ifdef SASC
 # include <clib/exec_protos.h>
-# define __ARGS(x)  x
 #endif
 
 #ifdef _DCC
 # include <clib/exec_protos.h>
-# define __ARGS(x)  x
-#endif
-
-#ifdef __TURBOC__
-# define __ARGS(x) x
 #endif
 
 #ifdef __BEOS__
 # include "os_beos.h"
-# define __ARGS(x)  x
 #endif
 
 #if (defined(UNIX) || defined(__EMX__) || defined(VMS)) \
@@ -282,16 +274,8 @@
 # include "os_unix.h"	    /* bring lots of system header files */
 #endif
 
-#if defined(MACOS) && (defined(__MRC__) || defined(__SC__))
-   /* Apple's Compilers support prototypes */
-# define __ARGS(x) x
-#endif
 #ifndef __ARGS
-# if defined(__STDC__) || defined(__GNUC__) || defined(WIN3264)
-#  define __ARGS(x) x
-# else
-#  define __ARGS(x) ()
-# endif
+# define __ARGS(x) x
 #endif
 
 /* __ARGS and __PARMS are the same thing. */

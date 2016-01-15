@@ -973,8 +973,7 @@ eval_clear()
  * Return the name of the executed function.
  */
     char_u *
-func_name(cookie)
-    void *cookie;
+func_name(void *cookie)
 {
     return ((funccall_T *)cookie)->func->uf_name;
 }
@@ -993,8 +992,7 @@ func_breakpoint(cookie)
  * Return the address holding the debug tick for a funccall cookie.
  */
     int *
-func_dbg_tick(cookie)
-    void *cookie;
+func_dbg_tick(void *cookie)
 {
     return &((funccall_T *)cookie)->dbg_tick;
 }
@@ -1003,8 +1001,7 @@ func_dbg_tick(cookie)
  * Return the nesting level for a funccall cookie.
  */
     int
-func_level(cookie)
-    void *cookie;
+func_level(void *cookie)
 {
     return ((funccall_T *)cookie)->level;
 }
@@ -1031,9 +1028,7 @@ current_func_returned()
  * not already exist.
  */
     void
-set_internal_string_var(name, value)
-    char_u	*name;
-    char_u	*value;
+set_internal_string_var(char_u *name, char_u *value)
 {
     char_u	*val;
     typval_T	*tvp;
@@ -1057,12 +1052,11 @@ static char_u	*redir_varname = NULL;
 
 /*
  * Start recording command output to a variable
+ * When "append" is TRUE append to an existing variable.
  * Returns OK if successfully completed the setup.  FAIL otherwise.
  */
     int
-var_redir_start(name, append)
-    char_u	*name;
-    int		append;		/* append to an existing variable */
+var_redir_start(char_u *name, int append)
 {
     int		save_emsg;
     int		err;
@@ -1139,9 +1133,7 @@ var_redir_start(name, append)
  *   :redir END
  */
     void
-var_redir_str(value, value_len)
-    char_u	*value;
-    int		value_len;
+var_redir_str(char_u *value, int value_len)
 {
     int		len;
 
@@ -1201,11 +1193,11 @@ var_redir_stop()
 
 # if defined(FEAT_MBYTE) || defined(PROTO)
     int
-eval_charconvert(enc_from, enc_to, fname_from, fname_to)
-    char_u	*enc_from;
-    char_u	*enc_to;
-    char_u	*fname_from;
-    char_u	*fname_to;
+eval_charconvert(
+    char_u	*enc_from,
+    char_u	*enc_to,
+    char_u	*fname_from,
+    char_u	*fname_to)
 {
     int		err = FALSE;
 
