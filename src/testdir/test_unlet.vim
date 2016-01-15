@@ -1,18 +1,9 @@
 " Tests for :unlet
 
 func Test_read_only()
-  try
-    " this caused a crash
-    unlet count
-  catch
-    call assert_true(v:exception =~ ':E795:')
-  endtry
-  try
-    " this caused a crash
-    unlet errmsg
-  catch
-    call assert_true(v:exception =~ ':E795:')
-  endtry
+  " these caused a crash
+  call assert_fails('unlet count', 'E795:')
+  call assert_fails('unlet errmsg', 'E795:')
 endfunc
 
 func Test_existing()
@@ -24,9 +15,5 @@ endfunc
 
 func Test_not_existing()
   unlet! does_not_exist
-  try
-    unlet does_not_exist
-  catch
-    call assert_true(v:exception =~ ':E108:')
-  endtry
+  call assert_fails('unlet does_not_exist', 'E108:')
 endfunc
