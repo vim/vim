@@ -849,7 +849,7 @@ if s:settings.line_ids
 	\ "  if (lineNum.indexOf('L') == -1) {",
 	\ "    lineNum = 'L'+lineNum;",
 	\ "  }",
-	\ "  lineElem = document.getElementById(lineNum);"
+	\ "  var lineElem = document.getElementById(lineNum);"
 	\ ])
   if s:settings.dynamic_folds
     call extend(s:lines, [
