@@ -1,4 +1,4 @@
-# The most simplistic Makefile, for MinGW gcc on MS-DOS
+# The most simplistic Makefile, for MinGW and Cygwin gcc on MS-DOS
 
 ifndef USEDLL
 USEDLL = no
