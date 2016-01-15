@@ -12994,6 +12994,8 @@ f_has(argvars, rettv)
 #endif
 #ifdef FEAT_CRYPT
 	"cryptv",
+	"crypt-blowfish",
+	"crypt-blowfish2",
 #endif
 #ifdef FEAT_CSCOPE
 	"cscope",
