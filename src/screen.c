@@ -4976,7 +4976,12 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		&& conceal_cursor_line(wp)
 		&& (int)wp->w_virtcol <= vcol + n_skip)
 	{
-	    wp->w_wcol = col - boguscols;
+#  ifdef FEAT_RIGHTLEFT
+	    if (wp->w_p_rl)
+		wp->w_wcol = W_WIDTH(wp) - col + boguscols - 1;
+	    else
+#  endif
+		wp->w_wcol = col - boguscols;
 	    wp->w_wrow = row;
 	    did_wcol = TRUE;
 	}
