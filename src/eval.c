@@ -10243,7 +10243,8 @@ f_cscope_connection(argvars, rettv)
 }
 
 /*
- * "cursor(lnum, col)" function
+ * "cursor(lnum, col)" function, or
+ * "cursor(list)"
  *
  * Moves the cursor to the specified line and column.
  * Returns 0 when the position could be set, -1 otherwise.
@@ -10266,7 +10267,10 @@ f_cursor(argvars, rettv)
 	colnr_T	    curswant = -1;
 
 	if (list2fpos(argvars, &pos, NULL, &curswant) == FAIL)
+	{
+	    EMSG(_(e_invarg));
 	    return;
+	}
 	line = pos.lnum;
 	col = pos.col;
 #ifdef FEAT_VIRTUALEDIT
