@@ -475,6 +475,7 @@ static void f_argidx __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_arglistid __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_argv __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_assert_equal __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_assert_exception __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_assert_false __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_assert_true __ARGS((typval_T *argvars, typval_T *rettv));
 #ifdef FEAT_FLOAT
@@ -8088,6 +8089,7 @@ static struct fst
     {"asin",		1, 1, f_asin},	/* WJMc */
 #endif
     {"assert_equal",	2, 3, f_assert_equal},
+    {"assert_exception", 1, 2, f_assert_exception},
     {"assert_false",	1, 2, f_assert_false},
     {"assert_true",	1, 2, f_assert_true},
 #ifdef FEAT_FLOAT
@@ -9264,6 +9266,35 @@ f_assert_equal(argvars, rettv)
     {
 	prepare_assert_error(&ga);
 	fill_assert_error(&ga, &argvars[2], NULL, &argvars[0], &argvars[1]);
+	assert_error(&ga);
+	ga_clear(&ga);
+    }
+}
+
+/*
+ * "assert_exception(string[, msg])" function
+ */
+    static void
+f_assert_exception(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv UNUSED;
+{
+    garray_T	ga;
+    char	*error;
+
+    error = (char *)get_tv_string_chk(&argvars[0]);
+    if (vimvars[VV_EXCEPTION].vv_str == NULL)
+    {
+	prepare_assert_error(&ga);
+	ga_concat(&ga, (char_u *)"v:exception is not set");
+	assert_error(&ga);
+	ga_clear(&ga);
+    }
+    else if (strstr((char *)vimvars[VV_EXCEPTION].vv_str, error) == NULL)
+    {
+	prepare_assert_error(&ga);
+	fill_assert_error(&ga, &argvars[1], NULL, &argvars[0],
+						&vimvars[VV_EXCEPTION].vv_tv);
 	assert_error(&ga);
 	ga_clear(&ga);
     }
