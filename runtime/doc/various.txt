@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.4.  Last change: 2015 Nov 15
+*various.txt*   For Vim version 7.4.  Last change: 2016 Jan 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -647,6 +647,7 @@ K			Run a program to lookup the keyword under the
 g CTRL-A		Only when Vim was compiled with MEM_PROFILING defined
 			(which is very rare): print memory usage statistics.
 			Only useful for debugging Vim.
+			For incrementing in Visual mode see |v_g_CTRL-A|.
 
 ==============================================================================
 2. Using Vim like less or more					*less*

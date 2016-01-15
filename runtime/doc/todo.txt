@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Jan 10
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Jan 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -33,8 +33,6 @@ not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-/tmp/test_increment_new_style.patch.2
 
 Regexp problems:
 - The regexp engines are not reentrant, causing havoc when interrupted by a
@@ -78,8 +76,6 @@ Regexp problems:
   matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
 - Search for \\~ causes error E874.
 
-Help to build with interfaces. (Ken Takata, 2015 Jan 5)
-
 Need to try out instructions in INSSTALLpc.txt about how to install all
 interfaces and how to build Vim with them.
 Appveyor build with self-installing executable, includes getting most
@@ -101,8 +97,6 @@ Should use /usr/local/share/applications or /usr/share/applications.
 Or use $XDG_DATA_DIRS.
 Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
 
-Patch to update the help summary. (Christian Brabandt, 2015 Jan 10)
-
 Add has('crypt-blowfish') and has('crypt-blowfish2') (Smu Johnson)
 
 Access to uninitialized memory in match_backref() regexp_nda.c:4882
@@ -123,19 +117,11 @@ Illegal memory access, requires ASAN to see. (Dominique Pelle, 2015 Jul 28)
 
 Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
 
-Patch to fix "." after CTRL-A in Visual block mode. (Ozaki Kiichi, 2015 Oct
-24)
-
-Patch to have CTRL-A and CTRL-X update the '[ and '] marks.
-(Yukihiro Nakadaira, 2015 Aug 23)
-
-Patch for GVimExt building with VS2015. (Mike Williams, 2015 Jan 10)
-
 Unexpected delay when using CTRL-O u.  It's not timeoutlen.
 (Gary Johnson, 2015 Aug 28)
 
-Instead of separately uploading patches to the ftp site, can we get them from
-github?  This URL works:
+Instead of separately uploading patches to the ftp site, we can get them from
+github with a URL like this:
    https://github.com/vim/vim/compare/v7.4.920%5E...v7.4.920.diff
 Diff for version.c contains more context, can't skip a patch.
 >
@@ -147,6 +133,9 @@ triggered.  Use the code from the end of set_num_option() in
 set_color_count().
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
+
+Patch to fix cursor position in right-left mode with concealing.
+(Hirohito Higashi, 2016 Jan 13)
 
 Plugin to use Vim in MANPAGER.  Konfekt, PR #491
 
@@ -161,8 +150,16 @@ Patch to recognize string slice for variable followed by colon.
 Patch to add debug backtrace. (Alberto Fanjul, 2015 Sep 27)
 Update 2016 Jan 2.  Issue #433
 
+Patch to gvim.nsi for appveyor build. (Ken Takata, 2016 Jan 12)
+
+Patch to improve behavior of dead keys on MS-Windows. (John Wellesz, 2015 Aug
+25)  https://github.com/vim/vim/pull/399.diff
+
 Patch to make mzscheme (racket) interface work. (Yukihiro Nakadaira, 2015 Jan
-10)  Doesn't work for me, need to build from source.
+10)  Doesn't work for me, need to build from source. Include anyway?
+Additional patch by Ken Takata, 2016 Jan 13.
+Merged patch by Yasuhiro Nakadaira,, 2016 Jan 14.
+Update for INSSTALLpc.txt by Ken Takata, Jan 14.
 
 MS-Windows: When editing a file with a leading space, writing it uses the
 wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
@@ -172,7 +169,7 @@ specifically?  First try with the parens, then without.
 
 Half-finished patch to fix the Problem using cgn to change a search hit when
 replacement includes hit. Reported by John Beckett, fix by Christian Brabandt,
-2015 Dec 14, Update Dec 15.
+2016 Jan 11.
 
 Patch to fix pointer cast warning in VS2015. (Mike Williams, 2015 Dec 13)
 Patch to make building GVimExt with VS2015. (Mike Williams, 2015 Dec 13)
@@ -198,6 +195,10 @@ library:  http://userguide.icu-project.org/boundaryanalysis
 
 When complete() first argument is before where insert started and 'backspace'
 is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
+
+Patch to fix bug in searchpair(). (Christian Brabandt, 2016 Jan 11)
+Problem reported by David Fishburn, using searchpair() with synID() used in
+the skip expression.
 
 Test 44 fails when [[=A=]] is changed to [[=À=]].  Caused by getcmdline() not
 handling the 0x80 as a second byte correctly?  (Dominique Pelle, 2015 Jun 10)
@@ -338,9 +339,6 @@ When two SIGWINCH arrive very quickly, the second one may be lost.
 (Josh Triplett, 2015 Sep 17)
 
 Make comments in the test Makefile silent. (Kartik Agaram, 2014 Sep 24)
-
-Patch to improve behavior of dead keys on MS-Windows. (John Wellesz, 2015 Aug
-25)  https://github.com/vim/vim/pull/399.diff
 
 Result of systemlist() does not show whether text ended in line break.
 (Bjorn Linse, 2014 Nov 27)
