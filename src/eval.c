@@ -476,6 +476,7 @@ static void f_arglistid __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_argv __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_assert_equal __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_assert_exception __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_assert_fails __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_assert_false __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_assert_true __ARGS((typval_T *argvars, typval_T *rettv));
 #ifdef FEAT_FLOAT
@@ -8090,6 +8091,7 @@ static struct fst
 #endif
     {"assert_equal",	2, 3, f_assert_equal},
     {"assert_exception", 1, 2, f_assert_exception},
+    {"assert_fails",	1, 2, f_assert_fails},
     {"assert_false",	1, 2, f_assert_false},
     {"assert_true",	1, 2, f_assert_true},
 #ifdef FEAT_FLOAT
@@ -9009,8 +9011,11 @@ f_alloc_fail(argvars, rettv)
     else
     {
 	alloc_fail_id = argvars[0].vval.v_number;
+	if (alloc_fail_id >= aid_last)
+	    EMSG(_(e_invarg));
 	alloc_fail_countdown = argvars[1].vval.v_number;
 	alloc_fail_repeat = argvars[2].vval.v_number;
+	did_outofmem_msg = FALSE;
     }
 }
 
@@ -9298,6 +9303,51 @@ f_assert_exception(argvars, rettv)
 	assert_error(&ga);
 	ga_clear(&ga);
     }
+}
+
+/*
+ * "assert_fails(cmd [, error])" function
+ */
+    static void
+f_assert_fails(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv UNUSED;
+{
+    char_u	*cmd = get_tv_string_chk(&argvars[0]);
+    garray_T	ga;
+
+    called_emsg = FALSE;
+    suppress_errthrow = TRUE;
+    emsg_silent = TRUE;
+    do_cmdline_cmd(cmd);
+    if (!called_emsg)
+    {
+	prepare_assert_error(&ga);
+	ga_concat(&ga, (char_u *)"command did not fail: ");
+	ga_concat(&ga, cmd);
+	assert_error(&ga);
+	ga_clear(&ga);
+    }
+    else if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	char_u	buf[NUMBUFLEN];
+	char	*error = (char *)get_tv_string_buf_chk(&argvars[1], buf);
+
+	if (strstr((char *)vimvars[VV_ERRMSG].vv_str, error) == NULL)
+	{
+	    prepare_assert_error(&ga);
+	    fill_assert_error(&ga, &argvars[2], NULL, &argvars[1],
+						&vimvars[VV_ERRMSG].vv_tv);
+	    assert_error(&ga);
+	    ga_clear(&ga);
+	}
+    }
+
+    called_emsg = FALSE;
+    suppress_errthrow = FALSE;
+    emsg_silent = FALSE;
+    emsg_on_display = FALSE;
+    set_vim_var_string(VV_ERRMSG, NULL, 0);
 }
 
 /*

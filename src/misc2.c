@@ -798,13 +798,17 @@ vim_mem_profile_dump()
 #endif /* MEM_PROFILE */
 
 #ifdef FEAT_EVAL
+static int alloc_does_fail __ARGS((long_u size));
+
     static int
-alloc_does_fail()
+alloc_does_fail(size)
+    long_u size;
 {
     if (alloc_fail_countdown == 0)
     {
 	if (--alloc_fail_repeat <= 0)
 	    alloc_fail_id = 0;
+	do_outofmem_msg(size);
 	return TRUE;
     }
     --alloc_fail_countdown;
@@ -844,7 +848,7 @@ alloc_id(size, id)
     alloc_id_T	id UNUSED;
 {
 #ifdef FEAT_EVAL
-    if (alloc_fail_id == id && alloc_does_fail())
+    if (alloc_fail_id == id && alloc_does_fail((long_u)size))
 	return NULL;
 #endif
     return (lalloc((long_u)size, TRUE));
@@ -1008,7 +1012,7 @@ lalloc_id(size, message, id)
     alloc_id_T	id UNUSED;
 {
 #ifdef FEAT_EVAL
-    if (alloc_fail_id == id && alloc_does_fail())
+    if (alloc_fail_id == id && alloc_does_fail(size))
 	return NULL;
 #endif
     return (lalloc((long_u)size, message));

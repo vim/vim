@@ -279,39 +279,19 @@ endfunction
 
 function Test_nomem()
   call alloc_fail(GetAllocId('qf_dirname_start'), 0, 0)
-  try
-    vimgrep vim runtest.vim
-  catch
-    call assert_true(v:exception =~ 'E342')
-  endtry
+  call assert_fails('vimgrep vim runtest.vim', 'E342:')
 
   call alloc_fail(GetAllocId('qf_dirname_now'), 0, 0)
-  try
-    vimgrep vim runtest.vim
-  catch
-    call assert_true(v:exception =~ 'E342')
-  endtry
+  call assert_fails('vimgrep vim runtest.vim', 'E342:')
 
   call alloc_fail(GetAllocId('qf_namebuf'), 0, 0)
-  try
-    cfile runtest.vim
-  catch
-    call assert_true(v:exception =~ 'E342')
-  endtry
+  call assert_fails('cfile runtest.vim', 'E342:')
 
   call alloc_fail(GetAllocId('qf_errmsg'), 0, 0)
-  try
-    cfile runtest.vim
-  catch
-    call assert_true(v:exception =~ 'E342')
-  endtry
+  call assert_fails('cfile runtest.vim', 'E342:')
 
   call alloc_fail(GetAllocId('qf_pattern'), 0, 0)
-  try
-    cfile runtest.vim
-  catch
-    call assert_true(v:exception =~ 'E342')
-  endtry
+  call assert_fails('cfile runtest.vim', 'E342:')
 
 endfunc
 
