@@ -216,6 +216,9 @@ CPU = i386
 !  endif
 ! else  # !CPU
 CPU = i386
+!  if !defined(PLATFORM) && defined(TARGET_CPU)
+PLATFORM = $(TARGET_CPU)
+!  endif
 !  ifdef PLATFORM
 !   if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
 CPU = AMD64
