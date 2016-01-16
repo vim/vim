@@ -351,7 +351,6 @@ SRC_DOS =	\
 		src/xpm_w32.h \
 		src/xxd/Make_bc3.mak \
 		src/xxd/Make_bc5.mak \
-		src/xxd/Make_cyg.mak \
 		src/xxd/Make_djg.mak \
 		src/xxd/Make_ming.mak \
 		src/xxd/Make_mvc.mak \
