@@ -483,6 +483,16 @@ Additionally, these commands can be used:
 	finish		Finish the current script or user function and come
 			back to debug mode for the command after the one that
 			sourced or called it.
+							*>bt*
+							*>backtrace*
+	backtrace,bt	Show the call stacktrace for actual debugging session.
+							*>frame*
+	frame N		Goes to N bactrace level. + and - signs make movement
+			relative.
+							*>up*
+	up		Goes one level up from call stacktrace.
+							*>down*
+	down		Goes one level down from call stacktrace.
 
 About the additional commands in debug mode:
 - There is no command-line completion for them, you get the completion for the

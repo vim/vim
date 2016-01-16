@@ -93,6 +93,7 @@ do_debug(cmd)
     int		n;
     char_u	*cmdline = NULL;
     char_u	*p;
+    char_u      *nc;
     char	*tail = NULL;
     static int	last_cmd = 0;
 #define CMD_CONT	1
@@ -101,6 +102,10 @@ do_debug(cmd)
 #define CMD_FINISH	4
 #define CMD_QUIT	5
 #define CMD_INTERRUPT	6
+#define CMD_BACKTRACE	7
+#define CMD_FRAME	8
+#define CMD_UP		9
+#define CMD_DOWN	10
 
 #ifdef ALWAYS_USE_GUI
     /* Can't do this when there is no terminal for input/output. */
@@ -197,8 +202,19 @@ do_debug(cmd)
 		    case 's': last_cmd = CMD_STEP;
 			      tail = "tep";
 			      break;
-		    case 'f': last_cmd = CMD_FINISH;
-			      tail = "inish";
+		    case 'f':
+                              last_cmd = 0;
+			      nc = (char_u *)(p+1);
+                              if(*nc != NUL && *nc == 'i')
+                              {
+                                last_cmd = CMD_FINISH;
+			        tail = "inish";
+                              }
+                              else if(*nc != NUL && *nc == 'r')
+                              {
+                                last_cmd = CMD_FRAME;
+			        tail = "rame";
+                              }
 			      break;
 		    case 'q': last_cmd = CMD_QUIT;
 			      tail = "uit";
@@ -206,18 +222,36 @@ do_debug(cmd)
 		    case 'i': last_cmd = CMD_INTERRUPT;
 			      tail = "nterrupt";
 			      break;
+		    case 'b':
+			      nc = (char_u *)(p+1);
+			      if(*nc != NUL && *nc == 't')
+			      {
+				  tail = "t";
+			      }
+			      else
+			      {
+				  tail = "acktrace";
+			      }
+			      last_cmd = CMD_BACKTRACE;
+			      break;
+		    case 'u': last_cmd = CMD_UP;
+			      tail = "p";
+			      break;
+		    case 'd': last_cmd = CMD_DOWN;
+			      tail = "own";
+			      break;
 		    default: last_cmd = 0;
 		}
 		if (last_cmd != 0)
 		{
 		    /* Check that the tail matches. */
 		    ++p;
-		    while (*p != NUL && *p == *tail)
+		    while (*p != NUL && *tail != NUL && *p == *tail)
 		    {
 			++p;
 			++tail;
 		    }
-		    if (ASCII_ISALPHA(*p))
+		    if (ASCII_ISALPHA(*p) && last_cmd != CMD_FRAME)
 			last_cmd = 0;
 		}
 	    }
@@ -250,7 +284,31 @@ do_debug(cmd)
 			/* Do not repeat ">interrupt" cmd, continue stepping. */
 			last_cmd = CMD_STEP;
 			break;
+		    case CMD_BACKTRACE:
+			    do_showbacktrace(cmd);
+			continue;
+		    case CMD_FRAME:
+			if (*p == NUL)
+			{
+			    do_showbacktrace(cmd);
+			}
+			else
+			{
+			    p = skipwhite(p);
+			    do_setdebugtracelevel(p);
+			}
+			continue;
+		    case CMD_UP:
+			debug_backtrace_level++;
+			do_checkbacktracelevel();
+			continue;
+		    case CMD_DOWN:
+			debug_backtrace_level--;
+			do_checkbacktracelevel();
+			continue;
 		}
+		//Going out reset backtrace_level
+		debug_backtrace_level = 0;
 		break;
 	    }
 
@@ -283,6 +341,141 @@ do_debug(cmd)
     /* Only print the message again when typing a command before coming back
      * here. */
     debug_did_msg = TRUE;
+}
+
+    int
+get_maxbacktrace_level()
+{
+    char * frame;
+    char * token;
+    int maxbacktrace;
+    int n_tokens;
+
+    maxbacktrace = 0;
+    if (sourcing_name != NULL)
+    {
+        frame = strdup((char *)sourcing_name);
+        token = strtok(frame, "..");
+        n_tokens = 0;
+
+        while (token)
+	{
+	    token = strtok (NULL, "..");
+            if (token)
+            {
+                maxbacktrace++;
+            }
+        }
+        free(frame);
+    }
+    return maxbacktrace;
+}
+
+    void
+do_setdebugtracelevel(arg)
+    char_u *arg;
+{
+    int relative;
+    int level;
+
+    relative = FALSE;
+    if (*arg == '+')
+    {
+	    relative = TRUE;
+    }
+    level = atoi((char *)arg);
+    if (level < 0)
+    {
+	    relative = TRUE;
+    }
+
+    if (relative)
+    {
+	    debug_backtrace_level += level;
+    }
+    else
+    {
+	    debug_backtrace_level = level;
+    }
+
+    do_checkbacktracelevel();
+}
+    void
+do_checkbacktracelevel()
+{
+    int max;
+    if (debug_backtrace_level < 0)
+    {
+	    debug_backtrace_level = 0;
+	    smsg((char_u *)_("backtrace set to lowest level: %d"), 0);
+    }
+    max = get_maxbacktrace_level();
+    if (debug_backtrace_level > max)
+    {
+	debug_backtrace_level = max;
+	smsg((char_u *)_("backtrace set to highest level: %d"), max);
+    }
+}
+
+    void
+do_showbacktrace(cmd)
+    char_u *cmd;
+{
+    char ** res;
+    char * frame;
+    char * token;
+    int n_tokens;
+    int i;
+    int current;
+
+    if (sourcing_name != NULL)
+    {
+	res  = NULL;
+	frame = strdup((char *)sourcing_name);
+	token = strtok(frame, "..");
+	n_tokens = 0;
+
+	while (token) {
+	    res = realloc (res, sizeof (char *) * ++n_tokens);
+
+	    if (res != NULL)
+	    {
+		res[n_tokens-1] = token;
+	    }
+	    token = strtok (NULL, "..");
+	}
+
+	res = realloc (res, sizeof (char_u*) * (n_tokens+1));
+	if (res != NULL)
+	{
+	    res[n_tokens] = 0;
+	}
+
+	current = n_tokens -1 - debug_backtrace_level;
+
+	for (i = 0; i < n_tokens; ++i)
+	{
+	    if (i == current)
+	    {
+		smsg((char_u *)_(" >%d %s"),n_tokens - 1 - i, res[i]);
+	    }
+	    else
+	    {
+		smsg((char_u *)_(" #%d %s"),n_tokens - 1 - i, res[i]);
+	    }
+	}
+
+	free(frame);
+	free(res);
+    }
+    if (sourcing_lnum != 0)
+    {
+       smsg((char_u *)_("line %ld: %s"), (long)sourcing_lnum, cmd);
+    }
+    else
+    {
+       smsg((char_u *)_("cmd: %s"), cmd);
+    }
 }
 
 /*
