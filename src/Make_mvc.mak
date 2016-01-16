@@ -755,43 +755,52 @@ PYTHON3_LIB = $(PYTHON3)\libs\python$(PYTHON3_VER).lib
 !ifndef MZSCHEME_VER
 MZSCHEME_VER = 205_000
 !endif
-CFLAGS = $(CFLAGS) -DFEAT_MZSCHEME -I $(MZSCHEME)\include
-!if EXIST("$(MZSCHEME)\collects\scheme\base.ss") \
-      	|| EXIST("$(MZSCHEME)\collects\scheme\base.rkt") \
-      	|| EXIST("$(MZSCHEME)\collects\racket\base.rkt")
-# for MzScheme >= 4 we need to include byte code for basic Scheme stuff
-MZSCHEME_EXTRA_DEP = mzscheme_base.c
-CFLAGS = $(CFLAGS) -DINCLUDE_MZSCHEME_BASE
+!ifndef MZSCHEME_COLLECTS
+MZSCHEME_COLLECTS=$(MZSCHEME)\collects
 !endif
+CFLAGS = $(CFLAGS) -DFEAT_MZSCHEME -I "$(MZSCHEME)\include"
 !if EXIST("$(MZSCHEME)\lib\msvc\libmzsch$(MZSCHEME_VER).lib")
 MZSCHEME_MAIN_LIB=mzsch
 !else
 MZSCHEME_MAIN_LIB=racket
 !endif
-!if EXIST("$(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib") \
-	&& !EXIST("$(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib")
+!if (EXIST("$(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll") \
+     && !EXIST("$(MZSCHEME)\lib\libmzgc$(MZSCHEME_VER).dll")) \
+    || (EXIST("$(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib") \
+        && !EXIST("$(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib"))
 !message Building with Precise GC
 MZSCHEME_PRECISE_GC = yes
 CFLAGS = $(CFLAGS) -DMZ_PRECISE_GC
 !endif
 !if "$(DYNAMIC_MZSCHEME)" == "yes"
-!if "$(MZSCHEME_PRECISE_GC)" == "yes"
-!error MzScheme with Precise GC cannot be loaded dynamically
-!endif
 !message MzScheme DLLs will be loaded dynamically
-CFLAGS = $(CFLAGS) -DDYNAMIC_MZSCHEME \
-		-DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" \
-		-DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
+CFLAGS = $(CFLAGS) -DDYNAMIC_MZSCHEME
+!if "$(MZSCHEME_PRECISE_GC)" == "yes"
+# Precise GC does not use separate dll
+CFLAGS = $(CFLAGS) \
+	 -DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" \
+	 -DDYNAMIC_MZGC_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\"
+!else
+CFLAGS = $(CFLAGS) \
+	 -DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" \
+	 -DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
+!endif
 !else
 !if "$(MZSCHEME_DEBUG)" == "yes"
 CFLAGS = $(CFLAGS) -DMZSCHEME_FORCE_GC
 !endif
 !if "$(MZSCHEME_PRECISE_GC)" == "yes"
 # Precise GC does not use separate dll
-MZSCHEME_LIB = $(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib
+!if EXIST("$(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).def")
+# create .lib from .def
+MZSCHEME_LIB = lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib
+MZSCHEME_EXTRA_DEP = lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib
 !else
-MZSCHEME_LIB = $(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib \
-		$(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib
+MZSCHEME_LIB = "$(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib"
+!endif
+!else
+MZSCHEME_LIB = "$(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib" \
+		"$(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib"
 !endif
 !endif
 MZSCHEME_OBJ = $(OUTDIR)\if_mzsch.obj
@@ -1059,7 +1068,6 @@ clean:
 	- if exist dimm_i.c del dimm_i.c
 	- if exist dimm.tlb del dimm.tlb
 	- if exist dosinst.exe del dosinst.exe
-	- if exist mzscheme_base.c del mzscheme_base.c
 	cd xxd
 	$(MAKE) /NOLOGO -f Make_mvc.mak clean
 	cd ..
@@ -1172,13 +1180,10 @@ $(OUTDIR)/if_perlsfio.obj: $(OUTDIR) if_perlsfio.c  $(INCL)
 
 $(OUTDIR)/if_mzsch.obj: $(OUTDIR) if_mzsch.c if_mzsch.h $(INCL) $(MZSCHEME_EXTRA_DEP)
 	$(CC) $(CFLAGS) if_mzsch.c \
-		-DMZSCHEME_COLLECTS=\"$(MZSCHEME:\=\\)\\collects\"
-mzscheme_base.c:
-!IF "$(MZSCHEME_MAIN_LIB)" == "racket"
-	$(MZSCHEME)\raco ctool --c-mods mzscheme_base.c ++lib scheme/base
-!ELSE
-	$(MZSCHEME)\mzc --c-mods mzscheme_base.c ++lib scheme/base
-!ENDIF
+		-DMZSCHEME_COLLECTS="\"$(MZSCHEME_COLLECTS:\=\\)\""
+
+lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib:
+	lib /DEF:"$(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).def"
 
 $(OUTDIR)/if_python.obj: $(OUTDIR) if_python.c if_py_both.h $(INCL)
 	$(CC) $(CFLAGS) $(PYTHON_INC) if_python.c

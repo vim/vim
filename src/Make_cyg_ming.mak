@@ -171,26 +171,37 @@ ifndef MZSCHEME_VER
 MZSCHEME_VER=205_000
 endif
 
-ifndef MZSCHEME_PRECISE_GC
-MZSCHEME_PRECISE_GC=no
-endif
-
 # for version 4.x we need to generate byte-code for Scheme base
 ifndef MZSCHEME_GENERATE_BASE
 MZSCHEME_GENERATE_BASE=no
 endif
 
-ifndef MZSCHEME_USE_RACKET
+ifneq ($(wildcard $(MZSCHEME)/lib/msvc/libmzsch$(MZSCHEME_VER).lib),)
 MZSCHEME_MAIN_LIB=mzsch
 else
 MZSCHEME_MAIN_LIB=racket
+endif
+
+ifndef MZSCHEME_PRECISE_GC
+MZSCHEME_PRECISE_GC=no
+ifneq ($(wildcard $(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll),)
+ifeq ($(wildcard $(MZSCHEME)\lib\libmzgc$(MZSCHEME_VER).dll),)
+MZSCHEME_PRECISE_GC=yes
+endif
+else
+ifneq ($(wildcard $(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib),)
+ifeq ($(wildcard $(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib),)
+MZSCHEME_PRECISE_GC=yes
+endif
+endif
+endif
 endif
 
 ifeq (no,$(DYNAMIC_MZSCHEME))
 ifeq (yes,$(MZSCHEME_PRECISE_GC))
 MZSCHEME_LIB=-l$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER)
 else
-MZSCHEME_LIB = -l$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
+MZSCHEME_LIB=-l$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
 endif
 # the modern MinGW can dynamically link to dlls directly.
 # point MZSCHEME_DLLS to where you put libmzschXXXXXXX.dll and libgcXXXXXXX.dll
@@ -429,9 +440,20 @@ endif
 endif
 
 ifdef MZSCHEME
-CFLAGS += -I$(MZSCHEME)/include -DFEAT_MZSCHEME -DMZSCHEME_COLLECTS=\"$(MZSCHEME)/collects\"
+ifndef MZSCHEME_COLLECTS
+MZSCHEME_COLLECTS=$(MZSCHEME)/collects
+ifeq (yes, $(UNDER_CYGWIN))
+MZSCHEME_COLLECTS:=$(shell cygpath -m $(MZSCHEME_COLLECTS) | sed -e 's/ /\\ /g')
+endif
+endif
+CFLAGS += -I$(MZSCHEME)/include -DFEAT_MZSCHEME -DMZSCHEME_COLLECTS=\"$(MZSCHEME_COLLECTS)\"
 ifeq (yes, $(DYNAMIC_MZSCHEME))
+ifeq (yes, $(MZSCHEME_PRECISE_GC))
+# Precise GC does not use separate dll
+CFLAGS += -DDYNAMIC_MZSCHEME -DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" -DDYNAMIC_MZGC_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\"
+else
 CFLAGS += -DDYNAMIC_MZSCHEME -DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" -DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
+endif
 endif
 ifeq (yes, "$(MZSCHEME_DEBUG)")
 CFLAGS += -DMZSCHEME_FORCE_GC

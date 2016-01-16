@@ -24,7 +24,7 @@ Contents:
 5. Cross compiling for Win32 from a Linux machine
 6. Building with Python support
 7. Building with Python3 support
-8. Building with MzScheme support
+8. Building with MzScheme/Racket support
 9. Building with Lua support
 10. Building with Perl support
 11. Building with Ruby support
@@ -415,8 +415,10 @@ E.g. When using MSVC (as one line):
         PYTHON3=C:\Python34 DYNAMIC_PYTHON3=yes PYTHON3_VER=34
 
 
-8. Building with MzScheme support
-=================================
+8. Building with MzScheme/Racket support
+========================================
+
+1) Building with MzScheme support
 
 (written by Sergey Khorev <sergey.khorev@gmail.com>)
 
@@ -451,31 +453,75 @@ After a successful build, these dlls can be freely removed, leaving them in
 %WINDOWS%\System32 only.
 
 
+2) Building with Racket support
+
+MzScheme and PLT Scheme names have been rebranded as Racket.  Vim with Racket
+(https://racket-lang.org/) support can be built with either MSVC or MinGW (or
+Cygwin).
+
+You need to set the following variables:
+
+    MZSCHEME:          Where Racket is installed.
+                       E.g. C:\Program Files (x86)\Racket
+    DYNAMIC_MZSCHEME:  Whether dynamic linking is used. Usually, set to yes.
+    MZSCHEME_VER:      Racket DLL version. E.g. 3m_9z0ds0 for Racket 6.3.
+    MZSCHEME_COLLECTS: (Optional) Path of the collects directory used at
+                       runtime. Default: $(MZSCHEME)\collects
+                       User can override this with the PLTCOLLECTS environment
+                       variable.
+
+E.g. When using MSVC (as one line):
+
+    nmake -f Make_mvc.mak
+        MZSCHEME="C:\Program Files (x86)\Racket" DYNAMIC_MZSCHEME=yes
+        MZSCHEME_VER=3m_9z0ds0
+
+Or when using MinGW (as one line):
+
+    mingw32-make -f Make_ming.mak
+        MZSCHEME='C:/Program\ Files\ (x86)/Racket' DYNAMIC_MZSCHEME=yes
+        MZSCHEME_VER=3m_9z0ds0
+
+    Spaces should be escaped with '\'.
+
+
 9. Building with Lua support
 ============================
 
-Vim with Lua support can be built with either MSVC or MinGW (or Cygwin).
-You can use binaries from LuaBinaries.
-    http://luabinaries.sourceforge.net/
+Vim with Lua support can be built with either MSVC or MinGW (or maybe Cygwin).
+You can use binaries from LuaBinaries: http://luabinaries.sourceforge.net/
+This also applies to when you get a Vim executable and don't build yourself,
+do the part up to "Build".
 
 1) Download and install LuaBinaries
+
 Go to the Download page of LuaBinaries:
-    http://luabinaries.sourceforge.net/download.html
+  http://luabinaries.sourceforge.net/download.html
 
 Download lua-X.Y.Z_Win32_dllw4_lib.zip for x86 or
-lua-X.Y.Z_Win64_dllw4_lib.zip for x64.  You can use them for both MSVC and
+lua-X.Y.Z_Win64_dllw4_lib.zip for x64.  You can use them both for MSVC and
 MinGW.
 
 Unpack it to a working directory. E.g. C:\projects\lua53.
 Lua's header files will be installed under the include directory.
 
+Copy luaXY.dll to your Windows system directory. The system directory depends
+on your Windows bitness and Vim bitness:
+  32-bit Vim on 32-bit Windows: C:\Windows\System32
+  32-bit Vim on 64-bit Windows: C:\Windows\SysWOW64
+  64-bit Vim on 64-bit Windows: C:\Windows\System32
+
+Or another option is copying luaXY.dll to the directory where gvim.exe
+(or vim.exe) is.
+
 
 2) Build
-You need to set the following variables:
 
-    LUA:         Where Lua is installed. E.g. C:\projects\lua53.
-    DYNAMIC_LUA: Whether dynamic linking is used. Usually, set to yes.
-    LUA_VER:     Lua version. E.g. 53 for Lua 5.3.X.
+You need to set LUA, DYNAMIC_LUA and LUA_VER.
+
+  LUA: Where Lua's header files are installed. E.g. C:\projects\lua53.
+  DYNAMIC_LUA: Whether dynamic linking is used. Set to yes.
+  LUA_VER: Lua version. E.g. 53 for Lua 5.3.X.
 
 E.g. When using MSVC (as one line):
 
@@ -487,7 +533,8 @@ Or when using MinGW (as one line):
     mingw32-make -f Make_mingw.mak
         LUA=C:\projects\lua53 DYNAMIC_LUA=yes LUA_VER=53
 
-Or when using Cygwin (as one line):
+
+Or when using Cygwin (as one line) (untested):
 
     make -f Make_cyg.mak
         LUA=/cygdrive/c/projects/lua53 DYNAMIC_LUA=yes LUA_VER=53
