@@ -68,6 +68,10 @@ typedef struct sn_prl_S
 #if defined(FEAT_EVAL) || defined(PROTO)
 static int debug_greedy = FALSE;	/* batch mode debugging: don't save
 					   and restore typeahead. */
+static int get_maxbacktrace_level(void);
+static void do_setdebugtracelevel(char_u *arg);
+static void do_checkbacktracelevel(void);
+static void do_showbacktrace(char_u *cmd);
 
 /*
  * do_debug(): Debug mode.
@@ -101,6 +105,10 @@ do_debug(cmd)
 #define CMD_FINISH	4
 #define CMD_QUIT	5
 #define CMD_INTERRUPT	6
+#define CMD_BACKTRACE	7
+#define CMD_FRAME	8
+#define CMD_UP		9
+#define CMD_DOWN	10
 
 #ifdef ALWAYS_USE_GUI
     /* Can't do this when there is no terminal for input/output. */
@@ -178,6 +186,7 @@ do_debug(cmd)
 # endif
 
 	cmdline_row = msg_row;
+	msg_starthere();
 	if (cmdline != NULL)
 	{
 	    /* If this is a debug command, set "last_cmd".
@@ -197,14 +206,39 @@ do_debug(cmd)
 		    case 's': last_cmd = CMD_STEP;
 			      tail = "tep";
 			      break;
-		    case 'f': last_cmd = CMD_FINISH;
-			      tail = "inish";
+		    case 'f':
+			      last_cmd = 0;
+			      if (p[1] == 'r')
+			      {
+				  last_cmd = CMD_FRAME;
+				  tail = "rame";
+			      }
+			      else
+			      {
+				  last_cmd = CMD_FINISH;
+				  tail = "inish";
+			      }
 			      break;
 		    case 'q': last_cmd = CMD_QUIT;
 			      tail = "uit";
 			      break;
 		    case 'i': last_cmd = CMD_INTERRUPT;
 			      tail = "nterrupt";
+			      break;
+		    case 'b': last_cmd = CMD_BACKTRACE;
+			      if (p[1] == 't')
+				  tail = "t";
+			      else
+				  tail = "acktrace";
+			      break;
+		    case 'w': last_cmd = CMD_BACKTRACE;
+			      tail = "here";
+			      break;
+		    case 'u': last_cmd = CMD_UP;
+			      tail = "p";
+			      break;
+		    case 'd': last_cmd = CMD_DOWN;
+			      tail = "own";
 			      break;
 		    default: last_cmd = 0;
 		}
@@ -217,7 +251,7 @@ do_debug(cmd)
 			++p;
 			++tail;
 		    }
-		    if (ASCII_ISALPHA(*p))
+		    if (ASCII_ISALPHA(*p) && last_cmd != CMD_FRAME)
 			last_cmd = 0;
 		}
 	    }
@@ -250,7 +284,31 @@ do_debug(cmd)
 			/* Do not repeat ">interrupt" cmd, continue stepping. */
 			last_cmd = CMD_STEP;
 			break;
+		    case CMD_BACKTRACE:
+			do_showbacktrace(cmd);
+			continue;
+		    case CMD_FRAME:
+			if (*p == NUL)
+			{
+			    do_showbacktrace(cmd);
+			}
+			else
+			{
+			    p = skipwhite(p);
+			    do_setdebugtracelevel(p);
+			}
+			continue;
+		    case CMD_UP:
+			debug_backtrace_level++;
+			do_checkbacktracelevel();
+			continue;
+		    case CMD_DOWN:
+			debug_backtrace_level--;
+			do_checkbacktracelevel();
+			continue;
 		}
+		/* Going out reset backtrace_level */
+		debug_backtrace_level = 0;
 		break;
 	    }
 
@@ -283,6 +341,92 @@ do_debug(cmd)
     /* Only print the message again when typing a command before coming back
      * here. */
     debug_did_msg = TRUE;
+}
+
+    static int
+get_maxbacktrace_level(void)
+{
+    char	*p, *q;
+    int		maxbacktrace = 1;
+
+    maxbacktrace = 0;
+    if (sourcing_name != NULL)
+    {
+	p = (char *)sourcing_name;
+	while ((q = strstr(p, "..")) != NULL)
+	{
+	    p = q + 2;
+	    maxbacktrace++;
+	}
+    }
+    return maxbacktrace;
+}
+
+    static void
+do_setdebugtracelevel(char_u *arg)
+{
+    int level;
+
+    level = atoi((char *)arg);
+    if (*arg == '+' || level < 0)
+	debug_backtrace_level += level;
+    else
+	debug_backtrace_level = level;
+
+    do_checkbacktracelevel();
+}
+
+    static void
+do_checkbacktracelevel(void)
+{
+    if (debug_backtrace_level < 0)
+    {
+	debug_backtrace_level = 0;
+	MSG(_("frame is zero"));
+    }
+    else
+    {
+	int max = get_maxbacktrace_level();
+
+	if (debug_backtrace_level > max)
+	{
+	    debug_backtrace_level = max;
+	    smsg((char_u *)_("frame at highest level: %d"), max);
+	}
+    }
+}
+
+    static void
+do_showbacktrace(char_u *cmd)
+{
+    char    *cur;
+    char    *next;
+    int	    i = 0;
+    int	    max = get_maxbacktrace_level();
+
+    if (sourcing_name != NULL)
+    {
+	cur = (char *)sourcing_name;
+	while (!got_int)
+	{
+	    next = strstr(cur, "..");
+	    if (next != NULL)
+		*next = NUL;
+	    if (i == max - debug_backtrace_level)
+		smsg((char_u *)"->%d %s", max - i, cur);
+	    else
+		smsg((char_u *)"  %d %s", max - i, cur);
+	    ++i;
+	    if (next == NULL)
+		break;
+	    *next = '.';
+	    cur = next + 2;
+	}
+    }
+    if (sourcing_lnum != 0)
+       smsg((char_u *)_("line %ld: %s"), (long)sourcing_lnum, cmd);
+    else
+       smsg((char_u *)_("cmd: %s"), cmd);
 }
 
 /*
