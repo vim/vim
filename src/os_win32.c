@@ -463,6 +463,7 @@ vimLoadLib(char *name)
 #if defined(DYNAMIC_GETTEXT) || defined(PROTO)
 # ifndef GETTEXT_DLL
 #  define GETTEXT_DLL "libintl.dll"
+#  define GETTEXT_DLL_ALT "libintl-8.dll"
 # endif
 /* Dummy functions */
 static char *null_libintl_gettext(const char *);
@@ -479,7 +480,7 @@ char *(*dyn_libintl_bind_textdomain_codeset)(const char *, const char *)
 				       = null_libintl_bind_textdomain_codeset;
 
     int
-dyn_libintl_init(char *libname)
+dyn_libintl_init()
 {
     int i;
     static struct
@@ -498,7 +499,9 @@ dyn_libintl_init(char *libname)
     if (hLibintlDLL)
 	return 1;
     /* Load gettext library (libintl.dll) */
-    hLibintlDLL = vimLoadLib(libname != NULL ? libname : GETTEXT_DLL);
+    hLibintlDLL = vimLoadLib(GETTEXT_DLL);
+    if (!hLibintlDLL)
+	hLibintlDLL = vimLoadLib(GETTEXT_DLL_ALT);
     if (!hLibintlDLL)
     {
 	if (p_verbose > 0)

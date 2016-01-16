@@ -69,7 +69,7 @@ WinMain(
 
 #ifdef DYNAMIC_GETTEXT
     /* Initialize gettext library */
-    dyn_libintl_init(NULL);
+    dyn_libintl_init();
 #endif
 
 #ifdef VIMDLL
