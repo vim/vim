@@ -22,6 +22,7 @@ int buf_check_timestamp __ARGS((buf_T *buf, int focus));
 void buf_reload __ARGS((buf_T *buf, int orig_mode));
 void buf_store_time __ARGS((buf_T *buf, struct stat *st, char_u *fname));
 void write_lnum_adjust __ARGS((linenr_T offset));
+int delete_recursive __ARGS((char_u *name));
 void vim_deltempdir __ARGS((void));
 char_u *vim_tempname __ARGS((int extra_char, int keep));
 void forward_slash __ARGS((char_u *fname));
