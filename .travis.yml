@@ -5,10 +5,10 @@ compiler:
   - gcc
 
 env:
-  - COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow
+  - COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp'"
     CHECK_AUTOCONF=yes
-  - COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+  - COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
   - COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
   - COVERAGE=no FEATURES=tiny  CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
 

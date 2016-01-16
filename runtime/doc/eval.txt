@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2015 Dec 29
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Jan 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -68,14 +68,16 @@ the Number.  Examples:
 	Number 0	-->	String "0" ~
 	Number -1	-->	String "-1" ~
 							*octal*
-Conversion from a String to a Number is done by converting the first digits
-to a number.  Hexadecimal "0xf9" and Octal "017" numbers are recognized.  If
-the String doesn't start with digits, the result is zero.  Examples:
+Conversion from a String to a Number is done by converting the first digits to
+a number.  Hexadecimal "0xf9", Octal "017", and Binary "0b10" numbers are
+recognized.  If the String doesn't start with digits, the result is zero.
+Examples:
 	String "456"	-->	Number 456 ~
 	String "6bar"	-->	Number 6 ~
 	String "foo"	-->	Number 0 ~
 	String "0xf1"	-->	Number 241 ~
 	String "0100"	-->	Number 64 ~
+	String "0b101"	-->	Number 5 ~
 	String "-8"	-->	Number -8 ~
 	String "+8"	-->	Number 0 ~
 
@@ -1737,6 +1739,8 @@ USAGE				RESULT	DESCRIPTION	~
 abs( {expr})			Float or Number  absolute value of {expr}
 acos( {expr})			Float	arc cosine of {expr}
 add( {list}, {item})		List	append {item} to |List| {list}
+alloc_fail( {id}, {countdown}, {repeat})
+				none	make memory allocation fail
 and( {expr}, {expr})		Number  bitwise AND
 append( {lnum}, {string})	Number	append {string} below line {lnum}
 append( {lnum}, {list})		Number	append lines {list} below line {lnum}
@@ -1746,9 +1750,11 @@ arglistid( [{winnr} [, {tabnr}]])
 				Number	argument list id
 argv( {nr})			String	{nr} entry of the argument list
 argv( )				List	the argument list
-assert_equal( {exp}, {act} [, {msg}]) none    assert that {exp} equals {act}
-assert_false( {actual} [, {msg}])     none    assert that {actual} is false
-assert_true( {actual} [, {msg}])      none    assert that {actual} is true
+assert_equal( {exp}, {act} [, {msg}]) none  assert {exp} equals {act}
+assert_exception({error} [, {msg}])   none  assert {error} is in v:exception
+assert_fails( {cmd} [, {error}])      none  assert {cmd} fails
+assert_false( {actual} [, {msg}])     none  assert {actual} is false
+assert_true( {actual} [, {msg}])      none  assert {actual} is true
 asin( {expr})			Float	arc sine of {expr}
 atan( {expr})			Float	arc tangent of {expr}
 atan2( {expr}, {expr})		Float   arc tangent of {expr1} / {expr2}
@@ -2073,6 +2079,7 @@ winrestcmd()			String	returns command to restore window sizes
 winrestview( {dict})		none	restore view of current window
 winsaveview()			Dict	save view of current window
 winwidth( {nr})			Number	width of window {nr}
+wordcount()			Dict	get byte/char/word statistics
 writefile( {list}, {fname} [, {flags}])
 				Number	write list of lines to file {fname}
 xor( {expr}, {expr})		Number  bitwise XOR
@@ -2113,6 +2120,13 @@ add({list}, {expr})					*add()*
 <		Note that when {expr} is a |List| it is appended as a single
 		item.  Use |extend()| to concatenate |Lists|.
 		Use |insert()| to add an item at another position.
+
+
+alloc_fail({id}, {countdown}, {repeat})			*alloc_fail()*
+		This is for testing: If the memory allocation with {id} is
+		called, then decrement {countdown}, and when it reaches zero
+		let memory allocation fail {repeat} times.  When {repeat} is
+		smaller than one it fails one time.
 
 
 and({expr}, {expr})					*and()*
@@ -2167,7 +2181,7 @@ argv([{nr}])	The result is the {nr}th file in the argument list of the
 		returned.
 
 							*assert_equal()*
-assert_equal({expected}, {actual}, [, {msg}])
+assert_equal({expected}, {actual} [, {msg}])
 		When {expected} and {actual} are not equal an error message is
 		added to |v:errors|.
 		There is no automatic conversion, the String "4" is different
@@ -2181,18 +2195,36 @@ assert_equal({expected}, {actual}, [, {msg}])
 <		Will result in a string to be added to |v:errors|:
 	test.vim line 12: Expected 'foo' but got 'bar' ~
 
-assert_false({actual}, [, {msg}])				*assert_false()*
+assert_exception({error} [, {msg}])			*assert_exception()*
+		When v:exception does not contain the string {error} an error
+		message is added to |v:errors|.
+		This can be used to assert that a command throws an exception.
+		Using the error number, followed by a colon, avoids problems
+		with translations: >
+			try
+			  commandthatfails
+			  call assert_false(1, 'command should have failed')
+			catch
+			  call assert_exception('E492:')
+			endtry
+
+assert_fails({cmd} [, {error}])					*assert_fails()*
+		Run {cmd} and add an error message to |v:errors| if it does
+		NOT produce an error.
+		When {error} is given it must match |v:errmsg|.
+
+assert_false({actual} [, {msg}])				*assert_false()*
 		When {actual} is not false an error message is added to
-		|v:errors|, like with |assert_equal()|..
+		|v:errors|, like with |assert_equal()|.
 		A value is false when it is zero. When "{actual}" is not a
 		number the assert fails.
 		When {msg} is omitted an error in the form "Expected False but
 		got {actual}" is produced.
 
-assert_true({actual}, [, {msg}])				*assert_true()*
+assert_true({actual} [, {msg}])					*assert_true()*
 		When {actual} is not true an error message is added to
-		|v:errors|, like with |assert_equal()|..
-		A value is true when it is a non-zeron number.  When {actual}
+		|v:errors|, like with |assert_equal()|.
+		A value is true when it is a non-zero number.  When {actual}
 		is not a number the assert fails.
 		When {msg} is omitted an error in the form "Expected True but
 		got {actual}" is produced.
@@ -3465,7 +3497,7 @@ getcmdwintype()						*getcmdwintype()*
 							*getcurpos()*
 getcurpos()	Get the position of the cursor.  This is like getpos('.'), but
 		includes an extra item in the list:
-		    [bufnum, lnum, col, off, curswant]
+		    [bufnum, lnum, col, off, curswant] ~
 		The "curswant" number is the preferred column when moving the
 		cursor vertically.
 		This can be used to save and restore the cursor position: >
@@ -5955,12 +5987,14 @@ str2float( {expr})					*str2float()*
 
 str2nr( {expr} [, {base}])				*str2nr()*
 		Convert string {expr} to a number.
-		{base} is the conversion base, it can be 8, 10 or 16.
+		{base} is the conversion base, it can be 2, 8, 10 or 16.
 		When {base} is omitted base 10 is used.  This also means that
 		a leading zero doesn't cause octal conversion to be used, as
 		with the default String to Number conversion.
 		When {base} is 16 a leading "0x" or "0X" is ignored.  With a
-		different base the result will be zero.
+		different base the result will be zero.  Similarly, when
+		{base} is 8 a leading "0" is ignored, and when {base} is 2 a
+		leading "0b" or "0B" is ignored.
 		Text after the number is silently ignored.
 
 
@@ -6740,6 +6774,28 @@ winwidth({nr})						*winwidth()*
   :  exe "normal 50\<C-W>|"
   :endif
 <
+wordcount()						*wordcount()*
+		The result is a dictionary of byte/chars/word statistics for
+		the current buffer.  This is the same info as provided by
+		|g_CTRL-G|
+		The return value includes:
+			bytes		Number of bytes in the buffer
+			chars		Number of chars in the buffer
+			words		Number of words in the buffer
+			cursor_bytes    Number of bytes before cursor position
+					(not in Visual mode)
+			cursor_chars    Number of chars before cursor position
+					(not in Visual mode)
+			cursor_words    Number of words before cursor position
+					(not in Visual mode)
+			visual_bytes    Number of bytes visually selected
+			                (only in Visual mode)
+			visual_chars    Number of chars visually selected
+			                (only in Visual mode)
+			visual_words    Number of chars visually selected
+			                (only in Visual mode)
+
+
 							*writefile()*
 writefile({list}, {fname} [, {flags}])
 		Write |List| {list} to file {fname}.  Each list item is

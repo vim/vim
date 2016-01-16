@@ -467,6 +467,7 @@ static void f_abs __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_acos __ARGS((typval_T *argvars, typval_T *rettv));
 #endif
 static void f_add __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_alloc_fail __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_and __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_append __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_argc __ARGS((typval_T *argvars, typval_T *rettv));
@@ -474,6 +475,8 @@ static void f_argidx __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_arglistid __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_argv __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_assert_equal __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_assert_exception __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_assert_fails __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_assert_false __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_assert_true __ARGS((typval_T *argvars, typval_T *rettv));
 #ifdef FEAT_FLOAT
@@ -780,6 +783,7 @@ static void f_winrestview __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_winsaveview __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_winwidth __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_writefile __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_wordcount __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_xor __ARGS((typval_T *argvars, typval_T *rettv));
 
 static int list2fpos __ARGS((typval_T *arg, pos_T *posp, int *fnump, colnr_T *curswantp));
@@ -808,6 +812,7 @@ static char_u *get_tv_string_buf_chk __ARGS((typval_T *varp, char_u *buf));
 static dictitem_T *find_var __ARGS((char_u *name, hashtab_T **htp, int no_autoload));
 static dictitem_T *find_var_in_ht __ARGS((hashtab_T *ht, int htname, char_u *varname, int no_autoload));
 static hashtab_T *find_var_ht __ARGS((char_u *name, char_u **varname));
+static funccall_T *get_funccal __ARGS((void));
 static void vars_clear_ext __ARGS((hashtab_T *ht, int free_val));
 static void delete_var __ARGS((hashtab_T *ht, hashitem_T *hi));
 static void list_one_var __ARGS((dictitem_T *v, char_u *prefix, int *first));
@@ -969,8 +974,7 @@ eval_clear()
  * Return the name of the executed function.
  */
     char_u *
-func_name(cookie)
-    void *cookie;
+func_name(void *cookie)
 {
     return ((funccall_T *)cookie)->func->uf_name;
 }
@@ -989,8 +993,7 @@ func_breakpoint(cookie)
  * Return the address holding the debug tick for a funccall cookie.
  */
     int *
-func_dbg_tick(cookie)
-    void *cookie;
+func_dbg_tick(void *cookie)
 {
     return &((funccall_T *)cookie)->dbg_tick;
 }
@@ -999,8 +1002,7 @@ func_dbg_tick(cookie)
  * Return the nesting level for a funccall cookie.
  */
     int
-func_level(cookie)
-    void *cookie;
+func_level(void *cookie)
 {
     return ((funccall_T *)cookie)->level;
 }
@@ -1027,9 +1029,7 @@ current_func_returned()
  * not already exist.
  */
     void
-set_internal_string_var(name, value)
-    char_u	*name;
-    char_u	*value;
+set_internal_string_var(char_u *name, char_u *value)
 {
     char_u	*val;
     typval_T	*tvp;
@@ -1053,12 +1053,11 @@ static char_u	*redir_varname = NULL;
 
 /*
  * Start recording command output to a variable
+ * When "append" is TRUE append to an existing variable.
  * Returns OK if successfully completed the setup.  FAIL otherwise.
  */
     int
-var_redir_start(name, append)
-    char_u	*name;
-    int		append;		/* append to an existing variable */
+var_redir_start(char_u *name, int append)
 {
     int		save_emsg;
     int		err;
@@ -1135,9 +1134,7 @@ var_redir_start(name, append)
  *   :redir END
  */
     void
-var_redir_str(value, value_len)
-    char_u	*value;
-    int		value_len;
+var_redir_str(char_u *value, int value_len)
 {
     int		len;
 
@@ -1197,11 +1194,11 @@ var_redir_stop()
 
 # if defined(FEAT_MBYTE) || defined(PROTO)
     int
-eval_charconvert(enc_from, enc_to, fname_from, fname_to)
-    char_u	*enc_from;
-    char_u	*enc_to;
-    char_u	*fname_from;
-    char_u	*fname_to;
+eval_charconvert(
+    char_u	*enc_from,
+    char_u	*enc_to,
+    char_u	*fname_from,
+    char_u	*fname_to)
 {
     int		err = FALSE;
 
@@ -1625,7 +1622,7 @@ call_vim_function(func, argc, argv, safe, str_arg_only, rettv)
 	    len = 0;
 	else
 	    /* Recognize a number argument, the others must be strings. */
-	    vim_str2nr(argv[i], NULL, &len, TRUE, TRUE, &n, NULL, 0);
+	    vim_str2nr(argv[i], NULL, &len, STR2NR_ALL, &n, NULL, 0);
 	if (len != 0 && len == (int)STRLEN(argv[i]))
 	{
 	    argvars[i].v_type = VAR_NUMBER;
@@ -3739,12 +3736,19 @@ do_unlet(name, forceit)
 	if (ht == &globvarht)
 	    d = &globvardict;
 	else if (current_funccal != NULL
-				 && ht == &current_funccal->l_vars.dv_hashtab)
+			     && ht == &current_funccal->l_vars.dv_hashtab)
 	    d = &current_funccal->l_vars;
+	else if (ht == &compat_hashtab)
+	    d = &vimvardict;
 	else
 	{
 	    di = find_var_in_ht(ht, *name, (char_u *)"", FALSE);
-	    d = di->di_tv.vval.v_dict;
+	    d = di == NULL ? NULL : di->di_tv.vval.v_dict;
+	}
+	if (d == NULL)
+	{
+	    EMSG2(_(e_intern2), "do_unlet()");
+	    return FAIL;
 	}
 	hi = hash_find(ht, varname);
 	if (!HASHITEM_EMPTY(hi))
@@ -3754,6 +3758,7 @@ do_unlet(name, forceit)
 		    || var_check_ro(di->di_flags, name, FALSE)
 		    || tv_check_lock(d->dv_lock, name, FALSE))
 		return FAIL;
+
 	    delete_var(ht, hi);
 	    return OK;
 	}
@@ -5139,7 +5144,7 @@ eval7(arg, rettv, evaluate, want_string)
 		else
 #endif
 		{
-		    vim_str2nr(*arg, NULL, &len, TRUE, TRUE, &n, NULL, 0);
+		    vim_str2nr(*arg, NULL, &len, STR2NR_ALL, &n, NULL, 0);
 		    *arg += len;
 		    if (evaluate)
 		    {
@@ -8067,6 +8072,7 @@ static struct fst
     {"acos",		1, 1, f_acos},	/* WJMc */
 #endif
     {"add",		2, 2, f_add},
+    {"alloc_fail",	3, 3, f_alloc_fail},
     {"and",		2, 2, f_and},
     {"append",		2, 2, f_append},
     {"argc",		0, 0, f_argc},
@@ -8077,6 +8083,8 @@ static struct fst
     {"asin",		1, 1, f_asin},	/* WJMc */
 #endif
     {"assert_equal",	2, 3, f_assert_equal},
+    {"assert_exception", 1, 2, f_assert_exception},
+    {"assert_fails",	1, 2, f_assert_fails},
     {"assert_false",	1, 2, f_assert_false},
     {"assert_true",	1, 2, f_assert_true},
 #ifdef FEAT_FLOAT
@@ -8387,6 +8395,7 @@ static struct fst
     {"winrestview",	1, 1, f_winrestview},
     {"winsaveview",	0, 0, f_winsaveview},
     {"winwidth",	1, 1, f_winwidth},
+    {"wordcount",	0, 0, f_wordcount},
     {"writefile",	2, 3, f_writefile},
     {"xor",		2, 2, f_xor},
 };
@@ -8979,6 +8988,31 @@ f_add(argvars, rettv)
 }
 
 /*
+ * "alloc_fail(id, countdown, repeat)" function
+ */
+    static void
+f_alloc_fail(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv UNUSED;
+{
+    if (argvars[0].v_type != VAR_NUMBER
+	    || argvars[0].vval.v_number <= 0
+	    || argvars[1].v_type != VAR_NUMBER
+	    || argvars[1].vval.v_number < 0
+	    || argvars[2].v_type != VAR_NUMBER)
+	EMSG(_(e_invarg));
+    else
+    {
+	alloc_fail_id = argvars[0].vval.v_number;
+	if (alloc_fail_id >= aid_last)
+	    EMSG(_(e_invarg));
+	alloc_fail_countdown = argvars[1].vval.v_number;
+	alloc_fail_repeat = argvars[2].vval.v_number;
+	did_outofmem_msg = FALSE;
+    }
+}
+
+/*
  * "and(expr, expr)" function
  */
     static void
@@ -9151,10 +9185,19 @@ prepare_assert_error(gap)
     char buf[NUMBUFLEN];
 
     ga_init2(gap, 1, 100);
-    ga_concat(gap, sourcing_name);
-    sprintf(buf, " line %ld", (long)sourcing_lnum);
-    ga_concat(gap, (char_u *)buf);
-    ga_concat(gap, (char_u *)": ");
+    if (sourcing_name != NULL)
+    {
+	ga_concat(gap, sourcing_name);
+	if (sourcing_lnum > 0)
+	    ga_concat(gap, (char_u *)" ");
+    }
+    if (sourcing_lnum > 0)
+    {
+	sprintf(buf, "line %ld", (long)sourcing_lnum);
+	ga_concat(gap, (char_u *)buf);
+    }
+    if (sourcing_name != NULL || sourcing_lnum > 0)
+	ga_concat(gap, (char_u *)": ");
 }
 
 /*
@@ -9227,6 +9270,80 @@ f_assert_equal(argvars, rettv)
 }
 
 /*
+ * "assert_exception(string[, msg])" function
+ */
+    static void
+f_assert_exception(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv UNUSED;
+{
+    garray_T	ga;
+    char	*error;
+
+    error = (char *)get_tv_string_chk(&argvars[0]);
+    if (vimvars[VV_EXCEPTION].vv_str == NULL)
+    {
+	prepare_assert_error(&ga);
+	ga_concat(&ga, (char_u *)"v:exception is not set");
+	assert_error(&ga);
+	ga_clear(&ga);
+    }
+    else if (strstr((char *)vimvars[VV_EXCEPTION].vv_str, error) == NULL)
+    {
+	prepare_assert_error(&ga);
+	fill_assert_error(&ga, &argvars[1], NULL, &argvars[0],
+						&vimvars[VV_EXCEPTION].vv_tv);
+	assert_error(&ga);
+	ga_clear(&ga);
+    }
+}
+
+/*
+ * "assert_fails(cmd [, error])" function
+ */
+    static void
+f_assert_fails(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv UNUSED;
+{
+    char_u	*cmd = get_tv_string_chk(&argvars[0]);
+    garray_T	ga;
+
+    called_emsg = FALSE;
+    suppress_errthrow = TRUE;
+    emsg_silent = TRUE;
+    do_cmdline_cmd(cmd);
+    if (!called_emsg)
+    {
+	prepare_assert_error(&ga);
+	ga_concat(&ga, (char_u *)"command did not fail: ");
+	ga_concat(&ga, cmd);
+	assert_error(&ga);
+	ga_clear(&ga);
+    }
+    else if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	char_u	buf[NUMBUFLEN];
+	char	*error = (char *)get_tv_string_buf_chk(&argvars[1], buf);
+
+	if (strstr((char *)vimvars[VV_ERRMSG].vv_str, error) == NULL)
+	{
+	    prepare_assert_error(&ga);
+	    fill_assert_error(&ga, &argvars[2], NULL, &argvars[1],
+						&vimvars[VV_ERRMSG].vv_tv);
+	    assert_error(&ga);
+	    ga_clear(&ga);
+	}
+    }
+
+    called_emsg = FALSE;
+    suppress_errthrow = FALSE;
+    emsg_silent = FALSE;
+    emsg_on_display = FALSE;
+    set_vim_var_string(VV_ERRMSG, NULL, 0);
+}
+
+/*
  * Common for assert_true() and assert_false().
  */
     static void
@@ -9243,7 +9360,7 @@ assert_bool(argvars, isTrue)
     {
 	prepare_assert_error(&ga);
 	fill_assert_error(&ga, &argvars[1],
-		(char_u *)(isTrue ? "True " : "False "),
+		(char_u *)(isTrue ? "True" : "False"),
 		NULL, &argvars[0]);
 	assert_error(&ga);
 	ga_clear(&ga);
@@ -10169,7 +10286,8 @@ f_cscope_connection(argvars, rettv)
 }
 
 /*
- * "cursor(lnum, col)" function
+ * "cursor(lnum, col)" function, or
+ * "cursor(list)"
  *
  * Moves the cursor to the specified line and column.
  * Returns 0 when the position could be set, -1 otherwise.
@@ -10192,7 +10310,10 @@ f_cursor(argvars, rettv)
 	colnr_T	    curswant = -1;
 
 	if (list2fpos(argvars, &pos, NULL, &curswant) == FAIL)
+	{
+	    EMSG(_(e_invarg));
 	    return;
+	}
 	line = pos.lnum;
 	col = pos.col;
 #ifdef FEAT_VIRTUALEDIT
@@ -12874,6 +12995,8 @@ f_has(argvars, rettv)
 #endif
 #ifdef FEAT_CRYPT
 	"cryptv",
+	"crypt-blowfish",
+	"crypt-blowfish2",
 #endif
 #ifdef FEAT_CSCOPE
 	"cscope",
@@ -18529,11 +18652,12 @@ f_str2nr(argvars, rettv)
     int		base = 10;
     char_u	*p;
     long	n;
+    int		what;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	base = get_tv_number(&argvars[1]);
-	if (base != 8 && base != 10 && base != 16)
+	if (base != 2 && base != 8 && base != 10 && base != 16)
 	{
 	    EMSG(_(e_invarg));
 	    return;
@@ -18543,7 +18667,14 @@ f_str2nr(argvars, rettv)
     p = skipwhite(get_tv_string(&argvars[0]));
     if (*p == '+')
 	p = skipwhite(p + 1);
-    vim_str2nr(p, NULL, NULL, base == 8 ? 2 : 0, base == 16 ? 2 : 0, &n, NULL, 0);
+    switch (base)
+    {
+	case 2: what = STR2NR_BIN + STR2NR_FORCE; break;
+	case 8: what = STR2NR_OCT + STR2NR_FORCE; break;
+	case 16: what = STR2NR_HEX + STR2NR_FORCE; break;
+	default: what = 0;
+    }
+    vim_str2nr(p, NULL, NULL, what, &n, NULL, 0);
     rettv->vval.v_number = n;
 }
 
@@ -20203,6 +20334,19 @@ f_winwidth(argvars, rettv)
 }
 
 /*
+ * "wordcount()" function
+ */
+    static void
+f_wordcount(argvars, rettv)
+    typval_T	*argvars UNUSED;
+    typval_T	*rettv;
+{
+    if (rettv_dict_alloc(rettv) == FAIL)
+	return;
+    cursor_pos_info(rettv->vval.v_dict);
+}
+
+/*
  * Write list of strings to file
  */
     static int
@@ -21349,7 +21493,7 @@ get_tv_number_chk(varp, denote)
 	case VAR_STRING:
 	    if (varp->vval.v_string != NULL)
 		vim_str2nr(varp->vval.v_string, NULL, NULL,
-						    TRUE, TRUE, &n, NULL, 0);
+						    STR2NR_ALL, &n, NULL, 0);
 	    return n;
 	case VAR_LIST:
 	    EMSG(_("E745: Using a List as a Number"));
@@ -21592,7 +21736,7 @@ find_var_ht(name, varname)
 
 	if (current_funccal == NULL)
 	    return &globvarht;			/* global variable */
-	return &current_funccal->l_vars.dv_hashtab; /* l: variable */
+	return &get_funccal()->l_vars.dv_hashtab; /* l: variable */
     }
     *varname = name + 2;
     if (*name == 'g')				/* global variable */
@@ -21613,13 +21757,39 @@ find_var_ht(name, varname)
     if (*name == 'v')				/* v: variable */
 	return &vimvarht;
     if (*name == 'a' && current_funccal != NULL) /* function argument */
-	return &current_funccal->l_avars.dv_hashtab;
+	return &get_funccal()->l_avars.dv_hashtab;
     if (*name == 'l' && current_funccal != NULL) /* local function variable */
-	return &current_funccal->l_vars.dv_hashtab;
+	return &get_funccal()->l_vars.dv_hashtab;
     if (*name == 's'				/* script variable */
 	    && current_SID > 0 && current_SID <= ga_scripts.ga_len)
 	return &SCRIPT_VARS(current_SID);
     return NULL;
+}
+
+/*
+ * Get function call environment based on bactrace debug level
+ */
+    static funccall_T *
+get_funccal()
+{
+    int		i;
+    funccall_T	*funccal;
+    funccall_T	*temp_funccal;
+
+    funccal = current_funccal;
+    if (debug_backtrace_level > 0)
+    {
+        for (i = 0; i < debug_backtrace_level; i++)
+        {
+            temp_funccal = funccal->caller;
+            if (temp_funccal)
+                funccal = temp_funccal;
+	    else
+                /* backtrace level overflow. reset to max */
+                debug_backtrace_level = i;
+        }
+    }
+    return funccal;
 }
 
 /*

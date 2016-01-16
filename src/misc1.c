@@ -2778,6 +2778,9 @@ changed()
 #endif
 		)
 	{
+	    int save_need_wait_return = need_wait_return;
+
+	    need_wait_return = FALSE;
 	    ml_open_file(curbuf);
 
 	    /* The ml_open_file() can cause an ATTENTION message.
@@ -2791,6 +2794,8 @@ changed()
 		wait_return(TRUE);
 		msg_scroll = save_msg_scroll;
 	    }
+	    else
+		need_wait_return = save_need_wait_return;
 	}
 	changed_int();
     }

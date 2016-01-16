@@ -695,11 +695,13 @@ if test "$enable_mzschemeinterp" = "yes"; then
 
   if test "X$with_plthome" != "X"; then
        vi_cv_path_mzscheme_pfx="$with_plthome"
+       vi_cv_path_mzscheme="${vi_cv_path_mzscheme_pfx}/bin/mzscheme"
   else
     AC_MSG_CHECKING(PLTHOME environment var)
     if test "X$PLTHOME" != "X"; then
 	AC_MSG_RESULT("$PLTHOME")
 	vi_cv_path_mzscheme_pfx="$PLTHOME"
+	vi_cv_path_mzscheme="${vi_cv_path_mzscheme_pfx}/bin/mzscheme"
     else
 	AC_MSG_RESULT(not set)
 	dnl -- try to find MzScheme executable
@@ -731,39 +733,45 @@ if test "$enable_mzschemeinterp" = "yes"; then
     fi
   fi
 
-  SCHEME_INC=
   if test "X$vi_cv_path_mzscheme_pfx" != "X"; then
-    AC_MSG_CHECKING(if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include)
-    if test -f "$vi_cv_path_mzscheme_pfx/include/scheme.h"; then
-      SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include
-      AC_MSG_RESULT(yes)
+    AC_MSG_CHECKING(for racket include directory)
+    SCHEME_INC=`${vi_cv_path_mzscheme} -e '(require setup/dirs)(let ((p (find-include-dir))) (when (path? p) (display p)))'`
+    if test "X$SCHEME_INC" != "X"; then
+      AC_MSG_RESULT(${SCHEME_INC})
     else
-      AC_MSG_RESULT(no)
-      AC_MSG_CHECKING(if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include/plt)
-      if test -f "$vi_cv_path_mzscheme_pfx/include/plt/scheme.h"; then
+      AC_MSG_RESULT(not found)
+      AC_MSG_CHECKING(if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include)
+      if test -f "$vi_cv_path_mzscheme_pfx/include/scheme.h"; then
+	SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include
 	AC_MSG_RESULT(yes)
-	SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include/plt
       else
 	AC_MSG_RESULT(no)
-	AC_MSG_CHECKING(if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include/racket)
-	if test -f "$vi_cv_path_mzscheme_pfx/include/racket/scheme.h"; then
+	AC_MSG_CHECKING(if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include/plt)
+	if test -f "$vi_cv_path_mzscheme_pfx/include/plt/scheme.h"; then
 	  AC_MSG_RESULT(yes)
-	  SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include/racket
+	  SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include/plt
 	else
 	  AC_MSG_RESULT(no)
-	  AC_MSG_CHECKING(if scheme.h can be found in /usr/include/plt/)
-	  if test -f /usr/include/plt/scheme.h; then
+	  AC_MSG_CHECKING(if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include/racket)
+	  if test -f "$vi_cv_path_mzscheme_pfx/include/racket/scheme.h"; then
 	    AC_MSG_RESULT(yes)
-	    SCHEME_INC=/usr/include/plt
+	    SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include/racket
 	  else
 	    AC_MSG_RESULT(no)
-	    AC_MSG_CHECKING(if scheme.h can be found in /usr/include/racket/)
-	    if test -f /usr/include/racket/scheme.h; then
+	    AC_MSG_CHECKING(if scheme.h can be found in /usr/include/plt/)
+	    if test -f /usr/include/plt/scheme.h; then
 	      AC_MSG_RESULT(yes)
-	      SCHEME_INC=/usr/include/racket
+	      SCHEME_INC=/usr/include/plt
 	    else
 	      AC_MSG_RESULT(no)
-	      vi_cv_path_mzscheme_pfx=
+	      AC_MSG_CHECKING(if scheme.h can be found in /usr/include/racket/)
+	      if test -f /usr/include/racket/scheme.h; then
+		AC_MSG_RESULT(yes)
+		SCHEME_INC=/usr/include/racket
+	      else
+		AC_MSG_RESULT(no)
+		vi_cv_path_mzscheme_pfx=
+	      fi
 	    fi
 	  fi
 	fi
@@ -772,54 +780,95 @@ if test "$enable_mzschemeinterp" = "yes"; then
   fi
 
   if test "X$vi_cv_path_mzscheme_pfx" != "X"; then
-    if test "x$MACOSX" = "xyes"; then
-      MZSCHEME_LIBS="-framework Racket"
-      MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
-    elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzscheme3m.a"; then
-      MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libmzscheme3m.a"
-      MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
-    elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libracket3m.a"; then
-      MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libracket3m.a"
-      MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
-    elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libracket.a"; then
-      MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libracket.a ${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a"
-    elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzscheme.a"; then
-      MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libmzscheme.a ${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a"
+
+    AC_MSG_CHECKING(for racket lib directory)
+    SCHEME_LIB=`${vi_cv_path_mzscheme} -e '(require setup/dirs)(let ((p (find-lib-dir))) (when (path? p) (display p)))'`
+    if test "X$SCHEME_LIB" != "X"; then
+      AC_MSG_RESULT(${SCHEME_LIB})
     else
-      dnl Using shared objects
-      if test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzscheme3m.so"; then
-        MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lmzscheme3m"
-	MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
-      elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libracket3m.so"; then
-        MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lracket3m"
-	MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
-      elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libracket.so"; then
-        MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lracket -lmzgc"
-      else
-        MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lmzscheme -lmzgc"
+      AC_MSG_RESULT(not found)
+    fi
+
+    for path in "${vi_cv_path_mzscheme_pfx}/lib" "${SCHEME_LIB}"; do
+      if test "X$path" != "X"; then
+	if test "x$MACOSX" = "xyes"; then
+	  MZSCHEME_LIBS="-framework Racket"
+	  MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
+	elif test -f "${path}/libmzscheme3m.a"; then
+	  MZSCHEME_LIBS="${path}/libmzscheme3m.a"
+	  MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
+	elif test -f "${path}/libracket3m.a"; then
+	  MZSCHEME_LIBS="${path}/libracket3m.a"
+	  MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
+	elif test -f "${path}/libracket.a"; then
+	  MZSCHEME_LIBS="${path}/libracket.a ${path}/libmzgc.a"
+	elif test -f "${path}/libmzscheme.a"; then
+	  MZSCHEME_LIBS="${path}/libmzscheme.a ${path}/libmzgc.a"
+	else
+	  dnl Using shared objects
+	  if test -f "${path}/libmzscheme3m.so"; then
+	    MZSCHEME_LIBS="-L${path} -lmzscheme3m"
+	    MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
+	  elif test -f "${path}/libracket3m.so"; then
+	    MZSCHEME_LIBS="-L${path} -lracket3m"
+	    MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
+	  elif test -f "${path}/libracket.so"; then
+	    MZSCHEME_LIBS="-L${path} -lracket -lmzgc"
+	  else
+	    dnl try next until last
+	    if test "$path" != "$SCHEME_LIB"; then
+	      continue
+	    fi
+	    MZSCHEME_LIBS="-L${path} -lmzscheme -lmzgc"
+	  fi
+	  if test "$GCC" = yes; then
+	    dnl Make Vim remember the path to the library.  For when it's not in
+	    dnl $LD_LIBRARY_PATH.
+	    MZSCHEME_LIBS="${MZSCHEME_LIBS} -Wl,-rpath -Wl,${path}"
+	  elif test "`(uname) 2>/dev/null`" = SunOS &&
+				   uname -r | grep '^5' >/dev/null; then
+	    MZSCHEME_LIBS="${MZSCHEME_LIBS} -R ${path}"
+	  fi
+	fi
       fi
-      if test "$GCC" = yes; then
-	dnl Make Vim remember the path to the library.  For when it's not in
-	dnl $LD_LIBRARY_PATH.
-	MZSCHEME_LIBS="${MZSCHEME_LIBS} -Wl,-rpath -Wl,${vi_cv_path_mzscheme_pfx}/lib"
-      elif test "`(uname) 2>/dev/null`" = SunOS &&
-			       uname -r | grep '^5' >/dev/null; then
-	MZSCHEME_LIBS="${MZSCHEME_LIBS} -R ${vi_cv_path_mzscheme_pfx}/lib"
+      if test "X$MZSCHEME_LIBS" != "X"; then
+	break
       fi
+    done
+
+    AC_MSG_CHECKING([if racket requires -pthread])
+    if test "X$SCHEME_LIB" != "X" && $FGREP -e -pthread "$SCHEME_LIB/buildinfo" >/dev/null ; then
+      AC_MSG_RESULT(yes)
+      MZSCHEME_LIBS="${MZSCHEME_LIBS} -pthread"
+      MZSCHEME_CFLAGS="${MZSCHEME_CFLAGS} -pthread"
+    else
+      AC_MSG_RESULT(no)
+    fi
+
+    AC_MSG_CHECKING(for racket config directory)
+    SCHEME_CONFIGDIR=`${vi_cv_path_mzscheme} -e '(require setup/dirs)(let ((p (find-config-dir))) (when (path? p) (display p)))'`
+    if test "X$SCHEME_CONFIGDIR" != "X"; then
+      MZSCHEME_CFLAGS="${MZSCHEME_CFLAGS} -DMZSCHEME_CONFIGDIR='\"${SCHEME_CONFIGDIR}\"'"
+      AC_MSG_RESULT(${SCHEME_CONFIGDIR})
+    else
+      AC_MSG_RESULT(not found)
     fi
 
     AC_MSG_CHECKING(for racket collects directory)
-    if test -d "$vi_cv_path_mzscheme_pfx/lib/plt/collects"; then
-      SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/lib/plt/
-    else
-      if test -d "$vi_cv_path_mzscheme_pfx/lib/racket/collects"; then
-	SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/lib/racket/
+    SCHEME_COLLECTS=`${vi_cv_path_mzscheme} -e '(require setup/dirs)(let ((p (find-collects-dir))) (when (path? p) (let-values (((base _1 _2) (split-path p))) (display base))))'`
+    if test "X$SCHEME_COLLECTS" = "X"; then
+      if test -d "$vi_cv_path_mzscheme_pfx/lib/plt/collects"; then
+	SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/lib/plt/
       else
-	if test -d "$vi_cv_path_mzscheme_pfx/share/racket/collects"; then
-	  SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/share/racket/
+	if test -d "$vi_cv_path_mzscheme_pfx/lib/racket/collects"; then
+	  SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/lib/racket/
 	else
-	  if test -d "$vi_cv_path_mzscheme_pfx/collects"; then
-	    SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/
+	  if test -d "$vi_cv_path_mzscheme_pfx/share/racket/collects"; then
+	    SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/share/racket/
+	  else
+	    if test -d "$vi_cv_path_mzscheme_pfx/collects"; then
+	      SCHEME_COLLECTS=$vi_cv_path_mzscheme_pfx/
+	    fi
 	  fi
 	fi
       fi
@@ -851,7 +900,6 @@ if test "$enable_mzschemeinterp" = "yes"; then
     if test "X$MZSCHEME_EXTRA" != "X" ; then
       dnl need to generate bytecode for MzScheme base
       MZSCHEME_CFLAGS="${MZSCHEME_CFLAGS} -DINCLUDE_MZSCHEME_BASE"
-      MZSCHEME_MZC="${vi_cv_path_mzscheme_pfx}/bin/mzc"
       AC_MSG_RESULT(needed)
     else
       AC_MSG_RESULT(not needed)
@@ -1622,11 +1670,11 @@ fi
 
 AC_MSG_CHECKING(--enable-tclinterp argument)
 AC_ARG_ENABLE(tclinterp,
-	[  --enable-tclinterp      Include Tcl interpreter.], ,
+	[  --enable-tclinterp[=OPTS]      Include Tcl interpreter. [default=no] [OPTS=no/yes/dynamic]], ,
 	[enable_tclinterp="no"])
 AC_MSG_RESULT($enable_tclinterp)
 
-if test "$enable_tclinterp" = "yes"; then
+if test "$enable_tclinterp" = "yes" -o "$enable_tclinterp" = "dynamic"; then
 
   dnl on FreeBSD tclsh is a silly script, look for tclsh8.[5420]
   AC_MSG_CHECKING(--with-tclsh argument)
@@ -1660,6 +1708,7 @@ if test "$enable_tclinterp" = "yes"; then
       tclver=`echo 'puts [[info tclversion]]' | $vi_cv_path_tcl -`
       AC_MSG_RESULT($tclver - OK);
       tclloc=`echo 'set l [[info library]];set i [[string last lib $l]];incr i -2;puts [[string range $l 0 $i]]' | $vi_cv_path_tcl -`
+      tcldll=`echo 'puts libtcl[[info tclversion]][[info sharedlibextension]]' | $vi_cv_path_tcl -`
 
       AC_MSG_CHECKING(for location of Tcl include)
       if test "x$MACOSX" != "xyes"; then
@@ -1694,7 +1743,11 @@ if test "$enable_tclinterp" = "yes"; then
 	    AC_MSG_RESULT($try/tclConfig.sh)
 	    . "$try/tclConfig.sh"
 	    dnl use eval, because tcl 8.2 includes ${TCL_DBGX}
-	    TCL_LIBS=`eval echo "$TCL_LIB_SPEC $TCL_LIBS"`
+	    if test "$enable_tclinterp" = "dynamic"; then
+	      TCL_LIBS=`eval echo "$TCL_STUB_LIB_SPEC $TCL_LIBS"`
+	    else
+	      TCL_LIBS=`eval echo "$TCL_LIB_SPEC $TCL_LIBS"`
+	    fi
 	    dnl Use $TCL_DEFS for -D_THREAD_SAFE et al.  But only use the
 	    dnl "-D_ABC" items.  Watch out for -DFOO=long\ long.
 	    TCL_DEFS=`echo $TCL_DEFS | sed -e 's/\\\\ /\\\\X/g' | tr ' ' '\012' | sed -e '/^[[^-]]/d' -e '/^-[[^D]]/d' -e '/-D[[^_]]/d' -e 's/-D_/ -D_/' | tr '\012' ' ' | sed -e 's/\\\\X/\\\\ /g'`
@@ -1737,6 +1790,12 @@ if test "$enable_tclinterp" = "yes"; then
       fi
     else
       AC_MSG_RESULT(too old; need Tcl version 8.0 or later)
+    fi
+  fi
+  if test "$enable_tclinterp" = "dynamic"; then
+    if test "X$TCL_SRC" != "X" -a "X$tcldll" != "X"; then
+      AC_DEFINE(DYNAMIC_TCL)
+      TCL_CFLAGS="-DDYNAMIC_TCL_DLL=\\\"$tcldll\\\" -DDYNAMIC_TCL_VER=\\\"$tclver\\\" $TCL_CFLAGS"
     fi
   fi
   if test "$fail_if_missing" = "yes" -a -z "$TCL_SRC"; then
@@ -2500,7 +2559,7 @@ if test -z "$SKIP_GTK2"; then
   fi
 fi
 
-dnl Check the version of Gdk-Pixbuf.  If the version is 2.32 or later and
+dnl Check the version of Gdk-Pixbuf.  If the version is 2.31 or later and
 dnl glib-compile-resources is found in PATH, use GResource.
 if test "x$GUITYPE" = "xGTK"; then
   AC_MSG_CHECKING([version of Gdk-Pixbuf])
@@ -2509,7 +2568,7 @@ if test "x$GUITYPE" = "xGTK"; then
     gdk_pixbuf_version_minor=`echo $gdk_pixbuf_version | \
       sed -e 's/[[0-9]][[0-9]]*\.\([[0-9]][[0-9]]*\)\.[[0-9]][[0-9]]*/\1/'`
     if test "x$gdk_pixbuf_version_minor" != x -a \
-      $gdk_pixbuf_version_minor -ge 32 ; then
+      $gdk_pixbuf_version_minor -ge 31 ; then
       AC_MSG_RESULT([OK.])
       AC_PATH_PROG(GLIB_COMPILE_RESOURCES,[glib-compile-resources],no)
       AC_MSG_CHECKING([glib-compile-resources])

@@ -1,12 +1,28 @@
 *** en_US.orig.aff	2015-12-30 18:55:30.352821552 +0100
---- en_US.aff	2015-12-30 19:01:19.849041178 +0100
+--- en_US.aff	2016-01-09 13:16:31.514054846 +0100
 ***************
-*** 2,5 ****
+*** 1,18 ****
+  SET UTF8
   TRY esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'
 ! ICONV 1
 ! ICONV ’ '
   NOSUGGEST !
---- 2,144 ----
+  
+! # ordinal numbers
+! COMPOUNDMIN 1
+! # only in compounds: 1th, 2th, 3th
+! ONLYINCOMPOUND c
+! # compound rules:
+! # 1. [0-9]*1[0-9]th (10th, 11th, 12th, 56714th, etc.)
+! # 2. [0-9]*[02-9](1st|2nd|3rd|[4-9]th) (21st, 22nd, 123rd, 1234th, etc.)
+! COMPOUNDRULE 2
+! COMPOUNDRULE n*1t
+! COMPOUNDRULE n*mp
+! WORDCHARS 0123456789
+  
+--- 1,164 ----
++ # Affix file for US English MySpell dictionary
+  SET UTF8
   TRY esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'
 ! 
 ! FOL  àáâãäåæçèéêëìíîïðñòóôõöøùúûüýþßÿ
@@ -150,20 +166,70 @@
 ! # ICONV ’ '
 ! 
   NOSUGGEST !
-***************
-*** 16,18 ****
-  COMPOUNDRULE n*mp
-! WORDCHARS 0123456789
   
---- 155,157 ----
-  COMPOUNDRULE n*mp
+! # This is disabled, because if Vim does not support NOCOMPOUNDSUGS giving
+! # suggestions is extremely slow.
+! # This is disabled, because without NOCOMPOUNDSUGS support giving suggestions
+! # is extremely slow.
+! ## ordinal numbers
+! #COMPOUNDMIN 1
+! ## only in compounds: 1th, 2th, 3th
+! #ONLYINCOMPOUND c
+! ## compound rules:
+! ## 1. [0-9]*1[0-9]th (10th, 11th, 12th, 56714th, etc.)
+! ## 2. [0-9]*[02-9](1st|2nd|3rd|[4-9]th) (21st, 22nd, 123rd, 1234th, etc.)
+! #COMPOUNDRULE 2
+! #COMPOUNDRULE n*1t
+! #COMPOUNDRULE n*mp
+! #NOCOMPOUNDSUGS
+! 
 ! # WORDCHARS 0123456789
   
 *** en_US.orig.dic	2015-12-30 18:55:58.928512408 +0100
---- en_US.dic	2015-12-30 18:58:56.026596695 +0100
+--- en_US.dic	2016-01-08 23:04:15.241835664 +0100
+***************
+*** 1,25 ****
+  48756
+! 0/nm
+! 0th/pt
+! 1/n1
+! 1st/p
+! 1th/tc
+! 2/nm
+! 2nd/p
+! 2th/tc
+! 3/nm
+! 3rd/p
+! 3th/tc
+! 4/nm
+! 4th/pt
+! 5/nm
+! 5th/pt
+! 6/nm
+! 6th/pt
+! 7/nm
+! 7th/pt
+! 8/nm
+! 8th/pt
+! 9/nm
+! 9th/pt
+  A/SM
+--- 1,12 ----
+  48756
+! 0th
+! 1st
+! 2nd
+! 3rd
+! 4th
+! 5th
+! 6th
+! 7th
+! 8th
+! 9th
+  A/SM
 ***************
 *** 48757 ****
---- 48757,48767 ----
+--- 48744,48754 ----
   zymurgy/M
 + a a/%
 + a an/%

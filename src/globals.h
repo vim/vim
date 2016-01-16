@@ -231,6 +231,7 @@ EXTERN int	ex_nesting_level INIT(= 0);	/* nesting level */
 EXTERN int	debug_break_level INIT(= -1);	/* break below this level */
 EXTERN int	debug_did_msg INIT(= FALSE);	/* did "debug mode" message */
 EXTERN int	debug_tick INIT(= 0);		/* breakpoint change count */
+EXTERN int	debug_backtrace_level INIT(= 0); /* breakpoint backtrace level */
 # ifdef FEAT_PROFILE
 EXTERN int	do_profiling INIT(= PROF_NONE);	/* PROF_ values */
 # endif
@@ -1618,6 +1619,15 @@ EXTERN FILE *time_fd INIT(= NULL);  /* where to write startup timing */
  */
 EXTERN int ignored;
 EXTERN char *ignoredp;
+
+#ifdef FEAT_EVAL
+/* set by alloc_fail(): ID */
+EXTERN alloc_id_T  alloc_fail_id INIT(= aid_none);
+/* set by alloc_fail(), when zero alloc() returns NULL */
+EXTERN int  alloc_fail_countdown INIT(= -1);
+/* set by alloc_fail(), number of times alloc() returns NULL */
+EXTERN int  alloc_fail_repeat INIT(= 0);
+#endif
 
 /*
  * Optional Farsi support.  Include it here, so EXTERN and INIT are defined.

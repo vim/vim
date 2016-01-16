@@ -216,6 +216,9 @@ CPU = i386
 !  endif
 ! else  # !CPU
 CPU = i386
+!  if !defined(PLATFORM) && defined(TARGET_CPU)
+PLATFORM = $(TARGET_CPU)
+!  endif
 !  ifdef PLATFORM
 !   if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
 CPU = AMD64
@@ -394,8 +397,24 @@ OUTDIR=$(OBJDIR)
 
 !if $(MSVCVER) < 1900
 MSVC_MAJOR = ($(MSVCVER) / 100 - 6)
+MSVCRT_VER = ($(MSVCVER) / 10 - 60)
 !else
 MSVC_MAJOR = ($(MSVCVER) / 100 - 5)
+MSVCRT_VER = ($(MSVCVER) / 10 - 50)
+!endif
+
+# Calculate MSVCRT_VER
+!if [(set /a MSVCRT_VER="$(MSVCRT_VER)" > nul) && set MSVCRT_VER > msvcrtver.~] == 0
+!include msvcrtver.~
+!if [del msvcrtver.~]
+!endif
+!endif
+
+# Base name of the msvcrXX.dll
+!if $(MSVCRT_VER) <= 60
+MSVCRT_NAME = msvcrt
+!else
+MSVCRT_NAME = msvcr$(MSVCRT_VER)
 !endif
 
 !if $(MSVC_MAJOR) == 6
@@ -736,43 +755,52 @@ PYTHON3_LIB = $(PYTHON3)\libs\python$(PYTHON3_VER).lib
 !ifndef MZSCHEME_VER
 MZSCHEME_VER = 205_000
 !endif
-CFLAGS = $(CFLAGS) -DFEAT_MZSCHEME -I $(MZSCHEME)\include
-!if EXIST("$(MZSCHEME)\collects\scheme\base.ss") \
-      	|| EXIST("$(MZSCHEME)\collects\scheme\base.rkt") \
-      	|| EXIST("$(MZSCHEME)\collects\racket\base.rkt")
-# for MzScheme >= 4 we need to include byte code for basic Scheme stuff
-MZSCHEME_EXTRA_DEP = mzscheme_base.c
-CFLAGS = $(CFLAGS) -DINCLUDE_MZSCHEME_BASE
+!ifndef MZSCHEME_COLLECTS
+MZSCHEME_COLLECTS=$(MZSCHEME)\collects
 !endif
+CFLAGS = $(CFLAGS) -DFEAT_MZSCHEME -I "$(MZSCHEME)\include"
 !if EXIST("$(MZSCHEME)\lib\msvc\libmzsch$(MZSCHEME_VER).lib")
 MZSCHEME_MAIN_LIB=mzsch
 !else
 MZSCHEME_MAIN_LIB=racket
 !endif
-!if EXIST("$(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib") \
-	&& !EXIST("$(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib")
+!if (EXIST("$(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll") \
+     && !EXIST("$(MZSCHEME)\lib\libmzgc$(MZSCHEME_VER).dll")) \
+    || (EXIST("$(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib") \
+        && !EXIST("$(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib"))
 !message Building with Precise GC
 MZSCHEME_PRECISE_GC = yes
 CFLAGS = $(CFLAGS) -DMZ_PRECISE_GC
 !endif
 !if "$(DYNAMIC_MZSCHEME)" == "yes"
-!if "$(MZSCHEME_PRECISE_GC)" == "yes"
-!error MzScheme with Precise GC cannot be loaded dynamically
-!endif
 !message MzScheme DLLs will be loaded dynamically
-CFLAGS = $(CFLAGS) -DDYNAMIC_MZSCHEME \
-		-DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" \
-		-DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
+CFLAGS = $(CFLAGS) -DDYNAMIC_MZSCHEME
+!if "$(MZSCHEME_PRECISE_GC)" == "yes"
+# Precise GC does not use separate dll
+CFLAGS = $(CFLAGS) \
+	 -DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" \
+	 -DDYNAMIC_MZGC_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\"
+!else
+CFLAGS = $(CFLAGS) \
+	 -DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" \
+	 -DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
+!endif
 !else
 !if "$(MZSCHEME_DEBUG)" == "yes"
 CFLAGS = $(CFLAGS) -DMZSCHEME_FORCE_GC
 !endif
 !if "$(MZSCHEME_PRECISE_GC)" == "yes"
 # Precise GC does not use separate dll
-MZSCHEME_LIB = $(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib
+!if EXIST("$(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).def")
+# create .lib from .def
+MZSCHEME_LIB = lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib
+MZSCHEME_EXTRA_DEP = lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib
 !else
-MZSCHEME_LIB = $(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib \
-		$(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib
+MZSCHEME_LIB = "$(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib"
+!endif
+!else
+MZSCHEME_LIB = "$(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib" \
+		"$(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib"
 !endif
 !endif
 MZSCHEME_OBJ = $(OUTDIR)\if_mzsch.obj
@@ -858,19 +886,39 @@ RUBY_API_VER = $(RUBY_VER_LONG:.=)
 !endif
 
 !if $(RUBY_VER) >= 18
+
 !ifndef RUBY_PLATFORM
+!if "$(CPU)" == "i386"
 RUBY_PLATFORM = i386-mswin32
-!endif
+!else # CPU
+RUBY_PLATFORM = x64-mswin64
+!endif # CPU
+!if $(MSVCRT_VER) >= 70
+RUBY_PLATFORM = $(RUBY_PLATFORM)_$(MSVCRT_VER)
+!endif # MSVCRT_VER
+!endif # RUBY_PLATFORM
+
 !ifndef RUBY_INSTALL_NAME
-RUBY_INSTALL_NAME = msvcrt-ruby$(RUBY_API_VER)
-!endif
-!else
+!ifndef RUBY_MSVCRT_NAME
+# Base name of msvcrXX.dll which is used by ruby's dll.
+RUBY_MSVCRT_NAME = $(MSVCRT_NAME)
+!endif # RUBY_MSVCRT_NAME
+!if "$(CPU)" == "i386"
+RUBY_INSTALL_NAME = $(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
+!else # CPU
+RUBY_INSTALL_NAME = x64-$(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
+!endif # CPU
+!endif # RUBY_INSTALL_NAME
+
+!else # $(RUBY_VER) >= 18
+
 !ifndef RUBY_PLATFORM
 RUBY_PLATFORM = i586-mswin32
 !endif
 !ifndef RUBY_INSTALL_NAME
 RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_API_VER)
 !endif
+
 !endif # $(RUBY_VER) >= 18
 
 !message Ruby requested (version $(RUBY_VER)) - root dir is "$(RUBY)"
@@ -946,8 +994,13 @@ LINKARGS1 = $(LINKARGS1) /LTCG:STATUS
 !endif
 !endif
 
-all:	$(VIM).exe vimrun.exe install.exe uninstal.exe xxd/xxd.exe \
-		GvimExt/gvimext.dll
+all:	$(VIM).exe \
+	vimrun.exe \
+	install.exe \
+	uninstal.exe \
+	xxd/xxd.exe \
+	tee/tee.exe \
+	GvimExt/gvimext.dll
 
 $(VIM).exe: $(OUTDIR) $(OBJ) $(GUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
 		$(LUA_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) $(TCL_OBJ) \
@@ -982,6 +1035,11 @@ xxd/xxd.exe: xxd/xxd.c
 	$(MAKE) /NOLOGO -f Make_mvc.mak
 	cd ..
 
+tee/tee.exe: tee/tee.c
+	cd tee
+	$(MAKE) /NOLOGO -f Make_mvc.mak
+	cd ..
+
 GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 	cd GvimExt
 	$(MAKE) /NOLOGO -f Makefile $(MAKEFLAGS_GVIMEXT)
@@ -1010,8 +1068,10 @@ clean:
 	- if exist dimm_i.c del dimm_i.c
 	- if exist dimm.tlb del dimm.tlb
 	- if exist dosinst.exe del dosinst.exe
-	- if exist mzscheme_base.c del mzscheme_base.c
 	cd xxd
+	$(MAKE) /NOLOGO -f Make_mvc.mak clean
+	cd ..
+	cd tee
 	$(MAKE) /NOLOGO -f Make_mvc.mak clean
 	cd ..
 	cd GvimExt
@@ -1025,6 +1085,11 @@ clean:
 test:
 	cd testdir
 	$(MAKE) /NOLOGO -f Make_dos.mak win32
+	cd ..
+
+testgvim:
+	cd testdir
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\gvim win32
 	cd ..
 
 testclean:
@@ -1115,13 +1180,10 @@ $(OUTDIR)/if_perlsfio.obj: $(OUTDIR) if_perlsfio.c  $(INCL)
 
 $(OUTDIR)/if_mzsch.obj: $(OUTDIR) if_mzsch.c if_mzsch.h $(INCL) $(MZSCHEME_EXTRA_DEP)
 	$(CC) $(CFLAGS) if_mzsch.c \
-		-DMZSCHEME_COLLECTS=\"$(MZSCHEME:\=\\)\\collects\"
-mzscheme_base.c:
-!IF "$(MZSCHEME_MAIN_LIB)" == "racket"
-	$(MZSCHEME)\raco ctool --c-mods mzscheme_base.c ++lib scheme/base
-!ELSE
-	$(MZSCHEME)\mzc --c-mods mzscheme_base.c ++lib scheme/base
-!ENDIF
+		-DMZSCHEME_COLLECTS="\"$(MZSCHEME_COLLECTS:\=\\)\""
+
+lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib:
+	lib /DEF:"$(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).def"
 
 $(OUTDIR)/if_python.obj: $(OUTDIR) if_python.c if_py_both.h $(INCL)
 	$(CC) $(CFLAGS) $(PYTHON_INC) if_python.c

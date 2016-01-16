@@ -7,6 +7,7 @@ SRC_ALL =	\
 		.travis.yml \
 		appveyor.yml \
 		src/README.txt \
+		src/alloc.h \
 		src/arabic.c \
 		src/arabic.h \
 		src/ascii.h \
@@ -191,7 +192,7 @@ SRC_UNIX =	\
 		src/gui_gtk_f.c \
 		src/gui_gtk_f.h \
 		src/gui_gtk_x11.c \
-		src/gui_gtk_gresources.xml \
+		src/gui_gtk_res.xml \
 		src/gui_motif.c \
 		src/gui_xmdlg.c \
 		src/gui_xmebw.c \
@@ -350,11 +351,11 @@ SRC_DOS =	\
 		src/xpm_w32.h \
 		src/xxd/Make_bc3.mak \
 		src/xxd/Make_bc5.mak \
-		src/xxd/Make_cyg.mak \
 		src/xxd/Make_djg.mak \
 		src/xxd/Make_ming.mak \
 		src/xxd/Make_mvc.mak \
 		nsis/gvim.nsi \
+		nsis/gvim_version.nsh \
 		nsis/README.txt \
 		uninstal.txt \
 		src/VisVim/Commands.cpp \
@@ -702,6 +703,7 @@ EXTRA =		\
 		runtime/vimlogo.xpm \
 		src/swis.s \
 		src/tee/Makefile \
+		src/tee/Make_mvc.mak \
 		src/tee/tee.c \
 		csdpmi4b.zip \
 

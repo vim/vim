@@ -797,6 +797,25 @@ vim_mem_profile_dump()
 
 #endif /* MEM_PROFILE */
 
+#ifdef FEAT_EVAL
+static int alloc_does_fail __ARGS((long_u size));
+
+    static int
+alloc_does_fail(size)
+    long_u size;
+{
+    if (alloc_fail_countdown == 0)
+    {
+	if (--alloc_fail_repeat <= 0)
+	    alloc_fail_id = 0;
+	do_outofmem_msg(size);
+	return TRUE;
+    }
+    --alloc_fail_countdown;
+    return FALSE;
+}
+#endif
+
 /*
  * Some memory is reserved for error messages and for being able to
  * call mf_release_all(), which needs some memory for mf_trans_add().
@@ -817,6 +836,21 @@ vim_mem_profile_dump()
 alloc(size)
     unsigned	    size;
 {
+    return (lalloc((long_u)size, TRUE));
+}
+
+/*
+ * alloc() with an ID for alloc_fail().
+ */
+    char_u *
+alloc_id(size, id)
+    unsigned	size;
+    alloc_id_T	id UNUSED;
+{
+#ifdef FEAT_EVAL
+    if (alloc_fail_id == id && alloc_does_fail((long_u)size))
+	return NULL;
+#endif
     return (lalloc((long_u)size, TRUE));
 }
 
@@ -966,6 +1000,22 @@ theend:
     mem_post_alloc((void **)&p, (size_t)size);
 #endif
     return p;
+}
+
+/*
+ * lalloc() with an ID for alloc_fail().
+ */
+    char_u *
+lalloc_id(size, message, id)
+    long_u	size;
+    int		message;
+    alloc_id_T	id UNUSED;
+{
+#ifdef FEAT_EVAL
+    if (alloc_fail_id == id && alloc_does_fail(size))
+	return NULL;
+#endif
+    return (lalloc((long_u)size, message));
 }
 
 #if defined(MEM_PROFILE) || defined(PROTO)
@@ -2780,7 +2830,7 @@ find_special_key(srcp, modp, keycode, keep_x_key)
 	    bp += 3;	/* skip t_xx, xx may be '-' or '>' */
 	else if (STRNICMP(bp, "char-", 5) == 0)
 	{
-	    vim_str2nr(bp + 5, NULL, &l, TRUE, TRUE, NULL, NULL, 0);
+	    vim_str2nr(bp + 5, NULL, &l, STR2NR_ALL, NULL, NULL, 0);
 	    bp += l + 5;
 	    break;
 	}
@@ -2812,7 +2862,7 @@ find_special_key(srcp, modp, keycode, keep_x_key)
 						 && VIM_ISDIGIT(last_dash[6]))
 	    {
 		/* <Char-123> or <Char-033> or <Char-0x33> */
-		vim_str2nr(last_dash + 6, NULL, NULL, TRUE, TRUE, NULL, &n, 0);
+		vim_str2nr(last_dash + 6, NULL, NULL, STR2NR_ALL, NULL, &n, 0);
 		key = (int)n;
 	    }
 	    else
@@ -6252,8 +6302,9 @@ put_bytes(fd, nr, len)
 
 /*
  * Write time_t to file "fd" in 8 bytes.
+ * Returns FAIL when the write failed.
  */
-    void
+    int
 put_time(fd, the_time)
     FILE	*fd;
     time_t	the_time;
@@ -6261,7 +6312,7 @@ put_time(fd, the_time)
     char_u	buf[8];
 
     time_to_bytes(the_time, buf);
-    (void)fwrite(buf, (size_t)8, (size_t)1, fd);
+    return fwrite(buf, (size_t)8, (size_t)1, fd) == 1 ? OK : FAIL;
 }
 
 /*

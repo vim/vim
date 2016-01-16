@@ -1,6 +1,8 @@
 #
 # Makefile for VIM on the Amiga, using Aztec/Manx C 5.0 or later
 #
+# NOTE: THIS IS OLD AND PROBABLY NO LONGER WORKS.
+#
 # Note: Not all dependencies are included. This was done to avoid having
 #	to compile everything when a global variable or function is added.
 #	Careful when changing a global struct or variable!

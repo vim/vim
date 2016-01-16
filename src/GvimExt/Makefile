@@ -12,6 +12,25 @@ APPVER=5.0
 NODEBUG = 1
 !endif
 
+!ifdef PROCESSOR_ARCHITECTURE
+# On Windows NT
+! ifndef CPU
+CPU = i386
+!  if !defined(PLATFORM) && defined(TARGET_CPU)
+PLATFORM = $(TARGET_CPU)
+!  endif
+!  ifdef PLATFORM
+!   if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
+CPU = AMD64
+!   elseif ("$(PLATFORM)" != "x86") && ("$(PLATFORM)" != "X86")
+!    error *** ERROR Unknown target platform "$(PLATFORM)". Make aborted.
+!   endif
+!  endif
+! endif
+!else
+CPU = i386
+!endif
+
 !ifdef SDK_INCLUDE_DIR
 !include $(SDK_INCLUDE_DIR)\Win32.mak
 !else
@@ -30,15 +49,15 @@ gvimext.dll:    gvimext.obj	\
 gvimext.obj: gvimext.h
 
 .cpp.obj:
-    $(cc) $(cflags) -DFEAT_GETTEXT $(cvarsmt) $*.cpp
+	$(cc) $(cflags) -DFEAT_GETTEXT $(cvarsmt) $*.cpp
 
 gvimext.res: gvimext.rc
-    $(rc) $(rcflags) $(rcvars)  gvimext.rc
+	$(rc) $(rcflags) $(rcvars)  gvimext.rc
 
 clean:
-    - if exist gvimext.dll del gvimext.dll
-    - if exist gvimext.lib del gvimext.lib
-    - if exist gvimext.exp del gvimext.exp
-    - if exist gvimext.obj del gvimext.obj
-    - if exist gvimext.res del gvimext.res
-    - if exist gvimext.dll.manifest del gvimext.dll.manifest
+	- if exist gvimext.dll del gvimext.dll
+	- if exist gvimext.lib del gvimext.lib
+	- if exist gvimext.exp del gvimext.exp
+	- if exist gvimext.obj del gvimext.obj
+	- if exist gvimext.res del gvimext.res
+	- if exist gvimext.dll.manifest del gvimext.dll.manifest

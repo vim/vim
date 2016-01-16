@@ -15,10 +15,10 @@ func Test_searchpos()
   call assert_equal([1, 3, 1], searchpos('\%(\([a-z]\)\|\_.\)\{-}xyz', 'pcW'))
 
   " Now with \zs, first match is in column 0, "a" is matched.
-  call cursor(1. 3)
+  call cursor(1, 3)
   call assert_equal([2, 4, 2], searchpos('\%(\([a-z]\)\|\_.\)\{-}\zsxyz', 'pcW'))
   " With z flag start at cursor column, don't see the "a".
-  call cursor(1. 3)
+  call cursor(1, 3)
   call assert_equal([2, 4, 1], searchpos('\%(\([a-z]\)\|\_.\)\{-}\zsxyz', 'pcWz'))
 
   set cpo+=c

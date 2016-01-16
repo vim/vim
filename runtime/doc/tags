@@ -1034,6 +1034,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'tbis'	options.txt	/*'tbis'*
 'tbs'	options.txt	/*'tbs'*
 'tc'	options.txt	/*'tc'*
+'tcldll'	options.txt	/*'tcldll'*
 'tenc'	options.txt	/*'tenc'*
 'term'	options.txt	/*'term'*
 'termbidi'	options.txt	/*'termbidi'*
@@ -2849,6 +2850,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :smapclear	map.txt	/*:smapclear*
 :sme	gui.txt	/*:sme*
 :smenu	gui.txt	/*:smenu*
+:smile	index.txt	/*:smile*
 :sn	windows.txt	/*:sn*
 :snext	windows.txt	/*:snext*
 :sni	if_sniff.txt	/*:sni*
@@ -4871,6 +4873,7 @@ added-win32-GUI	version5.txt	/*added-win32-GUI*
 aff-dic-format	spell.txt	/*aff-dic-format*
 after-directory	options.txt	/*after-directory*
 aleph	options.txt	/*aleph*
+alloc_fail()	eval.txt	/*alloc_fail()*
 alt	intro.txt	/*alt*
 alt-input	debugger.txt	/*alt-input*
 alternate-file	editing.txt	/*alternate-file*
@@ -4900,6 +4903,8 @@ asm.vim	syntax.txt	/*asm.vim*
 asm68k	syntax.txt	/*asm68k*
 asmh8300.vim	syntax.txt	/*asmh8300.vim*
 assert_equal()	eval.txt	/*assert_equal()*
+assert_exception()	eval.txt	/*assert_exception()*
+assert_fails()	eval.txt	/*assert_fails()*
 assert_false()	eval.txt	/*assert_false()*
 assert_true()	eval.txt	/*assert_true()*
 at	motion.txt	/*at*
@@ -6920,9 +6925,13 @@ man.vim	filetype.txt	/*man.vim*
 manual-copyright	usr_01.txt	/*manual-copyright*
 map()	eval.txt	/*map()*
 map-<SID>	map.txt	/*map-<SID>*
+map-CTRL-C	map.txt	/*map-CTRL-C*
 map-ambiguous	map.txt	/*map-ambiguous*
+map-backslash	map.txt	/*map-backslash*
 map-backtick	tips.txt	/*map-backtick*
+map-bar	map.txt	/*map-bar*
 map-comments	map.txt	/*map-comments*
+map-empty-rhs	map.txt	/*map-empty-rhs*
 map-error	map.txt	/*map-error*
 map-examples	map.txt	/*map-examples*
 map-keys-fails	map.txt	/*map-keys-fails*
@@ -6931,7 +6940,10 @@ map-modes	map.txt	/*map-modes*
 map-multibyte	map.txt	/*map-multibyte*
 map-overview	map.txt	/*map-overview*
 map-precedence	map.txt	/*map-precedence*
+map-return	map.txt	/*map-return*
 map-self-destroy	tips.txt	/*map-self-destroy*
+map-space_in_lhs	map.txt	/*map-space_in_lhs*
+map-space_in_rhs	map.txt	/*map-space_in_rhs*
 map-typing	map.txt	/*map-typing*
 map-which-keys	map.txt	/*map-which-keys*
 map.txt	map.txt	/*map.txt*
@@ -7459,7 +7471,6 @@ optwin	options.txt	/*optwin*
 or()	eval.txt	/*or()*
 oracle	ft_sql.txt	/*oracle*
 os2	os_os2.txt	/*os2*
-os2ansi	os_os2.txt	/*os2ansi*
 os390	os_390.txt	/*os390*
 os_390.txt	os_390.txt	/*os_390.txt*
 os_amiga.txt	os_amiga.txt	/*os_amiga.txt*
@@ -7984,6 +7995,7 @@ spell-NAME	spell.txt	/*spell-NAME*
 spell-NEEDAFFIX	spell.txt	/*spell-NEEDAFFIX*
 spell-NEEDCOMPOUND	spell.txt	/*spell-NEEDCOMPOUND*
 spell-NOBREAK	spell.txt	/*spell-NOBREAK*
+spell-NOCOMPOUNDSUGS	spell.txt	/*spell-NOCOMPOUNDSUGS*
 spell-NOSPLITSUGS	spell.txt	/*spell-NOSPLITSUGS*
 spell-NOSUGFILE	spell.txt	/*spell-NOSUGFILE*
 spell-NOSUGGEST	spell.txt	/*spell-NOSUGGEST*
@@ -8954,6 +8966,7 @@ winwidth()	eval.txt	/*winwidth()*
 word	motion.txt	/*word*
 word-count	editing.txt	/*word-count*
 word-motions	motion.txt	/*word-motions*
+wordcount()	eval.txt	/*wordcount()*
 workbench	starting.txt	/*workbench*
 workshop	workshop.txt	/*workshop*
 workshop-commands	workshop.txt	/*workshop-commands*

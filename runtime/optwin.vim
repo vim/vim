@@ -794,7 +794,7 @@ call append("$", "infercase\tadjust case of a keyword completion match")
 call append("$", "\t(local to buffer)")
 call <SID>BinOptionL("inf")
 if has("digraphs")
-  call append("$", "digraph\tenable entering digraps with c1 <BS> c2")
+  call append("$", "digraph\tenable entering digraphs with c1 <BS> c2")
   call <SID>BinOptionG("dg", &dg)
 endif
 call append("$", "tildeop\tthe \"~\" command behaves like an operator")
@@ -1199,7 +1199,7 @@ if has("arabic")
   call <SID>BinOptionG("tbidi", &tbidi)
 endif
 if has("keymap")
-  call append("$", "keymap\tname of a keyboard mappping")
+  call append("$", "keymap\tname of a keyboard mapping")
   call <SID>OptionL("kmp")
 endif
 if has("langmap")
@@ -1330,6 +1330,10 @@ endif
 if exists("&rubydll")
   call append("$", "rubydll\tname of the Ruby dynamic library")
   call <SID>OptionG("rubydll", &rubydll)
+endif
+if exists("&tcldll")
+  call append("$", "tcldll\tname of the Tcl dynamic library")
+  call <SID>OptionG("tcldll", &tcldll)
 endif
 
 set cpo&vim

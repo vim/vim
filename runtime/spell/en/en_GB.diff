@@ -1,5 +1,5 @@
 *** en_GB.orig.aff	2015-12-30 18:49:37.568638905 +0100
---- en_GB.aff	2015-12-30 18:59:04.186508433 +0100
+--- en_GB.aff	2016-01-09 13:15:56.490432894 +0100
 ***************
 *** 20,21 ****
 --- 20,158 ----
@@ -142,29 +142,65 @@
 + REPSAL @ ht
 + 
   REP 27
+***************
+*** 49,50 ****
+--- 186,203 ----
+  
++ # This is disabled, because if Vim does not support NOCOMPOUNDSUGS giving
++ # suggestions is extremely slow.
++ ## ordinal numbers
++ #COMPOUNDMIN 1
++ ## only in compounds: 1th, 2th, 3th
++ #ONLYINCOMPOUND ,
++ ## compound rules:
++ ## 1. [0-9]*1[0-9]th (10th, 11th, 12th, 56714th, etc.)
++ ## 2. [0-9]*[02-9](1st|2nd|3rd|[4-9]th) (21st, 22nd, 123rd, 1234th, etc.)
++ #COMPOUNDRULE 2
++ #COMPOUNDRULE (*:)
++ #COMPOUNDRULE (*{}
++ #NOCOMPOUNDSUGS
++ 
++ # WORDCHARS 0123456789
++ 
+  PFX A Y 2
 *** en_GB.orig.dic	2015-12-30 18:49:42.360587040 +0100
---- en_GB.dic	2015-12-30 19:03:23.035708178 +0100
+--- en_GB.dic	2016-01-08 23:03:35.510272903 +0100
+***************
+*** 1,2 ****
+--- 1,12 ----
+  56453
++ 0th
++ 1st
++ 2nd
++ 3rd
++ 4th
++ 5th
++ 6th
++ 7th
++ 8th
++ 9th
+  'gainst
 ***************
 *** 3615,3617 ****
   autosuggestion
 - autosuggestion
   autotest/S
---- 3615,3616 ----
+--- 3625,3626 ----
 ***************
 *** 9325,9327 ****
   Church
 - church
   Church-of-England
---- 9324,9325 ----
+--- 9334,9335 ----
 ***************
 *** 22885,22887 ****
   hand-painted
 - hand-pick/D
   hand-pick/GSD
---- 22883,22884 ----
+--- 22893,22894 ----
 ***************
 *** 56454 ****
---- 56451,56461 ----
+--- 56461,56471 ----
   émigré/S
 + a a/%
 + a an/%

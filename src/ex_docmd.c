@@ -2543,7 +2543,8 @@ do_one_cmd(cmdlinep, sourcing,
     correct_range(&ea);
 
 #ifdef FEAT_FOLDING
-    if (((ea.argt & WHOLEFOLD) || ea.addr_count >= 2) && !global_busy)
+    if (((ea.argt & WHOLEFOLD) || ea.addr_count >= 2) && !global_busy
+	    && ea.addr_type == ADDR_LINES)
     {
 	/* Put the first line at the start of a closed fold, put the last line
 	 * at the end of a closed fold. */
@@ -6915,6 +6916,7 @@ parse_addr_type_arg(value, vallen, argt, addr_type_arg)
     int		*addr_type_arg;
 {
     int	    i, a, b;
+
     for (i = 0; addr_type_complete[i].expand != -1; ++i)
     {
 	a = (int)STRLEN(addr_type_complete[i].name) == vallen;
@@ -6929,7 +6931,9 @@ parse_addr_type_arg(value, vallen, argt, addr_type_arg)
     if (addr_type_complete[i].expand == -1)
     {
 	char_u	*err = value;
-	for (i=0; err[i] == NUL || !vim_iswhite(err[i]); i++);
+
+	for (i = 0; err[i] != NUL && !vim_iswhite(err[i]); i++)
+	    ;
 	err[i] = NUL;
 	EMSG2(_("E180: Invalid address type value: %s"), err);
 	return FAIL;
@@ -7142,7 +7146,7 @@ ex_quit(eap)
 				       | (eap->forceit ? CCGD_FORCEIT : 0)
 				       | CCGD_EXCMD))
 	    || check_more(TRUE, eap->forceit) == FAIL
-	    || (only_one_window() && check_changed_any(eap->forceit)))
+	    || (only_one_window() && check_changed_any(eap->forceit, TRUE)))
     {
 	not_exiting();
     }
@@ -7213,7 +7217,7 @@ ex_quit_all(eap)
 #endif
 
     exiting = TRUE;
-    if (eap->forceit || !check_changed_any(FALSE))
+    if (eap->forceit || !check_changed_any(FALSE, FALSE))
 	getout(0);
     not_exiting();
 }
@@ -7608,7 +7612,7 @@ ex_exit(eap)
 		    || curbufIsChanged())
 		&& do_write(eap) == FAIL)
 	    || check_more(TRUE, eap->forceit) == FAIL
-	    || (only_one_window() && check_changed_any(eap->forceit)))
+	    || (only_one_window() && check_changed_any(eap->forceit, FALSE)))
     {
 	not_exiting();
     }

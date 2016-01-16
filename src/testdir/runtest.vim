@@ -43,6 +43,24 @@ set nomore
 " Output all messages in English.
 lang mess C
 
+let s:srcdir = expand('%:p:h:h')
+
+" Support function: get the alloc ID by name.
+function GetAllocId(name)
+  exe 'split ' . s:srcdir . '/alloc.h'
+  let top = search('typedef enum')
+  if top == 0
+    call add(v:errors, 'typedef not found in alloc.h')
+  endif
+  let lnum = search('aid_' . a:name . ',')
+  if lnum == 0
+    call add(v:errors, 'Alloc ID ' . a:name . ' not defined')
+  endif
+  close
+  return lnum - top - 1
+endfunc
+
+
 " Source the test script.  First grab the file name, in case the script
 " navigates away.
 let testname = expand('%')
@@ -50,12 +68,17 @@ let done = 0
 let fail = 0
 let errors = []
 let messages = []
-try
+if expand('%') =~ 'test_viml.vim'
+  " this test has intentional errors, don't use try/catch.
   source %
-catch
-  let fail += 1
-  call add(errors, 'Caught exception: ' . v:exception . ' @ ' . v:throwpoint)
-endtry
+else
+  try
+    source %
+  catch
+    let fail += 1
+    call add(errors, 'Caught exception: ' . v:exception . ' @ ' . v:throwpoint)
+  endtry
+endif
 
 " Locate Test_ functions and execute them.
 redir @q
@@ -63,7 +86,8 @@ function /^Test_
 redir END
 let tests = split(substitute(@q, 'function \(\k*()\)', '\1', 'g'))
 
-for test in tests
+" Execute the tests in alphabetical order.
+ for test in sort(tests)
   if exists("*SetUp")
     call SetUp()
   endif

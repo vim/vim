@@ -13,7 +13,7 @@ be fine for most people.
 
 With the exception of two sections (Windows 3.1 and MS-DOS), this document
 assumes that you are building Vim for Win32 or later.
-(Windows 95/98/Me/NT/2000/XP/2003/Vista/7)
+(Windows 95/98/Me/NT/2000/XP/2003/Vista/7/8/10)
 
 
 Contents:
@@ -23,11 +23,16 @@ Contents:
 4. Borland
 5. Cross compiling for Win32 from a Linux machine
 6. Building with Python support
-7. Building with MzScheme support
-8. Windows 3.1
-9. MS-DOS
+7. Building with Python3 support
+8. Building with MzScheme/Racket support
+9. Building with Lua support
+10. Building with Perl support
+11. Building with Ruby support
+12. Building with Tcl support
+13. Windows 3.1
+14. MS-DOS
 
-10. Installing after building from sources
+15. Installing after building from sources
 
 
 The currently preferred method is using the free Visual C++ Toolkit 2008
@@ -42,8 +47,9 @@ you need the executable to run on Windows 98 or ME, use the 2003 one
 Visual Studio
 -------------
 
-Building with Visual Studio (VS 98, VS .NET, VS .NET 2003, VS 2005, and VS 2008)
-is straightforward. (These instructions should also work for VS 4 and VS 5.)
+Building with Visual Studio (VS 98, VS .NET, VS .NET 2003, VS 2005, VS 2008,
+VS2010, VS2012, VS2013 and VS2015) is straightforward. (These instructions
+should also work for VS 4 and VS 5.)
 
 Using VS C++ 2008 Express is recommended, the binaries build with that run on
 nearly all platforms.  Binaries from later versions may not run on Windows 95
@@ -195,7 +201,7 @@ Vim with Make_mvc.mak.
 Targeting Windows XP with new MSVC      *new-msvc-windows-xp*
 ----------------------------------
 
-Beginning with Visual C++ 2010, Microsoft changed the behavior of LINK.EXE
+Beginning with Visual C++ 2012, Microsoft changed the behavior of LINK.EXE
 so that it targets Windows 6.0 (Vista) by default.  In order to override
 this, the target Windows version number needs to be passed to LINK like
 follows:
@@ -232,6 +238,10 @@ or you can use 'MinGW-w64' compiler.
 
     http://mingw-w64.sourceforge.net/
 
+Or a compiler provided on msys2:
+
+    https://msys2.github.io/
+
 Once you have downloaded the compiler binaries, unpack them on your hard disk
 somewhere, and put them on your PATH.  If you are on Win95/98 you can edit
 your AUTOEXEC.BAT file with a line like:
@@ -239,7 +249,14 @@ your AUTOEXEC.BAT file with a line like:
     set PATH=C:\MinGW\bin;%PATH%
 
 or on NT/2000/XP, go to the Control Panel, (Performance and Maintenance),
-System, Advanced, and edit the environment from there.
+System, Advanced, and edit the environment from there. If you use msys2
+compilers, set your installed paths:
+
+    C:\msys2\mingw32\bin
+
+for 32bit. And 64bit:
+
+    C:\msys2\mingw64\bin
 
 Test if gcc is on your path.  From a CMD (or COMMAND on '95/98) window:
 
@@ -334,6 +351,17 @@ Now you have created the Windows binary from your Linux box!  Have fun...
 For building with MSVC 2008 the "Windows Installer" from www.python.org
 works fine.
 
+When building, you need to set the following variables at least:
+
+    PYTHON:         Where Python is installed. E.g. C:\Python27
+    DYNAMIC_PYTHON: Whether dynamic linking is used. Usually, set to yes.
+    PYTHON_VER:     Python version. E.g. 27 for Python 2.7.X.
+
+E.g. When using MSVC (as one line):
+
+    nmake -f Make_mvc.mak
+        PYTHON=C:\Python27 DYNAMIC_PYTHON=yes PYTHON_VER=27
+
 (rest written by Ron Aaron: <ronaharon@yahoo.com>)
 
 Building with the mingw32 compiler, and the ActiveState ActivePython:
@@ -341,25 +369,56 @@ Building with the mingw32 compiler, and the ActiveState ActivePython:
 
 After installing the ActivePython, you will have to create a 'mingw32'
 'libpython20.a' to link with:
-   cd $PYTHON/libs
-   pexports python20.dll > python20.def
-   dlltool -d python20.def -l libpython20.a
+    cd $PYTHON/libs
+    pexports python20.dll > python20.def
+    dlltool -d python20.def -l libpython20.a
 
 Once that is done, edit the 'Make_ming.mak' so the PYTHON variable points to
 the root of the Python installation (C:\Python20, for example).  If you are
 cross-compiling on Linux with the mingw32 setup, you need to also convert all
 the 'Include' files to *unix* line-endings.  This bash command will do it
 easily:
-   for fil in *.h ; do vim -e -c 'set ff=unix|w|q' $fil
+    for fil in *.h ; do vim -e -c 'set ff=unix|w|q' $fil
 
 Now just do:
-   make -f Make_ming.mak gvim.exe
+    make -f Make_ming.mak gvim.exe
 
-and you will end up with a Python-enabled, Win32 version.  Enjoy!
+And if you use msys2 to build python support (as one line):
+
+    mingw32-make -f Make_ming.mak PYTHON=c:/msys64/mingw64
+        PYTHON_HOME=c:/msys64/mingw64
+        PYTHONINC=-Ic:/msys64/mingw64/include/python2.7
+        DYNAMIC_PYTHON=yes
+        PYTHON_VER=27
+        DYNAMIC_PYTHON_DLL=libpython2.7.dll
+        ARCH=x86-64
+        STATIC_STDCPLUS=yes
+
+You will end up with a Python-enabled, Win32 version. Enjoy!
 
 
-7. Building with MzScheme support
-=================================
+7. Building with Python3 support
+================================
+
+For building with MSVC 2008 the "Windows Installer" from www.python.org
+works fine.  Python 3.4 is recommended.
+
+When building, you need to set the following variables at least:
+
+    PYTHON3:         Where Python3 is installed. E.g. C:\Python34
+    DYNAMIC_PYTHON3: Whether dynamic linking is used. Usually, set to yes.
+    PYTHON3_VER:     Python3 version. E.g. 34 for Python 3.4.X.
+
+E.g. When using MSVC (as one line):
+
+    nmake -f Make_mvc.mak
+        PYTHON3=C:\Python34 DYNAMIC_PYTHON3=yes PYTHON3_VER=34
+
+
+8. Building with MzScheme/Racket support
+========================================
+
+1) Building with MzScheme support
 
 (written by Sergey Khorev <sergey.khorev@gmail.com>)
 
@@ -394,8 +453,238 @@ After a successful build, these dlls can be freely removed, leaving them in
 %WINDOWS%\System32 only.
 
 
-8. Windows 3.1x
-===============
+2) Building with Racket support
+
+MzScheme and PLT Scheme names have been rebranded as Racket.  Vim with Racket
+(https://racket-lang.org/) support can be built with either MSVC or MinGW (or
+Cygwin).
+
+You need to set the following variables:
+
+    MZSCHEME:          Where Racket is installed.
+                       E.g. C:\Program Files (x86)\Racket
+    DYNAMIC_MZSCHEME:  Whether dynamic linking is used. Usually, set to yes.
+    MZSCHEME_VER:      Racket DLL version. E.g. 3m_9z0ds0 for Racket 6.3.
+    MZSCHEME_COLLECTS: (Optional) Path of the collects directory used at
+                       runtime. Default: $(MZSCHEME)\collects
+                       User can override this with the PLTCOLLECTS environment
+                       variable.
+
+E.g. When using MSVC (as one line):
+
+    nmake -f Make_mvc.mak
+        MZSCHEME="C:\Program Files (x86)\Racket" DYNAMIC_MZSCHEME=yes
+        MZSCHEME_VER=3m_9z0ds0
+
+Or when using MinGW (as one line):
+
+    mingw32-make -f Make_ming.mak
+        MZSCHEME='C:/Program\ Files\ (x86)/Racket' DYNAMIC_MZSCHEME=yes
+        MZSCHEME_VER=3m_9z0ds0
+
+    Spaces should be escaped with '\'.
+
+
+9. Building with Lua support
+============================
+
+Vim with Lua support can be built with either MSVC or MinGW (or maybe Cygwin).
+You can use binaries from LuaBinaries: http://luabinaries.sourceforge.net/
+This also applies to when you get a Vim executable and don't build yourself,
+do the part up to "Build".
+
+1) Download and install LuaBinaries
+
+Go to the Download page of LuaBinaries:
+  http://luabinaries.sourceforge.net/download.html
+
+Download lua-X.Y.Z_Win32_dllw4_lib.zip for x86 or
+lua-X.Y.Z_Win64_dllw4_lib.zip for x64.  You can use them both for MSVC and
+MinGW.
+
+Unpack it to a working directory. E.g. C:\projects\lua53.
+Lua's header files will be installed under the include directory.
+
+Copy luaXY.dll to your Windows system directory. The system directory depends
+on your Windows bitness and Vim bitness:
+  32-bit Vim on 32-bit Windows: C:\Windows\System32
+  32-bit Vim on 64-bit Windows: C:\Windows\SysWOW64
+  64-bit Vim on 64-bit Windows: C:\Windows\System32
+
+Or another option is copying luaXY.dll to the directory where gvim.exe
+(or vim.exe) is.
+
+
+2) Build
+
+You need to set LUA, DYNAMIC_LUA and LUA_VER.
+
+  LUA: Where Lua's header files are installed. E.g. C:\projects\lua53.
+  DYNAMIC_LUA: Whether dynamic linking is used. Set to yes.
+  LUA_VER: Lua version. E.g. 53 for Lua 5.3.X.
+
+E.g. When using MSVC (as one line):
+
+    nmake -f Make_mvc.mak
+        LUA=C:\projects\lua53 DYNAMIC_LUA=yes LUA_VER=53
+
+Or when using MinGW (as one line):
+
+    mingw32-make -f Make_mingw.mak
+        LUA=C:\projects\lua53 DYNAMIC_LUA=yes LUA_VER=53
+
+
+Or when using Cygwin (as one line) (untested):
+
+    make -f Make_cyg.mak
+        LUA=/cygdrive/c/projects/lua53 DYNAMIC_LUA=yes LUA_VER=53
+
+
+10. Building with Perl support
+==============================
+
+Vim with Perl support can be built with either MSVC or MinGW (or Cygwin).
+You can use binaries from ActiveState (ActivePerl) or Strawberry Perl.
+
+    http://www.activestate.com/activeperl
+    http://strawberryperl.com/
+
+When building, you need to set the following variables:
+
+    PERL:         Where perl is installed. E.g. C:\Perl, C:\Strawberry\perl
+    DYNAMIC_PERL: Whether dynamic linking is used. Usually, set to yes.
+    PERL_VER:     Perl version. E.g. 522 for Perl 5.22.X.
+
+E.g. When using MSVC (as one line):
+
+    nmake -f Make_mvc.mak
+        PERL=C:\Perl DYNAMIC_PERL=yes PERL_VER=522
+
+Or when using MinGW (as one line):
+
+    mingw32-make -f Make_mingw.mak
+        PERL=C:\Perl DYNAMIC_PERL=yes PERL_VER=522
+
+
+11. Building with Ruby support
+==============================
+
+Vim with Ruby support can be built with either MSVC or MinGW (or Cygwin).
+Ruby doesn't provide the official Windows binaries.  The most widely used
+Windows binaries might be RubyInstaller.
+
+    http://rubyinstaller.org/
+
+If you use MinGW you can easily build with RubyInstaller, but if you use MSVC
+you need some tricks described below.
+(Another binary distribution is ActiveScriptRuby:
+    http://www.artonx.org/data/asr/)
+
+When building, you need to set the following variables at least:
+
+    RUBY:          Where ruby is installed. E.g. C:\Ruby22
+    DYNAMIC_RUBY:  Whether dynamic linking is used. Usually, set to yes.
+    RUBY_VER:      Ruby version. E.g. 22 for Ruby 2.2.X.
+    RUBY_VER_LONG: Ruby API version in a long format.
+                   E.g. 2.2.0 for Ruby 2.2.X.
+
+Ruby version vs. Ruby API version:
+
+    Ruby ver. | Ruby API ver.
+    =========================
+    1.8.X     | 1.8
+    1.9.[1-3] | 1.9.1
+    2.0.0     | 2.0.0
+    2.X.Y     | 2.X.0
+
+(Ruby 1.9.0 is excluded from the table because it is an unstable version.)
+
+
+A) Using MSVC
+
+If you want to link with ruby, normally you must use the same compiler as
+which was used to build the ruby binary.  RubyInstaller is built with MinGW,
+so normally you cannot use MSVC for building Vim if you want to link with
+RubyInstaller.  If you use a different complier, there are mainly two problems:
+config.h and Ruby's DLL name. Here are the steps for working around them:
+
+  1) Download and Install RubyInstaller.
+    You can install RubyInstaller with the default options and directory.
+    E.g.:
+      C:\Ruby22 (32-bit) or C:\Ruby22-x64 (64-bit)
+
+    Ruby 2.2.X is used in this example.
+
+  2) Download Ruby 2.2.X's source code and generate config.h:
+
+      cd C:\projects
+      git clone https://github.com/ruby/ruby.git -b ruby_2_2
+      cd ruby
+      win32\configure.bat
+      nmake .config.h.time
+
+    Note that ruby_2_2 is the branch name for Ruby 2.2.X's source code.
+    There is no need to build whole Ruby, just config.h is needed.
+    If you use 32-bit MSVC10, the config.h is generated in the
+    .ext\include\i386-mswin32_100 directory.
+
+  3) Install the generated config.h.
+
+      xcopy /s .ext\include C:\Ruby22\include\ruby-2.2.0
+
+    Note that 2.2.0 is Ruby API version of Ruby 2.2.X.
+
+  4) Build Vim. Note that you need to adjust some variables (as one line):
+
+      nmake -f Make_mvc.mak
+          RUBY=C:\Ruby22 DYNAMIC_RUBY=yes RUBY_VER=22 RUBY_VER_LONG=2.2.0
+          RUBY_MSVCRT_NAME=msvcrt
+          WINVER=0x500
+
+    WINVER must be set to >=0x500, when building with Ruby 2.1 or later.
+    When using this trick, you also need to set RUBY_MSVCRT_NAME to msvcrt
+    which is used for the Ruby's DLL name.
+
+B) Using MinGW
+
+Using MinGW is easier than using MSVC when linking with RubyInstaller.
+After you install RubyInstaller, just type this (as one line):
+
+    mingw32-make -f Make_ming.mak
+        RUBY=C:/Ruby22 DYNAMIC_RUBY=yes RUBY_VER=22 RUBY_VER_LONG=2.2.0
+        WINVER=0x500
+
+WINVER must be set to >=0x500, when building with Ruby 2.1 or later.
+
+
+12. Building with Tcl support
+=============================
+
+Vim with Tcl support can be built with either MSVC or MinGW (or Cygwin).
+You can use binaries from ActiveState (ActiveTcl).
+
+    http://www.activestate.com/activetcl
+
+When building, you need to set the following variables:
+
+    TCL:          Where tcl is installed. E.g. C:\Tcl86
+    DYNAMIC_TCL:  Whether dynamic linking is used. Usually, set to yes.
+    TCL_VER:      Tcl version in a short format. E.g. 86 for Tcl 8.6.X.
+    TCL_VER_LONG: Tcl version in a long format. E.g. 8.6 for Tcl 8.6.X.
+
+E.g. When using MSVC (as one line):
+
+    nmake -f Make_mvc.mak
+        TCL=C:\Tcl86 DYNAMIC_TCL=yes TCL_VER=86 TCL_VER_LONG=8.6
+
+Or when using MinGW (as one line):
+
+    mingw32-make -f Make_mingw.mak
+        TCL=C:\Tcl86 DYNAMIC_TCL=yes TCL_VER=86 TCL_VER_LONG=8.6
+
+
+13. Windows 3.1x
+================
 
 make -f Make_w16.mak		 16 bit, Borland C++ 5.0
 
@@ -414,8 +703,8 @@ In MSVC 4.2 support for Win32s was dropped!  Use this command:
     nmake -f Make_mvc.mak GUI=yes
 
 
-9. MS-DOS
-=========
+14. MS-DOS
+==========
 
 Summary:
 ren Make_bc3.mak Makefile; make     16 bit, Borland C++ and Turbo C++
@@ -457,48 +746,48 @@ If you get all kinds of strange error messages when compiling, try changing
 the file format from "unix" to "dos".
 
 
-10. Installing after building from sources
+15. Installing after building from sources
 ==========================================
 
 [provided by Michael Soyka]
 
 After you've built the Vim binaries as described above, you're ready to
 install Vim on your system.  However, if you've obtained the Vim sources
-using Mercurial or by downloading them as a unix tar file, you must first 
-create a "vim73" directory.  If you instead downloaded the sources as
+using Git, Mercurial or by downloading them as a unix tar file, you must
+first create a "vim74" directory.  If you instead downloaded the sources as
 zip files, you can skip this setup as the zip archives already have the
-correct directory structure.  
+correct directory structure.
 
-  A.  Create a Vim "runtime" subdirectory named "vim73"
+  A.  Create a Vim "runtime" subdirectory named "vim74"
   -----------------------------------------------------
-  If you obtained your Vim sources as zip files, you can skip this step.  
+  If you obtained your Vim sources as zip files, you can skip this step.
   Otherwise, continue reading.
 
   Go to the directory that contains the Vim "src" and "runtime"
-  directories and create a new subdirectory named "vim73".  
-  
-  Copy the "runtime" files into "vim73":
-     copy runtime\* vim73
+  directories and create a new subdirectory named "vim74".
 
-  B.  Copy the new binaries into the "vim73" directory
+  Copy the "runtime" files into "vim74":
+     copy runtime\* vim74
+
+  B.  Copy the new binaries into the "vim74" directory
   ----------------------------------------------------
   Regardless of how you installed the Vim sources, you need to copy the
-  new binaries you created above into "vim73":
+  new binaries you created above into "vim74":
 
-     copy src\*.exe vim73
-     copy src\GvimExt\gvimext.dll vim73
-     copy src\xxd\xxd.exe vim73
+     copy src\*.exe vim74
+     copy src\GvimExt\gvimext.dll vim74
+     copy src\xxd\xxd.exe vim74
 
-  C.  Move the "vim73" directory into the Vim installation subdirectory
+  C.  Move the "vim74" directory into the Vim installation subdirectory
   ---------------------------------------------------------------------
-  Move the "vim73" subdirectory into the subdirectory where you want Vim
-  to be installed.  Typically, this subdirectory will be named "vim".  
-  If you already have a "vim73" subdirectory in "vim", delete it first
-  by running its uninstal.exe program.  
+  Move the "vim74" subdirectory into the subdirectory where you want Vim
+  to be installed.  Typically, this subdirectory will be named "vim".
+  If you already have a "vim74" subdirectory in "vim", delete it first
+  by running its uninstal.exe program.
 
   D.  Install Vim
   ---------------
-  "cd" to your Vim installation subdirectory "vim\vim73" and run the
+  "cd" to your Vim installation subdirectory "vim\vim74" and run the
   "install.exe" program.  It will ask you a number of questions about
   how you would like to have your Vim setup.  Among these are:
   - You can tell it to write a "_vimrc" file with your preferences in the
@@ -507,7 +796,7 @@ correct directory structure.
     popup menu.
   - You can have it create batch files, so that you can run Vim from the
     console or in a shell.  You can select one of the directories in your
-    PATH or add the directory to PATH using the Windows Control Panel.  
+    PATH or add the directory to PATH using the Windows Control Panel.
   - Create entries for Vim on the desktop and in the Start menu.
 
 Happy Vimming!

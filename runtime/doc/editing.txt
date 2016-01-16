@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.4.  Last change: 2015 Aug 25
+*editing.txt*   For Vim version 7.4.  Last change: 2016 Jan 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -78,7 +78,9 @@ g CTRL-G		Prints the current position of the cursor in five
 			than one position on the screen (<Tab> or special
 			character), both the "real" column and the screen
 			column are shown, separated with a dash.
-			See also 'ruler' option.  {not in Vi}
+			Also see the 'ruler' option and the |wordcount()|
+			function.
+			{not in Vi}
 
 							*v_g_CTRL-G*
 {Visual}g CTRL-G	Similar to "g CTRL-G", but Word, Character, Line, and
@@ -1105,10 +1107,10 @@ The names can be in upper- or lowercase.
 			the last file in the argument list has not been
 			edited.  See |:confirm| and 'confirm'.  {not in Vi}
 
-:q[uit]!		Quit without writing, also when currently visible
-			buffers have changes.  Does not exit when this is the
-			last window and there is a changed hidden buffer.
-			In this case, the first changed hidden buffer becomes
+:q[uit]!		Quit without writing, also when the current buffer has
+			changes.  If this is the last window and there is a
+			modified hidden buffer, the current buffer is
+			abandoned and the first changed hidden buffer becomes
 			the current buffer.
 			Use ":qall!" to exit always.
 

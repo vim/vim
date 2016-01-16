@@ -825,7 +825,7 @@ gui_shell_closed()
 # endif
     /* If there are changed buffers, present the user with a dialog if
      * possible, otherwise give an error message. */
-    if (!check_changed_any(FALSE))
+    if (!check_changed_any(FALSE, FALSE))
 	getout(0);
 
     exiting = FALSE;

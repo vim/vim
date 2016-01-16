@@ -40,7 +40,6 @@ static void	find_start_of_word __ARGS((pos_T *));
 static void	find_end_of_word __ARGS((pos_T *));
 static int	get_mouse_class __ARGS((char_u *p));
 #endif
-static void	prep_redo_visual __ARGS((cmdarg_T *cap));
 static void	prep_redo_cmd __ARGS((cmdarg_T *cap));
 static void	prep_redo __ARGS((int regname, long, int, int, int, int, int));
 static int	checkclearop __ARGS((oparg_T *oap));
@@ -1386,6 +1385,7 @@ do_pending_operator(cap, old_col, gui_yank)
     static linenr_T redo_VIsual_line_count; /* number of lines */
     static colnr_T  redo_VIsual_vcol;	    /* number of cols or end column */
     static long	    redo_VIsual_count;	    /* count for Visual operator */
+    static int	    redo_VIsual_arg;	    /* extra argument */
 #ifdef FEAT_VIRTUALEDIT
     int		    include_line_break = FALSE;
 #endif
@@ -1693,6 +1693,7 @@ do_pending_operator(cap, old_col, gui_yank)
 		    redo_VIsual_vcol = resel_VIsual_vcol;
 		    redo_VIsual_line_count = resel_VIsual_line_count;
 		    redo_VIsual_count = cap->count0;
+		    redo_VIsual_arg = cap->arg;
 		}
 	    }
 
@@ -2102,6 +2103,24 @@ do_pending_operator(cap, old_col, gui_yank)
 			       oap->op_type == OP_FOLDDELREC, oap->is_VIsual);
 	    break;
 #endif
+	case OP_NR_ADD:
+	case OP_NR_SUB:
+	    if (empty_region_error)
+	    {
+		vim_beep(BO_OPER);
+		CancelRedo();
+	    }
+	    else
+	    {
+		VIsual_active = TRUE;
+#ifdef FEAT_LINEBREAK
+		curwin->w_p_lbr = lbr_saved;
+#endif
+		op_addsub(oap, cap->count1, redo_VIsual_arg);
+		VIsual_active = FALSE;
+	    }
+	    check_cursor_col();
+	    break;
 	default:
 	    clearopbeep(oap);
 	}
@@ -3597,43 +3616,6 @@ find_ident_at_pos(wp, lnum, startcol, string, find_type)
 }
 
 /*
- * Add commands to reselect Visual mode into the redo buffer.
- */
-    static void
-prep_redo_visual(cap)
-    cmdarg_T *cap;
-{
-    ResetRedobuff();
-    AppendCharToRedobuff(VIsual_mode);
-    if (VIsual_mode == 'V' && curbuf->b_visual.vi_end.lnum
-					    != curbuf->b_visual.vi_start.lnum)
-    {
-	AppendNumberToRedobuff(curbuf->b_visual.vi_end.lnum
-					    - curbuf->b_visual.vi_start.lnum);
-	AppendCharToRedobuff('j');
-    }
-    else if (VIsual_mode == 'v' || VIsual_mode == Ctrl_V)
-    {
-	/* block visual mode or char visual mmode*/
-	if (curbuf->b_visual.vi_end.lnum != curbuf->b_visual.vi_start.lnum)
-	{
-	    AppendNumberToRedobuff(curbuf->b_visual.vi_end.lnum -
-		    curbuf->b_visual.vi_start.lnum);
-	    AppendCharToRedobuff('j');
-	}
-	if (curbuf->b_visual.vi_curswant == MAXCOL)
-	    AppendCharToRedobuff('$');
-	else if (curbuf->b_visual.vi_end.col > curbuf->b_visual.vi_start.col)
-	{
-	    AppendNumberToRedobuff(curbuf->b_visual.vi_end.col
-					 - curbuf->b_visual.vi_start.col - 1);
-	    AppendCharToRedobuff(' ');
-	}
-    }
-    AppendNumberToRedobuff(cap->count1);
-}
-
-/*
  * Prepare for redo of a normal command.
  */
     static void
@@ -4237,30 +4219,17 @@ nv_help(cap)
 nv_addsub(cap)
     cmdarg_T	*cap;
 {
-    int visual = VIsual_active;
-
-    if (cap->oap->op_type == OP_NOP
-	    && do_addsub((int)cap->cmdchar, cap->count1, cap->arg) == OK)
+    if (!VIsual_active && cap->oap->op_type == OP_NOP)
     {
-	if (visual)
-	{
-	    prep_redo_visual(cap);
-	    if (cap->arg)
-		AppendCharToRedobuff('g');
-	    AppendCharToRedobuff(cap->cmdchar);
-	}
-	else
-	    prep_redo_cmd(cap);
+	prep_redo_cmd(cap);
+	cap->oap->op_type = cap->cmdchar == Ctrl_A ?  OP_NR_ADD : OP_NR_SUB;
+	op_addsub(cap->oap, cap->count1, cap->arg);
+	cap->oap->op_type = OP_NOP;
     }
+    else if (VIsual_active)
+	nv_operator(cap);
     else
-	clearopbeep(cap->oap);
-    if (visual)
-    {
-	VIsual_active = FALSE;
-	redo_VIsual_busy = FALSE;
-	may_clear_cmdline();
-	redraw_later(INVERTED);
-    }
+	clearop(cap->oap);
 }
 
 /*
@@ -7916,6 +7885,7 @@ nv_g_cmd(cap)
 	{
 	    cap->arg = TRUE;
 	    cap->cmdchar = cap->nchar;
+	    cap->nchar = NUL;
 	    nv_addsub(cap);
 	}
 	else
@@ -8262,7 +8232,7 @@ nv_g_cmd(cap)
      * "g CTRL-G": display info about cursor position
      */
     case Ctrl_G:
-	cursor_pos_info();
+	cursor_pos_info(NULL);
 	break;
 
     /*

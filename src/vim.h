@@ -255,26 +255,18 @@
  */
 #ifdef AZTEC_C
 # include <functions.h>
-# define __ARGS(x)  x
 #endif
 
 #ifdef SASC
 # include <clib/exec_protos.h>
-# define __ARGS(x)  x
 #endif
 
 #ifdef _DCC
 # include <clib/exec_protos.h>
-# define __ARGS(x)  x
-#endif
-
-#ifdef __TURBOC__
-# define __ARGS(x) x
 #endif
 
 #ifdef __BEOS__
 # include "os_beos.h"
-# define __ARGS(x)  x
 #endif
 
 #if (defined(UNIX) || defined(__EMX__) || defined(VMS)) \
@@ -282,16 +274,8 @@
 # include "os_unix.h"	    /* bring lots of system header files */
 #endif
 
-#if defined(MACOS) && (defined(__MRC__) || defined(__SC__))
-   /* Apple's Compilers support prototypes */
-# define __ARGS(x) x
-#endif
 #ifndef __ARGS
-# if defined(__STDC__) || defined(__GNUC__) || defined(WIN3264)
-#  define __ARGS(x) x
-# else
-#  define __ARGS(x) ()
-# endif
+# define __ARGS(x) x
 #endif
 
 /* __ARGS and __PARMS are the same thing. */
@@ -392,7 +376,15 @@
 # endif
 #endif
 
-#define NUMBUFLEN 30	    /* length of a buffer to store a number in ASCII */
+/* length of a buffer to store a number in ASCII (64 bits binary + NUL) */
+#define NUMBUFLEN 65
+
+/* flags for vim_str2nr() */
+#define STR2NR_BIN 1
+#define STR2NR_OCT 2
+#define STR2NR_HEX 4
+#define STR2NR_ALL (STR2NR_BIN + STR2NR_OCT + STR2NR_HEX)
+#define STR2NR_FORCE 8 /* only when ONE of the above is used */
 
 /*
  * Shorthand for unsigned variables. Many systems, but not all, have u_char
@@ -1449,6 +1441,10 @@ typedef UINT32_TYPEDEF UINT32_T;
 #define OP_FOLDDELREC	25	/* "zD" delete folds recursively */
 #define OP_FORMAT2	26	/* "gw" format operator, keeps cursor pos */
 #define OP_FUNCTION	27	/* "g@" call 'operatorfunc' */
+#define OP_NR_ADD	28	/* "<C-A>" Add to the number or alphabetic
+				   character (OP_ADD conflicts with Perl) */
+#define OP_NR_SUB	29	/* "<C-X>" Subtract from the number or
+				   alphabetic character */
 
 /*
  * Motion types, used for operators and for yank/delete registers.
@@ -1756,6 +1752,8 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 /* Note that gui.h is included by structs.h */
 
 #include "structs.h"	    /* file that defines many structures */
+
+#include "alloc.h"
 
 /* Values for "do_profiling". */
 #define PROF_NONE	0	/* profiling not started */

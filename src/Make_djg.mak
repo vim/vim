@@ -1,6 +1,8 @@
 #
 # Makefile for VIM on MSDOS, using DJGPP 2.0
 #
+# NOTE: THIS IS OLD AND PROBABLY NO LONGER WORKS.
+#
 
 #>>>>> choose options:
 

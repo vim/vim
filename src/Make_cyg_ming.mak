@@ -171,26 +171,37 @@ ifndef MZSCHEME_VER
 MZSCHEME_VER=205_000
 endif
 
-ifndef MZSCHEME_PRECISE_GC
-MZSCHEME_PRECISE_GC=no
-endif
-
 # for version 4.x we need to generate byte-code for Scheme base
 ifndef MZSCHEME_GENERATE_BASE
 MZSCHEME_GENERATE_BASE=no
 endif
 
-ifndef MZSCHEME_USE_RACKET
+ifneq ($(wildcard $(MZSCHEME)/lib/msvc/libmzsch$(MZSCHEME_VER).lib),)
 MZSCHEME_MAIN_LIB=mzsch
 else
 MZSCHEME_MAIN_LIB=racket
+endif
+
+ifndef MZSCHEME_PRECISE_GC
+MZSCHEME_PRECISE_GC=no
+ifneq ($(wildcard $(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll),)
+ifeq ($(wildcard $(MZSCHEME)\lib\libmzgc$(MZSCHEME_VER).dll),)
+MZSCHEME_PRECISE_GC=yes
+endif
+else
+ifneq ($(wildcard $(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib),)
+ifeq ($(wildcard $(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib),)
+MZSCHEME_PRECISE_GC=yes
+endif
+endif
+endif
 endif
 
 ifeq (no,$(DYNAMIC_MZSCHEME))
 ifeq (yes,$(MZSCHEME_PRECISE_GC))
 MZSCHEME_LIB=-l$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER)
 else
-MZSCHEME_LIB = -l$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
+MZSCHEME_LIB=-l$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
 endif
 # the modern MinGW can dynamically link to dlls directly.
 # point MZSCHEME_DLLS to where you put libmzschXXXXXXX.dll and libgcXXXXXXX.dll
@@ -212,7 +223,13 @@ DYNAMIC_PYTHON=yes
 endif
 
 ifndef PYTHON_VER
-PYTHON_VER=22
+PYTHON_VER=27
+endif
+ifndef DYNAMIC_PYTHON_DLL
+DYNAMIC_PYTHON_DLL=python$(PYTHON_VER).dll
+endif
+ifdef PYTHON_HOME
+PYTHON_HOME_DEF=-DPYTHON_HOME=\"$(PYTHON_HOME)\"
 endif
 
 ifeq (no,$(DYNAMIC_PYTHON))
@@ -220,10 +237,12 @@ PYTHONLIB=-L$(PYTHON)/libs -lpython$(PYTHON_VER)
 endif
 # my include files are in 'win32inc' on Linux, and 'include' in the standard
 # NT distro (ActiveState)
+ifndef PYTHONINC
 ifeq ($(CROSS),no)
 PYTHONINC=-I $(PYTHON)/include
 else
 PYTHONINC=-I $(PYTHON)/win32inc
+endif
 endif
 endif
 
@@ -255,12 +274,17 @@ endif
 #	  TCL=[Path to TCL directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_TCL=yes (to load the TCL DLL dynamically)
 #	  TCL_VER=[TCL version, eg 83, 84] (default is 83)
+#	  TCL_VER_LONG=[Tcl version, eg 8.3] (default is 8.3)
+#	    You must set TCL_VER_LONG when you set TCL_VER.
 ifdef TCL
 ifndef DYNAMIC_TCL
 DYNAMIC_TCL=yes
 endif
 ifndef TCL_VER
 TCL_VER = 83
+endif
+ifndef TCL_VER_LONG
+TCL_VER_LONG = 8.3
 endif
 TCLINC += -I$(TCL)/include
 endif
@@ -311,10 +335,14 @@ ifndef RUBY_INSTALL_NAME
 ifeq ($(RUBY_VER), 16)
 RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_API_VER)
 else
+ifndef RUBY_MSVCRT_NAME
+# Base name of msvcrXX.dll which is used by ruby's dll.
+RUBY_MSVCRT_NAME = msvcrt
+endif
 ifeq ($(ARCH),x86-64)
-RUBY_INSTALL_NAME = x64-msvcrt-ruby$(RUBY_API_VER)
+RUBY_INSTALL_NAME = x64-$(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
 else
-RUBY_INSTALL_NAME = msvcrt-ruby$(RUBY_API_VER)
+RUBY_INSTALL_NAME = $(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
 endif
 endif
 endif
@@ -412,9 +440,20 @@ endif
 endif
 
 ifdef MZSCHEME
-CFLAGS += -I$(MZSCHEME)/include -DFEAT_MZSCHEME -DMZSCHEME_COLLECTS=\"$(MZSCHEME)/collects\"
+ifndef MZSCHEME_COLLECTS
+MZSCHEME_COLLECTS=$(MZSCHEME)/collects
+ifeq (yes, $(UNDER_CYGWIN))
+MZSCHEME_COLLECTS:=$(shell cygpath -m $(MZSCHEME_COLLECTS) | sed -e 's/ /\\ /g')
+endif
+endif
+CFLAGS += -I$(MZSCHEME)/include -DFEAT_MZSCHEME -DMZSCHEME_COLLECTS=\"$(MZSCHEME_COLLECTS)\"
 ifeq (yes, $(DYNAMIC_MZSCHEME))
+ifeq (yes, $(MZSCHEME_PRECISE_GC))
+# Precise GC does not use separate dll
+CFLAGS += -DDYNAMIC_MZSCHEME -DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" -DDYNAMIC_MZGC_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\"
+else
 CFLAGS += -DDYNAMIC_MZSCHEME -DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" -DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
+endif
 endif
 ifeq (yes, "$(MZSCHEME_DEBUG)")
 CFLAGS += -DMZSCHEME_FORCE_GC
@@ -436,21 +475,21 @@ endif
 ifdef PYTHON
 CFLAGS += -DFEAT_PYTHON 
 ifeq (yes, $(DYNAMIC_PYTHON))
-CFLAGS += -DDYNAMIC_PYTHON
+CFLAGS += -DDYNAMIC_PYTHON -DDYNAMIC_PYTHON_DLL=\"$(DYNAMIC_PYTHON_DLL)\"
 endif
 endif
 
 ifdef PYTHON3 
 CFLAGS += -DFEAT_PYTHON3 
 ifeq (yes, $(DYNAMIC_PYTHON3))
-CFLAGS += -DDYNAMIC_PYTHON3 
+CFLAGS += -DDYNAMIC_PYTHON3 -DDYNAMIC_PYTHON3_DLL=\"PYTHON$(PYTHON3_VER).dll\"
 endif
 endif
 
 ifdef TCL
 CFLAGS += -DFEAT_TCL $(TCLINC)
 ifeq (yes, $(DYNAMIC_TCL))
-CFLAGS += -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"tcl$(TCL_VER).dll\"
+CFLAGS += -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"tcl$(TCL_VER).dll\" -DDYNAMIC_TCL_VER=\"$(TCL_VER_LONG)\"
 endif
 endif
 
@@ -772,10 +811,10 @@ INCL = vim.h feature.h os_win32.h os_dos.h ascii.h keymap.h term.h macros.h \
 	gui.h
 
 $(OUTDIR)/if_python.o : if_python.c if_py_both.h $(INCL)
-	$(CC) -c $(CFLAGS) $(PYTHONINC) -DDYNAMIC_PYTHON_DLL=\"python$(PYTHON_VER).dll\" $< -o $@
+	$(CC) -c $(CFLAGS) $(PYTHONINC) $(PYTHON_HOME_DEF) $< -o $@
 
 $(OUTDIR)/if_python3.o : if_python3.c if_py_both.h $(INCL)
-	$(CC) -c $(CFLAGS) $(PYTHON3INC) -DDYNAMIC_PYTHON3_DLL=\"PYTHON$(PYTHON3_VER).dll\" $< -o $@
+	$(CC) -c $(CFLAGS) $(PYTHON3INC) $< -o $@
 
 $(OUTDIR)/%.o : %.c $(INCL)
 	$(CC) -c $(CFLAGS) $< -o $@

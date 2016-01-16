@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2015 Nov 23
+*options.txt*	For Vim version 7.4.  Last change: 2016 Jan 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4844,13 +4844,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	reset this option. |-u| |--noplugin|
 
 						*'luadll'*
-'luadll' 		string	(default empty)
+'luadll' 		string	(default depends on the build)
 			global
-			{not in Vi} {only for Unix}
+			{not in Vi}
 			{only available when compiled with the |+lua/dyn|
 			feature}
-	Specifies the path of the Lua shared library instead of DYNAMIC_LUA_DLL
-	what was specified at compile time.
+	Specifies the name of the Lua shared library. The default is
+	DYNAMIC_LUA_DLL, which was specified at compile time.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -5015,8 +5015,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 	Maximum amount of memory in Kbyte to use for all buffers together.
 	The maximum usable value is about 2000000 (2 Gbyte).  Use this to work
-	without a limit.  On 64 bit machines higher values might work.  But
-	hey, do you really need more than 2 Gbyte for text editing?
+	without a limit.
+	On 64 bit machines higher values might work.  But hey, do you really
+	need more than 2 Gbyte for text editing?  Keep in mind that text is
+	stored in the swap file, one can edit files > 2 Gbyte anyay.  We do
+	need the memory to store undo info.
 	Also see 'maxmem'.
 
 						*'menuitems'* *'mis'*
@@ -5290,7 +5293,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Negative or zero value means no thread scheduling.
 
 							*'nrformats'* *'nf'*
-'nrformats' 'nf'	string	(default "octal,hex")
+'nrformats' 'nf'	string	(default "bin,octal,hex")
 			local to buffer
 			{not in Vi}
 	This defines what bases Vim will consider for numbers when using the
@@ -5304,6 +5307,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	hex	If included, numbers starting with "0x" or "0X" will be
 		considered to be hexadecimal.  Example: Using CTRL-X on
 		"0x100" results in "0x0ff".
+	bin	If included, numbers starting with "0b" or "0B" will be
+		considered to be binary.  Example: Using CTRL-X on
+		"0b1000" subtracts one, resulting in "0b0111".
 	Numbers which simply begin with a digit in the range 1-9 are always
 	considered decimal.  This also happens for numbers that are not
 	recognized as octal or hex.
@@ -5558,13 +5564,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	this doesn't work when $INCL contains a comma or white space.
 
 						*'perldll'*
-'perldll' 		string	(default empty)
+'perldll' 		string	(default depends on the build)
 			global
-			{not in Vi} {only for Unix}
+			{not in Vi}
 			{only available when compiled with the |+perl/dyn|
 			feature}
-	Specifies the path of the Perl shared library instead of
-	DYNAMIC_PERL_DLL what was specified at compile time.
+	Specifies the name of the Perl shared library. The default is
+	DYNAMIC_PERL_DLL, which was specified at compile time.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -5695,24 +5701,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|ins-completion-menu|.
 
 						*'pythondll'*
-'pythondll' 		string	(default empty)
+'pythondll' 		string	(default depends on the build)
 			global
-			{not in Vi} {only for Unix}
+			{not in Vi}
 			{only available when compiled with the |+python/dyn|
 			feature}
-	Specifies the path of the Python 2.x shared library instead of
-	DYNAMIC_PYTHON_DLL what was specified at compile time.
+	Specifies the name of the Python 2.x shared library. The default is
+	DYNAMIC_PYTHON_DLL, which was specified at compile time.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
 						*'pythonthreedll'*
-'pythonthreedll'	string	(default empty)
+'pythonthreedll'	string	(default depends on the build)
 			global
-			{not in Vi} {only for Unix}
+			{not in Vi}
 			{only available when compiled with the |+python3/dyn|
 			feature}
-	Specifies the path of the Python 3 shared library instead of
-	DYNAMIC_PYTHON3_DLL what was specified at compile time.
+	Specifies the name of the Python 3 shared library. The default is
+	DYNAMIC_PYTHON3_DLL, which was specified at compile time.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -5936,13 +5942,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The 'rightleft' option must be set for 'rightleftcmd' to take effect.
 
 						*'rubydll'*
-'rubydll' 		string	(default empty)
+'rubydll' 		string	(default: depends on the build)
 			global
-			{not in Vi} {only for Unix}
+			{not in Vi}
 			{only available when compiled with the |+ruby/dyn|
 			feature}
-	Specifies the path of the Ruby shared library instead of
-	DYNAMIC_RUBY_DLL what was specified at compile time.
+	Specifies the name of the Ruby shared library. The default is
+	DYNAMIC_RUBY_DLL, which was specified at compile time.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -6834,7 +6840,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	the two-letter, lower case region name.  You can use more than one
 	region by listing them: "en_us,en_ca" supports both US and Canadian
 	English, but not words specific for Australia, New Zealand or Great
-	Britain.
+	Britain. (Note: currently en_au and en_nz dictionaries are older than
+	en_ca, en_gb and en_us).
 	If the name "cjk" is included East Asian characters are excluded from
 	spell checking.  This is useful when editing text that also has Asian
 	words.
@@ -7425,6 +7432,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 	tagstack, but does change the pointer to the active entry.
 	Resetting this option is useful when using a ":tag" command in a
 	mapping which should not change the tagstack.
+
+						*'tcldll'*
+'tcldll' 		string	(default depends on the build)
+			global
+			{not in Vi}
+			{only available when compiled with the |+tcl/dyn|
+			feature}
+	Specifies the name of the Tcl shared library. The default is
+	DYNAMIC_TCL_DLL, which was specified at compile time.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 						*'term'* *E529* *E530* *E531*
 'term'			string	(default is $TERM, if that fails:

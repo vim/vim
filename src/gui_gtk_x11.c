@@ -2003,7 +2003,7 @@ sm_client_check_changed_any(GnomeClient	    *client UNUSED,
      * If there are changed buffers, present the user with
      * a dialog if possible, otherwise give an error message.
      */
-    shutdown_cancelled = check_changed_any(FALSE);
+    shutdown_cancelled = check_changed_any(FALSE, FALSE);
 
     exiting = FALSE;
     cmdmod = save_cmdmod;

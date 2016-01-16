@@ -611,12 +611,7 @@ perl_runtime_link_init(char *libname, int verbose)
 perl_enabled(verbose)
     int		verbose;
 {
-#ifdef WIN3264
-    char *dll = DYNAMIC_PERL_DLL;
-#else
-    char *dll = *p_perldll ? (char *)p_perldll : DYNAMIC_PERL_DLL;
-#endif
-    return perl_runtime_link_init(dll, verbose) == OK;
+    return perl_runtime_link_init((char *)p_perldll, verbose) == OK;
 }
 #endif /* DYNAMIC_PERL */
 

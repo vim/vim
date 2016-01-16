@@ -1776,10 +1776,11 @@ static struct vimoption
     {"loadplugins", "lpl",  P_BOOL|P_VI_DEF,
 			    (char_u *)&p_lpl, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L} SCRIPTID_INIT},
-#if defined(DYNAMIC_LUA) && !defined(WIN3264)
+#if defined(DYNAMIC_LUA)
     {"luadll",      NULL,   P_STRING|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_luadll, PV_NONE,
-			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+			    {(char_u *)DYNAMIC_LUA_DLL, (char_u *)0L}
+			    SCRIPTID_INIT},
 #endif
 #ifdef FEAT_GUI_MAC
     {"macatsui",    NULL,   P_BOOL|P_VI_DEF|P_RCLR,
@@ -1940,7 +1941,7 @@ static struct vimoption
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
     {"nrformats",   "nf",   P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_nf, PV_NF,
-			    {(char_u *)"octal,hex", (char_u *)0L}
+			    {(char_u *)"bin,octal,hex", (char_u *)0L}
 			    SCRIPTID_INIT},
     {"number",	    "nu",   P_BOOL|P_VI_DEF|P_RWIN,
 			    (char_u *)VAR_WIN, PV_NU,
@@ -2016,10 +2017,11 @@ static struct vimoption
 # endif
 #endif
 				(char_u *)0L} SCRIPTID_INIT},
-#if defined(DYNAMIC_PERL) && !defined(WIN3264)
+#if defined(DYNAMIC_PERL)
     {"perldll",     NULL,   P_STRING|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_perldll, PV_NONE,
-			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+			    {(char_u *)DYNAMIC_PERL_DLL, (char_u *)0L}
+			    SCRIPTID_INIT},
 #endif
     {"preserveindent", "pi", P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_pi, PV_PI,
@@ -2126,15 +2128,17 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
-#if defined(DYNAMIC_PYTHON3) && !defined(WIN3264)
+#if defined(DYNAMIC_PYTHON3)
     {"pythonthreedll",  NULL,   P_STRING|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_py3dll, PV_NONE,
-			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+			    {(char_u *)DYNAMIC_PYTHON3_DLL, (char_u *)0L}
+			    SCRIPTID_INIT},
 #endif
-#if defined(DYNAMIC_PYTHON) && !defined(WIN3264)
+#if defined(DYNAMIC_PYTHON)
     {"pythondll",   NULL,   P_STRING|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_pydll, PV_NONE,
-			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+			    {(char_u *)DYNAMIC_PYTHON_DLL, (char_u *)0L}
+			    SCRIPTID_INIT},
 #endif
     {"quoteescape", "qe",   P_STRING|P_ALLOCED|P_VI_DEF,
 #ifdef FEAT_TEXTOBJ
@@ -2209,10 +2213,11 @@ static struct vimoption
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCRIPTID_INIT},
-#if defined(DYNAMIC_RUBY) && !defined(WIN3264)
+#if defined(DYNAMIC_RUBY)
     {"rubydll",     NULL,   P_STRING|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_rubydll, PV_NONE,
-			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+			    {(char_u *)DYNAMIC_RUBY_DLL, (char_u *)0L}
+			    SCRIPTID_INIT},
 #endif
     {"ruler",	    "ru",   P_BOOL|P_VI_DEF|P_VIM|P_RSTAT,
 #ifdef FEAT_CMDL_INFO
@@ -2604,6 +2609,12 @@ static struct vimoption
     {"tagstack",    "tgst", P_BOOL|P_VI_DEF,
 			    (char_u *)&p_tgst, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L} SCRIPTID_INIT},
+#if defined(DYNAMIC_TCL)
+    {"tcldll",      NULL,   P_STRING|P_VI_DEF|P_SECURE,
+			    (char_u *)&p_tcldll, PV_NONE,
+			    {(char_u *)DYNAMIC_TCL_DLL, (char_u *)0L}
+			    SCRIPTID_INIT},
+#endif
     {"term",	    NULL,   P_STRING|P_EXPAND|P_NODEFAULT|P_NO_MKRC|P_VI_DEF|P_RALL,
 			    (char_u *)&T_NAME, PV_NONE,
 			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
@@ -3031,7 +3042,7 @@ static struct vimoption
 static char *(p_ambw_values[]) = {"single", "double", NULL};
 #endif
 static char *(p_bg_values[]) = {"light", "dark", NULL};
-static char *(p_nf_values[]) = {"octal", "hex", "alpha", NULL};
+static char *(p_nf_values[]) = {"bin", "octal", "hex", "alpha", NULL};
 static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
 #ifdef FEAT_CRYPT
 static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2", NULL};
@@ -4580,7 +4591,8 @@ do_set(arg, opt_flags)
 			{
 			    /* Allow negative (for 'undolevels'), octal and
 			     * hex numbers. */
-			    vim_str2nr(arg, NULL, &i, TRUE, TRUE, &value, NULL, 0);
+			    vim_str2nr(arg, NULL, &i, STR2NR_ALL,
+							     &value, NULL, 0);
 			    if (arg[i] != NUL && !vim_iswhite(arg[i]))
 			    {
 				errmsg = e_invarg;
@@ -4840,9 +4852,15 @@ do_set(arg, opt_flags)
 						|| s[i] == NUL))
 					break;
 				    /* Count backslashes.  Only a comma with an
-				     * even number of backslashes before it is
-				     * recognized as a separator */
-				    if (s > origval && s[-1] == '\\')
+				     * even number of backslashes or a single
+				     * backslash preceded by a comma before it
+				     * is recognized as a separator */
+				    if ((s > origval + 1
+						&& s[-1] == '\\'
+						&& s[-2] != ',')
+					    || (s == origval + 1
+						&& s[-1] == '\\'))
+
 					++bs;
 				    else
 					bs = 0;

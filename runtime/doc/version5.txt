@@ -1,4 +1,4 @@
-*version5.txt*  For Vim version 7.4.  Last change: 2012 Aug 08
+*version5.txt*  For Vim version 7.4.  Last change: 2016 Jan 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -848,7 +848,7 @@ putting a backslash before it.  |+cmd|
 
 After recovery, BufReadPost autocommands are applied.  |:recover|
 
-Added color support for "os2ansi", OS/2 console. (Slootman) |os2ansi|
+Added color support for "os2ansi", OS/2 console. (Slootman)
 
 Allow "%:p:h" when % is empty.  |:_%|
 

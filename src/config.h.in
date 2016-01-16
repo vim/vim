@@ -360,6 +360,9 @@
 /* Define if you want to include the Tcl interpreter. */
 #undef FEAT_TCL
 
+/* Define for linking via dlopen() or LoadLibrary() */
+#undef DYNAMIC_TCL
+
 /* Define if you want to include the Sniff interface. */
 #undef FEAT_SNIFF
 

@@ -4,6 +4,7 @@
  *
  *	Author: Paul Slootman
  *			(paul@wurtel.hobby.nl, paul@murphy.nl, paulS@toecompst.nl)
+ *	Modifications for MSVC: Yasuhiro Matsumoto
  *
  *	This source code is released into the public domain. It is provided on an
  *	as-is basis and no responsibility is accepted for its failure to perform
@@ -26,9 +27,16 @@
  * precompiled for OS/2. That one probably works better.
  */
 
-#include <unistd.h>
+#ifndef _MSC_VER
+# include <unistd.h>
+#endif
 #include <malloc.h>
 #include <stdio.h>
+#include <fcntl.h>
+
+#ifdef _WIN32
+# define sysconf(x) -1
+#endif
 
 void usage(void)
 {
@@ -79,17 +87,17 @@ main(int argc, char *argv[])
 	int	i;
 	char	buf[BUFSIZ];
 	int	n;
-	extern int	optind;
+	int	optind = 1;
 
-	while ((opt = getopt(argc, argv, "a")) != EOF)
+	for (i = 1; i < argc; i++)
 	{
-		switch (opt)
-		{
-			case 'a':	append++;
-					break;
-			default:	usage();
-					exit(2);
-		}
+		if (argv[i][0] != '-')
+			break;
+		if (!strcmp(argv[i], "-a"))
+			append++;
+		else
+			usage();
+		optind++;
 	}
 
 	numfiles = argc - optind;
@@ -124,9 +132,9 @@ main(int argc, char *argv[])
 			exit(1);
 		}
 	}
-	_fsetmode(stdin,  "b");
+	setmode(fileno(stdin),  O_BINARY);
 	fflush(stdout);	/* needed for _fsetmode(stdout) */
-	_fsetmode(stdout, "b");
+	setmode(fileno(stdout),  O_BINARY);
 
 	while ((n = myfread(buf, sizeof(char), sizeof(buf), stdin)) > 0)
 	{

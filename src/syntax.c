@@ -3022,6 +3022,8 @@ find_endpos(idx, startpos, m_endpos, hl_endpos, flagsp, end_endpos,
 	    if (r && regmatch.startpos[0].col
 					     <= best_regmatch.startpos[0].col)
 	    {
+		int line_len;
+
 		/* Add offset to skip pattern match */
 		syn_add_end_off(&pos, &regmatch, spp_skip, SPO_ME_OFF, 1);
 
@@ -3031,6 +3033,7 @@ find_endpos(idx, startpos, m_endpos, hl_endpos, flagsp, end_endpos,
 		    break;
 
 		line = ml_get_buf(syn_buf, startpos->lnum, FALSE);
+		line_len = (int)STRLEN(line);
 
 		/* take care of an empty match or negative offset */
 		if (pos.col <= matchcol)
@@ -3040,12 +3043,12 @@ find_endpos(idx, startpos, m_endpos, hl_endpos, flagsp, end_endpos,
 		else
 		    /* Be careful not to jump over the NUL at the end-of-line */
 		    for (matchcol = regmatch.endpos[0].col;
-			    line[matchcol] != NUL && matchcol < pos.col;
+			    matchcol < line_len && matchcol < pos.col;
 								   ++matchcol)
 			;
 
 		/* if the skip pattern includes end-of-line, break here */
-		if (line[matchcol] == NUL)
+		if (matchcol >= line_len)
 		    break;
 
 		continue;	    /* start with first end pattern again */
@@ -5830,6 +5833,11 @@ syn_cmd_sync(eap, syncing)
 	}
 	else if (STRCMP(key, "LINECONT") == 0)
 	{
+	    if (*next_arg == NUL)	   /* missing pattern */
+	    {
+		illegal = TRUE;
+		break;
+	    }
 	    if (curwin->w_s->b_syn_linecont_pat != NULL)
 	    {
 		EMSG(_("E403: syntax sync: line continuations pattern specified twice"));
@@ -7700,7 +7708,7 @@ do_highlight(line, forceit, init)
 			color &= 7;	/* truncate to 8 colors */
 		    }
 		    else if (t_colors == 16 || t_colors == 88
-							   || t_colors == 256)
+							   || t_colors >= 256)
 		    {
 			/*
 			 * Guess: if the termcap entry ends in 'm', it is
@@ -7711,19 +7719,16 @@ do_highlight(line, forceit, init)
 			    p = T_CAF;
 			else
 			    p = T_CSF;
-			if (*p != NUL && *(p + STRLEN(p) - 1) == 'm')
-			    switch (t_colors)
-			    {
-				case 16:
-				    color = color_numbers_8[i];
-				    break;
-				case 88:
-				    color = color_numbers_88[i];
-				    break;
-				case 256:
-				    color = color_numbers_256[i];
-				    break;
-			    }
+			if (*p != NUL && (t_colors > 256
+					      || *(p + STRLEN(p) - 1) == 'm'))
+			{
+			    if (t_colors == 88)
+				color = color_numbers_88[i];
+			    else if (t_colors >= 256)
+				color = color_numbers_256[i];
+			    else
+				color = color_numbers_8[i];
+			}
 		    }
 		}
 	    }

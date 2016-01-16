@@ -1,6 +1,6 @@
 # Project: gvimext
 # Generates gvimext.dll with gcc.
-# To be used with MingW.
+# To be used with MingW and Cygwin.
 #
 # Originally, the DLL base address was fixed: -Wl,--image-base=0x1C000000
 # Now it is allocated dymanically by the linker by evaluating all DLLs

@@ -50,10 +50,12 @@ $SPELLDIR/en.ascii.spl : $FILES
 # Fetching the files from OpenOffice.org.
 # THIS URL NO LONGER WORKS.
 #
-# Files for en_US, en_CA and en_GB obtaind from
+# Files for en_US, en_CA and en_GB can be obtained from:
 # github.com/marcoagpinto/aoo-mozilla-en-dict
+# Unfortunately, giving suggestions becomes terribly slow with these.
+# TODO: find out why suggestions are slow and fix that.
 #
-# NOTE: en_AU and en_NZ use older libraries.
+# For now we use the older libraries.
 #
 OODIR = http://ftp.services.openoffice.org/pub/OpenOffice.org/contrib/dictionaries
 :attr {fetch = $OODIR/%file%} en_US.zip en_CA.zip en_NZ.zip

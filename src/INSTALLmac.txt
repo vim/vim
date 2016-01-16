@@ -3,9 +3,13 @@ INSTALLmac.txt - Installation of Vim on Macintosh
 This file contains instructions for compiling Vim. If you already have an
 executable version of Vim, you don't need this.
 
-An alternate way of building that Benji Fisher uses can be found here:
+First, make sure you've installed Xcode or CommandLineToots.  If not, open a
+terminal and do
 
-	http://macvim.swdev.org/OSX/#Developers
+	$ make --version
+
+A window pops up instructing you to install the developer tools.
+
 
 ----------------------------------------------------------------------------
 Summary
@@ -30,11 +34,12 @@ MacOS Classic is no longer supported.  If you really want it use Vim 6.4.
  You can compile vim with the standard Unix routine:
    cd .../src
    make
+   make test
+   sudo make install
 
- This will create a working Vim.app application bundle in the src
+ "make" will create a working Vim.app application bundle in the src
  directory.  You can move this bundle (the Vim.app directory) anywhere
- you want.  Or use this command to move it to /Applications:
-   make install
+ you want.  Or use "make install" to move it to /Applications.
 
  You need at least Xcode 1.5 to compile Vim 7.0.
 

@@ -7132,7 +7132,7 @@ xsmp_handle_interaction(smc_conn, client_data)
 
     save_cmdmod = cmdmod;
     cmdmod.confirm = TRUE;
-    if (check_changed_any(FALSE))
+    if (check_changed_any(FALSE, FALSE))
 	/* Mustn't logout */
 	cancel_shutdown = True;
     cmdmod = save_cmdmod;

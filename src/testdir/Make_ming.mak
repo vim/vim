@@ -10,12 +10,14 @@
 
 ifneq (sh.exe, $(SHELL))
 DEL = rm -f
+DELDIR = rm -rf
 MV = mv
 CP = cp
 CAT = cat
 DIRSLASH = /
 else
 DEL = del
+DELDIR = rd /s /q
 MV = rename
 CP = copy
 CAT = type
@@ -76,6 +78,8 @@ clean:
 	-$(DEL) mbyte.vim
 	-$(DEL) mzscheme.vim
 	-$(DEL) lua.vim
+	-$(DELDIR) Xdir1
+	-$(DELDIR) Xfind
 	-$(DEL) X*
 	-$(DEL) viminfo
 
@@ -85,6 +89,8 @@ clean:
 	diff test.out $*.ok
 	-$(DEL) $*.out
 	$(MV) test.out $*.out
+	-$(DELDIR) Xdir1
+	-$(DELDIR) Xfind
 	-$(DEL) X*
 	-$(DEL) test.ok
 	-$(DEL) viminfo

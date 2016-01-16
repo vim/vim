@@ -43,7 +43,7 @@ void op_formatexpr __ARGS((oparg_T *oap));
 int fex_format __ARGS((linenr_T lnum, long count, int c));
 void format_lines __ARGS((linenr_T line_count, int avoid_fex));
 int paragraph_start __ARGS((linenr_T lnum));
-int do_addsub __ARGS((int command, linenr_T Prenum1, int g_cmd));
+void op_addsub __ARGS((oparg_T *oap, linenr_T Prenum1, int g_cmd));
 int read_viminfo_register __ARGS((vir_T *virp, int force));
 void write_viminfo_registers __ARGS((FILE *fp));
 void x11_export_final_selection __ARGS((void));
@@ -58,5 +58,5 @@ void write_reg_contents __ARGS((int name, char_u *str, int maxlen, int must_appe
 void write_reg_contents_lst __ARGS((int name, char_u **strings, int maxlen, int must_append, int yank_type, long block_len));
 void write_reg_contents_ex __ARGS((int name, char_u *str, int maxlen, int must_append, int yank_type, long block_len));
 void clear_oparg __ARGS((oparg_T *oap));
-void cursor_pos_info __ARGS((void));
+void cursor_pos_info __ARGS((dict_T *eval));
 /* vim: set ft=c : */

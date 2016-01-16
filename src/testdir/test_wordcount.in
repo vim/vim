@@ -1,0 +1,126 @@
+Test for wordcount() function
+
+STARTTEST
+:so small.vim
+:so mbyte.vim
+:set enc=utf8
+:set selection=inclusive fileformat=unix fileformats=unix
+:new
+:fu DoRecordWin(...)
+:	wincmd k
+:       if exists("a:1")
+:           call cursor(a:1)
+:       endif
+:       let result=[]
+:       call add(result, g:test)
+:       call add(result, getline(1, '$'))
+:       call add(result, wordcount())
+:	wincmd j
+:       return result
+:endfu
+:fu PutInWindow(args)
+:       wincmd k
+:       %d _
+:       call append(1, a:args)
+:	wincmd j
+:endfu
+:fu Log()
+:   $put ='----'
+:   $put =remove(g:log,0)
+:   $put =string(g:log)
+:endfu
+:fu! STL()
+:    if mode() =~? 'V'
+:       let g:visual_stat=wordcount()
+:    endif
+:    return string(wordcount())
+:endfu
+:let g:test="Test 1: empty window"
+:let log=DoRecordWin()
+:call Log()
+:"
+:let g:test="Test 2: some words, cursor at start"
+:call PutInWindow('one two three')
+:let log=DoRecordWin([1,1,0])
+:call Log()
+:"
+:let g:test="Test 3: some words, cursor at end"
+:call PutInWindow('one two three')
+:let log=DoRecordWin([2,99,0])
+:call Log()
+:"
+:let g:test="Test 4: some words, cursor at end, ve=all"
+:set ve=all
+:call PutInWindow('one two three')
+:let log=DoRecordWin([2,99,0])
+:call Log()
+:set ve=
+:"
+:let g:test="Test 5: several lines with words"
+:call PutInWindow(['one two three', 'one two three', 'one two three'])
+:let log=DoRecordWin([4,99,0])
+:call Log()
+:"
+:let g:test="Test 6: one line with BOM set"
+:call PutInWindow('one two three')
+:wincmd k
+:set bomb
+:w! Xtest
+:wincmd j
+:let log=DoRecordWin([2,99,0])
+:call Log()
+:wincmd k
+:set nobomb
+:w!
+:wincmd j
+:"
+:let g:test="Test 7: one line with multibyte words"
+:call PutInWindow(['Äne M¤ne Müh'])
+:let log=DoRecordWin([2,99,0])
+:call Log()
+:"
+:let g:test="Test 8: several lines with multibyte words"
+:call PutInWindow(['Äne M¤ne Müh', 'und raus bist dü!'])
+:let log=DoRecordWin([3,99,0])
+:call Log()
+:"
+:let g:test="Test 9: visual mode, complete buffer"
+:call PutInWindow(['Äne M¤ne Müh', 'und raus bist dü!'])
+:wincmd k
+:set ls=2 stl=%{STL()}
+:" start visual mode quickly and select complete buffer
+:0
+V2jy
+:set stl= ls=1
+:let log=DoRecordWin([3,99,0])
+:let log[2]=g:visual_stat
+:call Log()
+:"
+:let g:test="Test 10: visual mode (empty)"
+:call PutInWindow(['Äne M¤ne Müh', 'und raus bist dü!'])
+:wincmd k
+:set ls=2 stl=%{STL()}
+:" start visual mode quickly and select complete buffer
+:0
+v$y
+:set stl= ls=1
+:let log=DoRecordWin([3,99,0])
+:let log[2]=g:visual_stat
+:call Log()
+:"
+:let g:test="Test 11: visual mode, single line"
+:call PutInWindow(['Äne M¤ne Müh', 'und raus bist dü!'])
+:wincmd k
+:set ls=2 stl=%{STL()}
+:" start visual mode quickly and select complete buffer
+:2
+0v$y
+:set stl= ls=1
+:let log=DoRecordWin([3,99,0])
+:let log[2]=g:visual_stat
+:call Log()
+:"
+:/^RESULT test/,$w! test.out
+:qa!
+ENDTEST
+RESULT test:
