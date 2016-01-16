@@ -371,11 +371,6 @@ getcmdline(firstc, count, indent)
 	    c = safe_vgetc();
 	} while (c == K_IGNORE);
 
-#ifdef FEAT_LANGMAP
-	LANGMAP_ADJUST(c, get_cmdline_type() == ':');
-#endif
-
-
 	if (KeyTyped)
 	{
 	    some_key_typed = TRUE;

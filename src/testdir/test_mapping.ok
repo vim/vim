@@ -6,16 +6,25 @@ vim
 TEST2: CTRL-C |<ctrl-c>A|
 
 vmap works
-+
-+
-T
-{
-+
-+
+OK_nlangmap
+OK_nlangmap motion
+OK_nlangmap registers
+OK_nlangmap mapping
+OK_nlangmap noremap
+OK_ilangmap
+OK_iexplangmap
+OK_clangmap_non_colon
+OK_clangmap_colon
+OK_cexplangmap_no_colon
+OK_cexplangmap_colon
+OK_clangmap_colon_multibyte
 ю
-T
+OK_keymap
+OK_keymap_search
 ю
+OK_keymap_register
 .
+OK_register_no_keymap
 
 Test1: text with a (here some more text)
 Test1: text with a (here some more text)

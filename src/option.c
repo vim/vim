@@ -3135,6 +3135,7 @@ static int wc_use_keyname __ARGS((char_u *varp, long *wcp));
 #ifdef FEAT_LANGMAP
 static void langmap_init __ARGS((void));
 static void langmap_set __ARGS((void));
+int langmap_adjust(char_u*,int,int);
 #endif
 static void paste_option_changed __ARGS((void));
 static void compatible_set __ARGS((void));
@@ -11535,6 +11536,81 @@ langmap_adjust_mb(c)
     }
     return c;  /* no entry found, return "c" unmodified */
 }
+
+
+
+/*
+ * Apply 'langmap' to (multi-byte) characters in "buf".
+ */
+    int
+langmap_adjust(buf, len, maxlen)
+    char_u	*buf;
+    int		len;
+    int		maxlen;
+{
+    char_u	*p = buf;
+    int i;
+    for (i = len; --i >= 0;)
+    {
+	int c, co, nco = 1, nc = 1;
+	if (*p == K_SPECIAL)
+	{
+	    i -= 3;
+	    p += 3;
+	}
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	{
+	    c = co = (*mb_ptr2char)(p);
+	    nco = (*mb_ptr2len)(p);
+	    if (c >= 0)
+	    {
+		if (c < 256)
+		    c = langmap_mapchar[c];
+		else
+		{
+		    c = langmap_adjust_mb(c);
+		    nc = (*mb_char2len)(c);
+		}
+	    }
+	}
+	else
+#endif
+	{
+	    c = co = *p;
+	    c = langmap_mapchar[c];
+	}
+
+	if (c != co)
+	{
+	    int tlen = len + nc - nco;
+	    if (nc > nco)
+	    {
+		if (tlen > maxlen)
+		    break;
+		len = tlen;
+		mch_memmove(p + nc, p + nco, (size_t)i+1);
+	    }
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+		(*mb_char2bytes)(c,p);
+	    else
+#endif
+		*p = (char_u)c;
+
+	    if (nc < nco)
+	    {
+		len = tlen;
+		mch_memmove(p + nc, p + nco, (size_t)i+1);
+	    }
+
+	    p += nc;
+	}
+    }
+    return len;
+}
+
+
 # endif
 
     static void

@@ -24,43 +24,110 @@ TEST2: CTRL-C |A|
 GV
 :vunmap <c-c>
 :"
-:" langmap should not get remapped in insert mode
+:" langmap should apply in normal mode
+:set langmap=öc,üi langnoremap
+:call append(line('$'), "FAIL_nlangmap")
+Göf_OK_
+:" langmap should apply in normal mode with motion
+:call append(line('$'), "FAIL_nlangmap motion")
+qüGf_öüwOK_nlangmapq
+:" langmap should apply in normal mode with registers
+:call append(line('$'), "FAIL_nlangmap registers")
+@ü
+:" langmap should act before mappings
+:call append(line('$'), "FAIL_nlangmap mapping")
+:map col :%g/FAIL_nlangmap mapping/normal 0ct_OK<ESC>
+Göol
+:unmap col
+:set langmap=
+:" langmap should not get remapped
+:call append(line('$'), "FAIL_nlangmap noremap")
+:set langmap=:>,ö: langnoremap
+ömap , ö
+G,s/FAIL_nlangmap/OK_nlangmap
+öunmap ,
+öset langmap=
+:" langmap should not apply in Insert mode
 :inoremap { FAIL_ilangmap
 :set langmap=+{ langnoremap
 o+
-:" Insert-mode expr mapping with langmap
+:set langmap=
+:s/+/OK_ilangmap
+:" no Insert-mode expr mapping with langmap
 :inoremap <expr> { "FAIL_iexplangmap"
+:set langmap=+{ langnoremap
 o+
-:" langmap should not get mapped in non-':'-Command-line mode
-?+
-:call append(line('$'), getline('.')=="/"?"T":"FAIL_clangmap_non_colon")
-:" langmap should get mapped in ':'-Command-line mode
-:cnoremap / FAIL_clangmap_colon
+:iunmap {
+:set langmap=
+:s/+/OK_iexplangmap
+:" langmap is not mapped in non-:-Command-line mode
+o+clangmap_non_colon
+:set langmap=+{ langnoremap
+o{clangmap_non_colon
+?+clangmap_non_colon
+:set langmap=
+:call append(line('$'), getline('.')=="+clangmap_non_colon"?"OK_clangmap_non_colon":"FAIL_clangmap_non_colon")
+GkkddddG
+:" langmap should apply in :-Command-line mode (before maps)
+:let @p='+'
+:let @b='{'
+:set langmap=+{ langnoremap
+:cnoremap p FAIL_clangmap_colon
+:cnoremap { OK_clangmap_colon
 :call append(line('$'), '+')
-:cunmap /
-:" Command-line mode expr mapping with langmap
-:cnoremap <expr> + "FAIL_cexplangmap"
-:call append(line('$'), '/')
-:cunmap +
-:" langmap should map multi-byte in ':'-Command-line mode
+:set langmap=
+:cunmap p
+:cunmap b
+:"
+:" langmap is not applied in non-:-Command-line expr mapping
+:let @p='+'
+:let @b='{'
+:set langmap=+{ langnoremap
+:cnoremap <expr> p "FAIL"
+:cnoremap <expr> { "OK"
+:call append(line('$'), "FAIL_OK_cexplangmap_no_colon")
+/+
+df_
+:set langmap=
+:cunmap p
+:cunmap b
+:"
+:" langmap is applied in :-Command-line expr mapping
+:let @p='+'
+:let @b='{'
+:set langmap=+{ langnoremap
+:cnoremap <expr> p "FAIL_cexplangmap_colon"
+:cnoremap <expr> { "OK_cexplangmap_colon"
+:call append(line('$'), '+')
+:set langmap=
+:cunmap p
+:cunmap b
+:" langmap maps multi-byte in :-Command-line mode
+:let @p='+'
+:let @b='{'
 :set langmap=ф+;a{
 :set lфngmфp=
-:cnoremap { FAIL_clangmap_colon
+:cnoremap <expr> p "OK_clangmap_colon_multibyte"
+:cnoremap <expr> { "FAIL_clangmap_colon_multibyte"
 :call append(line('$'), '+')
-:cunmap {
+:cunmap p
+:cunmap b
 :"
-:" keymap should apply to insert mode, but not to normal mode
+:" keymap applies to insert mode, but not to normal mode
 :set keymap=russian-jcukenwin
 Gqao.q
-:" keymap should apply to non-':'-command mode
-Ggg/.
-:call append(line('$'), "/"=="ю"?"T":"FAIL_keymap")
+:call append(line('$'), getline('.')=="ю"?"OK_keymap":"FAIL_keymap")
+:" keymap should apply to non-:-command mode
+gg/.
+:call append(line('$'), "/"=="ю"?"OK_keymap_search":"FAIL_keymap_search")
 :" with keymap @a has same result as direct typing
 G@a
-:" keymap does not apply to ':'-command mode
+:call append(line('$'), getline('.')=="ю"?"OK_keymap_register":"FAIL_keymap_register")
+:" keymap does not apply to :-command mode
 :set keymap=
 :" without keymap @a produces the unmapped keys
 G@a
+:call append(line('$'), getline('.')=="."?"OK_register_no_keymap":"FAIL_register_no_keymap")
 :"
 :" issue #212 (feedkeys insert mapping at current position)
 :nnoremap . :call feedkeys(".", "in")<cr>
