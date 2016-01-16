@@ -43,6 +43,9 @@ set nomore
 " Output all messages in English.
 lang mess C
 
+" Always use forward slashes.
+set shellslash
+
 let s:srcdir = expand('%:p:h:h')
 
 " Support function: get the alloc ID by name.

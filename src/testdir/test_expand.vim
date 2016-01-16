@@ -16,8 +16,10 @@ func Test_with_directories()
 
   next Xdir?/*/file
   call assert_equal('Xdir3/Xdir4/file', expand('%'))
-  next! Xdir?/*/nofile
-  call assert_equal('Xdir?/*/nofile', expand('%'))
+  if has('unix')
+    next! Xdir?/*/nofile
+    call assert_equal('Xdir?/*/nofile', expand('%'))
+  endif
 
   call delete('Xdir1', 'rf')
   call delete('Xdir2', 'rf')

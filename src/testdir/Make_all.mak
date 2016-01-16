@@ -139,7 +139,6 @@ SCRIPTS_MORE2 = \
 	test10.out \
 	test12.out \
 	test25.out \
-	test27.out \
 	test49.out \
 	test97.out
 

@@ -35,7 +35,6 @@ include Make_all.mak
 # test10	'errorformat' is different
 # test12	can't unlink a swap file
 # test25	uses symbolic link
-# test27	can't edit file with "*" in file name
 # test54	doesn't work yet
 # test97	\{ and \$ are not escaped characters
 
