@@ -608,7 +608,6 @@ EXTERN char_u	*p_kp;		/* 'keywordprg' */
 EXTERN char_u	*p_km;		/* 'keymodel' */
 #ifdef FEAT_LANGMAP
 EXTERN char_u	*p_langmap;	/* 'langmap'*/
-EXTERN int	p_lnr;		/* 'langnoremap' */
 #endif
 #if defined(FEAT_MENU) && defined(FEAT_MULTI_LANG)
 EXTERN char_u	*p_lm;		/* 'langmenu' */

@@ -1708,7 +1708,7 @@ static struct vimoption
 			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
     {"langnoremap",  "lnr",   P_BOOL|P_VI_DEF,
 #ifdef FEAT_LANGMAP
-			    (char_u *)&p_lnr, PV_NONE,
+			    (char_u *)NULL, PV_NONE, /*not used any more, deprecated*/
 #else
 			    (char_u *)NULL, PV_NONE,
 #endif
