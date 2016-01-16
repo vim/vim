@@ -5543,7 +5543,7 @@ find_file_in_path_option(ptr, len, options, first, path_option,
 	/* copy file name into NameBuff, expanding environment variables */
 	save_char = ptr[len];
 	ptr[len] = NUL;
-	expand_env(ptr, NameBuff, MAXPATHL);
+	expand_env_esc(ptr, NameBuff, MAXPATHL, FALSE, TRUE, NULL);
 	ptr[len] = save_char;
 
 	vim_free(ff_file_to_find);
