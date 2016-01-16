@@ -22,6 +22,7 @@ void mch_hide __ARGS((char_u *name));
 int mch_ishidden __ARGS((char_u *name));
 int mch_isdir __ARGS((char_u *name));
 int mch_mkdir __ARGS((char_u *name));
+int mch_rmdir __ARGS((char_u *name));
 int mch_is_hard_link __ARGS((char_u *fname));
 int mch_is_symbolic_link __ARGS((char_u *fname));
 int mch_is_linked __ARGS((char_u *fname));

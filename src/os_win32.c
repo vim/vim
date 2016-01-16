@@ -3154,6 +3154,30 @@ mch_mkdir(char_u *name)
 }
 
 /*
+ * Delete directory "name".
+ * Return 0 on success, -1 on error.
+ */
+    int
+mch_rmdir(char_u *name)
+{
+#ifdef FEAT_MBYTE
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	WCHAR	*p;
+	int	retval;
+
+	p = enc_to_utf16(name, NULL);
+	if (p == NULL)
+	    return -1;
+	retval = _wrmdir(p);
+	vim_free(p);
+	return retval;
+    }
+#endif
+    return _rmdir(name);
+}
+
+/*
  * Return TRUE if file "fname" has more than one link.
  */
     int
