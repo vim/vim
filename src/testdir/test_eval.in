@@ -218,6 +218,24 @@ endfun
 0:call setpos('.', sp)
 jyl:$put
 :"
+:" substring and variable name
+:let str = 'abcdef'
+:let n = 3
+:$put =str[n:]
+:$put =str[:n]
+:$put =str[n:n]
+:unlet n
+:let nn = 3
+:$put =str[nn:]
+:$put =str[:nn]
+:$put =str[nn:nn]
+:unlet nn
+:let b:nn = 4
+:$put =str[b:nn:]
+:$put =str[:b:nn]
+:$put =str[b:nn:b:nn]
+:unlet b:nn
+:"
 :/^start:/+1,$wq! test.out
 :" vim: et ts=4 isk-=\: fmr=???,???
 :call getchar()

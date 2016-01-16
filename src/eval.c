@@ -115,6 +115,8 @@ static char *e_illvar = N_("E461: Illegal variable name: %s");
 static char *e_float_as_string = N_("E806: using Float as a String");
 #endif
 
+#define NAMESPACE_CHAR	(char_u *)"abglstvw"
+
 static dictitem_T	globvars_var;		/* variable used for g: */
 #define globvarht globvardict.dv_hashtab
 
@@ -20666,7 +20668,17 @@ get_id_len(arg)
 
     /* Find the end of the name. */
     for (p = *arg; eval_isnamec(*p); ++p)
-	;
+    {
+	if (*p == ':')
+	{
+	    /* "s:" is start of "s:var", but "n:" is not and can be used in
+	     * slice "[n:]".  Also "xx:" is not a namespace. */
+	    len = (int)(p - *arg);
+	    if ((len == 1 && vim_strchr(NAMESPACE_CHAR, **arg) == NULL)
+		    || len > 1)
+		break;
+	}
+    }
     if (p == *arg)	    /* no name found */
 	return 0;
 
@@ -20766,6 +20778,7 @@ find_name_end(arg, expr_start, expr_end, flags)
     int		mb_nest = 0;
     int		br_nest = 0;
     char_u	*p;
+    int		len;
 
     if (expr_start != NULL)
     {
@@ -20799,6 +20812,15 @@ find_name_end(arg, expr_start, expr_end, flags)
 		if (*p == '\\' && p[1] != NUL)
 		    ++p;
 	    if (*p == NUL)
+		break;
+	}
+	else if (br_nest == 0 && mb_nest == 0 && *p == ':')
+	{
+	    /* "s:" is start of "s:var", but "n:" is not and can be used in
+	     * slice "[n:]".  Also "xx:" is not a namespace. */
+	    len = (int)(p - arg);
+	    if ((len == 1 && vim_strchr(NAMESPACE_CHAR, *arg) == NULL)
+		    || len > 1)
 		break;
 	}
 
