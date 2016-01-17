@@ -89,6 +89,7 @@ clean:
 	-if exist Xdir1 rd /s /q Xdir1
 	-if exist Xfind rd /s /q Xfind
 	-del X*
+	-for /d %i in (X*) do @rmdir /s/q %i
 	-if exist viminfo del viminfo
 	-if exist test.log del test.log
 	-if exist messages del messages
