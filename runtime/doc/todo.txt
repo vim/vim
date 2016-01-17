@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Jan 15
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Jan 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -97,8 +97,6 @@ Should use /usr/local/share/applications or /usr/share/applications.
 Or use $XDG_DATA_DIRS.
 Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
 
-Add has('crypt-blowfish') and has('crypt-blowfish2') (Smu Johnson)
-
 Access to uninitialized memory in match_backref() regexp_nda.c:4882
 (Dominique Pelle, 2015 Nov 6)
 
@@ -125,41 +123,15 @@ github with a URL like this:
    https://github.com/vim/vim/compare/v7.4.920%5E...v7.4.920.diff
 Diff for version.c contains more context, can't skip a patch.
 >
-Can src/GvimExt/Make_cyg.mak be removed?
-Same for src/xxd/Make_cyg.mak
-
 When t_Co is changed from termresponse, the OptionSet autocmmand event isn't
 triggered.  Use the code from the end of set_num_option() in
 set_color_count().
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
-Patch to fix cursor position in right-left mode with concealing.
-(Hirohito Higashi, 2016 Jan 13)
-
 Plugin to use Vim in MANPAGER.  Konfekt, PR #491
 
 Using uninitialized memory. (Dominique Pelle, 2015 Nov 4)
-
-Patch for explaining the help. (Christian Brabandt, 2015 Jan 8)
-Should be in the user manual?
-
-Patch to recognize string slice for variable followed by colon.
-(Hirohito Higashi, 2015 Nov 24)
-
-Patch to add debug backtrace. (Alberto Fanjul, 2015 Sep 27)
-Update 2016 Jan 2.  Issue #433
-
-Patch to gvim.nsi for appveyor build. (Ken Takata, 2016 Jan 12)
-
-Patch to improve behavior of dead keys on MS-Windows. (John Wellesz, 2015 Aug
-25)  https://github.com/vim/vim/pull/399.diff
-
-Patch to make mzscheme (racket) interface work. (Yukihiro Nakadaira, 2015 Jan
-10)  Doesn't work for me, need to build from source. Include anyway?
-Additional patch by Ken Takata, 2016 Jan 13.
-Merged patch by Yasuhiro Nakadaira,, 2016 Jan 14.
-Update for INSSTALLpc.txt by Ken Takata, Jan 14.
 
 MS-Windows: When editing a file with a leading space, writing it uses the
 wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
@@ -171,18 +143,11 @@ Half-finished patch to fix the Problem using cgn to change a search hit when
 replacement includes hit. Reported by John Beckett, fix by Christian Brabandt,
 2016 Jan 11.
 
-Patch to fix pointer cast warning in VS2015. (Mike Williams, 2015 Dec 13)
-Patch to make building GVimExt with VS2015. (Mike Williams, 2015 Dec 13)
-
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
-Patch to add perleval(). (Damien, 2015 Dec 8, update 2016 Jan 4)
-
 Can we cache the syntax attributes, so that updates for 'relativenumber' and
 'cursorline'/'cursorcolumn' are a lot faster?
-
-Patch to add window and tab arguments to getcwd(). (Thinca, 2015 Nov 15)
 
 Build with Python on Mac does not always use the right library.
 (Kazunobu Kuriyama, 2015 Mar 28)
@@ -286,7 +251,7 @@ Is this the right solution?  Need to cleanup langmap behavior:
 - Remove LANGMAP_ADJUST() in other parts of the code.  Make sure the mode is
   covered by the above change.
 So that replaying the register doesn't use keymap/langmap and still does the
-same thing.  Remarks on issue 543.
+same thing.  Remarks on issue 543 (Roland Puntaier).
 
 Patch to add grepfile(). (Scott Prager, 2015 May 26)
 Work in progress.

@@ -3367,12 +3367,18 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 ==	change.txt	/*==*
 >	change.txt	/*>*
 >>	change.txt	/*>>*
+>backtrace	repeat.txt	/*>backtrace*
+>bt	repeat.txt	/*>bt*
 >cont	repeat.txt	/*>cont*
+>down	repeat.txt	/*>down*
 >finish	repeat.txt	/*>finish*
+>frame	repeat.txt	/*>frame*
 >interrupt	repeat.txt	/*>interrupt*
 >next	repeat.txt	/*>next*
 >quit	repeat.txt	/*>quit*
 >step	repeat.txt	/*>step*
+>up	repeat.txt	/*>up*
+>where	repeat.txt	/*>where*
 ?	pattern.txt	/*?*
 ?<CR>	pattern.txt	/*?<CR>*
 @	repeat.txt	/*@*
@@ -7086,6 +7092,7 @@ mzscheme-examples	if_mzsch.txt	/*mzscheme-examples*
 mzscheme-funcref	if_mzsch.txt	/*mzscheme-funcref*
 mzscheme-mzeval	if_mzsch.txt	/*mzscheme-mzeval*
 mzscheme-sandbox	if_mzsch.txt	/*mzscheme-sandbox*
+mzscheme-setup	if_mzsch.txt	/*mzscheme-setup*
 mzscheme-threads	if_mzsch.txt	/*mzscheme-threads*
 mzscheme-vim	if_mzsch.txt	/*mzscheme-vim*
 mzscheme-vimext	if_mzsch.txt	/*mzscheme-vimext*
@@ -7531,6 +7538,7 @@ perl-overview	if_perl.txt	/*perl-overview*
 perl-patterns	pattern.txt	/*perl-patterns*
 perl-using	if_perl.txt	/*perl-using*
 perl.vim	syntax.txt	/*perl.vim*
+perleval()	eval.txt	/*perleval()*
 persistent-undo	undo.txt	/*persistent-undo*
 pexpr-option	print.txt	/*pexpr-option*
 pfn-option	print.txt	/*pfn-option*
