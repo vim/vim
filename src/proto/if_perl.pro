@@ -6,3 +6,4 @@ void perl_win_free __ARGS((win_T *wp));
 void perl_buf_free __ARGS((buf_T *bp));
 void ex_perl __ARGS((exarg_T *eap));
 void ex_perldo __ARGS((exarg_T *eap));
+void do_perleval __ARGS((char_u *str, typval_T *rettv));

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Jan 16
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Jan 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1950,6 +1950,7 @@ nextnonblank( {lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char( {expr}[, {utf8}])	String	single char with ASCII/UTF8 value {expr}
 or( {expr}, {expr})		Number  bitwise OR
 pathshorten( {expr})		String	shorten directory names in a path
+perleval( {expr})		any	evaluate |Perl| expression
 pow( {x}, {y})			Float	{x} to the power of {y}
 prevnonblank( {lnum})		Number	line nr of non-blank line <= {lnum}
 printf( {fmt}, {expr1}...)	String	format text
@@ -4777,6 +4778,17 @@ pathshorten({expr})					*pathshorten()*
 			:echo pathshorten('~/.vim/autoload/myfile.vim')
 <			~/.v/a/myfile.vim ~
 		It doesn't matter if the path exists or not.
+
+perleval({expr})					*perleval()*
+		Evaluate Perl expression {expr} in scalar context and return
+		its result converted to Vim data structures. If value can't be
+		converted, it returned as string Perl representation.
+		Note: If you want a array or hash, {expr} must returns an
+		reference of it.
+		Example: >
+			:echo perleval('[1 .. 4]')
+<			[1, 2, 3, 4]
+		{only available when compiled with the |+perl| feature}
 
 pow({x}, {y})						*pow()*
 		Return the power of {x} to the exponent {y} as a |Float|.

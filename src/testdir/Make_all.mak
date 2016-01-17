@@ -178,7 +178,8 @@ NEW_TESTS = test_arglist.res \
 	    test_increment.res \
 	    test_quickfix.res \
 	    test_viml.res \
-	    test_alot.res
+	    test_alot.res \
+	    test_perl.res
 
 
 # Explicit dependencies.

@@ -657,6 +657,9 @@ static void f_nextnonblank __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_nr2char __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_or __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_pathshorten __ARGS((typval_T *argvars, typval_T *rettv));
+#ifdef FEAT_PERL
+static void f_perleval __ARGS((typval_T *argvars, typval_T *rettv));
+#endif
 #ifdef FEAT_FLOAT
 static void f_pow __ARGS((typval_T *argvars, typval_T *rettv));
 #endif
@@ -8270,6 +8273,9 @@ static struct fst
     {"nr2char",		1, 2, f_nr2char},
     {"or",		2, 2, f_or},
     {"pathshorten",	1, 1, f_pathshorten},
+#ifdef FEAT_PERL
+    {"perleval",	1, 1, f_perleval},
+#endif
 #ifdef FEAT_FLOAT
     {"pow",		2, 2, f_pow},
 #endif
@@ -15479,6 +15485,23 @@ f_pathshorten(argvars, rettv)
 	    shorten_dir(p);
     }
 }
+
+#ifdef FEAT_PERL
+/*
+ * "perleval()" function
+ */
+    static void
+f_perleval(argvars, rettv)
+    typval_T *argvars;
+    typval_T *rettv;
+{
+    char_u	*str;
+    char_u	buf[NUMBUFLEN];
+
+    str = get_tv_string_buf(&argvars[0], buf);
+    do_perleval(str, rettv);
+}
+#endif
 
 #ifdef FEAT_FLOAT
 /*
