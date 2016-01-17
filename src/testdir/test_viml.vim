@@ -1,5 +1,5 @@
 " Test various aspects of the Vim language.
-" This was formerly in test49.
+" Most of this was formerly in test49.
 
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1
@@ -906,6 +906,20 @@ func Test_if_bar_fail()
     call assert_equal('acdfh-acfh', g:test15_result)
 endfunc
 
+"-------------------------------------------------------------------------------
+" Test 90:  Recognizing {} in variable name.			    {{{1
+"-------------------------------------------------------------------------------
+
+func Test_curlies()
+    let s:var = 66
+    let ns = 's'
+    call assert_equal(66, {ns}:var)
+
+    let g:a = {}
+    let g:b = 't'
+    let g:a[g:b] = 77
+    call assert_equal(77, g:a['t'])
+endfunc
 
 "-------------------------------------------------------------------------------
 " Modelines								    {{{1
