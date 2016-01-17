@@ -21,6 +21,7 @@ endfunc
 func Test_recursive_delete()
   call mkdir('Xdir1')
   call mkdir('Xdir1/subdir')
+  call mkdir('Xdir1/empty')
   split Xdir1/Xfile
   call setline(1, ['a', 'b'])
   w
@@ -30,6 +31,7 @@ func Test_recursive_delete()
   call assert_equal(['a', 'b'], readfile('Xdir1/Xfile'))
   call assert_true(isdirectory('Xdir1/subdir'))
   call assert_equal(['a', 'b'], readfile('Xdir1/subdir/Xfile'))
+  call assert_true(isdirectory('Xdir1/empty'))
   call assert_equal(0, delete('Xdir1', 'rf'))
   call assert_false(isdirectory('Xdir1'))
   call assert_equal(-1, delete('Xdir1', 'd'))
