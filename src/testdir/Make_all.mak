@@ -171,7 +171,8 @@ SCRIPTS_GUI = test16.out
 
 # Tests using runtest.vim.vim.
 # Keep test_alot.res as the last one, sort the others.
-NEW_TESTS = test_assert.res \
+NEW_TESTS = test_arglist.res \
+	    test_assert.res \
 	    test_cdo.res \
 	    test_hardcopy.res \
 	    test_increment.res \

@@ -2562,6 +2562,10 @@ ex_argdelete(eap)
 		curwin->w_arg_idx -= n;
 	    else if (curwin->w_arg_idx > eap->line1)
 		curwin->w_arg_idx = eap->line1;
+	    if (ARGCOUNT == 0)
+		curwin->w_arg_idx = 0;
+	    else if (curwin->w_arg_idx >= ARGCOUNT)
+		curwin->w_arg_idx = ARGCOUNT - 1;
 	}
     }
     else if (*eap->arg == NUL)
