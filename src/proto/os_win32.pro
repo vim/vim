@@ -21,6 +21,7 @@ int mch_setperm __ARGS((char_u *name, long perm));
 void mch_hide __ARGS((char_u *name));
 int mch_ishidden __ARGS((char_u *name));
 int mch_isdir __ARGS((char_u *name));
+int mch_isrealdir __ARGS((char_u *name));
 int mch_mkdir __ARGS((char_u *name));
 int mch_rmdir __ARGS((char_u *name));
 int mch_is_hard_link __ARGS((char_u *fname));

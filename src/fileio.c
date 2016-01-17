@@ -7297,14 +7297,10 @@ delete_recursive(char_u *name)
     /* A symbolic link to a directory itself is deleted, not the directory it
      * points to. */
     if (
-# if defined(WIN32)
-	 mch_isdir(name) && !mch_is_symbolic_link(name)
-# else
-#  ifdef UNIX
+# if defined(UNIX) || defined(WIN32)
 	 mch_isrealdir(name)
-#  else
+# else
 	 mch_isdir(name)
-#  endif
 # endif
 	    )
     {
