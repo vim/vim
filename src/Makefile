@@ -1931,7 +1931,7 @@ unittest unittests: $(UNITTEST_TARGETS)
 		./$$t || exit 1; echo $$t passed; \
 	done
 
-# Run individual test, assuming that Vim was already compiled.
+# Run individual OLD style test, assuming that Vim was already compiled.
 test1 \
 	test_argument_0count \
 	test_argument_count \
@@ -1956,7 +1956,6 @@ test1 \
 	test_match_conceal \
 	test_nested_function \
 	test_options \
-	test_perl \
 	test_qf_title \
 	test_ruby \
 	test_search_mbyte \
@@ -1979,7 +1978,9 @@ test1 \
 	test100 test101 test102 test103 test104 test105 test106 test107 test108:
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
-test_assert \
+# Run individual NEW style test, assuming that Vim was already compiled.
+test_arglist \
+	test_assert \
 	test_backspace_opt \
 	test_cdo \
 	test_cursor_func \
@@ -1989,6 +1990,7 @@ test_assert \
 	test_increment \
 	test_lispwords \
 	test_menu \
+	test_perl \
 	test_quickfix \
 	test_searchpos \
 	test_set \

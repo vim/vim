@@ -4,7 +4,27 @@ if !has('perl')
   finish
 end
 
-set nocp viminfo+=nviminfo
+func Test_change_buffer()
+  call setline(line('$'), ['1 line 1'])
+  perl VIM::DoCommand("normal /^1\n")
+  perl $curline = VIM::Eval("line('.')")
+  perl $curbuf->Set($curline, "1 changed line 1")
+  call assert_equal('1 changed line 1', getline('$'))
+endfunc
+
+func Test_evaluate_list()
+  call setline(line('$'), ['2 line 2'])
+  perl VIM::DoCommand("normal /^2\n")
+  perl $curline = VIM::Eval("line('.')")
+  let l = ["abc", "def"]
+  perl << EOF
+  $l = VIM::Eval("l");
+  $curbuf->Append($curline, $l);
+EOF
+  normal j
+  .perldo s|\n|/|g
+  call assert_equal('abc/def/', getline('$'))
+endfunc
 
 fu <SID>catch_peval(expr)
   try
