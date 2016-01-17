@@ -861,6 +861,7 @@ static int can_free_funccal __ARGS((funccall_T *fc, int copyID)) ;
 static void free_funccal __ARGS((funccall_T *fc, int free_val));
 static void add_nr_var __ARGS((dict_T *dp, dictitem_T *v, char *name, varnumber_T nr));
 static win_T *find_win_by_nr __ARGS((typval_T *vp, tabpage_T *tp));
+static win_T *find_tabwin __ARGS((typval_T *wvp, typval_T *tvp));
 static void getwinvar __ARGS((typval_T *argvars, typval_T *rettv, int off));
 static int searchpair_cmn __ARGS((typval_T *argvars, pos_T *match_pos));
 static int search_cmn __ARGS((typval_T *argvars, pos_T *match_pos, int *flagsp));
@@ -3687,7 +3688,7 @@ do_unlet_var(lp, name_end, forceit)
     {
 	listitem_T    *li;
 	listitem_T    *ll_li = lp->ll_li;
-	int           ll_n1 = lp->ll_n1;
+	int	      ll_n1 = lp->ll_n1;
 
 	while (ll_li != NULL && (lp->ll_empty2 || lp->ll_n2 >= ll_n1))
 	{
@@ -8183,7 +8184,7 @@ static struct fst
     {"getcmdtype",	0, 0, f_getcmdtype},
     {"getcmdwintype",	0, 0, f_getcmdwintype},
     {"getcurpos",	0, 0, f_getcurpos},
-    {"getcwd",		0, 0, f_getcwd},
+    {"getcwd",		0, 2, f_getcwd},
     {"getfontname",	0, 1, f_getfontname},
     {"getfperm",	1, 1, f_getfperm},
     {"getfsize",	1, 1, f_getfsize},
@@ -8207,7 +8208,7 @@ static struct fst
     {"globpath",	2, 5, f_globpath},
     {"has",		1, 1, f_has},
     {"has_key",		2, 2, f_has_key},
-    {"haslocaldir",	0, 0, f_haslocaldir},
+    {"haslocaldir",	0, 2, f_haslocaldir},
     {"hasmapto",	1, 3, f_hasmapto},
     {"highlightID",	1, 1, f_hlID},		/* obsolete */
     {"highlight_exists",1, 1, f_hlexists},	/* obsolete */
@@ -9127,30 +9128,11 @@ f_arglistid(argvars, rettv)
     typval_T	*rettv;
 {
     win_T	*wp;
-    tabpage_T	*tp = NULL;
-    long	n;
 
     rettv->vval.v_number = -1;
-    if (argvars[0].v_type != VAR_UNKNOWN)
-    {
-	if (argvars[1].v_type != VAR_UNKNOWN)
-	{
-	    n = get_tv_number(&argvars[1]);
-	    if (n >= 0)
-		tp = find_tabpage(n);
-	}
-	else
-	    tp = curtab;
-
-	if (tp != NULL)
-	{
-	    wp = find_win_by_nr(&argvars[0], tp);
-	    if (wp != NULL)
-		rettv->vval.v_number = wp->w_alist->id;
-	}
-    }
-    else
-	rettv->vval.v_number = curwin->w_alist->id;
+    wp = find_tabwin(&argvars[0], &argvars[1]);
+    if (wp != NULL)
+	rettv->vval.v_number = wp->w_alist->id;
 }
 
 /*
@@ -12061,25 +12043,36 @@ f_getcmdwintype(argvars, rettv)
  */
     static void
 f_getcwd(argvars, rettv)
-    typval_T	*argvars UNUSED;
+    typval_T	*argvars;
     typval_T	*rettv;
 {
+    win_T	*wp = NULL;
     char_u	*cwd;
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
-    cwd = alloc(MAXPATHL);
-    if (cwd != NULL)
+
+    wp = find_tabwin(&argvars[0], &argvars[1]);
+    if (wp != NULL)
     {
-	if (mch_dirname(cwd, MAXPATHL) != FAIL)
+	if (wp->w_localdir != NULL)
+	    rettv->vval.v_string = vim_strsave(wp->w_localdir);
+	else if(globaldir != NULL)
+	    rettv->vval.v_string = vim_strsave(globaldir);
+	else
 	{
-	    rettv->vval.v_string = vim_strsave(cwd);
-#ifdef BACKSLASH_IN_FILENAME
-	    if (rettv->vval.v_string != NULL)
-		slash_adjust(rettv->vval.v_string);
-#endif
+	    cwd = alloc(MAXPATHL);
+	    if (cwd != NULL)
+	    {
+		if (mch_dirname(cwd, MAXPATHL) != FAIL)
+		    rettv->vval.v_string = vim_strsave(cwd);
+		vim_free(cwd);
+	    }
 	}
-	vim_free(cwd);
+#ifdef BACKSLASH_IN_FILENAME
+	if (rettv->vval.v_string != NULL)
+	    slash_adjust(rettv->vval.v_string);
+#endif
     }
 }
 
@@ -12706,6 +12699,38 @@ find_win_by_nr(vp, tp)
 	return curwin;
     return NULL;
 #endif
+}
+
+/*
+ * Find window specified by "wvp" in tabpage "tvp".
+ */
+    static win_T *
+find_tabwin(wvp, tvp)
+    typval_T	*wvp;	/* VAR_UNKNOWN for current window */
+    typval_T	*tvp;	/* VAR_UNKNOWN for current tab page */
+{
+    win_T	*wp = NULL;
+    tabpage_T	*tp = NULL;
+    long	n;
+
+    if (wvp->v_type != VAR_UNKNOWN)
+    {
+	if (tvp->v_type != VAR_UNKNOWN)
+	{
+	    n = get_tv_number(tvp);
+	    if (n >= 0)
+		tp = find_tabpage(n);
+	}
+	else
+	    tp = curtab;
+
+	if (tp != NULL)
+	    wp = find_win_by_nr(wvp, tp);
+    }
+    else
+	wp = curwin;
+
+    return wp;
 }
 
 /*
@@ -13543,10 +13568,13 @@ f_has_key(argvars, rettv)
  */
     static void
 f_haslocaldir(argvars, rettv)
-    typval_T	*argvars UNUSED;
+    typval_T	*argvars;
     typval_T	*rettv;
 {
-    rettv->vval.v_number = (curwin->w_localdir != NULL);
+    win_T	*wp = NULL;
+
+    wp = find_tabwin(&argvars[0], &argvars[1]);
+    rettv->vval.v_number = (wp != NULL && wp->w_localdir != NULL);
 }
 
 /*
@@ -21851,15 +21879,15 @@ get_funccal()
     funccal = current_funccal;
     if (debug_backtrace_level > 0)
     {
-        for (i = 0; i < debug_backtrace_level; i++)
-        {
-            temp_funccal = funccal->caller;
-            if (temp_funccal)
-                funccal = temp_funccal;
+	for (i = 0; i < debug_backtrace_level; i++)
+	{
+	    temp_funccal = funccal->caller;
+	    if (temp_funccal)
+		funccal = temp_funccal;
 	    else
-                /* backtrace level overflow. reset to max */
-                debug_backtrace_level = i;
-        }
+		/* backtrace level overflow. reset to max */
+		debug_backtrace_level = i;
+	}
     }
     return funccal;
 }
@@ -23379,8 +23407,8 @@ ret_free:
  * Also handles a Funcref in a List or Dictionary.
  * Returns the function name in allocated memory, or NULL for failure.
  * flags:
- * TFN_INT:         internal function name OK
- * TFN_QUIET:       be quiet
+ * TFN_INT:	    internal function name OK
+ * TFN_QUIET:	    be quiet
  * TFN_NO_AUTOLOAD: do not use script autoloading
  * Advances "pp" to just after the function name (if no error).
  */
