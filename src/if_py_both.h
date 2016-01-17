@@ -5521,7 +5521,7 @@ run_eval(const char *cmd, typval_T *rettv
     }
     else
     {
-	if (ConvertFromPyObject(run_ret, rettv) == -1)
+	if (run_ret != Py_None && ConvertFromPyObject(run_ret, rettv) == -1)
 	    EMSG(_("E859: Failed to convert returned python object to vim value"));
 	Py_DECREF(run_ret);
     }
