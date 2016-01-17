@@ -2994,7 +2994,7 @@ mch_hide(name)
 }
 
 /*
- * return TRUE if "name" is a directory
+ * return TRUE if "name" is a directory or a symlink to a directory
  * return FALSE if "name" is not a directory
  * return FALSE for error
  */
@@ -3007,6 +3007,28 @@ mch_isdir(name)
     if (*name == NUL)	    /* Some stat()s don't flag "" as an error. */
 	return FALSE;
     if (stat((char *)name, &statb))
+	return FALSE;
+#ifdef _POSIX_SOURCE
+    return (S_ISDIR(statb.st_mode) ? TRUE : FALSE);
+#else
+    return ((statb.st_mode & S_IFMT) == S_IFDIR ? TRUE : FALSE);
+#endif
+}
+
+/*
+ * return TRUE if "name" is a directory, NOT a symlink to a directory
+ * return FALSE if "name" is not a directory
+ * return FALSE for error
+ */
+    int
+mch_isrealdir(name)
+    char_u *name;
+{
+    struct stat statb;
+
+    if (*name == NUL)	    /* Some stat()s don't flag "" as an error. */
+	return FALSE;
+    if (lstat((char *)name, &statb))
 	return FALSE;
 #ifdef _POSIX_SOURCE
     return (S_ISDIR(statb.st_mode) ? TRUE : FALSE);

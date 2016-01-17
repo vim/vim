@@ -41,6 +41,7 @@ void mch_set_acl __ARGS((char_u *fname, vim_acl_T aclent));
 void mch_free_acl __ARGS((vim_acl_T aclent));
 void mch_hide __ARGS((char_u *name));
 int mch_isdir __ARGS((char_u *name));
+int mch_isrealdir __ARGS((char_u *name));
 int mch_can_exe __ARGS((char_u *name, char_u **path, int use_path));
 int mch_nodetype __ARGS((char_u *name));
 void mch_early_init __ARGS((void));

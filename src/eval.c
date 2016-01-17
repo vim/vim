@@ -10418,7 +10418,7 @@ f_delete(argvars, rettv)
 	/* delete an empty directory */
 	rettv->vval.v_number = mch_rmdir(name) == 0 ? 0 : -1;
     else if (STRCMP(flags, "rf") == 0)
-	/* delete an directory recursively */
+	/* delete a directory recursively */
 	rettv->vval.v_number = delete_recursive(name);
     else
 	EMSG2(_(e_invexpr2), flags);

@@ -7294,7 +7294,19 @@ delete_recursive(char_u *name)
     int		i;
     char_u	*exp;
 
-    if (mch_isdir(name))
+    /* A symbolic link to a directory itself is deleted, not the directory it
+     * points to. */
+    if (
+# if defined(WIN32)
+	 mch_isdir(name) && !mch_is_symbolic_link(name)
+# else
+#  ifdef UNIX
+	 mch_isrealdir(name)
+#  else
+	 mch_isdir(name)
+#  endif
+# endif
+	    )
     {
 	vim_snprintf((char *)NameBuff, MAXPATHL, "%s/*", name);
 	exp = vim_strsave(NameBuff);
