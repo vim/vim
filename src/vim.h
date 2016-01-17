@@ -835,6 +835,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define EW_ALLLINKS	0x1000	/* also links not pointing to existing file */
 #define EW_SHELLCMD	0x2000	/* called from expand_shellcmd(), don't check
 				 * if executable is in $PATH */
+#define EW_DODOT	0x4000	/* also files starting with a dot */
 
 /* Flags for find_file_*() functions. */
 #define FINDFILE_FILE	0	/* only files */
