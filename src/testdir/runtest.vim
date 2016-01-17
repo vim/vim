@@ -84,6 +84,7 @@ else
 endif
 
 " Locate Test_ functions and execute them.
+set nomore
 redir @q
 function /^Test_
 redir END
