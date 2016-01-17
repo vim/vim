@@ -20,10 +20,13 @@ func Test_with_directories()
     next! Xdir?/*/nofile
     call assert_equal('Xdir?/*/nofile', expand('%'))
   endif
+  " Edit another file, on MS-Windows the swap file would be in use and can't
+  " be deleted.
+  edit foo
 
-  call delete('Xdir1', 'rf')
-  call delete('Xdir2', 'rf')
-  call delete('Xdir3', 'rf')
+  call assert_equal(0, delete('Xdir1', 'rf'))
+  call assert_equal(0, delete('Xdir2', 'rf'))
+  call assert_equal(0, delete('Xdir3', 'rf'))
 endfunc
 
 func Test_with_tilde()
