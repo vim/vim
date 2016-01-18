@@ -2140,6 +2140,26 @@ ga_concat_strings(gap, sep)
     return s;
 }
 
+#if defined(FEAT_VIMINFO) || defined(PROTO)
+/*
+ * Make a copy of string "p" and add it to "gap".
+ * When out of memory nothing changes.
+ */
+    void
+ga_add_string(garray_T *gap, char_u *p)
+{
+    char_u *cp = vim_strsave(p);
+
+    if (cp != NULL)
+    {
+	if (ga_grow(gap, 1) == OK)
+	    ((char_u **)(gap->ga_data))[gap->ga_len++] = cp;
+	else
+	    vim_free(cp);
+    }
+}
+#endif
+
 /*
  * Concatenate a string to a growarray which contains characters.
  * When "s" is NULL does not do anything.

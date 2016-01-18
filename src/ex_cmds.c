@@ -1707,9 +1707,10 @@ append_redir(buf, buflen, opt, fname)
 		(char *)opt, (char *)fname);
 }
 
-#ifdef FEAT_VIMINFO
+#if defined(FEAT_VIMINFO) || defined(PROTO)
 
 static int no_viminfo __ARGS((void));
+static void write_viminfo_barlines(vir_T *virp, FILE *fp_out);
 static int  viminfo_errcnt;
 
     static int
@@ -2123,6 +2124,7 @@ do_viminfo(fp_in, fp_out, flags)
 #ifdef FEAT_MBYTE
     vir.vir_conv.vc_type = CONV_NONE;
 #endif
+    ga_init2(&vir.vir_barlines, (int)sizeof(char_u *), 100);
 
     if (fp_in != NULL)
     {
@@ -2159,6 +2161,7 @@ do_viminfo(fp_in, fp_out, flags)
 #endif
 	write_viminfo_filemarks(fp_out);
 	write_viminfo_bufferlist(fp_out);
+	write_viminfo_barlines(&vir, fp_out);
 	count = write_viminfo_marks(fp_out);
     }
     if (fp_in != NULL
@@ -2170,6 +2173,7 @@ do_viminfo(fp_in, fp_out, flags)
     if (vir.vir_conv.vc_type != CONV_NONE)
 	convert_setup(&vir.vir_conv, NULL, NULL);
 #endif
+    ga_clear_strings(&vir.vir_barlines);
 }
 
 /*
@@ -2196,7 +2200,6 @@ read_viminfo_up_to_marks(virp, forceit, writing)
 	{
 		/* Characters reserved for future expansion, ignored now */
 	    case '+': /* "+40 /path/dir file", for running vim without args */
-	    case '|': /* to be defined */
 	    case '^': /* to be defined */
 	    case '<': /* long line - ignored */
 		/* A comment or empty line. */
@@ -2204,6 +2207,11 @@ read_viminfo_up_to_marks(virp, forceit, writing)
 	    case '\r':
 	    case '\n':
 	    case '#':
+		eof = viminfo_readline(virp);
+		break;
+	    case '|': /* copy line (for future use) */
+		if (writing)
+		    ga_add_string(&virp->vir_barlines, virp->vir_line);
 		eof = viminfo_readline(virp);
 		break;
 	    case '*': /* "*encoding=value" */
@@ -2426,6 +2434,21 @@ viminfo_writestring(fd, p)
 	putc(c, fd);
     }
     putc('\n', fd);
+}
+
+    static void
+write_viminfo_barlines(vir_T *virp, FILE *fp_out)
+{
+    int		i;
+    garray_T	*gap = &virp->vir_barlines;
+
+    if (gap->ga_len > 0)
+    {
+	fputs(_("\n# Bar lines, copied verbatim:\n"), fp_out);
+
+	for (i = 0; i < gap->ga_len; ++i)
+	    fputs(((char **)(gap->ga_data))[i], fp_out);
+    }
 }
 #endif /* FEAT_VIMINFO */
 

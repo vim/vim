@@ -1008,6 +1008,7 @@ typedef struct
 #ifdef FEAT_MBYTE
     vimconv_T	vir_conv;	/* encoding conversion */
 #endif
+    garray_T	vir_barlines;	/* lines starting with | */
 } vir_T;
 
 #define CONV_NONE		0
