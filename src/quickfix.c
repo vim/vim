@@ -3465,7 +3465,10 @@ ex_vimgrep(eap)
     dirname_start = alloc_id(MAXPATHL, aid_qf_dirname_start);
     dirname_now = alloc_id(MAXPATHL, aid_qf_dirname_now);
     if (dirname_start == NULL || dirname_now == NULL)
+    {
+	FreeWild(fcount, fnames);
 	goto theend;
+    }
 
     /* Remember the current directory, because a BufRead autocommand that does
      * ":lcd %:p:h" changes the meaning of short path names. */
