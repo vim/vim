@@ -120,8 +120,8 @@ function Test_argument()
   $arga x
   call assert_equal(['a', 'b', 'c', 'x'], argv())
 
-  0arga Y
-  call assert_equal(['Y', 'a', 'b', 'c', 'x'], argv())
+  0arga y
+  call assert_equal(['y', 'a', 'b', 'c', 'x'], argv())
 
   %argd
   call assert_equal([], argv())
