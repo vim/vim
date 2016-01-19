@@ -18,6 +18,25 @@ func Test_assert_equal()
   call assert_equal([1, 2, 3], l)
 endfunc
 
+func Test_assert_exception()
+  try
+    nocommand
+  catch
+    call assert_exception('E492:')
+  endtry
+
+  try
+    nocommand
+  catch
+    try
+      " illegal argument, get NULL for error
+      call assert_exception([])
+    catch
+      call assert_exception('E730:')
+    endtry
+  endtry
+endfunc
+
 func Test_user_is_happy()
   smile
   sleep 300m

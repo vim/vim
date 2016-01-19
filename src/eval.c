@@ -9278,7 +9278,8 @@ f_assert_exception(argvars, rettv)
 	assert_error(&ga);
 	ga_clear(&ga);
     }
-    else if (strstr((char *)vimvars[VV_EXCEPTION].vv_str, error) == NULL)
+    else if (error != NULL
+	    && strstr((char *)vimvars[VV_EXCEPTION].vv_str, error) == NULL)
     {
 	prepare_assert_error(&ga);
 	fill_assert_error(&ga, &argvars[1], NULL, &argvars[0],
