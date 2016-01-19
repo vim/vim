@@ -226,7 +226,10 @@ function Test_argedit()
   argedit a
   call assert_equal(['a', 'b'], argv())
   call assert_equal('a', expand('%:t'))
-  call assert_fails('argedit a b', 'E172:')
+  if has('unix')
+    " on MS-Windows this would edit file "a b"
+    call assert_fails('argedit a b', 'E172:')
+  endif
   argedit c
   call assert_equal(['a', 'c', 'b'], argv())
   0argedit x
