@@ -295,4 +295,10 @@ function Test_nomem()
 
 endfunc
 
+function Test_helpgrep()
+  helpgrep quickfix
+  copen
+  " This wipes out the buffer, make sure that doesn't cause trouble.
+  cclose
+endfunc
 
