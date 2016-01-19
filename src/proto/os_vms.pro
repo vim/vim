@@ -1,16 +1,16 @@
 /* os_vms.c */
-void mch_settmode __ARGS((int tmode));
-int mch_get_shellsize __ARGS((void));
-void mch_set_shellsize __ARGS((void));
-char_u *mch_getenv __ARGS((char_u *lognam));
-int mch_setenv __ARGS((char *var, char *value, int x));
-int vms_sys __ARGS((char *cmd, char *out, char *inp));
-char *vms_tolower __ARGS((char *name));
-int vms_sys_status __ARGS((int status));
-int vms_read __ARGS((char *inbuf, size_t nbytes));
-int mch_expand_wildcards __ARGS((int num_pat, char_u **pat, int *num_file, char_u ***file, int flags));
-int mch_expandpath __ARGS((garray_T *gap, char_u *path, int flags));
-void *vms_fixfilename __ARGS((void *instring));
-void vms_remove_version __ARGS((void *fname));
-int RealWaitForChar __ARGS((int fd, long msec, int *check_for_gpm));
+void mch_settmode(int tmode);
+int mch_get_shellsize(void);
+void mch_set_shellsize(void);
+char_u *mch_getenv(char_u *lognam);
+int mch_setenv(char *var, char *value, int x);
+int vms_sys(char *cmd, char *out, char *inp);
+char *vms_tolower(char *name);
+int vms_sys_status(int status);
+int vms_read(char *inbuf, size_t nbytes);
+int mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, int flags);
+int mch_expandpath(garray_T *gap, char_u *path, int flags);
+void *vms_fixfilename(void *instring);
+void vms_remove_version(void *fname);
+int RealWaitForChar(int fd, long msec, int *check_for_gpm);
 /* vim: set ft=c : */

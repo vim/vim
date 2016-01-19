@@ -1361,10 +1361,10 @@ CPP_DEPEND = $(CC) -I$(srcdir) -M$(CPP_MM) \
 NO_ATTR=
 #
 # Use this for cproto 3 patchlevel 6 or below (use "cproto -V" to check):
-# PROTO_FLAGS = -f4 -m__ARGS -d -E"$(CPP)" $(NO_ATTR)
+# PROTO_FLAGS = -f4 -d -E"$(CPP)" $(NO_ATTR)
 #
 # Use this for cproto 3 patchlevel 7 or above (use "cproto -V" to check):
-PROTO_FLAGS = -m -M__ARGS -d -E"$(CPP)" $(NO_ATTR)
+PROTO_FLAGS = -d -E"$(CPP)" $(NO_ATTR)
 
 
 ################################################

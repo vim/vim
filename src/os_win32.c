@@ -101,6 +101,7 @@ typedef int CONSOLE_CURSOR_INFO;
 typedef int COORD;
 typedef int DWORD;
 typedef int HANDLE;
+typedef int LPHANDLE;
 typedef int HDC;
 typedef int HFONT;
 typedef int HICON;
