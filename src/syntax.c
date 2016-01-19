@@ -6474,6 +6474,12 @@ syn_get_id(wp, lnum, col, trans, spellp, keep_state)
 	    || lnum != current_lnum
 	    || col < current_col)
 	syntax_start(wp, lnum);
+    else if (wp->w_buffer == syn_buf
+	    && lnum == current_lnum
+	    && col > current_col)
+	/* next_match may not be correct when moving around, e.g. with the
+	 * "skip" expression in searchpair() */
+	next_match_idx = -1;
 
     (void)get_syntax_attr(col, spellp, keep_state);
 
