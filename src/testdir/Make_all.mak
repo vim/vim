@@ -89,8 +89,6 @@ SCRIPTS_ALL = \
 	test106.out \
 	test107.out \
 	test108.out \
-	test_argument_0count.out \
-	test_argument_count.out \
 	test_autocmd_option.out \
 	test_autoformat_join.out \
 	test_breakindent.out \

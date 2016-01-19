@@ -72,3 +72,204 @@ func Assert_argc(l)
     let i += 1
   endwhile
 endfunc
+
+" Test for [count]argument and [count]argdelete commands
+" Ported from the test_argument_count.in test script
+function Test_argument()
+  " Clean the argument list
+  arga a | %argd
+
+  let save_hidden = &hidden
+  set hidden
+
+  let g:buffers = []
+  augroup TEST
+    au BufEnter * call add(buffers, expand('%:t'))
+  augroup END
+
+  argadd a b c d
+  $argu
+  $-argu
+  -argu
+  1argu
+  +2argu
+
+  augroup TEST
+    au!
+  augroup END
+
+  call assert_equal(['d', 'c', 'b', 'a', 'c'], g:buffers)
+
+  redir => result
+  ar
+  redir END
+  call assert_true(result =~# 'a b \[c] d')
+
+  .argd
+  call assert_equal(['a', 'b', 'd'], argv())
+
+  -argd
+  call assert_equal(['a', 'd'], argv())
+
+  $argd
+  call assert_equal(['a'], argv())
+
+  1arga c
+  1arga b
+  $argu
+  $arga x
+  call assert_equal(['a', 'b', 'c', 'x'], argv())
+
+  0arga Y
+  call assert_equal(['Y', 'a', 'b', 'c', 'x'], argv())
+
+  %argd
+  call assert_equal([], argv())
+
+  arga a b c d e f
+  2,$-argd
+  call assert_equal(['a', 'f'], argv())
+
+  let &hidden = save_hidden
+
+  " Setting argument list should fail when the current buffer has unsaved
+  " changes
+  %argd
+  enew!
+  set modified
+  call assert_fails('args x y z', 'E37:')
+  args! x y z
+  call assert_equal(['x', 'y', 'z'], argv())
+  call assert_equal('x', expand('%:t'))
+
+  last | enew | argu
+  call assert_equal('z', expand('%:t'))
+
+  %argdelete
+  call assert_fails('argument', 'E163:')
+endfunction
+
+" Test for 0argadd and 0argedit
+" Ported from the test_argument_0count.in test script
+function Test_zero_argadd()
+  " Clean the argument list
+  arga a | %argd
+
+  arga a b c d
+  2argu
+  0arga added
+  call assert_equal(['added', 'a', 'b', 'c', 'd'], argv())
+
+  2argu
+  arga third
+  call assert_equal(['added', 'a', 'third', 'b', 'c', 'd'], argv())
+
+  %argd
+  arga a b c d
+  2argu
+  0arge edited
+  call assert_equal(['edited', 'a', 'b', 'c', 'd'], argv())
+
+  2argu
+  arga third
+  call assert_equal(['edited', 'a', 'third', 'b', 'c', 'd'], argv())
+endfunction
+
+function Reset_arglist()
+  args a | %argd
+endfunction
+
+" Test for argc()
+function Test_argc()
+  call Reset_arglist()
+  call assert_equal(0, argc())
+  argadd a b
+  call assert_equal(2, argc())
+endfunction
+
+" Test for arglistid()
+function Test_arglistid()
+  call Reset_arglist()
+  arga a b
+  call assert_equal(0, arglistid())
+  split
+  arglocal
+  call assert_equal(1, arglistid())
+  tabnew | tabfirst
+  call assert_equal(0, arglistid(2))
+  call assert_equal(1, arglistid(1, 1))
+  call assert_equal(0, arglistid(2, 1))
+  call assert_equal(1, arglistid(1, 2))
+  tabonly | only | enew!
+  argglobal
+  call assert_equal(0, arglistid())
+endfunction
+
+" Test for argv()
+function Test_argv()
+  call Reset_arglist()
+  call assert_equal([], argv())
+  call assert_equal("", argv(2))
+  argadd a b c d
+  call assert_equal('c', argv(2))
+endfunction
+
+" Test for the :argedit command
+function Test_argedit()
+  call Reset_arglist()
+  argedit a
+  call assert_equal(['a'], argv())
+  call assert_equal('a', expand('%:t'))
+  argedit b
+  call assert_equal(['a', 'b'], argv())
+  call assert_equal('b', expand('%:t'))
+  argedit a
+  call assert_equal(['a', 'b'], argv())
+  call assert_equal('a', expand('%:t'))
+  call assert_fails('argedit a b', 'E172:')
+  argedit c
+  call assert_equal(['a', 'c', 'b'], argv())
+  0argedit x
+  call assert_equal(['x', 'a', 'c', 'b'], argv())
+  enew! | set modified
+  call assert_fails('argedit y', 'E37:')
+  argedit! y
+  call assert_equal(['x', 'y', 'a', 'c', 'b'], argv())
+  %argd
+endfunction
+
+" Test for the :argdelete command
+function Test_argdelete()
+  call Reset_arglist()
+  args aa a aaa b bb
+  argdelete a*
+  call assert_equal(['b', 'bb'], argv())
+  call assert_equal('aa', expand('%:t'))
+  last
+  argdelete %
+  call assert_equal(['b'], argv())
+  call assert_fails('argdelete', 'E471:')
+  call assert_fails('1,100argdelete', 'E16:')
+  %argd
+endfunction
+
+" Tests for the :next, :prev, :first, :last, :rewind commands
+function Test_argpos()
+  call Reset_arglist()
+  args a b c d
+  last
+  call assert_equal(3, argidx())
+  call assert_fails('next', 'E165:')
+  prev
+  call assert_equal(2, argidx())
+  Next
+  call assert_equal(1, argidx())
+  first
+  call assert_equal(0, argidx())
+  call assert_fails('prev', 'E164:')
+  3next
+  call assert_equal(3, argidx())
+  rewind
+  call assert_equal(0, argidx())
+  %argd
+endfunction
