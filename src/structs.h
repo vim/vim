@@ -1362,6 +1362,8 @@ typedef struct {
 #if !defined(FEAT_SYN_HL) && !defined(FEAT_SPELL)
     int		dummy;
 #endif
+    char_u	b_syn_chartab[32];	/* syntax iskeyword option */
+    char_u	*b_syn_isk;		/* iskeyword option */
 } synblock_T;
 
 

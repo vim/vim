@@ -5494,6 +5494,7 @@ check_buf_options(buf)
 #endif
 #ifdef FEAT_SYN_HL
     check_string_option(&buf->b_p_syn);
+    check_string_option(&buf->b_s.b_syn_isk);
 #endif
 #ifdef FEAT_SPELL
     check_string_option(&buf->b_s.b_p_spc);
@@ -10821,6 +10822,7 @@ buf_copy_options(buf, flags)
 	    /* Don't copy 'syntax', it must be set */
 	    buf->b_p_syn = empty_option;
 	    buf->b_p_smc = p_smc;
+	    buf->b_s.b_syn_isk = empty_option;
 #endif
 #ifdef FEAT_SPELL
 	    buf->b_s.b_p_spc = vim_strsave(p_spc);
