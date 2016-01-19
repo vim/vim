@@ -506,12 +506,16 @@ slash_adjust(p)
     static int
 stat_symlink_aware(const char *name, struct stat *stp)
 {
-#if defined(_MSC_VER) && _MSC_VER < 1700
-    /* Work around for VC10 or earlier. stat() can't handle symlinks properly.
+#if (defined(_MSC_VER) && (_MSC_VER < 1900)) || defined(__MINGW32__)
+    /* Work around for VC12 or earlier (and MinGW). stat() can't handle
+     * symlinks properly.
      * VC9 or earlier: stat() doesn't support a symlink at all. It retrieves
      * status of a symlink itself.
      * VC10: stat() supports a symlink to a normal file, but it doesn't support
-     * a symlink to a directory (always returns an error). */
+     * a symlink to a directory (always returns an error).
+     * VC11 and VC12: stat() doesn't return an error for a symlink to a
+     * directory, but it doesn't set S_IFDIR flag.
+     * MinGW: Same as VC9. */
     WIN32_FIND_DATA	findData;
     HANDLE		hFind, h;
     DWORD		attr = 0;
@@ -540,6 +544,8 @@ stat_symlink_aware(const char *name, struct stat *stp)
 
 	    fd = _open_osfhandle((OPEN_OH_ARGTYPE)h, _O_RDONLY);
 	    n = _fstat(fd, (struct _stat*)stp);
+	    if ((n == 0) && (attr & FILE_ATTRIBUTE_DIRECTORY))
+		stp->st_mode = (stp->st_mode & ~S_IFREG) | S_IFDIR;
 	    _close(fd);
 	    return n;
 	}
@@ -552,12 +558,16 @@ stat_symlink_aware(const char *name, struct stat *stp)
     static int
 wstat_symlink_aware(const WCHAR *name, struct _stat *stp)
 {
-# if defined(_MSC_VER) && _MSC_VER < 1700
-    /* Work around for VC10 or earlier. _wstat() can't handle symlinks properly.
+# if (defined(_MSC_VER) && (_MSC_VER < 1900)) || defined(__MINGW32__)
+    /* Work around for VC12 or earlier (and MinGW). _wstat() can't handle
+     * symlinks properly.
      * VC9 or earlier: _wstat() doesn't support a symlink at all. It retrieves
      * status of a symlink itself.
      * VC10: _wstat() supports a symlink to a normal file, but it doesn't
-     * support a symlink to a directory (always returns an error). */
+     * support a symlink to a directory (always returns an error).
+     * VC11 and VC12: _wstat() doesn't return an error for a symlink to a
+     * directory, but it doesn't set S_IFDIR flag.
+     * MinGW: Same as VC9. */
     int			n;
     BOOL		is_symlink = FALSE;
     HANDLE		hFind, h;
@@ -587,6 +597,8 @@ wstat_symlink_aware(const WCHAR *name, struct _stat *stp)
 
 	    fd = _open_osfhandle((OPEN_OH_ARGTYPE)h, _O_RDONLY);
 	    n = _fstat(fd, stp);
+	    if ((n == 0) && (attr & FILE_ATTRIBUTE_DIRECTORY))
+		stp->st_mode = (stp->st_mode & ~S_IFREG) | S_IFDIR;
 	    _close(fd);
 	    return n;
 	}
