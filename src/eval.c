@@ -23628,8 +23628,10 @@ theend:
 eval_fname_script(p)
     char_u	*p;
 {
-    if (p[0] == '<' && (STRNICMP(p + 1, "SID>", 4) == 0
-					  || STRNICMP(p + 1, "SNR>", 4) == 0))
+    /* Use MB_STRICMP() because in Turkish comparing the "I" may not work with
+     * the standard library function. */
+    if (p[0] == '<' && (MB_STRNICMP(p + 1, "SID>", 4) == 0
+				       || MB_STRNICMP(p + 1, "SNR>", 4) == 0))
 	return 5;
     if (p[0] == 's' && p[1] == ':')
 	return 2;
