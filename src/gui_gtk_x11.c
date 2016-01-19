@@ -1437,9 +1437,6 @@ gui_mch_early_init_check(void)
 	EMSG(_((char *)e_opendisp));
 	return FAIL;
     }
-#ifdef USE_GRESOURCE
-    gui_gtk_register_resource();
-#endif
     return OK;
 }
 
@@ -1451,6 +1448,18 @@ gui_mch_early_init_check(void)
     int
 gui_mch_init_check(void)
 {
+#ifdef USE_GRESOURCE
+    static int res_registered = FALSE;
+
+    if (!res_registered)
+    {
+	/* Call this function in the GUI process; otherwise, the resources
+	 * won't be available.  Don't call it twice. */
+	res_registered = TRUE;
+	gui_gtk_register_resource();
+    }
+#endif
+
 #ifdef FEAT_GUI_GNOME
     if (gtk_socket_id == 0)
 	using_gnome = 1;
