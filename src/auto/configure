@@ -4763,8 +4763,8 @@ if test "${with_features+set}" = set; then :
   withval=$with_features; features="$withval"; { $as_echo "$as_me:${as_lineno-$LINENO}: result: $features" >&5
 $as_echo "$features" >&6; }
 else
-  features="normal"; { $as_echo "$as_me:${as_lineno-$LINENO}: result: Defaulting to normal" >&5
-$as_echo "Defaulting to normal" >&6; }
+  features="huge"; { $as_echo "$as_me:${as_lineno-$LINENO}: result: Defaulting to huge" >&5
+$as_echo "Defaulting to huge" >&6; }
 fi
 
 
