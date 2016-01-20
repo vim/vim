@@ -1111,14 +1111,6 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define HIST_COUNT	5	/* number of history tables */
 
 /*
- * Flags for chartab[].
- */
-#define CT_CELL_MASK	0x07	/* mask: nr of display cells (1, 2 or 4) */
-#define CT_PRINT_CHAR	0x10	/* flag: set for printable chars */
-#define CT_ID_CHAR	0x20	/* flag: set for ID chars */
-#define CT_FNAME_CHAR	0x40	/* flag: set for file name chars */
-
-/*
  * Values for do_tag().
  */
 #define DT_TAG		1	/* jump to newer position or same tag again */

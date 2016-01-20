@@ -5934,9 +5934,9 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 #endif
 
     /*
-     * 'isident', 'iskeyword', 'isprint or 'isfname' option: refill chartab[]
+     * 'isident', 'iskeyword', 'isprint or 'isfname' option: refill g_chartab[]
      * If the new option is invalid, use old value.  'lisp' option: refill
-     * chartab[] for '-' char
+     * g_chartab[] for '-' char
      */
     else if (  varp == &p_isi
 	    || varp == &(curbuf->b_p_isk)

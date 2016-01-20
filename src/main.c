@@ -1582,8 +1582,8 @@ init_locale()
 	/* Initialize the gettext library */
 	dyn_libintl_init();
 #  endif
-	/* expand_env() doesn't work yet, because chartab[] is not initialized
-	 * yet, call vim_getenv() directly */
+	/* expand_env() doesn't work yet, because g_chartab[] is not
+	 * initialized yet, call vim_getenv() directly */
 	p = vim_getenv((char_u *)"VIMRUNTIME", &mustfree);
 	if (p != NULL && *p != NUL)
 	{
