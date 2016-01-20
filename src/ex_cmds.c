@@ -14,6 +14,10 @@
 #include "vim.h"
 #include "version.h"
 
+#ifdef FEAT_FLOAT
+# include <float.h>
+#endif
+
 #ifdef FEAT_EX_EXTRA
 static int linelen __ARGS((int *has_tab));
 #endif
