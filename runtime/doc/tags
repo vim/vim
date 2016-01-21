@@ -2948,6 +2948,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :syn-files	syntax.txt	/*:syn-files*
 :syn-fold	syntax.txt	/*:syn-fold*
 :syn-include	syntax.txt	/*:syn-include*
+:syn-iskeyword	syntax.txt	/*:syn-iskeyword*
 :syn-keepend	syntax.txt	/*:syn-keepend*
 :syn-keyword	syntax.txt	/*:syn-keyword*
 :syn-lc	syntax.txt	/*:syn-lc*
@@ -4417,6 +4418,10 @@ E888	pattern.txt	/*E888*
 E889	map.txt	/*E889*
 E89	message.txt	/*E89*
 E890	syntax.txt	/*E890*
+E891	eval.txt	/*E891*
+E892	eval.txt	/*E892*
+E893	eval.txt	/*E893*
+E894	eval.txt	/*E894*
 E90	message.txt	/*E90*
 E91	options.txt	/*E91*
 E92	message.txt	/*E92*
@@ -8134,6 +8139,7 @@ strstr()	eval.txt	/*strstr()*
 strtrans()	eval.txt	/*strtrans()*
 strwidth()	eval.txt	/*strwidth()*
 style-changes	develop.txt	/*style-changes*
+style-compiler	develop.txt	/*style-compiler*
 style-examples	develop.txt	/*style-examples*
 style-functions	develop.txt	/*style-functions*
 style-names	develop.txt	/*style-names*

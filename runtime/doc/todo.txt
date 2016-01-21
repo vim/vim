@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Jan 17
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Jan 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -75,6 +75,12 @@ Regexp problems:
 - The pattern "\1" with the old engine gives E65, with the new engine it
   matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
 - Search for \\~ causes error E874.
+- "\%1l^#.*" does not match on a line starting with "#".  The zero-width match
+  clears the start-of-line flag.
+
+C89: remove __ARGS in more places
+- Script: Hirohito Higashi, Jan 21.
+- Update to osdef.sh, Hirohito Higashi, 2016 Jan 21.
 
 Need to try out instructions in INSSTALLpc.txt about how to install all
 interfaces and how to build Vim with them.
@@ -90,6 +96,11 @@ work. (ZyX, 2013 Sep 28) With examples: (Malcolm Rowe, 2015 Dec 24)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
+Use vim.vim syntax highlighting for help file examples, but without ":" in
+'iskeyword' for syntax.
+
+Remove SPACE_IN_FILENAME ? What could possibly go wrong?
+
 Installation of .desktop files does not work everywhere.
 It's now fixed, but the target directory probably isn't right.
 Add configure check?
@@ -102,6 +113,11 @@ Access to uninitialized memory in match_backref() regexp_nda.c:4882
 
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
+
+Win32: patch to use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
+More tests May 14. Update May 29.  Update Aug 10.
+Now part of large file patches. (Ken Takata, 2016 Jan 19, second one)
+Updated patches with ordering: Jan 20.
 
 Using ":windo" to set options in all windows has the side effect that it
 changes the window layout and the current window.  Make a variant that saves
@@ -117,6 +133,8 @@ Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
 
 Unexpected delay when using CTRL-O u.  It's not timeoutlen.
 (Gary Johnson, 2015 Aug 28)
+
+Patch to support 64 bit ints for Number. (Ken Takata, 2016 Jan 21)
 
 Instead of separately uploading patches to the ftp site, we can get them from
 github with a URL like this:
@@ -152,18 +170,13 @@ Can we cache the syntax attributes, so that updates for 'relativenumber' and
 Build with Python on Mac does not always use the right library.
 (Kazunobu Kuriyama, 2015 Mar 28)
 
-Patch to support Python 'None' value in pyeval(). (Damien, 2015 Nov 21)
-Need a Vim equivalent of None and a way to test for it.
+Need a Vim equivalent of Python's None and a way to test for it.
 
 To support Thai (and other languages) word boundaries, include the ICU
 library:  http://userguide.icu-project.org/boundaryanalysis
 
 When complete() first argument is before where insert started and 'backspace'
 is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
-
-Patch to fix bug in searchpair(). (Christian Brabandt, 2016 Jan 11)
-Problem reported by David Fishburn, using searchpair() with synID() used in
-the skip expression.
 
 Test 44 fails when [[=A=]] is changed to [[=À=]].  Caused by getcmdline() not
 handling the 0x80 as a second byte correctly?  (Dominique Pelle, 2015 Jun 10)
@@ -173,14 +186,6 @@ Goes away when disabling the swap file. (might1, Feb 16)
 
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
-
-Patch to add ":syn iskeyword". (Christian Brabandt, 2015 Nov 10)
-
-Patch to use PLATFORM to determine target architecture. (Taro Muraoka, 2015
-Nov 29)
-
-If libiconv.dll is not found search for libiconv2.dll. (Yasuhiro Matsumoto,
-2015 Oct 7)
 
 Using an external diff is inefficient.  Not all systems have a good diff
 program available (esp. MS-Windows).  Would be nice to have in internal diff
@@ -198,9 +203,6 @@ effects for when set by the user, on init and when reset to default.
 
 The argument for "-S" is not taken literally, the ":so" command expands
 wildcards.  Add a ":nowild" command modifier?  (ZyX, 2015 March 4)
-
-Patch to support sorting on floating point number.  (Alex Jakushev, 2010 Oct
-30)
 
 Proposal to make options.txt easier to read. (Arnaud Decara, 2015 Aug 5)
 Update Aug 14.
@@ -321,10 +323,6 @@ Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 Should be easy to highlight all matches with 'incsearch'.  Idea by Itchyny,
 2015 Feb 6.
 
-Plugins need to make a lot of effort, lots of mappings, to know what happened
-before pressing the key that triggers a plugin action.  How about keeping the
-last N pressed keys, so that they do not need to be mapped?
-
 Wrong scrolling when using incsearch.  Patch by Christian Brabandt, 2014 Dec 4.
 Is this a good solution?
 
@@ -410,9 +408,6 @@ Patch to make FocusGained and FocusLost work in modern terminals. (Hayaki
 Saito, 2013 Apr 24)  Has a problem (email 2015 Jan 7).
 Update 2015 Jan 10.
 
-Win32: patch to use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
-More tests May 14. Update May 29.  Update Aug 10.
-
 Idea: For a window in the middle (has window above and below it), use
 right-mouse-drag on the status line to move a window up/down without changing
 its height?  It's like dragging the status bar above it at the same time.
@@ -438,11 +433,13 @@ Problem with upwards search on Windows (works OK on Linux). (Brett Stahlman,
 2014 Jun 8)
 
 Include a plugin manager with Vim? Neobundle seems to be the best currently.
+Also Vundle: https://github.com/gmarik/vundle
 Long message about this from ZyX, 2014 Mar 23.  And following replies.
 Also see http://vim-wiki.mawercer.de/wiki/topic/vim%20plugin%20managment.html
 User view:
-- Support multiple sources, basically any http:// URL.  Be able to look into
-  the files before deciding to install.
+- Support multiple sources, basically any http:// URL. Or a central place that
+  will work for everybody (github?  redirects from vim.org?).
+  Be able to look into the files before deciding to install.
 - Be able to try out a plugin and remove it again with (almost) no traces.
 - Each plugin needs a "manifest" file that has the version, dependencies
   (including Vim version and features), conflicts, list of files, etc.
@@ -1112,6 +1109,14 @@ instead of one. (Constantin Pan, 2010 Sep 10)
 Gui menu edit/paste in block mode insert only inserts in one line (Bjorn
 Winckler, 2011 May 11)
 Requires a map mode for Insert mode started from blockwise Visual mode.
+
+Use json format for new items in .viminfo:
+    |["info","any info"]
+    |["text","text text text"
+    |"continuation line"]
+    |["hist",242342342,{"arg":"value"}]
+  Use \" for a single ".  Use \\ for a \.
+  See http://www.ietf.org/rfc/rfc4627.txt
 
 Writing nested List and Dict in viminfo gives error message and can't be read
 back. (Yukihiro Nakadaira, 2010 Nov 13)
@@ -2130,10 +2135,37 @@ Add an option for a minimal text length before inserting a line break for
 (Kartik Agaram)
 
 
-At next release:
--   Build a huge version by default.
--   Improve plugin handling: Automatic updates, handle dependencies?
-    E.g. Vundle: https://github.com/gmarik/vundle
+Better plugin support (not plugin manager, see elsewhere for that):
+- Add interface to another process, e.g. to run a background plugin.
+  Can use the code from netbeans to communicate over a socket.
+  A bit like +clientserver but without the hassle of starting another Vim.
+  Use json for the messages.
+    let handle = startjob({command})             # uses stdin/stdout
+    let handle = startjob({command}, {address})  # uses socket
+    let handle = connect({address})              # uses socket
+    let handle = deamon({command}, {address})    # start it if connect fails
+    let response = sendjson(handle, {json})      # sync
+    call sendjson(handle, {json}, {callback})    # async
+    call sethandler(handle, {callback})
+  The response json is wrapped in an array:
+    [{code},{response}]
+    {code} must be positive, when zero the callback from sethandler() is called
+  The job can send Vim commands that do not require a handler:
+    ['ex', {Ex command}]
+    ['normal', {Normal mode command}]
+    ['keys', {condition}, {key sequence}]
+    ['eval', {expression}]  sync, will send back result
+    ['expr', {expression}]  async
+- Native JSON support (to be able to commucate with any interface in the same
+  way).
+- Avoid use of feedkeys, add eval functions where needed:
+  - manipulating the Visual selection?
+- Add createmark(): add a mark like mM, but return a unique ID.  Need some way
+  to clean them up again...  Use a name + the script ID.
+  Add createmark( , 'c') to track inserts/deletes before the column.
+- Plugins need to make a lot of effort, lots of mappings, to know what
+  happened before pressing the key that triggers a plugin action.  How about
+  keeping the last N pressed keys, so that they do not need to be mapped?
 
 
 More patches:
@@ -3482,10 +3514,7 @@ Syntax highlighting:
     one is contained in.  Like "keepend" but specified on the contained item,
     instead of the containing item.
 8   cpp.vim: In C++ it's allowed to use {} inside ().
-8   Some syntax files set 'iskeyword'.  When switching to another filetype
-    this isn't reset.  Add a special keyword definition for the syntax rules?
-    When this is done, use vim.vim syntax highlighting for help file examples,
-    but without ":" in 'iskeyword' for syntax.
+8   Some syntax files set 'iskeyword', they should use "syn iskeyword".
     Also need a separate 'iskeyword' for the command line, e.g., in a help
     window ":e /asdf/asdf/" CTRL-W works different.
 8   Add specific syntax item to match with parens/braces that don't have a
