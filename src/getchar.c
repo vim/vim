@@ -2149,7 +2149,8 @@ vgetorpeek(advance)
 			else
 			{
 			    LANGMAP_ADJUST(c1,
-					   (State & (CMDLINE | INSERT)) == 0);
+					   (State & (CMDLINE | INSERT)) == 0
+					   && get_real_state() != SELECTMODE);
 			    nolmaplen = 0;
 			}
 #endif

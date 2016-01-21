@@ -50,6 +50,7 @@ int vim_mkdir_emsg(char_u *name, int prot);
 FILE *open_exfile(char_u *fname, int forceit, char *mode);
 void update_topline_cursor(void);
 void exec_normal_cmd(char_u *cmd, int remap, int silent);
+void exec_normal(int was_typed);
 int find_cmdline_var(char_u *src, int *usedlen);
 char_u *eval_vars(char_u *src, char_u *srcstart, int *usedlen, linenr_T *lnump, char_u **errormsg, int *escaped);
 char_u *expand_sfile(char_u *arg);

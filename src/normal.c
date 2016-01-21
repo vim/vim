@@ -638,7 +638,7 @@ normal_cmd(oap, toplevel)
      * Get the command character from the user.
      */
     c = safe_vgetc();
-    LANGMAP_ADJUST(c, TRUE);
+    LANGMAP_ADJUST(c, get_real_state() != SELECTMODE);
 
     /*
      * If a mapping was started in Visual or Select mode, remember the length
