@@ -39,7 +39,7 @@ GUI=yes
 DIRECTX=no
 # FEATURES=[TINY | SMALL | NORMAL | BIG | HUGE]
 # Set to TINY to make minimal version (few features).
-FEATURES=BIG
+FEATURES=HUGE
 # Set to one of i386, i486, i586, i686 as the minimum target processor.
 # For amd64/x64 architecture set ARCH=x86-64 .
 ARCH=i386

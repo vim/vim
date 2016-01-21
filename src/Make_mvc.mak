@@ -20,7 +20,7 @@
 #
 #	!!!!  After changing features do "nmake clean" first  !!!!
 #
-#	Feature Set: FEATURES=[TINY, SMALL, NORMAL, BIG, HUGE] (default is BIG)
+#	Feature Set: FEATURES=[TINY, SMALL, NORMAL, BIG, HUGE] (default is HUGE)
 #
 #	GUI interface: GUI=yes (default is no)
 #
@@ -950,7 +950,7 @@ CFLAGS = $(CFLAGS) -DMSWINPS
 # FEATURES: TINY, SMALL, NORMAL, BIG or HUGE
 #
 !if "$(FEATURES)"==""
-FEATURES = BIG
+FEATURES = HUGE
 !endif
 CFLAGS = $(CFLAGS) -DFEAT_$(FEATURES)
 
