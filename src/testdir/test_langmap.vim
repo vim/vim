@@ -1,5 +1,9 @@
 " tests for 'langmap'
 
+if !has('langmap')
+  finish
+endif
+
 func Test_langmap()
   new
   set langmap=}l,^x,%v
