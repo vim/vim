@@ -1955,6 +1955,7 @@ test1 \
 	test_nested_function \
 	test_options \
 	test_qf_title \
+	test_oldfiles \
 	test_ruby \
 	test_search_mbyte \
 	test_signs \

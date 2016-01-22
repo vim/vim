@@ -1520,12 +1520,16 @@ most of the information will be restored).
 			{not in Vi}
 
 						*:ol* *:oldfiles*
-:ol[dfiles]		List the files that have marks stored in the viminfo
+:ol[dfiles] [/{pat}/]	List the files that have marks stored in the viminfo
 			file.  This list is read on startup and only changes
 			afterwards with ":rviminfo!".  Also see |v:oldfiles|.
 			The number can be used with |c_#<|.
+			If {pat} is given only files matching the pattern will
+			be included.  The pattern must be enclosed in / or any
+			non-ID character, like for |:vimgrep|.
 			{not in Vi, only when compiled with the |+eval|
 			feature}
+
 
 :bro[wse] ol[dfiles][!]
 			List file names as with |:oldfiles|, and then prompt

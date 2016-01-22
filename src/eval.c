@@ -25336,22 +25336,45 @@ ex_oldfiles(eap)
     list_T	*l = vimvars[VV_OLDFILES].vv_list;
     listitem_T	*li;
     int		nr = 0;
+    char_u	*reg_pat;
+    char_u	*buf;
+    regmatch_T	regmatch;
 
     if (l == NULL)
 	msg((char_u *)_("No old files"));
     else
     {
 	msg_start();
+	msg_putchar('\n');
 	msg_scroll = TRUE;
+	if (*eap->arg != NUL) {
+	    if (skip_vimgrep_pat(eap->arg, &reg_pat, NULL) == NULL) {
+		EMSG(_(e_invalpat));
+		return;
+	    }
+	    regmatch.regprog = vim_regcomp(reg_pat, p_magic ? RE_MAGIC : 0);
+	    if (regmatch.regprog == NULL) {
+		return;
+	    }
+	}
 	for (li = l->lv_first; li != NULL && !got_int; li = li->li_next)
 	{
+	    buf = get_tv_string(&li->li_tv);
+	    if (reg_pat != NULL && *reg_pat != NUL) {
+		if (!vim_regexec(&regmatch, buf, (colnr_T)0)) {
+		    ++nr;
+		    continue;
+		}
+	    }
 	    msg_outnum((long)++nr);
 	    MSG_PUTS(": ");
-	    msg_outtrans(get_tv_string(&li->li_tv));
+	    msg_outtrans(buf);
 	    msg_putchar('\n');
 	    out_flush();	    /* output one line at a time */
 	    ui_breakcheck();
 	}
+	if (*eap->arg != NUL)
+	    vim_regfree(regmatch.regprog);
 	/* Assume "got_int" was set to truncate the listing. */
 	got_int = FALSE;
 
