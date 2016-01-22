@@ -2605,16 +2605,15 @@ qf_update_buffer(qi)
 	/* set curwin/curbuf to buf and save a few things */
 	aucmd_prepbuf(&aco, buf);
 
-	qf_fill_buffer(qi);
-
 	if ((win = qf_find_win(qi)) != NULL)
 	{
 	    curwin_save = curwin;
 	    curwin = win;
 	    qf_set_title_var(qi);
 	    curwin = curwin_save;
-
 	}
+
+	qf_fill_buffer(qi);
 
 	/* restore curwin/curbuf and a few other things */
 	aucmd_restbuf(&aco);
