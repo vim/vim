@@ -1955,7 +1955,6 @@ test1 \
 	test_nested_function \
 	test_options \
 	test_qf_title \
-	test_oldfiles \
 	test_ruby \
 	test_search_mbyte \
 	test_signs \
@@ -1989,6 +1988,7 @@ test_arglist \
 	test_increment \
 	test_lispwords \
 	test_menu \
+	test_oldfiles \
 	test_perl \
 	test_quickfix \
 	test_searchpos \

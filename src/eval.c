@@ -25360,7 +25360,7 @@ ex_oldfiles(eap)
 	for (li = l->lv_first; li != NULL && !got_int; li = li->li_next)
 	{
 	    buf = get_tv_string(&li->li_tv);
-	    if (reg_pat != NULL && *reg_pat != NUL) {
+	    if (*eap->arg != NUL && reg_pat != NULL && *reg_pat != NUL) {
 		if (!vim_regexec(&regmatch, buf, (colnr_T)0)) {
 		    ++nr;
 		    continue;
