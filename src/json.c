@@ -318,7 +318,8 @@ json_decode_object(js_read_T *reader, typval_T *res)
 	    goto fail;
 	}
 	di->di_tv = item;
-	dict_add(res->vval.v_dict, di);
+	if (dict_add(res->vval.v_dict, di) == FAIL)
+	    dictitem_free(di);
 
 	json_skip_white(reader);
 	p = reader->js_buf + reader->js_used;
@@ -398,7 +399,10 @@ json_decode_string(js_read_T *reader, typval_T *res)
     {
 	++reader->js_used;
 	res->v_type = VAR_STRING;
-	res->vval.v_string = vim_strsave(ga.ga_data);
+	if (ga.ga_data == NULL)
+	    res->vval.v_string = NULL;
+	else
+	    res->vval.v_string = vim_strsave(ga.ga_data);
     }
     else
     {
