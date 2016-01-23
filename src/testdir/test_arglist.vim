@@ -57,6 +57,17 @@ func Test_argadd()
   +2argadd y
   call Assert_argc(['a', 'b', 'c', 'x', 'y'])
   call assert_equal(1, argidx())
+
+  %argd
+  edit d
+  arga
+  call assert_equal(len(argv()), 1)
+  call assert_equal(get(argv(), 0, ''), 'd')
+
+  %argd
+  new
+  arga
+  call assert_equal(len(argv()), 0)
 endfunc
 
 func Init_abc()

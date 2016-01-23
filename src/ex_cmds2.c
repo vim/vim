@@ -2090,6 +2090,16 @@ do_arglist(str, what, after)
 #endif
 
     /*
+     * Set default argument for ":argadd" command.
+     */
+    if (what == AL_ADD && *str == NUL)
+    {
+	if (curbuf->b_ffname == NULL)
+	    return FAIL;
+	str = curbuf->b_fname;
+    }
+
+    /*
      * Collect all file name arguments in "new_ga".
      */
     if (get_arglist(&new_ga, str) == FAIL)
