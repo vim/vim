@@ -810,6 +810,25 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	    }
 	}
     }
+    else if (our_tv->v_type == VAR_SPECIAL)
+    {
+	if (our_tv->vval.v_number == VVAL_FALSE)
+	{
+	    ret = Py_False;
+	    Py_INCREF(ret);
+	}
+	else if (our_tv->vval.v_number == VVAL_TRUE)
+	{
+	    ret = Py_True;
+	    Py_INCREF(ret);
+	}
+	else
+	{
+	    Py_INCREF(Py_None);
+	    ret = Py_None;
+	}
+	return ret;
+    }
     else
     {
 	Py_INCREF(Py_None);

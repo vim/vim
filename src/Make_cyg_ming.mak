@@ -601,6 +601,7 @@ OBJ = \
 	$(OUTDIR)/getchar.o \
 	$(OUTDIR)/hardcopy.o \
 	$(OUTDIR)/hashtab.o \
+	$(OUTDIR)/json.o \
 	$(OUTDIR)/main.o \
 	$(OUTDIR)/mark.o \
 	$(OUTDIR)/memfile.o \

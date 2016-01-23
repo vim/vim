@@ -1523,6 +1523,7 @@ EXTERN char_u e_readonly[]	INIT(= N_("E45: 'readonly' option is set (add ! to ov
 #ifdef FEAT_EVAL
 EXTERN char_u e_readonlyvar[]	INIT(= N_("E46: Cannot change read-only variable \"%s\""));
 EXTERN char_u e_readonlysbx[]	INIT(= N_("E794: Cannot set variable in the sandbox: \"%s\""));
+EXTERN char_u e_emptykey[]	INIT(= N_("E713: Cannot use empty key for Dictionary"));
 #endif
 #ifdef FEAT_QUICKFIX
 EXTERN char_u e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));

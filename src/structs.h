@@ -1138,6 +1138,7 @@ typedef struct
 #define VAR_LIST    4	/* "v_list" is used */
 #define VAR_DICT    5	/* "v_dict" is used */
 #define VAR_FLOAT   6	/* "v_float" is used */
+#define VAR_SPECIAL 7	/* "v_number" is used */
 
 /* Values for "dv_scope". */
 #define VAR_SCOPE     1	/* a:, v:, s:, etc. scope dictionaries */
@@ -2682,3 +2683,15 @@ typedef struct {
   UINT32_T state[8];
   char_u   buffer[64];
 } context_sha256_T;
+
+/*
+ * Structure used for reading in json_decode().
+ */
+typedef struct
+{
+    char_u	*js_buf;	/* text to be decoded */
+    char_u	*js_end;	/* NUL in js_buf when js_eof is FALSE */
+    int		js_used;	/* bytes used from js_buf */
+    int		js_eof;		/* when TRUE js_buf is all there is */
+    FILE	*js_fd;		/* file descriptor to read more from */
+} js_read_T;

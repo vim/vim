@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Jan 21
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Jan 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1409,6 +1409,10 @@ v:exception	The value of the exception most recently caught and not
 	:endtry
 <		Output: "caught oops".
 
+					*v:false* *false-variable*
+v:false		A Number with value zero. Used to put "false" in JSON.  See
+		|jsonencode()|.
+
 					*v:fcs_reason* *fcs_reason-variable*
 v:fcs_reason	The reason why the |FileChangedShell| event was triggered.
 		Can be used in an autocommand to decide what to do and/or what
@@ -1541,6 +1545,14 @@ v:mouse_lnum	Line number for a mouse click obtained with |getchar()|.
 v:mouse_col	Column number for a mouse click obtained with |getchar()|.
 		This is the screen column number, like with |virtcol()|.  The
 		value is zero when there was no mouse button click.
+
+					*v:none* *none-variable*
+v:none		An empty String. Used to put an empty item in JSON.  See
+		|jsonencode()|.
+
+					*v:null* *null-variable*
+v:null		An empty String. Used to put "null" in JSON.  See
+		|jsonencode()|.
 
 					*v:oldfiles* *oldfiles-variable*
 v:oldfiles	List of file names that is loaded from the |viminfo| file on
@@ -1706,6 +1718,10 @@ v:throwpoint	The point where the exception most recently caught and not
 	:  echo "Exception from" v:throwpoint
 	:endtry
 <		Output: "Exception from test.vim, line 2"
+
+						*v:true* *true-variable*
+v:true		A Number with value one. Used to put "true" in JSON.  See
+		|jsonencode()|.
 
 						*v:val* *val-variable*
 v:val		Value of the current item of a |List| or |Dictionary|.	Only
@@ -1913,6 +1929,8 @@ isdirectory( {directory})	Number	TRUE if {directory} is a directory
 islocked( {expr})		Number	TRUE if {expr} is locked
 items( {dict})			List	key-value pairs in {dict}
 join( {list} [, {sep}])		String	join {list} items into one String
+jsondecode( {string})		any	decode JSON
+jsonencode( {expr})		String	encode JSON
 keys( {dict})			List	keys in {dict}
 len( {expr})			Number	the length of {expr}
 libcall( {lib}, {func}, {arg})	String	call {func} in library {lib} with {arg}
@@ -4214,6 +4232,27 @@ join({list} [, {sep}])					*join()*
 <		String items are used as-is.  |Lists| and |Dictionaries| are
 		converted into a string like with |string()|.
 		The opposite function is |split()|.
+
+jsondecode({string})					*jsondecode()*
+		TODO
+
+jsonencode({expr})					*jsonencode()*
+		Encodode {expr} as JSON and return this as a string.
+		The encoding is specified in:
+		http://www.ietf.org/rfc/rfc4627.txt
+		Vim values are converted as follows:
+		   Number		decimal number
+		   Float		floating point number
+		   String		in double quotes (possibly null)
+		   Funcref		nothing
+		   List			as an array (possibly null); when
+		   			used recursively: []
+		   Dict			as an object (possibly null); when
+		   			used recursively: {}
+		   v:false		"false"
+		   v:true		"true"
+		   v:none		nothing
+		   v:null		"null"
 
 keys({dict})						*keys()*
 		Return a |List| with all the keys of {dict}.  The |List| is in

@@ -1487,6 +1487,7 @@ BASIC_SRC = \
 	hashtab.c \
 	if_cscope.c \
 	if_xcmdsrv.c \
+	json.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -1580,6 +1581,7 @@ OBJ_COMMON = \
 	$(HANGULIN_OBJ) \
 	objects/if_cscope.o \
 	objects/if_xcmdsrv.o \
+	objects/json.o \
 	objects/mark.o \
         objects/memline.o \
 	objects/menu.o \
@@ -1654,6 +1656,7 @@ PRO_AUTO = \
 	if_python.pro \
 	if_python3.pro \
 	if_ruby.pro \
+	json.pro \
 	main.pro \
 	mark.pro \
 	memfile.pro \
@@ -1986,6 +1989,8 @@ test_arglist \
 	test_expand \
 	test_hardcopy \
 	test_increment \
+	test_json \
+	test_langmap \
 	test_lispwords \
 	test_menu \
 	test_perl \
@@ -1993,6 +1998,7 @@ test_arglist \
 	test_searchpos \
 	test_set \
 	test_sort \
+	test_syntax \
 	test_undolevels \
 	test_unlet \
 	test_viminfo \
@@ -2770,6 +2776,9 @@ objects/if_tcl.o: if_tcl.c
 objects/integration.o: integration.c
 	$(CCC) -o $@ integration.c
 
+objects/json.o: json.c
+	$(CCC) -o $@ json.c
+
 objects/main.o: main.c
 	$(CCC) -o $@ main.c
 
@@ -3060,6 +3069,10 @@ objects/if_xcmdsrv.o: if_xcmdsrv.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
  globals.h farsi.h arabic.h version.h
+objects/json.o: json.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
+ ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
+ gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
+ arabic.h
 objects/main.o: main.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
@@ -3114,7 +3127,7 @@ objects/option.o: option.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h 
 objects/os_unix.o: os_unix.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
- arabic.h if_mzsch.h os_unixx.h
+ arabic.h os_unixx.h
 objects/pathdef.o: auto/pathdef.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
@@ -3179,7 +3192,7 @@ objects/gui.o: gui.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h ascii.
 objects/gui_gtk.o: gui_gtk.c gui_gtk_f.h vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
- globals.h farsi.h arabic.h ../pixmaps/stock_icons.h
+ globals.h farsi.h arabic.h
 objects/gui_gtk_f.o: gui_gtk_f.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
@@ -3245,8 +3258,8 @@ objects/gui_athena.o: gui_athena.c vim.h auto/config.h feature.h os_unix.h \
 objects/gui_gtk_x11.o: gui_gtk_x11.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
- globals.h farsi.h arabic.h gui_gtk_f.h ../runtime/vim32x32.xpm \
- ../runtime/vim16x16.xpm ../runtime/vim48x48.xpm $(GRESOURCE_HDR)
+ globals.h farsi.h arabic.h auto/gui_gtk_gresources.h gui_gtk_f.h \
+ ../runtime/vim32x32.xpm ../runtime/vim16x16.xpm ../runtime/vim48x48.xpm
 objects/gui_x11.o: gui_x11.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
@@ -3278,7 +3291,7 @@ objects/if_lua.o: if_lua.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h 
 objects/if_mzsch.o: if_mzsch.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
- globals.h farsi.h arabic.h if_mzsch.h mzscheme_base.c
+ globals.h farsi.h arabic.h if_mzsch.h
 objects/if_perl.o: auto/if_perl.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \

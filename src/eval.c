@@ -99,7 +99,6 @@ static char *e_undefvar = N_("E121: Undefined variable: %s");
 static char *e_missbrac = N_("E111: Missing ']'");
 static char *e_listarg = N_("E686: Argument of %s must be a List");
 static char *e_listdictarg = N_("E712: Argument of %s must be a List or Dictionary");
-static char *e_emptykey = N_("E713: Cannot use empty key for Dictionary");
 static char *e_listreq = N_("E714: List required");
 static char *e_dictreq = N_("E715: Dictionary required");
 static char *e_toomanyarg = N_("E118: Too many arguments for function: %s");
@@ -371,6 +370,10 @@ static struct vimvar
     {VV_NAME("option_old",	 VAR_STRING), VV_RO},
     {VV_NAME("option_type",	 VAR_STRING), VV_RO},
     {VV_NAME("errors",		 VAR_LIST), 0},
+    {VV_NAME("false",		 VAR_SPECIAL), VV_RO},
+    {VV_NAME("true",		 VAR_SPECIAL), VV_RO},
+    {VV_NAME("null",		 VAR_SPECIAL), VV_RO},
+    {VV_NAME("none",		 VAR_SPECIAL), VV_RO},
 };
 
 /* shorthand */
@@ -428,7 +431,6 @@ static int get_option_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int get_string_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int get_lit_string_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int get_list_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
-static int rettv_list_alloc __ARGS((typval_T *rettv));
 static long list_len __ARGS((list_T *l));
 static int list_equal __ARGS((list_T *l1, list_T *l2, int ic, int recursive));
 static int dict_equal __ARGS((dict_T *d1, dict_T *d2, int ic, int recursive));
@@ -443,7 +445,6 @@ static char_u *list2string __ARGS((typval_T *tv, int copyID));
 static int list_join_inner __ARGS((garray_T *gap, list_T *l, char_u *sep, int echo_style, int copyID, garray_T *join_gap));
 static int list_join __ARGS((garray_T *gap, list_T *l, char_u *sep, int echo, int copyID));
 static int free_unref_items __ARGS((int copyID));
-static int rettv_dict_alloc __ARGS((typval_T *rettv));
 static dictitem_T *dictitem_copy __ARGS((dictitem_T *org));
 static void dictitem_remove __ARGS((dict_T *dict, dictitem_T *item));
 static dict_T *dict_copy __ARGS((dict_T *orig, int deep, int copyID));
@@ -453,9 +454,6 @@ static int get_dict_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static char_u *echo_string __ARGS((typval_T *tv, char_u **tofree, char_u *numbuf, int copyID));
 static char_u *tv2string __ARGS((typval_T *tv, char_u **tofree, char_u *numbuf, int copyID));
 static char_u *string_quote __ARGS((char_u *str, int function));
-#ifdef FEAT_FLOAT
-static int string2float __ARGS((char_u *text, float_T *value));
-#endif
 static int get_env_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int find_internal_func __ARGS((char_u *name));
 static char_u *deref_func_name __ARGS((char_u *name, int *lenp, int no_autoload));
@@ -617,6 +615,8 @@ static void f_isdirectory __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_islocked __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_items __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_join __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_jsondecode __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_jsonencode __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_keys __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_last_buffer_nr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_len __ARGS((typval_T *argvars, typval_T *rettv));
@@ -816,7 +816,6 @@ static linenr_T get_tv_lnum __ARGS((typval_T *argvars));
 static linenr_T get_tv_lnum_buf __ARGS((typval_T *argvars, buf_T *buf));
 static char_u *get_tv_string __ARGS((typval_T *varp));
 static char_u *get_tv_string_buf __ARGS((typval_T *varp, char_u *buf));
-static char_u *get_tv_string_buf_chk __ARGS((typval_T *varp, char_u *buf));
 static dictitem_T *find_var __ARGS((char_u *name, hashtab_T **htp, int no_autoload));
 static dictitem_T *find_var_in_ht __ARGS((hashtab_T *ht, int htname, char_u *varname, int no_autoload));
 static hashtab_T *find_var_ht __ARGS((char_u *name, char_u **varname));
@@ -915,6 +914,12 @@ eval_init()
     set_vim_var_nr(VV_HLSEARCH, 1L);
     set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc());
     set_vim_var_list(VV_ERRORS, list_alloc());
+
+    set_vim_var_nr(VV_FALSE, VVAL_FALSE);
+    set_vim_var_nr(VV_TRUE, VVAL_TRUE);
+    set_vim_var_nr(VV_NONE, VVAL_NONE);
+    set_vim_var_nr(VV_NULL, VVAL_NULL);
+
     set_reg_var(0);  /* default for v:register is not 0 but '"' */
 
 #ifdef EBCDIC
@@ -3080,13 +3085,15 @@ tv_op(tv1, tv2, op)
     char_u	numbuf[NUMBUFLEN];
     char_u	*s;
 
-    /* Can't do anything with a Funcref or a Dict on the right. */
-    if (tv2->v_type != VAR_FUNC && tv2->v_type != VAR_DICT)
+    /* Can't do anything with a Funcref, Dict, v:true on the right. */
+    if (tv2->v_type != VAR_FUNC && tv2->v_type != VAR_DICT
+						&& tv2->v_type != VAR_SPECIAL)
     {
 	switch (tv1->v_type)
 	{
 	    case VAR_DICT:
 	    case VAR_FUNC:
+	    case VAR_SPECIAL:
 		break;
 
 	    case VAR_LIST:
@@ -5390,6 +5397,10 @@ eval_index(arg, rettv, evaluate, verbose)
 	return FAIL;
     }
 #endif
+    else if (rettv->v_type == VAR_SPECIAL)
+    {
+	return FAIL;
+    }
 
     init_tv(&var1);
     init_tv(&var2);
@@ -5999,7 +6010,7 @@ list_alloc()
  * Allocate an empty list for a return value.
  * Returns OK or FAIL.
  */
-    static int
+    int
 rettv_list_alloc(rettv)
     typval_T	*rettv;
 {
@@ -6246,6 +6257,9 @@ tv_equal(tv1, tv2, ic, recursive)
 	    s1 = get_tv_string_buf(tv1, buf1);
 	    s2 = get_tv_string_buf(tv2, buf2);
 	    return ((ic ? MB_STRICMP(s1, s2) : STRCMP(s1, s2)) == 0);
+
+	case VAR_SPECIAL:
+	    return tv1->vval.v_number == tv2->vval.v_number;
     }
 
     EMSG2(_(e_intern2), "tv_equal()");
@@ -6838,6 +6852,17 @@ list_join(gap, l, sep, echo_style, copyID)
 }
 
 /*
+ * Return the next (unique) copy ID.
+ * Used for serializing nested structures.
+ */
+    int
+get_copyID()
+{
+    current_copyID += COPYID_INC;
+    return current_copyID;
+}
+
+/*
  * Garbage collection for lists and dictionaries.
  *
  * We use reference counts to be able to free most items right away when they
@@ -6883,8 +6908,7 @@ garbage_collect()
 
     /* We advance by two because we add one for items referenced through
      * previous_funccal. */
-    current_copyID += COPYID_INC;
-    copyID = current_copyID;
+    copyID = get_copyID();
 
     /*
      * 1. Go through all accessible variables and mark all lists and dicts
@@ -7236,7 +7260,7 @@ dict_alloc()
  * Allocate an empty dict for a return value.
  * Returns OK or FAIL.
  */
-    static int
+    int
 rettv_dict_alloc(rettv)
     typval_T	*rettv;
 {
@@ -7891,6 +7915,18 @@ echo_string(tv, tofree, numbuf, copyID)
 	    break;
 #endif
 
+	case VAR_SPECIAL:
+	    *tofree = NULL;
+	    switch (tv->vval.v_number)
+	    {
+		case VVAL_FALSE: r = (char_u *)"false"; break;
+		case VVAL_TRUE: r = (char_u *)"true"; break;
+		case VVAL_NONE: r = (char_u *)"none"; break;
+		case VVAL_NULL: r = (char_u *)"null"; break;
+		default: EMSG2(_(e_intern2), "echo_string(special)");
+	    }
+	    break;
+
 	default:
 	    EMSG2(_(e_intern2), "echo_string()");
 	    *tofree = NULL;
@@ -7932,6 +7968,7 @@ tv2string(tv, tofree, numbuf, copyID)
 	case VAR_NUMBER:
 	case VAR_LIST:
 	case VAR_DICT:
+	case VAR_SPECIAL:
 	    break;
 	default:
 	    EMSG2(_(e_intern2), "tv2string()");
@@ -7985,14 +8022,14 @@ string_quote(str, function)
     return s;
 }
 
-#ifdef FEAT_FLOAT
+#if defined(FEAT_FLOAT) || defined(PROTO)
 /*
  * Convert the string "text" to a floating point number.
  * This uses strtod().  setlocale(LC_NUMERIC, "C") has been used to make sure
  * this always uses a decimal point.
  * Returns the length of the text that was consumed.
  */
-    static int
+    int
 string2float(text, value)
     char_u	*text;
     float_T	*value;	    /* result stored here */
@@ -8237,6 +8274,8 @@ static struct fst
     {"islocked",	1, 1, f_islocked},
     {"items",		1, 1, f_items},
     {"join",		1, 2, f_join},
+    {"jsondecode",	1, 1, f_jsondecode},
+    {"jsonencode",	1, 1, f_jsonencode},
     {"keys",		1, 1, f_keys},
     {"last_buffer_nr",	0, 0, f_last_buffer_nr},/* obsolete */
     {"len",		1, 1, f_len},
@@ -14391,6 +14430,34 @@ f_join(argvars, rettv)
     }
     else
 	rettv->vval.v_string = NULL;
+}
+
+/*
+ * "jsondecode()" function
+ */
+    static void
+f_jsondecode(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    js_read_T	reader;
+
+    reader.js_buf = get_tv_string(&argvars[0]);
+    reader.js_eof = TRUE;
+    reader.js_used = 0;
+    json_decode(&reader, rettv);
+}
+
+/*
+ * "jsonencode()" function
+ */
+    static void
+f_jsonencode(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = json_encode(&argvars[0]);
 }
 
 /*
@@ -21558,6 +21625,7 @@ clear_tv(varp)
 		varp->vval.v_dict = NULL;
 		break;
 	    case VAR_NUMBER:
+	    case VAR_SPECIAL:
 		varp->vval.v_number = 0;
 		break;
 #ifdef FEAT_FLOAT
@@ -21759,7 +21827,7 @@ get_tv_string_chk(varp)
     return get_tv_string_buf_chk(varp, mybuf);
 }
 
-    static char_u *
+    char_u *
 get_tv_string_buf_chk(varp, buf)
     typval_T	*varp;
     char_u	*buf;
@@ -22120,8 +22188,7 @@ list_one_var(v, prefix, first)
     char_u	*s;
     char_u	numbuf[NUMBUFLEN];
 
-    current_copyID += COPYID_INC;
-    s = echo_string(&v->di_tv, &tofree, numbuf, current_copyID);
+    s = echo_string(&v->di_tv, &tofree, numbuf, get_copyID());
     list_one_var_a(prefix, v->di_key, v->di_tv.v_type,
 					 s == NULL ? (char_u *)"" : s, first);
     vim_free(tofree);
@@ -22435,6 +22502,7 @@ copy_tv(from, to)
     switch (from->v_type)
     {
 	case VAR_NUMBER:
+	case VAR_SPECIAL:
 	    to->vval.v_number = from->vval.v_number;
 	    break;
 #ifdef FEAT_FLOAT
@@ -22609,8 +22677,7 @@ ex_echo(eap)
 	    }
 	    else if (eap->cmdidx == CMD_echo)
 		msg_puts_attr((char_u *)" ", echo_attr);
-	    current_copyID += COPYID_INC;
-	    p = echo_string(&rettv, &tofree, numbuf, current_copyID);
+	    p = echo_string(&rettv, &tofree, numbuf, get_copyID());
 	    if (p != NULL)
 		for ( ; *p != NUL && !got_int; ++p)
 		{

@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2014 Aug 10
+# Last change:  2016 Jan 22
 #
 # This has script been tested on VMS 6.2 to 8.2 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -311,7 +311,7 @@ ALL_LIBS = $(LIBS) $(GUI_LIB_DIR) $(GUI_LIB) \
 
 SRC =	blowfish.c buffer.c charset.c crypt.c, crypt_zip.c diff.c digraph.c edit.c eval.c ex_cmds.c ex_cmds2.c \
 	ex_docmd.c ex_eval.c ex_getln.c if_xcmdsrv.c fileio.c fold.c getchar.c \
-	hardcopy.c hashtab.c main.c mark.c menu.c mbyte.c memfile.c memline.c message.c misc1.c \
+	hardcopy.c hashtab.c json.c main.c mark.c menu.c mbyte.c memfile.c memline.c message.c misc1.c \
 	misc2.c move.c normal.c ops.c option.c popupmnu.c quickfix.c regexp.c search.c sha256.c\
 	spell.c syntax.c tag.c term.c termlib.c ui.c undo.c version.c screen.c \
 	window.c os_unix.c os_vms.c pathdef.c \
@@ -320,7 +320,7 @@ SRC =	blowfish.c buffer.c charset.c crypt.c, crypt_zip.c diff.c digraph.c edit.c
 
 OBJ =	blowfish.obj buffer.obj charset.obj crypt.obj, crypt_zip.obj diff.obj digraph.obj edit.obj eval.obj \
 	ex_cmds.obj ex_cmds2.obj ex_docmd.obj ex_eval.obj ex_getln.obj \
-	if_xcmdsrv.obj fileio.obj fold.obj getchar.obj hardcopy.obj hashtab.obj main.obj mark.obj \
+	if_xcmdsrv.obj fileio.obj fold.obj getchar.obj hardcopy.obj hashtab.obj json.obj main.obj mark.obj \
 	menu.obj memfile.obj memline.obj message.obj misc1.obj misc2.obj \
 	move.obj mbyte.obj normal.obj ops.obj option.obj popupmnu.obj quickfix.obj \
 	regexp.obj search.obj sha256.obj spell.obj syntax.obj tag.obj term.obj termlib.obj \
@@ -572,6 +572,10 @@ if_mzsch.obj : if_mzsch.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h [.proto]gui_beval.pro ex_cmds.h proto.h \
  globals.h farsi.h arabic.h if_mzsch.h 
+json.obj : json.c vim.h [.auto]config.h feature.h os_unix.h   \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h gui_beval.h \
+ [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h farsi.h \
+ arabic.h version.h
 main.obj : main.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h gui_beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h farsi.h \
