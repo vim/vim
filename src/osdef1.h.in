@@ -12,130 +12,130 @@
  * sed cannot always handle so many commands, this is file 1 of 2
  */
 
-extern int	printf __ARGS((char *, ...));
-extern int	fprintf __ARGS((FILE *, char *, ...));
-extern int	sprintf __ARGS((char *, char *, ...));
-extern int	sscanf __ARGS((char *, char *, ...));
+extern int	printf(char *, ...);
+extern int	fprintf(FILE *, char *, ...);
+extern int	sprintf(char *, char *, ...);
+extern int	sscanf(char *, char *, ...);
 #ifndef fopen	/* could be redefined to fopen64() */
-extern FILE	*fopen __ARGS((const char *, const char *));
+extern FILE	*fopen(const char *, const char *);
 #endif
-extern int	fclose __ARGS((FILE *));
-extern int	fseek __ARGS((FILE *, long, int));
+extern int	fclose(FILE *);
+extern int	fseek(FILE *, long, int);
 #ifdef HAVE_FSEEKO
-extern int	fseeko __ARGS((FILE *, off_t, int));
+extern int	fseeko(FILE *, off_t, int);
 #endif
-extern long	ftell __ARGS((FILE *));
+extern long	ftell(FILE *);
 #ifdef HAVE_FSEEKO
-extern off_t	ftello __ARGS((FILE *));
+extern off_t	ftello(FILE *);
 #endif
-extern void	rewind __ARGS((FILE *));
-extern int	fread __ARGS((char *, int, int, FILE *));
-extern int	fwrite __ARGS((char *, int, int, FILE *));
-extern int	fputs __ARGS((char *, FILE *));
+extern void	rewind(FILE *);
+extern int	fread(char *, int, int, FILE *);
+extern int	fwrite(char *, int, int, FILE *);
+extern int	fputs(char *, FILE *);
 #ifndef ferror	/* let me say it again: "macros should never have prototypes" */
-extern int	ferror __ARGS((FILE *));
+extern int	ferror(FILE *);
 #endif
-extern int	fflush __ARGS((FILE *));
+extern int	fflush(FILE *);
 #if defined(sun) || defined(_SEQUENT_)
 /* used inside of stdio macros getc(), puts(), putchar()... */
-extern int	_flsbuf __ARGS((int, FILE *));
-extern int	_filbuf __ARGS((FILE *));
+extern int	_flsbuf(int, FILE *);
+extern int	_filbuf(FILE *);
 #endif
 
 #if !defined(HAVE_SELECT)
-struct pollfd;			/* for poll __ARGS */
-extern int	poll __ARGS((struct pollfd *, long, int));
+struct pollfd;			/* for poll() */
+extern int	poll(struct pollfd *, long, int);
 #endif
 
 #ifdef HAVE_MEMSET
-extern void	*memset __ARGS((void *, int, size_t));
+extern void	*memset(void *, int, size_t);
 #endif
 #ifdef HAVE_BCMP
-extern int	bcmp __ARGS((void *, void *, size_t));
+extern int	bcmp(void *, void *, size_t);
 #endif
 #ifdef HAVE_MEMCMP
-extern int	memcmp __ARGS((const void *, const void *, size_t));
+extern int	memcmp(const void *, const void *, size_t);
 #endif
 #ifdef HAVE_STRPBRK
-extern char	*strpbrk __ARGS((const char *, const char *));
+extern char	*strpbrk(const char *, const char *);
 #endif
 #ifdef USEBCOPY
-extern void	bcopy __ARGS((char *, char *, int));
+extern void	bcopy(char *, char *, int);
 #else
 # ifdef USEMEMCPY
-extern void	memcpy __ARGS((char *, char *, int));
+extern void	memcpy(char *, char *, int);
 # else
 #  ifdef USEMEMMOVE
-extern void	memmove __ARGS((char *, char *, int));
+extern void	memmove(char *, char *, int);
 #  endif
 # endif
 #endif
 /* used inside of FD_ZERO macro: */
-extern void	bzero __ARGS((void *, size_t));
+extern void	bzero(void *, size_t);
 #ifdef HAVE_SETSID
-extern pid_t	setsid __ARGS((void));
+extern pid_t	setsid(void);
 #endif
 #ifdef HAVE_SETPGID
-extern int	setpgid __ARGS((pid_t, pid_t));
+extern int	setpgid(pid_t, pid_t);
 #endif
 #ifdef HAVE_STRTOL
-extern int	strtol __ARGS((char *, char **, int));
+extern int	strtol(char *, char **, int);
 #endif
 #ifdef HAVE_STRFTIME
-extern size_t	strftime __ARGS((char *, size_t, char *, struct tm *));
+extern size_t	strftime(char *, size_t, char *, struct tm *);
 #endif
 #ifdef HAVE_STRCASECMP
-extern int	strcasecmp __ARGS((char *, char *));
+extern int	strcasecmp(char *, char *);
 #endif
 #ifdef HAVE_STRNCASECMP
-extern int	strncasecmp __ARGS((char *, char *, size_t));
+extern int	strncasecmp(char *, char *, size_t);
 #endif
 #ifndef strdup
-extern char	*strdup __ARGS((const char *));
+extern char	*strdup(const char *);
 #endif
-extern int	atoi __ARGS((char *));
-extern int	atol __ARGS((char *));
+extern int	atoi(char *);
+extern int	atol(char *);
 
 #ifndef USE_SYSTEM
-extern int	fork __ARGS((void));
+extern int	fork(void);
 # ifndef __TANDEM
-extern int	execvp __ARGS((const char *, const char **));
+extern int	execvp(const char *, const char **);
 # endif
-extern int	wait __ARGS((int *)); /* will this break things ...? */
-extern int	waitpid __ARGS((pid_t, int *, int));
+extern int	wait(int *); /* will this break things ...? */
+extern int	waitpid(pid_t, int *, int);
 #endif
 
-extern int	toupper __ARGS((int));
-extern int	tolower __ARGS((int));
+extern int	toupper(int);
+extern int	tolower(int);
 
-extern RETSIGTYPE (*signal __ARGS((int, RETSIGTYPE (*func) SIGPROTOARG))) __ARGS(SIGPROTOARG);
+extern RETSIGTYPE (*signal(int, RETSIGTYPE (*func) SIGPROTOARG)) SIGPROTOARG;
 #ifdef HAVE_SIGSET
-extern RETSIGTYPE (*sigset __ARGS((int, RETSIGTYPE (*func) SIGPROTOARG))) __ARGS(SIGPROTOARG);
+extern RETSIGTYPE (*sigset(int, RETSIGTYPE (*func) SIGPROTOARG)) SIGPROTOARG;
 #endif
 
 #if defined(HAVE_SETJMP_H)
 # ifdef HAVE_SIGSETJMP
-extern int	sigsetjmp __ARGS((sigjmp_buf, int));
-extern void	siglongjmp __ARGS((sigjmp_buf, int));
+extern int	sigsetjmp(sigjmp_buf, int);
+extern void	siglongjmp(sigjmp_buf, int);
 # else
-extern int	setjmp __ARGS((jmp_buf));
-extern void	longjmp __ARGS((jmp_buf, int));
+extern int	setjmp(jmp_buf);
+extern void	longjmp(jmp_buf, int);
 # endif
 #endif
 
-extern int	kill __ARGS((int, int));
+extern int	kill(int, int);
 
 #ifndef __TANDEM
-extern int	access __ARGS((char *, int));
+extern int	access(char *, int);
 #endif
-extern int	fsync __ARGS((int));
-extern int	fchown __ARGS((int, int, int));
+extern int	fsync(int);
+extern int	fchown(int, int, int);
 #if defined(HAVE_GETCWD) && !defined(sun) && !defined(__TANDEM)
-extern char	*getcwd __ARGS((char *, int));
+extern char	*getcwd(char *, int);
 #else
-extern char	*getwd __ARGS((char *));
+extern char	*getwd(char *);
 #endif
 #ifndef __alpha	/* suggested by Campbell */
-extern int	ioctl __ARGS((int, int, ...));
+extern int	ioctl(int, int, ...);
 #endif
-extern int	chmod __ARGS((const char *, mode_t));
+extern int	chmod(const char *, mode_t);
