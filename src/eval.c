@@ -6140,8 +6140,6 @@ list_equal(l1, l2, ic, recursive)
     return item1 == NULL && item2 == NULL;
 }
 
-#if defined(FEAT_RUBY) || defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) \
-	|| defined(FEAT_MZSCHEME) || defined(FEAT_LUA) || defined(PROTO)
 /*
  * Return the dictitem that an entry in a hashtable points to.
  */
@@ -6151,7 +6149,6 @@ dict_lookup(hi)
 {
     return HI2DI(hi);
 }
-#endif
 
 /*
  * Return TRUE when two dictionaries have exactly the same key/values.
