@@ -406,6 +406,7 @@ json_decode_string(js_read_T *reader, typval_T *res)
     }
     else
     {
+	EMSG(_(e_invarg));
 	res->v_type = VAR_SPECIAL;
 	res->vval.v_number = VVAL_NONE;
     }
