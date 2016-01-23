@@ -20157,6 +20157,13 @@ f_type(argvars, rettv)
 #ifdef FEAT_FLOAT
 	case VAR_FLOAT:  n = 5; break;
 #endif
+	case VAR_SPECIAL:
+			 if (argvars[0].vval.v_number == VVAL_FALSE
+				 || argvars[0].vval.v_number == VVAL_TRUE)
+			     n = 6;
+			 else
+			     n = 7;
+			 break;
 	default: EMSG2(_(e_intern2), "f_type()"); n = 0; break;
     }
     rettv->vval.v_number = n;

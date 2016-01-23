@@ -922,6 +922,23 @@ func Test_curlies()
 endfunc
 
 "-------------------------------------------------------------------------------
+" Test 91:  using type().					    {{{1
+"-------------------------------------------------------------------------------
+
+func Test_type()
+    call assert_equal(0, type(0))
+    call assert_equal(1, type(""))
+    call assert_equal(2, type(function("tr")))
+    call assert_equal(3, type([]))
+    call assert_equal(4, type({}))
+    call assert_equal(5, type(0.0))
+    call assert_equal(6, type(v:false))
+    call assert_equal(6, type(v:true))
+    call assert_equal(7, type(v:none))
+    call assert_equal(7, type(v:null))
+endfunc
+
+"-------------------------------------------------------------------------------
 " Modelines								    {{{1
 " vim: ts=8 sw=4 tw=80 fdm=marker
 " vim: fdt=substitute(substitute(foldtext(),\ '\\%(^+--\\)\\@<=\\(\\s*\\)\\(.\\{-}\\)\:\ \\%(\"\ \\)\\=\\(Test\ \\d*\\)\:\\s*',\ '\\3\ (\\2)\:\ \\1',\ \"\"),\ '\\(Test\\s*\\)\\(\\d\\)\\D\\@=',\ '\\1\ \\2',\ "")

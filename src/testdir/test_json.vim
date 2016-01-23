@@ -88,4 +88,18 @@ func Test_decode()
   call assert_equal(s:vard2x, jsondecode(s:jsond2))
 
   call assert_equal(s:varvals, jsondecode(s:jsonvals))
+
+  call assert_equal(v:true, jsondecode('true'))
+  call assert_equal(type(v:true), type(jsondecode('true')))
+  call assert_equal(v:none, jsondecode(''))
+  call assert_equal(type(v:none), type(jsondecode('')))
+  call assert_equal("", jsondecode('""'))
+
+  call assert_fails('call jsondecode("\"")', "E474:")
+  call assert_fails('call jsondecode("{-}")', "E474:")
+  call assert_fails('call jsondecode("blah")', "E474:")
+  call assert_fails('call jsondecode("true blah")', "E474:")
+  call assert_fails('call jsondecode("<foobar>")', "E474:")
+  call assert_fails('call jsondecode("[foobar]")', "E474:")
+  call assert_fails('call jsondecode("{foobar}")', "E474:")
 endfunc
