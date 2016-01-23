@@ -3108,8 +3108,9 @@ inchar(buf, maxlen, wait_time, tb_change_cnt)
 
 #ifdef FEAT_LANGMAP
     if (*p_langmap && len &&
-	(((State & (INSERT|CMDLINE)) == 0)
-	||(get_cmdline_type() == ':')))
+	((((State & (CMDLINE | INSERT)) == 0) 
+	 &&get_real_state() != SELECTMODE)
+	 || get_cmdline_type() == ':'))
     {
 	len = langmap_adjust(buf, len, maxlen);
     }

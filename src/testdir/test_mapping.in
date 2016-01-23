@@ -112,6 +112,11 @@ df_
 :call append(line('$'), '+')
 :cunmap p
 :cunmap b
+:" no langmap in Select-mode
+:call append(line('$'), "nnn")
+:set langmap=cb
+Gveccc
+:set langmap=
 :"
 :" keymap applies to insert mode, but not to normal mode
 :set keymap=russian-jcukenwin
