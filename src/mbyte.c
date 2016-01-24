@@ -4392,21 +4392,21 @@ iconv_string(vcp, str, slen, unconvlenp, resultlenp)
  * Dynamically load the "iconv.dll" on Win32.
  */
 
-#ifndef DYNAMIC_ICONV	    /* just generating prototypes */
-# define HINSTANCE int
-#endif
+#   ifndef DYNAMIC_ICONV	    /* must be generating prototypes */
+#    define HINSTANCE int
+#   endif
 static HINSTANCE hIconvDLL = 0;
 static HINSTANCE hMsvcrtDLL = 0;
 
-#  ifndef DYNAMIC_ICONV_DLL
-#   define DYNAMIC_ICONV_DLL "iconv.dll"
-#   define DYNAMIC_ICONV_DLL_ALT1 "libiconv.dll"
-#   define DYNAMIC_ICONV_DLL_ALT2 "libiconv2.dll"
-#   define DYNAMIC_ICONV_DLL_ALT3 "libiconv-2.dll"
-#  endif
-#  ifndef DYNAMIC_MSVCRT_DLL
-#   define DYNAMIC_MSVCRT_DLL "msvcrt.dll"
-#  endif
+#   ifndef DYNAMIC_ICONV_DLL
+#    define DYNAMIC_ICONV_DLL "iconv.dll"
+#    define DYNAMIC_ICONV_DLL_ALT1 "libiconv.dll"
+#    define DYNAMIC_ICONV_DLL_ALT2 "libiconv2.dll"
+#    define DYNAMIC_ICONV_DLL_ALT3 "libiconv-2.dll"
+#   endif
+#   ifndef DYNAMIC_MSVCRT_DLL
+#    define DYNAMIC_MSVCRT_DLL "msvcrt.dll"
+#   endif
 
 /*
  * Get the address of 'funcname' which is imported by 'hInst' DLL.
@@ -4459,14 +4459,22 @@ iconv_enabled(verbose)
     if (hIconvDLL != 0 && hMsvcrtDLL != 0)
 	return TRUE;
 
-    /* The iconv DLL file goes under different names, try them all. */
-    hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL);
-    if (hIconvDLL == 0)
-	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT1);
+    /* The iconv DLL file goes under different names, try them all.
+     * Do the "2" version first, it's newer. */
+#ifdef DYNAMIC_ICONV_DLL_ALT2
     if (hIconvDLL == 0)
 	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT2);
+#endif
+#ifdef DYNAMIC_ICONV_DLL_ALT3
     if (hIconvDLL == 0)
 	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT3);
+#endif
+    if (hIconvDLL == 0)
+	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL);
+#ifdef DYNAMIC_ICONV_DLL_ALT1
+    if (hIconvDLL == 0)
+	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT1);
+#endif
 
     if (hIconvDLL != 0)
 	hMsvcrtDLL = vimLoadLib(DYNAMIC_MSVCRT_DLL);
