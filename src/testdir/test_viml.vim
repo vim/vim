@@ -936,6 +936,16 @@ func Test_type()
     call assert_equal(6, type(v:true))
     call assert_equal(7, type(v:none))
     call assert_equal(7, type(v:null))
+
+    call assert_equal(0, 0 + v:false)
+    call assert_equal(1, 0 + v:true)
+    call assert_equal(0, 0 + v:none)
+    call assert_equal(0, 0 + v:null)
+
+    call assert_equal('false', '' . v:false)
+    call assert_equal('true', '' . v:true)
+    call assert_equal('none', '' . v:none)
+    call assert_equal('null', '' . v:null)
 endfunc
 
 "-------------------------------------------------------------------------------

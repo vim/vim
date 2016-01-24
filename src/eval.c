@@ -7820,6 +7820,20 @@ failret:
     return OK;
 }
 
+    static char *
+get_var_special_name(int nr)
+{
+    switch (nr)
+    {
+	case VVAL_FALSE: return "false";
+	case VVAL_TRUE: return "true";
+	case VVAL_NONE: return "none";
+	case VVAL_NULL: return "null";
+    }
+    EMSG2(_(e_intern2), "get_var_special_name()");
+    return "42";
+}
+
 /*
  * Return a string with the string representation of a variable.
  * If the memory is allocated "tofree" is set to it, otherwise NULL.
@@ -7914,14 +7928,7 @@ echo_string(tv, tofree, numbuf, copyID)
 
 	case VAR_SPECIAL:
 	    *tofree = NULL;
-	    switch (tv->vval.v_number)
-	    {
-		case VVAL_FALSE: r = (char_u *)"false"; break;
-		case VVAL_TRUE: r = (char_u *)"true"; break;
-		case VVAL_NONE: r = (char_u *)"none"; break;
-		case VVAL_NULL: r = (char_u *)"null"; break;
-		default: EMSG2(_(e_intern2), "echo_string(special)");
-	    }
+	    r = (char_u *)get_var_special_name(tv->vval.v_number);
 	    break;
 
 	default:
@@ -21704,6 +21711,9 @@ get_tv_number_chk(varp, denote)
 	case VAR_DICT:
 	    EMSG(_("E728: Using a Dictionary as a Number"));
 	    break;
+	case VAR_SPECIAL:
+	    return varp->vval.v_number == VVAL_TRUE ? 1 : 0;
+	    break;
 	default:
 	    EMSG2(_(e_intern2), "get_tv_number()");
 	    break;
@@ -21859,6 +21869,10 @@ get_tv_string_buf_chk(varp, buf)
 	    if (varp->vval.v_string != NULL)
 		return varp->vval.v_string;
 	    return (char_u *)"";
+	case VAR_SPECIAL:
+	    STRCPY(buf, get_var_special_name(varp->vval.v_number));
+	    return buf;
+
 	default:
 	    EMSG2(_(e_intern2), "get_tv_string_buf()");
 	    break;
