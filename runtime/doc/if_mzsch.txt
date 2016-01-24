@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 7.4.  Last change: 2016 Jan 16
+*if_mzsch.txt*  For Vim version 7.4.  Last change: 2016 Jan 24
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -265,7 +265,7 @@ directly from Scheme. For instance: >
 <
 
 ==============================================================================
-7. Dynamic loading				    *mzscheme-dynamic* *E815*
+7. Dynamic loading				*mzscheme-dynamic* *E815*
 
 On MS-Windows the MzScheme libraries can be loaded dynamically. The |:version|
 output then includes |+mzscheme/dyn|.
@@ -294,7 +294,7 @@ to set the environment variable as the following: >
   PLTCONFIGDIR=C:\Racket63\etc
 <
 ==============================================================================
-8. MzScheme setup				    *mzscheme-setup*
+8. MzScheme setup				    *mzscheme-setup* *E895*
 
 Vim requires "racket/base" module for if_mzsch core (fallback to "scheme/base"
 if it doesn't exist), "r5rs" module for test and "raco ctool" command for

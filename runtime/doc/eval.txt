@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Jan 23
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Jan 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1412,6 +1412,9 @@ v:exception	The value of the exception most recently caught and not
 					*v:false* *false-variable*
 v:false		A Number with value zero. Used to put "false" in JSON.  See
 		|jsonencode()|.
+		When used as a string this evaluates to "false". >
+			echo v:false
+<			false ~
 
 					*v:fcs_reason* *fcs_reason-variable*
 v:fcs_reason	The reason why the |FileChangedShell| event was triggered.
@@ -1489,7 +1492,7 @@ v:foldstart	Used for 'foldtext': first line of closed fold.
 v:hlsearch	Variable that indicates whether search highlighting is on. 
 		Setting it makes sense only if 'hlsearch' is enabled which
 		requires |+extra_search|. Setting this variable to zero acts
-		the like |:nohlsearch| command, setting it to one acts like >
+		like the |:nohlsearch| command, setting it to one acts like >
 			let &hlsearch = &hlsearch
 <		Note that the value is restored when returning from a
 		function. |function-search-undo|.
@@ -1549,10 +1552,18 @@ v:mouse_col	Column number for a mouse click obtained with |getchar()|.
 					*v:none* *none-variable*
 v:none		An empty String. Used to put an empty item in JSON.  See
 		|jsonencode()|.
+		When used as a number this evaluates to zero.
+		When used as a string this evaluates to "none". >
+			echo v:none
+<			none ~
 
 					*v:null* *null-variable*
 v:null		An empty String. Used to put "null" in JSON.  See
 		|jsonencode()|.
+		When used as a number this evaluates to zero.
+		When used as a string this evaluates to "null". >
+			echo v:null
+<			null ~
 
 					*v:oldfiles* *oldfiles-variable*
 v:oldfiles	List of file names that is loaded from the |viminfo| file on
@@ -1722,7 +1733,9 @@ v:throwpoint	The point where the exception most recently caught and not
 						*v:true* *true-variable*
 v:true		A Number with value one. Used to put "true" in JSON.  See
 		|jsonencode()|.
-
+		When used as a string this evaluates to "true". >
+			echo v:true
+<			true ~
 						*v:val* *val-variable*
 v:val		Value of the current item of a |List| or |Dictionary|.	Only
 		valid while evaluating the expression used with |map()| and
@@ -4234,17 +4247,26 @@ join({list} [, {sep}])					*join()*
 		The opposite function is |split()|.
 
 jsondecode({string})					*jsondecode()*
-		TODO
+		This parses a JSON formatted string and returns the equivalent
+		in Vim values.  See |jsonencode()| for the relation between
+		JSON and Vim values.
+		The decoding is permissive:
+		- A trailing comma in an array and object is ignored.
+		- An empty item in an array results in v:none.
+		- When an object name is not a string it is converted to a
+		  string.  E.g. the number 123 is used as the string "123".
+		- More floating point numbers are recognized, e.g. "1." for
+		  "1.0".
 
 jsonencode({expr})					*jsonencode()*
-		Encodode {expr} as JSON and return this as a string.
+		Encode {expr} as JSON and return this as a string.
 		The encoding is specified in:
 		http://www.ietf.org/rfc/rfc4627.txt
 		Vim values are converted as follows:
 		   Number		decimal number
 		   Float		floating point number
 		   String		in double quotes (possibly null)
-		   Funcref		nothing
+		   Funcref		not possible, error
 		   List			as an array (possibly null); when
 		   			used recursively: []
 		   Dict			as an object (possibly null); when
@@ -4253,6 +4275,13 @@ jsonencode({expr})					*jsonencode()*
 		   v:true		"true"
 		   v:none		nothing
 		   v:null		"null"
+		Note that using v:none is permitted, although the JSON
+		standard does not allow empty items.  This can be useful for
+		omitting items in an array:
+			[0,,,,,5] ~
+		This is much more efficient than:
+			[0,null,null,null,null,5] ~
+		But a strict JSON parser will not accept it.
 
 keys({dict})						*keys()*
 		Return a |List| with all the keys of {dict}.  The |List| is in
@@ -6615,6 +6644,8 @@ type({expr})	The result is a Number, depending on the type of {expr}:
 			List:	    3
 			Dictionary: 4
 			Float:	    5
+			Boolean:    6 (v:false and v:true)
+			None	    7 (v:null and v:none)
 		To avoid the magic numbers it should be used this way: >
 			:if type(myvar) == type(0)
 			:if type(myvar) == type("")
@@ -6622,6 +6653,8 @@ type({expr})	The result is a Number, depending on the type of {expr}:
 			:if type(myvar) == type([])
 			:if type(myvar) == type({})
 			:if type(myvar) == type(0.0)
+			:if type(myvar) == type(v:false)
+			:if type(myvar) == type(v:none
 
 undofile({name})					*undofile()*
 		Return the name of the undo file that would be used for a file

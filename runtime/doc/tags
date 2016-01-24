@@ -4422,6 +4422,7 @@ E891	eval.txt	/*E891*
 E892	eval.txt	/*E892*
 E893	eval.txt	/*E893*
 E894	eval.txt	/*E894*
+E895	if_mzsch.txt	/*E895*
 E90	message.txt	/*E90*
 E91	options.txt	/*E91*
 E92	message.txt	/*E92*
@@ -5730,6 +5731,7 @@ extend()	eval.txt	/*extend()*
 extension-removal	cmdline.txt	/*extension-removal*
 extensions-improvements	todo.txt	/*extensions-improvements*
 f	motion.txt	/*f*
+false-variable	eval.txt	/*false-variable*
 faq	intro.txt	/*faq*
 farsi	farsi.txt	/*farsi*
 farsi-fonts	farsi.txt	/*farsi-fonts*
@@ -6786,6 +6788,8 @@ javascript-cinoptions	indent.txt	/*javascript-cinoptions*
 javascript-indenting	indent.txt	/*javascript-indenting*
 join()	eval.txt	/*join()*
 jsbterm-mouse	options.txt	/*jsbterm-mouse*
+jsondecode()	eval.txt	/*jsondecode()*
+jsonencode()	eval.txt	/*jsonencode()*
 jtags	tagsrch.txt	/*jtags*
 jump-motions	motion.txt	/*jump-motions*
 jumplist	motion.txt	/*jumplist*
@@ -7435,6 +7439,7 @@ no-eval-feature	eval.txt	/*no-eval-feature*
 no_buffers_menu	gui.txt	/*no_buffers_menu*
 non-greedy	pattern.txt	/*non-greedy*
 non-zero-arg	eval.txt	/*non-zero-arg*
+none-variable	eval.txt	/*none-variable*
 normal-index	index.txt	/*normal-index*
 not-compatible	usr_01.txt	/*not-compatible*
 not-edited	editing.txt	/*not-edited*
@@ -7442,6 +7447,7 @@ notation	intro.txt	/*notation*
 notepad	gui_w32.txt	/*notepad*
 nr2char()	eval.txt	/*nr2char()*
 nroff.vim	syntax.txt	/*nroff.vim*
+null-variable	eval.txt	/*null-variable*
 number_relativenumber	options.txt	/*number_relativenumber*
 numbered-function	eval.txt	/*numbered-function*
 o	insert.txt	/*o*
@@ -8509,6 +8515,7 @@ toolbar-icon	gui.txt	/*toolbar-icon*
 toupper()	eval.txt	/*toupper()*
 tr()	eval.txt	/*tr()*
 trojan-horse	starting.txt	/*trojan-horse*
+true-variable	eval.txt	/*true-variable*
 trunc()	eval.txt	/*trunc()*
 try-conditionals	eval.txt	/*try-conditionals*
 try-echoerr	eval.txt	/*try-echoerr*
@@ -8618,6 +8625,7 @@ v:dying	eval.txt	/*v:dying*
 v:errmsg	eval.txt	/*v:errmsg*
 v:errors	eval.txt	/*v:errors*
 v:exception	eval.txt	/*v:exception*
+v:false	eval.txt	/*v:false*
 v:fcs_choice	eval.txt	/*v:fcs_choice*
 v:fcs_reason	eval.txt	/*v:fcs_reason*
 v:fname_diff	eval.txt	/*v:fname_diff*
@@ -8637,6 +8645,8 @@ v:lnum	eval.txt	/*v:lnum*
 v:mouse_col	eval.txt	/*v:mouse_col*
 v:mouse_lnum	eval.txt	/*v:mouse_lnum*
 v:mouse_win	eval.txt	/*v:mouse_win*
+v:none	eval.txt	/*v:none*
+v:null	eval.txt	/*v:null*
 v:oldfiles	eval.txt	/*v:oldfiles*
 v:operator	eval.txt	/*v:operator*
 v:option_new	eval.txt	/*v:option_new*
@@ -8658,6 +8668,7 @@ v:swapname	eval.txt	/*v:swapname*
 v:termresponse	eval.txt	/*v:termresponse*
 v:this_session	eval.txt	/*v:this_session*
 v:throwpoint	eval.txt	/*v:throwpoint*
+v:true	eval.txt	/*v:true*
 v:val	eval.txt	/*v:val*
 v:var	eval.txt	/*v:var*
 v:version	eval.txt	/*v:version*
