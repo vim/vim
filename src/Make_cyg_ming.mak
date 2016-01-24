@@ -64,8 +64,10 @@ WINVER = 0x0500
 endif
 # Set to yes to enable Cscope support.
 CSCOPE=yes
-# Set to yes to enable Netbeans support.
+# Set to yes to enable Netbeans support (requires CHANNEL).
 NETBEANS=$(GUI)
+# Set to yes to enable inter process communication.
+CHANNEL=$(GUI)
 
 
 # Link against the shared version of libstdc++ by default.  Set
@@ -526,6 +528,10 @@ endif
 endif
 endif
 
+ifeq ($(CHANNEL),yes)
+DEFINES += -DFEAT_CHANNEL
+endif
+
 # DirectWrite (DirectX)
 ifeq ($(DIRECTX),yes)
 # Only allow DirectWrite for a GUI build.
@@ -667,13 +673,28 @@ endif
 ifeq ($(CSCOPE),yes)
 OBJ += $(OUTDIR)/if_cscope.o
 endif
+
 ifeq ($(NETBEANS),yes)
+ifneq ($(CHANNEL),yes)
+# Cannot use Netbeans without CHANNEL
+NETBEANS=no
+else
 # Only allow NETBEANS for a GUI build.
 ifeq (yes, $(GUI))
 OBJ += $(OUTDIR)/netbeans.o
 LIB += -lwsock32
 endif
 endif
+endif
+
+ifeq ($(CHANNEL),yes)
+OBJ += $(OUTDIR)/channel.o
+ifneq ($(NETBEANS),yes)
+LIB += -lwsock32
+endif
+endif
+endif
+
 ifeq ($(DIRECTX),yes)
 # Only allow DIRECTX for a GUI build.
 ifeq (yes, $(GUI))
@@ -865,6 +886,9 @@ if_perl.c: if_perl.xs typemap
 
 $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)
 	$(CC) -c $(CFLAGS) netbeans.c -o $(OUTDIR)/netbeans.o
+
+$(OUTDIR)/channel.o:	channel.c $(INCL)
+	$(CC) -c $(CFLAGS) channel.c -o $(OUTDIR)/channel.o
 
 $(OUTDIR)/regexp.o:		regexp.c regexp_nfa.c $(INCL)
 	$(CC) -c $(CFLAGS) regexp.c -o $(OUTDIR)/regexp.o

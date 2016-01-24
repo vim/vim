@@ -13083,6 +13083,9 @@ f_has(argvars, rettv)
 #ifdef FEAT_BYTEOFF
 	"byte_offset",
 #endif
+#ifdef FEAT_CHANNEL
+	"channel",
+#endif
 #ifdef FEAT_CINDENT
 	"cindent",
 #endif

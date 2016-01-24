@@ -1938,10 +1938,30 @@ AC_ARG_ENABLE(netbeans,
 	, [enable_netbeans="yes"])
 if test "$enable_netbeans" = "yes"; then
   AC_MSG_RESULT(no)
+else
+  AC_MSG_RESULT(yes)
+fi
+
+AC_MSG_CHECKING(--disable-channel argument)
+AC_ARG_ENABLE(channel,
+	[  --disable-channel      Disable process communication support.],
+	, [enable_channel="yes"])
+if test "$enable_channel" = "yes"; then
+  AC_MSG_RESULT(no)
+else
+  if test "$enable_netbeans" = "yes"; then
+    AC_MSG_RESULT(yes, netbeans also disabled)
+    enable_netbeans="no"
+  else
+    AC_MSG_RESULT(yes)
+  fi
+fi
+
+if "$enable_channel" = "yes"; then
   dnl On Solaris we need the socket and nsl library.
   AC_CHECK_LIB(socket, socket)
   AC_CHECK_LIB(nsl, gethostbyname)
-  AC_MSG_CHECKING(whether compiling netbeans integration is possible)
+  AC_MSG_CHECKING(whether compiling with process communication is possible)
   AC_TRY_LINK([
 #include <stdio.h>
 #include <stdlib.h>
@@ -1967,9 +1987,7 @@ if test "$enable_netbeans" = "yes"; then
 		  (void)connect(1, (struct sockaddr *)&server, sizeof(server));
 	    ],
 	AC_MSG_RESULT(yes),
-	AC_MSG_RESULT(no); enable_netbeans="no")
-else
-  AC_MSG_RESULT(yes)
+	AC_MSG_RESULT(no); enable_netbeans="no"; enable_channel="no")
 fi
 if test "$enable_netbeans" = "yes"; then
   AC_DEFINE(FEAT_NETBEANS_INTG)
@@ -1977,6 +1995,13 @@ if test "$enable_netbeans" = "yes"; then
   AC_SUBST(NETBEANS_SRC)
   NETBEANS_OBJ="objects/netbeans.o"
   AC_SUBST(NETBEANS_OBJ)
+fi
+if test "$enable_channel" = "yes"; then
+  AC_DEFINE(FEAT_CHANNEL)
+  CHANNEL_SRC="channel.c"
+  AC_SUBST(CHANNEL_SRC)
+  CHANNEL_OBJ="objects/channel.o"
+  AC_SUBST(CHANNEL_OBJ)
 fi
 
 AC_MSG_CHECKING(--enable-sniff argument)

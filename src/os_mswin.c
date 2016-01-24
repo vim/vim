@@ -231,7 +231,7 @@ mch_exit(int r)
 # ifdef FEAT_OLE
     UninitOLE();
 # endif
-# ifdef FEAT_NETBEANS_INTG
+# ifdef FEAT_CHANNEL
     if (WSInitialized)
     {
 	WSInitialized = FALSE;

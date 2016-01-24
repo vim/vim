@@ -553,7 +553,7 @@ typedef BOOL (WINAPI *TGetMonitorInfo)(_HMONITOR, _MONITORINFO *);
 static TMonitorFromWindow   pMonitorFromWindow = NULL;
 static TGetMonitorInfo	    pGetMonitorInfo = NULL;
 static HANDLE		    user32_lib = NULL;
-#ifdef FEAT_NETBEANS_INTG
+#ifdef FEAT_CHANNEL
 int WSInitialized = FALSE; /* WinSock is initialized */
 #endif
 /*
@@ -5048,12 +5048,14 @@ netbeans_draw_multisign_indicator(int row)
     SetPixel(s_hdc, x+3, y++, gui.currFgColor);
     SetPixel(s_hdc, x+2, y, gui.currFgColor);
 }
+#endif
 
+#if defined(FEAT_CHANNEL) || defined(PROTO)
 /*
  * Initialize the Winsock dll.
  */
     void
-netbeans_init_winsock()
+channel_init_winsock()
 {
     WSADATA wsaData;
     int wsaerr;

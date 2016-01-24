@@ -209,6 +209,9 @@ void qsort __ARGS((void *base, size_t elm_count, size_t elm_size, int (*cmp)(con
 # ifdef FEAT_NETBEANS_INTG
 #  include "netbeans.pro"
 # endif
+# ifdef FEAT_CHANNEL
+#  include "channel.pro"
+# endif
 
 # ifdef FEAT_GUI
 #  include "gui.pro"

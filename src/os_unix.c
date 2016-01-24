@@ -5189,9 +5189,6 @@ RealWaitForChar(fd, msec, check_for_gpm)
     int		*check_for_gpm UNUSED;
 {
     int		ret;
-#ifdef FEAT_NETBEANS_INTG
-    int		nb_fd = netbeans_filedesc();
-#endif
 #if defined(FEAT_XCLIPBOARD) || defined(USE_XSMP) || defined(FEAT_MZSCHEME)
     static int	busy = FALSE;
 
@@ -5241,7 +5238,7 @@ RealWaitForChar(fd, msec, check_for_gpm)
 # endif
 #endif
 #ifndef HAVE_SELECT
-	struct pollfd   fds[6];
+	struct pollfd   fds[6 + MAX_OPEN_CHANNELS];
 	int		nfd;
 # ifdef FEAT_XCLIPBOARD
 	int		xterm_idx = -1;
@@ -5251,9 +5248,6 @@ RealWaitForChar(fd, msec, check_for_gpm)
 # endif
 # ifdef USE_XSMP
 	int		xsmp_idx = -1;
-# endif
-# ifdef FEAT_NETBEANS_INTG
-	int		nb_idx = -1;
 # endif
 	int		towait = (int)msec;
 
@@ -5306,14 +5300,8 @@ RealWaitForChar(fd, msec, check_for_gpm)
 	    nfd++;
 	}
 # endif
-#ifdef FEAT_NETBEANS_INTG
-	if (nb_fd != -1)
-	{
-	    nb_idx = nfd;
-	    fds[nfd].fd = nb_fd;
-	    fds[nfd].events = POLLIN;
-	    nfd++;
-	}
+#ifdef FEAT_CHANNEL
+	nfd = channel_poll_setup(nfd, &fds);
 #endif
 
 	ret = poll(fds, nfd, towait);
@@ -5368,12 +5356,9 @@ RealWaitForChar(fd, msec, check_for_gpm)
 		finished = FALSE;	/* Try again */
 	}
 # endif
-#ifdef FEAT_NETBEANS_INTG
-	if (ret > 0 && nb_idx != -1 && fds[nb_idx].revents & POLLIN)
-	{
-	    netbeans_read();
-	    --ret;
-	}
+#ifdef FEAT_CHANNEL
+	if (ret > 0)
+	    ret = channel_poll_check(ret, &fds);
 #endif
 
 
@@ -5462,13 +5447,8 @@ select_eintr:
 		maxfd = xsmp_icefd;
 	}
 # endif
-# ifdef FEAT_NETBEANS_INTG
-	if (nb_fd != -1)
-	{
-	    FD_SET(nb_fd, &rfds);
-	    if (maxfd < nb_fd)
-		maxfd = nb_fd;
-	}
+# ifdef FEAT_CHANNEL
+	maxfd = channel_select_setup(maxfd, &rfds);
 # endif
 
 	ret = select(maxfd + 1, &rfds, NULL, &efds, tvp);
@@ -5556,12 +5536,9 @@ select_eintr:
 	    }
 	}
 # endif
-#ifdef FEAT_NETBEANS_INTG
-	if (ret > 0 && nb_fd != -1 && FD_ISSET(nb_fd, &rfds))
-	{
-	    netbeans_read();
-	    --ret;
-	}
+#ifdef FEAT_CHANNEL
+	if (ret > 0)
+	    ret = channel_select_check(ret, &rfds);
 #endif
 
 #endif /* HAVE_SELECT */

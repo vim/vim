@@ -317,6 +317,6 @@
 # define PLINES_NOFILL(x) plines(x)
 #endif
 
-#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_CLIENTSERVER)
+#if defined(FEAT_CHANNEL) || defined(FEAT_CLIENTSERVER)
 # define MESSAGE_QUEUE
 #endif

@@ -86,9 +86,12 @@
 #		(BIG for WIN32, SMALL for DOS16)
 # WINVER	0x0400 or 0x0500: minimum Win32 version to support (0x0400)
 # CSCOPE	no or yes: include support for Cscope interface (yes)
-# NETBEANS	no or yes: include support for Netbeans interface (yes if GUI
+# NETBEANS	no or yes: include support for Netbeans interface; also
+#		requires CHANNEL (yes if GUI
 #		is yes)
 # NBDEBUG	no or yes: include support for debugging Netbeans interface (no)
+# CHANNEL	no or yes: include support for inter process communication (yes
+#		if GUI is yes)
 # XPM		define to path to XPM dir to get support for loading XPM images.
 
 ### BOR: root of the BC installation
@@ -135,6 +138,11 @@ CSCOPE = yes
 ### NETBEANS: yes to enable NetBeans interface support, no to disable it
 !if ("$(NETBEANS)"=="") && ("$(GUI)"=="yes")
 NETBEANS = yes
+!endif
+
+### CHANNEL: yes to enable inter process communication, no to disable it
+!if ("$(CHANNEL)"=="") && ("$(GUI)"=="yes")
+CHANNEL = yes
 !endif
 
 ### LUA: uncomment this line if you want lua support in vim
@@ -466,6 +474,7 @@ LINK2 = -aa
 RESFILE = vim.res
 !else
 !undef NETBEANS
+!undef CHANNEL
 !undef XPM
 !undef VIMDLL
 !if ("$(DEBUG)"=="yes")
@@ -488,11 +497,20 @@ RESFILE = vim.res
 !endif
 
 !if ("$(NETBEANS)"=="yes")
+!if ("$(CHANNEL)"!="yes")
+# cannot use Netbeans without CHANNEL
+NETBEANS = no
+!else
 DEFINES = $(DEFINES) -DFEAT_NETBEANS_INTG
 !if ("$(NBDEBUG)"=="yes")
 DEFINES = $(DEFINES) -DNBDEBUG
 NBDEBUG_DEP = nbdebug.h nbdebug.c
 !endif
+!endif
+!endif
+
+!if ("$(CHANNEL)"=="yes")
+DEFINES = $(DEFINES) -DFEAT_CHANNEL
 !endif
 
 !ifdef XPM
@@ -673,6 +691,11 @@ vimobj = $(vimobj) \
     $(OBJDIR)\netbeans.obj
 !endif
 
+!if ("$(CHANNEL)"=="yes")
+vimobj = $(vimobj) \
+    $(OBJDIR)\channel.obj
+!endif
+
 !ifdef XPM
 vimobj = $(vimobj) \
     $(OBJDIR)\xpm_w32.obj
@@ -747,6 +770,9 @@ MSG = $(MSG) CSCOPE
 !endif
 !if ("$(NETBEANS)"=="yes")
 MSG = $(MSG) NETBEANS
+!endif
+!if ("$(CHANNEL)"=="yes")
+MSG = $(MSG) CHANNEL
 !endif
 !ifdef XPM
 MSG = $(MSG) XPM
@@ -1028,6 +1054,9 @@ $(OBJDIR)\xpm_w32.obj: xpm_w32.c xpm.lib
 
 $(OBJDIR)\netbeans.obj: netbeans.c $(NBDEBUG_DEP)
 	$(CC) $(CCARG) $(CC1) $(CC2)$@ netbeans.c
+
+$(OBJDIR)\channel.obj: channel.c
+	$(CC) $(CCARG) $(CC1) $(CC2)$@ channel.c
 
 $(OBJDIR)\vim.res: vim.rc version.h tools.bmp tearoff.bmp \
 		vim.ico vim_error.ico vim_alert.ico vim_info.ico vim_quest.ico

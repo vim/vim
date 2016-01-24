@@ -1562,7 +1562,7 @@ clip_gen_owner_exists(cbd)
  * descriptions which would otherwise overflow.  The buffer is considered full
  * when only this extra space (or part of it) remains.
  */
-#if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG) \
+#if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_CHANNEL) \
 	|| defined(FEAT_CLIENTSERVER)
    /*
     * Sun WorkShop and NetBeans stuff debugger commands into the input buffer.

@@ -1929,8 +1929,8 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 #  ifdef FEAT_OLE
 #   define WM_OLE (WM_APP+0)
 #  endif
-#  ifdef FEAT_NETBEANS_INTG
-    /* message for Netbeans socket event */
+#  ifdef FEAT_CHANNEL
+    /* message for channel socket event */
 #   define WM_NETBEANS (WM_APP+1)
 #  endif
 # endif
@@ -1977,6 +1977,14 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 # include <io.h>	    /* for access() */
 
 # define stat(a,b) (access(a,0) ? -1 : stat(a,b))
+#endif
+
+#ifdef FEAT_CHANNEL
+# ifdef WIN64
+typedef __int64 sock_T;
+# else
+typedef int sock_T;
+# endif
 #endif
 
 #include "ex_cmds.h"	    /* Ex command defines */
@@ -2310,6 +2318,12 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 # define SET_NO_HLSEARCH(flag) no_hlsearch = (flag); set_vim_var_nr(VV_HLSEARCH, !no_hlsearch && p_hls)
 #else
 # define SET_NO_HLSEARCH(flag) no_hlsearch = (flag)
+#endif
+
+#ifdef FEAT_CHANNEL
+# define MAX_OPEN_CHANNELS 10
+#else
+# define MAX_OPEN_CHANNELS 0
 #endif
 
 #endif /* VIM__H */

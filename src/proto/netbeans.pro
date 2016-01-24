@@ -9,7 +9,6 @@ void ex_nbkey(exarg_T *eap);
 void ex_nbstart(exarg_T *eap);
 void netbeans_beval_cb(BalloonEval *beval, int state);
 int netbeans_active(void);
-int netbeans_filedesc(void);
 void netbeans_gui_register(void);
 void netbeans_open(char *params, int doabort);
 void netbeans_send_disconnect(void);

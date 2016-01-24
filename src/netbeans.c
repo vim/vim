@@ -106,13 +106,7 @@ static void nb_free __ARGS((void));
 # define NB_HAS_GUI (gui.in_use || gui.starting)
 #endif
 
-#ifdef WIN64
-typedef __int64 NBSOCK;
-#else
-typedef int NBSOCK;
-#endif
-
-static NBSOCK nbsock = -1;		/* socket fd for Netbeans connection */
+static sock_T nbsock = -1;		/* socket fd for Netbeans connection */
 #define NETBEANS_OPEN (nbsock != -1)
 
 #ifdef FEAT_GUI_X11
@@ -175,6 +169,7 @@ nb_close_socket(void)
 
     sock_close(nbsock);
     nbsock = -1;
+    channel_remove_netbeans();
 }
 
 /*
@@ -243,8 +238,7 @@ netbeans_connect(char *params, int doabort)
     if (*params == '=')
     {
 	/* "=fname": Read info from specified file. */
-	if (getConnInfo(params + 1, &hostname, &address, &password)
-								      == FAIL)
+	if (getConnInfo(params + 1, &hostname, &address, &password) == FAIL)
 	    return FAIL;
     }
     else
@@ -312,13 +306,13 @@ netbeans_connect(char *params, int doabort)
 	goto theend;	    /* out of memory */
 
 #ifdef FEAT_GUI_W32
-    netbeans_init_winsock();
+    channel_init_winsock();
 #endif
 
 #ifdef INET_SOCKETS
     port = atoi(address);
 
-    if ((sd = (NBSOCK)socket(AF_INET, SOCK_STREAM, 0)) == (NBSOCK)-1)
+    if ((sd = (sock_T)socket(AF_INET, SOCK_STREAM, 0)) == (sock_T)-1)
     {
 	nbdebug(("error in socket() in netbeans_connect()\n"));
 	PERROR("socket() in netbeans_connect()");
@@ -358,7 +352,7 @@ netbeans_connect(char *params, int doabort)
 	{
 	    sock_close(sd);
 #ifdef INET_SOCKETS
-	    if ((sd = (NBSOCK)socket(AF_INET, SOCK_STREAM, 0)) == (NBSOCK)-1)
+	    if ((sd = (sock_T)socket(AF_INET, SOCK_STREAM, 0)) == (sock_T)-1)
 	    {
 		SOCK_ERRNO;
 		nbdebug(("socket()#2 in netbeans_connect()\n"));
@@ -423,6 +417,7 @@ netbeans_connect(char *params, int doabort)
     }
 
     nbsock = sd;
+    channel_add_netbeans(nbsock);
     vim_snprintf(buf, sizeof(buf), "AUTH %s\n", password);
     nb_send(buf, "netbeans_connect");
 
@@ -2954,21 +2949,12 @@ netbeans_beval_cb(
 #endif
 
 /*
- * Return TRUE when the netbeans connection is closed.
+ * Return TRUE when the netbeans connection is active.
  */
     int
 netbeans_active(void)
 {
     return NETBEANS_OPEN;
-}
-
-/*
- * Return netbeans file descriptor.
- */
-    int
-netbeans_filedesc(void)
-{
-    return nbsock;
 }
 
 #if defined(FEAT_GUI) || defined(PROTO)

@@ -656,6 +656,8 @@ XMKMF
 xmkmfpath
 SNIFF_OBJ
 SNIFF_SRC
+CHANNEL_OBJ
+CHANNEL_SRC
 NETBEANS_OBJ
 NETBEANS_SRC
 WORKSHOP_OBJ
@@ -810,6 +812,7 @@ with_ruby_command
 enable_cscope
 enable_workshop
 enable_netbeans
+enable_channel
 enable_sniff
 enable_multibyte
 enable_hangulinput
@@ -1473,6 +1476,7 @@ Optional Features:
   --enable-cscope         Include cscope interface.
   --enable-workshop       Include Sun Visual Workshop support.
   --disable-netbeans      Disable NetBeans integration support.
+  --disable-channel      Disable process communication support.
   --enable-sniff          Include Sniff interface.
   --enable-multibyte      Include multibyte editing support.
   --enable-hangulinput    Include Hangul input support.
@@ -7227,6 +7231,29 @@ fi
 if test "$enable_netbeans" = "yes"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-channel argument" >&5
+$as_echo_n "checking --disable-channel argument... " >&6; }
+# Check whether --enable-channel was given.
+if test "${enable_channel+set}" = set; then :
+  enableval=$enable_channel;
+else
+  enable_channel="yes"
+fi
+
+if test "$enable_channel" = "yes"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+if test "$enable_netbeans" = "yes" -o "$enable_channel" = "yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for socket in -lsocket" >&5
 $as_echo_n "checking for socket in -lsocket... " >&6; }
 if ${ac_cv_lib_socket_socket+:} false; then :
@@ -7317,8 +7344,8 @@ _ACEOF
 
 fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiling netbeans integration is possible" >&5
-$as_echo_n "checking whether compiling netbeans integration is possible... " >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiling with process communication is possible" >&5
+$as_echo_n "checking whether compiling with process communication is possible... " >&6; }
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -7358,13 +7385,10 @@ if ac_fn_c_try_link "$LINENO"; then :
 $as_echo "yes" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }; enable_netbeans="no"
+$as_echo "no" >&6; }; enable_netbeans="no"; enable_channel="no"
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
 fi
 if test "$enable_netbeans" = "yes"; then
   $as_echo "#define FEAT_NETBEANS_INTG 1" >>confdefs.h
@@ -7372,6 +7396,14 @@ if test "$enable_netbeans" = "yes"; then
   NETBEANS_SRC="netbeans.c"
 
   NETBEANS_OBJ="objects/netbeans.o"
+
+fi
+if test "$enable_channel" = "yes"; then
+  $as_echo "#define FEAT_CHANNEL 1" >>confdefs.h
+
+  CHANNEL_SRC="channel.c"
+
+  CHANNEL_OBJ="objects/channel.o"
 
 fi
 
