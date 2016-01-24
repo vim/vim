@@ -462,6 +462,10 @@ CClink = $(CC)
 # Uncomment this when you do not want the netbeans interface.
 #CONF_OPT_NETBEANS = --disable-netbeans
 
+# CHANNEL - inter process communication. Same conditions as NetBeans.
+# Uncomment this when you do not want inter process communication.
+#CONF_OPT_CHANNEL = --disable-channel
+
 # SNIFF - Include support for SNiFF+.
 #CONF_OPT_SNIFF = --enable-sniff
 
@@ -1536,7 +1540,8 @@ TAGS_SRC = *.c *.cpp if_perl.xs
 
 EXTRA_SRC = hangulin.c if_lua.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
 	    if_python.c if_python3.c if_tcl.c if_ruby.c if_sniff.c \
-	    gui_beval.c workshop.c wsdebug.c integration.c netbeans.c \
+	    gui_beval.c workshop.c wsdebug.c integration.c \
+	    netbeans.c channel.c \
 	    $(GRESOURCE_SRC)
 
 # Unittest files
@@ -1552,8 +1557,10 @@ ALL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(UNITTEST_SRC) $(EXTRA_SRC)
 # Which files to check with lint.  Select one of these three lines.  ALL_SRC
 # checks more, but may not work well for checking a GUI that wasn't configured.
 # The perl sources also don't work well with lint.
-LINT_SRC = $(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) $(PYTHON_SRC) $(PYTHON3_SRC) $(TCL_SRC) \
-	$(SNIFF_SRC) $(WORKSHOP_SRC) $(WSDEBUG_SRC) $(NETBEANS_SRC)
+LINT_SRC = $(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) \
+	   $(PYTHON_SRC) $(PYTHON3_SRC) $(TCL_SRC) \
+	   $(SNIFF_SRC) $(WORKSHOP_SRC) $(WSDEBUG_SRC) \
+	   $(NETBEANS_SRC) $(CHANNEL_SRC)
 #LINT_SRC = $(SRC)
 #LINT_SRC = $(ALL_SRC)
 #LINT_SRC = $(BASIC_SRC)
@@ -1621,6 +1628,7 @@ OBJ_COMMON = \
 	$(OS_EXTRA_OBJ) \
 	$(WORKSHOP_OBJ) \
 	$(NETBEANS_OBJ) \
+	$(CHANNEL_OBJ) \
 	$(WSDEBUG_OBJ)
 
 OBJ = $(OBJ_COMMON) \
@@ -1689,6 +1697,7 @@ PRO_AUTO = \
 	gui_beval.pro \
 	workshop.pro \
 	netbeans.pro \
+	channel.pro \
 	$(ALL_GUI_PRO) \
 	$(TCL_PRO)
 
@@ -1731,7 +1740,8 @@ config auto/config.mk: auto/configure config.mk.in config.h.in
 		$(CONF_OPT_CSCOPE) $(CONF_OPT_MULTIBYTE) $(CONF_OPT_INPUT) \
 		$(CONF_OPT_OUTPUT) $(CONF_OPT_GPM) $(CONF_OPT_WORKSHOP) \
 		$(CONF_OPT_SNIFF) $(CONF_OPT_FEAT) $(CONF_TERM_LIB) \
-		$(CONF_OPT_COMPBY) $(CONF_OPT_ACL)  $(CONF_OPT_NETBEANS) \
+		$(CONF_OPT_COMPBY) $(CONF_OPT_ACL) $(CONF_OPT_NETBEANS) \
+		$(CONF_OPT_CHANNEL) \
 		$(CONF_ARGS) $(CONF_OPT_MZSCHEME) $(CONF_OPT_PLTHOME) \
 		$(CONF_OPT_LUA) $(CONF_OPT_LUA_PREFIX) \
 		$(CONF_OPT_SYSMOUSE); \
@@ -2896,6 +2906,9 @@ objects/wsdebug.o: wsdebug.c
 objects/netbeans.o: netbeans.c
 	$(CCC) -o $@ netbeans.c
 
+objects/channel.o: channel.c
+	$(CCC) -o $@ channel.c
+
 Makefile:
 	@echo The name of the makefile MUST be "Makefile" (with capital M)!!!!
 
@@ -3334,6 +3347,10 @@ objects/integration.o: integration.c vim.h auto/config.h feature.h os_unix.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
  globals.h farsi.h arabic.h integration.h
 objects/netbeans.o: netbeans.c vim.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
+ regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
+ globals.h farsi.h arabic.h version.h
+objects/channel.o: channel.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
  globals.h farsi.h arabic.h version.h
