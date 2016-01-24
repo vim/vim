@@ -16,6 +16,7 @@
 #include "vim.h"
 
 #if defined(FEAT_EVAL) || defined(PROTO)
+static int json_encode_item(garray_T *gap, typval_T *val, int copyID);
 static void json_decode_item(js_read_T *reader, typval_T *res);
 
 /*
@@ -83,7 +84,11 @@ write_string(garray_T *gap, char_u *str)
     }
 }
 
-    void
+/*
+ * Encode "val" into "gap".
+ * Return FAIL or OK.
+ */
+    static int
 json_encode_item(garray_T *gap, typval_T *val, int copyID)
 {
     char_u	numbuf[NUMBUFLEN];
@@ -94,7 +99,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID)
     switch (val->v_type)
     {
 	case VAR_SPECIAL:
-	    switch(val->vval.v_number)
+	    switch (val->vval.v_number)
 	    {
 		case VVAL_FALSE: ga_concat(gap, (char_u *)"false"); break;
 		case VVAL_TRUE: ga_concat(gap, (char_u *)"true"); break;
@@ -115,8 +120,9 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID)
 	    break;
 
 	case VAR_FUNC:
-	    /* no JSON equivalent, skip */
-	    break;
+	    /* no JSON equivalent */
+	    EMSG(_(e_invarg));
+	    return FAIL;
 
 	case VAR_LIST:
 	    l = val->vval.v_list;
@@ -134,12 +140,14 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID)
 		    ga_append(gap, '[');
 		    for (li = l->lv_first; li != NULL && !got_int; )
 		    {
-			json_encode_item(gap, &li->li_tv, copyID);
+			if (json_encode_item(gap, &li->li_tv, copyID) == FAIL)
+			    return FAIL;
 			li = li->li_next;
 			if (li != NULL)
 			    ga_append(gap, ',');
 		    }
 		    ga_append(gap, ']');
+		    l->lv_copyID = 0;
 		}
 	    }
 	    break;
@@ -172,10 +180,12 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID)
 				ga_append(gap, ',');
 			    write_string(gap, hi->hi_key);
 			    ga_append(gap, ':');
-			    json_encode_item(gap, &dict_lookup(hi)->di_tv,
-								      copyID);
+			    if (json_encode_item(gap, &dict_lookup(hi)->di_tv,
+							      copyID) == FAIL)
+				return FAIL;
 			}
 		    ga_append(gap, '}');
+		    d->dv_copyID = 0;
 		}
 	    }
 	    break;
@@ -187,7 +197,9 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID)
 	    break;
 #endif
 	default: EMSG2(_(e_intern2), "json_encode_item()"); break;
+		 return FAIL;
     }
+    return OK;
 }
 
 /*

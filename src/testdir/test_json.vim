@@ -27,6 +27,9 @@ let s:varl2 = [1, 2, 3]
 let l2 = ['a', s:varl2, 'c']
 let s:varl2[1] = l2
 let s:varl2x = [1, ["a", [], "c"], 3]
+let s:jsonl3 = '[[1,2],[1,2]]'
+let l3 = [1, 2]
+let s:varl3 = [l3, l3]
 
 let s:jsond1 = '{"a":1,"b":"bee","c":[1,2]}'
 let s:vard1 = {"a": 1, "b": "bee","c": [1,2]}
@@ -36,6 +39,9 @@ let s:vard2 = {"1": 1, "2": 2, "3": 3}
 let d2 = {"a": "aa", "b": s:vard2, "c": "cc"}
 let s:vard2["2"] = d2
 let s:vard2x = {"1": 1, "2": {"a": "aa", "b": {}, "c": "cc"}, "3": 3}
+let d3 = {"a": 1, "b": 2}
+let s:vard3 = {"x": d3, "y": d3}
+let s:jsond3 = '{"x":{"a":1,"b":2},"y":{"a":1,"b":2}}'
 
 let s:jsonvals = '[true,false,,null]'
 let s:varvals = [v:true, v:false, v:none, v:null]
@@ -58,11 +64,16 @@ func Test_encode()
 
   call assert_equal(s:jsonl1, jsonencode(s:varl1))
   call assert_equal(s:jsonl2, jsonencode(s:varl2))
+  call assert_equal(s:jsonl3, jsonencode(s:varl3))
 
   call assert_equal(s:jsond1, jsonencode(s:vard1))
   call assert_equal(s:jsond2, jsonencode(s:vard2))
+  call assert_equal(s:jsond3, jsonencode(s:vard3))
 
   call assert_equal(s:jsonvals, jsonencode(s:varvals))
+
+  call assert_fails('echo jsonencode(function("tr"))', 'E474:')
+  call assert_fails('echo jsonencode([function("tr")])', 'E474:')
 endfunc
 
 func Test_decode()
@@ -84,9 +95,11 @@ func Test_decode()
   call assert_equal(s:varl1, jsondecode(s:jsonl1))
   call assert_equal(s:varl2x, jsondecode(s:jsonl2))
   call assert_equal(s:varl2x, jsondecode(s:jsonl2s))
+  call assert_equal(s:varl3, jsondecode(s:jsonl3))
 
   call assert_equal(s:vard1, jsondecode(s:jsond1))
   call assert_equal(s:vard2x, jsondecode(s:jsond2))
+  call assert_equal(s:vard3, jsondecode(s:jsond3))
 
   call assert_equal(s:varvals, jsondecode(s:jsonvals))
 
