@@ -1950,14 +1950,14 @@ if test "$enable_channel" = "yes"; then
   AC_MSG_RESULT(no)
 else
   if test "$enable_netbeans" = "yes"; then
-    AC_MSG_RESULT(yes, netbeans also disabled)
+    AC_MSG_RESULT([yes, netbeans also disabled])
     enable_netbeans="no"
   else
     AC_MSG_RESULT(yes)
   fi
 fi
 
-if "$enable_channel" = "yes"; then
+if test "$enable_channel" = "yes"; then
   dnl On Solaris we need the socket and nsl library.
   AC_CHECK_LIB(socket, socket)
   AC_CHECK_LIB(nsl, gethostbyname)

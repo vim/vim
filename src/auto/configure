@@ -7249,11 +7249,17 @@ if test "$enable_channel" = "yes"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+  if test "$enable_netbeans" = "yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, netbeans also disabled" >&5
+$as_echo "yes, netbeans also disabled" >&6; }
+    enable_netbeans="no"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
+  fi
 fi
 
-if test "$enable_netbeans" = "yes" -o "$enable_channel" = "yes"; then
+if test "$enable_channel" = "yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for socket in -lsocket" >&5
 $as_echo_n "checking for socket in -lsocket... " >&6; }
 if ${ac_cv_lib_socket_socket+:} false; then :
