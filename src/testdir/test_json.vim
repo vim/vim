@@ -1,4 +1,5 @@
 " Test for JSON functions.
+scriptencoding utf-8
 
 let s:json1 = '"str\"in\\g"'
 let s:var1 = "str\"in\\g"
@@ -95,11 +96,25 @@ func Test_decode()
   call assert_equal(type(v:none), type(jsondecode('')))
   call assert_equal("", jsondecode('""'))
 
+  call assert_equal({'n': 1}, jsondecode('{"n":1,}'))
+
   call assert_fails('call jsondecode("\"")', "E474:")
-  call assert_fails('call jsondecode("{-}")', "E474:")
   call assert_fails('call jsondecode("blah")', "E474:")
   call assert_fails('call jsondecode("true blah")', "E474:")
   call assert_fails('call jsondecode("<foobar>")', "E474:")
-  call assert_fails('call jsondecode("[foobar]")', "E474:")
+
+  call assert_fails('call jsondecode("{")', "E474:")
   call assert_fails('call jsondecode("{foobar}")', "E474:")
+  call assert_fails('call jsondecode("{\"n\",")', "E474:")
+  call assert_fails('call jsondecode("{\"n\":")', "E474:")
+  call assert_fails('call jsondecode("{\"n\":1")', "E474:")
+  call assert_fails('call jsondecode("{\"n\":1,")', "E474:")
+  call assert_fails('call jsondecode("{\"n\",1}")', "E474:")
+  call assert_fails('call jsondecode("{-}")', "E474:")
+
+  call assert_fails('call jsondecode("[foobar]")', "E474:")
+  call assert_fails('call jsondecode("[")', "E474:")
+  call assert_fails('call jsondecode("[1")', "E474:")
+  call assert_fails('call jsondecode("[1,")', "E474:")
+  call assert_fails('call jsondecode("[1 2]")', "E474:")
 endfunc

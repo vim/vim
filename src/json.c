@@ -220,7 +220,7 @@ json_decode_array(js_read_T *reader, typval_T *res)
     listitem_T	*li;
 
     if (rettv_list_alloc(res) == FAIL)
-	goto fail;
+	goto failsilent;
     ++reader->js_used; /* consume the '[' */
 
     while (TRUE)
@@ -253,6 +253,8 @@ json_decode_array(js_read_T *reader, typval_T *res)
 	    goto fail;
     }
 fail:
+    EMSG(_(e_invarg));
+failsilent:
     res->v_type = VAR_SPECIAL;
     res->vval.v_number = VVAL_NONE;
 }
@@ -268,7 +270,7 @@ json_decode_object(js_read_T *reader, typval_T *res)
     char_u	*key;
 
     if (rettv_dict_alloc(res) == FAIL)
-	goto fail;
+	goto failsilent;
     ++reader->js_used; /* consume the '{' */
 
     while (TRUE)
@@ -293,7 +295,7 @@ json_decode_object(js_read_T *reader, typval_T *res)
 	    if (key != NULL)
 		EMSG(_(e_emptykey));
 	    clear_tv(&tvkey);
-	    goto fail;
+	    goto failsilent;
 	}
 
 	json_skip_white(reader);
@@ -329,6 +331,8 @@ json_decode_object(js_read_T *reader, typval_T *res)
 	    goto fail;
     }
 fail:
+    EMSG(_(e_invarg));
+failsilent:
     res->v_type = VAR_SPECIAL;
     res->vval.v_number = VVAL_NONE;
 }
