@@ -7825,10 +7825,10 @@ get_var_special_name(int nr)
 {
     switch (nr)
     {
-	case VVAL_FALSE: return "false";
-	case VVAL_TRUE: return "true";
-	case VVAL_NONE: return "none";
-	case VVAL_NULL: return "null";
+	case VVAL_FALSE: return "v:false";
+	case VVAL_TRUE: return "v:true";
+	case VVAL_NONE: return "v:none";
+	case VVAL_NULL: return "v:null";
     }
     EMSG2(_(e_intern2), "get_var_special_name()");
     return "42";
