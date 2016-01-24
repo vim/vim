@@ -1489,7 +1489,7 @@ v:foldstart	Used for 'foldtext': first line of closed fold.
 v:hlsearch	Variable that indicates whether search highlighting is on. 
 		Setting it makes sense only if 'hlsearch' is enabled which
 		requires |+extra_search|. Setting this variable to zero acts
-		the like |:nohlsearch| command, setting it to one acts like >
+		like the |:nohlsearch| command, setting it to one acts like >
 			let &hlsearch = &hlsearch
 <		Note that the value is restored when returning from a
 		function. |function-search-undo|.
