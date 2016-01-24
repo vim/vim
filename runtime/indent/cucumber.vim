@@ -35,38 +35,38 @@ function! GetCucumberIndent()
     return 0
   elseif csyn ==# 'cucumberExamples' || cline =~# '^\s*\%(Examples\|Scenarios\):'
     " examples heading
-    return 2 * &sw
+    return 2 * shiftwidth()
   elseif csyn =~# '^cucumber\%(Background\|Scenario\|ScenarioOutline\)$' || cline =~# '^\s*\%(Background\|Scenario\|Scenario Outline\):'
     " background, scenario or outline heading
-    return &sw
+    return shiftwidth()
   elseif syn ==# 'cucumberFeature' || line =~# '^\s*Feature:'
     " line after feature heading
-    return &sw
+    return shiftwidth()
   elseif syn ==# 'cucumberExamples' || line =~# '^\s*\%(Examples\|Scenarios\):'
     " line after examples heading
-    return 3 * &sw
+    return 3 * shiftwidth()
   elseif syn =~# '^cucumber\%(Background\|Scenario\|ScenarioOutline\)$' || line =~# '^\s*\%(Background\|Scenario\|Scenario Outline\):'
     " line after background, scenario or outline heading
-    return 2 * &sw
+    return 2 * shiftwidth()
   elseif cline =~# '^\s*[@#]' && (nsyn == 'cucumberFeature' || nline =~# '^\s*Feature:' || indent(prevnonblank(v:lnum-1)) <= 0)
     " tag or comment before a feature heading
     return 0
   elseif cline =~# '^\s*@'
     " other tags
-    return &sw
+    return shiftwidth()
   elseif cline =~# '^\s*[#|]' && line =~# '^\s*|'
     " mid-table
     " preserve indent
     return indent(prevnonblank(v:lnum-1))
   elseif cline =~# '^\s*|' && line =~# '^\s*[^|]'
     " first line of a table, relative indent
-    return indent(prevnonblank(v:lnum-1)) + &sw
+    return indent(prevnonblank(v:lnum-1)) + shiftwidth()
   elseif cline =~# '^\s*[^|]' && line =~# '^\s*|'
     " line after a table, relative unindent
-    return indent(prevnonblank(v:lnum-1)) - &sw
+    return indent(prevnonblank(v:lnum-1)) - shiftwidth()
   elseif cline =~# '^\s*#' && getline(v:lnum-1) =~ '^\s*$' && (nsyn =~# '^cucumber\%(Background\|Scenario\|ScenarioOutline\)$' || nline =~# '^\s*\%(Background\|Scenario\|Scenario Outline\):')
     " comments on scenarios
-    return &sw
+    return shiftwidth()
   endif
   return indent(prevnonblank(v:lnum-1))
 endfunction

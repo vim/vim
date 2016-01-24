@@ -38,9 +38,9 @@ function! GetHamlIndent()
   let indent = indent(lnum)
   let cindent = indent(v:lnum)
   if cline =~# '\v^-\s*%(elsif|else|when)>'
-    let indent = cindent < indent ? cindent : indent - &sw
+    let indent = cindent < indent ? cindent : indent - shiftwidth()
   endif
-  let increase = indent + &sw
+  let increase = indent + shiftwidth()
   if indent == indent(lnum)
     let indent = cindent <= indent ? -1 : increase
   endif

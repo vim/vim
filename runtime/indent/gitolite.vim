@@ -27,11 +27,11 @@ function! GetGitoliteIndent()
   let cline = getline(v:lnum)
 
   if cline =~ '^\s*\(C\|R\|RW\|RW+\|RWC\|RW+C\|RWD\|RW+D\|RWCD\|RW+CD\|-\)[ \t=]'
-    return &sw
+    return shiftwidth()
   elseif cline =~ '^\s*config\s'
-    return &sw
+    return shiftwidth()
   elseif pline =~ '^\s*repo\s' && cline =~ '^\s*\(#.*\)\?$'
-    return &sw
+    return shiftwidth()
   elseif cline =~ '^\s*#'
     return indent(prevln)
   elseif cline =~ '^\s*$'

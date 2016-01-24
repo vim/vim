@@ -247,7 +247,7 @@ if exists("*searchpairpos")
 		call cursor(paren)
 
 		if s:IsMethodSpecialCase(paren)
-			return paren[1] + &shiftwidth - 1
+			return paren[1] + shiftwidth() - 1
 		endif
 
 		" In case we are at the last character, we use the paren position.
@@ -281,19 +281,19 @@ if exists("*searchpairpos")
 		let ww = s:StripNamespaceAndMacroChars(w)
 
 		if &lispwords =~# '\V\<' . ww . '\>'
-			return paren[1] + &shiftwidth - 1
+			return paren[1] + shiftwidth() - 1
 		endif
 
 		if g:clojure_fuzzy_indent
 			\ && !s:MatchesOne(g:clojure_fuzzy_indent_blacklist, ww)
 			\ && s:MatchesOne(g:clojure_fuzzy_indent_patterns, ww)
-			return paren[1] + &shiftwidth - 1
+			return paren[1] + shiftwidth() - 1
 		endif
 
 		call search('\v\_s', 'cW')
 		call search('\v\S', 'W')
 		if paren[0] < line(".")
-			return paren[1] + (g:clojure_align_subforms ? 0 : &shiftwidth - 1)
+			return paren[1] + (g:clojure_align_subforms ? 0 : shiftwidth() - 1)
 		endif
 
 		call search('\v\S', 'bW')

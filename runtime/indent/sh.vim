@@ -28,7 +28,7 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 function s:buffer_shiftwidth()
-  return &shiftwidth
+  return shiftwidth()
 endfunction
 
 let s:sh_indent_defaults = {

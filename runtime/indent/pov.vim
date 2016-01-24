@@ -75,9 +75,9 @@ function GetPoVRayIndent()
   " opening line.
   let cur = s:MatchCount(v:lnum, '^\s*\%(#\s*\%(end\|else\)\>\|[]})]\)')
   if cur > 0
-    let final = plind + (chg - cur) * &sw
+    let final = plind + (chg - cur) * shiftwidth()
   else
-    let final = plind + chg * &sw
+    let final = plind + chg * shiftwidth()
   endif
 
   return final < 0 ? 0 : final

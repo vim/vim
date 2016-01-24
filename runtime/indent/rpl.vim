@@ -32,16 +32,16 @@ function RplGetIndent(lnum)
   if prevstat =~? '\<\(if\|iferr\|do\|while\)\>' && prevstat =~? '\<end\>'
   elseif prevstat =~? '\(^\|\s\+\)<<\($\|\s\+\)' && prevstat =~? '\s\+>>\($\|\s\+\)'
   elseif prevstat =~? '\<\(if\|iferr\|then\|else\|elseif\|select\|case\|do\|until\|while\|repeat\|for\|start\|default\)\>' || prevstat =~? '\(^\|\s\+\)<<\($\|\s\+\)'
-    let ind = ind + &sw
+    let ind = ind + shiftwidth()
   endif
 
   " Subtract a shiftwidth from then, else, elseif, end, until, repeat, next,
   " step
   let line = getline(v:lnum)
   if line =~? '^\s*\(then\|else\|elseif\|until\|repeat\|next\|step\|default\|end\)\>'
-    let ind = ind - &sw
+    let ind = ind - shiftwidth()
   elseif line =~? '^\s*>>\($\|\s\+\)'
-    let ind = ind - &sw
+    let ind = ind - shiftwidth()
   endif
 
   return ind

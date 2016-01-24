@@ -48,7 +48,7 @@ function! GetLuaIndent()
     " Add 'shiftwidth' if what we found previously is not in a comment and
     " an "end" or "until" is not present on the same line.
     if synIDattr(synID(prevlnum, midx + 1, 1), "name") != "luaComment" && prevline !~ '\<end\>\|\<until\>'
-      let ind = ind + &shiftwidth
+      let ind = ind + shiftwidth()
     endif
   endif
 
@@ -56,7 +56,7 @@ function! GetLuaIndent()
   " This is the part that requires 'indentkeys'.
   let midx = match(getline(v:lnum), '^\s*\%(end\>\|else\>\|elseif\>\|until\>\|}\)')
   if midx != -1 && synIDattr(synID(v:lnum, midx + 1, 1), "name") != "luaComment"
-    let ind = ind - &shiftwidth
+    let ind = ind - shiftwidth()
   endif
 
   return ind

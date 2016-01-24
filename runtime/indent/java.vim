@@ -87,7 +87,7 @@ function GetJavaIndent()
   " classes.
   if getline(v:lnum) =~ '^\s*\(extends\|implements\)\>'
         \ && getline(lnum) !~ '^\s*\(extends\|implements\)\>'
-    let theIndent = theIndent + &sw
+    let theIndent = theIndent + shiftwidth()
   endif
 
   " correct for continuation lines of "throws", "implements" and "extends"
@@ -96,20 +96,20 @@ function GetJavaIndent()
   if strlen(cont_kw) > 0
     let amount = strlen(cont_kw) + 1
     if getline(lnum) !~ ',\s*$'
-      let theIndent = theIndent - (amount + &sw)
+      let theIndent = theIndent - (amount + shiftwidth())
       if theIndent < 0
         let theIndent = 0
       endif
     elseif prev == lnum
       let theIndent = theIndent + amount
       if cont_kw ==# 'throws'
-        let theIndent = theIndent + &sw
+        let theIndent = theIndent + shiftwidth()
       endif
     endif
   elseif getline(prev) =~ '^\s*\(throws\|implements\|extends\)\>'
         \ && (getline(prev) =~ '{\s*$'
         \  || getline(v:lnum) =~ '^\s*{\s*$')
-    let theIndent = theIndent - &sw
+    let theIndent = theIndent - shiftwidth()
   endif
 
   " When the line starts with a }, try aligning it with the matching {,

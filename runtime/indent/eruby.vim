@@ -57,24 +57,24 @@ function! GetErubyIndent(...)
   let line = getline(lnum)
   let cline = getline(v:lnum)
   if cline =~# '^\s*<%[-=]\=\s*\%(}\|end\|else\|\%(ensure\|rescue\|elsif\|when\).\{-\}\)\s*\%([-=]\=%>\|$\)'
-    let ind = ind - &sw
+    let ind = ind - shiftwidth()
   endif
   if line =~# '\S\s*<%[-=]\=\s*\%(}\|end\).\{-\}\s*\%([-=]\=%>\|$\)'
-    let ind = ind - &sw
+    let ind = ind - shiftwidth()
   endif
   if line =~# '\%({\|\<do\)\%(\s*|[^|]*|\)\=\s*[-=]\=%>'
-    let ind = ind + &sw
+    let ind = ind + shiftwidth()
   elseif line =~# '<%[-=]\=\s*\%(module\|class\|def\|if\|for\|while\|until\|else\|elsif\|case\|when\|unless\|begin\|ensure\|rescue\)\>.*%>'
-    let ind = ind + &sw
+    let ind = ind + shiftwidth()
   endif
   if line =~# '^\s*<%[=#-]\=\s*$' && cline !~# '^\s*end\>'
-    let ind = ind + &sw
+    let ind = ind + shiftwidth()
   endif
   if line !~# '^\s*<%' && line =~# '%>\s*$'
-    let ind = ind - &sw
+    let ind = ind - shiftwidth()
   endif
   if cline =~# '^\s*[-=]\=%>\s*$'
-    let ind = ind - &sw
+    let ind = ind - shiftwidth()
   endif
   return ind
 endfunction

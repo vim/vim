@@ -63,23 +63,23 @@ function GetEiffelIndent()
   " Add a 'shiftwidth' after lines that start with an indent word
   let ind = indent(lnum)
   if getline(lnum) =~ s:relative_indent
-    let ind = ind + &sw
+    let ind = ind + shiftwidth()
   endif
 
   " Indent to single indent
   if getline(v:lnum) =~ s:single_dent && getline(v:lnum) !~ s:relative_indent
 	   \ && getline(v:lnum) !~ '\s*\<\(and\|or\|implies\)\>'
-     let ind = &sw
+     let ind = shiftwidth()
   endif
 
   " Indent to double indent
   if getline(v:lnum) =~ s:inheritance_dent
-     let ind = 2 * &sw
+     let ind = 2 * shiftwidth()
   endif
 
   " Indent line after the first line of the function definition
   if getline(lnum) =~ s:single_dent
-     let ind = ind + &sw
+     let ind = ind + shiftwidth()
   endif
 
   " The following should always be at the start of a line, no indenting
@@ -91,17 +91,17 @@ function GetEiffelIndent()
   " or first thing after the 'do'
   if getline(v:lnum) =~ s:outdent && getline(v:lnum - 1) !~ s:single_dent
 	\ && getline(v:lnum - 1) !~ '^\s*do\>'
-    let ind = ind - &sw
+    let ind = ind - shiftwidth()
   endif
 
   " Subtract a shiftwidth for end statements
   if getline(v:lnum) =~ '^\s*end\>'
-    let ind = ind - &sw
+    let ind = ind - shiftwidth()
   endif
 
   " set indent of zero end statements that are at an indent of 3, this should
   " only ever be the class's end.
-  if getline(v:lnum) =~ '^\s*end\>' && ind == &sw
+  if getline(v:lnum) =~ '^\s*end\>' && ind == shiftwidth()
     let ind = 0
   endif
 

@@ -67,7 +67,7 @@ endfun
 fun! <SID>XmlIndentSum(lnum, style, add)
     let line = getline(a:lnum)
     if a:style == match(line, '^\s*</')
-	return (&sw *
+	return (shiftwidth() *
 	\  (<SID>XmlIndentWithPattern(line, b:xml_indent_open)
 	\ - <SID>XmlIndentWithPattern(line, b:xml_indent_close)
 	\ - <SID>XmlIndentWithPattern(line, '.\{-}/>'))) + a:add
