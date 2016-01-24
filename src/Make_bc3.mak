@@ -72,6 +72,7 @@ EXE_dependencies = \
 	getchar.obj \
 	hardcopy.obj \
 	hashtab.obj \
+	json.obj \
 	main.obj \
 	mark.obj \
 	memfile.obj \

@@ -295,4 +295,24 @@ function Test_nomem()
 
 endfunc
 
+function Test_helpgrep()
+  helpgrep quickfix
+  copen
+  " This wipes out the buffer, make sure that doesn't cause trouble.
+  cclose
+endfunc
 
+func Test_errortitle()
+  augroup QfBufWinEnter
+    au!
+    au BufWinEnter * :let g:a=get(w:, 'quickfix_title', 'NONE')
+  augroup END
+  copen
+  let a=[{'lnum': 308, 'bufnr': bufnr(''), 'col': 58, 'valid': 1, 'vcol': 0, 'nr': 0, 'type': '', 'pattern': '', 'text': '    au BufWinEnter * :let g:a=get(w:, ''quickfix_title'', ''NONE'')'}]
+  call setqflist(a)
+  call assert_equal(':setqflist()', g:a)
+  augroup QfBufWinEnter
+    au!
+  augroup END
+  augroup! QfBufWinEnter
+endfunc

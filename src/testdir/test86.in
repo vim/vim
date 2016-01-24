@@ -329,6 +329,8 @@ EOF
 :$put =string(l)
 :let d=pyeval('{"a": "b", "c": 1, "d": ["e"]}')
 :$put =sort(items(d))
+:let v:errmsg = ''
+:$put ='pyeval(\"None\") = ' . pyeval('None') . v:errmsg
 :if has('float')
 :   let f=pyeval('0.0')
 :   $put =string(f)

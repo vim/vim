@@ -810,6 +810,25 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	    }
 	}
     }
+    else if (our_tv->v_type == VAR_SPECIAL)
+    {
+	if (our_tv->vval.v_number == VVAL_FALSE)
+	{
+	    ret = Py_False;
+	    Py_INCREF(ret);
+	}
+	else if (our_tv->vval.v_number == VVAL_TRUE)
+	{
+	    ret = Py_True;
+	    Py_INCREF(ret);
+	}
+	else
+	{
+	    Py_INCREF(Py_None);
+	    ret = Py_None;
+	}
+	return ret;
+    }
     else
     {
 	Py_INCREF(Py_None);
@@ -5521,7 +5540,7 @@ run_eval(const char *cmd, typval_T *rettv
     }
     else
     {
-	if (ConvertFromPyObject(run_ret, rettv) == -1)
+	if (run_ret != Py_None && ConvertFromPyObject(run_ret, rettv) == -1)
 	    EMSG(_("E859: Failed to convert returned python object to vim value"));
 	Py_DECREF(run_ret);
     }

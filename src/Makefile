@@ -576,7 +576,7 @@ CClink = $(CC)
 #CFLAGS = -g -O2 -fno-strength-reduce -Wall -Wmissing-prototypes
 #CFLAGS = -g -Wall -Wmissing-prototypes
 #CFLAGS = -O6 -fno-strength-reduce -Wall -Wshadow -Wmissing-prototypes
-CFLAGS = -g -DDEBUG -Wall -Wshadow -Wmissing-prototypes
+#CFLAGS = -g -DDEBUG -Wall -Wshadow -Wmissing-prototypes
 #CFLAGS = -g -O2 '-DSTARTUPTIME="vimstartup"' -fno-strength-reduce -Wall -Wmissing-prototypes
 
 # Use this with GCC to check for mistakes, unused arguments, etc.
@@ -1361,10 +1361,10 @@ CPP_DEPEND = $(CC) -I$(srcdir) -M$(CPP_MM) \
 NO_ATTR=
 #
 # Use this for cproto 3 patchlevel 6 or below (use "cproto -V" to check):
-# PROTO_FLAGS = -f4 -m__ARGS -d -E"$(CPP)" $(NO_ATTR)
+# PROTO_FLAGS = -f4 -d -E"$(CPP)" $(NO_ATTR)
 #
 # Use this for cproto 3 patchlevel 7 or above (use "cproto -V" to check):
-PROTO_FLAGS = -m -M__ARGS -d -E"$(CPP)" $(NO_ATTR)
+PROTO_FLAGS = -d -E"$(CPP)" $(NO_ATTR)
 
 
 ################################################
@@ -1487,6 +1487,7 @@ BASIC_SRC = \
 	hashtab.c \
 	if_cscope.c \
 	if_xcmdsrv.c \
+	json.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -1580,6 +1581,7 @@ OBJ_COMMON = \
 	$(HANGULIN_OBJ) \
 	objects/if_cscope.o \
 	objects/if_xcmdsrv.o \
+	objects/json.o \
 	objects/mark.o \
         objects/memline.o \
 	objects/menu.o \
@@ -1654,6 +1656,7 @@ PRO_AUTO = \
 	if_python.pro \
 	if_python3.pro \
 	if_ruby.pro \
+	json.pro \
 	main.pro \
 	mark.pro \
 	memfile.pro \
@@ -1931,10 +1934,8 @@ unittest unittests: $(UNITTEST_TARGETS)
 		./$$t || exit 1; echo $$t passed; \
 	done
 
-# Run individual test, assuming that Vim was already compiled.
+# Run individual OLD style test, assuming that Vim was already compiled.
 test1 \
-	test_argument_0count \
-	test_argument_count \
 	test_autocmd_option \
 	test_autoformat_join \
 	test_breakindent \
@@ -1946,6 +1947,7 @@ test1 \
 	test_erasebackword \
 	test_eval \
 	test_fixeol \
+	test_getcwd \
 	test_insertcount \
 	test_listchars \
 	test_listlbr \
@@ -1955,7 +1957,6 @@ test1 \
 	test_match_conceal \
 	test_nested_function \
 	test_options \
-	test_perl \
 	test_qf_title \
 	test_ruby \
 	test_search_mbyte \
@@ -1975,22 +1976,32 @@ test1 \
 	test70 test71 test72 test73 test74 test75 test76 test77 test78 test79 \
 	test80 test81 test82 test83 test84 test85 test86 test87 test88 test89 \
 	test90 test91 test92 test93 test94 test95 test96 test97 test98 test99 \
-	test100 test101 test102 test103 test104 test105 test106 test107:
+	test100 test101 test102 test103 test104 test105 test106 test107 test108:
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
-test_assert \
+# Run individual NEW style test, assuming that Vim was already compiled.
+test_arglist \
+	test_assert \
 	test_backspace_opt \
 	test_cdo \
+	test_cursor_func \
+	test_delete \
+	test_expand \
 	test_hardcopy \
 	test_increment \
+	test_json \
+	test_langmap \
 	test_lispwords \
 	test_menu \
+	test_perl \
 	test_quickfix \
 	test_searchpos \
 	test_set \
 	test_sort \
+	test_syntax \
 	test_undolevels \
 	test_unlet \
+	test_viminfo \
 	test_viml \
 	test_alot:
 	cd testdir; rm -f $@.res test.log messages; $(MAKE) -f Makefile $@.res VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
@@ -2765,6 +2776,9 @@ objects/if_tcl.o: if_tcl.c
 objects/integration.o: integration.c
 	$(CCC) -o $@ integration.c
 
+objects/json.o: json.c
+	$(CCC) -o $@ json.c
+
 objects/main.o: main.c
 	$(CCC) -o $@ main.c
 
@@ -3055,6 +3069,10 @@ objects/if_xcmdsrv.o: if_xcmdsrv.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
  globals.h farsi.h arabic.h version.h
+objects/json.o: json.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
+ ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
+ gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
+ arabic.h
 objects/main.o: main.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
@@ -3109,7 +3127,7 @@ objects/option.o: option.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h 
 objects/os_unix.o: os_unix.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
- arabic.h if_mzsch.h os_unixx.h
+ arabic.h os_unixx.h
 objects/pathdef.o: auto/pathdef.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
@@ -3174,7 +3192,7 @@ objects/gui.o: gui.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h ascii.
 objects/gui_gtk.o: gui_gtk.c gui_gtk_f.h vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
- globals.h farsi.h arabic.h ../pixmaps/stock_icons.h
+ globals.h farsi.h arabic.h
 objects/gui_gtk_f.o: gui_gtk_f.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
@@ -3240,8 +3258,8 @@ objects/gui_athena.o: gui_athena.c vim.h auto/config.h feature.h os_unix.h \
 objects/gui_gtk_x11.o: gui_gtk_x11.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
- globals.h farsi.h arabic.h gui_gtk_f.h ../runtime/vim32x32.xpm \
- ../runtime/vim16x16.xpm ../runtime/vim48x48.xpm $(GRESOURCE_HDR)
+ globals.h farsi.h arabic.h auto/gui_gtk_gresources.h gui_gtk_f.h \
+ ../runtime/vim32x32.xpm ../runtime/vim16x16.xpm ../runtime/vim48x48.xpm
 objects/gui_x11.o: gui_x11.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
@@ -3273,7 +3291,7 @@ objects/if_lua.o: if_lua.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h 
 objects/if_mzsch.o: if_mzsch.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
- globals.h farsi.h arabic.h if_mzsch.h mzscheme_base.c
+ globals.h farsi.h arabic.h if_mzsch.h
 objects/if_perl.o: auto/if_perl.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \

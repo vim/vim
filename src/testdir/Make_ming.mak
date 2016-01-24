@@ -35,7 +35,6 @@ include Make_all.mak
 # test10	'errorformat' is different
 # test12	can't unlink a swap file
 # test25	uses symbolic link
-# test27	can't edit file with "*" in file name
 # test54	doesn't work yet
 # test97	\{ and \$ are not escaped characters
 
@@ -66,8 +65,8 @@ win32:	fixff $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32)
 	echo ALL DONE
 
 fixff:
-	-$(VIMPROG) -u dos.vim --noplugin "+argdo set ff=dos|upd" +q *.in *.ok
-	-$(VIMPROG) -u dos.vim --noplugin "+argdo set ff=unix|upd" +q \
+	-$(VIMPROG) -u dos.vim -U NONE --noplugin "+argdo set ff=dos|upd" +q *.in *.ok
+	-$(VIMPROG) -u dos.vim -U NONE --noplugin "+argdo set ff=unix|upd" +q \
 		dotest.in test60.ok test71.ok test74.ok test_listchars.ok
 
 clean:

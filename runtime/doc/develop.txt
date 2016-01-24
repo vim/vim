@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 7.4.  Last change: 2014 Mar 27
+*develop.txt*   For Vim version 7.4.  Last change: 2016 Jan 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -166,12 +166,27 @@ This list is not complete.  Look in the source code for more examples.
 MAKING CHANGES						*style-changes*
 
 The basic steps to make changes to the code:
-1. Adjust the documentation.  Doing this first gives you an impression of how
+1. Get the code from github.  That makes it easier to keep your changed
+   version in sync with the main code base (it may be a while before your
+   changes will be included).  You do need to spend some time learning git,
+   it's not the most user friendly tool.
+2. Adjust the documentation.  Doing this first gives you an impression of how
    your changes affect the user.
-2. Make the source code changes.
-3. Check ../doc/todo.txt if the change affects any listed item.
-4. Make a patch with "diff -c" against the unmodified code and docs.
-5. Make a note about what changed and include it with the patch.
+3. Make the source code changes.
+4. Check ../doc/todo.txt if the change affects any listed item.
+5. Make a patch with "git diff".  You can also create a pull request on
+   github, but it's the diff that matters.
+6. Make a note about what changed, preferably mentioning the problem and the
+   solution.  Send an email to the vim-dev maillist with an explanation and
+   include the diff. Or create a pull request on github.
+
+
+C COMPILER						*style-compiler*
+
+The minimal C compiler version supported is C89, also known as ANSI C.
+Later standards don't add much and C89 is the widest supported.
+
+One restriction that this implies: no // comments, only /* comments */.
 
 
 USE OF COMMON FUNCTIONS					*style-functions*
@@ -197,7 +212,7 @@ NAMES							*style-names*
 
 Function names can not be more than 31 characters long (because of VMS).
 
-Don't use "delete" as a variable name, C++ doesn't like it.
+Don't use "delete" or "this" as a variable name, C++ doesn't like it.
 
 Because of the requirement that Vim runs on as many systems as possible, we
 need to avoid using names that are already defined by the system.  This is a
@@ -288,6 +303,24 @@ OK:	    do
 		a = 1;
 	    while (cond);
 
+Wrong:	    if (cond) {
+               cmd;
+               cmd;
+	    } else {
+               cmd;
+               cmd;
+	    }
+
+OK:	    if (cond)
+            {
+               cmd;
+               cmd;
+	    }
+	    else
+	    {
+               cmd;
+               cmd;
+	    }
 
 Functions start with:
 
@@ -299,9 +332,9 @@ OK:	/*
 	 * Return value explanation.
 	 */
 	    int
-	function_name(arg1, arg2)
-	    int		arg1;		/* short comment about arg1 */
-	    int		arg2;		/* short comment about arg2 */
+	function_name(
+	    int		arg1,		/* short comment about arg1 */
+	    int		arg2)		/* short comment about arg2 */
 	{
 	    int		local;		/* comment about local */
 

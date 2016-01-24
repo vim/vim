@@ -15,7 +15,6 @@ include Make_all.mak
 # test11	"cat" doesn't work properly
 # test12	can't unlink a swap file
 # test25	uses symbolic link
-# test27	can't edit file with "*"
 # test52	only for Win32
 # test85	no Lua interface
 # test86, 87	no Python interface

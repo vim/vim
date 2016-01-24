@@ -39,7 +39,7 @@ GUI=yes
 DIRECTX=no
 # FEATURES=[TINY | SMALL | NORMAL | BIG | HUGE]
 # Set to TINY to make minimal version (few features).
-FEATURES=BIG
+FEATURES=HUGE
 # Set to one of i386, i486, i586, i686 as the minimum target processor.
 # For amd64/x64 architecture set ARCH=x86-64 .
 ARCH=i386
@@ -258,15 +258,23 @@ endif
 ifndef PYTHON3_VER
 PYTHON3_VER=31
 endif
-
-ifeq (no,$(DYNAMIC_PYTHON3))
-PYTHON3LIB=-L$(PYTHON3)/libs -lPYTHON$(PYTHON3_VER)
+ifndef DYNAMIC_PYTHON3_DLL
+DYNAMIC_PYTHON3_DLL=python$(PYTHON3_VER).dll
+endif
+ifdef PYTHON3_HOME
+PYTHON3_HOME_DEF=-DPYTHON3_HOME=\"$(PYTHON3_HOME)\"
 endif
 
+ifeq (no,$(DYNAMIC_PYTHON3))
+PYTHON3LIB=-L$(PYTHON3)/libs -lpython$(PYTHON3_VER)
+endif
+
+ifndef PYTHON3INC
 ifeq ($(CROSS),no)
 PYTHON3INC=-I $(PYTHON3)/include
 else
 PYTHON3INC=-I $(PYTHON3)/win32inc
+endif
 endif
 endif
 
@@ -482,7 +490,7 @@ endif
 ifdef PYTHON3 
 CFLAGS += -DFEAT_PYTHON3 
 ifeq (yes, $(DYNAMIC_PYTHON3))
-CFLAGS += -DDYNAMIC_PYTHON3 -DDYNAMIC_PYTHON3_DLL=\"PYTHON$(PYTHON3_VER).dll\"
+CFLAGS += -DDYNAMIC_PYTHON3 -DDYNAMIC_PYTHON3_DLL=\"$(DYNAMIC_PYTHON3_DLL)\"
 endif
 endif
 
@@ -593,6 +601,7 @@ OBJ = \
 	$(OUTDIR)/getchar.o \
 	$(OUTDIR)/hardcopy.o \
 	$(OUTDIR)/hashtab.o \
+	$(OUTDIR)/json.o \
 	$(OUTDIR)/main.o \
 	$(OUTDIR)/mark.o \
 	$(OUTDIR)/memfile.o \
@@ -814,7 +823,7 @@ $(OUTDIR)/if_python.o : if_python.c if_py_both.h $(INCL)
 	$(CC) -c $(CFLAGS) $(PYTHONINC) $(PYTHON_HOME_DEF) $< -o $@
 
 $(OUTDIR)/if_python3.o : if_python3.c if_py_both.h $(INCL)
-	$(CC) -c $(CFLAGS) $(PYTHON3INC) $< -o $@
+	$(CC) -c $(CFLAGS) $(PYTHON3INC) $(PYTHON3_HOME_DEF) $< -o $@
 
 $(OUTDIR)/%.o : %.c $(INCL)
 	$(CC) -c $(CFLAGS) $< -o $@

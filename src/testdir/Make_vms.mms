@@ -163,7 +163,7 @@ SCRIPT_PYTHON = test86.out test87.out
 	-@ write sys$output "                "$*" "
 	-@ write sys$output "-----------------------------------------------"
 	-@ !run the test
-	-@ create/term/wait/nodetach mcr $(VIMPROG) $(GUI_OPTION) -u vms.vim --noplugin -s dotest.in $*.in
+	-@ create/term/wait/nodetach mcr $(VIMPROG) $(GUI_OPTION) -u vms.vim -U NONE --noplugin -s dotest.in $*.in
 	-@ !analyse the result
 	-@ directory /size/date test.out
 	-@ if "''F$SEARCH("test.out.*")'" .NES. "" then rename/nolog test.out $*.out 

@@ -376,6 +376,8 @@ static int	current_line_id = 0;	/* unique number for current line */
 #define CUR_STATE(idx)	((stateitem_T *)(current_state.ga_data))[idx]
 
 static void syn_sync __ARGS((win_T *wp, linenr_T lnum, synstate_T *last_valid));
+static void save_chartab(char_u *chartab);
+static void restore_chartab(char_u *chartab);
 static int syn_match_linecont __ARGS((linenr_T lnum));
 static void syn_start_line __ARGS((void));
 static void syn_update_ends __ARGS((int startofline));
@@ -458,6 +460,7 @@ static void add_keyword __ARGS((char_u *name, int id, int flags, short *cont_in_
 static char_u *get_group_name __ARGS((char_u *arg, char_u **name_end));
 static char_u *get_syn_options __ARGS((char_u *arg, syn_opt_arg_T *opt, int *conceal_char));
 static void syn_cmd_include __ARGS((exarg_T *eap, int syncing));
+static void syn_cmd_iskeyword __ARGS((exarg_T *eap, int syncing));
 static void syn_cmd_keyword __ARGS((exarg_T *eap, int syncing));
 static void syn_cmd_match __ARGS((exarg_T *eap, int syncing));
 static void syn_cmd_region __ARGS((exarg_T *eap, int syncing));
@@ -984,6 +987,24 @@ syn_sync(wp, start_lnum, last_valid)
     validate_current_state();
 }
 
+    static void
+save_chartab(char_u *chartab)
+{
+    if (syn_block->b_syn_isk != empty_option)
+    {
+	mch_memmove(chartab, syn_buf->b_chartab, (size_t)32);
+	mch_memmove(syn_buf->b_chartab, syn_win->w_s->b_syn_chartab,
+								  (size_t)32);
+    }
+}
+
+    static void
+restore_chartab(char_u *chartab)
+{
+    if (syn_win->w_s->b_syn_isk != empty_option)
+	mch_memmove(syn_buf->b_chartab, chartab, (size_t)32);
+}
+
 /*
  * Return TRUE if the line-continuation pattern matches in line "lnum".
  */
@@ -993,14 +1014,18 @@ syn_match_linecont(lnum)
 {
     regmmatch_T regmatch;
     int r;
+    char_u	buf_chartab[32];  /* chartab array for syn iskyeyword */
 
     if (syn_block->b_syn_linecont_prog != NULL)
     {
+	/* use syntax iskeyword option */
+	save_chartab(buf_chartab);
 	regmatch.rmm_ic = syn_block->b_syn_linecont_ic;
 	regmatch.regprog = syn_block->b_syn_linecont_prog;
 	r = syn_regexec(&regmatch, lnum, (colnr_T)0,
 				IF_SYN_TIME(&syn_block->b_syn_linecont_time));
 	syn_block->b_syn_linecont_prog = regmatch.regprog;
+	restore_chartab(buf_chartab);
 	return r;
     }
     return FALSE;
@@ -1891,6 +1916,7 @@ syn_current_attr(syncing, displaying, can_spell, keep_state)
     lpos_T	pos;
     int		lc_col;
     reg_extmatch_T *cur_extmatch = NULL;
+    char_u	buf_chartab[32];  /* chartab array for syn iskyeyword */
     char_u	*line;		/* current line.  NOTE: becomes invalid after
 				   looking for a pattern match! */
 
@@ -1945,6 +1971,9 @@ syn_current_attr(syncing, displaying, can_spell, keep_state)
      * avoid matching the same item in the same position twice. */
     ga_init2(&zero_width_next_ga, (int)sizeof(int), 10);
 
+    /* use syntax iskeyword option */
+    save_chartab(buf_chartab);
+
     /*
      * Repeat matching keywords and patterns, to find contained items at the
      * same column.  This stops when there are no extra matches at the current
@@ -1955,6 +1984,7 @@ syn_current_attr(syncing, displaying, can_spell, keep_state)
 	found_match = FALSE;
 	keep_next_list = FALSE;
 	syn_id = 0;
+
 
 	/*
 	 * 1. Check for a current state.
@@ -2308,6 +2338,8 @@ syn_current_attr(syncing, displaying, can_spell, keep_state)
 	}
 
     } while (found_match);
+
+    restore_chartab(buf_chartab);
 
     /*
      * Use attributes from the current state, if within its highlighting.
@@ -2915,6 +2947,7 @@ find_endpos(idx, startpos, m_endpos, hl_endpos, flagsp, end_endpos,
     lpos_T	pos;
     char_u	*line;
     int		had_match = FALSE;
+    char_u	buf_chartab[32];  /* chartab array for syn option iskyeyword */
 
     /* just in case we are invoked for a keyword */
     if (idx < 0)
@@ -2961,6 +2994,10 @@ find_endpos(idx, startpos, m_endpos, hl_endpos, flagsp, end_endpos,
     matchcol = startpos->col;	/* start looking for a match at sstart */
     start_idx = idx;		/* remember the first END pattern. */
     best_regmatch.startpos[0].col = 0;		/* avoid compiler warning */
+
+    /* use syntax iskeyword option */
+    save_chartab(buf_chartab);
+
     for (;;)
     {
 	/*
@@ -3116,6 +3153,8 @@ find_endpos(idx, startpos, m_endpos, hl_endpos, flagsp, end_endpos,
     /* no match for an END pattern in this line */
     if (!had_match)
 	m_endpos->lnum = 0;
+
+    restore_chartab(buf_chartab);
 
     /* Remove external matches. */
     unref_extmatch(re_extmatch_in);
@@ -3482,6 +3521,57 @@ syn_cmd_spell(eap, syncing)
 }
 
 /*
+ * Handle ":syntax iskeyword" command.
+ */
+    static void
+syn_cmd_iskeyword(eap, syncing)
+    exarg_T	*eap;
+    int		syncing UNUSED;
+{
+    char_u	*arg = eap->arg;
+    char_u	save_chartab[32];
+    char_u	*save_isk;
+
+    if (eap->skip)
+	return;
+
+    arg = skipwhite(arg);
+    if (*arg == NUL)
+    {
+	MSG_PUTS("\n");
+	MSG_PUTS(_("syntax iskeyword "));
+	if (curwin->w_s->b_syn_isk != empty_option)
+	    msg_outtrans(curwin->w_s->b_syn_isk);
+	else
+	    msg_outtrans((char_u *)"not set");
+    }
+    else
+    {
+	if (STRNICMP(arg, "clear", 5) == 0)
+	{
+	    mch_memmove(curwin->w_s->b_syn_chartab, curbuf->b_chartab,
+								  (size_t)32);
+	    clear_string_option(&curwin->w_s->b_syn_isk);
+	}
+	else
+	{
+	    mch_memmove(save_chartab, curbuf->b_chartab, (size_t)32);
+	    save_isk = curbuf->b_p_isk;
+	    curbuf->b_p_isk = vim_strsave(arg);
+
+	    buf_init_chartab(curbuf, FALSE);
+	    mch_memmove(curwin->w_s->b_syn_chartab, curbuf->b_chartab,
+								  (size_t)32);
+	    mch_memmove(curbuf->b_chartab, save_chartab, (size_t)32);
+	    clear_string_option(&curwin->w_s->b_syn_isk);
+	    curwin->w_s->b_syn_isk = curbuf->b_p_isk;
+	    curbuf->b_p_isk = save_isk;
+	}
+    }
+    redraw_win_later(curwin, NOT_VALID);
+}
+
+/*
  * Clear all syntax info for one buffer.
  */
     void
@@ -3523,6 +3613,7 @@ syntax_clear(block)
 #ifdef FEAT_FOLDING
     block->b_syn_folditems = 0;
 #endif
+    clear_string_option(&block->b_syn_isk);
 
     /* free the stored states */
     syn_stack_free_all(block);
@@ -3569,8 +3660,9 @@ syntax_sync_clear()
     curwin->w_s->b_syn_linecont_prog = NULL;
     vim_free(curwin->w_s->b_syn_linecont_pat);
     curwin->w_s->b_syn_linecont_pat = NULL;
+    clear_string_option(&curwin->w_s->b_syn_isk);
 
-    syn_stack_free_all(curwin->w_s);		/* Need to recompute all syntax. */
+    syn_stack_free_all(curwin->w_s);	/* Need to recompute all syntax. */
 }
 
 /*
@@ -3777,6 +3869,7 @@ syn_cmd_reset(eap, syncing)
     eap->nextcmd = check_nextcmd(eap->arg);
     if (!eap->skip)
     {
+	clear_string_option(&curwin->w_s->b_syn_isk);
 	set_internal_string_var((char_u *)"syntax_cmd", (char_u *)"reset");
 	do_cmdline_cmd((char_u *)"runtime! syntax/syncolor.vim");
 	do_unlet((char_u *)"g:syntax_cmd", TRUE);
@@ -6253,6 +6346,7 @@ static struct subcommand subcommands[] =
     {"conceal",		syn_cmd_conceal},
     {"enable",		syn_cmd_enable},
     {"include",		syn_cmd_include},
+    {"iskeyword",	syn_cmd_iskeyword},
     {"keyword",		syn_cmd_keyword},
     {"list",		syn_cmd_list},
     {"manual",		syn_cmd_manual},
@@ -6331,6 +6425,7 @@ ex_ownsyntax(eap)
 	clear_string_option(&curwin->w_s->b_p_spf);
 	clear_string_option(&curwin->w_s->b_p_spl);
 #endif
+	clear_string_option(&curwin->w_s->b_syn_isk);
     }
 
     /* save value of b:current_syntax */
@@ -6474,6 +6569,12 @@ syn_get_id(wp, lnum, col, trans, spellp, keep_state)
 	    || lnum != current_lnum
 	    || col < current_col)
 	syntax_start(wp, lnum);
+    else if (wp->w_buffer == syn_buf
+	    && lnum == current_lnum
+	    && col > current_col)
+	/* next_match may not be correct when moving around, e.g. with the
+	 * "skip" expression in searchpair() */
+	next_match_idx = -1;
 
     (void)get_syntax_attr(col, spellp, keep_state);
 

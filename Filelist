@@ -40,6 +40,7 @@ SRC_ALL =	\
 		src/hardcopy.c \
 		src/hashtab.c \
 		src/keymap.h \
+		src/json.c \
 		src/macros.h \
 		src/main.c \
 		src/mark.c \
@@ -132,6 +133,7 @@ SRC_ALL =	\
 		src/proto/gui_beval.pro \
 		src/proto/hardcopy.pro \
 		src/proto/hashtab.pro \
+		src/proto/json.pro \
 		src/proto/main.pro \
 		src/proto/mark.pro \
 		src/proto/mbyte.pro \

@@ -45,6 +45,7 @@ SRC = \
 	getchar.c \
 	hardcopy.c \
 	hashtab.c \
+	json.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -93,6 +94,7 @@ OBJ =	o/blowfish.o \
 	o/getchar.o \
 	o/hardcopy.o \
 	o/hashtab.o \
+	o/json.o \
 	o/main.o \
 	o/mark.o \
 	o/memfile.o \
@@ -178,6 +180,8 @@ o/getchar.o: getchar.c	$(SYMS)
 o/hardcopy.o: hardcopy.c	$(SYMS)
 
 o/hashtab.o: hashtab.c	$(SYMS)
+
+o/json.o:	json.c  $(SYMS)
 
 o/main.o: main.c $(SYMS)
 

@@ -55,6 +55,7 @@ SRC =	blowfish.c \
 	getchar.c \
 	hardcopy.c \
 	hashtab.c \
+	json.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -105,6 +106,7 @@ OBJ =	obj/blowfish.o \
 	obj/getchar.o \
 	obj/hardcopy.o \
 	obj/hashtab.o \
+	obj/json.o \
 	obj/main.o \
 	obj/mark.o \
 	obj/memfile.o \
@@ -153,6 +155,7 @@ PRO =	proto/blowfish.pro \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
+	proto/json.pro \
 	proto/main.pro \
 	proto/mark.pro \
 	proto/memfile.pro \
@@ -283,6 +286,9 @@ obj/hardcopy.o:	hardcopy.c
 
 obj/hashtab.o:	hashtab.c
 	$(CCSYM) $@ hashtab.c
+
+obj/json.o:	json.c
+	$(CCSYM) $@ json.c
 
 # Don't use $(SYMS) here, because main.c defines EXTERN
 obj/main.o:	main.c option.h globals.h

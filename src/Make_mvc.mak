@@ -20,7 +20,7 @@
 #
 #	!!!!  After changing features do "nmake clean" first  !!!!
 #
-#	Feature Set: FEATURES=[TINY, SMALL, NORMAL, BIG, HUGE] (default is BIG)
+#	Feature Set: FEATURES=[TINY, SMALL, NORMAL, BIG, HUGE] (default is HUGE)
 #
 #	GUI interface: GUI=yes (default is no)
 #
@@ -536,6 +536,7 @@ OBJ = \
 	$(OUTDIR)\getchar.obj \
 	$(OUTDIR)\hardcopy.obj \
 	$(OUTDIR)\hashtab.obj \
+	$(OUTDIR)\json.obj \
 	$(OUTDIR)\main.obj \
 	$(OUTDIR)\mark.obj \
 	$(OUTDIR)\mbyte.obj \
@@ -950,7 +951,7 @@ CFLAGS = $(CFLAGS) -DMSWINPS
 # FEATURES: TINY, SMALL, NORMAL, BIG or HUGE
 #
 !if "$(FEATURES)"==""
-FEATURES = BIG
+FEATURES = HUGE
 !endif
 CFLAGS = $(CFLAGS) -DFEAT_$(FEATURES)
 
@@ -1202,6 +1203,8 @@ $(OUTDIR)/if_sniff.obj:	$(OUTDIR) if_sniff.c  $(INCL)
 $(OUTDIR)/if_tcl.obj: $(OUTDIR) if_tcl.c  $(INCL)
 	$(CC) $(CFLAGS) $(TCL_INC) if_tcl.c
 
+$(OUTDIR)/json.obj:	$(OUTDIR) json.c  $(INCL)
+
 $(OUTDIR)/main.obj:	$(OUTDIR) main.c  $(INCL)
 
 $(OUTDIR)/mark.obj:	$(OUTDIR) mark.c  $(INCL)
@@ -1329,6 +1332,7 @@ proto.h: \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
+	proto/json.pro \
 	proto/main.pro \
 	proto/mark.pro \
 	proto/memfile.pro \

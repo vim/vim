@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Jan 15
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Jan 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -102,6 +102,9 @@ List, Dictionary and Funcref types are not automatically converted.
 When mixing Number and Float the Number is converted to Float.	Otherwise
 there is no automatic conversion of Float.  You can use str2float() for String
 to Float, printf() for Float to String and float2nr() for Float to Number.
+
+						*E891* *E892* *E893* *E894*
+When expecting a Float a Number can also be used, but nothing else.
 
 						*E706* *sticky-type-checking*
 You will get an error if you try to change the type of a variable.  You need
@@ -873,7 +876,7 @@ cursor: >
 	:let c = getline(".")[col(".") - 1]
 
 If the length of the String is less than the index, the result is an empty
-String.  A negative index always results in an empty string (reason: backwards
+String.  A negative index always results in an empty string (reason: backward
 compatibility).  Use [-1:] to get the last byte.
 
 If expr8 is a |List| then it results the item at index expr1.  See |list-index|
@@ -918,6 +921,11 @@ just above, except that indexes out of range cause an error.  Examples: >
 
 Using expr8[expr1] or expr8[expr1a : expr1b] on a |Funcref| results in an
 error.
+
+Watch out for confusion between a namespace and a variable followed by a colon
+for a sublist: >
+	mylist[n:]     " uses variable n
+	mylist[s:]     " uses namespace s:, error!
 
 
 expr8.name		entry in a |Dictionary|		*expr-entry*
@@ -1401,6 +1409,10 @@ v:exception	The value of the exception most recently caught and not
 	:endtry
 <		Output: "caught oops".
 
+					*v:false* *false-variable*
+v:false		A Number with value zero. Used to put "false" in JSON.  See
+		|jsonencode()|.
+
 					*v:fcs_reason* *fcs_reason-variable*
 v:fcs_reason	The reason why the |FileChangedShell| event was triggered.
 		Can be used in an autocommand to decide what to do and/or what
@@ -1533,6 +1545,14 @@ v:mouse_lnum	Line number for a mouse click obtained with |getchar()|.
 v:mouse_col	Column number for a mouse click obtained with |getchar()|.
 		This is the screen column number, like with |virtcol()|.  The
 		value is zero when there was no mouse button click.
+
+					*v:none* *none-variable*
+v:none		An empty String. Used to put an empty item in JSON.  See
+		|jsonencode()|.
+
+					*v:null* *null-variable*
+v:null		An empty String. Used to put "null" in JSON.  See
+		|jsonencode()|.
 
 					*v:oldfiles* *oldfiles-variable*
 v:oldfiles	List of file names that is loaded from the |viminfo| file on
@@ -1699,6 +1719,10 @@ v:throwpoint	The point where the exception most recently caught and not
 	:endtry
 <		Output: "Exception from test.vim, line 2"
 
+						*v:true* *true-variable*
+v:true		A Number with value one. Used to put "true" in JSON.  See
+		|jsonencode()|.
+
 						*v:val* *val-variable*
 v:val		Value of the current item of a |List| or |Dictionary|.	Only
 		valid while evaluating the expression used with |map()| and
@@ -1794,7 +1818,7 @@ cursor( {lnum}, {col} [, {off}])
 				Number	move cursor to {lnum}, {col}, {off}
 cursor( {list})			Number	move cursor to position in {list}
 deepcopy( {expr} [, {noref}])	any	make a full copy of {expr}
-delete( {fname})		Number	delete file {fname}
+delete( {fname} [, {flags}])	Number	delete the file or directory {fname}
 did_filetype()			Number	TRUE if FileType autocommand event used
 diff_filler( {lnum})		Number	diff filler lines about {lnum}
 diff_hlID( {lnum}, {col})	Number	diff highlighting at {lnum}/{col}
@@ -1846,7 +1870,7 @@ getcmdpos()			Number	return cursor position in command-line
 getcmdtype()			String	return current command-line type
 getcmdwintype()			String	return current command-line window type
 getcurpos()			List	position of the cursor
-getcwd()			String	the current working directory
+getcwd( [{winnr} [, {tabnr}]])	String	get the current working directory
 getfontname( [{name}])		String	name of font being used
 getfperm( {fname})		String	file permissions of file {fname}
 getfsize( {fname})		Number	size in bytes of file {fname}
@@ -1877,7 +1901,8 @@ globpath( {path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])
 				String	do glob({expr}) for all dirs in {path}
 has( {feature})			Number	TRUE if feature {feature} supported
 has_key( {dict}, {key})		Number	TRUE if {dict} has entry {key}
-haslocaldir()			Number	TRUE if current window executed |:lcd|
+haslocaldir( [{winnr} [, {tabnr}]])
+				Number	TRUE if the window executed |:lcd|
 hasmapto( {what} [, {mode} [, {abbr}]])
 				Number	TRUE if mapping to {what} exists
 histadd( {history},{item})	String	add an item to a history
@@ -1904,6 +1929,8 @@ isdirectory( {directory})	Number	TRUE if {directory} is a directory
 islocked( {expr})		Number	TRUE if {expr} is locked
 items( {dict})			List	key-value pairs in {dict}
 join( {list} [, {sep}])		String	join {list} items into one String
+jsondecode( {string})		any	decode JSON
+jsonencode( {expr})		String	encode JSON
 keys( {dict})			List	keys in {dict}
 len( {expr})			Number	the length of {expr}
 libcall( {lib}, {func}, {arg})	String	call {func} in library {lib} with {arg}
@@ -1945,6 +1972,7 @@ nextnonblank( {lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char( {expr}[, {utf8}])	String	single char with ASCII/UTF8 value {expr}
 or( {expr}, {expr})		Number  bitwise OR
 pathshorten( {expr})		String	shorten directory names in a path
+perleval( {expr})		any	evaluate |Perl| expression
 pow( {x}, {y})			Float	{x} to the power of {y}
 prevnonblank( {lnum})		Number	line nr of non-blank line <= {lnum}
 printf( {fmt}, {expr1}...)	String	format text
@@ -2748,10 +2776,20 @@ deepcopy({expr}[, {noref}])				*deepcopy()* *E698*
 		{noref} set to 1 will fail.
 		Also see |copy()|.
 
-delete({fname})							*delete()*
-		Deletes the file by the name {fname}.  The result is a Number,
-		which is 0 if the file was deleted successfully, and non-zero
-		when the deletion failed.
+delete({fname} [, {flags}])					*delete()*
+		Without {flags} or with {flags} empty: Deletes the file by the
+		name {fname}.  This also works when {fname} is a symbolic link.
+
+		When {flags} is "d": Deletes the directory by the name
+		{fname}.  This fails when directory {fname} is not empty.
+		
+		When {flags} is "rf": Deletes the directory by the name
+		{fname} and everything in it, recursively.  BE CAREFUL!
+		A symbolic link itself is deleted, not what it points to.
+		
+		The result is a Number, which is 0 if the delete operation was
+		successful and -1 when the deletion failed or partly failed.
+
 		Use |remove()| to delete an item from a |List|.
 		To delete a line from the buffer use |:delete|.  Use |:exe|
 		when the line number is in a variable.
@@ -3082,6 +3120,11 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 			if coming from a mapping.  This matters for undo,
 			opening folds, etc.
 		'i'	Insert the string instead of appending (see above).
+		'x'	Execute commands until typeahead is empty.  This is
+			similar to using ":normal!".  You can call feedkeys()
+			several times without 'x' and then one time with 'x'
+			(possibly with an empty {string}) to execute all the
+			typeahead.
 		Return value is always 0.
 
 filereadable({file})					*filereadable()*
@@ -3506,8 +3549,16 @@ getcurpos()	Get the position of the cursor.  This is like getpos('.'), but
 			call setpos('.', save_cursor)
 <
 							*getcwd()*
-getcwd()	The result is a String, which is the name of the current
+getcwd([{winnr} [, {tabnr}]])
+		The result is a String, which is the name of the current
 		working directory.
+		Without arguments, for the current window.
+
+		With {winnr} return the local current directory of this window
+		in the current tab page.
+		With {winnr} and {tabnr} return the local current directory of
+		the window in the specified tab page.
+		Return an empty string if the arguments are invalid.
 
 getfsize({fname})					*getfsize()*
 		The result is a Number, which is the size in bytes of the
@@ -3571,7 +3622,8 @@ getftype({fname})					*getftype()*
 			getftype("/home")
 <		Note that a type such as "link" will only be returned on
 		systems that support it.  On some systems only "dir" and
-		"file" are returned.
+		"file" are returned.  On MS-Windows a symbolic link to a
+		directory returns "dir" instead of "link".
 
 							*getline()*
 getline({lnum} [, {end}])
@@ -3843,9 +3895,15 @@ has_key({dict}, {key})					*has_key()*
 		The result is a Number, which is 1 if |Dictionary| {dict} has
 		an entry with key {key}.  Zero otherwise.
 
-haslocaldir()						*haslocaldir()*
-		The result is a Number, which is 1 when the current
-		window has set a local path via |:lcd|, and 0 otherwise.
+haslocaldir([{winnr} [, {tabnr}]])			*haslocaldir()*
+		The result is a Number, which is 1 when the window has set a
+		local path via |:lcd|, and 0 otherwise.
+
+		Without arguments use the current window.
+		With {winnr} use this window in the current tab page.
+		With {winnr} and {tabnr} use the window in the specified tab
+		page.
+		Return 0 if the arguments are invalid.
 
 hasmapto({what} [, {mode} [, {abbr}]])			*hasmapto()*
 		The result is a Number, which is 1 if there is a mapping that
@@ -4174,6 +4232,27 @@ join({list} [, {sep}])					*join()*
 <		String items are used as-is.  |Lists| and |Dictionaries| are
 		converted into a string like with |string()|.
 		The opposite function is |split()|.
+
+jsondecode({string})					*jsondecode()*
+		TODO
+
+jsonencode({expr})					*jsonencode()*
+		Encodode {expr} as JSON and return this as a string.
+		The encoding is specified in:
+		http://www.ietf.org/rfc/rfc4627.txt
+		Vim values are converted as follows:
+		   Number		decimal number
+		   Float		floating point number
+		   String		in double quotes (possibly null)
+		   Funcref		nothing
+		   List			as an array (possibly null); when
+		   			used recursively: []
+		   Dict			as an object (possibly null); when
+		   			used recursively: {}
+		   v:false		"false"
+		   v:true		"true"
+		   v:none		nothing
+		   v:null		"null"
 
 keys({dict})						*keys()*
 		Return a |List| with all the keys of {dict}.  The |List| is in
@@ -4532,8 +4611,8 @@ matchadd({group}, {pattern}[, {priority}[, {id} [, {dict}]]])
 		respectively.  If the {id} argument is not specified or -1,
 		|matchadd()| automatically chooses a free ID.
 
-		The optional {dict} argmument allows for further custom
-		values. Currently this is used to specify a match specifc
+		The optional {dict} argument allows for further custom
+		values. Currently this is used to specify a match specific
 		conceal character that will be shown for |hl-Conceal|
 		highlighted matches. The dict can have the following members:
 
@@ -4762,6 +4841,17 @@ pathshorten({expr})					*pathshorten()*
 			:echo pathshorten('~/.vim/autoload/myfile.vim')
 <			~/.v/a/myfile.vim ~
 		It doesn't matter if the path exists or not.
+
+perleval({expr})					*perleval()*
+		Evaluate Perl expression {expr} in scalar context and return
+		its result converted to Vim data structures. If value can't be
+		converted, it is returned as a string Perl representation.
+		Note: If you want an array or hash, {expr} must return a
+		reference to it.
+		Example: >
+			:echo perleval('[1 .. 4]')
+<			[1, 2, 3, 4]
+		{only available when compiled with the |+perl| feature}
 
 pow({x}, {y})						*pow()*
 		Return the power of {x} to the exponent {y} as a |Float|.
@@ -5277,7 +5367,7 @@ search({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*search()*
 
 		'ignorecase', 'smartcase' and 'magic' are used.
 		
-		When the 'z' flag is not given seaching always starts in
+		When the 'z' flag is not given, searching always starts in
 		column zero and then matches before the cursor are skipped.
 		When the 'c' flag is present in 'cpo' the next search starts
 		after the match.  Without the 'c' flag the next search starts
@@ -5845,6 +5935,9 @@ sort({list} [, {func} [, {dict}]])			*sort()* *E702*
 		When {func} is given and it is 'N' then all items will be
 		sorted numerical. This is like 'n' but a string containing
 		digits will be used as the number they represent.
+
+		When {func} is given and it is 'f' then all items will be
+		sorted numerical. All values must be a Number or a Float.
 
 		When {func} is a |Funcref| or a function name, this function
 		is called to compare items.  The function is invoked with two
@@ -7639,7 +7732,7 @@ This does NOT work: >
 			From Vim version 4.5 until 5.0, every Ex command in
 			between the ":if" and ":endif" is ignored.  These two
 			commands were just to allow for future expansions in a
-			backwards compatible way.  Nesting was allowed.  Note
+			backward compatible way.  Nesting was allowed.  Note
 			that any ":else" or ":elseif" was ignored, the "else"
 			part was not executed either.
 

@@ -598,6 +598,7 @@ vimobj =  \
 	$(OBJDIR)\getchar.obj \
 	$(OBJDIR)\hardcopy.obj \
 	$(OBJDIR)\hashtab.obj \
+	$(OBJDIR)\json.obj \
 	$(OBJDIR)\main.obj \
 	$(OBJDIR)\mark.obj \
 	$(OBJDIR)\memfile.obj \

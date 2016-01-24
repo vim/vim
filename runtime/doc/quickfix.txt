@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.4.  Last change: 2015 Dec 31
+*quickfix.txt*  For Vim version 7.4.  Last change: 2016 Jan 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -217,9 +217,9 @@ command with 'l'.
 :cex[pr][!] {expr}	Create a quickfix list using the result of {expr} and
 			jump to the first error.
 			If {expr} is a String, then each new-line terminated
-			line in the String is processed using the value
-			of 'errorformat' (buffer-local value if it was set)
-			and the result is added to the quickfix list.
+			line in the String is processed using the global value
+			of 'errorformat' and the result is added to the
+			quickfix list.
 			If {expr} is a List, then each String item in the list
 			is processed and added to the quickfix list.  Non
 			String items in the List are ignored.

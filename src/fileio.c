@@ -7280,6 +7280,54 @@ write_lnum_adjust(offset)
 	curbuf->b_no_eol_lnum += offset;
 }
 
+#if defined(TEMPDIRNAMES) || defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Delete "name" and everything in it, recursively.
+ * return 0 for succes, -1 if some file was not deleted.
+ */
+    int
+delete_recursive(char_u *name)
+{
+    int result = 0;
+    char_u	**files;
+    int		file_count;
+    int		i;
+    char_u	*exp;
+
+    /* A symbolic link to a directory itself is deleted, not the directory it
+     * points to. */
+    if (
+# if defined(UNIX) || defined(WIN32)
+	 mch_isrealdir(name)
+# else
+	 mch_isdir(name)
+# endif
+	    )
+    {
+	vim_snprintf((char *)NameBuff, MAXPATHL, "%s/*", name);
+	exp = vim_strsave(NameBuff);
+	if (exp == NULL)
+	    return -1;
+	if (gen_expand_wildcards(1, &exp, &file_count, &files,
+	      EW_DIR|EW_FILE|EW_SILENT|EW_ALLLINKS|EW_DODOT|EW_EMPTYOK) == OK)
+	{
+	    for (i = 0; i < file_count; ++i)
+		if (delete_recursive(files[i]) != 0)
+		    result = -1;
+	    FreeWild(file_count, files);
+	}
+	else
+	    result = -1;
+	vim_free(exp);
+	(void)mch_rmdir(name);
+    }
+    else
+	result = mch_remove(name) == 0 ? 0 : -1;
+
+    return result;
+}
+#endif
+
 #if defined(TEMPDIRNAMES) || defined(PROTO)
 static long	temp_count = 0;		/* Temp filename counter. */
 
@@ -7289,30 +7337,16 @@ static long	temp_count = 0;		/* Temp filename counter. */
     void
 vim_deltempdir()
 {
-    char_u	**files;
-    int		file_count;
-    int		i;
-
     if (vim_tempdir != NULL)
     {
-	sprintf((char *)NameBuff, "%s*", vim_tempdir);
-	if (gen_expand_wildcards(1, &NameBuff, &file_count, &files,
-					      EW_DIR|EW_FILE|EW_SILENT) == OK)
-	{
-	    for (i = 0; i < file_count; ++i)
-		mch_remove(files[i]);
-	    FreeWild(file_count, files);
-	}
-	gettail(NameBuff)[-1] = NUL;
-	(void)mch_rmdir(NameBuff);
-
+	/* remove the trailing path separator */
+	gettail(vim_tempdir)[-1] = NUL;
+	delete_recursive(vim_tempdir);
 	vim_free(vim_tempdir);
 	vim_tempdir = NULL;
     }
 }
-#endif
 
-#ifdef TEMPDIRNAMES
 /*
  * Directory "tempdir" was created.  Expand this name to a full path and put
  * it in "vim_tempdir".  This avoids that using ":cd" would confuse us.

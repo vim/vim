@@ -436,7 +436,7 @@ dnl Check user requested features.
 AC_MSG_CHECKING(--with-features argument)
 AC_ARG_WITH(features, [  --with-features=TYPE    tiny, small, normal, big or huge (default: normal)],
 	features="$withval"; AC_MSG_RESULT($features),
-	features="normal"; AC_MSG_RESULT(Defaulting to normal))
+	features="huge"; AC_MSG_RESULT(Defaulting to huge))
 
 dovimdiff=""
 dogvimdiff=""

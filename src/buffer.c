@@ -1955,6 +1955,7 @@ free_buf_options(buf, free_p_ff)
     clear_string_option(&buf->b_p_nf);
 #ifdef FEAT_SYN_HL
     clear_string_option(&buf->b_p_syn);
+    clear_string_option(&buf->b_s.b_syn_isk);
 #endif
 #ifdef FEAT_SPELL
     clear_string_option(&buf->b_s.b_p_spc);

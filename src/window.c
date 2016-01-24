@@ -2444,6 +2444,10 @@ win_close(win, free_buf)
 	if (win_valid(win))
 	    win->w_closing = FALSE;
 #endif
+	/* Make sure curbuf is valid. It can become invalid if 'bufhidden' is
+	 * "wipe". */
+	if (!buf_valid(curbuf))
+	    curbuf = firstbuf;
     }
 
     if (only_one_window() && win_valid(win) && win->w_buffer == NULL

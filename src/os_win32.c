@@ -101,6 +101,7 @@ typedef int CONSOLE_CURSOR_INFO;
 typedef int COORD;
 typedef int DWORD;
 typedef int HANDLE;
+typedef int LPHANDLE;
 typedef int HDC;
 typedef int HFONT;
 typedef int HICON;
@@ -463,6 +464,7 @@ vimLoadLib(char *name)
 #if defined(DYNAMIC_GETTEXT) || defined(PROTO)
 # ifndef GETTEXT_DLL
 #  define GETTEXT_DLL "libintl.dll"
+#  define GETTEXT_DLL_ALT "libintl-8.dll"
 # endif
 /* Dummy functions */
 static char *null_libintl_gettext(const char *);
@@ -479,7 +481,7 @@ char *(*dyn_libintl_bind_textdomain_codeset)(const char *, const char *)
 				       = null_libintl_bind_textdomain_codeset;
 
     int
-dyn_libintl_init(char *libname)
+dyn_libintl_init()
 {
     int i;
     static struct
@@ -498,7 +500,9 @@ dyn_libintl_init(char *libname)
     if (hLibintlDLL)
 	return 1;
     /* Load gettext library (libintl.dll) */
-    hLibintlDLL = vimLoadLib(libname != NULL ? libname : GETTEXT_DLL);
+    hLibintlDLL = vimLoadLib(GETTEXT_DLL);
+    if (!hLibintlDLL)
+	hLibintlDLL = vimLoadLib(GETTEXT_DLL_ALT);
     if (!hLibintlDLL)
     {
 	if (p_verbose > 0)
@@ -3127,6 +3131,17 @@ mch_isdir(char_u *name)
 }
 
 /*
+ * return TRUE if "name" is a directory, NOT a symlink to a directory
+ * return FALSE if "name" is not a directory
+ * return FALSE for error
+ */
+    int
+mch_isrealdir(char_u *name)
+{
+    return mch_isdir(name) && !mch_is_symbolic_link(name);
+}
+
+/*
  * Create directory "name".
  * Return 0 on success, -1 on error.
  */
@@ -3151,6 +3166,30 @@ mch_mkdir(char_u *name)
 }
 
 /*
+ * Delete directory "name".
+ * Return 0 on success, -1 on error.
+ */
+    int
+mch_rmdir(char_u *name)
+{
+#ifdef FEAT_MBYTE
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	WCHAR	*p;
+	int	retval;
+
+	p = enc_to_utf16(name, NULL);
+	if (p == NULL)
+	    return -1;
+	retval = _wrmdir(p);
+	vim_free(p);
+	return retval;
+    }
+#endif
+    return _rmdir(name);
+}
+
+/*
  * Return TRUE if file "fname" has more than one link.
  */
     int
@@ -3163,10 +3202,10 @@ mch_is_hard_link(char_u *fname)
 }
 
 /*
- * Return TRUE if file "fname" is a symbolic link.
+ * Return TRUE if "name" is a symbolic link (or a junction).
  */
     int
-mch_is_symbolic_link(char_u *fname)
+mch_is_symbolic_link(char_u *name)
 {
     HANDLE		hFind;
     int			res = FALSE;
@@ -3177,7 +3216,7 @@ mch_is_symbolic_link(char_u *fname)
     WIN32_FIND_DATAW	findDataW;
 
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-	wn = enc_to_utf16(fname, NULL);
+	wn = enc_to_utf16(name, NULL);
     if (wn != NULL)
     {
 	hFind = FindFirstFileW(wn, &findDataW);
@@ -3186,7 +3225,7 @@ mch_is_symbolic_link(char_u *fname)
 		&& GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
 	{
 	    /* Retry with non-wide function (for Windows 98). */
-	    hFind = FindFirstFile(fname, &findDataA);
+	    hFind = FindFirstFile(name, &findDataA);
 	    if (hFind != INVALID_HANDLE_VALUE)
 	    {
 		fileFlags = findDataA.dwFileAttributes;
@@ -3202,7 +3241,7 @@ mch_is_symbolic_link(char_u *fname)
     else
 #endif
     {
-	hFind = FindFirstFile(fname, &findDataA);
+	hFind = FindFirstFile(name, &findDataA);
 	if (hFind != INVALID_HANDLE_VALUE)
 	{
 	    fileFlags = findDataA.dwFileAttributes;
@@ -3214,7 +3253,8 @@ mch_is_symbolic_link(char_u *fname)
 	FindClose(hFind);
 
     if ((fileFlags & FILE_ATTRIBUTE_REPARSE_POINT)
-	    && reparseTag == IO_REPARSE_TAG_SYMLINK)
+	    && (reparseTag == IO_REPARSE_TAG_SYMLINK
+		|| reparseTag == IO_REPARSE_TAG_MOUNT_POINT))
 	res = TRUE;
 
     return res;
@@ -5812,7 +5852,8 @@ mch_delay(
 
 
 /*
- * this version of remove is not scared by a readonly (backup) file
+ * This version of remove is not scared by a readonly (backup) file.
+ * This can also remove a symbolic link like Unix.
  * Return 0 for success, -1 for failure.
  */
     int
@@ -5822,6 +5863,13 @@ mch_remove(char_u *name)
     WCHAR	*wn = NULL;
     int		n;
 #endif
+
+    /*
+     * On Windows, deleting a directory's symbolic link is done by
+     * RemoveDirectory(): mch_rmdir.  It seems unnatural, but it is fact.
+     */
+    if (mch_isdir(name) && mch_is_symbolic_link(name))
+	return mch_rmdir(name);
 
     win32_setattrs(name, FILE_ATTRIBUTE_NORMAL);
 

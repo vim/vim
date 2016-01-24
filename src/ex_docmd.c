@@ -10226,17 +10226,26 @@ exec_normal_cmd(cmd, remap, silent)
     int		remap;
     int		silent;
 {
+    /* Stuff the argument into the typeahead buffer. */
+    ins_typebuf(cmd, remap, 0, TRUE, silent);
+    exec_normal(FALSE);
+}
+#endif
+
+#if defined(FEAT_EX_EXTRA) || defined(FEAT_MENU) || defined(FEAT_EVAL) \
+	|| defined(PROTO)
+/*
+ * Execute normal_cmd() until there is no typeahead left.
+ */
+    void
+exec_normal(int was_typed)
+{
     oparg_T	oa;
 
-    /*
-     * Stuff the argument into the typeahead buffer.
-     * Execute normal_cmd() until there is no typeahead left.
-     */
     clear_oparg(&oa);
     finish_op = FALSE;
-    ins_typebuf(cmd, remap, 0, TRUE, silent);
-    while ((!stuff_empty() || (!typebuf_typed() && typebuf.tb_len > 0))
-								  && !got_int)
+    while ((!stuff_empty() || ((was_typed || !typebuf_typed())
+		    && typebuf.tb_len > 0)) && !got_int)
     {
 	update_topline_cursor();
 	normal_cmd(&oa, TRUE);	/* execute a Normal mode cmd */

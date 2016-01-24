@@ -189,7 +189,7 @@ static void ruby_vim_init(void);
 #endif
 
 #if defined(DYNAMIC_RUBY) || defined(PROTO)
-# ifdef PROTO
+# if defined(PROTO) && !defined(HINSTANCE)
 #  define HINSTANCE int		/* for generating prototypes */
 # endif
 
@@ -1032,6 +1032,11 @@ static VALUE vim_to_ruby(typval_T *tv)
 		}
 	    }
 	}
+    }
+    else if (tv->v_type == VAR_SPECIAL)
+    {
+	if (tv->vval.v_number <= VVAL_TRUE)
+	    result = INT2NUM(tv->vval.v_number);
     } /* else return Qnil; */
 
     return result;

@@ -921,6 +921,7 @@ Various:					*various-functions*
 
 	luaeval()		evaluate Lua expression
 	mzeval()		evaluate |MzScheme| expression
+	perleval()		evaluate Perl expression (|+perl|)
 	py3eval()		evaluate Python expression (|+python3|)
 	pyeval()		evaluate Python expression (|+python|)
 	wordcount()             get byte/word/char count of buffer

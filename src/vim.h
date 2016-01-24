@@ -835,6 +835,8 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define EW_ALLLINKS	0x1000	/* also links not pointing to existing file */
 #define EW_SHELLCMD	0x2000	/* called from expand_shellcmd(), don't check
 				 * if executable is in $PATH */
+#define EW_DODOT	0x4000	/* also files starting with a dot */
+#define EW_EMPTYOK	0x8000	/* no matches is not an error */
 
 /* Flags for find_file_*() functions. */
 #define FINDFILE_FILE	0	/* only files */
@@ -1107,14 +1109,6 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define HIST_INPUT	3	/* input() lines */
 #define HIST_DEBUG	4	/* debug commands */
 #define HIST_COUNT	5	/* number of history tables */
-
-/*
- * Flags for chartab[].
- */
-#define CT_CELL_MASK	0x07	/* mask: nr of display cells (1, 2 or 4) */
-#define CT_PRINT_CHAR	0x10	/* flag: set for printable chars */
-#define CT_ID_CHAR	0x20	/* flag: set for ID chars */
-#define CT_FNAME_CHAR	0x40	/* flag: set for file name chars */
 
 /*
  * Values for do_tag().
@@ -1902,7 +1896,17 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 #define VV_OPTION_OLD   60
 #define VV_OPTION_TYPE  61
 #define VV_ERRORS	62
-#define VV_LEN		63	/* number of v: vars */
+#define VV_FALSE	63
+#define VV_TRUE		64
+#define VV_NULL		65
+#define VV_NONE		66
+#define VV_LEN		67	/* number of v: vars */
+
+/* used for v_number in VAR_SPECIAL */
+#define VVAL_FALSE	0L
+#define VVAL_TRUE	1L
+#define VVAL_NONE	2L
+#define VVAL_NULL	3L
 
 #ifdef FEAT_CLIPBOARD
 

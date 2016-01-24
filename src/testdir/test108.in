@@ -2,6 +2,7 @@ Tests for backtrace debug commands.     vim: set ft=vim :
 
 STARTTEST
 :so small.vim
+:lang mess C
 :function! Foo()
 :   let var1 = 1
 :   let var2 = Bar(var1) + 9

@@ -5495,6 +5495,7 @@ check_buf_options(buf)
 #endif
 #ifdef FEAT_SYN_HL
     check_string_option(&buf->b_p_syn);
+    check_string_option(&buf->b_s.b_syn_isk);
 #endif
 #ifdef FEAT_SPELL
     check_string_option(&buf->b_s.b_p_spc);
@@ -5934,9 +5935,9 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 #endif
 
     /*
-     * 'isident', 'iskeyword', 'isprint or 'isfname' option: refill chartab[]
+     * 'isident', 'iskeyword', 'isprint or 'isfname' option: refill g_chartab[]
      * If the new option is invalid, use old value.  'lisp' option: refill
-     * chartab[] for '-' char
+     * g_chartab[] for '-' char
      */
     else if (  varp == &p_isi
 	    || varp == &(curbuf->b_p_isk)
@@ -10822,6 +10823,7 @@ buf_copy_options(buf, flags)
 	    /* Don't copy 'syntax', it must be set */
 	    buf->b_p_syn = empty_option;
 	    buf->b_p_smc = p_smc;
+	    buf->b_s.b_syn_isk = empty_option;
 #endif
 #ifdef FEAT_SPELL
 	    buf->b_s.b_p_spc = vim_strsave(p_spc);
