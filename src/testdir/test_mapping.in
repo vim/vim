@@ -148,6 +148,8 @@ G3o2k
 
 
 
+:call feedkeys(has('langmap')&&has('keymap')?"G":"ggVGd:r test_mapping.ok")
+
 :/^test/,$w! test.out
 :qa!
 ENDTEST
