@@ -868,7 +868,10 @@ These modifiers can be given, in this order:
 		When the file name is an absolute path (starts with "/" for
 		Unix; "x:\" for MS-DOS, WIN32, OS/2; "drive:" for Amiga), that
 		part is not removed.  When there is no head (path is relative
-		to current directory) the result is empty.
+		to current directory) it will expand the current directory,
+		thus "expand('%:h:h')" always returns the full path of the
+		parent directory even if the current directory is set to what
+		"%:h" expands to.
 	:t	Tail of the file name (last component of the name).  Must
 		precede any :r or :e.
 	:r	Root of the file name (the last extension removed).  When

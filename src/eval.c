@@ -25824,6 +25824,17 @@ repeat:
     {
 	valid |= VALID_HEAD;
 	*usedlen += 2;
+        if (*fnamep != NULL && **fnamep == '.' && *fnamelen == 1)
+        {
+            /* fnamep was already set to '.', try to move one directory up */
+            *fnamep = FullName_save(*fnamep, FALSE);
+            vim_free(*bufp);
+            if (*fnamep == NULL)
+                return -1;
+            p = *bufp = *fnamep;
+            tail = gettail(*fnamep);
+            *fnamelen = (int)STRLEN(*fnamep);
+        }
 	s = get_past_head(*fnamep);
 	while (tail > s && after_pathsep(s, tail))
 	    mb_ptr_back(*fnamep, tail);
