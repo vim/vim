@@ -40,13 +40,6 @@ qüGf_öüwOK_nlangmapq
 Göol
 :unmap col
 :set langmap=
-:" langmap should not get remapped
-:call append(line('$'), "FAIL_nlangmap noremap")
-:set langmap=:>,ö: langnoremap
-ömap , ö
-G,s/FAIL_nlangmap/OK_nlangmap
-öunmap ,
-öset langmap=
 :" langmap should not apply in Insert mode
 :inoremap { FAIL_ilangmap
 :set langmap=+{ langnoremap

@@ -10,7 +10,6 @@ OK_nlangmap
 OK_nlangmap motion
 OK_nlangmap registers
 OK_nlangmap mapping
-OK_nlangmap noremap
 OK_ilangmap
 OK_iexplangmap
 OK_clangmap_non_colon
