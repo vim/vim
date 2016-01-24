@@ -1290,7 +1290,7 @@ mzscheme_init(void)
 #endif
 	if (load_base_module_failed || startup_mzscheme())
 	{
-	    EMSG(_("Exxx: Sorry, this command is disabled, the MzScheme's racket/base module could not be loaded."));
+	    EMSG(_("E895: Sorry, this command is disabled, the MzScheme's racket/base module could not be loaded."));
 	    return -1;
 	}
 	initialized = TRUE;
