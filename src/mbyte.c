@@ -4461,12 +4461,18 @@ iconv_enabled(verbose)
 
     /* The iconv DLL file goes under different names, try them all. */
     hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL);
+#   ifdef DYNAMIC_ICONV_DLL_ALT1
     if (hIconvDLL == 0)
 	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT1);
+#   endif
+#   ifdef DYNAMIC_ICONV_DLL_ALT2
     if (hIconvDLL == 0)
 	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT2);
+#   endif
+#   ifdef DYNAMIC_ICONV_DLL_ALT3
     if (hIconvDLL == 0)
 	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT3);
+#   endif
 
     if (hIconvDLL != 0)
 	hMsvcrtDLL = vimLoadLib(DYNAMIC_MSVCRT_DLL);

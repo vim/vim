@@ -501,8 +501,10 @@ dyn_libintl_init()
 	return 1;
     /* Load gettext library (libintl.dll) */
     hLibintlDLL = vimLoadLib(GETTEXT_DLL);
+# ifdef GETTEXT_DLL_ALT
     if (!hLibintlDLL)
 	hLibintlDLL = vimLoadLib(GETTEXT_DLL_ALT);
+# endif
     if (!hLibintlDLL)
     {
 	if (p_verbose > 0)
