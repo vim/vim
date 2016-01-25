@@ -685,7 +685,6 @@ OBJ += $(OUTDIR)/netbeans.o
 LIB += -lwsock32
 endif
 endif
-endif
 
 ifeq ($(CHANNEL),yes)
 OBJ += $(OUTDIR)/channel.o
