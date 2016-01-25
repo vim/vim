@@ -10578,6 +10578,10 @@ f_empty(argvars, rettv)
 	    n = argvars[0].vval.v_dict == NULL
 			|| argvars[0].vval.v_dict->dv_hashtab.ht_used == 0;
 	    break;
+	case VAR_SPECIAL:
+	    n = argvars[0].vval.v_number != VVAL_TRUE;
+	    break;
+
 	default:
 	    EMSG2(_(e_intern2), "f_empty()");
 	    n = 0;
