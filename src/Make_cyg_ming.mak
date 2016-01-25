@@ -693,7 +693,6 @@ ifneq ($(NETBEANS),yes)
 LIB += -lwsock32
 endif
 endif
-endif
 
 ifeq ($(DIRECTX),yes)
 # Only allow DIRECTX for a GUI build.
