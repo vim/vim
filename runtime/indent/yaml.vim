@@ -24,14 +24,6 @@ if exists('*GetYAMLIndent')
     finish
 endif
 
-if exists('*shiftwidth')
-    let s:shiftwidth = function('shiftwidth')
-else
-    function s:shiftwidth()
-        return &shiftwidth
-    endfunction
-endif
-
 function s:FindPrevLessIndentedLine(lnum, ...)
     let prevlnum = prevnonblank(a:lnum-1)
     let curindent = a:0 ? a:1 : indent(a:lnum)
@@ -97,7 +89,7 @@ function GetYAMLIndent(lnum)
         "
         " - |-
         "     Block scalar without indentation indicator
-        return previndent+s:shiftwidth()
+        return previndent+shiftwidth()
     elseif prevline =~# '\v[:-]\ [|>]%(\d+[+\-]?|[+\-]?\d+)%(\#.*|\s*)$'
         " - |+2
         "   block scalar with indentation indicator
@@ -130,7 +122,7 @@ function GetYAMLIndent(lnum)
     elseif prevline =~# s:mapkeyregex
         " Mapping with: value
         "     that is multiline scalar
-        return previndent+s:shiftwidth()
+        return previndent+shiftwidth()
     endif
     return previndent
 endfunction
