@@ -106,6 +106,11 @@ static char *(features[]) =
 #else
 	"-byte_offset",
 #endif
+#ifdef FEAT_CHANNEL
+	"+channel",
+#else
+	"-channel",
+#endif
 #ifdef FEAT_CINDENT
 	"+cindent",
 #else
@@ -741,6 +746,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1177,
 /**/
     1176,
 /**/
