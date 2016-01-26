@@ -92,7 +92,7 @@ typedef struct {
     gint ch_inputHandler;	/* Cookie for input */
 #endif
 #ifdef FEAT_GUI_W32
-    int  ch_inputHandler = -1;	/* simply ret.value of WSAAsyncSelect() */
+    int  ch_inputHandler;	/* simply ret.value of WSAAsyncSelect() */
 #endif
 
     void (*ch_close_cb)(void);	/* callback invoked when channel is closed */
