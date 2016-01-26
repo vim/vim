@@ -27,36 +27,11 @@
 
 #if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
 
-/* Note: when making changes here also adjust configure.in. */
-#ifdef WIN32
-# ifdef DEBUG
-#  include <tchar.h>	/* for _T definition for TRACEn macros */
-# endif
-/* WinSock API is separated from C API, thus we can't use read(), write(),
- * errno... */
-# define SOCK_ERRNO errno = WSAGetLastError()
-# undef ECONNREFUSED
-# define ECONNREFUSED WSAECONNREFUSED
-# ifdef EINTR
-#  undef EINTR
-# endif
-# define EINTR WSAEINTR
-# define sock_write(sd, buf, len) send(sd, buf, len, 0)
-# define sock_read(sd, buf, len) recv(sd, buf, len, 0)
-# define sock_close(sd) closesocket(sd)
-# define sleep(t) Sleep(t*1000) /* WinAPI Sleep() accepts milliseconds */
-#else
+#ifndef WIN32
 # include <netdb.h>
-# include <netinet/in.h>
-
-# include <sys/socket.h>
 # ifdef HAVE_LIBGEN_H
 #  include <libgen.h>
 # endif
-# define SOCK_ERRNO
-# define sock_write(sd, buf, len) write(sd, buf, len)
-# define sock_read(sd, buf, len) read(sd, buf, len)
-# define sock_close(sd) close(sd)
 #endif
 
 #include "version.h"
@@ -83,35 +58,14 @@ static int getConnInfo __ARGS((char *file, char **host, char **port, char **pass
 static void nb_init_graphics __ARGS((void));
 static void coloncmd __ARGS((char *cmd, ...));
 static void nb_set_curbuf __ARGS((buf_T *buf));
-#ifdef FEAT_GUI_X11
-static void messageFromNetbeans __ARGS((XtPointer, int *, XtInputId *));
-#endif
-#ifdef FEAT_GUI_GTK
-static void messageFromNetbeans __ARGS((gpointer, gint, GdkInputCondition));
-#endif
 static void nb_parse_cmd __ARGS((char_u *));
 static int  nb_do_cmd __ARGS((int, char_u *, int, int, char_u *));
 static void nb_send __ARGS((char *buf, char *fun));
 static void nb_free __ARGS((void));
 
-/* TRUE when netbeans is running with a GUI. */
-#ifdef FEAT_GUI
-# define NB_HAS_GUI (gui.in_use || gui.starting)
-#endif
+#define NETBEANS_OPEN (nb_channel_idx >= 0 && channel_is_open(nb_channel_idx))
+static int nb_channel_idx = -1;
 
-static sock_T nbsock = -1;		/* socket fd for Netbeans connection */
-#define NETBEANS_OPEN (nbsock != -1)
-
-#ifdef FEAT_GUI_X11
-static XtInputId inputHandler = (XtInputId)NULL;  /* Cookie for input */
-#endif
-#ifdef FEAT_GUI_GTK
-static gint inputHandler = 0;		/* Cookie for input */
-#endif
-#ifdef FEAT_GUI_W32
-static int  inputHandler = -1;		/* simply ret.value of WSAAsyncSelect() */
-extern HWND s_hwnd;			/* Gvim's Window handle */
-#endif
 static int r_cmdno;			/* current command number for reply */
 static int dosetvisible = FALSE;
 
@@ -126,48 +80,17 @@ static int needupdate = 0;
 static int inAtomic = 0;
 
 /*
- * Close the socket and remove the input handlers.
+ * Callback invoked when the channel is closed.
  */
     static void
-nb_close_socket(void)
+nb_channel_closed(void)
 {
-    buf_T	*buf;
-
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
-	buf->b_has_sign_column = FALSE;
-
-#ifdef FEAT_GUI_X11
-    if (inputHandler != (XtInputId)NULL)
-    {
-	XtRemoveInput(inputHandler);
-	inputHandler = (XtInputId)NULL;
-    }
-#else
-# ifdef FEAT_GUI_GTK
-    if (inputHandler != 0)
-    {
-	gdk_input_remove(inputHandler);
-	inputHandler = 0;
-    }
-# else
-#  ifdef FEAT_GUI_W32
-    if (inputHandler == 0)
-    {
-	WSAAsyncSelect(nbsock, s_hwnd, 0, 0);
-	inputHandler = -1;
-    }
-#  endif
-# endif
-#endif
-
-    sock_close(nbsock);
-    nbsock = -1;
-    channel_remove_netbeans();
+    nb_channel_idx = -1;
 }
 
 /*
  * Close the connection and cleanup.
- * May be called when nb_close_socket() was called earlier.
+ * May be called when the socket was closed earlier.
  */
     static void
 netbeans_close(void)
@@ -175,7 +98,10 @@ netbeans_close(void)
     if (NETBEANS_OPEN)
     {
 	netbeans_send_disconnect();
-	nb_close_socket();
+	if (nb_channel_idx >= 0)
+	    /* Close the socket and remove the input handlers. */
+	    channel_close(nb_channel_idx);
+	nb_channel_idx = -1;
     }
 
 #ifdef FEAT_BEVAL
@@ -209,14 +135,7 @@ netbeans_close(void)
     static int
 netbeans_connect(char *params, int doabort)
 {
-    struct sockaddr_in	server;
-    struct hostent *	host;
-#ifdef FEAT_GUI_W32
-    u_short		port;
-#else
-    int			port;
-#endif
-    int		sd;
+    int		port;
     char	buf[32];
     char	*hostname = NULL;
     char	*address = NULL;
@@ -291,107 +210,29 @@ netbeans_connect(char *params, int doabort)
 	vim_free(password);
 	password = (char *)vim_strsave((char_u *)NB_DEF_PASS);
     }
-    if (hostname == NULL || address == NULL || password == NULL)
-	goto theend;	    /* out of memory */
-
-#ifdef FEAT_GUI_W32
-    channel_init_winsock();
-#endif
-
-    port = atoi(address);
-
-    if ((sd = (sock_T)socket(AF_INET, SOCK_STREAM, 0)) == (sock_T)-1)
+    if (hostname != NULL && address != NULL && password != NULL)
     {
-	nbdebug(("error in socket() in netbeans_connect()\n"));
-	PERROR("socket() in netbeans_connect()");
-	goto theend;
-    }
-
-    /* Get the server internet address and put into addr structure */
-    /* fill in the socket address structure and connect to server */
-    vim_memset((char *)&server, '\0', sizeof(server));
-    server.sin_family = AF_INET;
-    server.sin_port = htons(port);
-    if ((host = gethostbyname(hostname)) == NULL)
-    {
-	nbdebug(("error in gethostbyname() in netbeans_connect()\n"));
-	PERROR("gethostbyname() in netbeans_connect()");
-	sock_close(sd);
-	goto theend;
-    }
-    memcpy((char *)&server.sin_addr, host->h_addr, host->h_length);
-    /* Connect to server */
-    if (connect(sd, (struct sockaddr *)&server, sizeof(server)))
-    {
-	SOCK_ERRNO;
-	nbdebug(("netbeans_connect: Connect failed with errno %d\n", errno));
-	if (errno == ECONNREFUSED)
+	port = atoi(address);
+	nb_channel_idx = channel_open(hostname, port, nb_channel_closed);
+	if (nb_channel_idx >= 0)
 	{
-	    sock_close(sd);
-	    if ((sd = (sock_T)socket(AF_INET, SOCK_STREAM, 0)) == (sock_T)-1)
-	    {
-		SOCK_ERRNO;
-		nbdebug(("socket()#2 in netbeans_connect()\n"));
-		PERROR("socket()#2 in netbeans_connect()");
-		goto theend;
-	    }
-	    if (connect(sd, (struct sockaddr *)&server, sizeof(server)))
-	    {
-		int retries = 36;
-		int success = FALSE;
+	    /* success */
+# ifdef FEAT_BEVAL
+	    bevalServers |= BEVAL_NETBEANS;
+# endif
 
-		SOCK_ERRNO;
-		while (retries-- && ((errno == ECONNREFUSED)
-							 || (errno == EINTR)))
-		{
-		    nbdebug(("retrying...\n"));
-		    mch_delay(3000L, TRUE);
-		    ui_breakcheck();
-		    if (got_int)
-		    {
-			errno = EINTR;
-			break;
-		    }
-		    if (connect(sd, (struct sockaddr *)&server,
-							 sizeof(server)) == 0)
-		    {
-			success = TRUE;
-			break;
-		    }
-		    SOCK_ERRNO;
-		}
-		if (!success)
-		{
-		    /* Get here when the server can't be found. */
-		    nbdebug(("Cannot connect to Netbeans #2\n"));
-		    PERROR(_("Cannot connect to Netbeans #2"));
-		    sock_close(sd);
-		    if (doabort)
-			getout(1);
-		    goto theend;
-		}
-	    }
-	}
-	else
-	{
-	    nbdebug(("Cannot connect to Netbeans\n"));
-	    PERROR(_("Cannot connect to Netbeans"));
-	    sock_close(sd);
-	    if (doabort)
-		getout(1);
-	    goto theend;
+	    /* success, login */
+	    vim_snprintf(buf, sizeof(buf), "AUTH %s\n", password);
+	    nb_send(buf, "netbeans_connect");
+
+	    sprintf(buf, "0:version=0 \"%s\"\n", ExtEdProtocolVersion);
+	    nb_send(buf, "externaleditor_version");
 	}
     }
 
-    nbsock = sd;
-    channel_add_netbeans(nbsock);
-    vim_snprintf(buf, sizeof(buf), "AUTH %s\n", password);
-    nb_send(buf, "netbeans_connect");
+    if (nb_channel_idx < 0 && doabort)
+	getout(1);
 
-    sprintf(buf, "0:version=0 \"%s\"\n", ExtEdProtocolVersion);
-    nb_send(buf, "externaleditor_version");
-
-theend:
     vim_free(hostname);
     vim_free(address);
     vim_free(password);
@@ -532,111 +373,31 @@ handle_key_queue(void)
 }
 
 
-struct cmdqueue
-{
-    char_u	    *buffer;
-    struct cmdqueue *next;
-    struct cmdqueue *prev;
-};
-
-typedef struct cmdqueue queue_T;
-
-static queue_T head;  /* dummy node, header for circular queue */
-
-
-/*
- * Put the buffer on the work queue; possibly save it to a file as well.
- */
-    static void
-save(char_u *buf, int len)
-{
-    queue_T *node;
-
-    node = (queue_T *)alloc(sizeof(queue_T));
-    if (node == NULL)
-	return;	    /* out of memory */
-    node->buffer = alloc(len + 1);
-    if (node->buffer == NULL)
-    {
-	vim_free(node);
-	return;	    /* out of memory */
-    }
-    mch_memmove(node->buffer, buf, (size_t)len);
-    node->buffer[len] = NUL;
-
-    if (head.next == NULL)   /* initialize circular queue */
-    {
-	head.next = &head;
-	head.prev = &head;
-    }
-
-    /* insert node at tail of queue */
-    node->next = &head;
-    node->prev = head.prev;
-    head.prev->next = node;
-    head.prev = node;
-
-#ifdef NBDEBUG
-    {
-	static int outfd = -2;
-
-	/* possibly write buffer out to a file */
-	if (outfd == -3)
-	    return;
-
-	if (outfd == -2)
-	{
-	    char *file = getenv("__NETBEANS_SAVE");
-	    if (file == NULL)
-		outfd = -3;
-	    else
-		outfd = mch_open(file, O_WRONLY|O_CREAT|O_TRUNC, 0666);
-	}
-
-	if (outfd >= 0)
-	    write(outfd, buf, len);
-    }
-#endif
-}
-
-
 /*
  * While there's still a command in the work queue, parse and execute it.
  */
     void
 netbeans_parse_messages(void)
 {
+    char_u	*buffer;
     char_u	*p;
-    queue_T	*node;
     int		own_node;
 
-    while (head.next != NULL && head.next != &head)
+    while (nb_channel_idx >= 0)
     {
-	node = head.next;
+	buffer = channel_peek(nb_channel_idx);
+	if (buffer == NULL)
+	    break;	/* nothing to read */
 
 	/* Locate the first line in the first buffer. */
-	p = vim_strchr(node->buffer, '\n');
+	p = vim_strchr(buffer, '\n');
 	if (p == NULL)
 	{
 	    /* Command isn't complete.  If there is no following buffer,
 	     * return (wait for more). If there is another buffer following,
 	     * prepend the text to that buffer and delete this one.  */
-	    if (node->next == &head)
+	    if (channel_collapse(nb_channel_idx) == FAIL)
 		return;
-	    p = alloc((unsigned)(STRLEN(node->buffer)
-					   + STRLEN(node->next->buffer) + 1));
-	    if (p == NULL)
-		return;	    /* out of memory */
-	    STRCPY(p, node->buffer);
-	    STRCAT(p, node->next->buffer);
-	    vim_free(node->next->buffer);
-	    node->next->buffer = p;
-
-	    /* dispose of the node and buffer */
-	    head.next = node->next;
-	    node->next->prev = node->prev;
-	    vim_free(node->buffer);
-	    vim_free(node);
 	}
 	else
 	{
@@ -648,147 +409,30 @@ netbeans_parse_messages(void)
 	    if (*p == NUL)
 	    {
 		own_node = TRUE;
-		head.next = node->next;
-		node->next->prev = node->prev;
+		channel_get(nb_channel_idx);
 	    }
 	    else
 		own_node = FALSE;
 
 	    /* now, parse and execute the commands */
-	    nb_parse_cmd(node->buffer);
+	    nb_parse_cmd(buffer);
 
 	    if (own_node)
-	    {
-		/* buffer finished, dispose of the node and buffer */
-		vim_free(node->buffer);
-		vim_free(node);
-	    }
-	    /* Check that "head" wasn't changed under our fingers, e.g. when a
-	     * DETACH command was handled. */
-	    else if (head.next == node)
-	    {
-		/* more follows, move to the start */
-		STRMOVE(node->buffer, p);
-	    }
+		/* buffer finished, dispose of it */
+		vim_free(buffer);
+	    else
+		/* more follows, move it to the start */
+		STRMOVE(buffer, p);
 	}
     }
 }
 
-/* Buffer size for reading incoming messages. */
-#define MAXMSGSIZE 4096
-
-/*
- * Read a command from netbeans.
- */
-#ifdef FEAT_GUI_X11
-    static void
-messageFromNetbeans(XtPointer clientData UNUSED,
-		    int *unused1 UNUSED,
-		    XtInputId *unused2 UNUSED)
-{
-    netbeans_read();
-}
-#endif
-
-#ifdef FEAT_GUI_GTK
-    static void
-messageFromNetbeans(gpointer clientData UNUSED,
-		    gint unused1 UNUSED,
-		    GdkInputCondition unused2 UNUSED)
-{
-    netbeans_read();
-}
-#endif
-
-#define DETACH_MSG "DETACH\n"
-
+/* TODO: remove */
     void
 netbeans_read()
 {
-    static char_u	*buf = NULL;
-    int			len = 0;
-    int			readlen = 0;
-#ifdef HAVE_SELECT
-    struct timeval	tval;
-    fd_set		rfds;
-#else
-# ifdef HAVE_POLL
-    struct pollfd	fds;
-# endif
-#endif
-
-    if (!NETBEANS_OPEN)
-    {
-	nbdebug(("messageFromNetbeans() called without a socket\n"));
-	return;
-    }
-
-    /* Allocate a buffer to read into. */
-    if (buf == NULL)
-    {
-	buf = alloc(MAXMSGSIZE);
-	if (buf == NULL)
-	    return;	/* out of memory! */
-    }
-
-    /* Keep on reading for as long as there is something to read.
-     * Use select() or poll() to avoid blocking on a message that is exactly
-     * MAXMSGSIZE long. */
-    for (;;)
-    {
-#ifdef HAVE_SELECT
-	FD_ZERO(&rfds);
-	FD_SET(nbsock, &rfds);
-	tval.tv_sec = 0;
-	tval.tv_usec = 0;
-	if (select(nbsock + 1, &rfds, NULL, NULL, &tval) <= 0)
-	    break;
-#else
-# ifdef HAVE_POLL
-	fds.fd = nbsock;
-	fds.events = POLLIN;
-	if (poll(&fds, 1, 0) <= 0)
-	    break;
-# endif
-#endif
-	len = sock_read(nbsock, buf, MAXMSGSIZE);
-	if (len <= 0)
-	    break;	/* error or nothing more to read */
-
-	/* Store the read message in the queue. */
-	save(buf, len);
-	readlen += len;
-	if (len < MAXMSGSIZE)
-	    break;	/* did read everything that's available */
-    }
-
-    /* Reading a socket disconnection (readlen == 0), or a socket error. */
-    if (readlen <= 0)
-    {
-	/* Queue a "DETACH" netbeans message in the command queue in order to
-	 * terminate the netbeans session later. Do not end the session here
-	 * directly as we may be running in the context of a call to
-	 * netbeans_parse_messages():
-	 *	netbeans_parse_messages
-	 *	    -> autocmd triggered while processing the netbeans cmd
-	 *		-> ui_breakcheck
-	 *		    -> gui event loop or select loop
-	 *			-> netbeans_read()
-	 */
-	save((char_u *)DETACH_MSG, (int)strlen(DETACH_MSG));
-	nb_close_socket();
-
-	if (len < 0)
-	{
-	    nbdebug(("read from Netbeans socket\n"));
-	    PERROR(_("read from Netbeans socket"));
-	}
-    }
-
-#if defined(NB_HAS_GUI) && defined(FEAT_GUI_GTK)
-    if (NB_HAS_GUI && gtk_main_level() > 0)
-	gtk_main_quit();
-#endif
+    if (nb_channel_idx >= 0)
+	channel_read(nb_channel_idx);
 }
 
 /*
@@ -825,8 +469,13 @@ nb_parse_cmd(char_u *cmd)
 	/* NOTREACHED */
     }
 
-    if (STRCMP(cmd, "DETACH") == 0)
+    if (STRCMP(cmd, "\"DETACH\"") == 0)
     {
+	buf_T	*buf;
+
+	for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	    buf->b_has_sign_column = FALSE;
+
 	/* The IDE is breaking the connection. */
 	netbeans_close();
 	return;
@@ -923,7 +572,6 @@ static int curPCtype = -1;
 nb_free()
 {
     keyQ_T *key_node = keyHead.next;
-    queue_T *cmd_node = head.next;
     nbbuf_T buf;
     int i;
 
@@ -960,19 +608,8 @@ nb_free()
     }
 
     /* free the queued netbeans commands */
-    while (cmd_node != NULL && cmd_node != &head)
-    {
-	queue_T *next = cmd_node->next;
-	vim_free(cmd_node->buffer);
-	vim_free(cmd_node);
-	if (next == &head)
-	{
-	    head.next = &head;
-	    head.prev = &head;
-	    break;
-	}
-	cmd_node = next;
-    }
+    if (nb_channel_idx >= 0)
+	channel_clear(nb_channel_idx);
 }
 
 /*
@@ -1116,40 +753,19 @@ netbeans_end(void)
 	sprintf(buf, "%d:killed=%d\n", i, r_cmdno);
 	nbdebug(("EVT: %s", buf));
 	/* nb_send(buf, "netbeans_end");    avoid "write failed" messages */
-	ignored = sock_write(nbsock, buf, (int)STRLEN(buf));
+	nb_send(buf, NULL);
     }
 }
 
 /*
  * Send a message to netbeans.
+ * When "fun" is NULL no error is given.
  */
     static void
 nb_send(char *buf, char *fun)
 {
-    /* Avoid giving pages full of error messages when the other side has
-     * exited, only mention the first error until the connection works again. */
-    static int did_error = FALSE;
-
-    if (!NETBEANS_OPEN)
-    {
-	if (!did_error)
-	{
-	    nbdebug(("    %s(): write while not connected\n", fun));
-	    EMSG2("E630: %s(): write while not connected", fun);
-	}
-	did_error = TRUE;
-    }
-    else if (sock_write(nbsock, buf, (int)STRLEN(buf)) != (int)STRLEN(buf))
-    {
-	if (!did_error)
-	{
-	    nbdebug(("    %s(): write failed\n", fun));
-	    EMSG2("E631: %s(): write failed", fun);
-	}
-	did_error = TRUE;
-    }
-    else
-	did_error = FALSE;
+    if (nb_channel_idx >= 0)
+	channel_send(nb_channel_idx, (char_u *)buf, fun);
 }
 
 /*
@@ -2924,52 +2540,6 @@ netbeans_active(void)
     return NETBEANS_OPEN;
 }
 
-#if defined(FEAT_GUI) || defined(PROTO)
-/*
- * Register our file descriptor with the gui event handling system.
- */
-    void
-netbeans_gui_register(void)
-{
-    if (!NB_HAS_GUI || !NETBEANS_OPEN)
-	return;
-
-# ifdef FEAT_GUI_X11
-    /* tell notifier we are interested in being called
-     * when there is input on the editor connection socket
-     */
-    if (inputHandler == (XtInputId)NULL)
-	inputHandler = XtAppAddInput((XtAppContext)app_context, nbsock,
-			 (XtPointer)(XtInputReadMask + XtInputExceptMask),
-					       messageFromNetbeans, NULL);
-# else
-#  ifdef FEAT_GUI_GTK
-    /*
-     * Tell gdk we are interested in being called when there
-     * is input on the editor connection socket
-     */
-    if (inputHandler == 0)
-	inputHandler = gdk_input_add((gint)nbsock, (GdkInputCondition)
-	    ((int)GDK_INPUT_READ + (int)GDK_INPUT_EXCEPTION),
-					       messageFromNetbeans, NULL);
-#  else
-#   ifdef FEAT_GUI_W32
-    /*
-     * Tell Windows we are interested in receiving message when there
-     * is input on the editor connection socket
-     */
-    if (inputHandler == -1)
-	inputHandler = WSAAsyncSelect(nbsock, s_hwnd, WM_NETBEANS, FD_READ);
-#   endif
-#  endif
-# endif
-
-# ifdef FEAT_BEVAL
-    bevalServers |= BEVAL_NETBEANS;
-# endif
-}
-#endif
-
 /*
  * Tell netbeans that the window was opened, ready for commands.
  */
@@ -2986,9 +2556,6 @@ netbeans_open(char *params, int doabort)
 
     if (netbeans_connect(params, doabort) != OK)
 	return;
-#ifdef FEAT_GUI
-    netbeans_gui_register();
-#endif
 
     nbdebug(("EVT: %s", cmd));
     nb_send(cmd, "netbeans_startup_done");

@@ -5004,8 +5004,8 @@ ex_gui(eap)
 	 * of the argument ending up after the shell prompt. */
 	msg_clr_eos_force();
 	gui_start();
-#ifdef FEAT_NETBEANS_INTG
-	netbeans_gui_register();
+#ifdef FEAT_CHANNEL
+	channel_gui_register_all();
 #endif
     }
     if (!ends_excmd(*eap->arg))

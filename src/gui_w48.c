@@ -1779,9 +1779,10 @@ process_message(void)
     }
 #endif
 
-#ifdef FEAT_NETBEANS_INTG
+#ifdef FEAT_CHANNEL
     if (msg.message == WM_NETBEANS)
     {
+	/* TODO: channel_read(idx) */
 	netbeans_read();
 	return;
     }
