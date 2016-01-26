@@ -253,7 +253,7 @@ channel_gui_unregister(int idx)
 #   ifdef FEAT_GUI_W32
     if (channel->ch_inputHandler == 0)
     {
-	WSAAsyncSelect(nbsock, s_hwnd, 0, 0);
+	WSAAsyncSelect(channel->ch_fd, s_hwnd, 0, 0);
 	channel->ch_inputHandler = -1;
     }
 #   endif
