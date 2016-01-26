@@ -46,7 +46,7 @@ func Test_head()
   let dir = getcwd()
   " go beyond current directory
   let parentDir = expand('%:h:h')
-  let parentDir_ = split(dir, '/')
+  let parentDir_ = split(dir, '/', 1)
   call remove(parentDir_, len(parentDir_) - 1)
-  call assert_equal(parentDir, '/' . join(parentDir_, '/'))
+  call assert_equal(parentDir, join(parentDir_, '/'))
 endfunc
