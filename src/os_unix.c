@@ -2822,10 +2822,10 @@ mch_copy_sec(from_file, to_file)
 	    ret = setxattr((char*)to_file, name, buffer, (size_t)size, 0);
 	    if (ret < 0)
 	    {
-		MSG_PUTS(_("Could not set security context "));
-		MSG_PUTS(name);
-		MSG_PUTS(_(" for "));
-		msg_outtrans(to_file);
+		vim_snprintf((char *)IObuff, IOSIZE,
+			_("Could not set security context %s for %s"),
+			name, to_file);
+		msg_outtrans(IObuff);
 		msg_putchar('\n');
 	    }
 	}
@@ -2842,11 +2842,11 @@ mch_copy_sec(from_file, to_file)
 		case ERANGE:
 		default:
 		    /* no enough size OR unexpected error */
-		    MSG_PUTS(_("Could not get security context "));
-		    MSG_PUTS(name);
-		    MSG_PUTS(_(" for "));
-		    msg_outtrans(from_file);
-		    MSG_PUTS(_(". Removing it!\n"));
+		     vim_snprintf((char *)IObuff, IOSIZE,
+			    _("Could not get security context %s for %s. Removing it!"),
+			    name, from_file);
+		    msg_puts(IObuff);
+		    msg_putchar('\n');
 		    /* FALLTHROUGH to remove the attribute */
 
 		case ENODATA:
