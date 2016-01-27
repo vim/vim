@@ -9,6 +9,7 @@ char_u *channel_get(int idx);
 int channel_collapse(int idx);
 void channel_clear(int idx);
 void channel_read(int idx);
+int channel_socket2idx(sock_T fd);
 void channel_send(int idx, char_u *buf, char *fun);
 int channel_poll_setup(int nfd_in, void *fds_in);
 int channel_poll_check(int ret_in, void *fds_in);

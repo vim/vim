@@ -207,7 +207,6 @@ channel_gui_register(int idx)
     /*
      * Tell Windows we are interested in receiving message when there
      * is input on the editor connection socket.
-     * TODO: change WM_NETBEANS to something related to the channel index.
      */
     if (channel->ch_inputHandler == -1)
 	channel->ch_inputHandler =
@@ -647,6 +646,24 @@ channel_read(int idx)
 	gtk_main_quit();
 #endif
 }
+
+# if defined(FEAT_GUI_W32) || defined(PROTO)
+/*
+ * Lookup the channel index from the socket.
+ * Returns -1 when the socket isn't found.
+ */
+    int
+channel_socket2idx(sock_T fd)
+{
+    int i;
+
+    if (fd >= 0)
+	for (i = 0; i < channel_count; ++i)
+	    if (channels[i].ch_fd == fd)
+		return i;
+    return -1;
+}
+# endif
 
 /*
  * Write "buf" (NUL terminated string) to channel "idx".

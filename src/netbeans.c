@@ -427,14 +427,6 @@ netbeans_parse_messages(void)
     }
 }
 
-/* TODO: remove */
-    void
-netbeans_read()
-{
-    if (nb_channel_idx >= 0)
-	channel_read(nb_channel_idx);
-}
-
 /*
  * Handle one NUL terminated command.
  *

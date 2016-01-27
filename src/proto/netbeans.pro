@@ -1,6 +1,5 @@
 /* netbeans.c */
 void netbeans_parse_messages(void);
-void netbeans_read(void);
 int isNetbeansBuffer(buf_T *bufp);
 int isNetbeansModified(buf_T *bufp);
 void netbeans_end(void);
