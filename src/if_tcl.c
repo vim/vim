@@ -1555,7 +1555,7 @@ tclsetdelcmd(interp, reflist, vimobj, delcmd)
 ********************************************/
 
     static int
-channel_close(instance, interp)
+tcl_channel_close(instance, interp)
     ClientData	instance;
     Tcl_Interp	*interp UNUSED;
 {
@@ -1572,7 +1572,7 @@ channel_close(instance, interp)
 }
 
     static int
-channel_input(instance, buf, bufsiz, errptr)
+tcl_channel_input(instance, buf, bufsiz, errptr)
     ClientData	instance UNUSED;
     char	*buf UNUSED;
     int		bufsiz UNUSED;
@@ -1588,7 +1588,7 @@ channel_input(instance, buf, bufsiz, errptr)
 }
 
     static int
-channel_output(instance, buf, bufsiz, errptr)
+tcl_channel_output(instance, buf, bufsiz, errptr)
     ClientData	instance;
     char	*buf;
     int		bufsiz;
@@ -1628,7 +1628,7 @@ channel_output(instance, buf, bufsiz, errptr)
 }
 
     static void
-channel_watch(instance, mask)
+tcl_channel_watch(instance, mask)
     ClientData	instance UNUSED;
     int		mask UNUSED;
 {
@@ -1636,7 +1636,7 @@ channel_watch(instance, mask)
 }
 
     static int
-channel_gethandle(instance, direction, handleptr)
+tcl_channel_gethandle(instance, direction, handleptr)
     ClientData	instance UNUSED;
     int		direction UNUSED;
     ClientData	*handleptr UNUSED;
@@ -1646,18 +1646,18 @@ channel_gethandle(instance, direction, handleptr)
 }
 
 
-static Tcl_ChannelType channel_type =
+static Tcl_ChannelType tcl_channel_type =
 {
     "vimmessage",	/* typeName */
     TCL_CHANNEL_VERSION_2, /* version */
-    channel_close,	/* closeProc */
-    channel_input,	/* inputProc */
-    channel_output,	/* outputProc */
+    tcl_channel_close,	/* closeProc */
+    tcl_channel_input,	/* inputProc */
+    tcl_channel_output,	/* outputProc */
     NULL,		/* seekProc */
     NULL,		/* setOptionProc */
     NULL,		/* getOptionProc */
-    channel_watch,	/* watchProc */
-    channel_gethandle,	/* getHandleProc */
+    tcl_channel_watch,	/* watchProc */
+    tcl_channel_gethandle, /* getHandleProc */
     NULL,		/* close2Proc */
     NULL,		/* blockModeProc */
 #ifdef TCL_CHANNEL_VERSION_2
@@ -1732,8 +1732,8 @@ tclinit(eap)
 	/* Create replacement channels for stdout and stderr; this has to be
 	 * done each time an interpreter is created since the channels are closed
 	 * when the interpreter is deleted */
-	ch1 = Tcl_CreateChannel(&channel_type, "vimout", VIMOUT, TCL_WRITABLE);
-	ch2 = Tcl_CreateChannel(&channel_type, "vimerr", VIMERR, TCL_WRITABLE);
+	ch1 = Tcl_CreateChannel(&tcl_channel_type, "vimout", VIMOUT, TCL_WRITABLE);
+	ch2 = Tcl_CreateChannel(&tcl_channel_type, "vimerr", VIMERR, TCL_WRITABLE);
 	Tcl_SetStdChannel(ch1, TCL_STDOUT);
 	Tcl_SetStdChannel(ch2, TCL_STDERR);
 
