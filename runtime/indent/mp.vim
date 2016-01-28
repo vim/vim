@@ -162,18 +162,18 @@ function! GetMetaPostIndent()
   " if it is an internal/external :for or :if statements {{{2
   let pnn_s = getline(MetaPrevNonblankNoncomment(cl-1))
   if  pnn_s =~ '\<\(for\|if\)\>.\+:\s*\($\|%\)'
-    let ind = match(pnn_s, '\<\(for\|if\)\>.\+:\s*\($\|%\)') + &sw
+    let ind = match(pnn_s, '\<\(for\|if\)\>.\+:\s*\($\|%\)') + shiftwidth()
   " }}}
   " if it is a :def, :vardef, :beginfig, :begingroup, :else, :elseif {{{2
   elseif pnn_s =~ '^\s*\('                       .
         \ '\(var\)\=def\|'                       .
         \ 'begin\(group\|fig\s*(\s*\d\+\s*)\)\|' .
         \ 'else\(if\)\='                         . '\)\>'
-    let ind = ind + &sw
+    let ind = ind + shiftwidth()
   " }}}
   " if it is a broken line {{{2
   elseif pnn_s !~ end_of_item.'\s*\($\|%\)'
-    let ind = ind + (2 * &sw)
+    let ind = ind + (2 * shiftwidth())
   endif
   " }}}
   " }}}
@@ -196,7 +196,7 @@ function! GetMetaPostIndent()
   " }}}
   " if this is :endgroup statement {{{2
   elseif cs =~ '^\s*endgroup\>'
-    let ind = ind - &sw
+    let ind = ind - shiftwidth()
   endif
   " }}}
   " }}}

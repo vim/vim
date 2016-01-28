@@ -411,12 +411,12 @@ function GetRubyIndent(...)
 
   " If the previous line ended with a block opening, add a level of indent.
   if s:Match(lnum, s:block_regex)
-    return indent(s:GetMSL(lnum)) + &sw
+    return indent(s:GetMSL(lnum)) + shiftwidth()
   endif
 
   " If the previous line ended with the "*" of a splat, add a level of indent
   if line =~ s:splat_regex
-    return indent(lnum) + &sw
+    return indent(lnum) + shiftwidth()
   endif
 
   " If the previous line contained unclosed opening brackets and we are still
@@ -431,20 +431,20 @@ function GetRubyIndent(...)
     if opening.pos != -1
       if opening.type == '(' && searchpair('(', '', ')', 'bW', s:skip_expr) > 0
         if col('.') + 1 == col('$')
-          return ind + &sw
+          return ind + shiftwidth()
         else
           return virtcol('.')
         endif
       else
         let nonspace = matchend(line, '\S', opening.pos + 1) - 1
-        return nonspace > 0 ? nonspace : ind + &sw
+        return nonspace > 0 ? nonspace : ind + shiftwidth()
       endif
     elseif closing.pos != -1
       call cursor(lnum, closing.pos + 1)
       normal! %
 
       if s:Match(line('.'), s:ruby_indent_keywords)
-        return indent('.') + &sw
+        return indent('.') + shiftwidth()
       else
         return indent('.')
       endif
@@ -473,7 +473,7 @@ function GetRubyIndent(...)
   let col = s:Match(lnum, s:ruby_indent_keywords)
   if col > 0
     call cursor(lnum, col)
-    let ind = virtcol('.') - 1 + &sw
+    let ind = virtcol('.') - 1 + shiftwidth()
     " TODO: make this better (we need to count them) (or, if a searchpair
     " fails, we know that something is lacking an end and thus we indent a
     " level
@@ -506,9 +506,9 @@ function GetRubyIndent(...)
   " TODO: this does not take into account contrived things such as
   " module Foo; class Bar; end
   if s:Match(lnum, s:ruby_indent_keywords)
-    let ind = msl_ind + &sw
+    let ind = msl_ind + shiftwidth()
     if s:Match(lnum, s:end_end_regex)
-      let ind = ind - &sw
+      let ind = ind - shiftwidth()
     endif
     return ind
   endif
@@ -517,7 +517,7 @@ function GetRubyIndent(...)
   " closing bracket, indent one extra level.
   if s:Match(lnum, s:non_bracket_continuation_regex) && !s:Match(lnum, '^\s*\([\])}]\|end\)')
     if lnum == p_lnum
-      let ind = msl_ind + &sw
+      let ind = msl_ind + shiftwidth()
     else
       let ind = msl_ind
     endif

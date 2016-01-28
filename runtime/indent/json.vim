@@ -141,7 +141,7 @@ function GetJSONIndent()
 
   " If the previous line ended with a block opening, add a level of indent.
   " if s:Match(lnum, s:block_regex)
-    " return indent(lnum) + &sw
+    " return indent(lnum) + shiftwidth()
   " endif
 
   " If the previous line contained an opening bracket, and we are still in it,
@@ -149,7 +149,7 @@ function GetJSONIndent()
   if line =~ '[[({]'
     let counts = s:LineHasOpeningBrackets(lnum)
     if counts[0] == '1' || counts[1] == '1' || counts[2] == '1'
-      return ind + &sw
+      return ind + shiftwidth()
     else
       call cursor(v:lnum, vcol)
     end

@@ -24,13 +24,13 @@ function! GetGitconfigIndent()
   let cline = getline(v:lnum)
   if line =~  '\\\@<!\%(\\\\\)*\\$'
     " odd number of slashes, in a line continuation
-    return 2 * &sw
+    return 2 * shiftwidth()
   elseif cline =~ '^\s*\['
     return 0
   elseif cline =~ '^\s*\a'
-    return &sw
+    return shiftwidth()
   elseif cline == ''       && line =~ '^\['
-    return &sw
+    return shiftwidth()
   else
     return -1
   endif

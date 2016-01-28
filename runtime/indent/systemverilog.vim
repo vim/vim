@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:    SystemVerilog
 " Maintainer:  kocha <kocha.lsifrontend@gmail.com>
-" Last Change: 12-Aug-2013. 
+" Last Change: 25-Jan-2016. 
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -29,7 +29,7 @@ function SystemVerilogIndent()
   if exists('b:systemverilog_indent_width')
     let offset = b:systemverilog_indent_width
   else
-    let offset = &sw
+    let offset = shiftwidth()
   endif
   if exists('b:systemverilog_indent_modules')
     let indent_modules = offset

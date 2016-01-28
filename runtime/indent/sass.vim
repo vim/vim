@@ -29,9 +29,9 @@ function! GetSassIndent()
   let indent = indent(lnum)
   let cindent = indent(v:lnum)
   if line !~ s:property && line !~ s:extend && cline =~ s:property
-    return indent + &sw
+    return indent + shiftwidth()
   "elseif line =~ s:property && cline !~ s:property
-    "return indent - &sw
+    "return indent - shiftwidth()
   else
     return -1
   endif

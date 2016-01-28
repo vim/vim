@@ -38,14 +38,14 @@ function GetTFIndent()
 	endif
 
 	if line =~ '\(/def.*\\\|/for.*\(%;\s*\)\@\<!\\\)$'
-		let ind = ind + &sw
+		let ind = ind + shiftwidth()
 	elseif line =~ '\(/if\|/else\|/then\)'
 		if line !~ '/endif'
-			let ind = ind + &sw
+			let ind = ind + shiftwidth()
 		endif
 	elseif line =~ '/while'
 		if line !~ '/done'
-			let ind = ind + &sw
+			let ind = ind + shiftwidth()
 		endif
 	endif
 
@@ -53,11 +53,11 @@ function GetTFIndent()
 
 	if line =~ '\(/else\|/endif\|/then\)'
 		if line !~ '/if'
-			let ind = ind - &sw
+			let ind = ind - shiftwidth()
 		endif
 	elseif line =~ '/done'
 		if line !~ '/while'
-			let ind = ind - &sw
+			let ind = ind - shiftwidth()
 		endif
 	endif
 

@@ -215,12 +215,12 @@ function! GetTeXIndent() " {{{
     " LH modification : \begin does not always start a line
     " ZYC modification : \end after \begin won't cause wrong indent anymore
     if line =~ '\\begin{.*}' && line !~ g:tex_noindent_env
-        let ind = ind + &sw
+        let ind = ind + shiftwidth()
 
         if g:tex_indent_items
             " Add another sw for item-environments
             if line =~ g:tex_itemize_env
-                let ind = ind + &sw
+                let ind = ind + shiftwidth()
             endif
         endif
     endif
@@ -231,11 +231,11 @@ function! GetTeXIndent() " {{{
         if g:tex_indent_items
             " Remove another sw for item-environments
             if cline =~ g:tex_itemize_env
-                let ind = ind - &sw
+                let ind = ind - shiftwidth()
             endif
         endif
 
-        let ind = ind - &sw
+        let ind = ind - shiftwidth()
     endif
 
     if g:tex_indent_brace
@@ -263,7 +263,7 @@ function! GetTeXIndent() " {{{
             endif
         endfor
 
-        let ind += (sum1 - sum2) * &sw
+        let ind += (sum1 - sum2) * shiftwidth()
     endif
 
     if g:tex_indent_paretheses
@@ -276,12 +276,12 @@ function! GetTeXIndent() " {{{
 
         " '\item' or '\bibitem' itself:
         if cline =~ g:tex_items
-            let ind = ind - &sw
+            let ind = ind - shiftwidth()
         endif
 
         " lines following to '\item' are intented once again:
         if line =~ g:tex_items
-            let ind = ind + &sw
+            let ind = ind + shiftwidth()
         endif
 
     endif
