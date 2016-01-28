@@ -10,7 +10,7 @@
 /*
  * json.c: Encoding and decoding JSON.
  *
- * Follows this standard: http://www.ietf.org/rfc/rfc4627.txt
+ * Follows this standard: https://tools.ietf.org/html/rfc7159.html
  */
 
 #include "vim.h"

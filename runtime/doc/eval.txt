@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Jan 24
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Jan 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2842,6 +2842,7 @@ empty({expr})						*empty()*
 		Return the Number 1 if {expr} is empty, zero otherwise.
 		A |List| or |Dictionary| is empty when it does not have any
 		items.	A Number is empty when its value is zero.
+		|v:false|, |v:none| and |v:null| are empty, |v:true| is not.
 		For a long |List| this is much faster than comparing the
 		length with zero.
 
@@ -4252,16 +4253,21 @@ jsondecode({string})					*jsondecode()*
 		JSON and Vim values.
 		The decoding is permissive:
 		- A trailing comma in an array and object is ignored.
-		- An empty item in an array results in v:none.
-		- When an object name is not a string it is converted to a
-		  string.  E.g. the number 123 is used as the string "123".
+		- An empty item in an array, two commas with nothing or white
+		  space in between, results in v:none.
+		- When an object member name is not a string it is converted
+		  to a string.  E.g. the number 123 is used as the string
+		  "123".
 		- More floating point numbers are recognized, e.g. "1." for
 		  "1.0".
+		The result must be a valid Vim type:
+		- An empty object member name is not allowed.
+		- Duplicate object member names are not allowed.
 
 jsonencode({expr})					*jsonencode()*
 		Encode {expr} as JSON and return this as a string.
 		The encoding is specified in:
-		http://www.ietf.org/rfc/rfc4627.txt
+		https://tools.ietf.org/html/rfc7159.html
 		Vim values are converted as follows:
 		   Number		decimal number
 		   Float		floating point number
@@ -5889,18 +5895,8 @@ shellescape({string} [, {special}])			*shellescape()*
 shiftwidth()						*shiftwidth()*
 		Returns the effective value of 'shiftwidth'. This is the
 		'shiftwidth' value unless it is zero, in which case it is the
-		'tabstop' value.  To be backwards compatible in indent
-		plugins, use this: >
-			if exists('*shiftwidth')
-			  func s:sw()
-			    return shiftwidth()
-			  endfunc
-			else
-			  func s:sw()
-			    return &sw
-			  endfunc
-			endif
-<		And then use s:sw() instead of &sw.
+		'tabstop' value.  This function was introduced with patch
+		7.3.694 in 2012, everybody should have it by now.
 
 
 simplify({filename})					*simplify()*
