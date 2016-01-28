@@ -8,7 +8,7 @@ void channel_will_block(int idx);
 int channel_decode_json(char_u *msg, typval_T *tv);
 int channel_is_open(int idx);
 void channel_close(int idx);
-void channel_save(int idx, char_u *buf, int len);
+int channel_save(int idx, char_u *buf, int len);
 char_u *channel_peek(int idx);
 char_u *channel_get(int idx);
 int channel_collapse(int idx);

@@ -560,8 +560,9 @@ channel_close(int idx)
 
 /*
  * Store "buf[len]" on channel "idx".
+ * Returns OK or FAIL.
  */
-    void
+    int
 channel_save(int idx, char_u *buf, int len)
 {
     queue_T *node;
@@ -569,12 +570,12 @@ channel_save(int idx, char_u *buf, int len)
 
     node = (queue_T *)alloc(sizeof(queue_T));
     if (node == NULL)
-	return;	    /* out of memory */
+	return FAIL;	    /* out of memory */
     node->buffer = alloc(len + 1);
     if (node->buffer == NULL)
     {
 	vim_free(node);
-	return;	    /* out of memory */
+	return FAIL;	    /* out of memory */
     }
     mch_memmove(node->buffer, buf, (size_t)len);
     node->buffer[len] = NUL;
@@ -594,9 +595,11 @@ channel_save(int idx, char_u *buf, int len)
     if (debugfd != NULL)
     {
 	fprintf(debugfd, "RECV on %d: ", idx);
-	fwrite(buf, len, 1, debugfd);
+	if (fwrite(buf, len, 1, debugfd) != 1)
+	    return FAIL;
 	fprintf(debugfd, "\n");
     }
+    return OK;
 }
 
 /*
