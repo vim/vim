@@ -726,12 +726,14 @@ channel_wait(int fd, int timeout)
 	break;
     }
 #else
+# ifdef HAVE_POLL
     struct pollfd	fds;
 
     fds.fd = fd;
     fds.events = POLLIN;
     if (poll(&fds, 1, timeout) <= 0)
 	return FAIL;
+# endif
 #endif
     return OK;
 }
