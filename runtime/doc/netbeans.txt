@@ -1,10 +1,10 @@
-*netbeans.txt*  For Vim version 7.4.  Last change: 2015 Mar 14
+*netbeans.txt*  For Vim version 7.4.  Last change: 2016 Jan 27
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
 
 
-			*socket-interface* *netbeans* *netbeans-support*
+					*netbeans* *netbeans-support*
 
 Vim NetBeans Protocol: a socket interface for Vim integration into an IDE.
 

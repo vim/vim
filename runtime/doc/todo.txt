@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Jan 21
+todo.txt*      For Vim version 7.4.  Last change: 2016 Jan 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -78,9 +78,24 @@ Regexp problems:
 - "\%1l^#.*" does not match on a line starting with "#".  The zero-width match
   clears the start-of-line flag.
 
++channel:
+- cleanup on exit?  in mch_getout() and getout().
+- more contents in channel.txt
+
 C89: remove __ARGS in more places
-- Script: Hirohito Higashi, Jan 21.
-- Update to osdef.sh, Hirohito Higashi, 2016 Jan 21.
+- /tmp/noargs.vim
+- /tmp/eliminate__ARGS.vim
+- Script: Hirohito Higashi, Jan 25, 2nd one.
+- Assume HAVE_STDARG_H is always defined.
+
+This difference is unexpected:
+    echo v:true == 1
+    1
+    echo [v:true] == [1]
+    0
+It's because tv_equal() works different.
+
+Do we need to roll-back patch 1165, that put libintl-8.dll before libintl.dll?
 
 Need to try out instructions in INSSTALLpc.txt about how to install all
 interfaces and how to build Vim with them.
@@ -96,8 +111,17 @@ work. (ZyX, 2013 Sep 28) With examples: (Malcolm Rowe, 2015 Dec 24)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
+jsonencode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
+What if there is an invalid character?
+
+Should jsonencode()/jsondecode() restrict recursiveness?
+Or avoid recursiveness.
+
 Use vim.vim syntax highlighting for help file examples, but without ":" in
 'iskeyword' for syntax.
+
+Patch to make "%:h:h" return "." instead of the full path.
+(Coot, 2016 Jan 24, #592)
 
 Remove SPACE_IN_FILENAME ? What could possibly go wrong?
 
@@ -118,6 +142,13 @@ Win32: patch to use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
 More tests May 14. Update May 29.  Update Aug 10.
 Now part of large file patches. (Ken Takata, 2016 Jan 19, second one)
 Updated patches with ordering: Jan 20.
+And another update: Jan 24
+
+7   Add a watchpoint in the debug mode: An expression that breaks execution
+    when evaluating to non-zero.  Add the "watchadd expr" command, stop when
+    the value of the expression changes.  ":watchdel" deletes an item,
+    ":watchlist" lists the items. (Charles Campbell)
+Patch by Christian Brabandt, 2016 Jan 27.
 
 Using ":windo" to set options in all windows has the side effect that it
 changes the window layout and the current window.  Make a variant that saves
@@ -140,12 +171,21 @@ Instead of separately uploading patches to the ftp site, we can get them from
 github with a URL like this:
    https://github.com/vim/vim/compare/v7.4.920%5E...v7.4.920.diff
 Diff for version.c contains more context, can't skip a patch.
+
+Duplication of completion suggestions for ":!hom".  Issue 539.
 >
 When t_Co is changed from termresponse, the OptionSet autocmmand event isn't
 triggered.  Use the code from the end of set_num_option() in
 set_color_count().
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
+
+Comparing nested structures with "==" uses a different comperator than when
+comparing individual items.
+Also, "'' == 0" evaluates to true, which isn't nice.
+Add "===" to have a strict comparison (type and value match).
+Add "==*" (?) to have a value match, but no automatic conversion, and v:true
+equals 1 and 1.0, v:false equals 0 and 0.0.?
 
 Plugin to use Vim in MANPAGER.  Konfekt, PR #491
 
@@ -171,6 +211,10 @@ Build with Python on Mac does not always use the right library.
 (Kazunobu Kuriyama, 2015 Mar 28)
 
 Need a Vim equivalent of Python's None and a way to test for it.
+Use v:none.  var == v:none
+
+Patch to add arguments to argc() and argv(). (Yegappan Lakshmanan, 2016 Jan
+24)  Also need a way to get the global arg list?  Update later on Jan 24
 
 To support Thai (and other languages) word boundaries, include the ICU
 library:  http://userguide.icu-project.org/boundaryanalysis
@@ -221,7 +265,7 @@ Sep 10)
 Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
 Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8.
 
-Patch to improve I/O for Perl. (Damine, 2015 Jan 9)
+Patch to improve I/O for Perl. (Damien, 2015 Jan 9, update Jan 22 2nd one)
 
 Patch to set antialiasing style on Windows. (Ondrej Balaz, 2013 Mar 14)
 Needs a different check for CLEARTYPE_QUALITY.
@@ -257,6 +301,9 @@ same thing.  Remarks on issue 543 (Roland Puntaier).
 
 Patch to add grepfile(). (Scott Prager, 2015 May 26)
 Work in progress.
+
+Would be useful to have a treemap() or deepmap() function.  Like map() but
+when an item is a list or dict would recurse into it.
 
 Patch for global-local options consistency. (Arnaud Decara, 2015 Jul 22)
 Is this right?
@@ -325,6 +372,8 @@ Should be easy to highlight all matches with 'incsearch'.  Idea by Itchyny,
 
 Wrong scrolling when using incsearch.  Patch by Christian Brabandt, 2014 Dec 4.
 Is this a good solution?
+
+Patch to add /pattern/ to :oldfiles.  Pull #575.
 
 Patch to allow setting w:quickfix_title via setqflist() and setloclist()
 functions. (Christian Brabandt, 2013 May 8, update May 21)
@@ -1115,8 +1164,6 @@ Use json format for new items in .viminfo:
     |["text","text text text"
     |"continuation line"]
     |["hist",242342342,{"arg":"value"}]
-  Use \" for a single ".  Use \\ for a \.
-  See http://www.ietf.org/rfc/rfc4627.txt
 
 Writing nested List and Dict in viminfo gives error message and can't be read
 back. (Yukihiro Nakadaira, 2010 Nov 13)
@@ -2136,28 +2183,6 @@ Add an option for a minimal text length before inserting a line break for
 
 
 Better plugin support (not plugin manager, see elsewhere for that):
-- Add interface to another process, e.g. to run a background plugin.
-  Can use the code from netbeans to communicate over a socket.
-  A bit like +clientserver but without the hassle of starting another Vim.
-  Use json for the messages.
-    let handle = startjob({command})             # uses stdin/stdout
-    let handle = startjob({command}, {address})  # uses socket
-    let handle = connect({address})              # uses socket
-    let handle = deamon({command}, {address})    # start it if connect fails
-    let response = sendjson(handle, {json})      # sync
-    call sendjson(handle, {json}, {callback})    # async
-    call sethandler(handle, {callback})
-  The response json is wrapped in an array:
-    [{code},{response}]
-    {code} must be positive, when zero the callback from sethandler() is called
-  The job can send Vim commands that do not require a handler:
-    ['ex', {Ex command}]
-    ['normal', {Normal mode command}]
-    ['keys', {condition}, {key sequence}]
-    ['eval', {expression}]  sync, will send back result
-    ['expr', {expression}]  async
-- Native JSON support (to be able to commucate with any interface in the same
-  way).
 - Avoid use of feedkeys, add eval functions where needed:
   - manipulating the Visual selection?
 - Add createmark(): add a mark like mM, but return a unique ID.  Need some way
@@ -2166,6 +2191,8 @@ Better plugin support (not plugin manager, see elsewhere for that):
 - Plugins need to make a lot of effort, lots of mappings, to know what
   happened before pressing the key that triggers a plugin action.  How about
   keeping the last N pressed keys, so that they do not need to be mapped?
+- equivalent of netbeans_beval_cb().  With an autocommand?
+- Add something to enable debugging when a remote message is received.
 
 
 More patches:
@@ -5242,13 +5269,8 @@ Registers:
 
 
 Debug mode:
-7   Add something to enable debugging when a remote message is received.
 8   Add breakpoints for setting an option
 8   Add breakpoints for assigning to a variable.
-7   Add a watchpoint in the debug mode: An expression that breaks execution
-    when evaluating to non-zero.  Add the "watchadd expr" command, stop when
-    the value of the expression changes.  ":watchdel" deletes an item,
-    ":watchlist" lists the items. (Charles Campbell)
 7   Store the history from debug mode in viminfo.
 7   Make the debug mode history available with histget() et al.
 

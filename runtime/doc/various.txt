@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.4.  Last change: 2016 Jan 10
+*various.txt*   For Vim version 7.4.  Last change: 2016 Jan 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -319,6 +319,7 @@ N  *+builtin_terms*	some terminals builtin |builtin-terms|
 B  *++builtin_terms*	maximal terminals builtin |builtin-terms|
 N  *+byte_offset*	support for 'o' flag in 'statusline' option, "go"
 			and ":goto" commands.
+m  *+channel*		inter process communication |channel|
 N  *+cindent*		|'cindent'|, C indenting
 N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
    *+clipboard*		|clipboard| support
