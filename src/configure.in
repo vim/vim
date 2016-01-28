@@ -1,4 +1,5 @@
 dnl configure.in: autoconf script for Vim
+dnl vim: set ts=4 sw=2 sts=2 et :
 
 dnl Process this file with autoconf 2.12 or 2.13 to produce "configure".
 dnl Should also work with autoconf 2.54 and later.
@@ -1219,7 +1220,7 @@ eof
 	      vi_cv_path_python_plibs=`echo $vi_cv_path_python_plibs | sed s/-ltermcap//`
 	    fi
 	])
-	AC_CACHE_VAL(vi_cv_dll_name_python,
+	AC_CACHE_CHECK(Python's dll name,vi_cv_dll_name_python,
 	[
 	  if test "X$python_DLLLIBRARY" != "X"; then
 	    vi_cv_dll_name_python="$python_DLLLIBRARY"
@@ -1428,7 +1429,7 @@ eof
 	    vi_cv_path_python3_plibs=`echo $vi_cv_path_python3_plibs | sed s/-ltermcap//`
 	    vi_cv_path_python3_plibs=`echo $vi_cv_path_python3_plibs | sed s/-lffi//`
 	])
-	AC_CACHE_VAL(vi_cv_dll_name_python3,
+	AC_CACHE_CHECK(Python3's dll name,vi_cv_dll_name_python3,
 	[
 	  if test "X$python3_DLLLIBRARY" != "X"; then
 	    vi_cv_dll_name_python3="$python3_DLLLIBRARY"
@@ -1540,7 +1541,7 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
     int no_rtl_global_needed_for(char *python_instsoname, char *prefix)
     {
       int needed = 0;
-      void* pylib = dlopen(python_instsoname, RTLD_LAZY);
+      void* pylib = dlopen(python_instsoname, RTLD_LAZY|RTLD_LOCAL);
       if (pylib != 0)
       {
           void (*pfx)(char *home) = dlsym(pylib, "Py_SetPythonHome");
@@ -1586,7 +1587,7 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
     int no_rtl_global_needed_for(char *python_instsoname, wchar_t *prefix)
     {
       int needed = 0;
-      void* pylib = dlopen(python_instsoname, RTLD_LAZY);
+      void* pylib = dlopen(python_instsoname, RTLD_LAZY|RTLD_LOCAL);
       if (pylib != 0)
       {
           void (*pfx)(wchar_t *home) = dlsym(pylib, "Py_SetPythonHome");
