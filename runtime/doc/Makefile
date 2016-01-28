@@ -17,6 +17,7 @@ DOCS = \
 	arabic.txt \
 	autocmd.txt \
 	change.txt \
+	channel.txt \
 	cmdline.txt \
 	debug.txt \
 	debugger.txt \
@@ -151,6 +152,7 @@ HTMLS = \
 	arabic.html \
 	autocmd.html \
 	change.html \
+	channel.html \
 	cmdline.html \
 	debug.html \
 	debugger.html \

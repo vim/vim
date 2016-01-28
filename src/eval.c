@@ -458,7 +458,6 @@ static int get_env_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int find_internal_func(char_u *name);
 static char_u *deref_func_name(char_u *name, int *lenp, int no_autoload);
 static int get_func_tv(char_u *name, int len, typval_T *rettv, char_u **arg, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict);
-static int call_func(char_u *funcname, int len, typval_T *rettv, int argcount, typval_T *argvars, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict);
 static void emsg_funcname(char *ermsg, char_u *name);
 static int non_zero_arg(typval_T *argvars);
 
@@ -516,6 +515,9 @@ static void f_copy(typval_T *argvars, typval_T *rettv);
 static void f_cos(typval_T *argvars, typval_T *rettv);
 static void f_cosh(typval_T *argvars, typval_T *rettv);
 #endif
+#ifdef FEAT_CHANNEL
+static void f_connect(typval_T *argvars, typval_T *rettv);
+#endif
 static void f_count(typval_T *argvars, typval_T *rettv);
 static void f_cscope_connection(typval_T *argvars, typval_T *rettv);
 static void f_cursor(typval_T *argsvars, typval_T *rettv);
@@ -524,6 +526,9 @@ static void f_delete(typval_T *argvars, typval_T *rettv);
 static void f_did_filetype(typval_T *argvars, typval_T *rettv);
 static void f_diff_filler(typval_T *argvars, typval_T *rettv);
 static void f_diff_hlID(typval_T *argvars, typval_T *rettv);
+#ifdef FEAT_CHANNEL
+static void f_disconnect(typval_T *argvars, typval_T *rettv);
+#endif
 static void f_empty(typval_T *argvars, typval_T *rettv);
 static void f_escape(typval_T *argvars, typval_T *rettv);
 static void f_eval(typval_T *argvars, typval_T *rettv);
@@ -698,6 +703,10 @@ static void f_searchdecl(typval_T *argvars, typval_T *rettv);
 static void f_searchpair(typval_T *argvars, typval_T *rettv);
 static void f_searchpairpos(typval_T *argvars, typval_T *rettv);
 static void f_searchpos(typval_T *argvars, typval_T *rettv);
+#ifdef FEAT_CHANNEL
+static void f_sendexpr(typval_T *argvars, typval_T *rettv);
+static void f_sendraw(typval_T *argvars, typval_T *rettv);
+#endif
 static void f_server2client(typval_T *argvars, typval_T *rettv);
 static void f_serverlist(typval_T *argvars, typval_T *rettv);
 static void f_setbufvar(typval_T *argvars, typval_T *rettv);
@@ -8170,6 +8179,9 @@ static struct fst
     {"complete_check",	0, 0, f_complete_check},
 #endif
     {"confirm",		1, 4, f_confirm},
+#ifdef FEAT_CHANNEL
+    {"connect",		2, 3, f_connect},
+#endif
     {"copy",		1, 1, f_copy},
 #ifdef FEAT_FLOAT
     {"cos",		1, 1, f_cos},
@@ -8183,6 +8195,9 @@ static struct fst
     {"did_filetype",	0, 0, f_did_filetype},
     {"diff_filler",	1, 1, f_diff_filler},
     {"diff_hlID",	2, 2, f_diff_hlID},
+#ifdef FEAT_CHANNEL
+    {"disconnect",	1, 1, f_disconnect},
+#endif
     {"empty",		1, 1, f_empty},
     {"escape",		2, 2, f_escape},
     {"eval",		1, 1, f_eval},
@@ -8361,6 +8376,10 @@ static struct fst
     {"searchpair",	3, 7, f_searchpair},
     {"searchpairpos",	3, 7, f_searchpairpos},
     {"searchpos",	1, 4, f_searchpos},
+#ifdef FEAT_CHANNEL
+    {"sendexpr",	2, 3, f_sendexpr},
+    {"sendraw",		2, 3, f_sendraw},
+#endif
     {"server2client",	2, 2, f_server2client},
     {"serverlist",	0, 0, f_serverlist},
     {"setbufvar",	3, 3, f_setbufvar},
@@ -8674,7 +8693,7 @@ get_func_tv(name, len, rettv, arg, firstline, lastline, doesrange,
  * Return FAIL when the function can't be called,  OK otherwise.
  * Also returns OK when an error was encountered while executing the function.
  */
-    static int
+    int
 call_func(funcname, len, rettv, argcount, argvars, firstline, lastline,
 						doesrange, evaluate, selfdict)
     char_u	*funcname;	/* name of the function */
@@ -10293,6 +10312,83 @@ f_count(argvars, rettv)
     rettv->vval.v_number = n;
 }
 
+#ifdef FEAT_CHANNEL
+/*
+ * Get a callback from "arg".  It can be a Funcref or a function name.
+ * When "arg" is zero return an empty string.
+ * Return NULL for an invalid argument.
+ */
+    static char_u *
+get_callback(typval_T *arg)
+{
+    if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
+	return arg->vval.v_string;
+    if (arg->v_type == VAR_NUMBER && arg->vval.v_number == 0)
+	return (char_u *)"";
+    EMSG(_("E999: Invalid callback argument"));
+    return NULL;
+}
+
+/*
+ * "connect()" function
+ */
+    static void
+f_connect(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u	*address;
+    char_u	*mode;
+    char_u	*callback = NULL;
+    char_u	buf1[NUMBUFLEN];
+    char_u	*p;
+    int		port;
+    int		json_mode = FALSE;
+
+    address = get_tv_string(&argvars[0]);
+    mode = get_tv_string_buf(&argvars[1], buf1);
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+	callback = get_callback(&argvars[2]);
+	if (callback == NULL)
+	    return;
+    }
+
+    /* parse address */
+    p = vim_strchr(address, ':');
+    if (p == NULL)
+    {
+	EMSG2(_(e_invarg2), address);
+	return;
+    }
+    *p++ = NUL;
+    port = atoi((char *)p);
+    if (*address == NUL || port <= 0)
+    {
+	p[-1] = ':';
+	EMSG2(_(e_invarg2), address);
+	return;
+    }
+
+    /* parse mode */
+    if (STRCMP(mode, "json") == 0)
+	json_mode = TRUE;
+    else if (STRCMP(mode, "raw") != 0)
+    {
+	EMSG2(_(e_invarg2), mode);
+	return;
+    }
+
+    rettv->vval.v_number = channel_open((char *)address, port, NULL);
+    if (rettv->vval.v_number >= 0)
+    {
+	channel_set_json_mode(rettv->vval.v_number, json_mode);
+	if (callback != NULL && *callback != NUL)
+	    channel_set_callback(rettv->vval.v_number, callback);
+    }
+}
+#endif
+
 /*
  * "cscope_connection([{num} , {dbpath} [, {prepend}]])" function
  *
@@ -10544,6 +10640,46 @@ f_diff_hlID(argvars, rettv)
     rettv->vval.v_number = hlID == (hlf_T)0 ? 0 : (int)hlID;
 #endif
 }
+
+#ifdef FEAT_CHANNEL
+/*
+ * Get the channel index from the handle argument.
+ * Returns -1 if the handle is invalid or the channel is closed.
+ */
+    static int
+get_channel_arg(typval_T *tv)
+{
+    int ch_idx;
+
+    if (tv->v_type != VAR_NUMBER)
+    {
+	EMSG2(_(e_invarg2), get_tv_string(tv));
+	return -1;
+    }
+    ch_idx = tv->vval.v_number;
+
+    if (!channel_is_open(ch_idx))
+    {
+	EMSGN(_("E999: not an open channel"), ch_idx);
+	return -1;
+    }
+    return ch_idx;
+}
+
+/*
+ * "disconnect()" function
+ */
+    static void
+f_disconnect(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv UNUSED;
+{
+    int ch_idx = get_channel_arg(&argvars[0]);
+
+    if (ch_idx >= 0)
+	channel_close(ch_idx);
+}
+#endif
 
 /*
  * "empty({expr})" function
@@ -17377,6 +17513,109 @@ f_searchpos(argvars, rettv)
     if (flags & SP_SUBPAT)
 	list_append_number(rettv->vval.v_list, (varnumber_T)n);
 }
+
+#ifdef FEAT_CHANNEL
+/*
+ * common for "sendexpr()" and "sendraw()"
+ * Returns the channel index if the caller should read the response.
+ * Otherwise returns -1.
+ */
+    static int
+send_common(typval_T *argvars, char_u *text, char *fun)
+{
+    int		ch_idx;
+    char_u	*callback = NULL;
+
+    ch_idx = get_channel_arg(&argvars[0]);
+    if (ch_idx < 0)
+	return -1;
+
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+	callback = get_callback(&argvars[2]);
+	if (callback == NULL)
+	    return -1;
+    }
+    /* Set the callback or clear it. An empty callback means no callback and
+     * not reading the response. */
+    channel_set_req_callback(ch_idx,
+	    callback != NULL && *callback == NUL ? NULL : callback);
+    if (callback == NULL)
+	channel_will_block(ch_idx);
+
+    if (channel_send(ch_idx, text, fun) == OK && callback == NULL)
+	return ch_idx;
+    return -1;
+}
+
+/*
+ * "sendexpr()" function
+ */
+    static void
+f_sendexpr(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u	*text;
+    char_u	*resp;
+    typval_T	nrtv;
+    typval_T	listtv;
+    int		ch_idx;
+
+    /* return an empty string by default */
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
+    nrtv.v_type = VAR_NUMBER;
+    nrtv.vval.v_number = channel_get_id();
+    if (rettv_list_alloc(&listtv) == FAIL)
+	return;
+    if (list_append_tv(listtv.vval.v_list, &nrtv) == FAIL
+	    || list_append_tv(listtv.vval.v_list, &argvars[1]) == FAIL)
+    {
+	list_unref(listtv.vval.v_list);
+	return;
+    }
+
+    text = json_encode(&listtv);
+    list_unref(listtv.vval.v_list);
+
+    ch_idx = send_common(argvars, text, "sendexpr");
+    if (ch_idx >= 0)
+    {
+	/* TODO: read until the whole JSON message is received */
+	/* TODO: only use the message with the right message ID */
+	resp = channel_read_block(ch_idx);
+	if (resp != NULL)
+	{
+	    channel_decode_json(resp, rettv);
+	    vim_free(resp);
+	}
+    }
+}
+
+/*
+ * "sendraw()" function
+ */
+    static void
+f_sendraw(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u	buf[NUMBUFLEN];
+    char_u	*text;
+    int		ch_idx;
+
+    /* return an empty string by default */
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
+    text = get_tv_string_buf(&argvars[1], buf);
+    ch_idx = send_common(argvars, text, "sendraw");
+    if (ch_idx >= 0)
+	rettv->vval.v_string = channel_read_block(ch_idx);
+}
+#endif
 
 
     static void

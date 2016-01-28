@@ -1820,6 +1820,8 @@ complete_add( {expr})		Number	add completion match
 complete_check()		Number	check for key typed during completion
 confirm( {msg} [, {choices} [, {default} [, {type}]]])
 				Number	number of choice picked by user
+connect( {address}, {mode} [, {callback}])
+				Number	open a channel
 copy( {expr})			any	make a shallow copy of {expr}
 cos( {expr})			Float	cosine of {expr}
 cosh( {expr})			Float	hyperbolic cosine of {expr}
@@ -2027,6 +2029,10 @@ searchpairpos( {start}, {middle}, {end} [, {flags} [, {skip} [...]]])
 				List	search for other end of start/end pair
 searchpos( {pattern} [, {flags} [, {stopline} [, {timeout}]]])
 				List	search for {pattern}
+sendexpr( {handle}, {expr} [, {callback}])
+				any	send {expr} over JSON channel {handle}
+sendraw( {handle}, {string} [, {callback}])
+				any	send {string} over raw channel {handle}
 server2client( {clientid}, {string})
 				Number	send reply string
 serverlist()			String	get a list of available servers
@@ -2659,6 +2665,18 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 		tries to put the buttons in one horizontal line.  If they
 		don't fit, a vertical layout is used anyway.  For some systems
 		the horizontal layout is always used.
+
+connect({address}, {mode} [, {callback}])		*connect()*
+		Open a channel to {address}.  See |channel|.
+
+		{address} has the form "hostname:port", e.g.,
+		"localhost:8765".
+
+		{mode} is either "json" or "raw".  See |channel-mode| for the
+		meaning.
+
+		{callback} is a function that handles received messages on the
+		channel.  See |channel-callback|.
 
 							*copy()*
 copy({expr})	Make a copy of {expr}.	For Numbers and Strings this isn't
@@ -3861,7 +3879,9 @@ glob2regpat({expr})					 *glob2regpat()*
 			if filename =~ glob2regpat('Make*.mak')
 <		This is equivalent to: >
 			if filename =~ '^Make.*\.mak$'
-<
+<		When {expr} is an empty string the result is "^$", match an
+		empty string.
+
 								*globpath()*
 globpath({path}, {expr} [, {nosuf} [, {list} [, {allinks}]]])
 		Perform glob() on all directories in {path} and concatenate
@@ -5592,6 +5612,23 @@ searchpos({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*searchpos()*
 	:let [lnum, col, submatch] = searchpos('\(\l\)\|\(\u\)', 'np')
 <		In this example "submatch" is 2 when a lowercase letter is
 		found |/\l|, 3 when an uppercase letter is found |/\u|.
+
+sendexpr({handle}, {expr} [, {callback}])		*sendexpr()*
+		Send {expr} over JSON channel {handle}.  See |channel-use|.
+
+		When {callback} is given returns immediately.  Without
+		{callback} waits for a JSON response and returns the decoded
+		expression.  When there is an error or timeout returns an
+		empty string.
+
+		When {callback} is zero no response is expected.
+		Otherwise {callback} must be a Funcref or the name of a
+		function.  It is called when the response is received.  See
+		|channel-callback|.
+
+sendraw({handle}, {string} [, {callback}])		*sendraw()*
+		Send {string} over raw channel {handle}.  See |channel-raw|.
+		Works like |sendexpr()|, but does not decode the response.
 
 server2client( {clientid}, {string})			*server2client()*
 		Send a reply string to {clientid}.  The most recent {clientid}

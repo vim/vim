@@ -82,6 +82,7 @@ long get_dict_number(dict_T *d, char_u *key);
 int string2float(char_u *text, float_T *value);
 char_u *get_function_name(expand_T *xp, int idx);
 char_u *get_expr_name(expand_T *xp, int idx);
+int call_func(char_u *funcname, int len, typval_T *rettv, int argcount, typval_T *argvars, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict);
 int func_call(char_u *name, typval_T *args, dict_T *selfdict, typval_T *rettv);
 void dict_extend(dict_T *d1, dict_T *d2, char_u *action);
 void mzscheme_call_vim(char_u *name, typval_T *args, typval_T *rettv);
