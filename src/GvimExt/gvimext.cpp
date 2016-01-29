@@ -158,6 +158,7 @@ HBITMAP IconToBitmap(HICON hIcon, HBRUSH hBackground, int width, int height)
 # define VIMPACKAGE "vim"
 # ifndef GETTEXT_DLL
 #  define GETTEXT_DLL "libintl.dll"
+#  define GETTEXT_DLL_ALT "libintl-8.dll"
 # endif
 
 // Dummy functions
@@ -206,6 +207,10 @@ dyn_libintl_init(char *dir)
     if (!hLibintlDLL)
     {
 	hLibintlDLL = LoadLibrary(GETTEXT_DLL);
+#ifdef GETTEXT_DLL_ALT
+	if (!hLibintlDLL)
+	    hLibintlDLL = LoadLibrary(GETTEXT_DLL_ALT);
+#endif
 	if (!hLibintlDLL)
 	    return 0;
     }
