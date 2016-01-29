@@ -160,26 +160,26 @@ static BalloonEval *current_beval = NULL;
 #endif
 
 #ifdef FEAT_GUI_GTK
-static void addEventHandler __ARGS((GtkWidget *, BalloonEval *));
-static void removeEventHandler __ARGS((BalloonEval *));
-static gint target_event_cb __ARGS((GtkWidget *, GdkEvent *, gpointer));
-static gint mainwin_event_cb __ARGS((GtkWidget *, GdkEvent *, gpointer));
-static void pointer_event __ARGS((BalloonEval *, int, int, unsigned));
-static void key_event __ARGS((BalloonEval *, unsigned, int));
-static gint timeout_cb __ARGS((gpointer));
-static gint balloon_expose_event_cb __ARGS((GtkWidget *, GdkEventExpose *, gpointer));
+static void addEventHandler(GtkWidget *, BalloonEval *);
+static void removeEventHandler(BalloonEval *);
+static gint target_event_cb(GtkWidget *, GdkEvent *, gpointer);
+static gint mainwin_event_cb(GtkWidget *, GdkEvent *, gpointer);
+static void pointer_event(BalloonEval *, int, int, unsigned);
+static void key_event(BalloonEval *, unsigned, int);
+static gint timeout_cb(gpointer);
+static gint balloon_expose_event_cb(GtkWidget *, GdkEventExpose *, gpointer);
 #else
-static void addEventHandler __ARGS((Widget, BalloonEval *));
-static void removeEventHandler __ARGS((BalloonEval *));
-static void pointerEventEH __ARGS((Widget, XtPointer, XEvent *, Boolean *));
-static void pointerEvent __ARGS((BalloonEval *, XEvent *));
-static void timerRoutine __ARGS((XtPointer, XtIntervalId *));
+static void addEventHandler(Widget, BalloonEval *);
+static void removeEventHandler(BalloonEval *);
+static void pointerEventEH(Widget, XtPointer, XEvent *, Boolean *);
+static void pointerEvent(BalloonEval *, XEvent *);
+static void timerRoutine(XtPointer, XtIntervalId *);
 #endif
-static void cancelBalloon __ARGS((BalloonEval *));
-static void requestBalloon __ARGS((BalloonEval *));
-static void drawBalloon __ARGS((BalloonEval *));
-static void undrawBalloon __ARGS((BalloonEval *beval));
-static void createBalloonEvalWindow __ARGS((BalloonEval *));
+static void cancelBalloon(BalloonEval *);
+static void requestBalloon(BalloonEval *);
+static void drawBalloon(BalloonEval *);
+static void undrawBalloon(BalloonEval *beval);
+static void createBalloonEvalWindow(BalloonEval *);
 
 
 

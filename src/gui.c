@@ -14,34 +14,34 @@
 gui_T gui;
 
 #if defined(FEAT_MBYTE) && !defined(FEAT_GUI_GTK)
-static void set_guifontwide __ARGS((char_u *font_name));
+static void set_guifontwide(char_u *font_name);
 #endif
-static void gui_check_pos __ARGS((void));
-static void gui_position_components __ARGS((int));
-static void gui_outstr __ARGS((char_u *, int));
-static int gui_screenchar __ARGS((int off, int flags, guicolor_T fg, guicolor_T bg, int back));
+static void gui_check_pos(void);
+static void gui_position_components(int);
+static void gui_outstr(char_u *, int);
+static int gui_screenchar(int off, int flags, guicolor_T fg, guicolor_T bg, int back);
 #ifdef FEAT_GUI_GTK
-static int gui_screenstr __ARGS((int off, int len, int flags, guicolor_T fg, guicolor_T bg, int back));
+static int gui_screenstr(int off, int len, int flags, guicolor_T fg, guicolor_T bg, int back);
 #endif
-static void gui_delete_lines __ARGS((int row, int count));
-static void gui_insert_lines __ARGS((int row, int count));
-static void fill_mouse_coord __ARGS((char_u *p, int col, int row));
+static void gui_delete_lines(int row, int count);
+static void gui_insert_lines(int row, int count);
+static void fill_mouse_coord(char_u *p, int col, int row);
 #if defined(FEAT_GUI_TABLINE) || defined(PROTO)
-static int gui_has_tabline __ARGS((void));
+static int gui_has_tabline(void);
 #endif
-static void gui_do_scrollbar __ARGS((win_T *wp, int which, int enable));
-static colnr_T scroll_line_len __ARGS((linenr_T lnum));
-static linenr_T gui_find_longest_lnum __ARGS((void));
-static void gui_update_horiz_scrollbar __ARGS((int));
-static void gui_set_fg_color __ARGS((char_u *name));
-static void gui_set_bg_color __ARGS((char_u *name));
-static win_T *xy2win __ARGS((int x, int y));
+static void gui_do_scrollbar(win_T *wp, int which, int enable);
+static colnr_T scroll_line_len(linenr_T lnum);
+static linenr_T gui_find_longest_lnum(void);
+static void gui_update_horiz_scrollbar(int);
+static void gui_set_fg_color(char_u *name);
+static void gui_set_bg_color(char_u *name);
+static win_T *xy2win(int x, int y);
 
 #if defined(UNIX) && !defined(MACOS_X) && !defined(__APPLE__)
 # define MAY_FORK
-static void gui_do_fork __ARGS((void));
+static void gui_do_fork(void);
 
-static int gui_read_child_pipe __ARGS((int fd));
+static int gui_read_child_pipe(int fd);
 
 /* Return values for gui_read_child_pipe */
 enum {
@@ -52,7 +52,7 @@ enum {
 
 #endif /* MAY_FORK */
 
-static void gui_attempt_start __ARGS((void));
+static void gui_attempt_start(void);
 
 static int can_update_cursor = TRUE; /* can display the cursor */
 
@@ -5017,7 +5017,7 @@ ex_gui(eap)
 /*
  * This is shared between Athena, Motif and GTK.
  */
-static void gfp_setname __ARGS((char_u *fname, void *cookie));
+static void gfp_setname(char_u *fname, void *cookie);
 
 /*
  * Callback function for do_in_runtimepath().
@@ -5191,7 +5191,7 @@ gui_update_screen()
 #endif
 
 #if defined(FIND_REPLACE_DIALOG) || defined(PROTO)
-static void concat_esc __ARGS((garray_T *gap, char_u *text, int what));
+static void concat_esc(garray_T *gap, char_u *text, int what);
 
 /*
  * Get the text to use in a find/replace dialog.  Uses the last search pattern
@@ -5416,7 +5416,7 @@ gui_do_findrepl(flags, find_text, repl_text, down)
 	|| defined(PROTO)
 
 #ifdef FEAT_WINDOWS
-static void gui_wingoto_xy __ARGS((int x, int y));
+static void gui_wingoto_xy(int x, int y);
 
 /*
  * Jump to the window at specified point (x, y).

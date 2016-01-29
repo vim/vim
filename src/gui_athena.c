@@ -49,15 +49,15 @@ static XtIntervalId timer = 0;	    /* 0 = expired, otherwise active */
 
 /* Used to figure out menu ordering */
 static vimmenu_T *a_cur_menu = NULL;
-static Cardinal	athena_calculate_ins_pos __ARGS((Widget));
+static Cardinal	athena_calculate_ins_pos(Widget);
 
-static Pixmap gui_athena_create_pullright_pixmap __ARGS((Widget));
-static void gui_athena_menu_timeout __ARGS((XtPointer, XtIntervalId *));
-static void gui_athena_popup_callback __ARGS((Widget, XtPointer, XtPointer));
-static void gui_athena_delayed_arm_action __ARGS((Widget, XEvent *, String *,
-						 Cardinal *));
-static void gui_athena_popdown_submenus_action __ARGS((Widget, XEvent *,
-						      String *, Cardinal *));
+static Pixmap gui_athena_create_pullright_pixmap(Widget);
+static void gui_athena_menu_timeout(XtPointer, XtIntervalId *);
+static void gui_athena_popup_callback(Widget, XtPointer, XtPointer);
+static void gui_athena_delayed_arm_action(Widget, XEvent *, String *,
+						 Cardinal *);
+static void gui_athena_popdown_submenus_action(Widget, XEvent *,
+						      String *, Cardinal *);
 static XtActionsRec	pullAction[2] = {
     { "menu-delayedpopup", (XtActionProc)gui_athena_delayed_arm_action},
     { "menu-popdownsubmenus", (XtActionProc)gui_athena_popdown_submenus_action}
@@ -65,16 +65,16 @@ static XtActionsRec	pullAction[2] = {
 #endif
 
 #ifdef FEAT_TOOLBAR
-static void gui_mch_reset_focus __ARGS((void));
+static void gui_mch_reset_focus(void);
 static Widget toolBar = (Widget)0;
 #endif
 
-static void gui_athena_scroll_cb_jump	__ARGS((Widget, XtPointer, XtPointer));
-static void gui_athena_scroll_cb_scroll __ARGS((Widget, XtPointer, XtPointer));
+static void gui_athena_scroll_cb_jump(Widget, XtPointer, XtPointer);
+static void gui_athena_scroll_cb_scroll(Widget, XtPointer, XtPointer);
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_MENU)
-static void gui_athena_menu_colors __ARGS((Widget id));
+static void gui_athena_menu_colors(Widget id);
 #endif
-static void gui_athena_scroll_colors __ARGS((Widget id));
+static void gui_athena_scroll_colors(Widget id);
 
 #ifdef FEAT_MENU
 static XtTranslations	popupTrans, parentTrans, menuTrans, supermenuTrans;
@@ -442,8 +442,8 @@ gui_x11_destroy_widgets()
 #  include <X11/xpm.h>
 # endif
 
-static void createXpmImages __ARGS((char_u *path, char **xpm, Pixmap *sen));
-static void get_toolbar_pixmap __ARGS((vimmenu_T *menu, Pixmap *sen));
+static void createXpmImages(char_u *path, char **xpm, Pixmap *sen);
+static void get_toolbar_pixmap(vimmenu_T *menu, Pixmap *sen);
 
 /*
  * Allocated a pixmap for toolbar menu "menu".
@@ -643,13 +643,13 @@ gui_x11_set_back_color()
  * Menu stuff.
  */
 
-static char_u	*make_pull_name __ARGS((char_u * name));
-static Widget	get_popup_entry __ARGS((Widget w));
-static Widget	submenu_widget __ARGS((Widget));
-static Boolean	has_submenu __ARGS((Widget));
-static void gui_mch_submenu_change __ARGS((vimmenu_T *mp, int colors));
-static void gui_athena_menu_font __ARGS((Widget id));
-static Boolean	gui_athena_menu_has_submenus __ARGS((Widget, Widget));
+static char_u	*make_pull_name(char_u * name);
+static Widget	get_popup_entry(Widget w);
+static Widget	submenu_widget(Widget);
+static Boolean	has_submenu(Widget);
+static void gui_mch_submenu_change(vimmenu_T *mp, int colors);
+static void gui_athena_menu_font(Widget id);
+static Boolean	gui_athena_menu_has_submenus(Widget, Widget);
 
     void
 gui_mch_enable_menu(flag)
@@ -2066,9 +2066,9 @@ gui_mch_browse(saving, title, dflt, ext, initdir, filter)
 static int	dialogStatus;
 static Atom	dialogatom;
 
-static void keyhit_callback __ARGS((Widget w, XtPointer client_data, XEvent *event, Boolean *cont));
-static void butproc __ARGS((Widget w, XtPointer client_data, XtPointer call_data));
-static void dialog_wm_handler __ARGS((Widget w, XtPointer client_data, XEvent *event, Boolean *dum));
+static void keyhit_callback(Widget w, XtPointer client_data, XEvent *event, Boolean *cont);
+static void butproc(Widget w, XtPointer client_data, XtPointer call_data);
+static void dialog_wm_handler(Widget w, XtPointer client_data, XEvent *event, Boolean *dum);
 
 /*
  * Callback function for the textfield.  When CR is hit this works like

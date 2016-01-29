@@ -320,8 +320,8 @@ static OSVERSIONINFO os_version;    /* like it says.  Init in gui_mch_init() */
 
 #ifdef FEAT_BEVAL
 /* balloon-eval WM_NOTIFY_HANDLER */
-static void Handle_WM_Notify __ARGS((HWND hwnd, LPNMHDR pnmh));
-static void TrackUserActivity __ARGS((UINT uMsg));
+static void Handle_WM_Notify(HWND hwnd, LPNMHDR pnmh);
+static void TrackUserActivity(UINT uMsg);
 #endif
 
 /*

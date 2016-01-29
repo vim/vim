@@ -331,9 +331,9 @@ gui_mch_set_rendering_options(char_u *s)
 # define UINT_PTR UINT
 #endif
 
-static void make_tooltip __ARGS((BalloonEval *beval, char *text, POINT pt));
-static void delete_tooltip __ARGS((BalloonEval *beval));
-static VOID CALLBACK BevalTimerProc __ARGS((HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime));
+static void make_tooltip(BalloonEval *beval, char *text, POINT pt);
+static void delete_tooltip(BalloonEval *beval);
+static VOID CALLBACK BevalTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 
 static BalloonEval  *cur_beval = NULL;
 static UINT_PTR	    BevalTimerId = 0;
