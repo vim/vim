@@ -109,7 +109,7 @@ static match_T search_hl;	/* used for 'hlsearch' highlight matching */
 
 #ifdef FEAT_FOLDING
 static foldinfo_T win_foldinfo;	/* info for 'foldcolumn' */
-static int compute_foldcolumn __ARGS((win_T *wp, int col));
+static int compute_foldcolumn(win_T *wp, int col);
 #endif
 
 /*
@@ -117,67 +117,67 @@ static int compute_foldcolumn __ARGS((win_T *wp, int col));
  */
 static schar_T	*current_ScreenLine;
 
-static void win_update __ARGS((win_T *wp));
-static void win_draw_end __ARGS((win_T *wp, int c1, int c2, int row, int endrow, hlf_T hl));
+static void win_update(win_T *wp);
+static void win_draw_end(win_T *wp, int c1, int c2, int row, int endrow, hlf_T hl);
 #ifdef FEAT_FOLDING
-static void fold_line __ARGS((win_T *wp, long fold_count, foldinfo_T *foldinfo, linenr_T lnum, int row));
-static void fill_foldcolumn __ARGS((char_u *p, win_T *wp, int closed, linenr_T lnum));
-static void copy_text_attr __ARGS((int off, char_u *buf, int len, int attr));
+static void fold_line(win_T *wp, long fold_count, foldinfo_T *foldinfo, linenr_T lnum, int row);
+static void fill_foldcolumn(char_u *p, win_T *wp, int closed, linenr_T lnum);
+static void copy_text_attr(int off, char_u *buf, int len, int attr);
 #endif
-static int win_line __ARGS((win_T *, linenr_T, int, int, int nochange));
-static int char_needs_redraw __ARGS((int off_from, int off_to, int cols));
+static int win_line(win_T *, linenr_T, int, int, int nochange);
+static int char_needs_redraw(int off_from, int off_to, int cols);
 #ifdef FEAT_RIGHTLEFT
-static void screen_line __ARGS((int row, int coloff, int endcol, int clear_width, int rlflag));
+static void screen_line(int row, int coloff, int endcol, int clear_width, int rlflag);
 # define SCREEN_LINE(r, o, e, c, rl)    screen_line((r), (o), (e), (c), (rl))
 #else
-static void screen_line __ARGS((int row, int coloff, int endcol, int clear_width));
+static void screen_line(int row, int coloff, int endcol, int clear_width);
 # define SCREEN_LINE(r, o, e, c, rl)    screen_line((r), (o), (e), (c))
 #endif
 #ifdef FEAT_VERTSPLIT
-static void draw_vsep_win __ARGS((win_T *wp, int row));
+static void draw_vsep_win(win_T *wp, int row);
 #endif
 #ifdef FEAT_STL_OPT
-static void redraw_custom_statusline __ARGS((win_T *wp));
+static void redraw_custom_statusline(win_T *wp);
 #endif
 #ifdef FEAT_SEARCH_EXTRA
 # define SEARCH_HL_PRIORITY 0
-static void start_search_hl __ARGS((void));
-static void end_search_hl __ARGS((void));
-static void init_search_hl __ARGS((win_T *wp));
-static void prepare_search_hl __ARGS((win_T *wp, linenr_T lnum));
-static void next_search_hl __ARGS((win_T *win, match_T *shl, linenr_T lnum, colnr_T mincol, matchitem_T *cur));
-static int next_search_hl_pos __ARGS((match_T *shl, linenr_T lnum, posmatch_T *pos, colnr_T mincol));
+static void start_search_hl(void);
+static void end_search_hl(void);
+static void init_search_hl(win_T *wp);
+static void prepare_search_hl(win_T *wp, linenr_T lnum);
+static void next_search_hl(win_T *win, match_T *shl, linenr_T lnum, colnr_T mincol, matchitem_T *cur);
+static int next_search_hl_pos(match_T *shl, linenr_T lnum, posmatch_T *pos, colnr_T mincol);
 #endif
-static void screen_start_highlight __ARGS((int attr));
-static void screen_char __ARGS((unsigned off, int row, int col));
+static void screen_start_highlight(int attr);
+static void screen_char(unsigned off, int row, int col);
 #ifdef FEAT_MBYTE
-static void screen_char_2 __ARGS((unsigned off, int row, int col));
+static void screen_char_2(unsigned off, int row, int col);
 #endif
-static void screenclear2 __ARGS((void));
-static void lineclear __ARGS((unsigned off, int width));
-static void lineinvalid __ARGS((unsigned off, int width));
+static void screenclear2(void);
+static void lineclear(unsigned off, int width);
+static void lineinvalid(unsigned off, int width);
 #ifdef FEAT_VERTSPLIT
-static void linecopy __ARGS((int to, int from, win_T *wp));
-static void redraw_block __ARGS((int row, int end, win_T *wp));
+static void linecopy(int to, int from, win_T *wp);
+static void redraw_block(int row, int end, win_T *wp);
 #endif
-static int win_do_lines __ARGS((win_T *wp, int row, int line_count, int mayclear, int del));
-static void win_rest_invalid __ARGS((win_T *wp));
-static void msg_pos_mode __ARGS((void));
-static void recording_mode __ARGS((int attr));
+static int win_do_lines(win_T *wp, int row, int line_count, int mayclear, int del);
+static void win_rest_invalid(win_T *wp);
+static void msg_pos_mode(void);
+static void recording_mode(int attr);
 #if defined(FEAT_WINDOWS)
-static void draw_tabline __ARGS((void));
+static void draw_tabline(void);
 #endif
 #if defined(FEAT_WINDOWS) || defined(FEAT_WILDMENU) || defined(FEAT_STL_OPT)
-static int fillchar_status __ARGS((int *attr, int is_curwin));
+static int fillchar_status(int *attr, int is_curwin);
 #endif
 #ifdef FEAT_VERTSPLIT
-static int fillchar_vsep __ARGS((int *attr));
+static int fillchar_vsep(int *attr);
 #endif
 #ifdef FEAT_STL_OPT
-static void win_redr_custom __ARGS((win_T *wp, int draw_ruler));
+static void win_redr_custom(win_T *wp, int draw_ruler);
 #endif
 #ifdef FEAT_CMDL_INFO
-static void win_redr_ruler __ARGS((win_T *wp, int always));
+static void win_redr_ruler(win_T *wp, int always);
 #endif
 
 #if defined(FEAT_CLIPBOARD) || defined(FEAT_VERTSPLIT)
@@ -826,8 +826,8 @@ update_single_line(wp, lnum)
 #endif
 
 #if defined(FEAT_SIGNS) || defined(FEAT_GUI)
-static void update_prepare __ARGS((void));
-static void update_finish __ARGS((void));
+static void update_prepare(void);
+static void update_finish(void);
 
 /*
  * Prepare for updating one or more windows.
@@ -2205,7 +2205,7 @@ win_update(wp)
 }
 
 #ifdef FEAT_SIGNS
-static int draw_signcolumn __ARGS((win_T *wp));
+static int draw_signcolumn(win_T *wp);
 
 /*
  * Return TRUE when window "wp" has a column to draw signs in.
@@ -2334,7 +2334,7 @@ win_draw_end(wp, c1, c2, row, endrow, hl)
 }
 
 #ifdef FEAT_SYN_HL
-static int advance_color_col __ARGS((int vcol, int **color_cols));
+static int advance_color_col(int vcol, int **color_cols);
 
 /*
  * Advance **color_cols and return TRUE when there are columns to draw.
@@ -5744,7 +5744,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 }
 
 #ifdef FEAT_MBYTE
-static int comp_char_differs __ARGS((int, int));
+static int comp_char_differs(int, int);
 
 /*
  * Return if the composing characters at "off_from" and "off_to" differ.
@@ -6341,8 +6341,8 @@ draw_vsep_win(wp, row)
 #endif
 
 #ifdef FEAT_WILDMENU
-static int status_match_len __ARGS((expand_T *xp, char_u *s));
-static int skip_status_match_char __ARGS((expand_T *xp, char_u *s));
+static int status_match_len(expand_T *xp, char_u *s);
+static int skip_status_match_char(expand_T *xp, char_u *s);
 
 /*
  * Get the length of an item as it will be shown in the status line.
@@ -7168,7 +7168,7 @@ screen_getbytes(row, col, bytes, attrp)
 }
 
 #ifdef FEAT_MBYTE
-static int screen_comp_differs __ARGS((int, int*));
+static int screen_comp_differs(int, int*);
 
 /*
  * Return TRUE if composing characters for screen posn "off" differs from

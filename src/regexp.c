@@ -255,8 +255,8 @@
 #define un_Magic(x)	((x) + 256)
 #define is_Magic(x)	((x) < 0)
 
-static int no_Magic __ARGS((int x));
-static int toggle_Magic __ARGS((int x));
+static int no_Magic(int x);
+static int toggle_Magic(int x);
 
     static int
 no_Magic(x)
@@ -347,18 +347,18 @@ toggle_Magic(x)
 
 #define MAX_LIMIT	(32767L << 16L)
 
-static int re_multi_type __ARGS((int));
-static int cstrncmp __ARGS((char_u *s1, char_u *s2, int *n));
-static char_u *cstrchr __ARGS((char_u *, int));
+static int re_multi_type(int);
+static int cstrncmp(char_u *s1, char_u *s2, int *n);
+static char_u *cstrchr(char_u *, int);
 
 #ifdef BT_REGEXP_DUMP
-static void	regdump __ARGS((char_u *, bt_regprog_T *));
+static void	regdump(char_u *, bt_regprog_T *);
 #endif
 #ifdef DEBUG
-static char_u	*regprop __ARGS((char_u *));
+static char_u	*regprop(char_u *);
 #endif
 
-static int re_mult_next __ARGS((char *what));
+static int re_mult_next(char *what);
 
 static char_u e_missingbracket[] = N_("E769: Missing ] after %s[");
 static char_u e_unmatchedpp[] = N_("E53: Unmatched %s%%(");
@@ -426,13 +426,13 @@ static char_u		*reg_prev_sub = NULL;
 static char_u REGEXP_INRANGE[] = "]^-n\\";
 static char_u REGEXP_ABBR[] = "nrtebdoxuU";
 
-static int	backslash_trans __ARGS((int c));
-static int	get_char_class __ARGS((char_u **pp));
-static int	get_equi_class __ARGS((char_u **pp));
-static void	reg_equi_class __ARGS((int c));
-static int	get_coll_element __ARGS((char_u **pp));
-static char_u	*skip_anyof __ARGS((char_u *p));
-static void	init_class_tab __ARGS((void));
+static int	backslash_trans(int c);
+static int	get_char_class(char_u **pp);
+static int	get_equi_class(char_u **pp);
+static void	reg_equi_class(int c);
+static int	get_coll_element(char_u **pp);
+static char_u	*skip_anyof(char_u *p);
+static void	init_class_tab(void);
 
 /*
  * Translate '\x' to its control character, except "\n", which is Magic.
@@ -689,33 +689,33 @@ typedef struct
 /*
  * Forward declarations for vim_regcomp()'s friends.
  */
-static void	initchr __ARGS((char_u *));
-static void	save_parse_state __ARGS((parse_state_T *ps));
-static void	restore_parse_state __ARGS((parse_state_T *ps));
-static int	getchr __ARGS((void));
-static void	skipchr_keepstart __ARGS((void));
-static int	peekchr __ARGS((void));
-static void	skipchr __ARGS((void));
-static void	ungetchr __ARGS((void));
-static int	gethexchrs __ARGS((int maxinputlen));
-static int	getoctchrs __ARGS((void));
-static int	getdecchrs __ARGS((void));
-static int	coll_get_char __ARGS((void));
-static void	regcomp_start __ARGS((char_u *expr, int flags));
-static char_u	*reg __ARGS((int, int *));
-static char_u	*regbranch __ARGS((int *flagp));
-static char_u	*regconcat __ARGS((int *flagp));
-static char_u	*regpiece __ARGS((int *));
-static char_u	*regatom __ARGS((int *));
-static char_u	*regnode __ARGS((int));
+static void	initchr(char_u *);
+static void	save_parse_state(parse_state_T *ps);
+static void	restore_parse_state(parse_state_T *ps);
+static int	getchr(void);
+static void	skipchr_keepstart(void);
+static int	peekchr(void);
+static void	skipchr(void);
+static void	ungetchr(void);
+static int	gethexchrs(int maxinputlen);
+static int	getoctchrs(void);
+static int	getdecchrs(void);
+static int	coll_get_char(void);
+static void	regcomp_start(char_u *expr, int flags);
+static char_u	*reg(int, int *);
+static char_u	*regbranch(int *flagp);
+static char_u	*regconcat(int *flagp);
+static char_u	*regpiece(int *);
+static char_u	*regatom(int *);
+static char_u	*regnode(int);
 #ifdef FEAT_MBYTE
-static int	use_multibytecode __ARGS((int c));
+static int	use_multibytecode(int c);
 #endif
-static int	prog_magic_wrong __ARGS((void));
-static char_u	*regnext __ARGS((char_u *));
-static void	regc __ARGS((int b));
+static int	prog_magic_wrong(void);
+static char_u	*regnext(char_u *);
+static void	regc(int b);
 #ifdef FEAT_MBYTE
-static void	regmbc __ARGS((int c));
+static void	regmbc(int c);
 # define REGMBC(x) regmbc(x);
 # define CASEMBC(x) case x:
 #else
@@ -723,13 +723,13 @@ static void	regmbc __ARGS((int c));
 # define REGMBC(x)
 # define CASEMBC(x)
 #endif
-static void	reginsert __ARGS((int, char_u *));
-static void	reginsert_nr __ARGS((int op, long val, char_u *opnd));
-static void	reginsert_limits __ARGS((int, long, long, char_u *));
-static char_u	*re_put_long __ARGS((char_u *pr, long_u val));
-static int	read_limits __ARGS((long *, long *));
-static void	regtail __ARGS((char_u *, char_u *));
-static void	regoptail __ARGS((char_u *, char_u *));
+static void	reginsert(int, char_u *);
+static void	reginsert_nr(int op, long val, char_u *opnd);
+static void	reginsert_limits(int, long, long, char_u *);
+static char_u	*re_put_long(char_u *pr, long_u val);
+static int	read_limits(long *, long *);
+static void	regtail(char_u *, char_u *);
+static void	regoptail(char_u *, char_u *);
 
 static regengine_T bt_regengine;
 static regengine_T nfa_regengine;
@@ -1178,7 +1178,7 @@ get_coll_element(pp)
     return 0;
 }
 
-static void get_cpo_flags __ARGS((void));
+static void get_cpo_flags(void);
 static int reg_cpo_lit; /* 'cpoptions' contains 'l' flag */
 static int reg_cpo_bsl; /* 'cpoptions' contains '\' flag */
 
@@ -1302,8 +1302,8 @@ skip_regexp(startp, dirc, magic, newp)
     return p;
 }
 
-static regprog_T  *bt_regcomp __ARGS((char_u *expr, int re_flags));
-static void bt_regfree __ARGS((regprog_T *prog));
+static regprog_T  *bt_regcomp(char_u *expr, int re_flags);
+static void bt_regfree(regprog_T *prog);
 
 /*
  * bt_regcomp() - compile a regular expression into internal code for the
@@ -3514,21 +3514,21 @@ typedef struct regbehind_S
     save_se_T   save_end[NSUBEXP];
 } regbehind_T;
 
-static char_u	*reg_getline __ARGS((linenr_T lnum));
-static long	bt_regexec_both __ARGS((char_u *line, colnr_T col, proftime_T *tm));
-static long	regtry __ARGS((bt_regprog_T *prog, colnr_T col));
-static void	cleanup_subexpr __ARGS((void));
+static char_u	*reg_getline(linenr_T lnum);
+static long	bt_regexec_both(char_u *line, colnr_T col, proftime_T *tm);
+static long	regtry(bt_regprog_T *prog, colnr_T col);
+static void	cleanup_subexpr(void);
 #ifdef FEAT_SYN_HL
-static void	cleanup_zsubexpr __ARGS((void));
+static void	cleanup_zsubexpr(void);
 #endif
-static void	save_subexpr __ARGS((regbehind_T *bp));
-static void	restore_subexpr __ARGS((regbehind_T *bp));
-static void	reg_nextline __ARGS((void));
-static void	reg_save __ARGS((regsave_T *save, garray_T *gap));
-static void	reg_restore __ARGS((regsave_T *save, garray_T *gap));
-static int	reg_save_equal __ARGS((regsave_T *save));
-static void	save_se_multi __ARGS((save_se_T *savep, lpos_T *posp));
-static void	save_se_one __ARGS((save_se_T *savep, char_u **pp));
+static void	save_subexpr(regbehind_T *bp);
+static void	restore_subexpr(regbehind_T *bp);
+static void	reg_nextline(void);
+static void	reg_save(regsave_T *save, garray_T *gap);
+static void	reg_restore(regsave_T *save, garray_T *gap);
+static int	reg_save_equal(regsave_T *save);
+static void	save_se_multi(save_se_T *savep, lpos_T *posp);
+static void	save_se_one(save_se_T *savep, char_u **pp);
 
 /* Save the sub-expressions before attempting a match. */
 #define save_se(savep, posp, pp) \
@@ -3541,10 +3541,10 @@ static void	save_se_one __ARGS((save_se_T *savep, char_u **pp));
     else \
 	*(pp) = (savep)->se_u.ptr; }
 
-static int	re_num_cmp __ARGS((long_u val, char_u *scan));
-static int	match_with_backref __ARGS((linenr_T start_lnum, colnr_T start_col, linenr_T end_lnum, colnr_T end_col, int *bytelen));
-static int	regmatch __ARGS((char_u *prog));
-static int	regrepeat __ARGS((char_u *p, long maxcount));
+static int	re_num_cmp(long_u val, char_u *scan);
+static int	match_with_backref(linenr_T start_lnum, colnr_T start_col, linenr_T end_lnum, colnr_T end_col, int *bytelen);
+static int	regmatch(char_u *prog);
+static int	regrepeat(char_u *p, long maxcount);
 
 #ifdef DEBUG
 int		regnarrate = 0;
@@ -3647,8 +3647,8 @@ typedef struct regitem_S
     short	rs_no;		/* submatch nr or BEHIND/NOBEHIND */
 } regitem_T;
 
-static regitem_T *regstack_push __ARGS((regstate_T state, char_u *scan));
-static void regstack_pop __ARGS((char_u **scan));
+static regitem_T *regstack_push(regstate_T state, char_u *scan);
+static void regstack_pop(char_u **scan);
 
 /* used for STAR, PLUS and BRACE_SIMPLE matching */
 typedef struct regstar_S
@@ -3732,7 +3732,7 @@ static lpos_T	reg_endzpos[NSUBEXP];	/* idem, end pos */
 /* TRUE if using multi-line regexp. */
 #define REG_MULTI	(reg_match == NULL)
 
-static int  bt_regexec_nl __ARGS((regmatch_T *rmp, char_u *line, colnr_T col, int line_lbr));
+static int  bt_regexec_nl(regmatch_T *rmp, char_u *line, colnr_T col, int line_lbr);
 
 
 /*
@@ -3765,7 +3765,7 @@ bt_regexec_nl(rmp, line, col, line_lbr)
     return bt_regexec_both(line, col, NULL);
 }
 
-static long bt_regexec_multi __ARGS((regmmatch_T *rmp, win_T *win, buf_T *buf, linenr_T lnum, colnr_T col, proftime_T *tm));
+static long bt_regexec_multi(regmmatch_T *rmp, win_T *win, buf_T *buf, linenr_T lnum, colnr_T col, proftime_T *tm);
 
 /*
  * Match a regexp against multiple lines.
@@ -4033,7 +4033,7 @@ theend:
 }
 
 #ifdef FEAT_SYN_HL
-static reg_extmatch_T *make_extmatch __ARGS((void));
+static reg_extmatch_T *make_extmatch(void);
 
 /*
  * Create a new extmatch and mark it as referenced once.
@@ -4162,7 +4162,7 @@ regtry(prog, col)
 }
 
 #ifdef FEAT_MBYTE
-static int reg_prev_class __ARGS((void));
+static int reg_prev_class(void);
 
 /*
  * Get class of previous character.
@@ -4177,7 +4177,7 @@ reg_prev_class()
 }
 #endif
 
-static int reg_match_visual __ARGS((void));
+static int reg_match_visual(void);
 
 /*
  * Return TRUE if the current reginput position matches the Visual area.
@@ -7025,7 +7025,7 @@ re_mult_next(what)
 }
 
 #ifdef FEAT_MBYTE
-static void mb_decompose __ARGS((int c, int *c1, int *c2, int *c3));
+static void mb_decompose(int c, int *c1, int *c2, int *c3);
 
 typedef struct
 {
@@ -7238,14 +7238,14 @@ cstrchr(s, c)
  * This is impossible, so we declare a pointer to a function returning a
  * pointer to a function returning void. This should work for all compilers.
  */
-typedef void (*(*fptr_T) __ARGS((int *, int)))();
+typedef void (*(*fptr_T)(int *, int))();
 
-static fptr_T do_upper __ARGS((int *, int));
-static fptr_T do_Upper __ARGS((int *, int));
-static fptr_T do_lower __ARGS((int *, int));
-static fptr_T do_Lower __ARGS((int *, int));
+static fptr_T do_upper(int *, int);
+static fptr_T do_Upper(int *, int);
+static fptr_T do_lower(int *, int);
+static fptr_T do_Lower(int *, int);
 
-static int vim_regsub_both __ARGS((char_u *source, char_u *dest, int copy, int magic, int backslash));
+static int vim_regsub_both(char_u *source, char_u *dest, int copy, int magic, int backslash);
 
     static fptr_T
 do_upper(d, c)
@@ -7809,7 +7809,7 @@ exit:
 }
 
 #ifdef FEAT_EVAL
-static char_u *reg_getline_submatch __ARGS((linenr_T lnum));
+static char_u *reg_getline_submatch(linenr_T lnum);
 
 /*
  * Call reg_getline() with the line numbers from the submatch.  If a
@@ -8142,7 +8142,7 @@ vim_regfree(prog)
 }
 
 #ifdef FEAT_EVAL
-static void report_re_switch __ARGS((char_u *pat));
+static void report_re_switch(char_u *pat);
 
     static void
 report_re_switch(pat)
@@ -8158,7 +8158,7 @@ report_re_switch(pat)
 }
 #endif
 
-static int vim_regexec_both __ARGS((regmatch_T *rmp, char_u *line, colnr_T col, int nl));
+static int vim_regexec_both(regmatch_T *rmp, char_u *line, colnr_T col, int nl);
 
 /*
  * Match a regexp against a string.

@@ -77,8 +77,8 @@ static char *Fspec_Rms;		       /* rms file spec, passed implicitly between rout
 
 
 
-static TT_MODE	get_tty __ARGS((void));
-static void	set_tty __ARGS((int row, int col));
+static TT_MODE	get_tty(void);
+static void	set_tty(int row, int col);
 
 #define EXPL_ALLOC_INC 64
 

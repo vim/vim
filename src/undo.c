@@ -100,45 +100,45 @@ typedef struct {
 } bufinfo_T;
 
 
-static long get_undolevel __ARGS((void));
-static void u_unch_branch __ARGS((u_header_T *uhp));
-static u_entry_T *u_get_headentry __ARGS((void));
-static void u_getbot __ARGS((void));
-static void u_doit __ARGS((int count));
-static void u_undoredo __ARGS((int undo));
-static void u_undo_end __ARGS((int did_undo, int absolute));
-static void u_add_time __ARGS((char_u *buf, size_t buflen, time_t tt));
-static void u_freeheader __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
-static void u_freebranch __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
-static void u_freeentries __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
-static void u_freeentry __ARGS((u_entry_T *, long));
+static long get_undolevel(void);
+static void u_unch_branch(u_header_T *uhp);
+static u_entry_T *u_get_headentry(void);
+static void u_getbot(void);
+static void u_doit(int count);
+static void u_undoredo(int undo);
+static void u_undo_end(int did_undo, int absolute);
+static void u_add_time(char_u *buf, size_t buflen, time_t tt);
+static void u_freeheader(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
+static void u_freebranch(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
+static void u_freeentries(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
+static void u_freeentry(u_entry_T *, long);
 #ifdef FEAT_PERSISTENT_UNDO
-static void corruption_error __ARGS((char *mesg, char_u *file_name));
-static void u_free_uhp __ARGS((u_header_T *uhp));
-static int undo_write __ARGS((bufinfo_T *bi, char_u *ptr, size_t len));
-static int undo_flush __ARGS((bufinfo_T *bi));
-static int fwrite_crypt __ARGS((bufinfo_T *bi, char_u *ptr, size_t len));
-static int undo_write_bytes __ARGS((bufinfo_T *bi, long_u nr, int len));
-static void put_header_ptr __ARGS((bufinfo_T *bi, u_header_T *uhp));
-static int undo_read_4c __ARGS((bufinfo_T *bi));
-static int undo_read_2c __ARGS((bufinfo_T *bi));
-static int undo_read_byte __ARGS((bufinfo_T *bi));
-static time_t undo_read_time __ARGS((bufinfo_T *bi));
-static int undo_read __ARGS((bufinfo_T *bi, char_u *buffer, size_t size));
-static char_u *read_string_decrypt __ARGS((bufinfo_T *bi, int len));
-static int serialize_header __ARGS((bufinfo_T *bi, char_u *hash));
-static int serialize_uhp __ARGS((bufinfo_T *bi, u_header_T *uhp));
-static u_header_T *unserialize_uhp __ARGS((bufinfo_T *bi, char_u *file_name));
-static int serialize_uep __ARGS((bufinfo_T *bi, u_entry_T *uep));
-static u_entry_T *unserialize_uep __ARGS((bufinfo_T *bi, int *error, char_u *file_name));
-static void serialize_pos __ARGS((bufinfo_T *bi, pos_T pos));
-static void unserialize_pos __ARGS((bufinfo_T *bi, pos_T *pos));
-static void serialize_visualinfo __ARGS((bufinfo_T *bi, visualinfo_T *info));
-static void unserialize_visualinfo __ARGS((bufinfo_T *bi, visualinfo_T *info));
+static void corruption_error(char *mesg, char_u *file_name);
+static void u_free_uhp(u_header_T *uhp);
+static int undo_write(bufinfo_T *bi, char_u *ptr, size_t len);
+static int undo_flush(bufinfo_T *bi);
+static int fwrite_crypt(bufinfo_T *bi, char_u *ptr, size_t len);
+static int undo_write_bytes(bufinfo_T *bi, long_u nr, int len);
+static void put_header_ptr(bufinfo_T *bi, u_header_T *uhp);
+static int undo_read_4c(bufinfo_T *bi);
+static int undo_read_2c(bufinfo_T *bi);
+static int undo_read_byte(bufinfo_T *bi);
+static time_t undo_read_time(bufinfo_T *bi);
+static int undo_read(bufinfo_T *bi, char_u *buffer, size_t size);
+static char_u *read_string_decrypt(bufinfo_T *bi, int len);
+static int serialize_header(bufinfo_T *bi, char_u *hash);
+static int serialize_uhp(bufinfo_T *bi, u_header_T *uhp);
+static u_header_T *unserialize_uhp(bufinfo_T *bi, char_u *file_name);
+static int serialize_uep(bufinfo_T *bi, u_entry_T *uep);
+static u_entry_T *unserialize_uep(bufinfo_T *bi, int *error, char_u *file_name);
+static void serialize_pos(bufinfo_T *bi, pos_T pos);
+static void unserialize_pos(bufinfo_T *bi, pos_T *pos);
+static void serialize_visualinfo(bufinfo_T *bi, visualinfo_T *info);
+static void unserialize_visualinfo(bufinfo_T *bi, visualinfo_T *info);
 #endif
 
 #define U_ALLOC_LINE(size) lalloc((long_u)(size), FALSE)
-static char_u *u_save_line __ARGS((linenr_T));
+static char_u *u_save_line(linenr_T);
 
 /* used in undo_end() to report number of added and deleted lines */
 static long	u_newcount, u_oldcount;

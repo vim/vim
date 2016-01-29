@@ -17,11 +17,11 @@
 # include <sgtty.h>
 #endif
 
-static int  getent __ARGS((char *, char *, FILE *, int));
-static int  nextent __ARGS((char *, FILE *, int));
-static int  _match __ARGS((char *, char *));
-static char *_addfmt __ARGS((char *, char *, int));
-static char *_find __ARGS((char *, char *));
+static int  getent(char *, char *, FILE *, int);
+static int  nextent(char *, FILE *, int);
+static int  _match(char *, char *);
+static char *_addfmt(char *, char *, int);
+static char *_find(char *, char *);
 
 /*
  * Global variables for termlib
@@ -536,11 +536,11 @@ long _bauds[16]={
 tputs(cp, affcnt, outc)
     char *cp;				/* string to print */
     int affcnt;				/* Number of lines affected */
-    void (*outc) __ARGS((unsigned int));/* routine to output 1 character */
+    void (*outc)(unsigned int);/* routine to output 1 character */
 {
     long    frac,			/* 10^(#digits after decimal point) */
 	counter,			/* digits */
-	atol __ARGS((const char *));
+	atol(const char *);
 
     if (VIM_ISDIGIT(*cp)) {
 	counter = 0;

@@ -124,7 +124,7 @@
 # undef HAVE_SVR4_PTYS
 #endif
 
-static void initmaster __ARGS((int));
+static void initmaster(int);
 
 /*
  *  Open all ptys with O_NOCTTY, just to be on the safe side.
@@ -282,10 +282,10 @@ OpenPTY(ttyn)
 {
     int		f;
     char	*m;
-    char	*(ptsname __ARGS((int)));
-    int		unlockpt __ARGS((int));
-    int		grantpt __ARGS((int));
-    RETSIGTYPE (*sigcld)__ARGS(SIGPROTOARG);
+    char	*(ptsname(int));
+    int		unlockpt(int);
+    int		grantpt(int);
+    RETSIGTYPE (*sigcld) SIGPROTOARG;
     /* used for opening a new pty-pair: */
     static char TtyName[32];
 

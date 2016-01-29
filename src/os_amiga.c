@@ -71,12 +71,12 @@
 #ifdef __amigaos4__
 # define	dos_packet(a, b, c)   DoPkt(a, b, c, 0, 0, 0, 0)
 #elif !defined(AZTEC_C) && !defined(__AROS__)
-static long dos_packet __ARGS((struct MsgPort *, long, long));
+static long dos_packet(struct MsgPort *, long, long);
 #endif
-static int lock2name __ARGS((BPTR lock, char_u *buf, long   len));
-static void out_num __ARGS((long n));
-static struct FileInfoBlock *get_fib __ARGS((char_u *));
-static int sortcmp __ARGS((const void *a, const void *b));
+static int lock2name(BPTR lock, char_u *buf, long   len);
+static void out_num(long n);
+static struct FileInfoBlock *get_fib(char_u *);
+static int sortcmp(const void *a, const void *b);
 
 static BPTR		raw_in = (BPTR)NULL;
 static BPTR		raw_out = (BPTR)NULL;
@@ -219,7 +219,7 @@ mch_delay(msec, ignoreinput)
     int	    ignoreinput;
 {
 #ifndef LATTICE		/* SAS declares void Delay(ULONG) */
-    void	    Delay __ARGS((long));
+    void	    Delay(long);
 #endif
 
     if (msec > 0)

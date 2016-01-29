@@ -3088,75 +3088,75 @@ static char *(p_fcl_values[]) = {"all", NULL};
 static char *(p_cot_values[]) = {"menu", "menuone", "longest", "preview", "noinsert", "noselect", NULL};
 #endif
 
-static void set_option_default __ARGS((int, int opt_flags, int compatible));
-static void set_options_default __ARGS((int opt_flags));
-static char_u *term_bg_default __ARGS((void));
-static void did_set_option __ARGS((int opt_idx, int opt_flags, int new_value));
-static char_u *illegal_char __ARGS((char_u *, int));
-static int string_to_key __ARGS((char_u *arg));
+static void set_option_default(int, int opt_flags, int compatible);
+static void set_options_default(int opt_flags);
+static char_u *term_bg_default(void);
+static void did_set_option(int opt_idx, int opt_flags, int new_value);
+static char_u *illegal_char(char_u *, int);
+static int string_to_key(char_u *arg);
 #ifdef FEAT_CMDWIN
-static char_u *check_cedit __ARGS((void));
+static char_u *check_cedit(void);
 #endif
 #ifdef FEAT_TITLE
-static void did_set_title __ARGS((int icon));
+static void did_set_title(int icon);
 #endif
-static char_u *option_expand __ARGS((int opt_idx, char_u *val));
-static void didset_options __ARGS((void));
-static void didset_options2 __ARGS((void));
-static void check_string_option __ARGS((char_u **pp));
+static char_u *option_expand(int opt_idx, char_u *val);
+static void didset_options(void);
+static void didset_options2(void);
+static void check_string_option(char_u **pp);
 #if defined(FEAT_EVAL) || defined(PROTO)
-static long_u *insecure_flag __ARGS((int opt_idx, int opt_flags));
+static long_u *insecure_flag(int opt_idx, int opt_flags);
 #else
 # define insecure_flag(opt_idx, opt_flags) (&options[opt_idx].flags)
 #endif
-static void set_string_option_global __ARGS((int opt_idx, char_u **varp));
-static char_u *set_string_option __ARGS((int opt_idx, char_u *value, int opt_flags));
-static char_u *did_set_string_option __ARGS((int opt_idx, char_u **varp, int new_value_alloced, char_u *oldval, char_u *errbuf, int opt_flags));
-static char_u *set_chars_option __ARGS((char_u **varp));
+static void set_string_option_global(int opt_idx, char_u **varp);
+static char_u *set_string_option(int opt_idx, char_u *value, int opt_flags);
+static char_u *did_set_string_option(int opt_idx, char_u **varp, int new_value_alloced, char_u *oldval, char_u *errbuf, int opt_flags);
+static char_u *set_chars_option(char_u **varp);
 #ifdef FEAT_SYN_HL
-static int int_cmp __ARGS((const void *a, const void *b));
+static int int_cmp(const void *a, const void *b);
 #endif
 #ifdef FEAT_CLIPBOARD
-static char_u *check_clipboard_option __ARGS((void));
+static char_u *check_clipboard_option(void);
 #endif
 #ifdef FEAT_SPELL
-static char_u *did_set_spell_option __ARGS((int is_spellfile));
-static char_u *compile_cap_prog __ARGS((synblock_T *synblock));
+static char_u *did_set_spell_option(int is_spellfile);
+static char_u *compile_cap_prog(synblock_T *synblock);
 #endif
 #ifdef FEAT_EVAL
-static void set_option_scriptID_idx __ARGS((int opt_idx, int opt_flags, int id));
+static void set_option_scriptID_idx(int opt_idx, int opt_flags, int id);
 #endif
-static char_u *set_bool_option __ARGS((int opt_idx, char_u *varp, int value, int opt_flags));
-static char_u *set_num_option __ARGS((int opt_idx, char_u *varp, long value, char_u *errbuf, size_t errbuflen, int opt_flags));
-static void check_redraw __ARGS((long_u flags));
-static int findoption __ARGS((char_u *));
-static int find_key_option __ARGS((char_u *));
-static void showoptions __ARGS((int all, int opt_flags));
-static int optval_default __ARGS((struct vimoption *, char_u *varp));
-static void showoneopt __ARGS((struct vimoption *, int opt_flags));
-static int put_setstring __ARGS((FILE *fd, char *cmd, char *name, char_u **valuep, int expand));
-static int put_setnum __ARGS((FILE *fd, char *cmd, char *name, long *valuep));
-static int put_setbool __ARGS((FILE *fd, char *cmd, char *name, int value));
-static int  istermoption __ARGS((struct vimoption *));
-static char_u *get_varp_scope __ARGS((struct vimoption *p, int opt_flags));
-static char_u *get_varp __ARGS((struct vimoption *));
-static void option_value2string __ARGS((struct vimoption *, int opt_flags));
-static void check_winopt __ARGS((winopt_T *wop));
-static int wc_use_keyname __ARGS((char_u *varp, long *wcp));
+static char_u *set_bool_option(int opt_idx, char_u *varp, int value, int opt_flags);
+static char_u *set_num_option(int opt_idx, char_u *varp, long value, char_u *errbuf, size_t errbuflen, int opt_flags);
+static void check_redraw(long_u flags);
+static int findoption(char_u *);
+static int find_key_option(char_u *);
+static void showoptions(int all, int opt_flags);
+static int optval_default(struct vimoption *, char_u *varp);
+static void showoneopt(struct vimoption *, int opt_flags);
+static int put_setstring(FILE *fd, char *cmd, char *name, char_u **valuep, int expand);
+static int put_setnum(FILE *fd, char *cmd, char *name, long *valuep);
+static int put_setbool(FILE *fd, char *cmd, char *name, int value);
+static int  istermoption(struct vimoption *);
+static char_u *get_varp_scope(struct vimoption *p, int opt_flags);
+static char_u *get_varp(struct vimoption *);
+static void option_value2string(struct vimoption *, int opt_flags);
+static void check_winopt(winopt_T *wop);
+static int wc_use_keyname(char_u *varp, long *wcp);
 #ifdef FEAT_LANGMAP
-static void langmap_init __ARGS((void));
-static void langmap_set __ARGS((void));
+static void langmap_init(void);
+static void langmap_set(void);
 #endif
-static void paste_option_changed __ARGS((void));
-static void compatible_set __ARGS((void));
+static void paste_option_changed(void);
+static void compatible_set(void);
 #ifdef FEAT_LINEBREAK
-static void fill_breakat_flags __ARGS((void));
+static void fill_breakat_flags(void);
 #endif
-static int opt_strings_flags __ARGS((char_u *val, char **values, unsigned *flagp, int list));
-static int check_opt_strings __ARGS((char_u *val, char **values, int));
-static int check_opt_wim __ARGS((void));
+static int opt_strings_flags(char_u *val, char **values, unsigned *flagp, int list);
+static int check_opt_strings(char_u *val, char **values, int);
+static int check_opt_wim(void);
 #ifdef FEAT_LINEBREAK
-static int briopt_check __ARGS((win_T *wp));
+static int briopt_check(win_T *wp);
 #endif
 
 /*
@@ -4085,7 +4085,7 @@ set_helplang_default(lang)
 #endif
 
 #ifdef FEAT_GUI
-static char_u *gui_bg_default __ARGS((void));
+static char_u *gui_bg_default(void);
 
     static char_u *
 gui_bg_default()
@@ -5656,7 +5656,7 @@ insecure_flag(opt_idx, opt_flags)
 #endif
 
 #ifdef FEAT_TITLE
-static void redraw_titles __ARGS((void));
+static void redraw_titles(void);
 
 /*
  * Redraw the window title and/or tab page text later.
@@ -11486,7 +11486,7 @@ typedef struct
 } langmap_entry_T;
 
 static garray_T langmap_mapga;
-static void langmap_set_entry __ARGS((int from, int to));
+static void langmap_set_entry(int from, int to);
 
 /*
  * Search for an entry in "langmap_mapga" for "from".  If found set the "to"

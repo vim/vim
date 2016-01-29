@@ -78,7 +78,7 @@ static int selinux_enabled = -1;
 #endif
 
 #if defined(HAVE_SELECT)
-extern int   select __ARGS((int, fd_set *, fd_set *, fd_set *, struct timeval *));
+extern int   select(int, fd_set *, fd_set *, fd_set *, struct timeval *);
 #endif
 
 #ifdef FEAT_MOUSE_GPM
@@ -98,17 +98,17 @@ extern int   select __ARGS((int, fd_set *, fd_set *, fd_set *, struct timeval *)
 # define KG_CTRLR	7
 # define KG_CAPSSHIFT	8
 
-static void gpm_close __ARGS((void));
-static int gpm_open __ARGS((void));
-static int mch_gpm_process __ARGS((void));
+static void gpm_close(void);
+static int gpm_open(void);
+static int mch_gpm_process(void);
 #endif
 
 #ifdef FEAT_SYSMOUSE
 # include <sys/consio.h>
 # include <sys/fbio.h>
 
-static int sysmouse_open __ARGS((void));
-static void sysmouse_close __ARGS((void));
+static int sysmouse_open(void);
+static void sysmouse_close(void);
 static RETSIGTYPE sig_sysmouse __ARGS(SIGPROTOARG);
 #endif
 
@@ -140,8 +140,8 @@ static RETSIGTYPE sig_sysmouse __ARGS(SIGPROTOARG);
 #  include <X11/Shell.h>
 #  include <X11/StringDefs.h>
 static Widget	xterm_Shell = (Widget)0;
-static void clip_update __ARGS((void));
-static void xterm_update __ARGS((void));
+static void clip_update(void);
+static void xterm_update(void);
 # endif
 
 # if defined(FEAT_XCLIPBOARD) || defined(FEAT_TITLE)
@@ -150,15 +150,15 @@ Window	    x11_window = 0;
 Display	    *x11_display = NULL;
 
 # ifdef FEAT_TITLE
-static int  get_x11_windis __ARGS((void));
-static void set_x11_title __ARGS((char_u *));
-static void set_x11_icon __ARGS((char_u *));
+static int  get_x11_windis(void);
+static void set_x11_title(char_u *);
+static void set_x11_icon(char_u *);
 # endif
 #endif
 
 #ifdef FEAT_TITLE
-static int get_x11_title __ARGS((int));
-static int get_x11_icon __ARGS((int));
+static int get_x11_title(int);
+static int get_x11_icon(int);
 
 static char_u	*oldtitle = NULL;
 static int	did_set_title = FALSE;
@@ -166,28 +166,28 @@ static char_u	*oldicon = NULL;
 static int	did_set_icon = FALSE;
 #endif
 
-static void may_core_dump __ARGS((void));
+static void may_core_dump(void);
 
 #ifdef HAVE_UNION_WAIT
 typedef union wait waitstatus;
 #else
 typedef int waitstatus;
 #endif
-static pid_t wait4pid __ARGS((pid_t, waitstatus *));
+static pid_t wait4pid(pid_t, waitstatus *);
 
-static int  WaitForChar __ARGS((long));
+static int  WaitForChar(long);
 #if defined(__BEOS__) || defined(VMS)
-int  RealWaitForChar __ARGS((int, long, int *));
+int  RealWaitForChar(int, long, int *);
 #else
-static int  RealWaitForChar __ARGS((int, long, int *));
+static int  RealWaitForChar(int, long, int *);
 #endif
 
 #ifdef FEAT_XCLIPBOARD
-static int do_xterm_trace __ARGS((void));
+static int do_xterm_trace(void);
 # define XT_TRACE_DELAY	50	/* delay for xterm tracing */
 #endif
 
-static void handle_resize __ARGS((void));
+static void handle_resize(void);
 
 #if defined(SIGWINCH)
 static RETSIGTYPE sig_winch __ARGS(SIGPROTOARG);
@@ -207,16 +207,16 @@ static volatile int sig_alarm_called;
 #endif
 static RETSIGTYPE deathtrap __ARGS(SIGPROTOARG);
 
-static void catch_int_signal __ARGS((void));
-static void set_signals __ARGS((void));
-static void catch_signals __ARGS((RETSIGTYPE (*func_deadly)(), RETSIGTYPE (*func_other)()));
+static void catch_int_signal(void);
+static void set_signals(void);
+static void catch_signals(RETSIGTYPE (*func_deadly)(), RETSIGTYPE (*func_other)());
 #ifndef __EMX__
-static int  have_wildcard __ARGS((int, char_u **));
-static int  have_dollars __ARGS((int, char_u **));
+static int  have_wildcard(int, char_u **);
+static int  have_dollars(int, char_u **);
 #endif
 
 #ifndef __EMX__
-static int save_patterns __ARGS((int num_pat, char_u **pat, int *num_file, char_u ***file));
+static int save_patterns(int num_pat, char_u **pat, int *num_file, char_u ***file);
 #endif
 
 #ifndef SIG_ERR
@@ -696,7 +696,7 @@ mch_delay(msec, ignoreinput)
  * Return a pointer to an item on the stack.  Used to find out if the stack
  * grows up or down.
  */
-static void check_stack_growth __ARGS((char *p));
+static void check_stack_growth(char *p);
 static int stack_grows_downwards;
 
 /*
@@ -820,7 +820,7 @@ static stack_t sigstk;			/* for sigaltstack() */
 static struct sigstack sigstk;		/* for sigstack() */
 # endif
 
-static void init_signal_stack __ARGS((void));
+static void init_signal_stack(void);
 static char *signal_stack;
 
     static void
@@ -833,7 +833,7 @@ init_signal_stack()
 		|| MAC_OS_X_VERSION_MAX_ALLOWED <= 1040)
 	/* missing prototype.  Adding it to osdef?.h.in doesn't work, because
 	 * "struct sigaltstack" needs to be declared. */
-	extern int sigaltstack __ARGS((const struct sigaltstack *ss, struct sigaltstack *oss));
+	extern int sigaltstack(const struct sigaltstack *ss, struct sigaltstack *oss);
 #  endif
 
 #  ifdef HAVE_SS_BASE
@@ -1151,10 +1151,10 @@ sigcont_handler SIGDEFARG(sigarg)
 #endif
 
 # if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
-static void loose_clipboard __ARGS((void));
+static void loose_clipboard(void);
 # ifdef USE_SYSTEM
-static void save_clipboard __ARGS((void));
-static void restore_clipboard __ARGS((void));
+static void save_clipboard(void);
+static void restore_clipboard(void);
 
 static void *clip_star_save = NULL;
 static void *clip_plus_save = NULL;
@@ -1489,7 +1489,7 @@ mch_input_isatty()
 # if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H) \
 	&& (defined(FEAT_XCLIPBOARD) || defined(FEAT_TITLE))
 
-static void xopen_message __ARGS((struct timeval *tvp));
+static void xopen_message(struct timeval *tvp);
 
 /*
  * Give a message about the elapsed time for opening the X window.
@@ -1513,10 +1513,10 @@ xopen_message(tvp)
 /*
  * A few functions shared by X11 title and clipboard code.
  */
-static int x_error_handler __ARGS((Display *dpy, XErrorEvent *error_event));
-static int x_error_check __ARGS((Display *dpy, XErrorEvent *error_event));
-static int x_connect_to_server __ARGS((void));
-static int test_x11_window __ARGS((Display *dpy));
+static int x_error_handler(Display *dpy, XErrorEvent *error_event);
+static int x_error_check(Display *dpy, XErrorEvent *error_event);
+static int x_connect_to_server(void);
+static int test_x11_window(Display *dpy);
 
 static int	got_x_error = FALSE;
 
@@ -1556,7 +1556,7 @@ x_error_check(dpy, error_event)
 /*
  * An X IO Error handler, used to catch error while opening the display.
  */
-static int x_IOerror_check __ARGS((Display *dpy));
+static int x_IOerror_check(Display *dpy);
 
     static int
 x_IOerror_check(dpy)
@@ -1573,8 +1573,8 @@ x_IOerror_check(dpy)
 /*
  * An X IO Error handler, used to catch terminal errors.
  */
-static int x_IOerror_handler __ARGS((Display *dpy));
-static void may_restore_clipboard __ARGS((void));
+static int x_IOerror_handler(Display *dpy);
+static void may_restore_clipboard(void);
 static int xterm_dpy_was_reset = FALSE;
 
     static int
@@ -1676,7 +1676,7 @@ test_x11_window(dpy)
 
 #ifdef FEAT_X11
 
-static int get_x11_thing __ARGS((int get_title, int test_only));
+static int get_x11_thing(int get_title, int test_only);
 
 /*
  * try to get x11 window and display
@@ -2393,7 +2393,7 @@ mch_get_pid()
 }
 
 #if !defined(HAVE_STRERROR) && defined(USE_GETCWD)
-static char *strerror __ARGS((int));
+static char *strerror(int);
 
     static char *
 strerror(err)
@@ -3037,7 +3037,7 @@ mch_isrealdir(name)
 #endif
 }
 
-static int executable_file __ARGS((char_u *name));
+static int executable_file(char_u *name);
 
 /*
  * Return 1 if "name" is an executable file, 0 if not or it doesn't exist.
@@ -3247,7 +3247,7 @@ mch_free_mem()
 }
 #endif
 
-static void exit_scroll __ARGS((void));
+static void exit_scroll(void);
 
 /*
  * Output a newline when exiting.
@@ -7107,15 +7107,15 @@ clip_xterm_set_selection(cbd)
 /*
  * Code for X Session Management Protocol.
  */
-static void xsmp_handle_save_yourself __ARGS((SmcConn smc_conn, SmPointer client_data, int save_type, Bool shutdown, int interact_style, Bool fast));
-static void xsmp_die __ARGS((SmcConn smc_conn, SmPointer client_data));
-static void xsmp_save_complete __ARGS((SmcConn smc_conn, SmPointer client_data));
-static void xsmp_shutdown_cancelled __ARGS((SmcConn smc_conn, SmPointer	client_data));
-static void xsmp_ice_connection __ARGS((IceConn iceConn, IcePointer clientData, Bool opening, IcePointer *watchData));
+static void xsmp_handle_save_yourself(SmcConn smc_conn, SmPointer client_data, int save_type, Bool shutdown, int interact_style, Bool fast);
+static void xsmp_die(SmcConn smc_conn, SmPointer client_data);
+static void xsmp_save_complete(SmcConn smc_conn, SmPointer client_data);
+static void xsmp_shutdown_cancelled(SmcConn smc_conn, SmPointer	client_data);
+static void xsmp_ice_connection(IceConn iceConn, IcePointer clientData, Bool opening, IcePointer *watchData);
 
 
 # if defined(FEAT_GUI) && defined(USE_XSMP_INTERACT)
-static void xsmp_handle_interaction __ARGS((SmcConn smc_conn, SmPointer client_data));
+static void xsmp_handle_interaction(SmcConn smc_conn, SmPointer client_data);
 
 /*
  * This is our chance to ask the user if they want to save,

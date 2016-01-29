@@ -13,25 +13,25 @@
 #include "vim.h"
 
 #ifdef FEAT_EVAL
-static void set_vv_searchforward __ARGS((void));
-static int first_submatch __ARGS((regmmatch_T *rp));
+static void set_vv_searchforward(void);
+static int first_submatch(regmmatch_T *rp);
 #endif
-static int check_prevcol __ARGS((char_u *linep, int col, int ch, int *prevcol));
-static int inmacro __ARGS((char_u *, char_u *));
-static int check_linecomment __ARGS((char_u *line));
-static int cls __ARGS((void));
-static int skip_chars __ARGS((int, int));
+static int check_prevcol(char_u *linep, int col, int ch, int *prevcol);
+static int inmacro(char_u *, char_u *);
+static int check_linecomment(char_u *line);
+static int cls(void);
+static int skip_chars(int, int);
 #ifdef FEAT_TEXTOBJ
-static void back_in_line __ARGS((void));
-static void find_first_blank __ARGS((pos_T *));
-static void findsent_forward __ARGS((long count, int at_start_sent));
+static void back_in_line(void);
+static void find_first_blank(pos_T *);
+static void findsent_forward(long count, int at_start_sent);
 #endif
 #ifdef FEAT_FIND_ID
-static void show_pat_in_path __ARGS((char_u *, int,
-					 int, int, FILE *, linenr_T *, long));
+static void show_pat_in_path(char_u *, int,
+					 int, int, FILE *, linenr_T *, long);
 #endif
 #ifdef FEAT_VIMINFO
-static void wvsp_one __ARGS((FILE *fp, int idx, char *s, int sc));
+static void wvsp_one(FILE *fp, int idx, char *s, int sc);
 #endif
 
 /*
@@ -1785,7 +1785,7 @@ check_prevcol(linep, col, ch, prevcol)
     return (col >= 0 && linep[col] == ch) ? TRUE : FALSE;
 }
 
-static int find_rawstring_end __ARGS((char_u *linep, pos_T *startpos, pos_T *endpos));
+static int find_rawstring_end(char_u *linep, pos_T *startpos, pos_T *endpos);
 
 /*
  * Raw string start is found at linep[startpos.col - 1].
@@ -2678,7 +2678,7 @@ findsent(dir, count)
 {
     pos_T	pos, tpos;
     int		c;
-    int		(*func) __ARGS((pos_T *));
+    int		(*func)(pos_T *);
     int		startlnum;
     int		noskip = FALSE;	    /* do not skip blanks */
     int		cpo_J;
@@ -3831,7 +3831,7 @@ current_block(oap, count, include, what, other)
     return OK;
 }
 
-static int in_html_tag __ARGS((int));
+static int in_html_tag(int);
 
 /*
  * Return TRUE if the cursor is on a "<aaa>" tag.  Ignore "<aaa/>".
@@ -4286,8 +4286,8 @@ extend:
     return OK;
 }
 
-static int find_next_quote __ARGS((char_u *top_ptr, int col, int quotechar, char_u *escape));
-static int find_prev_quote __ARGS((char_u *line, int col_start, int quotechar, char_u *escape));
+static int find_next_quote(char_u *top_ptr, int col, int quotechar, char_u *escape);
+static int find_prev_quote(char_u *line, int col_start, int quotechar, char_u *escape);
 
 /*
  * Search quote char from string line[col].
@@ -4598,7 +4598,7 @@ current_quote(oap, count, include, quotechar)
 
 #endif /* FEAT_TEXTOBJ */
 
-static int is_one_char __ARGS((char_u *pattern, int move));
+static int is_one_char(char_u *pattern, int move);
 
 /*
  * Find next search match under cursor, cursor at end.

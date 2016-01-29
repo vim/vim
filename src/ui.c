@@ -381,7 +381,7 @@ ui_breakcheck()
 
 #if defined(FEAT_CLIPBOARD) || defined(PROTO)
 
-static void clip_copy_selection __ARGS((VimClipboard *clip));
+static void clip_copy_selection(VimClipboard *clip);
 
 /*
  * Selection stuff using Visual mode, for cutting and pasting text to other
@@ -660,13 +660,13 @@ clip_isautosel_plus()
  * Stuff for general mouse selection, without using Visual mode.
  */
 
-static int clip_compare_pos __ARGS((int row1, int col1, int row2, int col2));
-static void clip_invert_area __ARGS((int, int, int, int, int how));
-static void clip_invert_rectangle __ARGS((int row, int col, int height, int width, int invert));
-static void clip_get_word_boundaries __ARGS((VimClipboard *, int, int));
-static int  clip_get_line_end __ARGS((int));
-static void clip_update_modeless_selection __ARGS((VimClipboard *, int, int,
-						    int, int));
+static int clip_compare_pos(int row1, int col1, int row2, int col2);
+static void clip_invert_area(int, int, int, int, int how);
+static void clip_invert_rectangle(int row, int col, int height, int width, int invert);
+static void clip_get_word_boundaries(VimClipboard *, int, int);
+static int  clip_get_line_end(int);
+static void clip_update_modeless_selection(VimClipboard *, int, int,
+						    int, int);
 
 /* flags for clip_invert_area() */
 #define CLIP_CLEAR	1
@@ -2064,10 +2064,10 @@ x11_setup_atoms(dpy)
  * X Selection stuff, for cutting and pasting text to other windows.
  */
 
-static Boolean	clip_x11_convert_selection_cb __ARGS((Widget, Atom *, Atom *, Atom *, XtPointer *, long_u *, int *));
-static void  clip_x11_lose_ownership_cb __ARGS((Widget, Atom *));
-static void clip_x11_timestamp_cb __ARGS((Widget w, XtPointer n, XEvent *event, Boolean *cont));
-static void  clip_x11_request_selection_cb __ARGS((Widget, XtPointer, Atom *, Atom *, XtPointer, long_u *, int *));
+static Boolean	clip_x11_convert_selection_cb(Widget, Atom *, Atom *, Atom *, XtPointer *, long_u *, int *);
+static void  clip_x11_lose_ownership_cb(Widget, Atom *);
+static void clip_x11_timestamp_cb(Widget w, XtPointer n, XEvent *event, Boolean *cont);
+static void  clip_x11_request_selection_cb(Widget, XtPointer, Atom *, Atom *, XtPointer, long_u *, int *);
 
 /*
  * Property callback to get a timestamp for XtOwnSelection.
