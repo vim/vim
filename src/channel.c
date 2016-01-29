@@ -91,7 +91,7 @@ typedef struct {
 #ifdef FEAT_GUI_GTK
     gint      ch_inputHandler;	/* Cookie for input */
 #endif
-#ifdef FEAT_GUI_W32
+#ifdef WIN32
     int       ch_inputHandler;	/* simply ret.value of WSAAsyncSelect() */
 #endif
 
@@ -279,14 +279,14 @@ channel_open(char *hostname, int port_in, void (*close_cb)(void))
     int			sd;
     struct sockaddr_in	server;
     struct hostent *	host;
-#ifdef FEAT_GUI_W32
+#ifdef WIN32
     u_short		port = port_in;
 #else
     int			port = port_in;
 #endif
     int			idx;
 
-#ifdef FEAT_GUI_W32
+#ifdef WIN32
     channel_init_winsock();
 #endif
 
@@ -861,7 +861,7 @@ channel_read_block(int idx)
     return channel_get(idx);
 }
 
-# if defined(FEAT_GUI_W32) || defined(PROTO)
+# if defined(WIN32) || defined(PROTO)
 /*
  * Lookup the channel index from the socket.
  * Returns -1 when the socket isn't found.
@@ -965,7 +965,7 @@ channel_poll_check(int ret_in, void *fds_in)
 }
 # endif /* UNIX && !HAVE_SELECT */
 
-# if (defined(UNIX) && defined(HAVE_SELECT)) || defined(PROTO)
+# if (!defined(FEAT_GUI_W32) && defined(HAVE_SELECT)) || defined(PROTO)
 /*
  * The type of "rfds" is hidden to avoid problems with the function proto.
  */
@@ -1007,6 +1007,6 @@ channel_select_check(int ret_in, void *rfds_in)
 
     return ret;
 }
-# endif /* UNIX && HAVE_SELECT */
+# endif /* !FEAT_GUI_W32 && HAVE_SELECT */
 
 #endif /* FEAT_CHANNEL */

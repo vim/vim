@@ -50,4 +50,5 @@ char_u *serverGetReply(HWND server, int *expr_res, int remove, int wait);
 void serverProcessPendingMessages(void);
 char *charset_id2name(int id);
 int get_logfont(LOGFONT *lf, char_u *name, HDC printer_dc, int verbose);
+void channel_init_winsock(void);
 /* vim: set ft=c : */
