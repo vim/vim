@@ -56,12 +56,12 @@ typedef struct {
 } bf_state_T;
 
 
-static void bf_e_block __ARGS((bf_state_T *state, UINT32_T *p_xl, UINT32_T *p_xr));
-static void bf_e_cblock __ARGS((bf_state_T *state, char_u *block));
-static int bf_check_tables __ARGS((UINT32_T pax[18], UINT32_T sbx[4][256], UINT32_T val));
-static int bf_self_test __ARGS((void));
-static void bf_key_init __ARGS((bf_state_T *state, char_u *password, char_u *salt, int salt_len));
-static void bf_cfb_init __ARGS((bf_state_T *state, char_u *seed, int seed_len));
+static void bf_e_block(bf_state_T *state, UINT32_T *p_xl, UINT32_T *p_xr);
+static void bf_e_cblock(bf_state_T *state, char_u *block);
+static int bf_check_tables(UINT32_T pax[18], UINT32_T sbx[4][256], UINT32_T val);
+static int bf_self_test(void);
+static void bf_key_init(bf_state_T *state, char_u *password, char_u *salt, int salt_len);
+static void bf_cfb_init(bf_state_T *state, char_u *seed, int seed_len);
 
 /* Blowfish code */
 static UINT32_T pax_init[18] = {

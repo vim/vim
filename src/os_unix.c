@@ -109,7 +109,7 @@ static int mch_gpm_process(void);
 
 static int sysmouse_open(void);
 static void sysmouse_close(void);
-static RETSIGTYPE sig_sysmouse __ARGS(SIGPROTOARG);
+static RETSIGTYPE sig_sysmouse SIGPROTOARG;
 #endif
 
 /*
@@ -190,22 +190,22 @@ static int do_xterm_trace(void);
 static void handle_resize(void);
 
 #if defined(SIGWINCH)
-static RETSIGTYPE sig_winch __ARGS(SIGPROTOARG);
+static RETSIGTYPE sig_winch SIGPROTOARG;
 #endif
 #if defined(SIGINT)
-static RETSIGTYPE catch_sigint __ARGS(SIGPROTOARG);
+static RETSIGTYPE catch_sigint SIGPROTOARG;
 #endif
 #if defined(SIGPWR)
-static RETSIGTYPE catch_sigpwr __ARGS(SIGPROTOARG);
+static RETSIGTYPE catch_sigpwr SIGPROTOARG;
 #endif
 #if defined(SIGALRM) && defined(FEAT_X11) \
 	&& defined(FEAT_TITLE) && !defined(FEAT_GUI_GTK)
 # define SET_SIG_ALARM
-static RETSIGTYPE sig_alarm __ARGS(SIGPROTOARG);
+static RETSIGTYPE sig_alarm SIGPROTOARG;
 /* volatile because it is used in signal handler sig_alarm(). */
 static volatile int sig_alarm_called;
 #endif
-static RETSIGTYPE deathtrap __ARGS(SIGPROTOARG);
+static RETSIGTYPE deathtrap SIGPROTOARG;
 
 static void catch_int_signal(void);
 static void set_signals(void);
@@ -1137,7 +1137,7 @@ deathtrap SIGDEFARG(sigarg)
  * volatile because it is used in signal handler sigcont_handler().
  */
 static volatile int sigcont_received;
-static RETSIGTYPE sigcont_handler __ARGS(SIGPROTOARG);
+static RETSIGTYPE sigcont_handler SIGPROTOARG;
 
 /*
  * signal handler for SIGCONT
@@ -6592,10 +6592,10 @@ sig_sysmouse SIGDEFARG(sigarg)
 #endif /* FEAT_SYSMOUSE */
 
 #if defined(FEAT_LIBCALL) || defined(PROTO)
-typedef char_u * (*STRPROCSTR)__ARGS((char_u *));
-typedef char_u * (*INTPROCSTR)__ARGS((int));
-typedef int (*STRPROCINT)__ARGS((char_u *));
-typedef int (*INTPROCINT)__ARGS((int));
+typedef char_u * (*STRPROCSTR)(char_u *);
+typedef char_u * (*INTPROCSTR)(int);
+typedef int (*STRPROCINT)(char_u *);
+typedef int (*INTPROCINT)(int);
 
 /*
  * Call a DLL routine which takes either a string or int param

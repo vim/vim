@@ -2999,7 +2999,7 @@ source_runtime(name, all)
 do_in_runtimepath(name, all, callback, cookie)
     char_u	*name;
     int		all;
-    void	(*callback)__ARGS((char_u *fname, void *ck));
+    void	(*callback)(char_u *fname, void *ck);
     void	*cookie;
 {
     char_u	*rtp;

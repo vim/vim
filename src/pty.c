@@ -228,7 +228,7 @@ OpenPTY(ttyn)
 {
     int f;
     char *name;
-    RETSIGTYPE (*sigcld)__ARGS(SIGPROTOARG);
+    RETSIGTYPE (*sigcld) SIGPROTOARG;
 
     /*
      * SIGCHLD set to SIG_DFL for _getpty() because it may fork() and

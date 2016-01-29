@@ -3,5 +3,5 @@
  */
 
 #ifndef XPM_W32__H
-int LoadXpmImage __ARGS((char *filename, HBITMAP *hImage, HBITMAP *hShape));
+int LoadXpmImage(char *filename, HBITMAP *hImage, HBITMAP *hShape);
 #endif

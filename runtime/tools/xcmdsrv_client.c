@@ -29,10 +29,8 @@
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>
 
-#define __ARGS(x) x
-
 /* Client API */
-char * sendToVim __ARGS((Display *dpy, char *name, char *cmd, int asKeys, int *code));
+char * sendToVim(Display *dpy, char *name, char *cmd, int asKeys, int *code);
 
 #ifdef MAIN
 /* A sample program */
@@ -70,15 +68,15 @@ main(int argc, char **argv)
  * Forward declarations for procedures defined later in this file:
  */
 
-static int	x_error_check __ARGS((Display *dpy, XErrorEvent *error_event));
-static int	AppendPropCarefully __ARGS((Display *display,
-		    Window window, Atom property, char *value, int length));
-static Window	LookupName __ARGS((Display *dpy, char *name,
-		    int delete, char **loose));
-static int	SendInit __ARGS((Display *dpy));
-static char	*SendEventProc __ARGS((Display *dpy, XEvent *eventPtr,
-				      int expect, int *code));
-static int	IsSerialName __ARGS((char *name));
+static int	x_error_check(Display *dpy, XErrorEvent *error_event);
+static int	AppendPropCarefully(Display *display,
+		    Window window, Atom property, char *value, int length);
+static Window	LookupName(Display *dpy, char *name,
+		    int delete, char **loose);
+static int	SendInit(Display *dpy);
+static char	*SendEventProc(Display *dpy, XEvent *eventPtr,
+				      int expect, int *code);
+static int	IsSerialName(char *name);
 
 /* Private variables */
 static Atom	registryProperty = None;

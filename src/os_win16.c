@@ -84,7 +84,7 @@ int _stricoll(char *a, char *b);
 /* cproto doesn't create a prototype for main() */
 int _cdecl
 VimMain
-__ARGS((int argc, char **argv));
+    (int argc, char **argv);
 static int (_cdecl *pmain)(int, char **);
 
 #ifndef PROTO

@@ -55,7 +55,7 @@
 #  include "winclip.pro"
 #  if (defined(__GNUC__) && !defined(__MINGW32__)) \
 	|| (defined(__BORLANDC__) && __BORLANDC__ < 0x502)
-extern int _stricoll __ARGS((char *a, char *b));
+extern int _stricoll(char *a, char *b);
 #  endif
 # endif
 # ifdef VMS
@@ -111,25 +111,25 @@ int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-smsg __ARGS((char_u *, ...));
+smsg(char_u *, ...);
 
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-smsg_attr __ARGS((int, char_u *, ...));
+smsg_attr(int, char_u *, ...);
 
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-vim_snprintf_add __ARGS((char *, size_t, char *, ...));
+vim_snprintf_add(char *, size_t, char *, ...);
 
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-vim_snprintf __ARGS((char *, size_t, char *, ...));
+vim_snprintf(char *, size_t, char *, ...);
 
 #  if defined(HAVE_STDARG_H)
 int vim_vsnprintf(char *str, size_t str_m, char *fmt, va_list ap, typval_T *tvs);
@@ -140,11 +140,11 @@ int vim_vsnprintf(char *str, size_t str_m, char *fmt, va_list ap, typval_T *tvs)
 # include "misc1.pro"
 # include "misc2.pro"
 #ifndef HAVE_STRPBRK	    /* not generated automatically from misc2.c */
-char_u *vim_strpbrk __ARGS((char_u *s, char_u *charset));
+char_u *vim_strpbrk(char_u *s, char_u *charset);
 #endif
 #ifndef HAVE_QSORT
 /* Use our own qsort(), don't define the prototype when not used. */
-void qsort __ARGS((void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void *, const void *)));
+void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void *, const void *));
 #endif
 # include "move.pro"
 # if defined(FEAT_MBYTE) || defined(FEAT_XIM) || defined(FEAT_KEYMAP) \
@@ -219,9 +219,9 @@ void qsort __ARGS((void *base, size_t elm_count, size_t elm_size, int (*cmp)(con
 #   include "pty.pro"
 #  endif
 #  if !defined(HAVE_SETENV) && !defined(HAVE_PUTENV) && !defined(VMS)
-extern int putenv __ARGS((const char *string));		/* from pty.c */
+extern int putenv(const char *string);		/* from pty.c */
 #   ifdef USE_VIMPTY_GETENV
-extern char_u *vimpty_getenv __ARGS((const char_u *string));	/* from pty.c */
+extern char_u *vimpty_getenv(const char_u *string);	/* from pty.c */
 #   endif
 #  endif
 #  ifdef FEAT_GUI_W16
@@ -241,7 +241,7 @@ extern char_u *vimpty_getenv __ARGS((const char_u *string));	/* from pty.c */
 #  ifdef FEAT_GUI_ATHENA
 #   include "gui_athena.pro"
 #   ifdef FEAT_BROWSE
-extern char *vim_SelFile __ARGS((Widget toplevel, char *prompt, char *init_path, int (*show_entry)(), int x, int y, guicolor_T fg, guicolor_T bg, guicolor_T scroll_fg, guicolor_T scroll_bg));
+extern char *vim_SelFile(Widget toplevel, char *prompt, char *init_path, int (*show_entry)(), int x, int y, guicolor_T fg, guicolor_T bg, guicolor_T scroll_fg, guicolor_T scroll_bg);
 #   endif
 #  endif
 #  ifdef FEAT_GUI_MAC

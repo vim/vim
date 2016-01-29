@@ -6334,8 +6334,8 @@ in_id_list(cur_si, list, ssp, contained)
 
 struct subcommand
 {
-    char    *name;				/* subcommand name */
-    void    (*func)__ARGS((exarg_T *, int));	/* function to call */
+    char    *name;			/* subcommand name */
+    void    (*func)(exarg_T *, int);	/* function to call */
 };
 
 static struct subcommand subcommands[] =

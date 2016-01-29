@@ -60,7 +60,7 @@ typedef struct BalloonEvalStruct
 #endif
     int			ts;		/* tabstop setting for this buffer */
     char_u		*msg;
-    void		(*msgCB)__ARGS((struct BalloonEvalStruct *, int));
+    void		(*msgCB)(struct BalloonEvalStruct *, int);
     void		*clientData;	/* For callback */
 #if !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_W32)
     Dimension		screen_width;	/* screen width in pixels */

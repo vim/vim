@@ -125,9 +125,9 @@
 /* Compatibility hacks over */
 
 static PerlInterpreter *perl_interp = NULL;
-static void xs_init __ARGS((pTHX));
-static void VIM_init __ARGS((void));
-EXTERN_C void boot_DynaLoader __ARGS((pTHX_ CV*));
+static void xs_init(pTHX);
+static void VIM_init(void);
+EXTERN_C void boot_DynaLoader(pTHX_ CV*);
 
 /*
  * For dynamic linked perl.
@@ -1090,7 +1090,7 @@ perl_to_vim(sv, rettv)
 		    item2 = av_fetch((AV *)sv, size, 0);
 
 		    if (item2 == NULL || *item2 == NULL ||
-					perl_to_vim(*item2, &item->li_tv) == FAIL)
+				    perl_to_vim(*item2, &item->li_tv) == FAIL)
 			break;
 		}
 	    }

@@ -195,7 +195,7 @@ static void createBalloonEvalWindow(BalloonEval *);
 gui_mch_create_beval_area(target, mesg, mesgCB, clientData)
     void	*target;
     char_u	*mesg;
-    void	(*mesgCB)__ARGS((BalloonEval *, int));
+    void	(*mesgCB)(BalloonEval *, int);
     void	*clientData;
 {
 #ifndef FEAT_GUI_GTK

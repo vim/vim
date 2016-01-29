@@ -2142,7 +2142,7 @@ typedef struct
 static int fold_changed;
 
 /* Function declarations. {{{2 */
-static linenr_T foldUpdateIEMSRecurse(garray_T *gap, int level, linenr_T startlnum, fline_T *flp, void (*getlevel)__ARGS((fline_T *)), linenr_T bot, int topflags);
+static linenr_T foldUpdateIEMSRecurse(garray_T *gap, int level, linenr_T startlnum, fline_T *flp, void (*getlevel)(fline_T *), linenr_T bot, int topflags);
 static int foldInsert(garray_T *gap, int i);
 static void foldSplit(garray_T *gap, int i, linenr_T top, linenr_T bot);
 static void foldRemove(garray_T *gap, linenr_T top, linenr_T bot);
@@ -2169,7 +2169,7 @@ foldUpdateIEMS(wp, top, bot)
     linenr_T	start;
     linenr_T	end;
     fline_T	fline;
-    void	(*getlevel)__ARGS((fline_T *));
+    void	(*getlevel)(fline_T *);
     int		level;
     fold_T	*fp;
 
@@ -2422,7 +2422,7 @@ foldUpdateIEMSRecurse(gap, level, startlnum, flp, getlevel, bot, topflags)
     int		level;
     linenr_T	startlnum;
     fline_T	*flp;
-    void	(*getlevel)__ARGS((fline_T *));
+    void	(*getlevel)(fline_T *);
     linenr_T	bot;
     int		topflags;	/* flags used by containing fold */
 {

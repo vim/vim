@@ -4709,7 +4709,7 @@ ExpandFromContext(xp, pat, num_file, file, options)
 	static struct expgen
 	{
 	    int		context;
-	    char_u	*((*func)__ARGS((expand_T *, int)));
+	    char_u	*((*func)(expand_T *, int));
 	    int		ic;
 	    int		escaped;
 	} tab[] =
@@ -4804,7 +4804,7 @@ ExpandGeneric(xp, regmatch, num_file, file, func, escaped)
     regmatch_T	*regmatch;
     int		*num_file;
     char_u	***file;
-    char_u	*((*func)__ARGS((expand_T *, int)));
+    char_u	*((*func)(expand_T *, int));
 					  /* returns a string from the list */
     int		escaped;
 {

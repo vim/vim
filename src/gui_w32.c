@@ -4931,7 +4931,7 @@ gui_mch_post_balloon(beval, mesg)
 gui_mch_create_beval_area(target, mesg, mesgCB, clientData)
     void	*target;	/* ignored, always use s_textArea */
     char_u	*mesg;
-    void	(*mesgCB)__ARGS((BalloonEval *, int));
+    void	(*mesgCB)(BalloonEval *, int);
     void	*clientData;
 {
     /* partially stolen from gui_beval.c */

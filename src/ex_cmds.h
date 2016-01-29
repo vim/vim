@@ -85,7 +85,7 @@ typedef struct exarg exarg_T;
 #ifdef DO_DECLARE_EXCMD
 # define EX(a, b, c, d, e)  {(char_u *)b, c, (long_u)(d), e}
 
-typedef void (*ex_func_T) __ARGS((exarg_T *eap));
+typedef void (*ex_func_T) (exarg_T *eap);
 
 static struct cmdname
 {
@@ -1739,7 +1739,7 @@ struct exarg
     int		useridx;	/* user command index */
 #endif
     char_u	*errmsg;	/* returned error message */
-    char_u	*(*getline) __ARGS((int, void *, int));
+    char_u	*(*getline)(int, void *, int);
     void	*cookie;	/* argument for getline() */
 #ifdef FEAT_EVAL
     struct condstack *cstack;	/* condition stack for ":if" etc. */
