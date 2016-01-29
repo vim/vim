@@ -19,26 +19,26 @@
 #endif
 
 #ifdef FEAT_EX_EXTRA
-static int linelen __ARGS((int *has_tab));
+static int linelen(int *has_tab);
 #endif
-static void do_filter __ARGS((linenr_T line1, linenr_T line2, exarg_T *eap, char_u *cmd, int do_in, int do_out));
+static void do_filter(linenr_T line1, linenr_T line2, exarg_T *eap, char_u *cmd, int do_in, int do_out);
 #ifdef FEAT_VIMINFO
-static char_u *viminfo_filename __ARGS((char_u	*));
-static void do_viminfo __ARGS((FILE *fp_in, FILE *fp_out, int flags));
-static int viminfo_encoding __ARGS((vir_T *virp));
-static int read_viminfo_up_to_marks __ARGS((vir_T *virp, int forceit, int writing));
+static char_u *viminfo_filename(char_u	*);
+static void do_viminfo(FILE *fp_in, FILE *fp_out, int flags);
+static int viminfo_encoding(vir_T *virp);
+static int read_viminfo_up_to_marks(vir_T *virp, int forceit, int writing);
 #endif
 
-static int check_readonly __ARGS((int *forceit, buf_T *buf));
+static int check_readonly(int *forceit, buf_T *buf);
 #ifdef FEAT_AUTOCMD
-static void delbuf_msg __ARGS((char_u *name));
+static void delbuf_msg(char_u *name);
 #endif
 static int
 #ifdef __BORLANDC__
     _RTLENTRYF
 #endif
-	help_compare __ARGS((const void *s1, const void *s2));
-static void prepare_help_buffer __ARGS((void));
+	help_compare(const void *s1, const void *s2);
+static void prepare_help_buffer(void);
 
 /*
  * ":ascii" and "ga".
@@ -309,7 +309,7 @@ static int
 #ifdef __BORLANDC__
 _RTLENTRYF
 #endif
-sort_compare __ARGS((const void *s1, const void *s2));
+sort_compare(const void *s1, const void *s2);
 
     static int
 #ifdef __BORLANDC__
@@ -1759,7 +1759,7 @@ append_redir(buf, buflen, opt, fname)
 
 #if defined(FEAT_VIMINFO) || defined(PROTO)
 
-static int no_viminfo __ARGS((void));
+static int no_viminfo(void);
 static void write_viminfo_barlines(vir_T *virp, FILE *fp_out);
 static int  viminfo_errcnt;
 
@@ -6627,7 +6627,7 @@ ex_viusage(eap)
 }
 
 #if defined(FEAT_EX_EXTRA) || defined(PROTO)
-static void helptags_one __ARGS((char_u *dir, char_u *ext, char_u *lang, int add_help_tags));
+static void helptags_one(char_u *dir, char_u *ext, char_u *lang, int add_help_tags);
 
 /*
  * ":helptags"
@@ -7038,9 +7038,9 @@ struct sign
 static sign_T	*first_sign = NULL;
 static int	next_sign_typenr = 1;
 
-static int sign_cmd_idx __ARGS((char_u *begin_cmd, char_u *end_cmd));
-static void sign_list_defined __ARGS((sign_T *sp));
-static void sign_undefine __ARGS((sign_T *sp, sign_T *sp_prev));
+static int sign_cmd_idx(char_u *begin_cmd, char_u *end_cmd);
+static void sign_list_defined(sign_T *sp);
+static void sign_undefine(sign_T *sp, sign_T *sp_prev);
 
 static char *cmds[] = {
 			"define",

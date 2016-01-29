@@ -28,26 +28,26 @@
 #include "vim.h"
 
 #if defined(FEAT_CMDL_COMPL) || defined(FEAT_LISTCMDS) || defined(FEAT_EVAL) || defined(FEAT_PERL)
-static char_u	*buflist_match __ARGS((regmatch_T *rmp, buf_T *buf, int ignore_case));
+static char_u	*buflist_match(regmatch_T *rmp, buf_T *buf, int ignore_case);
 # define HAVE_BUFLIST_MATCH
-static char_u	*fname_match __ARGS((regmatch_T *rmp, char_u *name, int ignore_case));
+static char_u	*fname_match(regmatch_T *rmp, char_u *name, int ignore_case);
 #endif
-static void	buflist_setfpos __ARGS((buf_T *buf, win_T *win, linenr_T lnum, colnr_T col, int copy_options));
-static wininfo_T *find_wininfo __ARGS((buf_T *buf, int skip_diff_buffer));
+static void	buflist_setfpos(buf_T *buf, win_T *win, linenr_T lnum, colnr_T col, int copy_options);
+static wininfo_T *find_wininfo(buf_T *buf, int skip_diff_buffer);
 #ifdef UNIX
-static buf_T	*buflist_findname_stat __ARGS((char_u *ffname, struct stat *st));
-static int	otherfile_buf __ARGS((buf_T *buf, char_u *ffname, struct stat *stp));
-static int	buf_same_ino __ARGS((buf_T *buf, struct stat *stp));
+static buf_T	*buflist_findname_stat(char_u *ffname, struct stat *st);
+static int	otherfile_buf(buf_T *buf, char_u *ffname, struct stat *stp);
+static int	buf_same_ino(buf_T *buf, struct stat *stp);
 #else
-static int	otherfile_buf __ARGS((buf_T *buf, char_u *ffname));
+static int	otherfile_buf(buf_T *buf, char_u *ffname);
 #endif
 #ifdef FEAT_TITLE
-static int	ti_change __ARGS((char_u *str, char_u **last));
+static int	ti_change(char_u *str, char_u **last);
 #endif
-static int	append_arg_number __ARGS((win_T *wp, char_u *buf, int buflen, int add_file));
-static void	free_buffer __ARGS((buf_T *));
-static void	free_buffer_stuff __ARGS((buf_T *buf, int free_options));
-static void	clear_wininfo __ARGS((buf_T *buf));
+static int	append_arg_number(win_T *wp, char_u *buf, int buflen, int add_file);
+static void	free_buffer(buf_T *);
+static void	free_buffer_stuff(buf_T *buf, int free_options);
+static void	clear_wininfo(buf_T *buf);
 
 #ifdef UNIX
 # define dev_T dev_t
@@ -56,7 +56,7 @@ static void	clear_wininfo __ARGS((buf_T *buf));
 #endif
 
 #if defined(FEAT_SIGNS)
-static void insert_sign __ARGS((buf_T *buf, signlist_T *prev, signlist_T *next, int id, linenr_T lnum, int typenr));
+static void insert_sign(buf_T *buf, signlist_T *prev, signlist_T *next, int id, linenr_T lnum, int typenr);
 #endif
 
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
@@ -1006,7 +1006,7 @@ do_bufdel(command, arg, addr_count, start_bnr, end_bnr, forceit)
 #if defined(FEAT_LISTCMDS) || defined(FEAT_PYTHON) \
 	|| defined(FEAT_PYTHON3) || defined(PROTO)
 
-static int	empty_curbuf __ARGS((int close_others, int forceit, int action));
+static int	empty_curbuf(int close_others, int forceit, int action);
 
 /*
  * Make the current buffer empty.
@@ -2613,7 +2613,7 @@ buflist_setfpos(buf, win, lnum, col, copy_options)
 }
 
 #ifdef FEAT_DIFF
-static int wininfo_other_tab_diff __ARGS((wininfo_T *wip));
+static int wininfo_other_tab_diff(wininfo_T *wip);
 
 /*
  * Return TRUE when "wip" has 'diff' set and the diff is only for another tab
@@ -5118,7 +5118,7 @@ ex_buffer_all(eap)
 
 #endif /* FEAT_WINDOWS */
 
-static int  chk_modeline __ARGS((linenr_T, int));
+static int  chk_modeline(linenr_T, int);
 
 /*
  * do_modelines() - process mode lines for the current file

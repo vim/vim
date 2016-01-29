@@ -145,48 +145,48 @@ static expand_T	  compl_xp;
 
 static int	  compl_opt_refresh_always = FALSE;
 
-static void ins_ctrl_x __ARGS((void));
-static int  has_compl_option __ARGS((int dict_opt));
-static int  ins_compl_accept_char __ARGS((int c));
-static int ins_compl_add __ARGS((char_u *str, int len, int icase, char_u *fname, char_u **cptext, int cdir, int flags, int adup));
-static int  ins_compl_equal __ARGS((compl_T *match, char_u *str, int len));
-static void ins_compl_longest_match __ARGS((compl_T *match));
-static void ins_compl_add_matches __ARGS((int num_matches, char_u **matches, int icase));
-static int  ins_compl_make_cyclic __ARGS((void));
-static void ins_compl_upd_pum __ARGS((void));
-static void ins_compl_del_pum __ARGS((void));
-static int  pum_wanted __ARGS((void));
-static int  pum_enough_matches __ARGS((void));
-static void ins_compl_dictionaries __ARGS((char_u *dict, char_u *pat, int flags, int thesaurus));
-static void ins_compl_files __ARGS((int count, char_u **files, int thesaurus, int flags, regmatch_T *regmatch, char_u *buf, int *dir));
-static char_u *find_line_end __ARGS((char_u *ptr));
-static void ins_compl_free __ARGS((void));
-static void ins_compl_clear __ARGS((void));
-static int  ins_compl_bs __ARGS((void));
-static int  ins_compl_need_restart __ARGS((void));
-static void ins_compl_new_leader __ARGS((void));
-static void ins_compl_addleader __ARGS((int c));
-static int  ins_compl_len __ARGS((void));
-static void ins_compl_restart __ARGS((void));
-static void ins_compl_set_original_text __ARGS((char_u *str));
-static void ins_compl_addfrommatch __ARGS((void));
-static int  ins_compl_prep __ARGS((int c));
-static void ins_compl_fixRedoBufForLeader __ARGS((char_u *ptr_arg));
-static buf_T *ins_compl_next_buf __ARGS((buf_T *buf, int flag));
+static void ins_ctrl_x(void);
+static int  has_compl_option(int dict_opt);
+static int  ins_compl_accept_char(int c);
+static int ins_compl_add(char_u *str, int len, int icase, char_u *fname, char_u **cptext, int cdir, int flags, int adup);
+static int  ins_compl_equal(compl_T *match, char_u *str, int len);
+static void ins_compl_longest_match(compl_T *match);
+static void ins_compl_add_matches(int num_matches, char_u **matches, int icase);
+static int  ins_compl_make_cyclic(void);
+static void ins_compl_upd_pum(void);
+static void ins_compl_del_pum(void);
+static int  pum_wanted(void);
+static int  pum_enough_matches(void);
+static void ins_compl_dictionaries(char_u *dict, char_u *pat, int flags, int thesaurus);
+static void ins_compl_files(int count, char_u **files, int thesaurus, int flags, regmatch_T *regmatch, char_u *buf, int *dir);
+static char_u *find_line_end(char_u *ptr);
+static void ins_compl_free(void);
+static void ins_compl_clear(void);
+static int  ins_compl_bs(void);
+static int  ins_compl_need_restart(void);
+static void ins_compl_new_leader(void);
+static void ins_compl_addleader(int c);
+static int  ins_compl_len(void);
+static void ins_compl_restart(void);
+static void ins_compl_set_original_text(char_u *str);
+static void ins_compl_addfrommatch(void);
+static int  ins_compl_prep(int c);
+static void ins_compl_fixRedoBufForLeader(char_u *ptr_arg);
+static buf_T *ins_compl_next_buf(buf_T *buf, int flag);
 #if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
-static void ins_compl_add_list __ARGS((list_T *list));
-static void ins_compl_add_dict __ARGS((dict_T *dict));
+static void ins_compl_add_list(list_T *list);
+static void ins_compl_add_dict(dict_T *dict);
 #endif
-static int  ins_compl_get_exp __ARGS((pos_T *ini));
-static void ins_compl_delete __ARGS((void));
-static void ins_compl_insert __ARGS((void));
-static int  ins_compl_next __ARGS((int allow_get_expansion, int count, int insert_match));
-static int  ins_compl_key2dir __ARGS((int c));
-static int  ins_compl_pum_key __ARGS((int c));
-static int  ins_compl_key2count __ARGS((int c));
-static int  ins_compl_use_match __ARGS((int c));
-static int  ins_complete __ARGS((int c));
-static unsigned  quote_meta __ARGS((char_u *dest, char_u *str, int len));
+static int  ins_compl_get_exp(pos_T *ini);
+static void ins_compl_delete(void);
+static void ins_compl_insert(void);
+static int  ins_compl_next(int allow_get_expansion, int count, int insert_match);
+static int  ins_compl_key2dir(int c);
+static int  ins_compl_pum_key(int c);
+static int  ins_compl_key2count(int c);
+static int  ins_compl_use_match(int c);
+static int  ins_complete(int c);
+static unsigned  quote_meta(char_u *dest, char_u *str, int len);
 #endif /* FEAT_INS_EXPAND */
 
 #define BACKSPACE_CHAR		    1
@@ -194,80 +194,80 @@ static unsigned  quote_meta __ARGS((char_u *dest, char_u *str, int len));
 #define BACKSPACE_WORD_NOT_SPACE    3
 #define BACKSPACE_LINE		    4
 
-static void ins_redraw __ARGS((int ready));
-static void ins_ctrl_v __ARGS((void));
-static void undisplay_dollar __ARGS((void));
-static void insert_special __ARGS((int, int, int));
-static void internal_format __ARGS((int textwidth, int second_indent, int flags, int format_only, int c));
-static void check_auto_format __ARGS((int));
-static void redo_literal __ARGS((int c));
-static void start_arrow __ARGS((pos_T *end_insert_pos));
-static void start_arrow_with_change __ARGS((pos_T *end_insert_pos, int change));
-static void start_arrow_common __ARGS((pos_T *end_insert_pos, int change));
+static void ins_redraw(int ready);
+static void ins_ctrl_v(void);
+static void undisplay_dollar(void);
+static void insert_special(int, int, int);
+static void internal_format(int textwidth, int second_indent, int flags, int format_only, int c);
+static void check_auto_format(int);
+static void redo_literal(int c);
+static void start_arrow(pos_T *end_insert_pos);
+static void start_arrow_with_change(pos_T *end_insert_pos, int change);
+static void start_arrow_common(pos_T *end_insert_pos, int change);
 #ifdef FEAT_SPELL
-static void check_spell_redraw __ARGS((void));
-static void spell_back_to_badword __ARGS((void));
+static void check_spell_redraw(void);
+static void spell_back_to_badword(void);
 static int  spell_bad_len = 0;	/* length of located bad word */
 #endif
-static void stop_insert __ARGS((pos_T *end_insert_pos, int esc, int nomove));
-static int  echeck_abbr __ARGS((int));
-static int  replace_pop __ARGS((void));
-static void replace_join __ARGS((int off));
-static void replace_pop_ins __ARGS((void));
+static void stop_insert(pos_T *end_insert_pos, int esc, int nomove);
+static int  echeck_abbr(int);
+static int  replace_pop(void);
+static void replace_join(int off);
+static void replace_pop_ins(void);
 #ifdef FEAT_MBYTE
-static void mb_replace_pop_ins __ARGS((int cc));
+static void mb_replace_pop_ins(int cc);
 #endif
-static void replace_flush __ARGS((void));
-static void replace_do_bs __ARGS((int limit_col));
-static int del_char_after_col __ARGS((int limit_col));
+static void replace_flush(void);
+static void replace_do_bs(int limit_col);
+static int del_char_after_col(int limit_col);
 #ifdef FEAT_CINDENT
-static int cindent_on __ARGS((void));
+static int cindent_on(void);
 #endif
-static void ins_reg __ARGS((void));
-static void ins_ctrl_g __ARGS((void));
-static void ins_ctrl_hat __ARGS((void));
-static int  ins_esc __ARGS((long *count, int cmdchar, int nomove));
+static void ins_reg(void);
+static void ins_ctrl_g(void);
+static void ins_ctrl_hat(void);
+static int  ins_esc(long *count, int cmdchar, int nomove);
 #ifdef FEAT_RIGHTLEFT
-static void ins_ctrl_ __ARGS((void));
+static void ins_ctrl_(void);
 #endif
-static int ins_start_select __ARGS((int c));
-static void ins_insert __ARGS((int replaceState));
-static void ins_ctrl_o __ARGS((void));
-static void ins_shift __ARGS((int c, int lastc));
-static void ins_del __ARGS((void));
-static int  ins_bs __ARGS((int c, int mode, int *inserted_space_p));
+static int ins_start_select(int c);
+static void ins_insert(int replaceState);
+static void ins_ctrl_o(void);
+static void ins_shift(int c, int lastc);
+static void ins_del(void);
+static int  ins_bs(int c, int mode, int *inserted_space_p);
 #ifdef FEAT_MOUSE
-static void ins_mouse __ARGS((int c));
-static void ins_mousescroll __ARGS((int dir));
+static void ins_mouse(int c);
+static void ins_mousescroll(int dir);
 #endif
 #if defined(FEAT_GUI_TABLINE) || defined(PROTO)
-static void ins_tabline __ARGS((int c));
+static void ins_tabline(int c);
 #endif
-static void ins_left __ARGS((int end_change));
-static void ins_home __ARGS((int c));
-static void ins_end __ARGS((int c));
-static void ins_s_left __ARGS((void));
-static void ins_right __ARGS((int end_change));
-static void ins_s_right __ARGS((void));
-static void ins_up __ARGS((int startcol));
-static void ins_pageup __ARGS((void));
-static void ins_down __ARGS((int startcol));
-static void ins_pagedown __ARGS((void));
+static void ins_left(int end_change);
+static void ins_home(int c);
+static void ins_end(int c);
+static void ins_s_left(void);
+static void ins_right(int end_change);
+static void ins_s_right(void);
+static void ins_up(int startcol);
+static void ins_pageup(void);
+static void ins_down(int startcol);
+static void ins_pagedown(void);
 #ifdef FEAT_DND
-static void ins_drop __ARGS((void));
+static void ins_drop(void);
 #endif
-static int  ins_tab __ARGS((void));
-static int  ins_eol __ARGS((int c));
+static int  ins_tab(void);
+static int  ins_eol(int c);
 #ifdef FEAT_DIGRAPHS
-static int  ins_digraph __ARGS((void));
+static int  ins_digraph(void);
 #endif
-static int  ins_ctrl_ey __ARGS((int tc));
+static int  ins_ctrl_ey(int tc);
 #ifdef FEAT_SMARTINDENT
-static void ins_try_si __ARGS((int c));
+static void ins_try_si(int c);
 #endif
-static colnr_T get_nolist_virtcol __ARGS((void));
+static colnr_T get_nolist_virtcol(void);
 #ifdef FEAT_AUTOCMD
-static char_u *do_insert_char_pre __ARGS((int c));
+static char_u *do_insert_char_pre(int c);
 #endif
 
 static colnr_T	Insstart_textlen;	/* length of line when insert started */
@@ -4024,7 +4024,7 @@ ins_compl_next_buf(buf, flag)
 }
 
 #ifdef FEAT_COMPL_FUNC
-static void expand_by_function __ARGS((int type, char_u *base));
+static void expand_by_function(int type, char_u *base);
 
 /*
  * Execute user defined complete function 'completefunc' or 'omnifunc', and
@@ -7852,7 +7852,7 @@ cindent_on()
 
     void
 fixthisline(get_the_indent)
-    int (*get_the_indent) __ARGS((void));
+    int (*get_the_indent)(void);
 {
     int amount = get_the_indent();
 
@@ -8849,7 +8849,7 @@ ins_del()
     AppendCharToRedobuff(K_DEL);
 }
 
-static void ins_bs_one __ARGS((colnr_T *vcolp));
+static void ins_bs_one(colnr_T *vcolp);
 
 /*
  * Delete one character for ins_bs().
