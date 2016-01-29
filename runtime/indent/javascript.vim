@@ -9,10 +9,4 @@ if exists("b:did_indent")
 endif
 let b:did_indent = 1
 
-" C indenting is not too bad.
-setlocal cindent
-setlocal cinoptions+=j1,J1
-setlocal cinkeys-=0#
-setlocal cinkeys+=0]
-
 let b:undo_indent = "setl cin<"
