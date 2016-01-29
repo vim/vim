@@ -1679,6 +1679,7 @@ PRO_AUTO = \
 	normal.pro \
 	ops.pro \
 	option.pro \
+	os_mac_conv.pro \
 	os_unix.pro \
 	popupmnu.pro \
 	pty.pro \
