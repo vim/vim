@@ -553,9 +553,6 @@ typedef BOOL (WINAPI *TGetMonitorInfo)(_HMONITOR, _MONITORINFO *);
 static TMonitorFromWindow   pMonitorFromWindow = NULL;
 static TGetMonitorInfo	    pGetMonitorInfo = NULL;
 static HANDLE		    user32_lib = NULL;
-#ifdef FEAT_CHANNEL
-int WSInitialized = FALSE; /* WinSock is initialized */
-#endif
 /*
  * Return TRUE when running under Windows NT 3.x or Win32s, both of which have
  * less fancy GUI APIs.
@@ -844,6 +841,7 @@ _OnWindowPosChanged(
     const LPWINDOWPOS lpwpos)
 {
     static int x = 0, y = 0, cx = 0, cy = 0;
+    extern int WSInitialized;
 
     if (WSInitialized && (lpwpos->x != x || lpwpos->y != y
 				     || lpwpos->cx != cx || lpwpos->cy != cy))
@@ -5047,24 +5045,5 @@ netbeans_draw_multisign_indicator(int row)
     SetPixel(s_hdc, x+2, y, gui.currFgColor);
     SetPixel(s_hdc, x+3, y++, gui.currFgColor);
     SetPixel(s_hdc, x+2, y, gui.currFgColor);
-}
-#endif
-
-#if defined(FEAT_CHANNEL) || defined(PROTO)
-/*
- * Initialize the Winsock dll.
- */
-    void
-channel_init_winsock()
-{
-    WSADATA wsaData;
-    int wsaerr;
-
-    if (WSInitialized)
-	return;
-
-    wsaerr = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if (wsaerr == 0)
-	WSInitialized = TRUE;
 }
 #endif

@@ -161,7 +161,9 @@ extern HWND s_hwnd;
 static HWND s_hwnd = 0;	    /* console window handle, set by GetConsoleHwnd() */
 #endif
 
-extern int WSInitialized;
+#ifdef FEAT_CHANNEL
+int WSInitialized = FALSE; /* WinSock is initialized */
+#endif
 
 /* Don't generate prototypes here, because some systems do have these
  * functions. */
@@ -3093,3 +3095,22 @@ theend:
 }
 
 #endif /* defined(FEAT_GUI) || defined(FEAT_PRINTER) */
+
+#if defined(FEAT_CHANNEL) || defined(PROTO)
+/*
+ * Initialize the Winsock dll.
+ */
+    void
+channel_init_winsock()
+{
+    WSADATA wsaData;
+    int wsaerr;
+
+    if (WSInitialized)
+	return;
+
+    wsaerr = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (wsaerr == 0)
+	WSInitialized = TRUE;
+}
+#endif

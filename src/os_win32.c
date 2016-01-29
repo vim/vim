@@ -1443,6 +1443,13 @@ WaitForChar(long msec)
     INPUT_RECORD    ir;
     DWORD	    cRecords;
     WCHAR	    ch, ch2;
+#ifdef FEAT_CHANNEL
+    struct timeval  tv;
+    struct timeva   *tvp;
+    int		    ret;
+    fd_set	    rfds;
+    int		    maxfd;
+#endif
 
     if (msec > 0)
 	/* Wait until the specified time has elapsed. */
@@ -1459,9 +1466,11 @@ WaitForChar(long msec)
 #ifdef FEAT_MZSCHEME
 	mzvim_check_threads();
 #endif
+
 #ifdef FEAT_CLIENTSERVER
 	serverProcessPendingMessages();
 #endif
+
 	if (0
 #ifdef FEAT_MOUSE
 		|| g_nMouseClick != -1
@@ -1562,6 +1571,31 @@ WaitForChar(long msec)
     if (input_available())
 	return TRUE;
 #endif
+#ifdef FEAT_CHANNEL
+	if (maxfd >= 0)
+	{
+	    FD_ZERO(&rfds);
+	    maxfd = channel_select_setup(-1, &rfds);
+
+	    if (msec >= 0)
+	    {
+		tv.tv_sec = msec / 1000;
+		tv.tv_usec = (msec % 1000) * 1000;
+		tvp = &tv;
+	    }
+	    else
+	    {
+		tvp = NULL;
+	    }
+	    ret = select(maxfd + 1, &rfds, NULL, NULL, tvp);
+	    if (ret > 0)
+	    {
+		if (channel_select_check(ret, &rfds) > 0)
+		    return TRUE;
+	    }
+	}
+#endif
+
     return FALSE;
 }
 
