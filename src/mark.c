@@ -27,15 +27,15 @@
 #define EXTRA_MARKS 10					/* marks 0-9 */
 static xfmark_T namedfm[NMARKS + EXTRA_MARKS];		/* marks with file nr */
 
-static void fname2fnum __ARGS((xfmark_T *fm));
-static void fmarks_check_one __ARGS((xfmark_T *fm, char_u *name, buf_T *buf));
-static char_u *mark_line __ARGS((pos_T *mp, int lead_len));
-static void show_one_mark __ARGS((int, char_u *, pos_T *, char_u *, int current));
+static void fname2fnum(xfmark_T *fm);
+static void fmarks_check_one(xfmark_T *fm, char_u *name, buf_T *buf);
+static char_u *mark_line(pos_T *mp, int lead_len);
+static void show_one_mark(int, char_u *, pos_T *, char_u *, int current);
 #ifdef FEAT_JUMPLIST
-static void cleanup_jumplist __ARGS((void));
+static void cleanup_jumplist(void);
 #endif
 #ifdef FEAT_VIMINFO
-static void write_one_filemark __ARGS((FILE *fp, xfmark_T *fm, int c1, int c2));
+static void write_one_filemark(FILE *fp, xfmark_T *fm, int c1, int c2);
 #endif
 
 /*
@@ -1558,7 +1558,7 @@ removable(name)
     return retval;
 }
 
-static void write_one_mark __ARGS((FILE *fp_out, int c, pos_T *pos));
+static void write_one_mark(FILE *fp_out, int c, pos_T *pos);
 
 /*
  * Write all the named marks for all buffers.

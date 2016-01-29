@@ -123,9 +123,9 @@ static XFontSet current_fontset = NULL;
 		XDrawImageString16(dpy, win, gc, x, y, (XChar2b *)str, n); \
 	} while (0)
 
-static int check_fontset_sanity __ARGS((XFontSet fs));
-static int fontset_width __ARGS((XFontSet fs));
-static int fontset_ascent __ARGS((XFontSet fs));
+static int check_fontset_sanity(XFontSet fs);
+static int fontset_width(XFontSet fs);
+static int fontset_ascent(XFontSet fs);
 #endif
 
 static guicolor_T	prev_fg_color = INVALCOLOR;
@@ -136,26 +136,26 @@ static guicolor_T	prev_sp_color = INVALCOLOR;
 static XButtonPressedEvent last_mouse_event;
 #endif
 
-static int find_closest_color __ARGS((Colormap colormap, XColor *colorPtr));
-static void gui_x11_timer_cb __ARGS((XtPointer timed_out, XtIntervalId *interval_id));
-static void gui_x11_visibility_cb __ARGS((Widget w, XtPointer dud, XEvent *event, Boolean *dum));
-static void gui_x11_expose_cb __ARGS((Widget w, XtPointer dud, XEvent *event, Boolean *dum));
-static void gui_x11_resize_window_cb __ARGS((Widget w, XtPointer dud, XEvent *event, Boolean *dum));
-static void gui_x11_focus_change_cb __ARGS((Widget w, XtPointer data, XEvent *event, Boolean *dum));
-static void gui_x11_enter_cb __ARGS((Widget w, XtPointer data, XEvent *event, Boolean *dum));
-static void gui_x11_leave_cb __ARGS((Widget w, XtPointer data, XEvent *event, Boolean *dum));
-static void gui_x11_mouse_cb __ARGS((Widget w, XtPointer data, XEvent *event, Boolean *dum));
+static int find_closest_color(Colormap colormap, XColor *colorPtr);
+static void gui_x11_timer_cb(XtPointer timed_out, XtIntervalId *interval_id);
+static void gui_x11_visibility_cb(Widget w, XtPointer dud, XEvent *event, Boolean *dum);
+static void gui_x11_expose_cb(Widget w, XtPointer dud, XEvent *event, Boolean *dum);
+static void gui_x11_resize_window_cb(Widget w, XtPointer dud, XEvent *event, Boolean *dum);
+static void gui_x11_focus_change_cb(Widget w, XtPointer data, XEvent *event, Boolean *dum);
+static void gui_x11_enter_cb(Widget w, XtPointer data, XEvent *event, Boolean *dum);
+static void gui_x11_leave_cb(Widget w, XtPointer data, XEvent *event, Boolean *dum);
+static void gui_x11_mouse_cb(Widget w, XtPointer data, XEvent *event, Boolean *dum);
 #ifdef FEAT_SNIFF
-static void gui_x11_sniff_request_cb __ARGS((XtPointer closure, int *source, XtInputId *id));
+static void gui_x11_sniff_request_cb(XtPointer closure, int *source, XtInputId *id);
 #endif
-static void gui_x11_check_copy_area __ARGS((void));
+static void gui_x11_check_copy_area(void);
 #ifdef FEAT_CLIENTSERVER
-static void gui_x11_send_event_handler __ARGS((Widget, XtPointer, XEvent *, Boolean *));
+static void gui_x11_send_event_handler(Widget, XtPointer, XEvent *, Boolean *);
 #endif
-static void gui_x11_wm_protocol_handler __ARGS((Widget, XtPointer, XEvent *, Boolean *));
-static void gui_x11_blink_cb __ARGS((XtPointer timed_out, XtIntervalId *interval_id));
-static Cursor gui_x11_create_blank_mouse __ARGS((void));
-static void draw_curl __ARGS((int row, int col, int cells));
+static void gui_x11_wm_protocol_handler(Widget, XtPointer, XEvent *, Boolean *);
+static void gui_x11_blink_cb(XtPointer timed_out, XtIntervalId *interval_id);
+static Cursor gui_x11_create_blank_mouse(void);
+static void draw_curl(int row, int col, int cells);
 
 
 /*
@@ -1312,7 +1312,7 @@ gui_mch_init_check()
  */
 static XtInputId _xsmp_xtinputid;
 
-static void local_xsmp_handle_requests __ARGS((XtPointer c, int *s, XtInputId *i));
+static void local_xsmp_handle_requests(XtPointer c, int *s, XtInputId *i);
 
     static void
 local_xsmp_handle_requests(c, s, i)

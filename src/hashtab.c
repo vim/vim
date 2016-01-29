@@ -41,7 +41,7 @@ static long hash_count_perturb = 0;	/* count number of "misses" */
 /* Magic value for algorithm that walks through the array. */
 #define PERTURB_SHIFT 5
 
-static int hash_may_resize __ARGS((hashtab_T *ht, int minitems));
+static int hash_may_resize(hashtab_T *ht, int minitems);
 
 #if 0 /* currently not used */
 /*

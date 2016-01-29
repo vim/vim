@@ -19,47 +19,47 @@
 #define MENUDEPTH   10		/* maximum depth of menus */
 
 #ifdef FEAT_GUI_W32
-static int add_menu_path __ARGS((char_u *, vimmenu_T *, int *, char_u *, int));
+static int add_menu_path(char_u *, vimmenu_T *, int *, char_u *, int);
 #else
-static int add_menu_path __ARGS((char_u *, vimmenu_T *, int *, char_u *));
+static int add_menu_path(char_u *, vimmenu_T *, int *, char_u *);
 #endif
-static int menu_nable_recurse __ARGS((vimmenu_T *menu, char_u *name, int modes, int enable));
-static int remove_menu __ARGS((vimmenu_T **, char_u *, int, int silent));
-static void free_menu __ARGS((vimmenu_T **menup));
-static void free_menu_string __ARGS((vimmenu_T *, int));
-static int show_menus __ARGS((char_u *, int));
-static void show_menus_recursive __ARGS((vimmenu_T *, int, int));
-static int menu_name_equal __ARGS((char_u *name, vimmenu_T *menu));
-static int menu_namecmp __ARGS((char_u *name, char_u *mname));
-static int get_menu_cmd_modes __ARGS((char_u *, int, int *, int *));
-static char_u *popup_mode_name __ARGS((char_u *name, int idx));
-static char_u *menu_text __ARGS((char_u *text, int *mnemonic, char_u **actext));
+static int menu_nable_recurse(vimmenu_T *menu, char_u *name, int modes, int enable);
+static int remove_menu(vimmenu_T **, char_u *, int, int silent);
+static void free_menu(vimmenu_T **menup);
+static void free_menu_string(vimmenu_T *, int);
+static int show_menus(char_u *, int);
+static void show_menus_recursive(vimmenu_T *, int, int);
+static int menu_name_equal(char_u *name, vimmenu_T *menu);
+static int menu_namecmp(char_u *name, char_u *mname);
+static int get_menu_cmd_modes(char_u *, int, int *, int *);
+static char_u *popup_mode_name(char_u *name, int idx);
+static char_u *menu_text(char_u *text, int *mnemonic, char_u **actext);
 #ifdef FEAT_GUI
-static int get_menu_mode __ARGS((void));
-static void gui_update_menus_recurse __ARGS((vimmenu_T *, int));
+static int get_menu_mode(void);
+static void gui_update_menus_recurse(vimmenu_T *, int);
 #endif
 
 #if defined(FEAT_GUI_W32) && defined(FEAT_TEAROFF)
-static void gui_create_tearoffs_recurse __ARGS((vimmenu_T *menu, const char_u *pname, int *pri_tab, int pri_idx));
-static void gui_add_tearoff __ARGS((char_u *tearpath, int *pri_tab, int pri_idx));
-static void gui_destroy_tearoffs_recurse __ARGS((vimmenu_T *menu));
+static void gui_create_tearoffs_recurse(vimmenu_T *menu, const char_u *pname, int *pri_tab, int pri_idx);
+static void gui_add_tearoff(char_u *tearpath, int *pri_tab, int pri_idx);
+static void gui_destroy_tearoffs_recurse(vimmenu_T *menu);
 static int s_tearoffs = FALSE;
 #endif
 
-static int menu_is_hidden __ARGS((char_u *name));
+static int menu_is_hidden(char_u *name);
 #if defined(FEAT_CMDL_COMPL) || (defined(FEAT_GUI_W32) && defined(FEAT_TEAROFF))
-static int menu_is_tearoff __ARGS((char_u *name));
+static int menu_is_tearoff(char_u *name);
 #endif
 
 #if defined(FEAT_MULTI_LANG) || defined(FEAT_TOOLBAR)
-static char_u *menu_skip_part __ARGS((char_u *p));
+static char_u *menu_skip_part(char_u *p);
 #endif
 #ifdef FEAT_MULTI_LANG
-static char_u *menutrans_lookup __ARGS((char_u *name, int len));
-static void menu_unescape_name  __ARGS((char_u	*p));
+static char_u *menutrans_lookup(char_u *name, int len);
+static void menu_unescape_name(char_u	*p);
 #endif
 
-static char_u *menu_translate_tab_and_shift __ARGS((char_u *arg_start));
+static char_u *menu_translate_tab_and_shift(char_u *arg_start);
 
 /* The character for each menu mode */
 static char_u	menu_mode_chars[] = {'n', 'v', 's', 'o', 'i', 'c', 't'};

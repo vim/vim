@@ -17,7 +17,7 @@ static char_u	*username = NULL; /* cached result of mch_get_user_name() */
 static char_u	*ff_expand_buffer = NULL; /* used for expanding filenames */
 
 #if defined(FEAT_VIRTUALEDIT) || defined(PROTO)
-static int coladvance2 __ARGS((pos_T *pos, int addspaces, int finetune, colnr_T wcol));
+static int coladvance2(pos_T *pos, int addspaces, int finetune, colnr_T wcol);
 
 /*
  * Return TRUE if in the current mode we need to use virtual.
@@ -699,10 +699,10 @@ static long_u mem_peak;
 static long_u num_alloc;
 static long_u num_freed;
 
-static void mem_pre_alloc_s __ARGS((size_t *sizep));
-static void mem_pre_alloc_l __ARGS((long_u *sizep));
-static void mem_post_alloc __ARGS((void **pp, size_t size));
-static void mem_pre_free __ARGS((void **pp));
+static void mem_pre_alloc_s(size_t *sizep);
+static void mem_pre_alloc_l(long_u *sizep);
+static void mem_post_alloc(void **pp, size_t size);
+static void mem_pre_free(void **pp);
 
     static void
 mem_pre_alloc_s(sizep)
@@ -798,7 +798,7 @@ vim_mem_profile_dump()
 #endif /* MEM_PROFILE */
 
 #ifdef FEAT_EVAL
-static int alloc_does_fail __ARGS((long_u size));
+static int alloc_does_fail(long_u size);
 
     static int
 alloc_does_fail(size)
@@ -1064,7 +1064,7 @@ do_outofmem_msg(size)
 #if defined(EXITFREE) || defined(PROTO)
 
 # if defined(FEAT_SEARCHPATH)
-static void free_findfile __ARGS((void));
+static void free_findfile(void);
 # endif
 
 /*
@@ -4025,28 +4025,28 @@ typedef struct ff_search_ctx_T
 
 /* locally needed functions */
 #ifdef FEAT_PATH_EXTRA
-static int ff_check_visited __ARGS((ff_visited_T **, char_u *, char_u *));
+static int ff_check_visited(ff_visited_T **, char_u *, char_u *);
 #else
-static int ff_check_visited __ARGS((ff_visited_T **, char_u *));
+static int ff_check_visited(ff_visited_T **, char_u *);
 #endif
-static void vim_findfile_free_visited_list __ARGS((ff_visited_list_hdr_T **list_headp));
-static void ff_free_visited_list __ARGS((ff_visited_T *vl));
-static ff_visited_list_hdr_T* ff_get_visited_list __ARGS((char_u *, ff_visited_list_hdr_T **list_headp));
+static void vim_findfile_free_visited_list(ff_visited_list_hdr_T **list_headp);
+static void ff_free_visited_list(ff_visited_T *vl);
+static ff_visited_list_hdr_T* ff_get_visited_list(char_u *, ff_visited_list_hdr_T **list_headp);
 #ifdef FEAT_PATH_EXTRA
-static int ff_wc_equal __ARGS((char_u *s1, char_u *s2));
+static int ff_wc_equal(char_u *s1, char_u *s2);
 #endif
 
-static void ff_push __ARGS((ff_search_ctx_T *search_ctx, ff_stack_T *stack_ptr));
-static ff_stack_T *ff_pop __ARGS((ff_search_ctx_T *search_ctx));
-static void ff_clear __ARGS((ff_search_ctx_T *search_ctx));
-static void ff_free_stack_element __ARGS((ff_stack_T *stack_ptr));
+static void ff_push(ff_search_ctx_T *search_ctx, ff_stack_T *stack_ptr);
+static ff_stack_T *ff_pop(ff_search_ctx_T *search_ctx);
+static void ff_clear(ff_search_ctx_T *search_ctx);
+static void ff_free_stack_element(ff_stack_T *stack_ptr);
 #ifdef FEAT_PATH_EXTRA
-static ff_stack_T *ff_create_stack_element __ARGS((char_u *, char_u *, int, int));
+static ff_stack_T *ff_create_stack_element(char_u *, char_u *, int, int);
 #else
-static ff_stack_T *ff_create_stack_element __ARGS((char_u *, int, int));
+static ff_stack_T *ff_create_stack_element(char_u *, int, int);
 #endif
 #ifdef FEAT_PATH_EXTRA
-static int ff_path_in_stoplist __ARGS((char_u *, int, char_u **));
+static int ff_path_in_stoplist(char_u *, int, char_u **);
 #endif
 
 static char_u e_pathtoolong[] = N_("E854: path too long for completion");
@@ -5816,7 +5816,7 @@ qsort(base, elm_count, elm_size, cmp)
     void	*base;
     size_t	elm_count;
     size_t	elm_size;
-    int (*cmp) __ARGS((const void *, const void *));
+    int (*cmp)(const void *, const void *);
 {
     char_u	*buf;
     char_u	*p1;
@@ -5854,7 +5854,7 @@ static int
 #ifdef __BORLANDC__
 _RTLENTRYF
 #endif
-sort_compare __ARGS((const void *s1, const void *s2));
+sort_compare(const void *s1, const void *s2);
 
     static int
 #ifdef __BORLANDC__
@@ -5989,9 +5989,9 @@ extern
 #endif
        char **environ;		/* the global which is your env. */
 
-static int  findenv __ARGS((char *name)); /* look for a name in the env. */
-static int  newenv __ARGS((void));	/* copy env. from stack to heap */
-static int  moreenv __ARGS((void));	/* incr. size of env. */
+static int  findenv(char *name); /* look for a name in the env. */
+static int  newenv(void);	/* copy env. from stack to heap */
+static int  moreenv(void);	/* incr. size of env. */
 
     int
 putenv(string)

@@ -126,21 +126,21 @@ static char *init_cmds[]= {
 
 /*-------- Function Prototypes ----------------------------------*/
 
-static int ConnectToSniffEmacs __ARGS((void));
-static void sniff_connect __ARGS((void));
-static void HandleSniffRequest __ARGS((char* buffer));
-static int get_request __ARGS((int fd, char *buf, int maxlen));
-static void WriteToSniff __ARGS((char *str));
-static void SendRequest __ARGS((struct sn_cmd *command, char* symbol));
-static void vi_msg __ARGS((char *));
-static void vi_error_msg __ARGS((char *));
-static char *vi_symbol_under_cursor __ARGS((void));
-static void vi_open_file __ARGS((char *));
-static char *vi_buffer_name __ARGS((void));
-static buf_T *vi_find_buffer __ARGS((char *));
-static void vi_exec_cmd __ARGS((char *));
-static void vi_set_cursor_pos __ARGS((long char_nr));
-static long vi_cursor_pos __ARGS((void));
+static int ConnectToSniffEmacs(void);
+static void sniff_connect(void);
+static void HandleSniffRequest(char* buffer);
+static int get_request(int fd, char *buf, int maxlen);
+static void WriteToSniff(char *str);
+static void SendRequest(struct sn_cmd *command, char* symbol);
+static void vi_msg(char *);
+static void vi_error_msg(char *);
+static char *vi_symbol_under_cursor(void);
+static void vi_open_file(char *);
+static char *vi_buffer_name(void);
+static buf_T *vi_find_buffer(char *);
+static void vi_exec_cmd(char *);
+static void vi_set_cursor_pos(long char_nr);
+static long vi_cursor_pos(void);
 
 /* debug trace */
 #if 0

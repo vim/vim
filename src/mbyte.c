@@ -131,16 +131,16 @@
 
 #if defined(FEAT_MBYTE) || defined(PROTO)
 
-static int enc_canon_search __ARGS((char_u *name));
-static int dbcs_char2len __ARGS((int c));
-static int dbcs_char2bytes __ARGS((int c, char_u *buf));
-static int dbcs_ptr2len __ARGS((char_u *p));
-static int dbcs_ptr2len_len __ARGS((char_u *p, int size));
-static int utf_ptr2cells_len __ARGS((char_u *p, int size));
-static int dbcs_char2cells __ARGS((int c));
-static int dbcs_ptr2cells_len __ARGS((char_u *p, int size));
-static int dbcs_ptr2char __ARGS((char_u *p));
-static int utf_safe_read_char_adv __ARGS((char_u **s, size_t *n));
+static int enc_canon_search(char_u *name);
+static int dbcs_char2len(int c);
+static int dbcs_char2bytes(int c, char_u *buf);
+static int dbcs_ptr2len(char_u *p);
+static int dbcs_ptr2len_len(char_u *p, int size);
+static int utf_ptr2cells_len(char_u *p, int size);
+static int dbcs_char2cells(int c);
+static int dbcs_ptr2cells_len(char_u *p, int size);
+static int dbcs_ptr2char(char_u *p);
+static int utf_safe_read_char_adv(char_u **s, size_t *n);
 
 /*
  * Lookup table to quickly get the length in bytes of a UTF-8 character from
@@ -1195,7 +1195,7 @@ struct interval
     long first;
     long last;
 };
-static int intable __ARGS((struct interval *table, size_t size, int c));
+static int intable(struct interval *table, size_t size, int c);
 
 /*
  * Return TRUE if "c" is in "table[size / sizeof(struct interval)]".
@@ -2827,8 +2827,8 @@ static convertStruct foldCase[] =
 	{0x118a0,0x118bf,1,32}
 };
 
-static int utf_convert __ARGS((int a, convertStruct table[], int tableSize));
-static int utf_strnicmp __ARGS((char_u *s1, char_u *s2, size_t n1, size_t n2));
+static int utf_convert(int a, convertStruct table[], int tableSize);
+static int utf_strnicmp(char_u *s1, char_u *s2, size_t n1, size_t n2);
 
 /*
  * Generic conversion function for case operations.
@@ -4000,7 +4000,7 @@ mb_fix_col(col, row)
 #endif
 
 #if defined(FEAT_MBYTE) || defined(FEAT_POSTSCRIPT) || defined(PROTO)
-static int enc_alias_search __ARGS((char_u *name));
+static int enc_alias_search(char_u *name);
 
 /*
  * Skip the Vim specific head of a 'encoding' name.
@@ -4226,7 +4226,7 @@ encname2codepage(name)
 
 # if defined(USE_ICONV) || defined(PROTO)
 
-static char_u *iconv_string __ARGS((vimconv_T *vcp, char_u *str, int slen, int *unconvlenp, int *resultlenp));
+static char_u *iconv_string(vimconv_T *vcp, char_u *str, int slen, int *unconvlenp, int *resultlenp);
 
 /*
  * Call iconv_open() with a check if iconv() works properly (there are broken
@@ -5552,12 +5552,12 @@ static char e_xim[] = N_("E285: Failed to create input context");
 #  define USE_X11R6_XIM
 # endif
 
-static int xim_real_init __ARGS((Window x11_window, Display *x11_display));
+static int xim_real_init(Window x11_window, Display *x11_display);
 
 
 #ifdef USE_X11R6_XIM
-static void xim_instantiate_cb __ARGS((Display *display, XPointer client_data, XPointer	call_data));
-static void xim_destroy_cb __ARGS((XIM im, XPointer client_data, XPointer call_data));
+static void xim_instantiate_cb(Display *display, XPointer client_data, XPointer	call_data);
+static void xim_destroy_cb(XIM im, XPointer client_data, XPointer call_data);
 
     static void
 xim_instantiate_cb(display, client_data, call_data)

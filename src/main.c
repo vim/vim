@@ -94,37 +94,37 @@ typedef struct
 #define EDIT_QF	    4	    /* start in quickfix mode */
 
 #if (defined(UNIX) || defined(VMS)) && !defined(NO_VIM_MAIN)
-static int file_owned __ARGS((char *fname));
+static int file_owned(char *fname);
 #endif
-static void mainerr __ARGS((int, char_u *));
+static void mainerr(int, char_u *);
 #ifndef NO_VIM_MAIN
-static void main_msg __ARGS((char *s));
-static void usage __ARGS((void));
-static int get_number_arg __ARGS((char_u *p, int *idx, int def));
+static void main_msg(char *s);
+static void usage(void);
+static int get_number_arg(char_u *p, int *idx, int def);
 # if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
-static void init_locale __ARGS((void));
+static void init_locale(void);
 # endif
-static void parse_command_name __ARGS((mparm_T *parmp));
-static void early_arg_scan __ARGS((mparm_T *parmp));
-static void command_line_scan __ARGS((mparm_T *parmp));
-static void check_tty __ARGS((mparm_T *parmp));
-static void read_stdin __ARGS((void));
-static void create_windows __ARGS((mparm_T *parmp));
+static void parse_command_name(mparm_T *parmp);
+static void early_arg_scan(mparm_T *parmp);
+static void command_line_scan(mparm_T *parmp);
+static void check_tty(mparm_T *parmp);
+static void read_stdin(void);
+static void create_windows(mparm_T *parmp);
 # ifdef FEAT_WINDOWS
-static void edit_buffers __ARGS((mparm_T *parmp, char_u *cwd));
+static void edit_buffers(mparm_T *parmp, char_u *cwd);
 # endif
-static void exe_pre_commands __ARGS((mparm_T *parmp));
-static void exe_commands __ARGS((mparm_T *parmp));
-static void source_startup_scripts __ARGS((mparm_T *parmp));
-static void main_start_gui __ARGS((void));
+static void exe_pre_commands(mparm_T *parmp);
+static void exe_commands(mparm_T *parmp);
+static void source_startup_scripts(mparm_T *parmp);
+static void main_start_gui(void);
 # if defined(HAS_SWAP_EXISTS_ACTION)
-static void check_swap_exists_action __ARGS((void));
+static void check_swap_exists_action(void);
 # endif
 # if defined(FEAT_CLIENTSERVER) || defined(PROTO)
-static void exec_on_server __ARGS((mparm_T *parmp));
-static void prepare_server __ARGS((mparm_T *parmp));
-static void cmdsrv_main __ARGS((int *argc, char **argv, char_u *serverName_arg, char_u **serverStr));
-static char_u *serverMakeName __ARGS((char_u *arg, char *cmd));
+static void exec_on_server(mparm_T *parmp);
+static void prepare_server(mparm_T *parmp);
+static void cmdsrv_main(int *argc, char **argv, char_u *serverName_arg, char_u **serverStr);
+static char_u *serverMakeName(char_u *arg, char *cmd);
 # endif
 #endif
 
@@ -3442,7 +3442,7 @@ check_swap_exists_action()
 #endif
 
 #if defined(STARTUPTIME) || defined(PROTO)
-static void time_diff __ARGS((struct timeval *then, struct timeval *now));
+static void time_diff(struct timeval *then, struct timeval *now);
 
 static struct timeval	prev_timeval;
 
@@ -3556,7 +3556,7 @@ time_msg(mesg, tv_start)
  * Common code for the X command server and the Win32 command server.
  */
 
-static char_u *build_drop_cmd __ARGS((int filec, char **filev, int tabs, int sendReply));
+static char_u *build_drop_cmd(int filec, char **filev, int tabs, int sendReply);
 
 /*
  * Do the client-server stuff, unless "--servername ''" was used.

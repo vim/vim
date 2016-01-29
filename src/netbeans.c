@@ -44,24 +44,24 @@
  * protocol implemented here also supports A-A-P. */
 static char *ExtEdProtocolVersion = "2.5";
 
-static long pos2off __ARGS((buf_T *, pos_T *));
-static pos_T *off2pos __ARGS((buf_T *, long));
-static pos_T *get_off_or_lnum __ARGS((buf_T *buf, char_u **argp));
-static long get_buf_size __ARGS((buf_T *));
-static int netbeans_keystring __ARGS((char_u *keystr));
-static void postpone_keycommand __ARGS((char_u *keystr));
-static void special_keys __ARGS((char_u *args));
+static long pos2off(buf_T *, pos_T *);
+static pos_T *off2pos(buf_T *, long);
+static pos_T *get_off_or_lnum(buf_T *buf, char_u **argp);
+static long get_buf_size(buf_T *);
+static int netbeans_keystring(char_u *keystr);
+static void postpone_keycommand(char_u *keystr);
+static void special_keys(char_u *args);
 
-static int netbeans_connect __ARGS((char *, int));
-static int getConnInfo __ARGS((char *file, char **host, char **port, char **password));
+static int netbeans_connect(char *, int);
+static int getConnInfo(char *file, char **host, char **port, char **password);
 
-static void nb_init_graphics __ARGS((void));
-static void coloncmd __ARGS((char *cmd, ...));
-static void nb_set_curbuf __ARGS((buf_T *buf));
-static void nb_parse_cmd __ARGS((char_u *));
-static int  nb_do_cmd __ARGS((int, char_u *, int, int, char_u *));
-static void nb_send __ARGS((char *buf, char *fun));
-static void nb_free __ARGS((void));
+static void nb_init_graphics(void);
+static void coloncmd(char *cmd, ...);
+static void nb_set_curbuf(buf_T *buf);
+static void nb_parse_cmd(char_u *);
+static int  nb_do_cmd(int, char_u *, int, int, char_u *);
+static void nb_send(char *buf, char *fun);
+static void nb_free(void);
 
 #define NETBEANS_OPEN (nb_channel_idx >= 0 && channel_is_open(nb_channel_idx))
 static int nb_channel_idx = -1;
@@ -548,12 +548,12 @@ static char **globalsignmap = NULL;
 static int globalsignmaplen = 0;
 static int globalsignmapused = 0;
 
-static int  mapsigntype __ARGS((nbbuf_T *, int localsigntype));
-static void addsigntype __ARGS((nbbuf_T *, int localsigntype, char_u *typeName,
+static int  mapsigntype(nbbuf_T *, int localsigntype);
+static void addsigntype(nbbuf_T *, int localsigntype, char_u *typeName,
 			char_u *tooltip, char_u *glyphfile,
-			char_u *fg, char_u *bg));
-static void print_read_msg __ARGS((nbbuf_T *buf));
-static void print_save_msg __ARGS((nbbuf_T *buf, off_t nchars));
+			char_u *fg, char_u *bg);
+static void print_read_msg(nbbuf_T *buf);
+static void print_save_msg(nbbuf_T *buf, off_t nchars);
 
 static int curPCtype = -1;
 

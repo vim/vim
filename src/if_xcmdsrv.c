@@ -167,7 +167,7 @@ struct ServerReply
 static garray_T serverReply = { 0, 0, 0, 0, 0 };
 enum ServerReplyOp { SROP_Find, SROP_Add, SROP_Delete };
 
-typedef int (*EndCond) __ARGS((void *));
+typedef int (*EndCond)(void *);
 
 struct x_cmdqueue
 {
@@ -186,21 +186,21 @@ static x_queue_T head = {NULL, 0, NULL, NULL};
  * Forward declarations for procedures defined later in this file:
  */
 
-static Window	LookupName __ARGS((Display *dpy, char_u *name, int delete, char_u **loose));
-static int	SendInit __ARGS((Display *dpy));
-static int	DoRegisterName __ARGS((Display *dpy, char_u *name));
-static void	DeleteAnyLingerer __ARGS((Display *dpy, Window w));
-static int	GetRegProp __ARGS((Display *dpy, char_u **regPropp, long_u *numItemsp, int domsg));
-static int	WaitForPend __ARGS((void *p));
-static int	WaitForReply __ARGS((void *p));
-static int	WindowValid __ARGS((Display *dpy, Window w));
-static void	ServerWait __ARGS((Display *dpy, Window w, EndCond endCond, void *endData, int localLoop, int seconds));
-static struct ServerReply *ServerReplyFind __ARGS((Window w, enum ServerReplyOp op));
-static int	AppendPropCarefully __ARGS((Display *display, Window window, Atom property, char_u *value, int length));
-static int	x_error_check __ARGS((Display *dpy, XErrorEvent *error_event));
-static int	IsSerialName __ARGS((char_u *name));
-static void	save_in_queue __ARGS((char_u *buf, long_u len));
-static void	server_parse_message __ARGS((Display *dpy, char_u *propInfo, long_u numItems));
+static Window	LookupName(Display *dpy, char_u *name, int delete, char_u **loose);
+static int	SendInit(Display *dpy);
+static int	DoRegisterName(Display *dpy, char_u *name);
+static void	DeleteAnyLingerer(Display *dpy, Window w);
+static int	GetRegProp(Display *dpy, char_u **regPropp, long_u *numItemsp, int domsg);
+static int	WaitForPend(void *p);
+static int	WaitForReply(void *p);
+static int	WindowValid(Display *dpy, Window w);
+static void	ServerWait(Display *dpy, Window w, EndCond endCond, void *endData, int localLoop, int seconds);
+static struct ServerReply *ServerReplyFind(Window w, enum ServerReplyOp op);
+static int	AppendPropCarefully(Display *display, Window window, Atom property, char_u *value, int length);
+static int	x_error_check(Display *dpy, XErrorEvent *error_event);
+static int	IsSerialName(char_u *name);
+static void	save_in_queue(char_u *buf, long_u len);
+static void	server_parse_message(Display *dpy, char_u *propInfo, long_u numItems);
 
 /* Private variables for the "server" functionality */
 static Atom	registryProperty = None;
