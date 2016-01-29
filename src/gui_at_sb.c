@@ -125,27 +125,27 @@ static XtResource resources[] =
 };
 #undef Offset
 
-static void ClassInitialize __ARGS((void));
-static void Initialize __ARGS((Widget, Widget, ArgList, Cardinal *));
-static void Destroy __ARGS((Widget));
-static void Realize __ARGS((Widget, Mask *, XSetWindowAttributes *));
-static void Resize __ARGS((Widget));
-static void Redisplay __ARGS((Widget, XEvent *, Region));
-static Boolean SetValues __ARGS((Widget, Widget, Widget, ArgList, Cardinal *));
+static void ClassInitialize(void);
+static void Initialize(Widget, Widget, ArgList, Cardinal *);
+static void Destroy(Widget);
+static void Realize(Widget, Mask *, XSetWindowAttributes *);
+static void Resize(Widget);
+static void Redisplay(Widget, XEvent *, Region);
+static Boolean SetValues(Widget, Widget, Widget, ArgList, Cardinal *);
 
-static void HandleThumb __ARGS((Widget, XEvent *, String *, Cardinal *));
-static void MoveThumb __ARGS((Widget, XEvent *, String *, Cardinal *));
-static void NotifyThumb __ARGS((Widget, XEvent *, String *, Cardinal *));
-static void NotifyScroll __ARGS((Widget, XEvent *, String *, Cardinal *));
-static void EndScroll __ARGS((Widget, XEvent *, String *, Cardinal *));
-static void ScrollOneLineUp __ARGS((Widget, XEvent *, String *, Cardinal *));
-static void ScrollOneLineDown __ARGS((Widget, XEvent *, String *, Cardinal *));
-static void ScrollPageUp __ARGS((Widget, XEvent *, String *, Cardinal *));
-static void ScrollPageDown __ARGS((Widget, XEvent *, String *, Cardinal *));
-static void ScrollSome __ARGS((Widget w, XEvent *event, int call_data));
-static void _Xaw3dDrawShadows __ARGS((Widget, XEvent *, Region, int));
-static void AllocTopShadowGC __ARGS((Widget));
-static void AllocBotShadowGC __ARGS((Widget));
+static void HandleThumb(Widget, XEvent *, String *, Cardinal *);
+static void MoveThumb(Widget, XEvent *, String *, Cardinal *);
+static void NotifyThumb(Widget, XEvent *, String *, Cardinal *);
+static void NotifyScroll(Widget, XEvent *, String *, Cardinal *);
+static void EndScroll(Widget, XEvent *, String *, Cardinal *);
+static void ScrollOneLineUp(Widget, XEvent *, String *, Cardinal *);
+static void ScrollOneLineDown(Widget, XEvent *, String *, Cardinal *);
+static void ScrollPageUp(Widget, XEvent *, String *, Cardinal *);
+static void ScrollPageDown(Widget, XEvent *, String *, Cardinal *);
+static void ScrollSome(Widget w, XEvent *event, int call_data);
+static void _Xaw3dDrawShadows(Widget, XEvent *, Region, int);
+static void AllocTopShadowGC(Widget);
+static void AllocBotShadowGC(Widget);
 
 static XtActionsRec actions[] =
 {
