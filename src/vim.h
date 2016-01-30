@@ -2319,4 +2319,9 @@ typedef int sock_T;
 # define MAX_OPEN_CHANNELS 0
 #endif
 
+#ifdef FEAT_MZSCHEME
+/* this is in main.c, cproto can't handle it. */
+int vim_main2(int argc, char **argv);
+#endif
+
 #endif /* VIM__H */
