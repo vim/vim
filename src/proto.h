@@ -104,9 +104,7 @@ extern int _stricoll(char *a, char *b);
 #  include "menu.pro"
 # endif
 
-# if !defined MESSAGE_FILE || defined(HAVE_STDARG_H)
-    /* These prototypes cannot be produced automatically and conflict with
-     * the old-style prototypes in message.c. */
+/* These prototypes cannot be produced automatically. */
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
@@ -131,10 +129,7 @@ _RTLENTRYF
 #  endif
 vim_snprintf(char *, size_t, char *, ...);
 
-#  if defined(HAVE_STDARG_H)
 int vim_vsnprintf(char *str, size_t str_m, char *fmt, va_list ap, typval_T *tvs);
-#  endif
-# endif
 
 # include "message.pro"
 # include "misc1.pro"

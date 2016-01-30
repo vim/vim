@@ -15217,13 +15217,11 @@ f_prevnonblank(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = lnum;
 }
 
-#ifdef HAVE_STDARG_H
 /* This dummy va_list is here because:
  * - passing a NULL pointer doesn't work when va_list isn't a pointer
  * - locally in the function results in a "used before set" warning
  * - using va_start() to initialize it gives "function with fixed args" error */
 static va_list	ap;
-#endif
 
 /*
  * "printf()" function
@@ -15231,32 +15229,29 @@ static va_list	ap;
     static void
 f_printf(typval_T *argvars, typval_T *rettv)
 {
+    char_u	buf[NUMBUFLEN];
+    int		len;
+    char_u	*s;
+    int		saved_did_emsg = did_emsg;
+    char	*fmt;
+
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
-#ifdef HAVE_STDARG_H	    /* only very old compilers can't do this */
-    {
-	char_u	buf[NUMBUFLEN];
-	int	len;
-	char_u	*s;
-	int	saved_did_emsg = did_emsg;
-	char	*fmt;
 
-	/* Get the required length, allocate the buffer and do it for real. */
-	did_emsg = FALSE;
-	fmt = (char *)get_tv_string_buf(&argvars[0], buf);
-	len = vim_vsnprintf(NULL, 0, fmt, ap, argvars + 1);
-	if (!did_emsg)
+    /* Get the required length, allocate the buffer and do it for real. */
+    did_emsg = FALSE;
+    fmt = (char *)get_tv_string_buf(&argvars[0], buf);
+    len = vim_vsnprintf(NULL, 0, fmt, ap, argvars + 1);
+    if (!did_emsg)
+    {
+	s = alloc(len + 1);
+	if (s != NULL)
 	{
-	    s = alloc(len + 1);
-	    if (s != NULL)
-	    {
-		rettv->vval.v_string = s;
-		(void)vim_vsnprintf((char *)s, len + 1, fmt, ap, argvars + 1);
-	    }
+	    rettv->vval.v_string = s;
+	    (void)vim_vsnprintf((char *)s, len + 1, fmt, ap, argvars + 1);
 	}
-	did_emsg |= saved_did_emsg;
     }
-#endif
+    did_emsg |= saved_did_emsg;
 }
 
 /*

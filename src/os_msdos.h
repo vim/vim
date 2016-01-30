@@ -21,7 +21,6 @@
 # define USE_LONG_FNAME _USE_LFN    /* decide at run time */
 # define USE_FNAME_CASE
 # define HAVE_PUTENV
-# define HAVE_STDARG_H
 #else
 # define SHORT_FNAME		/* always 8.3 file name */
 #endif

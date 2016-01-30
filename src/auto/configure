@@ -10064,7 +10064,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
-for ac_header in stdarg.h stdint.h stdlib.h string.h \
+for ac_header in stdint.h stdlib.h string.h \
 	sys/select.h sys/utsname.h termcap.h fcntl.h \
 	sgtty.h sys/ioctl.h sys/time.h sys/types.h \
 	termio.h iconv.h inttypes.h langinfo.h math.h \

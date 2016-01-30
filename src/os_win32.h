@@ -49,9 +49,6 @@
 #ifndef HAVE_FCNTL_H
 # define HAVE_FCNTL_H
 #endif
-#ifndef HAVE_STDARG_H
-# define HAVE_STDARG_H
-#endif
 #define HAVE_QSORT
 #define HAVE_ST_MODE		/* have stat.st_mode */
 
