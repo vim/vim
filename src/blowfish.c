@@ -348,10 +348,10 @@ static UINT32_T sbx_init[4][256] = {
     bfs->sbx[3][xr & 0xFF];
 
     static void
-bf_e_block(bfs, p_xl, p_xr)
-    bf_state_T *bfs;
-    UINT32_T *p_xl;
-    UINT32_T *p_xr;
+bf_e_block(
+    bf_state_T *bfs,
+    UINT32_T *p_xl,
+    UINT32_T *p_xr)
 {
     UINT32_T temp;
     UINT32_T xl = *p_xl;
@@ -384,9 +384,9 @@ bf_e_block(bfs, p_xl, p_xr)
 #endif
 
     static void
-bf_e_cblock(bfs, block)
-    bf_state_T *bfs;
-    char_u *block;
+bf_e_cblock(
+    bf_state_T *bfs,
+    char_u *block)
 {
     block8	bk;
 
@@ -404,11 +404,11 @@ bf_e_cblock(bfs, block)
  * "salt[salt_len]" as the salt.
  */
     static void
-bf_key_init(bfs, password, salt, salt_len)
-    bf_state_T	*bfs;
-    char_u	*password;
-    char_u	*salt;
-    int		salt_len;
+bf_key_init(
+    bf_state_T	*bfs,
+    char_u	*password,
+    char_u	*salt,
+    int		salt_len)
 {
     int      i, j, keypos = 0;
     unsigned u;
@@ -470,10 +470,10 @@ bf_key_init(bfs, password, salt, salt_len)
  * Blowfish self-test for corrupted tables or instructions.
  */
     static int
-bf_check_tables(pax, sbx, val)
-    UINT32_T pax[18];
-    UINT32_T sbx[4][256];
-    UINT32_T val;
+bf_check_tables(
+    UINT32_T pax[18],
+    UINT32_T sbx[4][256],
+    UINT32_T val)
 {
     int i, j;
     UINT32_T c = 0;
@@ -514,7 +514,7 @@ static struct_bf_test_data bf_test_data[] = {
  * Return FAIL when there is something wrong with blowfish encryption.
  */
     static int
-bf_self_test()
+bf_self_test(void)
 {
     int    i, bn;
     int    err = 0;
@@ -566,10 +566,10 @@ bf_self_test()
  * Initialize with seed "seed[seed_len]".
  */
     static void
-bf_cfb_init(bfs, seed, seed_len)
-    bf_state_T	*bfs;
-    char_u	*seed;
-    int		seed_len;
+bf_cfb_init(
+    bf_state_T	*bfs,
+    char_u	*seed,
+    int		seed_len)
 {
     int i, mi;
 
@@ -602,11 +602,11 @@ bf_cfb_init(bfs, seed, seed_len)
  * "from" and "to" can be equal to encrypt in place.
  */
     void
-crypt_blowfish_encode(state, from, len, to)
-    cryptstate_T *state;
-    char_u	*from;
-    size_t	len;
-    char_u	*to;
+crypt_blowfish_encode(
+    cryptstate_T *state,
+    char_u	*from,
+    size_t	len,
+    char_u	*to)
 {
     bf_state_T *bfs = state->method_state;
     size_t	i;
@@ -625,11 +625,11 @@ crypt_blowfish_encode(state, from, len, to)
  * Decrypt "from[len]" into "to[len]".
  */
     void
-crypt_blowfish_decode(state, from, len, to)
-    cryptstate_T *state;
-    char_u	*from;
-    size_t	len;
-    char_u	*to;
+crypt_blowfish_decode(
+    cryptstate_T *state,
+    char_u	*from,
+    size_t	len,
+    char_u	*to)
 {
     bf_state_T *bfs = state->method_state;
     size_t	i;
@@ -644,13 +644,13 @@ crypt_blowfish_decode(state, from, len, to)
 }
 
     void
-crypt_blowfish_init(state, key, salt, salt_len, seed, seed_len)
-    cryptstate_T	*state;
-    char_u*		key;
-    char_u*		salt;
-    int			salt_len;
-    char_u*		seed;
-    int			seed_len;
+crypt_blowfish_init(
+    cryptstate_T	*state,
+    char_u*		key,
+    char_u*		salt,
+    int			salt_len,
+    char_u*		seed,
+    int			seed_len)
 {
     bf_state_T	*bfs = (bf_state_T *)alloc_clear(sizeof(bf_state_T));
 
@@ -672,7 +672,7 @@ crypt_blowfish_init(state, key, salt, salt_len, seed, seed_len)
  * Give an error and return FAIL when not.
  */
     int
-blowfish_self_test()
+blowfish_self_test(void)
 {
     if (sha256_self_test() == FAIL)
     {

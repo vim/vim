@@ -745,7 +745,7 @@ channel_wait(int fd, int timeout)
  * Return a unique ID to be used in a message.
  */
     int
-channel_get_id()
+channel_get_id(void)
 {
     static int next_id = 1;
 
