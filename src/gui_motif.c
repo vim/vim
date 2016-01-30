@@ -4074,7 +4074,7 @@ gui_mch_replace_dialog(eap)
  * Synchronize all gui elements, which are dependant upon the
  * main text font used. Those are in esp. the find/replace dialogs.
  * If you don't understand why this should be needed, please try to
- * search for "piê¶æ" in iso8859-2.
+ * search for "pi\xea\xb6\xe6" in iso8859-2.
  */
     void
 gui_motif_synch_fonts(void)
