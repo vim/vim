@@ -520,7 +520,11 @@ ex_sort(exarg_T *eap)
 	    if (regmatch.regprog != NULL)
 		end_col = 0;
 
-	if (sort_nr || sort_flt)
+	if (sort_nr
+#ifdef FEAT_FLOAT
+		|| sort_flt
+#endif
+		)
 	{
 	    /* Make sure vim_str2nr doesn't read any digits past the end
 	     * of the match, by temporarily terminating the string there */
