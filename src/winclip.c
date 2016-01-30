@@ -779,11 +779,11 @@ utf16_to_enc(short_u *str, int *lenp)
  * The result is in allocated memory: "out[outlen]".  With terminating NUL.
  */
     void
-acp_to_enc(str, str_size, out, outlen)
-    char_u	*str;
-    int		str_size;
-    char_u	**out;
-    int		*outlen;
+acp_to_enc(
+    char_u	*str,
+    int		str_size,
+    char_u	**out,
+    int		*outlen)
 
 {
     LPWSTR	widestr;
@@ -804,11 +804,11 @@ acp_to_enc(str, str_size, out, outlen)
  * The result is in allocated memory: "out[outlen]".  With terminating NUL.
  */
     void
-enc_to_acp(str, str_size, out, outlen)
-    char_u	*str;
-    int		str_size;
-    char_u	**out;
-    int		*outlen;
+enc_to_acp(
+    char_u	*str,
+    int		str_size,
+    char_u	**out,
+    int		*outlen)
 
 {
     LPWSTR	widestr;

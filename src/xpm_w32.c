@@ -28,10 +28,10 @@
  * "hShape".
  */
     int
-LoadXpmImage(filename, hImage, hShape)
-    char    *filename;
-    HBITMAP *hImage;
-    HBITMAP *hShape;
+LoadXpmImage(
+    char    *filename,
+    HBITMAP *hImage,
+    HBITMAP *hShape)
 {
     XImage	    *img;  /* loaded image */
     XImage	    *shp;  /* shapeimage */
