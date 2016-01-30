@@ -66,9 +66,9 @@ short	ospeed;		      /* Baud rate (1-16, 1=300, 16=19200), as in stty */
 #endif
 
     int
-tgetent(tbuf, term)
-    char    *tbuf;		/* Buffer to hold termcap entry, TBUFSZ bytes max */
-    char    *term;		/* Name of terminal */
+tgetent(
+    char    *tbuf,		/* Buffer to hold termcap entry, TBUFSZ bytes max */
+    char    *term)		/* Name of terminal */
 {
     char    tcbuf[32];		/* Temp buffer to handle */
     char    *tcptr = tcbuf;	/* extended entries */
@@ -140,10 +140,7 @@ tgetent(tbuf, term)
 }
 
     static int
-getent(tbuf, term, termcap, buflen)
-    char    *tbuf, *term;
-    FILE    *termcap;
-    int	    buflen;
+getent(char *tbuf, *term, FILE *termcap, int buflen)
 {
     char    *tptr;
     int	    tlen = strlen(term);
@@ -171,11 +168,11 @@ getent(tbuf, term, termcap, buflen)
     return 0;
 }
 
+/*
+ * Read 1 entry from TERMCAP file.
+ */
     static int
-nextent(tbuf, termcap, buflen)		/* Read 1 entry from TERMCAP file */
-    char    *tbuf;
-    FILE    *termcap;
-    int	    buflen;
+nextent(char *tbuf, FILE *termcap, int buflen)
 {
     char *lbuf = tbuf;				/* lbuf=line buffer */
 				/* read lines straight into buffer */
@@ -218,8 +215,7 @@ nextent(tbuf, termcap, buflen)		/* Read 1 entry from TERMCAP file */
  */
 
     int
-tgetflag(id)
-    char *id;
+tgetflag(char *id)
 {
     char    buf[256], *ptr = buf;
 
@@ -237,8 +233,7 @@ tgetflag(id)
  */
 
     int
-tgetnum(id)
-    char *id;
+tgetnum(char *id)
 {
     char *ptr, buf[256];
     ptr = buf;
@@ -277,8 +272,7 @@ tgetnum(id)
  */
 
     char *
-tgetstr(id, buf)
-    char	*id, **buf;
+tgetstr(char *id, char **buf)
 {
     int		len = strlen(id);
     char	*tmp=tent;
@@ -387,10 +381,10 @@ tgetstr(id, buf)
  */
 
     char *
-tgoto(cm, col, line)
-    char	*cm;				/* cm string, from termcap */
-    int col,					/* column, x position */
-    line;					/* line, y position */
+tgoto(
+    char    *cm,				/* cm string, from termcap */
+    int	    col,				/* column, x position */
+    int	    line)				/* line, y position */
 {
     char    gx, gy,				/* x, y */
 	*ptr,					/* pointer in 'cm' */
@@ -533,10 +527,10 @@ long _bauds[16]={
     4800,   9600,   19200,  19200 };
 
     int
-tputs(cp, affcnt, outc)
-    char *cp;				/* string to print */
-    int affcnt;				/* Number of lines affected */
-    void (*outc)(unsigned int);/* routine to output 1 character */
+tputs(
+    char *cp,				/* string to print */
+    int affcnt,				/* Number of lines affected */
+    void (*outc)(unsigned int))		/* routine to output 1 character */
 {
     long    frac,			/* 10^(#digits after decimal point) */
 	counter,			/* digits */
@@ -578,11 +572,10 @@ tputs(cp, affcnt, outc)
  * Module: tutil.c
  *
  * Purpose: Utility routines for TERMLIB functions.
- *
+ * Returns length of text common to s1 and s2.
  */
     static int
-_match(s1, s2)		/* returns length of text common to s1 and s2 */
-    char *s1, *s2;
+_match(char *s1, char *s2)
 {
     int i = 0;
 
@@ -596,8 +589,7 @@ _match(s1, s2)		/* returns length of text common to s1 and s2 */
  * finds next c in s that's a member of set, returns pointer
  */
     static char *
-_find(s, set)
-    char *s, *set;
+_find(char *s, char *set)
 {
     for(; *s; s++)
     {
@@ -617,9 +609,7 @@ _find(s, set)
  * add val to buf according to format fmt
  */
     static char *
-_addfmt(buf, fmt, val)
-    char *buf, *fmt;
-    int val;
+_addfmt(char *buf, char *fmt, int val)
 {
     sprintf(buf, fmt, val);
     while (*buf)

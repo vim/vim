@@ -1412,8 +1412,7 @@ static int	check_for_codes = FALSE;    /* check for key code response */
 #endif
 
     static struct builtin_term *
-find_builtin_term(term)
-    char_u	*term;
+find_builtin_term(char_u *term)
 {
     struct builtin_term *p;
 
@@ -1448,8 +1447,7 @@ find_builtin_term(term)
  * The terminal's name is not set, as this is already done in termcapinit().
  */
     static void
-parse_builtin_tcap(term)
-    char_u  *term;
+parse_builtin_tcap(char_u *term)
 {
     struct builtin_term	    *p;
     char_u		    name[2];
@@ -1510,8 +1508,7 @@ static void set_color_count(int nr);
  * Store it as a string in T_CCO (using nr_colors[]).
  */
     static void
-set_color_count(nr)
-    int		nr;
+set_color_count(int nr)
 {
     char_u	nr_colors[20];		/* string for number of colors */
 
@@ -1548,8 +1545,7 @@ static char *(key_names[]) =
  * While doing this, until ttest(), some options may be NULL, be careful.
  */
     int
-set_termname(term)
-    char_u *term;
+set_termname(char_u *term)
 {
     struct builtin_term *termp;
 #ifdef HAVE_TGETENT
@@ -2031,9 +2027,9 @@ static int has_mouse_termcode = 0;
 
 # if (!defined(UNIX) || defined(FEAT_MOUSE_TTY)) || defined(PROTO)
     void
-set_mouse_termcode(n, s)
-    int		n;	/* KS_MOUSE, KS_NETTERM_MOUSE or KS_DEC_MOUSE */
-    char_u	*s;
+set_mouse_termcode(
+    int		n,	/* KS_MOUSE, KS_NETTERM_MOUSE or KS_DEC_MOUSE */
+    char_u	*s)
 {
     char_u	name[2];
 
@@ -2079,8 +2075,8 @@ set_mouse_termcode(n, s)
 # if ((defined(UNIX) || defined(VMS)) \
 	&& defined(FEAT_MOUSE_TTY)) || defined(PROTO)
     void
-del_mouse_termcode(n)
-    int		n;	/* KS_MOUSE, KS_NETTERM_MOUSE or KS_DEC_MOUSE */
+del_mouse_termcode(
+    int		n)	/* KS_MOUSE, KS_NETTERM_MOUSE or KS_DEC_MOUSE */
 {
     char_u	name[2];
 
@@ -2130,9 +2126,7 @@ del_mouse_termcode(n)
  * Return error message if it fails, NULL if it's OK.
  */
     static char_u *
-tgetent_error(tbuf, term)
-    char_u  *tbuf;
-    char_u  *term;
+tgetent_error(char_u *tbuf, char_u *term)
 {
     int	    i;
 
@@ -2167,9 +2161,7 @@ tgetent_error(tbuf, term)
  * Fix that here.
  */
     static char_u *
-vim_tgetstr(s, pp)
-    char	*s;
-    char_u	**pp;
+vim_tgetstr(char *s, char_u **pp)
 {
     char	*p;
 
@@ -2188,9 +2180,9 @@ vim_tgetstr(s, pp)
  * Errors while getting the entries are ignored.
  */
     void
-getlinecol(cp, rp)
-    long	*cp;	/* pointer to columns */
-    long	*rp;	/* pointer to rows */
+getlinecol(
+    long	*cp,	/* pointer to columns */
+    long	*rp)	/* pointer to rows */
 {
     char_u	tbuf[TBUFSZ];
 
@@ -2212,9 +2204,7 @@ getlinecol(cp, rp)
  * Return FAIL if the entry was not found, OK if the entry was added.
  */
     int
-add_termcap_entry(name, force)
-    char_u  *name;
-    int	    force;
+add_termcap_entry(char_u *name, int force)
 {
     char_u  *term;
     int	    key;
@@ -2321,8 +2311,7 @@ add_termcap_entry(name, force)
 }
 
     static int
-term_is_builtin(name)
-    char_u  *name;
+term_is_builtin(char_u *name)
 {
     return (STRNCMP(name, "builtin_", (size_t)8) == 0);
 }
@@ -2333,8 +2322,7 @@ term_is_builtin(name)
  * "8bit", like in "xterm-8bit".
  */
     int
-term_is_8bit(name)
-    char_u  *name;
+term_is_8bit(char_u *name)
 {
     return (detected_8bit || strstr((char *)name, "8bit") != NULL);
 }
@@ -2346,8 +2334,7 @@ term_is_8bit(name)
  * <Esc>O -> <M-C-O>
  */
     static int
-term_7to8bit(p)
-    char_u  *p;
+term_7to8bit(char_u *p)
 {
     if (*p == ESC)
     {
@@ -2363,8 +2350,7 @@ term_7to8bit(p)
 
 #ifdef FEAT_GUI
     int
-term_is_gui(name)
-    char_u  *name;
+term_is_gui(char_u *name)
 {
     return (STRCMP(name, "builtin_gui") == 0 || STRCMP(name, "gui") == 0);
 }
@@ -2373,8 +2359,7 @@ term_is_gui(name)
 #if !defined(HAVE_TGETENT) || defined(AMIGA) || defined(PROTO)
 
     char_u *
-tltoa(i)
-    unsigned long i;
+tltoa(unsigned long i)
 {
     static char_u buf[16];
     char_u	*p;
@@ -2401,9 +2386,7 @@ tltoa(i)
 static char *tgoto(char *, int, int);
 
     static char *
-tgoto(cm, x, y)
-    char *cm;
-    int x, y;
+tgoto(char *cm, int x, int y)
 {
     static char buf[30];
     char *p, *s, *e;
@@ -2453,8 +2436,7 @@ tgoto(cm, x, y)
  * If that fails, use the default terminal name.
  */
     void
-termcapinit(name)
-    char_u *name;
+termcapinit(char_u *name)
 {
     char_u	*term;
 
@@ -2511,7 +2493,7 @@ static int		out_pos = 0;	/* number of chars in out_buf */
  * out_flush(): flush the output buffer
  */
     void
-out_flush()
+out_flush(void)
 {
     int	    len;
 
@@ -2530,7 +2512,7 @@ out_flush()
  * To avoid flushing half of the character, call this function first.
  */
     void
-out_flush_check()
+out_flush_check(void)
 {
     if (enc_dbcs != 0 && out_pos >= OUT_SIZE - MB_MAXBYTES)
 	out_flush();
@@ -2542,7 +2524,7 @@ out_flush_check()
  * out_trash(): Throw away the contents of the output buffer
  */
     void
-out_trash()
+out_trash(void)
 {
     out_pos = 0;
 }
@@ -2555,8 +2537,7 @@ out_trash()
  * like msg_puts() and screen_putchar() for that).
  */
     void
-out_char(c)
-    unsigned	c;
+out_char(unsigned c)
 {
 #if defined(UNIX) || defined(VMS) || defined(AMIGA) || defined(MACOS_X_UNIX)
     if (c == '\n')	/* turn LF into CR-LF (CRMOD doesn't seem to do this) */
@@ -2576,8 +2557,7 @@ static void out_char_nf(unsigned);
  * out_char_nf(c): like out_char(), but don't flush when p_wd is set
  */
     static void
-out_char_nf(c)
-    unsigned	c;
+out_char_nf(unsigned c)
 {
 #if defined(UNIX) || defined(VMS) || defined(AMIGA) || defined(MACOS_X_UNIX)
     if (c == '\n')	/* turn LF into CR-LF (CRMOD doesn't seem to do this) */
@@ -2602,8 +2582,7 @@ out_char_nf(c)
  * normal text (use functions like msg_puts() and screen_putchar() for that).
  */
     void
-out_str_nf(s)
-    char_u *s;
+out_str_nf(char_u *s)
 {
     if (out_pos > OUT_SIZE - 20)  /* avoid terminal strings being split up */
 	out_flush();
@@ -2623,8 +2602,7 @@ out_str_nf(s)
  * normal text (use functions like msg_puts() and screen_putchar() for that).
  */
     void
-out_str(s)
-    char_u	 *s;
+out_str(char_u *s)
 {
     if (s != NULL && *s)
     {
@@ -2656,39 +2634,32 @@ out_str(s)
  * cursor positioning using termcap parser. (jw)
  */
     void
-term_windgoto(row, col)
-    int	    row;
-    int	    col;
+term_windgoto(int row, int col)
 {
     OUT_STR(tgoto((char *)T_CM, col, row));
 }
 
     void
-term_cursor_right(i)
-    int	    i;
+term_cursor_right(int i)
 {
     OUT_STR(tgoto((char *)T_CRI, 0, i));
 }
 
     void
-term_append_lines(line_count)
-    int	    line_count;
+term_append_lines(int line_count)
 {
     OUT_STR(tgoto((char *)T_CAL, 0, line_count));
 }
 
     void
-term_delete_lines(line_count)
-    int	    line_count;
+term_delete_lines(int line_count)
 {
     OUT_STR(tgoto((char *)T_CDL, 0, line_count));
 }
 
 #if defined(HAVE_TGETENT) || defined(PROTO)
     void
-term_set_winpos(x, y)
-    int	    x;
-    int	    y;
+term_set_winpos(int x, int y)
 {
     /* Can't handle a negative value here */
     if (x < 0)
@@ -2699,17 +2670,14 @@ term_set_winpos(x, y)
 }
 
     void
-term_set_winsize(width, height)
-    int	    width;
-    int	    height;
+term_set_winsize(int width, int height)
 {
     OUT_STR(tgoto((char *)T_CWS, height, width));
 }
 #endif
 
     void
-term_fg_color(n)
-    int	    n;
+term_fg_color(int n)
 {
     /* Use "AF" termcap entry if present, "Sf" entry otherwise */
     if (*T_CAF)
@@ -2719,8 +2687,7 @@ term_fg_color(n)
 }
 
     void
-term_bg_color(n)
-    int	    n;
+term_bg_color(int n)
 {
     /* Use "AB" termcap entry if present, "Sb" entry otherwise */
     if (*T_CAB)
@@ -2730,9 +2697,7 @@ term_bg_color(n)
 }
 
     static void
-term_color(s, n)
-    char_u	*s;
-    int		n;
+term_color(char_u *s, int n)
 {
     char	buf[20];
     int i = 2;	/* index in s[] just after <Esc>[ or CSI */
@@ -2768,8 +2733,7 @@ term_color(s, n)
  * Generic function to set window title, using t_ts and t_fs.
  */
     void
-term_settitle(title)
-    char_u	*title;
+term_settitle(char_u *title)
 {
     /* t_ts takes one argument: column in status line */
     OUT_STR(tgoto((char *)T_TS, 0, 0));	/* set title start */
@@ -2784,8 +2748,7 @@ term_settitle(title)
  * Replace all entries that are NULL by empty_option
  */
     void
-ttest(pairs)
-    int	pairs;
+ttest(int pairs)
 {
     check_options();		    /* make sure no options are NULL */
 
@@ -2884,9 +2847,7 @@ ttest(pairs)
  * byte first, and store them in dst.
  */
     void
-add_long_to_buf(val, dst)
-    long_u  val;
-    char_u  *dst;
+add_long_to_buf(long_u val, char_u *dst)
 {
     int	    i;
     int	    shift;
@@ -2909,9 +2870,7 @@ static int get_long_from_buf(char_u *buf, long_u *val);
  * were present.
  */
     static int
-get_long_from_buf(buf, val)
-    char_u  *buf;
-    long_u  *val;
+get_long_from_buf(char_u *buf, long_u *val)
 {
     int	    len;
     char_u  bytes[sizeof(long_u)];
@@ -2942,10 +2901,7 @@ get_long_from_buf(buf, val)
  * available.
  */
     static int
-get_bytes_from_buf(buf, bytes, num_bytes)
-    char_u  *buf;
-    char_u  *bytes;
-    int	    num_bytes;
+get_bytes_from_buf(char_u *buf, char_u *bytes, int num_bytes)
 {
     int	    len = 0;
     int	    i;
@@ -2982,7 +2938,7 @@ get_bytes_from_buf(buf, bytes, num_bytes)
  * too big.
  */
     void
-check_shellsize()
+check_shellsize(void)
 {
     if (Rows < min_rows())	/* need room for one window and command line */
 	Rows = min_rows();
@@ -2993,7 +2949,7 @@ check_shellsize()
  * Limit Rows and Columns to avoid an overflow in Rows * Columns.
  */
     void
-limit_screen_size()
+limit_screen_size(void)
 {
     if (Columns < MIN_COLUMNS)
 	Columns = MIN_COLUMNS;
@@ -3007,7 +2963,7 @@ limit_screen_size()
  * Invoked just before the screen structures are going to be (re)allocated.
  */
     void
-win_new_shellsize()
+win_new_shellsize(void)
 {
     static int	old_Rows = 0;
     static int	old_Columns = 0;
@@ -3036,7 +2992,7 @@ win_new_shellsize()
  * Will obtain the current size and redraw (also when size didn't change).
  */
     void
-shell_resized()
+shell_resized(void)
 {
     set_shellsize(0, 0, FALSE);
 }
@@ -3046,7 +3002,7 @@ shell_resized()
  * When the size didn't change, nothing happens.
  */
     void
-shell_resized_check()
+shell_resized_check(void)
 {
     int		old_Rows = Rows;
     int		old_Columns = Columns;
@@ -3074,9 +3030,7 @@ shell_resized_check()
  * it fails use 'width' and 'height'.
  */
     void
-set_shellsize(width, height, mustset)
-    int	    width, height;
-    int	    mustset;
+set_shellsize(int width, int height, int mustset)
 {
     static int		busy = FALSE;
 
@@ -3192,8 +3146,7 @@ set_shellsize(width, height, mustset)
  * commands and Ex mode).
  */
     void
-settmode(tmode)
-    int	 tmode;
+settmode(int tmode)
 {
 #ifdef FEAT_GUI
     /* don't set the term where gvim was started to any mode */
@@ -3248,7 +3201,7 @@ settmode(tmode)
 }
 
     void
-starttermcap()
+starttermcap(void)
 {
     if (full_screen && !termcap_active)
     {
@@ -3273,7 +3226,7 @@ starttermcap()
 }
 
     void
-stoptermcap()
+stoptermcap(void)
 {
     screen_stop_highlight();
     reset_cterm_colors();
@@ -3329,7 +3282,7 @@ stoptermcap()
  * The result is caught in check_termcode().
  */
     void
-may_req_termresponse()
+may_req_termresponse(void)
 {
     if (crv_status == CRV_GET
 	    && cur_tmode == TMODE_RAW
@@ -3363,7 +3316,7 @@ may_req_termresponse()
  * it must be called immediately after entering termcap mode.
  */
     void
-may_req_ambiguous_char_width()
+may_req_ambiguous_char_width(void)
 {
     if (u7_status == U7_GET
 	    && cur_tmode == TMODE_RAW
@@ -3404,7 +3357,7 @@ may_req_ambiguous_char_width()
  * color when it is the right moment.
  */
     void
-may_req_bg_color()
+may_req_bg_color(void)
 {
     if (rbg_status == RBG_GET
 	    && cur_tmode == TMODE_RAW
@@ -3456,7 +3409,7 @@ log_tr(char *msg)
  * Return TRUE when saving and restoring the screen.
  */
     int
-swapping_screen()
+swapping_screen(void)
 {
     return (full_screen && *T_TI != NUL);
 }
@@ -3466,7 +3419,7 @@ swapping_screen()
  * setmouse() - switch mouse on/off depending on current mode and 'mouse'
  */
     void
-setmouse()
+setmouse(void)
 {
 # ifdef FEAT_MOUSE_TTY
     int	    checkfor;
@@ -3521,8 +3474,7 @@ setmouse()
  *   normal editing mode (not at hit-return message).
  */
     int
-mouse_has(c)
-    int	    c;
+mouse_has(int c)
 {
     char_u	*p;
 
@@ -3544,7 +3496,7 @@ mouse_has(c)
  * Return TRUE when 'mousemodel' is set to "popup" or "popup_setpos".
  */
     int
-mouse_model_popup()
+mouse_model_popup(void)
 {
     return (p_mousem[0] == 'p');
 }
@@ -3556,7 +3508,7 @@ mouse_model_popup()
  * Used when starting Vim or returning from a shell.
  */
     void
-scroll_start()
+scroll_start(void)
 {
     if (*T_VS != NUL)
     {
@@ -3572,7 +3524,7 @@ static int cursor_is_off = FALSE;
  * Enable the cursor.
  */
     void
-cursor_on()
+cursor_on(void)
 {
     if (cursor_is_off)
     {
@@ -3585,7 +3537,7 @@ cursor_on()
  * Disable the cursor.
  */
     void
-cursor_off()
+cursor_off(void)
 {
     if (full_screen)
     {
@@ -3600,7 +3552,7 @@ cursor_off()
  * Set cursor shape to match Insert or Replace mode.
  */
     void
-term_cursor_shape()
+term_cursor_shape(void)
 {
     static int showing_mode = NORMAL;
     char_u *p;
@@ -3648,9 +3600,7 @@ term_cursor_shape()
  * the full width of the window, excluding the vertical separator.
  */
     void
-scroll_region_set(wp, off)
-    win_T	*wp;
-    int		off;
+scroll_region_set(win_T *wp, int off)
 {
     OUT_STR(tgoto((char *)T_CS, W_WINROW(wp) + wp->w_height - 1,
 							 W_WINROW(wp) + off));
@@ -3666,7 +3616,7 @@ scroll_region_set(wp, off)
  * Reset scrolling region to the whole screen.
  */
     void
-scroll_region_reset()
+scroll_region_reset(void)
 {
     OUT_STR(tgoto((char *)T_CS, (int)Rows - 1, 0));
 #ifdef FEAT_VERTSPLIT
@@ -3695,7 +3645,7 @@ static int  tc_len = 0;	    /* current number of entries in termcodes[] */
 static int termcode_star(char_u *code, int len);
 
     void
-clear_termcodes()
+clear_termcodes(void)
 {
     while (tc_len > 0)
 	vim_free(termcodes[--tc_len].code);
@@ -3722,10 +3672,7 @@ clear_termcodes()
  * "flags" can also be ATC_FROM_TERM for got_code_from_term().
  */
     void
-add_termcode(name, string, flags)
-    char_u	*name;
-    char_u	*string;
-    int		flags;
+add_termcode(char_u *name, char_u *string, int flags)
 {
     struct termcode *new_tc;
     int		    i, j;
@@ -3854,9 +3801,7 @@ add_termcode(name, string, flags)
  * Return 0 if not found, 2 for ;*X and 1 for O*X and <M-O>*X.
  */
     static int
-termcode_star(code, len)
-    char_u	*code;
-    int		len;
+termcode_star(char_u *code, int len)
 {
     /* Shortest is <M-O>*X.  With ; shortest is <CSI>1;*X */
     if (len >= 3 && code[len - 2] == '*')
@@ -3870,8 +3815,7 @@ termcode_star(code, len)
 }
 
     char_u  *
-find_termcode(name)
-    char_u  *name;
+find_termcode(char_u *name)
 {
     int	    i;
 
@@ -3883,8 +3827,7 @@ find_termcode(name)
 
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     char_u *
-get_termcode(i)
-    int	    i;
+get_termcode(int i)
 {
     if (i >= tc_len)
 	return NULL;
@@ -3893,8 +3836,7 @@ get_termcode(i)
 #endif
 
     void
-del_termcode(name)
-    char_u  *name;
+del_termcode(char_u *name)
 {
     int	    i;
 
@@ -3913,8 +3855,7 @@ del_termcode(name)
 }
 
     static void
-del_termcode_idx(idx)
-    int		idx;
+del_termcode_idx(int idx)
 {
     int		i;
 
@@ -3930,7 +3871,7 @@ del_termcode_idx(idx)
  * Convert all 7-bit codes to their 8-bit equivalent.
  */
     static void
-switch_to_8bit()
+switch_to_8bit(void)
 {
     int		i;
     int		c;
@@ -3971,8 +3912,7 @@ static int orig_topfill = 0;
  * click still works.
  */
     void
-set_mouse_topline(wp)
-    win_T	*wp;
+set_mouse_topline(win_T *wp)
 {
     orig_topline = wp->w_topline;
 # ifdef FEAT_DIFF
@@ -3995,11 +3935,11 @@ set_mouse_topline(wp)
  * inserts and deletes.
  */
     int
-check_termcode(max_offset, buf, bufsize, buflen)
-    int		max_offset;
-    char_u	*buf;
-    int		bufsize;
-    int		*buflen;
+check_termcode(
+    int		max_offset,
+    char_u	*buf,
+    int		bufsize,
+    int		*buflen)
 {
     char_u	*tp;
     char_u	*p;
@@ -5459,12 +5399,12 @@ check_termcode(max_offset, buf, bufsize, buflen)
  * instead of a CTRL-V.
  */
     char_u *
-replace_termcodes(from, bufp, from_part, do_lt, special)
-    char_u	*from;
-    char_u	**bufp;
-    int		from_part;
-    int		do_lt;		/* also translate <lt> */
-    int		special;	/* always accept <key> notation */
+replace_termcodes(
+    char_u	*from,
+    char_u	**bufp,
+    int		from_part,
+    int		do_lt,		/* also translate <lt> */
+    int		special)	/* always accept <key> notation */
 {
     int		i;
     int		slen;
@@ -5673,8 +5613,7 @@ replace_termcodes(from, bufp, from_part, do_lt, special)
  * Return the index in termcodes[], or -1 if not found.
  */
     int
-find_term_bykeys(src)
-    char_u	*src;
+find_term_bykeys(char_u *src)
 {
     int		i;
     int		slen = (int)STRLEN(src);
@@ -5693,7 +5632,7 @@ find_term_bykeys(src)
  * Used to speed up check_termcode().
  */
     static void
-gather_termleader()
+gather_termleader(void)
 {
     int	    i;
     int	    len = 0;
@@ -5724,7 +5663,7 @@ gather_termleader()
  * This code looks a lot like showoptions(), but is different.
  */
     void
-show_termcodes()
+show_termcodes(void)
 {
     int		col;
     int		*items;
@@ -5810,10 +5749,7 @@ show_termcodes()
  * Output goes into IObuff[]
  */
     int
-show_one_termcode(name, code, printit)
-    char_u  *name;
-    char_u  *code;
-    int	    printit;
+show_one_termcode(char_u *name, char_u *code, int printit)
 {
     char_u	*p;
     int		len;
@@ -5870,7 +5806,7 @@ static int xt_index_in = 0;
 static int xt_index_out = 0;
 
     static void
-req_codes_from_term()
+req_codes_from_term(void)
 {
     xt_index_out = 0;
     xt_index_in = 0;
@@ -5878,7 +5814,7 @@ req_codes_from_term()
 }
 
     static void
-req_more_codes_from_term()
+req_more_codes_from_term(void)
 {
     char	buf[11];
     int		old_idx = xt_index_out;
@@ -5916,9 +5852,7 @@ req_more_codes_from_term()
  * "code" points to the "0" or "1".
  */
     static void
-got_code_from_term(code, len)
-    char_u	*code;
-    int		len;
+got_code_from_term(char_u *code, int len)
 {
 #define XT_LEN 100
     char_u	name[3];
@@ -6006,7 +5940,7 @@ got_code_from_term(code, len)
  * handled as typed text.
  */
     static void
-check_for_codes_from_term()
+check_for_codes_from_term(void)
 {
     int		c;
 
@@ -6058,9 +5992,9 @@ check_for_codes_from_term()
  * Returns NULL when there is a problem.
  */
     char_u *
-translate_mapping(str, expmap)
-    char_u	*str;
-    int		expmap;  /* TRUE when expanding mappings on command-line */
+translate_mapping(
+    char_u	*str,
+    int		expmap)  /* TRUE when expanding mappings on command-line */
 {
     garray_T	ga;
     int		c;
@@ -6148,8 +6082,7 @@ static char ksmd_str[20];
  * For Win32 console: update termcap codes for existing console attributes.
  */
     void
-update_tcap(attr)
-    int attr;
+update_tcap(int attr)
 {
     struct builtin_term *p;
 
