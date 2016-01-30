@@ -495,7 +495,7 @@ SFunselect(void)
 static int SFcompareLogins(const void *p, const void *q);
 
     static int
-SFcompareLogins(const void *p, *q)
+SFcompareLogins(const void *p, const void *q)
 {
     return strcmp(((SFLogin *)p)->name, ((SFLogin *)q)->name);
 }
@@ -571,7 +571,7 @@ SFgetHomeDirs(void)
 static int SFfindHomeDir(char *begin, char *end);
 
     static int
-SFfindHomeDir(char *begin, *end)
+SFfindHomeDir(char *begin, char *end)
 {
     char	save;
     char	*theRest;
@@ -2709,9 +2709,12 @@ vim_SelFile(
     char	*prompt,
     char	*init_path,
     int		(*show_entry)(),
-    int		x, y,
-    guicolor_T	fg, bg,
-    guicolor_T	scroll_fg, scroll_bg) /* The "Scrollbar" group colors */
+    int		x,
+    int		y,
+    guicolor_T	fg,
+    guicolor_T	bg,
+    guicolor_T	scroll_fg,
+    guicolor_T	scroll_bg) /* The "Scrollbar" group colors */
 {
     static int	firstTime = 1;
     XEvent	event;

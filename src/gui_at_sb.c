@@ -234,7 +234,8 @@ ClassInitialize(void)
     static void
 FillArea(
     ScrollbarWidget	sbw,
-    Position		top, bottom,
+    Position		top,
+    Position		bottom,
     int			fill,
     int			draw_shadow)
 {
@@ -641,7 +642,7 @@ Redisplay(Widget w, XEvent *event, Region region)
 
 
     static Boolean
-CompareEvents(XEvent *oldEvent, *newEvent)
+CompareEvents(XEvent *oldEvent, XEvent *newEvent)
 {
 #define Check(field) if (newEvent->field != oldEvent->field) return False;
 
@@ -713,7 +714,8 @@ LookAhead(Widget w, XEvent *event)
     static void
 ExtractPosition(
     XEvent	    *event,
-    Position	    *x, *y,	/* RETURN */
+    Position	    *x,		/* RETURN */
+    Position	    *y,		/* RETURN */
     unsigned int    *state)	/* RETURN */
 {
     switch (event->type)
@@ -816,7 +818,7 @@ RepeatNotify(XtPointer client_data, XtIntervalId *idp UNUSED)
  * Same as above, but for floating numbers.
  */
     static float
-FloatInRange(float num, small, big)
+FloatInRange(float num, float small, float big)
 {
     return (num < small) ? small : ((num > big) ? big : num);
 }
@@ -984,7 +986,7 @@ EndScroll(
 }
 
     static float
-FractionLoc(ScrollbarWidget sbw, int x, y)
+FractionLoc(ScrollbarWidget sbw, int x, int y)
 {
     int	    margin;
     float   height, width;
@@ -1165,7 +1167,7 @@ _Xaw3dDrawShadows(
  * Set the scroll bar to the given location.
  */
     void
-vim_XawScrollbarSetThumb(Widget w, double top, shown, max)
+vim_XawScrollbarSetThumb(Widget w, double top, double shown, double max)
 {
     ScrollbarWidget sbw = (ScrollbarWidget) w;
 

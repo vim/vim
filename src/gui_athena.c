@@ -89,7 +89,8 @@ static int		puller_width = 0;
     static void
 gui_athena_scroll_cb_jump(
     Widget	w UNUSED,
-    XtPointer	client_data, call_data)
+    XtPointer	client_data,
+    XtPointer	call_data)
 {
     scrollbar_T *sb, *sb_info;
     long	value;
@@ -124,7 +125,8 @@ gui_athena_scroll_cb_jump(
     static void
 gui_athena_scroll_cb_scroll(
     Widget	w UNUSED,
-    XtPointer	client_data, call_data)
+    XtPointer	client_data,
+    XtPointer	call_data)
 {
     scrollbar_T *sb, *sb_info;
     long	value;

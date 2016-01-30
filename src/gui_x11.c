@@ -1761,7 +1761,7 @@ gui_mch_exit(int rc UNUSED)
  * Get the position of the top left corner of the window.
  */
     int
-gui_mch_get_winpos(int *x, *y)
+gui_mch_get_winpos(int *x, int *y)
 {
     Dimension	xpos, ypos;
 
@@ -1779,7 +1779,7 @@ gui_mch_get_winpos(int *x, *y)
  * coordinates.
  */
     void
-gui_mch_set_winpos(int x, y)
+gui_mch_set_winpos(int x, int y)
 {
     XtVaSetValues(vimShell,
 	XtNx,	x,
@@ -3181,7 +3181,7 @@ static long_u		blink_offtime = 250;
 static XtIntervalId	blink_timer = (XtIntervalId)0;
 
     void
-gui_mch_set_blinking(long waittime, on, off)
+gui_mch_set_blinking(long waittime, long on, long off)
 {
     blink_waittime = waittime;
     blink_ontime = on;
