@@ -561,7 +561,7 @@ static int curPCtype = -1;
  * Free netbeans resources.
  */
     static void
-nb_free()
+nb_free(void)
 {
     keyQ_T *key_node = keyHead.next;
     nbbuf_T buf;
@@ -2355,22 +2355,20 @@ special_keys(char_u *args)
 }
 
     void
-ex_nbclose(eap)
-    exarg_T	*eap UNUSED;
+ex_nbclose(exarg_T *eap UNUSED)
 {
     netbeans_close();
 }
 
     void
-ex_nbkey(eap)
-    exarg_T	*eap;
+ex_nbkey(exarg_T *eap)
 {
     (void)netbeans_keystring(eap->arg);
 }
 
     void
-ex_nbstart(eap)
-    exarg_T	*eap;
+ex_nbstart(
+    exarg_T	*eap)
 {
 #ifdef FEAT_GUI
 # if !defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)  \
@@ -2572,7 +2570,7 @@ netbeans_open(char *params, int doabort)
  * before calling exit.
  */
     void
-netbeans_send_disconnect()
+netbeans_send_disconnect(void)
 {
     char buf[128];
 
@@ -3400,8 +3398,7 @@ pos2off(buf_T *buf, pos_T *pos)
  * doesn't normally call readfile, we do our own.
  */
     static void
-print_read_msg(buf)
-    nbbuf_T	*buf;
+print_read_msg(nbbuf_T *buf)
 {
     int	    lnum = buf->bufp->b_ml.ml_line_count;
     off_t   nchars = buf->bufp->b_orig_size;
@@ -3438,9 +3435,7 @@ print_read_msg(buf)
  * writing a file.
  */
     static void
-print_save_msg(buf, nchars)
-    nbbuf_T	*buf;
-    off_t	nchars;
+print_save_msg(nbbuf_T *buf, off_t nchars)
 {
     char_u	c;
     char_u	*p;
