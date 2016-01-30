@@ -118,7 +118,7 @@ static void gui_motif_scroll_colors(Widget id);
  */
 
     static void
-scroll_cb(Widget w UNUSED, XtPointer client_data, call_data)
+scroll_cb(Widget w UNUSED, XtPointer client_data, XtPointer call_data)
 {
     scrollbar_T *sb;
     long	value;
