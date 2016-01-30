@@ -93,7 +93,7 @@ static int cause_abort = FALSE;
  * due to a parsing error, aborting() always returns the same value.
  */
     int
-aborting()
+aborting(void)
 {
     return (did_emsg && force_abort) || got_int || did_throw;
 }
@@ -105,7 +105,7 @@ aborting()
  * error message has been reached.  update_force_abort() should be called then.
  */
     void
-update_force_abort()
+update_force_abort(void)
 {
     if (cause_abort)
 	force_abort = TRUE;
@@ -118,8 +118,7 @@ update_force_abort()
  * displayed and actually caused the abortion.
  */
     int
-should_abort(retcode)
-    int		retcode;
+should_abort(int retcode)
 {
     return ((retcode == FAIL && trylevel != 0 && !emsg_silent) || aborting());
 }
@@ -131,7 +130,7 @@ should_abort(retcode)
  * commands are still reported.
  */
     int
-aborted_in_try()
+aborted_in_try(void)
 {
     /* This function is only called after an error.  In this case, "force_abort"
      * determines whether searching for finally clauses is necessary. */
@@ -148,10 +147,10 @@ aborted_in_try()
  * set to TRUE, if a later but severer message should be used instead.
  */
     int
-cause_errthrow(mesg, severe, ignore)
-    char_u	*mesg;
-    int		severe;
-    int		*ignore;
+cause_errthrow(
+    char_u	*mesg,
+    int		severe,
+    int		*ignore)
 {
     struct msglist *elem;
     struct msglist **plist;
@@ -305,8 +304,7 @@ cause_errthrow(mesg, severe, ignore)
  * Free a "msg_list" and the messages it contains.
  */
     static void
-free_msglist(l)
-    struct msglist  *l;
+free_msglist(struct msglist *l)
 {
     struct msglist  *messages, *next;
 
@@ -325,7 +323,7 @@ free_msglist(l)
  * to NULL.
  */
     void
-free_global_msglist()
+free_global_msglist(void)
 {
     free_msglist(*msg_list);
     *msg_list = NULL;
@@ -337,9 +335,7 @@ free_global_msglist()
  * has returned (see do_one_cmd()).
  */
     void
-do_errthrow(cstack, cmdname)
-    struct condstack	*cstack;
-    char_u		*cmdname;
+do_errthrow(struct condstack *cstack, char_u *cmdname)
 {
     /*
      * Ensure that all commands in nested function calls and sourced files
@@ -374,8 +370,7 @@ do_errthrow(cstack, cmdname)
  * FALSE otherwise.
  */
     int
-do_intthrow(cstack)
-    struct condstack	*cstack;
+do_intthrow(struct condstack *cstack)
 {
     /*
      * If no interrupt occurred or no try conditional is active and no exception
@@ -425,11 +420,11 @@ do_intthrow(cstack)
  * Get an exception message that is to be stored in current_exception->value.
  */
     char_u *
-get_exception_string(value, type, cmdname, should_free)
-    void	*value;
-    int		type;
-    char_u	*cmdname;
-    int		*should_free;
+get_exception_string(
+    void	*value,
+    int		type,
+    char_u	*cmdname,
+    int		*should_free)
 {
     char_u	*ret, *mesg;
     int		cmdlen;
@@ -508,10 +503,7 @@ get_exception_string(value, type, cmdname, should_free)
  * error exception.
  */
     static int
-throw_exception(value, type, cmdname)
-    void	*value;
-    int		type;
-    char_u	*cmdname;
+throw_exception(void *value, int type, char_u *cmdname)
 {
     except_T	*excp;
     int		should_free;
@@ -597,9 +589,7 @@ fail:
  * caught and the catch clause has been ended normally.
  */
     static void
-discard_exception(excp, was_finished)
-    except_T		*excp;
-    int			was_finished;
+discard_exception(except_T *excp, int was_finished)
 {
     char_u		*saved_IObuff;
 
@@ -648,7 +638,7 @@ discard_exception(excp, was_finished)
  * Discard the exception currently being thrown.
  */
     void
-discard_current_exception()
+discard_current_exception(void)
 {
     discard_exception(current_exception, FALSE);
     current_exception = NULL;
@@ -660,8 +650,7 @@ discard_current_exception()
  * Put an exception on the caught stack.
  */
     static void
-catch_exception(excp)
-    except_T	*excp;
+catch_exception(except_T *excp)
 {
     excp->caught = caught_stack;
     caught_stack = excp;
@@ -708,8 +697,7 @@ catch_exception(excp)
  * Remove an exception from the caught stack.
  */
     static void
-finish_exception(excp)
-    except_T	*excp;
+finish_exception(except_T *excp)
 {
     if (excp != caught_stack)
 	EMSG(_(e_internal));
@@ -758,10 +746,7 @@ finish_exception(excp)
  * or the exception value for a pending exception.
  */
     static void
-report_pending(action, pending, value)
-    int		action;
-    int		pending;
-    void	*value;
+report_pending(int action, int pending, void *value)
 {
     char_u	*mesg;
     char	*s;
@@ -841,9 +826,7 @@ report_pending(action, pending, value)
  * the 'verbose' option or when debugging.
  */
     void
-report_make_pending(pending, value)
-    int		pending;
-    void	*value;
+report_make_pending(int pending, void *value)
 {
     if (p_verbose >= 14 || debug_break_level > 0)
     {
@@ -860,9 +843,7 @@ report_make_pending(pending, value)
  * it if required by the 'verbose' option or when debugging.
  */
     void
-report_resume_pending(pending, value)
-    int		pending;
-    void	*value;
+report_resume_pending(int pending, void *value)
 {
     if (p_verbose >= 14 || debug_break_level > 0)
     {
@@ -879,9 +860,7 @@ report_resume_pending(pending, value)
  * by the 'verbose' option or when debugging.
  */
     void
-report_discard_pending(pending, value)
-    int		pending;
-    void	*value;
+report_discard_pending(int pending, void *value)
 {
     if (p_verbose >= 14 || debug_break_level > 0)
     {
@@ -898,8 +877,7 @@ report_discard_pending(pending, value)
  * ":if".
  */
     void
-ex_if(eap)
-    exarg_T	*eap;
+ex_if(exarg_T *eap)
 {
     int		error;
     int		skip;
@@ -937,8 +915,7 @@ ex_if(eap)
  * ":endif".
  */
     void
-ex_endif(eap)
-    exarg_T	*eap;
+ex_endif(exarg_T *eap)
 {
     did_endif = TRUE;
     if (eap->cstack->cs_idx < 0
@@ -968,8 +945,7 @@ ex_endif(eap)
  * ":else" and ":elseif".
  */
     void
-ex_else(eap)
-    exarg_T	*eap;
+ex_else(exarg_T *eap)
 {
     int		error;
     int		skip;
@@ -1060,8 +1036,7 @@ ex_else(eap)
  * Handle ":while" and ":for".
  */
     void
-ex_while(eap)
-    exarg_T	*eap;
+ex_while(exarg_T *eap)
 {
     int		error;
     int		skip;
@@ -1160,8 +1135,7 @@ ex_while(eap)
  * ":continue"
  */
     void
-ex_continue(eap)
-    exarg_T	*eap;
+ex_continue(exarg_T *eap)
 {
     int		idx;
     struct condstack	*cstack = eap->cstack;
@@ -1199,8 +1173,7 @@ ex_continue(eap)
  * ":break"
  */
     void
-ex_break(eap)
-    exarg_T	*eap;
+ex_break(exarg_T *eap)
 {
     int		idx;
     struct condstack	*cstack = eap->cstack;
@@ -1226,8 +1199,7 @@ ex_break(eap)
  * ":endwhile" and ":endfor"
  */
     void
-ex_endwhile(eap)
-    exarg_T	*eap;
+ex_endwhile(exarg_T *eap)
 {
     struct condstack	*cstack = eap->cstack;
     int			idx;
@@ -1313,8 +1285,7 @@ ex_endwhile(eap)
  * ":throw expr"
  */
     void
-ex_throw(eap)
-    exarg_T	*eap;
+ex_throw(exarg_T *eap)
 {
     char_u	*arg = eap->arg;
     char_u	*value;
@@ -1344,8 +1315,7 @@ ex_throw(eap)
  * used for rethrowing an uncaught exception.
  */
     void
-do_throw(cstack)
-    struct condstack	*cstack;
+do_throw(struct condstack *cstack)
 {
     int		idx;
     int		inactivate_try = FALSE;
@@ -1426,8 +1396,7 @@ do_throw(cstack)
  * ":try"
  */
     void
-ex_try(eap)
-    exarg_T	*eap;
+ex_try(exarg_T *eap)
 {
     int		skip;
     struct condstack	*cstack = eap->cstack;
@@ -1496,8 +1465,7 @@ ex_try(eap)
  * ":catch /{pattern}/" and ":catch"
  */
     void
-ex_catch(eap)
-    exarg_T	*eap;
+ex_catch(exarg_T *eap)
 {
     int		idx = 0;
     int		give_up = FALSE;
@@ -1657,8 +1625,7 @@ ex_catch(eap)
  * ":finally"
  */
     void
-ex_finally(eap)
-    exarg_T	*eap;
+ex_finally(exarg_T *eap)
 {
     int		idx;
     int		skip = FALSE;
@@ -1785,8 +1752,7 @@ ex_finally(eap)
  * ":endtry"
  */
     void
-ex_endtry(eap)
-    exarg_T	*eap;
+ex_endtry(exarg_T *eap)
 {
     int		idx;
     int		skip;
@@ -1984,8 +1950,7 @@ ex_endtry(eap)
  * execution.
  */
     void
-enter_cleanup(csp)
-    cleanup_T	*csp;
+enter_cleanup(cleanup_T *csp)
 {
     int		pending = CSTP_NONE;
 
@@ -2047,8 +2012,7 @@ enter_cleanup(csp)
  * exception state is discarded.
  */
     void
-leave_cleanup(csp)
-    cleanup_T	*csp;
+leave_cleanup(cleanup_T *csp)
 {
     int		pending = csp->pending;
 
@@ -2133,10 +2097,10 @@ leave_cleanup(csp)
  * when such a try conditional is left.
  */
     int
-cleanup_conditionals(cstack, searched_cond, inclusive)
-    struct condstack   *cstack;
-    int		searched_cond;
-    int		inclusive;
+cleanup_conditionals(
+    struct condstack   *cstack,
+    int		searched_cond,
+    int		inclusive)
 {
     int		idx;
     int		stop = FALSE;
@@ -2256,8 +2220,7 @@ cleanup_conditionals(cstack, searched_cond, inclusive)
  * Return an appropriate error message for a missing endwhile/endfor/endif.
  */
    static char_u *
-get_end_emsg(cstack)
-    struct condstack	*cstack;
+get_end_emsg(struct condstack *cstack)
 {
     if (cstack->cs_flags[cstack->cs_idx] & CSF_WHILE)
 	return e_endwhile;
@@ -2275,11 +2238,11 @@ get_end_emsg(cstack)
  * Also free "for info" structures where needed.
  */
     void
-rewind_conditionals(cstack, idx, cond_type, cond_level)
-    struct condstack   *cstack;
-    int		idx;
-    int		cond_type;
-    int		*cond_level;
+rewind_conditionals(
+    struct condstack   *cstack,
+    int		idx,
+    int		cond_type,
+    int		*cond_level)
 {
     while (cstack->cs_idx > idx)
     {
@@ -2295,8 +2258,7 @@ rewind_conditionals(cstack, idx, cond_type, cond_level)
  * ":endfunction" when not after a ":function"
  */
     void
-ex_endfunction(eap)
-    exarg_T	*eap UNUSED;
+ex_endfunction(exarg_T *eap UNUSED)
 {
     EMSG(_("E193: :endfunction not inside a function"));
 }
@@ -2305,8 +2267,7 @@ ex_endfunction(eap)
  * Return TRUE if the string "p" looks like a ":while" or ":for" command.
  */
     int
-has_loop_cmd(p)
-    char_u	*p;
+has_loop_cmd(char_u *p)
 {
     int		len;
 
