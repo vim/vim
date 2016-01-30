@@ -1988,8 +1988,7 @@ entry_changed_cb(GtkWidget * entry, GtkWidget * dialog)
  * ":helpfind"
  */
     void
-ex_helpfind(eap)
-    exarg_T	*eap UNUSED;
+ex_helpfind(exarg_T *eap UNUSED)
 {
     /* This will fail when menus are not loaded.  Well, it's only for
      * backwards compatibility anyway. */

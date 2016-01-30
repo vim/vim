@@ -2607,8 +2607,7 @@ gui_mch_mousehide(int hide)
  * the menu that we should display
  */
     void
-gui_mac_handle_contextual_menu(event)
-    EventRecord *event;
+gui_mac_handle_contextual_menu(EventRecord *event)
 {
 /*
  *  Clone PopUp to use menu
@@ -3697,8 +3696,7 @@ gui_mch_set_font(GuiFont font)
  * If a font is not going to be used, free its structure.
  */
     void
-gui_mch_free_font(font)
-    GuiFont	font;
+gui_mch_free_font(GuiFont font)
 {
     /*
      * Free font when "font" is not 0.
@@ -6897,8 +6895,7 @@ gui_mch_update_tabline(void)
  * Set the current tab to "nr".  First tab is 1.
  */
     void
-gui_mch_set_curtab(nr)
-    int		nr;
+gui_mch_set_curtab(int nr)
 {
     DataBrowserItemID item = nr;
     SetDataBrowserSelectedItems(dataBrowser, 1, &item, kDataBrowserItemsAssign);

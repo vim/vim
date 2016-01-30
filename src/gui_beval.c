@@ -16,9 +16,7 @@
  * Common code, invoked when the mouse is resting for a moment.
  */
     void
-general_beval_cb(beval, state)
-    BalloonEval *beval;
-    int		state UNUSED;
+general_beval_cb(BalloonEval *beval, int state UNUSED)
 {
 #ifdef FEAT_EVAL
     win_T	*wp;
@@ -192,11 +190,11 @@ static void createBalloonEvalWindow(BalloonEval *);
  * Returns a pointer to the resulting object (NULL when out of memory).
  */
     BalloonEval *
-gui_mch_create_beval_area(target, mesg, mesgCB, clientData)
-    void	*target;
-    char_u	*mesg;
-    void	(*mesgCB)(BalloonEval *, int);
-    void	*clientData;
+gui_mch_create_beval_area(
+    void	*target,
+    char_u	*mesg,
+    void	(*mesgCB)(BalloonEval *, int),
+    void	*clientData)
 {
 #ifndef FEAT_GUI_GTK
     char	*display_name;	    /* get from gui.dpy */
@@ -262,8 +260,7 @@ gui_mch_create_beval_area(target, mesg, mesgCB, clientData)
  * Destroy a balloon-eval and free its associated memory.
  */
     void
-gui_mch_destroy_beval_area(beval)
-    BalloonEval	*beval;
+gui_mch_destroy_beval_area(BalloonEval *beval)
 {
     cancelBalloon(beval);
     removeEventHandler(beval);
@@ -278,16 +275,14 @@ gui_mch_destroy_beval_area(beval)
 #endif
 
     void
-gui_mch_enable_beval_area(beval)
-    BalloonEval	*beval;
+gui_mch_enable_beval_area(BalloonEval *beval)
 {
     if (beval != NULL)
 	addEventHandler(beval->target, beval);
 }
 
     void
-gui_mch_disable_beval_area(beval)
-    BalloonEval	*beval;
+gui_mch_disable_beval_area(BalloonEval *beval)
 {
     if (beval != NULL)
 	removeEventHandler(beval);
@@ -301,7 +296,7 @@ gui_mch_disable_beval_area(beval)
  * Assumption: Only one tooltip can be shown at a time.
  */
     BalloonEval *
-gui_mch_currently_showing_beval()
+gui_mch_currently_showing_beval(void)
 {
     return current_beval;
 }
@@ -317,13 +312,13 @@ gui_mch_currently_showing_beval()
  * Returns OK or FAIL.
  */
     int
-get_beval_info(beval, getword, winp, lnump, textp, colp)
-    BalloonEval	*beval;
-    int		getword;
-    win_T	**winp;
-    linenr_T	*lnump;
-    char_u	**textp;
-    int		*colp;
+get_beval_info(
+    BalloonEval	*beval,
+    int		getword,
+    win_T	**winp,
+    linenr_T	*lnump,
+    char_u	**textp,
+    int		*colp)
 {
     win_T	*wp;
     int		row, col;
@@ -427,9 +422,7 @@ get_beval_info(beval, getword, winp, lnump, textp, colp)
  * Show a balloon with "mesg".
  */
     void
-gui_mch_post_balloon(beval, mesg)
-    BalloonEval	*beval;
-    char_u	*mesg;
+gui_mch_post_balloon(BalloonEval *beval, char_u *mesg)
 {
     beval->msg = mesg;
     if (mesg != NULL)
@@ -446,8 +439,7 @@ gui_mch_post_balloon(beval, mesg)
  * Hide the given balloon.
  */
     void
-gui_mch_unpost_balloon(beval)
-    BalloonEval	*beval;
+gui_mch_unpost_balloon(BalloonEval *beval)
 {
     undrawBalloon(beval);
 }
@@ -687,9 +679,7 @@ balloon_expose_event_cb(GtkWidget *widget,
 #else /* !FEAT_GUI_GTK */
 
     static void
-addEventHandler(target, beval)
-    Widget	target;
-    BalloonEval	*beval;
+addEventHandler(Widget target, BalloonEval *beval)
 {
     XtAddEventHandler(target,
 			PointerMotionMask | EnterWindowMask |
@@ -700,8 +690,7 @@ addEventHandler(target, beval)
 }
 
     static void
-removeEventHandler(beval)
-    BalloonEval	*beval;
+removeEventHandler(BalloonEval *beval)
 {
     XtRemoveEventHandler(beval->target,
 			PointerMotionMask | EnterWindowMask |
@@ -716,11 +705,11 @@ removeEventHandler(beval)
  * The X event handler. All it does is call the real event handler.
  */
     static void
-pointerEventEH(w, client_data, event, unused)
-    Widget	w UNUSED;
-    XtPointer	client_data;
-    XEvent	*event;
-    Boolean	*unused UNUSED;
+pointerEventEH(
+    Widget	w UNUSED,
+    XtPointer	client_data,
+    XEvent	*event,
+    Boolean	*unused UNUSED)
 {
     BalloonEval *beval = (BalloonEval *)client_data;
     pointerEvent(beval, event);
@@ -733,9 +722,7 @@ pointerEventEH(w, client_data, event, unused)
  */
 
     static void
-pointerEvent(beval, event)
-    BalloonEval	*beval;
-    XEvent	*event;
+pointerEvent(BalloonEval *beval, XEvent *event)
 {
     Position	distance;	    /* a measure of how much the pointer moved */
     Position	delta;		    /* used to compute distance */
@@ -866,9 +853,7 @@ pointerEvent(beval, event)
 }
 
     static void
-timerRoutine(dx, id)
-    XtPointer	    dx;
-    XtIntervalId    *id UNUSED;
+timerRoutine(XtPointer dx, XtIntervalId *id UNUSED)
 {
     BalloonEval *beval = (BalloonEval *)dx;
 
@@ -885,8 +870,7 @@ timerRoutine(dx, id)
 #endif /* !FEAT_GUI_GTK */
 
     static void
-requestBalloon(beval)
-    BalloonEval	*beval;
+requestBalloon(BalloonEval *beval)
 {
     if (beval->showState != ShS_PENDING)
     {
@@ -1177,8 +1161,7 @@ createBalloonEvalWindow(BalloonEval *beval)
  * Draw a balloon.
  */
     static void
-drawBalloon(beval)
-    BalloonEval	*beval;
+drawBalloon(BalloonEval *beval)
 {
     Dimension	w;
     Dimension	h;
@@ -1281,8 +1264,7 @@ drawBalloon(beval)
  * Undraw a balloon.
  */
     static void
-undrawBalloon(beval)
-    BalloonEval *beval;
+undrawBalloon(BalloonEval *beval)
 {
     if (beval->balloonShell != (Widget)0)
 	XtPopdown(beval->balloonShell);
@@ -1292,8 +1274,7 @@ undrawBalloon(beval)
 }
 
     static void
-cancelBalloon(beval)
-    BalloonEval	*beval;
+cancelBalloon(BalloonEval *beval)
 {
     if (beval->showState == ShS_SHOWING
 	    || beval->showState == ShS_UPDATE_PENDING)
@@ -1309,8 +1290,7 @@ cancelBalloon(beval)
 
 
     static void
-createBalloonEvalWindow(beval)
-    BalloonEval	*beval;
+createBalloonEvalWindow(BalloonEval *beval)
 {
     Arg		args[12];
     int		n;

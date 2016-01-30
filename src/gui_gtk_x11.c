@@ -571,7 +571,7 @@ gui_mch_prepare(int *argc, char **argv)
 
 #if defined(EXITFREE) || defined(PROTO)
     void
-gui_mch_free_all()
+gui_mch_free_all(void)
 {
     vim_free(gui_argv);
 #if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
@@ -2224,10 +2224,10 @@ setup_save_yourself(void)
  * GTK tells us that XSMP needs attention
  */
     static gboolean
-local_xsmp_handle_requests(source, condition, data)
-    GIOChannel		*source UNUSED;
-    GIOCondition	condition;
-    gpointer		data;
+local_xsmp_handle_requests(
+    GIOChannel		*source UNUSED,
+    GIOCondition	condition,
+    gpointer		data)
 {
     if (condition == G_IO_IN)
     {
@@ -3070,8 +3070,7 @@ gui_mch_update_tabline(void)
  * Set the current tab to "nr".  First tab is 1.
  */
     void
-gui_mch_set_curtab(nr)
-    int		nr;
+gui_mch_set_curtab(int nr)
 {
     if (gui.tabline == NULL)
 	return;
@@ -3944,7 +3943,7 @@ force_shell_resize_idle(gpointer data)
  * Return TRUE if the main window is maximized.
  */
     int
-gui_mch_maximized()
+gui_mch_maximized(void)
 {
     return (gui.mainwin != NULL && gui.mainwin->window != NULL
 	    && (gdk_window_get_state(gui.mainwin->window)
@@ -3955,7 +3954,7 @@ gui_mch_maximized()
  * Unmaximize the main window
  */
     void
-gui_mch_unmaximize()
+gui_mch_unmaximize(void)
 {
     if (gui.mainwin != NULL)
 	gtk_window_unmaximize(GTK_WINDOW(gui.mainwin));
@@ -3966,7 +3965,7 @@ gui_mch_unmaximize()
  * new Rows and Columns.  This is like resizing the window.
  */
     void
-gui_mch_newfont()
+gui_mch_newfont(void)
 {
     int w, h;
 

@@ -137,8 +137,7 @@ static char_u	*eval_map_expr(char_u *str, int c);
  * Free and clear a buffer.
  */
     void
-free_buff(buf)
-    buffheader_T	*buf;
+free_buff(buffheader_T *buf)
 {
     buffblock_T	*p, *np;
 
@@ -155,9 +154,9 @@ free_buff(buf)
  * K_SPECIAL and CSI in the returned string are escaped.
  */
     static char_u *
-get_buffcont(buffer, dozero)
-    buffheader_T	*buffer;
-    int			dozero;	    /* count == zero is not an error */
+get_buffcont(
+    buffheader_T	*buffer,
+    int			dozero)	    /* count == zero is not an error */
 {
     long_u	    count = 0;
     char_u	    *p = NULL;
@@ -186,7 +185,7 @@ get_buffcont(buffer, dozero)
  * K_SPECIAL and CSI in the returned string are escaped.
  */
     char_u *
-get_recorded()
+get_recorded(void)
 {
     char_u	*p;
     size_t	len;
@@ -220,7 +219,7 @@ get_recorded()
  * K_SPECIAL and CSI in the returned string are escaped.
  */
     char_u *
-get_inserted()
+get_inserted(void)
 {
     return get_buffcont(&redobuff, FALSE);
 }
@@ -230,10 +229,10 @@ get_inserted()
  * K_SPECIAL and CSI should have been escaped already.
  */
     static void
-add_buff(buf, s, slen)
-    buffheader_T	*buf;
-    char_u		*s;
-    long		slen;	/* length of "s" or -1 */
+add_buff(
+    buffheader_T	*buf,
+    char_u		*s,
+    long		slen)	/* length of "s" or -1 */
 {
     buffblock_T *p;
     long_u	    len;
@@ -289,9 +288,7 @@ add_buff(buf, s, slen)
  * Add number "n" to buffer "buf".
  */
     static void
-add_num_buff(buf, n)
-    buffheader_T *buf;
-    long	      n;
+add_num_buff(buffheader_T *buf, long n)
 {
     char_u	number[32];
 
@@ -304,9 +301,7 @@ add_num_buff(buf, n)
  * Translates special keys, NUL, CSI, K_SPECIAL and multibyte characters.
  */
     static void
-add_char_buff(buf, c)
-    buffheader_T	*buf;
-    int			c;
+add_char_buff(buffheader_T *buf, int c)
 {
 #ifdef FEAT_MBYTE
     char_u	bytes[MB_MAXBYTES + 1];
@@ -368,8 +363,7 @@ static buffheader_T readbuf2 = {{NULL, {NUL}}, NULL, 0, 0};
  * No translation is done K_SPECIAL and CSI are escaped.
  */
     static int
-read_readbuffers(advance)
-    int		advance;
+read_readbuffers(int advance)
 {
     int c;
 
@@ -380,9 +374,7 @@ read_readbuffers(advance)
 }
 
     static int
-read_readbuf(buf, advance)
-    buffheader_T    *buf;
-    int		    advance;
+read_readbuf(buffheader_T *buf, int advance)
 {
     char_u	c;
     buffblock_T	*curr;
@@ -409,7 +401,7 @@ read_readbuf(buf, advance)
  * Prepare the read buffers for reading (if they contain something).
  */
     static void
-start_stuff()
+start_stuff(void)
 {
     if (readbuf1.bh_first.b_next != NULL)
     {
@@ -427,7 +419,7 @@ start_stuff()
  * Return TRUE if the stuff buffer is empty.
  */
     int
-stuff_empty()
+stuff_empty(void)
 {
     return (readbuf1.bh_first.b_next == NULL
 	 && readbuf2.bh_first.b_next == NULL);
@@ -438,7 +430,7 @@ stuff_empty()
  * redbuf2.
  */
     int
-readbuf1_empty()
+readbuf1_empty(void)
 {
     return (readbuf1.bh_first.b_next == NULL);
 }
@@ -447,8 +439,7 @@ readbuf1_empty()
  * Set a typeahead character that won't be flushed.
  */
     void
-typeahead_noflush(c)
-    int		c;
+typeahead_noflush(int c)
 {
     typeahead_char = c;
 }
@@ -459,8 +450,7 @@ typeahead_noflush(c)
  * flush all typeahead characters (used when interrupted by a CTRL-C).
  */
     void
-flush_buffers(flush_typeahead)
-    int flush_typeahead;
+flush_buffers(int flush_typeahead)
 {
     init_typebuf();
 
@@ -497,7 +487,7 @@ flush_buffers(flush_typeahead)
  * This is used for the CTRL-O <.> command in insert mode.
  */
     void
-ResetRedobuff()
+ResetRedobuff(void)
 {
     if (!block_redo)
     {
@@ -512,7 +502,7 @@ ResetRedobuff()
  * buffer.
  */
     void
-CancelRedo()
+CancelRedo(void)
 {
     if (!block_redo)
     {
@@ -533,7 +523,7 @@ CancelRedo()
 static int save_level = 0;
 
     void
-saveRedobuff()
+saveRedobuff(void)
 {
     char_u	*s;
 
@@ -559,7 +549,7 @@ saveRedobuff()
  * Used after executing autocommands and user functions.
  */
     void
-restoreRedobuff()
+restoreRedobuff(void)
 {
     if (--save_level == 0)
     {
@@ -576,8 +566,7 @@ restoreRedobuff()
  * K_SPECIAL and CSI should already have been escaped.
  */
     void
-AppendToRedobuff(s)
-    char_u	   *s;
+AppendToRedobuff(char_u *s)
 {
     if (!block_redo)
 	add_buff(&redobuff, s, -1L);
@@ -588,9 +577,9 @@ AppendToRedobuff(s)
  * K_SPECIAL and CSI are escaped as well.
  */
     void
-AppendToRedobuffLit(str, len)
-    char_u	*str;
-    int		len;	    /* length of "str" or -1 for up to the NUL */
+AppendToRedobuffLit(
+    char_u	*str,
+    int		len)	    /* length of "str" or -1 for up to the NUL */
 {
     char_u	*s = str;
     int		c;
@@ -649,8 +638,7 @@ AppendToRedobuffLit(str, len)
  * Translates special keys, NUL, CSI, K_SPECIAL and multibyte characters.
  */
     void
-AppendCharToRedobuff(c)
-    int		   c;
+AppendCharToRedobuff(int c)
 {
     if (!block_redo)
 	add_char_buff(&redobuff, c);
@@ -660,8 +648,7 @@ AppendCharToRedobuff(c)
  * Append a number to the redo buffer.
  */
     void
-AppendNumberToRedobuff(n)
-    long	    n;
+AppendNumberToRedobuff(long n)
 {
     if (!block_redo)
 	add_num_buff(&redobuff, n);
@@ -672,8 +659,7 @@ AppendNumberToRedobuff(n)
  * CSI and K_SPECIAL must already have been escaped.
  */
     void
-stuffReadbuff(s)
-    char_u	*s;
+stuffReadbuff(char_u *s)
 {
     add_buff(&readbuf1, s, -1L);
 }
@@ -683,16 +669,13 @@ stuffReadbuff(s)
  * CSI and K_SPECIAL must already have been escaped.
  */
     void
-stuffRedoReadbuff(s)
-    char_u	*s;
+stuffRedoReadbuff(char_u *s)
 {
     add_buff(&readbuf2, s, -1L);
 }
 
     void
-stuffReadbuffLen(s, len)
-    char_u	*s;
-    long	len;
+stuffReadbuffLen(char_u *s, long len)
 {
     add_buff(&readbuf1, s, len);
 }
@@ -704,8 +687,7 @@ stuffReadbuffLen(s, len)
  * Change CR, LF and ESC into a space.
  */
     void
-stuffReadbuffSpec(s)
-    char_u	*s;
+stuffReadbuffSpec(char_u *s)
 {
     int c;
 
@@ -737,8 +719,7 @@ stuffReadbuffSpec(s)
  * Translates special keys, NUL, CSI, K_SPECIAL and multibyte characters.
  */
     void
-stuffcharReadbuff(c)
-    int		   c;
+stuffcharReadbuff(int c)
 {
     add_char_buff(&readbuf1, c);
 }
@@ -747,8 +728,7 @@ stuffcharReadbuff(c)
  * Append a number to the stuff buffer.
  */
     void
-stuffnumReadbuff(n)
-    long    n;
+stuffnumReadbuff(long n)
 {
     add_num_buff(&readbuf1, n);
 }
@@ -762,9 +742,7 @@ stuffnumReadbuff(n)
  * If old is TRUE, use old_redobuff instead of redobuff.
  */
     static int
-read_redo(init, old_redo)
-    int		init;
-    int		old_redo;
+read_redo(int init, int old_redo)
 {
     static buffblock_T	*bp;
     static char_u	*p;
@@ -837,8 +815,7 @@ read_redo(init, old_redo)
  * The escaped K_SPECIAL and CSI are copied without translation.
  */
     static void
-copy_redo(old_redo)
-    int	    old_redo;
+copy_redo(int old_redo)
 {
     int	    c;
 
@@ -856,9 +833,7 @@ copy_redo(old_redo)
  * return FAIL for failure, OK otherwise
  */
     int
-start_redo(count, old_redo)
-    long    count;
-    int	    old_redo;
+start_redo(long count, int old_redo)
 {
     int	    c;
 
@@ -911,7 +886,7 @@ start_redo(count, old_redo)
  * return FAIL for failure, OK otherwise
  */
     int
-start_redo_ins()
+start_redo_ins(void)
 {
     int	    c;
 
@@ -937,7 +912,7 @@ start_redo_ins()
 }
 
     void
-stop_redo_ins()
+stop_redo_ins(void)
 {
     block_redo = FALSE;
 }
@@ -948,7 +923,7 @@ stop_redo_ins()
  * be impossible to type anything.
  */
     static void
-init_typebuf()
+init_typebuf(void)
 {
     if (typebuf.tb_buf == NULL)
     {
@@ -981,12 +956,12 @@ init_typebuf()
  * return FAIL for failure, OK otherwise
  */
     int
-ins_typebuf(str, noremap, offset, nottyped, silent)
-    char_u	*str;
-    int		noremap;
-    int		offset;
-    int		nottyped;
-    int		silent;
+ins_typebuf(
+    char_u	*str,
+    int		noremap,
+    int		offset,
+    int		nottyped,
+    int		silent)
 {
     char_u	*s1, *s2;
     int		newlen;
@@ -1114,8 +1089,7 @@ ins_typebuf(str, noremap, offset, nottyped, silent)
  * the char.
  */
     void
-ins_char_typebuf(c)
-    int	    c;
+ins_char_typebuf(int c)
 {
 #ifdef FEAT_MBYTE
     char_u	buf[MB_MAXBYTES + 1];
@@ -1151,8 +1125,8 @@ ins_char_typebuf(c)
  * that was just added.
  */
     int
-typebuf_changed(tb_change_cnt)
-    int		tb_change_cnt;	/* old value of typebuf.tb_change_cnt */
+typebuf_changed(
+    int		tb_change_cnt)	/* old value of typebuf.tb_change_cnt */
 {
     return (tb_change_cnt != 0 && (typebuf.tb_change_cnt != tb_change_cnt
 #if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
@@ -1166,7 +1140,7 @@ typebuf_changed(tb_change_cnt)
  * not been typed (result from a mapping or come from ":normal").
  */
     int
-typebuf_typed()
+typebuf_typed(void)
 {
     return typebuf.tb_maplen == 0;
 }
@@ -1175,7 +1149,7 @@ typebuf_typed()
  * Return the number of characters that are mapped (or not typed).
  */
     int
-typebuf_maplen()
+typebuf_maplen(void)
 {
     return typebuf.tb_maplen;
 }
@@ -1184,9 +1158,7 @@ typebuf_maplen()
  * remove "len" characters from typebuf.tb_buf[typebuf.tb_off + offset]
  */
     void
-del_typebuf(len, offset)
-    int	len;
-    int	offset;
+del_typebuf(int len, int offset)
 {
     int	    i;
 
@@ -1264,9 +1236,7 @@ del_typebuf(len, offset)
  * If recording is on put the character in the recordbuffer.
  */
     static void
-gotchars(chars, len)
-    char_u	*chars;
-    int		len;
+gotchars(char_u *chars, int len)
 {
     char_u	*s = chars;
     int		c;
@@ -1311,7 +1281,7 @@ gotchars(chars, len)
  * - When no_u_sync is non-zero.
  */
     static void
-may_sync_undo()
+may_sync_undo(void)
 {
     if ((!(State & (INSERT + CMDLINE)) || arrow_used)
 					       && scriptin[curscript] == NULL)
@@ -1323,7 +1293,7 @@ may_sync_undo()
  * Returns FAIL when out of memory.
  */
     int
-alloc_typebuf()
+alloc_typebuf(void)
 {
     typebuf.tb_buf = alloc(TYPELEN_INIT);
     typebuf.tb_noremap = alloc(TYPELEN_INIT);
@@ -1347,7 +1317,7 @@ alloc_typebuf()
  * Free the buffers of "typebuf".
  */
     void
-free_typebuf()
+free_typebuf(void)
 {
     if (typebuf.tb_buf == typebuf_init)
 	EMSG2(_(e_intern2), "Free typebuf 1");
@@ -1366,7 +1336,7 @@ free_typebuf()
 static typebuf_T saved_typebuf[NSCRIPT];
 
     int
-save_typebuf()
+save_typebuf(void)
 {
     init_typebuf();
     saved_typebuf[curscript] = typebuf;
@@ -1392,8 +1362,7 @@ static int old_mouse_col;	/* mouse_col related to old_char */
  * Save all three kinds of typeahead, so that the user must type at a prompt.
  */
     void
-save_typeahead(tp)
-    tasave_T	*tp;
+save_typeahead(tasave_T *tp)
 {
     tp->save_typebuf = typebuf;
     tp->typebuf_valid = (alloc_typebuf() == OK);
@@ -1418,8 +1387,7 @@ save_typeahead(tp)
  * The allocated memory is freed, can only be called once!
  */
     void
-restore_typeahead(tp)
-    tasave_T	*tp;
+restore_typeahead(tasave_T *tp)
 {
     if (tp->typebuf_valid)
     {
@@ -1444,9 +1412,9 @@ restore_typeahead(tp)
  * Open a new script file for the ":source!" command.
  */
     void
-openscript(name, directly)
-    char_u	*name;
-    int		directly;	/* when TRUE execute directly */
+openscript(
+    char_u	*name,
+    int		directly)	/* when TRUE execute directly */
 {
     if (curscript + 1 == NSCRIPT)
     {
@@ -1517,7 +1485,7 @@ openscript(name, directly)
  * Close the currently active input script.
  */
     static void
-closescript()
+closescript(void)
 {
     free_typebuf();
     typebuf = saved_typebuf[curscript];
@@ -1530,7 +1498,7 @@ closescript()
 
 #if defined(EXITFREE) || defined(PROTO)
     void
-close_all_scripts()
+close_all_scripts(void)
 {
     while (scriptin[0] != NULL)
 	closescript();
@@ -1542,7 +1510,7 @@ close_all_scripts()
  * Return TRUE when reading keys from a script file.
  */
     int
-using_script()
+using_script(void)
 {
     return scriptin[curscript] != NULL;
 }
@@ -1553,7 +1521,7 @@ using_script()
  * waiting 'updatetime' for a character to arrive.
  */
     void
-before_blocking()
+before_blocking(void)
 {
     updatescript(0);
 #ifdef FEAT_EVAL
@@ -1570,8 +1538,7 @@ before_blocking()
  * characters reaches 'updatecount' and 'updatecount' is non-zero.
  */
     void
-updatescript(c)
-    int c;
+updatescript(int c)
 {
     static int	    count = 0;
 
@@ -1594,7 +1561,7 @@ updatescript(c)
  * Returns the modifiers in the global "mod_mask".
  */
     int
-vgetc()
+vgetc(void)
 {
     int		c, c2;
 #ifdef FEAT_MBYTE
@@ -1839,7 +1806,7 @@ vgetc()
  * directly from the user (ignoring typeahead).
  */
     int
-safe_vgetc()
+safe_vgetc(void)
 {
     int	c;
 
@@ -1854,7 +1821,7 @@ safe_vgetc()
  * Also ignore scrollbar events.
  */
     int
-plain_vgetc()
+plain_vgetc(void)
 {
     int c;
 
@@ -1871,7 +1838,7 @@ plain_vgetc()
  * character is not valid!.
  */
     int
-vpeekc()
+vpeekc(void)
 {
     if (old_char != -1)
 	return old_char;
@@ -1884,7 +1851,7 @@ vpeekc()
  * codes.
  */
     int
-vpeekc_nomap()
+vpeekc_nomap(void)
 {
     int		c;
 
@@ -1904,7 +1871,7 @@ vpeekc_nomap()
  * buffer, it must be an ESC that is recognized as the start of a key code.
  */
     int
-vpeekc_any()
+vpeekc_any(void)
 {
     int		c;
 
@@ -1920,7 +1887,7 @@ vpeekc_any()
  * Return TRUE if a character is available, FALSE otherwise.
  */
     int
-char_avail()
+char_avail(void)
 {
     int	    retval;
 
@@ -1930,9 +1897,11 @@ char_avail()
     return (retval != NUL);
 }
 
+/*
+ * unget one character (can only be done once!)
+ */
     void
-vungetc(c)	/* unget one character (can only be done once!) */
-    int		c;
+vungetc(int c)
 {
     old_char = c;
     old_mod_mask = mod_mask;
@@ -1966,8 +1935,7 @@ vungetc(c)	/* unget one character (can only be done once!) */
  * K_SPECIAL and CSI may be escaped, need to get two more bytes then.
  */
     static int
-vgetorpeek(advance)
-    int	    advance;
+vgetorpeek(int advance)
 {
     int		c, c1;
     int		keylen;
@@ -2988,11 +2956,11 @@ vgetorpeek(advance)
  *  Return -1 when end of input script reached.
  */
     int
-inchar(buf, maxlen, wait_time, tb_change_cnt)
-    char_u	*buf;
-    int		maxlen;
-    long	wait_time;	    /* milli seconds */
-    int		tb_change_cnt;
+inchar(
+    char_u	*buf,
+    int		maxlen,
+    long	wait_time,	    /* milli seconds */
+    int		tb_change_cnt)
 {
     int		len = 0;	    /* init for GCC */
     int		retesc = FALSE;	    /* return ESC with gotint */
@@ -3114,10 +3082,10 @@ inchar(buf, maxlen, wait_time, tb_change_cnt)
  * Returns the new length.
  */
     int
-fix_input_buffer(buf, len, script)
-    char_u	*buf;
-    int		len;
-    int		script;		/* TRUE when reading from a script */
+fix_input_buffer(
+    char_u	*buf,
+    int		len,
+    int		script)		/* TRUE when reading from a script */
 {
     int		i;
     char_u	*p = buf;
@@ -3182,7 +3150,7 @@ fix_input_buffer(buf, len, script)
  * waiting for input to arrive.
  */
     int
-input_available()
+input_available(void)
 {
     return (!vim_is_input_buf_empty()
 # if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
@@ -3231,11 +3199,11 @@ input_available()
  *	  5 for entry not unique
  */
     int
-do_map(maptype, arg, mode, abbrev)
-    int		maptype;
-    char_u	*arg;
-    int		mode;
-    int		abbrev;		/* not a mapping but an abbreviation */
+do_map(
+    int		maptype,
+    char_u	*arg,
+    int		mode,
+    int		abbrev)		/* not a mapping but an abbreviation */
 {
     char_u	*keys;
     mapblock_T	*mp, **mpp;
@@ -3810,8 +3778,7 @@ theend:
  * "mpp" is a pointer to the m_next field of the PREVIOUS entry!
  */
     static void
-map_free(mpp)
-    mapblock_T	**mpp;
+map_free(mapblock_T **mpp)
 {
     mapblock_T	*mp;
 
@@ -3827,7 +3794,7 @@ map_free(mpp)
  * Initialize maphash[] for first use.
  */
     static void
-validate_maphash()
+validate_maphash(void)
 {
     if (!maphash_valid)
     {
@@ -3840,9 +3807,7 @@ validate_maphash()
  * Get the mapping mode from the command name.
  */
     int
-get_map_mode(cmdp, forceit)
-    char_u	**cmdp;
-    int		forceit;
+get_map_mode(char_u **cmdp, int forceit)
 {
     char_u	*p;
     int		modec;
@@ -3884,11 +3849,11 @@ get_map_mode(cmdp, forceit)
  * 'abbr' should be FALSE for mappings, TRUE for abbreviations.
  */
     void
-map_clear(cmdp, arg, forceit, abbr)
-    char_u	*cmdp;
-    char_u	*arg UNUSED;
-    int		forceit;
-    int		abbr;
+map_clear(
+    char_u	*cmdp,
+    char_u	*arg UNUSED,
+    int		forceit,
+    int		abbr)
 {
     int		mode;
 #ifdef FEAT_LOCALMAP
@@ -3916,11 +3881,11 @@ map_clear(cmdp, arg, forceit, abbr)
  * Clear all mappings in "mode".
  */
     void
-map_clear_int(buf, mode, local, abbr)
-    buf_T	*buf UNUSED;	/* buffer for local mappings */
-    int		mode;		/* mode in which to delete */
-    int		local UNUSED;	/* TRUE for buffer-local mappings */
-    int		abbr;		/* TRUE for abbreviations */
+map_clear_int(
+    buf_T	*buf UNUSED,	/* buffer for local mappings */
+    int		mode,		/* mode in which to delete */
+    int		local UNUSED,	/* TRUE for buffer-local mappings */
+    int		abbr)		/* TRUE for abbreviations */
 {
     mapblock_T	*mp, **mpp;
     int		hash;
@@ -3993,8 +3958,7 @@ map_clear_int(buf, mode, local, abbr)
  * Returns NULL when out of memory.
  */
     char_u *
-map_mode_to_chars(mode)
-    int mode;
+map_mode_to_chars(int mode)
 {
     garray_T    mapmode;
 
@@ -4033,9 +3997,9 @@ map_mode_to_chars(mode)
 }
 
     static void
-showmap(mp, local)
-    mapblock_T	*mp;
-    int		local;	    /* TRUE for buffer-local map */
+showmap(
+    mapblock_T	*mp,
+    int		local)	    /* TRUE for buffer-local map */
 {
     int		len = 1;
     char_u	*mapchars;
@@ -4108,10 +4072,7 @@ showmap(mp, local)
  * Also checks mappings local to the current buffer.
  */
     int
-map_to_exists(str, modechars, abbr)
-    char_u	*str;
-    char_u	*modechars;
-    int		abbr;
+map_to_exists(char_u *str, char_u *modechars, int abbr)
 {
     int		mode = 0;
     char_u	*rhs;
@@ -4149,10 +4110,7 @@ map_to_exists(str, modechars, abbr)
  * Also checks mappings local to the current buffer.
  */
     int
-map_to_exists_mode(rhs, mode, abbr)
-    char_u	*rhs;
-    int		mode;
-    int		abbr;
+map_to_exists_mode(char_u *rhs, int mode, int abbr)
 {
     mapblock_T	*mp;
     int		hash;
@@ -4216,14 +4174,14 @@ static int	expand_buffer = FALSE;
  * or abbreviation names.
  */
     char_u *
-set_context_in_map_cmd(xp, cmd, arg, forceit, isabbrev, isunmap, cmdidx)
-    expand_T	*xp;
-    char_u	*cmd;
-    char_u	*arg;
-    int		forceit;	/* TRUE if '!' given */
-    int		isabbrev;	/* TRUE if abbreviation */
-    int		isunmap;	/* TRUE if unmap/unabbrev command */
-    cmdidx_T	cmdidx;
+set_context_in_map_cmd(
+    expand_T	*xp,
+    char_u	*cmd,
+    char_u	*arg,
+    int		forceit,	/* TRUE if '!' given */
+    int		isabbrev,	/* TRUE if abbreviation */
+    int		isunmap,	/* TRUE if unmap/unabbrev command */
+    cmdidx_T	cmdidx)
 {
     if (forceit && cmdidx != CMD_map && cmdidx != CMD_unmap)
 	xp->xp_context = EXPAND_NOTHING;
@@ -4293,10 +4251,10 @@ set_context_in_map_cmd(xp, cmd, arg, forceit, isabbrev, isunmap, cmdidx)
  * Return OK if matches found, FAIL otherwise.
  */
     int
-ExpandMappings(regmatch, num_file, file)
-    regmatch_T	*regmatch;
-    int		*num_file;
-    char_u	***file;
+ExpandMappings(
+    regmatch_T	*regmatch,
+    int		*num_file,
+    char_u	***file)
 {
     mapblock_T	*mp;
     int		hash;
@@ -4441,11 +4399,11 @@ ExpandMappings(regmatch, num_file, file)
  * return TRUE if there is an abbreviation, FALSE if not
  */
     int
-check_abbr(c, ptr, col, mincol)
-    int		c;
-    char_u	*ptr;
-    int		col;
-    int		mincol;
+check_abbr(
+    int		c,
+    char_u	*ptr,
+    int		col,
+    int		mincol)
 {
     int		len;
     int		scol;		/* starting column of the abbr. */
@@ -4651,9 +4609,9 @@ check_abbr(c, ptr, col, mincol)
  * special characters.
  */
     static char_u *
-eval_map_expr(str, c)
-    char_u	*str;
-    int		c;	    /* NUL or typed character for abbreviation */
+eval_map_expr(
+    char_u	*str,
+    int		c)	    /* NUL or typed character for abbreviation */
 {
     char_u	*res;
     char_u	*p;
@@ -4715,8 +4673,8 @@ eval_map_expr(str, c)
  * Returns NULL when out of memory.
  */
     char_u *
-vim_strsave_escape_csi(p)
-    char_u *p;
+vim_strsave_escape_csi(
+    char_u *p)
 {
     char_u	*res;
     char_u	*s, *d;
@@ -4765,8 +4723,7 @@ vim_strsave_escape_csi(p)
  * vim_strsave_escape_csi().  Works in-place.
  */
     void
-vim_unescape_csi(p)
-    char_u *p;
+vim_unescape_csi(char_u *p)
 {
     char_u	*s = p, *d = p;
 
@@ -4794,9 +4751,9 @@ vim_unescape_csi(p)
  * Return FAIL on error, OK otherwise.
  */
     int
-makemap(fd, buf)
-    FILE	*fd;
-    buf_T	*buf;	    /* buffer for local mappings or NULL */
+makemap(
+    FILE	*fd,
+    buf_T	*buf)	    /* buffer for local mappings or NULL */
 {
     mapblock_T	*mp;
     char_u	c1, c2, c3;
@@ -5007,10 +4964,7 @@ makemap(fd, buf)
  * return FAIL for failure, OK otherwise
  */
     int
-put_escstr(fd, strstart, what)
-    FILE	*fd;
-    char_u	*strstart;
-    int		what;
+put_escstr(FILE *fd, char_u *strstart, int what)
 {
     char_u	*str = strstart;
     int		c;
@@ -5123,7 +5077,7 @@ put_escstr(fd, strstart, what)
  * Used after ":set term=xxx".
  */
     void
-check_map_keycodes()
+check_map_keycodes(void)
 {
     mapblock_T	*mp;
     char_u	*p;
@@ -5215,14 +5169,14 @@ check_map_keycodes()
  * NULL when no mapping found.
  */
     char_u *
-check_map(keys, mode, exact, ign_mod, abbr, mp_ptr, local_ptr)
-    char_u	*keys;
-    int		mode;
-    int		exact;		/* require exact match */
-    int		ign_mod;	/* ignore preceding modifier */
-    int		abbr;		/* do abbreviations */
-    mapblock_T	**mp_ptr;	/* return: pointer to mapblock or NULL */
-    int		*local_ptr;	/* return: buffer-local mapping or NULL */
+check_map(
+    char_u	*keys,
+    int		mode,
+    int		exact,		/* require exact match */
+    int		ign_mod,	/* ignore preceding modifier */
+    int		abbr,		/* do abbreviations */
+    mapblock_T	**mp_ptr,	/* return: pointer to mapblock or NULL */
+    int		*local_ptr)	/* return: buffer-local mapping or NULL */
 {
     int		hash;
     int		len, minlen;
@@ -5378,7 +5332,7 @@ static struct initmap
  * Set up default mappings.
  */
     void
-init_mappings()
+init_mappings(void)
 {
 #if defined(MSDOS) || defined(MSWIN) ||defined(MACOS)
     int		i;
@@ -5395,9 +5349,7 @@ init_mappings()
  * Need to put string in allocated memory, because do_map() will modify it.
  */
     void
-add_map(map, mode)
-    char_u	*map;
-    int		mode;
+add_map(char_u *map, int mode)
 {
     char_u	*s;
     char_u	*cpo_save = p_cpo;
