@@ -3749,7 +3749,7 @@ get_vim_curr_window(void)
 }
 
     static void
-make_modules()
+make_modules(void)
 {
     int		    i;
     Scheme_Env	    *mod = NULL;

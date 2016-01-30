@@ -695,7 +695,7 @@ python3_enabled(int verbose)
 static void get_py3_exceptions(void);
 
     static void
-get_py3_exceptions()
+get_py3_exceptions(void)
 {
     PyObject *exmod = PyImport_ImportModule("builtins");
     PyObject *exdict = PyModule_GetDict(exmod);
@@ -800,7 +800,7 @@ static PyObject *Py3Init_vim(void);
  */
 
     void
-python3_end()
+python3_end(void)
 {
     static int recurse = 0;
 
@@ -830,7 +830,7 @@ python3_end()
 
 #if (defined(DYNAMIC_PYTHON3) && defined(DYNAMIC_PYTHON) && defined(FEAT_PYTHON) && defined(UNIX)) || defined(PROTO)
     int
-python3_loaded()
+python3_loaded(void)
 {
     return (hinstPy3 != 0);
 }

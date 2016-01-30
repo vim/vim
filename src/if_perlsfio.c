@@ -25,11 +25,11 @@
 #define NIL(type)	((type)0)
 
     static int
-sfvimwrite(f, buf, n, disc)
-    Sfio_t	    *f;		/* stream involved */
-    char	    *buf;	/* buffer to read from */
-    int		    n;		/* number of bytes to write */
-    Sfdisc_t	    *disc;	/* discipline */
+sfvimwrite(
+    Sfio_t	    *f,		/* stream involved */
+    char	    *buf,	/* buffer to read from */
+    int		    n,		/* number of bytes to write */
+    Sfdisc_t	    *disc)	/* discipline */
 {
     char_u *str;
 
@@ -47,7 +47,7 @@ sfvimwrite(f, buf, n, disc)
  *  Create Vim discipline
  */
     Sfdisc_t *
-sfdcnewvim()
+sfdcnewvim(void)
 {
     Sfdisc_t	*disc;
 

@@ -620,8 +620,8 @@ adjust_sign_name(char *filename)
    if you want to do things differently if the editor is started standalone
    or in WorkShop mode. For example, in standalone mode you may not want to
    add a footer/message area or a sign gutter. */
-int
-workshop_invoked()
+	int
+workshop_invoked(void)
 {
 	static int result = -1;
 	if (result == -1) {
@@ -735,7 +735,7 @@ void	workshop_connect(XtAppContext context)
 	dummy = write(sd, buf, strlen(buf));
 }
 
-void	workshop_disconnect()
+void	workshop_disconnect(void)
 {
 	/* Probably need to send some message here */
 

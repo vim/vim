@@ -404,7 +404,7 @@ SniffEmacsReadThread(void *dummy)
  * to process the waiting sniff requests
  */
     void
-ProcessSniffRequests()
+ProcessSniffRequests(void)
 {
     static char buf[MAX_REQUEST_LEN];
     int len;
@@ -433,8 +433,7 @@ ProcessSniffRequests()
 }
 
     static struct sn_cmd *
-find_sniff_cmd(cmd)
-    char *cmd;
+find_sniff_cmd(char *cmd)
 {
     struct sn_cmd *sniff_cmd = NULL;
     int i;
@@ -463,10 +462,7 @@ find_sniff_cmd(cmd)
 }
 
     static int
-add_sniff_cmd(cmd, def, msg)
-    char *cmd;
-    char *def;
-    char *msg;
+add_sniff_cmd(char *cmd, char *def, char *msg)
 {
     int rc = 0;
     if (def != NULL && def[0] != NUL && find_sniff_cmd(cmd) == NULL)
@@ -526,8 +522,7 @@ add_sniff_cmd(cmd, def, msg)
  * Handle ":sniff" command
  */
     void
-ex_sniff(eap)
-    exarg_T	*eap;
+ex_sniff(exarg_T *eap)
 {
     char_u	*arg = eap->arg;
     char_u *symbol = NULL;
@@ -593,7 +588,7 @@ ex_sniff(eap)
 
 
     static void
-sniff_connect()
+sniff_connect(void)
 {
     if (sniff_connected)
 	return;
@@ -609,8 +604,7 @@ sniff_connect()
 }
 
     void
-sniff_disconnect(immediately)
-    int immediately;
+sniff_disconnect(int immediately)
 {
     if (!sniff_connected)
 	return;
@@ -674,7 +668,7 @@ sniff_disconnect(immediately)
  * Connect to Sniff: returns 1 on error
  */
     static int
-ConnectToSniffEmacs()
+ConnectToSniffEmacs(void)
 {
 #ifdef WIN32		/* Windows Version of the Code */
     HANDLE ToSniffEmacs[2], FromSniffEmacs[2];
@@ -773,8 +767,7 @@ ConnectToSniffEmacs()
  * Handle one request from SNiFF+
  */
     static void
-HandleSniffRequest(buffer)
-    char *buffer;
+HandleSniffRequest(char *buffer)
 {
     char VICommand[MAX_REQUEST_LEN];
     char command;
@@ -942,10 +935,7 @@ HandleSniffRequest(buffer)
  *	   <0 on error
  */
     static int
-get_request(fd, buf, maxlen)
-    int		fd;
-    char	*buf;
-    int		maxlen;
+get_request(int fd, char *buf, int maxlen)
 {
     static char	inbuf[1024];
     static int	pos = 0, bytes = 0;
@@ -997,9 +987,7 @@ get_request(fd, buf, maxlen)
 
 
     static void
-SendRequest(command, symbol)
-    struct sn_cmd *command;
-    char *symbol;
+SendRequest(struct sn_cmd *command, char *symbol)
 {
     int		cmd_type = command->cmd_type;
     static char cmdstr[MAX_REQUEST_LEN];
@@ -1074,8 +1062,7 @@ SendRequest(command, symbol)
 
 
     static void
-WriteToSniff(str)
-    char *str;
+WriteToSniff(char *str)
 {
     int bytes;
 #ifdef WIN32
@@ -1097,24 +1084,21 @@ WriteToSniff(str)
 /*-------- vim helping functions --------------------------------*/
 
     static void
-vi_msg(str)
-    char *str;
+vi_msg(char *str)
 {
     if (str != NULL && *str != NUL)
 	MSG((char_u *)str);
 }
 
     static void
-vi_error_msg(str)
-    char *str;
+vi_error_msg(char *str)
 {
     if (str != NULL && *str != NUL)
 	EMSG((char_u *)str);
 }
 
     static void
-vi_open_file(fname)
-    char *fname;
+vi_open_file(char *fname)
 {
     ++no_wait_return;
     do_ecmd(0, (char_u *)fname, NULL, NULL, ECMD_ONE, ECMD_HIDE+ECMD_OLDBUF,
@@ -1124,8 +1108,7 @@ vi_open_file(fname)
 }
 
     static buf_T *
-vi_find_buffer(fname)
-    char *fname;
+vi_find_buffer(char *fname)
 {			    /* derived from buflist_findname() [buffer.c] */
     buf_T	*buf;
 
@@ -1137,7 +1120,7 @@ vi_find_buffer(fname)
 
 
     static char *
-vi_symbol_under_cursor()
+vi_symbol_under_cursor(void)
 {
     int		len;
     char	*symbolp;
@@ -1156,14 +1139,13 @@ vi_symbol_under_cursor()
 
 
     static char *
-vi_buffer_name()
+vi_buffer_name(void)
 {
     return (char *)curbuf->b_sfname;
 }
 
     static void
-vi_exec_cmd(vicmd)
-    char *vicmd;
+vi_exec_cmd(char *vicmd)
 {
     do_cmdline_cmd((char_u *)vicmd);  /* [ex_docmd.c] */
 }
@@ -1173,8 +1155,7 @@ vi_exec_cmd(vicmd)
  * derived from cursor_pos_info() [buffer.c]
  */
     static void
-vi_set_cursor_pos(char_pos)
-    long char_pos;
+vi_set_cursor_pos(long char_pos)
 {
     linenr_T	lnum;
     long	char_count = 1;  /* first position = 1 */
@@ -1200,7 +1181,7 @@ vi_set_cursor_pos(char_pos)
 }
 
     static long
-vi_cursor_pos()
+vi_cursor_pos(void)
 {
     linenr_T	lnum;
     long	char_count=1;  /* sniff starts with pos 1 */

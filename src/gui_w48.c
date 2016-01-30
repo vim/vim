@@ -1144,7 +1144,7 @@ gui_mch_new_colors(void)
  * Set the colors to their default values.
  */
     void
-gui_mch_def_colors()
+gui_mch_def_colors(void)
 {
     gui.norm_pixel = GetSysColor(COLOR_WINDOWTEXT);
     gui.back_pixel = GetSysColor(COLOR_WINDOW);
@@ -1390,9 +1390,7 @@ gui_mch_get_font(
  */
 /*ARGSUSED*/
     char_u *
-gui_mch_get_fontname(font, name)
-    GuiFont font;
-    char_u  *name;
+gui_mch_get_fontname(GuiFont font, char_u *name)
 {
     if (name == NULL)
 	return NULL;
@@ -2623,8 +2621,7 @@ gui_mch_update_tabline(void)
  * Set the current tab to "nr".  First tab is 1.
  */
     void
-gui_mch_set_curtab(nr)
-    int		nr;
+gui_mch_set_curtab(int nr)
 {
     if (s_tabhwnd == NULL)
 	return;
@@ -3258,7 +3255,7 @@ update_im_font(void)
  * Handler of gui.wide_font (p_guifontwide) changed notification.
  */
     void
-gui_mch_wide_font_changed()
+gui_mch_wide_font_changed(void)
 {
 # ifndef MSWIN16_FASTTEXT
     LOGFONT lf;
@@ -3385,7 +3382,7 @@ gui_mch_init_font(char_u *font_name, int fontset)
  * Return TRUE if the GUI window is maximized, filling the whole screen.
  */
     int
-gui_mch_maximized()
+gui_mch_maximized(void)
 {
     WINDOWPLACEMENT wp;
 
@@ -3403,7 +3400,7 @@ gui_mch_maximized()
  * new Rows and Columns.  This is like resizing the window.
  */
     void
-gui_mch_newfont()
+gui_mch_newfont(void)
 {
     RECT	rect;
 

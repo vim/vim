@@ -625,7 +625,7 @@ static struct
  * Free ruby.dll
  */
     static void
-end_dynamic_ruby()
+end_dynamic_ruby(void)
 {
     if (hinstRuby)
     {
@@ -674,15 +674,14 @@ ruby_runtime_link_init(char *libname, int verbose)
  * else FALSE.
  */
     int
-ruby_enabled(verbose)
-    int		verbose;
+ruby_enabled(int verbose)
 {
     return ruby_runtime_link_init((char *)p_rubydll, verbose) == OK;
 }
 #endif /* defined(DYNAMIC_RUBY) || defined(PROTO) */
 
     void
-ruby_end()
+ruby_end(void)
 {
 #ifdef DYNAMIC_RUBY
     end_dynamic_ruby();
@@ -1115,12 +1114,12 @@ static buf_T *get_buf(VALUE obj)
     return buf;
 }
 
-static VALUE buffer_s_current()
+static VALUE buffer_s_current(void)
 {
     return buffer_new(curbuf);
 }
 
-static VALUE buffer_s_count()
+static VALUE buffer_s_count(void)
 {
     buf_T *b;
     int n = 0;
@@ -1357,7 +1356,7 @@ static win_T *get_win(VALUE obj)
     return win;
 }
 
-static VALUE window_s_current()
+static VALUE window_s_current(void)
 {
     return window_new(curwin);
 }
@@ -1366,7 +1365,7 @@ static VALUE window_s_current()
  * Added line manipulation functions
  *    SegPhault - 03/07/05
  */
-static VALUE line_s_current()
+static VALUE line_s_current(void)
 {
     return get_buffer_line(curbuf, curwin->w_cursor.lnum);
 }
@@ -1376,14 +1375,14 @@ static VALUE set_current_line(VALUE self UNUSED, VALUE str)
     return set_buffer_line(curbuf, curwin->w_cursor.lnum, str);
 }
 
-static VALUE current_line_number()
+static VALUE current_line_number(void)
 {
     return INT2FIX((int)curwin->w_cursor.lnum);
 }
 
 
 
-static VALUE window_s_count()
+static VALUE window_s_count(void)
 {
 #ifdef FEAT_WINDOWS
     win_T	*w;
