@@ -156,7 +156,7 @@ mch_setmouse(
  * GUI version of mch_init().
  */
     void
-mch_init()
+mch_init(void)
 {
     extern int _fmode;
 
@@ -206,7 +206,7 @@ mch_check_win(
  * return process ID
  */
     long
-mch_get_pid()
+mch_get_pid(void)
 {
     return (long)GetCurrentTask();
 }
@@ -379,7 +379,7 @@ mch_delay(
  * check for an "interrupt signal": CTRL-break or CTRL-C
  */
     void
-mch_breakcheck()
+mch_breakcheck(void)
 {
     /* never used */
 }
@@ -417,7 +417,7 @@ mch_rename(
  * Get the default shell for the current hardware platform
  */
     char*
-default_shell()
+default_shell(void)
 {
     char* psz = NULL;
 

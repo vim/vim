@@ -134,8 +134,7 @@ static void initmaster(int);
 #endif
 
     static void
-initmaster(f)
-    int f UNUSED;
+initmaster(int f UNUSED)
 {
 #ifndef VMS
 # ifdef POSIX
@@ -156,8 +155,7 @@ initmaster(f)
  * pty on others.  Needs to be tuned...
  */
     int
-SetupSlavePTY(fd)
-    int fd;
+SetupSlavePTY(int fd)
 {
     if (fd < 0)
 	return 0;
@@ -180,8 +178,7 @@ SetupSlavePTY(fd)
 #if defined(OSX) && !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     int		f;
     static char TtyName[32];

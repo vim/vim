@@ -723,10 +723,10 @@ struct typeahead_st {
  * "msec" == -1 will block until a character is available.
  */
     int
-RealWaitForChar(fd, msec, check_for_gpm)
-    int		fd UNUSED; /* always read from iochan */
-    long	msec;
-    int		*check_for_gpm UNUSED;
+RealWaitForChar(
+    int		fd UNUSED, /* always read from iochan */
+    long	msec,
+    int		*check_for_gpm UNUSED)
 {
     int status;
     struct _generic_64 time_curr;

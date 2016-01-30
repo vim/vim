@@ -42,10 +42,10 @@ static int pum_set_selected(int n, int repeat);
  * The menu appears above the screen line "row" or at "row" + "height" - 1.
  */
     void
-pum_display(array, size, selected)
-    pumitem_T	*array;
-    int		size;
-    int		selected;	/* index of initially selected item, none if
+pum_display(
+    pumitem_T	*array,
+    int		size,
+    int		selected)	/* index of initially selected item, none if
 				   out of range */
 {
     int		w;
@@ -263,7 +263,7 @@ redo:
  * Redraw the popup menu, using "pum_first" and "pum_selected".
  */
     void
-pum_redraw()
+pum_redraw(void)
 {
     int		row = pum_row;
     int		col;
@@ -487,9 +487,7 @@ pum_redraw()
  * must be recomputed.
  */
     static int
-pum_set_selected(n, repeat)
-    int	    n;
-    int	    repeat;
+pum_set_selected(int n, int repeat)
 {
     int	    resized = FALSE;
     int	    context = pum_height / 2;
@@ -704,7 +702,7 @@ pum_set_selected(n, repeat)
  * Undisplay the popup menu (later).
  */
     void
-pum_undisplay()
+pum_undisplay(void)
 {
     pum_array = NULL;
     redraw_all_later(SOME_VALID);
@@ -719,7 +717,7 @@ pum_undisplay()
  * displayed item.
  */
     void
-pum_clear()
+pum_clear(void)
 {
     pum_first = 0;
 }
@@ -729,7 +727,7 @@ pum_clear()
  * Overruled when "pum_do_redraw" is set, used to redraw the status lines.
  */
     int
-pum_visible()
+pum_visible(void)
 {
     return !pum_do_redraw && pum_array != NULL;
 }
@@ -739,7 +737,7 @@ pum_visible()
  * Only valid when pum_visible() returns TRUE!
  */
     int
-pum_get_height()
+pum_get_height(void)
 {
     return pum_height;
 }

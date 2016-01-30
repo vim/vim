@@ -481,7 +481,7 @@ char *(*dyn_libintl_bind_textdomain_codeset)(const char *, const char *)
 				       = null_libintl_bind_textdomain_codeset;
 
     int
-dyn_libintl_init()
+dyn_libintl_init(void)
 {
     int i;
     static struct
@@ -543,7 +543,7 @@ dyn_libintl_init()
 }
 
     void
-dyn_libintl_end()
+dyn_libintl_end(void)
 {
     if (hLibintlDLL)
 	FreeLibrary(hLibintlDLL);

@@ -44,14 +44,14 @@ static TECObjectRef gUTF16ToUTF8Converter;
  * A Mac version of string_convert_ext() for special cases.
  */
     char_u *
-mac_string_convert(ptr, len, lenp, fail_on_error, from_enc, to_enc, unconvlenp)
-    char_u		*ptr;
-    int			len;
-    int			*lenp;
-    int			fail_on_error;
-    int			from_enc;
-    int			to_enc;
-    int			*unconvlenp;
+mac_string_convert(
+    char_u		*ptr,
+    int			len,
+    int			*lenp,
+    int			fail_on_error,
+    int			from_enc,
+    int			to_enc,
+    int			*unconvlenp)
 {
     char_u		*retval, *d;
     CFStringRef		cfstr;
@@ -180,10 +180,10 @@ mac_string_convert(ptr, len, lenp, fail_on_error, from_enc, to_enc, unconvlenp)
  * Returns OK or FAIL.
  */
     int
-macroman2enc(ptr, sizep, real_size)
-    char_u	*ptr;
-    long	*sizep;
-    long	real_size;
+macroman2enc(
+    char_u	*ptr,
+    long	*sizep,
+    long	real_size)
 {
     CFStringRef		cfstr;
     CFRange		r;
@@ -226,14 +226,14 @@ macroman2enc(ptr, sizep, real_size)
  * Returns OK or FAIL.
  */
     int
-enc2macroman(from, fromlen, to, tolenp, maxtolen, rest, restlenp)
-    char_u	*from;
-    size_t	fromlen;
-    char_u	*to;
-    int		*tolenp;
-    int		maxtolen;
-    char_u	*rest;
-    int		*restlenp;
+enc2macroman(
+    char_u	*from,
+    size_t	fromlen,
+    char_u	*to,
+    int		*tolenp,
+    int		maxtolen,
+    char_u	*rest,
+    int		*restlenp)
 {
     CFStringRef	cfstr;
     CFRange	r;
@@ -274,7 +274,7 @@ enc2macroman(from, fromlen, to, tolenp, maxtolen, rest, restlenp)
  * Initializes text converters
  */
     void
-mac_conv_init()
+mac_conv_init(void)
 {
     TextEncoding    utf8_encoding;
     TextEncoding    utf8_hfsplus_encoding;
@@ -309,7 +309,7 @@ mac_conv_init()
  * Destroys text converters
  */
     void
-mac_conv_cleanup()
+mac_conv_cleanup(void)
 {
     if (gUTF16ToUTF8Converter)
     {
@@ -330,10 +330,10 @@ mac_conv_cleanup()
  * CFBase.h) to avoid clashes with X11 header files in the .pro file
  */
     char_u *
-mac_utf16_to_enc(from, fromLen, actualLen)
-    unsigned short *from;
-    size_t fromLen;
-    size_t *actualLen;
+mac_utf16_to_enc(
+    unsigned short *from,
+    size_t fromLen,
+    size_t *actualLen)
 {
     /* Following code borrows somewhat from os_mswin.c */
     vimconv_T	conv;
@@ -384,10 +384,10 @@ mac_utf16_to_enc(from, fromLen, actualLen)
  * CFBase.h) to avoid clashes with X11 header files in the .pro file
  */
     unsigned short *
-mac_enc_to_utf16(from, fromLen, actualLen)
-    char_u *from;
-    size_t fromLen;
-    size_t *actualLen;
+mac_enc_to_utf16(
+    char_u *from,
+    size_t fromLen,
+    size_t *actualLen)
 {
     /* Following code borrows somewhat from os_mswin.c */
     vimconv_T	conv;
@@ -443,9 +443,9 @@ mac_enc_to_utf16(from, fromLen, actualLen)
  * The void * return type is actually a CFStringRef
  */
     void *
-mac_enc_to_cfstring(from, fromLen)
-    char_u  *from;
-    size_t  fromLen;
+mac_enc_to_cfstring(
+    char_u  *from,
+    size_t  fromLen)
 {
     UniChar	*utf16_str;
     size_t	utf16_len;
@@ -465,10 +465,10 @@ mac_enc_to_cfstring(from, fromLen)
  * Converts a decomposed HFS+ UTF-8 path to precomposed UTF-8
  */
     char_u *
-mac_precompose_path(decompPath, decompLen, precompLen)
-    char_u  *decompPath;
-    size_t  decompLen;
-    size_t  *precompLen;
+mac_precompose_path(
+    char_u  *decompPath,
+    size_t  decompLen,
+    size_t  *precompLen)
 {
     char_u  *result = NULL;
     size_t  actualLen = 0;
@@ -498,10 +498,10 @@ mac_precompose_path(decompPath, decompLen, precompLen)
  * Converts from UTF-16 UniChars to precomposed UTF-8
  */
     static char_u *
-mac_utf16_to_utf8(from, fromLen, actualLen)
-    UniChar *from;
-    size_t fromLen;
-    size_t *actualLen;
+mac_utf16_to_utf8(
+    UniChar *from,
+    size_t fromLen,
+    size_t *actualLen)
 {
     ByteCount		utf8_len;
     ByteCount		inputRead;
@@ -538,10 +538,10 @@ mac_utf16_to_utf8(from, fromLen, actualLen)
  * Converts from UTF-8 to UTF-16 UniChars
  */
     static UniChar *
-mac_utf8_to_utf16(from, fromLen, actualLen)
-    char_u *from;
-    size_t fromLen;
-    size_t *actualLen;
+mac_utf8_to_utf16(
+    char_u *from,
+    size_t fromLen,
+    size_t *actualLen)
 {
     CFStringRef  utf8_str;
     CFRange      convertRange;
@@ -573,7 +573,8 @@ mac_utf8_to_utf16(from, fromLen, actualLen)
  * Sets LANG environment variable in Vim from Mac locale
  */
     void
-mac_lang_init() {
+mac_lang_init(void)
+{
     if (mch_getenv((char_u *)"LANG") == NULL)
     {
 	char	buf[20];
