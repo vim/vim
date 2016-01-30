@@ -256,7 +256,7 @@
 /*
  * +ex_extra		":retab", ":right", ":left", ":center", ":normal".
  */
-#ifdef FEAT_NORMAL
+#if defined(FEAT_NORMAL) || defined(FEAT_CHANNEL)
 # define FEAT_EX_EXTRA
 #endif
 

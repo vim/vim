@@ -99,7 +99,6 @@ typedef struct {
 
     char_u    *ch_callback;	/* function to call when a msg is not handled */
     char_u    *ch_req_callback;	/* function to call for current request */
-    int	      ch_will_block;	/* do not use callback right now */
 
     int	      ch_json_mode;
 } channel_T;
@@ -419,21 +418,13 @@ channel_set_req_callback(int idx, char_u *callback)
 }
 
 /*
- * Set the flag that the callback for channel "idx" should not be used now.
- */
-    void
-channel_will_block(int idx)
-{
-    channels[idx].ch_will_block = TRUE;
-}
-
-/*
- * Decode JSON "msg", which must have the form "[nr, expr]".
- * Put "expr" in "tv".
+ * Decode JSON "msg", which must have the form "[expr1, expr2]".
+ * Put "expr1" in "tv1".
+ * Put "expr2" in "tv2".
  * Return OK or FAIL.
  */
     int
-channel_decode_json(char_u *msg, typval_T *tv)
+channel_decode_json(char_u *msg, typval_T *tv1, typval_T *tv2)
 {
     js_read_T	reader;
     typval_T	listtv;
@@ -442,14 +433,14 @@ channel_decode_json(char_u *msg, typval_T *tv)
     reader.js_eof = TRUE;
     reader.js_used = 0;
     json_decode(&reader, &listtv);
-    /* TODO: use the sequence number */
-    if (listtv.v_type == VAR_LIST
-	  && listtv.vval.v_list->lv_len == 2
-	  && listtv.vval.v_list->lv_first->li_tv.v_type == VAR_NUMBER)
+
+    if (listtv.v_type == VAR_LIST && listtv.vval.v_list->lv_len == 2)
     {
 	/* Move the item from the list and then change the type to avoid the
 	 * item being freed. */
-	*tv = listtv.vval.v_list->lv_last->li_tv;
+	*tv1 = listtv.vval.v_list->lv_first->li_tv;
+	listtv.vval.v_list->lv_first->li_tv.v_type = VAR_NUMBER;
+	*tv2 = listtv.vval.v_list->lv_last->li_tv;
 	listtv.vval.v_list->lv_last->li_tv.v_type = VAR_NUMBER;
 	list_unref(listtv.vval.v_list);
 	return OK;
@@ -464,16 +455,78 @@ channel_decode_json(char_u *msg, typval_T *tv)
  * Invoke the "callback" on channel "idx".
  */
     static void
-invoke_callback(int idx, char_u *callback)
+invoke_callback(int idx, char_u *callback, typval_T *argv)
 {
-    typval_T	argv[3];
     typval_T	rettv;
     int		dummy;
-    char_u	*msg;
-    int		ret = OK;
 
     argv[0].v_type = VAR_NUMBER;
     argv[0].vval.v_number = idx;
+
+    call_func(callback, (int)STRLEN(callback),
+			     &rettv, 2, argv, 0L, 0L, &dummy, TRUE, NULL);
+    /* If an echo command was used the cursor needs to be put back where
+     * it belongs. */
+    setcursor();
+    cursor_on();
+    out_flush();
+}
+
+    static void
+channel_exe_cmd(char_u *cmd, typval_T *arg)
+{
+    if (STRCMP(cmd, "ex") == 0)
+    {
+	if (arg->v_type == VAR_STRING)
+	    do_cmdline_cmd(arg->vval.v_string);
+	else if (p_verbose > 2)
+	    EMSG("E999: received ex command with non-string argument");
+    }
+    else if (STRCMP(cmd, "normal") == 0)
+    {
+	if (arg->v_type == VAR_STRING)
+	{
+	    exarg_T ea;
+
+	    ea.arg = arg->vval.v_string;
+	    ea.addr_count = 0;
+	    ea.forceit = TRUE; /* no mapping */
+	    ex_normal(&ea);
+
+	    update_screen(0);
+	    showruler(FALSE);
+	    setcursor();
+	    out_flush();
+#ifdef FEAT_GUI
+	    if (gui.in_use)
+	    {
+		gui_update_cursor(FALSE, FALSE);
+		gui_mch_flush();
+	    }
+#endif
+	}
+	else if (p_verbose > 2)
+	    EMSG("E999: received normal command with non-string argument");
+    }
+    else if (p_verbose > 2)
+	EMSG2("E999: received unknown command: %s", cmd);
+}
+
+/*
+ * Invoke a callback for channel "idx" if needed.
+ */
+    static void
+may_invoke_callback(int idx)
+{
+    char_u	*msg;
+    typval_T	typetv;
+    typval_T	argv[3];
+    char_u	*cmd = NULL;
+    int		seq_nr = -1;
+    int		ret = OK;
+
+    if (channel_peek(idx) == NULL)
+	return;
 
     /* Concatenate everything into one buffer.
      * TODO: only read what the callback will use.
@@ -483,7 +536,16 @@ invoke_callback(int idx, char_u *callback)
     msg = channel_get(idx);
 
     if (channels[idx].ch_json_mode)
-	ret = channel_decode_json(msg, &argv[1]);
+    {
+	ret = channel_decode_json(msg, &typetv, &argv[1]);
+	if (ret == OK)
+	{
+	    if (typetv.v_type == VAR_STRING)
+		cmd = typetv.vval.v_string;
+	    else if (typetv.v_type == VAR_NUMBER)
+		seq_nr = typetv.vval.v_number;
+	}
+    }
     else
     {
 	argv[1].v_type = VAR_STRING;
@@ -492,39 +554,32 @@ invoke_callback(int idx, char_u *callback)
 
     if (ret == OK)
     {
-	call_func(callback, (int)STRLEN(callback),
-				 &rettv, 2, argv, 0L, 0L, &dummy, TRUE, NULL);
-	/* If an echo command was used the cursor needs to be put back where
-	 * it belongs. */
-	setcursor();
-	cursor_on();
-	out_flush();
+	if (cmd != NULL)
+	{
+	    channel_exe_cmd(cmd, &argv[1]);
+	}
+	else if (channels[idx].ch_req_callback != NULL && seq_nr != 0)
+	{
+	    /* TODO: check the sequence number */
+	    /* invoke the one-time callback */
+	    invoke_callback(idx, channels[idx].ch_req_callback, argv);
+	    channels[idx].ch_req_callback = NULL;
+	}
+	else if (channels[idx].ch_callback != NULL)
+	{
+	    /* invoke the channel callback */
+	    invoke_callback(idx, channels[idx].ch_callback, argv);
+	}
+	/* else: drop the message */
+
+	if (channels[idx].ch_json_mode)
+	{
+	    clear_tv(&typetv);
+	    clear_tv(&argv[1]);
+	}
     }
+
     vim_free(msg);
-}
-
-/*
- * Invoke a callback for channel "idx" if needed.
- */
-    static void
-may_invoke_callback(int idx)
-{
-    if (channels[idx].ch_will_block)
-	return;
-    if (channel_peek(idx) == NULL)
-	return;
-
-    if (channels[idx].ch_req_callback != NULL)
-    {
-	/* invoke the one-time callback */
-	invoke_callback(idx, channels[idx].ch_req_callback);
-	channels[idx].ch_req_callback = NULL;
-	return;
-    }
-
-    if (channels[idx].ch_callback != NULL)
-	/* invoke the channel callback */
-	invoke_callback(idx, channels[idx].ch_callback);
 }
 
 /*
@@ -823,8 +878,6 @@ channel_read(int idx)
 	}
     }
 
-    may_invoke_callback(idx);
-
 #if defined(CH_HAS_GUI) && defined(FEAT_GUI_GTK)
     if (CH_HAS_GUI && gtk_main_level() > 0)
 	gtk_main_quit();
@@ -845,10 +898,7 @@ channel_read_block(int idx)
 	/* Wait for up to 2 seconds.
 	 * TODO: use timeout set on the channel. */
 	if (channel_wait(channels[idx].ch_fd, 2000) == FAIL)
-	{
-	    channels[idx].ch_will_block = FALSE;
 	    return NULL;
-	}
 	channel_read(idx);
     }
 
@@ -857,7 +907,6 @@ channel_read_block(int idx)
     while (channel_collapse(idx) == OK)
 	;
 
-    channels[idx].ch_will_block = FALSE;
     return channel_get(idx);
 }
 
@@ -1008,5 +1057,17 @@ channel_select_check(int ret_in, void *rfds_in)
     return ret;
 }
 # endif /* !FEAT_GUI_W32 && HAVE_SELECT */
+
+/*
+ * Invoked from the main loop when it's save to execute received commands.
+ */
+    void
+channel_parse_messages(void)
+{
+    int	    i;
+
+    for (i = 0; i < channel_count; ++i)
+	may_invoke_callback(i);
+}
 
 #endif /* FEAT_CHANNEL */

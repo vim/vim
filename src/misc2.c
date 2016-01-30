@@ -6240,6 +6240,10 @@ parse_queued_messages(void)
     /* Process the queued netbeans messages. */
     netbeans_parse_messages();
 # endif
+# ifdef FEAT_CHANNEL
+    /* Process the messages queued on channels. */
+    channel_parse_messages();
+# endif
 # if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
     /* Process the queued clientserver messages. */
     server_parse_messages();

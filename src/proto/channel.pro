@@ -4,8 +4,7 @@ int channel_open(char *hostname, int port_in, void (*close_cb)(void));
 void channel_set_json_mode(int idx, int json_mode);
 void channel_set_callback(int idx, char_u *callback);
 void channel_set_req_callback(int idx, char_u *callback);
-void channel_will_block(int idx);
-int channel_decode_json(char_u *msg, typval_T *tv);
+int channel_decode_json(char_u *msg, typval_T *tv1, typval_T *tv2);
 int channel_is_open(int idx);
 void channel_close(int idx);
 int channel_save(int idx, char_u *buf, int len);
@@ -22,4 +21,5 @@ int channel_poll_setup(int nfd_in, void *fds_in);
 int channel_poll_check(int ret_in, void *fds_in);
 int channel_select_setup(int maxfd_in, void *rfds_in);
 int channel_select_check(int ret_in, void *rfds_in);
+void channel_parse_messages(void);
 /* vim: set ft=c : */

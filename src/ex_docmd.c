@@ -345,7 +345,6 @@ static char_u	*uc_fun_cmd(void);
 static char_u	*find_ucmd(exarg_T *eap, char_u *p, int *full, expand_T *xp, int *compl);
 #endif
 #ifdef FEAT_EX_EXTRA
-static void	ex_normal(exarg_T *eap);
 static void	ex_startinsert(exarg_T *eap);
 static void	ex_stopinsert(exarg_T *eap);
 #else
@@ -9861,11 +9860,11 @@ update_topline_cursor(void)
     update_curswant();
 }
 
-#ifdef FEAT_EX_EXTRA
+#if defined(FEAT_EX_EXTRA) || defined(PROTO)
 /*
  * ":normal[!] {commands}": Execute normal mode commands.
  */
-    static void
+    void
 ex_normal(exarg_T *eap)
 {
     int		save_msg_scroll = msg_scroll;

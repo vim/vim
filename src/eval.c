@@ -16889,8 +16889,6 @@ send_common(typval_T *argvars, char_u *text, char *fun)
      * not reading the response. */
     channel_set_req_callback(ch_idx,
 	    callback != NULL && *callback == NUL ? NULL : callback);
-    if (callback == NULL)
-	channel_will_block(ch_idx);
 
     if (channel_send(ch_idx, text, fun) == OK && callback == NULL)
 	return ch_idx;
@@ -16907,6 +16905,7 @@ f_sendexpr(typval_T *argvars, typval_T *rettv)
     char_u	*resp;
     typval_T	nrtv;
     typval_T	listtv;
+    typval_T	typetv;
     int		ch_idx;
 
     /* return an empty string by default */
@@ -16932,10 +16931,11 @@ f_sendexpr(typval_T *argvars, typval_T *rettv)
     {
 	/* TODO: read until the whole JSON message is received */
 	/* TODO: only use the message with the right message ID */
+	/* TODO: check sequence number */
 	resp = channel_read_block(ch_idx);
 	if (resp != NULL)
 	{
-	    channel_decode_json(resp, rettv);
+	    channel_decode_json(resp, &typetv, rettv);
 	    vim_free(resp);
 	}
     }
