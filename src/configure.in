@@ -2994,7 +2994,7 @@ if test $ac_cv_header_sys_wait_h = no; then
 		AC_MSG_RESULT(no))
 fi
 
-AC_CHECK_HEADERS(stdarg.h stdint.h stdlib.h string.h \
+AC_CHECK_HEADERS(stdint.h stdlib.h string.h \
 	sys/select.h sys/utsname.h termcap.h fcntl.h \
 	sgtty.h sys/ioctl.h sys/time.h sys/types.h \
 	termio.h iconv.h inttypes.h langinfo.h math.h \

@@ -296,7 +296,6 @@
 /* #undef STDC_HEADERS */
 
 /* instead, we check a few STDC things ourselves */
-#undef HAVE_STDARG_H
 #undef HAVE_STDLIB_H
 #undef HAVE_STRING_H
 
