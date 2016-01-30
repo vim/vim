@@ -31,7 +31,7 @@ static void test_mf_hash(void);
  * Test mf_hash_*() functions.
  */
     static void
-test_mf_hash()
+test_mf_hash(void)
 {
     mf_hashtab_T   ht;
     mf_hashitem_T  *item;
@@ -138,7 +138,7 @@ test_mf_hash()
 }
 
     int
-main()
+main(void)
 {
     test_mf_hash();
     return 0;
