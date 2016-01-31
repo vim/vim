@@ -4858,6 +4858,10 @@ fi
 $as_echo "$enable_luainterp" >&6; }
 
 if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
+  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+    as_fn_error $? "cannot use Lua with tiny or small features" "$LINENO" 5
+  fi
+
 
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking --with-lua-prefix argument" >&5
@@ -5598,6 +5602,9 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_perlinterp" >&5
 $as_echo "$enable_perlinterp" >&6; }
 if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
+  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+    as_fn_error $? "cannot use Perl with tiny or small features" "$LINENO" 5
+  fi
 
   # Extract the first word of "perl", so it can be a program name with args.
 set dummy perl; ac_word=$2
@@ -7235,8 +7242,14 @@ else
 fi
 
 if test "$enable_netbeans" = "yes"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use NetBeans with tiny or small features" >&5
+$as_echo "cannot use NetBeans with tiny or small features" >&6; }
+    enable_netbeans="no"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
+  fi
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
@@ -7252,8 +7265,14 @@ else
 fi
 
 if test "$enable_channel" = "yes"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use channels with tiny or small features" >&5
+$as_echo "cannot use channels with tiny or small features" >&6; }
+    enable_channel="no"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
+  fi
 else
   if test "$enable_netbeans" = "yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, netbeans also disabled" >&5
