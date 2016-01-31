@@ -195,8 +195,7 @@ OpenPTY(char **ttyn)
 	&& !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     char	*m, *s;
     int		f;
@@ -220,8 +219,7 @@ OpenPTY(ttyn)
 #if defined(__sgi) && !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     int f;
     char *name;
@@ -246,8 +244,7 @@ OpenPTY(ttyn)
 #if defined(MIPS) && defined(HAVE_DEV_PTC) && !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     int		f;
     struct stat buf;
@@ -274,8 +271,7 @@ OpenPTY(ttyn)
  * Same for Mac OS X Leopard. */
 #define PTY_DONE
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     int		f;
     char	*m;
@@ -316,8 +312,7 @@ int aixhack = -1;
 #endif
 
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     int		f;
     /* used for opening a new pty-pair: */
@@ -363,8 +358,7 @@ static char TtyProto[] = "/dev/ttyXY";
 # endif
 
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     char	*p, *q, *l, *d;
     int		f;

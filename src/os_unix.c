@@ -2041,15 +2041,13 @@ set_x11_icon(char_u *icon)
 #else  /* FEAT_X11 */
 
     static int
-get_x11_title(test_only)
-    int	    test_only UNUSED;
+get_x11_title(int test_only UNUSED)
 {
     return FALSE;
 }
 
     static int
-get_x11_icon(test_only)
-    int	    test_only;
+get_x11_icon(int test_only)
 {
     if (!test_only)
     {
@@ -2333,9 +2331,7 @@ mch_get_host_name(char_u *s, int len)
 # endif
 
     void
-mch_get_host_name(s, len)
-    char_u  *s;
-    int	    len;
+mch_get_host_name(char_u *s, int len)
 {
 # ifdef VAXC
     vaxc$gethostname((char *)s, len);
@@ -2743,9 +2739,7 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
  * Copy security info from "from_file" to "to_file".
  */
     void
-mch_copy_sec(from_file, to_file)
-    char_u	*from_file;
-    char_u	*to_file;
+mch_copy_sec(char_u *from_file, char_u *to_file)
 {
     static const char * const smack_copied_attributes[] =
 	{

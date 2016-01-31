@@ -9987,9 +9987,9 @@ theend:
  * "curbuf" and "curwin" to match "buf".
  */
     void
-aucmd_prepbuf(aco, buf)
-    aco_save_T	*aco;		/* structure to save values in */
-    buf_T	*buf;		/* new curbuf */
+aucmd_prepbuf(
+    aco_save_T	*aco,		/* structure to save values in */
+    buf_T	*buf)		/* new curbuf */
 {
     aco->save_curbuf = curbuf;
     --curbuf->b_nwindows;
@@ -10003,8 +10003,8 @@ aucmd_prepbuf(aco, buf)
  * This is the non-autocommand version.
  */
     void
-aucmd_restbuf(aco)
-    aco_save_T	*aco;		/* structure holding saved values */
+aucmd_restbuf(
+    aco_save_T	*aco)		/* structure holding saved values */
 {
     --curbuf->b_nwindows;
     curbuf = aco->save_curbuf;

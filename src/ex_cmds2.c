@@ -3627,10 +3627,7 @@ fgets_cr(char *s, int n, FILE *stream)
  * At least CodeWarrior 9 needed this code.
  */
     char *
-fgets_cr(s, n, stream)
-    char	*s;
-    int		n;
-    FILE	*stream;
+fgets_cr(char *s, int n, FILE *stream)
 {
     int	c = 0;
     int char_read = 0;

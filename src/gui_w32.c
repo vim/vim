@@ -2292,7 +2292,7 @@ im_set_active(int active)
  * Get IM status.  When IM is on, return not 0.  Else return 0.
  */
     int
-im_get_status()
+im_get_status(void)
 {
     return global_ime_get_status();
 }

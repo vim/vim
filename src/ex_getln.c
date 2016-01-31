@@ -5646,7 +5646,7 @@ set_cmdline_pos(
  * Returns NUL when something is wrong.
  */
     int
-get_cmdline_type()
+get_cmdline_type(void)
 {
     struct cmdline_info *p = get_ccline_ptr();
 

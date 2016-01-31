@@ -2234,8 +2234,7 @@ fontset_height2(XFontSet fs)
 
 /* NOT USED YET
     static int
-fontset_descent(fs)
-    XFontSet fs;
+fontset_descent(XFontSet fs)
 {
     XFontSetExtents *extents;
 

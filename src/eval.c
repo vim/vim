@@ -6001,7 +6001,7 @@ list_free(
  * It is not initialized, don't forget to set v_lock.
  */
     listitem_T *
-listitem_alloc()
+listitem_alloc(void)
 {
     return (listitem_T *)alloc(sizeof(listitem_T));
 }
@@ -10902,13 +10902,11 @@ f_filewritable(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = filewritable(get_tv_string(&argvars[0]));
 }
 
-static void findfilendir(typval_T *argvars, typval_T *rettv, int find_what);
-
     static void
-findfilendir(argvars, rettv, find_what)
-    typval_T	*argvars UNUSED;
-    typval_T	*rettv;
-    int		find_what UNUSED;
+findfilendir(
+    typval_T	*argvars UNUSED,
+    typval_T	*rettv,
+    int		find_what UNUSED)
 {
 #ifdef FEAT_SEARCHPATH
     char_u	*fname;
