@@ -90,9 +90,7 @@ do_debug(char_u *cmd)
     tasave_T	typeaheadbuf;
     int		typeahead_saved = FALSE;
     int		save_ignore_script = 0;
-# ifdef FEAT_EX_EXTRA
     int		save_ex_normal_busy;
-# endif
     int		n;
     char_u	*cmdline = NULL;
     char_u	*p;
@@ -161,10 +159,8 @@ do_debug(char_u *cmd)
 	 * with the commands being executed.  Reset "ex_normal_busy" to avoid
 	 * the side effects of using ":normal". Save the stuff buffer and make
 	 * it empty. Set ignore_script to avoid reading from script input. */
-# ifdef FEAT_EX_EXTRA
 	save_ex_normal_busy = ex_normal_busy;
 	ex_normal_busy = 0;
-# endif
 	if (!debug_greedy)
 	{
 	    save_typeahead(&typeaheadbuf);
@@ -180,9 +176,7 @@ do_debug(char_u *cmd)
 	    restore_typeahead(&typeaheadbuf);
 	    ignore_script = save_ignore_script;
 	}
-# ifdef FEAT_EX_EXTRA
 	ex_normal_busy = save_ex_normal_busy;
-# endif
 
 	cmdline_row = msg_row;
 	msg_starthere();

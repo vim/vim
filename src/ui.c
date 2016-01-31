@@ -1580,7 +1580,6 @@ vim_used_in_input_buf(void)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(FEAT_EX_EXTRA) || defined(PROTO)
 /*
  * Return the current contents of the input buffer and make it empty.
  * The returned pointer must be passed to set_input_buf() later.
@@ -1624,7 +1623,6 @@ set_input_buf(char_u *p)
 	vim_free(gap);
     }
 }
-#endif
 
 #if defined(FEAT_GUI) \
 	|| defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE) \
@@ -1701,15 +1699,12 @@ push_raw_key(char_u *s, int len)
 }
 #endif
 
-#if defined(FEAT_GUI) || defined(FEAT_EVAL) || defined(FEAT_EX_EXTRA) \
-	|| defined(PROTO)
 /* Remove everything from the input buffer.  Called when ^C is found */
     void
 trash_input_buf(void)
 {
     inbufcount = 0;
 }
-#endif
 
 /*
  * Read as much data from the input buffer as possible up to maxlen, and store

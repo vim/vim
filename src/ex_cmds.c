@@ -18,9 +18,7 @@
 # include <float.h>
 #endif
 
-#ifdef FEAT_EX_EXTRA
 static int linelen(int *has_tab);
-#endif
 static void do_filter(linenr_T line1, linenr_T line2, exarg_T *eap, char_u *cmd, int do_in, int do_out);
 #ifdef FEAT_VIMINFO
 static char_u *viminfo_filename(char_u	*);
@@ -138,7 +136,6 @@ do_ascii(exarg_T *eap UNUSED)
     msg(IObuff);
 }
 
-#if defined(FEAT_EX_EXTRA) || defined(PROTO)
 /*
  * ":left", ":center" and ":right": align text.
  */
@@ -787,7 +784,6 @@ ex_retab(exarg_T *eap)
 
     u_clearline();
 }
-#endif
 
 /*
  * :move command - move lines line1-line2 to line dest
@@ -6577,7 +6573,6 @@ ex_viusage(exarg_T *eap UNUSED)
     do_cmdline_cmd((char_u *)"help normal-index");
 }
 
-#if defined(FEAT_EX_EXTRA) || defined(PROTO)
 static void helptags_one(char_u *dir, char_u *ext, char_u *lang, int add_help_tags);
 
 /*
@@ -6962,7 +6957,6 @@ helptags_one(
     ga_clear(&ga);
     fclose(fd_tags);	    /* there is no check for an error... */
 }
-#endif
 
 #if defined(FEAT_SIGNS) || defined(PROTO)
 

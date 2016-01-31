@@ -8924,11 +8924,7 @@ nv_esc(cmdarg_T *cap)
 
     /* A CTRL-C is often used at the start of a menu.  When 'insertmode' is
      * set return to Insert mode afterwards. */
-    if (restart_edit == 0 && goto_im()
-#ifdef FEAT_EX_EXTRA
-	    && ex_normal_busy == 0
-#endif
-	    )
+    if (restart_edit == 0 && goto_im() && ex_normal_busy == 0)
 	restart_edit = 'a';
 }
 

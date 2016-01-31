@@ -1356,8 +1356,6 @@ static int old_mouse_row;	/* mouse_row related to old_char */
 static int old_mouse_col;	/* mouse_col related to old_char */
 #endif
 
-#if defined(FEAT_EVAL) || defined(FEAT_EX_EXTRA) || defined(PROTO)
-
 /*
  * Save all three kinds of typeahead, so that the user must type at a prompt.
  */
@@ -1406,7 +1404,6 @@ restore_typeahead(tasave_T *tp)
     set_input_buf(tp->save_inputbuf);
 # endif
 }
-#endif
 
 /*
  * Open a new script file for the ":source!" command.
@@ -1981,11 +1978,7 @@ vgetorpeek(int advance)
      * Using ":normal" can also do this, but it saves the typeahead buffer,
      * thus it should be OK.  But don't get a key from the user then.
      */
-    if (vgetc_busy > 0
-#ifdef FEAT_EX_EXTRA
-	    && ex_normal_busy == 0
-#endif
-	    )
+    if (vgetc_busy > 0 && ex_normal_busy == 0)
 	return NUL;
 
     local_State = get_real_state();
@@ -2605,9 +2598,7 @@ vgetorpeek(int advance)
 			&& typebuf.tb_len == 1
 			&& typebuf.tb_buf[typebuf.tb_off] == ESC
 			&& !no_mapping
-#ifdef FEAT_EX_EXTRA
 			&& ex_normal_busy == 0
-#endif
 			&& typebuf.tb_maplen == 0
 			&& (State & INSERT)
 			&& (p_timeout
@@ -2729,12 +2720,11 @@ vgetorpeek(int advance)
 		    continue;
 		}
 
-#ifdef FEAT_EX_EXTRA
 		if (ex_normal_busy > 0)
 		{
-# ifdef FEAT_CMDWIN
+#ifdef FEAT_CMDWIN
 		    static int tc = 0;
-# endif
+#endif
 
 		    /* No typeahead left and inside ":normal".  Must return
 		     * something to avoid getting stuck.  When an incomplete
@@ -2753,19 +2743,18 @@ vgetorpeek(int advance)
 		    if (p_im && (State & INSERT))
 			c = Ctrl_L;
 		    else if ((State & CMDLINE)
-# ifdef FEAT_CMDWIN
+#ifdef FEAT_CMDWIN
 			    || (cmdwin_type > 0 && tc == ESC)
-# endif
+#endif
 			    )
 			c = Ctrl_C;
 		    else
 			c = ESC;
-# ifdef FEAT_CMDWIN
+#ifdef FEAT_CMDWIN
 		    tc = c;
-# endif
+#endif
 		    break;
 		}
-#endif
 
 /*
  * get a character: 3. from the user - update display
@@ -4638,18 +4627,14 @@ eval_map_expr(
     /* Forbid changing text or using ":normal" to avoid most of the bad side
      * effects.  Also restore the cursor position. */
     ++textlock;
-#ifdef FEAT_EX_EXTRA
     ++ex_normal_lock;
-#endif
     set_vim_var_char(c);  /* set v:char to the typed character */
     save_cursor = curwin->w_cursor;
     save_msg_col = msg_col;
     save_msg_row = msg_row;
     p = eval_to_string(expr, NULL, FALSE);
     --textlock;
-#ifdef FEAT_EX_EXTRA
     --ex_normal_lock;
-#endif
     curwin->w_cursor = save_cursor;
     msg_col = save_msg_col;
     msg_row = save_msg_row;

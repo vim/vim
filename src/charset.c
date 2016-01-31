@@ -822,14 +822,11 @@ vim_strnsize(char_u *s, int len)
     else \
 	return ptr2cells(p);
 
-#if defined(FEAT_VREPLACE) || defined(FEAT_EX_EXTRA) || defined(FEAT_GUI) \
-	|| defined(FEAT_VIRTUALEDIT) || defined(PROTO)
     int
 chartabsize(char_u *p, colnr_T col)
 {
     RET_WIN_BUF_CHARTABSIZE(curwin, curbuf, p, col)
 }
-#endif
 
 #ifdef FEAT_LINEBREAK
     static int
@@ -1568,7 +1565,6 @@ skiphex(char_u *q)
 }
 #endif
 
-#if defined(FEAT_EX_EXTRA) || defined(PROTO)
 /*
  * skip to bin digit (or NUL after the string)
  */
@@ -1607,7 +1603,6 @@ skiptohex(char_u *q)
 	++p;
     return p;
 }
-#endif
 
 /*
  * Variant of isdigit() that can handle characters > 0x100.

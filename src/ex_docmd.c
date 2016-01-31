@@ -344,18 +344,8 @@ static void	ex_mark(exarg_T *eap);
 static char_u	*uc_fun_cmd(void);
 static char_u	*find_ucmd(exarg_T *eap, char_u *p, int *full, expand_T *xp, int *compl);
 #endif
-#ifdef FEAT_EX_EXTRA
 static void	ex_startinsert(exarg_T *eap);
 static void	ex_stopinsert(exarg_T *eap);
-#else
-# define ex_normal		ex_ni
-# define ex_align		ex_ni
-# define ex_retab		ex_ni
-# define ex_startinsert		ex_ni
-# define ex_stopinsert		ex_ni
-# define ex_helptags		ex_ni
-# define ex_sort		ex_ni
-#endif
 #ifdef FEAT_FIND_ID
 static void	ex_checkpath(exarg_T *eap);
 static void	ex_findpat(exarg_T *eap);
@@ -659,14 +649,12 @@ do_exmode(
     MSG(_("Entering Ex mode.  Type \"visual\" to go to Normal mode."));
     while (exmode_active)
     {
-#ifdef FEAT_EX_EXTRA
 	/* Check for a ":normal" command and no more characters left. */
 	if (ex_normal_busy > 0 && typebuf.tb_len == 0)
 	{
 	    exmode_active = FALSE;
 	    break;
 	}
-#endif
 	msg_scroll = TRUE;
 	need_wait_return = FALSE;
 	ex_pressedreturn = FALSE;
@@ -9860,7 +9848,6 @@ update_topline_cursor(void)
     update_curswant();
 }
 
-#if defined(FEAT_EX_EXTRA) || defined(PROTO)
 /*
  * ":normal[!] {commands}": Execute normal mode commands.
  */
@@ -10062,9 +10049,7 @@ ex_stopinsert(exarg_T *eap UNUSED)
     restart_edit = 0;
     stop_insert_mode = TRUE;
 }
-#endif
 
-#if defined(FEAT_EX_EXTRA) || defined(FEAT_MENU) || defined(PROTO)
 /*
  * Execute normal mode command "cmd".
  * "remap" can be REMAP_NONE or REMAP_YES.
@@ -10076,10 +10061,7 @@ exec_normal_cmd(char_u *cmd, int remap, int silent)
     ins_typebuf(cmd, remap, 0, TRUE, silent);
     exec_normal(FALSE);
 }
-#endif
 
-#if defined(FEAT_EX_EXTRA) || defined(FEAT_MENU) || defined(FEAT_EVAL) \
-	|| defined(PROTO)
 /*
  * Execute normal_cmd() until there is no typeahead left.
  */
@@ -10097,7 +10079,6 @@ exec_normal(int was_typed)
 	normal_cmd(&oa, TRUE);	/* execute a Normal mode cmd */
     }
 }
-#endif
 
 #ifdef FEAT_FIND_ID
     static void

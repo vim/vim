@@ -12855,9 +12855,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"emacs_tags",
 #endif
 	"eval",	    /* always present, of course! */
-#ifdef FEAT_EX_EXTRA
-	"ex_extra",
-#endif
+	"ex_extra", /* graduated feature */
 #ifdef FEAT_SEARCH_EXTRA
 	"extra_search",
 #endif
@@ -13684,16 +13682,12 @@ get_user_input(
 
 	if (defstr != NULL)
 	{
-# ifdef FEAT_EX_EXTRA
 	    int save_ex_normal_busy = ex_normal_busy;
 	    ex_normal_busy = 0;
-# endif
 	    rettv->vval.v_string =
 		getcmdline_prompt(inputsecret_flag ? NUL : '@', p, echo_attr,
 				  xp_type, xp_arg);
-# ifdef FEAT_EX_EXTRA
 	    ex_normal_busy = save_ex_normal_busy;
-# endif
 	}
 	if (inputdialog && rettv->vval.v_string == NULL
 		&& argvars[1].v_type != VAR_UNKNOWN

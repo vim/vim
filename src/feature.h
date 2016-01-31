@@ -254,13 +254,6 @@
 #endif
 
 /*
- * +ex_extra		":retab", ":right", ":left", ":center", ":normal".
- */
-#if defined(FEAT_NORMAL) || defined(FEAT_CHANNEL)
-# define FEAT_EX_EXTRA
-#endif
-
-/*
  * +extra_search	'hlsearch' and 'incsearch' options.
  */
 #ifdef FEAT_NORMAL

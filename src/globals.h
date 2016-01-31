@@ -995,10 +995,8 @@ EXTERN typebuf_T typebuf		/* typeahead buffer */
 		    = {NULL, NULL, 0, 0, 0, 0, 0, 0, 0}
 #endif
 		    ;
-#ifdef FEAT_EX_EXTRA
 EXTERN int	ex_normal_busy INIT(= 0); /* recursiveness of ex_normal() */
 EXTERN int	ex_normal_lock INIT(= 0); /* forbid use of ex_normal() */
-#endif
 #ifdef FEAT_EVAL
 EXTERN int	ignore_script INIT(= FALSE);  /* ignore script input */
 #endif
@@ -1573,9 +1571,7 @@ EXTERN char_u e_maxmempat[]	INIT(= N_("E363: pattern uses more memory than 'maxm
 EXTERN char_u e_emptybuf[]	INIT(= N_("E749: empty buffer"));
 EXTERN char_u e_nobufnr[]	INIT(= N_("E86: Buffer %ld does not exist"));
 
-#ifdef FEAT_EX_EXTRA
 EXTERN char_u e_invalpat[]	INIT(= N_("E682: Invalid search pattern or delimiter"));
-#endif
 EXTERN char_u e_bufloaded[]	INIT(= N_("E139: File is loaded in another buffer"));
 #if defined(FEAT_SYN_HL) || \
 	(defined(FEAT_INS_EXPAND) && defined(FEAT_COMPL_FUNC))
