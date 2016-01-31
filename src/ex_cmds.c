@@ -6586,19 +6586,19 @@ static void helptags_one(char_u *dir, char_u *ext, char_u *lang, int add_help_ta
     void
 ex_helptags(exarg_T *eap)
 {
-    garray_T	ga;
-    int		i, j;
-    int		len;
-#ifdef FEAT_MULTI_LANG
-    char_u	lang[2];
-#endif
     expand_T	xpc;
     char_u	*dirname;
+    int		add_help_tags = FALSE;
+#ifdef FEAT_MULTI_LANG
+    int		len;
+    int		i, j;
+    garray_T	ga;
+    char_u	lang[2];
     char_u	ext[5];
     char_u	fname[8];
     int		filecount;
     char_u	**files;
-    int		add_help_tags = FALSE;
+#endif
 
     /* Check for ":helptags ++t {dir}". */
     if (STRNCMP(eap->arg, "++t", 3) == 0 && vim_iswhite(eap->arg[3]))
