@@ -21939,6 +21939,7 @@ item_copy(
 #endif
 	case VAR_STRING:
 	case VAR_FUNC:
+	case VAR_SPECIAL:
 	    copy_tv(from, to);
 	    break;
 	case VAR_LIST:
