@@ -2646,9 +2646,11 @@ GUI_GTK_RES_INPUTS = \
 	../pixmaps/stock_vim_window_split_vertical.png
 
 auto/gui_gtk_gresources.c: gui_gtk_res.xml $(GUI_GTK_RES_INPUTS)
-	$(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=../pixmaps --generate --c-name=gui_gtk --manual-register $<
+	$(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=../pixmaps --generate --c-name=gui_gtk --manual-register gui_gtk_res.xml
 auto/gui_gtk_gresources.h: gui_gtk_res.xml $(GUI_GTK_RES_INPUTS)
-	$(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=../pixmaps --generate --c-name=gui_gtk --manual-register $<
+	if test -z "$(GLIB_COMPILE_RESOURCES)"; then touch $@; else \
+		$(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=../pixmaps --generate --c-name=gui_gtk --manual-register gui_gtk_res.xml; \
+	fi
 
 # All the object files are put in the "objects" directory.  Since not all make
 # commands understand putting object files in another directory, it must be
