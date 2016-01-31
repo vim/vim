@@ -5322,7 +5322,7 @@ init_mappings(void)
 #if defined(MSDOS) || defined(MSWIN) ||defined(MACOS)
     int		i;
 
-    for (i = 0; i < sizeof(initmappings) / sizeof(struct initmap); ++i)
+    for (i = 0; i < (int)(sizeof(initmappings) / sizeof(struct initmap)); ++i)
 	add_map(initmappings[i].arg, initmappings[i].mode);
 #endif
 }
