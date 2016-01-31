@@ -638,7 +638,6 @@ NARROW_PROTO
 MOTIF_LIBNAME
 GRESOURCE_OBJ
 GRESOURCE_SRC
-GRESOURCE_HDR
 GLIB_COMPILE_RESOURCES
 GNOME_INCLUDEDIR
 GNOME_LIBDIR
@@ -9107,7 +9106,6 @@ $as_echo "cannot be found in PATH." >&6; }
 $as_echo "usable." >&6; }
         $as_echo "#define USE_GRESOURCE 1" >>confdefs.h
 
-        GRESOURCE_HDR="auto/gui_gtk_gresources.h"
         GRESOURCE_SRC="auto/gui_gtk_gresources.c"
         GRESOURCE_OBJ="objects/gui_gtk_gresources.o"
       fi
@@ -9120,7 +9118,6 @@ $as_echo "not usable." >&6; }
 $as_echo "cannot obtain from pkg_config." >&6; }
   fi
 fi
-
 
 
 
