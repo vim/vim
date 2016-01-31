@@ -33,6 +33,33 @@ json_encode(typval_T *val)
     return ga.ga_data;
 }
 
+/*
+ * Encode ["nr", "val"] into a JSON format string.
+ * Returns NULL when out of memory.
+ */
+    char_u *
+json_encode_nr_expr(int nr, typval_T *val)
+{
+    typval_T	listtv;
+    typval_T	nrtv;
+    char_u	*text;
+
+    nrtv.v_type = VAR_NUMBER;
+    nrtv.vval.v_number = nr;
+    if (rettv_list_alloc(&listtv) == FAIL)
+	return NULL;
+    if (list_append_tv(listtv.vval.v_list, &nrtv) == FAIL
+	    || list_append_tv(listtv.vval.v_list, val) == FAIL)
+    {
+	list_unref(listtv.vval.v_list);
+	return NULL;
+    }
+
+    text = json_encode(&listtv);
+    list_unref(listtv.vval.v_list);
+    return text;
+}
+
     static void
 write_string(garray_T *gap, char_u *str)
 {

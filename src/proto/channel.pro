@@ -4,7 +4,7 @@ int channel_open(char *hostname, int port_in, void (*close_cb)(void));
 void channel_set_json_mode(int idx, int json_mode);
 void channel_set_callback(int idx, char_u *callback);
 void channel_set_req_callback(int idx, char_u *callback);
-int channel_decode_json(char_u *msg, typval_T *tv1, typval_T *tv2);
+int channel_decode_json(char_u *msg, typval_T *tv1, typval_T *tv2, typval_T *tv3);
 int channel_is_open(int idx);
 void channel_close(int idx);
 int channel_save(int idx, char_u *buf, int len);

@@ -16897,8 +16897,6 @@ f_sendexpr(typval_T *argvars, typval_T *rettv)
 {
     char_u	*text;
     char_u	*resp;
-    typval_T	nrtv;
-    typval_T	listtv;
     typval_T	typetv;
     int		ch_idx;
 
@@ -16906,19 +16904,9 @@ f_sendexpr(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
-    nrtv.v_type = VAR_NUMBER;
-    nrtv.vval.v_number = channel_get_id();
-    if (rettv_list_alloc(&listtv) == FAIL)
+    text = json_encode_nr_expr(channel_get_id(), &argvars[1]);
+    if (text == NULL)
 	return;
-    if (list_append_tv(listtv.vval.v_list, &nrtv) == FAIL
-	    || list_append_tv(listtv.vval.v_list, &argvars[1]) == FAIL)
-    {
-	list_unref(listtv.vval.v_list);
-	return;
-    }
-
-    text = json_encode(&listtv);
-    list_unref(listtv.vval.v_list);
 
     ch_idx = send_common(argvars, text, "sendexpr");
     if (ch_idx >= 0)
@@ -16929,7 +16917,7 @@ f_sendexpr(typval_T *argvars, typval_T *rettv)
 	resp = channel_read_block(ch_idx);
 	if (resp != NULL)
 	{
-	    channel_decode_json(resp, &typetv, rettv);
+	    channel_decode_json(resp, &typetv, rettv, NULL);
 	    vim_free(resp);
 	}
     }

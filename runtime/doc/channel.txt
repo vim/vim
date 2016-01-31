@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Jan 28
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Jan 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -48,10 +48,10 @@ And the response is:
 The number will increase every time you send a message.
 
 The server can send a command to Vim.  Type this on T1 (literally, including
-the quotes): >
-	NOT IMPLEMENTED YET
-	["ex","echo 'hi there'"]
-And you should see the message in Vim.
+the quotes):
+	["ex","echo 'hi there'"] ~
+And you should see the message in Vim. You can move the cursor a word forward:
+	["normal","w"] ~
 
 To handle asynchronous communication a callback needs to be used: >
 	func MyHandler(handle, msg)
@@ -100,6 +100,14 @@ When {callback} is empty (zero or an empty string) the handler is removed.
 Once done with the channel, disconnect it like this: >
     call disconnect(handle)
 
+Currently up to 10 channels can be in use at the same time. *E897*
+
+When the channel can't be opened you will get an error message.
+*E898* *E899* *E900* *E901* *E902*
+
+If there is an error reading or writing a channel it will be closed.
+*E896* *E630* *E631* 
+
 ==============================================================================
 3. Using a JSON channel					*channel-use*
 
@@ -146,36 +154,77 @@ The channel will then be inactive.
 ==============================================================================
 4. Vim commands						*channel-commands*
 
-NOT IMPLEMENTED YET
+PARTLY IMPLEMENTED: only "ex" and "normal" work
 
 With a "json" channel the process can send commands to Vim that will be
 handled by Vim internally, it does not require a handler for the channel.
 
-Possible commands are:
+Possible commands are:				*E903* *E904* *E905*
+    ["redraw"  {forced}]
     ["ex",     {Ex command}]
     ["normal", {Normal mode command}]
-    ["eval",   {number}, {expression}]
+    ["eval",   {expression}, {number}]
     ["expr",   {expression}]
 
 With all of these: Be careful what these commands do!  You can easily
 interfere with what the user is doing.  To avoid trouble use |mode()| to check
 that the editor is in the expected state.  E.g., to send keys that must be
-inserted as text, not executed as a command: >
-    ["ex","if mode() == 'i' | call feedkeys('ClassName') | endif"]
+inserted as text, not executed as a command:
+    ["ex","if mode() == 'i' | call feedkeys('ClassName') | endif"] ~
+
+Errors in these commands are normally not reported to avoid them messing up
+the display.  If you do want to see them, set the 'verbose' option to 3 or
+higher.
+
+
+Command "redraw" ~
+
+The other commands do not update the screen, so that you can send a sequence
+of commands without the cursor moving around.  You must end with the "redraw"
+command to show any changed text and show the cursor where it belongs.
+
+The argument is normally an empty string:
+	["redraw", ""] ~
+To first clear the screen pass "force":
+	["redraw", "force"] ~
+
+
+Command "ex" ~
 
 The "ex" command is executed as any Ex command.  There is no response for
-completion or error.  You could use functions in an |autoload| script.
-You can also invoke |feedkeys()| to insert anything.
+completion or error.  You could use functions in an |autoload| script:
+	["ex","call myscript#MyFunc(arg)"]
 
-The "normal" command is executed like with |:normal|.
+You can also use "call |feedkeys()|" to insert any key sequence.
 
-The "eval" command will result in sending back the result of the expression:
+
+Command "normal" ~
+
+The "normal" command is executed like with |:normal!|, commands are not
+mapped.  Example to open the folds under the cursor:
+	["normal" "zO"]
+
+
+Command "eval" ~
+
+The "eval" command an be used to get the result of an expression.  For
+example, to get the number of lines in the current buffer:
+	["eval","line('$')"] ~
+
+it will send back the result of the expression:
 	[{number}, {result}]
-Here {number} is the same as what was in the request.
+Here {number} is the same as what was in the request.  Use a negative number
+to avoid confusion with message that Vim sends.
 
-The "expr" command is similar, but does not send back any response.
+{result} is the result of the evaluation and is JSON encoded.  If the
+evaluation fails it is the string "ERROR".
+
+
+Command "expr" ~
+
+The "expr" command is similar to "eval", but does not send back any response.
 Example:
-	["expr","setline('$', ['one', 'two', 'three'])"]
+	["expr","setline('$', ['one', 'two', 'three'])"] ~
 
 ==============================================================================
 5. Using a raw channel					*channel-raw*

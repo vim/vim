@@ -335,7 +335,6 @@ static void	ex_rundo(exarg_T *eap);
 static void	ex_redo(exarg_T *eap);
 static void	ex_later(exarg_T *eap);
 static void	ex_redir(exarg_T *eap);
-static void	ex_redraw(exarg_T *eap);
 static void	ex_redrawstatus(exarg_T *eap);
 static void	close_redir(void);
 static void	ex_mkrc(exarg_T *eap);
@@ -9466,7 +9465,7 @@ ex_redir(exarg_T *eap)
 /*
  * ":redraw": force redraw
  */
-    static void
+    void
 ex_redraw(exarg_T *eap)
 {
     int		r = RedrawingDisabled;

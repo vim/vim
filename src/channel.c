@@ -293,14 +293,14 @@ channel_open(char *hostname, int port_in, void (*close_cb)(void))
     if (idx < 0)
     {
 	CHERROR("All channels are in use\n", "");
-	EMSG(_("E999: All channels are in use"));
+	EMSG(_("E897: All channels are in use"));
 	return -1;
     }
 
     if ((sd = (sock_T)socket(AF_INET, SOCK_STREAM, 0)) == (sock_T)-1)
     {
 	CHERROR("error in socket() in channel_open()\n", "");
-	PERROR("E999: socket() in channel_open()");
+	PERROR("E898: socket() in channel_open()");
 	return -1;
     }
 
@@ -312,7 +312,7 @@ channel_open(char *hostname, int port_in, void (*close_cb)(void))
     if ((host = gethostbyname(hostname)) == NULL)
     {
 	CHERROR("error in gethostbyname() in channel_open()\n", "");
-	PERROR("E999: gethostbyname() in channel_open()");
+	PERROR("E901: gethostbyname() in channel_open()");
 	sock_close(sd);
 	return -1;
     }
@@ -330,7 +330,7 @@ channel_open(char *hostname, int port_in, void (*close_cb)(void))
 	    {
 		SOCK_ERRNO;
 		CHERROR("socket() retry in channel_open()\n", "");
-		PERROR("E999: socket() retry in channel_open()");
+		PERROR("E900: socket() retry in channel_open()");
 		return -1;
 	    }
 	    if (connect(sd, (struct sockaddr *)&server, sizeof(server)))
@@ -362,7 +362,7 @@ channel_open(char *hostname, int port_in, void (*close_cb)(void))
 		{
 		    /* Get here when the server can't be found. */
 		    CHERROR("Cannot connect to port after retry\n", "");
-		    PERROR(_("E999: Cannot connect to port after retry2"));
+		    PERROR(_("E899: Cannot connect to port after retry2"));
 		    sock_close(sd);
 		    return -1;
 		}
@@ -371,7 +371,7 @@ channel_open(char *hostname, int port_in, void (*close_cb)(void))
 	else
 	{
 	    CHERROR("Cannot connect to port\n", "");
-	    PERROR(_("E999: Cannot connect to port"));
+	    PERROR(_("E902: Cannot connect to port"));
 	    sock_close(sd);
 	    return -1;
 	}
@@ -418,13 +418,15 @@ channel_set_req_callback(int idx, char_u *callback)
 }
 
 /*
- * Decode JSON "msg", which must have the form "[expr1, expr2]".
+ * Decode JSON "msg", which must have the form "[expr1, expr2, expr3]".
  * Put "expr1" in "tv1".
  * Put "expr2" in "tv2".
+ * Put "expr3" in "tv3". If "tv3" is NULL there is no "expr3".
+ *
  * Return OK or FAIL.
  */
     int
-channel_decode_json(char_u *msg, typval_T *tv1, typval_T *tv2)
+channel_decode_json(char_u *msg, typval_T *tv1, typval_T *tv2, typval_T *tv3)
 {
     js_read_T	reader;
     typval_T	listtv;
@@ -434,16 +436,31 @@ channel_decode_json(char_u *msg, typval_T *tv1, typval_T *tv2)
     reader.js_used = 0;
     json_decode(&reader, &listtv);
 
-    if (listtv.v_type == VAR_LIST && listtv.vval.v_list->lv_len == 2)
+    if (listtv.v_type == VAR_LIST)
     {
-	/* Move the item from the list and then change the type to avoid the
-	 * item being freed. */
-	*tv1 = listtv.vval.v_list->lv_first->li_tv;
-	listtv.vval.v_list->lv_first->li_tv.v_type = VAR_NUMBER;
-	*tv2 = listtv.vval.v_list->lv_last->li_tv;
-	listtv.vval.v_list->lv_last->li_tv.v_type = VAR_NUMBER;
-	list_unref(listtv.vval.v_list);
-	return OK;
+	list_T *list = listtv.vval.v_list;
+
+	if (list->lv_len == 2 || (tv3 != NULL && list->lv_len == 3))
+	{
+	    /* Move the item from the list and then change the type to avoid the
+	     * item being freed. */
+	    *tv1 = list->lv_first->li_tv;
+	    list->lv_first->li_tv.v_type = VAR_NUMBER;
+	    *tv2 = list->lv_first->li_next->li_tv;
+	    list->lv_first->li_next->li_tv.v_type = VAR_NUMBER;
+	    if (tv3 != NULL)
+	    {
+		if (list->lv_len == 3)
+		{
+		    *tv3 = list->lv_last->li_tv;
+		    list->lv_last->li_tv.v_type = VAR_NUMBER;
+		}
+		else
+		    tv3->v_type = VAR_UNKNOWN;
+	    }
+	    list_unref(list);
+	    return OK;
+	}
     }
 
     /* give error message? */
@@ -472,44 +489,86 @@ invoke_callback(int idx, char_u *callback, typval_T *argv)
     out_flush();
 }
 
+/*
+ * Execute a command received over channel "idx".
+ * "cmd" is the command string, "arg2" the second argument.
+ * "arg3" is the third argument, NULL if missing.
+ */
     static void
-channel_exe_cmd(char_u *cmd, typval_T *arg)
+channel_exe_cmd(int idx, char_u *cmd, typval_T *arg2, typval_T *arg3)
 {
+    char_u *arg;
+
+    if (arg2->v_type != VAR_STRING)
+    {
+	if (p_verbose > 2)
+	    EMSG("E903: received ex command with non-string argument");
+	return;
+    }
+    arg = arg2->vval.v_string;
+
     if (STRCMP(cmd, "ex") == 0)
     {
-	if (arg->v_type == VAR_STRING)
-	    do_cmdline_cmd(arg->vval.v_string);
-	else if (p_verbose > 2)
-	    EMSG("E999: received ex command with non-string argument");
+	do_cmdline_cmd(arg);
     }
     else if (STRCMP(cmd, "normal") == 0)
     {
-	if (arg->v_type == VAR_STRING)
-	{
-	    exarg_T ea;
+	exarg_T ea;
 
-	    ea.arg = arg->vval.v_string;
-	    ea.addr_count = 0;
-	    ea.forceit = TRUE; /* no mapping */
-	    ex_normal(&ea);
+	ea.arg = arg;
+	ea.addr_count = 0;
+	ea.forceit = TRUE; /* no mapping */
+	ex_normal(&ea);
+    }
+    else if (STRCMP(cmd, "redraw") == 0)
+    {
+	exarg_T ea;
 
-	    update_screen(0);
-	    showruler(FALSE);
-	    setcursor();
-	    out_flush();
+	ea.forceit = *arg != NUL;
+	ex_redraw(&ea);
+	showruler(FALSE);
+	setcursor();
+	out_flush();
 #ifdef FEAT_GUI
-	    if (gui.in_use)
-	    {
-		gui_update_cursor(FALSE, FALSE);
-		gui_mch_flush();
-	    }
-#endif
+	if (gui.in_use)
+	{
+	    gui_update_cursor(FALSE, FALSE);
+	    gui_mch_flush();
 	}
-	else if (p_verbose > 2)
-	    EMSG("E999: received normal command with non-string argument");
+#endif
+    }
+    else if (STRCMP(cmd, "expr") == 0 || STRCMP(cmd, "eval") == 0)
+    {
+	int is_eval = cmd[1] == 'v';
+
+	if (is_eval && arg3->v_type != VAR_NUMBER)
+	{
+	    if (p_verbose > 2)
+		EMSG("E904: third argument for eval must be a number");
+	}
+	else
+	{
+	    typval_T	*tv = eval_expr(arg, NULL);
+	    typval_T	err_tv;
+	    char_u	*json;
+
+	    if (is_eval)
+	    {
+		if (tv == NULL)
+		{
+		    err_tv.v_type = VAR_STRING;
+		    err_tv.vval.v_string = (char_u *)"ERROR";
+		    tv = &err_tv;
+		}
+		json = json_encode_nr_expr(arg3->vval.v_number, tv);
+		channel_send(idx, json, "eval");
+		vim_free(json);
+	    }
+	    free_tv(tv);
+	}
     }
     else if (p_verbose > 2)
-	EMSG2("E999: received unknown command: %s", cmd);
+	EMSG2("E905: received unknown command: %s", cmd);
 }
 
 /*
@@ -521,6 +580,7 @@ may_invoke_callback(int idx)
     char_u	*msg;
     typval_T	typetv;
     typval_T	argv[3];
+    typval_T	arg3;
     char_u	*cmd = NULL;
     int		seq_nr = -1;
     int		ret = OK;
@@ -537,9 +597,10 @@ may_invoke_callback(int idx)
 
     if (channels[idx].ch_json_mode)
     {
-	ret = channel_decode_json(msg, &typetv, &argv[1]);
+	ret = channel_decode_json(msg, &typetv, &argv[1], &arg3);
 	if (ret == OK)
 	{
+	    /* TODO: error if arg3 is set when it shouldn't? */
 	    if (typetv.v_type == VAR_STRING)
 		cmd = typetv.vval.v_string;
 	    else if (typetv.v_type == VAR_NUMBER)
@@ -556,7 +617,7 @@ may_invoke_callback(int idx)
     {
 	if (cmd != NULL)
 	{
-	    channel_exe_cmd(cmd, &argv[1]);
+	    channel_exe_cmd(idx, cmd, &argv[1], &arg3);
 	}
 	else if (channels[idx].ch_req_callback != NULL && seq_nr != 0)
 	{
@@ -576,6 +637,7 @@ may_invoke_callback(int idx)
 	{
 	    clear_tv(&typetv);
 	    clear_tv(&argv[1]);
+	    clear_tv(&arg3);
 	}
     }
 
@@ -874,7 +936,7 @@ channel_read(int idx)
 	{
 	    /* Todo: which channel? */
 	    CHERROR("%s(): cannot from channel\n", "channel_read");
-	    PERROR(_("E999: read from channel"));
+	    PERROR(_("E896: read from channel"));
 	}
     }
 
