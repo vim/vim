@@ -37,6 +37,15 @@ func Test_assert_exception()
   endtry
 endfunc
 
+func Test_wrong_error_type()
+  let save_verrors = v:errors
+  let v:['errors'] = {'foo': 3}
+  call assert_equal('yes', 'no')
+  let verrors = v:errors
+  let v:errors = save_verrors
+  call assert_equal(type([]), type(verrors))
+endfunc
+
 func Test_user_is_happy()
   smile
   sleep 300m

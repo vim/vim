@@ -919,6 +919,8 @@ eval_init(void)
 	    /* add to compat scope dict */
 	    hash_add(&compat_hashtab, p->vv_di.di_key);
     }
+    vimvars[VV_VERSION].vv_nr = VIM_VERSION_100;
+
     set_vim_var_nr(VV_SEARCHFORWARD, 1L);
     set_vim_var_nr(VV_HLSEARCH, 1L);
     set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc());
@@ -20616,11 +20618,8 @@ set_vim_var_string(
     char_u	*val,
     int		len)	    /* length of "val" to use or -1 (whole string) */
 {
-    /* Need to do this (at least) once, since we can't initialize a union.
-     * Will always be invoked when "v:progname" is set. */
-    vimvars[VV_VERSION].vv_nr = VIM_VERSION_100;
-
-    vim_free(vimvars[idx].vv_str);
+    clear_tv(&vimvars[idx].vv_di.di_tv);
+    vimvars[idx].vv_type = VAR_STRING;
     if (val == NULL)
 	vimvars[idx].vv_str = NULL;
     else if (len == -1)
@@ -20635,7 +20634,8 @@ set_vim_var_string(
     void
 set_vim_var_list(int idx, list_T *val)
 {
-    list_unref(vimvars[idx].vv_list);
+    clear_tv(&vimvars[idx].vv_di.di_tv);
+    vimvars[idx].vv_type = VAR_LIST;
     vimvars[idx].vv_list = val;
     if (val != NULL)
 	++val->lv_refcount;
@@ -20650,7 +20650,8 @@ set_vim_var_dict(int idx, dict_T *val)
     int		todo;
     hashitem_T	*hi;
 
-    dict_unref(vimvars[idx].vv_dict);
+    clear_tv(&vimvars[idx].vv_di.di_tv);
+    vimvars[idx].vv_type = VAR_DICT;
     vimvars[idx].vv_dict = val;
     if (val != NULL)
     {
