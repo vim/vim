@@ -629,6 +629,8 @@ channel_exe_cmd(int idx, char_u *cmd, typval_T *arg2, typval_T *arg3)
 	return;
     }
     arg = arg2->vval.v_string;
+    if (arg == NULL)
+	arg = (char_u *)"";
 
     if (STRCMP(cmd, "ex") == 0)
     {
@@ -647,7 +649,7 @@ channel_exe_cmd(int idx, char_u *cmd, typval_T *arg2, typval_T *arg3)
     {
 	exarg_T ea;
 
-	ea.forceit = arg != NULL && *arg != NUL;
+	ea.forceit = *arg != NUL;
 	ex_redraw(&ea);
 	showruler(FALSE);
 	setcursor();
