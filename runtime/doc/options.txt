@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2016 Jan 19
+*options.txt*	For Vim version 7.4.  Last change: 2016 Feb 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2295,7 +2295,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			the encrypted bytes will be different.
 							*blowfish2*
 	   blowfish2	Blowfish method.  Medium strong encryption.  Requires
-			Vim 7.4.399 or later, files can NOT be read by Vim 7.3
+			Vim 7.4.401 or later, files can NOT be read by Vim 7.3
 			and older.  This adds a "seed" to the file, every time
 			you write the file the encrypted bytes will be
 			different.  The whole undo file is encrypted, not just
@@ -6983,7 +6983,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The option consists of printf style '%' items interspersed with
 	normal text.  Each status line item is of the form:
 	  %-0{minwid}.{maxwid}{item}
-	All fields except the {item} is optional.  A single percent sign can
+	All fields except the {item} are optional.  A single percent sign can
 	be given as "%%".  Up to 80 items can be specified.  *E541*
 
 	When the option starts with "%!" then it is used as an expression,

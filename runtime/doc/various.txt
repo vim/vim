@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.4.  Last change: 2016 Jan 27
+*various.txt*   For Vim version 7.4.  Last change: 2016 Jan 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -208,8 +208,6 @@ g8			Print the hex values of the bytes used in the
 			Example: >
 				:exe "normal \<c-w>\<c-w>"
 <			{not in Vi, of course}
-			{not available when the |+ex_extra| feature was
-			disabled at compile time}
 
 :{range}norm[al][!] {commands}				*:normal-range*
 			Execute Normal mode commands {commands} for each line
@@ -218,8 +216,6 @@ g8			Print the hex values of the bytes used in the
 			for each line.  Otherwise it's the same as the
 			":normal" command without a range.
 			{not in Vi}
-			{not available when |+ex_extra| feature was disabled
-			at compile time}
 
 							*:sh* *:shell* *E371*
 :sh[ell]		This command starts a shell.  When the shell exits
@@ -342,8 +338,7 @@ m  *+directx*		Win32 GUI only: DirectX and |'renderoptions'|
    *+dnd*		Support for DnD into the "~ register |quote_~|.
 B  *+emacs_tags*	|emacs-tags| files
 N  *+eval*		expression evaluation |eval.txt|
-N  *+ex_extra*		Vim's extra Ex commands: |:center|, |:left|,
-			|:normal|, |:retab| and |:right|
+N  *+ex_extra*		always on now, used to be for Vim's extra Ex commands
 N  *+extra_search*	|'hlsearch'| and |'incsearch'| options.
 B  *+farsi*		|farsi| language
 N  *+file_in_path*	|gf|, |CTRL-W_f| and |<cfile>|

@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.4.  Last change: 2016 Jan 17
+*editing.txt*   For Vim version 7.4.  Last change: 2016 Feb 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1468,6 +1468,8 @@ test for blowfish with: >
 	v:version >= 703
 And for blowfish2 with: >
 	v:version > 704 || (v:version == 704 && has('patch401'))
+If you are sure Vim includes patch 7.4.237 a simpler check is: >
+	has('patch-7.4.401')
 <
 						*E817* *E818* *E819* *E820*
 When encryption does not work properly, you would be able to write your text

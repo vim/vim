@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Jan 28
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2668,6 +2668,8 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 
 connect({address}, {mode} [, {callback}])		*connect()*
 		Open a channel to {address}.  See |channel|.
+		Returns the channel handle on success.  Returns a negative
+		number for failure.
 
 		{address} has the form "hostname:port", e.g.,
 		"localhost:8765".
@@ -7053,7 +7055,7 @@ ebcdic			Compiled on a machine with ebcdic character set.
 emacs_tags		Compiled with support for Emacs tags.
 eval			Compiled with expression evaluation support.  Always
 			true, of course!
-ex_extra		Compiled with extra Ex commands |+ex_extra|.
+ex_extra		|+ex_extra|, always true now
 extra_search		Compiled with support for |'incsearch'| and
 			|'hlsearch'|
 farsi			Compiled with Farsi support |farsi|.

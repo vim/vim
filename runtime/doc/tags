@@ -4135,8 +4135,8 @@ E627	netbeans.txt	/*E627*
 E628	netbeans.txt	/*E628*
 E629	netbeans.txt	/*E629*
 E63	pattern.txt	/*E63*
-E630	netbeans.txt	/*E630*
-E631	netbeans.txt	/*E631*
+E630	channel.txt	/*E630*
+E631	channel.txt	/*E631*
 E632	netbeans.txt	/*E632*
 E633	netbeans.txt	/*E633*
 E634	netbeans.txt	/*E634*
@@ -4424,7 +4424,17 @@ E892	eval.txt	/*E892*
 E893	eval.txt	/*E893*
 E894	eval.txt	/*E894*
 E895	if_mzsch.txt	/*E895*
+E896	channel.txt	/*E896*
+E897	channel.txt	/*E897*
+E898	channel.txt	/*E898*
+E899	channel.txt	/*E899*
 E90	message.txt	/*E90*
+E900	channel.txt	/*E900*
+E901	channel.txt	/*E901*
+E902	channel.txt	/*E902*
+E903	channel.txt	/*E903*
+E904	channel.txt	/*E904*
+E905	channel.txt	/*E905*
 E91	options.txt	/*E91*
 E92	message.txt	/*E92*
 E93	windows.txt	/*E93*
@@ -8521,6 +8531,7 @@ timestamps	editing.txt	/*timestamps*
 tips	tips.txt	/*tips*
 tips.txt	tips.txt	/*tips.txt*
 todo	todo.txt	/*todo*
+todo.txt	todo.txt	/*todo.txt*
 toggle	options.txt	/*toggle*
 toggle-revins	version4.txt	/*toggle-revins*
 tolower()	eval.txt	/*tolower()*

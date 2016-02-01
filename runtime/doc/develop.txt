@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 7.4.  Last change: 2016 Jan 19
+*develop.txt*   For Vim version 7.4.  Last change: 2016 Jan 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -322,7 +322,8 @@ OK:	    if (cond)
                cmd;
 	    }
 
-Functions start with:
+Use ANSI (new style) function declarations with the return type on a separate
+indented line.
 
 Wrong:	int function_name(int arg1, int arg2)
 
@@ -340,8 +341,6 @@ OK:	/*
 
 	    local = arg1 * arg2;
 
-NOTE: Don't use ANSI style function declarations.  A few people still have to
-use a compiler that doesn't support it.
 
 
 SPACES AND PUNCTUATION					*style-spaces*

@@ -1,4 +1,4 @@
-todo.txt*      For Vim version 7.4.  Last change: 2016 Jan 27
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Feb 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -75,18 +75,24 @@ Regexp problems:
 - The pattern "\1" with the old engine gives E65, with the new engine it
   matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
 - Search for \\~ causes error E874.
+
 - "\%1l^#.*" does not match on a line starting with "#".  The zero-width match
   clears the start-of-line flag.
+  Patch by Christian, 2016 Jan 29.
 
 +channel:
+- implement wait for receiving end of Json.
+- implement only reading up to end of Json.
 - cleanup on exit?  in mch_getout() and getout().
-- more contents in channel.txt
-
-C89: remove __ARGS in more places
-- /tmp/noargs.vim
-- /tmp/eliminate__ARGS.vim
-- Script: Hirohito Higashi, Jan 25, 2nd one.
-- Assume HAVE_STDARG_H is always defined.
+- Add more contents to channel.txt
+- implement debug log
+- implement job control
+- Add a test with a server that can send canned responses.
+- make sure errors lead to a useful error msg. ["ex","foobar"]
+- use a timeout for connect()  Patch from Yasuhiro Matsumoto, Feb 1
+- set timeout for channel.
+- implement check for ID in response.
+- json: implement UTF-16 surrogate pair.
 
 This difference is unexpected:
     echo v:true == 1
@@ -95,7 +101,13 @@ This difference is unexpected:
     0
 It's because tv_equal() works different.
 
-Do we need to roll-back patch 1165, that put libintl-8.dll before libintl.dll?
+Allow for an empty dictionary key.
+
+Patch to put undo options together in undo window.
+(Gary Johnson, 2016 Jan 28)
+
+Patch for clearing history. (Yegappan Lakshmanan, 2016 Jan 31, second message
+has tests)
 
 Need to try out instructions in INSSTALLpc.txt about how to install all
 interfaces and how to build Vim with them.
@@ -106,6 +118,9 @@ result: https://ci.appveyor.com/project/k-takata/vim/history
 Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
 More info Jul 24.  Not clear why.
 
+Duplication of completion suggestions for ":!hom".  Issue 539.
+Patch by Christian, 2016 Jan 29
+>
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28) With examples: (Malcolm Rowe, 2015 Dec 24)
 
@@ -132,23 +147,32 @@ Should use /usr/local/share/applications or /usr/share/applications.
 Or use $XDG_DATA_DIRS.
 Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
 
+Move the README files that are for including in archives to a subdirectory.
+"readmedir/" ?
+
 Access to uninitialized memory in match_backref() regexp_nda.c:4882
 (Dominique Pelle, 2015 Nov 6)
 
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
 
+Patch to avoid redrawing tabline when the popup menu is visible.
+(Christian Brabandt, 2016 Jan 28)
+
 Win32: patch to use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
 More tests May 14. Update May 29.  Update Aug 10.
 Now part of large file patches. (Ken Takata, 2016 Jan 19, second one)
 Updated patches with ordering: Jan 20.
-And another update: Jan 24
+And another update: Jan 24, then Jan 29, 30, Feb 1.
 
 7   Add a watchpoint in the debug mode: An expression that breaks execution
     when evaluating to non-zero.  Add the "watchadd expr" command, stop when
     the value of the expression changes.  ":watchdel" deletes an item,
     ":watchlist" lists the items. (Charles Campbell)
 Patch by Christian Brabandt, 2016 Jan 27.
+
+Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
+Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
 
 Using ":windo" to set options in all windows has the side effect that it
 changes the window layout and the current window.  Make a variant that saves
@@ -157,6 +181,10 @@ Perhaps we can use ":windo <restore> {cmd}"?
 Patch to add <restore> to :windo, :bufdo, etc. (Christian Brabandt, 2015 Jan
 6, 2nd message)
 Alternative: ":keeppos" command modifier: ":keeppos windo {cmd}".
+
+Patch to fix display of listchars on the cursorline. (Nayuri Aohime, 2013)
+Update suggested by Yasuhiro Matsumoto, 2014 Nov 25:
+https://gist.github.com/presuku/d3d6b230b9b6dcfc0477
 
 Illegal memory access, requires ASAN to see. (Dominique Pelle, 2015 Jul 28)
 
@@ -172,8 +200,6 @@ github with a URL like this:
    https://github.com/vim/vim/compare/v7.4.920%5E...v7.4.920.diff
 Diff for version.c contains more context, can't skip a patch.
 
-Duplication of completion suggestions for ":!hom".  Issue 539.
->
 When t_Co is changed from termresponse, the OptionSet autocmmand event isn't
 triggered.  Use the code from the end of set_num_option() in
 set_color_count().
@@ -225,6 +251,9 @@ is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
 Test 44 fails when [[=A=]] is changed to [[=À=]].  Caused by getcmdline() not
 handling the 0x80 as a second byte correctly?  (Dominique Pelle, 2015 Jun 10)
 
+Patch to use two highlight groups for relative numbers. (Shaun Brady, 2016 Jan
+30)
+
 Weird encryption problems on Windows. (Ben Fritz, 2015 Feb 13)
 Goes away when disabling the swap file. (might1, Feb 16)
 
@@ -261,9 +290,6 @@ Patch to add GUI colors to the terminal, when it supports it. (ZyX, 2013 Jan
 
 Patch for problem with restoring screen on Windows. (Nobuhiro Takasaki, 2015
 Sep 10)
-
-Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
-Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8.
 
 Patch to improve I/O for Perl. (Damien, 2015 Jan 9, update Jan 22 2nd one)
 
@@ -409,7 +435,7 @@ Patch: On MS-Windows shellescape() may have to triple double quotes.
 (Ingo Karkat, 2015 Jan 16)
 
 Patch for variable tabstops.  On github (Christian Brabandt, 2014 May 15)
-Update 2015 Jul 25 (email).
+Update 2016 Jan 31 (email).
 
 Redo only remembers the last change.  Could use "{count}g." to redo an older
 change.  How does the user know which change?  At least have a way to list
@@ -456,6 +482,8 @@ compatible with Vim spell files.  The old files can no longer be downloaded.
 Patch to make FocusGained and FocusLost work in modern terminals. (Hayaki
 Saito, 2013 Apr 24)  Has a problem (email 2015 Jan 7).
 Update 2015 Jan 10.
+Also see issue #609.
+We could add the enable/disable sequences to t_ti/t_te or t_ks/t_ke.
 
 Idea: For a window in the middle (has window above and below it), use
 right-mouse-drag on the status line to move a window up/down without changing
@@ -542,10 +570,6 @@ Patch to support expression argument to sort() instead of a function name.
 Yasuhiro Matsumoto, 2013 May 31.
 Or should we add a more general mechanism, like a lambda() function?
 Patch by Yasuhiro Matsumoto, 2014 Sep 16.
-
-Patch to fix display of listchars on the cursorline. (Nayuri Aohime, 2013)
-Update suggested by Yasuhiro Matsumoto, 2014 Nov 25:
-https://gist.github.com/presuku/d3d6b230b9b6dcfc0477
 
 VMS: Select() doesn't work properly, typing ESC may hang Vim.  Use sys$qiow
 instead. (Samuel Ferencik, 2013 Sep 28)
