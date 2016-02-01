@@ -74,12 +74,20 @@ struct readqueue
     struct readqueue	*next;
     struct readqueue	*prev;
 };
-typedef struct readqueue queue_T;
+typedef struct readqueue readq_T;
+
+struct jsonqueue
+{
+    typval_T		*value;
+    struct jsonqueue	*next;
+    struct jsonqueue	*prev;
+};
+typedef struct jsonqueue jsonq_T;
 
 typedef struct {
     sock_T    ch_fd;	/* the socket, -1 for a closed channel */
     int	      ch_idx;	/* used by channel_poll_setup() */
-    queue_T   ch_head;	/* dummy node, header for circular queue */
+    readq_T   ch_head;	/* dummy node, header for circular queue */
 
     int	      ch_error;	/* When TRUE an error was reported.  Avoids giving
 			 * pages full of error messages when the other side
@@ -100,7 +108,8 @@ typedef struct {
     char_u    *ch_callback;	/* function to call when a msg is not handled */
     char_u    *ch_req_callback;	/* function to call for current request */
 
-    int	      ch_json_mode;
+    int	      ch_json_mode;	/* TRUE for a json channel */
+    jsonq_T   ch_json_head;	/* dummy node, header for circular queue */
 } channel_T;
 
 /*
@@ -125,6 +134,7 @@ add_channel(void)
 {
     int		idx;
     channel_T	*new_channels;
+    channel_T	*ch;
 
     if (channels != NULL)
 	for (idx = 0; idx < channel_count; ++idx)
@@ -139,18 +149,24 @@ add_channel(void)
     if (channels != NULL)
 	mch_memmove(new_channels, channels, sizeof(channel_T) * channel_count);
     channels = new_channels;
-    (void)vim_memset(&channels[channel_count], 0, sizeof(channel_T));
+    ch = &channels[channel_count];
+    (void)vim_memset(ch, 0, sizeof(channel_T));
 
-    channels[channel_count].ch_fd = (sock_T)-1;
+    ch->ch_fd = (sock_T)-1;
 #ifdef FEAT_GUI_X11
-    channels[channel_count].ch_inputHandler = (XtInputId)NULL;
+    ch->ch_inputHandler = (XtInputId)NULL;
 #endif
 #ifdef FEAT_GUI_GTK
-    channels[channel_count].ch_inputHandler = 0;
+    ch->ch_inputHandler = 0;
 #endif
 #ifdef FEAT_GUI_W32
-    channels[channel_count].ch_inputHandler = -1;
+    ch->ch_inputHandler = -1;
 #endif
+    /* initialize circular queues */
+    ch->ch_head.next = &ch->ch_head;
+    ch->ch_head.prev = &ch->ch_head;
+    ch->ch_json_head.next = &ch->ch_json_head;
+    ch->ch_json_head.prev = &ch->ch_json_head;
 
     return channel_count++;
 }
@@ -412,60 +428,10 @@ channel_set_callback(int idx, char_u *callback)
     void
 channel_set_req_callback(int idx, char_u *callback)
 {
+    /* TODO: make a list of callbacks */
     vim_free(channels[idx].ch_req_callback);
     channels[idx].ch_req_callback = callback == NULL
 					       ? NULL : vim_strsave(callback);
-}
-
-/*
- * Decode JSON "msg", which must have the form "[expr1, expr2, expr3]".
- * Put "expr1" in "tv1".
- * Put "expr2" in "tv2".
- * Put "expr3" in "tv3". If "tv3" is NULL there is no "expr3".
- *
- * Return OK or FAIL.
- */
-    int
-channel_decode_json(char_u *msg, typval_T *tv1, typval_T *tv2, typval_T *tv3)
-{
-    js_read_T	reader;
-    typval_T	listtv;
-
-    reader.js_buf = msg;
-    reader.js_eof = TRUE;
-    reader.js_used = 0;
-    json_decode(&reader, &listtv);
-
-    if (listtv.v_type == VAR_LIST)
-    {
-	list_T *list = listtv.vval.v_list;
-
-	if (list->lv_len == 2 || (tv3 != NULL && list->lv_len == 3))
-	{
-	    /* Move the item from the list and then change the type to avoid the
-	     * item being freed. */
-	    *tv1 = list->lv_first->li_tv;
-	    list->lv_first->li_tv.v_type = VAR_NUMBER;
-	    *tv2 = list->lv_first->li_next->li_tv;
-	    list->lv_first->li_next->li_tv.v_type = VAR_NUMBER;
-	    if (tv3 != NULL)
-	    {
-		if (list->lv_len == 3)
-		{
-		    *tv3 = list->lv_last->li_tv;
-		    list->lv_last->li_tv.v_type = VAR_NUMBER;
-		}
-		else
-		    tv3->v_type = VAR_UNKNOWN;
-	    }
-	    list_unref(list);
-	    return OK;
-	}
-    }
-
-    /* give error message? */
-    clear_tv(&listtv);
-    return FAIL;
 }
 
 /*
@@ -487,6 +453,163 @@ invoke_callback(int idx, char_u *callback, typval_T *argv)
     setcursor();
     cursor_on();
     out_flush();
+}
+
+/*
+ * Return the first buffer from the channel and remove it.
+ * The caller must free it.
+ * Returns NULL if there is nothing.
+ */
+    char_u *
+channel_get(int idx)
+{
+    readq_T *head = &channels[idx].ch_head;
+    readq_T *node;
+    char_u *p;
+
+    if (head->next == head || head->next == NULL)
+	return NULL;
+    node = head->next;
+    /* dispose of the node but keep the buffer */
+    p = node->buffer;
+    head->next = node->next;
+    node->next->prev = node->prev;
+    vim_free(node);
+    return p;
+}
+
+/*
+ * Returns the whole buffer contents concatenated.
+ */
+    static char_u *
+channel_get_all(int idx)
+{
+    /* Concatenate everything into one buffer.
+     * TODO: avoid multiple allocations. */
+    while (channel_collapse(idx) == OK)
+	;
+    return channel_get(idx);
+}
+
+/*
+ * Collapses the first and second buffer in the channel "idx".
+ * Returns FAIL if that is not possible.
+ */
+    int
+channel_collapse(int idx)
+{
+    readq_T *head = &channels[idx].ch_head;
+    readq_T *node = head->next;
+    char_u  *p;
+
+    if (node == head || node == NULL || node->next == head)
+	return FAIL;
+
+    p = alloc((unsigned)(STRLEN(node->buffer)
+					   + STRLEN(node->next->buffer) + 1));
+    if (p == NULL)
+	return FAIL;	    /* out of memory */
+    STRCPY(p, node->buffer);
+    STRCAT(p, node->next->buffer);
+    vim_free(node->next->buffer);
+    node->next->buffer = p;
+
+    /* dispose of the node and buffer */
+    head->next = node->next;
+    node->next->prev = node->prev;
+    vim_free(node->buffer);
+    vim_free(node);
+    return OK;
+}
+
+/*
+ * Use the read buffer of channel "ch_idx" and parse JSON messages that are
+ * complete.  The messages are added to the queue.
+ */
+    void
+channel_read_json(int ch_idx)
+{
+    js_read_T	reader;
+    typval_T	listtv;
+    jsonq_T	*item;
+    jsonq_T	*head = &channels[ch_idx].ch_json_head;
+
+    if (channel_peek(ch_idx) == NULL)
+	return;
+
+    /* TODO: make reader work properly */
+    /* reader.js_buf = channel_peek(ch_idx); */
+    reader.js_buf = channel_get_all(ch_idx);
+    reader.js_eof = TRUE;
+    /* reader.js_eof = FALSE; */
+    reader.js_used = 0;
+    /* reader.js_fill = channel_fill; */
+    reader.js_cookie = &ch_idx;
+    if (json_decode(&reader, &listtv) == OK)
+    {
+	item = (jsonq_T *)alloc((unsigned)sizeof(jsonq_T));
+	if (item == NULL)
+	    clear_tv(&listtv);
+	else
+	{
+	    item->value = alloc_tv();
+	    if (item->value == NULL)
+	    {
+		vim_free(item);
+		clear_tv(&listtv);
+	    }
+	    else
+	    {
+		*item->value = listtv;
+		item->prev = head->prev;
+		head->prev = item;
+		item->next = head;
+		item->prev->next = item;
+	    }
+	}
+    }
+}
+
+/*
+ * Remove "node" from the queue that it is in and free it.
+ * Caller should have freed or used node->value.
+ */
+    static void
+remove_json_node(jsonq_T *node)
+{
+    node->prev->next = node->next;
+    node->next->prev = node->prev;
+    vim_free(node);
+}
+
+/*
+ * Get a message from the JSON queue for channel "ch_idx".
+ * When "id" is positive it must match the first number in the list.
+ * When "id" is zero or negative jut get the first message.
+ * Return OK when found and return the value in "rettv".
+ * Return FAIL otherwise.
+ */
+    static int
+channel_get_json(int ch_idx, int id, typval_T **rettv)
+{
+    jsonq_T *head = &channels[ch_idx].ch_json_head;
+    jsonq_T *item = head->next;
+
+    while (item != head)
+    {
+	list_T	    *l = item->value->vval.v_list;
+	typval_T    *tv = &l->lv_first->li_tv;
+
+	if ((id > 0 && tv->v_type == VAR_NUMBER && tv->vval.v_number == id)
+	      || id <= 0)
+	{
+	    *rettv = item->value;
+	    remove_json_node(item);
+	    return OK;
+	}
+	item = item->next;
+    }
+    return FAIL;
 }
 
 /*
@@ -524,7 +647,7 @@ channel_exe_cmd(int idx, char_u *cmd, typval_T *arg2, typval_T *arg3)
     {
 	exarg_T ea;
 
-	ea.forceit = *arg != NUL;
+	ea.forceit = arg != NULL && *arg != NUL;
 	ex_redraw(&ea);
 	showruler(FALSE);
 	setcursor();
@@ -577,70 +700,89 @@ channel_exe_cmd(int idx, char_u *cmd, typval_T *arg2, typval_T *arg3)
     static void
 may_invoke_callback(int idx)
 {
-    char_u	*msg;
-    typval_T	typetv;
+    char_u	*msg = NULL;
+    typval_T	*listtv = NULL;
+    list_T	*list;
+    typval_T	*typetv;
     typval_T	argv[3];
-    typval_T	arg3;
-    char_u	*cmd = NULL;
     int		seq_nr = -1;
-    int		ret = OK;
+    int		json_mode = channels[idx].ch_json_mode;
 
     if (channel_peek(idx) == NULL)
 	return;
+    if (channels[idx].ch_close_cb != NULL)
+	/* this channel is handled elsewhere (netbeans) */
+	return;
 
-    /* Concatenate everything into one buffer.
-     * TODO: only read what the callback will use.
-     * TODO: avoid multiple allocations. */
-    while (channel_collapse(idx) == OK)
-	;
-    msg = channel_get(idx);
-
-    if (channels[idx].ch_json_mode)
+    if (json_mode)
     {
-	ret = channel_decode_json(msg, &typetv, &argv[1], &arg3);
-	if (ret == OK)
+	/* Get any json message. Return if there isn't one. */
+	channel_read_json(idx);
+	if (channel_get_json(idx, -1, &listtv) == FAIL)
+	    return;
+	if (listtv->v_type != VAR_LIST)
 	{
-	    /* TODO: error if arg3 is set when it shouldn't? */
-	    if (typetv.v_type == VAR_STRING)
-		cmd = typetv.vval.v_string;
-	    else if (typetv.v_type == VAR_NUMBER)
-		seq_nr = typetv.vval.v_number;
+	    /* TODO: give error */
+	    clear_tv(listtv);
+	    return;
 	}
+
+	list = listtv->vval.v_list;
+	if (list->lv_len < 2)
+	{
+	    /* TODO: give error */
+	    clear_tv(listtv);
+	    return;
+	}
+
+	argv[1] = list->lv_first->li_next->li_tv;
+	typetv = &list->lv_first->li_tv;
+	if (typetv->v_type == VAR_STRING)
+	{
+	    typval_T	*arg3 = NULL;
+	    char_u	*cmd = typetv->vval.v_string;
+
+	    /* ["cmd", arg] */
+	    if (list->lv_len == 3)
+		arg3 = &list->lv_last->li_tv;
+	    channel_exe_cmd(idx, cmd, &argv[1], arg3);
+	    clear_tv(listtv);
+	    return;
+	}
+
+	if (typetv->v_type != VAR_NUMBER)
+	{
+	    /* TODO: give error */
+	    clear_tv(listtv);
+	    return;
+	}
+	seq_nr = typetv->vval.v_number;
     }
     else
     {
+	/* For a raw channel we don't know where the message ends, just get
+	 * everything. */
+	msg = channel_get_all(idx);
 	argv[1].v_type = VAR_STRING;
 	argv[1].vval.v_string = msg;
     }
 
-    if (ret == OK)
+    if (channels[idx].ch_req_callback != NULL && seq_nr != 0)
     {
-	if (cmd != NULL)
-	{
-	    channel_exe_cmd(idx, cmd, &argv[1], &arg3);
-	}
-	else if (channels[idx].ch_req_callback != NULL && seq_nr != 0)
-	{
-	    /* TODO: check the sequence number */
-	    /* invoke the one-time callback */
-	    invoke_callback(idx, channels[idx].ch_req_callback, argv);
-	    channels[idx].ch_req_callback = NULL;
-	}
-	else if (channels[idx].ch_callback != NULL)
-	{
-	    /* invoke the channel callback */
-	    invoke_callback(idx, channels[idx].ch_callback, argv);
-	}
-	/* else: drop the message */
-
-	if (channels[idx].ch_json_mode)
-	{
-	    clear_tv(&typetv);
-	    clear_tv(&argv[1]);
-	    clear_tv(&arg3);
-	}
+	/* TODO: check the sequence number */
+	/* invoke the one-time callback */
+	invoke_callback(idx, channels[idx].ch_req_callback, argv);
+	channels[idx].ch_req_callback = NULL;
     }
+    else if (channels[idx].ch_callback != NULL)
+    {
+	/* invoke the channel callback */
+	invoke_callback(idx, channels[idx].ch_callback, argv);
+    }
+    /* else: drop the message TODO: give error */
 
+    if (listtv != NULL)
+	clear_tv(listtv);
     vim_free(msg);
 }
 
@@ -661,17 +803,29 @@ channel_is_open(int idx)
     void
 channel_close(int idx)
 {
-    channel_T		*channel = &channels[idx];
+    channel_T	*channel = &channels[idx];
+    jsonq_T	*jhead;
 
     if (channel->ch_fd >= 0)
     {
 	sock_close(channel->ch_fd);
 	channel->ch_fd = -1;
+	channel->ch_close_cb = NULL;
 #ifdef FEAT_GUI
 	channel_gui_unregister(idx);
 #endif
 	vim_free(channel->ch_callback);
 	channel->ch_callback = NULL;
+
+	while (channel_peek(idx) != NULL)
+	    vim_free(channel_get(idx));
+
+	jhead = &channel->ch_json_head;
+	while (jhead->next != jhead)
+	{
+	    clear_tv(jhead->next->value);
+	    remove_json_node(jhead->next);
+	}
     }
 }
 
@@ -682,10 +836,10 @@ channel_close(int idx)
     int
 channel_save(int idx, char_u *buf, int len)
 {
-    queue_T *node;
-    queue_T *head = &channels[idx].ch_head;
+    readq_T *node;
+    readq_T *head = &channels[idx].ch_head;
 
-    node = (queue_T *)alloc(sizeof(queue_T));
+    node = (readq_T *)alloc(sizeof(readq_T));
     if (node == NULL)
 	return FAIL;	    /* out of memory */
     node->buffer = alloc(len + 1);
@@ -696,12 +850,6 @@ channel_save(int idx, char_u *buf, int len)
     }
     mch_memmove(node->buffer, buf, (size_t)len);
     node->buffer[len] = NUL;
-
-    if (head->next == NULL)   /* initialize circular queue */
-    {
-	head->next = head;
-	head->prev = head;
-    }
 
     /* insert node at tail of queue */
     node->next = head;
@@ -726,65 +874,11 @@ channel_save(int idx, char_u *buf, int len)
     char_u *
 channel_peek(int idx)
 {
-    queue_T *head = &channels[idx].ch_head;
+    readq_T *head = &channels[idx].ch_head;
 
     if (head->next == head || head->next == NULL)
 	return NULL;
     return head->next->buffer;
-}
-
-/*
- * Return the first buffer from the channel and remove it.
- * The caller must free it.
- * Returns NULL if there is nothing.
- */
-    char_u *
-channel_get(int idx)
-{
-    queue_T *head = &channels[idx].ch_head;
-    queue_T *node;
-    char_u *p;
-
-    if (head->next == head || head->next == NULL)
-	return NULL;
-    node = head->next;
-    /* dispose of the node but keep the buffer */
-    p = node->buffer;
-    head->next = node->next;
-    node->next->prev = node->prev;
-    vim_free(node);
-    return p;
-}
-
-/*
- * Collapses the first and second buffer in the channel "idx".
- * Returns FAIL if that is not possible.
- */
-    int
-channel_collapse(int idx)
-{
-    queue_T *head = &channels[idx].ch_head;
-    queue_T *node = head->next;
-    char_u  *p;
-
-    if (node == head || node == NULL || node->next == head)
-	return FAIL;
-
-    p = alloc((unsigned)(STRLEN(node->buffer)
-					   + STRLEN(node->next->buffer) + 1));
-    if (p == NULL)
-	return FAIL;	    /* out of memory */
-    STRCPY(p, node->buffer);
-    STRCAT(p, node->next->buffer);
-    vim_free(node->next->buffer);
-    node->next->buffer = p;
-
-    /* dispose of the node and buffer */
-    head->next = node->next;
-    node->next->prev = node->prev;
-    vim_free(node->buffer);
-    vim_free(node);
-    return OK;
 }
 
 /*
@@ -793,9 +887,9 @@ channel_collapse(int idx)
     void
 channel_clear(int idx)
 {
-    queue_T *head = &channels[idx].ch_head;
-    queue_T *node = head->next;
-    queue_T *next;
+    readq_T *head = &channels[idx].ch_head;
+    readq_T *node = head->next;
+    readq_T *next;
 
     while (node != NULL && node != head)
     {
@@ -947,8 +1041,8 @@ channel_read(int idx)
 }
 
 /*
- * Read from channel "idx".  Blocks until there is something to read or the
- * timeout expires.
+ * Read from raw channel "idx".  Blocks until there is something to read or
+ * the timeout expires.
  * Returns what was read in allocated memory.
  * Returns NULL in case of error or timeout.
  */
@@ -964,12 +1058,32 @@ channel_read_block(int idx)
 	channel_read(idx);
     }
 
-    /* Concatenate everything into one buffer.
-     * TODO: avoid multiple allocations. */
-    while (channel_collapse(idx) == OK)
-	;
+    return channel_get_all(idx);
+}
 
-    return channel_get(idx);
+/*
+ * Read one JSON message from channel "ch_idx" with ID "id" and store the
+ * result in "rettv".
+ * Blocks until the message is received.
+ */
+    int
+channel_read_json_block(int ch_idx, int id, typval_T **rettv)
+{
+    for (;;)
+    {
+	channel_read_json(ch_idx);
+
+	/* search for messsage "id" */
+	if (channel_get_json(ch_idx, id, rettv) == OK)
+	    return OK;
+
+	/* Wait for up to 2 seconds.
+	 * TODO: use timeout set on the channel. */
+	if (channel_wait(channels[ch_idx].ch_fd, 2000) == FAIL)
+	    break;
+	channel_read(ch_idx);
+    }
+    return FAIL;
 }
 
 # if defined(WIN32) || defined(PROTO)

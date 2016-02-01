@@ -101,6 +101,7 @@ void set_reg_var(int c);
 char_u *v_exception(char_u *oldval);
 char_u *v_throwpoint(char_u *oldval);
 char_u *set_cmdarg(exarg_T *eap, char_u *oldarg);
+typval_T *alloc_tv(void);
 void free_tv(typval_T *varp);
 void clear_tv(typval_T *varp);
 long get_tv_number_chk(typval_T *varp, int *denote);

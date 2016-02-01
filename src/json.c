@@ -549,14 +549,16 @@ json_decode_item(js_read_T *reader, typval_T *res)
 
 /*
  * Decode the JSON from "reader" and store the result in "res".
+ * Return OK or FAIL;
  */
-    void
+    int
 json_decode(js_read_T *reader, typval_T *res)
 {
     json_skip_white(reader);
     json_decode_item(reader, res);
     json_skip_white(reader);
     if (reader->js_buf[reader->js_used] != NUL)
-	EMSG(_(e_invarg));
+	return FAIL;
+    return OK;
 }
 #endif

@@ -2693,5 +2693,6 @@ typedef struct
     char_u	*js_end;	/* NUL in js_buf when js_eof is FALSE */
     int		js_used;	/* bytes used from js_buf */
     int		js_eof;		/* when TRUE js_buf is all there is */
-    FILE	*js_fd;		/* file descriptor to read more from */
+    int		(*js_fill)(void *); /* function to fill the buffer */
+    void	*js_cookie;	/* passed to js_fill */
 } js_read_T;
