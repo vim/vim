@@ -5421,9 +5421,9 @@ input_timer_cb(gpointer data)
  */
     static void
 sniff_request_cb(
-    gpointer	data,
-    gint	source_fd,
-    GdkInputCondition condition)
+    gpointer	data UNUSED,
+    gint	source_fd UNUSED,
+    GdkInputCondition condition UNUSED)
 {
     static char_u bytes[3] = {CSI, (int)KS_EXTRA, (int)KE_SNIFF};
 
