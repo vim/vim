@@ -814,7 +814,6 @@ static int eval_isnamec(int c);
 static int eval_isnamec1(int c);
 static int get_var_tv(char_u *name, int len, typval_T *rettv, dictitem_T **dip, int verbose, int no_autoload);
 static int handle_subscript(char_u **arg, typval_T *rettv, int evaluate, int verbose);
-static typval_T *alloc_tv(void);
 static typval_T *alloc_string_tv(char_u *string);
 static void init_tv(typval_T *varp);
 static long get_tv_number(typval_T *varp);
@@ -10065,6 +10064,9 @@ f_connect(typval_T *argvars, typval_T *rettv)
     int		port;
     int		json_mode = FALSE;
 
+    /* default: fail */
+    rettv->vval.v_number = -1;
+
     address = get_tv_string(&argvars[0]);
     mode = get_tv_string_buf(&argvars[1], buf1);
     if (argvars[2].v_type != VAR_UNKNOWN)
@@ -10366,7 +10368,7 @@ get_channel_arg(typval_T *tv)
 
     if (!channel_is_open(ch_idx))
     {
-	EMSGN(_("E999: not an open channel"), ch_idx);
+	EMSGN(_("E906: not an open channel"), ch_idx);
 	return -1;
     }
     return ch_idx;
@@ -14100,7 +14102,8 @@ f_jsondecode(typval_T *argvars, typval_T *rettv)
     reader.js_buf = get_tv_string(&argvars[0]);
     reader.js_eof = TRUE;
     reader.js_used = 0;
-    json_decode(&reader, rettv);
+    if (json_decode(&reader, rettv) == FAIL)
+	EMSG(_(e_invarg));
 }
 
 /*
@@ -16896,29 +16899,37 @@ send_common(typval_T *argvars, char_u *text, char *fun)
 f_sendexpr(typval_T *argvars, typval_T *rettv)
 {
     char_u	*text;
-    char_u	*resp;
-    typval_T	typetv;
+    typval_T	*listtv;
     int		ch_idx;
+    int		id;
 
     /* return an empty string by default */
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
-    text = json_encode_nr_expr(channel_get_id(), &argvars[1]);
+    id = channel_get_id();
+    text = json_encode_nr_expr(id, &argvars[1]);
     if (text == NULL)
 	return;
 
     ch_idx = send_common(argvars, text, "sendexpr");
     if (ch_idx >= 0)
     {
-	/* TODO: read until the whole JSON message is received */
-	/* TODO: only use the message with the right message ID */
-	/* TODO: check sequence number */
-	resp = channel_read_block(ch_idx);
-	if (resp != NULL)
+	if (channel_read_json_block(ch_idx, id, &listtv) == OK)
 	{
-	    channel_decode_json(resp, &typetv, rettv, NULL);
-	    vim_free(resp);
+	    if (listtv->v_type == VAR_LIST)
+	    {
+		list_T *list = listtv->vval.v_list;
+
+		if (list->lv_len == 2)
+		{
+		    /* Move the item from the list and then change the type to
+		     * avoid the value being freed. */
+		    *rettv = list->lv_last->li_tv;
+		    list->lv_last->li_tv.v_type = VAR_NUMBER;
+		}
+	    }
+	    clear_tv(listtv);
 	}
     }
 }
@@ -20923,7 +20934,7 @@ handle_subscript(
  * Allocate memory for a variable type-value, and make it empty (0 or NULL
  * value).
  */
-    static typval_T *
+    typval_T *
 alloc_tv(void)
 {
     return (typval_T *)alloc_clear((unsigned)sizeof(typval_T));
