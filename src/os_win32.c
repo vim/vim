@@ -1461,10 +1461,12 @@ WaitForChar(long msec)
      */
     for (;;)
     {
+#ifdef MESSAGE_QUEUE
+	parse_queued_messages();
+#endif
 #ifdef FEAT_MZSCHEME
 	mzvim_check_threads();
 #endif
-
 #ifdef FEAT_CLIENTSERVER
 	serverProcessPendingMessages();
 #endif
@@ -1474,7 +1476,11 @@ WaitForChar(long msec)
 	maxfd = channel_select_setup(-1, &rfds);
 	if (maxfd >= 0)
 	{
-	    ret = select(maxfd + 1, &rfds, NULL, NULL, NULL);
+	    struct timeval  tv;
+
+	    tv.tv_sec = 0;
+	    tv.tv_usec = 0;
+	    ret = select(maxfd + 1, &rfds, NULL, NULL, &tv);
 	    if (ret > 0 && channel_select_check(ret, &rfds) > 0)
 		return TRUE;
 	}
