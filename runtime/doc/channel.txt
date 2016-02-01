@@ -11,7 +11,7 @@ DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT
 Vim uses channels to communicate with other processes.
 A channel uses a socket.				*socket-interface*
 
-Vim current supports up to 10 simultanious channels.
+Vim current supports up to 10 simultaneous channels.
 The Netbeans interface also uses a channel. |netbeans|
 
 1. Demo					|channel-demo|
