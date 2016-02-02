@@ -1591,7 +1591,7 @@ OBJ_COMMON = \
 	objects/if_cscope.o \
 	objects/if_xcmdsrv.o \
 	objects/mark.o \
-        objects/memline.o \
+	objects/memline.o \
 	objects/menu.o \
 	objects/message.o \
 	objects/misc1.o \
@@ -1633,11 +1633,17 @@ OBJ_COMMON = \
 	$(WSDEBUG_OBJ)
 
 OBJ = $(OBJ_COMMON) \
+	objects/json.o \
 	objects/main.o \
 	objects/memfile.o
 
+JSON_TEST_OBJ = $(OBJ_COMMON) \
+	objects/json_test.o \
+	objects/memfile.o
+
 MEMFILE_TEST_OBJ = $(OBJ_COMMON) \
-        objects/memfile_test.o
+	objects/json.o \
+	objects/memfile_test.o
 
 PRO_AUTO = \
 	blowfish.pro \
