@@ -21,6 +21,7 @@
 /* This file has to be included because the tested functions are static */
 #include "json.c"
 
+#if defined(FEAT_EVAL)
 /*
  * Test json_find_end() with imcomplete items.
  */
@@ -182,12 +183,15 @@ test_fill_called_on_string(void)
     reader.js_cookie =        " \"foobar\"  ";
     assert(json_decode_string(&reader, NULL) == OK);
 }
+#endif
 
     int
 main(void)
 {
+#if defined(FEAT_EVAL)
     test_decode_find_end();
     test_fill_called_on_find_end();
     test_fill_called_on_string();
+#endif
     return 0;
 }
