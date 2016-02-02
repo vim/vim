@@ -540,9 +540,8 @@ channel_read_json(int ch_idx)
     /* TODO: make reader work properly */
     /* reader.js_buf = channel_peek(ch_idx); */
     reader.js_buf = channel_get_all(ch_idx);
-    reader.js_eof = TRUE;
-    /* reader.js_eof = FALSE; */
     reader.js_used = 0;
+    reader.js_fill = NULL;
     /* reader.js_fill = channel_fill; */
     reader.js_cookie = &ch_idx;
     if (json_decode(&reader, &listtv) == OK)

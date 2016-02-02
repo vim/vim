@@ -2687,12 +2687,14 @@ typedef struct {
 /*
  * Structure used for reading in json_decode().
  */
-typedef struct
+struct js_reader
 {
     char_u	*js_buf;	/* text to be decoded */
-    char_u	*js_end;	/* NUL in js_buf when js_eof is FALSE */
+    char_u	*js_end;	/* NUL in js_buf */
     int		js_used;	/* bytes used from js_buf */
-    int		js_eof;		/* when TRUE js_buf is all there is */
-    int		(*js_fill)(void *); /* function to fill the buffer */
-    void	*js_cookie;	/* passed to js_fill */
-} js_read_T;
+    int		(*js_fill)(struct js_reader *);
+				/* function to fill the buffer or NULL;
+                                 * return TRUE when the buffer was filled */
+    void	*js_cookie;	/* can be used by js_fill */
+};
+typedef struct js_reader js_read_T;

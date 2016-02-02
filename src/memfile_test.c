@@ -25,8 +25,6 @@
 #define index_to_key(i) ((i) ^ 15167)
 #define TEST_COUNT 50000
 
-static void test_mf_hash(void);
-
 /*
  * Test mf_hash_*() functions.
  */

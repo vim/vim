@@ -14100,9 +14100,9 @@ f_jsondecode(typval_T *argvars, typval_T *rettv)
     js_read_T	reader;
 
     reader.js_buf = get_tv_string(&argvars[0]);
-    reader.js_eof = TRUE;
+    reader.js_fill = NULL;
     reader.js_used = 0;
-    if (json_decode(&reader, rettv) == FAIL)
+    if (json_decode_all(&reader, rettv) != OK)
 	EMSG(_(e_invarg));
 }
 
