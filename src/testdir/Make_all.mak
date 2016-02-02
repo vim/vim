@@ -171,6 +171,7 @@ SCRIPTS_GUI = test16.out
 NEW_TESTS = test_arglist.res \
 	    test_assert.res \
 	    test_cdo.res \
+	    test_channel.res \
 	    test_hardcopy.res \
 	    test_increment.res \
 	    test_langmap.res \

@@ -523,19 +523,21 @@ channel_collapse(int idx)
 }
 
 /*
- * Use the read buffer of channel "ch_idx" and parse JSON messages that are
+ * Use the read buffer of channel "ch_idx" and parse a JSON messages that is
  * complete.  The messages are added to the queue.
+ * Return TRUE if there is more to read.
  */
-    void
-channel_read_json(int ch_idx)
+    static int
+channel_parse_json(int ch_idx)
 {
     js_read_T	reader;
     typval_T	listtv;
     jsonq_T	*item;
     jsonq_T	*head = &channels[ch_idx].ch_json_head;
+    int		ret;
 
     if (channel_peek(ch_idx) == NULL)
-	return;
+	return FALSE;
 
     /* TODO: make reader work properly */
     /* reader.js_buf = channel_peek(ch_idx); */
@@ -544,26 +546,35 @@ channel_read_json(int ch_idx)
     reader.js_fill = NULL;
     /* reader.js_fill = channel_fill; */
     reader.js_cookie = &ch_idx;
-    if (json_decode(&reader, &listtv) == OK)
+    ret = json_decode(&reader, &listtv);
+    if (ret == OK)
     {
-	item = (jsonq_T *)alloc((unsigned)sizeof(jsonq_T));
-	if (item == NULL)
+	if (listtv.v_type != VAR_LIST)
+	{
+	    /* TODO: give error */
 	    clear_tv(&listtv);
+	}
 	else
 	{
-	    item->value = alloc_tv();
-	    if (item->value == NULL)
-	    {
-		vim_free(item);
+	    item = (jsonq_T *)alloc((unsigned)sizeof(jsonq_T));
+	    if (item == NULL)
 		clear_tv(&listtv);
-	    }
 	    else
 	    {
-		*item->value = listtv;
-		item->prev = head->prev;
-		head->prev = item;
-		item->next = head;
-		item->prev->next = item;
+		item->value = alloc_tv();
+		if (item->value == NULL)
+		{
+		    vim_free(item);
+		    clear_tv(&listtv);
+		}
+		else
+		{
+		    *item->value = listtv;
+		    item->prev = head->prev;
+		    head->prev = item;
+		    item->next = head;
+		    item->prev->next = item;
+		}
 	    }
 	}
     }
@@ -571,9 +582,16 @@ channel_read_json(int ch_idx)
     /* Put the unread part back into the channel.
      * TODO: insert in front */
     if (reader.js_buf[reader.js_used] != NUL)
+    {
 	channel_save(ch_idx, reader.js_buf + reader.js_used,
 		(int)(reader.js_end - reader.js_buf) - reader.js_used);
+	ret = TRUE;
+    }
+    else
+	ret = FALSE;
+
     vim_free(reader.js_buf);
+    return ret;
 }
 
 /*
@@ -607,7 +625,8 @@ channel_get_json(int ch_idx, int id, typval_T **rettv)
 	typval_T    *tv = &l->lv_first->li_tv;
 
 	if ((id > 0 && tv->v_type == VAR_NUMBER && tv->vval.v_number == id)
-	      || id <= 0)
+	      || (id <= 0
+		      && (tv->v_type != VAR_NUMBER || tv->vval.v_number < 0)))
 	{
 	    *rettv = item->value;
 	    remove_json_node(item);
@@ -717,23 +736,19 @@ may_invoke_callback(int idx)
     int		seq_nr = -1;
     int		json_mode = channels[idx].ch_json_mode;
 
-    if (channel_peek(idx) == NULL)
-	return FALSE;
     if (channels[idx].ch_close_cb != NULL)
 	/* this channel is handled elsewhere (netbeans) */
 	return FALSE;
 
     if (json_mode)
     {
-	/* Get any json message. Return if there isn't one. */
-	channel_read_json(idx);
+	/* Get any json message in the queue. */
 	if (channel_get_json(idx, -1, &listtv) == FAIL)
-	    return FALSE;
-	if (listtv->v_type != VAR_LIST)
 	{
-	    /* TODO: give error */
-	    clear_tv(listtv);
-	    return FALSE;
+	    /* Parse readahead, return when there is still no message. */
+	    channel_parse_json(idx);
+	    if (channel_get_json(idx, -1, &listtv) == FAIL)
+		return FALSE;
 	}
 
 	list = listtv->vval.v_list;
@@ -766,6 +781,11 @@ may_invoke_callback(int idx)
 	    return FALSE;
 	}
 	seq_nr = typetv->vval.v_number;
+    }
+    else if (channel_peek(idx) == NULL)
+    {
+	/* nothing to read on raw channel */
+	return FALSE;
     }
     else
     {
@@ -1080,19 +1100,29 @@ channel_read_block(int idx)
     int
 channel_read_json_block(int ch_idx, int id, typval_T **rettv)
 {
+    int  more;
+
     for (;;)
     {
-	channel_read_json(ch_idx);
+	more = channel_parse_json(ch_idx);
 
 	/* search for messsage "id" */
 	if (channel_get_json(ch_idx, id, rettv) == OK)
 	    return OK;
 
-	/* Wait for up to 2 seconds.
-	 * TODO: use timeout set on the channel. */
-	if (channel_wait(channels[ch_idx].ch_fd, 2000) == FAIL)
-	    break;
-	channel_read(ch_idx);
+	if (!more)
+	{
+	    /* Handle any other messages in the queue.  If done some more
+	     * messages may have arrived. */
+	    if (channel_parse_messages())
+		continue;
+
+	    /* Wait for up to 2 seconds.
+	     * TODO: use timeout set on the channel. */
+	    if (channel_wait(channels[ch_idx].ch_fd, 2000) == FAIL)
+		break;
+	    channel_read(ch_idx);
+	}
     }
     return FAIL;
 }
@@ -1246,16 +1276,23 @@ channel_select_check(int ret_in, void *rfds_in)
 # endif /* !FEAT_GUI_W32 && HAVE_SELECT */
 
 /*
- * Invoked from the main loop when it's save to execute received commands.
+ * Execute queued up commands.
+ * Invoked from the main loop when it's safe to execute received commands.
+ * Return TRUE when something was done.
  */
-    void
+    int
 channel_parse_messages(void)
 {
     int	    i;
+    int	    ret = FALSE;
 
     for (i = 0; i < channel_count; ++i)
 	while (may_invoke_callback(i) == OK)
-	    ;
+	{
+	    i = 0;  /* start over */
+	    ret = TRUE;
+	}
+    return ret;
 }
 
 #endif /* FEAT_CHANNEL */
