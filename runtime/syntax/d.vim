@@ -2,8 +2,8 @@
 "
 " Language:     D
 " Maintainer:   Jesse Phillips <Jesse.K.Phillips+D@gmail.com>
-" Last Change:  2013 October 5
-" Version:      0.26
+" Last Change:  2016 January 31
+" Version:      0.27
 "
 " Contributors:
 "   - Jason Mills: original Maintainer
@@ -15,6 +15,7 @@
 "   - Steven N. Oliver
 "   - Sohgo Takeuchi
 "   - Robert Clipsham
+"   - Petar Kirov
 "
 " Please submit bugs/comments/suggestions to the github repo: 
 " https://github.com/JesseKPhillips/d.vim
@@ -114,17 +115,19 @@ syn keyword dTraitsIdentifier      contained isIntegral isScalar isStaticArray
 syn keyword dTraitsIdentifier      contained isUnsigned isVirtualFunction
 syn keyword dTraitsIdentifier      contained isVirtualMethod isAbstractFunction
 syn keyword dTraitsIdentifier      contained isFinalFunction isStaticFunction
+syn keyword dTraitsIdentifier      contained isOverrideFunction isTemplate
 syn keyword dTraitsIdentifier      contained isRef isOut isLazy hasMember
-syn keyword dTraitsIdentifier      contained identifier getAttributes getMember
-syn keyword dTraitsIdentifier      contained getOverloads getProtection
-syn keyword dTraitsIdentifier      contained getVirtualFunctions
-syn keyword dTraitsIdentifier      contained getVirtualMethods parent
-syn keyword dTraitsIdentifier      contained classInstanceSize allMembers
+syn keyword dTraitsIdentifier      contained identifier getAliasThis 
+syn keyword dTraitsIdentifier      contained getAttributes getFunctionAttributes getMember 
+syn keyword dTraitsIdentifier      contained getOverloads getPointerBitmap getProtection
+syn keyword dTraitsIdentifier      contained getVirtualFunctions getVirtualIndex
+syn keyword dTraitsIdentifier      contained getVirtualMethods getUnitTests
+syn keyword dTraitsIdentifier      contained parent classInstanceSize allMembers
 syn keyword dTraitsIdentifier      contained derivedMembers isSame compiles
-syn keyword dPragmaIdentifier      contained lib msg startaddress GNU_asm
-syn keyword dExternIdentifier      contained Windows Pascal Java System D
+syn keyword dPragmaIdentifier      contained inline lib mangle msg startaddress GNU_asm
+syn keyword dExternIdentifier      contained C C++ D Windows Pascal System Objective-C
 syn keyword dAttribute             contained safe trusted system
-syn keyword dAttribute             contained property disable
+syn keyword dAttribute             contained property disable nogc
 syn keyword dVersionIdentifier     contained DigitalMars GNU LDC SDC D_NET
 syn keyword dVersionIdentifier     contained X86 X86_64 ARM PPC PPC64 IA64 MIPS MIPS64 Alpha
 syn keyword dVersionIdentifier     contained SPARC SPARC64 S390 S390X HPPA HPPA64 SH SH64
@@ -134,7 +137,7 @@ syn keyword dVersionIdentifier     contained Cygwin MinGW
 syn keyword dVersionIdentifier     contained LittleEndian BigEndian
 syn keyword dVersionIdentifier     contained D_InlineAsm_X86 D_InlineAsm_X86_64
 syn keyword dVersionIdentifier     contained D_Version2 D_Coverage D_Ddoc D_LP64 D_PIC
-syn keyword dVersionIdentifier     contained unittest none all
+syn keyword dVersionIdentifier     contained unittest assert none all
 
 syn cluster dComment contains=dNestedComment,dBlockComment,dLineComment
 
