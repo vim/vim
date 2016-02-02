@@ -1186,7 +1186,10 @@ OutputGetattr(PyObject *self, char *name)
 	return PyInt_FromLong(((OutputObject *)(self))->softspace);
     else if (strcmp(name, "__members__") == 0)
 	return ObjectDir(NULL, OutputAttrs);
-
+    else if (strcmp(name, "errors") == 0)
+	return PyString_FromString("strict");
+    else if (strcmp(name, "encoding") == 0)
+	return PyString_FromString(ENC_OPT);
     return Py_FindMethod(OutputMethods, self, name);
 }
 
