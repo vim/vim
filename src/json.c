@@ -339,7 +339,7 @@ json_decode_object(js_read_T *reader, typval_T *res)
     typval_T	item;
     dictitem_T	*di;
     char_u	buf[NUMBUFLEN];
-    char_u	*key;
+    char_u	*key = NULL;
     int		ret;
 
     if (res != NULL && rettv_dict_alloc(res) == FAIL)
