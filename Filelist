@@ -41,6 +41,7 @@ SRC_ALL =	\
 		src/hardcopy.c \
 		src/hashtab.c \
 		src/json.c \
+		src/json_test.c \
 		src/keymap.h \
 		src/macros.h \
 		src/main.c \
