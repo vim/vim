@@ -567,6 +567,13 @@ channel_read_json(int ch_idx)
 	    }
 	}
     }
+
+    /* Put the unread part back into the channel.
+     * TODO: insert in front */
+    if (reader.js_buf[reader.js_used] != NUL)
+	channel_save(ch_idx, reader.js_buf + reader.js_used,
+		(int)(reader.js_end - reader.js_buf) - reader.js_used);
+    vim_free(reader.js_buf);
 }
 
 /*
@@ -697,8 +704,9 @@ channel_exe_cmd(int idx, char_u *cmd, typval_T *arg2, typval_T *arg3)
 
 /*
  * Invoke a callback for channel "idx" if needed.
+ * Return OK when a message was handled, there might be another one.
  */
-    static void
+    static int
 may_invoke_callback(int idx)
 {
     char_u	*msg = NULL;
@@ -710,22 +718,22 @@ may_invoke_callback(int idx)
     int		json_mode = channels[idx].ch_json_mode;
 
     if (channel_peek(idx) == NULL)
-	return;
+	return FALSE;
     if (channels[idx].ch_close_cb != NULL)
 	/* this channel is handled elsewhere (netbeans) */
-	return;
+	return FALSE;
 
     if (json_mode)
     {
 	/* Get any json message. Return if there isn't one. */
 	channel_read_json(idx);
 	if (channel_get_json(idx, -1, &listtv) == FAIL)
-	    return;
+	    return FALSE;
 	if (listtv->v_type != VAR_LIST)
 	{
 	    /* TODO: give error */
 	    clear_tv(listtv);
-	    return;
+	    return FALSE;
 	}
 
 	list = listtv->vval.v_list;
@@ -733,7 +741,7 @@ may_invoke_callback(int idx)
 	{
 	    /* TODO: give error */
 	    clear_tv(listtv);
-	    return;
+	    return FALSE;
 	}
 
 	argv[1] = list->lv_first->li_next->li_tv;
@@ -748,14 +756,14 @@ may_invoke_callback(int idx)
 		arg3 = &list->lv_last->li_tv;
 	    channel_exe_cmd(idx, cmd, &argv[1], arg3);
 	    clear_tv(listtv);
-	    return;
+	    return TRUE;
 	}
 
 	if (typetv->v_type != VAR_NUMBER)
 	{
 	    /* TODO: give error */
 	    clear_tv(listtv);
-	    return;
+	    return FALSE;
 	}
 	seq_nr = typetv->vval.v_number;
     }
@@ -785,6 +793,8 @@ may_invoke_callback(int idx)
     if (listtv != NULL)
 	clear_tv(listtv);
     vim_free(msg);
+
+    return TRUE;
 }
 
 /*
@@ -1244,7 +1254,8 @@ channel_parse_messages(void)
     int	    i;
 
     for (i = 0; i < channel_count; ++i)
-	may_invoke_callback(i);
+	while (may_invoke_callback(i) == OK)
+	    ;
 }
 
 #endif /* FEAT_CHANNEL */
