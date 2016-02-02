@@ -52,7 +52,7 @@ gvimext.obj: gvimext.h
 	$(cc) $(cflags) -DFEAT_GETTEXT $(cvarsmt) $*.cpp
 
 gvimext.res: gvimext.rc
-	$(rc) $(rcflags) $(rcvars)  gvimext.rc
+	$(rc) /nologo $(rcflags) $(rcvars)  gvimext.rc
 
 clean:
 	- if exist gvimext.dll del gvimext.dll
