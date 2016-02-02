@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 01
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1810,6 +1810,13 @@ byteidxcomp( {expr}, {nr})	Number	byte index of {nr}'th char in {expr}
 call( {func}, {arglist} [, {dict}])
 				any	call {func} with arguments {arglist}
 ceil( {expr})			Float	round {expr} up
+ch_close( {handle})		none	close a channel
+ch_open( {address}, {mode} [, {callback}])
+				Number	open a channel
+ch_sendexpr( {handle}, {expr} [, {callback}])
+				any	send {expr} over JSON channel {handle}
+ch_sendraw( {handle}, {string} [, {callback}])
+				any	send {string} over raw channel {handle}
 changenr()			Number	current change number
 char2nr( {expr}[, {utf8}])	Number	ASCII/UTF8 value of first char in {expr}
 cindent( {lnum})		Number	C indent for line {lnum}
@@ -1820,8 +1827,6 @@ complete_add( {expr})		Number	add completion match
 complete_check()		Number	check for key typed during completion
 confirm( {msg} [, {choices} [, {default} [, {type}]]])
 				Number	number of choice picked by user
-connect( {address}, {mode} [, {callback}])
-				Number	open a channel
 copy( {expr})			any	make a shallow copy of {expr}
 cos( {expr})			Float	cosine of {expr}
 cosh( {expr})			Float	hyperbolic cosine of {expr}
@@ -2029,10 +2034,6 @@ searchpairpos( {start}, {middle}, {end} [, {flags} [, {skip} [...]]])
 				List	search for other end of start/end pair
 searchpos( {pattern} [, {flags} [, {stopline} [, {timeout}]]])
 				List	search for {pattern}
-sendexpr( {handle}, {expr} [, {callback}])
-				any	send {expr} over JSON channel {handle}
-sendraw( {handle}, {string} [, {callback}])
-				any	send {string} over raw channel {handle}
 server2client( {clientid}, {string})
 				Number	send reply string
 serverlist()			String	get a list of available servers
@@ -2666,7 +2667,10 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 		don't fit, a vertical layout is used anyway.  For some systems
 		the horizontal layout is always used.
 
-connect({address}, {mode} [, {callback}])		*connect()*
+ch_close({handle})					*ch_close()*
+		Close channel {handle}.  See |channel|.
+
+ch_open({address}, {mode} [, {callback}])		*ch_open()*
 		Open a channel to {address}.  See |channel|.
 		Returns the channel handle on success.  Returns a negative
 		number for failure.
@@ -2679,6 +2683,23 @@ connect({address}, {mode} [, {callback}])		*connect()*
 
 		{callback} is a function that handles received messages on the
 		channel.  See |channel-callback|.
+
+ch_sendexpr({handle}, {expr} [, {callback}])		ch_*sendexpr()*
+		Send {expr} over JSON channel {handle}.  See |channel-use|.
+
+		When {callback} is given returns immediately.  Without
+		{callback} waits for a JSON response and returns the decoded
+		expression.  When there is an error or timeout returns an
+		empty string.
+
+		When {callback} is zero no response is expected.
+		Otherwise {callback} must be a Funcref or the name of a
+		function.  It is called when the response is received.  See
+		|channel-callback|.
+
+ch_sendraw({handle}, {string} [, {callback}])		*ch_sendraw()*
+		Send {string} over raw channel {handle}.  See |channel-raw|.
+		Works like |ch_sendexpr()|, but does not decode the response.
 
 							*copy()*
 copy({expr})	Make a copy of {expr}.	For Numbers and Strings this isn't
@@ -5614,23 +5635,6 @@ searchpos({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*searchpos()*
 	:let [lnum, col, submatch] = searchpos('\(\l\)\|\(\u\)', 'np')
 <		In this example "submatch" is 2 when a lowercase letter is
 		found |/\l|, 3 when an uppercase letter is found |/\u|.
-
-sendexpr({handle}, {expr} [, {callback}])		*sendexpr()*
-		Send {expr} over JSON channel {handle}.  See |channel-use|.
-
-		When {callback} is given returns immediately.  Without
-		{callback} waits for a JSON response and returns the decoded
-		expression.  When there is an error or timeout returns an
-		empty string.
-
-		When {callback} is zero no response is expected.
-		Otherwise {callback} must be a Funcref or the name of a
-		function.  It is called when the response is received.  See
-		|channel-callback|.
-
-sendraw({handle}, {string} [, {callback}])		*sendraw()*
-		Send {string} over raw channel {handle}.  See |channel-raw|.
-		Works like |sendexpr()|, but does not decode the response.
 
 server2client( {clientid}, {string})			*server2client()*
 		Send a reply string to {clientid}.  The most recent {clientid}
