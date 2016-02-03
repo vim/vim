@@ -698,10 +698,14 @@ channel_exe_cmd(int idx, char_u *cmd, typval_T *arg2, typval_T *arg3)
 	}
 	else
 	{
-	    typval_T	*tv = eval_expr(arg, NULL);
+	    typval_T	*tv;
 	    typval_T	err_tv;
 	    char_u	*json;
 
+	    /* Don't pollute the display with errors. */
+	    ++emsg_skip;
+	    tv = eval_expr(arg, NULL);
+	    --emsg_skip;
 	    if (is_eval)
 	    {
 		if (tv == NULL)
@@ -714,7 +718,8 @@ channel_exe_cmd(int idx, char_u *cmd, typval_T *arg2, typval_T *arg3)
 		channel_send(idx, json, "eval");
 		vim_free(json);
 	    }
-	    free_tv(tv);
+	    if (tv != &err_tv)
+		free_tv(tv);
 	}
     }
     else if (p_verbose > 2)
@@ -1119,7 +1124,8 @@ channel_read_json_block(int ch_idx, int id, typval_T **rettv)
 
 	    /* Wait for up to 2 seconds.
 	     * TODO: use timeout set on the channel. */
-	    if (channel_wait(channels[ch_idx].ch_fd, 2000) == FAIL)
+	    if (channels[ch_idx].ch_fd < 0
+			|| channel_wait(channels[ch_idx].ch_fd, 2000) == FAIL)
 		break;
 	    channel_read(ch_idx);
 	}

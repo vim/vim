@@ -52,7 +52,6 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 decoded = [-1, '']
 
             # Send a response if the sequence number is positive.
-            # Negative numbers are used for "eval" responses.
             if decoded[0] >= 0:
                 if decoded[1] == 'hello!':
                     # simply send back a string
@@ -65,15 +64,37 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     print("sending: {}".format(cmd))
                     thesocket.sendall(cmd.encode('utf-8'))
                     response = "ok"
+                elif decoded[1] == 'eval-works':
+                    # Send an eval request.  We ignore the response.
+                    cmd = '["eval","\\"foo\\" . 123", -1]'
+                    print("sending: {}".format(cmd))
+                    thesocket.sendall(cmd.encode('utf-8'))
+                    response = "ok"
+                elif decoded[1] == 'eval-fails':
+                    # Send an eval request that will fail.
+                    cmd = '["eval","xxx", -2]'
+                    print("sending: {}".format(cmd))
+                    thesocket.sendall(cmd.encode('utf-8'))
+                    response = "ok"
+                elif decoded[1] == 'eval-result':
+                    # Send back the last received eval result.
+                    response = last_eval
                 elif decoded[1] == '!quit!':
                     # we're done
                     sys.exit(0)
+                elif decoded[1] == '!crash!':
+                    # Crash!
+                    42 / 0
                 else:
                     response = "what?"
 
                 encoded = json.dumps([decoded[0], response])
                 print("sending: {}".format(encoded))
                 thesocket.sendall(encoded.encode('utf-8'))
+
+            # Negative numbers are used for "eval" responses.
+            elif decoded[0] < 0:
+                last_eval = decoded
 
         thesocket = None
 
