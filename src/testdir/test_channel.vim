@@ -59,7 +59,7 @@ func s:kill_server()
   if has('win32')
     call system('taskkill /IM py.exe /T /F /FI "WINDOWTITLE eq test_channel"')
   else
-    call system("pkill --full test_channel.py")
+    call system("pkill -f test_channel.py")
   endif
 endfunc
 

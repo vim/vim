@@ -34,32 +34,34 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         thesocket = self.request
         while True:
             try:
-                data = self.request.recv(4096).decode('utf-8')
+                received = self.request.recv(4096).decode('utf-8')
             except socket.error:
                 print("=== socket error ===")
                 break
             except IOError:
                 print("=== socket closed ===")
                 break
-            if data == '':
+            if received == '':
                 print("=== socket closed ===")
                 break
-            print("received: {}".format(data))
+            print("received: {}".format(received))
 
             # We may receive two messages at once. Take the part up to the
             # matching "]" (recognized by finding "][").
-            while data != '':
-                splitidx = data.find('][')
+            todo = received
+            while todo != '':
+                splitidx = todo.find('][')
                 if splitidx < 0:
-                     todo = data
-                     data = ''
+                     used = todo
+                     todo = ''
                 else:
-                     todo = data[:splitidx + 1]
-                     data = data[splitidx + 1:]
-                     print("using: {}".format(todo))
+                     used = todo[:splitidx + 1]
+                     todo = todo[splitidx + 1:]
+                if used != received:
+                    print("using: {}".format(used))
 
                 try:
-                    decoded = json.loads(todo)
+                    decoded = json.loads(used)
                 except ValueError:
                     print("json decoding failed")
                     decoded = [-1, '']
