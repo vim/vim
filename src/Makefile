@@ -2012,6 +2012,7 @@ test_arglist \
 	test_assert \
 	test_backspace_opt \
 	test_cdo \
+	test_channel \
 	test_cursor_func \
 	test_delete \
 	test_expand \
@@ -2552,6 +2553,7 @@ shadow:	runtime pixmaps
 				 ../../testdir/Make_all.mak \
 				 ../../testdir/*.in \
 				 ../../testdir/*.vim \
+				 ../../testdir/*.py \
 				 ../../testdir/python* \
 				 ../../testdir/sautest \
 				 ../../testdir/test83-tags? \
