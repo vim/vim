@@ -91,6 +91,7 @@ SRC_ALL =	\
 		src/testdir/README.txt \
 		src/testdir/Make_all.mak \
 		src/testdir/*.in \
+		src/testdir/*.py \
 		src/testdir/sautest/autoload/*.vim \
 		src/testdir/runtest.vim \
 		src/testdir/test[0-9]*.ok \
