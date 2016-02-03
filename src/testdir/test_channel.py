@@ -98,7 +98,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         response = last_eval
                     elif decoded[1] == '!quit!':
                         # we're done
-                        sys.exit(0)
+                        self.server.shutdown()
+                        break
                     elif decoded[1] == '!crash!':
                         # Crash!
                         42 / 0
@@ -127,7 +128,6 @@ if __name__ == "__main__":
     server_thread = threading.Thread(target=server.serve_forever)
 
     # Exit the server thread when the main thread terminates
-    server_thread.daemon = True
     server_thread.start()
 
     # Write the port number in Xportnr, so that the test knows it.
@@ -135,6 +135,7 @@ if __name__ == "__main__":
     f.write("{}".format(port))
     f.close()
 
-    # Block here
     print("Listening on port {}".format(port))
-    server.serve_forever()
+
+    # Main thread terminates, but the server continues running
+    # until server.shutdown() is called.
