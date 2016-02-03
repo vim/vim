@@ -45,56 +45,69 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 print("=== socket closed ===")
                 break
             print("received: {}".format(data))
-            try:
-                decoded = json.loads(data)
-            except ValueError:
-                print("json decoding failed")
-                decoded = [-1, '']
 
-            # Send a response if the sequence number is positive.
-            if decoded[0] >= 0:
-                if decoded[1] == 'hello!':
-                    # simply send back a string
-                    response = "got it"
-                elif decoded[1] == 'make change':
-                    # Send two ex commands at the same time, before replying to
-                    # the request.
-                    cmd = '["ex","call append(\\"$\\",\\"added1\\")"]'
-                    cmd += '["ex","call append(\\"$\\",\\"added2\\")"]'
-                    print("sending: {}".format(cmd))
-                    thesocket.sendall(cmd.encode('utf-8'))
-                    response = "ok"
-                elif decoded[1] == 'eval-works':
-                    # Send an eval request.  We ignore the response.
-                    cmd = '["eval","\\"foo\\" . 123", -1]'
-                    print("sending: {}".format(cmd))
-                    thesocket.sendall(cmd.encode('utf-8'))
-                    response = "ok"
-                elif decoded[1] == 'eval-fails':
-                    # Send an eval request that will fail.
-                    cmd = '["eval","xxx", -2]'
-                    print("sending: {}".format(cmd))
-                    thesocket.sendall(cmd.encode('utf-8'))
-                    response = "ok"
-                elif decoded[1] == 'eval-result':
-                    # Send back the last received eval result.
-                    response = last_eval
-                elif decoded[1] == '!quit!':
-                    # we're done
-                    sys.exit(0)
-                elif decoded[1] == '!crash!':
-                    # Crash!
-                    42 / 0
+            # We may receive two messages at once. Take the part up to the
+            # matching "]" (recognized by finding "][").
+            while data != '':
+                splitidx = data.find('][')
+                if splitidx < 0:
+                     todo = data
+                     data = ''
                 else:
-                    response = "what?"
+                     todo = data[:splitidx + 1]
+                     data = data[splitidx + 1:]
+                     print("using: {}".format(todo))
 
-                encoded = json.dumps([decoded[0], response])
-                print("sending: {}".format(encoded))
-                thesocket.sendall(encoded.encode('utf-8'))
+                try:
+                    decoded = json.loads(todo)
+                except ValueError:
+                    print("json decoding failed")
+                    decoded = [-1, '']
 
-            # Negative numbers are used for "eval" responses.
-            elif decoded[0] < 0:
-                last_eval = decoded
+                # Send a response if the sequence number is positive.
+                if decoded[0] >= 0:
+                    if decoded[1] == 'hello!':
+                        # simply send back a string
+                        response = "got it"
+                    elif decoded[1] == 'make change':
+                        # Send two ex commands at the same time, before replying to
+                        # the request.
+                        cmd = '["ex","call append(\\"$\\",\\"added1\\")"]'
+                        cmd += '["ex","call append(\\"$\\",\\"added2\\")"]'
+                        print("sending: {}".format(cmd))
+                        thesocket.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                    elif decoded[1] == 'eval-works':
+                        # Send an eval request.  We ignore the response.
+                        cmd = '["eval","\\"foo\\" . 123", -1]'
+                        print("sending: {}".format(cmd))
+                        thesocket.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                    elif decoded[1] == 'eval-fails':
+                        # Send an eval request that will fail.
+                        cmd = '["eval","xxx", -2]'
+                        print("sending: {}".format(cmd))
+                        thesocket.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                    elif decoded[1] == 'eval-result':
+                        # Send back the last received eval result.
+                        response = last_eval
+                    elif decoded[1] == '!quit!':
+                        # we're done
+                        sys.exit(0)
+                    elif decoded[1] == '!crash!':
+                        # Crash!
+                        42 / 0
+                    else:
+                        response = "what?"
+
+                    encoded = json.dumps([decoded[0], response])
+                    print("sending: {}".format(encoded))
+                    thesocket.sendall(encoded.encode('utf-8'))
+
+                # Negative numbers are used for "eval" responses.
+                elif decoded[0] < 0:
+                    last_eval = decoded
 
         thesocket = None
 
