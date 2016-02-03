@@ -17,6 +17,8 @@ else
   finish
 endif
 
+let s:port = -1
+
 func s:start_server()
   " The Python program writes the port number in Xportnr.
   call delete("Xportnr")
@@ -49,9 +51,9 @@ func s:start_server()
     call assert_false(1, "Can't start test_channel.py")
     return -1
   endif
-  let port = l[0]
+  let s:port = l[0]
 
-  let handle = ch_open('localhost:' . port, 'json')
+  let handle = ch_open('localhost:' . s:port, 'json')
   return handle
 endfunc
 
@@ -90,6 +92,24 @@ func Test_communicate()
 
   " make the server quit, can't check if this works, should not hang.
   call ch_sendexpr(handle, '!quit!', 0)
+
+  call s:kill_server()
+endfunc
+
+" Test that we can open two channels.
+func Test_two_channels()
+  let handle = s:start_server()
+  if handle < 0
+    return
+  endif
+  call assert_equal('got it', ch_sendexpr(handle, 'hello!'))
+
+  let newhandle = ch_open('localhost:' . s:port, 'json')
+  call assert_equal('got it', ch_sendexpr(newhandle, 'hello!'))
+  call assert_equal('got it', ch_sendexpr(handle, 'hello!'))
+
+  call ch_close(handle)
+  call assert_equal('got it', ch_sendexpr(newhandle, 'hello!'))
 
   call s:kill_server()
 endfunc

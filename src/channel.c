@@ -133,22 +133,25 @@ FILE *debugfd = NULL;
 add_channel(void)
 {
     int		idx;
-    channel_T	*new_channels;
     channel_T	*ch;
 
     if (channels != NULL)
+    {
 	for (idx = 0; idx < channel_count; ++idx)
 	    if (channels[idx].ch_fd < 0)
 		/* re-use a closed channel slot */
 		return idx;
-    if (channel_count == MAX_OPEN_CHANNELS)
-	return -1;
-    new_channels = (channel_T *)alloc(sizeof(channel_T) * (channel_count + 1));
-    if (new_channels == NULL)
-	return -1;
-    if (channels != NULL)
-	mch_memmove(new_channels, channels, sizeof(channel_T) * channel_count);
-    channels = new_channels;
+	if (channel_count == MAX_OPEN_CHANNELS)
+	    return -1;
+    }
+    else
+    {
+	channels = (channel_T *)alloc((int)sizeof(channel_T)
+							 * MAX_OPEN_CHANNELS);
+	if (channels == NULL)
+	    return -1;
+    }
+
     ch = &channels[channel_count];
     (void)vim_memset(ch, 0, sizeof(channel_T));
 

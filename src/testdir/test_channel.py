@@ -24,14 +24,10 @@ except ImportError:
     # Python 2
     import SocketServer as socketserver
 
-thesocket = None
-
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         print("=== socket opened ===")
-        global thesocket
-        thesocket = self.request
         while True:
             try:
                 received = self.request.recv(4096).decode('utf-8')
@@ -77,19 +73,19 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         cmd = '["ex","call append(\\"$\\",\\"added1\\")"]'
                         cmd += '["ex","call append(\\"$\\",\\"added2\\")"]'
                         print("sending: {}".format(cmd))
-                        thesocket.sendall(cmd.encode('utf-8'))
+                        self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'eval-works':
                         # Send an eval request.  We ignore the response.
                         cmd = '["eval","\\"foo\\" . 123", -1]'
                         print("sending: {}".format(cmd))
-                        thesocket.sendall(cmd.encode('utf-8'))
+                        self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'eval-fails':
                         # Send an eval request that will fail.
                         cmd = '["eval","xxx", -2]'
                         print("sending: {}".format(cmd))
-                        thesocket.sendall(cmd.encode('utf-8'))
+                        self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'eval-result':
                         # Send back the last received eval result.
@@ -105,13 +101,11 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
                     encoded = json.dumps([decoded[0], response])
                     print("sending: {}".format(encoded))
-                    thesocket.sendall(encoded.encode('utf-8'))
+                    self.request.sendall(encoded.encode('utf-8'))
 
                 # Negative numbers are used for "eval" responses.
                 elif decoded[0] < 0:
                     last_eval = decoded
-
-        thesocket = None
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
