@@ -4,7 +4,8 @@ scriptencoding utf-8
 " This requires the Python command to run the test server.
 " This most likely only works on Unix and Windows console.
 if has('unix')
-  if !executable('python')
+  " We also need the pkill command to make sure the server can be stopped.
+  if !executable('python') || !executable('pkill')
     finish
   endif
 elseif has('win32') && !has('gui_win32')
@@ -20,7 +21,7 @@ func s:start_server()
   if has('win32')
     silent !start cmd /c start "test_channel" py test_channel.py
   else
-    silent !./test_channel.py&
+    silent !python test_channel.py&
   endif
 endfunc
 
@@ -28,7 +29,7 @@ func s:kill_server()
   if has('win32')
     call system('taskkill /IM py.exe /T /F /FI "WINDOWTITLE eq test_channel"')
   else
-    call system("killall test_channel.py")
+    call system("pkill --full test_channel.py")
   endif
 endfunc
 
