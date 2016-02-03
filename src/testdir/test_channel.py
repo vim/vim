@@ -68,8 +68,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         # simply send back a string
                         response = "got it"
                     elif decoded[1] == 'make change':
-                        # Send two ex commands at the same time, before replying to
-                        # the request.
+                        # Send two ex commands at the same time, before
+                        # replying to the request.
                         cmd = '["ex","call append(\\"$\\",\\"added1\\")"]'
                         cmd += '["ex","call append(\\"$\\",\\"added2\\")"]'
                         print("sending: {}".format(cmd))
@@ -84,6 +84,12 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     elif decoded[1] == 'eval-fails':
                         # Send an eval request that will fail.
                         cmd = '["eval","xxx", -2]'
+                        print("sending: {}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                    elif decoded[1] == 'eval-bad':
+                        # Send an eval request missing the third argument.
+                        cmd = '["eval","xxx"]'
                         print("sending: {}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"

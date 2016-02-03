@@ -694,7 +694,7 @@ channel_exe_cmd(int idx, char_u *cmd, typval_T *arg2, typval_T *arg3)
     {
 	int is_eval = cmd[1] == 'v';
 
-	if (is_eval && arg3->v_type != VAR_NUMBER)
+	if (is_eval && (arg3 == NULL || arg3->v_type != VAR_NUMBER))
 	{
 	    if (p_verbose > 2)
 		EMSG("E904: third argument for eval must be a number");
@@ -774,7 +774,7 @@ may_invoke_callback(int idx)
 	    typval_T	*arg3 = NULL;
 	    char_u	*cmd = typetv->vval.v_string;
 
-	    /* ["cmd", arg] */
+	    /* ["cmd", arg] or ["cmd", arg, arg] */
 	    if (list->lv_len == 3)
 		arg3 = &list->lv_last->li_tv;
 	    channel_exe_cmd(idx, cmd, &argv[1], arg3);
