@@ -533,10 +533,7 @@ json_decode_string(js_read_T *reader, typval_T *res)
 	if (res != NULL)
 	{
 	    res->v_type = VAR_STRING;
-	    if (ga.ga_data == NULL)
-		res->vval.v_string = NULL;
-	    else
-		res->vval.v_string = vim_strsave(ga.ga_data);
+	    res->vval.v_string = ga.ga_data;
 	}
 	return OK;
     }

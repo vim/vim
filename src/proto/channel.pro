@@ -22,4 +22,5 @@ int channel_poll_check(int ret_in, void *fds_in);
 int channel_select_setup(int maxfd_in, void *rfds_in);
 int channel_select_check(int ret_in, void *rfds_in);
 int channel_parse_messages(void);
+int set_ref_in_channel(int copyID);
 /* vim: set ft=c : */

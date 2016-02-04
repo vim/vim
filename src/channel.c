@@ -1315,4 +1315,29 @@ channel_parse_messages(void)
     return ret;
 }
 
+    int
+set_ref_in_channel(int copyID)
+{
+    int	    i;
+    int	    abort = FALSE;
+
+    for (i = 0; i < channel_count; ++i)
+    {
+	jsonq_T *head = &channels[i].ch_json_head;
+	jsonq_T *item = head->next;
+
+	while (item != head)
+	{
+	    list_T	*l = item->value->vval.v_list;
+
+	    if (l->lv_copyID != copyID)
+	    {
+		l->lv_copyID = copyID;
+		abort = abort || set_ref_in_list(l, copyID, NULL);
+	    }
+	    item = item->next;
+	}
+    }
+    return abort;
+}
 #endif /* FEAT_CHANNEL */
