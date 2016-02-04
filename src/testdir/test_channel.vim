@@ -88,14 +88,17 @@ func Test_communicate()
 
   " Send an eval request that works.
   call assert_equal('ok', ch_sendexpr(handle, 'eval-works'))
+  sleep 10m
   call assert_equal([-1, 'foo123'], ch_sendexpr(handle, 'eval-result'))
 
   " Send an eval request that fails.
   call assert_equal('ok', ch_sendexpr(handle, 'eval-fails'))
+  sleep 10m
   call assert_equal([-2, 'ERROR'], ch_sendexpr(handle, 'eval-result'))
 
   " Send a bad eval request. There will be no response.
   call assert_equal('ok', ch_sendexpr(handle, 'eval-bad'))
+  sleep 10m
   call assert_equal([-2, 'ERROR'], ch_sendexpr(handle, 'eval-result'))
 
   " make the server quit, can't check if this works, should not hang.
