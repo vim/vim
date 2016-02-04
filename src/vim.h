@@ -1339,6 +1339,8 @@ typedef enum
     , HLF_CM	    /* Mode (e.g., "-- INSERT --") */
     , HLF_N	    /* line number for ":number" and ":#" commands */
     , HLF_CLN	    /* current line number */
+    , HLF_RNA	    /* relative line number above current line */
+    , HLF_RNB	    /* relative line number below current line */
     , HLF_R	    /* return to continue message and yes/no questions */
     , HLF_S	    /* status lines */
     , HLF_SNC	    /* status lines of not-current windows */
@@ -1376,8 +1378,8 @@ typedef enum
 /* The HL_FLAGS must be in the same order as the HLF_ enums!
  * When changing this also adjust the default for 'highlight'. */
 #define HL_FLAGS {'8', '@', 'd', 'e', 'h', 'i', 'l', 'm', 'M', \
-		  'n', 'N', 'r', 's', 'S', 'c', 't', 'v', 'V', 'w', 'W', \
-		  'f', 'F', 'A', 'C', 'D', 'T', '-', '>', \
+		  'n', 'N', 'a', 'b', 'r', 's', 'S', 'c', 't', 'v', 'V', 'w', \
+		  'W', 'f', 'F', 'A', 'C', 'D', 'T', '-', '>', \
 		  'B', 'P', 'R', 'L', \
 		  '+', '=', 'x', 'X', '*', '#', '_', '!', '.', 'o'}
 

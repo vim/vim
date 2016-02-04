@@ -4860,6 +4860,12 @@ LineNr		Line number for ":number" and ":#" commands, and when 'number'
 							*hl-CursorLineNr*
 CursorLineNr	Like LineNr when 'cursorline' or 'relativenumber' is set for
 		the cursor line.
+							*hl-RelLineAbove*
+RelLineAbove	Like LineNr when 'relativenumber' is set, but applies only to
+		line numbers above the cursor line.
+							*hl-RelLineBelow*
+RelLineBelow	Like LineNr when 'relativenumber' is set, but applies only to
+		line numbers below the cursor line.
 							*hl-MatchParen*
 MatchParen	The character under the cursor or just before it, if it
 		is a paired bracket, and its match. |pi_paren.txt|

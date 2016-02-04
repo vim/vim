@@ -3724,6 +3724,16 @@ win_line(
 		    if ((wp->w_p_cul || wp->w_p_rnu)
 						 && lnum == wp->w_cursor.lnum)
 			char_attr = hl_attr(HLF_CLN);
+
+                    if (wp->w_p_rnu && (lnum < wp->w_cursor.lnum))
+                        /* high light relative above (<) cursor */
+                        char_attr = hl_combine_attr(
+                                char_attr, hl_attr(HLF_RNA));
+
+                    if (wp->w_p_rnu && (lnum > wp->w_cursor.lnum))
+                        /* high light relative below (>) cursor */
+                        char_attr = hl_combine_attr(
+                                char_attr, hl_attr(HLF_RNB));
 #endif
 		}
 	    }
