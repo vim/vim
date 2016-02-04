@@ -1,7 +1,11 @@
 " Test for channel functions.
 scriptencoding utf-8
 
-" This requires the Python command to run the test server.
+if !has('channel')
+  finish
+endif
+
+" This test requires the Python command to run the test server.
 " This most likely only works on Unix and Windows console.
 if has('unix')
   " We also need the pkill command to make sure the server can be stopped.
