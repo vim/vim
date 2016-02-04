@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Feb 01
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Feb 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -81,18 +81,35 @@ Regexp problems:
   Patch by Christian, 2016 Jan 29.
 
 +channel:
-- implement wait for receiving end of Json.
-- implement only reading up to end of Json.
+- use a timeout for connect()
+  Patch from Yasuhiro Matsumoto, Feb 2
+  Change connect() second argument to a dict with items:
+    mode
+    timeout
+    callback
+- When receiving malformed json starting with a quote it doesn't get
+  discarded.
+- add ch_setcallback()
+- add ch_settimeout()
 - cleanup on exit?  in mch_getout() and getout().
 - Add more contents to channel.txt
 - implement debug log
-- implement job control
+- implement job control:
+	let job = job_start('command', {options})
+	call job_stop(job)
+	let job = job_maystart('command', {address}, {options})
+    options:
+        - keep running when Vim exits
+- add remark undo sync, is there a way to force it?
 - Add a test with a server that can send canned responses.
+- Add more testing in json_test.c
 - make sure errors lead to a useful error msg. ["ex","foobar"]
-- use a timeout for connect()  Patch from Yasuhiro Matsumoto, Feb 1
 - set timeout for channel.
 - implement check for ID in response.
 - json: implement UTF-16 surrogate pair.
+
+Patch on #608: (Ken Takata)
+https://bitbucket.org/k_takata/vim-ktakata-mq/src/479934b94fd56b064c9e4bd8737585c5df69d56a/fix-gvimext-loadlibrary.patch?fileviewer=file-view-default
 
 This difference is unexpected:
     echo v:true == 1
@@ -108,6 +125,14 @@ Patch to put undo options together in undo window.
 
 Patch for clearing history. (Yegappan Lakshmanan, 2016 Jan 31, second message
 has tests)
+
+Patch to update the GTK icon cache when installing. (Kazunobu Kuriyama, 2016
+Feb 3)
+
+Patch for test86 and test87. (Roland Puntaier, #622)
+
+Patch for Python: #622. (Roland Puntaier, 2016 Feb 2)
+What does it change?
 
 Need to try out instructions in INSSTALLpc.txt about how to install all
 interfaces and how to build Vim with them.
@@ -131,6 +156,8 @@ What if there is an invalid character?
 
 Should jsonencode()/jsondecode() restrict recursiveness?
 Or avoid recursiveness.
+
+Patch to fix bug in statusline highlighting. (Christian Brabandt, 2016 Feb 2)
 
 Use vim.vim syntax highlighting for help file examples, but without ":" in
 'iskeyword' for syntax.
@@ -161,15 +188,16 @@ Patch to avoid redrawing tabline when the popup menu is visible.
 
 Win32: patch to use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
 More tests May 14. Update May 29.  Update Aug 10.
-Now part of large file patches. (Ken Takata, 2016 Jan 19, second one)
-Updated patches with ordering: Jan 20.
-And another update: Jan 24, then Jan 29, 30, Feb 1.
+Now part of large file patches. (Ken Takata, 2016 Feb 1)
+Two patches now?
+
+Patch to support 64 bit ints for Number. (Ken Takata, 2016 Jan 21)
 
 7   Add a watchpoint in the debug mode: An expression that breaks execution
     when evaluating to non-zero.  Add the "watchadd expr" command, stop when
     the value of the expression changes.  ":watchdel" deletes an item,
     ":watchlist" lists the items. (Charles Campbell)
-Patch by Christian Brabandt, 2016 Jan 27.
+Patch by Christian Brabandt, 2016 Feb 1.
 
 Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
 Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
@@ -182,6 +210,9 @@ Patch to add <restore> to :windo, :bufdo, etc. (Christian Brabandt, 2015 Jan
 6, 2nd message)
 Alternative: ":keeppos" command modifier: ":keeppos windo {cmd}".
 
+Patch to fix that executable() may fail on very long filename in MS-Windows.
+(Ken Takata, 2016 Feb 1)
+
 Patch to fix display of listchars on the cursorline. (Nayuri Aohime, 2013)
 Update suggested by Yasuhiro Matsumoto, 2014 Nov 25:
 https://gist.github.com/presuku/d3d6b230b9b6dcfc0477
@@ -192,8 +223,6 @@ Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
 
 Unexpected delay when using CTRL-O u.  It's not timeoutlen.
 (Gary Johnson, 2015 Aug 28)
-
-Patch to support 64 bit ints for Number. (Ken Takata, 2016 Jan 21)
 
 Instead of separately uploading patches to the ftp site, we can get them from
 github with a URL like this:

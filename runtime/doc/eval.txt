@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 02
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2684,7 +2684,7 @@ ch_open({address}, {mode} [, {callback}])		*ch_open()*
 		{callback} is a function that handles received messages on the
 		channel.  See |channel-callback|.
 
-ch_sendexpr({handle}, {expr} [, {callback}])		ch_*sendexpr()*
+ch_sendexpr({handle}, {expr} [, {callback}])		*ch_sendexpr()*
 		Send {expr} over JSON channel {handle}.  See |channel-use|.
 
 		When {callback} is given returns immediately.  Without

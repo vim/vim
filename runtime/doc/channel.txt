@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Jan 31
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Feb 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -11,7 +11,7 @@ DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT
 Vim uses channels to communicate with other processes.
 A channel uses a socket.				*socket-interface*
 
-Vim current supports up to 10 simultanious channels.
+Vim current supports up to 10 simultaneous channels.
 The Netbeans interface also uses a channel. |netbeans|
 
 1. Demo					|channel-demo|
@@ -32,13 +32,13 @@ $VIMRUNTIME/tools/demoserver.py
 Run it in one terminal.  We will call this T1.
 
 Run Vim in another terminal.  Connect to the demo server with: >
-	let handle = connect('localhost:8765', 'json')
+	let handle = ch_open('localhost:8765', 'json')
 
 In T1 you should see:
 	=== socket opened === ~
 
 You can now send a message to the server: >
-	echo sendexpr(handle, 'hello!')
+	echo ch_sendexpr(handle, 'hello!')
 
 The message is received in T1 and a response is sent back to Vim.
 You can see the raw messages in T1.  What Vim sends is:
@@ -57,19 +57,19 @@ To handle asynchronous communication a callback needs to be used: >
 	func MyHandler(handle, msg)
 	  echo "from the handler: " . a:msg
 	endfunc
-	call sendexpr(handle, 'hello!', "MyHandler")
+	call ch_sendexpr(handle, 'hello!', "MyHandler")
 
 Instead of giving a callback with every send call, it can also be specified
 when opening the channel: >
-	call disconnect(handle)
-	let handle = connect('localhost:8765', 'json', "MyHandler")
-	call sendexpr(handle, 'hello!', 0)
+	call ch_close(handle)
+	let handle = ch_open('localhost:8765', 'json', "MyHandler")
+	call ch_sendexpr(handle, 'hello!', 0)
 
 ==============================================================================
 2. Opening a channel					*channel-open*
 
-To open a channel:
-    let handle = connect({address}, {mode}, {callback})
+To open a channel: >
+    let handle = ch_open({address}, {mode}, {callback})
 
 {address} has the form "hostname:port".  E.g., "localhost:8765".
 
@@ -84,7 +84,7 @@ message. Example: >
 	func Handle(handle, msg)
 	  echo 'Received: ' . a:msg
 	endfunc
-	let handle = connect("localhost:8765", 'json', "Handle")
+	let handle = ch_open("localhost:8765", 'json', "Handle")
 
 When {mode} is "json" the "msg" argument is the body of the received message,
 converted to Vim types.
@@ -94,11 +94,11 @@ When {mode} is "json" the {callback} is optional.  When omitted it is only
 possible to receive a message after sending one.
 
 The handler can be added or changed later: >
-    call sethandler(handle, {callback})
+    call ch_setcallback(handle, {callback})
 When {callback} is empty (zero or an empty string) the handler is removed.
 
 Once done with the channel, disconnect it like this: >
-    call disconnect(handle)
+    call ch_close(handle)
 
 Currently up to 10 channels can be in use at the same time. *E897*
 
@@ -112,15 +112,15 @@ If there is an error reading or writing a channel it will be closed.
 3. Using a JSON channel					*channel-use*
 
 If {mode} is "json" then a message can be sent synchronously like this: >
-    let response = sendexpr(handle, {expr})
+    let response = ch_sendexpr(handle, {expr})
 This awaits a response from the other side.
 
 To send a message, without handling a response: >
-    call sendexpr(handle, {expr}, 0)
+    call ch_sendexpr(handle, {expr}, 0)
 
 To send a message and letting the response handled by a specific function,
 asynchronously: >
-    call sendexpr(handle, {expr}, {callback})
+    call ch_sendexpr(handle, {expr}, {callback})
 
 The {expr} is converted to JSON and wrapped in an array.  An example of the
 message that the receiver will get when {expr} is the string "hello":
@@ -148,7 +148,7 @@ message, it must use the number zero:
 Then channel handler will then get {response} converted to Vim types.  If the
 channel does not have a handler the message is dropped.
 
-On read error or disconnect() the string "DETACH" is sent, if still possible.
+On read error or ch_close() the string "DETACH" is sent, if still possible.
 The channel will then be inactive.
 
 ==============================================================================
@@ -200,7 +200,7 @@ You can also use "call |feedkeys()|" to insert any key sequence.
 
 Command "normal" ~
 
-The "normal" command is executed like with |:normal!|, commands are not
+The "normal" command is executed like with ":normal!", commands are not
 mapped.  Example to open the folds under the cursor:
 	["normal" "zO"]
 
@@ -230,19 +230,19 @@ Example:
 5. Using a raw channel					*channel-raw*
 
 If {mode} is "raw" then a message can be send like this: >
-    let response = sendraw(handle, {string})
+    let response = ch_sendraw(handle, {string})
 The {string} is sent as-is.  The response will be what can be read from the
 channel right away.  Since Vim doesn't know how to recognize the end of the
 message you need to take care of it yourself.
 
 To send a message, without expecting a response: >
-    call sendraw(handle, {string}, 0)
+    call ch_sendraw(handle, {string}, 0)
 The process can send back a response, the channel handler will be called with
 it.
 
 To send a message and letting the response handled by a specific function,
 asynchronously: >
-    call sendraw(handle, {string}, {callback})
+    call ch_sendraw(handle, {string}, {callback})
 
 This {string} can also be JSON, use |jsonencode()| to create it and
 |jsondecode()| to handle a received JSON message.

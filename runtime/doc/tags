@@ -5156,6 +5156,10 @@ catch-text	eval.txt	/*catch-text*
 cc	change.txt	/*cc*
 ceil()	eval.txt	/*ceil()*
 ch.vim	syntax.txt	/*ch.vim*
+ch_close()	eval.txt	/*ch_close()*
+ch_open()	eval.txt	/*ch_open()*
+ch_sendexpr()	eval.txt	/*ch_sendexpr()*
+ch_sendraw()	eval.txt	/*ch_sendraw()*
 change-list-jumps	motion.txt	/*change-list-jumps*
 change-name	tips.txt	/*change-name*
 change-tabs	change.txt	/*change-tabs*
@@ -5321,7 +5325,6 @@ complex-repeat	repeat.txt	/*complex-repeat*
 compress	pi_gzip.txt	/*compress*
 conceal	syntax.txt	/*conceal*
 confirm()	eval.txt	/*confirm()*
-connect()	eval.txt	/*connect()*
 connection-refused	message.txt	/*connection-refused*
 console-menus	gui.txt	/*console-menus*
 control	intro.txt	/*control*
@@ -7917,8 +7920,6 @@ sed.vim	syntax.txt	/*sed.vim*
 self	eval.txt	/*self*
 send-money	sponsor.txt	/*send-money*
 send-to-menu	gui_w32.txt	/*send-to-menu*
-sendexpr()	eval.txt	/*sendexpr()*
-sendraw()	eval.txt	/*sendraw()*
 sendto	gui_w32.txt	/*sendto*
 sentence	motion.txt	/*sentence*
 server-functions	usr_41.txt	/*server-functions*
