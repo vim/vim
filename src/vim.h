@@ -519,7 +519,7 @@ typedef unsigned long u8char_T;	    /* long should be 32 bits or more */
 # ifdef HAVE_SYS_POLL_H
 #  include <sys/poll.h>
 #  define HAVE_POLL
-# elif defined(WIN32) && !defined(FEAT_GUI_W32)
+# elif defined(WIN32)
 #  define HAVE_SELECT
 # else
 #  ifdef HAVE_POLL_H

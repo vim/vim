@@ -6,13 +6,13 @@ if !has('channel')
 endif
 
 " This test requires the Python command to run the test server.
-" This most likely only works on Unix and Windows console.
+" This most likely only works on Unix and Windows.
 if has('unix')
   " We also need the pkill command to make sure the server can be stopped.
   if !executable('python') || !executable('pkill')
     finish
   endif
-elseif has('win32') && !has('gui_win32')
+elseif has('win32')
   " Use Python Launcher for Windows (py.exe).
   if !executable('py')
     finish

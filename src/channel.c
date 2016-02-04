@@ -954,11 +954,12 @@ channel_clear(int idx)
 /*
  * Check for reading from "fd" with "timeout" msec.
  * Return FAIL when there is nothing to read.
+ * Always returns OK for FEAT_GUI_W32.
  */
     static int
 channel_wait(int fd, int timeout)
 {
-#ifdef HAVE_SELECT
+#if defined(HAVE_SELECT) && !defined(FEAT_GUI_W32)
     struct timeval	tval;
     fd_set		rfds;
     int			ret;
@@ -1045,6 +1046,16 @@ channel_read(int idx)
 	if (len < MAXMSGSIZE)
 	    break;	/* did read everything that's available */
     }
+#ifdef FEAT_GUI_W32
+    if (len == SOCKET_ERROR)
+    {
+	/* For Win32 GUI channel_wait() always returns OK and we handle the
+	 * situation that there is nothing to read here.
+	 * TODO: how about a timeout? */
+	if (WSAGetLastError() == WSAEWOULDBLOCK)
+	    return;
+    }
+#endif
 
     /* Reading a socket disconnection (readlen == 0), or a socket error. */
     if (readlen <= 0)
