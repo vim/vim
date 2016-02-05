@@ -84,6 +84,15 @@ struct jsonqueue
 };
 typedef struct jsonqueue jsonq_T;
 
+struct cbqueue
+{
+    char_u		*callback;
+    int			seq_nr;
+    struct cbqueue	*next;
+    struct cbqueue	*prev;
+};
+typedef struct cbqueue cbq_T;
+
 typedef struct {
     sock_T    ch_fd;	/* the socket, -1 for a closed channel */
     int	      ch_idx;	/* used by channel_poll_setup() */
@@ -106,7 +115,7 @@ typedef struct {
     void      (*ch_close_cb)(void); /* callback for when channel is closed */
 
     char_u    *ch_callback;	/* function to call when a msg is not handled */
-    char_u    *ch_req_callback;	/* function to call for current request */
+    cbq_T     ch_cb_head;	/* dummy node for pre-request callbacks */
 
     int	      ch_json_mode;	/* TRUE for a json channel */
     jsonq_T   ch_json_head;	/* dummy node, header for circular queue */
@@ -168,6 +177,8 @@ add_channel(void)
     /* initialize circular queues */
     ch->ch_head.next = &ch->ch_head;
     ch->ch_head.prev = &ch->ch_head;
+    ch->ch_cb_head.next = &ch->ch_cb_head;
+    ch->ch_cb_head.prev = &ch->ch_cb_head;
     ch->ch_json_head.next = &ch->ch_json_head;
     ch->ch_json_head.prev = &ch->ch_json_head;
 
@@ -426,15 +437,23 @@ channel_set_callback(int idx, char_u *callback)
 }
 
 /*
- * Set the callback for channel "idx" for the next response.
+ * Set the callback for channel "idx" for the response with "id".
  */
     void
-channel_set_req_callback(int idx, char_u *callback)
+channel_set_req_callback(int idx, char_u *callback, int id)
 {
-    /* TODO: make a list of callbacks */
-    vim_free(channels[idx].ch_req_callback);
-    channels[idx].ch_req_callback = callback == NULL
-					       ? NULL : vim_strsave(callback);
+    cbq_T *cbhead = &channels[idx].ch_cb_head;
+    cbq_T *item = (cbq_T *)alloc((int)sizeof(cbq_T));
+
+    if (item != NULL)
+    {
+	item->callback = vim_strsave(callback);
+	item->seq_nr = id;
+	item->prev = cbhead->prev;
+	cbhead->prev = item;
+	item->next = cbhead;
+	item->prev->next = item;
+    }
 }
 
 /*
@@ -599,6 +618,19 @@ channel_parse_json(int ch_idx)
 
 /*
  * Remove "node" from the queue that it is in and free it.
+ * Also frees the contained callback name.
+ */
+    static void
+remove_cb_node(cbq_T *node)
+{
+    node->prev->next = node->next;
+    node->next->prev = node->prev;
+    vim_free(node->callback);
+    vim_free(node);
+}
+
+/*
+ * Remove "node" from the queue that it is in and free it.
  * Caller should have freed or used node->value.
  */
     static void
@@ -628,8 +660,7 @@ channel_get_json(int ch_idx, int id, typval_T **rettv)
 	typval_T    *tv = &l->lv_first->li_tv;
 
 	if ((id > 0 && tv->v_type == VAR_NUMBER && tv->vval.v_number == id)
-	      || (id <= 0
-		      && (tv->v_type != VAR_NUMBER || tv->vval.v_number < 0)))
+	      || id <= 0)
 	{
 	    *rettv = item->value;
 	    remove_json_node(item);
@@ -742,9 +773,10 @@ may_invoke_callback(int idx)
     typval_T	*typetv;
     typval_T	argv[3];
     int		seq_nr = -1;
-    int		json_mode = channels[idx].ch_json_mode;
+    channel_T	*channel = &channels[idx];
+    int		json_mode = channel->ch_json_mode;
 
-    if (channels[idx].ch_close_cb != NULL)
+    if (channel->ch_close_cb != NULL)
 	/* this channel is handled elsewhere (netbeans) */
 	return FALSE;
 
@@ -804,17 +836,27 @@ may_invoke_callback(int idx)
 	argv[1].vval.v_string = msg;
     }
 
-    if (channels[idx].ch_req_callback != NULL && seq_nr != 0)
+    if (seq_nr > 0)
     {
-	/* TODO: check the sequence number */
-	/* invoke the one-time callback */
-	invoke_callback(idx, channels[idx].ch_req_callback, argv);
-	channels[idx].ch_req_callback = NULL;
+	cbq_T *cbhead = &channel->ch_cb_head;
+	cbq_T *cbitem = cbhead->next;
+
+	/* invoke the one-time callback with the matching nr */
+	while (cbitem != cbhead)
+	{
+	    if (cbitem->seq_nr == seq_nr)
+	    {
+		invoke_callback(idx, cbitem->callback, argv);
+		remove_cb_node(cbitem);
+		break;
+	    }
+	    cbitem = cbitem->next;
+	}
     }
-    else if (channels[idx].ch_callback != NULL)
+    else if (channel->ch_callback != NULL)
     {
 	/* invoke the channel callback */
-	invoke_callback(idx, channels[idx].ch_callback, argv);
+	invoke_callback(idx, channel->ch_callback, argv);
     }
     /* else: drop the message TODO: give error */
 
@@ -844,6 +886,7 @@ channel_close(int idx)
 {
     channel_T	*channel = &channels[idx];
     jsonq_T	*jhead;
+    cbq_T	*cbhead;
 
     if (channel->ch_fd >= 0)
     {
@@ -858,6 +901,10 @@ channel_close(int idx)
 
 	while (channel_peek(idx) != NULL)
 	    vim_free(channel_get(idx));
+
+	cbhead = &channel->ch_cb_head;
+	while (cbhead->next != cbhead)
+	    remove_cb_node(cbhead->next);
 
 	jhead = &channel->ch_json_head;
 	while (jhead->next != jhead)

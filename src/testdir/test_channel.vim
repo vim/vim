@@ -69,6 +69,13 @@ func s:kill_server()
   endif
 endfunc
 
+let s:responseHandle = -1
+let s:responseMsg = ''
+func s:RequestHandler(handle, msg)
+  let s:responseHandle = a:handle
+  let s:responseMsg = a:msg
+endfunc
+
 func Test_communicate()
   let handle = s:start_server()
   if handle < 0
@@ -85,6 +92,12 @@ func Test_communicate()
   sleep 10m
   call assert_equal('added1', getline(line('$') - 1))
   call assert_equal('added2', getline('$'))
+
+  " Send a request with a specific handler.
+  call ch_sendexpr(handle, 'hello!', 's:RequestHandler')
+  sleep 10m
+  call assert_equal(handle, s:responseHandle)
+  call assert_equal('got it', s:responseMsg)
 
   " Send an eval request that works.
   call assert_equal('ok', ch_sendexpr(handle, 'eval-works'))

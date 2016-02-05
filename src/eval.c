@@ -9800,7 +9800,7 @@ f_ch_open(typval_T *argvars, typval_T *rettv)
  * Otherwise returns -1.
  */
     static int
-send_common(typval_T *argvars, char_u *text, char *fun)
+send_common(typval_T *argvars, char_u *text, int id, char *fun)
 {
     int		ch_idx;
     char_u	*callback = NULL;
@@ -9815,10 +9815,10 @@ send_common(typval_T *argvars, char_u *text, char *fun)
 	if (callback == NULL)
 	    return -1;
     }
-    /* Set the callback or clear it. An empty callback means no callback and
-     * not reading the response. */
-    channel_set_req_callback(ch_idx,
-	    callback != NULL && *callback == NUL ? NULL : callback);
+    /* Set the callback. An empty callback means no callback and not reading
+     * the response. */
+    if (callback != NULL && *callback != NUL)
+	channel_set_req_callback(ch_idx, callback, id);
 
     if (channel_send(ch_idx, text, fun) == OK && callback == NULL)
 	return ch_idx;
@@ -9845,7 +9845,7 @@ f_ch_sendexpr(typval_T *argvars, typval_T *rettv)
     if (text == NULL)
 	return;
 
-    ch_idx = send_common(argvars, text, "sendexpr");
+    ch_idx = send_common(argvars, text, id, "sendexpr");
     vim_free(text);
     if (ch_idx >= 0)
     {
@@ -9883,7 +9883,7 @@ f_ch_sendraw(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = NULL;
 
     text = get_tv_string_buf(&argvars[1], buf);
-    ch_idx = send_common(argvars, text, "sendraw");
+    ch_idx = send_common(argvars, text, 0, "sendraw");
     if (ch_idx >= 0)
 	rettv->vval.v_string = channel_read_block(ch_idx);
 }
