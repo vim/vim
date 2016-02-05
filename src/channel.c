@@ -688,7 +688,9 @@ channel_parse_json(int ch_idx)
     ret = json_decode(&reader, &listtv);
     if (ret == OK)
     {
-	if (listtv.v_type != VAR_LIST)
+	/* Only accept the response when it is a list with at least two
+	 * items. */
+	if (listtv.v_type != VAR_LIST || listtv.vval.v_list->lv_len < 2)
 	{
 	    /* TODO: give error */
 	    clear_tv(&listtv);
@@ -909,13 +911,6 @@ may_invoke_callback(int idx)
 	}
 
 	list = listtv->vval.v_list;
-	if (list->lv_len < 2)
-	{
-	    /* TODO: give error */
-	    clear_tv(listtv);
-	    return FALSE;
-	}
-
 	argv[1] = list->lv_first->li_next->li_tv;
 	typetv = &list->lv_first->li_tv;
 	if (typetv->v_type == VAR_STRING)

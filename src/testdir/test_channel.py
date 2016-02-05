@@ -93,6 +93,11 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         print("sending: {}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
+                    elif decoded[1] == 'empty-request':
+                        cmd = '[]'
+                        print("sending: {}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
                     elif decoded[1] == 'eval-result':
                         # Send back the last received eval result.
                         response = last_eval
@@ -123,11 +128,9 @@ if __name__ == "__main__":
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
     ip, port = server.server_address
 
-    # Start a thread with the server -- that thread will then start one
-    # more thread for each request
+    # Start a thread with the server.  That thread will then start a new thread
+    # for each connection.
     server_thread = threading.Thread(target=server.serve_forever)
-
-    # Exit the server thread when the main thread terminates
     server_thread.start()
 
     # Write the port number in Xportnr, so that the test knows it.

@@ -9875,18 +9875,12 @@ f_ch_sendexpr(typval_T *argvars, typval_T *rettv)
     {
 	if (channel_read_json_block(ch_idx, id, &listtv) == OK)
 	{
-	    if (listtv->v_type == VAR_LIST)
-	    {
-		list_T *list = listtv->vval.v_list;
+	    list_T *list = listtv->vval.v_list;
 
-		if (list->lv_len == 2)
-		{
-		    /* Move the item from the list and then change the type to
-		     * avoid the value being freed. */
-		    *rettv = list->lv_last->li_tv;
-		    list->lv_last->li_tv.v_type = VAR_NUMBER;
-		}
-	    }
+	    /* Move the item from the list and then change the type to
+	     * avoid the value being freed. */
+	    *rettv = list->lv_last->li_tv;
+	    list->lv_last->li_tv.v_type = VAR_NUMBER;
 	    clear_tv(listtv);
 	}
     }
