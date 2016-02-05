@@ -8005,7 +8005,7 @@ static struct fst
 #endif
 #ifdef FEAT_CHANNEL
     {"ch_close",	1, 1, f_ch_close},
-    {"ch_open",		2, 3, f_ch_open},
+    {"ch_open",		1, 2, f_ch_open},
     {"ch_sendexpr",	2, 3, f_ch_sendexpr},
     {"ch_sendraw",	2, 3, f_ch_sendraw},
 #endif
@@ -9743,21 +9743,23 @@ f_ch_open(typval_T *argvars, typval_T *rettv)
     char_u	*address;
     char_u	*mode;
     char_u	*callback = NULL;
-    char_u	buf1[NUMBUFLEN];
     char_u	*p;
+    char	*rest;
     int		port;
-    int		json_mode = FALSE;
+    int		waittime = 0;
+    int		timeout = 2000;
+    int		json_mode = TRUE;
+    int		ch_idx;
 
     /* default: fail */
     rettv->vval.v_number = -1;
 
     address = get_tv_string(&argvars[0]);
-    mode = get_tv_string_buf(&argvars[1], buf1);
-    if (argvars[2].v_type != VAR_UNKNOWN)
+    if (argvars[1].v_type != VAR_UNKNOWN
+	 && (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL))
     {
-	callback = get_callback(&argvars[2]);
-	if (callback == NULL)
-	    return;
+	EMSG(_(e_invarg));
+	return;
     }
 
     /* parse address */
@@ -9768,30 +9770,52 @@ f_ch_open(typval_T *argvars, typval_T *rettv)
 	return;
     }
     *p++ = NUL;
-    port = atoi((char *)p);
-    if (*address == NUL || port <= 0)
+    port = strtol((char *)p, &rest, 10);
+    if (*address == NUL || port <= 0 || *rest != NUL)
     {
 	p[-1] = ':';
 	EMSG2(_(e_invarg2), address);
 	return;
     }
 
-    /* parse mode */
-    if (STRCMP(mode, "json") == 0)
-	json_mode = TRUE;
-    else if (STRCMP(mode, "raw") != 0)
+    if (argvars[1].v_type == VAR_DICT)
     {
-	EMSG2(_(e_invarg2), mode);
+	/* parse argdict */
+	dict_T	*dict = argvars[1].vval.v_dict;
+
+	if (dict_find(dict, (char_u *)"mode", -1) != NULL)
+	{
+	    mode = get_dict_string(dict, (char_u *)"mode", FALSE);
+	    if (STRCMP(mode, "raw") == 0)
+		json_mode = FALSE;
+	    else if (STRCMP(mode, "json") != 0)
+	    {
+		EMSG2(_(e_invarg2), mode);
+		return;
+	    }
+	}
+	if (dict_find(dict, (char_u *)"waittime", -1) != NULL)
+	    waittime = get_dict_number(dict, (char_u *)"waittime");
+	if (dict_find(dict, (char_u *)"timeout", -1) != NULL)
+	    timeout = get_dict_number(dict, (char_u *)"timeout");
+	if (dict_find(dict, (char_u *)"callback", -1) != NULL)
+	    callback = get_dict_string(dict, (char_u *)"callback", FALSE);
+    }
+    if (waittime < 0 || timeout < 0)
+    {
+	EMSG(_(e_invarg));
 	return;
     }
 
-    rettv->vval.v_number = channel_open((char *)address, port, NULL);
-    if (rettv->vval.v_number >= 0)
+    ch_idx = channel_open((char *)address, port, waittime, NULL);
+    if (ch_idx >= 0)
     {
-	channel_set_json_mode(rettv->vval.v_number, json_mode);
+	channel_set_json_mode(ch_idx, json_mode);
+	channel_set_timeout(ch_idx, timeout);
 	if (callback != NULL && *callback != NUL)
-	    channel_set_callback(rettv->vval.v_number, callback);
+	    channel_set_callback(ch_idx, callback);
     }
+    rettv->vval.v_number = ch_idx;
 }
 
 /*

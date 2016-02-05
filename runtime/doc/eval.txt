@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 04
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1811,8 +1811,7 @@ call( {func}, {arglist} [, {dict}])
 				any	call {func} with arguments {arglist}
 ceil( {expr})			Float	round {expr} up
 ch_close( {handle})		none	close a channel
-ch_open( {address}, {mode} [, {callback}])
-				Number	open a channel
+ch_open( {address} [, {argdict})] Number open a channel to {address}
 ch_sendexpr( {handle}, {expr} [, {callback}])
 				any	send {expr} over JSON channel {handle}
 ch_sendraw( {handle}, {string} [, {callback}])
@@ -2670,7 +2669,7 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 ch_close({handle})					*ch_close()*
 		Close channel {handle}.  See |channel|.
 
-ch_open({address}, {mode} [, {callback}])		*ch_open()*
+ch_open({address} [, {argdict}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
 		Returns the channel handle on success.  Returns a negative
 		number for failure.
@@ -2678,11 +2677,19 @@ ch_open({address}, {mode} [, {callback}])		*ch_open()*
 		{address} has the form "hostname:port", e.g.,
 		"localhost:8765".
 
-		{mode} is either "json" or "raw".  See |channel-mode| for the
-		meaning.
-
-		{callback} is a function that handles received messages on the
-		channel.  See |channel-callback|.
+		If {argdict} is given it must be a |Directory|.  The optional
+		items are:
+			mode        "raw" or "json".
+				    Default "json".
+			callback    function to call for requests with a zero
+				    sequence number.  See |channel-callback|.
+				    Default: none.
+			waittime    Specify connect timeout as milliseconds.
+				    Negative means forever.
+				    Default: 0.
+			timeout	    Specify response read timeout value as
+				    milliseconds. 
+				    Default: 2000.
 
 ch_sendexpr({handle}, {expr} [, {callback}])		*ch_sendexpr()*
 		Send {expr} over JSON channel {handle}.  See |channel-use|.

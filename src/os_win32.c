@@ -1123,6 +1123,29 @@ mch_setmouse(int on)
     SetConsoleMode(g_hConIn, cmodein);
 }
 
+#ifdef FEAT_CHANNEL
+    static int
+handle_channel_event(void)
+{
+    int		    ret;
+    fd_set	    rfds;
+    int		    maxfd;
+
+    FD_ZERO(&rfds);
+    maxfd = channel_select_setup(-1, &rfds);
+    if (maxfd >= 0)
+    {
+	struct timeval  tv;
+
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+	ret = select(maxfd + 1, &rfds, NULL, NULL, &tv);
+	if (ret > 0 && channel_select_check(ret, &rfds) > 0)
+	    return TRUE;
+    }
+    return FALSE;
+}
+#endif
 
 /*
  * Decode a MOUSE_EVENT.  If it's a valid event, return MOUSE_LEFT,
@@ -1443,11 +1466,6 @@ WaitForChar(long msec)
     INPUT_RECORD    ir;
     DWORD	    cRecords;
     WCHAR	    ch, ch2;
-#ifdef FEAT_CHANNEL
-    int		    ret;
-    fd_set	    rfds;
-    int		    maxfd;
-#endif
 
     if (msec > 0)
 	/* Wait until the specified time has elapsed. */
@@ -1472,18 +1490,8 @@ WaitForChar(long msec)
 #endif
 
 #ifdef FEAT_CHANNEL
-	FD_ZERO(&rfds);
-	maxfd = channel_select_setup(-1, &rfds);
-	if (maxfd >= 0)
-	{
-	    struct timeval  tv;
-
-	    tv.tv_sec = 0;
-	    tv.tv_usec = 0;
-	    ret = select(maxfd + 1, &rfds, NULL, NULL, &tv);
-	    if (ret > 0 && channel_select_check(ret, &rfds) > 0)
-		return TRUE;
-	}
+	if (handle_channel_event())
+	    return TRUE;
 #endif
 
 	if (0

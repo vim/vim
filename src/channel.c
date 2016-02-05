@@ -42,6 +42,8 @@ static void chlog(int send, char_u *buf);
 # define SOCK_ERRNO errno = WSAGetLastError()
 # undef ECONNREFUSED
 # define ECONNREFUSED WSAECONNREFUSED
+# undef EWOULDBLOCK
+# define EWOULDBLOCK WSAEWOULDBLOCK
 # ifdef EINTR
 #  undef EINTR
 # endif
@@ -119,6 +121,8 @@ typedef struct {
 
     int	      ch_json_mode;	/* TRUE for a json channel */
     jsonq_T   ch_json_head;	/* dummy node, header for circular queue */
+
+    int       ch_timeout;	/* request timeout in msec */
 } channel_T;
 
 /*
@@ -132,6 +136,48 @@ static int channel_count = 0;
  * TODO: open debug file when desired.
  */
 FILE *debugfd = NULL;
+
+#ifdef _WIN32
+# undef PERROR
+# define PERROR(msg) (void)emsg3((char_u *)"%s: %s", \
+	(char_u *)msg, (char_u *)strerror_win32(errno))
+
+    static char *
+strerror_win32(int eno)
+{
+    static LPVOID msgbuf = NULL;
+    char_u *ptr;
+
+    if (msgbuf)
+	LocalFree(msgbuf);
+    FormatMessage(
+	FORMAT_MESSAGE_ALLOCATE_BUFFER |
+	FORMAT_MESSAGE_FROM_SYSTEM |
+	FORMAT_MESSAGE_IGNORE_INSERTS,
+	NULL,
+	eno,
+	MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT),
+	(LPTSTR) &msgbuf,
+	0,
+	NULL);
+    /* chomp \r or \n */
+    for (ptr = (char_u *)msgbuf; *ptr; ptr++)
+	switch (*ptr)
+	{
+	    case '\r':
+		STRMOVE(ptr, ptr + 1);
+		ptr--;
+		break;
+	    case '\n':
+		if (*(ptr + 1) == '\0')
+		    *ptr = '\0';
+		else
+		    *ptr = ' ';
+		break;
+	}
+    return msgbuf;
+}
+#endif
 
 /*
  * Add a new channel slot, return the index.
@@ -181,6 +227,8 @@ add_channel(void)
     ch->ch_cb_head.prev = &ch->ch_cb_head;
     ch->ch_json_head.next = &ch->ch_json_head;
     ch->ch_json_head.prev = &ch->ch_json_head;
+
+    ch->ch_timeout = 2000;
 
     return channel_count++;
 }
@@ -303,17 +351,19 @@ channel_gui_unregister(int idx)
  * Returns a negative number for failure.
  */
     int
-channel_open(char *hostname, int port_in, void (*close_cb)(void))
+channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 {
     int			sd;
     struct sockaddr_in	server;
     struct hostent *	host;
 #ifdef WIN32
     u_short		port = port_in;
+    u_long		val = 1;
 #else
     int			port = port_in;
 #endif
     int			idx;
+    int			ret;
 
 #ifdef WIN32
     channel_init_winsock();
@@ -348,62 +398,120 @@ channel_open(char *hostname, int port_in, void (*close_cb)(void))
     }
     memcpy((char *)&server.sin_addr, host->h_addr, host->h_length);
 
-    /* Connect to server */
-    if (connect(sd, (struct sockaddr *)&server, sizeof(server)))
+    if (waittime >= 0)
     {
-	SOCK_ERRNO;
-	CHERROR("channel_open: Connect failed with errno %d\n", errno);
-	if (errno == ECONNREFUSED)
+	/* Make connect non-blocking. */
+	if (
+#ifdef _WIN32
+	    ioctlsocket(sd, FIONBIO, &val) < 0
+#else
+	    fcntl(sd, F_SETFL, O_NONBLOCK) < 0
+#endif
+	   )
 	{
+	    SOCK_ERRNO;
+	    CHERROR("channel_open: Connect failed with errno %d\n", errno);
 	    sock_close(sd);
-	    if ((sd = (sock_T)socket(AF_INET, SOCK_STREAM, 0)) == (sock_T)-1)
-	    {
-		SOCK_ERRNO;
-		CHERROR("socket() retry in channel_open()\n", "");
-		PERROR("E900: socket() retry in channel_open()");
-		return -1;
-	    }
-	    if (connect(sd, (struct sockaddr *)&server, sizeof(server)))
-	    {
-		int retries = 36;
-		int success = FALSE;
-
-		SOCK_ERRNO;
-		while (retries-- && ((errno == ECONNREFUSED)
-							 || (errno == EINTR)))
-		{
-		    CHERROR("retrying...\n", "");
-		    mch_delay(3000L, TRUE);
-		    ui_breakcheck();
-		    if (got_int)
-		    {
-			errno = EINTR;
-			break;
-		    }
-		    if (connect(sd, (struct sockaddr *)&server,
-							 sizeof(server)) == 0)
-		    {
-			success = TRUE;
-			break;
-		    }
-		    SOCK_ERRNO;
-		}
-		if (!success)
-		{
-		    /* Get here when the server can't be found. */
-		    CHERROR("Cannot connect to port after retry\n", "");
-		    PERROR(_("E899: Cannot connect to port after retry2"));
-		    sock_close(sd);
-		    return -1;
-		}
-	    }
+	    return -1;
 	}
-	else
+    }
+
+    /* Try connecting to the server. */
+    ret = connect(sd, (struct sockaddr *)&server, sizeof(server));
+    SOCK_ERRNO;
+    if (ret < 0)
+    {
+	if (errno != EWOULDBLOCK && errno != EINPROGRESS)
 	{
+	    CHERROR("channel_open: Connect failed with errno %d\n", errno);
 	    CHERROR("Cannot connect to port\n", "");
 	    PERROR(_("E902: Cannot connect to port"));
 	    sock_close(sd);
 	    return -1;
+	}
+    }
+
+    if (waittime >= 0)
+    {
+	struct timeval	tv;
+	fd_set		rfds, wfds;
+
+	FD_ZERO(&rfds);
+	FD_ZERO(&wfds);
+	FD_SET(sd, &rfds);
+	FD_SET(sd, &wfds);
+	tv.tv_sec = waittime;
+	tv.tv_usec = 0;
+	ret = select((int)sd+1, &rfds, &wfds, NULL, &tv);
+	if (ret < 0)
+	{
+	    SOCK_ERRNO;
+	    CHERROR("channel_open: Connect failed with errno %d\n", errno);
+	    CHERROR("Cannot connect to port\n", "");
+	    PERROR(_("E902: Cannot connect to port"));
+	    sock_close(sd);
+	    return -1;
+	}
+	if (!FD_ISSET(sd, &rfds) && !FD_ISSET(sd, &wfds))
+	{
+	    errno = ECONNREFUSED;
+	    CHERROR("Cannot connect to port\n", "");
+	    PERROR(_("E902: Cannot connect to port"));
+	    sock_close(sd);
+	    return -1;
+	}
+
+#ifdef _WIN32
+	val = 0;
+	ioctlsocket(sd, FIONBIO, &val);
+#else
+	fcntl(sd, F_SETFL, 0);
+#endif
+    }
+
+    if (errno == ECONNREFUSED)
+    {
+	sock_close(sd);
+	if ((sd = (sock_T)socket(AF_INET, SOCK_STREAM, 0)) == (sock_T)-1)
+	{
+	    SOCK_ERRNO;
+	    CHERROR("socket() retry in channel_open()\n", "");
+	    PERROR("E900: socket() retry in channel_open()");
+	    return -1;
+	}
+	if (connect(sd, (struct sockaddr *)&server, sizeof(server)))
+	{
+	    int retries = 36;
+	    int success = FALSE;
+
+	    SOCK_ERRNO;
+	    while (retries-- && ((errno == ECONNREFUSED)
+						     || (errno == EINTR)))
+	    {
+		CHERROR("retrying...\n", "");
+		mch_delay(3000L, TRUE);
+		ui_breakcheck();
+		if (got_int)
+		{
+		    errno = EINTR;
+		    break;
+		}
+		if (connect(sd, (struct sockaddr *)&server,
+						     sizeof(server)) == 0)
+		{
+		    success = TRUE;
+		    break;
+		}
+		SOCK_ERRNO;
+	    }
+	    if (!success)
+	    {
+		/* Get here when the server can't be found. */
+		CHERROR("Cannot connect to port after retry\n", "");
+		PERROR(_("E899: Cannot connect to port after retry2"));
+		sock_close(sd);
+		return -1;
+	    }
 	}
     }
 
@@ -424,6 +532,15 @@ channel_open(char *hostname, int port_in, void (*close_cb)(void))
 channel_set_json_mode(int idx, int json_mode)
 {
     channels[idx].ch_json_mode = json_mode;
+}
+
+/*
+ * Set the read timeout of channel "idx".
+ */
+    void
+channel_set_timeout(int idx, int timeout)
+{
+    channels[idx].ch_timeout = timeout;
 }
 
 /*
@@ -898,6 +1015,7 @@ channel_close(int idx)
 #endif
 	vim_free(channel->ch_callback);
 	channel->ch_callback = NULL;
+	channel->ch_timeout = 2000;
 
 	while (channel_peek(idx) != NULL)
 	    vim_free(channel_get(idx));
@@ -1148,9 +1266,8 @@ channel_read_block(int idx)
 {
     if (channel_peek(idx) == NULL)
     {
-	/* Wait for up to 2 seconds.
-	 * TODO: use timeout set on the channel. */
-	if (channel_wait(channels[idx].ch_fd, 2000) == FAIL)
+	/* Wait for up to the channel timeout. */
+	if (channel_wait(channels[idx].ch_fd, channels[idx].ch_timeout) == FAIL)
 	    return NULL;
 	channel_read(idx);
     }
@@ -1161,7 +1278,7 @@ channel_read_block(int idx)
 /*
  * Read one JSON message from channel "ch_idx" with ID "id" and store the
  * result in "rettv".
- * Blocks until the message is received.
+ * Blocks until the message is received or the timeout is reached.
  */
     int
 channel_read_json_block(int ch_idx, int id, typval_T **rettv)
@@ -1183,10 +1300,10 @@ channel_read_json_block(int ch_idx, int id, typval_T **rettv)
 	    if (channel_parse_messages())
 		continue;
 
-	    /* Wait for up to 2 seconds.
-	     * TODO: use timeout set on the channel. */
+	    /* Wait for up to the channel timeout. */
 	    if (channels[ch_idx].ch_fd < 0
-			|| channel_wait(channels[ch_idx].ch_fd, 2000) == FAIL)
+			|| channel_wait(channels[ch_idx].ch_fd,
+					 channels[ch_idx].ch_timeout) == FAIL)
 		break;
 	    channel_read(ch_idx);
 	}

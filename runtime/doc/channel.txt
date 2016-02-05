@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Feb 04
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Feb 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,7 +32,7 @@ $VIMRUNTIME/tools/demoserver.py
 Run it in one terminal.  We will call this T1.
 
 Run Vim in another terminal.  Connect to the demo server with: >
-	let handle = ch_open('localhost:8765', 'json')
+	let handle = ch_open('localhost:8765')
 
 In T1 you should see:
 	=== socket opened === ~
@@ -62,23 +62,25 @@ To handle asynchronous communication a callback needs to be used: >
 Instead of giving a callback with every send call, it can also be specified
 when opening the channel: >
 	call ch_close(handle)
-	let handle = ch_open('localhost:8765', 'json', "MyHandler")
+	let handle = ch_open('localhost:8765', {'callback': "MyHandler"})
 	call ch_sendexpr(handle, 'hello!', 0)
 
 ==============================================================================
 2. Opening a channel					*channel-open*
 
 To open a channel: >
-    let handle = ch_open({address}, {mode}, {callback})
+    let handle = ch_open({address} [, {argdict}])
 
 {address} has the form "hostname:port".  E.g., "localhost:8765".
 
-{mode} can be:						*channel-mode*
-	"json" - Use JSON, see below; most convenient way
+{argdict} is a dictionary with optional entries:
+
+"mode" can be:						*channel-mode*
+	"json" - Use JSON, see below; most convenient way. Default.
 	"raw"  - Use raw messages
 
 							*channel-callback*
-{callback} is a function that is called when a message is received that is not
+"callback" is a function that is called when a message is received that is not
 handled otherwise.  It gets two arguments: the channel handle and the received
 message. Example: >
 	func Handle(handle, msg)
@@ -86,16 +88,28 @@ message. Example: >
 	endfunc
 	let handle = ch_open("localhost:8765", 'json', "Handle")
 
-When {mode} is "json" the "msg" argument is the body of the received message,
-converted to Vim types.
-When {mode} is "raw" the "msg" argument is the whole message as a string.
+"waittime" is the time to wait for the connection to be made in milliseconds.
+The default is zero, don't wait, which is useful if the server is supposed to
+be running already.  A negative number waits forever.
 
-When {mode} is "json" the {callback} is optional.  When omitted it is only
+"timeout" is the time to wait for a request when blocking, using
+ch_sendexpr().  Again in millisecons.  The default si 2000 (2 seconds).
+
+When "mode" is "json" the "msg" argument is the body of the received message,
+converted to Vim types.
+When "mode" is "raw" the "msg" argument is the whole message as a string.
+
+When "mode" is "json" the "callback" is optional.  When omitted it is only
 possible to receive a message after sending one.
 
 The handler can be added or changed later: >
     call ch_setcallback(handle, {callback})
-When {callback} is empty (zero or an empty string) the handler is removed.
+When "callback is empty (zero or an empty string) the handler is removed.
+NOT IMPLEMENTED YET
+
+The timeout can be changed later: >
+    call ch_settimeout(handle, {msec})
+NOT IMPLEMENTED YET
 
 Once done with the channel, disconnect it like this: >
     call ch_close(handle)

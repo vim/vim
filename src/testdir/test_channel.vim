@@ -57,7 +57,7 @@ func s:start_server()
   endif
   let s:port = l[0]
 
-  let handle = ch_open('localhost:' . s:port, 'json')
+  let handle = ch_open('localhost:' . s:port)
   return handle
 endfunc
 
@@ -128,7 +128,7 @@ func Test_two_channels()
   endif
   call assert_equal('got it', ch_sendexpr(handle, 'hello!'))
 
-  let newhandle = ch_open('localhost:' . s:port, 'json')
+  let newhandle = ch_open('localhost:' . s:port)
   call assert_equal('got it', ch_sendexpr(newhandle, 'hello!'))
   call assert_equal('got it', ch_sendexpr(handle, 'hello!'))
 
