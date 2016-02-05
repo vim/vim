@@ -75,6 +75,12 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         print("sending: {}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
+                    elif decoded[1] == 'do normal':
+                        # Send a normal command.
+                        cmd = '["normal","G$s more\u001b"]'
+                        print("sending: {}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
                     elif decoded[1] == 'eval-works':
                         # Send an eval request.  We ignore the response.
                         cmd = '["eval","\\"foo\\" . 123", -1]'
@@ -90,6 +96,22 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     elif decoded[1] == 'eval-bad':
                         # Send an eval request missing the third argument.
                         cmd = '["eval","xxx"]'
+                        print("sending: {}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                    elif decoded[1] == 'an expr':
+                        # Send an expr request.
+                        cmd = '["expr","setline(\\"$\\", [\\"one\\",\\"two\\",\\"three\\"])"]'
+                        print("sending: {}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                    elif decoded[1] == 'redraw':
+                        cmd = '["redraw",""]'
+                        print("sending: {}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                    elif decoded[1] == 'redraw!':
+                        cmd = '["redraw","force"]'
                         print("sending: {}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"

@@ -93,6 +93,10 @@ func Test_communicate()
   call assert_equal('added1', getline(line('$') - 1))
   call assert_equal('added2', getline('$'))
 
+  call assert_equal('ok', ch_sendexpr(handle, 'do normal'))
+  sleep 10m
+  call assert_equal('added more', getline('$'))
+
   " Send a request with a specific handler.
   call ch_sendexpr(handle, 'hello!', 's:RequestHandler')
   sleep 10m
@@ -113,6 +117,19 @@ func Test_communicate()
   call assert_equal('ok', ch_sendexpr(handle, 'eval-bad'))
   sleep 10m
   call assert_equal([-2, 'ERROR'], ch_sendexpr(handle, 'eval-result'))
+
+  " Send an expr request
+  call assert_equal('ok', ch_sendexpr(handle, 'an expr'))
+  sleep 10m
+  call assert_equal('one', getline(line('$') - 2))
+  call assert_equal('two', getline(line('$') - 1))
+  call assert_equal('three', getline('$'))
+
+  " Request a redraw, we don't check for the effect.
+  call assert_equal('ok', ch_sendexpr(handle, 'redraw'))
+  call assert_equal('ok', ch_sendexpr(handle, 'redraw!'))
+
+  call assert_equal('ok', ch_sendexpr(handle, 'empty-request'))
 
   " make the server quit, can't check if this works, should not hang.
   call ch_sendexpr(handle, '!quit!', 0)
