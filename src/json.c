@@ -16,7 +16,7 @@
 #include "vim.h"
 
 #if defined(FEAT_EVAL) || defined(PROTO)
-static int json_encode_item(garray_T *gap, typval_T *val, int copyID);
+static int json_encode_item(garray_T *gap, typval_T *val, int copyID, int allow_none);
 static int json_decode_item(js_read_T *reader, typval_T *res);
 
 /*
@@ -29,7 +29,7 @@ json_encode(typval_T *val)
 
     /* Store bytes in the growarray. */
     ga_init2(&ga, 1, 4000);
-    json_encode_item(&ga, val, get_copyID());
+    json_encode_item(&ga, val, get_copyID(), TRUE);
     return ga.ga_data;
 }
 
@@ -121,7 +121,7 @@ write_string(garray_T *gap, char_u *str)
  * Return FAIL or OK.
  */
     static int
-json_encode_item(garray_T *gap, typval_T *val, int copyID)
+json_encode_item(garray_T *gap, typval_T *val, int copyID, int allow_none)
 {
     char_u	numbuf[NUMBUFLEN];
     char_u	*res;
@@ -135,7 +135,10 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID)
 	    {
 		case VVAL_FALSE: ga_concat(gap, (char_u *)"false"); break;
 		case VVAL_TRUE: ga_concat(gap, (char_u *)"true"); break;
-		case VVAL_NONE: break;
+		case VVAL_NONE: if (!allow_none)
+				    /* TODO: better error */
+				    EMSG(_(e_invarg));
+				break;
 		case VVAL_NULL: ga_concat(gap, (char_u *)"null"); break;
 	    }
 	    break;
@@ -152,7 +155,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID)
 	    break;
 
 	case VAR_FUNC:
-	    /* no JSON equivalent */
+	    /* no JSON equivalent TODO: better error */
 	    EMSG(_(e_invarg));
 	    return FAIL;
 
@@ -172,7 +175,8 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID)
 		    ga_append(gap, '[');
 		    for (li = l->lv_first; li != NULL && !got_int; )
 		    {
-			if (json_encode_item(gap, &li->li_tv, copyID) == FAIL)
+			if (json_encode_item(gap, &li->li_tv, copyID, TRUE)
+								      == FAIL)
 			    return FAIL;
 			li = li->li_next;
 			if (li != NULL)
@@ -213,7 +217,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID)
 			    write_string(gap, hi->hi_key);
 			    ga_append(gap, ':');
 			    if (json_encode_item(gap, &dict_lookup(hi)->di_tv,
-							      copyID) == FAIL)
+						       copyID, FALSE) == FAIL)
 				return FAIL;
 			}
 		    ga_append(gap, '}');

@@ -74,6 +74,7 @@ func Test_encode()
 
   call assert_fails('echo jsonencode(function("tr"))', 'E474:')
   call assert_fails('echo jsonencode([function("tr")])', 'E474:')
+  call assert_fails('echo jsonencode({"key":v:none})', 'E474:')
 endfunc
 
 func Test_decode()
