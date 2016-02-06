@@ -9217,7 +9217,7 @@ assert_bool(typval_T *argvars, int isTrue)
     garray_T	ga;
 
     if (argvars[0].v_type == VAR_SPECIAL
-	    && argvars[0].vval.v_number == (isTrue ? VVAL_TRUE : VV_FALSE))
+	    && argvars[0].vval.v_number == (isTrue ? VVAL_TRUE : VVAL_FALSE))
 	return;
     if (argvars[0].v_type != VAR_NUMBER
 	    || (get_tv_number_chk(&argvars[0], &error) == 0) == isTrue
