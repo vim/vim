@@ -2,11 +2,13 @@
 
 func Test_assert_false()
   call assert_false(0)
+  call assert_false(v:false)
 endfunc
 
 func Test_assert_true()
   call assert_true(1)
   call assert_true(123)
+  call assert_true(v:true)
 endfunc
 
 func Test_assert_equal()
