@@ -3268,6 +3268,7 @@ do_ecmd(
     int		did_get_winopts = FALSE;
 #endif
     int		readfile_flags = 0;
+    int		did_inc_redrawing_disabled = FALSE;
 
     if (eap != NULL)
 	command = eap->do_ecmd_cmd;
@@ -3600,6 +3601,11 @@ do_ecmd(
 	oldbuf = (flags & ECMD_OLDBUF);
     }
 
+    /* Don't redraw until the cursor is in the right line, otherwise
+     * autocommands may cause ml_get errors. */
+    ++RedrawingDisabled;
+    did_inc_redrawing_disabled = TRUE;
+
 #ifdef FEAT_AUTOCMD
     buf = curbuf;
 #endif
@@ -3697,9 +3703,6 @@ do_ecmd(
 /*
  * If we get here we are sure to start editing
  */
-    /* don't redraw until the cursor is in the right line */
-    ++RedrawingDisabled;
-
     /* Assume success now */
     retval = OK;
 
@@ -3899,6 +3902,7 @@ do_ecmd(
 #endif
 
     --RedrawingDisabled;
+    did_inc_redrawing_disabled = FALSE;
     if (!skip_redraw)
     {
 	n = p_so;
@@ -3933,6 +3937,8 @@ do_ecmd(
 #endif
 
 theend:
+    if (did_inc_redrawing_disabled)
+	--RedrawingDisabled;
 #ifdef FEAT_AUTOCMD
     if (did_set_swapcommand)
 	set_vim_var_string(VV_SWAPCOMMAND, NULL, -1);
