@@ -5831,11 +5831,10 @@ convert_dl(PyObject *obj, typval_T *tv,
 	}
 	/* As we are not using copy_tv which increments reference count we must
 	 * do it ourself. */
-	switch(tv->v_type)
-	{
-	    case VAR_DICT: ++tv->vval.v_dict->dv_refcount; break;
-	    case VAR_LIST: ++tv->vval.v_list->lv_refcount; break;
-	}
+	if (tv->v_type == VAR_DICT)
+	    ++tv->vval.v_dict->dv_refcount;
+	else if (tv->v_type == VAR_LIST)
+	    ++tv->vval.v_list->lv_refcount;
     }
     else
     {

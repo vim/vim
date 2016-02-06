@@ -1649,6 +1649,12 @@ do_py3eval (char_u *str, typval_T *rettv)
 	    rettv->v_type = VAR_NUMBER;
 	    rettv->vval.v_number = 0;
 	    break;
+	case VAR_NUMBER:
+	case VAR_STRING:
+	case VAR_FLOAT:
+	case VAR_JOB:
+	case VAR_SPECIAL:
+	    break;
     }
 }
 
