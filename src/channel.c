@@ -440,8 +440,8 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 	FD_ZERO(&wfds);
 	FD_SET(sd, &rfds);
 	FD_SET(sd, &wfds);
-	tv.tv_sec = waittime;
-	tv.tv_usec = 0;
+	tv.tv_sec = waittime / 1000;
+	tv.tv_usec = (waittime % 1000) * 1000;
 	ret = select((int)sd+1, &rfds, &wfds, NULL, &tv);
 	if (ret < 0)
 	{
