@@ -1111,12 +1111,24 @@ typedef double	float_T;
 typedef struct listvar_S list_T;
 typedef struct dictvar_S dict_T;
 
+typedef enum
+{
+    VAR_UNKNOWN = 0,
+    VAR_NUMBER,	/* "v_number" is used */
+    VAR_STRING,	/* "v_string" is used */
+    VAR_FUNC,	/* "v_string" is function name */
+    VAR_LIST,	/* "v_list" is used */
+    VAR_DICT,	/* "v_dict" is used */
+    VAR_FLOAT,	/* "v_float" is used */
+    VAR_SPECIAL	/* "v_number" is used */
+} vartype_T;
+
 /*
  * Structure to hold an internal variable without a name.
  */
 typedef struct
 {
-    char	v_type;	    /* see below: VAR_NUMBER, VAR_STRING, etc. */
+    vartype_T	v_type;
     char	v_lock;	    /* see below: VAR_LOCKED, VAR_FIXED */
     union
     {
@@ -1129,16 +1141,6 @@ typedef struct
 	dict_T		*v_dict;	/* dict value (can be NULL!) */
     }		vval;
 } typval_T;
-
-/* Values for "v_type". */
-#define VAR_UNKNOWN 0
-#define VAR_NUMBER  1	/* "v_number" is used */
-#define VAR_STRING  2	/* "v_string" is used */
-#define VAR_FUNC    3	/* "v_string" is function name */
-#define VAR_LIST    4	/* "v_list" is used */
-#define VAR_DICT    5	/* "v_dict" is used */
-#define VAR_FLOAT   6	/* "v_float" is used */
-#define VAR_SPECIAL 7	/* "v_number" is used */
 
 /* Values for "dv_scope". */
 #define VAR_SCOPE     1	/* a:, v:, s:, etc. scope dictionaries */
