@@ -19869,9 +19869,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_FUNC:   n = 2; break;
 	case VAR_LIST:   n = 3; break;
 	case VAR_DICT:   n = 4; break;
-#ifdef FEAT_FLOAT
 	case VAR_FLOAT:  n = 5; break;
-#endif
 	case VAR_SPECIAL:
 	     if (argvars[0].vval.v_number == VVAL_FALSE
 		     || argvars[0].vval.v_number == VVAL_TRUE)
@@ -19879,9 +19877,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	     else
 		 n = 7;
 	     break;
-#ifdef FEAT_JOB
 	case VAR_JOB:    n = 8; break;
-#endif
 	case VAR_UNKNOWN:
 	     EMSG2(_(e_intern2), "f_type(UNKNOWN)");
 	     n = -1;
@@ -24904,9 +24900,7 @@ write_viminfo_varlist(FILE *fp)
 		{
 		    case VAR_STRING: s = "STR"; break;
 		    case VAR_NUMBER: s = "NUM"; break;
-#ifdef FEAT_FLOAT
 		    case VAR_FLOAT:  s = "FLO"; break;
-#endif
 		    case VAR_DICT:   s = "DIC"; break;
 		    case VAR_LIST:   s = "LIS"; break;
 		    case VAR_SPECIAL: s = "XPL"; break;
