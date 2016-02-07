@@ -2728,3 +2728,11 @@ struct js_reader
     void	*js_cookie;	/* can be used by js_fill */
 };
 typedef struct js_reader js_read_T;
+
+/* mode for a channel */
+typedef enum
+{
+    MODE_RAW = 0,
+    MODE_JSON,
+    MODE_JS
+} ch_mode_T;

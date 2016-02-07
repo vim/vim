@@ -2317,6 +2317,10 @@ typedef int sock_T;
 # define MAX_OPEN_CHANNELS 0
 #endif
 
+/* Options for json_encode() and json_decode. */
+#define JSON_JS		1   /* use JS instead of JSON */
+#define JSON_NO_NONE	2   /* v:none item not allowed */
+
 #ifdef FEAT_MZSCHEME
 /* this is in main.c, cproto can't handle it. */
 int vim_main2(int argc, char **argv);

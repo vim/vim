@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Feb 06
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Feb 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -16,7 +16,7 @@ The Netbeans interface also uses a channel. |netbeans|
 
 1. Demo					|channel-demo|
 2. Opening a channel			|channel-open|
-3. Using a JSON channel			|channel-use|
+3. Using a JSON or JS channel		|channel-use|
 4. Vim commands				|channel-commands|
 5. Using a raw channel			|channel-use|
 6. Job control				|job-control|
@@ -77,6 +77,7 @@ To open a channel: >
 
 "mode" can be:						*channel-mode*
 	"json" - Use JSON, see below; most convenient way. Default.
+	"js"   - Use JavaScript encoding, more efficient than JSON.
 	"raw"  - Use raw messages
 
 							*channel-callback*
@@ -86,7 +87,7 @@ message. Example: >
 	func Handle(handle, msg)
 	  echo 'Received: ' . a:msg
 	endfunc
-	let handle = ch_open("localhost:8765", 'json', "Handle")
+	let handle = ch_open("localhost:8765", {"callback": "Handle"})
 
 "waittime" is the time to wait for the connection to be made in milliseconds.
 The default is zero, don't wait, which is useful if the server is supposed to
@@ -95,12 +96,12 @@ be running already.  A negative number waits forever.
 "timeout" is the time to wait for a request when blocking, using
 ch_sendexpr().  Again in milliseconds.  The default is 2000 (2 seconds).
 
-When "mode" is "json" the "msg" argument is the body of the received message,
-converted to Vim types.
+When "mode" is "json" or "js" the "msg" argument is the body of the received
+message, converted to Vim types.
 When "mode" is "raw" the "msg" argument is the whole message as a string.
 
-When "mode" is "json" the "callback" is optional.  When omitted it is only
-possible to receive a message after sending one.
+When "mode" is "json" or "js" the "callback" is optional.  When omitted it is
+only possible to receive a message after sending one.
 
 The handler can be added or changed later: >
     call ch_setcallback(handle, {callback})
@@ -123,11 +124,14 @@ If there is an error reading or writing a channel it will be closed.
 *E896* *E630* *E631* 
 
 ==============================================================================
-3. Using a JSON channel					*channel-use*
+3. Using a JSON or JS channel					*channel-use*
 
 If {mode} is "json" then a message can be sent synchronously like this: >
     let response = ch_sendexpr(handle, {expr})
 This awaits a response from the other side.
+
+When {mode} is "js" this works the same, except that the messages use
+JavaScript encoding.  See |jsencode()| for the difference.
 
 To send a message, without handling a response: >
     call ch_sendexpr(handle, {expr}, 0)
@@ -231,7 +235,8 @@ Here {number} is the same as what was in the request.  Use a negative number
 to avoid confusion with message that Vim sends.
 
 {result} is the result of the evaluation and is JSON encoded.  If the
-evaluation fails it is the string "ERROR".
+evaluation fails or the result can't be encoded in JSON it is the string
+"ERROR".
 
 
 Command "expr" ~

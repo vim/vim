@@ -16,22 +16,23 @@
 #include "vim.h"
 
 #if defined(FEAT_EVAL) || defined(PROTO)
-static int json_encode_item(garray_T *gap, typval_T *val, int copyID, int allow_none);
-static int json_decode_item(js_read_T *reader, typval_T *res);
+static int json_encode_item(garray_T *gap, typval_T *val, int copyID, int options);
+static int json_decode_item(js_read_T *reader, typval_T *res, int options);
 
 /*
  * Encode "val" into a JSON format string.
  * The result is in allocated memory.
  * The result is empty when encoding fails.
+ * "options" can be JSON_JS or zero;
  */
     char_u *
-json_encode(typval_T *val)
+json_encode(typval_T *val, int options)
 {
     garray_T ga;
 
     /* Store bytes in the growarray. */
     ga_init2(&ga, 1, 4000);
-    if (json_encode_item(&ga, val, get_copyID(), TRUE) == FAIL)
+    if (json_encode_item(&ga, val, get_copyID(), options) == FAIL)
     {
 	vim_free(ga.ga_data);
 	return vim_strsave((char_u *)"");
@@ -41,10 +42,11 @@ json_encode(typval_T *val)
 
 /*
  * Encode ["nr", "val"] into a JSON format string in allocated memory.
+ * "options" can be JSON_JS or zero;
  * Returns NULL when out of memory.
  */
     char_u *
-json_encode_nr_expr(int nr, typval_T *val)
+json_encode_nr_expr(int nr, typval_T *val, int options)
 {
     typval_T	listtv;
     typval_T	nrtv;
@@ -61,7 +63,7 @@ json_encode_nr_expr(int nr, typval_T *val)
 	return NULL;
     }
 
-    text = json_encode(&listtv);
+    text = json_encode(&listtv, options);
     list_unref(listtv.vval.v_list);
     return text;
 }
@@ -123,11 +125,29 @@ write_string(garray_T *gap, char_u *str)
 }
 
 /*
+ * Return TRUE if "key" can be used without quotes.
+ * That is when it starts with a letter and only contains letters, digits and
+ * underscore.
+ */
+    static int
+is_simple_key(char_u *key)
+{
+    char_u *p;
+
+    if (!ASCII_ISALPHA(*key))
+	return FALSE;
+    for (p = key + 1; *p != NUL; ++p)
+	if (!ASCII_ISALPHA(*p) && *p != '_' && !vim_isdigit(*p))
+	    return FALSE;
+    return TRUE;
+}
+
+/*
  * Encode "val" into "gap".
  * Return FAIL or OK.
  */
     static int
-json_encode_item(garray_T *gap, typval_T *val, int copyID, int allow_none)
+json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 {
     char_u	numbuf[NUMBUFLEN];
     char_u	*res;
@@ -141,13 +161,11 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int allow_none)
 	    {
 		case VVAL_FALSE: ga_concat(gap, (char_u *)"false"); break;
 		case VVAL_TRUE: ga_concat(gap, (char_u *)"true"); break;
-		case VVAL_NONE: if (!allow_none)
-				{
-				    /* TODO: better error */
-				    EMSG(_(e_invarg));
-				    return FAIL;
-				}
-				break;
+		case VVAL_NONE: if ((options & JSON_JS) != 0
+					     && (options & JSON_NO_NONE) == 0)
+				    /* empty item */
+				    break;
+				/* FALLTHROUGH */
 		case VVAL_NULL: ga_concat(gap, (char_u *)"null"); break;
 	    }
 	    break;
@@ -185,9 +203,15 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int allow_none)
 		    ga_append(gap, '[');
 		    for (li = l->lv_first; li != NULL && !got_int; )
 		    {
-			if (json_encode_item(gap, &li->li_tv, copyID, TRUE)
-								      == FAIL)
+			if (json_encode_item(gap, &li->li_tv, copyID,
+						   options & JSON_JS) == FAIL)
 			    return FAIL;
+			if ((options & JSON_JS)
+				&& li->li_next == NULL
+				&& li->li_tv.v_type == VAR_SPECIAL
+				&& li->li_tv.vval.v_number == VVAL_NONE)
+			    /* add an extra comma if the last item is v:none */
+			    ga_append(gap, ',');
 			li = li->li_next;
 			if (li != NULL)
 			    ga_append(gap, ',');
@@ -224,10 +248,14 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int allow_none)
 				first = FALSE;
 			    else
 				ga_append(gap, ',');
-			    write_string(gap, hi->hi_key);
+			    if ((options & JSON_JS)
+						 && is_simple_key(hi->hi_key))
+				ga_concat(gap, hi->hi_key);
+			    else
+				write_string(gap, hi->hi_key);
 			    ga_append(gap, ':');
 			    if (json_encode_item(gap, &dict_lookup(hi)->di_tv,
-						       copyID, FALSE) == FAIL)
+				      copyID, options | JSON_NO_NONE) == FAIL)
 				return FAIL;
 			}
 		    ga_append(gap, '}');
@@ -265,7 +293,8 @@ fill_numbuflen(js_read_T *reader)
 }
 
 /*
- * Skip white space in "reader".
+ * Skip white space in "reader".  All characters <= space are considered white
+ * space.
  * Also tops up readahead when needed.
  */
     static void
@@ -282,7 +311,7 @@ json_skip_white(js_read_T *reader)
 		reader->js_end = reader->js_buf + STRLEN(reader->js_buf);
 	    continue;
 	}
-	if (c != ' ' && c != TAB && c != NL && c != CAR)
+	if (c == NUL || c > ' ')
 	    break;
 	++reader->js_used;
     }
@@ -290,7 +319,7 @@ json_skip_white(js_read_T *reader)
 }
 
     static int
-json_decode_array(js_read_T *reader, typval_T *res)
+json_decode_array(js_read_T *reader, typval_T *res, int options)
 {
     char_u	*p;
     typval_T	item;
@@ -317,7 +346,7 @@ json_decode_array(js_read_T *reader, typval_T *res)
 	    break;
 	}
 
-	ret = json_decode_item(reader, res == NULL ? NULL : &item);
+	ret = json_decode_item(reader, res == NULL ? NULL : &item, options);
 	if (ret != OK)
 	    return ret;
 	if (res != NULL)
@@ -347,7 +376,7 @@ json_decode_array(js_read_T *reader, typval_T *res)
 }
 
     static int
-json_decode_object(js_read_T *reader, typval_T *res)
+json_decode_object(js_read_T *reader, typval_T *res, int options)
 {
     char_u	*p;
     typval_T	tvkey;
@@ -377,16 +406,31 @@ json_decode_object(js_read_T *reader, typval_T *res)
 	    break;
 	}
 
-	ret = json_decode_item(reader, res == NULL ? NULL : &tvkey);
-	if (ret != OK)
-	    return ret;
-	if (res != NULL)
+	if ((options & JSON_JS) && reader->js_buf[reader->js_used] != '"')
 	{
-	    key = get_tv_string_buf_chk(&tvkey, buf);
-	    if (key == NULL || *key == NUL)
+	    /* accept a key that is not in quotes */
+	    key = p = reader->js_buf + reader->js_used;
+	    while (*p != NUL && *p != ':' && *p > ' ')
+		++p;
+	    tvkey.v_type = VAR_STRING;
+	    tvkey.vval.v_string = vim_strnsave(key, (int)(p - key));
+	    reader->js_used += (int)(p - key);
+	    key = tvkey.vval.v_string;
+	}
+	else
+	{
+	    ret = json_decode_item(reader, res == NULL ? NULL : &tvkey,
+								     options);
+	    if (ret != OK)
+		return ret;
+	    if (res != NULL)
 	    {
-		clear_tv(&tvkey);
-		return FAIL;
+		key = get_tv_string_buf_chk(&tvkey, buf);
+		if (key == NULL || *key == NUL)
+		{
+		    clear_tv(&tvkey);
+		    return FAIL;
+		}
 	    }
 	}
 
@@ -403,7 +447,7 @@ json_decode_object(js_read_T *reader, typval_T *res)
 	++reader->js_used;
 	json_skip_white(reader);
 
-	ret = json_decode_item(reader, res == NULL ? NULL : &item);
+	ret = json_decode_item(reader, res == NULL ? NULL : &item, options);
 	if (ret != OK)
 	{
 	    if (res != NULL)
@@ -569,7 +613,7 @@ json_decode_string(js_read_T *reader, typval_T *res)
  * Return MAYBE for an incomplete message.
  */
     static int
-json_decode_item(js_read_T *reader, typval_T *res)
+json_decode_item(js_read_T *reader, typval_T *res, int options)
 {
     char_u	*p;
     int		len;
@@ -579,15 +623,18 @@ json_decode_item(js_read_T *reader, typval_T *res)
     switch (*p)
     {
 	case '[': /* array */
-	    return json_decode_array(reader, res);
+	    return json_decode_array(reader, res, options);
 
 	case '{': /* object */
-	    return json_decode_object(reader, res);
+	    return json_decode_object(reader, res, options);
 
 	case '"': /* string */
 	    return json_decode_string(reader, res);
 
 	case ',': /* comma: empty item */
+	    if ((options & JSON_JS) == 0)
+		return FAIL;
+	    /* FALLTHROUGH */
 	case NUL: /* empty */
 	    if (res != NULL)
 	    {
@@ -691,17 +738,18 @@ json_decode_item(js_read_T *reader, typval_T *res)
 
 /*
  * Decode the JSON from "reader" and store the result in "res".
+ * "options" can be JSON_JS or zero;
  * Return FAIL if not the whole message was consumed.
  */
     int
-json_decode_all(js_read_T *reader, typval_T *res)
+json_decode_all(js_read_T *reader, typval_T *res, int options)
 {
     int ret;
 
-    /* We get the end once, to avoid calling strlen() many times. */
+    /* We find the end once, to avoid calling strlen() many times. */
     reader->js_end = reader->js_buf + STRLEN(reader->js_buf);
     json_skip_white(reader);
-    ret = json_decode_item(reader, res);
+    ret = json_decode_item(reader, res, options);
     if (ret != OK)
 	return FAIL;
     json_skip_white(reader);
@@ -712,18 +760,19 @@ json_decode_all(js_read_T *reader, typval_T *res)
 
 /*
  * Decode the JSON from "reader" and store the result in "res".
+ * "options" can be JSON_JS or zero;
  * Return FAIL if the message has a decoding error or the message is
  * truncated.  Consumes the message anyway.
  */
     int
-json_decode(js_read_T *reader, typval_T *res)
+json_decode(js_read_T *reader, typval_T *res, int options)
 {
     int ret;
 
-    /* We get the end once, to avoid calling strlen() many times. */
+    /* We find the end once, to avoid calling strlen() many times. */
     reader->js_end = reader->js_buf + STRLEN(reader->js_buf);
     json_skip_white(reader);
-    ret = json_decode_item(reader, res);
+    ret = json_decode_item(reader, res, options);
     json_skip_white(reader);
 
     return ret == OK ? OK : FAIL;
@@ -731,6 +780,7 @@ json_decode(js_read_T *reader, typval_T *res)
 
 /*
  * Decode the JSON from "reader" to find the end of the message.
+ * "options" can be JSON_JS or zero;
  * Return FAIL if the message has a decoding error.
  * Return MAYBE if the message is truncated, need to read more.
  * This only works reliable if the message contains an object, array or
@@ -738,15 +788,15 @@ json_decode(js_read_T *reader, typval_T *res)
  * Does not advance the reader.
  */
     int
-json_find_end(js_read_T *reader)
+json_find_end(js_read_T *reader, int options)
 {
     int used_save = reader->js_used;
     int ret;
 
-    /* We get the end once, to avoid calling strlen() many times. */
+    /* We find the end once, to avoid calling strlen() many times. */
     reader->js_end = reader->js_buf + STRLEN(reader->js_buf);
     json_skip_white(reader);
-    ret = json_decode_item(reader, NULL);
+    ret = json_decode_item(reader, NULL, options);
     reader->js_used = used_save;
     return ret;
 }

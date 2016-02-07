@@ -1,7 +1,7 @@
 /* channel.c */
 void channel_gui_register_all(void);
 int channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void));
-void channel_set_json_mode(int idx, int json_mode);
+void channel_set_json_mode(int idx, ch_mode_T ch_mode);
 void channel_set_timeout(int idx, int timeout);
 void channel_set_callback(int idx, char_u *callback);
 void channel_set_req_callback(int idx, char_u *callback, int id);

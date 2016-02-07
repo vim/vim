@@ -1956,6 +1956,8 @@ job_start({command} [, {options}]) Job	start a job
 job_status({job})		String	get the status of a job
 job_stop({job} [, {how}])	Number	stop a job
 join( {list} [, {sep}])		String	join {list} items into one String
+jsdecode( {string})		any	decode JS style JSON
+jsencode( {expr})		String	encode JS style JSON
 jsondecode( {string})		any	decode JSON
 jsonencode( {expr})		String	encode JSON
 keys( {dict})			List	keys in {dict}
@@ -2439,7 +2441,6 @@ bufwinnr({expr})					*bufwinnr()*
 		|:wincmd|.
 		Only deals with the current tab page.
 
-
 byte2line({byte})					*byte2line()*
 		Return the line number that contains the character at byte
 		count {byte} in the current buffer.  This includes the
@@ -2688,7 +2689,7 @@ ch_open({address} [, {argdict}])				*ch_open()*
 
 		If {argdict} is given it must be a |Dictionary|.  The optional
 		items are:
-			mode        "raw" or "json".
+			mode        "raw", "js" or "json".
 				    Default "json".
 			callback    function to call for requests with a zero
 				    sequence number.  See |channel-callback|.
@@ -4381,17 +4382,33 @@ join({list} [, {sep}])					*join()*
 		converted into a string like with |string()|.
 		The opposite function is |split()|.
 
+jsdecode({string})					*jsdecode()*
+		This is similar to |jsondecode()| with these differences:
+		- Object key names do not have to be in quotes.
+		- Empty items in an array (between two commas) are allowed and
+		  result in v:none items.
+
+jsencode({expr})					*jsencode()*
+		This is similar to |jsonencode()| with these differences:
+		- Object key names are not in quotes.
+		- v:none items in an array result in an empty item between
+		  commas.
+		For example, the Vim object:
+			[1,v:none,{"one":1}],v:none ~
+		Will be encoded as:
+			[1,,{one:1},,] ~
+		While jsonencode() would produce:
+			[1,null,{"one":1},null] ~
+		This encoding is valid for JavaScript. It is more efficient
+		than JSON, especially when using an array with optional items.
+
+
 jsondecode({string})					*jsondecode()*
 		This parses a JSON formatted string and returns the equivalent
 		in Vim values.  See |jsonencode()| for the relation between
 		JSON and Vim values.
 		The decoding is permissive:
 		- A trailing comma in an array and object is ignored.
-		- An empty item in an array, two commas with nothing or white
-		  space in between, results in v:none.
-		- When an object member name is not a string it is converted
-		  to a string.  E.g. the number 123 is used as the string
-		  "123".
 		- More floating point numbers are recognized, e.g. "1." for
 		  "1.0".
 		The result must be a valid Vim type:
@@ -4413,7 +4430,7 @@ jsonencode({expr})					*jsonencode()*
 		   			used recursively: {}
 		   v:false		"false"
 		   v:true		"true"
-		   v:none		nothing
+		   v:none		"null"
 		   v:null		"null"
 		Note that using v:none is permitted, although the JSON
 		standard does not allow empty items.  This can be useful for
