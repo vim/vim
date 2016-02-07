@@ -468,7 +468,8 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 #endif
     }
 
-    if (errno == ECONNREFUSED)
+    /* Only retry for netbeans.  TODO: can we use a waittime instead? */
+    if (errno == ECONNREFUSED && close_cb != NULL)
     {
 	sock_close(sd);
 	if ((sd = (sock_T)socket(AF_INET, SOCK_STREAM, 0)) == (sock_T)-1)

@@ -196,8 +196,8 @@ func Test_connect_waittime()
     " Oops, port does exists.
     call ch_close(handle)
   else
-    " Failed connection doesn't wait the full time.
+    " Failed connection doesn't wait the full time on Unix.
     let elapsed = reltime(start)
-    call assert_true(reltimefloat(elapsed) < 1.0)
+    call assert_true(reltimefloat(elapsed) < (has('unix') ? 1.0 : 3.0))
   endif
 endfunc
