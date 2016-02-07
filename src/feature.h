@@ -1262,9 +1262,9 @@
 #endif
 
 /*
- * The +job feature requires Unix and +eval.
+ * The +job feature requires +eval and Unix or MS-Widndows.
  */
-#if defined(UNIX) && defined(FEAT_EVAL)
+#if (defined(UNIX) || defined(WIN32)) && defined(FEAT_EVAL)
 # define FEAT_JOB
 #endif
 

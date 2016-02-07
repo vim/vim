@@ -4155,7 +4155,7 @@ mch_system_classic(char *cmd, int options)
     si.cbReserved2 = 0;
     si.lpReserved2 = NULL;
 
-    /* There is a strange error on Windows 95 when using "c:\\command.com".
+    /* There is a strange error on Windows 95 when using "c:\command.com".
      * When the "c:\\" is left out it works OK...? */
     if (mch_windows95()
 	    && (STRNICMP(cmd, "c:/command.com", 14) == 0
@@ -5031,6 +5031,59 @@ mch_call_shell(
 
     return x;
 }
+
+#if defined(FEAT_JOB) || defined(PROTO)
+    void
+mch_start_job(char *cmd, job_T *job)
+{
+    STARTUPINFO		si;
+    PROCESS_INFORMATION	pi;
+
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+
+    if (!vim_create_process(cmd, FALSE,
+	    CREATE_DEFAULT_ERROR_MODE |
+	    CREATE_NEW_PROCESS_GROUP |
+	    CREATE_NO_WINDOW,
+	    &si, &pi))
+	job->jv_status = JOB_FAILED;
+    else
+    {
+	job->jf_pi = pi;
+	job->jv_status = JOB_STARTED;
+    }
+}
+
+    char *
+mch_job_status(job_T *job)
+{
+    DWORD dwExitCode = 0;
+
+    if (!GetExitCodeProcess(job->jf_pi.hProcess, &dwExitCode))
+	return "dead";
+    if (dwExitCode != STILL_ACTIVE)
+    {
+	CloseHandle(job->jf_pi.hProcess);
+	CloseHandle(job->jf_pi.hThread);
+	return "dead";
+    }
+    return "run";
+}
+
+    int
+mch_stop_job(job_T *job, char_u *how)
+{
+    if (STRCMP(how, "kill") == 0)
+	TerminateProcess(job->jf_pi.hProcess, 0);
+    else
+	return GenerateConsoleCtrlEvent(
+	    STRCMP(how, "hup") == 0 ?
+		    CTRL_BREAK_EVENT : CTRL_C_EVENT,
+		job->jf_pi.dwProcessId) ? OK : FAIL;
+    return OK;
+}
+#endif
 
 
 #ifndef FEAT_GUI_W32

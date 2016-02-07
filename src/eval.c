@@ -8205,7 +8205,7 @@ static struct fst
 #ifdef FEAT_JOB
     {"job_start",	1, 2, f_job_start},
     {"job_status",	1, 1, f_job_status},
-    {"job_stop",	1, 1, f_job_stop},
+    {"job_stop",	1, 2, f_job_stop},
 #endif
     {"join",		1, 2, f_join},
     {"jsdecode",	1, 1, f_jsdecode},
@@ -14286,7 +14286,7 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
 
     rettv->vval.v_job->jv_status = JOB_FAILED;
 #ifndef USE_ARGV
-    ga_init2(&ga, 200);
+    ga_init2(&ga, (int)sizeof(char*), 20);
 #endif
 
     if (argvars[0].v_type == VAR_STRING)
