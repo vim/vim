@@ -431,18 +431,16 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 	}
     }
 
-    if (waittime >= 0)
+    if (waittime >= 0 && ret < 0)
     {
 	struct timeval	tv;
-	fd_set		rfds, wfds;
+	fd_set		wfds;
 
-	FD_ZERO(&rfds);
 	FD_ZERO(&wfds);
-	FD_SET(sd, &rfds);
 	FD_SET(sd, &wfds);
 	tv.tv_sec = waittime / 1000;
 	tv.tv_usec = (waittime % 1000) * 1000;
-	ret = select((int)sd+1, &rfds, &wfds, NULL, &tv);
+	ret = select((int)sd + 1, NULL, &wfds, NULL, &tv);
 	if (ret < 0)
 	{
 	    SOCK_ERRNO;
@@ -452,15 +450,16 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 	    sock_close(sd);
 	    return -1;
 	}
-	if (!FD_ISSET(sd, &rfds) && !FD_ISSET(sd, &wfds))
+	if (!FD_ISSET(sd, &wfds))
 	{
-	    errno = ECONNREFUSED;
-	    CHERROR("Cannot connect to port\n", "");
-	    PERROR(_("E902: Cannot connect to port"));
+	    /* don't give an error, we just timed out. */
 	    sock_close(sd);
 	    return -1;
 	}
+    }
 
+    if (waittime >= 0)
+    {
 #ifdef _WIN32
 	val = 0;
 	ioctlsocket(sd, FIONBIO, &val);

@@ -177,3 +177,27 @@ func Test_server_crash()
   sleep 10m
   call s:kill_server()
 endfunc
+
+" Test that trying to connect to a non-existing port fails quickly.
+func Test_connect_waittime()
+  let start = reltime()
+  let handle = ch_open('localhost:9876')
+  if handle >= 0
+    " Oops, port does exists.
+    call ch_close(handle)
+  else
+    let elapsed = reltime(start)
+    call assert_true(elapsed < 1.0)
+  endif
+
+  let start = reltime()
+  let handle = ch_open('localhost:9867', {'waittime': 2000})
+  if handle >= 0
+    " Oops, port does exists.
+    call ch_close(handle)
+  else
+    " Failed connection doesn't wait the full time.
+    let elapsed = reltime(start)
+    call assert_true(elapsed < 1.0)
+  endif
+endfunc
