@@ -1010,6 +1010,24 @@ profile_msg(proftime_T *tm)
     return buf;
 }
 
+# if defined(FEAT_FLOAT) || defined(PROTO)
+/*
+ * Return a float that represents the time in "tm".
+ */
+    float_T
+profile_float(proftime_T *tm)
+{
+#  ifdef WIN3264
+    LARGE_INTEGER   fr;
+
+    QueryPerformanceFrequency(&fr);
+    return (float_T)tm->QuadPart / (float_T)fr.QuadPart;
+#  else
+    return (float_T)tm->tv_sec + (float_T)tm->tv_usec / 1000000.0;
+#  endif
+}
+# endif
+
 /*
  * Put the time "msec" past now in "tm".
  */

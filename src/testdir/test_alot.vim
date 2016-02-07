@@ -9,6 +9,7 @@ source test_glob2regpat.vim
 source test_json.vim
 source test_lispwords.vim
 source test_menu.vim
+source test_reltime.vim
 source test_searchpos.vim
 source test_set.vim
 source test_sort.vim
