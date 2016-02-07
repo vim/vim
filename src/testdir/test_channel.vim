@@ -187,7 +187,7 @@ func Test_connect_waittime()
     call ch_close(handle)
   else
     let elapsed = reltime(start)
-    call assert_true(elapsed < 1.0)
+    call assert_true(reltimefloat(elapsed) < 1.0)
   endif
 
   let start = reltime()
@@ -198,6 +198,6 @@ func Test_connect_waittime()
   else
     " Failed connection doesn't wait the full time.
     let elapsed = reltime(start)
-    call assert_true(elapsed < 1.0)
+    call assert_true(reltimefloat(elapsed) < 1.0)
   endif
 endfunc
