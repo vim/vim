@@ -2703,10 +2703,12 @@ ch_open({address} [, {argdict}])				*ch_open()*
 		{only available when compiled with the |+channel| feature}
 
 ch_sendexpr({handle}, {expr} [, {callback}])		*ch_sendexpr()*
-		Send {expr} over JSON channel {handle}.  See |channel-use|.
+		Send {expr} over channel {handle}.  The {expr} is encoded
+		according to the type of channel.  The function cannot be used
+		with a raw channel.  See |channel-use|.  *E912*
 
 		When {callback} is given returns immediately.  Without
-		{callback} waits for a JSON response and returns the decoded
+		{callback} waits for a response and returns the decoded
 		expression.  When there is an error or timeout returns an
 		empty string.
 
@@ -2718,8 +2720,10 @@ ch_sendexpr({handle}, {expr} [, {callback}])		*ch_sendexpr()*
 		{only available when compiled with the |+channel| feature}
 
 ch_sendraw({handle}, {string} [, {callback}])		*ch_sendraw()*
-		Send {string} over raw channel {handle}.  See |channel-raw|.
-		Works like |ch_sendexpr()|, but does not decode the response.
+		Send {string} over channel {handle}.
+		Works like |ch_sendexpr()|, but does not encode the request or
+		decode the response.  The caller is responsible for the
+		correct contents.  See |channel-use|.
 
 		{only available when compiled with the |+channel| feature}
 

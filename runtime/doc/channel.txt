@@ -117,7 +117,9 @@ Once done with the channel, disconnect it like this: >
 
 Currently up to 10 channels can be in use at the same time. *E897*
 
-When the channel can't be opened you will get an error message.
+When the channel can't be opened you will get an error message.  There is a
+difference between MS-Windows and Unix: On Unix when the port doesn't exist
+ch_open() fails quickly.  On MS-Windows "waittime" applies.
 *E898* *E899* *E900* *E901* *E902*
 
 If there is an error reading or writing a channel it will be closed.
@@ -168,6 +170,9 @@ channel does not have a handler the message is dropped.
 
 On read error or ch_close() the string "DETACH" is sent, if still possible.
 The channel will then be inactive.
+
+It is also possible to use ch_sendraw() on a JSON or JS channel.  The caller
+is then completely responsible for correct encoding and decoding.
 
 ==============================================================================
 4. Vim commands						*channel-commands*
@@ -265,6 +270,8 @@ asynchronously: >
 
 This {string} can also be JSON, use |jsonencode()| to create it and
 |jsondecode()| to handle a received JSON message.
+
+It is not possible to use |ch_sendexpr()| on a raw channel.
 
 ==============================================================================
 6. Job control						*job-control*

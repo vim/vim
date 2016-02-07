@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Feb 04
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Feb 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -81,32 +81,36 @@ Regexp problems:
   Patch by Christian, 2016 Jan 29.
 
 +channel:
-- use a timeout for connect()
-  Patch from Yasuhiro Matsumoto, Feb 2
-  Change connect() second argument to a dict with items:
-    mode
-    timeout
-    callback
+- implement job control:
+	job argument: redirect stdin/stdout
+	job argument: killonexit
+	let job = job_maystart('command', {address}, {options})
 - When receiving malformed json starting with a quote it doesn't get
   discarded.
+- add ch_status(): Whether channel is open.  Perhaps also mode, timeout.
+  When channel closes invoke channel callback.
 - add ch_setcallback()
 - add ch_settimeout()
 - cleanup on exit?  in mch_getout() and getout().
-- Add more contents to channel.txt
+- Add a test for the channel callback.
 - implement debug log
-- implement job control:
-	let job = job_start('command', {options})
-	call job_stop(job)
-	let job = job_maystart('command', {address}, {options})
-    options:
-        - keep running when Vim exits
-- add remark undo sync, is there a way to force it?
-- Add a test with a server that can send canned responses.
+- Add timestamp to queued messages and callbacks with ID, remove after a
+  minute.
+- add remark about undo sync, is there a way to force it?
 - Add more testing in json_test.c
 - make sure errors lead to a useful error msg. ["ex","foobar"]
-- set timeout for channel.
-- implement check for ID in response.
 - json: implement UTF-16 surrogate pair.
+- Need way to uniquely identify a window, no matter how windows are
+  rearranged.  Same for tab pages.
+      getwinid()             ID of current winow
+      getwinid({nr})         ID of window {nr}
+      getwinid({nr}, {tab})  ID of window {nr} in tab page {tab}
+      getwinnr({id})	     window nr of {id} or -1 if not open
+      gettabnr({id})	     tab page nr of {id} or -1 if not open
+      gotowin({id})
+  Make it so that the window ID can be used where currently a window nr is used
+- For connection to server, a "keep open" flag would be useful.  Retry
+  connecting in the main loop with zero timeout.
 
 Patch on #608: (Ken Takata)
 https://bitbucket.org/k_takata/vim-ktakata-mq/src/479934b94fd56b064c9e4bd8737585c5df69d56a/fix-gvimext-loadlibrary.patch?fileviewer=file-view-default
@@ -217,6 +221,8 @@ Patch to fix display of listchars on the cursorline. (Nayuri Aohime, 2013)
 Update suggested by Yasuhiro Matsumoto, 2014 Nov 25:
 https://gist.github.com/presuku/d3d6b230b9b6dcfc0477
 
+Patch to add TagNotFound autocommand. (Anton Lindqvist, 2016 Feb 3)
+
 Illegal memory access, requires ASAN to see. (Dominique Pelle, 2015 Jul 28)
 
 Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
@@ -264,6 +270,9 @@ Can we cache the syntax attributes, so that updates for 'relativenumber' and
 
 Build with Python on Mac does not always use the right library.
 (Kazunobu Kuriyama, 2015 Mar 28)
+
+Patch to add GTK 3 support. (Kazunobu Kuriyama, 2016 Feb 6)
+Does not fully work yet.
 
 Need a Vim equivalent of Python's None and a way to test for it.
 Use v:none.  var == v:none
@@ -621,6 +630,7 @@ Patch to add ":undorecover", get as much text out of the undo file as
 possible. (Christian Brabandt, 2014 Mar 12, update Aug 22)
 
 Include Haiku port? (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
+It can replace the BeOS code, which is likely not used anymore.
 
 Updated spec ftplugin. (Matěj Cepl, 2013 Oct 16)
 
@@ -2607,7 +2617,7 @@ GUI:
     Need better separation of Vim core and GUI code.
 8   When fontset support is enabled, setting 'guifont' to a single font
     doesn't work.
-8   Menu priority for sub-menus for: Amiga, BeOS.
+8   Menu priority for sub-menus for: Amiga.
 8   When translating menus ignore the part after the Tab, the shortcut.  So
     that the same menu item with a different shortcut (e.g., for the Mac) are
     still translated.
