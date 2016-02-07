@@ -14375,8 +14375,7 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
 
 theend:
 #ifdef USE_ARGV
-    if (argv != NULL)
-	vim_free(argv);
+    vim_free(argv);
 #else
     vim_free(ga.ga_data);
 #endif
