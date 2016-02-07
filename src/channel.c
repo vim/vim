@@ -1514,4 +1514,17 @@ set_ref_in_channel(int copyID)
     }
     return abort;
 }
+
+/*
+ * Return the mode of channel "idx".
+ * If "idx" is invalid returns MODE_JSON.
+ */
+    ch_mode_T
+channel_get_mode(int idx)
+{
+    if (idx < 0 || idx >= channel_count)
+	return MODE_JSON;
+    return channels[idx].ch_mode;
+}
+
 #endif /* FEAT_CHANNEL */

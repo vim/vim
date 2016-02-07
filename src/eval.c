@@ -9924,7 +9924,10 @@ send_common(typval_T *argvars, char_u *text, int id, char *fun)
 
     ch_idx = get_channel_arg(&argvars[0]);
     if (ch_idx < 0)
+    {
+	EMSG(_(e_invarg));
 	return -1;
+    }
 
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
@@ -9952,13 +9955,29 @@ f_ch_sendexpr(typval_T *argvars, typval_T *rettv)
     typval_T	*listtv;
     int		ch_idx;
     int		id;
+    ch_mode_T	ch_mode;
 
     /* return an empty string by default */
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
+    ch_idx = get_channel_arg(&argvars[0]);
+    if (ch_idx < 0)
+    {
+	EMSG(_(e_invarg));
+	return;
+    }
+
+    ch_mode = channel_get_mode(ch_idx);
+    if (ch_mode == MODE_RAW)
+    {
+	EMSG(_("E912: cannot use ch_sendexpr() with a raw channel"));
+	return;
+    }
+
     id = channel_get_id();
-    text = json_encode_nr_expr(id, &argvars[1], 0);
+    text = json_encode_nr_expr(id, &argvars[1],
+					    ch_mode == MODE_JS ? JSON_JS : 0);
     if (text == NULL)
 	return;
 
