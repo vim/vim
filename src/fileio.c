@@ -2350,7 +2350,7 @@ failed:
     {
 	int fdflags = fcntl(fd, F_GETFD);
 	if (fdflags >= 0 && (fdflags & FD_CLOEXEC) == 0)
-	    fcntl(fd, F_SETFD, fdflags | FD_CLOEXEC);
+	    (void)fcntl(fd, F_SETFD, fdflags | FD_CLOEXEC);
     }
 #endif
     vim_free(buffer);

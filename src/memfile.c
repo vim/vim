@@ -1312,7 +1312,7 @@ mf_do_open(
 #ifdef HAVE_FD_CLOEXEC
 	int fdflags = fcntl(mfp->mf_fd, F_GETFD);
 	if (fdflags >= 0 && (fdflags & FD_CLOEXEC) == 0)
-	    fcntl(mfp->mf_fd, F_SETFD, fdflags | FD_CLOEXEC);
+	    (void)fcntl(mfp->mf_fd, F_SETFD, fdflags | FD_CLOEXEC);
 #endif
 #if defined(HAVE_SELINUX) || defined(HAVE_SMACK)
 	mch_copy_sec(fname, mfp->mf_fname);

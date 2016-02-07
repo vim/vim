@@ -465,7 +465,7 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 	val = 0;
 	ioctlsocket(sd, FIONBIO, &val);
 #else
-	fcntl(sd, F_SETFL, 0);
+	(void)fcntl(sd, F_SETFL, 0);
 #endif
     }
 
@@ -1474,6 +1474,9 @@ channel_parse_messages(void)
     return ret;
 }
 
+/*
+ * Mark references to lists used in channels.
+ */
     int
 set_ref_in_channel(int copyID)
 {
