@@ -8200,7 +8200,7 @@ static struct fst
     {"isdirectory",	1, 1, f_isdirectory},
     {"islocked",	1, 1, f_islocked},
     {"items",		1, 1, f_items},
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB
     {"job_start",	1, 2, f_job_start},
     {"job_status",	1, 1, f_job_status},
     {"job_stop",	1, 1, f_job_stop},
@@ -22168,7 +22168,7 @@ copy_tv(typval_T *from, typval_T *to)
 	    break;
 #endif
 	case VAR_JOB:
-#ifdef FEAT_FLOAT
+#ifdef FEAT_JOB
 	    to->vval.v_job = from->vval.v_job;
 	    ++to->vval.v_job->jv_refcount;
 	    break;
