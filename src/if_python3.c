@@ -1653,6 +1653,7 @@ do_py3eval (char_u *str, typval_T *rettv)
 	case VAR_STRING:
 	case VAR_FLOAT:
 	case VAR_SPECIAL:
+	case VAR_JOB:
 	    break;
     }
 }
