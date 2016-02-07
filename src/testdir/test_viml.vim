@@ -1028,6 +1028,30 @@ func Test_type()
 endfunc
 
 "-------------------------------------------------------------------------------
+" Test 92:  skipping code					    {{{1
+"-------------------------------------------------------------------------------
+
+func Test_skip()
+    let Fn = function('Test_type')
+    call assert_false(0 && Fn[1])
+    call assert_false(0 && string(Fn))
+    call assert_false(0 && len(Fn))
+    let l = []
+    call assert_false(0 && l[1])
+    call assert_false(0 && string(l))
+    call assert_false(0 && len(l))
+    let f = 1.0
+    call assert_false(0 && f[1])
+    call assert_false(0 && string(f))
+    call assert_false(0 && len(f))
+    let sp = v:null
+    call assert_false(0 && sp[1])
+    call assert_false(0 && string(sp))
+    call assert_false(0 && len(sp))
+
+endfunc
+
+"-------------------------------------------------------------------------------
 " Modelines								    {{{1
 " vim: ts=8 sw=4 tw=80 fdm=marker
 " vim: fdt=substitute(substitute(foldtext(),\ '\\%(^+--\\)\\@<=\\(\\s*\\)\\(.\\{-}\\)\:\ \\%(\"\ \\)\\=\\(Test\ \\d*\\)\:\\s*',\ '\\3\ (\\2)\:\ \\1',\ \"\"),\ '\\(Test\\s*\\)\\(\\d\\)\\D\\@=',\ '\\1\ \\2',\ "")
