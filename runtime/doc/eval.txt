@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 05
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,7 +37,7 @@ done, the features in this document are not available.	See |+eval| and
 
 1.1 Variable types ~
 							*E712*
-There are six types of variables:
+There are eight types of variables:
 
 Number		A 32 or 64 bit signed number.  |expr-number| *Number*
 		Examples:  -123  0x10  0177
@@ -49,15 +49,19 @@ Float		A floating point number. |floating-point-format| *Float*
 String		A NUL terminated string of 8-bit unsigned characters (bytes).
 		|expr-string| Examples: "ab\txx\"--"  'x-z''a,c'
 
-Funcref		A reference to a function |Funcref|.
-		Example: function("strlen")
-
 List		An ordered sequence of items |List|.
 		Example: [1, 2, ['a', 'b']]
 
 Dictionary	An associative, unordered array: Each entry has a key and a
 		value. |Dictionary|
 		Example: {'blue': "#0000ff", 'red': "#ff0000"}
+
+Funcref		A reference to a function |Funcref|.
+		Example: function("strlen")
+
+Special		v:false, v:true, v:none and v:null
+
+Job		Used for job control, see |job_start()|.
 
 The Number and String types are converted automatically, depending on how they
 are used.
@@ -95,15 +99,16 @@ Note that in the command >
 "foo" is converted to 0, which means FALSE.  To test for a non-empty string,
 use empty(): >
 	:if !empty("foo")
-<				*E745* *E728* *E703* *E729* *E730* *E731*
-List, Dictionary and Funcref types are not automatically converted.
+<
+			*E745* *E728* *E703* *E729* *E730* *E731* *E908* *E910*
+List, Dictionary, Funcref and Job types are not automatically converted.
 
 							*E805* *E806* *E808*
 When mixing Number and Float the Number is converted to Float.	Otherwise
 there is no automatic conversion of Float.  You can use str2float() for String
 to Float, printf() for Float to String and float2nr() for Float to Number.
 
-						*E891* *E892* *E893* *E894*
+				*E891* *E892* *E893* *E894* *E907* *E911*
 When expecting a Float a Number can also be used, but nothing else.
 
 						*E706* *sticky-type-checking*
@@ -864,7 +869,7 @@ These three can be repeated and mixed.	Examples:
 expr8							*expr8*
 -----
 expr8[expr1]		item of String or |List|	*expr-[]* *E111*
-
+							*E909*
 If expr8 is a Number or String this results in a String that contains the
 expr1'th single byte from expr8.  expr8 is used as a String, expr1 as a
 Number.  This doesn't recognize multi-byte encodings, see |byteidx()| for
@@ -1947,6 +1952,9 @@ invert( {expr})			Number  bitwise invert
 isdirectory( {directory})	Number	TRUE if {directory} is a directory
 islocked( {expr})		Number	TRUE if {expr} is locked
 items( {dict})			List	key-value pairs in {dict}
+job_start({command} [, {options}]) Job	start a job	
+job_status({job})		String	get the status of a job
+job_stop({job} [, {how}])	Number	stop a job
 join( {list} [, {sep}])		String	join {list} items into one String
 jsondecode( {string})		any	decode JSON
 jsonencode( {expr})		String	encode JSON
@@ -2668,6 +2676,7 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 
 ch_close({handle})					*ch_close()*
 		Close channel {handle}.  See |channel|.
+		{only available when compiled with the |+channel| feature}
 
 ch_open({address} [, {argdict}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
@@ -2677,7 +2686,7 @@ ch_open({address} [, {argdict}])				*ch_open()*
 		{address} has the form "hostname:port", e.g.,
 		"localhost:8765".
 
-		If {argdict} is given it must be a |Directory|.  The optional
+		If {argdict} is given it must be a |Dictionary|.  The optional
 		items are:
 			mode        "raw" or "json".
 				    Default "json".
@@ -2686,10 +2695,11 @@ ch_open({address} [, {argdict}])				*ch_open()*
 				    Default: none.
 			waittime    Specify connect timeout as milliseconds.
 				    Negative means forever.
-				    Default: 0.
+				    Default: 0 (don't wait)
 			timeout	    Specify response read timeout value as
 				    milliseconds. 
 				    Default: 2000.
+		{only available when compiled with the |+channel| feature}
 
 ch_sendexpr({handle}, {expr} [, {callback}])		*ch_sendexpr()*
 		Send {expr} over JSON channel {handle}.  See |channel-use|.
@@ -2704,9 +2714,13 @@ ch_sendexpr({handle}, {expr} [, {callback}])		*ch_sendexpr()*
 		function.  It is called when the response is received.  See
 		|channel-callback|.
 
+		{only available when compiled with the |+channel| feature}
+
 ch_sendraw({handle}, {string} [, {callback}])		*ch_sendraw()*
 		Send {string} over raw channel {handle}.  See |channel-raw|.
 		Works like |ch_sendexpr()|, but does not decode the response.
+
+		{only available when compiled with the |+channel| feature}
 
 							*copy()*
 copy({expr})	Make a copy of {expr}.	For Numbers and Strings this isn't
@@ -2888,9 +2902,12 @@ diff_hlID({lnum}, {col})				*diff_hlID()*
 
 empty({expr})						*empty()*
 		Return the Number 1 if {expr} is empty, zero otherwise.
-		A |List| or |Dictionary| is empty when it does not have any
-		items.	A Number is empty when its value is zero.
-		|v:false|, |v:none| and |v:null| are empty, |v:true| is not.
+		- A |List| or |Dictionary| is empty when it does not have any
+		  items.
+		- A Number and Float is empty when its value is zero.
+		- |v:false|, |v:none| and |v:null| are empty, |v:true| is not.
+		- A Job is empty when it failed to start.
+
 		For a long |List| this is much faster than comparing the
 		length with zero.
 
@@ -4285,6 +4302,73 @@ items({dict})						*items()*
 		entry and the value of this entry.  The |List| is in arbitrary
 		order.
 
+
+job_start({command} [, {options}])				*job_start()*
+		Start a job and return a Job object.  Unlike |system()| and
+		|:!cmd| this does not wait for the job to finish.
+
+		{command} can be a string.  This works best on MS-Windows.  On
+		Unix it is split up in white-separated parts to be passed to
+		execvp().  Arguments in double quotes can contain white space.
+
+		{command} can be a list, where the first item is the executable
+		and further items are the arguments.  All items are converted
+		to String.  This works best on Unix.
+
+		The command is executed directly, not through a shell, the
+		'shell' option is not used.  To use the shell: >
+	let job = job_start(["/bin/sh", "-c", "echo hello"])
+<		Or: >
+	let job = job_start('/bin/sh -c "echo hello"')
+<		However, the status of the job will now be the status of the
+		shell, and stopping the job means stopping the shell and the
+		command may continue to run.
+
+		On Unix $PATH is used to search for the executable only when
+		the command does not contain a slash.
+
+		The job will use the same terminal as Vim.  If it reads from
+		stdin the job and Vim will be fighting over input, that
+		doesn't work.  Redirect stdin and stdout to avoid problems: >
+	let job = job_start(['sh', '-c', "myserver </dev/null >/dev/null"])
+<
+		The returned Job object can be used to get the status with
+		|job_status()| and stop the job with |job_stop()|.
+
+		{options} must be a Dictionary.  It can contain these optional
+		items:
+			killonexit	When non-zero kill the job when Vim
+					exits. (default: 0, don't kill)
+
+		{only available when compiled with the |+channel| feature}
+
+job_status({job})						*job_status()*
+		Returns a String with the status of {job}:
+			"run"	job is running
+			"fail"	job failed to start
+			"dead"	job died or was stopped after running
+
+		{only available when compiled with the |+channel| feature}
+
+job_stop({job} [, {how}])					*job_stop()*
+		Stop the {job}.  This can also be used to signal the job.
+
+		When {how} is omitted or is "term" the job will be terminated
+		normally.  For Unix SIGTERM is sent.
+		Other values:
+			"hup"	Unix: SIGHUP
+			"quit"	Unix: SIGQUIT
+			"kill"	Unix: SIGKILL (strongest way to stop)
+			number	Unix: signal with that number
+
+		The result is a Number: 1 if the operation could be executed,
+		0 if "how" is not supported on the system.
+		Note that even when the operation was executed, whether the
+		job was actually stopped needs to be checked with
+		job_status().
+		The operation will even be done when the job wasn't running.
+
+		{only available when compiled with the |+channel| feature}
 
 join({list} [, {sep}])					*join()*
 		Join the items in {list} together into one String.
@@ -6692,6 +6776,7 @@ type({expr})	The result is a Number, depending on the type of {expr}:
 			Float:	    5
 			Boolean:    6 (v:false and v:true)
 			None	    7 (v:null and v:none)
+			Job	    8
 		To avoid the magic numbers it should be used this way: >
 			:if type(myvar) == type(0)
 			:if type(myvar) == type("")

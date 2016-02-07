@@ -1255,10 +1255,17 @@
 #endif
 
 /*
- * The Channel feature requires +eval.
+ * The +channel feature requires +eval.
  */
 #if !defined(FEAT_EVAL) && defined(FEAT_CHANNEL)
 # undef FEAT_CHANNEL
+#endif
+
+/*
+ * The +job feature requires Unix and +eval.
+ */
+#if defined(UNIX) && defined(FEAT_EVAL)
+# define FEAT_JOB
 #endif
 
 /*

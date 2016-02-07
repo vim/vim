@@ -1110,17 +1110,19 @@ typedef double	float_T;
 
 typedef struct listvar_S list_T;
 typedef struct dictvar_S dict_T;
+typedef struct jobvar_S job_T;
 
 typedef enum
 {
     VAR_UNKNOWN = 0,
-    VAR_NUMBER,	/* "v_number" is used */
-    VAR_STRING,	/* "v_string" is used */
-    VAR_FUNC,	/* "v_string" is function name */
-    VAR_LIST,	/* "v_list" is used */
-    VAR_DICT,	/* "v_dict" is used */
-    VAR_FLOAT,	/* "v_float" is used */
-    VAR_SPECIAL	/* "v_number" is used */
+    VAR_NUMBER,	 /* "v_number" is used */
+    VAR_STRING,	 /* "v_string" is used */
+    VAR_FUNC,	 /* "v_string" is function name */
+    VAR_LIST,	 /* "v_list" is used */
+    VAR_DICT,	 /* "v_dict" is used */
+    VAR_FLOAT,	 /* "v_float" is used */
+    VAR_SPECIAL, /* "v_number" is used */
+    VAR_JOB	 /* "v_job" is used */
 } vartype_T;
 
 /*
@@ -1139,6 +1141,9 @@ typedef struct
 	char_u		*v_string;	/* string value (can be NULL!) */
 	list_T		*v_list;	/* list value (can be NULL!) */
 	dict_T		*v_dict;	/* dict value (can be NULL!) */
+#ifdef FEAT_JOB
+	job_T		*v_job;		/* job value (can be NULL!) */
+#endif
     }		vval;
 } typval_T;
 
@@ -1204,7 +1209,6 @@ struct dictitem_S
     char_u	di_flags;	/* flags (only used for variable) */
     char_u	di_key[1];	/* key (actually longer!) */
 };
-
 typedef struct dictitem_S dictitem_T;
 
 #define DI_FLAGS_RO	1  /* "di_flags" value: read-only variable */
@@ -1226,6 +1230,30 @@ struct dictvar_S
     dict_T	*dv_copydict;	/* copied dict used by deepcopy() */
     dict_T	*dv_used_next;	/* next dict in used dicts list */
     dict_T	*dv_used_prev;	/* previous dict in used dicts list */
+};
+
+typedef enum
+{
+    JOB_FAILED,
+    JOB_STARTED,
+    JOB_ENDED
+} jobstatus_T;
+
+/*
+ * Structure to hold info about a Job.
+ */
+struct jobvar_S
+{
+#ifdef UNIX
+    pid_t	jv_pid;
+    int		jv_exitval;
+#endif
+#ifdef WIN32
+    PROCESS_INFORMATION	jf_pi;
+#endif
+    jobstatus_T	jv_status;
+
+    int		jv_refcount;	/* reference count */
 };
 
 /* structure used for explicit stack while garbage collecting hash tables */

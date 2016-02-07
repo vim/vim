@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Feb 05
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Feb 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -93,7 +93,7 @@ The default is zero, don't wait, which is useful if the server is supposed to
 be running already.  A negative number waits forever.
 
 "timeout" is the time to wait for a request when blocking, using
-ch_sendexpr().  Again in millisecons.  The default si 2000 (2 seconds).
+ch_sendexpr().  Again in milliseconds.  The default is 2000 (2 seconds).
 
 When "mode" is "json" the "msg" argument is the body of the received message,
 converted to Vim types.
@@ -104,13 +104,13 @@ possible to receive a message after sending one.
 
 The handler can be added or changed later: >
     call ch_setcallback(handle, {callback})
-When "callback is empty (zero or an empty string) the handler is removed.
+When "callback" is empty (zero or an empty string) the handler is removed.
 NOT IMPLEMENTED YET
 
 The timeout can be changed later: >
     call ch_settimeout(handle, {msec})
 NOT IMPLEMENTED YET
-
+							  *E906*
 Once done with the channel, disconnect it like this: >
     call ch_close(handle)
 

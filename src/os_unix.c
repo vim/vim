@@ -3919,6 +3919,66 @@ wait4pid(pid_t child, waitstatus *status)
     return wait_pid;
 }
 
+#if defined(FEAT_JOB) || !defined(USE_SYSTEM) || defined(PROTO)
+    int
+mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
+{
+    int		i;
+    char_u	*p;
+    int		inquote;
+
+    /*
+     * Do this loop twice:
+     * 1: find number of arguments
+     * 2: separate them and build argv[]
+     */
+    for (i = 0; i < 2; ++i)
+    {
+	p = cmd;
+	inquote = FALSE;
+	*argc = 0;
+	for (;;)
+	{
+	    if (i == 1)
+		(*argv)[*argc] = (char *)p;
+	    ++*argc;
+	    while (*p != NUL && (inquote || (*p != ' ' && *p != TAB)))
+	    {
+		if (*p == '"')
+		    inquote = !inquote;
+		++p;
+	    }
+	    if (*p == NUL)
+		break;
+	    if (i == 1)
+		*p++ = NUL;
+	    p = skipwhite(p);
+	}
+	if (*argv == NULL)
+	{
+	    if (use_shcf)
+	    {
+		/* Account for possible multiple args in p_shcf. */
+		p = p_shcf;
+		for (;;)
+		{
+		    p = skiptowhite(p);
+		    if (*p == NUL)
+			break;
+		    ++*argc;
+		    p = skipwhite(p);
+		}
+	    }
+
+	    *argv = (char **)alloc((unsigned)((*argc + 4) * sizeof(char *)));
+	    if (*argv == NULL)	    /* out of memory */
+		return FAIL;
+	}
+    }
+    return OK;
+}
+#endif
+
     int
 mch_call_shell(
     char_u	*cmd,
@@ -4046,7 +4106,7 @@ mch_call_shell(
 # define EXEC_FAILED 122    /* Exit code when shell didn't execute.  Don't use
 			       127, some shells use that already */
 
-    char_u	*newcmd = NULL;
+    char_u	*newcmd;
     pid_t	pid;
     pid_t	wpid = 0;
     pid_t	wait_pid = 0;
@@ -4061,7 +4121,6 @@ mch_call_shell(
     char_u	*p_shcf_copy = NULL;
     int		i;
     char_u	*p;
-    int		inquote;
     int		pty_master_fd = -1;	    /* for pty's */
 # ifdef FEAT_GUI
     int		pty_slave_fd = -1;
@@ -4086,53 +4145,9 @@ mch_call_shell(
     if (options & SHELL_COOKED)
 	settmode(TMODE_COOK);		/* set to normal mode */
 
-    /*
-     * Do this loop twice:
-     * 1: find number of arguments
-     * 2: separate them and build argv[]
-     */
-    for (i = 0; i < 2; ++i)
-    {
-	p = newcmd;
-	inquote = FALSE;
-	argc = 0;
-	for (;;)
-	{
-	    if (i == 1)
-		argv[argc] = (char *)p;
-	    ++argc;
-	    while (*p && (inquote || (*p != ' ' && *p != TAB)))
-	    {
-		if (*p == '"')
-		    inquote = !inquote;
-		++p;
-	    }
-	    if (*p == NUL)
-		break;
-	    if (i == 1)
-		*p++ = NUL;
-	    p = skipwhite(p);
-	}
-	if (argv == NULL)
-	{
-	    /*
-	     * Account for possible multiple args in p_shcf.
-	     */
-	    p = p_shcf;
-	    for (;;)
-	    {
-		p = skiptowhite(p);
-		if (*p == NUL)
-		    break;
-		++argc;
-		p = skipwhite(p);
-	    }
+    if (mch_parse_cmd(newcmd, TRUE, &argv, &argc) == FAIL)
+	goto error;
 
-	    argv = (char **)alloc((unsigned)((argc + 4) * sizeof(char *)));
-	    if (argv == NULL)	    /* out of memory */
-		goto error;
-	}
-    }
     if (cmd != NULL)
     {
 	char_u	*s;
@@ -5005,6 +5020,97 @@ error:
 
 #endif /* USE_SYSTEM */
 }
+
+#if defined(FEAT_JOB) || defined(PROTO)
+    void
+mch_start_job(char **argv, job_T *job)
+{
+    pid_t pid = fork();
+
+    if (pid  == -1)	/* maybe we should use vfork() */
+    {
+	job->jv_status = JOB_FAILED;
+    }
+    else if (pid == 0)
+    {
+	/* child */
+	reset_signals();		/* handle signals normally */
+
+# ifdef HAVE_SETSID
+	/* Create our own process group, so that the child and all its
+	 * children can be kill()ed.  Don't do this when using pipes,
+	 * because stdin is not a tty, we would lose /dev/tty. */
+	(void)setsid();
+# endif
+
+	/* See above for type of argv. */
+	execvp(argv[0], argv);
+
+	perror("executing job failed");
+	_exit(EXEC_FAILED);	    /* exec failed, return failure code */
+    }
+    else
+    {
+	/* parent */
+	job->jv_pid = pid;
+	job->jv_status = JOB_STARTED;
+    }
+}
+
+    char *
+mch_job_status(job_T *job)
+{
+# ifdef HAVE_UNION_WAIT
+    union wait	status;
+# else
+    int		status = -1;
+# endif
+    pid_t	wait_pid = 0;
+
+# ifdef __NeXT__
+    wait_pid = wait4(job->jv_pid, &status, WNOHANG, (struct rusage *)0);
+# else
+    wait_pid = waitpid(job->jv_pid, &status, WNOHANG);
+# endif
+    if (wait_pid == -1)
+    {
+	/* process must have exited */
+	job->jv_status = JOB_ENDED;
+	return "dead";
+    }
+    if (wait_pid == 0)
+	return "run";
+    if (WIFEXITED(status))
+    {
+	/* LINTED avoid "bitwise operation on signed value" */
+	job->jv_exitval = WEXITSTATUS(status);
+	job->jv_status = JOB_ENDED;
+	return "dead";
+    }
+    return "run";
+}
+
+    int
+mch_stop_job(job_T *job, char_u *how)
+{
+    int sig = -1;
+
+    if (STRCMP(how, "hup") == 0)
+	sig = SIGHUP;
+    else if (*how == NUL || STRCMP(how, "term") == 0)
+	sig = SIGTERM;
+    else if (STRCMP(how, "quit") == 0)
+	sig = SIGQUIT;
+    else if (STRCMP(how, "kill") == 0)
+	sig = SIGKILL;
+    else if (isdigit(*how))
+	sig = atoi((char *)how);
+    else
+	return FAIL;
+    kill(job->jv_pid, sig);
+    return OK;
+}
+#endif
 
 /*
  * Check for CTRL-C typed by reading all available characters.
