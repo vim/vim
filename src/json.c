@@ -21,6 +21,8 @@ static int json_decode_item(js_read_T *reader, typval_T *res);
 
 /*
  * Encode "val" into a JSON format string.
+ * The result is in allocated memory.
+ * The result is empty when encoding fails.
  */
     char_u *
 json_encode(typval_T *val)
@@ -29,12 +31,16 @@ json_encode(typval_T *val)
 
     /* Store bytes in the growarray. */
     ga_init2(&ga, 1, 4000);
-    json_encode_item(&ga, val, get_copyID(), TRUE);
+    if (json_encode_item(&ga, val, get_copyID(), TRUE) == FAIL)
+    {
+	vim_free(ga.ga_data);
+	return vim_strsave((char_u *)"");
+    }
     return ga.ga_data;
 }
 
 /*
- * Encode ["nr", "val"] into a JSON format string.
+ * Encode ["nr", "val"] into a JSON format string in allocated memory.
  * Returns NULL when out of memory.
  */
     char_u *
@@ -136,8 +142,11 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int allow_none)
 		case VVAL_FALSE: ga_concat(gap, (char_u *)"false"); break;
 		case VVAL_TRUE: ga_concat(gap, (char_u *)"true"); break;
 		case VVAL_NONE: if (!allow_none)
+				{
 				    /* TODO: better error */
 				    EMSG(_(e_invarg));
+				    return FAIL;
+				}
 				break;
 		case VVAL_NULL: ga_concat(gap, (char_u *)"null"); break;
 	    }
@@ -155,6 +164,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int allow_none)
 	    break;
 
 	case VAR_FUNC:
+	case VAR_JOB:
 	    /* no JSON equivalent TODO: better error */
 	    EMSG(_(e_invarg));
 	    return FAIL;
@@ -226,14 +236,15 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int allow_none)
 	    }
 	    break;
 
-#ifdef FEAT_FLOAT
 	case VAR_FLOAT:
+#ifdef FEAT_FLOAT
 	    vim_snprintf((char *)numbuf, NUMBUFLEN, "%g", val->vval.v_float);
 	    ga_concat(gap, numbuf);
 	    break;
 #endif
-	default: EMSG2(_(e_intern2), "json_encode_item()"); break;
-		 return FAIL;
+	case VAR_UNKNOWN:
+	    EMSG2(_(e_intern2), "json_encode_item()"); break;
+	    return FAIL;
     }
     return OK;
 }

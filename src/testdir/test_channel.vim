@@ -118,10 +118,15 @@ func Test_communicate()
   sleep 10m
   call assert_equal([-2, 'ERROR'], ch_sendexpr(handle, 'eval-result'))
 
+  " Send an eval request that works but can't be encoded.
+  call assert_equal('ok', ch_sendexpr(handle, 'eval-error'))
+  sleep 10m
+  call assert_equal([-3, 'ERROR'], ch_sendexpr(handle, 'eval-result'))
+
   " Send a bad eval request. There will be no response.
   call assert_equal('ok', ch_sendexpr(handle, 'eval-bad'))
   sleep 10m
-  call assert_equal([-2, 'ERROR'], ch_sendexpr(handle, 'eval-result'))
+  call assert_equal([-3, 'ERROR'], ch_sendexpr(handle, 'eval-result'))
 
   " Send an expr request
   call assert_equal('ok', ch_sendexpr(handle, 'an expr'))

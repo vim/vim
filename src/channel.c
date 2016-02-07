@@ -853,24 +853,31 @@ channel_exe_cmd(int idx, char_u *cmd, typval_T *arg2, typval_T *arg3)
 	{
 	    typval_T	*tv;
 	    typval_T	err_tv;
-	    char_u	*json;
+	    char_u	*json = NULL;
 
 	    /* Don't pollute the display with errors. */
 	    ++emsg_skip;
 	    tv = eval_expr(arg, NULL);
-	    --emsg_skip;
 	    if (is_eval)
 	    {
-		if (tv == NULL)
+		if (tv != NULL)
+		    json = json_encode_nr_expr(arg3->vval.v_number, tv);
+		if (tv == NULL || (json != NULL && *json == NUL))
 		{
+		    /* If evaluation failed or the result can't be encoded
+		     * then return the string "ERROR". */
 		    err_tv.v_type = VAR_STRING;
 		    err_tv.vval.v_string = (char_u *)"ERROR";
 		    tv = &err_tv;
+		    json = json_encode_nr_expr(arg3->vval.v_number, tv);
 		}
-		json = json_encode_nr_expr(arg3->vval.v_number, tv);
-		channel_send(idx, json, "eval");
-		vim_free(json);
+		if (json != NULL)
+		{
+		    channel_send(idx, json, "eval");
+		    vim_free(json);
+		}
 	    }
+	    --emsg_skip;
 	    if (tv != &err_tv)
 		free_tv(tv);
 	}
