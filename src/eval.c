@@ -10611,7 +10611,7 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     static void
 f_empty(typval_T *argvars, typval_T *rettv)
 {
-    int		n;
+    int		n = FALSE;
 
     switch (argvars[0].v_type)
     {
@@ -19935,7 +19935,7 @@ f_trunc(typval_T *argvars, typval_T *rettv)
     static void
 f_type(typval_T *argvars, typval_T *rettv)
 {
-    int n;
+    int n = -1;
 
     switch (argvars[0].v_type)
     {
@@ -24952,7 +24952,7 @@ write_viminfo_varlist(FILE *fp)
     hashitem_T	*hi;
     dictitem_T	*this_var;
     int		todo;
-    char	*s;
+    char	*s = "";
     char_u	*p;
     char_u	*tofree;
     char_u	numbuf[NUMBUFLEN];
