@@ -116,6 +116,8 @@ typedef struct {
 
     void      (*ch_close_cb)(void); /* callback for when channel is closed */
 
+    int	      ch_block_id;	/* ID that channel_read_json_block() is
+				   waiting for */
     char_u    *ch_callback;	/* function to call when a msg is not handled */
     cbq_T     ch_cb_head;	/* dummy node for pre-request callbacks */
 
@@ -765,15 +767,17 @@ remove_json_node(jsonq_T *node)
 /*
  * Get a message from the JSON queue for channel "ch_idx".
  * When "id" is positive it must match the first number in the list.
- * When "id" is zero or negative jut get the first message.
+ * When "id" is zero or negative jut get the first message.  But not the one
+ * with id ch_block_id.
  * Return OK when found and return the value in "rettv".
  * Return FAIL otherwise.
  */
     static int
 channel_get_json(int ch_idx, int id, typval_T **rettv)
 {
-    jsonq_T *head = &channels[ch_idx].ch_json_head;
-    jsonq_T *item = head->next;
+    channel_T *channel = &channels[ch_idx];
+    jsonq_T   *head = &channel->ch_json_head;
+    jsonq_T   *item = head->next;
 
     while (item != head)
     {
@@ -781,7 +785,8 @@ channel_get_json(int ch_idx, int id, typval_T **rettv)
 	typval_T    *tv = &l->lv_first->li_tv;
 
 	if ((id > 0 && tv->v_type == VAR_NUMBER && tv->vval.v_number == id)
-	      || id <= 0)
+	      || (id <= 0 && (tv->v_type != VAR_NUMBER
+			       || tv->vval.v_number != channel->ch_block_id)))
 	{
 	    *rettv = item->value;
 	    remove_json_node(item);
@@ -1291,15 +1296,20 @@ channel_read_block(int idx)
     int
 channel_read_json_block(int ch_idx, int id, typval_T **rettv)
 {
-    int  more;
+    int		more;
+    channel_T	*channel = &channels[ch_idx];
 
+    channel->ch_block_id = id;
     for (;;)
     {
 	more = channel_parse_json(ch_idx);
 
 	/* search for messsage "id" */
 	if (channel_get_json(ch_idx, id, rettv) == OK)
+	{
+	    channel->ch_block_id = 0;
 	    return OK;
+	}
 
 	if (!more)
 	{
@@ -1309,13 +1319,13 @@ channel_read_json_block(int ch_idx, int id, typval_T **rettv)
 		continue;
 
 	    /* Wait for up to the channel timeout. */
-	    if (channels[ch_idx].ch_fd < 0
-			|| channel_wait(channels[ch_idx].ch_fd,
-					 channels[ch_idx].ch_timeout) == FAIL)
+	    if (channel->ch_fd < 0 || channel_wait(channel->ch_fd,
+						 channel->ch_timeout) == FAIL)
 		break;
 	    channel_read(ch_idx);
 	}
     }
+    channel->ch_block_id = 0;
     return FAIL;
 }
 
