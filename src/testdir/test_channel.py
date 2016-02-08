@@ -133,7 +133,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     elif decoded[1] == '!quit!':
                         # we're done
                         self.server.shutdown()
-                        break
+                        return
                     elif decoded[1] == '!crash!':
                         # Crash!
                         42 / 0
