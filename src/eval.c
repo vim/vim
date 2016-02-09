@@ -21606,8 +21606,12 @@ get_tv_string_buf_chk(typval_T *varp, char_u *buf)
 # ifdef UNIX
 		vim_snprintf((char *)buf, NUMBUFLEN,
 			    "process %ld %s", (long)job->jv_pid, status);
+# elif defined(WIN32)
+		vim_snprintf((char *)buf, NUMBUFLEN,
+			    "process %ld %s", (long)job->jf_pi.dwProcessId,
+			    status);
 # else
-		/* TODO */
+		/* fall-back */
 		vim_snprintf((char *)buf, NUMBUFLEN, "process ? %s", status);
 # endif
 		return buf;
