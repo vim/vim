@@ -23,6 +23,7 @@ else
 endif
 
 let s:port = -1
+let s:chopt = has('macunix') ? {'waittime' : 1} : {}
 
 func s:start_server()
   " The Python program writes the port number in Xportnr.
@@ -60,7 +61,7 @@ func s:start_server()
   endif
   let s:port = l[0]
 
-  let handle = ch_open('localhost:' . s:port)
+  let handle = ch_open('localhost:' . s:port, s:chopt)
   return handle
 endfunc
 
@@ -155,7 +156,7 @@ func Test_two_channels()
   endif
   call assert_equal('got it', ch_sendexpr(handle, 'hello!'))
 
-  let newhandle = ch_open('localhost:' . s:port)
+  let newhandle = ch_open('localhost:' . s:port, s:chopt)
   call assert_equal('got it', ch_sendexpr(newhandle, 'hello!'))
   call assert_equal('got it', ch_sendexpr(handle, 'hello!'))
 
@@ -181,7 +182,7 @@ endfunc
 " Test that trying to connect to a non-existing port fails quickly.
 func Test_connect_waittime()
   let start = reltime()
-  let handle = ch_open('localhost:9876')
+  let handle = ch_open('localhost:9876', s:chopt)
   if handle >= 0
     " Oops, port does exists.
     call ch_close(handle)
