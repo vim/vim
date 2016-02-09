@@ -1611,7 +1611,12 @@ ins_redraw(
 # endif
 # ifdef FEAT_AUTOCMD
 	if (has_cursormovedI())
+	{
+	    /* Make sure curswant is correct, an autocommand may call
+	     * getcurpos(). */
+	    update_curswant();
 	    apply_autocmds(EVENT_CURSORMOVEDI, NULL, NULL, FALSE, curbuf);
+	}
 # endif
 # ifdef FEAT_CONCEAL
 	if (curwin->w_p_cole > 0)
