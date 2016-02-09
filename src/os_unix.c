@@ -3920,6 +3920,11 @@ wait4pid(pid_t child, waitstatus *status)
 }
 
 #if defined(FEAT_JOB) || !defined(USE_SYSTEM) || defined(PROTO)
+/*
+ * Parse "cmd" and put the white-separated parts in "argv".
+ * "argv" is an allocated array with "argc" entries.
+ * Returns FAIL when out of memory.
+ */
     int
 mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 {
@@ -5107,7 +5112,8 @@ mch_stop_job(job_T *job, char_u *how)
 	sig = atoi((char *)how);
     else
 	return FAIL;
-    kill(job->jv_pid, sig);
+    /* TODO: have an option to only kill the process, not the group? */
+    kill(-job->jv_pid, sig);
     return OK;
 }
 #endif
