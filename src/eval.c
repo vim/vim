@@ -532,6 +532,7 @@ static void f_delete(typval_T *argvars, typval_T *rettv);
 static void f_did_filetype(typval_T *argvars, typval_T *rettv);
 static void f_diff_filler(typval_T *argvars, typval_T *rettv);
 static void f_diff_hlID(typval_T *argvars, typval_T *rettv);
+static void f_disable_char_avail_for_testing(typval_T *argvars, typval_T *rettv);
 static void f_empty(typval_T *argvars, typval_T *rettv);
 static void f_escape(typval_T *argvars, typval_T *rettv);
 static void f_eval(typval_T *argvars, typval_T *rettv);
@@ -8111,6 +8112,7 @@ static struct fst
     {"did_filetype",	0, 0, f_did_filetype},
     {"diff_filler",	1, 1, f_diff_filler},
     {"diff_hlID",	2, 2, f_diff_hlID},
+    {"disable_char_avail_for_testing", 1, 1, f_disable_char_avail_for_testing},
     {"empty",		1, 1, f_empty},
     {"escape",		2, 2, f_escape},
     {"eval",		1, 1, f_eval},
@@ -10606,6 +10608,15 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 }
 
 /*
+ * "disable_char_avail_for_testing({expr})" function
+ */
+    static void
+f_disable_char_avail_for_testing(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    disable_char_avail_for_testing = get_tv_number(&argvars[0]);
+}
+
+/*
  * "empty({expr})" function
  */
     static void
@@ -12449,8 +12460,11 @@ getpos_both(
 #endif
 							      (varnumber_T)0);
 	if (getcurpos)
+	{
+	    update_curswant();
 	    list_append_number(l, curwin->w_curswant == MAXCOL ?
 		    (varnumber_T)MAXCOL : (varnumber_T)curwin->w_curswant + 1);
+	}
     }
     else
 	rettv->vval.v_number = FALSE;

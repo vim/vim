@@ -1621,6 +1621,8 @@ EXTERN alloc_id_T  alloc_fail_id INIT(= aid_none);
 EXTERN int  alloc_fail_countdown INIT(= -1);
 /* set by alloc_fail(), number of times alloc() returns NULL */
 EXTERN int  alloc_fail_repeat INIT(= 0);
+
+EXTERN int  disable_char_avail_for_testing INIT(= 0);
 #endif
 
 /*
