@@ -19,55 +19,63 @@ elseif has('win32')
     finish
   endif
 else
+  " Can't run this test.
   finish
 endif
 
-let s:port = -1
 let s:chopt = has('macunix') ? {'waittime' : 1} : {}
 
-func s:start_server()
+" Run "testfunc" after sarting the server and stop the server afterwards.
+func s:run_server(testfunc)
   " The Python program writes the port number in Xportnr.
   call delete("Xportnr")
 
-  if has('job')
-    let s:job = job_start("python test_channel.py")
-  elseif has('win32')
-    silent !start cmd /c start "test_channel" py test_channel.py
-  else
-    silent !python test_channel.py&
-  endif
-
-  " Wait for up to 2 seconds for the port number to be there.
-  let cnt = 20
-  let l = []
-  while cnt > 0
-    try
-      let l = readfile("Xportnr")
-    catch
-    endtry
-    if len(l) >= 1
-      break
+  try
+    if has('job')
+      let s:job = job_start("python test_channel.py")
+    elseif has('win32')
+      silent !start cmd /c start "test_channel" py test_channel.py
+    else
+      silent !python test_channel.py&
     endif
-    sleep 100m
-    let cnt -= 1
-  endwhile
-  call delete("Xportnr")
 
-  if len(l) == 0
-    " Can't make the connection, give up.
+    " Wait for up to 2 seconds for the port number to be there.
+    let cnt = 20
+    let l = []
+    while cnt > 0
+      try
+        let l = readfile("Xportnr")
+      catch
+      endtry
+      if len(l) >= 1
+        break
+      endif
+      sleep 100m
+      let cnt -= 1
+    endwhile
+    call delete("Xportnr")
+
+    if len(l) == 0
+      " Can't make the connection, give up.
+      call assert_false(1, "Can't start test_channel.py")
+      return -1
+    endif
+    let port = l[0]
+
+    call call(function(a:testfunc), [port])
+  catch
+    call assert_false(1, "Caught exception: " . v:exception)
+  finally
     call s:kill_server()
-    call assert_false(1, "Can't start test_channel.py")
-    return -1
-  endif
-  let s:port = l[0]
-
-  let handle = ch_open('localhost:' . s:port, s:chopt)
-  return handle
+  endtry
 endfunc
 
 func s:kill_server()
   if has('job')
-    call job_stop(s:job)
+    if exists('s:job')
+      call job_stop(s:job)
+      unlet s:job
+    endif
   elseif has('win32')
     call system('taskkill /IM py.exe /T /F /FI "WINDOWTITLE eq test_channel"')
   else
@@ -82,9 +90,10 @@ func s:RequestHandler(handle, msg)
   let s:responseMsg = a:msg
 endfunc
 
-func Test_communicate()
-  let handle = s:start_server()
+func s:communicate(port)
+  let handle = ch_open('localhost:' . a:port, s:chopt)
   if handle < 0
+    call assert_false(1, "Can't open channel")
     return
   endif
 
@@ -144,39 +153,55 @@ func Test_communicate()
 
   " make the server quit, can't check if this works, should not hang.
   call ch_sendexpr(handle, '!quit!', 0)
+endfunc
 
-  call s:kill_server()
+func Test_communicate()
+  call s:run_server('s:communicate')
 endfunc
 
 " Test that we can open two channels.
-func Test_two_channels()
-  let handle = s:start_server()
+func s:two_channels(port)
+  let handle = ch_open('localhost:' . a:port)
   if handle < 0
+    call assert_false(1, "Can't open channel")
     return
   endif
+
   call assert_equal('got it', ch_sendexpr(handle, 'hello!'))
 
-  let newhandle = ch_open('localhost:' . s:port, s:chopt)
+  let newhandle = ch_open('localhost:' . a:port, s:chopt)
+  if newhandle < 0
+    call assert_false(1, "Can't open second channel")
+    return
+  endif
   call assert_equal('got it', ch_sendexpr(newhandle, 'hello!'))
   call assert_equal('got it', ch_sendexpr(handle, 'hello!'))
 
   call ch_close(handle)
   call assert_equal('got it', ch_sendexpr(newhandle, 'hello!'))
 
-  call s:kill_server()
+  call ch_close(newhandle)
+endfunc
+
+func Test_two_channels()
+  call s:run_server('s:two_channels')
 endfunc
 
 " Test that a server crash is handled gracefully.
-func Test_server_crash()
-  let handle = s:start_server()
+func s:server_crash(port)
+  let handle = ch_open('localhost:' . a:port, s:chopt)
   if handle < 0
+    call assert_false(1, "Can't open channel")
     return
   endif
+
   call ch_sendexpr(handle, '!crash!')
 
-  " kill the server in case if failed to crash
   sleep 10m
-  call s:kill_server()
+endfunc
+
+func Test_server_crash()
+  call s:run_server('s:server_crash')
 endfunc
 
 " Test that trying to connect to a non-existing port fails quickly.
@@ -198,6 +223,7 @@ func Test_connect_waittime()
     call ch_close(handle)
   else
     " Failed connection doesn't wait the full time on Unix.
+    " TODO: why is MS-Windows different?
     let elapsed = reltime(start)
     call assert_true(reltimefloat(elapsed) < (has('unix') ? 1.0 : 3.0))
   endif
