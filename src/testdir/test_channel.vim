@@ -204,6 +204,35 @@ func Test_server_crash()
   call s:run_server('s:server_crash')
 endfunc
 
+let s:reply = ""
+func s:Handler(chan, msg)
+  let s:reply = a:msg
+endfunc
+
+func s:channel_handler(port)
+  let chopt = copy(s:chopt)
+  let chopt['callback'] = 's:Handler'
+  let handle = ch_open('localhost:' . a:port, chopt)
+  if handle < 0
+    call assert_false(1, "Can't open channel")
+    return
+  endif
+
+  " Test that it works while waiting on a numbered message.
+  call assert_equal('ok', ch_sendexpr(handle, 'call me'))
+  sleep 10m
+  call assert_equal('we called you', s:reply)
+
+  " Test that it works while not waiting on a numbered message.
+  call ch_sendexpr(handle, 'call me again', 0)
+  sleep 10m
+  call assert_equal('we did call you', s:reply)
+endfunc
+
+func Test_channel_handler()
+  call s:run_server('s:channel_handler')
+endfunc
+
 " Test that trying to connect to a non-existing port fails quickly.
 func Test_connect_waittime()
   let start = reltime()

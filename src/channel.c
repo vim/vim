@@ -786,6 +786,7 @@ channel_get_json(int ch_idx, int id, typval_T **rettv)
 
 	if ((id > 0 && tv->v_type == VAR_NUMBER && tv->vval.v_number == id)
 	      || (id <= 0 && (tv->v_type != VAR_NUMBER
+			       || tv->vval.v_number == 0
 			       || tv->vval.v_number != channel->ch_block_id)))
 	{
 	    *rettv = item->value;

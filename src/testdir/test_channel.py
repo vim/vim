@@ -130,6 +130,16 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     elif decoded[1] == 'eval-result':
                         # Send back the last received eval result.
                         response = last_eval
+                    elif decoded[1] == 'call me':
+                        cmd = '[0,"we called you"]'
+                        print("sending: {}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                    elif decoded[1] == 'call me again':
+                        cmd = '[0,"we did call you"]'
+                        print("sending: {}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = ""
                     elif decoded[1] == '!quit!':
                         # we're done
                         self.server.shutdown()
@@ -140,9 +150,12 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     else:
                         response = "what?"
 
-                    encoded = json.dumps([decoded[0], response])
-                    print("sending: {}".format(encoded))
-                    self.request.sendall(encoded.encode('utf-8'))
+                    if response == "":
+                        print("no response")
+                    else:
+                        encoded = json.dumps([decoded[0], response])
+                        print("sending: {}".format(encoded))
+                        self.request.sendall(encoded.encode('utf-8'))
 
                 # Negative numbers are used for "eval" responses.
                 elif decoded[0] < 0:
