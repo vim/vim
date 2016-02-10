@@ -161,7 +161,7 @@ endfunc
 
 " Test that we can open two channels.
 func s:two_channels(port)
-  let handle = ch_open('localhost:' . a:port)
+  let handle = ch_open('localhost:' . a:port, s:chopt)
   if handle < 0
     call assert_false(1, "Can't open channel")
     return
