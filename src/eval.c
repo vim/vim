@@ -629,10 +629,10 @@ static void f_job_stop(typval_T *argvars, typval_T *rettv);
 static void f_job_status(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_join(typval_T *argvars, typval_T *rettv);
-static void f_jsdecode(typval_T *argvars, typval_T *rettv);
-static void f_jsencode(typval_T *argvars, typval_T *rettv);
-static void f_jsondecode(typval_T *argvars, typval_T *rettv);
-static void f_jsonencode(typval_T *argvars, typval_T *rettv);
+static void f_js_decode(typval_T *argvars, typval_T *rettv);
+static void f_js_encode(typval_T *argvars, typval_T *rettv);
+static void f_json_decode(typval_T *argvars, typval_T *rettv);
+static void f_json_encode(typval_T *argvars, typval_T *rettv);
 static void f_keys(typval_T *argvars, typval_T *rettv);
 static void f_last_buffer_nr(typval_T *argvars, typval_T *rettv);
 static void f_len(typval_T *argvars, typval_T *rettv);
@@ -8213,10 +8213,10 @@ static struct fst
     {"job_stop",	1, 2, f_job_stop},
 #endif
     {"join",		1, 2, f_join},
-    {"jsdecode",	1, 1, f_jsdecode},
-    {"jsencode",	1, 1, f_jsencode},
-    {"jsondecode",	1, 1, f_jsondecode},
-    {"jsonencode",	1, 1, f_jsonencode},
+    {"js_decode",	1, 1, f_js_decode},
+    {"js_encode",	1, 1, f_js_encode},
+    {"json_decode",	1, 1, f_json_decode},
+    {"json_encode",	1, 1, f_json_encode},
     {"keys",		1, 1, f_keys},
     {"last_buffer_nr",	0, 0, f_last_buffer_nr},/* obsolete */
     {"len",		1, 1, f_len},
@@ -14488,10 +14488,10 @@ f_join(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "jsdecode()" function
+ * "js_decode()" function
  */
     static void
-f_jsdecode(typval_T *argvars, typval_T *rettv)
+f_js_decode(typval_T *argvars, typval_T *rettv)
 {
     js_read_T	reader;
 
@@ -14503,20 +14503,20 @@ f_jsdecode(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "jsencode()" function
+ * "js_encode()" function
  */
     static void
-f_jsencode(typval_T *argvars, typval_T *rettv)
+f_js_encode(typval_T *argvars, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = json_encode(&argvars[0], JSON_JS);
 }
 
 /*
- * "jsondecode()" function
+ * "json_decode()" function
  */
     static void
-f_jsondecode(typval_T *argvars, typval_T *rettv)
+f_json_decode(typval_T *argvars, typval_T *rettv)
 {
     js_read_T	reader;
 
@@ -14528,10 +14528,10 @@ f_jsondecode(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "jsonencode()" function
+ * "json_encode()" function
  */
     static void
-f_jsonencode(typval_T *argvars, typval_T *rettv)
+f_json_encode(typval_T *argvars, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = json_encode(&argvars[0], 0);

@@ -1846,6 +1846,7 @@ delete( {fname} [, {flags}])	Number	delete the file or directory {fname}
 did_filetype()			Number	TRUE if FileType autocommand event used
 diff_filler( {lnum})		Number	diff filler lines about {lnum}
 diff_hlID( {lnum}, {col})	Number	diff highlighting at {lnum}/{col}
+disable_char_avail_for_testing({expr})  none  test without typeahead
 empty( {expr})			Number	TRUE if {expr} is empty
 escape( {string}, {chars})	String	escape {chars} in {string} with '\'
 eval( {string})			any	evaluate {string} into its value
@@ -1952,14 +1953,14 @@ invert( {expr})			Number  bitwise invert
 isdirectory( {directory})	Number	TRUE if {directory} is a directory
 islocked( {expr})		Number	TRUE if {expr} is locked
 items( {dict})			List	key-value pairs in {dict}
-job_start({command} [, {options}]) Job	start a job	
-job_status({job})		String	get the status of a job
-job_stop({job} [, {how}])	Number	stop a job
+job_start( {command} [, {options}]) Job	start a job	
+job_status( {job})		String	get the status of a job
+job_stop( {job} [, {how}])	Number	stop a job
 join( {list} [, {sep}])		String	join {list} items into one String
-jsdecode( {string})		any	decode JS style JSON
-jsencode( {expr})		String	encode JS style JSON
-jsondecode( {string})		any	decode JSON
-jsonencode( {expr})		String	encode JSON
+js_decode( {string})		any	decode JS style JSON
+js_encode( {expr})		String	encode JS style JSON
+json_decode( {string})		any	decode JSON
+json_encode( {expr})		String	encode JSON
 keys( {dict})			List	keys in {dict}
 len( {expr})			Number	the length of {expr}
 libcall( {lib}, {func}, {arg})	String	call {func} in library {lib} with {arg}
@@ -2733,8 +2734,9 @@ copy({expr})	Make a copy of {expr}.	For Numbers and Strings this isn't
 		When {expr} is a |List| a shallow copy is created.  This means
 		that the original |List| can be changed without changing the
 		copy, and vice versa.  But the items are identical, thus
-		changing an item changes the contents of both |Lists|.	Also
-		see |deepcopy()|.
+		changing an item changes the contents of both |Lists|.
+		A |Dictionary| is copied in a similar way as a |List|.
+		Also see |deepcopy()|.
 
 cos({expr})						*cos()*
 		Return the cosine of {expr}, measured in radians, as a |Float|.
@@ -4386,30 +4388,30 @@ join({list} [, {sep}])					*join()*
 		converted into a string like with |string()|.
 		The opposite function is |split()|.
 
-jsdecode({string})					*jsdecode()*
-		This is similar to |jsondecode()| with these differences:
+js_decode({string})					*js_decode()*
+		This is similar to |json_decode()| with these differences:
 		- Object key names do not have to be in quotes.
 		- Empty items in an array (between two commas) are allowed and
 		  result in v:none items.
 
-jsencode({expr})					*jsencode()*
-		This is similar to |jsonencode()| with these differences:
+js_encode({expr})					*js_encode()*
+		This is similar to |json_encode()| with these differences:
 		- Object key names are not in quotes.
 		- v:none items in an array result in an empty item between
 		  commas.
 		For example, the Vim object:
-			[1,v:none,{"one":1}],v:none ~
+			[1,v:none,{"one":1},v:none] ~
 		Will be encoded as:
 			[1,,{one:1},,] ~
-		While jsonencode() would produce:
+		While json_encode() would produce:
 			[1,null,{"one":1},null] ~
 		This encoding is valid for JavaScript. It is more efficient
 		than JSON, especially when using an array with optional items.
 
 
-jsondecode({string})					*jsondecode()*
+json_decode({string})					*json_decode()*
 		This parses a JSON formatted string and returns the equivalent
-		in Vim values.  See |jsonencode()| for the relation between
+		in Vim values.  See |json_encode()| for the relation between
 		JSON and Vim values.
 		The decoding is permissive:
 		- A trailing comma in an array and object is ignored.
@@ -4419,7 +4421,7 @@ jsondecode({string})					*jsondecode()*
 		- An empty object member name is not allowed.
 		- Duplicate object member names are not allowed.
 
-jsonencode({expr})					*jsonencode()*
+json_encode({expr})					*json_encode()*
 		Encode {expr} as JSON and return this as a string.
 		The encoding is specified in:
 		https://tools.ietf.org/html/rfc7159.html
