@@ -9871,12 +9871,13 @@ f_ch_open(typval_T *argvars, typval_T *rettv)
 
     if (argvars[1].v_type == VAR_DICT)
     {
-	/* parse argdict */
-	dict_T	*dict = argvars[1].vval.v_dict;
+	dict_T	    *dict = argvars[1].vval.v_dict;
+	dictitem_T  *item;
 
-	if (dict_find(dict, (char_u *)"mode", -1) != NULL)
+	/* parse argdict */
+	if ((item = dict_find(dict, (char_u *)"mode", -1)) != NULL)
 	{
-	    mode = get_dict_string(dict, (char_u *)"mode", FALSE);
+	    mode = get_tv_string(&item->di_tv);
 	    if (STRCMP(mode, "raw") == 0)
 		ch_mode = MODE_RAW;
 	    else if (STRCMP(mode, "js") == 0)
@@ -9889,12 +9890,12 @@ f_ch_open(typval_T *argvars, typval_T *rettv)
 		return;
 	    }
 	}
-	if (dict_find(dict, (char_u *)"waittime", -1) != NULL)
-	    waittime = get_dict_number(dict, (char_u *)"waittime");
-	if (dict_find(dict, (char_u *)"timeout", -1) != NULL)
-	    timeout = get_dict_number(dict, (char_u *)"timeout");
-	if (dict_find(dict, (char_u *)"callback", -1) != NULL)
-	    callback = get_dict_string(dict, (char_u *)"callback", FALSE);
+	if ((item = dict_find(dict, (char_u *)"waittime", -1)) != NULL)
+	    waittime = get_tv_number(&item->di_tv);
+	if ((item = dict_find(dict, (char_u *)"timeout", -1)) != NULL)
+	    timeout = get_tv_number(&item->di_tv);
+	if ((item = dict_find(dict, (char_u *)"callback", -1)) != NULL)
+	    callback = get_callback(&item->di_tv);
     }
     if (waittime < 0 || timeout < 0)
     {
