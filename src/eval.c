@@ -21622,7 +21622,7 @@ get_tv_string_buf_chk(typval_T *varp, char_u *buf)
 			    "process %ld %s", (long)job->jv_pid, status);
 # elif defined(WIN32)
 		vim_snprintf((char *)buf, NUMBUFLEN,
-			    "process %ld %s", (long)job->jf_pi.dwProcessId,
+			    "process %ld %s", (long)job->jv_pi.dwProcessId,
 			    status);
 # else
 		/* fall-back */

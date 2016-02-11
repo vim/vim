@@ -5050,7 +5050,7 @@ mch_start_job(char *cmd, job_T *job)
 	job->jv_status = JOB_FAILED;
     else
     {
-	job->jf_pi = pi;
+	job->jv_pi = pi;
 	job->jv_status = JOB_STARTED;
     }
 }
@@ -5060,12 +5060,12 @@ mch_job_status(job_T *job)
 {
     DWORD dwExitCode = 0;
 
-    if (!GetExitCodeProcess(job->jf_pi.hProcess, &dwExitCode))
+    if (!GetExitCodeProcess(job->jv_pi.hProcess, &dwExitCode))
 	return "dead";
     if (dwExitCode != STILL_ACTIVE)
     {
-	CloseHandle(job->jf_pi.hProcess);
-	CloseHandle(job->jf_pi.hThread);
+	CloseHandle(job->jv_pi.hProcess);
+	CloseHandle(job->jv_pi.hThread);
 	return "dead";
     }
     return "run";
@@ -5075,12 +5075,12 @@ mch_job_status(job_T *job)
 mch_stop_job(job_T *job, char_u *how)
 {
     if (STRCMP(how, "kill") == 0)
-	TerminateProcess(job->jf_pi.hProcess, 0);
+	TerminateProcess(job->jv_pi.hProcess, 0);
     else
 	return GenerateConsoleCtrlEvent(
 	    STRCMP(how, "hup") == 0 ?
 		    CTRL_BREAK_EVENT : CTRL_C_EVENT,
-		job->jf_pi.dwProcessId) ? OK : FAIL;
+		job->jv_pi.dwProcessId) ? OK : FAIL;
     return OK;
 }
 #endif
