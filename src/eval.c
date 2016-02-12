@@ -7720,8 +7720,7 @@ failret:
     static void
 job_free(job_T *job)
 {
-    /* TODO: free any handles */
-
+    mch_clear_job(job);
     vim_free(job);
 }
 
@@ -14369,9 +14368,11 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
 		s = vim_strsave_shellescape(s, FALSE, TRUE);
 		if (s == NULL)
 		    goto theend;
+		ga_concat(&ga, s);
+		vim_free(s);
 	    }
-	    ga_concat(&ga, s);
-	    vim_free(s);
+	    else
+		ga_concat(&ga, s);
 	    if (li->li_next != NULL)
 		ga_append(&ga, ' ');
 #endif
@@ -21623,7 +21624,8 @@ get_tv_string_buf_chk(typval_T *varp, char_u *buf)
 			    "process %ld %s", (long)job->jv_pid, status);
 # elif defined(WIN32)
 		vim_snprintf((char *)buf, NUMBUFLEN,
-			    "process %ld %s", (long)job->jv_pi.dwProcessId,
+			    "process %ld %s",
+			    (long)job->jv_proc_info.dwProcessId,
 			    status);
 # else
 		/* fall-back */

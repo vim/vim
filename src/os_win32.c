@@ -5038,19 +5038,44 @@ mch_start_job(char *cmd, job_T *job)
 {
     STARTUPINFO		si;
     PROCESS_INFORMATION	pi;
+    HANDLE		jo;
 
+    jo = CreateJobObject(NULL, NULL);
+    if (jo == NULL)
+    {
+	job->jv_status = JOB_FAILED;
+	return;
+    }
+
+    ZeroMemory(&pi, sizeof(pi));
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
+    si.dwFlags = STARTF_USESHOWWINDOW;
+    si.wShowWindow = SW_HIDE;
 
     if (!vim_create_process(cmd, FALSE,
+	    CREATE_SUSPENDED |
 	    CREATE_DEFAULT_ERROR_MODE |
 	    CREATE_NEW_PROCESS_GROUP |
-	    CREATE_NO_WINDOW,
+	    CREATE_NEW_CONSOLE,
 	    &si, &pi))
+    {
+	CloseHandle(jo);
 	job->jv_status = JOB_FAILED;
+    }
     else
     {
-	job->jv_pi = pi;
+	if (!AssignProcessToJobObject(jo, pi.hProcess))
+	{
+	    /* if failing, switch the way to terminate
+	     * process with TerminateProcess. */
+	    CloseHandle(jo);
+	    jo = NULL;
+	}
+	ResumeThread(pi.hThread);
+	CloseHandle(job->jv_proc_info.hThread);
+	job->jv_proc_info = pi;
+	job->jv_job_object = jo;
 	job->jv_status = JOB_STARTED;
     }
 }
@@ -5060,12 +5085,10 @@ mch_job_status(job_T *job)
 {
     DWORD dwExitCode = 0;
 
-    if (!GetExitCodeProcess(job->jv_pi.hProcess, &dwExitCode))
-	return "dead";
-    if (dwExitCode != STILL_ACTIVE)
+    if (!GetExitCodeProcess(job->jv_proc_info.hProcess, &dwExitCode)
+	    || dwExitCode != STILL_ACTIVE)
     {
-	CloseHandle(job->jv_pi.hProcess);
-	CloseHandle(job->jv_pi.hThread);
+	job->jv_status = JOB_ENDED;
 	return "dead";
     }
     return "run";
@@ -5074,14 +5097,39 @@ mch_job_status(job_T *job)
     int
 mch_stop_job(job_T *job, char_u *how)
 {
+    int ret = 0;
+    int ctrl_c = STRCMP(how, "int") == 0;
+
     if (STRCMP(how, "kill") == 0)
-	TerminateProcess(job->jv_pi.hProcess, 0);
-    else
-	return GenerateConsoleCtrlEvent(
-	    STRCMP(how, "hup") == 0 ?
-		    CTRL_BREAK_EVENT : CTRL_C_EVENT,
-		job->jv_pi.dwProcessId) ? OK : FAIL;
-    return OK;
+    {
+	if (job->jv_job_object != NULL)
+	    return TerminateJobObject(job->jv_job_object, 0) ? OK : FAIL;
+	else
+	    return TerminateProcess(job->jv_proc_info.hProcess, 0) ? OK : FAIL;
+    }
+
+    if (!AttachConsole(job->jv_proc_info.dwProcessId))
+	return FAIL;
+    ret = GenerateConsoleCtrlEvent(
+	    ctrl_c ? CTRL_C_EVENT : CTRL_BREAK_EVENT,
+	    job->jv_proc_info.dwProcessId)
+	? OK : FAIL;
+    FreeConsole();
+    return ret;
+}
+
+/*
+ * Clear the data related to "job".
+ */
+    void
+mch_clear_job(job_T *job)
+{
+    if (job->jv_status != JOB_FAILED)
+    {
+	if (job->jv_job_object != NULL)
+	    CloseHandle(job->jv_job_object);
+	CloseHandle(job->jv_proc_info.hProcess);
+    }
 }
 #endif
 

@@ -43,6 +43,7 @@ int mch_call_shell(char_u *cmd, int options);
 void mch_start_job(char *cmd, job_T *job);
 char *mch_job_status(job_T *job);
 int mch_stop_job(job_T *job, char_u *how);
+void mch_clear_job(job_T *job);
 void mch_set_normal_colors(void);
 void mch_write(char_u *s, int len);
 void mch_delay(long msec, int ignoreinput);

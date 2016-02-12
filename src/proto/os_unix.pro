@@ -60,6 +60,7 @@ int mch_call_shell(char_u *cmd, int options);
 void mch_start_job(char **argv, job_T *job);
 char *mch_job_status(job_T *job);
 int mch_stop_job(job_T *job, char_u *how);
+void mch_clear_job(job_T *job);
 void mch_breakcheck(void);
 int mch_expandpath(garray_T *gap, char_u *path, int flags);
 int mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, int flags);

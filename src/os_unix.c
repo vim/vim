@@ -5092,6 +5092,12 @@ mch_job_status(job_T *job)
 	job->jv_status = JOB_ENDED;
 	return "dead";
     }
+    if (WIFSIGNALED(status))
+    {
+	job->jv_exitval = -1;
+	job->jv_status = JOB_ENDED;
+	return "dead";
+    }
     return "run";
 }
 
@@ -5099,6 +5105,7 @@ mch_job_status(job_T *job)
 mch_stop_job(job_T *job, char_u *how)
 {
     int sig = -1;
+    pid_t job_pid;
 
     if (STRCMP(how, "hup") == 0)
 	sig = SIGHUP;
@@ -5112,9 +5119,29 @@ mch_stop_job(job_T *job, char_u *how)
 	sig = atoi((char *)how);
     else
 	return FAIL;
+
     /* TODO: have an option to only kill the process, not the group? */
-    kill(-job->jv_pid, sig);
+    job_pid = job->jv_pid;
+    if (job_pid == getpgid(job_pid))
+	job_pid = -job_pid;
+
+    kill(job_pid, sig);
+
     return OK;
+}
+
+/*
+ * Clear the data related to "job".
+ */
+    void
+mch_clear_job(job_T *job)
+{
+    /* call waitpid because child process may become zombie */
+# ifdef __NeXT__
+    wait4(job->jv_pid, NULL, WNOHANG, (struct rusage *)0);
+# else
+    waitpid(job->jv_pid, NULL, WNOHANG);
+# endif
 }
 #endif
 

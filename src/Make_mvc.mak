@@ -113,7 +113,7 @@
 #	Processor Version: CPUNR=[i386, i486, i586, i686, pentium4] (default is
 #	i386)
 #
-#	Version Support: WINVER=[0x0400, 0x0500] (default is 0x0400)
+#	Version Support: WINVER=[0x0400, 0x0500] (default is 0x0500)
 #
 #	Debug version: DEBUG=yes
 #	Mapfile: MAP=[no, yes or lines] (default is yes)
@@ -370,9 +370,8 @@ CON_LIB = $(CON_LIB) /DELAYLOAD:comdlg32.dll /DELAYLOAD:ole32.dll DelayImp.lib
 !endif
 
 ### Set the default $(WINVER) to make it work with VC++7.0 (VS.NET)
-#  When set to 0x0500 ":browse" stops working.
 !ifndef WINVER
-WINVER = 0x0400
+WINVER = 0x0500
 !endif
 
 # If you have a fixed directory for $VIM or $VIMRUNTIME, other than the normal

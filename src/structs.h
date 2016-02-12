@@ -1249,7 +1249,8 @@ struct jobvar_S
     int		jv_exitval;
 #endif
 #ifdef WIN32
-    PROCESS_INFORMATION	jv_pi;
+    PROCESS_INFORMATION	jv_proc_info;
+    HANDLE		jv_job_object;
 #endif
     jobstatus_T	jv_status;
 
