@@ -1500,6 +1500,10 @@ vim_regcomp_had_eol(void)
 }
 #endif
 
+/* variables for parsing reginput */
+static int	at_start;	/* True when on the first character */
+static int	prev_at_start;  /* True when on the second character */
+
 /*
  * Parse regular expression, i.e. main body or parenthesized thing.
  *
@@ -1918,6 +1922,7 @@ regatom(int *flagp)
     int		    c;
     char_u	    *p;
     int		    extra = 0;
+    int		    save_prev_at_start = prev_at_start;
 
     *flagp = WORST;		/* Tentatively. */
 
@@ -2331,7 +2336,11 @@ regatom(int *flagp)
 			      else if (c == 'l' || c == 'c' || c == 'v')
 			      {
 				  if (c == 'l')
+				  {
 				      ret = regnode(RE_LNUM);
+				      if (save_prev_at_start)
+					  at_start = TRUE;
+				  }
 				  else if (c == 'c')
 				      ret = regnode(RE_COL);
 				  else
@@ -2946,10 +2955,6 @@ regoptail(char_u *p, char_u *val)
 /*
  * Functions for getting characters from the regexp input.
  */
-
-static int	at_start;	/* True when on the first character */
-static int	prev_at_start;  /* True when on the second character */
-
 /*
  * Start parsing at "str".
  */

@@ -1128,6 +1128,7 @@ nfa_regatom(void)
     int		startc = -1;
     int		endc = -1;
     int		oldstartc = -1;
+    int		save_prev_at_start = prev_at_start;
 
     c = getchr();
     switch (c)
@@ -1467,9 +1468,13 @@ nfa_regatom(void)
 			if (c == 'l' || c == 'c' || c == 'v')
 			{
 			    if (c == 'l')
+			    {
 				/* \%{n}l  \%{n}<l  \%{n}>l  */
 				EMIT(cmp == '<' ? NFA_LNUM_LT :
 				     cmp == '>' ? NFA_LNUM_GT : NFA_LNUM);
+				if (save_prev_at_start)
+				    at_start = TRUE;
+			    }
 			    else if (c == 'c')
 				/* \%{n}c  \%{n}<c  \%{n}>c  */
 				EMIT(cmp == '<' ? NFA_COL_LT :
