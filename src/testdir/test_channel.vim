@@ -194,7 +194,7 @@ func Test_two_channels()
   " TODO: make this work again with MS-Windows
   if has('unix')
     call s:run_server('s:two_channels')
-  endf
+  endif
 endfunc
 
 " Test that a server crash is handled gracefully.
