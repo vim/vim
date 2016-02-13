@@ -1730,6 +1730,14 @@ typedef struct timeval proftime_T;
 typedef int proftime_T;	    /* dummy for function prototypes */
 #endif
 
+#ifdef FEAT_CHANNEL
+# ifdef WIN64
+typedef __int64 sock_T;
+# else
+typedef int sock_T;
+# endif
+#endif
+
 /* Include option.h before structs.h, because the number of window-local and
  * buffer-local options is used there. */
 #include "option.h"	    /* options and default values */
@@ -1968,14 +1976,6 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 # include <io.h>	    /* for access() */
 
 # define stat(a,b) (access(a,0) ? -1 : stat(a,b))
-#endif
-
-#ifdef FEAT_CHANNEL
-# ifdef WIN64
-typedef __int64 sock_T;
-# else
-typedef int sock_T;
-# endif
 #endif
 
 #include "ex_cmds.h"	    /* Ex command defines */
