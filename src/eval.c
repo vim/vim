@@ -627,7 +627,9 @@ static void f_isdirectory(typval_T *argvars, typval_T *rettv);
 static void f_islocked(typval_T *argvars, typval_T *rettv);
 static void f_items(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_JOB
+# ifdef FEAT_CHANNEL
 static void f_job_getchannel(typval_T *argvars, typval_T *rettv);
+# endif
 static void f_job_start(typval_T *argvars, typval_T *rettv);
 static void f_job_stop(typval_T *argvars, typval_T *rettv);
 static void f_job_status(typval_T *argvars, typval_T *rettv);
@@ -7741,6 +7743,7 @@ channel_unref(channel_T *channel)
     static void
 job_free(job_T *job)
 {
+# ifdef FEAT_CHANNEL
     if (job->jv_channel != NULL)
     {
 	/* The channel doesn't count as a references for the job, we need to
@@ -7748,6 +7751,7 @@ job_free(job_T *job)
 	job->jv_channel->ch_job = NULL;
 	channel_unref(job->jv_channel);
     }
+# endif
     mch_clear_job(job);
     vim_free(job);
 }
@@ -8238,7 +8242,9 @@ static struct fst
     {"islocked",	1, 1, f_islocked},
     {"items",		1, 1, f_items},
 #ifdef FEAT_JOB
+# ifdef FEAT_CHANNEL
     {"job_getchannel",	1, 1, f_job_getchannel},
+# endif
     {"job_start",	1, 2, f_job_start},
     {"job_status",	1, 1, f_job_status},
     {"job_stop",	1, 2, f_job_stop},
@@ -10747,7 +10753,7 @@ f_empty(typval_T *argvars, typval_T *rettv)
 	    break;
 #endif
 	case VAR_CHANNEL:
-#ifdef FEAT_CMDWIN
+#ifdef FEAT_CHANNEL
 	    n = argvars[0].vval.v_channel == NULL
 			       || !channel_is_open(argvars[0].vval.v_channel);
 	    break;
@@ -14395,6 +14401,8 @@ f_items(typval_T *argvars, typval_T *rettv)
 }
 
 #ifdef FEAT_JOB
+
+# ifdef FEAT_CHANNEL
 /*
  * "job_getchannel()" function
  */
@@ -14413,6 +14421,7 @@ f_job_getchannel(typval_T *argvars, typval_T *rettv)
 	    ++job->jv_channel->ch_refcount;
     }
 }
+# endif
 
 /*
  * "job_start()" function
