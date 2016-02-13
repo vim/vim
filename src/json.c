@@ -183,6 +183,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 
 	case VAR_FUNC:
 	case VAR_JOB:
+	case VAR_CHANNEL:
 	    /* no JSON equivalent TODO: better error */
 	    EMSG(_(e_invarg));
 	    return FAIL;

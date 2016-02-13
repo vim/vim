@@ -63,8 +63,8 @@ static int  nb_do_cmd(int, char_u *, int, int, char_u *);
 static void nb_send(char *buf, char *fun);
 static void nb_free(void);
 
-#define NETBEANS_OPEN (nb_channel_idx >= 0 && channel_is_open(nb_channel_idx))
-static int nb_channel_idx = -1;
+#define NETBEANS_OPEN (channel_can_write_to(nb_channel))
+static channel_T *nb_channel = NULL;
 
 static int r_cmdno;			/* current command number for reply */
 static int dosetvisible = FALSE;
@@ -85,7 +85,7 @@ static int inAtomic = 0;
     static void
 nb_channel_closed(void)
 {
-    nb_channel_idx = -1;
+    nb_channel = NULL;
 }
 
 /*
@@ -98,10 +98,10 @@ netbeans_close(void)
     if (NETBEANS_OPEN)
     {
 	netbeans_send_disconnect();
-	if (nb_channel_idx >= 0)
+	if (nb_channel != NULL)
 	    /* Close the socket and remove the input handlers. */
-	    channel_close(nb_channel_idx);
-	nb_channel_idx = -1;
+	    channel_close(nb_channel);
+	nb_channel = NULL;
     }
 
 #ifdef FEAT_BEVAL
@@ -213,8 +213,8 @@ netbeans_connect(char *params, int doabort)
     if (hostname != NULL && address != NULL && password != NULL)
     {
 	port = atoi(address);
-	nb_channel_idx = channel_open(hostname, port, 0, nb_channel_closed);
-	if (nb_channel_idx >= 0)
+	nb_channel = channel_open(hostname, port, 0, nb_channel_closed);
+	if (nb_channel != NULL)
 	{
 	    /* success */
 # ifdef FEAT_BEVAL
@@ -230,7 +230,7 @@ netbeans_connect(char *params, int doabort)
 	}
     }
 
-    if (nb_channel_idx < 0 && doabort)
+    if (nb_channel == NULL && doabort)
 	getout(1);
 
     vim_free(hostname);
@@ -383,9 +383,9 @@ netbeans_parse_messages(void)
     char_u	*p;
     int		own_node;
 
-    while (nb_channel_idx >= 0)
+    while (nb_channel != NULL)
     {
-	buffer = channel_peek(nb_channel_idx);
+	buffer = channel_peek(nb_channel);
 	if (buffer == NULL)
 	    break;	/* nothing to read */
 
@@ -396,7 +396,7 @@ netbeans_parse_messages(void)
 	    /* Command isn't complete.  If there is no following buffer,
 	     * return (wait for more). If there is another buffer following,
 	     * prepend the text to that buffer and delete this one.  */
-	    if (channel_collapse(nb_channel_idx) == FAIL)
+	    if (channel_collapse(nb_channel) == FAIL)
 		return;
 	}
 	else
@@ -409,7 +409,7 @@ netbeans_parse_messages(void)
 	    if (*p == NUL)
 	    {
 		own_node = TRUE;
-		channel_get(nb_channel_idx);
+		channel_get(nb_channel);
 	    }
 	    else
 		own_node = FALSE;
@@ -600,8 +600,8 @@ nb_free(void)
     }
 
     /* free the queued netbeans commands */
-    if (nb_channel_idx >= 0)
-	channel_clear(nb_channel_idx);
+    if (nb_channel != NULL)
+	channel_clear(nb_channel);
 }
 
 /*
@@ -756,8 +756,8 @@ netbeans_end(void)
     static void
 nb_send(char *buf, char *fun)
 {
-    if (nb_channel_idx >= 0)
-	channel_send(nb_channel_idx, (char_u *)buf, fun);
+    if (nb_channel != NULL)
+	channel_send(nb_channel, (char_u *)buf, fun);
 }
 
 /*

@@ -5043,7 +5043,7 @@ mch_start_job(char **argv, job_T *job)
     int		fd_in[2];	/* for stdin */
     int		fd_out[2];	/* for stdout */
     int		fd_err[2];	/* for stderr */
-    int		ch_idx;
+    channel_T	*channel;
 
     /* default is to fail */
     job->jv_status = JOB_FAILED;
@@ -5055,8 +5055,8 @@ mch_start_job(char **argv, job_T *job)
     if ((pipe(fd_in) < 0) || (pipe(fd_out) < 0) ||(pipe(fd_err) < 0))
 	goto failed;
 
-    ch_idx = add_channel();
-    if (ch_idx < 0)
+    channel = add_channel();
+    if (channel == NULL)
 	goto failed;
 
     pid = fork();	/* maybe we should use vfork() */
@@ -5108,14 +5108,14 @@ mch_start_job(char **argv, job_T *job)
     /* parent */
     job->jv_pid = pid;
     job->jv_status = JOB_STARTED;
-    job->jv_channel = ch_idx;
+    job->jv_channel = channel;
 
     /* child stdin, stdout and stderr */
     close(fd_in[0]);
     close(fd_out[1]);
     close(fd_err[1]);
-    channel_set_pipes(ch_idx, fd_in[1], fd_out[0], fd_err[0]);
-    channel_set_job(ch_idx, job);
+    channel_set_pipes(channel, fd_in[1], fd_out[0], fd_err[0]);
+    channel_set_job(channel, job);
 
     return;
 

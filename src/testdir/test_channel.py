@@ -1,13 +1,7 @@
 #!/usr/bin/python
 #
 # Server that will accept connections from a Vim channel.
-# Run this server and then in Vim you can open the channel:
-#  :let handle = ch_open('localhost:8765', 'json')
-#
-# Then Vim can send requests to the server:
-#  :let response = ch_sendexpr(handle, 'hello!')
-#
-# See ":help channel-demo" in Vim.
+# Used by test_channel.vim.
 #
 # This requires Python 2.6 or later.
 

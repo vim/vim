@@ -1139,6 +1139,9 @@ free_all_mem(void)
 # ifdef FEAT_DIFF
     diff_clear(curtab);
 # endif
+# ifdef FEAT_CHANNEL
+    channel_free_all();
+# endif
     clear_sb_text();	      /* free any scrollback text */
 
     /* Free some global vars. */
