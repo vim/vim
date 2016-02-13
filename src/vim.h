@@ -1730,12 +1730,10 @@ typedef struct timeval proftime_T;
 typedef int proftime_T;	    /* dummy for function prototypes */
 #endif
 
-#ifdef FEAT_CHANNEL
-# ifdef WIN64
+#ifdef WIN64
 typedef __int64 sock_T;
-# else
+#else
 typedef int sock_T;
-# endif
 #endif
 
 /* Include option.h before structs.h, because the number of window-local and
