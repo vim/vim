@@ -191,10 +191,7 @@ func s:two_channels(port)
 endfunc
 
 func Test_two_channels()
-  " TODO: make this work again with MS-Windows
-  if has('unix')
-    call s:run_server('s:two_channels')
-  endif
+  call s:run_server('s:two_channels')
 endfunc
 
 " Test that a server crash is handled gracefully.
@@ -211,10 +208,7 @@ func s:server_crash(port)
 endfunc
 
 func Test_server_crash()
-  " TODO: make this work again with MS-Windows
-  if has('unix')
-    call s:run_server('s:server_crash')
-  endif
+  call s:run_server('s:server_crash')
 endfunc
 
 let s:reply = ""

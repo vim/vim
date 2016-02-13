@@ -1783,7 +1783,13 @@ process_message(void)
 	int channel_idx = channel_fd2idx((sock_T)msg.wParam);
 
 	if (channel_idx >= 0)
+	{
+	    /* Disable error messages, they can mess up the display and throw
+	     * an exception. */
+	    ++emsg_off;
 	    channel_read(channel_idx, FALSE, "process_message");
+	    --emsg_off;
+	}
 	return;
     }
 #endif
