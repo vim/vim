@@ -3984,6 +3984,42 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 }
 #endif
 
+#if !defined(USE_SYSTEM) || defined(FEAT_JOB)
+    static void
+set_child_environment(void)
+{
+# ifdef HAVE_SETENV
+    char	envbuf[50];
+# else
+    static char	envbuf_Rows[20];
+    static char	envbuf_Columns[20];
+# endif
+
+    /* Simulate to have a dumb terminal (for now) */
+# ifdef HAVE_SETENV
+    setenv("TERM", "dumb", 1);
+    sprintf((char *)envbuf, "%ld", Rows);
+    setenv("ROWS", (char *)envbuf, 1);
+    sprintf((char *)envbuf, "%ld", Rows);
+    setenv("LINES", (char *)envbuf, 1);
+    sprintf((char *)envbuf, "%ld", Columns);
+    setenv("COLUMNS", (char *)envbuf, 1);
+# else
+    /*
+     * Putenv does not copy the string, it has to remain valid.
+     * Use a static array to avoid losing allocated memory.
+     */
+    putenv("TERM=dumb");
+    sprintf(envbuf_Rows, "ROWS=%ld", Rows);
+    putenv(envbuf_Rows);
+    sprintf(envbuf_Rows, "LINES=%ld", Rows);
+    putenv(envbuf_Rows);
+    sprintf(envbuf_Columns, "COLUMNS=%ld", Columns);
+    putenv(envbuf_Columns);
+# endif
+}
+#endif
+
     int
 mch_call_shell(
     char_u	*cmd,
@@ -4134,12 +4170,6 @@ mch_call_shell(
     int		fd_toshell[2];		/* for pipes */
     int		fd_fromshell[2];
     int		pipe_error = FALSE;
-# ifdef HAVE_SETENV
-    char	envbuf[50];
-# else
-    static char	envbuf_Rows[20];
-    static char	envbuf_Columns[20];
-# endif
     int		did_settmode = FALSE;	/* settmode(TMODE_RAW) called */
 
     newcmd = vim_strsave(p_sh);
@@ -4349,28 +4379,7 @@ mch_call_shell(
 #  endif
 		}
 # endif
-		/* Simulate to have a dumb terminal (for now) */
-# ifdef HAVE_SETENV
-		setenv("TERM", "dumb", 1);
-		sprintf((char *)envbuf, "%ld", Rows);
-		setenv("ROWS", (char *)envbuf, 1);
-		sprintf((char *)envbuf, "%ld", Rows);
-		setenv("LINES", (char *)envbuf, 1);
-		sprintf((char *)envbuf, "%ld", Columns);
-		setenv("COLUMNS", (char *)envbuf, 1);
-# else
-		/*
-		 * Putenv does not copy the string, it has to remain valid.
-		 * Use a static array to avoid losing allocated memory.
-		 */
-		putenv("TERM=dumb");
-		sprintf(envbuf_Rows, "ROWS=%ld", Rows);
-		putenv(envbuf_Rows);
-		sprintf(envbuf_Rows, "LINES=%ld", Rows);
-		putenv(envbuf_Rows);
-		sprintf(envbuf_Columns, "COLUMNS=%ld", Columns);
-		putenv(envbuf_Columns);
-# endif
+		set_child_environment();
 
 		/*
 		 * stderr is only redirected when using the GUI, so that a
@@ -5030,13 +5039,34 @@ error:
     void
 mch_start_job(char **argv, job_T *job)
 {
-    pid_t pid = fork();
+    pid_t	pid;
+    int		fd_in[2];	/* for stdin */
+    int		fd_out[2];	/* for stdout */
+    int		fd_err[2];	/* for stderr */
+    int		ch_idx;
 
-    if (pid  == -1)	/* maybe we should use vfork() */
+    /* default is to fail */
+    job->jv_status = JOB_FAILED;
+    fd_in[0] = -1;
+    fd_out[0] = -1;
+    fd_err[0] = -1;
+
+    /* Open pipes for stdin, stdout, stderr. */
+    if ((pipe(fd_in) < 0) || (pipe(fd_out) < 0) ||(pipe(fd_err) < 0))
+	goto failed;
+
+    ch_idx = add_channel();
+    if (ch_idx < 0)
+	goto failed;
+
+    pid = fork();	/* maybe we should use vfork() */
+    if (pid  == -1)
     {
-	job->jv_status = JOB_FAILED;
+	/* failed to fork */
+	goto failed;
     }
-    else if (pid == 0)
+
+    if (pid == 0)
     {
 	/* child */
 	reset_signals();		/* handle signals normally */
@@ -5048,17 +5078,62 @@ mch_start_job(char **argv, job_T *job)
 	(void)setsid();
 # endif
 
+	set_child_environment();
+
+	/* set up stdin for the child */
+	close(fd_in[1]);
+	close(0);
+	ignored = dup(fd_in[0]);
+	close(fd_in[0]);
+
+	/* set up stdout for the child */
+	close(fd_out[0]);
+	close(1);
+	ignored = dup(fd_out[1]);
+	close(fd_out[1]);
+
+	/* set up stderr for the child */
+	close(fd_err[0]);
+	close(2);
+	ignored = dup(fd_err[1]);
+	close(fd_err[1]);
+
 	/* See above for type of argv. */
 	execvp(argv[0], argv);
 
 	perror("executing job failed");
 	_exit(EXEC_FAILED);	    /* exec failed, return failure code */
     }
-    else
+
+    /* parent */
+    job->jv_pid = pid;
+    job->jv_status = JOB_STARTED;
+    job->jv_channel = ch_idx;
+
+    /* child stdin, stdout and stderr */
+    close(fd_in[0]);
+    close(fd_out[1]);
+    close(fd_err[1]);
+    channel_set_pipes(ch_idx, fd_in[1], fd_out[0], fd_err[0]);
+    channel_set_job(ch_idx, job);
+
+    return;
+
+failed:
+    if (fd_in[0] >= 0)
     {
-	/* parent */
-	job->jv_pid = pid;
-	job->jv_status = JOB_STARTED;
+	close(fd_in[0]);
+	close(fd_in[1]);
+    }
+    if (fd_out[0] >= 0)
+    {
+	close(fd_out[0]);
+	close(fd_out[1]);
+    }
+    if (fd_err[0] >= 0)
+    {
+	close(fd_err[0]);
+	close(fd_err[1]);
     }
 }
 
@@ -5104,8 +5179,8 @@ mch_job_status(job_T *job)
     int
 mch_stop_job(job_T *job, char_u *how)
 {
-    int sig = -1;
-    pid_t job_pid;
+    int	    sig = -1;
+    pid_t   job_pid;
 
     if (STRCMP(how, "hup") == 0)
 	sig = SIGHUP;

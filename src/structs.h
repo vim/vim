@@ -1110,7 +1110,12 @@ typedef double	float_T;
 
 typedef struct listvar_S list_T;
 typedef struct dictvar_S dict_T;
+
 typedef struct jobvar_S job_T;
+typedef struct readq_S readq_T;
+typedef struct jsonq_S jsonq_T;
+typedef struct cbq_S cbq_T;
+typedef struct channel_S channel_T;
 
 typedef enum
 {
@@ -1255,7 +1260,91 @@ struct jobvar_S
     jobstatus_T	jv_status;
 
     int		jv_refcount;	/* reference count */
+    int		jv_channel;	/* channel for I/O */
 };
+
+/*
+ * Structures to hold info about a Channel.
+ */
+struct readq_S
+{
+    char_u	*buffer;
+    readq_T	*next;
+    readq_T	*prev;
+};
+
+struct jsonq_S
+{
+    typval_T	*value;
+    jsonq_T	*next;
+    jsonq_T	*prev;
+};
+
+struct cbq_S
+{
+    char_u	*callback;
+    int		seq_nr;
+    cbq_T	*next;
+    cbq_T	*prev;
+};
+
+/* mode for a channel */
+typedef enum
+{
+    MODE_RAW = 0,
+    MODE_JSON,
+    MODE_JS
+} ch_mode_T;
+
+struct channel_S {
+    sock_T	ch_sock;	/* the socket, -1 for a closed channel */
+
+#ifdef UNIX
+# define CHANNEL_PIPES
+    int		ch_in;		/* stdin of the job, -1 if not used */
+    int		ch_out;		/* stdout of the job, -1 if not used */
+    int		ch_err;		/* stderr of the job, -1 if not used */
+
+# if defined(UNIX) && !defined(HAVE_SELECT)
+    int		ch_sock_idx;	/* used by channel_poll_setup() */
+    int		ch_in_idx;	/* used by channel_poll_setup() */
+    int		ch_out_idx;	/* used by channel_poll_setup() */
+    int		ch_err_idx;	/* used by channel_poll_setup() */
+# endif
+#endif
+
+    readq_T	ch_head;	/* dummy node, header for circular queue */
+
+    int		ch_error;	/* When TRUE an error was reported.  Avoids
+				 * giving pages full of error messages when
+				 * the other side has exited, only mention the
+				 * first error until the connection works
+				 * again. */
+#ifdef FEAT_GUI_X11
+    XtInputId	ch_inputHandler; /* Cookie for input */
+#endif
+#ifdef FEAT_GUI_GTK
+    gint	ch_inputHandler; /* Cookie for input */
+#endif
+#ifdef WIN32
+    int		ch_inputHandler; /* simply ret.value of WSAAsyncSelect() */
+#endif
+
+    void	(*ch_close_cb)(void); /* callback for when channel is closed */
+
+    int		ch_block_id;	/* ID that channel_read_json_block() is
+				   waiting for */
+    char_u	*ch_callback;	/* function to call when a msg is not handled */
+    cbq_T	ch_cb_head;	/* dummy node for pre-request callbacks */
+
+    ch_mode_T	ch_mode;
+    jsonq_T	ch_json_head;	/* dummy node, header for circular queue */
+
+    int		ch_timeout;	/* request timeout in msec */
+
+    job_T	*ch_job;	/* job that uses this channel */
+};
+
 
 /* structure used for explicit stack while garbage collecting hash tables */
 typedef struct ht_stack_S
@@ -2729,11 +2818,3 @@ struct js_reader
     void	*js_cookie;	/* can be used by js_fill */
 };
 typedef struct js_reader js_read_T;
-
-/* mode for a channel */
-typedef enum
-{
-    MODE_RAW = 0,
-    MODE_JSON,
-    MODE_JS
-} ch_mode_T;

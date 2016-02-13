@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 07
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1416,7 +1416,7 @@ v:exception	The value of the exception most recently caught and not
 
 					*v:false* *false-variable*
 v:false		A Number with value zero. Used to put "false" in JSON.  See
-		|jsonencode()|.
+		|json_encode()|.
 		When used as a string this evaluates to "false". >
 			echo v:false
 <			false ~
@@ -1556,7 +1556,7 @@ v:mouse_col	Column number for a mouse click obtained with |getchar()|.
 
 					*v:none* *none-variable*
 v:none		An empty String. Used to put an empty item in JSON.  See
-		|jsonencode()|.
+		|json_encode()|.
 		When used as a number this evaluates to zero.
 		When used as a string this evaluates to "none". >
 			echo v:none
@@ -1564,7 +1564,7 @@ v:none		An empty String. Used to put an empty item in JSON.  See
 
 					*v:null* *null-variable*
 v:null		An empty String. Used to put "null" in JSON.  See
-		|jsonencode()|.
+		|json_encode()|.
 		When used as a number this evaluates to zero.
 		When used as a string this evaluates to "null". >
 			echo v:null
@@ -1737,7 +1737,7 @@ v:throwpoint	The point where the exception most recently caught and not
 
 						*v:true* *true-variable*
 v:true		A Number with value one. Used to put "true" in JSON.  See
-		|jsonencode()|.
+		|json_encode()|.
 		When used as a string this evaluates to "true". >
 			echo v:true
 <			true ~
@@ -1816,7 +1816,9 @@ call( {func}, {arglist} [, {dict}])
 				any	call {func} with arguments {arglist}
 ceil( {expr})			Float	round {expr} up
 ch_close( {handle})		none	close a channel
+ch_logfile( {fname} [, {mode}])	none	start logging channel activity
 ch_open( {address} [, {argdict})] Number open a channel to {address}
+ch_readraw( {handle})		String	read from channel {handle}
 ch_sendexpr( {handle}, {expr} [, {callback}])
 				any	send {expr} over JSON channel {handle}
 ch_sendraw( {handle}, {string} [, {callback}])
@@ -1980,9 +1982,9 @@ mapcheck( {name}[, {mode} [, {abbr}]])
 				String	check for mappings matching {name}
 match( {expr}, {pat}[, {start}[, {count}]])
 				Number	position where {pat} matches in {expr}
-matchadd( {group}, {pattern}[, {priority}[, {id}]])
+matchadd( {group}, {pattern}[, {priority}[, {id} [, {dict}]]])
 				Number	highlight {pattern} with {group}
-matchaddpos( {group}, {list}[, {priority}[, {id}]])
+matchaddpos( {group}, {pos}[, {priority}[, {id}[, {dict}]]])
 				Number	highlight positions with {group}
 matcharg( {nr})			List	arguments of |:match|
 matchdelete( {id})		Number	delete match identified by {id}
@@ -2274,7 +2276,7 @@ assert_fails({cmd} [, {error}])					*assert_fails()*
 assert_false({actual} [, {msg}])				*assert_false()*
 		When {actual} is not false an error message is added to
 		|v:errors|, like with |assert_equal()|.
-		A value is false when it is zero. When "{actual}" is not a
+		A value is false when it is zero. When {actual} is not a
 		number the assert fails.
 		When {msg} is omitted an error in the form "Expected False but
 		got {actual}" is produced.
@@ -2676,9 +2678,15 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 		don't fit, a vertical layout is used anyway.  For some systems
 		the horizontal layout is always used.
 
-ch_close({handle})					*ch_close()*
+ch_close({handle})						*ch_close()*
 		Close channel {handle}.  See |channel|.
 		{only available when compiled with the |+channel| feature}
+
+ch_logfile( {fname} [, {mode}])					*ch_logfile()*
+		Start logging channel activity to {fname}.
+		When {mode} is omitted or "a" append to the file.
+		When {mode} is "w" start with an empty file.
+		When {fname} is an empty string: stop logging.
 
 ch_open({address} [, {argdict}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
@@ -2703,7 +2711,13 @@ ch_open({address} [, {argdict}])				*ch_open()*
 				    Default: 2000.
 		{only available when compiled with the |+channel| feature}
 
-ch_sendexpr({handle}, {expr} [, {callback}])		*ch_sendexpr()*
+ch_readraw({handle})						*ch_readraw()*
+		Read from channel {handle} and return the received message.
+		This uses the channel timeout.  When there is nothing to read
+		within that time an empty string is returned.
+		TODO: depends on channel mode.
+
+ch_sendexpr({handle}, {expr} [, {callback}])			*ch_sendexpr()*
 		Send {expr} over channel {handle}.  The {expr} is encoded
 		according to the type of channel.  The function cannot be used
 		with a raw channel.  See |channel-use|.  *E912*
@@ -2844,9 +2858,11 @@ deepcopy({expr}[, {noref}])				*deepcopy()* *E698*
 		different from using {expr} directly.
 		When {expr} is a |List| a full copy is created.  This means
 		that the original |List| can be changed without changing the
-		copy, and vice versa.  When an item is a |List|, a copy for it
-		is made, recursively.  Thus changing an item in the copy does
-		not change the contents of the original |List|.
+		copy, and vice versa.  When an item is a |List| or
+		|Dictionary|, a copy for it is made, recursively.  Thus
+		changing an item in the copy does not change the contents of
+		the original |List|.
+		A |Dictionary| is copied in a similar way as a |List|.
 		When {noref} is omitted or zero a contained |List| or
 		|Dictionary| is only copied once.  All references point to
 		this single copy.  With {noref} set to 1 every occurrence of a
@@ -2906,6 +2922,14 @@ diff_hlID({lnum}, {col})				*diff_hlID()*
 		line.
 		The highlight ID can be used with |synIDattr()| to obtain
 		syntax information about the highlighting.
+
+					*disable_char_avail_for_testing()*
+disable_char_avail_for_testing({expr})
+		When {expr} is 1 the internal char_avail() function will
+		return FALSE.  When {expr} is 0 the char_avail() function will
+		function normally.
+		Only use this for a test where typeahead causes the test not
+		to work.  E.g., to trigger the CursorMovedI autocommand event.
 
 empty({expr})						*empty()*
 		Return the Number 1 if {expr} is empty, zero otherwise.
@@ -3937,7 +3961,7 @@ glob2regpat({expr})					 *glob2regpat()*
 		empty string.
 
 								*globpath()*
-globpath({path}, {expr} [, {nosuf} [, {list} [, {allinks}]]])
+globpath({path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])
 		Perform glob() on all directories in {path} and concatenate
 		the results.  Example: >
 			:echo globpath(&rtp, "syntax/c.vim")
@@ -3963,7 +3987,7 @@ globpath({path}, {expr} [, {nosuf} [, {list} [, {allinks}]]])
 		they are separated by <NL> characters.  Example: >
 			:echo globpath(&rtp, "syntax/c.vim", 0, 1)
 <
-		{allinks} is used as with |glob()|.
+		{alllinks} is used as with |glob()|.
 
 		The "**" item can be used to search in a directory tree.
 		For example, to find all "README.txt" files in the directories
@@ -4314,22 +4338,25 @@ job_start({command} [, {options}])				*job_start()*
 		Start a job and return a Job object.  Unlike |system()| and
 		|:!cmd| this does not wait for the job to finish.
 
-		{command} can be a string.  This works best on MS-Windows.  On
+		{command} can be a String.  This works best on MS-Windows.  On
 		Unix it is split up in white-separated parts to be passed to
 		execvp().  Arguments in double quotes can contain white space.
 
-		{command} can be a list, where the first item is the executable
+		{command} can be a List, where the first item is the executable
 		and further items are the arguments.  All items are converted
 		to String.  This works best on Unix.
+
+		On MS-Windows, job_start() makes a GUI application hidden. If
+		want to show it, Use |:!start| instead.
 
 		The command is executed directly, not through a shell, the
 		'shell' option is not used.  To use the shell: >
 	let job = job_start(["/bin/sh", "-c", "echo hello"])
 <		Or: >
 	let job = job_start('/bin/sh -c "echo hello"')
-<		However, the status of the job will now be the status of the
-		shell, and stopping the job means stopping the shell and the
-		command may continue to run.
+<		Note that this will start two processes, the shell and the
+		command it executes.  If you don't want this use the "exec"
+		shell command.
 
 		On Unix $PATH is used to search for the executable only when
 		the command does not contain a slash.
@@ -4342,12 +4369,10 @@ job_start({command} [, {options}])				*job_start()*
 		The returned Job object can be used to get the status with
 		|job_status()| and stop the job with |job_stop()|.
 
-		{options} must be a Dictionary.  It can contain these optional
-		items:
-			killonexit	When non-zero kill the job when Vim
-					exits. (default: 0, don't kill)
+		{options} must be a Dictionary.  It can contain many optional
+		items, see |job-options|.
 
-		{only available when compiled with the |+channel| feature}
+		{only available when compiled with the |+job| feature}
 
 job_status({job})						*job_status()*
 		Returns a String with the status of {job}:
@@ -4355,27 +4380,40 @@ job_status({job})						*job_status()*
 			"fail"	job failed to start
 			"dead"	job died or was stopped after running
 
-		{only available when compiled with the |+channel| feature}
+		{only available when compiled with the |+job| feature}
 
 job_stop({job} [, {how}])					*job_stop()*
 		Stop the {job}.  This can also be used to signal the job.
 
 		When {how} is omitted or is "term" the job will be terminated
-		normally.  For Unix SIGTERM is sent.
-		Other values:
+		normally.  For Unix SIGTERM is sent.  For MS-Windows
+		CTRL_BREAK will be sent.  This goes to the process group, thus
+		children may also be affected.
+
+		Other values for Unix:
 			"hup"	Unix: SIGHUP
 			"quit"	Unix: SIGQUIT
 			"kill"	Unix: SIGKILL (strongest way to stop)
 			number	Unix: signal with that number
+
+		Other values for MS-Windows:
+			"int"	Windows: CTRL_C
+			"kill"	Windows: terminate process forcedly
+			Others	Windows: CTRL_BREAK
+
+		On Unix the signal is sent to the process group.  This means
+		that when the job is "sh -c command" it affects both the shell
+		and the command.
 
 		The result is a Number: 1 if the operation could be executed,
 		0 if "how" is not supported on the system.
 		Note that even when the operation was executed, whether the
 		job was actually stopped needs to be checked with
 		job_status().
-		The operation will even be done when the job wasn't running.
+		The status of the job isn't checked, the operation will even
+		be done when Vim thinks the job isn't running.
 
-		{only available when compiled with the |+channel| feature}
+		{only available when compiled with the |+job| feature}
 
 join({list} [, {sep}])					*join()*
 		Join the items in {list} together into one String.
@@ -4773,7 +4811,7 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 		done like 'magic' is set and 'cpoptions' is empty.
 
 					*matchadd()* *E798* *E799* *E801*
-matchadd({group}, {pattern}[, {priority}[, {id} [, {dict}]]])
+matchadd({group}, {pattern}[, {priority}[, {id}[, {dict}]]])
 		Defines a pattern to be highlighted in the current window (a
 		"match").  It will be highlighted with {group}.  Returns an
 		identification number (ID), which can be used to delete the
@@ -4809,7 +4847,7 @@ matchadd({group}, {pattern}[, {priority}[, {id} [, {dict}]]])
 		highlighted matches. The dict can have the following members:
 
 			conceal	    Special character to show instead of the
-				    match (only for |hl-Conceal| highlighed
+				    match (only for |hl-Conceal| highlighted
 				    matches, see |:syn-cchar|)
 
 		The number of matches is not limited, as it is the case with
@@ -6808,7 +6846,7 @@ type({expr})	The result is a Number, depending on the type of {expr}:
 			:if type(myvar) == type({})
 			:if type(myvar) == type(0.0)
 			:if type(myvar) == type(v:false)
-			:if type(myvar) == type(v:none
+			:if type(myvar) == type(v:none)
 
 undofile({name})					*undofile()*
 		Return the name of the undo file that would be used for a file

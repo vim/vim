@@ -273,3 +273,20 @@ func Test_connect_waittime()
     call assert_true(reltimefloat(elapsed) < (has('unix') ? 1.0 : 3.0))
   endif
 endfunc
+
+func Test_pipe()
+  if !has('job') || !has('unix')
+    return
+  endif
+  let job = job_start("python test_channel_pipe.py")
+  call assert_equal("run", job_status(job))
+  try
+    let handle = job_getchannel(job)
+    call ch_sendraw(handle, "echo something\n", 0)
+    call assert_equal("something\n", ch_readraw(handle))
+    let reply = ch_sendraw(handle, "quit\n")
+    call assert_equal("Goodbye!\n", reply)
+  finally
+    call job_stop(job)
+  endtry
+endfunc
