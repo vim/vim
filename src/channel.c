@@ -1537,7 +1537,7 @@ channel_send(int ch_idx, char_u *buf, char *fun)
     channel_T	*channel = &channels[ch_idx];
     int		len = (int)STRLEN(buf);
     int		res;
-    int		fd;
+    int		fd = -1;
     int		use_socket = FALSE;
 
     if (channel->ch_sock >= 0)
