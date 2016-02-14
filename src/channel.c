@@ -339,8 +339,9 @@ channel_gui_register_one(channel_T *channel, int which)
      * is input on the editor connection socket. */
     if (channel->ch_pfd[which].ch_inputHandler == 0)
 	channel->ch_pfd[which].ch_inputHandler = gdk_input_add(
-		(gint)channel->ch_pfd[which].ch_fd, (GdkInputCondition)
-		((int)GDK_INPUT_READ + (int)GDK_INPUT_EXCEPTION),
+		(gint)channel->ch_pfd[which].ch_fd,
+		(GdkInputCondition)
+			     ((int)GDK_INPUT_READ + (int)GDK_INPUT_EXCEPTION),
 		messageFromNetbeans,
 		(gpointer)(long)channel->ch_id);
 #  else
@@ -362,12 +363,12 @@ channel_gui_register(channel_T *channel)
     if (!CH_HAS_GUI)
 	return;
 
-    if (channel->ch_pfd[CHAN_SOCK].ch_fd >= 0)
+    if (channel->CH_SOCK >= 0)
 	channel_gui_register_one(channel, CHAN_SOCK);
 # ifdef CHANNEL_PIPES
-    if (channel->ch_pfd[CHAN_OUT].ch_fd >= 0)
+    if (channel->CH_OUT >= 0)
 	channel_gui_register_one(channel, CHAN_OUT);
-    if (channel->ch_pfd[CHAN_ERR].ch_fd >= 0)
+    if (channel->CH_ERR >= 0)
 	channel_gui_register_one(channel, CHAN_ERR);
 # endif
 }
@@ -386,44 +387,40 @@ channel_gui_register_all(void)
 }
 
     static void
-channel_gui_unregister_one(channel_T *channel, int which)
+channel_gui_unregister(channel_T *channel)
 {
-# ifdef FEAT_GUI_X11
-    if (channel->ch_pfd[which].ch_inputHandler != (XtInputId)NULL)
+    int	    which;
+
+#ifdef CHANNEL_PIPES
+    for (which = CHAN_SOCK; which < CHAN_IN; ++which)
+#else
+    which = CHAN_SOCK;
+#endif
     {
-	XtRemoveInput(channel->ch_pfd[which].ch_inputHandler);
-	channel->ch_pfd[which].ch_inputHandler = (XtInputId)NULL;
-    }
+# ifdef FEAT_GUI_X11
+	if (channel->ch_pfd[which].ch_inputHandler != (XtInputId)NULL)
+	{
+	    XtRemoveInput(channel->ch_pfd[which].ch_inputHandler);
+	    channel->ch_pfd[which].ch_inputHandler = (XtInputId)NULL;
+	}
 # else
 #  ifdef FEAT_GUI_GTK
-    if (channel->ch_pfd[which].ch_inputHandler != 0)
-    {
-	gdk_input_remove(channel->ch_pfd[which].ch_inputHandler);
-	channel->ch_pfd[which].ch_inputHandler = 0;
-    }
+	if (channel->ch_pfd[which].ch_inputHandler != 0)
+	{
+	    gdk_input_remove(channel->ch_pfd[which].ch_inputHandler);
+	    channel->ch_pfd[which].ch_inputHandler = 0;
+	}
 #  else
 #   ifdef FEAT_GUI_W32
-    if (channel->ch_pfd[which].ch_inputHandler == 0)
-    {
-	WSAAsyncSelect(channel->ch_pfd[which].ch_fd, s_hwnd, 0, 0);
-	channel->ch_pfd[which].ch_inputHandler = -1;
-    }
+	if (channel->ch_pfd[which].ch_inputHandler == 0)
+	{
+	    WSAAsyncSelect(channel->ch_pfd[which].ch_fd, s_hwnd, 0, 0);
+	    channel->ch_pfd[which].ch_inputHandler = -1;
+	}
 #   endif
 #  endif
 # endif
-}
-
-    static void
-channel_gui_unregister(channel_T *channel)
-{
-    if (channel->ch_pfd[CHAN_SOCK].ch_fd >= 0)
-	channel_gui_unregister_one(channel, CHAN_SOCK);
-# ifdef CHANNEL_PIPES
-    if (channel->ch_pfd[CHAN_OUT].ch_fd >= 0)
-	channel_gui_unregister_one(channel, CHAN_OUT);
-    if (channel->ch_pfd[CHAN_ERR].ch_fd >= 0)
-	channel_gui_unregister_one(channel, CHAN_ERR);
-# endif
+    }
 }
 
 #endif
@@ -1192,16 +1189,14 @@ channel_close(channel_T *channel)
 {
     ch_log(channel, "Closing channel");
 
+#ifdef FEAT_GUI
+    channel_gui_unregister(channel);
+#endif
+
     if (channel->CH_SOCK >= 0)
     {
 	sock_close(channel->CH_SOCK);
 	channel->CH_SOCK = -1;
-	channel->ch_close_cb = NULL;
-#ifdef FEAT_GUI
-	channel_gui_unregister(channel);
-#endif
-	vim_free(channel->ch_callback);
-	channel->ch_callback = NULL;
     }
 #if defined(CHANNEL_PIPES)
     if (channel->CH_IN >= 0)
@@ -1220,6 +1215,10 @@ channel_close(channel_T *channel)
 	channel->CH_ERR = -1;
     }
 #endif
+
+    channel->ch_close_cb = NULL;
+    vim_free(channel->ch_callback);
+    channel->ch_callback = NULL;
     channel_clear(channel);
 }
 
@@ -1383,7 +1382,7 @@ channel_get_id(void)
 
 /*
  * Get the file descriptor to read from, either the socket or stdout.
- * TODO: never gets stderr.
+ * TODO: should have a way to read stderr.
  */
     static int
 get_read_fd(channel_T *channel)
@@ -1400,7 +1399,8 @@ get_read_fd(channel_T *channel)
 
 /*
  * Read from channel "channel" for as long as there is something to read.
- * "which" is CHAN_SOCK, CHAN_OUT or CHAN_ERR.  When -1 guess.
+ * "which" is CHAN_SOCK, CHAN_OUT or CHAN_ERR.  When -1 use CHAN_SOCK or
+ * CHAN_OUT, the one that is open.
  * The data is put in the read queue.
  */
     void
@@ -1475,19 +1475,12 @@ channel_read(channel_T *channel, int which, char *func)
 	ch_errors(channel, "%s(): Cannot read\n", func);
 	channel_save(channel, (char_u *)DETACH_MSG, (int)STRLEN(DETACH_MSG));
 
-	if (use_socket)
-	{
-	    channel_close(channel);
-	    if (channel->ch_close_cb != NULL)
-		(*channel->ch_close_cb)();
-	}
-#if defined(CHANNEL_PIPES)
-	else
-	{
-	    close(fd);
-	    channel->CH_OUT = -1;
-	}
-#endif
+	/* TODO: When reading from stdout is not possible, should we try to
+	 * keep stdin and stderr open?  Probably not, assume the other side
+	 * has died. */
+	channel_close(channel);
+	if (channel->ch_close_cb != NULL)
+	    (*channel->ch_close_cb)();
 
 	if (len < 0)
 	{
@@ -1587,6 +1580,7 @@ channel_fd2channel(sock_T fd, int *whichp)
     if (fd >= 0)
 	for (channel = first_channel; channel != NULL;
 						   channel = channel->ch_next)
+	{
 #  ifdef CHANNEL_PIPES
 	    for (i = CHAN_SOCK; i < CHAN_IN; ++i)
 #  else
@@ -1595,8 +1589,9 @@ channel_fd2channel(sock_T fd, int *whichp)
 		if (channel->ch_pfd[i].ch_fd == fd)
 		{
 		    *whichp = i;
-		    return channel
+		    return channel;
 		}
+	}
     return NULL;
 }
 # endif
@@ -1638,7 +1633,7 @@ channel_send(channel_T *channel, char_u *buf, char *fun)
     {
 	ch_log_lead("SEND ", channel);
 	fprintf(log_fd, "'");
-	ignored = fwrite(buf, len, 1, log_fd);
+	ignored = (int)fwrite(buf, len, 1, log_fd);
 	fprintf(log_fd, "'\n");
 	fflush(log_fd);
     }
@@ -1677,11 +1672,13 @@ channel_poll_setup(int nfd_in, void *fds_in)
     int		which;
 
     for (channel = first_channel; channel != NULL; channel = channel->ch_next)
+    {
 #  ifdef CHANNEL_PIPES
 	for (which = CHAN_SOCK; which < CHAN_IN; ++which)
 #  else
 	which = CHAN_SOCK;
 #  endif
+	{
 	    if (channel->ch_pfd[which].ch_fd >= 0)
 	    {
 		channel->ch_pfd[which].ch_poll_idx = nfd;
@@ -1691,6 +1688,8 @@ channel_poll_setup(int nfd_in, void *fds_in)
 	    }
 	    else
 		channel->ch_pfd[which].ch_poll_idx = -1;
+	}
+    }
 
     return nfd;
 }
@@ -1707,8 +1706,9 @@ channel_poll_check(int ret_in, void *fds_in)
     int		which;
 
     for (channel = first_channel; channel != NULL; channel = channel->ch_next)
+    {
 #  ifdef CHANNEL_PIPES
-	for (which = CHAN_SOCK; which < CHAN_IN; ++which)
+	for (which = CHAN_SOCK; which < CH_IN; ++which)
 #  else
 	which = CHAN_SOCK;
 #  endif
@@ -1721,6 +1721,7 @@ channel_poll_check(int ret_in, void *fds_in)
 		--ret;
 	    }
 	}
+    }
 
     return ret;
 }
@@ -1739,6 +1740,7 @@ channel_select_setup(int maxfd_in, void *rfds_in)
     int		which;
 
     for (channel = first_channel; channel != NULL; channel = channel->ch_next)
+    {
 #  ifdef CHANNEL_PIPES
 	for (which = CHAN_SOCK; which < CHAN_IN; ++which)
 #  else
@@ -1754,6 +1756,7 @@ channel_select_setup(int maxfd_in, void *rfds_in)
 		    maxfd = fd;
 	    }
 	}
+    }
 
     return maxfd;
 }
@@ -1770,6 +1773,7 @@ channel_select_check(int ret_in, void *rfds_in)
     int		which;
 
     for (channel = first_channel; channel != NULL; channel = channel->ch_next)
+    {
 #  ifdef CHANNEL_PIPES
 	for (which = CHAN_SOCK; which < CHAN_IN; ++which)
 #  else
@@ -1784,6 +1788,7 @@ channel_select_check(int ret_in, void *rfds_in)
 		--ret;
 	    }
 	}
+    }
 
     return ret;
 }

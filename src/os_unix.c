@@ -5043,7 +5043,7 @@ mch_start_job(char **argv, job_T *job)
     int		fd_in[2];	/* for stdin */
     int		fd_out[2];	/* for stdout */
     int		fd_err[2];	/* for stderr */
-    channel_T	*channel;
+    channel_T	*channel = NULL;
 
     /* default is to fail */
     job->jv_status = JOB_FAILED;

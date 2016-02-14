@@ -1301,8 +1301,8 @@ typedef enum
     MODE_JS
 } ch_mode_T;
 
-/* Ordering matters: IN is last, only SOCK/OUT/ERR are polled */
-
+/* Ordering matters, it is used in for loops: IN is last, only SOCK/OUT/ERR
+ * are polled. */
 #define CHAN_SOCK   0
 #define CH_SOCK	    ch_pfd[CHAN_SOCK].ch_fd
 
@@ -1342,7 +1342,7 @@ struct channel_S {
 
     int		ch_id;		/* ID of the channel */
 
-    chan_fd_T	ch_pfd[4];	/* info for socket, in, out and err */
+    chan_fd_T	ch_pfd[4];	/* info for socket, out, err and in */
 
     readq_T	ch_head;	/* dummy node, header for circular queue */
 
@@ -1351,6 +1351,7 @@ struct channel_S {
 				 * the other side has exited, only mention the
 				 * first error until the connection works
 				 * again. */
+
     void	(*ch_close_cb)(void); /* callback for when channel is closed */
 
     int		ch_block_id;	/* ID that channel_read_json_block() is
