@@ -679,8 +679,10 @@ ifneq ($(CHANNEL),yes)
 # Cannot use Netbeans without CHANNEL
 NETBEANS=no
 else
-# Only allow NETBEANS for a GUI build.
-ifeq (yes, $(GUI))
+ifneq (yes, $(GUI))
+# Cannot use Netbeans without GUI.
+NETBEANS=no
+else
 OBJ += $(OUTDIR)/netbeans.o
 LIB += -lwsock32
 endif
