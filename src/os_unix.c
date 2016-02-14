@@ -5116,10 +5116,15 @@ mch_start_job(char **argv, job_T *job)
     close(fd_err[1]);
     channel_set_pipes(channel, fd_in[1], fd_out[0], fd_err[0]);
     channel_set_job(channel, job);
+#ifdef FEAT_GUI
+    channel_gui_register(channel);
+#endif
 
     return;
 
 failed:
+    if (channel != NULL)
+	channel_free(channel);
     if (fd_in[0] >= 0)
     {
 	close(fd_in[0]);

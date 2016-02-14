@@ -5039,12 +5039,19 @@ mch_start_job(char *cmd, job_T *job)
     STARTUPINFO		si;
     PROCESS_INFORMATION	pi;
     HANDLE		jo;
+#ifdef FEAT_CHANNEL
+    channel_T	*channel;
+
+    channel = add_channel();
+    if (channel == NULL)
+	return;
+#endif
 
     jo = CreateJobObject(NULL, NULL);
     if (jo == NULL)
     {
 	job->jv_status = JOB_FAILED;
-	return;
+	goto failed;
     }
 
     ZeroMemory(&pi, sizeof(pi));
@@ -5062,22 +5069,40 @@ mch_start_job(char *cmd, job_T *job)
     {
 	CloseHandle(jo);
 	job->jv_status = JOB_FAILED;
+	goto failed;
     }
-    else
+
+    if (!AssignProcessToJobObject(jo, pi.hProcess))
     {
-	if (!AssignProcessToJobObject(jo, pi.hProcess))
-	{
-	    /* if failing, switch the way to terminate
-	     * process with TerminateProcess. */
-	    CloseHandle(jo);
-	    jo = NULL;
-	}
-	ResumeThread(pi.hThread);
-	CloseHandle(job->jv_proc_info.hThread);
-	job->jv_proc_info = pi;
-	job->jv_job_object = jo;
-	job->jv_status = JOB_STARTED;
+	/* if failing, switch the way to terminate
+	 * process with TerminateProcess. */
+	CloseHandle(jo);
+	jo = NULL;
     }
+    ResumeThread(pi.hThread);
+    CloseHandle(job->jv_proc_info.hThread);
+    job->jv_proc_info = pi;
+    job->jv_job_object = jo;
+    job->jv_status = JOB_STARTED;
+
+#ifdef FEAT_CHANNEL
+# if 0
+    /* TODO: connect stdin/stdout/stderr */
+    job->jv_channel = channel;
+    channel_set_pipes(channel, fd_in[1], fd_out[0], fd_err[0]);
+    channel_set_job(channel, job);
+
+#  ifdef FEAT_GUI
+     channel_gui_register(channel);
+#  endif
+# endif
+#endif
+    return;
+
+failed:
+#ifdef FEAT_CHANNEL
+    channel_free(channel);
+#endif
 }
 
     char *

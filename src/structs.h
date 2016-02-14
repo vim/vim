@@ -1301,27 +1301,48 @@ typedef enum
     MODE_JS
 } ch_mode_T;
 
+/* Ordering matters: IN is last, only SOCK/OUT/ERR are polled */
+
+#define CHAN_SOCK   0
+#define CH_SOCK	    ch_pfd[CHAN_SOCK].ch_fd
+
+#ifdef UNIX
+# define CHANNEL_PIPES
+
+# define CHAN_OUT   1
+# define CHAN_ERR   2
+# define CHAN_IN    3
+# define CH_OUT	    ch_pfd[CHAN_OUT].ch_fd
+# define CH_ERR	    ch_pfd[CHAN_ERR].ch_fd
+# define CH_IN	    ch_pfd[CHAN_IN].ch_fd
+#endif
+
+/* The per-fd info for a channel. */
+typedef struct {
+    sock_T	ch_fd;	    /* socket/stdin/stdout/stderr, -1 if not used */
+
+# if defined(UNIX) && !defined(HAVE_SELECT)
+    int		ch_poll_idx;	/* used by channel_poll_setup() */
+# endif
+
+#ifdef FEAT_GUI_X11
+    XtInputId	ch_inputHandler; /* Cookie for input */
+#endif
+#ifdef FEAT_GUI_GTK
+    gint	ch_inputHandler; /* Cookie for input */
+#endif
+#ifdef WIN32
+    int		ch_inputHandler; /* ret.value of WSAAsyncSelect() */
+#endif
+} chan_fd_T;
+
 struct channel_S {
     channel_T	*ch_next;
     channel_T	*ch_prev;
 
     int		ch_id;		/* ID of the channel */
 
-    sock_T	ch_sock;	/* the socket, -1 for a closed channel */
-
-#ifdef UNIX
-# define CHANNEL_PIPES
-    int		ch_in;		/* stdin of the job, -1 if not used */
-    int		ch_out;		/* stdout of the job, -1 if not used */
-    int		ch_err;		/* stderr of the job, -1 if not used */
-
-# if defined(UNIX) && !defined(HAVE_SELECT)
-    int		ch_sock_idx;	/* used by channel_poll_setup() */
-    int		ch_in_idx;	/* used by channel_poll_setup() */
-    int		ch_out_idx;	/* used by channel_poll_setup() */
-    int		ch_err_idx;	/* used by channel_poll_setup() */
-# endif
-#endif
+    chan_fd_T	ch_pfd[4];	/* info for socket, in, out and err */
 
     readq_T	ch_head;	/* dummy node, header for circular queue */
 
@@ -1330,16 +1351,6 @@ struct channel_S {
 				 * the other side has exited, only mention the
 				 * first error until the connection works
 				 * again. */
-#ifdef FEAT_GUI_X11
-    XtInputId	ch_inputHandler; /* Cookie for input */
-#endif
-#ifdef FEAT_GUI_GTK
-    gint	ch_inputHandler; /* Cookie for input */
-#endif
-#ifdef WIN32
-    int		ch_inputHandler; /* simply ret.value of WSAAsyncSelect() */
-#endif
-
     void	(*ch_close_cb)(void); /* callback for when channel is closed */
 
     int		ch_block_id;	/* ID that channel_read_json_block() is

@@ -9970,12 +9970,12 @@ f_ch_open(typval_T *argvars, typval_T *rettv)
     channel = channel_open((char *)address, port, waittime, NULL);
     if (channel != NULL)
     {
+	rettv->vval.v_channel = channel;
 	channel_set_json_mode(channel, ch_mode);
 	channel_set_timeout(channel, timeout);
 	if (callback != NULL && *callback != NUL)
 	    channel_set_callback(channel, callback);
     }
-    rettv->vval.v_channel = channel;
 }
 
 /*
