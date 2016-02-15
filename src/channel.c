@@ -1262,6 +1262,8 @@ channel_save(channel_T *channel, char_u *buf, int len)
 {
     readq_T *node;
     readq_T *head = &channel->ch_head;
+    char_u  *p;
+    int	    i;
 
     node = (readq_T *)alloc(sizeof(readq_T));
     if (node == NULL)
@@ -1272,8 +1274,13 @@ channel_save(channel_T *channel, char_u *buf, int len)
 	vim_free(node);
 	return FAIL;	    /* out of memory */
     }
-    mch_memmove(node->rq_buffer, buf, (size_t)len);
-    node->rq_buffer[len] = NUL;
+
+    /* TODO: don't strip CR when channel is in raw mode */
+    p = node->rq_buffer;
+    for (i = 0; i < len; ++i)
+	if (buf[i] != CAR || i + 1 >= len || buf[i + 1] != NL)
+	    *p++ = buf[i];
+    *p = NUL;
 
     /* append node to the tail of the queue */
     node->rq_next = NULL;
