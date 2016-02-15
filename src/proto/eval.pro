@@ -79,6 +79,7 @@ int dict_add_list(dict_T *d, char *key, list_T *list);
 dictitem_T *dict_find(dict_T *d, char_u *key, int len);
 char_u *get_dict_string(dict_T *d, char_u *key, int save);
 long get_dict_number(dict_T *d, char_u *key);
+int channel_unref(channel_T *channel);
 int string2float(char_u *text, float_T *value);
 char_u *get_function_name(expand_T *xp, int idx);
 char_u *get_expr_name(expand_T *xp, int idx);

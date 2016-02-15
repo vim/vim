@@ -7730,12 +7730,21 @@ failret:
     return OK;
 }
 
-#ifdef FEAT_CHANNEL
-    static void
+#if defined(FEAT_CHANNEL) || defined(PROTO)
+/*
+ * Decrement the reference count on "channel" and free it when it goes down to
+ * zero.
+ * Returns TRUE when the channel was freed.
+ */
+    int
 channel_unref(channel_T *channel)
 {
     if (channel != NULL && --channel->ch_refcount <= 0)
+    {
 	channel_free(channel);
+	return TRUE;
+    }
+    return FALSE;
 }
 #endif
 

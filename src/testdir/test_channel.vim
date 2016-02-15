@@ -295,3 +295,21 @@ func Test_pipe()
     call job_stop(job)
   endtry
 endfunc
+
+let s:unletResponse = ''
+func s:UnletHandler(handle, msg)
+  let s:unletResponse = a:msg
+  unlet s:channelfd
+endfunc
+
+" Test that "unlet handle" in a handler doesn't crash Vim.
+func s:unlet_handle(port)
+  let s:channelfd = ch_open('localhost:' . a:port, s:chopt)
+  call ch_sendexpr(s:channelfd, "test", function('s:UnletHandler'))
+  sleep 10m
+  call assert_equal('what?', s:unletResponse)
+endfunc
+
+func Test_unlet_handle()
+  call s:run_server('s:unlet_handle')
+endfunc

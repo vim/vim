@@ -1217,8 +1217,6 @@ channel_close(channel_T *channel)
 #endif
 
     channel->ch_close_cb = NULL;
-    vim_free(channel->ch_callback);
-    channel->ch_callback = NULL;
     channel_clear(channel);
 }
 
@@ -1298,6 +1296,9 @@ channel_clear(channel_T *channel)
 	free_tv(json_head->jq_next->jq_value);
 	remove_json_node(json_head, json_head->jq_next);
     }
+
+    vim_free(channel->ch_callback);
+    channel->ch_callback = NULL;
 }
 
 #if defined(EXITFREE) || defined(PROTO)
@@ -1802,15 +1803,28 @@ channel_select_check(int ret_in, void *rfds_in)
     int
 channel_parse_messages(void)
 {
-    channel_T *channel;
-    int	    ret = FALSE;
+    channel_T	*channel = first_channel;
+    int		ret = FALSE;
+    int		r;
 
-    for (channel = first_channel; channel != NULL; channel = channel->ch_next)
-	while (may_invoke_callback(channel) == OK)
+    while (channel != NULL)
+    {
+	/* Increase the refcount, in case the handler causes the channel to be
+	 * unreferenced or closed. */
+	++channel->ch_refcount;
+	r = may_invoke_callback(channel);
+	if (channel_unref(channel))
+	    /* channel was freed, start over */
+	    channel = first_channel;
+
+	if (r == OK)
 	{
-	    channel = first_channel;  /* start over */
+	    channel = first_channel;  /* something was done, start over */
 	    ret = TRUE;
 	}
+	else
+	    channel = channel->ch_next;
+    }
     return ret;
 }
 
