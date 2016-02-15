@@ -414,7 +414,7 @@ WINDRES_CC = $(CC)
 #>>>>> end of choices
 ###########################################################################
 
-CFLAGS = -Iproto $(DEFINES) -pipe -w -march=$(ARCH) -Wall
+CFLAGS = -Iproto $(DEFINES) -pipe -march=$(ARCH) -Wall
 WINDRES_FLAGS = --preprocessor="$(WINDRES_CC) -E -xc" -DRC_INVOKED
 EXTRA_LIBS =
 
