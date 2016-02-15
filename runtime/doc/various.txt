@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.4.  Last change: 2016 Jan 31
+*various.txt*   For Vim version 7.4.  Last change: 2016 Feb 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -358,6 +358,7 @@ m  *+hangul_input*	Hangul input support |hangul|
    *+iconv*		Compiled with the |iconv()| function
    *+iconv/dyn*		Likewise |iconv-dynamic| |/dyn|
 N  *+insert_expand*	|insert_expand| Insert mode completion
+m  *+job*		starting and stopping jobs |job|
 N  *+jumplist*		|jumplist|
 B  *+keymap*		|'keymap'|
 B  *+langmap*		|'langmap'|

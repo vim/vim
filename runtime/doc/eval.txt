@@ -37,7 +37,7 @@ done, the features in this document are not available.	See |+eval| and
 
 1.1 Variable types ~
 							*E712*
-There are eight types of variables:
+There are nine types of variables:
 
 Number		A 32 or 64 bit signed number.  |expr-number| *Number*
 		Examples:  -123  0x10  0177
@@ -61,7 +61,9 @@ Funcref		A reference to a function |Funcref|.
 
 Special		v:false, v:true, v:none and v:null
 
-Job		Used for job control, see |job_start()|.
+Job		Used for a job, see |job_start()|.
+
+Channel		Used for a channel, see |ch_open()|.
 
 The Number and String types are converted automatically, depending on how they
 are used.
@@ -100,7 +102,7 @@ Note that in the command >
 use empty(): >
 	:if !empty("foo")
 <
-			*E745* *E728* *E703* *E729* *E730* *E731* *E908* *E910*
+		*E745* *E728* *E703* *E729* *E730* *E731* *E908* *E910* *E913*
 List, Dictionary, Funcref and Job types are not automatically converted.
 
 							*E805* *E806* *E808*
@@ -108,7 +110,7 @@ When mixing Number and Float the Number is converted to Float.	Otherwise
 there is no automatic conversion of Float.  You can use str2float() for String
 to Float, printf() for Float to String and float2nr() for Float to Number.
 
-				*E891* *E892* *E893* *E894* *E907* *E911*
+			*E891* *E892* *E893* *E894* *E907* *E911* *E914*
 When expecting a Float a Number can also be used, but nothing else.
 
 						*E706* *sticky-type-checking*
@@ -1823,6 +1825,7 @@ ch_sendexpr( {handle}, {expr} [, {callback}])
 				any	send {expr} over JSON channel {handle}
 ch_sendraw( {handle}, {string} [, {callback}])
 				any	send {string} over raw channel {handle}
+ch_status( {handle})		String	status of channel {handle}
 changenr()			Number	current change number
 char2nr( {expr}[, {utf8}])	Number	ASCII/UTF8 value of first char in {expr}
 cindent( {lnum})		Number	C indent for line {lnum}
@@ -1955,6 +1958,7 @@ invert( {expr})			Number  bitwise invert
 isdirectory( {directory})	Number	TRUE if {directory} is a directory
 islocked( {expr})		Number	TRUE if {expr} is locked
 items( {dict})			List	key-value pairs in {dict}
+job_getchannel( {job})		Number	get the channel handle for {job}
 job_start( {command} [, {options}]) Job	start a job	
 job_status( {job})		String	get the status of a job
 job_stop( {job} [, {how}])	Number	stop a job
@@ -2684,9 +2688,13 @@ ch_close({handle})						*ch_close()*
 
 ch_logfile( {fname} [, {mode}])					*ch_logfile()*
 		Start logging channel activity to {fname}.
+		When {fname} is an empty string: stop logging.
+
 		When {mode} is omitted or "a" append to the file.
 		When {mode} is "w" start with an empty file.
-		When {fname} is an empty string: stop logging.
+
+		The file is flushed after every message, on Unix you can use
+		"tail -f" to see what is going on in real time.
 
 ch_open({address} [, {argdict}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
@@ -2741,6 +2749,12 @@ ch_sendraw({handle}, {string} [, {callback}])		*ch_sendraw()*
 		correct contents.  See |channel-use|.
 
 		{only available when compiled with the |+channel| feature}
+
+ch_status({handle})						*ch_status()*
+		Return the status of channel {handle}:
+			"fail"		failed to open the channel
+			"open"		channel can be used
+			"closed"	channel can not be used
 
 							*copy()*
 copy({expr})	Make a copy of {expr}.	For Numbers and Strings this isn't
@@ -2938,6 +2952,7 @@ empty({expr})						*empty()*
 		- A Number and Float is empty when its value is zero.
 		- |v:false|, |v:none| and |v:null| are empty, |v:true| is not.
 		- A Job is empty when it failed to start.
+		- A Channel is empty when it is closed.
 
 		For a long |List| this is much faster than comparing the
 		length with zero.
@@ -4334,7 +4349,11 @@ items({dict})						*items()*
 		order.
 
 
-job_start({command} [, {options}])				*job_start()*
+job_getchannel({job})					 *job_getchannel()*
+		Get the channel handle that {job} is using.
+		{only available when compiled with the |+job| feature}
+
+job_start({command} [, {options}])			*job_start()*
 		Start a job and return a Job object.  Unlike |system()| and
 		|:!cmd| this does not wait for the job to finish.
 
@@ -6838,6 +6857,7 @@ type({expr})	The result is a Number, depending on the type of {expr}:
 			Boolean:    6 (v:false and v:true)
 			None	    7 (v:null and v:none)
 			Job	    8
+			Channel	    9
 		To avoid the magic numbers it should be used this way: >
 			:if type(myvar) == type(0)
 			:if type(myvar) == type("")

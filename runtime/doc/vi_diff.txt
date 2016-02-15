@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 7.4.  Last change: 2015 Nov 01
+*vi_diff.txt*   For Vim version 7.4.  Last change: 2016 Feb 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -960,7 +960,7 @@ Only Vim is able to accept options in between and after the file names.
 In 2005 the POSIX test suite was run to check the compatibility of Vim.  Most
 of the test was executed properly.  There are the few things where Vim
 is not POSIX compliant, even when run in Vi compatibility mode.
-
+							*$VIM_POSIX*
 Set the $VIM_POSIX environment variable to have 'cpoptions' include the POSIX
 flags when Vim starts up.  This makes Vim run as POSIX as it can.  That's
 a bit different from being Vi compatible.

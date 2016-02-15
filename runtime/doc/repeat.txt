@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.4.  Last change: 2016 Jan 16
+*repeat.txt*    For Vim version 7.4.  Last change: 2016 Feb 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -490,7 +490,7 @@ Additionally, these commands can be used:
 	bt
 	where
 							*>frame*
-	frame N		Goes to N bactrace level. + and - signs make movement
+	frame N		Goes to N backtrace level. + and - signs make movement
 			relative.  E.g., ":frame +3" goes three frames up.
 							*>up*
 	up		Goes one level up from call stacktrace.

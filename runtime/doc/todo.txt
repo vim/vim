@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Feb 07
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Feb 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -33,6 +33,100 @@ not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
++channel:
+- Move netbeans NL handling to channel.c, use it for NL mode channel
+- ch_open fails when socket isn't present yet. (Marcin Szamotulski)
+  Retry when error is "connection refused".
+- channel test waittime is disabled for MS-Windows, causes a crash.
+- channel needs both stdout and stderr (GUI implementation)
+- implement TODO items in ":help channel":
+   - implement ch_setoptions(handle, {options})
+   - job_setoptions(job, {options})
+   - ch_close() closes stdin/stdout/stderr
+   - out-cb
+   - err-cb
+   - exit-cb  move code from mch_clear_job()
+   - job argument: killonexit
+   - ch_read() for stderr
+   - ch_getjob(handle)
+   - ch_read(handle [, timeout])
+   - ch_readall(handle [, timeout])
+   - job_info() should remove usable info: process ID, run/dead, etc.
+   - job_maystart()
+   - job_gethandle(), job_sethandle()
+   - add ch_status(): Whether channel is open.  Perhaps also mode, timeout.
+   - When channel closes invoke "close-cb".
+- Move more details from eval.txt to channel.txt.  Add tags in eval.txt.
+- When receiving malformed json starting with a quote it doesn't get
+  discarded.
+- When message in queue but there is no callback, drop it after a while?
+- Crash when closing channel after ch_sendexpr() with callback and outstanding
+  request (Christian Robinson).
+- cleanup on exit?  in mch_getout() and getout().
+- On Mac a 1 msec waittime is needed in ch_open(), why?
+- Add more log calls, basically at every branch, before every callback, etc.
+- Add timestamp to queued messages and callbacks with ID, remove after a
+  minute.
+- add remark about undo sync, is there a way to force it?
+- When starting a job, have an option to open the server socket, so we know
+  the port, and pass it to the command with --socket-fd {nr}. (Olaf Dabrunz,
+  Feb 9)  How to do this on MS-Windows?
+- Add more unit-testing in json_test.c
+- Add a test where ["eval","getline(123)"] gets a line with special
+  characters (NUL, 0x80, etc.).  Check that it isn't garbled.
+- make sure errors lead to a useful error msg. ["ex","foobar"]
+- json: implement UTF-16 surrogate pair.
+- For connection to server, a "keep open" flag would be useful.  Retry
+  connecting in the main loop with zero timeout.
+More plugin support:
+- Have a way to install a callback from the main loop.  Called every second or
+  so.
+- Need way to uniquely identify a window, no matter how windows are
+  rearranged.  Same for tab pages.
+      getwinid()             ID of current winow
+      getwinid({nr})         ID of window {nr}
+      getwinid({nr}, {tab})  ID of window {nr} in tab page {tab}
+      getwinnr({id})	     window nr of {id} or -1 if not open
+      gettabnr({id})	     tab page nr of {id} or -1 if not open
+      gotowin({id})
+  Make it so that the window ID can be used where currently a window nr is used
+
+Patch on #608: (Ken Takata)
+https://bitbucket.org/k_takata/vim-ktakata-mq/src/479934b94fd56b064c9e4bd8737585c5df69d56a/fix-gvimext-loadlibrary.patch?fileviewer=file-view-default
+
+This difference is unexpected:
+    echo v:true == 1
+    1
+    echo [v:true] == [1]
+    0
+It's because tv_equal() works different.
+
+Add "runtime/bundles" ?
+    runtime/bundles/netrw/spec.vim
+    runtime/bundles/netrw/autoload/netrw.vim
+    runtime/bundles/netrw/syntax/netrw.vim
+    etc.
+Need an alternative for 'runtimepath' that tells where bundles are to be
+found. 'bundlepath' ?
+The plugins under 'bundlepath' would always be loaded.  Also have a path for
+optional plugins?  'optbundlepath'?  Or have directories "bundlesdef" and
+"bundlesopt"?
+Then use a command "loadplugin" to find a plugin in "optional".
+"bundles" is used by some plugin managers, need another name. "packages"?
+Add a "requires" / "provides" mechanism?
+    if my_feature_enabled
+      require +python
+    endif
+    require my_other_plugin
+~/vim/packages/netrw/def/netrw/plugin/netrw.vim
+~/vim/packages/netrw/opt/nwdebug/plugin/nwdebug.vim
+
+Why does this: 	echo "a" . 1.1
+result in:	a11
+Should recognize float (so long as it's not ".1.1").
+
+Allow for an empty dictionary key.
 
 Regexp problems:
 - The regexp engines are not reentrant, causing havoc when interrupted by a
@@ -76,53 +170,8 @@ Regexp problems:
   matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
 - Search for \\~ causes error E874.
 
-- "\%1l^#.*" does not match on a line starting with "#".  The zero-width match
-  clears the start-of-line flag.
-  Patch by Christian, 2016 Jan 29.
-
-+channel:
-- implement job control:
-	job argument: redirect stdin/stdout
-	job argument: killonexit
-	let job = job_maystart('command', {address}, {options})
-- When receiving malformed json starting with a quote it doesn't get
-  discarded.
-- add ch_status(): Whether channel is open.  Perhaps also mode, timeout.
-  When channel closes invoke channel callback.
-- add ch_setcallback()
-- add ch_settimeout()
-- cleanup on exit?  in mch_getout() and getout().
-- Add a test for the channel callback.
-- implement debug log
-- Add timestamp to queued messages and callbacks with ID, remove after a
-  minute.
-- add remark about undo sync, is there a way to force it?
-- Add more testing in json_test.c
-- make sure errors lead to a useful error msg. ["ex","foobar"]
-- json: implement UTF-16 surrogate pair.
-- Need way to uniquely identify a window, no matter how windows are
-  rearranged.  Same for tab pages.
-      getwinid()             ID of current winow
-      getwinid({nr})         ID of window {nr}
-      getwinid({nr}, {tab})  ID of window {nr} in tab page {tab}
-      getwinnr({id})	     window nr of {id} or -1 if not open
-      gettabnr({id})	     tab page nr of {id} or -1 if not open
-      gotowin({id})
-  Make it so that the window ID can be used where currently a window nr is used
-- For connection to server, a "keep open" flag would be useful.  Retry
-  connecting in the main loop with zero timeout.
-
-Patch on #608: (Ken Takata)
-https://bitbucket.org/k_takata/vim-ktakata-mq/src/479934b94fd56b064c9e4bd8737585c5df69d56a/fix-gvimext-loadlibrary.patch?fileviewer=file-view-default
-
-This difference is unexpected:
-    echo v:true == 1
-    1
-    echo [v:true] == [1]
-    0
-It's because tv_equal() works different.
-
-Allow for an empty dictionary key.
+Also include update_curswant() fix for getcurpos(). (Christian Brabandt, 2016
+Feb 9)
 
 Patch to put undo options together in undo window.
 (Gary Johnson, 2016 Jan 28)
@@ -221,7 +270,13 @@ Patch to fix display of listchars on the cursorline. (Nayuri Aohime, 2013)
 Update suggested by Yasuhiro Matsumoto, 2014 Nov 25:
 https://gist.github.com/presuku/d3d6b230b9b6dcfc0477
 
+Patch to make the behavior of "w" more straightforward, but not Vi compatible.
+With a 'cpo' flag.  (Christian Brabandt, 2016 Feb 8)
+
 Patch to add TagNotFound autocommand. (Anton Lindqvist, 2016 Feb 3)
+
+Patch to add Error autocommand. (Anton Lindqvist, 2016 Feb 14)
+Only remembers one error.
 
 Illegal memory access, requires ASAN to see. (Dominique Pelle, 2015 Jul 28)
 
@@ -271,7 +326,7 @@ Can we cache the syntax attributes, so that updates for 'relativenumber' and
 Build with Python on Mac does not always use the right library.
 (Kazunobu Kuriyama, 2015 Mar 28)
 
-Patch to add GTK 3 support. (Kazunobu Kuriyama, 2016 Feb 6)
+Patch to add GTK 3 support. (Kazunobu Kuriyama, 2016 Feb 13)
 Does not fully work yet.
 
 Need a Vim equivalent of Python's None and a way to test for it.
@@ -497,7 +552,7 @@ Bug: Autocompleting ":tag/pat" replaces "/pat" with a match but does not
 insert a space. (Micha Mos, 2014 Nov 7)
 
 Patch to add the :bvimgrep command.  (Christian Brabandt, 2014 Nov 12)
-Update Dec 6.
+Updated 2016 Feb 10
 
 Patch to add argument to :cquit. (Thinca, 2014 Oct 12)
 
