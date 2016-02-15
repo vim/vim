@@ -5102,6 +5102,8 @@ mch_start_job(char *cmd, job_T *job)
 failed:
 # ifdef FEAT_CHANNEL
     channel_free(channel);
+# else
+    ;  /* make compiler happy */
 # endif
 }
 
