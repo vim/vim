@@ -684,16 +684,13 @@ ifneq (yes, $(GUI))
 NETBEANS=no
 else
 OBJ += $(OUTDIR)/netbeans.o
-LIB += -lwsock32
 endif
 endif
 endif
 
 ifeq ($(CHANNEL),yes)
 OBJ += $(OUTDIR)/channel.o
-ifneq ($(NETBEANS),yes)
 LIB += -lwsock32
-endif
 endif
 
 ifeq ($(DIRECTX),yes)
