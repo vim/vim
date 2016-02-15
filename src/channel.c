@@ -32,10 +32,9 @@
 #  undef EINTR
 # endif
 # define EINTR WSAEINTR
-# define sock_write(sd, buf, len) send(sd, buf, len, 0)
-# define sock_read(sd, buf, len) recv(sd, buf, len, 0)
-# define sock_close(sd) closesocket(sd)
-# define sleep(t) Sleep(t*1000) /* WinAPI Sleep() accepts milliseconds */
+# define sock_write(sd, buf, len) send((SOCKET)sd, buf, len, 0)
+# define sock_read(sd, buf, len) recv((SOCKET)sd, buf, len, 0)
+# define sock_close(sd) closesocket((SOCKET)sd)
 #else
 # include <netdb.h>
 # include <netinet/in.h>
@@ -48,12 +47,46 @@
 # define sock_write(sd, buf, len) write(sd, buf, len)
 # define sock_read(sd, buf, len) read(sd, buf, len)
 # define sock_close(sd) close(sd)
+# define fd_read(fd, buf, len, timeout) read(fd, buf, len)
+# define fd_write(sd, buf, len) write(sd, buf, len)
+# define fd_close(sd) close(sd)
 #endif
 
 #ifdef FEAT_GUI_W32
 extern HWND s_hwnd;			/* Gvim's Window handle */
 #endif
 
+#ifdef WIN32
+    static int
+fd_read(sock_T fd, char_u *buf, size_t len, int timeout)
+{
+    HANDLE h = (HANDLE)fd;
+    DWORD nread;
+
+    if (!ReadFile(h, buf, (DWORD)len, &nread, NULL))
+	return -1;
+    return (int)nread;
+}
+
+    static int
+fd_write(sock_T fd, char_u *buf, size_t len)
+{
+    HANDLE h = (HANDLE)fd;
+    DWORD nwrite;
+
+    if (!WriteFile(h, buf, (DWORD)len, &nwrite, NULL))
+	return -1;
+    return (int)nwrite;
+}
+
+    static void
+fd_close(sock_T fd)
+{
+    HANDLE h = (HANDLE)fd;
+
+    CloseHandle(h);
+}
+#endif
 
 /* Log file opened with ch_logfile(). */
 static FILE *log_fd = NULL;
@@ -228,7 +261,7 @@ add_channel(void)
     which = CHAN_SOCK;
 #endif
     {
-	channel->ch_pfd[which].ch_fd = (sock_T)-1;
+	channel->ch_pfd[which].ch_fd = CHAN_FD_INVALID;
 #ifdef FEAT_GUI_X11
 	channel->ch_pfd[which].ch_inputHandler = (XtInputId)NULL;
 #endif
@@ -363,12 +396,12 @@ channel_gui_register(channel_T *channel)
     if (!CH_HAS_GUI)
 	return;
 
-    if (channel->CH_SOCK >= 0)
+    if (channel->CH_SOCK != CHAN_FD_INVALID)
 	channel_gui_register_one(channel, CHAN_SOCK);
 # ifdef CHANNEL_PIPES
-    if (channel->CH_OUT >= 0)
+    if (channel->CH_OUT != CHAN_FD_INVALID)
 	channel_gui_register_one(channel, CHAN_OUT);
-    if (channel->CH_ERR >= 0)
+    if (channel->CH_ERR != CHAN_FD_INVALID)
 	channel_gui_register_one(channel, CHAN_ERR);
 # endif
 }
@@ -457,7 +490,7 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 	return NULL;
     }
 
-    if ((sd = (sock_T)socket(AF_INET, SOCK_STREAM, 0)) == (sock_T)-1)
+    if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
 	ch_error(NULL, "in socket() in channel_open().\n");
 	PERROR("E898: socket() in channel_open()");
@@ -564,7 +597,7 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
     if (errno == ECONNREFUSED && close_cb != NULL)
     {
 	sock_close(sd);
-	if ((sd = (sock_T)socket(AF_INET, SOCK_STREAM, 0)) == (sock_T)-1)
+	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 	    SOCK_ERRNO;
 	    ch_log(NULL, "socket() retry in channel_open()\n");
@@ -609,7 +642,7 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 	}
     }
 
-    channel->CH_SOCK = sd;
+    channel->CH_SOCK = (sock_T)sd;
     channel->ch_close_cb = close_cb;
 
 #ifdef FEAT_GUI
@@ -621,7 +654,7 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 
 #if defined(CHANNEL_PIPES) || defined(PROTO)
     void
-channel_set_pipes(channel_T *channel, int in, int out, int err)
+channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err)
 {
     channel->CH_IN = in;
     channel->CH_OUT = out;
@@ -1144,9 +1177,9 @@ may_invoke_callback(channel_T *channel)
     int
 channel_can_write_to(channel_T *channel)
 {
-    return channel != NULL && (channel->CH_SOCK >= 0
+    return channel != NULL && (channel->CH_SOCK != CHAN_FD_INVALID
 #ifdef CHANNEL_PIPES
-			  || channel->CH_IN >= 0
+			  || channel->CH_IN != CHAN_FD_INVALID
 #endif
 			  );
 }
@@ -1158,11 +1191,11 @@ channel_can_write_to(channel_T *channel)
     int
 channel_is_open(channel_T *channel)
 {
-    return channel != NULL && (channel->CH_SOCK >= 0
+    return channel != NULL && (channel->CH_SOCK != CHAN_FD_INVALID
 #ifdef CHANNEL_PIPES
-			  || channel->CH_IN >= 0
-			  || channel->CH_OUT >= 0
-			  || channel->CH_ERR >= 0
+			  || channel->CH_IN != CHAN_FD_INVALID
+			  || channel->CH_OUT != CHAN_FD_INVALID
+			  || channel->CH_ERR != CHAN_FD_INVALID
 #endif
 			  );
 }
@@ -1193,26 +1226,26 @@ channel_close(channel_T *channel)
     channel_gui_unregister(channel);
 #endif
 
-    if (channel->CH_SOCK >= 0)
+    if (channel->CH_SOCK != CHAN_FD_INVALID)
     {
 	sock_close(channel->CH_SOCK);
-	channel->CH_SOCK = -1;
+	channel->CH_SOCK = CHAN_FD_INVALID;
     }
 #if defined(CHANNEL_PIPES)
-    if (channel->CH_IN >= 0)
+    if (channel->CH_IN != CHAN_FD_INVALID)
     {
-	close(channel->CH_IN);
-	channel->CH_IN = -1;
+	fd_close(channel->CH_IN);
+	channel->CH_IN = CHAN_FD_INVALID;
     }
-    if (channel->CH_OUT >= 0)
+    if (channel->CH_OUT != CHAN_FD_INVALID)
     {
-	close(channel->CH_OUT);
-	channel->CH_OUT = -1;
+	fd_close(channel->CH_OUT);
+	channel->CH_OUT = CHAN_FD_INVALID;
     }
-    if (channel->CH_ERR >= 0)
+    if (channel->CH_ERR != CHAN_FD_INVALID)
     {
-	close(channel->CH_ERR);
-	channel->CH_ERR = -1;
+	fd_close(channel->CH_ERR);
+	channel->CH_ERR = CHAN_FD_INVALID;
     }
 #endif
 
@@ -1325,7 +1358,7 @@ channel_free_all(void)
  * Always returns OK for FEAT_GUI_W32.
  */
     static int
-channel_wait(channel_T *channel, int fd, int timeout)
+channel_wait(channel_T *channel, sock_T fd, int timeout)
 {
 #if defined(HAVE_SELECT) && !defined(FEAT_GUI_W32)
     struct timeval	tval;
@@ -1334,13 +1367,38 @@ channel_wait(channel_T *channel, int fd, int timeout)
 
     if (timeout > 0)
 	ch_logn(channel, "Waiting for %d msec\n", timeout);
+
+
+# ifdef WIN32
+    if (channel->CH_SOCK == CHAN_FD_INVALID)
+    {
+	DWORD	nread;
+	int	diff;
+	DWORD	deadline = GetTickCount() + timeout;
+
+	/* reading from a pipe, not a socket */
+	while (TRUE)
+	{
+	    if (PeekNamedPipe(fd, NULL, 0, NULL, &nread, NULL) && nread > 0)
+		return OK;
+	    diff = deadline - GetTickCount();
+	    if (diff < 0)
+		break;
+	    /* Wait for 5 msec.
+	     * TODO: increase the sleep time when looping more often */
+	    Sleep(5);
+	}
+	return FAIL;
+    }
+#endif
+
     FD_ZERO(&rfds);
-    FD_SET(fd, &rfds);
+    FD_SET((int)fd, &rfds);
     tval.tv_sec = timeout / 1000;
     tval.tv_usec = (timeout % 1000) * 1000;
     for (;;)
     {
-	ret = select(fd + 1, &rfds, NULL, NULL, &tval);
+	ret = select((int)fd + 1, &rfds, NULL, NULL, &tval);
 # ifdef EINTR
 	if (ret == -1 && errno == EINTR)
 	    continue;
@@ -1385,17 +1443,17 @@ channel_get_id(void)
  * Get the file descriptor to read from, either the socket or stdout.
  * TODO: should have a way to read stderr.
  */
-    static int
+    static sock_T
 get_read_fd(channel_T *channel)
 {
-    if (channel->CH_SOCK >= 0)
+    if (channel->CH_SOCK != CHAN_FD_INVALID)
 	return channel->CH_SOCK;
 #if defined(CHANNEL_PIPES)
-    if (channel->CH_OUT >= 0)
+    if (channel->CH_OUT != CHAN_FD_INVALID)
 	return channel->CH_OUT;
 #endif
     ch_error(channel, "channel_read() called while socket is closed\n");
-    return -1;
+    return CHAN_FD_INVALID;
 }
 
 /*
@@ -1410,14 +1468,14 @@ channel_read(channel_T *channel, int which, char *func)
     static char_u	*buf = NULL;
     int			len = 0;
     int			readlen = 0;
-    int			fd;
+    sock_T		fd;
     int			use_socket = FALSE;
 
     if (which < 0)
 	fd = get_read_fd(channel);
     else
 	fd = channel->ch_pfd[which].ch_fd;
-    if (fd < 0)
+    if (fd == CHAN_FD_INVALID)
 	return;
     use_socket = fd == channel->CH_SOCK;
 
@@ -1439,7 +1497,7 @@ channel_read(channel_T *channel, int which, char *func)
 	if (use_socket)
 	    len = sock_read(fd, buf, MAXMSGSIZE);
 	else
-	    len = read(fd, buf, MAXMSGSIZE);
+	    len = fd_read(fd, buf, MAXMSGSIZE, channel->ch_timeout);
 	if (len <= 0)
 	    break;	/* error or nothing more to read */
 
@@ -1509,12 +1567,13 @@ channel_read_block(channel_T *channel)
     ch_log(channel, "Reading raw\n");
     if (channel_peek(channel) == NULL)
     {
-	int fd = get_read_fd(channel);
+	sock_T fd = get_read_fd(channel);
 
 	/* TODO: read both out and err if they are different */
 	ch_log(channel, "No readahead\n");
 	/* Wait for up to the channel timeout. */
-	if (fd < 0 || channel_wait(channel, fd, channel->ch_timeout) == FAIL)
+	if (fd == CHAN_FD_INVALID
+		|| channel_wait(channel, fd, channel->ch_timeout) == FAIL)
 	    return NULL;
 	channel_read(channel, -1, "channel_read_block");
     }
@@ -1533,7 +1592,7 @@ channel_read_block(channel_T *channel)
 channel_read_json_block(channel_T *channel, int id, typval_T **rettv)
 {
     int		more;
-    int		fd;
+    sock_T	fd;
 
     ch_log(channel, "Reading JSON\n");
     channel->ch_block_id = id;
@@ -1557,8 +1616,8 @@ channel_read_json_block(channel_T *channel, int id, typval_T **rettv)
 
 	    /* Wait for up to the channel timeout. */
 	    fd = get_read_fd(channel);
-	    if (fd < 0 || channel_wait(channel, fd, channel->ch_timeout)
-								      == FAIL)
+	    if (fd == CHAN_FD_INVALID
+		    || channel_wait(channel, fd, channel->ch_timeout) == FAIL)
 		break;
 	    channel_read(channel, -1, "channel_read_json_block");
 	}
@@ -1578,7 +1637,7 @@ channel_fd2channel(sock_T fd, int *whichp)
     channel_T	*channel;
     int		i;
 
-    if (fd >= 0)
+    if (fd != CHAN_FD_INVALID)
 	for (channel = first_channel; channel != NULL;
 						   channel = channel->ch_next)
 	{
@@ -1607,19 +1666,19 @@ channel_send(channel_T *channel, char_u *buf, char *fun)
 {
     int		len = (int)STRLEN(buf);
     int		res;
-    int		fd = -1;
+    sock_T	fd = CHAN_FD_INVALID;
     int		use_socket = FALSE;
 
-    if (channel->CH_SOCK >= 0)
+    if (channel->CH_SOCK != CHAN_FD_INVALID)
     {
 	fd = channel->CH_SOCK;
 	use_socket = TRUE;
     }
 #if defined(CHANNEL_PIPES)
-    else if (channel->CH_IN >= 0)
+    else if (channel->CH_IN != CHAN_FD_INVALID)
 	fd = channel->CH_IN;
 #endif
-    if (fd < 0)
+    if (fd == CHAN_FD_INVALID)
     {
 	if (!channel->ch_error && fun != NULL)
 	{
@@ -1642,7 +1701,7 @@ channel_send(channel_T *channel, char_u *buf, char *fun)
     if (use_socket)
 	res = sock_write(fd, buf, len);
     else
-	res = write(fd, buf, len);
+	res = fd_write(fd, buf, len);
     if (res != len)
     {
 	if (!channel->ch_error && fun != NULL)
@@ -1680,7 +1739,7 @@ channel_poll_setup(int nfd_in, void *fds_in)
 	which = CHAN_SOCK;
 #  endif
 	{
-	    if (channel->ch_pfd[which].ch_fd >= 0)
+	    if (channel->ch_pfd[which].ch_fd != CHAN_FD_INVALID)
 	    {
 		channel->ch_pfd[which].ch_poll_idx = nfd;
 		fds[nfd].fd = channel->ch_pfd[which].ch_fd;
@@ -1750,11 +1809,11 @@ channel_select_setup(int maxfd_in, void *rfds_in)
 	{
 	    sock_T fd = channel->ch_pfd[which].ch_fd;
 
-	    if (fd >= 0)
+	    if (fd != CHAN_FD_INVALID)
 	    {
-		FD_SET(fd, rfds);
-		if (maxfd < fd)
-		    maxfd = fd;
+		FD_SET((int)fd, rfds);
+		if (maxfd < (int)fd)
+		    maxfd = (int)fd;
 	    }
 	}
     }
@@ -1783,7 +1842,7 @@ channel_select_check(int ret_in, void *rfds_in)
 	{
 	    sock_T fd = channel->ch_pfd[which].ch_fd;
 
-	    if (ret > 0 && fd >= 0 && FD_ISSET(fd, rfds))
+	    if (ret > 0 && fd != CHAN_FD_INVALID && FD_ISSET(fd, rfds))
 	    {
 		channel_read(channel, which, "channel_select_check");
 		--ret;

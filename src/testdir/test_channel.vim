@@ -280,7 +280,7 @@ func Test_connect_waittime()
 endfunc
 
 func Test_pipe()
-  if !has('job') || !has('unix')
+  if !has('job')
     return
   endif
   let job = job_start("python test_channel_pipe.py")

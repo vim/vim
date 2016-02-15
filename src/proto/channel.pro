@@ -5,7 +5,7 @@ void channel_free(channel_T *channel);
 void channel_gui_register(channel_T *channel);
 void channel_gui_register_all(void);
 channel_T *channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void));
-void channel_set_pipes(channel_T *channel, int in, int out, int err);
+void channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err);
 void channel_set_job(channel_T *channel, job_T *job);
 void channel_set_json_mode(channel_T *channel, ch_mode_T ch_mode);
 void channel_set_timeout(channel_T *channel, int timeout);

@@ -1730,7 +1730,7 @@ typedef struct timeval proftime_T;
 typedef int proftime_T;	    /* dummy for function prototypes */
 #endif
 
-#ifdef WIN64
+#ifdef _WIN64
 typedef __int64 sock_T;
 #else
 typedef int sock_T;
