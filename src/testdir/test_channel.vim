@@ -13,9 +13,14 @@ if has('unix')
   if !(executable('python') && (has('job') || executable('pkill')))
     finish
   endif
+  let s:python = 'python'
 elseif has('win32')
-  " Use Python Launcher for Windows (py.exe).
-  if !executable('py')
+  " Use Python Launcher for Windows (py.exe) if available.
+  if executable('py.exe')
+    let s:python = 'py.exe'
+  elseif executable('python.exe')
+    let s:python = 'python.exe'
+  else
     finish
   endif
 else
@@ -32,11 +37,11 @@ func s:run_server(testfunc)
 
   try
     if has('job')
-      let s:job = job_start("python test_channel.py")
+      let s:job = job_start(s:python . " test_channel.py")
     elseif has('win32')
-      silent !start cmd /c start "test_channel" py test_channel.py
+      exe 'silent !start cmd /c start "test_channel" ' . s:python . ' test_channel.py'
     else
-      silent !python test_channel.py&
+      exe 'silent !' . s:python . ' test_channel.py&'
     endif
 
     " Wait for up to 2 seconds for the port number to be there.
@@ -77,7 +82,7 @@ func s:kill_server()
       unlet s:job
     endif
   elseif has('win32')
-    call system('taskkill /IM py.exe /T /F /FI "WINDOWTITLE eq test_channel"')
+    call system('taskkill /IM ' . s:python . ' /T /F /FI "WINDOWTITLE eq test_channel"')
   else
     call system("pkill -f test_channel.py")
   endif
@@ -283,7 +288,7 @@ func Test_pipe()
   if !has('job')
     return
   endif
-  let job = job_start("python test_channel_pipe.py")
+  let job = job_start(s:python . " test_channel_pipe.py")
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
