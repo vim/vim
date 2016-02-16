@@ -21828,7 +21828,10 @@ get_tv_string_buf_chk(typval_T *varp, char_u *buf)
 		channel_T *channel = varp->vval.v_channel;
 		char      *status = channel_status(channel);
 
-		vim_snprintf((char *)buf, NUMBUFLEN,
+		if (channel == NULL)
+		    vim_snprintf((char *)buf, NUMBUFLEN, "channel %s", status);
+		else
+		    vim_snprintf((char *)buf, NUMBUFLEN,
 				     "channel %d %s", channel->ch_id, status);
 		return buf;
 	    }
@@ -22467,7 +22470,8 @@ copy_tv(typval_T *from, typval_T *to)
 	case VAR_CHANNEL:
 #ifdef FEAT_CHANNEL
 	    to->vval.v_channel = from->vval.v_channel;
-	    ++to->vval.v_channel->ch_refcount;
+	    if (to->vval.v_channel != NULL)
+		++to->vval.v_channel->ch_refcount;
 	    break;
 #endif
 	case VAR_STRING:

@@ -318,3 +318,9 @@ endfunc
 func Test_unlet_handle()
   call s:run_server('s:unlet_handle')
 endfunc
+
+func Test_open_fail()
+  silent! let ch = ch_open("noserver")
+  echo ch
+  let d = ch
+endfunc

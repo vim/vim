@@ -634,7 +634,7 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 	    {
 		/* Get here when the server can't be found. */
 		ch_error(NULL, "Cannot connect to port after retry\n");
-		PERROR(_("E899: Cannot connect to port after retry2"));
+		PERROR(_("E899: Cannot connect to port after retry"));
 		sock_close(sd);
 		channel_free(channel);
 		return NULL;
@@ -1220,7 +1220,7 @@ channel_status(channel_T *channel)
     void
 channel_close(channel_T *channel)
 {
-    ch_log(channel, "Closing channel");
+    ch_log(channel, "Closing channel\n");
 
 #ifdef FEAT_GUI
     channel_gui_unregister(channel);
