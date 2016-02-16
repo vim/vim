@@ -354,7 +354,6 @@ wait_for_single_object(
 }
 # endif
 #endif
-#endif
 
     static void
 get_exe_name(void)
