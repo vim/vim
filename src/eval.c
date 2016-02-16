@@ -7535,7 +7535,7 @@ get_dict_string(dict_T *d, char_u *key, int save)
 
 /*
  * Get a number item from a dictionary.
- * Returns 0 if the entry doesn't exist or out of memory.
+ * Returns 0 if the entry doesn't exist.
  */
     long
 get_dict_number(dict_T *d, char_u *key)
@@ -9930,20 +9930,49 @@ f_ch_logfile(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
 /*
+ * Get the "mode" entry from "dict", if it exists, and parse the mode name.
+ * If the mode is invalide return FAIL.
+ */
+    static int
+get_mode_arg(dict_T *dict, jobopt_T *opt)
+{
+    dictitem_T	*item;
+    char_u	*mode;
+
+    if ((item = dict_find(dict, (char_u *)"mode", -1)) != NULL)
+    {
+	mode = get_tv_string(&item->di_tv);
+	if (STRCMP(mode, "nl") == 0)
+	    opt->jo_mode = MODE_NL;
+	else if (STRCMP(mode, "raw") == 0)
+	    opt->jo_mode = MODE_RAW;
+	else if (STRCMP(mode, "js") == 0)
+	    opt->jo_mode = MODE_JS;
+	else if (STRCMP(mode, "json") == 0)
+	    opt->jo_mode = MODE_JSON;
+	else
+	{
+	    EMSG2(_(e_invarg2), mode);
+	    return FAIL;
+	}
+    }
+    return OK;
+}
+
+/*
  * "ch_open()" function
  */
     static void
 f_ch_open(typval_T *argvars, typval_T *rettv)
 {
     char_u	*address;
-    char_u	*mode;
     char_u	*callback = NULL;
     char_u	*p;
     char	*rest;
     int		port;
     int		waittime = 0;
     int		timeout = 2000;
-    ch_mode_T	ch_mode = MODE_JSON;
+    jobopt_T    options;
     channel_T	*channel;
 
     /* default: fail */
@@ -9974,27 +10003,15 @@ f_ch_open(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
+    options.jo_mode = MODE_JSON;
     if (argvars[1].v_type == VAR_DICT)
     {
 	dict_T	    *dict = argvars[1].vval.v_dict;
 	dictitem_T  *item;
 
 	/* parse argdict */
-	if ((item = dict_find(dict, (char_u *)"mode", -1)) != NULL)
-	{
-	    mode = get_tv_string(&item->di_tv);
-	    if (STRCMP(mode, "raw") == 0)
-		ch_mode = MODE_RAW;
-	    else if (STRCMP(mode, "js") == 0)
-		ch_mode = MODE_JS;
-	    else if (STRCMP(mode, "json") == 0)
-		ch_mode = MODE_JSON;
-	    else
-	    {
-		EMSG2(_(e_invarg2), mode);
-		return;
-	    }
-	}
+	if (get_mode_arg(dict, &options) == FAIL)
+	    return;
 	if ((item = dict_find(dict, (char_u *)"waittime", -1)) != NULL)
 	    waittime = get_tv_number(&item->di_tv);
 	if ((item = dict_find(dict, (char_u *)"timeout", -1)) != NULL)
@@ -10012,7 +10029,7 @@ f_ch_open(typval_T *argvars, typval_T *rettv)
     if (channel != NULL)
     {
 	rettv->vval.v_channel = channel;
-	channel_set_json_mode(channel, ch_mode);
+	channel_set_mode(channel, options.jo_mode);
 	channel_set_timeout(channel, timeout);
 	if (callback != NULL && *callback != NUL)
 	    channel_set_callback(channel, callback);
@@ -14473,15 +14490,16 @@ f_job_getchannel(typval_T *argvars, typval_T *rettv)
     static void
 f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    job_T *job;
-    char_u *cmd = NULL;
+    job_T	*job;
+    char_u	*cmd = NULL;
 #if defined(UNIX)
 # define USE_ARGV
-    char    **argv = NULL;
-    int	    argc = 0;
+    char	**argv = NULL;
+    int		argc = 0;
 #else
-    garray_T ga;
+    garray_T	ga;
 #endif
+    jobopt_T	options;
 
     rettv->v_type = VAR_JOB;
     job = job_alloc();
@@ -14490,6 +14508,23 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
 
     rettv->vval.v_job->jv_status = JOB_FAILED;
+
+    /* Default mode is NL. */
+    options.jo_mode = MODE_NL;
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	dict_T	    *dict;
+
+	if (argvars[1].v_type != VAR_DICT)
+	{
+	    EMSG(_(e_invarg));
+	    return;
+	}
+	dict = argvars[1].vval.v_dict;
+	if (get_mode_arg(dict, &options) == FAIL)
+	    return;
+    }
+
 #ifndef USE_ARGV
     ga_init2(&ga, (int)sizeof(char*), 20);
 #endif
@@ -14552,9 +14587,9 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
 #endif
     }
 #ifdef USE_ARGV
-    mch_start_job(argv, job);
+    mch_start_job(argv, job, &options);
 #else
-    mch_start_job((char *)cmd, job);
+    mch_start_job((char *)cmd, job, &options);
 #endif
 
 theend:
