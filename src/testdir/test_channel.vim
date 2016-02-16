@@ -28,7 +28,7 @@ else
   finish
 endif
 
-let s:chopt = has('macunix') ? {'waittime' : 1} : {}
+let s:chopt = has('osx') ? {'waittime' : 1} : {}
 
 " Run "testfunc" after sarting the server and stop the server afterwards.
 func s:run_server(testfunc)

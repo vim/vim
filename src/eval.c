@@ -13117,7 +13117,10 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"mac",
 #endif
 #if defined(MACOS_X_UNIX)
-	"macunix",
+	"macunix",  /* built with 'darwin' enabled */
+#endif
+#if defined(__APPLE__) && __APPLE__ == 1
+	"osx",	    /* built with or without 'darwin' enabled */
 #endif
 #ifdef __QNX__
 	"qnx",
