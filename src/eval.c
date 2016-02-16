@@ -10031,7 +10031,7 @@ f_ch_open(typval_T *argvars, typval_T *rettv)
 	if ((item = dict_find(dict, (char_u *)"timeout", -1)) != NULL)
 	    timeout = get_tv_number(&item->di_tv);
     }
-    if (waittime < 0 || timeout < 0)
+    if (timeout < 0)
     {
 	EMSG(_(e_invarg));
 	return;

@@ -253,7 +253,7 @@ add_channel(void)
 	return NULL;
 
     channel->ch_id = next_ch_id++;
-    ch_log(channel, "Opening channel\n");
+    ch_log(channel, "Created channel\n");
 
 #ifdef CHANNEL_PIPES
     for (which = CHAN_SOCK; which <= CHAN_IN; ++which)
@@ -458,8 +458,12 @@ channel_gui_unregister(channel_T *channel)
 
 #endif
 
+static char *e_cannot_connect = N_("E902: Cannot connect to port");
+
 /*
  * Open a socket channel to "hostname":"port".
+ * "waittime" is the time in msec to wait for the connection.
+ * When negative wait forever.
  * Returns the channel for success.
  * Returns NULL for failure.
  */
@@ -492,7 +496,7 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 
     if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
-	ch_error(NULL, "in socket() in channel_open().\n");
+	ch_error(channel, "in socket() in channel_open().\n");
 	PERROR("E898: socket() in channel_open()");
 	channel_free(channel);
 	return NULL;
@@ -505,7 +509,7 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
     server.sin_port = htons(port);
     if ((host = gethostbyname(hostname)) == NULL)
     {
-	ch_error(NULL, "in gethostbyname() in channel_open()\n");
+	ch_error(channel, "in gethostbyname() in channel_open()\n");
 	PERROR("E901: gethostbyname() in channel_open()");
 	sock_close(sd);
 	channel_free(channel);
@@ -525,7 +529,7 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 	   )
 	{
 	    SOCK_ERRNO;
-	    ch_errorn(NULL, "channel_open: Connect failed with errno %d\n",
+	    ch_errorn(channel, "channel_open: Connect failed with errno %d\n",
 								       errno);
 	    sock_close(sd);
 	    channel_free(channel);
@@ -534,7 +538,7 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
     }
 
     /* Try connecting to the server. */
-    ch_logsn(NULL, "Connecting to %s port %d", hostname, port);
+    ch_logsn(channel, "Connecting to %s port %d\n", hostname, port);
     ret = connect(sd, (struct sockaddr *)&server, sizeof(server));
     SOCK_ERRNO;
     if (ret < 0)
@@ -545,9 +549,9 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 #endif
 		)
 	{
-	    ch_errorn(NULL, "channel_open: Connect failed with errno %d\n",
+	    ch_errorn(channel, "channel_open: Connect failed with errno %d\n",
 								       errno);
-	    PERROR(_("E902: Cannot connect to port"));
+	    PERROR(_(e_cannot_connect));
 	    sock_close(sd);
 	    channel_free(channel);
 	    return NULL;
@@ -558,29 +562,62 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
     {
 	struct timeval	tv;
 	fd_set		wfds;
+#if defined(__APPLE__) && __APPLE__ == 1
+# define PASS_RFDS
+	fd_set          rfds;
 
+	FD_ZERO(&rfds);
+	FD_SET(sd, &rfds);
+	/* On Mac a zero timeout almost never works.  At least wait one
+	 * millisecond. */
+	if (waittime == 0)
+	    waittime = 1;
+#endif
 	FD_ZERO(&wfds);
 	FD_SET(sd, &wfds);
 	tv.tv_sec = waittime / 1000;
 	tv.tv_usec = (waittime % 1000) * 1000;
-	ret = select((int)sd + 1, NULL, &wfds, NULL, &tv);
+
+	ch_logn(channel, "Waiting for connection (timeout %d msec)...\n",
+								    waittime);
+	ret = select((int)sd + 1,
+#ifdef PASS_RFDS
+		&rfds,
+#else
+		NULL,
+#endif
+		&wfds, NULL, &tv);
+
 	if (ret < 0)
 	{
 	    SOCK_ERRNO;
-	    ch_errorn(NULL, "channel_open: Connect failed with errno %d\n",
+	    ch_errorn(channel, "channel_open: Connect failed with errno %d\n",
 								       errno);
-	    PERROR(_("E902: Cannot connect to port"));
+	    PERROR(_(e_cannot_connect));
 	    sock_close(sd);
 	    channel_free(channel);
 	    return NULL;
 	}
+#ifdef PASS_RFDS
+	if (ret == 0 && FD_ISSET(sd, &rfds) && FD_ISSET(sd, &wfds))
+	{
+	    /* For OS X, this implies error. See tcp(4). */
+	    ch_error(channel, "channel_open: Connect failed\n");
+	    EMSG(_(e_cannot_connect));
+	    sock_close(sd);
+	    channel_free(channel);
+	    return NULL;
+	}
+#endif
 	if (!FD_ISSET(sd, &wfds))
 	{
 	    /* don't give an error, we just timed out. */
+	    ch_error(channel, "Connection timed out\n");
 	    sock_close(sd);
 	    channel_free(channel);
 	    return NULL;
 	}
+	ch_log(channel, "Connection made\n");
     }
 
     if (waittime >= 0)
@@ -600,7 +637,7 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 	    SOCK_ERRNO;
-	    ch_log(NULL, "socket() retry in channel_open()\n");
+	    ch_log(channel, "socket() retry in channel_open()\n");
 	    PERROR("E900: socket() retry in channel_open()");
 	    channel_free(channel);
 	    return NULL;
@@ -614,7 +651,7 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 	    while (retries-- && ((errno == ECONNREFUSED)
 						     || (errno == EINTR)))
 	    {
-		ch_log(NULL, "retrying...\n");
+		ch_log(channel, "retrying...\n");
 		mch_delay(3000L, TRUE);
 		ui_breakcheck();
 		if (got_int)
@@ -633,7 +670,7 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 	    if (!success)
 	    {
 		/* Get here when the server can't be found. */
-		ch_error(NULL, "Cannot connect to port after retry\n");
+		ch_error(channel, "Cannot connect to port after retry\n");
 		PERROR(_("E899: Cannot connect to port after retry"));
 		sock_close(sd);
 		channel_free(channel);
@@ -1434,7 +1471,7 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
     int			ret;
 
     if (timeout > 0)
-	ch_logn(channel, "Waiting for %d msec\n", timeout);
+	ch_logn(channel, "Waiting for up to %d msec\n", timeout);
 
 
 # ifdef WIN32
@@ -1447,7 +1484,8 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 	/* reading from a pipe, not a socket */
 	while (TRUE)
 	{
-	    if (PeekNamedPipe((HANDLE)fd, NULL, 0, NULL, &nread, NULL) && nread > 0)
+	    if (PeekNamedPipe((HANDLE)fd, NULL, 0, NULL, &nread, NULL)
+								 && nread > 0)
 		return OK;
 	    diff = deadline - GetTickCount();
 	    if (diff < 0)
