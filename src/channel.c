@@ -888,8 +888,7 @@ channel_parse_json(channel_T *channel)
 }
 
 /*
- * Remove "node" from the queue that it is in and free it.
- * Also frees the contained callback name.
+ * Remove "node" from the queue that it is in.  Does not free it.
  */
     static void
 remove_cb_node(cbq_T *head, cbq_T *node)
@@ -902,8 +901,6 @@ remove_cb_node(cbq_T *head, cbq_T *node)
 	head->cq_prev = node->cq_prev;
     else
 	node->cq_next->cq_prev = node->cq_prev;
-    vim_free(node->cq_callback);
-    vim_free(node);
 }
 
 /*
@@ -1144,8 +1141,12 @@ may_invoke_callback(channel_T *channel)
 	    if (item->cq_seq_nr == seq_nr)
 	    {
 		ch_log(channel, "Invoking one-time callback\n");
-		invoke_callback(channel, item->cq_callback, argv);
+		/* Remove the item from the list first, if the callback
+		 * invokes ch_close() the list will be cleared. */
 		remove_cb_node(head, item);
+		invoke_callback(channel, item->cq_callback, argv);
+		vim_free(item->cq_callback);
+		vim_free(item);
 		done = TRUE;
 		break;
 	    }
@@ -1329,7 +1330,13 @@ channel_clear(channel_T *channel)
 	vim_free(channel_get(channel));
 
     while (cb_head->cq_next != NULL)
-	remove_cb_node(cb_head, cb_head->cq_next);
+    {
+	cbq_T *node = cb_head->cq_next;
+
+	remove_cb_node(cb_head, node);
+	vim_free(node->cq_callback);
+	vim_free(node);
+    }
 
     while (json_head->jq_next != NULL)
     {
