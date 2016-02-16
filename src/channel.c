@@ -47,7 +47,7 @@
 # define sock_write(sd, buf, len) write(sd, buf, len)
 # define sock_read(sd, buf, len) read(sd, buf, len)
 # define sock_close(sd) close(sd)
-# define fd_read(fd, buf, len, timeout) read(fd, buf, len)
+# define fd_read(fd, buf, len) read(fd, buf, len)
 # define fd_write(sd, buf, len) write(sd, buf, len)
 # define fd_close(sd) close(sd)
 #endif
@@ -58,7 +58,7 @@ extern HWND s_hwnd;			/* Gvim's Window handle */
 
 #ifdef WIN32
     static int
-fd_read(sock_T fd, char_u *buf, size_t len, int timeout)
+fd_read(sock_T fd, char_u *buf, size_t len)
 {
     HANDLE h = (HANDLE)fd;
     DWORD nread;
@@ -1504,7 +1504,7 @@ channel_read(channel_T *channel, int which, char *func)
 	if (use_socket)
 	    len = sock_read(fd, buf, MAXMSGSIZE);
 	else
-	    len = fd_read(fd, buf, MAXMSGSIZE, channel->ch_timeout);
+	    len = fd_read(fd, buf, MAXMSGSIZE);
 	if (len <= 0)
 	    break;	/* error or nothing more to read */
 
