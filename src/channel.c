@@ -669,12 +669,12 @@ channel_set_job(channel_T *channel, job_T *job)
 }
 
 /*
- * Set the json mode of channel "channel" to "ch_mode".
+ * Set the mode of channel "channel" to "mode".
  */
     void
-channel_set_json_mode(channel_T *channel, ch_mode_T ch_mode)
+channel_set_mode(channel_T *channel, ch_mode_T mode)
 {
-    channel->ch_mode = ch_mode;
+    channel->ch_mode = mode;
 }
 
 /*
@@ -1057,7 +1057,8 @@ channel_exe_cmd(channel_T *channel, char_u *cmd, typval_T *arg2, typval_T *arg3)
 
 /*
  * Invoke a callback for channel "channel" if needed.
- * Return OK when a message was handled, there might be another one.
+ * TODO: add "which" argument, read stderr.
+ * Return TRUE when a message was handled, there might be another one.
  */
     static int
 may_invoke_callback(channel_T *channel)
@@ -1074,7 +1075,7 @@ may_invoke_callback(channel_T *channel)
 	/* this channel is handled elsewhere (netbeans) */
 	return FALSE;
 
-    if (ch_mode != MODE_RAW)
+    if (ch_mode == MODE_JSON || ch_mode == MODE_JS)
     {
 	/* Get any json message in the queue. */
 	if (channel_get_json(channel, -1, &listtv) == FAIL)
@@ -1113,18 +1114,51 @@ may_invoke_callback(channel_T *channel)
     }
     else if (channel_peek(channel) == NULL)
     {
-	/* nothing to read on raw channel */
+	/* nothing to read on RAW or NL channel */
 	return FALSE;
     }
     else
     {
-	/* If there is no callback, don't do anything. */
+	/* If there is no callback drop the message. */
 	if (channel->ch_callback == NULL)
+	{
+	    while ((msg = channel_get(channel)) != NULL)
+		vim_free(msg);
 	    return FALSE;
+	}
 
-	/* For a raw channel we don't know where the message ends, just get
-	 * everything. */
-	msg = channel_get_all(channel);
+	if (ch_mode == MODE_NL)
+	{
+	    char_u  *nl;
+	    char_u  *buf;
+
+	    /* See if we have a message ending in NL in the first buffer.  If
+	     * not try to concatenate the first and the second buffer. */
+	    while (TRUE)
+	    {
+		buf = channel_peek(channel);
+		nl = vim_strchr(buf, NL);
+		if (nl != NULL)
+		    break;
+		if (channel_collapse(channel) == FAIL)
+		    return FALSE; /* incomplete message */
+	    }
+	    if (nl[1] == NUL)
+		/* get the whole buffer */
+		msg = channel_get(channel);
+	    else
+	    {
+		/* Copy the message into allocated memory and remove it from
+		 * the buffer. */
+		msg = vim_strnsave(buf, (int)(nl - buf));
+		mch_memmove(buf, nl + 1, STRLEN(nl + 1) + 1);
+	    }
+	}
+	else
+	    /* For a raw channel we don't know where the message ends, just
+	     * get everything we have. */
+	    msg = channel_get_all(channel);
+
 	argv[1].v_type = VAR_STRING;
 	argv[1].vval.v_string = msg;
     }
@@ -1276,12 +1310,20 @@ channel_save(channel_T *channel, char_u *buf, int len)
 	return FAIL;	    /* out of memory */
     }
 
-    /* TODO: don't strip CR when channel is in raw mode */
-    p = node->rq_buffer;
-    for (i = 0; i < len; ++i)
-	if (buf[i] != CAR || i + 1 >= len || buf[i + 1] != NL)
-	    *p++ = buf[i];
-    *p = NUL;
+    if (channel->ch_mode == MODE_NL)
+    {
+	/* Drop any CR before a NL. */
+	p = node->rq_buffer;
+	for (i = 0; i < len; ++i)
+	    if (buf[i] != CAR || i + 1 >= len || buf[i + 1] != NL)
+		*p++ = buf[i];
+	*p = NUL;
+    }
+    else
+    {
+	mch_memmove(node->rq_buffer, buf, len);
+	node->rq_buffer[len] = NUL;
+    }
 
     /* append node to the tail of the queue */
     node->rq_next = NULL;
@@ -1570,21 +1612,33 @@ channel_read(channel_T *channel, int which, char *func)
 }
 
 /*
- * Read from raw channel "channel".  Blocks until there is something to read or
- * the timeout expires.
+ * Read from RAW or NL channel "channel".  Blocks until there is something to
+ * read or the timeout expires.
+ * TODO: add "which" argument and read from stderr.
  * Returns what was read in allocated memory.
  * Returns NULL in case of error or timeout.
  */
     char_u *
 channel_read_block(channel_T *channel)
 {
-    ch_log(channel, "Reading raw\n");
-    if (channel_peek(channel) == NULL)
-    {
-	sock_T fd = get_read_fd(channel);
+    char_u	*buf;
+    char_u	*msg;
+    ch_mode_T	mode = channel->ch_mode;
+    sock_T	fd = get_read_fd(channel);
+    char_u	*nl;
 
-	/* TODO: read both out and err if they are different */
-	ch_log(channel, "No readahead\n");
+    ch_logsn(channel, "Blocking %s read, timeout: %d msec\n",
+			mode == MODE_RAW ? "RAW" : "NL", channel->ch_timeout);
+
+    while (TRUE)
+    {
+	buf = channel_peek(channel);
+	if (buf != NULL && (mode == MODE_RAW
+			 || (mode == MODE_NL && vim_strchr(buf, NL) != NULL)))
+	    break;
+	if (buf != NULL && channel_collapse(channel) == OK)
+	    continue;
+
 	/* Wait for up to the channel timeout. */
 	if (fd == CHAN_FD_INVALID
 		|| channel_wait(channel, fd, channel->ch_timeout) == FAIL)
@@ -1592,9 +1646,30 @@ channel_read_block(channel_T *channel)
 	channel_read(channel, -1, "channel_read_block");
     }
 
-    /* TODO: only get the first message */
-    ch_log(channel, "Returning readahead\n");
-    return channel_get_all(channel);
+    if (mode == MODE_RAW)
+    {
+	msg = channel_get_all(channel);
+    }
+    else
+    {
+	nl = vim_strchr(buf, NL);
+	if (nl[1] == NUL)
+	{
+	    /* get the whole buffer */
+	    msg = channel_get(channel);
+	    *nl = NUL;
+	}
+	else
+	{
+	    /* Copy the message into allocated memory and remove it from the
+	     * buffer. */
+	    msg = vim_strnsave(buf, (int)(nl - buf));
+	    mch_memmove(buf, nl + 1, STRLEN(nl + 1) + 1);
+	}
+    }
+    if (log_fd != NULL)
+	ch_logn(channel, "Returning %d bytes\n", (int)STRLEN(msg));
+    return msg;
 }
 
 /*

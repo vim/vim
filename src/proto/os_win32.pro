@@ -40,7 +40,7 @@ void mch_set_shellsize(void);
 void mch_new_shellsize(void);
 void mch_set_winsize_now(void);
 int mch_call_shell(char_u *cmd, int options);
-void mch_start_job(char *cmd, job_T *job);
+void mch_start_job(char *cmd, job_T *job, jobopt_T *options);
 char *mch_job_status(job_T *job);
 int mch_stop_job(job_T *job, char_u *how);
 void mch_clear_job(job_T *job);

@@ -21,4 +21,7 @@ if __name__ == "__main__":
         if typed.startswith("echo"):
             print(typed[5:-1])
             sys.stdout.flush()
+        if typed.startswith("double"):
+            print(typed[7:-1] + "\nAND " + typed[7:-1])
+            sys.stdout.flush()
 

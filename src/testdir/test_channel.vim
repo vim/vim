@@ -284,7 +284,30 @@ func Test_connect_waittime()
   endif
 endfunc
 
-func Test_pipe()
+func Test_raw_pipe()
+  if !has('job')
+    return
+  endif
+  let job = job_start(s:python . " test_channel_pipe.py", {'mode': 'raw'})
+  call assert_equal("run", job_status(job))
+  try
+    let handle = job_getchannel(job)
+    call ch_sendraw(handle, "echo something\n", 0)
+    let msg = ch_readraw(handle)
+    call assert_equal("something\n", substitute(msg, "\r", "", 'g'))
+
+    call ch_sendraw(handle, "double this\n", 0)
+    let msg = ch_readraw(handle)
+    call assert_equal("this\nAND this\n", substitute(msg, "\r", "", 'g'))
+
+    let reply = ch_sendraw(handle, "quit\n")
+    call assert_equal("Goodbye!\n", substitute(reply, "\r", "", 'g'))
+  finally
+    call job_stop(job)
+  endtry
+endfunc
+
+func Test_nl_pipe()
   if !has('job')
     return
   endif
@@ -293,9 +316,14 @@ func Test_pipe()
   try
     let handle = job_getchannel(job)
     call ch_sendraw(handle, "echo something\n", 0)
-    call assert_equal("something\n", ch_readraw(handle))
+    call assert_equal("something", ch_readraw(handle))
+
+    call ch_sendraw(handle, "double this\n", 0)
+    call assert_equal("this", ch_readraw(handle))
+    call assert_equal("AND this", ch_readraw(handle))
+
     let reply = ch_sendraw(handle, "quit\n")
-    call assert_equal("Goodbye!\n", reply)
+    call assert_equal("Goodbye!", reply)
   finally
     call job_stop(job)
   endtry

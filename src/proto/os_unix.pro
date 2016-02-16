@@ -57,7 +57,7 @@ void mch_set_shellsize(void);
 void mch_new_shellsize(void);
 int mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc);
 int mch_call_shell(char_u *cmd, int options);
-void mch_start_job(char **argv, job_T *job);
+void mch_start_job(char **argv, job_T *job, jobopt_T *options);
 char *mch_job_status(job_T *job);
 int mch_stop_job(job_T *job, char_u *how);
 void mch_clear_job(job_T *job);
