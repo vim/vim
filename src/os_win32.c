@@ -5071,6 +5071,7 @@ mch_start_job(char *cmd, job_T *job)
     si.dwFlags |= STARTF_USESHOWWINDOW;
     si.wShowWindow = SW_HIDE;
 
+# ifdef FEAT_CHANNEL
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = NULL;
@@ -5085,6 +5086,7 @@ mch_start_job(char *cmd, job_T *job)
     si.hStdInput = ifd[0];
     si.hStdOutput = ofd[1];
     si.hStdError = efd[1];
+# endif
 
     if (!vim_create_process(cmd, TRUE,
 	    CREATE_SUSPENDED |
@@ -5111,11 +5113,11 @@ mch_start_job(char *cmd, job_T *job)
     job->jv_job_object = jo;
     job->jv_status = JOB_STARTED;
 
+# ifdef FEAT_CHANNEL
     CloseHandle(ifd[0]);
     CloseHandle(ofd[1]);
     CloseHandle(efd[1]);
 
-# ifdef FEAT_CHANNEL
     job->jv_channel = channel;
     channel_set_pipes(channel, (sock_T)ifd[1], (sock_T)ofd[0], (sock_T)efd[0]);
     channel_set_job(channel, job);
