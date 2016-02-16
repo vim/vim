@@ -5127,7 +5127,7 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options)
 # ifdef FEAT_CHANNEL
     channel_set_pipes(channel, fd_in[1], fd_out[0], fd_err[0]);
     channel_set_job(channel, job);
-    channel_set_mode(channel, options->jo_mode);
+    channel_set_options(channel, options);
 #  ifdef FEAT_GUI
     channel_gui_register(channel);
 #  endif

@@ -5125,7 +5125,7 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
     job->jv_channel = channel;
     channel_set_pipes(channel, (sock_T)ifd[1], (sock_T)ofd[0], (sock_T)efd[0]);
     channel_set_job(channel, job);
-    channel_set_mode(channel, options->jo_mode);
+    channel_set_options(channel, options);
 
 #   ifdef FEAT_GUI
      channel_gui_register(channel);

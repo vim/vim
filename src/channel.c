@@ -697,6 +697,18 @@ channel_set_callback(channel_T *channel, char_u *callback)
 }
 
 /*
+ * Set various properties from an "options" argument.
+ */
+    void
+channel_set_options(channel_T *channel, jobopt_T *options)
+{
+    channel_set_mode(channel, options->jo_mode);
+
+    if (options->jo_callback != NULL && *options->jo_callback != NUL)
+	channel_set_callback(channel, options->jo_callback);
+}
+
+/*
  * Set the callback for channel "channel" for the response with "id".
  */
     void

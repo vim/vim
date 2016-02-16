@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Feb 15
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Feb 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -117,7 +117,7 @@ Use |ch_status()| to see if the channel could be opened.
 
 "mode" can be:						*channel-mode*
 	"json" - Use JSON, see below; most convenient way. Default.
-	"js"   - Use JavaScript encoding, more efficient than JSON.
+	"js"   - Use JS (JavaScript) encoding, more efficient than JSON.
 	"nl"   - Use messages that end in a NL character
 	"raw"  - Use raw messages
 
@@ -188,11 +188,11 @@ If there is an error reading or writing a channel it will be closed.
 ==============================================================================
 4. Using a JSON or JS channel					*channel-use*
 
-If {mode} is "json" then a message can be sent synchronously like this: >
+If mode is JSON then a message can be sent synchronously like this: >
     let response = ch_sendexpr(channel, {expr})
 This awaits a response from the other side.
 
-When {mode} is "js" this works the same, except that the messages use
+When mode is JS this works the same, except that the messages use
 JavaScript encoding.  See |js_encode()| for the difference.
 
 To send a message, without handling a response: >
@@ -242,7 +242,7 @@ is then completely responsible for correct encoding and decoding.
 ==============================================================================
 5. Channel commands					*channel-commands*
 
-With a "json" channel the process can send commands to Vim that will be
+With a JSON channel the process can send commands to Vim that will be
 handled by Vim internally, it does not require a handler for the channel.
 
 Possible commands are:				*E903* *E904* *E905*
@@ -316,14 +316,15 @@ Example:
 ==============================================================================
 6. Using a RAW or NL channel				*channel-raw*
 
-If {mode} is "raw" then a message can be send like this: >
+If mode is RAW or NL then a message can be send like this: >
     let response = ch_sendraw(channel, {string})
+
 The {string} is sent as-is.  The response will be what can be read from the
 channel right away.  Since Vim doesn't know how to recognize the end of the
 message you need to take care of it yourself.  The timeout applies for reading
 the first byte, after that it will not wait for anything more.
 
-If {mode} is "nl" you can send a message in a similar way.  You are expected
+If mode is "nl" you can send a message in a similar way.  You are expected
 to put in the NL after each message.  Thus you can also send several messages
 ending in a NL at once.  The response will be the text up to and including the
 first NL.  This can also be just the NL for an empty response.
@@ -450,6 +451,7 @@ The {options} argument in job_start() is a dictionary.  All entries are
 optional.  The same options can be used with job_setoptions(job, {options}).
 
 TODO:						*job-out-cb*
+"callback": handler
 "out-cb": handler	Callback for when there is something to read on
 			stdout.
 TODO:						*job-err-cb*
@@ -484,7 +486,7 @@ TODO:						*job-out-io*
 "out-buffer": "name" 	buffer to append to
 
 TODO:						*job-err-io*
-"err-io": "out"		same as stdout (default)
+"err-io": "out"		same type as stdout (default)
 "err-io": "null"	disconnect stderr
 "err-io": "pipe"	stderr is connected to the channel
 "err-io": "file"	stderr writes to a file

@@ -9930,14 +9930,17 @@ f_ch_logfile(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
 /*
- * Get the "mode" entry from "dict", if it exists, and parse the mode name.
- * If the mode is invalide return FAIL.
+ * Get the option entries from "dict", and parse them.
+ * If an option value is invalid return FAIL.
  */
     static int
-get_mode_arg(dict_T *dict, jobopt_T *opt)
+get_job_options(dict_T *dict, jobopt_T *opt)
 {
     dictitem_T	*item;
     char_u	*mode;
+
+    if (dict == NULL)
+	return OK;
 
     if ((item = dict_find(dict, (char_u *)"mode", -1)) != NULL)
     {
@@ -9956,6 +9959,17 @@ get_mode_arg(dict_T *dict, jobopt_T *opt)
 	    return FAIL;
 	}
     }
+
+    if ((item = dict_find(dict, (char_u *)"callback", -1)) != NULL)
+    {
+	opt->jo_callback = get_callback(&item->di_tv);
+	if (opt->jo_callback == NULL)
+	{
+	    EMSG2(_(e_invarg2), "callback");
+	    return FAIL;
+	}
+    }
+
     return OK;
 }
 
@@ -9966,7 +9980,6 @@ get_mode_arg(dict_T *dict, jobopt_T *opt)
 f_ch_open(typval_T *argvars, typval_T *rettv)
 {
     char_u	*address;
-    char_u	*callback = NULL;
     char_u	*p;
     char	*rest;
     int		port;
@@ -10004,20 +10017,19 @@ f_ch_open(typval_T *argvars, typval_T *rettv)
     }
 
     options.jo_mode = MODE_JSON;
+    options.jo_callback = NULL;
     if (argvars[1].v_type == VAR_DICT)
     {
 	dict_T	    *dict = argvars[1].vval.v_dict;
 	dictitem_T  *item;
 
 	/* parse argdict */
-	if (get_mode_arg(dict, &options) == FAIL)
+	if (get_job_options(dict, &options) == FAIL)
 	    return;
 	if ((item = dict_find(dict, (char_u *)"waittime", -1)) != NULL)
 	    waittime = get_tv_number(&item->di_tv);
 	if ((item = dict_find(dict, (char_u *)"timeout", -1)) != NULL)
 	    timeout = get_tv_number(&item->di_tv);
-	if ((item = dict_find(dict, (char_u *)"callback", -1)) != NULL)
-	    callback = get_callback(&item->di_tv);
     }
     if (waittime < 0 || timeout < 0)
     {
@@ -10029,10 +10041,8 @@ f_ch_open(typval_T *argvars, typval_T *rettv)
     if (channel != NULL)
     {
 	rettv->vval.v_channel = channel;
-	channel_set_mode(channel, options.jo_mode);
+	channel_set_options(channel, &options);
 	channel_set_timeout(channel, timeout);
-	if (callback != NULL && *callback != NUL)
-	    channel_set_callback(channel, callback);
     }
 }
 
@@ -10082,6 +10092,7 @@ send_common(typval_T *argvars, char_u *text, int id, char *fun)
 {
     channel_T	*channel;
     char_u	*callback = NULL;
+    jobopt_T	options;
 
     channel = get_channel_arg(&argvars[0]);
     if (channel == NULL)
@@ -10089,9 +10100,15 @@ send_common(typval_T *argvars, char_u *text, int id, char *fun)
 
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
-	callback = get_callback(&argvars[2]);
-	if (callback == NULL)
+	if (argvars[2].v_type != VAR_DICT)
+	{
+	    EMSG(_(e_invarg));
 	    return NULL;
+	}
+	options.jo_callback = NULL;
+	if (get_job_options(argvars[2].vval.v_dict, &options) == FAIL)
+	    return NULL;
+	callback = options.jo_callback;
     }
     /* Set the callback. An empty callback means no callback and not reading
      * the response. */
@@ -14511,17 +14528,15 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
 
     /* Default mode is NL. */
     options.jo_mode = MODE_NL;
+    options.jo_callback = NULL;
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
-	dict_T	    *dict;
-
 	if (argvars[1].v_type != VAR_DICT)
 	{
 	    EMSG(_(e_invarg));
 	    return;
 	}
-	dict = argvars[1].vval.v_dict;
-	if (get_mode_arg(dict, &options) == FAIL)
+	if (get_job_options(argvars[1].vval.v_dict, &options) == FAIL)
 	    return;
     }
 

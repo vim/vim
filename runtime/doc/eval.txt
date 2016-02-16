@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 13
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1821,9 +1821,9 @@ ch_close( {handle})		none	close a channel
 ch_logfile( {fname} [, {mode}])	none	start logging channel activity
 ch_open( {address} [, {argdict})] Number open a channel to {address}
 ch_readraw( {handle})		String	read from channel {handle}
-ch_sendexpr( {handle}, {expr} [, {callback}])
+ch_sendexpr( {handle}, {expr} [, {options}])
 				any	send {expr} over JSON channel {handle}
-ch_sendraw( {handle}, {string} [, {callback}])
+ch_sendraw( {handle}, {string} [, {options}])
 				any	send {string} over raw channel {handle}
 ch_status( {handle})		String	status of channel {handle}
 changenr()			Number	current change number
@@ -2725,28 +2725,32 @@ ch_readraw({handle})						*ch_readraw()*
 		within that time an empty string is returned.
 		TODO: depends on channel mode.
 
-ch_sendexpr({handle}, {expr} [, {callback}])			*ch_sendexpr()*
+ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 		Send {expr} over channel {handle}.  The {expr} is encoded
 		according to the type of channel.  The function cannot be used
 		with a raw channel.  See |channel-use|.  *E912*
 
-		When {callback} is given returns immediately.  Without
-		{callback} waits for a response and returns the decoded
-		expression.  When there is an error or timeout returns an
-		empty string.
+		{options} must be a Dictionary.
+		When "callback" is a Funcref or the name of a function,
+		ch_sendexpr() returns immediately.  The callback is invoked
+		when the response is received.  See |channel-callback|.
 
-		When {callback} is zero no response is expected.
-		Otherwise {callback} must be a Funcref or the name of a
-		function.  It is called when the response is received.  See
-		|channel-callback|.
+		Without "callback" ch_sendexpr() waits for a response and
+		returns the decoded expression.  When there is an error or
+		timeout it returns an empty string.
+
+		When "callback" is zero no response is expected.
 
 		{only available when compiled with the |+channel| feature}
 
-ch_sendraw({handle}, {string} [, {callback}])		*ch_sendraw()*
+ch_sendraw({handle}, {string} [, {options}])		*ch_sendraw()*
 		Send {string} over channel {handle}.
 		Works like |ch_sendexpr()|, but does not encode the request or
 		decode the response.  The caller is responsible for the
-		correct contents.  See |channel-use|.
+		correct contents.  Also does not add a newline for a channel
+		in NL mode, the caller must do that.  The NL in the response
+		is removed.
+		See |channel-use|.
 
 		{only available when compiled with the |+channel| feature}
 
@@ -7274,7 +7278,7 @@ listcmds		Compiled with commands for the buffer list |:files|
 			and the argument list |arglist|.
 localmap		Compiled with local mappings and abbr. |:map-local|
 lua			Compiled with Lua interface |Lua|.
-mac			Macintosh version of Vim.
+mac			Any Macintosh version of Vim.
 macunix			Compiled for OS X, with darwin
 osx			Compiled for OS X, with or without darwin
 menu			Compiled with support for |:menu|.
