@@ -473,7 +473,7 @@ enc_canon_props(char_u *name)
 	CPINFO	cpinfo;
 
 	/* Get info on this codepage to find out what it is. */
-	if (GetCPInfo(atoi(name + 2), &cpinfo) != 0)
+	if (GetCPInfo(atoi((char *)name + 2), &cpinfo) != 0)
 	{
 	    if (cpinfo.MaxCharSize == 1) /* some single-byte encoding */
 		return ENC_8BIT;
@@ -535,7 +535,7 @@ mb_init(void)
 	CPINFO	cpinfo;
 
 	/* Get info on this codepage to find out what it is. */
-	if (GetCPInfo(atoi(p_enc + 2), &cpinfo) != 0)
+	if (GetCPInfo(atoi((char *)p_enc + 2), &cpinfo) != 0)
 	{
 	    if (cpinfo.MaxCharSize == 1)
 	    {
@@ -547,7 +547,7 @@ mb_init(void)
 		    && (cpinfo.LeadByte[0] != 0 || cpinfo.LeadByte[1] != 0))
 	    {
 		/* must be a DBCS encoding, check below */
-		enc_dbcs_new = atoi(p_enc + 2);
+		enc_dbcs_new = atoi((char *)p_enc + 2);
 	    }
 	    else
 		goto codepage_invalid;
@@ -571,7 +571,7 @@ codepage_invalid:
 #ifdef WIN3264
 	/* Windows: accept only valid codepage numbers, check below. */
 	if (p_enc[6] != 'c' || p_enc[7] != 'p'
-				      || (enc_dbcs_new = atoi(p_enc + 8)) == 0)
+			      || (enc_dbcs_new = atoi((char *)p_enc + 8)) == 0)
 	    return e_invarg;
 #else
 	/* Unix: accept any "2byte-" name, assume current locale. */
@@ -4338,7 +4338,7 @@ get_iconv_import_func(HINSTANCE hInst, const char *funcname)
 		continue;
 	    pImpName = (PIMAGE_IMPORT_BY_NAME)(pImage
 					+ (UINT_PTR)(pINT->u1.AddressOfData));
-	    if (strcmp(pImpName->Name, funcname) == 0)
+	    if (strcmp((char *)pImpName->Name, funcname) == 0)
 		return (void *)pIAT->u1.Function;
 	}
     }
@@ -6268,7 +6268,7 @@ string_convert_ext(
 	    {
 		tmp_len = MultiByteToWideChar(vcp->vc_cpfrom,
 					unconvlenp ? MB_ERR_INVALID_CHARS : 0,
-					ptr, len, 0, 0);
+					(char *)ptr, len, 0, 0);
 		if (tmp_len == 0
 			&& GetLastError() == ERROR_NO_UNICODE_TRANSLATION)
 		{
@@ -6288,7 +6288,8 @@ string_convert_ext(
 	    if (vcp->vc_cpfrom == 0)
 		utf8_to_utf16(ptr, len, tmp, unconvlenp);
 	    else
-		MultiByteToWideChar(vcp->vc_cpfrom, 0, ptr, len, tmp, tmp_len);
+		MultiByteToWideChar(vcp->vc_cpfrom, 0,
+			(char *)ptr, len, tmp, tmp_len);
 
 	    /* 2. ucs-2  ->  codepage/UTF-8. */
 	    if (vcp->vc_cpto == 0)
@@ -6303,7 +6304,8 @@ string_convert_ext(
 		    utf16_to_utf8(tmp, tmp_len, retval);
 		else
 		    WideCharToMultiByte(vcp->vc_cpto, 0,
-					  tmp, tmp_len, retval, retlen, 0, 0);
+					  tmp, tmp_len,
+					  (char *)retval, retlen, 0, 0);
 		retval[retlen] = NUL;
 		if (lenp != NULL)
 		    *lenp = retlen;

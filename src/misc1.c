@@ -3779,7 +3779,7 @@ init_homedir(void)
 	homedrive = mch_getenv((char_u *)"HOMEDRIVE");
 	homepath = mch_getenv((char_u *)"HOMEPATH");
 	if (homepath == NULL || *homepath == NUL)
-	    homepath = "\\";
+	    homepath = (char_u *)"\\";
 	if (homedrive != NULL
 			   && STRLEN(homedrive) + STRLEN(homepath) < MAXPATHL)
 	{
@@ -3817,7 +3817,7 @@ init_homedir(void)
      * Best assumption we can make in such a situation.
      */
     if (var == NULL)
-	var = "C:/";
+	var = (char_u *)"C:/";
 #endif
     if (var != NULL)
     {
@@ -9944,7 +9944,7 @@ dos_expandpath(
 
     if (wn == NULL)
 # endif
-	hFind = FindFirstFile(buf, &fb);
+	hFind = FindFirstFile((LPCSTR)buf, &fb);
     ok = (hFind != INVALID_HANDLE_VALUE);
 #else
     /* If we are expanding wildcards we try both files and directories */
@@ -10042,7 +10042,7 @@ dos_expandpath(
 	    }
 	    if (wn == NULL)
 # endif
-		hFind = FindFirstFile(buf, &fb);
+		hFind = FindFirstFile((LPCSTR)buf, &fb);
 	    ok = (hFind != INVALID_HANDLE_VALUE);
 #else
 	    ok = (findfirst((char *)buf, &fb,

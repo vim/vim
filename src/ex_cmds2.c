@@ -4149,16 +4149,16 @@ ex_checktime(exarg_T *eap)
 #if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
 	&& (defined(FEAT_EVAL) || defined(FEAT_MULTI_LANG))
 # define HAVE_GET_LOCALE_VAL
-static char *get_locale_val(int what);
+static char_u *get_locale_val(int what);
 
-    static char *
+    static char_u *
 get_locale_val(int what)
 {
-    char	*loc;
+    char_u	*loc;
 
     /* Obtain the locale value from the libraries.  For DJGPP this is
      * redefined and it doesn't use the arguments. */
-    loc = setlocale(what, NULL);
+    loc = (char_u *)setlocale(what, NULL);
 
 # ifdef WIN32
     if (loc != NULL)
@@ -4222,7 +4222,7 @@ gettext_lang(char_u *name)
 
     for (i = 0; mtable[i] != NULL; i += 2)
 	if (STRNICMP(mtable[i], name, STRLEN(mtable[i])) == 0)
-	    return mtable[i + 1];
+	    return (char_u *)mtable[i + 1];
     return name;
 }
 #endif
@@ -4239,13 +4239,13 @@ get_mess_lang(void)
 
 # ifdef HAVE_GET_LOCALE_VAL
 #  if defined(LC_MESSAGES)
-    p = (char_u *)get_locale_val(LC_MESSAGES);
+    p = get_locale_val(LC_MESSAGES);
 #  else
     /* This is necessary for Win32, where LC_MESSAGES is not defined and $LANG
      * may be set to the LCID number.  LC_COLLATE is the best guess, LC_TIME
      * and LC_MONETARY may be set differently for a Japanese working in the
      * US. */
-    p = (char_u *)get_locale_val(LC_COLLATE);
+    p = get_locale_val(LC_COLLATE);
 #  endif
 # else
     p = mch_getenv((char_u *)"LC_ALL");
@@ -4290,7 +4290,7 @@ get_mess_env(void)
 		p = NULL;		/* ignore something like "1043" */
 # ifdef HAVE_GET_LOCALE_VAL
 	    if (p == NULL || *p == NUL)
-		p = (char_u *)get_locale_val(LC_CTYPE);
+		p = get_locale_val(LC_CTYPE);
 # endif
 	}
     }
@@ -4310,7 +4310,7 @@ set_lang_var(void)
     char_u	*loc;
 
 # ifdef HAVE_GET_LOCALE_VAL
-    loc = (char_u *)get_locale_val(LC_CTYPE);
+    loc = get_locale_val(LC_CTYPE);
 # else
     /* setlocale() not supported: use the default value */
     loc = (char_u *)"C";
@@ -4320,14 +4320,14 @@ set_lang_var(void)
     /* When LC_MESSAGES isn't defined use the value from $LC_MESSAGES, fall
      * back to LC_CTYPE if it's empty. */
 # if defined(HAVE_GET_LOCALE_VAL) && defined(LC_MESSAGES)
-    loc = (char_u *)get_locale_val(LC_MESSAGES);
+    loc = get_locale_val(LC_MESSAGES);
 # else
     loc = get_mess_env();
 # endif
     set_vim_var_string(VV_LANG, loc, -1);
 
 # ifdef HAVE_GET_LOCALE_VAL
-    loc = (char_u *)get_locale_val(LC_TIME);
+    loc = get_locale_val(LC_TIME);
 # endif
     set_vim_var_string(VV_LC_TIME, loc, -1);
 }

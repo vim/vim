@@ -273,11 +273,11 @@ mch_early_init(void)
     for (i = 0; i < 256; ++i)
 	toupper_tab[i] = tolower_tab[i] = i;
 #ifdef WIN3264
-    CharUpperBuff(toupper_tab, 256);
-    CharLowerBuff(tolower_tab, 256);
+    CharUpperBuff((LPSTR)toupper_tab, 256);
+    CharLowerBuff((LPSTR)tolower_tab, 256);
 #else
-    AnsiUpperBuff(toupper_tab, 256);
-    AnsiLowerBuff(tolower_tab, 256);
+    AnsiUpperBuff((LPSTR)toupper_tab, 256);
+    AnsiLowerBuff((LPSTR)tolower_tab, 256);
 #endif
 }
 
@@ -327,7 +327,7 @@ mch_settitle(
 	    }
 	}
 #  endif
-	SetConsoleTitle(title);
+	SetConsoleTitle((LPCSTR)title);
     }
 # endif
 }
@@ -428,7 +428,7 @@ mch_FullName(
 	if (nResult == FAIL)	    /* fall back to non-wide function */
 #endif
 	{
-	    if (_fullpath(buf, fname, len - 1) == NULL)
+	    if (_fullpath((char *)buf, (const char *)fname, len - 1) == NULL)
 	    {
 		/* failed, use relative path name */
 		vim_strncpy(buf, fname, len - 1);
@@ -469,10 +469,10 @@ mch_isFullName(char_u *fname)
 	return TRUE;
 
     /* A name that can't be made absolute probably isn't absolute. */
-    if (mch_FullName(fname, szName, sizeof(szName) - 1, FALSE) == FAIL)
+    if (mch_FullName(fname, (char_u *)szName, sizeof(szName) - 1, FALSE) == FAIL)
 	return FALSE;
 
-    return pathcmp(fname, szName, -1) == 0;
+    return pathcmp((const char *)fname, (const char *)szName, -1) == 0;
 }
 
 /*
@@ -619,14 +619,14 @@ vim_stat(const char *name, struct stat *stp)
     /* WinNT and later can use _MAX_PATH wide characters for a pathname, which
      * means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
      * UTF-8. */
-    char	buf[_MAX_PATH * 3 + 1];
+    char_u	buf[_MAX_PATH * 3 + 1];
 #else
-    char	buf[_MAX_PATH + 1];
+    char_u	buf[_MAX_PATH + 1];
 #endif
-    char	*p;
+    char_u	*p;
 
     vim_strncpy((char_u *)buf, (char_u *)name, sizeof(buf) - 1);
-    p = buf + strlen(buf);
+    p = buf + STRLEN(buf);
     if (p > buf)
 	mb_ptr_back(buf, p);
 
@@ -637,10 +637,10 @@ vim_stat(const char *name, struct stat *stp)
     if ((buf[0] == '\\' && buf[1] == '\\') || (buf[0] == '/' && buf[1] == '/'))
     {
 	/* UNC root path must be followed by '\\'. */
-	p = vim_strpbrk(buf + 2, "\\/");
+	p = vim_strpbrk(buf + 2, (char_u *)"\\/");
 	if (p != NULL)
 	{
-	    p = vim_strpbrk(p + 1, "\\/");
+	    p = vim_strpbrk(p + 1, (char_u *)"\\/");
 	    if (p == NULL)
 		STRCAT(buf, "\\");
 	}
@@ -668,7 +668,7 @@ vim_stat(const char *name, struct stat *stp)
 	}
     }
 #endif
-    return stat_symlink_aware(buf, stp);
+    return stat_symlink_aware((char *)buf, stp);
 }
 
 #if defined(FEAT_GUI_MSWIN) || defined(PROTO)
@@ -820,7 +820,7 @@ mch_chdir(char *path)
 #ifdef FEAT_MBYTE
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
-	WCHAR	*p = enc_to_utf16(path, NULL);
+	WCHAR	*p = enc_to_utf16((char_u *)path, NULL);
 	int	n;
 
 	if (p != NULL)
@@ -853,7 +853,8 @@ can_end_termcap_mode(
     if (g_PlatformId == VER_PLATFORM_WIN32_NT || Columns == 80)
 	return TRUE;
     if (give_msg)
-	msg(_("'columns' is not 80, cannot execute external commands"));
+	msg((char_u *)
+		_("'columns' is not 80, cannot execute external commands"));
     return FALSE;
 #endif
 }
@@ -915,7 +916,7 @@ check_str_len(char_u *str)
     MEMORY_BASIC_INFORMATION	mbi;
     size_t			length = 0;
     size_t			i;
-    const char			*p;
+    const char_u		*p;
 
     /* get page size */
     GetSystemInfo(&si);
@@ -953,7 +954,7 @@ mch_icon_load_cb(char_u *fname, void *cookie)
     HANDLE *h = (HANDLE *)cookie;
 
     *h = LoadImage(NULL,
-		   fname,
+		   (LPSTR)fname,
 		   IMAGE_ICON,
 		   64,
 		   64,
@@ -992,7 +993,7 @@ mch_libcall(
 # ifdef WIN16
     hinstLib = LoadLibrary(libname);
 # else
-    hinstLib = vimLoadLib(libname);
+    hinstLib = vimLoadLib((char *)libname);
 # endif
 
     // If the handle is valid, try to get the function address.
@@ -1005,25 +1006,25 @@ mch_libcall(
 	if (argstring != NULL)
 	{
 	    /* Call with string argument */
-	    ProcAdd = (MYSTRPROCSTR) GetProcAddress(hinstLib, funcname);
+	    ProcAdd = (MYSTRPROCSTR)GetProcAddress(hinstLib, (LPCSTR)funcname);
 	    if ((fRunTimeLinkSuccess = (ProcAdd != NULL)) != 0)
 	    {
 		if (string_result == NULL)
-		    retval_int = ((MYSTRPROCINT)ProcAdd)(argstring);
+		    retval_int = ((MYSTRPROCINT)ProcAdd)((LPSTR)argstring);
 		else
-		    retval_str = (ProcAdd)(argstring);
+		    retval_str = (char_u *)(ProcAdd)((LPSTR)argstring);
 	    }
 	}
 	else
 	{
 	    /* Call with number argument */
-	    ProcAddI = (MYINTPROCSTR) GetProcAddress(hinstLib, funcname);
+	    ProcAddI = (MYINTPROCSTR) GetProcAddress(hinstLib, (LPCSTR)funcname);
 	    if ((fRunTimeLinkSuccess = (ProcAddI != NULL)) != 0)
 	    {
 		if (string_result == NULL)
 		    retval_int = ((MYINTPROCINT)ProcAddI)(argint);
 		else
-		    retval_str = (ProcAddI)(argint);
+		    retval_str = (char_u *)(ProcAddI)(argint);
 	    }
 	}
 
@@ -1228,7 +1229,7 @@ vimSetDlgItemText(HWND hDlg, int nIDDlgItem, char_u *s)
 	vim_free(wp);
 	return ret;
     }
-    return SetDlgItemText(hDlg, nIDDlgItem, s);
+    return SetDlgItemText(hDlg, nIDDlgItem, (LPCSTR)s);
 }
 #endif
 
@@ -1283,18 +1284,18 @@ PrintDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		    SendDlgItemMessage(hDlg, i, WM_SETFONT, (WPARAM)hfont, 1);
 		    if (GetDlgItemText(hDlg,i, buff, sizeof(buff)))
-			vimSetDlgItemText(hDlg,i, _(buff));
+			vimSetDlgItemText(hDlg,i, (char_u *)_(buff));
 		}
 		SendDlgItemMessage(hDlg, IDCANCEL,
 						WM_SETFONT, (WPARAM)hfont, 1);
 		if (GetDlgItemText(hDlg,IDCANCEL, buff, sizeof(buff)))
-		    vimSetDlgItemText(hDlg,IDCANCEL, _(buff));
+		    vimSetDlgItemText(hDlg,IDCANCEL, (char_u *)_(buff));
 	    }
 #endif
-	    SetWindowText(hDlg, szAppName);
+	    SetWindowText(hDlg, (LPCSTR)szAppName);
 	    if (prt_name != NULL)
 	    {
-		vimSetDlgItemText(hDlg, IDC_PRINTTEXT2, (LPSTR)prt_name);
+		vimSetDlgItemText(hDlg, IDC_PRINTTEXT2, (char_u *)prt_name);
 		vim_free(prt_name);
 		prt_name = NULL;
 	    }
@@ -1585,7 +1586,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 	 * NT, but NULL appears to work just as well.
 	 */
 	if (*p_pdev != NUL)
-	    prt_dlg.hDC = CreateDC(NULL, p_pdev, NULL, NULL);
+	    prt_dlg.hDC = CreateDC(NULL, (LPCSTR)p_pdev, NULL, NULL);
 	else
 #endif
 	{
@@ -1649,7 +1650,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     {
 	char_u	*printer_name = (char_u *)devname + devname->wDeviceOffset;
 	char_u	*port_name = (char_u *)devname +devname->wOutputOffset;
-	char_u	*text = _("to %s on %s");
+	char_u	*text = (char_u *)_("to %s on %s");
 #ifdef FEAT_MBYTE
 	char_u  *printer_name_orig = printer_name;
 	char_u	*port_name_orig = port_name;
@@ -1671,7 +1672,8 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 	prt_name = alloc((unsigned)(STRLEN(printer_name) + STRLEN(port_name)
 							     + STRLEN(text)));
 	if (prt_name != NULL)
-	    wsprintf(prt_name, text, printer_name, port_name);
+	    wsprintf((char *)prt_name, (const char *)text,
+		    printer_name, port_name);
 #ifdef FEAT_MBYTE
 	if (printer_name != printer_name_orig)
 	    vim_free(printer_name);
@@ -1781,11 +1783,11 @@ mch_print_begin(prt_settings_T *psettings)
     SetAbortProc(prt_dlg.hDC, AbortProc);
 #endif
     wsprintf(szBuffer, _("Printing '%s'"), gettail(psettings->jobname));
-    vimSetDlgItemText(hDlgPrint, IDC_PRINTTEXT1, (LPSTR)szBuffer);
+    vimSetDlgItemText(hDlgPrint, IDC_PRINTTEXT1, (char_u *)szBuffer);
 
     vim_memset(&di, 0, sizeof(DOCINFO));
     di.cbSize = sizeof(DOCINFO);
-    di.lpszDocName = psettings->jobname;
+    di.lpszDocName = (LPCSTR)psettings->jobname;
     ret = StartDoc(prt_dlg.hDC, &di);
 
 #ifdef FEAT_GUI
@@ -1815,7 +1817,7 @@ mch_print_end_page(void)
 mch_print_begin_page(char_u *msg)
 {
     if (msg != NULL)
-	vimSetDlgItemText(hDlgPrint, IDC_PROGRESS, (LPSTR)msg);
+	vimSetDlgItemText(hDlgPrint, IDC_PROGRESS, msg);
     return (StartPage(prt_dlg.hDC) > 0);
 }
 
@@ -1878,16 +1880,17 @@ mch_print_text_out(char_u *p, int len)
     }
 #endif
     TextOut(prt_dlg.hDC, prt_pos_x + prt_left_margin,
-					  prt_pos_y + prt_top_margin, p, len);
+					  prt_pos_y + prt_top_margin,
+					  (LPCSTR)p, len);
 #ifndef FEAT_PROPORTIONAL_FONTS
     prt_pos_x += len * prt_tm.tmAveCharWidth;
     return (prt_pos_x + prt_left_margin + prt_tm.tmAveCharWidth
 				     + prt_tm.tmOverhang > prt_right_margin);
 #else
 # ifdef WIN16
-    GetTextExtentPoint(prt_dlg.hDC, p, len, &sz);
+    GetTextExtentPoint(prt_dlg.hDC, (LPCSTR)p, len, &sz);
 # else
-    GetTextExtentPoint32(prt_dlg.hDC, p, len, &sz);
+    GetTextExtentPoint32(prt_dlg.hDC, (LPCSTR)p, len, &sz);
 # endif
     prt_pos_x += (sz.cx - prt_tm.tmOverhang);
     /* This is wrong when printing spaces for a TAB. */
@@ -2027,7 +2030,7 @@ shortcut_errorw:
 	goto shortcut_end;
 
     // full path string must be in Unicode.
-    MultiByteToWideChar(CP_ACP, 0, fname, -1, wsz, MAX_PATH);
+    MultiByteToWideChar(CP_ACP, 0, (LPCSTR)fname, -1, wsz, MAX_PATH);
 
     // "load" the name and resolve the link
     hr = ppf->lpVtbl->Load(ppf, wsz, STGM_READ);
@@ -2043,7 +2046,7 @@ shortcut_errorw:
     ZeroMemory(buf, MAX_PATH);
     hr = psl->lpVtbl->GetPath(psl, buf, MAX_PATH, &ffd, 0);
     if (hr == S_OK && buf[0] != NUL)
-	rfname = vim_strsave(buf);
+	rfname = vim_strsave((char_u *)buf);
 
 shortcut_end:
     // Release all interface pointers (both belong to the same object)
@@ -2234,7 +2237,7 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	    if (res == NULL)
 	    {
-		res = vim_strsave(_(e_invexprmsg));
+		res = vim_strsave((char_u *)_(e_invexprmsg));
 		reply.dwData = COPYDATA_ERROR_RESULT;
 	    }
 	    else
@@ -2399,8 +2402,8 @@ enumWindowsGetNames(HWND hwnd, LPARAM lparam)
 	return TRUE;
 
     /* Add the name to the list */
-    ga_concat(ga, server);
-    ga_concat(ga, "\n");
+    ga_concat(ga, (char_u *)server);
+    ga_concat(ga, (char_u *)"\n");
     return TRUE;
 }
 
@@ -2459,7 +2462,7 @@ serverSetName(char_u *name)
 #endif
 
 	/* Update the message window title */
-	SetWindowText(message_window, ok_name);
+	SetWindowText(message_window, (LPCSTR)ok_name);
 
 #ifdef FEAT_EVAL
 	/* Set the servername variable */
@@ -2948,7 +2951,7 @@ get_logfont(
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
 	int	len;
-	enc_to_acp(name, (int)strlen(name), &acpname, &len);
+	enc_to_acp(name, (int)strlen((char *)name), &acpname, &len);
 	name = acpname;
     }
 #endif

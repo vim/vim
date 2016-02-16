@@ -839,7 +839,7 @@ cs_create_connection(int i)
 # ifdef __BORLANDC__
 #  define OPEN_OH_ARGTYPE long
 # else
-#  if (_MSC_VER >= 1300)
+#  if (_MSC_VER >= 1300) || defined(__MINGW32__)
 #   define OPEN_OH_ARGTYPE intptr_t
 #  else
 #   define OPEN_OH_ARGTYPE long
@@ -1423,7 +1423,7 @@ cs_insert_filelist(
     /* On windows 9x GetFileInformationByHandle doesn't work, so skip it */
     if (!mch_windows95())
     {
-	switch (win32_fileinfo(fname, &bhfi))
+	switch (win32_fileinfo((char_u *)fname, &bhfi))
 	{
 	case FILEINFO_ENC_FAIL:		/* enc_to_utf16() failed */
 	case FILEINFO_READ_FAIL:	/* CreateFile() failed */
@@ -1459,7 +1459,8 @@ cs_insert_filelist(
 	    && csinfo[j].st_dev == sb->st_dev && csinfo[j].st_ino == sb->st_ino
 #else
 	    /* compare pathnames first */
-	    && ((fullpathcmp(csinfo[j].fname, fname, FALSE) & FPC_SAME)
+	    && ((fullpathcmp((char_u *)csinfo[j].fname,
+			(char_u *)fname, FALSE) & FPC_SAME)
 		/* if not Windows 9x, test index file attributes too */
 		|| (!mch_windows95()
 		    && csinfo[j].nVolume == bhfi.dwVolumeSerialNumber

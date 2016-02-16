@@ -3196,7 +3196,7 @@ set_init_1(void)
 # endif
 	    || ((p = mch_getenv((char_u *)"COMSPEC")) != NULL && *p != NUL)
 # ifdef WIN3264
-	    || ((p = default_shell()) != NULL && *p != NUL)
+	    || ((p = (char_u *)default_shell()) != NULL && *p != NUL)
 # endif
 #endif
 	    )
@@ -3479,7 +3479,7 @@ set_init_1(void)
 		STRCPY(buf, "ja");
 	    else
 		buf[2] = NUL;		/* truncate to two-letter code */
-	    vim_setenv("LANG", buf);
+	    vim_setenv((char_u *)"LANG", (char_u *)buf);
 	}
     }
 # else

@@ -49,6 +49,12 @@
 # define __inline__ __inline
 #endif
 
+#ifdef __GNUC__
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused-variable"
+# pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
@@ -1730,3 +1736,6 @@ Append(vimbuf, ...)
 	}
     }
 
+#ifdef __GNUC__
+# pragma GCC diagnostic pop
+#endif

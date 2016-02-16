@@ -626,8 +626,8 @@ getcmdline(
 #endif
 		    if (vim_ispathsep(ccline.cmdbuff[j])
 #ifdef BACKSLASH_IN_FILENAME
-			    && vim_strchr(" *?[{`$%#", ccline.cmdbuff[j + 1])
-			       == NULL
+			    && vim_strchr((char_u *)" *?[{`$%#",
+				ccline.cmdbuff[j + 1]) == NULL
 #endif
 		       )
 		    {

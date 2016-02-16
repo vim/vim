@@ -14554,7 +14554,7 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
 #ifdef USE_ARGV
     mch_start_job(argv, job);
 #else
-    mch_start_job(cmd, job);
+    mch_start_job((char *)cmd, job);
 #endif
 
 theend:
@@ -16410,7 +16410,7 @@ f_remote_peek(typval_T *argvars UNUSED, typval_T *rettv)
 	return;		/* type error; errmsg already given */
     }
 # ifdef WIN32
-    sscanf(serverid, SCANF_HEX_LONG_U, &n);
+    sscanf((const char *)serverid, SCANF_HEX_LONG_U, &n);
     if (n == 0)
 	rettv->vval.v_number = -1;
     else
@@ -16456,7 +16456,7 @@ f_remote_read(typval_T *argvars UNUSED, typval_T *rettv)
 	/* The server's HWND is encoded in the 'id' parameter */
 	long_u		n = 0;
 
-	sscanf(serverid, SCANF_HEX_LONG_U, &n);
+	sscanf((char *)serverid, SCANF_HEX_LONG_U, &n);
 	if (n != 0)
 	    r = serverGetReply((HWND)n, FALSE, TRUE, TRUE);
 	if (r == NULL)
@@ -25415,7 +25415,7 @@ get_short_pathname(char_u **fnamep, char_u **bufp, int *fnamelen)
     char_u	*newbuf;
 
     len = *fnamelen;
-    l = GetShortPathName(*fnamep, *fnamep, len);
+    l = GetShortPathName((LPSTR)*fnamep, (LPSTR)*fnamep, len);
     if (l > len - 1)
     {
 	/* If that doesn't work (not enough space), then save the string
@@ -25428,7 +25428,7 @@ get_short_pathname(char_u **fnamep, char_u **bufp, int *fnamelen)
 	*fnamep = *bufp = newbuf;
 
 	/* Really should always succeed, as the buffer is big enough. */
-	l = GetShortPathName(*fnamep, *fnamep, l+1);
+	l = GetShortPathName((LPSTR)*fnamep, (LPSTR)*fnamep, l+1);
     }
 
     *fnamelen = l;
@@ -25720,7 +25720,7 @@ repeat:
 	    p = alloc(_MAX_PATH + 1);
 	    if (p != NULL)
 	    {
-		if (GetLongPathName(*fnamep, p, _MAX_PATH))
+		if (GetLongPathName((LPSTR)*fnamep, (LPSTR)p, _MAX_PATH))
 		{
 		    vim_free(*bufp);
 		    *bufp = *fnamep = p;

@@ -158,6 +158,10 @@
 # define RSTRING_PTR(s) RSTRING(s)->ptr
 #endif
 
+#ifdef HAVE_DUP
+# undef HAVE_DUP
+#endif
+
 #include "vim.h"
 #include "version.h"
 
@@ -253,6 +257,7 @@ static void ruby_vim_init(void);
 # define rb_raise			dll_rb_raise
 # define rb_str_cat			dll_rb_str_cat
 # define rb_str_concat			dll_rb_str_concat
+# undef rb_str_new
 # define rb_str_new			dll_rb_str_new
 # ifdef rb_str_new2
 /* Ruby may #define rb_str_new2 to use rb_str_new_cstr. */
@@ -300,7 +305,8 @@ static void ruby_vim_init(void);
 #  define ruby_script			dll_ruby_script
 #  define rb_enc_find_index		dll_rb_enc_find_index
 #  define rb_enc_find			dll_rb_enc_find
-#  define rb_enc_str_new			dll_rb_enc_str_new
+#  undef rb_enc_str_new
+#  define rb_enc_str_new		dll_rb_enc_str_new
 #  define rb_sprintf			dll_rb_sprintf
 #  define rb_require			dll_rb_require
 #  define ruby_options			dll_ruby_options

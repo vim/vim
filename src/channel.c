@@ -58,7 +58,7 @@ extern HWND s_hwnd;			/* Gvim's Window handle */
 
 #ifdef WIN32
     static int
-fd_read(sock_T fd, char_u *buf, size_t len)
+fd_read(sock_T fd, char *buf, size_t len)
 {
     HANDLE h = (HANDLE)fd;
     DWORD nread;
@@ -69,7 +69,7 @@ fd_read(sock_T fd, char_u *buf, size_t len)
 }
 
     static int
-fd_write(sock_T fd, char_u *buf, size_t len)
+fd_write(sock_T fd, char *buf, size_t len)
 {
     HANDLE h = (HANDLE)fd;
     DWORD nwrite;
@@ -1393,7 +1393,7 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 	/* reading from a pipe, not a socket */
 	while (TRUE)
 	{
-	    if (PeekNamedPipe(fd, NULL, 0, NULL, &nread, NULL) && nread > 0)
+	    if (PeekNamedPipe((HANDLE)fd, NULL, 0, NULL, &nread, NULL) && nread > 0)
 		return OK;
 	    diff = deadline - GetTickCount();
 	    if (diff < 0)
@@ -1509,9 +1509,9 @@ channel_read(channel_T *channel, int which, char *func)
 	if (channel_wait(channel, fd, 0) == FAIL)
 	    break;
 	if (use_socket)
-	    len = sock_read(fd, buf, MAXMSGSIZE);
+	    len = sock_read(fd, (char *)buf, MAXMSGSIZE);
 	else
-	    len = fd_read(fd, buf, MAXMSGSIZE);
+	    len = fd_read(fd, (char *)buf, MAXMSGSIZE);
 	if (len <= 0)
 	    break;	/* error or nothing more to read */
 
@@ -1713,9 +1713,9 @@ channel_send(channel_T *channel, char_u *buf, char *fun)
     }
 
     if (use_socket)
-	res = sock_write(fd, buf, len);
+	res = sock_write(fd, (char *)buf, len);
     else
-	res = fd_write(fd, buf, len);
+	res = fd_write(fd, (char *)buf, len);
     if (res != len)
     {
 	if (!channel->ch_error && fun != NULL)

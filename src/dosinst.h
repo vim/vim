@@ -452,7 +452,7 @@ run_command(char *cmd)
 /*
  * Append a backslash to "name" if there isn't one yet.
  */
-    static void
+    void
 add_pathsep(char *name)
 {
     int		len = strlen(name);

@@ -43,6 +43,15 @@
 # undef _DEBUG
 #endif
 
+#ifdef HAVE_STRFTIME
+# undef HAVE_STRFTIME
+#endif
+#ifdef HAVE_STRING_H
+# undef HAVE_STRING_H
+#endif
+#ifdef HAVE_PUTENV
+# undef HAVE_PUTENV
+#endif
 #ifdef HAVE_STDARG_H
 # undef HAVE_STDARG_H	/* Python's config.h defines it as well. */
 #endif

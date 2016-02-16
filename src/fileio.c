@@ -7480,11 +7480,11 @@ vim_tempname(
     }
     strcpy(buf4, "VIM");
     buf4[2] = extra_char;   /* make it "VIa", "VIb", etc. */
-    if (GetTempFileName(szTempFile, buf4, 0, itmp) == 0)
+    if (GetTempFileName(szTempFile, buf4, 0, (LPSTR)itmp) == 0)
 	return NULL;
     if (!keep)
 	/* GetTempFileName() will create the file, we don't want that */
-	(void)DeleteFile(itmp);
+	(void)DeleteFile((LPSTR)itmp);
 
     /* Backslashes in a temp file name cause problems when filtering with
      * "sh".  NOTE: This also checks 'shellcmdflag' to help those people who
