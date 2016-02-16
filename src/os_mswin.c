@@ -741,7 +741,8 @@ display_errors(void)
 				     gui.starting ? (char_u *)_("Message") :
 #endif
 					     (char_u *)_("Error"),
-				     p, (char_u *)_("&Ok"), 1, NULL, FALSE);
+				     (char_u *)p, (char_u *)_("&Ok"),
+					1, NULL, FALSE);
 		break;
 	    }
 	ga_clear(&error_ga);
@@ -2951,7 +2952,7 @@ get_logfont(
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
 	int	len;
-	enc_to_acp(name, (int)strlen((char *)name), &acpname, &len);
+	enc_to_acp(name, (int)STRLEN(name), &acpname, &len);
 	name = acpname;
     }
 #endif

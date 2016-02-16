@@ -236,6 +236,7 @@ static char_u *exe_path = NULL;
 
 static BOOL win8_or_later = FALSE;
 
+#ifndef FEAT_GUI_W32
 /*
  * Version of ReadConsoleInput() that works with IME.
  * Works around problems on Windows 8.
@@ -325,6 +326,7 @@ peek_console_input(
     return read_console_input(hInput, lpBuffer, -1, lpEvents);
 }
 
+# ifdef FEAT_CLIENTSERVER
     static DWORD
 msg_wait_for_multiple_objects(
     DWORD    nCount,
@@ -338,8 +340,9 @@ msg_wait_for_multiple_objects(
     return MsgWaitForMultipleObjects(nCount, pHandles, fWaitAll,
 				     dwMilliseconds, dwWakeMask);
 }
+# endif
 
-#ifndef FEAT_CLIENTSERVER
+# ifndef FEAT_CLIENTSERVER
     static DWORD
 wait_for_single_object(
     HANDLE hHandle,
@@ -349,6 +352,8 @@ wait_for_single_object(
 	return WAIT_OBJECT_0;
     return WaitForSingleObject(hHandle, dwMilliseconds);
 }
+# endif
+#endif
 #endif
 
     static void

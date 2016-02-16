@@ -534,7 +534,8 @@ char_to_string(int ch, char_u *string, int slen, int had_alt)
 	else
 	{
 	    string[0] = ch;
-	    len = MultiByteToWideChar(GetACP(), 0, string, 1, wstring, 2);
+	    len = MultiByteToWideChar(GetACP(), 0, (LPCSTR)string,
+		    1, wstring, 2);
 	}
     }
     else
@@ -551,7 +552,7 @@ char_to_string(int ch, char_u *string, int slen, int had_alt)
 	if (enc_codepage > 0)
 	{
 	    len = WideCharToMultiByte(enc_codepage, 0, wstring, len,
-						       string, slen, 0, NULL);
+					       (LPSTR)string, slen, 0, NULL);
 	    /* If we had included the ALT key into the character but now the
 	     * upper bit is no longer set, that probably means the conversion
 	     * failed.  Convert the original character and set the upper bit
@@ -560,7 +561,7 @@ char_to_string(int ch, char_u *string, int slen, int had_alt)
 	    {
 		wstring[0] = ch & 0x7f;
 		len = WideCharToMultiByte(enc_codepage, 0, wstring, len,
-						       string, slen, 0, NULL);
+					       (LPSTR)string, slen, 0, NULL);
 		if (len == 1) /* safety check */
 		    string[0] |= 0x80;
 	    }
@@ -921,7 +922,7 @@ findrep_atow(LPFINDREPLACEW lpfrw, LPFINDREPLACE lpfr)
     lpfrw->hwndOwner = lpfr->hwndOwner;
     lpfrw->Flags = lpfr->Flags;
 
-    wp = enc_to_utf16(lpfr->lpstrFindWhat, NULL);
+    wp = enc_to_utf16((char_u *)lpfr->lpstrFindWhat, NULL);
     wcsncpy(lpfrw->lpstrFindWhat, wp, lpfrw->wFindWhatLen - 1);
     vim_free(wp);
 
@@ -938,12 +939,12 @@ findrep_wtoa(LPFINDREPLACE lpfr, LPFINDREPLACEW lpfrw)
 
     lpfr->Flags = lpfrw->Flags;
 
-    p = utf16_to_enc(lpfrw->lpstrFindWhat, NULL);
-    vim_strncpy(lpfr->lpstrFindWhat, p, lpfr->wFindWhatLen - 1);
+    p = utf16_to_enc((short_u*)lpfrw->lpstrFindWhat, NULL);
+    vim_strncpy((char_u *)lpfr->lpstrFindWhat, p, lpfr->wFindWhatLen - 1);
     vim_free(p);
 
-    p = utf16_to_enc(lpfrw->lpstrReplaceWith, NULL);
-    vim_strncpy(lpfr->lpstrReplaceWith, p, lpfr->wReplaceWithLen - 1);
+    p = utf16_to_enc((short_u*)lpfrw->lpstrReplaceWith, NULL);
+    vim_strncpy((char_u *)lpfr->lpstrReplaceWith, p, lpfr->wReplaceWithLen - 1);
     vim_free(p);
 }
 # endif
@@ -1000,8 +1001,8 @@ _OnFindRepl(void)
 	if (s_findrep_struct.Flags & FR_MATCHCASE)
 	    flags |= FRD_MATCH_CASE;
 	down = (s_findrep_struct.Flags & FR_DOWN) != 0;
-	gui_do_findrepl(flags, s_findrep_struct.lpstrFindWhat,
-				     s_findrep_struct.lpstrReplaceWith, down);
+	gui_do_findrepl(flags, (char_u *)s_findrep_struct.lpstrFindWhat,
+			     (char_u *)s_findrep_struct.lpstrReplaceWith, down);
     }
 }
 #endif
@@ -1530,7 +1531,7 @@ gui_mch_get_color(char_u *name)
     int		    r, g, b;
     int		    i;
 
-    if (name[0] == '#' && strlen(name) == 7)
+    if (name[0] == '#' && STRLEN(name) == 7)
     {
 	/* Name is in "#rrggbb" format */
 	r = hex_digit(name[1]) * 16 + hex_digit(name[2]);
@@ -2268,7 +2269,7 @@ GetTextWidth(HDC hdc, char_u *str, int len)
 {
     SIZE    size;
 
-    GetTextExtentPoint(hdc, str, len, &size);
+    GetTextExtentPoint(hdc, (LPCSTR)str, len, &size);
     return size.cx;
 }
 
@@ -2468,10 +2469,11 @@ show_tabline_popup_menu(void)
 
     if (first_tabpage->tp_next != NULL)
 	add_tabline_popup_menu_entry(tab_pmenu,
-					  TABLINE_MENU_CLOSE, _("Close tab"));
-    add_tabline_popup_menu_entry(tab_pmenu, TABLINE_MENU_NEW, _("New tab"));
-    add_tabline_popup_menu_entry(tab_pmenu, TABLINE_MENU_OPEN,
-				 _("Open tab..."));
+				TABLINE_MENU_CLOSE, (char_u *)_("Close tab"));
+    add_tabline_popup_menu_entry(tab_pmenu,
+				TABLINE_MENU_NEW, (char_u *)_("New tab"));
+    add_tabline_popup_menu_entry(tab_pmenu,
+				TABLINE_MENU_OPEN, (char_u *)_("Open tab..."));
 
     GetCursorPos(&pt);
     rval = TrackPopupMenuEx(tab_pmenu, TPM_RETURNCMD, pt.x, pt.y, s_tabhwnd,
@@ -2583,7 +2585,7 @@ gui_mch_update_tabline(void)
 	}
 
 	get_tabline_label(tp, FALSE);
-	tie.pszText = NameBuff;
+	tie.pszText = (LPSTR)NameBuff;
 #ifdef FEAT_MBYTE
 	wstr = NULL;
 	if (use_unicode)
@@ -2680,7 +2682,7 @@ initialise_findrep(char_u *initial_string)
     if (wword)
 	s_findrep_struct.Flags |= FR_WHOLEWORD;
     if (entry_text != NULL && *entry_text != NUL)
-	vim_strncpy(s_findrep_struct.lpstrFindWhat, entry_text,
+	vim_strncpy((char_u *)s_findrep_struct.lpstrFindWhat, entry_text,
 					   s_findrep_struct.wFindWhatLen - 1);
     vim_free(entry_text);
 }
@@ -3194,11 +3196,11 @@ logfont2name(LOGFONT lf)
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
 	int	len;
-	acp_to_enc(lf.lfFaceName, (int)strlen(lf.lfFaceName),
+	acp_to_enc((char_u *)lf.lfFaceName, (int)strlen(lf.lfFaceName),
 						(char_u **)&font_name, &len);
     }
 #endif
-    res = alloc((unsigned)(strlen(font_name) + 20
+    res = (char *)alloc((unsigned)(strlen(font_name) + 20
 		    + (charset_name == NULL ? 0 : strlen(charset_name) + 2)));
     if (res != NULL)
     {
@@ -3233,7 +3235,7 @@ logfont2name(LOGFONT lf)
     if (font_name != lf.lfFaceName)
 	vim_free(font_name);
 #endif
-    return res;
+    return (char_u *)res;
 }
 
 
@@ -3323,7 +3325,7 @@ gui_mch_init_font(char_u *font_name, int fontset)
 	return FAIL;
 
     if (font_name == NULL)
-	font_name = lf.lfFaceName;
+	font_name = (char_u *)lf.lfFaceName;
 #if defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)
     norm_logfont = lf;
     sub_logfont = lf;
@@ -3753,12 +3755,12 @@ gui_mch_browse(
     fileStruct.lStructSize = sizeof(fileStruct);
 #endif
 
-    fileStruct.lpstrTitle = title;
-    fileStruct.lpstrDefExt = ext;
+    fileStruct.lpstrTitle = (LPSTR)title;
+    fileStruct.lpstrDefExt = (LPSTR)ext;
 
-    fileStruct.lpstrFile = fileBuf;
+    fileStruct.lpstrFile = (LPSTR)fileBuf;
     fileStruct.nMaxFile = MAXPATHL;
-    fileStruct.lpstrFilter = filterp;
+    fileStruct.lpstrFilter = (LPSTR)filterp;
     fileStruct.hwndOwner = s_hwnd;		/* main Vim window is owner*/
     /* has an initial dir been specified? */
     if (initdir != NULL && *initdir != NUL)
@@ -3769,7 +3771,7 @@ gui_mch_browse(
 	    for (p = initdirp; *p != NUL; ++p)
 		if (*p == '/')
 		    *p = '\\';
-	fileStruct.lpstrInitialDir = initdirp;
+	fileStruct.lpstrInitialDir = (LPSTR)initdirp;
     }
 
     /*
@@ -3851,7 +3853,7 @@ _OnDropFiles(
 #endif
 	    {
 		DragQueryFile(hDrop, i, szFile, BUFPATHLEN);
-		fnames[i] = vim_strsave(szFile);
+		fnames[i] = vim_strsave((char_u *)szFile);
 	    }
 	}
 

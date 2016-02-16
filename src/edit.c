@@ -328,7 +328,7 @@ edit(
 {
     int		c = 0;
     char_u	*ptr;
-    int		lastc;
+    int		lastc = 0;
     int		mincol;
     static linenr_T o_lnum = 0;
     int		i;

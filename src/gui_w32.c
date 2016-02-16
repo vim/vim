@@ -1131,7 +1131,7 @@ _WndProc(
 
 			    if (STRLEN(str) < sizeof(lpdi->szText)
 				    || ((tt_text = vim_strsave(str)) == NULL))
-				vim_strncpy(lpdi->szText, str,
+				vim_strncpy((char_u *)lpdi->szText, str,
 						sizeof(lpdi->szText) - 1);
 			    else
 				lpdi->lpszText = tt_text;
@@ -1747,9 +1747,9 @@ gui_mch_init(void)
 
     /* Initialise the struct */
     s_findrep_struct.lStructSize = sizeof(s_findrep_struct);
-    s_findrep_struct.lpstrFindWhat = alloc(MSWIN_FR_BUFSIZE);
+    s_findrep_struct.lpstrFindWhat = (LPSTR)alloc(MSWIN_FR_BUFSIZE);
     s_findrep_struct.lpstrFindWhat[0] = NUL;
-    s_findrep_struct.lpstrReplaceWith = alloc(MSWIN_FR_BUFSIZE);
+    s_findrep_struct.lpstrReplaceWith = (LPSTR)alloc(MSWIN_FR_BUFSIZE);
     s_findrep_struct.lpstrReplaceWith[0] = NUL;
     s_findrep_struct.wFindWhatLen = MSWIN_FR_BUFSIZE;
     s_findrep_struct.wReplaceWithLen = MSWIN_FR_BUFSIZE;
@@ -2099,7 +2099,7 @@ GetCompositionString_inUCS2(HIMC hIMC, DWORD GCS, int *lenp)
     pImmGetCompositionStringA(hIMC, GCS, buf, ret);
 
     /* convert from codepage to UCS-2 */
-    MultiByteToWideChar_alloc(GetACP(), 0, buf, ret, &wbuf, lenp);
+    MultiByteToWideChar_alloc(GetACP(), 0, (LPCSTR)buf, ret, &wbuf, lenp);
     vim_free(buf);
 
     return (short_u *)wbuf;
@@ -3028,7 +3028,7 @@ rebuild_tearoff(vimmenu_T *menu)
 
     HWND thwnd = menu->tearoff_handle;
 
-    GetWindowText(thwnd, tbuf, 127);
+    GetWindowText(thwnd, (LPSTR)tbuf, 127);
     if (GetWindowRect(thwnd, &trect)
 	    && GetWindowRect(s_hwnd, &rct)
 	    && GetClientRect(s_hwnd, &roct))
@@ -3174,7 +3174,7 @@ dialog_callback(
 	    else
 # endif
 		GetDlgItemText(hwnd, DLG_NONBUTTON_CONTROL + 2,
-							 s_textfield, IOSIZE);
+						(LPSTR)s_textfield, IOSIZE);
 	}
 
 	/*
@@ -3216,7 +3216,7 @@ dialog_callback(
  * If stubbing out this fn, return 1.
  */
 
-static const char_u *dlg_icons[] = /* must match names in resource file */
+static const char *dlg_icons[] = /* must match names in resource file */
 {
     "IDR_VIM",
     "IDR_VIM_ERROR",
@@ -3353,7 +3353,7 @@ gui_mch_dialog(
     fontHeight = fontInfo.tmHeight;
 
     /* Minimum width for horizontal button */
-    minButtonWidth = GetTextWidth(hdc, "Cancel", 6);
+    minButtonWidth = GetTextWidth(hdc, (char_u *)"Cancel", 6);
 
     /* Maximum width of a dialog, if possible */
     if (s_hwnd == NULL)
@@ -3617,7 +3617,7 @@ gui_mch_dialog(
 				   + 2 * fontHeight * i),
 		    PixelToDialogX(dlgwidth - 2 * DLG_VERT_PADDING_X),
 		    (WORD)(PixelToDialogY(2 * fontHeight) - 1),
-		    (WORD)(IDCANCEL + 1 + i), (WORD)0x0080, pstart);
+		    (WORD)(IDCANCEL + 1 + i), (WORD)0x0080, (char *)pstart);
 	}
 	else
 	{
@@ -3628,7 +3628,7 @@ gui_mch_dialog(
 		    PixelToDialogY(buttonYpos), /* TBK */
 		    PixelToDialogX(buttonWidths[i]),
 		    (WORD)(PixelToDialogY(2 * fontHeight) - 1),
-		    (WORD)(IDCANCEL + 1 + i), (WORD)0x0080, pstart);
+		    (WORD)(IDCANCEL + 1 + i), (WORD)0x0080, (char *)pstart);
 	}
 	pstart = pend + 1;	/*next button*/
     }
@@ -3649,7 +3649,7 @@ gui_mch_dialog(
 	    PixelToDialogY(dlgPaddingY),
 	    (WORD)(PixelToDialogX(messageWidth) + 1),
 	    PixelToDialogY(msgheight),
-	    DLG_NONBUTTON_CONTROL + 1, (WORD)0x0081, message);
+	    DLG_NONBUTTON_CONTROL + 1, (WORD)0x0081, (char *)message);
 
     /* Edit box */
     if (textfield != NULL)
@@ -3659,7 +3659,7 @@ gui_mch_dialog(
 		PixelToDialogY(2 * dlgPaddingY + msgheight),
 		PixelToDialogX(dlgwidth - 4 * dlgPaddingX),
 		PixelToDialogY(fontHeight + dlgPaddingY),
-		DLG_NONBUTTON_CONTROL + 2, (WORD)0x0081, textfield);
+		DLG_NONBUTTON_CONTROL + 2, (WORD)0x0081, (char *)textfield);
 	*pnumitems += 1;
     }
 
@@ -3798,7 +3798,7 @@ nCopyAnsiToWideChar(
     if (enc_codepage == 0 && (int)GetACP() != enc_codepage)
     {
 	/* Not a codepage, use our own conversion function. */
-	wn = enc_to_utf16(lpAnsiIn, NULL);
+	wn = enc_to_utf16((char_u *)lpAnsiIn, NULL);
 	if (wn != NULL)
 	{
 	    wcscpy(lpWCStr, wn);
@@ -4043,7 +4043,7 @@ gui_mch_tearoff(
 
     /* Calculate width of a single space.  Used for padding columns to the
      * right width. */
-    spaceWidth = GetTextWidth(hdc, " ", 1);
+    spaceWidth = GetTextWidth(hdc, (char_u *)" ", 1);
 
     /* Figure out max width of the text column, the accelerator column and the
      * optional submenu column. */
@@ -4086,7 +4086,7 @@ gui_mch_tearoff(
     textWidth = columnWidths[0] + columnWidths[1];
     if (submenuWidth != 0)
     {
-	submenuWidth = GetTextWidth(hdc, TEAROFF_SUBMENU_LABEL,
+	submenuWidth = GetTextWidth(hdc, (char_u *)TEAROFF_SUBMENU_LABEL,
 					  (int)STRLEN(TEAROFF_SUBMENU_LABEL));
 	textWidth += submenuWidth;
     }
@@ -4262,7 +4262,7 @@ gui_mch_tearoff(
 		(WORD)(sepPadding + 1 + 13 * (*pnumitems)),
 		(WORD)PixelToDialogX(dlgwidth - 2 * TEAROFF_PADDING_X),
 		(WORD)12,
-		menuID, (WORD)0x0080, label);
+		menuID, (WORD)0x0080, (char *)label);
 	vim_free(label);
 	(*pnumitems)++;
     }
@@ -4360,7 +4360,7 @@ get_toolbar_bitmap(vimmenu_T *menu)
 	    gui_find_iconfile(menu->iconfile, fname, "bmp");
 	    hbitmap = LoadImage(
 			NULL,
-			fname,
+			(LPCSTR)fname,
 			IMAGE_BITMAP,
 			TOOLBAR_BUTTON_WIDTH,
 			TOOLBAR_BUTTON_HEIGHT,
@@ -4381,7 +4381,7 @@ get_toolbar_bitmap(vimmenu_T *menu)
 					menu->dname, fname, "bmp") == OK))
 	    hbitmap = LoadImage(
 		    NULL,
-		    fname,
+		    (LPCSTR)fname,
 		    IMAGE_BITMAP,
 		    TOOLBAR_BUTTON_WIDTH,
 		    TOOLBAR_BUTTON_HEIGHT,
@@ -4629,14 +4629,15 @@ gui_mch_register_sign(char_u *signfile)
 	    do_load = 0;
 
 	if (do_load)
-	    sign.hImage = (HANDLE)LoadImage(NULL, signfile, sign.uType,
+	    sign.hImage = (HANDLE)LoadImage(NULL, (LPCSTR)signfile, sign.uType,
 		    gui.char_width * 2, gui.char_height,
 		    LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 #ifdef FEAT_XPM_W32
 	if (!STRICMP(ext, ".xpm"))
 	{
 	    sign.uType = IMAGE_XPM;
-	    LoadXpmImage(signfile, (HBITMAP *)&sign.hImage, (HBITMAP *)&sign.hShape);
+	    LoadXpmImage((char *)signfile, (HBITMAP *)&sign.hImage,
+		    (HBITMAP *)&sign.hShape);
 	}
 #endif
     }
@@ -4740,13 +4741,13 @@ multiline_balloon_available(void)
 		UINT vlen = 0;
 		void *data = alloc(len);
 
-		if (data != NULL
+		if ((data != NULL
 			&& GetFileVersionInfo(comctl_dll, 0, len, data)
 			&& VerQueryValue(data, "\\", (void **)&ver, &vlen)
 			&& vlen
-			&& HIWORD(ver->dwFileVersionMS) > 4
-			|| (HIWORD(ver->dwFileVersionMS) == 4
-			    && LOWORD(ver->dwFileVersionMS) >= 70))
+			&& HIWORD(ver->dwFileVersionMS) > 4)
+			|| ((HIWORD(ver->dwFileVersionMS) == 4
+			    && LOWORD(ver->dwFileVersionMS) >= 70)))
 		{
 		    vim_free(data);
 		    multiline_tip = TRUE;
@@ -4908,7 +4909,7 @@ gui_mch_post_balloon(BalloonEval *beval, char_u *mesg)
     {
 	gui_mch_disable_beval_area(cur_beval);
 	beval->showState = ShS_SHOWING;
-	make_tooltip(beval, mesg, pt);
+	make_tooltip(beval, (char *)mesg, pt);
     }
     // TRACE0("gui_mch_post_balloon }}}");
 }
