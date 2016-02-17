@@ -1772,7 +1772,7 @@ gui_mch_init(void)
 # if !defined(_MSC_VER) || (_MSC_VER < 1400)
 /* Define HandleToLong for old MS and non-MS compilers if not defined. */
 #  ifndef HandleToLong
-#   define HandleToLong(h) ((long)(h))
+#   define HandleToLong(h) ((long)(intptr_t)(h))
 #  endif
 # endif
     /* set the v:windowid variable */

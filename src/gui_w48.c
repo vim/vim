@@ -2442,7 +2442,7 @@ add_tabline_popup_menu_entry(HMENU pmenu, UINT item_id, char_u *item_text)
 	info.fMask = MIIM_TYPE | MIIM_ID;
 	info.wID = item_id;
 	info.fType = MFT_STRING;
-	info.dwTypeData = item_text;
+	info.dwTypeData = (LPTSTR)item_text;
 	info.cch = (UINT)STRLEN(item_text);
 	InsertMenuItem(pmenu, item_id, FALSE, &info);
     }
