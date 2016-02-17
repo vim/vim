@@ -9850,43 +9850,7 @@ f_ceil(typval_T *argvars, typval_T *rettv)
 }
 #endif
 
-#ifdef FEAT_CHANNEL
-/*
- * Get the channel from the argument.
- * Returns NULL if the handle is invalid.
- */
-    static channel_T *
-get_channel_arg(typval_T *tv)
-{
-    channel_T *channel;
-
-    if (tv->v_type != VAR_CHANNEL)
-    {
-	EMSG2(_(e_invarg2), get_tv_string(tv));
-	return NULL;
-    }
-    channel = tv->vval.v_channel;
-
-    if (channel == NULL || !channel_is_open(channel))
-    {
-	EMSG(_("E906: not an open channel"));
-	return NULL;
-    }
-    return channel;
-}
-
-/*
- * "ch_close()" function
- */
-    static void
-f_ch_close(typval_T *argvars, typval_T *rettv UNUSED)
-{
-    channel_T *channel = get_channel_arg(&argvars[0]);
-
-    if (channel != NULL)
-	channel_close(channel);
-}
-
+#if defined(FEAT_CHANNEL) || defined(FEAT_JOB)
 /*
  * Get a callback from "arg".  It can be a Funcref or a function name.
  * When "arg" is zero return an empty string.
@@ -9901,32 +9865,6 @@ get_callback(typval_T *arg)
 	return (char_u *)"";
     EMSG(_("E999: Invalid callback argument"));
     return NULL;
-}
-
-/*
- * "ch_logfile()" function
- */
-    static void
-f_ch_logfile(typval_T *argvars, typval_T *rettv UNUSED)
-{
-    char_u *fname;
-    char_u *opt = (char_u *)"";
-    char_u buf[NUMBUFLEN];
-    FILE   *file = NULL;
-
-    fname = get_tv_string(&argvars[0]);
-    if (argvars[1].v_type == VAR_STRING)
-	opt = get_tv_string_buf(&argvars[1], buf);
-    if (*fname != NUL)
-    {
-	file = fopen((char *)fname, *opt == 'w' ? "w" : "a");
-	if (file == NULL)
-	{
-	    EMSG2(_(e_notopen), fname);
-	    return;
-	}
-    }
-    ch_logfile(file);
 }
 
 /*
@@ -9971,6 +9909,70 @@ get_job_options(dict_T *dict, jobopt_T *opt)
     }
 
     return OK;
+}
+#endif
+
+#ifdef FEAT_CHANNEL
+/*
+ * Get the channel from the argument.
+ * Returns NULL if the handle is invalid.
+ */
+    static channel_T *
+get_channel_arg(typval_T *tv)
+{
+    channel_T *channel;
+
+    if (tv->v_type != VAR_CHANNEL)
+    {
+	EMSG2(_(e_invarg2), get_tv_string(tv));
+	return NULL;
+    }
+    channel = tv->vval.v_channel;
+
+    if (channel == NULL || !channel_is_open(channel))
+    {
+	EMSG(_("E906: not an open channel"));
+	return NULL;
+    }
+    return channel;
+}
+
+/*
+ * "ch_close()" function
+ */
+    static void
+f_ch_close(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    channel_T *channel = get_channel_arg(&argvars[0]);
+
+    if (channel != NULL)
+	channel_close(channel);
+}
+
+/*
+ * "ch_logfile()" function
+ */
+    static void
+f_ch_logfile(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    char_u *fname;
+    char_u *opt = (char_u *)"";
+    char_u buf[NUMBUFLEN];
+    FILE   *file = NULL;
+
+    fname = get_tv_string(&argvars[0]);
+    if (argvars[1].v_type == VAR_STRING)
+	opt = get_tv_string_buf(&argvars[1], buf);
+    if (*fname != NUL)
+    {
+	file = fopen((char *)fname, *opt == 'w' ? "w" : "a");
+	if (file == NULL)
+	{
+	    EMSG2(_(e_notopen), fname);
+	    return;
+	}
+    }
+    ch_logfile(file);
 }
 
 /*
