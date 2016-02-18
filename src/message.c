@@ -531,7 +531,8 @@ emsg(char_u *s)
 	return TRUE;
 
     called_emsg = TRUE;
-    ex_exitval = 1;
+    if (emsg_silent == 0)
+	ex_exitval = 1;
 
     /*
      * If "emsg_severe" is TRUE: When an error exception is to be thrown,
