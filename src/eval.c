@@ -8973,7 +8973,7 @@ f_abs(typval_T *argvars, typval_T *rettv)
     static void
 f_acos(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -9402,7 +9402,7 @@ f_assert_true(typval_T *argvars, typval_T *rettv UNUSED)
     static void
 f_asin(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -9432,7 +9432,7 @@ f_atan(typval_T *argvars, typval_T *rettv)
     static void
 f_atan2(typval_T *argvars, typval_T *rettv)
 {
-    float_T	fx, fy;
+    float_T	fx = 0.0, fy = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &fx) == OK
@@ -9840,7 +9840,7 @@ f_call(typval_T *argvars, typval_T *rettv)
     static void
 f_ceil(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -10440,7 +10440,7 @@ f_copy(typval_T *argvars, typval_T *rettv)
     static void
 f_cos(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -10455,7 +10455,7 @@ f_cos(typval_T *argvars, typval_T *rettv)
     static void
 f_cosh(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -11003,7 +11003,7 @@ f_exists(typval_T *argvars, typval_T *rettv)
     static void
 f_exp(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -11584,7 +11584,7 @@ f_findfile(typval_T *argvars, typval_T *rettv)
     static void
 f_float2nr(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     if (get_float_arg(argvars, &f) == OK)
     {
@@ -11603,7 +11603,7 @@ f_float2nr(typval_T *argvars, typval_T *rettv)
     static void
 f_floor(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -11618,7 +11618,7 @@ f_floor(typval_T *argvars, typval_T *rettv)
     static void
 f_fmod(typval_T *argvars, typval_T *rettv)
 {
-    float_T	fx, fy;
+    float_T	fx = 0.0, fy = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &fx) == OK
@@ -15022,7 +15022,7 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
     static void
 f_log(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -15037,7 +15037,7 @@ f_log(typval_T *argvars, typval_T *rettv)
     static void
 f_log10(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -15833,7 +15833,7 @@ f_perleval(typval_T *argvars, typval_T *rettv)
     static void
 f_pow(typval_T *argvars, typval_T *rettv)
 {
-    float_T	fx, fy;
+    float_T	fx = 0.0, fy = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &fx) == OK
@@ -17116,7 +17116,7 @@ vim_round(float_T f)
     static void
 f_round(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -18288,7 +18288,7 @@ f_simplify(typval_T *argvars, typval_T *rettv)
     static void
 f_sin(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -18303,7 +18303,7 @@ f_sin(typval_T *argvars, typval_T *rettv)
     static void
 f_sinh(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -18889,7 +18889,7 @@ f_split(typval_T *argvars, typval_T *rettv)
     static void
 f_sqrt(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -19951,7 +19951,7 @@ f_test(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     static void
 f_tan(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -19966,7 +19966,7 @@ f_tan(typval_T *argvars, typval_T *rettv)
     static void
 f_tanh(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -20155,7 +20155,7 @@ error:
     static void
 f_trunc(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
