@@ -504,6 +504,7 @@ static void f_ceil(typval_T *argvars, typval_T *rettv);
 #endif
 #ifdef FEAT_CHANNEL
 static void f_ch_close(typval_T *argvars, typval_T *rettv);
+static void f_ch_log(typval_T *argvars, typval_T *rettv);
 static void f_ch_logfile(typval_T *argvars, typval_T *rettv);
 static void f_ch_open(typval_T *argvars, typval_T *rettv);
 static void f_ch_readraw(typval_T *argvars, typval_T *rettv);
@@ -8124,6 +8125,7 @@ static struct fst
 #endif
 #ifdef FEAT_CHANNEL
     {"ch_close",	1, 1, f_ch_close},
+    {"ch_log",		1, 2, f_ch_log},
     {"ch_logfile",	1, 2, f_ch_logfile},
     {"ch_open",		1, 2, f_ch_open},
     {"ch_readraw",	1, 2, f_ch_readraw},
@@ -9947,6 +9949,21 @@ f_ch_close(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (channel != NULL)
 	channel_close(channel);
+}
+
+/*
+ * "ch_log()" function
+ */
+    static void
+f_ch_log(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    char_u	*msg = get_tv_string(&argvars[0]);
+    channel_T	*channel = NULL;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	channel = get_channel_arg(&argvars[1]);
+
+    ch_log(channel, (char *)msg);
 }
 
 /*
@@ -14603,9 +14620,30 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
 	cmd = ga.ga_data;
 #endif
     }
+
 #ifdef USE_ARGV
+# ifdef FEAT_CHANNEL
+    if (ch_log_active())
+    {
+	garray_T    ga;
+	int	    i;
+
+	ga_init2(&ga, (int)sizeof(char), 200);
+	for (i = 0; i < argc; ++i)
+	{
+	    if (i > 0)
+		ga_concat(&ga, (char_u *)"  ");
+	    ga_concat(&ga, (char_u *)argv[i]);
+	}
+	ch_logs(NULL, "Starting job: %s", ga.ga_data);
+	ga_clear(&ga);
+    }
+# endif
     mch_start_job(argv, job, &options);
 #else
+# ifdef FEAT_CHANNEL
+    ch_logs(NULL, "Starting job: %s", cmd);
+# endif
     mch_start_job((char *)cmd, job, &options);
 #endif
 

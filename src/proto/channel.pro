@@ -1,5 +1,8 @@
 /* channel.c */
 void ch_logfile(FILE *file);
+int ch_log_active(void);
+void ch_log(channel_T *ch, char *msg);
+void ch_logs(channel_T *ch, char *msg, char *name);
 channel_T *add_channel(void);
 void channel_free(channel_T *channel);
 void channel_gui_register(channel_T *channel);

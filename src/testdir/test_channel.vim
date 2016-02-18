@@ -31,17 +31,24 @@ endif
 let s:chopt = {}
 
 " Run "testfunc" after sarting the server and stop the server afterwards.
-func s:run_server(testfunc)
+func s:run_server(testfunc, ...)
   " The Python program writes the port number in Xportnr.
   call delete("Xportnr")
 
+  if a:0 == 1
+    let arg = ' ' . a:1
+  else
+    let arg = ''
+  endif
+  let cmd = s:python . " test_channel.py" . arg
+
   try
     if has('job')
-      let s:job = job_start(s:python . " test_channel.py")
+      let s:job = job_start(cmd)
     elseif has('win32')
-      exe 'silent !start cmd /c start "test_channel" ' . s:python . ' test_channel.py'
+      exe 'silent !start cmd /c start "test_channel" ' . cmd
     else
-      exe 'silent !' . s:python . ' test_channel.py&'
+      exe 'silent !' . cmd . '&'
     endif
 
     " Wait for up to 2 seconds for the port number to be there.
@@ -175,6 +182,7 @@ func s:communicate(port)
 endfunc
 
 func Test_communicate()
+  call ch_log('Test_communicate()')
   call s:run_server('s:communicate')
 endfunc
 
@@ -203,6 +211,7 @@ func s:two_channels(port)
 endfunc
 
 func Test_two_channels()
+  call ch_log('Test_two_channels()')
   call s:run_server('s:two_channels')
 endfunc
 
@@ -220,6 +229,7 @@ func s:server_crash(port)
 endfunc
 
 func Test_server_crash()
+  call ch_log('Test_server_crash()')
   call s:run_server('s:server_crash')
 endfunc
 
@@ -248,6 +258,7 @@ func s:channel_handler(port)
 endfunc
 
 func Test_channel_handler()
+  call ch_log('Test_channel_handler()')
   let s:chopt.callback = 's:Handler'
   call s:run_server('s:channel_handler')
   let s:chopt.callback = function('s:Handler')
@@ -261,9 +272,10 @@ func Test_connect_waittime()
     " TODO: Make this work again for MS-Windows.
     return
   endif
+  call ch_log('Test_connect_waittime()')
   let start = reltime()
   let handle = ch_open('localhost:9876', s:chopt)
-  if ch_status(handle) == "fail"
+  if ch_status(handle) != "fail"
     " Oops, port does exists.
     call ch_close(handle)
   else
@@ -272,7 +284,7 @@ func Test_connect_waittime()
   endif
 
   let start = reltime()
-  let handle = ch_open('localhost:9867', {'waittime': 2000})
+  let handle = ch_open('localhost:9867', {'waittime': 500})
   if ch_status(handle) != "fail"
     " Oops, port does exists.
     call ch_close(handle)
@@ -280,7 +292,7 @@ func Test_connect_waittime()
     " Failed connection doesn't wait the full time on Unix.
     " TODO: why is MS-Windows different?
     let elapsed = reltime(start)
-    call assert_true(reltimefloat(elapsed) < (has('unix') ? 1.0 : 3.0))
+    call assert_true(reltimefloat(elapsed) < 1.0)
   endif
 endfunc
 
@@ -288,6 +300,7 @@ func Test_raw_pipe()
   if !has('job')
     return
   endif
+  call ch_log('Test_raw_pipe()')
   let job = job_start(s:python . " test_channel_pipe.py", {'mode': 'raw'})
   call assert_equal("run", job_status(job))
   try
@@ -311,6 +324,7 @@ func Test_nl_pipe()
   if !has('job')
     return
   endif
+  call ch_log('Test_nl_pipe()')
   let job = job_start(s:python . " test_channel_pipe.py")
   call assert_equal("run", job_status(job))
   try
@@ -346,6 +360,7 @@ func s:unlet_handle(port)
 endfunc
 
 func Test_unlet_handle()
+  call ch_log('Test_unlet_handle()')
   call s:run_server('s:unlet_handle')
 endfunc
 
@@ -366,13 +381,36 @@ func s:close_handle(port)
 endfunc
 
 func Test_close_handle()
+  call ch_log('Test_close_handle()')
   call s:run_server('s:close_handle')
 endfunc
 
 """"""""""
 
 func Test_open_fail()
+  call ch_log('Test_open_fail()')
   silent! let ch = ch_open("noserver")
   echo ch
   let d = ch
+endfunc
+
+""""""""""
+
+func s:open_delay(port)
+  " Wait up to a second for the port to open.
+  let s:chopt.waittime = 1000
+  let channel = ch_open('localhost:' . a:port, s:chopt)
+  unlet s:chopt.waittime
+  if ch_status(channel) == "fail"
+    call assert_false(1, "Can't open channel")
+    return
+  endif
+  call assert_equal('got it', ch_sendexpr(channel, 'hello!'))
+  call ch_close(channel)
+endfunc
+
+func Test_open_delay()
+  call ch_log('Test_open_delay()')
+  " The server will wait half a second before creating the port.
+  call s:run_server('s:open_delay', 'delay')
 endfunc

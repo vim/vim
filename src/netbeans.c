@@ -213,7 +213,7 @@ netbeans_connect(char *params, int doabort)
     if (hostname != NULL && address != NULL && password != NULL)
     {
 	port = atoi(address);
-	nb_channel = channel_open(hostname, port, 0, nb_channel_closed);
+	nb_channel = channel_open(hostname, port, 3000, nb_channel_closed);
 	if (nb_channel != NULL)
 	{
 	    /* success */

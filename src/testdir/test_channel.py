@@ -9,6 +9,7 @@ from __future__ import print_function
 import json
 import socket
 import sys
+import time
 import threading
 
 try:
@@ -158,8 +159,24 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
+def writePortInFile(port):
+    # Write the port number in Xportnr, so that the test knows it.
+    f = open("Xportnr", "w")
+    f.write("{}".format(port))
+    f.close()
+
 if __name__ == "__main__":
     HOST, PORT = "localhost", 0
+
+    # Wait half a second before opening the port to test waittime in ch_open().
+    # We do want to get the port number, get that first.  We cannot open the
+    # socket, guess a port is free.
+    if len(sys.argv) >= 2 and sys.argv[1] == 'delay':
+        PORT = 13684
+        writePortInFile(PORT)
+
+        print("Wait for it...")
+        time.sleep(0.5)
 
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
     ip, port = server.server_address
@@ -169,10 +186,7 @@ if __name__ == "__main__":
     server_thread = threading.Thread(target=server.serve_forever)
     server_thread.start()
 
-    # Write the port number in Xportnr, so that the test knows it.
-    f = open("Xportnr", "w")
-    f.write("{}".format(port))
-    f.close()
+    writePortInFile(port)
 
     print("Listening on port {}".format(port))
 

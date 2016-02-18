@@ -90,6 +90,9 @@ fd_close(sock_T fd)
 
 /* Log file opened with ch_logfile(). */
 static FILE *log_fd = NULL;
+#ifdef FEAT_RELTIME
+static proftime_T log_start;
+#endif
 
     void
 ch_logfile(FILE *file)
@@ -98,7 +101,18 @@ ch_logfile(FILE *file)
 	fclose(log_fd);
     log_fd = file;
     if (log_fd != NULL)
+    {
 	fprintf(log_fd, "==== start log session ====\n");
+#ifdef FEAT_RELTIME
+	profile_start(&log_start);
+#endif
+    }
+}
+
+    int
+ch_log_active()
+{
+    return log_fd != NULL;
 }
 
     static void
@@ -106,6 +120,13 @@ ch_log_lead(char *what, channel_T *ch)
 {
     if (log_fd != NULL)
     {
+#ifdef FEAT_RELTIME
+	proftime_T log_now;
+
+	profile_start(&log_now);
+	profile_sub(&log_now, &log_start);
+	fprintf(log_fd, "%s ", profile_msg(&log_now));
+#endif
 	if (ch != NULL)
 	    fprintf(log_fd, "%son %d: ", what, ch->ch_id);
 	else
@@ -113,13 +134,14 @@ ch_log_lead(char *what, channel_T *ch)
     }
 }
 
-    static void
+    void
 ch_log(channel_T *ch, char *msg)
 {
     if (log_fd != NULL)
     {
 	ch_log_lead("", ch);
 	fputs(msg, log_fd);
+	fputc('\n', log_fd);
 	fflush(log_fd);
     }
 }
@@ -131,17 +153,19 @@ ch_logn(channel_T *ch, char *msg, int nr)
     {
 	ch_log_lead("", ch);
 	fprintf(log_fd, msg, nr);
+	fputc('\n', log_fd);
 	fflush(log_fd);
     }
 }
 
-    static void
+    void
 ch_logs(channel_T *ch, char *msg, char *name)
 {
     if (log_fd != NULL)
     {
 	ch_log_lead("", ch);
 	fprintf(log_fd, msg, name);
+	fputc('\n', log_fd);
 	fflush(log_fd);
     }
 }
@@ -153,6 +177,7 @@ ch_logsn(channel_T *ch, char *msg, char *name, int nr)
     {
 	ch_log_lead("", ch);
 	fprintf(log_fd, msg, name, nr);
+	fputc('\n', log_fd);
 	fflush(log_fd);
     }
 }
@@ -164,6 +189,7 @@ ch_error(channel_T *ch, char *msg)
     {
 	ch_log_lead("ERR ", ch);
 	fputs(msg, log_fd);
+	fputc('\n', log_fd);
 	fflush(log_fd);
     }
 }
@@ -175,6 +201,7 @@ ch_errorn(channel_T *ch, char *msg, int nr)
     {
 	ch_log_lead("ERR ", ch);
 	fprintf(log_fd, msg, nr);
+	fputc('\n', log_fd);
 	fflush(log_fd);
     }
 }
@@ -186,6 +213,7 @@ ch_errors(channel_T *ch, char *msg, char *arg)
     {
 	ch_log_lead("ERR ", ch);
 	fprintf(log_fd, msg, arg);
+	fputc('\n', log_fd);
 	fflush(log_fd);
     }
 }
@@ -253,7 +281,7 @@ add_channel(void)
 	return NULL;
 
     channel->ch_id = next_ch_id++;
-    ch_log(channel, "Created channel\n");
+    ch_log(channel, "Created channel");
 
 #ifdef CHANNEL_PIPES
     for (which = CHAN_SOCK; which <= CHAN_IN; ++which)
@@ -470,14 +498,17 @@ static char *e_cannot_connect = N_("E902: Cannot connect to port");
     channel_T *
 channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 {
-    int			sd;
+    int			sd = -1;
     struct sockaddr_in	server;
-    struct hostent *	host;
+    struct hostent	*host;
 #ifdef WIN32
     u_short		port = port_in;
     u_long		val = 1;
 #else
     int			port = port_in;
+    struct timeval	start_tv;
+    int			so_error;
+    socklen_t		so_error_len = sizeof(so_error);
 #endif
     channel_T		*channel;
     int			ret;
@@ -489,16 +520,7 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
     channel = add_channel();
     if (channel == NULL)
     {
-	ch_error(NULL, "Cannot allocate channel.\n");
-	EMSG(_("E897: All channels are in use"));
-	return NULL;
-    }
-
-    if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-    {
-	ch_error(channel, "in socket() in channel_open().\n");
-	PERROR("E898: socket() in channel_open()");
-	channel_free(channel);
+	ch_error(NULL, "Cannot allocate channel.");
 	return NULL;
     }
 
@@ -509,115 +531,185 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
     server.sin_port = htons(port);
     if ((host = gethostbyname(hostname)) == NULL)
     {
-	ch_error(channel, "in gethostbyname() in channel_open()\n");
+	ch_error(channel, "in gethostbyname() in channel_open()");
 	PERROR("E901: gethostbyname() in channel_open()");
-	sock_close(sd);
 	channel_free(channel);
 	return NULL;
     }
     memcpy((char *)&server.sin_addr, host->h_addr, host->h_length);
 
-    if (waittime >= 0)
-    {
-	/* Make connect non-blocking. */
-	if (
-#ifdef _WIN32
-	    ioctlsocket(sd, FIONBIO, &val) < 0
-#else
-	    fcntl(sd, F_SETFL, O_NONBLOCK) < 0
+#if defined(__APPLE__) && __APPLE__ == 1
+    /* On Mac a zero timeout almost never works.  At least wait one
+     * millisecond. */
+    if (waittime == 0)
+	waittime = 1;
 #endif
-	   )
-	{
-	    SOCK_ERRNO;
-	    ch_errorn(channel, "channel_open: Connect failed with errno %d\n",
-								       errno);
+
+    /*
+     * For Unix we need to call connect() again after connect() failed.
+     * On Win32 one time is sufficient.
+     */
+    while (TRUE)
+    {
+	if (sd >= 0)
 	    sock_close(sd);
+	sd = socket(AF_INET, SOCK_STREAM, 0);
+	if (sd == -1)
+	{
+	    ch_error(channel, "in socket() in channel_open().");
+	    PERROR("E898: socket() in channel_open()");
 	    channel_free(channel);
 	    return NULL;
 	}
-    }
 
-    /* Try connecting to the server. */
-    ch_logsn(channel, "Connecting to %s port %d\n", hostname, port);
-    ret = connect(sd, (struct sockaddr *)&server, sizeof(server));
-    SOCK_ERRNO;
-    if (ret < 0)
-    {
-	if (errno != EWOULDBLOCK
+	if (waittime >= 0)
+	{
+	    /* Make connect() non-blocking. */
+	    if (
+#ifdef _WIN32
+		ioctlsocket(sd, FIONBIO, &val) < 0
+#else
+		fcntl(sd, F_SETFL, O_NONBLOCK) < 0
+#endif
+	       )
+	    {
+		SOCK_ERRNO;
+		ch_errorn(channel,
+			 "channel_open: Connect failed with errno %d", errno);
+		sock_close(sd);
+		channel_free(channel);
+		return NULL;
+	    }
+	}
+
+	/* Try connecting to the server. */
+	ch_logsn(channel, "Connecting to %s port %d", hostname, port);
+	ret = connect(sd, (struct sockaddr *)&server, sizeof(server));
+
+	SOCK_ERRNO;
+	if (ret < 0)
+	{
+	    if (errno != EWOULDBLOCK
+		    && errno != ECONNREFUSED
+
 #ifdef EINPROGRESS
 		    && errno != EINPROGRESS
 #endif
-		)
-	{
-	    ch_errorn(channel, "channel_open: Connect failed with errno %d\n",
-								       errno);
-	    PERROR(_(e_cannot_connect));
-	    sock_close(sd);
-	    channel_free(channel);
-	    return NULL;
+		    )
+	    {
+		ch_errorn(channel,
+			"channel_open: Connect failed with errno %d", errno);
+		PERROR(_(e_cannot_connect));
+		sock_close(sd);
+		channel_free(channel);
+		return NULL;
+	    }
 	}
-    }
 
-    if (waittime >= 0 && ret < 0)
-    {
-	struct timeval	tv;
-	fd_set		wfds;
+	/* If we don't block and connect() failed then try using select() to
+	 * wait for the connection to be made. */
+	if (waittime >= 0 && ret < 0)
+	{
+	    struct timeval	tv;
+	    fd_set		wfds;
 #if defined(__APPLE__) && __APPLE__ == 1
 # define PASS_RFDS
-	fd_set          rfds;
+	    fd_set          rfds;
 
-	FD_ZERO(&rfds);
-	FD_SET(sd, &rfds);
-	/* On Mac a zero timeout almost never works.  At least wait one
-	 * millisecond. */
-	if (waittime == 0)
-	    waittime = 1;
+	    FD_ZERO(&rfds);
+	    FD_SET(sd, &rfds);
 #endif
-	FD_ZERO(&wfds);
-	FD_SET(sd, &wfds);
-	tv.tv_sec = waittime / 1000;
-	tv.tv_usec = (waittime % 1000) * 1000;
+	    FD_ZERO(&wfds);
+	    FD_SET(sd, &wfds);
 
-	ch_logn(channel, "Waiting for connection (timeout %d msec)...\n",
-								    waittime);
-	ret = select((int)sd + 1,
+	    tv.tv_sec = waittime / 1000;
+	    tv.tv_usec = (waittime % 1000) * 1000;
+#ifndef WIN32
+	    gettimeofday(&start_tv, NULL);
+#endif
+	    ch_logn(channel,
+		    "Waiting for connection (waittime %d msec)...", waittime);
+	    ret = select((int)sd + 1,
 #ifdef PASS_RFDS
-		&rfds,
+		    &rfds,
 #else
-		NULL,
+		    NULL,
 #endif
-		&wfds, NULL, &tv);
+		    &wfds, NULL, &tv);
 
-	if (ret < 0)
-	{
-	    SOCK_ERRNO;
-	    ch_errorn(channel, "channel_open: Connect failed with errno %d\n",
-								       errno);
-	    PERROR(_(e_cannot_connect));
-	    sock_close(sd);
-	    channel_free(channel);
-	    return NULL;
-	}
+	    if (ret < 0)
+	    {
+		SOCK_ERRNO;
+		ch_errorn(channel,
+			"channel_open: Connect failed with errno %d", errno);
+		PERROR(_(e_cannot_connect));
+		sock_close(sd);
+		channel_free(channel);
+		return NULL;
+	    }
 #ifdef PASS_RFDS
-	if (ret == 0 && FD_ISSET(sd, &rfds) && FD_ISSET(sd, &wfds))
-	{
-	    /* For OS X, this implies error. See tcp(4). */
-	    ch_error(channel, "channel_open: Connect failed\n");
-	    EMSG(_(e_cannot_connect));
-	    sock_close(sd);
-	    channel_free(channel);
-	    return NULL;
-	}
+	    if (ret == 0 && FD_ISSET(sd, &rfds) && FD_ISSET(sd, &wfds))
+	    {
+		/* For OS X, this implies error. See tcp(4). */
+		ch_error(channel, "channel_open: Connect failed");
+		EMSG(_(e_cannot_connect));
+		sock_close(sd);
+		channel_free(channel);
+		return NULL;
+	    }
 #endif
-	if (!FD_ISSET(sd, &wfds))
-	{
-	    /* don't give an error, we just timed out. */
-	    ch_error(channel, "Connection timed out\n");
-	    sock_close(sd);
-	    channel_free(channel);
-	    return NULL;
+#ifdef WIN32
+	    /* On Win32 select() is expected to work and wait for up to the
+	     * waittime for the socket to be open. */
+	    if (!FD_ISSET(sd, &wfds) || ret == 0)
+#else
+	    /* See socket(7) for the behavior on Linux-like systems:
+	     * After putting the socket in non-blocking mode, connect() will
+	     * return EINPROGRESS, select() will not wait (as if writing is
+	     * possible), need to use getsockopt() to check if the socket is
+	     * actually open. */
+	    getsockopt(sd, SOL_SOCKET, SO_ERROR, &so_error, &so_error_len);
+	    if (!FD_ISSET(sd, &wfds) || ret == 0 || so_error != 0)
+#endif
+	    {
+#ifndef WIN32
+		struct  timeval end_tv;
+		long    elapsed_msec;
+
+		gettimeofday(&end_tv, NULL);
+		elapsed_msec = (end_tv.tv_sec - start_tv.tv_sec) * 1000
+				 + (end_tv.tv_usec - start_tv.tv_usec) / 1000;
+		if (waittime > 1 && elapsed_msec < waittime)
+		{
+		    /* The port isn't ready but we also didn't get an error.
+		     * This happens when the server didn't open the socket
+		     * yet.  Wait a bit and try again. */
+		    mch_delay(waittime < 50 ? (long)waittime : 50L, TRUE);
+		    ui_breakcheck();
+		    if (!got_int)
+		    {
+			/* reduce the waittime by the elapsed time and the 50
+			 * msec delay (or a bit more) */
+			waittime -= elapsed_msec;
+			if (waittime > 50)
+			    waittime -= 50;
+			else
+			    waittime = 1;
+			continue;
+		    }
+		    /* we were interrupted, behave as if timed out */
+		}
+#endif
+		/* We timed out. */
+		ch_error(channel, "Connection timed out");
+		sock_close(sd);
+		channel_free(channel);
+		return NULL;
+	    }
+
+	    ch_log(channel, "Connection made");
+	    break;
 	}
-	ch_log(channel, "Connection made\n");
     }
 
     if (waittime >= 0)
@@ -628,55 +720,6 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
 #else
 	(void)fcntl(sd, F_SETFL, 0);
 #endif
-    }
-
-    /* Only retry for netbeans.  TODO: can we use a waittime instead? */
-    if (errno == ECONNREFUSED && close_cb != NULL)
-    {
-	sock_close(sd);
-	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-	{
-	    SOCK_ERRNO;
-	    ch_log(channel, "socket() retry in channel_open()\n");
-	    PERROR("E900: socket() retry in channel_open()");
-	    channel_free(channel);
-	    return NULL;
-	}
-	if (connect(sd, (struct sockaddr *)&server, sizeof(server)))
-	{
-	    int retries = 36;
-	    int success = FALSE;
-
-	    SOCK_ERRNO;
-	    while (retries-- && ((errno == ECONNREFUSED)
-						     || (errno == EINTR)))
-	    {
-		ch_log(channel, "retrying...\n");
-		mch_delay(3000L, TRUE);
-		ui_breakcheck();
-		if (got_int)
-		{
-		    errno = EINTR;
-		    break;
-		}
-		if (connect(sd, (struct sockaddr *)&server,
-						     sizeof(server)) == 0)
-		{
-		    success = TRUE;
-		    break;
-		}
-		SOCK_ERRNO;
-	    }
-	    if (!success)
-	    {
-		/* Get here when the server can't be found. */
-		ch_error(channel, "Cannot connect to port after retry\n");
-		PERROR(_("E899: Cannot connect to port after retry"));
-		sock_close(sd);
-		channel_free(channel);
-		return NULL;
-	    }
-	}
     }
 
     channel->CH_SOCK = (sock_T)sd;
@@ -1155,7 +1198,7 @@ may_invoke_callback(channel_T *channel)
 	if (typetv->v_type != VAR_NUMBER)
 	{
 	    ch_error(channel,
-		      "Dropping message with invalid sequence number type\n");
+		      "Dropping message with invalid sequence number type");
 	    free_tv(listtv);
 	    return FALSE;
 	}
@@ -1223,7 +1266,7 @@ may_invoke_callback(channel_T *channel)
 	{
 	    if (item->cq_seq_nr == seq_nr)
 	    {
-		ch_log(channel, "Invoking one-time callback\n");
+		ch_log(channel, "Invoking one-time callback");
 		/* Remove the item from the list first, if the callback
 		 * invokes ch_close() the list will be cleared. */
 		remove_cb_node(head, item);
@@ -1236,16 +1279,16 @@ may_invoke_callback(channel_T *channel)
 	    item = item->cq_next;
 	}
 	if (!done)
-	    ch_log(channel, "Dropping message without callback\n");
+	    ch_log(channel, "Dropping message without callback");
     }
     else if (channel->ch_callback != NULL)
     {
 	/* invoke the channel callback */
-	ch_log(channel, "Invoking channel callback\n");
+	ch_log(channel, "Invoking channel callback");
 	invoke_callback(channel, channel->ch_callback, argv);
     }
     else
-	ch_log(channel, "Dropping message\n");
+	ch_log(channel, "Dropping message");
 
     if (listtv != NULL)
 	free_tv(listtv);
@@ -1304,7 +1347,7 @@ channel_status(channel_T *channel)
     void
 channel_close(channel_T *channel)
 {
-    ch_log(channel, "Closing channel\n");
+    ch_log(channel, "Closing channel");
 
 #ifdef FEAT_GUI
     channel_gui_unregister(channel);
@@ -1471,7 +1514,7 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
     int			ret;
 
     if (timeout > 0)
-	ch_logn(channel, "Waiting for up to %d msec\n", timeout);
+	ch_logn(channel, "Waiting for up to %d msec", timeout);
 
 
 # ifdef WIN32
@@ -1511,7 +1554,7 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 # endif
 	if (ret <= 0)
 	{
-	    ch_log(channel, "Nothing to read\n");
+	    ch_log(channel, "Nothing to read");
 	    return FAIL;
 	}
 	break;
@@ -1521,12 +1564,12 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
     struct pollfd	fds;
 
     if (timeout > 0)
-	ch_logn(channel, "Waiting for %d msec\n", timeout);
+	ch_logn(channel, "Waiting for %d msec", timeout);
     fds.fd = fd;
     fds.events = POLLIN;
     if (poll(&fds, 1, timeout) <= 0)
     {
-	ch_log(channel, "Nothing to read\n");
+	ch_log(channel, "Nothing to read");
 	return FAIL;
     }
 # endif
@@ -1558,7 +1601,7 @@ get_read_fd(channel_T *channel)
     if (channel->CH_OUT != CHAN_FD_INVALID)
 	return channel->CH_OUT;
 #endif
-    ch_error(channel, "channel_read() called while socket is closed\n");
+    ch_error(channel, "channel_read() called while socket is closed");
     return CHAN_FD_INVALID;
 }
 
@@ -1637,7 +1680,7 @@ channel_read(channel_T *channel, int which, char *func)
 	 *		    -> gui event loop or select loop
 	 *			-> channel_read()
 	 */
-	ch_errors(channel, "%s(): Cannot read\n", func);
+	ch_errors(channel, "%s(): Cannot read", func);
 	channel_save(channel, (char_u *)DETACH_MSG, (int)STRLEN(DETACH_MSG));
 
 	/* TODO: When reading from stdout is not possible, should we try to
@@ -1649,7 +1692,7 @@ channel_read(channel_T *channel, int which, char *func)
 
 	if (len < 0)
 	{
-	    ch_error(channel, "channel_read(): cannot read from channel\n");
+	    ch_error(channel, "channel_read(): cannot read from channel");
 	    PERROR(_("E896: read from channel"));
 	}
     }
@@ -1677,7 +1720,7 @@ channel_read_block(channel_T *channel)
     sock_T	fd = get_read_fd(channel);
     char_u	*nl;
 
-    ch_logsn(channel, "Blocking %s read, timeout: %d msec\n",
+    ch_logsn(channel, "Blocking %s read, timeout: %d msec",
 			mode == MODE_RAW ? "RAW" : "NL", channel->ch_timeout);
 
     while (TRUE)
@@ -1718,7 +1761,7 @@ channel_read_block(channel_T *channel)
 	}
     }
     if (log_fd != NULL)
-	ch_logn(channel, "Returning %d bytes\n", (int)STRLEN(msg));
+	ch_logn(channel, "Returning %d bytes", (int)STRLEN(msg));
     return msg;
 }
 
@@ -1733,7 +1776,7 @@ channel_read_json_block(channel_T *channel, int id, typval_T **rettv)
     int		more;
     sock_T	fd;
 
-    ch_log(channel, "Reading JSON\n");
+    ch_log(channel, "Reading JSON");
     channel->ch_block_id = id;
     for (;;)
     {
@@ -1821,7 +1864,7 @@ channel_send(channel_T *channel, char_u *buf, char *fun)
     {
 	if (!channel->ch_error && fun != NULL)
 	{
-	    ch_errors(channel, "%s(): write while not connected\n", fun);
+	    ch_errors(channel, "%s(): write while not connected", fun);
 	    EMSG2("E630: %s(): write while not connected", fun);
 	}
 	channel->ch_error = TRUE;
@@ -1845,7 +1888,7 @@ channel_send(channel_T *channel, char_u *buf, char *fun)
     {
 	if (!channel->ch_error && fun != NULL)
 	{
-	    ch_errors(channel, "%s(): write failed\n", fun);
+	    ch_errors(channel, "%s(): write failed", fun);
 	    EMSG2("E631: %s(): write failed", fun);
 	}
 	channel->ch_error = TRUE;
