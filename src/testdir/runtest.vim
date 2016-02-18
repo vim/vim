@@ -90,12 +90,13 @@ endif
 " Locate Test_ functions and execute them.
 set nomore
 redir @q
-function /^Test_
+silent function /^Test_
 redir END
 let s:tests = split(substitute(@q, 'function \(\k*()\)', '\1', 'g'))
 
 " Execute the tests in alphabetical order.
- for s:test in sort(s:tests)
+for s:test in sort(s:tests)
+  echo 'Executing ' . s:test
   if exists("*SetUp")
     call SetUp()
   endif
