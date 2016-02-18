@@ -268,10 +268,6 @@ endfunc
 
 " Test that trying to connect to a non-existing port fails quickly.
 func Test_connect_waittime()
-  if !has('unix')
-    " TODO: Make this work again for MS-Windows.
-    return
-  endif
   call ch_log('Test_connect_waittime()')
   let start = reltime()
   let handle = ch_open('localhost:9876', s:chopt)
