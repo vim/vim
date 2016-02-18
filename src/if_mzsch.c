@@ -1101,10 +1101,10 @@ startup_mzscheme(void)
 	MZ_GC_VAR_IN_REG(0, coll_path);
 	MZ_GC_REG();
 	/* workaround for dynamic loading on windows */
-	s = vim_getenv("PLTCOLLECTS", &mustfree);
+	s = vim_getenv((char_u *)"PLTCOLLECTS", &mustfree);
 	if (s != NULL)
 	{
-	    coll_path = scheme_make_path(s);
+	    coll_path = scheme_make_path((char *)s);
 	    MZ_GC_CHECK();
 	    if (mustfree)
 		vim_free(s);
