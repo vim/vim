@@ -57,7 +57,6 @@ directx_enabled(void)
 gui_mch_set_rendering_options(char_u *s)
 {
 #ifdef FEAT_DIRECTX
-    int	    retval = FAIL;
     char_u  *p, *q;
 
     int	    dx_enable = 0;
@@ -95,36 +94,36 @@ gui_mch_set_rendering_options(char_u *s)
 	else if (STRCMP(name, "gamma") == 0)
 	{
 	    dx_flags |= 1 << 0;
-	    dx_gamma = (float)atof(value);
+	    dx_gamma = (float)atof((char *)value);
 	}
 	else if (STRCMP(name, "contrast") == 0)
 	{
 	    dx_flags |= 1 << 1;
-	    dx_contrast = (float)atof(value);
+	    dx_contrast = (float)atof((char *)value);
 	}
 	else if (STRCMP(name, "level") == 0)
 	{
 	    dx_flags |= 1 << 2;
-	    dx_level = (float)atof(value);
+	    dx_level = (float)atof((char *)value);
 	}
 	else if (STRCMP(name, "geom") == 0)
 	{
 	    dx_flags |= 1 << 3;
-	    dx_geom = atoi(value);
+	    dx_geom = atoi((char *)value);
 	    if (dx_geom < 0 || dx_geom > 2)
 		return FAIL;
 	}
 	else if (STRCMP(name, "renmode") == 0)
 	{
 	    dx_flags |= 1 << 4;
-	    dx_renmode = atoi(value);
+	    dx_renmode = atoi((char *)value);
 	    if (dx_renmode < 0 || dx_renmode > 6)
 		return FAIL;
 	}
 	else if (STRCMP(name, "taamode") == 0)
 	{
 	    dx_flags |= 1 << 5;
-	    dx_taamode = atoi(value);
+	    dx_taamode = atoi((char *)value);
 	    if (dx_taamode < 0 || dx_taamode > 3)
 		return FAIL;
 	}
