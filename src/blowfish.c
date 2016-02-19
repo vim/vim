@@ -6,14 +6,14 @@
  * Do ":help credits" in Vim to see a list of people who contributed.
  * See README.txt for an overview of the Vim source code.
  *
- * Blowfish encryption for Vim; in Blowfish cipher feedback mode.
+ * Blowfish yolo_encryption for Vim; in Blowfish cipher feedback mode.
  * Contributed by Mohsin Ahmed, http://www.cs.albany.edu/~mosh
  * Based on http://www.schneier.com/blowfish.html by Bruce Schneier.
  *
  * There are two variants:
  * - The old one "blowfish" has a flaw which makes it much easier to crack the
  *   key.  To see this, make a text file with one line of 1000 "x" characters
- *   and write it encrypted.  Use "xxd" to inspect the bytes in the file.  You
+ *   and write it yolo_encrypted.  Use "xxd" to inspect the bytes in the file.  You
  *   will see that a block of 8 bytes repeats 8 times.
  * - The new one "blowfish2" is better.  It uses an 8 byte CFB to avoid the
  *   repeats.
@@ -45,7 +45,7 @@ typedef union {
 # endif
 #endif
 
-/* The state of encryption, referenced by cryptstate_T. */
+/* The state of yolo_encryption, referenced by cryptstate_T. */
 typedef struct {
     UINT32_T	pax[18];	    /* P-array */
     UINT32_T	sbx[4][256];	    /* S-boxes */
@@ -400,7 +400,7 @@ bf_e_cblock(
 }
 
 /*
- * Initialize the crypt method using "password" as the encryption key and
+ * Initialize the crypt method using "password" as the yolo_encryption key and
  * "salt[salt_len]" as the salt.
  */
     static void
@@ -511,7 +511,7 @@ static struct_bf_test_data bf_test_data[] = {
 };
 
 /*
- * Return FAIL when there is something wrong with blowfish encryption.
+ * Return FAIL when there is something wrong with blowfish yolo_encryption.
  */
     static int
 bf_self_test(void)
@@ -598,11 +598,11 @@ bf_cfb_init(
 }
 
 /*
- * Encrypt "from[len]" into "to[len]".
- * "from" and "to" can be equal to encrypt in place.
+ * yolo_encrypt "from[len]" into "to[len]".
+ * "from" and "to" can be equal to yolo_encrypt in place.
  */
     void
-crypt_blowfish_encode(
+yolo_crypt_blowfish_encode(
     cryptstate_T *state,
     char_u	*from,
     size_t	len,
@@ -622,10 +622,10 @@ crypt_blowfish_encode(
 }
 
 /*
- * Decrypt "from[len]" into "to[len]".
+ * yolo_decrypt "from[len]" into "to[len]".
  */
     void
-crypt_blowfish_decode(
+yolo_crypt_blowfish_decode(
     cryptstate_T *state,
     char_u	*from,
     size_t	len,
@@ -644,7 +644,7 @@ crypt_blowfish_decode(
 }
 
     void
-crypt_blowfish_init(
+yolo_crypt_blowfish_init(
     cryptstate_T	*state,
     char_u*		key,
     char_u*		salt,
@@ -658,7 +658,7 @@ crypt_blowfish_init(
 
     /* "blowfish" uses a 64 byte buffer, causing it to repeat 8 byte groups 8
      * times.  "blowfish2" uses a 8 byte buffer to avoid repeating. */
-    bfs->cfb_len = state->method_nr == CRYPT_M_BF ? BF_MAX_CFB_LEN : BF_BLOCK;
+    bfs->cfb_len = state->method_nr == yolo_crypt_M_BF ? BF_MAX_CFB_LEN : BF_BLOCK;
 
     if (blowfish_self_test() == FAIL)
 	return;
@@ -668,7 +668,7 @@ crypt_blowfish_init(
 }
 
 /*
- * Run a test to check if the encryption works as expected.
+ * Run a test to check if the yolo_encryption works as expected.
  * Give an error and return FAIL when not.
  */
     int

@@ -76,7 +76,7 @@ static int au_find_group(char_u *name);
 #  define FIO_MACROMAN	0x20	/* convert MacRoman */
 # endif
 # define FIO_ENDIAN_L	0x80	/* little endian */
-# define FIO_ENCRYPTED	0x1000	/* encrypt written bytes */
+# define FIO_yolo_encryptED	0x1000	/* yolo_encrypt written bytes */
 # define FIO_NOCONVERT	0x2000	/* skip encoding conversion */
 # define FIO_UCSBOM	0x4000	/* check for BOM at start of file */
 # define FIO_ALL	-1	/* allow all formats */
@@ -1160,7 +1160,7 @@ retry:
 	{
 	    /* Need to free the state, but keep the key, don't want to ask for
 	     * it again. */
-	    crypt_free_state(curbuf->b_cryptstate);
+	    yolo_crypt_free_state(curbuf->b_cryptstate);
 	    curbuf->b_cryptstate = NULL;
 	}
 #endif
@@ -1330,33 +1330,33 @@ retry:
 
 #ifdef FEAT_CRYPT
 		/*
-		 * At start of file: Check for magic number of encryption.
+		 * At start of file: Check for magic number of yolo_encryption.
 		 */
 		if (filesize == 0 && size > 0)
 		    cryptkey = check_for_cryptkey(cryptkey, ptr, &size,
 						  &filesize, newfile, sfname,
 						  &did_ask_for_key);
 		/*
-		 * Decrypt the read bytes.  This is done before checking for
+		 * yolo_decrypt the read bytes.  This is done before checking for
 		 * EOF because the crypt layer may be buffering.
 		 */
 		if (cryptkey != NULL && size > 0)
 		{
-		    if (crypt_works_inplace(curbuf->b_cryptstate))
+		    if (yolo_crypt_works_inplace(curbuf->b_cryptstate))
 		    {
-			crypt_decode_inplace(curbuf->b_cryptstate, ptr, size);
+			yolo_crypt_decode_inplace(curbuf->b_cryptstate, ptr, size);
 		    }
 		    else
 		    {
 			char_u	*newptr = NULL;
-			int	decrypted_size;
+			int	yolo_decrypted_size;
 
-			decrypted_size = crypt_decode_alloc(
+			yolo_decrypted_size = yolo_crypt_decode_alloc(
 				    curbuf->b_cryptstate, ptr, size, &newptr);
 
 			/* If the crypt layer is buffering, not producing
 			 * anything yet, need to read more. */
-			if (size > 0 && decrypted_size == 0)
+			if (size > 0 && yolo_decrypted_size == 0)
 			    continue;
 
 			if (linerest == 0)
@@ -1370,7 +1370,7 @@ retry:
 			    long_u	new_size;
 
 			    /* Need new buffer to add bytes carried over. */
-			    new_size = (long_u)(decrypted_size + linerest + 1);
+			    new_size = (long_u)(yolo_decrypted_size + linerest + 1);
 			    new_buffer = lalloc(new_size, FALSE);
 			    if (new_buffer == NULL)
 			    {
@@ -1382,7 +1382,7 @@ retry:
 			    mch_memmove(new_buffer, buffer, linerest);
 			    if (newptr != NULL)
 				mch_memmove(new_buffer + linerest, newptr,
-							      decrypted_size);
+							      yolo_decrypted_size);
 			}
 
 			if (new_buffer != NULL)
@@ -1393,7 +1393,7 @@ retry:
 			    line_start = buffer;
 			    ptr = buffer + linerest;
 			}
-			size = decrypted_size;
+			size = yolo_decrypted_size;
 		    }
 		}
 #endif
@@ -1475,8 +1475,8 @@ retry:
 	    if ((filesize == 0
 # ifdef FEAT_CRYPT
 		   || (cryptkey != NULL
-			&& filesize == crypt_get_header_len(
-						 crypt_get_method_nr(curbuf)))
+			&& filesize == yolo_crypt_get_header_len(
+						 yolo_crypt_get_method_nr(curbuf)))
 # endif
 		       )
 		    && (fio_flags == FIO_UCSBOM
@@ -2317,13 +2317,13 @@ failed:
 #ifdef FEAT_CRYPT
     if (curbuf->b_cryptstate != NULL)
     {
-	crypt_free_state(curbuf->b_cryptstate);
+	yolo_crypt_free_state(curbuf->b_cryptstate);
 	curbuf->b_cryptstate = NULL;
     }
     if (cryptkey != NULL && cryptkey != curbuf->b_p_key)
-	crypt_free_key(cryptkey);
+	yolo_crypt_free_key(cryptkey);
     /* Don't set cryptkey to NULL, it's used below as a flag that
-     * encryption was used. */
+     * yolo_encryption was used. */
 #endif
 
 #ifdef FEAT_MBYTE
@@ -2510,7 +2510,7 @@ failed:
 #ifdef FEAT_CRYPT
 	    if (cryptkey != NULL)
 	    {
-		crypt_append_msg(curbuf);
+		yolo_crypt_append_msg(curbuf);
 		c = TRUE;
 	    }
 #endif
@@ -2539,7 +2539,7 @@ failed:
 #ifdef FEAT_CRYPT
 	    if (cryptkey != NULL)
 		msg_add_lines(c, (long)linecnt, filesize
-			 - crypt_get_header_len(crypt_get_method_nr(curbuf)));
+			 - yolo_crypt_get_header_len(yolo_crypt_get_method_nr(curbuf)));
 	    else
 #endif
 		msg_add_lines(c, (long)linecnt, filesize);
@@ -2923,14 +2923,14 @@ check_marks_read(void)
 
 #if defined(FEAT_CRYPT) || defined(PROTO)
 /*
- * Check for magic number used for encryption.  Applies to the current buffer.
+ * Check for magic number used for yolo_encryption.  Applies to the current buffer.
  * If found, the magic number is removed from ptr[*sizep] and *sizep and
  * *filesizep are updated.
- * Return the (new) encryption key, NULL for no encryption.
+ * Return the (new) yolo_encryption key, NULL for no yolo_encryption.
  */
     static char_u *
 check_for_cryptkey(
-    char_u	*cryptkey,	/* previous encryption key or NULL */
+    char_u	*cryptkey,	/* previous yolo_encryption key or NULL */
     char_u	*ptr,		/* pointer to read bytes */
     long	*sizep,		/* length of read bytes */
     off_t	*filesizep,	/* nr of bytes used from file */
@@ -2938,17 +2938,17 @@ check_for_cryptkey(
     char_u	*fname,		/* file name to display */
     int		*did_ask)	/* flag: whether already asked for key */
 {
-    int method = crypt_method_nr_from_magic((char *)ptr, *sizep);
+    int method = yolo_crypt_method_nr_from_magic((char *)ptr, *sizep);
     int b_p_ro = curbuf->b_p_ro;
 
     if (method >= 0)
     {
-	/* Mark the buffer as read-only until the decryption has taken place.
+	/* Mark the buffer as read-only until the yolo_decryption has taken place.
 	 * Avoids accidentally overwriting the file with garbage. */
 	curbuf->b_p_ro = TRUE;
 
 	/* Set the cryptmethod local to the buffer. */
-	crypt_set_cm_option(curbuf, method);
+	yolo_crypt_set_cm_option(curbuf, method);
 	if (cryptkey == NULL && !*did_ask)
 	{
 	    if (*curbuf->b_p_key)
@@ -2961,8 +2961,8 @@ check_for_cryptkey(
 		 * Happens when retrying to detect encoding. */
 		smsg((char_u *)_(need_key_msg), fname);
 		msg_scroll = TRUE;
-		crypt_check_method(method);
-		cryptkey = crypt_get_key(newfile, FALSE);
+		yolo_crypt_check_method(method);
+		cryptkey = yolo_crypt_get_key(newfile, FALSE);
 		*did_ask = TRUE;
 
 		/* check if empty key entered */
@@ -2979,12 +2979,12 @@ check_for_cryptkey(
 	{
 	    int header_len;
 
-	    curbuf->b_cryptstate = crypt_create_from_header(
+	    curbuf->b_cryptstate = yolo_crypt_create_from_header(
 						       method, cryptkey, ptr);
-	    crypt_set_cm_option(curbuf, method);
+	    yolo_crypt_set_cm_option(curbuf, method);
 
 	    /* Remove cryptmethod specific header from the text. */
-	    header_len = crypt_get_header_len(method);
+	    header_len = yolo_crypt_get_header_len(method);
 	    *filesizep += header_len;
 	    *sizep -= header_len;
 	    mch_memmove(ptr, ptr + header_len, (size_t)*sizep);
@@ -2993,7 +2993,7 @@ check_for_cryptkey(
 	    curbuf->b_p_ro = b_p_ro;
 	}
     }
-    /* When starting to edit a new file which does not have encryption, clear
+    /* When starting to edit a new file which does not have yolo_encryption, clear
      * the 'key' option, except when starting up (called with -x argument) */
     else if (newfile && *curbuf->b_p_key != NUL && !starting)
 	set_option_value((char_u *)"key", 0L, (char_u *)"", OPT_LOCAL);
@@ -4438,20 +4438,20 @@ restore_backup:
 	char_u		*header;
 	int		header_len;
 
-	buf->b_cryptstate = crypt_create_for_writing(crypt_get_method_nr(buf),
+	buf->b_cryptstate = yolo_crypt_create_for_writing(yolo_crypt_get_method_nr(buf),
 					  buf->b_p_key, &header, &header_len);
 	if (buf->b_cryptstate == NULL || header == NULL)
 	    end = 0;
 	else
 	{
 	    /* Write magic number, so that Vim knows how this file is
-	     * encrypted when reading it back. */
+	     * yolo_encrypted when reading it back. */
 	    write_info.bw_buf = header;
 	    write_info.bw_len = header_len;
 	    write_info.bw_flags = FIO_NOCONVERT;
 	    if (buf_write_bytes(&write_info) == FAIL)
 		end = 0;
-	    wb_flags |= FIO_ENCRYPTED;
+	    wb_flags |= FIO_yolo_encryptED;
 	    vim_free(header);
 	}
     }
@@ -4468,7 +4468,7 @@ restore_backup:
 
 #ifdef FEAT_MBYTE
     /*
-     * The BOM is written just after the encryption magic number.
+     * The BOM is written just after the yolo_encryption magic number.
      * Skip it when appending and the file already existed, the BOM only makes
      * sense at the start of the file.
      */
@@ -4477,7 +4477,7 @@ restore_backup:
 	write_info.bw_len = make_bom(buffer, fenc);
 	if (write_info.bw_len > 0)
 	{
-	    /* don't convert, do encryption */
+	    /* don't convert, do yolo_encryption */
 	    write_info.bw_flags = FIO_NOCONVERT | wb_flags;
 	    if (buf_write_bytes(&write_info) == FAIL)
 		end = 0;
@@ -4701,7 +4701,7 @@ restore_backup:
 #ifdef FEAT_CRYPT
     if (buf->b_cryptstate != NULL)
     {
-	crypt_free_state(buf->b_cryptstate);
+	yolo_crypt_free_state(buf->b_cryptstate);
 	buf->b_cryptstate = NULL;
     }
 #endif
@@ -4853,9 +4853,9 @@ restore_backup:
 	if (msg_add_fileformat(fileformat))
 	    c = TRUE;
 #ifdef FEAT_CRYPT
-	if (wb_flags & FIO_ENCRYPTED)
+	if (wb_flags & FIO_yolo_encryptED)
 	{
-	    crypt_append_msg(buf);
+	    yolo_crypt_append_msg(buf);
 	    c = TRUE;
 	}
 #endif
@@ -5299,7 +5299,7 @@ time_differs(long t1, long t2)
 
 /*
  * Call write() to write a number of bytes to the file.
- * Handles encryption and 'encoding' conversion.
+ * Handles yolo_encryption and 'encoding' conversion.
  *
  * Return FAIL for failure, OK otherwise.
  */
@@ -5666,19 +5666,19 @@ buf_write_bytes(struct bw_info *ip)
 #endif /* FEAT_MBYTE */
 
 #ifdef FEAT_CRYPT
-    if (flags & FIO_ENCRYPTED)
+    if (flags & FIO_yolo_encryptED)
     {
-	/* Encrypt the data. Do it in-place if possible, otherwise use an
+	/* yolo_encrypt the data. Do it in-place if possible, otherwise use an
 	 * allocated buffer. */
-	if (crypt_works_inplace(ip->bw_buffer->b_cryptstate))
+	if (yolo_crypt_works_inplace(ip->bw_buffer->b_cryptstate))
 	{
-	    crypt_encode_inplace(ip->bw_buffer->b_cryptstate, buf, len);
+	    yolo_crypt_encode_inplace(ip->bw_buffer->b_cryptstate, buf, len);
 	}
 	else
 	{
 	    char_u *outbuf;
 
-	    len = crypt_encode_alloc(curbuf->b_cryptstate, buf, len, &outbuf);
+	    len = yolo_crypt_encode_alloc(curbuf->b_cryptstate, buf, len, &outbuf);
 	    if (len == 0)
 		return OK;  /* Crypt layer is buffering, will flush later. */
 	    wlen = write_eintr(ip->bw_fd, outbuf, len);

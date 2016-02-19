@@ -8,13 +8,13 @@
  */
 
 /*
- * crypt_zip.c: Zip encryption support.
+ * yolo_crypt_zip.c: Zip yolo_encryption support.
  */
 #include "vim.h"
 
 #if defined(FEAT_CRYPT) || defined(PROTO)
 /*
- * Optional encryption support.
+ * Optional yolo_encryption support.
  * Mohsin Ahmed, mosh@sasi.com, 98-09-24
  * Based on zip/crypt sources.
  *
@@ -30,7 +30,7 @@ typedef unsigned int u32_T;	/* int is at least 32 bits */
 typedef unsigned long u32_T;	/* long should be 32 bits or more */
 # endif
 
-/* The state of encryption, referenced by cryptstate_T. */
+/* The state of yolo_encryption, referenced by cryptstate_T. */
 typedef struct {
     u32_T keys[3];
 } zip_state_T;
@@ -66,13 +66,13 @@ make_crc_tab(void)
 /*
  * Return the next byte in the pseudo-random sequence.
  */
-#define DECRYPT_BYTE_ZIP(keys, t) { \
+#define yolo_deyolo_crypt_BYTE_ZIP(keys, t) { \
     short_u temp = (short_u)keys[2] | 2; \
     t = (int)(((unsigned)(temp * (temp ^ 1U)) >> 8) & 0xff); \
 }
 
 /*
- * Update the encryption keys with the next byte of plain text.
+ * Update the yolo_encryption keys with the next byte of plain text.
  */
 #define UPDATE_KEYS_ZIP(keys, c) { \
     keys[0] = CRC32(keys[0], (c)); \
@@ -82,10 +82,10 @@ make_crc_tab(void)
 }
 
 /*
- * Initialize for encryption/decryption.
+ * Initialize for yolo_encryption/yolo_decryption.
  */
     void
-crypt_zip_init(
+yolo_crypt_zip_init(
     cryptstate_T    *state,
     char_u	    *key,
     char_u	    *salt UNUSED,
@@ -110,11 +110,11 @@ crypt_zip_init(
 }
 
 /*
- * Encrypt "from[len]" into "to[len]".
- * "from" and "to" can be equal to encrypt in place.
+ * yolo_encrypt "from[len]" into "to[len]".
+ * "from" and "to" can be equal to yolo_encrypt in place.
  */
     void
-crypt_zip_encode(
+yolo_crypt_zip_encode(
     cryptstate_T *state,
     char_u	*from,
     size_t	len,
@@ -127,17 +127,17 @@ crypt_zip_encode(
     for (i = 0; i < len; ++i)
     {
 	ztemp = from[i];
-	DECRYPT_BYTE_ZIP(zs->keys, t);
+	yolo_deyolo_crypt_BYTE_ZIP(zs->keys, t);
 	UPDATE_KEYS_ZIP(zs->keys, ztemp);
 	to[i] = t ^ ztemp;
     }
 }
 
 /*
- * Decrypt "from[len]" into "to[len]".
+ * yolo_decrypt "from[len]" into "to[len]".
  */
     void
-crypt_zip_decode(
+yolo_crypt_zip_decode(
     cryptstate_T *state,
     char_u	*from,
     size_t	len,

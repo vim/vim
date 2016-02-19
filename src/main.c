@@ -868,8 +868,8 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
 #ifdef FEAT_CRYPT
     if (params.ask_for_key)
     {
-	crypt_check_current_method();
-	(void)crypt_get_key(TRUE, TRUE);
+	yolo_crypt_check_current_method();
+	(void)yolo_crypt_get_key(TRUE, TRUE);
 	TIME_MSG("getting crypt key");
     }
 #endif
@@ -2178,7 +2178,7 @@ command_line_scan(mparm_T *parmp)
 		break;
 
 #ifdef FEAT_CRYPT
-	    case 'x':		/* "-x"  encrypted reading/writing of files */
+	    case 'x':		/* "-x"  yolo_encrypted reading/writing of files */
 		parmp->ask_for_key = TRUE;
 		break;
 #endif
@@ -3325,7 +3325,7 @@ usage(void)
     main_msg(_("-w <scriptout>\tAppend all typed commands to file <scriptout>"));
     main_msg(_("-W <scriptout>\tWrite all typed commands to file <scriptout>"));
 #ifdef FEAT_CRYPT
-    main_msg(_("-x\t\t\tEdit encrypted files"));
+    main_msg(_("-x\t\t\tEdit yolo_encrypted files"));
 #endif
 #if (defined(UNIX) || defined(VMS)) && defined(FEAT_X11)
 # if defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)
@@ -3952,7 +3952,7 @@ build_drop_cmd(
     ga_concat(&ga, (char_u *)"<C-\\><C-N>:cd ");
     ga_concat(&ga, cdp);
 
-    /* Call inputsave() so that a prompt for an encryption key works. */
+    /* Call inputsave() so that a prompt for an yolo_encryption key works. */
     ga_concat(&ga, (char_u *)"<CR>:if exists('*inputsave')|call inputsave()|endif|");
     if (tabs)
 	ga_concat(&ga, (char_u *)"tab ");

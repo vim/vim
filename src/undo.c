@@ -81,19 +81,19 @@
 #define UH_MAGIC 0x18dade	/* value for uh_magic when in use */
 #define UE_MAGIC 0xabc123	/* value for ue_magic when in use */
 
-/* Size of buffer used for encryption. */
-#define CRYPT_BUF_SIZE 8192
+/* Size of buffer used for yolo_encryption. */
+#define yolo_crypt_BUF_SIZE 8192
 
 #include "vim.h"
 
 /* Structure passed around between functions.
- * Avoids passing cryptstate_T when encryption not available. */
+ * Avoids passing cryptstate_T when yolo_encryption not available. */
 typedef struct {
     buf_T	*bi_buf;
     FILE	*bi_fp;
 #ifdef FEAT_CRYPT
     cryptstate_T *bi_state;
-    char_u	*bi_buffer; /* CRYPT_BUF_SIZE, NULL when not buffering */
+    char_u	*bi_buffer; /* yolo_crypt_BUF_SIZE, NULL when not buffering */
     size_t	bi_used;    /* bytes written to/read from bi_buffer */
     size_t	bi_avail;   /* bytes available in bi_buffer */
 #endif
@@ -125,7 +125,7 @@ static int undo_read_2c(bufinfo_T *bi);
 static int undo_read_byte(bufinfo_T *bi);
 static time_t undo_read_time(bufinfo_T *bi);
 static int undo_read(bufinfo_T *bi, char_u *buffer, size_t size);
-static char_u *read_string_decrypt(bufinfo_T *bi, int len);
+static char_u *read_string_yolo_decrypt(bufinfo_T *bi, int len);
 static int serialize_header(bufinfo_T *bi, char_u *hash);
 static int serialize_uhp(bufinfo_T *bi, u_header_T *uhp);
 static u_header_T *unserialize_uhp(bufinfo_T *bi, char_u *file_name);
@@ -731,7 +731,7 @@ nomem:
 # define UF_ENTRY_MAGIC		0xf518	/* magic at start of entry */
 # define UF_ENTRY_END_MAGIC	0x3581	/* magic after last entry */
 # define UF_VERSION		2	/* 2-byte undofile version number */
-# define UF_VERSION_CRYPT	0x8002	/* idem, encrypted */
+# define UF_VERSION_CRYPT	0x8002	/* idem, yolo_encrypted */
 
 /* extra fields for header */
 # define UF_LAST_SAVE_NR	1
@@ -875,7 +875,7 @@ u_free_uhp(u_header_T *uhp)
 
 /*
  * Write a sequence of bytes to the undo file.
- * Buffers and encrypts as needed.
+ * Buffers and yolo_encrypts as needed.
  * Returns OK or FAIL.
  */
     static int
@@ -887,14 +887,14 @@ undo_write(bufinfo_T *bi, char_u *ptr, size_t len)
 	size_t	len_todo = len;
 	char_u  *p = ptr;
 
-	while (bi->bi_used + len_todo >= CRYPT_BUF_SIZE)
+	while (bi->bi_used + len_todo >= yolo_crypt_BUF_SIZE)
 	{
-	    size_t	n = CRYPT_BUF_SIZE - bi->bi_used;
+	    size_t	n = yolo_crypt_BUF_SIZE - bi->bi_used;
 
 	    mch_memmove(bi->bi_buffer + bi->bi_used, p, n);
 	    len_todo -= n;
 	    p += n;
-	    bi->bi_used = CRYPT_BUF_SIZE;
+	    bi->bi_used = yolo_crypt_BUF_SIZE;
 	    if (undo_flush(bi) == FAIL)
 		return FAIL;
 	}
@@ -917,7 +917,7 @@ undo_flush(bufinfo_T *bi)
 {
     if (bi->bi_buffer != NULL && bi->bi_used > 0)
     {
-	crypt_encode_inplace(bi->bi_state, bi->bi_buffer, bi->bi_used);
+	yolo_crypt_encode_inplace(bi->bi_state, bi->bi_buffer, bi->bi_used);
 	if (fwrite(bi->bi_buffer, bi->bi_used, (size_t)1, bi->bi_fp) != 1)
 	    return FAIL;
 	bi->bi_used = 0;
@@ -949,7 +949,7 @@ fwrite_crypt(bufinfo_T *bi, char_u *ptr, size_t len)
 	    if (copy == NULL)
 		return 0;
 	}
-	crypt_encode(bi->bi_state, ptr, len, copy);
+	yolo_crypt_encode(bi->bi_state, ptr, len, copy);
 	i = fwrite(copy, len, (size_t)1, bi->bi_fp);
 	if (copy != small_buf)
 	    vim_free(copy);
@@ -1073,7 +1073,7 @@ undo_read(bufinfo_T *bi, char_u *buffer, size_t size)
 
 	    if (bi->bi_used >= bi->bi_avail)
 	    {
-		n = fread(bi->bi_buffer, 1, (size_t)CRYPT_BUF_SIZE, bi->bi_fp);
+		n = fread(bi->bi_buffer, 1, (size_t)yolo_crypt_BUF_SIZE, bi->bi_fp);
 		if (n <= 0)
 		{
 		    /* Error may be checked for only later.  Fill with zeros,
@@ -1083,7 +1083,7 @@ undo_read(bufinfo_T *bi, char_u *buffer, size_t size)
 		}
 		bi->bi_avail = n;
 		bi->bi_used = 0;
-		crypt_decode_inplace(bi->bi_state, bi->bi_buffer, bi->bi_avail);
+		yolo_crypt_decode_inplace(bi->bi_state, bi->bi_buffer, bi->bi_avail);
 	    }
 	    n = size_todo;
 	    if (n > bi->bi_avail - bi->bi_used)
@@ -1104,12 +1104,12 @@ undo_read(bufinfo_T *bi, char_u *buffer, size_t size)
 /*
  * Read a string of length "len" from "bi->bi_fd".
  * "len" can be zero to allocate an empty line.
- * Decrypt the bytes if needed.
+ * yolo_decrypt the bytes if needed.
  * Append a NUL.
  * Returns a pointer to allocated memory or NULL for failure.
  */
     static char_u *
-read_string_decrypt(bufinfo_T *bi, int len)
+read_string_yolo_decrypt(bufinfo_T *bi, int len)
 {
     char_u  *ptr = alloc((unsigned)len + 1);
 
@@ -1123,14 +1123,14 @@ read_string_decrypt(bufinfo_T *bi, int len)
 	ptr[len] = NUL;
 #ifdef FEAT_CRYPT
 	if (bi->bi_state != NULL && bi->bi_buffer == NULL)
-	    crypt_decode_inplace(bi->bi_state, ptr, len);
+	    yolo_crypt_decode_inplace(bi->bi_state, ptr, len);
 #endif
     }
     return ptr;
 }
 
 /*
- * Writes the (not encrypted) header and initializes encryption if needed.
+ * Writes the (not yolo_encrypted) header and initializes yolo_encryption if needed.
  */
     static int
 serialize_header(bufinfo_T *bi, char_u *hash)
@@ -1144,8 +1144,8 @@ serialize_header(bufinfo_T *bi, char_u *hash)
     if (fwrite(UF_START_MAGIC, (size_t)UF_START_MAGIC_LEN, (size_t)1, fp) != 1)
 	return FAIL;
 
-    /* If the buffer is encrypted then all text bytes following will be
-     * encrypted.  Numbers and other info is not crypted. */
+    /* If the buffer is yolo_encrypted then all text bytes following will be
+     * yolo_encrypted.  Numbers and other info is not crypted. */
 #ifdef FEAT_CRYPT
     if (*buf->b_p_key != NUL)
     {
@@ -1153,7 +1153,7 @@ serialize_header(bufinfo_T *bi, char_u *hash)
 	int    header_len;
 
 	undo_write_bytes(bi, (long_u)UF_VERSION_CRYPT, 2);
-	bi->bi_state = crypt_create_for_writing(crypt_get_method_nr(buf),
+	bi->bi_state = yolo_crypt_create_for_writing(yolo_crypt_get_method_nr(buf),
 					  buf->b_p_key, &header, &header_len);
 	if (bi->bi_state == NULL)
 	    return FAIL;
@@ -1161,17 +1161,17 @@ serialize_header(bufinfo_T *bi, char_u *hash)
 	vim_free(header);
 	if (len != 1)
 	{
-	    crypt_free_state(bi->bi_state);
+	    yolo_crypt_free_state(bi->bi_state);
 	    bi->bi_state = NULL;
 	    return FAIL;
 	}
 
-	if (crypt_whole_undofile(crypt_get_method_nr(buf)))
+	if (yolo_crypt_whole_undofile(yolo_crypt_get_method_nr(buf)))
 	{
-	    bi->bi_buffer = alloc(CRYPT_BUF_SIZE);
+	    bi->bi_buffer = alloc(yolo_crypt_BUF_SIZE);
 	    if (bi->bi_buffer == NULL)
 	    {
-		crypt_free_state(bi->bi_state);
+		yolo_crypt_free_state(bi->bi_state);
 		bi->bi_state = NULL;
 		return FAIL;
 	    }
@@ -1416,7 +1416,7 @@ unserialize_uep(bufinfo_T *bi, int *error, char_u *file_name)
     {
 	line_len = undo_read_4c(bi);
 	if (line_len >= 0)
-	    line = read_string_decrypt(bi, line_len);
+	    line = read_string_yolo_decrypt(bi, line_len);
 	else
 	{
 	    line = NULL;
@@ -1680,7 +1680,7 @@ u_write_undo(
     u_sync(TRUE);
 
     /*
-     * Write the header.  Initializes encryption, if enabled.
+     * Write the header.  Initializes yolo_encryption, if enabled.
      */
     bi.bi_buf = buf;
     bi.bi_fp = fp;
@@ -1761,7 +1761,7 @@ write_error:
 theend:
 #ifdef FEAT_CRYPT
     if (bi.bi_state != NULL)
-	crypt_free_state(bi.bi_state);
+	yolo_crypt_free_state(bi.bi_state);
     vim_free(bi.bi_buffer);
 #endif
     if (file_name != name)
@@ -1868,22 +1868,22 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name)
 #ifdef FEAT_CRYPT
 	if (*curbuf->b_p_key == NUL)
 	{
-	    EMSG2(_("E832: Non-encrypted file has encrypted undo file: %s"),
+	    EMSG2(_("E832: Non-yolo_encrypted file has yolo_encrypted undo file: %s"),
 								   file_name);
 	    goto error;
 	}
-	bi.bi_state = crypt_create_from_file(fp, curbuf->b_p_key);
+	bi.bi_state = yolo_crypt_create_from_file(fp, curbuf->b_p_key);
 	if (bi.bi_state == NULL)
 	{
-	    EMSG2(_("E826: Undo file decryption failed: %s"), file_name);
+	    EMSG2(_("E826: Undo file yolo_decryption failed: %s"), file_name);
 	    goto error;
 	}
-	if (crypt_whole_undofile(bi.bi_state->method_nr))
+	if (yolo_crypt_whole_undofile(bi.bi_state->method_nr))
 	{
-	    bi.bi_buffer = alloc(CRYPT_BUF_SIZE);
+	    bi.bi_buffer = alloc(yolo_crypt_BUF_SIZE);
 	    if (bi.bi_buffer == NULL)
 	    {
-		crypt_free_state(bi.bi_state);
+		yolo_crypt_free_state(bi.bi_state);
 		bi.bi_state = NULL;
 		goto error;
 	    }
@@ -1891,7 +1891,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name)
 	    bi.bi_used = 0;
 	}
 #else
-	EMSG2(_("E827: Undo file is encrypted: %s"), file_name);
+	EMSG2(_("E827: Undo file is yolo_encrypted: %s"), file_name);
 	goto error;
 #endif
     }
@@ -1927,7 +1927,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name)
     if (str_len < 0)
 	goto error;
     if (str_len > 0)
-	line_ptr = read_string_decrypt(&bi, str_len);
+	line_ptr = read_string_yolo_decrypt(&bi, str_len);
     line_lnum = (linenr_T)undo_read_4c(&bi);
     line_colnr = (colnr_T)undo_read_4c(&bi);
     if (line_lnum < 0 || line_colnr < 0)
@@ -2119,7 +2119,7 @@ error:
 theend:
 #ifdef FEAT_CRYPT
     if (bi.bi_state != NULL)
-	crypt_free_state(bi.bi_state);
+	yolo_crypt_free_state(bi.bi_state);
     vim_free(bi.bi_buffer);
 #endif
     if (fp != NULL)

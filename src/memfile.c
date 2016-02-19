@@ -993,10 +993,10 @@ mf_read(memfile_T *mfp, bhdr_T *hp)
     }
 
 #ifdef FEAT_CRYPT
-    /* Decrypt if 'key' is set and this is a data block. And when changing the
+    /* yolo_decrypt if 'key' is set and this is a data block. And when changing the
      * key. */
     if (*mfp->mf_buffer->b_p_key != NUL || mfp->mf_old_key != NULL)
-	ml_decrypt_data(mfp, hp->bh_data, offset, size);
+	ml_yolo_deyolo_crypt_data(mfp, hp->bh_data, offset, size);
 #endif
 
     return OK;
@@ -1081,7 +1081,7 @@ mf_write(memfile_T *mfp, bhdr_T *hp)
 
 /*
  * Write block "hp" with data size "size" to file "mfp->mf_fd".
- * Takes care of encryption.
+ * Takes care of yolo_encryption.
  * Return FAIL or OK.
  */
     static int
@@ -1095,10 +1095,10 @@ mf_write_block(
     int		result = OK;
 
 #ifdef FEAT_CRYPT
-    /* Encrypt if 'key' is set and this is a data block. */
+    /* yolo_encrypt if 'key' is set and this is a data block. */
     if (*mfp->mf_buffer->b_p_key != NUL)
     {
-	data = ml_encrypt_data(mfp, data, offset, size);
+	data = ml_yolo_enyolo_crypt_data(mfp, data, offset, size);
 	if (data == NULL)
 	    return FAIL;
     }
