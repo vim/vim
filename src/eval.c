@@ -14635,14 +14635,14 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
 		ga_concat(&ga, (char_u *)"  ");
 	    ga_concat(&ga, (char_u *)argv[i]);
 	}
-	ch_logs(NULL, "Starting job: %s", ga.ga_data);
+	ch_logs(NULL, "Starting job: %s", (char *)ga.ga_data);
 	ga_clear(&ga);
     }
 # endif
     mch_start_job(argv, job, &options);
 #else
 # ifdef FEAT_CHANNEL
-    ch_logs(NULL, "Starting job: %s", cmd);
+    ch_logs(NULL, "Starting job: %s", (char *)cmd);
 # endif
     mch_start_job((char *)cmd, job, &options);
 #endif

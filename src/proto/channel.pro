@@ -30,6 +30,7 @@ void channel_read(channel_T *channel, int which, char *func);
 char_u *channel_read_block(channel_T *channel);
 int channel_read_json_block(channel_T *channel, int id, typval_T **rettv);
 channel_T *channel_fd2channel(sock_T fd, int *whichp);
+void channel_handle_events(void);
 int channel_send(channel_T *channel, char_u *buf, char *fun);
 int channel_poll_setup(int nfd_in, void *fds_in);
 int channel_poll_check(int ret_in, void *fds_in);
