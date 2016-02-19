@@ -9886,6 +9886,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
     int		todo;
     hashitem_T	*hi;
 
+    opt->jo_set = 0;
     if (tv->v_type == VAR_UNKNOWN)
 	return OK;
     if (tv->v_type != VAR_DICT)
