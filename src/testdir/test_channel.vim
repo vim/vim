@@ -144,6 +144,12 @@ func s:communicate(port)
   endif
   call assert_equal('got it', s:responseMsg)
 
+  " check setting options (without testing the effect)
+  call ch_setoptions(handle, {'callback': 's:NotUsed'})
+  call ch_setoptions(handle, {'timeout': 111})
+  call assert_fails("call ch_setoptions(handle, {'waittime': 111})", "E475")
+  call assert_fails("call ch_setoptions(handle, {'mode': 'json'})", "E475")
+
   " Send an eval request that works.
   call assert_equal('ok', ch_sendexpr(handle, 'eval-works'))
   sleep 10m

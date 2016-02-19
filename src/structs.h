@@ -1372,13 +1372,23 @@ struct channel_S {
     int		ch_refcount;	/* reference count */
 };
 
+#define JO_MODE		1
+#define JO_CALLBACK	2
+#define JO_WAITTIME	4
+#define JO_TIMEOUT	8
+#define JO_ALL		0xffffff
+
 /*
  * Options for job and channel commands.
  */
 typedef struct
 {
-    ch_mode_T	jo_mode;	/* "mode" */
-    char_u	*jo_callback;	/* "callback", not allocated! */
+    int		jo_set;		/* JO_ bits for values that were set */
+
+    ch_mode_T	jo_mode;
+    char_u	*jo_callback;	/* not allocated! */
+    int		jo_waittime;
+    int		jo_timeout;
 } jobopt_T;
 
 

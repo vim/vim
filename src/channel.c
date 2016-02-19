@@ -749,24 +749,6 @@ channel_set_job(channel_T *channel, job_T *job)
 }
 
 /*
- * Set the mode of channel "channel" to "mode".
- */
-    void
-channel_set_mode(channel_T *channel, ch_mode_T mode)
-{
-    channel->ch_mode = mode;
-}
-
-/*
- * Set the read timeout of channel "channel".
- */
-    void
-channel_set_timeout(channel_T *channel, int timeout)
-{
-    channel->ch_timeout = timeout;
-}
-
-/*
  * Set the callback for channel "channel".
  */
     void
@@ -782,9 +764,13 @@ channel_set_callback(channel_T *channel, char_u *callback)
     void
 channel_set_options(channel_T *channel, jobopt_T *options)
 {
-    channel_set_mode(channel, options->jo_mode);
+    if (options->jo_set & JO_MODE)
+	channel->ch_mode = options->jo_mode;
+    if (options->jo_set & JO_TIMEOUT)
+	channel->ch_timeout = options->jo_timeout;
 
-    if (options->jo_callback != NULL && *options->jo_callback != NUL)
+    if ((options->jo_set & JO_CALLBACK)
+	    && options->jo_callback != NULL && *options->jo_callback != NUL)
 	channel_set_callback(channel, options->jo_callback);
 }
 

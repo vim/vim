@@ -510,6 +510,7 @@ static void f_ch_open(typval_T *argvars, typval_T *rettv);
 static void f_ch_readraw(typval_T *argvars, typval_T *rettv);
 static void f_ch_sendexpr(typval_T *argvars, typval_T *rettv);
 static void f_ch_sendraw(typval_T *argvars, typval_T *rettv);
+static void f_ch_setoptions(typval_T *argvars, typval_T *rettv);
 static void f_ch_status(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_changenr(typval_T *argvars, typval_T *rettv);
@@ -8131,6 +8132,7 @@ static struct fst
     {"ch_readraw",	1, 2, f_ch_readraw},
     {"ch_sendexpr",	2, 3, f_ch_sendexpr},
     {"ch_sendraw",	2, 3, f_ch_sendraw},
+    {"ch_setoptions",	2, 2, f_ch_setoptions},
     {"ch_status",	1, 1, f_ch_status},
 #endif
     {"changenr",	0, 0, f_changenr},
@@ -9870,44 +9872,91 @@ get_callback(typval_T *arg)
 }
 
 /*
- * Get the option entries from "dict", and parse them.
+ * Get the option entries from the dict in "tv", parse them and put the result
+ * in "opt".
+ * Only accept options in "supported".
  * If an option value is invalid return FAIL.
  */
     static int
-get_job_options(dict_T *dict, jobopt_T *opt)
+get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 {
-    dictitem_T	*item;
+    typval_T	*item;
     char_u	*mode;
+    dict_T	*dict;
+    int		todo;
+    hashitem_T	*hi;
 
+    if (tv->v_type == VAR_UNKNOWN)
+	return OK;
+    if (tv->v_type != VAR_DICT)
+    {
+	EMSG(_(e_invarg));
+	return FAIL;
+    }
+    dict = tv->vval.v_dict;
     if (dict == NULL)
 	return OK;
 
-    if ((item = dict_find(dict, (char_u *)"mode", -1)) != NULL)
-    {
-	mode = get_tv_string(&item->di_tv);
-	if (STRCMP(mode, "nl") == 0)
-	    opt->jo_mode = MODE_NL;
-	else if (STRCMP(mode, "raw") == 0)
-	    opt->jo_mode = MODE_RAW;
-	else if (STRCMP(mode, "js") == 0)
-	    opt->jo_mode = MODE_JS;
-	else if (STRCMP(mode, "json") == 0)
-	    opt->jo_mode = MODE_JSON;
-	else
+    todo = (int)dict->dv_hashtab.ht_used;
+    for (hi = dict->dv_hashtab.ht_array; todo > 0; ++hi)
+	if (!HASHITEM_EMPTY(hi))
 	{
-	    EMSG2(_(e_invarg2), mode);
-	    return FAIL;
-	}
-    }
+	    item = &HI2DI(hi)->di_tv;
 
-    if ((item = dict_find(dict, (char_u *)"callback", -1)) != NULL)
-    {
-	opt->jo_callback = get_callback(&item->di_tv);
-	if (opt->jo_callback == NULL)
-	{
-	    EMSG2(_(e_invarg2), "callback");
-	    return FAIL;
+	    if (STRCMP(hi->hi_key, "mode") == 0)
+	    {
+		if (!(supported & JO_MODE))
+		    break;
+		opt->jo_set |= JO_MODE;
+		mode = get_tv_string(item);
+		if (STRCMP(mode, "nl") == 0)
+		    opt->jo_mode = MODE_NL;
+		else if (STRCMP(mode, "raw") == 0)
+		    opt->jo_mode = MODE_RAW;
+		else if (STRCMP(mode, "js") == 0)
+		    opt->jo_mode = MODE_JS;
+		else if (STRCMP(mode, "json") == 0)
+		    opt->jo_mode = MODE_JSON;
+		else
+		{
+		    EMSG2(_(e_invarg2), mode);
+		    return FAIL;
+		}
+	    }
+	    else if (STRCMP(hi->hi_key, "callback") == 0)
+	    {
+		if (!(supported & JO_CALLBACK))
+		    break;
+		opt->jo_set |= JO_CALLBACK;
+		opt->jo_callback = get_callback(item);
+		if (opt->jo_callback == NULL)
+		{
+		    EMSG2(_(e_invarg2), "callback");
+		    return FAIL;
+		}
+	    }
+	    else if (STRCMP(hi->hi_key, "waittime") == 0)
+	    {
+		if (!(supported & JO_WAITTIME))
+		    break;
+		opt->jo_set |= JO_WAITTIME;
+		opt->jo_waittime = get_tv_number(item);
+	    }
+	    else if (STRCMP(hi->hi_key, "timeout") == 0)
+	    {
+		if (!(supported & JO_TIMEOUT))
+		    break;
+		opt->jo_set |= JO_TIMEOUT;
+		opt->jo_timeout = get_tv_number(item);
+	    }
+	    else
+		break;
+	    --todo;
 	}
+    if (todo > 0)
+    {
+	EMSG2(_(e_invarg2), hi->hi_key);
+	return FAIL;
     }
 
     return OK;
@@ -10002,9 +10051,7 @@ f_ch_open(typval_T *argvars, typval_T *rettv)
     char_u	*p;
     char	*rest;
     int		port;
-    int		waittime = 0;
-    int		timeout = 2000;
-    jobopt_T    options;
+    jobopt_T    opt;
     channel_T	*channel;
 
     /* default: fail */
@@ -10035,33 +10082,26 @@ f_ch_open(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
-    options.jo_mode = MODE_JSON;
-    options.jo_callback = NULL;
-    if (argvars[1].v_type == VAR_DICT)
-    {
-	dict_T	    *dict = argvars[1].vval.v_dict;
-	dictitem_T  *item;
-
-	/* parse argdict */
-	if (get_job_options(dict, &options) == FAIL)
-	    return;
-	if ((item = dict_find(dict, (char_u *)"waittime", -1)) != NULL)
-	    waittime = get_tv_number(&item->di_tv);
-	if ((item = dict_find(dict, (char_u *)"timeout", -1)) != NULL)
-	    timeout = get_tv_number(&item->di_tv);
-    }
-    if (timeout < 0)
+    /* parse options */
+    opt.jo_mode = MODE_JSON;
+    opt.jo_callback = NULL;
+    opt.jo_waittime = 0;
+    opt.jo_timeout = 2000;
+    if (get_job_options(&argvars[1], &opt,
+		JO_MODE + JO_CALLBACK + JO_WAITTIME + JO_TIMEOUT) == FAIL)
+	return;
+    if (opt.jo_timeout < 0)
     {
 	EMSG(_(e_invarg));
 	return;
     }
 
-    channel = channel_open((char *)address, port, waittime, NULL);
+    channel = channel_open((char *)address, port, opt.jo_waittime, NULL);
     if (channel != NULL)
     {
 	rettv->vval.v_channel = channel;
-	channel_set_options(channel, &options);
-	channel_set_timeout(channel, timeout);
+	opt.jo_set = JO_ALL;
+	channel_set_options(channel, &opt);
     }
 }
 
@@ -10077,28 +10117,11 @@ f_ch_readraw(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
+    /* TODO: use timeout from the options */
+
     channel = get_channel_arg(&argvars[0]);
     if (channel != NULL)
 	rettv->vval.v_string = channel_read_block(channel);
-}
-
-/*
- * "ch_status()" function
- */
-    static void
-f_ch_status(typval_T *argvars, typval_T *rettv)
-{
-    /* return an empty string by default */
-    rettv->v_type = VAR_STRING;
-
-    if (argvars[0].v_type != VAR_CHANNEL)
-    {
-	EMSG2(_(e_invarg2), get_tv_string(&argvars[0]));
-	rettv->vval.v_string = NULL;
-    }
-    else
-	rettv->vval.v_string = vim_strsave(
-			 (char_u *)channel_status(argvars[0].vval.v_channel));
 }
 
 /*
@@ -10110,31 +10133,22 @@ f_ch_status(typval_T *argvars, typval_T *rettv)
 send_common(typval_T *argvars, char_u *text, int id, char *fun)
 {
     channel_T	*channel;
-    char_u	*callback = NULL;
-    jobopt_T	options;
+    jobopt_T	opt;
 
     channel = get_channel_arg(&argvars[0]);
     if (channel == NULL)
 	return NULL;
 
-    if (argvars[2].v_type != VAR_UNKNOWN)
-    {
-	if (argvars[2].v_type != VAR_DICT)
-	{
-	    EMSG(_(e_invarg));
-	    return NULL;
-	}
-	options.jo_callback = NULL;
-	if (get_job_options(argvars[2].vval.v_dict, &options) == FAIL)
-	    return NULL;
-	callback = options.jo_callback;
-    }
+    opt.jo_callback = NULL;
+    if (get_job_options(&argvars[2], &opt, JO_CALLBACK) == FAIL)
+	return NULL;
+
     /* Set the callback. An empty callback means no callback and not reading
      * the response. */
-    if (callback != NULL && *callback != NUL)
-	channel_set_req_callback(channel, callback, id);
+    if (opt.jo_callback != NULL && *opt.jo_callback != NUL)
+	channel_set_req_callback(channel, opt.jo_callback, id);
 
-    if (channel_send(channel, text, fun) == OK && callback == NULL)
+    if (channel_send(channel, text, fun) == OK && opt.jo_callback == NULL)
 	return channel;
     return NULL;
 }
@@ -10207,6 +10221,42 @@ f_ch_sendraw(typval_T *argvars, typval_T *rettv)
     channel = send_common(argvars, text, 0, "sendraw");
     if (channel != NULL)
 	rettv->vval.v_string = channel_read_block(channel);
+}
+
+/*
+ * "ch_setoptions()" function
+ */
+    static void
+f_ch_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    channel_T	*channel;
+    jobopt_T	opt;
+
+    channel = get_channel_arg(&argvars[0]);
+    if (channel == NULL)
+	return;
+    if (get_job_options(&argvars[1], &opt, JO_CALLBACK + JO_TIMEOUT) == FAIL)
+	return NULL;
+    channel_set_options(channel, &opt);
+}
+
+/*
+ * "ch_status()" function
+ */
+    static void
+f_ch_status(typval_T *argvars, typval_T *rettv)
+{
+    /* return an empty string by default */
+    rettv->v_type = VAR_STRING;
+
+    if (argvars[0].v_type != VAR_CHANNEL)
+    {
+	EMSG2(_(e_invarg2), get_tv_string(&argvars[0]));
+	rettv->vval.v_string = NULL;
+    }
+    else
+	rettv->vval.v_string = vim_strsave(
+			 (char_u *)channel_status(argvars[0].vval.v_channel));
 }
 #endif
 
@@ -14535,7 +14585,7 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
 #else
     garray_T	ga;
 #endif
-    jobopt_T	options;
+    jobopt_T	opt;
 
     rettv->v_type = VAR_JOB;
     job = job_alloc();
@@ -14546,18 +14596,10 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_job->jv_status = JOB_FAILED;
 
     /* Default mode is NL. */
-    options.jo_mode = MODE_NL;
-    options.jo_callback = NULL;
-    if (argvars[1].v_type != VAR_UNKNOWN)
-    {
-	if (argvars[1].v_type != VAR_DICT)
-	{
-	    EMSG(_(e_invarg));
-	    return;
-	}
-	if (get_job_options(argvars[1].vval.v_dict, &options) == FAIL)
-	    return;
-    }
+    opt.jo_mode = MODE_NL;
+    opt.jo_callback = NULL;
+    if (get_job_options(&argvars[1], &opt, JO_MODE + JO_CALLBACK) == FAIL)
+	return;
 
 #ifndef USE_ARGV
     ga_init2(&ga, (int)sizeof(char*), 20);
@@ -14639,12 +14681,12 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
 	ga_clear(&ga);
     }
 # endif
-    mch_start_job(argv, job, &options);
+    mch_start_job(argv, job, &opt);
 #else
 # ifdef FEAT_CHANNEL
     ch_logs(NULL, "Starting job: %s", (char *)cmd);
 # endif
-    mch_start_job((char *)cmd, job, &options);
+    mch_start_job((char *)cmd, job, &opt);
 #endif
 
 theend:
