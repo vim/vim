@@ -538,12 +538,11 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
     }
     memcpy((char *)&server.sin_addr, host->h_addr, host->h_length);
 
-#if defined(__APPLE__) && __APPLE__ == 1
-    /* On Mac a zero timeout almost never works.  At least wait one
-     * millisecond. */
+    /* On Mac and Solaris a zero timeout almost never works.  At least wait
+     * one millisecond. Let's do it for all systems, because we don't know why
+     * this is needed. */
     if (waittime == 0)
 	waittime = 1;
-#endif
 
     /*
      * For Unix we need to call connect() again after connect() failed.
