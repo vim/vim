@@ -10,7 +10,6 @@ void channel_gui_register_all(void);
 channel_T *channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void));
 void channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err);
 void channel_set_job(channel_T *channel, job_T *job);
-void channel_set_callback(channel_T *channel, char_u *callback);
 void channel_set_options(channel_T *channel, jobopt_T *options);
 void channel_set_req_callback(channel_T *channel, char_u *callback, int id);
 char_u *channel_get(channel_T *channel);

@@ -749,16 +749,6 @@ channel_set_job(channel_T *channel, job_T *job)
 }
 
 /*
- * Set the callback for channel "channel".
- */
-    void
-channel_set_callback(channel_T *channel, char_u *callback)
-{
-    vim_free(channel->ch_callback);
-    channel->ch_callback = vim_strsave(callback);
-}
-
-/*
  * Set various properties from an "options" argument.
  */
     void
@@ -769,9 +759,14 @@ channel_set_options(channel_T *channel, jobopt_T *options)
     if (options->jo_set & JO_TIMEOUT)
 	channel->ch_timeout = options->jo_timeout;
 
-    if ((options->jo_set & JO_CALLBACK)
-	    && options->jo_callback != NULL && *options->jo_callback != NUL)
-	channel_set_callback(channel, options->jo_callback);
+    if (options->jo_set & JO_CALLBACK)
+    {
+	vim_free(channel->ch_callback);
+	if (options->jo_callback != NULL && *options->jo_callback != NUL)
+	    channel->ch_callback = vim_strsave(options->jo_callback);
+	else
+	    channel->ch_callback = NULL;
+    }
 }
 
 /*
