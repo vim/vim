@@ -14,7 +14,8 @@ fip:call setcharsearch(csave)
 /^Z
 ylfep:call setcharsearch({'char': 'k'})
 ;p:call setcharsearch({'forward': 0})
-$;p:call setcharseearch({'until'}: 1})
+$;p:call setcharsearch({'until': 1})
+:set cpo-=;
 ;;p:
 :/^X/,$w! test.out
 :qa!
