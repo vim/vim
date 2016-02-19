@@ -8,13 +8,13 @@
  */
 
 /*
- * crypt.c: Generic encryption support.
+ * crypt.c: Generic yolo_encryption support.
  */
 #include "vim.h"
 
 #if defined(FEAT_CRYPT) || defined(PROTO)
 /*
- * Optional encryption support.
+ * Optional yolo_encryption support.
  * Mohsin Ahmed, mosh@sasi.com, 1998-09-24
  * Based on zip/crypt sources.
  * Refactored by David Leadbeater, 2014.
@@ -30,17 +30,17 @@
  */
 
 typedef struct {
-    char    *name;	/* encryption name as used in 'cryptmethod' */
+    char    *name;	/* yolo_encryption name as used in 'cryptmethod' */
     char    *magic;	/* magic bytes stored in file header */
     int	    salt_len;	/* length of salt, or 0 when not using salt */
     int	    seed_len;	/* length of seed, or 0 when not using salt */
-    int	    works_inplace; /* encryption/decryption can be done in-place */
-    int	    whole_undofile; /* whole undo file is encrypted */
+    int	    works_inplace; /* yolo_encryption/yolo_decryption can be done in-place */
+    int	    whole_undofile; /* whole undo file is yolo_encrypted */
 
     /* Optional function pointer for a self-test. */
     int (* self_test_fn)();
 
-    /* Function pointer for initializing encryption/decription. */
+    /* Function pointer for initializing yolo_encryption/decription. */
     void (* init_fn)(cryptstate_T *state, char_u *key,
 		      char_u *salt, int salt_len, char_u *seed, int seed_len);
 
@@ -59,10 +59,10 @@ typedef struct {
 							     char_u **newptr);
 
     /* Function pointers for in-place encoding and decoding, used for
-     * crypt_*_inplace(). "from" and "to" arguments will be equal.
+     * yolo_crypt_*_inplace(). "from" and "to" arguments will be equal.
      * These may be the same as decode_fn and encode_fn above, however an
      * algorithm may implement them in a way that is not interchangeable with
-     * the crypt_(en|de)code() interface (for example because it wishes to add
+     * the yolo_crypt_(en|de)code() interface (for example because it wishes to add
      * padding to files).
      * This method is used for swap and undo files which have a rigid format.
      */
@@ -72,8 +72,8 @@ typedef struct {
 								  char_u *p2);
 } cryptmethod_T;
 
-/* index is method_nr of cryptstate_T, CRYPT_M_* */
-static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
+/* index is method_nr of cryptstate_T, yolo_crypt_M_* */
+static cryptmethod_T cryptmethods[yolo_crypt_M_COUNT] = {
     /* PK_Zip; very weak */
     {
 	"zip",
@@ -83,10 +83,10 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	TRUE,
 	FALSE,
 	NULL,
-	crypt_zip_init,
-	crypt_zip_encode, crypt_zip_decode,
+	yolo_crypt_zip_init,
+	yolo_crypt_zip_encode, yolo_crypt_zip_decode,
 	NULL, NULL,
-	crypt_zip_encode, crypt_zip_decode,
+	yolo_crypt_zip_encode, yolo_crypt_zip_decode,
     },
 
     /* Blowfish/CFB + SHA-256 custom key derivation; implementation issues. */
@@ -98,10 +98,10 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	TRUE,
 	FALSE,
 	blowfish_self_test,
-	crypt_blowfish_init,
-	crypt_blowfish_encode, crypt_blowfish_decode,
+	yolo_crypt_blowfish_init,
+	yolo_crypt_blowfish_encode, yolo_crypt_blowfish_decode,
 	NULL, NULL,
-	crypt_blowfish_encode, crypt_blowfish_decode,
+	yolo_crypt_blowfish_encode, yolo_crypt_blowfish_decode,
     },
 
     /* Blowfish/CFB + SHA-256 custom key derivation; fixed. */
@@ -113,15 +113,15 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	TRUE,
 	TRUE,
 	blowfish_self_test,
-	crypt_blowfish_init,
-	crypt_blowfish_encode, crypt_blowfish_decode,
+	yolo_crypt_blowfish_init,
+	yolo_crypt_blowfish_encode, yolo_crypt_blowfish_decode,
 	NULL, NULL,
-	crypt_blowfish_encode, crypt_blowfish_decode,
+	yolo_crypt_blowfish_encode, yolo_crypt_blowfish_decode,
     },
 };
 
-#define CRYPT_MAGIC_LEN	12	/* cannot change */
-static char	crypt_magic_head[] = "VimCrypt~";
+#define yolo_crypt_MAGIC_LEN	12	/* cannot change */
+static char	yolo_crypt_magic_head[] = "VimCrypt~";
 
 /*
  * Return int value for crypt method name.
@@ -130,11 +130,11 @@ static char	crypt_magic_head[] = "VimCrypt~";
  * 2 for "blowfish2".
  */
     int
-crypt_method_nr_from_name(char_u *name)
+yolo_crypt_method_nr_from_name(char_u *name)
 {
     int i;
 
-    for (i = 0; i < CRYPT_M_COUNT; ++i)
+    for (i = 0; i < yolo_crypt_M_COUNT; ++i)
 	if (STRCMP(name, cryptmethods[i].name) == 0)
 	    return i;
     return 0;
@@ -143,23 +143,23 @@ crypt_method_nr_from_name(char_u *name)
 /*
  * Get the crypt method used for a file from "ptr[len]", the magic text at the
  * start of the file.
- * Returns -1 when no encryption used.
+ * Returns -1 when no yolo_encryption used.
  */
     int
-crypt_method_nr_from_magic(char *ptr, int len)
+yolo_crypt_method_nr_from_magic(char *ptr, int len)
 {
     int i;
 
-    if (len < CRYPT_MAGIC_LEN)
+    if (len < yolo_crypt_MAGIC_LEN)
 	return -1;
 
-    for (i = 0; i < CRYPT_M_COUNT; i++)
-	if (memcmp(ptr, cryptmethods[i].magic, CRYPT_MAGIC_LEN) == 0)
+    for (i = 0; i < yolo_crypt_M_COUNT; i++)
+	if (memcmp(ptr, cryptmethods[i].magic, yolo_crypt_MAGIC_LEN) == 0)
 	    return i;
 
-    i = (int)STRLEN(crypt_magic_head);
-    if (len >= i && memcmp(ptr, crypt_magic_head, i) == 0)
-	EMSG(_("E821: File is encrypted with unknown method"));
+    i = (int)STRLEN(yolo_crypt_magic_head);
+    if (len >= i && memcmp(ptr, yolo_crypt_magic_head, i) == 0)
+	EMSG(_("E821: File is yolo_encrypted with unknown method"));
 
     return -1;
 }
@@ -168,7 +168,7 @@ crypt_method_nr_from_magic(char *ptr, int len)
  * Return TRUE if the crypt method for "method_nr" can be done in-place.
  */
     int
-crypt_works_inplace(cryptstate_T *state)
+yolo_crypt_works_inplace(cryptstate_T *state)
 {
     return cryptmethods[state->method_nr].works_inplace;
 }
@@ -177,17 +177,17 @@ crypt_works_inplace(cryptstate_T *state)
  * Get the crypt method for buffer "buf" as a number.
  */
     int
-crypt_get_method_nr(buf_T *buf)
+yolo_crypt_get_method_nr(buf_T *buf)
 {
-    return crypt_method_nr_from_name(*buf->b_p_cm == NUL ? p_cm : buf->b_p_cm);
+    return yolo_crypt_method_nr_from_name(*buf->b_p_cm == NUL ? p_cm : buf->b_p_cm);
 }
 
 /*
- * Return TRUE when the buffer uses an encryption method that encrypts the
+ * Return TRUE when the buffer uses an yolo_encryption method that yolo_encrypts the
  * whole undo file, not only the text.
  */
     int
-crypt_whole_undofile(int method_nr)
+yolo_crypt_whole_undofile(int method_nr)
 {
     return cryptmethods[method_nr].whole_undofile;
 }
@@ -196,19 +196,19 @@ crypt_whole_undofile(int method_nr)
  * Get crypt method specifc length of the file header in bytes.
  */
     int
-crypt_get_header_len(int method_nr)
+yolo_crypt_get_header_len(int method_nr)
 {
-    return CRYPT_MAGIC_LEN
+    return yolo_crypt_MAGIC_LEN
 	+ cryptmethods[method_nr].salt_len
 	+ cryptmethods[method_nr].seed_len;
 }
 
 /*
  * Set the crypt method for buffer "buf" to "method_nr" using the int value as
- * returned by crypt_method_nr_from_name().
+ * returned by yolo_crypt_method_nr_from_name().
  */
     void
-crypt_set_cm_option(buf_T *buf, int method_nr)
+yolo_crypt_set_cm_option(buf_T *buf, int method_nr)
 {
     free_string_option(buf->b_p_cm);
     buf->b_p_cm = vim_strsave((char_u *)cryptmethods[method_nr].name);
@@ -219,9 +219,9 @@ crypt_set_cm_option(buf_T *buf, int method_nr)
  * return OK/FAIL.
  */
     int
-crypt_self_test(void)
+yolo_crypt_self_test(void)
 {
-    int method_nr = crypt_get_method_nr(curbuf);
+    int method_nr = yolo_crypt_get_method_nr(curbuf);
 
     if (cryptmethods[method_nr].self_test_fn == NULL)
 	return OK;
@@ -232,7 +232,7 @@ crypt_self_test(void)
  * Allocate a crypt state and initialize it.
  */
     cryptstate_T *
-crypt_create(
+yolo_crypt_create(
     int		method_nr,
     char_u	*key,
     char_u	*salt,
@@ -250,10 +250,10 @@ crypt_create(
 /*
  * Allocate a crypt state from a file header and initialize it.
  * Assumes that header contains at least the number of bytes that
- * crypt_get_header_len() returns for "method_nr".
+ * yolo_crypt_get_header_len() returns for "method_nr".
  */
     cryptstate_T *
-crypt_create_from_header(
+yolo_crypt_create_from_header(
     int		method_nr,
     char_u	*key,
     char_u	*header)
@@ -264,11 +264,11 @@ crypt_create_from_header(
     int		seed_len = cryptmethods[method_nr].seed_len;
 
     if (salt_len > 0)
-	salt = header + CRYPT_MAGIC_LEN;
+	salt = header + yolo_crypt_MAGIC_LEN;
     if (seed_len > 0)
-	seed = header + CRYPT_MAGIC_LEN + salt_len;
+	seed = header + yolo_crypt_MAGIC_LEN + salt_len;
 
-    return crypt_create(method_nr, key, salt, salt_len, seed, seed_len);
+    return yolo_crypt_create(method_nr, key, salt, salt_len, seed, seed_len);
 }
 
 /*
@@ -276,33 +276,33 @@ crypt_create_from_header(
  * Return an allocated cryptstate_T or NULL on error.
  */
     cryptstate_T *
-crypt_create_from_file(FILE *fp, char_u *key)
+yolo_crypt_create_from_file(FILE *fp, char_u *key)
 {
     int		method_nr;
     int		header_len;
-    char	magic_buffer[CRYPT_MAGIC_LEN];
+    char	magic_buffer[yolo_crypt_MAGIC_LEN];
     char_u	*buffer;
     cryptstate_T *state;
 
-    if (fread(magic_buffer, CRYPT_MAGIC_LEN, 1, fp) != 1)
+    if (fread(magic_buffer, yolo_crypt_MAGIC_LEN, 1, fp) != 1)
 	return NULL;
-    method_nr = crypt_method_nr_from_magic(magic_buffer, CRYPT_MAGIC_LEN);
+    method_nr = yolo_crypt_method_nr_from_magic(magic_buffer, yolo_crypt_MAGIC_LEN);
     if (method_nr < 0)
 	return NULL;
 
-    header_len = crypt_get_header_len(method_nr);
+    header_len = yolo_crypt_get_header_len(method_nr);
     if ((buffer = alloc(header_len)) == NULL)
 	return NULL;
-    mch_memmove(buffer, magic_buffer, CRYPT_MAGIC_LEN);
-    if (header_len > CRYPT_MAGIC_LEN
-	    && fread(buffer + CRYPT_MAGIC_LEN,
-				    header_len - CRYPT_MAGIC_LEN, 1, fp) != 1)
+    mch_memmove(buffer, magic_buffer, yolo_crypt_MAGIC_LEN);
+    if (header_len > yolo_crypt_MAGIC_LEN
+	    && fread(buffer + yolo_crypt_MAGIC_LEN,
+				    header_len - yolo_crypt_MAGIC_LEN, 1, fp) != 1)
     {
 	vim_free(buffer);
 	return NULL;
     }
 
-    state = crypt_create_from_header(method_nr, key, buffer);
+    state = yolo_crypt_create_from_header(method_nr, key, buffer);
     vim_free(buffer);
     return state;
 }
@@ -315,13 +315,13 @@ crypt_create_from_file(FILE *fp, char_u *key)
  * Returns the state or NULL on failure.
  */
     cryptstate_T *
-crypt_create_for_writing(
+yolo_crypt_create_for_writing(
     int	    method_nr,
     char_u  *key,
     char_u  **header,
     int	    *header_len)
 {
-    int	    len = crypt_get_header_len(method_nr);
+    int	    len = yolo_crypt_get_header_len(method_nr);
     char_u  *salt = NULL;
     char_u  *seed = NULL;
     int	    salt_len = cryptmethods[method_nr].salt_len;
@@ -333,13 +333,13 @@ crypt_create_for_writing(
     if (*header == NULL)
 	return NULL;
 
-    mch_memmove(*header, cryptmethods[method_nr].magic, CRYPT_MAGIC_LEN);
+    mch_memmove(*header, cryptmethods[method_nr].magic, yolo_crypt_MAGIC_LEN);
     if (salt_len > 0 || seed_len > 0)
     {
 	if (salt_len > 0)
-	    salt = *header + CRYPT_MAGIC_LEN;
+	    salt = *header + yolo_crypt_MAGIC_LEN;
 	if (seed_len > 0)
-	    seed = *header + CRYPT_MAGIC_LEN + salt_len;
+	    seed = *header + yolo_crypt_MAGIC_LEN + salt_len;
 
 	/* TODO: Should this be crypt method specific? (Probably not worth
 	 * it).  sha2_seed is pretty bad for large amounts of entropy, so make
@@ -347,7 +347,7 @@ crypt_create_for_writing(
 	sha2_seed(salt, salt_len, seed, seed_len);
     }
 
-    state = crypt_create(method_nr, key, salt, salt_len, seed, seed_len);
+    state = yolo_crypt_create(method_nr, key, salt, salt_len, seed, seed_len);
     if (state == NULL)
     {
 	vim_free(*header);
@@ -360,7 +360,7 @@ crypt_create_for_writing(
  * Free the crypt state.
  */
     void
-crypt_free_state(cryptstate_T *state)
+yolo_crypt_free_state(cryptstate_T *state)
 {
     vim_free(state->method_state);
     vim_free(state);
@@ -372,7 +372,7 @@ crypt_free_state(cryptstate_T *state)
  * Return number of bytes in "newptr", 0 for need more or -1 on error.
  */
     long
-crypt_encode_alloc(
+yolo_crypt_encode_alloc(
     cryptstate_T *state,
     char_u	*from,
     size_t	len,
@@ -395,12 +395,12 @@ crypt_encode_alloc(
 }
 
 /*
- * Decrypt "ptr[len]" and store the result in a newly allocated buffer, which
+ * yolo_decrypt "ptr[len]" and store the result in a newly allocated buffer, which
  * is stored in "newptr".
  * Return number of bytes in "newptr", 0 for need more or -1 on error.
  */
     long
-crypt_decode_alloc(
+yolo_crypt_decode_alloc(
     cryptstate_T *state,
     char_u	*ptr,
     long	len,
@@ -424,10 +424,10 @@ crypt_decode_alloc(
 }
 
 /*
- * Encrypting "from[len]" into "to[len]".
+ * yolo_encrypting "from[len]" into "to[len]".
  */
     void
-crypt_encode(
+yolo_crypt_encode(
     cryptstate_T *state,
     char_u	*from,
     size_t	len,
@@ -437,10 +437,10 @@ crypt_encode(
 }
 
 /*
- * decrypting "from[len]" into "to[len]".
+ * yolo_decrypting "from[len]" into "to[len]".
  */
     void
-crypt_decode(
+yolo_crypt_decode(
     cryptstate_T *state,
     char_u	*from,
     size_t	len,
@@ -450,10 +450,10 @@ crypt_decode(
 }
 
 /*
- * Simple inplace encryption, modifies "buf[len]" in place.
+ * Simple inplace yolo_encryption, modifies "buf[len]" in place.
  */
     void
-crypt_encode_inplace(
+yolo_crypt_encode_inplace(
     cryptstate_T *state,
     char_u	*buf,
     size_t	len)
@@ -462,10 +462,10 @@ crypt_encode_inplace(
 }
 
 /*
- * Simple inplace decryption, modifies "buf[len]" in place.
+ * Simple inplace yolo_decryption, modifies "buf[len]" in place.
  */
     void
-crypt_decode_inplace(
+yolo_crypt_decode_inplace(
     cryptstate_T *state,
     char_u	*buf,
     size_t	len)
@@ -478,7 +478,7 @@ crypt_decode_inplace(
  * in memory anywhere.
  */
     void
-crypt_free_key(char_u *key)
+yolo_crypt_free_key(char_u *key)
 {
     char_u *p;
 
@@ -494,19 +494,19 @@ crypt_free_key(char_u *key)
  * Check the crypt method and give a warning if it's outdated.
  */
     void
-crypt_check_method(int method)
+yolo_crypt_check_method(int method)
 {
-    if (method < CRYPT_M_BF2)
+    if (method < yolo_crypt_M_BF2)
     {
 	msg_scroll = TRUE;
-	MSG(_("Warning: Using a weak encryption method; see :help 'cm'"));
+	MSG(_("Warning: Using a weak yolo_encryption method; see :help 'cm'"));
     }
 }
 
     void
-crypt_check_current_method(void)
+yolo_crypt_check_current_method(void)
 {
-    crypt_check_method(crypt_get_method_nr(curbuf));
+    yolo_crypt_check_method(yolo_crypt_get_method_nr(curbuf));
 }
 
 /*
@@ -517,7 +517,7 @@ crypt_check_current_method(void)
  * Returns NULL on failure.
  */
     char_u *
-crypt_get_key(
+yolo_crypt_get_key(
     int		store,
     int		twice)	    /* Ask for the key twice. */
 {
@@ -529,7 +529,7 @@ crypt_get_key(
 	cmdline_star = TRUE;
 	cmdline_row = msg_row;
 	p1 = getcmdline_prompt(NUL, round == 0
-		? (char_u *)_("Enter encryption key: ")
+		? (char_u *)_("Enter yolo_encryption key: ")
 		: (char_u *)_("Enter same key again: "), 0, EXPAND_NOTHING,
 		NULL);
 	cmdline_star = FALSE;
@@ -542,8 +542,8 @@ crypt_get_key(
 	    if (p2 != NULL && STRCMP(p1, p2) != 0)
 	    {
 		MSG(_("Keys don't match!"));
-		crypt_free_key(p1);
-		crypt_free_key(p2);
+		yolo_crypt_free_key(p1);
+		yolo_crypt_free_key(p2);
 		p2 = NULL;
 		round = -1;		/* do it again */
 		continue;
@@ -552,7 +552,7 @@ crypt_get_key(
 	    if (store)
 	    {
 		set_option_value((char_u *)"key", 0L, p1, OPT_LOCAL);
-		crypt_free_key(p1);
+		yolo_crypt_free_key(p1);
 		p1 = curbuf->b_p_key;
 	    }
 	    break;
@@ -566,19 +566,19 @@ crypt_get_key(
     need_wait_return = FALSE;
     msg_didout = FALSE;
 
-    crypt_free_key(p2);
+    yolo_crypt_free_key(p2);
     return p1;
 }
 
 
 /*
- * Append a message to IObuff for the encryption/decryption method being used.
+ * Append a message to IObuff for the yolo_encryption/yolo_decryption method being used.
  */
     void
-crypt_append_msg(
+yolo_crypt_append_msg(
     buf_T *buf)
 {
-    if (crypt_get_method_nr(buf) == 0)
+    if (yolo_crypt_get_method_nr(buf) == 0)
 	STRCAT(IObuff, _("[crypted]"));
     else
     {

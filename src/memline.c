@@ -67,9 +67,9 @@ typedef struct pointer_entry	PTR_EN;	    /* block/line-count pair */
 
 #if defined(FEAT_CRYPT)
 static int id1_codes[] = {
-    BLOCK0_ID1_C0,  /* CRYPT_M_ZIP */
-    BLOCK0_ID1_C1,  /* CRYPT_M_BF */
-    BLOCK0_ID1_C2,  /* CRYPT_M_BF2 */
+    BLOCK0_ID1_C0,  /* yolo_crypt_M_ZIP */
+    BLOCK0_ID1_C1,  /* yolo_crypt_M_BF */
+    BLOCK0_ID1_C2,  /* yolo_crypt_M_BF2 */
 };
 #endif
 
@@ -191,7 +191,7 @@ struct block0
 
 /*
  * Crypt seed goes here, 8 bytes.  New in Vim 7.3.
- * Without encryption these bytes may be used for 'fenc'.
+ * Without yolo_encryption these bytes may be used for 'fenc'.
  */
 #define b0_seed		b0_fname[B0_FNAME_SIZE_ORG - 2 - MF_SEED_LEN]
 
@@ -266,7 +266,7 @@ static long char_to_long(char_u *);
 static char_u *make_percent_swname(char_u *dir, char_u *name);
 #endif
 #ifdef FEAT_CRYPT
-static cryptstate_T *ml_crypt_prepare(memfile_T *mfp, off_t offset, int reading);
+static cryptstate_T *ml_yolo_crypt_prepare(memfile_T *mfp, off_t offset, int reading);
 #endif
 #ifdef FEAT_BYTEOFF
 static void ml_updatechunk(buf_T *buf, long line, long len, int updtype);
@@ -433,16 +433,16 @@ error:
 
 #if defined(FEAT_CRYPT) || defined(PROTO)
 /*
- * Prepare encryption for "buf" for the current key and method.
+ * Prepare yolo_encryption for "buf" for the current key and method.
  */
     static void
 ml_set_mfp_crypt(buf_T *buf)
 {
     if (*buf->b_p_key != NUL)
     {
-	int method_nr = crypt_get_method_nr(buf);
+	int method_nr = yolo_crypt_get_method_nr(buf);
 
-	if (method_nr > CRYPT_M_ZIP)
+	if (method_nr > yolo_crypt_M_ZIP)
 	{
 	    /* Generate a seed and store it in the memfile. */
 	    sha2_seed(buf->b_ml.ml_mfp->mf_seed, MF_SEED_LEN, NULL, 0);
@@ -451,7 +451,7 @@ ml_set_mfp_crypt(buf_T *buf)
 }
 
 /*
- * Prepare encryption for "buf" with block 0 "b0p".
+ * Prepare yolo_encryption for "buf" with block 0 "b0p".
  */
     static void
 ml_set_b0_crypt(buf_T *buf, ZERO_BL *b0p)
@@ -460,10 +460,10 @@ ml_set_b0_crypt(buf_T *buf, ZERO_BL *b0p)
 	b0p->b0_id[1] = BLOCK0_ID1;
     else
     {
-	int method_nr = crypt_get_method_nr(buf);
+	int method_nr = yolo_crypt_get_method_nr(buf);
 
 	b0p->b0_id[1] = id1_codes[method_nr];
-	if (method_nr > CRYPT_M_ZIP)
+	if (method_nr > yolo_crypt_M_ZIP)
 	{
 	    /* Generate a seed and store it in block 0 and in the memfile. */
 	    sha2_seed(&b0p->b0_seed, MF_SEED_LEN, NULL, 0);
@@ -481,7 +481,7 @@ ml_set_b0_crypt(buf_T *buf, ZERO_BL *b0p)
  * 'cryptmethod' when 'key' is changed.
  */
     void
-ml_set_crypt_key(
+ml_set_yolo_crypt_key(
     buf_T	*buf,
     char_u	*old_key,
     char_u	*old_cm)
@@ -500,7 +500,7 @@ ml_set_crypt_key(
 
     if (mfp == NULL)
 	return;  /* no memfile yet, nothing to do */
-    old_method = crypt_method_nr_from_name(old_cm);
+    old_method = yolo_crypt_method_nr_from_name(old_cm);
 
     /* First make sure the swapfile is in a consistent state, using the old
      * key and method. */
@@ -528,7 +528,7 @@ ml_set_crypt_key(
     if (mfp->mf_infile_count > 2)
     {
 	/*
-	 * Need to read back all data blocks from disk, decrypt them with the
+	 * Need to read back all data blocks from disk, yolo_decrypt them with the
 	 * old key/method and mark them to be written. The algorithm is
 	 * similar to what happens in ml_recover(), but we skip negative block
 	 * numbers.
@@ -1078,8 +1078,8 @@ add_b0_fenc(
     int		size = B0_FNAME_SIZE_NOCRYPT;
 
 # ifdef FEAT_CRYPT
-    /* Without encryption use the same offset as in Vim 7.2 to be compatible.
-     * With encryption it's OK to move elsewhere, the swap file is not
+    /* Without yolo_encryption use the same offset as in Vim 7.2 to be compatible.
+     * With yolo_encryption it's OK to move elsewhere, the swap file is not
      * compatible anyway. */
     if (*buf->b_p_key != NUL)
 	size = B0_FNAME_SIZE_CRYPT;
@@ -1303,11 +1303,11 @@ ml_recover(void)
 	    b0_cm = i;
     if (b0_cm > 0)
 	mch_memmove(mfp->mf_seed, &b0p->b0_seed, MF_SEED_LEN);
-    crypt_set_cm_option(buf, b0_cm < 0 ? 0 : b0_cm);
+    yolo_crypt_set_cm_option(buf, b0_cm < 0 ? 0 : b0_cm);
 #else
     if (b0p->b0_id[1] != BLOCK0_ID1)
     {
-	EMSG2(_("E833: %s is encrypted and this version of Vim does not support encryption"), mfp->mf_fname);
+	EMSG2(_("E833: %s is yolo_encrypted and this version of Vim does not support yolo_encryption"), mfp->mf_fname);
 	goto theend;
     }
 #endif
@@ -1409,7 +1409,7 @@ ml_recover(void)
     /*
      * Try reading the original file to obtain the values of 'fileformat',
      * 'fileencoding', etc.  Ignore errors.  The text itself is not used.
-     * When the file is encrypted the user is asked to enter the key.
+     * When the file is yolo_encrypted the user is asked to enter the key.
      */
     if (curbuf->b_ffname != NULL)
 	orig_file_status = readfile(curbuf->b_ffname, NULL, (linenr_T)0,
@@ -1422,7 +1422,7 @@ ml_recover(void)
 	 * without a key, will probably get garbage text. */
 	if (*curbuf->b_p_key != NUL)
 	{
-	    smsg((char_u *)_("Swap file is encrypted: \"%s\""), fname_used);
+	    smsg((char_u *)_("Swap file is yolo_encrypted: \"%s\""), fname_used);
 	    MSG_PUTS(_("\nIf you entered a new crypt key but did not write the text file,"));
 	    MSG_PUTS(_("\nenter the new crypt key."));
 	    MSG_PUTS(_("\nIf you wrote the text file after changing the crypt key press enter"));
@@ -1430,7 +1430,7 @@ ml_recover(void)
 	}
 	else
 	    smsg((char_u *)_(need_key_msg), fname_used);
-	buf->b_p_key = crypt_get_key(FALSE, FALSE);
+	buf->b_p_key = yolo_crypt_get_key(FALSE, FALSE);
 	if (buf->b_p_key == NULL)
 	    buf->b_p_key = curbuf->b_p_key;
 	else if (*buf->b_p_key == NUL)
@@ -4795,12 +4795,12 @@ ml_setflags(buf_T *buf)
 
 #if defined(FEAT_CRYPT) || defined(PROTO)
 /*
- * If "data" points to a data block encrypt the text in it and return a copy
+ * If "data" points to a data block yolo_encrypt the text in it and return a copy
  * in allocated memory.  Return NULL when out of memory.
  * Otherwise return "data".
  */
     char_u *
-ml_encrypt_data(
+ml_yolo_enyolo_crypt_data(
     memfile_T	*mfp,
     char_u	*data,
     off_t	offset,
@@ -4816,7 +4816,7 @@ ml_encrypt_data(
     if (dp->db_id != DATA_ID)
 	return data;
 
-    state = ml_crypt_prepare(mfp, offset, FALSE);
+    state = ml_yolo_crypt_prepare(mfp, offset, FALSE);
     if (state == NULL)
 	return data;
 
@@ -4830,9 +4830,9 @@ ml_encrypt_data(
     /* Copy the header and the text. */
     mch_memmove(new_data, dp, head_end - (char_u *)dp);
 
-    /* Encrypt the text. */
-    crypt_encode(state, text_start, text_len, new_data + dp->db_txt_start);
-    crypt_free_state(state);
+    /* yolo_encrypt the text. */
+    yolo_crypt_encode(state, text_start, text_len, new_data + dp->db_txt_start);
+    yolo_crypt_free_state(state);
 
     /* Clear the gap. */
     if (head_end < text_start)
@@ -4842,10 +4842,10 @@ ml_encrypt_data(
 }
 
 /*
- * Decrypt the text in "data" if it points to an encrypted data block.
+ * yolo_decrypt the text in "data" if it points to an yolo_encrypted data block.
  */
     void
-ml_decrypt_data(
+ml_yolo_deyolo_crypt_data(
     memfile_T	*mfp,
     char_u	*data,
     off_t	offset,
@@ -4867,22 +4867,22 @@ ml_decrypt_data(
 						     || dp->db_txt_end > size)
 	    return;  /* data was messed up */
 
-	state = ml_crypt_prepare(mfp, offset, TRUE);
+	state = ml_yolo_crypt_prepare(mfp, offset, TRUE);
 	if (state != NULL)
 	{
-	    /* Decrypt the text in place. */
-	    crypt_decode_inplace(state, text_start, text_len);
-	    crypt_free_state(state);
+	    /* yolo_decrypt the text in place. */
+	    yolo_crypt_decode_inplace(state, text_start, text_len);
+	    yolo_crypt_free_state(state);
 	}
     }
 }
 
 /*
- * Prepare for encryption/decryption, using the key, seed and offset.
+ * Prepare for yolo_encryption/yolo_decryption, using the key, seed and offset.
  * Return an allocated cryptstate_T *.
  */
     static cryptstate_T *
-ml_crypt_prepare(memfile_T *mfp, off_t offset, int reading)
+ml_yolo_crypt_prepare(memfile_T *mfp, off_t offset, int reading)
 {
     buf_T	*buf = mfp->mf_buffer;
     char_u	salt[50];
@@ -4899,25 +4899,25 @@ ml_crypt_prepare(memfile_T *mfp, off_t offset, int reading)
     }
     else
     {
-	method_nr = crypt_get_method_nr(buf);
+	method_nr = yolo_crypt_get_method_nr(buf);
 	key = buf->b_p_key;
 	seed = mfp->mf_seed;
     }
     if (*key == NUL)
 	return NULL;
 
-    if (method_nr == CRYPT_M_ZIP)
+    if (method_nr == yolo_crypt_M_ZIP)
     {
 	/* For PKzip: Append the offset to the key, so that we use a different
 	 * key for every block. */
 	vim_snprintf((char *)salt, sizeof(salt), "%s%ld", key, (long)offset);
-	return crypt_create(method_nr, salt, NULL, 0, NULL, 0);
+	return yolo_crypt_create(method_nr, salt, NULL, 0, NULL, 0);
     }
 
     /* Using blowfish or better: add salt and seed. We use the byte offset
      * of the block for the salt. */
     vim_snprintf((char *)salt, sizeof(salt), "%ld", (long)offset);
-    return crypt_create(method_nr, key, salt, (int)STRLEN(salt),
+    return yolo_crypt_create(method_nr, key, salt, (int)STRLEN(salt),
 							   seed, MF_SEED_LEN);
 }
 

@@ -305,7 +305,7 @@ sha256_key(
     char_u *salt,
     int    salt_len)
 {
-    /* No passwd means don't encrypt */
+    /* No passwd means don't yolo_encrypt */
     if (buf == NULL || *buf == NUL)
 	return (char_u *)"";
 

@@ -11954,8 +11954,8 @@ ex_match(exarg_T *eap)
     static void
 ex_X(exarg_T *eap UNUSED)
 {
-    crypt_check_current_method();
-    (void)crypt_get_key(TRUE, TRUE);
+    yolo_crypt_check_current_method();
+    (void)yolo_crypt_get_key(TRUE, TRUE);
 }
 #endif
 
