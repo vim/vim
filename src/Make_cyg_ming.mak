@@ -42,7 +42,7 @@ DIRECTX=no
 FEATURES=HUGE
 # Set to one of i386, i486, i586, i686 as the minimum target processor.
 # For amd64/x64 architecture set ARCH=x86-64 .
-ARCH=i386
+ARCH=i686
 # Set to yes to cross-compile from unix; no=native Windows (and Cygwin).
 CROSS=no
 # Set to path to iconv.h and libiconv.a to enable using 'iconv.dll'.
@@ -58,9 +58,9 @@ DYNAMIC_IME=yes
 POSTSCRIPT=no
 # Set to yes to enable OLE support.
 OLE=no
-# Set the default $(WINVER) to make it work with pre-Win2k.
+# Set the default $(WINVER) to make it work with WinXP.
 ifndef WINVER
-WINVER = 0x0500
+WINVER = 0x0501
 endif
 # Set to yes to enable Cscope support.
 CSCOPE=yes
@@ -483,14 +483,14 @@ endif
 endif
 
 ifdef PYTHON
-CFLAGS += -DFEAT_PYTHON 
+CFLAGS += -DFEAT_PYTHON
 ifeq (yes, $(DYNAMIC_PYTHON))
 CFLAGS += -DDYNAMIC_PYTHON -DDYNAMIC_PYTHON_DLL=\"$(DYNAMIC_PYTHON_DLL)\"
 endif
 endif
 
-ifdef PYTHON3 
-CFLAGS += -DFEAT_PYTHON3 
+ifdef PYTHON3
+CFLAGS += -DFEAT_PYTHON3
 ifeq (yes, $(DYNAMIC_PYTHON3))
 CFLAGS += -DDYNAMIC_PYTHON3 -DDYNAMIC_PYTHON3_DLL=\"$(DYNAMIC_PYTHON3_DLL)\"
 endif
