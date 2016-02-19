@@ -116,7 +116,9 @@ static void u_freeentry(u_entry_T *, long);
 static void corruption_error(char *mesg, char_u *file_name);
 static void u_free_uhp(u_header_T *uhp);
 static int undo_write(bufinfo_T *bi, char_u *ptr, size_t len);
+# ifdef FEAT_CRYPT
 static int undo_flush(bufinfo_T *bi);
+# endif
 static int fwrite_crypt(bufinfo_T *bi, char_u *ptr, size_t len);
 static int undo_write_bytes(bufinfo_T *bi, long_u nr, int len);
 static void put_header_ptr(bufinfo_T *bi, u_header_T *uhp);
