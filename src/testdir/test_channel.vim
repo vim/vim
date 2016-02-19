@@ -146,7 +146,7 @@ func s:communicate(port)
 
   " check setting options (without testing the effect)
   call ch_setoptions(handle, {'callback': 's:NotUsed'})
-  call ch_setoptions(handle, {'timeout': 111})
+  call ch_setoptions(handle, {'timeout': 1111})
   call assert_fails("call ch_setoptions(handle, {'waittime': 111})", "E475")
   call assert_fails("call ch_setoptions(handle, {'mode': 'json'})", "E475")
 
