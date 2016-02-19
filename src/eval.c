@@ -10236,7 +10236,7 @@ f_ch_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     if (channel == NULL)
 	return;
     if (get_job_options(&argvars[1], &opt, JO_CALLBACK + JO_TIMEOUT) == FAIL)
-	return NULL;
+	return;
     channel_set_options(channel, &opt);
 }
 
