@@ -488,11 +488,7 @@ struct vimoption
  * The options with a NULL variable are 'hidden': a set command for them is
  * ignored and they are not printed.
  */
-static struct vimoption
-#ifdef FEAT_GUI_W16
-	_far
-#endif
-	options[] =
+static struct vimoption options[] =
 {
     {"aleph",	    "al",   P_NUM|P_VI_DEF|P_CURSWANT,
 #ifdef FEAT_RIGHTLEFT

@@ -102,7 +102,7 @@ ex_menu(
     int		i;
 #if defined(FEAT_GUI) && !defined(FEAT_GUI_GTK)
     int		old_menu_height;
-# if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_W32) && !defined(FEAT_GUI_W16)
+# if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_W32)
     int		old_toolbar_height;
 # endif
 #endif
@@ -274,7 +274,7 @@ ex_menu(
     }
 #if defined(FEAT_GUI) && !(defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON))
     old_menu_height = gui.menu_height;
-# if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_W32) && !defined(FEAT_GUI_W16)
+# if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_W32)
     old_toolbar_height = gui.toolbar_height;
 # endif
 #endif
@@ -395,7 +395,7 @@ ex_menu(
     /* If the menubar height changed, resize the window */
     if (gui.in_use
 	    && (gui.menu_height != old_menu_height
-# if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_W32) && !defined(FEAT_GUI_W16)
+# if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_W32)
 		|| gui.toolbar_height != old_toolbar_height
 # endif
 	    ))

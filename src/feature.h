@@ -554,7 +554,7 @@
 /* #define NO_BUILTIN_TCAPS */
 #endif
 
-#if !defined(NO_BUILTIN_TCAPS) && !defined(FEAT_GUI_W16)
+#if !defined(NO_BUILTIN_TCAPS)
 # ifdef FEAT_BIG
 #  define ALL_BUILTIN_TCAPS
 # else
@@ -1179,7 +1179,7 @@
 # if defined(MSDOS) || (defined(WIN3264) && !defined(FEAT_GUI_W32))
 #  define MCH_CURSOR_SHAPE
 # endif
-# if defined(FEAT_GUI_W32) || defined(FEAT_GUI_W16) || defined(FEAT_GUI_MOTIF) \
+# if defined(FEAT_GUI_W32) || defined(FEAT_GUI_MOTIF) \
 	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_PHOTON)
 #  define FEAT_MOUSESHAPE

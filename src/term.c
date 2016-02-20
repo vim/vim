@@ -2479,11 +2479,7 @@ termcapinit(char_u *name)
 #ifdef DOS16
 # define OUT_SIZE	255		/* only have 640K total... */
 #else
-# ifdef FEAT_GUI_W16
-#  define OUT_SIZE	1023		/* Save precious 1K near data */
-# else
-#  define OUT_SIZE	2047
-# endif
+# define OUT_SIZE	2047
 #endif
 	    /* Add one to allow mch_write() in os_win32.c to append a NUL */
 static char_u		out_buf[OUT_SIZE + 1];

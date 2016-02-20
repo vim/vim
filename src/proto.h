@@ -211,9 +211,6 @@ extern int putenv(const char *string);		/* from pty.c */
 extern char_u *vimpty_getenv(const char_u *string);	/* from pty.c */
 #   endif
 #  endif
-#  ifdef FEAT_GUI_W16
-#   include "gui_w16.pro"
-#  endif
 #  ifdef FEAT_GUI_W32
 #   include "gui_w32.pro"
 #  endif

@@ -2720,10 +2720,6 @@ struct VimMenu
 #ifdef FEAT_BEVAL_TIP
     BalloonEval *tip;		    /* tooltip for this menu item */
 #endif
-#ifdef FEAT_GUI_W16
-    UINT	id;		    /* Id of menu item */
-    HMENU	submenu_id;	    /* If this is submenu, add children here */
-#endif
 #ifdef FEAT_GUI_W32
     UINT	id;		    /* Id of menu item */
     HMENU	submenu_id;	    /* If this is submenu, add children here */

@@ -126,7 +126,6 @@
     || defined(FEAT_GUI_ATHENA) \
     || defined(FEAT_GUI_MAC) \
     || defined(FEAT_GUI_W32) \
-    || defined(FEAT_GUI_W16) \
     || defined(FEAT_GUI_PHOTON)
 # define FEAT_GUI_ENABLED  /* also defined with NO_X11_INCLUDES */
 # if !defined(FEAT_GUI) && !defined(NO_X11_INCLUDES)
@@ -147,7 +146,7 @@
 # define _CRT_NONSTDC_NO_DEPRECATE
 #endif
 
-#if defined(FEAT_GUI_W32) || defined(FEAT_GUI_W16)
+#if defined(FEAT_GUI_W32)
 # define FEAT_GUI_MSWIN
 #endif
 #if defined(WIN32) || defined(_WIN64)
@@ -868,11 +867,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 
 #ifdef FEAT_SYN_HL
 # define SST_MIN_ENTRIES 150	/* minimal size for state stack array */
-# ifdef FEAT_GUI_W16
-#  define SST_MAX_ENTRIES 500	/* (only up to 64K blocks) */
-# else
-#  define SST_MAX_ENTRIES 1000	/* maximal size for state stack array */
-# endif
+# define SST_MAX_ENTRIES 1000	/* maximal size for state stack array */
 # define SST_FIX_STATES	 7	/* size of sst_stack[]. */
 # define SST_DIST	 16	/* normal distance between entries */
 # define SST_INVALID	(synstate_T *)-1	/* invalid syn_state pointer */

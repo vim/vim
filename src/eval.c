@@ -13492,9 +13492,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_GUI_PHOTON
 	"gui_photon",
 #endif
-#ifdef FEAT_GUI_W16
-	"gui_win16",
-#endif
 #ifdef FEAT_GUI_W32
 	"gui_win32",
 #endif

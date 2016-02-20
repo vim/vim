@@ -9734,7 +9734,7 @@ static int vim_backtick(char_u *p);
 static int expand_backtick(garray_T *gap, char_u *pat, int flags);
 # endif
 
-# if defined(MSDOS) || defined(FEAT_GUI_W16) || defined(WIN3264)
+# if defined(MSDOS) || defined(WIN3264)
 /*
  * File name expansion code for MS-DOS, Win16 and Win32.  It's here because
  * it's shared between these systems.
@@ -10078,7 +10078,7 @@ mch_expandpath(
 {
     return dos_expandpath(gap, path, 0, flags, FALSE);
 }
-# endif /* MSDOS || FEAT_GUI_W16 || WIN3264 */
+# endif /* MSDOS || WIN3264 */
 
 #if (defined(UNIX) && !defined(VMS)) || defined(USE_UNIXFILENAME) \
 	|| defined(PROTO)

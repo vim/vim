@@ -148,13 +148,8 @@
 #define TEAR_LEN		(9)	/* length of above string */
 
 /* for the toolbar */
-#ifdef FEAT_GUI_W16
-# define TOOLBAR_BUTTON_HEIGHT	15
-# define TOOLBAR_BUTTON_WIDTH	16
-#else
-# define TOOLBAR_BUTTON_HEIGHT	18
-# define TOOLBAR_BUTTON_WIDTH	18
-#endif
+#define TOOLBAR_BUTTON_HEIGHT	18
+#define TOOLBAR_BUTTON_WIDTH	18
 #define TOOLBAR_BORDER_HEIGHT	12  /* room above+below buttons for MSWindows */
 
 #ifdef FEAT_GUI_MSWIN
