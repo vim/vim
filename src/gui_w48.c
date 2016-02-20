@@ -138,7 +138,6 @@ typedef int WNDPROC;
 
 static void _OnPaint( HWND hwnd);
 static void clear_rect(RECT *rcp);
-static int gui_mswin_get_menu_height(int fix_window);
 
 static WORD		s_dlgfntheight;		/* height of the dialog font */
 static WORD		s_dlgfntwidth;		/* width of the dialog font */
@@ -342,7 +341,7 @@ static LOGFONT sub_logfont;
 static LRESULT _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData);
 #endif
 
-#if defined(FEAT_MBYTE) && defined(WIN3264)
+#if defined(FEAT_BROWSE)
 static char_u *convert_filter(char_u *s);
 #endif
 

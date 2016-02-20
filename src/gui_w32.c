@@ -36,6 +36,10 @@ static int s_directx_load_attempted = 0;
 # define IS_ENABLE_DIRECTX() (s_directx_enabled && s_dwc != NULL)
 #endif
 
+#ifdef FEAT_MENU
+static int gui_mswin_get_menu_height(int fix_window);
+#endif
+
 #if defined(FEAT_DIRECTX) || defined(PROTO)
     int
 directx_enabled(void)
@@ -458,7 +462,9 @@ static UINT	s_menu_id = 100;
  * stuff for dialogs, menus, tearoffs etc.
  */
 static LRESULT APIENTRY dialog_callback(HWND, UINT, WPARAM, LPARAM);
+#ifdef FEAT_TEAROFF
 static LRESULT APIENTRY tearoff_callback(HWND, UINT, WPARAM, LPARAM);
+#endif
 static PWORD
 add_dialog_element(
 	PWORD p,
@@ -472,7 +478,9 @@ add_dialog_element(
 	const char *caption);
 static LPWORD lpwAlign(LPWORD);
 static int nCopyAnsiToWideChar(LPWORD, LPSTR);
+#if defined(FEAT_MENU) && defined(FEAT_TEAROFF)
 static void gui_mch_tearoff(char_u *title, vimmenu_T *menu, int initX, int initY);
+#endif
 static void get_dialog_font_metrics(void);
 
 static int dialog_default_button = -1;
