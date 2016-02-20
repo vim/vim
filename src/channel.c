@@ -329,39 +329,20 @@ channel_free(channel_T *channel)
     vim_free(channel);
 }
 
-#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
-    static channel_T *
-channel_from_id(int id)
-{
-    channel_T *channel;
-
-    for (channel = first_channel; channel != NULL; channel = channel->ch_next)
-	if (channel->ch_id == id)
-	    return channel;
-    return NULL;
-}
-#endif
-
 #if defined(FEAT_GUI) || defined(PROTO)
 
 #if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
     static void
-channel_read_netbeans(int id)
+channel_read_fd(int fd)
 {
-    channel_T	*channel = channel_from_id(id);
+    channel_T	*channel;
     int		part;
 
+    channel = channel_fd2channel(fd, &part);
     if (channel == NULL)
-	ch_errorn(NULL, "Channel %d not found", id);
+	ch_errorn(NULL, "Channel for fd %d not found", fd);
     else
-    {
-	/* TODO: check stderr */
-	if (channel->CH_SOCK_FD != INVALID_FD)
-	    part = PART_SOCK;
-	else
-	    part = PART_OUT;
 	channel_read(channel, part, "messageFromNetbeans");
-    }
 }
 #endif
 
@@ -375,7 +356,7 @@ messageFromNetbeans(XtPointer clientData,
 		    int *unused1 UNUSED,
 		    XtInputId *unused2 UNUSED)
 {
-    channel_read_netbeans((int)(long)clientData);
+    channel_read_fd((int)(long)clientData);
 }
 #endif
 
@@ -385,7 +366,7 @@ messageFromNetbeans(gpointer clientData,
 		    gint unused1 UNUSED,
 		    GdkInputCondition unused2 UNUSED)
 {
-    channel_read_netbeans((int)(long)clientData);
+    channel_read_fd((int)(long)clientData);
 }
 #endif
 
@@ -401,7 +382,7 @@ channel_gui_register_one(channel_T *channel, int part)
 		channel->ch_part[part].ch_fd,
 		(XtPointer)(XtInputReadMask + XtInputExceptMask),
 		messageFromNetbeans,
-		(XtPointer)(long)channel->ch_id);
+		(XtPointer)(long)channel->ch_part[part].ch_fd);
 # else
 #  ifdef FEAT_GUI_GTK
     /* Tell gdk we are interested in being called when there
@@ -412,7 +393,7 @@ channel_gui_register_one(channel_T *channel, int part)
 		(GdkInputCondition)
 			     ((int)GDK_INPUT_READ + (int)GDK_INPUT_EXCEPTION),
 		messageFromNetbeans,
-		(gpointer)(long)channel->ch_id);
+		(gpointer)(long)channel->ch_part[part].ch_fd);
 #  else
 #   ifdef FEAT_GUI_W32
     /* Tell Windows we are interested in receiving message when there
@@ -1812,13 +1793,14 @@ channel_read_json_block(channel_T *channel, int part, int id, typval_T **rettv)
     return FAIL;
 }
 
-# if defined(WIN32) || defined(PROTO)
+# if defined(WIN32) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
+	|| defined(PROTO)
 /*
- * Lookup the channel from the socket.  Set "part" to the fd index.
+ * Lookup the channel from the socket.  Set "partp" to the fd index.
  * Returns NULL when the socket isn't found.
  */
     channel_T *
-channel_fd2channel(sock_T fd, int *part)
+channel_fd2channel(sock_T fd, int *partp)
 {
     channel_T	*channel;
     int		part;
@@ -1834,7 +1816,7 @@ channel_fd2channel(sock_T fd, int *part)
 #  endif
 		if (channel->ch_part[part].ch_fd == fd)
 		{
-		    *part = part;
+		    *partp = part;
 		    return channel;
 		}
 	}
