@@ -14,15 +14,6 @@
  * Also used by Cygwin, using os_unix.c.
  */
 
-#ifdef WIN16
-# ifdef __BORLANDC__
-#  pragma warn -par
-#  pragma warn -ucp
-#  pragma warn -use
-#  pragma warn -aus
-# endif
-#endif
-
 #include "vimio.h"
 #include "vim.h"
 

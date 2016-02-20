@@ -27,7 +27,7 @@
 # endif
 #endif
 
-#if defined(MSDOS) || defined(WIN16) || defined(WIN32) || defined(_WIN64) \
+#if defined(MSDOS) || defined(WIN32) || defined(_WIN64) \
 	|| defined(__EMX__)
 # include "vimio.h"
 #endif
@@ -150,7 +150,7 @@
 #if defined(FEAT_GUI_W32) || defined(FEAT_GUI_W16)
 # define FEAT_GUI_MSWIN
 #endif
-#if defined(WIN16) || defined(WIN32) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN64)
 # define MSWIN
 #endif
 /* Practically everything is common to both Win32 and Win64 */
@@ -306,10 +306,6 @@
 
 #ifdef MSDOS
 # include "os_msdos.h"
-#endif
-
-#ifdef WIN16
-# include "os_win16.h"
 #endif
 
 #ifdef WIN3264
@@ -471,7 +467,7 @@ typedef unsigned long u8char_T;	    /* long should be 32 bits or more */
 # include <sys/stat.h>
 #endif
 
-#if defined(HAVE_ERRNO_H) || defined(DJGPP) || defined(WIN16) \
+#if defined(HAVE_ERRNO_H) || defined(DJGPP) \
 	|| defined(WIN32) || defined(_WIN64) || defined(__EMX__)
 # include <errno.h>
 #endif

@@ -10,28 +10,11 @@
 /*
  * os_mswin.c
  *
- * Routines common to both Win16 and Win32.
+ * Routines for Win32.
  */
-
-#ifdef WIN16
-# ifdef __BORLANDC__
-#  pragma warn -par
-#  pragma warn -ucp
-#  pragma warn -use
-#  pragma warn -aus
-# endif
-#endif
 
 #include "vim.h"
 
-#ifdef WIN16
-# define SHORT_FNAME		/* always 8.3 file name */
-/* cproto fails on missing include files */
-# ifndef PROTO
-#  include <dos.h>
-# endif
-# include <string.h>
-#endif
 #include <sys/types.h>
 #include <signal.h>
 #include <limits.h>
@@ -904,7 +887,6 @@ typedef int (*MYSTRPROCINT)(LPSTR);
 typedef int (*MYINTPROCINT)(int);
 # endif
 
-# ifndef WIN16
 /*
  * Check if a pointer points to a valid NUL terminated string.
  * Return the length of the string, including terminating NUL.
@@ -944,7 +926,6 @@ check_str_len(char_u *str)
 
     return 0;
 }
-# endif
 
 /*
  * Passed to do_in_runtimepath() to load a vim.ico file.
@@ -991,11 +972,7 @@ mch_libcall(
     BOOL fRunTimeLinkSuccess = FALSE;
 
     // Get a handle to the DLL module.
-# ifdef WIN16
-    hinstLib = LoadLibrary(libname);
-# else
     hinstLib = vimLoadLib((char *)libname);
-# endif
 
     // If the handle is valid, try to get the function address.
     if (hinstLib != NULL)
@@ -1034,15 +1011,7 @@ mch_libcall(
 	if (string_result == NULL)
 	    *number_result = retval_int;
 	else if (retval_str != NULL
-# ifdef WIN16
-		&& retval_str != (char_u *)1
-		&& retval_str != (char_u *)-1
-		&& !IsBadStringPtr(retval_str, INT_MAX)
-		&& (len = strlen(retval_str) + 1) > 0
-# else
-		&& (len = check_str_len(retval_str)) > 0
-# endif
-		)
+		&& (len = check_str_len(retval_str)) > 0)
 	{
 	    *string_result = lalloc((long_u)len, TRUE);
 	    if (*string_result != NULL)
@@ -1184,9 +1153,6 @@ mch_set_winpos(int x, int y)
 
 #if (defined(FEAT_PRINTER) && !defined(FEAT_POSTSCRIPT)) || defined(PROTO)
 
-# ifdef WIN16
-#  define TEXT(a) a
-# endif
 /*=================================================================
  * Win32 printer stuff
  */
@@ -1211,7 +1177,7 @@ static char_u		*prt_name = NULL;
 #define IDC_PRINTTEXT2		402
 #define IDC_PROGRESS		403
 
-#if !defined(FEAT_MBYTE) || defined(WIN16)
+#if !defined(FEAT_MBYTE)
 # define vimSetDlgItemText(h, i, s) SetDlgItemText(h, i, s)
 #else
     static BOOL
@@ -1456,23 +1422,13 @@ prt_get_cpl(void)
     int		dvoff;
     int		rev_offset;
     int		dpi;
-#ifdef WIN16
-    POINT	pagesize;
-#endif
 
     GetTextMetrics(prt_dlg.hDC, &prt_tm);
     prt_line_height = prt_tm.tmHeight + prt_tm.tmExternalLeading;
 
     hr	    = GetDeviceCaps(prt_dlg.hDC, HORZRES);
-#ifdef WIN16
-    Escape(prt_dlg.hDC, GETPHYSPAGESIZE, NULL, NULL, &pagesize);
-    phyw    = pagesize.x;
-    Escape(prt_dlg.hDC, GETPRINTINGOFFSET, NULL, NULL, &pagesize);
-    dvoff   = pagesize.x;
-#else
     phyw    = GetDeviceCaps(prt_dlg.hDC, PHYSICALWIDTH);
     dvoff   = GetDeviceCaps(prt_dlg.hDC, PHYSICALOFFSETX);
-#endif
     dpi	    = GetDeviceCaps(prt_dlg.hDC, LOGPIXELSX);
 
     rev_offset = phyw - (dvoff + hr);
@@ -1501,20 +1457,10 @@ prt_get_lpp(void)
     int rev_offset;
     int	bottom_margin;
     int	dpi;
-#ifdef WIN16
-    POINT pagesize;
-#endif
 
     vr	    = GetDeviceCaps(prt_dlg.hDC, VERTRES);
-#ifdef WIN16
-    Escape(prt_dlg.hDC, GETPHYSPAGESIZE, NULL, NULL, &pagesize);
-    phyw    = pagesize.y;
-    Escape(prt_dlg.hDC, GETPRINTINGOFFSET, NULL, NULL, &pagesize);
-    dvoff   = pagesize.y;
-#else
     phyw    = GetDeviceCaps(prt_dlg.hDC, PHYSICALHEIGHT);
     dvoff   = GetDeviceCaps(prt_dlg.hDC, PHYSICALOFFSETY);
-#endif
     dpi	    = GetDeviceCaps(prt_dlg.hDC, LOGPIXELSY);
 
     rev_offset = phyw - (dvoff + vr);
@@ -1741,12 +1687,6 @@ init_fail_dlg:
 
 	if (err)
 	{
-#ifdef WIN16
-	    char buf[20];
-
-	    sprintf(buf, "%ld", err);
-	    EMSG2(_("E238: Print error: %s"), buf);
-#else
 	    char_u *buf;
 
 	    /* I suspect FormatMessage() doesn't work for values returned by
@@ -1758,7 +1698,6 @@ init_fail_dlg:
 	    EMSG2(_("E238: Print error: %s"),
 				  buf == NULL ? (char_u *)_("Unknown") : buf);
 	    LocalFree((LPVOID)(buf));
-#endif
 	}
 	else
 	    msg_clr_eos(); /* Maybe canceled */
@@ -1778,11 +1717,7 @@ mch_print_begin(prt_settings_T *psettings)
 
     hDlgPrint = CreateDialog(GetModuleHandle(NULL), TEXT("PrintDlgBox"),
 					     prt_dlg.hwndOwner, PrintDlgProc);
-#ifdef WIN16
-    Escape(prt_dlg.hDC, SETABORTPROC, 0, (LPSTR)AbortProc, NULL);
-#else
     SetAbortProc(prt_dlg.hDC, AbortProc);
-#endif
     wsprintf(szBuffer, _("Printing '%s'"), gettail(psettings->jobname));
     vimSetDlgItemText(hDlgPrint, IDC_PRINTTEXT1, (char_u *)szBuffer);
 
@@ -1845,10 +1780,10 @@ mch_print_start_line(int margin, int page_line)
     int
 mch_print_text_out(char_u *p, int len)
 {
-#if defined(FEAT_PROPORTIONAL_FONTS) || (defined(FEAT_MBYTE) && !defined(WIN16))
+#if defined(FEAT_PROPORTIONAL_FONTS) || defined(FEAT_MBYTE)
     SIZE	sz;
 #endif
-#if defined(FEAT_MBYTE) && !defined(WIN16)
+#if defined(FEAT_MBYTE)
     WCHAR	*wp = NULL;
     int		wlen = len;
 
@@ -1888,20 +1823,12 @@ mch_print_text_out(char_u *p, int len)
     return (prt_pos_x + prt_left_margin + prt_tm.tmAveCharWidth
 				     + prt_tm.tmOverhang > prt_right_margin);
 #else
-# ifdef WIN16
-    GetTextExtentPoint(prt_dlg.hDC, (LPCSTR)p, len, &sz);
-# else
     GetTextExtentPoint32(prt_dlg.hDC, (LPCSTR)p, len, &sz);
-# endif
     prt_pos_x += (sz.cx - prt_tm.tmOverhang);
     /* This is wrong when printing spaces for a TAB. */
     if (p[len] == NUL)
 	return FALSE;
-# ifdef WIN16
-    GetTextExtentPoint(prt_dlg.hDC, p + len, 1, &sz);
-# else
     GetTextExtentPoint32(prt_dlg.hDC, p + len, 1, &sz);
-# endif
     return (prt_pos_x + prt_left_margin + sz.cx > prt_right_margin);
 #endif
 }
@@ -3027,14 +2954,10 @@ get_logfont(
 		lf->lfWidth = points_to_pixels(p, &p, FALSE, (long_i)printer_dc);
 		break;
 	    case 'b':
-#ifndef MSWIN16_FASTTEXT
 		lf->lfWeight = FW_BOLD;
-#endif
 		break;
 	    case 'i':
-#ifndef MSWIN16_FASTTEXT
 		lf->lfItalic = TRUE;
-#endif
 		break;
 	    case 'u':
 		lf->lfUnderline = TRUE;

@@ -1400,7 +1400,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     length = (unsigned)STRLEN(string) + 3;  /* two quotes and a trailing NUL */
     for (p = string; *p != NUL; mb_ptr_adv(p))
     {
-# if defined(WIN32) || defined(WIN16) || defined(DOS)
+# if defined(WIN32) || defined(DOS)
 	if (!p_ssl)
 	{
 	    if (*p == '"')
@@ -1431,7 +1431,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 	d = escaped_string;
 
 	/* add opening quote */
-# if defined(WIN32) || defined(WIN16) || defined(DOS)
+# if defined(WIN32) || defined(DOS)
 	if (!p_ssl)
 	    *d++ = '"';
 	else
@@ -1440,7 +1440,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 
 	for (p = string; *p != NUL; )
 	{
-# if defined(WIN32) || defined(WIN16) || defined(DOS)
+# if defined(WIN32) || defined(DOS)
 	    if (!p_ssl)
 	    {
 		if (*p == '"')
@@ -1483,7 +1483,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 	}
 
 	/* add terminating quote and finish with a NUL */
-# if defined(WIN32) || defined(WIN16) || defined(DOS)
+# if defined(WIN32) || defined(DOS)
 	if (!p_ssl)
 	    *d++ = '"';
 	else

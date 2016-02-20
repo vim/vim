@@ -1336,7 +1336,7 @@ CARBONGUI_TESTARG = VIMPROG=../$(APPDIR)/Contents/MacOS/$(VIMTARGET)
 
 # All GUI files
 ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c pty.c
-ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_xmdlg.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w16.pro gui_w32.pro gui_photon.pro
+ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_xmdlg.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w32.pro gui_photon.pro
 
 # }}}
 
@@ -1715,7 +1715,7 @@ PRO_AUTO = \
 # Resources used for the Mac are in one directory.
 RSRC_DIR = os_mac_rsrc
 
-PRO_MANUAL = os_amiga.pro os_msdos.pro os_win16.pro os_win32.pro \
+PRO_MANUAL = os_amiga.pro os_msdos.pro os_win32.pro \
 	os_mswin.pro winclip.pro os_beos.pro os_vms.pro $(PERL_PRO)
 
 # Default target is making the executable and tools
@@ -1868,20 +1868,16 @@ os_msdos.pro: os_msdos.c
 	$(CPROTO) -DMSDOS -UHAVE_CONFIG_H $< > proto/$@
 	echo "/* vim: set ft=c : */" >> proto/$@
 
-os_win16.pro: os_win16.c
-	$(CPROTO) -DWIN16 -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
 os_win32.pro: os_win32.c
 	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
 	echo "/* vim: set ft=c : */" >> proto/$@
 
 os_mswin.pro: os_mswin.c
-	$(CPROTO) -DWIN16 -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
+	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
 	echo "/* vim: set ft=c : */" >> proto/$@
 
 winclip.pro: winclip.c
-	$(CPROTO) -DWIN16 -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
+	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
 	echo "/* vim: set ft=c : */" >> proto/$@
 
 os_beos.pro: os_beos.c
@@ -2025,6 +2021,7 @@ test_arglist \
 	test_menu \
 	test_perl \
 	test_quickfix \
+	test_reltime \
 	test_searchpos \
 	test_set \
 	test_sort \

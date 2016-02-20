@@ -2184,7 +2184,7 @@ gui_outstr_nowrap(
     guicolor_T	fg_color;
     guicolor_T	bg_color;
     guicolor_T	sp_color;
-#if !defined(MSWIN16_FASTTEXT) && !defined(FEAT_GUI_GTK)
+#if !defined(FEAT_GUI_GTK)
     GuiFont	font = NOFONT;
 # ifdef FEAT_MBYTE
     GuiFont	wide_font = NOFONT;
@@ -2241,7 +2241,7 @@ gui_outstr_nowrap(
 	highlight_mask = gui.highlight_mask;
     hl_mask_todo = highlight_mask;
 
-#if !defined(MSWIN16_FASTTEXT) && !defined(FEAT_GUI_GTK)
+#if !defined(FEAT_GUI_GTK)
     /* Set the font */
     if (aep != NULL && aep->ae_u.gui.font != NOFONT)
 	font = aep->ae_u.gui.font;
@@ -2358,11 +2358,9 @@ gui_outstr_nowrap(
 	clip_may_clear_selection(gui.row, gui.row);
 
 
-#ifndef MSWIN16_FASTTEXT
     /* If there's no bold font, then fake it */
     if (hl_mask_todo & (HL_BOLD | HL_STANDOUT))
 	draw_flags |= DRAW_BOLD;
-#endif
 
     /*
      * When drawing bold or italic characters the spill-over from the left
@@ -2383,11 +2381,7 @@ gui_outstr_nowrap(
 	draw_flags |= DRAW_UNDERL;
 #else
     /* Do we underline the text? */
-    if ((hl_mask_todo & HL_UNDERLINE)
-# ifndef MSWIN16_FASTTEXT
-	    || (hl_mask_todo & HL_ITALIC)
-# endif
-       )
+    if ((hl_mask_todo & HL_UNDERLINE) || (hl_mask_todo & HL_ITALIC))
 	draw_flags |= DRAW_UNDERL;
 #endif
     /* Do we undercurl the text? */
@@ -3338,7 +3332,7 @@ gui_init_which_components(char_u *oldval UNUSED)
     static int	prev_footer = -1;
     int		using_footer = FALSE;
 #endif
-#if defined(FEAT_MENU) && !defined(WIN16)
+#if defined(FEAT_MENU)
     static int	prev_tearoff = -1;
     int		using_tearoff = FALSE;
 #endif
@@ -3415,7 +3409,7 @@ gui_init_which_components(char_u *oldval UNUSED)
 		break;
 #endif
 	    case GO_TEAROFF:
-#if defined(FEAT_MENU) && !defined(WIN16)
+#if defined(FEAT_MENU)
 		using_tearoff = TRUE;
 #endif
 		break;
@@ -3522,7 +3516,7 @@ gui_init_which_components(char_u *oldval UNUSED)
 		fix_size = TRUE;
 	}
 #endif
-#if defined(FEAT_MENU) && !defined(WIN16) && !(defined(WIN3264) && !defined(FEAT_TEAROFF))
+#if defined(FEAT_MENU) && !(defined(WIN3264) && !defined(FEAT_TEAROFF))
 	if (using_tearoff != prev_tearoff)
 	{
 	    gui_mch_toggle_tearoffs(using_tearoff);

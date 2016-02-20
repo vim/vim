@@ -13235,9 +13235,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef VMS
 	"vms",
 #endif
-#ifdef WIN16
-	"win16",
-#endif
 #ifdef WIN32
 	"win32",
 #endif

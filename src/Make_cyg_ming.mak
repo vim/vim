@@ -860,7 +860,7 @@ $(OUTDIR)/ex_docmd.o:	ex_docmd.c $(INCL) ex_cmds.h
 $(OUTDIR)/ex_eval.o:	ex_eval.c $(INCL) ex_cmds.h
 	$(CC) -c $(CFLAGS) ex_eval.c -o $(OUTDIR)/ex_eval.o
 
-$(OUTDIR)/gui_w32.o:	gui_w32.c gui_w48.c $(INCL)
+$(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL)
 	$(CC) -c $(CFLAGS) gui_w32.c -o $(OUTDIR)/gui_w32.o
 
 $(OUTDIR)/gui_dwrite.o:	gui_dwrite.cpp $(INCL) gui_dwrite.h

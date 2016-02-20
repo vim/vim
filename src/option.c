@@ -2296,14 +2296,10 @@ static struct vimoption
 # if defined(MSDOS)
 			    (char_u *)"command",
 # else
-#  if defined(WIN16)
-			    (char_u *)"command.com",
-#  else
-#   if defined(WIN3264)
+#  if defined(WIN3264)
 			    (char_u *)"",	/* set in set_init_1() */
-#   else
+#  else
 			    (char_u *)"sh",
-#   endif
 #  endif
 # endif
 #endif /* VMS */
@@ -2367,7 +2363,7 @@ static struct vimoption
     {"shellxescape", "sxe", P_STRING|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_sxe, PV_NONE,
 			    {
-#if defined(MSDOS) || defined(WIN16) || defined(WIN3264)
+#if defined(MSDOS) || defined(WIN3264)
 			    (char_u *)"\"&|<>()@^",
 #else
 			    (char_u *)"",

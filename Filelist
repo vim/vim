@@ -300,7 +300,6 @@ SRC_DOS =	\
 		src/Make_dvc.mak \
 		src/Make_ming.mak \
 		src/Make_mvc.mak \
-		src/Make_w16.mak \
 		src/bigvim.bat \
 		src/bigvim64.bat \
 		src/msvcsetup.bat \
@@ -314,10 +313,7 @@ SRC_DOS =	\
 		src/glbl_ime.h \
 		src/gui_dwrite.cpp \
 		src/gui_dwrite.h \
-		src/gui_w16.c \
 		src/gui_w32.c \
-		src/gui_w48.c \
-		src/guiw16rc.h \
 		src/gui_w32_rc.h \
 		src/if_ole.cpp \
 		src/if_ole.h \
@@ -329,16 +325,12 @@ SRC_DOS =	\
 		src/os_msdos.h \
 		src/os_w32dll.c \
 		src/os_w32exe.c \
-		src/os_win16.c \
 		src/os_win32.c \
 		src/os_mswin.c \
-		src/os_win16.h \
 		src/os_win32.h \
-		src/proto/gui_w16.pro \
 		src/proto/gui_w32.pro \
 		src/proto/if_ole.pro \
 		src/proto/os_msdos.pro \
-		src/proto/os_win16.pro \
 		src/proto/os_win32.pro \
 		src/proto/os_mswin.pro \
 		src/testdir/Make_dos.mak \
@@ -349,8 +341,6 @@ SRC_DOS =	\
 		src/vim.rc \
 		src/vimio.h \
 		src/gvim.exe.mnf \
-		src/vim16.def \
-		src/vim16.rc \
 		src/vimrun.c \
 		src/vimtbar.h \
 		src/xpm_w32.c \
@@ -390,7 +380,6 @@ SRC_DOS_BIN =	\
 		src/VisVim/Res/*.bmp \
 		src/tearoff.bmp \
 		src/tools.bmp \
-		src/tools16.bmp \
 		src/vim*.ico \
 		src/vim.tlb \
 		src/vimtbar.lib \

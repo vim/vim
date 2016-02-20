@@ -28,12 +28,6 @@
 # include <conio.h>
 #endif
 
-/*
- * MS-DOS only code, not used for Win16.
- */
-#ifndef WIN16
-
-
 #ifndef PROTO
 # include <bios.h>
 # ifdef DJGPP
@@ -2849,11 +2843,6 @@ Win16SetClipboardData(
 
 #endif	/* FEAT_CLIPBOARD */
 #endif /* DJGPP */
-
-/*
- * End of MS-DOS only code
- */
-#endif /* WIN16 */
 
 /* common MS-DOS and Win16 code follows */
 

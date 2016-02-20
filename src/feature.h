@@ -320,7 +320,7 @@
  *
  * Disabled for EBCDIC as it requires multibyte.
  */
-#if defined(FEAT_BIG) && !defined(WIN16) && VIM_SIZEOF_INT >= 4 && !defined(EBCDIC)
+#if defined(FEAT_BIG) && VIM_SIZEOF_INT >= 4 && !defined(EBCDIC)
 # define FEAT_ARABIC
 #endif
 #ifdef FEAT_ARABIC
@@ -624,8 +624,7 @@
  * Multibyte support doesn't work on z/OS Unix currently.
  */
 #if (defined(FEAT_NORMAL) || defined(FEAT_GUI_GTK) || defined(FEAT_ARABIC)) \
-	&& !defined(FEAT_MBYTE) && !defined(WIN16) \
-	&& VIM_SIZEOF_INT >= 4 && !defined(EBCDIC)
+	&& !defined(FEAT_MBYTE) && VIM_SIZEOF_INT >= 4 && !defined(EBCDIC)
 # define FEAT_MBYTE
 #endif
 
@@ -763,7 +762,7 @@
     && (defined(FEAT_GUI_GTK) \
 	|| (defined(FEAT_GUI_MOTIF) && defined(HAVE_XM_NOTEBOOK_H)) \
 	|| defined(FEAT_GUI_MAC) \
-	|| (defined(FEAT_GUI_MSWIN) && !defined(WIN16) \
+	|| (defined(FEAT_GUI_MSWIN) \
 	    && (!defined(_MSC_VER) || _MSC_VER > 1020)))
 # define FEAT_GUI_TABLINE
 #endif
