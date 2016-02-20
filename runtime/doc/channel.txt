@@ -121,6 +121,13 @@ Use |ch_status()| to see if the channel could be opened.
 	"nl"   - Use messages that end in a NL character
 	"raw"  - Use raw messages
 
+"in-mode"	mode specifically for stdin, only when using pipes
+"out-mode"	mode specifically for stdout, only when using pipes
+"err-mode"	mode specifically for stderr, only when using pipes
+		Note: when setting "mode" the part specific mode is
+		overwritten.  Therefore set "mode" first and the part specific
+		mode later.
+
 							*channel-callback*
 "callback"	A function that is called when a message is received that is
 		not handled otherwise.  It gets two arguments: the channel
@@ -130,9 +137,13 @@ Use |ch_status()| to see if the channel could be opened.
 	endfunc
 	let channel = ch_open("localhost:8765", {"callback": "Handle"})
 <
-		TODO:
+"out-cb"	A function like "callback" but used for stdout.  Only for when
+		the channel uses pipes.  When "out-cb" wasn't set the channel
+		callback is used.
+
 "err-cb"	A function like "callback" but used for stderr.  Only for when
-		the channel uses pipes.
+		the channel uses pipes.  When "err-cb" wasn't set the channel
+		callback is used.
 
 		TODO:
 "close-cb"	A function that is called when the channel gets closed, other
@@ -144,9 +155,15 @@ Use |ch_status()| to see if the channel could be opened.
 		useful if the server is supposed to be running already.  A
 		negative number waits forever.
 
-"timeout"	The time to wait for a request when blocking, using
-		ch_sendexpr().  Again in milliseconds.  The default is 2000 (2
+"timeout"	The time to wait for a request when blocking, E.g. when using
+		ch_sendexpr().  In milliseconds.  The default is 2000 (2
 		seconds).
+
+"out-timeout"	Timeout for stdout.  Only when using pipes.
+"err-timeout"	Timeout for stderr.  Only when using pipes.
+		Note: when setting "timeout" the part specific mode is
+		overwritten.  Therefore set "timeout" first and the part
+		specific mode later.
 
 When "mode" is "json" or "js" the "msg" argument is the body of the received
 message, converted to Vim types.
@@ -248,8 +265,10 @@ Possible commands are:				*E903* *E904* *E905*
     ["redraw"  {forced}]
     ["ex",     {Ex command}]
     ["normal", {Normal mode command}]
-    ["eval",   {expression}, {number}]
+    ["expr",   {expression}, {number}]
     ["expr",   {expression}]
+    ["call",   {func name}, {argument list}, {number}]
+    ["call",   {func name}, {argument list}]
 
 With all of these: Be careful what these commands do!  You can easily
 interfere with what the user is doing.  To avoid trouble use |mode()| to check
@@ -290,29 +309,44 @@ mapped.  Example to open the folds under the cursor:
 	["normal" "zO"]
 
 
-Command "eval" ~
+Command "expr"  with response ~
 
-The "eval" command an be used to get the result of an expression.  For
+The "expr" command can be used to get the result of an expression.  For
 example, to get the number of lines in the current buffer:
-	["eval","line('$')", -2] ~
+	["expr","line('$')", -2] ~
 
-it will send back the result of the expression:
+It will send back the result of the expression:
 	[-2, "last line"] ~
 The format is:
 	[{number}, {result}]
+							*E915*
 Here {number} is the same as what was in the request.  Use a negative number
-to avoid confusion with message that Vim sends.
+to avoid confusion with message that Vim sends.  Use a different number on
+every request to be able to match the request with the response.
 
 {result} is the result of the evaluation and is JSON encoded.  If the
 evaluation fails or the result can't be encoded in JSON it is the string
 "ERROR".
 
 
-Command "expr" ~
+Command "expr" without a response ~
 
-The "expr" command is similar to "eval", but does not send back any response.
+This command is similar to "expr" above, but does not send back any response.
 Example:
 	["expr","setline('$', ['one', 'two', 'three'])"] ~
+There is no third argument in the request.
+
+
+Command "call" ~
+
+This is similar to "expr", but instead of passing the whole expression as a
+string this passes the name of a function and a list of arguments.  This
+avoids the conversion of the arguments to a string and escaping and
+concatenating them.  Example:
+	["call", "line", ["$"], -2] ~
+
+Leave out the fourth argument if no response is to be sent:
+	["call", "setline", ["$", ["one", "two", "three"]]] ~
 
 ==============================================================================
 6. Using a RAW or NL channel				*channel-raw*
@@ -357,20 +391,18 @@ are:
 TODO:
 To objain the job associated with a channel: ch_getjob(channel)
 
-TODO:
 To read one message from a channel: >
 	let output = ch_read(channel)
 This uses the channel timeout.  To read without a timeout, just get any
 message that is available: >
-	let output = ch_read(channel, 0)
+	let output = ch_read(channel, {'timeout': 0})
 When no message was available then the result is v:none for a JSON or JS mode
 channels, an empty string for a RAW or NL channel.
 
-To read all output from a RAW or NL channel that is available: >
-	let output = ch_readall(channel)
+To read all output from a RAW channel that is available: >
+	let output = ch_readraw(channel)
 To read the error output: >
-	let output = ch_readall(channel, "err")
-TODO: use channel timeout, no timeout or specify timeout?
+	let output = ch_readraw(channel, {"part": "err"})
 
 ==============================================================================
 8. Starting a job with a channel			*job-start* *job*
@@ -451,13 +483,15 @@ This gives the job some time to make the port available.
 The {options} argument in job_start() is a dictionary.  All entries are
 optional.  The same options can be used with job_setoptions(job, {options}).
 
-TODO:						*job-out-cb*
-"callback": handler
+						*job-callback*
+"callback": handler	Callback for something to read on any part of the
+			channel.
+						*job-out-cb*
 "out-cb": handler	Callback for when there is something to read on
 			stdout.
-TODO:						*job-err-cb*
+						*job-err-cb*
 "err-cb": handler	Callback for when there is something to read on
-			stderr.  Defaults to the same callback as "out-cb".
+			stderr.
 TODO:						*job-close-cb*
 "close-cb": handler	Callback for when the channel is closed.  Same as
 			"close-cb" on ch_open().
