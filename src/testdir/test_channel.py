@@ -192,3 +192,8 @@ if __name__ == "__main__":
 
     # Main thread terminates, but the server continues running
     # until server.shutdown() is called.
+    try:
+        while server_thread.isAlive(): 
+            server_thread.join(1)
+    except (KeyboardInterrupt, SystemExit):
+        server.shutdown()
