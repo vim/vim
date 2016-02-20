@@ -1080,28 +1080,28 @@ channel_get_json(channel_T *channel, int part, int id, typval_T **rettv)
     return FAIL;
 }
 
+#define CH_JSON_MAX_ARGS 4
+
 /*
  * Execute a command received over "channel"/"part"
- * "cmd" is the command string, "arg2" the second argument.
- * "arg3" is the third argument, NULL if missing.
+ * "argv[0]" is the command string.
+ * "argv[1]" etc. have further arguments, type is VAR_UNKNOWN if missing.
  */
     static void
-channel_exe_cmd(
-	channel_T *channel,
-	int part,
-	char_u *cmd,
-	typval_T *arg2,
-	typval_T *arg3)
+channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
 {
-    char_u *arg;
+    char_u  *cmd = argv[0].vval.v_string;
+    char_u  *arg;
+    int	    options = channel->ch_part[part].ch_mode == MODE_JS ? JSON_JS : 0;
 
-    if (arg2->v_type != VAR_STRING)
+    if (argv[1].v_type != VAR_STRING)
     {
+	ch_error(channel, "received command with non-string argument");
 	if (p_verbose > 2)
-	    EMSG("E903: received ex command with non-string argument");
+	    EMSG("E903: received command with non-string argument");
 	return;
     }
-    arg = arg2->vval.v_string;
+    arg = argv[1].vval.v_string;
     if (arg == NULL)
 	arg = (char_u *)"";
 
@@ -1135,31 +1135,46 @@ channel_exe_cmd(
 	}
 #endif
     }
-    else if (STRCMP(cmd, "expr") == 0 || STRCMP(cmd, "eval") == 0)
+    else if (STRCMP(cmd, "expr") == 0 || STRCMP(cmd, "call") == 0)
     {
-	int is_eval = cmd[1] == 'v';
+	int is_call = cmd[0] == 'c';
+	int id_idx = is_call ? 3 : 2;
 
-	if (is_eval && (arg3 == NULL || arg3->v_type != VAR_NUMBER))
+	if (argv[id_idx].v_type != VAR_UNKNOWN
+					 && argv[id_idx].v_type != VAR_NUMBER)
 	{
+	    ch_error(channel, "last argument for expr/call must be a number");
 	    if (p_verbose > 2)
-		EMSG("E904: third argument for eval must be a number");
+		EMSG("E904: last argument for expr/call must be a number");
+	}
+	else if (is_call && argv[2].v_type != VAR_LIST)
+	{
+	    ch_error(channel, "third argument for call must be a list");
+	    if (p_verbose > 2)
+		EMSG("E904: third argument for call must be a list");
 	}
 	else
 	{
 	    typval_T	*tv;
+	    typval_T	res_tv;
 	    typval_T	err_tv;
 	    char_u	*json = NULL;
-	    int		options = channel->ch_part[part].ch_mode == MODE_JS
-								? JSON_JS : 0;
 
 	    /* Don't pollute the display with errors. */
 	    ++emsg_skip;
-	    tv = eval_expr(arg, NULL);
-	    if (is_eval)
+	    if (!is_call)
+		tv = eval_expr(arg, NULL);
+	    else if (func_call(arg, &argv[2], NULL, &res_tv) == OK)
+		tv = &res_tv;
+	    else
+		tv = NULL;
+
+	    if (argv[id_idx].v_type == VAR_NUMBER)
 	    {
+		int id = argv[id_idx].vval.v_number;
+
 		if (tv != NULL)
-		    json = json_encode_nr_expr(arg3->vval.v_number, tv,
-								     options);
+		    json = json_encode_nr_expr(id, tv, options);
 		if (tv == NULL || (json != NULL && *json == NUL))
 		{
 		    /* If evaluation failed or the result can't be encoded
@@ -1169,22 +1184,28 @@ channel_exe_cmd(
 		    err_tv.v_type = VAR_STRING;
 		    err_tv.vval.v_string = (char_u *)"ERROR";
 		    tv = &err_tv;
-		    json = json_encode_nr_expr(arg3->vval.v_number, tv,
-								     options);
+		    json = json_encode_nr_expr(id, tv, options);
 		}
 		if (json != NULL)
 		{
-		    channel_send(channel, part, json, "eval");
+		    channel_send(channel,
+				 part == PART_SOCK ? PART_SOCK : PART_IN,
+				 json, (char *)cmd);
 		    vim_free(json);
 		}
 	    }
 	    --emsg_skip;
-	    if (tv != &err_tv)
+	    if (tv == &res_tv)
+		clear_tv(tv);
+	    else if (tv != &err_tv)
 		free_tv(tv);
 	}
     }
     else if (p_verbose > 2)
+    {
+	ch_errors(channel, "Receved unknown command: %s", (char *)cmd);
 	EMSG2("E905: received unknown command: %s", cmd);
+    }
 }
 
 /*
@@ -1196,9 +1217,7 @@ may_invoke_callback(channel_T *channel, int part)
 {
     char_u	*msg = NULL;
     typval_T	*listtv = NULL;
-    list_T	*list;
-    typval_T	*typetv;
-    typval_T	argv[3];
+    typval_T	argv[CH_JSON_MAX_ARGS];
     int		seq_nr = -1;
     ch_mode_T	ch_mode = channel->ch_part[part].ch_mode;
     char_u	*callback = NULL;
@@ -1214,6 +1233,9 @@ may_invoke_callback(channel_T *channel, int part)
 
     if (ch_mode == MODE_JSON || ch_mode == MODE_JS)
     {
+	listitem_T	*item;
+	int		argc = 0;
+
 	/* Get any json message in the queue. */
 	if (channel_get_json(channel, part, -1, &listtv) == FAIL)
 	{
@@ -1223,31 +1245,32 @@ may_invoke_callback(channel_T *channel, int part)
 		return FALSE;
 	}
 
-	list = listtv->vval.v_list;
-	argv[1] = list->lv_first->li_next->li_tv;
-	typetv = &list->lv_first->li_tv;
-	if (typetv->v_type == VAR_STRING)
-	{
-	    typval_T	*arg3 = NULL;
-	    char_u	*cmd = typetv->vval.v_string;
+	for (item = listtv->vval.v_list->lv_first;
+			    item != NULL && argc < CH_JSON_MAX_ARGS;
+						    item = item->li_next)
+	    argv[argc++] = item->li_tv;
+	while (argc < CH_JSON_MAX_ARGS)
+	    argv[argc++].v_type = VAR_UNKNOWN;
 
-	    /* ["cmd", arg] or ["cmd", arg, arg] */
-	    if (list->lv_len == 3)
-		arg3 = &list->lv_last->li_tv;
+	if (argv[0].v_type == VAR_STRING)
+	{
+	    char_u	*cmd = argv[0].vval.v_string;
+
+	    /* ["cmd", arg] or ["cmd", arg, arg] or ["cmd", arg, arg, arg] */
 	    ch_logs(channel, "Executing %s command", (char *)cmd);
-	    channel_exe_cmd(channel, part, cmd, &argv[1], arg3);
+	    channel_exe_cmd(channel, part, argv);
 	    free_tv(listtv);
 	    return TRUE;
 	}
 
-	if (typetv->v_type != VAR_NUMBER)
+	if (argv[0].v_type != VAR_NUMBER)
 	{
 	    ch_error(channel,
 		      "Dropping message with invalid sequence number type");
 	    free_tv(listtv);
 	    return FALSE;
 	}
-	seq_nr = typetv->vval.v_number;
+	seq_nr = argv[0].vval.v_number;
     }
     else if (channel_peek(channel, part) == NULL)
     {

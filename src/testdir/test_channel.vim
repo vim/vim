@@ -431,3 +431,26 @@ func Test_open_delay()
   " The server will wait half a second before creating the port.
   call s:run_server('s:open_delay', 'delay')
 endfunc
+
+"""""""""
+
+function MyFunction(a,b,c)
+  let s:call_ret = [a:a, a:b, a:c]
+endfunc
+
+function s:test_call(port)
+  let handle = ch_open('localhost:' . a:port, s:chopt)
+  if ch_status(handle) == "fail"
+    call assert_false(1, "Can't open channel")
+    return
+  endif
+
+  call assert_equal('ok', ch_sendexpr(handle, 'call-func'))
+  sleep 20m
+  call assert_equal([1, 2, 3], s:call_ret)
+endfunc
+
+func Test_call()
+  call ch_log('Test_call()')
+  call s:run_server('s:test_call')
+endfunc

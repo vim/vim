@@ -78,32 +78,37 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         response = "ok"
                     elif decoded[1] == 'eval-works':
                         # Send an eval request.  We ignore the response.
-                        cmd = '["eval","\\"foo\\" . 123", -1]'
+                        cmd = '["expr","\\"foo\\" . 123", -1]'
                         print("sending: {}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'eval-fails':
                         # Send an eval request that will fail.
-                        cmd = '["eval","xxx", -2]'
+                        cmd = '["expr","xxx", -2]'
                         print("sending: {}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'eval-error':
                         # Send an eval request that works but the result can't
                         # be encoded.
-                        cmd = '["eval","function(\\"tr\\")", -3]'
+                        cmd = '["expr","function(\\"tr\\")", -3]'
                         print("sending: {}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'eval-bad':
                         # Send an eval request missing the third argument.
-                        cmd = '["eval","xxx"]'
+                        cmd = '["expr","xxx"]'
                         print("sending: {}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'an expr':
                         # Send an expr request.
                         cmd = '["expr","setline(\\"$\\", [\\"one\\",\\"two\\",\\"three\\"])"]'
+                        print("sending: {}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                    elif decoded[1] == 'call-func':
+                        cmd = '["call","MyFunction",[1,2,3], 0]'
                         print("sending: {}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
@@ -135,6 +140,9 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         print("sending: {}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = ""
+                    elif decoded[1] == 'wait a bit':
+                        time.sleep(0.2)
+                        response = "waited"
                     elif decoded[1] == '!quit!':
                         # we're done
                         self.server.shutdown()
