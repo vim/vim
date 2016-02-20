@@ -184,6 +184,21 @@ func s:communicate(port)
 
   call assert_equal('ok', ch_sendexpr(handle, 'empty-request'))
 
+  " Reading while there is nothing available.
+  call assert_equal(v:none, ch_read(handle, {'timeout': 0}))
+  let start = reltime()
+  call assert_equal(v:none, ch_read(handle, {'timeout': 333}))
+  let elapsed = reltime(start)
+  call assert_true(reltimefloat(elapsed) > 0.3)
+  call assert_true(reltimefloat(elapsed) < 0.6)
+
+  " Send without waiting for a response, then wait for a response.
+  call ch_sendexpr(handle, 'wait a bit',  {'callback': 0})
+  let resp = ch_read(handle)
+  call assert_equal(type([]), type(resp))
+  call assert_equal(type(11), type(resp[0]))
+  call assert_equal('waited', resp[1])
+
   " make the server quit, can't check if this works, should not hang.
   call ch_sendexpr(handle, '!quit!', {'callback': 0})
 endfunc
@@ -292,8 +307,7 @@ func Test_connect_waittime()
     " Oops, port does exists.
     call ch_close(handle)
   else
-    " Failed connection doesn't wait the full time on Unix.
-    " TODO: why is MS-Windows different?
+    " Failed connection should wait about 500 msec.
     let elapsed = reltime(start)
     call assert_true(reltimefloat(elapsed) < 1.0)
   endif

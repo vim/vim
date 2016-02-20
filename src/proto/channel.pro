@@ -23,9 +23,9 @@ void channel_clear(channel_T *channel);
 void channel_free_all(void);
 int channel_get_id(void);
 void channel_read(channel_T *channel, int part, char *func);
-char_u *channel_read_block(channel_T *channel, int part);
-int channel_read_json_block(channel_T *channel, int part, int id, typval_T **rettv);
-channel_T *channel_fd2channel(sock_T fd, int *part);
+char_u *channel_read_block(channel_T *channel, int part, int timeout);
+int channel_read_json_block(channel_T *channel, int part, int timeout, int id, typval_T **rettv);
+channel_T *channel_fd2channel(sock_T fd, int *partp);
 void channel_handle_events(void);
 int channel_send(channel_T *channel, int part, char_u *buf, char *fun);
 int channel_poll_setup(int nfd_in, void *fds_in);
@@ -37,4 +37,5 @@ int set_ref_in_channel(int copyID);
 int channel_part_send(channel_T *channel);
 int channel_part_read(channel_T *channel);
 ch_mode_T channel_get_mode(channel_T *channel, int part);
+int channel_get_timeout(channel_T *channel, int part);
 /* vim: set ft=c : */

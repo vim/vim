@@ -1377,6 +1377,8 @@ struct channel_S {
 #define JO_CALLBACK	2	/* channel callback */
 #define JO_WAITTIME	4	/* only for ch_open() */
 #define JO_TIMEOUT	8	/* all timeouts */
+#define JO_PART		16	/* "part" */
+#define JO_ID		32	/* "id" */
 #define JO_ALL		0xffffff
 
 /*
@@ -1390,6 +1392,8 @@ typedef struct
     char_u	*jo_callback;	/* not allocated! */
     int		jo_waittime;
     int		jo_timeout;
+    int		jo_part;
+    int		jo_id;
 } jobopt_T;
 
 

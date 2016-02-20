@@ -1696,12 +1696,11 @@ channel_read(channel_T *channel, int part, char *func)
  * Returns NULL in case of error or timeout.
  */
     char_u *
-channel_read_block(channel_T *channel, int part)
+channel_read_block(channel_T *channel, int part, int timeout)
 {
     char_u	*buf;
     char_u	*msg;
     ch_mode_T	mode = channel->ch_part[part].ch_mode;
-    int		timeout = channel->ch_part[part].ch_timeout;
     sock_T	fd = channel->ch_part[part].ch_fd;
     char_u	*nl;
 
@@ -1753,16 +1752,23 @@ channel_read_block(channel_T *channel, int part)
 /*
  * Read one JSON message with ID "id" from "channel"/"part" and store the
  * result in "rettv".
+ * When "id" is -1 accept any message;
  * Blocks until the message is received or the timeout is reached.
  */
     int
-channel_read_json_block(channel_T *channel, int part, int id, typval_T **rettv)
+channel_read_json_block(
+	channel_T *channel,
+	int part,
+	int timeout,
+	int id,
+	typval_T **rettv)
 {
     int		more;
     sock_T	fd;
 
     ch_log(channel, "Reading JSON");
-    channel->ch_part[part].ch_block_id = id;
+    if (id != -1)
+	channel->ch_part[part].ch_block_id = id;
     for (;;)
     {
 	more = channel_parse_json(channel, part);
@@ -1781,10 +1787,9 @@ channel_read_json_block(channel_T *channel, int part, int id, typval_T **rettv)
 	    if (channel_parse_messages())
 		continue;
 
-	    /* Wait for up to the channel timeout. */
+	    /* Wait for up to the timeout. */
 	    fd = channel->ch_part[part].ch_fd;
-	    if (fd == INVALID_FD || channel_wait(channel, fd,
-				   channel->ch_part[part].ch_timeout) == FAIL)
+	    if (fd == INVALID_FD || channel_wait(channel, fd, timeout) == FAIL)
 		break;
 	    channel_read(channel, part, "channel_read_json_block");
 	}
@@ -2159,6 +2164,15 @@ channel_get_mode(channel_T *channel, int part)
     if (channel == NULL)
 	return MODE_JSON;
     return channel->ch_part[part].ch_mode;
+}
+
+/*
+ * Return the timeout of "channel"/"part"
+ */
+    int
+channel_get_timeout(channel_T *channel, int part)
+{
+    return channel->ch_part[part].ch_timeout;
 }
 
 #endif /* FEAT_CHANNEL */
