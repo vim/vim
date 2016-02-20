@@ -1303,19 +1303,19 @@ typedef enum
 
 /* Ordering matters, it is used in for loops: IN is last, only SOCK/OUT/ERR
  * are polled. */
-#define CHAN_SOCK   0
-#define CH_SOCK	    ch_pfd[CHAN_SOCK].ch_fd
+#define PART_SOCK   0
+#define CH_SOCK_FD	ch_part[PART_SOCK].ch_fd
 
 #if defined(UNIX) || defined(WIN32)
 # define CHANNEL_PIPES
-# define CHAN_FD_INVALID  (-1)
+# define INVALID_FD  (-1)
 
-# define CHAN_OUT   1
-# define CHAN_ERR   2
-# define CHAN_IN    3
-# define CH_OUT	    ch_pfd[CHAN_OUT].ch_fd
-# define CH_ERR	    ch_pfd[CHAN_ERR].ch_fd
-# define CH_IN	    ch_pfd[CHAN_IN].ch_fd
+# define PART_OUT   1
+# define PART_ERR   2
+# define PART_IN    3
+# define CH_OUT_FD	ch_part[PART_OUT].ch_fd
+# define CH_ERR_FD	ch_part[PART_ERR].ch_fd
+# define CH_IN_FD	ch_part[PART_IN].ch_fd
 #endif
 
 /* The per-fd info for a channel. */
@@ -1335,7 +1335,18 @@ typedef struct {
 #ifdef WIN32
     int		ch_inputHandler; /* ret.value of WSAAsyncSelect() */
 #endif
-} chan_fd_T;
+
+    ch_mode_T	ch_mode;
+    int		ch_timeout;	/* request timeout in msec */
+
+    readq_T	ch_head;	/* header for circular raw read queue */
+    jsonq_T	ch_json_head;	/* header for circular json read queue */
+    int		ch_block_id;	/* ID that channel_read_json_block() is
+				   waiting for */
+
+    cbq_T	ch_cb_head;	/* dummy node for per-request callbacks */
+    char_u	*ch_callback;	/* call when a msg is not handled */
+} chanpart_T;
 
 struct channel_S {
     channel_T	*ch_next;
@@ -1343,9 +1354,7 @@ struct channel_S {
 
     int		ch_id;		/* ID of the channel */
 
-    chan_fd_T	ch_pfd[4];	/* info for socket, out, err and in */
-
-    readq_T	ch_head;	/* dummy node, header for circular queue */
+    chanpart_T	ch_part[4];	/* info for socket, out, err and in */
 
     int		ch_error;	/* When TRUE an error was reported.  Avoids
 				 * giving pages full of error messages when
@@ -1355,15 +1364,7 @@ struct channel_S {
 
     void	(*ch_close_cb)(void); /* callback for when channel is closed */
 
-    int		ch_block_id;	/* ID that channel_read_json_block() is
-				   waiting for */
-    char_u	*ch_callback;	/* function to call when a msg is not handled */
-    cbq_T	ch_cb_head;	/* dummy node for pre-request callbacks */
-
-    ch_mode_T	ch_mode;
-    jsonq_T	ch_json_head;	/* dummy node, header for circular queue */
-
-    int		ch_timeout;	/* request timeout in msec */
+    char_u	*ch_callback;	/* call when any msg is not handled */
 
     job_T	*ch_job;	/* Job that uses this channel; this does not
 				 * count as a reference to avoid a circular
@@ -1372,10 +1373,10 @@ struct channel_S {
     int		ch_refcount;	/* reference count */
 };
 
-#define JO_MODE		1
-#define JO_CALLBACK	2
-#define JO_WAITTIME	4
-#define JO_TIMEOUT	8
+#define JO_MODE		1	/* all modes */
+#define JO_CALLBACK	2	/* channel callback */
+#define JO_WAITTIME	4	/* only for ch_open() */
+#define JO_TIMEOUT	8	/* all timeouts */
 #define JO_ALL		0xffffff
 
 /*

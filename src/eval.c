@@ -10112,33 +10112,42 @@ f_ch_open(typval_T *argvars, typval_T *rettv)
     static void
 f_ch_readraw(typval_T *argvars, typval_T *rettv)
 {
-    channel_T *channel;
+    channel_T	*channel;
+    int		part;
 
     /* return an empty string by default */
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
     /* TODO: use timeout from the options */
+    /* TODO: read from stderr */
 
     channel = get_channel_arg(&argvars[0]);
     if (channel != NULL)
-	rettv->vval.v_string = channel_read_block(channel);
+    {
+	part = channel_part_read(channel);
+	rettv->vval.v_string = channel_read_block(channel, part);
+    }
 }
 
 /*
  * common for "sendexpr()" and "sendraw()"
  * Returns the channel if the caller should read the response.
+ * Sets "part_read" to the the read fd.
  * Otherwise returns NULL.
  */
     static channel_T *
-send_common(typval_T *argvars, char_u *text, int id, char *fun)
+send_common(typval_T *argvars, char_u *text, int id, char *fun, int *part_read)
 {
     channel_T	*channel;
     jobopt_T	opt;
+    int		part_send;
 
     channel = get_channel_arg(&argvars[0]);
     if (channel == NULL)
 	return NULL;
+    part_send = channel_part_send(channel);
+    *part_read = channel_part_read(channel);
 
     opt.jo_callback = NULL;
     if (get_job_options(&argvars[2], &opt, JO_CALLBACK) == FAIL)
@@ -10147,9 +10156,10 @@ send_common(typval_T *argvars, char_u *text, int id, char *fun)
     /* Set the callback. An empty callback means no callback and not reading
      * the response. */
     if (opt.jo_callback != NULL && *opt.jo_callback != NUL)
-	channel_set_req_callback(channel, opt.jo_callback, id);
+	channel_set_req_callback(channel, part_send, opt.jo_callback, id);
 
-    if (channel_send(channel, text, fun) == OK && opt.jo_callback == NULL)
+    if (channel_send(channel, part_send, text, fun) == OK
+						   && opt.jo_callback == NULL)
 	return channel;
     return NULL;
 }
@@ -10165,6 +10175,8 @@ f_ch_sendexpr(typval_T *argvars, typval_T *rettv)
     channel_T	*channel;
     int		id;
     ch_mode_T	ch_mode;
+    int		part_send;
+    int		part_read;
 
     /* return an empty string by default */
     rettv->v_type = VAR_STRING;
@@ -10173,11 +10185,12 @@ f_ch_sendexpr(typval_T *argvars, typval_T *rettv)
     channel = get_channel_arg(&argvars[0]);
     if (channel == NULL)
 	return;
+    part_send = channel_part_send(channel);
 
-    ch_mode = channel_get_mode(channel);
-    if (ch_mode == MODE_RAW)
+    ch_mode = channel_get_mode(channel, part_send);
+    if (ch_mode == MODE_RAW || ch_mode == MODE_NL)
     {
-	EMSG(_("E912: cannot use ch_sendexpr() with a raw channel"));
+	EMSG(_("E912: cannot use ch_sendexpr() with a raw or nl channel"));
 	return;
     }
 
@@ -10187,11 +10200,11 @@ f_ch_sendexpr(typval_T *argvars, typval_T *rettv)
     if (text == NULL)
 	return;
 
-    channel = send_common(argvars, text, id, "sendexpr");
+    channel = send_common(argvars, text, id, "sendexpr", &part_read);
     vim_free(text);
     if (channel != NULL)
     {
-	if (channel_read_json_block(channel, id, &listtv) == OK)
+	if (channel_read_json_block(channel, part_read, id, &listtv) == OK)
 	{
 	    list_T *list = listtv->vval.v_list;
 
@@ -10213,15 +10226,16 @@ f_ch_sendraw(typval_T *argvars, typval_T *rettv)
     char_u	buf[NUMBUFLEN];
     char_u	*text;
     channel_T	*channel;
+    int		part_read;
 
     /* return an empty string by default */
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
     text = get_tv_string_buf(&argvars[1], buf);
-    channel = send_common(argvars, text, 0, "sendraw");
+    channel = send_common(argvars, text, 0, "sendraw", &part_read);
     if (channel != NULL)
-	rettv->vval.v_string = channel_read_block(channel);
+	rettv->vval.v_string = channel_read_block(channel, part_read);
 }
 
 /*

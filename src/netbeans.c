@@ -385,7 +385,7 @@ netbeans_parse_messages(void)
 
     while (nb_channel != NULL)
     {
-	buffer = channel_peek(nb_channel);
+	buffer = channel_peek(nb_channel, PART_SOCK);
 	if (buffer == NULL)
 	    break;	/* nothing to read */
 
@@ -396,7 +396,7 @@ netbeans_parse_messages(void)
 	    /* Command isn't complete.  If there is no following buffer,
 	     * return (wait for more). If there is another buffer following,
 	     * prepend the text to that buffer and delete this one.  */
-	    if (channel_collapse(nb_channel) == FAIL)
+	    if (channel_collapse(nb_channel, PART_SOCK) == FAIL)
 		return;
 	}
 	else
@@ -409,7 +409,7 @@ netbeans_parse_messages(void)
 	    if (*p == NUL)
 	    {
 		own_node = TRUE;
-		channel_get(nb_channel);
+		channel_get(nb_channel, PART_SOCK);
 	    }
 	    else
 		own_node = FALSE;
@@ -757,7 +757,7 @@ netbeans_end(void)
 nb_send(char *buf, char *fun)
 {
     if (nb_channel != NULL)
-	channel_send(nb_channel, (char_u *)buf, fun);
+	channel_send(nb_channel, PART_SOCK, (char_u *)buf, fun);
 }
 
 /*
