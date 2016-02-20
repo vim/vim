@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 16
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1793,9 +1793,9 @@ argidx()			Number	current index in the argument list
 arglistid( [{winnr} [, {tabnr}]])
 				Number	argument list id
 argv( {nr})			String	{nr} entry of the argument list
-argv( )				List	the argument list
+argv()				List	the argument list
 assert_equal( {exp}, {act} [, {msg}]) none  assert {exp} equals {act}
-assert_exception({error} [, {msg}])   none  assert {error} is in v:exception
+assert_exception( {error} [, {msg}])  none  assert {error} is in v:exception
 assert_fails( {cmd} [, {error}])      none  assert {cmd} fails
 assert_false( {actual} [, {msg}])     none  assert {actual} is false
 assert_true( {actual} [, {msg}])      none  assert {actual} is true
@@ -1818,13 +1818,15 @@ call( {func}, {arglist} [, {dict}])
 				any	call {func} with arguments {arglist}
 ceil( {expr})			Float	round {expr} up
 ch_close( {handle})		none	close a channel
+ch_log( {msg} [, {channel}])	none	write {msg} in the channel log file
 ch_logfile( {fname} [, {mode}])	none	start logging channel activity
-ch_open( {address} [, {argdict})] Number open a channel to {address}
+ch_open( {address} [, {options}]) Channel open a channel to {address}
 ch_readraw( {handle})		String	read from channel {handle}
 ch_sendexpr( {handle}, {expr} [, {options}])
 				any	send {expr} over JSON channel {handle}
 ch_sendraw( {handle}, {string} [, {options}])
 				any	send {string} over raw channel {handle}
+ch_setoptions( {handle}, {options})  none  set options for channel {handle}
 ch_status( {handle})		String	status of channel {handle}
 changenr()			Number	current change number
 char2nr( {expr}[, {utf8}])	Number	ASCII/UTF8 value of first char in {expr}
@@ -1851,11 +1853,11 @@ delete( {fname} [, {flags}])	Number	delete the file or directory {fname}
 did_filetype()			Number	TRUE if FileType autocommand event used
 diff_filler( {lnum})		Number	diff filler lines about {lnum}
 diff_hlID( {lnum}, {col})	Number	diff highlighting at {lnum}/{col}
-disable_char_avail_for_testing({expr})  none  test without typeahead
+disable_char_avail_for_testing( {expr})  none  test without typeahead
 empty( {expr})			Number	TRUE if {expr} is empty
 escape( {string}, {chars})	String	escape {chars} in {string} with '\'
 eval( {string})			any	evaluate {string} into its value
-eventhandler( )			Number	TRUE if inside an event handler
+eventhandler()			Number	TRUE if inside an event handler
 executable( {expr})		Number	1 if executable {expr} exists
 exepath( {expr})		String  full path of the command {expr}
 exists( {expr})			Number	TRUE if {expr} exists
@@ -1881,9 +1883,9 @@ fnamemodify( {fname}, {mods})	String	modify file name
 foldclosed( {lnum})		Number	first line of fold at {lnum} if closed
 foldclosedend( {lnum})		Number	last line of fold at {lnum} if closed
 foldlevel( {lnum})		Number	fold level at {lnum}
-foldtext( )			String	line displayed for closed fold
+foldtext()			String	line displayed for closed fold
 foldtextresult( {lnum})		String	text for closed fold at {lnum}
-foreground( )			Number	bring the Vim window to the foreground
+foreground()			Number	bring the Vim window to the foreground
 function( {name})		Funcref reference to function {name}
 garbagecollect( [{atexit}])	none	free memory, breaking cyclic references
 get( {list}, {idx} [, {def}])	any	get item {idx} from {list} or {def}
@@ -1893,7 +1895,7 @@ getbufline( {expr}, {lnum} [, {end}])
 getbufvar( {expr}, {varname} [, {def}])
 				any	variable {varname} in buffer {expr}
 getchar( [expr])		Number	get one character from the user
-getcharmod( )			Number	modifiers for the last typed character
+getcharmod()			Number	modifiers for the last typed character
 getcharsearch()			Dict	last character search
 getcmdline()			String	return the current command-line
 getcmdpos()			Number	return cursor position in command-line
@@ -1935,7 +1937,7 @@ haslocaldir( [{winnr} [, {tabnr}]])
 				Number	TRUE if the window executed |:lcd|
 hasmapto( {what} [, {mode} [, {abbr}]])
 				Number	TRUE if mapping to {what} exists
-histadd( {history},{item})	String	add an item to a history
+histadd( {history}, {item})	String	add an item to a history
 histdel( {history} [, {item}])	String	remove an item from a history
 histget( {history} [, {index}])	String	get the item {index} from a history
 histnr( {history})		Number	highest index of a history
@@ -2220,7 +2222,7 @@ argidx()	The result is the current index in the argument list.  0 is
 		the first file.  argc() - 1 is the last one.  See |arglist|.
 
 							*arglistid()*
-arglistid([{winnr}, [ {tabnr} ]])
+arglistid([{winnr} [, {tabnr}]])
 		Return the argument list ID.  This is a number which
 		identifies the argument list being used.  Zero is used for the
 		global argument list.  See |arglist|.
@@ -2686,7 +2688,13 @@ ch_close({handle})						*ch_close()*
 		Close channel {handle}.  See |channel|.
 		{only available when compiled with the |+channel| feature}
 
-ch_logfile( {fname} [, {mode}])					*ch_logfile()*
+ch_log({msg} [, {channel}])					*ch_log()*
+		Write {msg} in the channel log file, if it was opened with
+		|ch_logfile()|.
+		When {channel} is passed the channel number is used for the
+		message.  {channel} must be an open channel.
+
+ch_logfile({fname} [, {mode}])					*ch_logfile()*
 		Start logging channel activity to {fname}.
 		When {fname} is an empty string: stop logging.
 
@@ -2696,7 +2704,7 @@ ch_logfile( {fname} [, {mode}])					*ch_logfile()*
 		The file is flushed after every message, on Unix you can use
 		"tail -f" to see what is going on in real time.
 
-ch_open({address} [, {argdict}])				*ch_open()*
+ch_open({address} [, {options}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
 		Returns the channel handle on success.  Returns a negative
 		number for failure.
@@ -2704,7 +2712,7 @@ ch_open({address} [, {argdict}])				*ch_open()*
 		{address} has the form "hostname:port", e.g.,
 		"localhost:8765".
 
-		If {argdict} is given it must be a |Dictionary|.  The optional
+		If {options} is given it must be a |Dictionary|.  The optional
 		items are:
 			mode        "raw", "js" or "json".
 				    Default "json".
@@ -2753,6 +2761,16 @@ ch_sendraw({handle}, {string} [, {options}])		*ch_sendraw()*
 		See |channel-use|.
 
 		{only available when compiled with the |+channel| feature}
+
+ch_setoptions({handle}, {options})			*ch_setoptions()*
+		Set options on channel {handle}:
+			"callback"	the channel callback
+			"timeout"	default read timeout in msec
+		See |ch_open()| for more explanation.
+
+		These options cannot be changed:
+			"mode"		cannot be changed once channel is open
+			"waittime"	only applies to "ch_open()|
 
 ch_status({handle})						*ch_status()*
 		Return the status of channel {handle}:
@@ -6005,7 +6023,7 @@ setqflist({list} [, {action}])				*setqflist()*
 
 
 							*setreg()*
-setreg({regname}, {value} [,{options}])
+setreg({regname}, {value} [, {options}])
 		Set the register {regname} to {value}.
 		{value} may be any value returned by |getreg()|, including 
 		a |List|.

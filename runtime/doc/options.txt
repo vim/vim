@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2016 Feb 12
+*options.txt*	For Vim version 7.4.  Last change: 2016 Feb 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1969,7 +1969,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: 'copyindent' is reset when 'compatible' is set.
 	Also see 'preserveindent'.
 
-						*'cpoptions'* *'cpo'*
+						*'cpoptions'* *'cpo'* *cpo*
 'cpoptions' 'cpo'	string	(Vim default: "aABceFs",
 				 Vi default:  all flags)
 			global

@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.4.  Last change: 2014 Jul 09
+*starting.txt*  For Vim version 7.4.  Last change: 2016 Feb 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -12,9 +12,10 @@ Starting Vim						*starting*
 4. Initialization		|initialization|
 5. $VIM and $VIMRUNTIME		|$VIM|
 6. Suspending			|suspend|
-7. Saving settings		|save-settings|
-8. Views and Sessions		|views-sessions|
-9. The viminfo file		|viminfo-file|
+7. Exiting			|exiting|
+8. Saving settings		|save-settings|
+9. Views and Sessions		|views-sessions|
+10. The viminfo file		|viminfo-file|
 
 ==============================================================================
 1. Vim arguments					*vim-arguments*
@@ -1133,7 +1134,20 @@ can't paste it in another application (since Vim is going to sleep an attempt
 to get the selection would make the program hang).
 
 ==============================================================================
-7. Saving settings					*save-settings*
+7. Exiting						*exiting*
+
+There are several ways to exit Vim:
+- Close the last window with `:quit`.  Only when there are no changes.
+- Close the last window with `:quit!`.  Also when there are changes.
+- Close all windows with `:qall`.  Only when there are no changes.
+- Close all windows with `:qall!`.  Also when there are changes.
+- Use `:cquit`.  Also when there are changes.
+
+When using `:cquit` or when there was an error message Vim exits with exit
+code 1.  Errors can be avoide by using `:silent!`.
+
+==============================================================================
+8. Saving settings					*save-settings*
 
 Mostly you will edit your vimrc files manually.  This gives you the greatest
 flexibility.  There are a few commands to generate a vimrc file automatically.
@@ -1195,7 +1209,7 @@ option, which has several side effects.  See |'compatible'|.
 'compatible' option to the output file first, because of these side effects.
 
 ==============================================================================
-8. Views and Sessions					*views-sessions*
+9. Views and Sessions					*views-sessions*
 
 This is introduced in sections |21.4| and |21.5| of the user manual.
 
@@ -1342,7 +1356,7 @@ To automatically save and restore views for *.c files: >
 	au BufWinEnter *.c silent loadview
 
 ==============================================================================
-9. The viminfo file				*viminfo* *viminfo-file* *E136*
+10. The viminfo file				*viminfo* *viminfo-file* *E136*
 						*E575* *E576* *E577*
 If you exit Vim and later start it again, you would normally lose a lot of
 information.  The viminfo file can be used to remember that information, which

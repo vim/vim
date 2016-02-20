@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Feb 15
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Feb 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,11 +35,8 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 +channel:
-- Move netbeans NL handling to channel.c, use it for NL mode channel
-- ch_open fails when socket isn't present yet. (Marcin Szamotulski)
-  Retry when error is "connection refused".
-- channel test waittime is disabled for MS-Windows, causes a crash.
-- channel needs both stdout and stderr (GUI implementation)
+- channel needs both stdout and stderr (GUI implementation, queues)
+   - ch_read() for stderr
 - implement TODO items in ":help channel":
    - implement ch_setoptions(handle, {options})
    - job_setoptions(job, {options})
@@ -48,7 +45,6 @@ not be repeated below, unless there is extra information.
    - err-cb
    - exit-cb  move code from mch_clear_job()
    - job argument: killonexit
-   - ch_read() for stderr
    - ch_getjob(handle)
    - ch_read(handle [, timeout])
    - ch_readall(handle [, timeout])
@@ -57,6 +53,12 @@ not be repeated below, unless there is extra information.
    - job_gethandle(), job_sethandle()
    - add ch_status(): Whether channel is open.  Perhaps also mode, timeout.
    - When channel closes invoke "close-cb".
+- Add "call" to call a function with a list of arguments. (Damien)
+    merge "expr" and "eval", send something back if there is a third arg?
+- A callback on ch_sendraw() should be put at the end of the list of callback
+  handlers.  When a message arrives invoke the first one and remove it.
+- Support channel without socket support.  Useful for starting a job with
+  pipes.  Need another feature, +socket ?
 - Move more details from eval.txt to channel.txt.  Add tags in eval.txt.
 - When receiving malformed json starting with a quote it doesn't get
   discarded.
@@ -79,6 +81,7 @@ not be repeated below, unless there is extra information.
 - json: implement UTF-16 surrogate pair.
 - For connection to server, a "keep open" flag would be useful.  Retry
   connecting in the main loop with zero timeout.
+
 More plugin support:
 - Have a way to install a callback from the main loop.  Called every second or
   so.
@@ -102,6 +105,10 @@ This difference is unexpected:
     0
 It's because tv_equal() works different.
 
+Compiler warnings. (John Marriott, Feb 17)
+
+Compiler warnings in if_ole.cpp.  Patch by Ken Takata, Feb 18.
+
 Add "runtime/bundles" ?
     runtime/bundles/netrw/spec.vim
     runtime/bundles/netrw/autoload/netrw.vim
@@ -121,6 +128,8 @@ Add a "requires" / "provides" mechanism?
     require my_other_plugin
 ~/vim/packages/netrw/def/netrw/plugin/netrw.vim
 ~/vim/packages/netrw/opt/nwdebug/plugin/nwdebug.vim
+
+Patch to add GTK 3 support. (Kazunobu Kuriyama, 2016 Feb 13)
 
 Why does this: 	echo "a" . 1.1
 result in:	a11
@@ -169,6 +178,9 @@ Regexp problems:
 - The pattern "\1" with the old engine gives E65, with the new engine it
   matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
 - Search for \\~ causes error E874.
+
+Patch to fix that folds close with autocomplete.  #643
+Christian Brabandt, 2016 Feb 18.
 
 Also include update_curswant() fix for getcurpos(). (Christian Brabandt, 2016
 Feb 9)
@@ -275,7 +287,7 @@ With a 'cpo' flag.  (Christian Brabandt, 2016 Feb 8)
 
 Patch to add TagNotFound autocommand. (Anton Lindqvist, 2016 Feb 3)
 
-Patch to add Error autocommand. (Anton Lindqvist, 2016 Feb 14)
+Patch to add Error autocommand. (Anton Lindqvist, 2016 Feb 17)
 Only remembers one error.
 
 Illegal memory access, requires ASAN to see. (Dominique Pelle, 2015 Jul 28)
@@ -317,6 +329,9 @@ Half-finished patch to fix the Problem using cgn to change a search hit when
 replacement includes hit. Reported by John Beckett, fix by Christian Brabandt,
 2016 Jan 11.
 
+Patch to add :mapgroup, put mappings in a group like augroup.
+(Yasuhiro Matsumoto, 2016 Feb 19)
+
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
@@ -325,9 +340,6 @@ Can we cache the syntax attributes, so that updates for 'relativenumber' and
 
 Build with Python on Mac does not always use the right library.
 (Kazunobu Kuriyama, 2015 Mar 28)
-
-Patch to add GTK 3 support. (Kazunobu Kuriyama, 2016 Feb 13)
-Does not fully work yet.
 
 Need a Vim equivalent of Python's None and a way to test for it.
 Use v:none.  var == v:none

@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 7.4.  Last change: 2016 Jan 31
+*netbeans.txt*  For Vim version 7.4.  Last change: 2016 Feb 18
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -193,6 +193,8 @@ There are two different ways to run Vim in NetBeans mode:
 
 	+ an IDE may start Vim with the |-nb| command line argument
 	+ NetBeans can be started from within Vim with the |:nbstart| command
+
+Vim uses a 3 second timeout on trying to make the connection.
 
 							*netbeans-parameters*
 Three forms can be used to setup the NetBeans connection parameters.

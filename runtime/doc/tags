@@ -2550,7 +2550,6 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :nbkey	netbeans.txt	/*:nbkey*
 :nbstart	netbeans.txt	/*:nbstart*
 :ne	editing.txt	/*:ne*
-:netrw-s-cr	pi_netrw.txt	/*:netrw-s-cr*
 :new	windows.txt	/*:new*
 :next	editing.txt	/*:next*
 :next_f	editing.txt	/*:next_f*
@@ -2836,6 +2835,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :sign-unplace	sign.txt	/*:sign-unplace*
 :sil	various.txt	/*:sil*
 :silent	various.txt	/*:silent*
+:silent!	various.txt	/*:silent!*
 :sim	gui_w32.txt	/*:sim*
 :simalt	gui_w32.txt	/*:simalt*
 :sin	change.txt	/*:sin*
@@ -5168,11 +5168,13 @@ cc	change.txt	/*cc*
 ceil()	eval.txt	/*ceil()*
 ch.vim	syntax.txt	/*ch.vim*
 ch_close()	eval.txt	/*ch_close()*
+ch_log()	eval.txt	/*ch_log()*
 ch_logfile()	eval.txt	/*ch_logfile()*
 ch_open()	eval.txt	/*ch_open()*
 ch_readraw()	eval.txt	/*ch_readraw()*
 ch_sendexpr()	eval.txt	/*ch_sendexpr()*
 ch_sendraw()	eval.txt	/*ch_sendraw()*
+ch_setoptions()	eval.txt	/*ch_setoptions()*
 ch_status()	eval.txt	/*ch_status()*
 change-list-jumps	motion.txt	/*change-list-jumps*
 change-name	tips.txt	/*change-name*
@@ -5361,6 +5363,7 @@ count-items	tips.txt	/*count-items*
 count-variable	eval.txt	/*count-variable*
 count1-variable	eval.txt	/*count1-variable*
 cp-default	version5.txt	/*cp-default*
+cpo	options.txt	/*cpo*
 cpo-!	options.txt	/*cpo-!*
 cpo-#	options.txt	/*cpo-#*
 cpo-$	options.txt	/*cpo-$*
@@ -5694,6 +5697,7 @@ execute-menus	gui.txt	/*execute-menus*
 exepath()	eval.txt	/*exepath()*
 exim	starting.txt	/*exim*
 exists()	eval.txt	/*exists()*
+exiting	starting.txt	/*exiting*
 exp()	eval.txt	/*exp()*
 expand()	eval.txt	/*expand()*
 expand-env	options.txt	/*expand-env*
@@ -6206,6 +6210,7 @@ g:netrw_sepchr	pi_netrw.txt	/*g:netrw_sepchr*
 g:netrw_servername	pi_netrw.txt	/*g:netrw_servername*
 g:netrw_sftp_cmd	pi_netrw.txt	/*g:netrw_sftp_cmd*
 g:netrw_silent	pi_netrw.txt	/*g:netrw_silent*
+g:netrw_sizestyle	pi_netrw.txt	/*g:netrw_sizestyle*
 g:netrw_sort_by	pi_netrw.txt	/*g:netrw_sort_by*
 g:netrw_sort_direction	pi_netrw.txt	/*g:netrw_sort_direction*
 g:netrw_sort_options	pi_netrw.txt	/*g:netrw_sort_options*
@@ -7213,6 +7218,7 @@ netrw-:Texplore	pi_netrw.txt	/*netrw-:Texplore*
 netrw-:Vexplore	pi_netrw.txt	/*netrw-:Vexplore*
 netrw-C	pi_netrw.txt	/*netrw-C*
 netrw-D	pi_netrw.txt	/*netrw-D*
+netrw-I	pi_netrw.txt	/*netrw-I*
 netrw-O	pi_netrw.txt	/*netrw-O*
 netrw-P	pi_netrw.txt	/*netrw-P*
 netrw-P18	pi_netrw.txt	/*netrw-P18*
@@ -7262,6 +7268,7 @@ netrw-dirlist	pi_netrw.txt	/*netrw-dirlist*
 netrw-downdir	pi_netrw.txt	/*netrw-downdir*
 netrw-edithide	pi_netrw.txt	/*netrw-edithide*
 netrw-editwindow	pi_netrw.txt	/*netrw-editwindow*
+netrw-enter	pi_netrw.txt	/*netrw-enter*
 netrw-ex	pi_netrw.txt	/*netrw-ex*
 netrw-explore	pi_netrw.txt	/*netrw-explore*
 netrw-explore-cmds	pi_netrw.txt	/*netrw-explore-cmds*
@@ -7298,10 +7305,12 @@ netrw-list	pi_netrw.txt	/*netrw-list*
 netrw-listbookmark	pi_netrw.txt	/*netrw-listbookmark*
 netrw-listhack	pi_netrw.txt	/*netrw-listhack*
 netrw-login	pi_netrw.txt	/*netrw-login*
+netrw-mA	pi_netrw.txt	/*netrw-mA*
 netrw-mB	pi_netrw.txt	/*netrw-mB*
 netrw-mF	pi_netrw.txt	/*netrw-mF*
 netrw-mT	pi_netrw.txt	/*netrw-mT*
 netrw-mX	pi_netrw.txt	/*netrw-mX*
+netrw-ma	pi_netrw.txt	/*netrw-ma*
 netrw-mb	pi_netrw.txt	/*netrw-mb*
 netrw-mc	pi_netrw.txt	/*netrw-mc*
 netrw-md	pi_netrw.txt	/*netrw-md*
@@ -7362,6 +7371,7 @@ netrw-pscp	pi_netrw.txt	/*netrw-pscp*
 netrw-psftp	pi_netrw.txt	/*netrw-psftp*
 netrw-putty	pi_netrw.txt	/*netrw-putty*
 netrw-qF	pi_netrw.txt	/*netrw-qF*
+netrw-qL	pi_netrw.txt	/*netrw-qL*
 netrw-qb	pi_netrw.txt	/*netrw-qb*
 netrw-qf	pi_netrw.txt	/*netrw-qf*
 netrw-quickcom	pi_netrw.txt	/*netrw-quickcom*
@@ -7378,6 +7388,7 @@ netrw-reverse	pi_netrw.txt	/*netrw-reverse*
 netrw-rexplore	pi_netrw.txt	/*netrw-rexplore*
 netrw-rightmouse	pi_netrw.txt	/*netrw-rightmouse*
 netrw-s	pi_netrw.txt	/*netrw-s*
+netrw-s-cr	pi_netrw.txt	/*netrw-s-cr*
 netrw-settings	pi_netrw.txt	/*netrw-settings*
 netrw-settings-window	pi_netrw.txt	/*netrw-settings-window*
 netrw-sexplore	pi_netrw.txt	/*netrw-sexplore*

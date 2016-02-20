@@ -2,7 +2,7 @@
 #
 # Server that will accept connections from a Vim channel.
 # Run this server and then in Vim you can open the channel:
-#  :let handle = ch_open('localhost:8765', 'json')
+#  :let handle = ch_open('localhost:8765')
 #
 # Then Vim can send requests to the server:
 #  :let response = ch_sendexpr(handle, 'hello!')

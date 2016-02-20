@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Feb 16
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Feb 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -155,7 +155,6 @@ When "mode" is "raw" the "msg" argument is the whole message as a string.
 When "mode" is "json" or "js" the "callback" is optional.  When omitted it is
 only possible to receive a message after sending one.
 
-TODO:
 To change the channel options after opening it use ch_setoptions().  The
 arguments are similar to what is passed to ch_open(), but "waittime" cannot be
 given, since that only applies to opening the channel.
@@ -233,8 +232,8 @@ message, it must use the number zero:
 Then channel handler will then get {response} converted to Vim types.  If the
 channel does not have a handler the message is dropped.
 
-On read error or ch_close() the string "DETACH" is sent, if still possible.
-The channel will then be inactive.
+On read error or ch_close(), when using a socket, the string "DETACH" is sent,
+if still possible.  The channel will then be inactive.
 
 It is also possible to use ch_sendraw() on a JSON or JS channel.  The caller
 is then completely responsible for correct encoding and decoding.
@@ -295,9 +294,11 @@ Command "eval" ~
 
 The "eval" command an be used to get the result of an expression.  For
 example, to get the number of lines in the current buffer:
-	["eval","line('$')"] ~
+	["eval","line('$')", -2] ~
 
 it will send back the result of the expression:
+	[-2, "last line"] ~
+The format is:
 	[{number}, {result}]
 Here {number} is the same as what was in the request.  Use a negative number
 to avoid confusion with message that Vim sends.
