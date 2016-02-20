@@ -1373,13 +1373,24 @@ struct channel_S {
     int		ch_refcount;	/* reference count */
 };
 
-#define JO_MODE		1	/* all modes */
-#define JO_CALLBACK	2	/* channel callback */
-#define JO_WAITTIME	4	/* only for ch_open() */
-#define JO_TIMEOUT	8	/* all timeouts */
-#define JO_PART		16	/* "part" */
-#define JO_ID		32	/* "id" */
+#define JO_MODE		0x0001	/* channel mode */
+#define JO_IN_MODE	0x0002	/* stdin mode */
+#define JO_OUT_MODE	0x0004	/* stdout mode */
+#define JO_ERR_MODE	0x0008	/* stderr mode */
+#define JO_CALLBACK	0x0010	/* channel callback */
+#define JO_OUT_CALLBACK	0x0020	/* stdout callback */
+#define JO_ERR_CALLBACK	0x0040	/* stderr callback */
+#define JO_WAITTIME	0x0080	/* only for ch_open() */
+#define JO_TIMEOUT	0x0100	/* all timeouts */
+#define JO_OUT_TIMEOUT	0x0200	/* stdout timeouts */
+#define JO_ERR_TIMEOUT	0x0400	/* stderr timeouts */
+#define JO_PART		0x0800	/* "part" */
+#define JO_ID		0x1000	/* "id" */
 #define JO_ALL		0xffffff
+
+#define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
+#define JO_CB_ALL	(JO_CALLBACK + JO_OUT_CALLBACK + JO_ERR_CALLBACK)
+#define JO_TIMEOUT_ALL	(JO_TIMEOUT + JO_OUT_TIMEOUT + JO_ERR_TIMEOUT)
 
 /*
  * Options for job and channel commands.
@@ -1389,9 +1400,16 @@ typedef struct
     int		jo_set;		/* JO_ bits for values that were set */
 
     ch_mode_T	jo_mode;
+    ch_mode_T	jo_in_mode;
+    ch_mode_T	jo_out_mode;
+    ch_mode_T	jo_err_mode;
     char_u	*jo_callback;	/* not allocated! */
+    char_u	*jo_out_cb;	/* not allocated! */
+    char_u	*jo_err_cb;	/* not allocated! */
     int		jo_waittime;
     int		jo_timeout;
+    int		jo_out_timeout;
+    int		jo_err_timeout;
     int		jo_part;
     int		jo_id;
 } jobopt_T;

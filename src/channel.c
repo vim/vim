@@ -737,27 +737,58 @@ channel_set_job(channel_T *channel, job_T *job)
 }
 
 /*
- * Set various properties from an "options" argument.
+ * Set various properties from an "opt" argument.
  */
     void
-channel_set_options(channel_T *channel, jobopt_T *options)
+channel_set_options(channel_T *channel, jobopt_T *opt)
 {
-    int part;
+    int    part;
+    char_u **cbp;
 
-    if (options->jo_set & JO_MODE)
+    if (opt->jo_set & JO_MODE)
 	for (part = PART_SOCK; part <= PART_IN; ++part)
-	    channel->ch_part[part].ch_mode = options->jo_mode;
-    if (options->jo_set & JO_TIMEOUT)
-	for (part = PART_SOCK; part <= PART_IN; ++part)
-	    channel->ch_part[part].ch_timeout = options->jo_timeout;
+	    channel->ch_part[part].ch_mode = opt->jo_mode;
+    if (opt->jo_set & JO_IN_MODE)
+	channel->ch_part[PART_IN].ch_mode = opt->jo_in_mode;
+    if (opt->jo_set & JO_OUT_MODE)
+	channel->ch_part[PART_OUT].ch_mode = opt->jo_out_mode;
+    if (opt->jo_set & JO_ERR_MODE)
+	channel->ch_part[PART_ERR].ch_mode = opt->jo_err_mode;
 
-    if (options->jo_set & JO_CALLBACK)
+    if (opt->jo_set & JO_TIMEOUT)
+	for (part = PART_SOCK; part <= PART_IN; ++part)
+	    channel->ch_part[part].ch_timeout = opt->jo_timeout;
+    if (opt->jo_set & JO_OUT_TIMEOUT)
+	channel->ch_part[PART_OUT].ch_timeout = opt->jo_out_timeout;
+    if (opt->jo_set & JO_ERR_TIMEOUT)
+	channel->ch_part[PART_ERR].ch_timeout = opt->jo_err_timeout;
+
+    if (opt->jo_set & JO_CALLBACK)
     {
-	vim_free(channel->ch_callback);
-	if (options->jo_callback != NULL && *options->jo_callback != NUL)
-	    channel->ch_callback = vim_strsave(options->jo_callback);
+	cbp = &channel->ch_callback;
+	vim_free(*cbp);
+	if (opt->jo_callback != NULL && *opt->jo_callback != NUL)
+	    *cbp = vim_strsave(opt->jo_callback);
 	else
-	    channel->ch_callback = NULL;
+	    *cbp = NULL;
+    }
+    if (opt->jo_set & JO_OUT_CALLBACK)
+    {
+	cbp = &channel->ch_part[PART_OUT].ch_callback;
+	vim_free(*cbp);
+	if (opt->jo_out_cb != NULL && *opt->jo_out_cb != NUL)
+	    *cbp = vim_strsave(opt->jo_out_cb);
+	else
+	    *cbp = NULL;
+    }
+    if (opt->jo_set & JO_ERR_CALLBACK)
+    {
+	cbp = &channel->ch_part[PART_ERR].ch_callback;
+	vim_free(*cbp);
+	if (opt->jo_err_cb != NULL && *opt->jo_err_cb != NUL)
+	    *cbp = vim_strsave(opt->jo_err_cb);
+	else
+	    *cbp = NULL;
     }
 }
 
