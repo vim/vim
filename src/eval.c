@@ -501,6 +501,9 @@ static void f_ceil(typval_T *argvars, typval_T *rettv);
 #endif
 #ifdef FEAT_CHANNEL
 static void f_ch_close(typval_T *argvars, typval_T *rettv);
+# ifdef FEAT_JOB
+static void f_ch_getjob(typval_T *argvars, typval_T *rettv);
+# endif
 static void f_ch_log(typval_T *argvars, typval_T *rettv);
 static void f_ch_logfile(typval_T *argvars, typval_T *rettv);
 static void f_ch_open(typval_T *argvars, typval_T *rettv);
@@ -8186,6 +8189,9 @@ static struct fst
 #endif
 #ifdef FEAT_CHANNEL
     {"ch_close",	1, 1, f_ch_close},
+# ifdef FEAT_JOB
+    {"ch_getjob",	1, 1, f_ch_getjob},
+# endif
     {"ch_log",		1, 2, f_ch_log},
     {"ch_logfile",	1, 2, f_ch_logfile},
     {"ch_open",		1, 2, f_ch_open},
@@ -10185,6 +10191,25 @@ f_ch_close(typval_T *argvars, typval_T *rettv UNUSED)
     if (channel != NULL)
 	channel_close(channel);
 }
+
+# ifdef FEAT_JOB
+/*
+ * "ch_getjob()" function
+ */
+    static void
+f_ch_getjob(typval_T *argvars, typval_T *rettv)
+{
+    channel_T *channel = get_channel_arg(&argvars[0]);
+
+    if (channel != NULL)
+    {
+	rettv->v_type = VAR_JOB;
+	rettv->vval.v_job = channel->ch_job;
+	if (channel->ch_job != NULL)
+	    ++channel->ch_job->jv_refcount;
+    }
+}
+# endif
 
 /*
  * "ch_log()" function

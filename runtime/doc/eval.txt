@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 19
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -59,11 +59,11 @@ Dictionary	An associative, unordered array: Each entry has a key and a
 Funcref		A reference to a function |Funcref|.
 		Example: function("strlen")
 
-Special		v:false, v:true, v:none and v:null
+Special		|v:false|, |v:true|, |v:none| and |v:null|.  *Special*
 
-Job		Used for a job, see |job_start()|.
+Job		Used for a job, see |job_start()|. *Job*
 
-Channel		Used for a channel, see |ch_open()|.
+Channel		Used for a channel, see |ch_open()|. *Channel*
 
 The Number and String types are converted automatically, depending on how they
 are used.
@@ -1817,17 +1817,19 @@ byteidxcomp( {expr}, {nr})	Number	byte index of {nr}'th char in {expr}
 call( {func}, {arglist} [, {dict}])
 				any	call {func} with arguments {arglist}
 ceil( {expr})			Float	round {expr} up
-ch_close( {handle})		none	close a channel
+ch_close( {channel})		none	close {channel}
+ch_getjob( {channel})		Job	get the Job of {channel}
 ch_log( {msg} [, {channel}])	none	write {msg} in the channel log file
 ch_logfile( {fname} [, {mode}])	none	start logging channel activity
 ch_open( {address} [, {options}]) Channel open a channel to {address}
-ch_readraw( {handle})		String	read from channel {handle}
-ch_sendexpr( {handle}, {expr} [, {options}])
-				any	send {expr} over JSON channel {handle}
-ch_sendraw( {handle}, {string} [, {options}])
-				any	send {string} over raw channel {handle}
-ch_setoptions( {handle}, {options})  none  set options for channel {handle}
-ch_status( {handle})		String	status of channel {handle}
+ch_read( {channel} [, {options}])  String  read from  {channel}
+ch_readraw( {channel} [, {options}])  String  read raw from  {channel}
+ch_sendexpr( {channel}, {expr} [, {options}])
+				any	send {expr} over JSON {channel}
+ch_sendraw( {channel}, {string} [, {options}])
+				any	send {string} over raw {channel}
+ch_setoptions( {channel}, {options})  none  set options for {channel}
+ch_status( {channel})		String	status of  {channel}
 changenr()			Number	current change number
 char2nr( {expr}[, {utf8}])	Number	ASCII/UTF8 value of first char in {expr}
 cindent( {lnum})		Number	C indent for line {lnum}
@@ -1960,10 +1962,11 @@ invert( {expr})			Number  bitwise invert
 isdirectory( {directory})	Number	TRUE if {directory} is a directory
 islocked( {expr})		Number	TRUE if {expr} is locked
 items( {dict})			List	key-value pairs in {dict}
-job_getchannel( {job})		Number	get the channel handle for {job}
-job_start( {command} [, {options}]) Job	start a job	
-job_status( {job})		String	get the status of a job
-job_stop( {job} [, {how}])	Number	stop a job
+job_getchannel( {job})		Channel	get the channel handle for {job}
+job_setoptions( {job}, {options}) none	set options for {job}
+job_start( {command} [, {options}]) Job	 start a job
+job_status( {job})		String	get the status of {job}
+job_stop( {job} [, {how}])	Number	stop {job}
 join( {list} [, {sep}])		String	join {list} items into one String
 js_decode( {string})		any	decode JS style JSON
 js_encode( {expr})		String	encode JS style JSON
@@ -2684,9 +2687,17 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 		don't fit, a vertical layout is used anyway.  For some systems
 		the horizontal layout is always used.
 
-ch_close({handle})						*ch_close()*
-		Close channel {handle}.  See |channel|.
+ch_close({channel})						*ch_close()*
+		Close {channel}.  See |channel-close|.
 		{only available when compiled with the |+channel| feature}
+
+ch_getjob({channel})						*ch_getjob()*
+		Get the Job associated with {channel}.
+		If there is no job calling |job_status()| on the returned Job
+		will result in "fail".
+
+		{only available when compiled with the |+channel| and
+		|+job| features}
 
 ch_log({msg} [, {channel}])					*ch_log()*
 		Write {msg} in the channel log file, if it was opened with
@@ -2706,8 +2717,8 @@ ch_logfile({fname} [, {mode}])					*ch_logfile()*
 
 ch_open({address} [, {options}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
-		Returns the channel handle on success.  Returns a negative
-		number for failure.
+		Returns a Channel.  Use |ch_status()| to check for
+		failure.
 
 		{address} has the form "hostname:port", e.g.,
 		"localhost:8765".
@@ -2722,19 +2733,38 @@ ch_open({address} [, {options}])				*ch_open()*
 			waittime    Specify connect timeout as milliseconds.
 				    Negative means forever.
 				    Default: 0 (don't wait)
-			timeout	    Specify response read timeout value as
+			timeout	    Specify response read timeout value in
 				    milliseconds. 
 				    Default: 2000.
 		{only available when compiled with the |+channel| feature}
 
-ch_readraw({handle})						*ch_readraw()*
-		Read from channel {handle} and return the received message.
-		This uses the channel timeout.  When there is nothing to read
-		within that time an empty string is returned.
-		TODO: depends on channel mode.
+ch_read({channel} [, {options}])				*ch_read()*
+		Read from {channel} and return the received message.
 
-ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
-		Send {expr} over channel {handle}.  The {expr} is encoded
+		This uses the channel timeout.  When there is nothing to read
+		within that time an empty string is returned.  To specify a
+		different timeout in msec use the "timeout" option:
+			{"timeout": 123} ~
+		To read from the error output use the "part" option:
+			{"part": "err"} ~
+		To read a message with a specific ID, on a JS or JSON channel:
+			{"id": 99} ~
+		When no ID is specified or the ID is -1, the first message is
+		returned. This overrules any callback waiting for this
+		message.
+
+		For a RAW channel this returns whatever is available, since
+		Vim does not know where a message ends.
+		For a NL channel this returns one message.
+		For a JS or JSON channel this returns one decoded message.
+		This includes any sequence number.
+
+ch_readraw({channel} [, {options}])			*ch_readraw()*
+		Like ch_read() but for a JS and JSON channel does not decode
+		the message.
+
+ch_sendexpr({channel}, {expr} [, {options}])			*ch_sendexpr()*
+		Send {expr} over {channel}.  The {expr} is encoded
 		according to the type of channel.  The function cannot be used
 		with a raw channel.  See |channel-use|.  *E912*
 
@@ -2751,8 +2781,8 @@ ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 
 		{only available when compiled with the |+channel| feature}
 
-ch_sendraw({handle}, {string} [, {options}])		*ch_sendraw()*
-		Send {string} over channel {handle}.
+ch_sendraw({channel}, {string} [, {options}])		*ch_sendraw()*
+		Send {string} over {channel}.
 		Works like |ch_sendexpr()|, but does not encode the request or
 		decode the response.  The caller is responsible for the
 		correct contents.  Also does not add a newline for a channel
@@ -2762,18 +2792,21 @@ ch_sendraw({handle}, {string} [, {options}])		*ch_sendraw()*
 
 		{only available when compiled with the |+channel| feature}
 
-ch_setoptions({handle}, {options})			*ch_setoptions()*
-		Set options on channel {handle}:
+ch_setoptions({channel}, {options})			*ch_setoptions()*
+		Set options on {channel}:
 			"callback"	the channel callback
 			"timeout"	default read timeout in msec
+			"mode"		mode for the whole channel
 		See |ch_open()| for more explanation.
 
+		Note that changing the mode may cause queued messages to be
+		lost.
+
 		These options cannot be changed:
-			"mode"		cannot be changed once channel is open
 			"waittime"	only applies to "ch_open()|
 
-ch_status({handle})						*ch_status()*
-		Return the status of channel {handle}:
+ch_status({channel})						*ch_status()*
+		Return the status of {channel}:
 			"fail"		failed to open the channel
 			"open"		channel can be used
 			"closed"	channel can not be used
@@ -4370,10 +4403,14 @@ items({dict})						*items()*
 		entry and the value of this entry.  The |List| is in arbitrary
 		order.
 
-
 job_getchannel({job})					 *job_getchannel()*
 		Get the channel handle that {job} is using.
 		{only available when compiled with the |+job| feature}
+
+job_setoptions({job}, {options})			*job_setoptions()*
+		Change options for {job}.  Supported are:
+			"stoponexit"	|job-stoponexit|
+			"exit-cb"	|job-exit-cb|
 
 job_start({command} [, {options}])			*job_start()*
 		Start a job and return a Job object.  Unlike |system()| and
@@ -4415,11 +4452,14 @@ job_start({command} [, {options}])			*job_start()*
 
 		{only available when compiled with the |+job| feature}
 
-job_status({job})						*job_status()*
+job_status({job})					*job_status()* *E916*
 		Returns a String with the status of {job}:
 			"run"	job is running
 			"fail"	job failed to start
 			"dead"	job died or was stopped after running
+		
+		If an exit callback was set with the "exit-cb" option and the
+		job is now detected to be "dead" the callback will be invoked.
 
 		{only available when compiled with the |+job| feature}
 
@@ -7375,7 +7415,6 @@ vms			VMS version of Vim.
 vreplace		Compiled with |gR| and |gr| commands.
 wildignore		Compiled with 'wildignore' option.
 wildmenu		Compiled with 'wildmenu' option.
-win16			Win16 version of Vim (MS-Windows 3.1).
 win32			Win32 version of Vim (MS-Windows 95 and later, 32 or
 			64 bits)
 win32unix		Win32 version of Vim, using Unix files (Cygwin)
