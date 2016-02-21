@@ -1470,10 +1470,6 @@ WaitForChar(long msec)
 	serverProcessPendingMessages();
 #endif
 
-#ifdef FEAT_CHANNEL
-	channel_handle_events();
-#endif
-
 	if (0
 #ifdef FEAT_MOUSE
 		|| g_nMouseClick != -1

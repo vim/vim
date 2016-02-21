@@ -2248,10 +2248,6 @@ gui_mch_wait_for_chars(int wtime)
 	parse_queued_messages();
 #endif
 
-#ifdef FEAT_CHANNEL
-	channel_handle_events();
-#endif
-
 	/*
 	 * Don't use gui_mch_update() because then we will spin-lock until a
 	 * char arrives, instead we use GetMessage() to hang until an
