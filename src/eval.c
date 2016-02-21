@@ -10135,7 +10135,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		    break;
 		opt->jo_set |= JO_EXIT_CB;
 		opt->jo_exit_cb = get_tv_string_buf_chk(item, opt->jo_ecb_buf);
-		if (opt->jo_ecb_buf == NULL)
+		if (opt->jo_exit_cb == NULL)
 		{
 		    EMSG2(_(e_invarg2), "exit-cb");
 		    return FAIL;
