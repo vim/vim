@@ -44,7 +44,8 @@ func s:run_server(testfunc, ...)
 
   try
     if has('job')
-      let s:job = job_start(cmd)
+      let s:job = job_start(cmd, {"stoponexit": "hup"})
+      call job_setoptions(s:job, {"stoponexit": "kill"})
     elseif has('win32')
       exe 'silent !start cmd /c start "test_channel" ' . cmd
     else
