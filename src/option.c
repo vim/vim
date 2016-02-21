@@ -1978,6 +1978,11 @@ static struct vimoption options[] =
     {"osfiletype",  "oft",  P_STRING|P_ALLOCED|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
+    {"packpath",    "pp",   P_STRING|P_VI_DEF|P_EXPAND|P_ONECOMMA|P_NODUP
+								    |P_SECURE,
+			    (char_u *)&p_pp, PV_NONE,
+			    {(char_u *)DFLT_RUNTIMEPATH, (char_u *)0L}
+			    SCRIPTID_INIT},
     {"paragraphs",  "para", P_STRING|P_VI_DEF,
 			    (char_u *)&p_para, PV_NONE,
 			    {(char_u *)"IPLPPPQPP TPHPLIPpLpItpplpipbp",
@@ -11045,6 +11050,7 @@ set_context_in_set_cmd(
 	if (p == (char_u *)&p_bdir
 		|| p == (char_u *)&p_dir
 		|| p == (char_u *)&p_path
+		|| p == (char_u *)&p_pp
 		|| p == (char_u *)&p_rtp
 #ifdef FEAT_SEARCHPATH
 		|| p == (char_u *)&p_cdpath

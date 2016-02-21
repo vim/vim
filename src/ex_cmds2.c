@@ -2905,8 +2905,6 @@ ex_runtime(exarg_T *eap)
     source_runtime(eap->arg, eap->forceit);
 }
 
-static void source_callback(char_u *fname, void *cookie);
-
     static void
 source_callback(char_u *fname, void *cookie UNUSED)
 {
@@ -2925,19 +2923,9 @@ source_runtime(char_u *name, int all)
     return do_in_runtimepath(name, all, source_callback, NULL);
 }
 
-/*
- * Find "name" in 'runtimepath'.  When found, invoke the callback function for
- * it: callback(fname, "cookie")
- * When "all" is TRUE repeat for all matches, otherwise only the first one is
- * used.
- * Returns OK when at least one match found, FAIL otherwise.
- *
- * If "name" is NULL calls callback for each entry in runtimepath. Cookie is
- * passed by reference in this case, setting it to NULL indicates that callback
- * has done its job.
- */
-    int
-do_in_runtimepath(
+    static int
+do_in_path(
+    char_u	*path,
     char_u	*name,
     int		all,
     void	(*callback)(char_u *fname, void *ck),
@@ -2962,7 +2950,7 @@ do_in_runtimepath(
 
     /* Make a copy of 'runtimepath'.  Invoking the callback may change the
      * value. */
-    rtp_copy = vim_strsave(p_rtp);
+    rtp_copy = vim_strsave(path);
     buf = alloc(MAXPATHL);
     if (buf != NULL && rtp_copy != NULL)
     {
@@ -2970,7 +2958,7 @@ do_in_runtimepath(
 	{
 	    verbose_enter();
 	    smsg((char_u *)_("Searching for \"%s\" in \"%s\""),
-						 (char *)name, (char *)p_rtp);
+						 (char *)name, (char *)path);
 	    verbose_leave();
 	}
 
@@ -3037,6 +3025,120 @@ do_in_runtimepath(
 #endif
 
     return did_one ? OK : FAIL;
+}
+
+/*
+ * Find "name" in 'runtimepath'.  When found, invoke the callback function for
+ * it: callback(fname, "cookie")
+ * When "all" is TRUE repeat for all matches, otherwise only the first one is
+ * used.
+ * Returns OK when at least one match found, FAIL otherwise.
+ *
+ * If "name" is NULL calls callback for each entry in runtimepath. Cookie is
+ * passed by reference in this case, setting it to NULL indicates that callback
+ * has done its job.
+ */
+    int
+do_in_runtimepath(
+    char_u	*name,
+    int		all,
+    void	(*callback)(char_u *fname, void *ck),
+    void	*cookie)
+{
+    return do_in_path(p_rtp, name, all, callback, cookie);
+}
+
+    static void
+source_pack_plugin(char_u *fname, void *cookie UNUSED)
+{
+    char_u *p6, *p5, *p4, *p3, *p2, *p1, *p;
+    int c;
+    char_u *new_rtp;
+    int keep;
+    int oldlen;
+    int addlen;
+
+    p4 = p3 = p2 = p1 = get_past_head(fname);
+    for (p = p1; *p; mb_ptr_adv(p))
+    {
+	if (vim_ispathsep_nocolon(*p))
+	{
+	    p6 = p5; p5 = p4; p4 = p3; p3 = p2; p2 = p1; p1 = p;
+	}
+    }
+
+    /* now we have:
+     * rtp/pack/name/ever/name/plugin/name.vim
+     *    p6   p5   p4   p3   p2     p1
+     */
+
+    /* find the part up to "pack" in 'runtimepath' */
+    c = *p6;
+    *p6 = NUL;
+    p = (char_u *)strstr((char *)p_rtp, (char *)fname);
+    if (p == NULL)
+	/* not found, append at the end */
+	p = p_rtp + STRLEN(p_rtp);
+    else
+	/* append after the matching directory. */
+	p += STRLEN(fname);
+    *p6 = c;
+
+    c = *p2;
+    *p2 = NUL;
+    if (strstr((char *)p_rtp, (char *)fname) == NULL)
+    {
+	/* directory not in 'runtimepath', add it */
+	oldlen = STRLEN(p_rtp);
+	addlen = STRLEN(fname);
+	new_rtp = alloc(oldlen + addlen + 2);
+	if (new_rtp == NULL)
+	{
+	    *p2 = c;
+	    return;
+	}
+	keep = (int)(p - p_rtp);
+	mch_memmove(new_rtp, p_rtp, keep);
+	new_rtp[keep] = ',';
+	mch_memmove(new_rtp + keep + 1, fname, addlen + 1);
+	if (p_rtp[keep] != NUL)
+	    mch_memmove(new_rtp + keep + 1 + addlen, p_rtp + keep,
+							   oldlen - keep + 1);
+	free_string_option(p_rtp);
+	p_rtp = new_rtp;
+    }
+    *p2 = c;
+
+    (void)do_source(fname, FALSE, DOSO_NONE);
+}
+
+/*
+ * Source the plugins in the package directories.
+ */
+    void
+source_packages()
+{
+    do_in_path(p_pp, (char_u *)"pack/*/ever/*/plugin/*.vim",
+					      TRUE, source_pack_plugin, NULL);
+}
+
+/*
+ * ":loadplugin {name}"
+ */
+    void
+ex_loadplugin(exarg_T *eap)
+{
+    static char *pattern = "pack/*/opt/%s/plugin/*.vim";
+    int		len;
+    char	*pat;
+
+    len = STRLEN(pattern) + STRLEN(eap->arg);
+    pat = (char *)alloc(len);
+    if (pat == NULL)
+	return;
+    vim_snprintf(pat, len, pattern, eap->arg);
+    do_in_path(p_pp, (char_u *)pat, TRUE, source_pack_plugin, NULL);
+    vim_free(pat);
 }
 
 #if defined(FEAT_EVAL) && defined(FEAT_AUTOCMD)

@@ -726,6 +726,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'option'	intro.txt	/*'option'*
 'osfiletype'	options.txt	/*'osfiletype'*
 'pa'	options.txt	/*'pa'*
+'packpath'	options.txt	/*'packpath'*
 'para'	options.txt	/*'para'*
 'paragraphs'	options.txt	/*'paragraphs'*
 'paste'	options.txt	/*'paste'*
@@ -746,6 +747,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'pmbcs'	options.txt	/*'pmbcs'*
 'pmbfn'	options.txt	/*'pmbfn'*
 'popt'	options.txt	/*'popt'*
+'pp'	options.txt	/*'pp'*
 'preserveindent'	options.txt	/*'preserveindent'*
 'previewheight'	options.txt	/*'previewheight'*
 'previewwindow'	options.txt	/*'previewwindow'*
@@ -3540,6 +3542,7 @@ CTRL-\_CTRL-N	intro.txt	/*CTRL-\\_CTRL-N*
 CTRL-]	tagsrch.txt	/*CTRL-]*
 CTRL-^	editing.txt	/*CTRL-^*
 CTRL-{char}	intro.txt	/*CTRL-{char}*
+Channel	eval.txt	/*Channel*
 Chinese	mbyte.txt	/*Chinese*
 Cmd-event	autocmd.txt	/*Cmd-event*
 CmdUndefined	autocmd.txt	/*CmdUndefined*
@@ -4427,7 +4430,6 @@ E893	eval.txt	/*E893*
 E894	eval.txt	/*E894*
 E895	if_mzsch.txt	/*E895*
 E896	channel.txt	/*E896*
-E897	channel.txt	/*E897*
 E898	channel.txt	/*E898*
 E899	channel.txt	/*E899*
 E90	message.txt	/*E90*
@@ -4447,6 +4449,8 @@ E911	eval.txt	/*E911*
 E912	eval.txt	/*E912*
 E913	eval.txt	/*E913*
 E914	eval.txt	/*E914*
+E915	channel.txt	/*E915*
+E916	eval.txt	/*E916*
 E92	message.txt	/*E92*
 E93	windows.txt	/*E93*
 E94	windows.txt	/*E94*
@@ -4515,6 +4519,7 @@ InsertEnter	autocmd.txt	/*InsertEnter*
 InsertLeave	autocmd.txt	/*InsertLeave*
 J	change.txt	/*J*
 Japanese	mbyte.txt	/*Japanese*
+Job	eval.txt	/*Job*
 K	various.txt	/*K*
 KDE	gui_x11.txt	/*KDE*
 KVim	gui_x11.txt	/*KVim*
@@ -4659,6 +4664,7 @@ ShellCmdPost	autocmd.txt	/*ShellCmdPost*
 ShellFilterPost	autocmd.txt	/*ShellFilterPost*
 SourceCmd	autocmd.txt	/*SourceCmd*
 SourcePre	autocmd.txt	/*SourcePre*
+Special	eval.txt	/*Special*
 SpellFileMissing	autocmd.txt	/*SpellFileMissing*
 StdinReadPost	autocmd.txt	/*StdinReadPost*
 StdinReadPre	autocmd.txt	/*StdinReadPre*
@@ -5168,9 +5174,11 @@ cc	change.txt	/*cc*
 ceil()	eval.txt	/*ceil()*
 ch.vim	syntax.txt	/*ch.vim*
 ch_close()	eval.txt	/*ch_close()*
+ch_getjob()	eval.txt	/*ch_getjob()*
 ch_log()	eval.txt	/*ch_log()*
 ch_logfile()	eval.txt	/*ch_logfile()*
 ch_open()	eval.txt	/*ch_open()*
+ch_read()	eval.txt	/*ch_read()*
 ch_readraw()	eval.txt	/*ch_readraw()*
 ch_sendexpr()	eval.txt	/*ch_sendexpr()*
 ch_sendraw()	eval.txt	/*ch_sendraw()*
@@ -5203,6 +5211,7 @@ changetick	eval.txt	/*changetick*
 changing	change.txt	/*changing*
 channel	channel.txt	/*channel*
 channel-callback	channel.txt	/*channel-callback*
+channel-close	channel.txt	/*channel-close*
 channel-commands	channel.txt	/*channel-commands*
 channel-demo	channel.txt	/*channel-demo*
 channel-mode	channel.txt	/*channel-mode*
@@ -5273,6 +5282,7 @@ clipboard-html	options.txt	/*clipboard-html*
 clipboard-unnamed	options.txt	/*clipboard-unnamed*
 clipboard-unnamedplus	options.txt	/*clipboard-unnamedplus*
 clojure-indent	indent.txt	/*clojure-indent*
+close-cb	channel.txt	/*close-cb*
 cmdarg-variable	eval.txt	/*cmdarg-variable*
 cmdbang-variable	eval.txt	/*cmdbang-variable*
 cmdline-arguments	vi_diff.txt	/*cmdline-arguments*
@@ -5639,6 +5649,8 @@ end	intro.txt	/*end*
 end-of-file	pattern.txt	/*end-of-file*
 enlightened-terminal	syntax.txt	/*enlightened-terminal*
 erlang.vim	syntax.txt	/*erlang.vim*
+err-cb	channel.txt	/*err-cb*
+err-timeout	channel.txt	/*err-timeout*
 errmsg-variable	eval.txt	/*errmsg-variable*
 error-file-format	quickfix.txt	/*error-file-format*
 error-messages	message.txt	/*error-messages*
@@ -6433,7 +6445,6 @@ gui-shell-win32	gui_w32.txt	/*gui-shell-win32*
 gui-start	gui.txt	/*gui-start*
 gui-toolbar	gui.txt	/*gui-toolbar*
 gui-vert-scroll	gui.txt	/*gui-vert-scroll*
-gui-w16	gui_w16.txt	/*gui-w16*
 gui-w32	gui_w32.txt	/*gui-w32*
 gui-w32-cmdargs	gui_w32.txt	/*gui-w32-cmdargs*
 gui-w32-dialogs	gui_w32.txt	/*gui-w32-dialogs*
@@ -6455,7 +6466,6 @@ gui-x11-printing	gui_x11.txt	/*gui-x11-printing*
 gui-x11-start	gui_x11.txt	/*gui-x11-start*
 gui-x11-various	gui_x11.txt	/*gui-x11-various*
 gui.txt	gui.txt	/*gui.txt*
-gui_w16.txt	gui_w16.txt	/*gui_w16.txt*
 gui_w32.txt	gui_w32.txt	/*gui_w32.txt*
 gui_x11.txt	gui_x11.txt	/*gui_x11.txt*
 guifontwide_gtk2	options.txt	/*guifontwide_gtk2*
@@ -6832,6 +6842,7 @@ java.vim	syntax.txt	/*java.vim*
 javascript-cinoptions	indent.txt	/*javascript-cinoptions*
 javascript-indenting	indent.txt	/*javascript-indenting*
 job	channel.txt	/*job*
+job-callback	channel.txt	/*job-callback*
 job-channel-overview	channel.txt	/*job-channel-overview*
 job-close-cb	channel.txt	/*job-close-cb*
 job-control	channel.txt	/*job-control*
@@ -6839,15 +6850,16 @@ job-err-cb	channel.txt	/*job-err-cb*
 job-err-io	channel.txt	/*job-err-io*
 job-exit-cb	channel.txt	/*job-exit-cb*
 job-in-io	channel.txt	/*job-in-io*
-job-killonexit	channel.txt	/*job-killonexit*
 job-may-start	channel.txt	/*job-may-start*
 job-options	channel.txt	/*job-options*
 job-out-cb	channel.txt	/*job-out-cb*
 job-out-io	channel.txt	/*job-out-io*
 job-start	channel.txt	/*job-start*
 job-start-nochannel	channel.txt	/*job-start-nochannel*
+job-stoponexit	channel.txt	/*job-stoponexit*
 job-term	channel.txt	/*job-term*
 job_getchannel()	eval.txt	/*job_getchannel()*
+job_setoptions()	eval.txt	/*job_setoptions()*
 job_start()	eval.txt	/*job_start()*
 job_status()	eval.txt	/*job_status()*
 job_stop()	eval.txt	/*job_stop()*
@@ -7577,7 +7589,10 @@ os_unix.txt	os_unix.txt	/*os_unix.txt*
 os_vms.txt	os_vms.txt	/*os_vms.txt*
 os_win32.txt	os_win32.txt	/*os_win32.txt*
 other-features	vi_diff.txt	/*other-features*
+out-cb	channel.txt	/*out-cb*
+out-timeout	channel.txt	/*out-timeout*
 p	change.txt	/*p*
+packages	repeat.txt	/*packages*
 page-down	intro.txt	/*page-down*
 page-up	intro.txt	/*page-up*
 page_down	intro.txt	/*page_down*
@@ -8995,25 +9010,13 @@ w:	eval.txt	/*w:*
 w:current_syntax	syntax.txt	/*w:current_syntax*
 w:quickfix_title	quickfix.txt	/*w:quickfix_title*
 w:var	eval.txt	/*w:var*
+waittime	channel.txt	/*waittime*
 warningmsg-variable	eval.txt	/*warningmsg-variable*
 white-space	pattern.txt	/*white-space*
 whitespace	pattern.txt	/*whitespace*
 wildcard	editing.txt	/*wildcard*
 wildcards	editing.txt	/*wildcards*
 wildmenumode()	eval.txt	/*wildmenumode()*
-win16-!start	gui_w16.txt	/*win16-!start*
-win16-clipboard	gui_w16.txt	/*win16-clipboard*
-win16-colors	gui_w16.txt	/*win16-colors*
-win16-default-editor	gui_w16.txt	/*win16-default-editor*
-win16-dialogs	gui_w16.txt	/*win16-dialogs*
-win16-drag-n-drop	gui_w16.txt	/*win16-drag-n-drop*
-win16-gui	gui_w16.txt	/*win16-gui*
-win16-maximized	gui_w16.txt	/*win16-maximized*
-win16-printing	gui_w16.txt	/*win16-printing*
-win16-shell	gui_w16.txt	/*win16-shell*
-win16-start	gui_w16.txt	/*win16-start*
-win16-truetype	gui_w16.txt	/*win16-truetype*
-win16-various	gui_w16.txt	/*win16-various*
 win32	os_win32.txt	/*win32*
 win32-!start	gui_w32.txt	/*win32-!start*
 win32-PATH	os_win32.txt	/*win32-PATH*

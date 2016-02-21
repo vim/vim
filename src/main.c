@@ -637,6 +637,9 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
 	source_runtime((char_u *)"plugin/**/*.vim", TRUE);
 # endif
 	TIME_MSG("loading plugins");
+
+	source_packages();
+	TIME_MSG("loading packages");
     }
 #endif
 

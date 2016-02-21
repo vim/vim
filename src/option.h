@@ -723,6 +723,7 @@ EXTERN int	p_ru;		/* 'ruler' */
 #ifdef FEAT_STL_OPT
 EXTERN char_u	*p_ruf;		/* 'rulerformat' */
 #endif
+EXTERN char_u	*p_pp;		/* 'packpath' */
 EXTERN char_u	*p_rtp;		/* 'runtimepath' */
 EXTERN long	p_sj;		/* 'scrolljump' */
 EXTERN long	p_so;		/* 'scrolloff' */

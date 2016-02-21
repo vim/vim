@@ -13785,6 +13785,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_OLE
 	"ole",
 #endif
+	"packages",
 #ifdef FEAT_PATH_EXTRA
 	"path_extra",
 #endif
