@@ -833,6 +833,8 @@ invoke_callback(channel_T *channel, char_u *callback, typval_T *argv)
 
     call_func(callback, (int)STRLEN(callback),
 			     &rettv, 2, argv, 0L, 0L, &dummy, TRUE, NULL);
+    clear_tv(&rettv);
+
     /* If an echo command was used the cursor needs to be put back where
      * it belongs. */
     setcursor();

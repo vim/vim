@@ -468,3 +468,28 @@ func Test_call()
   call ch_log('Test_call()')
   call s:run_server('s:test_call')
 endfunc
+
+"""""""""
+
+let s:job_ret = 'not yet'
+function MyExitCb(job, status)
+  let s:job_ret = 'done'
+endfunc
+
+function s:test_exit_callback(port)
+  call job_setoptions(s:job, {'exit-cb': 'MyExitCb'})
+  let s:exit_job = s:job
+endfunc
+
+func Test_exit_callback()
+  if has('job')
+    call s:run_server('s:test_exit_callback')
+
+    " the job may take a little while to exit
+    sleep 50m
+
+    " calling job_status() triggers the callback
+    call job_status(s:exit_job)
+    call assert_equal('done', s:job_ret)
+  endif
+endfunc

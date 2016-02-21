@@ -6256,5 +6256,9 @@ parse_queued_messages(void)
     /* Process the queued clientserver messages. */
     server_parse_messages();
 # endif
+# ifdef FEAT_JOB
+    /* Check if any jobs have ended. */
+    job_check_ended();
+# endif
 }
 #endif

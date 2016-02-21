@@ -7774,6 +7774,7 @@ job_free(job_T *job)
 	job->jv_prev->jv_next = job->jv_next;
 
     vim_free(job->jv_stoponexit);
+    vim_free(job->jv_exit_cb);
     vim_free(job);
 }
 
@@ -7781,7 +7782,13 @@ job_free(job_T *job)
 job_unref(job_T *job)
 {
     if (job != NULL && --job->jv_refcount <= 0)
-	job_free(job);
+    {
+	/* Do not free the job when it has not ended yet and there is a
+	 * "stoponexit" flag or an exit callback. */
+	if (job->jv_status != JOB_STARTED
+		|| (job->jv_stoponexit == NULL && job->jv_exit_cb == NULL))
+	    job_free(job);
+    }
 }
 
 /*
@@ -7819,6 +7826,14 @@ job_set_options(job_T *job, jobopt_T *opt)
 	else
 	    job->jv_stoponexit = vim_strsave(opt->jo_stoponexit);
     }
+    if (opt->jo_set & JO_EXIT_CB)
+    {
+	vim_free(job->jv_exit_cb);
+	if (opt->jo_exit_cb == NULL || *opt->jo_exit_cb == NUL)
+	    job->jv_exit_cb = NULL;
+	else
+	    job->jv_exit_cb = vim_strsave(opt->jo_exit_cb);
+    }
 }
 
 /*
@@ -7830,7 +7845,7 @@ job_stop_on_exit()
     job_T	*job;
 
     for (job = first_job; job != NULL; job = job->jv_next)
-	if (job->jv_stoponexit != NULL && *job->jv_stoponexit != NUL)
+	if (job->jv_status == JOB_STARTED && job->jv_stoponexit != NULL)
 	    mch_stop_job(job, job->jv_stoponexit);
 }
 #endif
@@ -10030,7 +10045,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		opt->jo_out_cb = get_callback(item);
 		if (opt->jo_out_cb == NULL)
 		{
-		    EMSG2(_(e_invarg2), "out-db");
+		    EMSG2(_(e_invarg2), "out-cb");
 		    return FAIL;
 		}
 	    }
@@ -10105,6 +10120,18 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		if (opt->jo_stoponexit == NULL)
 		{
 		    EMSG2(_(e_invarg2), "stoponexit");
+		    return FAIL;
+		}
+	    }
+	    else if (STRCMP(hi->hi_key, "exit-cb") == 0)
+	    {
+		if (!(supported & JO_EXIT_CB))
+		    break;
+		opt->jo_set |= JO_EXIT_CB;
+		opt->jo_exit_cb = get_tv_string_buf_chk(item, opt->jo_ecb_buf);
+		if (opt->jo_ecb_buf == NULL)
+		{
+		    EMSG2(_(e_invarg2), "exit-cb");
 		    return FAIL;
 		}
 	    }
@@ -14771,7 +14798,7 @@ f_items(typval_T *argvars, typval_T *rettv)
     dict_list(argvars, rettv, 2);
 }
 
-#ifdef FEAT_JOB
+#if defined(FEAT_JOB) || defined(PROTO)
 /*
  * Get the job from the argument.
  * Returns NULL if the job is invalid.
@@ -14824,7 +14851,7 @@ f_job_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     if (job == NULL)
 	return;
     clear_job_options(&opt);
-    if (get_job_options(&argvars[1], &opt, JO_STOPONEXIT) == FAIL)
+    if (get_job_options(&argvars[1], &opt, JO_STOPONEXIT + JO_EXIT_CB) == FAIL)
 	return;
     job_set_options(job, &opt);
 }
@@ -14858,7 +14885,8 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
     clear_job_options(&opt);
     opt.jo_mode = MODE_NL;
     if (get_job_options(&argvars[1], &opt,
-	    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL + JO_STOPONEXIT) == FAIL)
+	    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL
+					+ JO_STOPONEXIT + JO_EXIT_CB) == FAIL)
 	return;
     job_set_options(job, &opt);
 
@@ -14959,6 +14987,77 @@ theend:
 }
 
 /*
+ * Get the status of "job" and invoke the exit callback when needed.
+ * The returned string is not allocated.
+ */
+    static char *
+job_status(job_T *job)
+{
+    char	*result;
+
+    if (job->jv_status == JOB_ENDED)
+	/* No need to check, dead is dead. */
+	result = "dead";
+    else if (job->jv_status == JOB_FAILED)
+	result = "fail";
+    else
+    {
+	result = mch_job_status(job);
+# ifdef FEAT_CHANNEL
+	if (job->jv_status == JOB_ENDED)
+	    ch_log(job->jv_channel, "Job ended");
+# endif
+	if (job->jv_status == JOB_ENDED && job->jv_exit_cb != NULL)
+	{
+	    typval_T	argv[3];
+	    typval_T	rettv;
+	    int		dummy;
+
+	    /* invoke the exit callback */
+	    argv[0].v_type = VAR_JOB;
+	    argv[0].vval.v_job = job;
+	    argv[1].v_type = VAR_NUMBER;
+	    argv[1].vval.v_number = job->jv_exitval;
+	    call_func(job->jv_exit_cb, (int)STRLEN(job->jv_exit_cb),
+				 &rettv, 2, argv, 0L, 0L, &dummy, TRUE, NULL);
+	    clear_tv(&rettv);
+	}
+	if (job->jv_status == JOB_ENDED && job->jv_refcount == 0)
+	{
+	    /* The job already was unreferenced, now that it ended it can be
+	     * freed. Careful: caller must not use "job" after this! */
+	    job_free(job);
+	}
+    }
+    return result;
+}
+
+/*
+ * Called once in a while: check if any jobs with an "exit-cb" have ended.
+ */
+    void
+job_check_ended()
+{
+    static time_t   last_check = 0;
+    time_t	    now;
+    job_T	    *job;
+    job_T	    *next;
+
+    /* Only do this once in 10 seconds. */
+    now = time(NULL);
+    if (last_check + 10 < now)
+    {
+	last_check = now;
+	for (job = first_job; job != NULL; job = next)
+	{
+	    next = job->jv_next;
+	    if (job->jv_status == JOB_STARTED && job->jv_exit_cb != NULL)
+		job_status(job); /* may free "job" */
+	}
+    }
+}
+
+/*
  * "job_status()" function
  */
     static void
@@ -14969,13 +15068,7 @@ f_job_status(typval_T *argvars, typval_T *rettv)
 
     if (job != NULL)
     {
-	if (job->jv_status == JOB_ENDED)
-	    /* No need to check, dead is dead. */
-	    result = "dead";
-	else if (job->jv_status == JOB_FAILED)
-	    result = "fail";
-	else
-	    result = mch_job_status(job);
+	result = job_status(job);
 	rettv->v_type = VAR_STRING;
 	rettv->vval.v_string = vim_strsave((char_u *)result);
     }
@@ -22857,7 +22950,8 @@ copy_tv(typval_T *from, typval_T *to)
 	case VAR_JOB:
 #ifdef FEAT_JOB
 	    to->vval.v_job = from->vval.v_job;
-	    ++to->vval.v_job->jv_refcount;
+	    if (to->vval.v_job != NULL)
+		++to->vval.v_job->jv_refcount;
 	    break;
 #endif
 	case VAR_CHANNEL:
