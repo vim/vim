@@ -5127,6 +5127,7 @@ mch_job_status(job_T *job)
 	    || dwExitCode != STILL_ACTIVE)
     {
 	job->jv_status = JOB_ENDED;
+	job->jv_exitval = (int)dwExitCode;
 	return "dead";
     }
     return "run";

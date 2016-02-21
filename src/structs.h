@@ -1257,7 +1257,6 @@ struct jobvar_S
     job_T	*jv_prev;
 #ifdef UNIX
     pid_t	jv_pid;
-    int		jv_exitval;
 #endif
 #ifdef WIN32
     PROCESS_INFORMATION	jv_proc_info;
@@ -1265,6 +1264,7 @@ struct jobvar_S
 #endif
     jobstatus_T	jv_status;
     char_u	*jv_stoponexit; /* allocated */
+    int		jv_exitval;
     char_u	*jv_exit_cb;	/* allocated */
 
     int		jv_refcount;	/* reference count */
