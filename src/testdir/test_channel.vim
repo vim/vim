@@ -304,16 +304,26 @@ func Test_connect_waittime()
     call assert_true(reltimefloat(elapsed) < 1.0)
   endif
 
+  " We intend to use a socket that doesn't exist and wait for half a second
+  " before giving up.  If the socket does exist it can fail in various ways.
+  " Check for "Connection reset by peer" to avoid flakyness.
   let start = reltime()
-  let handle = ch_open('localhost:9867', {'waittime': 500})
-  if ch_status(handle) != "fail"
-    " Oops, port does exists.
-    call ch_close(handle)
-  else
-    " Failed connection should wait about 500 msec.
-    let elapsed = reltime(start)
-    call assert_true(reltimefloat(elapsed) < 1.0)
-  endif
+  try
+    let handle = ch_open('localhost:9867', {'waittime': 500})
+    if ch_status(handle) != "fail"
+      " Oops, port does exists.
+      call ch_close(handle)
+    else
+      " Failed connection should wait about 500 msec.
+      let elapsed = reltime(start)
+      call assert_true(reltimefloat(elapsed) > 0.3)
+      call assert_true(reltimefloat(elapsed) < 1.0)
+    endif
+  catch
+    if v:exception !~ 'Connection reset by peer'
+      call assert_false(1, "Caught exception: " . v:exception)
+    endif
+  endtry
 endfunc
 
 func Test_raw_pipe()
