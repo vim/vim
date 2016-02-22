@@ -1554,7 +1554,8 @@ channel_free_all(void)
 
 
 /* Sent when the channel is found closed when reading. */
-#define DETACH_MSG "\"DETACH\"\n"
+#define DETACH_MSG_RAW "DETACH\n"
+#define DETACH_MSG_JSON "\"DETACH\"\n"
 
 /* Buffer size for reading incoming messages. */
 #define MAXMSGSIZE 4096
@@ -1658,6 +1659,7 @@ channel_read(channel_T *channel, int part, char *func)
     int			readlen = 0;
     sock_T		fd;
     int			use_socket = FALSE;
+    char		*msg;
 
     fd = channel->ch_part[part].ch_fd;
     if (fd == INVALID_FD)
@@ -1721,8 +1723,10 @@ channel_read(channel_T *channel, int part, char *func)
 	 *			-> channel_read()
 	 */
 	ch_errors(channel, "%s(): Cannot read", func);
-	channel_save(channel, part,
-			       (char_u *)DETACH_MSG, (int)STRLEN(DETACH_MSG));
+	msg = channel->ch_part[part].ch_mode == MODE_RAW
+				  || channel->ch_part[part].ch_mode == MODE_NL
+		    ? DETACH_MSG_RAW : DETACH_MSG_JSON;
+	channel_save(channel, part, (char_u *)msg, (int)STRLEN(msg));
 
 	/* TODO: When reading from stdout is not possible, should we try to
 	 * keep stdin and stderr open?  Probably not, assume the other side

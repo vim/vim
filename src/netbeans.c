@@ -461,7 +461,7 @@ nb_parse_cmd(char_u *cmd)
 	/* NOTREACHED */
     }
 
-    if (STRCMP(cmd, "\"DETACH\"") == 0)
+    if (STRCMP(cmd, "DETACH") == 0)
     {
 	buf_T	*buf;
 
