@@ -9489,7 +9489,7 @@ f_asin(typval_T *argvars, typval_T *rettv)
     static void
 f_atan(typval_T *argvars, typval_T *rettv)
 {
-    float_T	f;
+    float_T	f = 0.0;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
