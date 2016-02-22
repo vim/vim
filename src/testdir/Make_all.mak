@@ -15,7 +15,6 @@ SCRIPTS_ALL = \
 	test7.out \
 	test8.out \
 	test9.out \
-	test13.out \
 	test14.out \
 	test15.out \
 	test18.out \
@@ -104,7 +103,6 @@ SCRIPTS_ALL = \
 	test_insertcount.out \
 	test_listchars.out \
 	test_listlbr.out \
-	test_listlbr_utf8.out \
 	test_mapping.out \
 	test_marks.out \
 	test_match_conceal.out \
@@ -135,9 +133,11 @@ SCRIPTS_MORE2 = \
 	test2.out \
 	test10.out \
 	test12.out \
+	test13.out \
 	test25.out \
 	test49.out \
-	test97.out
+	test97.out \
+	test_listlbr_utf8.out
 
 
 # Tests that run on most systems, but not MingW and Cygwin.
