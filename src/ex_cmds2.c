@@ -3087,8 +3087,8 @@ source_pack_plugin(char_u *fname, void *cookie UNUSED)
     if (strstr((char *)p_rtp, (char *)fname) == NULL)
     {
 	/* directory not in 'runtimepath', add it */
-	oldlen = STRLEN(p_rtp);
-	addlen = STRLEN(fname);
+	oldlen = (int)STRLEN(p_rtp);
+	addlen = (int)STRLEN(fname);
 	new_rtp = alloc(oldlen + addlen + 2);
 	if (new_rtp == NULL)
 	{
@@ -3130,7 +3130,7 @@ ex_loadplugin(exarg_T *eap)
     int		len;
     char	*pat;
 
-    len = STRLEN(pattern) + STRLEN(eap->arg);
+    len = (int)STRLEN(pattern) + (int)STRLEN(eap->arg);
     pat = (char *)alloc(len);
     if (pat == NULL)
 	return;
