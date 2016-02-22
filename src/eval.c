@@ -15064,7 +15064,7 @@ job_status(job_T *job)
  * Called once in a while: check if any jobs with an "exit-cb" have ended.
  */
     void
-job_check_ended()
+job_check_ended(void)
 {
     static time_t   last_check = 0;
     time_t	    now;
