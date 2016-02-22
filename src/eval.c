@@ -15039,7 +15039,8 @@ job_status(job_T *job)
 	    typval_T	rettv;
 	    int		dummy;
 
-	    /* invoke the exit callback */
+	    /* invoke the exit callback; make sure the refcount is > 0 */
+	    ++job->jv_refcount;
 	    argv[0].v_type = VAR_JOB;
 	    argv[0].vval.v_job = job;
 	    argv[1].v_type = VAR_NUMBER;
@@ -15047,10 +15048,11 @@ job_status(job_T *job)
 	    call_func(job->jv_exit_cb, (int)STRLEN(job->jv_exit_cb),
 				 &rettv, 2, argv, 0L, 0L, &dummy, TRUE, NULL);
 	    clear_tv(&rettv);
+	    --job->jv_refcount;
 	}
 	if (job->jv_status == JOB_ENDED && job->jv_refcount == 0)
 	{
-	    /* The job already was unreferenced, now that it ended it can be
+	    /* The job was already unreferenced, now that it ended it can be
 	     * freed. Careful: caller must not use "job" after this! */
 	    job_free(job);
 	}
