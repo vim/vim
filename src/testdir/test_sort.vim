@@ -1,5 +1,14 @@
 " Test sort()
 
+:func Compare1(a, b) abort
+    call sort(range(3), 'Compare2')
+    return a:a ># a:b
+:endfunc
+
+:func Compare2(a, b) abort
+    return a:a <# a:b
+:endfunc
+
 func Test_sort_strings()
   " numbers compared as strings
   call assert_equal([1, 2, 3], sort([3, 2, 1]))
@@ -20,4 +29,9 @@ endfunc
 
 func Test_sort_float()
   call assert_equal([0.28, 3, 13.5], sort([13.5, 0.28, 3], 'f'))
+endfunc
+
+func Test_sort_nested()
+  " test ability to call sort() from a compare function
+  call assert_equal([1, 3, 5], sort([3, 1, 5], 'Compare1'))
 endfunc
