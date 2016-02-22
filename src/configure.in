@@ -2610,17 +2610,18 @@ if test "x$GUITYPE" = "xGTK"; then
     gdk_pixbuf_version_minor=`echo $gdk_pixbuf_version | \
       sed -e 's/[[0-9]][[0-9]]*\.\([[0-9]][[0-9]]*\)\.[[0-9]][[0-9]]*/\1/'`
     if test "x$gdk_pixbuf_version_minor" != x -a \
-      $gdk_pixbuf_version_minor -ge 31 ; then
+	$gdk_pixbuf_version_minor -ge 31 ; then
       AC_MSG_RESULT([OK.])
       AC_PATH_PROG(GLIB_COMPILE_RESOURCES,[glib-compile-resources],no)
       AC_MSG_CHECKING([glib-compile-resources])
       if test "x$GLIB_COMPILE_RESOURCES" = xno ; then
-        AC_MSG_RESULT([cannot be found in PATH.])
+	GLIB_COMPILE_RESOURCES=""
+	AC_MSG_RESULT([cannot be found in PATH.])
       else
 	AC_MSG_RESULT([usable.])
-        AC_DEFINE(USE_GRESOURCE)
-        GRESOURCE_SRC="auto/gui_gtk_gresources.c"
-        GRESOURCE_OBJ="objects/gui_gtk_gresources.o"
+	AC_DEFINE(USE_GRESOURCE)
+	GRESOURCE_SRC="auto/gui_gtk_gresources.c"
+	GRESOURCE_OBJ="objects/gui_gtk_gresources.o"
       fi
     else
       AC_MSG_RESULT([not usable.])

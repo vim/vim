@@ -9052,7 +9052,7 @@ $as_echo_n "checking version of Gdk-Pixbuf... " >&6; }
     gdk_pixbuf_version_minor=`echo $gdk_pixbuf_version | \
       sed -e 's/[0-9][0-9]*\.\([0-9][0-9]*\)\.[0-9][0-9]*/\1/'`
     if test "x$gdk_pixbuf_version_minor" != x -a \
-      $gdk_pixbuf_version_minor -ge 31 ; then
+	$gdk_pixbuf_version_minor -ge 31 ; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: OK." >&5
 $as_echo "OK." >&6; }
       # Extract the first word of "glib-compile-resources", so it can be a program name with args.
@@ -9099,15 +9099,16 @@ fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking glib-compile-resources" >&5
 $as_echo_n "checking glib-compile-resources... " >&6; }
       if test "x$GLIB_COMPILE_RESOURCES" = xno ; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot be found in PATH." >&5
+	GLIB_COMPILE_RESOURCES=""
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot be found in PATH." >&5
 $as_echo "cannot be found in PATH." >&6; }
       else
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: usable." >&5
 $as_echo "usable." >&6; }
-        $as_echo "#define USE_GRESOURCE 1" >>confdefs.h
+	$as_echo "#define USE_GRESOURCE 1" >>confdefs.h
 
-        GRESOURCE_SRC="auto/gui_gtk_gresources.c"
-        GRESOURCE_OBJ="objects/gui_gtk_gresources.o"
+	GRESOURCE_SRC="auto/gui_gtk_gresources.c"
+	GRESOURCE_OBJ="objects/gui_gtk_gresources.o"
       fi
     else
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: not usable." >&5
