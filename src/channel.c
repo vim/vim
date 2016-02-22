@@ -1706,9 +1706,9 @@ channel_read(channel_T *channel, int part, char *func)
     }
 #endif
 
-    /* Reading a socket disconnection (readlen == 0), or a socket error.
+    /* Reading a disconnection (readlen == 0), or an error.
      * TODO: call error callback. */
-    if (readlen <= 0 && channel->ch_job == NULL)
+    if (readlen <= 0)
     {
 	/* Queue a "DETACH" netbeans message in the command queue in order to
 	 * terminate the netbeans session later. Do not end the session here
