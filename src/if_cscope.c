@@ -2062,7 +2062,10 @@ cs_print_tags_priv(char **matches, char **cntxts, int num_matches)
     strcpy(tbuf, matches[0]);
     ptag = strtok(tbuf, "\t");
     if (ptag == NULL)
+    {
+	vim_free(tbuf);
 	return;
+    }
 
     newsize = (int)(strlen(cstag_msg) + strlen(ptag));
     buf = (char *)alloc(newsize);
