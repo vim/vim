@@ -16,6 +16,12 @@
 #include "vim.h"
 
 #if defined(FEAT_EVAL) || defined(PROTO)
+
+#if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
+  /* for isnan() and isinf() */
+# include <math.h>
+#endif
+
 static int json_encode_item(garray_T *gap, typval_T *val, int copyID, int options);
 static int json_decode_item(js_read_T *reader, typval_T *res, int options);
 
@@ -267,8 +273,20 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
-	    vim_snprintf((char *)numbuf, NUMBUFLEN, "%g", val->vval.v_float);
-	    ga_concat(gap, numbuf);
+# if defined(HAVE_MATH_H)
+	    if ((options & JSON_JS) && isnan(val->vval.v_float))
+		ga_concat(gap, (char_u *)"NaN");
+	    else if ((options & JSON_JS) && isinf(val->vval.v_float))
+		ga_concat(gap, (char_u *)"Infinity");
+	    else if (isnan(val->vval.v_float) || isinf(val->vval.v_float))
+		ga_concat(gap, (char_u *)"null");
+	    else
+# endif
+	    {
+		vim_snprintf((char *)numbuf, NUMBUFLEN, "%g",
+							   val->vval.v_float);
+		ga_concat(gap, numbuf);
+	    }
 	    break;
 #endif
 	case VAR_UNKNOWN:
@@ -720,9 +738,36 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		}
 		return OK;
 	    }
+#ifdef FEAT_FLOAT
+	    if (STRNICMP((char *)p, "NaN", 3) == 0)
+	    {
+		reader->js_used += 3;
+		if (res != NULL)
+		{
+		    res->v_type = VAR_FLOAT;
+		    res->vval.v_float = 0.0 / 0.0;
+		}
+		return OK;
+	    }
+	    if (STRNICMP((char *)p, "Infinity", 8) == 0)
+	    {
+		reader->js_used += 8;
+		if (res != NULL)
+		{
+		    res->v_type = VAR_FLOAT;
+		    res->vval.v_float = 1.0 / 0.0;
+		}
+		return OK;
+	    }
+#endif
 	    /* check for truncated name */
 	    len = (int)(reader->js_end - (reader->js_buf + reader->js_used));
-	    if ((len < 5 && STRNICMP((char *)p, "false", len) == 0)
+	    if (
+		    (len < 5 && STRNICMP((char *)p, "false", len) == 0)
+#ifdef FEAT_FLOAT
+		    || (len < 8 && STRNICMP((char *)p, "Infinity", len) == 0)
+		    || (len < 3 && STRNICMP((char *)p, "NaN", len) == 0)
+#endif
 		    || (len < 4 && (STRNICMP((char *)p, "true", len) == 0
 			       ||  STRNICMP((char *)p, "null", len) == 0)))
 		return MAYBE;
