@@ -8545,6 +8545,7 @@ enable_gui_canon=`echo "_$enable_gui" | \
 	sed 's/[ _+-]//g;y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/'`
 
 SKIP_GTK2=YES
+SKIP_GTK3=YES
 SKIP_GNOME=YES
 SKIP_MOTIF=YES
 SKIP_ATHENA=YES
