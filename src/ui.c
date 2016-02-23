@@ -711,7 +711,7 @@ clip_compare_pos(
     if (row1 < row2) return(-1);
     if (col1 > col2) return(1);
     if (col1 < col2) return(-1);
-		     return(0);
+    return(0);
 }
 
 /*
