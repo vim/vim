@@ -17,9 +17,20 @@
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-#if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
-  /* for isnan() and isinf() */
-# include <math.h>
+#if defined(FEAT_FLOAT)
+# include <float.h>
+# if defined(HAVE_MATH_H)
+   /* for isnan() and isinf() */
+#  include <math.h>
+# endif
+# if defined(WIN32) && !defined(isnan)
+#  define isnan(x) _isnan(x)
+#  define isinf(x) (!_finite(x) && !_isnan(x))
+# endif
+# if defined(_MSC_VER) && !defined(INFINITY)
+#  define INFINITY (DBL_MAX+DBL_MAX)
+#  define NAN (INFINITY-INFINITY)
+# endif
 #endif
 
 static int json_encode_item(garray_T *gap, typval_T *val, int copyID, int options);
@@ -745,7 +756,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		if (res != NULL)
 		{
 		    res->v_type = VAR_FLOAT;
-		    res->vval.v_float = 0.0 / 0.0;
+		    res->vval.v_float = NAN;
 		}
 		return OK;
 	    }
@@ -755,7 +766,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		if (res != NULL)
 		{
 		    res->v_type = VAR_FLOAT;
-		    res->vval.v_float = 1.0 / 0.0;
+		    res->vval.v_float = INFINITY;
 		}
 		return OK;
 	    }
