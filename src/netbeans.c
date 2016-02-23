@@ -3055,17 +3055,56 @@ netbeans_draw_multisign_indicator(int row)
     int i;
     int y;
     int x;
+#if GTK_CHECK_VERSION(3,0,0)
+    cairo_t *cr = NULL;
+#else
     GdkDrawable *drawable = gui.drawarea->window;
+#endif
 
     if (!NETBEANS_OPEN)
 	return;
+
+#if GTK_CHECK_VERSION(3,0,0)
+    cr = cairo_create(gui.surface);
+    {
+	GdkVisual *visual = NULL;
+	guint32 r_mask, g_mask, b_mask;
+	gint r_shift, g_shift, b_shift;
+
+	visual = gdk_window_get_visual(gtk_widget_get_window(gui.drawarea));
+	if (visual != NULL)
+	{
+	    gdk_visual_get_red_pixel_details(visual, &r_mask, &r_shift, NULL);
+	    gdk_visual_get_green_pixel_details(visual, &g_mask, &g_shift, NULL);
+	    gdk_visual_get_blue_pixel_details(visual, &b_mask, &b_shift, NULL);
+
+	    cairo_set_source_rgb(cr,
+		    ((gui.fgcolor->red & r_mask) >> r_shift) / 255.0,
+		    ((gui.fgcolor->green & g_mask) >> g_shift) / 255.0,
+		    ((gui.fgcolor->blue & b_mask) >> b_shift) / 255.0);
+	}
+    }
+#endif
 
     x = 0;
     y = row * gui.char_height + 2;
 
     for (i = 0; i < gui.char_height - 3; i++)
+#if GTK_CHECK_VERSION(3,0,0)
+	cairo_rectangle(cr, x+2, y++, 1, 1);
+#else
 	gdk_draw_point(drawable, gui.text_gc, x+2, y++);
+#endif
 
+#if GTK_CHECK_VERSION(3,0,0)
+    cairo_rectangle(cr, x+0, y, 1, 1);
+    cairo_rectangle(cr, x+2, y, 1, 1);
+    cairo_rectangle(cr, x+4, y++, 1, 1);
+    cairo_rectangle(cr, x+1, y, 1, 1);
+    cairo_rectangle(cr, x+2, y, 1, 1);
+    cairo_rectangle(cr, x+3, y++, 1, 1);
+    cairo_rectangle(cr, x+2, y, 1, 1);
+#else
     gdk_draw_point(drawable, gui.text_gc, x+0, y);
     gdk_draw_point(drawable, gui.text_gc, x+2, y);
     gdk_draw_point(drawable, gui.text_gc, x+4, y++);
@@ -3073,6 +3112,11 @@ netbeans_draw_multisign_indicator(int row)
     gdk_draw_point(drawable, gui.text_gc, x+2, y);
     gdk_draw_point(drawable, gui.text_gc, x+3, y++);
     gdk_draw_point(drawable, gui.text_gc, x+2, y);
+#endif
+
+#if GTK_CHECK_VERSION(3,0,0)
+    cairo_destroy(cr);
+#endif
 }
 #endif /* FEAT_GUI_GTK */
 

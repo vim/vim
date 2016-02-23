@@ -460,3 +460,6 @@
 
 /* Define if GResource is used to load icons */
 #undef USE_GRESOURCE
+
+/* Define if GTK+ GUI is to be linked against GTK+ 3 */
+#undef USE_GTK3

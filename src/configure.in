@@ -213,7 +213,7 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
     dnl or Motif, Athena or GTK GUI is used.
     AC_CHECK_HEADER(Carbon/Carbon.h, CARBON=yes)
     if test "x$CARBON" = "xyes"; then
-      if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xathena -a "X$enable_gui" != Xgtk2; then
+      if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xathena -a "X$enable_gui" != Xgtk2 -a "X$enable_gui" != Xgtk3; then
 	with_x=no
       fi
     fi
@@ -2198,7 +2198,7 @@ test "x$with_x" = xno -a "x$MACOSX" != "xyes" -a "x$QNX" != "xyes" && enable_gui
 
 AC_MSG_CHECKING(--enable-gui argument)
 AC_ARG_ENABLE(gui,
- [  --enable-gui[=OPTS]     X11 GUI [default=auto] [OPTS=auto/no/gtk2/gnome2/motif/athena/neXtaw/photon/carbon]], , enable_gui="auto")
+ [  --enable-gui[=OPTS]     X11 GUI [default=auto] [OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/photon/carbon]], , enable_gui="auto")
 
 dnl Canonicalize the --enable-gui= argument so that it can be easily compared.
 dnl Do not use character classes for portability with old tools.
@@ -2256,6 +2256,8 @@ else
     gnome2)	AC_MSG_RESULT(GNOME 2.x GUI support)
 		SKIP_GNOME=
 		SKIP_GTK2=;;
+    gtk3)	AC_MSG_RESULT(GTK+ 3.x GUI support)
+		SKIP_GTK3=;;
     motif)	AC_MSG_RESULT(Motif GUI support)
 		SKIP_MOTIF=;;
     athena)	AC_MSG_RESULT(Athena GUI support)
@@ -2288,6 +2290,17 @@ if test "x$SKIP_GNOME" != "xYES" -a "$enable_gui_canon" != "gnome2"; then
   AC_MSG_RESULT($enable_gnome_check)
   if test "x$enable_gnome_check" = "xno"; then
     SKIP_GNOME=YES
+  fi
+fi
+
+if test "x$SKIP_GTK3" != "xYES" -a "$enable_gui_canon" != "gtk3"; then
+  AC_MSG_CHECKING(whether or not to look for GTK+ 3)
+  AC_ARG_ENABLE(gtk3-check,
+	[  --enable-gtk3-check     If auto-select GUI, check for GTK+ 3 [default=yes]],
+	, enable_gtk3_check="yes")
+  AC_MSG_RESULT($enable_gtk3_check)
+  if test "x$enable_gtk3_check" = "xno"; then
+    SKIP_GTK3=YES
   fi
 fi
 
@@ -2379,12 +2392,12 @@ AC_DEFUN(AM_PATH_GTK,
 [
   if test "X$GTK_CONFIG" != "Xno" -o "X$PKG_CONFIG" != "Xno"; then
   {
-    min_gtk_version=ifelse([$1], ,2.2.0,$1)
-    AC_MSG_CHECKING(for GTK - version >= $min_gtk_version)
     no_gtk=""
     if (test "X$SKIP_GTK2" != "XYES" -a "X$PKG_CONFIG" != "Xno") \
 	  && $PKG_CONFIG --exists gtk+-2.0; then
     {
+      min_gtk_version=ifelse([$1], ,2.2.0,$1)
+      AC_MSG_CHECKING(for GTK - version >= $min_gtk_version)
       dnl We should be using PKG_CHECK_MODULES() instead of this hack.
       dnl But I guess the dependency on pkgconfig.m4 is not wanted or
       dnl something like that.
@@ -2396,6 +2409,22 @@ AC_DEFUN(AM_PATH_GTK,
       gtk_minor_version=`$PKG_CONFIG --modversion gtk+-2.0 | \
 	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
       gtk_micro_version=`$PKG_CONFIG --modversion gtk+-2.0 | \
+	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
+    }
+    elif (test "X$SKIP_GTK3" != "XYES" -a "X$PKG_CONFIG" != "Xno") \
+	  && $PKG_CONFIG --exists gtk+-3.0; then
+    {
+      min_gtk_version=ifelse([$1], ,3.0.0,$1)
+      AC_MSG_CHECKING(for GTK - version >= $min_gtk_version)
+
+      GTK_CFLAGS=`$PKG_CONFIG --cflags gtk+-3.0`
+      GTK_LIBDIR=`$PKG_CONFIG --libs-only-L gtk+-3.0`
+      GTK_LIBS=`$PKG_CONFIG --libs gtk+-3.0`
+      gtk_major_version=`$PKG_CONFIG --modversion gtk+-3.0 | \
+	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
+      gtk_minor_version=`$PKG_CONFIG --modversion gtk+-3.0 | \
+	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
+      gtk_micro_version=`$PKG_CONFIG --modversion gtk+-3.0 | \
 	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
     }
     else
@@ -2573,6 +2602,7 @@ if test -z "$SKIP_GTK2"; then
 		 GTK_LIBNAME="$GTK_LIBS"
 		GUI_INC_LOC="$GTK_CFLAGS"], )
     if test "x$GTK_CFLAGS" != "x"; then
+      SKIP_GTK3=YES
       SKIP_ATHENA=YES
       SKIP_NEXTAW=YES
       SKIP_MOTIF=YES
@@ -2597,6 +2627,44 @@ if test -z "$SKIP_GTK2"; then
 	GTK_LIBNAME="$GTK_LIBNAME $GNOME_LIBDIR $GNOME_LIBS"
       fi
     }
+    fi
+  fi
+fi
+
+
+dnl ---------------------------------------------------------------------------
+dnl Check for GTK3.
+dnl ---------------------------------------------------------------------------
+if test -z "$SKIP_GTK3"; then
+
+  AC_MSG_CHECKING(--disable-gtktest argument)
+  AC_ARG_ENABLE(gtktest, [  --disable-gtktest       Do not try to compile and run a test GTK program],
+	, enable_gtktest=yes)
+  if test "x$enable_gtktest" = "xyes" ; then
+    AC_MSG_RESULT(gtk test enabled)
+  else
+    AC_MSG_RESULT(gtk test disabled)
+  fi
+
+  if test "X$PKG_CONFIG" = "X"; then
+    AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+  fi
+
+  if test "x$PKG_CONFIG" != "xno"; then
+    AM_PATH_GTK(3.0.0,
+		[GUI_LIB_LOC="$GTK_LIBDIR"
+		 GTK_LIBNAME="$GTK_LIBS"
+		GUI_INC_LOC="$GTK_CFLAGS"], )
+    if test "x$GTK_CFLAGS" != "x"; then
+      SKIP_GTK2=YES
+      SKIP_GNOME=YES
+      SKIP_ATHENA=YES
+      SKIP_NEXTAW=YES
+      SKIP_MOTIF=YES
+      GUITYPE=GTK
+      AC_SUBST(GTK_LIBNAME)
+      AC_DEFINE(HAVE_GTK_MULTIHEAD)
+      AC_DEFINE(USE_GTK3)
     fi
   fi
 fi
@@ -2823,7 +2891,7 @@ if test "$enable_xsmp" = "yes"; then
 fi
 
 
-if test -z "$SKIP_ATHENA" -o -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF" -o -z "$SKIP_GTK2"; then
+if test -z "$SKIP_ATHENA" -o -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF" -o -z "$SKIP_GTK2" -o -z "$SKIP_GTK3"; then
   dnl Check for X11/xpm.h and X11/Sunkeysym.h with the GUI include path
   cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"

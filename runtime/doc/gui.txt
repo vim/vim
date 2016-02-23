@@ -25,7 +25,7 @@ Other GUI documentation:
 
 First you must make sure you actually have a version of Vim with the GUI code
 included.  You can check this with the ":version" command, it says "with xxx
-GUI", where "xxx" is X11-Motif, X11-Athena, Photon, GTK, GTK2, etc., or
+GUI", where "xxx" is X11-Motif, X11-Athena, Photon, GTK2, GTK3, etc., or
 "MS-Windows 32 bit GUI version".
 
 How to start the GUI depends on the system used.  Mostly you can run the
@@ -514,10 +514,13 @@ a menu entry.  Hit <Enter> to execute it.  Hit <Esc> if you want to cancel.
 This does require the |+menu| feature enabled at compile time.
 
 							*tear-off-menus*
-GTK+ and Motif support Tear-off menus.  These are sort of sticky menus or
+GTK+ 2 and Motif support Tear-off menus.  These are sort of sticky menus or
 pop-up menus that are present all the time.  If the resizing does not work
 correctly, this may be caused by using something like "Vim*geometry" in the
 defaults.  Use "Vim.geometry" instead.
+
+As to GTK+ 3, tear-off menus have been deprecated since GTK+ 3.4.
+Accordingly, they are disabled if gvim is linked against GTK+ 3.4 or later.
 
 The Win32 GUI version emulates Motif's tear-off menus.  Actually, a Motif user
 will spot the differences easily, but hopefully they're just as useful.  You
@@ -650,8 +653,8 @@ When no or zero priority is given, 500 is used.
 The priority for the PopUp menu is not used.
 
 The Help menu will be placed on the far right side of the menu bar on systems
-which support this (Motif and GTK+).  For GTK+ 2, this is not done anymore
-because right-aligning the Help menu is now discouraged UI design.
+which support this (Motif and GTK+).  For GTK+ 2 and 3, this is not done
+anymore because right-aligning the Help menu is now discouraged UI design.
 
 You can use a priority higher than 9999, to make it go after the Help menu,
 but that is non-standard and is discouraged.  The highest possible priority is
