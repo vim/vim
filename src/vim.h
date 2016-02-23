@@ -1897,10 +1897,6 @@ typedef int sock_T;
 #  ifdef FEAT_OLE
 #   define WM_OLE (WM_APP+0)
 #  endif
-#  ifdef FEAT_CHANNEL
-    /* message for channel socket event */
-#   define WM_NETBEANS (WM_APP+1)
-#  endif
 # endif
 
 /* Info about selected text */

@@ -131,10 +131,10 @@ func s:communicate(port)
     call assert_false(1, 's:responseHandle was not set')
   else
     call assert_equal(handle, s:responseHandle)
+    unlet s:responseHandle
   endif
   call assert_equal('got it', s:responseMsg)
 
-  unlet s:responseHandle
   let s:responseMsg = ''
   call ch_sendexpr(handle, 'hello!', {'callback': function('s:RequestHandler')})
   sleep 10m
@@ -142,6 +142,7 @@ func s:communicate(port)
     call assert_false(1, 's:responseHandle was not set')
   else
     call assert_equal(handle, s:responseHandle)
+    unlet s:responseHandle
   endif
   call assert_equal('got it', s:responseMsg)
 
@@ -186,15 +187,12 @@ func s:communicate(port)
   call assert_equal('ok', ch_sendexpr(handle, 'empty-request'))
 
   " Reading while there is nothing available.
-  " TODO: make this work for MS-Windows
-  if has('unix')
-    call assert_equal(v:none, ch_read(handle, {'timeout': 0}))
-    let start = reltime()
-    call assert_equal(v:none, ch_read(handle, {'timeout': 333}))
-    let elapsed = reltime(start)
-    call assert_true(reltimefloat(elapsed) > 0.3)
-    call assert_true(reltimefloat(elapsed) < 0.6)
-  endif
+  call assert_equal(v:none, ch_read(handle, {'timeout': 0}))
+  let start = reltime()
+  call assert_equal(v:none, ch_read(handle, {'timeout': 333}))
+  let elapsed = reltime(start)
+  call assert_true(reltimefloat(elapsed) > 0.3)
+  call assert_true(reltimefloat(elapsed) < 0.6)
 
   " Send without waiting for a response, then wait for a response.
   call ch_sendexpr(handle, 'wait a bit',  {'callback': 0})

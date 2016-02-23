@@ -52,10 +52,6 @@
 # define fd_close(sd) close(sd)
 #endif
 
-#ifdef FEAT_GUI_W32
-extern HWND s_hwnd;			/* Gvim's Window handle */
-#endif
-
 #ifdef WIN32
     static int
 fd_read(sock_T fd, char *buf, size_t len)
@@ -296,9 +292,6 @@ add_channel(void)
 #ifdef FEAT_GUI_GTK
 	channel->ch_part[part].ch_inputHandler = 0;
 #endif
-#ifdef FEAT_GUI_W32
-	channel->ch_part[part].ch_inputHandler = -1;
-#endif
 	channel->ch_part[part].ch_timeout = 2000;
     }
 
@@ -421,15 +414,6 @@ channel_gui_register_one(channel_T *channel, int part)
 		messageFromNetbeans,
 		(gpointer)(long)channel->ch_part[part].ch_fd);
 #   endif
-#  else
-#   ifdef FEAT_GUI_W32
-    /* Tell Windows we are interested in receiving message when there
-     * is input on the editor connection socket.  */
-    if (channel->ch_part[part].ch_inputHandler == -1)
-	channel->ch_part[part].ch_inputHandler = WSAAsyncSelect(
-		channel->ch_part[part].ch_fd,
-		s_hwnd, WM_NETBEANS, FD_READ);
-#   endif
 #  endif
 # endif
 }
@@ -491,14 +475,6 @@ channel_gui_unregister(channel_T *channel)
 #   endif
 	    channel->ch_part[part].ch_inputHandler = 0;
 	}
-#  else
-#   ifdef FEAT_GUI_W32
-	if (channel->ch_part[part].ch_inputHandler == 0)
-	{
-	    WSAAsyncSelect(channel->ch_part[part].ch_fd, s_hwnd, 0, 0);
-	    channel->ch_part[part].ch_inputHandler = -1;
-	}
-#   endif
 #  endif
 # endif
     }
@@ -1630,7 +1606,6 @@ channel_free_all(void)
 /*
  * Check for reading from "fd" with "timeout" msec.
  * Return FAIL when there is nothing to read.
- * Always returns OK for FEAT_GUI_W32.
  */
     static int
 channel_wait(channel_T *channel, sock_T fd, int timeout)
@@ -1662,12 +1637,7 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
     else
 #endif
     {
-#if defined(FEAT_GUI_W32)
-	/* Can't check socket for Win32 GUI, always return OK. */
-	ch_log(channel, "Can't check, assuming there is something to read");
-	return OK;
-#else
-# if defined(HAVE_SELECT)
+#if defined(HAVE_SELECT)
 	struct timeval	tval;
 	fd_set		rfds;
 	int			ret;
@@ -1679,23 +1649,22 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 	for (;;)
 	{
 	    ret = select((int)fd + 1, &rfds, NULL, NULL, &tval);
-#  ifdef EINTR
+# ifdef EINTR
 	    SOCK_ERRNO;
 	    if (ret == -1 && errno == EINTR)
 		continue;
-#  endif
+# endif
 	    if (ret > 0)
 		return OK;
 	    break;
 	}
-# else
+#else
 	struct pollfd	fds;
 
 	fds.fd = fd;
 	fds.events = POLLIN;
 	if (poll(&fds, 1, timeout) > 0)
 	    return OK;
-# endif
 #endif
     }
     ch_log(channel, "Nothing to read");
@@ -1764,16 +1733,6 @@ channel_read(channel_T *channel, int part, char *func)
 	if (len < MAXMSGSIZE)
 	    break;	/* did read everything that's available */
     }
-#ifdef FEAT_GUI_W32
-    if (use_socket && len == SOCKET_ERROR)
-    {
-	/* For Win32 GUI channel_wait() always returns OK and we handle the
-	 * situation that there is nothing to read here.
-	 * TODO: how about a timeout? */
-	if (WSAGetLastError() == WSAEWOULDBLOCK)
-	    return;
-    }
-#endif
 
     /* Reading a disconnection (readlen == 0), or an error.
      * TODO: call error callback. */
@@ -1970,17 +1929,12 @@ channel_handle_events(void)
 
     for (channel = first_channel; channel != NULL; channel = channel->ch_next)
     {
-#  ifdef FEAT_GUI_W32
-	/* only check the pipes */
-	for (part = PART_OUT; part <= PART_ERR; ++part)
-#  else
-#   ifdef CHANNEL_PIPES
+#  ifdef CHANNEL_PIPES
 	/* check the socket and pipes */
 	for (part = PART_SOCK; part <= PART_ERR; ++part)
-#   else
+#  else
 	/* only check the socket */
 	part = PART_SOCK;
-#   endif
 #  endif
 	{
 	    fd = channel->ch_part[part].ch_fd;

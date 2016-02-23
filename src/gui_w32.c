@@ -1927,24 +1927,6 @@ process_message(void)
     }
 #endif
 
-#ifdef FEAT_CHANNEL
-    if (msg.message == WM_NETBEANS)
-    {
-	int	    part;
-	channel_T   *channel = channel_fd2channel((sock_T)msg.wParam, &part);
-
-	if (channel != NULL)
-	{
-	    /* Disable error messages, they can mess up the display and throw
-	     * an exception. */
-	    ++emsg_off;
-	    channel_read(channel, part, "process_message");
-	    --emsg_off;
-	}
-	return;
-    }
-#endif
-
 #ifdef FEAT_SNIFF
     if (sniff_request_waiting && want_sniff_request)
     {
@@ -2245,7 +2227,18 @@ gui_mch_wait_for_chars(int wtime)
 	}
 
 #ifdef MESSAGE_QUEUE
-	parse_queued_messages();
+	/* Check channel while waiting message. */
+	for (;;)
+	{
+	    MSG msg;
+
+	    parse_queued_messages();
+
+	    if (pPeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)
+		|| MsgWaitForMultipleObjects(0, NULL, FALSE, 100, QS_ALLEVENTS)
+								!= WAIT_TIMEOUT)
+		break;
+	}
 #endif
 
 	/*

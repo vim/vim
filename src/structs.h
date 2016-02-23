@@ -1336,9 +1336,6 @@ typedef struct {
 #ifdef FEAT_GUI_GTK
     gint	ch_inputHandler; /* Cookie for input */
 #endif
-#ifdef WIN32
-    int		ch_inputHandler; /* ret.value of WSAAsyncSelect() */
-#endif
 
     ch_mode_T	ch_mode;
     int		ch_timeout;	/* request timeout in msec */

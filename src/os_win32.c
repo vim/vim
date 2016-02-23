@@ -1492,6 +1492,11 @@ WaitForChar(long msec)
 	{
 	    DWORD dwWaitTime = dwEndTime - dwNow;
 
+#ifdef FEAT_CHANNEL
+	    /* Check channel while waiting input. */
+	    if (dwWaitTime > 100)
+		dwWaitTime = 100;
+#endif
 #ifdef FEAT_MZSCHEME
 	    if (mzthreads_allowed() && p_mzq > 0
 				    && (msec < 0 || (long)dwWaitTime > p_mzq))
