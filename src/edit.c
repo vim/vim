@@ -185,7 +185,8 @@ static int  ins_compl_key2dir(int c);
 static int  ins_compl_pum_key(int c);
 static int  ins_compl_key2count(int c);
 static int  ins_compl_use_match(int c);
-static int  ins_complete(int c);
+static int  ins_complete(int c, int enable_pum);
+static void show_pum(int save_w_wrow);
 static unsigned  quote_meta(char_u *dest, char_u *str, int len);
 #endif /* FEAT_INS_EXPAND */
 
@@ -1429,7 +1430,7 @@ doESCkey:
 
 docomplete:
 	    compl_busy = TRUE;
-	    if (ins_complete(c) == FAIL)
+	    if (ins_complete(c, TRUE) == FAIL)
 		compl_cont_status = 0;
 	    compl_busy = FALSE;
 	    break;
@@ -2765,6 +2766,8 @@ ins_compl_make_cyclic(void)
     void
 set_completion(colnr_T startcol, list_T *list)
 {
+    int save_w_wrow = curwin->w_wrow;
+
     /* If already doing completions stop it. */
     if (ctrl_x_mode != 0)
 	ins_compl_prep(' ');
@@ -2794,11 +2797,15 @@ set_completion(colnr_T startcol, list_T *list)
 
     compl_curr_match = compl_first_match;
     if (compl_no_insert)
-	ins_complete(K_DOWN);
+	ins_complete(K_DOWN, FALSE);
     else
-	ins_complete(Ctrl_N);
+	ins_complete(Ctrl_N, FALSE);
     if (compl_no_select)
-	ins_complete(Ctrl_P);
+	ins_complete(Ctrl_P, FALSE);
+
+    /* Lazily show the popup menu, unless we got interrupted. */
+    if (!compl_interrupted)
+	show_pum(save_w_wrow);
     out_flush();
 }
 
@@ -3484,7 +3491,7 @@ ins_compl_new_leader(void)
 	}
 #endif
 	compl_restarting = TRUE;
-	if (ins_complete(Ctrl_N) == FAIL)
+	if (ins_complete(Ctrl_N, TRUE) == FAIL)
 	    compl_cont_status = 0;
 	compl_restarting = FALSE;
     }
@@ -5017,7 +5024,7 @@ ins_compl_use_match(int c)
  * Returns OK if completion was done, FAIL if something failed (out of mem).
  */
     static int
-ins_complete(int c)
+ins_complete(int c, int enable_pum)
 {
     char_u	*line;
     int		startcol = 0;	    /* column where searched text starts */
@@ -5610,25 +5617,32 @@ ins_complete(int c)
     }
 
     /* Show the popup menu, unless we got interrupted. */
-    if (!compl_interrupted)
+    if (enable_pum && !compl_interrupted)
     {
-	/* RedrawingDisabled may be set when invoked through complete(). */
-	n = RedrawingDisabled;
-	RedrawingDisabled = 0;
-
-	/* If the cursor moved we need to remove the pum first. */
-	setcursor();
-	if (save_w_wrow != curwin->w_wrow)
-	    ins_compl_del_pum();
-
-	ins_compl_show_pum();
-	setcursor();
-	RedrawingDisabled = n;
+	show_pum(save_w_wrow);
     }
     compl_was_interrupted = compl_interrupted;
     compl_interrupted = FALSE;
 
     return OK;
+}
+
+    static void
+show_pum(int save_w_wrow)
+{
+  /* RedrawingDisabled may be set when invoked through complete(). */
+  int n = RedrawingDisabled;
+
+  RedrawingDisabled = 0;
+
+  /* If the cursor moved we need to remove the pum first. */
+  setcursor();
+  if (save_w_wrow != curwin->w_wrow)
+      ins_compl_del_pum();
+
+  ins_compl_show_pum();
+  setcursor();
+  RedrawingDisabled = n;
 }
 
 /*
