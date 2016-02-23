@@ -4256,8 +4256,7 @@ get_locale_val(int what)
 {
     char_u	*loc;
 
-    /* Obtain the locale value from the libraries.  For DJGPP this is
-     * redefined and it doesn't use the arguments. */
+    /* Obtain the locale value from the libraries. */
     loc = (char_u *)setlocale(what, NULL);
 
 # ifdef WIN32

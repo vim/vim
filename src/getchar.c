@@ -1677,15 +1677,6 @@ vgetc(void)
 		c = CSI;
 #endif
 	}
-#ifdef MSDOS
-	/*
-	 * If K_NUL was typed, it is replaced by K_NUL, 3 in mch_inchar().
-	 * Delete the 3 here.
-	 */
-	else if (c == K_NUL && vpeekc() == 3)
-	    (void)vgetorpeek(TRUE);
-#endif
-
 	/* a keypad or special function key was not mapped, use it like
 	 * its ASCII equivalent */
 	switch (c)
@@ -5241,7 +5232,7 @@ check_map(
 }
 #endif
 
-#if defined(MSDOS) || defined(MSWIN) || defined(MACOS)
+#if defined(MSWIN) || defined(MACOS)
 
 #define VIS_SEL	(VISUAL+SELECTMODE)	/* abbreviation */
 
@@ -5254,7 +5245,7 @@ static struct initmap
     int		mode;
 } initmappings[] =
 {
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
 	/* Use the Windows (CUA) keybindings. */
 # ifdef FEAT_GUI
 	/* paste, copy and cut */
@@ -5274,17 +5265,6 @@ static struct initmap
 
 	/* paste, copy and cut */
 #  ifdef FEAT_CLIPBOARD
-#   ifdef DJGPP
-	{(char_u *)"\316\122 \"*P", NORMAL},	    /* SHIFT-Insert is "*P */
-	{(char_u *)"\316\122 \"-d\"*P", VIS_SEL},   /* SHIFT-Insert is "-d"*P */
-	{(char_u *)"\316\122 \022\017*", INSERT},  /* SHIFT-Insert is ^R^O* */
-	{(char_u *)"\316\222 \"*y", VIS_SEL},	    /* CTRL-Insert is "*y */
-#    if 0 /* Shift-Del produces the same code as Del */
-	{(char_u *)"\316\123 \"*d", VIS_SEL},	    /* SHIFT-Del is "*d */
-#    endif
-	{(char_u *)"\316\223 \"*d", VIS_SEL},	    /* CTRL-Del is "*d */
-	{(char_u *)"\030 \"-d", VIS_SEL},	    /* CTRL-X is "-d */
-#   else
 	{(char_u *)"\316\324 \"*P", NORMAL},	    /* SHIFT-Insert is "*P */
 	{(char_u *)"\316\324 \"-d\"*P", VIS_SEL},   /* SHIFT-Insert is "-d"*P */
 	{(char_u *)"\316\324 \022\017*", INSERT},  /* SHIFT-Insert is ^R^O* */
@@ -5292,7 +5272,6 @@ static struct initmap
 	{(char_u *)"\316\327 \"*d", VIS_SEL},	    /* SHIFT-Del is "*d */
 	{(char_u *)"\316\330 \"*d", VIS_SEL},	    /* CTRL-Del is "*d */
 	{(char_u *)"\030 \"-d", VIS_SEL},	    /* CTRL-X is "-d */
-#   endif
 #  else
 	{(char_u *)"\316\324 P", NORMAL},	    /* SHIFT-Insert is P */
 	{(char_u *)"\316\324 \"-dP", VIS_SEL},	    /* SHIFT-Insert is "-dP */
@@ -5325,7 +5304,7 @@ static struct initmap
     void
 init_mappings(void)
 {
-#if defined(MSDOS) || defined(MSWIN) ||defined(MACOS)
+#if defined(MSWIN) ||defined(MACOS)
     int		i;
 
     for (i = 0; i < (int)(sizeof(initmappings) / sizeof(struct initmap)); ++i)
@@ -5333,8 +5312,7 @@ init_mappings(void)
 #endif
 }
 
-#if defined(MSDOS) || defined(MSWIN) \
-	|| defined(FEAT_CMDWIN) || defined(MACOS) || defined(PROTO)
+#if defined(MSWIN) || defined(FEAT_CMDWIN) || defined(MACOS) || defined(PROTO)
 /*
  * Add a mapping "map" for mode "mode".
  * Need to put string in allocated memory, because do_map() will modify it.

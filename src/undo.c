@@ -641,9 +641,9 @@ u_savecommon(
 	u_getbot();
     }
 
-#if !defined(UNIX) && !defined(DJGPP) && !defined(WIN32) && !defined(__EMX__)
+#if !defined(UNIX) && !defined(WIN32) && !defined(__EMX__)
 	/*
-	 * With Amiga and MSDOS 16 bit we can't handle big undo's, because
+	 * With Amiga we can't handle big undo's, because
 	 * then u_alloc_line would have to allocate a block larger than 32K
 	 */
     if (size >= 8000)

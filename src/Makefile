@@ -908,7 +908,7 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 ### after changing this, you need to do "make reconfig".
 #CONF_TERM_LIB = --with-tlib=ncurses
 
-### For GCC on MSDOS, the ".exe" suffix will be added.
+### For GCC on MS-Windows, the ".exe" suffix will be added.
 #EXEEXT = .exe
 #LNKEXT = .exe
 
@@ -1715,7 +1715,7 @@ PRO_AUTO = \
 # Resources used for the Mac are in one directory.
 RSRC_DIR = os_mac_rsrc
 
-PRO_MANUAL = os_amiga.pro os_msdos.pro os_win32.pro \
+PRO_MANUAL = os_amiga.pro os_win32.pro \
 	os_mswin.pro winclip.pro os_beos.pro os_vms.pro $(PERL_PRO)
 
 # Default target is making the executable and tools
@@ -1836,7 +1836,7 @@ update-po:
 # Generate function prototypes.  This is not needed to compile vim, but if
 # you want to use it, cproto is out there on the net somewhere -- Webb
 #
-# When generating os_amiga.pro, os_msdos.pro and os_win32.pro there will be a
+# When generating os_amiga.pro and os_win32.pro there will be a
 # few include files that can not be found, that's OK.
 
 proto: $(PRO_AUTO) $(PRO_MANUAL)
@@ -1862,10 +1862,6 @@ CPROTO = cproto $(PROTO_FLAGS) -DPROTO \
 
 os_amiga.pro: os_amiga.c
 	$(CPROTO) -DAMIGA -UHAVE_CONFIG_H -DBPTR=char* $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_msdos.pro: os_msdos.c
-	$(CPROTO) -DMSDOS -UHAVE_CONFIG_H $< > proto/$@
 	echo "/* vim: set ft=c : */" >> proto/$@
 
 os_win32.pro: os_win32.c

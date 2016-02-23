@@ -291,11 +291,9 @@ SRC_DOS =	\
 		src/GvimExt/uninst.bat \
 		README_srcdos.txt \
 		src/INSTALLpc.txt \
-		src/Make_bc3.mak \
 		src/Make_bc5.mak \
 		src/Make_cyg.mak \
 		src/Make_cyg_ming.mak \
-		src/Make_djg.mak \
 		src/Make_ivc.mak \
 		src/Make_dvc.mak \
 		src/Make_ming.mak \
@@ -321,8 +319,6 @@ SRC_DOS =	\
 		src/if_perl_msvc/stdbool.h \
 		src/iid_ole.c \
 		src/os_dos.h \
-		src/os_msdos.c \
-		src/os_msdos.h \
 		src/os_w32dll.c \
 		src/os_w32exe.c \
 		src/os_win32.c \
@@ -330,7 +326,6 @@ SRC_DOS =	\
 		src/os_win32.h \
 		src/proto/gui_w32.pro \
 		src/proto/if_ole.pro \
-		src/proto/os_msdos.pro \
 		src/proto/os_win32.pro \
 		src/proto/os_mswin.pro \
 		src/testdir/Make_dos.mak \
@@ -345,9 +340,7 @@ SRC_DOS =	\
 		src/vimtbar.h \
 		src/xpm_w32.c \
 		src/xpm_w32.h \
-		src/xxd/Make_bc3.mak \
 		src/xxd/Make_bc5.mak \
-		src/xxd/Make_djg.mak \
 		src/xxd/Make_ming.mak \
 		src/xxd/Make_mvc.mak \
 		nsis/gvim.nsi \

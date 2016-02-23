@@ -10,7 +10,7 @@
  *
  * term.c: functions for controlling the terminal
  *
- * primitive termcap support for Amiga, MSDOS, and Win32 included
+ * primitive termcap support for Amiga and Win32 included
  *
  * NOTE: padding and variable substitution is not performed,
  * when compiling without HAVE_TGETENT, we use tputs() and tgoto() dummies.
@@ -428,7 +428,7 @@ static struct builtin_term builtin_termcaps[] =
 #  endif
 # endif
 
-# if defined(MSDOS) || defined(ALL_BUILTIN_TCAPS) || defined(__EMX__)
+# if defined(ALL_BUILTIN_TCAPS) || defined(__EMX__)
 /*
  * These codes are valid when nansi.sys or equivalent has been installed.
  * Function keys on a PC are preceded with a NUL. These are converted into
@@ -511,107 +511,6 @@ static struct builtin_term builtin_termcaps[] =
     {K_END,		"\316O"},
     {K_PAGEDOWN,	"\316Q"},
     {K_PAGEUP,		"\316I"},
-# endif
-
-# if defined(MSDOS)
-/*
- * These codes are valid for the pc video.  The entries that start with ESC |
- * are translated into conio calls in os_msdos.c. Default for MSDOS.
- */
-    {(int)KS_NAME,	"pcterm"},
-    {(int)KS_CE,	"\033|K"},
-    {(int)KS_AL,	"\033|L"},
-    {(int)KS_DL,	"\033|M"},
-#  ifdef TERMINFO
-    {(int)KS_CS,	"\033|%i%p1%d;%p2%dr"},
-#   ifdef FEAT_VERTSPLIT
-    {(int)KS_CSV,	"\033|%i%p1%d;%p2%dV"},
-#   endif
-#  else
-    {(int)KS_CS,	"\033|%i%d;%dr"},
-#   ifdef FEAT_VERTSPLIT
-    {(int)KS_CSV,	"\033|%i%d;%dV"},
-#   endif
-#  endif
-    {(int)KS_CL,	"\033|J"},
-    {(int)KS_ME,	"\033|0m"},	/* normal */
-    {(int)KS_MR,	"\033|112m"},	/* reverse: black on lightgrey */
-    {(int)KS_MD,	"\033|15m"},	/* bold: white text */
-    {(int)KS_SE,	"\033|0m"},	/* standout end */
-    {(int)KS_SO,	"\033|31m"},	/* standout: white on blue */
-    {(int)KS_CZH,	"\033|225m"},	/* italic mode: blue text on yellow */
-    {(int)KS_CZR,	"\033|0m"},	/* italic mode end */
-    {(int)KS_US,	"\033|67m"},	/* underscore mode: cyan text on red */
-    {(int)KS_UE,	"\033|0m"},	/* underscore mode end */
-    {(int)KS_CCO,	"16"},		/* allow 16 colors */
-#  ifdef TERMINFO
-    {(int)KS_CAB,	"\033|%p1%db"},	/* set background color */
-    {(int)KS_CAF,	"\033|%p1%df"},	/* set foreground color */
-#  else
-    {(int)KS_CAB,	"\033|%db"},	/* set background color */
-    {(int)KS_CAF,	"\033|%df"},	/* set foreground color */
-#  endif
-    {(int)KS_MS,	"y"},
-    {(int)KS_UT,	"y"},
-    {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
-    {(int)KS_CM,	"\033|%i%p1%d;%p2%dH"},
-#  else
-    {(int)KS_CM,	"\033|%i%d;%dH"},
-#  endif
-#ifdef DJGPP
-    {(int)KS_VB,	"\033|B"},	/* visual bell */
-#endif
-    {K_UP,		"\316H"},
-    {K_DOWN,		"\316P"},
-    {K_LEFT,		"\316K"},
-    {K_RIGHT,		"\316M"},
-    {K_S_LEFT,		"\316s"},
-    {K_S_RIGHT,		"\316t"},
-    {K_S_TAB,		"\316\017"},
-    {K_F1,		"\316;"},
-    {K_F2,		"\316<"},
-    {K_F3,		"\316="},
-    {K_F4,		"\316>"},
-    {K_F5,		"\316?"},
-    {K_F6,		"\316@"},
-    {K_F7,		"\316A"},
-    {K_F8,		"\316B"},
-    {K_F9,		"\316C"},
-    {K_F10,		"\316D"},
-    {K_F11,		"\316\205"},
-    {K_F12,		"\316\206"},
-    {K_S_F1,		"\316T"},
-    {K_S_F2,		"\316U"},
-    {K_S_F3,		"\316V"},
-    {K_S_F4,		"\316W"},
-    {K_S_F5,		"\316X"},
-    {K_S_F6,		"\316Y"},
-    {K_S_F7,		"\316Z"},
-    {K_S_F8,		"\316["},
-    {K_S_F9,		"\316\\"},
-    {K_S_F10,		"\316]"},
-    {K_S_F11,		"\316\207"},
-    {K_S_F12,		"\316\210"},
-    {K_INS,		"\316R"},
-    {K_DEL,		"\316S"},
-    {K_HOME,		"\316G"},
-    {K_END,		"\316O"},
-    {K_PAGEDOWN,	"\316Q"},
-    {K_PAGEUP,		"\316I"},
-    {K_KPLUS,		"\316N"},
-    {K_KMINUS,		"\316J"},
-    {K_KMULTIPLY,	"\3167"},
-    {K_K0,		"\316\332"},
-    {K_K1,		"\316\336"},
-    {K_K2,		"\316\342"},
-    {K_K3,		"\316\346"},
-    {K_K4,		"\316\352"},
-    {K_K5,		"\316\356"},
-    {K_K6,		"\316\362"},
-    {K_K7,		"\316\366"},
-    {K_K8,		"\316\372"},
-    {K_K9,		"\316\376"},
 # endif
 
 # if defined(WIN3264) || defined(ALL_BUILTIN_TCAPS) || defined(__EMX__)
@@ -1369,10 +1268,6 @@ static struct builtin_term builtin_termcaps[] =
 # define DEFAULT_TERM	(char_u *)"win32"
 #endif
 
-#ifdef MSDOS
-# define DEFAULT_TERM	(char_u *)"pcterm"
-#endif
-
 #if defined(UNIX) && !defined(__MINT__)
 # define DEFAULT_TERM	(char_u *)"ansi"
 #endif
@@ -1971,7 +1866,7 @@ set_termname(char_u *term)
 	/* termcap failed to report size */
 	/* set defaults, in case ui_get_shellsize() also fails */
 	width = 80;
-#if defined(MSDOS) || defined(WIN3264)
+#if defined(WIN3264)
 	height = 25;	    /* console is often 25 lines */
 #else
 	height = 24;	    /* most terminals are 24 lines */
@@ -4482,7 +4377,7 @@ check_termcode(
 	    if (key_name[0] == (int)KS_MOUSE)
 	    {
 		/*
-		 * For xterm and MSDOS we get "<t_mouse>scr", where
+		 * For xterm we get "<t_mouse>scr", where
 		 *  s == encoded button state:
 		 *	   0x20 = left button down
 		 *	   0x21 = middle button down
@@ -4646,7 +4541,7 @@ check_termcode(
 #endif
 	    )
 	{
-#  if !defined(MSWIN) && !defined(MSDOS)
+#  if !defined(MSWIN)
 		/*
 		 * Handle mouse events.
 		 * Recognize the xterm mouse wheel, but not in the GUI, the

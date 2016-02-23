@@ -29,7 +29,7 @@ static int	diff_flags = DIFF_FILLER;
 
 static int diff_a_works = MAYBE; /* TRUE when "diff -a" works, FALSE when it
 				    doesn't work, MAYBE when not checked yet */
-#if defined(MSWIN) || defined(MSDOS)
+#if defined(MSWIN)
 static int diff_bin_works = MAYBE; /* TRUE when "diff --binary" works, FALSE
 				      when it doesn't work, MAYBE when not
 				      checked yet */
@@ -733,7 +733,7 @@ ex_diffupdate(
 	    break;
 #endif
 
-#if defined(MSWIN) || defined(MSDOS)
+#if defined(MSWIN)
 	/* If the "-a" argument works, also check if "--binary" works. */
 	if (ok && diff_a_works == MAYBE && diff_bin_works == MAYBE)
 	{
@@ -764,7 +764,7 @@ ex_diffupdate(
 	    EMSG(_("E810: Cannot read or write temp files"));
 	EMSG(_("E97: Cannot create diffs"));
 	diff_a_works = MAYBE;
-#if defined(MSWIN) || defined(MSDOS)
+#if defined(MSWIN)
 	diff_bin_works = MAYBE;
 #endif
 	goto theend;
@@ -845,7 +845,7 @@ diff_file(
 	     * non-zero when differences have been found. */
 	    vim_snprintf((char *)cmd, len, "diff %s%s%s%s%s %s",
 		    diff_a_works == FALSE ? "" : "-a ",
-#if defined(MSWIN) || defined(MSDOS)
+#if defined(MSWIN)
 		    diff_bin_works == TRUE ? "--binary " : "",
 #else
 		    "",

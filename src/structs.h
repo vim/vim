@@ -1845,9 +1845,7 @@ struct file_buffer
 #endif
     int		b_p_ro;		/* 'readonly' */
     long	b_p_sw;		/* 'shiftwidth' */
-#ifndef SHORT_FNAME
     int		b_p_sn;		/* 'shortname' */
-#endif
 #ifdef FEAT_SMARTINDENT
     int		b_p_si;		/* 'smartindent' */
 #endif
@@ -1983,9 +1981,7 @@ struct file_buffer
 				   access b_spell without #ifdef. */
 #endif
 
-#ifndef SHORT_FNAME
     int		b_shortname;	/* this file has an 8.3 file name */
-#endif
 
 #ifdef FEAT_MZSCHEME
     void	*b_mzscheme_ref; /* The MzScheme reference to this buffer */

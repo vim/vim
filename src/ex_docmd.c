@@ -3758,7 +3758,7 @@ set_one_cmd_context(
 
 	/* Check for environment variable */
 	if (*xp->xp_pattern == '$'
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
 		|| *xp->xp_pattern == '%'
 #endif
 		)

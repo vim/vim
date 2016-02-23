@@ -3191,15 +3191,13 @@ win_line(
 	    }
 	}
 
-#ifndef MSDOS
 	/* Check if the character under the cursor should not be inverted */
 	if (!highlight_match && lnum == curwin->w_cursor.lnum && wp == curwin
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 		&& !gui.in_use
-# endif
+#endif
 		)
 	    noinvcur = TRUE;
-#endif
 
 	/* if inverting in this line set area_highlighting */
 	if (fromcol >= 0)
@@ -9379,8 +9377,8 @@ win_do_lines(
      * ScreenLines[] when t_CV isn't defined.  That's faster than using
      * win_line().
      * Don't use a scroll region when we are going to redraw the text, writing
-     * a character in the lower right corner of the scroll region causes a
-     * scroll-up in the DJGPP version.
+     * a character in the lower right corner of the scroll region may cause a
+     * scroll-up .
      */
     if (scroll_region
 #ifdef FEAT_VERTSPLIT

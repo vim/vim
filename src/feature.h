@@ -65,14 +65,10 @@
 # if defined(UNIX) || defined(WIN3264) || defined(MACOS)
 #  define FEAT_HUGE
 # else
-#  if defined(MSWIN) || defined(DJGPP) || defined(VMS) || defined(MACOS) || defined(AMIGA)
+#  if defined(MSWIN) || defined(VMS) || defined(MACOS) || defined(AMIGA)
 #   define FEAT_BIG
 #  else
-#   ifdef MSDOS
-#    define FEAT_SMALL
-#   else
-#    define FEAT_NORMAL
-#   endif
+#   define FEAT_NORMAL
 #  endif
 # endif
 #endif
@@ -467,7 +463,7 @@
  *			and byte2line().
  *			Note: Required for Macintosh.
  */
-#if defined(FEAT_NORMAL) && !defined(MSDOS)
+#if defined(FEAT_NORMAL)
 # define FEAT_TITLE
 #endif
 
@@ -541,7 +537,6 @@
  *			with HAVE_TGETENT defined).
  *
  * (nothing)		Machine specific termcap entries will be included.
- *			This is default for win16 to save static data.
  *
  * SOME_BUILTIN_TCAPS	Include most useful builtin termcap entries (used only
  *			with NO_BUILTIN_TCAPS not defined).
@@ -1060,7 +1055,7 @@
 # ifdef FEAT_BIG
 #  define FEAT_MOUSE_SGR
 # endif
-# if defined(FEAT_NORMAL) && (defined(MSDOS) || defined(WIN3264))
+# if defined(FEAT_NORMAL) && defined(WIN3264)
 #  define DOS_MOUSE
 # endif
 # if defined(FEAT_NORMAL) && defined(__QNX__)
@@ -1176,7 +1171,7 @@
  */
 #ifdef FEAT_NORMAL
 /* MS-DOS console and Win32 console can change cursor shape */
-# if defined(MSDOS) || (defined(WIN3264) && !defined(FEAT_GUI_W32))
+# if defined(WIN3264) && !defined(FEAT_GUI_W32)
 #  define MCH_CURSOR_SHAPE
 # endif
 # if defined(FEAT_GUI_W32) || defined(FEAT_GUI_MOTIF) \

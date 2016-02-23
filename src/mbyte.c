@@ -6005,7 +6005,7 @@ convert_setup_ext(
 }
 
 #if defined(FEAT_GUI) || defined(AMIGA) || defined(WIN3264) \
-	|| defined(MSDOS) || defined(PROTO)
+	|| defined(PROTO)
 /*
  * Do conversion on typed input characters in-place.
  * The input and output are not NUL terminated!

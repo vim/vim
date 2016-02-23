@@ -326,13 +326,6 @@ ml_open(buf_T *buf)
     curwin->w_nrwidth_line_count = 0;
 #endif
 
-#if defined(MSDOS) && !defined(DJGPP)
-    /* for 16 bit MS-DOS create a swapfile now, because we run out of
-     * memory very quickly */
-    if (p_uc != 0)
-	ml_open_file(buf);
-#endif
-
 /*
  * fill block0 struct and write page 0
  */
@@ -641,7 +634,7 @@ ml_setname(buf_T *buf)
     memfile_T	*mfp;
     char_u	*fname;
     char_u	*dirp;
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
     char_u	*p;
 #endif
 
@@ -672,7 +665,7 @@ ml_setname(buf_T *buf)
 	if (fname == NULL)	    /* no file name found for this dir */
 	    continue;
 
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
 	/*
 	 * Set full pathname for swap file now, because a ":!cd dir" may
 	 * change directory without us knowing it.
@@ -704,7 +697,7 @@ ml_setname(buf_T *buf)
 	    vim_free(mfp->mf_fname);
 	    mfp->mf_fname = fname;
 	    vim_free(mfp->mf_ffname);
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
 	    mfp->mf_ffname = NULL;  /* mf_fname is full pathname already */
 #else
 	    mf_set_ffname(mfp);
@@ -797,7 +790,7 @@ ml_open_file(buf_T *buf)
 	    continue;
 	if (mf_open_file(mfp, fname) == OK)	/* consumes fname! */
 	{
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
 	    /*
 	     * set full pathname for swap file now, because a ":!cd dir" may
 	     * change directory without us knowing it.
@@ -986,7 +979,7 @@ set_b0_fname(ZERO_BL *b0p, buf_T *buf)
 	b0p->b0_fname[0] = NUL;
     else
     {
-#if defined(MSDOS) || defined(MSWIN) || defined(AMIGA)
+#if defined(MSWIN) || defined(AMIGA)
 	/* Systems that cannot translate "~user" back into a path: copy the
 	 * file name unmodified.  Do use slashes instead of backslashes for
 	 * portability. */
@@ -1280,7 +1273,7 @@ ml_recover(void)
     {
 	msg_start();
 	msg_outtrans_attr(mfp->mf_fname, attr | MSG_HIST);
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
 	if (STRNCMP(b0p->b0_hname, "PC ", 3) == 0)
 	    MSG_PUTS_ATTR(_(" cannot be used with this version of Vim.\n"),
 							     attr | MSG_HIST);
@@ -2147,7 +2140,7 @@ swapfile_info(char_u *fname)
 
 		if (b0_magic_wrong(&b0))
 		{
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
 		    if (STRNCMP(b0.b0_hname, "PC ", 3) == 0)
 			MSG_PUTS(_("\n         [not usable with this version of Vim]"));
 		    else
@@ -2172,13 +2165,6 @@ recov_file_names(char_u **names, char_u *path, int prepend_dot)
 {
     int		num_names;
 
-#ifdef SHORT_FNAME
-    /*
-     * (MS-DOS) always short names
-     */
-    names[0] = modname(path, (char_u *)".sw?", FALSE);
-    num_names = 1;
-#else /* !SHORT_FNAME */
     /*
      * (Win32 and Win64) never short names, but do prepend a dot.
      * (Not MS-DOS or Win32 or Win64) maybe short name, maybe not: Try both.
@@ -2261,8 +2247,6 @@ end:
 # ifndef WIN3264
     curbuf->b_shortname = shortname;
 # endif
-
-#endif /* !SHORT_FNAME */
 
     return num_names;
 }
@@ -3953,11 +3937,7 @@ makeswapname(
 #endif
 
     r = buf_modname(
-#ifdef SHORT_FNAME
-	    TRUE,
-#else
 	    (buf->b_p_sn || buf->b_shortname),
-#endif
 	    fname_res,
 	    (char_u *)
 #if defined(VMS)
@@ -3965,13 +3945,8 @@ makeswapname(
 #else
 	    ".swp",
 #endif
-#ifdef SHORT_FNAME		/* always 8.3 file name */
-	    FALSE
-#else
 	    /* Prepend a '.' to the swap file name for the current directory. */
-	    dir_name[0] == '.' && dir_name[1] == NUL
-#endif
-	       );
+	    dir_name[0] == '.' && dir_name[1] == NUL);
     if (r == NULL)	    /* out of memory */
 	return NULL;
 
@@ -4152,12 +4127,10 @@ findswapname(
 #ifdef AMIGA
     BPTR	fh;
 #endif
-#ifndef SHORT_FNAME
     int		r;
-#endif
     char_u	*buf_fname = buf->b_fname;
 
-#if !defined(SHORT_FNAME) && !defined(UNIX)
+#if !defined(UNIX)
 # define CREATE_DUMMY_FILE
     FILE	*dummyfd = NULL;
 
@@ -4217,7 +4190,7 @@ findswapname(
 	    fname = NULL;
 	    break;
 	}
-#if defined(UNIX) && !defined(SHORT_FNAME)
+#if defined(UNIX)
 /*
  * Some systems have a MS-DOS compatible filesystem that use 8.3 character
  * file names. If this is the first try and the swap file name does not fit in
@@ -4356,7 +4329,6 @@ findswapname(
 	 */
 	if (fname[n - 2] == 'w' && fname[n - 1] == 'p')	/* first try */
 	{
-#ifndef SHORT_FNAME
 	    /*
 	     * on MS-DOS compatible filesystems (e.g. messydos) file.doc.swp
 	     * and file.doc are the same file. To guess if this problem is
@@ -4379,7 +4351,6 @@ findswapname(
 		    continue;	    /* try again with '.' replaced with '_' */
 		}
 	    }
-#endif
 	    /*
 	     * If we get here the ".swp" file really exists.
 	     * Give an error message, unless recovering, no file name, we are

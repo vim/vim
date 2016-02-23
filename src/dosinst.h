@@ -46,14 +46,14 @@
 char *searchpath(char *name);
 #endif
 
-#if defined(DJGPP) || defined(UNIX_LINT)
+#if defined(UNIX_LINT)
 # include <unistd.h>
 # include <errno.h>
 #endif
 
 #include "version.h"
 
-#if defined(DJGPP) || defined(UNIX_LINT)
+#if defined(UNIX_LINT)
 # define vim_mkdir(x, y) mkdir((char *)(x), y)
 #else
 # if defined(WIN3264) && !defined(__BORLANDC__)
@@ -63,9 +63,7 @@ char *searchpath(char *name);
 # endif
 #endif
 
-#ifndef DJGPP
-# define sleep(n) Sleep((n) * 1000)
-#endif
+#define sleep(n) Sleep((n) * 1000)
 
 /* ---------------------------------------- */
 
@@ -423,9 +421,7 @@ run_command(char *cmd)
     char	*p;
 
     /* On WinNT, 'start' is a shell built-in for cmd.exe rather than an
-     * executable (start.exe) like in Win9x.  DJGPP, being a DOS program,
-     * is given the COMSPEC command.com by WinNT, so we have to find
-     * cmd.exe manually and use it. */
+     * executable (start.exe) like in Win9x. */
     cmd_path = searchpath_save("cmd.exe");
     if (cmd_path != NULL)
     {
@@ -640,14 +636,6 @@ char	*sysdrive;		/* system drive or "c:\" */
     static void
 do_inits(char **argv)
 {
-#ifdef DJGPP
-    /*
-     * Use Long File Names by default, if $LFN not set.
-     */
-    if (getenv("LFN") == NULL)
-	putenv("LFN=y");
-#endif
-
     /* Find out the full path of our executable. */
     if (my_fullpath(installdir, argv[0], BUFSIZE) == NULL)
     {

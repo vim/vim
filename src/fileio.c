@@ -445,7 +445,7 @@ readfile(
 	    return FAIL;
 	}
 #endif
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
 	/*
 	 * MS-Windows allows opening a device, but we will probably get stuck
 	 * trying to read it.
@@ -521,12 +521,12 @@ readfile(
 
 /*
  * for UNIX: check readonly with perm and mch_access()
- * for MSDOS and Amiga: check readonly by trying to open the file for writing
+ * for Amiga: check readonly by trying to open the file for writing
  */
     file_readonly = FALSE;
     if (read_stdin)
     {
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
 	/* Force binary I/O on stdin to avoid CR-LF -> LF conversion. */
 	setmode(0, O_BINARY);
 #endif
@@ -561,7 +561,7 @@ readfile(
 	msg_scroll = msg_save;
 #ifndef UNIX
 	/*
-	 * On MSDOS and Amiga we can't open a directory, check here.
+	 * On Amiga we can't open a directory, check here.
 	 */
 	isdir_f = (mch_isdir(fname));
 	perm = mch_getperm(fname);  /* check if the file exists */
@@ -3546,7 +3546,7 @@ buf_write(
     }
     if (c == NODE_WRITABLE)
     {
-# if defined(MSDOS) || defined(MSWIN)
+# if defined(MSWIN)
 	/* MS-Windows allows opening a device, but we will probably get stuck
 	 * trying to write to it.  */
 	if (!p_odev)
@@ -3791,7 +3791,7 @@ buf_write(
 	    struct stat	st_new;
 	    char_u	*dirp;
 	    char_u	*rootname;
-#if defined(UNIX) && !defined(SHORT_FNAME)
+#if defined(UNIX)
 	    int		did_set_shortname;
 #endif
 
@@ -3834,7 +3834,7 @@ buf_write(
 		    goto nobackup;
 		}
 
-#if defined(UNIX) && !defined(SHORT_FNAME)
+#if defined(UNIX)
 		did_set_shortname = FALSE;
 #endif
 
@@ -3846,12 +3846,7 @@ buf_write(
 		    /*
 		     * Make backup file name.
 		     */
-		    backup = buf_modname(
-#ifdef SHORT_FNAME
-			    TRUE,
-#else
-			    (buf->b_p_sn || buf->b_shortname),
-#endif
+		    backup = buf_modname((buf->b_p_sn || buf->b_shortname),
 						 rootname, backup_ext, FALSE);
 		    if (backup == NULL)
 		    {
@@ -3878,7 +3873,6 @@ buf_write(
 			{
 			    vim_free(backup);
 			    backup = NULL;	/* no backup file to delete */
-# ifndef SHORT_FNAME
 			    /*
 			     * may try again with 'shortname' set
 			     */
@@ -3891,7 +3885,6 @@ buf_write(
 				/* setting shortname didn't help */
 			    if (did_set_shortname)
 				buf->b_shortname = FALSE;
-# endif
 			    break;
 			}
 #endif
@@ -4059,12 +4052,7 @@ buf_write(
 		    backup = NULL;
 		else
 		{
-		    backup = buf_modname(
-#ifdef SHORT_FNAME
-			    TRUE,
-#else
-			    (buf->b_p_sn || buf->b_shortname),
-#endif
+		    backup = buf_modname((buf->b_p_sn || buf->b_shortname),
 						 rootname, backup_ext, FALSE);
 		    vim_free(rootname);
 		}
@@ -4911,12 +4899,7 @@ restore_backup:
      */
     if (*p_pm && dobackup)
     {
-	char *org = (char *)buf_modname(
-#ifdef SHORT_FNAME
-					TRUE,
-#else
-					(buf->b_p_sn || buf->b_shortname),
-#endif
+	char *org = (char *)buf_modname((buf->b_p_sn || buf->b_shortname),
 							  fname, p_pm, FALSE);
 
 	if (backup != NULL)
@@ -5287,7 +5270,7 @@ check_mtime(buf_T *buf, struct stat *st)
     static int
 time_differs(long t1, long t2)
 {
-#if defined(__linux__) || defined(MSDOS) || defined(MSWIN)
+#if defined(__linux__) || defined(MSWIN)
     /* On a FAT filesystem, esp. under Linux, there are only 5 bits to store
      * the seconds.  Since the roundoff is done when flushing the inode, the
      * time may change unexpectedly by one second!!! */
@@ -6030,9 +6013,9 @@ shorten_fname(char_u *full_path, char_u *dir_name)
     if (fnamencmp(dir_name, full_path, len) == 0)
     {
 	p = full_path + len;
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
 	/*
-	 * MSDOS: when a file is in the root directory, dir_name will end in a
+	 * MSWIN: when a file is in the root directory, dir_name will end in a
 	 * slash, since C: by itself does not define a specific dir. In this
 	 * case p may already be correct. <negri>
 	 */
@@ -6047,7 +6030,7 @@ shorten_fname(char_u *full_path, char_u *dir_name)
 #endif
 	}
     }
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
     /*
      * When using a file in the current drive, remove the drive name:
      * "A:\dir\file" -> "\dir\file".  This helps when moving a session file on
@@ -6163,12 +6146,7 @@ modname(
     char_u *ext,
     int	    prepend_dot)	/* may prepend a '.' to file name */
 {
-    return buf_modname(
-#ifdef SHORT_FNAME
-			TRUE,
-#else
-			(curbuf->b_p_sn || curbuf->b_shortname),
-#endif
+    return buf_modname((curbuf->b_p_sn || curbuf->b_shortname),
 						     fname, ext, prepend_dot);
 }
 
@@ -6207,9 +6185,7 @@ buf_modname(
 	    retval[fnamelen++] = PATHSEP;
 	    retval[fnamelen] = NUL;
 	}
-#ifndef SHORT_FNAME
 	prepend_dot = FALSE;	    /* nothing to prepend a dot to */
-#endif
     }
     else
     {
@@ -6235,9 +6211,7 @@ buf_modname(
 #ifdef USE_LONG_FNAME
 		    && (!USE_LONG_FNAME || shortname)
 #else
-# ifndef SHORT_FNAME
 		    && shortname
-# endif
 #endif
 								)
 	    if (*ptr == '.')	/* replace '.' by '_' */
@@ -6250,10 +6224,8 @@ buf_modname(
     }
 
     /* the file name has at most BASENAMELEN characters. */
-#ifndef SHORT_FNAME
     if (STRLEN(ptr) > (unsigned)BASENAMELEN)
 	ptr[BASENAMELEN] = '\0';
-#endif
 
     s = ptr + STRLEN(ptr);
 
@@ -6263,9 +6235,7 @@ buf_modname(
 #ifdef USE_LONG_FNAME
     if (!USE_LONG_FNAME || shortname)
 #else
-# ifndef SHORT_FNAME
     if (shortname)
-# endif
 #endif
     {
 	/*
@@ -6320,7 +6290,6 @@ buf_modname(
      */
     STRCPY(s, ext);
 
-#ifndef SHORT_FNAME
     /*
      * Prepend the dot.
      */
@@ -6333,7 +6302,6 @@ buf_modname(
 	STRMOVE(e + 1, e);
 	*e = '.';
     }
-#endif
 
     /*
      * Check that, after appending the extension, the file name is really

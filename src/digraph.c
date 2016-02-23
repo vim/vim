@@ -39,74 +39,7 @@ static garray_T	user_digraphs = {0, 0, (int)sizeof(digr_T), 10, NULL};
  * compilers cannot handle them (Amiga SAS/C is the most picky one).
  */
 static digr_T digraphdefault[] =
-#if defined(MSDOS)
-	/*
-	 * MSDOS digraphs.
-	 */
-       {{'C', ',', 128},	/* ~@ XX */
-	{'u', '"', 129},	/* Å */
-	{'e', '\'', 130},	/* Ç */
-	{'a', '^', 131},	/* É */
-	{'a', '"', 132},	/* Ñ */
-	{'a', '`', 133},	/* Ö */
-	{'a', '@', 134},	/* Ü */
-	{'c', ',', 135},	/* ~G XX */
-	{'e', '^', 136},	/* ~H XX */
-	{'e', '"', 137},	/* â */
-	{'e', '`', 138},	/* ä */
-	{'i', '"', 139},	/* ã */
-	{'i', '^', 140},	/* å */
-	{'i', '`', 141},	/* ç */
-	{'A', '"', 142},	/* ~N XX */
-	{'A', '@', 143},	/* è */
-	{'E', '\'', 144},	/* ê */
-	{'a', 'e', 145},	/* ë */
-	{'A', 'E', 146},	/* í */
-	{'o', '^', 147},	/* ì */
-	{'o', '"', 148},	/* î */
-	{'o', '`', 149},	/* ï */
-	{'u', '^', 150},	/* ñ */
-	{'u', '`', 151},	/* ó */
-	{'y', '"', 152},	/* ò */
-	{'O', '"', 153},	/* ô */
-	{'U', '"', 154},	/* ö */
-	{'c', '|', 155},	/* õ */
-	{'$', '$', 156},	/* ú */
-	{'Y', '-', 157},	/* ~] XX */
-	{'P', 't', 158},	/* û */
-	{'f', 'f', 159},	/* ü */
-	{'a', '\'', 160},	/* † */
-	{'i', '\'', 161},	/* ° */
-	{'o', '\'', 162},	/* ¢ */
-	{'u', '\'', 163},	/* x XX */
-	{'n', '~', 164},	/* § */
-	{'N', '~', 165},	/* • */
-	{'a', 'a', 166},	/* ¶ */
-	{'o', 'o', 167},	/* ß */
-	{'~', '?', 168},	/* ® */
-	{'-', 'a', 169},	/* © */
-	{'a', '-', 170},	/* ™ */
-	{'1', '2', 171},	/* ´ */
-	{'1', '4', 172},	/* ¨ */
-	{'~', '!', 173},	/* ≠ */
-	{'<', '<', 174},	/* Æ */
-	{'>', '>', 175},	/* Ø */
-
-	{'s', 's', 225},	/* · */
-	{'j', 'u', 230},	/* Ê */
-	{'o', '/', 237},	/* Ì */
-	{'+', '-', 241},	/* Ò */
-	{'>', '=', 242},	/* Ú */
-	{'<', '=', 243},	/* Û */
-	{':', '-', 246},	/* ˆ */
-	{'~', '~', 247},	/* ˜ */
-	{'~', 'o', 248},	/* ¯ */
-	{'2', '2', 253},	/* ˝ */
-	{NUL, NUL, NUL}
-	};
-
-#else	/* !MSDOS */
-# ifdef __MINT__
+#ifdef __MINT__
 
 	/*
 	 * ATARI digraphs
@@ -171,8 +104,8 @@ static digr_T digraphdefault[] =
 	{NUL, NUL, NUL}
 	};
 
-# else	/* !__MINT__ */
-#  ifdef HPUX_DIGRAPHS
+#else	/* !__MINT__ */
+# ifdef HPUX_DIGRAPHS
 
 	/*
 	 * different HPUX digraphs
@@ -275,9 +208,9 @@ static digr_T digraphdefault[] =
 	{NUL, NUL, NUL}
 	};
 
-#  else	/* !HPUX_DIGRAPHS */
+# else	/* !HPUX_DIGRAPHS */
 
-#   ifdef EBCDIC
+#  ifdef EBCDIC
 
 	/*
 	 * EBCDIC - ISO digraphs
@@ -387,8 +320,8 @@ static digr_T digraphdefault[] =
 	{NUL, NUL, NUL}
 	};
 
-#   else
-#    if defined(MACOS) && !defined(FEAT_MBYTE)
+#  else
+#   if defined(MACOS) && !defined(FEAT_MBYTE)
 
 	/*
 	 * Macintosh digraphs
@@ -516,9 +449,9 @@ static digr_T digraphdefault[] =
 	{NUL, NUL, NUL}
 	};
 
-#    else	/* !MACOS */
+#   else	/* !MACOS */
 
-#     ifdef OLD_DIGRAPHS
+#    ifdef OLD_DIGRAPHS
 
 	/*
 	 * digraphs compatible with Vim 5.x
@@ -625,7 +558,7 @@ static digr_T digraphdefault[] =
 	{'y', '"', 255},	/* x XX */
 	{NUL, NUL, NUL}
 	};
-#     else /* OLD_DIGRAPHS */
+#    else /* OLD_DIGRAPHS */
 
 	/*
 	 * digraphs for Unicode from RFC1345
@@ -2001,13 +1934,12 @@ static digr_T digraphdefault[] =
 	{NUL, NUL, NUL}
        };
 
-#     endif /* OLD_DIGRAPHS */
+#    endif /* OLD_DIGRAPHS */
 
-#    endif /* Macintosh */
-#   endif /* EBCDIC */
-#  endif    /* !HPUX_DIGRAPHS */
-# endif	/* !__MINT__ */
-#endif	/* !MSDOS */
+#   endif /* Macintosh */
+#  endif /* EBCDIC */
+# endif    /* !HPUX_DIGRAPHS */
+#endif	/* !__MINT__ */
 
 /*
  * handle digraphs after typing a character

@@ -805,12 +805,7 @@ alloc_does_fail(long_u size)
  * Some memory is reserved for error messages and for being able to
  * call mf_release_all(), which needs some memory for mf_trans_add().
  */
-#if defined(MSDOS) && !defined(DJGPP)
-# define SMALL_MEM
-# define KEEP_ROOM 8192L
-#else
-# define KEEP_ROOM (2 * 8192L)
-#endif
+#define KEEP_ROOM (2 * 8192L)
 #define KEEP_ROOM_KB (KEEP_ROOM / 1024L)
 
 /*
@@ -892,7 +887,7 @@ lalloc(long_u size, int message)
     char_u	*p;		    /* pointer to new storage space */
     static int	releasing = FALSE;  /* don't do mf_release_all() recursive */
     int		try_again;
-#if defined(HAVE_AVAIL_MEM) && !defined(SMALL_MEM)
+#if defined(HAVE_AVAIL_MEM)
     static long_u allocated = 0;    /* allocated since last avail check */
 #endif
 
@@ -907,12 +902,6 @@ lalloc(long_u size, int message)
 
 #ifdef MEM_PROFILE
     mem_pre_alloc_l(&size);
-#endif
-
-#if defined(MSDOS) && !defined(DJGPP)
-    if (size >= 0xfff0)		/* in MSDOS we can't deal with >64K blocks */
-	p = NULL;
-    else
 #endif
 
     /*
@@ -934,14 +923,13 @@ lalloc(long_u size, int message)
 	    /* 1. No check for available memory: Just return. */
 	    goto theend;
 #else
-# ifndef SMALL_MEM
 	    /* 2. Slow check for available memory: call mch_avail_mem() after
 	     *    allocating (KEEP_ROOM / 2) amount of memory. */
 	    allocated += size;
 	    if (allocated < KEEP_ROOM / 2)
 		goto theend;
 	    allocated = 0;
-# endif
+
 	    /* 3. check for available memory: call mch_avail_mem() */
 	    if (mch_avail_mem(TRUE) < KEEP_ROOM_KB && !releasing)
 	    {
@@ -5453,7 +5441,7 @@ find_file_in_path_option(
     if (vim_isAbsName(ff_file_to_find)
 	    /* "..", "../path", "." and "./path": don't use the path_option */
 	    || rel_to_curdir
-#if defined(MSWIN) || defined(MSDOS)
+#if defined(MSWIN)
 	    /* handle "\tmp" as absolute path */
 	    || vim_ispathsep(ff_file_to_find[0])
 	    /* handle "c:name" as absolute path */
@@ -5507,18 +5495,10 @@ find_file_in_path_option(
 		buf = suffixes;
 		for (;;)
 		{
-		    if (
-#ifdef DJGPP
-			    /* "C:" by itself will fail for mch_getperm(),
-			     * assume it's always valid. */
-			    (find_what != FINDFILE_FILE && NameBuff[0] != NUL
-				  && NameBuff[1] == ':'
-				  && NameBuff[2] == NUL) ||
-#endif
-			    (mch_getperm(NameBuff) >= 0
+		    if (mch_getperm(NameBuff) >= 0
 			     && (find_what == FINDFILE_BOTH
 				 || ((find_what == FINDFILE_DIR)
-						    == mch_isdir(NameBuff)))))
+						    == mch_isdir(NameBuff))))
 		    {
 			file_name = vim_strsave(NameBuff);
 			goto theend;

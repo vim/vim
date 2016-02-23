@@ -19,7 +19,7 @@
  */
 EXTERN long	Rows			/* nr of rows in the screen */
 #ifdef DO_INIT
-# if defined(MSDOS) || defined(WIN3264)
+# if defined(WIN3264)
 			    = 25L
 # else
 			    = 24L
@@ -948,9 +948,6 @@ EXTERN int	ctrl_x_mode INIT(= 0);	/* Which Ctrl-X mode are we in? */
 #endif
 
 EXTERN int	no_abbr INIT(= TRUE);	/* TRUE when no abbreviations loaded */
-#ifdef MSDOS
-EXTERN int	beep_count INIT(= 0);	/* nr of beeps since last char typed */
-#endif
 
 #ifdef USE_EXE_NAME
 EXTERN char_u	*exe_name;		/* the name of the executable */

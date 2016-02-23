@@ -10,10 +10,6 @@
 #define EXTERN
 #include "vim.h"
 
-#ifdef SPAWNO
-# include <spawno.h>		/* special MS-DOS swapping library */
-#endif
-
 #ifdef __CYGWIN__
 # ifndef WIN32
 #  include <cygwin/version.h>
@@ -505,8 +501,7 @@ main
 
     /*
      * mch_init() sets up the terminal (window) for use.  This must be
-     * done after resetting full_screen, otherwise it may move the cursor
-     * (MSDOS).
+     * done after resetting full_screen, otherwise it may move the cursor.
      * Note that we may use mch_exit() before mch_init()!
      */
     mch_init();
@@ -708,10 +703,6 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
 	if (!gui.in_use && params.evim_mode)
 	    mch_exit(1);
     }
-#endif
-
-#ifdef SPAWNO		/* special MSDOS swapping library */
-    init_SPAWNO("", SWAP_ANY);
 #endif
 
 #ifdef FEAT_VIMINFO

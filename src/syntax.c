@@ -8055,7 +8055,7 @@ free_highlight(void)
     void
 restore_cterm_colors(void)
 {
-#if defined(MSDOS) || (defined(WIN3264) && !defined(FEAT_GUI_W32))
+#if defined(WIN3264) && !defined(FEAT_GUI_W32)
     /* Since t_me has been set, this probably means that the user
      * wants to use this as default colors.  Need to reset default
      * background/foreground colors. */
