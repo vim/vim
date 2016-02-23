@@ -1097,7 +1097,7 @@ perl_to_vim(SV *sv, typval_T *rettv)
 	case SVt_PVHV:	/* dictionary */
 	{
 	    HE *		entry;
-	    size_t		key_len;
+	    I32			key_len;
 	    char *		key;
 	    dictitem_T *	item;
 	    SV *		item2;
@@ -1121,9 +1121,9 @@ perl_to_vim(SV *sv, typval_T *rettv)
 		for (entry = hv_iternext((HV *)sv); entry; entry = hv_iternext((HV *)sv))
 		{
 		    key_len = 0;
-		    key = hv_iterkey(entry, (I32 *)&key_len);
+		    key = hv_iterkey(entry, &key_len);
 
-		    if (!key || !key_len || strlen(key) < key_len) {
+		    if (!key || !key_len || strlen(key) < (size_t)key_len) {
 			EMSG2("Malformed key Dictionary '%s'", key && *key ? key : "(empty)");
 			break;
 		    }
