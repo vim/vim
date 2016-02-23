@@ -140,6 +140,10 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         print("sending: {}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = ""
+                    elif decoded[1] == 'close me':
+                        print("closing")
+                        self.request.close()
+                        response = ""
                     elif decoded[1] == 'wait a bit':
                         time.sleep(0.2)
                         response = "waited"

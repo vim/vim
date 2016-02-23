@@ -485,7 +485,11 @@ static char *e_cannot_connect = N_("E902: Cannot connect to port");
  * Returns NULL for failure.
  */
     channel_T *
-channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
+channel_open(
+	char *hostname,
+	int port_in,
+	int waittime,
+	void (*nb_close_cb)(void))
 {
     int			sd = -1;
     struct sockaddr_in	server;
@@ -711,7 +715,7 @@ channel_open(char *hostname, int port_in, int waittime, void (*close_cb)(void))
     }
 
     channel->CH_SOCK_FD = (sock_T)sd;
-    channel->ch_close_cb = close_cb;
+    channel->ch_nb_close_cb = nb_close_cb;
 
 #ifdef FEAT_GUI
     channel_gui_register(channel);
@@ -787,6 +791,15 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	vim_free(*cbp);
 	if (opt->jo_err_cb != NULL && *opt->jo_err_cb != NUL)
 	    *cbp = vim_strsave(opt->jo_err_cb);
+	else
+	    *cbp = NULL;
+    }
+    if (opt->jo_set & JO_CLOSE_CALLBACK)
+    {
+	cbp = &channel->ch_close_cb;
+	vim_free(*cbp);
+	if (opt->jo_close_cb != NULL && *opt->jo_close_cb != NUL)
+	    *cbp = vim_strsave(opt->jo_close_cb);
 	else
 	    *cbp = NULL;
     }
@@ -1255,7 +1268,7 @@ may_invoke_callback(channel_T *channel, int part)
     ch_mode_T	ch_mode = channel->ch_part[part].ch_mode;
     char_u	*callback = NULL;
 
-    if (channel->ch_close_cb != NULL)
+    if (channel->ch_nb_close_cb != NULL)
 	/* this channel is handled elsewhere (netbeans) */
 	return FALSE;
 
@@ -1477,7 +1490,28 @@ channel_close(channel_T *channel)
     }
 #endif
 
-    channel->ch_close_cb = NULL;
+    if (channel->ch_close_cb != NULL)
+    {
+	  typval_T	argv[1];
+	  typval_T	rettv;
+	  int		dummy;
+
+	  /* invoke the close callback; increment the refcount to avoid it
+	   * being freed halfway */
+	  argv[0].v_type = VAR_CHANNEL;
+	  argv[0].vval.v_channel = channel;
+	  ++channel->ch_refcount;
+	  call_func(channel->ch_close_cb, (int)STRLEN(channel->ch_close_cb),
+				 &rettv, 1, argv, 0L, 0L, &dummy, TRUE, NULL);
+	  clear_tv(&rettv);
+	  --channel->ch_refcount;
+
+	  /* the callback is only called once */
+	  vim_free(channel->ch_close_cb);
+	  channel->ch_close_cb = NULL;
+    }
+
+    channel->ch_nb_close_cb = NULL;
     channel_clear(channel);
 }
 
@@ -1539,6 +1573,8 @@ channel_clear(channel_T *channel)
 #endif
     vim_free(channel->ch_callback);
     channel->ch_callback = NULL;
+    vim_free(channel->ch_close_cb);
+    channel->ch_close_cb = NULL;
 }
 
 #if defined(EXITFREE) || defined(PROTO)
@@ -1732,8 +1768,8 @@ channel_read(channel_T *channel, int part, char *func)
 	 * keep stdin and stderr open?  Probably not, assume the other side
 	 * has died. */
 	channel_close(channel);
-	if (channel->ch_close_cb != NULL)
-	    (*channel->ch_close_cb)();
+	if (channel->ch_nb_close_cb != NULL)
+	    (*channel->ch_nb_close_cb)();
 
 	if (len < 0)
 	{

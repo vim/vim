@@ -10067,6 +10067,18 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		    return FAIL;
 		}
 	    }
+	    else if (STRCMP(hi->hi_key, "close-cb") == 0)
+	    {
+		if (!(supported & JO_CLOSE_CALLBACK))
+		    break;
+		opt->jo_set |= JO_CLOSE_CALLBACK;
+		opt->jo_close_cb = get_callback(item);
+		if (opt->jo_close_cb == NULL)
+		{
+		    EMSG2(_(e_invarg2), "close-cb");
+		    return FAIL;
+		}
+	    }
 	    else if (STRCMP(hi->hi_key, "waittime") == 0)
 	    {
 		if (!(supported & JO_WAITTIME))
@@ -18924,7 +18936,7 @@ item_compare2(const void *s1, const void *s2)
 
     rettv.v_type = VAR_UNKNOWN;		/* clear_tv() uses this */
     res = call_func(sortinfo->item_compare_func,
-		 		 (int)STRLEN(sortinfo->item_compare_func),
+				 (int)STRLEN(sortinfo->item_compare_func),
 				 &rettv, 2, argv, 0L, 0L, &dummy, TRUE,
 				 sortinfo->item_compare_selfdict);
     clear_tv(&argv[0]);

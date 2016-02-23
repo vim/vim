@@ -471,9 +471,9 @@ endfunc
 
 """""""""
 
-let s:job_ret = 'not yet'
+let s:job_exit_ret = 'not yet'
 function MyExitCb(job, status)
-  let s:job_ret = 'done'
+  let s:job_exit_ret = 'done'
 endfunc
 
 function s:test_exit_callback(port)
@@ -490,6 +490,32 @@ func Test_exit_callback()
 
     " calling job_status() triggers the callback
     call job_status(s:exit_job)
-    call assert_equal('done', s:job_ret)
+    call assert_equal('done', s:job_exit_ret)
   endif
 endfunc
+
+"""""""""
+
+let s:ch_close_ret = 'alive'
+function MyCloseCb(ch)
+  let s:ch_close_ret = 'closed'
+endfunc
+
+function s:test_close_callback(port)
+  let handle = ch_open('localhost:' . a:port, s:chopt)
+  if ch_status(handle) == "fail"
+    call assert_false(1, "Can't open channel")
+    return
+  endif
+  call ch_setoptions(handle, {'close-cb': 'MyCloseCb'})
+
+  call assert_equal('', ch_sendexpr(handle, 'close me'))
+  sleep 20m
+  call assert_equal('closed', s:ch_close_ret)
+endfunc
+
+func Test_close_callback()
+  call ch_log('Test_close_callback()')
+  call s:run_server('s:test_close_callback')
+endfunc
+
