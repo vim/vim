@@ -75,16 +75,20 @@ redo:
 
     row = curwin->w_wrow + W_WINROW(curwin);
 
+#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
     if (firstwin->w_p_pvw)
 	top_clear = firstwin->w_height;
     else
+#endif
 	top_clear = 0;
 
+#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
     /* When the preview window is at the bottom stop just above it.  Also
      * avoid drawing over the status line so that it's clear there is a window
      * boundary. */
     if (lastwin->w_p_pvw)
 	above_row -= lastwin->w_height + lastwin->w_status_height + 1;
+#endif
 
     /*
      * Figure out the size and position of the pum.
@@ -149,6 +153,7 @@ redo:
     if (pum_height < 1 || (pum_height == 1 && size > 1))
 	return;
 
+#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
     /* If there is a preview window at the top avoid drawing over it. */
     if (firstwin->w_p_pvw
 	    && pum_row < firstwin->w_height
@@ -157,6 +162,7 @@ redo:
 	pum_row += firstwin->w_height;
 	pum_height -= firstwin->w_height;
     }
+#endif
 
     /* Compute the width of the widest match and the widest extra. */
     for (i = 0; i < size; ++i)

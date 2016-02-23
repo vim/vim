@@ -2442,7 +2442,7 @@ ex_next(exarg_T *eap)
     }
 }
 
-#ifdef FEAT_LISTCMDS
+#if defined(FEAT_LISTCMDS) || defined(PROTO)
 /*
  * ":argedit"
  */
@@ -2559,6 +2559,15 @@ ex_listdo(exarg_T *eap)
 
 #ifndef FEAT_WINDOWS
     if (eap->cmdidx == CMD_windo)
+    {
+	ex_ni(eap);
+	return;
+    }
+#endif
+
+#ifndef FEAT_QUICKFIX
+    if (eap->cmdidx == CMD_cdo || eap->cmdidx == CMD_ldo ||
+	    eap->cmdidx == CMD_cfdo || eap->cmdidx == CMD_lfdo)
     {
 	ex_ni(eap);
 	return;
