@@ -5970,7 +5970,8 @@ screenrow()							*screenrow()*
 
 		Note: Same restrictions as with |screencol()|.
 
-search({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*search()*
+								*search()*
+search({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 		Search for regexp pattern {pattern}.  The search starts at the
 		cursor position (you can use |cursor()| to set it).
 
@@ -6017,6 +6018,14 @@ search({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*search()*
 		The value must not be negative.  A zero value is like not
 		giving the argument.
 		{only available when compiled with the |+reltime| feature}
+
+		{skip} expression is evaluated with the cursor positioned on
+		the start of the match.  It should return non-zero if this
+		match is to be skipped.  E.g., because it is inside a comment
+		or a string.
+		When {skip} is omitted or empty, every match is accepted.
+		When evaluating {skip} causes an error the search is aborted
+		and -1 returned.
 
 							*search()-sub-match*
 		With the 'p' flag the returned value is one more than the
@@ -6172,7 +6181,8 @@ searchpairpos({start}, {middle}, {end} [, {flags} [, {skip}
 <
 		See |match-parens| for a bigger and more useful example.
 
-searchpos({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*searchpos()*
+								*searchpos()*
+searchpos({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 		Same as |search()|, but returns a |List| with the line and
 		column position of the match. The first element of the |List|
 		is the line number and the second element is the byte index of

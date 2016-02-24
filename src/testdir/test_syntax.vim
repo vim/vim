@@ -80,3 +80,22 @@ func Test_syntax_after_reload()
   call assert_true(exists('g:gotit'))
   call delete('Xsomefile')
 endfunc
+
+func Test_search_syntax()
+	new
+	call setline(1, [
+	\ '',
+	\ '/* This is VIM */',
+	\ 'Another Text for VIM',
+	\ ' let a="VIM"',
+	\ ''])
+	syntax on
+	syntax match Comment "^/\*.*\*/"
+	syntax match String '".*"'
+	:1
+	call search('VIM', 'w', '', 0, 'synIDattr(synID(line("."),col("."),1),"name")=~?"comment"')
+  call assert_equal('Another Text for VIM', getline('.'))
+	call search('VIM', 'w', '', 0, 'synIDattr(synID(line("."),col("."),1),"name")!~?"string"')
+  call assert_equal(' let a="VIM"', getline('.'))
+	:quit!
+endfu

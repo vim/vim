@@ -8731,11 +8731,11 @@ static struct fst
     {"screenchar",	2, 2, f_screenchar},
     {"screencol",	0, 0, f_screencol},
     {"screenrow",	0, 0, f_screenrow},
-    {"search",		1, 4, f_search},
+    {"search",		1, 5, f_search},
     {"searchdecl",	1, 3, f_searchdecl},
     {"searchpair",	3, 7, f_searchpair},
     {"searchpairpos",	3, 7, f_searchpairpos},
-    {"searchpos",	1, 4, f_searchpos},
+    {"searchpos",	1, 5, f_searchpos},
     {"server2client",	2, 2, f_server2client},
     {"serverlist",	0, 0, f_serverlist},
     {"setbufvar",	3, 3, f_setbufvar},
@@ -17670,6 +17670,7 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     char_u	*pat;
     pos_T	pos;
     pos_T	save_cursor;
+    pos_T	save_pos;
     int		save_p_ws = p_ws;
     int		dir;
     int		retval = 0;	/* default: FAIL */
@@ -17680,6 +17681,9 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 #endif
     int		options = SEARCH_KEEP;
     int		subpatnum;
+    pos_T	firstpos;
+    char_u	*skip = (char_u *)"";
+    char_u	nbuf[NUMBUFLEN];
 
     pat = get_tv_string(&argvars[0]);
     dir = get_search_arg(&argvars[1], flagsp);	/* may set p_ws */
@@ -17693,8 +17697,10 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     if (flags & SP_COLUMN)
 	options |= SEARCH_COL;
 
-    /* Optional arguments: line number to stop searching and timeout. */
-    if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN)
+    /* Optional arguments: line number to stop searching,
+     * timeout and skip expression. */
+    if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN
+	    && argvars[3].v_type != VAR_UNKNOWN)
     {
 	lnum_stop = get_tv_number_chk(&argvars[2], NULL);
 	if (lnum_stop < 0)
@@ -17707,6 +17713,11 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 		goto theend;
 	}
 #endif
+	if (argvars[4].v_type != VAR_UNKNOWN)
+	    skip = get_tv_string_buf_chk(&argvars[4], nbuf);
+
+	if (skip == NULL)
+	    goto theend;
     }
 
 #ifdef FEAT_RELTIME
@@ -17728,10 +17739,37 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     }
 
     pos = save_cursor = curwin->w_cursor;
-    subpatnum = searchit(curwin, curbuf, &pos, dir, pat, 1L,
-				options, RE_SEARCH, (linenr_T)lnum_stop, &tm);
-    if (subpatnum != FAIL)
+    clearpos(&firstpos);
+    for (;;)
     {
+	subpatnum = searchit(curwin, curbuf, &pos, dir, pat, 1L,
+				    options, RE_SEARCH, (linenr_T)lnum_stop, &tm);
+
+	if (subpatnum == FAIL ||  (firstpos.lnum != 0 && equalpos(pos, firstpos)))
+	    /* didn't find it or found the first match again: FAIL */
+	    break;
+
+	/* If the skip pattern matches, ignore this match. */
+	if (*skip != NUL)
+	{
+	    int r;
+	    int err;
+
+	    save_pos = curwin->w_cursor;
+	    curwin->w_cursor = pos;
+	    r = eval_to_bool(skip, &err, NULL, FALSE);
+	    curwin->w_cursor = save_pos;
+	    if (err)
+	    {
+		/* Evaluating {skip} caused an error, break here. */
+		curwin->w_cursor = save_cursor;
+		retval = 0;
+		break;
+	    }
+	    if (r)
+		continue;
+	}
+
 	if (flags & SP_SUBPAT)
 	    retval = subpatnum;
 	else
@@ -17745,9 +17783,7 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 	    match_pos->lnum = pos.lnum;
 	    match_pos->col = pos.col + 1;
 	}
-	/* "/$" will put the cursor after the end of the line, may need to
-	 * correct that here */
-	check_cursor();
+	break;
     }
 
     /* If 'n' flag is used: restore cursor position. */
@@ -17755,6 +17791,10 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 	curwin->w_cursor = save_cursor;
     else
 	curwin->w_set_curswant = TRUE;
+
+    /* "/$" will put the cursor after the end of the line, may need to
+    * correct that here */
+    check_cursor();
 theend:
     p_ws = save_p_ws;
 
