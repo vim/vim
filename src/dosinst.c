@@ -793,6 +793,9 @@ install_bat_choice(int idx)
 	    fprintf(fd, "if .%%1==. goto loopend\n");
 	    if (*exename == 'g')
 	    {
+		fprintf(fd, "if NOT .%%1==.--nofork goto noforklongarg\n");
+		fprintf(fd, "set VIMNOFORK=1\n");
+		fprintf(fd, ":noforklongarg\n");
 		fprintf(fd, "if NOT .%%1==.-f goto noforkarg\n");
 		fprintf(fd, "set VIMNOFORK=1\n");
 		fprintf(fd, ":noforkarg\n");
