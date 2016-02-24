@@ -100,7 +100,7 @@ netbeans_close(void)
 	netbeans_send_disconnect();
 	if (nb_channel != NULL)
 	    /* Close the socket and remove the input handlers. */
-	    channel_close(nb_channel);
+	    channel_close(nb_channel, TRUE);
 	nb_channel = NULL;
     }
 

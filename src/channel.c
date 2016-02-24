@@ -312,7 +312,7 @@ add_channel(void)
     void
 channel_free(channel_T *channel)
 {
-    channel_close(channel);
+    channel_close(channel, TRUE);
     if (channel->ch_next != NULL)
 	channel->ch_next->ch_prev = channel->ch_prev;
     if (channel->ch_prev == NULL)
@@ -1466,7 +1466,7 @@ channel_status(channel_T *channel)
  * This does not trigger the close callback.
  */
     void
-channel_close(channel_T *channel)
+channel_close(channel_T *channel, int invoke_close_cb)
 {
     ch_log(channel, "Closing channel");
 
@@ -1497,7 +1497,7 @@ channel_close(channel_T *channel)
     }
 #endif
 
-    if (channel->ch_close_cb != NULL)
+    if (invoke_close_cb && channel->ch_close_cb != NULL)
     {
 	  typval_T	argv[1];
 	  typval_T	rettv;
@@ -1757,7 +1757,7 @@ channel_read(channel_T *channel, int part, char *func)
 	/* TODO: When reading from stdout is not possible, should we try to
 	 * keep stdin and stderr open?  Probably not, assume the other side
 	 * has died. */
-	channel_close(channel);
+	channel_close(channel, TRUE);
 	if (channel->ch_nb_close_cb != NULL)
 	    (*channel->ch_nb_close_cb)();
 

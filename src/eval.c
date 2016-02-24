@@ -10213,7 +10213,7 @@ f_ch_close(typval_T *argvars, typval_T *rettv UNUSED)
     channel_T *channel = get_channel_arg(&argvars[0]);
 
     if (channel != NULL)
-	channel_close(channel);
+	channel_close(channel, FALSE);
 }
 
 # ifdef FEAT_JOB
