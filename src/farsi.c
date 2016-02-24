@@ -764,8 +764,8 @@ fkmap(int c)
 		if (!p_ri)
 		    dec_cursor();
 
-		    chg_c_toX_orX ();
-		    chg_l_toXor_X ();
+		chg_c_toX_orX ();
+		chg_l_toXor_X ();
 
 		if (!p_ri)
 		    inc_cursor();
@@ -1243,7 +1243,7 @@ fkmap(int c)
 		if (!p_ri)
 		    dec_cursor();
 
-		    tempc = LA;
+		tempc = LA;
 	    }
 	    else
 	    {
