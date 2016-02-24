@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2016 Feb 21
+*options.txt*	For Vim version 7.4.  Last change: 2016 Feb 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1211,10 +1211,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'bioskey' 'biosk'	boolean	(default on)
 			global
 			{not in Vi}  {only for MS-DOS}
-	When on the BIOS is called to obtain a keyboard character.  This works
-	better to detect CTRL-C, but only works for the console.  When using a
-	terminal over a serial port reset this option.
-	Also see |'conskey'|.
+	This was for MS-DOS and is no longer supported.
 
 							*'bomb'* *'nobomb'*
 'bomb'			boolean	(default off)
@@ -1946,13 +1943,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'conskey' 'consk'	boolean	(default off)
 			global
 			{not in Vi}  {only for MS-DOS}
-	When on direct console I/O is used to obtain a keyboard character.
-	This should work in most cases.  Also see |'bioskey'|.  Together,
-	three methods of console input are available:
-	'conskey'   'bioskey'	    action ~
-	   on	     on or off	    direct console input
-	   off		on	    BIOS
-	   off		off	    STDIN
+	This was for MS-DOS and is no longer supported.
 
 			*'copyindent'* *'ci'* *'nocopyindent'* *'noci'*
 'copyindent' 'ci'	boolean	(default off)
@@ -5412,7 +5403,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 				*'packpath'* *'pp'*
 'packpath' 'pp'		string	(default: see 'runtimepath')
 			{not in Vi}
-			{not available without the |+packages| feature}
 	Directories used to find packages.  See |packages|.
 
 

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Feb 20
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Feb 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,41 +35,35 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 +channel:
-- channel needs both stdout and stderr (GUI implementation, queues)
-   - ch_read() for stderr
-- implement TODO items in ":help channel":
-   - implement ch_setoptions(handle, {options})
-   - job_setoptions(job, {options})
-   - ch_close() closes stdin/stdout/stderr
-   - out-cb
-   - err-cb
-   - exit-cb  move code from mch_clear_job()
-   - job argument: killonexit
-   - ch_getjob(handle)
-   - ch_read(handle [, timeout])
-   - ch_readall(handle [, timeout])
-   - job_info() should remove usable info: process ID, run/dead, etc.
-   - job_maystart()
-   - job_gethandle(), job_sethandle()
-   - add ch_status(): Whether channel is open.  Perhaps also mode, timeout.
-   - When channel closes invoke "close-cb".
-- Add "call" to call a function with a list of arguments. (Damien)
-    merge "expr" and "eval", send something back if there is a third arg?
+- don't free channel if there are callbacks.
+    netbeans channel leaks?
+- job_stop() on MS-Windows: "term" should probably do the same as "kill".
+- Make JSON encode and decode NaN and Infinity.
 - A callback on ch_sendraw() should be put at the end of the list of callback
   handlers.  When a message arrives invoke the first one and remove it.
-- Support channel without socket support.  Useful for starting a job with
-  pipes.  Need another feature, +socket ?
+- implement TODO items in ":help channel":
+   - job_start() options:
+	term
+	in-io
+	in-file
+	out-io
+	out-file
+	out-buffer
+	err-io
+	err-file
+	err-buffer
+	existing channel to use
+   - job_maystart()
+   - add job_info(): process ID, run/dead, etc.
+   - add ch_info(): in/out/err mode, timeout, callbacks, etc.
 - Move more details from eval.txt to channel.txt.  Add tags in eval.txt.
 - When receiving malformed json starting with a quote it doesn't get
   discarded.
-- When message in queue but there is no callback, drop it after a while?
-- Crash when closing channel after ch_sendexpr() with callback and outstanding
-  request (Christian Robinson).
-- cleanup on exit?  in mch_getout() and getout().
-- On Mac a 1 msec waittime is needed in ch_open(), why?
-- Add more log calls, basically at every branch, before every callback, etc.
-- Add timestamp to queued messages and callbacks with ID, remove after a
+- When a message in the queue but there is no callback, drop it after a while?
+  Add timestamp to queued messages and callbacks with ID, remove after a
   minute.
+- cleanup on exit?  in mch_getout() and getout().
+- Add more log calls, basically at every branch, before every callback, etc.
 - add remark about undo sync, is there a way to force it?
 - When starting a job, have an option to open the server socket, so we know
   the port, and pass it to the command with --socket-fd {nr}. (Olaf Dabrunz,
@@ -81,6 +75,8 @@ not be repeated below, unless there is extra information.
 - json: implement UTF-16 surrogate pair.
 - For connection to server, a "keep open" flag would be useful.  Retry
   connecting in the main loop with zero timeout.
+
+Remove the sniff interface?  Looks like it's dead.
 
 More plugin support:
 - Have a way to install a callback from the main loop.  Called every second or
@@ -94,9 +90,8 @@ More plugin support:
       gettabnr({id})	     tab page nr of {id} or -1 if not open
       gotowin({id})
   Make it so that the window ID can be used where currently a window nr is used
-
-Patch on #608: (Ken Takata)
-https://bitbucket.org/k_takata/vim-ktakata-mq/src/479934b94fd56b064c9e4bd8737585c5df69d56a/fix-gvimext-loadlibrary.patch?fileviewer=file-view-default
+  Patch from Anton Lindqvist, 2016 Feb 21, to make bufwinnr() return a list.
+  Perhaps add bufwinid() instead.
 
 This difference is unexpected:
     echo v:true == 1
@@ -109,25 +104,11 @@ Compiler warnings. (John Marriott, Feb 17)
 
 Compiler warnings in if_ole.cpp.  Patch by Ken Takata, Feb 18.
 
-Add "runtime/bundles" ?
-    runtime/bundles/netrw/spec.vim
-    runtime/bundles/netrw/autoload/netrw.vim
-    runtime/bundles/netrw/syntax/netrw.vim
-    etc.
-Need an alternative for 'runtimepath' that tells where bundles are to be
-found. 'bundlepath' ?
-The plugins under 'bundlepath' would always be loaded.  Also have a path for
-optional plugins?  'optbundlepath'?  Or have directories "bundlesdef" and
-"bundlesopt"?
-Then use a command "loadplugin" to find a plugin in "optional".
-"bundles" is used by some plugin managers, need another name. "packages"?
-Add a "requires" / "provides" mechanism?
-    if my_feature_enabled
-      require +python
-    endif
-    require my_other_plugin
-~/vim/packages/netrw/def/netrw/plugin/netrw.vim
-~/vim/packages/netrw/opt/nwdebug/plugin/nwdebug.vim
+When running "make install" don't overwrite the doc/tags file, generate it
+elsewhere, so that the distributed file doesn't change.
+
+Fix to support --nofork for Windows batch files. (Kevin Cantú, 2016 Feb 23,
+#658)
 
 Patch to add GTK 3 support. (Kazunobu Kuriyama, 2016 Feb 13)
 
@@ -199,6 +180,14 @@ Patch for test86 and test87. (Roland Puntaier, #622)
 Patch for Python: #622. (Roland Puntaier, 2016 Feb 2)
 What does it change?
 
+Win32: patch to use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
+More tests May 14. Update May 29.  Update Aug 10.
+Now part of large file patches. (Ken Takata, 2016 Feb 1)
+Two patches now?  New update Feb 24.
+
+Patch to support 64 bit ints for Number. (Ken Takata, 2016 Jan 21)
+Also in update of Feb 24?
+
 Need to try out instructions in INSSTALLpc.txt about how to install all
 interfaces and how to build Vim with them.
 Appveyor build with self-installing executable, includes getting most
@@ -251,12 +240,7 @@ directory exists. (Sergio Gallelli, 2013 Dec 29)
 Patch to avoid redrawing tabline when the popup menu is visible.
 (Christian Brabandt, 2016 Jan 28)
 
-Win32: patch to use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
-More tests May 14. Update May 29.  Update Aug 10.
-Now part of large file patches. (Ken Takata, 2016 Feb 1)
-Two patches now?
-
-Patch to support 64 bit ints for Number. (Ken Takata, 2016 Jan 21)
+Patch to add {skip} argument to search(). (Christian Brabandt, 2016 Feb 24)
 
 7   Add a watchpoint in the debug mode: An expression that breaks execution
     when evaluating to non-zero.  Add the "watchadd expr" command, stop when

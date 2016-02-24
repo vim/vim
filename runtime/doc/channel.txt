@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Feb 21
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Feb 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -160,9 +160,13 @@ Use |ch_status()| to see if the channel could be opened.
 	func MyCloseHandler(channel)
 <							*waittime*
 "waittime"	The time to wait for the connection to be made in
-		milliseconds.  The default is zero, don't wait, which is
-		useful if the server is supposed to be running already.  A
-		negative number waits forever.
+		milliseconds.  A negative number waits forever.
+
+		The default is zero, don't wait, which is useful if a local
+		server is supposed to be running already.  On Unix Vim
+		actually uses a 1 msec timeout, that is required on many
+		systems.  Use a larger value for a remote server, e.g.  10
+		msec at least.
 
 "timeout"	The time to wait for a request when blocking, E.g. when using
 		ch_sendexpr().  In milliseconds.  The default is 2000 (2
@@ -253,7 +257,8 @@ Then channel handler will then get {response} converted to Vim types.  If the
 channel does not have a handler the message is dropped.
 
 On read error or ch_close(), when using a socket, the string "DETACH" is sent,
-if still possible.  The channel will then be inactive.
+if still possible.  The channel will then be inactive. For a JSON and JS mode
+channel quotes are used around DETACH, otherwise there are no quotes.
 
 It is also possible to use ch_sendraw() on a JSON or JS channel.  The caller
 is then completely responsible for correct encoding and decoding.

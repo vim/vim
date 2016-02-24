@@ -2446,6 +2446,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :lo	starting.txt	/*:lo*
 :loadk	mbyte.txt	/*:loadk*
 :loadkeymap	mbyte.txt	/*:loadkeymap*
+:loadp	repeat.txt	/*:loadp*
+:loadplugin	repeat.txt	/*:loadplugin*
 :loadview	starting.txt	/*:loadview*
 :loc	motion.txt	/*:loc*
 :lockmarks	motion.txt	/*:lockmarks*
@@ -6038,6 +6040,7 @@ ft-xml-omni	insert.txt	/*ft-xml-omni*
 ft-xml-syntax	syntax.txt	/*ft-xml-syntax*
 ft-xpm-syntax	syntax.txt	/*ft-xpm-syntax*
 ft-yaml-syntax	syntax.txt	/*ft-yaml-syntax*
+ft-zsh-syntax	syntax.txt	/*ft-zsh-syntax*
 ft_ada.txt	ft_ada.txt	/*ft_ada.txt*
 ft_sql.txt	ft_sql.txt	/*ft_sql.txt*
 ftdetect	filetype.txt	/*ftdetect*
@@ -6829,6 +6832,7 @@ iquote	motion.txt	/*iquote*
 is	motion.txt	/*is*
 isdirectory()	eval.txt	/*isdirectory()*
 islocked()	eval.txt	/*islocked()*
+isnan()	eval.txt	/*isnan()*
 it	motion.txt	/*it*
 italic	syntax.txt	/*italic*
 items()	eval.txt	/*items()*
@@ -6950,6 +6954,7 @@ list-repeat	windows.txt	/*list-repeat*
 lite.vim	syntax.txt	/*lite.vim*
 literal-string	eval.txt	/*literal-string*
 lnum-variable	eval.txt	/*lnum-variable*
+load-plugin	repeat.txt	/*load-plugin*
 load-plugins	starting.txt	/*load-plugins*
 load-vim-script	repeat.txt	/*load-vim-script*
 local-additions	help.txt	/*local-additions*
@@ -9193,6 +9198,7 @@ zn	fold.txt	/*zn*
 zo	fold.txt	/*zo*
 zr	fold.txt	/*zr*
 zs	scroll.txt	/*zs*
+zsh.vim	syntax.txt	/*zsh.vim*
 zt	scroll.txt	/*zt*
 zuG	spell.txt	/*zuG*
 zuW	spell.txt	/*zuW*

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 21
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1961,6 +1961,7 @@ insert( {list}, {item} [, {idx}]) List	insert {item} in {list} [before {idx}]
 invert( {expr})			Number  bitwise invert
 isdirectory( {directory})	Number	TRUE if {directory} is a directory
 islocked( {expr})		Number	TRUE if {expr} is locked
+isnan( {expr})			Number  TRUE if {expr} is NaN
 items( {dict})			List	key-value pairs in {dict}
 job_getchannel( {job})		Channel	get the channel handle for {job}
 job_setoptions( {job}, {options}) none	set options for {job}
@@ -4396,6 +4397,13 @@ islocked({expr})					*islocked()* *E786*
 
 <		When {expr} is a variable that does not exist you get an error
 		message.  Use |exists()| to check for existence.
+
+isnan({expr})						*isnan()*
+		Return non-zero if {expr} is a float with value NaN. >
+			echo isnan(0.0 / 0.0)
+<			1 ~
+
+		{only available when compiled with the |+float| feature}
 
 items({dict})						*items()*
 		Return a |List| with all the key-value pairs of {dict}.  Each

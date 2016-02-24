@@ -2,7 +2,7 @@
 " Language:	Vim 7.4 script
 " Maintainer:	Charles E. Campbell <NdrOchipS@PcampbellAfamily.Mbiz>
 " Last Change:	February 17, 2016
-" Version:	7.4-43
+" Version:	7.4-44
 " Automatically generated keyword lists: {{{1
 
 " Quit when a syntax file was already loaded {{{2
@@ -83,43 +83,43 @@ syn keyword vimFuncName contained	add append arglistid assert_equal assert_false
 " Special Vim Highlighting (not automatic) {{{1
 
 " Set up folding commands
-if exists("g:vimsyn_folding") && g:vimsyn_folding =~ '[aflmpPrt]'
- if g:vimsyn_folding =~ 'a' 
+if exists("g:vimsyn_folding") && g:vimsyn_folding =~# '[aflmpPrt]'
+ if g:vimsyn_folding =~# 'a' 
   com! -nargs=* VimFolda <args> fold 
  else 
   com! -nargs=* VimFolda <args> 
  endif
- if g:vimsyn_folding =~ 'f' 
+ if g:vimsyn_folding =~# 'f' 
   com! -nargs=* VimFoldf <args> fold 
  else 
   com! -nargs=* VimFoldf <args> 
  endif
- if g:vimsyn_folding =~ 'l' 
+ if g:vimsyn_folding =~# 'l' 
   com! -nargs=* VimFoldl <args> fold 
  else 
   com! -nargs=* VimFoldl <args> 
  endif
- if g:vimsyn_folding =~ 'm' 
+ if g:vimsyn_folding =~# 'm' 
   com! -nargs=* VimFoldm <args> fold 
  else 
   com! -nargs=* VimFoldm <args> 
  endif
- if g:vimsyn_folding =~ 'p' 
+ if g:vimsyn_folding =~# 'p' 
   com! -nargs=* VimFoldp <args> fold 
  else 
   com! -nargs=* VimFoldp <args> 
  endif
- if g:vimsyn_folding =~ 'P' 
+ if g:vimsyn_folding =~# 'P' 
   com! -nargs=* VimFoldP <args> fold 
  else 
   com! -nargs=* VimFoldP <args> 
  endif
- if g:vimsyn_folding =~ 'r' 
+ if g:vimsyn_folding =~# 'r' 
   com! -nargs=* VimFoldr <args> fold 
  else 
   com! -nargs=* VimFoldr <args> 
  endif
- if g:vimsyn_folding =~ 't' 
+ if g:vimsyn_folding =~# 't' 
   com! -nargs=* VimFoldt <args> fold 
  else 
   com! -nargs=* VimFoldt <args> 
@@ -190,7 +190,7 @@ syn keyword vimFTOption contained	detect indent off on plugin
 " Augroup : vimAugroupError removed because long augroups caused sync'ing problems. {{{2
 " ======= : Trade-off: Increasing synclines with slower editing vs augroup END error checking.
 syn cluster vimAugroupList	contains=vimAugroup,vimIsCommand,vimCommand,vimUserCmd,vimExecute,vimNotFunc,vimFuncName,vimFunction,vimFunctionError,vimLineComment,vimMap,vimSpecFile,vimOper,vimNumber,vimOperParen,vimComment,vimString,vimSubst,vimMark,vimRegister,vimAddress,vimFilter,vimCmplxRepeat,vimComment,vimLet,vimSet,vimAutoCmd,vimRegion,vimSynLine,vimNotation,vimCtrlChar,vimFuncVar,vimContinue
-if exists("g:vimsyn_folding") && g:vimsyn_folding =~ 'a'
+if exists("g:vimsyn_folding") && g:vimsyn_folding =~# 'a'
  syn region  vimAugroup	fold matchgroup=vimAugroupKey start="\<aug\%[roup]\>\ze\s\+\K\k*" end="\<aug\%[roup]\>\ze\s\+[eE][nN][dD]\>"	contains=vimAutoCmd,@vimAugroupList
 else
  syn region  vimAugroup	matchgroup=vimAugroupKey start="\<aug\%[roup]\>\ze\s\+\K\k*" end="\<aug\%[roup]\>\ze\s\+[eE][nN][dD]\>"	contains=vimAutoCmd,@vimAugroupList
@@ -218,7 +218,7 @@ syn cluster	vimFuncList	contains=vimCommand,vimFunctionError,vimFuncKey,Tag,vimF
 syn cluster	vimFuncBodyList	contains=vimAbb,vimAddress,vimAugroupKey,vimAutoCmd,vimCmplxRepeat,vimComment,vimComment,vimContinue,vimCtrlChar,vimEcho,vimEchoHL,vimExecute,vimIf,vimIsCommand,vimFBVar,vimFunc,vimFunction,vimFuncVar,vimGlobal,vimHighlight,vimIsCommand,vimLet,vimLineComment,vimMap,vimMark,vimNorm,vimNotation,vimNotFunc,vimNumber,vimOper,vimOperParen,vimRegion,vimRegister,vimSet,vimSpecFile,vimString,vimSubst,vimSynLine,vimUnmap,vimUserCommand
 syn match	vimFunction	"\<fu\%[nction]!\=\s\+\%(<[sS][iI][dD]>\|[sSgGbBwWtTlL]:\)\=\%(\i\|[#.]\|{.\{-1,}}\)*\ze\s*("	contains=@vimFuncList nextgroup=vimFuncBody
 
-if exists("g:vimsyn_folding") && g:vimsyn_folding =~ 'f'
+if exists("g:vimsyn_folding") && g:vimsyn_folding =~# 'f'
  syn region	vimFuncBody  contained	fold start="\ze\s*("	matchgroup=vimCommand end="\<\(endf\>\|endfu\%[nction]\>\)"		contains=@vimFuncBodyList
 else
  syn region	vimFuncBody  contained	start="\ze\s*("	matchgroup=vimCommand end="\<\(endf\>\|endfu\%[nction]\>\)"		contains=@vimFuncBodyList
@@ -611,12 +611,12 @@ syn region	vimGlobal	matchgroup=Statement start='\<v\%[global]!\=/' skip='\\.' e
 " Allows users to specify the type of embedded script highlighting
 " they want:  (perl/python/ruby/tcl support)
 "   g:vimsyn_embed == 0   : don't embed any scripts
-"   g:vimsyn_embed =~ 'l' : embed lua      (but only if vim supports it)
-"   g:vimsyn_embed =~ 'm' : embed mzscheme (but only if vim supports it)
-"   g:vimsyn_embed =~ 'p' : embed perl     (but only if vim supports it)
-"   g:vimsyn_embed =~ 'P' : embed python   (but only if vim supports it)
-"   g:vimsyn_embed =~ 'r' : embed ruby     (but only if vim supports it)
-"   g:vimsyn_embed =~ 't' : embed tcl      (but only if vim supports it)
+"   g:vimsyn_embed =~# 'l' : embed lua      (but only if vim supports it)
+"   g:vimsyn_embed =~# 'm' : embed mzscheme (but only if vim supports it)
+"   g:vimsyn_embed =~# 'p' : embed perl     (but only if vim supports it)
+"   g:vimsyn_embed =~# 'P' : embed python   (but only if vim supports it)
+"   g:vimsyn_embed =~# 'r' : embed ruby     (but only if vim supports it)
+"   g:vimsyn_embed =~# 't' : embed tcl      (but only if vim supports it)
 if !exists("g:vimsyn_embed")
  let g:vimsyn_embed= "lmpPr"
 endif
@@ -631,7 +631,7 @@ if !filereadable(s:luapath)
   endif
  endfor
 endif
-if (g:vimsyn_embed =~ 'l' && has("lua")) && filereadable(s:luapath)
+if (g:vimsyn_embed =~# 'l' && has("lua")) && filereadable(s:luapath)
  unlet! b:current_syntax
  exe "syn include @vimLuaScript ".s:luapath
  VimFoldl syn region vimLuaRegion matchgroup=vimScriptDelim start=+lua\s*<<\s*\z(.*\)$+ end=+^\z1$+	contains=@vimLuaScript
@@ -653,7 +653,7 @@ if !filereadable(s:perlpath)
   endif
  endfor
 endif
-if (g:vimsyn_embed =~ 'p' && has("perl")) && filereadable(s:perlpath)
+if (g:vimsyn_embed =~# 'p' && has("perl")) && filereadable(s:perlpath)
  unlet! b:current_syntax
  exe "syn include @vimPerlScript ".s:perlpath
  VimFoldp syn region vimPerlRegion  matchgroup=vimScriptDelim start=+pe\%[rl]\s*<<\s*\z(.*\)$+ end=+^\z1$+	contains=@vimPerlScript
@@ -675,7 +675,7 @@ if !filereadable(s:rubypath)
   endif
  endfor
 endif
-if (g:vimsyn_embed =~ 'r' && has("ruby")) && filereadable(s:rubypath)
+if (g:vimsyn_embed =~# 'r' && has("ruby")) && filereadable(s:rubypath)
  unlet! b:current_syntax
  exe "syn include @vimRubyScript ".s:rubypath
  VimFoldr syn region vimRubyRegion matchgroup=vimScriptDelim start=+rub[y]\s*<<\s*\z(.*\)$+ end=+^\z1$+	contains=@vimRubyScript
@@ -697,7 +697,7 @@ if !filereadable(s:pythonpath)
   endif
  endfor
 endif
-if g:vimsyn_embed =~ 'P' && (has("python") || has("python3")) && filereadable(s:pythonpath)
+if g:vimsyn_embed =~# 'P' && (has("python") || has("python3")) && filereadable(s:pythonpath)
  unlet! b:current_syntax
  exe "syn include @vimPythonScript ".s:pythonpath
  VimFoldP syn region vimPythonRegion matchgroup=vimScriptDelim start=+py\%[thon]3\=\s*<<\s*\z(.*\)$+ end=+^\z1$+	contains=@vimPythonScript
@@ -728,7 +728,7 @@ if s:trytcl
    endif
   endfor
  endif
- if (g:vimsyn_embed =~ 't' && has("tcl")) && filereadable(s:tclpath)
+ if (g:vimsyn_embed =~# 't' && has("tcl")) && filereadable(s:tclpath)
   unlet! b:current_syntax
   exe "syn include @vimTclScript ".s:tclpath
   VimFoldt syn region vimTclRegion matchgroup=vimScriptDelim start=+tc[l]\=\s*<<\s*\z(.*\)$+ end=+^\z1$+	contains=@vimTclScript
@@ -755,7 +755,7 @@ if !filereadable(s:mzschemepath)
   endif
  endfor
 endif
-if (g:vimsyn_embed =~ 'm' && has("mzscheme")) && filereadable(s:mzschemepath)
+if (g:vimsyn_embed =~# 'm' && has("mzscheme")) && filereadable(s:mzschemepath)
  unlet! b:current_syntax
  let iskKeep= &isk
  exe "syn include @vimMzSchemeScript ".s:mzschemepath
