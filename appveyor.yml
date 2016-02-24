@@ -1,5 +1,7 @@
 version: "{build}"
 
+skip_tags: true
+
 environment:
   matrix:
     - FEATURE: HUGE
