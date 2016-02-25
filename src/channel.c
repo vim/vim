@@ -307,6 +307,31 @@ add_channel(void)
 }
 
 /*
+ * Return TRUE if "channel" has a callback.
+ */
+    static int
+channel_has_callback(channel_T *channel)
+{
+    return channel->ch_callback != NULL
+#ifdef CHANNEL_PIPES
+	    || channel->ch_part[PART_OUT].ch_callback != NULL
+	    || channel->ch_part[PART_ERR].ch_callback != NULL
+#endif
+	    || channel->ch_close_cb != NULL;
+}
+
+/*
+ * Close a channel and free all its resources if there is no further action
+ * possible, there is no callback to be invoked.
+ */
+    void
+channel_may_free(channel_T *channel)
+{
+    if (!channel_has_callback(channel))
+	channel_free(channel);
+}
+
+/*
  * Close a channel and free all its resources.
  */
     void
@@ -1463,7 +1488,7 @@ channel_status(channel_T *channel)
 
 /*
  * Close channel "channel".
- * This does not trigger the close callback.
+ * Trigger the close callback if "invoke_close_cb" is TRUE.
  */
     void
 channel_close(channel_T *channel, int invoke_close_cb)
@@ -2149,6 +2174,14 @@ channel_parse_messages(void)
 
     while (channel != NULL)
     {
+	if (channel->ch_refcount == 0 && !channel_has_callback(channel))
+	{
+	    /* channel is no longer useful, free it */
+	    channel_free(channel);
+	    channel = first_channel;
+	    part = PART_SOCK;
+	    continue;
+	}
 	if (channel->ch_part[part].ch_fd != INVALID_FD)
 	{
 	    /* Increase the refcount, in case the handler causes the channel

@@ -7745,8 +7745,8 @@ failret:
 
 #if defined(FEAT_CHANNEL) || defined(PROTO)
 /*
- * Decrement the reference count on "channel" and free it when it goes down to
- * zero.
+ * Decrement the reference count on "channel" and maybe free it when it goes
+ * down to zero.  Don't free it if there is a pending action.
  * Returns TRUE when the channel was freed.
  */
     int
@@ -7754,7 +7754,7 @@ channel_unref(channel_T *channel)
 {
     if (channel != NULL && --channel->ch_refcount <= 0)
     {
-	channel_free(channel);
+	channel_may_free(channel);
 	return TRUE;
     }
     return FALSE;
