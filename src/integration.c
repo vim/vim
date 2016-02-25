@@ -805,7 +805,7 @@ widgetIsIconified(
 	if (XtWindow(w) != 0) {			/* only check if window exists! */
 		XGetWindowProperty(XtDisplay(w), XtWindow(w), wm_state, 0L, 2L,
 		    False, AnyPropertyType, &act_type, &act_fmt, &nitems_ret,
-		    &bytes_after, (u_char **) &property);
+		    &bytes_after, (char_u **) &property);
 		if (nitems_ret == 2 && property[0] == IconicState) {
 			return True;
 		}

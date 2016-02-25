@@ -119,7 +119,7 @@
 #endif
 
 /* Returns empty string if it is NULL. */
-#define EMPTY_IF_NULL(x) ((x) ? (x) : (u_char *)"")
+#define EMPTY_IF_NULL(x) ((x) ? (x) : (char_u *)"")
 
 #ifdef FEAT_LANGMAP
 /*
