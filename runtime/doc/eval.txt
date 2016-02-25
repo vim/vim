@@ -4474,21 +4474,27 @@ job_status({job})					*job_status()* *E916*
 job_stop({job} [, {how}])					*job_stop()*
 		Stop the {job}.  This can also be used to signal the job.
 
-		When {how} is omitted or is "term" the job will be terminated
-		normally.  For Unix SIGTERM is sent.  For MS-Windows
-		CTRL_BREAK will be sent.  This goes to the process group, thus
-		children may also be affected.
+		When {how} is omitted or is "term" the job will be terminated.
+		For Unix SIGTERM is sent.  On MS-Windows the job will be
+		terminated forcedly (there is no "gentle" way).
+		This goes to the process group, thus children may also be
+		affected.
 
-		Other values for Unix:
-			"hup"	Unix: SIGHUP
-			"quit"	Unix: SIGQUIT
-			"kill"	Unix: SIGKILL (strongest way to stop)
-			number	Unix: signal with that number
+		Effect for Unix:
+			"term"	 SIGTERM (default)
+			"hup"	 SIGHUP
+			"quit"	 SIGQUIT
+			"int"	 SIGINT
+			"kill"	 SIGKILL (strongest way to stop)
+			number	 signal with that number
 
-		Other values for MS-Windows:
-			"int"	Windows: CTRL_C
-			"kill"	Windows: terminate process forcedly
-			Others	Windows: CTRL_BREAK
+		Effect for MS-Windows:
+			"term"	 terminate process forcedly (default)
+			"hup"	 CTRL_BREAK
+			"quit"	 CTRL_BREAK
+			"int"	 CTRL_C
+			"kill"	 terminate process forcedly
+			Others	 CTRL_BREAK
 
 		On Unix the signal is sent to the process group.  This means
 		that when the job is "sh -c command" it affects both the shell

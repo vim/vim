@@ -5202,12 +5202,14 @@ mch_stop_job(job_T *job, char_u *how)
     int	    sig = -1;
     pid_t   job_pid;
 
-    if (STRCMP(how, "hup") == 0)
-	sig = SIGHUP;
-    else if (*how == NUL || STRCMP(how, "term") == 0)
+    if (*how == NUL || STRCMP(how, "term") == 0)
 	sig = SIGTERM;
+    else if (STRCMP(how, "hup") == 0)
+	sig = SIGHUP;
     else if (STRCMP(how, "quit") == 0)
 	sig = SIGQUIT;
+    else if (STRCMP(how, "int") == 0)
+	sig = SIGINT;
     else if (STRCMP(how, "kill") == 0)
 	sig = SIGKILL;
     else if (isdigit(*how))
