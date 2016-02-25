@@ -2,6 +2,8 @@
 # Common Makefile, defines the list of tests to run.
 #
 
+NO_PLUGIN = -U NONE --noplugin --not-a-term
+
 # The first script creates small.vim.
 SCRIPTS_FIRST = \
 	test1.out
