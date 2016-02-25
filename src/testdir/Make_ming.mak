@@ -65,8 +65,8 @@ win32:	fixff $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32)
 	echo ALL DONE
 
 fixff:
-	-$(VIMPROG) -u dos.vim -U NONE --noplugin "+argdo set ff=dos|upd" +q *.in *.ok
-	-$(VIMPROG) -u dos.vim -U NONE --noplugin "+argdo set ff=unix|upd" +q \
+	-$(VIMPROG) -u dos.vim $(NO_PLUGIN) "+argdo set ff=dos|upd" +q *.in *.ok
+	-$(VIMPROG) -u dos.vim $(NO_PLUGIN) "+argdo set ff=unix|upd" +q \
 		dotest.in test60.ok test71.ok test74.ok test_listchars.ok
 
 clean:
@@ -84,7 +84,7 @@ clean:
 
 .in.out:
 	$(CP) $*.ok test.ok
-	$(VIMPROG) -u dos.vim -U NONE --noplugin -s dotest.in $*.in
+	$(VIMPROG) -u dos.vim $(NO_PLUGIN) -s dotest.in $*.in
 	diff test.out $*.ok
 	-$(DEL) $*.out
 	$(MV) test.out $*.out
@@ -96,5 +96,5 @@ clean:
 
 bench_re_freeze.out: bench_re_freeze.vim
 	-$(DEL) benchmark.out
-	$(VIMPROG) -u dos.vim -U NONE --noplugin $*.in
+	$(VIMPROG) -u dos.vim $(NO_PLUGIN) $*.in
 	$(CAT) benchmark.out

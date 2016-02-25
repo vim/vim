@@ -414,6 +414,10 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		not needed, because Vim will be able to find out what type
 		of terminal you are using.  (See |terminal-info|.)  {not in Vi}
 
+--not-a-term	Tells Vim that the user knows that the input and/or output is
+		not connected to a terminal.  This will avoid the warning and
+		the two second delay that would happen.
+
 							*-d*
 -d		Start in diff mode, like |vimdiff|.
 		{not in Vi} {not available when compiled without the |+diff|
