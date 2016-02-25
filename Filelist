@@ -6,6 +6,7 @@ SRC_ALL =	\
 		.hgignore \
 		.travis.yml \
 		appveyor.yml \
+		src/appveyor.bat \
 		src/README.txt \
 		src/alloc.h \
 		src/arabic.c \
