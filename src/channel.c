@@ -1763,10 +1763,13 @@ channel_read(channel_T *channel, int part, char *func)
 	    break;	/* did read everything that's available */
     }
 
-    /* Reading a disconnection (readlen == 0), or an error.
-     * TODO: call error callback. */
+    /* Reading a disconnection (readlen == 0), or an error. */
     if (readlen <= 0)
     {
+	/* Do not give an error message, most likely the other end just
+	 * exited. */
+	ch_errors(channel, "%s(): Cannot read from channel", func);
+
 	/* Queue a "DETACH" netbeans message in the command queue in order to
 	 * terminate the netbeans session later. Do not end the session here
 	 * directly as we may be running in the context of a call to
@@ -1777,13 +1780,6 @@ channel_read(channel_T *channel, int part, char *func)
 	 *		    -> gui event loop or select loop
 	 *			-> channel_read()
 	 */
-	ch_errors(channel, "%s(): Cannot read", func);
-	if (len < 0)
-	{
-	    ch_error(channel, "channel_read(): cannot read from channel");
-	    PERROR(_("E896: read from channel"));
-	}
-
 	msg = channel->ch_part[part].ch_mode == MODE_RAW
 				  || channel->ch_part[part].ch_mode == MODE_NL
 		    ? DETACH_MSG_RAW : DETACH_MSG_JSON;
