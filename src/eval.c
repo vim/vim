@@ -7770,8 +7770,11 @@ job_free(job_T *job)
 # ifdef FEAT_CHANNEL
     if (job->jv_channel != NULL)
     {
-	/* The channel doesn't count as a references for the job, we need to
-	 * NULL the reference when the job is freed. */
+	/* The link from the channel to the job doesn't count as a reference,
+	 * thus don't decrement the refcount of the job.  The reference from
+	 * the job to the channel does count the refrence, decrement it and
+	 * NULL the reference.  We don't set ch_job_killed, unreferencing the
+	 * job doesn't mean it stops running. */
 	job->jv_channel->ch_job = NULL;
 	channel_unref(job->jv_channel);
     }
@@ -15161,7 +15164,14 @@ f_job_stop(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	if (mch_stop_job(job, arg) == FAIL)
 	    rettv->vval.v_number = 0;
 	else
+	{
 	    rettv->vval.v_number = 1;
+	    /* Assume that "hup" does not kill the job. */
+	    if (job->jv_channel != NULL && STRCMP(arg, "hup") != 0)
+		job->jv_channel->ch_job_killed = TRUE;
+	}
+	/* We don't try freeing the job, obviously the caller still has a
+	 * reference to it. */
     }
 }
 #endif

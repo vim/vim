@@ -307,11 +307,14 @@ add_channel(void)
 }
 
 /*
- * Return TRUE if "channel" has a callback.
+ * Return TRUE if "channel" has a callback and the associated job wasn't
+ * killed.
  */
     static int
-channel_has_callback(channel_T *channel)
+channel_still_useful(channel_T *channel)
 {
+    if (channel->ch_job_killed && channel->ch_job == NULL)
+	return FALSE;
     return channel->ch_callback != NULL
 #ifdef CHANNEL_PIPES
 	    || channel->ch_part[PART_OUT].ch_callback != NULL
@@ -322,12 +325,13 @@ channel_has_callback(channel_T *channel)
 
 /*
  * Close a channel and free all its resources if there is no further action
- * possible, there is no callback to be invoked.
+ * possible, there is no callback to be invoked or the associated job was
+ * killed.
  */
     void
 channel_may_free(channel_T *channel)
 {
-    if (!channel_has_callback(channel))
+    if (!channel_still_useful(channel))
 	channel_free(channel);
 }
 
@@ -1774,6 +1778,12 @@ channel_read(channel_T *channel, int part, char *func)
 	 *			-> channel_read()
 	 */
 	ch_errors(channel, "%s(): Cannot read", func);
+	if (len < 0)
+	{
+	    ch_error(channel, "channel_read(): cannot read from channel");
+	    PERROR(_("E896: read from channel"));
+	}
+
 	msg = channel->ch_part[part].ch_mode == MODE_RAW
 				  || channel->ch_part[part].ch_mode == MODE_NL
 		    ? DETACH_MSG_RAW : DETACH_MSG_JSON;
@@ -1785,12 +1795,6 @@ channel_read(channel_T *channel, int part, char *func)
 	channel_close(channel, TRUE);
 	if (channel->ch_nb_close_cb != NULL)
 	    (*channel->ch_nb_close_cb)();
-
-	if (len < 0)
-	{
-	    ch_error(channel, "channel_read(): cannot read from channel");
-	    PERROR(_("E896: read from channel"));
-	}
     }
 
 #if defined(CH_HAS_GUI) && defined(FEAT_GUI_GTK)
@@ -2174,7 +2178,7 @@ channel_parse_messages(void)
 
     while (channel != NULL)
     {
-	if (channel->ch_refcount == 0 && !channel_has_callback(channel))
+	if (channel->ch_refcount == 0 && !channel_still_useful(channel))
 	{
 	    /* channel is no longer useful, free it */
 	    channel_free(channel);

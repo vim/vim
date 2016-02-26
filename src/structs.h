@@ -1373,6 +1373,8 @@ struct channel_S {
     job_T	*ch_job;	/* Job that uses this channel; this does not
 				 * count as a reference to avoid a circular
 				 * reference. */
+    int		ch_job_killed;	/* TRUE when there was a job and it was killed
+				 * or we know it died. */
 
     int		ch_refcount;	/* reference count */
 };
