@@ -686,64 +686,13 @@ Or when using MinGW (as one line):
 13. Windows 3.1x
 ================
 
-make -f Make_w16.mak		 16 bit, Borland C++ 5.0
-
-Warning: Be sure to use the right make.exe.  It should be Borland make.
-
-You will almost certainly have to change the paths for libs and include files
-in the Makefile.  Look for "D:\BC5" and "ctl3dv2".  You will get a number of
-warnings which can be ignored ( _chmod, precompiled header files, and
-"possibly incorrect assignment").
-
-The makefile should also work for BC++ 4.0 and 4.5, but may need tweaking to
-remove unsupported compiler & liker options.
-
-For making the Win32s version, you need Microsoft Visual C++ 4.1 OR EARLIER.
-In MSVC 4.2 support for Win32s was dropped!  Use this command:
-    nmake -f Make_mvc.mak GUI=yes
+The Windows 3.1x support was removed in patch 7.4.1364.
 
 
 14. MS-DOS
 ==========
 
-Summary:
-ren Make_bc3.mak Makefile; make     16 bit, Borland C++ and Turbo C++
-ren Make_tcc.mak Makefile; make     16 bit, Turbo C
-make -f Make_djg.mak		    32 bit, DJGPP 2.0
-make -f Make_bc5.mak		    32 bit, Borland C++ 5.x (edit it to
-				    define DOS)
-
-Warning: Be sure to use the right make.exe.  Microsoft C make doesn't work;
-Borland make only works with Make_bc3.mak, Make_bc5.mak and Make_tcc.mak;
-DJGPP/GNU make must be used for Make_djg.mak.
-
-The Borland C++ compiler has been used to generate the MS-DOS executable; it
-should work without problems. You will probably have to change the paths for
-LIBPATH and INCLUDEPATH in the start of the Makefile.  You will get two
-warnings which can be ignored (one about _chmod and one about precompiled
-header files).
-
-The "spawno" library by Ralf Brown was used in order to free memory when Vim
-starts a shell or other external command.  Only about 200 bytes are taken from
-conventional memory.  When recompiling get the spawno library from Simtel,
-directory "msdos/c".  It is called something like "spwno413.zip".  Or follow
-the instructions in the Makefile to remove the library.
-
-The Turbo C Makefile has not been tested much lately. It is included for those
-that don't have C++. You may need to make a few changes to get it to work.
-
-DJGPP needs to be installed properly to compile Vim; you need a lot of things
-before it works. When your setup is OK, Vim should compile with just one
-warning (about an argument to signal()).
-
-Make_bc5.mak is for those that have Borland C++ 5.0 or later.  At the top of
-the file, there are some variables you can change to make either a 32-bit
-Windows exe (GUI or console mode), or a 16-bit MS-DOS version.
-NOTE: multi-byte support is broken in the Borland libraries, not everything
-will work properly!  Esp. handling multi-byte file names.
-
-If you get all kinds of strange error messages when compiling, try changing
-the file format from "unix" to "dos".
+The MS-DOS support was removed in patch 7.4.1399.
 
 
 15. Installing after building from sources

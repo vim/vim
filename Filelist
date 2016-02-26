@@ -694,7 +694,6 @@ EXTRA =		\
 		src/tee/Makefile \
 		src/tee/Make_mvc.mak \
 		src/tee/tee.c \
-		csdpmi4b.zip \
 
 # generic language files
 LANG_GEN = \
