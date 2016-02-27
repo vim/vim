@@ -237,7 +237,8 @@ public:
 	AddRef();
     }
 
-    ~GdiTextRenderer()
+    // add "virtual" to avoid a compiler warning
+    virtual ~GdiTextRenderer()
     {
 	SafeRelease(&pRenderTarget_);
 	SafeRelease(&pRenderingParams_);
@@ -255,7 +256,7 @@ public:
 	__maybenull void* clientDrawingContext,
 	__out DWRITE_MATRIX* transform)
     {
-	//forward the render target's transform
+	// forward the render target's transform
 	pRenderTarget_->GetCurrentTransform(transform);
 	return S_OK;
     }
