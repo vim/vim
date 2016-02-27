@@ -12,6 +12,12 @@ let s:var4 = "\x10\x11\x12\x13\x14\x15\x16\x17"
 let s:json5 = '"\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f"'
 let s:var5 = "\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f"
 
+" surrogate pair
+let s:jsonsp1 = '"\ud83c\udf63"'
+let s:varsp1 = "\xf0\x9f\x8d\xa3"
+let s:jsonsp2 = '"\ud83c\u00a0"'
+let s:varsp2 = "\ud83c\u00a0"
+
 let s:jsonmb = '"s¢cĴgё"'
 let s:varmb = "s¢cĴgё"
 let s:jsonnr = '1234'
@@ -69,6 +75,8 @@ func Test_json_encode()
 
   if has('multi_byte')
     call assert_equal(s:jsonmb, json_encode(s:varmb))
+    call assert_equal(s:varsp1, json_decode(s:jsonsp1))
+    call assert_equal(s:varsp2, json_decode(s:jsonsp2))
   endif
 
   call assert_equal(s:jsonnr, json_encode(s:varnr))
@@ -105,6 +113,8 @@ func Test_json_decode()
 
   if has('multi_byte')
     call assert_equal(s:varmb, json_decode(s:jsonmb))
+    call assert_equal(s:varsp1, js_decode(s:jsonsp1))
+    call assert_equal(s:varsp2, js_decode(s:jsonsp2))
   endif
 
   call assert_equal(s:varnr, json_decode(s:jsonnr))
