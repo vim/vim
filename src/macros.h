@@ -327,25 +327,29 @@
    /* for isnan() and isinf() */
 #  include <math.h>
 # endif
-# if defined(WIN32) && !defined(isnan)
-#  define isnan(x) _isnan(x)
-#  define isinf(x) (!_finite(x) && !_isnan(x))
-# else
-#  ifndef HAVE_ISNAN
-    static inline int isnan(double x) { return x != x; }
-#  endif
-#  ifndef HAVE_ISINF
-    static inline int isinf(double x) { return !isnan(x) && isnan(x - x); }
-#  endif
-# endif
-# if !defined(INFINITY)
-#  if defined(DBL_MAX)
-#   define INFINITY (DBL_MAX+DBL_MAX)
+# ifdef USING_FLOAT_STUFF
+#  if defined(WIN32)
+#   ifndef isnan
+#    define isnan(x) _isnan(x)
+#    define isinf(x) (!_finite(x) && !_isnan(x))
+#   endif
 #  else
-#   define INFINITY (1.0 / 0.0)
+#   ifndef HAVE_ISNAN
+     static inline int isnan(double x) { return x != x; }
+#   endif
+#   ifndef HAVE_ISINF
+     static inline int isinf(double x) { return !isnan(x) && isnan(x - x); }
+#   endif
 #  endif
-# endif
-# if !defined(NAN)
-#  define NAN (INFINITY-INFINITY)
+#  if !defined(INFINITY)
+#   if defined(DBL_MAX)
+#    define INFINITY (DBL_MAX+DBL_MAX)
+#   else
+#    define INFINITY (1.0 / 0.0)
+#   endif
+#  endif
+#  if !defined(NAN)
+#   define NAN (INFINITY-INFINITY)
+#  endif
 # endif
 #endif

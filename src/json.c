@@ -12,6 +12,7 @@
  *
  * Follows this standard: https://tools.ietf.org/html/rfc7159.html
  */
+#define USING_FLOAT_STUFF
 
 #include "vim.h"
 
