@@ -6658,7 +6658,13 @@ gui_mch_draw_string(
 		/* Use unicodepdy to make characters fit as we expect, even
 		 * when the font uses different widths (e.g., bold character
 		 * is wider).  */
-		unicodepdy[clen] = cw * gui.char_width;
+		if (c >= 0x10000)
+		{
+		    unicodepdy[wlen - 2] = cw * gui.char_width;
+		    unicodepdy[wlen - 1] = 0;
+		}
+		else
+		    unicodepdy[wlen - 1] = cw * gui.char_width;
 	    }
 	    cells += cw;
 	    i += utfc_ptr2len_len(text + i, len - i);
