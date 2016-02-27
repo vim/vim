@@ -6513,7 +6513,7 @@ im_get_status(void)
 static MenuRef contextMenu = NULL;
 enum
 {
-    kTabContextMenuId = 42,
+    kTabContextMenuId = 42
 };
 
 // the caller has to CFRelease() the returned string
