@@ -27,8 +27,10 @@
 #  define isnan(x) _isnan(x)
 #  define isinf(x) (!_finite(x) && !_isnan(x))
 # endif
-# if defined(_MSC_VER) && !defined(INFINITY)
+# if !defined(INFINITY) && defined(DBL_MAX)
 #  define INFINITY (DBL_MAX+DBL_MAX)
+# endif
+# if !defined(NAN) && defined(INFINITY)
 #  define NAN (INFINITY-INFINITY)
 # endif
 #endif
@@ -285,12 +287,10 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
 # if defined(HAVE_MATH_H)
-	    if ((options & JSON_JS) && isnan(val->vval.v_float))
+	    if (isnan(val->vval.v_float))
 		ga_concat(gap, (char_u *)"NaN");
-	    else if ((options & JSON_JS) && isinf(val->vval.v_float))
+	    else if (isinf(val->vval.v_float))
 		ga_concat(gap, (char_u *)"Infinity");
-	    else if (isnan(val->vval.v_float) || isinf(val->vval.v_float))
-		ga_concat(gap, (char_u *)"null");
 	    else
 # endif
 	    {

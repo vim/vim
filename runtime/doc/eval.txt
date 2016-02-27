@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 23
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4561,6 +4561,8 @@ json_encode({expr})					*json_encode()*
 		Vim values are converted as follows:
 		   Number		decimal number
 		   Float		floating point number
+		   Float nan		"NaN"
+		   Float inf		"Infinity"
 		   String		in double quotes (possibly null)
 		   Funcref		not possible, error
 		   List			as an array (possibly null); when
@@ -4571,13 +4573,9 @@ json_encode({expr})					*json_encode()*
 		   v:true		"true"
 		   v:none		"null"
 		   v:null		"null"
-		Note that using v:none is permitted, although the JSON
-		standard does not allow empty items.  This can be useful for
-		omitting items in an array:
-			[0,,,,,5] ~
-		This is much more efficient than:
-			[0,null,null,null,null,5] ~
-		But a strict JSON parser will not accept it.
+		Note that NaN and Infinity are passed on as values.  This is
+		missing in the JSON standard, but several implementations do
+		allow it.  If not then you will get an error.
 
 keys({dict})						*keys()*
 		Return a |List| with all the keys of {dict}.  The |List| is in
