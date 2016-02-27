@@ -11,16 +11,11 @@
 
 #if defined(FEAT_CSCOPE) || defined(PROTO)
 
-#if defined(UNIX)
-# include <sys/types.h>		/* pid_t */
-# include <sys/stat.h>		/* dev_t, ino_t */
-#else
-# if defined (WIN32)
-#  ifndef WIN32_LEAN_AND_MEAN
-#   define WIN32_LEAN_AND_MEAN
-#  endif
-#  include <windows.h>
+#if defined (WIN32)
+# ifndef WIN32_LEAN_AND_MEAN
+#  define WIN32_LEAN_AND_MEAN
 # endif
+# include <windows.h>
 #endif
 
 #define CSCOPE_SUCCESS		0
