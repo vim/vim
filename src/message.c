@@ -15,10 +15,6 @@
 
 #include "vim.h"
 
-#if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
-# include <math.h>
-#endif
-
 static int other_sourcing_name(void);
 static char_u *get_emsg_source(void);
 static char_u *get_emsg_lnum(void);

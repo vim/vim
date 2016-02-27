@@ -460,3 +460,12 @@
 
 /* Define if GTK+ GUI is to be linked against GTK+ 3 */
 #undef USE_GTK3
+
+/* Define if we have isinf() */
+#undef HAVE_ISINF
+
+/* Define if we have isnan() */
+#undef HAVE_ISNAN
+
+/* Define to inline symbol or empty */
+#undef inline

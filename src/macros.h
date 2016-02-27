@@ -320,3 +320,32 @@
 #if defined(FEAT_CHANNEL) || defined(FEAT_JOB) || defined(FEAT_CLIENTSERVER)
 # define MESSAGE_QUEUE
 #endif
+
+#if defined(FEAT_EVAL) && defined(FEAT_FLOAT)
+# include <float.h>
+# if defined(HAVE_MATH_H)
+   /* for isnan() and isinf() */
+#  include <math.h>
+# endif
+# if defined(WIN32) && !defined(isnan)
+#  define isnan(x) _isnan(x)
+#  define isinf(x) (!_finite(x) && !_isnan(x))
+# else
+#  ifndef HAVE_ISNAN
+    static inline int isnan(double x) { return x != x; }
+#  endif
+#  ifndef HAVE_ISINF
+    static inline int isinf(double x) { return !isnan(x) && isnan(x - x); }
+#  endif
+# endif
+# if !defined(INFINITY)
+#  if defined(DBL_MAX)
+#   define INFINITY (DBL_MAX+DBL_MAX)
+#  else
+#   define INFINITY (1.0 / 0.0)
+#  endif
+# endif
+# if !defined(NAN)
+#  define NAN (INFINITY-INFINITY)
+# endif
+#endif

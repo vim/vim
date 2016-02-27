@@ -27,16 +27,6 @@
 # include <time.h>	/* for time_t */
 #endif
 
-#if defined(FEAT_FLOAT)
-# include <float.h>
-# if defined(HAVE_MATH_H)
-#  include <math.h>
-# endif
-# if defined(WIN32) && !defined(isnan)
-#  define isnan(x) _isnan(x)
-# endif
-#endif
-
 #define DICT_MAXNEST 100	/* maximum nesting of lists and dicts */
 
 #define DO_NOT_FREE_CNT 99999	/* refcount for dict or list that should not

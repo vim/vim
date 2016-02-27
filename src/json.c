@@ -17,24 +17,6 @@
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-#if defined(FEAT_FLOAT)
-# include <float.h>
-# if defined(HAVE_MATH_H)
-   /* for isnan() and isinf() */
-#  include <math.h>
-# endif
-# if defined(WIN32) && !defined(isnan)
-#  define isnan(x) _isnan(x)
-#  define isinf(x) (!_finite(x) && !_isnan(x))
-# endif
-# if !defined(INFINITY) && defined(DBL_MAX)
-#  define INFINITY (DBL_MAX+DBL_MAX)
-# endif
-# if !defined(NAN) && defined(INFINITY)
-#  define NAN (INFINITY-INFINITY)
-# endif
-#endif
-
 static int json_encode_item(garray_T *gap, typval_T *val, int copyID, int options);
 static int json_decode_item(js_read_T *reader, typval_T *res, int options);
 
