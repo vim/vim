@@ -499,6 +499,7 @@ static void f_ceil(typval_T *argvars, typval_T *rettv);
 static void f_ch_close(typval_T *argvars, typval_T *rettv);
 static void f_ch_evalexpr(typval_T *argvars, typval_T *rettv);
 static void f_ch_evalraw(typval_T *argvars, typval_T *rettv);
+static void f_ch_getbufnr(typval_T *argvars, typval_T *rettv);
 # ifdef FEAT_JOB
 static void f_ch_getjob(typval_T *argvars, typval_T *rettv);
 # endif
@@ -8195,6 +8196,7 @@ static struct fst
     {"ch_close",	1, 1, f_ch_close},
     {"ch_evalexpr",	2, 3, f_ch_evalexpr},
     {"ch_evalraw",	2, 3, f_ch_evalraw},
+    {"ch_getbufnr",	2, 2, f_ch_getbufnr},
 # ifdef FEAT_JOB
     {"ch_getjob",	1, 1, f_ch_getjob},
 # endif
@@ -10227,13 +10229,6 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 	return FAIL;
     }
 
-    for (part = PART_OUT; part <= PART_IN; ++part)
-	if (opt->jo_io[part] == JIO_BUFFER && opt->jo_io_name[part] == NULL)
-	{
-	    EMSG(_("E915: Missing name for buffer"));
-	    return FAIL;
-	}
-
     return OK;
 }
 #endif
@@ -10275,6 +10270,33 @@ f_ch_close(typval_T *argvars, typval_T *rettv UNUSED)
     {
 	channel_close(channel, FALSE);
 	channel_clear(channel);
+    }
+}
+
+/*
+ * "ch_getbufnr()" function
+ */
+    static void
+f_ch_getbufnr(typval_T *argvars, typval_T *rettv)
+{
+    channel_T *channel = get_channel_arg(&argvars[0]);
+
+    rettv->vval.v_number = -1;
+    if (channel != NULL)
+    {
+	char_u	*what = get_tv_string(&argvars[1]);
+	int	part;
+
+	if (STRCMP(what, "err") == 0)
+	    part = PART_ERR;
+	else if (STRCMP(what, "out") == 0)
+	    part = PART_OUT;
+	else if (STRCMP(what, "in") == 0)
+	    part = PART_IN;
+	else
+	    part = PART_SOCK;
+	if (channel->ch_part[part].ch_buffer != NULL)
+	    rettv->vval.v_number = channel->ch_part[part].ch_buffer->b_fnum;
     }
 }
 

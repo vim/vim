@@ -787,12 +787,15 @@ channel_set_job(channel_T *channel, job_T *job)
     static buf_T *
 find_buffer(char_u *name)
 {
-    buf_T *buf = buflist_findname(name);
+    buf_T *buf = NULL;
     buf_T *save_curbuf = curbuf;
 
+    if (name != NULL && *name != NUL)
+	buf = buflist_findname(name);
     if (buf == NULL)
     {
-	buf = buflist_new(name, NULL, (linenr_T)0, BLN_LISTED);
+	buf = buflist_new(name == NULL ? (char_u *)"" : name,
+					       NULL, (linenr_T)0, BLN_LISTED);
 	buf_copy_options(buf, BCO_ENTER);
 #ifdef FEAT_QUICKFIX
 	clear_string_option(&buf->b_p_bt);
@@ -880,7 +883,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	channel->ch_part[PART_OUT].ch_mode = MODE_NL;
 	channel->ch_part[PART_OUT].ch_buffer =
 				       find_buffer(opt->jo_io_name[PART_OUT]);
-	ch_logs(channel, "writing to buffer %s",
+	ch_logs(channel, "writing to buffer '%s'",
 		      (char *)channel->ch_part[PART_OUT].ch_buffer->b_ffname);
     }
 }
@@ -1357,7 +1360,14 @@ may_invoke_callback(channel_T *channel, int part)
 	callback = channel->ch_part[part].ch_callback;
     else
 	callback = channel->ch_callback;
+
     buffer = channel->ch_part[part].ch_buffer;
+    if (buffer != NULL && !buf_valid(buffer))
+    {
+	/* buffer was wiped out */
+	channel->ch_part[part].ch_buffer = NULL;
+	buffer = NULL;
+    }
 
     if (ch_mode == MODE_JSON || ch_mode == MODE_JS)
     {

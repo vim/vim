@@ -561,11 +561,14 @@ TODO:						*job-term*
 
 When the IO mode is "buffer" and there is a callback, the text is appended to
 the buffer before invoking the callback.
-							*E915*
+
 The name of the buffer is compared the full name of existing buffers.  If
-there is a match that buffer is used.  Otherwise a new buffer is created,
-where 'buftype' is set to "nofile" and 'bufhidden' to "hide".  If you prefer
-other settings, create the buffer first and pass the buffer number.
+there is a match that buffer is used.  Otherwise a new buffer is created.
+Use an empty name to always create a new buffer.  |ch_getbufnr()| can then be
+used to get the buffer number.
+
+For a new buffer 'buftype' is set to "nofile" and 'bufhidden' to "hide".  If
+you prefer other settings, create the buffer first and pass the buffer number.
 
 When the buffer written to is displayed in a window and the cursor is in the
 first column of the last line, the cursor will be moved to the newly added

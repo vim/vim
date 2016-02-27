@@ -1822,6 +1822,7 @@ ch_evalexpr( {channel}, {expr} [, {options}])
 				any	evaluate {expr} on JSON {channel}
 ch_evalraw( {channel}, {string} [, {options}])
 				any	evaluate {string} on raw {channel}
+ch_getbufnr( {channel}, {what})	Number	get buffer number for {channel}/{what}
 ch_getjob( {channel})		Job	get the Job of {channel}
 ch_log( {msg} [, {channel}])	none	write {msg} in the channel log file
 ch_logfile( {fname} [, {mode}])	none	start logging channel activity
@@ -2719,6 +2720,13 @@ ch_evalraw({channel}, {string} [, {options}])		*ch_evalraw()*
 		is removed.
 		See |channel-use|.
 
+		{only available when compiled with the |+channel| feature}
+
+ch_getbufnr({channel}, {what})				 *ch_getbufnr()*
+		Get the buffer number that {channel} is using for {what}.
+		{what} can be "err" for stderr, "out" for stdout or empty for
+		socket output.
+		Returns -1 when there is no buffer.
 		{only available when compiled with the |+channel| feature}
 
 ch_getjob({channel})						*ch_getjob()*

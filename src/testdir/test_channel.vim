@@ -400,6 +400,32 @@ func Test_pipe_to_buffer()
   endtry
 endfunc
 
+func Test_pipe_to_nameless_buffer()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_pipe_to_nameless_buffer()')
+  let job = job_start(s:python . " test_channel_pipe.py",
+	\ {'out-io': 'buffer'})
+  call assert_equal("run", job_status(job))
+  try
+    let handle = job_getchannel(job)
+    call ch_sendraw(handle, "echo line one\n")
+    call ch_sendraw(handle, "echo line two\n")
+    exe ch_getbufnr(handle, "out") . 'sbuf'
+    for i in range(100)
+      sleep 10m
+      if line('$') >= 3
+	break
+      endif
+    endfor
+    call assert_equal(['Reading from channel output...', 'line one', 'line two'], getline(1, '$'))
+    bwipe!
+  finally
+    call job_stop(job)
+  endtry
+endfunc
+
 """"""""""
 
 let s:unletResponse = ''
