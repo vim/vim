@@ -1818,6 +1818,10 @@ call( {func}, {arglist} [, {dict}])
 				any	call {func} with arguments {arglist}
 ceil( {expr})			Float	round {expr} up
 ch_close( {channel})		none	close {channel}
+ch_evalexpr( {channel}, {expr} [, {options}])
+				any	evaluate {expr} on JSON {channel}
+ch_evalraw( {channel}, {string} [, {options}])
+				any	evaluate {string} on raw {channel}
 ch_getjob( {channel})		Job	get the Job of {channel}
 ch_log( {msg} [, {channel}])	none	write {msg} in the channel log file
 ch_logfile( {fname} [, {mode}])	none	start logging channel activity
@@ -2692,6 +2696,31 @@ ch_close({channel})						*ch_close()*
 		Close {channel}.  See |channel-close|.
 		{only available when compiled with the |+channel| feature}
 
+ch_evalexpr({channel}, {expr} [, {options}])			*ch_evalexpr()*
+		Send {expr} over {channel}.  The {expr} is encoded
+		according to the type of channel.  The function cannot be used
+		with a raw channel.  See |channel-use|.  *E912*
+								*E917*
+		{options} must be a Dictionary.  It must not have a "callback"
+		entry.
+
+		ch_evalexpr() waits for a response and returns the decoded
+		expression.  When there is an error or timeout it returns an
+		empty string.
+
+		{only available when compiled with the |+channel| feature}
+
+ch_evalraw({channel}, {string} [, {options}])		*ch_evalraw()*
+		Send {string} over {channel}.
+		Works like |ch_evalexpr()|, but does not encode the request or
+		decode the response.  The caller is responsible for the
+		correct contents.  Also does not add a newline for a channel
+		in NL mode, the caller must do that.  The NL in the response
+		is removed.
+		See |channel-use|.
+
+		{only available when compiled with the |+channel| feature}
+
 ch_getjob({channel})						*ch_getjob()*
 		Get the Job associated with {channel}.
 		If there is no job calling |job_status()| on the returned Job
@@ -2769,16 +2798,11 @@ ch_sendexpr({channel}, {expr} [, {options}])			*ch_sendexpr()*
 		according to the type of channel.  The function cannot be used
 		with a raw channel.  See |channel-use|.  *E912*
 
-		{options} must be a Dictionary.
-		When "callback" is a Funcref or the name of a function,
-		ch_sendexpr() returns immediately.  The callback is invoked
-		when the response is received.  See |channel-callback|.
-
-		Without "callback" ch_sendexpr() waits for a response and
-		returns the decoded expression.  When there is an error or
-		timeout it returns an empty string.
-
-		When "callback" is zero no response is expected.
+		{options} must be a Dictionary.  The "callback" item is a
+		Funcref or the name of a function it is invoked when the
+		response is received.  See |channel-callback|.
+		Without "callback" the channel handler is invoked, otherwise
+		any received message is dropped.
 
 		{only available when compiled with the |+channel| feature}
 
@@ -7391,7 +7415,6 @@ scrollbind		Compiled with 'scrollbind' support.
 showcmd			Compiled with 'showcmd' support.
 signs			Compiled with |:sign| support.
 smartindent		Compiled with 'smartindent' support.
-sniff			Compiled with SNiFF interface support.
 spell			Compiled with spell checking support |spell|.
 startuptime		Compiled with |--startuptime| support.
 statusline		Compiled with support for 'statusline', 'rulerformat'

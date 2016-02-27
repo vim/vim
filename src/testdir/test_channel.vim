@@ -110,17 +110,17 @@ func s:communicate(port)
   endif
 
   " Simple string request and reply.
-  call assert_equal('got it', ch_sendexpr(handle, 'hello!'))
+  call assert_equal('got it', ch_evalexpr(handle, 'hello!'))
 
   " Request that triggers sending two ex commands.  These will usually be
   " handled before getting the response, but it's not guaranteed, thus wait a
   " tiny bit for the commands to get executed.
-  call assert_equal('ok', ch_sendexpr(handle, 'make change'))
+  call assert_equal('ok', ch_evalexpr(handle, 'make change'))
   sleep 10m
   call assert_equal('added1', getline(line('$') - 1))
   call assert_equal('added2', getline('$'))
 
-  call assert_equal('ok', ch_sendexpr(handle, 'do normal'))
+  call assert_equal('ok', ch_evalexpr(handle, 'do normal'))
   sleep 10m
   call assert_equal('added more', getline('$'))
 
@@ -154,37 +154,37 @@ func s:communicate(port)
   call ch_setoptions(handle, {'callback': ''})
 
   " Send an eval request that works.
-  call assert_equal('ok', ch_sendexpr(handle, 'eval-works'))
+  call assert_equal('ok', ch_evalexpr(handle, 'eval-works'))
   sleep 10m
-  call assert_equal([-1, 'foo123'], ch_sendexpr(handle, 'eval-result'))
+  call assert_equal([-1, 'foo123'], ch_evalexpr(handle, 'eval-result'))
 
   " Send an eval request that fails.
-  call assert_equal('ok', ch_sendexpr(handle, 'eval-fails'))
+  call assert_equal('ok', ch_evalexpr(handle, 'eval-fails'))
   sleep 10m
-  call assert_equal([-2, 'ERROR'], ch_sendexpr(handle, 'eval-result'))
+  call assert_equal([-2, 'ERROR'], ch_evalexpr(handle, 'eval-result'))
 
   " Send an eval request that works but can't be encoded.
-  call assert_equal('ok', ch_sendexpr(handle, 'eval-error'))
+  call assert_equal('ok', ch_evalexpr(handle, 'eval-error'))
   sleep 10m
-  call assert_equal([-3, 'ERROR'], ch_sendexpr(handle, 'eval-result'))
+  call assert_equal([-3, 'ERROR'], ch_evalexpr(handle, 'eval-result'))
 
   " Send a bad eval request. There will be no response.
-  call assert_equal('ok', ch_sendexpr(handle, 'eval-bad'))
+  call assert_equal('ok', ch_evalexpr(handle, 'eval-bad'))
   sleep 10m
-  call assert_equal([-3, 'ERROR'], ch_sendexpr(handle, 'eval-result'))
+  call assert_equal([-3, 'ERROR'], ch_evalexpr(handle, 'eval-result'))
 
   " Send an expr request
-  call assert_equal('ok', ch_sendexpr(handle, 'an expr'))
+  call assert_equal('ok', ch_evalexpr(handle, 'an expr'))
   sleep 10m
   call assert_equal('one', getline(line('$') - 2))
   call assert_equal('two', getline(line('$') - 1))
   call assert_equal('three', getline('$'))
 
   " Request a redraw, we don't check for the effect.
-  call assert_equal('ok', ch_sendexpr(handle, 'redraw'))
-  call assert_equal('ok', ch_sendexpr(handle, 'redraw!'))
+  call assert_equal('ok', ch_evalexpr(handle, 'redraw'))
+  call assert_equal('ok', ch_evalexpr(handle, 'redraw!'))
 
-  call assert_equal('ok', ch_sendexpr(handle, 'empty-request'))
+  call assert_equal('ok', ch_evalexpr(handle, 'empty-request'))
 
   " Reading while there is nothing available.
   call assert_equal(v:none, ch_read(handle, {'timeout': 0}))
@@ -195,14 +195,14 @@ func s:communicate(port)
   call assert_true(reltimefloat(elapsed) < 0.6)
 
   " Send without waiting for a response, then wait for a response.
-  call ch_sendexpr(handle, 'wait a bit',  {'callback': 0})
+  call ch_sendexpr(handle, 'wait a bit')
   let resp = ch_read(handle)
   call assert_equal(type([]), type(resp))
   call assert_equal(type(11), type(resp[0]))
   call assert_equal('waited', resp[1])
 
   " make the server quit, can't check if this works, should not hang.
-  call ch_sendexpr(handle, '!quit!', {'callback': 0})
+  call ch_sendexpr(handle, '!quit!')
 endfunc
 
 func Test_communicate()
@@ -218,18 +218,18 @@ func s:two_channels(port)
     return
   endif
 
-  call assert_equal('got it', ch_sendexpr(handle, 'hello!'))
+  call assert_equal('got it', ch_evalexpr(handle, 'hello!'))
 
   let newhandle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(newhandle) == "fail"
     call assert_false(1, "Can't open second channel")
     return
   endif
-  call assert_equal('got it', ch_sendexpr(newhandle, 'hello!'))
-  call assert_equal('got it', ch_sendexpr(handle, 'hello!'))
+  call assert_equal('got it', ch_evalexpr(newhandle, 'hello!'))
+  call assert_equal('got it', ch_evalexpr(handle, 'hello!'))
 
   call ch_close(handle)
-  call assert_equal('got it', ch_sendexpr(newhandle, 'hello!'))
+  call assert_equal('got it', ch_evalexpr(newhandle, 'hello!'))
 
   call ch_close(newhandle)
 endfunc
@@ -247,7 +247,7 @@ func s:server_crash(port)
     return
   endif
 
-  call ch_sendexpr(handle, '!crash!')
+  call ch_evalexpr(handle, '!crash!')
 
   sleep 10m
 endfunc
@@ -271,12 +271,12 @@ func s:channel_handler(port)
   endif
 
   " Test that it works while waiting on a numbered message.
-  call assert_equal('ok', ch_sendexpr(handle, 'call me'))
+  call assert_equal('ok', ch_evalexpr(handle, 'call me'))
   sleep 10m
   call assert_equal('we called you', s:reply)
 
   " Test that it works while not waiting on a numbered message.
-  call ch_sendexpr(handle, 'call me again', {'callback': 0})
+  call ch_sendexpr(handle, 'call me again')
   sleep 10m
   call assert_equal('we did call you', s:reply)
 endfunc
@@ -334,15 +334,15 @@ func Test_raw_pipe()
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
-    call ch_sendraw(handle, "echo something\n", {'callback': 0})
+    call ch_sendraw(handle, "echo something\n")
     let msg = ch_readraw(handle)
     call assert_equal("something\n", substitute(msg, "\r", "", 'g'))
 
-    call ch_sendraw(handle, "double this\n", {'callback': 0})
+    call ch_sendraw(handle, "double this\n")
     let msg = ch_readraw(handle)
     call assert_equal("this\nAND this\n", substitute(msg, "\r", "", 'g'))
 
-    let reply = ch_sendraw(handle, "quit\n")
+    let reply = ch_evalraw(handle, "quit\n")
     call assert_equal("Goodbye!\n", substitute(reply, "\r", "", 'g'))
   finally
     call job_stop(job)
@@ -358,15 +358,43 @@ func Test_nl_pipe()
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
-    call ch_sendraw(handle, "echo something\n", {'callback': 0})
+    call ch_sendraw(handle, "echo something\n")
     call assert_equal("something", ch_readraw(handle))
 
-    call ch_sendraw(handle, "double this\n", {'callback': 0})
+    call ch_sendraw(handle, "double this\n")
     call assert_equal("this", ch_readraw(handle))
     call assert_equal("AND this", ch_readraw(handle))
 
-    let reply = ch_sendraw(handle, "quit\n")
+    let reply = ch_evalraw(handle, "quit\n")
     call assert_equal("Goodbye!", reply)
+  finally
+    call job_stop(job)
+  endtry
+endfunc
+
+func Test_pipe_to_buffer()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_pipe_to_buffer()')
+  let job = job_start(s:python . " test_channel_pipe.py",
+	\ {'out-io': 'buffer', 'out-name': 'pipe-output'})
+  call assert_equal("run", job_status(job))
+  try
+    let handle = job_getchannel(job)
+    call ch_sendraw(handle, "echo line one\n")
+    call ch_sendraw(handle, "echo line two\n")
+    call ch_sendraw(handle, "double this\n")
+    call ch_sendraw(handle, "quit\n")
+    sp pipe-output
+    for i in range(100)
+      sleep 10m
+      if line('$') >= 6
+	break
+      endif
+    endfor
+    call assert_equal(['Reading from channel output...', 'line one', 'line two', 'this', 'AND this', 'Goodbye!'], getline(1, '$'))
+    bwipe!
   finally
     call job_stop(job)
   endtry
@@ -434,7 +462,7 @@ func s:open_delay(port)
     call assert_false(1, "Can't open channel")
     return
   endif
-  call assert_equal('got it', ch_sendexpr(channel, 'hello!'))
+  call assert_equal('got it', ch_evalexpr(channel, 'hello!'))
   call ch_close(channel)
 endfunc
 
@@ -457,7 +485,7 @@ function s:test_call(port)
     return
   endif
 
-  call assert_equal('ok', ch_sendexpr(handle, 'call-func'))
+  call assert_equal('ok', ch_evalexpr(handle, 'call-func'))
   sleep 20m
   call assert_equal([1, 2, 3], s:call_ret)
 endfunc
@@ -507,7 +535,7 @@ function s:test_close_callback(port)
   endif
   call ch_setoptions(handle, {'close-cb': 'MyCloseCb'})
 
-  call assert_equal('', ch_sendexpr(handle, 'close me'))
+  call assert_equal('', ch_evalexpr(handle, 'close me'))
   sleep 20m
   call assert_equal('closed', s:ch_close_ret)
 endfunc

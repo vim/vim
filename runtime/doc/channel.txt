@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Feb 23
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Feb 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -74,7 +74,7 @@ In T1 you should see:
 	=== socket opened === ~
 
 You can now send a message to the server: >
-	echo ch_sendexpr(channel, 'hello!')
+	echo ch_evalexpr(channel, 'hello!')
 
 The message is received in T1 and a response is sent back to Vim.
 You can see the raw messages in T1.  What Vim sends is:
@@ -101,7 +101,7 @@ Instead of giving a callback with every send call, it can also be specified
 when opening the channel: >
 	call ch_close(channel)
 	let channel = ch_open('localhost:8765', {'callback': "MyHandler"})
-	call ch_sendexpr(channel, 'hello!', {'callback': 0})
+	call ch_sendexpr(channel, 'hello!')
 
 ==============================================================================
 3. Opening a channel					*channel-open*
@@ -171,7 +171,7 @@ Use |ch_status()| to see if the channel could be opened.
 		msec at least.
 
 "timeout"	The time to wait for a request when blocking, E.g. when using
-		ch_sendexpr().  In milliseconds.  The default is 2000 (2
+		ch_evalexpr().  In milliseconds.  The default is 2000 (2
 		seconds).
 						*out-timeout* *err-timeout*
 "out-timeout"	Timeout for stdout.  Only when using pipes.
@@ -214,7 +214,7 @@ If there is an error reading or writing a channel it will be closed.
 4. Using a JSON or JS channel					*channel-use*
 
 If mode is JSON then a message can be sent synchronously like this: >
-    let response = ch_sendexpr(channel, {expr})
+    let response = ch_evalexpr(channel, {expr})
 This awaits a response from the other side.
 
 When mode is JS this works the same, except that the messages use
@@ -222,7 +222,7 @@ JavaScript encoding.  See |js_encode()| for the difference.
 
 To send a message, without handling a response or letting the channel callback
 handle the response: >
-    call ch_sendexpr(channel, {expr}, {'callback': 0})
+    call ch_sendexpr(channel, {expr})
 
 To send a message and letting the response handled by a specific function,
 asynchronously: >
@@ -263,8 +263,9 @@ On read error or ch_close(), when using a socket, the string "DETACH" is sent,
 if still possible.  The channel will then be inactive. For a JSON and JS mode
 channel quotes are used around DETACH, otherwise there are no quotes.
 
-It is also possible to use ch_sendraw() on a JSON or JS channel.  The caller
-is then completely responsible for correct encoding and decoding.
+It is also possible to use ch_sendraw() and ch_evalraw() on a JSON or JS
+channel.  The caller is then completely responsible for correct encoding and
+decoding.
 
 ==============================================================================
 5. Channel commands					*channel-commands*
@@ -363,7 +364,7 @@ Leave out the fourth argument if no response is to be sent:
 6. Using a RAW or NL channel				*channel-raw*
 
 If mode is RAW or NL then a message can be send like this: >
-    let response = ch_sendraw(channel, {string})
+    let response = ch_evalraw(channel, {string})
 
 The {string} is sent as-is.  The response will be what can be read from the
 channel right away.  Since Vim doesn't know how to recognize the end of the
@@ -377,18 +378,18 @@ first NL.  This can also be just the NL for an empty response.
 If no NL was read before the channel timeout an empty string is returned.
 
 To send a message, without expecting a response: >
-    call ch_sendraw(channel, {string}, 0)
+    call ch_sendraw(channel, {string})
 The process can send back a response, the channel handler will be called with
 it.
 
 To send a message and letting the response handled by a specific function,
 asynchronously: >
-    call ch_sendraw(channel, {string}, {callback})
+    call ch_sendraw(channel, {string}, {'callback': 'MyHandler'})
 
 This {string} can also be JSON, use |json_encode()| to create it and
 |json_decode()| to handle a received JSON message.
 
-It is not possible to use |ch_sendexpr()| on a raw channel.
+It is not possible to use |ch_evalexpr()| or |ch_sendexpr()| on a raw channel.
 
 ==============================================================================
 7. More channel functions				*channel-more*
@@ -447,8 +448,8 @@ If you want to handle both stderr and stdout with one handler use the
 "callback" option: >
     let job = job_start(command, {"callback": "MyHandler"}) 
 
-You can send a message to the command with ch_sendraw().  If the channel is in
-JSON or JS mode you can use ch_sendexpr().
+You can send a message to the command with ch_evalraw().  If the channel is in
+JSON or JS mode you can use ch_evalexpr().
 
 There are several options you can use, see |job-options|.
 For example, to start a job and write its output in buffer "dummy": >

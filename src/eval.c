@@ -507,6 +507,8 @@ static void f_ceil(typval_T *argvars, typval_T *rettv);
 #endif
 #ifdef FEAT_CHANNEL
 static void f_ch_close(typval_T *argvars, typval_T *rettv);
+static void f_ch_evalexpr(typval_T *argvars, typval_T *rettv);
+static void f_ch_evalraw(typval_T *argvars, typval_T *rettv);
 # ifdef FEAT_JOB
 static void f_ch_getjob(typval_T *argvars, typval_T *rettv);
 # endif
@@ -8201,6 +8203,8 @@ static struct fst
 #endif
 #ifdef FEAT_CHANNEL
     {"ch_close",	1, 1, f_ch_close},
+    {"ch_evalexpr",	2, 3, f_ch_evalexpr},
+    {"ch_evalraw",	2, 3, f_ch_evalraw},
 # ifdef FEAT_JOB
     {"ch_getjob",	1, 1, f_ch_getjob},
 # endif
@@ -10485,7 +10489,13 @@ f_ch_readraw(typval_T *argvars, typval_T *rettv)
  * Otherwise returns NULL.
  */
     static channel_T *
-send_common(typval_T *argvars, char_u *text, int id, char *fun, int *part_read)
+send_common(
+	typval_T *argvars,
+	char_u *text,
+	int id,
+	int eval,
+	char *fun,
+	int *part_read)
 {
     channel_T	*channel;
     jobopt_T	opt;
@@ -10502,9 +10512,17 @@ send_common(typval_T *argvars, char_u *text, int id, char *fun, int *part_read)
 	return NULL;
 
     /* Set the callback. An empty callback means no callback and not reading
-     * the response. */
+     * the response. With "ch_evalexpr()" and "ch_evalraw()" a callback is not
+     * allowed. */
     if (opt.jo_callback != NULL && *opt.jo_callback != NUL)
+    {
+	if (eval)
+	{
+	    EMSG2(_("E917: Cannot use a callback with %s()"), fun);
+	    return NULL;
+	}
 	channel_set_req_callback(channel, part_send, opt.jo_callback, id);
+    }
 
     if (channel_send(channel, part_send, text, fun) == OK
 						   && opt.jo_callback == NULL)
@@ -10513,10 +10531,10 @@ send_common(typval_T *argvars, char_u *text, int id, char *fun, int *part_read)
 }
 
 /*
- * "ch_sendexpr()" function
+ * common for "ch_evalexpr()" and "ch_sendexpr()"
  */
     static void
-f_ch_sendexpr(typval_T *argvars, typval_T *rettv)
+ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 {
     char_u	*text;
     typval_T	*listtv;
@@ -10539,7 +10557,7 @@ f_ch_sendexpr(typval_T *argvars, typval_T *rettv)
     ch_mode = channel_get_mode(channel, part_send);
     if (ch_mode == MODE_RAW || ch_mode == MODE_NL)
     {
-	EMSG(_("E912: cannot use ch_sendexpr() with a raw or nl channel"));
+	EMSG(_("E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"));
 	return;
     }
 
@@ -10549,9 +10567,10 @@ f_ch_sendexpr(typval_T *argvars, typval_T *rettv)
     if (text == NULL)
 	return;
 
-    channel = send_common(argvars, text, id, "sendexpr", &part_read);
+    channel = send_common(argvars, text, id, eval,
+			    eval ? "ch_evalexpr" : "ch_sendexpr", &part_read);
     vim_free(text);
-    if (channel != NULL)
+    if (channel != NULL && eval)
     {
 	/* TODO: timeout from options */
 	timeout = channel_get_timeout(channel, part_read);
@@ -10570,10 +10589,28 @@ f_ch_sendexpr(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "ch_sendraw()" function
+ * "ch_evalexpr()" function
  */
     static void
-f_ch_sendraw(typval_T *argvars, typval_T *rettv)
+f_ch_evalexpr(typval_T *argvars, typval_T *rettv)
+{
+    ch_expr_common(argvars, rettv, TRUE);
+}
+
+/*
+ * "ch_sendexpr()" function
+ */
+    static void
+f_ch_sendexpr(typval_T *argvars, typval_T *rettv)
+{
+    ch_expr_common(argvars, rettv, FALSE);
+}
+
+/*
+ * common for "ch_evalraw()" and "ch_sendraw()"
+ */
+    static void
+ch_raw_common(typval_T *argvars, typval_T *rettv, int eval)
 {
     char_u	buf[NUMBUFLEN];
     char_u	*text;
@@ -10586,13 +10623,32 @@ f_ch_sendraw(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = NULL;
 
     text = get_tv_string_buf(&argvars[1], buf);
-    channel = send_common(argvars, text, 0, "sendraw", &part_read);
-    if (channel != NULL)
+    channel = send_common(argvars, text, 0, eval,
+			      eval ? "ch_evalraw" : "ch_sendraw", &part_read);
+    if (channel != NULL && eval)
     {
 	/* TODO: timeout from options */
 	timeout = channel_get_timeout(channel, part_read);
 	rettv->vval.v_string = channel_read_block(channel, part_read, timeout);
     }
+}
+
+/*
+ * "ch_evalraw()" function
+ */
+    static void
+f_ch_evalraw(typval_T *argvars, typval_T *rettv)
+{
+    ch_raw_common(argvars, rettv, TRUE);
+}
+
+/*
+ * "ch_sendraw()" function
+ */
+    static void
+f_ch_sendraw(typval_T *argvars, typval_T *rettv)
+{
+    ch_raw_common(argvars, rettv, FALSE);
 }
 
 /*
