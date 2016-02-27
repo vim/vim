@@ -1272,7 +1272,6 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +scrollbind	various.txt	/*+scrollbind*
 +signs	various.txt	/*+signs*
 +smartindent	various.txt	/*+smartindent*
-+sniff	various.txt	/*+sniff*
 +startuptime	various.txt	/*+startuptime*
 +statusline	various.txt	/*+statusline*
 +sun_workshop	various.txt	/*+sun_workshop*
@@ -1323,6 +1322,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 --literal	starting.txt	/*--literal*
 --nofork	starting.txt	/*--nofork*
 --noplugin	starting.txt	/*--noplugin*
+--not-a-term	starting.txt	/*--not-a-term*
 --remote	remote.txt	/*--remote*
 --remote-expr	remote.txt	/*--remote-expr*
 --remote-send	remote.txt	/*--remote-send*
@@ -2860,8 +2860,6 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :smile	index.txt	/*:smile*
 :sn	windows.txt	/*:sn*
 :snext	windows.txt	/*:snext*
-:sni	if_sniff.txt	/*:sni*
-:sniff	if_sniff.txt	/*:sniff*
 :sno	change.txt	/*:sno*
 :snomagic	change.txt	/*:snomagic*
 :snor	map.txt	/*:snor*
@@ -3568,7 +3566,6 @@ D	change.txt	/*D*
 DOS	os_dos.txt	/*DOS*
 DOS-format	editing.txt	/*DOS-format*
 DOS-format-write	editing.txt	/*DOS-format-write*
-DPMI	os_msdos.txt	/*DPMI*
 Dictionaries	eval.txt	/*Dictionaries*
 Dictionary	eval.txt	/*Dictionary*
 Dictionary-function	eval.txt	/*Dictionary-function*
@@ -3761,12 +3758,7 @@ E270	if_ruby.txt	/*E270*
 E271	if_ruby.txt	/*E271*
 E272	if_ruby.txt	/*E272*
 E273	if_ruby.txt	/*E273*
-E274	if_sniff.txt	/*E274*
-E275	if_sniff.txt	/*E275*
-E276	if_sniff.txt	/*E276*
 E277	remote.txt	/*E277*
-E278	if_sniff.txt	/*E278*
-E279	if_sniff.txt	/*E279*
 E28	syntax.txt	/*E28*
 E280	if_tcl.txt	/*E280*
 E281	if_tcl.txt	/*E281*
@@ -3949,11 +3941,6 @@ E447	editing.txt	/*E447*
 E448	various.txt	/*E448*
 E449	eval.txt	/*E449*
 E45	message.txt	/*E45*
-E450	os_msdos.txt	/*E450*
-E451	os_msdos.txt	/*E451*
-E452	os_msdos.txt	/*E452*
-E453	os_msdos.txt	/*E453*
-E454	os_msdos.txt	/*E454*
 E455	print.txt	/*E455*
 E456	print.txt	/*E456*
 E457	print.txt	/*E457*
@@ -4451,8 +4438,8 @@ E911	eval.txt	/*E911*
 E912	eval.txt	/*E912*
 E913	eval.txt	/*E913*
 E914	eval.txt	/*E914*
-E915	channel.txt	/*E915*
 E916	eval.txt	/*E916*
+E917	eval.txt	/*E917*
 E92	message.txt	/*E92*
 E93	windows.txt	/*E93*
 E94	windows.txt	/*E94*
@@ -5176,6 +5163,9 @@ cc	change.txt	/*cc*
 ceil()	eval.txt	/*ceil()*
 ch.vim	syntax.txt	/*ch.vim*
 ch_close()	eval.txt	/*ch_close()*
+ch_evalexpr()	eval.txt	/*ch_evalexpr()*
+ch_evalraw()	eval.txt	/*ch_evalraw()*
+ch_getbufnr()	eval.txt	/*ch_getbufnr()*
 ch_getjob()	eval.txt	/*ch_getjob()*
 ch_log()	eval.txt	/*ch_log()*
 ch_logfile()	eval.txt	/*ch_logfile()*
@@ -5611,8 +5601,6 @@ dos-locations	os_dos.txt	/*dos-locations*
 dos-shell	os_dos.txt	/*dos-shell*
 dos-standard-mappings	os_dos.txt	/*dos-standard-mappings*
 dos-temp-files	os_dos.txt	/*dos-temp-files*
-dos16	os_msdos.txt	/*dos16*
-dos32	os_msdos.txt	/*dos32*
 dosbatch.vim	syntax.txt	/*dosbatch.vim*
 double-click	term.txt	/*double-click*
 download	intro.txt	/*download*
@@ -7115,7 +7103,6 @@ message.txt	message.txt	/*message.txt*
 messages	message.txt	/*messages*
 meta	intro.txt	/*meta*
 min()	eval.txt	/*min()*
-minimal-features	os_msdos.txt	/*minimal-features*
 missing-options	vi_diff.txt	/*missing-options*
 mkdir()	eval.txt	/*mkdir()*
 mlang.txt	mlang.txt	/*mlang.txt*
@@ -7146,18 +7133,7 @@ mouse_win-variable	eval.txt	/*mouse_win-variable*
 movement	intro.txt	/*movement*
 ms-dos	os_msdos.txt	/*ms-dos*
 msdos	os_msdos.txt	/*msdos*
-msdos-arrows	os_msdos.txt	/*msdos-arrows*
-msdos-clipboard-limits	os_msdos.txt	/*msdos-clipboard-limits*
-msdos-compiling	os_msdos.txt	/*msdos-compiling*
-msdos-copy-paste	os_msdos.txt	/*msdos-copy-paste*
-msdos-fname-extensions	os_msdos.txt	/*msdos-fname-extensions*
-msdos-limitations	os_msdos.txt	/*msdos-limitations*
-msdos-linked-files	os_msdos.txt	/*msdos-linked-files*
-msdos-longfname	os_msdos.txt	/*msdos-longfname*
 msdos-mode	gui_w32.txt	/*msdos-mode*
-msdos-problems	os_msdos.txt	/*msdos-problems*
-msdos-termcap	os_msdos.txt	/*msdos-termcap*
-msdos-versions	os_msdos.txt	/*msdos-versions*
 msql.vim	syntax.txt	/*msql.vim*
 mswin.vim	gui_w32.txt	/*mswin.vim*
 multi-byte	mbyte.txt	/*multi-byte*
@@ -8044,10 +8020,6 @@ slice	eval.txt	/*slice*
 slow-fast-terminal	term.txt	/*slow-fast-terminal*
 slow-start	starting.txt	/*slow-start*
 slow-terminal	term.txt	/*slow-terminal*
-sniff	if_sniff.txt	/*sniff*
-sniff-commands	if_sniff.txt	/*sniff-commands*
-sniff-compiling	if_sniff.txt	/*sniff-compiling*
-sniff-intro	if_sniff.txt	/*sniff-intro*
 socket-interface	channel.txt	/*socket-interface*
 sort()	eval.txt	/*sort()*
 sorting	change.txt	/*sorting*

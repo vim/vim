@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.4.  Last change: 2016 Feb 24
+*index.txt*     For Vim version 7.4.  Last change: 2016 Feb 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1499,7 +1499,6 @@ tag	      command	      action ~
 |:smile|	:smi[le]	make the user happy
 |:snext|	:sn[ext]	split window and go to next file in the
 				argument list
-|:sniff|	:sni[ff]	send request to sniff
 |:snomagic|	:sno[magic]	:substitute with 'nomagic'
 |:snoremap|	:snor[emap]	like ":noremap" but for Select mode
 |:snoremenu|	:snoreme[nu]	like ":noremenu" but for Select mode

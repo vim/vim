@@ -2700,7 +2700,7 @@ ch_close({channel})						*ch_close()*
 ch_evalexpr({channel}, {expr} [, {options}])			*ch_evalexpr()*
 		Send {expr} over {channel}.  The {expr} is encoded
 		according to the type of channel.  The function cannot be used
-		with a raw channel.  See |channel-use|.  *E912*
+		with a raw channel.  See |channel-use|.
 								*E917*
 		{options} must be a Dictionary.  It must not have a "callback"
 		entry.
@@ -2804,7 +2804,7 @@ ch_readraw({channel} [, {options}])			*ch_readraw()*
 ch_sendexpr({channel}, {expr} [, {options}])			*ch_sendexpr()*
 		Send {expr} over {channel}.  The {expr} is encoded
 		according to the type of channel.  The function cannot be used
-		with a raw channel.  See |channel-use|.  *E912*
+		with a raw channel.  See |channel-use|. *E912*
 
 		{options} must be a Dictionary.  The "callback" item is a
 		Funcref or the name of a function it is invoked when the
