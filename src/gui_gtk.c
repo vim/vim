@@ -1661,7 +1661,7 @@ dialog_add_buttons(GtkDialog *dialog, char_u *button_string)
 	    else if (button_equal(label, "Ok"))     label = _("OK");
 	    else if (button_equal(label, "Yes"))    label = _("Yes");
 	    else if (button_equal(label, "No"))     label = _("No");
-	    else if (button_equal(label, "Cancel")) label = _("Canccl");
+	    else if (button_equal(label, "Cancel")) label = _("Cancel");
 # else
 	    if	    (button_equal(label, ok[0]))    label = GTK_STOCK_OK;
 	    else if (button_equal(label, ync[0]))   label = GTK_STOCK_YES;
