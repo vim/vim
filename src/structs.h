@@ -1347,6 +1347,7 @@ typedef struct {
 
     cbq_T	ch_cb_head;	/* dummy node for per-request callbacks */
     char_u	*ch_callback;	/* call when a msg is not handled */
+    buf_T	*ch_buffer;	/* buffer to read from or write to */
 } chanpart_T;
 
 struct channel_S {
@@ -1395,12 +1396,26 @@ struct channel_S {
 #define JO_ID		    0x2000	/* "id" */
 #define JO_STOPONEXIT	    0x4000	/* "stoponexit" */
 #define JO_EXIT_CB	    0x8000	/* "exit-cb" */
+#define JO_OUT_IO	    0x10000	/* "out-io" */
+#define JO_ERR_IO	    0x20000	/* "err-io" (JO_OUT_IO << 1) */
+#define JO_IN_IO	    0x40000	/* "in-io" (JO_OUT_IO << 2) */
+#define JO_OUT_NAME	    0x80000	/* "out-name" */
+#define JO_ERR_NAME	    0x100000	/* "err-name" (JO_OUT_NAME << 1) */
+#define JO_IN_NAME	    0x200000	/* "in-name" (JO_OUT_NAME << 2) */
 #define JO_ALL		    0xffffff
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
     (JO_CALLBACK + JO_OUT_CALLBACK + JO_ERR_CALLBACK + JO_CLOSE_CALLBACK)
 #define JO_TIMEOUT_ALL	(JO_TIMEOUT + JO_OUT_TIMEOUT + JO_ERR_TIMEOUT)
+
+typedef enum {
+    JIO_NULL,
+    JIO_PIPE,
+    JIO_FILE,
+    JIO_BUFFER,
+    JIO_OUT
+} job_io_T;
 
 /*
  * Options for job and channel commands.
@@ -1413,6 +1428,11 @@ typedef struct
     ch_mode_T	jo_in_mode;
     ch_mode_T	jo_out_mode;
     ch_mode_T	jo_err_mode;
+
+    job_io_T	jo_io[4];	/* PART_OUT, PART_ERR, PART_IN */
+    char_u	jo_io_name_buf[4][NUMBUFLEN];
+    char_u	*jo_io_name[4];	/* not allocated! */
+
     char_u	*jo_callback;	/* not allocated! */
     char_u	*jo_out_cb;	/* not allocated! */
     char_u	*jo_err_cb;	/* not allocated! */

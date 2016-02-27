@@ -9976,10 +9976,43 @@ handle_mode(typval_T *item, jobopt_T *opt, ch_mode_T *modep, int jo)
     return OK;
 }
 
+    static int
+handle_io(typval_T *item, int part, jobopt_T *opt)
+{
+    char_u	*val = get_tv_string(item);
+
+    opt->jo_set |= JO_OUT_IO << (part - PART_OUT);
+    if (STRCMP(val, "null") == 0)
+	opt->jo_io[part] = JIO_NULL;
+    else if (STRCMP(val, "pipe") == 0)
+	opt->jo_io[part] = JIO_PIPE;
+    else if (STRCMP(val, "file") == 0)
+	opt->jo_io[part] = JIO_FILE;
+    else if (STRCMP(val, "buffer") == 0)
+	opt->jo_io[part] = JIO_BUFFER;
+    else if (STRCMP(val, "out") == 0 && part == PART_ERR)
+	opt->jo_io[part] = JIO_OUT;
+    else
+    {
+	EMSG2(_(e_invarg2), val);
+	return FAIL;
+    }
+    return OK;
+}
+
     static void
 clear_job_options(jobopt_T *opt)
 {
     vim_memset(opt, 0, sizeof(jobopt_T));
+}
+
+/*
+ * Get the PART_ number from the first character of an option name.
+ */
+    static int
+part_from_char(int c)
+{
+    return c == 'i' ? PART_IN : c == 'o' ? PART_OUT: PART_ERR;
 }
 
 /*
@@ -9996,6 +10029,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
     dict_T	*dict;
     int		todo;
     hashitem_T	*hi;
+    int		part;
 
     opt->jo_set = 0;
     if (tv->v_type == VAR_UNKNOWN)
@@ -10045,6 +10079,27 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		if (handle_mode(item, opt, &opt->jo_err_mode, JO_ERR_MODE)
 								      == FAIL)
 		    return FAIL;
+	    }
+	    else if (STRCMP(hi->hi_key, "in-io") == 0
+		    || STRCMP(hi->hi_key, "out-io") == 0
+		    || STRCMP(hi->hi_key, "err-io") == 0)
+	    {
+		if (!(supported & JO_OUT_IO))
+		    break;
+		if (handle_io(item, part_from_char(*hi->hi_key), opt) == FAIL)
+		    return FAIL;
+	    }
+	    else if (STRCMP(hi->hi_key, "in-name") == 0
+		    || STRCMP(hi->hi_key, "out-name") == 0
+		    || STRCMP(hi->hi_key, "err-name") == 0)
+	    {
+		part = part_from_char(*hi->hi_key);
+
+		if (!(supported & JO_OUT_IO))
+		    break;
+		opt->jo_set |= JO_OUT_NAME << (part - PART_OUT);
+		opt->jo_io_name[part] =
+		       get_tv_string_buf_chk(item, opt->jo_io_name_buf[part]);
 	    }
 	    else if (STRCMP(hi->hi_key, "callback") == 0)
 	    {
@@ -10178,6 +10233,13 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 	return FAIL;
     }
 
+    for (part = PART_OUT; part <= PART_IN; ++part)
+	if (opt->jo_io[part] == JIO_BUFFER && opt->jo_io_name[part] == NULL)
+	{
+	    EMSG(_("E915: Missing name for buffer"));
+	    return FAIL;
+	}
+
     return OK;
 }
 #endif
@@ -10216,7 +10278,10 @@ f_ch_close(typval_T *argvars, typval_T *rettv UNUSED)
     channel_T *channel = get_channel_arg(&argvars[0]);
 
     if (channel != NULL)
+    {
 	channel_close(channel, FALSE);
+	channel_clear(channel);
+    }
 }
 
 # ifdef FEAT_JOB
@@ -14948,7 +15013,7 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
     opt.jo_mode = MODE_NL;
     if (get_job_options(&argvars[1], &opt,
 	    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL
-					+ JO_STOPONEXIT + JO_EXIT_CB) == FAIL)
+			    + JO_STOPONEXIT + JO_EXIT_CB + JO_OUT_IO) == FAIL)
 	return;
     job_set_options(job, &opt);
 

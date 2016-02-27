@@ -52,6 +52,10 @@
 # define fd_close(sd) close(sd)
 #endif
 
+/* Whether a redraw is needed for appending a line to a buffer. */
+static int channel_need_redraw = FALSE;
+
+
 #ifdef WIN32
     static int
 fd_read(sock_T fd, char *buf, size_t len)
@@ -342,6 +346,7 @@ channel_may_free(channel_T *channel)
 channel_free(channel_T *channel)
 {
     channel_close(channel, TRUE);
+    channel_clear(channel);
     if (channel->ch_next != NULL)
 	channel->ch_next->ch_prev = channel->ch_prev;
     if (channel->ch_prev == NULL)
@@ -777,6 +782,35 @@ channel_set_job(channel_T *channel, job_T *job)
 }
 
 /*
+ * Find a buffer matching "name" or create a new one.
+ */
+    static buf_T *
+find_buffer(char_u *name)
+{
+    buf_T *buf = buflist_findname(name);
+    buf_T *save_curbuf = curbuf;
+
+    if (buf == NULL)
+    {
+	buf = buflist_new(name, NULL, (linenr_T)0, BLN_LISTED);
+	buf_copy_options(buf, BCO_ENTER);
+#ifdef FEAT_QUICKFIX
+	clear_string_option(&buf->b_p_bt);
+	buf->b_p_bt = vim_strsave((char_u *)"nofile");
+	clear_string_option(&buf->b_p_bh);
+	buf->b_p_bh = vim_strsave((char_u *)"hide");
+#endif
+	curbuf = buf;
+	ml_open(curbuf);
+	ml_replace(1, (char_u *)"Reading from channel output...", TRUE);
+	changed_bytes(1, 0);
+	curbuf = save_curbuf;
+    }
+
+    return buf;
+}
+
+/*
  * Set various properties from an "opt" argument.
  */
     void
@@ -838,6 +872,16 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	    *cbp = vim_strsave(opt->jo_close_cb);
 	else
 	    *cbp = NULL;
+    }
+
+    if ((opt->jo_set & JO_OUT_IO) && opt->jo_io[PART_OUT] == JIO_BUFFER)
+    {
+	/* writing output to a buffer. Force mode to NL. */
+	channel->ch_part[PART_OUT].ch_mode = MODE_NL;
+	channel->ch_part[PART_OUT].ch_buffer =
+				       find_buffer(opt->jo_io_name[PART_OUT]);
+	ch_logs(channel, "writing to buffer %s",
+		      (char *)channel->ch_part[PART_OUT].ch_buffer->b_ffname);
     }
 }
 
@@ -1303,6 +1347,7 @@ may_invoke_callback(channel_T *channel, int part)
     int		seq_nr = -1;
     ch_mode_T	ch_mode = channel->ch_part[part].ch_mode;
     char_u	*callback = NULL;
+    buf_T	*buffer = NULL;
 
     if (channel->ch_nb_close_cb != NULL)
 	/* this channel is handled elsewhere (netbeans) */
@@ -1312,6 +1357,7 @@ may_invoke_callback(channel_T *channel, int part)
 	callback = channel->ch_part[part].ch_callback;
     else
 	callback = channel->ch_callback;
+    buffer = channel->ch_part[part].ch_buffer;
 
     if (ch_mode == MODE_JSON || ch_mode == MODE_JS)
     {
@@ -1361,8 +1407,8 @@ may_invoke_callback(channel_T *channel, int part)
     }
     else
     {
-	/* If there is no callback drop the message. */
-	if (callback == NULL)
+	/* If there is no callback or buffer drop the message. */
+	if (callback == NULL && buffer == NULL)
 	{
 	    while ((msg = channel_get(channel, part)) != NULL)
 		vim_free(msg);
@@ -1386,8 +1432,11 @@ may_invoke_callback(channel_T *channel, int part)
 		    return FALSE; /* incomplete message */
 	    }
 	    if (nl[1] == NUL)
-		/* get the whole buffer */
+	    {
+		/* get the whole buffer, drop the NL */
 		msg = channel_get(channel, part);
+		*nl = NUL;
+	    }
 	    else
 	    {
 		/* Copy the message into allocated memory and remove it from
@@ -1431,11 +1480,54 @@ may_invoke_callback(channel_T *channel, int part)
 	if (!done)
 	    ch_log(channel, "Dropping message without callback");
     }
-    else if (callback != NULL)
+    else if (callback != NULL || buffer != NULL)
     {
-	/* invoke the channel callback */
-	ch_log(channel, "Invoking channel callback");
-	invoke_callback(channel, callback, argv);
+	if (buffer != NULL)
+	{
+	    buf_T	*save_curbuf = curbuf;
+	    linenr_T	lnum = buffer->b_ml.ml_line_count;
+
+	    /* Append to the buffer */
+	    ch_logn(channel, "appending line %d to buffer", (int)lnum + 1);
+
+	    curbuf = buffer;
+	    u_sync(TRUE);
+	    u_save(lnum, lnum + 1);
+
+	    ml_append(lnum, msg, 0, FALSE);
+	    appended_lines_mark(lnum, 1L);
+	    curbuf = save_curbuf;
+
+	    if (buffer->b_nwindows > 0)
+	    {
+		win_T	*wp;
+		win_T	*save_curwin;
+
+		FOR_ALL_WINDOWS(wp)
+		{
+		    if (wp->w_buffer == buffer
+			    && wp->w_cursor.lnum == lnum
+			    && wp->w_cursor.col == 0)
+		    {
+			++wp->w_cursor.lnum;
+			save_curwin = curwin;
+			curwin = wp;
+			curbuf = curwin->w_buffer;
+			scroll_cursor_bot(0, FALSE);
+			curwin = save_curwin;
+			curbuf = curwin->w_buffer;
+		    }
+		}
+		redraw_buf_later(buffer, VALID);
+		channel_need_redraw = TRUE;
+	    }
+	}
+	if (callback != NULL)
+	{
+	    /* invoke the channel callback */
+	    ch_log(channel, "Invoking channel callback");
+	    invoke_callback(channel, callback, argv);
+	}
     }
     else
 	ch_log(channel, "Dropping message");
@@ -1493,6 +1585,7 @@ channel_status(channel_T *channel)
 /*
  * Close channel "channel".
  * Trigger the close callback if "invoke_close_cb" is TRUE.
+ * Does not clear the buffers.
  */
     void
 channel_close(channel_T *channel, int invoke_close_cb)
@@ -1548,7 +1641,6 @@ channel_close(channel_T *channel, int invoke_close_cb)
     }
 
     channel->ch_nb_close_cb = NULL;
-    channel_clear(channel);
 }
 
 /*
@@ -2160,6 +2252,24 @@ channel_select_check(int ret_in, void *rfds_in)
 # endif /* !WIN32 && HAVE_SELECT */
 
 /*
+ * Return TRUE if "channel" has JSON or other typeahead.
+ */
+    static int
+channel_has_readahead(channel_T *channel, int part)
+{
+    ch_mode_T	ch_mode = channel->ch_part[part].ch_mode;
+
+    if (ch_mode == MODE_JSON || ch_mode == MODE_JS)
+    {
+	jsonq_T   *head = &channel->ch_part[part].ch_json_head;
+	jsonq_T   *item = head->jq_next;
+
+	return item != NULL;
+    }
+    return channel_peek(channel, part) != NULL;
+}
+
+/*
  * Execute queued up commands.
  * Invoked from the main loop when it's safe to execute received commands.
  * Return TRUE when something was done.
@@ -2172,6 +2282,7 @@ channel_parse_messages(void)
     int		r;
     int		part = PART_SOCK;
 
+    ch_log(NULL, "looking for messages on channels");
     while (channel != NULL)
     {
 	if (channel->ch_refcount == 0 && !channel_still_useful(channel))
@@ -2182,7 +2293,8 @@ channel_parse_messages(void)
 	    part = PART_SOCK;
 	    continue;
 	}
-	if (channel->ch_part[part].ch_fd != INVALID_FD)
+	if (channel->ch_part[part].ch_fd != INVALID_FD
+		|| channel_has_readahead(channel, part))
 	{
 	    /* Increase the refcount, in case the handler causes the channel
 	     * to be unreferenced or closed. */
@@ -2208,6 +2320,16 @@ channel_parse_messages(void)
 	    part = PART_SOCK;
 	}
     }
+
+    if (channel_need_redraw && must_redraw)
+    {
+	channel_need_redraw = FALSE;
+	update_screen(0);
+	setcursor();
+	cursor_on();
+	out_flush();
+    }
+
     return ret;
 }
 
