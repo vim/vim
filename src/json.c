@@ -83,12 +83,15 @@ write_string(garray_T *gap, char_u *str)
 	vimconv_T   conv;
 	char_u	    *converted = NULL;
 
-	convert_setup(&conv, p_enc, (char_u*)"utf-8");
-	if (conv.vc_type != CONV_NONE)
-	    converted = res = string_convert(&conv, res, NULL);
-	convert_setup(&conv, NULL, NULL);
+	if (!enc_utf8)
+	{
+	    conv.vc_type = CONV_NONE;
+	    convert_setup(&conv, p_enc, (char_u*)"utf-8");
+	    if (conv.vc_type != CONV_NONE)
+		converted = res = string_convert(&conv, res, NULL);
+	    convert_setup(&conv, NULL, NULL);
+	}
 #endif
-
 	ga_append(gap, '"');
 	while (*res != NUL)
 	{
@@ -540,10 +543,14 @@ json_decode_string(js_read_T *reader, typval_T *res)
 
     p = reader->js_buf + reader->js_used + 1; /* skip over " */
 #if defined(FEAT_MBYTE) && defined(USE_ICONV)
-    convert_setup(&conv, (char_u*)"utf-8", p_enc);
-    if (conv.vc_type != CONV_NONE)
-	converted = p = string_convert(&conv, p, NULL);
-    convert_setup(&conv, NULL, NULL);
+    if (!enc_utf8)
+    {
+	conv.vc_type = CONV_NONE;
+	convert_setup(&conv, (char_u*)"utf-8", p_enc);
+	if (conv.vc_type != CONV_NONE)
+	    converted = p = string_convert(&conv, p, NULL);
+	convert_setup(&conv, NULL, NULL);
+    }
 #endif
     while (*p != '"')
     {
