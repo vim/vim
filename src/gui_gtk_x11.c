@@ -1543,7 +1543,7 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
 	    length += 2;
 
 #if !GTK_CHECK_VERSION(3,0,0)
-	    /* Looks redandunt even for GTK2 because these values are
+	    /* Looks redundant even for GTK2 because these values are
 	     * overwritten by gtk_selection_data_set() that follows. */
 	    selection_data->type = selection_data->target;
 	    selection_data->format = 16;	/* 16 bits per char */
@@ -1597,7 +1597,7 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
     if (string != NULL)
     {
 #if !GTK_CHECK_VERSION(3,0,0)
-	/* Looks redandunt even for GTK2 because these values are
+	/* Looks redundant even for GTK2 because these values are
 	 * overwritten by gtk_selection_data_set() that follows. */
 	selection_data->type = selection_data->target;
 	selection_data->format = 8;	/* 8 bits per char */
@@ -3921,7 +3921,7 @@ gui_mch_init(void)
      */
     /* some aesthetics on the toolbar */
 # ifdef USE_GTK3
-    /* TODO: Add GTK+ 3 code here using GtkCssProvider if neccessary. */
+    /* TODO: Add GTK+ 3 code here using GtkCssProvider if necessary. */
     /* N.B.  Since the default value of GtkToolbar::button-relief is
      * GTK_RELIEF_NONE, there's no need to specify that, probably. */
 # else
@@ -4447,8 +4447,8 @@ mainwin_destroy_cb(GtkObject *object UNUSED, gpointer data UNUSED)
  * plug's window 'min hints to set *it's* minimum size, but that's also the
  * only way we have of making ourselves bigger (by set lines/columns).
  * Thus set hints at start-up to ensure correct init. size, then a
- * second after the final attempt to reset the real minimum hinst (done by
- * scrollbar init.), actually do the standard hinst and stop the timer.
+ * second after the final attempt to reset the real minimum hints (done by
+ * scrollbar init.), actually do the standard hints and stop the timer.
  * We'll not let the default hints be set while this timer's active.
  */
     static gboolean
@@ -7078,6 +7078,8 @@ gui_mch_mousehide(int hide)
 	    else
 #ifdef FEAT_MOUSESHAPE
 		mch_set_mouse_shape(last_shape);
+#elif GTK_CHECK_VERSION(3,0,0)
+		gdk_window_set_cursor(gtk_widget_get_window(gui.drawarea), NULL);
 #else
 		gdk_window_set_cursor(gui.drawarea->window, NULL);
 #endif
