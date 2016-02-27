@@ -6460,22 +6460,6 @@ input_timer_cb(gpointer data)
     return FALSE;		/* don't happen again */
 }
 
-#ifdef FEAT_SNIFF
-/*
- * Callback function, used when data is available on the SNiFF connection.
- */
-    static void
-sniff_request_cb(
-    gpointer	data UNUSED,
-    gint	source_fd UNUSED,
-    GdkInputCondition condition UNUSED)
-{
-    static char_u bytes[3] = {CSI, (int)KS_EXTRA, (int)KE_SNIFF};
-
-    add_to_input_buf(bytes, 3);
-}
-#endif
-
 /*
  * GUI input routine called by gui_wait_for_chars().  Waits for a character
  * from the keyboard.
@@ -6491,26 +6475,6 @@ gui_mch_wait_for_chars(long wtime)
     int focus;
     guint timer;
     static int timed_out;
-#ifdef FEAT_SNIFF
-    static int	sniff_on = 0;
-    static gint	sniff_input_id = 0;
-#endif
-
-#ifdef FEAT_SNIFF
-    if (sniff_on && !want_sniff_request)
-    {
-	if (sniff_input_id)
-	    gdk_input_remove(sniff_input_id);
-	sniff_on = 0;
-    }
-    else if (!sniff_on && want_sniff_request)
-    {
-	/* Add fd_from_sniff to watch for available data in main loop. */
-	sniff_input_id = gdk_input_add(fd_from_sniff,
-			       GDK_INPUT_READ, sniff_request_cb, NULL);
-	sniff_on = 1;
-    }
-#endif
 
     timed_out = FALSE;
 

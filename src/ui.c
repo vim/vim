@@ -1627,7 +1627,7 @@ set_input_buf(char_u *p)
 #if defined(FEAT_GUI) \
 	|| defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE) \
 	|| defined(FEAT_XCLIPBOARD) || defined(VMS) \
-	|| defined(FEAT_SNIFF) || defined(FEAT_CLIENTSERVER) \
+	|| defined(FEAT_CLIENTSERVER) \
 	|| defined(PROTO)
 /*
  * Add the given bytes to the input buffer
@@ -1772,17 +1772,7 @@ fill_input_buf(int exit_on_error UNUSED)
     inbufcount = 0;
 # else
 
-#  ifdef FEAT_SNIFF
-    if (sniff_request_waiting)
-    {
-	add_to_input_buf((char_u *)"\233sniff",6); /* results in K_SNIFF */
-	sniff_request_waiting = 0;
-	want_sniff_request = 0;
-	return;
-    }
-#  endif
-
-# ifdef FEAT_MBYTE
+#  ifdef FEAT_MBYTE
     if (rest != NULL)
     {
 	/* Use remainder of previous call, starts with an invalid character
@@ -1806,7 +1796,7 @@ fill_input_buf(int exit_on_error UNUSED)
     }
     else
 	unconverted = 0;
-#endif
+#  endif
 
     len = 0;	/* to avoid gcc warning */
     for (try = 0; try < 100; ++try)

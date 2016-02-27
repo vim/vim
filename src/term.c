@@ -1796,16 +1796,6 @@ set_termname(char_u *term)
 # endif
 #endif	/* FEAT_MOUSE */
 
-#ifdef FEAT_SNIFF
-    {
-	char_u	name[2];
-
-	name[0] = (int)KS_EXTRA;
-	name[1] = (int)KE_SNIFF;
-	add_termcode(name, (char_u *)"\233sniff", FALSE);
-    }
-#endif
-
 #ifdef USE_TERM_CONSOLE
     /* DEFAULT_TERM indicates that it is the machine console. */
     if (STRCMP(term, DEFAULT_TERM) != 0)

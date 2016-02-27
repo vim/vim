@@ -82,8 +82,6 @@
 #	  TCL_VER_LONG=[Tcl version, eg 8.3] (default is 8.3)
 #	    You must set TCL_VER_LONG when you set TCL_VER.
 #
-#	SNiFF+ interface: SNIFF=yes
-#
 #	Cscope support: CSCOPE=yes
 #
 #	Iconv library support (always dynamically loaded):
@@ -269,16 +267,6 @@ WP64CHECK = /Wp64
 CTAGS = ctags
 !endif
 
-!if "$(SNIFF)" == "yes"
-# SNIFF - Include support for SNiFF+.
-SNIFF_INCL  = if_sniff.h
-SNIFF_OBJ   = $(OBJDIR)/if_sniff.obj
-SNIFF_LIB   = shell32.lib
-SNIFF_DEFS  = -DFEAT_SNIFF
-# The SNiFF integration needs multithreaded libraries!
-MULTITHREADED = yes
-!endif
-
 !ifndef CSCOPE
 CSCOPE = yes
 !endif
@@ -380,7 +368,7 @@ WINVER = 0x0501
 #VIMRUNTIMEDIR = somewhere
 
 CFLAGS = -c /W3 /nologo $(CVARS) -I. -Iproto -DHAVE_PATHDEF -DWIN32 \
-		$(SNIFF_DEFS) $(CSCOPE_DEFS) $(NETBEANS_DEFS) $(CHANNEL_DEFS) \
+		$(CSCOPE_DEFS) $(NETBEANS_DEFS) $(CHANNEL_DEFS) \
 		$(NBDEBUG_DEFS) $(XPM_DEFS) \
 		$(DEFINES) -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
 		/Fo$(OUTDIR)/ 
@@ -528,7 +516,7 @@ CFLAGS = $(CFLAGS) /Zl /MTd
 !endif # DEBUG
 
 INCL =	vim.h os_win32.h ascii.h feature.h globals.h keymap.h macros.h \
-	proto.h option.h structs.h term.h $(SNIFF_INCL) $(CSCOPE_INCL) \
+	proto.h option.h structs.h term.h $(CSCOPE_INCL) \
 	$(NBDEBUG_INCL)
 
 OBJ = \
@@ -997,7 +985,7 @@ conflags = $(conflags) /map /mapinfo:lines
 !ENDIF
 
 LINKARGS1 = $(linkdebug) $(conflags)
-LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) user32.lib $(SNIFF_LIB) \
+LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) user32.lib \
 		$(LUA_LIB) $(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(PYTHON3_LIB) $(RUBY_LIB) \
 		$(TCL_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(LINK_PDB)
 
@@ -1020,12 +1008,12 @@ all:	$(VIM).exe \
 
 $(VIM).exe: $(OUTDIR) $(OBJ) $(GUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
 		$(LUA_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) $(TCL_OBJ) \
-		$(SNIFF_OBJ) $(CSCOPE_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
+		$(CSCOPE_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
 		version.c version.h
 	$(CC) $(CFLAGS) version.c
 	$(link) $(LINKARGS1) -out:$(VIM).exe $(OBJ) $(GUI_OBJ) $(OLE_OBJ) \
 		$(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) \
-		$(TCL_OBJ) $(SNIFF_OBJ) $(CSCOPE_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) \
+		$(TCL_OBJ) $(CSCOPE_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) \
 		$(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 	if exist $(VIM).exe.manifest mt.exe -nologo -manifest $(VIM).exe.manifest -updateresource:$(VIM).exe;1
 
@@ -1211,9 +1199,6 @@ $(OUTDIR)/if_ole.obj: $(OUTDIR) if_ole.cpp  $(INCL) if_ole.h
 
 $(OUTDIR)/if_ruby.obj: $(OUTDIR) if_ruby.c  $(INCL)
 	$(CC) $(CFLAGS) $(RUBY_INC) if_ruby.c
-
-$(OUTDIR)/if_sniff.obj:	$(OUTDIR) if_sniff.c  $(INCL)
-	$(CC) $(CFLAGS) if_sniff.c
 
 $(OUTDIR)/if_tcl.obj: $(OUTDIR) if_tcl.c  $(INCL)
 	$(CC) $(CFLAGS) $(TCL_INC) if_tcl.c

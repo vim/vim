@@ -1761,8 +1761,7 @@ skiptowhite(char_u *p)
     return p;
 }
 
-#if defined(FEAT_LISTCMDS) || defined(FEAT_SIGNS) || defined(FEAT_SNIFF) \
-	|| defined(PROTO)
+#if defined(FEAT_LISTCMDS) || defined(FEAT_SIGNS) || defined(PROTO)
 /*
  * skiptowhite_esc: Like skiptowhite(), but also skip escaped chars
  */

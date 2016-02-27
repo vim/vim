@@ -362,9 +362,6 @@
 /* Define for linking via dlopen() or LoadLibrary() */
 #undef DYNAMIC_TCL
 
-/* Define if you want to include the Sniff interface. */
-#undef FEAT_SNIFF
-
 /* Define if you want to add support for ACL */
 #undef HAVE_POSIX_ACL
 #undef HAVE_SOLARIS_ZFS_ACL

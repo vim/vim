@@ -326,7 +326,7 @@ static int		s_findrep_is_find;	/* TRUE for find dialog, FALSE
 #endif
 
 static HINSTANCE	s_hinst = NULL;
-#if !defined(FEAT_SNIFF) && !defined(FEAT_GUI)
+#if !defined(FEAT_GUI)
 static
 #endif
 HWND			s_hwnd = NULL;
@@ -1923,23 +1923,6 @@ process_message(void)
 	    add_to_input_buf(str, (int)STRLEN(str));
 	    vim_free(str);  /* was allocated in CVim::SendKeys() */
 	}
-	return;
-    }
-#endif
-
-#ifdef FEAT_SNIFF
-    if (sniff_request_waiting && want_sniff_request)
-    {
-	static char_u bytes[3] = {CSI, (char_u)KS_EXTRA, (char_u)KE_SNIFF};
-	add_to_input_buf(bytes, 3); /* K_SNIFF */
-	sniff_request_waiting = 0;
-	want_sniff_request = 0;
-	/* request is handled in normal.c */
-    }
-    if (msg.message == WM_USER)
-    {
-	MyTranslateMessage(&msg);
-	pDispatchMessage(&msg);
 	return;
     }
 #endif

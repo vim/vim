@@ -5340,7 +5340,6 @@ WaitForChar(long msec)
  * "msec" == 0 will check for characters once.
  * "msec" == -1 will block until a character is available.
  * When a GUI is being used, this will not be used for input -- webb
- * Returns also, when a request from Sniff is waiting -- toni.
  * Or when a Linux GPM mouse event is waiting.
  * Or when a clientserver message is on the queue.
  */
@@ -5427,15 +5426,6 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED)
 	fds[0].events = POLLIN;
 	nfd = 1;
 
-# ifdef FEAT_SNIFF
-#  define SNIFF_IDX 1
-	if (want_sniff_request)
-	{
-	    fds[SNIFF_IDX].fd = fd_from_sniff;
-	    fds[SNIFF_IDX].events = POLLIN;
-	    nfd++;
-	}
-# endif
 # ifdef FEAT_XCLIPBOARD
 	may_restore_clipboard();
 	if (xterm_Shell != (Widget)0)
@@ -5478,17 +5468,6 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED)
 	    finished = FALSE;
 # endif
 
-# ifdef FEAT_SNIFF
-	if (ret < 0)
-	    sniff_disconnect(1);
-	else if (want_sniff_request)
-	{
-	    if (fds[SNIFF_IDX].revents & POLLHUP)
-		sniff_disconnect(1);
-	    if (fds[SNIFF_IDX].revents & POLLIN)
-		sniff_request_waiting = 1;
-	}
-# endif
 # ifdef FEAT_XCLIPBOARD
 	if (xterm_Shell != (Widget)0 && (fds[xterm_idx].revents & POLLIN))
 	{
@@ -5574,15 +5553,6 @@ select_eintr:
 # endif
 	maxfd = fd;
 
-# ifdef FEAT_SNIFF
-	if (want_sniff_request)
-	{
-	    FD_SET(fd_from_sniff, &rfds);
-	    FD_SET(fd_from_sniff, &efds);
-	    if (maxfd < fd_from_sniff)
-		maxfd = fd_from_sniff;
-	}
-# endif
 # ifdef FEAT_XCLIPBOARD
 	may_restore_clipboard();
 	if (xterm_Shell != (Widget)0)
@@ -5652,17 +5622,6 @@ select_eintr:
 	    finished = FALSE;
 # endif
 
-# ifdef FEAT_SNIFF
-	if (ret < 0 )
-	    sniff_disconnect(1);
-	else if (ret > 0 && want_sniff_request)
-	{
-	    if (FD_ISSET(fd_from_sniff, &efds))
-		sniff_disconnect(1);
-	    if (FD_ISSET(fd_from_sniff, &rfds))
-		sniff_request_waiting = 1;
-	}
-# endif
 # ifdef FEAT_XCLIPBOARD
 	if (ret > 0 && xterm_Shell != (Widget)0
 		&& FD_ISSET(ConnectionNumber(xterm_dpy), &rfds))

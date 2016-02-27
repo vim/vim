@@ -2021,19 +2021,6 @@ if test "$enable_channel" = "yes"; then
   AC_SUBST(CHANNEL_OBJ)
 fi
 
-AC_MSG_CHECKING(--enable-sniff argument)
-AC_ARG_ENABLE(sniff,
-	[  --enable-sniff          Include Sniff interface.], ,
-	[enable_sniff="no"])
-AC_MSG_RESULT($enable_sniff)
-if test "$enable_sniff" = "yes"; then
-  AC_DEFINE(FEAT_SNIFF)
-  SNIFF_SRC="if_sniff.c"
-  AC_SUBST(SNIFF_SRC)
-  SNIFF_OBJ="objects/if_sniff.o"
-  AC_SUBST(SNIFF_OBJ)
-fi
-
 AC_MSG_CHECKING(--enable-multibyte argument)
 AC_ARG_ENABLE(multibyte,
 	[  --enable-multibyte      Include multibyte editing support.], ,

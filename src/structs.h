@@ -1639,10 +1639,6 @@ struct file_buffer
     char	 b_fab_rat;	/* Record attribute */
     unsigned int b_fab_mrs;	/* Max record size  */
 #endif
-#ifdef FEAT_SNIFF
-    int		b_sniff;	/* file was loaded through Sniff */
-#endif
-
     int		b_fnum;		/* buffer number for this file. */
 
     int		b_changed;	/* 'modified': Set to TRUE if something in the

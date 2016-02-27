@@ -1052,12 +1052,6 @@ doESCkey:
 	case K_SELECT:	/* end of Select mode mapping - ignore */
 	    break;
 
-#ifdef FEAT_SNIFF
-	case K_SNIFF:	/* Sniff command received */
-	    stuffcharReadbuff(K_SNIFF);
-	    goto doESCkey;
-#endif
-
 	case K_HELP:	/* Help key works like <ESC> <Help> */
 	case K_F1:
 	case K_XF1:

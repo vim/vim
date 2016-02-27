@@ -131,9 +131,6 @@ do_debug(char_u *cmd)
     redir_off = TRUE;		/* don't redirect debug commands */
 
     State = NORMAL;
-#ifdef FEAT_SNIFF
-    want_sniff_request = 0;    /* No K_SNIFF wanted */
-#endif
 
     if (!debug_did_msg)
 	MSG(_("Entering Debug mode.  Type \"cont\" to continue."));
@@ -151,9 +148,7 @@ do_debug(char_u *cmd)
     {
 	msg_scroll = TRUE;
 	need_wait_return = FALSE;
-#ifdef FEAT_SNIFF
-	ProcessSniffRequests();
-#endif
+
 	/* Save the current typeahead buffer and replace it with an empty one.
 	 * This makes sure we get input from the user here and don't interfere
 	 * with the commands being executed.  Reset "ex_normal_busy" to avoid

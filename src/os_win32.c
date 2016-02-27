@@ -1683,27 +1683,6 @@ mch_inchar(
     if (typeaheadlen > 0)
 	goto theend;
 
-#ifdef FEAT_SNIFF
-    if (want_sniff_request)
-    {
-	if (sniff_request_waiting)
-	{
-	    /* return K_SNIFF */
-	    typeahead[typeaheadlen++] = CSI;
-	    typeahead[typeaheadlen++] = (char_u)KS_EXTRA;
-	    typeahead[typeaheadlen++] = (char_u)KE_SNIFF;
-	    sniff_request_waiting = 0;
-	    want_sniff_request = 0;
-	    goto theend;
-	}
-	else if (time < 0 || time > 250)
-	{
-	    /* don't wait too long, a request might be pending */
-	    time = 250;
-	}
-    }
-#endif
-
     if (time >= 0)
     {
 	if (!WaitForChar(time))     /* no character available */

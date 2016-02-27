@@ -145,9 +145,6 @@ static void gui_x11_focus_change_cb(Widget w, XtPointer data, XEvent *event, Boo
 static void gui_x11_enter_cb(Widget w, XtPointer data, XEvent *event, Boolean *dum);
 static void gui_x11_leave_cb(Widget w, XtPointer data, XEvent *event, Boolean *dum);
 static void gui_x11_mouse_cb(Widget w, XtPointer data, XEvent *event, Boolean *dum);
-#ifdef FEAT_SNIFF
-static void gui_x11_sniff_request_cb(XtPointer closure, int *source, XtInputId *id);
-#endif
 static void gui_x11_check_copy_area(void);
 #ifdef FEAT_CLIENTSERVER
 static void gui_x11_send_event_handler(Widget, XtPointer, XEvent *, Boolean *);
@@ -1162,20 +1159,6 @@ gui_x11_mouse_cb(
 
     gui_send_mouse_event(button, x, y, repeated_click, vim_modifiers);
 }
-
-#ifdef FEAT_SNIFF
-/* ARGSUSED */
-    static void
-gui_x11_sniff_request_cb(
-    XtPointer	closure UNUSED,
-    int		*source UNUSED,
-    XtInputId	*id UNUSED)
-{
-    static char_u bytes[3] = {CSI, (int)KS_EXTRA, (int)KE_SNIFF};
-
-    add_to_input_buf(bytes, 3);
-}
-#endif
 
 /*
  * End of call-back routines
@@ -2818,27 +2801,8 @@ gui_mch_wait_for_chars(long wtime)
     static int	    timed_out;
     XtIntervalId    timer = (XtIntervalId)0;
     XtInputMask	    desired;
-#ifdef FEAT_SNIFF
-    static int	    sniff_on = 0;
-    static XtInputId sniff_input_id = 0;
-#endif
 
     timed_out = FALSE;
-
-#ifdef FEAT_SNIFF
-    if (sniff_on && !want_sniff_request)
-    {
-	if (sniff_input_id)
-	    XtRemoveInput(sniff_input_id);
-	sniff_on = 0;
-    }
-    else if (!sniff_on && want_sniff_request)
-    {
-	sniff_input_id = XtAppAddInput(app_context, fd_from_sniff,
-		     (XtPointer)XtInputReadMask, gui_x11_sniff_request_cb, 0);
-	sniff_on = 1;
-    }
-#endif
 
     if (wtime > 0)
 	timer = XtAppAddTimeOut(app_context, (long_u)wtime, gui_x11_timer_cb,

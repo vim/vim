@@ -653,8 +653,6 @@ X_PRE_LIBS
 X_CFLAGS
 XMKMF
 xmkmfpath
-SNIFF_OBJ
-SNIFF_SRC
 CHANNEL_OBJ
 CHANNEL_SRC
 NETBEANS_OBJ
@@ -812,7 +810,6 @@ enable_cscope
 enable_workshop
 enable_netbeans
 enable_channel
-enable_sniff
 enable_multibyte
 enable_hangulinput
 enable_xim
@@ -1477,7 +1474,6 @@ Optional Features:
   --enable-workshop       Include Sun Visual Workshop support.
   --disable-netbeans      Disable NetBeans integration support.
   --disable-channel      Disable process communication support.
-  --enable-sniff          Include Sniff interface.
   --enable-multibyte      Include multibyte editing support.
   --enable-hangulinput    Include Hangul input support.
   --enable-xim            Include XIM input support.
@@ -7436,26 +7432,6 @@ if test "$enable_channel" = "yes"; then
   CHANNEL_SRC="channel.c"
 
   CHANNEL_OBJ="objects/channel.o"
-
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-sniff argument" >&5
-$as_echo_n "checking --enable-sniff argument... " >&6; }
-# Check whether --enable-sniff was given.
-if test "${enable_sniff+set}" = set; then :
-  enableval=$enable_sniff;
-else
-  enable_sniff="no"
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_sniff" >&5
-$as_echo "$enable_sniff" >&6; }
-if test "$enable_sniff" = "yes"; then
-  $as_echo "#define FEAT_SNIFF 1" >>confdefs.h
-
-  SNIFF_SRC="if_sniff.c"
-
-  SNIFF_OBJ="objects/if_sniff.o"
 
 fi
 

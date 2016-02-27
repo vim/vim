@@ -466,9 +466,6 @@ CClink = $(CC)
 # Uncomment this when you do not want inter process communication.
 #CONF_OPT_CHANNEL = --disable-channel
 
-# SNIFF - Include support for SNiFF+.
-#CONF_OPT_SNIFF = --enable-sniff
-
 # MULTIBYTE - To edit multi-byte characters.
 # Uncomment this when you want to edit a multibyte language.
 # It's automatically enabled with normal features, GTK or IME support.
@@ -1391,7 +1388,7 @@ OSDEF_CFLAGS = $(PRE_DEFS) $(POST_DEFS)
 
 LINT_CFLAGS = -DLINT -I. $(PRE_DEFS) $(POST_DEFS) $(RUBY_CFLAGS) $(LUA_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(PYTHON3_CFLAGS) $(TCL_CFLAGS) -Dinline= -D__extension__= -Dalloca=alloca
 
-LINT_EXTRA = -DUSE_SNIFF -DHANGUL_INPUT -D"__attribute__(x)="
+LINT_EXTRA = -DHANGUL_INPUT -D"__attribute__(x)="
 
 DEPEND_CFLAGS = -DPROTO -DDEPEND -DFEAT_GUI $(LINT_CFLAGS)
 
@@ -1532,14 +1529,13 @@ SRC =	$(BASIC_SRC) \
 	$(PYTHON_SRC) $(PYTHON3_SRC) \
 	$(TCL_SRC) \
 	$(RUBY_SRC) \
-	$(SNIFF_SRC) \
 	$(WORKSHOP_SRC) \
 	$(WSDEBUG_SRC)
 
 TAGS_SRC = *.c *.cpp if_perl.xs
 
 EXTRA_SRC = hangulin.c if_lua.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
-	    if_python.c if_python3.c if_tcl.c if_ruby.c if_sniff.c \
+	    if_python.c if_python3.c if_tcl.c if_ruby.c \
 	    gui_beval.c workshop.c wsdebug.c integration.c \
 	    netbeans.c channel.c \
 	    $(GRESOURCE_SRC)
@@ -1561,7 +1557,7 @@ ALL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(UNITTEST_SRC) $(EXTRA_SRC)
 # The perl sources also don't work well with lint.
 LINT_SRC = $(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) \
 	   $(PYTHON_SRC) $(PYTHON3_SRC) $(TCL_SRC) \
-	   $(SNIFF_SRC) $(WORKSHOP_SRC) $(WSDEBUG_SRC) \
+	   $(WORKSHOP_SRC) $(WSDEBUG_SRC) \
 	   $(NETBEANS_SRC) $(CHANNEL_SRC)
 #LINT_SRC = $(SRC)
 #LINT_SRC = $(ALL_SRC)
@@ -1611,7 +1607,6 @@ OBJ_COMMON = \
 	objects/sha256.o \
 	objects/spell.o \
 	objects/syntax.o \
-	$(SNIFF_OBJ) \
 	objects/tag.o \
 	objects/term.o \
 	objects/ui.o \
@@ -1750,7 +1745,7 @@ config auto/config.mk: auto/configure config.mk.in config.h.in
 		$(CONF_OPT_TCL) $(CONF_OPT_RUBY) $(CONF_OPT_NLS) \
 		$(CONF_OPT_CSCOPE) $(CONF_OPT_MULTIBYTE) $(CONF_OPT_INPUT) \
 		$(CONF_OPT_OUTPUT) $(CONF_OPT_GPM) $(CONF_OPT_WORKSHOP) \
-		$(CONF_OPT_SNIFF) $(CONF_OPT_FEAT) $(CONF_TERM_LIB) \
+		$(CONF_OPT_FEAT) $(CONF_TERM_LIB) \
 		$(CONF_OPT_COMPBY) $(CONF_OPT_ACL) $(CONF_OPT_NETBEANS) \
 		$(CONF_OPT_CHANNEL) \
 		$(CONF_ARGS) $(CONF_OPT_MZSCHEME) $(CONF_OPT_PLTHOME) \
@@ -2815,9 +2810,6 @@ objects/if_python3.o: if_python3.c if_py_both.h
 objects/if_ruby.o: if_ruby.c
 	$(CCC) $(RUBY_CFLAGS) -o $@ if_ruby.c
 
-objects/if_sniff.o: if_sniff.c
-	$(CCC) -o $@ if_sniff.c
-
 objects/if_tcl.o: if_tcl.c
 	$(CCC) $(TCL_CFLAGS) -o $@ if_tcl.c
 
@@ -3364,10 +3356,6 @@ objects/if_ruby.o: if_ruby.c auto/config.h vim.h feature.h os_unix.h auto/osdef.
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h globals.h \
  farsi.h arabic.h version.h
-objects/if_sniff.o: if_sniff.c vim.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
- regexp.h gui.h gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h \
- globals.h farsi.h arabic.h os_unixx.h
 objects/gui_beval.o: gui_beval.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h \

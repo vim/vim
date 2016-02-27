@@ -296,9 +296,6 @@ static void	ex_popup(exarg_T *eap);
 # define ex_rubydo		ex_ni
 # define ex_rubyfile		ex_ni
 #endif
-#ifndef FEAT_SNIFF
-# define ex_sniff		ex_ni
-#endif
 #ifndef FEAT_KEYMAP
 # define ex_loadkeymap		ex_ni
 #endif
@@ -641,9 +638,6 @@ do_exmode(
     /* Ignore scrollbar and mouse events in Ex mode */
     ++hold_gui_events;
 #endif
-#ifdef FEAT_SNIFF
-    want_sniff_request = 0;    /* No K_SNIFF wanted */
-#endif
 
     MSG(_("Entering Ex mode.  Type \"visual\" to go to Normal mode."));
     while (exmode_active)
@@ -661,9 +655,6 @@ do_exmode(
 	changedtick = curbuf->b_changedtick;
 	prev_msg_row = msg_row;
 	prev_line = curwin->w_cursor.lnum;
-#ifdef FEAT_SNIFF
-	ProcessSniffRequests();
-#endif
 	if (improved)
 	{
 	    cmdline_row = msg_row;
