@@ -794,7 +794,7 @@ find_buffer(char_u *name)
 	buf = buflist_findname(name);
     if (buf == NULL)
     {
-	buf = buflist_new(name == NULL ? (char_u *)"" : name,
+	buf = buflist_new(name == NULL || *name == NUL ? NULL : name,
 					       NULL, (linenr_T)0, BLN_LISTED);
 	buf_copy_options(buf, BCO_ENTER);
 #ifdef FEAT_QUICKFIX
