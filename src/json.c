@@ -101,7 +101,7 @@ write_string(garray_T *gap, char_u *str)
 	    /* always use utf-8 encoding, ignore 'encoding' */
 	    c = utf_ptr2char(res);
 #else
-	    c = (int)*(p);
+	    c = *res;
 #endif
 
 	    switch (c)
@@ -142,7 +142,7 @@ write_string(garray_T *gap, char_u *str)
 #ifdef FEAT_MBYTE
 	    res += utf_ptr2len(res);
 #else
-	    ++p;
+	    ++res;
 #endif
 	}
 	ga_append(gap, '"');
