@@ -86,6 +86,8 @@ write_string(garray_T *gap, char_u *str)
 
 	if (!enc_utf8)
 	{
+	    /* Convert the text from 'encoding' to utf-8, the JSON string is
+	     * always utf-8. */
 	    conv.vc_type = CONV_NONE;
 	    convert_setup(&conv, p_enc, (char_u*)"utf-8");
 	    if (conv.vc_type != CONV_NONE)
@@ -534,33 +536,23 @@ json_decode_string(js_read_T *reader, typval_T *res)
     int		c;
     long	nr;
     char_u	buf[NUMBUFLEN];
-#if defined(FEAT_MBYTE) && defined(USE_ICONV)
-    vimconv_T   conv;
-    char_u	*converted = NULL;
-#endif
 
     if (res != NULL)
 	ga_init2(&ga, 1, 200);
 
     p = reader->js_buf + reader->js_used + 1; /* skip over " */
-#if defined(FEAT_MBYTE) && defined(USE_ICONV)
-    if (!enc_utf8)
-    {
-	conv.vc_type = CONV_NONE;
-	convert_setup(&conv, (char_u*)"utf-8", p_enc);
-	if (conv.vc_type != CONV_NONE)
-	    converted = p = string_convert(&conv, p, NULL);
-	convert_setup(&conv, NULL, NULL);
-    }
-#endif
     while (*p != '"')
     {
+	/* The JSON is always expected to be utf-8, thus use utf functions
+	 * here. The string is converted below if needed. */
 	if (*p == NUL || p[1] == NUL
 #ifdef FEAT_MBYTE
 		|| utf_ptr2len(p) < utf_byte2len(*p)
 #endif
 		)
 	{
+	    /* Not enough bytes to make a character or end of the string. Get
+	     * more if possible. */
 	    if (reader->js_fill == NULL)
 		break;
 	    len = (int)(reader->js_end - p);
@@ -652,9 +644,6 @@ json_decode_string(js_read_T *reader, typval_T *res)
 		if (ga_grow(&ga, len) == FAIL)
 		{
 		    ga_clear(&ga);
-#if defined(FEAT_MBYTE) && defined(USE_ICONV)
-		    vim_free(converted);
-#endif
 		    return FAIL;
 		}
 		mch_memmove((char *)ga.ga_data + ga.ga_len, p, (size_t)len);
@@ -663,9 +652,6 @@ json_decode_string(js_read_T *reader, typval_T *res)
 	    p += len;
 	}
     }
-#if defined(FEAT_MBYTE) && defined(USE_ICONV)
-    vim_free(converted);
-#endif
 
     reader->js_used = (int)(p - reader->js_buf);
     if (*p == '"')
@@ -674,7 +660,25 @@ json_decode_string(js_read_T *reader, typval_T *res)
 	if (res != NULL)
 	{
 	    res->v_type = VAR_STRING;
-	    res->vval.v_string = ga.ga_data;
+#if defined(FEAT_MBYTE) && defined(USE_ICONV)
+	    if (!enc_utf8)
+	    {
+		vimconv_T   conv;
+
+		/* Convert the utf-8 string to 'encoding'. */
+		conv.vc_type = CONV_NONE;
+		convert_setup(&conv, (char_u*)"utf-8", p_enc);
+		if (conv.vc_type != CONV_NONE)
+		{
+		    res->vval.v_string =
+				      string_convert(&conv, ga.ga_data, NULL);
+		    vim_free(ga.ga_data);
+		}
+		convert_setup(&conv, NULL, NULL);
+	    }
+	    else
+#endif
+		res->vval.v_string = ga.ga_data;
 	}
 	return OK;
     }
