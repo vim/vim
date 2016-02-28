@@ -28,6 +28,8 @@
 # define ECONNREFUSED WSAECONNREFUSED
 # undef EWOULDBLOCK
 # define EWOULDBLOCK WSAEWOULDBLOCK
+# undef EINPROGRESS
+# define EINPROGRESS WSAEINPROGRESS
 # ifdef EINTR
 #  undef EINTR
 # endif
@@ -550,8 +552,6 @@ channel_open(
 #else
     int			port = port_in;
     struct timeval	start_tv;
-    int			so_error;
-    socklen_t		so_error_len = sizeof(so_error);
 #endif
     channel_T		*channel;
     int			ret;
@@ -633,7 +633,6 @@ channel_open(
 	{
 	    if (errno != EWOULDBLOCK
 		    && errno != ECONNREFUSED
-
 #ifdef EINPROGRESS
 		    && errno != EINPROGRESS
 #endif
@@ -653,14 +652,13 @@ channel_open(
 	if (waittime >= 0 && ret < 0)
 	{
 	    struct timeval	tv;
+	    fd_set		rfds;
 	    fd_set		wfds;
-#if defined(__APPLE__) && __APPLE__ == 1
-# define PASS_RFDS
-	    fd_set	    rfds;
+	    int			so_error = 0;
+	    socklen_t		so_error_len = sizeof(so_error);
 
 	    FD_ZERO(&rfds);
 	    FD_SET(sd, &rfds);
-#endif
 	    FD_ZERO(&wfds);
 	    FD_SET(sd, &wfds);
 
@@ -671,13 +669,7 @@ channel_open(
 #endif
 	    ch_logn(channel,
 		    "Waiting for connection (waittime %d msec)...", waittime);
-	    ret = select((int)sd + 1,
-#ifdef PASS_RFDS
-		    &rfds,
-#else
-		    NULL,
-#endif
-		    &wfds, NULL, &tv);
+	    ret = select((int)sd + 1, &rfds, &wfds, NULL, &tv);
 
 	    if (ret < 0)
 	    {
@@ -689,30 +681,39 @@ channel_open(
 		channel_free(channel);
 		return NULL;
 	    }
-#ifdef PASS_RFDS
-	    if (ret == 0 && FD_ISSET(sd, &rfds) && FD_ISSET(sd, &wfds))
-	    {
-		/* For OS X, this implies error. See tcp(4). */
-		ch_error(channel, "channel_open: Connect failed");
-		EMSG(_(e_cannot_connect));
-		sock_close(sd);
-		channel_free(channel);
-		return NULL;
-	    }
-#endif
-#ifdef WIN32
-	    /* On Win32 select() is expected to work and wait for up to the
-	     * waittime for the socket to be open. */
-	    if (!FD_ISSET(sd, &wfds) || ret == 0)
-#else
-	    /* See socket(7) for the behavior on Linux-like systems:
+
+	    /* On Win32: select() is expected to work and wait for up to the
+	     * waittime for the socket to be open.
+	     * On Linux-like systems: See socket(7) for the behavior
 	     * After putting the socket in non-blocking mode, connect() will
 	     * return EINPROGRESS, select() will not wait (as if writing is
 	     * possible), need to use getsockopt() to check if the socket is
-	     * actually open. */
-	    getsockopt(sd, SOL_SOCKET, SO_ERROR, &so_error, &so_error_len);
-	    if (!FD_ISSET(sd, &wfds) || ret == 0 || so_error != 0)
+	     * actually connect.
+	     * We detect an failure to connect when both read and write fds
+	     * are set.  Use getsockopt() to find out what kind of failure. */
+	    if (FD_ISSET(sd, &rfds) && FD_ISSET(sd, &wfds))
+	    {
+		ret = getsockopt(sd,
+			    SOL_SOCKET, SO_ERROR, &so_error, &so_error_len);
+		if (ret < 0 || (so_error != 0
+			&& so_error != EWOULDBLOCK
+			&& so_error != ECONNREFUSED
+#ifdef EINPROGRESS
+			&& so_error != EINPROGRESS
 #endif
+			))
+		{
+		    ch_errorn(channel,
+			    "channel_open: Connect failed with errno %d",
+			    so_error);
+		    PERROR(_(e_cannot_connect));
+		    sock_close(sd);
+		    channel_free(channel);
+		    return NULL;
+		}
+	    }
+
+	    if (!FD_ISSET(sd, &wfds) || so_error != 0)
 	    {
 #ifndef WIN32
 		struct  timeval end_tv;
