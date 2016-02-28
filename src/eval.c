@@ -7741,7 +7741,7 @@ failret:
 /*
  * Decrement the reference count on "channel" and maybe free it when it goes
  * down to zero.  Don't free it if there is a pending action.
- * Returns TRUE when the channel was freed.
+ * Returns TRUE when the channel is no longer referenced.
  */
     int
 channel_unref(channel_T *channel)
@@ -7762,6 +7762,7 @@ static job_T *first_job = NULL;
 job_free(job_T *job)
 {
 # ifdef FEAT_CHANNEL
+    ch_log(job->jv_channel, "Freeing job");
     if (job->jv_channel != NULL)
     {
 	/* The link from the channel to the job doesn't count as a reference,
@@ -7796,7 +7797,17 @@ job_unref(job_T *job)
 	 * "stoponexit" flag or an exit callback. */
 	if (job->jv_status != JOB_STARTED
 		|| (job->jv_stoponexit == NULL && job->jv_exit_cb == NULL))
+	{
 	    job_free(job);
+	}
+	else if (job->jv_channel != NULL)
+	{
+	    /* Do remove the link to the channel, otherwise it hangs
+	     * around until Vim exits. See job_free() for refcount. */
+	    job->jv_channel->ch_job = NULL;
+	    channel_unref(job->jv_channel);
+	    job->jv_channel = NULL;
+	}
     }
 }
 
@@ -10467,7 +10478,10 @@ common_channel_read(typval_T *argvars, typval_T *rettv, int raw)
 		id = opt.jo_id;
 	    channel_read_json_block(channel, part, timeout, id, &listtv);
 	    if (listtv != NULL)
+	    {
 		*rettv = *listtv;
+		vim_free(listtv);
+	    }
 	    else
 	    {
 		rettv->v_type = VAR_SPECIAL;
@@ -15292,6 +15306,9 @@ f_job_stop(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		return;
 	    }
 	}
+# ifdef FEAT_CHANNEL
+	ch_logs(job->jv_channel, "Stopping job with '%s'", (char *)arg);
+# endif
 	if (mch_stop_job(job, arg) == FAIL)
 	    rettv->vval.v_number = 0;
 	else

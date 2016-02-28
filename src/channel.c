@@ -311,8 +311,11 @@ add_channel(void)
 }
 
 /*
+ * Called when the refcount of a channel is zero.
  * Return TRUE if "channel" has a callback and the associated job wasn't
  * killed.
+ * If the job was killed the channel is not expected to work anymore.
+ * If there is no callback then nobody can get readahead.
  */
     static int
 channel_still_useful(channel_T *channel)
@@ -347,6 +350,7 @@ channel_free(channel_T *channel)
 {
     channel_close(channel, TRUE);
     channel_clear(channel);
+    ch_log(channel, "Freeing channel");
     if (channel->ch_next != NULL)
 	channel->ch_next->ch_prev = channel->ch_prev;
     if (channel->ch_prev == NULL)
@@ -775,6 +779,10 @@ channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err)
 }
 #endif
 
+/*
+ * Sets the job the channel is associated with.
+ * This does not keep a refcount, when the job is freed ch_job is cleared.
+ */
     void
 channel_set_job(channel_T *channel, job_T *job)
 {
@@ -1421,7 +1429,10 @@ may_invoke_callback(channel_T *channel, int part)
 	if (callback == NULL && buffer == NULL)
 	{
 	    while ((msg = channel_get(channel, part)) != NULL)
+	    {
+		ch_logs(channel, "Dropping message '%s'", (char *)msg);
 		vim_free(msg);
+	    }
 	    return FALSE;
 	}
 
@@ -1475,7 +1486,8 @@ may_invoke_callback(channel_T *channel, int part)
 	{
 	    if (item->cq_seq_nr == seq_nr)
 	    {
-		ch_log(channel, "Invoking one-time callback");
+		ch_logs(channel, "Invoking one-time callback '%s'",
+						   (char *)item->cq_callback);
 		/* Remove the item from the list first, if the callback
 		 * invokes ch_close() the list will be cleared. */
 		remove_cb_node(head, item);
@@ -1488,7 +1500,7 @@ may_invoke_callback(channel_T *channel, int part)
 	    item = item->cq_next;
 	}
 	if (!done)
-	    ch_log(channel, "Dropping message without callback");
+	    ch_logn(channel, "Dropping message %d without callback", seq_nr);
     }
     else if (callback != NULL || buffer != NULL)
     {
@@ -1539,6 +1551,8 @@ may_invoke_callback(channel_T *channel, int part)
 	    invoke_callback(channel, callback, argv);
 	}
     }
+    else if (msg != NULL)
+	ch_logs(channel, "Dropping message '%s'", (char *)msg);
     else
 	ch_log(channel, "Dropping message");
 
@@ -1637,6 +1651,8 @@ channel_close(channel_T *channel, int invoke_close_cb)
 
 	  /* invoke the close callback; increment the refcount to avoid it
 	   * being freed halfway */
+	  ch_logs(channel, "Invoking close callback %s",
+						(char *)channel->ch_close_cb);
 	  argv[0].v_type = VAR_CHANNEL;
 	  argv[0].vval.v_channel = channel;
 	  ++channel->ch_refcount;
@@ -1704,6 +1720,7 @@ channel_clear_one(channel_T *channel, int part)
     void
 channel_clear(channel_T *channel)
 {
+    ch_log(channel, "Clearing channel");
     channel_clear_one(channel, PART_SOCK);
 #ifdef CHANNEL_PIPES
     channel_clear_one(channel, PART_OUT);
@@ -1721,6 +1738,7 @@ channel_free_all(void)
 {
     channel_T *channel;
 
+    ch_log(NULL, "channel_free_all()");
     for (channel = first_channel; channel != NULL; channel = channel->ch_next)
 	channel_clear(channel);
 }
@@ -1798,7 +1816,6 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 	    return OK;
 #endif
     }
-    ch_log(channel, "Nothing to read");
     return FAIL;
 }
 
@@ -1970,11 +1987,11 @@ channel_read_block(channel_T *channel, int part, int timeout)
  */
     int
 channel_read_json_block(
-	channel_T *channel,
-	int part,
-	int timeout,
-	int id,
-	typval_T **rettv)
+	channel_T   *channel,
+	int	    part,
+	int	    timeout,
+	int	    id,
+	typval_T    **rettv)
 {
     int		more;
     sock_T	fd;
