@@ -82,8 +82,7 @@ func Test_json_encode()
 
   if has('multi_byte')
     call assert_equal(s:jsonmb, json_encode(s:varmb))
-    call assert_equal(s:varsp1, json_decode(s:jsonsp1))
-    call assert_equal(s:varsp2, json_decode(s:jsonsp2))
+    " no test for surrogate pair, json_encode() doesn't create them.
   endif
 
   call assert_equal(s:jsonnr, json_encode(s:varnr))
@@ -120,8 +119,8 @@ func Test_json_decode()
 
   if has('multi_byte')
     call assert_equal(s:varmb, json_decode(s:jsonmb))
-    call assert_equal(s:varsp1, js_decode(s:jsonsp1))
-    call assert_equal(s:varsp2, js_decode(s:jsonsp2))
+    call assert_equal(s:varsp1, json_decode(s:jsonsp1))
+    call assert_equal(s:varsp2, json_decode(s:jsonsp2))
   endif
 
   call assert_equal(s:varnr, json_decode(s:jsonnr))
@@ -185,6 +184,7 @@ func Test_js_encode()
 
   if has('multi_byte')
     call assert_equal(s:jsonmb, js_encode(s:varmb))
+    " no test for surrogate pair, js_encode() doesn't create them.
   endif
 
   call assert_equal(s:jsonnr, js_encode(s:varnr))
@@ -223,6 +223,8 @@ func Test_js_decode()
 
   if has('multi_byte')
     call assert_equal(s:varmb, js_decode(s:jsonmb))
+    call assert_equal(s:varsp1, js_decode(s:jsonsp1))
+    call assert_equal(s:varsp2, js_decode(s:jsonsp2))
   endif
 
   call assert_equal(s:varnr, js_decode(s:jsonnr))
