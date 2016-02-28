@@ -535,14 +535,21 @@ endfunc
 
 func Test_exit_callback()
   if has('job')
+    call ch_log('Test_exit_callback()')
     call s:run_server('s:test_exit_callback')
 
-    " the job may take a little while to exit
-    sleep 50m
+    " wait up to a second for the job to exit
+    for i in range(100)
+      if s:job_exit_ret == 'done'
+	break
+      endif
+      sleep 10m
+      " calling job_status() triggers the callback
+      call job_status(s:exit_job)
+    endfor
 
-    " calling job_status() triggers the callback
-    call job_status(s:exit_job)
     call assert_equal('done', s:job_exit_ret)
+    unlet s:exit_job
   endif
 endfunc
 
@@ -571,3 +578,5 @@ func Test_close_callback()
   call s:run_server('s:test_close_callback')
 endfunc
 
+" Uncomment this to see what happens, output is in src/testdir/channellog.
+" call ch_logfile('channellog', 'w')
