@@ -7747,10 +7747,7 @@ failret:
 channel_unref(channel_T *channel)
 {
     if (channel != NULL && --channel->ch_refcount <= 0)
-    {
-	channel_may_free(channel);
-	return TRUE;
-    }
+	return channel_may_free(channel);
     return FALSE;
 }
 #endif

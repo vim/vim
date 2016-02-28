@@ -334,12 +334,17 @@ channel_still_useful(channel_T *channel)
  * Close a channel and free all its resources if there is no further action
  * possible, there is no callback to be invoked or the associated job was
  * killed.
+ * Return TRUE if the channel was freed.
  */
-    void
+    int
 channel_may_free(channel_T *channel)
 {
     if (!channel_still_useful(channel))
+    {
 	channel_free(channel);
+	return TRUE;
+    }
+    return FALSE;
 }
 
 /*
