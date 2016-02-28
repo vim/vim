@@ -1,5 +1,12 @@
 " Test for JSON functions.
+
+" JSON requires using utf-8.  Conversion breaks the asserts, therefore set
+" 'encoding' to utf-8.
+if !has('multi_byte')
+  finish
+endif
 scriptencoding utf-8
+set encoding=utf-8
 
 let s:json1 = '"str\"in\\g"'
 let s:var1 = "str\"in\\g"
