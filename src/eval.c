@@ -7800,6 +7800,7 @@ job_unref(job_T *job)
 	{
 	    job_free(job);
 	}
+# ifdef FEAT_CHANNEL
 	else if (job->jv_channel != NULL)
 	{
 	    /* Do remove the link to the channel, otherwise it hangs
@@ -7808,6 +7809,7 @@ job_unref(job_T *job)
 	    channel_unref(job->jv_channel);
 	    job->jv_channel = NULL;
 	}
+# endif
     }
 }
 
