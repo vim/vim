@@ -945,10 +945,15 @@ invoke_callback(channel_T *channel, char_u *callback, typval_T *argv)
     clear_tv(&rettv);
 
     /* If an echo command was used the cursor needs to be put back where
-     * it belongs. */
+     * it belongs. If highlighting was changed a redraw is needed. */
+    update_screen(0);
     setcursor();
     cursor_on();
     out_flush();
+#ifdef FEAT_GUI
+    gui_update_cursor(TRUE, FALSE);
+    gui_mch_flush();
+#endif
 }
 
 /*
