@@ -659,6 +659,7 @@ json_decode_string(js_read_T *reader, typval_T *res)
 	++reader->js_used;
 	if (res != NULL)
 	{
+	    ga_append(&ga, NUL);
 	    res->v_type = VAR_STRING;
 #if defined(FEAT_MBYTE) && defined(USE_ICONV)
 	    if (!enc_utf8)
