@@ -316,20 +316,47 @@ add_channel(void)
  * Called when the refcount of a channel is zero.
  * Return TRUE if "channel" has a callback and the associated job wasn't
  * killed.
- * If the job was killed the channel is not expected to work anymore.
- * If there is no callback then nobody can get readahead.
  */
     static int
 channel_still_useful(channel_T *channel)
 {
+    int has_sock_msg;
+#ifdef CHANNEL_PIPES
+    int	has_out_msg;
+    int	has_err_msg;
+#endif
+
+    /* If the job was killed the channel is not expected to work anymore. */
     if (channel->ch_job_killed && channel->ch_job == NULL)
 	return FALSE;
-    return channel->ch_callback != NULL
+
+    /* If there is a close callback it may still need to be invoked. */
+    if (channel->ch_close_cb != NULL)
+	return TRUE;
+
+    /* If there is no callback then nobody can get readahead.  If the fd is
+     * closed and there is no readahead then the callback won't be called. */
+    has_sock_msg = channel->ch_part[PART_SOCK].ch_fd != INVALID_FD
+	          || channel->ch_part[PART_SOCK].ch_head.rq_next != NULL
+		  || channel->ch_part[PART_SOCK].ch_json_head.jq_next != NULL;
 #ifdef CHANNEL_PIPES
-	    || channel->ch_part[PART_OUT].ch_callback != NULL
-	    || channel->ch_part[PART_ERR].ch_callback != NULL
+    has_out_msg = channel->ch_part[PART_OUT].ch_fd != INVALID_FD
+		  || channel->ch_part[PART_OUT].ch_head.rq_next != NULL
+		  || channel->ch_part[PART_OUT].ch_json_head.jq_next != NULL;
+    has_err_msg = channel->ch_part[PART_ERR].ch_fd != INVALID_FD
+		  || channel->ch_part[PART_ERR].ch_head.rq_next != NULL
+		  || channel->ch_part[PART_ERR].ch_json_head.jq_next != NULL;
 #endif
-	    || channel->ch_close_cb != NULL;
+    return (channel->ch_callback != NULL && (has_sock_msg
+#ifdef CHANNEL_PIPES
+		|| has_out_msg || has_err_msg
+#endif
+		))
+#ifdef CHANNEL_PIPES
+	    || (channel->ch_part[PART_OUT].ch_callback != NULL && has_out_msg)
+	    || (channel->ch_part[PART_ERR].ch_callback != NULL && has_err_msg)
+#endif
+	    ;
 }
 
 /*
@@ -1497,7 +1524,7 @@ may_invoke_callback(channel_T *channel, int part)
 	{
 	    if (item->cq_seq_nr == seq_nr)
 	    {
-		ch_logs(channel, "Invoking one-time callback '%s'",
+		ch_logs(channel, "Invoking one-time callback %s",
 						   (char *)item->cq_callback);
 		/* Remove the item from the list first, if the callback
 		 * invokes ch_close() the list will be cleared. */
@@ -1558,7 +1585,7 @@ may_invoke_callback(channel_T *channel, int part)
 	if (callback != NULL)
 	{
 	    /* invoke the channel callback */
-	    ch_log(channel, "Invoking channel callback");
+	    ch_logs(channel, "Invoking channel callback %s", (char *)callback);
 	    invoke_callback(channel, callback, argv);
 	}
     }
@@ -1758,7 +1785,6 @@ channel_free_all(void)
 
 /* Sent when the channel is found closed when reading. */
 #define DETACH_MSG_RAW "DETACH\n"
-#define DETACH_MSG_JSON "\"DETACH\"\n"
 
 /* Buffer size for reading incoming messages. */
 #define MAXMSGSIZE 4096
@@ -1854,7 +1880,6 @@ channel_read(channel_T *channel, int part, char *func)
     int			readlen = 0;
     sock_T		fd;
     int			use_socket = FALSE;
-    char		*msg;
 
     fd = channel->ch_part[part].ch_fd;
     if (fd == INVALID_FD)
@@ -1909,11 +1934,12 @@ channel_read(channel_T *channel, int part, char *func)
 	 *		-> ui_breakcheck
 	 *		    -> gui event loop or select loop
 	 *			-> channel_read()
+	 * Don't send "DETACH" for a JS or JSON channel.
 	 */
-	msg = channel->ch_part[part].ch_mode == MODE_RAW
-				  || channel->ch_part[part].ch_mode == MODE_NL
-		    ? DETACH_MSG_RAW : DETACH_MSG_JSON;
-	channel_save(channel, part, (char_u *)msg, (int)STRLEN(msg));
+	if (channel->ch_part[part].ch_mode == MODE_RAW
+				 || channel->ch_part[part].ch_mode == MODE_NL)
+	    channel_save(channel, part, (char_u *)DETACH_MSG_RAW,
+						 (int)STRLEN(DETACH_MSG_RAW));
 
 	/* TODO: When reading from stdout is not possible, should we try to
 	 * keep stdin and stderr open?  Probably not, assume the other side
