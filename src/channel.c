@@ -681,8 +681,10 @@ channel_open(
 	    struct timeval	tv;
 	    fd_set		rfds;
 	    fd_set		wfds;
+#ifndef WIN32
 	    int			so_error = 0;
 	    socklen_t		so_error_len = sizeof(so_error);
+#endif
 
 	    FD_ZERO(&rfds);
 	    FD_SET(sd, &rfds);
@@ -709,9 +711,12 @@ channel_open(
 		return NULL;
 	    }
 
+#ifdef WIN32
 	    /* On Win32: select() is expected to work and wait for up to the
-	     * waittime for the socket to be open.
-	     * On Linux-like systems: See socket(7) for the behavior
+	     * waittime for the socket to be open. */
+	    if (!FD_ISSET(sd, &wfds) || ret == 0)
+#else
+	    /* On Linux-like systems: See socket(7) for the behavior
 	     * After putting the socket in non-blocking mode, connect() will
 	     * return EINPROGRESS, select() will not wait (as if writing is
 	     * possible), need to use getsockopt() to check if the socket is
@@ -725,9 +730,9 @@ channel_open(
 		if (ret < 0 || (so_error != 0
 			&& so_error != EWOULDBLOCK
 			&& so_error != ECONNREFUSED
-#ifdef EINPROGRESS
+# ifdef EINPROGRESS
 			&& so_error != EINPROGRESS
-#endif
+# endif
 			))
 		{
 		    ch_errorn(channel,
@@ -741,6 +746,7 @@ channel_open(
 	    }
 
 	    if (!FD_ISSET(sd, &wfds) || so_error != 0)
+#endif
 	    {
 #ifndef WIN32
 		struct  timeval end_tv;
