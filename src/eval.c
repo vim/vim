@@ -15137,7 +15137,8 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
 #ifdef USE_ARGV
 	    argv[argc++] = (char *)s;
 #else
-	    if (li != l->lv_first)
+	    /* Only escape when needed, double quotes are not always allowed. */
+	    if (li != l->lv_first && vim_strpbrk(s, (char_u *)" \t\"") != NULL)
 	    {
 		s = vim_strsave_shellescape(s, FALSE, TRUE);
 		if (s == NULL)
