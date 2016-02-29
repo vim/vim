@@ -6454,14 +6454,14 @@ have_dollars(int num, char_u **file)
 }
 #endif	/* ifndef __EMX__ */
 
-#ifndef HAVE_RENAME
+#if !defined(HAVE_RENAME) || defined(PROTO)
 /*
  * Scaled-down version of rename(), which is missing in Xenix.
  * This version can only move regular files and will fail if the
  * destination exists.
  */
     int
-mch_rename(const char *src, *dest)
+mch_rename(const char *src, const char *dest)
 {
     struct stat	    st;
 

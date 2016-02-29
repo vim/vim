@@ -66,6 +66,7 @@ int mch_expandpath(garray_T *gap, char_u *path, int flags);
 int mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, int flags);
 int mch_has_exp_wildcard(char_u *p);
 int mch_has_wildcard(char_u *p);
+int mch_rename(const char *src, const char *dest);
 int mch_libcall(char_u *libname, char_u *funcname, char_u *argstring, int argint, char_u **string_result, int *number_result);
 void setup_term_clip(void);
 void start_xterm_trace(int button);
