@@ -926,8 +926,9 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 
     if ((opt->jo_set & JO_OUT_IO) && opt->jo_io[PART_OUT] == JIO_BUFFER)
     {
-	/* writing output to a buffer. Force mode to NL. */
-	channel->ch_part[PART_OUT].ch_mode = MODE_NL;
+	/* writing output to a buffer. Default mode is NL. */
+	if (!(opt->jo_set & JO_OUT_MODE))
+	    channel->ch_part[PART_OUT].ch_mode = MODE_NL;
 	channel->ch_part[PART_OUT].ch_buffer =
 				       find_buffer(opt->jo_io_name[PART_OUT]);
 	ch_logs(channel, "writing to buffer '%s'",
@@ -1560,32 +1561,38 @@ may_invoke_callback(channel_T *channel, int part)
 	    u_sync(TRUE);
 	    u_save(lnum, lnum + 1);
 
-	    ml_append(lnum, msg, 0, FALSE);
-	    appended_lines_mark(lnum, 1L);
-	    curbuf = save_curbuf;
-
-	    if (buffer->b_nwindows > 0)
+	    if (msg == NULL)
+		/* JSON or JS mode: re-encode the message. */
+		msg = json_encode(listtv, ch_mode);
+	    if (msg != NULL)
 	    {
-		win_T	*wp;
-		win_T	*save_curwin;
+		ml_append(lnum, msg, 0, FALSE);
+		appended_lines_mark(lnum, 1L);
+		curbuf = save_curbuf;
 
-		FOR_ALL_WINDOWS(wp)
+		if (buffer->b_nwindows > 0)
 		{
-		    if (wp->w_buffer == buffer
-			    && wp->w_cursor.lnum == lnum
-			    && wp->w_cursor.col == 0)
+		    win_T	*wp;
+		    win_T	*save_curwin;
+
+		    FOR_ALL_WINDOWS(wp)
 		    {
-			++wp->w_cursor.lnum;
-			save_curwin = curwin;
-			curwin = wp;
-			curbuf = curwin->w_buffer;
-			scroll_cursor_bot(0, FALSE);
-			curwin = save_curwin;
-			curbuf = curwin->w_buffer;
+			if (wp->w_buffer == buffer
+				&& wp->w_cursor.lnum == lnum
+				&& wp->w_cursor.col == 0)
+			{
+			    ++wp->w_cursor.lnum;
+			    save_curwin = curwin;
+			    curwin = wp;
+			    curbuf = curwin->w_buffer;
+			    scroll_cursor_bot(0, FALSE);
+			    curwin = save_curwin;
+			    curbuf = curwin->w_buffer;
+			}
 		    }
+		    redraw_buf_later(buffer, VALID);
+		    channel_need_redraw = TRUE;
 		}
-		redraw_buf_later(buffer, VALID);
-		channel_need_redraw = TRUE;
 	    }
 	}
 	if (callback != NULL)

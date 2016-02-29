@@ -426,6 +426,32 @@ func Test_pipe_to_nameless_buffer()
   endtry
 endfunc
 
+func Test_pipe_to_buffer_json()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_pipe_to_buffer_json()')
+  let job = job_start(s:python . " test_channel_pipe.py",
+	\ {'out-io': 'buffer', 'out-mode': 'json'})
+  call assert_equal("run", job_status(job))
+  try
+    let handle = job_getchannel(job)
+    call ch_sendraw(handle, "echo [0, \"hello\"]\n")
+    call ch_sendraw(handle, "echo [-2, 12.34]\n")
+    exe ch_getbufnr(handle, "out") . 'sbuf'
+    for i in range(100)
+      sleep 10m
+      if line('$') >= 3
+	break
+      endif
+    endfor
+    call assert_equal(['Reading from channel output...', '[0,"hello"]', '[-2,12.34]'], getline(1, '$'))
+    bwipe!
+  finally
+    call job_stop(job)
+  endtry
+endfunc
+
 """"""""""
 
 let s:unletResponse = ''
