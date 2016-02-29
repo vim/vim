@@ -1602,8 +1602,6 @@ may_invoke_callback(channel_T *channel, int part)
 	    invoke_callback(channel, callback, argv);
 	}
     }
-    else if (msg != NULL)
-	ch_logs(channel, "Dropping message '%s'", (char *)msg);
     else
 	ch_log(channel, "Dropping message");
 
