@@ -676,9 +676,9 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 	default:
 	    if (VIM_ISDIGIT(*p) || *p == '-')
 	    {
+#ifdef FEAT_FLOAT
 		char_u  *sp = p;
 
-#ifdef FEAT_FLOAT
 		if (*sp == '-')
 		{
 		    ++sp;
