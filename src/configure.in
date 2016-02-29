@@ -3565,7 +3565,7 @@ AC_CHECK_FUNCS(bcmp fchdir fchown fsync getcwd getpseudotty \
 	setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigvec strcasecmp strerror strftime stricmp strncasecmp \
 	strnicmp strpbrk strtol tgetent towlower towupper iswupper \
-	usleep utime utimes isnan isinf)
+	usleep utime utimes)
 AC_FUNC_FSEEKO
 
 dnl define _LARGE_FILES, _FILE_OFFSET_BITS and _LARGEFILE_SOURCE when
@@ -3666,6 +3666,33 @@ AC_TRY_LINK([
     d = atan(1.11);
     ],
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_FLOAT_FUNCS),
+	AC_MSG_RESULT(no))
+
+dnl isinf() and isnan() need to include header files and may need -lm.
+AC_MSG_CHECKING([for isinf()])
+AC_TRY_LINK([
+#ifdef HAVE_MATH_H
+# include <math.h>
+#endif
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+], [int r = isinf(1.11); ],
+	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_ISINF),
+	AC_MSG_RESULT(no))
+
+AC_MSG_CHECKING([for isnan()])
+AC_TRY_LINK([
+#ifdef HAVE_MATH_H
+# include <math.h>
+#endif
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+], [int r = isnan(1.11); ],
+	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_ISNAN),
 	AC_MSG_RESULT(no))
 
 dnl Link with -lposix1e for ACL stuff; if not found, try -lacl for SGI
