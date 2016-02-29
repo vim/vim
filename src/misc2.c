@@ -1729,13 +1729,14 @@ vim_memcmp(void *b1, void *b2, size_t len)
 }
 #endif
 
+/* skipped when generating prototypes, the prototype is in vim.h */
 #ifdef VIM_MEMMOVE
 /*
  * Version of memmove() that handles overlapping source and destination.
  * For systems that don't have a function that is guaranteed to do that (SYSV).
  */
     void
-mch_memmove(void *src_arg, *dst_arg, size_t len)
+mch_memmove(void *src_arg, void *dst_arg, size_t len)
 {
     /*
      * A void doesn't have a size, we use char pointers.

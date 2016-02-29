@@ -140,7 +140,7 @@ tgetent(
 }
 
     static int
-getent(char *tbuf, *term, FILE *termcap, int buflen)
+getent(char *tbuf, char *term, FILE *termcap, int buflen)
 {
     char    *tptr;
     int	    tlen = strlen(term);
