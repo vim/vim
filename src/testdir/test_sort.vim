@@ -38,8 +38,9 @@ endfunc
 
 func Test_sort_default()
   " docs say omitted, empty or zero argument sorts on string representation.
-  call assert_equal(["2", 1, 3.3], sort([3.3, 1, "2"]))
-  call assert_equal(["2", 1, 3.3], sort([3.3, 1, "2"], ''))
-  call assert_equal(["2", 1, 3.3], sort([3.3, 1, "2"], 0))
+  call assert_equal(['2', 'A', 'AA', 'a', 1, 3.3], sort([3.3, 1, "2", "A", "a", "AA"]))
+  call assert_equal(['2', 'A', 'AA', 'a', 1, 3.3], sort([3.3, 1, "2", "A", "a", "AA"], ''))
+  call assert_equal(['2', 'A', 'AA', 'a', 1, 3.3], sort([3.3, 1, "2", "A", "a", "AA"], 0))
+  call assert_equal(['2', 'A', 'a', 'AA', 1, 3.3], sort([3.3, 1, "2", "A", "a", "AA"], 1))
   call assert_fails('call sort([3.3, 1, "2"], 3)', "E474")
 endfunc
