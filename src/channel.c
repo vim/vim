@@ -1516,6 +1516,9 @@ may_invoke_callback(channel_T *channel, int part)
 	     * get everything we have. */
 	    msg = channel_get_all(channel, part);
 
+	if (msg == NULL)
+	    return FALSE; /* out of memory (and avoids Coverity warning) */
+
 	argv[1].v_type = VAR_STRING;
 	argv[1].vval.v_string = msg;
     }
