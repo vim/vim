@@ -720,10 +720,10 @@ channel_open(
 	     * After putting the socket in non-blocking mode, connect() will
 	     * return EINPROGRESS, select() will not wait (as if writing is
 	     * possible), need to use getsockopt() to check if the socket is
-	     * actually connect.
-	     * We detect an failure to connect when both read and write fds
+	     * actually able to connect.
+	     * We detect an failure to connect when either read and write fds
 	     * are set.  Use getsockopt() to find out what kind of failure. */
-	    if (FD_ISSET(sd, &rfds) && FD_ISSET(sd, &wfds))
+	    if (FD_ISSET(sd, &rfds) || FD_ISSET(sd, &wfds))
 	    {
 		ret = getsockopt(sd,
 			    SOL_SOCKET, SO_ERROR, &so_error, &so_error_len);
@@ -1559,7 +1559,8 @@ may_invoke_callback(channel_T *channel, int part)
 
 	    curbuf = buffer;
 	    u_sync(TRUE);
-	    u_save(lnum, lnum + 1);
+	    /* ignore undo failure, undo is not very useful here */
+	    ignored = u_save(lnum, lnum + 1);
 
 	    if (msg == NULL)
 		/* JSON or JS mode: re-encode the message. */
