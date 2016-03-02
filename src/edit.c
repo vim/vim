@@ -1590,7 +1590,9 @@ ins_redraw(
 		curwin->w_p_cole > 0
 # endif
 		)
+# ifdef FEAT_AUTOCMD
 	&& !equalpos(last_cursormoved, curwin->w_cursor)
+# endif
 # ifdef FEAT_INS_EXPAND
 	&& !pum_visible()
 # endif
@@ -1616,12 +1618,16 @@ ins_redraw(
 # ifdef FEAT_CONCEAL
 	if (curwin->w_p_cole > 0)
 	{
+#  ifdef FEAT_AUTOCMD
 	    conceal_old_cursor_line = last_cursormoved.lnum;
+#  endif
 	    conceal_new_cursor_line = curwin->w_cursor.lnum;
 	    conceal_update_lines = TRUE;
 	}
 # endif
+# ifdef FEAT_AUTOCMD
 	last_cursormoved = curwin->w_cursor;
+# endif
     }
 #endif
 
