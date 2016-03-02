@@ -5235,9 +5235,9 @@ mch_clear_job(job_T *job)
 {
     /* call waitpid because child process may become zombie */
 # ifdef __NeXT__
-    wait4(job->jv_pid, NULL, WNOHANG, (struct rusage *)0);
+    (void)wait4(job->jv_pid, NULL, WNOHANG, (struct rusage *)0);
 # else
-    waitpid(job->jv_pid, NULL, WNOHANG);
+    (void)waitpid(job->jv_pid, NULL, WNOHANG);
 # endif
 }
 #endif
