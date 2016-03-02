@@ -1551,22 +1551,22 @@ may_invoke_callback(channel_T *channel, int part)
     {
 	if (buffer != NULL)
 	{
-	    buf_T	*save_curbuf = curbuf;
-	    linenr_T	lnum = buffer->b_ml.ml_line_count;
-
-	    /* Append to the buffer */
-	    ch_logn(channel, "appending line %d to buffer", (int)lnum + 1);
-
-	    curbuf = buffer;
-	    u_sync(TRUE);
-	    /* ignore undo failure, undo is not very useful here */
-	    ignored = u_save(lnum, lnum + 1);
-
 	    if (msg == NULL)
 		/* JSON or JS mode: re-encode the message. */
 		msg = json_encode(listtv, ch_mode);
 	    if (msg != NULL)
 	    {
+		buf_T	    *save_curbuf = curbuf;
+		linenr_T    lnum = buffer->b_ml.ml_line_count;
+
+		/* Append to the buffer */
+		ch_logn(channel, "appending line %d to buffer", (int)lnum + 1);
+
+		curbuf = buffer;
+		u_sync(TRUE);
+		/* ignore undo failure, undo is not very useful here */
+		ignored = u_save(lnum, lnum + 1);
+
 		ml_append(lnum, msg, 0, FALSE);
 		appended_lines_mark(lnum, 1L);
 		curbuf = save_curbuf;
