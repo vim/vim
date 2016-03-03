@@ -339,10 +339,8 @@ func s:raw_one_time_callback(port)
 endfunc
 
 func Test_raw_one_time_callback()
-  call ch_logfile('channellog', 'w')
   call ch_log('Test_raw_one_time_callback()')
   call s:run_server('s:raw_one_time_callback')
-  call ch_logfile('')
 endfunc
 
 """""""""
@@ -420,12 +418,34 @@ func Test_nl_pipe()
     call ch_sendraw(handle, "echo something\n")
     call assert_equal("something", ch_readraw(handle))
 
+    call ch_sendraw(handle, "echoerr wrong\n")
+    call assert_equal("wrong", ch_readraw(handle, {'part': 'err'}))
+
     call ch_sendraw(handle, "double this\n")
     call assert_equal("this", ch_readraw(handle))
     call assert_equal("AND this", ch_readraw(handle))
 
     let reply = ch_evalraw(handle, "quit\n")
     call assert_equal("Goodbye!", reply)
+  finally
+    call job_stop(job)
+  endtry
+endfunc
+
+func Test_nl_err_to_out_pipe()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_nl_err_to_out_pipe()')
+  let job = job_start(s:python . " test_channel_pipe.py", {'err-io': 'out'})
+  call assert_equal("run", job_status(job))
+  try
+    let handle = job_getchannel(job)
+    call ch_sendraw(handle, "echo something\n")
+    call assert_equal("something", ch_readraw(handle))
+
+    call ch_sendraw(handle, "echoerr wrong\n")
+    call assert_equal("wrong", ch_readraw(handle))
   finally
     call job_stop(job)
   endtry

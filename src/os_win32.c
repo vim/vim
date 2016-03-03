@@ -5000,6 +5000,7 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
     HANDLE		jo;
 # ifdef FEAT_CHANNEL
     channel_T		*channel;
+    int			use_out_for_err = options->jo_io[PART_ERR] == JIO_OUT;
     HANDLE		ifd[2];
     HANDLE		ofd[2];
     HANDLE		efd[2];
@@ -5038,13 +5039,14 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
        || !pSetHandleInformation(ifd[1], HANDLE_FLAG_INHERIT, 0)
        || !CreatePipe(&ofd[0], &ofd[1], &saAttr, 0)
        || !pSetHandleInformation(ofd[0], HANDLE_FLAG_INHERIT, 0)
-       || !CreatePipe(&efd[0], &efd[1], &saAttr, 0)
-       || !pSetHandleInformation(efd[0], HANDLE_FLAG_INHERIT, 0))
+       || (!use_out_for_err
+	   && (!CreatePipe(&efd[0], &efd[1], &saAttr, 0)
+	    || !pSetHandleInformation(efd[0], HANDLE_FLAG_INHERIT, 0))))
 	goto failed;
     si.dwFlags |= STARTF_USESTDHANDLES;
     si.hStdInput = ifd[0];
     si.hStdOutput = ofd[1];
-    si.hStdError = efd[1];
+    si.hStdError = use_out_for_err ? ofd[1] : efd[1];
 # endif
 
     if (!vim_create_process(cmd, TRUE,
@@ -5075,10 +5077,12 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
 # ifdef FEAT_CHANNEL
     CloseHandle(ifd[0]);
     CloseHandle(ofd[1]);
-    CloseHandle(efd[1]);
+    if (!use_out_for_err)
+	CloseHandle(efd[1]);
 
     job->jv_channel = channel;
-    channel_set_pipes(channel, (sock_T)ifd[1], (sock_T)ofd[0], (sock_T)efd[0]);
+    channel_set_pipes(channel, (sock_T)ifd[1], (sock_T)ofd[0],
+			       use_out_for_err ? INVALID_FD : (sock_T)efd[0]);
     channel_set_job(channel, job);
     channel_set_options(channel, options);
 
