@@ -64,6 +64,7 @@ int source_runtime(char_u *name, int all);
 int do_in_runtimepath(char_u *name, int all, void (*callback)(char_u *fname, void *ck), void *cookie);
 void source_packages(void);
 void ex_loadplugin(exarg_T *eap);
+void ex_packadd(exarg_T *eap);
 void ex_options(exarg_T *eap);
 void ex_source(exarg_T *eap);
 linenr_T *source_breakpoint(void *cookie);
