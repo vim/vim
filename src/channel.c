@@ -1390,6 +1390,23 @@ channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
     }
 }
 
+    static void
+invoke_one_time_callback(
+	channel_T   *channel,
+	cbq_T	    *cbhead,
+	cbq_T	    *item,
+	typval_T    *argv)
+{
+    ch_logs(channel, "Invoking one-time callback %s",
+						   (char *)item->cq_callback);
+    /* Remove the item from the list first, if the callback
+     * invokes ch_close() the list will be cleared. */
+    remove_cb_node(cbhead, item);
+    invoke_callback(channel, item->cq_callback, argv);
+    vim_free(item->cq_callback);
+    vim_free(item);
+}
+
 /*
  * Invoke a callback for "channel"/"part" if needed.
  * Return TRUE when a message was handled, there might be another one.
@@ -1402,6 +1419,8 @@ may_invoke_callback(channel_T *channel, int part)
     typval_T	argv[CH_JSON_MAX_ARGS];
     int		seq_nr = -1;
     ch_mode_T	ch_mode = channel->ch_part[part].ch_mode;
+    cbq_T	*cbhead = &channel->ch_part[part].ch_cb_head;
+    cbq_T	*cbitem = cbhead->cq_next;
     char_u	*callback = NULL;
     buf_T	*buffer = NULL;
 
@@ -1409,7 +1428,10 @@ may_invoke_callback(channel_T *channel, int part)
 	/* this channel is handled elsewhere (netbeans) */
 	return FALSE;
 
-    if (channel->ch_part[part].ch_callback != NULL)
+    /* use a message-specific callback, part callback or channel callback */
+    if (cbitem != NULL)
+	callback = cbitem->cq_callback;
+    else if (channel->ch_part[part].ch_callback != NULL)
 	callback = channel->ch_part[part].ch_callback;
     else
 	callback = channel->ch_callback;
@@ -1525,27 +1547,18 @@ may_invoke_callback(channel_T *channel, int part)
 
     if (seq_nr > 0)
     {
-	cbq_T	*head = &channel->ch_part[part].ch_cb_head;
-	cbq_T	*item = head->cq_next;
 	int	done = FALSE;
 
 	/* invoke the one-time callback with the matching nr */
-	while (item != NULL)
+	while (cbitem != NULL)
 	{
-	    if (item->cq_seq_nr == seq_nr)
+	    if (cbitem->cq_seq_nr == seq_nr)
 	    {
-		ch_logs(channel, "Invoking one-time callback %s",
-						   (char *)item->cq_callback);
-		/* Remove the item from the list first, if the callback
-		 * invokes ch_close() the list will be cleared. */
-		remove_cb_node(head, item);
-		invoke_callback(channel, item->cq_callback, argv);
-		vim_free(item->cq_callback);
-		vim_free(item);
+		invoke_one_time_callback(channel, cbhead, cbitem, argv);
 		done = TRUE;
 		break;
 	    }
-	    item = item->cq_next;
+	    cbitem = cbitem->cq_next;
 	}
 	if (!done)
 	    ch_logn(channel, "Dropping message %d without callback", seq_nr);
@@ -1599,11 +1612,18 @@ may_invoke_callback(channel_T *channel, int part)
 		}
 	    }
 	}
+
 	if (callback != NULL)
 	{
-	    /* invoke the channel callback */
-	    ch_logs(channel, "Invoking channel callback %s", (char *)callback);
-	    invoke_callback(channel, callback, argv);
+	    if (cbitem != NULL)
+		invoke_one_time_callback(channel, cbhead, cbitem, argv);
+	    else
+	    {
+		/* invoke the channel callback */
+		ch_logs(channel, "Invoking channel callback %s",
+							    (char *)callback);
+		invoke_callback(channel, callback, argv);
+	    }
 	}
     }
     else

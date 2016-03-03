@@ -62,6 +62,9 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     if decoded[1] == 'hello!':
                         # simply send back a string
                         response = "got it"
+                    elif decoded[1].startswith("echo "):
+                        # send back the argument
+                        response = decoded[1][5:]
                     elif decoded[1] == 'make change':
                         # Send two ex commands at the same time, before
                         # replying to the request.

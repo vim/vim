@@ -257,6 +257,8 @@ func Test_server_crash()
   call s:run_server('s:server_crash')
 endfunc
 
+"""""""""
+
 let s:reply = ""
 func s:Handler(chan, msg)
   unlet s:reply
@@ -289,6 +291,61 @@ func Test_channel_handler()
   call s:run_server('s:channel_handler')
   unlet s:chopt.callback
 endfunc
+
+"""""""""
+
+let s:reply1 = ""
+func s:HandleRaw1(chan, msg)
+  unlet s:reply1
+  let s:reply1 = a:msg
+endfunc
+
+let s:reply2 = ""
+func s:HandleRaw2(chan, msg)
+  unlet s:reply2
+  let s:reply2 = a:msg
+endfunc
+
+let s:reply3 = ""
+func s:HandleRaw3(chan, msg)
+  unlet s:reply3
+  let s:reply3 = a:msg
+endfunc
+
+func s:raw_one_time_callback(port)
+  let handle = ch_open('localhost:' . a:port, s:chopt)
+  if ch_status(handle) == "fail"
+    call assert_false(1, "Can't open channel")
+    return
+  endif
+  call ch_setoptions(handle, {'mode': 'raw'})
+
+  " The message are sent raw, we do our own JSON strings here.
+  call ch_sendraw(handle, "[1, \"hello!\"]", {'callback': 's:HandleRaw1'})
+  sleep 10m
+  call assert_equal("[1, \"got it\"]", s:reply1)
+  call ch_sendraw(handle, "[2, \"echo something\"]", {'callback': 's:HandleRaw2'})
+  call ch_sendraw(handle, "[3, \"wait a bit\"]", {'callback': 's:HandleRaw3'})
+  sleep 10m
+  call assert_equal("[2, \"something\"]", s:reply2)
+  " wait for up to 500 msec for the 200 msec delayed reply
+  for i in range(50)
+    sleep 10m
+    if s:reply3 != ''
+      break
+    endif
+  endfor
+  call assert_equal("[3, \"waited\"]", s:reply3)
+endfunc
+
+func Test_raw_one_time_callback()
+  call ch_logfile('channellog', 'w')
+  call ch_log('Test_raw_one_time_callback()')
+  call s:run_server('s:raw_one_time_callback')
+  call ch_logfile('')
+endfunc
+
+"""""""""
 
 " Test that trying to connect to a non-existing port fails quickly.
 func Test_connect_waittime()
@@ -324,6 +381,8 @@ func Test_connect_waittime()
     endif
   endtry
 endfunc
+
+"""""""""
 
 func Test_raw_pipe()
   if !has('job')
