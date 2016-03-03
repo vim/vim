@@ -72,6 +72,24 @@ function GetAllocId(name)
   return lnum - top - 1
 endfunc
 
+function RunTheTest(test)
+  echo 'Executing ' . a:test
+  if exists("*SetUp")
+    call SetUp()
+  endif
+
+  call add(s:messages, 'Executing ' . a:test)
+  let s:done += 1
+  try
+    exe 'call ' . a:test
+  catch
+    call add(v:errors, 'Caught exception in ' . a:test . ': ' . v:exception . ' @ ' . v:throwpoint)
+  endtry
+
+  if exists("*TearDown")
+    call TearDown()
+  endif
+endfunc
 
 " Source the test script.  First grab the file name, in case the script
 " navigates away.  g:testname can be used by the tests.
@@ -92,6 +110,9 @@ else
   endtry
 endif
 
+" Names of flaky tests.
+let s:flaky = ['Test_reltime()']
+
 " Locate Test_ functions and execute them.
 set nomore
 redir @q
@@ -106,18 +127,13 @@ endif
 
 " Execute the tests in alphabetical order.
 for s:test in sort(s:tests)
-  echo 'Executing ' . s:test
-  if exists("*SetUp")
-    call SetUp()
-  endif
+  call RunTheTest(s:test)
 
-  call add(s:messages, 'Executing ' . s:test)
-  let s:done += 1
-  try
-    exe 'call ' . s:test
-  catch
-    call add(v:errors, 'Caught exception in ' . s:test . ': ' . v:exception . ' @ ' . v:throwpoint)
-  endtry
+  if len(v:errors) > 0 && index(s:flaky, s:test) >= 0
+    call add(s:messages, 'Flaky test failed, running it again')
+    let v:errors = []
+    call RunTheTest(s:test)
+  endif
 
   if len(v:errors) > 0
     let s:fail += 1
@@ -126,9 +142,6 @@ for s:test in sort(s:tests)
     let v:errors = []
   endif
 
-  if exists("*TearDown")
-    call TearDown()
-  endif
 endfor
 
 if s:fail == 0
