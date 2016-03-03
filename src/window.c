@@ -3896,8 +3896,8 @@ leave_tabpage(
 enter_tabpage(
     tabpage_T	*tp,
     buf_T	*old_curbuf UNUSED,
-    int		trigger_enter_autocmds UNUSED,
-    int		trigger_leave_autocmds UNUSED)
+    int		trigger_enter_autocmds,
+    int		trigger_leave_autocmds)
 {
     int		old_off = tp->tp_firstwin->w_winrow;
     win_T	*next_prevwin = tp->tp_prevwin;

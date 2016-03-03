@@ -2033,7 +2033,7 @@ set_arglist(char_u *str)
     static int
 do_arglist(
     char_u	*str,
-    int		what UNUSED,
+    int		what,
     int		after UNUSED)		/* 0 means before first one */
 {
     garray_T	new_ga;

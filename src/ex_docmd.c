@@ -9262,7 +9262,7 @@ ex_bang(exarg_T *eap)
  * ":undo".
  */
     static void
-ex_undo(exarg_T *eap UNUSED)
+ex_undo(exarg_T *eap)
 {
     if (eap->addr_count == 1)	    /* :undo 123 */
 	undo_time(eap->line2, FALSE, FALSE, TRUE);
@@ -9759,7 +9759,7 @@ theend:
 #if ((defined(FEAT_SESSION) || defined(FEAT_EVAL)) && defined(vim_mkdir)) \
 	|| defined(PROTO)
     int
-vim_mkdir_emsg(char_u *name, int prot UNUSED)
+vim_mkdir_emsg(char_u *name, int prot)
 {
     if (vim_mkdir(name, prot) != 0)
     {

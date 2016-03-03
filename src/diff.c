@@ -641,7 +641,7 @@ diff_write(buf_T *buf, char_u *fname)
  */
     void
 ex_diffupdate(
-    exarg_T	*eap UNUSED)	    /* can be NULL */
+    exarg_T	*eap)	    /* can be NULL */
 {
     buf_T	*buf;
     int		idx_orig;
