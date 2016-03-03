@@ -3057,6 +3057,7 @@ do_in_runtimepath(
     return do_in_path(p_rtp, name, all ? DIP_ALL : 0, callback, cookie);
 }
 
+#ifdef FEAT_AUTOCMD
 /*
  * Source filetype detection scripts, if filetype.vim was already done.
  */
@@ -3075,6 +3076,7 @@ may_do_filetypes(char_u *pat)
     }
     vim_free(cmd);
 }
+#endif
 
     static void
 add_pack_plugin(char_u *fname, void *cookie)
@@ -3160,7 +3162,9 @@ source_packages()
 {
     do_in_path(p_pp, (char_u *)"pack/*/ever/*/plugin/*.vim",
 					      DIP_ALL, add_pack_plugin, p_pp);
+#ifdef FEAT_AUTOCMD
     may_do_filetypes((char_u *)"pack/*/ever/*/ftdetect/*.vim");
+#endif
 }
 
 /*
@@ -3181,8 +3185,10 @@ ex_loadplugin(exarg_T *eap)
     vim_snprintf(pat, len, plugpat, eap->arg);
     do_in_path(p_pp, (char_u *)pat, DIP_ALL, add_pack_plugin, p_pp);
 
+#ifdef FEAT_AUTOCMD
     vim_snprintf(pat, len, ftpat, eap->arg);
     may_do_filetypes((char_u *)pat);
+#endif
 
     vim_free(pat);
 }
