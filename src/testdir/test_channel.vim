@@ -479,6 +479,31 @@ func Test_pipe_to_buffer()
   endtry
 endfunc
 
+func Test_pipe_from_buffer()
+  if !has('job')
+    return
+  endif
+call ch_logfile('channellog', 'w')
+  call ch_log('Test_pipe_from_buffer()')
+
+  sp pipe-input
+  call setline(1, ['echo one', 'echo two', 'echo three'])
+
+  let job = job_start(s:python . " test_channel_pipe.py",
+	\ {'in-io': 'buffer', 'in-name': 'pipe-input'})
+  call assert_equal("run", job_status(job))
+  try
+    let handle = job_getchannel(job)
+    call assert_equal('one', ch_read(handle))
+    call assert_equal('two', ch_read(handle))
+    call assert_equal('three', ch_read(handle))
+    bwipe!
+  finally
+    call job_stop(job)
+  endtry
+call ch_logfile('')
+endfunc
+
 func Test_pipe_to_nameless_buffer()
   if !has('job')
     return

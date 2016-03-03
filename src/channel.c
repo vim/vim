@@ -819,13 +819,32 @@ channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err)
 #endif
 
 /*
- * Sets the job the channel is associated with.
+ * Sets the job the channel is associated with and associated options.
  * This does not keep a refcount, when the job is freed ch_job is cleared.
  */
     void
-channel_set_job(channel_T *channel, job_T *job)
+channel_set_job(channel_T *channel, job_T *job, jobopt_T *options)
 {
     channel->ch_job = job;
+
+    channel_set_options(channel, options);
+
+    if (job->jv_in_buf != NULL)
+    {
+	chanpart_T *in_part = &channel->ch_part[PART_IN];
+
+	in_part->ch_buffer = job->jv_in_buf;
+	ch_logs(channel, "reading from buffer '%s'",
+					(char *)in_part->ch_buffer->b_ffname);
+	if (options->jo_set & JO_IN_TOP)
+	    in_part->ch_buf_top = options->jo_in_top;
+	else
+	    in_part->ch_buf_top = 1;
+	if (options->jo_set & JO_IN_BOT)
+	    in_part->ch_buf_bot = options->jo_in_bot;
+	else
+	    in_part->ch_buf_bot = in_part->ch_buffer->b_ml.ml_line_count;
+    }
 }
 
 /*
@@ -961,6 +980,47 @@ channel_set_req_callback(
 	else
 	    item->cq_prev->cq_next = item;
     }
+}
+
+/*
+ * Write any lines to the in channel.
+ */
+    void
+channel_write_in(channel_T *channel)
+{
+    chanpart_T *in_part = &channel->ch_part[PART_IN];
+    linenr_T    lnum;
+    buf_T	*buf = in_part->ch_buffer;
+
+    if (buf == NULL)
+	return;
+    if (!buf_valid(buf) || buf->b_ml.ml_mfp == NULL)
+    {
+	/* buffer was wiped out or unloaded */
+	in_part->ch_buffer = NULL;
+	return;
+    }
+    if (in_part->ch_fd == INVALID_FD)
+	/* pipe was closed */
+	return;
+
+    for (lnum = in_part->ch_buf_top; lnum <= in_part->ch_buf_bot
+				   && lnum <= buf->b_ml.ml_line_count; ++lnum)
+    {
+	char_u *line = ml_get_buf(buf, lnum, FALSE);
+	int	len = STRLEN(line);
+	char_u *p;
+
+	/* TODO: check if channel can be written to */
+	if ((p = alloc(len + 2)) == NULL)
+	    break;
+	STRCPY(p, line);
+	p[len] = NL;
+	p[len + 1] = NUL;
+	channel_send(channel, PART_IN, p, "channel_write_in()");
+	vim_free(p);
+    }
+    in_part->ch_buf_top = lnum;
 }
 
 /*
