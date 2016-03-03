@@ -3058,14 +3058,14 @@ do_in_runtimepath(
     static void
 may_do_filetypes(char_u *pat)
 {
-    char_u *cmd = vim_strsave((char_u *)"did_load_filetypes");
+    char_u *cmd = vim_strsave((char_u *)"g:did_load_filetypes");
 
     /* If runtime/filetype.vim wasn't loaded yet, the scripts will be found
      * when it loads. */
     if (cmd != NULL && eval_to_number(cmd) > 0)
     {
 	do_cmdline_cmd((char_u *)"augroup filetypedetect");
-	source_runtime(pat, TRUE);
+	do_in_path(p_pp, pat, TRUE, source_callback, NULL);
 	do_cmdline_cmd((char_u *)"augroup END");
     }
     vim_free(cmd);
@@ -3125,8 +3125,8 @@ source_pack_plugin(char_u *fname, void *cookie UNUSED)
 	if (p_rtp[keep] != NUL)
 	    mch_memmove(new_rtp + keep + 1 + addlen, p_rtp + keep,
 							   oldlen - keep + 1);
-	free_string_option(p_rtp);
-	p_rtp = new_rtp;
+	set_option_value((char_u *)"rtp", 0L, new_rtp, 0);
+	vim_free(new_rtp);
     }
     *p2 = c;
 
