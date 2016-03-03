@@ -120,7 +120,7 @@ func s:communicate(port)
   call assert_equal('added1', getline(line('$') - 1))
   call assert_equal('added2', getline('$'))
 
-  call assert_equal('ok', ch_evalexpr(handle, 'do normal'))
+  call assert_equal('ok', ch_evalexpr(handle, 'do normal', {'timeout': 100}))
   sleep 10m
   call assert_equal('added more', getline('$'))
 
@@ -342,7 +342,7 @@ func Test_raw_pipe()
     let msg = ch_readraw(handle)
     call assert_equal("this\nAND this\n", substitute(msg, "\r", "", 'g'))
 
-    let reply = ch_evalraw(handle, "quit\n")
+    let reply = ch_evalraw(handle, "quit\n", {'timeout': 100})
     call assert_equal("Goodbye!\n", substitute(reply, "\r", "", 'g'))
   finally
     call job_stop(job)

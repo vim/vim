@@ -10518,15 +10518,15 @@ f_ch_readraw(typval_T *argvars, typval_T *rettv)
  */
     static channel_T *
 send_common(
-	typval_T *argvars,
-	char_u *text,
-	int id,
-	int eval,
-	char *fun,
-	int *part_read)
+	typval_T    *argvars,
+	char_u	    *text,
+	int	    id,
+	int	    eval,
+	jobopt_T    *opt,
+	char	    *fun,
+	int	    *part_read)
 {
     channel_T	*channel;
-    jobopt_T	opt;
     int		part_send;
 
     channel = get_channel_arg(&argvars[0]);
@@ -10535,25 +10535,25 @@ send_common(
     part_send = channel_part_send(channel);
     *part_read = channel_part_read(channel);
 
-    clear_job_options(&opt);
-    if (get_job_options(&argvars[2], &opt, JO_CALLBACK) == FAIL)
+    clear_job_options(opt);
+    if (get_job_options(&argvars[2], opt, JO_CALLBACK + JO_TIMEOUT) == FAIL)
 	return NULL;
 
     /* Set the callback. An empty callback means no callback and not reading
      * the response. With "ch_evalexpr()" and "ch_evalraw()" a callback is not
      * allowed. */
-    if (opt.jo_callback != NULL && *opt.jo_callback != NUL)
+    if (opt->jo_callback != NULL && *opt->jo_callback != NUL)
     {
 	if (eval)
 	{
 	    EMSG2(_("E917: Cannot use a callback with %s()"), fun);
 	    return NULL;
 	}
-	channel_set_req_callback(channel, part_send, opt.jo_callback, id);
+	channel_set_req_callback(channel, part_send, opt->jo_callback, id);
     }
 
     if (channel_send(channel, part_send, text, fun) == OK
-						   && opt.jo_callback == NULL)
+						  && opt->jo_callback == NULL)
 	return channel;
     return NULL;
 }
@@ -10571,6 +10571,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     ch_mode_T	ch_mode;
     int		part_send;
     int		part_read;
+    jobopt_T    opt;
     int		timeout;
 
     /* return an empty string by default */
@@ -10595,12 +10596,15 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     if (text == NULL)
 	return;
 
-    channel = send_common(argvars, text, id, eval,
+    channel = send_common(argvars, text, id, eval, &opt,
 			    eval ? "ch_evalexpr" : "ch_sendexpr", &part_read);
     vim_free(text);
     if (channel != NULL && eval)
     {
-	/* TODO: timeout from options */
+	if (opt.jo_set & JO_TIMEOUT)
+	    timeout = opt.jo_timeout;
+	else
+	    timeout = channel_get_timeout(channel, part_read);
 	timeout = channel_get_timeout(channel, part_read);
 	if (channel_read_json_block(channel, part_read, timeout, id, &listtv)
 									== OK)
@@ -10644,6 +10648,7 @@ ch_raw_common(typval_T *argvars, typval_T *rettv, int eval)
     char_u	*text;
     channel_T	*channel;
     int		part_read;
+    jobopt_T    opt;
     int		timeout;
 
     /* return an empty string by default */
@@ -10651,12 +10656,14 @@ ch_raw_common(typval_T *argvars, typval_T *rettv, int eval)
     rettv->vval.v_string = NULL;
 
     text = get_tv_string_buf(&argvars[1], buf);
-    channel = send_common(argvars, text, 0, eval,
+    channel = send_common(argvars, text, 0, eval, &opt,
 			      eval ? "ch_evalraw" : "ch_sendraw", &part_read);
     if (channel != NULL && eval)
     {
-	/* TODO: timeout from options */
-	timeout = channel_get_timeout(channel, part_read);
+	if (opt.jo_set & JO_TIMEOUT)
+	    timeout = opt.jo_timeout;
+	else
+	    timeout = channel_get_timeout(channel, part_read);
 	rettv->vval.v_string = channel_read_block(channel, part_read, timeout);
     }
 }
