@@ -1820,6 +1820,7 @@ gui_gtk_get_pointer(GtkWidget       *widget,
     return gdk_window_get_device_position(win, dev , x, y, state);
 }
 
+# if defined(FEAT_GUI_TABLINE) || defined(PROTO)
     static GdkWindow *
 gui_gtk_window_at_position(GtkWidget *widget,
 			   gint      *x,
@@ -1828,6 +1829,7 @@ gui_gtk_window_at_position(GtkWidget *widget,
     GdkDevice * const dev = gui_gtk_get_pointer_device(widget);
     return gdk_device_get_window_at_position(dev, x, y);
 }
+# endif
 #endif
 
 /*
