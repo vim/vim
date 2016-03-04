@@ -2446,8 +2446,6 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :lo	starting.txt	/*:lo*
 :loadk	mbyte.txt	/*:loadk*
 :loadkeymap	mbyte.txt	/*:loadkeymap*
-:loadp	repeat.txt	/*:loadp*
-:loadplugin	repeat.txt	/*:loadplugin*
 :loadview	starting.txt	/*:loadview*
 :loc	motion.txt	/*:loc*
 :lockmarks	motion.txt	/*:lockmarks*
@@ -2620,6 +2618,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :ounmenu	gui.txt	/*:ounmenu*
 :ownsyntax	syntax.txt	/*:ownsyntax*
 :p	various.txt	/*:p*
+:pa	repeat.txt	/*:pa*
+:packadd	repeat.txt	/*:packadd*
 :pc	windows.txt	/*:pc*
 :pclose	windows.txt	/*:pclose*
 :pe	if_perl.txt	/*:pe*
@@ -4438,8 +4438,10 @@ E911	eval.txt	/*E911*
 E912	eval.txt	/*E912*
 E913	eval.txt	/*E913*
 E914	eval.txt	/*E914*
+E915	channel.txt	/*E915*
 E916	eval.txt	/*E916*
 E917	eval.txt	/*E917*
+E918	channel.txt	/*E918*
 E92	message.txt	/*E92*
 E93	windows.txt	/*E93*
 E94	windows.txt	/*E94*
@@ -6942,7 +6944,6 @@ list-repeat	windows.txt	/*list-repeat*
 lite.vim	syntax.txt	/*lite.vim*
 literal-string	eval.txt	/*literal-string*
 lnum-variable	eval.txt	/*lnum-variable*
-load-plugin	repeat.txt	/*load-plugin*
 load-plugins	starting.txt	/*load-plugins*
 load-vim-script	repeat.txt	/*load-vim-script*
 local-additions	help.txt	/*local-additions*
@@ -7573,6 +7574,7 @@ other-features	vi_diff.txt	/*other-features*
 out-cb	channel.txt	/*out-cb*
 out-timeout	channel.txt	/*out-timeout*
 p	change.txt	/*p*
+pack-add	repeat.txt	/*pack-add*
 packages	repeat.txt	/*packages*
 page-down	intro.txt	/*page-down*
 page-up	intro.txt	/*page-up*

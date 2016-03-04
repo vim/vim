@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Feb 27
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Mar 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,26 +35,22 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 +channel:
-- A callback on ch_sendraw() should be put at the end of the list of callback
-  handlers.  When a message arrives invoke the first one and remove it.
 - implement TODO items in ":help channel":
+   - Send last line of buffer when it's added.
    - job_start() options:
-	term
-	in-io
-	in-file
-	out-io
-	out-file
-	out-buffer
-	err-io
-	err-file
-	err-buffer
+	in-io: null, file (in-name), in-buf
+	out-io: null, file, out-buf
+	err-io: null, file (err-name), buffer (err-buf)
 	existing channel to use
    - job_maystart()
    - add job_info(): process ID, run/dead, etc.
    - add ch_info(): in/out/err mode, timeout, callbacks, etc.
 - Move more details from eval.txt to channel.txt.  Add tags in eval.txt.
 - When receiving malformed json starting with a quote it doesn't get
-  discarded.
+  discarded.  Any invalid JSON or JSON that isn't a list will block further
+  parsing?
+- When decoding json, don't read all the typeahead at once, use the reader
+  properly.
 - When a message in the queue but there is no callback, drop it after a while?
   Add timestamp to queued messages and callbacks with ID, remove after a
   minute.
@@ -70,12 +66,11 @@ not be repeated below, unless there is extra information.
 - make sure errors lead to a useful error msg. ["ex","foobar"]
 - For connection to server, a "keep open" flag would be useful.  Retry
   connecting in the main loop with zero timeout.
+Later
+- job_start(): run job in a newly opened terminal.
+    With xterm could use -S{pty}.
 
-For Win32 isinf() should be inline. (ZyX)
-
-Add ":packadd"? Like :loadplugin but only adds the dir to 'runtimepath'.
-
-emoji patch from Yasuhiro Matsumoto.
+emoji patch from Yasuhiro Matsumoto.  Asked Thomas Dickey.
 
 More plugin support:
 - Have a way to install a callback from the main loop.  Called every second or
@@ -107,15 +102,17 @@ When running "make install" don't overwrite the doc/tags file, generate it
 elsewhere, so that the distributed file doesn't change.
 
 Fix to support --nofork for Windows batch files. (Kevin Cantú, 2016 Feb 23,
-#658)
+#658, #659)  Also add "setlocal" at top of batch file?
 
-Patch to add GTK 3 support. (Kazunobu Kuriyama, 2016 Feb 13)
+Patch to add matchstrpos(). (Ozaki Kiichi, 2016 Feb 28)
 
 Why does this: 	echo "a" . 1.1
 result in:	a11
 Should recognize float (so long as it's not ".1.1").
 
-Allow for an empty dictionary key.
+Allow for an empty dictionary key?
+
+Patch to improve I/O for Perl. (Damien, 2016 Jan 9, update Jan 22 2nd one)
 
 Regexp problems:
 - The regexp engines are not reentrant, causing havoc when interrupted by a
@@ -170,6 +167,7 @@ Patch to put undo options together in undo window.
 
 Patch to have better check for {action} argument of setqflist().
 Nikolai Pavlov, Feb 25, #661.  Can be even more strict.
+Also see patch from Hirohito Higash, Feb 25.
 
 Patch for clearing history. (Yegappan Lakshmanan, 2016 Jan 31, second message
 has tests)
@@ -189,6 +187,10 @@ Two patches now?  New update Feb 24.
 
 Patch to support 64 bit ints for Number. (Ken Takata, 2016 Jan 21)
 Also in update of Feb 24?
+
+Patch to add setbufline(). (email from Yasuhiro Matsumoto, patch by Ozaki
+Kiichi, 2016 Feb 28)
+https://gist.github.com/ichizok/64bdc92aed19ec9001dd
 
 Need to try out instructions in INSSTALLpc.txt about how to install all
 interfaces and how to build Vim with them.
@@ -381,8 +383,6 @@ Patch to add GUI colors to the terminal, when it supports it. (ZyX, 2013 Jan
 
 Patch for problem with restoring screen on Windows. (Nobuhiro Takasaki, 2015
 Sep 10)
-
-Patch to improve I/O for Perl. (Damien, 2015 Jan 9, update Jan 22 2nd one)
 
 Patch to set antialiasing style on Windows. (Ondrej Balaz, 2013 Mar 14)
 Needs a different check for CLEARTYPE_QUALITY.

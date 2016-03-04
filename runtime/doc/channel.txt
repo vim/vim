@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Feb 27
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Mar 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -103,6 +103,11 @@ when opening the channel: >
 	let channel = ch_open('localhost:8765', {'callback': "MyHandler"})
 	call ch_sendexpr(channel, 'hello!')
 
+When trying out channels it's useful to see what is going on.  You can tell
+Vim to write lines in log file: >
+	call ch_logfile('channellog', 'w')
+See |ch_logfile()|.
+
 ==============================================================================
 3. Opening a channel					*channel-open*
 
@@ -130,7 +135,8 @@ Use |ch_status()| to see if the channel could be opened.
 		overwritten.  Therefore set "mode" first and the part specific
 		mode later.
 
-		Note: when writing to a file or buffer NL mode is always used.
+		Note: when writing to a file or buffer and when reading from a
+		buffer NL mode is used by default.
 
 							*channel-callback*
 "callback"	A function that is called when a message is received that is
@@ -190,6 +196,10 @@ be given, since that only applies to opening the channel.
 For example, the handler can be added or changed: >
     call ch_setoptions(channel, {'callback': callback})
 When "callback" is empty (zero or an empty string) the handler is removed.
+
+After a callback has been invoked Vim will update the screen and put the
+cursor back where it belongs.  Thus the callback should not need to do
+`:redraw`.
 
 The timeout can be changed: >
     call ch_setoptions(channel, {'timeout': msec})
@@ -259,9 +269,9 @@ message, it must use the number zero:
 Then channel handler will then get {response} converted to Vim types.  If the
 channel does not have a handler the message is dropped.
 
-On read error or ch_close(), when using a socket, the string "DETACH" is sent,
-if still possible.  The channel will then be inactive. For a JSON and JS mode
-channel quotes are used around DETACH, otherwise there are no quotes.
+On read error or ch_close(), when using a socket with RAW or NL mode, the
+string "DETACH\n" is sent, if still possible.  The channel will then be
+inactive.
 
 It is also possible to use ch_sendraw() and ch_evalraw() on a JSON or JS
 channel.  The caller is then completely responsible for correct encoding and
@@ -457,6 +467,22 @@ For example, to start a job and write its output in buffer "dummy": >
 			     \ {'out-io': 'buffer', 'out-name': 'dummy'})
 	sbuf dummy
 
+To run a job that reads from a buffer: >
+	let job = job_start({command},
+	    \ {'in-io': 'buffer', 'in-name': 'mybuffer'})
+<
+							*E915* *E918*
+The buffer is found by name, similar to |bufnr()|. The buffer must exist and
+be loaded when job_start() is called.
+
+By default this reads the whole buffer.  This can be changed with the "in-top"
+and "in-bot" options.
+
+TODO
+A special mode is when "in-top" is set to zero and "in-bot" is not set: The
+last-but-one line will be send to the job stdin.  This allows for editing the
+last line and sending it when pressing Enter.
+
 TODO:
 To run a job and read its output once it is done: >
 	let job = job_start({command}, {'exit-cb': 'MyHandler'})
@@ -470,7 +496,8 @@ To run a job and read its output once it is done: >
 9. Starting a job without a channel			*job-start-nochannel*
 
 To start another process without creating a channel: >
-    let job = job_start(command, {"in-io": "null", "out-io": "null"})
+    let job = job_start(command,
+    	\ {"in-io": "null", "out-io": "null", "err-io": "null"})
 
 This starts {command} in the background, Vim does not wait for it to finish.
 
@@ -538,7 +565,9 @@ TODO:						*job-term*
 "in-io": "null"		disconnect stdin  TODO
 "in-io": "pipe"		stdin is connected to the channel (default)
 "in-io": "file"		stdin reads from a file  TODO
-"in-io": "buffer"	stdin reads from a buffer  TODO
+"in-io": "buffer"	stdin reads from a buffer
+"in-top": number	when using "buffer": first line to send (default: 1)
+"in-bot": number	when using "buffer": last line to send (default: last)
 "in-name": "/path/file"	the name of he file or buffer to read from
 "in-buf": number	the number of the buffer to read from  TODO
 
@@ -551,7 +580,7 @@ TODO:						*job-term*
 "out-buf": number	the number of the buffer to write to  TODO
 
 						*job-err-io*
-"err-io": "out"		same as stdout  TODO
+"err-io": "out"		stderr messages to go to stdout
 "err-io": "null"	disconnect stderr  TODO
 "err-io": "pipe"	stderr is connected to the channel (default)
 "err-io": "file"	stderr writes to a file  TODO
@@ -561,6 +590,10 @@ TODO:						*job-term*
 
 When the IO mode is "buffer" and there is a callback, the text is appended to
 the buffer before invoking the callback.
+
+When using JS or JSON mode with "buffer", only messages with zero or negative
+ID will be added to the buffer, after decoding + encoding.  Messages with a
+positive number will be handled by a callback, commands are handled as usual.
 
 The name of the buffer is compared the full name of existing buffers.  If
 there is a match that buffer is used.  Otherwise a new buffer is created.

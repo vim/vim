@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.4.  Last change: 2016 Feb 27
+*starting.txt*  For Vim version 7.4.  Last change: 2016 Mar 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -832,6 +832,8 @@ accordingly.  Vim proceeds in this order:
 	-  The user exrc file(s).  Same as for the user vimrc file, but with
 	   "vimrc" replaced by "exrc".  But only one of ".exrc" and "_exrc" is
 	   used, depending on the system.  And without the (*)!
+	-  You would usually have "syntax on" and/or "filetype on" commands,
+	   which trigger initializing filetype detection, see |syntax-loading|.
 
      d. If the 'exrc' option is on (which is not the default), the current
 	directory is searched for three files.  The first that exists is used,

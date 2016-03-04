@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Feb 27
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Mar 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2695,6 +2695,14 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 
 ch_close({channel})						*ch_close()*
 		Close {channel}.  See |channel-close|.
+
+		Note that a channel is closed in three stages:
+		  - The I/O ends, log message: "Closing channel". There can
+		    still be queued messages to read or callbacks to invoke.
+		  - The readahead is cleared, log message: "Clearing channel".
+		    Some variables may still reference the channel.
+		  - The channel is freed, log message: "Freeing channel".
+
 		{only available when compiled with the |+channel| feature}
 
 ch_evalexpr({channel}, {expr} [, {options}])			*ch_evalexpr()*
@@ -2703,7 +2711,7 @@ ch_evalexpr({channel}, {expr} [, {options}])			*ch_evalexpr()*
 		with a raw channel.  See |channel-use|.
 								*E917*
 		{options} must be a Dictionary.  It must not have a "callback"
-		entry.
+		entry.  It can have a "timeout" entry.
 
 		ch_evalexpr() waits for a response and returns the decoded
 		expression.  When there is an error or timeout it returns an
@@ -2752,6 +2760,7 @@ ch_logfile({fname} [, {mode}])					*ch_logfile()*
 
 		The file is flushed after every message, on Unix you can use
 		"tail -f" to see what is going on in real time.
+
 
 ch_open({address} [, {options}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
