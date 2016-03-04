@@ -1686,24 +1686,24 @@ add_to_input_buf_csi(char_u *str, int len)
 push_raw_key(char_u *s, int len)
 {
     char_u *tmpbuf;
+    char_u *inp = s;
 
+    /* use the conversion result if possible */
     tmpbuf = hangul_string_convert(s, &len);
     if (tmpbuf != NULL)
-    {
-	s = tmpbuf;
+	inp = tmpbuf;
 
-	for (; len--; s++)
+    for (; len--; inp++)
+    {
+	inbuf[inbufcount++] = *inp;
+	if (*inp == CSI)
 	{
-	    inbuf[inbufcount++] = *s;
-	    if (*s == CSI)
-	    {
-		/* Turn CSI into K_CSI. */
-		inbuf[inbufcount++] = KS_EXTRA;
-		inbuf[inbufcount++] = (int)KE_CSI;
-	    }
+	    /* Turn CSI into K_CSI. */
+	    inbuf[inbufcount++] = KS_EXTRA;
+	    inbuf[inbufcount++] = (int)KE_CSI;
 	}
-	vim_free(tmpbuf);
     }
+    vim_free(tmpbuf);
 }
 #endif
 
