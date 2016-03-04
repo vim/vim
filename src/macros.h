@@ -331,7 +331,7 @@
 #  if defined(WIN32)
 #   ifndef isnan
 #    define isnan(x) _isnan(x)
-     static inline int isinf(double x) { return !_finite(x) && !_isnan(x); }
+     static __inline int isinf(double x) { return !_finite(x) && !_isnan(x); }
 #   endif
 #  else
 #   ifndef HAVE_ISNAN
