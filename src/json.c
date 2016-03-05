@@ -506,6 +506,7 @@ json_decode_object(js_read_T *reader, typval_T *res, int options)
 		return FAIL;
 	    }
 	    di->di_tv = item;
+	    di->di_tv.v_lock = 0;
 	    if (dict_add(res->vval.v_dict, di) == FAIL)
 	    {
 		dictitem_free(di);
