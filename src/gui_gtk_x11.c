@@ -617,9 +617,9 @@ visibility_event(GtkWidget *widget UNUSED,
  */
 #if GTK_CHECK_VERSION(3,0,0)
 static gboolean is_key_pressed = FALSE;
+static gboolean blink_mode = TRUE;
 
 static gboolean gui_gtk_is_blink_on(void);
-static gboolean gui_gtk_is_no_blink(void);
 static void gui_gtk_window_clear(GdkWindow *win);
 
     static void
@@ -649,7 +649,6 @@ gui_gtk3_should_draw_cursor(void)
     cond |= gui_gtk_is_blink_on();
     cond |= is_key_pressed;
     cond |= gui.in_focus == FALSE;
-    cond |= gui_gtk_is_no_blink();
     return  cond;
 }
 
@@ -681,7 +680,10 @@ draw_event(GtkWidget *widget,
 	    for (i = 0; i < list->num_rectangles; i++)
 	    {
 		const cairo_rectangle_t rect = list->rectangles[i];
-		gui_gtk3_redraw(rect.x, rect.y, rect.width, rect.height);
+		if (blink_mode)
+		    gui_gtk3_redraw(rect.x, rect.y, rect.width, rect.height);
+		else
+		    gui_redraw(rect.x, rect.y, rect.width, rect.height);
 	    }
 	}
 	cairo_rectangle_list_destroy(list);
@@ -790,20 +792,33 @@ gui_gtk_is_blink_on(void)
 {
     return blink_state == BLINK_ON;
 }
-
-    static gboolean
-gui_gtk_is_no_blink(void)
-{
-    return blink_waittime == 0 || blink_ontime == 0 || blink_offtime == 0;
-}
 #endif
 
     void
 gui_mch_set_blinking(long waittime, long on, long off)
 {
+#if GTK_CHECK_VERSION(3,0,0)
+    if (waittime == 0 || on == 0 || off == 0)
+    {
+	blink_mode = FALSE;
+
+	blink_waittime = 700;
+	blink_ontime = 400;
+	blink_offtime = 250;
+    }
+    else
+    {
+	blink_mode = TRUE;
+
+	blink_waittime = waittime;
+	blink_ontime = on;
+	blink_offtime = off;
+    }
+#else
     blink_waittime = waittime;
     blink_ontime = on;
     blink_offtime = off;
+#endif
 }
 
 /*
