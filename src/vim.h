@@ -757,6 +757,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define EXPAND_USER		42
 #define EXPAND_SYNTIME		43
 #define EXPAND_USER_ADDR_TYPE	44
+#define EXPAND_PACKADD		45
 
 /* Values for exmode_active (0 is no exmode) */
 #define EXMODE_NORMAL		1

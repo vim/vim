@@ -112,6 +112,7 @@ static int	expand_showtail(expand_T *xp);
 #ifdef FEAT_CMDL_COMPL
 static int	expand_shellcmd(char_u *filepat, int *num_file, char_u ***file, int flagsarg);
 static int	ExpandRTDir(char_u *pat, int *num_file, char_u ***file, char *dirname[]);
+static int	ExpandPackAddDir(char_u *pat, int *num_file, char_u ***file);
 # ifdef FEAT_CMDHIST
 static char_u	*get_history_arg(expand_T *xp, int idx);
 # endif
@@ -4231,6 +4232,7 @@ addstar(
 		|| context == EXPAND_COMPILER
 		|| context == EXPAND_OWNSYNTAX
 		|| context == EXPAND_FILETYPE
+		|| context == EXPAND_PACKADD
 		|| (context == EXPAND_TAGS && fname[0] == '/'))
 	    retval = vim_strnsave(fname, len);
 	else
@@ -4647,6 +4649,8 @@ ExpandFromContext(
     if (xp->xp_context == EXPAND_USER_LIST)
 	return ExpandUserList(xp, num_file, file);
 # endif
+    if (xp->xp_context == EXPAND_PACKADD)
+	return ExpandPackAddDir(pat, num_file, file);
 
     regmatch.regprog = vim_regcomp(pat, p_magic ? RE_MAGIC : 0);
     if (regmatch.regprog == NULL)
@@ -5166,6 +5170,58 @@ ExpandRTDir(
 	    *e = NUL;
 	    mch_memmove(match, s, e - s + 1);
 	}
+    }
+
+    if (ga.ga_len == 0)
+	return FAIL;
+
+    /* Sort and remove duplicates which can happen when specifying multiple
+     * directories in dirnames. */
+    remove_duplicates(&ga);
+
+    *file = ga.ga_data;
+    *num_file = ga.ga_len;
+    return OK;
+}
+
+/*
+ * Expand loadplugin names:
+ * 'packpath'/pack/ * /opt/{pat}
+ */
+    static int
+ExpandPackAddDir(
+    char_u	*pat,
+    int		*num_file,
+    char_u	***file)
+{
+    char_u	*s;
+    char_u	*e;
+    char_u	*match;
+    garray_T	ga;
+    int		i;
+    int		pat_len;
+
+    *num_file = 0;
+    *file = NULL;
+    pat_len = (int)STRLEN(pat);
+    ga_init2(&ga, (int)sizeof(char *), 10);
+
+    s = alloc((unsigned)(pat_len + 26));
+    if (s == NULL)
+    {
+	ga_clear_strings(&ga);
+	return FAIL;
+    }
+    sprintf((char *)s, "pack/*/opt/%s*", pat);
+    globpath(p_pp, s, &ga, 0);
+    vim_free(s);
+
+    for (i = 0; i < ga.ga_len; ++i)
+    {
+	match = ((char_u **)ga.ga_data)[i];
+	s = gettail(match);
+	e = s + STRLEN(s);
+	mch_memmove(match, s, e - s + 1);
     }
 
     if (ga.ga_len == 0)

@@ -55,3 +55,24 @@ func Test_packadd_noload()
   packadd! mytest
   call assert_equal(new_rtp, &rtp)
 endfunc
+
+" Check command-line completion for 'packadd'
+func Test_packadd_completion()
+  let optdir1 = &packpath . '/pack/mine/opt'
+  let optdir2 = &packpath . '/pack/candidate/opt'
+
+  call mkdir(optdir1 . '/pluginA', 'p')
+  call mkdir(optdir1 . '/pluginC', 'p')
+  call mkdir(optdir2 . '/pluginB', 'p')
+  call mkdir(optdir2 . '/pluginC', 'p')
+
+  let li = []
+  call feedkeys(":packadd \<Tab>')\<C-B>call add(li, '\<CR>", 't')
+  call feedkeys(":packadd " . repeat("\<Tab>", 2) . "')\<C-B>call add(li, '\<CR>", 't')
+  call feedkeys(":packadd " . repeat("\<Tab>", 3) . "')\<C-B>call add(li, '\<CR>", 't')
+  call feedkeys(":packadd " . repeat("\<Tab>", 4) . "')\<C-B>call add(li, '\<CR>", 'tx')
+  call assert_equal("packadd pluginA", li[0])
+  call assert_equal("packadd pluginB", li[1])
+  call assert_equal("packadd pluginC", li[2])
+  call assert_equal("packadd ", li[3])
+endfunc
