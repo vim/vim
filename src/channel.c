@@ -1046,8 +1046,11 @@ invoke_callback(channel_T *channel, char_u *callback, typval_T *argv)
     cursor_on();
     out_flush();
 #ifdef FEAT_GUI
-    gui_update_cursor(TRUE, FALSE);
-    gui_mch_flush();
+    if (gui.in_use)
+    {
+	gui_update_cursor(TRUE, FALSE);
+	gui_mch_flush();
+    }
 #endif
 }
 
