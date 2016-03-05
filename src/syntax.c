@@ -509,7 +509,9 @@ syntax_start(win_T *wp, linenr_T lnum)
      * Also do this when a change was made, the current state may be invalid
      * then.
      */
-    if (syn_block != wp->w_s || changedtick != syn_buf->b_changedtick)
+    if (syn_block != wp->w_s
+	    || changedtick != syn_buf->b_changedtick
+	    || syn_buf != wp->w_buffer)
     {
 	invalidate_current_state();
 	syn_buf = wp->w_buffer;
