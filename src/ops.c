@@ -410,7 +410,15 @@ shift_block(oparg_T *oap, int amount)
 	{
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
-		bd.textstart += (*mb_ptr2len)(bd.textstart);
+	    {
+		if ((*mb_ptr2len)(bd.textstart) == 1)
+		    ++bd.textstart;
+		else
+		{
+		    ws_vcol = 0;
+		    bd.startspaces = 0;
+		}
+	    }
 	    else
 #endif
 		++bd.textstart;
