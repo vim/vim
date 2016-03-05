@@ -1480,7 +1480,7 @@ may_invoke_callback(channel_T *channel, int part)
     int		seq_nr = -1;
     ch_mode_T	ch_mode = channel->ch_part[part].ch_mode;
     cbq_T	*cbhead = &channel->ch_part[part].ch_cb_head;
-    cbq_T	*cbitem = cbhead->cq_next;
+    cbq_T	*cbitem;
     char_u	*callback = NULL;
     buf_T	*buffer = NULL;
 
@@ -1488,7 +1488,10 @@ may_invoke_callback(channel_T *channel, int part)
 	/* this channel is handled elsewhere (netbeans) */
 	return FALSE;
 
-    /* use a message-specific callback, part callback or channel callback */
+    /* Use a message-specific callback, part callback or channel callback */
+    for (cbitem = cbhead->cq_next; cbitem != NULL; cbitem = cbitem->cq_next)
+	if (cbitem->cq_seq_nr == 0)
+	    break;
     if (cbitem != NULL)
 	callback = cbitem->cq_callback;
     else if (channel->ch_part[part].ch_callback != NULL)
@@ -1610,16 +1613,13 @@ may_invoke_callback(channel_T *channel, int part)
 	int	done = FALSE;
 
 	/* invoke the one-time callback with the matching nr */
-	while (cbitem != NULL)
-	{
+	for (cbitem = cbhead->cq_next; cbitem != NULL; cbitem = cbitem->cq_next)
 	    if (cbitem->cq_seq_nr == seq_nr)
 	    {
 		invoke_one_time_callback(channel, cbhead, cbitem, argv);
 		done = TRUE;
 		break;
 	    }
-	    cbitem = cbitem->cq_next;
-	}
 	if (!done)
 	    ch_logn(channel, "Dropping message %d without callback", seq_nr);
     }

@@ -294,6 +294,72 @@ endfunc
 
 """""""""
 
+let s:ch_reply = ''
+func s:ChHandler(chan, msg)
+  unlet s:ch_reply
+  let s:ch_reply = a:msg
+endfunc
+
+let s:zero_reply = ''
+func s:OneHandler(chan, msg)
+  unlet s:zero_reply
+  let s:zero_reply = a:msg
+endfunc
+
+func s:channel_zero(port)
+  let handle = ch_open('localhost:' . a:port, s:chopt)
+  if ch_status(handle) == "fail"
+    call assert_false(1, "Can't open channel")
+    return
+  endif
+
+  " Check that eval works.
+  call assert_equal('got it', ch_evalexpr(handle, 'hello!'))
+
+  " Check that eval works if a zero id message is sent back.
+  let s:ch_reply = ''
+  call assert_equal('sent zero', ch_evalexpr(handle, 'send zero'))
+  sleep 10m
+  if s:has_handler
+    call assert_equal('zero index', s:ch_reply)
+  else
+    call assert_equal('', s:ch_reply)
+  endif
+
+  " Check that handler works if a zero id message is sent back.
+  let s:ch_reply = ''
+  let s:zero_reply = ''
+  call ch_sendexpr(handle, 'send zero', {'callback': 's:OneHandler'})
+  " Somehow the second message takes a bit of time.
+  for i in range(50)
+    if s:zero_reply == 'sent zero'
+      break
+    endif
+    sleep 10m
+  endfor
+  if s:has_handler
+    call assert_equal('zero index', s:ch_reply)
+  else
+    call assert_equal('', s:ch_reply)
+  endif
+  call assert_equal('sent zero', s:zero_reply)
+endfunc
+
+func Test_zero_reply()
+  call ch_log('Test_zero_reply()')
+  " Run with channel handler
+  let s:has_handler = 1
+  let s:chopt.callback = 's:ChHandler'
+  call s:run_server('s:channel_zero')
+  unlet s:chopt.callback
+
+  " Run without channel handler
+  let s:has_handler = 0
+  call s:run_server('s:channel_zero')
+endfunc
+
+"""""""""
+
 let s:reply1 = ""
 func s:HandleRaw1(chan, msg)
   unlet s:reply1
