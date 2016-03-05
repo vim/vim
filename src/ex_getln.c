@@ -5783,6 +5783,7 @@ clr_history(int histype)
 	{
 	    vim_free(hisptr->hisstr);
 	    clear_hist_entry(hisptr);
+	    hisptr++;
 	}
 	hisidx[histype] = -1;	/* mark history as cleared */
 	hisnum[histype] = 0;	/* reset identifier counter */
