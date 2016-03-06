@@ -146,6 +146,9 @@ func s:communicate(port)
   endif
   call assert_equal('got it', s:responseMsg)
 
+  " Collect garbage, tests that our handle isn't collected.
+  call garbagecollect()
+
   " check setting options (without testing the effect)
   call ch_setoptions(handle, {'callback': 's:NotUsed'})
   call ch_setoptions(handle, {'timeout': 1111})
