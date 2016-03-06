@@ -136,6 +136,8 @@ ch_log_lead(char *what, channel_T *ch)
     }
 }
 
+static int did_log_msg = TRUE;
+
     void
 ch_log(channel_T *ch, char *msg)
 {
@@ -145,6 +147,7 @@ ch_log(channel_T *ch, char *msg)
 	fputs(msg, log_fd);
 	fputc('\n', log_fd);
 	fflush(log_fd);
+	did_log_msg = TRUE;
     }
 }
 
@@ -157,6 +160,7 @@ ch_logn(channel_T *ch, char *msg, int nr)
 	fprintf(log_fd, msg, nr);
 	fputc('\n', log_fd);
 	fflush(log_fd);
+	did_log_msg = TRUE;
     }
 }
 
@@ -169,6 +173,7 @@ ch_logs(channel_T *ch, char *msg, char *name)
 	fprintf(log_fd, msg, name);
 	fputc('\n', log_fd);
 	fflush(log_fd);
+	did_log_msg = TRUE;
     }
 }
 
@@ -181,6 +186,7 @@ ch_logsn(channel_T *ch, char *msg, char *name, int nr)
 	fprintf(log_fd, msg, name, nr);
 	fputc('\n', log_fd);
 	fflush(log_fd);
+	did_log_msg = TRUE;
     }
 }
 
@@ -193,6 +199,7 @@ ch_error(channel_T *ch, char *msg)
 	fputs(msg, log_fd);
 	fputc('\n', log_fd);
 	fflush(log_fd);
+	did_log_msg = TRUE;
     }
 }
 
@@ -205,6 +212,7 @@ ch_errorn(channel_T *ch, char *msg, int nr)
 	fprintf(log_fd, msg, nr);
 	fputc('\n', log_fd);
 	fflush(log_fd);
+	did_log_msg = TRUE;
     }
 }
 
@@ -217,6 +225,7 @@ ch_errors(channel_T *ch, char *msg, char *arg)
 	fprintf(log_fd, msg, arg);
 	fputc('\n', log_fd);
 	fflush(log_fd);
+	did_log_msg = TRUE;
     }
 }
 
@@ -2352,6 +2361,7 @@ channel_send(channel_T *channel, int part, char_u *buf, char *fun)
 	ignored = (int)fwrite(buf, len, 1, log_fd);
 	fprintf(log_fd, "'\n");
 	fflush(log_fd);
+	did_log_msg = TRUE;
     }
 
     if (part == PART_SOCK)
@@ -2541,7 +2551,13 @@ channel_parse_messages(void)
     int		r;
     int		part = PART_SOCK;
 
-    ch_log(NULL, "looking for messages on channels");
+    /* Only do this message when another message was given, otherwise we get
+     * lots of them. */
+    if (did_log_msg)
+    {
+	ch_log(NULL, "looking for messages on channels");
+	did_log_msg = FALSE;
+    }
     while (channel != NULL)
     {
 	if (channel->ch_refcount == 0 && !channel_still_useful(channel))
