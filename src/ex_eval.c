@@ -432,7 +432,7 @@ get_exception_string(
 
     if (type == ET_ERROR)
     {
-	*should_free = FALSE;
+	*should_free = TRUE;
 	mesg = ((struct msglist *)value)->throw_msg;
 	if (cmdname != NULL && *cmdname != NUL)
 	{
@@ -489,7 +489,7 @@ get_exception_string(
     else
     {
 	*should_free = FALSE;
-	ret = (char_u *) value;
+	ret = (char_u *)value;
     }
 
     return ret;
