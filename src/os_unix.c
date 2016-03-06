@@ -5045,6 +5045,7 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
     int		fd_out[2];	/* for stdout */
     int		fd_err[2];	/* for stderr */
     channel_T	*channel = NULL;
+    int		use_file_for_in = options->jo_io[PART_IN] == JIO_FILE;
     int		use_out_for_err = options->jo_io[PART_ERR] == JIO_OUT;
 
     /* default is to fail */
@@ -5055,8 +5056,22 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 
     /* TODO: without the channel feature connect the child to /dev/null? */
     /* Open pipes for stdin, stdout, stderr. */
-    if (pipe(fd_in) < 0 || pipe(fd_out) < 0
-				    || (!use_out_for_err && pipe(fd_err) < 0))
+    if (use_file_for_in)
+    {
+	char_u *fname = options->jo_io_name[PART_IN];
+
+	fd_in[0] = mch_open((char *)fname, O_RDONLY, 0);
+	if (fd_in[0] < 0)
+	{
+	    EMSG2(_(e_notopen), fname);
+	    goto failed;
+	}
+    }
+    else if (pipe(fd_in) < 0)
+	goto failed;
+    if (pipe(fd_out) < 0)
+	goto failed;
+    if (!use_out_for_err && pipe(fd_err) < 0)
 	goto failed;
 
     channel = add_channel();
@@ -5088,7 +5103,8 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 	/* TODO: re-enable this when pipes connect without a channel */
 # ifdef FEAT_CHANNEL
 	/* set up stdin for the child */
-	close(fd_in[1]);
+	if (!use_file_for_in)
+	    close(fd_in[1]);
 	close(0);
 	ignored = dup(fd_in[0]);
 	close(fd_in[0]);
@@ -5130,12 +5146,15 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 
 # ifdef FEAT_CHANNEL
     /* child stdin, stdout and stderr */
-    close(fd_in[0]);
+    if (!use_file_for_in)
+	close(fd_in[0]);
     close(fd_out[1]);
     if (!use_out_for_err)
 	close(fd_err[1]);
-    channel_set_pipes(channel, fd_in[1], fd_out[0],
-				    use_out_for_err ? INVALID_FD : fd_err[0]);
+    channel_set_pipes(channel,
+		      use_file_for_in ? INVALID_FD : fd_in[1],
+		      fd_out[0],
+		      use_out_for_err ? INVALID_FD : fd_err[0]);
     channel_set_job(channel, job, options);
 #  ifdef FEAT_GUI
     channel_gui_register(channel);
@@ -5151,7 +5170,8 @@ failed: ;
     if (fd_in[0] >= 0)
     {
 	close(fd_in[0]);
-	close(fd_in[1]);
+	if (!use_file_for_in)
+	    close(fd_in[1]);
     }
     if (fd_out[0] >= 0)
     {

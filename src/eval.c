@@ -15118,6 +15118,7 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
     garray_T	ga;
 #endif
     jobopt_T	opt;
+    int		part;
 
     rettv->v_type = VAR_JOB;
     job = job_alloc();
@@ -15134,6 +15135,17 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
 	    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL
 			    + JO_STOPONEXIT + JO_EXIT_CB + JO_OUT_IO) == FAIL)
 	return;
+
+    /* Check that when io is "file" that there is a file name. */
+    for (part = PART_OUT; part <= PART_IN; ++part)
+	if ((opt.jo_set & (JO_OUT_IO << (part - PART_OUT)))
+		&& opt.jo_io[part] == JIO_FILE
+		&& (!(opt.jo_set & (JO_OUT_NAME << (part - PART_OUT)))
+		    || *opt.jo_io_name[part] == NUL))
+	{
+	    EMSG(_("E920: -io file requires -name to be set"));
+	    return;
+	}
 
     if ((opt.jo_set & JO_IN_IO) && opt.jo_io[PART_IN] == JIO_BUFFER)
     {

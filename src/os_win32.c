@@ -5000,6 +5000,7 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
     HANDLE		jo;
 # ifdef FEAT_CHANNEL
     channel_T		*channel;
+    int			use_file_for_in = options->jo_io[PART_IN] == JIO_FILE;
     int			use_out_for_err = options->jo_io[PART_ERR] == JIO_OUT;
     HANDLE		ifd[2];
     HANDLE		ofd[2];
@@ -5035,13 +5036,25 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = NULL;
-    if (!CreatePipe(&ifd[0], &ifd[1], &saAttr, 0)
-       || !pSetHandleInformation(ifd[1], HANDLE_FLAG_INHERIT, 0)
-       || !CreatePipe(&ofd[0], &ofd[1], &saAttr, 0)
-       || !pSetHandleInformation(ofd[0], HANDLE_FLAG_INHERIT, 0)
-       || (!use_out_for_err
+    if (use_file_for_in)
+    {
+	char_u *fname = options->jo_io_name[PART_IN];
+
+	// TODO
+	EMSG2(_(e_notopen), fname);
+	goto failed;
+    }
+    else if (!CreatePipe(&ifd[0], &ifd[1], &saAttr, 0)
+	    || !pSetHandleInformation(ifd[1], HANDLE_FLAG_INHERIT, 0))
+	goto failed;
+
+    if (!CreatePipe(&ofd[0], &ofd[1], &saAttr, 0)
+	    || !pSetHandleInformation(ofd[0], HANDLE_FLAG_INHERIT, 0))
+	goto failed;
+
+    if (!use_out_for_err
 	   && (!CreatePipe(&efd[0], &efd[1], &saAttr, 0)
-	    || !pSetHandleInformation(efd[0], HANDLE_FLAG_INHERIT, 0))))
+	    || !pSetHandleInformation(efd[0], HANDLE_FLAG_INHERIT, 0)))
 	goto failed;
     si.dwFlags |= STARTF_USESTDHANDLES;
     si.hStdInput = ifd[0];

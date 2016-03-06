@@ -524,6 +524,31 @@ func Test_nl_err_to_out_pipe()
   endtry
 endfunc
 
+func Test_nl_read_file()
+  if !has('job')
+    return
+  endif
+  " TODO: make this work for MS-Windows.
+  if !has('unix')
+    return
+  endif
+  call ch_log('Test_nl_read_file()')
+  call writefile(['echo something', 'echoerr wrong', 'double this'], 'Xinput')
+  let job = job_start(s:python . " test_channel_pipe.py",
+	\ {'in-io': 'file', 'in-name': 'Xinput'})
+  call assert_equal("run", job_status(job))
+  try
+    let handle = job_getchannel(job)
+    call assert_equal("something", ch_readraw(handle))
+    call assert_equal("wrong", ch_readraw(handle, {'part': 'err'}))
+    call assert_equal("this", ch_readraw(handle))
+    call assert_equal("AND this", ch_readraw(handle))
+  finally
+    call job_stop(job)
+    call delete('Xinput')
+  endtry
+endfunc
+
 func Test_pipe_to_buffer()
   if !has('job')
     return
@@ -556,7 +581,6 @@ func Test_pipe_from_buffer()
   if !has('job')
     return
   endif
-call ch_logfile('channellog', 'w')
   call ch_log('Test_pipe_from_buffer()')
 
   sp pipe-input
@@ -574,7 +598,6 @@ call ch_logfile('channellog', 'w')
   finally
     call job_stop(job)
   endtry
-call ch_logfile('')
 endfunc
 
 func Test_pipe_to_nameless_buffer()
