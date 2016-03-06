@@ -108,6 +108,10 @@ func s:communicate(port)
     call assert_false(1, "Can't open channel")
     return
   endif
+  if has('job')
+    " check that no job is handled correctly
+    call assert_equal('no process', string(ch_getjob(handle)))
+  endif
 
   " Simple string request and reply.
   call assert_equal('got it', ch_evalexpr(handle, 'hello!'))

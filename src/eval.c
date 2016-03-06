@@ -15249,6 +15249,7 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
 #endif
 
 #ifdef FEAT_CHANNEL
+    /* If the channel is reading from a buffer, write lines now. */
     channel_write_in(job->jv_channel);
 #endif
 
@@ -22601,7 +22602,11 @@ get_tv_string_buf_chk(typval_T *varp, char_u *buf)
 #ifdef FEAT_JOB
 	    {
 		job_T *job = varp->vval.v_job;
-		char  *status = job->jv_status == JOB_FAILED ? "fail"
+		char  *status;
+
+		if (job == NULL)
+		    return (char_u *)"no process";
+		status = job->jv_status == JOB_FAILED ? "fail"
 				: job->jv_status == JOB_ENDED ? "dead"
 				: "run";
 # ifdef UNIX
