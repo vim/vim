@@ -2918,8 +2918,7 @@ source_callback(char_u *fname, void *cookie UNUSED)
 /*
  * Source the file "name" from all directories in 'runtimepath'.
  * "name" can contain wildcards.
- * When "flags" has DIP_ALL: source all files, otherwise only the first one.
- * When "flags" has DIP_DIR: find directories instead of files.
+ * When "all" is TRUE: source all files, otherwise only the first one.
  *
  * return FAIL when no file could be sourced, OK otherwise.
  */
@@ -2931,7 +2930,18 @@ source_runtime(char_u *name, int all)
 
 #define DIP_ALL	1	/* all matches, not just the first one */
 #define DIP_DIR	2	/* find directories instead of files. */
+#define DIP_ERR	4	/* give an error message when none found. */
 
+/*
+ * Find the file "name" in all directories in "path" and invoke
+ * "callback(fname, cookie)".
+ * "name" can contain wildcards.
+ * When "flags" has DIP_ALL: source all files, otherwise only the first one.
+ * When "flags" has DIP_DIR: find directories instead of files.
+ * When "flags" has DIP_ERR: give an error message if there is no match.
+ *
+ * return FAIL when no file could be sourced, OK otherwise.
+ */
     static int
 do_in_path(
     char_u	*path,
@@ -3022,11 +3032,18 @@ do_in_path(
     }
     vim_free(buf);
     vim_free(rtp_copy);
-    if (p_verbose > 0 && !did_one && name != NULL)
+    if (!did_one && name != NULL)
     {
-	verbose_enter();
-	smsg((char_u *)_("not found in 'runtimepath': \"%s\""), name);
-	verbose_leave();
+	char *basepath = path == p_rtp ? "runtimepath" : "packpath";
+
+	if (flags & DIP_ERR)
+	    EMSG3(_(e_dirnotf), basepath, name);
+	else if (p_verbose > 0)
+	{
+	    verbose_enter();
+	    smsg((char_u *)_("not found in '%s': \"%s\""), basepath, name);
+	    verbose_leave();
+	}
     }
 
 #ifdef AMIGA
@@ -3178,8 +3195,8 @@ theend:
     void
 source_packages()
 {
-    do_in_path(p_pp, (char_u *)"pack/*/ever/*",
-				    DIP_ALL + DIP_DIR, add_pack_plugin, p_pp);
+    do_in_path(p_pp, (char_u *)"pack/*/ever/*", DIP_ALL + DIP_DIR,
+							add_pack_plugin, p_pp);
 }
 
 /*
@@ -3197,8 +3214,8 @@ ex_packadd(exarg_T *eap)
     if (pat == NULL)
 	return;
     vim_snprintf(pat, len, plugpat, eap->arg);
-    do_in_path(p_pp, (char_u *)pat, DIP_ALL + DIP_DIR, add_pack_plugin,
-						  eap->forceit ? NULL : p_pp);
+    do_in_path(p_pp, (char_u *)pat, DIP_ALL + DIP_DIR + DIP_ERR,
+				 add_pack_plugin, eap->forceit ? NULL : p_pp);
     vim_free(pat);
 }
 

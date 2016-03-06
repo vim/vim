@@ -31,6 +31,10 @@ func Test_packadd()
   call assert_equal(17, g:ftdetect_works)
   call assert_true(len(&rtp) > len(rtp))
   call assert_true(&rtp =~ 'testdir/Xdir/pack/mine/opt/mytest\($\|,\)')
+
+  " Check exception
+  call assert_fails("packadd directorynotfound", 'E919:')
+  call assert_fails("packadd", 'E471:')
 endfunc
 
 func Test_packadd_noload()
