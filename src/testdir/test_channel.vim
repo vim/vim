@@ -629,6 +629,83 @@ func Test_pipe_to_buffer_json()
   endtry
 endfunc
 
+" Wait a little while for the last line, minus "offset", to equal "line".
+func Wait_for_last_line(line, offset)
+  for i in range(100)
+    sleep 10m
+    if getline(line('$') - a:offset) == a:line
+      break
+    endif
+  endfor
+endfunc
+
+func Test_pipe_io_two_buffers()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_pipe_io_two_buffers()')
+
+  " Create two buffers, one to read from and one to write to.
+  split pipe-output
+  set buftype=nofile
+  split pipe-input
+  set buftype=nofile
+
+  let job = job_start(s:python . " test_channel_pipe.py",
+	\ {'in-io': 'buffer', 'in-name': 'pipe-input', 'in-top': 0,
+	\  'out-io': 'buffer', 'out-name': 'pipe-output'})
+  call assert_equal("run", job_status(job))
+  try
+    exe "normal Gaecho hello\<CR>"
+    exe bufwinnr('pipe-output') . "wincmd w"
+    call Wait_for_last_line('hello', 0)
+    call assert_equal('hello', getline('$'))
+
+    exe bufwinnr('pipe-input') . "wincmd w"
+    exe "normal Gadouble this\<CR>"
+    exe bufwinnr('pipe-output') . "wincmd w"
+    call Wait_for_last_line('AND this', 0)
+    call assert_equal('this', getline(line('$') - 1))
+    call assert_equal('AND this', getline('$'))
+
+    bwipe!
+    exe bufwinnr('pipe-input') . "wincmd w"
+    bwipe!
+  finally
+    call job_stop(job)
+  endtry
+endfunc
+
+func Test_pipe_io_one_buffer()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_pipe_io_one_buffer()')
+
+  " Create one buffer to read from and to write to.
+  split pipe-io
+  set buftype=nofile
+
+  let job = job_start(s:python . " test_channel_pipe.py",
+	\ {'in-io': 'buffer', 'in-name': 'pipe-io', 'in-top': 0,
+	\  'out-io': 'buffer', 'out-name': 'pipe-io'})
+  call assert_equal("run", job_status(job))
+  try
+    exe "normal Goecho hello\<CR>"
+    call Wait_for_last_line('hello', 1)
+    call assert_equal('hello', getline(line('$') - 1))
+
+    exe "normal Gadouble this\<CR>"
+    call Wait_for_last_line('AND this', 1)
+    call assert_equal('this', getline(line('$') - 2))
+    call assert_equal('AND this', getline(line('$') - 1))
+
+    bwipe!
+  finally
+    call job_stop(job)
+  endtry
+endfunc
+
 """"""""""
 
 let s:unletResponse = ''
