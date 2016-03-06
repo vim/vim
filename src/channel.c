@@ -837,7 +837,18 @@ channel_set_job(channel_T *channel, job_T *job, jobopt_T *options)
 	ch_logs(channel, "reading from buffer '%s'",
 					(char *)in_part->ch_buffer->b_ffname);
 	if (options->jo_set & JO_IN_TOP)
-	    in_part->ch_buf_top = options->jo_in_top;
+	{
+	    if (options->jo_in_top == 0 && !(options->jo_set & JO_IN_BOT))
+	    {
+		/* Special mode: send last-but-one line when appending a line
+		 * to the buffer. */
+		in_part->ch_buffer->b_write_to_channel = TRUE;
+		in_part->ch_buf_top =
+				   in_part->ch_buffer->b_ml.ml_line_count + 1;
+	    }
+	    else
+		in_part->ch_buf_top = options->jo_in_top;
+	}
 	else
 	    in_part->ch_buf_top = 1;
 	if (options->jo_set & JO_IN_BOT)
@@ -864,13 +875,12 @@ find_buffer(char_u *name)
 					       NULL, (linenr_T)0, BLN_LISTED);
 	buf_copy_options(buf, BCO_ENTER);
 #ifdef FEAT_QUICKFIX
-	clear_string_option(&buf->b_p_bt);
-	buf->b_p_bt = vim_strsave((char_u *)"nofile");
-	clear_string_option(&buf->b_p_bh);
-	buf->b_p_bh = vim_strsave((char_u *)"hide");
+	set_option_value((char_u *)"bt", 0L, (char_u *)"nofile", OPT_LOCAL);
+	set_option_value((char_u *)"bh", 0L, (char_u *)"hide", OPT_LOCAL);
 #endif
 	curbuf = buf;
-	ml_open(curbuf);
+	if (curbuf->b_ml.ml_mfp == NULL)
+	    ml_open(curbuf);
 	ml_replace(1, (char_u *)"Reading from channel output...", TRUE);
 	changed_bytes(1, 0);
 	curbuf = save_curbuf;
@@ -982,8 +992,25 @@ channel_set_req_callback(
     }
 }
 
+    static void
+write_buf_line(buf_T *buf, linenr_T lnum, channel_T *channel)
+{
+    char_u  *line = ml_get_buf(buf, lnum, FALSE);
+    int	    len = STRLEN(line);
+    char_u  *p;
+
+    /* TODO: check if channel can be written to, do not block on write */
+    if ((p = alloc(len + 2)) == NULL)
+	return;
+    STRCPY(p, line);
+    p[len] = NL;
+    p[len + 1] = NUL;
+    channel_send(channel, PART_IN, p, "write_buf_line()");
+    vim_free(p);
+}
+
 /*
- * Write any lines to the in channel.
+ * Write any lines to the input channel.
  */
     void
 channel_write_in(channel_T *channel)
@@ -991,6 +1018,7 @@ channel_write_in(channel_T *channel)
     chanpart_T *in_part = &channel->ch_part[PART_IN];
     linenr_T    lnum;
     buf_T	*buf = in_part->ch_buffer;
+    int		written = 0;
 
     if (buf == NULL)
 	return;
@@ -1007,20 +1035,58 @@ channel_write_in(channel_T *channel)
     for (lnum = in_part->ch_buf_top; lnum <= in_part->ch_buf_bot
 				   && lnum <= buf->b_ml.ml_line_count; ++lnum)
     {
-	char_u *line = ml_get_buf(buf, lnum, FALSE);
-	int	len = STRLEN(line);
-	char_u *p;
-
-	/* TODO: check if channel can be written to */
-	if ((p = alloc(len + 2)) == NULL)
-	    break;
-	STRCPY(p, line);
-	p[len] = NL;
-	p[len + 1] = NUL;
-	channel_send(channel, PART_IN, p, "channel_write_in()");
-	vim_free(p);
+	write_buf_line(buf, lnum, channel);
+	++written;
     }
+
+    if (written == 1)
+	ch_logn(channel, "written line %d to channel", (int)lnum - 1);
+    else if (written > 1)
+	ch_logn(channel, "written %d lines to channel", written);
+
     in_part->ch_buf_top = lnum;
+}
+
+/*
+ * Write appended lines above the last one in "buf" to the channel.
+ */
+    void
+channel_write_new_lines(buf_T *buf)
+{
+    channel_T	*channel;
+    int		found_one = FALSE;
+
+    /* There could be more than one channel for the buffer, loop over all of
+     * them. */
+    for (channel = first_channel; channel != NULL; channel = channel->ch_next)
+    {
+	chanpart_T  *in_part = &channel->ch_part[PART_IN];
+	linenr_T    lnum;
+	int	    written = 0;
+
+	if (in_part->ch_buffer == buf)
+	{
+	    if (in_part->ch_fd == INVALID_FD)
+		/* pipe was closed */
+		continue;
+	    found_one = TRUE;
+	    for (lnum = in_part->ch_buf_bot; lnum < buf->b_ml.ml_line_count;
+								       ++lnum)
+	    {
+		write_buf_line(buf, lnum, channel);
+		++written;
+	    }
+
+	    if (written == 1)
+		ch_logn(channel, "written line %d to channel", (int)lnum - 1);
+	    else if (written > 1)
+		ch_logn(channel, "written %d lines to channel", written);
+
+	    in_part->ch_buf_bot = lnum;
+	}
+    }
+    if (!found_one)
+	buf->b_write_to_channel = FALSE;
 }
 
 /*
@@ -1470,6 +1536,76 @@ invoke_one_time_callback(
     vim_free(item);
 }
 
+    static void
+append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel)
+{
+    buf_T	*save_curbuf = curbuf;
+    linenr_T    lnum = buffer->b_ml.ml_line_count;
+    int		save_write_to = buffer->b_write_to_channel;
+
+    /* If the buffer is also used as input insert above the last
+     * line. Don't write these lines. */
+    if (save_write_to)
+    {
+	--lnum;
+	buffer->b_write_to_channel = FALSE;
+    }
+
+    /* Append to the buffer */
+    ch_logn(channel, "appending line %d to buffer", (int)lnum + 1);
+
+    curbuf = buffer;
+    u_sync(TRUE);
+    /* ignore undo failure, undo is not very useful here */
+    ignored = u_save(lnum, lnum + 1);
+
+    ml_append(lnum, msg, 0, FALSE);
+    appended_lines_mark(lnum, 1L);
+    curbuf = save_curbuf;
+
+    if (buffer->b_nwindows > 0)
+    {
+	win_T	*wp;
+	win_T	*save_curwin;
+
+	FOR_ALL_WINDOWS(wp)
+	{
+	    if (wp->w_buffer == buffer
+		    && (save_write_to
+			? wp->w_cursor.lnum == lnum + 1
+			: (wp->w_cursor.lnum == lnum
+			    && wp->w_cursor.col == 0)))
+	    {
+		++wp->w_cursor.lnum;
+		save_curwin = curwin;
+		curwin = wp;
+		curbuf = curwin->w_buffer;
+		scroll_cursor_bot(0, FALSE);
+		curwin = save_curwin;
+		curbuf = curwin->w_buffer;
+	    }
+	}
+	redraw_buf_later(buffer, VALID);
+	channel_need_redraw = TRUE;
+    }
+
+    if (save_write_to)
+    {
+	channel_T *ch;
+
+	/* Find channels reading from this buffer and adjust their
+	 * next-to-read line number. */
+	buffer->b_write_to_channel = TRUE;
+	for (ch = first_channel; ch != NULL; ch = ch->ch_next)
+	{
+	    chanpart_T  *in_part = &ch->ch_part[PART_IN];
+
+	    if (in_part->ch_buffer == buffer)
+		in_part->ch_buf_bot = buffer->b_ml.ml_line_count;
+	}
+    }
+}
+
 /*
  * Invoke a callback for "channel"/"part" if needed.
  * Return TRUE when a message was handled, there might be another one.
@@ -1634,46 +1770,7 @@ may_invoke_callback(channel_T *channel, int part)
 		/* JSON or JS mode: re-encode the message. */
 		msg = json_encode(listtv, ch_mode);
 	    if (msg != NULL)
-	    {
-		buf_T	    *save_curbuf = curbuf;
-		linenr_T    lnum = buffer->b_ml.ml_line_count;
-
-		/* Append to the buffer */
-		ch_logn(channel, "appending line %d to buffer", (int)lnum + 1);
-
-		curbuf = buffer;
-		u_sync(TRUE);
-		/* ignore undo failure, undo is not very useful here */
-		ignored = u_save(lnum, lnum + 1);
-
-		ml_append(lnum, msg, 0, FALSE);
-		appended_lines_mark(lnum, 1L);
-		curbuf = save_curbuf;
-
-		if (buffer->b_nwindows > 0)
-		{
-		    win_T	*wp;
-		    win_T	*save_curwin;
-
-		    FOR_ALL_WINDOWS(wp)
-		    {
-			if (wp->w_buffer == buffer
-				&& wp->w_cursor.lnum == lnum
-				&& wp->w_cursor.col == 0)
-			{
-			    ++wp->w_cursor.lnum;
-			    save_curwin = curwin;
-			    curwin = wp;
-			    curbuf = curwin->w_buffer;
-			    scroll_cursor_bot(0, FALSE);
-			    curwin = save_curwin;
-			    curbuf = curwin->w_buffer;
-			}
-		    }
-		    redraw_buf_later(buffer, VALID);
-		    channel_need_redraw = TRUE;
-		}
-	    }
+		append_to_buffer(buffer, msg, channel);
 	}
 
 	if (callback != NULL)

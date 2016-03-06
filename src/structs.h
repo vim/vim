@@ -2051,6 +2051,10 @@ struct file_buffer
     int		b_netbeans_file;    /* TRUE when buffer is owned by NetBeans */
     int		b_was_netbeans_file;/* TRUE if b_netbeans_file was once set */
 #endif
+#ifdef FEAT_CHANNEL
+    int		b_write_to_channel; /* TRUE when appended lines are written to
+				     * a channel. */
+#endif
 
 #ifdef FEAT_CRYPT
     cryptstate_T *b_cryptstate;	/* Encryption state while reading or writing
