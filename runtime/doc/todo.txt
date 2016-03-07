@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Mar 04
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Mar 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,10 +35,10 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 +channel:
+- move code from eval.c to channel.c
 - implement TODO items in ":help channel":
-   - Send last line of buffer when it's added.
    - job_start() options:
-	in-io: null, file (in-name), in-buf
+	in-io: null, in-buf
 	out-io: null, file, out-buf
 	err-io: null, file (err-name), buffer (err-buf)
 	existing channel to use
@@ -54,7 +54,6 @@ not be repeated below, unless there is extra information.
 - When a message in the queue but there is no callback, drop it after a while?
   Add timestamp to queued messages and callbacks with ID, remove after a
   minute.
-- cleanup on exit?  in mch_getout() and getout().
 - Add more log calls, basically at every branch, before every callback, etc.
 - add remark about undo sync, is there a way to force it?
 - When starting a job, have an option to open the server socket, so we know
@@ -71,6 +70,14 @@ Later
     With xterm could use -S{pty}.
 
 emoji patch from Yasuhiro Matsumoto.  Asked Thomas Dickey.
+
+Packages:
+- Add command to update help tags in 'runtimepath'.  Pathogen has something
+  like that.
+- colorscheme command in .vimrc doesn't work.
+   - Postpone until later?
+   - Also search in 'packpath'?
+   - command to load packages now?
 
 More plugin support:
 - Have a way to install a callback from the main loop.  Called every second or
@@ -113,6 +120,9 @@ Should recognize float (so long as it's not ".1.1").
 Allow for an empty dictionary key?
 
 Patch to improve I/O for Perl. (Damien, 2016 Jan 9, update Jan 22 2nd one)
+
+Patch to fix ml_get error. (Alexander Freiherr von Buddenbrock, 2016 Mar 4,
+#676)
 
 Regexp problems:
 - The regexp engines are not reentrant, causing havoc when interrupted by a
@@ -169,13 +179,13 @@ Patch to have better check for {action} argument of setqflist().
 Nikolai Pavlov, Feb 25, #661.  Can be even more strict.
 Also see patch from Hirohito Higash, Feb 25.
 
-Patch for clearing history. (Yegappan Lakshmanan, 2016 Jan 31, second message
-has tests)
-
 Patch to update the GTK icon cache when installing. (Kazunobu Kuriyama, 2016
 Feb 3)
 
 Patch for test86 and test87. (Roland Puntaier, #622)
+
+We can use '. to go to the last change in the current buffer, but how about
+the last change in any buffer?  Can we use ', (, is next to .)?
 
 Patch for Python: #622. (Roland Puntaier, 2016 Feb 2)
 What does it change?
@@ -334,6 +344,7 @@ Use v:none.  var == v:none
 
 Patch to add arguments to argc() and argv(). (Yegappan Lakshmanan, 2016 Jan
 24)  Also need a way to get the global arg list?  Update later on Jan 24
+Update Mar 5.
 
 To support Thai (and other languages) word boundaries, include the ICU
 library:  http://userguide.icu-project.org/boundaryanalysis
@@ -1750,9 +1761,6 @@ Fail to edit file after failed register access.  Error flag remains set?
 Patch for redo register. (Ben Schmidt, 2007 Oct 19)
 Await response to question to make the register writable.
 
-src/testdir/Make_dos.mak: not all tests are included, e.g., test49, without a
-remark why.
-
 Problem with 'ts' set to 9 and 'showbreak' to ">>>". (Matthew Winn, 2007 Oct
 1)
 
@@ -2720,64 +2728,7 @@ GUI:
     currently.  This is very obvious on a 66Mhz 486.
 
 
-MSDOS/DJGPP:
-9   Pressing CTRL-C often crashes the console Vim runs in. (Ken Liao)
-    When 'bioskey' isn't set it doesn't happen.  Could be a problem with the
-    BIOS emulation of the console.  Version 5.6 already had this problem.
-8   DJGPP: "cd c:" can take us to a directory that no longer exists.
-    change_drive() doesn't check this.  How to check for this error?
-9   The 16 bit version runs out of memory very quickly.  Should find unused
-    code and reduce static data.  Resetting 'writebackup' helps to be able to
-    write a file.
-9   Crash when running on Windows 98 in a console window and pressing CTRL-C.
-    Happens now and then.  When debugging Vim in gdb this also happens.  Since
-    the console crashes, might be a bug in the DOS console.  Resetting
-    'bioskey' avoids it, but then CTRL-C doesn't work.
-9   DOS: Make CTRL-Fx and ALT-Fx work.
-    CTRL-F1 = CE-5E, CTRL-F2 = CE-5F, .., CTRL-F10 = CE-67
-    ALT-F1 = CE-68, ALT-F2 = CE-69, .., ALT-F10 = CE-71
-    Shifted cursor keys produce same codes as unshifted keys.  Use bioskey(2)
-    to get modifier mask for <S-C-M-Fx>.
-    Use K_SPECIAL/KS_MODIFIER codes to insert modifier mask in input stream?
-    Make this work like in Win32 console.
-    Mapping things like <M-A> doesn't work, because it generates an extended
-    key code.  Use a translation table?
-9   Can't read an opened swap file when the "share" command has not been used.
-    At least ignore the swap files that Vim has opened itself.
-8   Use DJGPP 2.03.
-8   The Dos32 version (DJGPP) can't use long file names on Windows NT.
-    Check if new package can be used (v2misc/ntlfn08[bs].zip).
-8   setlocale() is bogus.
-8   Vim busy waits for new characters or mouse clicks.	Should put in some
-    sort of sleep, to avoid eating 50% of the CPU time.  Test on an unpatched
-    Windows 95 system!
-8   DJGPP: when shell is bash, make fails. (Donahoe)
-7   Hitting CTRL-P twice quickly (e.g., in keyword completion) on a 8088
-    machine, starts printer echo! (John Mullin).
-7   MSDOS 16 bit version can't work with COMSPEC that has an argument, e.g.:
-    COMSPEC=C:\WINDOWS\COMMAND.COM /E:4096    (Bradley)
-    Caused by BCC system() function (Borland "make" has the same problem).
-8   Mouse: handle left&right button pressed as middle button pressed.  Add
-    modifier keys shift, ctrl and alt.
-7   When too many files are open (depends on FILES), strange things happen.
-    The Dos16 version runs out of memory, in the Dos32 version "!ls" causes a
-    crash.  Another symptom: .swp files are not deleted, existing files are
-    "[New file]".
-7   DJGPP version doesn't work with graphics display mode.  Switch to a mode
-    that is supported?
-8   DJGPP: ":mode" doesn't work for many modes.  Disable them.
-8   DJGPP: When starting in Ex mode, shouldn't clear the screen. (Walter
-    Briscoe)
-
-
-MSDOS, OS/2 and Win32:
-8   OS/2: Add backtick expansion.  Undefine NO_EXPANDPATH and use
-    gen_expand_wildcards().
-8   OS/2: Add clipboard support?  See example clipbrd.exe from Alexander
-    Wagner.
-8   OS/2: Add Extended Attributes support and define HAVE_ACL.
-8   OS/2: When editing a file name "foo.txt" that is actually called FOO.txt,
-    writing uses "foo.txt".  Should obtain the real file name.
+Win32 console:
 8   Should $USERPROFILE be preferred above $HOMEDRIVE/$HOMEPATH?  No, but it's
     a good fallback, thus use:
 	    $HOME

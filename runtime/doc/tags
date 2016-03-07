@@ -4442,6 +4442,7 @@ E915	channel.txt	/*E915*
 E916	eval.txt	/*E916*
 E917	eval.txt	/*E917*
 E918	channel.txt	/*E918*
+E919	repeat.txt	/*E919*
 E92	message.txt	/*E92*
 E93	windows.txt	/*E93*
 E94	windows.txt	/*E94*
@@ -9010,6 +9011,7 @@ win32-mouse	os_win32.txt	/*win32-mouse*
 win32-open-with-menu	gui_w32.txt	/*win32-open-with-menu*
 win32-popup-menu	gui_w32.txt	/*win32-popup-menu*
 win32-problems	os_win32.txt	/*win32-problems*
+win32-quotes	os_win32.txt	/*win32-quotes*
 win32-restore	os_win32.txt	/*win32-restore*
 win32-startup	os_win32.txt	/*win32-startup*
 win32-term	os_win32.txt	/*win32-term*

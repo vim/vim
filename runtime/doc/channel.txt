@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Mar 03
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Mar 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -467,6 +467,9 @@ For example, to start a job and write its output in buffer "dummy": >
 			     \ {'out-io': 'buffer', 'out-name': 'dummy'})
 	sbuf dummy
 
+
+Job input from a buffer ~
+
 To run a job that reads from a buffer: >
 	let job = job_start({command},
 	    \ {'in-io': 'buffer', 'in-name': 'mybuffer'})
@@ -478,10 +481,10 @@ be loaded when job_start() is called.
 By default this reads the whole buffer.  This can be changed with the "in-top"
 and "in-bot" options.
 
-TODO
-A special mode is when "in-top" is set to zero and "in-bot" is not set: The
-last-but-one line will be send to the job stdin.  This allows for editing the
-last line and sending it when pressing Enter.
+A special mode is when "in-top" is set to zero and "in-bot" is not set: Every
+time a line is added to the buffer, the last-but-one line will be send to the
+job stdin.  This allows for editing the last line and sending it when pressing
+Enter.
 
 TODO:
 To run a job and read its output once it is done: >
@@ -568,7 +571,7 @@ TODO:						*job-term*
 "in-io": "buffer"	stdin reads from a buffer
 "in-top": number	when using "buffer": first line to send (default: 1)
 "in-bot": number	when using "buffer": last line to send (default: last)
-"in-name": "/path/file"	the name of he file or buffer to read from
+"in-name": "/path/file"	the name of the file or buffer to read from
 "in-buf": number	the number of the buffer to read from  TODO
 
 						*job-out-io*
@@ -588,8 +591,12 @@ TODO:						*job-term*
 "err-name": "/path/file" the name of the file or buffer to write to
 "err-buf": number	the number of the buffer to write to  TODO
 
-When the IO mode is "buffer" and there is a callback, the text is appended to
-the buffer before invoking the callback.
+When the out-io or err-io mode is "buffer" and there is a callback, the text
+is appended to the buffer before invoking the callback.
+
+When a buffer is used both for input and output, the output lines are put
+above the last line, since the last line is what is written to the channel
+input.  Otherwise lines are appened below the last line.
 
 When using JS or JSON mode with "buffer", only messages with zero or negative
 ID will be added to the buffer, after decoding + encoding.  Messages with a

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Mar 03
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Mar 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1817,24 +1817,24 @@ byteidxcomp( {expr}, {nr})	Number	byte index of {nr}'th char in {expr}
 call( {func}, {arglist} [, {dict}])
 				any	call {func} with arguments {arglist}
 ceil( {expr})			Float	round {expr} up
-ch_close( {channel})		none	close {channel}
-ch_evalexpr( {channel}, {expr} [, {options}])
-				any	evaluate {expr} on JSON {channel}
-ch_evalraw( {channel}, {string} [, {options}])
-				any	evaluate {string} on raw {channel}
-ch_getbufnr( {channel}, {what})	Number	get buffer number for {channel}/{what}
+ch_close( {handle})		none	close {handle}
+ch_evalexpr( {handle}, {expr} [, {options}])
+				any	evaluate {expr} on JSON {handle}
+ch_evalraw( {handle}, {string} [, {options}])
+				any	evaluate {string} on raw {handle}
+ch_getbufnr( {handle}, {what})	Number	get buffer number for {handle}/{what}
 ch_getjob( {channel})		Job	get the Job of {channel}
-ch_log( {msg} [, {channel}])	none	write {msg} in the channel log file
+ch_log( {msg} [, {handle}])	none	write {msg} in the channel log file
 ch_logfile( {fname} [, {mode}])	none	start logging channel activity
 ch_open( {address} [, {options}]) Channel open a channel to {address}
-ch_read( {channel} [, {options}])  String  read from  {channel}
-ch_readraw( {channel} [, {options}])  String  read raw from  {channel}
-ch_sendexpr( {channel}, {expr} [, {options}])
-				any	send {expr} over JSON {channel}
-ch_sendraw( {channel}, {string} [, {options}])
-				any	send {string} over raw {channel}
-ch_setoptions( {channel}, {options})  none  set options for {channel}
-ch_status( {channel})		String	status of  {channel}
+ch_read( {handle} [, {options}])  String  read from  {handle}
+ch_readraw( {handle} [, {options}])  String  read raw from  {handle}
+ch_sendexpr( {handle}, {expr} [, {options}])
+				any	send {expr} over JSON {handle}
+ch_sendraw( {handle}, {string} [, {options}])
+				any	send {string} over raw {handle}
+ch_setoptions( {handle}, {options})  none  set options for {handle}
+ch_status( {handle})		String	status of  {handle}
 changenr()			Number	current change number
 char2nr( {expr}[, {utf8}])	Number	ASCII/UTF8 value of first char in {expr}
 cindent( {lnum})		Number	C indent for line {lnum}
@@ -2693,8 +2693,9 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 		don't fit, a vertical layout is used anyway.  For some systems
 		the horizontal layout is always used.
 
-ch_close({channel})						*ch_close()*
-		Close {channel}.  See |channel-close|.
+ch_close({handle})						*ch_close()*
+		Close {handle}.  See |channel-close|.
+		{handle} can be Channel or a Job that has a Channel.
 
 		Note that a channel is closed in three stages:
 		  - The I/O ends, log message: "Closing channel". There can
@@ -2705,10 +2706,11 @@ ch_close({channel})						*ch_close()*
 
 		{only available when compiled with the |+channel| feature}
 
-ch_evalexpr({channel}, {expr} [, {options}])			*ch_evalexpr()*
-		Send {expr} over {channel}.  The {expr} is encoded
+ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
+		Send {expr} over {handle}.  The {expr} is encoded
 		according to the type of channel.  The function cannot be used
 		with a raw channel.  See |channel-use|.
+		{handle} can be Channel or a Job that has a Channel.
 								*E917*
 		{options} must be a Dictionary.  It must not have a "callback"
 		entry.  It can have a "timeout" entry.
@@ -2719,8 +2721,10 @@ ch_evalexpr({channel}, {expr} [, {options}])			*ch_evalexpr()*
 
 		{only available when compiled with the |+channel| feature}
 
-ch_evalraw({channel}, {string} [, {options}])		*ch_evalraw()*
-		Send {string} over {channel}.
+ch_evalraw({handle}, {string} [, {options}])		*ch_evalraw()*
+		Send {string} over {handle}.
+		{handle} can be Channel or a Job that has a Channel.
+
 		Works like |ch_evalexpr()|, but does not encode the request or
 		decode the response.  The caller is responsible for the
 		correct contents.  Also does not add a newline for a channel
@@ -2730,8 +2734,9 @@ ch_evalraw({channel}, {string} [, {options}])		*ch_evalraw()*
 
 		{only available when compiled with the |+channel| feature}
 
-ch_getbufnr({channel}, {what})				 *ch_getbufnr()*
-		Get the buffer number that {channel} is using for {what}.
+ch_getbufnr({handle}, {what})				 *ch_getbufnr()*
+		Get the buffer number that {handle} is using for {what}.
+		{handle} can be Channel or a Job that has a Channel.
 		{what} can be "err" for stderr, "out" for stdout or empty for
 		socket output.
 		Returns -1 when there is no buffer.
@@ -2745,11 +2750,13 @@ ch_getjob({channel})						*ch_getjob()*
 		{only available when compiled with the |+channel| and
 		|+job| features}
 
-ch_log({msg} [, {channel}])					*ch_log()*
+ch_log({msg} [, {handle}])					*ch_log()*
 		Write {msg} in the channel log file, if it was opened with
 		|ch_logfile()|.
-		When {channel} is passed the channel number is used for the
-		message.  {channel} must be an open channel.
+		When {handle} is passed the channel number is used for the
+		message.
+		{handle} can be Channel or a Job that has a Channel.  The
+		Channel must open.
 
 ch_logfile({fname} [, {mode}])					*ch_logfile()*
 		Start logging channel activity to {fname}.
@@ -2785,8 +2792,9 @@ ch_open({address} [, {options}])				*ch_open()*
 				    Default: 2000.
 		{only available when compiled with the |+channel| feature}
 
-ch_read({channel} [, {options}])				*ch_read()*
-		Read from {channel} and return the received message.
+ch_read({handle} [, {options}])					*ch_read()*
+		Read from {handle} and return the received message.
+		{handle} can be Channel or a Job that has a Channel.
 
 		This uses the channel timeout.  When there is nothing to read
 		within that time an empty string is returned.  To specify a
@@ -2806,14 +2814,15 @@ ch_read({channel} [, {options}])				*ch_read()*
 		For a JS or JSON channel this returns one decoded message.
 		This includes any sequence number.
 
-ch_readraw({channel} [, {options}])			*ch_readraw()*
+ch_readraw({handle} [, {options}])			*ch_readraw()*
 		Like ch_read() but for a JS and JSON channel does not decode
 		the message.
 
-ch_sendexpr({channel}, {expr} [, {options}])			*ch_sendexpr()*
-		Send {expr} over {channel}.  The {expr} is encoded
+ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
+		Send {expr} over {handle}.  The {expr} is encoded
 		according to the type of channel.  The function cannot be used
 		with a raw channel.  See |channel-use|. *E912*
+		{handle} can be Channel or a Job that has a Channel.
 
 		{options} must be a Dictionary.  The "callback" item is a
 		Funcref or the name of a function it is invoked when the
@@ -2823,8 +2832,8 @@ ch_sendexpr({channel}, {expr} [, {options}])			*ch_sendexpr()*
 
 		{only available when compiled with the |+channel| feature}
 
-ch_sendraw({channel}, {string} [, {options}])		*ch_sendraw()*
-		Send {string} over {channel}.
+ch_sendraw({handle}, {string} [, {options}])		*ch_sendraw()*
+		Send {string} over {handle}.
 		Works like |ch_sendexpr()|, but does not encode the request or
 		decode the response.  The caller is responsible for the
 		correct contents.  Also does not add a newline for a channel
@@ -2834,12 +2843,13 @@ ch_sendraw({channel}, {string} [, {options}])		*ch_sendraw()*
 
 		{only available when compiled with the |+channel| feature}
 
-ch_setoptions({channel}, {options})			*ch_setoptions()*
-		Set options on {channel}:
+ch_setoptions({handle}, {options})			*ch_setoptions()*
+		Set options on {handle}:
 			"callback"	the channel callback
 			"timeout"	default read timeout in msec
 			"mode"		mode for the whole channel
 		See |ch_open()| for more explanation.
+		{handle} can be Channel or a Job that has a Channel.
 
 		Note that changing the mode may cause queued messages to be
 		lost.
@@ -2847,11 +2857,12 @@ ch_setoptions({channel}, {options})			*ch_setoptions()*
 		These options cannot be changed:
 			"waittime"	only applies to "ch_open()|
 
-ch_status({channel})						*ch_status()*
-		Return the status of {channel}:
+ch_status({handle})						*ch_status()*
+		Return the status of {handle}:
 			"fail"		failed to open the channel
 			"open"		channel can be used
 			"closed"	channel can not be used
+		{handle} can be Channel or a Job that has a Channel.
 
 							*copy()*
 copy({expr})	Make a copy of {expr}.	For Numbers and Strings this isn't
