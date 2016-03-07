@@ -2471,7 +2471,10 @@ fold_line(
 	{
 	    int	    w = number_width(wp);
 	    long    num;
-	    char    *fmt = "%*ld ";
+	    if(wp->w_p_la)
+		char    *fmt = "%*ld ";
+	    else
+		char	*fmt = "%-*ld ";
 
 	    if (len > w + 1)
 		len = w + 1;
@@ -2488,7 +2491,10 @@ fold_line(
 		    /* 'number' + 'relativenumber': cursor line shows absolute
 		     * line number */
 		    num = lnum;
-		    fmt = "%-*ld ";
+		    if(wp->w_p_ra)
+			fmt = "%*ld ";
+		    else
+			fmt = "%-*ld ";
 		}
 	    }
 
