@@ -215,6 +215,8 @@
 #endif
 #define PV_NU		OPT_WIN(WV_NU)
 #define PV_RNU		OPT_WIN(WV_RNU)
+#define PV_RA		OPT_WIN(WV_RA)
+#define PV_LA		OPT_WIN(WV_LA)
 #ifdef FEAT_LINEBREAK
 # define PV_NUW		OPT_WIN(WV_NUW)
 #endif
@@ -1673,6 +1675,9 @@ static struct vimoption options[] =
 # endif
 #endif
 				(char_u *)0L} SCRIPTID_INIT},
+    {"lalign", "la",	    P_BOOL|P_VI_DEF|P_RWIN,
+			    (char_u *)VAR_WIN, PV_LA,
+			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
     {"langmap",     "lmap", P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP|P_SECURE,
 #ifdef FEAT_LANGMAP
 			    (char_u *)&p_langmap, PV_NONE,
@@ -2137,6 +2142,9 @@ static struct vimoption options[] =
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCRIPTID_INIT},
+    {"ralign", "ra",	    P_BOOL|P_VI_DEF|P_RWIN,
+			    (char_u *)VAR_WIN, PV_RA,
+			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
     {"readonly",    "ro",   P_BOOL|P_VI_DEF|P_RSTAT|P_NOGLOB,
 			    (char_u *)&p_ro, PV_RO,
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
@@ -10245,6 +10253,8 @@ get_varp(struct vimoption *p)
 #endif
 	case PV_NU:	return (char_u *)&(curwin->w_p_nu);
 	case PV_RNU:	return (char_u *)&(curwin->w_p_rnu);
+	case PV_RA:	return (char_u *)&(curwin->w_p_ra);
+	case PV_LA:	return (char_u *)&(curwin->w_p_la);
 #ifdef FEAT_LINEBREAK
 	case PV_NUW:	return (char_u *)&(curwin->w_p_nuw);
 #endif
