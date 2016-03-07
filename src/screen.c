@@ -2471,10 +2471,12 @@ fold_line(
 	{
 	    int	    w = number_width(wp);
 	    long    num;
+	    char    *fmt;
+	    /* Handle alignment */
 	    if(wp->w_p_la)
-		char    *fmt = "%*ld ";
+		fmt = "%-*ld ";
 	    else
-		char	*fmt = "%-*ld ";
+		fmt = "%*ld ";
 
 	    if (len > w + 1)
 		len = w + 1;
@@ -2491,7 +2493,8 @@ fold_line(
 		    /* 'number' + 'relativenumber': cursor line shows absolute
 		     * line number */
 		    num = lnum;
-		    if(wp->w_p_ra)
+		    /* Handle alignment */
+		    if(!wp->w_p_ra)
 			fmt = "%*ld ";
 		    else
 			fmt = "%-*ld ";
@@ -3687,7 +3690,12 @@ win_line(
 			    )
 		    {
 			long num;
-			char *fmt = "%*ld ";
+			char *fmt;
+			/* Handle alignment */
+			if(wp->w_p_la)
+			    fmt = "%-*ld";
+			else
+			    fmt = "%*ld ";
 
 			if (wp->w_p_nu && !wp->w_p_rnu)
 			    /* 'number' + 'norelativenumber' */
@@ -3700,7 +3708,11 @@ win_line(
 			    {
 				/* 'number' + 'relativenumber' */
 				num = lnum;
-				fmt = "%-*ld ";
+				/* Handle alignment */
+				if(wp->w_p_ra)
+				    fmt = "%*ld ";
+				else
+				    fmt = "%-*ld ";
 			    }
 			}
 
