@@ -15262,7 +15262,8 @@ f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
 
 #ifdef FEAT_CHANNEL
     /* If the channel is reading from a buffer, write lines now. */
-    channel_write_in(job->jv_channel);
+    if (job->jv_channel != NULL)
+	channel_write_in(job->jv_channel);
 #endif
 
 theend:
