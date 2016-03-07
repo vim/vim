@@ -395,11 +395,21 @@ func s:raw_one_time_callback(port)
 
   " The message are sent raw, we do our own JSON strings here.
   call ch_sendraw(handle, "[1, \"hello!\"]", {'callback': 's:HandleRaw1'})
-  sleep 10m
+  for i in range(50)
+    sleep 10m
+    if s:reply1 != ''
+      break
+    endif
+  endfor
   call assert_equal("[1, \"got it\"]", s:reply1)
   call ch_sendraw(handle, "[2, \"echo something\"]", {'callback': 's:HandleRaw2'})
   call ch_sendraw(handle, "[3, \"wait a bit\"]", {'callback': 's:HandleRaw3'})
-  sleep 10m
+  for i in range(50)
+    sleep 10m
+    if s:reply2 != ''
+      break
+    endif
+  endfor
   call assert_equal("[2, \"something\"]", s:reply2)
   " wait for up to 500 msec for the 200 msec delayed reply
   for i in range(50)
