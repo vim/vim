@@ -463,16 +463,16 @@ func Test_raw_pipe()
   let job = job_start(s:python . " test_channel_pipe.py", {'mode': 'raw'})
   call assert_equal("run", job_status(job))
   try
-    let handle = job_getchannel(job)
-    call ch_sendraw(handle, "echo something\n")
-    let msg = ch_readraw(handle)
+    " For a change use the job where a channel is expected.
+    call ch_sendraw(job, "echo something\n")
+    let msg = ch_readraw(job)
     call assert_equal("something\n", substitute(msg, "\r", "", 'g'))
 
-    call ch_sendraw(handle, "double this\n")
-    let msg = ch_readraw(handle)
+    call ch_sendraw(job, "double this\n")
+    let msg = ch_readraw(job)
     call assert_equal("this\nAND this\n", substitute(msg, "\r", "", 'g'))
 
-    let reply = ch_evalraw(handle, "quit\n", {'timeout': 100})
+    let reply = ch_evalraw(job, "quit\n", {'timeout': 100})
     call assert_equal("Goodbye!\n", substitute(reply, "\r", "", 'g'))
   finally
     call job_stop(job)

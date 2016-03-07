@@ -10285,14 +10285,22 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
     static channel_T *
 get_channel_arg(typval_T *tv)
 {
-    channel_T *channel;
+    channel_T *channel = NULL;
 
-    if (tv->v_type != VAR_CHANNEL)
+    if (tv->v_type == VAR_JOB)
+    {
+	if (tv->vval.v_job != NULL)
+	    channel = tv->vval.v_job->jv_channel;
+    }
+    else if (tv->v_type == VAR_CHANNEL)
+    {
+	channel = tv->vval.v_channel;
+    }
+    else
     {
 	EMSG2(_(e_invarg2), get_tv_string(tv));
 	return NULL;
     }
-    channel = tv->vval.v_channel;
 
     if (channel == NULL || !channel_is_open(channel))
     {
@@ -15106,7 +15114,7 @@ f_job_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
  * "job_start()" function
  */
     static void
-f_job_start(typval_T *argvars UNUSED, typval_T *rettv)
+f_job_start(typval_T *argvars, typval_T *rettv)
 {
     job_T	*job;
     char_u	*cmd = NULL;
