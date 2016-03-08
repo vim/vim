@@ -5046,13 +5046,18 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
     int		fd_err[2];	/* for stderr */
     channel_T	*channel = NULL;
     int		use_file_for_in = options->jo_io[PART_IN] == JIO_FILE;
+    int		use_file_for_out = options->jo_io[PART_OUT] == JIO_FILE;
+    int		use_file_for_err = options->jo_io[PART_ERR] == JIO_FILE;
     int		use_out_for_err = options->jo_io[PART_ERR] == JIO_OUT;
 
     /* default is to fail */
     job->jv_status = JOB_FAILED;
     fd_in[0] = -1;
+    fd_in[1] = -1;
     fd_out[0] = -1;
+    fd_out[1] = -1;
     fd_err[0] = -1;
+    fd_err[1] = -1;
 
     /* TODO: without the channel feature connect the child to /dev/null? */
     /* Open pipes for stdin, stdout, stderr. */
@@ -5069,9 +5074,33 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
     }
     else if (pipe(fd_in) < 0)
 	goto failed;
-    if (pipe(fd_out) < 0)
+
+    if (use_file_for_out)
+    {
+	char_u *fname = options->jo_io_name[PART_OUT];
+
+	fd_out[1] = mch_open((char *)fname, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fd_out[1] < 0)
+	{
+	    EMSG2(_(e_notopen), fname);
+	    goto failed;
+	}
+    }
+    else if (pipe(fd_out) < 0)
 	goto failed;
-    if (!use_out_for_err && pipe(fd_err) < 0)
+
+    if (use_file_for_err)
+    {
+	char_u *fname = options->jo_io_name[PART_ERR];
+
+	fd_err[1] = mch_open((char *)fname, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+	if (fd_err[1] < 0)
+	{
+	    EMSG2(_(e_notopen), fname);
+	    goto failed;
+	}
+    }
+    else if (!use_out_for_err && pipe(fd_err) < 0)
 	goto failed;
 
     channel = add_channel();
@@ -5117,14 +5146,16 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 	}
 	else
 	{
-	    close(fd_err[0]);
+	    if (!use_file_for_err)
+		close(fd_err[0]);
 	    close(2);
 	    ignored = dup(fd_err[1]);
 	    close(fd_err[1]);
 	}
 
 	/* set up stdout for the child */
-	close(fd_out[0]);
+	if (!use_file_for_out)
+	    close(fd_out[0]);
 	close(1);
 	ignored = dup(fd_out[1]);
 	close(fd_out[1]);
@@ -5148,13 +5179,15 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
     /* child stdin, stdout and stderr */
     if (!use_file_for_in)
 	close(fd_in[0]);
-    close(fd_out[1]);
-    if (!use_out_for_err)
+    if (!use_file_for_out)
+	close(fd_out[1]);
+    if (!use_out_for_err && !use_file_for_err)
 	close(fd_err[1]);
     channel_set_pipes(channel,
 		      use_file_for_in ? INVALID_FD : fd_in[1],
-		      fd_out[0],
-		      use_out_for_err ? INVALID_FD : fd_err[0]);
+		      use_file_for_out ? INVALID_FD : fd_out[0],
+		      use_out_for_err || use_file_for_err
+						    ? INVALID_FD : fd_err[0]);
     channel_set_job(channel, job, options);
 #  ifdef FEAT_GUI
     channel_gui_register(channel);
@@ -5168,21 +5201,17 @@ failed: ;
     if (channel != NULL)
 	channel_free(channel);
     if (fd_in[0] >= 0)
-    {
 	close(fd_in[0]);
-	if (!use_file_for_in)
-	    close(fd_in[1]);
-    }
+    if (fd_in[1] >= 0)
+	close(fd_in[1]);
     if (fd_out[0] >= 0)
-    {
 	close(fd_out[0]);
+    if (fd_out[1] >= 0)
 	close(fd_out[1]);
-    }
     if (fd_err[0] >= 0)
-    {
 	close(fd_err[0]);
+    if (fd_err[1] >= 0)
 	close(fd_err[1]);
-    }
 # endif
 }
 
