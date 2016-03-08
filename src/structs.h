@@ -1417,8 +1417,8 @@ struct channel_S {
 #define JO_TIMEOUT_ALL	(JO_TIMEOUT + JO_OUT_TIMEOUT + JO_ERR_TIMEOUT)
 
 typedef enum {
+    JIO_PIPE,	    /* default */
     JIO_NULL,
-    JIO_PIPE,
     JIO_FILE,
     JIO_BUFFER,
     JIO_OUT

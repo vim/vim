@@ -784,6 +784,58 @@ func Test_pipe_io_one_buffer()
   endtry
 endfunc
 
+func Test_pipe_null()
+  if !has('job')
+    return
+  endif
+  " TODO: implement this for MS-Windows
+  if !has('unix')
+    return
+  endif
+  call ch_log('Test_pipe_null()')
+
+  " We cannot check that no I/O works, we only check that the job starts
+  " properly.
+  let job = job_start(s:python . " test_channel_pipe.py something",
+	\ {'in-io': 'null'})
+  call assert_equal("run", job_status(job))
+  try
+    call assert_equal('something', ch_read(job))
+  finally
+    call job_stop(job)
+  endtry
+
+  let job = job_start(s:python . " test_channel_pipe.py err-out",
+	\ {'out-io': 'null'})
+  call assert_equal("run", job_status(job))
+  try
+    call assert_equal('err-out', ch_read(job, {"part": "err"}))
+  finally
+    call job_stop(job)
+  endtry
+
+  let job = job_start(s:python . " test_channel_pipe.py something",
+	\ {'err-io': 'null'})
+  call assert_equal("run", job_status(job))
+  try
+    call assert_equal('something', ch_read(job))
+  finally
+    call job_stop(job)
+  endtry
+
+  let job = job_start(s:python . " test_channel_pipe.py something",
+	\ {'out-io': 'null', 'err-io': 'out'})
+  call assert_equal("run", job_status(job))
+  call job_stop(job)
+
+  let job = job_start(s:python . " test_channel_pipe.py something",
+	\ {'in-io': 'null', 'out-io': 'null', 'err-io': 'null'})
+  call assert_equal("run", job_status(job))
+  call assert_equal('channel fail', string(job_getchannel(job)))
+  call assert_equal('fail', ch_status(job))
+  call job_stop(job)
+endfunc
+
 """"""""""
 
 let s:unletResponse = ''

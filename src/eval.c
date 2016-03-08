@@ -10285,7 +10285,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
  * Returns NULL if the handle is invalid.
  */
     static channel_T *
-get_channel_arg(typval_T *tv)
+get_channel_arg(typval_T *tv, int check_open)
 {
     channel_T *channel = NULL;
 
@@ -10304,7 +10304,7 @@ get_channel_arg(typval_T *tv)
 	return NULL;
     }
 
-    if (channel == NULL || !channel_is_open(channel))
+    if (check_open && (channel == NULL || !channel_is_open(channel)))
     {
 	EMSG(_("E906: not an open channel"));
 	return NULL;
@@ -10318,7 +10318,7 @@ get_channel_arg(typval_T *tv)
     static void
 f_ch_close(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    channel_T *channel = get_channel_arg(&argvars[0]);
+    channel_T *channel = get_channel_arg(&argvars[0], TRUE);
 
     if (channel != NULL)
     {
@@ -10333,7 +10333,7 @@ f_ch_close(typval_T *argvars, typval_T *rettv UNUSED)
     static void
 f_ch_getbufnr(typval_T *argvars, typval_T *rettv)
 {
-    channel_T *channel = get_channel_arg(&argvars[0]);
+    channel_T *channel = get_channel_arg(&argvars[0], TRUE);
 
     rettv->vval.v_number = -1;
     if (channel != NULL)
@@ -10361,7 +10361,7 @@ f_ch_getbufnr(typval_T *argvars, typval_T *rettv)
     static void
 f_ch_getjob(typval_T *argvars, typval_T *rettv)
 {
-    channel_T *channel = get_channel_arg(&argvars[0]);
+    channel_T *channel = get_channel_arg(&argvars[0], TRUE);
 
     if (channel != NULL)
     {
@@ -10383,7 +10383,7 @@ f_ch_log(typval_T *argvars, typval_T *rettv UNUSED)
     channel_T	*channel = NULL;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
-	channel = get_channel_arg(&argvars[1]);
+	channel = get_channel_arg(&argvars[1], TRUE);
 
     ch_log(channel, (char *)msg);
 }
@@ -10500,7 +10500,7 @@ common_channel_read(typval_T *argvars, typval_T *rettv, int raw)
 								      == FAIL)
 	return;
 
-    channel = get_channel_arg(&argvars[0]);
+    channel = get_channel_arg(&argvars[0], TRUE);
     if (channel != NULL)
     {
 	if (opt.jo_set & JO_PART)
@@ -10570,7 +10570,7 @@ send_common(
     channel_T	*channel;
     int		part_send;
 
-    channel = get_channel_arg(&argvars[0]);
+    channel = get_channel_arg(&argvars[0], TRUE);
     if (channel == NULL)
 	return NULL;
     part_send = channel_part_send(channel);
@@ -10619,7 +10619,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
-    channel = get_channel_arg(&argvars[0]);
+    channel = get_channel_arg(&argvars[0], TRUE);
     if (channel == NULL)
 	return;
     part_send = channel_part_send(channel);
@@ -10736,7 +10736,7 @@ f_ch_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     channel_T	*channel;
     jobopt_T	opt;
 
-    channel = get_channel_arg(&argvars[0]);
+    channel = get_channel_arg(&argvars[0], TRUE);
     if (channel == NULL)
 	return;
     clear_job_options(&opt);
@@ -10752,17 +10752,14 @@ f_ch_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     static void
 f_ch_status(typval_T *argvars, typval_T *rettv)
 {
+    channel_T	*channel;
+
     /* return an empty string by default */
     rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
 
-    if (argvars[0].v_type != VAR_CHANNEL)
-    {
-	EMSG2(_(e_invarg2), get_tv_string(&argvars[0]));
-	rettv->vval.v_string = NULL;
-    }
-    else
-	rettv->vval.v_string = vim_strsave(
-			 (char_u *)channel_status(argvars[0].vval.v_channel));
+    channel = get_channel_arg(&argvars[0], FALSE);
+    rettv->vval.v_string = vim_strsave((char_u *)channel_status(channel));
 }
 #endif
 

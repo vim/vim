@@ -10,7 +10,12 @@ import sys
 if __name__ == "__main__":
 
     if len(sys.argv) > 1:
-        print(sys.argv[1])
+        if sys.argv[1].startswith("err"):
+            print(sys.argv[1], file=sys.stderr)
+            sys.stderr.flush()
+        else:
+            print(sys.argv[1])
+            sys.stdout.flush()
 
     while True:
         typed = sys.stdin.readline()
