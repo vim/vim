@@ -103,9 +103,12 @@ endfunc
 " Wait for up to a second for "expr" to become true.
 func s:waitFor(expr)
   for i in range(100)
-    if eval(a:expr)
-      return
-    endif
+    try
+      if eval(a:expr)
+	return
+      endif
+    catch
+    endtry
     sleep 10m
   endfor
 endfunc
