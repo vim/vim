@@ -53,9 +53,8 @@ func s:run_server(testfunc, ...)
     endif
 
     " Wait for up to 2 seconds for the port number to be there.
-    let cnt = 20
     let l = []
-    while cnt > 0
+    for i in range(200)
       try
         let l = readfile("Xportnr")
       catch
@@ -63,9 +62,8 @@ func s:run_server(testfunc, ...)
       if len(l) >= 1
         break
       endif
-      sleep 100m
-      let cnt -= 1
-    endwhile
+      sleep 10m
+    endfor
     call delete("Xportnr")
 
     if len(l) == 0
@@ -102,6 +100,16 @@ func s:RequestHandler(handle, msg)
   let s:responseMsg = a:msg
 endfunc
 
+" Wait for up to a second for "expr" to become true.
+func s:waitFor(expr)
+  for i in range(100)
+    if eval(a:expr)
+      return
+    endif
+    sleep 10m
+  endfor
+endfunc
+
 func s:communicate(port)
   let handle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(handle) == "fail"
@@ -120,17 +128,17 @@ func s:communicate(port)
   " handled before getting the response, but it's not guaranteed, thus wait a
   " tiny bit for the commands to get executed.
   call assert_equal('ok', ch_evalexpr(handle, 'make change'))
-  sleep 10m
+  call s:waitFor('"added2" == getline("$")')
   call assert_equal('added1', getline(line('$') - 1))
   call assert_equal('added2', getline('$'))
 
   call assert_equal('ok', ch_evalexpr(handle, 'do normal', {'timeout': 100}))
-  sleep 10m
+  call s:waitFor('"added more" == getline("$")')
   call assert_equal('added more', getline('$'))
 
   " Send a request with a specific handler.
   call ch_sendexpr(handle, 'hello!', {'callback': 's:RequestHandler'})
-  sleep 10m
+  call s:waitFor('exists("s:responseHandle")')
   if !exists('s:responseHandle')
     call assert_false(1, 's:responseHandle was not set')
   else
@@ -141,7 +149,7 @@ func s:communicate(port)
 
   let s:responseMsg = ''
   call ch_sendexpr(handle, 'hello!', {'callback': function('s:RequestHandler')})
-  sleep 10m
+  call s:waitFor('exists("s:responseHandle")')
   if !exists('s:responseHandle')
     call assert_false(1, 's:responseHandle was not set')
   else
@@ -182,7 +190,7 @@ func s:communicate(port)
 
   " Send an expr request
   call assert_equal('ok', ch_evalexpr(handle, 'an expr'))
-  sleep 10m
+  call s:waitFor('"three" == getline("$")')
   call assert_equal('one', getline(line('$') - 2))
   call assert_equal('two', getline(line('$') - 1))
   call assert_equal('three', getline('$'))
@@ -281,12 +289,12 @@ func s:channel_handler(port)
 
   " Test that it works while waiting on a numbered message.
   call assert_equal('ok', ch_evalexpr(handle, 'call me'))
-  sleep 10m
+  call s:waitFor('"we called you" == s:reply')
   call assert_equal('we called you', s:reply)
 
   " Test that it works while not waiting on a numbered message.
   call ch_sendexpr(handle, 'call me again')
-  sleep 10m
+  call s:waitFor('"we did call you" == s:reply')
   call assert_equal('we did call you', s:reply)
 endfunc
 
@@ -326,10 +334,11 @@ func s:channel_zero(port)
   " Check that eval works if a zero id message is sent back.
   let s:ch_reply = ''
   call assert_equal('sent zero', ch_evalexpr(handle, 'send zero'))
-  sleep 10m
   if s:has_handler
+    call s:waitFor('"zero index" == s:ch_reply')
     call assert_equal('zero index', s:ch_reply)
   else
+    sleep 20m
     call assert_equal('', s:ch_reply)
   endif
 
@@ -337,13 +346,7 @@ func s:channel_zero(port)
   let s:ch_reply = ''
   let s:zero_reply = ''
   call ch_sendexpr(handle, 'send zero', {'callback': 's:OneHandler'})
-  " Somehow the second message takes a bit of time.
-  for i in range(50)
-    if s:zero_reply == 'sent zero'
-      break
-    endif
-    sleep 10m
-  endfor
+  call s:waitFor('"sent zero" == s:zero_reply')
   if s:has_handler
     call assert_equal('zero index', s:ch_reply)
   else
@@ -395,29 +398,14 @@ func s:raw_one_time_callback(port)
 
   " The message are sent raw, we do our own JSON strings here.
   call ch_sendraw(handle, "[1, \"hello!\"]", {'callback': 's:HandleRaw1'})
-  for i in range(50)
-    sleep 10m
-    if s:reply1 != ''
-      break
-    endif
-  endfor
+  call s:waitFor('s:reply1 != ""')
   call assert_equal("[1, \"got it\"]", s:reply1)
   call ch_sendraw(handle, "[2, \"echo something\"]", {'callback': 's:HandleRaw2'})
   call ch_sendraw(handle, "[3, \"wait a bit\"]", {'callback': 's:HandleRaw3'})
-  for i in range(50)
-    sleep 10m
-    if s:reply2 != ''
-      break
-    endif
-  endfor
+  call s:waitFor('s:reply2 != ""')
   call assert_equal("[2, \"something\"]", s:reply2)
-  " wait for up to 500 msec for the 200 msec delayed reply
-  for i in range(50)
-    sleep 10m
-    if s:reply3 != ''
-      break
-    endif
-  endfor
+  " wait for the 200 msec delayed reply
+  call s:waitFor('s:reply3 != ""')
   call assert_equal("[3, \"waited\"]", s:reply3)
 endfunc
 
@@ -572,12 +560,7 @@ func Test_nl_write_out_file()
     call ch_sendraw(handle, "echo line one\n")
     call ch_sendraw(handle, "echo line two\n")
     call ch_sendraw(handle, "double this\n")
-    for i in range(50)
-      sleep 10m
-      if len(readfile('Xoutput')) > 2
-	break
-      endif
-    endfor
+    call s:waitFor('len(readfile("Xoutput")) > 2')
     call assert_equal(['line one', 'line two', 'this', 'AND this'], readfile('Xoutput'))
   finally
     call job_stop(job)
@@ -602,12 +585,7 @@ func Test_nl_write_err_file()
     call ch_sendraw(handle, "echoerr line one\n")
     call ch_sendraw(handle, "echoerr line two\n")
     call ch_sendraw(handle, "doubleerr this\n")
-    for i in range(50)
-      sleep 10m
-      if len(readfile('Xoutput')) > 2
-	break
-      endif
-    endfor
+    call s:waitFor('len(readfile("Xoutput")) > 2')
     call assert_equal(['line one', 'line two', 'this', 'AND this'], readfile('Xoutput'))
   finally
     call job_stop(job)
@@ -633,12 +611,7 @@ func Test_nl_write_both_file()
     call ch_sendraw(handle, "echo line two\n")
     call ch_sendraw(handle, "double this\n")
     call ch_sendraw(handle, "doubleerr that\n")
-    for i in range(50)
-      sleep 10m
-      if len(readfile('Xoutput')) > 5
-	break
-      endif
-    endfor
+    call s:waitFor('len(readfile("Xoutput")) > 5')
     call assert_equal(['line one', 'line two', 'this', 'AND this', 'that', 'AND that'], readfile('Xoutput'))
   finally
     call job_stop(job)
@@ -661,12 +634,7 @@ func Test_pipe_to_buffer()
     call ch_sendraw(handle, "double this\n")
     call ch_sendraw(handle, "quit\n")
     sp pipe-output
-    for i in range(100)
-      sleep 10m
-      if line('$') >= 6
-	break
-      endif
-    endfor
+    call s:waitFor('line("$") >= 6')
     call assert_equal(['Reading from channel output...', 'line one', 'line two', 'this', 'AND this', 'Goodbye!'], getline(1, '$'))
     bwipe!
   finally
@@ -710,12 +678,7 @@ func Test_pipe_to_nameless_buffer()
     call ch_sendraw(handle, "echo line one\n")
     call ch_sendraw(handle, "echo line two\n")
     exe ch_getbufnr(handle, "out") . 'sbuf'
-    for i in range(100)
-      sleep 10m
-      if line('$') >= 3
-	break
-      endif
-    endfor
+    call s:waitFor('line("$") >= 3')
     call assert_equal(['Reading from channel output...', 'line one', 'line two'], getline(1, '$'))
     bwipe!
   finally
@@ -736,12 +699,7 @@ func Test_pipe_to_buffer_json()
     call ch_sendraw(handle, "echo [0, \"hello\"]\n")
     call ch_sendraw(handle, "echo [-2, 12.34]\n")
     exe ch_getbufnr(handle, "out") . 'sbuf'
-    for i in range(100)
-      sleep 10m
-      if line('$') >= 3
-	break
-      endif
-    endfor
+    call s:waitFor('line("$") >= 3')
     call assert_equal(['Reading from channel output...', '[0,"hello"]', '[-2,12.34]'], getline(1, '$'))
     bwipe!
   finally
@@ -750,12 +708,12 @@ func Test_pipe_to_buffer_json()
 endfunc
 
 " Wait a little while for the last line, minus "offset", to equal "line".
-func Wait_for_last_line(line, offset)
+func s:wait_for_last_line(line, offset)
   for i in range(100)
-    sleep 10m
     if getline(line('$') - a:offset) == a:line
       break
     endif
+    sleep 10m
   endfor
 endfunc
 
@@ -778,13 +736,13 @@ func Test_pipe_io_two_buffers()
   try
     exe "normal Gaecho hello\<CR>"
     exe bufwinnr('pipe-output') . "wincmd w"
-    call Wait_for_last_line('hello', 0)
+    call s:wait_for_last_line('hello', 0)
     call assert_equal('hello', getline('$'))
 
     exe bufwinnr('pipe-input') . "wincmd w"
     exe "normal Gadouble this\<CR>"
     exe bufwinnr('pipe-output') . "wincmd w"
-    call Wait_for_last_line('AND this', 0)
+    call s:wait_for_last_line('AND this', 0)
     call assert_equal('this', getline(line('$') - 1))
     call assert_equal('AND this', getline('$'))
 
@@ -812,11 +770,11 @@ func Test_pipe_io_one_buffer()
   call assert_equal("run", job_status(job))
   try
     exe "normal Goecho hello\<CR>"
-    call Wait_for_last_line('hello', 1)
+    call s:wait_for_last_line('hello', 1)
     call assert_equal('hello', getline(line('$') - 1))
 
     exe "normal Gadouble this\<CR>"
-    call Wait_for_last_line('AND this', 1)
+    call s:wait_for_last_line('AND this', 1)
     call assert_equal('this', getline(line('$') - 2))
     call assert_equal('AND this', getline(line('$') - 1))
 
@@ -838,7 +796,7 @@ endfunc
 func s:unlet_handle(port)
   let s:channelfd = ch_open('localhost:' . a:port, s:chopt)
   call ch_sendexpr(s:channelfd, "test", {'callback': function('s:UnletHandler')})
-  sleep 10m
+  call s:waitFor('"what?" == s:unletResponse')
   call assert_equal('what?', s:unletResponse)
 endfunc
 
@@ -859,7 +817,7 @@ endfunc
 func s:close_handle(port)
   let s:channelfd = ch_open('localhost:' . a:port, s:chopt)
   call ch_sendexpr(s:channelfd, "test", {'callback': function('s:CloseHandler')})
-  sleep 10m
+  call s:waitFor('"what?" == s:unletResponse')
   call assert_equal('what?', s:unletResponse)
 endfunc
 
@@ -911,8 +869,9 @@ function s:test_call(port)
     return
   endif
 
+  let s:call_ret = []
   call assert_equal('ok', ch_evalexpr(handle, 'call-func'))
-  sleep 20m
+  call s:waitFor('len(s:call_ret) > 0')
   call assert_equal([1, 2, 3], s:call_ret)
 endfunc
 
@@ -969,7 +928,7 @@ function s:test_close_callback(port)
   call ch_setoptions(handle, {'close-cb': 'MyCloseCb'})
 
   call assert_equal('', ch_evalexpr(handle, 'close me'))
-  sleep 20m
+  call s:waitFor('"closed" == s:ch_close_ret')
   call assert_equal('closed', s:ch_close_ret)
 endfunc
 
