@@ -4992,6 +4992,41 @@ mch_call_shell(
 }
 
 #if defined(FEAT_JOB) || defined(PROTO)
+    HANDLE
+job_io_file_open(
+	char_u *fname,
+	DWORD dwDesiredAccess,
+	DWORD dwShareMode,
+	LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+	DWORD dwCreationDisposition,
+	DWORD dwFlagsAndAttributes)
+{
+    HANDLE h;
+#ifdef FEAT_MBYTE
+    WCHAR *wn = NULL;
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	wn = enc_to_utf16(fname, NULL);
+	if (wn != NULL)
+	{
+	    h = CreateFileW(wn, dwDesiredAccess, dwShareMode,
+		     lpSecurityAttributes, dwCreationDisposition,
+		     dwFlagsAndAttributes, NULL);
+	    vim_free(wn);
+	    if (h == INVALID_HANDLE_VALUE
+			  && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
+		wn = NULL;
+	}
+    }
+    if (wn == NULL)
+#endif
+
+	h = CreateFile((LPCSTR)fname, dwDesiredAccess, dwShareMode,
+		     lpSecurityAttributes, dwCreationDisposition,
+		     dwFlagsAndAttributes, NULL);
+    return h;
+}
+
     void
 mch_start_job(char *cmd, job_T *job, jobopt_T *options)
 {
@@ -5001,6 +5036,8 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
 # ifdef FEAT_CHANNEL
     channel_T		*channel;
     int			use_file_for_in = options->jo_io[PART_IN] == JIO_FILE;
+    int			use_file_for_out = options->jo_io[PART_OUT] == JIO_FILE;
+    int			use_file_for_err = options->jo_io[PART_ERR] == JIO_FILE;
     int			use_out_for_err = options->jo_io[PART_ERR] == JIO_OUT;
     HANDLE		ifd[2];
     HANDLE		ofd[2];
@@ -5036,29 +5073,13 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = NULL;
+
     if (use_file_for_in)
     {
 	char_u *fname = options->jo_io_name[PART_IN];
-#ifdef FEAT_MBYTE
-	WCHAR *wn = NULL;
-	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-	{
-	    wn = enc_to_utf16(fname, NULL);
-	    if (wn != NULL)
-	    {
-		ifd[0] = CreateFileW(wn, GENERIC_WRITE, FILE_SHARE_READ,
-			 &saAttr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-		vim_free(wn);
-		if (ifd[0] == INVALID_HANDLE_VALUE
-			      && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
-		    wn = NULL;
-	    }
-	}
-	if (wn == NULL)
-#endif
 
-	    ifd[0] = CreateFile((LPCSTR)fname, GENERIC_READ, FILE_SHARE_READ,
-			 &saAttr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	ifd[0] = job_io_file_open(fname, GENERIC_READ, FILE_SHARE_READ,
+		&saAttr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL);
 	if (ifd[0] == INVALID_HANDLE_VALUE)
 	{
 	    EMSG2(_(e_notopen), fname);
@@ -5069,18 +5090,43 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
 	    || !pSetHandleInformation(ifd[1], HANDLE_FLAG_INHERIT, 0))
 	goto failed;
 
-    if (!CreatePipe(&ofd[0], &ofd[1], &saAttr, 0)
+    if (use_file_for_out)
+    {
+	char_u *fname = options->jo_io_name[PART_OUT];
+
+	ofd[0] = job_io_file_open(fname, GENERIC_WRITE, FILE_SHARE_WRITE,
+		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
+	if (ofd[0] == INVALID_HANDLE_VALUE)
+	{
+	    EMSG2(_(e_notopen), fname);
+	    goto failed;
+	}
+    }
+    else if (!CreatePipe(&ofd[0], &ofd[1], &saAttr, 0)
 	    || !pSetHandleInformation(ofd[0], HANDLE_FLAG_INHERIT, 0))
 	goto failed;
 
-    if (!use_out_for_err
+    if (use_file_for_err)
+    {
+	char_u *fname = options->jo_io_name[PART_ERR];
+
+	efd[0] = job_io_file_open(fname, GENERIC_WRITE, FILE_SHARE_WRITE,
+		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
+	if (efd[0] == INVALID_HANDLE_VALUE)
+	{
+	    EMSG2(_(e_notopen), fname);
+	    goto failed;
+	}
+    }
+    else if (!use_out_for_err
 	   && (!CreatePipe(&efd[0], &efd[1], &saAttr, 0)
 	    || !pSetHandleInformation(efd[0], HANDLE_FLAG_INHERIT, 0)))
 	goto failed;
+
     si.dwFlags |= STARTF_USESTDHANDLES;
     si.hStdInput = ifd[0];
-    si.hStdOutput = ofd[1];
-    si.hStdError = use_out_for_err ? ofd[1] : efd[1];
+    si.hStdOutput = use_file_for_out ? ofd[0] : ofd[1];
+    si.hStdError = use_out_for_err && !use_file_for_err ? ofd[1] : efd[1];
 # endif
 
     if (!vim_create_process(cmd, TRUE,
@@ -5111,7 +5157,8 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
 # ifdef FEAT_CHANNEL
     if (!use_file_for_in)
 	CloseHandle(ifd[0]);
-    CloseHandle(ofd[1]);
+    if (!use_file_for_out)
+	CloseHandle(ofd[1]);
     if (!use_out_for_err)
 	CloseHandle(efd[1]);
 

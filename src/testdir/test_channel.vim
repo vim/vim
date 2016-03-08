@@ -547,10 +547,6 @@ func Test_nl_write_out_file()
   if !has('job')
     return
   endif
-  " TODO: make this work for MS-Windows
-  if !has('unix')
-    return
-  endif
   call ch_log('Test_nl_write_out_file()')
   let job = job_start(s:python . " test_channel_pipe.py",
 	\ {'out-io': 'file', 'out-name': 'Xoutput'})
@@ -572,10 +568,6 @@ func Test_nl_write_err_file()
   if !has('job')
     return
   endif
-  " TODO: make this work for MS-Windows
-  if !has('unix')
-    return
-  endif
   call ch_log('Test_nl_write_err_file()')
   let job = job_start(s:python . " test_channel_pipe.py",
 	\ {'err-io': 'file', 'err-name': 'Xoutput'})
@@ -595,10 +587,6 @@ endfunc
 
 func Test_nl_write_both_file()
   if !has('job')
-    return
-  endif
-  " TODO: make this work for MS-Windows
-  if !has('unix')
     return
   endif
   call ch_log('Test_nl_write_both_file()')
