@@ -5039,10 +5039,31 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
     if (use_file_for_in)
     {
 	char_u *fname = options->jo_io_name[PART_IN];
+#ifdef FEAT_MBYTE
+	WCHAR *wn = NULL;
+	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+	{
+	    wn = enc_to_utf16(fname, NULL);
+	    if (wn != NULL)
+	    {
+		ifd[0] = CreateFileW(wn, GENERIC_WRITE, FILE_SHARE_READ,
+			 &saAttr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		vim_free(wn);
+		if (ifd[0] == INVALID_HANDLE_VALUE
+			      && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
+		    wn = NULL;
+	    }
+	}
+	if (wn == NULL)
+#endif
 
-	// TODO
-	EMSG2(_(e_notopen), fname);
-	goto failed;
+	    ifd[0] = CreateFile((LPCSTR)fname, GENERIC_READ, FILE_SHARE_READ,
+			 &saAttr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (ifd[0] == INVALID_HANDLE_VALUE)
+	{
+	    EMSG2(_(e_notopen), fname);
+	    goto failed;
+	}
     }
     else if (!CreatePipe(&ifd[0], &ifd[1], &saAttr, 0)
 	    || !pSetHandleInformation(ifd[1], HANDLE_FLAG_INHERIT, 0))
@@ -5088,18 +5109,21 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
     job->jv_status = JOB_STARTED;
 
 # ifdef FEAT_CHANNEL
-    CloseHandle(ifd[0]);
+    if (!use_file_for_in)
+	CloseHandle(ifd[0]);
     CloseHandle(ofd[1]);
     if (!use_out_for_err)
 	CloseHandle(efd[1]);
 
     job->jv_channel = channel;
-    channel_set_pipes(channel, (sock_T)ifd[1], (sock_T)ofd[0],
-			       use_out_for_err ? INVALID_FD : (sock_T)efd[0]);
+    channel_set_pipes(channel,
+		    use_file_for_in ? INVALID_FD : (sock_T)ifd[1],
+		    (sock_T)ofd[0],
+		    use_out_for_err ? INVALID_FD : (sock_T)efd[0]);
     channel_set_job(channel, job, options);
-#   ifdef FEAT_GUI
-     channel_gui_register(channel);
-#   endif
+#  ifdef FEAT_GUI
+    channel_gui_register(channel);
+#  endif
 # endif
     return;
 

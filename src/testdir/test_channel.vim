@@ -538,10 +538,6 @@ func Test_nl_read_file()
   if !has('job')
     return
   endif
-  " TODO: make this work for MS-Windows.
-  if !has('unix')
-    return
-  endif
   call ch_log('Test_nl_read_file()')
   call writefile(['echo something', 'echoerr wrong', 'double this'], 'Xinput')
   let job = job_start(s:python . " test_channel_pipe.py",
