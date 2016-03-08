@@ -8,7 +8,11 @@ func Test_file_perm()
   call assert_true(len(getfperm('Xtest')) == 9)
 
   call assert_equal(1, setfperm('Xtest', 'rwx------'))
-  call assert_equal('rwx------', getfperm('Xtest'))
+  if has('win32')
+    call assert_equal('rw-rw-rw-', getfperm('Xtest'))
+  else
+    call assert_equal('rwx------', getfperm('Xtest'))
+  endif
 
   call assert_equal(1, setfperm('Xtest', 'r--r--r--'))
   call assert_equal('r--r--r--', getfperm('Xtest'))
