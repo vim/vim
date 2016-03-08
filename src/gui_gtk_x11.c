@@ -3346,6 +3346,8 @@ set_toolbar_style(GtkToolbar *toolbar)
 	case TBIS_SMALL:    size = GTK_ICON_SIZE_SMALL_TOOLBAR;	break;
 	case TBIS_MEDIUM:   size = GTK_ICON_SIZE_BUTTON;	break;
 	case TBIS_LARGE:    size = GTK_ICON_SIZE_LARGE_TOOLBAR;	break;
+	case TBIS_HUGE:     size = GTK_ICON_SIZE_DND;		break;
+	case TBIS_GIANT:    size = GTK_ICON_SIZE_DIALOG;	break;
 	default:	    size = GTK_ICON_SIZE_INVALID;	break;
     }
     oldsize = gtk_toolbar_get_icon_size(toolbar);

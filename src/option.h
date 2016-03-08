@@ -871,12 +871,14 @@ static char *(p_toolbar_values[]) = {"text", "icons", "tooltips", "horiz", NULL}
 EXTERN char_u	*p_tbis;	/* 'toolbariconsize' */
 EXTERN unsigned tbis_flags;
 # ifdef IN_OPTION_C
-static char *(p_tbis_values[]) = {"tiny", "small", "medium", "large", NULL};
+static char *(p_tbis_values[]) = {"tiny", "small", "medium", "large", "huge", "giant", NULL};
 # endif
 # define TBIS_TINY		0x01
 # define TBIS_SMALL		0x02
 # define TBIS_MEDIUM		0x04
 # define TBIS_LARGE		0x08
+# define TBIS_HUGE		0x10
+# define TBIS_GIANT		0x20
 #endif
 EXTERN long	p_ttyscroll;	/* 'ttyscroll' */
 #if defined(FEAT_MOUSE) && (defined(UNIX) || defined(VMS))
