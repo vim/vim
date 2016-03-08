@@ -871,7 +871,7 @@ channel_set_job(channel_T *channel, job_T *job, jobopt_T *options)
  * Find a buffer matching "name" or create a new one.
  */
     static buf_T *
-find_buffer(char_u *name)
+find_buffer(char_u *name, int err)
 {
     buf_T *buf = NULL;
     buf_T *save_curbuf = curbuf;
@@ -890,7 +890,8 @@ find_buffer(char_u *name)
 	curbuf = buf;
 	if (curbuf->b_ml.ml_mfp == NULL)
 	    ml_open(curbuf);
-	ml_replace(1, (char_u *)"Reading from channel output...", TRUE);
+	ml_replace(1, (char_u *)(err ? "Reading from channel error..."
+				   : "Reading from channel output..."), TRUE);
 	changed_bytes(1, 0);
 	curbuf = save_curbuf;
     }
@@ -968,9 +969,26 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	if (!(opt->jo_set & JO_OUT_MODE))
 	    channel->ch_part[PART_OUT].ch_mode = MODE_NL;
 	channel->ch_part[PART_OUT].ch_buffer =
-				       find_buffer(opt->jo_io_name[PART_OUT]);
-	ch_logs(channel, "writing to buffer '%s'",
+				find_buffer(opt->jo_io_name[PART_OUT], FALSE);
+	ch_logs(channel, "writing out to buffer '%s'",
 		      (char *)channel->ch_part[PART_OUT].ch_buffer->b_ffname);
+    }
+
+    if ((opt->jo_set & JO_ERR_IO) && (opt->jo_io[PART_ERR] == JIO_BUFFER
+	 || (opt->jo_io[PART_ERR] == JIO_OUT && (opt->jo_set & JO_OUT_IO)
+				       && opt->jo_io[PART_OUT] == JIO_BUFFER)))
+    {
+	/* writing err to a buffer. Default mode is NL. */
+	if (!(opt->jo_set & JO_ERR_MODE))
+	    channel->ch_part[PART_ERR].ch_mode = MODE_NL;
+	if (opt->jo_io[PART_ERR] == JIO_OUT)
+	    channel->ch_part[PART_ERR].ch_buffer =
+					 channel->ch_part[PART_OUT].ch_buffer;
+	else
+	    channel->ch_part[PART_ERR].ch_buffer =
+				 find_buffer(opt->jo_io_name[PART_ERR], TRUE);
+	ch_logs(channel, "writing err to buffer '%s'",
+		      (char *)channel->ch_part[PART_ERR].ch_buffer->b_ffname);
     }
 }
 

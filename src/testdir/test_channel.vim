@@ -633,6 +633,53 @@ func Test_pipe_to_buffer()
   endtry
 endfunc
 
+func Test_pipe_err_to_buffer()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_pipe_err_to_buffer()')
+  let job = job_start(s:python . " test_channel_pipe.py",
+	\ {'err-io': 'buffer', 'err-name': 'pipe-err'})
+  call assert_equal("run", job_status(job))
+  try
+    let handle = job_getchannel(job)
+    call ch_sendraw(handle, "echoerr line one\n")
+    call ch_sendraw(handle, "echoerr line two\n")
+    call ch_sendraw(handle, "doubleerr this\n")
+    call ch_sendraw(handle, "quit\n")
+    sp pipe-err
+    call s:waitFor('line("$") >= 5')
+    call assert_equal(['Reading from channel error...', 'line one', 'line two', 'this', 'AND this'], getline(1, '$'))
+    bwipe!
+  finally
+    call job_stop(job)
+  endtry
+endfunc
+
+func Test_pipe_both_to_buffer()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_pipe_both_to_buffer()')
+  let job = job_start(s:python . " test_channel_pipe.py",
+	\ {'out-io': 'buffer', 'out-name': 'pipe-err', 'err-io': 'out'})
+  call assert_equal("run", job_status(job))
+  try
+    let handle = job_getchannel(job)
+    call ch_sendraw(handle, "echo line one\n")
+    call ch_sendraw(handle, "echoerr line two\n")
+    call ch_sendraw(handle, "double this\n")
+    call ch_sendraw(handle, "doubleerr that\n")
+    call ch_sendraw(handle, "quit\n")
+    sp pipe-err
+    call s:waitFor('line("$") >= 7')
+    call assert_equal(['Reading from channel output...', 'line one', 'line two', 'this', 'AND this', 'that', 'AND that', 'Goodbye!'], getline(1, '$'))
+    bwipe!
+  finally
+    call job_stop(job)
+  endtry
+endfunc
+
 func Test_pipe_from_buffer()
   if !has('job')
     return
