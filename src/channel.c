@@ -1005,7 +1005,7 @@ channel_set_req_callback(
 write_buf_line(buf_T *buf, linenr_T lnum, channel_T *channel)
 {
     char_u  *line = ml_get_buf(buf, lnum, FALSE);
-    int	    len = STRLEN(line);
+    int	    len = (int)STRLEN(line);
     char_u  *p;
 
     /* TODO: check if channel can be written to, do not block on write */
