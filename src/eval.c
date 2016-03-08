@@ -735,6 +735,7 @@ static void f_serverlist(typval_T *argvars, typval_T *rettv);
 static void f_setbufvar(typval_T *argvars, typval_T *rettv);
 static void f_setcharsearch(typval_T *argvars, typval_T *rettv);
 static void f_setcmdpos(typval_T *argvars, typval_T *rettv);
+static void f_setfperm(typval_T *argvars, typval_T *rettv);
 static void f_setline(typval_T *argvars, typval_T *rettv);
 static void f_setloclist(typval_T *argvars, typval_T *rettv);
 static void f_setmatches(typval_T *argvars, typval_T *rettv);
@@ -8446,6 +8447,7 @@ static struct fst
     {"setbufvar",	3, 3, f_setbufvar},
     {"setcharsearch",	1, 1, f_setcharsearch},
     {"setcmdpos",	1, 1, f_setcmdpos},
+    {"setfperm",	2, 2, f_setfperm},
     {"setline",		2, 2, f_setline},
     {"setloclist",	2, 3, f_setloclist},
     {"setmatches",	1, 1, f_setmatches},
@@ -18419,6 +18421,42 @@ f_setcmdpos(typval_T *argvars, typval_T *rettv)
 
     if (pos >= 0)
 	rettv->vval.v_number = set_cmdline_pos(pos);
+}
+
+/*
+ * "setfperm({fname}, {mode})" function
+ */
+    static void
+f_setfperm(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*fname;
+    char_u	modebuf[NUMBUFLEN];
+    char_u	*mode_str;
+    int		i;
+    int		mask;
+    int		mode = 0;
+
+    rettv->vval.v_number = 0;
+    fname = get_tv_string_chk(&argvars[0]);
+    if (fname == NULL)
+	return;
+    mode_str = get_tv_string_buf_chk(&argvars[1], modebuf);
+    if (mode_str == NULL)
+	return;
+    if (STRLEN(mode_str) != 9)
+    {
+	EMSG2(_(e_invarg2), mode_str);
+	return;
+    }
+
+    mask = 1;
+    for (i = 8; i >= 0; --i)
+    {
+	if (mode_str[i] != '-')
+	    mode |= mask;
+	mask = mask << 1;
+    }
+    rettv->vval.v_number = mch_setperm(fname, mode) == OK;
 }
 
 /*
