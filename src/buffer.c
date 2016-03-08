@@ -3722,7 +3722,7 @@ build_stl_str_hl(
 	    {
 		/* remove group if all items are empty */
 		for (n = groupitem[groupdepth] + 1; n < curitem; n++)
-		    if (item[n].type == Normal)
+		    if (item[n].type == Normal || item[n].type == Highlight)
 			break;
 		if (n == curitem)
 		{
