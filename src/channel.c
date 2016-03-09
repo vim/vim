@@ -987,7 +987,11 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	/* writing output to a buffer. Default mode is NL. */
 	if (!(opt->jo_set & JO_OUT_MODE))
 	    channel->ch_part[PART_OUT].ch_mode = MODE_NL;
-	channel->ch_part[PART_OUT].ch_buffer =
+	if (opt->jo_set & JO_OUT_BUF)
+	    channel->ch_part[PART_OUT].ch_buffer =
+				     buflist_findnr(opt->jo_io_buf[PART_OUT]);
+	else
+	    channel->ch_part[PART_OUT].ch_buffer =
 				find_buffer(opt->jo_io_name[PART_OUT], FALSE);
 	ch_logs(channel, "writing out to buffer '%s'",
 		      (char *)channel->ch_part[PART_OUT].ch_buffer->b_ffname);
@@ -1003,6 +1007,9 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	if (opt->jo_io[PART_ERR] == JIO_OUT)
 	    channel->ch_part[PART_ERR].ch_buffer =
 					 channel->ch_part[PART_OUT].ch_buffer;
+	else if (opt->jo_set & JO_ERR_BUF)
+	    channel->ch_part[PART_ERR].ch_buffer =
+				     buflist_findnr(opt->jo_io_buf[PART_ERR]);
 	else
 	    channel->ch_part[PART_ERR].ch_buffer =
 				 find_buffer(opt->jo_io_name[PART_ERR], TRUE);

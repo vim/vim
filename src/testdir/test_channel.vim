@@ -610,13 +610,22 @@ func Test_nl_write_both_file()
   endtry
 endfunc
 
-func Test_pipe_to_buffer()
+func Run_test_pipe_to_buffer(use_name)
   if !has('job')
     return
   endif
   call ch_log('Test_pipe_to_buffer()')
-  let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'out-io': 'buffer', 'out-name': 'pipe-output'})
+  let options = {'out-io': 'buffer'}
+  if a:use_name
+    let options['out-name'] = 'pipe-output'
+    let firstline = 'Reading from channel output...'
+  else
+    sp pipe-output
+    let options['out-buf'] = bufnr('%')
+    quit
+    let firstline = ''
+  endif
+  let job = job_start(s:python . " test_channel_pipe.py", options)
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
@@ -626,20 +635,37 @@ func Test_pipe_to_buffer()
     call ch_sendraw(handle, "quit\n")
     sp pipe-output
     call s:waitFor('line("$") >= 6')
-    call assert_equal(['Reading from channel output...', 'line one', 'line two', 'this', 'AND this', 'Goodbye!'], getline(1, '$'))
+    call assert_equal([firstline, 'line one', 'line two', 'this', 'AND this', 'Goodbye!'], getline(1, '$'))
     bwipe!
   finally
     call job_stop(job)
   endtry
 endfunc
 
-func Test_pipe_err_to_buffer()
+func Test_pipe_to_buffer_name()
+  call Run_test_pipe_to_buffer(1)
+endfunc
+
+func Test_pipe_to_buffer_nr()
+  call Run_test_pipe_to_buffer(0)
+endfunc
+
+func Run_test_pipe_err_to_buffer(use_name)
   if !has('job')
     return
   endif
   call ch_log('Test_pipe_err_to_buffer()')
-  let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'err-io': 'buffer', 'err-name': 'pipe-err'})
+  let options = {'err-io': 'buffer'}
+  if a:use_name
+    let options['err-name'] = 'pipe-err'
+    let firstline = 'Reading from channel error...'
+  else
+    sp pipe-err
+    let options['err-buf'] = bufnr('%')
+    quit
+    let firstline = ''
+  endif
+  let job = job_start(s:python . " test_channel_pipe.py", options)
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
@@ -649,13 +675,21 @@ func Test_pipe_err_to_buffer()
     call ch_sendraw(handle, "quit\n")
     sp pipe-err
     call s:waitFor('line("$") >= 5')
-    call assert_equal(['Reading from channel error...', 'line one', 'line two', 'this', 'AND this'], getline(1, '$'))
+    call assert_equal([firstline, 'line one', 'line two', 'this', 'AND this'], getline(1, '$'))
     bwipe!
   finally
     call job_stop(job)
   endtry
 endfunc
 
+func Test_pipe_err_to_buffer_name()
+  call Run_test_pipe_err_to_buffer(1)
+endfunc
+  
+func Test_pipe_err_to_buffer_nr()
+  call Run_test_pipe_err_to_buffer(0)
+endfunc
+  
 func Test_pipe_both_to_buffer()
   if !has('job')
     return
@@ -680,7 +714,7 @@ func Test_pipe_both_to_buffer()
   endtry
 endfunc
 
-func Test_pipe_from_buffer()
+func Run_test_pipe_from_buffer(use_name)
   if !has('job')
     return
   endif
@@ -688,9 +722,14 @@ func Test_pipe_from_buffer()
 
   sp pipe-input
   call setline(1, ['echo one', 'echo two', 'echo three'])
+  let options = {'in-io': 'buffer'}
+  if a:use_name
+    let options['in-name'] = 'pipe-input'
+  else
+    let options['in-buf'] = bufnr('%')
+  endif
 
-  let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'in-io': 'buffer', 'in-name': 'pipe-input'})
+  let job = job_start(s:python . " test_channel_pipe.py", options)
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
@@ -701,6 +740,14 @@ func Test_pipe_from_buffer()
   finally
     call job_stop(job)
   endtry
+endfunc
+
+func Test_pipe_from_buffer_name()
+  call Run_test_pipe_from_buffer(1)
+endfunc
+
+func Test_pipe_from_buffer_nr()
+  call Run_test_pipe_from_buffer(0)
 endfunc
 
 func Test_pipe_to_nameless_buffer()

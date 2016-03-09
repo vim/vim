@@ -10119,6 +10119,27 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		opt->jo_io_name[part] =
 		       get_tv_string_buf_chk(item, opt->jo_io_name_buf[part]);
 	    }
+	    else if (STRCMP(hi->hi_key, "in-buf") == 0
+		    || STRCMP(hi->hi_key, "out-buf") == 0
+		    || STRCMP(hi->hi_key, "err-buf") == 0)
+	    {
+		part = part_from_char(*hi->hi_key);
+
+		if (!(supported & JO_OUT_IO))
+		    break;
+		opt->jo_set |= JO_OUT_BUF << (part - PART_OUT);
+		opt->jo_io_buf[part] = get_tv_number(item);
+		if (opt->jo_io_buf[part] <= 0)
+		{
+		    EMSG2(_(e_invarg2), get_tv_string(item));
+		    return FAIL;
+		}
+		if (buflist_findnr(opt->jo_io_buf[part]) == NULL)
+		{
+		    EMSGN(_(e_nobufnr), (long)opt->jo_io_buf[part]);
+		    return FAIL;
+		}
+	    }
 	    else if (STRCMP(hi->hi_key, "in-top") == 0
 		    || STRCMP(hi->hi_key, "in-bot") == 0)
 	    {
@@ -15156,21 +15177,36 @@ f_job_start(typval_T *argvars, typval_T *rettv)
 
     if ((opt.jo_set & JO_IN_IO) && opt.jo_io[PART_IN] == JIO_BUFFER)
     {
-	buf_T *buf;
+	buf_T *buf = NULL;
 
 	/* check that we can find the buffer before starting the job */
-	if (!(opt.jo_set & JO_IN_NAME))
+	if (opt.jo_set & JO_IN_BUF)
 	{
-	    EMSG(_("E915: in-io buffer requires in-name to be set"));
-	    return;
+	    buf = buflist_findnr(opt.jo_io_buf[PART_IN]);
+	    if (buf == NULL)
+		EMSGN(_(e_nobufnr), (long)opt.jo_io_buf[PART_IN]);
 	}
-	buf = buflist_find_by_name(opt.jo_io_name[PART_IN], FALSE);
+	else if (!(opt.jo_set & JO_IN_NAME))
+	{
+	    EMSG(_("E915: in-io buffer requires in-buf or in-name to be set"));
+	}
+	else
+	    buf = buflist_find_by_name(opt.jo_io_name[PART_IN], FALSE);
 	if (buf == NULL)
 	    return;
 	if (buf->b_ml.ml_mfp == NULL)
 	{
-	    EMSG2(_("E918: buffer must be loaded: %s"),
-						     opt.jo_io_name[PART_IN]);
+	    char_u	buf[NUMBUFLEN];
+	    char_u	*s;
+
+	    if (opt.jo_set & JO_IN_BUF)
+	    {
+		sprintf((char *)buf, "%d", opt.jo_io_buf[PART_IN]);
+		s = buf;
+	    }
+	    else
+		s = opt.jo_io_name[PART_IN];
+	    EMSG2(_("E918: buffer must be loaded: %s"), s);
 	    return;
 	}
 	job->jv_in_buf = buf;
