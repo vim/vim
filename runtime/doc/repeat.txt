@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.4.  Last change: 2016 Mar 07
+*repeat.txt*    For Vim version 7.4.  Last change: 2016 Mar 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -441,16 +441,16 @@ The directory name "foo" is arbitrary, you can pick anything you like.
 
 You would now have these files under ~/.vim:
 	pack/foo/README.txt
-	pack/foo/ever/foobar/plugin/foo.vim
-	pack/foo/ever/foobar/syntax/some.vim
+	pack/foo/start/foobar/plugin/foo.vim
+	pack/foo/start/foobar/syntax/some.vim
 	pack/foo/opt/foodebug/plugin/debugger.vim
 
 When Vim starts up, after processing your .vimrc, it scans all directories in
-'packpath' for plugins under the "pack/*/ever" directory and loads them.  The
+'packpath' for plugins under the "pack/*/start" directory and loads them.  The
 directory is added to 'runtimepath'.
 
-In the example Vim will find "pack/foo/ever/foobar/plugin/foo.vim" and adds 
-"~/.vim/pack/foo/ever/foobar" to 'runtimepath'.
+In the example Vim will find "pack/foo/start/foobar/plugin/foo.vim" and adds 
+"~/.vim/pack/foo/start/foobar" to 'runtimepath'.
 
 If the "foobar" plugin kicks in and sets the 'filetype' to "some", Vim will
 find the syntax/some.vim file, because its directory is in 'runtimepath'.
@@ -458,7 +458,7 @@ find the syntax/some.vim file, because its directory is in 'runtimepath'.
 Vim will also load ftdetect files, if there are any.
 
 Note that the files under "pack/foo/opt" or not loaded automatically, only the
-ones under "pack/foo/ever".  See |pack-add| below for how the "opt" directory
+ones under "pack/foo/start".  See |pack-add| below for how the "opt" directory
 is used.
 
 Loading packages will not happen if loading plugins is disabled, see
@@ -469,13 +469,13 @@ Using a single plugin and loading it automatically ~
 
 If you don't have a package but a single plugin, you need to create the extra
 directory level:
-	% mkdir -p ~/.vim/pack/foo/ever/foobar
-	% cd ~/.vim/pack/foo/ever/foobar
+	% mkdir -p ~/.vim/pack/foo/start/foobar
+	% cd ~/.vim/pack/foo/start/foobar
 	% unzip /tmp/someplugin.zip
 
 You would now have these files:
-	pack/foo/ever/foobar/plugin/foo.vim
-	pack/foo/ever/foobar/syntax/some.vim
+	pack/foo/start/foobar/plugin/foo.vim
+	pack/foo/start/foobar/syntax/some.vim
 
 From here it works like above.
 
