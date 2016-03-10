@@ -5126,7 +5126,7 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
 	jo = NULL;
     }
     ResumeThread(pi.hThread);
-    CloseHandle(job->jv_proc_info.hThread);
+    CloseHandle(pi.hThread);
     job->jv_proc_info = pi;
     job->jv_job_object = jo;
     job->jv_status = JOB_STARTED;
