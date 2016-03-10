@@ -4992,6 +4992,41 @@ mch_call_shell(
 }
 
 #if defined(FEAT_JOB) || defined(PROTO)
+    static HANDLE
+job_io_file_open(
+        char_u *fname,
+        DWORD dwDesiredAccess,
+        DWORD dwShareMode,
+        LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+        DWORD dwCreationDisposition,
+        DWORD dwFlagsAndAttributes)
+{
+    HANDLE h;
+# ifdef FEAT_MBYTE
+    WCHAR *wn = NULL;
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+        wn = enc_to_utf16(fname, NULL);
+        if (wn != NULL)
+        {
+            h = CreateFileW(wn, dwDesiredAccess, dwShareMode,
+                     lpSecurityAttributes, dwCreationDisposition,
+                     dwFlagsAndAttributes, NULL);
+            vim_free(wn);
+            if (h == INVALID_HANDLE_VALUE
+                          && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
+                wn = NULL;
+        }
+    }
+    if (wn == NULL)
+# endif
+
+        h = CreateFile((LPCSTR)fname, dwDesiredAccess, dwShareMode,
+                     lpSecurityAttributes, dwCreationDisposition,
+                     dwFlagsAndAttributes, NULL);
+    return h;
+}
+
     void
 mch_start_job(char *cmd, job_T *job, jobopt_T *options)
 {
@@ -5046,13 +5081,14 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
     {
 	char_u *fname = options->jo_io_name[PART_IN];
 
-	int fd = mch_open((char *)fname, O_RDONLY, 0);
-	if (fd < 0)
+	ifd[0] = job_io_file_open(fname, GENERIC_READ,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		&saAttr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL);
+	if (ifd[0] == INVALID_HANDLE_VALUE)
 	{
 	    EMSG2(_(e_notopen), fname);
 	    goto failed;
 	}
-	ifd[0] = (HANDLE)_get_osfhandle(fd);
     }
     else if (!use_null_for_in &&
 	    (!CreatePipe(&ifd[0], &ifd[1], &saAttr, 0)
@@ -5063,13 +5099,14 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
     {
 	char_u *fname = options->jo_io_name[PART_OUT];
 
-	int fd = mch_open((char *)fname, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (fd < 0)
+	ofd[1] = job_io_file_open(fname, GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
+	if (ofd[1] == INVALID_HANDLE_VALUE)
 	{
 	    EMSG2(_(e_notopen), fname);
 	    goto failed;
 	}
-	ofd[1] = (HANDLE)_get_osfhandle(fd);
     }
     else if (!use_null_for_out &&
 	    (!CreatePipe(&ofd[0], &ofd[1], &saAttr, 0)
@@ -5080,13 +5117,14 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
     {
 	char_u *fname = options->jo_io_name[PART_ERR];
 
-	int fd = mch_open((char *)fname, O_WRONLY | O_CREAT | O_TRUNC, 0600);
-	if (fd < 0)
+	efd[1] = job_io_file_open(fname, GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
+	if (efd[1] == INVALID_HANDLE_VALUE)
 	{
 	    EMSG2(_(e_notopen), fname);
 	    goto failed;
 	}
-	efd[1] = (HANDLE)_get_osfhandle(fd);
     }
     else if (!use_out_for_err && !use_null_for_err &&
 	    (!CreatePipe(&efd[0], &efd[1], &saAttr, 0)
