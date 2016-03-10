@@ -686,6 +686,10 @@ channel_open(
 	    return NULL;
 	}
 
+	/* Limit the waittime to 50 msec.  If it doesn't work within this
+	 * time we close the socket and try creating it again. */
+	waitnow = waittime > 50 ? 50 : waittime;
+
 	/* If connect() didn't finish then try using select() to wait for the
 	 * connection to be made. For Win32 always use select() to wait. */
 #ifndef WIN32
@@ -701,10 +705,6 @@ channel_open(
 	    struct timeval	start_tv;
 	    struct timeval	end_tv;
 #endif
-	    /* Limit the waittime to 50 msec.  If it doesn't work within this
-	     * time we close the socket and try creating it again. */
-	    waitnow = waittime > 50 ? 50 : waittime;
-
 	    FD_ZERO(&rfds);
 	    FD_SET(sd, &rfds);
 	    FD_ZERO(&wfds);
