@@ -11839,24 +11839,25 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     keys = get_tv_string(&argvars[0]);
-    if (*keys != NUL)
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
     {
-	if (argvars[1].v_type != VAR_UNKNOWN)
+	flags = get_tv_string_buf(&argvars[1], nbuf);
+	for ( ; *flags != NUL; ++flags)
 	{
-	    flags = get_tv_string_buf(&argvars[1], nbuf);
-	    for ( ; *flags != NUL; ++flags)
+	    switch (*flags)
 	    {
-		switch (*flags)
-		{
-		    case 'n': remap = FALSE; break;
-		    case 'm': remap = TRUE; break;
-		    case 't': typed = TRUE; break;
-		    case 'i': insert = TRUE; break;
-		    case 'x': execute = TRUE; break;
-		}
+		case 'n': remap = FALSE; break;
+		case 'm': remap = TRUE; break;
+		case 't': typed = TRUE; break;
+		case 'i': insert = TRUE; break;
+		case 'x': execute = TRUE; break;
 	    }
 	}
+    }
 
+    if (*keys != NUL || execute)
+    {
 	/* Need to escape K_SPECIAL and CSI before putting the string in the
 	 * typeahead buffer. */
 	keys_esc = vim_strsave_escape_csi(keys);
