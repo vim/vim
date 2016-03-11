@@ -15197,13 +15197,13 @@ f_job_start(typval_T *argvars, typval_T *rettv)
 	    return;
 	if (buf->b_ml.ml_mfp == NULL)
 	{
-	    char_u	buf[NUMBUFLEN];
+	    char_u	numbuf[NUMBUFLEN];
 	    char_u	*s;
 
 	    if (opt.jo_set & JO_IN_BUF)
 	    {
-		sprintf((char *)buf, "%d", opt.jo_io_buf[PART_IN]);
-		s = buf;
+		sprintf((char *)numbuf, "%d", opt.jo_io_buf[PART_IN]);
+		s = numbuf;
 	    }
 	    else
 		s = opt.jo_io_name[PART_IN];
