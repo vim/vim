@@ -11869,7 +11869,14 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 	    if (vgetc_busy)
 		typebuf_was_filled = TRUE;
 	    if (execute)
+	    {
+		int save_msg_scroll = msg_scroll;
+
+		/* Avoid a 1 second delay when the keys start Insert mode. */
+		msg_scroll = FALSE;
 		exec_normal(TRUE);
+		msg_scroll |= save_msg_scroll;
+	    }
 	}
     }
 }
