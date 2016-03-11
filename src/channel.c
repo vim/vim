@@ -459,6 +459,9 @@ messageFromNetbeans(gpointer clientData,
     static void
 channel_gui_register_one(channel_T *channel, int part)
 {
+    if (!CH_HAS_GUI)
+	return;
+
 # ifdef FEAT_GUI_X11
     /* Tell notifier we are interested in being called
      * when there is input on the editor connection socket. */
@@ -499,12 +502,9 @@ channel_gui_register_one(channel_T *channel, int part)
 # endif
 }
 
-    void
+    static void
 channel_gui_register(channel_T *channel)
 {
-    if (!CH_HAS_GUI)
-	return;
-
     if (channel->CH_SOCK_FD != INVALID_FD)
 	channel_gui_register_one(channel, PART_SOCK);
 # ifdef CHANNEL_PIPES
@@ -529,6 +529,30 @@ channel_gui_register_all(void)
 }
 
     static void
+channel_gui_unregister_one(channel_T *channel, int part)
+{
+# ifdef FEAT_GUI_X11
+    if (channel->ch_part[part].ch_inputHandler != (XtInputId)NULL)
+    {
+	XtRemoveInput(channel->ch_part[part].ch_inputHandler);
+	channel->ch_part[part].ch_inputHandler = (XtInputId)NULL;
+    }
+# else
+#  ifdef FEAT_GUI_GTK
+    if (channel->ch_part[part].ch_inputHandler != 0)
+    {
+#   if GTK_CHECK_VERSION(3,0,0)
+	g_source_remove(channel->ch_part[part].ch_inputHandler);
+#   else
+	gdk_input_remove(channel->ch_part[part].ch_inputHandler);
+#   endif
+	channel->ch_part[part].ch_inputHandler = 0;
+    }
+#  endif
+# endif
+}
+
+    static void
 channel_gui_unregister(channel_T *channel)
 {
     int	    part;
@@ -539,25 +563,7 @@ channel_gui_unregister(channel_T *channel)
     part = PART_SOCK;
 #endif
     {
-# ifdef FEAT_GUI_X11
-	if (channel->ch_part[part].ch_inputHandler != (XtInputId)NULL)
-	{
-	    XtRemoveInput(channel->ch_part[part].ch_inputHandler);
-	    channel->ch_part[part].ch_inputHandler = (XtInputId)NULL;
-	}
-# else
-#  ifdef FEAT_GUI_GTK
-	if (channel->ch_part[part].ch_inputHandler != 0)
-	{
-#   if GTK_CHECK_VERSION(3,0,0)
-	    g_source_remove(channel->ch_part[part].ch_inputHandler);
-#   else
-	    gdk_input_remove(channel->ch_part[part].ch_inputHandler);
-#   endif
-	    channel->ch_part[part].ch_inputHandler = 0;
-	}
-#  endif
-# endif
+	channel_gui_unregister_one(channel, part);
     }
 }
 
@@ -830,19 +836,53 @@ channel_open(
     channel->ch_nb_close_cb = nb_close_cb;
 
 #ifdef FEAT_GUI
-    channel_gui_register(channel);
+    channel_gui_register_one(channel, PART_SOCK);
 #endif
 
     return channel;
 }
 
 #if defined(CHANNEL_PIPES) || defined(PROTO)
+    static void
+may_close_part(sock_T *fd)
+{
+    if (*fd != INVALID_FD)
+    {
+	fd_close(*fd);
+	*fd = INVALID_FD;
+    }
+}
+
     void
 channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err)
 {
-    channel->CH_IN_FD = in;
-    channel->CH_OUT_FD = out;
-    channel->CH_ERR_FD = err;
+    if (in != INVALID_FD)
+    {
+	may_close_part(&channel->CH_IN_FD);
+	channel->CH_IN_FD = in;
+    }
+    if (out != INVALID_FD)
+    {
+# if defined(FEAT_GUI)
+	channel_gui_unregister_one(channel, PART_OUT);
+# endif
+	may_close_part(&channel->CH_OUT_FD);
+	channel->CH_OUT_FD = out;
+# if defined(FEAT_GUI)
+	channel_gui_register_one(channel, PART_OUT);
+# endif
+    }
+    if (err != INVALID_FD)
+    {
+# if defined(FEAT_GUI)
+	channel_gui_unregister_one(channel, PART_ERR);
+# endif
+	may_close_part(&channel->CH_ERR_FD);
+	channel->CH_ERR_FD = err;
+# if defined(FEAT_GUI)
+	channel_gui_register_one(channel, PART_ERR);
+# endif
+    }
 }
 #endif
 
@@ -1912,21 +1952,9 @@ channel_close(channel_T *channel, int invoke_close_cb)
 	channel->CH_SOCK_FD = INVALID_FD;
     }
 #if defined(CHANNEL_PIPES)
-    if (channel->CH_IN_FD != INVALID_FD)
-    {
-	fd_close(channel->CH_IN_FD);
-	channel->CH_IN_FD = INVALID_FD;
-    }
-    if (channel->CH_OUT_FD != INVALID_FD)
-    {
-	fd_close(channel->CH_OUT_FD);
-	channel->CH_OUT_FD = INVALID_FD;
-    }
-    if (channel->CH_ERR_FD != INVALID_FD)
-    {
-	fd_close(channel->CH_ERR_FD);
-	channel->CH_ERR_FD = INVALID_FD;
-    }
+    may_close_part(&channel->CH_IN_FD);
+    may_close_part(&channel->CH_OUT_FD);
+    may_close_part(&channel->CH_ERR_FD);
 #endif
 
     if (invoke_close_cb && channel->ch_close_cb != NULL)

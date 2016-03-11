@@ -5111,7 +5111,14 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 
     if (!use_null_for_in || !use_null_for_out || !use_null_for_err)
     {
-	channel = add_channel();
+	if (options->jo_set & JO_CHANNEL)
+	{
+	    channel = options->jo_channel;
+	    if (channel != NULL)
+		++channel->ch_refcount;
+	}
+	else
+	    channel = add_channel();
 	if (channel == NULL)
 	    goto failed;
     }
@@ -5211,7 +5218,7 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
     job->jv_pid = pid;
     job->jv_status = JOB_STARTED;
 # ifdef FEAT_CHANNEL
-    job->jv_channel = channel;
+    job->jv_channel = channel;  /* ch_refcount was set above */
 # endif
 
 # ifdef FEAT_CHANNEL
@@ -5232,9 +5239,6 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 		      use_out_for_err || use_file_for_err || use_null_for_err
 						    ? INVALID_FD : fd_err[0]);
 	channel_set_job(channel, job, options);
-#  ifdef FEAT_GUI
-	channel_gui_register(channel);
-#  endif
     }
 # endif
 
@@ -5243,8 +5247,7 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 
 failed: ;
 # ifdef FEAT_CHANNEL
-    if (channel != NULL)
-	channel_free(channel);
+    channel_unref(channel);
     if (fd_in[0] >= 0)
 	close(fd_in[0]);
     if (fd_in[1] >= 0)

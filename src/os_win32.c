@@ -5138,7 +5138,14 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
 
     if (!use_null_for_in || !use_null_for_out || !use_null_for_err)
     {
-	channel = add_channel();
+	if (options->jo_set & JO_CHANNEL)
+	{
+	    channel = options->jo_channel;
+	    if (channel != NULL)
+		++channel->ch_refcount;
+	}
+	else
+	    channel = add_channel();
 	if (channel == NULL)
 	    goto failed;
     }
@@ -5188,9 +5195,6 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
 		      use_out_for_err || use_file_for_err || use_null_for_err
 					    ? INVALID_FD : (sock_T)efd[0]);
 	channel_set_job(channel, job, options);
-#  ifdef FEAT_GUI
-	channel_gui_register(channel);
-#  endif
     }
 # endif
     return;
@@ -5203,7 +5207,7 @@ failed:
     CloseHandle(ifd[1]);
     CloseHandle(ofd[1]);
     CloseHandle(efd[1]);
-    channel_free(channel);
+    channel_unref(channel);
 # else
     ;  /* make compiler happy */
 # endif

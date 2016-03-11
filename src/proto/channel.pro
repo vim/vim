@@ -6,7 +6,6 @@ void ch_logs(channel_T *ch, char *msg, char *name);
 channel_T *add_channel(void);
 int channel_may_free(channel_T *channel);
 void channel_free(channel_T *channel);
-void channel_gui_register(channel_T *channel);
 void channel_gui_register_all(void);
 channel_T *channel_open(char *hostname, int port_in, int waittime, void (*nb_close_cb)(void));
 void channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err);

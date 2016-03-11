@@ -917,6 +917,33 @@ func Test_pipe_null()
   call job_stop(job)
 endfunc
 
+func Test_reuse_channel()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_reuse_channel()')
+
+  let job = job_start(s:python . " test_channel_pipe.py")
+  call assert_equal("run", job_status(job))
+  let handle = job_getchannel(job)
+  try
+    call ch_sendraw(handle, "echo something\n")
+    call assert_equal("something", ch_readraw(handle))
+  finally
+    call job_stop(job)
+  endtry
+
+  let job = job_start(s:python . " test_channel_pipe.py", {'channel': handle})
+  call assert_equal("run", job_status(job))
+  let handle = job_getchannel(job)
+  try
+    call ch_sendraw(handle, "echo again\n")
+    call assert_equal("again", ch_readraw(handle))
+  finally
+    call job_stop(job)
+  endtry
+endfunc
+
 """"""""""
 
 let s:unletResponse = ''

@@ -1412,6 +1412,7 @@ struct channel_S {
 #define JO_OUT_BUF	    0x1000000	/* "out-buf" */
 #define JO_ERR_BUF	    0x2000000	/* "err-buf" (JO_OUT_BUF << 1) */
 #define JO_IN_BUF	    0x4000000	/* "in-buf" (JO_OUT_BUF << 2) */
+#define JO_CHANNEL	    0x8000000	/* "channel" */
 #define JO_ALL		    0xfffffff
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
@@ -1443,6 +1444,7 @@ typedef struct
     char_u	jo_io_name_buf[4][NUMBUFLEN];
     char_u	*jo_io_name[4];	/* not allocated! */
     int		jo_io_buf[4];
+    channel_T	*jo_channel;
 
     linenr_T	jo_in_top;
     linenr_T	jo_in_bot;

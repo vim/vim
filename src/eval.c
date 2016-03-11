@@ -10164,6 +10164,18 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		    return FAIL;
 		}
 	    }
+	    else if (STRCMP(hi->hi_key, "channel") == 0)
+	    {
+		if (!(supported & JO_OUT_IO))
+		    break;
+		opt->jo_set |= JO_CHANNEL;
+		if (item->v_type != VAR_CHANNEL)
+		{
+		    EMSG2(_(e_invarg2), "channel");
+		    return FAIL;
+		}
+		opt->jo_channel = item->vval.v_channel;
+	    }
 	    else if (STRCMP(hi->hi_key, "callback") == 0)
 	    {
 		if (!(supported & JO_CALLBACK))
