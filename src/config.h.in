@@ -432,7 +432,7 @@
 #undef FEAT_NETBEANS_INTG
 
 /* Define if you want to include process communication. */
-#undef FEAT_CHANNEL
+#undef FEAT_JOB_CHANNEL
 
 /* Define default global runtime path */
 #undef RUNTIME_GLOBAL

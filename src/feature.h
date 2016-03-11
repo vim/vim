@@ -1250,15 +1250,8 @@
 /*
  * The +channel feature requires +eval.
  */
-#if !defined(FEAT_EVAL) && defined(FEAT_CHANNEL)
-# undef FEAT_CHANNEL
-#endif
-
-/*
- * The +job feature requires +eval and Unix or MS-Windows.
- */
-#if (defined(UNIX) || defined(WIN32)) && defined(FEAT_EVAL)
-# define FEAT_JOB
+#if !defined(FEAT_EVAL) && defined(FEAT_JOB_CHANNEL)
+# undef FEAT_JOB_CHANNEL
 #endif
 
 /*

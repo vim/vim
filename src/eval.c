@@ -496,14 +496,12 @@ static void f_call(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_ceil(typval_T *argvars, typval_T *rettv);
 #endif
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 static void f_ch_close(typval_T *argvars, typval_T *rettv);
 static void f_ch_evalexpr(typval_T *argvars, typval_T *rettv);
 static void f_ch_evalraw(typval_T *argvars, typval_T *rettv);
 static void f_ch_getbufnr(typval_T *argvars, typval_T *rettv);
-# ifdef FEAT_JOB
 static void f_ch_getjob(typval_T *argvars, typval_T *rettv);
-# endif
 static void f_ch_log(typval_T *argvars, typval_T *rettv);
 static void f_ch_logfile(typval_T *argvars, typval_T *rettv);
 static void f_ch_open(typval_T *argvars, typval_T *rettv);
@@ -632,10 +630,8 @@ static void f_islocked(typval_T *argvars, typval_T *rettv);
 static void f_isnan(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_items(typval_T *argvars, typval_T *rettv);
-#ifdef FEAT_JOB
-# ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 static void f_job_getchannel(typval_T *argvars, typval_T *rettv);
-# endif
 static void f_job_setoptions(typval_T *argvars, typval_T *rettv);
 static void f_job_start(typval_T *argvars, typval_T *rettv);
 static void f_job_stop(typval_T *argvars, typval_T *rettv);
@@ -6236,11 +6232,11 @@ tv_equal(
 	    return tv1->vval.v_float == tv2->vval.v_float;
 #endif
 	case VAR_JOB:
-#ifdef FEAT_JOB
+#ifdef FEAT_JOB_CHANNEL
 	    return tv1->vval.v_job == tv2->vval.v_job;
 #endif
 	case VAR_CHANNEL:
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 	    return tv1->vval.v_channel == tv2->vval.v_channel;
 #endif
 	case VAR_UNKNOWN:
@@ -6926,7 +6922,7 @@ garbage_collect(void)
     abort = abort || set_ref_in_python3(copyID);
 #endif
 
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
     abort = abort || set_ref_in_channel(copyID);
 #endif
 
@@ -7738,7 +7734,7 @@ failret:
     return OK;
 }
 
-#if defined(FEAT_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
  * Decrement the reference count on "channel" and maybe free it when it goes
  * down to zero.  Don't free it if there is a pending action.
@@ -7751,15 +7747,12 @@ channel_unref(channel_T *channel)
 	return channel_may_free(channel);
     return FALSE;
 }
-#endif
 
-#if defined(FEAT_JOB) || defined(PROTO)
 static job_T *first_job = NULL;
 
     static void
 job_free(job_T *job)
 {
-# ifdef FEAT_CHANNEL
     ch_log(job->jv_channel, "Freeing job");
     if (job->jv_channel != NULL)
     {
@@ -7771,7 +7764,6 @@ job_free(job_T *job)
 	job->jv_channel->ch_job = NULL;
 	channel_unref(job->jv_channel);
     }
-# endif
     mch_clear_job(job);
 
     if (job->jv_next != NULL)
@@ -7798,7 +7790,6 @@ job_unref(job_T *job)
 	{
 	    job_free(job);
 	}
-# ifdef FEAT_CHANNEL
 	else if (job->jv_channel != NULL)
 	{
 	    /* Do remove the link to the channel, otherwise it hangs
@@ -7807,7 +7798,6 @@ job_unref(job_T *job)
 	    channel_unref(job->jv_channel);
 	    job->jv_channel = NULL;
 	}
-# endif
     }
 }
 
@@ -8204,14 +8194,12 @@ static struct fst
 #ifdef FEAT_FLOAT
     {"ceil",		1, 1, f_ceil},
 #endif
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
     {"ch_close",	1, 1, f_ch_close},
     {"ch_evalexpr",	2, 3, f_ch_evalexpr},
     {"ch_evalraw",	2, 3, f_ch_evalraw},
     {"ch_getbufnr",	2, 2, f_ch_getbufnr},
-# ifdef FEAT_JOB
     {"ch_getjob",	1, 1, f_ch_getjob},
-# endif
     {"ch_log",		1, 2, f_ch_log},
     {"ch_logfile",	1, 2, f_ch_logfile},
     {"ch_open",		1, 2, f_ch_open},
@@ -8344,10 +8332,8 @@ static struct fst
     {"isnan",		1, 1, f_isnan},
 #endif
     {"items",		1, 1, f_items},
-#ifdef FEAT_JOB
-# ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
     {"job_getchannel",	1, 1, f_job_getchannel},
-# endif
     {"job_setoptions",	2, 2, f_job_setoptions},
     {"job_start",	1, 2, f_job_start},
     {"job_status",	1, 1, f_job_status},
@@ -9955,7 +9941,7 @@ f_ceil(typval_T *argvars, typval_T *rettv)
 }
 #endif
 
-#if defined(FEAT_CHANNEL) || defined(FEAT_JOB)
+#if defined(FEAT_JOB_CHANNEL)
 /*
  * Get a callback from "arg".  It can be a Funcref or a function name.
  * When "arg" is zero return an empty string.
@@ -10312,7 +10298,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 }
 #endif
 
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 /*
  * Get the channel from the argument.
  * Returns NULL if the handle is invalid.
@@ -10387,7 +10373,6 @@ f_ch_getbufnr(typval_T *argvars, typval_T *rettv)
     }
 }
 
-# ifdef FEAT_JOB
 /*
  * "ch_getjob()" function
  */
@@ -10404,7 +10389,6 @@ f_ch_getjob(typval_T *argvars, typval_T *rettv)
 	    ++channel->ch_job->jv_refcount;
     }
 }
-# endif
 
 /*
  * "ch_log()" function
@@ -11427,13 +11411,13 @@ f_empty(typval_T *argvars, typval_T *rettv)
 	    break;
 
 	case VAR_JOB:
-#ifdef FEAT_JOB
+#ifdef FEAT_JOB_CHANNEL
 	    n = argvars[0].vval.v_job == NULL
 			   || argvars[0].vval.v_job->jv_status != JOB_STARTED;
 	    break;
 #endif
 	case VAR_CHANNEL:
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 	    n = argvars[0].vval.v_channel == NULL
 			       || !channel_is_open(argvars[0].vval.v_channel);
 	    break;
@@ -13815,7 +13799,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_BYTEOFF
 	"byte_offset",
 #endif
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 	"channel",
 #endif
 #ifdef FEAT_CINDENT
@@ -13951,7 +13935,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_INS_EXPAND
 	"insert_expand",
 #endif
-#ifdef FEAT_JOB
+#ifdef FEAT_JOB_CHANNEL
 	"job",
 #endif
 #ifdef FEAT_JUMPLIST
@@ -15092,7 +15076,7 @@ f_items(typval_T *argvars, typval_T *rettv)
     dict_list(argvars, rettv, 2);
 }
 
-#if defined(FEAT_JOB) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
  * Get the job from the argument.
  * Returns NULL if the job is invalid.
@@ -15114,7 +15098,6 @@ get_job_arg(typval_T *tv)
     return job;
 }
 
-# ifdef FEAT_CHANNEL
 /*
  * "job_getchannel()" function
  */
@@ -15131,7 +15114,6 @@ f_job_getchannel(typval_T *argvars, typval_T *rettv)
 	    ++job->jv_channel->ch_refcount;
     }
 }
-# endif
 
 /*
  * "job_setoptions()" function
@@ -15298,7 +15280,6 @@ f_job_start(typval_T *argvars, typval_T *rettv)
     }
 
 #ifdef USE_ARGV
-# ifdef FEAT_CHANNEL
     if (ch_log_active())
     {
 	garray_T    ga;
@@ -15314,20 +15295,15 @@ f_job_start(typval_T *argvars, typval_T *rettv)
 	ch_logs(NULL, "Starting job: %s", (char *)ga.ga_data);
 	ga_clear(&ga);
     }
-# endif
     mch_start_job(argv, job, &opt);
 #else
-# ifdef FEAT_CHANNEL
     ch_logs(NULL, "Starting job: %s", (char *)cmd);
-# endif
     mch_start_job((char *)cmd, job, &opt);
 #endif
 
-#ifdef FEAT_CHANNEL
     /* If the channel is reading from a buffer, write lines now. */
     if (job->jv_channel != NULL)
 	channel_write_in(job->jv_channel);
-#endif
 
 theend:
 #ifdef USE_ARGV
@@ -15354,10 +15330,8 @@ job_status(job_T *job)
     else
     {
 	result = mch_job_status(job);
-# ifdef FEAT_CHANNEL
 	if (job->jv_status == JOB_ENDED)
 	    ch_log(job->jv_channel, "Job ended");
-# endif
 	if (job->jv_status == JOB_ENDED && job->jv_exit_cb != NULL)
 	{
 	    typval_T	argv[3];
@@ -15450,9 +15424,7 @@ f_job_stop(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		return;
 	    }
 	}
-# ifdef FEAT_CHANNEL
 	ch_logs(job->jv_channel, "Stopping job with '%s'", (char *)arg);
-# endif
 	if (mch_stop_job(job, arg) == FAIL)
 	    rettv->vval.v_number = 0;
 	else
@@ -22414,12 +22386,12 @@ free_tv(typval_T *varp)
 		dict_unref(varp->vval.v_dict);
 		break;
 	    case VAR_JOB:
-#ifdef FEAT_JOB
+#ifdef FEAT_JOB_CHANNEL
 		job_unref(varp->vval.v_job);
 		break;
 #endif
 	    case VAR_CHANNEL:
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 		channel_unref(varp->vval.v_channel);
 		break;
 #endif
@@ -22468,13 +22440,13 @@ clear_tv(typval_T *varp)
 		break;
 #endif
 	    case VAR_JOB:
-#ifdef FEAT_JOB
+#ifdef FEAT_JOB_CHANNEL
 		job_unref(varp->vval.v_job);
 		varp->vval.v_job = NULL;
 #endif
 		break;
 	    case VAR_CHANNEL:
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 		channel_unref(varp->vval.v_channel);
 		varp->vval.v_channel = NULL;
 #endif
@@ -22543,12 +22515,12 @@ get_tv_number_chk(typval_T *varp, int *denote)
 	    return varp->vval.v_number == VVAL_TRUE ? 1 : 0;
 	    break;
 	case VAR_JOB:
-#ifdef FEAT_JOB
+#ifdef FEAT_JOB_CHANNEL
 	    EMSG(_("E910: Using a Job as a Number"));
 	    break;
 #endif
 	case VAR_CHANNEL:
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 	    EMSG(_("E913: Using a Channel as a Number"));
 	    break;
 #endif
@@ -22589,12 +22561,12 @@ get_tv_float(typval_T *varp)
 	    EMSG(_("E907: Using a special value as a Float"));
 	    break;
 	case VAR_JOB:
-# ifdef FEAT_JOB
+# ifdef FEAT_JOB_CHANNEL
 	    EMSG(_("E911: Using a Job as a Float"));
 	    break;
 # endif
 	case VAR_CHANNEL:
-# ifdef FEAT_CHANNEL
+# ifdef FEAT_JOB_CHANNEL
 	    EMSG(_("E914: Using a Channel as a Float"));
 	    break;
 # endif
@@ -22711,7 +22683,7 @@ get_tv_string_buf_chk(typval_T *varp, char_u *buf)
 	    STRCPY(buf, get_var_special_name(varp->vval.v_number));
 	    return buf;
 	case VAR_JOB:
-#ifdef FEAT_JOB
+#ifdef FEAT_JOB_CHANNEL
 	    {
 		job_T *job = varp->vval.v_job;
 		char  *status;
@@ -22738,7 +22710,7 @@ get_tv_string_buf_chk(typval_T *varp, char_u *buf)
 #endif
 	    break;
 	case VAR_CHANNEL:
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 	    {
 		channel_T *channel = varp->vval.v_channel;
 		char      *status = channel_status(channel);
@@ -23377,14 +23349,14 @@ copy_tv(typval_T *from, typval_T *to)
 	    break;
 #endif
 	case VAR_JOB:
-#ifdef FEAT_JOB
+#ifdef FEAT_JOB_CHANNEL
 	    to->vval.v_job = from->vval.v_job;
 	    if (to->vval.v_job != NULL)
 		++to->vval.v_job->jv_refcount;
 	    break;
 #endif
 	case VAR_CHANNEL:
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 	    to->vval.v_channel = from->vval.v_channel;
 	    if (to->vval.v_channel != NULL)
 		++to->vval.v_channel->ch_refcount;

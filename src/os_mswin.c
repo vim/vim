@@ -144,7 +144,7 @@ extern HWND s_hwnd;
 static HWND s_hwnd = 0;	    /* console window handle, set by GetConsoleHwnd() */
 #endif
 
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 int WSInitialized = FALSE; /* WinSock is initialized */
 #endif
 
@@ -216,7 +216,7 @@ mch_exit(int r)
 # ifdef FEAT_OLE
     UninitOLE();
 # endif
-# ifdef FEAT_CHANNEL
+# ifdef FEAT_JOB_CHANNEL
     if (WSInitialized)
     {
 	WSInitialized = FALSE;
@@ -3018,7 +3018,7 @@ theend:
 
 #endif /* defined(FEAT_GUI) || defined(FEAT_PRINTER) */
 
-#if defined(FEAT_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
  * Initialize the Winsock dll.
  */

@@ -3059,7 +3059,7 @@ ml_append_int(
 							   (char_u *)"\n", 1);
     }
 #endif
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
     if (buf->b_write_to_channel)
 	channel_write_new_lines(buf);
 #endif

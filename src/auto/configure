@@ -7427,7 +7427,7 @@ if test "$enable_netbeans" = "yes"; then
 
 fi
 if test "$enable_channel" = "yes"; then
-  $as_echo "#define FEAT_CHANNEL 1" >>confdefs.h
+  $as_echo "#define FEAT_JOB_CHANNEL 1" >>confdefs.h
 
   CHANNEL_SRC="channel.c"
 

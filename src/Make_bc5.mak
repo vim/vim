@@ -464,7 +464,7 @@ NBDEBUG_DEP = nbdebug.h nbdebug.c
 !endif
 
 !if ("$(CHANNEL)"=="yes")
-DEFINES = $(DEFINES) -DFEAT_CHANNEL
+DEFINES = $(DEFINES) -DFEAT_JOB_CHANNEL
 !endif
 
 !ifdef XPM

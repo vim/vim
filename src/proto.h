@@ -193,7 +193,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # ifdef FEAT_NETBEANS_INTG
 #  include "netbeans.pro"
 # endif
-# ifdef FEAT_CHANNEL
+# ifdef FEAT_JOB_CHANNEL
 #  include "channel.pro"
 # endif
 

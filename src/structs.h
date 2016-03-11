@@ -1147,10 +1147,8 @@ typedef struct
 	char_u		*v_string;	/* string value (can be NULL!) */
 	list_T		*v_list;	/* list value (can be NULL!) */
 	dict_T		*v_dict;	/* dict value (can be NULL!) */
-#ifdef FEAT_JOB
+#ifdef FEAT_JOB_CHANNEL
 	job_T		*v_job;		/* job value (can be NULL!) */
-#endif
-#ifdef FEAT_CHANNEL
 	channel_T	*v_channel;	/* channel value (can be NULL!) */
 #endif
     }		vval;
@@ -1312,8 +1310,7 @@ typedef enum
 #define PART_SOCK   0
 #define CH_SOCK_FD	ch_part[PART_SOCK].ch_fd
 
-#if defined(UNIX) || defined(WIN32)
-# define CHANNEL_PIPES
+#ifdef FEAT_JOB_CHANNEL
 # define INVALID_FD  (-1)
 
 # define PART_OUT   1
@@ -2057,7 +2054,7 @@ struct file_buffer
     int		b_netbeans_file;    /* TRUE when buffer is owned by NetBeans */
     int		b_was_netbeans_file;/* TRUE if b_netbeans_file was once set */
 #endif
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
     int		b_write_to_channel; /* TRUE when appended lines are written to
 				     * a channel. */
 #endif

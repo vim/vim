@@ -1127,7 +1127,7 @@ free_all_mem(void)
 # ifdef FEAT_DIFF
     diff_clear(curtab);
 # endif
-# ifdef FEAT_CHANNEL
+# ifdef FEAT_JOB_CHANNEL
     channel_free_all();
 # endif
     clear_sb_text();	      /* free any scrollback text */
@@ -6221,7 +6221,7 @@ has_non_ascii(char_u *s)
 parse_queued_messages(void)
 {
     /* For Win32 mch_breakcheck() does not check for input, do it here. */
-# if defined(WIN32) && defined(FEAT_CHANNEL)
+# if defined(WIN32) && defined(FEAT_JOB_CHANNEL)
     channel_handle_events();
 # endif
 
@@ -6229,7 +6229,7 @@ parse_queued_messages(void)
     /* Process the queued netbeans messages. */
     netbeans_parse_messages();
 # endif
-# ifdef FEAT_CHANNEL
+# ifdef FEAT_JOB_CHANNEL
     /* Process the messages queued on channels. */
     channel_parse_messages();
 # endif
@@ -6237,7 +6237,7 @@ parse_queued_messages(void)
     /* Process the queued clientserver messages. */
     server_parse_messages();
 # endif
-# ifdef FEAT_JOB
+# ifdef FEAT_JOB_CHANNEL
     /* Check if any jobs have ended. */
     job_check_ended();
 # endif

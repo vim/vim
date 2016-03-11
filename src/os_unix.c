@@ -3919,7 +3919,7 @@ wait4pid(pid_t child, waitstatus *status)
     return wait_pid;
 }
 
-#if defined(FEAT_JOB) || !defined(USE_SYSTEM) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL) || !defined(USE_SYSTEM) || defined(PROTO)
 /*
  * Parse "cmd" and put the white-separated parts in "argv".
  * "argv" is an allocated array with "argc" entries.
@@ -3984,7 +3984,7 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 }
 #endif
 
-#if !defined(USE_SYSTEM) || defined(FEAT_JOB)
+#if !defined(USE_SYSTEM) || defined(FEAT_JOB_CHANNEL)
     static void
 set_child_environment(void)
 {
@@ -5035,12 +5035,11 @@ error:
 #endif /* USE_SYSTEM */
 }
 
-#if defined(FEAT_JOB) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
     void
 mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 {
     pid_t	pid;
-# ifdef FEAT_CHANNEL
     int		fd_in[2];	/* for stdin */
     int		fd_out[2];	/* for stdout */
     int		fd_err[2];	/* for stderr */
@@ -5122,7 +5121,6 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 	if (channel == NULL)
 	    goto failed;
     }
-# endif
 
     pid = fork();	/* maybe we should use vfork() */
     if (pid  == -1)
@@ -5133,9 +5131,7 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 
     if (pid == 0)
     {
-# ifdef FEAT_CHANNEL
 	int		null_fd = -1;
-# endif
 
 	/* child */
 	reset_signals();		/* handle signals normally */
@@ -5149,8 +5145,6 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 
 	set_child_environment();
 
-	/* TODO: re-enable this when pipes connect without a channel */
-# ifdef FEAT_CHANNEL
 	if (use_null_for_in || use_null_for_out || use_null_for_err)
 	    null_fd = open("/dev/null", O_RDWR | O_EXTRA, 0);
 
@@ -5205,7 +5199,6 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 	}
 	if (null_fd >= 0)
 	    close(null_fd);
-# endif
 
 	/* See above for type of argv. */
 	execvp(argv[0], argv);
@@ -5217,11 +5210,8 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
     /* parent */
     job->jv_pid = pid;
     job->jv_status = JOB_STARTED;
-# ifdef FEAT_CHANNEL
     job->jv_channel = channel;  /* ch_refcount was set above */
-# endif
 
-# ifdef FEAT_CHANNEL
     /* child stdin, stdout and stderr */
     if (!use_file_for_in)
 	close(fd_in[0]);
@@ -5240,13 +5230,11 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 						    ? INVALID_FD : fd_err[0]);
 	channel_set_job(channel, job, options);
     }
-# endif
 
     /* success! */
     return;
 
-failed: ;
-# ifdef FEAT_CHANNEL
+failed:
     channel_unref(channel);
     if (fd_in[0] >= 0)
 	close(fd_in[0]);
@@ -5260,7 +5248,6 @@ failed: ;
 	close(fd_err[0]);
     if (fd_err[1] >= 0)
 	close(fd_err[1]);
-# endif
 }
 
     char *
@@ -5560,7 +5547,7 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED)
 	    nfd++;
 	}
 # endif
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 	nfd = channel_poll_setup(nfd, &fds);
 #endif
 
@@ -5608,7 +5595,7 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED)
 		finished = FALSE;	/* Try again */
 	}
 # endif
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 	if (ret > 0)
 	    ret = channel_poll_check(ret, &fds);
 #endif
@@ -5690,7 +5677,7 @@ select_eintr:
 		maxfd = xsmp_icefd;
 	}
 # endif
-# ifdef FEAT_CHANNEL
+# ifdef FEAT_JOB_CHANNEL
 	maxfd = channel_select_setup(maxfd, &rfds);
 # endif
 
@@ -5772,7 +5759,7 @@ select_eintr:
 	    }
 	}
 # endif
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 	if (ret > 0)
 	    ret = channel_select_check(ret, &rfds);
 #endif

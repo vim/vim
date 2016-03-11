@@ -529,7 +529,7 @@ endif
 endif
 
 ifeq ($(CHANNEL),yes)
-DEFINES += -DFEAT_CHANNEL
+DEFINES += -DFEAT_JOB_CHANNEL
 endif
 
 # DirectWrite (DirectX)

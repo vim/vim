@@ -332,7 +332,7 @@ XPM_INC	  = -I $(XPM)\include -I $(XPM)\..\include
 !if "$(CHANNEL)" == "yes"
 CHANNEL_PRO	= proto/channel.pro
 CHANNEL_OBJ	= $(OBJDIR)/channel.obj
-CHANNEL_DEFS	= -DFEAT_CHANNEL
+CHANNEL_DEFS	= -DFEAT_JOB_CHANNEL
 
 NETBEANS_LIB	= WSock32.lib
 !endif

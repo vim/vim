@@ -2014,7 +2014,7 @@ if test "$enable_netbeans" = "yes"; then
   AC_SUBST(NETBEANS_OBJ)
 fi
 if test "$enable_channel" = "yes"; then
-  AC_DEFINE(FEAT_CHANNEL)
+  AC_DEFINE(FEAT_JOB_CHANNEL)
   CHANNEL_SRC="channel.c"
   AC_SUBST(CHANNEL_SRC)
   CHANNEL_OBJ="objects/channel.o"

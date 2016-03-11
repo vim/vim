@@ -4949,7 +4949,7 @@ ex_gui(exarg_T *eap)
 	 * of the argument ending up after the shell prompt. */
 	msg_clr_eos_force();
 	gui_start();
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 	channel_gui_register_all();
 #endif
     }

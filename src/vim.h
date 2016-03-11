@@ -2273,7 +2273,7 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 # define SET_NO_HLSEARCH(flag) no_hlsearch = (flag)
 #endif
 
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 # define MAX_OPEN_CHANNELS 10
 #else
 # define MAX_OPEN_CHANNELS 0
