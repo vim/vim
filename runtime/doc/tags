@@ -5226,6 +5226,7 @@ charity	uganda.txt	/*charity*
 charset	mbyte.txt	/*charset*
 charset-conversion	mbyte.txt	/*charset-conversion*
 chill.vim	syntax.txt	/*chill.vim*
+chmod	eval.txt	/*chmod*
 cindent()	eval.txt	/*cindent()*
 cinkeys-format	indent.txt	/*cinkeys-format*
 cino-#	indent.txt	/*cino-#*
@@ -5642,7 +5643,9 @@ end	intro.txt	/*end*
 end-of-file	pattern.txt	/*end-of-file*
 enlightened-terminal	syntax.txt	/*enlightened-terminal*
 erlang.vim	syntax.txt	/*erlang.vim*
+err-buf	channel.txt	/*err-buf*
 err-cb	channel.txt	/*err-cb*
+err-name	channel.txt	/*err-name*
 err-timeout	channel.txt	/*err-timeout*
 errmsg-variable	eval.txt	/*errmsg-variable*
 error-file-format	quickfix.txt	/*error-file-format*
@@ -6762,6 +6765,10 @@ improved-viminfo	version5.txt	/*improved-viminfo*
 improvements-5	version5.txt	/*improvements-5*
 improvements-6	version6.txt	/*improvements-6*
 improvements-7	version7.txt	/*improvements-7*
+in-bot	channel.txt	/*in-bot*
+in-buf	channel.txt	/*in-buf*
+in-name	channel.txt	/*in-name*
+in-top	channel.txt	/*in-top*
 inactive-buffer	windows.txt	/*inactive-buffer*
 include-search	tagsrch.txt	/*include-search*
 inclusive	motion.txt	/*inclusive*
@@ -6845,11 +6852,11 @@ job-err-cb	channel.txt	/*job-err-cb*
 job-err-io	channel.txt	/*job-err-io*
 job-exit-cb	channel.txt	/*job-exit-cb*
 job-in-io	channel.txt	/*job-in-io*
-job-may-start	channel.txt	/*job-may-start*
 job-options	channel.txt	/*job-options*
 job-out-cb	channel.txt	/*job-out-cb*
 job-out-io	channel.txt	/*job-out-io*
 job-start	channel.txt	/*job-start*
+job-start-if-needed	channel.txt	/*job-start-if-needed*
 job-start-nochannel	channel.txt	/*job-start-nochannel*
 job-stoponexit	channel.txt	/*job-stoponexit*
 job-term	channel.txt	/*job-term*
@@ -7572,7 +7579,9 @@ os_unix.txt	os_unix.txt	/*os_unix.txt*
 os_vms.txt	os_vms.txt	/*os_vms.txt*
 os_win32.txt	os_win32.txt	/*os_win32.txt*
 other-features	vi_diff.txt	/*other-features*
+out-buf	channel.txt	/*out-buf*
 out-cb	channel.txt	/*out-cb*
+out-name	channel.txt	/*out-name*
 out-timeout	channel.txt	/*out-timeout*
 p	change.txt	/*p*
 pack-add	repeat.txt	/*pack-add*
@@ -7979,6 +7988,7 @@ set-spc-auto	spell.txt	/*set-spc-auto*
 setbufvar()	eval.txt	/*setbufvar()*
 setcharsearch()	eval.txt	/*setcharsearch()*
 setcmdpos()	eval.txt	/*setcmdpos()*
+setfperm()	eval.txt	/*setfperm()*
 setline()	eval.txt	/*setline()*
 setloclist()	eval.txt	/*setloclist()*
 setmatches()	eval.txt	/*setmatches()*

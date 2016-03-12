@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Mar 07
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Mar 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4468,6 +4468,9 @@ items({dict})						*items()*
 
 job_getchannel({job})					 *job_getchannel()*
 		Get the channel handle that {job} is using.
+		To check if the job has no channel: >
+			if string(job_getchannel()) == 'channel fail'
+<
 		{only available when compiled with the |+job| feature}
 
 job_setoptions({job}, {options})			*job_setoptions()*

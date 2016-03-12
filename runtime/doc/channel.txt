@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Mar 06
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Mar 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -44,8 +44,8 @@ There are four main types of jobs:
 4. Running a filter, synchronously.
    Uses pipes.
 
-For when using sockets See |job-start|, |job-may-start| and |channel-open|.
-For 2 and 3, one or more jobs using pipes, see |job-start|.
+For when using sockets See |job-start|, |job-start-nochannel| and
+|channel-open|.  For 2 and 3, one or more jobs using pipes, see |job-start|.
 For 4 use the ":{range}!cmd" command, see |filter|.
 
 Over the socket and pipes these protocols are available:
@@ -162,7 +162,7 @@ Use |ch_status()| to see if the channel could be opened.
 		the channel uses pipes.  When "err-cb" wasn't set the channel
 		callback is used.
 
-		TODO:					*close-cb*
+							*close-cb*
 "close-cb"	A function that is called when the channel gets closed, other
 		than by calling ch_close().  It should be defined like this: >
 	func MyCloseHandler(channel)
@@ -410,7 +410,6 @@ are:
 	"open"		The channel can be used.
 	"closed"	The channel was closed.
 
-TODO:
 To obtain the job associated with a channel: ch_getjob(channel)
 
 To read one message from a channel: >
@@ -486,15 +485,6 @@ time a line is added to the buffer, the last-but-one line will be send to the
 job stdin.  This allows for editing the last line and sending it when pressing
 Enter.
 
-TODO:
-To run a job and read its output once it is done: >
-	let job = job_start({command}, {'exit-cb': 'MyHandler'})
-	func MyHandler(job, status)
-	  let channel = job_getchannel()
-	  let output = ch_readall(channel)
-	  " parse output
-	endfunc
-
 ==============================================================================
 9. Starting a job without a channel			*job-start-nochannel*
 
@@ -504,28 +494,23 @@ To start another process without creating a channel: >
 
 This starts {command} in the background, Vim does not wait for it to finish.
 
-TODO:
 When Vim sees that neither stdin, stdout or stderr are connected, no channel
 will be created.  Often you will want to include redirection in the command to
 avoid it getting stuck.
 
 There are several options you can use, see |job-options|.
 
-TODO:							*job-may-start*
-To start a job only when connecting to an address does not work use
-job_maystart('command', {address}, {options}), For Example: >
-	let job = job_maystart(command, address, {"waittime": 1000})
-	let channel = job_gethandle(job)
-
-This comes down to: >
+							*job-start-if-needed*
+To start a job only when connecting to an address does not work, do something
+like this: >
 	let channel = ch_open(address, {"waittime": 0})
 	if ch_status(channel) == "fail"
 	  let job = job_start(command)
 	  let channel = ch_open(address, {"waittime": 1000})
-	  call job_sethandle(channel)
 	endif
-Note that the specified waittime applies to when the job has been started.
-This gives the job some time to make the port available.
+
+Note that the waittime for ch_open() gives the job one second to make the port
+available.
 
 ==============================================================================
 10. Job options						*job-options*
@@ -560,43 +545,54 @@ See |job_setoptions()| and |ch_setoptions()|.
 "stoponexit": ""	Do not stop the job when Vim exits.
 			The default is "term".
 
-TODO:						*job-term*
+						*job-term*
 "term": "open"		Start a terminal and connect the job
 			stdin/stdout/stderr to it.
+			NOTE: Not implemented yet!
 
-						*job-in-io*
-"in-io": "null"		disconnect stdin  TODO
+"channel": {channel}	Use an existing channel instead of creating a new one.
+			The parts of the channel that get used for the new job
+			will be disconnected from what they were used before.
+			If the channel was still use by another job this may
+			cause I/O errors.
+			Existing callbacks and other settings remain.
+
+				*job-in-io* *in-top* *in-bot* *in-name* *in-buf*
+"in-io": "null"		disconnect stdin (read from /dev/null)
 "in-io": "pipe"		stdin is connected to the channel (default)
-"in-io": "file"		stdin reads from a file  TODO
+"in-io": "file"		stdin reads from a file
 "in-io": "buffer"	stdin reads from a buffer
 "in-top": number	when using "buffer": first line to send (default: 1)
 "in-bot": number	when using "buffer": last line to send (default: last)
 "in-name": "/path/file"	the name of the file or buffer to read from
-"in-buf": number	the number of the buffer to read from  TODO
+"in-buf": number	the number of the buffer to read from
 
-						*job-out-io*
-"out-io": "null"	disconnect stdout  TODO
+				*job-out-io* *out-name* *out-buf*
+"out-io": "null"	disconnect stdout (goes to /dev/null)
 "out-io": "pipe"	stdout is connected to the channel (default)
-"out-io": "file"	stdout writes to a file  TODO
+"out-io": "file"	stdout writes to a file
 "out-io": "buffer" 	stdout appends to a buffer
 "out-name": "/path/file" the name of the file or buffer to write to
-"out-buf": number	the number of the buffer to write to  TODO
+"out-buf": number	the number of the buffer to write to
 
-						*job-err-io*
+				*job-err-io* *err-name* *err-buf*
 "err-io": "out"		stderr messages to go to stdout
-"err-io": "null"	disconnect stderr  TODO
+"err-io": "null"	disconnect stderr  (goes to /dev/null)
 "err-io": "pipe"	stderr is connected to the channel (default)
-"err-io": "file"	stderr writes to a file  TODO
-"err-io": "buffer" 	stderr appends to a buffer  TODO
+"err-io": "file"	stderr writes to a file
+"err-io": "buffer" 	stderr appends to a buffer
 "err-name": "/path/file" the name of the file or buffer to write to
-"err-buf": number	the number of the buffer to write to  TODO
+"err-buf": number	the number of the buffer to write to
+
+
+Writing to a buffer ~
 
 When the out-io or err-io mode is "buffer" and there is a callback, the text
 is appended to the buffer before invoking the callback.
 
 When a buffer is used both for input and output, the output lines are put
 above the last line, since the last line is what is written to the channel
-input.  Otherwise lines are appened below the last line.
+input.  Otherwise lines are appended below the last line.
 
 When using JS or JSON mode with "buffer", only messages with zero or negative
 ID will be added to the buffer, after decoding + encoding.  Messages with a
@@ -615,6 +611,14 @@ first column of the last line, the cursor will be moved to the newly added
 line and the window is scrolled up to show the cursor if needed.
 
 Undo is synced for every added line.
+
+
+Writing to a file ~
+
+The file is created with permissions 600 (read-write for the user, not
+accessible for others).  Use |setfperm()| to change this.
+
+If the file already exists it is truncated.
 
 ==============================================================================
 11. Controlling a job					*job-control*

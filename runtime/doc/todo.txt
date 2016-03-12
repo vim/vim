@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Mar 07
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Mar 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,16 +35,11 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 +channel:
+- CHANNEL_PIPES -> FEAT_JOB
+- FEAT_JOB / FEAT_CHANNEL -> FEAT_JOBCHANNEL ?
 - move code from eval.c to channel.c
-- implement TODO items in ":help channel":
-   - job_start() options:
-	in-io: null, in-buf
-	out-io: null, file, out-buf
-	err-io: null, file (err-name), buffer (err-buf)
-	existing channel to use
-   - job_maystart()
-   - add job_info(): process ID, run/dead, etc.
-   - add ch_info(): in/out/err mode, timeout, callbacks, etc.
+- add job_info(): process ID, run/dead, etc.
+- add ch_info(): in/out/err mode, timeout, callbacks, etc.
 - Move more details from eval.txt to channel.txt.  Add tags in eval.txt.
 - When receiving malformed json starting with a quote it doesn't get
   discarded.  Any invalid JSON or JSON that isn't a list will block further
@@ -53,16 +48,16 @@ not be repeated below, unless there is extra information.
   properly.
 - When a message in the queue but there is no callback, drop it after a while?
   Add timestamp to queued messages and callbacks with ID, remove after a
-  minute.
-- Add more log calls, basically at every branch, before every callback, etc.
-- add remark about undo sync, is there a way to force it?
+  minute.  Option to set the droptime.
+- Add more ch_log calls, basically at every branch, before every callback, etc.
+- Add remark about undo sync, is there a way to force it?
 - When starting a job, have an option to open the server socket, so we know
   the port, and pass it to the command with --socket-fd {nr}. (Olaf Dabrunz,
   Feb 9)  How to do this on MS-Windows?
 - Add more unit-testing in json_test.c
 - Add a test where ["eval","getline(123)"] gets a line with special
   characters (NUL, 0x80, etc.).  Check that it isn't garbled.
-- make sure errors lead to a useful error msg. ["ex","foobar"]
+- Make sure errors lead to a useful error msg. ["ex","foobar"]
 - For connection to server, a "keep open" flag would be useful.  Retry
   connecting in the main loop with zero timeout.
 Later
@@ -71,13 +66,16 @@ Later
 
 emoji patch from Yasuhiro Matsumoto.  Asked Thomas Dickey.
 
+Remove sticky type checking.
+
 Packages:
 - Add command to update help tags in 'runtimepath'.  Pathogen has something
   like that.
 - colorscheme command in .vimrc doesn't work.
-   - Postpone until later?
-   - Also search in 'packpath'?
-   - command to load packages now?
+   - Also search in 'packpath', both "start" and "opt", don't add dir to 'rtp'
+- command like :runtime that also search 'packpath'.  :packruntime
+    use "ever" or "opt"?  both?
+- command to load packages now?
 
 More plugin support:
 - Have a way to install a callback from the main loop.  Called every second or
@@ -198,9 +196,13 @@ Two patches now?  New update Feb 24.
 Patch to support 64 bit ints for Number. (Ken Takata, 2016 Jan 21)
 Also in update of Feb 24?
 
+After 7.5 is released:
+- Drop support for older MS-Windows systems, before XP.
+  Patch from Ken Takata, 2016 Mar 8.
+
 Patch to add setbufline(). (email from Yasuhiro Matsumoto, patch by Ozaki
 Kiichi, 2016 Feb 28)
-https://gist.github.com/ichizok/64bdc92aed19ec9001dd
+Update Mar 8: https://gist.github.com/mattn/23c1f50999084992ca98
 
 Need to try out instructions in INSSTALLpc.txt about how to install all
 interfaces and how to build Vim with them.
@@ -224,8 +226,6 @@ What if there is an invalid character?
 
 Should jsonencode()/jsondecode() restrict recursiveness?
 Or avoid recursiveness.
-
-Patch to fix bug in statusline highlighting. (Christian Brabandt, 2016 Feb 2)
 
 Use vim.vim syntax highlighting for help file examples, but without ":" in
 'iskeyword' for syntax.
@@ -306,7 +306,7 @@ set_color_count().
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
-Comparing nested structures with "==" uses a different comperator than when
+Comparing nested structures with "==" uses a different comparator than when
 comparing individual items.
 Also, "'' == 0" evaluates to true, which isn't nice.
 Add "===" to have a strict comparison (type and value match).

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2016 Feb 24
+*options.txt*	For Vim version 7.4.  Last change: 2016 Mar 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7769,13 +7769,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 				{not in Vi}
 				{only in the GTK+ 2 GUI}
 	Controls the size of toolbar icons.  The possible values are:
-		tiny		Use tiny toolbar icons.
-		small		Use small toolbar icons (default).
-		medium		Use medium-sized toolbar icons.
-		large		Use large toolbar icons.
+		tiny		Use tiny icons.
+		small		Use small icons (default).
+		medium		Use medium-sized icons.
+		large		Use large icons.
+		huge		Use even larger icons.
+		giant		Use very big icons.
 	The exact dimensions in pixels of the various icon sizes depend on
-	the current theme.  Common dimensions are large=32x32, medium=24x24,
-	small=20x20 and tiny=16x16.
+	the current theme.  Common dimensions are giant=48x48, huge=32x32,
+	large=24x24, medium=24x24, small=20x20 and tiny=16x16.
 
 	If 'toolbariconsize' is empty, the global default size as determined
 	by user preferences or the current theme is used.
