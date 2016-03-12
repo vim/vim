@@ -80,3 +80,20 @@ func Test_packadd_completion()
   call assert_equal("packadd pluginC", li[2])
   call assert_equal("packadd ", li[3])
 endfunc
+
+func Test_packloadall()
+  let plugindir = &packpath . '/pack/mine/start/foo/plugin'
+  call mkdir(plugindir, 'p')
+  call writefile(['let g:plugin_foo_number = 1234'], plugindir . '/bar.vim')
+  packloadall
+  call assert_equal(1234, g:plugin_foo_number)
+
+  " only works once
+  call writefile(['let g:plugin_bar_number = 4321'], plugindir . '/bar2.vim')
+  packloadall
+  call assert_false(exists('g:plugin_bar_number'))
+
+  " works when ! used
+  packloadall!
+  call assert_equal(4321, g:plugin_bar_number)
+endfunc

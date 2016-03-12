@@ -634,7 +634,7 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
 # endif
 	TIME_MSG("loading plugins");
 
-	source_packages();
+	ex_packloadall(NULL);
 	TIME_MSG("loading packages");
     }
 #endif
