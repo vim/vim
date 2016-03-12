@@ -59,17 +59,6 @@ STARTTEST
 :  $put =v:exception
 :endtry
 :"
-:" Changing var type should fail
-:try
-:  let d = []
-:catch
-:  $put =v:exception[:14] . v:exception[-1:-1]
-:endtry
-:try
-:  let l = {}
-:catch
-:  $put =v:exception[:14] . v:exception[-1:-1]
-:endtry
 :"
 :" removing items with :unlet
 :unlet l[2]
