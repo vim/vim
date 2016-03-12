@@ -479,6 +479,12 @@ func Test_raw_pipe()
   finally
     call job_stop(job)
   endtry
+
+  let s:job = job
+  call s:waitFor('"dead" == job_status(s:job)')
+  let info = job_info(job)
+  call assert_equal("dead", info.status)
+  call assert_equal("term", info.stoponexit)
 endfunc
 
 func Test_nl_pipe()
@@ -1051,6 +1057,7 @@ endfunc
 function s:test_exit_callback(port)
   call job_setoptions(s:job, {'exit-cb': 'MyExitCb'})
   let s:exit_job = s:job
+  call assert_equal('MyExitCb', job_info(s:job)['exit-cb'])
 endfunc
 
 func Test_exit_callback()
@@ -1069,6 +1076,7 @@ func Test_exit_callback()
     endfor
 
     call assert_equal('done', s:job_exit_ret)
+    call assert_equal('dead', job_info(s:exit_job).status)
     unlet s:exit_job
   endif
 endfunc

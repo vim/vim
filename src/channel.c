@@ -3725,6 +3725,40 @@ job_status(job_T *job)
     return result;
 }
 
+/*
+ * Implementation of job_info().
+ */
+    void
+job_info(job_T *job, dict_T *dict)
+{
+    dictitem_T	*item;
+    varnumber_T	nr;
+
+    dict_add_nr_str(dict, "status", 0L, (char_u *)job_status(job));
+
+    item = dictitem_alloc((char_u *)"channel");
+    if (item == NULL)
+	return;
+    item->di_tv.v_lock = 0;
+    item->di_tv.v_type = VAR_CHANNEL;
+    item->di_tv.vval.v_channel = job->jv_channel;
+    if (job->jv_channel != NULL)
+	++job->jv_channel->ch_refcount;
+    if (dict_add(dict, item) == FAIL)
+	dictitem_free(item);
+
+#ifdef UNIX
+    nr = job->jv_pid;
+#else
+    nr = job->jv_proc_info.dwProcessId;
+#endif
+    dict_add_nr_str(dict, "process", nr, NULL);
+
+    dict_add_nr_str(dict, "exitval", job->jv_exitval, NULL);
+    dict_add_nr_str(dict, "exit-cb", 0L, job->jv_exit_cb);
+    dict_add_nr_str(dict, "stoponexit", 0L, job->jv_stoponexit);
+}
+
     int
 job_stop(job_T *job, typval_T *argvars)
 {

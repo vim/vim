@@ -4527,6 +4527,8 @@ job_status({job})					*job_status()* *E916*
 		If an exit callback was set with the "exit-cb" option and the
 		job is now detected to be "dead" the callback will be invoked.
 
+		For more information see |job_info()|.
+
 		{only available when compiled with the |+job| feature}
 
 job_stop({job} [, {how}])					*job_stop()*

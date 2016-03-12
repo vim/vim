@@ -632,6 +632,7 @@ static void f_isnan(typval_T *argvars, typval_T *rettv);
 static void f_items(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_JOB_CHANNEL
 static void f_job_getchannel(typval_T *argvars, typval_T *rettv);
+static void f_job_info(typval_T *argvars, typval_T *rettv);
 static void f_job_setoptions(typval_T *argvars, typval_T *rettv);
 static void f_job_start(typval_T *argvars, typval_T *rettv);
 static void f_job_stop(typval_T *argvars, typval_T *rettv);
@@ -8208,6 +8209,7 @@ static struct fst
     {"items",		1, 1, f_items},
 #ifdef FEAT_JOB_CHANNEL
     {"job_getchannel",	1, 1, f_job_getchannel},
+    {"job_info",	1, 1, f_job_info},
     {"job_setoptions",	2, 2, f_job_setoptions},
     {"job_start",	1, 2, f_job_start},
     {"job_status",	1, 1, f_job_status},
@@ -14342,6 +14344,18 @@ f_job_getchannel(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "job_info()" function
+ */
+    static void
+f_job_info(typval_T *argvars, typval_T *rettv)
+{
+    job_T	*job = get_job_arg(&argvars[0]);
+
+    if (job != NULL && rettv_dict_alloc(rettv) != FAIL)
+	job_info(job, rettv->vval.v_dict);
+}
+
+/*
  * "job_setoptions()" function
  */
     static void
@@ -14375,13 +14389,11 @@ f_job_start(typval_T *argvars, typval_T *rettv)
 f_job_status(typval_T *argvars, typval_T *rettv)
 {
     job_T	*job = get_job_arg(&argvars[0]);
-    char	*result;
 
     if (job != NULL)
     {
-	result = job_status(job);
 	rettv->v_type = VAR_STRING;
-	rettv->vval.v_string = vim_strsave((char_u *)result);
+	rettv->vval.v_string = vim_strsave((char_u *)job_status(job));
     }
 }
 
