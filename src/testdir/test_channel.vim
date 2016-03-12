@@ -517,6 +517,7 @@ func Test_nl_err_to_out_pipe()
   if !has('job')
     return
   endif
+  call ch_logfile('Xlog')
   call ch_log('Test_nl_err_to_out_pipe()')
   let job = job_start(s:python . " test_channel_pipe.py", {'err-io': 'out'})
   call assert_equal("run", job_status(job))
@@ -529,6 +530,32 @@ func Test_nl_err_to_out_pipe()
     call assert_equal("wrong", ch_readraw(handle))
   finally
     call job_stop(job)
+    call ch_logfile('')
+    let loglines = readfile('Xlog')
+    call assert_true(len(loglines) > 10)
+    let found_test = 0
+    let found_send = 0
+    let found_recv = 0
+    let found_stop = 0
+    for l in loglines
+      if l =~ 'Test_nl_err_to_out_pipe'
+	let found_test = 1
+      endif
+      if l =~ 'SEND on.*echo something'
+	let found_send = 1
+      endif
+      if l =~ 'RECV on.*something'
+	let found_recv = 1
+      endif
+      if l =~ 'Stopping job with'
+	let found_stop = 1
+      endif
+    endfor
+    call assert_equal(1, found_test)
+    call assert_equal(1, found_send)
+    call assert_equal(1, found_recv)
+    call assert_equal(1, found_stop)
+    call delete('Xlog')
   endtry
 endfunc
 
