@@ -442,10 +442,11 @@ func Test_connect_waittime()
       " Oops, port does exists.
       call ch_close(handle)
     else
-      " Failed connection should wait about 500 msec.
+      " Failed connection should wait about 500 msec.  Can be longer if the
+      " computer is busy with other things.
       let elapsed = reltime(start)
       call assert_true(reltimefloat(elapsed) > 0.3)
-      call assert_true(reltimefloat(elapsed) < 1.0)
+      call assert_true(reltimefloat(elapsed) < 1.5)
     endif
   catch
     if v:exception !~ 'Connection reset by peer'
