@@ -2288,4 +2288,9 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 int vim_main2(int argc, char **argv);
 #endif
 
+/* Used for flags of do_in_path() */
+#define DIP_ALL	1	/* all matches, not just the first one */
+#define DIP_DIR	2	/* find directories instead of files. */
+#define DIP_ERR	4	/* give an error message when none found. */
+
 #endif /* VIM__H */

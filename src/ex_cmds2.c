@@ -2928,10 +2928,6 @@ source_runtime(char_u *name, int all)
     return do_in_runtimepath(name, all, source_callback, NULL);
 }
 
-#define DIP_ALL	1	/* all matches, not just the first one */
-#define DIP_DIR	2	/* find directories instead of files. */
-#define DIP_ERR	4	/* give an error message when none found. */
-
 /*
  * Find the file "name" in all directories in "path" and invoke
  * "callback(fname, cookie)".
@@ -2942,7 +2938,7 @@ source_runtime(char_u *name, int all)
  *
  * return FAIL when no file could be sourced, OK otherwise.
  */
-    static int
+    int
 do_in_path(
     char_u	*path,
     char_u	*name,
