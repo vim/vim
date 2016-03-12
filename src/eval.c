@@ -22091,22 +22091,6 @@ set_var(
 	if (var_check_ro(v->di_flags, name, FALSE)
 			       || tv_check_lock(v->di_tv.v_lock, name, FALSE))
 	    return;
-	if (v->di_tv.v_type != tv->v_type
-		&& !((v->di_tv.v_type == VAR_STRING
-			|| v->di_tv.v_type == VAR_NUMBER)
-		    && (tv->v_type == VAR_STRING
-			|| tv->v_type == VAR_NUMBER))
-#ifdef FEAT_FLOAT
-		&& !((v->di_tv.v_type == VAR_NUMBER
-			|| v->di_tv.v_type == VAR_FLOAT)
-		    && (tv->v_type == VAR_NUMBER
-			|| tv->v_type == VAR_FLOAT))
-#endif
-		)
-	{
-	    EMSG2(_("E706: Variable type mismatch for: %s"), name);
-	    return;
-	}
 
 	/*
 	 * Handle setting internal v: variables separately where needed to

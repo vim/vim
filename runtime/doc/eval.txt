@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Mar 08
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Mar 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -113,16 +113,8 @@ to Float, printf() for Float to String and float2nr() for Float to Number.
 			*E891* *E892* *E893* *E894* *E907* *E911* *E914*
 When expecting a Float a Number can also be used, but nothing else.
 
-						*E706* *sticky-type-checking*
-You will get an error if you try to change the type of a variable.  You need
-to |:unlet| it first to avoid this error.  String and Number are considered
-equivalent though, as well are Float and Number.  Consider this sequence of
-commands: >
-	:let l = "string"
-	:let l = 44		" changes type from String to Number
-	:let l = [1, 2, 3]	" error!  l is still a Number
-	:let l = 4.4		" changes type from Number to Float
-	:let l = "string"	" error!
+						*no-type-checking*
+You will not get an error if you try to change the type of a variable.
 
 
 1.2 Function references ~
@@ -1969,6 +1961,7 @@ islocked( {expr})		Number	TRUE if {expr} is locked
 isnan( {expr})			Number  TRUE if {expr} is NaN
 items( {dict})			List	key-value pairs in {dict}
 job_getchannel( {job})		Channel	get the channel handle for {job}
+job_info( {job})		Dict	get information about {job}
 job_setoptions( {job}, {options}) none	set options for {job}
 job_start( {command} [, {options}]) Job	 start a job
 job_status( {job})		String	get the status of {job}
@@ -4473,10 +4466,18 @@ job_getchannel({job})					 *job_getchannel()*
 <
 		{only available when compiled with the |+job| feature}
 
+job_info({job})						*job_info()*
+		Returns a Dictionary with information about {job}:
+		   "status"	what |job_status()| returns
+		   "channel"	what |job_getchannel()| returns
+		   "exitval"	only valid when "status" is "dead"
+		   "exit-cb"	function to be called on exit
+		   "stoponexit"	|job-stoponexit|
+
 job_setoptions({job}, {options})			*job_setoptions()*
 		Change options for {job}.  Supported are:
-			"stoponexit"	|job-stoponexit|
-			"exit-cb"	|job-exit-cb|
+		   "stoponexit"	|job-stoponexit|
+		   "exit-cb"	|job-exit-cb|
 
 job_start({command} [, {options}])			*job_start()*
 		Start a job and return a Job object.  Unlike |system()| and

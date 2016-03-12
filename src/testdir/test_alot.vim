@@ -1,6 +1,7 @@
 " A series of tests that can run in one Vim invocation.
 " This makes testing go faster, since Vim doesn't need to restart.
 
+source test_assign.vim
 source test_backspace_opt.vim
 source test_cursor_func.vim
 source test_delete.vim
