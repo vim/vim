@@ -2438,6 +2438,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 	easier to see the selected text.
 
 
+						*'cursorlineopt'* *'culopt'*
+'cursorlineopt' 'culopt' string (default: "both")
+			local to window
+			{not in Vi}
+			{not available when compiled without the |+syntax|
+			feature}
+	Settings for 'cursorline'.
+	Valid values:
+	    "line"	Highlight the screen line of the cursor with
+			CursorLine |hl-CursorLine|.
+	    "number"	Highlight the line number of the cursor with
+			CursorLineNr |hl-CursorLineNr|.
+	    "both"	Highlight as both "line" and "number" are set.
+
+
 						*'debug'*
 'debug'			string	(default "")
 			global

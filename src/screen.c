@@ -3876,7 +3876,7 @@ win_line(
     {
 	// Do not show the cursor line when Visual mode is active, because it's
 	// not clear what is selected then.  Do update w_last_cursorline.
-	if (!(wp == curwin && VIsual_active))
+	if (!(wp == curwin && VIsual_active) && *wp->w_p_culopt != 'n')
 	{
 	    line_attr = HL_ATTR(HLF_CUL);
 	    area_highlighting = TRUE;
@@ -4078,6 +4078,7 @@ win_line(
 		       * TODO: Can we use CursorLine instead of CursorLineNr
 		       * when CursorLineNr isn't set? */
 		      if ((wp->w_p_cul || wp->w_p_rnu)
+						 && *wp->w_p_culopt != 'l'
 						 && lnum == wp->w_cursor.lnum)
 			char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_CLN));
 #endif
@@ -4112,7 +4113,8 @@ win_line(
 		    {
 			char_attr = HL_ATTR(diff_hlf);
 #  ifdef FEAT_SYN_HL
-			if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
+			if (wp->w_p_cul && lnum == wp->w_cursor.lnum
+						    && *wp->w_p_culopt != 'n')
 			    char_attr = hl_combine_attr(char_attr,
 							    HL_ATTR(HLF_CUL));
 #  endif
@@ -4174,7 +4176,8 @@ win_line(
 			tocol += n_extra;
 #ifdef FEAT_SYN_HL
 		    /* combine 'showbreak' with 'cursorline' */
-		    if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
+		    if (wp->w_p_cul && lnum == wp->w_cursor.lnum
+						    && *wp->w_p_culopt != 'n')
 			char_attr = hl_combine_attr(char_attr,
 							    HL_ATTR(HLF_CUL));
 #endif
@@ -4386,7 +4389,8 @@ win_line(
 							      && n_extra == 0)
 		    diff_hlf = HLF_CHD;		/* changed line */
 		line_attr = HL_ATTR(diff_hlf);
-		if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
+		if (wp->w_p_cul && lnum == wp->w_cursor.lnum
+						    && *wp->w_p_culopt != 'n')
 		    line_attr = hl_combine_attr(line_attr, HL_ATTR(HLF_CUL));
 	    }
 #endif
@@ -5348,7 +5352,8 @@ win_line(
 			if (vi_attr == 0 || char_attr != vi_attr)
 			{
 			    char_attr = HL_ATTR(diff_hlf);
-			    if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
+			    if (wp->w_p_cul && lnum == wp->w_cursor.lnum
+						    && *wp->w_p_culopt != 'n')
 				char_attr = hl_combine_attr(char_attr,
 							    HL_ATTR(HLF_CUL));
 			}
