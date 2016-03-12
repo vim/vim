@@ -2901,12 +2901,38 @@ ex_compiler(exarg_T *eap)
 #endif
 
 /*
- * ":runtime {name}"
+ * ":runtime [what] {name}"
  */
     void
 ex_runtime(exarg_T *eap)
 {
-    source_runtime(eap->arg, eap->forceit ? DIP_ALL : 0);
+    char_u  *arg = eap->arg;
+    char_u  *p = skiptowhite(arg);
+    int	    len = (int)(p - arg);
+    int	    flags = eap->forceit ? DIP_ALL : 0;
+
+    if (STRNCMP(arg, "START", len) == 0)
+    {
+	flags += DIP_START + DIP_NORTP;
+	arg = skipwhite(arg + len);
+    }
+    else if (STRNCMP(arg, "OPT", len) == 0)
+    {
+	flags += DIP_OPT + DIP_NORTP;
+	arg = skipwhite(arg + len);
+    }
+    else if (STRNCMP(arg, "PACK", len) == 0)
+    {
+	flags += DIP_START + DIP_OPT + DIP_NORTP;
+	arg = skipwhite(arg + len);
+    }
+    else if (STRNCMP(arg, "ALL", len) == 0)
+    {
+	flags += DIP_START + DIP_OPT;
+	arg = skipwhite(arg + len);
+    }
+
+    source_runtime(arg, flags);
 }
 
     static void
@@ -3067,15 +3093,16 @@ do_in_runtimepath(
     void	(*callback)(char_u *fname, void *ck),
     void	*cookie)
 {
-    int		done;
+    int		done = FAIL;
     char_u	*s;
     int		len;
     char	*start_dir = "pack/*/start/*/%s";
     char	*opt_dir = "pack/*/opt/*/%s";
 
-    done = do_in_path(p_rtp, name, flags, callback, cookie);
+    if ((flags & DIP_NORTP) == 0)
+	done = do_in_path(p_rtp, name, flags, callback, cookie);
 
-    if (done == FAIL && (flags & DIP_START))
+    if ((done == FAIL || (flags & DIP_ALL)) && (flags & DIP_START))
     {
 	len = STRLEN(start_dir) + STRLEN(name);
 	s = alloc(len);
@@ -3086,7 +3113,7 @@ do_in_runtimepath(
 	vim_free(s);
     }
 
-    if (done == FAIL && (flags & DIP_OPT))
+    if ((done == FAIL || (flags & DIP_ALL)) && (flags & DIP_OPT))
     {
 	len = STRLEN(opt_dir) + STRLEN(name);
 	s = alloc(len);

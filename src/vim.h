@@ -2294,5 +2294,6 @@ int vim_main2(int argc, char **argv);
 #define DIP_ERR	    0x04	/* give an error message when none found. */
 #define DIP_START   0x08	/* also use "start" directory in 'packpath' */
 #define DIP_OPT	    0x10	/* also use "opt" directory in 'packpath' */
+#define DIP_NORTP   0x20	/* do not use 'runtimepath' */
 
 #endif /* VIM__H */
