@@ -3625,7 +3625,17 @@ job_start(typval_T *argvars)
 	    /* Only escape when needed, double quotes are not always allowed. */
 	    if (li != l->lv_first && vim_strpbrk(s, (char_u *)" \t\"") != NULL)
 	    {
+# ifdef WIN32
+		int old_ssl = p_ssl;
+
+		/* This is using CreateProcess, not cmd.exe.  Always use
+		 * double quote and backslashes. */
+		p_ssl = 0;
+# endif
 		s = vim_strsave_shellescape(s, FALSE, TRUE);
+# ifdef WIN32
+		p_ssl = old_ssl;
+# endif
 		if (s == NULL)
 		    goto theend;
 		ga_concat(&ga, s);
