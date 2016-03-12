@@ -1061,7 +1061,7 @@ VimForeachRTP(PyObject *self UNUSED, PyObject *callable)
     data.callable = callable;
     data.result = NULL;
 
-    do_in_runtimepath(NULL, FALSE, &map_rtp_callback, &data);
+    do_in_runtimepath(NULL, 0, &map_rtp_callback, &data);
 
     if (data.result == NULL)
     {
@@ -1150,7 +1150,7 @@ Vim_GetPaths(PyObject *self UNUSED)
     if (!(ret = PyList_New(0)))
 	return NULL;
 
-    do_in_runtimepath(NULL, FALSE, &map_finder_callback, ret);
+    do_in_runtimepath(NULL, 0, &map_finder_callback, ret);
 
     if (PyErr_Occurred())
     {

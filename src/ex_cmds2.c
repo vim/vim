@@ -2872,7 +2872,7 @@ ex_compiler(exarg_T *eap)
 	    do_unlet((char_u *)"b:current_compiler", TRUE);
 
 	    sprintf((char *)buf, "compiler/%s.vim", eap->arg);
-	    if (source_runtime(buf, TRUE) == FAIL)
+	    if (source_runtime(buf, DIP_ALL) == FAIL)
 		EMSG2(_("E666: compiler not supported: %s"), eap->arg);
 	    vim_free(buf);
 
@@ -2906,7 +2906,7 @@ ex_compiler(exarg_T *eap)
     void
 ex_runtime(exarg_T *eap)
 {
-    source_runtime(eap->arg, eap->forceit);
+    source_runtime(eap->arg, eap->forceit ? DIP_ALL : 0);
 }
 
     static void
@@ -2918,14 +2918,14 @@ source_callback(char_u *fname, void *cookie UNUSED)
 /*
  * Source the file "name" from all directories in 'runtimepath'.
  * "name" can contain wildcards.
- * When "all" is TRUE: source all files, otherwise only the first one.
+ * When "flags" has DIP_ALL: source all files, otherwise only the first one.
  *
  * return FAIL when no file could be sourced, OK otherwise.
  */
     int
-source_runtime(char_u *name, int all)
+source_runtime(char_u *name, int flags)
 {
-    return do_in_runtimepath(name, all, source_callback, NULL);
+    return do_in_runtimepath(name, flags, source_callback, NULL);
 }
 
 /*
@@ -3052,8 +3052,8 @@ do_in_path(
 /*
  * Find "name" in 'runtimepath'.  When found, invoke the callback function for
  * it: callback(fname, "cookie")
- * When "all" is TRUE repeat for all matches, otherwise only the first one is
- * used.
+ * When "flags" has DIP_ALL repeat for all matches, otherwise only the first
+ * one is used.
  * Returns OK when at least one match found, FAIL otherwise.
  *
  * If "name" is NULL calls callback for each entry in runtimepath. Cookie is
@@ -3063,11 +3063,41 @@ do_in_path(
     int
 do_in_runtimepath(
     char_u	*name,
-    int		all,
+    int		flags,
     void	(*callback)(char_u *fname, void *ck),
     void	*cookie)
 {
-    return do_in_path(p_rtp, name, all ? DIP_ALL : 0, callback, cookie);
+    int		done;
+    char_u	*s;
+    int		len;
+    char	*start_dir = "pack/*/start/*/%s";
+    char	*opt_dir = "pack/*/opt/*/%s";
+
+    done = do_in_path(p_rtp, name, flags, callback, cookie);
+
+    if (done == FAIL && (flags & DIP_START))
+    {
+	len = STRLEN(start_dir) + STRLEN(name);
+	s = alloc(len);
+	if (s == NULL)
+	    return FAIL;
+	vim_snprintf((char *)s, len, start_dir, name);
+	done = do_in_path(p_pp, s, flags, callback, cookie);
+	vim_free(s);
+    }
+
+    if (done == FAIL && (flags & DIP_OPT))
+    {
+	len = STRLEN(opt_dir) + STRLEN(name);
+	s = alloc(len);
+	if (s == NULL)
+	    return FAIL;
+	vim_snprintf((char *)s, len, opt_dir, name);
+	done = do_in_path(p_pp, s, flags, callback, cookie);
+	vim_free(s);
+    }
+
+    return done;
 }
 
 /*

@@ -11777,16 +11777,16 @@ ex_filetype(exarg_T *eap)
     {
 	if (*arg == 'o' || !filetype_detect)
 	{
-	    source_runtime((char_u *)FILETYPE_FILE, TRUE);
+	    source_runtime((char_u *)FILETYPE_FILE, DIP_ALL);
 	    filetype_detect = TRUE;
 	    if (plugin)
 	    {
-		source_runtime((char_u *)FTPLUGIN_FILE, TRUE);
+		source_runtime((char_u *)FTPLUGIN_FILE, DIP_ALL);
 		filetype_plugin = TRUE;
 	    }
 	    if (indent)
 	    {
-		source_runtime((char_u *)INDENT_FILE, TRUE);
+		source_runtime((char_u *)INDENT_FILE, DIP_ALL);
 		filetype_indent = TRUE;
 	    }
 	}
@@ -11802,18 +11802,18 @@ ex_filetype(exarg_T *eap)
 	{
 	    if (plugin)
 	    {
-		source_runtime((char_u *)FTPLUGOF_FILE, TRUE);
+		source_runtime((char_u *)FTPLUGOF_FILE, DIP_ALL);
 		filetype_plugin = FALSE;
 	    }
 	    if (indent)
 	    {
-		source_runtime((char_u *)INDOFF_FILE, TRUE);
+		source_runtime((char_u *)INDOFF_FILE, DIP_ALL);
 		filetype_indent = FALSE;
 	    }
 	}
 	else
 	{
-	    source_runtime((char_u *)FTOFF_FILE, TRUE);
+	    source_runtime((char_u *)FTOFF_FILE, DIP_ALL);
 	    filetype_detect = FALSE;
 	}
     }

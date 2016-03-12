@@ -950,7 +950,7 @@ mch_icon_load_cb(char_u *fname, void *cookie)
 mch_icon_load(HANDLE *iconp)
 {
     return do_in_runtimepath((char_u *)"bitmaps/vim.ico",
-					      FALSE, mch_icon_load_cb, iconp);
+						  0, mch_icon_load_cb, iconp);
 }
 
     int

@@ -2478,7 +2478,7 @@ spell_load_lang(char_u *lang)
 					"spell/%s.%s.spl",
 #endif
 							   lang, spell_enc());
-	r = do_in_runtimepath(fname_enc, FALSE, spell_load_cb, &sl);
+	r = do_in_runtimepath(fname_enc, 0, spell_load_cb, &sl);
 
 	if (r == FAIL && *sl.sl_lang != NUL)
 	{
@@ -2490,7 +2490,7 @@ spell_load_lang(char_u *lang)
 						  "spell/%s.ascii.spl",
 #endif
 									lang);
-	    r = do_in_runtimepath(fname_enc, FALSE, spell_load_cb, &sl);
+	    r = do_in_runtimepath(fname_enc, 0, spell_load_cb, &sl);
 
 #ifdef FEAT_AUTOCMD
 	    if (r == FAIL && *sl.sl_lang != NUL && round == 1
@@ -2519,7 +2519,7 @@ spell_load_lang(char_u *lang)
     {
 	/* At least one file was loaded, now load ALL the additions. */
 	STRCPY(fname_enc + STRLEN(fname_enc) - 3, "add.spl");
-	do_in_runtimepath(fname_enc, TRUE, spell_load_cb, &sl);
+	do_in_runtimepath(fname_enc, DIP_ALL, spell_load_cb, &sl);
     }
 }
 

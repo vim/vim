@@ -628,9 +628,9 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
     if (p_lpl)
     {
 # ifdef VMS	/* Somehow VMS doesn't handle the "**". */
-	source_runtime((char_u *)"plugin/*.vim", TRUE);
+	source_runtime((char_u *)"plugin/*.vim", DIP_ALL);
 # else
-	source_runtime((char_u *)"plugin/**/*.vim", TRUE);
+	source_runtime((char_u *)"plugin/**/*.vim", DIP_ALL);
 # endif
 	TIME_MSG("loading plugins");
 

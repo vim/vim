@@ -2638,7 +2638,7 @@ get_tagfname(
 #else
 		    "doc/tags"
 #endif
-					      , TRUE, found_tagfile_cb, NULL);
+					   , DIP_ALL, found_tagfile_cb, NULL);
 	}
 
 	if (tnp->tn_hf_idx >= tag_fnames.ga_len)
