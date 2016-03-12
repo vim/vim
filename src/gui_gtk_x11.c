@@ -636,7 +636,10 @@ gui_gtk3_update_cursor(cairo_t *cr)
     if (gui.row == gui.cursor_row)
     {
 	gui.by_signal = TRUE;
-	gui_update_cursor(TRUE, TRUE);
+	if (State & CMDLINE)
+	    gui_update_cursor(TRUE, FALSE);
+	else
+	    gui_update_cursor(TRUE, TRUE);
 	gui.by_signal = FALSE;
 	cairo_paint(cr);
     }
@@ -6310,8 +6313,25 @@ gui_mch_flash(int msec)
 gui_mch_invert_rectangle(int r, int c, int nr, int nc)
 {
 #if GTK_CHECK_VERSION(3,0,0)
-    /* TODO Replace GdkGC with Cairo */
-    (void)r; (void)c; (void)nr; (void)nc;
+    const GdkRectangle rect = {
+	FILL_X(c), FILL_Y(r), nc * gui.char_width, nr * gui.char_height
+    };
+    cairo_t * const cr = cairo_create(gui.surface);
+
+    set_cairo_source_rgb_from_pixel(cr, gui.norm_pixel ^ gui.back_pixel);
+# if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1,9,2)
+    cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
+# else
+    /* Give an implementation for older cairo versions if necessary. */
+# endif
+    gdk_cairo_rectangle(cr, &rect);
+    cairo_fill(cr);
+
+    cairo_destroy(cr);
+
+    if (!gui.by_signal)
+	gtk_widget_queue_draw_area(gui.drawarea, rect.x, rect.y,
+		rect.width, rect.height);
 #else
     GdkGCValues values;
     GdkGC *invert_gc;
