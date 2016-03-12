@@ -650,7 +650,8 @@ gui_gtk3_should_draw_cursor(void)
 {
     unsigned int cond = 0;
     cond |= gui_gtk_is_blink_on();
-    cond |= is_key_pressed;
+    if (gui.cursor_col >= gui.col)
+	cond |= is_key_pressed;
     cond |= gui.in_focus == FALSE;
     return  cond;
 }
@@ -686,17 +687,29 @@ draw_event(GtkWidget *widget,
 		if (blink_mode)
 		    gui_gtk3_redraw(rect.x, rect.y, rect.width, rect.height);
 		else
-		    gui_redraw(rect.x, rect.y, rect.width, rect.height);
+		{
+		    if (get_real_state() & VISUAL)
+			gui_gtk3_redraw(rect.x, rect.y,
+				rect.width, rect.height);
+		    else
+			gui_redraw(rect.x, rect.y, rect.width, rect.height);
+		}
 	    }
 	}
 	cairo_rectangle_list_destroy(list);
+
+	if (get_real_state() & VISUAL)
+	{
+	    if (gui.cursor_row == gui.row && gui.cursor_col >= gui.col)
+		gui_update_cursor(TRUE, TRUE);
+	}
 
 	cairo_paint(cr);
     }
     gui.by_signal = FALSE;
 
     /* Add the cursor to the window if necessary.*/
-    if (gui_gtk3_should_draw_cursor())
+    if (gui_gtk3_should_draw_cursor() && blink_mode)
 	gui_gtk3_update_cursor(cr);
 
     return FALSE;
