@@ -492,7 +492,7 @@ func Test_nl_pipe()
     return
   endif
   call ch_log('Test_nl_pipe()')
-  let job = job_start(s:python . " test_channel_pipe.py")
+  let job = job_start([s:python, "test_channel_pipe.py"])
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
