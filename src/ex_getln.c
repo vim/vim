@@ -111,7 +111,7 @@ static int	ExpandFromContext(expand_T *xp, char_u *, int *, char_u ***, int);
 static int	expand_showtail(expand_T *xp);
 #ifdef FEAT_CMDL_COMPL
 static int	expand_shellcmd(char_u *filepat, int *num_file, char_u ***file, int flagsarg);
-static int	ExpandRTDir(char_u *pat, int *num_file, char_u ***file, char *dirname[]);
+static int	ExpandRTDir(char_u *pat, int flags, int *num_file, char_u ***file, char *dirname[]);
 static int	ExpandPackAddDir(char_u *pat, int *num_file, char_u ***file);
 # ifdef FEAT_CMDHIST
 static char_u	*get_history_arg(expand_T *xp, int idx);
@@ -4628,22 +4628,23 @@ ExpandFromContext(
     if (xp->xp_context == EXPAND_COLORS)
     {
 	char *directories[] = {"colors", NULL};
-	return ExpandRTDir(pat, num_file, file, directories);
+	return ExpandRTDir(pat, DIP_START + DIP_OPT, num_file, file,
+								directories);
     }
     if (xp->xp_context == EXPAND_COMPILER)
     {
 	char *directories[] = {"compiler", NULL};
-	return ExpandRTDir(pat, num_file, file, directories);
+	return ExpandRTDir(pat, 0, num_file, file, directories);
     }
     if (xp->xp_context == EXPAND_OWNSYNTAX)
     {
 	char *directories[] = {"syntax", NULL};
-	return ExpandRTDir(pat, num_file, file, directories);
+	return ExpandRTDir(pat, 0, num_file, file, directories);
     }
     if (xp->xp_context == EXPAND_FILETYPE)
     {
 	char *directories[] = {"syntax", "indent", "ftplugin", NULL};
-	return ExpandRTDir(pat, num_file, file, directories);
+	return ExpandRTDir(pat, 0, num_file, file, directories);
     }
 # if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
     if (xp->xp_context == EXPAND_USER_LIST)
@@ -5119,13 +5120,19 @@ ExpandUserList(
 #endif
 
 /*
- * Expand color scheme, compiler or filetype names:
- * 'runtimepath'/{dirnames}/{pat}.vim
+ * Expand color scheme, compiler or filetype names.
+ * Search from 'runtimepath':
+ *   'runtimepath'/{dirnames}/{pat}.vim
+ * When "flags" has DIP_START: search also from 'start' of 'packpath':
+ *   'packpath'/pack/ * /start/ * /{dirnames}/{pat}.vim
+ * When "flags" has DIP_OPT: search also from 'opt' of 'packpath':
+ *   'packpath'/pack/ * /opt/ * /{dirnames}/{pat}.vim
  * "dirnames" is an array with one or more directory names.
  */
     static int
 ExpandRTDir(
     char_u	*pat,
+    int		flags,
     int		*num_file,
     char_u	***file,
     char	*dirnames[])
@@ -5153,6 +5160,36 @@ ExpandRTDir(
 	sprintf((char *)s, "%s/%s*.vim", dirnames[i], pat);
 	globpath(p_rtp, s, &ga, 0);
 	vim_free(s);
+    }
+
+    if (flags & DIP_START) {
+	for (i = 0; dirnames[i] != NULL; ++i)
+	{
+	    s = alloc((unsigned)(STRLEN(dirnames[i]) + pat_len + 22));
+	    if (s == NULL)
+	    {
+		ga_clear_strings(&ga);
+		return FAIL;
+	    }
+	    sprintf((char *)s, "pack/*/start/*/%s/%s*.vim", dirnames[i], pat);
+	    globpath(p_pp, s, &ga, 0);
+	    vim_free(s);
+	}
+    }
+
+    if (flags & DIP_OPT) {
+	for (i = 0; dirnames[i] != NULL; ++i)
+	{
+	    s = alloc((unsigned)(STRLEN(dirnames[i]) + pat_len + 20));
+	    if (s == NULL)
+	    {
+		ga_clear_strings(&ga);
+		return FAIL;
+	    }
+	    sprintf((char *)s, "pack/*/opt/*/%s/%s*.vim", dirnames[i], pat);
+	    globpath(p_pp, s, &ga, 0);
+	    vim_free(s);
+	}
     }
 
     for (i = 0; i < ga.ga_len; ++i)

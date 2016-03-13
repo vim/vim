@@ -135,6 +135,29 @@ func Test_colorscheme()
   call assert_equal(1, g:found_three)
 endfunc
 
+func Test_colorscheme_completion()
+  let colordirrun = &packpath . '/runtime/colors'
+  let colordirstart = &packpath . '/pack/mine/start/foo/colors'
+  let colordiropt = &packpath . '/pack/mine/opt/bar/colors'
+  call mkdir(colordirrun, 'p')
+  call mkdir(colordirstart, 'p')
+  call mkdir(colordiropt, 'p')
+  call writefile(['let g:found_one = 1'], colordirrun . '/one.vim')
+  call writefile(['let g:found_two = 1'], colordirstart . '/two.vim')
+  call writefile(['let g:found_three = 1'], colordiropt . '/three.vim')
+  exe 'set rtp=' . &packpath . '/runtime'
+
+  let li=[]
+  call feedkeys(":colorscheme " . repeat("\<Tab>", 1) . "')\<C-B>call add(li, '\<CR>", 't')
+  call feedkeys(":colorscheme " . repeat("\<Tab>", 2) . "')\<C-B>call add(li, '\<CR>", 't')
+  call feedkeys(":colorscheme " . repeat("\<Tab>", 3) . "')\<C-B>call add(li, '\<CR>", 't')
+  call feedkeys(":colorscheme " . repeat("\<Tab>", 4) . "')\<C-B>call add(li, '\<CR>", 'tx')
+  call assert_equal("colorscheme one", li[0])
+  call assert_equal("colorscheme three", li[1])
+  call assert_equal("colorscheme two", li[2])
+  call assert_equal("colorscheme ", li[3])
+endfunc
+
 func Test_runtime()
   let rundir = &packpath . '/runtime/extra'
   let startdir = &packpath . '/pack/mine/start/foo/extra'
