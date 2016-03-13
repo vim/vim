@@ -2240,6 +2240,7 @@ test_arglist \
 	test_reltime \
 	test_retab \
 	test_ruby \
+	test_scroll_opt \
 	test_scrollbind \
 	test_search \
 	test_searchpos \
