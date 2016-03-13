@@ -807,6 +807,7 @@ static void f_values(typval_T *argvars, typval_T *rettv);
 static void f_virtcol(typval_T *argvars, typval_T *rettv);
 static void f_visualmode(typval_T *argvars, typval_T *rettv);
 static void f_wildmenumode(typval_T *argvars, typval_T *rettv);
+static void f_win_findbuf(typval_T *argvars, typval_T *rettv);
 static void f_win_getid(typval_T *argvars, typval_T *rettv);
 static void f_win_gotoid(typval_T *argvars, typval_T *rettv);
 static void f_win_id2tabwin(typval_T *argvars, typval_T *rettv);
@@ -8388,6 +8389,7 @@ static struct fst
     {"virtcol",		1, 1, f_virtcol},
     {"visualmode",	0, 1, f_visualmode},
     {"wildmenumode",	0, 0, f_wildmenumode},
+    {"win_findbuf",	1, 1, f_win_findbuf},
     {"win_getid",	0, 2, f_win_getid},
     {"win_gotoid",	1, 1, f_win_gotoid},
     {"win_id2tabwin",	1, 1, f_win_id2tabwin},
@@ -12666,6 +12668,16 @@ f_getwinposx(typval_T *argvars UNUSED, typval_T *rettv)
 	    rettv->vval.v_number = x;
     }
 #endif
+}
+
+/*
+ * "win_findbuf()" function
+ */
+    static void
+f_win_findbuf(typval_T *argvars, typval_T *rettv)
+{
+    if (rettv_list_alloc(rettv) != FAIL)
+	win_findbuf(argvars, rettv->vval.v_list);
 }
 
 /*

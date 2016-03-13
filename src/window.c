@@ -7297,4 +7297,19 @@ win_id2win(typval_T *argvars)
     }
     return 0;
 }
+
+    void
+win_findbuf(typval_T *argvars, list_T *list)
+{
+    win_T	*wp;
+    tabpage_T   *tp;
+    int		bufnr = get_tv_number(&argvars[0]);
+
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+	for (wp = tp == curtab ? firstwin : tp->tp_firstwin;
+						  wp != NULL; wp = wp->w_next)
+	    if (wp->w_buffer->b_fnum == bufnr)
+		list_append_number(list, wp->w_id);
+}
+
 #endif
