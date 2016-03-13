@@ -434,7 +434,6 @@ static int dict_equal(dict_T *d1, dict_T *d2, int ic, int recursive);
 static int tv_equal(typval_T *tv1, typval_T *tv2, int ic, int recursive);
 static long list_find_nr(list_T *l, long idx, int *errorp);
 static long list_idx_of_item(list_T *l, listitem_T *item);
-static int list_append_number(list_T *l, varnumber_T n);
 static int list_extend(list_T	*l1, list_T *l2, listitem_T *bef);
 static int list_concat(list_T *l1, list_T *l2, typval_T *tv);
 static list_T *list_copy(list_T *orig, int deep, int copyID);
@@ -808,6 +807,10 @@ static void f_values(typval_T *argvars, typval_T *rettv);
 static void f_virtcol(typval_T *argvars, typval_T *rettv);
 static void f_visualmode(typval_T *argvars, typval_T *rettv);
 static void f_wildmenumode(typval_T *argvars, typval_T *rettv);
+static void f_win_getid(typval_T *argvars, typval_T *rettv);
+static void f_win_gotoid(typval_T *argvars, typval_T *rettv);
+static void f_win_id2tabwin(typval_T *argvars, typval_T *rettv);
+static void f_win_id2win(typval_T *argvars, typval_T *rettv);
 static void f_winbufnr(typval_T *argvars, typval_T *rettv);
 static void f_wincol(typval_T *argvars, typval_T *rettv);
 static void f_winheight(typval_T *argvars, typval_T *rettv);
@@ -6469,7 +6472,7 @@ list_append_string(list_T *l, char_u *str, int len)
  * Append "n" to list "l".
  * Returns FAIL when out of memory.
  */
-    static int
+    int
 list_append_number(list_T *l, varnumber_T n)
 {
     listitem_T	*li;
@@ -8385,6 +8388,10 @@ static struct fst
     {"virtcol",		1, 1, f_virtcol},
     {"visualmode",	0, 1, f_visualmode},
     {"wildmenumode",	0, 0, f_wildmenumode},
+    {"win_getid",	0, 2, f_win_getid},
+    {"win_gotoid",	1, 1, f_win_gotoid},
+    {"win_id2tabwin",	1, 1, f_win_id2tabwin},
+    {"win_id2win",	1, 1, f_win_id2win},
     {"winbufnr",	1, 1, f_winbufnr},
     {"wincol",		0, 0, f_wincol},
     {"winheight",	1, 1, f_winheight},
@@ -12659,6 +12666,43 @@ f_getwinposx(typval_T *argvars UNUSED, typval_T *rettv)
 	    rettv->vval.v_number = x;
     }
 #endif
+}
+
+/*
+ * "win_getid()" function
+ */
+    static void
+f_win_getid(typval_T *argvars, typval_T *rettv)
+{
+    rettv->vval.v_number = win_getid(argvars);
+}
+
+/*
+ * "win_gotoid()" function
+ */
+    static void
+f_win_gotoid(typval_T *argvars, typval_T *rettv)
+{
+    rettv->vval.v_number = win_gotoid(argvars);
+}
+
+/*
+ * "win_id2tabwin()" function
+ */
+    static void
+f_win_id2tabwin(typval_T *argvars, typval_T *rettv)
+{
+    if (rettv_list_alloc(rettv) != FAIL)
+	win_id2tabwin(argvars, rettv->vval.v_list);
+}
+
+/*
+ * "win_id2win()" function
+ */
+    static void
+f_win_id2win(typval_T *argvars, typval_T *rettv)
+{
+    rettv->vval.v_number = win_id2win(argvars);
 }
 
 /*

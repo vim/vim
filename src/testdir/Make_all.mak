@@ -186,6 +186,7 @@ NEW_TESTS = test_arglist.res \
 	    test_viminfo.res \
 	    test_viml.res \
 	    test_visual.res \
+	    test_window_id.res \
 	    test_alot.res
 
 
