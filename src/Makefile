@@ -2112,6 +2112,9 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 	-$(SHELL) ./installman.sh install $(DEST_MAN) "" $(INSTALLMANARGS)
 	@echo generating help tags
 # Generate the help tags with ":helptags" to handle all languages.
+# Move the distributed tags file aside and restore it, to avoid it being
+# different from the repository.
+	cd $(HELPSOURCE); mv -f tags tags.dist
 	-@cd $(HELPSOURCE); $(MAKE) VIMEXE=$(DEST_BIN)/$(VIMTARGET) vimtags
 	cd $(HELPSOURCE); \
 		files=`ls *.txt tags`; \
@@ -2121,6 +2124,7 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 		chmod $(HELPMOD) $$files
 	$(INSTALL_DATA)  $(HELPSOURCE)/*.pl $(DEST_HELP)
 	chmod $(SCRIPTMOD) $(DEST_HELP)/*.pl
+	cd $(HELPSOURCE); mv -f tags.dist tags
 # install the menu files
 	$(INSTALL_DATA) $(SCRIPTSOURCE)/menu.vim $(SYS_MENU_FILE)
 	chmod $(VIMSCRIPTMOD) $(SYS_MENU_FILE)
