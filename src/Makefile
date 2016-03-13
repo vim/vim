@@ -424,7 +424,7 @@ CClink = $(CC)
 # NOTE: This may cause threading to be enabled, which has side effects (such
 # as using different libraries and debugging becomes more difficult).
 # NOTE: Using this together with Perl may cause a crash in initialization.
-# For Python3 support make a symbolic link in /usr/local/bin: 
+# For Python3 support make a symbolic link in /usr/local/bin:
 #	ln -s python3 python3.1
 # If both python2.x and python3.x are enabled then the linking will be via
 # dlopen(), dlsym(), dlclose(), i.e. pythonX.Y.so must be available
@@ -1997,30 +1997,38 @@ test1 \
 # Run individual NEW style test, assuming that Vim was already compiled.
 test_arglist \
 	test_assert \
+	test_assign \
 	test_backspace_opt \
 	test_cdo \
 	test_channel \
 	test_cursor_func \
 	test_delete \
 	test_expand \
+	test_feedkeys \
+	test_file_perm \
 	test_glob2regpat \
 	test_hardcopy \
+	test_history \
 	test_increment \
+	test_join \
 	test_json \
 	test_langmap \
 	test_lispwords \
 	test_menu \
+	test_packadd \
 	test_perl \
 	test_quickfix \
 	test_reltime \
 	test_searchpos \
 	test_set \
 	test_sort \
+	test_syn_attr \
 	test_syntax \
 	test_undolevels \
 	test_unlet \
 	test_viminfo \
 	test_viml \
+	test_visual \
 	test_alot:
 	cd testdir; rm -f $@.res test.log messages; $(MAKE) -f Makefile $@.res VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 	@if test -f testdir/test.log; then \
