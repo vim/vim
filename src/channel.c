@@ -1025,8 +1025,9 @@ find_buffer(char_u *name, int err)
     void
 channel_set_options(channel_T *channel, jobopt_T *opt)
 {
-    int    part;
-    char_u **cbp;
+    int		part;
+    char_u	**cbp;
+    partial_T	**pp;
 
     if (opt->jo_set & JO_MODE)
 	for (part = PART_SOCK; part <= PART_IN; ++part)
@@ -1049,38 +1050,58 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
     if (opt->jo_set & JO_CALLBACK)
     {
 	cbp = &channel->ch_callback;
+	pp = &channel->ch_partial;
 	vim_free(*cbp);
+	partial_unref(*pp);
 	if (opt->jo_callback != NULL && *opt->jo_callback != NUL)
 	    *cbp = vim_strsave(opt->jo_callback);
 	else
 	    *cbp = NULL;
+	*pp = opt->jo_partial;
+	if (*pp != NULL)
+	    ++(*pp)->pt_refcount;
     }
     if (opt->jo_set & JO_OUT_CALLBACK)
     {
 	cbp = &channel->ch_part[PART_OUT].ch_callback;
+	pp = &channel->ch_part[PART_OUT].ch_partial;
 	vim_free(*cbp);
+	partial_unref(*pp);
 	if (opt->jo_out_cb != NULL && *opt->jo_out_cb != NUL)
 	    *cbp = vim_strsave(opt->jo_out_cb);
 	else
 	    *cbp = NULL;
+	*pp = opt->jo_out_partial;
+	if (*pp != NULL)
+	    ++(*pp)->pt_refcount;
     }
     if (opt->jo_set & JO_ERR_CALLBACK)
     {
 	cbp = &channel->ch_part[PART_ERR].ch_callback;
+	pp = &channel->ch_part[PART_ERR].ch_partial;
 	vim_free(*cbp);
+	partial_unref(*pp);
 	if (opt->jo_err_cb != NULL && *opt->jo_err_cb != NUL)
 	    *cbp = vim_strsave(opt->jo_err_cb);
 	else
 	    *cbp = NULL;
+	*pp = opt->jo_err_partial;
+	if (*pp != NULL)
+	    ++(*pp)->pt_refcount;
     }
     if (opt->jo_set & JO_CLOSE_CALLBACK)
     {
 	cbp = &channel->ch_close_cb;
+	pp = &channel->ch_close_partial;
 	vim_free(*cbp);
+	partial_unref(*pp);
 	if (opt->jo_close_cb != NULL && *opt->jo_close_cb != NUL)
 	    *cbp = vim_strsave(opt->jo_close_cb);
 	else
 	    *cbp = NULL;
+	*pp = opt->jo_err_partial;
+	if (*pp != NULL)
+	    ++(*pp)->pt_refcount;
     }
 
     if ((opt->jo_set & JO_OUT_IO) && opt->jo_io[PART_OUT] == JIO_BUFFER)
@@ -1124,10 +1145,11 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
  */
     void
 channel_set_req_callback(
-	channel_T *channel,
-	int part,
-	char_u *callback,
-	int id)
+	channel_T   *channel,
+	int	    part,
+	char_u	    *callback,
+	partial_T   *partial,
+	int	    id)
 {
     cbq_T *head = &channel->ch_part[part].ch_cb_head;
     cbq_T *item = (cbq_T *)alloc((int)sizeof(cbq_T));
@@ -1135,6 +1157,9 @@ channel_set_req_callback(
     if (item != NULL)
     {
 	item->cq_callback = vim_strsave(callback);
+	item->cq_partial = partial;
+	if (partial != NULL)
+	    ++partial->pt_refcount;
 	item->cq_seq_nr = id;
 	item->cq_prev = head->cq_prev;
 	head->cq_prev = item;
@@ -1247,7 +1272,8 @@ channel_write_new_lines(buf_T *buf)
  * Invoke the "callback" on channel "channel".
  */
     static void
-invoke_callback(channel_T *channel, char_u *callback, typval_T *argv)
+invoke_callback(channel_T *channel, char_u *callback, partial_T *partial,
+							       typval_T *argv)
 {
     typval_T	rettv;
     int		dummy;
@@ -1256,7 +1282,7 @@ invoke_callback(channel_T *channel, char_u *callback, typval_T *argv)
     argv[0].vval.v_channel = channel;
 
     call_func(callback, (int)STRLEN(callback),
-			     &rettv, 2, argv, 0L, 0L, &dummy, TRUE, NULL);
+			&rettv, 2, argv, 0L, 0L, &dummy, TRUE, partial, NULL);
     clear_tv(&rettv);
 
     /* If an echo command was used the cursor needs to be put back where
@@ -1629,7 +1655,7 @@ channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
 	    ++emsg_skip;
 	    if (!is_call)
 		tv = eval_expr(arg, NULL);
-	    else if (func_call(arg, &argv[2], NULL, &res_tv) == OK)
+	    else if (func_call(arg, &argv[2], NULL, NULL, &res_tv) == OK)
 		tv = &res_tv;
 	    else
 		tv = NULL;
@@ -1685,8 +1711,9 @@ invoke_one_time_callback(
     /* Remove the item from the list first, if the callback
      * invokes ch_close() the list will be cleared. */
     remove_cb_node(cbhead, item);
-    invoke_callback(channel, item->cq_callback, argv);
+    invoke_callback(channel, item->cq_callback, item->cq_partial, argv);
     vim_free(item->cq_callback);
+    partial_unref(item->cq_partial);
     vim_free(item);
 }
 
@@ -1775,6 +1802,7 @@ may_invoke_callback(channel_T *channel, int part)
     cbq_T	*cbhead = &channel->ch_part[part].ch_cb_head;
     cbq_T	*cbitem;
     char_u	*callback = NULL;
+    partial_T	*partial = NULL;
     buf_T	*buffer = NULL;
 
     if (channel->ch_nb_close_cb != NULL)
@@ -1786,11 +1814,20 @@ may_invoke_callback(channel_T *channel, int part)
 	if (cbitem->cq_seq_nr == 0)
 	    break;
     if (cbitem != NULL)
+    {
 	callback = cbitem->cq_callback;
+	partial = cbitem->cq_partial;
+    }
     else if (channel->ch_part[part].ch_callback != NULL)
+    {
 	callback = channel->ch_part[part].ch_callback;
+	partial = channel->ch_part[part].ch_partial;
+    }
     else
+    {
 	callback = channel->ch_callback;
+	partial = channel->ch_partial;
+    }
 
     buffer = channel->ch_part[part].ch_buffer;
     if (buffer != NULL && !buf_valid(buffer))
@@ -1936,7 +1973,7 @@ may_invoke_callback(channel_T *channel, int part)
 		/* invoke the channel callback */
 		ch_logs(channel, "Invoking channel callback %s",
 							    (char *)callback);
-		invoke_callback(channel, callback, argv);
+		invoke_callback(channel, callback, partial, argv);
 	    }
 	}
     }
@@ -2024,13 +2061,16 @@ channel_close(channel_T *channel, int invoke_close_cb)
 	  argv[0].vval.v_channel = channel;
 	  ++channel->ch_refcount;
 	  call_func(channel->ch_close_cb, (int)STRLEN(channel->ch_close_cb),
-				 &rettv, 1, argv, 0L, 0L, &dummy, TRUE, NULL);
+			   &rettv, 1, argv, 0L, 0L, &dummy, TRUE,
+			   channel->ch_close_partial, NULL);
 	  clear_tv(&rettv);
 	  --channel->ch_refcount;
 
 	  /* the callback is only called once */
 	  vim_free(channel->ch_close_cb);
 	  channel->ch_close_cb = NULL;
+	  partial_unref(channel->ch_close_partial);
+	  channel->ch_close_partial = NULL;
     }
 
     channel->ch_nb_close_cb = NULL;
@@ -2068,6 +2108,7 @@ channel_clear_one(channel_T *channel, int part)
 
 	remove_cb_node(cb_head, node);
 	vim_free(node->cq_callback);
+	partial_unref(node->cq_partial);
 	vim_free(node);
     }
 
@@ -2079,6 +2120,8 @@ channel_clear_one(channel_T *channel, int part)
 
     vim_free(channel->ch_part[part].ch_callback);
     channel->ch_part[part].ch_callback = NULL;
+    partial_unref(channel->ch_part[part].ch_partial);
+    channel->ch_part[part].ch_partial = NULL;
 }
 
 /*
@@ -2093,8 +2136,12 @@ channel_clear(channel_T *channel)
     channel_clear_one(channel, PART_ERR);
     vim_free(channel->ch_callback);
     channel->ch_callback = NULL;
+    partial_unref(channel->ch_partial);
+    channel->ch_partial = NULL;
     vim_free(channel->ch_close_cb);
     channel->ch_close_cb = NULL;
+    partial_unref(channel->ch_close_partial);
+    channel->ch_close_partial = NULL;
 }
 
 #if defined(EXITFREE) || defined(PROTO)
@@ -2592,7 +2639,8 @@ send_common(
 	    EMSG2(_("E917: Cannot use a callback with %s()"), fun);
 	    return NULL;
 	}
-	channel_set_req_callback(channel, part_send, opt->jo_callback, id);
+	channel_set_req_callback(channel, part_send,
+				       opt->jo_callback, opt->jo_partial, id);
     }
 
     if (channel_send(channel, part_send, text, fun) == OK
@@ -2982,13 +3030,19 @@ channel_get_timeout(channel_T *channel, int part)
  * Return NULL for an invalid argument.
  */
     static char_u *
-get_callback(typval_T *arg)
+get_callback(typval_T *arg, partial_T **pp)
 {
+    if (arg->v_type == VAR_PARTIAL && arg->vval.v_partial != NULL)
+    {
+	*pp = arg->vval.v_partial;
+	return (*pp)->pt_name;
+    }
+    *pp = NULL;
     if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
 	return arg->vval.v_string;
     if (arg->v_type == VAR_NUMBER && arg->vval.v_number == 0)
 	return (char_u *)"";
-    EMSG(_("E999: Invalid callback argument"));
+    EMSG(_("E921: Invalid callback argument"));
     return NULL;
 }
 
@@ -3201,7 +3255,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		if (!(supported & JO_CALLBACK))
 		    break;
 		opt->jo_set |= JO_CALLBACK;
-		opt->jo_callback = get_callback(item);
+		opt->jo_callback = get_callback(item, &opt->jo_partial);
 		if (opt->jo_callback == NULL)
 		{
 		    EMSG2(_(e_invarg2), "callback");
@@ -3213,7 +3267,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		if (!(supported & JO_OUT_CALLBACK))
 		    break;
 		opt->jo_set |= JO_OUT_CALLBACK;
-		opt->jo_out_cb = get_callback(item);
+		opt->jo_out_cb = get_callback(item, &opt->jo_out_partial);
 		if (opt->jo_out_cb == NULL)
 		{
 		    EMSG2(_(e_invarg2), "out-cb");
@@ -3225,7 +3279,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		if (!(supported & JO_ERR_CALLBACK))
 		    break;
 		opt->jo_set |= JO_ERR_CALLBACK;
-		opt->jo_err_cb = get_callback(item);
+		opt->jo_err_cb = get_callback(item, &opt->jo_err_partial);
 		if (opt->jo_err_cb == NULL)
 		{
 		    EMSG2(_(e_invarg2), "err-cb");
@@ -3237,7 +3291,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		if (!(supported & JO_CLOSE_CALLBACK))
 		    break;
 		opt->jo_set |= JO_CLOSE_CALLBACK;
-		opt->jo_close_cb = get_callback(item);
+		opt->jo_close_cb = get_callback(item, &opt->jo_close_partial);
 		if (opt->jo_close_cb == NULL)
 		{
 		    EMSG2(_(e_invarg2), "close-cb");
@@ -3311,7 +3365,14 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		if (!(supported & JO_EXIT_CB))
 		    break;
 		opt->jo_set |= JO_EXIT_CB;
-		opt->jo_exit_cb = get_tv_string_buf_chk(item, opt->jo_ecb_buf);
+		if (item->v_type == VAR_PARTIAL && item->vval.v_partial != NULL)
+		{
+		    opt->jo_exit_partial = item->vval.v_partial;
+		    opt->jo_exit_cb = item->vval.v_partial->pt_name;
+		}
+		else
+		    opt->jo_exit_cb = get_tv_string_buf_chk(
+						       item, opt->jo_ecb_buf);
 		if (opt->jo_exit_cb == NULL)
 		{
 		    EMSG2(_(e_invarg2), "exit-cb");
@@ -3390,6 +3451,7 @@ job_free(job_T *job)
 
     vim_free(job->jv_stoponexit);
     vim_free(job->jv_exit_cb);
+    partial_unref(job->jv_exit_partial);
     vim_free(job);
 }
 
@@ -3454,10 +3516,19 @@ job_set_options(job_T *job, jobopt_T *opt)
     if (opt->jo_set & JO_EXIT_CB)
     {
 	vim_free(job->jv_exit_cb);
+	partial_unref(job->jv_exit_partial);
 	if (opt->jo_exit_cb == NULL || *opt->jo_exit_cb == NUL)
+	{
 	    job->jv_exit_cb = NULL;
+	    job->jv_exit_partial = NULL;
+	}
 	else
+	{
 	    job->jv_exit_cb = vim_strsave(opt->jo_exit_cb);
+	    job->jv_exit_partial = opt->jo_exit_partial;
+	    if (job->jv_exit_partial != NULL)
+		++job->jv_exit_partial->pt_refcount;
+	}
     }
 }
 
@@ -3721,7 +3792,8 @@ job_status(job_T *job)
 	    argv[1].v_type = VAR_NUMBER;
 	    argv[1].vval.v_number = job->jv_exitval;
 	    call_func(job->jv_exit_cb, (int)STRLEN(job->jv_exit_cb),
-				 &rettv, 2, argv, 0L, 0L, &dummy, TRUE, NULL);
+			   &rettv, 2, argv, 0L, 0L, &dummy, TRUE,
+			   job->jv_exit_partial, NULL);
 	    clear_tv(&rettv);
 	    --job->jv_refcount;
 	}

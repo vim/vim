@@ -1561,6 +1561,7 @@ do_pyeval (char_u *str, typval_T *rettv)
 	case VAR_DICT: ++rettv->vval.v_dict->dv_refcount; break;
 	case VAR_LIST: ++rettv->vval.v_list->lv_refcount; break;
 	case VAR_FUNC: func_ref(rettv->vval.v_string);    break;
+	case VAR_PARTIAL: ++rettv->vval.v_partial->pt_refcount; break;
 	case VAR_UNKNOWN:
 	    rettv->v_type = VAR_NUMBER;
 	    rettv->vval.v_number = 0;

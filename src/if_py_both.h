@@ -2944,7 +2944,7 @@ FunctionCall(FunctionObject *self, PyObject *argsObject, PyObject *kwargs)
     Python_Lock_Vim();
 
     VimTryStart();
-    error = func_call(name, &args, selfdict, &rettv);
+    error = func_call(name, &args, NULL, selfdict, &rettv);
 
     Python_Release_Vim();
     Py_END_ALLOW_THREADS

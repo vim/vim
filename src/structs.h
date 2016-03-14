@@ -1110,6 +1110,7 @@ typedef double	float_T;
 
 typedef struct listvar_S list_T;
 typedef struct dictvar_S dict_T;
+typedef struct partial_S partial_T;
 
 typedef struct jobvar_S job_T;
 typedef struct readq_S readq_T;
@@ -1123,6 +1124,7 @@ typedef enum
     VAR_NUMBER,	 /* "v_number" is used */
     VAR_STRING,	 /* "v_string" is used */
     VAR_FUNC,	 /* "v_string" is function name */
+    VAR_PARTIAL, /* "v_partial" is used */
     VAR_LIST,	 /* "v_list" is used */
     VAR_DICT,	 /* "v_dict" is used */
     VAR_FLOAT,	 /* "v_float" is used */
@@ -1147,6 +1149,7 @@ typedef struct
 	char_u		*v_string;	/* string value (can be NULL!) */
 	list_T		*v_list;	/* list value (can be NULL!) */
 	dict_T		*v_dict;	/* dict value (can be NULL!) */
+	partial_T	*v_partial;	/* closure: function with args */
 #ifdef FEAT_JOB_CHANNEL
 	job_T		*v_job;		/* job value (can be NULL!) */
 	channel_T	*v_channel;	/* channel value (can be NULL!) */
@@ -1239,6 +1242,15 @@ struct dictvar_S
     dict_T	*dv_used_prev;	/* previous dict in used dicts list */
 };
 
+struct partial_S
+{
+    int		pt_refcount;	/* reference count */
+    char_u	*pt_name;	/* function name */
+    int		pt_argc;	/* number of arguments */
+    typval_T	*pt_argv;	/* arguments in allocated array */
+    dict_T	*pt_dict;	/* dict for "self" */
+};
+
 typedef enum
 {
     JOB_FAILED,
@@ -1264,6 +1276,7 @@ struct jobvar_S
     char_u	*jv_stoponexit; /* allocated */
     int		jv_exitval;
     char_u	*jv_exit_cb;	/* allocated */
+    partial_T	*jv_exit_partial;
 
     buf_T	*jv_in_buf;	/* buffer from "in-name" */
 
@@ -1291,6 +1304,7 @@ struct jsonq_S
 struct cbq_S
 {
     char_u	*cq_callback;
+    partial_T	*cq_partial;
     int		cq_seq_nr;
     cbq_T	*cq_next;
     cbq_T	*cq_prev;
@@ -1346,6 +1360,7 @@ typedef struct {
 
     cbq_T	ch_cb_head;	/* dummy node for per-request callbacks */
     char_u	*ch_callback;	/* call when a msg is not handled */
+    partial_T	*ch_partial;
 
     buf_T	*ch_buffer;	/* buffer to read from or write to */
     linenr_T	ch_buf_top;	/* next line to send */
@@ -1371,7 +1386,9 @@ struct channel_S {
 				 * closed */
 
     char_u	*ch_callback;	/* call when any msg is not handled */
+    partial_T	*ch_partial;
     char_u	*ch_close_cb;	/* call when channel is closed */
+    partial_T	*ch_close_partial;
 
     job_T	*ch_job;	/* Job that uses this channel; this does not
 				 * count as a reference to avoid a circular
@@ -1447,9 +1464,15 @@ typedef struct
     linenr_T	jo_in_bot;
 
     char_u	*jo_callback;	/* not allocated! */
+    partial_T	*jo_partial;	/* not referenced! */
     char_u	*jo_out_cb;	/* not allocated! */
+    partial_T	*jo_out_partial; /* not referenced! */
     char_u	*jo_err_cb;	/* not allocated! */
+    partial_T	*jo_err_partial; /* not referenced! */
     char_u	*jo_close_cb;	/* not allocated! */
+    partial_T	*jo_close_partial; /* not referenced! */
+    char_u	*jo_exit_cb;	/* not allocated! */
+    partial_T	*jo_exit_partial; /* not referenced! */
     int		jo_waittime;
     int		jo_timeout;
     int		jo_out_timeout;
@@ -1459,7 +1482,6 @@ typedef struct
     char_u	jo_soe_buf[NUMBUFLEN];
     char_u	*jo_stoponexit;
     char_u	jo_ecb_buf[NUMBUFLEN];
-    char_u	*jo_exit_cb;
 } jobopt_T;
 
 
