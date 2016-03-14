@@ -12,7 +12,7 @@ channel_T *channel_open_func(typval_T *argvars);
 void channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err);
 void channel_set_job(channel_T *channel, job_T *job, jobopt_T *options);
 void channel_set_options(channel_T *channel, jobopt_T *opt);
-void channel_set_req_callback(channel_T *channel, int part, char_u *callback, int id);
+void channel_set_req_callback(channel_T *channel, int part, char_u *callback, partial_T *partial, int id);
 void channel_write_in(channel_T *channel);
 void channel_write_new_lines(buf_T *buf);
 char_u *channel_get(channel_T *channel, int part);
