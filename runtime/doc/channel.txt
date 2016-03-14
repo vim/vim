@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Mar 12
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Mar 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -127,10 +127,10 @@ Use |ch_status()| to see if the channel could be opened.
 	"js"   - Use JS (JavaScript) encoding, more efficient than JSON.
 	"nl"   - Use messages that end in a NL character
 	"raw"  - Use raw messages
-
-"in-mode"	mode specifically for stdin, only when using pipes
-"out-mode"	mode specifically for stdout, only when using pipes
-"err-mode"	mode specifically for stderr, only when using pipes
+						*in_mode* *out_mode* *err_mode*
+"in_mode"	mode specifically for stdin, only when using pipes
+"out_mode"	mode specifically for stdout, only when using pipes
+"err_mode"	mode specifically for stderr, only when using pipes
 		Note: when setting "mode" the part specific mode is
 		overwritten.  Therefore set "mode" first and the part specific
 		mode later.
@@ -138,7 +138,7 @@ Use |ch_status()| to see if the channel could be opened.
 		Note: when writing to a file or buffer and when reading from a
 		buffer NL mode is used by default.
 
-							*channel-callback*
+						*channel-callback* *E921*
 "callback"	A function that is called when a message is received that is
 		not handled otherwise.  It gets two arguments: the channel
 		and the received message. Example: >
@@ -153,17 +153,17 @@ Use |ch_status()| to see if the channel could be opened.
 		excluding the NL.
 		When "mode" is "raw" the "msg" argument is the whole message
 		as a string.
-							*out-cb*
-"out-cb"	A function like "callback" but used for stdout.  Only for when
-		the channel uses pipes.  When "out-cb" wasn't set the channel
+							*out_cb*
+"out_cb"	A function like "callback" but used for stdout.  Only for when
+		the channel uses pipes.  When "out_cb" wasn't set the channel
 		callback is used.
-							*err-cb*
-"err-cb"	A function like "callback" but used for stderr.  Only for when
-		the channel uses pipes.  When "err-cb" wasn't set the channel
+							*err_cb*
+"err_cb"	A function like "callback" but used for stderr.  Only for when
+		the channel uses pipes.  When "err_cb" wasn't set the channel
 		callback is used.
 
-							*close-cb*
-"close-cb"	A function that is called when the channel gets closed, other
+							*close_cb*
+"close_cb"	A function that is called when the channel gets closed, other
 		than by calling ch_close().  It should be defined like this: >
 	func MyCloseHandler(channel)
 <							*waittime*
@@ -179,9 +179,9 @@ Use |ch_status()| to see if the channel could be opened.
 "timeout"	The time to wait for a request when blocking, E.g. when using
 		ch_evalexpr().  In milliseconds.  The default is 2000 (2
 		seconds).
-						*out-timeout* *err-timeout*
-"out-timeout"	Timeout for stdout.  Only when using pipes.
-"err-timeout"	Timeout for stderr.  Only when using pipes.
+						*out_timeout* *err_timeout*
+"out_timeout"	Timeout for stdout.  Only when using pipes.
+"err_timeout"	Timeout for stderr.  Only when using pipes.
 		Note: when setting "timeout" the part specific mode is
 		overwritten.  Therefore set "timeout" first and the part
 		specific mode later.
@@ -440,7 +440,7 @@ been received and not parsed correctly.
 
 If the command produces a line of output that you want to deal with, specify
 a handler for stdout: >
-    let job = job_start(command, {"out-cb": "MyHandler"})
+    let job = job_start(command, {"out_cb": "MyHandler"})
 The function will be called with the channel and a message. You would define
 it like this: >
     func MyHandler(channel, msg)
@@ -448,10 +448,10 @@ it like this: >
 Without the handler you need to read the output with |ch_read()| or
 |ch_readraw()|.
 
-The handler defined for "out-cb" will not receive stderr.  If you want to
-handle that separately, add an "err-cb" handler: >
-    let job = job_start(command, {"out-cb": "MyHandler",
-	    \			  "err-cb": "ErrHandler"})
+The handler defined for "out_cb" will not receive stderr.  If you want to
+handle that separately, add an "err_cb" handler: >
+    let job = job_start(command, {"out_cb": "MyHandler",
+	    \			  "err_cb": "ErrHandler"})
 
 If you want to handle both stderr and stdout with one handler use the
 "callback" option: >
@@ -463,7 +463,7 @@ JSON or JS mode you can use ch_evalexpr().
 There are several options you can use, see |job-options|.
 For example, to start a job and write its output in buffer "dummy": >
 	let logjob = job_start("tail -f /tmp/log",
-			     \ {'out-io': 'buffer', 'out-name': 'dummy'})
+			     \ {'out_io': 'buffer', 'out_name': 'dummy'})
 	sbuf dummy
 
 
@@ -471,16 +471,16 @@ Job input from a buffer ~
 
 To run a job that reads from a buffer: >
 	let job = job_start({command},
-	    \ {'in-io': 'buffer', 'in-name': 'mybuffer'})
+	    \ {'in_io': 'buffer', 'in_name': 'mybuffer'})
 <
 							*E915* *E918*
 The buffer is found by name, similar to |bufnr()|. The buffer must exist and
 be loaded when job_start() is called.
 
-By default this reads the whole buffer.  This can be changed with the "in-top"
-and "in-bot" options.
+By default this reads the whole buffer.  This can be changed with the "in_top"
+and "in_bot" options.
 
-A special mode is when "in-top" is set to zero and "in-bot" is not set: Every
+A special mode is when "in_top" is set to zero and "in_bot" is not set: Every
 time a line is added to the buffer, the last-but-one line will be send to the
 job stdin.  This allows for editing the last line and sending it when pressing
 Enter.
@@ -490,7 +490,7 @@ Enter.
 
 To start another process without creating a channel: >
     let job = job_start(command,
-    	\ {"in-io": "null", "out-io": "null", "err-io": "null"})
+    	\ {"in_io": "null", "out_io": "null", "err_io": "null"})
 
 This starts {command} in the background, Vim does not wait for it to finish.
 
@@ -524,17 +524,17 @@ See |job_setoptions()| and |ch_setoptions()|.
 						*job-callback*
 "callback": handler	Callback for something to read on any part of the
 			channel.
-						*job-out-cb*
-"out-cb": handler	Callback for when there is something to read on
+						*job-out_cb*
+"out_cb": handler	Callback for when there is something to read on
 			stdout.
-						*job-err-cb*
-"err-cb": handler	Callback for when there is something to read on
+						*job-err_cb*
+"err_cb": handler	Callback for when there is something to read on
 			stderr.
-						*job-close-cb*
-"close-cb": handler	Callback for when the channel is closed.  Same as
-			"close-cb" on ch_open().
-						*job-exit-cb*
-"exit-cb": handler	Callback for when the job ends.  The arguments are the
+						*job-close_cb*
+"close_cb": handler	Callback for when the channel is closed.  Same as
+			"close_cb" on ch_open().
+						*job-exit_cb*
+"exit_cb": handler	Callback for when the job ends.  The arguments are the
 			job and the exit status.
 			Vim checks about every 10 seconds for jobs that ended.
 			The callback can also be triggered by calling
@@ -557,37 +557,37 @@ See |job_setoptions()| and |ch_setoptions()|.
 			cause I/O errors.
 			Existing callbacks and other settings remain.
 
-				*job-in-io* *in-top* *in-bot* *in-name* *in-buf*
-"in-io": "null"		disconnect stdin (read from /dev/null)
-"in-io": "pipe"		stdin is connected to the channel (default)
-"in-io": "file"		stdin reads from a file
-"in-io": "buffer"	stdin reads from a buffer
-"in-top": number	when using "buffer": first line to send (default: 1)
-"in-bot": number	when using "buffer": last line to send (default: last)
-"in-name": "/path/file"	the name of the file or buffer to read from
-"in-buf": number	the number of the buffer to read from
+				*job-in_io* *in_top* *in_bot* *in_name* *in_buf*
+"in_io": "null"		disconnect stdin (read from /dev/null)
+"in_io": "pipe"		stdin is connected to the channel (default)
+"in_io": "file"		stdin reads from a file
+"in_io": "buffer"	stdin reads from a buffer
+"in_top": number	when using "buffer": first line to send (default: 1)
+"in_bot": number	when using "buffer": last line to send (default: last)
+"in_name": "/path/file"	the name of the file or buffer to read from
+"in_buf": number	the number of the buffer to read from
 
-				*job-out-io* *out-name* *out-buf*
-"out-io": "null"	disconnect stdout (goes to /dev/null)
-"out-io": "pipe"	stdout is connected to the channel (default)
-"out-io": "file"	stdout writes to a file
-"out-io": "buffer" 	stdout appends to a buffer
-"out-name": "/path/file" the name of the file or buffer to write to
-"out-buf": number	the number of the buffer to write to
+				*job-out_io* *out_name* *out_buf*
+"out_io": "null"	disconnect stdout (goes to /dev/null)
+"out_io": "pipe"	stdout is connected to the channel (default)
+"out_io": "file"	stdout writes to a file
+"out_io": "buffer" 	stdout appends to a buffer
+"out_name": "/path/file" the name of the file or buffer to write to
+"out_buf": number	the number of the buffer to write to
 
-				*job-err-io* *err-name* *err-buf*
-"err-io": "out"		stderr messages to go to stdout
-"err-io": "null"	disconnect stderr  (goes to /dev/null)
-"err-io": "pipe"	stderr is connected to the channel (default)
-"err-io": "file"	stderr writes to a file
-"err-io": "buffer" 	stderr appends to a buffer
-"err-name": "/path/file" the name of the file or buffer to write to
-"err-buf": number	the number of the buffer to write to
+				*job-err_io* *err_name* *err_buf*
+"err_io": "out"		stderr messages to go to stdout
+"err_io": "null"	disconnect stderr  (goes to /dev/null)
+"err_io": "pipe"	stderr is connected to the channel (default)
+"err_io": "file"	stderr writes to a file
+"err_io": "buffer" 	stderr appends to a buffer
+"err_name": "/path/file" the name of the file or buffer to write to
+"err_buf": number	the number of the buffer to write to
 
 
 Writing to a buffer ~
 
-When the out-io or err-io mode is "buffer" and there is a callback, the text
+When the out_io or err_io mode is "buffer" and there is a callback, the text
 is appended to the buffer before invoking the callback.
 
 When a buffer is used both for input and output, the output lines are put
@@ -614,7 +614,7 @@ Undo is synced for every added line.
 
 
 Writing to a file ~
-
+							*E920*
 The file is created with permissions 600 (read-write for the user, not
 accessible for others).  Use |setfperm()| to change this.
 

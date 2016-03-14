@@ -1414,18 +1414,18 @@ struct channel_S {
 #define JO_PART		    0x1000	/* "part" */
 #define JO_ID		    0x2000	/* "id" */
 #define JO_STOPONEXIT	    0x4000	/* "stoponexit" */
-#define JO_EXIT_CB	    0x8000	/* "exit-cb" */
-#define JO_OUT_IO	    0x10000	/* "out-io" */
-#define JO_ERR_IO	    0x20000	/* "err-io" (JO_OUT_IO << 1) */
-#define JO_IN_IO	    0x40000	/* "in-io" (JO_OUT_IO << 2) */
-#define JO_OUT_NAME	    0x80000	/* "out-name" */
-#define JO_ERR_NAME	    0x100000	/* "err-name" (JO_OUT_NAME << 1) */
-#define JO_IN_NAME	    0x200000	/* "in-name" (JO_OUT_NAME << 2) */
-#define JO_IN_TOP	    0x400000	/* "in-top" */
-#define JO_IN_BOT	    0x800000	/* "in-bot" */
-#define JO_OUT_BUF	    0x1000000	/* "out-buf" */
-#define JO_ERR_BUF	    0x2000000	/* "err-buf" (JO_OUT_BUF << 1) */
-#define JO_IN_BUF	    0x4000000	/* "in-buf" (JO_OUT_BUF << 2) */
+#define JO_EXIT_CB	    0x8000	/* "exit_cb" */
+#define JO_OUT_IO	    0x10000	/* "out_io" */
+#define JO_ERR_IO	    0x20000	/* "err_io" (JO_OUT_IO << 1) */
+#define JO_IN_IO	    0x40000	/* "in_io" (JO_OUT_IO << 2) */
+#define JO_OUT_NAME	    0x80000	/* "out_name" */
+#define JO_ERR_NAME	    0x100000	/* "err_name" (JO_OUT_NAME << 1) */
+#define JO_IN_NAME	    0x200000	/* "in_name" (JO_OUT_NAME << 2) */
+#define JO_IN_TOP	    0x400000	/* "in_top" */
+#define JO_IN_BOT	    0x800000	/* "in_bot" */
+#define JO_OUT_BUF	    0x1000000	/* "out_buf" */
+#define JO_ERR_BUF	    0x2000000	/* "err_buf" (JO_OUT_BUF << 1) */
+#define JO_IN_BUF	    0x4000000	/* "in_buf" (JO_OUT_BUF << 2) */
 #define JO_CHANNEL	    0x8000000	/* "channel" */
 #define JO_ALL		    0xfffffff
 

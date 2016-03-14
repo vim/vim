@@ -519,7 +519,7 @@ func Test_nl_err_to_out_pipe()
   endif
   call ch_logfile('Xlog')
   call ch_log('Test_nl_err_to_out_pipe()')
-  let job = job_start(s:python . " test_channel_pipe.py", {'err-io': 'out'})
+  let job = job_start(s:python . " test_channel_pipe.py", {'err_io': 'out'})
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
@@ -566,7 +566,7 @@ func Test_nl_read_file()
   call ch_log('Test_nl_read_file()')
   call writefile(['echo something', 'echoerr wrong', 'double this'], 'Xinput')
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'in-io': 'file', 'in-name': 'Xinput'})
+	\ {'in_io': 'file', 'in_name': 'Xinput'})
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
@@ -586,7 +586,7 @@ func Test_nl_write_out_file()
   endif
   call ch_log('Test_nl_write_out_file()')
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'out-io': 'file', 'out-name': 'Xoutput'})
+	\ {'out_io': 'file', 'out_name': 'Xoutput'})
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
@@ -607,7 +607,7 @@ func Test_nl_write_err_file()
   endif
   call ch_log('Test_nl_write_err_file()')
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'err-io': 'file', 'err-name': 'Xoutput'})
+	\ {'err_io': 'file', 'err_name': 'Xoutput'})
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
@@ -628,7 +628,7 @@ func Test_nl_write_both_file()
   endif
   call ch_log('Test_nl_write_both_file()')
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'out-io': 'file', 'out-name': 'Xoutput', 'err-io': 'out'})
+	\ {'out_io': 'file', 'out_name': 'Xoutput', 'err_io': 'out'})
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
@@ -649,13 +649,13 @@ func Run_test_pipe_to_buffer(use_name)
     return
   endif
   call ch_log('Test_pipe_to_buffer()')
-  let options = {'out-io': 'buffer'}
+  let options = {'out_io': 'buffer'}
   if a:use_name
-    let options['out-name'] = 'pipe-output'
+    let options['out_name'] = 'pipe-output'
     let firstline = 'Reading from channel output...'
   else
     sp pipe-output
-    let options['out-buf'] = bufnr('%')
+    let options['out_buf'] = bufnr('%')
     quit
     let firstline = ''
   endif
@@ -689,13 +689,13 @@ func Run_test_pipe_err_to_buffer(use_name)
     return
   endif
   call ch_log('Test_pipe_err_to_buffer()')
-  let options = {'err-io': 'buffer'}
+  let options = {'err_io': 'buffer'}
   if a:use_name
-    let options['err-name'] = 'pipe-err'
+    let options['err_name'] = 'pipe-err'
     let firstline = 'Reading from channel error...'
   else
     sp pipe-err
-    let options['err-buf'] = bufnr('%')
+    let options['err_buf'] = bufnr('%')
     quit
     let firstline = ''
   endif
@@ -730,7 +730,7 @@ func Test_pipe_both_to_buffer()
   endif
   call ch_log('Test_pipe_both_to_buffer()')
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'out-io': 'buffer', 'out-name': 'pipe-err', 'err-io': 'out'})
+	\ {'out_io': 'buffer', 'out_name': 'pipe-err', 'err_io': 'out'})
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
@@ -756,11 +756,11 @@ func Run_test_pipe_from_buffer(use_name)
 
   sp pipe-input
   call setline(1, ['echo one', 'echo two', 'echo three'])
-  let options = {'in-io': 'buffer'}
+  let options = {'in_io': 'buffer'}
   if a:use_name
-    let options['in-name'] = 'pipe-input'
+    let options['in_name'] = 'pipe-input'
   else
-    let options['in-buf'] = bufnr('%')
+    let options['in_buf'] = bufnr('%')
   endif
 
   let job = job_start(s:python . " test_channel_pipe.py", options)
@@ -790,7 +790,7 @@ func Test_pipe_to_nameless_buffer()
   endif
   call ch_log('Test_pipe_to_nameless_buffer()')
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'out-io': 'buffer'})
+	\ {'out_io': 'buffer'})
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
@@ -811,7 +811,7 @@ func Test_pipe_to_buffer_json()
   endif
   call ch_log('Test_pipe_to_buffer_json()')
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'out-io': 'buffer', 'out-mode': 'json'})
+	\ {'out_io': 'buffer', 'out_mode': 'json'})
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
@@ -849,8 +849,8 @@ func Test_pipe_io_two_buffers()
   set buftype=nofile
 
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'in-io': 'buffer', 'in-name': 'pipe-input', 'in-top': 0,
-	\  'out-io': 'buffer', 'out-name': 'pipe-output'})
+	\ {'in_io': 'buffer', 'in_name': 'pipe-input', 'in_top': 0,
+	\  'out_io': 'buffer', 'out_name': 'pipe-output'})
   call assert_equal("run", job_status(job))
   try
     exe "normal Gaecho hello\<CR>"
@@ -884,8 +884,8 @@ func Test_pipe_io_one_buffer()
   set buftype=nofile
 
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'in-io': 'buffer', 'in-name': 'pipe-io', 'in-top': 0,
-	\  'out-io': 'buffer', 'out-name': 'pipe-io'})
+	\ {'in_io': 'buffer', 'in_name': 'pipe-io', 'in_top': 0,
+	\  'out_io': 'buffer', 'out_name': 'pipe-io'})
   call assert_equal("run", job_status(job))
   try
     exe "normal Goecho hello\<CR>"
@@ -912,7 +912,7 @@ func Test_pipe_null()
   " We cannot check that no I/O works, we only check that the job starts
   " properly.
   let job = job_start(s:python . " test_channel_pipe.py something",
-	\ {'in-io': 'null'})
+	\ {'in_io': 'null'})
   call assert_equal("run", job_status(job))
   try
     call assert_equal('something', ch_read(job))
@@ -921,7 +921,7 @@ func Test_pipe_null()
   endtry
 
   let job = job_start(s:python . " test_channel_pipe.py err-out",
-	\ {'out-io': 'null'})
+	\ {'out_io': 'null'})
   call assert_equal("run", job_status(job))
   try
     call assert_equal('err-out', ch_read(job, {"part": "err"}))
@@ -930,7 +930,7 @@ func Test_pipe_null()
   endtry
 
   let job = job_start(s:python . " test_channel_pipe.py something",
-	\ {'err-io': 'null'})
+	\ {'err_io': 'null'})
   call assert_equal("run", job_status(job))
   try
     call assert_equal('something', ch_read(job))
@@ -939,12 +939,12 @@ func Test_pipe_null()
   endtry
 
   let job = job_start(s:python . " test_channel_pipe.py something",
-	\ {'out-io': 'null', 'err-io': 'out'})
+	\ {'out_io': 'null', 'err_io': 'out'})
   call assert_equal("run", job_status(job))
   call job_stop(job)
 
   let job = job_start(s:python . " test_channel_pipe.py something",
-	\ {'in-io': 'null', 'out-io': 'null', 'err-io': 'null'})
+	\ {'in_io': 'null', 'out_io': 'null', 'err_io': 'null'})
   call assert_equal("run", job_status(job))
   call assert_equal('channel fail', string(job_getchannel(job)))
   call assert_equal('fail', ch_status(job))
@@ -1082,9 +1082,9 @@ function MyExitCb(job, status)
 endfunc
 
 function s:test_exit_callback(port)
-  call job_setoptions(s:job, {'exit-cb': 'MyExitCb'})
+  call job_setoptions(s:job, {'exit_cb': 'MyExitCb'})
   let s:exit_job = s:job
-  call assert_equal('MyExitCb', job_info(s:job)['exit-cb'])
+  call assert_equal('MyExitCb', job_info(s:job)['exit_cb'])
 endfunc
 
 func Test_exit_callback()
@@ -1121,7 +1121,7 @@ function s:test_close_callback(port)
     call assert_false(1, "Can't open channel")
     return
   endif
-  call ch_setoptions(handle, {'close-cb': 'MyCloseCb'})
+  call ch_setoptions(handle, {'close_cb': 'MyCloseCb'})
 
   call assert_equal('', ch_evalexpr(handle, 'close me'))
   call s:waitFor('"closed" == s:ch_close_ret')

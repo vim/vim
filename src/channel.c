@@ -3148,7 +3148,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		if (handle_mode(item, opt, &opt->jo_mode, JO_MODE) == FAIL)
 		    return FAIL;
 	    }
-	    else if (STRCMP(hi->hi_key, "in-mode") == 0)
+	    else if (STRCMP(hi->hi_key, "in_mode") == 0)
 	    {
 		if (!(supported & JO_IN_MODE))
 		    break;
@@ -3156,7 +3156,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 								      == FAIL)
 		    return FAIL;
 	    }
-	    else if (STRCMP(hi->hi_key, "out-mode") == 0)
+	    else if (STRCMP(hi->hi_key, "out_mode") == 0)
 	    {
 		if (!(supported & JO_OUT_MODE))
 		    break;
@@ -3164,7 +3164,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 								      == FAIL)
 		    return FAIL;
 	    }
-	    else if (STRCMP(hi->hi_key, "err-mode") == 0)
+	    else if (STRCMP(hi->hi_key, "err_mode") == 0)
 	    {
 		if (!(supported & JO_ERR_MODE))
 		    break;
@@ -3172,18 +3172,18 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 								      == FAIL)
 		    return FAIL;
 	    }
-	    else if (STRCMP(hi->hi_key, "in-io") == 0
-		    || STRCMP(hi->hi_key, "out-io") == 0
-		    || STRCMP(hi->hi_key, "err-io") == 0)
+	    else if (STRCMP(hi->hi_key, "in_io") == 0
+		    || STRCMP(hi->hi_key, "out_io") == 0
+		    || STRCMP(hi->hi_key, "err_io") == 0)
 	    {
 		if (!(supported & JO_OUT_IO))
 		    break;
 		if (handle_io(item, part_from_char(*hi->hi_key), opt) == FAIL)
 		    return FAIL;
 	    }
-	    else if (STRCMP(hi->hi_key, "in-name") == 0
-		    || STRCMP(hi->hi_key, "out-name") == 0
-		    || STRCMP(hi->hi_key, "err-name") == 0)
+	    else if (STRCMP(hi->hi_key, "in_name") == 0
+		    || STRCMP(hi->hi_key, "out_name") == 0
+		    || STRCMP(hi->hi_key, "err_name") == 0)
 	    {
 		part = part_from_char(*hi->hi_key);
 
@@ -3193,9 +3193,9 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		opt->jo_io_name[part] =
 		       get_tv_string_buf_chk(item, opt->jo_io_name_buf[part]);
 	    }
-	    else if (STRCMP(hi->hi_key, "in-buf") == 0
-		    || STRCMP(hi->hi_key, "out-buf") == 0
-		    || STRCMP(hi->hi_key, "err-buf") == 0)
+	    else if (STRCMP(hi->hi_key, "in_buf") == 0
+		    || STRCMP(hi->hi_key, "out_buf") == 0
+		    || STRCMP(hi->hi_key, "err_buf") == 0)
 	    {
 		part = part_from_char(*hi->hi_key);
 
@@ -3214,8 +3214,8 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		    return FAIL;
 		}
 	    }
-	    else if (STRCMP(hi->hi_key, "in-top") == 0
-		    || STRCMP(hi->hi_key, "in-bot") == 0)
+	    else if (STRCMP(hi->hi_key, "in_top") == 0
+		    || STRCMP(hi->hi_key, "in_bot") == 0)
 	    {
 		linenr_T *lp;
 
@@ -3262,7 +3262,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		    return FAIL;
 		}
 	    }
-	    else if (STRCMP(hi->hi_key, "out-cb") == 0)
+	    else if (STRCMP(hi->hi_key, "out_cb") == 0)
 	    {
 		if (!(supported & JO_OUT_CALLBACK))
 		    break;
@@ -3270,11 +3270,11 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		opt->jo_out_cb = get_callback(item, &opt->jo_out_partial);
 		if (opt->jo_out_cb == NULL)
 		{
-		    EMSG2(_(e_invarg2), "out-cb");
+		    EMSG2(_(e_invarg2), "out_cb");
 		    return FAIL;
 		}
 	    }
-	    else if (STRCMP(hi->hi_key, "err-cb") == 0)
+	    else if (STRCMP(hi->hi_key, "err_cb") == 0)
 	    {
 		if (!(supported & JO_ERR_CALLBACK))
 		    break;
@@ -3282,11 +3282,11 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		opt->jo_err_cb = get_callback(item, &opt->jo_err_partial);
 		if (opt->jo_err_cb == NULL)
 		{
-		    EMSG2(_(e_invarg2), "err-cb");
+		    EMSG2(_(e_invarg2), "err_cb");
 		    return FAIL;
 		}
 	    }
-	    else if (STRCMP(hi->hi_key, "close-cb") == 0)
+	    else if (STRCMP(hi->hi_key, "close_cb") == 0)
 	    {
 		if (!(supported & JO_CLOSE_CALLBACK))
 		    break;
@@ -3294,7 +3294,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		opt->jo_close_cb = get_callback(item, &opt->jo_close_partial);
 		if (opt->jo_close_cb == NULL)
 		{
-		    EMSG2(_(e_invarg2), "close-cb");
+		    EMSG2(_(e_invarg2), "close_cb");
 		    return FAIL;
 		}
 	    }
@@ -3312,14 +3312,14 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		opt->jo_set |= JO_TIMEOUT;
 		opt->jo_timeout = get_tv_number(item);
 	    }
-	    else if (STRCMP(hi->hi_key, "out-timeout") == 0)
+	    else if (STRCMP(hi->hi_key, "out_timeout") == 0)
 	    {
 		if (!(supported & JO_OUT_TIMEOUT))
 		    break;
 		opt->jo_set |= JO_OUT_TIMEOUT;
 		opt->jo_out_timeout = get_tv_number(item);
 	    }
-	    else if (STRCMP(hi->hi_key, "err-timeout") == 0)
+	    else if (STRCMP(hi->hi_key, "err_timeout") == 0)
 	    {
 		if (!(supported & JO_ERR_TIMEOUT))
 		    break;
@@ -3360,7 +3360,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		    return FAIL;
 		}
 	    }
-	    else if (STRCMP(hi->hi_key, "exit-cb") == 0)
+	    else if (STRCMP(hi->hi_key, "exit_cb") == 0)
 	    {
 		if (!(supported & JO_EXIT_CB))
 		    break;
@@ -3375,7 +3375,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 						       item, opt->jo_ecb_buf);
 		if (opt->jo_exit_cb == NULL)
 		{
-		    EMSG2(_(e_invarg2), "exit-cb");
+		    EMSG2(_(e_invarg2), "exit_cb");
 		    return FAIL;
 		}
 	    }
@@ -3546,7 +3546,7 @@ job_stop_on_exit()
 }
 
 /*
- * Called once in a while: check if any jobs with an "exit-cb" have ended.
+ * Called once in a while: check if any jobs with an "exit_cb" have ended.
  */
     void
 job_check_ended(void)
@@ -3609,7 +3609,7 @@ job_start(typval_T *argvars)
 		&& (!(opt.jo_set & (JO_OUT_NAME << (part - PART_OUT)))
 		    || *opt.jo_io_name[part] == NUL))
 	{
-	    EMSG(_("E920: -io file requires -name to be set"));
+	    EMSG(_("E920: _io file requires _name to be set"));
 	    return job;
 	}
 
@@ -3626,7 +3626,7 @@ job_start(typval_T *argvars)
 	}
 	else if (!(opt.jo_set & JO_IN_NAME))
 	{
-	    EMSG(_("E915: in-io buffer requires in-buf or in-name to be set"));
+	    EMSG(_("E915: in_io buffer requires in_buf or in_name to be set"));
 	}
 	else
 	    buf = buflist_find_by_name(opt.jo_io_name[PART_IN], FALSE);
@@ -3837,7 +3837,7 @@ job_info(job_T *job, dict_T *dict)
     dict_add_nr_str(dict, "process", nr, NULL);
 
     dict_add_nr_str(dict, "exitval", job->jv_exitval, NULL);
-    dict_add_nr_str(dict, "exit-cb", 0L, job->jv_exit_cb);
+    dict_add_nr_str(dict, "exit_cb", 0L, job->jv_exit_cb);
     dict_add_nr_str(dict, "stoponexit", 0L, job->jv_stoponexit);
 }
 
