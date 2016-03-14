@@ -6859,7 +6859,6 @@ do_helptags(char_u *dirname, int add_help_tags)
 	    || filecount == 0)
     {
 	EMSG2("E151: No match: %s", NameBuff);
-	vim_free(dirname);
 	return;
     }
 
