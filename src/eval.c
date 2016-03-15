@@ -8759,8 +8759,6 @@ call_func(
 	}
 	if (error == ERROR_NONE && partial->pt_argc > 0)
 	{
-	    int	    i;
-
 	    for (argv_clear = 0; argv_clear < partial->pt_argc; ++argv_clear)
 		copy_tv(&partial->pt_argv[argv_clear], &argv[argv_clear]);
 	    for (i = 0; i < argcount_in; ++i)
