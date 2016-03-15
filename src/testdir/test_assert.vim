@@ -62,6 +62,12 @@ func Test_compare_fail()
   endtry
 endfunc
 
+func Test_assert_fail_fails()
+  call assert_fails('xxx', {})
+  call assert_true(v:errors[0] =~ "Expected {} but got 'E731:")
+  call remove(v:errors, 0)
+endfunc
+
 
 func Test_user_is_happy()
   smile
