@@ -3682,10 +3682,9 @@ gui_mch_browseW(
     filterp = convert_filterW(filter);
 
     vim_memset(&fileStruct, 0, sizeof(OPENFILENAMEW));
-#ifdef OPENFILENAME_SIZE_VERSION_400
+#ifdef OPENFILENAME_SIZE_VERSION_400W
     /* be compatible with Windows NT 4.0 */
-    /* TODO: what to use for OPENFILENAMEW??? */
-    fileStruct.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+    fileStruct.lStructSize = OPENFILENAME_SIZE_VERSION_400W;
 #else
     fileStruct.lStructSize = sizeof(fileStruct);
 #endif
