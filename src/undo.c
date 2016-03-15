@@ -2286,7 +2286,14 @@ undo_time(
      * Init "closest" to a value we can't reach. */
     if (absolute)
     {
-	target = step;
+	if (step == 0)
+	{
+	    /* target 0 does not exist, got to 1 and above it. */
+	    target = 1;
+	    above = TRUE;
+	}
+	else
+	    target = step;
 	closest = -1;
     }
     else

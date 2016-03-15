@@ -4,6 +4,7 @@
 source test_assign.vim
 source test_cursor_func.vim
 source test_delete.vim
+source test_ex_undo.vim
 source test_expand.vim
 source test_feedkeys.vim
 source test_file_perm.vim
