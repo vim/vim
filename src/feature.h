@@ -400,6 +400,13 @@
 #endif
 
 /*
+ * +timers		timer_start()
+ */
+#if defined(FEAT_RELTIME) && (defined(UNIX) || defined(WIN32))
+# define FEAT_TIMERS
+#endif
+
+/*
  * +textobjects		Text objects: "vaw", "das", etc.
  */
 #if defined(FEAT_NORMAL) && defined(FEAT_EVAL)

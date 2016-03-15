@@ -8894,12 +8894,22 @@ ex_sleep(exarg_T *eap)
 do_sleep(long msec)
 {
     long	done;
+    long	wait_now;
 
     cursor_on();
     out_flush();
-    for (done = 0; !got_int && done < msec; done += 1000L)
+    for (done = 0; !got_int && done < msec; done += wait_now)
     {
-	ui_delay(msec - done > 1000L ? 1000L : msec - done, TRUE);
+	wait_now = msec - done > 1000L ? 1000L : msec - done;
+#ifdef FEAT_TIMERS
+	{
+	    long    due_time = check_due_timer();
+
+	    if (due_time > 0 && due_time < wait_now)
+		wait_now = due_time;
+	}
+#endif
+	ui_delay(wait_now, TRUE);
 	ui_breakcheck();
 #ifdef MESSAGE_QUEUE
 	/* Process the netbeans and clientserver messages that may have been

@@ -411,6 +411,27 @@ redraw_asap(int type)
 }
 
 /*
+ * Invoked after an asynchronous callback is called.
+ * If an echo command was used the cursor needs to be put back where
+ * it belongs. If highlighting was changed a redraw is needed.
+ */
+    void
+redraw_after_callback()
+{
+    update_screen(0);
+    setcursor();
+    cursor_on();
+    out_flush();
+#ifdef FEAT_GUI
+    if (gui.in_use)
+    {
+	gui_update_cursor(TRUE, FALSE);
+	gui_mch_flush();
+    }
+#endif
+}
+
+/*
  * Changed something in the current window, at buffer line "lnum", that
  * requires that line and possibly other lines to be redrawn.
  * Used when entering/leaving Insert mode with the cursor on a folded line.

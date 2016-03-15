@@ -1088,6 +1088,174 @@ profile_zero(proftime_T *tm)
 
 # endif  /* FEAT_PROFILE || FEAT_RELTIME */
 
+# if defined(FEAT_TIMERS) || defined(PROTO)
+static timer_T	*first_timer = NULL;
+static int	last_timer_id = 0;
+
+/*
+ * Insert a timer in the list of timers.
+ */
+    static void
+insert_timer(timer_T *timer)
+{
+    timer->tr_next = first_timer;
+    timer->tr_prev = NULL;
+    if (first_timer != NULL)
+	first_timer->tr_prev = timer;
+    first_timer = timer;
+}
+
+/*
+ * Take a timer out of the list of timers.
+ */
+    static void
+remove_timer(timer_T *timer)
+{
+    if (timer->tr_prev == NULL)
+	first_timer = timer->tr_next;
+    else
+	timer->tr_prev->tr_next = timer->tr_next;
+    if (timer->tr_next != NULL)
+	timer->tr_next->tr_prev = timer->tr_prev;
+}
+
+    static void
+free_timer(timer_T *timer)
+{
+    vim_free(timer->tr_callback);
+    partial_unref(timer->tr_partial);
+    vim_free(timer);
+}
+
+/*
+ * Create a timer and return it.  NULL if out of memory.
+ * Caller should set the callback.
+ */
+    timer_T *
+create_timer(long msec, int repeat)
+{
+    timer_T	*timer = (timer_T *)alloc_clear(sizeof(timer_T));
+
+    if (timer == NULL)
+	return NULL;
+    timer->tr_id = ++last_timer_id;
+    insert_timer(timer);
+    if (repeat != 0)
+    {
+	timer->tr_repeat = repeat - 1;
+	timer->tr_interval = msec;
+    }
+
+    profile_setlimit(msec, &timer->tr_due);
+    return timer;
+}
+
+/*
+ * Invoke the callback of "timer".
+ */
+    static void
+timer_callback(timer_T *timer)
+{
+    typval_T	rettv;
+    int		dummy;
+    typval_T	argv[2];
+
+    argv[0].v_type = VAR_NUMBER;
+    argv[0].vval.v_number = timer->tr_id;
+    argv[1].v_type = VAR_UNKNOWN;
+
+    call_func(timer->tr_callback, (int)STRLEN(timer->tr_callback),
+			&rettv, 1, argv, 0L, 0L, &dummy, TRUE,
+			timer->tr_partial, NULL);
+    clear_tv(&rettv);
+}
+
+/*
+ * Call timers that are due.
+ * Return the time in msec until the next timer is due.
+ */
+    long
+check_due_timer()
+{
+    timer_T	*timer;
+    long	this_due;
+    long	next_due;
+    proftime_T	now;
+    int		did_one = FALSE;
+# ifdef WIN3264
+    LARGE_INTEGER   fr;
+
+    QueryPerformanceFrequency(&fr);
+# endif
+    while (!got_int)
+    {
+	profile_start(&now);
+	next_due = -1;
+	for (timer = first_timer; timer != NULL; timer = timer->tr_next)
+	{
+# ifdef WIN3264
+	    this_due = (long)(((double)(timer->tr_due.QuadPart - now.QuadPart)
+					       / (double)fr.QuadPart) * 1000);
+# else
+	    this_due = (timer->tr_due.tv_sec - now.tv_sec) * 1000
+			       + (timer->tr_due.tv_usec - now.tv_usec) / 1000;
+# endif
+	    if (this_due <= 1)
+	    {
+		remove_timer(timer);
+		timer_callback(timer);
+		did_one = TRUE;
+		if (timer->tr_repeat != 0)
+		{
+		    profile_setlimit(timer->tr_interval, &timer->tr_due);
+		    if (timer->tr_repeat > 0)
+			--timer->tr_repeat;
+		    insert_timer(timer);
+		}
+		else
+		    free_timer(timer);
+		/* the callback may do anything, start all over */
+		break;
+	    }
+	    if (next_due == -1 || next_due > this_due)
+		next_due = this_due;
+	}
+	if (timer == NULL)
+	    break;
+    }
+
+    if (did_one)
+	redraw_after_callback();
+
+    return next_due;
+}
+
+/*
+ * Find a timer by ID.  Returns NULL if not found;
+ */
+    timer_T *
+find_timer(int id)
+{
+    timer_T *timer;
+
+    for (timer = first_timer; timer != NULL; timer = timer->tr_next)
+	if (timer->tr_id == id)
+	    break;
+    return timer;
+}
+
+
+/*
+ * Stop a timer and delete it.
+ */
+    void
+stop_timer(timer_T *timer)
+{
+    remove_timer(timer);
+    free_timer(timer);
+}
+# endif
+
 #if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME) && defined(FEAT_FLOAT)
 # if defined(HAVE_MATH_H)
 #  include <math.h>

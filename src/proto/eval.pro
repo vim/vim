@@ -91,6 +91,7 @@ void partial_unref(partial_T *pt);
 void mzscheme_call_vim(char_u *name, typval_T *args, typval_T *rettv);
 float_T vim_round(float_T f);
 long do_searchpair(char_u *spat, char_u *mpat, char_u *epat, int dir, char_u *skip, int flags, pos_T *match_pos, linenr_T lnum_stop, long time_limit);
+char_u *get_callback(typval_T *arg, partial_T **pp);
 void set_vim_var_nr(int idx, long val);
 long get_vim_var_nr(int idx);
 char_u *get_vim_var_str(int idx);

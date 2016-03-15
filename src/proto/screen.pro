@@ -6,6 +6,7 @@ void redraw_all_later(int type);
 void redraw_curbuf_later(int type);
 void redraw_buf_later(buf_T *buf, int type);
 int redraw_asap(int type);
+void redraw_after_callback(void);
 void redrawWinline(linenr_T lnum, int invalid);
 void update_curbuf(int type);
 void update_screen(int type);
