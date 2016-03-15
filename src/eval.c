@@ -9240,6 +9240,12 @@ ga_concat_esc(garray_T *gap, char_u *str)
     char_u  *p;
     char_u  buf[NUMBUFLEN];
 
+    if (str == NULL)
+    {
+	ga_concat(gap, (char_u *)"NULL");
+	return;
+    }
+
     for (p = str; *p != NUL; ++p)
 	switch (*p)
 	{

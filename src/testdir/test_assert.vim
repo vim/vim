@@ -48,6 +48,21 @@ func Test_wrong_error_type()
   call assert_equal(type([]), type(verrors))
 endfunc
 
+func Test_compare_fail()
+  let s:v = {}          
+  let s:x = {"a": s:v} 
+  let s:v["b"] = s:x   
+  let s:w = {"c": s:x, "d": ''}
+  try
+    call assert_equal(s:w, '')
+  catch
+    call assert_exception('E724:')
+    call assert_true(v:errors[0] =~ "Expected NULL but got ''")
+    call remove(v:errors, 0)
+  endtry
+endfunc
+
+
 func Test_user_is_happy()
   smile
   sleep 300m
