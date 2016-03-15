@@ -6114,6 +6114,11 @@ find_help_tags(
 		    || (arg[0] == '\\' && arg[1] == '{'))
 	      *d++ = '\\';
 
+	  /*
+	   * If tag starts with "('", skip the "(". Fixes CTRL-] on ('option'.
+	   */
+	  if (*arg == '(' && arg[1] == '\'')
+	      arg++;
 	  for (s = arg; *s; ++s)
 	  {
 	    /*
