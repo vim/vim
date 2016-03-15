@@ -11786,6 +11786,10 @@ f_function(typval_T *argvars, typval_T *rettv)
 	EMSG2(_("E700: Unknown function: %s"), s);
     else
     {
+	int	dict_idx = 0;
+	int	arg_idx = 0;
+	list_T	*list = NULL;
+
 	if (STRNCMP(s, "s:", 2) == 0 || STRNCMP(s, "<SID>", 5) == 0)
 	{
 	    char	sid_buf[25];
@@ -11808,10 +11812,6 @@ f_function(typval_T *argvars, typval_T *rettv)
 
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	{
-	    partial_T	*pt;
-	    int		dict_idx = 0;
-	    int		arg_idx = 0;
-
 	    if (argvars[2].v_type != VAR_UNKNOWN)
 	    {
 		/* function(name, [args], dict) */
@@ -11824,27 +11824,38 @@ f_function(typval_T *argvars, typval_T *rettv)
 	    else
 		/* function(name, [args]) */
 		arg_idx = 1;
-	    if (dict_idx > 0 && (argvars[dict_idx].v_type != VAR_DICT
-				     || argvars[dict_idx].vval.v_dict == NULL))
+	    if (dict_idx > 0)
 	    {
-		EMSG(_("E922: expected a dict"));
-		vim_free(name);
-		return;
+		if (argvars[dict_idx].v_type != VAR_DICT)
+		{
+		    EMSG(_("E922: expected a dict"));
+		    vim_free(name);
+		    return;
+		}
+		if (argvars[dict_idx].vval.v_dict == NULL)
+		    dict_idx = 0;
 	    }
-	    if (arg_idx > 0 && (argvars[arg_idx].v_type != VAR_LIST
-				     || argvars[arg_idx].vval.v_list == NULL))
+	    if (arg_idx > 0)
 	    {
-		EMSG(_("E923: Second argument of function() must be a list or a dict"));
-		vim_free(name);
-		return;
+		if (argvars[arg_idx].v_type != VAR_LIST)
+		{
+		    EMSG(_("E923: Second argument of function() must be a list or a dict"));
+		    vim_free(name);
+		    return;
+		}
+		list = argvars[arg_idx].vval.v_list;
+		if (list == NULL || list->lv_len == 0)
+		    arg_idx = 0;
 	    }
+	}
+	if (dict_idx > 0 || arg_idx > 0)
+	{
+	    partial_T	*pt = (partial_T *)alloc_clear(sizeof(partial_T));
 
-	    pt = (partial_T *)alloc_clear(sizeof(partial_T));
 	    if (pt != NULL)
 	    {
 		if (arg_idx > 0)
 		{
-		    list_T	*list = argvars[arg_idx].vval.v_list;
 		    listitem_T	*li;
 		    int		i = 0;
 
