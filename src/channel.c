@@ -1285,19 +1285,7 @@ invoke_callback(channel_T *channel, char_u *callback, partial_T *partial,
 			&rettv, 2, argv, 0L, 0L, &dummy, TRUE, partial, NULL);
     clear_tv(&rettv);
 
-    /* If an echo command was used the cursor needs to be put back where
-     * it belongs. If highlighting was changed a redraw is needed. */
-    update_screen(0);
-    setcursor();
-    cursor_on();
-    out_flush();
-#ifdef FEAT_GUI
-    if (gui.in_use)
-    {
-	gui_update_cursor(TRUE, FALSE);
-	gui_mch_flush();
-    }
-#endif
+    redraw_after_callback();
 }
 
 /*
@@ -3022,28 +3010,6 @@ channel_get_mode(channel_T *channel, int part)
 channel_get_timeout(channel_T *channel, int part)
 {
     return channel->ch_part[part].ch_timeout;
-}
-
-/*
- * Get a callback from "arg".  It can be a Funcref or a function name.
- * When "arg" is zero return an empty string.
- * Return NULL for an invalid argument.
- */
-    static char_u *
-get_callback(typval_T *arg, partial_T **pp)
-{
-    if (arg->v_type == VAR_PARTIAL && arg->vval.v_partial != NULL)
-    {
-	*pp = arg->vval.v_partial;
-	return (*pp)->pt_name;
-    }
-    *pp = NULL;
-    if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
-	return arg->vval.v_string;
-    if (arg->v_type == VAR_NUMBER && arg->vval.v_number == 0)
-	return (char_u *)"";
-    EMSG(_("E921: Invalid callback argument"));
-    return NULL;
 }
 
     static int
