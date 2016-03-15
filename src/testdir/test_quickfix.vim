@@ -316,3 +316,53 @@ func Test_errortitle()
   augroup END
   augroup! QfBufWinEnter
 endfunc
+
+function XqfTitleTests(cchar)
+  let Xgetexpr = a:cchar . 'getexpr'
+  if a:cchar == 'c'
+    let Xgetlist = 'getqflist()'
+  else
+    let Xgetlist = 'getloclist(0)'
+  endif
+  let Xopen = a:cchar . 'open'
+  let Xclose = a:cchar . 'close'
+
+  exe Xgetexpr . " ['file:1:1:message']"
+  exe 'let l = ' . Xgetlist
+  if a:cchar == 'c'
+    call setqflist(l, 'r')
+  else
+    call setloclist(0, l, 'r')
+  endif
+
+  exe Xopen
+  if a:cchar == 'c'
+    let title = ':setqflist()'
+  else
+    let title = ':setloclist()'
+  endif
+  call assert_equal(title, w:quickfix_title)
+  exe Xclose
+endfunction
+
+" Tests for quickfix window's title
+function Test_qf_title()
+    call XqfTitleTests('c')
+    call XqfTitleTests('l')
+endfunction
+
+" Tests for 'errorformat'
+function Test_efm()
+  let save_efm = &efm
+  set efm=%EEEE%m,%WWWW%m,%+CCCC%.%#,%-GGGG%.%#
+  cgetexpr ['WWWW', 'EEEE', 'CCCC']
+  let l = strtrans(string(map(getqflist(), '[v:val.text, v:val.valid]')))
+  call assert_equal("[['W', 1], ['E^@CCCC', 1]]", l)
+  cgetexpr ['WWWW', 'GGGG', 'EEEE', 'CCCC']
+  let l = strtrans(string(map(getqflist(), '[v:val.text, v:val.valid]')))
+  call assert_equal("[['W', 1], ['E^@CCCC', 1]]", l)
+  cgetexpr ['WWWW', 'GGGG', 'ZZZZ', 'EEEE', 'CCCC', 'YYYY']
+  let l = strtrans(string(map(getqflist(), '[v:val.text, v:val.valid]')))
+  call assert_equal("[['W', 1], ['ZZZZ', 0], ['E^@CCCC', 1], ['YYYY', 0]]", l)
+  let &efm = save_efm
+endfunction
