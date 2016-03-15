@@ -53,6 +53,7 @@ func Test_backspace_option()
   " Cleared when 'compatible' is set
   set compatible
   call assert_equal('', &backspace)
+  set nocompatible
 endfunc
 
 " vim: tabstop=2 shiftwidth=0 expandtab
