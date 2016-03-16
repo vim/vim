@@ -44,7 +44,7 @@ NONE 2999
 {'33': 999}
 len: 3
 again: 3
-Vim(call):E725: 
+xxx3
 g:dict.func-4
 a:function('3')
 Vim(let):E698: 
