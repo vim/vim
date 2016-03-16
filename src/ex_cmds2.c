@@ -1179,7 +1179,7 @@ check_due_timer()
 {
     timer_T	*timer;
     long	this_due;
-    long	next_due;
+    long	next_due = -1;
     proftime_T	now;
     int		did_one = FALSE;
 # ifdef WIN3264
