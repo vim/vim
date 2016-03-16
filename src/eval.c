@@ -21705,6 +21705,7 @@ handle_subscript(
 	/* Turn "dict.Func" into a partial for "Func" with "dict". */
 	if (pt != NULL)
 	{
+	    pt->pt_refcount = 1;
 	    pt->pt_dict = selfdict;
 	    selfdict = NULL;
 	    pt->pt_name = rettv->vval.v_string;
