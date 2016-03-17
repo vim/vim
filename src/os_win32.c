@@ -214,7 +214,6 @@ static void standend(void);
 static void visual_bell(void);
 static void cursor_visible(BOOL fVisible);
 static DWORD write_chars(char_u *pchBuf, DWORD cbToWrite);
-static WCHAR tgetch(int *pmodifiers, WCHAR *pch2);
 static void create_conin(void);
 static int s_cursor_visible = TRUE;
 static int did_create_conin = FALSE;
@@ -1502,6 +1501,21 @@ WaitForChar(long msec)
 				    && (msec < 0 || (long)dwWaitTime > p_mzq))
 		dwWaitTime = p_mzq; /* don't wait longer than 'mzquantum' */
 #endif
+#ifdef FEAT_TIMERS
+	    {
+		long	due_time;
+
+		/* When waiting very briefly don't trigger timers. */
+		if (dwWaitTime > 10)
+		{
+		    /* Trigger timers and then get the time in msec until the
+		     * next one is due.  Wait up to that time. */
+		    due_time = check_due_timer();
+		    if (due_time > 0 && dwWaitTime > (DWORD)due_time)
+			dwWaitTime = due_time;
+		}
+	    }
+#endif
 #ifdef FEAT_CLIENTSERVER
 	    /* Wait for either an event on the console input or a message in
 	     * the client-server window. */
@@ -1604,7 +1618,7 @@ create_conin(void)
 }
 
 /*
- * Get a keystroke or a mouse event
+ * Get a keystroke or a mouse event, use a blocking wait.
  */
     static WCHAR
 tgetch(int *pmodifiers, WCHAR *pch2)
@@ -6074,7 +6088,7 @@ mch_write(
 
 
 /*
- * Delay for half a second.
+ * Delay for "msec" milliseconds.
  */
 /*ARGSUSED*/
     void
