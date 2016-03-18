@@ -347,7 +347,7 @@ static char *(p_bo_values[]) = {"all", "backspace", "cursor", "complete",
 				 "copy", "ctrlg", "error", "esc", "ex",
 				 "hangul", "insertmode", "lang", "mess",
 				 "showmatch", "operator", "register", "shell", 
-				 "spell", "wildmode", NULL};
+				 "spell", "wildmode", "topbot", NULL};
 # endif
 
 /* values for the 'beepon' option */
@@ -370,6 +370,7 @@ static char *(p_bo_values[]) = {"all", "backspace", "cursor", "complete",
 #define BO_SH		0x10000
 #define BO_SPELL	0x20000
 #define BO_WILD		0x40000
+#define BO_TOPBOT	0x80000
 
 #ifdef FEAT_WILDIGN
 EXTERN char_u	*p_bsk;		/* 'backupskip' */

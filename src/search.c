@@ -1027,9 +1027,11 @@ searchit(
 		lnum = buf->b_ml.ml_line_count;
 	    else
 		lnum = 1;
-	    if (!shortmess(SHM_SEARCH) && (options & SEARCH_MSG))
+	    if (!shortmess(SHM_SEARCH) && (options & SEARCH_MSG)) {
 		give_warning((char_u *)_(dir == BACKWARD
 					  ? top_bot_msg : bot_top_msg), TRUE);
+		vim_beep(BO_TOPBOT);
+	    }
 	}
 	if (got_int || called_emsg
 #ifdef FEAT_SEARCH_EXTRA
