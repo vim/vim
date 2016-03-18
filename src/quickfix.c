@@ -3286,6 +3286,7 @@ ex_vimgrep(exarg_T *eap)
     int		fcount;
     char_u	**fnames;
     char_u	*fname;
+    char_u	*title;
     char_u	*s;
     char_u	*p;
     int		fi;
@@ -3354,6 +3355,7 @@ ex_vimgrep(exarg_T *eap)
 
     /* Get the search pattern: either white-separated or enclosed in // */
     regmatch.regprog = NULL;
+    title = vim_strsave(*eap->cmdlinep);
     p = skip_vimgrep_pat(eap->arg, &s, &flags);
     if (p == NULL)
     {
@@ -3390,7 +3392,7 @@ ex_vimgrep(exarg_T *eap)
 	 eap->cmdidx != CMD_vimgrepadd && eap->cmdidx != CMD_lvimgrepadd)
 					|| qi->qf_curlist == qi->qf_listcount)
 	/* make place for a new list */
-	qf_new_list(qi, *eap->cmdlinep);
+	qf_new_list(qi, title != NULL ? title : *eap->cmdlinep);
     else if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
 	/* Adding to existing list, find last entry. */
 	for (prevp = qi->qf_lists[qi->qf_curlist].qf_start;
@@ -3669,6 +3671,7 @@ ex_vimgrep(exarg_T *eap)
     }
 
 theend:
+    vim_free(title);
     vim_free(dirname_now);
     vim_free(dirname_start);
     vim_free(target_dir);
