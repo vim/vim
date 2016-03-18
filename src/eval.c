@@ -21660,7 +21660,6 @@ handle_subscript(
     char_u	*s;
     int		len;
     typval_T	functv;
-    partial_T	*pt = NULL;
 
     while (ret == OK
 	    && (**arg == '['
@@ -21671,6 +21670,8 @@ handle_subscript(
     {
 	if (**arg == '(')
 	{
+	    partial_T	*pt = NULL;
+
 	    /* need to copy the funcref so that we can clear rettv */
 	    if (evaluate)
 	    {
