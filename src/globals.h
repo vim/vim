@@ -19,7 +19,7 @@
  */
 EXTERN long	Rows			/* nr of rows in the screen */
 #ifdef DO_INIT
-# if defined(MSDOS) || defined(WIN3264)
+# if defined(WIN3264)
 			    = 25L
 # else
 			    = 24L
@@ -845,19 +845,19 @@ EXTERN vimconv_T output_conv;			/* type of output conversion */
  * The value is set in mb_init();
  */
 /* length of char in bytes, including following composing chars */
-EXTERN int (*mb_ptr2len) __ARGS((char_u *p)) INIT(= latin_ptr2len);
+EXTERN int (*mb_ptr2len)(char_u *p) INIT(= latin_ptr2len);
 /* idem, with limit on string length */
-EXTERN int (*mb_ptr2len_len) __ARGS((char_u *p, int size)) INIT(= latin_ptr2len_len);
+EXTERN int (*mb_ptr2len_len)(char_u *p, int size) INIT(= latin_ptr2len_len);
 /* byte length of char */
-EXTERN int (*mb_char2len) __ARGS((int c)) INIT(= latin_char2len);
+EXTERN int (*mb_char2len)(int c) INIT(= latin_char2len);
 /* convert char to bytes, return the length */
-EXTERN int (*mb_char2bytes) __ARGS((int c, char_u *buf)) INIT(= latin_char2bytes);
-EXTERN int (*mb_ptr2cells) __ARGS((char_u *p)) INIT(= latin_ptr2cells);
-EXTERN int (*mb_ptr2cells_len) __ARGS((char_u *p, int size)) INIT(= latin_ptr2cells_len);
-EXTERN int (*mb_char2cells) __ARGS((int c)) INIT(= latin_char2cells);
-EXTERN int (*mb_off2cells) __ARGS((unsigned off, unsigned max_off)) INIT(= latin_off2cells);
-EXTERN int (*mb_ptr2char) __ARGS((char_u *p)) INIT(= latin_ptr2char);
-EXTERN int (*mb_head_off) __ARGS((char_u *base, char_u *p)) INIT(= latin_head_off);
+EXTERN int (*mb_char2bytes)(int c, char_u *buf) INIT(= latin_char2bytes);
+EXTERN int (*mb_ptr2cells)(char_u *p) INIT(= latin_ptr2cells);
+EXTERN int (*mb_ptr2cells_len)(char_u *p, int size) INIT(= latin_ptr2cells_len);
+EXTERN int (*mb_char2cells)(int c) INIT(= latin_char2cells);
+EXTERN int (*mb_off2cells)(unsigned off, unsigned max_off) INIT(= latin_off2cells);
+EXTERN int (*mb_ptr2char)(char_u *p) INIT(= latin_ptr2char);
+EXTERN int (*mb_head_off)(char_u *base, char_u *p) INIT(= latin_head_off);
 
 # if defined(USE_ICONV) && defined(DYNAMIC_ICONV)
 /* Pointers to functions and variables to be loaded at runtime */
@@ -948,9 +948,6 @@ EXTERN int	ctrl_x_mode INIT(= 0);	/* Which Ctrl-X mode are we in? */
 #endif
 
 EXTERN int	no_abbr INIT(= TRUE);	/* TRUE when no abbreviations loaded */
-#ifdef MSDOS
-EXTERN int	beep_count INIT(= 0);	/* nr of beeps since last char typed */
-#endif
 
 #ifdef USE_EXE_NAME
 EXTERN char_u	*exe_name;		/* the name of the executable */
@@ -995,10 +992,8 @@ EXTERN typebuf_T typebuf		/* typeahead buffer */
 		    = {NULL, NULL, 0, 0, 0, 0, 0, 0, 0}
 #endif
 		    ;
-#ifdef FEAT_EX_EXTRA
 EXTERN int	ex_normal_busy INIT(= 0); /* recursiveness of ex_normal() */
 EXTERN int	ex_normal_lock INIT(= 0); /* forbid use of ex_normal() */
-#endif
 #ifdef FEAT_EVAL
 EXTERN int	ignore_script INIT(= FALSE);  /* ignore script input */
 #endif
@@ -1523,6 +1518,7 @@ EXTERN char_u e_readonly[]	INIT(= N_("E45: 'readonly' option is set (add ! to ov
 #ifdef FEAT_EVAL
 EXTERN char_u e_readonlyvar[]	INIT(= N_("E46: Cannot change read-only variable \"%s\""));
 EXTERN char_u e_readonlysbx[]	INIT(= N_("E794: Cannot set variable in the sandbox: \"%s\""));
+EXTERN char_u e_emptykey[]	INIT(= N_("E713: Cannot use empty key for Dictionary"));
 #endif
 #ifdef FEAT_QUICKFIX
 EXTERN char_u e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));
@@ -1572,9 +1568,7 @@ EXTERN char_u e_maxmempat[]	INIT(= N_("E363: pattern uses more memory than 'maxm
 EXTERN char_u e_emptybuf[]	INIT(= N_("E749: empty buffer"));
 EXTERN char_u e_nobufnr[]	INIT(= N_("E86: Buffer %ld does not exist"));
 
-#ifdef FEAT_EX_EXTRA
 EXTERN char_u e_invalpat[]	INIT(= N_("E682: Invalid search pattern or delimiter"));
-#endif
 EXTERN char_u e_bufloaded[]	INIT(= N_("E139: File is loaded in another buffer"));
 #if defined(FEAT_SYN_HL) || \
 	(defined(FEAT_INS_EXPAND) && defined(FEAT_COMPL_FUNC))
@@ -1583,6 +1577,7 @@ EXTERN char_u e_notset[]	INIT(= N_("E764: Option '%s' is not set"));
 #ifndef FEAT_CLIPBOARD
 EXTERN char_u e_invalidreg[]    INIT(= N_("E850: Invalid register name"));
 #endif
+EXTERN char_u e_dirnotf[]	INIT(= N_("E919: Directory not found in '%s': \"%s\""));
 
 #ifdef MACOS_X_UNIX
 EXTERN short disallow_gui	INIT(= FALSE);
@@ -1624,6 +1619,8 @@ EXTERN alloc_id_T  alloc_fail_id INIT(= aid_none);
 EXTERN int  alloc_fail_countdown INIT(= -1);
 /* set by alloc_fail(), number of times alloc() returns NULL */
 EXTERN int  alloc_fail_repeat INIT(= 0);
+
+EXTERN int  disable_char_avail_for_testing INIT(= 0);
 #endif
 
 /*

@@ -158,6 +158,10 @@
 # define RSTRING_PTR(s) RSTRING(s)->ptr
 #endif
 
+#ifdef HAVE_DUP
+# undef HAVE_DUP
+#endif
+
 #include "vim.h"
 #include "version.h"
 
@@ -253,6 +257,7 @@ static void ruby_vim_init(void);
 # define rb_raise			dll_rb_raise
 # define rb_str_cat			dll_rb_str_cat
 # define rb_str_concat			dll_rb_str_concat
+# undef rb_str_new
 # define rb_str_new			dll_rb_str_new
 # ifdef rb_str_new2
 /* Ruby may #define rb_str_new2 to use rb_str_new_cstr. */
@@ -300,7 +305,8 @@ static void ruby_vim_init(void);
 #  define ruby_script			dll_ruby_script
 #  define rb_enc_find_index		dll_rb_enc_find_index
 #  define rb_enc_find			dll_rb_enc_find
-#  define rb_enc_str_new			dll_rb_enc_str_new
+#  undef rb_enc_str_new
+#  define rb_enc_str_new		dll_rb_enc_str_new
 #  define rb_sprintf			dll_rb_sprintf
 #  define rb_require			dll_rb_require
 #  define ruby_options			dll_ruby_options
@@ -625,7 +631,7 @@ static struct
  * Free ruby.dll
  */
     static void
-end_dynamic_ruby()
+end_dynamic_ruby(void)
 {
     if (hinstRuby)
     {
@@ -674,15 +680,14 @@ ruby_runtime_link_init(char *libname, int verbose)
  * else FALSE.
  */
     int
-ruby_enabled(verbose)
-    int		verbose;
+ruby_enabled(int verbose)
 {
     return ruby_runtime_link_init((char *)p_rubydll, verbose) == OK;
 }
 #endif /* defined(DYNAMIC_RUBY) || defined(PROTO) */
 
     void
-ruby_end()
+ruby_end(void)
 {
 #ifdef DYNAMIC_RUBY
     end_dynamic_ruby();
@@ -1032,6 +1037,11 @@ static VALUE vim_to_ruby(typval_T *tv)
 		}
 	    }
 	}
+    }
+    else if (tv->v_type == VAR_SPECIAL)
+    {
+	if (tv->vval.v_number <= VVAL_TRUE)
+	    result = INT2NUM(tv->vval.v_number);
     } /* else return Qnil; */
 
     return result;
@@ -1110,12 +1120,12 @@ static buf_T *get_buf(VALUE obj)
     return buf;
 }
 
-static VALUE buffer_s_current()
+static VALUE buffer_s_current(void)
 {
     return buffer_new(curbuf);
 }
 
-static VALUE buffer_s_count()
+static VALUE buffer_s_count(void)
 {
     buf_T *b;
     int n = 0;
@@ -1352,7 +1362,7 @@ static win_T *get_win(VALUE obj)
     return win;
 }
 
-static VALUE window_s_current()
+static VALUE window_s_current(void)
 {
     return window_new(curwin);
 }
@@ -1361,7 +1371,7 @@ static VALUE window_s_current()
  * Added line manipulation functions
  *    SegPhault - 03/07/05
  */
-static VALUE line_s_current()
+static VALUE line_s_current(void)
 {
     return get_buffer_line(curbuf, curwin->w_cursor.lnum);
 }
@@ -1371,14 +1381,14 @@ static VALUE set_current_line(VALUE self UNUSED, VALUE str)
     return set_buffer_line(curbuf, curwin->w_cursor.lnum, str);
 }
 
-static VALUE current_line_number()
+static VALUE current_line_number(void)
 {
     return INT2FIX((int)curwin->w_cursor.lnum);
 }
 
 
 
-static VALUE window_s_count()
+static VALUE window_s_count(void)
 {
 #ifdef FEAT_WINDOWS
     win_T	*w;

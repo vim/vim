@@ -20,9 +20,6 @@
 # if defined(AZTEC_C) || defined(__amigaos4__)
 #  define HAVE_STAT_H
 # endif
-# ifdef __amigaos4__
-#  define HAVE_STDARG_H
-# endif
 # define HAVE_STDLIB_H
 # define HAVE_STRING_H
 # define HAVE_FCNTL_H

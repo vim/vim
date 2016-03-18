@@ -302,3 +302,179 @@ function Test_helpgrep()
   cclose
 endfunc
 
+func Test_errortitle()
+  augroup QfBufWinEnter
+    au!
+    au BufWinEnter * :let g:a=get(w:, 'quickfix_title', 'NONE')
+  augroup END
+  copen
+  let a=[{'lnum': 308, 'bufnr': bufnr(''), 'col': 58, 'valid': 1, 'vcol': 0, 'nr': 0, 'type': '', 'pattern': '', 'text': '    au BufWinEnter * :let g:a=get(w:, ''quickfix_title'', ''NONE'')'}]
+  call setqflist(a)
+  call assert_equal(':setqflist()', g:a)
+  augroup QfBufWinEnter
+    au!
+  augroup END
+  augroup! QfBufWinEnter
+endfunc
+
+function XqfTitleTests(cchar)
+  let Xgetexpr = a:cchar . 'getexpr'
+  if a:cchar == 'c'
+    let Xgetlist = 'getqflist()'
+  else
+    let Xgetlist = 'getloclist(0)'
+  endif
+  let Xopen = a:cchar . 'open'
+  let Xclose = a:cchar . 'close'
+
+  exe Xgetexpr . " ['file:1:1:message']"
+  exe 'let l = ' . Xgetlist
+  if a:cchar == 'c'
+    call setqflist(l, 'r')
+  else
+    call setloclist(0, l, 'r')
+  endif
+
+  exe Xopen
+  if a:cchar == 'c'
+    let title = ':setqflist()'
+  else
+    let title = ':setloclist()'
+  endif
+  call assert_equal(title, w:quickfix_title)
+  exe Xclose
+endfunction
+
+" Tests for quickfix window's title
+function Test_qf_title()
+    call XqfTitleTests('c')
+    call XqfTitleTests('l')
+endfunction
+
+" Tests for 'errorformat'
+function Test_efm()
+  let save_efm = &efm
+  set efm=%EEEE%m,%WWWW%m,%+CCCC%.%#,%-GGGG%.%#
+  cgetexpr ['WWWW', 'EEEE', 'CCCC']
+  let l = strtrans(string(map(getqflist(), '[v:val.text, v:val.valid]')))
+  call assert_equal("[['W', 1], ['E^@CCCC', 1]]", l)
+  cgetexpr ['WWWW', 'GGGG', 'EEEE', 'CCCC']
+  let l = strtrans(string(map(getqflist(), '[v:val.text, v:val.valid]')))
+  call assert_equal("[['W', 1], ['E^@CCCC', 1]]", l)
+  cgetexpr ['WWWW', 'GGGG', 'ZZZZ', 'EEEE', 'CCCC', 'YYYY']
+  let l = strtrans(string(map(getqflist(), '[v:val.text, v:val.valid]')))
+  call assert_equal("[['W', 1], ['ZZZZ', 0], ['E^@CCCC', 1], ['YYYY', 0]]", l)
+  let &efm = save_efm
+endfunction
+
+" This will test for problems in quickfix:
+" A. incorrectly copying location lists which caused the location list to show
+"    a different name than the file that was actually being displayed.
+" B. not reusing the window for which the location list window is opened but
+"    instead creating new windows.
+" C. make sure that the location list window is not reused instead of the
+"    window it belongs to.
+"
+" Set up the test environment:
+function! ReadTestProtocol(name)
+  let base = substitute(a:name, '\v^test://(.*)%(\.[^.]+)?', '\1', '')
+  let word = substitute(base, '\v(.*)\..*', '\1', '')
+
+  setl modifiable
+  setl noreadonly
+  setl noswapfile
+  setl bufhidden=delete
+  %del _
+  " For problem 2:
+  " 'buftype' has to be set to reproduce the constant opening of new windows
+  setl buftype=nofile
+
+  call setline(1, word)
+
+  setl nomodified
+  setl nomodifiable
+  setl readonly
+  exe 'doautocmd BufRead ' . substitute(a:name, '\v^test://(.*)', '\1', '')
+endfunction
+
+function Test_locationlist()
+    enew
+
+    augroup testgroup
+      au!
+      autocmd BufReadCmd test://* call ReadTestProtocol(expand("<amatch>"))
+    augroup END
+
+    let words = [ "foo", "bar", "baz", "quux", "shmoo", "spam", "eggs" ]
+
+    let qflist = []
+    for word in words
+      call add(qflist, {'filename': 'test://' . word . '.txt', 'text': 'file ' . word . '.txt', })
+      " NOTE: problem 1:
+      " intentionally not setting 'lnum' so that the quickfix entries are not
+      " valid
+      call setloclist(0, qflist, ' ')
+    endfor
+
+    " Test A
+    lrewind
+    enew
+    lopen
+    lnext
+    lnext
+    lnext
+    lnext
+    vert split
+    wincmd L
+    lopen
+    wincmd p
+    lnext
+    let fileName = expand("%")
+    wincmd p
+    let locationListFileName = substitute(getline(line('.')), '\([^|]*\)|.*', '\1', '')
+    let fileName = substitute(fileName, '\\', '/', 'g')
+    let locationListFileName = substitute(locationListFileName, '\\', '/', 'g')
+    call assert_equal("test://bar.txt", fileName)
+    call assert_equal("test://bar.txt", locationListFileName)
+
+    wincmd n | only
+
+    " Test B:
+    lrewind
+    lopen
+    2
+    exe "normal \<CR>"
+    wincmd p
+    3
+    exe "normal \<CR>"
+    wincmd p
+    4
+    exe "normal \<CR>"
+    call assert_equal(2, winnr('$'))
+    wincmd n | only
+
+    " Test C:
+    lrewind
+    lopen
+    " Let's move the location list window to the top to check whether it (the
+    " first window found) will be reused when we try to open new windows:
+    wincmd K
+    2
+    exe "normal \<CR>"
+    wincmd p
+    3
+    exe "normal \<CR>"
+    wincmd p
+    4
+    exe "normal \<CR>"
+    1wincmd w
+    call assert_equal('quickfix', &buftype)
+    2wincmd w
+    let bufferName = expand("%")
+    let bufferName = substitute(bufferName, '\\', '/', 'g')
+    call assert_equal('test://quux.txt', bufferName)
+
+    wincmd n | only
+
+    augroup! testgroup
+endfunction

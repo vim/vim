@@ -18,7 +18,7 @@
 #ifdef AMIGA
 # define DFLT_EFM	"%f>%l:%c:%t:%n:%m,%f:%l: %t%*\\D%n: %m,%f %l %t%*\\D%n: %m,%*[^\"]\"%f\"%*\\D%l: %m,%f:%l:%m,%f|%l| %m"
 #else
-# if defined(MSDOS) || defined(WIN3264)
+# if defined(WIN3264)
 #  define DFLT_EFM	"%f(%l) : %t%*\\D%n: %m,%*[^\"]\"%f\"%*\\D%l: %m,%f(%l) : %m,%*[^ ] %f %l: %m,%f:%l:%c:%m,%f(%l):%m,%f:%l:%m,%f|%l| %m"
 # else
 #  if defined(__EMX__)	/* put most common here (i.e. gcc format) at front */
@@ -214,7 +214,8 @@
 #define SHM_INTRO	'I'		/* intro messages */
 #define SHM_COMPLETIONMENU  'c'		/* completion menu messages */
 #define SHM_RECORDING	'q'		/* short recording message */
-#define SHM_ALL		"rmfixlnwaWtToOsAIcq" /* all possible flags for 'shm' */
+#define SHM_FILEINFO	'F'		/* no file info messages */
+#define SHM_ALL		"rmfixlnwaWtToOsAIcqF" /* all possible flags for 'shm' */
 
 /* characters for p_go: */
 #define GO_ASEL		'a'		/* autoselect */
@@ -385,10 +386,6 @@ EXTERN char_u	*p_bexpr;
 #endif
 #ifdef FEAT_BROWSE
 EXTERN char_u	*p_bsdir;	/* 'browsedir' */
-#endif
-#ifdef MSDOS
-EXTERN int	p_biosk;	/* 'bioskey' */
-EXTERN int	p_consk;	/* 'conskey' */
 #endif
 #ifdef FEAT_LINEBREAK
 EXTERN char_u	*p_breakat;	/* 'breakat' */
@@ -671,7 +668,7 @@ EXTERN int	p_more;		/* 'more' */
 #ifdef FEAT_MZSCHEME
 EXTERN long	p_mzq;		/* 'mzquantum */
 #endif
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
 EXTERN int	p_odev;		/* 'opendevice' */
 #endif
 EXTERN char_u	*p_opfunc;	/* 'operatorfunc' */
@@ -723,6 +720,7 @@ EXTERN int	p_ru;		/* 'ruler' */
 #ifdef FEAT_STL_OPT
 EXTERN char_u	*p_ruf;		/* 'rulerformat' */
 #endif
+EXTERN char_u	*p_pp;		/* 'packpath' */
 EXTERN char_u	*p_rtp;		/* 'runtimepath' */
 EXTERN long	p_sj;		/* 'scrolljump' */
 EXTERN long	p_so;		/* 'scrolloff' */
@@ -874,12 +872,14 @@ static char *(p_toolbar_values[]) = {"text", "icons", "tooltips", "horiz", NULL}
 EXTERN char_u	*p_tbis;	/* 'toolbariconsize' */
 EXTERN unsigned tbis_flags;
 # ifdef IN_OPTION_C
-static char *(p_tbis_values[]) = {"tiny", "small", "medium", "large", NULL};
+static char *(p_tbis_values[]) = {"tiny", "small", "medium", "large", "huge", "giant", NULL};
 # endif
 # define TBIS_TINY		0x01
 # define TBIS_SMALL		0x02
 # define TBIS_MEDIUM		0x04
 # define TBIS_LARGE		0x08
+# define TBIS_HUGE		0x10
+# define TBIS_GIANT		0x20
 #endif
 EXTERN long	p_ttyscroll;	/* 'ttyscroll' */
 #if defined(FEAT_MOUSE) && (defined(UNIX) || defined(VMS))
@@ -1073,9 +1073,7 @@ enum
 #ifdef FEAT_SMARTINDENT
     , BV_SI
 #endif
-#ifndef SHORT_FNAME
     , BV_SN
-#endif
 #ifdef FEAT_SYN_HL
     , BV_SMC
     , BV_SYN

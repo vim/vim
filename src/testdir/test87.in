@@ -228,6 +228,8 @@ def ee(expr, g=globals(), l=locals()):
                     cb.append(expr + ':' + repr((e.__class__, TypeError(msg))))
                 else:
                     cb.append(expr + ':' + repr((e.__class__, e)))
+            elif sys.version_info >= (3, 5) and e.__class__ is ValueError and str(e) == 'embedded null byte':
+                msg = cb.append(expr + ':' + repr((TypeError, TypeError('expected bytes with no null'))))
             else:
                 cb.append(expr + ':' + repr((e.__class__, e)))
         else:
@@ -264,13 +266,17 @@ EOF
 :let messages=[]
 :delfunction DictNew
 py3 <<EOF
+import sys
 d=vim.bindeval('{}')
 m=vim.bindeval('messages')
 def em(expr, g=globals(), l=locals()):
     try:
         exec(expr, g, l)
     except Exception as e:
-        m.extend([e.__class__.__name__])
+        if sys.version_info >= (3, 5) and e.__class__ is ValueError and str(e) == 'embedded null byte':
+            m.extend([TypeError.__name__])
+        else:
+            m.extend([e.__class__.__name__])
 
 em('d["abc1"]')
 em('d["abc1"]="\\0"')

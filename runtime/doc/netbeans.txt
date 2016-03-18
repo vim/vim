@@ -1,10 +1,10 @@
-*netbeans.txt*  For Vim version 7.4.  Last change: 2015 Mar 14
+*netbeans.txt*  For Vim version 7.4.  Last change: 2016 Feb 18
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
 
 
-			*socket-interface* *netbeans* *netbeans-support*
+					*netbeans* *netbeans-support*
 
 Vim NetBeans Protocol: a socket interface for Vim integration into an IDE.
 
@@ -193,6 +193,8 @@ There are two different ways to run Vim in NetBeans mode:
 
 	+ an IDE may start Vim with the |-nb| command line argument
 	+ NetBeans can be started from within Vim with the |:nbstart| command
+
+Vim uses a 3 second timeout on trying to make the connection.
 
 							*netbeans-parameters*
 Three forms can be used to setup the NetBeans connection parameters.
@@ -823,7 +825,7 @@ REJECT		Not used.
 6.7 Protocol errors					*nb-protocol_errors*
 
 These errors occur when a message violates the protocol:
-*E627* *E628* *E629* *E630* *E631* *E632* *E633* *E634* *E635* *E636*
+*E627* *E628* *E629* *E632* *E633* *E634* *E635* *E636*
 *E637* *E638* *E639* *E640* *E641* *E642* *E643* *E644* *E645* *E646*
 *E647* *E648* *E649* *E650* *E651* *E652* *E653* *E654*
 

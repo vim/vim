@@ -77,8 +77,8 @@ static char *Fspec_Rms;		       /* rms file spec, passed implicitly between rout
 
 
 
-static TT_MODE	get_tty __ARGS((void));
-static void	set_tty __ARGS((int row, int col));
+static TT_MODE	get_tty(void);
+static void	set_tty(int row, int col);
 
 #define EXPL_ALLOC_INC 64
 
@@ -723,10 +723,10 @@ struct typeahead_st {
  * "msec" == -1 will block until a character is available.
  */
     int
-RealWaitForChar(fd, msec, check_for_gpm)
-    int		fd UNUSED; /* always read from iochan */
-    long	msec;
-    int		*check_for_gpm UNUSED;
+RealWaitForChar(
+    int		fd UNUSED, /* always read from iochan */
+    long	msec,
+    int		*check_for_gpm UNUSED)
 {
     int status;
     struct _generic_64 time_curr;

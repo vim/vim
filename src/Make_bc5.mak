@@ -7,6 +7,7 @@
 #
 # Contributed by Ben Singer.
 # Updated 4/1997 by Ron Aaron
+#	2016: removed support for 16 bit DOS
 #	6/1997 - added support for 16 bit DOS
 #	Note: this has been tested, and works, for BC5.  Your mileage may vary.
 #	Has been reported NOT to work with BC 4.52.  Maybe it can be fixed?
@@ -34,8 +35,7 @@
 # name		value (default)
 #
 # BOR		path to root of Borland C install (c:\bc5)
-# LINK		name of the linker ($(BOR)\bin\ilink if OSTYPE is DOS16,
-#		$(BOR)\bin\ilink32 otherwise)
+# LINK		name of the linker ($(BOR)\bin\ilink32)
 # GUI		no or yes: set to yes if you want the GUI version (yes)
 # LUA     define to path to Lua dir to get Lua support (not defined)
 #   LUA_VER	  define to version of Lua being used (51)
@@ -70,7 +70,6 @@
 # GETTEXT	no or yes: set to yes for multi-language support (yes)
 # ICONV		no or yes: set to yes for dynamic iconv support (yes)
 # OLE		no or yes: set to yes to make OLE gvim (no)
-# OSTYPE	DOS16 or WIN32 (WIN32)
 # DEBUG		no or yes: set to yes if you wish a DEBUGging build (no)
 # CODEGUARD	no or yes: set to yes if you want to use CODEGUARD (no)
 # CPUNR		1 through 6: select -CPU argument to compile with (3)
@@ -78,17 +77,19 @@
 # USEDLL	no or yes: set to yes to use the Runtime library DLL (no)
 #		For USEDLL=yes the cc3250.dll is required to run Vim.
 # VIMDLL	no or yes: create vim32.dll, and stub (g)vim.exe (no)
-# ALIGN		1, 2 or 4: Alignment to use (4 for Win32, 2 for DOS16)
+# ALIGN		1, 2 or 4: Alignment to use (4 for Win32)
 # FASTCALL	no or yes: set to yes to use register-based function protocol (yes)
 # OPTIMIZE	SPACE, SPEED, or MAXSPEED: type of optimization (MAXSPEED)
 # POSTSCRIPT	no or yes: set to yes for PostScript printing
-# FEATURES	TINY, SMALL, NORMAL, BIG or HUGE
-#		(BIG for WIN32, SMALL for DOS16)
+# FEATURES	TINY, SMALL, NORMAL, BIG or HUGE (BIG for WIN32)
 # WINVER	0x0400 or 0x0500: minimum Win32 version to support (0x0400)
 # CSCOPE	no or yes: include support for Cscope interface (yes)
-# NETBEANS	no or yes: include support for Netbeans interface (yes if GUI
+# NETBEANS	no or yes: include support for Netbeans interface; also
+#		requires CHANNEL (yes if GUI
 #		is yes)
 # NBDEBUG	no or yes: include support for debugging Netbeans interface (no)
+# CHANNEL	no or yes: include support for inter process communication (yes
+#		if GUI is yes)
 # XPM		define to path to XPM dir to get support for loading XPM images.
 
 ### BOR: root of the BC installation
@@ -96,8 +97,7 @@
 BOR = c:\bc5
 !endif
 
-### LINK: Name of the linker: tlink or ilink32 (this is below, depends on
-# $(OSTYPE)
+### LINK: Name of the linker: ilink32 (this is below)
 
 ### GUI: yes for GUI version, no for console version
 !if ("$(GUI)"=="")
@@ -137,6 +137,11 @@ CSCOPE = yes
 NETBEANS = yes
 !endif
 
+### CHANNEL: yes to enable inter process communication, no to disable it
+!if ("$(CHANNEL)"=="") && ("$(GUI)"=="yes")
+CHANNEL = yes
+!endif
+
 ### LUA: uncomment this line if you want lua support in vim
 # LUA=c:\lua
 
@@ -157,12 +162,6 @@ NETBEANS = yes
 
 ### OLE: no for normal gvim, yes for OLE-capable gvim (only works with GUI)
 #OLE = yes
-
-### OSTYPE: DOS16 for Windows 3.1 version, WIN32 for Windows 95/98/NT/2000
-#   version
-!if ("$(OSTYPE)"=="")
-OSTYPE = WIN32
-!endif
 
 ### DEBUG: Uncomment to make an executable for debugging
 # DEBUG = yes
@@ -200,13 +199,9 @@ USEDLL = no
 ### VIMDLL: yes for a DLL version of VIM (NOT RECOMMENDED), no otherwise
 #VIMDLL = yes
 
-### ALIGN: alignment you desire: (1,2 or 4: s/b 4 for Win32, 2 for DOS)
+### ALIGN: alignment you desire: (1,2 or 4: s/b 4 for Win32)
 !if ("$(ALIGN)"=="")
-!if ($(OSTYPE)==DOS16)
-ALIGN = 2
-!else
 ALIGN = 4
-!endif
 !endif
 
 ### FASTCALL: yes to use FASTCALL calling convention (RECOMMENDED!), no otherwise
@@ -231,13 +226,9 @@ FASTCALL = yes
 OPTIMIZE = MAXSPEED
 !endif
 
-### FEATURES: TINY, SMALL, NORMAL, BIG or HUGE (BIG for WIN32, SMALL for DOS16)
+### FEATURES: TINY, SMALL, NORMAL, BIG or HUGE (BIG for WIN32)
 !if ("$(FEATURES)"=="")
-! if ($(OSTYPE)==DOS16)
-FEATURES = SMALL
-! else
 FEATURES = BIG
-! endif
 !endif
 
 ### POSTSCRIPT: uncomment this line if you want PostScript printing
@@ -258,24 +249,7 @@ WINVER = 0x0400
 # Sanity checks for the above options:
 #
 
-!if ($(OSTYPE)==DOS16)
-!if (($(CPUNR)+0)>4)
-!error CPUNR Must be less than or equal to 4 for DOS16
-!endif
-
-!if (($(ALIGN)+0)>2)
-!error ALIGN Must be less than or equal to 2 for DOS16
-!endif
-
-!else	# not DOS16
-!if (($(CPUNR)+0)<3)
-!error CPUNR Must be greater or equal to 3 for WIN32
-!endif
-!endif
-
-!if ($(OSTYPE)!=WIN32) && ($(OSTYPE)!=DOS16)
-!error Check the OSTYPE variable again: $(OSTYPE) is not supported!
-!endif
+OSTYPE = WIN32
 
 #
 # Optimizations: change as desired (RECOMMENDATION: Don't change!):
@@ -296,11 +270,6 @@ OPT = $(OPT) -pr
 !if ("$(CODEGUARD)"!="yes")
 OPT = $(OPT) -vi-
 !endif
-!endif
-!if ($(OSTYPE)==DOS16)
-!undef GUI
-!undef VIMDLL
-!undef USEDLL
 !endif
 # shouldn't have to change:
 LIB = $(BOR)\lib
@@ -466,6 +435,7 @@ LINK2 = -aa
 RESFILE = vim.res
 !else
 !undef NETBEANS
+!undef CHANNEL
 !undef XPM
 !undef VIMDLL
 !if ("$(DEBUG)"=="yes")
@@ -474,25 +444,27 @@ TARGET = vimd.exe
 # for now, anyway: VIMDLL is only for the GUI version
 TARGET = vim.exe
 !endif
-!if ($(OSTYPE)==DOS16)
-DEFINES= -DFEAT_$(FEATURES) -DMSDOS
-EXETYPE=-ml
-STARTUPOBJ = c0l.obj
-LINK2 =
-!else
 EXETYPE=-WC
 STARTUPOBJ = c0x32.obj
 LINK2 = -ap -OS -o -P
-!endif
 RESFILE = vim.res
 !endif
 
 !if ("$(NETBEANS)"=="yes")
+!if ("$(CHANNEL)"!="yes")
+# cannot use Netbeans without CHANNEL
+NETBEANS = no
+!else
 DEFINES = $(DEFINES) -DFEAT_NETBEANS_INTG
 !if ("$(NBDEBUG)"=="yes")
 DEFINES = $(DEFINES) -DNBDEBUG
 NBDEBUG_DEP = nbdebug.h nbdebug.c
 !endif
+!endif
+!endif
+
+!if ("$(CHANNEL)"=="yes")
+DEFINES = $(DEFINES) -DFEAT_JOB_CHANNEL
 !endif
 
 !ifdef XPM
@@ -527,16 +499,6 @@ DEFINES = $(DEFINES) -DMSWINPS
 ##### BASE COMPILER/TOOLS RULES #####
 MAKE = $(BOR)\bin\make
 CFLAGS = -w-aus -w-par -w-pch -w-ngu -w-csu -I$(INCLUDE)
-!if ($(OSTYPE)==DOS16)
-BRC =
-!if ("$(LINK)"=="")
-LINK	= $(BOR)\BIN\TLink
-!endif
-CC   = $(BOR)\BIN\Bcc
-LFLAGS	= -Tde -c -m -L$(LIB) $(DEBUG_FLAG) $(LINK2)
-LFLAGSDLL  =
-CFLAGS = $(CFLAGS) -H- $(HEADERS)
-!else
 BRC = $(BOR)\BIN\brc32
 !if ("$(LINK)"=="")
 LINK	= $(BOR)\BIN\ILink32
@@ -545,7 +507,6 @@ CC   = $(BOR)\BIN\Bcc32
 LFLAGS	= -OS -Tpe -c -m -L$(LIB) $(DEBUG_FLAG) $(LINK2)
 LFLAGSDLL  = -Tpd -c -m -L$(LIB) $(DEBUG_FLAG) $(LINK2)
 CFLAGS = $(CFLAGS) -d -RT- -k- -Oi $(HEADERS) -f-
-!endif
 
 CC1 = -c
 CC2 = -o
@@ -565,8 +526,6 @@ CCARG = +$(OBJDIR)\bcc.cfg
 .cpp.obj:
 	$(CC) $(CCARG) $(CC1) $(CC2)$@ $*.cpp
 
-!if ($(OSTYPE)==DOS16)
-!else # win32:
 vimmain = \
 	$(OBJDIR)\os_w32exe.obj
 !if ("$(VIMDLL)"=="yes")
@@ -575,7 +534,6 @@ vimwinmain = \
 !else
 vimwinmain = \
 	$(OBJDIR)\os_w32exe.obj
-!endif
 !endif
 
 vimobj =  \
@@ -598,6 +556,7 @@ vimobj =  \
 	$(OBJDIR)\getchar.obj \
 	$(OBJDIR)\hardcopy.obj \
 	$(OBJDIR)\hashtab.obj \
+	$(OBJDIR)\json.obj \
 	$(OBJDIR)\main.obj \
 	$(OBJDIR)\mark.obj \
 	$(OBJDIR)\memfile.obj \
@@ -672,6 +631,11 @@ vimobj = $(vimobj) \
     $(OBJDIR)\netbeans.obj
 !endif
 
+!if ("$(CHANNEL)"=="yes")
+vimobj = $(vimobj) \
+    $(OBJDIR)\channel.obj
+!endif
+
 !ifdef XPM
 vimobj = $(vimobj) \
     $(OBJDIR)\xpm_w32.obj
@@ -696,13 +660,8 @@ vimobj = $(vimobj) \
 	$(OBJDIR)\gui_w32.obj
 !endif
 
-!if ($(OSTYPE)==WIN32)
 vimobj = $(vimobj) \
 	$(OBJDIR)\os_win32.obj $(OBJDIR)\os_mswin.obj $(OBJDIR)\winclip.obj
-!elif ($(OSTYPE)==DOS16)
-vimobj = $(vimobj) \
-	$(OBJDIR)\os_msdos.obj
-!endif
 # Blab what we are going to do:
 MSG = Compiling $(OSTYPE) $(TARGET) $(OLETARGET), with:
 !if ("$(GUI)"=="yes")
@@ -746,6 +705,9 @@ MSG = $(MSG) CSCOPE
 !endif
 !if ("$(NETBEANS)"=="yes")
 MSG = $(MSG) NETBEANS
+!endif
+!if ("$(CHANNEL)"=="yes")
+MSG = $(MSG) CHANNEL
 !endif
 !ifdef XPM
 MSG = $(MSG) XPM
@@ -791,14 +753,10 @@ MSG = $(MSG) Align=$(ALIGNARG)
 
 !message $(MSG)
 
-!if ($(OSTYPE)==DOS16)
-TARGETS = $(TARGET)
-!else
 !if ("$(VIMDLL)"=="yes")
 TARGETS = $(DLLTARGET)
 !endif
 TARGETS = $(TARGETS) $(TARGET)
-!endif
 
 # Targets:
 all: vim vimrun.exe install.exe xxd uninstal.exe GvimExt/gvimext.dll
@@ -824,18 +782,10 @@ GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 	cd ..
 
 install.exe: dosinst.c $(OBJDIR)\bcc.cfg
-!if ($(OSTYPE)==WIN32)
 	$(CC) $(CCARG) -WC -DWIN32 -einstall dosinst.c
-!else
-	$(CC) $(CCARG) -WC -einstall dosinst.c
-!endif
 
 uninstal.exe: uninstal.c $(OBJDIR)\bcc.cfg
-!if ($(OSTYPE)==WIN32)
 	$(CC) $(CCARG) -WC -DWIN32 -O2 -euninstal uninstal.c
-!else
-	$(CC) $(CCARG) -WC -O2 -euninstal uninstal.c
-!endif
 
 clean:
 !if "$(OS)" == "Windows_NT"
@@ -896,10 +846,7 @@ $(DLLTARGET): $(OBJDIR) $(vimdllobj)
 	cg32.lib+
 !endif
 # $(OSTYPE)==WIN32 causes os_mswin.c compilation. FEAT_SHORTCUT in it needs OLE
-!if ("$(OLE)"=="yes" || $(OSTYPE)==WIN32)
 	ole2w32.lib +
-!endif
-!if ($(OSTYPE)==WIN32)
 	import32.lib+
 !ifdef LUA
 	$(LUA_LIB_FLAG)lua.lib+
@@ -928,9 +875,6 @@ $(DLLTARGET): $(OBJDIR) $(vimdllobj)
 	cw32.lib
 !endif
 	vim.def
-!else
-	cl.lib
-!endif
 |
 
 !if ("$(VIMDLL)"=="yes")
@@ -947,14 +891,11 @@ $(TARGET): $(OBJDIR) $(vimobj) $(OBJDIR)\$(RESFILE)
 	$(vimobj)
 !endif
 	$<,$*
-!if ($(OSTYPE)==WIN32)
 !if ("$(CODEGUARD)"=="yes")
 	cg32.lib+
 !endif
 # $(OSTYPE)==WIN32 causes os_mswin.c compilation. FEAT_SHORTCUT in it needs OLE
-!if ("$(OLE)"=="yes" || $(OSTYPE)==WIN32)
 	ole2w32.lib +
-!endif
 	import32.lib+
 !ifdef LUA
 	$(LUA_LIB_FLAG)lua.lib+
@@ -984,9 +925,6 @@ $(TARGET): $(OBJDIR) $(vimobj) $(OBJDIR)\$(RESFILE)
 !endif
 
 	$(OBJDIR)\$(RESFILE)
-!else
-	emu.lib + cl.lib
-!endif
 |
 
 test:
@@ -1027,6 +965,9 @@ $(OBJDIR)\xpm_w32.obj: xpm_w32.c xpm.lib
 
 $(OBJDIR)\netbeans.obj: netbeans.c $(NBDEBUG_DEP)
 	$(CC) $(CCARG) $(CC1) $(CC2)$@ netbeans.c
+
+$(OBJDIR)\channel.obj: channel.c
+	$(CC) $(CCARG) $(CC1) $(CC2)$@ channel.c
 
 $(OBJDIR)\vim.res: vim.rc version.h tools.bmp tearoff.bmp \
 		vim.ico vim_error.ico vim_alert.ico vim_info.ico vim_quest.ico

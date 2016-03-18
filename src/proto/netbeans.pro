@@ -1,6 +1,5 @@
 /* netbeans.c */
 void netbeans_parse_messages(void);
-void netbeans_read(void);
 int isNetbeansBuffer(buf_T *bufp);
 int isNetbeansModified(buf_T *bufp);
 void netbeans_end(void);
@@ -9,8 +8,6 @@ void ex_nbkey(exarg_T *eap);
 void ex_nbstart(exarg_T *eap);
 void netbeans_beval_cb(BalloonEval *beval, int state);
 int netbeans_active(void);
-int netbeans_filedesc(void);
-void netbeans_gui_register(void);
 void netbeans_open(char *params, int doabort);
 void netbeans_send_disconnect(void);
 void netbeans_frame_moved(int new_x, int new_y);

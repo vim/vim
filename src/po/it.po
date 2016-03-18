@@ -13,13 +13,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim 7.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-11 20:58+0200\n"
-"PO-Revision-Date:  2015-08-11 22:02+0200\n"
-"Last-Translator:   Vlad Sandrini   <vlad.gently@gmail.com>\n"
-"Language-Team:     Italian                   Antonio Colombo <azc100@gmail."
-"com>                   Vlad Sandrini <vlad.gently@gmail."
-"com>                   Luciano Montanaro <mikelima@cirulla.net>\n"
-"Language: \n"
+"POT-Creation-Date: 2016-02-11 12:10+0100\n"
+"PO-Revision-Date:  2016-02-11 14:42+0200\n"
+"Last-Translator:   Antonio Colombo   <azc100@gmail.com>\n"
+"Language-Team:     Antonio Colombo   <azc100@gmail.com>"
+"                   Vlad Sandrini     <vlad.gently@gmail.com"
+"                   Luciano Montanaro <mikelima@cirulla.net>\n"
+"Language: Italian\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO_8859-1\n"
 "Content-Transfer-Encoding: 8-bit\n"
@@ -203,6 +203,18 @@ msgstr "Segni per %s:"
 #, c-format
 msgid "    line=%ld  id=%d  name=%s"
 msgstr "    riga=%ld id=%d, nome=%s"
+
+msgid "E897: All channels are in use"
+msgstr "E897: Tutti i canali sono in uso"
+
+msgid "E902: Cannot connect to port"
+msgstr "E902: Non posso commettermi alla porta"
+
+msgid "E899: Cannot connect to port after retry2"
+msgstr "E899: Non posso commettermi alla porta dopo retry2"
+
+msgid "E896: read from channel"
+msgstr "E896: lettura dal canale"
 
 msgid "E821: File is encrypted with unknown method"
 msgstr "E821: File cifrato con metodo sconosciuto"
@@ -400,9 +412,6 @@ msgstr "E686: L'argomento di %s deve essere una Lista"
 msgid "E712: Argument of %s must be a List or Dictionary"
 msgstr "E712: L'argomento di %s deve essere una Lista o un Dizionario"
 
-msgid "E713: Cannot use empty key for Dictionary"
-msgstr "E713: Non posso usare una chiave nulla per il Dizionario"
-
 msgid "E714: List required"
 msgstr "E714: È necessaria una Lista"
 
@@ -444,7 +453,7 @@ msgstr "E461: Nome di variabile non ammesso: %s"
 
 # nuovo
 msgid "E806: using Float as a String"
-msgstr "E806: uso di un numero con virgola come stringa"
+msgstr "E806: uso di un Numero-a-virgola-mobile come Stringa"
 
 msgid "E687: Less targets than List items"
 msgstr "E687: Destinazioni più numerose degli elementi di Lista"
@@ -510,13 +519,16 @@ msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Operazione non valida per Funcref"
 
 msgid "E804: Cannot use '%' with Float"
-msgstr "E804: Non si può usare '%' con un numero con virgola"
+msgstr "E804: Non si può usare '%' con un Numero-a-virgola-mobile"
 
 msgid "E110: Missing ')'"
 msgstr "E110: Manca ')'"
 
 msgid "E695: Cannot index a Funcref"
 msgstr "E695: Non posso indicizzare un Funcref"
+
+msgid "E909: Cannot index a special variable"
+msgstr "E909: Non posso indicizzare una variabile speciale"
 
 #, c-format
 msgid "E112: Option name missing: %s"
@@ -589,13 +601,22 @@ msgid "E725: Calling dict function without Dictionary: %s"
 msgstr "E725: Chiamata di funzione dict in assenza di Dizionario: %s"
 
 msgid "E808: Number or Float required"
-msgstr "E808: Ci vuole un numero intero o con virgola"
+msgstr "E808: Ci vuole un Numero o un Numero-a-virgola-mobile"
 
 msgid "add() argument"
 msgstr "argomento di add()"
 
 msgid "E699: Too many arguments"
 msgstr "E699: Troppi argomenti"
+
+msgid "E906: not an open channel"
+msgstr "E906: canale non aperto"
+
+msgid "E999: Invalid callback argument"
+msgstr "E999: Argomento callback non valido"
+
+msgid "E912: cannot use ch_sendexpr() with a raw channel"
+msgstr "E912: non posso usare ch_sendexpr() con un canale grezzo"
 
 msgid "E785: complete() can only be used in Insert mode"
 msgstr "E785: complete() può essere usata solo in modalità inserimento"
@@ -698,7 +719,7 @@ msgid "E677: Error writing temp file"
 msgstr "E677: Errore in scrittura su file temporaneo"
 
 msgid "E805: Using a Float as a Number"
-msgstr "E805: Uso di un numero con virgola come intero"
+msgstr "E805: Uso di un Numero-a-virgola-mobile come Numero"
 
 msgid "E703: Using a Funcref as a Number"
 msgstr "E703: Uso di Funcref come Numero"
@@ -709,6 +730,27 @@ msgstr "E745: Uso di Lista come Numero"
 msgid "E728: Using a Dictionary as a Number"
 msgstr "E728: Uso di Dizionario come Numero"
 
+msgid "E910: Using a Job as a Number"
+msgstr "E910: Uso di Job come Numero"
+
+msgid "E891: Using a Funcref as a Float"
+msgstr "E891: Uso di Funcref come Numero-a-virgola-mobile"
+
+msgid "E892: Using a String as a Float"
+msgstr "E892: Uso di Stringa come Numero-a-virgola-mobile"
+
+msgid "E893: Using a List as a Float"
+msgstr "E893: Uso di Lista come Numero-a-virgola-mobile"
+
+msgid "E894: Using a Dictionary as a Float"
+msgstr "E894: Uso di Dizionario come Numero-a-virgola-mobile"
+
+msgid "E907: Using a special value as a Float"
+msgstr "E907: Uso di valore speciale come Numero-a-virgola-mobile"
+
+msgid "E911: Using a Job as a Float"
+msgstr "E911: Uso di Job come Numero-a-virgola-mobile"
+
 msgid "E729: using Funcref as a String"
 msgstr "E729: uso di Funcref come Stringa"
 
@@ -717,6 +759,10 @@ msgstr "E730: uso di Lista come Stringa"
 
 msgid "E731: using Dictionary as a String"
 msgstr "E731: uso di Dizionario come Stringa"
+
+# nuovo
+msgid "E908: using an invalid value as a String"
+msgstr "E908: uso di un valore non valido come Stringa"
 
 #, c-format
 msgid "E706: Variable type mismatch for: %s"
@@ -786,9 +832,11 @@ msgstr "E746: Il nome funzione non corrisponde al nome file dello script: %s"
 msgid "E129: Function name required"
 msgstr "E129: Nome funzione necessario"
 
+#, c-format
 msgid "E128: Function name must start with a capital or \"s:\": %s"
-msgstr "E128: Il nome funzione deve iniziare con maiuscola o \"s:\": %s" 
+msgstr "E128: Il nome funzione deve iniziare con maiuscola o \"s:\": %s"
 
+#, c-format
 msgid "E884: Function name cannot contain a colon: %s"
 msgstr "E884: Il nome della funzione non può contenere un due punti: %s"
 
@@ -908,6 +956,7 @@ msgstr "E138: Non riesco a scrivere il file viminfo %s!"
 msgid "Writing viminfo file \"%s\""
 msgstr "Scrivo file viminfo \"%s\""
 
+#, c-format
 msgid "E886: Can't rename viminfo file to %s!"
 msgstr "E886: Non riesco a rinominare il file viminfo a %s!"
 
@@ -928,6 +977,13 @@ msgstr "# Valore di 'encoding' al momento della scrittura di questo file\n"
 
 msgid "Illegal starting char"
 msgstr "Carattere iniziale non ammesso"
+
+msgid ""
+"\n"
+"# Bar lines, copied verbatim:\n"
+msgstr ""
+"\n"
+"# Righe che iniziano con '|', semplicemente copiate:\n"
 
 msgid "Save As"
 msgstr "Salva con Nome"
@@ -1135,6 +1191,13 @@ msgstr "riga %ld: %s"
 msgid "cmd: %s"
 msgstr "com: %s"
 
+msgid "frame is zero"
+msgstr "al livello zero"
+
+#, c-format
+msgid "frame at highest level: %d"
+msgstr "al livello più alto: %d"
+
 #, c-format
 msgid "Breakpoint in \"%s%s\" line %ld"
 msgstr "Pausa in \"%s%s\" riga %ld"
@@ -1166,8 +1229,7 @@ msgstr "E162: Buffer \"%s\" non salvato dopo modifica"
 
 msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
 msgstr ""
-"Avviso: Entrato in altro buffer inaspettatamente (controllare "
-"autocomandi)"
+"Avviso: Entrato in altro buffer inaspettatamente (controllare autocomandi)"
 
 msgid "E163: There is only one file to edit"
 msgstr "E163: C'è un solo file da elaborare"
@@ -1356,6 +1418,7 @@ msgstr "E841: Nome riservato, non usabile in un comando definito dall'utente"
 msgid "E184: No such user-defined command: %s"
 msgstr "E184: Comando definito dall'utente %s inesistente"
 
+#, c-format
 msgid "E180: Invalid address type value: %s"
 msgstr "E180: Tipo di indirizzo non valido: %s"
 
@@ -1811,8 +1874,8 @@ msgid ""
 "E513: write error, conversion failed in line %ld (make 'fenc' empty to "
 "override)"
 msgstr ""
-"E513: errore in scrittura, conversione fallita alla riga %ld (rendere "
-"'fenc' nullo per eseguire comunque)"
+"E513: errore in scrittura, conversione fallita alla riga %ld (rendere 'fenc' "
+"nullo per eseguire comunque)"
 
 msgid "E514: write error (file system full?)"
 msgstr "E514: errore in scrittura ('File System' pieno?)"
@@ -1868,16 +1931,16 @@ msgid "[dos format]"
 msgstr "[in formato DOS]"
 
 msgid "[mac]"
-msgstr "[MAC]"
+msgstr "[Mac]"
 
 msgid "[mac format]"
-msgstr "[in formato MAC]"
+msgstr "[in formato Mac]"
 
 msgid "[unix]"
-msgstr "[UNIX]"
+msgstr "[Unix]"
 
 msgid "[unix format]"
-msgstr "[in formato UNIX]"
+msgstr "[in formato Unix]"
 
 msgid "1 line, "
 msgstr "1 riga, "
@@ -2620,6 +2683,13 @@ msgid ""
 msgstr ""
 "E815: Spiacente, comando non disponibile, non riesco a caricare librerie "
 "programmi MzScheme."
+
+msgid ""
+"E895: Sorry, this command is disabled, the MzScheme's racket/base module "
+"could not be loaded."
+msgstr ""
+"E815: Spiacente, comando non disponibile, non riesco a caricare modulo "
+"racket/base di MzScheme."
 
 msgid "invalid expression"
 msgstr "espressione non valida"
@@ -3788,15 +3858,12 @@ msgid ""
 "\n"
 "(1) Another program may be editing the same file.  If this is the case,\n"
 "    be careful not to end up with two different instances of the same\n"
-"    file when making changes."
+"    file when making changes.  Quit, or continue with caution.\n"
 msgstr ""
 "\n"
-"(1) Un altro programma può essere in edit sullo stesso file.\n"
-"    Se è così, attenzione a non trovarti con due versioni\n"
-"    differenti dello stesso file a cui vengono apportate modifiche."
-
-msgid "  Quit, or continue with caution.\n"
-msgstr "  Esci, o continua con prudenza.\n"
+"(1) Un altro programma può essere in edit sullo stesso file.  Se è così,\n"
+"    attenzione a non finire con due sessioni differenti che modificano lo\n"
+"    stesso file.  Uscire da Vim, o continuare con cautela.\n"
 
 msgid "(2) An edit session for this file crashed.\n"
 msgstr "(2) Una sessione di edit per questo file è finita male.\n"
@@ -3989,7 +4056,7 @@ msgid "E766: Insufficient arguments for printf()"
 msgstr "E766: Argomenti non sufficienti per printf()"
 
 msgid "E807: Expected Float argument for printf()"
-msgstr "E807: Numero con virgola atteso come argomento per printf()"
+msgstr "E807: Numero-a-virgola-mobile atteso come argomento per printf()"
 
 msgid "E767: Too many arguments to printf()"
 msgstr "E767: Troppi argomenti per printf()"
@@ -4100,19 +4167,10 @@ msgstr "E346: Nessun altra directory \"%s\" trovata nel 'cdpath'"
 msgid "E347: No more file \"%s\" found in path"
 msgstr "E347: Nessun altro file \"%s\" trovato nel percorso"
 
-msgid "Cannot connect to Netbeans #2"
-msgstr "Non posso connettermi a Netbeans #2"
-
-msgid "Cannot connect to Netbeans"
-msgstr "Non posso connettermi a Netbeans"
-
 #, c-format
 msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
 msgstr ""
 "E668: Modalità errata di accesso a file info connessione NetBeans: \"%s\""
-
-msgid "read from Netbeans socket"
-msgstr "lettura da socket Netbeans"
 
 #, c-format
 msgid "E658: NetBeans connection lost for buffer %ld"
@@ -4246,7 +4304,8 @@ msgstr "E574: Tipo di registro sconosciuto: %d"
 msgid ""
 "E883: search pattern and expression register may not contain two or more "
 "lines"
-msgstr "E883: espressione di ricerca e registro dell'espressione non possono "
+msgstr ""
+"E883: espressione di ricerca e registro dell'espressione non possono "
 "contenere due o più righe"
 
 #, c-format
@@ -4567,18 +4626,11 @@ msgstr ""
 "\n"
 "Non posso impostare il contesto di sicurezza per "
 
-msgid "Could not set security context "
-msgstr "Non riesco a impostare il contesto di sicurezza "
+msgid "Could not set security context %s for %s"
+msgstr "Non posso impostare il contesto di sicurezza %s per %s"
 
-msgid " for "
-msgstr " per "
-
-#. no enough size OR unexpected error
-msgid "Could not get security context "
-msgstr "Non riesco a ottenere il contesto di sicurezza "
-
-msgid ". Removing it!\n"
-msgstr ". Lo rimuovo!\n"
+msgid "Could not get security context %s for %s. Removing it!"
+msgstr "Non posso ottenere il contesto di sicurezza %s per %s. Lo rimuovo!"
 
 msgid ""
 "\n"
@@ -4757,6 +4809,7 @@ msgstr "E681: Buffer non caricato"
 msgid "E777: String or List expected"
 msgstr "E777: aspettavo Stringa o Lista"
 
+#, c-format
 msgid "E369: invalid item in %s%%[]"
 msgstr "E369: elemento non valido in %s%%[]"
 
@@ -4847,6 +4900,7 @@ msgstr "E554: Errore sintattico in %s{...}"
 msgid "External submatches:\n"
 msgstr "Sotto-corrispondenze esterne:\n"
 
+#, c-format
 msgid "E888: (NFA regexp) cannot repeat %s"
 msgstr "E888: (NFA regexp) non riesco a ripetere %s"
 
@@ -4867,6 +4921,7 @@ msgstr "E865: (NFA) Fine prematura dell'espressione regolare"
 msgid "E866: (NFA regexp) Misplaced %c"
 msgstr "E866: (NFA regexp) %c fuori posto"
 
+#, c-format
 msgid "E877: (NFA regexp) Invalid character class: %ld"
 msgstr "E877: (NFA regexp) Classe di caratteri non valida: %ld"
 
@@ -5171,8 +5226,7 @@ msgstr "Valore errato per CHECKCOMPOUNDPATTERN in %s riga %d: %s"
 
 #, c-format
 msgid "Different combining flag in continued affix block in %s line %d: %s"
-msgstr ""
-"Flag combinazione diverso in blocco affissi continuo in %s riga %d: %s"
+msgstr "Flag combinazione diverso in blocco affissi continuo in %s riga %d: %s"
 
 #, c-format
 msgid "Duplicate affix in %s line %d: %s"
@@ -5367,9 +5421,11 @@ msgstr "Fatto!"
 msgid "E765: 'spellfile' does not have %ld entries"
 msgstr "E765: 'spellfile' non ha %ld elementi"
 
+#, c-format
 msgid "Word '%.*s' removed from %s"
 msgstr "Parola '%.*s' rimossa da %s"
 
+#, c-format
 msgid "Word '%.*s' added to %s"
 msgstr "Parola '%.*s' aggiunta a %s"
 
@@ -5431,6 +5487,9 @@ msgstr "Nessun elemento sintattico definito per questo buffer"
 #, c-format
 msgid "E390: Illegal argument: %s"
 msgstr "E390: Argomento non ammesso: %s"
+
+msgid "syntax iskeyword "
+msgstr "syntax iskeyword "
 
 #, c-format
 msgid "E391: No such syntax cluster: %s"
@@ -5507,6 +5566,9 @@ msgstr "E847: Troppe inclusioni di sintassi"
 #, c-format
 msgid "E789: Missing ']': %s"
 msgstr "E789: Manca ']': %s"
+
+msgid "E890: trailing char after ']': %s]%s"
+msgstr "E890: Caratteri in più dopo ']': %s]%s"
 
 #, c-format
 msgid "E398: Missing '=': %s"
@@ -5965,7 +6027,7 @@ msgid ""
 "MacOS X (unix) version"
 msgstr ""
 "\n"
-"Versione MacOS X (unix)"
+"Versione MacOS X (Unix)"
 
 msgid ""
 "\n"
@@ -6537,6 +6599,9 @@ msgid "E794: Cannot set variable in the sandbox: \"%s\""
 msgstr ""
 "E794: Non posso impostare la variabile read-only in ambiente protetto: \"%s\""
 
+msgid "E713: Cannot use empty key for Dictionary"
+msgstr "E713: Non posso usare una chiave nulla per il Dizionario"
+
 msgid "E47: Error while reading errorfile"
 msgstr "E47: Errore leggendo il file errori"
 
@@ -6655,6 +6720,7 @@ msgstr "il dizionario è bloccato"
 msgid "list is locked"
 msgstr "la lista è bloccata"
 
+#, c-format
 msgid "failed to add key '%s' to dictionary"
 msgstr "non non riusciato ad aggiungere la chiave '%s' al dizionario"
 
@@ -6754,8 +6820,8 @@ msgstr "il passo scorrendo un intervallo non può essere zero"
 
 #, c-format
 msgid "attempt to assign sequence of size greater than %d to extended slice"
-msgstr "tentativo di assegnare una sequenza maggiore di %d a un intervallo "
-"esteso"
+msgstr ""
+"tentativo di assegnare una sequenza maggiore di %d a un intervallo esteso"
 
 #, c-format
 msgid "internal error: no vim list item %d"
@@ -6767,9 +6833,11 @@ msgstr "errore interno: non ci sono abbastanza elementi per la lista"
 msgid "internal error: failed to add item to list"
 msgstr "errore interno: non ho potuto aggiungere un elemento alla lista"
 
+#, c-format
 msgid "attempt to assign sequence of size %d to extended slice of size %d"
-msgstr "tentativo di assegnare sequenza di dimensione %d a un intervallo "
-" esteso di dimensione %d"
+msgstr ""
+"tentativo di assegnare sequenza di dimensione %d a un intervallo  esteso di "
+"dimensione %d"
 
 msgid "failed to add item to list"
 msgstr "non ho potuto aggiungere un elemento alla lista"
@@ -6907,4 +6975,3 @@ msgid ""
 msgstr ""
 "Impostazione di percorso non riuscita: sys.path non è una lista\n"
 "Dovresti aggiungere vim.VIM_SPECIAL_PATH a sys.path"
-

@@ -29,10 +29,8 @@
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>
 
-#define __ARGS(x) x
-
 /* Client API */
-char * sendToVim __ARGS((Display *dpy, char *name, char *cmd, int asKeys, int *code));
+char * sendToVim(Display *dpy, char *name, char *cmd, int asKeys, int *code);
 
 #ifdef MAIN
 /* A sample program */
@@ -70,15 +68,15 @@ main(int argc, char **argv)
  * Forward declarations for procedures defined later in this file:
  */
 
-static int	x_error_check __ARGS((Display *dpy, XErrorEvent *error_event));
-static int	AppendPropCarefully __ARGS((Display *display,
-		    Window window, Atom property, char *value, int length));
-static Window	LookupName __ARGS((Display *dpy, char *name,
-		    int delete, char **loose));
-static int	SendInit __ARGS((Display *dpy));
-static char	*SendEventProc __ARGS((Display *dpy, XEvent *eventPtr,
-				      int expect, int *code));
-static int	IsSerialName __ARGS((char *name));
+static int	x_error_check(Display *dpy, XErrorEvent *error_event);
+static int	AppendPropCarefully(Display *display,
+		    Window window, Atom property, char *value, int length);
+static Window	LookupName(Display *dpy, char *name,
+		    int delete, char **loose);
+static int	SendInit(Display *dpy);
+static char	*SendEventProc(Display *dpy, XEvent *eventPtr,
+				      int expect, int *code);
+static int	IsSerialName(char *name);
 
 /* Private variables */
 static Atom	registryProperty = None;
@@ -96,12 +94,12 @@ static int	got_x_error = FALSE;
  */
 
     char *
-sendToVim(dpy, name, cmd, asKeys, code)
-    Display	*dpy;			/* Where to send. */
-    char	*name;			/* Where to send. */
-    char	*cmd;			/* What to send. */
-    int		asKeys;			/* Interpret as keystrokes or expr ? */
-    int		*code;			/* Return code. 0 => OK */
+sendToVim(
+    Display	*dpy,			/* Where to send. */
+    char	*name,			/* Where to send. */
+    char	*cmd,			/* What to send. */
+    int		asKeys,			/* Interpret as keystrokes or expr ? */
+    int		*code)			/* Return code. 0 => OK */
 {
     Window	    w;
     Atom	    *plist;
@@ -247,8 +245,7 @@ sendToVim(dpy, name, cmd, asKeys, code)
  */
 
     static int
-SendInit(dpy)
-    Display *dpy;
+SendInit(Display *dpy)
 {
     XErrorHandler old_handler;
 
@@ -291,11 +288,11 @@ SendInit(dpy)
  */
 
     static Window
-LookupName(dpy, name, delete, loose)
-    Display *dpy;	/* Display whose registry to check. */
-    char *name;		/* Name of an interpreter. */
-    int delete;		/* If non-zero, delete info about name. */
-    char **loose;	/* Do another search matching -999 if not found
+LookupName(
+    Display *dpy,	/* Display whose registry to check. */
+    char *name,		/* Name of an interpreter. */
+    int delete,		/* If non-zero, delete info about name. */
+    char **loose)	/* Do another search matching -999 if not found
 			   Return result here if a match is found */
 {
     unsigned char   *regProp, *entry;
@@ -398,11 +395,11 @@ LookupName(dpy, name, delete, loose)
 }
 
     static char *
-SendEventProc(dpy, eventPtr, expected, code)
-    Display	   *dpy;
-    XEvent	    *eventPtr;		/* Information about event. */
-    int		    expected;		/* The one were waiting for */
-    int		    *code;		/* Return code. 0 => OK */
+SendEventProc(
+    Display	   *dpy,
+    XEvent	    *eventPtr,		/* Information about event. */
+    int		    expected,		/* The one were waiting for */
+    int		    *code)		/* Return code. 0 => OK */
 {
     unsigned char   *propInfo;
     unsigned char   *p;
@@ -537,13 +534,13 @@ SendEventProc(dpy, eventPtr, expected, code)
  */
 
     static int
-AppendPropCarefully(dpy, window, property, value, length)
-    Display *dpy;		/* Display on which to operate. */
-    Window window;		/* Window whose property is to
+AppendPropCarefully(
+    Display *dpy,		/* Display on which to operate. */
+    Window window,		/* Window whose property is to
 				 * be modified. */
-    Atom property;		/* Name of property. */
-    char *value;		/* Characters  to append to property. */
-    int  length;		/* How much to append */
+    Atom property,		/* Name of property. */
+    char *value,		/* Characters  to append to property. */
+    int  length)		/* How much to append */
 {
     XErrorHandler old_handler;
 
@@ -562,9 +559,7 @@ AppendPropCarefully(dpy, window, property, value, length)
  */
 /* ARGSUSED */
     static int
-x_error_check(dpy, error_event)
-    Display *dpy;
-    XErrorEvent	*error_event;
+x_error_check(Display *dpy, XErrorEvent *error_event)
 {
     got_x_error = TRUE;
     return 0;
@@ -575,8 +570,7 @@ x_error_check(dpy, error_event)
  * Actually just checks if the name ends in a digit.
  */
     static int
-IsSerialName(str)
-    char   *str;
+IsSerialName(char *str)
 {
     int len = strlen(str);
 

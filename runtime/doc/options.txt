@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2016 Jan 19
+*options.txt*	For Vim version 7.4.  Last change: 2016 Mar 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1211,10 +1211,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'bioskey' 'biosk'	boolean	(default on)
 			global
 			{not in Vi}  {only for MS-DOS}
-	When on the BIOS is called to obtain a keyboard character.  This works
-	better to detect CTRL-C, but only works for the console.  When using a
-	terminal over a serial port reset this option.
-	Also see |'conskey'|.
+	This was for MS-DOS and is no longer supported.
 
 							*'bomb'* *'nobomb'*
 'bomb'			boolean	(default off)
@@ -1946,13 +1943,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'conskey' 'consk'	boolean	(default off)
 			global
 			{not in Vi}  {only for MS-DOS}
-	When on direct console I/O is used to obtain a keyboard character.
-	This should work in most cases.  Also see |'bioskey'|.  Together,
-	three methods of console input are available:
-	'conskey'   'bioskey'	    action ~
-	   on	     on or off	    direct console input
-	   off		on	    BIOS
-	   off		off	    STDIN
+	This was for MS-DOS and is no longer supported.
 
 			*'copyindent'* *'ci'* *'nocopyindent'* *'noci'*
 'copyindent' 'ci'	boolean	(default off)
@@ -1969,7 +1960,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: 'copyindent' is reset when 'compatible' is set.
 	Also see 'preserveindent'.
 
-						*'cpoptions'* *'cpo'*
+						*'cpoptions'* *'cpo'* *cpo*
 'cpoptions' 'cpo'	string	(Vim default: "aABceFs",
 				 Vi default:  all flags)
 			global
@@ -2295,7 +2286,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			the encrypted bytes will be different.
 							*blowfish2*
 	   blowfish2	Blowfish method.  Medium strong encryption.  Requires
-			Vim 7.4.399 or later, files can NOT be read by Vim 7.3
+			Vim 7.4.401 or later, files can NOT be read by Vim 7.3
 			and older.  This adds a "seed" to the file, every time
 			you write the file the encrypted bytes will be
 			different.  The whole undo file is encrypted, not just
@@ -3096,17 +3087,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	  item		default		Used for ~
 	  stl:c		' ' or '^'	statusline of the current window
-	  stlnc:c	' ' or '-'	statusline of the non-current windows
+	  stlnc:c	' ' or '='	statusline of the non-current windows
 	  vert:c	'|'		vertical separators |:vsplit|
 	  fold:c	'-'		filling 'foldtext'
 	  diff:c	'-'		deleted lines of the 'diff' option
 
 	Any one that is omitted will fall back to the default.  For "stl" and
-	"stlnc" the space will be used when there is highlighting, '^' or '-'
+	"stlnc" the space will be used when there is highlighting, '^' or '='
 	otherwise.
 
 	Example: >
-	    :set fillchars=stl:^,stlnc:-,vert:\|,fold:-,diff:-
+	    :set fillchars=stl:^,stlnc:=,vert:\|,fold:-,diff:-
 <	This is similar to the default, except that these characters will also
 	be used when there is highlighting.
 
@@ -5409,6 +5400,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option was supported on RISC OS, which has been removed.
 
 
+				*'packpath'* *'pp'*
+'packpath' 'pp'		string	(default: see 'runtimepath')
+			{not in Vi}
+	Directories used to find packages.  See |packages|.
+
+
 						*'paragraphs'* *'para'*
 'paragraphs' 'para'	string	(default "IPLPPPQPP TPHPLIPpLpItpplpipbp")
 			global
@@ -6536,7 +6533,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  c	don't give |ins-completion-menu| messages.  For example,
 		"-- XXX completion (YYY)", "match 1 of 2", "The only match",
 		"Pattern not found", "Back at original", etc.
-	  q     use "recording" instead of "recording @a"
+	  q	use "recording" instead of "recording @a"
+	  F	don't give the file info when editing a file, like `:silent`
+		was used for the command
 
 	This gives you the opportunity to avoid that a change between buffers
 	requires you to hit <Enter>, but still gives as useful a message as
@@ -6983,7 +6982,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The option consists of printf style '%' items interspersed with
 	normal text.  Each status line item is of the form:
 	  %-0{minwid}.{maxwid}{item}
-	All fields except the {item} is optional.  A single percent sign can
+	All fields except the {item} are optional.  A single percent sign can
 	be given as "%%".  Up to 80 items can be specified.  *E541*
 
 	When the option starts with "%!" then it is used as an expression,
@@ -7571,6 +7570,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	non-keyword characters (white space is preferred).  Maximum line
 	length is 510 bytes.
 	To obtain a file to be used here, check out this ftp site:
+	[Sorry this link doesn't work anymore, do you know the right one?] 
 	ftp://ftp.ox.ac.uk/pub/wordlists/  First get the README file.
 	To include a comma in a file name precede it with a backslash.  Spaces
 	after a comma are ignored, otherwise spaces are included in the file
@@ -7771,13 +7771,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 				{not in Vi}
 				{only in the GTK+ 2 GUI}
 	Controls the size of toolbar icons.  The possible values are:
-		tiny		Use tiny toolbar icons.
-		small		Use small toolbar icons (default).
-		medium		Use medium-sized toolbar icons.
-		large		Use large toolbar icons.
+		tiny		Use tiny icons.
+		small		Use small icons (default).
+		medium		Use medium-sized icons.
+		large		Use large icons.
+		huge		Use even larger icons.
+		giant		Use very big icons.
 	The exact dimensions in pixels of the various icon sizes depend on
-	the current theme.  Common dimensions are large=32x32, medium=24x24,
-	small=20x20 and tiny=16x16.
+	the current theme.  Common dimensions are giant=48x48, huge=32x32,
+	large=24x24, medium=24x24, small=20x20 and tiny=16x16.
 
 	If 'toolbariconsize' is empty, the global default size as determined
 	by user preferences or the current theme is used.

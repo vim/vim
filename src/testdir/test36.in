@@ -98,6 +98,9 @@ p:s/\%#=2\U//g
 p:s/\%#=0[^A-Z]//g
 p:s/\%#=1[^A-Z]//g
 p:s/\%#=2[^A-Z]//g
+p:s/\%#=0\%204l^\t...//g
+p:s/\%#=1\%205l^\t...//g
+p:s/\%#=2\%206l^\t...//g
 :/^start-here/+1,$wq! test.out
 ENDTEST
 

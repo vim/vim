@@ -1,11 +1,11 @@
-# Japanese translation for Vim			vim:set foldmethod=marker:
+# Japanese translation for Vim
 #
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
 #
-# Last Change: 2014 May 13
+# Copyright (C) 2001-2016 MURAOKA Taro <koron.kaoriya@gmail.com>,
+# 			  vim-jp (http://vim-jp.org/)
 #
-# Copyright (C) 2001-13 MURAOKA Taro <koron.kaoriya@gmail.com>
 # THIS FILE IS DISTRIBUTED UNDER THE VIM LICENSE.
 #
 # generated from ja.po, DO NOT EDIT
@@ -14,10 +14,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim 7.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-07-06 13:50+0900\n"
-"PO-Revision-Date: 2013-07-06 15:00+0900\n"
+"POT-Creation-Date: 2016-02-01 09:02+0900\n"
+"PO-Revision-Date: 2016-02-01-09:08+0900\n"
 "Last-Translator: MURAOKA Taro <koron.kaoriya@gmail.com>\n"
-"Language-Team: MURAOKA Taro <koron.kaoriya@gmail.com>\n"
+"Language-Team: vim-jp (https://github.com/vim-jp/lang-ja)\n"
 "Language: Japanese\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=cp932\n"
@@ -39,7 +39,7 @@ msgid "E819: Blowfish test failed"
 msgstr "E819: Blowfish暗号のテストに失敗しました"
 
 msgid "[Location List]"
-msgstr "[場所リスト]"
+msgstr "[ロケーションリスト]"
 
 msgid "[Quickfix List]"
 msgstr "[Quickfixリスト]"
@@ -83,16 +83,15 @@ msgstr "1 個のバッファが破棄されました"
 msgid "%d buffers wiped out"
 msgstr "%d 個のバッファが破棄されました"
 
+msgid "E90: Cannot unload last buffer"
+msgstr "E90: 最後のバッファは解放できません"
+
 msgid "E84: No modified buffer found"
 msgstr "E84: 変更されたバッファはありません"
 
 #. back where we started, didn't find anything.
 msgid "E85: There is no listed buffer"
 msgstr "E85: リスト表\示されるバッファはありません"
-
-#, c-format
-msgid "E86: Buffer %ld does not exist"
-msgstr "E86: バッファ %ld はありません"
 
 msgid "E87: Cannot go beyond last buffer"
 msgstr "E87: 最後のバッファを越えて移動はできません"
@@ -103,9 +102,6 @@ msgstr "E88: 最初のバッファより前へは移動できません"
 #, c-format
 msgid "E89: No write since last change for buffer %ld (add ! to override)"
 msgstr "E89: バッファ %ld の変更は保存されていません (! で変更を破棄)"
-
-msgid "E90: Cannot unload last buffer"
-msgstr "E90: 最後のバッファは解放できません"
 
 msgid "W14: Warning: List of file names overflow"
 msgstr "W14: 警告: ファイル名のリストが長過ぎます"
@@ -206,6 +202,36 @@ msgstr "%s のサイン:"
 msgid "    line=%ld  id=%d  name=%s"
 msgstr "    行=%ld  識別子=%d  名前=%s"
 
+msgid "E897: All channels are in use"
+msgstr "E897: 全チャンネルが使用中です"
+
+msgid "E899: Cannot connect to port after retry2"
+msgstr "E899: 2回のリトライをしてもポートに接続できません"
+
+msgid "E902: Cannot connect to port"
+msgstr "E902: ポートに接続できません"
+
+msgid "E896: read from channel"
+msgstr "E896: チャンネルから読み込み"
+
+msgid "E821: File is encrypted with unknown method"
+msgstr "E821: ファイルが未知の方法で暗号化されています"
+
+msgid "Warning: Using a weak encryption method; see :help 'cm'"
+msgstr "警告: 弱い暗号方法を使っています; :help 'cm' を参照してください"
+
+msgid "Enter encryption key: "
+msgstr "暗号化用のキーを入力してください: "
+
+msgid "Enter same key again: "
+msgstr "もう一度同じキーを入力してください: "
+
+msgid "Keys don't match!"
+msgstr "キーが一致しません"
+
+msgid "[crypted]"
+msgstr "[暗号化]"
+
 #, c-format
 msgid "E96: Can not diff more than %ld buffers"
 msgstr "E96: %ld 以上のバッファはdiffできません"
@@ -214,7 +240,7 @@ msgid "E810: Cannot read or write temp files"
 msgstr "E810: 一時ファイルの読込もしくは書込ができません"
 
 msgid "E97: Cannot create diffs"
-msgstr "E97: 差分を作成できません "
+msgstr "E97: 差分を作成できません"
 
 msgid "Patch file"
 msgstr "パッチファイル"
@@ -229,7 +255,7 @@ msgid "E99: Current buffer is not in diff mode"
 msgstr "E99: 現在のバッファは差分モードではありません"
 
 msgid "E793: No other buffer in diff mode is modifiable"
-msgstr "E793: 差分モードである他のバッファは変更可能\です"
+msgstr "E793: 差分モードである他のバッファは変更できません"
 
 msgid "E100: No other buffer in diff mode"
 msgstr "E100: 差分モードである他のバッファはありません"
@@ -272,7 +298,7 @@ msgid " Whole line completion (^L^N^P)"
 msgstr " 行(全体)補完 (^L^N^P)"
 
 msgid " File name completion (^F^N^P)"
-msgstr "ファイル名補完 (^F^N^P)"
+msgstr " ファイル名補完 (^F^N^P)"
 
 msgid " Tag completion (^]^N^P)"
 msgstr " タグ補完 (^]^N^P)"
@@ -293,7 +319,7 @@ msgid " Command-line completion (^V^N^P)"
 msgstr " コマンドライン補完 (^V^N^P)"
 
 msgid " User defined completion (^U^N^P)"
-msgstr " ユーザ定義補完 (^U^N^P)"
+msgstr " ユーザー定義補完 (^U^N^P)"
 
 msgid " Omni completion (^O^N^P)"
 msgstr " オムニ補完 (^O^N^P)"
@@ -384,9 +410,6 @@ msgstr "E686: %s の引数はリスト型でなければなりません"
 #, c-format
 msgid "E712: Argument of %s must be a List or Dictionary"
 msgstr "E712: %s の引数はリスト型または辞書型でなければなりません"
-
-msgid "E713: Cannot use empty key for Dictionary"
-msgstr "E713: 辞書型に空のキーを使うことはできません"
 
 msgid "E714: List required"
 msgstr "E714: リスト型が必要です"
@@ -527,6 +550,10 @@ msgstr "E696: リスト型にカンマがありません: %s"
 msgid "E697: Missing end of List ']': %s"
 msgstr "E697: リスト型の最後に ']' がありません: %s"
 
+msgid "Not enough memory to set references, garbage collection aborted!"
+msgstr ""
+"ガーベッジコレクションを中止しました! 参照を作成するのにメモリが不足しました"
+
 #, c-format
 msgid "E720: Missing colon in Dictionary: %s"
 msgstr "E720: 辞書型にコロンがありません: %s"
@@ -560,7 +587,7 @@ msgstr "E117: 未知の関数です: %s"
 
 #, c-format
 msgid "E119: Not enough arguments for function: %s"
-msgstr "E119: 関数の引数が少な過ぎます: %s"
+msgstr "E119: 関数の引数が足りません: %s"
 
 #, c-format
 msgid "E120: Using <SID> not in a script context: %s"
@@ -590,12 +617,18 @@ msgstr "E785: complete() は挿入モードでしか利用できません"
 msgid "&Ok"
 msgstr "&Ok"
 
-#, c-format
-msgid "E737: Key already exists: %s"
-msgstr "E737: キーは既に存在します: %s"
+msgid "E999: Invalid callback argument"
+msgstr "E999: 無効なコールバック引数です"
+
+msgid "E999: not an open channel"
+msgstr "E999: 開いていないチャンネルです"
 
 msgid "extend() argument"
 msgstr "extend() の引数"
+
+#, c-format
+msgid "E737: Key already exists: %s"
+msgstr "E737: キーは既に存在します: %s"
 
 msgid "map() argument"
 msgstr "map() の引数"
@@ -640,14 +673,14 @@ msgid "<empty>"
 msgstr "<空>"
 
 msgid "E240: No connection to Vim server"
-msgstr "E240: Vim サーバへの接続がありません"
+msgstr "E240: Vim サーバーへの接続がありません"
 
 #, c-format
 msgid "E241: Unable to send to %s"
 msgstr "E241: %s へ送ることができません"
 
 msgid "E277: Unable to read a server reply"
-msgstr "E277: サーバの応答がありません"
+msgstr "E277: サーバーの応答がありません"
 
 msgid "remove() argument"
 msgstr "remove() の引数"
@@ -665,8 +698,14 @@ msgstr "E258: クライアントへ送ることができません"
 msgid "sort() argument"
 msgstr "sort() の引数"
 
+msgid "uniq() argument"
+msgstr "uniq() の引数"
+
 msgid "E702: Sort compare function failed"
 msgstr "E702: ソ\ートの比較関数が失敗しました"
+
+msgid "E882: Uniq compare function failed"
+msgstr "E882: Uniq の比較関数が失敗しました"
 
 msgid "(Invalid)"
 msgstr "(無効)"
@@ -685,6 +724,18 @@ msgstr "E745: リスト型を数値として扱っています"
 
 msgid "E728: Using a Dictionary as a Number"
 msgstr "E728: 辞書型を数値として扱っています"
+
+msgid "E891: Using a Funcref as a Float"
+msgstr "E891: 関数参照型を浮動小数点数として扱っています。"
+
+msgid "E892: Using a String as a Float"
+msgstr "E892: 文字列を浮動小数点数として扱っています"
+
+msgid "E893: Using a List as a Float"
+msgstr "E893: リスト型を浮動小数点数として扱っています"
+
+msgid "E894: Using a Dictionary as a Float"
+msgstr "E894: 辞書型を浮動小数点数として扱っています"
 
 msgid "E729: using Funcref as a String"
 msgstr "E729: 関数参照型を文字列として扱っています"
@@ -763,8 +814,12 @@ msgid "E129: Function name required"
 msgstr "E129: 関数名が要求されます"
 
 #, c-format
-msgid "E128: Function name must start with a capital or contain a colon: %s"
-msgstr "E128: 関数名は大文字で始まるかコロンを含まなければなりません: %s"
+msgid "E128: Function name must start with a capital or \"s:\": %s"
+msgstr "E128: 関数名は大文字か \"s:\" で始まらなければなりません: %s"
+
+#, c-format
+msgid "E884: Function name cannot contain a colon: %s"
+msgstr "E884: 関数名にはコロンは含められません: %s"
 
 #, c-format
 msgid "E131: Cannot delete function %s: It is in use"
@@ -854,7 +909,7 @@ msgstr "E136: viminfo: エラーが多過ぎるので, 以降はスキップします"
 
 #, c-format
 msgid "Reading viminfo file \"%s\"%s%s%s"
-msgstr "viminfoファイル \"%s\"%s%s%s を読込み中 "
+msgstr "viminfoファイル \"%s\"%s%s%s を読込み中"
 
 msgid " info"
 msgstr " 情報"
@@ -881,6 +936,10 @@ msgstr "E138: viminfoファイル %s を保存できません!"
 msgid "Writing viminfo file \"%s\""
 msgstr "viminfoファイル \"%s\" を書込み中"
 
+#, c-format
+msgid "E886: Can't rename viminfo file to %s!"
+msgstr "E886: viminfoファイルを %s へ名前変更できません!"
+
 #. Write the info:
 #, c-format
 msgid "# This viminfo file was generated by Vim %s.\n"
@@ -898,6 +957,13 @@ msgstr "# このファイルが書かれた時の 'encoding' の値\n"
 
 msgid "Illegal starting char"
 msgstr "不正な先頭文字です"
+
+msgid ""
+"\n"
+"# Bar lines, copied verbatim:\n"
+msgstr ""
+"\n"
+"# '|' で始まる行の、文字通りのコピー:\n"
 
 msgid "Save As"
 msgstr "別名で保存"
@@ -1081,9 +1147,13 @@ msgstr "E158: 無効なバッファ名です: %s"
 msgid "E157: Invalid sign ID: %ld"
 msgstr "E157: 無効なsign識別子です: %ld"
 
+#, c-format
+msgid "E885: Not possible to change sign %s"
+msgstr "E885: 変更できない sign です: %s"
+
 # Added at 27-Jan-2004.
 msgid " (NOT FOUND)"
-msgstr "  (見つかりません)"
+msgstr " (見つかりません)"
 
 msgid " (not supported)"
 msgstr " (非サポート)"
@@ -1101,6 +1171,13 @@ msgstr "行 %ld: %s"
 #, c-format
 msgid "cmd: %s"
 msgstr "コマンド: %s"
+
+msgid "frame is zero"
+msgstr "フレームが 0 です"
+
+#, c-format
+msgid "frame at highest level: %d"
+msgstr "最高レベルのフレーム: %d"
 
 #, c-format
 msgid "Breakpoint in \"%s%s\" line %ld"
@@ -1219,7 +1296,8 @@ msgid "E197: Cannot set language to \"%s\""
 msgstr "E197: 言語を \"%s\" に設定できません"
 
 msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
-msgstr "Exモードに入ります. ノーマルに戻るには\"visual\"と入力してください."
+msgstr ""
+"Exモードに入ります. ノーマルモードに戻るには\"visual\"と入力してください."
 
 msgid "E501: At end-of-file"
 msgstr "E501: ファイルの終了位置"
@@ -1238,7 +1316,7 @@ msgid "End of function"
 msgstr "関数の最後です"
 
 msgid "E464: Ambiguous use of user-defined command"
-msgstr "E464: ユーザ定義コマンドのあいまいな使用です"
+msgstr "E464: ユーザー定義コマンドのあいまいな使用です"
 
 msgid "E492: Not an editor command"
 msgstr "E492: エディタのコマンドではありません"
@@ -1277,13 +1355,13 @@ msgstr "E174: コマンドが既にあります: 再定義するには ! を追加してください"
 
 msgid ""
 "\n"
-"    Name        Args Range Complete  Definition"
+"    Name        Args       Address   Complete  Definition"
 msgstr ""
 "\n"
-"    名前        引数 範囲  補完      定義"
+"    名前        引数       アドレス  補完      定義"
 
 msgid "No user-defined commands found"
-msgstr "ユーザ定義コマンドが見つかりませんでした"
+msgstr "ユーザー定義コマンドが見つかりませんでした"
 
 msgid "E175: No attribute specified"
 msgstr "E175: 属性は定義されていません"
@@ -1298,7 +1376,10 @@ msgid "E178: Invalid default value for count"
 msgstr "E178: カウントの省略値が無効です"
 
 msgid "E179: argument required for -complete"
-msgstr "E179: -補完のための引数が必要です"
+msgstr "E179: -complete には引数が必要です"
+
+msgid "E179: argument required for -addr"
+msgstr "E179: -addr には引数が必要です"
 
 #, c-format
 msgid "E181: Invalid attribute: %s"
@@ -1308,14 +1389,18 @@ msgid "E182: Invalid command name"
 msgstr "E182: 無効なコマンド名です"
 
 msgid "E183: User defined commands must start with an uppercase letter"
-msgstr "E183: ユーザ定義コマンドは英大文字で始まらなければなりません"
+msgstr "E183: ユーザー定義コマンドは英大文字で始まらなければなりません"
 
 msgid "E841: Reserved name, cannot be used for user defined command"
-msgstr "E841: 予\約名なので, ユーザ定義コマンドに利用できません"
+msgstr "E841: 予\約名なので, ユーザー定義コマンドに利用できません"
 
 #, c-format
 msgid "E184: No such user-defined command: %s"
-msgstr "E184: そのユーザ定義コマンドはありません: %s"
+msgstr "E184: そのユーザー定義コマンドはありません: %s"
+
+#, c-format
+msgid "E180: Invalid address type value: %s"
+msgstr "E180: 無効なアドレスタイプ値です: %s"
 
 #, c-format
 msgid "E180: Invalid complete value: %s"
@@ -1602,13 +1687,13 @@ msgid "Illegal file name"
 msgstr "不正なファイル名"
 
 msgid "is a directory"
-msgstr " はディレクトリです"
+msgstr "はディレクトリです"
 
 msgid "is not a file"
-msgstr " はファイルではありません"
+msgstr "はファイルではありません"
 
 msgid "is a device (disabled with 'opendevice' option)"
-msgstr " はデバイスです ('opendevice' オプションで回避できます)"
+msgstr "はデバイスです ('opendevice' オプションで回避できます)"
 
 msgid "[New File]"
 msgstr "[新ファイル]"
@@ -1620,7 +1705,7 @@ msgid "[File too big]"
 msgstr "[ファイル過大]"
 
 msgid "[Permission Denied]"
-msgstr "[認可がありません]"
+msgstr "[権限がありません]"
 
 msgid "E200: *ReadPre autocommands made the file unreadable"
 msgstr "E200: *ReadPre autocommand がファイルを読込不可にしました"
@@ -1662,12 +1747,6 @@ msgstr "[未変換]"
 msgid "[converted]"
 msgstr "[変換済]"
 
-msgid "[blowfish]"
-msgstr "[blowfish暗号化]"
-
-msgid "[crypted]"
-msgstr "[暗号化]"
-
 #, c-format
 msgid "[CONVERSION ERROR in line %ld]"
 msgstr "[%ld 行目で変換エラー]"
@@ -1687,9 +1766,6 @@ msgstr "'charconvert' による変換が失敗しました"
 
 msgid "can't read output of 'charconvert'"
 msgstr "'charconvert' の出力を読込めませんでした"
-
-msgid "E821: File is encrypted with unknown method"
-msgstr "E821: ファイルが未知の方法で暗号化されています"
 
 msgid "E676: No matching autocommands for acwrite buffer"
 msgstr "E676: acwriteバッファの該当するautocommandは存在しません"
@@ -1772,7 +1848,7 @@ msgstr " 変換エラー"
 
 #, c-format
 msgid " in line %ld;"
-msgstr "行 %ld;"
+msgstr " 行 %ld;"
 
 msgid "[Device]"
 msgstr "[デバイス]"
@@ -2151,8 +2227,8 @@ msgstr "全て置換"
 msgid "Vim: Received \"die\" request from session manager\n"
 msgstr "Vim: セッションマネージャから \"die\" 要求を受け取りました\n"
 
-msgid "Close"
-msgstr "閉じる"
+msgid "Close tab"
+msgstr "タブページを閉じる"
 
 msgid "New tab"
 msgstr "新規タブページ"
@@ -2209,9 +2285,6 @@ msgstr "E243: 引数はサポートされません: \"-%s\"; OLE版を使用してください."
 
 msgid "E672: Unable to open window inside MDI application"
 msgstr "E672: MDIアプリの中ではウィンドウを開けません"
-
-msgid "Close tab"
-msgstr "タブページを閉じる"
 
 msgid "Open tab..."
 msgstr "タブページを開く"
@@ -2570,6 +2643,13 @@ msgid ""
 "loaded."
 msgstr "E815: このコマンドは無効です. MzScheme ライブラリをロードできません."
 
+msgid ""
+"E895: Sorry, this command is disabled, the MzScheme's racket/base module "
+"could not be loaded."
+msgstr ""
+"E895: このコマンドは無効です,ごめんなさい. MzScheme の racket/base モジュール"
+"がロードできませんでした."
+
 msgid "invalid expression"
 msgstr "無効な式です"
 
@@ -2643,6 +2723,13 @@ msgid ""
 msgstr ""
 "E263: このコマンドは無効です,ごめんなさい: Pythonライブラリをロードできません"
 "でした."
+
+msgid ""
+"E887: Sorry, this command is disabled, the Python's site module could not be "
+"loaded."
+msgstr ""
+"E887: このコマンドは無効です,ごめんなさい. Python の site モジュールをロード"
+"できませんでした."
 
 # Added at 07-Feb-2004.
 msgid "E659: Cannot invoke Python recursively"
@@ -2845,14 +2932,14 @@ msgid "cannot get line"
 msgstr "行を取得できません"
 
 msgid "Unable to register a command server name"
-msgstr "命令サーバの名前を登録できません"
+msgstr "命令サーバーの名前を登録できません"
 
 msgid "E248: Failed to send command to the destination program"
 msgstr "E248: 目的のプログラムへのコマンド送信に失敗しました"
 
 #, c-format
 msgid "E573: Invalid server id used: %s"
-msgstr "E573: 無効なサーバIDが使われました: %s"
+msgstr "E573: 無効なサーバーIDが使われました: %s"
 
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
 msgstr "E251: VIM 実体の登録プロパティが不正です. 消去しました!"
@@ -3110,16 +3197,16 @@ msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\t暗号化されたファイルを編集する"
 
 msgid "-display <display>\tConnect vim to this particular X-server"
-msgstr "-display <display>\tvimを指定した X サーバに接続する"
+msgstr "-display <display>\tvimを指定した X サーバーに接続する"
 
 msgid "-X\t\t\tDo not connect to X server"
-msgstr "-X\t\t\tXサーバに接続しない"
+msgstr "-X\t\t\tXサーバーに接続しない"
 
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
-msgstr "--remote <files>\t可能\ならばVimサーバで <files> を編集する"
+msgstr "--remote <files>\t可能\ならばVimサーバーで <files> を編集する"
 
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
-msgstr "--remote-silent <files>  同上, サーバが無くても警告文を出力しない"
+msgstr "--remote-silent <files>  同上, サーバーが無くても警告文を出力しない"
 
 msgid ""
 "--remote-wait <files>  As --remote but wait for files to have been edited"
@@ -3127,7 +3214,8 @@ msgstr "--remote-wait <files>\t--remote後 ファイルの編集が終わるのを待つ"
 
 msgid ""
 "--remote-wait-silent <files>  Same, don't complain if there is no server"
-msgstr "--remote-wait-silent <files>  同上, サーバが無くても警告文を出力しない"
+msgstr ""
+"--remote-wait-silent <files>  同上, サーバーが無くても警告文を出力しない"
 
 msgid ""
 "--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"
@@ -3136,16 +3224,16 @@ msgstr ""
 "ページを開く"
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
-msgstr "--remote-send <keys>\tVimサーバに <keys> を送信して終了する"
+msgstr "--remote-send <keys>\tVimサーバーに <keys> を送信して終了する"
 
 msgid "--remote-expr <expr>\tEvaluate <expr> in a Vim server and print result"
-msgstr "--remote-expr <expr>\tサーバで <expr> を実行して結果を表\示する"
+msgstr "--remote-expr <expr>\tサーバーで <expr> を実行して結果を表\示する"
 
 msgid "--serverlist\t\tList available Vim server names and exit"
-msgstr "--serverlist\t\tVimサーバ名の一覧を表\示して終了する"
+msgstr "--serverlist\t\tVimサーバー名の一覧を表\示して終了する"
 
 msgid "--servername <name>\tSend to/become the Vim server <name>"
-msgstr "--servername <name>\tVimサーバ <name> に送信/名前設定する"
+msgstr "--servername <name>\tVimサーバー <name> に送信/名前設定する"
 
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
 msgstr "--startuptime <file>\t起動にかかった時間の詳細を <file> へ出力する"
@@ -3551,7 +3639,7 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"それから.swpファイルを削除してください\n"
+"元の.swpファイルは削除しても構\いません\n"
 "\n"
 
 msgid "Using crypt key from swap file for the text file.\n"
@@ -3565,7 +3653,7 @@ msgid "   In current directory:\n"
 msgstr "   現在のディレクトリ:\n"
 
 msgid "   Using specified name:\n"
-msgstr "   ある名前を使用中:\n"
+msgstr "   以下の名前を使用中:\n"
 
 msgid "   In directory "
 msgstr "   ディレクトリ "
@@ -3609,7 +3697,7 @@ msgid ""
 "         user name: "
 msgstr ""
 "\n"
-"          ユーザ名: "
+"        ユーザー名: "
 
 msgid "   host name: "
 msgstr "   ホスト名: "
@@ -3737,11 +3825,11 @@ msgid ""
 msgstr ""
 "\n"
 "(1) 別のプログラムが同じファイルを編集しているかもしれません.\n"
-"    この場合には, 変更をした際に最終的に, 同じファイルの異なる\n"
-"    2つのインスタンスができてしまうことに注意してください."
+"    この場合には, 変更をしてしまうと1つのファイルに対して異なる2つの\n"
+"    インスタンスができてしまうので, そうしないように気をつけてください."
 
 msgid "  Quit, or continue with caution.\n"
-msgstr "  終了するか, 注意しながら続けてください.\n"
+msgstr "    終了するか, 注意しながら続けてください.\n"
 
 msgid "(2) An edit session for this file crashed.\n"
 msgstr "(2) このファイルの編集セッションがクラッシュした.\n"
@@ -3967,13 +4055,6 @@ msgstr " (割込まれました)"
 msgid "Beep!"
 msgstr "ビーッ!"
 
-msgid "Vim: preserving files...\n"
-msgstr "Vim: ファイルを保存中...\n"
-
-#. close all memfiles, without deleting
-msgid "Vim: Finished.\n"
-msgstr "Vim: 終了しました.\n"
-
 msgid "ERROR: "
 msgstr "エラー: "
 
@@ -4023,15 +4104,6 @@ msgstr "E548: 数値が必要です"
 msgid "E549: Illegal percentage"
 msgstr "E549: 不正なパーセンテージです"
 
-msgid "Enter encryption key: "
-msgstr "暗号化用のキーを入力してください: "
-
-msgid "Enter same key again: "
-msgstr "もう一度同じキーを入力してください: "
-
-msgid "Keys don't match!"
-msgstr "キーが一致しません"
-
 msgid "E854: path too long for completion"
 msgstr "E854: パスが長過ぎて補完できません"
 
@@ -4059,19 +4131,10 @@ msgstr "E346: cdpathにはこれ以上 \"%s\" というファイルがありません"
 msgid "E347: No more file \"%s\" found in path"
 msgstr "E347: パスにはこれ以上 \"%s\" というファイルがありません"
 
-msgid "Cannot connect to Netbeans #2"
-msgstr "Netbeans #2 に接続できません"
-
-msgid "Cannot connect to Netbeans"
-msgstr "Netbeans に接続できません"
-
 #, c-format
 msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
 msgstr ""
 "E668: NetBeansの接続情報ファイルのアクセスモードに問題があります: \"%s\""
-
-msgid "read from Netbeans socket"
-msgstr "Netbeans のソ\ケットを読込み"
 
 #, c-format
 msgid "E658: NetBeans connection lost for buffer %ld"
@@ -4202,6 +4265,11 @@ msgstr ""
 msgid "E574: Unknown register type %d"
 msgstr "E574: 未知のレジスタ型 %d です"
 
+msgid ""
+"E883: search pattern and expression register may not contain two or more "
+"lines"
+msgstr "E883: 検索パターンと式レジスタには2行以上を含められません"
+
 #, c-format
 msgid "%ld Cols; "
 msgstr "%ld 列; "
@@ -4258,6 +4326,10 @@ msgstr "E522: termcap 内に見つかりません"
 #, c-format
 msgid "E539: Illegal character <%s>"
 msgstr "E539: 不正な文字です <%s>"
+
+#, c-format
+msgid "For option %s"
+msgstr "オプション: %s"
 
 msgid "E529: Cannot set 'term' to empty string"
 msgstr "E529: 'term' には空文字列を設定できません"
@@ -4483,20 +4555,9 @@ msgstr "E244: 文字セット名 \"%s\" は不正です (フォント名 \"%s\")"
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: '%c' は不正な文字です (フォント名 \"%s\")"
 
-msgid "Vim: Double signal, exiting\n"
-msgstr "Vim: 2重のシグナルのため, 終了します\n"
-
-#, c-format
-msgid "Vim: Caught deadly signal %s\n"
-msgstr "Vim: 致命的シグナル %s を検知しました\n"
-
-#, c-format
-msgid "Vim: Caught deadly signal\n"
-msgstr "Vim: 致命的シグナルを検知しました\n"
-
 #, c-format
 msgid "Opening the X display took %ld msec"
-msgstr "Xサーバへの接続に %ld ミリ秒かかりました"
+msgstr "Xサーバーへの接続に %ld ミリ秒かかりました"
 
 msgid ""
 "\n"
@@ -4524,6 +4585,14 @@ msgid ""
 msgstr ""
 "\n"
 "セキュリティコンテキストを設定できません "
+
+#, c-format
+msgid "Could not set security context %s for %s"
+msgstr "セキュリティコンテキスト %s を %s に設定できません"
+
+#, c-format
+msgid "Could not get security context %s for %s. Removing it!"
+msgstr "セキュリティコンテキスト %s を %s から取得できません. 削除します!"
 
 msgid ""
 "\n"
@@ -4802,19 +4871,31 @@ msgstr "E554: %s{...} 内に文法エラーがあります"
 msgid "External submatches:\n"
 msgstr "外部の部分該当:\n"
 
+#, c-format
+msgid "E888: (NFA regexp) cannot repeat %s"
+msgstr "E888: (NFA 正規表\現) 繰り返せません %s"
+
 msgid ""
 "E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be "
 "used "
 msgstr ""
-"E864: \\%#= には 0, 1 もしくは 2 のみが続けられます。"
-"正規表\現エンジンは自動選択されます。"
+"E864: \\%#= には 0, 1 もしくは 2 のみが続けられます。正規表\現エンジンは自動選"
+"択されます。"
+
+msgid "Switching to backtracking RE engine for pattern: "
+msgstr "次のパターンにバックトラッキング RE エンジンを適用します: "
+
+msgid "E865: (NFA) Regexp end encountered prematurely"
+msgstr "E865: (NFA) 期待より早く正規表\現の終端に到達しました"
 
 #, c-format
 msgid "E866: (NFA regexp) Misplaced %c"
 msgstr "E866: (NFA 正規表\現) 位置が誤っています: %c"
 
-msgid "E865: (NFA) Regexp end encountered prematurely"
-msgstr "E865: (NFA) 期待より早く正規表\現の終端に到達しました"
+#
+#, c-format
+msgid "E877: (NFA regexp) Invalid character class: %ld"
+msgstr "E877: (NFA 正規表\現) 無効な文字クラス: %ld"
 
 #, c-format
 msgid "E867: (NFA) Unknown operator '\\z%c'"
@@ -4856,8 +4937,8 @@ msgid ""
 "E875: (NFA regexp) (While converting from postfix to NFA), too many states "
 "left on stack"
 msgstr ""
-"E875: (NFA 正規表\現) (後置文字列をNFAに変換中に) "
-"スタックに残されたステートが多過ぎます"
+"E875: (NFA 正規表\現) (後置文字列をNFAに変換中に) スタックに残されたステートが"
+"多過ぎます"
 
 msgid "E876: (NFA regexp) Not enough space to store the whole NFA "
 msgstr "E876: (NFA 正規表\現) NFA全体を保存するには空きスペースが足りません"
@@ -4867,8 +4948,9 @@ msgstr "E878: (NFA) 現在横断中のブランチに十\分なメモリを割り当てられません!"
 
 msgid ""
 "Could not open temporary log file for writing, displaying on stderr ... "
-msgstr "NFA正規表\現エンジン用のログファイルを書込用として開けません。"
-"ログは標準出力に出力します。"
+msgstr ""
+"NFA正規表\現エンジン用のログファイルを書込用として開けません。ログは標準出力に"
+"出力します。"
 
 #, c-format
 msgid "(NFA) COULD NOT OPEN %s !"
@@ -5317,12 +5399,12 @@ msgid "E765: 'spellfile' does not have %ld entries"
 msgstr "E765: 'spellfile' には %ld 個のエントリはありません"
 
 #, c-format
-msgid "Word removed from %s"
-msgstr "%s から単語が削除されました"
+msgid "Word '%.*s' removed from %s"
+msgstr "単語 '%.*s' が %s から削除されました"
 
 #, c-format
-msgid "Word added to %s"
-msgstr "%s に単語が追加されました"
+msgid "Word '%.*s' added to %s"
+msgstr "単語 '%.*s' が %s へ追加されました"
 
 msgid "E763: Word characters differ between spell files"
 msgstr "E763: 単語の文字がスペルファイルと異なります"
@@ -5382,6 +5464,9 @@ msgstr "このバッファに定義された構\文要素はありません"
 #, c-format
 msgid "E390: Illegal argument: %s"
 msgstr "E390: 不正な引数です: %s"
+
+msgid "syntax iskeyword "
+msgstr "シンタックス用 iskeyword "
 
 #, c-format
 msgid "E391: No such syntax cluster: %s"
@@ -5458,6 +5543,10 @@ msgstr "E847: 構\文の取り込み(include)が多過ぎます"
 #, c-format
 msgid "E789: Missing ']': %s"
 msgstr "E789: ']' がありません: %s"
+
+#, c-format
+msgid "E890: trailing char after ']': %s]%s"
+msgstr "E890: ']' の後ろに余分な文字があります: %s]%s"
 
 #, c-format
 msgid "E398: Missing '=': %s"
@@ -5541,7 +5630,7 @@ msgstr "E415: 予\期せぬ等号です: %s"
 
 #, c-format
 msgid "E416: missing equal sign: %s"
-msgstr "E416: 等号ががありません: %s"
+msgstr "E416: 等号がありません: %s"
 
 #, c-format
 msgid "E417: missing argument: %s"
@@ -5711,8 +5800,8 @@ msgstr "空の選択領域のかわりにCUT_BUFFER0が使用されました"
 
 #. This happens when the FileChangedRO autocommand changes the
 #. * file in a way it becomes shorter.
-msgid "E834: Line count changed unexpectedly"
-msgstr "E834: 予\期せず行カウントが変わりました"
+msgid "E881: Line count changed unexpectedly"
+msgstr "E881: 予\期せず行カウントが変わりました"
 
 #. must display the prompt
 msgid "No undo possible; continue anyway"
@@ -6040,31 +6129,31 @@ msgid "   system vimrc file: \""
 msgstr "      システム vimrc: \""
 
 msgid "     user vimrc file: \""
-msgstr "        ユーザ vimrc: \""
+msgstr "      ユーザー vimrc: \""
 
 msgid " 2nd user vimrc file: \""
-msgstr "     第2ユーザ vimrc: \""
+msgstr "   第2ユーザー vimrc: \""
 
 msgid " 3rd user vimrc file: \""
-msgstr "     第3ユーザ vimrc: \""
+msgstr "   第3ユーザー vimrc: \""
 
 msgid "      user exrc file: \""
-msgstr "         ユーザ exrc: \""
+msgstr "       ユーザー exrc: \""
 
 msgid "  2nd user exrc file: \""
-msgstr "      第2ユーザ exrc: \""
+msgstr "    第2ユーザー exrc: \""
 
 msgid "  system gvimrc file: \""
 msgstr "     システム gvimrc: \""
 
 msgid "    user gvimrc file: \""
-msgstr "       ユーザ gvimrc: \""
+msgstr "     ユーザー gvimrc: \""
 
 msgid "2nd user gvimrc file: \""
-msgstr "    第2ユーザ gvimrc: \""
+msgstr "  第2ユーザー gvimrc: \""
 
 msgid "3rd user gvimrc file: \""
-msgstr "    第3ユーザ gvimrc: \""
+msgstr "  第3ユーザー gvimrc: \""
 
 msgid "    system menu file: \""
 msgstr "    システムメニュー: \""
@@ -6124,19 +6213,19 @@ msgid "type  :help cp-default<Enter> for info on this"
 msgstr "詳細な情報は           :help cp-default<Enter>"
 
 msgid "menu  Help->Orphans           for information    "
-msgstr "詳細はメニューの ヘルプ→孤児 を参照して下さい   "
+msgstr "詳細はメニューの ヘルプ->孤児 を参照して下さい   "
 
 msgid "Running modeless, typed text is inserted"
 msgstr "モード無で実行中, タイプした文字が挿入されます"
 
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
-msgstr "メニューの 編集→全体設定→挿入(初心者)モード切替 "
+msgstr "メニューの 編集->全体設定->挿入(初心者)モード切替 "
 
 msgid "                              for two modes      "
 msgstr "                              でモード有に       "
 
 msgid "menu  Edit->Global Settings->Toggle Vi Compatible"
-msgstr "メニューの 編集→全体設定→Vi互換モード切替      "
+msgstr "メニューの 編集->全体設定->Vi互換モード切替      "
 
 msgid "                              for Vim defaults   "
 msgstr "                              でVimとして動作    "
@@ -6145,7 +6234,7 @@ msgid "Sponsor Vim development!"
 msgstr "Vimの開発を応援してください!"
 
 msgid "Become a registered Vim user!"
-msgstr "Vimの登録ユーザになってください!"
+msgstr "Vimの登録ユーザーになってください!"
 
 msgid "type  :help sponsor<Enter>    for information "
 msgstr "詳細な情報は           :help sponsor<Enter>   "
@@ -6154,7 +6243,7 @@ msgid "type  :help register<Enter>   for information "
 msgstr "詳細な情報は           :help register<Enter>  "
 
 msgid "menu  Help->Sponsor/Register  for information    "
-msgstr "詳細はメニューの ヘルプ→スポンサー/登録 を参照して下さい   "
+msgstr "詳細はメニューの ヘルプ->スポンサー/登録 を参照して下さい"
 
 msgid "WARNING: Windows 95/98/ME detected"
 msgstr "   警告: Windows 95/98/Me を検出  "
@@ -6193,6 +6282,9 @@ msgstr "E446: カーソ\ルの下にファイル名がありません"
 msgid "E447: Can't find file \"%s\" in path"
 msgstr "E447: pathには \"%s\" というファイルがありません"
 
+msgid "List or number required"
+msgstr "リストか数値が必要です"
+
 msgid "Edit with &multiple Vims"
 msgstr "複数のVimで編集する (&M)"
 
@@ -6219,7 +6311,7 @@ msgid "gvimext.dll error"
 msgstr "gvimext.dll エラー"
 
 msgid "Path length too long!"
-msgstr "パスが長すぎます!"
+msgstr "パスが長過ぎます!"
 
 msgid "--No lines in buffer--"
 msgstr "--バッファに行がありません--"
@@ -6391,7 +6483,7 @@ msgstr "E36: ウィンドウに十\分な高さもしくは幅がありません"
 
 #, c-format
 msgid "E247: no registered server named \"%s\""
-msgstr "E247: %s という名前の登録されたサーバはありません"
+msgstr "E247: %s という名前の登録されたサーバーはありません"
 
 #, c-format
 msgid "E482: Can't create file %s"
@@ -6410,6 +6502,9 @@ msgstr "E485: ファイル %s を読込めません"
 
 msgid "E37: No write since last change (add ! to override)"
 msgstr "E37: 最後の変更が保存されていません (! を追加で変更を破棄)"
+
+msgid "E37: No write since last change"
+msgstr "E37: 最後の変更が保存されていません"
 
 msgid "E38: Null argument"
 msgstr "E38: 引数が空です"
@@ -6444,7 +6539,7 @@ msgid "E42: No Errors"
 msgstr "E42: エラーはありません"
 
 msgid "E776: No location list"
-msgstr "E776: 場所リストはありません"
+msgstr "E776: ロケーションリストはありません"
 
 msgid "E43: Damaged match string"
 msgstr "E43: 該当文字列が破損しています"
@@ -6462,6 +6557,9 @@ msgstr "E46: 読取専用変数 \"%s\" には値を設定できません"
 #, c-format
 msgid "E794: Cannot set variable in the sandbox: \"%s\""
 msgstr "E794: サンドボックスでは変数 \"%s\" に値を設定できません"
+
+msgid "E713: Cannot use empty key for Dictionary"
+msgstr "E713: 辞書型に空のキーを使うことはできません"
 
 msgid "E47: Error while reading errorfile"
 msgstr "E47: エラーファイルの読込中にエラーが発生しました"
@@ -6545,6 +6643,10 @@ msgstr "E363: パターンが 'maxmempattern' 以上のメモリを使用します"
 msgid "E749: empty buffer"
 msgstr "E749: バッファが空です"
 
+#, c-format
+msgid "E86: Buffer %ld does not exist"
+msgstr "E86: バッファ %ld はありません"
+
 msgid "E682: Invalid search pattern or delimiter"
 msgstr "E682: 検索パターンか区切り記号が不正です"
 
@@ -6608,7 +6710,7 @@ msgstr "C言語の int 型としては値が大き過ぎます"
 msgid "value is too small to fit into C int type"
 msgstr "C言語の int 型としては値が小さ過ぎます"
 
-msgid "number must be greater then zero"
+msgid "number must be greater than zero"
 msgstr "数値は 0 より大きくなければなりません"
 
 msgid "number must be greater or equal to zero"
@@ -6666,15 +6768,29 @@ msgstr "リスト範囲外のインデックスです"
 msgid "internal error: failed to get vim list item %d"
 msgstr "内部エラー: vimのリスト要素 %d の取得に失敗しました"
 
-msgid "failed to add item to list"
-msgstr "リストへの要素追加に失敗しました"
+msgid "slice step cannot be zero"
+msgstr "スライスのステップに 0 は指定できません"
+
+#, c-format
+msgid "attempt to assign sequence of size greater than %d to extended slice"
+msgstr "長さ %d の拡張スライスに、より長いスライスを割り当てようとしました"
 
 #, c-format
 msgid "internal error: no vim list item %d"
 msgstr "内部エラー: vimのリスト要素 %d はありません"
 
+msgid "internal error: not enough list items"
+msgstr "内部エラー: リストに十\分な要素がありません"
+
 msgid "internal error: failed to add item to list"
 msgstr "内部エラー: リストへの要素追加に失敗しました"
+
+#, c-format
+msgid "attempt to assign sequence of size %d to extended slice of size %d"
+msgstr "長さ %d のスライスを %d の拡張スライスに割り当てようとしました"
+
+msgid "failed to add item to list"
+msgstr "リストへの要素追加に失敗しました"
 
 msgid "cannot delete vim.List attributes"
 msgstr "vim.List 属性は消せません"

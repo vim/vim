@@ -83,4 +83,9 @@ void clear_matches(win_T *wp);
 matchitem_T *get_match(win_T *wp, int id);
 int get_win_number(win_T *wp, win_T *first_win);
 int get_tab_number(tabpage_T *tp);
+int win_getid(typval_T *argvars);
+int win_gotoid(typval_T *argvars);
+void win_id2tabwin(typval_T *argvars, list_T *list);
+int win_id2win(typval_T *argvars);
+void win_findbuf(typval_T *argvars, list_T *list);
 /* vim: set ft=c : */

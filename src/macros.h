@@ -119,7 +119,7 @@
 #endif
 
 /* Returns empty string if it is NULL. */
-#define EMPTY_IF_NULL(x) ((x) ? (x) : (u_char *)"")
+#define EMPTY_IF_NULL(x) ((x) ? (x) : (char_u *)"")
 
 #ifdef FEAT_LANGMAP
 /*
@@ -226,7 +226,7 @@
 #if defined(UNIX) || defined(VMS)  /* open in rw------- mode */
 # define mch_open_rw(n, f)	mch_open((n), (f), (mode_t)0600)
 #else
-# if defined(MSDOS) || defined(MSWIN)  /* open read/write */
+# if defined(MSWIN)  /* open read/write */
 #  define mch_open_rw(n, f)	mch_open((n), (f), S_IREAD | S_IWRITE)
 # else
 #  define mch_open_rw(n, f)	mch_open((n), (f), 0)
@@ -317,6 +317,39 @@
 # define PLINES_NOFILL(x) plines(x)
 #endif
 
-#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_CLIENTSERVER)
+#if defined(FEAT_JOB_CHANNEL) || defined(FEAT_CLIENTSERVER)
 # define MESSAGE_QUEUE
+#endif
+
+#if defined(FEAT_EVAL) && defined(FEAT_FLOAT)
+# include <float.h>
+# if defined(HAVE_MATH_H)
+   /* for isnan() and isinf() */
+#  include <math.h>
+# endif
+# ifdef USING_FLOAT_STUFF
+#  if defined(WIN32)
+#   ifndef isnan
+#    define isnan(x) _isnan(x)
+     static __inline int isinf(double x) { return !_finite(x) && !_isnan(x); }
+#   endif
+#  else
+#   ifndef HAVE_ISNAN
+     static inline int isnan(double x) { return x != x; }
+#   endif
+#   ifndef HAVE_ISINF
+     static inline int isinf(double x) { return !isnan(x) && isnan(x - x); }
+#   endif
+#  endif
+#  if !defined(INFINITY)
+#   if defined(DBL_MAX)
+#    define INFINITY (DBL_MAX+DBL_MAX)
+#   else
+#    define INFINITY (1.0 / 0.0)
+#   endif
+#  endif
+#  if !defined(NAN)
+#   define NAN (INFINITY-INFINITY)
+#  endif
+# endif
 #endif

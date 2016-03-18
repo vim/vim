@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.4.  Last change: 2015 Nov 30
+*usr_41.txt*	For Vim version 7.4.  Last change: 2016 Feb 14
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -892,6 +892,14 @@ Testing:				    *test-functions*
 	assert_equal()       	assert that two expressions values are equal
 	assert_false()		assert that an expression is false
 	assert_true()		assert that an expression is true
+
+Inter-process communication:
+	ch_open()		open a channel
+	ch_close()		close a channel
+	ch_sendexpr()		send a JSON message over a channel
+	ch_sendraw()		send a raw message over a channel
+	jsonencode()		encode an expression to a JSON string
+	jsondecode()		decode a JSON string to Vim types
 
 Various:					*various-functions*
 	mode()			get current editing mode
@@ -2227,7 +2235,7 @@ This construct makes sure the function is only defined once: >
 	:endif
 <
 
-UNDO							*undo_ftplugin*
+UNDO						*undo_indent* *undo_ftplugin*
 
 When the user does ":setfiletype xyz" the effect of the previous filetype
 should be undone.  Set the b:undo_ftplugin variable to the commands that will
@@ -2241,6 +2249,9 @@ global value.  That is mostly the best way to reset the option value.
 
 This does require removing the "C" flag from 'cpoptions' to allow line
 continuation, as mentioned above |use-cpo-save|.
+
+For undoing the effect of an indent script, the b:undo_indent variable should
+be set accordingly.
 
 
 FILE NAME

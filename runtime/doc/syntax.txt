@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.4.  Last change: 2016 Jan 19
+*syntax.txt*	For Vim version 7.4.  Last change: 2016 Feb 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2890,7 +2890,7 @@ You may wish to embed languages into sh.  I'll give an example courtesy of
 Lorance Stinson on how to do this with awk as an example. Put the following
 file into $HOME/.vim/after/syntax/sh/awkembed.vim: >
 
-    " AWK Embedding: {{{1
+    " AWK Embedding:
     " ==============
     " Shamelessly ripped from aspperl.vim by Aaron Hope.
     if exists("b:current_syntax")
@@ -3361,6 +3361,13 @@ Note that schemas are not actually limited to plain scalars, but this is the
 only difference between schemas defined in YAML specification and the only 
 difference defined in the syntax file.
 
+
+ZSH						    *zsh.vim* *ft-zsh-syntax*
+
+The syntax script for zsh allows for syntax-based folding: >
+
+	:let g:zsh_fold_enable = 1
+
 ==============================================================================
 5. Defining a syntax					*:syn-define* *E410*
 
@@ -3458,7 +3465,7 @@ SYNTAX ISKEYWORD SETTING				*:syn-iskeyword*
 	If no argument is given, the current value will be output.
 
 	Setting this option influences what |/\k| matches in syntax patterns
-	and also determines where |:syn-keywords| will be checked for a new
+	and also determines where |:syn-keyword| will be checked for a new
 	match.
 
 	It is recommended when writing syntax files, to use this command

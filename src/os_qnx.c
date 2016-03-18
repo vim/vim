@@ -19,7 +19,7 @@
 int is_photon_available;
 #endif
 
-void qnx_init()
+void qnx_init(void)
 {
 #if defined(FEAT_GUI_PHOTON)
     PhChannelParms_t parms;
@@ -37,7 +37,7 @@ void qnx_init()
 #define CLIP_TYPE_TEXT "TEXT"
 
 /* Turn on the clipboard for a console vim when photon is running */
-void qnx_clip_init()
+void qnx_clip_init(void)
 {
     if (is_photon_available == TRUE && !gui.in_use)
 	clip_init(TRUE);

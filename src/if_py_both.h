@@ -810,6 +810,25 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	    }
 	}
     }
+    else if (our_tv->v_type == VAR_SPECIAL)
+    {
+	if (our_tv->vval.v_number == VVAL_FALSE)
+	{
+	    ret = Py_False;
+	    Py_INCREF(ret);
+	}
+	else if (our_tv->vval.v_number == VVAL_TRUE)
+	{
+	    ret = Py_True;
+	    Py_INCREF(ret);
+	}
+	else
+	{
+	    Py_INCREF(Py_None);
+	    ret = Py_None;
+	}
+	return ret;
+    }
     else
     {
 	Py_INCREF(Py_None);
@@ -1042,7 +1061,7 @@ VimForeachRTP(PyObject *self UNUSED, PyObject *callable)
     data.callable = callable;
     data.result = NULL;
 
-    do_in_runtimepath(NULL, FALSE, &map_rtp_callback, &data);
+    do_in_runtimepath(NULL, 0, &map_rtp_callback, &data);
 
     if (data.result == NULL)
     {
@@ -1131,7 +1150,7 @@ Vim_GetPaths(PyObject *self UNUSED)
     if (!(ret = PyList_New(0)))
 	return NULL;
 
-    do_in_runtimepath(NULL, FALSE, &map_finder_callback, ret);
+    do_in_runtimepath(NULL, 0, &map_finder_callback, ret);
 
     if (PyErr_Occurred())
     {
@@ -2925,7 +2944,7 @@ FunctionCall(FunctionObject *self, PyObject *argsObject, PyObject *kwargs)
     Python_Lock_Vim();
 
     VimTryStart();
-    error = func_call(name, &args, selfdict, &rettv);
+    error = func_call(name, &args, NULL, selfdict, &rettv);
 
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
@@ -5812,11 +5831,10 @@ convert_dl(PyObject *obj, typval_T *tv,
 	}
 	/* As we are not using copy_tv which increments reference count we must
 	 * do it ourself. */
-	switch(tv->v_type)
-	{
-	    case VAR_DICT: ++tv->vval.v_dict->dv_refcount; break;
-	    case VAR_LIST: ++tv->vval.v_list->lv_refcount; break;
-	}
+	if (tv->v_type == VAR_DICT)
+	    ++tv->vval.v_dict->dv_refcount;
+	else if (tv->v_type == VAR_LIST)
+	    ++tv->vval.v_list->lv_refcount;
     }
     else
     {

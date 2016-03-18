@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.4.  Last change: 2016 Jan 10
+*various.txt*   For Vim version 7.4.  Last change: 2016 Feb 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -208,8 +208,6 @@ g8			Print the hex values of the bytes used in the
 			Example: >
 				:exe "normal \<c-w>\<c-w>"
 <			{not in Vi, of course}
-			{not available when the |+ex_extra| feature was
-			disabled at compile time}
 
 :{range}norm[al][!] {commands}				*:normal-range*
 			Execute Normal mode commands {commands} for each line
@@ -218,8 +216,6 @@ g8			Print the hex values of the bytes used in the
 			for each line.  Otherwise it's the same as the
 			":normal" command without a range.
 			{not in Vi}
-			{not available when |+ex_extra| feature was disabled
-			at compile time}
 
 							*:sh* *:shell* *E371*
 :sh[ell]		This command starts a shell.  When the shell exits
@@ -319,6 +315,7 @@ N  *+builtin_terms*	some terminals builtin |builtin-terms|
 B  *++builtin_terms*	maximal terminals builtin |builtin-terms|
 N  *+byte_offset*	support for 'o' flag in 'statusline' option, "go"
 			and ":goto" commands.
+m  *+channel*		inter process communication |channel|
 N  *+cindent*		|'cindent'|, C indenting
 N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
    *+clipboard*		|clipboard| support
@@ -341,8 +338,7 @@ m  *+directx*		Win32 GUI only: DirectX and |'renderoptions'|
    *+dnd*		Support for DnD into the "~ register |quote_~|.
 B  *+emacs_tags*	|emacs-tags| files
 N  *+eval*		expression evaluation |eval.txt|
-N  *+ex_extra*		Vim's extra Ex commands: |:center|, |:left|,
-			|:normal|, |:retab| and |:right|
+N  *+ex_extra*		always on now, used to be for Vim's extra Ex commands
 N  *+extra_search*	|'hlsearch'| and |'incsearch'| options.
 B  *+farsi*		|farsi| language
 N  *+file_in_path*	|gf|, |CTRL-W_f| and |<cfile>|
@@ -362,6 +358,7 @@ m  *+hangul_input*	Hangul input support |hangul|
    *+iconv*		Compiled with the |iconv()| function
    *+iconv/dyn*		Likewise |iconv-dynamic| |/dyn|
 N  *+insert_expand*	|insert_expand| Insert mode completion
+m  *+job*		starting and stopping jobs |job|
 N  *+jumplist*		|jumplist|
 B  *+keymap*		|'keymap'|
 B  *+langmap*		|'langmap'|
@@ -414,7 +411,6 @@ m  *+ruby/dyn*		Ruby interface |ruby-dynamic| |/dyn|
 N  *+scrollbind*	|'scrollbind'|
 B  *+signs*		|:sign|
 N  *+smartindent*	|'smartindent'|
-m  *+sniff*		SniFF interface |sniff|
 N  *+startuptime*	|--startuptime| argument
 N  *+statusline*	Options 'statusline', 'rulerformat' and special
 			formats of 'titlestring' and 'iconstring'
@@ -518,7 +514,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 
 :redi[r] END		End redirecting messages.  {not in Vi}
 
-						*:sil* *:silent*
+						*:sil* *:silent* *:silent!*
 :sil[ent][!] {command}	Execute {command} silently.  Normal messages will not
 			be given or added to the message history.
 			When [!] is added, error messages will also be

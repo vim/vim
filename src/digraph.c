@@ -28,8 +28,8 @@ typedef struct digraph
     result_T	result;
 } digr_T;
 
-static int getexactdigraph __ARGS((int, int, int));
-static void printdigraph __ARGS((digr_T *));
+static int getexactdigraph(int, int, int);
+static void printdigraph(digr_T *);
 
 /* digraphs added by the user */
 static garray_T	user_digraphs = {0, 0, (int)sizeof(digr_T), 10, NULL};
@@ -39,74 +39,7 @@ static garray_T	user_digraphs = {0, 0, (int)sizeof(digr_T), 10, NULL};
  * compilers cannot handle them (Amiga SAS/C is the most picky one).
  */
 static digr_T digraphdefault[] =
-#if defined(MSDOS)
-	/*
-	 * MSDOS digraphs.
-	 */
-       {{'C', ',', 128},	/* ~@ XX */
-	{'u', '"', 129},	/* Å */
-	{'e', '\'', 130},	/* Ç */
-	{'a', '^', 131},	/* É */
-	{'a', '"', 132},	/* Ñ */
-	{'a', '`', 133},	/* Ö */
-	{'a', '@', 134},	/* Ü */
-	{'c', ',', 135},	/* ~G XX */
-	{'e', '^', 136},	/* ~H XX */
-	{'e', '"', 137},	/* â */
-	{'e', '`', 138},	/* ä */
-	{'i', '"', 139},	/* ã */
-	{'i', '^', 140},	/* å */
-	{'i', '`', 141},	/* ç */
-	{'A', '"', 142},	/* ~N XX */
-	{'A', '@', 143},	/* è */
-	{'E', '\'', 144},	/* ê */
-	{'a', 'e', 145},	/* ë */
-	{'A', 'E', 146},	/* í */
-	{'o', '^', 147},	/* ì */
-	{'o', '"', 148},	/* î */
-	{'o', '`', 149},	/* ï */
-	{'u', '^', 150},	/* ñ */
-	{'u', '`', 151},	/* ó */
-	{'y', '"', 152},	/* ò */
-	{'O', '"', 153},	/* ô */
-	{'U', '"', 154},	/* ö */
-	{'c', '|', 155},	/* õ */
-	{'$', '$', 156},	/* ú */
-	{'Y', '-', 157},	/* ~] XX */
-	{'P', 't', 158},	/* û */
-	{'f', 'f', 159},	/* ü */
-	{'a', '\'', 160},	/* † */
-	{'i', '\'', 161},	/* ° */
-	{'o', '\'', 162},	/* ¢ */
-	{'u', '\'', 163},	/* x XX */
-	{'n', '~', 164},	/* § */
-	{'N', '~', 165},	/* • */
-	{'a', 'a', 166},	/* ¶ */
-	{'o', 'o', 167},	/* ß */
-	{'~', '?', 168},	/* ® */
-	{'-', 'a', 169},	/* © */
-	{'a', '-', 170},	/* ™ */
-	{'1', '2', 171},	/* ´ */
-	{'1', '4', 172},	/* ¨ */
-	{'~', '!', 173},	/* ≠ */
-	{'<', '<', 174},	/* Æ */
-	{'>', '>', 175},	/* Ø */
-
-	{'s', 's', 225},	/* · */
-	{'j', 'u', 230},	/* Ê */
-	{'o', '/', 237},	/* Ì */
-	{'+', '-', 241},	/* Ò */
-	{'>', '=', 242},	/* Ú */
-	{'<', '=', 243},	/* Û */
-	{':', '-', 246},	/* ˆ */
-	{'~', '~', 247},	/* ˜ */
-	{'~', 'o', 248},	/* ¯ */
-	{'2', '2', 253},	/* ˝ */
-	{NUL, NUL, NUL}
-	};
-
-#else	/* !MSDOS */
-# ifdef __MINT__
+#ifdef __MINT__
 
 	/*
 	 * ATARI digraphs
@@ -171,8 +104,8 @@ static digr_T digraphdefault[] =
 	{NUL, NUL, NUL}
 	};
 
-# else	/* !__MINT__ */
-#  ifdef HPUX_DIGRAPHS
+#else	/* !__MINT__ */
+# ifdef HPUX_DIGRAPHS
 
 	/*
 	 * different HPUX digraphs
@@ -275,9 +208,9 @@ static digr_T digraphdefault[] =
 	{NUL, NUL, NUL}
 	};
 
-#  else	/* !HPUX_DIGRAPHS */
+# else	/* !HPUX_DIGRAPHS */
 
-#   ifdef EBCDIC
+#  ifdef EBCDIC
 
 	/*
 	 * EBCDIC - ISO digraphs
@@ -387,8 +320,8 @@ static digr_T digraphdefault[] =
 	{NUL, NUL, NUL}
 	};
 
-#   else
-#    if defined(MACOS) && !defined(FEAT_MBYTE)
+#  else
+#   if defined(MACOS) && !defined(FEAT_MBYTE)
 
 	/*
 	 * Macintosh digraphs
@@ -516,9 +449,9 @@ static digr_T digraphdefault[] =
 	{NUL, NUL, NUL}
 	};
 
-#    else	/* !MACOS */
+#   else	/* !MACOS */
 
-#     ifdef OLD_DIGRAPHS
+#    ifdef OLD_DIGRAPHS
 
 	/*
 	 * digraphs compatible with Vim 5.x
@@ -625,7 +558,7 @@ static digr_T digraphdefault[] =
 	{'y', '"', 255},	/* x XX */
 	{NUL, NUL, NUL}
 	};
-#     else /* OLD_DIGRAPHS */
+#    else /* OLD_DIGRAPHS */
 
 	/*
 	 * digraphs for Unicode from RFC1345
@@ -2001,20 +1934,18 @@ static digr_T digraphdefault[] =
 	{NUL, NUL, NUL}
        };
 
-#     endif /* OLD_DIGRAPHS */
+#    endif /* OLD_DIGRAPHS */
 
-#    endif /* Macintosh */
-#   endif /* EBCDIC */
-#  endif    /* !HPUX_DIGRAPHS */
-# endif	/* !__MINT__ */
-#endif	/* !MSDOS */
+#   endif /* Macintosh */
+#  endif /* EBCDIC */
+# endif    /* !HPUX_DIGRAPHS */
+#endif	/* !__MINT__ */
 
 /*
  * handle digraphs after typing a character
  */
     int
-do_digraph(c)
-    int	    c;
+do_digraph(int c)
 {
     static int	backspaced;	/* character before K_BS */
     static int	lastchar;	/* last typed character */
@@ -2041,8 +1972,8 @@ do_digraph(c)
  * Returns composed character, or NUL when ESC was used.
  */
     int
-get_digraph(cmdline)
-    int		cmdline;	/* TRUE when called from the cmdline */
+get_digraph(
+    int		cmdline)	/* TRUE when called from the cmdline */
 {
     int		c, cc;
 
@@ -2085,10 +2016,7 @@ get_digraph(cmdline)
  * If "meta_char" is TRUE and "char1" is a space, return "char2" | 0x80.
  */
     static int
-getexactdigraph(char1, char2, meta_char)
-    int		char1;
-    int		char2;
-    int		meta_char;
+getexactdigraph(int char1, int char2, int meta_char)
 {
     int		i;
     int		retval = 0;
@@ -2173,10 +2101,7 @@ getexactdigraph(char1, char2, meta_char)
  * Allow for both char1-char2 and char2-char1
  */
     int
-getdigraph(char1, char2, meta_char)
-    int	char1;
-    int	char2;
-    int	meta_char;
+getdigraph(int char1, int char2, int meta_char)
 {
     int	    retval;
 
@@ -2192,8 +2117,7 @@ getdigraph(char1, char2, meta_char)
  * format: {c1}{c2} char {c1}{c2} char ...
  */
     void
-putdigraph(str)
-    char_u *str;
+putdigraph(char_u *str)
 {
     int		char1, char2, n;
     int		i;
@@ -2252,7 +2176,7 @@ putdigraph(str)
 }
 
     void
-listdigraphs()
+listdigraphs(void)
 {
     int		i;
     digr_T	*dp;
@@ -2297,8 +2221,7 @@ listdigraphs()
 }
 
     static void
-printdigraph(dp)
-    digr_T	*dp;
+printdigraph(digr_T *dp)
 {
     char_u	buf[30];
     char_u	*p;
@@ -2357,7 +2280,7 @@ typedef struct
 
 #define KMAP_MAXLEN 20	    /* maximum length of "from" or "to" */
 
-static void keymap_unload __ARGS((void));
+static void keymap_unload(void);
 
 /*
  * Set up key mapping tables for the 'keymap' option.
@@ -2366,7 +2289,7 @@ static void keymap_unload __ARGS((void));
  * checked.
  */
     char_u *
-keymap_init()
+keymap_init(void)
 {
     curbuf->b_kmap_state &= ~KEYMAP_INIT;
 
@@ -2397,13 +2320,13 @@ keymap_init()
 	/* try finding "keymap/'keymap'_'encoding'.vim"  in 'runtimepath' */
 	vim_snprintf((char *)buf, buflen, "keymap/%s_%s.vim",
 						   curbuf->b_p_keymap, p_enc);
-	if (source_runtime(buf, FALSE) == FAIL)
+	if (source_runtime(buf, 0) == FAIL)
 # endif
 	{
 	    /* try finding "keymap/'keymap'.vim" in 'runtimepath'  */
 	    vim_snprintf((char *)buf, buflen, "keymap/%s.vim",
 							  curbuf->b_p_keymap);
-	    if (source_runtime(buf, FALSE) == FAIL)
+	    if (source_runtime(buf, 0) == FAIL)
 	    {
 		vim_free(buf);
 		return (char_u *)N_("E544: Keymap file not found");
@@ -2419,8 +2342,7 @@ keymap_init()
  * ":loadkeymap" command: load the following lines as the keymap.
  */
     void
-ex_loadkeymap(eap)
-    exarg_T	*eap;
+ex_loadkeymap(exarg_T *eap)
 {
     char_u	*line;
     char_u	*p;
@@ -2505,7 +2427,7 @@ ex_loadkeymap(eap)
  * Stop using 'keymap'.
  */
     static void
-keymap_unload()
+keymap_unload(void)
 {
     char_u	buf[KMAP_MAXLEN + 10];
     int		i;

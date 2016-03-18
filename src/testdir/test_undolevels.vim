@@ -1,7 +1,5 @@
 " Tests for 'undolevels'
 
-set nocompatible viminfo+=nviminfo
-
 func FillBuffer()
   for i in range(1,13)
     put=i

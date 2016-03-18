@@ -65,14 +65,10 @@
 # if defined(UNIX) || defined(WIN3264) || defined(MACOS)
 #  define FEAT_HUGE
 # else
-#  if defined(MSWIN) || defined(DJGPP) || defined(VMS) || defined(MACOS) || defined(AMIGA)
+#  if defined(MSWIN) || defined(VMS) || defined(MACOS) || defined(AMIGA)
 #   define FEAT_BIG
 #  else
-#   ifdef MSDOS
-#    define FEAT_SMALL
-#   else
-#    define FEAT_NORMAL
-#   endif
+#   define FEAT_NORMAL
 #  endif
 # endif
 #endif
@@ -254,13 +250,6 @@
 #endif
 
 /*
- * +ex_extra		":retab", ":right", ":left", ":center", ":normal".
- */
-#ifdef FEAT_NORMAL
-# define FEAT_EX_EXTRA
-#endif
-
-/*
  * +extra_search	'hlsearch' and 'incsearch' options.
  */
 #ifdef FEAT_NORMAL
@@ -327,7 +316,7 @@
  *
  * Disabled for EBCDIC as it requires multibyte.
  */
-#if defined(FEAT_BIG) && !defined(WIN16) && VIM_SIZEOF_INT >= 4 && !defined(EBCDIC)
+#if defined(FEAT_BIG) && VIM_SIZEOF_INT >= 4 && !defined(EBCDIC)
 # define FEAT_ARABIC
 #endif
 #ifdef FEAT_ARABIC
@@ -411,6 +400,13 @@
 #endif
 
 /*
+ * +timers		timer_start()
+ */
+#if defined(FEAT_RELTIME) && (defined(UNIX) || defined(WIN32))
+# define FEAT_TIMERS
+#endif
+
+/*
  * +textobjects		Text objects: "vaw", "das", etc.
  */
 #if defined(FEAT_NORMAL) && defined(FEAT_EVAL)
@@ -474,7 +470,7 @@
  *			and byte2line().
  *			Note: Required for Macintosh.
  */
-#if defined(FEAT_NORMAL) && !defined(MSDOS)
+#if defined(FEAT_NORMAL)
 # define FEAT_TITLE
 #endif
 
@@ -548,7 +544,6 @@
  *			with HAVE_TGETENT defined).
  *
  * (nothing)		Machine specific termcap entries will be included.
- *			This is default for win16 to save static data.
  *
  * SOME_BUILTIN_TCAPS	Include most useful builtin termcap entries (used only
  *			with NO_BUILTIN_TCAPS not defined).
@@ -561,7 +556,7 @@
 /* #define NO_BUILTIN_TCAPS */
 #endif
 
-#if !defined(NO_BUILTIN_TCAPS) && !defined(FEAT_GUI_W16)
+#if !defined(NO_BUILTIN_TCAPS)
 # ifdef FEAT_BIG
 #  define ALL_BUILTIN_TCAPS
 # else
@@ -631,8 +626,7 @@
  * Multibyte support doesn't work on z/OS Unix currently.
  */
 #if (defined(FEAT_NORMAL) || defined(FEAT_GUI_GTK) || defined(FEAT_ARABIC)) \
-	&& !defined(FEAT_MBYTE) && !defined(WIN16) \
-	&& VIM_SIZEOF_INT >= 4 && !defined(EBCDIC)
+	&& !defined(FEAT_MBYTE) && VIM_SIZEOF_INT >= 4 && !defined(EBCDIC)
 # define FEAT_MBYTE
 #endif
 
@@ -770,7 +764,7 @@
     && (defined(FEAT_GUI_GTK) \
 	|| (defined(FEAT_GUI_MOTIF) && defined(HAVE_XM_NOTEBOOK_H)) \
 	|| defined(FEAT_GUI_MAC) \
-	|| (defined(FEAT_GUI_MSWIN) && !defined(WIN16) \
+	|| (defined(FEAT_GUI_MSWIN) \
 	    && (!defined(_MSC_VER) || _MSC_VER > 1020)))
 # define FEAT_GUI_TABLINE
 #endif
@@ -1068,7 +1062,7 @@
 # ifdef FEAT_BIG
 #  define FEAT_MOUSE_SGR
 # endif
-# if defined(FEAT_NORMAL) && (defined(MSDOS) || defined(WIN3264))
+# if defined(FEAT_NORMAL) && defined(WIN3264)
 #  define DOS_MOUSE
 # endif
 # if defined(FEAT_NORMAL) && defined(__QNX__)
@@ -1184,10 +1178,10 @@
  */
 #ifdef FEAT_NORMAL
 /* MS-DOS console and Win32 console can change cursor shape */
-# if defined(MSDOS) || (defined(WIN3264) && !defined(FEAT_GUI_W32))
+# if defined(WIN3264) && !defined(FEAT_GUI_W32)
 #  define MCH_CURSOR_SHAPE
 # endif
-# if defined(FEAT_GUI_W32) || defined(FEAT_GUI_W16) || defined(FEAT_GUI_MOTIF) \
+# if defined(FEAT_GUI_W32) || defined(FEAT_GUI_MOTIF) \
 	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_PHOTON)
 #  define FEAT_MOUSESHAPE
@@ -1234,9 +1228,9 @@
  * +perl		Perl interface: "--enable-perlinterp"
  * +python		Python interface: "--enable-pythoninterp"
  * +tcl			TCL interface: "--enable-tclinterp"
- * +sniff		Sniff interface: "--enable-sniff"
  * +sun_workshop	Sun Workshop integration
  * +netbeans_intg	Netbeans integration
+ * +channel		Inter process communication
  */
 
 /*
@@ -1258,6 +1252,13 @@
 #if (!defined(FEAT_LISTCMDS) || !defined(FEAT_EVAL)) \
 	&& defined(FEAT_NETBEANS_INTG)
 # undef FEAT_NETBEANS_INTG
+#endif
+
+/*
+ * The +channel feature requires +eval.
+ */
+#if !defined(FEAT_EVAL) && defined(FEAT_JOB_CHANNEL)
+# undef FEAT_JOB_CHANNEL
 #endif
 
 /*

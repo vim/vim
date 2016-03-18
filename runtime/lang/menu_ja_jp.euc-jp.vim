@@ -1,10 +1,12 @@
 " vi:set ts=8 sts=8 sw=8 tw=0:
 "
 " Menu Translations:	Japanese (EUC-JP)
-" Translated By:	MURAOKA Taro  <koron.kaoriya@gmail.com>
-" Last Change:		12-May-2013.
+" Last Translator:	MURAOKA Taro  <koron.kaoriya@gmail.com>
+" Last Change:		28-Jan-2016.
 "
-" Copyright (C) 2001-13 MURAOKA Taro <koron.kaoriya@gmail.com>
+" Copyright (C) 2001-2016 MURAOKA Taro <koron.kaoriya@gmail.com>,
+"			  vim-jp (http://vim-jp.org/)
+"
 " THIS FILE IS DISTRIBUTED UNDER THE VIM LICENSE.
 
 " Quit when menu translations have already been done.
@@ -20,7 +22,7 @@ scriptencoding euc-jp
 " Help menu
 menutrans &Help			ヘルプ(&H)
 menutrans &Overview<Tab><F1>	概略(&O)<Tab><F1>
-menutrans &User\ Manual		ユーザマニュアル(&U)
+menutrans &User\ Manual		ユーザーマニュアル(&U)
 menutrans &How-to\ links	&How-toリンク
 menutrans &Credits		クレジット(&C)
 menutrans Co&pying		著作権情報(&P)
@@ -138,7 +140,7 @@ menutrans &Tools			ツール(&T)
 menutrans &Jump\ to\ this\ tag<Tab>g^]	タグジャンプ(&J)<Tab>g^]
 menutrans Jump\ &back<Tab>^T		戻る(&B)<Tab>^T
 menutrans Build\ &Tags\ File		タグファイル作成(&T)
-menutrans &Make<Tab>:make		メイク(&M)<Tab>:make
+menutrans &Make<Tab>:make		ビルド(&M)<Tab>:make
 menutrans &List\ Errors<Tab>:cl		エラーリスト(&L)<Tab>:cl
 menutrans L&ist\ Messages<Tab>:cl!	メッセージリスト(&I)<Tab>:cl!
 menutrans &Next\ Error<Tab>:cn		次のエラーへ(&N)<Tab>:cn

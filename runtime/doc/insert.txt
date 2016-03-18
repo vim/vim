@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.4.  Last change: 2015 Sep 15
+*insert.txt*    For Vim version 7.4.  Last change: 2016 Jan 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1872,8 +1872,6 @@ NOTE: These commands cannot be used with |:global| or |:vglobal|.
 			or script is finished.
 			This command does not work from |:normal|.
 			{not in Vi}
-			{not available when compiled without the |+ex_extra|
-			feature}
 
 							*:stopi* *:stopinsert*
 :stopi[nsert]		Stop Insert mode as soon as possible.  Works like
@@ -1891,15 +1889,11 @@ NOTE: These commands cannot be used with |:global| or |:vglobal|.
 			script that the replacement will only start after
 			the function or script is finished.
 			{not in Vi}
-			{not available when compiled without the |+ex_extra|
-			feature}
 
 							*:startgreplace*
 :startg[replace][!]	Just like |:startreplace|, but use Virtual Replace
 			mode, like with |gR|.
 			{not in Vi}
-			{not available when compiled without the |+ex_extra|
-			feature}
 
 ==============================================================================
 10. Inserting a file					*inserting-file*

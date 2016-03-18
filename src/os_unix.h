@@ -74,10 +74,6 @@
 # define USE_GETCWD
 #endif
 
-#ifndef __ARGS
-# define __ARGS(x) x
-#endif
-
 /* always use unlink() to remove files */
 #ifndef PROTO
 # ifdef VMS
@@ -453,7 +449,7 @@ typedef struct dsc$descriptor   DESC;
 # ifdef HAVE_RENAME
 #  define mch_rename(src, dst) rename(src, dst)
 # else
-int mch_rename __ARGS((const char *src, const char *dest));
+int mch_rename(const char *src, const char *dest);
 # endif
 # ifndef VMS
 #  ifdef __MVS__

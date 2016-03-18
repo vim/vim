@@ -1,4 +1,4 @@
-*os_390.txt*    For Vim version 7.4.  Last change: 2010 May 30
+*os_390.txt*    For Vim version 7.4.  Last change: 2016 Feb 27
 
 
 		  VIM REFERENCE MANUAL	  by Ralf Schandl
@@ -108,7 +108,6 @@ Never tested:
     - Langmap			(|'langmap'|)
     - Python support		(|Python|)
     - Right-to-left mode	(|'rightleft'|)
-    - SNiFF+ interface		(|sniff|)
     - TCL interface		(|tcl|)
     ...
 

@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 
+	int
 main()
 {
 	while (1)
@@ -18,4 +19,5 @@ main()
 		fflush(stdout);
 		usleep(250000);		/* off time */
 	}
+	return 0;
 }

@@ -96,7 +96,7 @@ static CVim *app = 0;
 class CVim : public IVim
 {
 public:
-    ~CVim();
+    virtual ~CVim();
     static CVim *Create(int *pbDoRestart);
 
     // IUnknown members
@@ -432,6 +432,7 @@ class CVimCF : public IClassFactory
 {
 public:
     static CVimCF *Create();
+    virtual ~CVimCF() {};
 
     STDMETHOD(QueryInterface)(REFIID riid, void ** ppv);
     STDMETHOD_(unsigned long, AddRef)(void);

@@ -4,7 +4,7 @@
 # Authors:	Zoltan Arpadffy, <arpadffy@polarhome.com>
 #		Sandor Kopanyi,  <sandor.kopanyi@mailbox.hu>
 #
-# Last change:  2015 Dec 28
+# Last change:  2016 Feb 25
 #
 # This has been tested on VMS 6.2 to 8.3 on DEC Alpha, VAX and IA64.
 # Edit the lines in the Configuration section below to select.
@@ -163,7 +163,7 @@ SCRIPT_PYTHON = test86.out test87.out
 	-@ write sys$output "                "$*" "
 	-@ write sys$output "-----------------------------------------------"
 	-@ !run the test
-	-@ create/term/wait/nodetach mcr $(VIMPROG) $(GUI_OPTION) -u vms.vim -U NONE --noplugin -s dotest.in $*.in
+	-@ create/term/wait/nodetach mcr $(VIMPROG) $(GUI_OPTION) -u vms.vim $(NO_PLUGIN) -s dotest.in $*.in
 	-@ !analyse the result
 	-@ directory /size/date test.out
 	-@ if "''F$SEARCH("test.out.*")'" .NES. "" then rename/nolog test.out $*.out 

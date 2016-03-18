@@ -25,13 +25,11 @@
 #define index_to_key(i) ((i) ^ 15167)
 #define TEST_COUNT 50000
 
-static void test_mf_hash __ARGS((void));
-
 /*
  * Test mf_hash_*() functions.
  */
     static void
-test_mf_hash()
+test_mf_hash(void)
 {
     mf_hashtab_T   ht;
     mf_hashitem_T  *item;
@@ -138,7 +136,7 @@ test_mf_hash()
 }
 
     int
-main()
+main(void)
 {
     test_mf_hash();
     return 0;

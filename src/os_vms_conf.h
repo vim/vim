@@ -109,7 +109,6 @@
 #define HAVE_FSYNC
 #define HAVE_GETPWUID
 #define HAVE_GETPWNAM
-#define HAVE_STDARG_H
 #define	HAVE_STDLIB_H
 #define	HAVE_STRING_H
 #define	HAVE_ERRNO_H
