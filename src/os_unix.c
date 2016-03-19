@@ -176,6 +176,7 @@ typedef int waitstatus;
 static pid_t wait4pid(pid_t, waitstatus *);
 
 static int  WaitForChar(long);
+static int  WaitForCharOrMouse(long);
 #if defined(__BEOS__) || defined(VMS)
 int  RealWaitForChar(int, long, int *);
 #else
@@ -5347,12 +5348,49 @@ mch_breakcheck(void)
 }
 
 /*
- * Wait "msec" msec until a character is available from the keyboard or from
- * inbuf[]. msec == -1 will block forever.
+ * Wait "msec" msec until a character is available from the mouse, keyboard,
+ * from inbuf[].
+ * "msec" == -1 will block forever.
+ * Invokes timer callbacks when needed.
  * When a GUI is being used, this will never get called -- webb
  */
     static int
 WaitForChar(long msec)
+{
+#ifdef FEAT_TIMERS
+    long    due_time;
+    long    remaining = msec;
+
+    /* When waiting very briefly don't trigger timers. */
+    if (msec >= 0 && msec < 10L)
+	return WaitForCharOrMouse(msec);
+
+    while (msec < 0 || remaining > 0)
+    {
+	/* Trigger timers and then get the time in msec until the next one is
+	 * due.  Wait up to that time. */
+	due_time = check_due_timer();
+	if (due_time <= 0 || (msec > 0 && due_time > remaining))
+	    due_time = remaining;
+	if (WaitForCharOrMouse(due_time))
+	    return TRUE;
+	if (msec > 0)
+	    remaining -= due_time;
+    }
+    return FALSE;
+#else
+    return WaitForCharOrMouse(msec);
+#endif
+}
+
+/*
+ * Wait "msec" msec until a character is available from the mouse or keyboard
+ * or from inbuf[].
+ * "msec" == -1 will block forever.
+ * When a GUI is being used, this will never get called -- webb
+ */
+    static int
+WaitForCharOrMouse(long msec)
 {
 #ifdef FEAT_MOUSE_GPM
     int		gpm_process_wanted;
