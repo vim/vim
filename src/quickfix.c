@@ -1578,11 +1578,9 @@ qf_jump(
 	     * specified, the current window is vertically split and narrow.
 	     */
 	    flags = WSP_HELP;
-# ifdef FEAT_VERTSPLIT
 	    if (cmdmod.split == 0 && curwin->w_width != Columns
 						      && curwin->w_width < 80)
 		flags |= WSP_TOP;
-# endif
 	    if (qi != &ql_info)
 		flags |= WSP_NEWLOC;  /* don't copy the location list */
 
@@ -2360,15 +2358,12 @@ ex_copen(exarg_T *eap)
 	win_goto(win);
 	if (eap->addr_count != 0)
 	{
-#ifdef FEAT_VERTSPLIT
 	    if (cmdmod.split & WSP_VERT)
 	    {
 		if (height != W_WIDTH(win))
 		    win_setwidth(height);
 	    }
-	    else
-#endif
-	    if (height != win->w_height)
+	    else if (height != win->w_height)
 		win_setheight(height);
 	}
     }
@@ -2425,11 +2420,7 @@ ex_copen(exarg_T *eap)
 
 	/* Only set the height when still in the same tab page and there is no
 	 * window to the side. */
-	if (curtab == prevtab
-#ifdef FEAT_VERTSPLIT
-		&& curwin->w_width == Columns
-#endif
-	   )
+	if (curtab == prevtab && curwin->w_width == Columns)
 	    win_setheight(height);
 	curwin->w_p_wfh = TRUE;	    /* set 'winfixheight' */
 	if (win_valid(win))

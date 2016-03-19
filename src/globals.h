@@ -427,7 +427,7 @@ EXTERN int	gui_prev_topfill INIT(= 0);
 EXTERN int	drag_status_line INIT(= FALSE);	/* dragging the status line */
 EXTERN int	postponed_mouseshape INIT(= FALSE); /* postponed updating the
 						       mouse pointer shape */
-#  ifdef FEAT_VERTSPLIT
+#  ifdef FEAT_WINDOWS
 EXTERN int	drag_sep_line INIT(= FALSE);	/* dragging vert separator */
 #  endif
 # endif
@@ -1547,9 +1547,7 @@ EXTERN char_u e_umark[]		INIT(= N_("E78: Unknown mark"));
 EXTERN char_u e_wildexpand[]	INIT(= N_("E79: Cannot expand wildcards"));
 #ifdef FEAT_WINDOWS
 EXTERN char_u e_winheight[]	INIT(= N_("E591: 'winheight' cannot be smaller than 'winminheight'"));
-# ifdef FEAT_VERTSPLIT
 EXTERN char_u e_winwidth[]	INIT(= N_("E592: 'winwidth' cannot be smaller than 'winminwidth'"));
-# endif
 #endif
 EXTERN char_u e_write[]		INIT(= N_("E80: Error while writing"));
 EXTERN char_u e_zerocount[]	INIT(= N_("Zero count"));

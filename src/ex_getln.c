@@ -500,11 +500,7 @@ getcmdline(
 		}
 		else
 		{
-# ifdef FEAT_VERTSPLIT
 		    win_redraw_last_status(topframe);
-# else
-		    lastwin->w_redr_status = TRUE;
-# endif
 		    redraw_statuslines();
 		}
 		KeyTyped = skt;

@@ -1812,7 +1812,7 @@ gui_write(
 			gui.scroll_region_bot = arg1;
 		    }
 		    break;
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 		case 'V':	/* Set vertical scroll region */
 		    if (arg1 < arg2)
 		    {
@@ -3128,7 +3128,7 @@ button_set:
 	    && button != MOUSE_DRAG
 # ifdef FEAT_MOUSESHAPE
 	    && !drag_status_line
-#  ifdef FEAT_VERTSPLIT
+#  ifdef FEAT_WINDOWS
 	    && !drag_sep_line
 #  endif
 # endif
@@ -3406,7 +3406,7 @@ gui_init_which_components(char_u *oldval UNUSED)
 	    case GO_RIGHT:
 		gui.which_scrollbars[SBAR_RIGHT] = TRUE;
 		break;
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	    case GO_VLEFT:
 		if (win_hasvertsplit())
 		    gui.which_scrollbars[SBAR_LEFT] = TRUE;
@@ -3839,7 +3839,7 @@ gui_create_scrollbar(scrollbar_T *sb, int type, win_T *wp)
     sb->max = 1;
     sb->top = 0;
     sb->height = 0;
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     sb->width = 0;
 #endif
     sb->status_height = 0;
@@ -4121,7 +4121,7 @@ gui_update_scrollbars(
     long	val, size, max;		/* need 32 bits here */
     int		which_sb;
     int		h, y;
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     static win_T *prev_curwin = NULL;
 #endif
 
@@ -4219,10 +4219,8 @@ gui_update_scrollbars(
 #ifdef FEAT_WINDOWS
 	    || sb->top != wp->w_winrow
 	    || sb->status_height != wp->w_status_height
-# ifdef FEAT_VERTSPLIT
 	    || sb->width != wp->w_width
 	    || prev_curwin != curwin
-# endif
 #endif
 	    )
 	{
@@ -4232,9 +4230,7 @@ gui_update_scrollbars(
 #ifdef FEAT_WINDOWS
 	    sb->top = wp->w_winrow;
 	    sb->status_height = wp->w_status_height;
-# ifdef FEAT_VERTSPLIT
 	    sb->width = wp->w_width;
-# endif
 #endif
 
 	    /* Calculate height and position in pixels */
@@ -4316,7 +4312,7 @@ gui_update_scrollbars(
 					    val, size, max);
 	}
     }
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     prev_curwin = curwin;
 #endif
     --hold_gui_events;
@@ -4333,7 +4329,7 @@ gui_do_scrollbar(
     int		which,	    /* SBAR_LEFT or SBAR_RIGHT */
     int		enable)	    /* TRUE to enable scrollbar */
 {
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     int		midcol = curwin->w_wincol + curwin->w_width / 2;
     int		has_midcol = (wp->w_wincol <= midcol
 				     && wp->w_wincol + wp->w_width >= midcol);
@@ -4857,7 +4853,7 @@ gui_mouse_moved(int x, int y)
 	st[2] = KE_FILLER;
 	st[3] = (char_u)MOUSE_LEFT;
 	fill_mouse_coord(st + 4,
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 		wp->w_wincol == 0 ? -1 : wp->w_wincol + MOUSE_COLOFF,
 #else
 		-1,
@@ -4934,11 +4930,9 @@ xy2win(int x UNUSED, int y UNUSED)
     }
     else if (row > wp->w_height)	/* below status line */
 	update_mouseshape(SHAPE_IDX_CLINE);
-#  ifdef FEAT_VERTSPLIT
     else if (!(State & CMDLINE) && W_VSEP_WIDTH(wp) > 0 && col == wp->w_width
 	    && (row != wp->w_height || !stl_connected(wp)) && msg_scrolled == 0)
 	update_mouseshape(SHAPE_IDX_VSEP);
-#  endif
     else if (!(State & CMDLINE) && W_STATUS_HEIGHT(wp) > 0
 				  && row == wp->w_height && msg_scrolled == 0)
 	update_mouseshape(SHAPE_IDX_STATUS);

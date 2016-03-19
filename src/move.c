@@ -990,7 +990,7 @@ curs_columns(
 	curwin->w_wrow = curwin->w_height - 1;
     }
     else if (curwin->w_p_wrap
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	    && curwin->w_width != 0
 #endif
 	    )
@@ -1096,7 +1096,7 @@ curs_columns(
 	    && curwin->w_height != 0
 	    && curwin->w_cursor.lnum == curwin->w_topline
 	    && width > 0
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	    && curwin->w_width != 0
 #endif
 	    )
@@ -1259,7 +1259,7 @@ scrolldown(
      */
     wrow = curwin->w_wrow;
     if (curwin->w_p_wrap
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 		&& curwin->w_width != 0
 #endif
 	    )
@@ -1468,7 +1468,7 @@ scrolldown_clamp(void)
     end_row += plines(curwin->w_topline - 1);
 #endif
     if (curwin->w_p_wrap
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 		&& curwin->w_width != 0
 #endif
 	    )
@@ -1532,7 +1532,7 @@ scrollup_clamp(void)
     start_row = curwin->w_wrow - plines(curwin->w_topline);
 #endif
     if (curwin->w_p_wrap
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 		&& curwin->w_width != 0
 #endif
 	    )

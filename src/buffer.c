@@ -4607,9 +4607,9 @@ do_arg_all(
     old_curwin = curwin;
     old_curtab = curtab;
 
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     need_mouse_correct = TRUE;
-#endif
+# endif
 
     /*
      * Try closing all windows that are not in the argument list.
@@ -4629,10 +4629,7 @@ do_arg_all(
 	    buf = wp->w_buffer;
 	    if (buf->b_ffname == NULL
 		    || (!keep_tabs && buf->b_nwindows > 1)
-#ifdef FEAT_VERTSPLIT
-		    || wp->w_width != Columns
-#endif
-		    )
+		    || wp->w_width != Columns)
 		i = opened_len;
 	    else
 	    {
@@ -4901,13 +4898,11 @@ ex_buffer_all(exarg_T *eap)
 	{
 	    wpnext = wp->w_next;
 	    if ((wp->w_buffer->b_nwindows > 1
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 		    || ((cmdmod.split & WSP_VERT)
 			? wp->w_height + wp->w_status_height < Rows - p_ch
 							    - tabline_height()
 			: wp->w_width != Columns)
-#endif
-#ifdef FEAT_WINDOWS
 		    || (had_tab > 0 && wp != firstwin)
 #endif
 		    ) && firstwin != lastwin

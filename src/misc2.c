@@ -169,7 +169,7 @@ coladvance2(
 
 	if (finetune
 		&& curwin->w_p_wrap
-# ifdef FEAT_VERTSPLIT
+# ifdef FEAT_WINDOWS
 		&& curwin->w_width != 0
 # endif
 		&& wcol >= (colnr_T)width)
@@ -3633,7 +3633,7 @@ get_shape_idx(int mouse)
     }
     if (mouse && drag_status_line)
 	return SHAPE_IDX_SDRAG;
-# ifdef FEAT_VERTSPLIT
+# ifdef FEAT_WINDOWS
     if (mouse && drag_sep_line)
 	return SHAPE_IDX_VDRAG;
 # endif

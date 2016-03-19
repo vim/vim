@@ -83,7 +83,7 @@ enum SpecialKey
     KS_CSI,	/* start insert mode (bar cursor) */
     KS_CEI,	/* end insert mode (block cursor) */
     KS_CSR,	/* start replace mode (underline cursor) */
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     KS_CSV,	/* scroll region vertical */
 #endif
     KS_OP,	/* original color pair */

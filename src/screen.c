@@ -133,7 +133,7 @@ static void screen_line(int row, int coloff, int endcol, int clear_width, int rl
 static void screen_line(int row, int coloff, int endcol, int clear_width);
 # define SCREEN_LINE(r, o, e, c, rl)    screen_line((r), (o), (e), (c))
 #endif
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 static void draw_vsep_win(win_T *wp, int row);
 #endif
 #ifdef FEAT_STL_OPT
@@ -156,7 +156,7 @@ static void screen_char_2(unsigned off, int row, int col);
 static void screenclear2(void);
 static void lineclear(unsigned off, int width);
 static void lineinvalid(unsigned off, int width);
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 static void linecopy(int to, int from, win_T *wp);
 static void redraw_block(int row, int end, win_T *wp);
 #endif
@@ -170,7 +170,7 @@ static void draw_tabline(void);
 #if defined(FEAT_WINDOWS) || defined(FEAT_WILDMENU) || defined(FEAT_STL_OPT)
 static int fillchar_status(int *attr, int is_curwin);
 #endif
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 static int fillchar_vsep(int *attr);
 #endif
 #ifdef FEAT_STL_OPT
@@ -180,7 +180,7 @@ static void win_redr_custom(win_T *wp, int draw_ruler);
 static void win_redr_ruler(win_T *wp, int always);
 #endif
 
-#if defined(FEAT_CLIPBOARD) || defined(FEAT_VERTSPLIT)
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_WINDOWS)
 /* Ugly global: overrule attribute used by screen_char() */
 static int screen_char_attr = 0;
 #endif
@@ -1095,7 +1095,7 @@ win_update(win_T *wp)
 	return;
     }
 
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     /* Window is zero-width: Only need to draw the separator. */
     if (wp->w_width == 0)
     {
@@ -2138,7 +2138,7 @@ win_update(win_T *wp)
     }
     else
     {
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	draw_vsep_win(wp, row);
 #endif
 	if (eof)		/* we hit the end of the file */
@@ -5627,7 +5627,7 @@ win_line(
 		    )
 	    {
 		win_draw_end(wp, '@', ' ', row, wp->w_height, HLF_AT);
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 		draw_vsep_win(wp, row);
 #endif
 		row = endrow;
@@ -5835,7 +5835,7 @@ screen_line(
     unsigned	    max_off_to;
 #endif
     int		    col = 0;
-#if defined(FEAT_GUI) || defined(UNIX) || defined(FEAT_VERTSPLIT)
+#if defined(FEAT_GUI) || defined(UNIX) || defined(FEAT_WINDOWS)
     int		    hl;
 #endif
     int		    force = FALSE;	/* force update rest of the line */
@@ -6174,7 +6174,7 @@ screen_line(
 #endif
 	    screen_fill(row, row + 1, col + coloff, clear_width + coloff,
 								 ' ', ' ', 0);
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	    off_to += clear_width - col;
 	    col = clear_width;
 #endif
@@ -6183,7 +6183,7 @@ screen_line(
 
     if (clear_width > 0)
     {
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	/* For a window that's left of another, draw the separator char. */
 	if (col + coloff < Columns)
 	{
@@ -6289,7 +6289,7 @@ redraw_statuslines(void)
 }
 #endif
 
-#if (defined(FEAT_WILDMENU) && defined(FEAT_VERTSPLIT)) || defined(PROTO)
+#if (defined(FEAT_WILDMENU) && defined(FEAT_WINDOWS)) || defined(PROTO)
 /*
  * Redraw all status lines at the bottom of frame "frp".
  */
@@ -6313,7 +6313,7 @@ win_redraw_last_status(frame_T *frp)
 }
 #endif
 
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 /*
  * Draw the verticap separator right of window "wp" starting with line "row".
  */
@@ -6606,7 +6606,7 @@ win_redr_status_matches(
 	screen_fill(row, row + 1, clen, (int)Columns, fillchar, fillchar, attr);
     }
 
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     win_redraw_last_status(topframe);
 #else
     lastwin->w_redr_status = TRUE;
@@ -6700,11 +6700,6 @@ win_redr_status(win_T *wp)
 	    len += 4;
 	}
 
-#ifndef FEAT_VERTSPLIT
-	this_ru_col = ru_col;
-	if (this_ru_col < (Columns + 1) / 2)
-	    this_ru_col = (Columns + 1) / 2;
-#else
 	this_ru_col = ru_col - (Columns - W_WIDTH(wp));
 	if (this_ru_col < (W_WIDTH(wp) + 1) / 2)
 	    this_ru_col = (W_WIDTH(wp) + 1) / 2;
@@ -6714,7 +6709,6 @@ win_redr_status(win_T *wp)
 	    len = 1;
 	}
 	else
-#endif
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
@@ -6761,7 +6755,6 @@ win_redr_status(win_T *wp)
 #endif
     }
 
-#ifdef FEAT_VERTSPLIT
     /*
      * May need to draw the character below the vertical separator.
      */
@@ -6774,7 +6767,6 @@ win_redr_status(win_T *wp)
 	screen_putchar(fillchar, W_WINROW(wp) + wp->w_height, W_ENDCOL(wp),
 									attr);
     }
-#endif
     busy = FALSE;
 }
 
@@ -6811,7 +6803,6 @@ redraw_custom_statusline(win_T *wp)
 }
 #endif
 
-# ifdef FEAT_VERTSPLIT
 /*
  * Return TRUE if the status line of window "wp" is connected to the status
  * line of the window right of it.  If not, then it's a vertical separator.
@@ -6839,7 +6830,6 @@ stl_connected(win_T *wp)
     }
     return FALSE;
 }
-# endif
 
 #endif /* FEAT_WINDOWS */
 
@@ -6963,7 +6953,7 @@ win_redr_custom(
 		if (*stl++ != '(')
 		    stl = p_ruf;
 	    }
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	    col = ru_col - (Columns - W_WIDTH(wp));
 	    if (col < (W_WIDTH(wp) + 1) / 2)
 		col = (W_WIDTH(wp) + 1) / 2;
@@ -6999,7 +6989,7 @@ win_redr_custom(
 # endif
 	}
 
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	col += W_WINCOL(wp);
 #endif
     }
@@ -8038,7 +8028,7 @@ screen_char(unsigned off, int row, int col)
     /*
      * Stop highlighting first, so it's easier to move the cursor.
      */
-#if defined(FEAT_CLIPBOARD) || defined(FEAT_VERTSPLIT)
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_WINDOWS)
     if (screen_char_attr != 0)
 	attr = screen_char_attr;
     else
@@ -8113,7 +8103,7 @@ screen_char_2(unsigned off, int row, int col)
 }
 #endif
 
-#if defined(FEAT_CLIPBOARD) || defined(FEAT_VERTSPLIT) || defined(PROTO)
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * Draw a rectangle of the screen, inverted when "invert" is TRUE.
  * This uses the contents of ScreenLines[] and doesn't change it.
@@ -8167,7 +8157,7 @@ screen_draw_rectangle(
 }
 #endif
 
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 /*
  * Redraw the characters for a vertically split window.
  */
@@ -8875,7 +8865,7 @@ lineinvalid(unsigned off, int width)
     (void)vim_memset(ScreenAttrs + off, -1, (size_t)width * sizeof(sattr_T));
 }
 
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 /*
  * Copy part of a Screenline for vertically split window "wp".
  */
@@ -9373,7 +9363,7 @@ win_do_lines(
 
     /* only a few lines left: redraw is faster */
     if (mayclear && Rows - line_count < 5
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	    && wp->w_width == Columns
 #endif
 	    )
@@ -9409,12 +9399,12 @@ win_do_lines(
      * scroll-up .
      */
     if (scroll_region
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	    || W_WIDTH(wp) != Columns
 #endif
 	    )
     {
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	if (scroll_region && (wp->w_width == Columns || *T_CSV != NUL))
 #endif
 	    scroll_region_set(wp, row);
@@ -9424,7 +9414,7 @@ win_do_lines(
 	else
 	    retval = screen_ins_lines(W_WINROW(wp) + row, 0, line_count,
 						      wp->w_height - row, wp);
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	if (scroll_region && (wp->w_width == Columns || *T_CSV != NUL))
 #endif
 	    scroll_region_reset();
@@ -9543,7 +9533,7 @@ screen_ins_lines(
      * exists.
      */
     result_empty = (row + line_count >= end);
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     if (wp != NULL && wp->w_width != Columns && *T_CSV == NUL)
 	type = USE_REDRAW;
     else
@@ -9585,7 +9575,7 @@ screen_ins_lines(
     /* Remove a modeless selection when inserting lines halfway the screen
      * or not the full width of the screen. */
     if (off + row > 0
-# ifdef FEAT_VERTSPLIT
+# ifdef FEAT_WINDOWS
 	    || (wp != NULL && wp->w_width != Columns)
 # endif
        )
@@ -9613,7 +9603,7 @@ screen_ins_lines(
     end += off;
     for (i = 0; i < line_count; ++i)
     {
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	if (wp != NULL && wp->w_width != Columns)
 	{
 	    /* need to copy part of a line */
@@ -9649,7 +9639,7 @@ screen_ins_lines(
     screen_stop_highlight();
     windgoto(cursor_row, 0);
 
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     /* redraw the characters */
     if (type == USE_REDRAW)
 	redraw_block(row, end, wp);
@@ -9758,7 +9748,7 @@ screen_del_lines(
      * 5. Use T_DL (delete line) if it exists.
      * 6. redraw the characters from ScreenLines[].
      */
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     if (wp != NULL && wp->w_width != Columns && *T_CSV == NUL)
 	type = USE_REDRAW;
     else
@@ -9790,7 +9780,7 @@ screen_del_lines(
     else if (*T_CDL != NUL && line_count > 1 && can_delete)
 	type = USE_T_CDL;
     else if (can_clear(T_CE) && result_empty
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	    && (wp == NULL || wp->w_width == Columns)
 #endif
 	    )
@@ -9806,7 +9796,7 @@ screen_del_lines(
     /* Remove a modeless selection when deleting lines halfway the screen or
      * not the full width of the screen. */
     if (off + row > 0
-# ifdef FEAT_VERTSPLIT
+# ifdef FEAT_WINDOWS
 	    || (wp != NULL && wp->w_width != Columns)
 # endif
        )
@@ -9840,7 +9830,7 @@ screen_del_lines(
     end += off;
     for (i = 0; i < line_count; ++i)
     {
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	if (wp != NULL && wp->w_width != Columns)
 	{
 	    /* need to copy part of a line */
@@ -9876,7 +9866,7 @@ screen_del_lines(
 
     screen_stop_highlight();
 
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     /* redraw the characters */
     if (type == USE_REDRAW)
 	redraw_block(row, end, wp);
@@ -10445,7 +10435,7 @@ fillchar_status(int *attr, int is_curwin)
 }
 #endif
 
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 /*
  * Get the character to use in a separator between vertically split windows.
  * Get its attributes in "*attr".
@@ -10540,7 +10530,7 @@ win_redr_ruler(win_T *wp, int always)
     int		i;
     size_t	len;
     int		o;
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     int		this_ru_col;
     int		off = 0;
     int		width = Columns;
@@ -10623,10 +10613,8 @@ win_redr_ruler(win_T *wp, int always)
 	{
 	    row = W_WINROW(wp) + wp->w_height;
 	    fillchar = fillchar_status(&attr, wp == curwin);
-# ifdef FEAT_VERTSPLIT
 	    off = W_WINCOL(wp);
 	    width = W_WIDTH(wp);
-# endif
 	}
 	else
 #endif
@@ -10634,7 +10622,7 @@ win_redr_ruler(win_T *wp, int always)
 	    row = Rows - 1;
 	    fillchar = ' ';
 	    attr = 0;
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	    width = Columns;
 	    off = 0;
 #endif
@@ -10674,7 +10662,7 @@ win_redr_ruler(win_T *wp, int always)
 	if (wp->w_status_height == 0)	/* can't use last char of screen */
 #endif
 	    ++o;
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	this_ru_col = ru_col - (Columns - width);
 	if (this_ru_col < 0)
 	    this_ru_col = 0;

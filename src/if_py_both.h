@@ -3673,8 +3673,6 @@ WindowAttr(WindowObject *self, char *name)
 #ifdef FEAT_WINDOWS
     else if (strcmp(name, "row") == 0)
 	return PyLong_FromLong((long)(self->win->w_winrow));
-#endif
-#ifdef FEAT_VERTSPLIT
     else if (strcmp(name, "width") == 0)
 	return PyLong_FromLong((long)(W_WIDTH(self->win)));
     else if (strcmp(name, "col") == 0)
@@ -3765,7 +3763,7 @@ WindowSetattr(WindowObject *self, char *name, PyObject *valObject)
 
 	return 0;
     }
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     else if (strcmp(name, "width") == 0)
     {
 	long	width;

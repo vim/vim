@@ -1449,7 +1449,7 @@ static VALUE window_width(VALUE self UNUSED)
 
 static VALUE window_set_width(VALUE self UNUSED, VALUE width)
 {
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     win_T *win = get_win(self);
     win_T *savewin = curwin;
 

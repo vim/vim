@@ -5867,11 +5867,9 @@ ex_help(exarg_T *eap)
 	     * specified, the current window is vertically split and
 	     * narrow. */
 	    n = WSP_HELP;
-# ifdef FEAT_VERTSPLIT
 	    if (cmdmod.split == 0 && curwin->w_width != Columns
 						  && curwin->w_width < 80)
 		n |= WSP_TOP;
-# endif
 	    if (win_split(0, n) == FAIL)
 		goto erret;
 #else

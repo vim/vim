@@ -1976,7 +1976,7 @@ plines_win_nofill(
     if (!wp->w_p_wrap)
 	return 1;
 
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     if (wp->w_width == 0)
 	return 1;
 #endif
@@ -2052,7 +2052,7 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     if (!wp->w_p_wrap)
 	return lines + 1;
 
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     if (wp->w_width == 0)
 	return lines + 1;
 #endif

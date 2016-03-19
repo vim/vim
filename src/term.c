@@ -179,13 +179,13 @@ static struct builtin_term builtin_termcaps[] =
 # ifdef TERMINFO
     {(int)KS_CDL,	IF_EB("\033|%p1%dD", ESC_STR "|%p1%dD")},
     {(int)KS_CS,	IF_EB("\033|%p1%d;%p2%dR", ESC_STR "|%p1%d;%p2%dR")},
-#  ifdef FEAT_VERTSPLIT
+#  ifdef FEAT_WINDOWS
     {(int)KS_CSV,	IF_EB("\033|%p1%d;%p2%dV", ESC_STR "|%p1%d;%p2%dV")},
 #  endif
 # else
     {(int)KS_CDL,	IF_EB("\033|%dD", ESC_STR "|%dD")},
     {(int)KS_CS,	IF_EB("\033|%d;%dR", ESC_STR "|%d;%dR")},
-#  ifdef FEAT_VERTSPLIT
+#  ifdef FEAT_WINDOWS
     {(int)KS_CSV,	IF_EB("\033|%d;%dV", ESC_STR "|%d;%dV")},
 #  endif
 # endif
@@ -1080,7 +1080,7 @@ static struct builtin_term builtin_termcaps[] =
 #  else
     {(int)KS_CS,	"[%dCS%d]"},
 #  endif
-#  ifdef FEAT_VERTSPLIT
+#  ifdef FEAT_WINDOWS
 #   ifdef TERMINFO
     {(int)KS_CSV,	"[%p1%dCSV%p2%d]"},
 #   else
@@ -2862,7 +2862,7 @@ win_new_shellsize(void)
     if (old_Columns != Columns)
     {
 	old_Columns = Columns;
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	shell_new_columns();	/* update window sizes */
 #endif
     }
@@ -3485,7 +3485,7 @@ scroll_region_set(win_T *wp, int off)
 {
     OUT_STR(tgoto((char *)T_CS, W_WINROW(wp) + wp->w_height - 1,
 							 W_WINROW(wp) + off));
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     if (*T_CSV != NUL && wp->w_width != Columns)
 	OUT_STR(tgoto((char *)T_CSV, W_WINCOL(wp) + wp->w_width - 1,
 							       W_WINCOL(wp)));
@@ -3500,7 +3500,7 @@ scroll_region_set(win_T *wp, int off)
 scroll_region_reset(void)
 {
     OUT_STR(tgoto((char *)T_CS, (int)Rows - 1, 0));
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     if (*T_CSV != NUL)
 	OUT_STR(tgoto((char *)T_CSV, (int)Columns - 1, 0));
 #endif

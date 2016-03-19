@@ -646,7 +646,7 @@ static char *(features[]) =
 #else
 	"-user_commands",
 #endif
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	"+vertsplit",
 #else
 	"-vertsplit",
@@ -748,6 +748,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1611,
 /**/
     1610,
 /**/

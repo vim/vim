@@ -1093,7 +1093,7 @@ win_lbr_chartabsize(
 	    && vim_isbreak(c)
 	    && !vim_isbreak(s[1])
 	    && wp->w_p_wrap
-# ifdef FEAT_VERTSPLIT
+# ifdef FEAT_WINDOWS
 	    && wp->w_width != 0
 # endif
        )
@@ -1250,10 +1250,10 @@ in_win_border(win_T *wp, colnr_T vcol)
     int		width1;		/* width of first line (after line number) */
     int		width2;		/* width of further lines */
 
-#ifdef FEAT_VERTSPLIT
+# ifdef FEAT_WINDOWS
     if (wp->w_width == 0)	/* there is no border */
 	return FALSE;
-#endif
+# endif
     width1 = W_WIDTH(wp) - win_col_off(wp);
     if ((int)vcol < width1 - 1)
 	return FALSE;

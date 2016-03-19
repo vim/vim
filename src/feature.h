@@ -97,6 +97,7 @@
 /*
  * +windows		Multiple windows.  Without this there is no help
  *			window and no status lines.
+ * +vertsplit		Vertically split windows.
  */
 #ifdef FEAT_SMALL
 # define FEAT_WINDOWS
@@ -109,16 +110,6 @@
  */
 #ifdef FEAT_NORMAL
 # define FEAT_LISTCMDS
-#endif
-
-/*
- * +vertsplit		Vertically split windows.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_VERTSPLIT
-#endif
-#if defined(FEAT_VERTSPLIT) && !defined(FEAT_WINDOWS)
-# define FEAT_WINDOWS
 #endif
 
 /*
@@ -144,8 +135,8 @@
 # define FEAT_JUMPLIST
 #endif
 
-/* the cmdline-window requires FEAT_VERTSPLIT and FEAT_CMDHIST */
-#if defined(FEAT_VERTSPLIT) && defined(FEAT_CMDHIST)
+/* the cmdline-window requires FEAT_WINDOWS and FEAT_CMDHIST */
+#if defined(FEAT_WINDOWS) && defined(FEAT_CMDHIST)
 # define FEAT_CMDWIN
 #endif
 
@@ -601,7 +592,7 @@
  * +mksession		":mksession" command.
  *			Requires +windows and +vertsplit.
  */
-#if defined(FEAT_NORMAL) && defined(FEAT_WINDOWS) && defined(FEAT_VERTSPLIT)
+#if defined(FEAT_NORMAL) && defined(FEAT_WINDOWS)
 # define FEAT_SESSION
 #endif
 

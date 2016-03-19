@@ -2306,8 +2306,6 @@ do_mouse(
     int		in_status_line;	/* mouse in status line */
 #ifdef FEAT_WINDOWS
     static int	in_tab_line = FALSE; /* mouse clicked in tab line */
-#endif
-#ifdef FEAT_VERTSPLIT
     int		in_sep_line;	/* mouse in vertical separator line */
 #endif
     int		c1, c2;
@@ -2384,13 +2382,11 @@ do_mouse(
 	drag_status_line = FALSE;
 	update_mouseshape(SHAPE_IDX_STATUS);
     }
-# ifdef FEAT_VERTSPLIT
     if (!is_drag && drag_sep_line)
     {
 	drag_sep_line = FALSE;
 	update_mouseshape(SHAPE_IDX_VSEP);
     }
-# endif
 #endif
 
     /*
@@ -2784,9 +2780,7 @@ do_mouse(
 			oap == NULL ? NULL : &(oap->inclusive), which_button);
     moved = (jump_flags & CURSOR_MOVED);
     in_status_line = (jump_flags & IN_STATUS_LINE);
-#ifdef FEAT_VERTSPLIT
     in_sep_line = (jump_flags & IN_SEP_LINE);
-#endif
 
 #ifdef FEAT_NETBEANS_INTG
     if (isNetbeansBuffer(curbuf)
@@ -3022,7 +3016,6 @@ do_mouse(
 	}
 #endif
     }
-#ifdef FEAT_VERTSPLIT
     else if (in_sep_line)
     {
 # ifdef FEAT_MOUSESHAPE
@@ -3033,7 +3026,6 @@ do_mouse(
 	}
 # endif
     }
-#endif
     else if ((mod_mask & MOD_MASK_MULTI_CLICK) && (State & (NORMAL | INSERT))
 	     && mouse_has(MOUSE_VISUAL))
     {
@@ -4401,10 +4393,10 @@ nv_screengo(oparg_T *oap, int dir, long dist)
     if (width2 == 0)
 	width2 = 1; /* avoid divide by zero */
 
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     if (curwin->w_width != 0)
-    {
 #endif
+    {
       /*
        * Instead of sticking at the last character of the buffer line we
        * try to stick in the last column of the screen.
@@ -4491,9 +4483,7 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 	    }
 	}
       }
-#ifdef FEAT_VERTSPLIT
     }
-#endif
 
     if (virtual_active() && atend)
 	coladvance(MAXCOL);
@@ -7987,7 +7977,7 @@ nv_g_cmd(cmdarg_T *cap)
 	oap->motion_type = MCHAR;
 	oap->inclusive = FALSE;
 	if (curwin->w_p_wrap
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 		&& curwin->w_width != 0
 #endif
 		)
@@ -8054,7 +8044,7 @@ nv_g_cmd(cmdarg_T *cap)
 	    oap->motion_type = MCHAR;
 	    oap->inclusive = TRUE;
 	    if (curwin->w_p_wrap
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 		    && curwin->w_width != 0
 #endif
 	       )

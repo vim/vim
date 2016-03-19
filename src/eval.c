@@ -13734,7 +13734,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_VIMINFO
 	"viminfo",
 #endif
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	"vertsplit",
 #endif
 #ifdef FEAT_VIRTUALEDIT
@@ -20646,10 +20646,8 @@ f_winrestcmd(typval_T *argvars UNUSED, typval_T *rettv)
     {
 	sprintf((char *)buf, "%dresize %d|", winnr, wp->w_height);
 	ga_concat(&ga, buf);
-# ifdef FEAT_VERTSPLIT
 	sprintf((char *)buf, "vert %dresize %d|", winnr, wp->w_width);
 	ga_concat(&ga, buf);
-# endif
 	++winnr;
     }
     ga_append(&ga, NUL);
@@ -20701,7 +20699,7 @@ f_winrestview(typval_T *argvars, typval_T *rettv UNUSED)
 
 	check_cursor();
 	win_new_height(curwin, curwin->w_height);
-# ifdef FEAT_VERTSPLIT
+# ifdef FEAT_WINDOWS
 	win_new_width(curwin, W_WIDTH(curwin));
 # endif
 	changed_window_setting();
@@ -20756,7 +20754,7 @@ f_winwidth(typval_T *argvars, typval_T *rettv)
     if (wp == NULL)
 	rettv->vval.v_number = -1;
     else
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 	rettv->vval.v_number = wp->w_width;
 #else
 	rettv->vval.v_number = Columns;

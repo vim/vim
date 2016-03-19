@@ -145,7 +145,7 @@ static Scheme_Object *get_window_num(void *, int, Scheme_Object **);
 static Scheme_Object *get_window_buffer(void *, int, Scheme_Object **);
 static Scheme_Object *get_window_height(void *, int, Scheme_Object **);
 static Scheme_Object *set_window_height(void *, int, Scheme_Object **);
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 static Scheme_Object *get_window_width(void *, int, Scheme_Object **);
 static Scheme_Object *set_window_width(void *, int, Scheme_Object **);
 #endif
@@ -2066,7 +2066,7 @@ set_window_height(void *data, int argc, Scheme_Object **argv)
     return scheme_void;
 }
 
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 /* (get-win-width [window]) */
     static Scheme_Object *
 get_window_width(void *data, int argc, Scheme_Object **argv)
@@ -3718,7 +3718,7 @@ static Vim_Prim prims[]=
     {get_window_buffer, "get-win-buffer", 0, 1},
     {get_window_height, "get-win-height", 0, 1},
     {set_window_height, "set-win-height", 1, 2},
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     {get_window_width, "get-win-width", 0, 1},
     {set_window_width, "set-win-width", 1, 2},
 #endif
