@@ -251,6 +251,27 @@ func! BuildWidthTable(pattern, tableName)
   wincmd p
 endfunc
 
+" Build the amoji width table in a new buffer.
+func! BuildEmojiTable(pattern, tableName)
+  let ranges = []
+  for line in map(filter(filter(getline(1, '$'), 'v:val=~"^[1-9]"'), 'v:val=~a:pattern'), 'matchstr(v:val,"^\\S\\+")')
+    let token = split(line, '\.\.')
+    if len(token) == 1
+      call add(token, token[0])
+    endif
+    call add(ranges, printf("\t{0x%04x, 0x%04x},", "0x".token[0], "0x".token[1]))
+  endfor
+
+  " New buffer to put the result in.
+  new
+  exe "file " . a:tableName
+  call setline(1, "    static struct interval " . a:tableName . "[] =")
+  call setline(2, "    {")
+  call append('$', ranges)
+  call setline('$', getline('$')[:-2])  " remove last comma
+  call setline(line('$') + 1, "    };")
+  wincmd p
+endfunc
 
 " Try to avoid hitting E36
 set equalalways
@@ -290,3 +311,9 @@ call BuildWidthTable('[WF]', 'doublewidth')
 
 " Build the ambiguous width table.
 call BuildWidthTable('A', 'ambiguous')
+
+" Edit the emoji text file.  Requires the netrw plugin.
+edit http://www.unicode.org/Public/emoji/3.0/emoji-data.txt
+
+" Build the emoji table. Ver. 1.0 - 6.0
+call BuildEmojiTable('; Emoji\s\+# [1-6]\.[0-9]', 'emoji')
