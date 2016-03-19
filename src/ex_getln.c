@@ -5653,96 +5653,6 @@ get_history_idx(int histype)
     return history[histype][hisidx[histype]].hisnum;
 }
 
-static struct cmdline_info *get_ccline_ptr(void);
-
-/*
- * Get pointer to the command line info to use. cmdline_paste() may clear
- * ccline and put the previous value in prev_ccline.
- */
-    static struct cmdline_info *
-get_ccline_ptr(void)
-{
-    if ((State & CMDLINE) == 0)
-	return NULL;
-    if (ccline.cmdbuff != NULL)
-	return &ccline;
-    if (prev_ccline_used && prev_ccline.cmdbuff != NULL)
-	return &prev_ccline;
-    return NULL;
-}
-
-/*
- * Get the current command line in allocated memory.
- * Only works when the command line is being edited.
- * Returns NULL when something is wrong.
- */
-    char_u *
-get_cmdline_str(void)
-{
-    struct cmdline_info *p = get_ccline_ptr();
-
-    if (p == NULL)
-	return NULL;
-    return vim_strnsave(p->cmdbuff, p->cmdlen);
-}
-
-/*
- * Get the current command line position, counted in bytes.
- * Zero is the first position.
- * Only works when the command line is being edited.
- * Returns -1 when something is wrong.
- */
-    int
-get_cmdline_pos(void)
-{
-    struct cmdline_info *p = get_ccline_ptr();
-
-    if (p == NULL)
-	return -1;
-    return p->cmdpos;
-}
-
-/*
- * Set the command line byte position to "pos".  Zero is the first position.
- * Only works when the command line is being edited.
- * Returns 1 when failed, 0 when OK.
- */
-    int
-set_cmdline_pos(
-    int		pos)
-{
-    struct cmdline_info *p = get_ccline_ptr();
-
-    if (p == NULL)
-	return 1;
-
-    /* The position is not set directly but after CTRL-\ e or CTRL-R = has
-     * changed the command line. */
-    if (pos < 0)
-	new_cmdpos = 0;
-    else
-	new_cmdpos = pos;
-    return 0;
-}
-
-/*
- * Get the current command-line type.
- * Returns ':' or '/' or '?' or '@' or '>' or '-'
- * Only works when the command line is being edited.
- * Returns NUL when something is wrong.
- */
-    int
-get_cmdline_type(void)
-{
-    struct cmdline_info *p = get_ccline_ptr();
-
-    if (p == NULL)
-	return NUL;
-    if (p->cmdfirstc == NUL)
-	return (p->input_fn) ? '@' : '-';
-    return p->cmdfirstc;
-}
-
 /*
  * Calculate history index from a number:
  *   num > 0: seen as identifying number of a history entry
@@ -5950,6 +5860,98 @@ remove_key_from_history(void)
 #endif
 
 #endif /* FEAT_CMDHIST */
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Get pointer to the command line info to use. cmdline_paste() may clear
+ * ccline and put the previous value in prev_ccline.
+ */
+    static struct cmdline_info *
+get_ccline_ptr(void)
+{
+    if ((State & CMDLINE) == 0)
+	return NULL;
+    if (ccline.cmdbuff != NULL)
+	return &ccline;
+    if (prev_ccline_used && prev_ccline.cmdbuff != NULL)
+	return &prev_ccline;
+    return NULL;
+}
+
+/*
+ * Get the current command line in allocated memory.
+ * Only works when the command line is being edited.
+ * Returns NULL when something is wrong.
+ */
+    char_u *
+get_cmdline_str(void)
+{
+    struct cmdline_info *p = get_ccline_ptr();
+
+    if (p == NULL)
+	return NULL;
+    return vim_strnsave(p->cmdbuff, p->cmdlen);
+}
+
+/*
+ * Get the current command line position, counted in bytes.
+ * Zero is the first position.
+ * Only works when the command line is being edited.
+ * Returns -1 when something is wrong.
+ */
+    int
+get_cmdline_pos(void)
+{
+    struct cmdline_info *p = get_ccline_ptr();
+
+    if (p == NULL)
+	return -1;
+    return p->cmdpos;
+}
+
+/*
+ * Set the command line byte position to "pos".  Zero is the first position.
+ * Only works when the command line is being edited.
+ * Returns 1 when failed, 0 when OK.
+ */
+    int
+set_cmdline_pos(
+    int		pos)
+{
+    struct cmdline_info *p = get_ccline_ptr();
+
+    if (p == NULL)
+	return 1;
+
+    /* The position is not set directly but after CTRL-\ e or CTRL-R = has
+     * changed the command line. */
+    if (pos < 0)
+	new_cmdpos = 0;
+    else
+	new_cmdpos = pos;
+    return 0;
+}
+#endif
+
+#if defined(FEAT_EVAL) || defined(FEAT_CMDWIN) || defined(PROTO)
+/*
+ * Get the current command-line type.
+ * Returns ':' or '/' or '?' or '@' or '>' or '-'
+ * Only works when the command line is being edited.
+ * Returns NUL when something is wrong.
+ */
+    int
+get_cmdline_type(void)
+{
+    struct cmdline_info *p = get_ccline_ptr();
+
+    if (p == NULL)
+	return NUL;
+    if (p->cmdfirstc == NUL)
+	return (p->input_fn) ? '@' : '-';
+    return p->cmdfirstc;
+}
+#endif
 
 #if defined(FEAT_QUICKFIX) || defined(FEAT_CMDHIST) || defined(PROTO)
 /*
