@@ -7897,9 +7897,49 @@ tv2string(
 	    *tofree = string_quote(tv->vval.v_string, TRUE);
 	    return *tofree;
 	case VAR_PARTIAL:
-	    *tofree = string_quote(tv->vval.v_partial == NULL ? NULL
-					 : tv->vval.v_partial->pt_name, TRUE);
-	    return *tofree;
+	    {
+		partial_T   *pt = tv->vval.v_partial;
+		char_u	    *fname = string_quote(pt == NULL ? NULL
+							: pt->pt_name, FALSE);
+		garray_T    ga;
+		int	    i;
+		char_u	    *tf;
+
+		ga_init2(&ga, 1, 100);
+		ga_concat(&ga, (char_u *)"function(");
+		if (fname != NULL)
+		{
+		    ga_concat(&ga, fname);
+		    vim_free(fname);
+		}
+		if (pt != NULL && pt->pt_argc > 0)
+		{
+		    ga_concat(&ga, (char_u *)", [");
+		    for (i = 0; i < pt->pt_argc; ++i)
+		    {
+			if (i > 0)
+			    ga_concat(&ga, (char_u *)", ");
+			ga_concat(&ga,
+			     tv2string(&pt->pt_argv[i], &tf, numbuf, copyID));
+			vim_free(tf);
+		    }
+		    ga_concat(&ga, (char_u *)"]");
+		}
+		if (pt != NULL && pt->pt_dict != NULL)
+		{
+		    typval_T dtv;
+
+		    ga_concat(&ga, (char_u *)", ");
+		    dtv.v_type = VAR_DICT;
+		    dtv.vval.v_dict = pt->pt_dict;
+		    ga_concat(&ga, tv2string(&dtv, &tf, numbuf, copyID));
+		    vim_free(tf);
+		}
+		ga_concat(&ga, (char_u *)")");
+
+		*tofree = ga.ga_data;
+		return *tofree;
+	    }
 	case VAR_STRING:
 	    *tofree = string_quote(tv->vval.v_string, FALSE);
 	    return *tofree;

@@ -156,3 +156,17 @@ func Test_partial_exists()
   let lF = [F]
   call assert_true(exists('*lF[0]'))
 endfunc
+
+func Test_partial_string()
+  let F = function('MyFunc')
+  call assert_equal("function('MyFunc')", string(F))
+  let F = function('MyFunc', ['foo'])
+  call assert_equal("function('MyFunc', ['foo'])", string(F))
+  let F = function('MyFunc', ['foo', 'bar'])
+  call assert_equal("function('MyFunc', ['foo', 'bar'])", string(F))
+  let d = {'one': 1}
+  let F = function('MyFunc', d)
+  call assert_equal("function('MyFunc', {'one': 1})", string(F))
+  let F = function('MyFunc', ['foo'], d)
+  call assert_equal("function('MyFunc', ['foo'], {'one': 1})", string(F))
+endfunc
