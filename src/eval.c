@@ -20398,6 +20398,7 @@ f_type(typval_T *argvars, typval_T *rettv)
     {
 	case VAR_NUMBER: n = 0; break;
 	case VAR_STRING: n = 1; break;
+	case VAR_PARTIAL:
 	case VAR_FUNC:   n = 2; break;
 	case VAR_LIST:   n = 3; break;
 	case VAR_DICT:   n = 4; break;
@@ -20411,7 +20412,6 @@ f_type(typval_T *argvars, typval_T *rettv)
 	     break;
 	case VAR_JOB:     n = 8; break;
 	case VAR_CHANNEL: n = 9; break;
-	case VAR_PARTIAL: n = 10; break;
 	case VAR_UNKNOWN:
 	     EMSG2(_(e_intern2), "f_type(UNKNOWN)");
 	     n = -1;
