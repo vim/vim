@@ -713,6 +713,7 @@ IN_README_DIR = \
 		README_unix.txt \
 		README_vms.txt \
 		README_w32s.txt \
+		Contents \
 		Contents.info \
 		Vim.info \
 		Xxd.info \
