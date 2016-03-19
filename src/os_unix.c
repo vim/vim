@@ -5150,7 +5150,7 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 	    null_fd = open("/dev/null", O_RDWR | O_EXTRA, 0);
 
 	/* set up stdin for the child */
-	if (use_null_for_in)
+	if (use_null_for_in && null_fd >= 0)
 	{
 	    close(0);
 	    ignored = dup(null_fd);
@@ -5165,7 +5165,7 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 	}
 
 	/* set up stderr for the child */
-	if (use_null_for_err)
+	if (use_null_for_err && null_fd >= 0)
 	{
 	    close(2);
 	    ignored = dup(null_fd);
@@ -5185,7 +5185,7 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 	}
 
 	/* set up stdout for the child */
-	if (use_null_for_out)
+	if (use_null_for_out && null_fd >= 0)
 	{
 	    close(0);
 	    ignored = dup(null_fd);
