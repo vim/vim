@@ -870,6 +870,8 @@ wait_return(int redraw)
 #ifdef USE_ON_FLY_SCROLL
 	dont_scroll = TRUE;		/* disallow scrolling here */
 #endif
+	cmdline_row = msg_row;
+
 	/* Avoid the sequence that the user types ":" at the hit-return prompt
 	 * to start an Ex command, but the file-changed dialog gets in the
 	 * way. */
@@ -2426,6 +2428,7 @@ msg_puts_printf(char_u *str, int maxlen)
     static int
 do_more_prompt(int typed_char)
 {
+    static int	entered = FALSE;
     int		used_typed_char = typed_char;
     int		oldState = State;
     int		c;
@@ -2436,6 +2439,13 @@ do_more_prompt(int typed_char)
     msgchunk_T	*mp_last = NULL;
     msgchunk_T	*mp;
     int		i;
+
+    /* We get called recursively when a timer callback outputs a message. In
+     * that case don't show another prompt. Also when at the hit-Enter prompt.
+     */
+    if (entered || State == HITRETURN)
+	return FALSE;
+    entered = TRUE;
 
     if (typed_char == 'G')
     {
@@ -2675,6 +2685,7 @@ do_more_prompt(int typed_char)
 	msg_col = Columns - 1;
 #endif
 
+    entered = FALSE;
 #ifdef FEAT_CON_DIALOG
     return retval;
 #else

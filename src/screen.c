@@ -418,8 +418,15 @@ redraw_asap(int type)
     void
 redraw_after_callback()
 {
-    update_screen(0);
-    setcursor();
+    if (State == HITRETURN || State == ASKMORE)
+	; /* do nothing */
+    else if (State & CMDLINE)
+	redrawcmdline();
+    else if ((State & NORMAL) || (State & INSERT))
+    {
+	update_screen(0);
+	setcursor();
+    }
     cursor_on();
     out_flush();
 #ifdef FEAT_GUI
