@@ -105,7 +105,7 @@ gui_start(void)
 	/* If there is 'f' in 'guioptions' and specify -g argument,
 	 * gui_mch_init_check() was not called yet.  */
 	if (gui_mch_init_check() != OK)
-	    exit(1);
+	    getout_preserve_modified(1);
 #endif
 	gui_attempt_start();
     }
@@ -272,7 +272,7 @@ gui_do_fork(void)
 #ifdef FEAT_GUI_GTK
     /* Call gtk_init_check() here after fork(). See gui_init_check(). */
     if (gui_mch_init_check() != OK)
-	exit(1);
+	getout_preserve_modified(1);
 #endif
 
 # if defined(HAVE_SETSID) || defined(HAVE_SETPGID)
@@ -309,7 +309,7 @@ gui_do_fork(void)
 
     /* If we failed to start the GUI, exit now. */
     if (!gui.in_use)
-	exit(1);
+	getout_preserve_modified(1);
 }
 
 /*

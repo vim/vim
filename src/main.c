@@ -1355,7 +1355,7 @@ main_loop(
 }
 
 
-#if defined(USE_XSMP) || defined(FEAT_GUI_MSWIN) || defined(PROTO)
+#if defined(USE_XSMP) || defined(FEAT_GUI) || defined(PROTO)
 /*
  * Exit, but leave behind swap files for modified buffers.
  */
@@ -1377,7 +1377,9 @@ getout_preserve_modified(int exitval)
 #endif
 
 
-/* Exit properly */
+/*
+ * Exit properly.
+ */
     void
 getout(int exitval)
 {
