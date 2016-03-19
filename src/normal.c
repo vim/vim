@@ -2780,7 +2780,9 @@ do_mouse(
 			oap == NULL ? NULL : &(oap->inclusive), which_button);
     moved = (jump_flags & CURSOR_MOVED);
     in_status_line = (jump_flags & IN_STATUS_LINE);
+#ifdef FEAT_WINDOWS
     in_sep_line = (jump_flags & IN_SEP_LINE);
+#endif
 
 #ifdef FEAT_NETBEANS_INTG
     if (isNetbeansBuffer(curbuf)
@@ -3016,6 +3018,7 @@ do_mouse(
 	}
 #endif
     }
+#ifdef FEAT_WINDOWS
     else if (in_sep_line)
     {
 # ifdef FEAT_MOUSESHAPE
@@ -3026,6 +3029,7 @@ do_mouse(
 	}
 # endif
     }
+#endif
     else if ((mod_mask & MOD_MASK_MULTI_CLICK) && (State & (NORMAL | INSERT))
 	     && mouse_has(MOUSE_VISUAL))
     {

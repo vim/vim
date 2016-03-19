@@ -3446,7 +3446,9 @@ win_alloc_firstwin(win_T *oldwin)
     if (curwin->w_frame == NULL)
 	return FAIL;
     topframe = curwin->w_frame;
+#ifdef FEAT_WINDOWS
     topframe->fr_width = Columns;
+#endif
     topframe->fr_height = Rows - p_ch;
     topframe->fr_win = curwin;
 
@@ -3477,8 +3479,10 @@ win_init_size(void)
 {
     firstwin->w_height = ROWS_AVAIL;
     topframe->fr_height = ROWS_AVAIL;
+#ifdef FEAT_WINDOWS
     firstwin->w_width = Columns;
     topframe->fr_width = Columns;
+#endif
 }
 
 #if defined(FEAT_WINDOWS) || defined(PROTO)
@@ -4468,9 +4472,9 @@ win_alloc(win_T *after UNUSED, int hidden UNUSED)
 #ifdef FEAT_WINDOWS
     if (!hidden)
 	win_append(after, new_wp);
-#endif
     new_wp->w_wincol = 0;
     new_wp->w_width = Columns;
+#endif
 
     /* position the display and the cursor at the top of the file. */
     new_wp->w_topline = 1;
