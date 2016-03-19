@@ -415,6 +415,7 @@ WINDRES_CC = $(CC)
 ###########################################################################
 
 CFLAGS = -Iproto $(DEFINES) -pipe -march=$(ARCH) -Wall
+CXXFLAGS = -std=c++11
 WINDRES_FLAGS = --preprocessor="$(WINDRES_CC) -E -xc" -DRC_INVOKED
 EXTRA_LIBS =
 
@@ -864,14 +865,14 @@ $(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL)
 	$(CC) -c $(CFLAGS) gui_w32.c -o $(OUTDIR)/gui_w32.o
 
 $(OUTDIR)/gui_dwrite.o:	gui_dwrite.cpp $(INCL) gui_dwrite.h
-	$(CC) -c $(CFLAGS) gui_dwrite.cpp -o $(OUTDIR)/gui_dwrite.o
+	$(CC) -c $(CFLAGS) $(CXXFLAGS) gui_dwrite.cpp -o $(OUTDIR)/gui_dwrite.o
 
 $(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL) if_cscope.h
 	$(CC) -c $(CFLAGS) if_cscope.c -o $(OUTDIR)/if_cscope.o
 
 # Remove -D__IID_DEFINED__ for newer versions of the w32api
 $(OUTDIR)/if_ole.o: if_ole.cpp $(INCL)
-	$(CC) $(CFLAGS) -c -o $(OUTDIR)/if_ole.o if_ole.cpp
+	$(CC) $(CFLAGS) $(CXXFLAGS) -c -o $(OUTDIR)/if_ole.o if_ole.cpp
 
 $(OUTDIR)/if_ruby.o: if_ruby.c $(INCL)
 ifeq (16, $(RUBY))
