@@ -495,3 +495,22 @@ function Test_locationlist()
 
     augroup! testgroup
 endfunction
+
+function Test_locationlist_curwin_was_closed()
+    augroup testgroup
+      au!
+      autocmd BufReadCmd t call R(expand("<amatch>"))
+    augroup END
+
+    function R(n)
+      quit
+    endfunc
+
+    new
+    let q = []
+    call add(q, {'filename': 't' })
+    call setloclist(0, q)
+    call assert_fails('lrewind', 'E924:')
+
+    augroup! testgroup
+endfunction
