@@ -5861,7 +5861,7 @@ remove_key_from_history(void)
 
 #endif /* FEAT_CMDHIST */
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(FEAT_CMDWIN) || defined(PROTO)
 /*
  * Get pointer to the command line info to use. cmdline_paste() may clear
  * ccline and put the previous value in prev_ccline.
@@ -5877,7 +5877,9 @@ get_ccline_ptr(void)
 	return &prev_ccline;
     return NULL;
 }
+#endif
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Get the current command line in allocated memory.
  * Only works when the command line is being edited.
@@ -5948,7 +5950,11 @@ get_cmdline_type(void)
     if (p == NULL)
 	return NUL;
     if (p->cmdfirstc == NUL)
-	return (p->input_fn) ? '@' : '-';
+	return
+# ifdef FEAT_EVAL
+	    (p->input_fn) ? '@' :
+# endif
+	    '-';
     return p->cmdfirstc;
 }
 #endif
