@@ -605,7 +605,6 @@ RT_AMI =	\
 		README.txt.info \
 		README_ami.txt \
 		README_ami.txt.info \
-		libs/arp.library \
 		runtime/doc.info \
 		runtime/doc/*.info \
 		runtime/icons/README.txt \
