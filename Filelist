@@ -713,6 +713,12 @@ IN_README_DIR = \
 		README_unix.txt \
 		README_vms.txt \
 		README_w32s.txt \
+		Contents.info \
+		Vim.info \
+		Xxd.info \
+		runtime.info \
+		src.info \
+		vimdir.info \
 
 # generic language files
 LANG_GEN = \
