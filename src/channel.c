@@ -2684,7 +2684,6 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	    timeout = opt.jo_timeout;
 	else
 	    timeout = channel_get_timeout(channel, part_read);
-	timeout = channel_get_timeout(channel, part_read);
 	if (channel_read_json_block(channel, part_read, timeout, id, &listtv)
 									== OK)
 	{
