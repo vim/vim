@@ -11904,7 +11904,9 @@ f_function(typval_T *argvars, typval_T *rettv)
 	    partial_T	*pt = (partial_T *)alloc_clear(sizeof(partial_T));
 
 	    /* result is a VAR_PARTIAL */
-	    if (pt != NULL)
+	    if (pt == NULL)
+		vim_free(name);
+	    else
 	    {
 		if (arg_idx > 0 || (arg_pt != NULL && arg_pt->pt_argc > 0))
 		{
