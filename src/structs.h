@@ -1319,6 +1319,14 @@ typedef enum
     MODE_JS
 } ch_mode_T;
 
+typedef enum {
+    JIO_PIPE,	    /* default */
+    JIO_NULL,
+    JIO_FILE,
+    JIO_BUFFER,
+    JIO_OUT
+} job_io_T;
+
 /* Ordering matters, it is used in for loops: IN is last, only SOCK/OUT/ERR
  * are polled. */
 #define PART_SOCK   0
@@ -1351,6 +1359,7 @@ typedef struct {
 #endif
 
     ch_mode_T	ch_mode;
+    job_io_T	ch_io;
     int		ch_timeout;	/* request timeout in msec */
 
     readq_T	ch_head;	/* header for circular raw read queue */
@@ -1383,6 +1392,9 @@ struct channel_S {
     int		ch_last_msg_id;	/* ID of the last message */
 
     chanpart_T	ch_part[4];	/* info for socket, out, err and in */
+
+    char	*ch_hostname;	/* only for socket, allocated */
+    int		ch_port;	/* only for socket */
 
     int		ch_error;	/* When TRUE an error was reported.  Avoids
 				 * giving pages full of error messages when
@@ -1442,14 +1454,6 @@ struct channel_S {
 #define JO_CB_ALL \
     (JO_CALLBACK + JO_OUT_CALLBACK + JO_ERR_CALLBACK + JO_CLOSE_CALLBACK)
 #define JO_TIMEOUT_ALL	(JO_TIMEOUT + JO_OUT_TIMEOUT + JO_ERR_TIMEOUT)
-
-typedef enum {
-    JIO_PIPE,	    /* default */
-    JIO_NULL,
-    JIO_FILE,
-    JIO_BUFFER,
-    JIO_OUT
-} job_io_T;
 
 /*
  * Options for job and channel commands.
