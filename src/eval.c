@@ -501,6 +501,7 @@ static void f_ch_evalexpr(typval_T *argvars, typval_T *rettv);
 static void f_ch_evalraw(typval_T *argvars, typval_T *rettv);
 static void f_ch_getbufnr(typval_T *argvars, typval_T *rettv);
 static void f_ch_getjob(typval_T *argvars, typval_T *rettv);
+static void f_ch_info(typval_T *argvars, typval_T *rettv);
 static void f_ch_log(typval_T *argvars, typval_T *rettv);
 static void f_ch_logfile(typval_T *argvars, typval_T *rettv);
 static void f_ch_open(typval_T *argvars, typval_T *rettv);
@@ -8141,6 +8142,7 @@ static struct fst
     {"ch_evalraw",	2, 3, f_ch_evalraw},
     {"ch_getbufnr",	2, 2, f_ch_getbufnr},
     {"ch_getjob",	1, 1, f_ch_getjob},
+    {"ch_info",		1, 1, f_ch_info},
     {"ch_log",		1, 2, f_ch_log},
     {"ch_logfile",	1, 2, f_ch_logfile},
     {"ch_open",		1, 2, f_ch_open},
@@ -10026,6 +10028,18 @@ f_ch_getjob(typval_T *argvars, typval_T *rettv)
 	if (channel->ch_job != NULL)
 	    ++channel->ch_job->jv_refcount;
     }
+}
+
+/*
+ * "ch_info()" function
+ */
+    static void
+f_ch_info(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    channel_T *channel = get_channel_arg(&argvars[0], TRUE);
+
+    if (channel != NULL && rettv_dict_alloc(rettv) != FAIL)
+	channel_info(channel, rettv->vval.v_dict);
 }
 
 /*

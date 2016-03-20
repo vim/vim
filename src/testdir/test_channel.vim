@@ -120,9 +120,16 @@ func s:communicate(port)
     return
   endif
   if has('job')
-    " check that no job is handled correctly
+    " check that getjob without a job is handled correctly
     call assert_equal('no process', string(ch_getjob(handle)))
   endif
+  let dict = ch_info(handle)
+  call assert_true(dict.id != 0)
+  call assert_equal('open', dict.status)
+  call assert_equal(a:port, string(dict.port))
+  call assert_equal('open', dict.sock_status)
+  call assert_equal('socket', dict.sock_io)
+
   " Simple string request and reply.
   call assert_equal('got it', ch_evalexpr(handle, 'hello!'))
 

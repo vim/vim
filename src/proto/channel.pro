@@ -20,6 +20,7 @@ int channel_collapse(channel_T *channel, int part);
 int channel_can_write_to(channel_T *channel);
 int channel_is_open(channel_T *channel);
 char *channel_status(channel_T *channel);
+void channel_info(channel_T *channel, dict_T *dict);
 void channel_close(channel_T *channel, int invoke_close_cb);
 char_u *channel_peek(channel_T *channel, int part);
 void channel_clear(channel_T *channel);
