@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Mar 14
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Mar 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -153,6 +153,9 @@ Use |ch_status()| to see if the channel could be opened.
 		excluding the NL.
 		When "mode" is "raw" the "msg" argument is the whole message
 		as a string.
+
+		For all callbacks: Use |function()| to bind it to arguments
+		and/or a dictionary.
 							*out_cb*
 "out_cb"	A function like "callback" but used for stdout.  Only for when
 		the channel uses pipes.  When "out_cb" wasn't set the channel

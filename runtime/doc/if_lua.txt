@@ -410,13 +410,20 @@ This means that Vim will search for the Lua DLL or shared library file only
 when needed.  When you don't use the Lua interface you don't need it, thus
 you can use Vim without this file.
 
-On MS-Windows to use the Lua interface the Lua DLL must be in your search path.
-In a console window type "path" to see what directories are used.  The version
-of the DLL must match the Lua version Vim was compiled with.
 
-On Unix the 'luadll' option can be used to specify the Lua shared library file
-instead of DYNAMIC_LUA_DLL file what was specified at compile time.  The
-version of the shared library must match the Lua version Vim was compiled with.
+MS-Windows ~
+
+To use the Lua interface the Lua DLL must be in your search path.  In a
+console window type "path" to see what directories are used.  The 'luadll'
+option can be also used to specify the Lua DLL.  The version of the DLL must
+match the Lua version Vim was compiled with.
+
+
+Unix ~
+
+The 'luadll' option can be used to specify the Lua shared library file instead
+of DYNAMIC_LUA_DLL file what was specified at compile time.  The version of
+the shared library must match the Lua version Vim was compiled with.
 
 
 ==============================================================================

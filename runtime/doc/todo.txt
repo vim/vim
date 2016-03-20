@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Mar 11
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Mar 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,15 +35,8 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 +channel:
-- CHANNEL_PIPES -> FEAT_JOB
-- FEAT_JOB / FEAT_CHANNEL -> FEAT_JOBCHANNEL ?
-- move code from eval.c to channel.c
-- add job_info(): process ID, run/dead, etc.
-- add ch_info(): in/out/err mode, timeout, callbacks, etc.
+- add test for out-cb and err-cb.
 - Move more details from eval.txt to channel.txt.  Add tags in eval.txt.
-- When receiving malformed json starting with a quote it doesn't get
-  discarded.  Any invalid JSON or JSON that isn't a list will block further
-  parsing?
 - When decoding json, don't read all the typeahead at once, use the reader
   properly.
 - When a message in the queue but there is no callback, drop it after a while?
@@ -64,47 +57,9 @@ Later
 - job_start(): run job in a newly opened terminal.
     With xterm could use -S{pty}.
 
-emoji patch from Yasuhiro Matsumoto.  Asked Thomas Dickey.
+Packages: how about "after" directory?
 
-Remove sticky type checking.
-
-Packages:
-- Add command to update help tags in 'runtimepath'.  Pathogen has something
-  like that.
-- colorscheme command in .vimrc doesn't work.
-   - Also search in 'packpath', both "start" and "opt", don't add dir to 'rtp'
-- command like :runtime that also search 'packpath'.  :packruntime
-    use "ever" or "opt"?  both?
-- command to load packages now?
-
-More plugin support:
-- Have a way to install a callback from the main loop.  Called every second or
-  so.
-- Need way to uniquely identify a window, no matter how windows are
-  rearranged.  Same for tab pages.
-      getwinid()             ID of current winow
-      getwinid({nr})         ID of window {nr}
-      getwinid({nr}, {tab})  ID of window {nr} in tab page {tab}
-      getwinnr({id})	     window nr of {id} or -1 if not open
-      gettabnr({id})	     tab page nr of {id} or -1 if not open
-      gotowin({id})
-  Make it so that the window ID can be used where currently a window nr is used
-  Patch from Anton Lindqvist, 2016 Feb 21, to make bufwinnr() return a list.
-  Perhaps add bufwinid() instead.
-
-This difference is unexpected:
-    echo v:true == 1
-    1
-    echo [v:true] == [1]
-    0
-It's because tv_equal() works different.
-
-Compiler warnings. (John Marriott, Feb 17)
-
-Compiler warnings in if_ole.cpp.  Patch by Ken Takata, Feb 18.
-
-When running "make install" don't overwrite the doc/tags file, generate it
-elsewhere, so that the distributed file doesn't change.
+Make it so that the window ID can be used where currently a window nr is used
 
 Fix to support --nofork for Windows batch files. (Kevin Cantú, 2016 Feb 23,
 #658, #659)  Also add "setlocal" at top of batch file?
@@ -170,6 +125,12 @@ Christian Brabandt, 2016 Feb 18.
 Also include update_curswant() fix for getcurpos(). (Christian Brabandt, 2016
 Feb 9)
 
+Patch to list some messages and clear messages. (Yasuhiro Matsumoto, 2016 Mar
+12)
+
+Patch to fix escaping special characters for delete(). (tc-0, 2016 Mar 20,
+#700) Test fails on MS-Windows.
+
 Patch to put undo options together in undo window.
 (Gary Johnson, 2016 Jan 28)
 
@@ -181,6 +142,10 @@ Patch to update the GTK icon cache when installing. (Kazunobu Kuriyama, 2016
 Feb 3)
 
 Patch for test86 and test87. (Roland Puntaier, #622)
+
+Cannot delete a file with square brackets with delete(). (#696)
+
+Patch to add 'topbot' to 'belloff' option. (Coot, 2016 Mar 18, #695)
 
 We can use '. to go to the last change in the current buffer, but how about
 the last change in any buffer?  Can we use ', (, is next to .)?
@@ -200,18 +165,20 @@ After 7.5 is released:
 - Drop support for older MS-Windows systems, before XP.
   Patch from Ken Takata, 2016 Mar 8.
 
+Add stronger encryption.  Could use libsodium (NaCl).
+https://github.com/jedisct1/libsodium/
+Possibly include the needed code so that it can be build everywhere.
+
 Patch to add setbufline(). (email from Yasuhiro Matsumoto, patch by Ozaki
 Kiichi, 2016 Feb 28)
 Update Mar 8: https://gist.github.com/mattn/23c1f50999084992ca98
+Update Mar 13: https://gist.github.com/mattn/23c1f50999084992ca98
 
 Need to try out instructions in INSSTALLpc.txt about how to install all
 interfaces and how to build Vim with them.
 Appveyor build with self-installing executable, includes getting most
 interfaces: https://github.com/k-takata/vim/tree/chrisbra-appveyor-build
 result: https://ci.appveyor.com/project/k-takata/vim/history
-
-Still using freed memory after using setloclist(). (lcd, 2014 Jul 23)
-More info Jul 24.  Not clear why.
 
 Duplication of completion suggestions for ":!hom".  Issue 539.
 Patch by Christian, 2016 Jan 29
@@ -241,9 +208,6 @@ Add configure check?
 Should use /usr/local/share/applications or /usr/share/applications.
 Or use $XDG_DATA_DIRS.
 Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
-
-Move the README files that are for including in archives to a subdirectory.
-"readmedir/" ?
 
 Access to uninitialized memory in match_backref() regexp_nda.c:4882
 (Dominique Pelle, 2015 Nov 6)
@@ -333,6 +297,9 @@ Patch to add :mapgroup, put mappings in a group like augroup.
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
+Patch to add filtering of the quickfix list. (Yegappan Lakshmanan, 2016 Mar
+13, last version)
+
 Can we cache the syntax attributes, so that updates for 'relativenumber' and
 'cursorline'/'cursorcolumn' are a lot faster?
 
@@ -412,8 +379,6 @@ Patch to fix checking global option value when not using it.
 When 'showbreak' is set repeating a Visual operation counts the size of the
 'showbreak' text as part of the operation. (Axel Bender, 2015 Jul 20)
 
-Patch to apply 'fileformats' when starting Vim. (Mike Williams, 2015 Jul 22)
-
 Patch for matchit plugin related to multibyte chars. (Ken Takata, 2015 Jul 22)
 
 Patch for multi-byte characters in langmap and applying a mapping on them.
@@ -471,6 +436,7 @@ Mixup of highlighting when there is a match and SpellBad. (ZyX, 2015 Jan 1)
 Patch for drag&drop reordering of GUI tab pages reordering.
 (Ken Takata, 2013 Nov 22, second one, also by Masamichi Abe)
 Now on Git: https://gist.github.com/nocd5/165286495c782b815b94
+Update 2016 Mar 15.
 
 Patch on Issue 72: 'autochdir' causes problems for :vimgrep.
 
@@ -3732,7 +3698,7 @@ Syntax highlighting:
     unprintable char another color.  Would be useful for ^M at end of line.
 
 
-Built-in script language:
+Vim script language:
 8   Make the filename and line number available to script functions, so that
     they can give useful debugging info.  The whole call stack would be ideal.
     At least use this for error messages.
@@ -3753,14 +3719,10 @@ Built-in script language:
 7   ":include" command: just like ":source" but doesn't start a new scriptID?
     Will be tricky for the list of script names.
 8   Have a look at VSEL.  Would it be useful to include? (Bigham)
-8   Add ":fungroup" command, to group function definitions together.  When
-    encountered, all functions in the group are removed.  Suggest using an
-    obscure name to avoid name clashes.  Require a ":fungroup END" in the same
-    sourced file?  Assume the group ends at the end of the file.  Handle
-    nested packages?
-    Alternative: Support packages.  {package-name}:{function-name}().
-    Packages are loaded automatically when first used, from
-    $VIMRUNTIME/packages (or use a search path).
+8   Have a prefix for a function to make it unique.  When using packages it
+    can be the plugin name.
+    Perhaps also have a way to remove everything that the package added?
+    including autocommands.
 7   Pre-parse or compile Vim scripts into a bytecode.
     1. Put the bytecode with the original script, with an ":if
        has('bytecode')" around it, so that it's only used with a Vim that
@@ -3777,8 +3739,6 @@ Built-in script language:
 8   Add functions:
 	has(":command")		Check if ":command" works.  compare function
 				with "ex_ni".  E.g. for ":simalt".
-	system()		With a List argument.  Bypasses the shell, use
-				exec() directly.  (Bob Hiestand)
 	escape()		Add argument to specify what to escape with.
 	modestack()		Instead of just the current mode return the
 				stack of Insert / CTRL-O / :normal things.
