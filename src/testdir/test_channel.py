@@ -35,7 +35,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             if received == '':
                 print("=== socket closed ===")
                 break
-            print("received: {}".format(received))
+            print("received: {0}".format(received))
 
             # We may receive two messages at once. Take the part up to the
             # matching "]" (recognized by finding "][").
@@ -49,7 +49,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                      used = todo[:splitidx + 1]
                      todo = todo[splitidx + 1:]
                 if used != received:
-                    print("using: {}".format(used))
+                    print("using: {0}".format(used))
 
                 try:
                     decoded = json.loads(used)
@@ -70,48 +70,48 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         # replying to the request.
                         cmd = '["ex","call append(\\"$\\",\\"added1\\")"]'
                         cmd += '["ex","call append(\\"$\\",\\"added2\\")"]'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'do normal':
                         # Send a normal command.
                         cmd = '["normal","G$s more\u001b"]'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'eval-works':
                         # Send an eval request.  We ignore the response.
                         cmd = '["expr","\\"foo\\" . 123", -1]'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'eval-fails':
                         # Send an eval request that will fail.
                         cmd = '["expr","xxx", -2]'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'eval-error':
                         # Send an eval request that works but the result can't
                         # be encoded.
                         cmd = '["expr","function(\\"tr\\")", -3]'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'eval-bad':
                         # Send an eval request missing the third argument.
                         cmd = '["expr","xxx"]'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'malformed1':
                         cmd = '["ex",":"]wrong!["ex","smi"]'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'malformed2':
                         cmd = '"unterminated string'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                         # Need to wait for Vim to give up, otherwise the double
@@ -119,7 +119,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         time.sleep(0.2)
                     elif decoded[1] == 'malformed3':
                         cmd = '["ex","missing ]"'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                         # Need to wait for Vim to give up, otherwise the ]
@@ -127,37 +127,37 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         time.sleep(0.2)
                     elif decoded[1] == 'split':
                         cmd = '["ex","let '
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         time.sleep(0.01)
                         cmd = 'g:split = 123"]'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'an expr':
                         # Send an expr request.
                         cmd = '["expr","setline(\\"$\\", [\\"one\\",\\"two\\",\\"three\\"])"]'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'call-func':
                         cmd = '["call","MyFunction",[1,2,3], 0]'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'redraw':
                         cmd = '["redraw",""]'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'redraw!':
                         cmd = '["redraw","force"]'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'empty-request':
                         cmd = '[]'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'eval-result':
@@ -165,17 +165,17 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         response = last_eval
                     elif decoded[1] == 'call me':
                         cmd = '[0,"we called you"]'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'call me again':
                         cmd = '[0,"we did call you"]'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = ""
                     elif decoded[1] == 'send zero':
                         cmd = '[0,"zero index"]'
-                        print("sending: {}".format(cmd))
+                        print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "sent zero"
                     elif decoded[1] == 'close me':
@@ -199,7 +199,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         print("no response")
                     else:
                         encoded = json.dumps([decoded[0], response])
-                        print("sending: {}".format(encoded))
+                        print("sending: {0}".format(encoded))
                         self.request.sendall(encoded.encode('utf-8'))
 
                 # Negative numbers are used for "eval" responses.
@@ -212,7 +212,7 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 def writePortInFile(port):
     # Write the port number in Xportnr, so that the test knows it.
     f = open("Xportnr", "w")
-    f.write("{}".format(port))
+    f.write("{0}".format(port))
     f.close()
 
 if __name__ == "__main__":
@@ -238,7 +238,7 @@ if __name__ == "__main__":
 
     writePortInFile(port)
 
-    print("Listening on port {}".format(port))
+    print("Listening on port {0}".format(port))
 
     # Main thread terminates, but the server continues running
     # until server.shutdown() is called.
