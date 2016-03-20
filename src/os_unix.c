@@ -5214,11 +5214,11 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
     job->jv_channel = channel;  /* ch_refcount was set above */
 
     /* child stdin, stdout and stderr */
-    if (!use_file_for_in)
+    if (!use_file_for_in && fd_in[0] >= 0)
 	close(fd_in[0]);
-    if (!use_file_for_out)
+    if (!use_file_for_out && fd_out[1] >= 0)
 	close(fd_out[1]);
-    if (!use_out_for_err && !use_file_for_err)
+    if (!use_out_for_err && !use_file_for_err && fd_err[1] >= 0)
 	close(fd_err[1]);
     if (channel != NULL)
     {
