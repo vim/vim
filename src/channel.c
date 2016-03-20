@@ -1003,11 +1003,11 @@ find_buffer(char_u *name, int err)
 	buf = buflist_new(name == NULL || *name == NUL ? NULL : name,
 					       NULL, (linenr_T)0, BLN_LISTED);
 	buf_copy_options(buf, BCO_ENTER);
+	curbuf = buf;
 #ifdef FEAT_QUICKFIX
 	set_option_value((char_u *)"bt", 0L, (char_u *)"nofile", OPT_LOCAL);
 	set_option_value((char_u *)"bh", 0L, (char_u *)"hide", OPT_LOCAL);
 #endif
-	curbuf = buf;
 	if (curbuf->b_ml.ml_mfp == NULL)
 	    ml_open(curbuf);
 	ml_replace(1, (char_u *)(err ? "Reading from channel error..."
