@@ -994,6 +994,39 @@ func Test_reuse_channel()
   endtry
 endfunc
 
+func Test_out_cb()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_out_cb()')
+
+  let dict = {'thisis': 'dict: '}
+  func dict.outHandler(chan, msg) dict
+    let s:outmsg = self.thisis . a:msg
+  endfunc
+  func dict.errHandler(chan, msg) dict
+    let s:errmsg = self.thisis . a:msg
+  endfunc
+  let job = job_start(s:python . " test_channel_pipe.py",
+	\ {'out_cb': dict.outHandler,
+	\ 'out_mode': 'json',
+	\ 'err_cb': dict.errHandler,
+	\ 'err_mode': 'json'})
+  call assert_equal("run", job_status(job))
+  try
+    let s:outmsg = ''
+    let s:errmsg = ''
+    call ch_sendraw(job, "echo [0, \"hello\"]\n")
+    call ch_sendraw(job, "echoerr [0, \"there\"]\n")
+    call s:waitFor('s:outmsg != ""')
+    call assert_equal("dict: hello", s:outmsg)
+    call s:waitFor('s:errmsg != ""')
+    call assert_equal("dict: there", s:errmsg)
+  finally
+    call job_stop(job)
+  endtry
+endfunc
+
 """"""""""
 
 let s:unletResponse = ''
