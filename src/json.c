@@ -877,8 +877,9 @@ json_decode_all(js_read_T *reader, typval_T *res, int options)
 /*
  * Decode the JSON from "reader" and store the result in "res".
  * "options" can be JSON_JS or zero;
- * Return FAIL if the message has a decoding error or the message is
- * truncated.  Consumes the message anyway.
+ * Return FAIL for a decoding error.
+ * Return MAYBE for an incomplete message.
+ * Consumes the message anyway.
  */
     int
 json_decode(js_read_T *reader, typval_T *res, int options)
@@ -891,7 +892,7 @@ json_decode(js_read_T *reader, typval_T *res, int options)
     ret = json_decode_item(reader, res, options);
     json_skip_white(reader);
 
-    return ret == OK ? OK : FAIL;
+    return ret;
 }
 
 /*

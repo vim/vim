@@ -127,7 +127,14 @@ func s:communicate(port)
   call assert_equal('got it', ch_evalexpr(handle, 'hello!'))
 
   " Malformed command should be ignored.
-  call assert_equal('ok', ch_evalexpr(handle, 'malformed'))
+  call assert_equal('ok', ch_evalexpr(handle, 'malformed1'))
+  call assert_equal('ok', ch_evalexpr(handle, 'malformed2'))
+  call assert_equal('ok', ch_evalexpr(handle, 'malformed3'))
+
+  " split command should work
+  call assert_equal('ok', ch_evalexpr(handle, 'split'))
+  call s:waitFor('exists("g:split")')
+  call assert_equal(123, g:split)
 
   " Request that triggers sending two ex commands.  These will usually be
   " handled before getting the response, but it's not guaranteed, thus wait a

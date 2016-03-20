@@ -104,8 +104,33 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         print("sending: {}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
-                    elif decoded[1] == 'malformed':
+                    elif decoded[1] == 'malformed1':
                         cmd = '["ex",":"]wrong!["ex","smi"]'
+                        print("sending: {}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                    elif decoded[1] == 'malformed2':
+                        cmd = '"unterminated string'
+                        print("sending: {}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                        # Need to wait for Vim to give up, otherwise the double
+                        # quote in the "ok" response terminates the string.
+                        time.sleep(0.2)
+                    elif decoded[1] == 'malformed3':
+                        cmd = '["ex","missing ]"'
+                        print("sending: {}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                        # Need to wait for Vim to give up, otherwise the ]
+                        # in the "ok" response terminates the list.
+                        time.sleep(0.2)
+                    elif decoded[1] == 'split':
+                        cmd = '["ex","let '
+                        print("sending: {}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        time.sleep(0.01)
+                        cmd = 'g:split = 123"]'
                         print("sending: {}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
