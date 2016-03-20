@@ -102,15 +102,13 @@ func Test_complicated_name_recursive_delete()
   call mkdir('Xcomplicated')
   call mkdir('Xcomplicated/[complicated-1 ]')
   call mkdir('Xcomplicated/{complicated,2 }')
-  call mkdir('Xcomplicated/[complicated-3 ?')
-  call mkdir('Xcomplicated/(complicated-4 |')
+  call mkdir('Xcomplicated/(complicated-3 |')
   split Xcomplicated/Xfile
   call setline(1, ['a', 'b'])
   w
   w Xcomplicated/\[complicated-1\ \]/Xfile
   w Xcomplicated/\{complicated,2\ \}/Xfile
-  w Xcomplicated/\[complicated-3\ \?/Xfile
-  w Xcomplicated/\(complicated-4\ \|/Xfile
+  w Xcomplicated/\(complicated-3\ \|/Xfile
   close
   call assert_true(isdirectory('Xcomplicated'))
   call assert_equal(['a', 'b'], readfile('Xcomplicated/Xfile'))
@@ -118,10 +116,28 @@ func Test_complicated_name_recursive_delete()
   call assert_equal(['a', 'b'], readfile('Xcomplicated/[complicated-1 ]/Xfile'))
   call assert_true(isdirectory('Xcomplicated/{complicated,2 }'))
   call assert_equal(['a', 'b'], readfile('Xcomplicated/{complicated,2 }/Xfile'))
-  call assert_true(isdirectory('Xcomplicated/[complicated-3 ?'))
-  call assert_equal(['a', 'b'], readfile('Xcomplicated/[complicated-3 ?/Xfile'))
-  call assert_true(isdirectory('Xcomplicated/(complicated-4 |'))
-  call assert_equal(['a', 'b'], readfile('Xcomplicated/(complicated-4 |/Xfile'))
+  call assert_true(isdirectory('Xcomplicated/(complicated-3 |'))
+  call assert_equal(['a', 'b'], readfile('Xcomplicated/(complicated-3 |/Xfile'))
+  call assert_equal(0, delete('Xcomplicated', 'rf'))
+  call assert_false(isdirectory('Xcomplicated'))
+  call assert_equal(-1, delete('Xcomplicated', 'd'))
+endfunc
+
+func Test_complicated_name_recursive_delete_unix()
+  if !has('unix')
+    return
+  endif
+  call mkdir('Xcomplicated')
+  call mkdir('Xcomplicated/[complicated ?')
+  split Xcomplicated/Xfile
+  call setline(1, ['a', 'b'])
+  w
+  w Xcomplicated/\[complicated\ \?/Xfile
+  close
+  call assert_true(isdirectory('Xcomplicated'))
+  call assert_equal(['a', 'b'], readfile('Xcomplicated/Xfile'))
+  call assert_true(isdirectory('Xcomplicated/[complicated ?'))
+  call assert_equal(['a', 'b'], readfile('Xcomplicated/[complicated ?/Xfile'))
   call assert_equal(0, delete('Xcomplicated', 'rf'))
   call assert_false(isdirectory('Xcomplicated'))
   call assert_equal(-1, delete('Xcomplicated', 'd'))
