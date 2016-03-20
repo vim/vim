@@ -7219,6 +7219,7 @@ delete_recursive(char_u *name)
     int		file_count;
     int		i;
     char_u	*exp;
+    char_u      *esc_name;
 
     /* A symbolic link to a directory itself is deleted, not the directory it
      * points to. */
@@ -7230,8 +7231,14 @@ delete_recursive(char_u *name)
 # endif
 	    )
     {
-	vim_snprintf((char *)NameBuff, MAXPATHL, "%s/*", name);
+        /* Escape square brackets in file names as these will be interpreted as
+         * ranges in gen_expand_wildcards below. */
+        esc_name = vim_strsave_escaped(name, "[]");
+        if (esc_name == NULL)
+            return -1;
+	vim_snprintf((char *)NameBuff, MAXPATHL, "%s/*", esc_name);
 	exp = vim_strsave(NameBuff);
+        vim_free(esc_name);
 	if (exp == NULL)
 	    return -1;
 	if (gen_expand_wildcards(1, &exp, &file_count, &files,
