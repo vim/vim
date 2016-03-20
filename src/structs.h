@@ -1380,6 +1380,7 @@ struct channel_S {
     channel_T	*ch_prev;
 
     int		ch_id;		/* ID of the channel */
+    int		ch_last_msg_id;	/* ID of the last message */
 
     chanpart_T	ch_part[4];	/* info for socket, out, err and in */
 

@@ -2295,17 +2295,6 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 }
 
 /*
- * Return a unique ID to be used in a message.
- */
-    int
-channel_get_id(void)
-{
-    static int next_id = 1;
-
-    return next_id++;
-}
-
-/*
  * Read from channel "channel" for as long as there is something to read.
  * "part" is PART_SOCK, PART_OUT or PART_ERR.
  * The data is put in the read queue.
@@ -2787,7 +2776,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	return;
     }
 
-    id = channel_get_id();
+    id = ++channel->ch_last_msg_id;
     text = json_encode_nr_expr(id, &argvars[1],
 					    ch_mode == MODE_JS ? JSON_JS : 0);
     if (text == NULL)
