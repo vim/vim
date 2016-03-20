@@ -123,9 +123,11 @@ func s:communicate(port)
     " check that no job is handled correctly
     call assert_equal('no process', string(ch_getjob(handle)))
   endif
-
   " Simple string request and reply.
   call assert_equal('got it', ch_evalexpr(handle, 'hello!'))
+
+  " Malformed command should be ignored.
+  call assert_equal('ok', ch_evalexpr(handle, 'malformed'))
 
   " Request that triggers sending two ex commands.  These will usually be
   " handled before getting the response, but it's not guaranteed, thus wait a

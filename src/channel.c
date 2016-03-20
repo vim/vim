@@ -1481,9 +1481,17 @@ channel_parse_json(channel_T *channel, int part)
      * TODO: insert in front */
     if (reader.js_buf[reader.js_used] != NUL)
     {
-	channel_save(channel, part, reader.js_buf + reader.js_used,
-		(int)(reader.js_end - reader.js_buf) - reader.js_used);
-	ret = TRUE;
+	if (ret == FAIL)
+	{
+	    ch_error(channel, "Decoding failed - discarding input");
+	    ret = FALSE;
+	}
+	else
+	{
+	    channel_save(channel, part, reader.js_buf + reader.js_used,
+		    (int)(reader.js_end - reader.js_buf) - reader.js_used);
+	    ret = TRUE;
+	}
     }
     else
 	ret = FALSE;
@@ -1586,12 +1594,14 @@ channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
 
     if (STRCMP(cmd, "ex") == 0)
     {
+	ch_logs(channel, "Executing ex command '%s'", (char *)arg);
 	do_cmdline_cmd(arg);
     }
     else if (STRCMP(cmd, "normal") == 0)
     {
 	exarg_T ea;
 
+	ch_logs(channel, "Executing normal command '%s'", (char *)arg);
 	ea.arg = arg;
 	ea.addr_count = 0;
 	ea.forceit = TRUE; /* no mapping */
@@ -1601,6 +1611,7 @@ channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
     {
 	exarg_T ea;
 
+	ch_log(channel, "redraw");
 	ea.forceit = *arg != NUL;
 	ex_redraw(&ea);
 	showruler(FALSE);
@@ -1642,11 +1653,18 @@ channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
 	    /* Don't pollute the display with errors. */
 	    ++emsg_skip;
 	    if (!is_call)
+	    {
+		ch_logs(channel, "Evaluating expression '%s'", (char *)arg);
 		tv = eval_expr(arg, NULL);
-	    else if (func_call(arg, &argv[2], NULL, NULL, &res_tv) == OK)
-		tv = &res_tv;
+	    }
 	    else
-		tv = NULL;
+	    {
+		ch_logs(channel, "Calling '%s'", (char *)arg);
+		if (func_call(arg, &argv[2], NULL, NULL, &res_tv) == OK)
+		    tv = &res_tv;
+		else
+		    tv = NULL;
+	    }
 
 	    if (argv[id_idx].v_type == VAR_NUMBER)
 	    {
@@ -1848,10 +1866,7 @@ may_invoke_callback(channel_T *channel, int part)
 
 	if (argv[0].v_type == VAR_STRING)
 	{
-	    char_u	*cmd = argv[0].vval.v_string;
-
 	    /* ["cmd", arg] or ["cmd", arg, arg] or ["cmd", arg, arg, arg] */
-	    ch_logs(channel, "Executing %s command", (char *)cmd);
 	    channel_exe_cmd(channel, part, argv);
 	    free_tv(listtv);
 	    return TRUE;
