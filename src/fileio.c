@@ -7231,8 +7231,9 @@ delete_recursive(char_u *name)
 # endif
 	    )
     {
-        /* Escape square brackets in file names as these will be interpreted as
-         * ranges in gen_expand_wildcards below. */
+        /* Escape some regexp chars in file names as these probably will be
+         * interpreted as ill-formed regular expressions in
+         * gen_expand_wildcards. */
         esc_name = vim_strsave_escaped(name, "[]{}");
         if (esc_name == NULL)
             return -1;
