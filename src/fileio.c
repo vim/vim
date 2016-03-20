@@ -7207,6 +7207,8 @@ write_lnum_adjust(linenr_T offset)
 }
 
 #if defined(TEMPDIRNAMES) || defined(FEAT_EVAL) || defined(PROTO)
+static char_u regexp_escape_chars[] = "[]{}";
+
 /*
  * Delete "name" and everything in it, recursively.
  * return 0 for succes, -1 if some file was not deleted.
@@ -7234,7 +7236,7 @@ delete_recursive(char_u *name)
         /* Escape some regexp chars in file names as these probably will be
          * interpreted as ill-formed regular expressions in
          * gen_expand_wildcards. */
-        esc_name = vim_strsave_escaped(name, "[]{}");
+        esc_name = vim_strsave_escaped(name, regexp_escape_chars);
         if (esc_name == NULL)
             return -1;
 	vim_snprintf((char *)NameBuff, MAXPATHL, "%s/*", esc_name);
