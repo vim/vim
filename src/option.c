@@ -4017,6 +4017,15 @@ set_init_3(void)
     }
 #endif
 
+    if (bufempty())
+    {
+	int idx_ffs = findoption((char_u *)"ffs");
+
+	/* Apply the first entry of 'fileformats' to the initial buffer. */
+	if (idx_ffs >= 0 && (options[idx_ffs].flags & P_WAS_SET))
+	    set_fileformat(default_fileformat(), OPT_LOCAL);
+    }
+
 #ifdef FEAT_TITLE
     set_title_defaults();
 #endif
