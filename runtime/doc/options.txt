@@ -3825,7 +3825,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 								*'go-F'*
 	  'F'	Add a footer.  Only for Motif.  See |gui-footer|.
 								*'go-s'*
-	  's'	Fix GUI from resizing automatically.  If set, this will
+	  's'	Prevent GUI from resizing automatically.  If set, this will
 		prevent the GUI from resizing itself to fit the same number of
 		'lines' and 'columns' when showing tab page labels,
 		adding/removing scrollbars, etc.  Instead, the behavior is
