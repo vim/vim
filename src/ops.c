@@ -5783,6 +5783,8 @@ do_addsub(
 theend:
     if (visual)
 	curwin->w_cursor = save_cursor;
+    else if (did_change)
+	curwin->w_set_curswant = TRUE;
 
     return did_change;
 }
