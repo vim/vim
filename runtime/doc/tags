@@ -310,6 +310,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'go-m'	options.txt	/*'go-m'*
 'go-p'	options.txt	/*'go-p'*
 'go-r'	options.txt	/*'go-r'*
+'go-s'	options.txt	/*'go-s'*
 'go-t'	options.txt	/*'go-t'*
 'go-v'	options.txt	/*'go-v'*
 'gp'	options.txt	/*'gp'*

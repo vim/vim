@@ -239,7 +239,8 @@
 #define GO_TOOLBAR	'T'		/* add toolbar */
 #define GO_FOOTER	'F'		/* add footer */
 #define GO_VERTICAL	'v'		/* arrange dialog buttons vertically */
-#define GO_ALL		"aAbcefFghilmMprtTv" /* all possible flags for 'go' */
+#define GO_FIXWINSIZE   's'             /* fix GUI size even if 'lines'/'columns' will be changed as a result */
+#define GO_ALL		"aAbcefFghilmMprtTvs" /* all possible flags for 'go' */
 
 /* flags for 'comments' option */
 #define COM_NEST	'n'		/* comments strings nest */
