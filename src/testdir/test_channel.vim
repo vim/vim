@@ -685,6 +685,9 @@ func Run_test_pipe_to_buffer(use_name)
     call ch_sendraw(handle, "quit\n")
     sp pipe-output
     call s:waitFor('line("$") >= 6')
+    if getline('$') == 'DETACH'
+      $del
+    endif
     call assert_equal([firstline, 'line one', 'line two', 'this', 'AND this', 'Goodbye!'], getline(1, '$'))
     bwipe!
   finally
