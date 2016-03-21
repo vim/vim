@@ -1252,6 +1252,11 @@ utf_char2cells(int c)
 	{0xfe68, 0xfe6b},
 	{0xff01, 0xff60},
 	{0xffe0, 0xffe6},
+	{0x1b000, 0x1b001},
+	{0x1f200, 0x1f202},
+	{0x1f210, 0x1f23a},
+	{0x1f240, 0x1f248},
+	{0x1f250, 0x1f251},
 	{0x20000, 0x2fffd},
 	{0x30000, 0x3fffd}
     };
@@ -3351,6 +3356,7 @@ static convertStruct toUpper[] =
 	{0x10cc0,0x10cf2,1,-64},
 	{0x118c0,0x118df,1,-32}
 };
+
 /*
  * Return the upper-case equivalent of "a", which is a UCS-4 character.  Use
  * simple case folding.
