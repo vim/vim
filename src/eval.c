@@ -12019,6 +12019,7 @@ partial_free(partial_T *pt)
     for (i = 0; i < pt->pt_argc; ++i)
 	clear_tv(&pt->pt_argv[i]);
     vim_free(pt->pt_argv);
+    dict_unref(pt->pt_dict);
     func_unref(pt->pt_name);
     vim_free(pt->pt_name);
     vim_free(pt);
@@ -21797,7 +21798,8 @@ handle_subscript(
 		selfdict = NULL;
 		if (rettv->v_type == VAR_FUNC)
 		{
-		    /* just a function: use selfdict */
+		    /* Just a function: Take over the function name and use
+		     * selfdict. */
 		    pt->pt_name = rettv->vval.v_string;
 		}
 		else
@@ -21805,8 +21807,11 @@ handle_subscript(
 		    partial_T	*ret_pt = rettv->vval.v_partial;
 		    int		i;
 
-		    /* partial: use selfdict and copy args */
+		    /* Partial: copy the function name, use selfdict and copy
+		     * args.  Can't take over name or args, the partial might
+		     * be referenced elsewhere. */
 		    pt->pt_name = vim_strsave(ret_pt->pt_name);
+		    func_ref(pt->pt_name);
 		    if (ret_pt->pt_argc > 0)
 		    {
 			pt->pt_argv = (typval_T *)alloc(
@@ -21823,7 +21828,6 @@ handle_subscript(
 		    }
 		    partial_unref(ret_pt);
 		}
-		func_ref(pt->pt_name);
 		rettv->v_type = VAR_PARTIAL;
 		rettv->vval.v_partial = pt;
 	    }

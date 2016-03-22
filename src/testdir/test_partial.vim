@@ -170,3 +170,13 @@ func Test_partial_string()
   let F = function('MyFunc', ['foo'], d)
   call assert_equal("function('MyFunc', ['foo'], {'one': 1})", string(F))
 endfunc
+
+func Test_func_unref()
+  let obj = {}
+  function! obj.func() abort
+  endfunction
+  let funcnumber = matchstr(string(obj.func), '^function(''\zs.\{-}\ze''')
+  call assert_true(exists('*{' . funcnumber . '}'))
+  unlet obj
+  call assert_false(exists('*{' . funcnumber . '}'))
+endfunc
