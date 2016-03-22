@@ -209,7 +209,9 @@ static hashtab_T	func_hashtab;
 /* The names of packages that once were loaded are remembered. */
 static garray_T		ga_loaded = {0, 0, sizeof(char_u *), 4, NULL};
 
-/* list heads for garbage collection */
+/* List heads for garbage collection. Although there can be a reference loop
+ * from partial to dict to partial, we don't need to keep track of the partial,
+ * since it will get freed when the dict is unused and gets freed. */
 static dict_T		*first_dict = NULL;	/* list of all dicts */
 static list_T		*first_list = NULL;	/* list of all lists */
 
@@ -7130,9 +7132,14 @@ set_ref_in_item(
     list_T	*ll;
     int		abort = FALSE;
 
-    if (tv->v_type == VAR_DICT)
+    if (tv->v_type == VAR_DICT || tv->v_type == VAR_PARTIAL)
     {
-	dd = tv->vval.v_dict;
+	if (tv->v_type == VAR_DICT)
+	    dd = tv->vval.v_dict;
+	else if (tv->vval.v_partial != NULL)
+	    dd = tv->vval.v_partial->pt_dict;
+	else
+	    dd = NULL;
 	if (dd != NULL && dd->dv_copyID != copyID)
 	{
 	    /* Didn't see this dict yet. */
@@ -7182,6 +7189,32 @@ set_ref_in_item(
 	}
     }
     return abort;
+}
+
+    static void
+partial_free(partial_T *pt, int free_dict)
+{
+    int i;
+
+    for (i = 0; i < pt->pt_argc; ++i)
+	clear_tv(&pt->pt_argv[i]);
+    vim_free(pt->pt_argv);
+    if (free_dict)
+	dict_unref(pt->pt_dict);
+    func_unref(pt->pt_name);
+    vim_free(pt->pt_name);
+    vim_free(pt);
+}
+
+/*
+ * Unreference a closure: decrement the reference count and free it when it
+ * becomes zero.
+ */
+    void
+partial_unref(partial_T *pt)
+{
+    if (pt != NULL && --pt->pt_refcount <= 0)
+	partial_free(pt, TRUE);
 }
 
 /*
@@ -7275,7 +7308,18 @@ dict_free(
 	    hash_remove(&d->dv_hashtab, hi);
 	    if (recurse || (di->di_tv.v_type != VAR_LIST
 					     && di->di_tv.v_type != VAR_DICT))
-		clear_tv(&di->di_tv);
+	    {
+		if (!recurse && di->di_tv.v_type == VAR_PARTIAL)
+		{
+		    partial_T *pt = di->di_tv.vval.v_partial;
+
+		    /* We unref the partial but not the dict it refers to. */
+		    if (pt != NULL && --pt->pt_refcount == 0)
+			partial_free(pt, FALSE);
+		}
+		else
+		    clear_tv(&di->di_tv);
+	    }
 	    vim_free(di);
 	    --todo;
 	}
@@ -12009,31 +12053,6 @@ f_function(typval_T *argvars, typval_T *rettv)
 	    func_ref(name);
 	}
     }
-}
-
-    static void
-partial_free(partial_T *pt)
-{
-    int i;
-
-    for (i = 0; i < pt->pt_argc; ++i)
-	clear_tv(&pt->pt_argv[i]);
-    vim_free(pt->pt_argv);
-    dict_unref(pt->pt_dict);
-    func_unref(pt->pt_name);
-    vim_free(pt->pt_name);
-    vim_free(pt);
-}
-
-/*
- * Unreference a closure: decrement the reference count and free it when it
- * becomes zero.
- */
-    void
-partial_unref(partial_T *pt)
-{
-    if (pt != NULL && --pt->pt_refcount <= 0)
-	partial_free(pt);
 }
 
 /*
