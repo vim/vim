@@ -26439,6 +26439,13 @@ repeat:
 
     if (src[*usedlen] == ':' && src[*usedlen + 1] == 'S')
     {
+	/* *fnamep may still contain the entire original string, but *fnamelen
+	 * indicates to the caller how much of the string to use.
+	 * Since vim_strsave_shellescape duplicates the given string, we need
+	 * to mark the end of the string in *fnamep.
+	 */
+	(*fnamep)[*fnamelen] = NUL;
+
 	p = vim_strsave_shellescape(*fnamep, FALSE, FALSE);
 	if (p == NULL)
 	    return -1;
