@@ -283,6 +283,12 @@ func! BuildEmojiTable(pattern, tableName)
       call add(alltokens, token)
     endif
 
+    " Characters below 1F000 may be considered single width traditionally,
+    " making them double width causes problems.
+    if first < 0x1f000
+      continue
+    endif
+
     " exclude characters that are in the "ambiguous" or "doublewidth" table
     for ambi in s:ambitable
       if first >= ambi[0] && first <= ambi[1]
