@@ -26439,8 +26439,12 @@ repeat:
 
     if (src[*usedlen] == ':' && src[*usedlen + 1] == 'S')
     {
-	/* vim_strsave_shellescape() needs a NUL terminated string. */
-	(*fnamep)[*fnamelen] = NUL;
+	p = vim_strnsave(*fnamep, *fnamelen);
+	if (p == NULL)
+	    return -1;
+	vim_free(*bufp);
+	*bufp = *fnamep = p;
+
 	p = vim_strsave_shellescape(*fnamep, FALSE, FALSE);
 	if (p == NULL)
 	    return -1;

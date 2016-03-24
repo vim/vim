@@ -26,5 +26,6 @@ fnamemodify('abc'' ''def',    ':S'      )	'''abc''\'''' ''\''''def'''
 fnamemodify('abc''%''def',    ':S'      )	'''abc''\''''%''\''''def'''
 fnamemodify("abc\ndef",       ':S'      )	'''abc^@def'''
 expand('%:r:S') == shellescape(expand('%:r'))	1
+join([expand('%:r'), expand('%:r:S'), expand('%')], ',')	'test105,''test105'',test105.in'
 fnamemodify("abc\ndef",       ':S'      )	'''abc\^@def'''
 vim: ts=8
