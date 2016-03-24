@@ -193,3 +193,16 @@ func Test_tostring()
     call assert_true(v:false, v:exception)
   endtry
 endfunc
+
+func Test_redefine_dict_func()
+  let d = {}
+  function d.test4()
+  endfunction
+  let d.test4 = d.test4
+  try
+    function! d.test4(name)
+    endfunction
+  catch
+    call assert_true(v:errmsg, v:exception)
+  endtry
+endfunc
