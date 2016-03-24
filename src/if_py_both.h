@@ -6032,13 +6032,26 @@ ConvertToPyObject(typval_T *tv)
 	case VAR_FUNC:
 	    return NEW_FUNCTION(tv->vval.v_string == NULL
 					  ? (char_u *)"" : tv->vval.v_string);
+	case VAR_PARTIAL:
+	    return NEW_FUNCTION(tv->vval.v_partial == NULL
+				? (char_u *)"" : tv->vval.v_partial->pt_name);
 	case VAR_UNKNOWN:
+	case VAR_CHANNEL:
+	case VAR_JOB:
 	    Py_INCREF(Py_None);
 	    return Py_None;
-	default:
+	case VAR_SPECIAL:
+	    switch (tv->vval.v_number)
+	    {
+		case VVAL_FALSE: return AlwaysFalse(NULL);
+		case VVAL_TRUE:  return AlwaysTrue(NULL);
+		case VVAL_NONE:
+		case VVAL_NULL:  return AlwaysNone(NULL);
+	    }
 	    PyErr_SET_VIM(N_("internal error: invalid value type"));
 	    return NULL;
     }
+    return NULL;
 }
 
 typedef struct

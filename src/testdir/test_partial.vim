@@ -206,3 +206,17 @@ func Test_redefine_dict_func()
     call assert_true(v:errmsg, v:exception)
   endtry
 endfunc
+
+func Test_bind_in_python()
+  if has('python')
+    let g:d = {}
+    function g:d.test2()
+    endfunction
+    python import vim
+    try
+      call assert_equal(pyeval('vim.bindeval("g:d.test2")'), g:d.test2)
+    catch
+      call assert_true(v:false, v:exception)
+    endtry
+  endif
+endfunc
