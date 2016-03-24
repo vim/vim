@@ -36,6 +36,7 @@ STARTTEST
 :Put fnamemodify('abc''%''def',    ':S'      )
 :Put fnamemodify("abc\ndef",       ':S'      )
 :Put expand('%:r:S') == shellescape(expand('%:r'))
+:Put join([expand('%:r'), expand('%:r:S'), expand('%')], ',')
 :set shell=tcsh
 :Put fnamemodify("abc\ndef",       ':S'      )
 :$put ='vim: ts=8'
