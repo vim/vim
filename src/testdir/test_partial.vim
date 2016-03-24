@@ -180,3 +180,16 @@ func Test_func_unref()
   unlet obj
   call assert_false(exists('*{' . funcnumber . '}'))
 endfunc
+
+func Test_tostring()
+  let d = {}
+  let d.d = d
+  function d.test3()
+    echo 42
+  endfunction
+  try
+    call string(d.test3)
+  catch
+    call assert_true(v:false, v:exception)
+  endtry
+endfunc
