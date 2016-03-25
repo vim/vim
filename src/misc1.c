@@ -9737,18 +9737,6 @@ pstrcmp(const void *a, const void *b)
     return (pathcmp(*(char **)a, *(char **)b, -1));
 }
 
-# ifndef WIN3264
-    static void
-namelowcpy(
-    char_u *d,
-    char_u *s)
-{
-    while (*s)
-	*d++ = TOLOWER_LOC(*s++);
-    *d = NUL;
-}
-# endif
-
 /*
  * Recursively expand one path component into all matching files and/or
  * directories.  Adds matches to "gap".  Handles "*", "?", "[a-z]", "**", etc.
@@ -9777,16 +9765,12 @@ dos_expandpath(
     int		len;
     int		starstar = FALSE;
     static int	stardepth = 0;	    /* depth for "**" expansion */
-#ifdef WIN3264
     WIN32_FIND_DATA	fb;
     HANDLE		hFind = (HANDLE)0;
 # ifdef FEAT_MBYTE
     WIN32_FIND_DATAW    wfb;
     WCHAR		*wn = NULL;	/* UCS-2 name, NULL when not used. */
 # endif
-#else
-    struct ffblk	fb;
-#endif
     char_u		*matchname;
     int			ok;
 
@@ -9827,7 +9811,7 @@ dos_expandpath(
 	else if (path_end >= path + wildoff
 			 && vim_strchr((char_u *)"*?[~", *path_end) != NULL)
 	    e = p;
-#ifdef FEAT_MBYTE
+# ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    len = (*mb_ptr2len)(path_end);
@@ -9836,7 +9820,7 @@ dos_expandpath(
 	    path_end += len;
 	}
 	else
-#endif
+# endif
 	    *p++ = *path_end++;
     }
     e = p;
@@ -9897,7 +9881,6 @@ dos_expandpath(
 
     /* Scan all files in the directory with "dir/ *.*" */
     STRCPY(s, "*.*");
-#ifdef WIN3264
 # ifdef FEAT_MBYTE
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
@@ -9921,24 +9904,15 @@ dos_expandpath(
 # endif
 	hFind = FindFirstFile((LPCSTR)buf, &fb);
     ok = (hFind != INVALID_HANDLE_VALUE);
-#else
-    /* If we are expanding wildcards we try both files and directories */
-    ok = (findfirst((char *)buf, &fb,
-		(*path_end != NUL || (flags & EW_DIR)) ? FA_DIREC : 0) == 0);
-#endif
 
     while (ok)
     {
-#ifdef WIN3264
 # ifdef FEAT_MBYTE
 	if (wn != NULL)
 	    p = utf16_to_enc(wfb.cFileName, NULL);   /* p is allocated here */
 	else
 # endif
 	    p = (char_u *)fb.cFileName;
-#else
-	p = (char_u *)fb.ff_name;
-#endif
 	/* Ignore entries starting with a dot, unless when asked for.  Accept
 	 * all entries found with "matchname". */
 	if ((p[0] != '.' || starts_with_dot
@@ -9950,11 +9924,7 @@ dos_expandpath(
 		  || ((flags & EW_NOTWILD)
 		     && fnamencmp(path + (s - buf), p, e - s) == 0)))
 	{
-#ifdef WIN3264
 	    STRCPY(s, p);
-#else
-	    namelowcpy(s, p);
-#endif
 	    len = (int)STRLEN(buf);
 
 	    if (starstar && stardepth < 100)
@@ -9986,7 +9956,6 @@ dos_expandpath(
 	    }
 	}
 
-#ifdef WIN3264
 # ifdef FEAT_MBYTE
 	if (wn != NULL)
 	{
@@ -9996,16 +9965,12 @@ dos_expandpath(
 	else
 # endif
 	    ok = FindNextFile(hFind, &fb);
-#else
-	ok = (findnext(&fb) == 0);
-#endif
 
 	/* If no more matches and no match was used, try expanding the name
 	 * itself.  Finds the long name of a short filename. */
 	if (!ok && matchname != NULL && gap->ga_len == start_len)
 	{
 	    STRCPY(s, matchname);
-#ifdef WIN3264
 	    FindClose(hFind);
 # ifdef FEAT_MBYTE
 	    if (wn != NULL)
@@ -10019,21 +9984,15 @@ dos_expandpath(
 # endif
 		hFind = FindFirstFile((LPCSTR)buf, &fb);
 	    ok = (hFind != INVALID_HANDLE_VALUE);
-#else
-	    ok = (findfirst((char *)buf, &fb,
-		 (*path_end != NUL || (flags & EW_DIR)) ? FA_DIREC : 0) == 0);
-#endif
 	    vim_free(matchname);
 	    matchname = NULL;
 	}
     }
 
-#ifdef WIN3264
     FindClose(hFind);
 # ifdef FEAT_MBYTE
     vim_free(wn);
 # endif
-#endif
     vim_free(buf);
     vim_regfree(regmatch.regprog);
     vim_free(matchname);
