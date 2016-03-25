@@ -679,3 +679,11 @@ function Test_quickfix_was_changed_by_autocmd()
   call XquickfixChangedByAutocmd('c')
   call XquickfixChangedByAutocmd('l')
 endfunction
+
+func Test_caddbuffer_to_empty()
+  helpgr quickfix
+  call setqflist([], 'r')
+  cad
+  call assert_fails('cn', 'E553:')
+  quit!
+endfunc
