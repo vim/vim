@@ -494,6 +494,7 @@ RT_ALL =	\
 		runtime/macros/less.vim \
 		runtime/macros/life/click.me \
 		runtime/macros/life/life.vim \
+		runtime/macros/matchit.vim \
 		runtime/macros/maze/README.txt \
 		runtime/macros/maze/[mM]akefile \
 		runtime/macros/maze/main.aap \
