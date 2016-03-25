@@ -130,6 +130,7 @@
 #		make installlinks	only installs the Vim binary links
 #		make installmanlinks	only installs the Vim manpage links
 #		make installmacros	only installs the Vim macros
+#		make installpack	only installs the packages
 #		make installtutorbin	only installs the Vim tutor program
 #		make installtutor	only installs the Vim tutor files
 #		make installspell	only installs the spell files
@@ -1008,6 +1009,7 @@ LANGSUBDIR = /lang
 COMPSUBDIR = /compiler
 KMAPSUBDIR = /keymap
 MACROSUBDIR = /macros
+PACKSUBDIR = /pack
 TOOLSSUBDIR = /tools
 TUTORSUBDIR = /tutor
 SPELLSUBDIR = /spell
@@ -1029,6 +1031,7 @@ PODIR = po
 ### COMPSUBLOC	location for compiler files
 ### KMAPSUBLOC	location for keymap files
 ### MACROSUBLOC	location for macro files
+### PACKSUBLOC	location for packages
 ### TOOLSSUBLOC	location for tools files
 ### TUTORSUBLOC	location for tutor files
 ### SPELLSUBLOC	location for spell files
@@ -1050,6 +1053,7 @@ LANGSUBLOC	= $(VIMRTLOC)$(LANGSUBDIR)
 COMPSUBLOC	= $(VIMRTLOC)$(COMPSUBDIR)
 KMAPSUBLOC	= $(VIMRTLOC)$(KMAPSUBDIR)
 MACROSUBLOC	= $(VIMRTLOC)$(MACROSUBDIR)
+PACKSUBLOC	= $(VIMRTLOC)$(PACKSUBDIR)
 TOOLSSUBLOC	= $(VIMRTLOC)$(TOOLSSUBDIR)
 TUTORSUBLOC	= $(VIMRTLOC)$(TUTORSUBDIR)
 SPELLSUBLOC	= $(VIMRTLOC)$(SPELLSUBDIR)
@@ -1154,6 +1158,9 @@ FTPLUGSOURCE = ../runtime/ftplugin
 
 # Where to copy the macro files from
 MACROSOURCE = ../runtime/macros
+
+# Where to copy the package files from
+PACKSOURCE = ../runtime/pack
 
 # Where to copy the tools files from
 TOOLSSOURCE = ../runtime/tools
@@ -1430,6 +1437,7 @@ DEST_LANG = $(DESTDIR)$(LANGSUBLOC)
 DEST_COMP = $(DESTDIR)$(COMPSUBLOC)
 DEST_KMAP = $(DESTDIR)$(KMAPSUBLOC)
 DEST_MACRO = $(DESTDIR)$(MACROSUBLOC)
+DEST_PACK = $(DESTDIR)$(PACKSUBLOC)
 DEST_TOOLS = $(DESTDIR)$(TOOLSSUBLOC)
 DEST_TUTOR = $(DESTDIR)$(TUTORSUBLOC)
 DEST_SPELL = $(DESTDIR)$(SPELLSUBLOC)
@@ -2107,7 +2115,7 @@ INSTALLMANARGS = $(VIMLOC) $(SCRIPTLOC) $(VIMRCLOC) $(HELPSOURCE) $(MANMOD) \
 		$(VIMNAME) $(VIMDIFFNAME) $(EVIMNAME)
 
 # Install most of the runtime files
-installruntime: installrtbase installmacros installtutor installspell
+installruntime: installrtbase installmacros installpack installtutor installspell
 
 # install the help files; first adjust the contents for the final location
 installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
@@ -2205,6 +2213,11 @@ installmacros: $(DEST_VIM) $(DEST_RT) $(DEST_MACRO)
 	      if test -n "$$cvs"; then \
 		 rm -rf $$cvs; \
 	      fi
+
+installpack: $(DEST_VIM) $(DEST_RT) $(DEST_PACK)
+	$(INSTALL_DATA_R) $(PACKSOURCE)/* $(DEST_PACK)
+	chmod $(DIRMOD) `find $(DEST_PACK) -type d -print`
+	chmod $(FILEMOD) `find $(DEST_PACK) -type f -print`
 
 # install the tutor files
 installtutorbin: $(DEST_VIM)
@@ -2355,8 +2368,8 @@ $(HELPSOURCE)/vim.1 $(MACROSOURCE) $(TOOLSSOURCE):
 $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 		$(DEST_VIM) $(DEST_RT) $(DEST_HELP) \
 		$(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) $(DEST_FTP) \
-		$(DEST_LANG) $(DEST_KMAP) $(DEST_COMP) \
-		$(DEST_MACRO) $(DEST_TOOLS) $(DEST_TUTOR) $(DEST_SPELL) \
+		$(DEST_LANG) $(DEST_KMAP) $(DEST_COMP) $(DEST_MACRO) \
+		$(DEST_PACK) $(DEST_TOOLS) $(DEST_TUTOR) $(DEST_SPELL) \
 		$(DEST_AUTO) $(DEST_AUTO)/xml $(DEST_PLUG):
 	-$(SHELL) ./mkinstalldirs $@
 	-chmod $(DIRMOD) $@
@@ -2501,6 +2514,7 @@ uninstall_runtime:
 	-rm -f $(DEST_SYN)/*.vim $(DEST_SYN)/README.txt
 	-rm -f $(DEST_IND)/*.vim $(DEST_IND)/README.txt
 	-rm -rf $(DEST_MACRO)
+	-rm -rf $(DEST_PACK)
 	-rm -rf $(DEST_TUTOR)
 	-rm -rf $(DEST_SPELL)
 	-rm -rf $(DEST_TOOLS)
