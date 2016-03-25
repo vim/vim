@@ -41,3 +41,9 @@ func Test_fnamemodify()
   call assert_equal("'abc\\\ndef'",  fnamemodify("abc\ndef", ':S'))
   set shell&
 endfunc
+
+func Test_expand()
+  new
+  call assert_equal("",  expand('%:S'))
+  quit
+endfunc
