@@ -85,7 +85,6 @@ SCRIPTS_ALL = \
 	test102.out \
 	test103.out \
 	test104.out \
-	test105.out \
 	test107.out \
 	test108.out \
 	test_autocmd_option.out \
