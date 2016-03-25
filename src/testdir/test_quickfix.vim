@@ -684,6 +684,11 @@ func Test_caddbuffer_to_empty()
   helpgr quickfix
   call setqflist([], 'r')
   cad
-  call assert_fails('cn', 'E553:')
+  try
+    cn
+  catch
+    " number of matches is unknown
+    call assert_true(v:exception =~ 'E553:')
+  endtry
   quit!
 endfunc
