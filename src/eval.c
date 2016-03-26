@@ -20190,6 +20190,7 @@ get_callback(typval_T *arg, partial_T **pp)
     if (arg->v_type == VAR_PARTIAL && arg->vval.v_partial != NULL)
     {
 	*pp = arg->vval.v_partial;
+	++(*pp)->pt_refcount;
 	return (*pp)->pt_name;
     }
     *pp = NULL;
