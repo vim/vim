@@ -312,12 +312,12 @@ pum_redraw(void)
 	if (curwin->w_p_rl)
 	{
 	    if (pum_col < W_WINCOL(curwin) + W_WIDTH(curwin) - 1)
-		screen_putchar(' ', row, pum_col + 1, attr);
+		screen_putchar(' ', row, vertical_tabline_width() + pum_col + 1, attr);
 	}
 	else
 #endif
 	    if (pum_col > 0)
-		screen_putchar(' ', row, pum_col - 1, attr);
+		screen_putchar(' ', row, vertical_tabline_width() + pum_col - 1, attr);
 
 	/* Display each entry, use two spaces for a Tab.
 	 * Do this 3 times: For the main text, kind and extra info */
@@ -383,7 +383,7 @@ pum_redraw(void)
 					}
 				    }
 				    screen_puts_len(rt, (int)STRLEN(rt),
-						   row, col - size + 1, attr);
+						   row, vertical_tabline_width() + col - size + 1, attr);
 				    vim_free(rt_start);
 				}
 				vim_free(st);
@@ -395,7 +395,7 @@ pum_redraw(void)
 			{
 			    if (st != NULL)
 			    {
-				screen_puts_len(st, (int)STRLEN(st), row, col,
+				screen_puts_len(st, (int)STRLEN(st), row, vertical_tabline_width() + col,
 									attr);
 				vim_free(st);
 			    }
@@ -409,14 +409,14 @@ pum_redraw(void)
 #ifdef FEAT_RIGHTLEFT
 			if (curwin->w_p_rl)
 			{
-			    screen_puts_len((char_u *)"  ", 2, row, col - 1,
+			    screen_puts_len((char_u *)"  ", 2, row, vertical_tabline_width() + col - 1,
 									attr);
 			    col -= 2;
 			}
 			else
 #endif
 			{
-			    screen_puts_len((char_u *)"  ", 2, row, col, attr);
+			    screen_puts_len((char_u *)"  ", 2, row, vertical_tabline_width() + col, attr);
 			    col += 2;
 			}
 			totwidth += 2;
@@ -442,14 +442,14 @@ pum_redraw(void)
 #ifdef FEAT_RIGHTLEFT
 	    if (curwin->w_p_rl)
 	    {
-		screen_fill(row, row + 1, pum_col - pum_base_width - n + 1,
-						    col + 1, ' ', ' ', attr);
+		screen_fill(row, row + 1, vertical_tabline_width() + pum_col - pum_base_width - n + 1,
+						    vertical_tabline_width() + col + 1, ' ', ' ', attr);
 		col = pum_col - pum_base_width - n + 1;
 	    }
 	    else
 #endif
 	    {
-		screen_fill(row, row + 1, col, pum_col + pum_base_width + n,
+		screen_fill(row, row + 1, vertical_tabline_width() + col, vertical_tabline_width() + pum_col + pum_base_width + n,
 							      ' ', ' ', attr);
 		col = pum_col + pum_base_width + n;
 	    }
@@ -458,22 +458,22 @@ pum_redraw(void)
 
 #ifdef FEAT_RIGHTLEFT
 	if (curwin->w_p_rl)
-	    screen_fill(row, row + 1, pum_col - pum_width + 1, col + 1, ' ',
+	    screen_fill(row, row + 1, vertical_tabline_width() + pum_col - pum_width + 1, vertical_tabline_width() + col + 1, ' ',
 								    ' ', attr);
 	else
 #endif
-	    screen_fill(row, row + 1, col, pum_col + pum_width, ' ', ' ',
+	    screen_fill(row, row + 1, vertical_tabline_width() + col, vertical_tabline_width() + pum_col + pum_width, ' ', ' ',
 									attr);
 	if (pum_scrollbar > 0)
 	{
 #ifdef FEAT_RIGHTLEFT
 	    if (curwin->w_p_rl)
-		screen_putchar(' ', row, pum_col - pum_width,
+		screen_putchar(' ', row, vertical_tabline_width() + pum_col - pum_width,
 			i >= thumb_pos && i < thumb_pos + thumb_heigth
 						  ? attr_thumb : attr_scroll);
 	    else
 #endif
-		screen_putchar(' ', row, pum_col + pum_width,
+		screen_putchar(' ', row, vertical_tabline_width() + pum_col + pum_width,
 			i >= thumb_pos && i < thumb_pos + thumb_heigth
 						  ? attr_thumb : attr_scroll);
 	}

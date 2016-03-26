@@ -791,7 +791,7 @@ getcmdline(
 		    goto cmdline_changed;
 		if (!cmd_silent)
 		{
-		    windgoto(msg_row, 0);
+		    windgoto(msg_row, vertical_tabline_width() + 0);
 		    out_flush();
 		}
 		break;
@@ -2332,7 +2332,7 @@ redraw:
 		    }
 		}
 		msg_clr_eos();
-		windgoto(msg_row, msg_col);
+		windgoto(msg_row, vertical_tabline_width() + msg_col);
 		continue;
 	    }
 
@@ -2408,7 +2408,7 @@ redraw:
 	line_ga.ga_len += len;
 	escaped = FALSE;
 
-	windgoto(msg_row, msg_col);
+	windgoto(msg_row, vertical_tabline_width() + msg_col);
 	pend = (char_u *)(line_ga.ga_data) + line_ga.ga_len;
 
 	/* We are done when a NL is entered, but not when it comes after an
@@ -3234,7 +3234,7 @@ redrawcmd(void)
     /* when 'incsearch' is set there may be no command line while redrawing */
     if (ccline.cmdbuff == NULL)
     {
-	windgoto(cmdline_row, 0);
+	windgoto(cmdline_row, vertical_tabline_width() + 0);
 	msg_clr_eos();
 	return;
     }
@@ -3294,7 +3294,7 @@ cursorcmd(void)
 	    msg_row = Rows - 1;
     }
 
-    windgoto(msg_row, msg_col);
+    windgoto(msg_row, vertical_tabline_width() + msg_col);
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
     redrawcmd_preedit();
 #endif
@@ -3315,7 +3315,7 @@ gotocmdline(int clr)
 	msg_col = 0;	    /* always start in column 0 */
     if (clr)		    /* clear the bottom line(s) */
 	msg_clr_eos();	    /* will reset clear_cmdline */
-    windgoto(cmdline_row, 0);
+    windgoto(cmdline_row, vertical_tabline_width() + 0);
 }
 
 /*

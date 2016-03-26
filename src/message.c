@@ -1707,7 +1707,7 @@ screen_puts_mbyte(char_u *s, int l, int attr)
 	return s;
     }
 
-    screen_puts_len(s, l, msg_row, msg_col, attr);
+    screen_puts_len(s, l, msg_row, vertical_tabline_width() + msg_col, attr);
 #ifdef FEAT_RIGHTLEFT
     if (cmdmsg_rl)
     {
@@ -2099,13 +2099,13 @@ msg_scroll_up(void)
 	/* Scrolling up doesn't result in the right background.  Set the
 	 * background here.  It's not efficient, but avoids that we have to do
 	 * it all over the code. */
-	screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
+	screen_fill((int)Rows - 1, (int)Rows, vertical_tabline_width() + 0, GetColumns(), ' ', ' ', 0);
 
 	/* Also clear the last char of the last but one line if it was not
 	 * cleared before to avoid a scroll-up. */
 	if (ScreenAttrs[LineOffset[Rows - 2] + Columns - 1] == (sattr_T)-1)
 	    screen_fill((int)Rows - 2, (int)Rows - 1,
-				 (int)Columns - 1, (int)Columns, ' ', ' ', 0);
+				 GetColumns() - 1, GetColumns(), ' ', ' ', 0);
     }
 }
 
@@ -2322,7 +2322,7 @@ t_puts(
 {
     /* output postponed text */
     msg_didout = TRUE;		/* remember that line is not empty */
-    screen_puts_len(t_s, (int)(s - t_s), msg_row, msg_col, attr);
+    screen_puts_len(t_s, (int)(s - t_s), msg_row, vertical_tabline_width() + msg_col, attr);
     msg_col += *t_col;
     *t_col = 0;
 #ifdef FEAT_MBYTE
@@ -2646,8 +2646,8 @@ do_more_prompt(int typed_char)
 		    /* scroll up, display line at bottom */
 		    msg_scroll_up();
 		    inc_msg_scrolled();
-		    screen_fill((int)Rows - 2, (int)Rows - 1, 0,
-						   (int)Columns, ' ', ' ', 0);
+		    screen_fill((int)Rows - 2, (int)Rows - 1, vertical_tabline_width() + 0,
+						   GetColumns(), ' ', ' ', 0);
 		    mp_last = disp_sb_line((int)Rows - 2, mp_last);
 		    --toscroll;
 		}
@@ -2656,8 +2656,8 @@ do_more_prompt(int typed_char)
 	    if (toscroll <= 0)
 	    {
 		/* displayed the requested text, more prompt again */
-		screen_fill((int)Rows - 1, (int)Rows, 0,
-						   (int)Columns, ' ', ' ', 0);
+		screen_fill((int)Rows - 1, (int)Rows, vertical_tabline_width() + 0,
+						   GetColumns(), ' ', ' ', 0);
 		msg_moremsg(FALSE);
 		continue;
 	    }
@@ -2670,7 +2670,7 @@ do_more_prompt(int typed_char)
     }
 
     /* clear the --more-- message */
-    screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
+    screen_fill((int)Rows - 1, (int)Rows, vertical_tabline_width() + 0, GetColumns(), ' ', ' ', 0);
     State = oldState;
 #ifdef FEAT_MOUSE
     setmouse();
@@ -2815,7 +2815,7 @@ mch_msg(char *str)
 msg_screen_putchar(int c, int attr)
 {
     msg_didout = TRUE;		/* remember that line is not empty */
-    screen_putchar(c, msg_row, msg_col, attr);
+    screen_putchar(c, msg_row, vertical_tabline_width() + msg_col, attr);
 #ifdef FEAT_RIGHTLEFT
     if (cmdmsg_rl)
     {
@@ -2843,11 +2843,11 @@ msg_moremsg(int full)
     char_u	*s = (char_u *)_("-- More --");
 
     attr = hl_attr(HLF_M);
-    screen_puts(s, (int)Rows - 1, 0, attr);
+    screen_puts(s, (int)Rows - 1, vertical_tabline_width() + 0, attr);
     if (full)
 	screen_puts((char_u *)
 		_(" SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "),
-		(int)Rows - 1, vim_strsize(s), attr);
+		(int)Rows - 1, vertical_tabline_width() + vim_strsize(s), attr);
 }
 
 /*
@@ -2942,15 +2942,15 @@ msg_clr_eos_force(void)
 #ifdef FEAT_RIGHTLEFT
 	if (cmdmsg_rl)
 	{
-	    screen_fill(msg_row, msg_row + 1, 0, msg_col + 1, ' ', ' ', 0);
-	    screen_fill(msg_row + 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
+	    screen_fill(msg_row, msg_row + 1, vertical_tabline_width() + 0, vertical_tabline_width() + msg_col + 1, ' ', ' ', 0);
+	    screen_fill(msg_row + 1, (int)Rows, vertical_tabline_width() + 0, GetColumns(), ' ', ' ', 0);
 	}
 	else
 #endif
 	{
-	    screen_fill(msg_row, msg_row + 1, msg_col, (int)Columns,
+	    screen_fill(msg_row, msg_row + 1, vertical_tabline_width() + msg_col, GetColumns(),
 								 ' ', ' ', 0);
-	    screen_fill(msg_row + 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
+	    screen_fill(msg_row + 1, (int)Rows, vertical_tabline_width() + 0, GetColumns(), ' ', ' ', 0);
 	}
     }
 }

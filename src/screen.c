@@ -165,6 +165,9 @@ static void win_rest_invalid(win_T *wp);
 static void msg_pos_mode(void);
 static void recording_mode(int attr);
 #if defined(FEAT_WINDOWS)
+int vertical_tabline_width(void);
+int GetColumns(void);
+static void draw_vertical_tabline(void);
 static void draw_tabline(void);
 #endif
 #if defined(FEAT_WINDOWS) || defined(FEAT_WILDMENU) || defined(FEAT_STL_OPT)
@@ -627,6 +630,8 @@ update_screen(int type)
 	curwin->w_redr_type = type;
 
 #ifdef FEAT_WINDOWS
+    if (true)
+        draw_vertical_tabline();
     /* Redraw the tab pages line if needed. */
     if (redraw_tabline || type >= NOT_VALID)
 	draw_tabline();
@@ -983,6 +988,8 @@ updateWindow(win_T *wp)
     win_update(wp);
 
 #ifdef FEAT_WINDOWS
+    if (true)
+        draw_vertical_tabline();
     /* When the screen was cleared redraw the tab pages line. */
     if (redraw_tabline)
 	draw_tabline();
@@ -1492,6 +1499,8 @@ win_update(win_T *wp)
 		if (screen_cleared != TRUE)
 		    screenclear();
 #ifdef FEAT_WINDOWS
+                if (true)
+	            draw_vertical_tabline();
 		/* The screen was cleared, redraw the tab pages line. */
 		if (redraw_tabline)
 		    draw_tabline();
@@ -2125,7 +2134,7 @@ win_update(win_T *wp)
 	     */
 	    screen_fill(W_WINROW(wp) + wp->w_height - 1,
 		    W_WINROW(wp) + wp->w_height,
-		    (int)W_ENDCOL(wp) - 3, (int)W_ENDCOL(wp),
+		    (int)vertical_tabline_width() + W_ENDCOL(wp) - 3, (int)vertical_tabline_width() + W_ENDCOL(wp),
 		    '@', '@', hl_attr(HLF_AT));
 	    set_empty_rows(wp, srow);
 	    wp->w_botline = lnum;
@@ -2270,7 +2279,7 @@ win_draw_end(
 	    if (n > W_WIDTH(wp))
 		n = W_WIDTH(wp);
 	    screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		    W_ENDCOL(wp) - n, (int)W_ENDCOL(wp),
+		    vertical_tabline_width() + W_ENDCOL(wp) - n, (int)vertical_tabline_width() + W_ENDCOL(wp),
 		    ' ', ' ', hl_attr(HLF_FC));
 	}
 # endif
@@ -2283,16 +2292,16 @@ win_draw_end(
 	    if (nn > W_WIDTH(wp))
 		nn = W_WIDTH(wp);
 	    screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		    W_ENDCOL(wp) - nn, (int)W_ENDCOL(wp) - n,
+		    vertical_tabline_width() + W_ENDCOL(wp) - nn, (int)vertical_tabline_width() + W_ENDCOL(wp) - n,
 		    ' ', ' ', hl_attr(HLF_SC));
 	    n = nn;
 	}
 # endif
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		W_WINCOL(wp), W_ENDCOL(wp) - 1 - FDC_OFF,
+		vertical_tabline_width() + W_WINCOL(wp), vertical_tabline_width() + W_ENDCOL(wp) - 1 - FDC_OFF,
 		c2, c2, hl_attr(hl));
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		W_ENDCOL(wp) - 1 - FDC_OFF, W_ENDCOL(wp) - FDC_OFF,
+		vertical_tabline_width() + W_ENDCOL(wp) - 1 - FDC_OFF, vertical_tabline_width() + W_ENDCOL(wp) - FDC_OFF,
 		c1, c2, hl_attr(hl));
     }
     else
@@ -2306,7 +2315,7 @@ win_draw_end(
 	    if (n > wp->w_width)
 		n = wp->w_width;
 	    screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		    W_WINCOL(wp), (int)W_WINCOL(wp) + n,
+		    vertical_tabline_width() + W_WINCOL(wp), (int)vertical_tabline_width() + W_WINCOL(wp) + n,
 		    cmdwin_type, ' ', hl_attr(HLF_AT));
 	}
 #endif
@@ -2319,7 +2328,7 @@ win_draw_end(
 	    if (nn > W_WIDTH(wp))
 		nn = W_WIDTH(wp);
 	    screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		    W_WINCOL(wp) + n, (int)W_WINCOL(wp) + nn,
+		    vertical_tabline_width() + W_WINCOL(wp) + n, (int)vertical_tabline_width() + W_WINCOL(wp) + nn,
 		    ' ', ' ', hl_attr(HLF_FC));
 	    n = nn;
 	}
@@ -2333,13 +2342,13 @@ win_draw_end(
 	    if (nn > W_WIDTH(wp))
 		nn = W_WIDTH(wp);
 	    screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		    W_WINCOL(wp) + n, (int)W_WINCOL(wp) + nn,
+		    vertical_tabline_width() + W_WINCOL(wp) + n, (int)vertical_tabline_width() + W_WINCOL(wp) + nn,
 		    ' ', ' ', hl_attr(HLF_SC));
 	    n = nn;
 	}
 #endif
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		W_WINCOL(wp) + FDC_OFF, (int)W_ENDCOL(wp),
+		vertical_tabline_width() + W_WINCOL(wp) + FDC_OFF, (int)vertical_tabline_width() + W_ENDCOL(wp),
 		c1, c2, hl_attr(hl));
     }
     set_empty_rows(wp, row);
@@ -5888,8 +5897,8 @@ screen_line(
 		++col;
 	    }
 	    if (col <= endcol)
-		screen_fill(row, row + 1, col + coloff,
-					    endcol + coloff + 1, ' ', ' ', 0);
+		screen_fill(row, row + 1, vertical_tabline_width() + col + coloff,
+					    vertical_tabline_width() + endcol + coloff + 1, ' ', ' ', 0);
 	}
 	col = endcol + 1;
 	off_to = LineOffset[row] + col + coloff;
@@ -6066,10 +6075,10 @@ screen_line(
 		ScreenAttrs[off_to + 1] = ScreenAttrs[off_from];
 
 	    if (enc_dbcs != 0 && char_cells == 2)
-		screen_char_2(off_to, row, col + coloff);
+		screen_char_2(off_to, row, vertical_tabline_width() + col + coloff);
 	    else
 #endif
-		screen_char(off_to, row, col + coloff);
+		screen_char(off_to, row, vertical_tabline_width() + col + coloff);
 	}
 	else if (  p_wiv
 #ifdef FEAT_GUI
@@ -6102,7 +6111,7 @@ screen_line(
 	ScreenLines[off_to] = ' ';
 	if (enc_utf8)
 	    ScreenLinesUC[off_to] = 0;
-	screen_char(off_to, row, col + coloff);
+	screen_char(off_to, row, vertical_tabline_width() + col + coloff);
     }
 #endif
 
@@ -6164,15 +6173,15 @@ screen_line(
 
 		    if (enc_dbcs != 0 && prev_cells > 1)
 			screen_char_2(off_to - prev_cells, row,
-						   col + coloff - prev_cells);
+						   vertical_tabline_width() + col + coloff - prev_cells);
 		    else
 # endif
 			screen_char(off_to - prev_cells, row,
-						   col + coloff - prev_cells);
+						   vertical_tabline_width() + col + coloff - prev_cells);
 		}
 	    }
 #endif
-	    screen_fill(row, row + 1, col + coloff, clear_width + coloff,
+	    screen_fill(row, row + 1, vertical_tabline_width() + col + coloff, vertical_tabline_width() + clear_width + coloff,
 								 ' ', ' ', 0);
 #ifdef FEAT_WINDOWS
 	    off_to += clear_width - col;
@@ -6211,7 +6220,7 @@ screen_line(
 			ScreenLinesUC[off_to] = 0;
 		}
 # endif
-		screen_char(off_to, row, col + coloff);
+		screen_char(off_to, row, vertical_tabline_width() + col + coloff);
 	    }
 	}
 	else
@@ -6284,6 +6293,8 @@ redraw_statuslines(void)
     for (wp = firstwin; wp; wp = wp->w_next)
 	if (wp->w_redr_status)
 	    win_redr_status(wp);
+    if (true)
+	draw_vertical_tabline();
     if (redraw_tabline)
 	draw_tabline();
 }
@@ -6328,7 +6339,7 @@ draw_vsep_win(win_T *wp, int row)
 	/* draw the vertical separator right of this window */
 	c = fillchar_vsep(&hl);
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + wp->w_height,
-		W_ENDCOL(wp), W_ENDCOL(wp) + 1,
+		vertical_tabline_width() + W_ENDCOL(wp), vertical_tabline_width() + W_ENDCOL(wp) + 1,
 		c, ' ', hl);
     }
 }
@@ -6596,14 +6607,14 @@ win_redr_status_matches(
 	    }
 	}
 
-	screen_puts(buf, row, 0, attr);
+	screen_puts(buf, row, vertical_tabline_width() + 0, attr);
 	if (selstart != NULL && highlight)
 	{
 	    *selend = NUL;
-	    screen_puts(selstart, row, selstart_col, hl_attr(HLF_WM));
+	    screen_puts(selstart, row, vertical_tabline_width() + selstart_col, hl_attr(HLF_WM));
 	}
 
-	screen_fill(row, row + 1, clen, (int)Columns, fillchar, fillchar, attr);
+	screen_fill(row, row + 1, vertical_tabline_width() + clen, vertical_tabline_width() + (int)Columns, fillchar, fillchar, attr);
     }
 
 #ifdef FEAT_WINDOWS
@@ -6741,13 +6752,13 @@ win_redr_status(win_T *wp)
 	    }
 
 	row = W_WINROW(wp) + wp->w_height;
-	screen_puts(p, row, W_WINCOL(wp), attr);
-	screen_fill(row, row + 1, len + W_WINCOL(wp),
-			this_ru_col + W_WINCOL(wp), fillchar, fillchar, attr);
+	screen_puts(p, row, vertical_tabline_width() + W_WINCOL(wp), attr);
+	screen_fill(row, row + 1, vertical_tabline_width() + len + W_WINCOL(wp),
+			vertical_tabline_width() + this_ru_col + W_WINCOL(wp), fillchar, fillchar, attr);
 
 	if (get_keymap_str(wp, NameBuff, MAXPATHL)
 		&& (int)(this_ru_col - len) > (int)(STRLEN(NameBuff) + 1))
-	    screen_puts(NameBuff, row, (int)(this_ru_col - STRLEN(NameBuff)
+	    screen_puts(NameBuff, row, (int)(vertical_tabline_width() + this_ru_col - STRLEN(NameBuff)
 						   - 1 + W_WINCOL(wp)), attr);
 
 #ifdef FEAT_CMDL_INFO
@@ -6764,7 +6775,7 @@ win_redr_status(win_T *wp)
 	    fillchar = fillchar_status(&attr, wp == curwin);
 	else
 	    fillchar = fillchar_vsep(&attr);
-	screen_putchar(fillchar, W_WINROW(wp) + wp->w_height, W_ENDCOL(wp),
+	screen_putchar(fillchar, W_WINROW(wp) + wp->w_height, vertical_tabline_width() + W_ENDCOL(wp),
 									attr);
     }
     busy = FALSE;
@@ -7041,7 +7052,7 @@ win_redr_custom(
     for (n = 0; hltab[n].start != NULL; n++)
     {
 	len = (int)(hltab[n].start - p);
-	screen_puts_len(p, len, row, col, curattr);
+	screen_puts_len(p, len, row, vertical_tabline_width() + col, curattr);
 	col += vim_strnsize(p, len);
 	p = hltab[n].start;
 
@@ -7056,7 +7067,7 @@ win_redr_custom(
 	else
 	    curattr = highlight_user[hltab[n].userhl - 1];
     }
-    screen_puts(p, row, col, curattr);
+    screen_puts(p, row, vertical_tabline_width() + col, curattr);
 
     if (wp == NULL)
     {
@@ -8804,7 +8815,7 @@ screenclear2(void)
     /* blank out ScreenLines */
     for (i = 0; i < Rows; ++i)
     {
-	lineclear(LineOffset[i], (int)Columns);
+	lineclear(vertical_tabline_width() + LineOffset[i], (int)Columns);
 	LineWraps[i] = FALSE;
     }
 
@@ -8818,7 +8829,7 @@ screenclear2(void)
     {
 	/* can't clear the screen, mark all chars with invalid attributes */
 	for (i = 0; i < Rows; ++i)
-	    lineinvalid(LineOffset[i], (int)Columns);
+	    lineinvalid(vertical_tabline_width() + LineOffset[i], (int)Columns);
 	clear_cmdline = TRUE;
     }
 
@@ -9186,7 +9197,7 @@ setcursor(void)
     {
 	validate_cursor();
 	windgoto(W_WINROW(curwin) + curwin->w_wrow,
-		W_WINCOL(curwin) + (
+		vertical_tabline_width() + W_WINCOL(curwin) + (
 #ifdef FEAT_RIGHTLEFT
 		/* With 'rightleft' set and the cursor on a double-wide
 		 * character, position it on the leftmost column. */
@@ -9267,7 +9278,7 @@ win_ins_lines(
 	if (lastrow > Rows)
 	    lastrow = Rows;
 	screen_fill(nextrow - line_count, lastrow - line_count,
-		  W_WINCOL(wp), (int)W_ENDCOL(wp),
+		  vertical_tabline_width() + W_WINCOL(wp), (int)vertical_tabline_width() + W_ENDCOL(wp),
 		  ' ', ' ', 0);
     }
 
@@ -9378,7 +9389,7 @@ win_do_lines(
     if (row + line_count >= wp->w_height)
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + wp->w_height,
-		W_WINCOL(wp), (int)W_ENDCOL(wp),
+		vertical_tabline_width() + W_WINCOL(wp), (int)vertical_tabline_width() + W_ENDCOL(wp),
 		' ', ' ', 0);
 	return OK;
     }
@@ -9612,9 +9623,9 @@ screen_ins_lines(
 		linecopy(j + line_count, j, wp);
 	    j += line_count;
 	    if (can_clear((char_u *)" "))
-		lineclear(LineOffset[j] + wp->w_wincol, wp->w_width);
+		lineclear(vertical_tabline_width() + LineOffset[j] + wp->w_wincol, wp->w_width);
 	    else
-		lineinvalid(LineOffset[j] + wp->w_wincol, wp->w_width);
+		lineinvalid(vertical_tabline_width() + LineOffset[j] + wp->w_wincol, wp->w_width);
 	    LineWraps[j] = FALSE;
 	}
 	else
@@ -9630,9 +9641,9 @@ screen_ins_lines(
 	    LineOffset[j + line_count] = temp;
 	    LineWraps[j + line_count] = FALSE;
 	    if (can_clear((char_u *)" "))
-		lineclear(temp, (int)Columns);
+		lineclear(vertical_tabline_width() + temp, (int)Columns);
 	    else
-		lineinvalid(temp, (int)Columns);
+		lineinvalid(vertical_tabline_width() + temp, (int)Columns);
 	}
     }
 
@@ -9839,9 +9850,9 @@ screen_del_lines(
 		linecopy(j - line_count, j, wp);
 	    j -= line_count;
 	    if (can_clear((char_u *)" "))
-		lineclear(LineOffset[j] + wp->w_wincol, wp->w_width);
+		lineclear(vertical_tabline_width() + LineOffset[j] + wp->w_wincol, wp->w_width);
 	    else
-		lineinvalid(LineOffset[j] + wp->w_wincol, wp->w_width);
+		lineinvalid(vertical_tabline_width() + LineOffset[j] + wp->w_wincol, wp->w_width);
 	    LineWraps[j] = FALSE;
 	}
 	else
@@ -9858,9 +9869,9 @@ screen_del_lines(
 	    LineOffset[j - line_count] = temp;
 	    LineWraps[j - line_count] = FALSE;
 	    if (can_clear((char_u *)" "))
-		lineclear(temp, (int)Columns);
+		lineclear(vertical_tabline_width() + temp, (int)Columns);
 	    else
-		lineinvalid(temp, (int)Columns);
+		lineinvalid(vertical_tabline_width() + temp, (int)Columns);
 	}
     }
 
@@ -10205,6 +10216,76 @@ recording_mode(int attr)
 }
 
 #if defined(FEAT_WINDOWS)
+    int
+vertical_tabline_width(void)
+{
+    return 20;
+}
+
+    int
+GetColumns(void)
+{
+    return (int)Columns + vertical_tabline_width();
+}
+
+    static void
+draw_vertical_tabline(void)
+{
+    /* int		vertical_tabwidth_without_bar; */
+    int		tabcount = 0;
+    int		len;
+    int		attr_sel = hl_attr(HLF_TPS);
+    int		attr_nosel = hl_attr(HLF_TP);
+    int		attr_fill = hl_attr(HLF_TPF);
+    win_T	*wp;
+    win_T	*cwp;
+    int		attr;
+    int		i;
+    int		col = 0;
+    int		row = 0;
+    tabpage_T	*tp;
+    char_u	*p;
+
+    /* vertical_tabwidth_without_bar = vertical_tabline_width() - 1; */
+
+    tp = first_tabpage;
+    for (row = 0; row < screen_Rows; ++row)
+    {
+        if (tp != NULL)
+        {
+            if (tp == curtab)
+            {
+                cwp = curwin;
+                wp = firstwin;
+                attr = attr_sel;
+            }
+            else
+            {
+                cwp = tp->tp_curwin;
+                wp = tp->tp_firstwin;
+                attr = attr_nosel;
+            }
+            get_trans_bufname(cwp->w_buffer);
+            shorten_dir(NameBuff);
+            len = vim_strsize(NameBuff);
+            p = NameBuff;
+            screen_puts_len(p, len, row, col, attr);
+            for (i = len; i < vertical_tabline_width(); ++i)
+                screen_putchar(' ', row, col + i, attr);
+            /* screen_putchar('|', row, col + vertical_tabwidth_without_bar, attr_nosel); */
+            tp = tp->tp_next;
+        }
+        else
+        {
+            attr = attr_fill;
+            for (i = 0; i < vertical_tabline_width(); ++i)
+                screen_putchar(' ', row, col + i, attr);
+            /* screen_putchar('|', row, col + vertical_tabwidth_without_bar, attr_nosel); */
+        }
+    }
+
+}
+
 /*
  * Draw the tab pages line at the top of the Vim window.
  */
@@ -10289,12 +10370,12 @@ draw_tabline(void)
 	    if (tp->tp_topframe == topframe)
 		attr = attr_sel;
 	    if (use_sep_chars && col > 0)
-		screen_putchar('|', 0, col++, attr);
+		screen_putchar('|', 0, vertical_tabline_width() + col++, attr);
 
 	    if (tp->tp_topframe != topframe)
 		attr = attr_nosel;
 
-	    screen_putchar(' ', 0, col++, attr);
+	    screen_putchar(' ', 0, vertical_tabline_width() + col++, attr);
 
 	    if (tp == curtab)
 	    {
@@ -10319,7 +10400,7 @@ draw_tabline(void)
 		    len = (int)STRLEN(NameBuff);
 		    if (col + len >= Columns - 3)
 			break;
-		    screen_puts_len(NameBuff, len, 0, col,
+		    screen_puts_len(NameBuff, len, 0, vertical_tabline_width() + col,
 #if defined(FEAT_SYN_HL)
 					 hl_combine_attr(attr, hl_attr(HLF_T))
 #else
@@ -10329,8 +10410,8 @@ draw_tabline(void)
 		    col += len;
 		}
 		if (modified)
-		    screen_puts_len((char_u *)"+", 1, 0, col++, attr);
-		screen_putchar(' ', 0, col++, attr);
+		    screen_puts_len((char_u *)"+", 1, 0, vertical_tabline_width() + col++, attr);
+		screen_putchar(' ', 0, vertical_tabline_width() + col++, attr);
 	    }
 
 	    room = scol - col + tabwidth - 1;
@@ -10358,10 +10439,10 @@ draw_tabline(void)
 		if (len > Columns - col - 1)
 		    len = Columns - col - 1;
 
-		screen_puts_len(p, (int)STRLEN(p), 0, col, attr);
+		screen_puts_len(p, (int)STRLEN(p), 0, vertical_tabline_width() + col, attr);
 		col += len;
 	    }
-	    screen_putchar(' ', 0, col++, attr);
+	    screen_putchar(' ', 0, vertical_tabline_width() + col++, attr);
 
 	    /* Store the tab page number in TabPageIdxs[], so that
 	     * jump_to_mouse() knows where each one is. */
@@ -10374,12 +10455,12 @@ draw_tabline(void)
 	    c = '_';
 	else
 	    c = ' ';
-	screen_fill(0, 1, col, (int)Columns, c, c, attr_fill);
+	screen_fill(0, 1, vertical_tabline_width() + col, GetColumns(), c, c, attr_fill);
 
 	/* Put an "X" for closing the current tab if there are several. */
 	if (first_tabpage->tp_next != NULL)
 	{
-	    screen_putchar('X', 0, (int)Columns - 1, attr_nosel);
+	    screen_putchar('X', 0, GetColumns() - 1, attr_nosel);
 	    TabPageIdxs[Columns - 1] = -999;
 	}
     }
@@ -10510,6 +10591,8 @@ showruler(int always)
 	maketitle();
 #endif
 #ifdef FEAT_WINDOWS
+    if (true)
+	draw_vertical_tabline();
     /* Redraw the tab pages line if needed. */
     if (redraw_tabline)
 	draw_tabline();
@@ -10706,11 +10789,11 @@ win_redr_ruler(win_T *wp, int always)
 	if (this_ru_col + (int)STRLEN(buffer) > WITH_WIDTH(width))
 	    buffer[WITH_WIDTH(width) - this_ru_col] = NUL;
 
-	screen_puts(buffer, row, this_ru_col + WITH_OFF(off), attr);
+	screen_puts(buffer, row, vertical_tabline_width() + this_ru_col + WITH_OFF(off), attr);
 	i = redraw_cmdline;
 	screen_fill(row, row + 1,
-		this_ru_col + WITH_OFF(off) + (int)STRLEN(buffer),
-		(int)(WITH_OFF(off) + WITH_WIDTH(width)),
+		vertical_tabline_width() + this_ru_col + WITH_OFF(off) + (int)STRLEN(buffer),
+		(int)(vertical_tabline_width() + WITH_OFF(off) + WITH_WIDTH(width)),
 		fillchar, fillchar, attr);
 	/* don't redraw the cmdline because of showing the ruler */
 	redraw_cmdline = i;
