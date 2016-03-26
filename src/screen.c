@@ -6612,7 +6612,7 @@ win_redr_status_matches(
 	    screen_puts(selstart, row, selstart_col + p_vtlc, hl_attr(HLF_WM));
 	}
 
-	screen_fill(row, row + 1, clen + p_vtlc, (int)Columns, fillchar, fillchar, attr);
+	screen_fill(row, row + 1, clen + p_vtlc, (int)Columns + p_vtlc, fillchar, fillchar, attr);
     }
 
 #ifdef FEAT_WINDOWS
@@ -8182,14 +8182,14 @@ redraw_block(int row, int end, win_T *wp)
     if (wp == NULL)
     {
 	col = 0;
-	width = (Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc);
+	width = Columns;
     }
     else
     {
 	col = wp->w_wincol;
 	width = wp->w_width;
     }
-    screen_draw_rectangle(row, col, end - row, width, FALSE);
+    screen_draw_rectangle(row, col + p_vtlc, end - row, width, FALSE);
 }
 #endif
 
@@ -8812,7 +8812,7 @@ screenclear2(void)
     /* blank out ScreenLines */
     for (i = 0; i < Rows; ++i)
     {
-	lineclear(LineOffset[i], (int)Columns);
+	lineclear(LineOffset[i] + p_vtlc, (int)Columns);
 	LineWraps[i] = FALSE;
     }
 
@@ -8826,7 +8826,7 @@ screenclear2(void)
     {
 	/* can't clear the screen, mark all chars with invalid attributes */
 	for (i = 0; i < Rows; ++i)
-	    lineinvalid(LineOffset[i], (int)Columns);
+	    lineinvalid(LineOffset[i] + p_vtlc, (int)Columns);
 	clear_cmdline = TRUE;
     }
 
@@ -8880,8 +8880,8 @@ lineinvalid(unsigned off, int width)
     static void
 linecopy(int to, int from, win_T *wp)
 {
-    unsigned	off_to = LineOffset[to] + wp->w_wincol;
-    unsigned	off_from = LineOffset[from] + wp->w_wincol;
+    unsigned	off_to = LineOffset[to] + wp->w_wincol + p_vtlc;
+    unsigned	off_from = LineOffset[from] + wp->w_wincol + p_vtlc;
 
     mch_memmove(ScreenLines + off_to, ScreenLines + off_from,
 	    wp->w_width * sizeof(schar_T));
@@ -9620,9 +9620,9 @@ screen_ins_lines(
 		linecopy(j + line_count, j, wp);
 	    j += line_count;
 	    if (can_clear((char_u *)" "))
-		lineclear(LineOffset[j] + wp->w_wincol, wp->w_width);
+		lineclear(LineOffset[j] + wp->w_wincol + p_vtlc, wp->w_width);
 	    else
-		lineinvalid(LineOffset[j] + wp->w_wincol, wp->w_width);
+		lineinvalid(LineOffset[j] + wp->w_wincol + p_vtlc, wp->w_width);
 	    LineWraps[j] = FALSE;
 	}
 	else
@@ -9638,9 +9638,9 @@ screen_ins_lines(
 	    LineOffset[j + line_count] = temp;
 	    LineWraps[j + line_count] = FALSE;
 	    if (can_clear((char_u *)" "))
-		lineclear(temp, (int)Columns);
+		lineclear(temp + p_vtlc, (int)Columns);
 	    else
-		lineinvalid(temp, (int)Columns);
+		lineinvalid(temp + p_vtlc, (int)Columns);
 	}
     }
 
@@ -9847,9 +9847,9 @@ screen_del_lines(
 		linecopy(j - line_count, j, wp);
 	    j -= line_count;
 	    if (can_clear((char_u *)" "))
-		lineclear(LineOffset[j] + wp->w_wincol, wp->w_width);
+		lineclear(LineOffset[j] + wp->w_wincol + p_vtlc, wp->w_width);
 	    else
-		lineinvalid(LineOffset[j] + wp->w_wincol, wp->w_width);
+		lineinvalid(LineOffset[j] + wp->w_wincol + p_vtlc, wp->w_width);
 	    LineWraps[j] = FALSE;
 	}
 	else
@@ -9866,9 +9866,9 @@ screen_del_lines(
 	    LineOffset[j - line_count] = temp;
 	    LineWraps[j - line_count] = FALSE;
 	    if (can_clear((char_u *)" "))
-		lineclear(temp, (int)Columns);
+		lineclear(temp + p_vtlc, (int)Columns);
 	    else
-		lineinvalid(temp, (int)Columns);
+		lineinvalid(temp + p_vtlc, (int)Columns);
 	}
     }
 
@@ -10276,7 +10276,7 @@ draw_tabline(void)
     int		tabcount = 0;
     tabpage_T	*tp;
     int		tabwidth;
-    int		col = 0;
+    int		col = p_vtlc;
     int		scol = 0;
     int		attr;
     win_T	*wp;
@@ -10351,12 +10351,12 @@ draw_tabline(void)
 	    if (tp->tp_topframe == topframe)
 		attr = attr_sel;
 	    if (use_sep_chars && col > 0)
-		screen_putchar('|', 0, col++ + p_vtlc, attr);
+		screen_putchar('|', 0, col++, attr);
 
 	    if (tp->tp_topframe != topframe)
 		attr = attr_nosel;
 
-	    screen_putchar(' ', 0, col++ + p_vtlc, attr);
+	    screen_putchar(' ', 0, col++, attr);
 
 	    if (tp == curtab)
 	    {
@@ -10381,7 +10381,7 @@ draw_tabline(void)
 		    len = (int)STRLEN(NameBuff);
 		    if (col + len >= Columns - 3)
 			break;
-		    screen_puts_len(NameBuff, len, 0, col + p_vtlc,
+		    screen_puts_len(NameBuff, len, 0, col,
 #if defined(FEAT_SYN_HL)
 					 hl_combine_attr(attr, hl_attr(HLF_T))
 #else
@@ -10391,8 +10391,8 @@ draw_tabline(void)
 		    col += len;
 		}
 		if (modified)
-		    screen_puts_len((char_u *)"+", 1, 0, col++ + p_vtlc, attr);
-		screen_putchar(' ', 0, col++ + p_vtlc, attr);
+		    screen_puts_len((char_u *)"+", 1, 0, col++, attr);
+		screen_putchar(' ', 0, col++, attr);
 	    }
 
 	    room = scol - col + tabwidth - 1;
@@ -10420,10 +10420,10 @@ draw_tabline(void)
 		if (len > Columns - col - 1)
 		    len = Columns - col - 1;
 
-		screen_puts_len(p, (int)STRLEN(p), 0, col + p_vtlc, attr);
+		screen_puts_len(p, (int)STRLEN(p), 0, col, attr);
 		col += len;
 	    }
-	    screen_putchar(' ', 0, col++ + p_vtlc, attr);
+	    screen_putchar(' ', 0, col++, attr);
 
 	    /* Store the tab page number in TabPageIdxs[], so that
 	     * jump_to_mouse() knows where each one is. */
@@ -10436,7 +10436,7 @@ draw_tabline(void)
 	    c = '_';
 	else
 	    c = ' ';
-	screen_fill(0, 1, col + p_vtlc, (int)Columns, c, c, attr_fill);
+	screen_fill(0, 1, col, (int)Columns, c, c, attr_fill);
 
 	/* Put an "X" for closing the current tab if there are several. */
 	if (first_tabpage->tp_next != NULL)

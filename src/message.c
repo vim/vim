@@ -2099,13 +2099,13 @@ msg_scroll_up(void)
 	/* Scrolling up doesn't result in the right background.  Set the
 	 * background here.  It's not efficient, but avoids that we have to do
 	 * it all over the code. */
-	screen_fill((int)Rows - 1, (int)Rows, 0 + p_vtlc, (int)Columns + p_vtlc, ' ', ' ', 0);
+	screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
 
 	/* Also clear the last char of the last but one line if it was not
 	 * cleared before to avoid a scroll-up. */
 	if (ScreenAttrs[LineOffset[Rows - 2] + Columns - 1] == (sattr_T)-1)
 	    screen_fill((int)Rows - 2, (int)Rows - 1,
-				 (int)Columns - 1 + p_vtlc, (int)Columns + p_vtlc, ' ', ' ', 0);
+				 (int)Columns - 1, (int)Columns, ' ', ' ', 0);
     }
 }
 
@@ -2670,7 +2670,7 @@ do_more_prompt(int typed_char)
     }
 
     /* clear the --more-- message */
-    screen_fill((int)Rows - 1, (int)Rows, 0 + p_vtlc, (int)Columns + p_vtlc, ' ', ' ', 0);
+    screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
     State = oldState;
 #ifdef FEAT_MOUSE
     setmouse();
@@ -2815,7 +2815,7 @@ mch_msg(char *str)
 msg_screen_putchar(int c, int attr)
 {
     msg_didout = TRUE;		/* remember that line is not empty */
-    screen_putchar(c, msg_row, msg_col + p_vtlc, attr);
+    screen_putchar(c, msg_row, msg_col, attr);
 #ifdef FEAT_RIGHTLEFT
     if (cmdmsg_rl)
     {
@@ -2843,11 +2843,11 @@ msg_moremsg(int full)
     char_u	*s = (char_u *)_("-- More --");
 
     attr = hl_attr(HLF_M);
-    screen_puts(s, (int)Rows - 1, 0 + p_vtlc, attr);
+    screen_puts(s, (int)Rows - 1, 0, attr);
     if (full)
 	screen_puts((char_u *)
 		_(" SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "),
-		(int)Rows - 1, vim_strsize(s) + p_vtlc, attr);
+		(int)Rows - 1, vim_strsize(s), attr);
 }
 
 /*
