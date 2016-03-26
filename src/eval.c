@@ -13838,7 +13838,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	if (STRNICMP(name, "patch", 5) == 0)
 	{
 	    if (name[5] == '-'
-		    && STRLEN(name) > 11
+		    && STRLEN(name) >= 11
 		    && vim_isdigit(name[6])
 		    && vim_isdigit(name[8])
 		    && vim_isdigit(name[10]))
