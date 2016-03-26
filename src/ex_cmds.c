@@ -5867,7 +5867,7 @@ ex_help(exarg_T *eap)
 	     * specified, the current window is vertically split and
 	     * narrow. */
 	    n = WSP_HELP;
-	    if (cmdmod.split == 0 && curwin->w_width != Columns
+	    if (cmdmod.split == 0 && curwin->w_width != (Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc)
 						  && curwin->w_width < 80)
 		n |= WSP_TOP;
 	    if (win_split(0, n) == FAIL)

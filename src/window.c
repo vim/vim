@@ -1150,7 +1150,7 @@ win_split_ins(
 	if (flags & (WSP_TOP | WSP_BOT))
 	{
 	    wp->w_wincol = 0;
-	    win_new_width(wp, Columns);
+	    win_new_width(wp, (Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc));
 	    wp->w_vsep_width = 0;
 	}
 	else
@@ -1747,7 +1747,7 @@ win_equal(
 	dir = *p_ead;
     win_equal_rec(next_curwin == NULL ? curwin : next_curwin, current,
 		      topframe, dir, 0, tabline_height(),
-					   (int)Columns, topframe->fr_height);
+					   (int)(Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc), topframe->fr_height);
 }
 
 /*
@@ -1803,7 +1803,7 @@ win_equal_rec(
 	     * frame. */
 	    n = frame_minwidth(topfr, NOWIN);
 	    /* add one for the rightmost window, it doesn't have a separator */
-	    if (col + width == Columns)
+	    if (col + width == (Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc))
 		extra_sep = 1;
 	    else
 		extra_sep = 0;
@@ -3447,7 +3447,7 @@ win_alloc_firstwin(win_T *oldwin)
 	return FAIL;
     topframe = curwin->w_frame;
 #ifdef FEAT_WINDOWS
-    topframe->fr_width = Columns;
+    topframe->fr_width = (Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc);
 #endif
     topframe->fr_height = Rows - p_ch;
     topframe->fr_win = curwin;
@@ -3480,8 +3480,8 @@ win_init_size(void)
     firstwin->w_height = ROWS_AVAIL;
     topframe->fr_height = ROWS_AVAIL;
 #ifdef FEAT_WINDOWS
-    firstwin->w_width = Columns;
-    topframe->fr_width = Columns;
+    firstwin->w_width = (Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc);
+    topframe->fr_width = (Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc);
 #endif
 }
 
@@ -3767,7 +3767,7 @@ leave_tabpage(
     tp->tp_firstwin = firstwin;
     tp->tp_lastwin = lastwin;
     tp->tp_old_Rows = Rows;
-    tp->tp_old_Columns = Columns;
+    tp->tp_old_Columns = (Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc);
     firstwin = NULL;
     lastwin = NULL;
     return OK;
@@ -3819,7 +3819,7 @@ enter_tabpage(
 #endif
 		))
 	shell_new_rows();
-    if (curtab->tp_old_Columns != Columns && starting == 0)
+    if (curtab->tp_old_Columns != (Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc) && starting == 0)
 	shell_new_columns();	/* update window widths */
 
 #if defined(FEAT_GUI)
@@ -4473,7 +4473,7 @@ win_alloc(win_T *after UNUSED, int hidden UNUSED)
     if (!hidden)
 	win_append(after, new_wp);
     new_wp->w_wincol = 0;
-    new_wp->w_width = Columns;
+    new_wp->w_width = (Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc);
 #endif
 
     /* position the display and the cursor at the top of the file. */
@@ -4806,9 +4806,9 @@ shell_new_columns(void)
 
     /* First try setting the widths of windows with 'winfixwidth'.  If that
      * doesn't result in the right width, forget about that option. */
-    frame_new_width(topframe, (int)Columns, FALSE, TRUE);
-    if (!frame_check_width(topframe, Columns))
-	frame_new_width(topframe, (int)Columns, FALSE, FALSE);
+    frame_new_width(topframe, (Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc), FALSE, TRUE);
+    if (!frame_check_width(topframe, (Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc)))
+	frame_new_width(topframe, (Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc), FALSE, FALSE);
 
     (void)win_comp_pos();		/* recompute w_winrow and w_wincol */
 #if 0
@@ -5059,7 +5059,7 @@ frame_setheight(frame_T *curfrp, int height)
 		if (frp != curfrp)
 		    room -= frame_minheight(frp, NULL);
 	    }
-	    if (curfrp->fr_width != Columns)
+	    if (curfrp->fr_width != (Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc))
 		room_cmdline = 0;
 	    else
 	    {
@@ -5071,7 +5071,7 @@ frame_setheight(frame_T *curfrp, int height)
 
 	    if (height <= room + room_cmdline)
 		break;
-	    if (run == 2 || curfrp->fr_width == Columns)
+	    if (run == 2 || curfrp->fr_width == (Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc))
 	    {
 		if (height > room + room_cmdline)
 		    height = room + room_cmdline;
@@ -5815,7 +5815,7 @@ command_height(void)
 
     /* Find bottom frame with width of screen. */
     frp = lastwin->w_frame;
-    while (frp->fr_width != Columns && frp->fr_parent != NULL)
+    while (frp->fr_width != (Columns - p_vtlc < 1 ? 1 : Columns - p_vtlc) && frp->fr_parent != NULL)
 	frp = frp->fr_parent;
 
     /* Avoid changing the height of a window with 'winfixheight' set. */
